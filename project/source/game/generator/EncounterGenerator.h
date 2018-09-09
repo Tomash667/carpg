@@ -2,7 +2,7 @@
 
 #include "OutsideLocationGenerator.h"
 
-class EncounterGenerator : public OutsideLocationGenerator
+class EncounterGenerator final : public OutsideLocationGenerator
 {
 public:
 	int GetNumberOfSteps() override;

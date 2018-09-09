@@ -11,13 +11,16 @@
 #include "Stock.h"
 #include "Debug.h"
 #include "Portal.h"
+#include "Texture.h"
 #include "Game.h"
 
+//=================================================================================================
 void InsideLocationGenerator::Init()
 {
 	inside = (InsideLocation*)loc;
 }
 
+//=================================================================================================
 void InsideLocationGenerator::OnEnter()
 {
 	Game& game = Game::Get();
@@ -163,7 +166,7 @@ void InsideLocationGenerator::OnEnter()
 
 	// generuj minimapê
 	game.LoadingStep(game.txGeneratingMinimap);
-	game.CreateDungeonMinimap();
+	CreateMinimap();
 
 	// sekret
 	Quest_Secret* secret = QM.quest_secret;
@@ -262,11 +265,13 @@ void InsideLocationGenerator::OnEnter()
 	game.OpenDoorsByTeam(spawn_pt);
 }
 
+//=================================================================================================
 InsideLocationLevel& InsideLocationGenerator::GetLevelData()
 {
 	return inside->GetLevelData();
 }
 
+//=================================================================================================
 void InsideLocationGenerator::GenerateTraps()
 {
 	Game& game = Game::Get();
@@ -369,6 +374,7 @@ void InsideLocationGenerator::GenerateTraps()
 	}
 }
 
+//=================================================================================================
 void InsideLocationGenerator::RegenerateTraps()
 {
 	Game& game = Game::Get();
@@ -498,4 +504,48 @@ void InsideLocationGenerator::RegenerateTraps()
 
 	if(game.devmode)
 		Info("Traps: %d", game.local_ctx.traps->size());
+}
+
+//=================================================================================================
+void InsideLocationGenerator::CreateMinimap()
+{
+	Game& game = Game::Get();
+	InsideLocationLevel& lvl = GetLevelData();
+	TextureLock lock(game.tMinimap);
+
+	for(int y = 0; y < lvl.h; ++y)
+	{
+		uint* pix = lock[y];
+		for(int x = 0; x < lvl.w; ++x)
+		{
+			Pole& p = lvl.map[x + (lvl.w - 1 - y)*lvl.w];
+			if(IS_SET(p.flags, Pole::F_ODKRYTE))
+			{
+				if(OR2_EQ(p.type, SCIANA, BLOKADA_SCIANA))
+					*pix = Color(100, 100, 100);
+				else if(p.type == DRZWI)
+					*pix = Color(127, 51, 0);
+				else
+					*pix = Color(220, 220, 240);
+			}
+			else
+				*pix = 0;
+			++pix;
+		}
+	}
+
+	// extra borders
+	uint* pix = lock[lvl.h];
+	for(int x = 0; x < lvl.w + 1; ++x)
+	{
+		*pix = 0;
+		++pix;
+	}
+	for(int y = 0; y < lvl.h + 1; ++y)
+	{
+		uint* pix = lock[y] + lvl.w;
+		*pix = 0;
+	}
+
+	game.minimap_size = lvl.w;
 }

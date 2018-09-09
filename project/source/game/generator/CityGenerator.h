@@ -94,7 +94,7 @@ struct Road2
 	}
 };
 
-class CityGenerator : public OutsideLocationGenerator
+class CityGenerator final : public OutsideLocationGenerator
 {
 public:
 	CityGenerator() : sorter(grid)
@@ -154,6 +154,7 @@ private:
 	void RepositionUnits();
 	void GeneratePickableItems();
 	LevelContextEnumerator ForEachContext() { return LevelContextEnumerator(city); }
+	void CreateMinimap() override;
 
 	City* city;
 	TerrainTile* tiles;

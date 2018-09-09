@@ -12,6 +12,7 @@
 #include "Team.h"
 #include "OutsideObject.h"
 #include "AIController.h"
+#include "Texture.h"
 #include "Game.h"
 
 const float SPAWN_RATIO = 0.2f;
@@ -2318,7 +2319,7 @@ void CityGenerator::OnEnter()
 
 	// generate minimap
 	game.LoadingStep(game.txGeneratingMinimap);
-	game.CreateCityMinimap();
+	CreateMinimap();
 
 	// dodaj gracza i jego dru¿ynê
 	Vec3 spawn_pos;
@@ -2944,4 +2945,98 @@ void CityGenerator::GeneratePickableItems()
 				game.PickableItemAdd(Item::Get("healing_herb"));
 		}
 	}
+}
+
+//=================================================================================================
+void CityGenerator::CreateMinimap()
+{
+	Game& game = Game::Get();
+	TextureLock lock(game.tMinimap);
+
+	for(int y = 0; y < OutsideLocation::size; ++y)
+	{
+		uint* pix = lock[y];
+		for(int x = 0; x < OutsideLocation::size; ++x)
+		{
+			const TerrainTile& t = city->tiles[x + (OutsideLocation::size - 1 - y)*OutsideLocation::size];
+			Color col;
+			if(t.mode >= TM_BUILDING)
+				col = Color(128, 64, 0);
+			else if(t.alpha == 0)
+			{
+				if(t.t == TT_GRASS)
+					col = Color(0, 128, 0);
+				else if(t.t == TT_ROAD)
+					col = Color(128, 128, 128);
+				else if(t.t == TT_FIELD)
+					col = Color(200, 200, 100);
+				else
+					col = Color(128, 128, 64);
+			}
+			else
+			{
+				int r, g, b, r2, g2, b2;
+				switch(t.t)
+				{
+				case TT_GRASS:
+					r = 0;
+					g = 128;
+					b = 0;
+					break;
+				case TT_ROAD:
+					r = 128;
+					g = 128;
+					b = 128;
+					break;
+				case TT_FIELD:
+					r = 200;
+					g = 200;
+					b = 0;
+					break;
+				case TT_SAND:
+				default:
+					r = 128;
+					g = 128;
+					b = 64;
+					break;
+				}
+				switch(t.t2)
+				{
+				case TT_GRASS:
+					r2 = 0;
+					g2 = 128;
+					b2 = 0;
+					break;
+				case TT_ROAD:
+					r2 = 128;
+					g2 = 128;
+					b2 = 128;
+					break;
+				case TT_FIELD:
+					r2 = 200;
+					g2 = 200;
+					b2 = 0;
+					break;
+				case TT_SAND:
+				default:
+					r2 = 128;
+					g2 = 128;
+					b2 = 64;
+					break;
+				}
+				const float T = float(t.alpha) / 255;
+				col = Color(Lerp(r, r2, T), Lerp(g, g2, T), Lerp(b, b2, T));
+			}
+			if(x < 16 || x > 128 - 16 || y < 16 || y > 128 - 16)
+			{
+				col.r /= 2;
+				col.g /= 2;
+				col.b /= 2;
+			}
+			*pix = col;
+			++pix;
+		}
+	}
+
+	game.minimap_size = OutsideLocation::size;
 }

@@ -11,6 +11,7 @@
 #include "QuestManager.h"
 #include "Quest_Bandits.h"
 #include "Team.h"
+#include "Texture.h"
 #include "Game.h"
 
 
@@ -42,6 +43,7 @@ OutsideObject OutsideLocationGenerator::misc[] = {
 const uint OutsideLocationGenerator::n_misc = countof(misc);
 
 
+//=================================================================================================
 void OutsideLocationGenerator::InitOnce()
 {
 	for(uint i = 0; i < n_trees; ++i)
@@ -52,12 +54,14 @@ void OutsideLocationGenerator::InitOnce()
 		misc[i].obj = BaseObject::Get(misc[i].name);
 }
 
+//=================================================================================================
 void OutsideLocationGenerator::Init()
 {
 	outside = (OutsideLocation*)loc;
 	terrain = Game::Get().terrain;
 }
 
+//=================================================================================================
 int OutsideLocationGenerator::GetNumberOfSteps()
 {
 	int steps = LocationGenerator::GetNumberOfSteps();
@@ -70,6 +74,7 @@ int OutsideLocationGenerator::GetNumberOfSteps()
 	return steps;
 }
 
+//=================================================================================================
 void OutsideLocationGenerator::CreateMap()
 {
 	// create map
@@ -98,6 +103,7 @@ void OutsideLocationGenerator::CreateMap()
 	}
 }
 
+//=================================================================================================
 void OutsideLocationGenerator::OnEnter()
 {
 	Game& game = Game::Get();
@@ -190,7 +196,7 @@ void OutsideLocationGenerator::OnEnter()
 
 	// generate minimap
 	game.LoadingStep(game.txGeneratingMinimap);
-	game.CreateForestMinimap();
+	CreateMinimap();
 
 	SpawnTeam();
 
@@ -209,6 +215,7 @@ void OutsideLocationGenerator::OnEnter()
 	}
 }
 
+//=================================================================================================
 void OutsideLocationGenerator::SpawnForestObjects(int road_dir)
 {
 	Game& game = Game::Get();
@@ -282,6 +289,7 @@ void OutsideLocationGenerator::SpawnForestObjects(int road_dir)
 	}
 }
 
+//=================================================================================================
 void OutsideLocationGenerator::SpawnForestItems(int count_mod)
 {
 	assert(InRange(count_mod, -2, 1));
@@ -341,12 +349,55 @@ void OutsideLocationGenerator::SpawnForestItems(int count_mod)
 	}
 }
 
+//=================================================================================================
 int OutsideLocationGenerator::HandleUpdate()
 {
 	return 1;
 }
 
+//=================================================================================================
 void OutsideLocationGenerator::SpawnTeam()
 {
 	Game::Get().AddPlayerTeam(team_pos, team_dir, reenter, true);
+}
+
+//=================================================================================================
+void OutsideLocationGenerator::CreateMinimap()
+{
+	Game& game = Game::Get();
+	TextureLock lock(game.tMinimap);
+
+	for(int y = 0; y < OutsideLocation::size; ++y)
+	{
+		uint* pix = lock[y];
+		for(int x = 0; x < OutsideLocation::size; ++x)
+		{
+			TERRAIN_TILE t = outside->tiles[x + (OutsideLocation::size - 1 - y)*OutsideLocation::size].t;
+			Color col;
+			if(t == TT_GRASS)
+				col = Color(0, 128, 0);
+			else if(t == TT_ROAD)
+				col = Color(128, 128, 128);
+			else if(t == TT_SAND)
+				col = Color(128, 128, 64);
+			else if(t == TT_GRASS2)
+				col = Color(105, 128, 89);
+			else if(t == TT_GRASS3)
+				col = Color(127, 51, 0);
+			else
+				col = Color(255, 0, 0);
+			if(x < 16 || x > 128 - 16 || y < 16 || y > 128 - 16)
+			{
+				col = ((col & 0xFF) / 2) |
+					((((col & 0xFF00) >> 8) / 2) << 8) |
+					((((col & 0xFF0000) >> 16) / 2) << 16) |
+					0xFF000000;
+			}
+
+			*pix = col;
+			++pix;
+		}
+	}
+
+	game.minimap_size = OutsideLocation::size;
 }

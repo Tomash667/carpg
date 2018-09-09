@@ -8,7 +8,6 @@
 // rodzaj lokacji
 //-----------------------------------------------------------------------------
 // po dodaniu nowej lokacji trzeba w wielu miejscach pozmieniaæ coœ, tu jest ich lista:
-// RebuildMinimap
 // CreateLocation
 // WorldMapGui::LoadData
 // EnterLocation

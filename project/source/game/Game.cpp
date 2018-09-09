@@ -31,6 +31,7 @@
 #include "Level.h"
 #include "QuestManager.h"
 #include "Quest_Contest.h"
+#include "LocationGeneratorFactory.h"
 #include "DirectX.h"
 
 // limit fps
@@ -671,7 +672,9 @@ void Game::OnReload()
 
 	CreateTextures();
 	BuildDungeon();
-	RebuildMinimap();
+	// rebuild minimap texture
+	if(game_state == GS_LEVEL)
+		loc_gen_factory->Get(L.location)->CreateMinimap();
 	Inventory::OnReload();
 }
 

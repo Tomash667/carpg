@@ -5,6 +5,7 @@
 #include "Tile.h"
 #include "Game.h"
 
+//=================================================================================================
 int LabyrinthGenerator::GetNumberOfSteps()
 {
 	int steps = LocationGenerator::GetNumberOfSteps();
@@ -15,6 +16,7 @@ int LabyrinthGenerator::GetNumberOfSteps()
 	return steps;
 }
 
+//=================================================================================================
 int LabyrinthGenerator::TryGenerate(const Int2& maze_size, const Int2& room_size, Int2& room_pos, Int2& doors)
 {
 	list<Int2> drillers;
@@ -155,6 +157,7 @@ int LabyrinthGenerator::TryGenerate(const Int2& maze_size, const Int2& room_size
 	return pc;
 }
 
+//=================================================================================================
 void LabyrinthGenerator::GenerateLabyrinth(Pole*& tiles, const Int2& size, const Int2& room_size, Int2& stairs, int& stairs_dir, Int2& room_pos,
 	int grating_chance)
 {
@@ -200,6 +203,7 @@ void LabyrinthGenerator::GenerateLabyrinth(Pole*& tiles, const Int2& size, const
 		Pole::DebugDraw(tiles, size);
 }
 
+//=================================================================================================
 void LabyrinthGenerator::CreateStairs(Pole* tiles, const Int2& size, Int2& stairs, int& stairs_dir)
 {
 	int order[4] = { 0,1,2,3 };
@@ -359,6 +363,7 @@ void LabyrinthGenerator::CreateStairs(Pole* tiles, const Int2& size, Int2& stair
 	}
 }
 
+//=================================================================================================
 void LabyrinthGenerator::CreateGratings(Pole* tiles, const Int2& size, const Int2& room_size, const Int2& room_pos, int grating_chance)
 {
 	if(grating_chance <= 0)
@@ -383,6 +388,7 @@ void LabyrinthGenerator::CreateGratings(Pole* tiles, const Int2& size, const Int
 	}
 }
 
+//=================================================================================================
 void LabyrinthGenerator::Generate()
 {
 	InsideLocation* inside = (InsideLocation*)loc;
@@ -401,6 +407,7 @@ void LabyrinthGenerator::Generate()
 	r.size = base.room_size;
 }
 
+//=================================================================================================
 void LabyrinthGenerator::GenerateObjects()
 {
 	Game& game = Game::Get();
@@ -500,6 +507,7 @@ void LabyrinthGenerator::GenerateObjects()
 	}
 }
 
+//=================================================================================================
 void LabyrinthGenerator::GenerateUnits()
 {
 	Game::Get().GenerateLabirynthUnits();

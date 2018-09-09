@@ -2,7 +2,7 @@
 
 #include "OutsideLocationGenerator.h"
 
-class ForestGenerator : public OutsideLocationGenerator
+class ForestGenerator final : public OutsideLocationGenerator
 {
 public:
 	void Generate() override;

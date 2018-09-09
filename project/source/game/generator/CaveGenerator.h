@@ -2,7 +2,7 @@
 
 #include "InsideLocationGenerator.h"
 
-class CaveGenerator : public InsideLocationGenerator
+class CaveGenerator final : public InsideLocationGenerator
 {
 public:
 	CaveGenerator();

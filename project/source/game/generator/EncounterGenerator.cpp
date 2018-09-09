@@ -16,6 +16,7 @@
 #include "UnitGroup.h"
 #include "Game.h"
 
+//=================================================================================================
 int EncounterGenerator::GetNumberOfSteps()
 {
 	int steps = LocationGenerator::GetNumberOfSteps();
@@ -23,6 +24,7 @@ int EncounterGenerator::GetNumberOfSteps()
 	return steps;
 }
 
+//=================================================================================================
 void EncounterGenerator::Generate()
 {
 	// 0 - right, 1 - up, 2 - left, 3 - down
@@ -112,6 +114,7 @@ void EncounterGenerator::Generate()
 	terrain->RemoveHeightMap();
 }
 
+//=================================================================================================
 void EncounterGenerator::OnEnter()
 {
 	Game& game = Game::Get();
@@ -144,7 +147,7 @@ void EncounterGenerator::OnEnter()
 
 	// generate minimap
 	game.LoadingStep(game.txGeneratingMinimap);
-	game.CreateForestMinimap();
+	CreateMinimap();
 
 	// add team
 	SpawnEncounterTeam();
@@ -156,6 +159,7 @@ void EncounterGenerator::OnEnter()
 	}
 }
 
+//=================================================================================================
 void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest)
 {
 	Game& game = Game::Get();
@@ -424,6 +428,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 	}
 }
 
+//=================================================================================================
 void EncounterGenerator::SpawnEncounterTeam()
 {
 	assert(InRange(enc_kierunek, 0, 3));

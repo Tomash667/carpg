@@ -31,6 +31,7 @@
 #include "EntityInterpolator.h"
 #include "World.h"
 #include "Level.h"
+#include "LocationGeneratorFactory.h"
 
 vector<NetChange> Net::changes;
 Net::Mode Net::mode;
@@ -960,10 +961,7 @@ bool Game::ReadLevelData(BitStreamReader& f)
 
 			SpawnCityPhysics();
 			RespawnBuildingPhysics();
-			CreateCityMinimap();
 		}
-		else
-			CreateForestMinimap();
 		f >> L.light_angle;
 		if(!f)
 		{
@@ -1077,8 +1075,10 @@ bool Game::ReadLevelData(BitStreamReader& f)
 		SetDungeonParamsAndTextures(base);
 
 		SpawnDungeonColliders();
-		CreateDungeonMinimap();
 	}
+
+	// minimap
+	loc_gen_factory->Get(L.location)->CreateMinimap();
 
 	// usable objects
 	byte count;

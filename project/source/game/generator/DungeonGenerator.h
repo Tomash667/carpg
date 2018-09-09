@@ -2,7 +2,7 @@
 
 #include "InsideLocationGenerator.h"
 
-class DungeonGenerator : public InsideLocationGenerator
+class DungeonGenerator final : public InsideLocationGenerator
 {
 public:
 	int GetNumberOfSteps() override;

@@ -2,7 +2,7 @@
 
 #include "OutsideLocationGenerator.h"
 
-class SecretLocationGenerator : public OutsideLocationGenerator
+class SecretLocationGenerator final : public OutsideLocationGenerator
 {
 public:
 	void Generate() override;

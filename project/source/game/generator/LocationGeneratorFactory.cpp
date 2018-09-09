@@ -16,6 +16,7 @@
 #include "QuestManager.h"
 #include "Quest_Secret.h"
 
+//=================================================================================================
 void LocationGeneratorFactory::InitOnce()
 {
 	camp = new CampGenerator;
@@ -31,6 +32,7 @@ void LocationGeneratorFactory::InitOnce()
 	OutsideLocationGenerator::InitOnce();
 }
 
+//=================================================================================================
 void LocationGeneratorFactory::Clear()
 {
 	delete camp;
@@ -44,6 +46,7 @@ void LocationGeneratorFactory::Clear()
 	delete secret;
 }
 
+//=================================================================================================
 LocationGenerator* LocationGeneratorFactory::Get(Location* loc)
 {
 	LocationGenerator* loc_gen;

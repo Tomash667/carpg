@@ -3,6 +3,7 @@
 #include "LocationGenerator.h"
 #include "Location.h"
 
+//=================================================================================================
 int LocationGenerator::GetNumberOfSteps()
 {
 	int steps = 3; // common txEnteringLocation, txGeneratingMinimap, txLoadingComplete

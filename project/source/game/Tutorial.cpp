@@ -13,6 +13,7 @@
 #include "Level.h"
 #include "QuestManager.h"
 #include "Quest_Contest.h"
+#include "LocationGeneratorFactory.h"
 
 char mapa_t[] = {
 	"$$$$$$$$###########$$$"
@@ -370,7 +371,7 @@ void Game::StartTutorial()
 	// go!
 	LoadResources("", false);
 	SpawnDungeonColliders();
-	CreateDungeonMinimap();
+	loc_gen_factory->Get(L.location)->CreateMinimap();
 	AddPlayerTeam(Vec3(2.f*start_tile.x + 1, 0, 2.f*start_tile.y + 1), 0, false, true);
 	L.event_handler = nullptr;
 	SetMusic();

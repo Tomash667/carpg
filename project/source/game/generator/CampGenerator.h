@@ -2,7 +2,7 @@
 
 #include "OutsideLocationGenerator.h"
 
-class CampGenerator : public OutsideLocationGenerator
+class CampGenerator final : public OutsideLocationGenerator
 {
 public:
 	void Generate() override;

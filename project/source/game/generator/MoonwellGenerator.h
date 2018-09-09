@@ -2,7 +2,7 @@
 
 #include "OutsideLocationGenerator.h"
 
-class MoonwellGenerator : public OutsideLocationGenerator
+class MoonwellGenerator final : public OutsideLocationGenerator
 {
 public:
 	void Generate() override;

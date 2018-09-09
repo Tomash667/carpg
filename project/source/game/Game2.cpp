@@ -57,9 +57,9 @@
 #include "Quest_Tournament.h"
 #include "Debug.h"
 #include "LocationGeneratorFactory.h"
-#include "LocationGenerator.h"
 #include "CaveGenerator.h"
 #include "DungeonGenerator.h"
+#include "Texture.h"
 
 const int SAVE_VERSION = V_CURRENT;
 int LOAD_VERSION;
@@ -12644,193 +12644,19 @@ void Game::AddGameMsg2(cstring msg, float time, int id)
 	game_gui->game_messages->AddMessageIfNotExists(msg, time, id);
 }
 
-void Game::CreateCityMinimap()
-{
-	D3DLOCKED_RECT lock;
-	tMinimap->LockRect(0, &lock, nullptr, 0);
-
-	OutsideLocation* loc = (OutsideLocation*)L.location;
-
-	for(int y = 0; y < OutsideLocation::size; ++y)
-	{
-		DWORD* pix = (DWORD*)(((byte*)lock.pBits) + lock.Pitch*y);
-		for(int x = 0; x < OutsideLocation::size; ++x)
-		{
-			const TerrainTile& t = loc->tiles[x + (OutsideLocation::size - 1 - y)*OutsideLocation::size];
-			Color col;
-			if(t.mode >= TM_BUILDING)
-				col = Color(128, 64, 0);
-			else if(t.alpha == 0)
-			{
-				if(t.t == TT_GRASS)
-					col = Color(0, 128, 0);
-				else if(t.t == TT_ROAD)
-					col = Color(128, 128, 128);
-				else if(t.t == TT_FIELD)
-					col = Color(200, 200, 100);
-				else
-					col = Color(128, 128, 64);
-			}
-			else
-			{
-				int r, g, b, r2, g2, b2;
-				switch(t.t)
-				{
-				case TT_GRASS:
-					r = 0;
-					g = 128;
-					b = 0;
-					break;
-				case TT_ROAD:
-					r = 128;
-					g = 128;
-					b = 128;
-					break;
-				case TT_FIELD:
-					r = 200;
-					g = 200;
-					b = 0;
-					break;
-				case TT_SAND:
-				default:
-					r = 128;
-					g = 128;
-					b = 64;
-					break;
-				}
-				switch(t.t2)
-				{
-				case TT_GRASS:
-					r2 = 0;
-					g2 = 128;
-					b2 = 0;
-					break;
-				case TT_ROAD:
-					r2 = 128;
-					g2 = 128;
-					b2 = 128;
-					break;
-				case TT_FIELD:
-					r2 = 200;
-					g2 = 200;
-					b2 = 0;
-					break;
-				case TT_SAND:
-				default:
-					r2 = 128;
-					g2 = 128;
-					b2 = 64;
-					break;
-				}
-				const float T = float(t.alpha) / 255;
-				col = Color(Lerp(r, r2, T), Lerp(g, g2, T), Lerp(b, b2, T));
-			}
-			if(x < 16 || x > 128 - 16 || y < 16 || y > 128 - 16)
-			{
-				col.r /= 2;
-				col.g /= 2;
-				col.b /= 2;
-			}
-			*pix = col;
-			++pix;
-		}
-	}
-
-	tMinimap->UnlockRect(0);
-
-	game_gui->minimap->minimap_size = OutsideLocation::size;
-}
-
-void Game::CreateDungeonMinimap()
-{
-	D3DLOCKED_RECT lock;
-	tMinimap->LockRect(0, &lock, nullptr, 0);
-
-	InsideLocationLevel& lvl = ((InsideLocation*)L.location)->GetLevelData();
-
-	for(int y = 0; y < lvl.h; ++y)
-	{
-		DWORD* pix = (DWORD*)(((byte*)lock.pBits) + lock.Pitch*y);
-		for(int x = 0; x < lvl.w; ++x)
-		{
-			Pole& p = lvl.map[x + (lvl.w - 1 - y)*lvl.w];
-			if(IS_SET(p.flags, Pole::F_ODKRYTE))
-			{
-				if(OR2_EQ(p.type, SCIANA, BLOKADA_SCIANA))
-					*pix = Color(100, 100, 100);
-				else if(p.type == DRZWI)
-					*pix = Color(127, 51, 0);
-				else
-					*pix = Color(220, 220, 240);
-			}
-			else
-				*pix = 0;
-			++pix;
-		}
-	}
-
-	// extra borders
-	DWORD* pix = (DWORD*)(((byte*)lock.pBits) + lock.Pitch*lvl.h);
-	for(int x = 0; x < lvl.w + 1; ++x)
-	{
-		*pix = 0;
-		++pix;
-	}
-	for(int y = 0; y < lvl.h + 1; ++y)
-	{
-		DWORD* pix = (DWORD*)(((byte*)lock.pBits) + lock.Pitch*y);
-		pix += lvl.w;
-		*pix = 0;
-	}
-
-	tMinimap->UnlockRect(0);
-
-	game_gui->minimap->minimap_size = lvl.w;
-}
-
-void Game::RebuildMinimap()
-{
-	if(game_state == GS_LEVEL)
-	{
-		switch(L.location->type)
-		{
-		case L_CITY:
-			CreateCityMinimap();
-			break;
-		case L_DUNGEON:
-		case L_CRYPT:
-		case L_CAVE:
-			CreateDungeonMinimap();
-			break;
-		case L_FOREST:
-		case L_CAMP:
-		case L_ENCOUNTER:
-		case L_MOONWELL:
-			CreateForestMinimap();
-			break;
-		default:
-			assert(0);
-			Warn("RebuildMinimap: unknown location %d.", L.location->type);
-			break;
-		}
-	}
-}
-
 void Game::UpdateDungeonMinimap(bool send)
 {
 	if(minimap_reveal.empty())
 		return;
 
-	D3DLOCKED_RECT lock;
-	tMinimap->LockRect(0, &lock, nullptr, 0);
-
+	TextureLock lock(tMinimap);
 	InsideLocationLevel& lvl = ((InsideLocation*)L.location)->GetLevelData();
 
 	for(vector<Int2>::iterator it = minimap_reveal.begin(), end = minimap_reveal.end(); it != end; ++it)
 	{
 		Pole& p = lvl.map[it->x + (lvl.w - it->y - 1)*lvl.w];
 		SET_BIT(p.flags, Pole::F_ODKRYTE);
-		DWORD* pix = ((DWORD*)(((byte*)lock.pBits) + lock.Pitch*it->y)) + it->x;
+		uint* pix = lock[it->y] + it->x;
 		if(OR2_EQ(p.type, SCIANA, BLOKADA_SCIANA))
 			*pix = Color(100, 100, 100);
 		else if(p.type == DRZWI)
@@ -12851,8 +12677,6 @@ void Game::UpdateDungeonMinimap(bool send)
 	}
 
 	minimap_reveal.clear();
-
-	tMinimap->UnlockRect(0);
 }
 
 Door* Game::FindDoor(LevelContext& ctx, const Int2& pt)
@@ -14481,50 +14305,6 @@ void Game::DialogTalk(DialogContext& ctx, cstring msg)
 		ctx.skip_id = c.ile;
 		net_talk.push_back(c.str);
 	}
-}
-
-void Game::CreateForestMinimap()
-{
-	D3DLOCKED_RECT lock;
-	tMinimap->LockRect(0, &lock, nullptr, 0);
-
-	OutsideLocation* loc = (OutsideLocation*)L.location;
-
-	for(int y = 0; y < OutsideLocation::size; ++y)
-	{
-		DWORD* pix = (DWORD*)(((byte*)lock.pBits) + lock.Pitch*y);
-		for(int x = 0; x < OutsideLocation::size; ++x)
-		{
-			TERRAIN_TILE t = loc->tiles[x + (OutsideLocation::size - 1 - y)*OutsideLocation::size].t;
-			Color col;
-			if(t == TT_GRASS)
-				col = Color(0, 128, 0);
-			else if(t == TT_ROAD)
-				col = Color(128, 128, 128);
-			else if(t == TT_SAND)
-				col = Color(128, 128, 64);
-			else if(t == TT_GRASS2)
-				col = Color(105, 128, 89);
-			else if(t == TT_GRASS3)
-				col = Color(127, 51, 0);
-			else
-				col = Color(255, 0, 0);
-			if(x < 16 || x > 128 - 16 || y < 16 || y > 128 - 16)
-			{
-				col = ((col & 0xFF) / 2) |
-					((((col & 0xFF00) >> 8) / 2) << 8) |
-					((((col & 0xFF0000) >> 16) / 2) << 16) |
-					0xFF000000;
-			}
-
-			*pix = col;
-			++pix;
-		}
-	}
-
-	tMinimap->UnlockRect(0);
-
-	game_gui->minimap->minimap_size = OutsideLocation::size;
 }
 
 Vec2 Game::GetMapPosition(Unit& unit)

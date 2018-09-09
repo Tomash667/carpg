@@ -29,6 +29,7 @@
 #include "World.h"
 #include "Level.h"
 #include "LoadingHandler.h"
+#include "LocationGeneratorFactory.h"
 
 enum SaveFlags
 {
@@ -881,13 +882,9 @@ void Game::LoadGame(GameReader& f)
 			{
 				RespawnBuildingPhysics();
 				SpawnCityPhysics();
-				CreateCityMinimap();
 			}
 			else
-			{
 				L.SpawnOutsideBariers();
-				CreateForestMinimap();
-			}
 
 			InitQuadTree();
 			CalculateQuadtree();
@@ -903,8 +900,10 @@ void Game::LoadGame(GameReader& f)
 
 			RespawnObjectColliders(false);
 			SpawnDungeonColliders();
-			CreateDungeonMinimap();
 		}
+
+		// minimap
+		loc_gen_factory->Get(L.location)->CreateMinimap();
 
 		// particles
 		local_ctx.pes->resize(f.Read<uint>());

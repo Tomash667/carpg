@@ -117,7 +117,11 @@ void Minimap::Draw(ControlDrawData* /*cdd*/)
 //=================================================================================================
 void Minimap::Update(float dt)
 {
-	if(Game::Get().city_ctx)
+	Game& game = Game::Get();
+
+	minimap_size = game.minimap_size;
+
+	if(game.city_ctx)
 	{
 		for(vector<Text>::iterator it = texts.begin(), end = texts.end(); it != end; ++it)
 		{

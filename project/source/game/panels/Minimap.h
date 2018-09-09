@@ -55,11 +55,11 @@ public:
 		Vec2 pos, anchor;
 	};
 
-	int minimap_size;
 	Matrix m1;
 	vector<Text> texts;
 	City* city;
 
 private:
 	TEX tMiniunit[5], tSchodyDol, tSchodyGora, tMinibag, tMinibag2, tMiniportal;
+	int minimap_size;
 };

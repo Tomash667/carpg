@@ -39,7 +39,7 @@
 #include "Quest_Secret.h"
 #include "Quest_Tournament.h"
 #include "LocationGeneratorFactory.h"
-#include "LocationGenerator.h"
+#include "Texture.h"
 
 extern Matrix m1, m2, m3, m4;
 
@@ -242,12 +242,10 @@ void Game::ApplyTiles(float* _h, TerrainTile* _tiles)
 	assert(_h && _tiles);
 
 	TEX splat = terrain->GetSplatTexture();
-	D3DLOCKED_RECT lock;
-	V(splat->LockRect(0, &lock, nullptr, 0));
-	byte* bits = (byte*)lock.pBits;
+	TextureLock lock(splat);
 	for(uint y = 0; y < 256; ++y)
 	{
-		DWORD* row = (DWORD*)(bits + lock.Pitch * y);
+		uint* row = lock[y];
 		for(uint x = 0; x < 256; ++x, ++row)
 		{
 			TerrainTile& t = _tiles[x / 2 + y / 2 * OutsideLocation::size];
@@ -264,7 +262,6 @@ void Game::ApplyTiles(float* _h, TerrainTile* _tiles)
 			}
 		}
 	}
-	V(splat->UnlockRect(0));
 	splat->GenerateMipSubLevels();
 
 	terrain->SetHeightMap(_h);

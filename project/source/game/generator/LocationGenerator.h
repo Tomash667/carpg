@@ -19,6 +19,7 @@ public:
 	virtual void GenerateObjects() {}
 	virtual void GenerateUnits() {}
 	virtual void GenerateItems() {}
+	virtual void CreateMinimap() = 0;
 
 	Location* loc;
 	int dungeon_level;

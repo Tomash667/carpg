@@ -654,6 +654,7 @@ public:
 	// MINIMAPA
 	bool minimap_opened_doors;
 	vector<Int2> minimap_reveal;
+	uint minimap_size;
 
 	//---------------------------------
 	// FALLBACK
@@ -998,9 +999,6 @@ public:
 	void AddGameMsg3(PlayerController* player, GMS id);
 	int CalculateQuestReward(int gold);
 	void AddReward(int gold) { AddGold(CalculateQuestReward(gold), nullptr, true, txQuestCompletedGold, 4.f, false); }
-	void CreateCityMinimap();
-	void CreateDungeonMinimap();
-	void RebuildMinimap();
 	void UpdateDungeonMinimap(bool send);
 	void DungeonReveal(const Int2& tile);
 	void SaveStock(FileWriter& f, vector<ItemSlot>& cnt);
@@ -1552,7 +1550,6 @@ public:
 	// roti jest u¿ywane tylko do ustalenia czy k¹t jest zerowy czy nie, mo¿na przerobiæ t¹ funkcjê ¿eby tego nie u¿ywa³a wogóle
 	void ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding* inside, Mesh* mesh, Mesh* inside_mesh, float rot, int roti,
 		const Vec3& shift, Building* type, CityBuilding* building, bool recreate = false, Vec3* out_point = nullptr);
-	void CreateForestMinimap();
 	void Event_RandomEncounter(int id);
 	void SpawnUnitsGroup(LevelContext& ctx, const Vec3& pos, const Vec3* look_at, uint count, UnitGroup* group, int level, delegate<void(Unit*)> callback);
 	void UpdateLocation(LevelContext& ctx, int days, int open_chance, bool reset);

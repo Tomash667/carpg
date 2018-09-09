@@ -1,5 +1,7 @@
 #pragma once
 
+#include "LocationGenerator.h"
+
 class LocationGeneratorFactory
 {
 public:
