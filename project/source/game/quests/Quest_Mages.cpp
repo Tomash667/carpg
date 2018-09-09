@@ -270,17 +270,8 @@ void Quest_Mages2::SetProgress(int prog2)
 			if(prog != Progress::BoughtPotion)
 				OnUpdate(game->txQuest[180]);
 			const Item* item = Item::Get("q_magowie_potion");
-			game->PreloadItem(item);
-			game->current_dialog->pc->unit->AddItem(item, 1, false);
+			game->current_dialog->pc->unit->AddItem2(item, 1u, 0u);
 			game->current_dialog->pc->unit->ModGold(-150);
-
-			if(Net::IsOnline() && !game->current_dialog->is_local)
-			{
-				game->Net_AddItem(game->current_dialog->pc, item, false);
-				game->Net_AddedItemMsg(game->current_dialog->pc);
-			}
-			else
-				game->AddGameMsg3(GMS_ADDED_ITEM);
 		}
 		break;
 	case Progress::MageDrinkPotion:

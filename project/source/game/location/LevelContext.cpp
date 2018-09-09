@@ -4,6 +4,7 @@
 #include "Game.h"
 #include "Chest.h"
 #include "Level.h"
+#include "City.h"
 
 //=================================================================================================
 void TmpLevelContext::Clear()
@@ -256,4 +257,23 @@ Usable* LevelContext::FindUsable(BaseUsable* base)
 	}
 
 	return nullptr;
+}
+
+
+//=================================================================================================
+LevelContext& LevelContextEnumerator::Iterator::operator * () const
+{
+	assert(index != -2);
+	if(index == -1)
+		return Game::Get().local_ctx;
+	else
+		return city->inside_buildings[index]->ctx;
+}
+
+LevelContextEnumerator::Iterator& LevelContextEnumerator::Iterator::operator ++ ()
+{
+	++index;
+	if(index >= (int)city->inside_buildings.size())
+		index = -2;
+	return *this;
 }

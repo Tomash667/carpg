@@ -54,7 +54,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			parcel.id = "$parcel";
 			parcel.name = Format(game->txQuest[8], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str());
 			parcel.refid = refid;
-			game->current_dialog->pc->unit->AddItem(&parcel, 1, true);
+			game->current_dialog->pc->unit->AddItem2(&parcel, 1u, 1u);
 
 			Location& loc2 = GetStartLocation();
 			msgs.push_back(Format(game->txQuest[3], LocationHelper::IsCity(loc2) ? game->txForMayor : game->txForSoltys, loc2.name.c_str(), W.GetDate()));
@@ -75,14 +75,6 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 				e->timed = true;
 				e->location_event_handler = nullptr;
 			}
-
-			if(Net::IsOnline() && !game->current_dialog->is_local)
-			{
-				game->Net_AddItem(game->current_dialog->pc, &parcel, true);
-				game->Net_AddedItemMsg(game->current_dialog->pc);
-			}
-			else
-				game->AddGameMsg3(GMS_ADDED_ITEM);
 		}
 		break;
 	case Progress::DeliverAfterTime:

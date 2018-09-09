@@ -142,16 +142,7 @@ void Quest_Evil::SetProgress(int prog2)
 		{
 			OnUpdate(game->txQuest[243]);
 			const Item* item = Item::Get("q_zlo_ksiega");
-			game->PreloadItem(item);
-			game->current_dialog->pc->unit->AddItem(item, 1, true);
-
-			if(Net::IsOnline() && !game->current_dialog->is_local)
-			{
-				game->Net_AddItem(game->current_dialog->pc, item, true);
-				game->Net_AddedItemMsg(game->current_dialog->pc);
-			}
-			else
-				game->AddGameMsg3(GMS_ADDED_ITEM);
+			game->current_dialog->pc->unit->AddItem2(item, 1u, 1u);
 		}
 		break;
 	case Progress::GivenBook:

@@ -613,7 +613,7 @@ struct Unit
 	{
 		return AddItem(item, count, is_team ? count : 0);
 	}
-	// add item and show game message, send net notification
+	// add item and show game message, send net notification, calls preload
 	void AddItem2(const Item* item, uint count, uint team_count);
 	// dodaje przedmiot i zak³ada jeœli nie ma takiego typu, przedmiot jest dru¿ynowy
 	void AddItemAndEquipIfNone(const Item* item, uint count = 1);

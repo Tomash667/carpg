@@ -210,6 +210,7 @@ struct PlayerController : public HeroPlayerCommon
 	void RefreshCooldown();
 	bool IsHit(Unit* unit) const;
 	int GetNextActionItemIndex() const;
+	void AddItemMessage(uint count);
 };
 
 //-----------------------------------------------------------------------------

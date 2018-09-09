@@ -655,6 +655,26 @@ bool Unit::AddItem(const Item* item, uint count, uint team_count)
 }
 
 //=================================================================================================
+void Unit::AddItem2(const Item* item, uint count, uint team_count)
+{
+	Game::Get().PreloadItem(item);
+	AddItem(item, count, team_count);
+
+	if(IsPlayer())
+	{
+		if(!player->IsLocal())
+		{
+			NetChangePlayer& c = Add1(player->player_info->changes);
+			c.type = NetChangePlayer::ADD_ITEMS;
+			c.item = item;
+			c.id = team_count;
+			c.ile = count;
+		}
+		player->AddItemMessage(count);
+	}
+}
+
+//=================================================================================================
 void Unit::ApplyConsumableEffect(const Consumable& item)
 {
 	Game& game = Game::Get();

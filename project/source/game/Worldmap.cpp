@@ -2,7 +2,6 @@
 #include "GameCore.h"
 #include "Game.h"
 #include "Terrain.h"
-#include "CityGenerator.h"
 #include "Inventory.h"
 #include "Quest_Sawmill.h"
 #include "Quest_Bandits.h"
@@ -40,7 +39,7 @@
 #include "Quest_Secret.h"
 #include "Quest_Tournament.h"
 #include "LocationGeneratorFactory.h"
-#include "OutsideObject.h"
+#include "LocationGenerator.h"
 
 extern Matrix m1, m2, m3, m4;
 
@@ -1444,42 +1443,6 @@ void Game::RespawnBuildingPhysics()
 	}
 }
 
-void Game::RepositionCityUnits()
-{
-	const int a = int(0.15f*OutsideLocation::size) + 3;
-	const int b = int(0.85f*OutsideLocation::size) - 3;
-
-	UnitData* citizen;
-	if(city_ctx->IsVillage())
-		citizen = UnitData::Get("villager");
-	else
-		citizen = UnitData::Get("citizen");
-	UnitData* guard = UnitData::Get("guard_move");
-	InsideBuilding* inn = city_ctx->FindInn();
-
-	for(vector<Unit*>::iterator it = local_ctx.units->begin(), end = local_ctx.units->end(); it != end; ++it)
-	{
-		Unit& u = **it;
-		if(u.IsAlive() && u.IsAI())
-		{
-			if(u.ai->goto_inn)
-				WarpToArea(inn->ctx, (Rand() % 5 == 0 ? inn->arena2 : inn->arena1), u.GetUnitRadius(), u.pos);
-			else if(u.data == citizen || u.data == guard)
-			{
-				for(int j = 0; j < 50; ++j)
-				{
-					Int2 pt(Random(a, b), Random(a, b));
-					if(city_ctx->tiles[pt(OutsideLocation::size)].IsRoadOrPath())
-					{
-						WarpUnit(u, Vec3(2.f*pt.x + 1, 0, 2.f*pt.y + 1));
-						break;
-					}
-				}
-			}
-		}
-	}
-}
-
 void Game::Event_RandomEncounter(int)
 {
 	dialog_enc = nullptr;
@@ -1787,82 +1750,6 @@ Game::ObjectEntity Game::SpawnObjectNearLocation(LevelContext& ctx, BaseObject* 
 			terrain->SetH(pt);
 
 		return SpawnObjectEntity(ctx, obj, pt, rot, scale);
-	}
-}
-
-void Game::SpawnTmpUnits(City* city)
-{
-	InsideBuilding* inn = city->FindInn();
-	CityBuilding* training_grounds = city->FindBuilding(BuildingGroup::BG_TRAINING_GROUNDS);
-
-	// heroes
-	uint count;
-	Int2 level;
-	if(W.CheckFirstCity())
-	{
-		count = 4;
-		level = Int2(2, 5);
-	}
-	else
-	{
-		count = Random(1u, 4u);
-		level = Int2(2, 15);
-	}
-
-	for(uint i = 0; i < count; ++i)
-	{
-		UnitData& ud = GetHero(ClassInfo::GetRandom());
-
-		if(Rand() % 2 == 0 || !training_grounds)
-		{
-			// inside inn
-			SpawnUnitInsideInn(ud, level.Random(), inn, true);
-		}
-		else
-		{
-			// on training grounds
-			Unit* u = SpawnUnitNearLocation(local_ctx, Vec3(2.f*training_grounds->unit_pt.x + 1, 0, 2.f*training_grounds->unit_pt.y + 1), ud, nullptr,
-				level.Random(), 8.f);
-			if(u)
-				u->temporary = true;
-		}
-	}
-
-	// quest traveler (100% chance in city, 50% in village)
-	if(!city_ctx->IsVillage() || Rand() % 2 == 0)
-		SpawnUnitInsideInn(*UnitData::Get("traveler"), -2, inn, SU_TEMPORARY);
-}
-
-void Game::RemoveTmpUnits(City* city)
-{
-	RemoveTmpUnits(local_ctx);
-
-	for(vector<InsideBuilding*>::iterator it = city->inside_buildings.begin(), end = city->inside_buildings.end(); it != end; ++it)
-		RemoveTmpUnits((*it)->ctx);
-}
-
-void Game::RemoveTmpUnits(LevelContext& ctx)
-{
-	for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end;)
-	{
-		Unit* u = *it;
-		if(u->temporary)
-		{
-			delete u;
-
-			if(it + 1 == end)
-			{
-				ctx.units->pop_back();
-				return;
-			}
-			else
-			{
-				it = ctx.units->erase(it);
-				end = ctx.units->end();
-			}
-		}
-		else
-			++it;
 	}
 }
 

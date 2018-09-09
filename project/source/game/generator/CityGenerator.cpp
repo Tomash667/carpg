@@ -21,6 +21,13 @@ const float EXIT_START = 11.1f;
 const float EXIT_END = 12.6f;
 
 //=================================================================================================
+void CityGenerator::Init()
+{
+	OutsideLocationGenerator::Init();
+	city = (City*)outside;
+}
+
+//=================================================================================================
 void CityGenerator::Init(TerrainTile* _tiles, float* _height, int _w, int _h)
 {
 	assert(_tiles && _height && _w > 0 && _h > 0);
@@ -2058,7 +2065,6 @@ int CityGenerator::GetNumberOfSteps()
 //=================================================================================================
 void CityGenerator::Generate()
 {
-	City* city = (City*)loc;
 	bool village = city->IsVillage();
 	if(village)
 	{
@@ -2211,7 +2217,6 @@ void CityGenerator::Generate()
 void CityGenerator::OnEnter()
 {
 	Game& game = Game::Get();
-	City* city = (City*)loc;
 	game.city_ctx = city;
 	game.arena_free = true;
 
@@ -2236,7 +2241,7 @@ void CityGenerator::OnEnter()
 		// generate units
 		game.LoadingStep(game.txGeneratingUnits);
 		SpawnUnits();
-		game.SpawnTmpUnits(city);
+		SpawnTemporaryUnits();
 
 		// generate items
 		game.LoadingStep(game.txGeneratingItems);
@@ -2249,7 +2254,7 @@ void CityGenerator::OnEnter()
 	{
 		// remove temporary/quest units
 		if(city->reset)
-			game.RemoveTmpUnits(city);
+			RemoveTemporaryUnits();
 
 		// remove blood/corpses
 		int days;
@@ -2267,7 +2272,7 @@ void CityGenerator::OnEnter()
 		// recreate units
 		game.LoadingStep(game.txGeneratingUnits);
 		game.RespawnUnits();
-		game.RepositionCityUnits();
+		RepositionUnits();
 
 		// recreate physics
 		game.LoadingStep(game.txGeneratingPhysics);
@@ -2276,7 +2281,7 @@ void CityGenerator::OnEnter()
 
 		if(city->reset)
 		{
-			game.SpawnTmpUnits(city);
+			SpawnTemporaryUnits();
 			city->reset = false;
 		}
 
@@ -2341,7 +2346,6 @@ void CityGenerator::OnEnter()
 void CityGenerator::SpawnBuildings()
 {
 	Game& game = Game::Get();
-	City* city = (City*)loc;
 
 	const int mur1 = int(0.15f*OutsideLocation::size);
 	const int mur2 = int(0.85f*OutsideLocation::size);
@@ -2625,7 +2629,7 @@ void CityGenerator::SpawnObjects()
 		game.SpawnObjectEntity(game.local_ctx, BaseObject::Get("coveredwell"), pos, PI / 2 * (Rand() % 4), 1.f, 0, nullptr);
 	}
 
-	TerrainTile* tiles = ((City*)L.location)->tiles;
+	TerrainTile* tiles = city->tiles;
 
 	for(int i = 0; i < 512; ++i)
 	{
@@ -2652,7 +2656,6 @@ void CityGenerator::SpawnObjects()
 void CityGenerator::SpawnUnits()
 {
 	Game& game = Game::Get();
-	City* city = (City*)loc;
 
 	for(CityBuilding& b : city->buildings)
 	{
@@ -2736,10 +2739,112 @@ void CityGenerator::SpawnUnits()
 }
 
 //=================================================================================================
+void CityGenerator::SpawnTemporaryUnits()
+{
+	Game& game = Game::Get();
+
+	InsideBuilding* inn = city->FindInn();
+	CityBuilding* training_grounds = city->FindBuilding(BuildingGroup::BG_TRAINING_GROUNDS);
+
+	// heroes
+	uint count;
+	Int2 level;
+	if(W.CheckFirstCity())
+	{
+		count = 4;
+		level = Int2(2, 5);
+	}
+	else
+	{
+		count = Random(1u, 4u);
+		level = Int2(2, 15);
+	}
+
+	for(uint i = 0; i < count; ++i)
+	{
+		UnitData& ud = game.GetHero(ClassInfo::GetRandom());
+
+		if(Rand() % 2 == 0 || !training_grounds)
+		{
+			// inside inn
+			game.SpawnUnitInsideInn(ud, level.Random(), inn, true);
+		}
+		else
+		{
+			// on training grounds
+			Unit* u = game.SpawnUnitNearLocation(game.local_ctx, Vec3(2.f*training_grounds->unit_pt.x + 1, 0, 2.f*training_grounds->unit_pt.y + 1), ud, nullptr,
+				level.Random(), 8.f);
+			if(u)
+				u->temporary = true;
+		}
+	}
+
+	// quest traveler (100% chance in city, 50% in village)
+	if(!city->IsVillage() || Rand() % 2 == 0)
+		game.SpawnUnitInsideInn(*UnitData::Get("traveler"), -2, inn, Game::SU_TEMPORARY);
+}
+
+//=================================================================================================
+void CityGenerator::RemoveTemporaryUnits()
+{
+	for(LevelContext& ctx : ForEachContext())
+	{
+		LoopAndRemove(*ctx.units, [](Unit* u)
+		{
+			if(u->temporary)
+			{
+				delete u;
+				return true;
+			}
+			else
+				return false;
+		});
+	}
+}
+
+//=================================================================================================
+void CityGenerator::RepositionUnits()
+{
+	Game& game = Game::Get();
+
+	const int a = int(0.15f*OutsideLocation::size) + 3;
+	const int b = int(0.85f*OutsideLocation::size) - 3;
+
+	UnitData* citizen;
+	if(city->IsVillage())
+		citizen = UnitData::Get("villager");
+	else
+		citizen = UnitData::Get("citizen");
+	UnitData* guard = UnitData::Get("guard_move");
+	InsideBuilding* inn = city->FindInn();
+
+	for(vector<Unit*>::iterator it = game.local_ctx.units->begin(), end = game.local_ctx.units->end(); it != end; ++it)
+	{
+		Unit& u = **it;
+		if(u.IsAlive() && u.IsAI())
+		{
+			if(u.ai->goto_inn)
+				game.WarpToArea(inn->ctx, (Rand() % 5 == 0 ? inn->arena2 : inn->arena1), u.GetUnitRadius(), u.pos);
+			else if(u.data == citizen || u.data == guard)
+			{
+				for(int j = 0; j < 50; ++j)
+				{
+					Int2 pt(Random(a, b), Random(a, b));
+					if(city->tiles[pt(OutsideLocation::size)].IsRoadOrPath())
+					{
+						game.WarpUnit(u, Vec3(2.f*pt.x + 1, 0, 2.f*pt.y + 1));
+						break;
+					}
+				}
+			}
+		}
+	}
+}
+
+//=================================================================================================
 void CityGenerator::GeneratePickableItems()
 {
 	Game& game = Game::Get();
-	City* city = (City*)loc;
 
 	BaseObject* table = BaseObject::Get("table"),
 		*shelves = BaseObject::Get("shelves");

@@ -6,6 +6,7 @@
 #include "Building.h"
 #include "Perlin.h"
 #include "EntryPoint.h"
+#include "LevelContext.h"
 
 struct BuildPt
 {
@@ -100,6 +101,7 @@ public:
 	{
 	}
 
+	void Init() override;
 	void Init(TerrainTile* tiles, float* height, int w, int h);
 	void SetRoadSize(int road_size, int road_part);
 	void SetTerrainNoise(int octaves, float frequency, float hmin, float hmax);
@@ -147,8 +149,13 @@ private:
 	void SpawnObjects();
 	void SpawnBuildings();
 	void SpawnUnits();
+	void SpawnTemporaryUnits();
+	void RemoveTemporaryUnits();
+	void RepositionUnits();
 	void GeneratePickableItems();
+	LevelContextEnumerator ForEachContext() { return LevelContextEnumerator(city); }
 
+	City* city;
 	TerrainTile* tiles;
 	int w, h, road_part, road_size;
 	float* height, hmin, hmax;

@@ -229,19 +229,6 @@ struct SuperShader
 	uint id;
 };
 
-class CityGenerator;
-
-class Quest_Sawmill;
-class Quest_Mine;
-class Quest_Bandits;
-class Quest_Mages;
-class Quest_Mages2;
-class Quest_Orcs;
-class Quest_Orcs2;
-class Quest_Goblins;
-class Quest_Evil;
-class Quest_Crazies;
-
 enum StreamLogType
 {
 	Stream_None,
@@ -613,7 +600,6 @@ public:
 	LevelContext local_ctx;
 	ObjectPool<TmpLevelContext> tmp_ctx_pool;
 	City* city_ctx; // je¿eli jest w mieœcie/wiosce to ten wskaŸnik jest ok, takto nullptr
-	CityGenerator* gen;
 
 	MeshInstance* GetBowInstance(Mesh* mesh);
 
@@ -1446,28 +1432,6 @@ public:
 	PlayerInfo& GetPlayerInfo(int id);
 	PlayerInfo* GetPlayerInfoTry(int id);
 	void UpdateWarpData(float dt);
-	void Net_AddItem(PlayerController* player, const Item* item, bool is_team)
-	{
-		NetChangePlayer& c = Add1(player->player_info->changes);
-		c.type = NetChangePlayer::ADD_ITEMS;
-		c.item = item;
-		c.id = (is_team ? 1 : 0);
-		c.ile = 1;
-	}
-	void Net_AddedItemMsg(PlayerController* player)
-	{
-		NetChangePlayer& c = Add1(player->player_info->changes);
-		c.type = NetChangePlayer::GAME_MESSAGE;
-		c.id = GMS_ADDED_ITEM;
-	}
-	void Net_AddItems(PlayerController* player, const Item* item, int ile, bool is_team)
-	{
-		NetChangePlayer& c = Add1(player->player_info->changes);
-		c.type = NetChangePlayer::ADD_ITEMS;
-		c.item = item;
-		c.id = (is_team ? ile : 0);
-		c.ile = ile;
-	}
 	void Net_RecruitNpc(Unit* unit)
 	{
 		NetChange& c = Add1(Net::changes);
@@ -1589,7 +1553,6 @@ public:
 	void ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding* inside, Mesh* mesh, Mesh* inside_mesh, float rot, int roti,
 		const Vec3& shift, Building* type, CityBuilding* building, bool recreate = false, Vec3* out_point = nullptr);
 	void CreateForestMinimap();
-	void RepositionCityUnits();
 	void Event_RandomEncounter(int id);
 	void SpawnUnitsGroup(LevelContext& ctx, const Vec3& pos, const Vec3* look_at, uint count, UnitGroup* group, int level, delegate<void(Unit*)> callback);
 	void UpdateLocation(LevelContext& ctx, int days, int open_chance, bool reset);
@@ -1598,9 +1561,6 @@ public:
 		float scale = 1.f);
 	ObjectEntity SpawnObjectNearLocation(LevelContext& ctx, BaseObject* obj, const Vec2& pos, const Vec2& rot_target, float range = 2.f, float margin = 0.3f,
 		float scale = 1.f);
-	void SpawnTmpUnits(City* city);
-	void RemoveTmpUnits(City* city);
-	void RemoveTmpUnits(LevelContext& ctx);
 	enum SpawnObjectExtrasFlags
 	{
 		SOE_DONT_SPAWN_PARTICLES = 1 << 0,

@@ -82,3 +82,26 @@ struct ILevel
 {
 	virtual void ApplyContext(LevelContext& ctx) = 0;
 };
+
+//-----------------------------------------------------------------------------
+struct LevelContextEnumerator
+{
+	struct Iterator
+	{
+		Iterator(City* city, int index) : city(city), index(index) {}
+		bool operator != (const Iterator& it) const { return index != it.index; }
+		LevelContext& operator * () const;
+		Iterator& operator ++ ();
+
+	private:
+		City* city;
+		int index;
+	};
+
+	LevelContextEnumerator(City* city) : city(city) {}
+	Iterator begin() { return Iterator(city, -1); }
+	Iterator end() { return Iterator(city, -2); }
+
+private:
+	City* city;
+};

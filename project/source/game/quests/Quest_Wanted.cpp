@@ -73,19 +73,11 @@ void Quest_Wanted::SetProgress(int prog2)
 			letter.name = game->txQuest[258];
 			letter.refid = refid;
 			letter.desc = Format(game->txQuest[259], level * 100, unit_name.c_str());
-			game->current_dialog->pc->unit->AddItem(&letter, 1, true);
+			game->current_dialog->pc->unit->AddItem2(&letter, 1u, 1u);
 
 			// wpis do dziennika
 			msgs.push_back(Format(game->txQuest[29], GetStartLocationName(), W.GetDate()));
 			msgs.push_back(Format(game->txQuest[260], level * 100, unit_name.c_str(), GetTargetLocationName(), GetTargetLocationDir()));
-
-			if(Net::IsOnline() && !game->current_dialog->is_local)
-			{
-				game->Net_AddItem(game->current_dialog->pc, &letter, true);
-				game->Net_AddedItemMsg(game->current_dialog->pc);
-			}
-			else
-				game->AddGameMsg3(GMS_ADDED_ITEM);
 		}
 		break;
 	case Progress::Timeout: // czas min¹³

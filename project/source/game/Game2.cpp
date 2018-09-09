@@ -20,7 +20,6 @@
 #include "Quest_Goblins.h"
 #include "Quest_Evil.h"
 #include "Quest_Crazies.h"
-#include "CityGenerator.h"
 #include "Version.h"
 #include "LocationHelper.h"
 #include "InsideLocation.h"
@@ -5595,15 +5594,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 	else if(strcmp(msg, "crazy_give_item") == 0)
 	{
 		crazy_give_item = GetRandomItem(100);
-		PreloadItem(crazy_give_item);
-		ctx.pc->unit->AddItem(crazy_give_item, 1, false);
-		if(!ctx.is_local)
-		{
-			Net_AddItem(ctx.pc, crazy_give_item, false);
-			Net_AddedItemMsg(ctx.pc);
-		}
-		else
-			AddGameMsg3(GMS_ADDED_ITEM);
+		ctx.pc->unit->AddItem2(crazy_give_item, 1u, 0u);
 	}
 	else
 	{

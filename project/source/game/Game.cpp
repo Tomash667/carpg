@@ -6,7 +6,6 @@
 #include "ParticleSystem.h"
 #include "Language.h"
 #include "Version.h"
-#include "CityGenerator.h"
 #include "Quest_Mages.h"
 #include "Content.h"
 #include "OutsideLocation.h"
@@ -88,15 +87,12 @@ quickstart_slot(MAX_SAVE_SLOTS), arena_free(true), autoready(false), loc_gen_fac
 	uv_mod = Terrain::DEFAULT_UV_MOD;
 	cam.draw_range = 80.f;
 
-	gen = new CityGenerator;
-
 	SetupConfigVars();
 }
 
 //=================================================================================================
 Game::~Game()
 {
-	delete gen;
 }
 
 //=================================================================================================

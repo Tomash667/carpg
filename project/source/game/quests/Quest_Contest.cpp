@@ -91,10 +91,7 @@ void Quest_Contest::Special(DialogContext& ctx, cstring msg)
 		winner = nullptr;
 		Game& game = Game::Get();
 		game.AddItem(*ctx.pc->unit, ItemList::GetItem("contest_reward"), 1, false);
-		if(ctx.is_local)
-			game.AddGameMsg3(GMS_ADDED_ITEM);
-		else
-			game.Net_AddedItemMsg(ctx.pc);
+		ctx.pc->AddItemMessage(1u);
 	}
 }
 

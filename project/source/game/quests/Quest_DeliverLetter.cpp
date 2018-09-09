@@ -55,20 +55,12 @@ void Quest_DeliverLetter::SetProgress(int prog2)
 			letter.id = "$letter";
 			letter.name = Format(game->txQuest[0], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str());
 			letter.refid = refid;
-			game->current_dialog->pc->unit->AddItem(&letter, 1, true);
+			game->current_dialog->pc->unit->AddItem2(&letter, 1u, 1u);
 
 			Location& loc2 = GetStartLocation();
 			msgs.push_back(Format(game->txQuest[3], LocationHelper::IsCity(loc2) ? game->txForMayor : game->txForSoltys, loc2.name.c_str(), W.GetDate()));
 			msgs.push_back(Format(game->txQuest[4], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str(),
 				kierunek_nazwa[GetLocationDir(loc2.pos, loc.pos)]));
-
-			if(Net::IsOnline() && !game->current_dialog->is_local)
-			{
-				game->Net_AddItem(game->current_dialog->pc, &letter, true);
-				game->Net_AddedItemMsg(game->current_dialog->pc);
-			}
-			else
-				game->AddGameMsg3(GMS_ADDED_ITEM);
 		}
 		break;
 	case Progress::Timeout:

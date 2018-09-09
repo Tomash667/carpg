@@ -88,15 +88,7 @@ void Quest_Secret::Special(DialogContext& ctx, cstring msg)
 	{
 		state = SECRET_REWARD;
 		const Item* item = Item::Get("sword_forbidden");
-		game.PreloadItem(item);
-		ctx.pc->unit->AddItem(item, 1, true);
-		if(!ctx.is_local)
-		{
-			game.Net_AddItem(ctx.pc, item, true);
-			game.Net_AddedItemMsg(ctx.pc);
-		}
-		else
-			game.AddGameMsg3(GMS_ADDED_ITEM);
+		ctx.pc->unit->AddItem2(item, 1u, 1u);
 	}
 }
 

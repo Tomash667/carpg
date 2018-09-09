@@ -912,3 +912,31 @@ int PlayerController::GetNextActionItemIndex() const
 {
 	return FindItemIndex(unit->items, next_action_data.index, next_action_data.item, false);
 }
+
+//=================================================================================================
+void PlayerController::AddItemMessage(uint count)
+{
+	assert(count != 0u);
+	if(IsLocal())
+	{
+		Game& game = Game::Get();
+		if(count == 1u)
+			game.AddGameMsg3(GMS_ADDED_ITEM);
+		else
+			game.AddGameMsg(Format(game.txGmsAddedItems, count), 3.f);
+	}
+	else
+	{
+		NetChangePlayer& c2 = Add1(player_info->changes);
+		if(count == 1u)
+		{
+			c2.type = NetChangePlayer::GAME_MESSAGE;
+			c2.id = GMS_ADDED_ITEM;
+		}
+		else
+		{
+			c2.type = NetChangePlayer::ADDED_ITEMS_MSG;
+			c2.ile = count;
+		}
+	}
+}

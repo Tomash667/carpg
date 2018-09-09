@@ -452,7 +452,7 @@ void Game::UpdateTournament(float dt)
 					{
 						Unit& u = **it;
 						float mhp = u.hpmax - u.hp;
-						int given_items = 0;
+						uint given_items = 0;
 						if(mhp > 0.f && u.IsAI())
 							u.ai->have_potion = 2;
 						if(mhp >= 600.f)
@@ -476,26 +476,7 @@ void Game::UpdateTournament(float dt)
 							given_items += count;
 						}
 						if(u.IsPlayer() && given_items)
-						{
-							if(u.player == pc)
-							{
-								if(given_items == 1)
-									AddGameMsg3(GMS_ADDED_ITEM);
-								else
-									AddGameMsg(Format(txGmsAddedItems, given_items), 3.f);
-							}
-							else
-							{
-								if(given_items == 1)
-									Net_AddedItemMsg(u.player);
-								else
-								{
-									NetChangePlayer& c = Add1(u.player->player_info->changes);
-									c.type = NetChangePlayer::ADDED_ITEMS_MSG;
-									c.ile = given_items;
-								}
-							}
-						}
+							u.player->AddItemMessage(given_items);
 					}
 
 					// winner goes to next round
