@@ -347,7 +347,7 @@ void Game::PostconfigureGame()
 	loc_gen_factory->InitOnce();
 
 	// get pointer to gold item
-	gold_item_ptr = Item::Get("gold");
+	Item::gold = Item::Get("gold");
 
 	// copy first dungeon texture to second
 	tFloor[1] = tFloorBase;

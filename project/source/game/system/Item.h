@@ -199,6 +199,7 @@ struct Item
 	TEX icon;
 	ResourceState state;
 
+	static const Item* gold;
 	static ItemsMap items;
 	static Item* TryGet(Cstring id);
 	static Item* Get(Cstring id)

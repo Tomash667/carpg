@@ -20,14 +20,10 @@ struct Trap
 	static const int MIN_SIZE = 31;
 	static int netid_counter;
 
-	Trap() : hitted(nullptr)
-	{
-	}
-	~Trap()
-	{
-		delete hitted;
-	}
-
+	Trap() : hitted(nullptr) {}
+	~Trap() { delete hitted; }
 	void Save(FileWriter& f, bool local);
 	void Load(FileReader& f, bool local);
+	void Write(BitStreamWriter& f);
+	bool Read(BitStreamReader& f);
 };

@@ -146,7 +146,7 @@ void CampGenerator::GenerateObjects()
 				Chest* chest = (Chest*)e;
 
 				game.GenerateTreasure(level, 5, chest->items, gold, false);
-				InsertItemBare(chest->items, game.gold_item_ptr, (uint)gold);
+				InsertItemBare(chest->items, Item::gold, (uint)gold);
 				SortItems(chest->items);
 			}
 		}

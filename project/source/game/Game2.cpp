@@ -9880,7 +9880,7 @@ void Game::GenerateDungeonTreasure(vector<Chest*>& chests, int level, bool extra
 	{
 		vector<ItemSlot>& items = chests.front()->items;
 		GenerateTreasure(level, 10, items, gold, extra);
-		InsertItemBare(items, gold_item_ptr, (uint)gold, (uint)gold);
+		InsertItemBare(items, Item::gold, (uint)gold, (uint)gold);
 		SortItems(items);
 	}
 	else
@@ -9978,8 +9978,6 @@ void Game::GenerateTreasure(int level, int _count, vector<ItemSlot>& items, int&
 	gold = value + level * 5;
 }
 
-Item* gold_item_ptr;
-
 void Game::SplitTreasure(vector<ItemSlot>& items, int gold, Chest** chests, int count)
 {
 	assert(gold >= 0 && count > 0 && chests);
@@ -10003,7 +10001,7 @@ void Game::SplitTreasure(vector<ItemSlot>& items, int gold, Chest** chests, int 
 		if(i == count - 1)
 			ile += gold;
 		ItemSlot& slot = Add1(chests[i]->items);
-		slot.Set(gold_item_ptr, ile, ile);
+		slot.Set(Item::gold, ile, ile);
 		SortItems(chests[i]->items);
 	}
 }
@@ -14087,7 +14085,11 @@ void Game::RemoveUnit(Unit* unit, bool notify)
 	unit->to_remove = true;
 	L.to_remove.push_back(unit);
 	if(notify && Net::IsServer())
-		Net_RemoveUnit(unit);
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::REMOVE_UNIT;
+		c.id = unit->netid;
+	}
 }
 
 void Game::DeleteUnit(Unit* unit)
@@ -18344,7 +18346,7 @@ void Game::DropGold(int ile)
 	{
 		// stwórz przedmiot
 		GroundItem* item = new GroundItem;
-		item->item = gold_item_ptr;
+		item->item = Item::gold;
 		item->count = ile;
 		item->team_count = 0;
 		item->pos = pc->unit->pos;

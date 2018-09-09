@@ -592,7 +592,6 @@ public:
 	vector<MeshInstance*> bow_instances;
 	Pak* pak;
 	vector<AIController*> ais;
-	const Item* gold_item_ptr;
 	uint force_seed, next_seed;
 	vector<AttachedSound> attached_sounds;
 	SaveSlot single_saves[MAX_SAVE_SLOTS], multi_saves[MAX_SAVE_SLOTS];
@@ -1333,15 +1332,7 @@ public:
 	void OnEnterPassword(int id);
 	void ForceRedraw();
 	void PrepareLevelData(BitStream& stream, bool loaded_resources);
-	void WriteUnit(BitStreamWriter& f, Unit& unit);
-	void WriteItem(BitStreamWriter& f, GroundItem& item);
-	void WriteChest(BitStreamWriter& f, Chest& chest);
-	void WriteTrap(BitStreamWriter& f, Trap& trap);
 	bool ReadLevelData(BitStreamReader& f);
-	bool ReadUnit(BitStreamReader& f, Unit& unit);
-	bool ReadItem(BitStreamReader& f, GroundItem& item);
-	bool ReadChest(BitStreamReader& f, Chest& chest);
-	bool ReadTrap(BitStreamReader& f, Trap& trap);
 	void SendPlayerData(int index);
 	bool ReadPlayerData(BitStreamReader& stream);
 	void UpdateServer(float dt);
@@ -1362,12 +1353,6 @@ public:
 	PlayerInfo& GetPlayerInfo(int id);
 	PlayerInfo* GetPlayerInfoTry(int id);
 	void UpdateWarpData(float dt);
-	void Net_RemoveUnit(Unit* unit)
-	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::REMOVE_UNIT;
-		c.id = unit->netid;
-	}
 	void Net_SpawnUnit(Unit* unit)
 	{
 		NetChange& c = Add1(Net::changes);

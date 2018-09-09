@@ -290,7 +290,7 @@ void Game::StartTutorial()
 							chest->AddItem(Item::Get("sword_long"));
 							chest->AddItem(Item::Get("shield_wood"));
 							chest->AddItem(Item::Get("al_leather"));
-							chest->AddItem(gold_item_ptr, Random(75, 100));
+							chest->AddItem(Item::gold, Random(75, 100));
 							chest->handler = &tut_chest_handler;
 						}
 						break;
@@ -311,7 +311,7 @@ void Game::StartTutorial()
 							Chest* chest = SpawnObjectEntity(L.local_ctx, o, Vec3(2.f*x + 1, 0, 2.f*y + o->size.y), PI);
 							chest->AddItem(Item::Get("bow_short"));
 							chest->AddItem(Item::Get("p_hp"));
-							chest->AddItem(gold_item_ptr, Random(75, 100));
+							chest->AddItem(Item::gold, Random(75, 100));
 							chest->handler = &tut_chest_handler2;
 						}
 						break;

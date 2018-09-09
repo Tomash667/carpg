@@ -41,7 +41,6 @@ extern bool blacksmith_buy[];
 extern bool alchemist_buy[];
 extern bool innkeeper_buy[];
 extern bool foodseller_buy[];
-static Unit* SUMMONER_PLACEHOLDER = (Unit*)0xFA4E1111;
 
 //=================================================================================================
 inline bool ReadItemSimple(BitStreamReader& f, const Item*& item)
@@ -372,7 +371,7 @@ void Game::PrepareLevelData(BitStream& stream, bool loaded_resources)
 				// units
 				f.WriteCasted<byte>(ib.units.size());
 				for(Unit* unit : ib.units)
-					WriteUnit(f, *unit);
+					unit->Write(f);
 				// doors
 				f.WriteCasted<byte>(ib.doors.size());
 				for(Door* door : ib.doors)
@@ -380,7 +379,7 @@ void Game::PrepareLevelData(BitStream& stream, bool loaded_resources)
 				// ground items
 				f.WriteCasted<byte>(ib.items.size());
 				for(GroundItem* item : ib.items)
-					WriteItem(f, *item);
+					item->Write(f);
 				// bloods
 				f.WriteCasted<word>(ib.bloods.size());
 				for(Blood& blood : ib.bloods)
@@ -425,7 +424,7 @@ void Game::PrepareLevelData(BitStream& stream, bool loaded_resources)
 		// traps
 		f.WriteCasted<byte>(lvl.traps.size());
 		for(Trap* trap : lvl.traps)
-			WriteTrap(f, *trap);
+			trap->Write(f);
 		// doors
 		f.WriteCasted<byte>(lvl.doors.size());
 		for(Door* door : lvl.doors)
@@ -445,11 +444,11 @@ void Game::PrepareLevelData(BitStream& stream, bool loaded_resources)
 	// units
 	f.WriteCasted<byte>(L.local_ctx.units->size());
 	for(Unit* unit : *L.local_ctx.units)
-		WriteUnit(f, *unit);
+		unit->Write(f);
 	// ground items
 	f.WriteCasted<byte>(L.local_ctx.items->size());
 	for(GroundItem* item : *L.local_ctx.items)
-		WriteItem(f, *item);
+		item->Write(f);
 	// bloods
 	f.WriteCasted<word>(L.local_ctx.bloods->size());
 	for(Blood& blood : *L.local_ctx.bloods)
@@ -461,7 +460,7 @@ void Game::PrepareLevelData(BitStream& stream, bool loaded_resources)
 	// chests
 	f.WriteCasted<byte>(L.local_ctx.chests->size());
 	for(Chest* chest : *L.local_ctx.chests)
-		WriteChest(f, *chest);
+		chest->Write(f);
 
 	L.location->WritePortals(f);
 
@@ -520,144 +519,6 @@ void Game::PrepareLevelData(BitStream& stream, bool loaded_resources)
 
 	f.WriteCasted<byte>(GetLocationMusic());
 	f.WriteCasted<byte>(0xFF);
-}
-
-//=================================================================================================
-void Game::WriteUnit(BitStreamWriter& f, Unit& unit)
-{
-	// main
-	f << unit.data->id;
-	f << unit.netid;
-
-	// human data
-	if(unit.data->type == UNIT_TYPE::HUMAN)
-	{
-		f.WriteCasted<byte>(unit.human_data->hair);
-		f.WriteCasted<byte>(unit.human_data->beard);
-		f.WriteCasted<byte>(unit.human_data->mustache);
-		f << unit.human_data->hair_color;
-		f << unit.human_data->height;
-	}
-
-	// items
-	if(unit.data->type != UNIT_TYPE::ANIMAL)
-	{
-		if(unit.HaveWeapon())
-			f << unit.GetWeapon().id;
-		else
-			f.Write0();
-		if(unit.HaveBow())
-			f << unit.GetBow().id;
-		else
-			f.Write0();
-		if(unit.HaveShield())
-			f << unit.GetShield().id;
-		else
-			f.Write0();
-		if(unit.HaveArmor())
-			f << unit.GetArmor().id;
-		else
-			f.Write0();
-	}
-	f.WriteCasted<byte>(unit.live_state);
-	f << unit.pos;
-	f << unit.rot;
-	f << unit.hp;
-	f << unit.hpmax;
-	f << unit.netid;
-	f.WriteCasted<char>(unit.in_arena);
-	f << (unit.summoner != nullptr);
-
-	// hero/player data
-	byte b;
-	if(unit.IsHero())
-		b = 1;
-	else if(unit.IsPlayer())
-		b = 2;
-	else
-		b = 0;
-	f << b;
-	if(unit.IsHero())
-	{
-		f << unit.hero->name;
-		b = 0;
-		if(unit.hero->know_name)
-			b |= 0x01;
-		if(unit.hero->team_member)
-			b |= 0x02;
-		f << b;
-		f << unit.hero->credit;
-	}
-	else if(unit.IsPlayer())
-	{
-		f << unit.player->name;
-		f.WriteCasted<byte>(unit.player->id);
-		f << unit.player->credit;
-		f << unit.player->free_days;
-	}
-	if(unit.IsAI())
-		f << unit.GetAiMode();
-
-	// loaded data
-	if(mp_load)
-	{
-		f << unit.netid;
-		unit.mesh_inst->Write(f);
-		f.WriteCasted<byte>(unit.animation);
-		f.WriteCasted<byte>(unit.current_animation);
-		f.WriteCasted<byte>(unit.animation_state);
-		f.WriteCasted<byte>(unit.attack_id);
-		f.WriteCasted<byte>(unit.action);
-		f.WriteCasted<byte>(unit.weapon_taken);
-		f.WriteCasted<byte>(unit.weapon_hiding);
-		f.WriteCasted<byte>(unit.weapon_state);
-		f << unit.target_pos;
-		f << unit.target_pos2;
-		f << unit.timer;
-		if(unit.used_item)
-			f << unit.used_item->id;
-		else
-			f.Write0();
-		f << (unit.usable ? unit.usable->netid : -1);
-	}
-}
-
-//=================================================================================================
-void Game::WriteItem(BitStreamWriter& f, GroundItem& item)
-{
-	f << item.netid;
-	f << item.pos;
-	f << item.rot;
-	f << item.count;
-	f << item.team_count;
-	f << item.item->id;
-	if(item.item->IsQuest())
-		f << item.item->refid;
-}
-
-//=================================================================================================
-void Game::WriteChest(BitStreamWriter& f, Chest& chest)
-{
-	f << chest.pos;
-	f << chest.rot;
-	f << chest.netid;
-}
-
-//=================================================================================================
-void Game::WriteTrap(BitStreamWriter& f, Trap& trap)
-{
-	f.WriteCasted<byte>(trap.base->type);
-	f.WriteCasted<byte>(trap.dir);
-	f << trap.netid;
-	f << trap.tile;
-	f << trap.pos;
-	f << trap.obj.rot.y;
-
-	if(mp_load)
-	{
-		f.WriteCasted<byte>(trap.state);
-		f << trap.time;
-	}
 }
 
 //=================================================================================================
@@ -825,7 +686,7 @@ bool Game::ReadLevelData(BitStreamReader& f)
 				for(Unit*& unit : ib.units)
 				{
 					unit = new Unit;
-					if(!ReadUnit(f, *unit))
+					if(!unit->Read(f))
 					{
 						Error("Read level: Broken packet for unit in %d inside building.", index);
 						return false;
@@ -862,7 +723,7 @@ bool Game::ReadLevelData(BitStreamReader& f)
 				for(GroundItem*& item : ib.items)
 				{
 					item = new GroundItem;
-					if(!ReadItem(f, *item))
+					if(!item->Read(f))
 					{
 						Error("Read level: Broken packet for ground item in %d inside building.", index);
 						return false;
@@ -1011,7 +872,7 @@ bool Game::ReadLevelData(BitStreamReader& f)
 		for(Trap*& trap : lvl.traps)
 		{
 			trap = new Trap;
-			if(!ReadTrap(f, *trap))
+			if(!trap->Read(f))
 			{
 				Error("Read level: Broken packet for inside location trap.");
 				return false;
@@ -1088,7 +949,7 @@ bool Game::ReadLevelData(BitStreamReader& f)
 	for(Unit*& unit : *L.local_ctx.units)
 	{
 		unit = new Unit;
-		if(!ReadUnit(f, *unit))
+		if(!unit->Read(f))
 		{
 			Error("Read level: Broken unit.");
 			return false;
@@ -1106,7 +967,7 @@ bool Game::ReadLevelData(BitStreamReader& f)
 	for(GroundItem*& item : *L.local_ctx.items)
 	{
 		item = new GroundItem;
-		if(!ReadItem(f, *item))
+		if(!item->Read(f))
 		{
 			Error("Read level: Broken ground item.");
 			return false;
@@ -1159,7 +1020,7 @@ bool Game::ReadLevelData(BitStreamReader& f)
 	for(Chest*& chest : *L.local_ctx.chests)
 	{
 		chest = new Chest;
-		if(!ReadChest(f, *chest))
+		if(!chest->Read(f))
 		{
 			Error("Read level: Broken chest.");
 			return false;
@@ -1419,347 +1280,6 @@ bool Game::ReadLevelData(BitStreamReader& f)
 
 	InitQuadTree();
 	CalculateQuadtree();
-
-	return true;
-}
-
-//=================================================================================================
-bool Game::ReadUnit(BitStreamReader& f, Unit& unit)
-{
-	// main
-	const string& id = f.ReadString1();
-	f >> unit.netid;
-	if(!f)
-		return false;
-	unit.data = UnitData::TryGet(id);
-	if(!unit.data)
-	{
-		Error("Missing base unit id '%s'!", id.c_str());
-		return false;
-	}
-
-	// human data
-	if(unit.data->type == UNIT_TYPE::HUMAN)
-	{
-		unit.human_data = new Human;
-		f.ReadCasted<byte>(unit.human_data->hair);
-		f.ReadCasted<byte>(unit.human_data->beard);
-		f.ReadCasted<byte>(unit.human_data->mustache);
-		f >> unit.human_data->hair_color;
-		f >> unit.human_data->height;
-		if(!f)
-			return false;
-		if(unit.human_data->hair == 0xFF)
-			unit.human_data->hair = -1;
-		if(unit.human_data->beard == 0xFF)
-			unit.human_data->beard = -1;
-		if(unit.human_data->mustache == 0xFF)
-			unit.human_data->mustache = -1;
-		if(unit.human_data->hair < -1
-			|| unit.human_data->hair >= MAX_HAIR
-			|| unit.human_data->beard < -1
-			|| unit.human_data->beard >= MAX_BEARD
-			|| unit.human_data->mustache < -1
-			|| unit.human_data->mustache >= MAX_MUSTACHE
-			|| !InRange(unit.human_data->height, 0.85f, 1.15f))
-		{
-			Error("Invalid human data (hair:%d, beard:%d, mustache:%d, height:%g).", unit.human_data->hair, unit.human_data->beard,
-				unit.human_data->mustache, unit.human_data->height);
-			return false;
-		}
-	}
-	else
-		unit.human_data = nullptr;
-
-	// equipped items
-	if(unit.data->type != UNIT_TYPE::ANIMAL)
-	{
-		for(int i = 0; i < SLOT_MAX; ++i)
-		{
-			const string& item_id = f.ReadString1();
-			if(!f)
-				return false;
-			if(item_id.empty())
-				unit.slots[i] = nullptr;
-			else
-			{
-				const Item* item = Item::TryGet(item_id);
-				if(item && ItemTypeToSlot(item->type) == (ITEM_SLOT)i)
-				{
-					PreloadItem(item);
-					unit.slots[i] = item;
-				}
-				else
-				{
-					if(item)
-						Error("Invalid slot type (%d != %d).", ItemTypeToSlot(item->type), i);
-					return false;
-				}
-			}
-		}
-	}
-	else
-	{
-		for(int i = 0; i < SLOT_MAX; ++i)
-			unit.slots[i] = nullptr;
-	}
-
-	// variables
-	f.ReadCasted<byte>(unit.live_state);
-	f >> unit.pos;
-	f >> unit.rot;
-	f >> unit.hp;
-	f >> unit.hpmax;
-	f >> unit.netid;
-	f.ReadCasted<char>(unit.in_arena);
-	bool summoner = f.Read<bool>();
-	if(!f)
-		return false;
-	if(unit.live_state >= Unit::LIVESTATE_MAX)
-	{
-		Error("Invalid live state %d.", unit.live_state);
-		return false;
-	}
-	unit.summoner = (summoner ? SUMMONER_PLACEHOLDER : nullptr);
-
-	// hero/player data
-	byte type;
-	f >> type;
-	if(!f)
-		return false;
-	if(type == 1)
-	{
-		// hero
-		byte flags;
-		unit.ai = (AIController*)1; // (X_X)
-		unit.player = nullptr;
-		unit.hero = new HeroData;
-		unit.hero->unit = &unit;
-		f >> unit.hero->name;
-		f >> flags;
-		f >> unit.hero->credit;
-		if(!f)
-			return false;
-		unit.hero->know_name = IS_SET(flags, 0x01);
-		unit.hero->team_member = IS_SET(flags, 0x02);
-	}
-	else if(type == 2)
-	{
-		// player
-		unit.ai = nullptr;
-		unit.hero = nullptr;
-		unit.player = new PlayerController;
-		unit.player->unit = &unit;
-		f >> unit.player->name;
-		f.ReadCasted<byte>(unit.player->id);
-		f >> unit.player->credit;
-		f >> unit.player->free_days;
-		if(!f)
-			return false;
-		if(unit.player->credit < 0)
-		{
-			Error("Invalid player %d credit %d.", unit.player->id, unit.player->credit);
-			return false;
-		}
-		if(unit.player->free_days < 0)
-		{
-			Error("Invalid player %d free days %d.", unit.player->id, unit.player->free_days);
-			return false;
-		}
-		PlayerInfo* info = GetPlayerInfoTry(unit.player->id);
-		if(!info)
-		{
-			Error("Invalid player id %d.", unit.player->id);
-			return false;
-		}
-		info->u = &unit;
-	}
-	else
-	{
-		// ai
-		unit.ai = (AIController*)1; // (X_X)
-		unit.hero = nullptr;
-		unit.player = nullptr;
-	}
-
-	// ai variables
-	if(unit.IsAI())
-	{
-		f.ReadCasted<byte>(unit.ai_mode);
-		if(!f)
-			return false;
-	}
-
-	// mesh
-	unit.CreateMesh(mp_load ? Unit::CREATE_MESH::PRELOAD : Unit::CREATE_MESH::NORMAL);
-
-	unit.action = A_NONE;
-	unit.weapon_taken = W_NONE;
-	unit.weapon_hiding = W_NONE;
-	unit.weapon_state = WS_HIDDEN;
-	unit.talking = false;
-	unit.busy = Unit::Busy_No;
-	unit.in_building = -1;
-	unit.frozen = FROZEN::NO;
-	unit.usable = nullptr;
-	unit.used_item = nullptr;
-	unit.bow_instance = nullptr;
-	unit.ai = nullptr;
-	unit.animation = ANI_STAND;
-	unit.current_animation = ANI_STAND;
-	unit.timer = 0.f;
-	unit.to_remove = false;
-	unit.bubble = nullptr;
-	unit.interp = EntityInterpolator::Pool.Get();
-	unit.interp->Reset(unit.pos, unit.rot);
-	unit.visual_pos = unit.pos;
-	unit.animation_state = 0;
-
-	if(mp_load)
-	{
-		// get current state in multiplayer
-		f >> unit.netid;
-		if(!unit.mesh_inst->Read(f))
-			return false;
-		f.ReadCasted<byte>(unit.animation);
-		f.ReadCasted<byte>(unit.current_animation);
-		f.ReadCasted<byte>(unit.animation_state);
-		f.ReadCasted<byte>(unit.attack_id);
-		f.ReadCasted<byte>(unit.action);
-		f.ReadCasted<byte>(unit.weapon_taken);
-		f.ReadCasted<byte>(unit.weapon_hiding);
-		f.ReadCasted<byte>(unit.weapon_state);
-		f >> unit.target_pos;
-		f >> unit.target_pos2;
-		f >> unit.timer;
-		const string& used_item = f.ReadString1();
-		int usable_netid = f.Read<int>();
-		if(!f)
-			return false;
-
-		// used item
-		if(!used_item.empty())
-		{
-			unit.used_item = Item::TryGet(used_item);
-			if(!unit.used_item)
-			{
-				Error("Missing used item '%s'.", used_item.c_str());
-				return false;
-			}
-		}
-		else
-			unit.used_item = nullptr;
-
-		// usable
-		if(usable_netid == -1)
-			unit.usable = nullptr;
-		else
-		{
-			unit.usable = L.FindUsable(usable_netid);
-			if(unit.usable)
-			{
-				unit.use_rot = Vec3::LookAtAngle(unit.pos, unit.usable->pos);
-				unit.usable->user = &unit;
-			}
-			else
-			{
-				Error("Missing usable %d.", usable_netid);
-				return false;
-			}
-		}
-
-		// bow animesh instance
-		if(unit.action == A_SHOOT)
-		{
-			unit.bow_instance = GetBowInstance(unit.GetBow().mesh);
-			unit.bow_instance->Play(&unit.bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
-			unit.bow_instance->groups[0].speed = unit.mesh_inst->groups[1].speed;
-			unit.bow_instance->groups[0].time = unit.mesh_inst->groups[1].time;
-		}
-	}
-
-	// physics
-	CreateUnitPhysics(unit, true);
-
-	// boss music
-	if(IS_SET(unit.data->flags2, F2_BOSS))
-		W.AddBossLevel();
-
-	unit.prev_pos = unit.pos;
-	unit.speed = unit.prev_speed = 0.f;
-	unit.talking = false;
-
-	return true;
-}
-
-//=================================================================================================
-bool Game::ReadItem(BitStreamReader& f, GroundItem& item)
-{
-	f >> item.netid;
-	f >> item.pos;
-	f >> item.rot;
-	f >> item.count;
-	f >> item.team_count;
-	return f.IsOk() && ReadItemAndFind(f, item.item) > 0;
-}
-
-//=================================================================================================
-bool Game::ReadChest(BitStreamReader& f, Chest& chest)
-{
-	f >> chest.pos;
-	f >> chest.rot;
-	f >> chest.netid;
-	if(!f)
-		return false;
-	chest.mesh_inst = new MeshInstance(aChest);
-	return true;
-}
-
-//=================================================================================================
-bool Game::ReadTrap(BitStreamReader& f, Trap& trap)
-{
-	TRAP_TYPE type;
-	f.ReadCasted<byte>(type);
-	f.ReadCasted<byte>(trap.dir);
-	f >> trap.netid;
-	f >> trap.tile;
-	f >> trap.pos;
-	f >> trap.obj.rot.y;
-	if(!f)
-		return false;
-	trap.base = &BaseTrap::traps[type];
-
-	trap.state = 0;
-	trap.obj.base = nullptr;
-	trap.obj.mesh = trap.base->mesh;
-	trap.obj.pos = trap.pos;
-	trap.obj.scale = 1.f;
-	trap.obj.rot.x = trap.obj.rot.z = 0;
-	trap.trigger = false;
-	trap.hitted = nullptr;
-
-	if(mp_load)
-	{
-		f.ReadCasted<byte>(trap.state);
-		f >> trap.time;
-		if(!f)
-			return false;
-	}
-
-	if(type == TRAP_ARROW || type == TRAP_POISON)
-		trap.obj.rot = Vec3(0, 0, 0);
-	else if(type == TRAP_SPEAR)
-	{
-		trap.obj2.base = nullptr;
-		trap.obj2.mesh = trap.base->mesh2;
-		trap.obj2.pos = trap.obj.pos;
-		trap.obj2.rot = trap.obj.rot;
-		trap.obj2.scale = 1.f;
-		trap.obj2.pos.y -= 2.f;
-		trap.hitted = nullptr;
-	}
-	else
-		trap.obj.base = &obj_alpha;
 
 	return true;
 }
@@ -3029,7 +2549,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						continue;
 
 					if(slot.item->type == IT_GOLD)
-						unit.AddItem(gold_item_ptr, slot.count, slot.team_count);
+						unit.AddItem(Item::gold, slot.count, slot.team_count);
 					else
 					{
 						InsertItemBare(unit.items, slot.item, slot.count, slot.team_count);
@@ -4302,7 +3822,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 
 					// create item
 					GroundItem* item = new GroundItem;
-					item->item = gold_item_ptr;
+					item->item = Item::gold;
 					item->count = count;
 					item->team_count = 0;
 					item->pos = unit.pos;
@@ -4339,7 +3859,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				}
 				else
 				{
-					InsertItem(*player.chest_trade, gold_item_ptr, count, 0);
+					InsertItem(*player.chest_trade, Item::gold, count, 0);
 					unit.gold -= count;
 				}
 			}
@@ -4734,7 +4254,7 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 			f << (c.ile != 0);
 			break;
 		case NetChange::SPAWN_ITEM:
-			WriteItem(f, *c.item);
+			c.item->Write(f);
 			break;
 		case NetChange::REMOVE_ITEM:
 			f << c.id;
@@ -4915,7 +4435,7 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 			f << c.unit->hero->free;
 			break;
 		case NetChange::SPAWN_UNIT:
-			WriteUnit(f, *c.unit);
+			c.unit->Write(f);
 			break;
 		case NetChange::CHANGE_ARENA_STATE:
 			f << c.unit->netid;
@@ -5799,7 +5319,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 		case NetChange::SPAWN_ITEM:
 			{
 				GroundItem* item = new GroundItem;
-				if(!ReadItem(f, *item))
+				if(!item->Read(f))
 				{
 					StreamError("Update client: Broken SPAWN_ITEM.");
 					delete item;
@@ -6718,7 +6238,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 		case NetChange::SPAWN_UNIT:
 			{
 				Unit* unit = new Unit;
-				if(!ReadUnit(f, *unit))
+				if(!unit->Read(f))
 				{
 					StreamError("Update client: Broken SPAWN_UNIT.");
 					delete unit;

@@ -1092,7 +1092,7 @@ void Inventory::Event(GuiEvent e)
 			if(it->item->type == IT_GOLD)
 			{
 				zloto = true;
-				game.pc->unit->AddItem(game.gold_item_ptr, it->count, it->team_count);
+				game.pc->unit->AddItem(Item::gold, it->count, it->team_count);
 			}
 			else
 			{
@@ -1608,7 +1608,7 @@ void Inventory::OnPutGold(int id)
 			return;
 		}
 		// dodaj z³oto
-		if(!InsertItem(*unit->player->chest_trade, game.gold_item_ptr, counter, 0))
+		if(!InsertItem(*unit->player->chest_trade, Item::gold, counter, 0))
 			UpdateGrid(false);
 		// usuñ
 		unit->gold -= counter;

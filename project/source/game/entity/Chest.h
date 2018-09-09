@@ -36,6 +36,8 @@ struct Chest : public ItemContainer
 
 	void Save(FileWriter& f, bool local);
 	void Load(FileReader& f, bool local);
+	void Write(BitStreamWriter& f);
+	bool Read(BitStreamReader& f);
 	Vec3 GetCenter() const
 	{
 		Vec3 p = pos;

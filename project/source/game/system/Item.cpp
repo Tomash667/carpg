@@ -7,6 +7,7 @@
 #include "Game.h"
 
 extern string g_system_dir;
+const Item* Item::gold;
 ItemsMap Item::items;
 std::map<string, Item*> item_aliases;
 vector<ItemList*> ItemList::lists;

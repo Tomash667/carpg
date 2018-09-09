@@ -2,6 +2,7 @@
 #include "GameCore.h"
 #include "Chest.h"
 #include "Game.h"
+#include "BitStreamFunc.h"
 
 int Chest::netid_counter;
 
@@ -66,4 +67,24 @@ void Chest::Load(FileReader& f, bool local)
 		handler = (ChestEventHandler*)refid;
 		Game::Get().load_chest_handler.push_back(this);
 	}
+}
+
+//=================================================================================================
+void Chest::Write(BitStreamWriter& f)
+{
+	f << pos;
+	f << rot;
+	f << netid;
+}
+
+//=================================================================================================
+bool Chest::Read(BitStreamReader& f)
+{
+	f >> pos;
+	f >> rot;
+	f >> netid;
+	if(!f)
+		return false;
+	mesh_inst = new MeshInstance(Game::Get().aChest);
+	return true;
 }

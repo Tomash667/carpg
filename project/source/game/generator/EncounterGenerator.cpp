@@ -261,7 +261,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 				{
 					int gold;
 					game.GenerateTreasure(5, 5, chest->items, gold, false);
-					InsertItemBare(chest->items, game.gold_item_ptr, (uint)gold);
+					InsertItemBare(chest->items, Item::gold, (uint)gold);
 					SortItems(chest->items);
 				}
 				SM.GetVar("guards_enc_reward") = false;

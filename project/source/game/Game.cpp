@@ -2351,7 +2351,7 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 		// dodaj z³oto do ekwipunku
 		if(u.gold && !(u.IsPlayer() || u.IsFollower()))
 		{
-			u.AddItem(gold_item_ptr, (uint)u.gold);
+			u.AddItem(Item::gold, (uint)u.gold);
 			u.gold = 0;
 		}
 

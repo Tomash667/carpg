@@ -11,7 +11,10 @@
 #include "Content.h"
 #include "SoundManager.h"
 #include "GameFile.h"
+#include "World.h"
 #include "Level.h"
+#include "BitStreamFunc.h"
+#include "EntityInterpolator.h"
 
 const float Unit::AUTO_TALK_WAIT = 0.333f;
 const float Unit::STAMINA_BOW_ATTACK = 100.f;
@@ -19,6 +22,7 @@ const float Unit::STAMINA_BASH_ATTACK = 50.f;
 const float Unit::STAMINA_UNARMED_ATTACK = 50.f;
 const float Unit::STAMINA_RESTORE_TIMER = 0.5f;
 int Unit::netid_counter;
+static Unit* SUMMONER_PLACEHOLDER = (Unit*)0xFA4E1111;
 
 //=================================================================================================
 Unit::~Unit()
@@ -1698,6 +1702,377 @@ void Unit::Load(GameReader& f, bool local)
 			player->SetRequiredPoints();
 		}
 	}
+}
+
+//=================================================================================================
+void Unit::Write(BitStreamWriter& f)
+{
+	// main
+	f << data->id;
+	f << netid;
+
+	// human data
+	if(data->type == UNIT_TYPE::HUMAN)
+	{
+		f.WriteCasted<byte>(human_data->hair);
+		f.WriteCasted<byte>(human_data->beard);
+		f.WriteCasted<byte>(human_data->mustache);
+		f << human_data->hair_color;
+		f << human_data->height;
+	}
+
+	// items
+	if(data->type != UNIT_TYPE::ANIMAL)
+	{
+		if(HaveWeapon())
+			f << GetWeapon().id;
+		else
+			f.Write0();
+		if(HaveBow())
+			f << GetBow().id;
+		else
+			f.Write0();
+		if(HaveShield())
+			f << GetShield().id;
+		else
+			f.Write0();
+		if(HaveArmor())
+			f << GetArmor().id;
+		else
+			f.Write0();
+	}
+	f.WriteCasted<byte>(live_state);
+	f << pos;
+	f << rot;
+	f << hp;
+	f << hpmax;
+	f << netid;
+	f.WriteCasted<char>(in_arena);
+	f << (summoner != nullptr);
+
+	// hero/player data
+	byte b;
+	if(IsHero())
+		b = 1;
+	else if(IsPlayer())
+		b = 2;
+	else
+		b = 0;
+	f << b;
+	if(IsHero())
+	{
+		f << hero->name;
+		b = 0;
+		if(hero->know_name)
+			b |= 0x01;
+		if(hero->team_member)
+			b |= 0x02;
+		f << b;
+		f << hero->credit;
+	}
+	else if(IsPlayer())
+	{
+		f << player->name;
+		f.WriteCasted<byte>(player->id);
+		f << player->credit;
+		f << player->free_days;
+	}
+	if(IsAI())
+		f << GetAiMode();
+
+	// loaded data
+	if(Game::Get().mp_load)
+	{
+		f << netid;
+		mesh_inst->Write(f);
+		f.WriteCasted<byte>(animation);
+		f.WriteCasted<byte>(current_animation);
+		f.WriteCasted<byte>(animation_state);
+		f.WriteCasted<byte>(attack_id);
+		f.WriteCasted<byte>(action);
+		f.WriteCasted<byte>(weapon_taken);
+		f.WriteCasted<byte>(weapon_hiding);
+		f.WriteCasted<byte>(weapon_state);
+		f << target_pos;
+		f << target_pos2;
+		f << timer;
+		if(used_item)
+			f << used_item->id;
+		else
+			f.Write0();
+		f << (usable ? usable->netid : -1);
+	}
+}
+
+//=================================================================================================
+bool Unit::Read(BitStreamReader& f)
+{
+	Game& game = Game::Get();
+
+	// main
+	const string& id = f.ReadString1();
+	f >> netid;
+	if(!f)
+		return false;
+	data = UnitData::TryGet(id);
+	if(!data)
+	{
+		Error("Missing base unit id '%s'!", id.c_str());
+		return false;
+	}
+
+	// human data
+	if(data->type == UNIT_TYPE::HUMAN)
+	{
+		human_data = new Human;
+		f.ReadCasted<byte>(human_data->hair);
+		f.ReadCasted<byte>(human_data->beard);
+		f.ReadCasted<byte>(human_data->mustache);
+		f >> human_data->hair_color;
+		f >> human_data->height;
+		if(!f)
+			return false;
+		if(human_data->hair == 0xFF)
+			human_data->hair = -1;
+		if(human_data->beard == 0xFF)
+			human_data->beard = -1;
+		if(human_data->mustache == 0xFF)
+			human_data->mustache = -1;
+		if(human_data->hair < -1
+			|| human_data->hair >= MAX_HAIR
+			|| human_data->beard < -1
+			|| human_data->beard >= MAX_BEARD
+			|| human_data->mustache < -1
+			|| human_data->mustache >= MAX_MUSTACHE
+			|| !InRange(human_data->height, 0.85f, 1.15f))
+		{
+			Error("Invalid human data (hair:%d, beard:%d, mustache:%d, height:%g).", human_data->hair, human_data->beard,
+				human_data->mustache, human_data->height);
+			return false;
+		}
+	}
+	else
+		human_data = nullptr;
+
+	// equipped items
+	if(data->type != UNIT_TYPE::ANIMAL)
+	{
+		for(int i = 0; i < SLOT_MAX; ++i)
+		{
+			const string& item_id = f.ReadString1();
+			if(!f)
+				return false;
+			if(item_id.empty())
+				slots[i] = nullptr;
+			else
+			{
+				const Item* item = Item::TryGet(item_id);
+				if(item && ItemTypeToSlot(item->type) == (ITEM_SLOT)i)
+				{
+					game.PreloadItem(item);
+					slots[i] = item;
+				}
+				else
+				{
+					if(item)
+						Error("Invalid slot type (%d != %d).", ItemTypeToSlot(item->type), i);
+					return false;
+				}
+			}
+		}
+	}
+	else
+	{
+		for(int i = 0; i < SLOT_MAX; ++i)
+			slots[i] = nullptr;
+	}
+
+	// variables
+	f.ReadCasted<byte>(live_state);
+	f >> pos;
+	f >> rot;
+	f >> hp;
+	f >> hpmax;
+	f >> netid;
+	f.ReadCasted<char>(in_arena);
+	bool summoner = f.Read<bool>();
+	if(!f)
+		return false;
+	if(live_state >= Unit::LIVESTATE_MAX)
+	{
+		Error("Invalid live state %d.", live_state);
+		return false;
+	}
+	summoner = (summoner ? SUMMONER_PLACEHOLDER : nullptr);
+
+	// hero/player data
+	byte type;
+	f >> type;
+	if(!f)
+		return false;
+	if(type == 1)
+	{
+		// hero
+		byte flags;
+		ai = (AIController*)1; // (X_X)
+		player = nullptr;
+		hero = new HeroData;
+		hero->unit = this;
+		f >> hero->name;
+		f >> flags;
+		f >> hero->credit;
+		if(!f)
+			return false;
+		hero->know_name = IS_SET(flags, 0x01);
+		hero->team_member = IS_SET(flags, 0x02);
+	}
+	else if(type == 2)
+	{
+		// player
+		ai = nullptr;
+		hero = nullptr;
+		player = new PlayerController;
+		player->unit = this;
+		f >> player->name;
+		f.ReadCasted<byte>(player->id);
+		f >> player->credit;
+		f >> player->free_days;
+		if(!f)
+			return false;
+		if(player->credit < 0)
+		{
+			Error("Invalid player %d credit %d.", player->id, player->credit);
+			return false;
+		}
+		if(player->free_days < 0)
+		{
+			Error("Invalid player %d free days %d.", player->id, player->free_days);
+			return false;
+		}
+		PlayerInfo* info = game.GetPlayerInfoTry(player->id);
+		if(!info)
+		{
+			Error("Invalid player id %d.", player->id);
+			return false;
+		}
+		info->u = this;
+	}
+	else
+	{
+		// ai
+		ai = (AIController*)1; // (X_X)
+		hero = nullptr;
+		player = nullptr;
+	}
+
+	// ai variables
+	if(IsAI())
+	{
+		f.ReadCasted<byte>(ai_mode);
+		if(!f)
+			return false;
+	}
+
+	// mesh
+	CreateMesh(game.mp_load ? Unit::CREATE_MESH::PRELOAD : Unit::CREATE_MESH::NORMAL);
+
+	action = A_NONE;
+	weapon_taken = W_NONE;
+	weapon_hiding = W_NONE;
+	weapon_state = WS_HIDDEN;
+	talking = false;
+	busy = Unit::Busy_No;
+	in_building = -1;
+	frozen = FROZEN::NO;
+	usable = nullptr;
+	used_item = nullptr;
+	bow_instance = nullptr;
+	ai = nullptr;
+	animation = ANI_STAND;
+	current_animation = ANI_STAND;
+	timer = 0.f;
+	to_remove = false;
+	bubble = nullptr;
+	interp = EntityInterpolator::Pool.Get();
+	interp->Reset(pos, rot);
+	visual_pos = pos;
+	animation_state = 0;
+
+	if(game.mp_load)
+	{
+		// get current state in multiplayer
+		f >> netid;
+		if(!mesh_inst->Read(f))
+			return false;
+		f.ReadCasted<byte>(animation);
+		f.ReadCasted<byte>(current_animation);
+		f.ReadCasted<byte>(animation_state);
+		f.ReadCasted<byte>(attack_id);
+		f.ReadCasted<byte>(action);
+		f.ReadCasted<byte>(weapon_taken);
+		f.ReadCasted<byte>(weapon_hiding);
+		f.ReadCasted<byte>(weapon_state);
+		f >> target_pos;
+		f >> target_pos2;
+		f >> timer;
+		const string& used_item_id = f.ReadString1();
+		int usable_netid = f.Read<int>();
+		if(!f)
+			return false;
+
+		// used item
+		if(!used_item_id.empty())
+		{
+			used_item = Item::TryGet(used_item_id);
+			if(!used_item)
+			{
+				Error("Missing used item '%s'.", used_item_id.c_str());
+				return false;
+			}
+		}
+		else
+			used_item = nullptr;
+
+		// usable
+		if(usable_netid == -1)
+			usable = nullptr;
+		else
+		{
+			usable = L.FindUsable(usable_netid);
+			if(usable)
+			{
+				use_rot = Vec3::LookAtAngle(pos, usable->pos);
+				usable->user = this;
+			}
+			else
+			{
+				Error("Missing usable %d.", usable_netid);
+				return false;
+			}
+		}
+
+		// bow animesh instance
+		if(action == A_SHOOT)
+		{
+			bow_instance = game.GetBowInstance(GetBow().mesh);
+			bow_instance->Play(&bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
+			bow_instance->groups[0].speed = mesh_inst->groups[1].speed;
+			bow_instance->groups[0].time = mesh_inst->groups[1].time;
+		}
+	}
+
+	// physics
+	game.CreateUnitPhysics(*this, true);
+
+	// boss music
+	if(IS_SET(data->flags2, F2_BOSS))
+		W.AddBossLevel();
+
+	prev_pos = pos;
+	speed = prev_speed = 0.f;
+	talking = false;
+
+	return true;
 }
 
 //=================================================================================================

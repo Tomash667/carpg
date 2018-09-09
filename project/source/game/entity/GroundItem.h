@@ -14,4 +14,6 @@ struct GroundItem
 
 	void Save(FileWriter& f);
 	void Load(FileReader& f);
+	void Write(BitStreamWriter& f);
+	bool Read(BitStreamReader& f);
 };

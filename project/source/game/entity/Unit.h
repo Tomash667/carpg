@@ -429,6 +429,8 @@ struct Unit
 	int GetRandomAttack() const;
 	void Save(GameWriter& f, bool local);
 	void Load(GameReader& f, bool local);
+	void Write(BitStreamWriter& f);
+	bool Read(BitStreamReader& f);
 	Effect* FindEffect(EffectId effect);
 	bool FindEffect(EffectId effect, float* value);
 	Vec3 GetCenter() const
