@@ -586,7 +586,7 @@ public:
 	GAME_STATE game_state, prev_game_state;
 	LocalPlayerData pc_data;
 	PlayerController* pc;
-	bool testing, force_seed_all, koniec_gry, local_ctx_valid, target_loc_is_camp, death_solo;
+	bool testing, force_seed_all, koniec_gry, target_loc_is_camp, death_solo;
 	int death_screen, dungeon_level;
 	float death_fade, game_speed;
 	vector<MeshInstance*> bow_instances;
@@ -597,9 +597,7 @@ public:
 	vector<AttachedSound> attached_sounds;
 	SaveSlot single_saves[MAX_SAVE_SLOTS], multi_saves[MAX_SAVE_SLOTS];
 	vector<UnitView> unit_views;
-	LevelContext local_ctx;
 	ObjectPool<TmpLevelContext> tmp_ctx_pool;
-	City* city_ctx; // jeøeli jest w mieúcie/wiosce to ten wskaünik jest ok, takto nullptr
 
 	MeshInstance* GetBowInstance(Mesh* mesh);
 
@@ -919,7 +917,6 @@ public:
 	void OpenDoorsByTeam(const Int2& pt);
 	void ExitToMap();
 	void RespawnObjectColliders(bool spawn_pes = true);
-	void RespawnObjectColliders(LevelContext& ctx, bool spawn_pes = true);
 	void SetRoomPointers();
 	SOUND GetMaterialSound(MATERIAL_TYPE m1, MATERIAL_TYPE m2);
 	void PlayAttachedSound(Unit& unit, SOUND sound, float smin, float smax = 0.f);
@@ -1110,22 +1107,6 @@ public:
 	void OnEnterLocation();
 	void OnEnterLevel();
 	void OnEnterLevelOrLocation();
-	Unit* FindUnitByIdLocal(UnitData* ud)
-	{
-		return local_ctx.FindUnitById(ud);
-	}
-	Unit* FindUnitByIdLocal(cstring id)
-	{
-		return FindUnitByIdLocal(UnitData::Get(id));
-	}
-	Object* FindObjectByIdLocal(BaseObject* obj)
-	{
-		return local_ctx.FindObject(obj);
-	}
-	Object* FindObjectByIdLocal(cstring id)
-	{
-		return FindObjectByIdLocal(BaseObject::Get(id));
-	}
 	Unit* GetRandomArenaHero();
 	cstring GetRandomIdleText(Unit& u);
 	void HandleQuestEvent(Quest_Event* event);

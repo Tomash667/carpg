@@ -384,7 +384,7 @@ void CaveGenerator::GenerateObjects()
 	o->rot = Vec3(0, dir_to_rot(lvl.staircase_up_dir), 0);
 	o->scale = 1;
 	o->base = nullptr;
-	game.local_ctx.objects->push_back(o);
+	L.local_ctx.objects->push_back(o);
 
 	game.GenerateCaveObjects();
 	if(L.location_index == QM.quest_mine->target_loc)
@@ -463,7 +463,7 @@ void CaveGenerator::GenerateUnits()
 					break;
 
 				int enemy_level = Random(ud->level.x, Min(ud->level.y, levels, level));
-				if(!game.SpawnUnitNearLocation(game.local_ctx, Vec3(2.f*pt.x + 1.f, 0, 2.f*pt.y + 1.f), *ud, nullptr, enemy_level, 3.f))
+				if(!game.SpawnUnitNearLocation(L.local_ctx, Vec3(2.f*pt.x + 1.f, 0, 2.f*pt.y + 1.f), *ud, nullptr, enemy_level, 3.f))
 					break;
 				levels -= enemy_level;
 			}

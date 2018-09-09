@@ -66,8 +66,8 @@ void MoonwellGenerator::GenerateObjects()
 	Vec3 pos(128.f, 0, 128.f);
 	terrain->SetH(pos);
 	pos.y -= 0.2f;
-	game.SpawnObjectEntity(game.local_ctx, BaseObject::Get("moonwell"), pos, 0.f);
-	game.SpawnObjectEntity(game.local_ctx, BaseObject::Get("moonwell_phy"), pos, 0.f);
+	game.SpawnObjectEntity(L.local_ctx, BaseObject::Get("moonwell"), pos, 0.f);
+	game.SpawnObjectEntity(L.local_ctx, BaseObject::Get("moonwell_phy"), pos, 0.f);
 
 	TerrainTile* tiles = ((OutsideLocation*)L.location)->tiles;
 
@@ -83,7 +83,7 @@ void MoonwellGenerator::GenerateObjects()
 				Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 				pos.y = terrain->GetH(pos);
 				OutsideObject& o = trees[Rand() % n_trees];
-				game.SpawnObjectEntity(game.local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+				game.SpawnObjectEntity(L.local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 			}
 			else if(co == TT_GRASS3)
 			{
@@ -95,7 +95,7 @@ void MoonwellGenerator::GenerateObjects()
 				else
 					co = Rand() % 3;
 				OutsideObject& o = trees2[co];
-				game.SpawnObjectEntity(game.local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+				game.SpawnObjectEntity(L.local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 			}
 		}
 	}
@@ -111,7 +111,7 @@ void MoonwellGenerator::GenerateObjects()
 				Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 				pos.y = terrain->GetH(pos);
 				OutsideObject& o = misc[Rand() % n_misc];
-				game.SpawnObjectEntity(game.local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+				game.SpawnObjectEntity(L.local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 			}
 		}
 	}
@@ -172,7 +172,7 @@ void MoonwellGenerator::GenerateUnits()
 			if(Rand() % 5 == 0 && ud_hunter->level.x <= level)
 			{
 				int enemy_level = Random(ud_hunter->level.x, Min(ud_hunter->level.y, levels, level));
-				if(game.SpawnUnitNearLocation(game.local_ctx, pos3, *ud_hunter, nullptr, enemy_level, 6.f))
+				if(game.SpawnUnitNearLocation(L.local_ctx, pos3, *ud_hunter, nullptr, enemy_level, 6.f))
 					levels -= enemy_level;
 			}
 			while(levels > 0)
@@ -196,7 +196,7 @@ void MoonwellGenerator::GenerateUnits()
 					break;
 
 				int enemy_level = Random(ud->level.x, Min(ud->level.y, levels, level));
-				if(!game.SpawnUnitNearLocation(game.local_ctx, pos3, *ud, nullptr, enemy_level, 6.f))
+				if(!game.SpawnUnitNearLocation(L.local_ctx, pos3, *ud, nullptr, enemy_level, 6.f))
 					break;
 				levels -= enemy_level;
 			}

@@ -19,6 +19,21 @@ void TmpLevelContext::Clear()
 }
 
 //=================================================================================================
+void LevelContext::BuildRefidTables()
+{
+	for(vector<ParticleEmitter*>::iterator it2 = pes->begin(), end2 = pes->end(); it2 != end2; ++it2)
+	{
+		(*it2)->refid = (int)ParticleEmitter::refid_table.size();
+		ParticleEmitter::refid_table.push_back(*it2);
+	}
+	for(vector<TrailParticleEmitter*>::iterator it2 = tpes->begin(), end2 = tpes->end(); it2 != end2; ++it2)
+	{
+		(*it2)->refid = (int)TrailParticleEmitter::refid_table.size();
+		TrailParticleEmitter::refid_table.push_back(*it2);
+	}
+}
+
+//=================================================================================================
 void LevelContext::RemoveDeadUnits()
 {
 	for(vector<Unit*>::iterator it = units->begin(), end = units->end(); it != end; ++it)
@@ -233,7 +248,7 @@ void LevelContext::SetTmpCtx(TmpLevelContext* ctx)
 	ctx->Clear();
 }
 
-Unit* LevelContext::FindUnitById(UnitData* ud)
+Unit* LevelContext::FindUnit(UnitData* ud)
 {
 	assert(ud);
 
@@ -265,7 +280,7 @@ LevelContext& LevelContextEnumerator::Iterator::operator * () const
 {
 	assert(index != -2);
 	if(index == -1)
-		return Game::Get().local_ctx;
+		return L.local_ctx;
 	else
 		return ((City*)loc)->inside_buildings[index]->ctx;
 }

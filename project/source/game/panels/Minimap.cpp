@@ -49,7 +49,7 @@ void Minimap::Draw(ControlDrawData* /*cdd*/)
 
 	// przedmioty
 	LocalVector<GroundItem*> important_items;
-	for(vector<GroundItem*>::iterator it = game.local_ctx.items->begin(), end = game.local_ctx.items->end(); it != end; ++it)
+	for(vector<GroundItem*>::iterator it = L.local_ctx.items->begin(), end = L.local_ctx.items->end(); it != end; ++it)
 	{
 		if(IS_SET((*it)->item->flags, ITEM_IMPORTANT))
 			important_items->push_back(*it);
@@ -76,7 +76,7 @@ void Minimap::Draw(ControlDrawData* /*cdd*/)
 	}
 
 	// obrazki pozosta³ych postaci
-	for(vector<Unit*>::iterator it = game.local_ctx.units->begin(), end = game.local_ctx.units->end(); it != end; ++it)
+	for(vector<Unit*>::iterator it = L.local_ctx.units->begin(), end = L.local_ctx.units->end(); it != end; ++it)
 	{
 		Unit& u = **it;
 		if((u.IsAlive() || IS_SET(u.data->flags2, F2_MARK)) && !u.IsTeamMember() && (!lvl || lvl->IsTileVisible(u.pos)))
@@ -86,7 +86,7 @@ void Minimap::Draw(ControlDrawData* /*cdd*/)
 		}
 	}
 
-	if(game.city_ctx)
+	if(L.city_ctx)
 	{
 		// teksty w mieœcie
 		for(Text& text : texts)
@@ -121,7 +121,7 @@ void Minimap::Update(float dt)
 
 	minimap_size = game.minimap_size;
 
-	if(game.city_ctx)
+	if(L.city_ctx)
 	{
 		for(vector<Text>::iterator it = texts.begin(), end = texts.end(); it != end; ++it)
 		{
@@ -178,12 +178,11 @@ void Minimap::Hide()
 //=================================================================================================
 void Minimap::Build()
 {
-	Game& game = Game::Get();
-	if(game.city_ctx)
+	if(L.city_ctx)
 	{
-		if(game.city_ctx != city)
+		if(L.city_ctx != city)
 		{
-			city = game.city_ctx;
+			city = L.city_ctx;
 			texts.clear();
 
 			for(CityBuilding& b : city->buildings)
@@ -223,9 +222,8 @@ Vec2 Minimap::GetMapPosition(Unit& unit)
 		return Vec2(unit.pos.x, unit.pos.z);
 	else
 	{
-		Game& game = Game::Get();
-		Building* type = game.city_ctx->inside_buildings[unit.in_building]->type;
-		for(CityBuilding& b : game.city_ctx->buildings)
+		Building* type = L.city_ctx->inside_buildings[unit.in_building]->type;
+		for(CityBuilding& b : L.city_ctx->buildings)
 		{
 			if(b.type == type)
 				return Vec2(float(b.pt.x * 2), float(b.pt.y * 2));

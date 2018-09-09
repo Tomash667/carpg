@@ -174,7 +174,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 	else if(l.type != L_DUNGEON && l.type != L_CRYPT)
 		Info("Entering location '%s'.", l.name.c_str());
 
-	city_ctx = nullptr;
+	L.city_ctx = nullptr;
 
 	if(L.location->outside)
 	{
@@ -190,7 +190,6 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 
 	l.last_visit = W.GetWorldtime();
 	CheckIfLocationCleared();
-	local_ctx_valid = true;
 	cam.Reset();
 	pc_data.rot_buf = 0.f;
 	SetMusic();
@@ -1182,7 +1181,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 			u.event_handler = nullptr;
 		}
 
-		InsideBuilding* inn = city_ctx->FindInn();
+		InsideBuilding* inn = L.city_ctx->FindInn();
 		Unit* innkeeper = inn->FindUnit(UnitData::Get("innkeeper"));
 
 		innkeeper->talking = false;
@@ -1200,7 +1199,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 		UpdateLocation(31, 100, false);
 	}
 
-	if(city_ctx && game_state != GS_EXIT_TO_MENU && Net::IsLocal())
+	if(L.city_ctx && game_state != GS_EXIT_TO_MENU && Net::IsLocal())
 	{
 		// opuszczanie miasta
 		BuyTeamItems();
@@ -1250,7 +1249,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 	}
 
 	L.is_open = false;
-	city_ctx = nullptr;
+	L.city_ctx = nullptr;
 }
 
 void Game::GenerateDungeonObjects2()
@@ -1268,10 +1267,10 @@ void Game::GenerateDungeonObjects2()
 		o->rot = Vec3(0, dir_to_rot(lvl.staircase_up_dir), 0);
 		o->scale = 1;
 		o->base = nullptr;
-		local_ctx.objects->push_back(o);
+		L.local_ctx.objects->push_back(o);
 	}
 	else
-		SpawnObjectEntity(local_ctx, BaseObject::Get("portal"), inside->portal->pos, inside->portal->rot);
+		SpawnObjectEntity(L.local_ctx, BaseObject::Get("portal"), inside->portal->pos, inside->portal->rot);
 
 	// schody w dó³
 	if(inside->HaveDownStairs())
@@ -1282,7 +1281,7 @@ void Game::GenerateDungeonObjects2()
 		o->rot = Vec3(0, dir_to_rot(lvl.staircase_down_dir), 0);
 		o->scale = 1;
 		o->base = nullptr;
-		local_ctx.objects->push_back(o);
+		L.local_ctx.objects->push_back(o);
 	}
 
 	// kratki, drzwi
@@ -1299,7 +1298,7 @@ void Game::GenerateDungeonObjects2()
 				o->pos = Vec3(float(x * 2), 0, float(y * 2));
 				o->scale = 1;
 				o->base = nullptr;
-				local_ctx.objects->push_back(o);
+				L.local_ctx.objects->push_back(o);
 			}
 			if(p == KRATKA || p == KRATKA_SUFIT)
 			{
@@ -1309,7 +1308,7 @@ void Game::GenerateDungeonObjects2()
 				o->pos = Vec3(float(x * 2), 4, float(y * 2));
 				o->scale = 1;
 				o->base = nullptr;
-				local_ctx.objects->push_back(o);
+				L.local_ctx.objects->push_back(o);
 			}
 			if(p == DRZWI)
 			{
@@ -1320,7 +1319,7 @@ void Game::GenerateDungeonObjects2()
 				o->pos = Vec3(float(x * 2) + 1, 0, float(y * 2) + 1);
 				o->scale = 1;
 				o->base = nullptr;
-				local_ctx.objects->push_back(o);
+				L.local_ctx.objects->push_back(o);
 
 				if(czy_blokuje2(lvl.map[x - 1 + y*lvl.w].type))
 				{
@@ -1352,7 +1351,7 @@ void Game::GenerateDungeonObjects2()
 				if(Rand() % 100 < base.door_chance || IS_SET(lvl.map[x + y*lvl.w].flags, Pole::F_SPECJALNE))
 				{
 					Door* door = new Door;
-					local_ctx.doors->push_back(door);
+					L.local_ctx.doors->push_back(door);
 					door->pt = Int2(x, y);
 					door->pos = o->pos;
 					door->rot = o->rot.y;
@@ -1411,7 +1410,7 @@ void Game::SpawnCityPhysics()
 
 void Game::RespawnBuildingPhysics()
 {
-	for(vector<CityBuilding>::iterator it = city_ctx->buildings.begin(), end = city_ctx->buildings.end(); it != end; ++it)
+	for(vector<CityBuilding>::iterator it = L.city_ctx->buildings.begin(), end = L.city_ctx->buildings.end(); it != end; ++it)
 	{
 		Building* b = it->type;
 
@@ -1421,13 +1420,13 @@ void Game::RespawnBuildingPhysics()
 		else if(r == 3)
 			r = 1;
 
-		ProcessBuildingObjects(local_ctx, city_ctx, nullptr, b->mesh, nullptr, dir_to_rot(r), r,
+		ProcessBuildingObjects(L.local_ctx, L.city_ctx, nullptr, b->mesh, nullptr, dir_to_rot(r), r,
 			Vec3(float(it->pt.x + b->shift[it->rot].x) * 2, 1.f, float(it->pt.y + b->shift[it->rot].y) * 2), nullptr, &*it, true);
 	}
 
-	for(vector<InsideBuilding*>::iterator it = city_ctx->inside_buildings.begin(), end = city_ctx->inside_buildings.end(); it != end; ++it)
+	for(vector<InsideBuilding*>::iterator it = L.city_ctx->inside_buildings.begin(), end = L.city_ctx->inside_buildings.end(); it != end; ++it)
 	{
-		ProcessBuildingObjects((*it)->ctx, city_ctx, *it, (*it)->type->inside_mesh, nullptr, 0.f, 0, Vec3((*it)->offset.x, 0.f, (*it)->offset.y), nullptr,
+		ProcessBuildingObjects((*it)->ctx, L.city_ctx, *it, (*it)->type->inside_mesh, nullptr, 0.f, 0, Vec3((*it)->offset.x, 0.f, (*it)->offset.y), nullptr,
 			nullptr, true);
 	}
 }
@@ -1623,11 +1622,11 @@ void Game::UpdateLocation(LevelContext& ctx, int days, int open_chance, bool res
 
 void Game::UpdateLocation(int days, int open_chance, bool reset)
 {
-	UpdateLocation(local_ctx, days, open_chance, reset);
+	UpdateLocation(L.local_ctx, days, open_chance, reset);
 
-	if(city_ctx)
+	if(L.city_ctx)
 	{
-		for(vector<InsideBuilding*>::iterator it = city_ctx->inside_buildings.begin(), end = city_ctx->inside_buildings.end(); it != end; ++it)
+		for(vector<InsideBuilding*>::iterator it = L.city_ctx->inside_buildings.begin(), end = L.city_ctx->inside_buildings.end(); it != end; ++it)
 			UpdateLocation((*it)->ctx, days, open_chance, reset);
 	}
 }

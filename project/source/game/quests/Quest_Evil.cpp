@@ -14,6 +14,7 @@
 #include "Team.h"
 #include "Portal.h"
 #include "World.h"
+#include "Level.h"
 
 //=================================================================================================
 void Quest_Evil::Init()
@@ -235,14 +236,14 @@ void Quest_Evil::SetProgress(int prog2)
 			target.active_quest = nullptr;
 			target.dont_clean = false;
 			BaseObject* base_obj = BaseObject::Get("bloody_altar");
-			Object* obj = game->local_ctx.FindObject(base_obj);
+			Object* obj = L.local_ctx.FindObject(base_obj);
 			obj->base = BaseObject::Get("altar");
 			obj->mesh = obj->base->mesh;
 			ResourceManager::Get<Mesh>().Load(obj->mesh);
 			// usuñ cz¹steczki
 			float best_dist = 999.f;
 			ParticleEmitter* pe = nullptr;
-			for(vector<ParticleEmitter*>::iterator it = game->local_ctx.pes->begin(), end = game->local_ctx.pes->end(); it != end; ++it)
+			for(vector<ParticleEmitter*>::iterator it = L.local_ctx.pes->begin(), end = L.local_ctx.pes->end(); it != end; ++it)
 			{
 				if((*it)->tex == game->tKrew[BLOOD_RED])
 				{
@@ -572,16 +573,16 @@ void Quest_Evil::GenerateBloodyAltar()
 	pe->tex = game->tKrew[BLOOD_RED];
 	pe->size = 0.5f;
 	pe->Init();
-	game->local_ctx.pes->push_back(pe);
+	L.local_ctx.pes->push_back(pe);
 
 	// dodaj krew
 	vector<Int2> path;
-	game->FindPath(game->local_ctx, lvl.staircase_up, pos_to_pt(obj->pos), path);
+	game->FindPath(L.local_ctx, lvl.staircase_up, pos_to_pt(obj->pos), path);
 	for(vector<Int2>::iterator it = path.begin(), end = path.end(); it != end; ++it)
 	{
 		if(it != path.begin())
 		{
-			Blood& b = Add1(game->local_ctx.bloods);
+			Blood& b = Add1(L.local_ctx.bloods);
 			b.pos = Vec3::Random(Vec3(-0.5f, 0.05f, -0.5f), Vec3(0.5f, 0.05f, 0.5f))
 				+ Vec3(2.f*it->x + 1 + (float(it->x) - (it - 1)->x) / 2, 0, 2.f*it->y + 1 + (float(it->y) - (it - 1)->y) / 2);
 			b.type = BLOOD_RED;
@@ -591,7 +592,7 @@ void Quest_Evil::GenerateBloodyAltar()
 			b.normal = Vec3(0, 1, 0);
 		}
 		{
-			Blood& b = Add1(game->local_ctx.bloods);
+			Blood& b = Add1(L.local_ctx.bloods);
 			b.pos = Vec3::Random(Vec3(-0.5f, 0.05f, -0.5f), Vec3(0.5f, 0.05f, 0.5f)) + Vec3(2.f*it->x + 1, 0, 2.f*it->y + 1);
 			b.type = BLOOD_RED;
 			b.rot = Random(MAX_ANGLE);
@@ -641,7 +642,7 @@ void Quest_Evil::GeneratePortal()
 		Room& r = lvl.rooms[id];
 
 		game->global_col.clear();
-		game->GatherCollisionObjects(game->local_ctx, game->global_col, r.Center(), 2.f);
+		game->GatherCollisionObjects(L.local_ctx, game->global_col, r.Center(), 2.f);
 		if(game->global_col.empty())
 			break;
 
@@ -655,7 +656,7 @@ void Quest_Evil::GeneratePortal()
 	Vec3 portal_pos = r.Center();
 	r.target = RoomTarget::PortalCreate;
 	float rot = PI*Random(0, 3);
-	game->SpawnObjectEntity(game->local_ctx, BaseObject::Get("portal"), portal_pos, rot);
+	game->SpawnObjectEntity(L.local_ctx, BaseObject::Get("portal"), portal_pos, rot);
 	inside->portal = new Portal;
 	inside->portal->target_loc = -1;
 	inside->portal->next_portal = nullptr;
@@ -675,11 +676,11 @@ void Quest_Evil::GeneratePortal()
 void Quest_Evil::WarpEvilBossToAltar()
 {
 	// znajdŸ bossa
-	Unit* u = game->FindUnitByIdLocal("q_zlo_boss");
+	Unit* u = L.local_ctx.FindUnit("q_zlo_boss");
 	assert(u);
 
 	// znajdŸ krwawy o³tarz
-	Object* o = game->FindObjectByIdLocal("bloody_altar");
+	Object* o = L.local_ctx.FindObject("bloody_altar");
 	assert(o);
 
 	if(u && o)

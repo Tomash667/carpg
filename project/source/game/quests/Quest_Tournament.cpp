@@ -3,6 +3,7 @@
 #include "Quest_Tournament.h"
 #include "GameFile.h"
 #include "World.h"
+#include "Level.h"
 #include "Dialog.h"
 #include "QuestManager.h"
 #include "Quest_Mages.h"
@@ -67,7 +68,7 @@ void Quest_Tournament::Load(GameReader& f)
 	state = TOURNAMENT_NOT_DONE;
 	units.clear();
 	if(generated)
-		master = Game::Get().FindUnitByIdLocal("arena_master");
+		master = L.local_ctx.FindUnit("arena_master");
 	else
 		master = nullptr;
 }
@@ -167,7 +168,6 @@ cstring Quest_Tournament::FormatString(const string& str)
 //=================================================================================================
 void Quest_Tournament::Progress()
 {
-	Game& game = Game::Get();
 	int current_year = W.GetYear();
 	int month = W.GetMonth();
 	int day = W.GetDay();
@@ -177,7 +177,7 @@ void Quest_Tournament::Progress()
 		city = W.GetRandomCityIndex(city);
 		master = nullptr;
 	}
-	if(day == 6 && month == 2 && game.city_ctx && IS_SET(game.city_ctx->flags, City::HaveArena) && W.GetCurrentLocationIndex() == city && !generated)
+	if(day == 6 && month == 2 && L.city_ctx && IS_SET(L.city_ctx->flags, City::HaveArena) && W.GetCurrentLocationIndex() == city && !generated)
 		GenerateUnits();
 	if(month > 2 || (month == 2 && day > 6))
 		year = current_year;
@@ -226,7 +226,7 @@ void Quest_Tournament::StartTournament(Unit* arena_master)
 	pairs.clear();
 	skipped_unit = nullptr;
 	other_fighter = nullptr;
-	Game::Get().city_ctx->FindInsideBuilding(BuildingGroup::BG_ARENA, arena);
+	L.city_ctx->FindInsideBuilding(BuildingGroup::BG_ARENA, arena);
 }
 
 bool Quest_Tournament::ShouldJoin(Unit& u)
@@ -254,20 +254,20 @@ bool Quest_Tournament::ShouldJoin(Unit& u)
 void Quest_Tournament::GenerateUnits()
 {
 	Game& game = Game::Get();
-	Vec3 pos = game.city_ctx->FindBuilding(BuildingGroup::BG_ARENA)->walk_pt;
-	master = game.FindUnitByIdLocal("arena_master");
+	Vec3 pos = L.city_ctx->FindBuilding(BuildingGroup::BG_ARENA)->walk_pt;
+	master = L.local_ctx.FindUnit("arena_master");
 
 	// warp heroes in front of arena
-	for(vector<Unit*>::iterator it = game.local_ctx.units->begin(), end = game.local_ctx.units->end(); it != end; ++it)
+	for(vector<Unit*>::iterator it = L.local_ctx.units->begin(), end = L.local_ctx.units->end(); it != end; ++it)
 	{
 		Unit& u = **it;
 		if(ShouldJoin(u) && !u.IsFollowingTeamMember())
 		{
 			game.BreakUnitAction(u, Game::BREAK_ACTION_MODE::INSTANT, true);
-			game.WarpNearLocation(game.local_ctx, u, pos, 12.f, false);
+			game.WarpNearLocation(L.local_ctx, u, pos, 12.f, false);
 		}
 	}
-	InsideBuilding* inn = game.city_ctx->FindInn();
+	InsideBuilding* inn = L.city_ctx->FindInn();
 	for(vector<Unit*>::iterator it = inn->units.begin(), end = inn->units.end(); it != end;)
 	{
 		Unit& u = **it;
@@ -275,8 +275,8 @@ void Quest_Tournament::GenerateUnits()
 		{
 			game.BreakUnitAction(u, Game::BREAK_ACTION_MODE::INSTANT, true);
 			u.in_building = -1;
-			game.WarpNearLocation(game.local_ctx, u, pos, 12.f, false);
-			game.local_ctx.units->push_back(&u);
+			game.WarpNearLocation(L.local_ctx, u, pos, 12.f, false);
+			L.local_ctx.units->push_back(&u);
 			it = inn->units.erase(it);
 			end = inn->units.end();
 		}
@@ -288,7 +288,7 @@ void Quest_Tournament::GenerateUnits()
 	int count = Random(6, 9);
 	for(int i = 0; i < count; ++i)
 	{
-		Unit* u = game.SpawnUnitNearLocation(game.local_ctx, pos, GetRandomHeroData(), nullptr, Random(5, 20), 12.f);
+		Unit* u = game.SpawnUnitNearLocation(L.local_ctx, pos, GetRandomHeroData(), nullptr, Random(5, 20), 12.f);
 		if(u)
 		{
 			u->temporary = true;
@@ -327,7 +327,7 @@ void Quest_Tournament::Update(float dt)
 			timer += dt;
 
 		// team members joining
-		const Vec3& walk_pt = game.city_ctx->FindBuilding(BuildingGroup::BG_ARENA)->walk_pt;
+		const Vec3& walk_pt = L.city_ctx->FindBuilding(BuildingGroup::BG_ARENA)->walk_pt;
 		for(Unit* unit : Team.members)
 		{
 			if(unit->busy == Unit::Busy_No && Vec3::Distance2d(unit->pos, master->pos) <= 16.f && !unit->dont_attack && ShouldJoin(*unit))
@@ -364,7 +364,7 @@ void Quest_Tournament::Update(float dt)
 			if(timer >= 60.f)
 			{
 				// gather npc's
-				for(vector<Unit*>::iterator it = game.local_ctx.units->begin(), end = game.local_ctx.units->end(); it != end; ++it)
+				for(vector<Unit*>::iterator it = L.local_ctx.units->begin(), end = L.local_ctx.units->end(); it != end; ++it)
 				{
 					Unit& u = **it;
 					if(Vec3::Distance2d(u.pos, master->pos) < 64.f && ShouldJoin(u))

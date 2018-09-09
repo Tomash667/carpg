@@ -3,6 +3,7 @@
 #include "LabyrinthGenerator.h"
 #include "InsideLocation.h"
 #include "Tile.h"
+#include "Level.h"
 #include "Game.h"
 
 //=================================================================================================
@@ -464,7 +465,7 @@ void LabyrinthGenerator::GenerateObjects()
 		pe->speed_max = Vec3(1, 4, 1);
 		pe->mode = 1;
 		pe->Init();
-		game.local_ctx.pes->push_back(pe);
+		L.local_ctx.pes->push_back(pe);
 	}
 
 	// pochodnia w skarbie
@@ -503,7 +504,7 @@ void LabyrinthGenerator::GenerateObjects()
 		pe->speed_max = Vec3(1, 4, 1);
 		pe->mode = 1;
 		pe->Init();
-		game.local_ctx.pes->push_back(pe);
+		L.local_ctx.pes->push_back(pe);
 	}
 }
 

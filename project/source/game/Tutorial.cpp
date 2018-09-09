@@ -204,14 +204,13 @@ void Game::StartTutorial()
 	loc->type = L_DUNGEON;
 	loc->image = LI_DUNGEON;
 	W.StartInLocation(loc);
-	city_ctx = nullptr;
-	local_ctx_valid = true;
+	L.city_ctx = nullptr;
 	InsideLocationLevel& lvl = loc->GetLevelData();
 	lvl.w = lvl.h = 22;
 	dungeon_level = 0;
 	loc->SetActiveLevel(0);
 	BaseLocation& base = g_base_locations[TUTORIAL_FORT];
-	ApplyContext(loc, local_ctx);
+	ApplyContext(loc, L.local_ctx);
 	SetDungeonParamsAndTextures(base);
 
 	// pokoje
@@ -287,7 +286,7 @@ void Game::StartTutorial()
 					case 1:
 						{
 							BaseObject* o = BaseObject::Get("chest");
-							Chest* chest = SpawnObjectEntity(local_ctx, o, Vec3(2.f*x + 1, 0, 2.f*y + o->size.y), PI);
+							Chest* chest = SpawnObjectEntity(L.local_ctx, o, Vec3(2.f*x + 1, 0, 2.f*y + o->size.y), PI);
 							chest->AddItem(Item::Get("sword_long"));
 							chest->AddItem(Item::Get("shield_wood"));
 							chest->AddItem(Item::Get("al_leather"));
@@ -297,11 +296,11 @@ void Game::StartTutorial()
 						break;
 					case 2:
 						tut_dummy = Vec3(2.f*x + 1, 0, 2.f*y + 1);
-						SpawnObjectEntity(local_ctx, BaseObject::Get("melee_target"), tut_dummy, PI / 2);
+						SpawnObjectEntity(L.local_ctx, BaseObject::Get("melee_target"), tut_dummy, PI / 2);
 						break;
 					case 3:
 						{
-							Unit* u = SpawnUnitNearLocation(local_ctx, Vec3(2.f*x + 1, 0, 2.f*y + 1), *UnitData::Get("tut_goblin"), nullptr, 1);
+							Unit* u = SpawnUnitNearLocation(L.local_ctx, Vec3(2.f*x + 1, 0, 2.f*y + 1), *UnitData::Get("tut_goblin"), nullptr, 1);
 							u->rot = PI;
 							u->event_handler = &tut_unit_handler;
 						}
@@ -309,7 +308,7 @@ void Game::StartTutorial()
 					case 4:
 						{
 							BaseObject* o = BaseObject::Get("chest");
-							Chest* chest = SpawnObjectEntity(local_ctx, o, Vec3(2.f*x + 1, 0, 2.f*y + o->size.y), PI);
+							Chest* chest = SpawnObjectEntity(L.local_ctx, o, Vec3(2.f*x + 1, 0, 2.f*y + o->size.y), PI);
 							chest->AddItem(Item::Get("bow_short"));
 							chest->AddItem(Item::Get("p_hp"));
 							chest->AddItem(gold_item_ptr, Random(75, 100));
@@ -318,7 +317,7 @@ void Game::StartTutorial()
 						break;
 					case 5:
 						{
-							Object* o = SpawnObjectEntity(local_ctx, BaseObject::Get("bow_target"), Vec3(2.f*x + 1, 0, 2.f*y + 1), -PI / 2);
+							Object* o = SpawnObjectEntity(L.local_ctx, BaseObject::Get("bow_target"), Vec3(2.f*x + 1, 0, 2.f*y + 1), -PI / 2);
 							if(tut_shield)
 								tut_shield2 = o;
 							else
@@ -327,7 +326,7 @@ void Game::StartTutorial()
 						break;
 					case 6:
 						{
-							Unit* u = SpawnUnitNearLocation(local_ctx, Vec3(2.f*x + 1, 0, 2.f*y + 1), *UnitData::Get("tut_czlowiek"), nullptr, 1);
+							Unit* u = SpawnUnitNearLocation(L.local_ctx, Vec3(2.f*x + 1, 0, 2.f*y + 1), *UnitData::Get("tut_czlowiek"), nullptr, 1);
 							u->rot = PI;
 						}
 						break;
@@ -358,7 +357,7 @@ void Game::StartTutorial()
 	GenerateDungeonObjects();
 
 	// drzwi
-	for(vector<Door*>::iterator it = local_ctx.doors->begin(), end = local_ctx.doors->end(); it != end; ++it)
+	for(vector<Door*>::iterator it = L.local_ctx.doors->begin(), end = L.local_ctx.doors->end(); it != end; ++it)
 	{
 		char c = mapa_t3[(*it)->pt(22)];
 		assert(InRange(c, '0', '9'));
@@ -456,7 +455,7 @@ void Game::UpdateTutorial()
 			pe->op_alpha = POP_LINEAR_SHRINK;
 			pe->mode = 0;
 			pe->Init();
-			local_ctx.pes->push_back(pe);
+			L.local_ctx.pes->push_back(pe);
 			// jest kolizja
 			sound_mgr->PlaySound3d(GetMaterialSound(MAT_IRON, MAT_ROCK), hitpoint, 2.f, 10.f);
 			if(tut_state == 5)
@@ -557,7 +556,7 @@ void Game::UpdateTutorial()
 
 		if(unlock != -1)
 		{
-			for(Door* door : *local_ctx.doors)
+			for(Door* door : *L.local_ctx.doors)
 			{
 				if(door->locked == LOCK_TUTORIAL + unlock)
 				{
@@ -645,7 +644,7 @@ void Game::TutEvent(int id)
 
 	if(unlock != -1)
 	{
-		for(vector<Door*>::iterator it = local_ctx.doors->begin(), end = local_ctx.doors->end(); it != end; ++it)
+		for(vector<Door*>::iterator it = L.local_ctx.doors->begin(), end = L.local_ctx.doors->end(); it != end; ++it)
 		{
 			if((*it)->locked == LOCK_TUTORIAL + unlock)
 			{

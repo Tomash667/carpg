@@ -22,15 +22,15 @@ void Level::ProcessUnitWarps()
 	{
 		if(warp.where == WARP_OUTSIDE)
 		{
-			if(game.city_ctx && warp.unit->in_building != -1)
+			if(L.city_ctx && warp.unit->in_building != -1)
 			{
 				// exit from building
-				InsideBuilding& building = *game.city_ctx->inside_buildings[warp.unit->in_building];
+				InsideBuilding& building = *L.city_ctx->inside_buildings[warp.unit->in_building];
 				RemoveElement(building.units, warp.unit);
 				warp.unit->in_building = -1;
 				warp.unit->rot = building.outside_rot;
 				game.WarpUnit(*warp.unit, building.outside_spawn);
-				game.local_ctx.units->push_back(warp.unit);
+				L.local_ctx.units->push_back(warp.unit);
 			}
 			else
 			{
@@ -53,7 +53,7 @@ void Level::ProcessUnitWarps()
 				warp.unit->in_building = -1;
 				warp.unit->rot = building.outside_rot;
 				game.WarpUnit(*warp.unit, building.outside_spawn);
-				game.local_ctx.units->push_back(warp.unit);
+				L.local_ctx.units->push_back(warp.unit);
 				RemoveElement(game.at_arena, warp.unit);
 			}
 			else
@@ -67,11 +67,11 @@ void Level::ProcessUnitWarps()
 		else
 		{
 			// enter building
-			InsideBuilding& building = *game.city_ctx->inside_buildings[warp.where];
+			InsideBuilding& building = *L.city_ctx->inside_buildings[warp.where];
 			if(warp.unit->in_building == -1)
-				RemoveElement(game.local_ctx.units, warp.unit);
+				RemoveElement(L.local_ctx.units, warp.unit);
 			else
-				RemoveElement(game.city_ctx->inside_buildings[warp.unit->in_building]->units, warp.unit);
+				RemoveElement(L.city_ctx->inside_buildings[warp.unit->in_building]->units, warp.unit);
 			warp.unit->in_building = warp.where;
 			warp.unit->rot = PI;
 			game.WarpUnit(*warp.unit, building.inside_spawn);
@@ -167,7 +167,7 @@ void Level::SpawnOutsideBariers()
 
 	// top
 	{
-		CollisionObject& cobj = Add1(game.local_ctx.colliders);
+		CollisionObject& cobj = Add1(L.local_ctx.colliders);
 		cobj.type = CollisionObject::RECTANGLE;
 		cobj.pt = Vec2(size2, border2);
 		cobj.w = size2;
@@ -185,7 +185,7 @@ void Level::SpawnOutsideBariers()
 
 	// bottom
 	{
-		CollisionObject& cobj = Add1(game.local_ctx.colliders);
+		CollisionObject& cobj = Add1(L.local_ctx.colliders);
 		cobj.type = CollisionObject::RECTANGLE;
 		cobj.pt = Vec2(size2, size - border2);
 		cobj.w = size2;
@@ -203,7 +203,7 @@ void Level::SpawnOutsideBariers()
 
 	// left
 	{
-		CollisionObject& cobj = Add1(game.local_ctx.colliders);
+		CollisionObject& cobj = Add1(L.local_ctx.colliders);
 		cobj.type = CollisionObject::RECTANGLE;
 		cobj.pt = Vec2(border2, size2);
 		cobj.w = border2;
@@ -221,7 +221,7 @@ void Level::SpawnOutsideBariers()
 
 	// right
 	{
-		CollisionObject& cobj = Add1(game.local_ctx.colliders);
+		CollisionObject& cobj = Add1(L.local_ctx.colliders);
 		cobj.type = CollisionObject::RECTANGLE;
 		cobj.pt = Vec2(size - border2, size2);
 		cobj.w = border2;

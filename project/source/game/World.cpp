@@ -43,7 +43,7 @@ struct TmpLocation : public Location
 	TmpLocation() : Location(false) {}
 
 	void ApplyContext(LevelContext& ctx) {}
-	void BuildRefidTable() {}
+	void BuildRefidTables() {}
 	bool FindUnit(Unit*, int*) { return false; }
 	Unit* FindUnit(UnitData*, int&) { return nullptr; }
 };

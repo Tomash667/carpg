@@ -1708,11 +1708,11 @@ void Game::ListAreas(LevelContext& ctx)
 {
 	if(ctx.type == LevelContext::Outside)
 	{
-		if(city_ctx)
+		if(L.city_ctx)
 		{
-			if(IS_SET(city_ctx->flags, City::HaveExit))
+			if(IS_SET(L.city_ctx->flags, City::HaveExit))
 			{
-				for(vector<EntryPoint>::const_iterator entry_it = city_ctx->entry_points.begin(), entry_end = city_ctx->entry_points.end();
+				for(vector<EntryPoint>::const_iterator entry_it = L.city_ctx->entry_points.begin(), entry_end = L.city_ctx->entry_points.end();
 					entry_it != entry_end; ++entry_it)
 				{
 					const EntryPoint& e = *entry_it;
@@ -1724,7 +1724,7 @@ void Game::ListAreas(LevelContext& ctx)
 				}
 			}
 
-			for(vector<InsideBuilding*>::const_iterator it = city_ctx->inside_buildings.begin(), end = city_ctx->inside_buildings.end(); it != end; ++it)
+			for(vector<InsideBuilding*>::const_iterator it = L.city_ctx->inside_buildings.begin(), end = L.city_ctx->inside_buildings.end(); it != end; ++it)
 			{
 				const InsideBuilding& ib = **it;
 				Area& a = Add1(draw_batch.areas);
@@ -1735,7 +1735,7 @@ void Game::ListAreas(LevelContext& ctx)
 			}
 		}
 
-		if(!city_ctx || !IS_SET(city_ctx->flags, City::HaveExit))
+		if(!L.city_ctx || !IS_SET(L.city_ctx->flags, City::HaveExit))
 		{
 			const float H1 = -10.f;
 			const float H2 = 30.f;
@@ -1853,7 +1853,7 @@ void Game::ListAreas(LevelContext& ctx)
 	{
 		// exit from building
 		Area& a = Add1(draw_batch.areas);
-		const Box2d& area = city_ctx->inside_buildings[ctx.building_id]->exit_area;
+		const Box2d& area = L.city_ctx->inside_buildings[ctx.building_id]->exit_area;
 		a.v[0] = Vec3(area.v1.x, 0.1f, area.v2.y);
 		a.v[1] = Vec3(area.v2.x, 0.1f, area.v2.y);
 		a.v[2] = Vec3(area.v1.x, 0.1f, area.v1.y);

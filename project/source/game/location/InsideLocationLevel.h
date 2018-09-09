@@ -81,7 +81,7 @@ struct InsideLocationLevel : public LevelArea
 	void SaveLevel(GameWriter& f, bool local);
 	void LoadLevel(GameReader& f, bool local);
 
-	void BuildRefidTable();
+	void BuildRefidTables();
 
 	Pole& At(const Int2& pt)
 	{

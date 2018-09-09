@@ -555,9 +555,9 @@ void City::Load(GameReader& f, bool local, LOCATION_TOKEN token)
 }
 
 //=================================================================================================
-void City::BuildRefidTable()
+void City::BuildRefidTables()
 {
-	OutsideLocation::BuildRefidTable();
+	OutsideLocation::BuildRefidTables();
 
 	for(vector<InsideBuilding*>::iterator it2 = inside_buildings.begin(), end2 = inside_buildings.end(); it2 != end2; ++it2)
 	{

@@ -13,6 +13,7 @@
 #include "AIController.h"
 #include "Team.h"
 #include "World.h"
+#include "Level.h"
 
 //=================================================================================================
 void Quest_Orcs::Init()
@@ -258,7 +259,7 @@ void WarpToThroneOrcBoss()
 	// szukaj orka
 	UnitData* ud = UnitData::Get("q_orkowie_boss");
 	Unit* u = nullptr;
-	for(vector<Unit*>::iterator it = game.local_ctx.units->begin(), end = game.local_ctx.units->end(); it != end; ++it)
+	for(vector<Unit*>::iterator it = L.local_ctx.units->begin(), end = L.local_ctx.units->end(); it != end; ++it)
 	{
 		if((*it)->data == ud)
 		{
@@ -269,7 +270,7 @@ void WarpToThroneOrcBoss()
 	assert(u);
 
 	// szukaj tronu
-	Usable* use = game.local_ctx.FindUsable("throne");
+	Usable* use = L.local_ctx.FindUsable("throne");
 	assert(use);
 
 	// przenieœ
@@ -453,7 +454,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 			quest_manager.EndUniqueQuest();
 			// gorush
 			game->RemoveTeamMember(orc);
-			Usable* tron = game->local_ctx.FindUsable("throne");
+			Usable* tron = L.local_ctx.FindUsable("throne");
 			assert(tron);
 			if(tron)
 			{
@@ -472,7 +473,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 			};
 			UnitData* ud_slaby = UnitData::Get("q_orkowie_slaby");
 
-			for(vector<Unit*>::iterator it = game->local_ctx.units->begin(), end = game->local_ctx.units->end(); it != end; ++it)
+			for(vector<Unit*>::iterator it = L.local_ctx.units->begin(), end = L.local_ctx.units->end(); it != end; ++it)
 			{
 				Unit& u = **it;
 				if(u.IsAlive())

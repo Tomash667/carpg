@@ -86,12 +86,12 @@ void SecretLocationGenerator::GenerateObjects()
 	terrain->SetH(pos);
 	BaseObject* o = BaseObject::Get("tomashu_dom");
 	pos.y += 0.05f;
-	game.SpawnObjectEntity(game.local_ctx, o, pos, 0);
-	game.ProcessBuildingObjects(game.local_ctx, nullptr, nullptr, o->mesh, nullptr, 0.f, 0, Vec3(0, 0, 0), nullptr, nullptr, false);
+	game.SpawnObjectEntity(L.local_ctx, o, pos, 0);
+	game.ProcessBuildingObjects(L.local_ctx, nullptr, nullptr, o->mesh, nullptr, 0.f, 0, Vec3(0, 0, 0), nullptr, nullptr, false);
 
 	pos.z = 64.f;
 	terrain->SetH(pos);
-	game.SpawnObjectEntity(game.local_ctx, BaseObject::Get("portal"), pos, 0);
+	game.SpawnObjectEntity(L.local_ctx, BaseObject::Get("portal"), pos, 0);
 
 	Portal* portal = new Portal;
 	portal->at_level = 0;
@@ -117,7 +117,7 @@ void SecretLocationGenerator::GenerateObjects()
 				Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 				pos.y = terrain->GetH(pos);
 				OutsideObject& o = trees[Rand() % n_trees];
-				game.SpawnObjectEntity(game.local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+				game.SpawnObjectEntity(L.local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 			}
 			else if(co == TT_GRASS3)
 			{
@@ -129,7 +129,7 @@ void SecretLocationGenerator::GenerateObjects()
 				else
 					co = Rand() % 3;
 				OutsideObject& o = trees2[co];
-				game.SpawnObjectEntity(game.local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+				game.SpawnObjectEntity(L.local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 			}
 		}
 	}
@@ -146,7 +146,7 @@ void SecretLocationGenerator::GenerateObjects()
 				Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 				pos.y = terrain->GetH(pos);
 				OutsideObject& o = misc[Rand() % n_misc];
-				game.SpawnObjectEntity(game.local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+				game.SpawnObjectEntity(L.local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 			}
 		}
 	}
@@ -179,7 +179,7 @@ void SecretLocationGenerator::GenerateUnits()
 
 		if(ok)
 		{
-			game.SpawnUnitNearLocation(game.local_ctx, Vec3(pos.x, 0, pos.y), *golem, nullptr, -2);
+			game.SpawnUnitNearLocation(L.local_ctx, Vec3(pos.x, 0, pos.y), *golem, nullptr, -2);
 			poss.push_back(pos);
 			++added;
 		}

@@ -145,10 +145,10 @@ int MultiInsideLocation::GetRandomLevel() const
 }
 
 //=================================================================================================
-void MultiInsideLocation::BuildRefidTable()
+void MultiInsideLocation::BuildRefidTables()
 {
 	for(vector<InsideLocationLevel>::iterator it = levels.begin(), end = levels.end(); it != end; ++it)
-		it->BuildRefidTable();
+		it->BuildRefidTables();
 }
 
 //=================================================================================================

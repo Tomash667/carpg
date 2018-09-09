@@ -31,7 +31,7 @@ void InsideLocationGenerator::OnEnter()
 	BaseLocation& base = g_base_locations[inside->target];
 
 	if(!reenter)
-		game.ApplyContext(inside, game.local_ctx);
+		game.ApplyContext(inside, L.local_ctx);
 
 	game.SetDungeonParamsAndTextures(base);
 
@@ -51,7 +51,7 @@ void InsideLocationGenerator::OnEnter()
 		game.LoadingStep(game.txRegeneratingLevel);
 
 		if(days > 0)
-			game.UpdateLocation(game.local_ctx, days, base.door_open, need_reset);
+			game.UpdateLocation(L.local_ctx, days, base.door_open, need_reset);
 
 		bool respawn_units = HandleUpdate(days);
 
@@ -60,7 +60,7 @@ void InsideLocationGenerator::OnEnter()
 			// usuñ ¿ywe jednostki
 			if(days != 0)
 			{
-				for(vector<Unit*>::iterator it = game.local_ctx.units->begin(), end = game.local_ctx.units->end(); it != end; ++it)
+				for(vector<Unit*>::iterator it = L.local_ctx.units->begin(), end = L.local_ctx.units->end(); it != end; ++it)
 				{
 					if((*it)->IsAlive())
 					{
@@ -68,16 +68,16 @@ void InsideLocationGenerator::OnEnter()
 						*it = nullptr;
 					}
 				}
-				RemoveNullElements(game.local_ctx.units);
+				RemoveNullElements(L.local_ctx.units);
 			}
 
 			// usuñ zawartoœæ skrzyni
-			for(vector<Chest*>::iterator it = game.local_ctx.chests->begin(), end = game.local_ctx.chests->end(); it != end; ++it)
+			for(vector<Chest*>::iterator it = L.local_ctx.chests->begin(), end = L.local_ctx.chests->end(); it != end; ++it)
 				(*it)->items.clear();
 
 			// nowa zawartoœæ skrzyni
 			int dlevel = game.GetDungeonLevel();
-			for(vector<Chest*>::iterator it = game.local_ctx.chests->begin(), end = game.local_ctx.chests->end(); it != end; ++it)
+			for(vector<Chest*>::iterator it = L.local_ctx.chests->begin(), end = L.local_ctx.chests->end(); it != end; ++it)
 			{
 				Chest& chest = **it;
 				if(!chest.items.empty())
@@ -98,7 +98,7 @@ void InsideLocationGenerator::OnEnter()
 			RegenerateTraps();
 		}
 
-		game.OnReenterLevel(game.local_ctx);
+		game.OnReenterLevel(L.local_ctx);
 
 		// odtwórz jednostki
 		if(respawn_units)
@@ -180,7 +180,7 @@ void InsideLocationGenerator::OnEnter()
 
 		if(game.hardcore_mode)
 		{
-			Object* o = game.local_ctx.FindObject(BaseObject::Get("portal"));
+			Object* o = L.local_ctx.FindObject(BaseObject::Get("portal"));
 
 			OutsideLocation* loc = new OutsideLocation;
 			loc->active_quest = (Quest_Dungeon*)ACTIVE_QUEST_HOLDER;
@@ -207,13 +207,13 @@ void InsideLocationGenerator::OnEnter()
 			// dodaj kartkê (overkill sprawdzania!)
 			const Item* kartka = Item::Get("sekret_kartka2");
 			assert(kartka);
-			Chest* c = game.local_ctx.FindChestInRoom(r);
+			Chest* c = L.local_ctx.FindChestInRoom(r);
 			assert(c);
 			if(c)
 				c->AddItem(kartka, 1, 1);
 			else
 			{
-				Object* o = game.local_ctx.FindObject(BaseObject::Get("portal"));
+				Object* o = L.local_ctx.FindObject(BaseObject::Get("portal"));
 				assert(0);
 				if(o)
 				{
@@ -224,7 +224,7 @@ void InsideLocationGenerator::OnEnter()
 					item->netid = GroundItem::netid_counter++;
 					item->pos = o->pos;
 					item->rot = Random(MAX_ANGLE);
-					game.local_ctx.items->push_back(item);
+					L.local_ctx.items->push_back(item);
 				}
 				else
 					game.SpawnGroundItemInsideRoom(r, kartka);
@@ -450,7 +450,7 @@ void InsideLocationGenerator::RegenerateTraps()
 	else
 		szansa = 20;
 
-	vector<Trap*>& traps = *game.local_ctx.traps;
+	vector<Trap*>& traps = *L.local_ctx.traps;
 	int id = 0, topid = traps.size();
 
 	for(int y = 1; y < lvl.h - 1; ++y)
@@ -503,14 +503,13 @@ void InsideLocationGenerator::RegenerateTraps()
 	}
 
 	if(game.devmode)
-		Info("Traps: %d", game.local_ctx.traps->size());
+		Info("Traps: %d", L.local_ctx.traps->size());
 }
 
 //=================================================================================================
 void InsideLocationGenerator::RespawnTraps()
 {
-	Game& game = Game::Get();
-	for(vector<Trap*>::iterator it = game.local_ctx.traps->begin(), end = game.local_ctx.traps->end(); it != end; ++it)
+	for(vector<Trap*>::iterator it = L.local_ctx.traps->begin(), end = L.local_ctx.traps->end(); it != end; ++it)
 	{
 		Trap& trap = **it;
 

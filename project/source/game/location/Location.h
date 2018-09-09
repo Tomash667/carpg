@@ -106,7 +106,7 @@ struct Location : public ILevel
 	// virtual functions to implement
 	virtual void Save(GameWriter& f, bool local);
 	virtual void Load(GameReader& f, bool local, LOCATION_TOKEN token);
-	virtual void BuildRefidTable() = 0;
+	virtual void BuildRefidTables() = 0;
 	virtual bool FindUnit(Unit* unit, int* level = nullptr) = 0;
 	virtual Unit* FindUnit(UnitData* data, int& at_level) = 0;
 	virtual bool CheckUpdate(int& days_passed, int worldtime);

@@ -40,6 +40,8 @@ public:
 	Location* location; // same as W.current_location
 	int location_index; // same as W.current_location_index
 	LocationEventHandler* event_handler;
+	LevelContext local_ctx;
+	City* city_ctx; // pointer to city or nullptr when not inside city
 	int enter_from; // from where team entered level (used when spawning new player in MP)
 	float light_angle; // random angle used for lighting in outside locations
 	bool is_open; // is location loaded, team is inside or is on world map and can reenter

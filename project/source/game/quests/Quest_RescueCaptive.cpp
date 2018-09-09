@@ -11,6 +11,7 @@
 #include "SaveState.h"
 #include "Team.h"
 #include "World.h"
+#include "Level.h"
 
 //=================================================================================================
 void Quest_RescueCaptive::Start()
@@ -228,7 +229,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 			captive->event_handler = nullptr;
 			captive = nullptr;
 
-			OnUpdate(Format(game->txQuest[42], game->city_ctx->name.c_str()));
+			OnUpdate(Format(game->txQuest[42], L.city_ctx->name.c_str()));
 		}
 		break;
 	}

@@ -462,32 +462,32 @@ void Game::SaveGame(GameWriter& f)
 	if(game_state == GS_LEVEL)
 	{
 		// particles
-		f << local_ctx.pes->size();
-		for(ParticleEmitter* pe : *local_ctx.pes)
+		f << L.local_ctx.pes->size();
+		for(ParticleEmitter* pe : *L.local_ctx.pes)
 			pe->Save(f);
 
-		f << local_ctx.tpes->size();
-		for(TrailParticleEmitter* tpe : *local_ctx.tpes)
+		f << L.local_ctx.tpes->size();
+		for(TrailParticleEmitter* tpe : *L.local_ctx.tpes)
 			tpe->Save(f);
 
 		// explosions
-		f << local_ctx.explos->size();;
-		for(Explo* explo : *local_ctx.explos)
+		f << L.local_ctx.explos->size();;
+		for(Explo* explo : *L.local_ctx.explos)
 			explo->Save(f);
 
 		// electric effects
-		f << local_ctx.electros->size();
-		for(Electro* electro : *local_ctx.electros)
+		f << L.local_ctx.electros->size();
+		for(Electro* electro : *L.local_ctx.electros)
 			electro->Save(f);
 
 		// drain effects
-		f << local_ctx.drains->size();
-		for(Drain& drain : *local_ctx.drains)
+		f << L.local_ctx.drains->size();
+		for(Drain& drain : *L.local_ctx.drains)
 			drain.Save(f);
 
 		// bullets
-		f << local_ctx.bullets->size();
-		for(Bullet& bullet : *local_ctx.bullets)
+		f << L.local_ctx.bullets->size();
+		for(Bullet& bullet : *L.local_ctx.bullets)
 			bullet.Save(f);
 
 		f << check_id;
@@ -705,9 +705,9 @@ void Game::LoadGame(GameReader& f)
 		}
 	}
 	if(L.location != nullptr && L.location->type == L_CITY)
-		city_ctx = (City*)L.location;
+		L.city_ctx = (City*)L.location;
 	else
-		city_ctx = nullptr;
+		L.city_ctx = nullptr;
 	if(LOAD_VERSION < V_FEATURE)
 		W.LoadOld(f, loading, 3);
 	f >> L.enter_from;
@@ -872,13 +872,13 @@ void Game::LoadGame(GameReader& f)
 			SetOutsideParams();
 			SetTerrainTextures();
 
-			ApplyContext(L.location, local_ctx);
+			ApplyContext(L.location, L.local_ctx);
 			ApplyTiles(outside->h, outside->tiles);
 
 			RespawnObjectColliders(false);
 			SpawnTerrainCollider();
 
-			if(city_ctx)
+			if(L.city_ctx)
 			{
 				RespawnBuildingPhysics();
 				SpawnCityPhysics();
@@ -895,7 +895,7 @@ void Game::LoadGame(GameReader& f)
 			inside->SetActiveLevel(dungeon_level);
 			BaseLocation& base = g_base_locations[inside->target];
 
-			ApplyContext(inside, local_ctx);
+			ApplyContext(inside, L.local_ctx);
 			SetDungeonParamsAndTextures(base);
 
 			RespawnObjectColliders(false);
@@ -906,16 +906,16 @@ void Game::LoadGame(GameReader& f)
 		loc_gen_factory->Get(L.location)->CreateMinimap();
 
 		// particles
-		local_ctx.pes->resize(f.Read<uint>());
-		for(ParticleEmitter*& pe : *local_ctx.pes)
+		L.local_ctx.pes->resize(f.Read<uint>());
+		for(ParticleEmitter*& pe : *L.local_ctx.pes)
 		{
 			pe = new ParticleEmitter;
 			ParticleEmitter::AddRefid(pe);
 			pe->Load(f);
 		}
 
-		local_ctx.tpes->resize(f.Read<uint>());
-		for(TrailParticleEmitter* tpe : *local_ctx.tpes)
+		L.local_ctx.tpes->resize(f.Read<uint>());
+		for(TrailParticleEmitter* tpe : *L.local_ctx.tpes)
 		{
 			tpe = new TrailParticleEmitter;
 			TrailParticleEmitter::AddRefid(tpe);
@@ -923,29 +923,29 @@ void Game::LoadGame(GameReader& f)
 		}
 
 		// explosions
-		local_ctx.explos->resize(f.Read<uint>());
-		for(Explo*& explo : *local_ctx.explos)
+		L.local_ctx.explos->resize(f.Read<uint>());
+		for(Explo*& explo : *L.local_ctx.explos)
 		{
 			explo = new Explo;
 			explo->Load(f);
 		}
 
 		// electric effects
-		local_ctx.electros->resize(f.Read<uint>());
-		for(Electro*& electro : *local_ctx.electros)
+		L.local_ctx.electros->resize(f.Read<uint>());
+		for(Electro*& electro : *L.local_ctx.electros)
 		{
 			electro = new Electro;
 			electro->Load(f);
 		}
 
 		// drain effects
-		local_ctx.drains->resize(f.Read<uint>());
-		for(Drain& drain : *local_ctx.drains)
+		L.local_ctx.drains->resize(f.Read<uint>());
+		for(Drain& drain : *L.local_ctx.drains)
 			drain.Load(f);
 
 		// bullets
-		local_ctx.bullets->resize(f.Read<uint>());
-		for(Bullet& bullet : *local_ctx.bullets)
+		L.local_ctx.bullets->resize(f.Read<uint>());
+		for(Bullet& bullet : *L.local_ctx.bullets)
 			bullet.Load(f);
 
 		f >> read_id;
@@ -953,14 +953,10 @@ void Game::LoadGame(GameReader& f)
 			throw "Failed to read level data.";
 		++check_id;
 
-		local_ctx_valid = true;
 		RemoveUnusedAiAndCheck();
 	}
 	else
-	{
 		L.is_open = false;
-		local_ctx_valid = false;
-	}
 
 	// gui
 	if(LOAD_VERSION <= V_0_3)
@@ -1256,7 +1252,7 @@ void Game::RemoveUnusedAiAndCheck()
 	for(vector<AIController*>::iterator it = ais.begin(), end = ais.end(); it != end; ++it)
 	{
 		bool ok = false;
-		for(vector<Unit*>::iterator it2 = local_ctx.units->begin(), end2 = local_ctx.units->end(); it2 != end2; ++it2)
+		for(vector<Unit*>::iterator it2 = L.local_ctx.units->begin(), end2 = L.local_ctx.units->end(); it2 != end2; ++it2)
 		{
 			if((*it2)->ai == *it)
 			{
@@ -1264,9 +1260,9 @@ void Game::RemoveUnusedAiAndCheck()
 				break;
 			}
 		}
-		if(!ok && city_ctx)
+		if(!ok && L.city_ctx)
 		{
-			for(vector<InsideBuilding*>::iterator it2 = city_ctx->inside_buildings.begin(), end2 = city_ctx->inside_buildings.end(); it2 != end2 && !ok; ++it2)
+			for(vector<InsideBuilding*>::iterator it2 = L.city_ctx->inside_buildings.begin(), end2 = L.city_ctx->inside_buildings.end(); it2 != end2 && !ok; ++it2)
 			{
 				for(vector<Unit*>::iterator it3 = (*it2)->units.begin(), end3 = (*it2)->units.end(); it3 != end3; ++it3)
 				{
@@ -1298,10 +1294,10 @@ void Game::RemoveUnusedAiAndCheck()
 
 #ifdef _DEBUG
 	int err_count = 0;
-	CheckUnitsAi(local_ctx, err_count);
-	if(city_ctx)
+	CheckUnitsAi(L.local_ctx, err_count);
+	if(L.city_ctx)
 	{
-		for(vector<InsideBuilding*>::iterator it = city_ctx->inside_buildings.begin(), end = city_ctx->inside_buildings.end(); it != end; ++it)
+		for(vector<InsideBuilding*>::iterator it = L.city_ctx->inside_buildings.begin(), end = L.city_ctx->inside_buildings.end(); it != end; ++it)
 			CheckUnitsAi((*it)->ctx, err_count);
 	}
 	if(err_count)

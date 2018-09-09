@@ -439,28 +439,28 @@ void Game::PrepareLevelData(BitStream& stream, bool loaded_resources)
 	}
 
 	// usable objects
-	f.WriteCasted<byte>(local_ctx.usables->size());
-	for(Usable* usable : *local_ctx.usables)
+	f.WriteCasted<byte>(L.local_ctx.usables->size());
+	for(Usable* usable : *L.local_ctx.usables)
 		usable->Write(f);
 	// units
-	f.WriteCasted<byte>(local_ctx.units->size());
-	for(Unit* unit : *local_ctx.units)
+	f.WriteCasted<byte>(L.local_ctx.units->size());
+	for(Unit* unit : *L.local_ctx.units)
 		WriteUnit(f, *unit);
 	// ground items
-	f.WriteCasted<byte>(local_ctx.items->size());
-	for(GroundItem* item : *local_ctx.items)
+	f.WriteCasted<byte>(L.local_ctx.items->size());
+	for(GroundItem* item : *L.local_ctx.items)
 		WriteItem(f, *item);
 	// bloods
-	f.WriteCasted<word>(local_ctx.bloods->size());
-	for(Blood& blood : *local_ctx.bloods)
+	f.WriteCasted<word>(L.local_ctx.bloods->size());
+	for(Blood& blood : *L.local_ctx.bloods)
 		blood.Write(f);
 	// objects
-	f.WriteCasted<word>(local_ctx.objects->size());
-	for(Object* object : *local_ctx.objects)
+	f.WriteCasted<word>(L.local_ctx.objects->size());
+	for(Object* object : *L.local_ctx.objects)
 		object->Write(f);
 	// chests
-	f.WriteCasted<byte>(local_ctx.chests->size());
-	for(Chest* chest : *local_ctx.chests)
+	f.WriteCasted<byte>(L.local_ctx.chests->size());
+	for(Chest* chest : *L.local_ctx.chests)
 		WriteChest(f, *chest);
 
 	L.location->WritePortals(f);
@@ -478,8 +478,8 @@ void Game::PrepareLevelData(BitStream& stream, bool loaded_resources)
 	if(mp_load)
 	{
 		// bullets
-		f.WriteCasted<byte>(local_ctx.bullets->size());
-		for(Bullet& bullet : *local_ctx.bullets)
+		f.WriteCasted<byte>(L.local_ctx.bullets->size());
+		for(Bullet& bullet : *L.local_ctx.bullets)
 		{
 			f << bullet.pos;
 			f << bullet.rot;
@@ -494,8 +494,8 @@ void Game::PrepareLevelData(BitStream& stream, bool loaded_resources)
 		}
 
 		// explosions
-		f.WriteCasted<byte>(local_ctx.explos->size());
-		for(Explo* explo : *local_ctx.explos)
+		f.WriteCasted<byte>(L.local_ctx.explos->size());
+		for(Explo* explo : *L.local_ctx.explos)
 		{
 			f << explo->tex->filename;
 			f << explo->pos;
@@ -504,8 +504,8 @@ void Game::PrepareLevelData(BitStream& stream, bool loaded_resources)
 		}
 
 		// electros
-		f.WriteCasted<byte>(local_ctx.electros->size());
-		for(Electro* electro : *local_ctx.electros)
+		f.WriteCasted<byte>(L.local_ctx.electros->size());
+		for(Electro* electro : *L.local_ctx.electros)
 		{
 			f << electro->netid;
 			f.WriteCasted<byte>(electro->lines.size());
@@ -695,10 +695,9 @@ bool Game::ReadLevelData(BitStreamReader& f)
 		InsideLocation* inside = (InsideLocation*)L.location;
 		inside->SetActiveLevel(dungeon_level);
 	}
-	ApplyContext(L.location, local_ctx);
+	ApplyContext(L.location, L.local_ctx);
 	RequireLoadingResources(L.location, &loaded_resources);
-	local_ctx_valid = true;
-	city_ctx = nullptr;
+	L.city_ctx = nullptr;
 
 	if(L.location->outside)
 	{
@@ -726,7 +725,7 @@ bool Game::ReadLevelData(BitStreamReader& f)
 		if(outside->type == L_CITY)
 		{
 			City* city = (City*)outside;
-			city_ctx = city;
+			L.city_ctx = city;
 
 			// entry points
 			const int ENTRY_POINT_MIN_SIZE = 20;
@@ -807,7 +806,7 @@ bool Game::ReadLevelData(BitStreamReader& f)
 					return false;
 				}
 				ib.offset = Vec2(512.f*ib.level_shift.x + 256.f, 512.f*ib.level_shift.y + 256.f);
-				ProcessBuildingObjects(ib.ctx, city_ctx, &ib, ib.type->inside_mesh, nullptr, 0, 0, Vec3(ib.offset.x, 0, ib.offset.y), ib.type, nullptr, true);
+				ProcessBuildingObjects(ib.ctx, L.city_ctx, &ib, ib.type->inside_mesh, nullptr, 0, 0, Vec3(ib.offset.x, 0, ib.offset.y), ib.type, nullptr, true);
 
 				// usable objects
 				f >> count;
@@ -1079,8 +1078,8 @@ bool Game::ReadLevelData(BitStreamReader& f)
 		Error("Read level: Broken usable object count.");
 		return false;
 	}
-	local_ctx.usables->resize(count);
-	for(Usable*& usable : *local_ctx.usables)
+	L.local_ctx.usables->resize(count);
+	for(Usable*& usable : *L.local_ctx.usables)
 	{
 		usable = new Usable;
 		if(!usable->Read(f))
@@ -1097,8 +1096,8 @@ bool Game::ReadLevelData(BitStreamReader& f)
 		Error("Read level: Broken unit count.");
 		return false;
 	}
-	local_ctx.units->resize(count);
-	for(Unit*& unit : *local_ctx.units)
+	L.local_ctx.units->resize(count);
+	for(Unit*& unit : *L.local_ctx.units)
 	{
 		unit = new Unit;
 		if(!ReadUnit(f, *unit))
@@ -1115,8 +1114,8 @@ bool Game::ReadLevelData(BitStreamReader& f)
 		Error("Read level: Broken ground item count.");
 		return false;
 	}
-	local_ctx.items->resize(count);
-	for(GroundItem*& item : *local_ctx.items)
+	L.local_ctx.items->resize(count);
+	for(GroundItem*& item : *L.local_ctx.items)
 	{
 		item = new GroundItem;
 		if(!ReadItem(f, *item))
@@ -1134,8 +1133,8 @@ bool Game::ReadLevelData(BitStreamReader& f)
 		Error("Read level: Broken blood count.");
 		return false;
 	}
-	local_ctx.bloods->resize(count2);
-	for(Blood& blood : *local_ctx.bloods)
+	L.local_ctx.bloods->resize(count2);
+	for(Blood& blood : *L.local_ctx.bloods)
 		blood.Read(f);
 	if(!f)
 	{
@@ -1150,8 +1149,8 @@ bool Game::ReadLevelData(BitStreamReader& f)
 		Error("Read level: Broken object count.");
 		return false;
 	}
-	local_ctx.objects->resize(count2);
-	for(Object*& object : *local_ctx.objects)
+	L.local_ctx.objects->resize(count2);
+	for(Object*& object : *L.local_ctx.objects)
 	{
 		object = new Object;
 		if(!object->Read(f))
@@ -1168,8 +1167,8 @@ bool Game::ReadLevelData(BitStreamReader& f)
 		Error("Read level: Broken chest count.");
 		return false;
 	}
-	local_ctx.chests->resize(count);
-	for(Chest*& chest : *local_ctx.chests)
+	L.local_ctx.chests->resize(count);
+	for(Chest*& chest : *L.local_ctx.chests)
 	{
 		chest = new Chest;
 		if(!ReadChest(f, *chest))
@@ -1247,8 +1246,8 @@ bool Game::ReadLevelData(BitStreamReader& f)
 			Error("Read level: Broken bullet count.");
 			return false;
 		}
-		local_ctx.bullets->resize(count);
-		for(Bullet& bullet : *local_ctx.bullets)
+		L.local_ctx.bullets->resize(count);
+		for(Bullet& bullet : *L.local_ctx.bullets)
 		{
 			f >> bullet.pos;
 			f >> bullet.rot;
@@ -1276,7 +1275,7 @@ bool Game::ReadLevelData(BitStreamReader& f)
 				tpe->color1 = Vec4(1, 1, 1, 0.5f);
 				tpe->color2 = Vec4(1, 1, 1, 0);
 				tpe->Init(50);
-				local_ctx.tpes->push_back(tpe);
+				L.local_ctx.tpes->push_back(tpe);
 				bullet.trail = tpe;
 
 				TrailParticleEmitter* tpe2 = new TrailParticleEmitter;
@@ -1284,7 +1283,7 @@ bool Game::ReadLevelData(BitStreamReader& f)
 				tpe2->color1 = Vec4(1, 1, 1, 0.5f);
 				tpe2->color2 = Vec4(1, 1, 1, 0);
 				tpe2->Init(50);
-				local_ctx.tpes->push_back(tpe2);
+				L.local_ctx.tpes->push_back(tpe2);
 				bullet.trail2 = tpe2;
 			}
 			else
@@ -1328,7 +1327,7 @@ bool Game::ReadLevelData(BitStreamReader& f)
 					pe->op_alpha = POP_LINEAR_SHRINK;
 					pe->mode = 1;
 					pe->Init();
-					local_ctx.pes->push_back(pe);
+					L.local_ctx.pes->push_back(pe);
 					bullet.pe = pe;
 				}
 			}
@@ -1353,8 +1352,8 @@ bool Game::ReadLevelData(BitStreamReader& f)
 			Error("Read level: Broken explosion count.");
 			return false;
 		}
-		local_ctx.explos->resize(count);
-		for(Explo*& explo : *local_ctx.explos)
+		L.local_ctx.explos->resize(count);
+		for(Explo*& explo : *L.local_ctx.explos)
 		{
 			explo = new Explo;
 			const string& tex_id = f.ReadString1();
@@ -1376,9 +1375,9 @@ bool Game::ReadLevelData(BitStreamReader& f)
 			Error("Read level: Broken electro count.");
 			return false;
 		}
-		local_ctx.electros->resize(count);
+		L.local_ctx.electros->resize(count);
 		Spell* electro_spell = FindSpell("thunder_bolt");
-		for(Electro*& electro : *local_ctx.electros)
+		for(Electro*& electro : *L.local_ctx.electros)
 		{
 			electro = new Electro;
 			electro->spell = electro_spell;
@@ -1425,7 +1424,6 @@ bool Game::ReadLevelData(BitStreamReader& f)
 	}
 
 	RespawnObjectColliders();
-	local_ctx_valid = true;
 	if(W.IsBossLevel())
 		SetMusic();
 	else
@@ -2028,15 +2026,15 @@ Unit* Game::FindUnit(int netid)
 	if(netid == -1)
 		return nullptr;
 
-	for(vector<Unit*>::iterator it = local_ctx.units->begin(), end = local_ctx.units->end(); it != end; ++it)
+	for(vector<Unit*>::iterator it = L.local_ctx.units->begin(), end = L.local_ctx.units->end(); it != end; ++it)
 	{
 		if((*it)->netid == netid)
 			return *it;
 	}
 
-	if(city_ctx)
+	if(L.city_ctx)
 	{
-		for(vector<InsideBuilding*>::iterator it = city_ctx->inside_buildings.begin(), end = city_ctx->inside_buildings.end(); it != end; ++it)
+		for(vector<InsideBuilding*>::iterator it = L.city_ctx->inside_buildings.begin(), end = L.city_ctx->inside_buildings.end(); it != end; ++it)
 		{
 			for(vector<Unit*>::iterator it2 = (*it)->units.begin(), end2 = (*it)->units.end(); it2 != end2; ++it2)
 			{
@@ -2052,15 +2050,15 @@ Unit* Game::FindUnit(int netid)
 //=================================================================================================
 Unit* Game::FindUnit(delegate<bool(Unit*)> pred)
 {
-	for(auto u : *local_ctx.units)
+	for(auto u : *L.local_ctx.units)
 	{
 		if(pred(u))
 			return u;
 	}
 
-	if(city_ctx)
+	if(L.city_ctx)
 	{
-		for(auto inside : city_ctx->inside_buildings)
+		for(auto inside : L.city_ctx->inside_buildings)
 		{
 			for(auto u : inside->units)
 			{
@@ -2152,10 +2150,10 @@ void Game::UpdateServer(float dt)
 		// dodaj zmiany pozycji jednostek i ai_mode
 		if(game_state == GS_LEVEL)
 		{
-			ServerProcessUnits(*local_ctx.units);
-			if(city_ctx)
+			ServerProcessUnits(*L.local_ctx.units);
+			if(L.city_ctx)
 			{
-				for(vector<InsideBuilding*>::iterator it = city_ctx->inside_buildings.begin(), end = city_ctx->inside_buildings.end(); it != end; ++it)
+				for(vector<InsideBuilding*>::iterator it = L.city_ctx->inside_buildings.begin(), end = L.city_ctx->inside_buildings.end(); it != end; ++it)
 					ServerProcessUnits((*it)->units);
 			}
 		}
@@ -3308,7 +3306,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				f >> building_index;
 				if(!f)
 					StreamError("Update server: Broken ENTER_BUILDING from %s.", info.name.c_str());
-				else if(city_ctx && building_index < city_ctx->inside_buildings.size())
+				else if(L.city_ctx && building_index < L.city_ctx->inside_buildings.size())
 				{
 					WarpData& warp = Add1(mp_warps);
 					warp.u = &unit;
@@ -3798,7 +3796,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					StreamError("Update server: Player %s used CHEAT_WARP without devmode.", info.name.c_str());
 				else if(unit.frozen != FROZEN::NO)
 					StreamError("Update server: CHEAT_WARP from %s, unit is frozen.", info.name.c_str());
-				else if(!city_ctx || building_index >= city_ctx->inside_buildings.size())
+				else if(!L.city_ctx || building_index >= L.city_ctx->inside_buildings.size())
 					StreamError("Update server: CHEAT_WARP from %s, invalid inside building index %u.", info.name.c_str(), building_index);
 				else
 				{
@@ -6870,7 +6868,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				f >> type;
 				if(!f)
 					StreamError("Update client: Broken ARENA_SOUND.");
-				else if(city_ctx && IS_SET(city_ctx->flags, City::HaveArena) && GetArena()->ctx.building_id == pc->unit->in_building)
+				else if(L.city_ctx && IS_SET(L.city_ctx->flags, City::HaveArena) && GetArena()->ctx.building_id == pc->unit->in_building)
 				{
 					SOUND snd;
 					if(type == 0)
@@ -7186,7 +7184,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 			{
 				// change object
 				BaseObject* base_obj = BaseObject::Get("bloody_altar");
-				Object* obj = local_ctx.FindObject(base_obj);
+				Object* obj = L.local_ctx.FindObject(base_obj);
 				obj->base = BaseObject::Get("altar");
 				obj->mesh = obj->base->mesh;
 				ResourceManager::Get<Mesh>().Load(obj->mesh);
@@ -7194,7 +7192,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				// remove particles
 				float best_dist = 999.f;
 				ParticleEmitter* pe = nullptr;
-				for(vector<ParticleEmitter*>::iterator it = local_ctx.pes->begin(), end = local_ctx.pes->end(); it != end; ++it)
+				for(vector<ParticleEmitter*>::iterator it = L.local_ctx.pes->begin(), end = L.local_ctx.pes->end(); it != end; ++it)
 				{
 					if((*it)->tex == tKrew[BLOOD_RED])
 					{
@@ -9137,19 +9135,19 @@ void Game::ServerProcessUnits(vector<Unit*>& units)
 //=================================================================================================
 GroundItem* Game::FindItemNetid(int netid, LevelContext** ctx)
 {
-	for(vector<GroundItem*>::iterator it = local_ctx.items->begin(), end = local_ctx.items->end(); it != end; ++it)
+	for(vector<GroundItem*>::iterator it = L.local_ctx.items->begin(), end = L.local_ctx.items->end(); it != end; ++it)
 	{
 		if((*it)->netid == netid)
 		{
 			if(ctx)
-				*ctx = &local_ctx;
+				*ctx = &L.local_ctx;
 			return *it;
 		}
 	}
 
-	if(city_ctx)
+	if(L.city_ctx)
 	{
-		for(vector<InsideBuilding*>::iterator it = city_ctx->inside_buildings.begin(), end = city_ctx->inside_buildings.end(); it != end; ++it)
+		for(vector<InsideBuilding*>::iterator it = L.city_ctx->inside_buildings.begin(), end = L.city_ctx->inside_buildings.end(); it != end; ++it)
 		{
 			for(vector<GroundItem*>::iterator it2 = (*it)->items.begin(), end2 = (*it)->items.end(); it2 != end2; ++it2)
 			{
@@ -9301,15 +9299,15 @@ const Item* Game::FindQuestItemClient(cstring id, int refid) const
 //=================================================================================================
 Usable* Game::FindUsable(int netid)
 {
-	for(vector<Usable*>::iterator it = local_ctx.usables->begin(), end = local_ctx.usables->end(); it != end; ++it)
+	for(vector<Usable*>::iterator it = L.local_ctx.usables->begin(), end = L.local_ctx.usables->end(); it != end; ++it)
 	{
 		if((*it)->netid == netid)
 			return *it;
 	}
 
-	if(city_ctx)
+	if(L.city_ctx)
 	{
-		for(vector<InsideBuilding*>::iterator it = city_ctx->inside_buildings.begin(), end = city_ctx->inside_buildings.end(); it != end; ++it)
+		for(vector<InsideBuilding*>::iterator it = L.city_ctx->inside_buildings.begin(), end = L.city_ctx->inside_buildings.end(); it != end; ++it)
 		{
 			if(*it)
 			{
@@ -9369,18 +9367,18 @@ int Game::ReadItemAndFind(BitStreamReader& f, const Item*& item) const
 //=================================================================================================
 Door* Game::FindDoor(int netid)
 {
-	if(local_ctx.doors)
+	if(L.local_ctx.doors)
 	{
-		for(vector<Door*>::iterator it = local_ctx.doors->begin(), end = local_ctx.doors->end(); it != end; ++it)
+		for(vector<Door*>::iterator it = L.local_ctx.doors->begin(), end = L.local_ctx.doors->end(); it != end; ++it)
 		{
 			if((*it)->netid == netid)
 				return *it;
 		}
 	}
 
-	if(city_ctx)
+	if(L.city_ctx)
 	{
-		for(vector<InsideBuilding*>::iterator it2 = city_ctx->inside_buildings.begin(), end2 = city_ctx->inside_buildings.end(); it2 != end2; ++it2)
+		for(vector<InsideBuilding*>::iterator it2 = L.city_ctx->inside_buildings.begin(), end2 = L.city_ctx->inside_buildings.end(); it2 != end2; ++it2)
 		{
 			for(vector<Door*>::iterator it = (*it2)->doors.begin(), end = (*it2)->doors.end(); it != end; ++it)
 			{
@@ -9396,9 +9394,9 @@ Door* Game::FindDoor(int netid)
 //=================================================================================================
 Trap* Game::FindTrap(int netid)
 {
-	if(local_ctx.traps)
+	if(L.local_ctx.traps)
 	{
-		for(vector<Trap*>::iterator it = local_ctx.traps->begin(), end = local_ctx.traps->end(); it != end; ++it)
+		for(vector<Trap*>::iterator it = L.local_ctx.traps->begin(), end = L.local_ctx.traps->end(); it != end; ++it)
 		{
 			if((*it)->netid == netid)
 				return *it;
@@ -9411,9 +9409,9 @@ Trap* Game::FindTrap(int netid)
 //=================================================================================================
 Chest* Game::FindChest(int netid)
 {
-	if(local_ctx.chests)
+	if(L.local_ctx.chests)
 	{
-		for(vector<Chest*>::iterator it = local_ctx.chests->begin(), end = local_ctx.chests->end(); it != end; ++it)
+		for(vector<Chest*>::iterator it = L.local_ctx.chests->begin(), end = L.local_ctx.chests->end(); it != end; ++it)
 		{
 			if((*it)->netid == netid)
 				return *it;
@@ -9426,14 +9424,14 @@ Chest* Game::FindChest(int netid)
 //=================================================================================================
 bool Game::RemoveTrap(int netid)
 {
-	if(local_ctx.traps)
+	if(L.local_ctx.traps)
 	{
-		for(vector<Trap*>::iterator it = local_ctx.traps->begin(), end = local_ctx.traps->end(); it != end; ++it)
+		for(vector<Trap*>::iterator it = L.local_ctx.traps->begin(), end = L.local_ctx.traps->end(); it != end; ++it)
 		{
 			if((*it)->netid == netid)
 			{
 				delete *it;
-				local_ctx.traps->erase(it);
+				L.local_ctx.traps->erase(it);
 				return true;
 			}
 		}
@@ -9445,15 +9443,15 @@ bool Game::RemoveTrap(int netid)
 //=================================================================================================
 Electro* Game::FindElectro(int netid)
 {
-	for(vector<Electro*>::iterator it = local_ctx.electros->begin(), end = local_ctx.electros->end(); it != end; ++it)
+	for(vector<Electro*>::iterator it = L.local_ctx.electros->begin(), end = L.local_ctx.electros->end(); it != end; ++it)
 	{
 		if((*it)->netid == netid)
 			return *it;
 	}
 
-	if(city_ctx)
+	if(L.city_ctx)
 	{
-		for(vector<InsideBuilding*>::iterator it = city_ctx->inside_buildings.begin(), end = city_ctx->inside_buildings.end(); it != end; ++it)
+		for(vector<InsideBuilding*>::iterator it = L.city_ctx->inside_buildings.begin(), end = L.city_ctx->inside_buildings.end(); it != end; ++it)
 		{
 			for(vector<Electro*>::iterator it2 = (*it)->ctx.electros->begin(), end2 = (*it)->ctx.electros->end(); it2 != end2; ++it2)
 			{
@@ -9693,7 +9691,7 @@ void Game::ReadNetVars(BitStreamReader& f)
 //=================================================================================================
 void Game::InterpolateUnits(float dt)
 {
-	for(Unit* unit : *local_ctx.units)
+	for(Unit* unit : *L.local_ctx.units)
 	{
 		if(unit != pc->unit)
 			UpdateInterpolator(unit->interp, dt, unit->visual_pos, unit->rot);
@@ -9714,9 +9712,9 @@ void Game::InterpolateUnits(float dt)
 			}
 		}
 	}
-	if(city_ctx)
+	if(L.city_ctx)
 	{
-		for(InsideBuilding* inside : city_ctx->inside_buildings)
+		for(InsideBuilding* inside : L.city_ctx->inside_buildings)
 		{
 			for(Unit* unit : inside->units)
 			{

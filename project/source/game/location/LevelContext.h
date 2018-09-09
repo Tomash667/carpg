@@ -5,6 +5,7 @@
 #include "Bullet.h"
 #include "Collision.h"
 #include "SpellEffects.h"
+#include "UnitData.h"
 
 //-----------------------------------------------------------------------------
 struct TmpLevelContext
@@ -60,8 +61,13 @@ struct LevelContext
 	bool have_terrain, require_tmp_ctx;
 
 	void SetTmpCtx(TmpLevelContext* ctx);
+	void BuildRefidTables();
 	void RemoveDeadUnits();
-	Unit* FindUnitById(UnitData* ud);
+	Unit* FindUnit(UnitData* ud);
+	Unit* FindUnit(cstring id)
+	{
+		return FindUnit(UnitData::Get(id));
+	}
 	Usable* FindUsable(BaseUsable* base);
 	Usable* FindUsable(cstring id)
 	{
@@ -72,6 +78,10 @@ struct LevelContext
 	bool RemoveGroundItem(const Item* item);
 	bool FindItemInChest(const Item* item, Chest** chest, int* slot);
 	Object* FindObject(BaseObject* base_obj);
+	Object* FindObject(string id)
+	{
+		return FindObject(BaseObject::Get(id));
+	}
 	Chest* FindChestInRoom(const Room& p);
 	Chest* GetRandomFarChest(const Int2& pt);
 };

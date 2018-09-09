@@ -1014,10 +1014,10 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						}
 
 						bool ok = false;
-						if(city_ctx)
+						if(L.city_ctx)
 						{
 							int index;
-							InsideBuilding* building = city_ctx->FindInsideBuilding(group, index);
+							InsideBuilding* building = L.city_ctx->FindInsideBuilding(group, index);
 							if(building)
 							{
 								// wejdü do budynku

@@ -10,6 +10,7 @@
 #include "Encounter.h"
 #include "AIController.h"
 #include "World.h"
+#include "Level.h"
 
 //=================================================================================================
 void Quest_Bandits::Init()
@@ -64,7 +65,7 @@ void WarpToThroneBanditBoss()
 	// search for boss
 	UnitData* ud = UnitData::Get("q_bandyci_szef");
 	Unit* u = nullptr;
-	for(vector<Unit*>::iterator it = game.local_ctx.units->begin(), end = game.local_ctx.units->end(); it != end; ++it)
+	for(vector<Unit*>::iterator it = L.local_ctx.units->begin(), end = L.local_ctx.units->end(); it != end; ++it)
 	{
 		if((*it)->data == ud)
 		{
@@ -75,7 +76,7 @@ void WarpToThroneBanditBoss()
 	assert(u);
 
 	// search for boss
-	Usable* use = game.local_ctx.FindUsable("throne");
+	Usable* use = L.local_ctx.FindUsable("throne");
 	assert(use);
 
 	// warp boss to throne
@@ -184,7 +185,7 @@ void Quest_Bandits::SetProgress(int prog2)
 
 			// zmieñ ai pod¹¿aj¹cych stra¿ników
 			UnitData* ud = UnitData::Get("guard_q_bandyci");
-			for(vector<Unit*>::iterator it = game->local_ctx.units->begin(), end = game->local_ctx.units->end(); it != end; ++it)
+			for(vector<Unit*>::iterator it = L.local_ctx.units->begin(), end = L.local_ctx.units->end(); it != end; ++it)
 			{
 				if((*it)->data == ud)
 				{

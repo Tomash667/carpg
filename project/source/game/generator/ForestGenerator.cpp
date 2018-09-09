@@ -132,7 +132,7 @@ void ForestGenerator::GenerateUnits()
 			if(Rand() % 5 == 0 && ud_hunter->level.x <= level)
 			{
 				int enemy_level = Random(ud_hunter->level.x, Min(ud_hunter->level.y, levels, level));
-				if(game.SpawnUnitNearLocation(game.local_ctx, pos3, *ud_hunter, nullptr, enemy_level, 6.f))
+				if(game.SpawnUnitNearLocation(L.local_ctx, pos3, *ud_hunter, nullptr, enemy_level, 6.f))
 					levels -= enemy_level;
 			}
 			while(levels > 0)
@@ -156,7 +156,7 @@ void ForestGenerator::GenerateUnits()
 					break;
 
 				int enemy_level = Random(ud->level.x, Min(ud->level.y, levels, level));
-				if(!game.SpawnUnitNearLocation(game.local_ctx, pos3, *ud, nullptr, enemy_level, 6.f))
+				if(!game.SpawnUnitNearLocation(L.local_ctx, pos3, *ud, nullptr, enemy_level, 6.f))
 					break;
 				levels -= enemy_level;
 			}

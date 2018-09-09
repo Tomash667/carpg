@@ -249,7 +249,7 @@ void OutsideLocation::Load(GameReader& f, bool local, LOCATION_TOKEN token)
 }
 
 //=================================================================================================
-void OutsideLocation::BuildRefidTable()
+void OutsideLocation::BuildRefidTables()
 {
 	for(vector<Unit*>::iterator it = units.begin(), end = units.end(); it != end; ++it)
 	{

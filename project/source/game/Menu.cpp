@@ -1639,7 +1639,7 @@ void Game::UpdateServerTransfer(float dt)
 					c.unit = unit;
 
 					AddMultiMsg(Format(txMpNPCLeft, unit->hero->name.c_str()));
-					if(city_ctx)
+					if(L.city_ctx)
 						unit->hero->mode = HeroData::Wander;
 					else
 						unit->hero->mode = HeroData::Leave;
@@ -1816,7 +1816,7 @@ void Game::UpdateServerTransfer(float dt)
 						pos = center_unit->pos;
 					else
 					{
-						InsideBuilding* inside = city_ctx->inside_buildings[center_unit->in_building];
+						InsideBuilding* inside = L.city_ctx->inside_buildings[center_unit->in_building];
 						Vec2 p = inside->enter_area.Midpoint();
 						pos = Vec3(p.x, inside->enter_y, p.y);
 					}
@@ -1827,8 +1827,8 @@ void Game::UpdateServerTransfer(float dt)
 						auto& info = *pinfo;
 						if(!info.loaded)
 						{
-							local_ctx.units->push_back(info.u);
-							WarpNearLocation(local_ctx, *info.u, pos, 4.f, false, 20);
+							L.local_ctx.units->push_back(info.u);
+							WarpNearLocation(L.local_ctx, *info.u, pos, 4.f, false, 20);
 							info.u->rot = Vec3::LookAtAngle(info.u->pos, pos);
 							info.u->interp->Reset(info.u->pos, info.u->rot);
 						}
@@ -1841,8 +1841,8 @@ void Game::UpdateServerTransfer(float dt)
 					float rot;
 					Portal* portal;
 
-					if(city_ctx)
-						city_ctx->GetEntry(pos, rot);
+					if(L.city_ctx)
+						L.city_ctx->GetEntry(pos, rot);
 					else if(L.enter_from >= ENTER_FROM_PORTAL && (portal = L.location->GetPortal(L.enter_from)) != nullptr)
 					{
 						pos = portal->pos + Vec3(sin(portal->rot) * 2, 0, cos(portal->rot) * 2);
@@ -1872,8 +1872,8 @@ void Game::UpdateServerTransfer(float dt)
 						auto& info = *pinfo;
 						if(!info.loaded)
 						{
-							local_ctx.units->push_back(info.u);
-							WarpNearLocation(local_ctx, *info.u, pos, L.location->outside ? 4.f : 2.f, false, 20);
+							L.local_ctx.units->push_back(info.u);
+							WarpNearLocation(L.local_ctx, *info.u, pos, L.location->outside ? 4.f : 2.f, false, 20);
 							info.u->rot = rot;
 							info.u->interp->Reset(info.u->pos, info.u->rot);
 						}
@@ -2017,11 +2017,11 @@ void Game::UpdateServerSend(float dt)
 		}
 		for(auto info : game_players)
 			info->update_timer = 0.f;
-		for(vector<Unit*>::iterator it = local_ctx.units->begin(), end = local_ctx.units->end(); it != end; ++it)
+		for(vector<Unit*>::iterator it = L.local_ctx.units->begin(), end = L.local_ctx.units->end(); it != end; ++it)
 			(*it)->changed = false;
-		if(city_ctx)
+		if(L.city_ctx)
 		{
-			for(vector<InsideBuilding*>::iterator it = city_ctx->inside_buildings.begin(), end = city_ctx->inside_buildings.end(); it != end; ++it)
+			for(vector<InsideBuilding*>::iterator it = L.city_ctx->inside_buildings.begin(), end = L.city_ctx->inside_buildings.end(); it != end; ++it)
 			{
 				for(vector<Unit*>::iterator it2 = (*it)->units.begin(), end2 = (*it)->units.end(); it2 != end2; ++it2)
 					(*it2)->changed = false;

@@ -378,7 +378,7 @@ Room& InsideLocationLevel::GetFarRoom(bool have_down_stairs, bool no_target)
 }
 
 //=================================================================================================
-void InsideLocationLevel::BuildRefidTable()
+void InsideLocationLevel::BuildRefidTables()
 {
 	for(vector<Unit*>::iterator it = units.begin(), end = units.end(); it != end; ++it)
 	{

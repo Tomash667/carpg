@@ -459,7 +459,7 @@ void Game::UpdateAi(float dt)
 							ai.idle_data.area.id = -1;
 							ai.idle_data.area.pos = (u.in_building == -1 ?
 								GetExitPos(u) :
-								city_ctx->inside_buildings[u.in_building]->exit_area.Midpoint().XZ());
+								L.city_ctx->inside_buildings[u.in_building]->exit_area.Midpoint().XZ());
 						}
 					}
 					else
@@ -479,7 +479,7 @@ void Game::UpdateAi(float dt)
 							else
 							{
 								int karczma_id;
-								InsideBuilding* karczma = city_ctx->FindInn(karczma_id);
+								InsideBuilding* karczma = L.city_ctx->FindInn(karczma_id);
 								if(u.in_building == -1)
 								{
 									// idŸ do karczmy
@@ -507,7 +507,7 @@ void Game::UpdateAi(float dt)
 										// jest w budynku nie karczmie, wyjdŸ na zewn¹trz
 										ai.timer = Random(15.f, 30.f);
 										ai.idle_action = AIController::Idle_MoveRegion;
-										ai.idle_data.area.pos = city_ctx->inside_buildings[u.in_building]->exit_area.Midpoint().XZ();
+										ai.idle_data.area.pos = L.city_ctx->inside_buildings[u.in_building]->exit_area.Midpoint().XZ();
 										ai.idle_data.area.id = -1;
 									}
 								}
@@ -540,13 +540,13 @@ void Game::UpdateAi(float dt)
 									{
 										// bohater nie jest w budynku, lider jest; idŸ do wejœcia
 										ai.idle_data.area.id = leader->in_building;
-										ai.idle_data.area.pos = city_ctx->inside_buildings[leader->in_building]->enter_area.Midpoint().XZ();
+										ai.idle_data.area.pos = L.city_ctx->inside_buildings[leader->in_building]->enter_area.Midpoint().XZ();
 									}
 									else
 									{
 										// bohater jest w budynku, lider na zewn¹trz lub w innym; opuœæ budynek
 										ai.idle_data.area.id = -1;
-										ai.idle_data.area.pos = city_ctx->inside_buildings[u.in_building]->exit_area.Midpoint().XZ();
+										ai.idle_data.area.pos = L.city_ctx->inside_buildings[u.in_building]->exit_area.Midpoint().XZ();
 									}
 
 									if(u.IsHero())
@@ -619,7 +619,7 @@ void Game::UpdateAi(float dt)
 							{
 								// szukaj o³tarza
 								BaseObject* base_obj = BaseObject::Get("bloody_altar");
-								Object* obj = local_ctx.FindObject(base_obj);
+								Object* obj = L.local_ctx.FindObject(base_obj);
 
 								if(obj)
 								{
@@ -726,13 +726,13 @@ void Game::UpdateAi(float dt)
 									if(u.in_building == -1)
 									{
 										// jest na zewn¹trz
-										int co = Rand() % (IS_SET(city_ctx->flags, City::HaveTrainingGrounds) ? 3 : 2);
+										int co = Rand() % (IS_SET(L.city_ctx->flags, City::HaveTrainingGrounds) ? 3 : 2);
 										if(co == 0)
 										{
 											// idŸ losowo
 											ai.loc_timer = ai.timer = Random(30.f, 120.f);
 											ai.idle_action = AIController::Idle_Move;
-											ai.idle_data.pos = city_ctx->buildings[Rand() % city_ctx->buildings.size()].walk_pt
+											ai.idle_data.pos = L.city_ctx->buildings[Rand() % L.city_ctx->buildings.size()].walk_pt
 												+ Vec3::Random(Vec3(-1.f, 0, -1), Vec3(1, 0, 1));
 										}
 										else if(co == 1)
@@ -740,14 +740,14 @@ void Game::UpdateAi(float dt)
 											// idŸ do karczmy
 											ai.loc_timer = ai.timer = Random(75.f, 150.f);
 											ai.idle_action = AIController::Idle_MoveRegion;
-											ai.idle_data.area.pos = city_ctx->FindInn(ai.idle_data.area.id)->enter_area.Midpoint().XZ();
+											ai.idle_data.area.pos = L.city_ctx->FindInn(ai.idle_data.area.id)->enter_area.Midpoint().XZ();
 										}
 										else if(co == 2)
 										{
 											// idŸ na pole treningowe
 											ai.loc_timer = ai.timer = Random(75.f, 150.f);
 											ai.idle_action = AIController::Idle_Move;
-											ai.idle_data.pos = city_ctx->FindBuilding(BuildingGroup::BG_TRAINING_GROUNDS)->walk_pt
+											ai.idle_data.pos = L.city_ctx->FindBuilding(BuildingGroup::BG_TRAINING_GROUNDS)->walk_pt
 												+ Vec3::Random(Vec3(-1.f, 0, -1), Vec3(1, 0, 1));
 										}
 									}
@@ -756,7 +756,7 @@ void Game::UpdateAi(float dt)
 										// opuœæ budynek
 										ai.loc_timer = ai.timer = Random(15.f, 30.f);
 										ai.idle_action = AIController::Idle_MoveRegion;
-										ai.idle_data.area.pos = city_ctx->inside_buildings[u.in_building]->exit_area.Midpoint().XZ();
+										ai.idle_data.area.pos = L.city_ctx->inside_buildings[u.in_building]->exit_area.Midpoint().XZ();
 										ai.idle_data.area.id = -1;
 									}
 									ai.city_wander = true;
@@ -766,7 +766,7 @@ void Game::UpdateAi(float dt)
 									// idŸ do losowego budynku
 									ai.loc_timer = ai.timer = Random(30.f, 120.f);
 									ai.idle_action = AIController::Idle_Move;
-									ai.idle_data.pos = city_ctx->buildings[Rand() % city_ctx->buildings.size()].walk_pt + Vec3::Random(Vec3(-1.f, 0, -1), Vec3(1, 0, 1));
+									ai.idle_data.pos = L.city_ctx->buildings[Rand() % L.city_ctx->buildings.size()].walk_pt + Vec3::Random(Vec3(-1.f, 0, -1), Vec3(1, 0, 1));
 									ai.city_wander = true;
 								}
 							}
@@ -1087,7 +1087,7 @@ void Game::UpdateAi(float dt)
 									}
 									else
 										ai.idle_data.pos = u.pos + Vec3::Random(Vec3(-5.f, 0, -5.f), Vec3(5.f, 0, 5.f));
-									if(city_ctx && !city_ctx->IsInsideCity(ai.idle_data.pos))
+									if(L.city_ctx && !L.city_ctx->IsInsideCity(ai.idle_data.pos))
 									{
 										ai.timer = Random(2.f, 4.f);
 										ai.idle_action = AIController::Idle_None;
@@ -1450,7 +1450,7 @@ void Game::UpdateAi(float dt)
 							case AIController::Idle_RunRegion:
 								if(Vec3::Distance2d(u.pos, ai.idle_data.area.pos) < u.GetUnitRadius() * 2)
 								{
-									if(city_ctx && !IS_SET(city_ctx->flags, City::HaveExit) && ai.idle_data.area.id == -1 && u.in_building == -1)
+									if(L.city_ctx && !IS_SET(L.city_ctx->flags, City::HaveExit) && ai.idle_data.area.id == -1 && u.in_building == -1)
 									{
 										// in exit area, go to border
 										ai.idle_data.area.pos = GetExitPos(u, true);
@@ -1473,7 +1473,7 @@ void Game::UpdateAi(float dt)
 											ai.idle_action = AIController::Idle_Move;
 											ai.timer = Random(5.f, 15.f);
 											ai.loc_timer = Random(60.f, 120.f);
-											InsideBuilding* inside = city_ctx->inside_buildings[ai.idle_data.area.id];
+											InsideBuilding* inside = L.city_ctx->inside_buildings[ai.idle_data.area.id];
 											ai.idle_data.pos = (Rand() % 5 == 0 ? inside->arena2 : inside->arena1).GetRandomPos3();
 										}
 									}
@@ -2522,7 +2522,7 @@ void Game::UpdateAi(float dt)
 							&& target_tile != ai.pf_target_tile && ai.pf_timer <= 0.f))
 					{
 						ai.pf_timer = Random(0.2f, 0.4f);
-						if(FindPath(ctx, my_tile, target_tile, ai.pf_path, !IS_SET(u.data->flags, F_DONT_OPEN), ai.city_wander && city_ctx != nullptr))
+						if(FindPath(ctx, my_tile, target_tile, ai.pf_path, !IS_SET(u.data->flags, F_DONT_OPEN), ai.city_wander && L.city_ctx != nullptr))
 						{
 							// path found
 							ai.pf_state = AIController::PFS_GLOBAL_DONE;
@@ -2993,7 +2993,7 @@ void Game::AI_HitReaction(Unit& unit, const Vec3& pos)
 		}
 
 		// alarm near allies
-		for(Unit* u : *local_ctx.units)
+		for(Unit* u : *L.local_ctx.units)
 		{
 			if(u->to_remove || &unit == u || !u->IsStanding() || u->IsPlayer() || !IsFriend(unit, *u) || u->dont_attack)
 				continue;
@@ -3076,7 +3076,7 @@ void Game::CheckAutoTalk(Unit& unit, float dt)
 		if(CanSee(unit, talk_target))
 		{
 			bool ok = true;
-			for(vector<Unit*>::iterator it2 = local_ctx.units->begin(), end2 = local_ctx.units->end(); it2 != end2; ++it2)
+			for(vector<Unit*>::iterator it2 = L.local_ctx.units->begin(), end2 = L.local_ctx.units->end(); it2 != end2; ++it2)
 			{
 				Unit& check_unit = **it2;
 				if(&talk_target == &check_unit || &unit == &check_unit)

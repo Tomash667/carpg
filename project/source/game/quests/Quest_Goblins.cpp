@@ -67,7 +67,7 @@ void DodajStraznikow()
 	UnitData* ud = UnitData::Get("q_gobliny_szlachcic2");
 
 	// szukaj szlachcica
-	for(vector<Unit*>::iterator it = game.local_ctx.units->begin(), end = game.local_ctx.units->end(); it != end; ++it)
+	for(vector<Unit*>::iterator it = L.local_ctx.units->begin(), end = L.local_ctx.units->end(); it != end; ++it)
 	{
 		if((*it)->data == ud)
 		{
@@ -78,7 +78,7 @@ void DodajStraznikow()
 	assert(u);
 
 	// szukaj tronu
-	Usable* use = game.local_ctx.FindUsable("throne");
+	Usable* use = L.local_ctx.FindUsable("throne");
 	assert(use);
 
 	// przesuñ szlachcica w pobli¿e tronu
@@ -89,7 +89,7 @@ void DodajStraznikow()
 	InsideLocationLevel& lvl = inside->GetLevelData();
 	Room* room = lvl.GetNearestRoom(u->pos);
 	assert(room);
-	for(vector<Unit*>::iterator it = game.local_ctx.units->begin(), end = game.local_ctx.units->end(); it != end; ++it)
+	for(vector<Unit*>::iterator it = L.local_ctx.units->begin(), end = L.local_ctx.units->end(); it != end; ++it)
 	{
 		if((*it)->data != ud && room->IsInside((*it)->pos))
 		{

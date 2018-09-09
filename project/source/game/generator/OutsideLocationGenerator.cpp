@@ -107,9 +107,9 @@ void OutsideLocationGenerator::CreateMap()
 void OutsideLocationGenerator::OnEnter()
 {
 	Game& game = Game::Get();
-	game.city_ctx = nullptr;
+	L.city_ctx = nullptr;
 	if(!reenter)
-		game.ApplyContext(outside, game.local_ctx);
+		game.ApplyContext(outside, L.local_ctx);
 
 	int days;
 	bool need_reset = outside->CheckUpdate(days, W.GetWorldtime());
@@ -146,7 +146,7 @@ void OutsideLocationGenerator::OnEnter()
 		if(need_reset)
 		{
 			// remove alive units
-			for(vector<Unit*>::iterator it = game.local_ctx.units->begin(), end = game.local_ctx.units->end(); it != end; ++it)
+			for(vector<Unit*>::iterator it = L.local_ctx.units->begin(), end = L.local_ctx.units->end(); it != end; ++it)
 			{
 				if((*it)->IsAlive())
 				{
@@ -154,7 +154,7 @@ void OutsideLocationGenerator::OnEnter()
 					*it = nullptr;
 				}
 			}
-			RemoveNullElements(game.local_ctx.units);
+			RemoveNullElements(L.local_ctx.units);
 		}
 
 		// recreate colliders
@@ -171,7 +171,7 @@ void OutsideLocationGenerator::OnEnter()
 		if(days > 10)
 			GenerateItems();
 
-		game.OnReenterLevel(game.local_ctx);
+		game.OnReenterLevel(L.local_ctx);
 	}
 
 	// create colliders
@@ -209,7 +209,7 @@ void OutsideLocationGenerator::OnEnter()
 		Vec3 pos = team_pos + Vec3(sin(team_dir + PI) * 8, 0, cos(team_dir + PI) * 8);
 		for(int i = 0; i < ile; ++i)
 		{
-			Unit* u = game.SpawnUnitNearLocation(game.local_ctx, pos, *ud, &Team.leader->pos, 6, 4.f);
+			Unit* u = game.SpawnUnitNearLocation(L.local_ctx, pos, *ud, &Team.leader->pos, 6, 4.f);
 			u->assist = true;
 		}
 	}
@@ -233,19 +233,19 @@ void OutsideLocationGenerator::SpawnForestObjects(int road_dir)
 			pos = Vec3(Rand() % 2 == 0 ? 127.f - 32.f : 127.f + 32.f, 0, 127.f);
 		terrain->SetH(pos);
 		pos.y -= 1.f;
-		game.SpawnObjectEntity(game.local_ctx, BaseObject::Get("obelisk"), pos, 0.f);
+		game.SpawnObjectEntity(L.local_ctx, BaseObject::Get("obelisk"), pos, 0.f);
 	}
 	else if(Rand() % 16 == 0)
 	{
 		// tree with rocks around it
 		Vec3 pos(Random(48.f, 208.f), 0, Random(48.f, 208.f));
 		pos.y = terrain->GetH(pos) - 1.f;
-		game.SpawnObjectEntity(game.local_ctx, trees2[3].obj, pos, Random(MAX_ANGLE), 4.f);
+		game.SpawnObjectEntity(L.local_ctx, trees2[3].obj, pos, Random(MAX_ANGLE), 4.f);
 		for(int i = 0; i < 12; ++i)
 		{
 			Vec3 pos2 = pos + Vec3(sin(PI * 2 * i / 12)*8.f, 0, cos(PI * 2 * i / 12)*8.f);
 			pos2.y = terrain->GetH(pos2);
-			game.SpawnObjectEntity(game.local_ctx, misc[4].obj, pos2, Random(MAX_ANGLE));
+			game.SpawnObjectEntity(L.local_ctx, misc[4].obj, pos2, Random(MAX_ANGLE));
 		}
 	}
 
@@ -259,7 +259,7 @@ void OutsideLocationGenerator::SpawnForestObjects(int road_dir)
 			Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 			pos.y = terrain->GetH(pos);
 			OutsideObject& o = trees[Rand() % n_trees];
-			game.SpawnObjectEntity(game.local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+			game.SpawnObjectEntity(L.local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 		}
 		else if(co == TT_GRASS3)
 		{
@@ -271,7 +271,7 @@ void OutsideLocationGenerator::SpawnForestObjects(int road_dir)
 			else
 				co = Rand() % 3;
 			OutsideObject& o = trees2[co];
-			game.SpawnObjectEntity(game.local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+			game.SpawnObjectEntity(L.local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 		}
 	}
 
@@ -284,7 +284,7 @@ void OutsideLocationGenerator::SpawnForestObjects(int road_dir)
 			Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 			pos.y = terrain->GetH(pos);
 			OutsideObject& o = misc[Rand() % n_misc];
-			game.SpawnObjectEntity(game.local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+			game.SpawnObjectEntity(L.local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 		}
 	}
 }
