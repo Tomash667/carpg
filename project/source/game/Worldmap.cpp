@@ -380,7 +380,7 @@ Game::ObjectEntity Game::SpawnObjectEntity(LevelContext& ctx, BaseObject* base, 
 		if(IS_SET(base_use->use_flags, BaseUsable::CONTAINER))
 		{
 			u->container = new ItemContainer;
-			auto item = GetRandomBook();
+			const Item* item = Book::GetRandom();
 			if(item)
 				u->container->items.push_back({ item, 1, 1 });
 		}
@@ -1172,25 +1172,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 	// drinking contest
 	Quest_Contest* contest = QM.quest_contest;
 	if(contest->state >= Quest_Contest::CONTEST_STARTING)
-	{
-		for(vector<Unit*>::iterator it = contest->units.begin(), end = contest->units.end(); it != end; ++it)
-		{
-			Unit& u = **it;
-			u.busy = Unit::Busy_No;
-			u.look_target = nullptr;
-			u.event_handler = nullptr;
-		}
-
-		InsideBuilding* inn = L.city_ctx->FindInn();
-		Unit* innkeeper = inn->FindUnit(UnitData::Get("innkeeper"));
-
-		innkeeper->talking = false;
-		innkeeper->mesh_inst->need_update = true;
-		innkeeper->busy = Unit::Busy_No;
-		contest->state = Quest_Contest::CONTEST_DONE;
-		contest->units.clear();
-		W.AddNews(txContestNoWinner);
-	}
+		contest->Cleanup();
 
 	// clear blood & bodies from orc base
 	if(Net::IsLocal() && QM.quest_orcs2->orcs_state == Quest_Orcs2::State::ClearDungeon && L.location_index == QM.quest_orcs2->target_loc)

@@ -6,7 +6,6 @@
 #include "SaveState.h"
 #include "BitStreamFunc.h"
 #include "ItemContainer.h"
-#include "Game.h"
 
 enum OLD_USABLE_ID
 {
@@ -111,7 +110,7 @@ void Usable::Load(FileReader& f, bool local)
 			container->Load(f);
 		else
 		{
-			auto item = Game::Get().GetRandomBook();
+			const Item* item = Book::GetRandom();
 			if(item)
 				container->items.push_back({ item, 1 ,1 });
 		}

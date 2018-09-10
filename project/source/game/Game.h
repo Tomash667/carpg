@@ -18,7 +18,6 @@
 #include "PlayerInfo.h"
 #include "Camera.h"
 #include "Config.h"
-#include "UnitEventHandler.h"
 #include "LevelArea.h"
 #include "SaveSlot.h"
 #include "ResourceManager.h"
@@ -247,7 +246,7 @@ struct ConfigVar
 
 typedef std::map<Mesh*, TEX> ItemTextureMap;
 
-class Game final : public Engine, public UnitEventHandler
+class Game final : public Engine
 {
 public:
 	Game();
@@ -469,7 +468,6 @@ public:
 		txAiHeroOutsideText[2], txAiDrunkMageText[3], txAiDrunkText[5], txAiDrunkmanText[4];
 	cstring txEnteringLocation, txGeneratingMap, txGeneratingBuildings, txGeneratingObjects, txGeneratingUnits, txGeneratingItems, txGeneratingPhysics, txRecreatingObjects, txGeneratingMinimap,
 		txLoadingComplete, txWaitingForPlayers, txLoadingResources;
-	cstring txContestNoWinner, txContestStart, txContestTalk[14], txContestWin, txContestWinNews, txContestDraw, txContestPrize, txContestNoPeople;
 	cstring txTut[10], txTutNote, txTutLoc, txTutPlay, txTutTick;
 	cstring txCantSaveGame, txSaveFailed, txSavedGameN, txLoadFailed, txQuickSave, txGameSaved, txLoadingLocations, txLoadingData, txLoadingQuests, txEndOfLoading,
 		txCantSaveNow, txOnlyServerCanSave, txCantLoadGame, txOnlyServerCanLoad, txLoadSignature, txLoadVersion, txLoadSaveVersionOld, txLoadMP, txLoadSP, txLoadError,
@@ -677,8 +675,6 @@ public:
 	//--------------------------------------
 	// QUESTS
 	void ShowAcademyText();
-
-	void UpdateContest(float dt);
 
 	// tutorial
 	int tut_state;
@@ -1027,8 +1023,6 @@ public:
 	void UpdateQuests(int days);
 	void RemoveQuestUnit(UnitData* ud, bool on_leave);
 	void RemoveQuestUnits(bool on_leave);
-	void HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit);
-	int GetUnitEventHandlerQuestRefid();
 	void UpdateGame2(float dt);
 	void SetUnitWeaponState(Unit& unit, bool wyjmuje, WeaponType co);
 	void UpdatePlayerView();
@@ -1107,7 +1101,6 @@ public:
 	void PlayerYell(Unit& u);
 	bool CanBuySell(const Item* item);
 	void SetOutsideParams();
-	const Item* GetRandomBook();
 
 	// level area
 	LevelAreaContext* ForLevel(int loc, int level = -1);

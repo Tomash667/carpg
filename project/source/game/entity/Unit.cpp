@@ -7,6 +7,7 @@
 #include "UnitHelper.h"
 #include "QuestManager.h"
 #include "Quest_Secret.h"
+#include "Quest_Contest.h"
 #include "AIController.h"
 #include "Team.h"
 #include "Content.h"
@@ -16,6 +17,7 @@
 #include "Level.h"
 #include "BitStreamFunc.h"
 #include "EntityInterpolator.h"
+#include "UnitEventHandler.h"
 
 const float Unit::AUTO_TALK_WAIT = 0.333f;
 const float Unit::STAMINA_BOW_ATTACK = 100.f;
@@ -1504,7 +1506,7 @@ void Unit::Load(GameReader& f, bool local)
 	f >> netid;
 	int unit_event_handler_quest_refid = f.Read<int>();
 	if(unit_event_handler_quest_refid == -2)
-		event_handler = &Game::Get();
+		event_handler = QM.quest_contest;
 	else if(unit_event_handler_quest_refid == -1)
 		event_handler = nullptr;
 	else

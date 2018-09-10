@@ -413,6 +413,8 @@ struct Book : public Item
 	bool runic;
 
 	static vector<Book*> books;
+	// get random book for shelf (can be nullptr)
+	static const Item* GetRandom();
 };
 
 

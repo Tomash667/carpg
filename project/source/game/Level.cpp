@@ -6,6 +6,7 @@
 #include "Door.h"
 #include "Trap.h"
 #include "Chest.h"
+#include "UnitEventHandler.h"
 #include "Game.h"
 
 Level L;
@@ -398,4 +399,23 @@ Electro* Level::FindElectro(int netid)
 	}
 
 	return nullptr;
+}
+
+//=================================================================================================
+bool Level::RemoveTrap(int netid)
+{
+	if(local_ctx.traps)
+	{
+		for(vector<Trap*>::iterator it = local_ctx.traps->begin(), end = local_ctx.traps->end(); it != end; ++it)
+		{
+			if((*it)->netid == netid)
+			{
+				delete *it;
+				local_ctx.traps->erase(it);
+				return true;
+			}
+		}
+	}
+
+	return false;
 }

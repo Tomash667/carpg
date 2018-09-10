@@ -1,8 +1,9 @@
 #pragma once
 
+#include "UnitEventHandler.h"
 #include "QuestHandler.h"
 
-class Quest_Contest : public QuestHandler
+class Quest_Contest : public QuestHandler, public UnitEventHandler
 {
 public:
 	enum State
@@ -22,6 +23,10 @@ public:
 	void Special(DialogContext& ctx, cstring msg) override;
 	bool SpecialIf(DialogContext& ctx, cstring msg) override;
 	cstring FormatString(const string& str) override;
+	void Update(float dt);
+	void HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit);
+	int GetUnitEventHandlerQuestRefid() { return -2; } // special value hack
+	void Cleanup();
 
 	State state;
 	int where, state2, year;
@@ -29,4 +34,7 @@ public:
 	Unit* winner;
 	float time;
 	bool generated;
+
+private:
+	cstring txContestNoWinner, txContestStart, txContestTalk[14], txContestWin, txContestWinNews, txContestDraw, txContestPrize, txContestNoPeople;
 };

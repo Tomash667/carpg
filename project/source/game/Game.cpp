@@ -1246,16 +1246,6 @@ void Game::SetGameText()
 	txWaitingForPlayers = Str("waitingForPlayers");
 	txLoadingResources = Str("loadingResources");
 
-	// zawody w piciu
-	txContestNoWinner = Str("contestNoWinner");
-	txContestStart = Str("contestStart");
-	LoadArray(txContestTalk, "contestTalk");
-	txContestWin = Str("contestWin");
-	txContestWinNews = Str("contestWinNews");
-	txContestDraw = Str("contestDraw");
-	txContestPrize = Str("contestPrize");
-	txContestNoPeople = Str("contestNoPeople");
-
 	// samouczek
 	LoadArray(txTut, "tut");
 	txTutNote = Str("tutNote");

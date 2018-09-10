@@ -382,6 +382,17 @@ BookScheme* BookScheme::TryGet(Cstring id)
 }
 
 //=================================================================================================
+const Item* Book::GetRandom()
+{
+	if(Rand() % 2 == 0)
+		return nullptr;
+	if(Rand() % 50 == 0)
+		return ItemList::GetItem("rare_books");
+	else
+		return ItemList::GetItem("books");
+}
+
+//=================================================================================================
 ItemListResult ItemList::TryGet(Cstring _id)
 {
 	ItemListResult result;
