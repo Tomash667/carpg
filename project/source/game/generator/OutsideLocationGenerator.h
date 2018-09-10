@@ -14,6 +14,7 @@ public:
 	virtual int HandleUpdate(); // -1 don't call RespawnUnits/reset, 0 don't reset, 1 can reset
 	virtual void SpawnTeam();
 	void CreateMinimap() override;
+	void OnLoad() override;
 
 protected:
 	void CreateMap();

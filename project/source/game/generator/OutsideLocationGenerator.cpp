@@ -109,7 +109,7 @@ void OutsideLocationGenerator::OnEnter()
 	Game& game = Game::Get();
 	L.city_ctx = nullptr;
 	if(!reenter)
-		game.ApplyContext(outside, L.local_ctx);
+		L.ApplyContext(outside, L.local_ctx);
 
 	int days;
 	bool need_reset = outside->CheckUpdate(days, W.GetWorldtime());
@@ -400,4 +400,33 @@ void OutsideLocationGenerator::CreateMinimap()
 	}
 
 	game.minimap_size = OutsideLocation::size;
+}
+
+//=================================================================================================
+void OutsideLocationGenerator::OnLoad()
+{
+	Game& game = Game::Get();
+	OutsideLocation* outside = (OutsideLocation*)loc;
+
+	game.SetOutsideParams();
+	game.SetTerrainTextures();
+
+	L.ApplyContext(outside, L.local_ctx);
+	game.ApplyTiles(outside->h, outside->tiles);
+
+	game.RespawnObjectColliders(false);
+	game.SpawnTerrainCollider();
+
+	if(outside->type == L_CITY)
+	{
+		game.RespawnBuildingPhysics();
+		game.SpawnCityPhysics();
+	}
+	else
+		L.SpawnOutsideBariers();
+
+	game.InitQuadTree();
+	game.CalculateQuadtree();
+
+	CreateMinimap();
 }

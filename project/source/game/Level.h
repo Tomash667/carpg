@@ -36,6 +36,7 @@ public:
 	void ProcessRemoveUnits(bool clear);
 	void SpawnOutsideBariers();
 	LevelContextEnumerator ForEachContext() { return LevelContextEnumerator(location); }
+	void ApplyContext(ILevel* level, LevelContext& ctx);
 	LevelContext& GetContext(Unit& unit);
 	LevelContext& GetContext(const Vec3& pos);
 	LevelContext& GetContextFromInBuilding(int in_building);
@@ -57,6 +58,7 @@ public:
 	float light_angle; // random angle used for lighting in outside locations
 	bool is_open; // is location loaded, team is inside or is on world map and can reenter
 	vector<Unit*> to_remove;
+	ObjectPool<TmpLevelContext> tmp_ctx_pool;
 
 private:
 	vector<UnitWarpData> unit_warp_data;

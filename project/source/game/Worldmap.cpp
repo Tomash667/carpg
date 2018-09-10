@@ -737,7 +737,7 @@ void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding*
 					inside->outside_rot = rot;
 					inside->top = -1.f;
 					inside->xsphere_radius = -1.f;
-					ApplyContext(inside, inside->ctx);
+					L.ApplyContext(inside, inside->ctx);
 					inside->ctx.building_id = (int)city->inside_buildings.size();
 
 					city->inside_buildings.push_back(inside);

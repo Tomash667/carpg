@@ -120,7 +120,7 @@ void EncounterGenerator::OnEnter()
 	Game& game = Game::Get();
 	outside->loaded_resources = false;
 	L.city_ctx = nullptr;
-	game.ApplyContext(outside, L.local_ctx);
+	L.ApplyContext(outside, L.local_ctx);
 
 	game.ApplyTiles(outside->h, outside->tiles);
 	game.SetOutsideParams();

@@ -2223,7 +2223,7 @@ void CityGenerator::OnEnter()
 
 	if(!reenter)
 	{
-		game.ApplyContext(city, L.local_ctx);
+		L.ApplyContext(city, L.local_ctx);
 		game.ApplyTiles(city->h, city->tiles);
 	}
 
@@ -2267,7 +2267,7 @@ void CityGenerator::OnEnter()
 		for(InsideBuilding* inside : city->inside_buildings)
 		{
 			if(inside->ctx.require_tmp_ctx && !inside->ctx.tmp_ctx)
-				inside->ctx.SetTmpCtx(game.tmp_ctx_pool.Get());
+				inside->ctx.SetTmpCtx(L.tmp_ctx_pool.Get());
 		}
 
 		// recreate units

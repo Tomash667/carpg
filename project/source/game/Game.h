@@ -596,7 +596,6 @@ public:
 	vector<AttachedSound> attached_sounds;
 	SaveSlot single_saves[MAX_SAVE_SLOTS], multi_saves[MAX_SAVE_SLOTS];
 	vector<UnitView> unit_views;
-	ObjectPool<TmpLevelContext> tmp_ctx_pool;
 
 	MeshInstance* GetBowInstance(Mesh* mesh);
 
@@ -921,10 +920,8 @@ public:
 	void PlayAttachedSound(Unit& unit, SOUND sound, float smin, float smax = 0.f);
 	void StopAllSounds();
 	ATTACK_RESULT DoGenericAttack(LevelContext& ctx, Unit& attacker, Unit& hitted, const Vec3& hitpoint, float dmg, int dmg_type, bool bash);
-	void GenerateLabirynthUnits();
 	int GetDungeonLevel();
 	int GetDungeonLevelChest();
-	void GenerateCaveObjects();
 	void SaveGame(GameWriter& f);
 	void LoadGame(GameReader& f);
 	void RemoveUnusedAiAndCheck();
@@ -989,7 +986,6 @@ public:
 	void LeaveLevel(LevelContext& ctx, bool clear);
 	void CreateBlood(LevelContext& ctx, const Unit& unit, bool fully_created = false);
 	void WarpUnit(Unit& unit, const Vec3& pos);
-	void ApplyContext(ILevel* level, LevelContext& ctx);
 	void UpdateContext(LevelContext& ctx, float dt);
 	// dru¿yna
 	bool IsLeader()

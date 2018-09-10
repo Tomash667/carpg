@@ -865,45 +865,8 @@ void Game::LoadGame(GameReader& f)
 	{
 		L.is_open = true;
 
-		if(L.location->outside)
-		{
-			OutsideLocation* outside = (OutsideLocation*)L.location;
-
-			SetOutsideParams();
-			SetTerrainTextures();
-
-			ApplyContext(L.location, L.local_ctx);
-			ApplyTiles(outside->h, outside->tiles);
-
-			RespawnObjectColliders(false);
-			SpawnTerrainCollider();
-
-			if(L.city_ctx)
-			{
-				RespawnBuildingPhysics();
-				SpawnCityPhysics();
-			}
-			else
-				L.SpawnOutsideBariers();
-
-			InitQuadTree();
-			CalculateQuadtree();
-		}
-		else
-		{
-			InsideLocation* inside = (InsideLocation*)L.location;
-			inside->SetActiveLevel(L.dungeon_level);
-			BaseLocation& base = g_base_locations[inside->target];
-
-			ApplyContext(inside, L.local_ctx);
-			SetDungeonParamsAndTextures(base);
-
-			RespawnObjectColliders(false);
-			SpawnDungeonColliders();
-		}
-
-		// minimap
-		loc_gen_factory->Get(L.location)->CreateMinimap();
+		LocationGenerator* loc_gen = loc_gen_factory->Get(L.location);
+		loc_gen->OnLoad();
 
 		// particles
 		L.local_ctx.pes->resize(f.Read<uint>());

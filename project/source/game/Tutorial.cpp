@@ -210,7 +210,7 @@ void Game::StartTutorial()
 	L.dungeon_level = 0;
 	loc->SetActiveLevel(0);
 	BaseLocation& base = g_base_locations[TUTORIAL_FORT];
-	ApplyContext(loc, L.local_ctx);
+	L.ApplyContext(loc, L.local_ctx);
 	SetDungeonParamsAndTextures(base);
 
 	// pokoje

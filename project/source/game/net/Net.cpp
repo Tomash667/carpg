@@ -544,7 +544,7 @@ bool Game::ReadLevelData(BitStreamReader& f)
 		InsideLocation* inside = (InsideLocation*)L.location;
 		inside->SetActiveLevel(L.dungeon_level);
 	}
-	ApplyContext(L.location, L.local_ctx);
+	L.ApplyContext(L.location, L.local_ctx);
 	RequireLoadingResources(L.location, &loaded_resources);
 	L.city_ctx = nullptr;
 
@@ -639,7 +639,7 @@ bool Game::ReadLevelData(BitStreamReader& f)
 			{
 				ib_ptr = new InsideBuilding;
 				InsideBuilding& ib = *ib_ptr;
-				ApplyContext(ib_ptr, ib_ptr->ctx);
+				L.ApplyContext(ib_ptr, ib_ptr->ctx);
 				ib.ctx.building_id = index;
 				f >> ib.level_shift;
 				const string& building_id = f.ReadString1();
@@ -6559,7 +6559,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					info.event = [this](int)
 					{
 						dialog_enc = nullptr;
-						Net::PushChange(NetChange::CLOSE_ENCOUNTER); 
+						Net::PushChange(NetChange::CLOSE_ENCOUNTER);
 					};
 					info.name = "encounter";
 					info.order = ORDER_TOP;

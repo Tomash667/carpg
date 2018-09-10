@@ -31,7 +31,7 @@ void InsideLocationGenerator::OnEnter()
 	BaseLocation& base = g_base_locations[inside->target];
 
 	if(!reenter)
-		game.ApplyContext(inside, L.local_ctx);
+		L.ApplyContext(inside, L.local_ctx);
 
 	game.SetDungeonParamsAndTextures(base);
 
@@ -566,4 +566,21 @@ void InsideLocationGenerator::CreateMinimap()
 	}
 
 	game.minimap_size = lvl.w;
+}
+
+void InsideLocationGenerator::OnLoad()
+{
+	Game& game = Game::Get();
+
+	InsideLocation* inside = (InsideLocation*)loc;
+	inside->SetActiveLevel(L.dungeon_level);
+	BaseLocation& base = g_base_locations[inside->target];
+
+	L.ApplyContext(inside, L.local_ctx);
+	game.SetDungeonParamsAndTextures(base);
+
+	game.RespawnObjectColliders(false);
+	game.SpawnDungeonColliders();
+
+	CreateMinimap();
 }

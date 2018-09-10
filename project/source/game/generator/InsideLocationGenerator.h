@@ -9,6 +9,7 @@ public:
 	void OnEnter() override;
 	virtual bool HandleUpdate(int days) { return true; }
 	void CreateMinimap() override;
+	void OnLoad() override;
 
 protected:
 	InsideLocationLevel& GetLevelData();

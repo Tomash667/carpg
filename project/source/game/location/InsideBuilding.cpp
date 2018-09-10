@@ -7,6 +7,7 @@
 #include "Door.h"
 #include "BuildingGroup.h"
 #include "GameFile.h"
+#include "Level.h"
 
 //=================================================================================================
 InsideBuilding::~InsideBuilding()
@@ -191,7 +192,7 @@ void InsideBuilding::Load(GameReader& f, bool local)
 
 	if(local)
 	{
-		ctx.SetTmpCtx(Game::Get().tmp_ctx_pool.Get());
+		ctx.SetTmpCtx(L.tmp_ctx_pool.Get());
 
 		ctx.pes->resize(f.Read<uint>());
 		for(ParticleEmitter*& pe : *ctx.pes)

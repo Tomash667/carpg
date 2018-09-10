@@ -241,6 +241,15 @@ void Level::SpawnOutsideBariers()
 	}
 }
 
+void Level::ApplyContext(ILevel* level, LevelContext& ctx)
+{
+	assert(level);
+
+	level->ApplyContext(ctx);
+	if(ctx.require_tmp_ctx && !ctx.tmp_ctx)
+		ctx.SetTmpCtx(tmp_ctx_pool.Get());
+}
+
 LevelContext& Level::GetContext(Unit& unit)
 {
 	if(unit.in_building == -1)

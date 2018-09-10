@@ -4,6 +4,7 @@
 #include "InsideLocation.h"
 #include "Tile.h"
 #include "Level.h"
+#include "UnitGroup.h"
 #include "Game.h"
 
 //=================================================================================================
@@ -511,5 +512,60 @@ void LabyrinthGenerator::GenerateObjects()
 //=================================================================================================
 void LabyrinthGenerator::GenerateUnits()
 {
-	Game::Get().GenerateLabirynthUnits();
+	Game& game = Game::Get();
+
+	// ustal jakie jednostki mo¿na tu wygenerowaæ
+	cstring group_id;
+	int count, tries;
+	if(L.location->spawn == SG_UNKNOWN)
+	{
+		group_id = "unk";
+		count = 30;
+		tries = 150;
+	}
+	else
+	{
+		group_id = "labirynth";
+		count = 20;
+		tries = 100;
+	}
+	int level = game.GetDungeonLevel();
+	static TmpUnitGroup t;
+	t.group = UnitGroup::TryGet(group_id);
+	t.Fill(level);
+
+	// generuj jednostki
+	InsideLocationLevel& lvl = ((InsideLocation*)L.location)->GetLevelData();
+	for(int added = 0; added < count && tries; --tries)
+	{
+		Int2 pt(Random(1, lvl.w - 2), Random(1, lvl.h - 2));
+		if(czy_blokuje21(lvl.map[pt(lvl.w)]))
+			continue;
+		if(Int2::Distance(pt, lvl.staircase_up) < 5)
+			continue;
+
+		// co wygenerowaæ
+		int x = Rand() % t.total,
+			y = 0;
+
+		for(int i = 0; i<int(t.entries.size()); ++i)
+		{
+			y += t.entries[i].count;
+
+			if(x < y)
+			{
+				// dodaj
+				if(game.SpawnUnitNearLocation(L.local_ctx, Vec3(2.f*pt.x + 1.f, 0, 2.f*pt.y + 1.f), *t.entries[i].ud, nullptr, Random(level / 2, level)))
+					++added;
+				break;
+			}
+		}
+	}
+
+	// wrogowie w skarbcu
+	if(L.location->spawn == SG_UNKNOWN)
+	{
+		for(int i = 0; i < 3; ++i)
+			game.SpawnUnitInsideRoom(lvl.rooms[0], *t.entries[0].ud, Random(level / 2, level));
+	}
 }

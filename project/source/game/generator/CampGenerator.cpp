@@ -76,7 +76,7 @@ void CampGenerator::GenerateObjects()
 	Game& game = Game::Get();
 
 	SpawnForestObjects();
-	
+
 	vector<Vec2> pts;
 	BaseObject* ognisko = BaseObject::Get("campfire"),
 		*ognisko_zgaszone = BaseObject::Get("campfire_off"),
