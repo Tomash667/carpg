@@ -61,7 +61,7 @@ public:
 	bool IfNeedTalk(cstring topic) const override;
 	bool SpecialIf(DialogContext& ctx, cstring msg) override;
 	bool HandleLocationEvent(LocationEventHandler::Event event) override;
-	void HandleChestEvent(ChestEventHandler::Event event) override;
+	void HandleChestEvent(ChestEventHandler::Event event, Chest* chest) override;
 	int GetLocationEventHandlerQuestRefid() override
 	{
 		return refid;

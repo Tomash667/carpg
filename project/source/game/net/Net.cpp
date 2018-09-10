@@ -2219,7 +2219,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 
 					// event handler
 					if(chest->handler)
-						chest->handler->HandleChestEvent(ChestEventHandler::Opened);
+						chest->handler->HandleChestEvent(ChestEventHandler::Opened, chest);
 				}
 			}
 			break;
@@ -6523,7 +6523,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				f >> netid;
 				if(!f)
 					StreamError("Update client: Broken REMOVE_TRAP.");
-				else if(!RemoveTrap(netid))
+				else if(!L.RemoveTrap(netid))
 					StreamError("Update client: REMOVE_TRAP, missing trap %d.", netid);
 			}
 			break;
@@ -8753,25 +8753,6 @@ int Game::ReadItemAndFind(BitStreamReader& f, const Item*& item) const
 		else
 			return 1;
 	}
-}
-
-//=================================================================================================
-bool Game::RemoveTrap(int netid)
-{
-	if(L.local_ctx.traps)
-	{
-		for(vector<Trap*>::iterator it = L.local_ctx.traps->begin(), end = L.local_ctx.traps->end(); it != end; ++it)
-		{
-			if((*it)->netid == netid)
-			{
-				delete *it;
-				L.local_ctx.traps->erase(it);
-				return true;
-			}
-		}
-	}
-
-	return false;
 }
 
 //=================================================================================================

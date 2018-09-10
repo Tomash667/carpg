@@ -166,14 +166,6 @@ enum DRAW_FLAGS
 	DF_MENU = 1 << 15,
 };
 
-struct TutorialText
-{
-	cstring text;
-	Vec3 pos;
-	int state; // 0 - nie aktywny, 1 - aktywny, 2 - uruchomiony
-	int id;
-};
-
 typedef delegate<void(cstring)> PrintMsgFunc;
 
 const float UNIT_VIEW_A = 0.2f;
@@ -468,7 +460,7 @@ public:
 		txAiHeroOutsideText[2], txAiDrunkMageText[3], txAiDrunkText[5], txAiDrunkmanText[4];
 	cstring txEnteringLocation, txGeneratingMap, txGeneratingBuildings, txGeneratingObjects, txGeneratingUnits, txGeneratingItems, txGeneratingPhysics, txRecreatingObjects, txGeneratingMinimap,
 		txLoadingComplete, txWaitingForPlayers, txLoadingResources;
-	cstring txTut[10], txTutNote, txTutLoc, txTutPlay, txTutTick;
+	cstring txTutPlay, txTutTick;
 	cstring txCantSaveGame, txSaveFailed, txSavedGameN, txLoadFailed, txQuickSave, txGameSaved, txLoadingLocations, txLoadingData, txLoadingQuests, txEndOfLoading,
 		txCantSaveNow, txOnlyServerCanSave, txCantLoadGame, txOnlyServerCanLoad, txLoadSignature, txLoadVersion, txLoadSaveVersionOld, txLoadMP, txLoadSP, txLoadError,
 		txLoadErrorGeneric, txLoadOpenError;
@@ -675,15 +667,6 @@ public:
 	//--------------------------------------
 	// QUESTS
 	void ShowAcademyText();
-
-	// tutorial
-	int tut_state;
-	vector<TutorialText> ttexts;
-	Vec3 tut_dummy;
-	Object* tut_shield, *tut_shield2;
-	void UpdateTutorial();
-	void TutEvent(int id);
-	void EndOfTutorial(int);
 
 	//
 	vector<Unit*> warp_to_inn;
@@ -1168,7 +1151,6 @@ public:
 	void ShowSavePanel();
 	void ShowLoadPanel();
 	void StartNewGame();
-	void StartTutorial();
 	void NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharacter& cc, bool tutorial);
 	void ShowCreateCharacterPanel(bool enter_name, bool redo = false);
 	void StartQuickGame();
@@ -1328,7 +1310,6 @@ public:
 	int ReadItemAndFind(BitStreamReader& f, const Item*& item) const;
 	bool ReadItemList(BitStreamReader& f, vector<ItemSlot>& items);
 	bool ReadItemListTeam(BitStreamReader& f, vector<ItemSlot>& items, bool skip = false);
-	bool RemoveTrap(int netid);
 	void ReequipItemsMP(Unit& unit); // zak³ada przedmioty które ma w ekipunku, dostaje broñ jeœli nie ma, podnosi z³oto
 	void UseDays(PlayerController* player, int count);
 	PlayerInfo* FindOldPlayer(cstring nick);

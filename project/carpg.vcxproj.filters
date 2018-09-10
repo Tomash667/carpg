@@ -114,9 +114,6 @@
     <ClCompile Include="source\game\Scene.cpp">
       <Filter>3. game</Filter>
     </ClCompile>
-    <ClCompile Include="source\game\Tutorial.cpp">
-      <Filter>3. game</Filter>
-    </ClCompile>
     <ClCompile Include="source\game\Worldmap.cpp">
       <Filter>3. game</Filter>
     </ClCompile>
@@ -756,6 +753,9 @@
     </ClCompile>
     <ClCompile Include="source\game\Pathfinding.cpp">
       <Filter>3. game</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\quests\Quest_Tutorial.cpp">
+      <Filter>3. game\quests</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1518,6 +1518,9 @@
     </ClInclude>
     <ClInclude Include="source\game\Pathfinding.h">
       <Filter>3. game</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\quests\Quest_Tutorial.h">
+      <Filter>3. game\quests</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

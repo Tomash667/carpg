@@ -13,7 +13,7 @@ struct ChestEventHandler
 		Opened
 	};
 
-	virtual void HandleChestEvent(Event event) = 0;
+	virtual void HandleChestEvent(Event event, Chest* chest) = 0;
 	virtual int GetChestEventHandlerQuestRefid() = 0;
 };
 

@@ -30,6 +30,7 @@
 #include "Quest_SpreadNews.h"
 #include "Quest_StolenArtifact.h"
 #include "Quest_Tournament.h"
+#include "Quest_Tutorial.h"
 #include "Quest_Wanted.h"
 
 //-----------------------------------------------------------------------------
@@ -70,6 +71,9 @@ void QuestManager::InitOnce()
 	quest_secret = new Quest_Secret;
 	quest_secret->InitOnce();
 	quest_tournament = new Quest_Tournament;
+	quest_tournament->InitOnce();
+	quest_tutorial = new Quest_Tutorial;
+	quest_tutorial->InitOnce();
 }
 
 //=================================================================================================
@@ -81,6 +85,7 @@ void QuestManager::Cleanup()
 	delete quest_contest;
 	delete quest_secret;
 	delete quest_tournament;
+	delete quest_tutorial;
 }
 
 //=================================================================================================

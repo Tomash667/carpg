@@ -17,6 +17,7 @@ class Quest_Orcs2;
 class Quest_Sawmill;
 class Quest_Secret;
 class Quest_Tournament;
+class Quest_Tutorial;
 struct Item;
 struct ItemSlot;
 struct Quest;
@@ -95,6 +96,7 @@ public:
 	Quest_Contest* quest_contest;
 	Quest_Secret* quest_secret;
 	Quest_Tournament* quest_tournament;
+	Quest_Tutorial* quest_tutorial;
 	int quest_counter;
 	int unique_quests_completed;
 	bool unique_completed_show;

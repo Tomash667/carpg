@@ -256,7 +256,7 @@ bool Quest_Mine::HandleLocationEvent(LocationEventHandler::Event event)
 }
 
 //=================================================================================================
-void Quest_Mine::HandleChestEvent(ChestEventHandler::Event event)
+void Quest_Mine::HandleChestEvent(ChestEventHandler::Event event, Chest* chest)
 {
 	if(prog == Progress::TalkedWithMiner && event == ChestEventHandler::Opened)
 		SetProgress(Progress::Finished);

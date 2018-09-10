@@ -55,6 +55,7 @@
 #include "Quest_Contest.h"
 #include "Quest_Secret.h"
 #include "Quest_Tournament.h"
+#include "Quest_Tutorial.h"
 #include "Debug.h"
 #include "LocationGeneratorFactory.h"
 #include "CaveGenerator.h"
@@ -927,7 +928,7 @@ void Game::UpdateGame(float dt)
 	minimap_opened_doors = false;
 
 	if(in_tutorial && !Net::IsOnline())
-		UpdateTutorial();
+		QM.quest_tutorial->Update();
 
 	drunk_anim = Clip(drunk_anim + dt);
 	UpdatePostEffects(dt);
@@ -2533,7 +2534,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 					// event handler
 					if(pc_data.before_player_ptr.chest->handler)
-						pc_data.before_player_ptr.chest->handler->HandleChestEvent(ChestEventHandler::Opened);
+						pc_data.before_player_ptr.chest->handler->HandleChestEvent(ChestEventHandler::Opened, pc->action_chest);
 
 					if(Net::IsOnline())
 					{
@@ -9135,29 +9136,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 				if(Net::IsLocal() && in_tutorial && callback.target)
 				{
 					void* ptr = callback.target->getUserPointer();
-					if((ptr == tut_shield || ptr == tut_shield2) && tut_state == 12)
-					{
-						Train(*pc->unit, true, (int)SkillId::BOW, 1);
-						tut_state = 13;
-						int unlock = 6;
-						int activate = 8;
-						for(vector<TutorialText>::iterator it = ttexts.begin(), end = ttexts.end(); it != end; ++it)
-						{
-							if(it->id == activate)
-							{
-								it->state = 1;
-								break;
-							}
-						}
-						for(vector<Door*>::iterator it = L.local_ctx.doors->begin(), end = L.local_ctx.doors->end(); it != end; ++it)
-						{
-							if((*it)->locked == LOCK_TUTORIAL + unlock)
-							{
-								(*it)->locked = LOCK_NONE;
-								break;
-							}
-						}
-					}
+					QM.quest_tutorial->HandleBulletCollision(ptr);
 				}
 			}
 			else
@@ -10103,7 +10082,7 @@ void Game::ChangeLevel(int where)
 		{
 			if(in_tutorial)
 			{
-				TutEvent(3);
+				QM.quest_tutorial->OnEvent(Quest_Tutorial::Exit);
 				fallback_type = FALLBACK::CLIENT;
 				fallback_t = 0.f;
 				return;

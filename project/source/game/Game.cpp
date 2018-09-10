@@ -1246,10 +1246,6 @@ void Game::SetGameText()
 	txWaitingForPlayers = Str("waitingForPlayers");
 	txLoadingResources = Str("loadingResources");
 
-	// samouczek
-	LoadArray(txTut, "tut");
-	txTutNote = Str("tutNote");
-	txTutLoc = Str("tutLoc");
 	txTutPlay = Str("tutPlay");
 	txTutTick = Str("tutTick");
 

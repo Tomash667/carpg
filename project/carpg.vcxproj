@@ -245,6 +245,7 @@
     <ClInclude Include="source\game\quests\Quest_Contest.h" />
     <ClInclude Include="source\game\quests\Quest_Secret.h" />
     <ClInclude Include="source\game\quests\Quest_Tournament.h" />
+    <ClInclude Include="source\game\quests\Quest_Tutorial.h" />
     <ClInclude Include="source\game\script\TypeBuilder.h" />
     <ClInclude Include="source\game\script\ScriptManager.h" />
     <ClInclude Include="source\game\script\Var.h" />
@@ -477,6 +478,7 @@
     <ClCompile Include="source\game\quests\Quest_Contest.cpp" />
     <ClCompile Include="source\game\quests\Quest_Secret.cpp" />
     <ClCompile Include="source\game\quests\Quest_Tournament.cpp" />
+    <ClCompile Include="source\game\quests\Quest_Tutorial.cpp" />
     <ClCompile Include="source\game\script\ScriptManager.cpp" />
     <ClCompile Include="source\game\script\Var.cpp" />
     <ClCompile Include="source\game\stats\Action.cpp" />
@@ -608,7 +610,6 @@
     <ClCompile Include="source\game\Team.cpp" />
     <ClCompile Include="source\game\TeamItems.cpp" />
     <ClCompile Include="source\game\TerrainTile.cpp" />
-    <ClCompile Include="source\game\Tutorial.cpp" />
     <ClCompile Include="source\game\World.cpp" />
     <ClCompile Include="source\game\Worldmap.cpp" />
     <ClCompile Include="source\Main.cpp" />

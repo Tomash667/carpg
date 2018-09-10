@@ -47,7 +47,7 @@ public:
 	Trap* FindTrap(int netid);
 	Chest* FindChest(int netid);
 	Electro* FindElectro(int netid);
-	void RemoveTrap(int netid);
+	bool RemoveTrap(int netid);
 
 	Location* location; // same as W.current_location
 	int location_index; // same as W.current_location_index

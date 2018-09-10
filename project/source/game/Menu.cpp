@@ -33,6 +33,7 @@
 #include "World.h"
 #include "Level.h"
 #include "QuestManager.h"
+#include "Quest_Tutorial.h"
 
 extern string g_ctime;
 
@@ -3280,7 +3281,7 @@ void Game::OnPlayTutorial(int id)
 		GUI.GetDialog("tutorial_dialog")->visible = false;
 		SaveOptions();
 		if(id == BUTTON_YES)
-			StartTutorial();
+			QM.quest_tutorial->Start();
 		else
 			StartNewGame();
 	}
