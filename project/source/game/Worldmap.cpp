@@ -268,7 +268,7 @@ void Game::ApplyTiles(float* _h, TerrainTile* _tiles)
 	terrain->CalculateBox();
 }
 
-Game::ObjectEntity Game::SpawnObjectEntity(LevelContext& ctx, BaseObject* base, const Vec3& pos, float rot, float scale, int flags, Vec3* out_point,
+ObjectEntity Game::SpawnObjectEntity(LevelContext& ctx, BaseObject* base, const Vec3& pos, float rot, float scale, int flags, Vec3* out_point,
 	int variant)
 {
 	if(IS_SET(base->flags, OBJ_TABLE_SPAWNER))
@@ -1184,7 +1184,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 	if(L.city_ctx && game_state != GS_EXIT_TO_MENU && Net::IsLocal())
 	{
 		// opuszczanie miasta
-		BuyTeamItems();
+		Team.BuyTeamItems();
 	}
 
 	LeaveLevel();
@@ -1613,7 +1613,7 @@ void Game::UpdateLocation(int days, int open_chance, bool reset)
 	}
 }
 
-Game::ObjectEntity Game::SpawnObjectNearLocation(LevelContext& ctx, BaseObject* obj, const Vec2& pos, float rot, float range, float margin, float scale)
+ObjectEntity Game::SpawnObjectNearLocation(LevelContext& ctx, BaseObject* obj, const Vec2& pos, float rot, float range, float margin, float scale)
 {
 	bool ok = false;
 	if(obj->type == OBJ_CYLINDER)
@@ -1679,7 +1679,7 @@ Game::ObjectEntity Game::SpawnObjectNearLocation(LevelContext& ctx, BaseObject* 
 	}
 }
 
-Game::ObjectEntity Game::SpawnObjectNearLocation(LevelContext& ctx, BaseObject* obj, const Vec2& pos, const Vec2& rot_target, float range, float margin,
+ObjectEntity Game::SpawnObjectNearLocation(LevelContext& ctx, BaseObject* obj, const Vec2& pos, const Vec2& rot_target, float range, float margin,
 	float scale)
 {
 	if(obj->type == OBJ_CYLINDER)

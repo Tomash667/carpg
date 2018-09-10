@@ -195,7 +195,7 @@ void Quest_Evil::SetProgress(int prog2)
 			const Item* item = Item::Get("q_zlo_ksiega");
 			u.AddItem(item, 1, true);
 			game->RemoveItem(*game->current_dialog->pc->unit, item, 1);
-			game->AddTeamMember(&u, true);
+			Team.AddTeamMember(&u, true);
 
 			evil_state = State::ClosingPortals;
 		}
@@ -277,7 +277,7 @@ void Quest_Evil::SetProgress(int prog2)
 			evil_state = State::ClericLeaving;
 			// usuñ jozana z dru¿yny
 			Unit& u = *game->current_dialog->talker;
-			game->RemoveTeamMember(&u);
+			Team.RemoveTeamMember(&u);
 			u.hero->mode = HeroData::Leave;
 		}
 		break;

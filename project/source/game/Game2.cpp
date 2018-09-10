@@ -3114,7 +3114,7 @@ void Game::UseAction(PlayerController* p, bool from_server, const Vec3* pos)
 			Unit* existing_unit = L.FindUnit([=](Unit* u) { return u->summoner == p->unit; });
 			if(existing_unit)
 			{
-				RemoveTeamMember(existing_unit);
+				Team.RemoveTeamMember(existing_unit);
 				RemoveUnit(existing_unit);
 			}
 
@@ -3136,7 +3136,7 @@ void Game::UseAction(PlayerController* p, bool from_server, const Vec3* pos)
 					at_arena.push_back(unit);
 				if(Net::IsServer())
 					Net_SpawnUnit(unit);
-				AddTeamMember(unit, true);
+				Team.AddTeamMember(unit, true);
 				SpawnUnitEffect(*unit);
 			}
 		}
@@ -5272,7 +5272,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 		int cost = ctx.talker->hero->JoinCost();
 		ctx.pc->unit->ModGold(-cost);
 		ctx.talker->gold += cost;
-		AddTeamMember(ctx.talker, false);
+		Team.AddTeamMember(ctx.talker, false);
 		ctx.talker->temporary = false;
 		Team.free_recruit = false;
 		ctx.talker->hero->SetupMelee();
@@ -5281,7 +5281,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 	}
 	else if(strcmp(msg, "recruit_free") == 0)
 	{
-		AddTeamMember(ctx.talker, false);
+		Team.AddTeamMember(ctx.talker, false);
 		Team.free_recruit = false;
 		ctx.talker->temporary = false;
 		ctx.talker->hero->SetupMelee();
@@ -5341,7 +5341,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 	}
 	else if(strcmp(msg, "kick_npc") == 0)
 	{
-		RemoveTeamMember(ctx.talker);
+		Team.RemoveTeamMember(ctx.talker);
 		if(L.city_ctx)
 			ctx.talker->hero->mode = HeroData::Wander;
 		else
@@ -5353,11 +5353,11 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 		ctx.talker->temporary = true;
 	}
 	else if(strcmp(msg, "give_item_credit") == 0)
-		TeamShareGiveItemCredit(ctx);
+		Team.TeamShareGiveItemCredit(ctx);
 	else if(strcmp(msg, "sell_item") == 0)
-		TeamShareSellItem(ctx);
+		Team.TeamShareSellItem(ctx);
 	else if(strcmp(msg, "share_decline") == 0)
-		TeamShareDecline(ctx);
+		Team.TeamShareDecline(ctx);
 	else if(strcmp(msg, "pvp") == 0)
 	{
 		// walka z towarzyszem
@@ -5435,13 +5435,13 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 	}
 	else if(strcmp(msg, "captive_join") == 0)
 	{
-		AddTeamMember(ctx.talker, true);
+		Team.AddTeamMember(ctx.talker, true);
 		ctx.talker->dont_attack = true;
 	}
 	else if(strcmp(msg, "captive_escape") == 0)
 	{
 		if(ctx.talker->hero->team_member)
-			RemoveTeamMember(ctx.talker);
+			Team.RemoveTeamMember(ctx.talker);
 		ctx.talker->hero->mode = HeroData::Leave;
 		ctx.talker->dont_attack = false;
 	}
@@ -7603,7 +7603,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 					CreateBlood(ctx, u);
 					if(u.summoner != nullptr && Net::IsLocal())
 					{
-						RemoveTeamMember(&u);
+						Team.RemoveTeamMember(&u);
 						u.action = A_DESPAWN;
 						u.timer = Random(2.5f, 5.f);
 						u.summoner = nullptr;
@@ -9581,7 +9581,7 @@ void Game::GenerateDungeonObjects()
 	}
 }
 
-Game::ObjectEntity Game::GenerateDungeonObject(InsideLocationLevel& lvl, Room& room, BaseObject* base, vector<Vec3>& on_wall, vector<Int2>& blocks, int flags)
+ObjectEntity Game::GenerateDungeonObject(InsideLocationLevel& lvl, Room& room, BaseObject* base, vector<Vec3>& on_wall, vector<Int2>& blocks, int flags)
 {
 	Vec3 pos;
 	float rot;
@@ -10247,6 +10247,7 @@ void Game::AddPlayerTeam(const Vec3& pos, float rot, bool reenter, bool hide_wea
 
 void Game::OpenDoorsByTeam(const Int2& pt)
 {
+	static vector<Int2> tmp_path;
 	InsideLocation* inside = (InsideLocation*)L.location;
 	InsideLocationLevel& lvl = inside->GetLevelData();
 	for(Unit* unit : Team.members)
@@ -12135,8 +12136,7 @@ void Game::ClearGameVarsOnNewGameOrLoad()
 	koniec_gry = false;
 	minimap_reveal.clear();
 	game_gui->minimap->city = nullptr;
-	team_shares.clear();
-	team_share_id = -1;
+	Team.ClearOnNewGameOrLoad();
 	draw_flags = 0xFFFFFFFF;
 	unit_views.clear();
 	game_gui->journal->Reset();
@@ -14102,25 +14102,6 @@ void Game::AddGoldArena(int count)
 	AddGold(count * (85 + v.size() * 15) / 100, &v, true);
 }
 
-void Game::EventTakeItem(int id)
-{
-	if(id == BUTTON_YES)
-	{
-		ItemSlot& slot = pc->unit->items[take_item_id];
-		pc->credit += slot.item->value / 2;
-		slot.team_count = 0;
-
-		if(Net::IsLocal())
-			CheckCredit(true);
-		else
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::TAKE_ITEM_CREDIT;
-			c.id = take_item_id;
-		}
-	}
-}
-
 bool Game::IsBetterItem(Unit& unit, const Item* item, int* value)
 {
 	assert(item && item->IsWearable());
@@ -15418,7 +15399,7 @@ void Game::UpdateGame2(float dt)
 		QM.quest_tournament->Update(dt);
 
 	// sharing of team items between team members
-	UpdateTeamItemShares();
+	Team.UpdateTeamItemShares();
 
 	// contest
 	QM.quest_contest->Update(dt);
@@ -17567,74 +17548,6 @@ int xdif(int a, int b)
 			return -5;
 		return -6;
 	}
-}
-
-void Game::AddTeamMember(Unit* unit, bool free)
-{
-	assert(unit && unit->hero);
-
-	// set as team member
-	unit->hero->team_member = true;
-	unit->hero->free = free;
-	unit->hero->mode = HeroData::Follow;
-
-	// add to team list
-	if(!free)
-	{
-		if(Team.GetActiveTeamSize() == 1u)
-			Team.active_members[0]->MakeItemsTeam(false);
-		Team.active_members.push_back(unit);
-	}
-	Team.members.push_back(unit);
-
-	// set items as not team
-	unit->MakeItemsTeam(false);
-
-	// update TeamPanel if open
-	if(game_gui->team_panel->visible)
-		game_gui->team_panel->Changed();
-
-	// send info to other players
-	if(Net::IsOnline())
-	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::RECRUIT_NPC;
-		c.unit = unit;
-	}
-
-	if(unit->event_handler)
-		unit->event_handler->HandleUnitEvent(UnitEventHandler::RECRUIT, unit);
-}
-
-void Game::RemoveTeamMember(Unit* unit)
-{
-	assert(unit && unit->hero);
-
-	// set as not team member
-	unit->hero->team_member = false;
-
-	// remove from team list
-	if(!unit->hero->free)
-		RemoveElementOrder(Team.active_members, unit);
-	RemoveElementOrder(Team.members, unit);
-
-	// set items as team
-	unit->MakeItemsTeam(true);
-
-	// update TeamPanel if open
-	if(game_gui->team_panel->visible)
-		game_gui->team_panel->Changed();
-
-	// send info to other players
-	if(Net::IsOnline())
-	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::KICK_NPC;
-		c.id = unit->netid;
-	}
-
-	if(unit->event_handler)
-		unit->event_handler->HandleUnitEvent(UnitEventHandler::KICK, unit);
 }
 
 void Game::DropGold(int ile)

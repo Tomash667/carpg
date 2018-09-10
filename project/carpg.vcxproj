@@ -208,6 +208,7 @@
     <ClInclude Include="source\game\entity\Encounter.h" />
     <ClInclude Include="source\game\entity\ItemContainer.h" />
     <ClInclude Include="source\game\entity\News.h" />
+    <ClInclude Include="source\game\entity\ObjectEntity.h" />
     <ClInclude Include="source\game\entity\OutsideObject.h" />
     <ClInclude Include="source\game\entity\Portal.h" />
     <ClInclude Include="source\game\entity\Room.h" />
@@ -608,7 +609,6 @@
     <ClCompile Include="source\game\system\UnitGroup.cpp" />
     <ClCompile Include="source\game\system\UnitLoader.cpp" />
     <ClCompile Include="source\game\Team.cpp" />
-    <ClCompile Include="source\game\TeamItems.cpp" />
     <ClCompile Include="source\game\TerrainTile.cpp" />
     <ClCompile Include="source\game\World.cpp" />
     <ClCompile Include="source\game\Worldmap.cpp" />

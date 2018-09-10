@@ -10,6 +10,7 @@
 #include "AIController.h"
 #include "SoundManager.h"
 #include "World.h"
+#include "Team.h"
 
 //=================================================================================================
 void Quest_Mages::Start()
@@ -240,7 +241,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			loc.st = 1;
 			loc.SetKnown();
 			target_loc = loc.index;
-			game->AddTeamMember(game->current_dialog->talker, true);
+			Team.AddTeamMember(game->current_dialog->talker, true);
 			OnUpdate(Format(game->txQuest[177], game->current_dialog->talker->hero->name.c_str(), GetTargetLocationName(),
 				GetLocationDirName(W.GetCurrentLocation()->pos, GetTargetLocation().pos), W.GetCurrentLocation()->name.c_str()));
 			mages_state = State::OldMageJoined;
@@ -309,7 +310,7 @@ void Quest_Mages2::SetProgress(int prog2)
 		// nie zrekrutowa³em maga
 		{
 			Unit* u = game->current_dialog->talker;
-			game->RemoveTeamMember(u);
+			Team.RemoveTeamMember(u);
 			mages_state = State::MageLeaving;
 			good_mage_name = u->hero->name;
 			hd_mage.Get(*u->human_data);
@@ -349,7 +350,7 @@ void Quest_Mages2::SetProgress(int prog2)
 				OnUpdate(Format(game->txQuest[184], u->hero->name.c_str()));
 				good_mage_name = u->hero->name;
 				u->ai->goto_inn = false;
-				game->AddTeamMember(u, true);
+				Team.AddTeamMember(u, true);
 			}
 
 			mages_state = State::MageRecruited;
@@ -371,7 +372,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			OnUpdate(Format(game->txQuest[187], game->current_dialog->talker->hero->name.c_str(), evil_mage_name.c_str()));
 			// idŸ sobie
 			Unit* u = game->current_dialog->talker;
-			game->RemoveTeamMember(u);
+			Team.RemoveTeamMember(u);
 			u->hero->mode = HeroData::Leave;
 			scholar = nullptr;
 		}

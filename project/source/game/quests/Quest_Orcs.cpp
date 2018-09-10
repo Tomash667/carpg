@@ -311,7 +311,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 				QM.quest_orcs->target_loc = -1;
 			}
 			// do³¹cz do dru¿yny
-			game->AddTeamMember(game->current_dialog->talker, true);
+			Team.AddTeamMember(game->current_dialog->talker, true);
 			Team.free_recruit = false;
 		}
 		break;
@@ -453,7 +453,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 			OnUpdate(game->txQuest[206]);
 			quest_manager.EndUniqueQuest();
 			// gorush
-			game->RemoveTeamMember(orc);
+			Team.RemoveTeamMember(orc);
 			Usable* tron = L.local_ctx.FindUsable("throne");
 			assert(tron);
 			if(tron)

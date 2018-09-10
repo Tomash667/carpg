@@ -2336,7 +2336,7 @@ void CityGenerator::OnEnter()
 			unit->hero->lost_pvp = false;
 	}
 
-	game.CheckTeamItemShares();
+	Team.CheckTeamItemShares();
 
 	Quest_Contest* contest = QM.quest_contest;
 	if(!contest->generated && L.location_index == contest->where && contest->state == Quest_Contest::CONTEST_TODAY)

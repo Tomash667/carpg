@@ -1031,8 +1031,7 @@ void Game::LoadGame(GameReader& f)
 		L.event_handler = dynamic_cast<LocationEventHandler*>(quest_manager.FindQuest(location_event_handler_quest_refid));
 	else
 		L.event_handler = nullptr;
-	team_shares.clear();
-	team_share_id = -1;
+	Team.ClearOnNewGameOrLoad();
 	fallback_type = FALLBACK::NONE;
 	fallback_t = -0.5f;
 	inventory_mode = I_NONE;
@@ -1100,7 +1099,7 @@ void Game::LoadGame(GameReader& f)
 	load_screen->visible = false;
 
 #ifdef _DEBUG
-	ValidateTeamItems();
+	Team.ValidateTeamItems();
 #endif
 
 	Info("Game loaded.");

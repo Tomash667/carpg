@@ -380,9 +380,6 @@
     <ClCompile Include="source\game\Game_LevelArea.cpp">
       <Filter>3. game</Filter>
     </ClCompile>
-    <ClCompile Include="source\game\TeamItems.cpp">
-      <Filter>3. game</Filter>
-    </ClCompile>
     <ClCompile Include="source\ErrorHandler.cpp" />
     <ClCompile Include="source\core\Config.cpp">
       <Filter>1. core</Filter>
@@ -1521,6 +1518,9 @@
     </ClInclude>
     <ClInclude Include="source\game\quests\Quest_Tutorial.h">
       <Filter>3. game\quests</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\entity\ObjectEntity.h">
+      <Filter>3. game\entity</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

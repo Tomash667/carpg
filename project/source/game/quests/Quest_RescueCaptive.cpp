@@ -151,7 +151,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 					loc.active_quest = nullptr;
 			}
 			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
-			game->RemoveTeamMember(captive);
+			Team.RemoveTeamMember(captive);
 
 			game->RemoveUnit(captive);
 			captive->event_handler = nullptr;
@@ -221,7 +221,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 		// captive was left in city
 		{
 			if(captive->hero->team_member)
-				game->RemoveTeamMember(captive);
+				Team.RemoveTeamMember(captive);
 			captive->dont_attack = false;
 			captive->ai->goto_inn = true;
 			captive->ai->timer = 0.f;

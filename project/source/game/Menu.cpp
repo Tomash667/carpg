@@ -395,7 +395,7 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 		npc->ai = new AIController;
 		npc->ai->Init(npc);
 		npc->hero->know_name = true;
-		AddTeamMember(npc, false);
+		Team.AddTeamMember(npc, false);
 		Team.free_recruit = false;
 		npc->hero->SetupMelee();
 	}
@@ -1662,7 +1662,7 @@ void Game::UpdateServerTransfer(float dt)
 			npc->ai = new AIController;
 			npc->ai->Init(npc);
 			npc->hero->know_name = true;
-			AddTeamMember(npc, false);
+			Team.AddTeamMember(npc, false);
 			npc->hero->SetupMelee();
 		}
 
