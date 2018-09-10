@@ -21,28 +21,7 @@
 #include "UnitEventHandler.h"
 #include "LevelArea.h"
 #include "SaveSlot.h"
-#include "Room.h"
-#include "Location.h"
-#include "Unit.h"
 #include "ResourceManager.h"
-
-//#define DRAW_LOCAL_PATH
-#ifdef DRAW_LOCAL_PATH
-#	ifndef _DEBUG
-#		error "DRAW_LOCAL_PATH in release!"
-#	endif
-#endif
-
-struct APoint
-{
-	int odleglosc, koszt, suma, stan;
-	Int2 prev;
-
-	bool IsLower(int suma2) const
-	{
-		return stan == 0 || suma2 < suma;
-	}
-};
 
 //-----------------------------------------------------------------------------
 // Tryb szybkiego uruchamiania gry
@@ -202,8 +181,6 @@ const float UNIT_VIEW_A = 0.2f;
 const float UNIT_VIEW_B = 0.4f;
 const int UNIT_VIEW_MUL = 5;
 
-struct Terrain;
-
 struct PostEffect
 {
 	int id;
@@ -322,7 +299,8 @@ public:
 		bool IsUsable() const { return type == USABLE; }
 	};
 
-	void OnCleanup();
+	void OnCleanup() override;
+	void CleanupSystems();
 	void OnDraw();
 	void OnDraw(bool normal = true);
 	void OnTick(float dt);
@@ -498,7 +476,7 @@ public:
 		txLoadErrorGeneric, txLoadOpenError;
 	cstring txPvpRefuse, txWin, txWinMp, txINeedWeapon, txNoHpp, txCantDo, txDontLootFollower, txDontLootArena, txUnlockedDoor,
 		txNeedKey, txLevelUp, txLevelDown, txLocationText, txLocationTextMap, txRegeneratingLevel, txGmsLooted, txGmsRumor, txGmsJournalUpdated, txGmsUsed,
-		txGmsUnitBusy, txGmsGatherTeam, txGmsNotLeader, txGmsNotInCombat, txGainTextAttrib, txGainTextSkill, txNeedItem, txReallyQuit, txSecretAppear,
+		txGmsUnitBusy, txGmsGatherTeam, txGmsNotLeader, txGmsNotInCombat, txGainTextAttrib, txGainTextSkill, txNeedItem, txReallyQuit,
 		txGmsAddedItem, txGmsAddedItems, txGmsGettingOutOfRange, txGmsLeftEvent;
 	cstring txRumor[28], txRumorD[7];
 	cstring txMayorQFailed[3], txQuestAlreadyGiven[2], txMayorNoQ[2], txCaptainQFailed[2], txCaptainNoQ[2], txLocationDiscovered[2], txAllDiscovered[2], txCampDiscovered[2],
@@ -616,16 +594,6 @@ public:
 	DialogContext* FindDialogContext(Unit* talker);
 
 	//---------------------------------
-	// PATHFINDING
-	vector<APoint> a_map;
-#ifdef DRAW_LOCAL_PATH
-	vector<std::pair<Vec2, int> > test_pf;
-	Unit* marked;
-	bool test_pf_outside;
-#endif
-	vector<bool> local_pfmap;
-
-	//---------------------------------
 	// FIZYKA
 	btCollisionShape* shape_wall, *shape_low_ceiling, *shape_arrow, *shape_ceiling, *shape_floor, *shape_door, *shape_block, *shape_schody, *shape_schody_c[2],
 		*shape_summon, *shape_barrier;
@@ -711,13 +679,6 @@ public:
 	void ShowAcademyText();
 
 	void UpdateContest(float dt);
-
-	// secret quest
-	bool CheckMoonStone(GroundItem* item, Unit& unit);
-	Item* GetSecretNote()
-	{
-		return Item::Get("sekret_kartka");
-	}
 
 	// tutorial
 	int tut_state;
@@ -874,10 +835,8 @@ public:
 	void GiveDmg(LevelContext& ctx, Unit* giver, float dmg, Unit& taker, const Vec3* hitpoint = nullptr, int dmg_flags = 0);
 	void UpdateUnits(LevelContext& ctx, float dt);
 	void UpdateUnitInventory(Unit& unit, bool notify = true);
-	bool FindPath(LevelContext& ctx, const Int2& start_tile, const Int2& target_tile, vector<Int2>& path, bool can_open_doors = true, bool wedrowanie = false, vector<Int2>* blocked = nullptr);
 	bool CanLoadGame() const;
 	bool CanSaveGame() const;
-	int FindLocalPath(LevelContext& ctx, vector<Int2>& path, const Int2& my_tile, const Int2& target_tile, const Unit* me, const Unit* other, const void* usable = nullptr, bool is_end_point = false);
 	bool DoShieldSmash(LevelContext& ctx, Unit& attacker);
 	Vec4 GetFogColor();
 	Vec4 GetFogParams();
@@ -1465,4 +1424,5 @@ public:
 	// NEW
 	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 	LocationGeneratorFactory* loc_gen_factory;
+	Pathfinding* pathfinding;
 };

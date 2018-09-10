@@ -1,6 +1,7 @@
 #pragma once
 
 #include "QuestHandler.h"
+#include "Item.h"
 
 class Quest_Secret : public QuestHandler
 {
@@ -26,7 +27,12 @@ public:
 	void Load(GameReader& f);
 	void Special(DialogContext& ctx, cstring msg) override;
 	bool SpecialIf(DialogContext& ctx, cstring msg) override;
+	bool CheckMoonStone(GroundItem* item, Unit& unit);
+	static Item& GetNote() { return *Item::Get("sekret_kartka"); }
 
 	SecretState state;
 	int where, where2;
+
+private:
+	cstring txSecretAppear;
 };

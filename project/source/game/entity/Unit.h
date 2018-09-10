@@ -629,7 +629,7 @@ struct Unit
 		return AddItem(item, count, is_team ? count : 0);
 	}
 	// add item and show game message, send net notification, calls preload
-	void AddItem2(const Item* item, uint count, uint team_count);
+	void AddItem2(const Item* item, uint count, uint team_count, bool show_msg = true);
 	// dodaje przedmiot i zak³ada jeœli nie ma takiego typu, przedmiot jest dru¿ynowy
 	void AddItemAndEquipIfNone(const Item* item, uint count = 1);
 	// zwraca udŸwig postaci (0-brak obci¹¿enia, 1-maksymalne, >1 przeci¹¿ony)

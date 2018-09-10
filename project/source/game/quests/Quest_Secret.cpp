@@ -1,18 +1,14 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "Quest_Secret.h"
-#include "Item.h"
 #include "BaseObject.h"
 #include "GameFile.h"
 #include "QuestManager.h"
 #include "Team.h"
+#include "World.h"
+#include "Location.h"
+#include "Language.h"
 #include "Game.h"
-
-//=================================================================================================
-inline Item& GetNote()
-{
-	return *Item::Get("sekret_kartka");
-}
 
 //=================================================================================================
 void Quest_Secret::InitOnce()
@@ -23,6 +19,8 @@ void Quest_Secret::InitOnce()
 	QM.RegisterSpecialIfHandler(this, "secret_can_fight");
 	QM.RegisterSpecialIfHandler(this, "secret_win");
 	QM.RegisterSpecialIfHandler(this, "secret_can_get_reward");
+
+	txSecretAppear = Str("secretAppear");
 }
 
 //=================================================================================================
@@ -109,5 +107,33 @@ bool Quest_Secret::SpecialIf(DialogContext& ctx, cstring msg)
 		return Any(state, SECRET_WIN, SECRET_REWARD);
 	else if(strcmp(msg, "secret_can_get_reward") == 0)
 		return state == SECRET_WIN;
+	return false;
+}
+
+//=================================================================================================
+bool Quest_Secret::CheckMoonStone(GroundItem* item, Unit& unit)
+{
+	assert(item);
+
+	if(state == SECRET_NONE && W.GetCurrentLocation()->type == L_MOONWELL && item->item->id == "krystal"
+		&& Vec3::Distance2d(item->pos, Vec3(128.f, 0, 128.f)) < 1.2f)
+	{
+		Game::Get().AddGameMsg(txSecretAppear, 3.f);
+		state = SECRET_DROPPED_STONE;
+		Location& l = *W.CreateLocation(L_DUNGEON, Vec2(0, 0), -128.f, DWARF_FORT, SG_CHALLANGE, false, 3);
+		l.st = 18;
+		l.active_quest = (Quest_Dungeon*)ACTIVE_QUEST_HOLDER;
+		l.state = LS_UNKNOWN;
+		where = l.index;
+		Vec2& cpos = W.GetCurrentLocation()->pos;
+		Item* note = &GetNote();
+		note->desc = Format("\"%c %d km, %c %d km\"", cpos.y > l.pos.y ? 'S' : 'N', (int)abs((cpos.y - l.pos.y) / 3), cpos.x > l.pos.x ? 'W' : 'E', (int)abs((cpos.x - l.pos.x) / 3));
+		unit.AddItem2(note, 1u, 1u, false);
+		delete item;
+		if(Net::IsOnline())
+			Net::PushChange(NetChange::SECRET_TEXT);
+		return true;
+	}
+
 	return false;
 }

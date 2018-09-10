@@ -6,6 +6,7 @@
 #include "Inventory.h"
 #include "UnitHelper.h"
 #include "QuestManager.h"
+#include "Quest_Secret.h"
 #include "AIController.h"
 #include "Team.h"
 #include "Content.h"
@@ -221,7 +222,7 @@ bool Unit::DropItem(int index)
 			no_more = true;
 			items.erase(items.begin() + index);
 		}
-		if(!game.CheckMoonStone(item, *this))
+		if(!QM.quest_secret->CheckMoonStone(item, *this))
 			game.AddGroundItem(L.GetContext(*this), item);
 
 		if(Net::IsServer())
@@ -660,7 +661,7 @@ bool Unit::AddItem(const Item* item, uint count, uint team_count)
 }
 
 //=================================================================================================
-void Unit::AddItem2(const Item* item, uint count, uint team_count)
+void Unit::AddItem2(const Item* item, uint count, uint team_count, bool show_msg)
 {
 	Game::Get().PreloadItem(item);
 	AddItem(item, count, team_count);
@@ -675,7 +676,8 @@ void Unit::AddItem2(const Item* item, uint count, uint team_count)
 			c.id = team_count;
 			c.ile = count;
 		}
-		player->AddItemMessage(count);
+		if(show_msg)
+			player->AddItemMessage(count);
 	}
 }
 

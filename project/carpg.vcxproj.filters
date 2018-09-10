@@ -754,6 +754,9 @@
     <ClCompile Include="source\engine\Texture.cpp">
       <Filter>2. engine</Filter>
     </ClCompile>
+    <ClCompile Include="source\game\Pathfinding.cpp">
+      <Filter>3. game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\resource\resource1.h">
@@ -1512,6 +1515,9 @@
     </ClInclude>
     <ClInclude Include="source\engine\Texture.h">
       <Filter>2. engine</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\Pathfinding.h">
+      <Filter>3. game</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

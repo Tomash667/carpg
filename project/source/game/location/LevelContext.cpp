@@ -5,6 +5,7 @@
 #include "Chest.h"
 #include "Level.h"
 #include "City.h"
+#include "Room.h"
 
 //=================================================================================================
 void TmpLevelContext::Clear()

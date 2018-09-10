@@ -60,6 +60,7 @@
 #include "CaveGenerator.h"
 #include "DungeonGenerator.h"
 #include "Texture.h"
+#include "Pathfinding.h"
 
 const int SAVE_VERSION = V_CURRENT;
 int LOAD_VERSION;
@@ -71,7 +72,6 @@ const float TRAP_ARROW_SPEED = 45.f;
 const float ARROW_TIMER = 5.f;
 const float MIN_H = 1.5f; // hardcoded in GetPhysicsPos
 const float TRAIN_KILL_RATIO = 0.1f;
-const float SS = 0.25f;//0.25f/8;
 const int NN = 64;
 extern const int ITEM_IMAGE_SIZE = 64;
 const float SMALL_DISTANCE = 0.001f;
@@ -304,58 +304,7 @@ void Game::Draw()
 	ListDrawObjects(ctx, cam.frustum, outside);
 	DrawScene(outside);
 
-	// rysowanie local pathfind map
-#ifdef DRAW_LOCAL_PATH
-	V(eMesh->SetTechnique(techMeshSimple2));
-	V(eMesh->Begin(&passes, 0));
-	V(eMesh->BeginPass(0));
-
-	V(eMesh->SetMatrix(hMeshCombined, &cam.matViewProj));
-	V(eMesh->CommitChanges());
-
-	SetAlphaBlend(true);
-	SetAlphaTest(false);
-	SetNoZWrite(false);
-
-	for(vector<std::pair<Vec2, int> >::iterator it = test_pf.begin(), end = test_pf.end(); it != end; ++it)
-	{
-		Vec3 v[4] = {
-			Vec3(it->first.x, 0.1f, it->first.y + SS),
-			Vec3(it->first.x + SS, 0.1f, it->first.y + SS),
-			Vec3(it->first.x, 0.1f, it->first.y),
-			Vec3(it->first.x + SS, 0.1f, it->first.y)
-		};
-
-		if(test_pf_outside)
-		{
-			float h = terrain->GetH(v[0].x, v[0].z) + 0.1f;
-			for(int i = 0; i < 4; ++i)
-				v[i].y = h;
-		}
-
-		Vec4 color;
-		switch(it->second)
-		{
-		case 0:
-			color = Vec4(0, 1, 0, 0.5f);
-			break;
-		case 1:
-			color = Vec4(1, 0, 0, 0.5f);
-			break;
-		case 2:
-			color = Vec4(0, 0, 0, 0.5f);
-			break;
-		}
-
-		V(eMesh->SetVector(hMeshTint, &color));
-		V(eMesh->CommitChanges());
-
-		device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, v, sizeof(Vec3));
-	}
-
-	V(eMesh->EndPass());
-	V(eMesh->End());
-#endif
+	pathfinding->DebugDraw();
 }
 
 //=================================================================================================
@@ -10324,7 +10273,7 @@ void Game::OpenDoorsByTeam(const Int2& pt)
 	for(Unit* unit : Team.members)
 	{
 		Int2 unit_pt = pos_to_pt(unit->pos);
-		if(FindPath(L.local_ctx, unit_pt, pt, tmp_path))
+		if(pathfinding->FindPath(L.local_ctx, unit_pt, pt, tmp_path))
 		{
 			for(vector<Int2>::iterator it2 = tmp_path.begin(), end2 = tmp_path.end(); it2 != end2; ++it2)
 			{
@@ -17962,34 +17911,6 @@ const Item* Game::GetRandomItem(int max_value)
 	}
 
 	return items->at(Rand() % items->size());
-}
-
-bool Game::CheckMoonStone(GroundItem* item, Unit& unit)
-{
-	assert(item);
-
-	Quest_Secret* secret = QM.quest_secret;
-	if(secret->state == Quest_Secret::SECRET_NONE && L.location->type == L_MOONWELL && item->item->id == "krystal"
-		&& Vec3::Distance2d(item->pos, Vec3(128.f, 0, 128.f)) < 1.2f)
-	{
-		AddGameMsg(txSecretAppear, 3.f);
-		secret->state = Quest_Secret::SECRET_DROPPED_STONE;
-		Location& l = *W.CreateLocation(L_DUNGEON, Vec2(0, 0), -128.f, DWARF_FORT, SG_CHALLANGE, false, 3);
-		l.st = 18;
-		l.active_quest = (Quest_Dungeon*)ACTIVE_QUEST_HOLDER;
-		l.state = LS_UNKNOWN;
-		secret->where = l.index;
-		Vec2& cpos = L.location->pos;
-		Item* note = GetSecretNote();
-		note->desc = Format("\"%c %d km, %c %d km\"", cpos.y > l.pos.y ? 'S' : 'N', (int)abs((cpos.y - l.pos.y) / 3), cpos.x > l.pos.x ? 'W' : 'E', (int)abs((cpos.x - l.pos.x) / 3));
-		unit.AddItem(note);
-		delete item;
-		if(Net::IsOnline())
-			Net::PushChange(NetChange::SECRET_TEXT);
-		return true;
-	}
-
-	return false;
 }
 
 int xdif(int a, int b)

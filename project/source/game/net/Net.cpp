@@ -11,6 +11,7 @@
 #include "Content.h"
 #include "QuestManager.h"
 #include "Quest_Tournament.h"
+#include "Quest_Secret.h"
 #include "Quest.h"
 #include "City.h"
 #include "InsideLocation.h"
@@ -2057,7 +2058,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					item->pos.x -= sin(unit.rot)*0.25f;
 					item->pos.z -= cos(unit.rot)*0.25f;
 					item->rot = Random(MAX_ANGLE);
-					if(!CheckMoonStone(item, unit))
+					if(!QM.quest_secret->CheckMoonStone(item, unit))
 						AddGroundItem(L.GetContext(unit), item);
 
 					// send to other players
@@ -4517,7 +4518,7 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 			WriteNetVars(f);
 			break;
 		case NetChange::SECRET_TEXT:
-			f << GetSecretNote()->desc;
+			f << Quest_Secret::GetNote().desc;
 			break;
 		case NetChange::UPDATE_MAP_POS:
 			f << W.GetWorldPos();
@@ -7172,7 +7173,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 			break;
 		// secret letter text update
 		case NetChange::SECRET_TEXT:
-			f >> GetSecretNote()->desc;
+			f >> Quest_Secret::GetNote().desc;
 			if(!f)
 				StreamError("Update client: Broken SECRET_TEXT.");
 			break;
@@ -8876,7 +8877,7 @@ void Game::PrepareWorldData(BitStreamWriter& f)
 		StringPool.Free(net_talk);
 
 	// secret note text
-	f << GetSecretNote()->desc;
+	f << Quest_Secret::GetNote().desc;
 
 	f.WriteCasted<byte>(0xFF);
 }
@@ -8956,7 +8957,7 @@ bool Game::ReadWorldData(BitStreamReader& f)
 	}
 
 	// secret note text
-	f >> GetSecretNote()->desc;
+	f >> Quest_Secret::GetNote().desc;
 	if(!f)
 	{
 		Error("Read world: Broken packet for secret note text.");

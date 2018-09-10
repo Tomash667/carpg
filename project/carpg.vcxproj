@@ -239,6 +239,7 @@
     <ClInclude Include="source\game\panels\BookPanel.h" />
     <ClInclude Include="source\game\panels\GameDialogBox.h" />
     <ClInclude Include="source\game\panels\GlobalGui.h" />
+    <ClInclude Include="source\game\Pathfinding.h" />
     <ClInclude Include="source\game\quests\QuestHandler.h" />
     <ClInclude Include="source\game\quests\QuestConsts.h" />
     <ClInclude Include="source\game\quests\Quest_Contest.h" />
@@ -472,6 +473,7 @@
     <ClCompile Include="source\game\panels\ActionPanel.cpp" />
     <ClCompile Include="source\game\panels\BookPanel.cpp" />
     <ClCompile Include="source\game\panels\GlobalGui.cpp" />
+    <ClCompile Include="source\game\Pathfinding.cpp" />
     <ClCompile Include="source\game\quests\Quest_Contest.cpp" />
     <ClCompile Include="source\game\quests\Quest_Secret.cpp" />
     <ClCompile Include="source\game\quests\Quest_Tournament.cpp" />

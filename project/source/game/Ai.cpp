@@ -14,6 +14,7 @@
 #include "QuestManager.h"
 #include "Quest_Contest.h"
 #include "Quest_Tournament.h"
+#include "Pathfinding.h"
 
 const float JUMP_BACK_MIN_RANGE = 4.f;
 const float JUMP_BACK_TIMER = 0.2f;
@@ -2522,7 +2523,7 @@ void Game::UpdateAi(float dt)
 							&& target_tile != ai.pf_target_tile && ai.pf_timer <= 0.f))
 					{
 						ai.pf_timer = Random(0.2f, 0.4f);
-						if(FindPath(ctx, my_tile, target_tile, ai.pf_path, !IS_SET(u.data->flags, F_DONT_OPEN), ai.city_wander && L.city_ctx != nullptr))
+						if(pathfinding->FindPath(ctx, my_tile, target_tile, ai.pf_path, !IS_SET(u.data->flags, F_DONT_OPEN), ai.city_wander && L.city_ctx != nullptr))
 						{
 							// path found
 							ai.pf_state = AIController::PFS_GLOBAL_DONE;
@@ -2607,7 +2608,7 @@ void Game::UpdateAi(float dt)
 						is_end_point = (ai.pf_local_try + 1 == ai.pf_path.size());
 					}
 
-					int ret = FindLocalPath(ctx, ai.pf_local_path, my_local_tile, local_tile, &u, path_unit_ignore, path_obj_ignore, is_end_point);
+					int ret = pathfinding->FindLocalPath(ctx, ai.pf_local_path, my_local_tile, local_tile, &u, path_unit_ignore, path_obj_ignore, is_end_point);
 					ai.pf_local_target_tile = local_tile;
 					if(ret == 0)
 					{

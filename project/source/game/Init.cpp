@@ -20,6 +20,7 @@
 #include "World.h"
 #include "DirectX.h"
 #include "LocationGeneratorFactory.h"
+#include "Pathfinding.h"
 
 extern void HumanPredraw(void* ptr, Matrix* mat, int n);
 extern const int ITEM_IMAGE_SIZE;
@@ -345,6 +346,8 @@ void Game::PostconfigureGame()
 	// location generator factory
 	loc_gen_factory = new LocationGeneratorFactory;
 	loc_gen_factory->InitOnce();
+
+	pathfinding = new Pathfinding;
 
 	// get pointer to gold item
 	Item::gold = Item::Get("gold");
@@ -996,4 +999,11 @@ void Game::LoadItemsData()
 	auto list = ItemList::Get("normal_food");
 	for(auto item : list.lis->items)
 		PreloadItem(item);
+}
+
+//=================================================================================================
+void Game::CleanupSystems()
+{
+	delete loc_gen_factory;
+	delete pathfinding;
 }
