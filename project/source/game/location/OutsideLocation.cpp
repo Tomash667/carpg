@@ -7,6 +7,8 @@
 #include "Chest.h"
 #include "GroundItem.h"
 #include "GameFile.h"
+#include "BitStreamFunc.h"
+#include "Level.h"
 
 namespace OLD
 {
@@ -246,6 +248,36 @@ void OutsideLocation::Load(GameReader& f, bool local, LOCATION_TOKEN token)
 			}
 		}
 	}
+}
+
+//=================================================================================================
+void OutsideLocation::Write(BitStreamWriter& f)
+{
+	f.Write((cstring)tiles, sizeof(TerrainTile)*size*size);
+	f.Write((cstring)h, sizeof(float)*(size + 1)*(size + 1));
+	f << L.light_angle;
+}
+
+//=================================================================================================
+bool OutsideLocation::Read(BitStreamReader& f)
+{
+	int size11 = size*size;
+	int size22 = size + 1;
+	size22 *= size22;
+	if(!tiles)
+		tiles = new TerrainTile[size11];
+	if(!h)
+		h = new float[size22];
+	f.Read((char*)tiles, sizeof(TerrainTile)*size11);
+	f.Read((char*)h, sizeof(float)*size22);
+	f >> L.light_angle;
+	if(!f)
+	{
+		Error("Read level: Broken packet for terrain.");
+		return false;
+	}
+
+	return true;
 }
 
 //=================================================================================================

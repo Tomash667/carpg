@@ -9,6 +9,8 @@
 #include "GameFile.h"
 #include "BuildingScript.h"
 #include "World.h"
+#include "Level.h"
+#include "BitStreamFunc.h"
 
 //=================================================================================================
 City::~City()
@@ -552,6 +554,110 @@ void City::Load(GameReader& f, bool local, LOCATION_TOKEN token)
 			flags |= HaveTrainingGrounds | HaveArena | HaveMerchant | HaveFoodSeller | HaveBlacksmith | HaveAlchemist | HaveInn;
 		}
 	}
+}
+
+//=================================================================================================
+void City::Write(BitStreamWriter& f)
+{
+	OutsideLocation::Write(f);
+
+	f.WriteCasted<byte>(flags);
+	f.WriteCasted<byte>(entry_points.size());
+	for(EntryPoint& entry_point : entry_points)
+	{
+		f << entry_point.exit_area;
+		f << entry_point.exit_y;
+	}
+	f.WriteCasted<byte>(buildings.size());
+	for(CityBuilding& building : buildings)
+	{
+		f << building.type->id;
+		f << building.pt;
+		f.WriteCasted<byte>(building.rot);
+	}
+	f.WriteCasted<byte>(inside_buildings.size());
+	for(InsideBuilding* inside_building : inside_buildings)
+		inside_building->Write(f);
+}
+
+//=================================================================================================
+bool City::Read(BitStreamReader& f)
+{
+	OutsideLocation::Read(f);
+
+	// entry points
+	const int ENTRY_POINT_MIN_SIZE = 20;
+	byte count;
+	f.ReadCasted<byte>(flags);
+	f >> count;
+	if(!f.Ensure(count * ENTRY_POINT_MIN_SIZE))
+	{
+		Error("Read level: Broken packet for city.");
+		return false;
+	}
+	entry_points.resize(count);
+	for(EntryPoint& entry : entry_points)
+	{
+		f.Read(entry.exit_area);
+		f.Read(entry.exit_y);
+	}
+	if(!f)
+	{
+		Error("Read level: Broken packet for entry points.");
+		return false;
+	}
+
+	// buildings
+	const int BUILDING_MIN_SIZE = 10;
+	f >> count;
+	if(!f.Ensure(BUILDING_MIN_SIZE * count))
+	{
+		Error("Read level: Broken packet for buildings count.");
+		return false;
+	}
+	buildings.resize(count);
+	for(CityBuilding& building : buildings)
+	{
+		const string& building_id = f.ReadString1();
+		f >> building.pt;
+		f.ReadCasted<byte>(building.rot);
+		if(!f)
+		{
+			Error("Read level: Broken packet for buildings.");
+			return false;
+		}
+		building.type = Building::Get(building_id);
+		if(!building.type)
+		{
+			Error("Read level: Invalid building id '%s'.", building_id.c_str());
+			return false;
+		}
+	}
+
+	// inside buildings
+	const int INSIDE_BUILDING_MIN_SIZE = 73;
+	f >> count;
+	if(!f.Ensure(INSIDE_BUILDING_MIN_SIZE * count))
+	{
+		Error("Read level: Broken packet for inside buildings count.");
+		return false;
+	}
+	inside_buildings.resize(count);
+	int index = 0;
+	for(InsideBuilding*& ib : inside_buildings)
+	{
+		ib = new InsideBuilding;
+		L.ApplyContext(ib, ib->ctx);
+		ib->ctx.building_id = index;
+		if(!ib->Load(f))
+		{
+			Error("Read level: Failed to loading inside building %d.", index);
+			return false;
+		}
+		++index;
+	}
+
+	return true;
 }
 
 //=================================================================================================

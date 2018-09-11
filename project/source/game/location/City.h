@@ -71,6 +71,8 @@ struct City : public OutsideLocation
 	// from Location
 	void Save(GameWriter& f, bool local) override;
 	void Load(GameReader& f, bool local, LOCATION_TOKEN token) override;
+	void Write(BitStreamWriter& f) override;
+	bool Read(BitStreamReader& f) override;
 	void BuildRefidTables() override;
 	bool FindUnit(Unit* unit, int* level) override;
 	Unit* FindUnit(UnitData* data, int& at_level) override;

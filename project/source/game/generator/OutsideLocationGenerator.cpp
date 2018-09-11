@@ -164,7 +164,7 @@ void OutsideLocationGenerator::OnEnter()
 		// respawn units
 		game.LoadingStep(game.txGeneratingUnits);
 		if(update >= 0)
-			game.RespawnUnits();
+			L.RespawnUnits();
 		if(need_reset)
 			GenerateUnits();
 
@@ -419,11 +419,15 @@ void OutsideLocationGenerator::OnLoad()
 
 	if(outside->type == L_CITY)
 	{
+		L.city_ctx = (City*)loc;
 		game.RespawnBuildingPhysics();
 		game.SpawnCityPhysics();
 	}
 	else
+	{
+		L.city_ctx = nullptr;
 		L.SpawnOutsideBariers();
+	}
 
 	game.InitQuadTree();
 	game.CalculateQuadtree();

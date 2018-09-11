@@ -2272,7 +2272,7 @@ void CityGenerator::OnEnter()
 
 		// recreate units
 		game.LoadingStep(game.txGeneratingUnits);
-		game.RespawnUnits();
+		L.RespawnUnits();
 		RepositionUnits();
 
 		// recreate physics

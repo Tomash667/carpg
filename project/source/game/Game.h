@@ -1288,7 +1288,6 @@ public:
 	bool EnterLocation(int level = 0, int from_portal = -1, bool close_portal = false);
 	void GenerateWorld();
 	void ApplyTiles(float* h, TerrainTile* tiles);
-	void RespawnUnits();
 	void LeaveLocation(bool clear = false, bool end_buffs = true);
 	void SpawnCityPhysics();
 	// for object rot must be 0, PI/2, PI or PI*3/2

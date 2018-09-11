@@ -43,6 +43,8 @@ struct TmpLocation : public Location
 	TmpLocation() : Location(false) {}
 
 	void ApplyContext(LevelContext& ctx) {}
+	void Write(BitStreamWriter& f) {}
+	bool Read(BitStreamReader& f) { return false; }
 	void BuildRefidTables() {}
 	bool FindUnit(Unit*, int*) { return false; }
 	Unit* FindUnit(UnitData*, int&) { return nullptr; }

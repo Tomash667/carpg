@@ -10,7 +10,6 @@
 #include "Quest_Crazies.h"
 #include "Perlin.h"
 #include "LocationHelper.h"
-#include "Content.h"
 #include "QuestManager.h"
 #include "Encounter.h"
 #include "Cave.h"
@@ -969,32 +968,6 @@ void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding*
 
 	if(inside)
 		inside->ctx.masks = (!inside->masks.empty() ? &inside->masks : nullptr);
-}
-
-void Game::RespawnUnits()
-{
-	for(LevelContext& ctx : L.ForEachContext())
-	{
-		for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
-		{
-			Unit* u = *it;
-			if(u->player)
-				continue;
-
-			// model
-			u->action = A_NONE;
-			u->talking = false;
-			u->CreateMesh(Unit::CREATE_MESH::NORMAL);
-
-			// fizyka
-			CreateUnitPhysics(*u, true);
-
-			// ai
-			AIController* ai = new AIController;
-			ai->Init(u);
-			ais.push_back(ai);
-		}
-	}
 }
 
 template<typename T>

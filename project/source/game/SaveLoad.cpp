@@ -704,10 +704,6 @@ void Game::LoadGame(GameReader& f)
 			}
 		}
 	}
-	if(L.location != nullptr && L.location->type == L_CITY)
-		L.city_ctx = (City*)L.location;
-	else
-		L.city_ctx = nullptr;
 	if(LOAD_VERSION < V_FEATURE)
 		W.LoadOld(f, loading, 3);
 	f >> L.enter_from;

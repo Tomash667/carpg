@@ -102,7 +102,7 @@ void InsideLocationGenerator::OnEnter()
 
 		// odtwórz jednostki
 		if(respawn_units)
-			game.RespawnUnits();
+			L.RespawnUnits();
 		RespawnTraps();
 
 		// odtwórz fizykê
@@ -576,6 +576,7 @@ void InsideLocationGenerator::OnLoad()
 	inside->SetActiveLevel(L.dungeon_level);
 	BaseLocation& base = g_base_locations[inside->target];
 
+	L.city_ctx = nullptr;
 	L.ApplyContext(inside, L.local_ctx);
 	game.SetDungeonParamsAndTextures(base);
 

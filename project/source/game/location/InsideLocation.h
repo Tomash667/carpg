@@ -17,6 +17,8 @@ struct InsideLocation : public Location
 	// from Location
 	void Save(GameWriter& f, bool local) override;
 	void Load(GameReader& f, bool local, LOCATION_TOKEN token) override;
+	void Write(BitStreamWriter& f) override;
+	bool Read(BitStreamReader& f) override;
 
 	virtual void SetActiveLevel(int _level) = 0;
 	virtual bool HaveUpStairs() const = 0;
