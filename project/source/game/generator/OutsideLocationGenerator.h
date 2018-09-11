@@ -18,6 +18,8 @@ public:
 
 protected:
 	void CreateMap();
+	void ApplyTiles();
+	void SpawnOutsideBariers();
 
 	static const uint s;
 	static OutsideObject trees[];

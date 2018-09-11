@@ -8,16 +8,30 @@
 #include "Chest.h"
 #include "UnitEventHandler.h"
 #include "AIController.h"
+#include "ResourceManager.h"
+#include "Terrain.h"
+#include "UnitGroup.h"
 #include "Game.h"
 
 Level L;
 
+//=================================================================================================
+void Level::LoadData()
+{
+	auto& tex_mgr = ResourceManager::Get<Texture>();
+	tFlare = tex_mgr.AddLoadTask("flare.png");
+	tFlare2 = tex_mgr.AddLoadTask("flare2.png");
+	tWater = tex_mgr.AddLoadTask("water.png");
+}
+
+//=================================================================================================
 void Level::Reset()
 {
 	unit_warp_data.clear();
 	to_remove.clear();
 }
 
+//=================================================================================================
 void Level::ProcessUnitWarps()
 {
 	Game& game = Game::Get();
@@ -142,6 +156,7 @@ void Level::ProcessUnitWarps()
 	}
 }
 
+//=================================================================================================
 void Level::ProcessRemoveUnits(bool clear)
 {
 	Game& game = Game::Get();
@@ -161,88 +176,7 @@ void Level::ProcessRemoveUnits(bool clear)
 	to_remove.clear();
 }
 
-void Level::SpawnOutsideBariers()
-{
-	Game& game = Game::Get();
-
-	const float size = 256.f;
-	const float size2 = size / 2;
-	const float border = 32.f;
-	const float border2 = border / 2;
-
-	// top
-	{
-		CollisionObject& cobj = Add1(local_ctx.colliders);
-		cobj.type = CollisionObject::RECTANGLE;
-		cobj.pt = Vec2(size2, border2);
-		cobj.w = size2;
-		cobj.h = border2;
-
-		btCollisionObject* obj = new btCollisionObject;
-		obj->setCollisionShape(game.shape_barrier);
-		obj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BARRIER);
-		btTransform tr;
-		tr.setIdentity();
-		tr.setOrigin(btVector3(size2, 40.f, border2));
-		obj->setWorldTransform(tr);
-		game.phy_world->addCollisionObject(obj, CG_BARRIER);
-	}
-
-	// bottom
-	{
-		CollisionObject& cobj = Add1(local_ctx.colliders);
-		cobj.type = CollisionObject::RECTANGLE;
-		cobj.pt = Vec2(size2, size - border2);
-		cobj.w = size2;
-		cobj.h = border2;
-
-		btCollisionObject* obj = new btCollisionObject;
-		obj->setCollisionShape(game.shape_barrier);
-		obj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BARRIER);
-		btTransform tr;
-		tr.setIdentity();
-		tr.setOrigin(btVector3(size2, 40.f, size - border2));
-		obj->setWorldTransform(tr);
-		game.phy_world->addCollisionObject(obj, CG_BARRIER);
-	}
-
-	// left
-	{
-		CollisionObject& cobj = Add1(local_ctx.colliders);
-		cobj.type = CollisionObject::RECTANGLE;
-		cobj.pt = Vec2(border2, size2);
-		cobj.w = border2;
-		cobj.h = size2;
-
-		btCollisionObject* obj = new btCollisionObject;
-		obj->setCollisionShape(game.shape_barrier);
-		obj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BARRIER);
-		btTransform tr;
-		tr.setOrigin(btVector3(border2, 40.f, size2));
-		tr.setRotation(btQuaternion(PI / 2, 0, 0));
-		obj->setWorldTransform(tr);
-		game.phy_world->addCollisionObject(obj, CG_BARRIER);
-	}
-
-	// right
-	{
-		CollisionObject& cobj = Add1(local_ctx.colliders);
-		cobj.type = CollisionObject::RECTANGLE;
-		cobj.pt = Vec2(size - border2, size2);
-		cobj.w = border2;
-		cobj.h = size2;
-
-		btCollisionObject* obj = new btCollisionObject;
-		obj->setCollisionShape(game.shape_barrier);
-		obj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BARRIER);
-		btTransform tr;
-		tr.setOrigin(btVector3(size - border2, 40.f, size2));
-		tr.setRotation(btQuaternion(PI / 2, 0, 0));
-		obj->setWorldTransform(tr);
-		game.phy_world->addCollisionObject(obj, CG_BARRIER);
-	}
-}
-
+//=================================================================================================
 void Level::ApplyContext(ILevel* level, LevelContext& ctx)
 {
 	assert(level);
@@ -252,6 +186,7 @@ void Level::ApplyContext(ILevel* level, LevelContext& ctx)
 		ctx.SetTmpCtx(tmp_ctx_pool.Get());
 }
 
+//=================================================================================================
 LevelContext& Level::GetContext(Unit& unit)
 {
 	if(unit.in_building == -1)
@@ -263,6 +198,7 @@ LevelContext& Level::GetContext(Unit& unit)
 	}
 }
 
+//=================================================================================================
 LevelContext& Level::GetContext(const Vec3& pos)
 {
 	if(!city_ctx)
@@ -284,6 +220,7 @@ LevelContext& Level::GetContext(const Vec3& pos)
 	}
 }
 
+//=================================================================================================
 LevelContext& Level::GetContextFromInBuilding(int in_building)
 {
 	if(in_building == -1)
@@ -421,6 +358,7 @@ bool Level::RemoveTrap(int netid)
 	return false;
 }
 
+//=================================================================================================
 void Level::RespawnUnits()
 {
 	Game& game = Game::Get();
@@ -445,6 +383,1182 @@ void Level::RespawnUnits()
 			AIController* ai = new AIController;
 			ai->Init(u);
 			game.ais.push_back(ai);
+		}
+	}
+}
+
+//=================================================================================================
+ObjectEntity Level::SpawnObjectEntity(LevelContext& ctx, BaseObject* base, const Vec3& pos, float rot, float scale, int flags, Vec3* out_point,
+	int variant)
+{
+	if(IS_SET(base->flags, OBJ_TABLE_SPAWNER))
+	{
+		// table & stools
+		BaseObject* table = BaseObject::Get(Rand() % 2 == 0 ? "table" : "table2");
+		BaseUsable* stool = BaseUsable::Get("stool");
+
+		// table
+		Object* o = new Object;
+		o->mesh = table->mesh;
+		o->rot = Vec3(0, rot, 0);
+		o->pos = pos;
+		o->scale = 1;
+		o->base = table;
+		ctx.objects->push_back(o);
+		SpawnObjectExtras(ctx, table, pos, rot, o);
+
+		// stools
+		int count = Random(2, 4);
+		int d[4] = { 0,1,2,3 };
+		for(int i = 0; i < 4; ++i)
+			std::swap(d[Rand() % 4], d[Rand() % 4]);
+
+		for(int i = 0; i < count; ++i)
+		{
+			float sdir, slen;
+			switch(d[i])
+			{
+			case 0:
+				sdir = 0.f;
+				slen = table->size.y + 0.3f;
+				break;
+			case 1:
+				sdir = PI / 2;
+				slen = table->size.x + 0.3f;
+				break;
+			case 2:
+				sdir = PI;
+				slen = table->size.y + 0.3f;
+				break;
+			case 3:
+				sdir = PI * 3 / 2;
+				slen = table->size.x + 0.3f;
+				break;
+			default:
+				assert(0);
+				break;
+			}
+
+			sdir += rot;
+
+			Usable* u = new Usable;
+			ctx.usables->push_back(u);
+			u->base = stool;
+			u->pos = pos + Vec3(sin(sdir)*slen, 0, cos(sdir)*slen);
+			u->rot = sdir;
+			u->user = nullptr;
+			if(Net::IsOnline())
+				u->netid = Usable::netid_counter++;
+
+			SpawnObjectExtras(ctx, stool, u->pos, u->rot, u);
+		}
+
+		return o;
+	}
+	else if(IS_SET(base->flags, OBJ_BUILDING))
+	{
+		// building
+		int roti;
+		if(Equal(rot, 0))
+			roti = 0;
+		else if(Equal(rot, PI / 2))
+			roti = 1;
+		else if(Equal(rot, PI))
+			roti = 2;
+		else if(Equal(rot, PI * 3 / 2))
+			roti = 3;
+		else
+		{
+			assert(0);
+			roti = 0;
+			rot = 0.f;
+		}
+
+		Object* o = new Object;
+		o->mesh = base->mesh;
+		o->rot = Vec3(0, rot, 0);
+		o->pos = pos;
+		o->scale = scale;
+		o->base = base;
+		ctx.objects->push_back(o);
+
+		ProcessBuildingObjects(ctx, nullptr, nullptr, o->mesh, nullptr, rot, roti, pos, nullptr, nullptr, false, out_point);
+
+		return o;
+	}
+	else if(IS_SET(base->flags, OBJ_USABLE))
+	{
+		// usable object
+		BaseUsable* base_use = (BaseUsable*)base;
+
+		Usable* u = new Usable;
+		u->base = base_use;
+		u->pos = pos;
+		u->rot = rot;
+		u->user = nullptr;
+
+		if(IS_SET(base_use->use_flags, BaseUsable::CONTAINER))
+		{
+			u->container = new ItemContainer;
+			const Item* item = Book::GetRandom();
+			if(item)
+				u->container->items.push_back({ item, 1, 1 });
+		}
+
+		if(variant == -1)
+		{
+			if(base->variants)
+			{
+				// extra code for bench
+				if(IS_SET(base_use->use_flags, BaseUsable::IS_BENCH))
+				{
+					switch(location->type)
+					{
+					case L_CITY:
+						variant = 0;
+						break;
+					case L_DUNGEON:
+					case L_CRYPT:
+						variant = Rand() % 2;
+						break;
+					default:
+						variant = Rand() % 2 + 2;
+						break;
+					}
+				}
+				else
+					variant = Random<int>(base->variants->entries.size() - 1);
+			}
+		}
+		u->variant = variant;
+
+		if(Net::IsOnline())
+			u->netid = Usable::netid_counter++;
+		ctx.usables->push_back(u);
+
+		SpawnObjectExtras(ctx, base, pos, rot, u, scale, flags);
+
+		return u;
+	}
+	else if(IS_SET(base->flags, OBJ_IS_CHEST))
+	{
+		// chest
+		Chest* chest = new Chest;
+		chest->mesh_inst = new MeshInstance(base->mesh);
+		chest->rot = rot;
+		chest->pos = pos;
+		chest->handler = nullptr;
+		chest->looted = false;
+		ctx.chests->push_back(chest);
+		if(Net::IsOnline())
+			chest->netid = Chest::netid_counter++;
+
+		SpawnObjectExtras(ctx, base, pos, rot, nullptr, scale, flags);
+
+		return chest;
+	}
+	else
+	{
+		// normal object
+		Object* o = new Object;
+		o->mesh = base->mesh;
+		o->rot = Vec3(0, rot, 0);
+		o->pos = pos;
+		o->scale = scale;
+		o->base = base;
+		ctx.objects->push_back(o);
+
+		SpawnObjectExtras(ctx, base, pos, rot, o, scale, flags);
+
+		return o;
+	}
+}
+
+//=================================================================================================
+void Level::SpawnObjectExtras(LevelContext& ctx, BaseObject* obj, const Vec3& pos, float rot, void* user_ptr, float scale, int flags)
+{
+	assert(obj);
+
+	Game& game = Game::Get();
+
+	// ogieñ pochodni
+	if(!IS_SET(flags, SOE_DONT_SPAWN_PARTICLES))
+	{
+		if(IS_SET(obj->flags, OBJ_LIGHT))
+		{
+			ParticleEmitter* pe = new ParticleEmitter;
+			pe->alpha = 0.8f;
+			pe->emision_interval = 0.1f;
+			pe->emisions = -1;
+			pe->life = -1;
+			pe->max_particles = 50;
+			pe->op_alpha = POP_LINEAR_SHRINK;
+			pe->op_size = POP_LINEAR_SHRINK;
+			pe->particle_life = 0.5f;
+			pe->pos = pos;
+			pe->pos.y += obj->centery;
+			pe->pos_min = Vec3(0, 0, 0);
+			pe->pos_max = Vec3(0, 0, 0);
+			pe->spawn_min = 1;
+			pe->spawn_max = 3;
+			pe->speed_min = Vec3(-1, 3, -1);
+			pe->speed_max = Vec3(1, 4, 1);
+			pe->mode = 1;
+			pe->Init();
+			ctx.pes->push_back(pe);
+
+			pe->tex = tFlare;
+			if(IS_SET(obj->flags, OBJ_CAMPFIRE_EFFECT))
+				pe->size = 0.7f;
+			else
+			{
+				pe->size = 0.5f;
+				if(IS_SET(flags, SOE_MAGIC_LIGHT))
+					pe->tex = tFlare2;
+			}
+
+			// œwiat³o
+			if(!IS_SET(flags, SOE_DONT_CREATE_LIGHT) && ctx.lights)
+			{
+				Light& s = Add1(ctx.lights);
+				s.pos = pe->pos;
+				s.range = 5;
+				if(IS_SET(flags, SOE_MAGIC_LIGHT))
+					s.color = Vec3(0.8f, 0.8f, 1.f);
+				else
+					s.color = Vec3(1.f, 0.9f, 0.9f);
+			}
+		}
+		else if(IS_SET(obj->flags, OBJ_BLOOD_EFFECT))
+		{
+			// krew
+			ParticleEmitter* pe = new ParticleEmitter;
+			pe->alpha = 0.8f;
+			pe->emision_interval = 0.1f;
+			pe->emisions = -1;
+			pe->life = -1;
+			pe->max_particles = 50;
+			pe->op_alpha = POP_LINEAR_SHRINK;
+			pe->op_size = POP_LINEAR_SHRINK;
+			pe->particle_life = 0.5f;
+			pe->pos = pos;
+			pe->pos.y += obj->centery;
+			pe->pos_min = Vec3(0, 0, 0);
+			pe->pos_max = Vec3(0, 0, 0);
+			pe->spawn_min = 1;
+			pe->spawn_max = 3;
+			pe->speed_min = Vec3(-1, 4, -1);
+			pe->speed_max = Vec3(1, 6, 1);
+			pe->mode = 0;
+			pe->tex = game.tKrew[BLOOD_RED];
+			pe->size = 0.5f;
+			pe->Init();
+			ctx.pes->push_back(pe);
+		}
+		else if(IS_SET(obj->flags, OBJ_WATER_EFFECT))
+		{
+			// krew
+			ParticleEmitter* pe = new ParticleEmitter;
+			pe->alpha = 0.8f;
+			pe->emision_interval = 0.1f;
+			pe->emisions = -1;
+			pe->life = -1;
+			pe->max_particles = 500;
+			pe->op_alpha = POP_LINEAR_SHRINK;
+			pe->op_size = POP_LINEAR_SHRINK;
+			pe->particle_life = 3.f;
+			pe->pos = pos;
+			pe->pos.y += obj->centery;
+			pe->pos_min = Vec3(0, 0, 0);
+			pe->pos_max = Vec3(0, 0, 0);
+			pe->spawn_min = 4;
+			pe->spawn_max = 8;
+			pe->speed_min = Vec3(-0.6f, 4, -0.6f);
+			pe->speed_max = Vec3(0.6f, 7, 0.6f);
+			pe->mode = 0;
+			pe->tex = tWater;
+			pe->size = 0.05f;
+			pe->Init();
+			ctx.pes->push_back(pe);
+		}
+	}
+
+	// fizyka
+	if(obj->shape)
+	{
+		CollisionObject& c = Add1(ctx.colliders);
+		c.ptr = user_ptr;
+
+		int group = CG_OBJECT;
+		if(IS_SET(obj->flags, OBJ_PHY_BLOCKS_CAM))
+			group |= CG_CAMERA_COLLIDER;
+
+		btCollisionObject* cobj = new btCollisionObject;
+		cobj->setCollisionShape(obj->shape);
+		cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | group);
+
+		if(obj->type == OBJ_CYLINDER)
+		{
+			cobj->getWorldTransform().setOrigin(btVector3(pos.x, pos.y + obj->h / 2, pos.z));
+			c.type = CollisionObject::SPHERE;
+			c.pt = Vec2(pos.x, pos.z);
+			c.radius = obj->r;
+		}
+		else if(obj->type == OBJ_HITBOX)
+		{
+			btTransform& tr = cobj->getWorldTransform();
+			m1 = Matrix::RotationY(rot);
+			m2 = *obj->matrix * m1;
+			Vec3 pos2 = Vec3::TransformZero(m2);
+			pos2 += pos;
+			tr.setOrigin(ToVector3(pos2));
+			tr.setRotation(btQuaternion(rot, 0, 0));
+
+			c.pt = Vec2(pos2.x, pos2.z);
+			c.w = obj->size.x;
+			c.h = obj->size.y;
+			if(NotZero(rot))
+			{
+				c.type = CollisionObject::RECTANGLE_ROT;
+				c.rot = rot;
+				c.radius = max(c.w, c.h) * SQRT_2;
+			}
+			else
+				c.type = CollisionObject::RECTANGLE;
+		}
+		else
+		{
+			m1 = Matrix::RotationY(rot);
+			m2 = Matrix::Translation(pos);
+			// skalowanie jakimœ sposobem przechodzi do btWorldTransform i przy rysowaniu jest z³a skala (dwukrotnie u¿yta)
+			m3 = Matrix::Scale(1.f / obj->size.x, 1.f, 1.f / obj->size.y);
+			m3 = m3 * *obj->matrix * m1 * m2;
+			cobj->getWorldTransform().setFromOpenGLMatrix(&m3._11);
+			Vec3 out_pos = Vec3::TransformZero(m3);
+			Quat q = Quat::CreateFromRotationMatrix(m3);
+
+			float yaw = asin(-2 * (q.x*q.z - q.w*q.y));
+			c.pt = Vec2(out_pos.x, out_pos.z);
+			c.w = obj->size.x;
+			c.h = obj->size.y;
+			if(NotZero(yaw))
+			{
+				c.type = CollisionObject::RECTANGLE_ROT;
+				c.rot = yaw;
+				c.radius = max(c.w, c.h) * SQRT_2;
+			}
+			else
+				c.type = CollisionObject::RECTANGLE;
+		}
+
+		game.phy_world->addCollisionObject(cobj, group);
+
+		if(IS_SET(obj->flags, OBJ_PHYSICS_PTR))
+		{
+			assert(user_ptr);
+			cobj->setUserPointer(user_ptr);
+		}
+
+		if(IS_SET(obj->flags, OBJ_PHY_BLOCKS_CAM))
+			c.ptr = CAM_COLLIDER;
+
+		if(IS_SET(obj->flags, OBJ_DOUBLE_PHYSICS))
+			SpawnObjectExtras(ctx, obj->next_obj, pos, rot, user_ptr, scale, flags);
+		else if(IS_SET(obj->flags, OBJ_MULTI_PHYSICS))
+		{
+			for(int i = 0;; ++i)
+			{
+				if(obj->next_obj[i].shape)
+					SpawnObjectExtras(ctx, &obj->next_obj[i], pos, rot, user_ptr, scale, flags);
+				else
+					break;
+			}
+		}
+	}
+	else if(IS_SET(obj->flags, OBJ_SCALEABLE))
+	{
+		CollisionObject& c = Add1(ctx.colliders);
+		c.type = CollisionObject::SPHERE;
+		c.pt = Vec2(pos.x, pos.z);
+		c.radius = obj->r*scale;
+
+		btCollisionObject* cobj = new btCollisionObject;
+		btCylinderShape* shape = new btCylinderShape(btVector3(obj->r*scale, obj->h*scale, obj->r*scale));
+		game.shapes.push_back(shape);
+		cobj->setCollisionShape(shape);
+		cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_OBJECT);
+		cobj->getWorldTransform().setOrigin(btVector3(pos.x, pos.y + obj->h / 2 * scale, pos.z));
+		game.phy_world->addCollisionObject(cobj, CG_OBJECT);
+	}
+
+	if(IS_SET(obj->flags, OBJ_CAM_COLLIDERS))
+	{
+		int roti = (int)round((rot / (PI / 2)));
+		for(vector<Mesh::Point>::const_iterator it = obj->mesh->attach_points.begin(), end = obj->mesh->attach_points.end(); it != end; ++it)
+		{
+			const Mesh::Point& pt = *it;
+			if(strncmp(pt.name.c_str(), "camcol", 6) != 0)
+				continue;
+
+			m2 = pt.mat * Matrix::RotationY(rot);
+			Vec3 pos2 = Vec3::TransformZero(m2) + pos;
+
+			btBoxShape* shape = new btBoxShape(btVector3(pt.size.x, pt.size.y, pt.size.z));
+			game.shapes.push_back(shape);
+			btCollisionObject* co = new btCollisionObject;
+			co->setCollisionShape(shape);
+			co->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_CAMERA_COLLIDER);
+			co->getWorldTransform().setOrigin(ToVector3(pos2));
+			game.phy_world->addCollisionObject(co, CG_CAMERA_COLLIDER);
+			if(roti != 0)
+				co->getWorldTransform().setRotation(btQuaternion(rot, 0, 0));
+
+			float w = pt.size.x, h = pt.size.z;
+			if(roti == 1 || roti == 3)
+				std::swap(w, h);
+
+			CameraCollider& cc = Add1(game.cam_colliders);
+			cc.box.v1.x = pos2.x - w;
+			cc.box.v2.x = pos2.x + w;
+			cc.box.v1.z = pos2.z - h;
+			cc.box.v2.z = pos2.z + h;
+			cc.box.v1.y = pos2.y - pt.size.y;
+			cc.box.v2.y = pos2.y + pt.size.y;
+		}
+	}
+}
+
+//=================================================================================================
+void Level::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding* inside, Mesh* mesh, Mesh* inside_mesh, float rot, int roti,
+	const Vec3& shift, Building* type, CityBuilding* building, bool recreate, Vec3* out_point)
+{
+	if(mesh->attach_points.empty())
+	{
+		building->walk_pt = shift;
+		assert(!inside);
+		return;
+	}
+
+	// https://github.com/Tomash667/carpg/wiki/%5BPL%5D-Buildings-export
+	// o_x_[!N!]nazwa_???
+	// x (o - obiekt, r - obrócony obiekt, p - fizyka, s - strefa, c - postaæ, m - maska œwiat³a, d - detal wokó³ obiektu, l - limited rot object)
+	// N - wariant (tylko obiekty)
+	Game& game = Game::Get();
+	string token;
+	Matrix m1, m2;
+	bool have_exit = false, have_spawn = false;
+	bool is_inside = (inside != nullptr);
+	Vec3 spawn_point;
+	static vector<const Mesh::Point*> details;
+
+	for(vector<Mesh::Point>::const_iterator it2 = mesh->attach_points.begin(), end2 = mesh->attach_points.end(); it2 != end2; ++it2)
+	{
+		const Mesh::Point& pt = *it2;
+		if(pt.name.length() < 5 || pt.name[0] != 'o')
+			continue;
+
+		char c = pt.name[2];
+		if(c == 'o' || c == 'r' || c == 'p' || c == 's' || c == 'c' || c == 'l')
+		{
+			uint poss = pt.name.find_first_of('_', 4);
+			if(poss == string::npos)
+			{
+				assert(0);
+				continue;
+			}
+			token = pt.name.substr(4, poss - 4);
+			for(uint k = 0, len = token.length(); k < len; ++k)
+			{
+				if(token[k] == '#')
+					token[k] = '_';
+			}
+		}
+		else if(c == 'm')
+		{
+			// light mask
+			// nothing to do here
+		}
+		else if(c == 'd')
+		{
+			if(!recreate)
+			{
+				assert(!is_inside);
+				details.push_back(&pt);
+			}
+			continue;
+		}
+		else
+			continue;
+
+		Vec3 pos;
+		if(roti != 0)
+		{
+			m2 = pt.mat * Matrix::RotationY(rot);
+			pos = Vec3::TransformZero(m2);
+		}
+		else
+			pos = Vec3::TransformZero(pt.mat);
+		pos += shift;
+
+		if(c == 'o' || c == 'r' || c == 'l')
+		{
+			// obiekt / obrócony obiekt
+			if(!recreate)
+			{
+				cstring name;
+				int variant = -1;
+				if(token[0] == '!')
+				{
+					// póki co tylko 0-9
+					variant = int(token[1] - '0');
+					assert(InRange(variant, 0, 9));
+					assert(token[2] == '!');
+					name = token.c_str() + 3;
+				}
+				else
+					name = token.c_str();
+
+				BaseObject* base = BaseObject::TryGet(name);
+				assert(base);
+
+				if(base)
+				{
+					if(ctx.type == LevelContext::Outside)
+						game.terrain->SetH(pos);
+					float r;
+					switch(c)
+					{
+					case 'o':
+					default:
+						r = Random(MAX_ANGLE);
+						break;
+					case 'r':
+						r = Clip(pt.rot.y + rot);
+						break;
+					case 'l':
+						r = PI / 2 * (Rand() % 4);
+						break;
+					}
+					SpawnObjectEntity(ctx, base, pos, r, 1.f, 0, nullptr, variant);
+				}
+			}
+		}
+		else if(c == 'p')
+		{
+			// fizyka
+			if(token == "circle" || token == "circlev")
+			{
+				bool is_wall = (token == "circle");
+
+				CollisionObject& cobj = Add1(ctx.colliders);
+				cobj.type = CollisionObject::SPHERE;
+				cobj.radius = pt.size.x;
+				cobj.pt.x = pos.x;
+				cobj.pt.y = pos.z;
+				cobj.ptr = (is_wall ? CAM_COLLIDER : nullptr);
+
+				if(ctx.type == LevelContext::Outside)
+				{
+					game.terrain->SetH(pos);
+					pos.y += 2.f;
+				}
+
+				btCylinderShape* shape = new btCylinderShape(btVector3(pt.size.x, 4.f, pt.size.z));
+				game.shapes.push_back(shape);
+				btCollisionObject* co = new btCollisionObject;
+				co->setCollisionShape(shape);
+				int group = (is_wall ? CG_BUILDING : CG_COLLIDER);
+				co->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | group);
+				co->getWorldTransform().setOrigin(ToVector3(pos));
+				game.phy_world->addCollisionObject(co, group);
+			}
+			else if(token == "square" || token == "squarev" || token == "squarevn" || token == "squarevp")
+			{
+				bool is_wall = (token == "square" || token == "squarevn");
+				bool block_camera = (token == "square");
+
+				CollisionObject& cobj = Add1(ctx.colliders);
+				cobj.type = CollisionObject::RECTANGLE;
+				cobj.pt.x = pos.x;
+				cobj.pt.y = pos.z;
+				cobj.w = pt.size.x;
+				cobj.h = pt.size.z;
+				cobj.ptr = (block_camera ? CAM_COLLIDER : nullptr);
+
+				btBoxShape* shape;
+				if(token != "squarevp")
+				{
+					shape = new btBoxShape(btVector3(pt.size.x, 16.f, pt.size.z));
+					if(ctx.type == LevelContext::Outside)
+					{
+						game.terrain->SetH(pos);
+						pos.y += 8.f;
+					}
+					else
+						pos.y = 0.f;
+				}
+				else
+				{
+					shape = new btBoxShape(btVector3(pt.size.x, pt.size.y, pt.size.z));
+					if(ctx.type == LevelContext::Outside)
+						pos.y += game.terrain->GetH(pos);
+				}
+				game.shapes.push_back(shape);
+				btCollisionObject* co = new btCollisionObject;
+				co->setCollisionShape(shape);
+				int group = (is_wall ? CG_BUILDING : CG_COLLIDER);
+				co->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | group);
+				co->getWorldTransform().setOrigin(ToVector3(pos));
+				game.phy_world->addCollisionObject(co, group);
+
+				if(roti != 0)
+				{
+					cobj.type = CollisionObject::RECTANGLE_ROT;
+					cobj.rot = rot;
+					cobj.radius = sqrt(cobj.w*cobj.w + cobj.h*cobj.h);
+					co->getWorldTransform().setRotation(btQuaternion(rot, 0, 0));
+				}
+			}
+			else if(token == "squarevpa")
+			{
+				btBoxShape* shape = new btBoxShape(btVector3(pt.size.x, pt.size.y, pt.size.z));
+				if(ctx.type == LevelContext::Outside)
+					pos.y += game.terrain->GetH(pos);
+				game.shapes.push_back(shape);
+				btCollisionObject* co = new btCollisionObject;
+				co->setCollisionShape(shape);
+				int group = CG_COLLIDER;
+				co->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | group);
+				co->getWorldTransform().setOrigin(ToVector3(pos));
+				game.phy_world->addCollisionObject(co, group);
+
+				if(roti != 0)
+					co->getWorldTransform().setRotation(btQuaternion(rot, 0, 0));
+			}
+			else if(token == "squarecam")
+			{
+				if(ctx.type == LevelContext::Outside)
+					pos.y += game.terrain->GetH(pos);
+
+				btBoxShape* shape = new btBoxShape(btVector3(pt.size.x, pt.size.y, pt.size.z));
+				game.shapes.push_back(shape);
+				btCollisionObject* co = new btCollisionObject;
+				co->setCollisionShape(shape);
+				co->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_CAMERA_COLLIDER);
+				co->getWorldTransform().setOrigin(ToVector3(pos));
+				game.phy_world->addCollisionObject(co, CG_CAMERA_COLLIDER);
+				if(roti != 0)
+					co->getWorldTransform().setRotation(btQuaternion(rot, 0, 0));
+
+				float w = pt.size.x, h = pt.size.z;
+				if(roti == 1 || roti == 3)
+					std::swap(w, h);
+
+				CameraCollider& cc = Add1(game.cam_colliders);
+				cc.box.v1.x = pos.x - w;
+				cc.box.v2.x = pos.x + w;
+				cc.box.v1.z = pos.z - h;
+				cc.box.v2.z = pos.z + h;
+				cc.box.v1.y = pos.y - pt.size.y;
+				cc.box.v2.y = pos.y + pt.size.y;
+			}
+			else if(token == "xsphere")
+			{
+				inside->xsphere_pos = pos;
+				inside->xsphere_radius = pt.size.x;
+			}
+			else
+				assert(0);
+		}
+		else if(c == 's')
+		{
+			// strefa
+			if(!recreate)
+			{
+				if(token == "enter")
+				{
+					assert(!inside);
+
+					inside = new InsideBuilding;
+					inside->level_shift = city->inside_offset;
+					inside->offset = Vec2(512.f*city->inside_offset.x + 256.f, 512.f*city->inside_offset.y + 256.f);
+					if(city->inside_offset.x > city->inside_offset.y)
+					{
+						--city->inside_offset.x;
+						++city->inside_offset.y;
+					}
+					else
+					{
+						city->inside_offset.x += 2;
+						city->inside_offset.y = 0;
+					}
+					float w, h;
+					if(roti == 0 || roti == 2)
+					{
+						w = pt.size.x;
+						h = pt.size.z;
+					}
+					else
+					{
+						w = pt.size.z;
+						h = pt.size.x;
+					}
+					inside->enter_area.v1.x = pos.x - w;
+					inside->enter_area.v1.y = pos.z - h;
+					inside->enter_area.v2.x = pos.x + w;
+					inside->enter_area.v2.y = pos.z + h;
+					Vec2 mid = inside->enter_area.Midpoint();
+					inside->enter_y = game.terrain->GetH(mid.x, mid.y) + 0.1f;
+					inside->type = type;
+					inside->outside_rot = rot;
+					inside->top = -1.f;
+					inside->xsphere_radius = -1.f;
+					ApplyContext(inside, inside->ctx);
+					inside->ctx.building_id = (int)city->inside_buildings.size();
+
+					city->inside_buildings.push_back(inside);
+
+					assert(inside_mesh);
+
+					if(inside_mesh)
+					{
+						Vec3 o_pos = Vec3(inside->offset.x, 0.f, inside->offset.y);
+
+						Object* o = new Object;
+						o->base = nullptr;
+						o->mesh = inside_mesh;
+						o->pos = o_pos;
+						o->rot = Vec3(0, 0, 0);
+						o->scale = 1.f;
+						o->require_split = true;
+						inside->ctx.objects->push_back(o);
+
+						ProcessBuildingObjects(inside->ctx, city, inside, inside_mesh, nullptr, 0.f, 0, o->pos, nullptr, nullptr);
+					}
+
+					have_exit = true;
+				}
+				else if(token == "exit")
+				{
+					assert(inside);
+
+					inside->exit_area.v1.x = pos.x - pt.size.x;
+					inside->exit_area.v1.y = pos.z - pt.size.z;
+					inside->exit_area.v2.x = pos.x + pt.size.x;
+					inside->exit_area.v2.y = pos.z + pt.size.z;
+
+					have_exit = true;
+				}
+				else if(token == "spawn")
+				{
+					if(is_inside)
+						inside->inside_spawn = pos;
+					else
+					{
+						spawn_point = pos;
+						game.terrain->SetH(spawn_point);
+					}
+
+					have_spawn = true;
+				}
+				else if(token == "top")
+				{
+					assert(is_inside);
+					inside->top = pos.y;
+				}
+				else if(token == "door" || token == "doorc" || token == "doorl" || token == "door2")
+				{
+					Door* door = new Door;
+					door->pos = pos;
+					door->rot = Clip(pt.rot.y + rot);
+					door->state = Door::Open;
+					door->door2 = (token == "door2");
+					door->mesh_inst = new MeshInstance(door->door2 ? game.aDoor2 : game.aDoor);
+					door->mesh_inst->groups[0].speed = 2.f;
+					door->phy = new btCollisionObject;
+					door->phy->setCollisionShape(game.shape_door);
+					door->phy->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_DOOR);
+					door->locked = LOCK_NONE;
+					door->netid = Door::netid_counter++;
+
+					btTransform& tr = door->phy->getWorldTransform();
+					Vec3 pos = door->pos;
+					pos.y += 1.319f;
+					tr.setOrigin(ToVector3(pos));
+					tr.setRotation(btQuaternion(door->rot, 0, 0));
+					game.phy_world->addCollisionObject(door->phy, CG_DOOR);
+
+					if(token != "door") // door2 are closed now, this is intended
+					{
+						door->state = Door::Closed;
+						if(token == "doorl")
+							door->locked = 1;
+					}
+					else
+					{
+						btVector3& pos = door->phy->getWorldTransform().getOrigin();
+						pos.setY(pos.y() - 100.f);
+						door->mesh_inst->SetToEnd(door->mesh_inst->mesh->anims[0].name.c_str());
+					}
+
+					ctx.doors->push_back(door);
+				}
+				else if(token == "arena")
+				{
+					assert(inside);
+
+					inside->arena1.v1.x = pos.x - pt.size.x;
+					inside->arena1.v1.y = pos.z - pt.size.z;
+					inside->arena1.v2.x = pos.x + pt.size.x;
+					inside->arena1.v2.y = pos.z + pt.size.z;
+				}
+				else if(token == "arena2")
+				{
+					assert(inside);
+
+					inside->arena2.v1.x = pos.x - pt.size.x;
+					inside->arena2.v1.y = pos.z - pt.size.z;
+					inside->arena2.v2.x = pos.x + pt.size.x;
+					inside->arena2.v2.y = pos.z + pt.size.z;
+				}
+				else if(token == "viewer")
+				{
+					// ten punkt jest u¿ywany w SpawnArenaViewers
+				}
+				else if(token == "point")
+				{
+					if(building)
+					{
+						building->walk_pt = pos;
+						game.terrain->SetH(building->walk_pt);
+					}
+					else if(out_point)
+						*out_point = pos;
+				}
+				else
+					assert(0);
+			}
+		}
+		else if(c == 'c')
+		{
+			if(!recreate)
+			{
+				UnitData* ud = UnitData::TryGet(token.c_str());
+				assert(ud);
+				if(ud)
+				{
+					Unit* u = game.SpawnUnitNearLocation(ctx, pos, *ud, nullptr, -2);
+					u->rot = Clip(pt.rot.y + rot);
+					u->ai->start_rot = u->rot;
+				}
+			}
+		}
+		else if(c == 'm')
+		{
+			LightMask& mask = Add1(inside->masks);
+			mask.size = Vec2(pt.size.x, pt.size.z);
+			mask.pos = Vec2(pos.x, pos.z);
+		}
+	}
+
+	if(!details.empty() && !is_inside)
+	{
+		int c = Rand() % 80 + details.size() * 2, count;
+		if(c < 10)
+			count = 0;
+		else if(c < 30)
+			count = 1;
+		else if(c < 60)
+			count = 2;
+		else if(c < 90)
+			count = 3;
+		else
+			count = 4;
+		if(count > 0)
+		{
+			std::random_shuffle(details.begin(), details.end(), MyRand);
+			while(count && !details.empty())
+			{
+				const Mesh::Point& pt = *details.back();
+				details.pop_back();
+				--count;
+
+				uint poss = pt.name.find_first_of('_', 4);
+				if(poss == string::npos)
+				{
+					assert(0);
+					continue;
+				}
+				token = pt.name.substr(4, poss - 4);
+				for(uint k = 0, len = token.length(); k < len; ++k)
+				{
+					if(token[k] == '#')
+						token[k] = '_';
+				}
+
+				Vec3 pos;
+				if(roti != 0)
+				{
+					m1 = Matrix::RotationY(rot);
+					m2 = pt.mat * m1;
+					pos = Vec3::TransformZero(m2);
+				}
+				else
+					pos = Vec3::TransformZero(pt.mat);
+				pos += shift;
+
+				cstring name;
+				int variant = -1;
+				if(token[0] == '!')
+				{
+					// póki co tylko 0-9
+					variant = int(token[1] - '0');
+					assert(InRange(variant, 0, 9));
+					assert(token[2] == '!');
+					name = token.c_str() + 3;
+				}
+				else
+					name = token.c_str();
+
+				BaseObject* obj = BaseObject::TryGet(name);
+				assert(obj);
+
+				if(obj)
+				{
+					if(ctx.type == LevelContext::Outside)
+						game.terrain->SetH(pos);
+					SpawnObjectEntity(ctx, obj, pos, Clip(pt.rot.y + rot), 1.f, 0, nullptr, variant);
+				}
+			}
+		}
+		details.clear();
+	}
+
+	if(!recreate)
+	{
+		if(is_inside || inside)
+			assert(have_exit && have_spawn);
+
+		if(!is_inside && inside)
+			inside->outside_spawn = spawn_point;
+	}
+
+	if(inside)
+		inside->ctx.masks = (!inside->masks.empty() ? &inside->masks : nullptr);
+}
+
+//=================================================================================================
+ObjectEntity Level::SpawnObjectNearLocation(LevelContext& ctx, BaseObject* obj, const Vec2& pos, float rot, float range, float margin, float scale)
+{
+	Game& game = Game::Get();
+	bool ok = false;
+	if(obj->type == OBJ_CYLINDER)
+	{
+		game.global_col.clear();
+		Vec3 pt(pos.x, 0, pos.y);
+		game.GatherCollisionObjects(ctx, game.global_col, pt, obj->r + margin + range);
+		float extra_radius = range / 20;
+		for(int i = 0; i < 20; ++i)
+		{
+			if(!game.Collide(game.global_col, pt, obj->r + margin))
+			{
+				ok = true;
+				break;
+			}
+			pt = Vec3(pos.x, 0, pos.y);
+			pt += Vec2::RandomPoissonDiscPoint().XZ() * extra_radius;
+			extra_radius += range / 20;
+		}
+
+		if(!ok)
+			return nullptr;
+
+		if(ctx.type == LevelContext::Outside)
+			game.terrain->SetH(pt);
+
+		return SpawnObjectEntity(ctx, obj, pt, rot, scale);
+	}
+	else
+	{
+		game.global_col.clear();
+		Vec3 pt(pos.x, 0, pos.y);
+		game.GatherCollisionObjects(ctx, game.global_col, pt, sqrt(obj->size.x + obj->size.y) + margin + range);
+		float extra_radius = range / 20;
+		Box2d box(pos);
+		box.v1.x -= obj->size.x;
+		box.v1.y -= obj->size.y;
+		box.v2.x += obj->size.x;
+		box.v2.y += obj->size.y;
+		for(int i = 0; i < 20; ++i)
+		{
+			if(!game.Collide(game.global_col, box, margin, rot))
+			{
+				ok = true;
+				break;
+			}
+			pt = Vec3(pos.x, 0, pos.y);
+			pt += Vec2::RandomPoissonDiscPoint().XZ() * extra_radius;
+			extra_radius += range / 20;
+			box.v1.x = pt.x - obj->size.x;
+			box.v1.y = pt.z - obj->size.y;
+			box.v2.x = pt.x + obj->size.x;
+			box.v2.y = pt.z + obj->size.y;
+		}
+
+		if(!ok)
+			return nullptr;
+
+		if(ctx.type == LevelContext::Outside)
+			game.terrain->SetH(pt);
+
+		return SpawnObjectEntity(ctx, obj, pt, rot, scale);
+	}
+}
+
+//=================================================================================================
+ObjectEntity Level::SpawnObjectNearLocation(LevelContext& ctx, BaseObject* obj, const Vec2& pos, const Vec2& rot_target, float range, float margin,
+	float scale)
+{
+	if(obj->type == OBJ_CYLINDER)
+		return SpawnObjectNearLocation(ctx, obj, pos, Vec2::LookAtAngle(pos, rot_target), range, margin, scale);
+	else
+	{
+		Game& game = Game::Get();
+		game.global_col.clear();
+		Vec3 pt(pos.x, 0, pos.y);
+		game.GatherCollisionObjects(ctx, game.global_col, pt, sqrt(obj->size.x + obj->size.y) + margin + range);
+		float extra_radius = range / 20, rot;
+		Box2d box(pos);
+		box.v1.x -= obj->size.x;
+		box.v1.y -= obj->size.y;
+		box.v2.x += obj->size.x;
+		box.v2.y += obj->size.y;
+		bool ok = false;
+		for(int i = 0; i < 20; ++i)
+		{
+			rot = Vec2::LookAtAngle(Vec2(pt.x, pt.z), rot_target);
+			if(!game.Collide(game.global_col, box, margin, rot))
+			{
+				ok = true;
+				break;
+			}
+			pt = Vec3(pos.x, 0, pos.y);
+			pt += Vec2::RandomPoissonDiscPoint().XZ() * extra_radius;
+			extra_radius += range / 20;
+			box.v1.x = pt.x - obj->size.x;
+			box.v1.y = pt.z - obj->size.y;
+			box.v2.x = pt.x + obj->size.x;
+			box.v2.y = pt.z + obj->size.y;
+		}
+
+		if(!ok)
+			return nullptr;
+
+		if(ctx.type == LevelContext::Outside)
+			game.terrain->SetH(pt);
+
+		return SpawnObjectEntity(ctx, obj, pt, rot, scale);
+	}
+}
+
+//=================================================================================================
+void Level::PickableItemBegin(LevelContext& ctx, Object& o)
+{
+	assert(o.base);
+
+	pickable_ctx = &ctx;
+	pickable_obj = &o;
+	pickable_spawns.clear();
+	pickable_items.clear();
+
+	for(vector<Mesh::Point>::iterator it = o.base->mesh->attach_points.begin(), end = o.base->mesh->attach_points.end(); it != end; ++it)
+	{
+		if(strncmp(it->name.c_str(), "spawn_", 6) == 0)
+		{
+			assert(it->type == Mesh::Point::Box);
+			Box box(it->mat._41, it->mat._42, it->mat._43);
+			box.v1.x -= it->size.x - 0.05f;
+			box.v1.z -= it->size.z - 0.05f;
+			box.v2.x += it->size.x - 0.05f;
+			box.v2.z += it->size.z - 0.05f;
+			box.v1.y = box.v2.y = box.v1.y - it->size.y;
+			pickable_spawns.push_back(box);
+		}
+	}
+
+	assert(!pickable_spawns.empty());
+}
+
+//=================================================================================================
+void Level::PickableItemAdd(const Item* item)
+{
+	assert(item);
+
+	for(int i = 0; i < 20; ++i)
+	{
+		// pobierz punkt
+		uint spawn = Rand() % pickable_spawns.size();
+		Box& box = pickable_spawns[spawn];
+		// ustal pozycjê
+		Vec3 pos(Random(box.v1.x, box.v2.x), box.v1.y, Random(box.v1.z, box.v2.z));
+		// sprawdŸ kolizjê
+		bool ok = true;
+		for(vector<PickableItem>::iterator it = pickable_items.begin(), end = pickable_items.end(); it != end; ++it)
+		{
+			if(it->spawn == spawn)
+			{
+				if(CircleToCircle(pos.x, pos.z, 0.15f, it->pos.x, it->pos.z, 0.15f))
+				{
+					ok = false;
+					break;
+				}
+			}
+		}
+		// dodaj
+		if(ok)
+		{
+			PickableItem& i = Add1(pickable_items);
+			i.spawn = spawn;
+			i.pos = pos;
+
+			GroundItem* gi = new GroundItem;
+			gi->count = 1;
+			gi->team_count = 1;
+			gi->item = item;
+			gi->netid = GroundItem::netid_counter++;
+			gi->rot = Random(MAX_ANGLE);
+			float rot = pickable_obj->rot.y,
+				s = sin(rot),
+				c = cos(rot);
+			gi->pos = Vec3(pos.x*c + pos.z*s, pos.y, -pos.x*s + pos.z*c) + pickable_obj->pos;
+			pickable_ctx->items->push_back(gi);
+
+			break;
+		}
+	}
+}
+
+//=================================================================================================
+void Level::SpawnUnitsGroup(LevelContext& ctx, const Vec3& pos, const Vec3* look_at, uint count, UnitGroup* group, int level, delegate<void(Unit*)> callback)
+{
+	static TmpUnitGroup tgroup;
+	tgroup.group = group;
+	tgroup.Fill(level);
+
+	for(uint i = 0; i < count; ++i)
+	{
+		int x = Rand() % tgroup.total,
+			y = 0;
+		for(auto& entry : tgroup.entries)
+		{
+			y += entry.count;
+			if(x < y)
+			{
+				Unit* u = Game::Get().SpawnUnitNearLocation(ctx, pos, *entry.ud, look_at, Clamp(entry.ud->level.Random(), level / 2, level), 4.f);
+				if(u && callback)
+					callback(u);
+				break;
+			}
 		}
 	}
 }

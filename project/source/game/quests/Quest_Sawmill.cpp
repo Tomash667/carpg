@@ -277,7 +277,7 @@ void Quest_Sawmill::GenerateSawmill(bool in_progress)
 		{
 			Vec2 pt = Vec2::Random(Vec2(128 - 16, 128 - 16), Vec2(128 + 16, 128 + 16));
 			BaseObject* obj = tartak_objs_ptrs[Rand() % n_tartak_objs];
-			game->SpawnObjectNearLocation(L.local_ctx, obj, pt, Random(MAX_ANGLE), 2.f);
+			L.SpawnObjectNearLocation(L.local_ctx, obj, pt, Random(MAX_ANGLE), 2.f);
 		}
 
 		// generuj innych drwali
@@ -296,7 +296,7 @@ void Quest_Sawmill::GenerateSawmill(bool in_progress)
 		// budynek
 		Vec3 spawn_pt;
 		float rot = PI / 2 * (Rand() % 4);
-		game->SpawnObjectEntity(L.local_ctx, BaseObject::Get("tartak"), Vec3(128, wys, 128), rot, 1.f, 0, &spawn_pt);
+		L.SpawnObjectEntity(L.local_ctx, BaseObject::Get("tartak"), Vec3(128, wys, 128), rot, 1.f, 0, &spawn_pt);
 
 		// artur drwal
 		Unit* u = game->SpawnUnitNearLocation(L.local_ctx, spawn_pt, ud, nullptr, -2);
@@ -311,7 +311,7 @@ void Quest_Sawmill::GenerateSawmill(bool in_progress)
 		{
 			Vec2 pt = Vec2::Random(Vec2(128 - 16, 128 - 16), Vec2(128 + 16, 128 + 16));
 			BaseObject* obj = tartak_objs_ptrs[Rand() % n_tartak_objs];
-			game->SpawnObjectNearLocation(L.local_ctx, obj, pt, Random(MAX_ANGLE), 2.f);
+			L.SpawnObjectNearLocation(L.local_ctx, obj, pt, Random(MAX_ANGLE), 2.f);
 		}
 
 		// inni drwale

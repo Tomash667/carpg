@@ -22,17 +22,6 @@ CaveGenerator::~CaveGenerator()
 }
 
 //=================================================================================================
-int CaveGenerator::GetNumberOfSteps()
-{
-	int steps = LocationGenerator::GetNumberOfSteps();
-	if(first)
-		steps += 2; // txGeneratingObjects, txGeneratingUnits
-	else if(!reenter)
-		++steps; // txRegeneratingLevel
-	return steps;
-}
-
-//=================================================================================================
 void CaveGenerator::FillMap(bool* m)
 {
 	for(int i = 0; i < size2; ++i)

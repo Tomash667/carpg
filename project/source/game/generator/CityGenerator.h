@@ -8,94 +8,87 @@
 #include "EntryPoint.h"
 #include "LevelContext.h"
 
-struct BuildPt
-{
-	Int2 pt;
-	int side; // 0 = obojêtnie, 1 = <==> szerszy, 2 ^ d³u¿szy
-};
-
-enum RoadType
-{
-	RoadType_Plus,
-	RoadType_Line,
-	RoadType_Curve,
-	RoadType_Oval,
-	RoadType_Three,
-	RoadType_Sin,
-	RoadType_Part,
-	RoadType_Max
-};
-
-struct APoint2
-{
-	int koszt, stan, dir;
-	Int2 prev;
-};
-
-struct APoint2Sorter
-{
-	APoint2Sorter(APoint2* _grid, uint _s) : grid(_grid), s(_s)
-	{
-	}
-
-	bool operator() (int idx1, int idx2) const
-	{
-		return grid[idx1].koszt > grid[idx2].koszt;
-	}
-
-	APoint2* grid;
-	uint s;
-};
-
-struct APoint2Sorter2
-{
-	explicit APoint2Sorter2(vector<APoint2>& grid) : grid(grid)
-	{
-	}
-
-	bool operator() (int idx1, int idx2) const
-	{
-		return grid[idx1].koszt > grid[idx2].koszt;
-	}
-
-	vector<APoint2>& grid;
-};
-
-enum EntryDir
-{
-	ED_Left,
-	ED_Right,
-	ED_Bottom,
-	ED_Top,
-	ED_LeftBottom,
-	ED_LeftTop,
-	ED_RightBottom,
-	ED_RightTop,
-	ED_BottomLeft,
-	ED_BottomRight,
-	ED_TopLeft,
-	ED_TopRight
-};
-
-#define ROAD_HORIZONTAL (1<<0)
-#define ROAD_START_CHECKED (1<<1)
-#define ROAD_END_CHECKED (1<<2)
-#define ROAD_MID_CHECKED (1<<3)
-#define ROAD_ALL_CHECKED (ROAD_START_CHECKED|ROAD_END_CHECKED|ROAD_MID_CHECKED)
-
-struct Road2
-{
-	Int2 start, end;
-	int flags;
-
-	int Length() const
-	{
-		return max(abs(end.x - start.x), abs(end.y - start.y));
-	}
-};
-
 class CityGenerator final : public OutsideLocationGenerator
 {
+	enum EntryDir
+	{
+		ED_Left,
+		ED_Right,
+		ED_Bottom,
+		ED_Top,
+		ED_LeftBottom,
+		ED_LeftTop,
+		ED_RightBottom,
+		ED_RightTop,
+		ED_BottomLeft,
+		ED_BottomRight,
+		ED_TopLeft,
+		ED_TopRight
+	};
+
+	enum RoadType
+	{
+		RoadType_Plus,
+		RoadType_Line,
+		RoadType_Curve,
+		RoadType_Oval,
+		RoadType_Three,
+		RoadType_Sin,
+		RoadType_Part,
+		RoadType_Max
+	};
+
+	struct BuildPt
+	{
+		Int2 pt;
+		int side; // 0 = obojêtnie, 1 = <==> szerszy, 2 ^ d³u¿szy
+	};
+
+	struct APoint2
+	{
+		int koszt, stan, dir;
+		Int2 prev;
+	};
+
+	struct APoint2Sorter
+	{
+		APoint2Sorter(APoint2* _grid, uint _s) : grid(_grid), s(_s)
+		{
+		}
+
+		bool operator() (int idx1, int idx2) const
+		{
+			return grid[idx1].koszt > grid[idx2].koszt;
+		}
+
+		APoint2* grid;
+		uint s;
+	};
+
+	struct APoint2Sorter2
+	{
+		explicit APoint2Sorter2(vector<APoint2>& grid) : grid(grid)
+		{
+		}
+
+		bool operator() (int idx1, int idx2) const
+		{
+			return grid[idx1].koszt > grid[idx2].koszt;
+		}
+
+		vector<APoint2>& grid;
+	};
+
+	struct Road2
+	{
+		Int2 start, end;
+		int flags;
+
+		int Length() const
+		{
+			return max(abs(end.x - start.x), abs(end.y - start.y));
+		}
+	};
 public:
 	CityGenerator() : sorter(grid)
 	{
@@ -154,6 +147,9 @@ private:
 	void RepositionUnits();
 	void GeneratePickableItems();
 	void CreateMinimap() override;
+	void OnLoad() override;
+	void SpawnCityPhysics();
+	void RespawnBuildingPhysics();
 
 	City* city;
 	TerrainTile* tiles;

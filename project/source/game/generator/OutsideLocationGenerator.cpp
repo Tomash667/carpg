@@ -118,7 +118,7 @@ void OutsideLocationGenerator::OnEnter()
 		need_reset = false;
 
 	if(!reenter)
-		game.ApplyTiles(outside->h, outside->tiles);
+		ApplyTiles();
 
 	game.SetOutsideParams();
 
@@ -179,7 +179,7 @@ void OutsideLocationGenerator::OnEnter()
 	{
 		game.LoadingStep(game.txRecreatingObjects);
 		game.SpawnTerrainCollider();
-		L.SpawnOutsideBariers();
+		SpawnOutsideBariers();
 	}
 
 	// handle quest event
@@ -218,7 +218,6 @@ void OutsideLocationGenerator::OnEnter()
 //=================================================================================================
 void OutsideLocationGenerator::SpawnForestObjects(int road_dir)
 {
-	Game& game = Game::Get();
 	TerrainTile* tiles = ((OutsideLocation*)loc)->tiles;
 
 	// obelisk
@@ -233,19 +232,19 @@ void OutsideLocationGenerator::SpawnForestObjects(int road_dir)
 			pos = Vec3(Rand() % 2 == 0 ? 127.f - 32.f : 127.f + 32.f, 0, 127.f);
 		terrain->SetH(pos);
 		pos.y -= 1.f;
-		game.SpawnObjectEntity(L.local_ctx, BaseObject::Get("obelisk"), pos, 0.f);
+		L.SpawnObjectEntity(L.local_ctx, BaseObject::Get("obelisk"), pos, 0.f);
 	}
 	else if(Rand() % 16 == 0)
 	{
 		// tree with rocks around it
 		Vec3 pos(Random(48.f, 208.f), 0, Random(48.f, 208.f));
 		pos.y = terrain->GetH(pos) - 1.f;
-		game.SpawnObjectEntity(L.local_ctx, trees2[3].obj, pos, Random(MAX_ANGLE), 4.f);
+		L.SpawnObjectEntity(L.local_ctx, trees2[3].obj, pos, Random(MAX_ANGLE), 4.f);
 		for(int i = 0; i < 12; ++i)
 		{
 			Vec3 pos2 = pos + Vec3(sin(PI * 2 * i / 12)*8.f, 0, cos(PI * 2 * i / 12)*8.f);
 			pos2.y = terrain->GetH(pos2);
-			game.SpawnObjectEntity(L.local_ctx, misc[4].obj, pos2, Random(MAX_ANGLE));
+			L.SpawnObjectEntity(L.local_ctx, misc[4].obj, pos2, Random(MAX_ANGLE));
 		}
 	}
 
@@ -259,7 +258,7 @@ void OutsideLocationGenerator::SpawnForestObjects(int road_dir)
 			Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 			pos.y = terrain->GetH(pos);
 			OutsideObject& o = trees[Rand() % n_trees];
-			game.SpawnObjectEntity(L.local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+			L.SpawnObjectEntity(L.local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 		}
 		else if(co == TT_GRASS3)
 		{
@@ -271,7 +270,7 @@ void OutsideLocationGenerator::SpawnForestObjects(int road_dir)
 			else
 				co = Rand() % 3;
 			OutsideObject& o = trees2[co];
-			game.SpawnObjectEntity(L.local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+			L.SpawnObjectEntity(L.local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 		}
 	}
 
@@ -284,7 +283,7 @@ void OutsideLocationGenerator::SpawnForestObjects(int road_dir)
 			Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 			pos.y = terrain->GetH(pos);
 			OutsideObject& o = misc[Rand() % n_misc];
-			game.SpawnObjectEntity(L.local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+			L.SpawnObjectEntity(L.local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 		}
 	}
 }
@@ -412,25 +411,128 @@ void OutsideLocationGenerator::OnLoad()
 	game.SetTerrainTextures();
 
 	L.ApplyContext(outside, L.local_ctx);
-	game.ApplyTiles(outside->h, outside->tiles);
+	L.city_ctx = nullptr;
+	ApplyTiles();
 
 	game.RespawnObjectColliders(false);
 	game.SpawnTerrainCollider();
-
-	if(outside->type == L_CITY)
-	{
-		L.city_ctx = (City*)loc;
-		game.RespawnBuildingPhysics();
-		game.SpawnCityPhysics();
-	}
-	else
-	{
-		L.city_ctx = nullptr;
-		L.SpawnOutsideBariers();
-	}
-
+	SpawnOutsideBariers();
 	game.InitQuadTree();
 	game.CalculateQuadtree();
 
 	CreateMinimap();
+}
+
+//=================================================================================================
+void OutsideLocationGenerator::ApplyTiles()
+{
+	TEX splat = terrain->GetSplatTexture();
+	TextureLock lock(splat);
+	for(uint y = 0; y < 256; ++y)
+	{
+		uint* row = lock[y];
+		for(uint x = 0; x < 256; ++x, ++row)
+		{
+			TerrainTile& t = outside->tiles[x / 2 + y / 2 * OutsideLocation::size];
+			if(t.alpha == 0)
+				*row = terrain_tile_info[t.t].mask;
+			else
+			{
+				const TerrainTileInfo& tti1 = terrain_tile_info[t.t];
+				const TerrainTileInfo& tti2 = terrain_tile_info[t.t2];
+				if(tti1.shift > tti2.shift)
+					*row = tti2.mask + ((255 - t.alpha) << tti1.shift);
+				else
+					*row = tti1.mask + (t.alpha << tti2.shift);
+			}
+		}
+	}
+	lock.GenerateMipSubLevels();
+
+	terrain->SetHeightMap(outside->h);
+	terrain->Rebuild();
+	terrain->CalculateBox();
+}
+
+//=================================================================================================
+void OutsideLocationGenerator::SpawnOutsideBariers()
+{
+	Game& game = Game::Get();
+
+	const float size = 256.f;
+	const float size2 = size / 2;
+	const float border = 32.f;
+	const float border2 = border / 2;
+
+	// top
+	{
+		CollisionObject& cobj = Add1(L.local_ctx.colliders);
+		cobj.type = CollisionObject::RECTANGLE;
+		cobj.pt = Vec2(size2, border2);
+		cobj.w = size2;
+		cobj.h = border2;
+
+		btCollisionObject* obj = new btCollisionObject;
+		obj->setCollisionShape(game.shape_barrier);
+		obj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BARRIER);
+		btTransform tr;
+		tr.setIdentity();
+		tr.setOrigin(btVector3(size2, 40.f, border2));
+		obj->setWorldTransform(tr);
+		game.phy_world->addCollisionObject(obj, CG_BARRIER);
+	}
+
+	// bottom
+	{
+		CollisionObject& cobj = Add1(L.local_ctx.colliders);
+		cobj.type = CollisionObject::RECTANGLE;
+		cobj.pt = Vec2(size2, size - border2);
+		cobj.w = size2;
+		cobj.h = border2;
+
+		btCollisionObject* obj = new btCollisionObject;
+		obj->setCollisionShape(game.shape_barrier);
+		obj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BARRIER);
+		btTransform tr;
+		tr.setIdentity();
+		tr.setOrigin(btVector3(size2, 40.f, size - border2));
+		obj->setWorldTransform(tr);
+		game.phy_world->addCollisionObject(obj, CG_BARRIER);
+	}
+
+	// left
+	{
+		CollisionObject& cobj = Add1(L.local_ctx.colliders);
+		cobj.type = CollisionObject::RECTANGLE;
+		cobj.pt = Vec2(border2, size2);
+		cobj.w = border2;
+		cobj.h = size2;
+
+		btCollisionObject* obj = new btCollisionObject;
+		obj->setCollisionShape(game.shape_barrier);
+		obj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BARRIER);
+		btTransform tr;
+		tr.setOrigin(btVector3(border2, 40.f, size2));
+		tr.setRotation(btQuaternion(PI / 2, 0, 0));
+		obj->setWorldTransform(tr);
+		game.phy_world->addCollisionObject(obj, CG_BARRIER);
+	}
+
+	// right
+	{
+		CollisionObject& cobj = Add1(L.local_ctx.colliders);
+		cobj.type = CollisionObject::RECTANGLE;
+		cobj.pt = Vec2(size - border2, size2);
+		cobj.w = border2;
+		cobj.h = size2;
+
+		btCollisionObject* obj = new btCollisionObject;
+		obj->setCollisionShape(game.shape_barrier);
+		obj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BARRIER);
+		btTransform tr;
+		tr.setOrigin(btVector3(size - border2, 40.f, size2));
+		tr.setRotation(btQuaternion(PI / 2, 0, 0));
+		obj->setWorldTransform(tr);
+		game.phy_world->addCollisionObject(obj, CG_BARRIER);
+	}
 }

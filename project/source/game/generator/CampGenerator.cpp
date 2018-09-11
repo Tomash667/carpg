@@ -109,7 +109,7 @@ void CampGenerator::GenerateObjects()
 		pts.push_back(pt);
 
 		// ognisko
-		if(game.SpawnObjectNearLocation(L.local_ctx, Rand() % 5 == 0 ? ognisko_zgaszone : ognisko, pt, Random(MAX_ANGLE)))
+		if(L.SpawnObjectNearLocation(L.local_ctx, Rand() % 5 == 0 ? ognisko_zgaszone : ognisko, pt, Random(MAX_ANGLE)))
 		{
 			// namioty / pos³ania
 			for(int j = 0, ile = Random(4, 7); j < ile; ++j)
@@ -117,9 +117,9 @@ void CampGenerator::GenerateObjects()
 				float kat = Random(MAX_ANGLE);
 				bool czy_namiot = (Rand() % 2 == 0);
 				if(czy_namiot)
-					game.SpawnObjectNearLocation(L.local_ctx, namiot, pt + Vec2(sin(kat), cos(kat))*Random(4.f, 5.5f), pt);
+					L.SpawnObjectNearLocation(L.local_ctx, namiot, pt + Vec2(sin(kat), cos(kat))*Random(4.f, 5.5f), pt);
 				else
-					game.SpawnObjectNearLocation(L.local_ctx, poslanie, pt + Vec2(sin(kat), cos(kat))*Random(3.f, 4.f), pt);
+					L.SpawnObjectNearLocation(L.local_ctx, poslanie, pt + Vec2(sin(kat), cos(kat))*Random(3.f, 4.f), pt);
 			}
 		}
 	}
@@ -139,7 +139,7 @@ void CampGenerator::GenerateObjects()
 		if(ok)
 		{
 			BaseObject* obj = camp_objs_ptrs[Rand() % n_camp_objs];
-			auto e = game.SpawnObjectNearLocation(L.local_ctx, obj, pt, Random(MAX_ANGLE), 2.f);
+			auto e = L.SpawnObjectNearLocation(L.local_ctx, obj, pt, Random(MAX_ANGLE), 2.f);
 			if(e.IsChest() && L.location->spawn != SG_NONE) // empty chests for empty camps
 			{
 				int gold, level = L.location->st;

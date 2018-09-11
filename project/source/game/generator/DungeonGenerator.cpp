@@ -15,17 +15,6 @@
 #include "Game.h"
 
 //=================================================================================================
-int DungeonGenerator::GetNumberOfSteps()
-{
-	int steps = LocationGenerator::GetNumberOfSteps();
-	if(first)
-		steps += 2; // txGeneratingObjects, txGeneratingUnits
-	else if(!reenter)
-		++steps; // txRegeneratingLevel
-	return steps;
-}
-
-//=================================================================================================
 void DungeonGenerator::Generate()
 {
 	InsideLocation* inside = (InsideLocation*)loc;
@@ -401,8 +390,6 @@ bool DungeonGenerator::HandleUpdate(int days)
 //=================================================================================================
 void DungeonGenerator::GenerateDungeonItems()
 {
-	Game& game = Game::Get();
-
 	// determine how much food to spawn
 	int mod = 3;
 	InsideLocation* inside = (InsideLocation*)loc;
@@ -441,11 +428,11 @@ void DungeonGenerator::GenerateDungeonItems()
 		Object& obj = **it;
 		if(obj.base == table)
 		{
-			game.PickableItemBegin(L.local_ctx, obj);
+			L.PickableItemBegin(L.local_ctx, obj);
 			if(spawn_golden_cup)
 			{
 				spawn_golden_cup = false;
-				game.PickableItemAdd(Item::Get("golden_cup"));
+				L.PickableItemAdd(Item::Get("golden_cup"));
 			}
 			else
 			{
@@ -453,22 +440,22 @@ void DungeonGenerator::GenerateDungeonItems()
 				if(count)
 				{
 					for(int i = 0; i < count; ++i)
-						game.PickableItemAdd(lis.Get());
+						L.PickableItemAdd(lis.Get());
 				}
 			}
 			if(Rand() % 3 == 0)
-				game.PickableItemAdd(plate);
+				L.PickableItemAdd(plate);
 			if(Rand() % 3 == 0)
-				game.PickableItemAdd(cup);
+				L.PickableItemAdd(cup);
 		}
 		else if(obj.base == shelves)
 		{
 			int count = Random(mod, mod * 3 / 2);
 			if(count)
 			{
-				game.PickableItemBegin(L.local_ctx, obj);
+				L.PickableItemBegin(L.local_ctx, obj);
 				for(int i = 0; i < count; ++i)
-					game.PickableItemAdd(lis.Get());
+					L.PickableItemAdd(lis.Get());
 			}
 		}
 	}

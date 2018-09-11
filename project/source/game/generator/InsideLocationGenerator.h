@@ -6,6 +6,7 @@ class InsideLocationGenerator : public LocationGenerator
 {
 public:
 	void Init() override;
+	int GetNumberOfSteps() override;
 	void OnEnter() override;
 	virtual bool HandleUpdate(int days) { return true; }
 	void CreateMinimap() override;

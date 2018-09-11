@@ -21,6 +21,7 @@
 #include "DirectX.h"
 #include "LocationGeneratorFactory.h"
 #include "Pathfinding.h"
+#include "Level.h"
 
 extern void HumanPredraw(void* ptr, Matrix* mat, int n);
 extern const int ITEM_IMAGE_SIZE;
@@ -586,11 +587,9 @@ void Game::AddLoadTasks()
 	tKrewSlad[BLOOD_ROCK] = nullptr;
 	tKrewSlad[BLOOD_IRON] = nullptr;
 	tIskra = tex_mgr.AddLoadTask("iskra.png");
-	tWoda = tex_mgr.AddLoadTask("water.png");
-	tFlare = tex_mgr.AddLoadTask("flare.png");
-	tFlare2 = tex_mgr.AddLoadTask("flare2.png");
 	tSpawn = tex_mgr.AddLoadTask("spawn_fog.png");
 	tex_mgr.AddLoadTask("lighting_line.png", tLightingLine);
+	L.LoadData();
 
 	// physic meshes
 	res_mgr.AddTaskCategory(txLoadPhysicMeshes);

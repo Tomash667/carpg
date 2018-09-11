@@ -14,5 +14,13 @@ TextureLock::TextureLock(TEX tex) : tex(tex)
 
 TextureLock::~TextureLock()
 {
-	tex->UnlockRect(0);
+	if(tex)
+		tex->UnlockRect(0);
+}
+
+void TextureLock::GenerateMipSubLevels()
+{
+	assert(tex);
+	tex->GenerateMipSubLevels();
+	tex = nullptr;
 }

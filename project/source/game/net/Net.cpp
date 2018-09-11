@@ -439,6 +439,12 @@ bool Game::ReadLevelData(BitStreamReader& f)
 		return false;
 	}
 
+	if(L.location->Read(f))
+	{
+		Error("Read level: Failed to read location.");
+		return false;
+	}
+
 	loc_gen_factory->Get(L.location)->OnLoad();
 	RequireLoadingResources(L.location, &loaded_resources);
 

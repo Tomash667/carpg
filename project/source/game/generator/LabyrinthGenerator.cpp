@@ -8,17 +8,6 @@
 #include "Game.h"
 
 //=================================================================================================
-int LabyrinthGenerator::GetNumberOfSteps()
-{
-	int steps = LocationGenerator::GetNumberOfSteps();
-	if(first)
-		steps += 2; // txGeneratingObjects, txGeneratingUnits
-	else if(!reenter)
-		++steps; // txRegeneratingLevel
-	return steps;
-}
-
-//=================================================================================================
 int LabyrinthGenerator::TryGenerate(const Int2& maze_size, const Int2& room_size, Int2& room_pos, Int2& doors)
 {
 	list<Int2> drillers;
@@ -419,94 +408,23 @@ void LabyrinthGenerator::GenerateObjects()
 	game.GenerateDungeonObjects();
 	GenerateTraps();
 
-	BaseObject* obj = BaseObject::Get("torch");
+	BaseObject* torch = BaseObject::Get("torch");
 
-	// pochodnia przy œcianie
-	{
-		Object* o = new Object;
-		o->base = obj;
-		o->rot = Vec3(0, Random(MAX_ANGLE), 0);
-		o->scale = 1.f;
-		o->mesh = obj->mesh;
-		lvl.objects.push_back(o);
+	// torch near wall
+	Int2 pt = lvl.GetUpStairsFrontTile();
+	Vec3 pos;
+	if(czy_blokuje2(lvl.map[pt.x - 1 + pt.y*lvl.w].type))
+		pos = Vec3(2.f*pt.x + torch->size.x + 0.1f, 0.f, 2.f*pt.y + 1.f);
+	else if(czy_blokuje2(lvl.map[pt.x + 1 + pt.y*lvl.w].type))
+		pos = Vec3(2.f*(pt.x + 1) - torch->size.x - 0.1f, 0.f, 2.f*pt.y + 1.f);
+	else if(czy_blokuje2(lvl.map[pt.x + (pt.y - 1)*lvl.w].type))
+		pos = Vec3(2.f*pt.x + 1.f, 0.f, 2.f*pt.y + torch->size.y + 0.1f);
+	else if(czy_blokuje2(lvl.map[pt.x + (pt.y + 1)*lvl.w].type))
+		pos = Vec3(2.f*pt.x + 1.f, 0.f, 2.f*(pt.y + 1) + torch->size.y - 0.1f);
+	L.SpawnObjectEntity(L.local_ctx, torch, pos, Random(MAX_ANGLE));
 
-		Int2 pt = lvl.GetUpStairsFrontTile();
-		if(czy_blokuje2(lvl.map[pt.x - 1 + pt.y*lvl.w].type))
-			o->pos = Vec3(2.f*pt.x + obj->size.x + 0.1f, 0.f, 2.f*pt.y + 1.f);
-		else if(czy_blokuje2(lvl.map[pt.x + 1 + pt.y*lvl.w].type))
-			o->pos = Vec3(2.f*(pt.x + 1) - obj->size.x - 0.1f, 0.f, 2.f*pt.y + 1.f);
-		else if(czy_blokuje2(lvl.map[pt.x + (pt.y - 1)*lvl.w].type))
-			o->pos = Vec3(2.f*pt.x + 1.f, 0.f, 2.f*pt.y + obj->size.y + 0.1f);
-		else if(czy_blokuje2(lvl.map[pt.x + (pt.y + 1)*lvl.w].type))
-			o->pos = Vec3(2.f*pt.x + 1.f, 0.f, 2.f*(pt.y + 1) + obj->size.y - 0.1f);
-
-		Light& s = Add1(lvl.lights);
-		s.pos = o->pos;
-		s.pos.y += obj->centery;
-		s.range = 5;
-		s.color = Vec3(1.f, 0.9f, 0.9f);
-
-		ParticleEmitter* pe = new ParticleEmitter;
-		pe->tex = game.tFlare;
-		pe->alpha = 0.8f;
-		pe->emision_interval = 0.1f;
-		pe->emisions = -1;
-		pe->life = -1;
-		pe->max_particles = 50;
-		pe->op_alpha = POP_LINEAR_SHRINK;
-		pe->op_size = POP_LINEAR_SHRINK;
-		pe->particle_life = 0.5f;
-		pe->pos = s.pos;
-		pe->pos_min = Vec3(0, 0, 0);
-		pe->pos_max = Vec3(0, 0, 0);
-		pe->size = IS_SET(obj->flags, OBJ_CAMPFIRE_EFFECT) ? .7f : .5f;
-		pe->spawn_min = 1;
-		pe->spawn_max = 3;
-		pe->speed_min = Vec3(-1, 3, -1);
-		pe->speed_max = Vec3(1, 4, 1);
-		pe->mode = 1;
-		pe->Init();
-		L.local_ctx.pes->push_back(pe);
-	}
-
-	// pochodnia w skarbie
-	{
-		Object* o = new Object;
-		o->base = obj;
-		o->rot = Vec3(0, Random(MAX_ANGLE), 0);
-		o->scale = 1.f;
-		o->mesh = obj->mesh;
-		o->pos = lvl.rooms[0].Center();
-		lvl.objects.push_back(o);
-
-		Light& s = Add1(lvl.lights);
-		s.pos = o->pos;
-		s.pos.y += obj->centery;
-		s.range = 5;
-		s.color = Vec3(1.f, 0.9f, 0.9f);
-
-		ParticleEmitter* pe = new ParticleEmitter;
-		pe->tex = game.tFlare;
-		pe->alpha = 0.8f;
-		pe->emision_interval = 0.1f;
-		pe->emisions = -1;
-		pe->life = -1;
-		pe->max_particles = 50;
-		pe->op_alpha = POP_LINEAR_SHRINK;
-		pe->op_size = POP_LINEAR_SHRINK;
-		pe->particle_life = 0.5f;
-		pe->pos = s.pos;
-		pe->pos_min = Vec3(0, 0, 0);
-		pe->pos_max = Vec3(0, 0, 0);
-		pe->size = IS_SET(obj->flags, OBJ_CAMPFIRE_EFFECT) ? .7f : .5f;
-		pe->spawn_min = 1;
-		pe->spawn_max = 3;
-		pe->speed_min = Vec3(-1, 3, -1);
-		pe->speed_max = Vec3(1, 4, 1);
-		pe->mode = 1;
-		pe->Init();
-		L.local_ctx.pes->push_back(pe);
-	}
+	// torch inside treasure
+	L.SpawnObjectEntity(L.local_ctx, torch, lvl.rooms[0].Center(), Random(MAX_ANGLE));
 }
 
 //=================================================================================================

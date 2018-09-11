@@ -7,7 +7,6 @@ class CaveGenerator final : public InsideLocationGenerator
 public:
 	CaveGenerator();
 	~CaveGenerator();
-	int GetNumberOfSteps() override;
 	void Generate() override;
 	void RegenerateFlags();
 	void DebugDraw();

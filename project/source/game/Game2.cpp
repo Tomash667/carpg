@@ -9444,7 +9444,7 @@ void Game::GenerateDungeonObjects()
 	// dotyczy tylko pochodni
 	int flags = 0;
 	if(IS_SET(base.options, BLO_MAGIC_LIGHT))
-		flags = SOE_MAGIC_LIGHT;
+		flags = Level::SOE_MAGIC_LIGHT;
 
 	bool wymagany = false;
 	if(base.wymagany.room)
@@ -9749,7 +9749,7 @@ ObjectEntity Game::GenerateDungeonObject(InsideLocationLevel& lvl, Room& room, B
 	if(IS_SET(base->flags, OBJ_ON_WALL))
 		on_wall.push_back(pos);
 
-	return SpawnObjectEntity(L.local_ctx, base, pos, rot, 1.f, flags);
+	return L.SpawnObjectEntity(L.local_ctx, base, pos, rot, 1.f, flags);
 }
 
 void Game::AddRoomColliders(InsideLocationLevel& lvl, Room& room, vector<Int2>& blocks)
@@ -10102,7 +10102,6 @@ void Game::ChangeLevel(int where)
 			--L.dungeon_level;
 			inside->SetActiveLevel(L.dungeon_level);
 			LocationGenerator* loc_gen = loc_gen_factory->Get(inside);
-			loc_gen->Init(false, false, L.dungeon_level);
 			L.enter_from = ENTER_FROM_DOWN_LEVEL;
 			EnterLevel(loc_gen);
 		}
@@ -10127,7 +10126,6 @@ void Game::ChangeLevel(int where)
 		inside->SetActiveLevel(L.dungeon_level);
 
 		LocationGenerator* loc_gen = loc_gen_factory->Get(inside);
-		loc_gen->Init(false, false, L.dungeon_level);
 
 		// czy to pierwsza wizyta?
 		if(L.dungeon_level >= inside->generated)
@@ -10302,9 +10300,9 @@ void Game::RespawnObjectColliders(bool spawn_pes)
 {
 	for(LevelContext& ctx : L.ForEachContext())
 	{
-		int flags = SOE_DONT_CREATE_LIGHT;
+		int flags = Level::SOE_DONT_CREATE_LIGHT;
 		if(!spawn_pes)
-			flags |= SOE_DONT_SPAWN_PARTICLES;
+			flags |= Level::SOE_DONT_SPAWN_PARTICLES;
 
 		// dotyczy tylko pochodni
 		if(ctx.type == LevelContext::Inside)
@@ -10312,7 +10310,7 @@ void Game::RespawnObjectColliders(bool spawn_pes)
 			InsideLocation* inside = (InsideLocation*)L.location;
 			BaseLocation& base = g_base_locations[inside->target];
 			if(IS_SET(base.options, BLO_MAGIC_LIGHT))
-				flags |= SOE_MAGIC_LIGHT;
+				flags |= Level::SOE_MAGIC_LIGHT;
 		}
 
 		for(vector<Object*>::iterator it = ctx.objects->begin(), end = ctx.objects->end(); it != end; ++it)
@@ -10342,21 +10340,21 @@ void Game::RespawnObjectColliders(bool spawn_pes)
 					rot = 0.f;
 				}
 
-				ProcessBuildingObjects(ctx, nullptr, nullptr, base_obj->mesh, nullptr, rot, roti, obj.pos, nullptr, nullptr, true);
+				L.ProcessBuildingObjects(ctx, nullptr, nullptr, base_obj->mesh, nullptr, rot, roti, obj.pos, nullptr, nullptr, true);
 			}
 			else
-				SpawnObjectExtras(ctx, base_obj, obj.pos, obj.rot.y, &obj, obj.scale, flags);
+				L.SpawnObjectExtras(ctx, base_obj, obj.pos, obj.rot.y, &obj, obj.scale, flags);
 		}
 
 		if(ctx.chests)
 		{
 			BaseObject* chest = BaseObject::Get("chest");
 			for(vector<Chest*>::iterator it = ctx.chests->begin(), end = ctx.chests->end(); it != end; ++it)
-				SpawnObjectExtras(ctx, chest, (*it)->pos, (*it)->rot, nullptr, 1.f, flags);
+				L.SpawnObjectExtras(ctx, chest, (*it)->pos, (*it)->rot, nullptr, 1.f, flags);
 		}
 
 		for(vector<Usable*>::iterator it = ctx.usables->begin(), end = ctx.usables->end(); it != end; ++it)
-			SpawnObjectExtras(ctx, (*it)->base, (*it)->pos, (*it)->rot, *it, 1.f, flags);
+			L.SpawnObjectExtras(ctx, (*it)->base, (*it)->pos, (*it)->rot, *it, 1.f, flags);
 	}
 }
 

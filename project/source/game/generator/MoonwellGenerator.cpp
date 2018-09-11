@@ -61,13 +61,11 @@ void MoonwellGenerator::Generate()
 //=================================================================================================
 void MoonwellGenerator::GenerateObjects()
 {
-	Game& game = Game::Get();
-
 	Vec3 pos(128.f, 0, 128.f);
 	terrain->SetH(pos);
 	pos.y -= 0.2f;
-	game.SpawnObjectEntity(L.local_ctx, BaseObject::Get("moonwell"), pos, 0.f);
-	game.SpawnObjectEntity(L.local_ctx, BaseObject::Get("moonwell_phy"), pos, 0.f);
+	L.SpawnObjectEntity(L.local_ctx, BaseObject::Get("moonwell"), pos, 0.f);
+	L.SpawnObjectEntity(L.local_ctx, BaseObject::Get("moonwell_phy"), pos, 0.f);
 
 	TerrainTile* tiles = ((OutsideLocation*)L.location)->tiles;
 
@@ -83,7 +81,7 @@ void MoonwellGenerator::GenerateObjects()
 				Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 				pos.y = terrain->GetH(pos);
 				OutsideObject& o = trees[Rand() % n_trees];
-				game.SpawnObjectEntity(L.local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+				L.SpawnObjectEntity(L.local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 			}
 			else if(co == TT_GRASS3)
 			{
@@ -95,7 +93,7 @@ void MoonwellGenerator::GenerateObjects()
 				else
 					co = Rand() % 3;
 				OutsideObject& o = trees2[co];
-				game.SpawnObjectEntity(L.local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+				L.SpawnObjectEntity(L.local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 			}
 		}
 	}
@@ -111,7 +109,7 @@ void MoonwellGenerator::GenerateObjects()
 				Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 				pos.y = terrain->GetH(pos);
 				OutsideObject& o = misc[Rand() % n_misc];
-				game.SpawnObjectEntity(L.local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+				L.SpawnObjectEntity(L.local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 			}
 		}
 	}

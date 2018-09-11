@@ -47,7 +47,7 @@ void LocationGeneratorFactory::Clear()
 }
 
 //=================================================================================================
-LocationGenerator* LocationGeneratorFactory::Get(Location* loc)
+LocationGenerator* LocationGeneratorFactory::Get(Location* loc, bool first, bool reenter)
 {
 	LocationGenerator* loc_gen;
 	switch(loc->type)
@@ -88,5 +88,9 @@ LocationGenerator* LocationGeneratorFactory::Get(Location* loc)
 		break;
 	}
 	loc_gen->loc = loc;
+	loc_gen->dungeon_level = L.dungeon_level;
+	loc_gen->first = first;
+	loc_gen->reenter = reenter;
+	loc_gen->Init();
 	return loc_gen;
 }

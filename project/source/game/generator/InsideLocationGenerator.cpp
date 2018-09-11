@@ -20,6 +20,18 @@ void InsideLocationGenerator::Init()
 	inside = (InsideLocation*)loc;
 }
 
+
+//=================================================================================================
+int InsideLocationGenerator::GetNumberOfSteps()
+{
+	int steps = LocationGenerator::GetNumberOfSteps();
+	if(first)
+		steps += 2; // txGeneratingObjects, txGeneratingUnits
+	else if(!reenter)
+		++steps; // txRegeneratingLevel
+	return steps;
+}
+
 //=================================================================================================
 void InsideLocationGenerator::OnEnter()
 {

@@ -5,7 +5,6 @@
 class DungeonGenerator final : public InsideLocationGenerator
 {
 public:
-	int GetNumberOfSteps() override;
 	void Generate() override;
 	void GenerateObjects() override;
 	void GenerateUnits() override;

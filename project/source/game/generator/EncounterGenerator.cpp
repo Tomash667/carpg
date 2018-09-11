@@ -122,7 +122,7 @@ void EncounterGenerator::OnEnter()
 	L.city_ctx = nullptr;
 	L.ApplyContext(outside, L.local_ctx);
 
-	game.ApplyTiles(outside->h, outside->tiles);
+	ApplyTiles();
 	game.SetOutsideParams();
 
 	// generate objects
@@ -132,7 +132,7 @@ void EncounterGenerator::OnEnter()
 	// create colliders
 	game.LoadingStep(game.txRecreatingObjects);
 	game.SpawnTerrainCollider();
-	L.SpawnOutsideBariers();
+	SpawnOutsideBariers();
 
 	// generate units
 	game.LoadingStep(game.txGeneratingUnits);
@@ -255,8 +255,8 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 				group_name2 = "wagon_guards";
 				count2 = Random(2, 3);
 				level2 = Random(3, 8);
-				game.SpawnObjectNearLocation(L.local_ctx, BaseObject::Get("wagon"), Vec2(128, 128), Random(MAX_ANGLE));
-				Chest* chest = game.SpawnObjectNearLocation(L.local_ctx, BaseObject::Get("chest"), Vec2(128, 128), Random(MAX_ANGLE), 6.f);
+				L.SpawnObjectNearLocation(L.local_ctx, BaseObject::Get("wagon"), Vec2(128, 128), Random(MAX_ANGLE));
+				Chest* chest = L.SpawnObjectNearLocation(L.local_ctx, BaseObject::Get("chest"), Vec2(128, 128), Random(MAX_ANGLE), 6.f);
 				if(chest)
 				{
 					int gold;
@@ -407,7 +407,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 	if(group_name)
 	{
 		UnitGroup* group = UnitGroup::TryGet(group_name);
-		game.SpawnUnitsGroup(L.local_ctx, spawn_pos, &look_pt, count, group, level, [&](Unit* u)
+		L.SpawnUnitsGroup(L.local_ctx, spawn_pos, &look_pt, count, group, level, [&](Unit* u)
 		{
 			u->dont_attack = dont_attack;
 			dist = Vec3::Distance(u->pos, look_pt);
@@ -423,7 +423,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 	if(group_name2)
 	{
 		UnitGroup* group = UnitGroup::TryGet(group_name2);
-		game.SpawnUnitsGroup(L.local_ctx, spawn_pos, &look_pt, count2, group, level2,
+		L.SpawnUnitsGroup(L.local_ctx, spawn_pos, &look_pt, count2, group, level2,
 			[&](Unit* u) { u->dont_attack = dont_attack; });
 	}
 }

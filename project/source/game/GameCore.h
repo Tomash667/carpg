@@ -118,6 +118,7 @@ struct Trap;
 struct Unit;
 struct UnitData;
 struct UnitEventHandler;
+struct UnitGroup;
 struct Usable;
 struct Var;
 struct VarsContainer;

@@ -299,7 +299,7 @@ bool InsideBuilding::Load(BitStreamReader& f)
 		return false;
 	}
 	offset = Vec2(512.f*level_shift.x + 256.f, 512.f*level_shift.y + 256.f);
-	Game::Get().ProcessBuildingObjects(ctx, L.city_ctx, this, type->inside_mesh, nullptr, 0, 0, Vec3(offset.x, 0, offset.y), type, nullptr, true);
+	L.ProcessBuildingObjects(ctx, L.city_ctx, this, type->inside_mesh, nullptr, 0, 0, Vec3(offset.x, 0, offset.y), type, nullptr, true);
 
 	// usable objects
 	f >> count;

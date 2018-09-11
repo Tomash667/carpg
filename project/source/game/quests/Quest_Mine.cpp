@@ -782,7 +782,7 @@ bool Quest_Mine::GenerateMine(CaveGenerator* cave_gen)
 				break;
 			}
 
-			game->SpawnObjectEntity(L.local_ctx, pochodnia, pos, Random(MAX_ANGLE));
+			L.SpawnObjectEntity(L.local_ctx, pochodnia, pos, Random(MAX_ANGLE));
 		}
 
 		// portal
@@ -807,7 +807,7 @@ bool Quest_Mine::GenerateMine(CaveGenerator* cave_gen)
 
 			// obiekt
 			const Vec3 pos(2.f*pt.x + 5, 0, 2.f*pt.y + 5);
-			game->SpawnObjectEntity(L.local_ctx, portal, pos, rot);
+			L.SpawnObjectEntity(L.local_ctx, portal, pos, rot);
 
 			// lokacja
 			SingleInsideLocation* loc = new SingleInsideLocation;
@@ -1006,7 +1006,7 @@ bool Quest_Mine::GenerateMine(CaveGenerator* cave_gen)
 					break;
 				}
 
-				game->SpawnObjectEntity(L.local_ctx, obj, Vec3(2.f*it->x + Random(0.1f, 1.9f), 0.f, 2.f*it->y + Random(0.1f, 1.9f)), Random(MAX_ANGLE));
+				L.SpawnObjectEntity(L.local_ctx, obj, Vec3(2.f*it->x + Random(0.1f, 1.9f), 0.f, 2.f*it->y + Random(0.1f, 1.9f)), Random(MAX_ANGLE));
 			}
 		}
 	}
