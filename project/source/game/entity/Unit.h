@@ -845,6 +845,10 @@ struct Unit
 		INSTANT
 	};
 	void BreakAction(BREAK_ACTION_MODE mode = BREAK_ACTION_MODE::NORMAL, bool notify = false, bool allow_animation = false);
+	void Fall();
+	void TryStandup(float dt);
+	void Standup();
+	void Die(LevelContext* ctx, Unit* killer);
 
 	//-----------------------------------------------------------------------------
 	static vector<Unit*> refid_table;

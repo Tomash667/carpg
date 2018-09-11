@@ -153,7 +153,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
 			Team.RemoveTeamMember(captive);
 
-			game->RemoveUnit(captive);
+			L.RemoveUnit(captive);
 			captive->event_handler = nullptr;
 			OnUpdate(Format(game->txQuest[38], GetStartLocationName()));
 

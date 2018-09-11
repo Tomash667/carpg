@@ -1582,7 +1582,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							else if(it->cmd == CMD_BREAK_ACTION)
 								u->BreakAction(Unit::BREAK_ACTION_MODE::NORMAL, true);
 							else
-								UnitFall(*u);
+								u->Fall();
 						}
 						else
 						{

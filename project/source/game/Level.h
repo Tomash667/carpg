@@ -49,6 +49,7 @@ public:
 	Chest* FindChest(int netid);
 	Electro* FindElectro(int netid);
 	bool RemoveTrap(int netid);
+	void RemoveUnit(Unit* unit, bool notify = true);
 	// for object rot must be 0, PI/2, PI or PI*3/2
 	ObjectEntity SpawnObjectEntity(LevelContext& ctx, BaseObject* base, const Vec3& pos, float rot, float scale = 1.f, int flags = 0,
 		Vec3* out_point = nullptr, int variant = -1);
@@ -68,10 +69,17 @@ public:
 		float scale = 1.f);
 	void PickableItemBegin(LevelContext& ctx, Object& o);
 	void PickableItemAdd(const Item* item);
+	void AddGroundItem(LevelContext& ctx, GroundItem* item);
 	Unit* SpawnUnitInsideRoom(Room& room, UnitData& unit, int level = -1, const Int2& pt = Int2(-1000, -1000), const Int2& pt2 = Int2(-1000, -1000));
 	Unit* SpawnUnitInsideRoomOrNear(InsideLocationLevel& lvl, Room& room, UnitData& unit, int level = -1, const Int2& pt = Int2(-1000, -1000), const Int2& pt2 = Int2(-1000, -1000));
 	Unit* SpawnUnitNearLocation(LevelContext& ctx, const Vec3& pos, UnitData& unit, const Vec3* look_at = nullptr, int level = -1, float extra_radius = 2.f);
 	Unit* SpawnUnitInsideArea(LevelContext& ctx, const Box2d& area, UnitData& unit, int level = -1);
+	enum SpawnUnitFlags
+	{
+		SU_MAIN_ROOM = 1 << 0,
+		SU_TEMPORARY = 1 << 1
+	};
+	Unit* SpawnUnitInsideInn(UnitData& unit, int level = -1, InsideBuilding* inn = nullptr, int flags = 0);
 	void SpawnUnitsGroup(LevelContext& ctx, const Vec3& pos, const Vec3* look_at, uint count, UnitGroup* group, int level, delegate<void(Unit*)> callback);
 	struct IgnoreObjects
 	{

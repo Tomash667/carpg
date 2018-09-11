@@ -18,6 +18,7 @@
 #include "BitStreamFunc.h"
 #include "EntityInterpolator.h"
 #include "UnitEventHandler.h"
+#include "GameStats.h"
 
 const float Unit::AUTO_TALK_WAIT = 0.333f;
 const float Unit::STAMINA_BOW_ATTACK = 100.f;
@@ -191,7 +192,6 @@ void Unit::SetGold(int new_gold)
 //=================================================================================================
 bool Unit::DropItem(int index)
 {
-	Game& game = Game::Get();
 	bool no_more = false;
 
 	ItemSlot& s = items[index];
@@ -225,7 +225,7 @@ bool Unit::DropItem(int index)
 			items.erase(items.begin() + index);
 		}
 		if(!QM.quest_secret->CheckMoonStone(item, *this))
-			game.AddGroundItem(L.GetContext(*this), item);
+			L.AddGroundItem(L.GetContext(*this), item);
 
 		if(Net::IsServer())
 		{
@@ -257,7 +257,6 @@ bool Unit::DropItem(int index)
 void Unit::DropItem(ITEM_SLOT slot)
 {
 	assert(slots[slot]);
-	Game& game = Game::Get();
 	const Item*& item2 = slots[slot];
 
 	weight -= item2->weight;
@@ -278,7 +277,7 @@ void Unit::DropItem(ITEM_SLOT slot)
 		item->pos.z -= cos(rot)*0.25f;
 		item->rot = Random(MAX_ANGLE);
 		item2 = nullptr;
-		game.AddGroundItem(L.GetContext(*this), item);
+		L.AddGroundItem(L.GetContext(*this), item);
 
 		if(Net::IsOnline())
 		{
@@ -306,7 +305,6 @@ void Unit::DropItem(ITEM_SLOT slot)
 //=================================================================================================
 bool Unit::DropItems(int index, uint count)
 {
-	Game& game = Game::Get();
 	bool no_more = false;
 
 	ItemSlot& s = items[index];
@@ -338,7 +336,7 @@ bool Unit::DropItems(int index, uint count)
 			no_more = true;
 			items.erase(items.begin() + index);
 		}
-		game.AddGroundItem(L.GetContext(*this), item);
+		L.AddGroundItem(L.GetContext(*this), item);
 
 		if(Net::IsServer())
 		{
@@ -844,7 +842,7 @@ void Unit::UpdateEffects(float dt)
 	{
 		alcohol += alco_sum*dt;
 		if(alcohol >= hpmax && live_state == ALIVE)
-			game.UnitFall(*this);
+			Fall();
 		if(IsPlayer() && !player->is_local)
 			player->player_info->update_flags |= PlayerInfo::UF_ALCOHOL;
 	}
@@ -3660,7 +3658,7 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 			{
 				if(Net::IsLocal())
 				{
-					player->action_unit->busy = Unit::Busy_No;
+					player->action_unit->busy = Busy_No;
 					player->action_unit->look_target = nullptr;
 					player->dialog_ctx->dialog_mode = false;
 				}
@@ -3674,7 +3672,7 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 		{
 			if(player->action == PlayerController::Action_Talk)
 			{
-				player->action_unit->busy = Unit::Busy_No;
+				player->action_unit->busy = Busy_No;
 				player->action_unit->look_target = nullptr;
 				player->dialog_ctx->dialog_mode = false;
 				look_target = nullptr;
@@ -3685,12 +3683,288 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 	else if(Net::IsLocal())
 	{
 		ai->potion = -1;
-		if(busy == Unit::Busy_Talking)
+		if(busy == Busy_Talking)
 		{
 			DialogContext* ctx = game.FindDialogContext(this);
 			if(ctx)
 				game.EndDialog(*ctx);
-			busy = Unit::Busy_No;
+			busy = Busy_No;
 		}
 	}
+}
+
+//=================================================================================================
+void Unit::Fall()
+{
+	ACTION prev_action = action;
+	live_state = FALLING;
+
+	if(Net::IsLocal())
+	{
+		// przerwij akcjê
+		BreakAction(BREAK_ACTION_MODE::FALL);
+
+		// wstawanie
+		raise_timer = Random(5.f, 7.f);
+
+		// event
+		if(event_handler)
+			event_handler->HandleUnitEvent(UnitEventHandler::FALL, this);
+
+		// komunikat
+		if(Net::IsOnline())
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::FALL;
+			c.unit = this;
+		}
+
+		if(player && player->is_local)
+			Game::Get().pc_data.before_player = BP_NONE;
+	}
+	else
+	{
+		// przerwij akcjê
+		BreakAction(BREAK_ACTION_MODE::FALL);
+
+		if(player && player->is_local)
+		{
+			raise_timer = Random(5.f, 7.f);
+			Game::Get().pc_data.before_player = BP_NONE;
+		}
+	}
+
+	if(prev_action == A_ANIMATION)
+	{
+		action = A_NONE;
+		current_animation = ANI_STAND;
+	}
+	animation = ANI_DIE;
+	talking = false;
+	mesh_inst->need_update = true;
+}
+
+//=================================================================================================
+void Unit::TryStandup(float dt)
+{
+	Game& game = Game::Get();
+	if(in_arena != -1 || game.death_screen != 0)
+		return;
+
+	raise_timer -= dt;
+	bool ok = false;
+
+	if(live_state == DEAD)
+	{
+		if(IsTeamMember())
+		{
+			if(hp > 0.f && raise_timer > 0.1f)
+				raise_timer = 0.1f;
+
+			if(raise_timer <= 0.f)
+			{
+				RemovePoison();
+
+				if(alcohol > hpmax)
+				{
+					// móg³by wstaæ ale jest zbyt pijany
+					live_state = FALL;
+					game.UpdateUnitPhysics(*this, pos);
+				}
+				else
+				{
+					// sprawdŸ czy nie ma wrogów
+					LevelContext& ctx = L.GetContext(*this);
+					ok = true;
+					for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
+					{
+						if((*it)->IsStanding() && game.IsEnemy(*this, **it) && Vec3::Distance(pos, (*it)->pos) <= 20.f && game.CanSee(*this, **it))
+						{
+							ok = false;
+							break;
+						}
+					}
+				}
+
+				if(!ok)
+				{
+					if(hp > 0.f)
+						raise_timer = 0.1f;
+					else
+						raise_timer = Random(1.f, 2.f);
+				}
+			}
+		}
+	}
+	else if(live_state == FALL)
+	{
+		if(raise_timer <= 0.f)
+		{
+			if(alcohol < hpmax)
+				ok = true;
+			else
+				raise_timer = Random(1.f, 2.f);
+		}
+	}
+
+	if(ok)
+	{
+		Standup();
+
+		if(Net::IsOnline())
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::STAND_UP;
+			c.unit = this;
+		}
+	}
+}
+
+//=================================================================================================
+void Unit::Standup()
+{
+	HealPoison();
+	live_state = ALIVE;
+	Mesh::Animation* anim = mesh_inst->mesh->GetAnimation("wstaje2");
+	if(anim)
+	{
+		mesh_inst->Play(anim, PLAY_ONCE | PLAY_PRIO3, 0);
+		mesh_inst->groups[0].speed = 1.f;
+		action = A_STAND_UP;
+		animation = ANI_PLAY;
+	}
+	else
+		action = A_NONE;
+	used_item = nullptr;
+
+	if(Net::IsLocal())
+	{
+		if(IsAI())
+		{
+			if(ai->state != AIController::Idle)
+			{
+				ai->state = AIController::Idle;
+				ai->change_ai_mode = true;
+			}
+			ai->alert_target = nullptr;
+			ai->idle_action = AIController::Idle_None;
+			ai->target = nullptr;
+			ai->timer = Random(2.f, 5.f);
+		}
+
+		Game::Get().WarpUnit(*this, pos);
+	}
+}
+
+//=================================================================================================
+void Unit::Die(LevelContext* ctx, Unit* killer)
+{
+	ACTION prev_action = action;
+	Game& game = Game::Get();
+
+	if(live_state == FALL)
+	{
+		// postaæ ju¿ le¿y na ziemi, dodaj krew
+		game.CreateBlood(*ctx, *this);
+		live_state = DEAD;
+	}
+	else
+		live_state = DYING;
+
+	if(Net::IsLocal())
+	{
+		// przerwij akcjê
+		BreakAction(BREAK_ACTION_MODE::FALL);
+
+		// dodaj z³oto do ekwipunku
+		if(gold && !(IsPlayer() || IsFollower()))
+		{
+			AddItem(Item::gold, (uint)gold);
+			gold = 0;
+		}
+
+		// og³oœ œmieræ
+		for(vector<Unit*>::iterator it = ctx->units->begin(), end = ctx->units->end(); it != end; ++it)
+		{
+			if((*it)->IsPlayer() || !(*it)->IsStanding() || !game.IsFriend(*this, **it))
+				continue;
+
+			if(Vec3::Distance(pos, (*it)->pos) <= 20.f && game.CanSee(*this, **it))
+				(*it)->ai->morale -= 2.f;
+		}
+
+		// o¿ywianie / sprawdŸ czy lokacja oczyszczona
+		if(IsTeamMember())
+			raise_timer = Random(5.f, 7.f);
+		else
+			game.CheckIfLocationCleared();
+
+		// event
+		if(event_handler)
+			event_handler->HandleUnitEvent(UnitEventHandler::DIE, this);
+
+		// komunikat
+		if(Net::IsOnline())
+		{
+			NetChange& c2 = Add1(Net::changes);
+			c2.type = NetChange::DIE;
+			c2.unit = this;
+		}
+
+		// statystyki
+		++GameStats::Get().total_kills;
+		if(killer && killer->IsPlayer())
+		{
+			++killer->player->kills;
+			if(Net::IsOnline())
+				killer->player->stat_flags |= STAT_KILLS;
+		}
+		if(IsPlayer())
+		{
+			++player->knocks;
+			if(Net::IsOnline())
+				player->stat_flags |= STAT_KNOCKS;
+			if(player->is_local)
+				game.pc_data.before_player = BP_NONE;
+		}
+	}
+	else
+	{
+		hp = 0.f;
+
+		// przerwij akcjê
+		BreakAction(BREAK_ACTION_MODE::FALL);
+
+		// o¿ywianie
+		if(player && player->is_local)
+		{
+			raise_timer = Random(5.f, 7.f);
+			game.pc_data.before_player = BP_NONE;
+		}
+	}
+
+	// end boss music
+	if(IS_SET(data->flags2, F2_BOSS) && W.RemoveBossLevel(Int2(L.location_index, L.dungeon_level)))
+		game.SetMusic();
+
+	if(prev_action == A_ANIMATION)
+	{
+		action = A_NONE;
+		current_animation = ANI_STAND;
+	}
+	animation = ANI_DIE;
+	talking = false;
+	mesh_inst->need_update = true;
+
+	// dŸwiêk
+	SOUND snd = nullptr;
+	if(data->sounds->sound[SOUND_DEATH])
+		snd = data->sounds->sound[SOUND_DEATH]->sound;
+	else if(data->sounds->sound[SOUND_PAIN])
+		snd = data->sounds->sound[SOUND_PAIN]->sound;
+	if(snd)
+		game.PlayUnitSound(*this, snd, 2.f);
+
+	// przenieœ fizyke
+	game.UpdateUnitPhysics(*this, pos);
 }

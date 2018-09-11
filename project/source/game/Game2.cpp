@@ -1421,7 +1421,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 		pc_data.autowalk = false;
 		pc_data.action_ready = false;
 		pc_data.rot_buf = 0.f;
-		UnitTryStandup(u, dt);
+		u.TryStandup(dt);
 		return;
 	}
 
@@ -2934,7 +2934,7 @@ void Game::UseAction(PlayerController* p, bool from_server, const Vec3* pos)
 			if(existing_unit)
 			{
 				Team.RemoveTeamMember(existing_unit);
-				RemoveUnit(existing_unit);
+				L.RemoveUnit(existing_unit);
 			}
 
 			// spawn new
@@ -6582,7 +6582,7 @@ void Game::GiveDmg(LevelContext& ctx, Unit* giver, float dmg, Unit& taker, const
 	if((taker.hp -= dmg) <= 0.f && !taker.IsImmortal())
 	{
 		// unit killed
-		UnitDie(taker, &ctx, giver);
+		taker.Die(&ctx, giver);
 	}
 	else
 	{
@@ -7709,7 +7709,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 		case A_DESPAWN:
 			u.timer -= dt;
 			if(u.timer <= 0.f)
-				RemoveUnit(&u);
+				L.RemoveUnit(&u);
 			break;
 		case A_PREPARE:
 			assert(Net::IsClient());
@@ -11487,23 +11487,6 @@ Door* Game::FindDoor(LevelContext& ctx, const Int2& pt)
 	return nullptr;
 }
 
-void Game::AddGroundItem(LevelContext& ctx, GroundItem* item)
-{
-	assert(item);
-
-	if(ctx.type == LevelContext::Outside)
-		terrain->SetH(item->pos);
-	ctx.items->push_back(item);
-
-	if(Net::IsOnline())
-	{
-		item->netid = GroundItem::netid_counter++;
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::SPAWN_ITEM;
-		c.item = item;
-	}
-}
-
 SOUND Game::GetItemSound(const Item* item)
 {
 	assert(item);
@@ -12897,20 +12880,7 @@ bool Game::WarpToArea(LevelContext& ctx, const Box2d& area, float radius, Vec3& 
 	return false;
 }
 
-void Game::RemoveUnit(Unit* unit, bool notify)
-{
-	assert(unit);
-	if(unit->action == A_DESPAWN)
-		SpawnUnitEffect(*unit);
-	unit->to_remove = true;
-	L.to_remove.push_back(unit);
-	if(notify && Net::IsServer())
-	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::REMOVE_UNIT;
-		c.id = unit->netid;
-	}
-}
+
 
 void Game::DeleteUnit(Unit* unit)
 {
@@ -13396,7 +13366,7 @@ void Game::RemoveArenaViewers()
 	for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
 	{
 		if((*it)->data == ud)
-			RemoveUnit(*it);
+			L.RemoveUnit(*it);
 	}
 
 	arena_viewers.clear();
@@ -13972,7 +13942,7 @@ void Game::GenerateQuestUnits()
 {
 	if(QM.quest_sawmill->sawmill_state == Quest_Sawmill::State::None && L.location_index == QM.quest_sawmill->start_loc)
 	{
-		Unit* u = SpawnUnitInsideInn(*UnitData::Get("artur_drwal"), -2);
+		Unit* u = L.SpawnUnitInsideInn(*UnitData::Get("artur_drwal"), -2);
 		assert(u);
 		if(u)
 		{
@@ -13986,7 +13956,7 @@ void Game::GenerateQuestUnits()
 
 	if(L.location_index == QM.quest_mine->start_loc && QM.quest_mine->mine_state == Quest_Mine::State::None)
 	{
-		Unit* u = SpawnUnitInsideInn(*UnitData::Get("inwestor"), -2);
+		Unit* u = L.SpawnUnitInsideInn(*UnitData::Get("inwestor"), -2);
 		assert(u);
 		if(u)
 		{
@@ -13999,7 +13969,7 @@ void Game::GenerateQuestUnits()
 
 	if(L.location_index == QM.quest_bandits->start_loc && QM.quest_bandits->bandits_state == Quest_Bandits::State::None)
 	{
-		Unit* u = SpawnUnitInsideInn(*UnitData::Get("mistrz_agentow"), -2);
+		Unit* u = L.SpawnUnitInsideInn(*UnitData::Get("mistrz_agentow"), -2);
 		assert(u);
 		if(u)
 		{
@@ -14012,7 +13982,7 @@ void Game::GenerateQuestUnits()
 
 	if(L.location_index == QM.quest_mages->start_loc && QM.quest_mages2->mages_state == Quest_Mages2::State::None)
 	{
-		Unit* u = SpawnUnitInsideInn(*UnitData::Get("q_magowie_uczony"), -2);
+		Unit* u = L.SpawnUnitInsideInn(*UnitData::Get("q_magowie_uczony"), -2);
 		assert(u);
 		if(u)
 		{
@@ -14026,7 +13996,7 @@ void Game::GenerateQuestUnits()
 	{
 		if(QM.quest_mages2->mages_state == Quest_Mages2::State::TalkedWithCaptain)
 		{
-			Unit* u = SpawnUnitInsideInn(*UnitData::Get("q_magowie_stary"), 15);
+			Unit* u = L.SpawnUnitInsideInn(*UnitData::Get("q_magowie_stary"), 15);
 			assert(u);
 			if(u)
 			{
@@ -14038,7 +14008,7 @@ void Game::GenerateQuestUnits()
 		}
 		else if(QM.quest_mages2->mages_state == Quest_Mages2::State::MageLeft)
 		{
-			Unit* u = SpawnUnitInsideInn(*UnitData::Get("q_magowie_stary"), 15);
+			Unit* u = L.SpawnUnitInsideInn(*UnitData::Get("q_magowie_stary"), 15);
 			assert(u);
 			if(u)
 			{
@@ -14055,7 +14025,7 @@ void Game::GenerateQuestUnits()
 
 	if(L.location_index == QM.quest_orcs->start_loc && QM.quest_orcs2->orcs_state == Quest_Orcs2::State::None)
 	{
-		Unit* u = SpawnUnitInsideInn(*UnitData::Get("q_orkowie_straznik"));
+		Unit* u = L.SpawnUnitInsideInn(*UnitData::Get("q_orkowie_straznik"));
 		assert(u);
 		if(u)
 		{
@@ -14069,7 +14039,7 @@ void Game::GenerateQuestUnits()
 
 	if(L.location_index == QM.quest_goblins->start_loc && QM.quest_goblins->goblins_state == Quest_Goblins::State::None)
 	{
-		Unit* u = SpawnUnitInsideInn(*UnitData::Get("q_gobliny_szlachcic"));
+		Unit* u = L.SpawnUnitInsideInn(*UnitData::Get("q_gobliny_szlachcic"));
 		assert(u);
 		if(u)
 		{
@@ -14144,7 +14114,7 @@ void Game::GenerateQuestUnits()
 
 	if(QM.quest_evil->evil_state == Quest_Evil::State::GenerateMage && L.location_index == QM.quest_evil->mage_loc)
 	{
-		Unit* u = SpawnUnitInsideInn(*UnitData::Get("q_zlo_mag"), -2);
+		Unit* u = L.SpawnUnitInsideInn(*UnitData::Get("q_zlo_mag"), -2);
 		assert(u);
 		if(u)
 		{
@@ -14288,48 +14258,7 @@ void Game::UpdateQuests(int days)
 	if(income != 0)
 		AddGold(income, nullptr, true);
 
-	// update contest
-	int stan; // 0 - before contest, 1 - time for contest, 2 - after contest
-	int month = W.GetMonth();
-	int day = W.GetDay();
-
-	if(month < 8)
-		stan = 0;
-	else if(month == 8)
-	{
-		if(day < 20)
-			stan = 0;
-		else if(day == 20)
-			stan = 1;
-		else
-			stan = 2;
-	}
-	else
-		stan = 2;
-
-	Quest_Contest* contest = QM.quest_contest;
-	switch(stan)
-	{
-	case 0:
-		if(contest->state != Quest_Contest::CONTEST_NOT_DONE)
-		{
-			contest->state = Quest_Contest::CONTEST_NOT_DONE;
-			contest->where = W.GetRandomSettlementIndex(contest->where);
-		}
-		contest->generated = false;
-		contest->units.clear();
-		break;
-	case 1:
-		contest->state = Quest_Contest::CONTEST_TODAY;
-		if(!contest->generated && game_state == GS_LEVEL && L.location_index == contest->where)
-			SpawnDrunkmans();
-		break;
-	case 2:
-		contest->state = Quest_Contest::CONTEST_DONE;
-		contest->generated = false;
-		contest->units.clear();
-		break;
-	}
+	QM.quest_contest->Progress();
 
 	//----------------------------
 	// mages
@@ -14375,7 +14304,7 @@ void Game::RemoveQuestUnit(UnitData* ud, bool on_leave)
 	});
 
 	if(unit)
-		RemoveUnit(unit, !on_leave);
+		L.RemoveUnit(unit, !on_leave);
 }
 
 void Game::RemoveQuestUnits(bool on_leave)
@@ -14401,7 +14330,7 @@ void Game::RemoveQuestUnits(bool on_leave)
 			if(u && u->IsAlive())
 			{
 				QM.quest_sawmill->build_state = Quest_Sawmill::BuildState::LumberjackLeft;
-				RemoveUnit(u, !on_leave);
+				L.RemoveUnit(u, !on_leave);
 			}
 		}
 
@@ -14427,7 +14356,7 @@ void Game::RemoveQuestUnits(bool on_leave)
 		{
 			if(*it == QM.quest_bandits->agent && (*it)->IsAlive())
 			{
-				RemoveUnit(*it, !on_leave);
+				L.RemoveUnit(*it, !on_leave);
 				break;
 			}
 		}
@@ -14465,7 +14394,7 @@ void Game::RemoveQuestUnits(bool on_leave)
 
 	if(QM.quest_evil->evil_state == Quest_Evil::State::ClericLeaving)
 	{
-		RemoveUnit(QM.quest_evil->cleric, !on_leave);
+		L.RemoveUnit(QM.quest_evil->cleric, !on_leave);
 		QM.quest_evil->cleric = nullptr;
 		QM.quest_evil->evil_state = Quest_Evil::State::ClericLeft;
 	}
@@ -14900,7 +14829,7 @@ void Game::UpdateArena(float dt)
 				{
 					if(unit->in_arena != 0)
 					{
-						RemoveUnit(unit);
+						L.RemoveUnit(unit);
 						continue;
 					}
 
@@ -16691,7 +16620,7 @@ void Game::DropGold(int ile)
 		item->pos.x -= sin(pc->unit->rot)*0.25f;
 		item->pos.z -= cos(pc->unit->rot)*0.25f;
 		item->rot = Random(MAX_ANGLE);
-		AddGroundItem(L.GetContext(*pc->unit), item);
+		L.AddGroundItem(L.GetContext(*pc->unit), item);
 
 		// wyœlij info o animacji
 		if(Net::IsServer())
@@ -16990,52 +16919,6 @@ GroundItem* Game::SpawnGroundItemInsideAnyRoom(InsideLocationLevel& lvl, const I
 	}
 }
 
-Unit* Game::SpawnUnitInsideInn(UnitData& ud, int level, InsideBuilding* inn, int flags)
-{
-	if(!inn)
-		inn = L.city_ctx->FindInn();
-
-	Vec3 pos;
-	bool ok = false;
-	if(IS_SET(flags, SU_MAIN_ROOM) || Rand() % 5 != 0)
-	{
-		if(WarpToArea(inn->ctx, inn->arena1, ud.GetRadius(), pos, 20) ||
-			WarpToArea(inn->ctx, inn->arena2, ud.GetRadius(), pos, 10))
-			ok = true;
-	}
-	else
-	{
-		if(WarpToArea(inn->ctx, inn->arena2, ud.GetRadius(), pos, 10) ||
-			WarpToArea(inn->ctx, inn->arena1, ud.GetRadius(), pos, 20))
-			ok = true;
-	}
-
-	if(ok)
-	{
-		float rot = Random(MAX_ANGLE);
-		Unit* u = CreateUnitWithAI(inn->ctx, ud, level, nullptr, &pos, &rot);
-		if(u && IS_SET(flags, SU_TEMPORARY))
-			u->temporary = true;
-		return u;
-	}
-	else
-		return nullptr;
-}
-
-void Game::SpawnDrunkmans()
-{
-	InsideBuilding* inn = L.city_ctx->FindInn();
-	QM.quest_contest->generated = true;
-	UnitData& pijak = *UnitData::Get("pijak");
-	int ile = Random(4, 6);
-	for(int i = 0; i < ile; ++i)
-	{
-		Unit* u = SpawnUnitInsideInn(pijak, Random(2, 15), inn, SU_TEMPORARY | SU_MAIN_ROOM);
-		if(u && Net::IsOnline())
-			Net_SpawnUnit(u);
-	}
-}
-
 void Game::SetOutsideParams()
 {
 	cam.draw_range = 80.f;
@@ -17304,7 +17187,7 @@ void Game::HandleQuestEvent(Quest_Event* event)
 		if(L.local_ctx.type == LevelContext::Outside)
 		{
 			if(L.location->type == L_CITY)
-				spawned = SpawnUnitInsideInn(*event->unit_to_spawn, event->unit_spawn_level);
+				spawned = L.SpawnUnitInsideInn(*event->unit_to_spawn, event->unit_spawn_level);
 			else
 			{
 				Vec3 pos(0, 0, 0);

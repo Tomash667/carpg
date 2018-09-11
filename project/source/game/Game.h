@@ -748,12 +748,6 @@ public:
 	ObjectEntity GenerateDungeonObject(InsideLocationLevel& lvl, Room& room, BaseObject* base, vector<Vec3>& on_wall, vector<Int2>& blocks, int flags);
 	void AddRoomColliders(InsideLocationLevel& lvl, Room& room, vector<Int2>& blocks);
 	void GenerateDungeonTreasure(vector<Chest*>& chests, int level, bool extra = false);
-	enum SpawnUnitFlags
-	{
-		SU_MAIN_ROOM = 1 << 0,
-		SU_TEMPORARY = 1 << 1
-	};
-	Unit* SpawnUnitInsideInn(UnitData& unit, int level = -1, InsideBuilding* inn = nullptr, int flags = 0);
 	Unit* CreateUnitWithAI(LevelContext& ctx, UnitData& unit, int level = -1, Human* human_data = nullptr, const Vec3* pos = nullptr, const float* rot = nullptr, AIController** ai = nullptr);
 	void ChangeLevel(int where);
 	void AddPlayerTeam(const Vec3& pos, float rot, bool reenter, bool hide_weapon);
@@ -820,7 +814,6 @@ public:
 	void SaveStock(FileWriter& f, vector<ItemSlot>& cnt);
 	void LoadStock(FileReader& f, vector<ItemSlot>& cnt);
 	Door* FindDoor(LevelContext& ctx, const Int2& pt);
-	void AddGroundItem(LevelContext& ctx, GroundItem* item);
 	void GenerateDungeonObjects2();
 	SOUND GetItemSound(const Item* item);
 	cstring GetCurrentLocationText();
@@ -869,7 +862,6 @@ public:
 	void StartArenaCombat(int level);
 	InsideBuilding* GetArena();
 	bool WarpToArea(LevelContext& ctx, const Box2d& area, float radius, Vec3& pos, int tries = 10);
-	void RemoveUnit(Unit* unit, bool notify = true);
 	void DeleteUnit(Unit* unit);
 	void DialogTalk(DialogContext& ctx, cstring msg);
 	void GenerateHeroName(HeroData& hero);
@@ -970,14 +962,9 @@ public:
 
 	bool IsDrunkman(Unit& u);
 	void PlayUnitSound(Unit& u, SOUND snd, float range = 1.f);
-	void UnitFall(Unit& u);
-	void UnitDie(Unit& u, LevelContext* ctx, Unit* killer);
-	void UnitTryStandup(Unit& u, float dt);
-	void UnitStandup(Unit& u);
 
 	void UpdatePostEffects(float dt);
 
-	void SpawnDrunkmans();
 	void PlayerYell(Unit& u);
 	bool CanBuySell(const Item* item);
 	void SetOutsideParams();

@@ -2349,7 +2349,7 @@ void CityGenerator::OnEnter()
 
 	Quest_Contest* contest = QM.quest_contest;
 	if(!contest->generated && L.location_index == contest->where && contest->state == Quest_Contest::CONTEST_TODAY)
-		game.SpawnDrunkmans();
+		contest->SpawnDrunkmans();
 }
 
 //=================================================================================================
@@ -2571,7 +2571,7 @@ void CityGenerator::SpawnUnits()
 	// pijacy w karczmie
 	for(int i = 0, ile = Random(1, city->citizens / 3); i < ile; ++i)
 	{
-		if(!game.SpawnUnitInsideInn(*dweller, -2))
+		if(!L.SpawnUnitInsideInn(*dweller, -2))
 			break;
 	}
 
@@ -2611,8 +2611,6 @@ void CityGenerator::SpawnUnits()
 //=================================================================================================
 void CityGenerator::SpawnTemporaryUnits()
 {
-	Game& game = Game::Get();
-
 	InsideBuilding* inn = city->FindInn();
 	CityBuilding* training_grounds = city->FindBuilding(BuildingGroup::BG_TRAINING_GROUNDS);
 
@@ -2637,7 +2635,7 @@ void CityGenerator::SpawnTemporaryUnits()
 		if(Rand() % 2 == 0 || !training_grounds)
 		{
 			// inside inn
-			game.SpawnUnitInsideInn(ud, level.Random(), inn, true);
+			L.SpawnUnitInsideInn(ud, level.Random(), inn, true);
 		}
 		else
 		{
@@ -2651,7 +2649,7 @@ void CityGenerator::SpawnTemporaryUnits()
 
 	// quest traveler (100% chance in city, 50% in village)
 	if(!city->IsVillage() || Rand() % 2 == 0)
-		game.SpawnUnitInsideInn(*UnitData::Get("traveler"), -2, inn, Game::SU_TEMPORARY);
+		L.SpawnUnitInsideInn(*UnitData::Get("traveler"), -2, inn, Level::SU_TEMPORARY);
 }
 
 //=================================================================================================

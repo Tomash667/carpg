@@ -23,10 +23,12 @@ public:
 	void Special(DialogContext& ctx, cstring msg) override;
 	bool SpecialIf(DialogContext& ctx, cstring msg) override;
 	cstring FormatString(const string& str) override;
+	void Progress();
 	void Update(float dt);
 	void HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit);
 	int GetUnitEventHandlerQuestRefid() { return -2; } // special value hack
 	void Cleanup();
+	void SpawnDrunkmans();
 
 	State state;
 	int where, state2, year;

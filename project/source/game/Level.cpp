@@ -58,7 +58,7 @@ void Level::ProcessUnitWarps()
 				// unit left location
 				if(warp.unit->event_handler)
 					warp.unit->event_handler->HandleUnitEvent(UnitEventHandler::LEAVE, warp.unit);
-				game.RemoveUnit(warp.unit);
+				L.RemoveUnit(warp.unit);
 			}
 		}
 		else if(warp.where == WARP_ARENA)
@@ -358,6 +358,22 @@ bool Level::RemoveTrap(int netid)
 	}
 
 	return false;
+}
+
+//=================================================================================================
+void Level::RemoveUnit(Unit* unit, bool notify)
+{
+	assert(unit);
+	if(unit->action == A_DESPAWN)
+		Game::Get().SpawnUnitEffect(*unit);
+	unit->to_remove = true;
+	to_remove.push_back(unit);
+	if(notify && Net::IsServer())
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::REMOVE_UNIT;
+		c.id = unit->netid;
+	}
 }
 
 //=================================================================================================
@@ -1463,6 +1479,24 @@ void Level::PickableItemBegin(LevelContext& ctx, Object& o)
 }
 
 //=================================================================================================
+void Level::AddGroundItem(LevelContext& ctx, GroundItem* item)
+{
+	assert(item);
+
+	if(ctx.type == LevelContext::Outside)
+		Game::Get().terrain->SetH(item->pos);
+	ctx.items->push_back(item);
+
+	if(Net::IsOnline())
+	{
+		item->netid = GroundItem::netid_counter++;
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::SPAWN_ITEM;
+		c.item = item;
+	}
+}
+
+//=================================================================================================
 void Level::PickableItemAdd(const Item* item)
 {
 	assert(item);
@@ -1599,6 +1633,41 @@ Unit* Level::SpawnUnitInsideArea(LevelContext& ctx, const Box2d& area, UnitData&
 		return nullptr;
 
 	return game.CreateUnitWithAI(ctx, unit, level, nullptr, &pos);
+}
+
+//=================================================================================================
+Unit* Level::SpawnUnitInsideInn(UnitData& ud, int level, InsideBuilding* inn, int flags)
+{
+	Game& game = Game::Get();
+
+	if(!inn)
+		inn = city_ctx->FindInn();
+
+	Vec3 pos;
+	bool ok = false;
+	if(IS_SET(flags, SU_MAIN_ROOM) || Rand() % 5 != 0)
+	{
+		if(game.WarpToArea(inn->ctx, inn->arena1, ud.GetRadius(), pos, 20) ||
+			game.WarpToArea(inn->ctx, inn->arena2, ud.GetRadius(), pos, 10))
+			ok = true;
+	}
+	else
+	{
+		if(game.WarpToArea(inn->ctx, inn->arena2, ud.GetRadius(), pos, 10) ||
+			game.WarpToArea(inn->ctx, inn->arena1, ud.GetRadius(), pos, 20))
+			ok = true;
+	}
+
+	if(ok)
+	{
+		float rot = Random(MAX_ANGLE);
+		Unit* u = game.CreateUnitWithAI(inn->ctx, ud, level, nullptr, &pos, &rot);
+		if(u && IS_SET(flags, SU_TEMPORARY))
+			u->temporary = true;
+		return u;
+	}
+	else
+		return nullptr;
 }
 
 //=================================================================================================

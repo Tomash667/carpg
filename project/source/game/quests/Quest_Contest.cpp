@@ -146,6 +146,52 @@ cstring Quest_Contest::FormatString(const string& str)
 }
 
 //=================================================================================================
+void Quest_Contest::Progress()
+{
+	int step; // 0 - before contest, 1 - time for contest, 2 - after contest
+	int month = W.GetMonth();
+	int day = W.GetDay();
+
+	if(month < 8)
+		step = 0;
+	else if(month == 8)
+	{
+		if(day < 20)
+			step = 0;
+		else if(day == 20)
+			step = 1;
+		else
+			step = 2;
+	}
+	else
+		step = 2;
+
+	switch(step)
+	{
+	case 0:
+		if(state != CONTEST_NOT_DONE)
+		{
+			state = CONTEST_NOT_DONE;
+			where = W.GetRandomSettlementIndex(where);
+		}
+		generated = false;
+		units.clear();
+		break;
+	case 1:
+		state = CONTEST_TODAY;
+		if(!generated && Game::Get().game_state == GS_LEVEL && L.location_index == where)
+			SpawnDrunkmans();
+		SpawnDrunkmans();
+		break;
+	case 2:
+		state = CONTEST_DONE;
+		generated = false;
+		units.clear();
+		break;
+	}
+}
+
+//=================================================================================================
 void Quest_Contest::Update(float dt)
 {
 	Game& game = Game::Get();
@@ -527,4 +573,19 @@ void Quest_Contest::Cleanup()
 	state = CONTEST_DONE;
 	units.clear();
 	W.AddNews(txContestNoWinner);
+}
+
+//=================================================================================================
+void Quest_Contest::SpawnDrunkmans()
+{
+	InsideBuilding* inn = L.city_ctx->FindInn();
+	generated = true;
+	UnitData& pijak = *UnitData::Get("pijak");
+	int ile = Random(4, 6);
+	for(int i = 0; i < ile; ++i)
+	{
+		Unit* u = L.SpawnUnitInsideInn(pijak, Random(2, 15), inn, Level::SU_TEMPORARY | Level::SU_MAIN_ROOM);
+		if(u && Net::IsOnline())
+			Game::Get().Net_SpawnUnit(u);
+	}
 }

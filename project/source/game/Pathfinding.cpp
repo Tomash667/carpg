@@ -517,8 +517,6 @@ int Pathfinding::FindLocalPath(LevelContext& ctx, vector<Int2>& _path, const Int
 {
 	assert(_me);
 
-	Game& game = Game::Get();
-
 	_path.clear();
 #ifdef DRAW_LOCAL_PATH
 	if(marked == _me)

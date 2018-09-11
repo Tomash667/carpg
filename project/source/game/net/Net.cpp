@@ -1588,7 +1588,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					item->pos.z -= cos(unit.rot)*0.25f;
 					item->rot = Random(MAX_ANGLE);
 					if(!QM.quest_secret->CheckMoonStone(item, unit))
-						AddGroundItem(L.GetContext(unit), item);
+						L.AddGroundItem(L.GetContext(unit), item);
 
 					// send to other players
 					if(players > 2)
@@ -2432,7 +2432,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 			break;
 		// player stands up
 		case NetChange::STAND_UP:
-			UnitStandup(unit);
+			unit.Standup();
 			// send to other players
 			if(players > 2)
 			{
@@ -3359,7 +3359,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					item->pos.x -= sin(unit.rot)*0.25f;
 					item->pos.z -= cos(unit.rot)*0.25f;
 					item->rot = Random(MAX_ANGLE);
-					AddGroundItem(L.GetContext(*info.u), item);
+					L.AddGroundItem(L.GetContext(*info.u), item);
 
 					// send info to other players
 					if(players > 2)
@@ -3478,7 +3478,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				{
 					Unit* target = L.FindUnit(netid);
 					if(target)
-						UnitFall(*target);
+						target->Fall();
 					else
 						StreamError("Update server: CHEAT_FALL from %s, missing unit %d.", info.name.c_str(), netid);
 				}
@@ -4802,7 +4802,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					if(!unit)
 						StreamError("Update client: DIE, missing unit %d.", netid);
 					else
-						UnitDie(*unit, nullptr, nullptr);
+						unit->Die(&L.GetContext(*unit), nullptr);
 				}
 			}
 			break;
@@ -4819,7 +4819,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					if(!unit)
 						StreamError("Update client: FALL, missing unit %d.", netid);
 					else
-						UnitFall(*unit);
+						unit->Fall();
 				}
 			}
 			break;
@@ -5677,7 +5677,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					if(!unit)
 						StreamError("Update client: STAND_UP, missing unit %d.", netid);
 					else
-						UnitStandup(*unit);
+						unit->Standup();
 				}
 			}
 			break;
@@ -5760,7 +5760,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					if(!unit)
 						StreamError("Update client: REMOVE_UNIT, missing unit %d.", netid);
 					else
-						RemoveUnit(unit);
+						L.RemoveUnit(unit);
 				}
 			}
 			break;
