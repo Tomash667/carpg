@@ -468,9 +468,6 @@
     <ClCompile Include="source\engine\VertexData.cpp">
       <Filter>2. engine</Filter>
     </ClCompile>
-    <ClCompile Include="source\game\TerrainTile.cpp">
-      <Filter>3. game</Filter>
-    </ClCompile>
     <ClCompile Include="source\game\entity\Usable.cpp">
       <Filter>3. game\entity</Filter>
     </ClCompile>
@@ -754,6 +751,9 @@
     <ClCompile Include="source\game\quests\Quest_Tutorial.cpp">
       <Filter>3. game\quests</Filter>
     </ClCompile>
+    <ClCompile Include="source\game\entity\TerrainTile.cpp">
+      <Filter>3. game\entity</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\resource\resource1.h">
@@ -770,9 +770,6 @@
     </ClInclude>
     <ClInclude Include="source\core\Tokenizer.h">
       <Filter>1. core</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\Collision.h">
-      <Filter>3. game</Filter>
     </ClInclude>
     <ClInclude Include="source\game\ConsoleCommands.h">
       <Filter>3. game</Filter>
@@ -1182,9 +1179,6 @@
     <ClInclude Include="source\engine\VertexData.h">
       <Filter>2. engine</Filter>
     </ClInclude>
-    <ClInclude Include="source\game\TerrainTile.h">
-      <Filter>3. game</Filter>
-    </ClInclude>
     <ClInclude Include="source\game\entity\Usable.h">
       <Filter>3. game\entity</Filter>
     </ClInclude>
@@ -1520,6 +1514,12 @@
       <Filter>3. game\quests</Filter>
     </ClInclude>
     <ClInclude Include="source\game\entity\ObjectEntity.h">
+      <Filter>3. game\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\entity\Collision.h">
+      <Filter>3. game\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\entity\TerrainTile.h">
       <Filter>3. game\entity</Filter>
     </ClInclude>
   </ItemGroup>

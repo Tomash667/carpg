@@ -390,7 +390,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 
 	if(essential)
 	{
-		talker = game.SpawnUnitNearLocation(L.local_ctx, spawn_pos, *essential, &look_pt, Clamp(essential->level.Random(), level / 2, level), 4.f);
+		talker = L.SpawnUnitNearLocation(L.local_ctx, spawn_pos, *essential, &look_pt, Clamp(essential->level.Random(), level / 2, level), 4.f);
 		talker->dont_attack = dont_attack;
 		best_dist = Vec3::Distance(talker->pos, look_pt);
 		--count;

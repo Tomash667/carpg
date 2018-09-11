@@ -106,187 +106,6 @@ PlayerController::Action InventoryModeToActionRequired(InventoryMode imode)
 }
 
 //=================================================================================================
-void Game::BreakUnitAction(Unit& unit, BREAK_ACTION_MODE mode, bool notify, bool allow_animation)
-{
-	if(notify && Net::IsServer())
-	{
-		NetChange& c = Add1(Net::changes);
-		c.unit = &unit;
-		c.type = NetChange::BREAK_ACTION;
-	}
-
-	switch(unit.action)
-	{
-	case A_POSITION:
-		return;
-	case A_SHOOT:
-		if(unit.bow_instance)
-		{
-			bow_instances.push_back(unit.bow_instance);
-			unit.bow_instance = nullptr;
-		}
-		unit.action = A_NONE;
-		break;
-	case A_DRINK:
-		if(unit.animation_state == 0)
-		{
-			if(Net::IsLocal())
-				AddItem(unit, unit.used_item, 1, unit.used_item_is_team);
-			if(mode != BREAK_ACTION_MODE::FALL)
-				unit.used_item = nullptr;
-		}
-		else
-			unit.used_item = nullptr;
-		unit.mesh_inst->Deactivate(1);
-		unit.action = A_NONE;
-		break;
-	case A_EAT:
-		if(unit.animation_state < 2)
-		{
-			if(Net::IsLocal())
-				AddItem(unit, unit.used_item, 1, unit.used_item_is_team);
-			if(mode != BREAK_ACTION_MODE::FALL)
-				unit.used_item = nullptr;
-		}
-		else
-			unit.used_item = nullptr;
-		unit.mesh_inst->Deactivate(1);
-		unit.action = A_NONE;
-		break;
-	case A_TAKE_WEAPON:
-		if(unit.weapon_state == WS_HIDING)
-		{
-			if(unit.animation_state == 0)
-			{
-				unit.weapon_state = WS_TAKEN;
-				unit.weapon_taken = unit.weapon_hiding;
-				unit.weapon_hiding = W_NONE;
-			}
-			else
-			{
-				unit.weapon_state = WS_HIDDEN;
-				unit.weapon_taken = unit.weapon_hiding = W_NONE;
-			}
-		}
-		else
-		{
-			if(unit.animation_state == 0)
-			{
-				unit.weapon_state = WS_HIDDEN;
-				unit.weapon_taken = W_NONE;
-			}
-			else
-				unit.weapon_state = WS_TAKEN;
-		}
-		unit.action = A_NONE;
-		break;
-	case A_BLOCK:
-		unit.mesh_inst->Deactivate(1);
-		unit.action = A_NONE;
-		break;
-	case A_DASH:
-		if(unit.animation_state == 1)
-		{
-			unit.mesh_inst->Deactivate(1);
-			unit.mesh_inst->groups[1].blend_max = 0.33f;
-		}
-		break;
-	}
-
-	if(unit.usable && !(unit.player && unit.player->action == PlayerController::Action_LootContainer))
-	{
-		if(mode == BREAK_ACTION_MODE::INSTANT)
-		{
-			unit.action = A_NONE;
-			unit.SetAnimationAtEnd(NAMES::ani_stand);
-			unit.UseUsable(nullptr);
-			unit.used_item = nullptr;
-			unit.animation = ANI_STAND;
-		}
-		else
-		{
-			unit.target_pos2 = unit.target_pos = unit.pos;
-			const Item* prev_used_item = unit.used_item;
-			Unit_StopUsingUsable(L.GetContext(unit), unit, mode != BREAK_ACTION_MODE::FALL && notify);
-			if(prev_used_item && unit.slots[SLOT_WEAPON] == prev_used_item && !unit.HaveShield())
-			{
-				unit.weapon_state = WS_TAKEN;
-				unit.weapon_taken = W_ONE_HANDED;
-				unit.weapon_hiding = W_NONE;
-			}
-			else if(mode == BREAK_ACTION_MODE::FALL)
-				unit.used_item = prev_used_item;
-			unit.action = A_POSITION;
-			unit.animation_state = 0;
-		}
-
-		if(Net::IsLocal() && unit.IsAI() && unit.ai->idle_action != AIController::Idle_None)
-		{
-			unit.ai->idle_action = AIController::Idle_None;
-			unit.ai->timer = Random(1.f, 2.f);
-		}
-	}
-	else
-	{
-		if(!Any(unit.action, A_ANIMATION, A_STAND_UP) || !allow_animation)
-			unit.action = A_NONE;
-	}
-
-	unit.mesh_inst->frame_end_info = false;
-	unit.mesh_inst->frame_end_info2 = false;
-	unit.run_attack = false;
-
-	if(unit.IsPlayer())
-	{
-		PlayerController& player = *unit.player;
-		player.next_action = NA_NONE;
-		if(&player == pc)
-		{
-			pc_data.action_ready = false;
-			Inventory::lock = nullptr;
-			if(inventory_mode > I_INVENTORY)
-				CloseInventory();
-
-			if(player.action == PlayerController::Action_Talk)
-			{
-				if(Net::IsLocal())
-				{
-					player.action_unit->busy = Unit::Busy_No;
-					player.action_unit->look_target = nullptr;
-					player.dialog_ctx->dialog_mode = false;
-				}
-				else
-					dialog_context.dialog_mode = false;
-				unit.look_target = nullptr;
-				player.action = PlayerController::Action_None;
-			}
-		}
-		else if(Net::IsLocal())
-		{
-			if(player.action == PlayerController::Action_Talk)
-			{
-				player.action_unit->busy = Unit::Busy_No;
-				player.action_unit->look_target = nullptr;
-				player.dialog_ctx->dialog_mode = false;
-				unit.look_target = nullptr;
-				player.action = PlayerController::Action_None;
-			}
-		}
-	}
-	else if(Net::IsLocal())
-	{
-		unit.ai->potion = -1;
-		if(unit.busy == Unit::Busy_Talking)
-		{
-			DialogContext* ctx = FindDialogContext(&unit);
-			if(ctx)
-				EndDialog(*ctx);
-			unit.busy = Unit::Busy_No;
-		}
-	}
-}
-
-//=================================================================================================
 void Game::Draw()
 {
 	PROFILER_BLOCK("Draw");
@@ -3127,7 +2946,7 @@ void Game::UseAction(PlayerController* p, bool from_server, const Vec3* pos)
 				assert(pos);
 				spawn_pos = *pos;
 			}
-			auto unit = SpawnUnitNearLocation(L.GetContext(*p->unit), spawn_pos, *UnitData::Get("white_wolf_sum"), nullptr, p->unit->level);
+			auto unit = L.SpawnUnitNearLocation(L.GetContext(*p->unit), spawn_pos, *UnitData::Get("white_wolf_sum"), nullptr, p->unit->level);
 			if(unit)
 			{
 				unit->summoner = p->unit;
@@ -3258,14 +3077,14 @@ int Game::CheckMove(Vec3& _pos, const Vec3& _dir, float _radius, Unit* _me, bool
 	Vec3 new_pos = _pos + _dir;
 	Vec3 gather_pos = _pos + _dir / 2;
 	float gather_radius = _dir.Length() + _radius;
-	global_col.clear();
+	L.global_col.clear();
 
-	IgnoreObjects ignore = { 0 };
+	Level::IgnoreObjects ignore = { 0 };
 	Unit* ignored[] = { _me, nullptr };
 	ignore.ignored_units = (const Unit**)ignored;
-	GatherCollisionObjects(L.GetContext(*_me), global_col, gather_pos, gather_radius, &ignore);
+	L.GatherCollisionObjects(L.GetContext(*_me), L.global_col, gather_pos, gather_radius, &ignore);
 
-	if(global_col.empty())
+	if(L.global_col.empty())
 	{
 		if(is_small)
 			*is_small = (Vec3::Distance(_pos, new_pos) < SMALL_DISTANCE);
@@ -3274,7 +3093,7 @@ int Game::CheckMove(Vec3& _pos, const Vec3& _dir, float _radius, Unit* _me, bool
 	}
 
 	// idŸ prosto po x i z
-	if(!Collide(global_col, new_pos, _radius))
+	if(!L.Collide(L.global_col, new_pos, _radius))
 	{
 		if(is_small)
 			*is_small = (Vec3::Distance(_pos, new_pos) < SMALL_DISTANCE);
@@ -3285,7 +3104,7 @@ int Game::CheckMove(Vec3& _pos, const Vec3& _dir, float _radius, Unit* _me, bool
 	// idŸ po x
 	Vec3 new_pos2 = _me->pos;
 	new_pos2.x = new_pos.x;
-	if(!Collide(global_col, new_pos2, _radius))
+	if(!L.Collide(L.global_col, new_pos2, _radius))
 	{
 		if(is_small)
 			*is_small = (Vec3::Distance(_pos, new_pos2) < SMALL_DISTANCE);
@@ -3296,7 +3115,7 @@ int Game::CheckMove(Vec3& _pos, const Vec3& _dir, float _radius, Unit* _me, bool
 	// idŸ po z
 	new_pos2.x = _me->pos.x;
 	new_pos2.z = new_pos.z;
-	if(!Collide(global_col, new_pos2, _radius))
+	if(!L.Collide(L.global_col, new_pos2, _radius))
 	{
 		if(is_small)
 			*is_small = (Vec3::Distance(_pos, new_pos2) < SMALL_DISTANCE);
@@ -3317,15 +3136,15 @@ int Game::CheckMovePhase(Vec3& _pos, const Vec3& _dir, float _radius, Unit* _me,
 	Vec3 gather_pos = _pos + _dir / 2;
 	float gather_radius = _dir.Length() + _radius;
 
-	global_col.clear();
+	L.global_col.clear();
 
-	IgnoreObjects ignore = { 0 };
+	Level::IgnoreObjects ignore = { 0 };
 	Unit* ignored[] = { _me, nullptr };
 	ignore.ignored_units = (const Unit**)ignored;
 	ignore.ignore_objects = true;
-	GatherCollisionObjects(L.GetContext(*_me), global_col, gather_pos, gather_radius, &ignore);
+	L.GatherCollisionObjects(L.GetContext(*_me), L.global_col, gather_pos, gather_radius, &ignore);
 
-	if(global_col.empty())
+	if(L.global_col.empty())
 	{
 		if(is_small)
 			*is_small = (Vec3::Distance(_pos, new_pos) < SMALL_DISTANCE);
@@ -3334,7 +3153,7 @@ int Game::CheckMovePhase(Vec3& _pos, const Vec3& _dir, float _radius, Unit* _me,
 	}
 
 	// idŸ prosto po x i z
-	if(!Collide(global_col, new_pos, _radius))
+	if(!L.Collide(L.global_col, new_pos, _radius))
 	{
 		if(is_small)
 			*is_small = (Vec3::Distance(_pos, new_pos) < SMALL_DISTANCE);
@@ -3345,7 +3164,7 @@ int Game::CheckMovePhase(Vec3& _pos, const Vec3& _dir, float _radius, Unit* _me,
 	// idŸ po x
 	Vec3 new_pos2 = _me->pos;
 	new_pos2.x = new_pos.x;
-	if(!Collide(global_col, new_pos2, _radius))
+	if(!L.Collide(L.global_col, new_pos2, _radius))
 	{
 		if(is_small)
 			*is_small = (Vec3::Distance(_pos, new_pos2) < SMALL_DISTANCE);
@@ -3356,7 +3175,7 @@ int Game::CheckMovePhase(Vec3& _pos, const Vec3& _dir, float _radius, Unit* _me,
 	// idŸ po z
 	new_pos2.x = _me->pos.x;
 	new_pos2.z = new_pos.z;
-	if(!Collide(global_col, new_pos2, _radius))
+	if(!L.Collide(L.global_col, new_pos2, _radius))
 	{
 		if(is_small)
 			*is_small = (Vec3::Distance(_pos, new_pos2) < SMALL_DISTANCE);
@@ -3365,7 +3184,7 @@ int Game::CheckMovePhase(Vec3& _pos, const Vec3& _dir, float _radius, Unit* _me,
 	}
 
 	// jeœli zablokowa³ siê w innej jednostce to wyjdŸ z niej
-	if(Collide(global_col, _pos, _radius))
+	if(L.Collide(L.global_col, _pos, _radius))
 	{
 		if(is_small)
 			*is_small = (Vec3::Distance(_pos, new_pos) < SMALL_DISTANCE);
@@ -3375,548 +3194,6 @@ int Game::CheckMovePhase(Vec3& _pos, const Vec3& _dir, float _radius, Unit* _me,
 
 	// nie ma drogi
 	return 0;
-}
-
-//=================================================================================================
-void Game::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _objects, const Vec3& _pos, float _radius, const IgnoreObjects* ignore)
-{
-	assert(_radius > 0.f);
-
-	// tiles
-	int minx = max(0, int((_pos.x - _radius) / 2)),
-		maxx = int((_pos.x + _radius) / 2),
-		minz = max(0, int((_pos.z - _radius) / 2)),
-		maxz = int((_pos.z + _radius) / 2);
-
-	if((!ignore || !ignore->ignore_blocks) && ctx.type != LevelContext::Building)
-	{
-		if(L.location->outside)
-		{
-			City* city = (City*)L.location;
-			TerrainTile* tiles = city->tiles;
-			maxx = min(maxx, OutsideLocation::size);
-			maxz = min(maxz, OutsideLocation::size);
-
-			for(int z = minz; z <= maxz; ++z)
-			{
-				for(int x = minx; x <= maxx; ++x)
-				{
-					if(tiles[x + z * OutsideLocation::size].mode >= TM_BUILDING_BLOCK)
-					{
-						CollisionObject& co = Add1(_objects);
-						co.pt = Vec2(2.f*x + 1.f, 2.f*z + 1.f);
-						co.w = 1.f;
-						co.h = 1.f;
-						co.type = CollisionObject::RECTANGLE;
-					}
-				}
-			}
-		}
-		else
-		{
-			InsideLocation* inside = (InsideLocation*)L.location;
-			InsideLocationLevel& lvl = inside->GetLevelData();
-			maxx = min(maxx, lvl.w);
-			maxz = min(maxz, lvl.h);
-
-			for(int z = minz; z <= maxz; ++z)
-			{
-				for(int x = minx; x <= maxx; ++x)
-				{
-					POLE co = lvl.map[x + z * lvl.w].type;
-					if(czy_blokuje2(co))
-					{
-						CollisionObject& co = Add1(_objects);
-						co.pt = Vec2(2.f*x + 1.f, 2.f*z + 1.f);
-						co.w = 1.f;
-						co.h = 1.f;
-						co.type = CollisionObject::RECTANGLE;
-					}
-					else if(co == SCHODY_DOL)
-					{
-						if(!lvl.staircase_down_in_wall)
-						{
-							CollisionObject& co = Add1(_objects);
-							co.pt = Vec2(2.f*x + 1.f, 2.f*z + 1.f);
-							co.check = &Game::CollideWithStairs;
-							co.check_rect = &Game::CollideWithStairsRect;
-							co.extra = 0;
-							co.type = CollisionObject::CUSTOM;
-						}
-					}
-					else if(co == SCHODY_GORA)
-					{
-						CollisionObject& co = Add1(_objects);
-						co.pt = Vec2(2.f*x + 1.f, 2.f*z + 1.f);
-						co.check = &Game::CollideWithStairs;
-						co.check_rect = &Game::CollideWithStairsRect;
-						co.extra = 1;
-						co.type = CollisionObject::CUSTOM;
-					}
-				}
-			}
-		}
-	}
-
-	// units
-	float radius;
-	Vec3 pos;
-	if(ignore && ignore->ignored_units)
-	{
-		for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
-		{
-			if(!*it || !(*it)->IsStanding())
-				continue;
-
-			const Unit** u = ignore->ignored_units;
-			do
-			{
-				if(!*u)
-					break;
-				if(*u == *it)
-					goto jest;
-				++u;
-			}
-			while(1);
-
-			radius = (*it)->GetUnitRadius();
-			pos = (*it)->GetColliderPos();
-			if(Distance(pos.x, pos.z, _pos.x, _pos.z) <= radius + _radius)
-			{
-				CollisionObject& co = Add1(_objects);
-				co.pt = Vec2(pos.x, pos.z);
-				co.radius = radius;
-				co.type = CollisionObject::SPHERE;
-			}
-
-		jest:
-			;
-		}
-	}
-	else
-	{
-		for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
-		{
-			if(!*it || !(*it)->IsStanding())
-				continue;
-
-			radius = (*it)->GetUnitRadius();
-			Vec3 pos = (*it)->GetColliderPos();
-			if(Distance(pos.x, pos.z, _pos.x, _pos.z) <= radius + _radius)
-			{
-				CollisionObject& co = Add1(_objects);
-				co.pt = Vec2(pos.x, pos.z);
-				co.radius = radius;
-				co.type = CollisionObject::SPHERE;
-			}
-		}
-	}
-
-	// obiekty kolizji
-	if(ignore && ignore->ignore_objects)
-	{
-		// ignoruj obiekty
-	}
-	else if(!ignore || !ignore->ignored_objects)
-	{
-		for(vector<CollisionObject>::iterator it = ctx.colliders->begin(), end = ctx.colliders->end(); it != end; ++it)
-		{
-			if(it->type == CollisionObject::RECTANGLE)
-			{
-				if(CircleToRectangle(_pos.x, _pos.z, _radius, it->pt.x, it->pt.y, it->w, it->h))
-					_objects.push_back(*it);
-			}
-			else
-			{
-				if(CircleToCircle(_pos.x, _pos.z, _radius, it->pt.x, it->pt.y, it->radius))
-					_objects.push_back(*it);
-			}
-		}
-	}
-	else
-	{
-		for(vector<CollisionObject>::iterator it = ctx.colliders->begin(), end = ctx.colliders->end(); it != end; ++it)
-		{
-			if(it->ptr)
-			{
-				const void** objs = ignore->ignored_objects;
-				do
-				{
-					if(it->ptr == *objs)
-						goto ignoruj;
-					else if(!*objs)
-						break;
-					else
-						++objs;
-				}
-				while(1);
-			}
-
-			if(it->type == CollisionObject::RECTANGLE)
-			{
-				if(CircleToRectangle(_pos.x, _pos.z, _radius, it->pt.x, it->pt.y, it->w, it->h))
-					_objects.push_back(*it);
-			}
-			else
-			{
-				if(CircleToCircle(_pos.x, _pos.z, _radius, it->pt.x, it->pt.y, it->radius))
-					_objects.push_back(*it);
-			}
-
-		ignoruj:
-			;
-		}
-	}
-
-	// drzwi
-	if(ctx.doors && !ctx.doors->empty())
-	{
-		for(vector<Door*>::iterator it = ctx.doors->begin(), end = ctx.doors->end(); it != end; ++it)
-		{
-			if((*it)->IsBlocking() && CircleToRotatedRectangle(_pos.x, _pos.z, _radius, (*it)->pos.x, (*it)->pos.z, 0.842f, 0.181f, (*it)->rot))
-			{
-				CollisionObject& co = Add1(_objects);
-				co.pt = Vec2((*it)->pos.x, (*it)->pos.z);
-				co.type = CollisionObject::RECTANGLE_ROT;
-				co.w = 0.842f;
-				co.h = 0.181f;
-				co.rot = (*it)->rot;
-			}
-		}
-	}
-}
-
-//=================================================================================================
-void Game::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _objects, const Box2d& _box, const IgnoreObjects* ignore)
-{
-	// tiles
-	int minx = max(0, int(_box.v1.x / 2)),
-		maxx = int(_box.v2.x / 2),
-		minz = max(0, int(_box.v1.y / 2)),
-		maxz = int(_box.v2.y / 2);
-
-	if((!ignore || !ignore->ignore_blocks) && ctx.type != LevelContext::Building)
-	{
-		if(L.location->outside)
-		{
-			City* city = (City*)L.location;
-			TerrainTile* tiles = city->tiles;
-			maxx = min(maxx, OutsideLocation::size);
-			maxz = min(maxz, OutsideLocation::size);
-
-			for(int z = minz; z <= maxz; ++z)
-			{
-				for(int x = minx; x <= maxx; ++x)
-				{
-					if(tiles[x + z * OutsideLocation::size].mode >= TM_BUILDING_BLOCK)
-					{
-						CollisionObject& co = Add1(_objects);
-						co.pt = Vec2(2.f*x + 1.f, 2.f*z + 1.f);
-						co.w = 1.f;
-						co.h = 1.f;
-						co.type = CollisionObject::RECTANGLE;
-					}
-				}
-			}
-		}
-		else
-		{
-			InsideLocation* inside = (InsideLocation*)L.location;
-			InsideLocationLevel& lvl = inside->GetLevelData();
-			maxx = min(maxx, lvl.w);
-			maxz = min(maxz, lvl.h);
-
-			for(int z = minz; z <= maxz; ++z)
-			{
-				for(int x = minx; x <= maxx; ++x)
-				{
-					POLE co = lvl.map[x + z * lvl.w].type;
-					if(czy_blokuje2(co))
-					{
-						CollisionObject& co = Add1(_objects);
-						co.pt = Vec2(2.f*x + 1.f, 2.f*z + 1.f);
-						co.w = 1.f;
-						co.h = 1.f;
-						co.type = CollisionObject::RECTANGLE;
-					}
-					else if(co == SCHODY_DOL)
-					{
-						if(!lvl.staircase_down_in_wall)
-						{
-							CollisionObject& co = Add1(_objects);
-							co.pt = Vec2(2.f*x + 1.f, 2.f*z + 1.f);
-							co.check = &Game::CollideWithStairs;
-							co.check_rect = &Game::CollideWithStairsRect;
-							co.extra = 0;
-							co.type = CollisionObject::CUSTOM;
-						}
-					}
-					else if(co == SCHODY_GORA)
-					{
-						CollisionObject& co = Add1(_objects);
-						co.pt = Vec2(2.f*x + 1.f, 2.f*z + 1.f);
-						co.check = &Game::CollideWithStairs;
-						co.check_rect = &Game::CollideWithStairsRect;
-						co.extra = 1;
-						co.type = CollisionObject::CUSTOM;
-					}
-				}
-			}
-		}
-	}
-
-	Vec2 rectpos = _box.Midpoint(),
-		rectsize = _box.Size();
-
-	// units
-	float radius;
-	if(ignore && ignore->ignored_units)
-	{
-		for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
-		{
-			if(!(*it)->IsStanding())
-				continue;
-
-			const Unit** u = ignore->ignored_units;
-			do
-			{
-				if(!*u)
-					break;
-				if(*u == *it)
-					goto jest;
-				++u;
-			}
-			while(1);
-
-			radius = (*it)->GetUnitRadius();
-			if(CircleToRectangle((*it)->pos.x, (*it)->pos.z, radius, rectpos.x, rectpos.y, rectsize.x, rectsize.y))
-			{
-				CollisionObject& co = Add1(_objects);
-				co.pt = Vec2((*it)->pos.x, (*it)->pos.z);
-				co.radius = radius;
-				co.type = CollisionObject::SPHERE;
-			}
-
-		jest:
-			;
-		}
-	}
-	else
-	{
-		for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
-		{
-			if(!(*it)->IsStanding())
-				continue;
-
-			radius = (*it)->GetUnitRadius();
-			if(CircleToRectangle((*it)->pos.x, (*it)->pos.z, radius, rectpos.x, rectpos.y, rectsize.x, rectsize.y))
-			{
-				CollisionObject& co = Add1(_objects);
-				co.pt = Vec2((*it)->pos.x, (*it)->pos.z);
-				co.radius = radius;
-				co.type = CollisionObject::SPHERE;
-			}
-		}
-	}
-
-	// obiekty kolizji
-	if(ignore && ignore->ignore_objects)
-	{
-		// ignoruj obiekty
-	}
-	else if(!ignore || !ignore->ignored_objects)
-	{
-		for(vector<CollisionObject>::iterator it = ctx.colliders->begin(), end = ctx.colliders->end(); it != end; ++it)
-		{
-			if(it->type == CollisionObject::RECTANGLE)
-			{
-				if(RectangleToRectangle(it->pt.x - it->w, it->pt.y - it->h, it->pt.x + it->w, it->pt.y + it->h, _box.v1.x, _box.v1.y, _box.v2.x, _box.v2.y))
-					_objects.push_back(*it);
-			}
-			else
-			{
-				if(CircleToRectangle(it->pt.x, it->pt.y, it->radius, rectpos.x, rectpos.y, rectsize.x, rectsize.y))
-					_objects.push_back(*it);
-			}
-		}
-	}
-	else
-	{
-		for(vector<CollisionObject>::iterator it = ctx.colliders->begin(), end = ctx.colliders->end(); it != end; ++it)
-		{
-			if(it->ptr)
-			{
-				const void** objs = ignore->ignored_objects;
-				do
-				{
-					if(it->ptr == *objs)
-						goto ignoruj;
-					else if(!*objs)
-						break;
-					else
-						++objs;
-				}
-				while(1);
-			}
-
-			if(it->type == CollisionObject::RECTANGLE)
-			{
-				if(RectangleToRectangle(it->pt.x - it->w, it->pt.y - it->h, it->pt.x + it->w, it->pt.y + it->h, _box.v1.x, _box.v1.y, _box.v2.x, _box.v2.y))
-					_objects.push_back(*it);
-			}
-			else
-			{
-				if(CircleToRectangle(it->pt.x, it->pt.y, it->radius, rectpos.x, rectpos.y, rectsize.x, rectsize.y))
-					_objects.push_back(*it);
-			}
-
-		ignoruj:
-			;
-		}
-	}
-}
-
-//=================================================================================================
-bool Game::Collide(const vector<CollisionObject>& _objects, const Vec3& _pos, float _radius)
-{
-	assert(_radius > 0.f);
-
-	for(vector<CollisionObject>::const_iterator it = _objects.begin(), end = _objects.end(); it != end; ++it)
-	{
-		switch(it->type)
-		{
-		case CollisionObject::SPHERE:
-			if(Distance(_pos.x, _pos.z, it->pt.x, it->pt.y) <= it->radius + _radius)
-				return true;
-			break;
-		case CollisionObject::RECTANGLE:
-			if(CircleToRectangle(_pos.x, _pos.z, _radius, it->pt.x, it->pt.y, it->w, it->h))
-				return true;
-			break;
-		case CollisionObject::RECTANGLE_ROT:
-			if(CircleToRotatedRectangle(_pos.x, _pos.z, _radius, it->pt.x, it->pt.y, it->w, it->h, it->rot))
-				return true;
-			break;
-		case CollisionObject::CUSTOM:
-			if((this->*(it->check))(*it, _pos, _radius))
-				return true;
-			break;
-		}
-	}
-
-	return false;
-}
-
-//=================================================================================================
-bool Game::Collide(const vector<CollisionObject>& _objects, const Box2d& _box, float _margin)
-{
-	Box2d box = _box;
-	box.v1.x -= _margin;
-	box.v1.y -= _margin;
-	box.v2.x += _margin;
-	box.v2.y += _margin;
-
-	Vec2 rectpos = _box.Midpoint(),
-		rectsize = _box.Size() / 2;
-
-	for(vector<CollisionObject>::const_iterator it = _objects.begin(), end = _objects.end(); it != end; ++it)
-	{
-		switch(it->type)
-		{
-		case CollisionObject::SPHERE:
-			if(CircleToRectangle(it->pt.x, it->pt.y, it->radius + _margin, rectpos.x, rectpos.y, rectsize.x, rectsize.y))
-				return true;
-			break;
-		case CollisionObject::RECTANGLE:
-			if(RectangleToRectangle(box.v1.x, box.v1.y, box.v2.x, box.v2.y, it->pt.x - it->w, it->pt.y - it->h, it->pt.x + it->w, it->pt.y + it->h))
-				return true;
-			break;
-		case CollisionObject::RECTANGLE_ROT:
-			{
-				RotRect r1, r2;
-				r1.center = it->pt;
-				r1.size.x = it->w + _margin;
-				r1.size.y = it->h + _margin;
-				r1.rot = -it->rot;
-				r2.center = rectpos;
-				r2.size = rectsize;
-				r2.rot = 0.f;
-
-				if(RotatedRectanglesCollision(r1, r2))
-					return true;
-			}
-			break;
-		case CollisionObject::CUSTOM:
-			if((this->*(it->check_rect))(*it, box))
-				return true;
-			break;
-		}
-	}
-
-	return false;
-}
-
-//=================================================================================================
-bool Game::Collide(const vector<CollisionObject>& _objects, const Box2d& _box, float margin, float _rot)
-{
-	if(!NotZero(_rot))
-		return Collide(_objects, _box, margin);
-
-	Box2d box = _box;
-	box.v1.x -= margin;
-	box.v1.y -= margin;
-	box.v2.x += margin;
-	box.v2.y += margin;
-
-	Vec2 rectpos = box.Midpoint(),
-		rectsize = box.Size() / 2;
-
-	for(vector<CollisionObject>::const_iterator it = _objects.begin(), end = _objects.end(); it != end; ++it)
-	{
-		switch(it->type)
-		{
-		case CollisionObject::SPHERE:
-			if(CircleToRotatedRectangle(it->pt.x, it->pt.y, it->radius, rectpos.x, rectpos.y, rectsize.x, rectsize.y, _rot))
-				return true;
-			break;
-		case CollisionObject::RECTANGLE:
-			{
-				RotRect r1, r2;
-				r1.center = it->pt;
-				r1.size.x = it->w;
-				r1.size.y = it->h;
-				r1.rot = 0.f;
-				r2.center = rectpos;
-				r2.size = rectsize;
-				r2.rot = _rot;
-
-				if(RotatedRectanglesCollision(r1, r2))
-					return true;
-			}
-			break;
-		case CollisionObject::RECTANGLE_ROT:
-			{
-				RotRect r1, r2;
-				r1.center = it->pt;
-				r1.size.x = it->w;
-				r1.size.y = it->h;
-				r1.rot = it->rot;
-				r2.center = rectpos;
-				r2.size = rectsize;
-				r2.rot = _rot;
-
-				if(RotatedRectanglesCollision(r1, r2))
-					return true;
-			}
-			break;
-		case CollisionObject::CUSTOM:
-			if((this->*(it->check_rect))(*it, box))
-				return true;
-			break;
-		}
-	}
-
-	return false;
 }
 
 //=================================================================================================
@@ -6022,96 +5299,6 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 		}
 		UpdateUnitPhysics(unit, unit.pos);
 	}
-}
-
-//=================================================================================================
-bool Game::CollideWithStairs(const CollisionObject& _co, const Vec3& _pos, float _radius) const
-{
-	assert(_co.type == CollisionObject::CUSTOM && _co.check == &Game::CollideWithStairs && !L.location->outside && _radius > 0.f);
-
-	InsideLocation* inside = (InsideLocation*)L.location;
-	InsideLocationLevel& lvl = inside->GetLevelData();
-
-	int dir;
-
-	if(_co.extra == 0)
-	{
-		assert(!lvl.staircase_down_in_wall);
-		dir = lvl.staircase_down_dir;
-	}
-	else
-		dir = lvl.staircase_up_dir;
-
-	if(dir != 0)
-	{
-		if(CircleToRectangle(_pos.x, _pos.z, _radius, _co.pt.x, _co.pt.y - 0.95f, 1.f, 0.05f))
-			return true;
-	}
-
-	if(dir != 1)
-	{
-		if(CircleToRectangle(_pos.x, _pos.z, _radius, _co.pt.x - 0.95f, _co.pt.y, 0.05f, 1.f))
-			return true;
-	}
-
-	if(dir != 2)
-	{
-		if(CircleToRectangle(_pos.x, _pos.z, _radius, _co.pt.x, _co.pt.y + 0.95f, 1.f, 0.05f))
-			return true;
-	}
-
-	if(dir != 3)
-	{
-		if(CircleToRectangle(_pos.x, _pos.z, _radius, _co.pt.x + 0.95f, _co.pt.y, 0.05f, 1.f))
-			return true;
-	}
-
-	return false;
-}
-
-//=================================================================================================
-bool Game::CollideWithStairsRect(const CollisionObject& _co, const Box2d& _box) const
-{
-	assert(_co.type == CollisionObject::CUSTOM && _co.check_rect == &Game::CollideWithStairsRect && !L.location->outside);
-
-	InsideLocation* inside = (InsideLocation*)L.location;
-	InsideLocationLevel& lvl = inside->GetLevelData();
-
-	int dir;
-
-	if(_co.extra == 0)
-	{
-		assert(!lvl.staircase_down_in_wall);
-		dir = lvl.staircase_down_dir;
-	}
-	else
-		dir = lvl.staircase_up_dir;
-
-	if(dir != 0)
-	{
-		if(RectangleToRectangle(_box.v1.x, _box.v1.y, _box.v2.x, _box.v2.y, _co.pt.x - 1.f, _co.pt.y - 1.f, _co.pt.x + 1.f, _co.pt.y - 0.9f))
-			return true;
-	}
-
-	if(dir != 1)
-	{
-		if(RectangleToRectangle(_box.v1.x, _box.v1.y, _box.v2.x, _box.v2.y, _co.pt.x - 1.f, _co.pt.y - 1.f, _co.pt.x - 0.9f, _co.pt.y + 1.f))
-			return true;
-	}
-
-	if(dir != 2)
-	{
-		if(RectangleToRectangle(_box.v1.x, _box.v1.y, _box.v2.x, _box.v2.y, _co.pt.x - 1.f, _co.pt.y + 0.9f, _co.pt.x + 1.f, _co.pt.y + 1.f))
-			return true;
-	}
-
-	if(dir != 3)
-	{
-		if(RectangleToRectangle(_box.v1.x, _box.v1.y, _box.v2.x, _box.v2.y, _co.pt.x + 0.9f, _co.pt.y - 1.f, _co.pt.x + 1.f, _co.pt.y + 1.f))
-			return true;
-	}
-
-	return false;
 }
 
 //=================================================================================================
@@ -8284,7 +7471,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 							{
 								u.visual_pos = u.pos = Vec3::Lerp(u.target_pos, u.target_pos2, u.timer * 2);
 								u.changed = true;
-								global_col.clear();
+								L.global_col.clear();
 								float my_radius = u.GetUnitRadius();
 								bool ok = true;
 								for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
@@ -8710,7 +7897,7 @@ bool Game::DoShieldSmash(LevelContext& ctx, Unit& attacker)
 	{
 		hitted->last_bash = 1.f + float(hitted->Get(AttributeId::END)) / 50.f;
 
-		BreakUnitAction(*hitted);
+		hitted->BreakAction();
 
 		if(hitted->action != A_POSITION)
 			hitted->action = A_PAIN;
@@ -9718,11 +8905,11 @@ ObjectEntity Game::GenerateDungeonObject(InsideLocationLevel& lvl, Room& room, B
 		}
 
 		// sprawdŸ kolizje z innymi obiektami
-		IgnoreObjects ignore = { 0 };
+		Level::IgnoreObjects ignore = { 0 };
 		ignore.ignore_blocks = true;
-		global_col.clear();
-		GatherCollisionObjects(L.local_ctx, global_col, pos, max(shift.x, shift.y) * SQRT_2, &ignore);
-		if(!global_col.empty() && Collide(global_col, Box2d(pos.x - shift.x, pos.z - shift.y, pos.x + shift.x, pos.z + shift.y), 0.8f, rot))
+		L.global_col.clear();
+		L.GatherCollisionObjects(L.local_ctx, L.global_col, pos, max(shift.x, shift.y) * SQRT_2, &ignore);
+		if(!L.global_col.empty() && L.Collide(L.global_col, Box2d(pos.x - shift.x, pos.z - shift.y, pos.x + shift.x, pos.z + shift.y), 0.8f, rot))
 			return nullptr;
 	}
 	else
@@ -9738,11 +8925,11 @@ ObjectEntity Game::GenerateDungeonObject(InsideLocationLevel& lvl, Room& room, B
 		}
 
 		// sprawdŸ kolizje z innymi obiektami
-		IgnoreObjects ignore = { 0 };
+		Level::IgnoreObjects ignore = { 0 };
 		ignore.ignore_blocks = true;
-		global_col.clear();
-		GatherCollisionObjects(L.local_ctx, global_col, pos, base->r, &ignore);
-		if(!global_col.empty() && Collide(global_col, pos, base->r + 0.8f))
+		L.global_col.clear();
+		L.GatherCollisionObjects(L.local_ctx, L.global_col, pos, base->r, &ignore);
+		if(!L.global_col.empty() && L.Collide(L.global_col, pos, base->r + 0.8f))
 			return nullptr;
 	}
 
@@ -9932,62 +9119,6 @@ void Game::SplitTreasure(vector<ItemSlot>& items, int gold, Chest** chests, int 
 		slot.Set(Item::gold, ile, ile);
 		SortItems(chests[i]->items);
 	}
-}
-
-Unit* Game::SpawnUnitInsideRoom(Room &p, UnitData &unit, int level, const Int2& stairs_pt, const Int2& stairs_down_pt)
-{
-	const float radius = unit.GetRadius();
-	Vec3 stairs_pos(2.f*stairs_pt.x + 1.f, 0.f, 2.f*stairs_pt.y + 1.f);
-
-	for(int i = 0; i < 10; ++i)
-	{
-		Vec3 pt = p.GetRandomPos(radius);
-
-		if(Vec3::Distance(stairs_pos, pt) < 10.f)
-			continue;
-
-		Int2 my_pt = Int2(int(pt.x / 2), int(pt.y / 2));
-		if(my_pt == stairs_down_pt)
-			continue;
-
-		global_col.clear();
-		GatherCollisionObjects(L.local_ctx, global_col, pt, radius, nullptr);
-
-		if(!Collide(global_col, pt, radius))
-		{
-			float rot = Random(MAX_ANGLE);
-			return CreateUnitWithAI(L.local_ctx, unit, level, nullptr, &pt, &rot);
-		}
-	}
-
-	return nullptr;
-}
-
-Unit* Game::SpawnUnitNearLocation(LevelContext& ctx, const Vec3 &pos, UnitData &unit, const Vec3* look_at, int level, float extra_radius)
-{
-	const float radius = unit.GetRadius();
-
-	global_col.clear();
-	GatherCollisionObjects(ctx, global_col, pos, extra_radius + radius, nullptr);
-
-	Vec3 tmp_pos = pos;
-
-	for(int i = 0; i < 10; ++i)
-	{
-		if(!Collide(global_col, tmp_pos, radius))
-		{
-			float rot;
-			if(look_at)
-				rot = Vec3::LookAtAngle(tmp_pos, *look_at);
-			else
-				rot = Random(MAX_ANGLE);
-			return CreateUnitWithAI(ctx, unit, level, nullptr, &tmp_pos, &rot);
-		}
-
-		tmp_pos = pos + Vec2::RandomPoissonDiscPoint().XZ() * extra_radius;
-	}
-
-	return nullptr;
 }
 
 Unit* Game::CreateUnitWithAI(LevelContext& ctx, UnitData& unit, int level, Human* human_data, const Vec3* pos, const float* rot, AIController** ai)
@@ -10211,7 +9342,7 @@ void Game::AddPlayerTeam(const Vec3& pos, float rot, bool reenter, bool hide_wea
 		u.animation = u.current_animation = ANI_STAND;
 		u.mesh_inst->Play(NAMES::ani_stand, PLAY_PRIO1, 0);
 		u.mesh_inst->groups[0].speed = 1.f;
-		BreakUnitAction(u);
+		u.BreakAction();
 		u.SetAnimationAtEnd();
 		if(u.in_building != -1)
 		{
@@ -10495,7 +9626,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 		// pain animation & break blocking
 		if(hitted.stamina < 0)
 		{
-			BreakUnitAction(hitted);
+			hitted.BreakAction();
 
 			if(!IS_SET(hitted.data->flags, F_DONT_SUFFER))
 			{
@@ -12435,11 +11566,11 @@ void Game::Unit_StopUsingUsable(LevelContext& ctx, Unit& u, bool send)
 
 	const float unit_radius = u.GetUnitRadius();
 
-	global_col.clear();
-	IgnoreObjects ignore = { 0 };
+	L.global_col.clear();
+	Level::IgnoreObjects ignore = { 0 };
 	const Unit* ignore_units[2] = { &u, nullptr };
 	ignore.ignored_units = ignore_units;
-	GatherCollisionObjects(ctx, global_col, u.pos, 2.f + unit_radius, &ignore);
+	L.GatherCollisionObjects(ctx, L.global_col, u.pos, 2.f + unit_radius, &ignore);
 
 	Vec3 tmp_pos = u.target_pos;
 	bool ok = false;
@@ -12447,7 +11578,7 @@ void Game::Unit_StopUsingUsable(LevelContext& ctx, Unit& u, bool send)
 
 	for(int i = 0; i < 20; ++i)
 	{
-		if(!Collide(global_col, tmp_pos, unit_radius))
+		if(!L.Collide(L.global_col, tmp_pos, unit_radius))
 		{
 			if(i != 0 && ctx.have_terrain)
 				tmp_pos.y = terrain->GetH(tmp_pos);
@@ -12896,14 +12027,14 @@ void Game::WarpUnit(Unit& unit, const Vec3& pos)
 {
 	const float unit_radius = unit.GetUnitRadius();
 
-	BreakUnitAction(unit, BREAK_ACTION_MODE::INSTANT, false, true);
+	unit.BreakAction(Unit::BREAK_ACTION_MODE::INSTANT, false, true);
 
-	global_col.clear();
+	L.global_col.clear();
 	LevelContext& ctx = L.GetContext(unit);
-	IgnoreObjects ignore = { 0 };
+	Level::IgnoreObjects ignore = { 0 };
 	const Unit* ignore_units[2] = { &unit, nullptr };
 	ignore.ignored_units = ignore_units;
-	GatherCollisionObjects(ctx, global_col, pos, 2.f + unit_radius, &ignore);
+	L.GatherCollisionObjects(ctx, L.global_col, pos, 2.f + unit_radius, &ignore);
 
 	Vec3 tmp_pos = pos;
 	bool ok = false;
@@ -12911,7 +12042,7 @@ void Game::WarpUnit(Unit& unit, const Vec3& pos)
 
 	for(int i = 0; i < 20; ++i)
 	{
-		if(!Collide(global_col, tmp_pos, unit_radius))
+		if(!L.Collide(L.global_col, tmp_pos, unit_radius))
 		{
 			unit.pos = tmp_pos;
 			ok = true;
@@ -13636,7 +12767,7 @@ void Game::StartArenaCombat(int level)
 		{
 			if(unit->frozen == FROZEN::NO)
 			{
-				BreakUnitAction(*unit, BREAK_ACTION_MODE::NORMAL, true, true);
+				unit->BreakAction(Unit::BREAK_ACTION_MODE::NORMAL, true, true);
 
 				unit->frozen = FROZEN::YES;
 				unit->in_arena = 0;
@@ -13735,7 +12866,7 @@ void Game::StartArenaCombat(int level)
 			y += entry.count;
 			if(x < y)
 			{
-				Unit* u = SpawnUnitInsideArea(arena->ctx, arena->arena2, *entry.ud, lvl);
+				Unit* u = L.SpawnUnitInsideArea(arena->ctx, arena->arena2, *entry.ud, lvl);
 				u->rot = 0.f;
 				u->in_arena = 1;
 				u->frozen = FROZEN::YES;
@@ -13750,26 +12881,16 @@ void Game::StartArenaCombat(int level)
 	}
 }
 
-Unit* Game::SpawnUnitInsideArea(LevelContext& ctx, const Box2d& area, UnitData& unit, int level)
-{
-	Vec3 pos;
-
-	if(!WarpToArea(ctx, area, unit.GetRadius(), pos))
-		return nullptr;
-
-	return CreateUnitWithAI(ctx, unit, level, nullptr, &pos);
-}
-
 bool Game::WarpToArea(LevelContext& ctx, const Box2d& area, float radius, Vec3& pos, int tries)
 {
 	for(int i = 0; i < tries; ++i)
 	{
 		pos = area.GetRandomPos3();
 
-		global_col.clear();
-		GatherCollisionObjects(ctx, global_col, pos, radius, nullptr);
+		L.global_col.clear();
+		L.GatherCollisionObjects(ctx, L.global_col, pos, radius, nullptr);
 
-		if(!Collide(global_col, pos, radius))
+		if(!L.Collide(L.global_col, pos, radius))
 			return true;
 	}
 
@@ -13813,7 +12934,7 @@ void Game::DeleteUnit(Unit* unit)
 		if(unit == pc_data.selected_unit)
 			pc_data.selected_unit = nullptr;
 		if(pc->action == PlayerController::Action_LootUnit && pc->action_unit == unit)
-			BreakUnitAction(*pc->unit);
+			pc->unit->BreakAction();
 
 		if(unit->player && Net::IsLocal())
 		{
@@ -14258,7 +13379,7 @@ void Game::SpawnArenaViewers(int count)
 		points.erase(points.begin() + id);
 		Vec3 pos(pt->mat._41 + arena->offset.x, pt->mat._42, pt->mat._43 + arena->offset.y);
 		Vec3 look_at(arena->offset.x, 0, arena->offset.y);
-		Unit* u = SpawnUnitNearLocation(arena->ctx, pos, ud, &look_at, -1, 2.f);
+		Unit* u = L.SpawnUnitNearLocation(arena->ctx, pos, ud, &look_at, -1, 2.f);
 		if(u && Net::IsOnline())
 			Net_SpawnUnit(u);
 		--count;
@@ -14675,7 +13796,7 @@ void Game::SpawnHeroesInsideDungeon()
 	for(int i = 0; i < count; ++i)
 	{
 		int level = team_level + Random(-2, 2);
-		Unit* u = SpawnUnitInsideRoom(*p, ClassInfo::GetRandomData(), level);
+		Unit* u = L.SpawnUnitInsideRoom(*p, ClassInfo::GetRandomData(), level);
 		if(u)
 			heroes->push_back(u);
 		else
@@ -14752,9 +13873,9 @@ GroundItem* Game::SpawnGroundItemInsideRoom(Room& room, const Item* item)
 	for(int i = 0; i < 50; ++i)
 	{
 		Vec3 pos = room.GetRandomPos(0.5f);
-		global_col.clear();
-		GatherCollisionObjects(L.local_ctx, global_col, pos, 0.25f);
-		if(!Collide(global_col, pos, 0.25f))
+		L.global_col.clear();
+		L.GatherCollisionObjects(L.local_ctx, L.global_col, pos, 0.25f);
+		if(!L.Collide(L.global_col, pos, 0.25f))
 		{
 			GroundItem* gi = new GroundItem;
 			gi->count = 1;
@@ -14790,9 +13911,9 @@ GroundItem* Game::SpawnGroundItemInsideRadius(const Item* item, const Vec2& pos,
 			try_exact = false;
 			pt = Vec3(pos.x, 0, pos.y);
 		}
-		global_col.clear();
-		GatherCollisionObjects(L.local_ctx, global_col, pt, 0.25f);
-		if(!Collide(global_col, pt, 0.25f))
+		L.global_col.clear();
+		L.GatherCollisionObjects(L.local_ctx, L.global_col, pt, 0.25f);
+		if(!L.Collide(L.global_col, pt, 0.25f))
 		{
 			GroundItem* gi = new GroundItem;
 			gi->count = 1;
@@ -14826,9 +13947,9 @@ GroundItem* Game::SpawnGroundItemInsideRegion(const Item* item, const Vec2& pos,
 			try_exact = false;
 			pt = Vec3(pos.x, 0, pos.y);
 		}
-		global_col.clear();
-		GatherCollisionObjects(L.local_ctx, global_col, pt, 0.25f);
-		if(!Collide(global_col, pt, 0.25f))
+		L.global_col.clear();
+		L.GatherCollisionObjects(L.local_ctx, L.global_col, pt, 0.25f);
+		if(!L.Collide(L.global_col, pt, 0.25f))
 		{
 			GroundItem* gi = new GroundItem;
 			gi->count = 1;
@@ -14964,7 +14085,7 @@ void Game::GenerateQuestUnits()
 	if(L.location_index == QM.quest_evil->start_loc && QM.quest_evil->evil_state == Quest_Evil::State::None)
 	{
 		CityBuilding* b = L.city_ctx->FindBuilding(BuildingGroup::BG_INN);
-		Unit* u = SpawnUnitNearLocation(L.local_ctx, b->walk_pt, *UnitData::Get("q_zlo_kaplan"), nullptr, 10);
+		Unit* u = L.SpawnUnitNearLocation(L.local_ctx, b->walk_pt, *UnitData::Get("q_zlo_kaplan"), nullptr, 10);
 		assert(u);
 		if(u)
 		{
@@ -14987,7 +14108,7 @@ void Game::GenerateQuestUnits()
 		if(QM.quest_sawmill->days >= 30 && L.city_ctx)
 		{
 			QM.quest_sawmill->days = 29;
-			Unit* u = SpawnUnitNearLocation(L.GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("poslaniec_tartak"), &Team.leader->pos, -2, 2.f);
+			Unit* u = L.SpawnUnitNearLocation(L.GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("poslaniec_tartak"), &Team.leader->pos, -2, 2.f);
 			if(u)
 			{
 				QM.quest_sawmill->messenger = u;
@@ -15011,7 +14132,7 @@ void Game::GenerateQuestUnits()
 			QM.quest_mine->mine_state2 == Quest_Mine::State2::InExpand || // inform player about finished mine expanding
 			QM.quest_mine->mine_state2 == Quest_Mine::State2::Expanded)) // inform player about finding portal
 	{
-		Unit* u = SpawnUnitNearLocation(L.GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("poslaniec_kopalnia"), &Team.leader->pos, -2, 2.f);
+		Unit* u = L.SpawnUnitNearLocation(L.GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("poslaniec_kopalnia"), &Team.leader->pos, -2, 2.f);
 		if(u)
 		{
 			QM.quest_mine->messenger = u;
@@ -15042,7 +14163,7 @@ void Game::GenerateQuestUnits2(bool on_enter)
 {
 	if(QM.quest_goblins->goblins_state == Quest_Goblins::State::Counting && QM.quest_goblins->days <= 0)
 	{
-		Unit* u = SpawnUnitNearLocation(L.GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("q_gobliny_poslaniec"), &Team.leader->pos, -2, 2.f);
+		Unit* u = L.SpawnUnitNearLocation(L.GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("q_gobliny_poslaniec"), &Team.leader->pos, -2, 2.f);
 		if(u)
 		{
 			if(Net::IsOnline() && !on_enter)
@@ -15056,7 +14177,7 @@ void Game::GenerateQuestUnits2(bool on_enter)
 
 	if(QM.quest_goblins->goblins_state == Quest_Goblins::State::NoblemanLeft && QM.quest_goblins->days <= 0)
 	{
-		Unit* u = SpawnUnitNearLocation(L.GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("q_gobliny_mag"), &Team.leader->pos, 5, 2.f);
+		Unit* u = L.SpawnUnitNearLocation(L.GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("q_gobliny_mag"), &Team.leader->pos, 5, 2.f);
 		if(u)
 		{
 			if(Net::IsOnline() && !on_enter)
@@ -15086,7 +14207,7 @@ void Game::UpdateQuests(int days)
 		if(QM.quest_sawmill->days >= 30 && L.city_ctx && game_state == GS_LEVEL)
 		{
 			QM.quest_sawmill->days = 29;
-			Unit* u = SpawnUnitNearLocation(L.GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("poslaniec_tartak"), &Team.leader->pos, -2, 2.f);
+			Unit* u = L.SpawnUnitNearLocation(L.GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("poslaniec_tartak"), &Team.leader->pos, -2, 2.f);
 			if(u)
 			{
 				if(Net::IsOnline())
@@ -15118,7 +14239,7 @@ void Game::UpdateQuests(int days)
 				// player invesetd in mine, inform him about finishing
 				if(L.city_ctx && game_state == GS_LEVEL)
 				{
-					Unit* u = SpawnUnitNearLocation(L.GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("poslaniec_kopalnia"), &Team.leader->pos, -2, 2.f);
+					Unit* u = L.SpawnUnitNearLocation(L.GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("poslaniec_kopalnia"), &Team.leader->pos, -2, 2.f);
 					if(u)
 					{
 						if(Net::IsOnline())
@@ -15150,7 +14271,7 @@ void Game::UpdateQuests(int days)
 		QM.quest_mine->days += days;
 		if(QM.quest_mine->days >= QM.quest_mine->days_required && L.city_ctx && game_state == GS_LEVEL)
 		{
-			Unit* u = SpawnUnitNearLocation(L.GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("poslaniec_kopalnia"), &Team.leader->pos, -2, 2.f);
+			Unit* u = L.SpawnUnitNearLocation(L.GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("poslaniec_kopalnia"), &Team.leader->pos, -2, 2.f);
 			if(u)
 			{
 				if(Net::IsOnline())
@@ -15409,7 +14530,7 @@ void Game::UpdateGame2(float dt)
 		if(QM.quest_bandits->timer <= 0.f)
 		{
 			// spawn agent
-			Unit* u = SpawnUnitNearLocation(L.GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("agent"), &Team.leader->pos, -2, 2.f);
+			Unit* u = L.SpawnUnitNearLocation(L.GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("agent"), &Team.leader->pos, -2, 2.f);
 			if(u)
 			{
 				if(Net::IsOnline())
@@ -16637,11 +15758,11 @@ void Game::WarpNearLocation(LevelContext& ctx, Unit& unit, const Vec3& pos, floa
 {
 	const float radius = unit.GetUnitRadius();
 
-	global_col.clear();
-	IgnoreObjects ignore = { 0 };
+	L.global_col.clear();
+	Level::IgnoreObjects ignore = { 0 };
 	const Unit* ignore_units[2] = { &unit, nullptr };
 	ignore.ignored_units = ignore_units;
-	GatherCollisionObjects(ctx, global_col, pos, extra_radius + radius, &ignore);
+	L.GatherCollisionObjects(ctx, L.global_col, pos, extra_radius + radius, &ignore);
 
 	Vec3 tmp_pos = pos;
 	if(!allow_exact)
@@ -16649,7 +15770,7 @@ void Game::WarpNearLocation(LevelContext& ctx, Unit& unit, const Vec3& pos, floa
 
 	for(int i = 0; i < tries; ++i)
 	{
-		if(!Collide(global_col, tmp_pos, radius))
+		if(!L.Collide(L.global_col, tmp_pos, radius))
 			break;
 
 		tmp_pos = pos + Vec2::RandomPoissonDiscPoint().XZ() * extra_radius;
@@ -17869,25 +16990,6 @@ GroundItem* Game::SpawnGroundItemInsideAnyRoom(InsideLocationLevel& lvl, const I
 	}
 }
 
-Unit* Game::SpawnUnitInsideRoomOrNear(InsideLocationLevel& lvl, Room& room, UnitData& ud, int level, const Int2& pt, const Int2& pt2)
-{
-	Unit* u = SpawnUnitInsideRoom(room, ud, level, pt, pt2);
-	if(u)
-		return u;
-
-	LocalVector<int> connected(room.connected);
-	connected.Shuffle();
-
-	for(vector<int>::iterator it = connected->begin(), end = connected->end(); it != end; ++it)
-	{
-		u = SpawnUnitInsideRoom(lvl.rooms[*it], ud, level, pt, pt2);
-		if(u)
-			return u;
-	}
-
-	return nullptr;
-}
-
 Unit* Game::SpawnUnitInsideInn(UnitData& ud, int level, InsideBuilding* inn, int flags)
 {
 	if(!inn)
@@ -18213,13 +17315,13 @@ void Game::HandleQuestEvent(Quest_Event* event)
 					++count;
 				}
 				pos /= (float)count;
-				spawned = SpawnUnitNearLocation(L.local_ctx, pos, *event->unit_to_spawn, nullptr, event->unit_spawn_level);
+				spawned = L.SpawnUnitNearLocation(L.local_ctx, pos, *event->unit_to_spawn, nullptr, event->unit_spawn_level);
 			}
 		}
 		else
 		{
 			Room& room = lvl->GetRoom(event->spawn_unit_room, inside->HaveDownStairs());
-			spawned = SpawnUnitInsideRoomOrNear(*lvl, room, *event->unit_to_spawn, event->unit_spawn_level);
+			spawned = L.SpawnUnitInsideRoomOrNear(*lvl, room, *event->unit_to_spawn, event->unit_spawn_level);
 		}
 		if(!spawned)
 			throw "Failed to spawn quest unit!";
@@ -18255,7 +17357,7 @@ void Game::HandleQuestEvent(Quest_Event* event)
 			room = lvl->GetRoom(pos_to_pt(spawned->pos));
 		else
 			room = &lvl->GetRoom(event->spawn_unit_room2, inside->HaveDownStairs());
-		spawned2 = SpawnUnitInsideRoomOrNear(*lvl, *room, *event->unit_to_spawn2, event->unit_spawn_level2);
+		spawned2 = L.SpawnUnitInsideRoomOrNear(*lvl, *room, *event->unit_to_spawn2, event->unit_spawn_level2);
 		if(!spawned2)
 			throw "Failed to spawn quest unit 2!";
 		if(devmode)

@@ -362,7 +362,7 @@ void DungeonGenerator::GenerateUnits()
 				if(x < y)
 				{
 					// dodaj
-					game.SpawnUnitInsideRoom(*it, *entry.ud, Random(part.max_level / 2, part.max_level), pt, pt2);
+					L.SpawnUnitInsideRoom(*it, *entry.ud, Random(part.max_level / 2, part.max_level), pt, pt2);
 					break;
 				}
 			}

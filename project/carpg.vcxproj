@@ -201,10 +201,10 @@
     <ClInclude Include="source\engine\VertexData.h" />
     <ClInclude Include="source\engine\VertexDeclaration.h" />
     <ClInclude Include="source\ErrorHandler.h" />
-    <ClInclude Include="source\game\Collision.h" />
     <ClInclude Include="source\game\ConsoleCommands.h" />
     <ClInclude Include="source\game\Debug.h" />
     <ClInclude Include="source\game\entity\BloodType.h" />
+    <ClInclude Include="source\game\entity\Collision.h" />
     <ClInclude Include="source\game\entity\Encounter.h" />
     <ClInclude Include="source\game\entity\ItemContainer.h" />
     <ClInclude Include="source\game\entity\News.h" />
@@ -212,6 +212,7 @@
     <ClInclude Include="source\game\entity\OutsideObject.h" />
     <ClInclude Include="source\game\entity\Portal.h" />
     <ClInclude Include="source\game\entity\Room.h" />
+    <ClInclude Include="source\game\entity\TerrainTile.h" />
     <ClInclude Include="source\game\entity\Tile.h" />
     <ClInclude Include="source\game\entity\UnitEventHandler.h" />
     <ClInclude Include="source\game\GameCore.h" />
@@ -377,7 +378,6 @@
     <ClInclude Include="source\game\system\UnitData.h" />
     <ClInclude Include="source\game\system\UnitGroup.h" />
     <ClInclude Include="source\game\Team.h" />
-    <ClInclude Include="source\game\TerrainTile.h" />
     <ClInclude Include="source\game\World.h" />
     <ClInclude Include="source\Pch.h" />
     <ClInclude Include="source\resource\resource1.h" />
@@ -452,6 +452,7 @@
     <ClCompile Include="source\game\entity\ItemContainer.cpp" />
     <ClCompile Include="source\game\entity\Portal.cpp" />
     <ClCompile Include="source\game\entity\Room.cpp" />
+    <ClCompile Include="source\game\entity\TerrainTile.cpp" />
     <ClCompile Include="source\game\entity\Tile.cpp" />
     <ClCompile Include="source\game\GameFile.cpp" />
     <ClCompile Include="source\game\GameStats.cpp" />
@@ -609,7 +610,6 @@
     <ClCompile Include="source\game\system\UnitGroup.cpp" />
     <ClCompile Include="source\game\system\UnitLoader.cpp" />
     <ClCompile Include="source\game\Team.cpp" />
-    <ClCompile Include="source\game\TerrainTile.cpp" />
     <ClCompile Include="source\game\World.cpp" />
     <ClCompile Include="source\game\Worldmap.cpp" />
     <ClCompile Include="source\Main.cpp" />

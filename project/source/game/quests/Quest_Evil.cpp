@@ -642,9 +642,9 @@ void Quest_Evil::GeneratePortal()
 		dobre.pop_back();
 		Room& r = lvl.rooms[id];
 
-		game->global_col.clear();
-		game->GatherCollisionObjects(L.local_ctx, game->global_col, r.Center(), 2.f);
-		if(game->global_col.empty())
+		L.global_col.clear();
+		L.GatherCollisionObjects(L.local_ctx, L.global_col, r.Center(), 2.f);
+		if(L.global_col.empty())
 			break;
 
 		if(dobre.empty())

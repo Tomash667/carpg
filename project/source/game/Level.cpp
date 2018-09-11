@@ -3,6 +3,8 @@
 #include "Level.h"
 #include "City.h"
 #include "InsideBuilding.h"
+#include "InsideLocation.h"
+#include "InsideLocationLevel.h"
 #include "Door.h"
 #include "Trap.h"
 #include "Chest.h"
@@ -356,35 +358,6 @@ bool Level::RemoveTrap(int netid)
 	}
 
 	return false;
-}
-
-//=================================================================================================
-void Level::RespawnUnits()
-{
-	Game& game = Game::Get();
-
-	for(LevelContext& ctx : ForEachContext())
-	{
-		for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
-		{
-			Unit* u = *it;
-			if(u->player)
-				continue;
-
-			// model
-			u->action = A_NONE;
-			u->talking = false;
-			u->CreateMesh(Unit::CREATE_MESH::NORMAL);
-
-			// fizyka
-			game.CreateUnitPhysics(*u, true);
-
-			// ai
-			AIController* ai = new AIController;
-			ai->Init(u);
-			game.ais.push_back(ai);
-		}
-	}
 }
 
 //=================================================================================================
@@ -1247,7 +1220,7 @@ void Level::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding
 				assert(ud);
 				if(ud)
 				{
-					Unit* u = game.SpawnUnitNearLocation(ctx, pos, *ud, nullptr, -2);
+					Unit* u = SpawnUnitNearLocation(ctx, pos, *ud, nullptr, -2);
 					u->rot = Clip(pt.rot.y + rot);
 					u->ai->start_rot = u->rot;
 				}
@@ -1354,13 +1327,13 @@ ObjectEntity Level::SpawnObjectNearLocation(LevelContext& ctx, BaseObject* obj, 
 	bool ok = false;
 	if(obj->type == OBJ_CYLINDER)
 	{
-		game.global_col.clear();
+		global_col.clear();
 		Vec3 pt(pos.x, 0, pos.y);
-		game.GatherCollisionObjects(ctx, game.global_col, pt, obj->r + margin + range);
+		GatherCollisionObjects(ctx, global_col, pt, obj->r + margin + range);
 		float extra_radius = range / 20;
 		for(int i = 0; i < 20; ++i)
 		{
-			if(!game.Collide(game.global_col, pt, obj->r + margin))
+			if(!Collide(global_col, pt, obj->r + margin))
 			{
 				ok = true;
 				break;
@@ -1380,9 +1353,9 @@ ObjectEntity Level::SpawnObjectNearLocation(LevelContext& ctx, BaseObject* obj, 
 	}
 	else
 	{
-		game.global_col.clear();
+		global_col.clear();
 		Vec3 pt(pos.x, 0, pos.y);
-		game.GatherCollisionObjects(ctx, game.global_col, pt, sqrt(obj->size.x + obj->size.y) + margin + range);
+		GatherCollisionObjects(ctx, global_col, pt, sqrt(obj->size.x + obj->size.y) + margin + range);
 		float extra_radius = range / 20;
 		Box2d box(pos);
 		box.v1.x -= obj->size.x;
@@ -1391,7 +1364,7 @@ ObjectEntity Level::SpawnObjectNearLocation(LevelContext& ctx, BaseObject* obj, 
 		box.v2.y += obj->size.y;
 		for(int i = 0; i < 20; ++i)
 		{
-			if(!game.Collide(game.global_col, box, margin, rot))
+			if(!Collide(global_col, box, margin, rot))
 			{
 				ok = true;
 				break;
@@ -1424,9 +1397,9 @@ ObjectEntity Level::SpawnObjectNearLocation(LevelContext& ctx, BaseObject* obj, 
 	else
 	{
 		Game& game = Game::Get();
-		game.global_col.clear();
+		global_col.clear();
 		Vec3 pt(pos.x, 0, pos.y);
-		game.GatherCollisionObjects(ctx, game.global_col, pt, sqrt(obj->size.x + obj->size.y) + margin + range);
+		GatherCollisionObjects(ctx, global_col, pt, sqrt(obj->size.x + obj->size.y) + margin + range);
 		float extra_radius = range / 20, rot;
 		Box2d box(pos);
 		box.v1.x -= obj->size.x;
@@ -1437,7 +1410,7 @@ ObjectEntity Level::SpawnObjectNearLocation(LevelContext& ctx, BaseObject* obj, 
 		for(int i = 0; i < 20; ++i)
 		{
 			rot = Vec2::LookAtAngle(Vec2(pt.x, pt.z), rot_target);
-			if(!game.Collide(game.global_col, box, margin, rot))
+			if(!Collide(global_col, box, margin, rot))
 			{
 				ok = true;
 				break;
@@ -1539,6 +1512,96 @@ void Level::PickableItemAdd(const Item* item)
 }
 
 //=================================================================================================
+Unit* Level::SpawnUnitInsideRoom(Room &p, UnitData &unit, int level, const Int2& stairs_pt, const Int2& stairs_down_pt)
+{
+	const float radius = unit.GetRadius();
+	Vec3 stairs_pos(2.f*stairs_pt.x + 1.f, 0.f, 2.f*stairs_pt.y + 1.f);
+
+	for(int i = 0; i < 10; ++i)
+	{
+		Vec3 pt = p.GetRandomPos(radius);
+
+		if(Vec3::Distance(stairs_pos, pt) < 10.f)
+			continue;
+
+		Int2 my_pt = Int2(int(pt.x / 2), int(pt.y / 2));
+		if(my_pt == stairs_down_pt)
+			continue;
+
+		global_col.clear();
+		GatherCollisionObjects(local_ctx, global_col, pt, radius, nullptr);
+
+		if(!Collide(global_col, pt, radius))
+		{
+			float rot = Random(MAX_ANGLE);
+			return Game::Get().CreateUnitWithAI(local_ctx, unit, level, nullptr, &pt, &rot);
+		}
+	}
+
+	return nullptr;
+}
+
+//=================================================================================================
+Unit* Level::SpawnUnitInsideRoomOrNear(InsideLocationLevel& lvl, Room& room, UnitData& ud, int level, const Int2& pt, const Int2& pt2)
+{
+	Unit* u = SpawnUnitInsideRoom(room, ud, level, pt, pt2);
+	if(u)
+		return u;
+
+	LocalVector<int> connected(room.connected);
+	connected.Shuffle();
+
+	for(vector<int>::iterator it = connected->begin(), end = connected->end(); it != end; ++it)
+	{
+		u = SpawnUnitInsideRoom(lvl.rooms[*it], ud, level, pt, pt2);
+		if(u)
+			return u;
+	}
+
+	return nullptr;
+}
+
+//=================================================================================================
+Unit* Level::SpawnUnitNearLocation(LevelContext& ctx, const Vec3 &pos, UnitData &unit, const Vec3* look_at, int level, float extra_radius)
+{
+	const float radius = unit.GetRadius();
+
+	global_col.clear();
+	GatherCollisionObjects(ctx, global_col, pos, extra_radius + radius, nullptr);
+
+	Vec3 tmp_pos = pos;
+
+	for(int i = 0; i < 10; ++i)
+	{
+		if(!Collide(global_col, tmp_pos, radius))
+		{
+			float rot;
+			if(look_at)
+				rot = Vec3::LookAtAngle(tmp_pos, *look_at);
+			else
+				rot = Random(MAX_ANGLE);
+			return Game::Get().CreateUnitWithAI(ctx, unit, level, nullptr, &tmp_pos, &rot);
+		}
+
+		tmp_pos = pos + Vec2::RandomPoissonDiscPoint().XZ() * extra_radius;
+	}
+
+	return nullptr;
+}
+
+//=================================================================================================
+Unit* Level::SpawnUnitInsideArea(LevelContext& ctx, const Box2d& area, UnitData& unit, int level)
+{
+	Vec3 pos;
+	Game& game = Game::Get();
+
+	if(!game.WarpToArea(ctx, area, unit.GetRadius(), pos))
+		return nullptr;
+
+	return game.CreateUnitWithAI(ctx, unit, level, nullptr, &pos);
+}
+
+//=================================================================================================
 void Level::SpawnUnitsGroup(LevelContext& ctx, const Vec3& pos, const Vec3* look_at, uint count, UnitGroup* group, int level, delegate<void(Unit*)> callback)
 {
 	static TmpUnitGroup tgroup;
@@ -1554,11 +1617,643 @@ void Level::SpawnUnitsGroup(LevelContext& ctx, const Vec3& pos, const Vec3* look
 			y += entry.count;
 			if(x < y)
 			{
-				Unit* u = Game::Get().SpawnUnitNearLocation(ctx, pos, *entry.ud, look_at, Clamp(entry.ud->level.Random(), level / 2, level), 4.f);
+				Unit* u = SpawnUnitNearLocation(ctx, pos, *entry.ud, look_at, Clamp(entry.ud->level.Random(), level / 2, level), 4.f);
 				if(u && callback)
 					callback(u);
 				break;
 			}
 		}
 	}
+}
+
+//=================================================================================================
+void Level::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _objects, const Vec3& _pos, float _radius, const IgnoreObjects* ignore)
+{
+	assert(_radius > 0.f);
+
+	// tiles
+	int minx = max(0, int((_pos.x - _radius) / 2)),
+		maxx = int((_pos.x + _radius) / 2),
+		minz = max(0, int((_pos.z - _radius) / 2)),
+		maxz = int((_pos.z + _radius) / 2);
+
+	if((!ignore || !ignore->ignore_blocks) && ctx.type != LevelContext::Building)
+	{
+		if(location->outside)
+		{
+			City* city = (City*)location;
+			TerrainTile* tiles = city->tiles;
+			maxx = min(maxx, OutsideLocation::size);
+			maxz = min(maxz, OutsideLocation::size);
+
+			for(int z = minz; z <= maxz; ++z)
+			{
+				for(int x = minx; x <= maxx; ++x)
+				{
+					if(tiles[x + z * OutsideLocation::size].mode >= TM_BUILDING_BLOCK)
+					{
+						CollisionObject& co = Add1(_objects);
+						co.pt = Vec2(2.f*x + 1.f, 2.f*z + 1.f);
+						co.w = 1.f;
+						co.h = 1.f;
+						co.type = CollisionObject::RECTANGLE;
+					}
+				}
+			}
+		}
+		else
+		{
+			InsideLocation* inside = (InsideLocation*)location;
+			InsideLocationLevel& lvl = inside->GetLevelData();
+			maxx = min(maxx, lvl.w);
+			maxz = min(maxz, lvl.h);
+
+			for(int z = minz; z <= maxz; ++z)
+			{
+				for(int x = minx; x <= maxx; ++x)
+				{
+					POLE co = lvl.map[x + z * lvl.w].type;
+					if(czy_blokuje2(co))
+					{
+						CollisionObject& co = Add1(_objects);
+						co.pt = Vec2(2.f*x + 1.f, 2.f*z + 1.f);
+						co.w = 1.f;
+						co.h = 1.f;
+						co.type = CollisionObject::RECTANGLE;
+					}
+					else if(co == SCHODY_DOL)
+					{
+						if(!lvl.staircase_down_in_wall)
+						{
+							CollisionObject& co = Add1(_objects);
+							co.pt = Vec2(2.f*x + 1.f, 2.f*z + 1.f);
+							co.check = &Level::CollideWithStairs;
+							co.check_rect = &Level::CollideWithStairsRect;
+							co.extra = 0;
+							co.type = CollisionObject::CUSTOM;
+						}
+					}
+					else if(co == SCHODY_GORA)
+					{
+						CollisionObject& co = Add1(_objects);
+						co.pt = Vec2(2.f*x + 1.f, 2.f*z + 1.f);
+						co.check = &Level::CollideWithStairs;
+						co.check_rect = &Level::CollideWithStairsRect;
+						co.extra = 1;
+						co.type = CollisionObject::CUSTOM;
+					}
+				}
+			}
+		}
+	}
+
+	// units
+	float radius;
+	Vec3 pos;
+	if(ignore && ignore->ignored_units)
+	{
+		for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
+		{
+			if(!*it || !(*it)->IsStanding())
+				continue;
+
+			const Unit** u = ignore->ignored_units;
+			do
+			{
+				if(!*u)
+					break;
+				if(*u == *it)
+					goto jest;
+				++u;
+			}
+			while(1);
+
+			radius = (*it)->GetUnitRadius();
+			pos = (*it)->GetColliderPos();
+			if(Distance(pos.x, pos.z, _pos.x, _pos.z) <= radius + _radius)
+			{
+				CollisionObject& co = Add1(_objects);
+				co.pt = Vec2(pos.x, pos.z);
+				co.radius = radius;
+				co.type = CollisionObject::SPHERE;
+			}
+
+		jest:
+			;
+		}
+	}
+	else
+	{
+		for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
+		{
+			if(!*it || !(*it)->IsStanding())
+				continue;
+
+			radius = (*it)->GetUnitRadius();
+			Vec3 pos = (*it)->GetColliderPos();
+			if(Distance(pos.x, pos.z, _pos.x, _pos.z) <= radius + _radius)
+			{
+				CollisionObject& co = Add1(_objects);
+				co.pt = Vec2(pos.x, pos.z);
+				co.radius = radius;
+				co.type = CollisionObject::SPHERE;
+			}
+		}
+	}
+
+	// obiekty kolizji
+	if(ignore && ignore->ignore_objects)
+	{
+		// ignoruj obiekty
+	}
+	else if(!ignore || !ignore->ignored_objects)
+	{
+		for(vector<CollisionObject>::iterator it = ctx.colliders->begin(), end = ctx.colliders->end(); it != end; ++it)
+		{
+			if(it->type == CollisionObject::RECTANGLE)
+			{
+				if(CircleToRectangle(_pos.x, _pos.z, _radius, it->pt.x, it->pt.y, it->w, it->h))
+					_objects.push_back(*it);
+			}
+			else
+			{
+				if(CircleToCircle(_pos.x, _pos.z, _radius, it->pt.x, it->pt.y, it->radius))
+					_objects.push_back(*it);
+			}
+		}
+	}
+	else
+	{
+		for(vector<CollisionObject>::iterator it = ctx.colliders->begin(), end = ctx.colliders->end(); it != end; ++it)
+		{
+			if(it->ptr)
+			{
+				const void** objs = ignore->ignored_objects;
+				do
+				{
+					if(it->ptr == *objs)
+						goto ignoruj;
+					else if(!*objs)
+						break;
+					else
+						++objs;
+				}
+				while(1);
+			}
+
+			if(it->type == CollisionObject::RECTANGLE)
+			{
+				if(CircleToRectangle(_pos.x, _pos.z, _radius, it->pt.x, it->pt.y, it->w, it->h))
+					_objects.push_back(*it);
+			}
+			else
+			{
+				if(CircleToCircle(_pos.x, _pos.z, _radius, it->pt.x, it->pt.y, it->radius))
+					_objects.push_back(*it);
+			}
+
+		ignoruj:
+			;
+		}
+	}
+
+	// drzwi
+	if(ctx.doors && !ctx.doors->empty())
+	{
+		for(vector<Door*>::iterator it = ctx.doors->begin(), end = ctx.doors->end(); it != end; ++it)
+		{
+			if((*it)->IsBlocking() && CircleToRotatedRectangle(_pos.x, _pos.z, _radius, (*it)->pos.x, (*it)->pos.z, 0.842f, 0.181f, (*it)->rot))
+			{
+				CollisionObject& co = Add1(_objects);
+				co.pt = Vec2((*it)->pos.x, (*it)->pos.z);
+				co.type = CollisionObject::RECTANGLE_ROT;
+				co.w = 0.842f;
+				co.h = 0.181f;
+				co.rot = (*it)->rot;
+			}
+		}
+	}
+}
+
+//=================================================================================================
+void Level::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _objects, const Box2d& _box, const IgnoreObjects* ignore)
+{
+	// tiles
+	int minx = max(0, int(_box.v1.x / 2)),
+		maxx = int(_box.v2.x / 2),
+		minz = max(0, int(_box.v1.y / 2)),
+		maxz = int(_box.v2.y / 2);
+
+	if((!ignore || !ignore->ignore_blocks) && ctx.type != LevelContext::Building)
+	{
+		if(location->outside)
+		{
+			City* city = (City*)location;
+			TerrainTile* tiles = city->tiles;
+			maxx = min(maxx, OutsideLocation::size);
+			maxz = min(maxz, OutsideLocation::size);
+
+			for(int z = minz; z <= maxz; ++z)
+			{
+				for(int x = minx; x <= maxx; ++x)
+				{
+					if(tiles[x + z * OutsideLocation::size].mode >= TM_BUILDING_BLOCK)
+					{
+						CollisionObject& co = Add1(_objects);
+						co.pt = Vec2(2.f*x + 1.f, 2.f*z + 1.f);
+						co.w = 1.f;
+						co.h = 1.f;
+						co.type = CollisionObject::RECTANGLE;
+					}
+				}
+			}
+		}
+		else
+		{
+			InsideLocation* inside = (InsideLocation*)location;
+			InsideLocationLevel& lvl = inside->GetLevelData();
+			maxx = min(maxx, lvl.w);
+			maxz = min(maxz, lvl.h);
+
+			for(int z = minz; z <= maxz; ++z)
+			{
+				for(int x = minx; x <= maxx; ++x)
+				{
+					POLE co = lvl.map[x + z * lvl.w].type;
+					if(czy_blokuje2(co))
+					{
+						CollisionObject& co = Add1(_objects);
+						co.pt = Vec2(2.f*x + 1.f, 2.f*z + 1.f);
+						co.w = 1.f;
+						co.h = 1.f;
+						co.type = CollisionObject::RECTANGLE;
+					}
+					else if(co == SCHODY_DOL)
+					{
+						if(!lvl.staircase_down_in_wall)
+						{
+							CollisionObject& co = Add1(_objects);
+							co.pt = Vec2(2.f*x + 1.f, 2.f*z + 1.f);
+							co.check = &Level::CollideWithStairs;
+							co.check_rect = &Level::CollideWithStairsRect;
+							co.extra = 0;
+							co.type = CollisionObject::CUSTOM;
+						}
+					}
+					else if(co == SCHODY_GORA)
+					{
+						CollisionObject& co = Add1(_objects);
+						co.pt = Vec2(2.f*x + 1.f, 2.f*z + 1.f);
+						co.check = &Level::CollideWithStairs;
+						co.check_rect = &Level::CollideWithStairsRect;
+						co.extra = 1;
+						co.type = CollisionObject::CUSTOM;
+					}
+				}
+			}
+		}
+	}
+
+	Vec2 rectpos = _box.Midpoint(),
+		rectsize = _box.Size();
+
+	// units
+	float radius;
+	if(ignore && ignore->ignored_units)
+	{
+		for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
+		{
+			if(!(*it)->IsStanding())
+				continue;
+
+			const Unit** u = ignore->ignored_units;
+			do
+			{
+				if(!*u)
+					break;
+				if(*u == *it)
+					goto jest;
+				++u;
+			}
+			while(1);
+
+			radius = (*it)->GetUnitRadius();
+			if(CircleToRectangle((*it)->pos.x, (*it)->pos.z, radius, rectpos.x, rectpos.y, rectsize.x, rectsize.y))
+			{
+				CollisionObject& co = Add1(_objects);
+				co.pt = Vec2((*it)->pos.x, (*it)->pos.z);
+				co.radius = radius;
+				co.type = CollisionObject::SPHERE;
+			}
+
+		jest:
+			;
+		}
+	}
+	else
+	{
+		for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
+		{
+			if(!(*it)->IsStanding())
+				continue;
+
+			radius = (*it)->GetUnitRadius();
+			if(CircleToRectangle((*it)->pos.x, (*it)->pos.z, radius, rectpos.x, rectpos.y, rectsize.x, rectsize.y))
+			{
+				CollisionObject& co = Add1(_objects);
+				co.pt = Vec2((*it)->pos.x, (*it)->pos.z);
+				co.radius = radius;
+				co.type = CollisionObject::SPHERE;
+			}
+		}
+	}
+
+	// obiekty kolizji
+	if(ignore && ignore->ignore_objects)
+	{
+		// ignoruj obiekty
+	}
+	else if(!ignore || !ignore->ignored_objects)
+	{
+		for(vector<CollisionObject>::iterator it = ctx.colliders->begin(), end = ctx.colliders->end(); it != end; ++it)
+		{
+			if(it->type == CollisionObject::RECTANGLE)
+			{
+				if(RectangleToRectangle(it->pt.x - it->w, it->pt.y - it->h, it->pt.x + it->w, it->pt.y + it->h, _box.v1.x, _box.v1.y, _box.v2.x, _box.v2.y))
+					_objects.push_back(*it);
+			}
+			else
+			{
+				if(CircleToRectangle(it->pt.x, it->pt.y, it->radius, rectpos.x, rectpos.y, rectsize.x, rectsize.y))
+					_objects.push_back(*it);
+			}
+		}
+	}
+	else
+	{
+		for(vector<CollisionObject>::iterator it = ctx.colliders->begin(), end = ctx.colliders->end(); it != end; ++it)
+		{
+			if(it->ptr)
+			{
+				const void** objs = ignore->ignored_objects;
+				do
+				{
+					if(it->ptr == *objs)
+						goto ignoruj;
+					else if(!*objs)
+						break;
+					else
+						++objs;
+				}
+				while(1);
+			}
+
+			if(it->type == CollisionObject::RECTANGLE)
+			{
+				if(RectangleToRectangle(it->pt.x - it->w, it->pt.y - it->h, it->pt.x + it->w, it->pt.y + it->h, _box.v1.x, _box.v1.y, _box.v2.x, _box.v2.y))
+					_objects.push_back(*it);
+			}
+			else
+			{
+				if(CircleToRectangle(it->pt.x, it->pt.y, it->radius, rectpos.x, rectpos.y, rectsize.x, rectsize.y))
+					_objects.push_back(*it);
+			}
+
+		ignoruj:
+			;
+		}
+	}
+}
+
+//=================================================================================================
+bool Level::Collide(const vector<CollisionObject>& _objects, const Vec3& _pos, float _radius)
+{
+	assert(_radius > 0.f);
+
+	for(vector<CollisionObject>::const_iterator it = _objects.begin(), end = _objects.end(); it != end; ++it)
+	{
+		switch(it->type)
+		{
+		case CollisionObject::SPHERE:
+			if(Distance(_pos.x, _pos.z, it->pt.x, it->pt.y) <= it->radius + _radius)
+				return true;
+			break;
+		case CollisionObject::RECTANGLE:
+			if(CircleToRectangle(_pos.x, _pos.z, _radius, it->pt.x, it->pt.y, it->w, it->h))
+				return true;
+			break;
+		case CollisionObject::RECTANGLE_ROT:
+			if(CircleToRotatedRectangle(_pos.x, _pos.z, _radius, it->pt.x, it->pt.y, it->w, it->h, it->rot))
+				return true;
+			break;
+		case CollisionObject::CUSTOM:
+			if((this->*(it->check))(*it, _pos, _radius))
+				return true;
+			break;
+		}
+	}
+
+	return false;
+}
+
+//=================================================================================================
+bool Level::Collide(const vector<CollisionObject>& _objects, const Box2d& _box, float _margin)
+{
+	Box2d box = _box;
+	box.v1.x -= _margin;
+	box.v1.y -= _margin;
+	box.v2.x += _margin;
+	box.v2.y += _margin;
+
+	Vec2 rectpos = _box.Midpoint(),
+		rectsize = _box.Size() / 2;
+
+	for(vector<CollisionObject>::const_iterator it = _objects.begin(), end = _objects.end(); it != end; ++it)
+	{
+		switch(it->type)
+		{
+		case CollisionObject::SPHERE:
+			if(CircleToRectangle(it->pt.x, it->pt.y, it->radius + _margin, rectpos.x, rectpos.y, rectsize.x, rectsize.y))
+				return true;
+			break;
+		case CollisionObject::RECTANGLE:
+			if(RectangleToRectangle(box.v1.x, box.v1.y, box.v2.x, box.v2.y, it->pt.x - it->w, it->pt.y - it->h, it->pt.x + it->w, it->pt.y + it->h))
+				return true;
+			break;
+		case CollisionObject::RECTANGLE_ROT:
+			{
+				RotRect r1, r2;
+				r1.center = it->pt;
+				r1.size.x = it->w + _margin;
+				r1.size.y = it->h + _margin;
+				r1.rot = -it->rot;
+				r2.center = rectpos;
+				r2.size = rectsize;
+				r2.rot = 0.f;
+
+				if(RotatedRectanglesCollision(r1, r2))
+					return true;
+			}
+			break;
+		case CollisionObject::CUSTOM:
+			if((this->*(it->check_rect))(*it, box))
+				return true;
+			break;
+		}
+	}
+
+	return false;
+}
+
+//=================================================================================================
+bool Level::Collide(const vector<CollisionObject>& _objects, const Box2d& _box, float margin, float _rot)
+{
+	if(!NotZero(_rot))
+		return Collide(_objects, _box, margin);
+
+	Box2d box = _box;
+	box.v1.x -= margin;
+	box.v1.y -= margin;
+	box.v2.x += margin;
+	box.v2.y += margin;
+
+	Vec2 rectpos = box.Midpoint(),
+		rectsize = box.Size() / 2;
+
+	for(vector<CollisionObject>::const_iterator it = _objects.begin(), end = _objects.end(); it != end; ++it)
+	{
+		switch(it->type)
+		{
+		case CollisionObject::SPHERE:
+			if(CircleToRotatedRectangle(it->pt.x, it->pt.y, it->radius, rectpos.x, rectpos.y, rectsize.x, rectsize.y, _rot))
+				return true;
+			break;
+		case CollisionObject::RECTANGLE:
+			{
+				RotRect r1, r2;
+				r1.center = it->pt;
+				r1.size.x = it->w;
+				r1.size.y = it->h;
+				r1.rot = 0.f;
+				r2.center = rectpos;
+				r2.size = rectsize;
+				r2.rot = _rot;
+
+				if(RotatedRectanglesCollision(r1, r2))
+					return true;
+			}
+			break;
+		case CollisionObject::RECTANGLE_ROT:
+			{
+				RotRect r1, r2;
+				r1.center = it->pt;
+				r1.size.x = it->w;
+				r1.size.y = it->h;
+				r1.rot = it->rot;
+				r2.center = rectpos;
+				r2.size = rectsize;
+				r2.rot = _rot;
+
+				if(RotatedRectanglesCollision(r1, r2))
+					return true;
+			}
+			break;
+		case CollisionObject::CUSTOM:
+			if((this->*(it->check_rect))(*it, box))
+				return true;
+			break;
+		}
+	}
+
+	return false;
+}
+
+//=================================================================================================
+bool Level::CollideWithStairs(const CollisionObject& _co, const Vec3& _pos, float _radius) const
+{
+	assert(_co.type == CollisionObject::CUSTOM && _co.check == &Level::CollideWithStairs && !location->outside && _radius > 0.f);
+
+	InsideLocation* inside = (InsideLocation*)location;
+	InsideLocationLevel& lvl = inside->GetLevelData();
+
+	int dir;
+
+	if(_co.extra == 0)
+	{
+		assert(!lvl.staircase_down_in_wall);
+		dir = lvl.staircase_down_dir;
+	}
+	else
+		dir = lvl.staircase_up_dir;
+
+	if(dir != 0)
+	{
+		if(CircleToRectangle(_pos.x, _pos.z, _radius, _co.pt.x, _co.pt.y - 0.95f, 1.f, 0.05f))
+			return true;
+	}
+
+	if(dir != 1)
+	{
+		if(CircleToRectangle(_pos.x, _pos.z, _radius, _co.pt.x - 0.95f, _co.pt.y, 0.05f, 1.f))
+			return true;
+	}
+
+	if(dir != 2)
+	{
+		if(CircleToRectangle(_pos.x, _pos.z, _radius, _co.pt.x, _co.pt.y + 0.95f, 1.f, 0.05f))
+			return true;
+	}
+
+	if(dir != 3)
+	{
+		if(CircleToRectangle(_pos.x, _pos.z, _radius, _co.pt.x + 0.95f, _co.pt.y, 0.05f, 1.f))
+			return true;
+	}
+
+	return false;
+}
+
+//=================================================================================================
+bool Level::CollideWithStairsRect(const CollisionObject& _co, const Box2d& _box) const
+{
+	assert(_co.type == CollisionObject::CUSTOM && _co.check_rect == &Level::CollideWithStairsRect && !location->outside);
+
+	InsideLocation* inside = (InsideLocation*)location;
+	InsideLocationLevel& lvl = inside->GetLevelData();
+
+	int dir;
+
+	if(_co.extra == 0)
+	{
+		assert(!lvl.staircase_down_in_wall);
+		dir = lvl.staircase_down_dir;
+	}
+	else
+		dir = lvl.staircase_up_dir;
+
+	if(dir != 0)
+	{
+		if(RectangleToRectangle(_box.v1.x, _box.v1.y, _box.v2.x, _box.v2.y, _co.pt.x - 1.f, _co.pt.y - 1.f, _co.pt.x + 1.f, _co.pt.y - 0.9f))
+			return true;
+	}
+
+	if(dir != 1)
+	{
+		if(RectangleToRectangle(_box.v1.x, _box.v1.y, _box.v2.x, _box.v2.y, _co.pt.x - 1.f, _co.pt.y - 1.f, _co.pt.x - 0.9f, _co.pt.y + 1.f))
+			return true;
+	}
+
+	if(dir != 2)
+	{
+		if(RectangleToRectangle(_box.v1.x, _box.v1.y, _box.v2.x, _box.v2.y, _co.pt.x - 1.f, _co.pt.y + 0.9f, _co.pt.x + 1.f, _co.pt.y + 1.f))
+			return true;
+	}
+
+	if(dir != 3)
+	{
+		if(RectangleToRectangle(_box.v1.x, _box.v1.y, _box.v2.x, _box.v2.y, _co.pt.x + 0.9f, _co.pt.y - 1.f, _co.pt.x + 1.f, _co.pt.y + 1.f))
+			return true;
+	}
+
+	return false;
 }

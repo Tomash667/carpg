@@ -606,7 +606,7 @@ void CaveGenerator::GenerateUnits()
 					break;
 
 				int enemy_level = Random(ud->level.x, Min(ud->level.y, levels, level));
-				if(!game.SpawnUnitNearLocation(L.local_ctx, Vec3(2.f*pt.x + 1.f, 0, 2.f*pt.y + 1.f), *ud, nullptr, enemy_level, 3.f))
+				if(!L.SpawnUnitNearLocation(L.local_ctx, Vec3(2.f*pt.x + 1.f, 0, 2.f*pt.y + 1.f), *ud, nullptr, enemy_level, 3.f))
 					break;
 				levels -= enemy_level;
 			}

@@ -2281,7 +2281,7 @@ void CityGenerator::OnEnter()
 
 		// recreate units
 		game.LoadingStep(game.txGeneratingUnits);
-		L.RespawnUnits();
+		RespawnUnits();
 		RepositionUnits();
 
 		// recreate physics
@@ -2586,7 +2586,7 @@ void CityGenerator::SpawnUnits()
 			Int2 pt(Random(a, b), Random(a, b));
 			if(city->tiles[pt(OutsideLocation::size)].IsRoadOrPath())
 			{
-				game.SpawnUnitNearLocation(L.local_ctx, Vec3(2.f*pt.x + 1, 0, 2.f*pt.y + 1), *dweller, nullptr, -2, 2.f);
+				L.SpawnUnitNearLocation(L.local_ctx, Vec3(2.f*pt.x + 1, 0, 2.f*pt.y + 1), *dweller, nullptr, -2, 2.f);
 				break;
 			}
 		}
@@ -2601,7 +2601,7 @@ void CityGenerator::SpawnUnits()
 			Int2 pt(Random(a, b), Random(a, b));
 			if(city->tiles[pt(OutsideLocation::size)].IsRoadOrPath())
 			{
-				game.SpawnUnitNearLocation(L.local_ctx, Vec3(2.f*pt.x + 1, 0, 2.f*pt.y + 1), *guard, nullptr, -2, 2.f);
+				L.SpawnUnitNearLocation(L.local_ctx, Vec3(2.f*pt.x + 1, 0, 2.f*pt.y + 1), *guard, nullptr, -2, 2.f);
 				break;
 			}
 		}
@@ -2642,7 +2642,7 @@ void CityGenerator::SpawnTemporaryUnits()
 		else
 		{
 			// on training grounds
-			Unit* u = game.SpawnUnitNearLocation(L.local_ctx, Vec3(2.f*training_grounds->unit_pt.x + 1, 0, 2.f*training_grounds->unit_pt.y + 1), ud, nullptr,
+			Unit* u = L.SpawnUnitNearLocation(L.local_ctx, Vec3(2.f*training_grounds->unit_pt.x + 1, 0, 2.f*training_grounds->unit_pt.y + 1), ud, nullptr,
 				level.Random(), 8.f);
 			if(u)
 				u->temporary = true;

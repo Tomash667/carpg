@@ -153,8 +153,6 @@ void SecretLocationGenerator::GenerateObjects()
 //=================================================================================================
 void SecretLocationGenerator::GenerateUnits()
 {
-	Game& game = Game::Get();
-
 	UnitData* golem = UnitData::Get("golem_adamantine");
 	static vector<Vec2> poss;
 
@@ -177,7 +175,7 @@ void SecretLocationGenerator::GenerateUnits()
 
 		if(ok)
 		{
-			game.SpawnUnitNearLocation(L.local_ctx, Vec3(pos.x, 0, pos.y), *golem, nullptr, -2);
+			L.SpawnUnitNearLocation(L.local_ctx, Vec3(pos.x, 0, pos.y), *golem, nullptr, -2);
 			poss.push_back(pos);
 			++added;
 		}

@@ -473,7 +473,7 @@ void LabyrinthGenerator::GenerateUnits()
 			if(x < y)
 			{
 				// dodaj
-				if(game.SpawnUnitNearLocation(L.local_ctx, Vec3(2.f*pt.x + 1.f, 0, 2.f*pt.y + 1.f), *t.entries[i].ud, nullptr, Random(level / 2, level)))
+				if(L.SpawnUnitNearLocation(L.local_ctx, Vec3(2.f*pt.x + 1.f, 0, 2.f*pt.y + 1.f), *t.entries[i].ud, nullptr, Random(level / 2, level)))
 					++added;
 				break;
 			}
@@ -484,6 +484,6 @@ void LabyrinthGenerator::GenerateUnits()
 	if(L.location->spawn == SG_UNKNOWN)
 	{
 		for(int i = 0; i < 3; ++i)
-			game.SpawnUnitInsideRoom(lvl.rooms[0], *t.entries[0].ud, Random(level / 2, level));
+			L.SpawnUnitInsideRoom(lvl.rooms[0], *t.entries[0].ud, Random(level / 2, level));
 	}
 }

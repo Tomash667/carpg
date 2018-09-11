@@ -554,7 +554,7 @@ int Pathfinding::FindLocalPath(LevelContext& ctx, vector<Int2>& _path, const Int
 	const Unit* ignored_units[3] = { _me, 0 };
 	if(_other)
 		ignored_units[1] = _other;
-	Game::IgnoreObjects ignore = { 0 };
+	Level::IgnoreObjects ignore = { 0 };
 	ignore.ignored_units = (const Unit**)ignored_units;
 	const void* ignored_objects[2] = { 0 };
 	if(usable)
@@ -563,8 +563,8 @@ int Pathfinding::FindLocalPath(LevelContext& ctx, vector<Int2>& _path, const Int
 		ignore.ignored_objects = ignored_objects;
 	}
 
-	game.global_col.clear();
-	game.GatherCollisionObjects(ctx, game.global_col, Box2d(float(minx) / 4 - 0.25f, float(miny) / 4 - 0.25f, float(maxx) / 4 + 0.25f, float(maxy) / 4 + 0.25f), &ignore);
+	L.global_col.clear();
+	L.GatherCollisionObjects(ctx, L.global_col, Box2d(float(minx) / 4 - 0.25f, float(miny) / 4 - 0.25f, float(maxx) / 4 + 0.25f, float(maxy) / 4 + 0.25f), &ignore);
 
 	const float r = _me->GetUnitRadius() - 0.25f / 2;
 
@@ -572,7 +572,7 @@ int Pathfinding::FindLocalPath(LevelContext& ctx, vector<Int2>& _path, const Int
 	{
 		for(int x = minx, x2 = 0; x < maxx; ++x, ++x2)
 		{
-			if(!game.Collide(game.global_col, Box2d(0.25f*x, 0.25f*y, 0.25f*(x + 1), 0.25f*(y + 1)), r))
+			if(!L.Collide(L.global_col, Box2d(0.25f*x, 0.25f*y, 0.25f*(x + 1), 0.25f*(y + 1)), r))
 			{
 #ifdef DRAW_LOCAL_PATH
 				if(marked == _me)

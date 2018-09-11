@@ -102,7 +102,7 @@ void DodajStraznikow()
 	UnitData* ud2 = UnitData::Get("q_gobliny_ochroniarz");
 	for(int i = 0; i < 3; ++i)
 	{
-		Unit* u2 = game.SpawnUnitInsideRoom(*room, *ud2, 10);
+		Unit* u2 = L.SpawnUnitInsideRoom(*room, *ud2, 10);
 		if(u2)
 		{
 			u2->dont_attack = true;

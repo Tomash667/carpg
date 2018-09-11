@@ -114,7 +114,7 @@ void InsideLocationGenerator::OnEnter()
 
 		// odtwórz jednostki
 		if(respawn_units)
-			L.RespawnUnits();
+			RespawnUnits();
 		RespawnTraps();
 
 		// odtwórz fizykê
@@ -145,13 +145,13 @@ void InsideLocationGenerator::OnEnter()
 						{
 							if(!it->IsCorridor() && Rand() % 2 == 0)
 							{
-								Unit* u = game.SpawnUnitInsideRoom(*it, *ud, -2, Int2(-999, -999), Int2(-999, -999));
+								Unit* u = L.SpawnUnitInsideRoom(*it, *ud, -2, Int2(-999, -999), Int2(-999, -999));
 								if(u)
 									u->dont_attack = true;
 							}
 						}
 
-						Unit* u = game.SpawnUnitInsideRoom(lvl.GetFarRoom(false), *UnitData::Get("q_orkowie_kowal"), -2, Int2(-999, -999), Int2(-999, -999));
+						Unit* u = L.SpawnUnitInsideRoom(lvl.GetFarRoom(false), *UnitData::Get("q_orkowie_kowal"), -2, Int2(-999, -999), Int2(-999, -999));
 						if(u)
 							u->dont_attack = true;
 

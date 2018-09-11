@@ -49,7 +49,6 @@ public:
 	Chest* FindChest(int netid);
 	Electro* FindElectro(int netid);
 	bool RemoveTrap(int netid);
-	void RespawnUnits();
 	// for object rot must be 0, PI/2, PI or PI*3/2
 	ObjectEntity SpawnObjectEntity(LevelContext& ctx, BaseObject* base, const Vec3& pos, float rot, float scale = 1.f, int flags = 0,
 		Vec3* out_point = nullptr, int variant = -1);
@@ -69,7 +68,29 @@ public:
 		float scale = 1.f);
 	void PickableItemBegin(LevelContext& ctx, Object& o);
 	void PickableItemAdd(const Item* item);
+	Unit* SpawnUnitInsideRoom(Room& room, UnitData& unit, int level = -1, const Int2& pt = Int2(-1000, -1000), const Int2& pt2 = Int2(-1000, -1000));
+	Unit* SpawnUnitInsideRoomOrNear(InsideLocationLevel& lvl, Room& room, UnitData& unit, int level = -1, const Int2& pt = Int2(-1000, -1000), const Int2& pt2 = Int2(-1000, -1000));
+	Unit* SpawnUnitNearLocation(LevelContext& ctx, const Vec3& pos, UnitData& unit, const Vec3* look_at = nullptr, int level = -1, float extra_radius = 2.f);
+	Unit* SpawnUnitInsideArea(LevelContext& ctx, const Box2d& area, UnitData& unit, int level = -1);
 	void SpawnUnitsGroup(LevelContext& ctx, const Vec3& pos, const Vec3* look_at, uint count, UnitGroup* group, int level, delegate<void(Unit*)> callback);
+	struct IgnoreObjects
+	{
+		// nullptr lub tablica jednostek zakoñczona nullptr
+		const Unit** ignored_units;
+		// nullptr lub tablica obiektów [u¿ywalnych lub nie] zakoñczona nullptr
+		const void** ignored_objects;
+		// czy ignorowaæ bloki
+		bool ignore_blocks;
+		// czy ignorowaæ obiekty
+		bool ignore_objects;
+	};
+	void GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& objects, const Vec3& pos, float radius, const IgnoreObjects* ignore = nullptr);
+	void GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& objects, const Box2d& box, const IgnoreObjects* ignore = nullptr);
+	bool Collide(const vector<CollisionObject>& objects, const Vec3& pos, float radius);
+	bool Collide(const vector<CollisionObject>& objects, const Box2d& box, float margin = 0.f);
+	bool Collide(const vector<CollisionObject>& objects, const Box2d& box, float margin, float rot);
+	bool CollideWithStairs(const CollisionObject& co, const Vec3& pos, float radius) const;
+	bool CollideWithStairsRect(const CollisionObject& co, const Box2d& box) const;
 
 	Location* location; // same as W.current_location
 	int location_index; // same as W.current_location_index
@@ -82,6 +103,7 @@ public:
 	bool is_open; // is location loaded, team is inside or is on world map and can reenter
 	vector<Unit*> to_remove;
 	ObjectPool<TmpLevelContext> tmp_ctx_pool;
+	vector<CollisionObject> global_col;
 
 private:
 	vector<UnitWarpData> unit_warp_data;

@@ -39,6 +39,7 @@ class GlobalGui;
 class InfoBox;
 class Inventory;
 class Journal;
+class Level;
 class LevelAreaContext;
 class MainMenu;
 class Minimap;

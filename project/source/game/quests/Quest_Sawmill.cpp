@@ -265,7 +265,7 @@ void Quest_Sawmill::GenerateSawmill(bool in_progress)
 	if(in_progress)
 	{
 		// artur drwal
-		Unit* u = game->SpawnUnitNearLocation(L.local_ctx, Vec3(128, 0, 128), ud, nullptr, -2);
+		Unit* u = L.SpawnUnitNearLocation(L.local_ctx, Vec3(128, 0, 128), ud, nullptr, -2);
 		assert(u);
 		u->rot = Random(MAX_ANGLE);
 		u->hero->name = game->txArthur;
@@ -284,7 +284,7 @@ void Quest_Sawmill::GenerateSawmill(bool in_progress)
 		int ile = Random(5, 10);
 		for(int i = 0; i < ile; ++i)
 		{
-			Unit* u = game->SpawnUnitNearLocation(L.local_ctx, Vec3::Random(Vec3(128 - 16, 0, 128 - 16), Vec3(128 + 16, 0, 128 + 16)), ud2, nullptr, -2);
+			Unit* u = L.SpawnUnitNearLocation(L.local_ctx, Vec3::Random(Vec3(128 - 16, 0, 128 - 16), Vec3(128 + 16, 0, 128 + 16)), ud2, nullptr, -2);
 			if(u)
 				u->rot = Random(MAX_ANGLE);
 		}
@@ -299,7 +299,7 @@ void Quest_Sawmill::GenerateSawmill(bool in_progress)
 		L.SpawnObjectEntity(L.local_ctx, BaseObject::Get("tartak"), Vec3(128, wys, 128), rot, 1.f, 0, &spawn_pt);
 
 		// artur drwal
-		Unit* u = game->SpawnUnitNearLocation(L.local_ctx, spawn_pt, ud, nullptr, -2);
+		Unit* u = L.SpawnUnitNearLocation(L.local_ctx, spawn_pt, ud, nullptr, -2);
 		assert(u);
 		u->rot = rot;
 		u->hero->name = game->txArthur;
@@ -318,7 +318,7 @@ void Quest_Sawmill::GenerateSawmill(bool in_progress)
 		int ile = Random(5, 10);
 		for(int i = 0; i < ile; ++i)
 		{
-			Unit* u = game->SpawnUnitNearLocation(L.local_ctx, Vec3::Random(Vec3(128 - 16, 0, 128 - 16), Vec3(128 + 16, 0, 128 + 16)), ud2, nullptr, -2);
+			Unit* u = L.SpawnUnitNearLocation(L.local_ctx, Vec3::Random(Vec3(128 - 16, 0, 128 - 16), Vec3(128 + 16, 0, 128 + 16)), ud2, nullptr, -2);
 			if(u)
 				u->rot = Random(MAX_ANGLE);
 		}

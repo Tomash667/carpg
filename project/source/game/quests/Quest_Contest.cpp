@@ -167,7 +167,7 @@ void Quest_Contest::Update(float dt)
 			u.event_handler = nullptr;
 			if(u.IsPlayer())
 			{
-				game.BreakUnitAction(u, Game::BREAK_ACTION_MODE::NORMAL, true);
+				u.BreakAction(Unit::BREAK_ACTION_MODE::NORMAL, true);
 				if(u.player != game.pc)
 				{
 					NetChangePlayer& c = Add1(u.player->player_info->changes);
@@ -263,7 +263,7 @@ void Quest_Contest::Update(float dt)
 				}
 				else
 				{
-					game.BreakUnitAction(u, Game::BREAK_ACTION_MODE::NORMAL, true);
+					u.BreakAction(Unit::BREAK_ACTION_MODE::NORMAL, true);
 					if(u.IsPlayer() && u.player != game.pc)
 					{
 						NetChangePlayer& c = Add1(u.player->player_info->changes);
@@ -470,7 +470,7 @@ void Quest_Contest::Update(float dt)
 					u.event_handler = nullptr;
 					if(u.IsPlayer())
 					{
-						game.BreakUnitAction(u, Game::BREAK_ACTION_MODE::NORMAL, true);
+						u.BreakAction(Unit::BREAK_ACTION_MODE::NORMAL, true);
 						if(u.player != game.pc)
 						{
 							NetChangePlayer& c = Add1(u.player->player_info->changes);

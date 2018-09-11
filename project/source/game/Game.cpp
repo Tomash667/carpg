@@ -1530,7 +1530,7 @@ void Game::UnitFall(Unit& u)
 	if(Net::IsLocal())
 	{
 		// przerwij akcjê
-		BreakUnitAction(u, BREAK_ACTION_MODE::FALL);
+		u.BreakAction(Unit::BREAK_ACTION_MODE::FALL);
 
 		// wstawanie
 		u.raise_timer = Random(5.f, 7.f);
@@ -1553,7 +1553,7 @@ void Game::UnitFall(Unit& u)
 	else
 	{
 		// przerwij akcjê
-		BreakUnitAction(u, BREAK_ACTION_MODE::FALL);
+		u.BreakAction(Unit::BREAK_ACTION_MODE::FALL);
 
 		// komunikat
 		if(&u == pc->unit)
@@ -1590,7 +1590,7 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 	if(Net::IsLocal())
 	{
 		// przerwij akcjê
-		BreakUnitAction(u, BREAK_ACTION_MODE::FALL);
+		u.BreakAction(Unit::BREAK_ACTION_MODE::FALL);
 
 		// dodaj z³oto do ekwipunku
 		if(u.gold && !(u.IsPlayer() || u.IsFollower()))
@@ -1649,7 +1649,7 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 		u.hp = 0.f;
 
 		// przerwij akcjê
-		BreakUnitAction(u, BREAK_ACTION_MODE::FALL);
+		u.BreakAction(Unit::BREAK_ACTION_MODE::FALL);
 
 		// o¿ywianie
 		if(&u == pc->unit)

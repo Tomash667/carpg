@@ -263,7 +263,7 @@ void Quest_Tournament::GenerateUnits()
 		Unit& u = **it;
 		if(ShouldJoin(u) && !u.IsFollowingTeamMember())
 		{
-			game.BreakUnitAction(u, Game::BREAK_ACTION_MODE::INSTANT, true);
+			u.BreakAction(Unit::BREAK_ACTION_MODE::INSTANT, true);
 			game.WarpNearLocation(L.local_ctx, u, pos, 12.f, false);
 		}
 	}
@@ -273,7 +273,7 @@ void Quest_Tournament::GenerateUnits()
 		Unit& u = **it;
 		if(ShouldJoin(u) && !u.IsFollowingTeamMember())
 		{
-			game.BreakUnitAction(u, Game::BREAK_ACTION_MODE::INSTANT, true);
+			u.BreakAction(Unit::BREAK_ACTION_MODE::INSTANT, true);
 			u.in_building = -1;
 			game.WarpNearLocation(L.local_ctx, u, pos, 12.f, false);
 			L.local_ctx.units->push_back(&u);
@@ -288,7 +288,7 @@ void Quest_Tournament::GenerateUnits()
 	int count = Random(6, 9);
 	for(int i = 0; i < count; ++i)
 	{
-		Unit* u = game.SpawnUnitNearLocation(L.local_ctx, pos, GetRandomHeroData(), nullptr, Random(5, 20), 12.f);
+		Unit* u = L.SpawnUnitNearLocation(L.local_ctx, pos, GetRandomHeroData(), nullptr, Random(5, 20), 12.f);
 		if(u)
 		{
 			u->temporary = true;

@@ -2783,7 +2783,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 
 						for(byte i = 0; i < count; ++i)
 						{
-							Unit* spawned = SpawnUnitNearLocation(ctx, pos, *data, &unit.pos, level);
+							Unit* spawned = L.SpawnUnitNearLocation(ctx, pos, *data, &unit.pos, level);
 							if(!spawned)
 							{
 								Warn("Update server: CHEAT_SPAWN_UNIT from %s, no free space for unit.", info.name.c_str());
@@ -3459,7 +3459,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				{
 					Unit* target = L.FindUnit(netid);
 					if(target)
-						BreakUnitAction(*target, BREAK_ACTION_MODE::NORMAL, true);
+						target->BreakAction(Unit::BREAK_ACTION_MODE::NORMAL, true);
 					else
 						StreamError("Update server: CHEAT_BREAK_ACTION from %s, missing unit %d.", info.name.c_str(), netid);
 				}
@@ -4966,7 +4966,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 						StreamError("Update client: STUNNED, missing unit %d.", netid);
 					else
 					{
-						BreakUnitAction(*unit);
+						unit->BreakAction();
 
 						if(unit->action != A_POSITION)
 							unit->action = A_PAIN;
@@ -5300,7 +5300,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					break;
 				}
 
-				BreakUnitAction(*unit, BREAK_ACTION_MODE::INSTANT, false, true);
+				unit->BreakAction(Unit::BREAK_ACTION_MODE::INSTANT, false, true);
 
 				int old_in_building = unit->in_building;
 				unit->in_building = in_building;
@@ -6795,7 +6795,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				{
 					Unit* unit = L.FindUnit(netid);
 					if(unit)
-						BreakUnitAction(*unit);
+						unit->BreakAction();
 					else
 						StreamError("Update client: BREAK_ACTION, missing unit %d.", netid);
 				}
@@ -8688,10 +8688,10 @@ bool Game::ReadPlayerStartData(BitStreamReader& f)
 //=================================================================================================
 bool Game::CheckMoveNet(Unit& unit, const Vec3& pos)
 {
-	global_col.clear();
+	L.global_col.clear();
 
 	const float radius = unit.GetUnitRadius();
-	IgnoreObjects ignore = { 0 };
+	Level::IgnoreObjects ignore = { 0 };
 	Unit* ignored[] = { &unit, nullptr };
 	const void* ignored_objects[2] = { nullptr, nullptr };
 	if(unit.usable)
@@ -8699,12 +8699,12 @@ bool Game::CheckMoveNet(Unit& unit, const Vec3& pos)
 	ignore.ignored_units = (const Unit**)ignored;
 	ignore.ignored_objects = ignored_objects;
 
-	GatherCollisionObjects(L.GetContext(unit), global_col, pos, radius, &ignore);
+	L.GatherCollisionObjects(L.GetContext(unit), L.global_col, pos, radius, &ignore);
 
-	if(global_col.empty())
+	if(L.global_col.empty())
 		return true;
 
-	return !Collide(global_col, pos, radius);
+	return !L.Collide(L.global_col, pos, radius);
 }
 
 //=================================================================================================

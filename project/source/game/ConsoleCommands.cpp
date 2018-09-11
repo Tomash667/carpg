@@ -688,7 +688,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 
 								for(int i = 0; i < ile; ++i)
 								{
-									Unit* u = SpawnUnitNearLocation(ctx, pc->unit->GetFrontPos(), *data, &pc->unit->pos, level);
+									Unit* u = L.SpawnUnitNearLocation(ctx, pc->unit->GetFrontPos(), *data, &pc->unit->pos, level);
 									if(!u)
 									{
 										Msg("No free space for unit '%s'!", data->id.c_str());
@@ -1580,7 +1580,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							if(it->cmd == CMD_HURT)
 								GiveDmg(L.GetContext(*u), nullptr, 100.f, *u);
 							else if(it->cmd == CMD_BREAK_ACTION)
-								BreakUnitAction(*u, BREAK_ACTION_MODE::NORMAL, true);
+								u->BreakAction(Unit::BREAK_ACTION_MODE::NORMAL, true);
 							else
 								UnitFall(*u);
 						}

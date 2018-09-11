@@ -930,14 +930,14 @@ bool Quest_Mine::GenerateMine(CaveGenerator* cave_gen)
 						float rot = Clip(dir_to_rot(dir) + PI);
 						static float radius = max(iron_vein->size.x, iron_vein->size.y) * SQRT_2;
 
-						Game::IgnoreObjects ignore = { 0 };
+						Level::IgnoreObjects ignore = { 0 };
 						ignore.ignore_blocks = true;
-						game->global_col.clear();
-						game->GatherCollisionObjects(L.local_ctx, game->global_col, pos, radius, &ignore);
+						L.global_col.clear();
+						L.GatherCollisionObjects(L.local_ctx, L.global_col, pos, radius, &ignore);
 
 						Box2d box(pos.x - iron_vein->size.x, pos.z - iron_vein->size.y, pos.x + iron_vein->size.x, pos.z + iron_vein->size.y);
 
-						if(!game->Collide(game->global_col, box, 0.f, rot))
+						if(!L.Collide(L.global_col, box, 0.f, rot))
 						{
 							Usable* u = new Usable;
 							u->pos = pos;
@@ -1028,7 +1028,7 @@ bool Quest_Mine::GenerateMine(CaveGenerator* cave_gen)
 		}
 		pt -= g_kierunek2[lvl.staircase_up_dir];
 
-		game->SpawnUnitNearLocation(L.local_ctx, Vec3(2.f*pt.x + 1, 0, 2.f*pt.y + 1), *UnitData::Get("gornik_szef"), &Vec3(2.f*lvl.staircase_up.x + 1, 0, 2.f*lvl.staircase_up.y + 1), -2);
+		L.SpawnUnitNearLocation(L.local_ctx, Vec3(2.f*pt.x + 1, 0, 2.f*pt.y + 1), *UnitData::Get("gornik_szef"), &Vec3(2.f*lvl.staircase_up.x + 1, 0, 2.f*lvl.staircase_up.y + 1), -2);
 
 		// górnicy
 		UnitData& gornik = *UnitData::Get("gornik");
@@ -1040,7 +1040,7 @@ bool Quest_Mine::GenerateMine(CaveGenerator* cave_gen)
 				const Pole& p = lvl.At(tile);
 				if(p.type == PUSTE && !IS_SET(p.flags, Pole::F_DRUGA_TEKSTURA))
 				{
-					game->SpawnUnitNearLocation(L.local_ctx, Vec3(2.f*tile.x + Random(0.4f, 1.6f), 0, 2.f*tile.y + Random(0.4f, 1.6f)), gornik, nullptr, -2);
+					L.SpawnUnitNearLocation(L.local_ctx, Vec3(2.f*tile.x + Random(0.4f, 1.6f), 0, 2.f*tile.y + Random(0.4f, 1.6f)), gornik, nullptr, -2);
 					break;
 				}
 			}

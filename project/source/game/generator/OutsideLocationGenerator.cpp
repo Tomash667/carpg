@@ -164,7 +164,7 @@ void OutsideLocationGenerator::OnEnter()
 		// respawn units
 		game.LoadingStep(game.txGeneratingUnits);
 		if(update >= 0)
-			L.RespawnUnits();
+			RespawnUnits();
 		if(need_reset)
 			GenerateUnits();
 
@@ -209,7 +209,7 @@ void OutsideLocationGenerator::OnEnter()
 		Vec3 pos = team_pos + Vec3(sin(team_dir + PI) * 8, 0, cos(team_dir + PI) * 8);
 		for(int i = 0; i < ile; ++i)
 		{
-			Unit* u = game.SpawnUnitNearLocation(L.local_ctx, pos, *ud, &Team.leader->pos, 6, 4.f);
+			Unit* u = L.SpawnUnitNearLocation(L.local_ctx, pos, *ud, &Team.leader->pos, 6, 4.f);
 			u->assist = true;
 		}
 	}

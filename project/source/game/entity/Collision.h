@@ -1,9 +1,8 @@
-// obiekty kolizji
 #pragma once
 
 //-----------------------------------------------------------------------------
-typedef bool (Game::*CollisionCheck)(const CollisionObject& co, const Vec3& pos, float radius) const;
-typedef bool (Game::*CollisionCheckRect)(const CollisionObject& co, const Box2d& box) const;
+typedef bool (Level::*CollisionCheck)(const CollisionObject& co, const Vec3& pos, float radius) const;
+typedef bool (Level::*CollisionCheckRect)(const CollisionObject& co, const Box2d& box) const;
 
 //-----------------------------------------------------------------------------
 #define CAM_COLLIDER ((void*)1)

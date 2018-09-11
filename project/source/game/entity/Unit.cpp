@@ -3512,3 +3512,185 @@ byte Unit::GetAiMode() const
 		mode |= AI_MODE_ATTACK_TEAM;
 	return mode;
 }
+
+//=================================================================================================
+void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation)
+{
+	Game& game = Game::Get();
+
+	if(notify && Net::IsServer())
+	{
+		NetChange& c = Add1(Net::changes);
+		c.unit = this;
+		c.type = NetChange::BREAK_ACTION;
+	}
+
+	switch(action)
+	{
+	case A_POSITION:
+		return;
+	case A_SHOOT:
+		if(bow_instance)
+		{
+			game.bow_instances.push_back(bow_instance);
+			bow_instance = nullptr;
+		}
+		action = A_NONE;
+		break;
+	case A_DRINK:
+		if(animation_state == 0)
+		{
+			if(Net::IsLocal())
+				game.AddItem(*this, used_item, 1, used_item_is_team);
+			if(mode != BREAK_ACTION_MODE::FALL)
+				used_item = nullptr;
+		}
+		else
+			used_item = nullptr;
+		mesh_inst->Deactivate(1);
+		action = A_NONE;
+		break;
+	case A_EAT:
+		if(animation_state < 2)
+		{
+			if(Net::IsLocal())
+				game.AddItem(*this, used_item, 1, used_item_is_team);
+			if(mode != BREAK_ACTION_MODE::FALL)
+				used_item = nullptr;
+		}
+		else
+			used_item = nullptr;
+		mesh_inst->Deactivate(1);
+		action = A_NONE;
+		break;
+	case A_TAKE_WEAPON:
+		if(weapon_state == WS_HIDING)
+		{
+			if(animation_state == 0)
+			{
+				weapon_state = WS_TAKEN;
+				weapon_taken = weapon_hiding;
+				weapon_hiding = W_NONE;
+			}
+			else
+			{
+				weapon_state = WS_HIDDEN;
+				weapon_taken = weapon_hiding = W_NONE;
+			}
+		}
+		else
+		{
+			if(animation_state == 0)
+			{
+				weapon_state = WS_HIDDEN;
+				weapon_taken = W_NONE;
+			}
+			else
+				weapon_state = WS_TAKEN;
+		}
+		action = A_NONE;
+		break;
+	case A_BLOCK:
+		mesh_inst->Deactivate(1);
+		action = A_NONE;
+		break;
+	case A_DASH:
+		if(animation_state == 1)
+		{
+			mesh_inst->Deactivate(1);
+			mesh_inst->groups[1].blend_max = 0.33f;
+		}
+		break;
+	}
+
+	if(usable && !(player && player->action == PlayerController::Action_LootContainer))
+	{
+		if(mode == BREAK_ACTION_MODE::INSTANT)
+		{
+			action = A_NONE;
+			SetAnimationAtEnd(NAMES::ani_stand);
+			UseUsable(nullptr);
+			used_item = nullptr;
+			animation = ANI_STAND;
+		}
+		else
+		{
+			target_pos2 = target_pos = pos;
+			const Item* prev_used_item = used_item;
+			game.Unit_StopUsingUsable(L.GetContext(*this), *this, mode != BREAK_ACTION_MODE::FALL && notify);
+			if(prev_used_item && slots[SLOT_WEAPON] == prev_used_item && !HaveShield())
+			{
+				weapon_state = WS_TAKEN;
+				weapon_taken = W_ONE_HANDED;
+				weapon_hiding = W_NONE;
+			}
+			else if(mode == BREAK_ACTION_MODE::FALL)
+				used_item = prev_used_item;
+			action = A_POSITION;
+			animation_state = 0;
+		}
+
+		if(Net::IsLocal() && IsAI() && ai->idle_action != AIController::Idle_None)
+		{
+			ai->idle_action = AIController::Idle_None;
+			ai->timer = Random(1.f, 2.f);
+		}
+	}
+	else
+	{
+		if(!Any(action, A_ANIMATION, A_STAND_UP) || !allow_animation)
+			action = A_NONE;
+	}
+
+	mesh_inst->frame_end_info = false;
+	mesh_inst->frame_end_info2 = false;
+	run_attack = false;
+
+	if(IsPlayer())
+	{
+		player->next_action = NA_NONE;
+		if(player == game.pc)
+		{
+			game.pc_data.action_ready = false;
+			Inventory::lock = nullptr;
+			if(game.inventory_mode > I_INVENTORY)
+				game.CloseInventory();
+
+			if(player->action == PlayerController::Action_Talk)
+			{
+				if(Net::IsLocal())
+				{
+					player->action_unit->busy = Unit::Busy_No;
+					player->action_unit->look_target = nullptr;
+					player->dialog_ctx->dialog_mode = false;
+				}
+				else
+					game.dialog_context.dialog_mode = false;
+				look_target = nullptr;
+				player->action = PlayerController::Action_None;
+			}
+		}
+		else if(Net::IsLocal())
+		{
+			if(player->action == PlayerController::Action_Talk)
+			{
+				player->action_unit->busy = Unit::Busy_No;
+				player->action_unit->look_target = nullptr;
+				player->dialog_ctx->dialog_mode = false;
+				look_target = nullptr;
+				player->action = PlayerController::Action_None;
+			}
+		}
+	}
+	else if(Net::IsLocal())
+	{
+		ai->potion = -1;
+		if(busy == Unit::Busy_Talking)
+		{
+			DialogContext* ctx = game.FindDialogContext(this);
+			if(ctx)
+				game.EndDialog(*ctx);
+			busy = Unit::Busy_No;
+		}
+	}
+}

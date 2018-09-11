@@ -156,8 +156,6 @@ void CampGenerator::GenerateObjects()
 //=================================================================================================
 void CampGenerator::GenerateUnits()
 {
-	Game& game = Game::Get();
-
 	static TmpUnitGroup group;
 	static vector<Vec2> poss;
 	poss.clear();
@@ -237,7 +235,7 @@ void CampGenerator::GenerateUnits()
 					break;
 
 				int enemy_level = Random(ud->level.x, Min(ud->level.y, levels, level));
-				if(!game.SpawnUnitNearLocation(L.local_ctx, pos3, *ud, nullptr, enemy_level, 6.f))
+				if(!L.SpawnUnitNearLocation(L.local_ctx, pos3, *ud, nullptr, enemy_level, 6.f))
 					break;
 				levels -= enemy_level;
 			}

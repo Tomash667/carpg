@@ -838,6 +838,13 @@ struct Unit
 
 	void ApplyStun(float length);
 	void UseUsable(Usable* usable);
+	enum class BREAK_ACTION_MODE
+	{
+		NORMAL,
+		FALL,
+		INSTANT
+	};
+	void BreakAction(BREAK_ACTION_MODE mode = BREAK_ACTION_MODE::NORMAL, bool notify = false, bool allow_animation = false);
 
 	//-----------------------------------------------------------------------------
 	static vector<Unit*> refid_table;
