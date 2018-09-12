@@ -56,7 +56,7 @@ extern string g_system_dir;
 extern cstring RESTART_MUTEX_NAME;
 
 //=================================================================================================
-Game::Game() : have_console(false), vbParticle(nullptr), peer(nullptr), quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0), cl_fog(true),
+Game::Game() : have_console(false), vbParticle(nullptr), quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0), cl_fog(true),
 cl_lighting(true), draw_particle_sphere(false), draw_unit_radius(false), draw_hitbox(false), noai(false), testing(false), game_speed(1.f), devmode(false),
 draw_phy(false), draw_col(false), force_seed(0), next_seed(0), force_seed_all(false), alpha_test_state(-1), debug_info(false), dont_wander(false),
 check_updates(true), skip_tutorial(false), portal_anim(0), debug_info2(false), music_type(MusicType::None),
@@ -976,9 +976,7 @@ void Game::OnCleanup()
 	DeleteElements(game_players);
 	DeleteElements(old_players);
 	SM.Cleanup();
-
-	if(peer)
-		SLNet::RakPeerInterface::DestroyInstance(peer);
+	N.Cleanup();
 }
 
 //=================================================================================================

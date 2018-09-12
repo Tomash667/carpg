@@ -1052,7 +1052,6 @@ public:
 
 	//-----------------------------------------------------------------
 	// MULTIPLAYER
-	SLNet::RakPeerInterface* peer;
 	string server_name, player_name, server_pswd, server_ip, enter_pswd, server_name2;
 	int autostart_count;//, kick_timer;
 	int players; // aktualna liczba graczy w grze
@@ -1114,7 +1113,6 @@ public:
 
 	void InitServer();
 	void InitClient();
-	void UpdateServerInfo();
 	int FindPlayerIndex(cstring nick, bool not_left = false);
 	int FindPlayerIndex(const SystemAddress& adr);
 	int GetPlayerIndex(int id);

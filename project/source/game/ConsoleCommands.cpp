@@ -1064,7 +1064,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								f << ID_WHISPER;
 								f.WriteCasted<byte>(Net::IsServer() ? my_id : info.id);
 								f << text;
-								peer->Send(&net_stream, MEDIUM_PRIORITY, RELIABLE, 0, Net::IsServer() ? info.adr : server, false);
+								N.peer->Send(&net_stream, MEDIUM_PRIORITY, RELIABLE, 0, Net::IsServer() ? info.adr : server, false);
 								StreamWrite(net_stream, Stream_Chat, Net::IsServer() ? info.adr : server);
 								cstring s = Format("@%s: %s", info.name.c_str(), text.c_str());
 								AddMsg(s);
@@ -1087,7 +1087,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							BitStreamWriter f(net_stream);
 							f << ID_SERVER_SAY;
 							f << text;
-							peer->Send(&net_stream, MEDIUM_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+							N.peer->Send(&net_stream, MEDIUM_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 							StreamWrite(net_stream, Stream_Chat, UNASSIGNED_SYSTEM_ADDRESS);
 						}
 						AddServerMsg(text.c_str());
@@ -1262,7 +1262,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							packet_data.resize(2);
 							packet_data[0] = ID_TIMER;
 							packet_data[1] = (byte)STARTUP_TIMER;
-							peer->Send((cstring)&packet_data[0], 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+							N.peer->Send((cstring)&packet_data[0], 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 							StreamWrite(&packet_data[0], 2, Stream_UpdateLobbyServer, UNASSIGNED_SYSTEM_ADDRESS);
 							server_panel->bts[4].text = server_panel->txStop;
 							cstring s = Format(server_panel->txStartingIn, STARTUP_TIMER);
@@ -1282,7 +1282,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						f << ID_SAY;
 						f.WriteCasted<byte>(my_id);
 						f << text;
-						peer->Send(&net_stream, MEDIUM_PRIORITY, RELIABLE, 0, Net::IsServer() ? UNASSIGNED_SYSTEM_ADDRESS : server, Net::IsServer());
+						N.peer->Send(&net_stream, MEDIUM_PRIORITY, RELIABLE, 0, Net::IsServer() ? UNASSIGNED_SYSTEM_ADDRESS : server, Net::IsServer());
 						StreamWrite(net_stream, Stream_Chat, Net::IsServer() ? UNASSIGNED_SYSTEM_ADDRESS : server);
 						cstring s = Format("%s: %s", game_players[0]->name.c_str(), text.c_str());
 						AddMsg(s);
@@ -1521,7 +1521,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								packet_data.resize(2);
 								packet_data[0] = ID_TIMER;
 								packet_data[1] = (byte)STARTUP_TIMER;
-								peer->Send((cstring)&packet_data[0], 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+								N.peer->Send((cstring)&packet_data[0], 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 								StreamWrite(&packet_data[0], 2, Stream_UpdateLobbyServer, UNASSIGNED_SYSTEM_ADDRESS);
 							}
 							else

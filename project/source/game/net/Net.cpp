@@ -153,12 +153,12 @@ void Game::InitServer()
 {
 	Info("Creating server (port %d)...", mp_port);
 
-	if(!peer)
-		peer = SLNet::RakPeerInterface::GetInstance();
+	if(!N.peer)
+		N.peer = RakPeerInterface::GetInstance();
 
 	SocketDescriptor sd(mp_port, 0);
 	sd.socketFamily = AF_INET;
-	StartupResult r = peer->Startup(max_players + 4, &sd, 1);
+	StartupResult r = N.peer->Startup(max_players + 4, &sd, 1);
 	if(r != RAKNET_STARTED)
 	{
 		Error("Failed to create server: RakNet error %d.", r);
@@ -168,11 +168,11 @@ void Game::InitServer()
 	if(!server_pswd.empty())
 	{
 		Info("Set server password.");
-		peer->SetIncomingPassword(server_pswd.c_str(), server_pswd.length());
+		N.peer->SetIncomingPassword(server_pswd.c_str(), server_pswd.length());
 	}
 
-	peer->SetMaximumIncomingConnections((word)max_players + 4);
-	DEBUG_DO(peer->SetTimeoutTime(60 * 60 * 1000, UNASSIGNED_SYSTEM_ADDRESS));
+	N.peer->SetMaximumIncomingConnections((word)max_players + 4);
+	DEBUG_DO(N.peer->SetTimeoutTime(60 * 60 * 1000, UNASSIGNED_SYSTEM_ADDRESS));
 
 	Info("Server created. Waiting for connection.");
 
@@ -186,51 +186,23 @@ void Game::InitClient()
 {
 	Info("Initlializing client...");
 
-	if(!peer)
-		peer = SLNet::RakPeerInterface::GetInstance();
+	if(!N.peer)
+		N.peer = RakPeerInterface::GetInstance();
 
-	SLNet::SocketDescriptor sd;
+	SocketDescriptor sd;
 	sd.socketFamily = AF_INET;
-	StartupResult r = peer->Startup(1, &sd, 1);
+	StartupResult r = N.peer->Startup(1, &sd, 1);
 	if(r != RAKNET_STARTED)
 	{
 		Error("Failed to create client: RakNet error %d.", r);
 		throw Format(txInitConnectionFailed, r);
 	}
-	peer->SetMaximumIncomingConnections(0);
+	N.peer->SetMaximumIncomingConnections(0);
 
 	Net::SetMode(Net::Mode::Client);
 	Info("sv_online = true");
 
-	DEBUG_DO(peer->SetTimeoutTime(60 * 60 * 1000, UNASSIGNED_SYSTEM_ADDRESS));
-}
-
-//=================================================================================================
-void Game::UpdateServerInfo()
-{
-	// 0 char C
-	// 1 char A
-	// 2-5 int - wersja
-	// 6 byte - gracze
-	// 7 byte - max graczy
-	// 8 byte - flags
-	// 9+ byte - nazwa
-	server_info.Reset();
-	BitStreamWriter f(server_info);
-	f.WriteCasted<byte>('C');
-	f.WriteCasted<byte>('A');
-	f << VERSION;
-	f.WriteCasted<byte>(players);
-	f.WriteCasted<byte>(max_players);
-	byte flags = 0;
-	if(!server_pswd.empty())
-		flags |= SERVER_PASSWORD;
-	if(mp_load)
-		flags |= SERVER_SAVED;
-	f.WriteCasted<byte>(flags);
-	f << server_name;
-
-	peer->SetOfflinePingResponse((cstring)server_info.GetData(), server_info.GetNumberOfBytesUsed());
+	DEBUG_DO(N.peer->SetTimeoutTime(60 * 60 * 1000, UNASSIGNED_SYSTEM_ADDRESS));
 }
 
 //=================================================================================================
@@ -275,7 +247,7 @@ void Game::KickPlayer(int index)
 	packet_data.resize(2);
 	packet_data[0] = ID_SERVER_CLOSE;
 	packet_data[1] = 1;
-	peer->Send((cstring)&packet_data[0], 2, MEDIUM_PRIORITY, RELIABLE, 0, info.adr, false);
+	N.peer->Send((cstring)&packet_data[0], 2, MEDIUM_PRIORITY, RELIABLE, 0, info.adr, false);
 	StreamWrite(packet_data, Stream_None, info.adr);
 
 	info.state = PlayerInfo::REMOVING;
@@ -291,7 +263,7 @@ void Game::KickPlayer(int index)
 		// puki co tylko dla lobby
 		CheckReady();
 
-		UpdateServerInfo();
+		N.UpdateServerInfo();
 	}
 	else
 	{
@@ -866,7 +838,7 @@ void Game::SendPlayerData(int index)
 
 	f.WriteCasted<byte>(0xFF);
 
-	peer->Send(&net_stream2, HIGH_PRIORITY, RELIABLE, 0, info.adr, false);
+	N.peer->Send(&net_stream2, HIGH_PRIORITY, RELIABLE, 0, info.adr, false);
 	StreamWrite(net_stream2, Stream_TransferServer, info.adr);
 }
 
@@ -1026,7 +998,7 @@ void Game::UpdateServer(float dt)
 	}
 
 	Packet* packet;
-	for(packet = peer->Receive(); packet; peer->DeallocatePacket(packet), packet = peer->Receive())
+	for(packet = N.peer->Receive(); packet; N.peer->DeallocatePacket(packet), packet = N.peer->Receive())
 	{
 		BitStream& stream = StreamStart(packet, Stream_UpdateGameServer);
 		BitStreamReader reader(stream);
@@ -1064,7 +1036,7 @@ void Game::UpdateServer(float dt)
 		case ID_CONTROL:
 			if(!ProcessControlMessageServer(reader, info))
 			{
-				peer->DeallocatePacket(packet);
+				N.peer->DeallocatePacket(packet);
 				return;
 			}
 			break;
@@ -1116,7 +1088,7 @@ void Game::UpdateServer(float dt)
 		WriteServerChanges(f);
 		Net::changes.clear();
 		assert(net_talk.empty());
-		peer->Send(&net_stream, HIGH_PRIORITY, RELIABLE_ORDERED, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+		N.peer->Send(&net_stream, HIGH_PRIORITY, RELIABLE_ORDERED, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 		StreamWrite(net_stream, Stream_UpdateGameServer, UNASSIGNED_SYSTEM_ADDRESS);
 
 		for(auto pinfo : game_players)
@@ -1148,7 +1120,7 @@ void Game::UpdateServer(float dt)
 				net_stream.Reset();
 				BitStreamWriter f(net_stream);
 				WriteServerChangesForPlayer(f, info);
-				peer->Send(&net_stream, HIGH_PRIORITY, RELIABLE_ORDERED, 0, info.adr, false);
+				N.peer->Send(&net_stream, HIGH_PRIORITY, RELIABLE_ORDERED, 0, info.adr, false);
 				StreamWrite(net_stream, Stream_UpdateGameServer, info.adr);
 				info.update_flags = 0;
 				info.changes.clear();
@@ -4288,7 +4260,7 @@ void Game::UpdateClient(float dt)
 	bool exit_from_server = false;
 
 	Packet* packet;
-	for(packet = peer->Receive(); packet; peer->DeallocatePacket(packet), packet = peer->Receive())
+	for(packet = N.peer->Receive(); packet; N.peer->DeallocatePacket(packet), packet = N.peer->Receive())
 	{
 		BitStream& stream = StreamStart(packet, Stream_UpdateGameClient);
 		BitStreamReader reader(stream);
@@ -4313,7 +4285,7 @@ void Game::UpdateClient(float dt)
 				}
 				Info(text_eng);
 				StreamEnd();
-				peer->DeallocatePacket(packet);
+				N.peer->DeallocatePacket(packet);
 				ExitToMenu();
 				GUI.SimpleDialog(text, nullptr);
 				return;
@@ -4343,7 +4315,7 @@ void Game::UpdateClient(float dt)
 				}
 				Info("Update client: %s", reason_text);
 				StreamEnd();
-				peer->DeallocatePacket(packet);
+				N.peer->DeallocatePacket(packet);
 				ExitToMenu();
 				GUI.SimpleDialog(reason_text_int, nullptr);
 				return;
@@ -4388,7 +4360,7 @@ void Game::UpdateClient(float dt)
 						delete dialog_enc;
 						dialog_enc = nullptr;
 					}
-					peer->DeallocatePacket(packet);
+					N.peer->DeallocatePacket(packet);
 					StreamError();
 					Net_FilterClientChanges();
 					LoadingStart(4);
@@ -4399,14 +4371,14 @@ void Game::UpdateClient(float dt)
 		case ID_CHANGES:
 			if(!ProcessControlMessageClient(reader, exit_from_server))
 			{
-				peer->DeallocatePacket(packet);
+				N.peer->DeallocatePacket(packet);
 				return;
 			}
 			break;
 		case ID_PLAYER_CHANGES:
 			if(!ProcessControlMessageClientForMe(reader))
 			{
-				peer->DeallocatePacket(packet);
+				N.peer->DeallocatePacket(packet);
 				return;
 			}
 			break;
@@ -4439,12 +4411,12 @@ void Game::UpdateClient(float dt)
 			f << false;
 		WriteClientChanges(f);
 		Net::changes.clear();
-		peer->Send(&net_stream, HIGH_PRIORITY, RELIABLE_ORDERED, 0, server, false);
+		N.peer->Send(&net_stream, HIGH_PRIORITY, RELIABLE_ORDERED, 0, server, false);
 		StreamWrite(net_stream, Stream_UpdateGameClient, server);
 	}
 
 	if(exit_from_server)
-		peer->Shutdown(1000);
+		N.peer->Shutdown(1000);
 }
 
 //=================================================================================================
@@ -8015,7 +7987,7 @@ void Game::Server_Say(BitStream& stream, PlayerInfo& info, Packet* packet)
 		// przeœlij dalej
 		if (players > 2)
 		{
-			peer->Send(&stream, MEDIUM_PRIORITY, RELIABLE, 0, packet->systemAddress, true);
+			N.peer->Send(&stream, MEDIUM_PRIORITY, RELIABLE, 0, packet->systemAddress, true);
 			StreamWrite(stream, Stream_Chat, packet->systemAddress);
 		}
 
@@ -8050,7 +8022,7 @@ void Game::Server_Whisper(BitStreamReader& f, PlayerInfo& info, Packet* packet)
 			{
 				PlayerInfo& info2 = *game_players[index];
 				packet->data[1] = (byte)info.id;
-				peer->Send((cstring)packet->data, packet->length, MEDIUM_PRIORITY, RELIABLE, 0, info2.adr, false);
+				N.peer->Send((cstring)packet->data, packet->length, MEDIUM_PRIORITY, RELIABLE, 0, info2.adr, false);
 				StreamWrite(packet, Stream_Chat, info2.adr);
 			}
 		}
@@ -8712,7 +8684,7 @@ void Game::Net_PreSave()
 {
 	// poinformuj graczy o zapisywaniu
 	//byte b = ID_SAVING;
-	//peer->Send((char*)&b, 1, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+	//N.peer->Send((char*)&b, 1, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 
 	// players_left
 	ProcessLeftPlayers();
@@ -8974,10 +8946,10 @@ void Game::Net_FilterServerChanges()
 //=================================================================================================
 void Game::ClosePeer(bool wait)
 {
-	assert(peer);
+	assert(N.peer);
 
 	Info("Peer shutdown.");
-	peer->Shutdown(wait ? I_SHUTDOWN : 0);
+	N.peer->Shutdown(wait ? I_SHUTDOWN : 0);
 	Info("sv_online = false");
 	if(Net::IsClient())
 		was_client = true;

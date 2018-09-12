@@ -300,7 +300,7 @@ void ServerPanel::Event(GuiEvent e)
 					game->startup_timer = float(STARTUP_TIMER);
 					game->last_startup_id = STARTUP_TIMER;
 					byte b[] = { ID_TIMER, STARTUP_TIMER };
-					game->peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+					N.peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 					game->StreamWrite(b, 2, Stream_UpdateLobbyServer, UNASSIGNED_SYSTEM_ADDRESS);
 					bts[4].text = txStop;
 					cstring s = Format(txStartingIn, STARTUP_TIMER);
@@ -373,16 +373,16 @@ void ServerPanel::ExitLobby(VoidF f)
 		Info("ServerPanel: Closing server.");
 
 		// zablokuj do³¹czanie
-		game->peer->SetMaximumIncomingConnections(0);
+		N.peer->SetMaximumIncomingConnections(0);
 		// wy³¹cz info o serwerze
-		game->peer->SetOfflinePingResponse(nullptr, 0);
+		N.peer->SetOfflinePingResponse(nullptr, 0);
 
 		if(game->players > 1)
 		{
 			// roz³¹cz graczy
 			Info("ServerPanel: Disconnecting clients.");
 			const byte b[] = { ID_SERVER_CLOSE, 0 };
-			game->peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+			N.peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 			game->StreamWrite(b, 2, Stream_UpdateLobbyServer, UNASSIGNED_SYSTEM_ADDRESS);
 			game->net_mode = Game::NM_QUITTING_SERVER;
 			--game->players;
@@ -402,7 +402,7 @@ void ServerPanel::ExitLobby(VoidF f)
 	else
 	{
 		const byte b = ID_LEAVE;
-		game->peer->Send((cstring)&b, 1, IMMEDIATE_PRIORITY, RELIABLE, 0, game->server, false);
+		N.peer->Send((cstring)&b, 1, IMMEDIATE_PRIORITY, RELIABLE, 0, game->server, false);
 		game->StreamWrite(&b, 1, Stream_UpdateLobbyClient, game->server);
 		game->info_box->Show(txDisconnecting);
 		game->net_mode = Game::NM_QUITTING;
@@ -444,7 +444,7 @@ void ServerPanel::OnInput(const string& str)
 			f << ID_SAY;
 			f.WriteCasted<byte>(game->my_id);
 			f << str;
-			game->peer->Send(&game->net_stream, MEDIUM_PRIORITY, RELIABLE, 0, Net::IsServer() ? UNASSIGNED_SYSTEM_ADDRESS : game->server, Net::IsServer());
+			N.peer->Send(&game->net_stream, MEDIUM_PRIORITY, RELIABLE, 0, Net::IsServer() ? UNASSIGNED_SYSTEM_ADDRESS : game->server, Net::IsServer());
 			game->StreamWrite(game->net_stream, Stream_Chat, Net::IsServer() ? UNASSIGNED_SYSTEM_ADDRESS : game->server);
 		}
 		cstring s = Format("%s: %s", game->player_name.c_str(), str.c_str());
@@ -464,7 +464,7 @@ void ServerPanel::StopStartup()
 	if(game->players > 1)
 	{
 		byte c = ID_END_TIMER;
-		game->peer->Send((cstring)&c, 1, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+		N.peer->Send((cstring)&c, 1, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 		game->StreamWrite(&c, 1, Stream_UpdateLobbyServer, UNASSIGNED_SYSTEM_ADDRESS);
 	}
 }
@@ -518,7 +518,7 @@ void ServerPanel::PickClass(Class clas, bool ready)
 		f << ID_PICK_CHARACTER;
 		WriteCharacterData(f, info.clas, info.hd, info.cc);
 		f << ready;
-		game->peer->Send(&stream, IMMEDIATE_PRIORITY, RELIABLE, 0, game->server, false);
+		N.peer->Send(&stream, IMMEDIATE_PRIORITY, RELIABLE, 0, game->server, false);
 		game->StreamWrite(stream, Stream_UpdateLobbyClient, game->server);
 	}
 	else

@@ -472,6 +472,7 @@
     <ClCompile Include="source\game\Level.cpp" />
     <ClCompile Include="source\game\net\BitStreamFunc.cpp" />
     <ClCompile Include="source\game\net\EntityInterpolator.cpp" />
+    <ClCompile Include="source\game\net\Net2.cpp" />
     <ClCompile Include="source\game\net\PlayerInfo.cpp" />
     <ClCompile Include="source\game\panels\ActionPanel.cpp" />
     <ClCompile Include="source\game\panels\BookPanel.cpp" />

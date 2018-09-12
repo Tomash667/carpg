@@ -9188,7 +9188,7 @@ void Game::ChangeLevel(int where)
 			packet_data[1] = (byte)L.location_index;
 			packet_data[2] = (byte)level;
 			packet_data[3] = 0;
-			int ack = peer->Send((cstring)&packet_data[0], 4, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+			int ack = N.peer->Send((cstring)&packet_data[0], 4, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 			StreamWrite(packet_data.data(), 3, Stream_TransferServer, UNASSIGNED_SYSTEM_ADDRESS);
 			for(auto info : game_players)
 			{

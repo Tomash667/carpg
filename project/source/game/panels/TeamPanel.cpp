@@ -129,10 +129,10 @@ void TeamPanel::Draw(ControlDrawData*)
 			if(Net::IsServer())
 			{
 				if(u != game.pc->unit)
-					s += Format(txPing, game.peer->GetAveragePing(u->player->player_info->adr));
+					s += Format(txPing, N.peer->GetAveragePing(u->player->player_info->adr));
 			}
 			else if(u == game.pc->unit)
-				s += Format(txPing, game.peer->GetAveragePing(game.server));
+				s += Format(txPing, N.peer->GetAveragePing(game.server));
 			s += Format(txDays, u->player->free_days);
 		}
 		s += ")$h-";

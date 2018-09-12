@@ -109,7 +109,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 		packet_data[1] = (byte)L.location_index;
 		packet_data[2] = 0;
 		packet_data[3] = (W.GetState() == World::State::INSIDE_ENCOUNTER ? 1 : 0);
-		int ack = peer->Send((cstring)&packet_data[0], 4, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+		int ack = N.peer->Send((cstring)&packet_data[0], 4, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 		StreamWrite(packet_data, Stream_TransferServer, UNASSIGNED_SYSTEM_ADDRESS);
 		for(auto info : game_players)
 		{

@@ -84,12 +84,12 @@ void PickServerPanel::Update(float dt)
 	if(ping_timer < 0.f)
 	{
 		ping_timer = 1.f;
-		game->peer->Ping("255.255.255.255", (word)game->mp_port, true);
+		N.peer->Ping("255.255.255.255", (word)game->mp_port, true);
 	}
 
 	// listen for packets
 	Packet* packet;
-	for(packet = game->peer->Receive(); packet; game->peer->DeallocatePacket(packet), packet = game->peer->Receive())
+	for(packet = N.peer->Receive(); packet; N.peer->DeallocatePacket(packet), packet = N.peer->Receive())
 	{
 		BitStream& stream = game->StreamStart(packet, Stream_PickServer);
 		BitStreamReader reader(stream);
@@ -263,7 +263,7 @@ void PickServerPanel::Show()
 	}
 
 	Info("Pinging servers.");
-	game->peer->Ping("255.255.255.255", (word)game->mp_port, true);
+	N.peer->Ping("255.255.255.255", (word)game->mp_port, true);
 
 	ping_timer = 1.f;
 	servers.clear();

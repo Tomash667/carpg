@@ -754,6 +754,9 @@
     <ClCompile Include="source\game\entity\TerrainTile.cpp">
       <Filter>3. game\entity</Filter>
     </ClCompile>
+    <ClCompile Include="source\game\net\Net2.cpp">
+      <Filter>3. game\net</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\resource\resource1.h">

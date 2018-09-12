@@ -475,7 +475,7 @@ void Game::StartGameMode()
 
 		server_panel->Show();
 		Net_OnNewGameServer();
-		UpdateServerInfo();
+		N.UpdateServerInfo();
 
 		if(change_title_a)
 			ChangeTitle();
