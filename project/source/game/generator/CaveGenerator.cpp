@@ -634,7 +634,6 @@ bool CaveGenerator::HandleUpdate(int days)
 //=================================================================================================
 void CaveGenerator::GenerateMushrooms(int days_since)
 {
-	Game& game = Game::Get();
 	InsideLocationLevel& lvl = GetLevelData();
 	Int2 pt;
 	Vec2 pos;
@@ -667,7 +666,7 @@ void CaveGenerator::GenerateMushrooms(int days_since)
 				pos.y += 0.5f;
 				break;
 			}
-			game.SpawnGroundItemInsideRadius(shroom, pos, 0.5f);
+			L.SpawnGroundItemInsideRadius(shroom, pos, 0.5f);
 		}
 	}
 }

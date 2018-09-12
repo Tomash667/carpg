@@ -5297,7 +5297,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 			unit.visual_pos = unit.pos;
 			unit.changed = true;
 		}
-		UpdateUnitPhysics(unit, unit.pos);
+		unit.UpdatePhysics(unit.pos);
 	}
 }
 
@@ -5706,7 +5706,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 
 		// physics
 		if(create_physics)
-			CreateUnitPhysics(*u);
+			u->CreatePhysics();
 		else
 			u->cobj = nullptr;
 	}
@@ -6787,7 +6787,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 				if(u.live_state == Unit::DYING)
 				{
 					u.live_state = Unit::DEAD;
-					CreateBlood(ctx, u);
+					L.CreateBlood(ctx, u);
 					if(u.summoner != nullptr && Net::IsLocal())
 					{
 						Team.RemoveTeamMember(&u);
@@ -7210,7 +7210,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 				float p = u.mesh_inst->GetProgress2();
 				if(p >= 28.f / 52.f && u.animation_state == 0)
 				{
-					PlayUnitSound(u, sGulp);
+					u.PlaySound(sGulp);
 					u.animation_state = 1;
 					if(Net::IsLocal())
 						u.ApplyConsumableEffect(u.used_item->ToConsumable());
@@ -7240,7 +7240,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 				if(p >= 32.f / 70 && u.animation_state == 0)
 				{
 					u.animation_state = 1;
-					PlayUnitSound(u, sEat);
+					u.PlaySound(sEat);
 				}
 				if(p >= 48.f / 70 && u.animation_state == 1)
 				{
@@ -7487,7 +7487,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 									}
 								}
 								if(ok)
-									UpdateUnitPhysics(u, u.pos);
+									u.UpdatePhysics(u.pos);
 							}
 						}
 					}
@@ -9136,7 +9136,7 @@ Unit* Game::CreateUnitWithAI(LevelContext& ctx, UnitData& unit, int level, Human
 		}
 		else
 			u->pos = *pos;
-		UpdateUnitPhysics(*u, u->pos);
+		u->UpdatePhysics(u->pos);
 		u->visual_pos = u->pos;
 	}
 	if(rot)
@@ -9322,7 +9322,7 @@ void Game::AddPlayerTeam(const Vec3& pos, float rot, bool reenter, bool hide_wea
 		if(!reenter)
 		{
 			L.local_ctx.units->push_back(&u);
-			CreateUnitPhysics(u);
+			u.CreatePhysics();
 			if(u.IsHero())
 				ais.push_back(u.ai);
 		}
@@ -11579,7 +11579,7 @@ void Game::Unit_StopUsingUsable(LevelContext& ctx, Unit& u, bool send)
 	assert(ok);
 
 	if(u.cobj)
-		UpdateUnitPhysics(u, u.target_pos);
+		u.UpdatePhysics(u.target_pos);
 
 	if(send && Net::IsOnline())
 	{
@@ -11862,7 +11862,7 @@ void Game::LeaveLevel(LevelContext& ctx, bool clear)
 					{
 						unit.live_state = Unit::DEAD;
 						unit.mesh_inst->SetToEnd();
-						CreateBlood(ctx, unit, true);
+						L.CreateBlood(ctx, unit, true);
 					}
 					if(unit.ai->goto_inn && L.city_ctx)
 					{
@@ -11979,33 +11979,6 @@ void Game::LeaveLevel(LevelContext& ctx, bool clear)
 	}
 }
 
-void Game::CreateBlood(LevelContext& ctx, const Unit& u, bool fully_created)
-{
-	if(!tKrewSlad[u.data->blood] || IS_SET(u.data->flags2, F2_BLOODLESS))
-		return;
-
-	Blood& b = Add1(ctx.bloods);
-	if(u.human_data)
-		u.mesh_inst->SetupBones(&u.human_data->mat_scale[0]);
-	else
-		u.mesh_inst->SetupBones();
-	b.pos = u.GetLootCenter();
-	b.type = u.data->blood;
-	b.rot = Random(MAX_ANGLE);
-	b.size = (fully_created ? 1.f : 0.f);
-
-	if(ctx.have_terrain)
-	{
-		b.pos.y = terrain->GetH(b.pos) + 0.05f;
-		terrain->GetAngle(b.pos.x, b.pos.z, b.normal);
-	}
-	else
-	{
-		b.pos.y = u.pos.y + 0.05f;
-		b.normal = Vec3(0, 1, 0);
-	}
-}
-
 void Game::WarpUnit(Unit& unit, const Vec3& pos)
 {
 	const float unit_radius = unit.GetUnitRadius();
@@ -12047,7 +12020,7 @@ void Game::WarpUnit(Unit& unit, const Vec3& pos)
 	}
 
 	if(unit.cobj)
-		UpdateUnitPhysics(unit, unit.pos);
+		unit.UpdatePhysics(unit.pos);
 
 	unit.visual_pos = unit.pos;
 
@@ -12298,9 +12271,7 @@ void Game::LoadResources(cstring text, bool worldmap)
 	}
 
 	// spawn blood for units that are dead and their mesh just loaded
-	for(Unit* unit : blood_to_spawn)
-		CreateBlood(L.GetContext(*unit), *unit, true);
-	blood_to_spawn.clear();
+	L.SpawnBlood();
 
 	// finished
 	if((Net::IsLocal() || !mp_load_worldmap) && !L.location->outside)
@@ -13676,10 +13647,10 @@ void Game::SpawnHeroesInsideDungeon()
 					{
 						u.animation = u.current_animation = ANI_DIE;
 						u.SetAnimationAtEnd(NAMES::ani_die);
-						CreateBlood(L.local_ctx, u, true);
+						L.CreateBlood(L.local_ctx, u, true);
 					}
 					else
-						blood_to_spawn.push_back(&u);
+						L.blood_to_spawn.push_back(&u);
 					u.hp = 0.f;
 					++GameStats::Get().total_kills;
 
@@ -13834,108 +13805,6 @@ void Game::SpawnHeroesInsideDungeon()
 
 	// sprawdü czy lokacja oczyszczona (raczej nie jest)
 	CheckIfLocationCleared();
-}
-
-GroundItem* Game::SpawnGroundItemInsideRoom(Room& room, const Item* item)
-{
-	assert(item);
-
-	for(int i = 0; i < 50; ++i)
-	{
-		Vec3 pos = room.GetRandomPos(0.5f);
-		L.global_col.clear();
-		L.GatherCollisionObjects(L.local_ctx, L.global_col, pos, 0.25f);
-		if(!L.Collide(L.global_col, pos, 0.25f))
-		{
-			GroundItem* gi = new GroundItem;
-			gi->count = 1;
-			gi->team_count = 1;
-			gi->rot = Random(MAX_ANGLE);
-			gi->pos = pos;
-			gi->item = item;
-			gi->netid = GroundItem::netid_counter++;
-			L.local_ctx.items->push_back(gi);
-			return gi;
-		}
-	}
-
-	return nullptr;
-}
-
-GroundItem* Game::SpawnGroundItemInsideRadius(const Item* item, const Vec2& pos, float radius, bool try_exact)
-{
-	assert(item);
-
-	Vec3 pt;
-	for(int i = 0; i < 50; ++i)
-	{
-		if(!try_exact)
-		{
-			float a = Random(), b = Random();
-			if(b < a)
-				std::swap(a, b);
-			pt = Vec3(pos.x + b * radius*cos(2 * PI*a / b), 0, pos.y + b * radius*sin(2 * PI*a / b));
-		}
-		else
-		{
-			try_exact = false;
-			pt = Vec3(pos.x, 0, pos.y);
-		}
-		L.global_col.clear();
-		L.GatherCollisionObjects(L.local_ctx, L.global_col, pt, 0.25f);
-		if(!L.Collide(L.global_col, pt, 0.25f))
-		{
-			GroundItem* gi = new GroundItem;
-			gi->count = 1;
-			gi->team_count = 1;
-			gi->rot = Random(MAX_ANGLE);
-			gi->pos = pt;
-			if(L.local_ctx.type == LevelContext::Outside)
-				terrain->SetH(gi->pos);
-			gi->item = item;
-			gi->netid = GroundItem::netid_counter++;
-			L.local_ctx.items->push_back(gi);
-			return gi;
-		}
-	}
-
-	return nullptr;
-}
-
-GroundItem* Game::SpawnGroundItemInsideRegion(const Item* item, const Vec2& pos, const Vec2& region_size, bool try_exact)
-{
-	assert(item);
-	assert(region_size.x > 0 && region_size.y > 0);
-
-	Vec3 pt;
-	for(int i = 0; i < 50; ++i)
-	{
-		if(!try_exact)
-			pt = Vec3(pos.x + Random(region_size.x), 0, pos.y + Random(region_size.y));
-		else
-		{
-			try_exact = false;
-			pt = Vec3(pos.x, 0, pos.y);
-		}
-		L.global_col.clear();
-		L.GatherCollisionObjects(L.local_ctx, L.global_col, pt, 0.25f);
-		if(!L.Collide(L.global_col, pt, 0.25f))
-		{
-			GroundItem* gi = new GroundItem;
-			gi->count = 1;
-			gi->team_count = 1;
-			gi->rot = Random(MAX_ANGLE);
-			gi->pos = pt;
-			if(L.local_ctx.type == LevelContext::Outside)
-				terrain->SetH(gi->pos);
-			gi->item = item;
-			gi->netid = GroundItem::netid_counter++;
-			L.local_ctx.items->push_back(gi);
-			return gi;
-		}
-	}
-
-	return nullptr;
 }
 
 void Game::GenerateQuestUnits()
@@ -15654,35 +15523,6 @@ DialogContext* Game::FindDialogContext(Unit* talker)
 	return nullptr;
 }
 
-void Game::CreateUnitPhysics(Unit& unit, bool position)
-{
-	btCapsuleShape* caps = new btCapsuleShape(unit.GetUnitRadius(), max(MIN_H, unit.GetUnitHeight()));
-	unit.cobj = new btCollisionObject;
-	unit.cobj->setCollisionShape(caps);
-	unit.cobj->setUserPointer(&unit);
-	unit.cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_UNIT);
-
-	if(position)
-	{
-		Vec3 pos = unit.pos;
-		pos.y += unit.GetUnitHeight();
-		btVector3 bpos(ToVector3(unit.IsAlive() ? pos : Vec3(1000, 1000, 1000)));
-		bpos.setY(unit.pos.y + max(MIN_H, unit.GetUnitHeight()) / 2);
-		unit.cobj->getWorldTransform().setOrigin(bpos);
-	}
-
-	phy_world->addCollisionObject(unit.cobj, CG_UNIT);
-}
-
-void Game::UpdateUnitPhysics(Unit& unit, const Vec3& pos)
-{
-	btVector3 a_min, a_max, bpos(ToVector3(unit.IsAlive() ? pos : Vec3(1000, 1000, 1000)));
-	bpos.setY(pos.y + max(MIN_H, unit.GetUnitHeight()) / 2);
-	unit.cobj->getWorldTransform().setOrigin(bpos);
-	unit.cobj->getCollisionShape()->getAabb(unit.cobj->getWorldTransform(), a_min, a_max);
-	phy_broadphase->setAabb(unit.cobj->getBroadphaseHandle(), a_min, a_max, phy_dispatcher);
-}
-
 void Game::WarpNearLocation(LevelContext& ctx, Unit& unit, const Vec3& pos, float extra_radius, bool allow_exact, int tries)
 {
 	const float radius = unit.GetUnitRadius();
@@ -15721,7 +15561,7 @@ void Game::WarpNearLocation(LevelContext& ctx, Unit& unit, const Vec3& pos, floa
 	}
 
 	if(unit.cobj)
-		UpdateUnitPhysics(unit, unit.pos);
+		unit.UpdatePhysics(unit.pos);
 }
 
 /* mode: 0 - normal training
@@ -16598,47 +16438,6 @@ int xdif(int a, int b)
 	}
 }
 
-void Game::DropGold(int ile)
-{
-	pc->unit->gold -= ile;
-	sound_mgr->PlaySound2d(sCoins);
-
-	// animacja wyrzucania
-	pc->unit->action = A_ANIMATION;
-	pc->unit->mesh_inst->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
-	pc->unit->mesh_inst->groups[0].speed = 1.f;
-	pc->unit->mesh_inst->frame_end_info = false;
-
-	if(Net::IsLocal())
-	{
-		// stwÛrz przedmiot
-		GroundItem* item = new GroundItem;
-		item->item = Item::gold;
-		item->count = ile;
-		item->team_count = 0;
-		item->pos = pc->unit->pos;
-		item->pos.x -= sin(pc->unit->rot)*0.25f;
-		item->pos.z -= cos(pc->unit->rot)*0.25f;
-		item->rot = Random(MAX_ANGLE);
-		L.AddGroundItem(L.GetContext(*pc->unit), item);
-
-		// wyúlij info o animacji
-		if(Net::IsServer())
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::DROP_ITEM;
-			c.unit = pc->unit;
-		}
-	}
-	else
-	{
-		// wyúlij komunikat o wyrzucaniu z≥ota
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::DROP_GOLD;
-		c.id = ile;
-	}
-}
-
 void Game::AddItem(Unit& unit, const Item* item, uint count, uint team_count, bool send_msg)
 {
 	assert(item && count && team_count <= count);
@@ -16902,21 +16701,6 @@ InsideLocationLevel* Game::TryGetLevelData()
 		return &((InsideLocation*)L.location)->GetLevelData();
 	else
 		return nullptr;
-}
-
-GroundItem* Game::SpawnGroundItemInsideAnyRoom(InsideLocationLevel& lvl, const Item* item)
-{
-	assert(item);
-	while(true)
-	{
-		int id = Rand() % lvl.rooms.size();
-		if(!lvl.rooms[id].IsCorridor())
-		{
-			GroundItem* item2 = SpawnGroundItemInsideRoom(lvl.rooms[id], item);
-			if(item2)
-				return item2;
-		}
-	}
 }
 
 void Game::SetOutsideParams()
@@ -17294,9 +17078,9 @@ void Game::HandleQuestEvent(Quest_Event* event)
 		{
 			GroundItem* item;
 			if(lvl)
-				item = SpawnGroundItemInsideAnyRoom(*lvl, event->item_to_give[0]);
+				item = L.SpawnGroundItemInsideAnyRoom(*lvl, event->item_to_give[0]);
 			else
-				item = SpawnGroundItemInsideRadius(event->item_to_give[0], Vec2(128, 128), 10.f);
+				item = L.SpawnGroundItemInsideRadius(event->item_to_give[0], Vec2(128, 128), 10.f);
 			if(devmode)
 				Info("Generated item %s on ground (%g,%g).", event->item_to_give[0]->id.c_str(), item->pos.x, item->pos.z);
 		}

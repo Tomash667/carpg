@@ -239,7 +239,7 @@ void InsideLocationGenerator::OnEnter()
 					L.local_ctx.items->push_back(item);
 				}
 				else
-					game.SpawnGroundItemInsideRoom(r, kartka);
+					L.SpawnGroundItemInsideRoom(r, kartka);
 			}
 
 			secret->state = Quest_Secret::SECRET_CLOSED;

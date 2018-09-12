@@ -70,6 +70,10 @@ public:
 	void PickableItemBegin(LevelContext& ctx, Object& o);
 	void PickableItemAdd(const Item* item);
 	void AddGroundItem(LevelContext& ctx, GroundItem* item);
+	GroundItem* SpawnGroundItemInsideAnyRoom(InsideLocationLevel& lvl, const Item* item);
+	GroundItem* SpawnGroundItemInsideRoom(Room& room, const Item* item);
+	GroundItem* SpawnGroundItemInsideRadius(const Item* item, const Vec2& pos, float radius, bool try_exact = false);
+	GroundItem* SpawnGroundItemInsideRegion(const Item* item, const Vec2& pos, const Vec2& region_size, bool try_exact);
 	Unit* SpawnUnitInsideRoom(Room& room, UnitData& unit, int level = -1, const Int2& pt = Int2(-1000, -1000), const Int2& pt2 = Int2(-1000, -1000));
 	Unit* SpawnUnitInsideRoomOrNear(InsideLocationLevel& lvl, Room& room, UnitData& unit, int level = -1, const Int2& pt = Int2(-1000, -1000), const Int2& pt2 = Int2(-1000, -1000));
 	Unit* SpawnUnitNearLocation(LevelContext& ctx, const Vec3& pos, UnitData& unit, const Vec3* look_at = nullptr, int level = -1, float extra_radius = 2.f);
@@ -99,6 +103,8 @@ public:
 	bool Collide(const vector<CollisionObject>& objects, const Box2d& box, float margin, float rot);
 	bool CollideWithStairs(const CollisionObject& co, const Vec3& pos, float radius) const;
 	bool CollideWithStairsRect(const CollisionObject& co, const Box2d& box) const;
+	void CreateBlood(LevelContext& ctx, const Unit& unit, bool fully_created = false);
+	void SpawnBlood();
 
 	Location* location; // same as W.current_location
 	int location_index; // same as W.current_location_index
@@ -112,6 +118,7 @@ public:
 	vector<Unit*> to_remove;
 	ObjectPool<TmpLevelContext> tmp_ctx_pool;
 	vector<CollisionObject> global_col;
+	vector<Unit*> blood_to_spawn;
 
 private:
 	vector<UnitWarpData> unit_warp_data;

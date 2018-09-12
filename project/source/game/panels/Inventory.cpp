@@ -1387,7 +1387,7 @@ void Inventory::OnDropGold(int id)
 	else if(!unit->CanAct())
 		GUI.SimpleDialog(txDropNotNow, this);
 	else
-		game.DropGold(counter);
+		game.pc->unit->DropGold(counter);
 }
 
 //=================================================================================================

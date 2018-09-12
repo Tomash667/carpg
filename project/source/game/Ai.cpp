@@ -661,7 +661,7 @@ void Game::UpdateAi(float dt)
 								if(u.usable->base == stool && u.in_building != -1)
 								{
 									int co;
-									if(IsDrunkman(u))
+									if(u.IsDrunkman())
 										co = Rand() % 3;
 									else
 										co = Rand() % 2 + 1;
@@ -696,7 +696,7 @@ void Game::UpdateAi(float dt)
 									if(u.animation_state != 0)
 									{
 										int co;
-										if(IsDrunkman(u))
+										if(u.IsDrunkman())
 											co = Rand() % 2;
 										else
 											co = 1;
@@ -1320,7 +1320,7 @@ void Game::UpdateAi(float dt)
 												else
 												{
 													ai.idle_action = AIController::Idle_Use;
-													if(u.usable->base == stool && u.in_building != -1 && IsDrunkman(u))
+													if(u.usable->base == stool && u.in_building != -1 && u.IsDrunkman())
 														ai.timer = Random(10.f, 20.f);
 													else if(u.usable->base == throne)
 														ai.timer = 120.f;

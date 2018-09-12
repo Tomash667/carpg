@@ -1209,7 +1209,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							DungeonReveal(new_tile);
 					}
 					unit.pos = new_pos;
-					UpdateUnitPhysics(unit, unit.pos);
+					unit.UpdatePhysics(unit.pos);
 					unit.interp->Add(unit.pos, rot);
 					unit.changed = true;
 				}
@@ -4502,7 +4502,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					assert(ani < ANI_MAX);
 					if(unit->animation != ANI_PLAY && ani != ANI_PLAY)
 						unit->animation = ani;
-					UpdateUnitPhysics(*unit, unit->pos);
+					unit->UpdatePhysics(unit->pos);
 					unit->interp->Add(pos, rot);
 				}
 			}

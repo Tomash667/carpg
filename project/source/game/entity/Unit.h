@@ -849,6 +849,11 @@ struct Unit
 	void TryStandup(float dt);
 	void Standup();
 	void Die(LevelContext* ctx, Unit* killer);
+	void DropGold(int count);
+	bool IsDrunkman() const;
+	void PlaySound(SOUND snd, float range = 1.f);
+	void CreatePhysics(bool position = false);
+	void UpdatePhysics(const Vec3& pos);
 
 	//-----------------------------------------------------------------------------
 	static vector<Unit*> refid_table;

@@ -2553,7 +2553,7 @@ void CityGenerator::SpawnUnits()
 
 		u->pos = Vec3(float(b.unit_pt.x) * 2 + 1, 0, float(b.unit_pt.y) * 2 + 1);
 		terrain->SetH(u->pos);
-		game.UpdateUnitPhysics(*u, u->pos);
+		u->UpdatePhysics(u->pos);
 		u->visual_pos = u->pos;
 
 		if(b.type->group == BuildingGroup::BG_ARENA)

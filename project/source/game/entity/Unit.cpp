@@ -8,6 +8,7 @@
 #include "QuestManager.h"
 #include "Quest_Secret.h"
 #include "Quest_Contest.h"
+#include "Quest_Mages.h"
 #include "AIController.h"
 #include "Team.h"
 #include "Content.h"
@@ -1673,7 +1674,7 @@ void Unit::Load(GameReader& f, bool local)
 
 	// fizyka
 	if(local)
-		Game::Get().CreateUnitPhysics(*this, true);
+		CreatePhysics(true);
 	else
 		cobj = nullptr;
 
@@ -2064,7 +2065,7 @@ bool Unit::Read(BitStreamReader& f)
 	}
 
 	// physics
-	game.CreateUnitPhysics(*this, true);
+	CreatePhysics(true);
 
 	// boss music
 	if(IS_SET(data->flags2, F2_BOSS))
@@ -3769,7 +3770,7 @@ void Unit::TryStandup(float dt)
 				{
 					// móg³by wstaæ ale jest zbyt pijany
 					live_state = FALL;
-					game.UpdateUnitPhysics(*this, pos);
+					UpdatePhysics(pos);
 				}
 				else
 				{
@@ -3865,7 +3866,7 @@ void Unit::Die(LevelContext* ctx, Unit* killer)
 	if(live_state == FALL)
 	{
 		// postaæ ju¿ le¿y na ziemi, dodaj krew
-		game.CreateBlood(*ctx, *this);
+		L.CreateBlood(*ctx, *this);
 		live_state = DEAD;
 	}
 	else
@@ -3963,8 +3964,103 @@ void Unit::Die(LevelContext* ctx, Unit* killer)
 	else if(data->sounds->sound[SOUND_PAIN])
 		snd = data->sounds->sound[SOUND_PAIN]->sound;
 	if(snd)
-		game.PlayUnitSound(*this, snd, 2.f);
+		PlaySound(snd, 2.f);
 
 	// przenieœ fizyke
-	game.UpdateUnitPhysics(*this, pos);
+	UpdatePhysics(pos);
+}
+
+//=================================================================================================
+void Unit::DropGold(int count)
+{
+	Game& game = Game::Get();
+
+	gold -= count;
+	game.sound_mgr->PlaySound2d(game.sCoins);
+
+	// animacja wyrzucania
+	action = A_ANIMATION;
+	mesh_inst->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
+	mesh_inst->groups[0].speed = 1.f;
+	mesh_inst->frame_end_info = false;
+
+	if(Net::IsLocal())
+	{
+		// stwórz przedmiot
+		GroundItem* item = new GroundItem;
+		item->item = Item::gold;
+		item->count = count;
+		item->team_count = 0;
+		item->pos = pos;
+		item->pos.x -= sin(rot)*0.25f;
+		item->pos.z -= cos(rot)*0.25f;
+		item->rot = Random(MAX_ANGLE);
+		L.AddGroundItem(L.GetContext(*this), item);
+
+		// wyœlij info o animacji
+		if(Net::IsServer())
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::DROP_ITEM;
+			c.unit = this;
+		}
+	}
+	else
+	{
+		// wyœlij komunikat o wyrzucaniu z³ota
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::DROP_GOLD;
+		c.id = count;
+	}
+}
+
+//=================================================================================================
+bool Unit::IsDrunkman() const
+{
+	if(IS_SET(data->flags, F_AI_DRUNKMAN))
+		return true;
+	else if(IS_SET(data->flags3, F3_DRUNK_MAGE))
+		return QM.quest_mages2->mages_state < Quest_Mages2::State::MageCured;
+	else if(IS_SET(data->flags3, F3_DRUNKMAN_AFTER_CONTEST))
+		return QM.quest_contest->state == Quest_Contest::CONTEST_DONE;
+	else
+		return false;
+}
+
+//=================================================================================================
+void Unit::PlaySound(SOUND snd, float range)
+{
+	Game::Get().sound_mgr->PlaySound3d(snd, GetHeadSoundPos(), range);
+}
+
+//=================================================================================================
+void Unit::CreatePhysics(bool position)
+{
+	btCapsuleShape* caps = new btCapsuleShape(GetUnitRadius(), max(MIN_H, GetUnitHeight()));
+	cobj = new btCollisionObject;
+	cobj->setCollisionShape(caps);
+	cobj->setUserPointer(this);
+	cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_UNIT);
+
+	if(position)
+	{
+		Vec3 pos = pos;
+		pos.y += GetUnitHeight();
+		btVector3 bpos(ToVector3(IsAlive() ? pos : Vec3(1000, 1000, 1000)));
+		bpos.setY(pos.y + max(MIN_H, GetUnitHeight()) / 2);
+		cobj->getWorldTransform().setOrigin(bpos);
+	}
+
+	Game::Get().phy_world->addCollisionObject(cobj, CG_UNIT);
+}
+
+//=================================================================================================
+void Unit::UpdatePhysics(const Vec3& pos)
+{
+	Game& game = Game::Get();
+	btVector3 a_min, a_max, bpos(ToVector3(IsAlive() ? pos : Vec3(1000, 1000, 1000)));
+	bpos.setY(pos.y + max(MIN_H, GetUnitHeight()) / 2);
+	cobj->getWorldTransform().setOrigin(bpos);
+	cobj->getCollisionShape()->getAabb(cobj->getWorldTransform(), a_min, a_max);
+	game.phy_broadphase->setAabb(cobj->getBroadphaseHandle(), a_min, a_max, game.phy_dispatcher);
 }

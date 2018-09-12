@@ -450,7 +450,6 @@ public:
 	TEX missing_texture;
 	vector<std::pair<Unit*, bool>> units_mesh_load;
 	std::set<const Item*> items_load;
-	vector<Unit*> blood_to_spawn;
 
 	//---------------------------------
 	// GUI / HANDEL
@@ -822,7 +821,6 @@ public:
 	void EnterLevel(LocationGenerator* loc_gen);
 	void LeaveLevel(bool clear = false);
 	void LeaveLevel(LevelContext& ctx, bool clear);
-	void CreateBlood(LevelContext& ctx, const Unit& unit, bool fully_created = false);
 	void WarpUnit(Unit& unit, const Vec3& pos);
 	void UpdateContext(LevelContext& ctx, float dt);
 	// dru¿yna
@@ -886,10 +884,6 @@ public:
 	};
 	CanLeaveLocationResult CanLeaveLocation(Unit& unit);
 	void SpawnHeroesInsideDungeon();
-	GroundItem* SpawnGroundItemInsideAnyRoom(InsideLocationLevel& lvl, const Item* item);
-	GroundItem* SpawnGroundItemInsideRoom(Room& room, const Item* item);
-	GroundItem* SpawnGroundItemInsideRadius(const Item* item, const Vec2& pos, float radius, bool try_exact = false);
-	GroundItem* SpawnGroundItemInsideRegion(const Item* item, const Vec2& pos, const Vec2& region_size, bool try_exact);
 	void GenerateQuestUnits();
 	void GenerateQuestUnits2(bool on_enter);
 	void UpdateQuests(int days);
@@ -909,8 +903,6 @@ public:
 	void StartPvp(PlayerController* player, Unit* unit);
 	void UpdateGameNet(float dt);
 	void CheckCredit(bool require_update = false, bool ignore = false);
-	void CreateUnitPhysics(Unit& unit, bool position = false);
-	void UpdateUnitPhysics(Unit& unit, const Vec3& pos);
 	void WarpNearLocation(LevelContext& ctx, Unit& uint, const Vec3& pos, float extra_radius, bool allow_exact, int tries = 20);
 	void Train(Unit& unit, bool is_skill, int co, int mode = 0);
 	void ShowStatGain(bool is_skill, int what, int value);
@@ -927,8 +919,6 @@ public:
 	Unit* GetRandomArenaHero();
 	cstring GetRandomIdleText(Unit& u);
 	void HandleQuestEvent(Quest_Event* event);
-
-	void DropGold(int count);
 
 	// dodaje przedmiot do ekwipunku postaci (obs³uguje z³oto, otwarty ekwipunek i multiplayer)
 	void AddItem(Unit& unit, const Item* item, uint count, uint team_count, bool send_msg = true);
@@ -959,10 +949,6 @@ public:
 	bool ValidateTarget(Unit& u, Unit* target);
 
 	void UpdateLights(vector<Light>& lights);
-
-	bool IsDrunkman(Unit& u);
-	void PlayUnitSound(Unit& u, SOUND snd, float range = 1.f);
-
 	void UpdatePostEffects(float dt);
 
 	void PlayerYell(Unit& u);

@@ -293,8 +293,6 @@ void OutsideLocationGenerator::SpawnForestItems(int count_mod)
 {
 	assert(InRange(count_mod, -2, 1));
 
-	Game& game = Game::Get();
-
 	// get count to spawn
 	int herbs, green_herbs;
 	switch(count_mod)
@@ -340,7 +338,7 @@ void OutsideLocationGenerator::SpawnForestItems(int count_mod)
 				TERRAIN_TILE type = tiles[pt.x + pt.y*OutsideLocation::size].t;
 				if(type == TT_GRASS || type == TT_GRASS3)
 				{
-					game.SpawnGroundItemInsideRegion(to_spawn.item, Vec2(2.f*pt.x, 2.f*pt.y), region_size, false);
+					L.SpawnGroundItemInsideRegion(to_spawn.item, Vec2(2.f*pt.x, 2.f*pt.y), region_size, false);
 					break;
 				}
 			}

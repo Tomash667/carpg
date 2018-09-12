@@ -34,7 +34,7 @@ void LocationGenerator::RespawnUnits()
 			u->CreateMesh(Unit::CREATE_MESH::NORMAL);
 
 			// fizyka
-			game.CreateUnitPhysics(*u, true);
+			u->CreatePhysics(true);
 
 			// ai
 			AIController* ai = new AIController;

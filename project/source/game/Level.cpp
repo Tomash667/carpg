@@ -58,7 +58,7 @@ void Level::ProcessUnitWarps()
 				// unit left location
 				if(warp.unit->event_handler)
 					warp.unit->event_handler->HandleUnitEvent(UnitEventHandler::LEAVE, warp.unit);
-				L.RemoveUnit(warp.unit);
+				RemoveUnit(warp.unit);
 			}
 		}
 		else if(warp.where == WARP_ARENA)
@@ -1497,6 +1497,127 @@ void Level::AddGroundItem(LevelContext& ctx, GroundItem* item)
 }
 
 //=================================================================================================
+GroundItem* Level::SpawnGroundItemInsideAnyRoom(InsideLocationLevel& lvl, const Item* item)
+{
+	assert(item);
+	while(true)
+	{
+		int id = Rand() % lvl.rooms.size();
+		if(!lvl.rooms[id].IsCorridor())
+		{
+			GroundItem* item2 = SpawnGroundItemInsideRoom(lvl.rooms[id], item);
+			if(item2)
+				return item2;
+		}
+	}
+}
+
+//=================================================================================================
+GroundItem* Level::SpawnGroundItemInsideRoom(Room& room, const Item* item)
+{
+	assert(item);
+
+	for(int i = 0; i < 50; ++i)
+	{
+		Vec3 pos = room.GetRandomPos(0.5f);
+		global_col.clear();
+		GatherCollisionObjects(local_ctx, global_col, pos, 0.25f);
+		if(!Collide(global_col, pos, 0.25f))
+		{
+			GroundItem* gi = new GroundItem;
+			gi->count = 1;
+			gi->team_count = 1;
+			gi->rot = Random(MAX_ANGLE);
+			gi->pos = pos;
+			gi->item = item;
+			gi->netid = GroundItem::netid_counter++;
+			local_ctx.items->push_back(gi);
+			return gi;
+		}
+	}
+
+	return nullptr;
+}
+
+//=================================================================================================
+GroundItem* Level::SpawnGroundItemInsideRadius(const Item* item, const Vec2& pos, float radius, bool try_exact)
+{
+	assert(item);
+
+	Vec3 pt;
+	for(int i = 0; i < 50; ++i)
+	{
+		if(!try_exact)
+		{
+			float a = Random(), b = Random();
+			if(b < a)
+				std::swap(a, b);
+			pt = Vec3(pos.x + b * radius*cos(2 * PI*a / b), 0, pos.y + b * radius*sin(2 * PI*a / b));
+		}
+		else
+		{
+			try_exact = false;
+			pt = Vec3(pos.x, 0, pos.y);
+		}
+		global_col.clear();
+		GatherCollisionObjects(local_ctx, global_col, pt, 0.25f);
+		if(!Collide(global_col, pt, 0.25f))
+		{
+			GroundItem* gi = new GroundItem;
+			gi->count = 1;
+			gi->team_count = 1;
+			gi->rot = Random(MAX_ANGLE);
+			gi->pos = pt;
+			if(local_ctx.type == LevelContext::Outside)
+				Game::Get().terrain->SetH(gi->pos);
+			gi->item = item;
+			gi->netid = GroundItem::netid_counter++;
+			local_ctx.items->push_back(gi);
+			return gi;
+		}
+	}
+
+	return nullptr;
+}
+
+//=================================================================================================
+GroundItem* Level::SpawnGroundItemInsideRegion(const Item* item, const Vec2& pos, const Vec2& region_size, bool try_exact)
+{
+	assert(item);
+	assert(region_size.x > 0 && region_size.y > 0);
+
+	Vec3 pt;
+	for(int i = 0; i < 50; ++i)
+	{
+		if(!try_exact)
+			pt = Vec3(pos.x + Random(region_size.x), 0, pos.y + Random(region_size.y));
+		else
+		{
+			try_exact = false;
+			pt = Vec3(pos.x, 0, pos.y);
+		}
+		global_col.clear();
+		GatherCollisionObjects(local_ctx, global_col, pt, 0.25f);
+		if(!Collide(global_col, pt, 0.25f))
+		{
+			GroundItem* gi = new GroundItem;
+			gi->count = 1;
+			gi->team_count = 1;
+			gi->rot = Random(MAX_ANGLE);
+			gi->pos = pt;
+			if(local_ctx.type == LevelContext::Outside)
+				Game::Get().terrain->SetH(gi->pos);
+			gi->item = item;
+			gi->netid = GroundItem::netid_counter++;
+			local_ctx.items->push_back(gi);
+			return gi;
+		}
+	}
+
+	return nullptr;
+}
+
+//=================================================================================================
 void Level::PickableItemAdd(const Item* item)
 {
 	assert(item);
@@ -2325,4 +2446,41 @@ bool Level::CollideWithStairsRect(const CollisionObject& _co, const Box2d& _box)
 	}
 
 	return false;
+}
+
+//=================================================================================================
+void Level::CreateBlood(LevelContext& ctx, const Unit& u, bool fully_created)
+{
+	Game& game = Game::Get();
+	if(!game.tKrewSlad[u.data->blood] || IS_SET(u.data->flags2, F2_BLOODLESS))
+		return;
+
+	Blood& b = Add1(ctx.bloods);
+	if(u.human_data)
+		u.mesh_inst->SetupBones(&u.human_data->mat_scale[0]);
+	else
+		u.mesh_inst->SetupBones();
+	b.pos = u.GetLootCenter();
+	b.type = u.data->blood;
+	b.rot = Random(MAX_ANGLE);
+	b.size = (fully_created ? 1.f : 0.f);
+
+	if(ctx.have_terrain)
+	{
+		b.pos.y = game.terrain->GetH(b.pos) + 0.05f;
+		game.terrain->GetAngle(b.pos.x, b.pos.z, b.normal);
+	}
+	else
+	{
+		b.pos.y = u.pos.y + 0.05f;
+		b.normal = Vec3(0, 1, 0);
+	}
+}
+
+//=================================================================================================
+void Level::SpawnBlood()
+{
+	for(Unit* unit : blood_to_spawn)
+		CreateBlood(GetContext(*unit), *unit, true);
+	blood_to_spawn.clear();
 }
