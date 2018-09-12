@@ -1065,7 +1065,7 @@ bool Quest_Mine::GenerateMine(CaveGenerator* cave_gen)
 						const Pole& p = lvl.At(tile);
 						if(p.type == PUSTE && !IS_SET(p.flags, Pole::F_DRUGA_TEKSTURA))
 						{
-							game->WarpUnit(*u, Vec3(2.f*tile.x + Random(0.4f, 1.6f), 0, 2.f*tile.y + Random(0.4f, 1.6f)));
+							L.WarpUnit(*u, Vec3(2.f*tile.x + Random(0.4f, 1.6f), 0, 2.f*tile.y + Random(0.4f, 1.6f)));
 							break;
 						}
 					}
@@ -1081,7 +1081,7 @@ bool Quest_Mine::GenerateMine(CaveGenerator* cave_gen)
 					}
 					pt -= g_kierunek2[lvl.staircase_up_dir];
 
-					game->WarpUnit(*u, Vec3(2.f*pt.x + 1, 0, 2.f*pt.y + 1));
+					L.WarpUnit(*u, Vec3(2.f*pt.x + 1, 0, 2.f*pt.y + 1));
 				}
 			}
 		}

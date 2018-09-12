@@ -854,6 +854,7 @@ struct Unit
 	void PlaySound(SOUND snd, float range = 1.f);
 	void CreatePhysics(bool position = false);
 	void UpdatePhysics(const Vec3& pos);
+	SOUND GetTalkSound() const;
 
 	//-----------------------------------------------------------------------------
 	static vector<Unit*> refid_table;

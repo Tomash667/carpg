@@ -254,8 +254,6 @@ GameDialog* Quest_Orcs2::GetDialog(int type2)
 //=================================================================================================
 void WarpToThroneOrcBoss()
 {
-	Game& game = Game::Get();
-
 	// szukaj orka
 	UnitData* ud = UnitData::Get("q_orkowie_boss");
 	Unit* u = nullptr;
@@ -274,7 +272,7 @@ void WarpToThroneOrcBoss()
 	assert(use);
 
 	// przenieœ
-	game.WarpUnit(*u, use->pos);
+	L.WarpUnit(*u, use->pos);
 }
 
 //=================================================================================================

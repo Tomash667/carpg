@@ -688,7 +688,7 @@ void Quest_Evil::WarpEvilBossToAltar()
 	{
 		Vec3 warp_pos = o->pos;
 		warp_pos -= Vec3(sin(o->rot.y)*1.5f, 0, cos(o->rot.y)*1.5f);
-		game->WarpUnit(*u, warp_pos);
+		L.WarpUnit(*u, warp_pos);
 		u->ai->start_pos = u->pos;
 	}
 }

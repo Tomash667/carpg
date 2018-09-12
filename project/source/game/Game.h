@@ -388,8 +388,8 @@ public:
 		hTerrainCombined, hTerrainWorld, hTerrainTexBlend, hTerrainTex[5], hTerrainColorAmbient, hTerrainColorDiffuse, hTerrainLightDir, hTerrainFogColor,
 		hTerrainFogParam, hGuiSize, hGuiTex, hPostTex, hPostPower, hPostSkill, hGlowCombined, hGlowBones, hGlowColor, hGlowTex, hGrassViewProj, hGrassTex,
 		hGrassFogColor, hGrassFogParams, hGrassAmbientColor;
-	SOUND sGulp, sCoins, sBow[2], sDoor[3], sDoorClosed[2], sDoorClose, sItem[8], sTalk[4], sChestOpen, sChestClose, sDoorBudge, sRock, sWood, sCrystal,
-		sMetal, sBody[5], sBone, sSkin, sArenaFight, sArenaWin, sArenaLost, sUnlock, sEvil, sXarTalk, sOrcTalk, sGoblinTalk, sGolemTalk, sEat, sSummon;
+	SOUND sGulp, sCoins, sBow[2], sDoor[3], sDoorClosed[2], sDoorClose, sItem[8], sChestOpen, sChestClose, sDoorBudge, sRock, sWood, sCrystal,
+		sMetal, sBody[5], sBone, sSkin, sArenaFight, sArenaWin, sArenaLost, sUnlock, sEvil, sEat, sSummon;
 	VB vbParticle;
 	SURFACE sChar, sSave, sItemRegion, sItemRegionRot;
 	static cstring txGoldPlus, txQuestCompletedGold;
@@ -768,8 +768,6 @@ public:
 	void SpellHitEffect(LevelContext& ctx, Bullet& bullet, const Vec3& pos, Unit* hitted);
 	void UpdateExplosions(LevelContext& ctx, float dt);
 	void UpdateTraps(LevelContext& ctx, float dt);
-	// zwraca tymczasowy wskaŸnik na stworzon¹ pu³apkê lub nullptr (mo¿e siê nie udaæ tylko dla ARROW i POISON)
-	Trap* CreateTrap(Int2 pt, TRAP_TYPE type, bool timed = false);
 	void PreloadTraps(vector<Trap*>& traps);
 	bool RayTest(const Vec3& from, const Vec3& to, Unit* ignore, Vec3& hitpoint, Unit*& hitted);
 	enum LINE_TEST_RESULT
@@ -821,7 +819,6 @@ public:
 	void EnterLevel(LocationGenerator* loc_gen);
 	void LeaveLevel(bool clear = false);
 	void LeaveLevel(LevelContext& ctx, bool clear);
-	void WarpUnit(Unit& unit, const Vec3& pos);
 	void UpdateContext(LevelContext& ctx, float dt);
 	// dru¿yna
 	bool IsLeader()
@@ -859,7 +856,6 @@ public:
 	//
 	void StartArenaCombat(int level);
 	InsideBuilding* GetArena();
-	bool WarpToArea(LevelContext& ctx, const Box2d& area, float radius, Vec3& pos, int tries = 10);
 	void DeleteUnit(Unit* unit);
 	void DialogTalk(DialogContext& ctx, cstring msg);
 	void GenerateHeroName(HeroData& hero);
@@ -907,11 +903,9 @@ public:
 	void Train(Unit& unit, bool is_skill, int co, int mode = 0);
 	void ShowStatGain(bool is_skill, int what, int value);
 	void ActivateChangeLeaderButton(bool activate);
-	void WarpToInn(Unit& unit);
 	void PayCredit(PlayerController* player, int ile);
 	void CreateSaveImage(cstring filename);
 	void PlayerUseUsable(Usable* u, bool after_action);
-	SOUND GetTalkSound(Unit& u);
 	void UnitTalk(Unit& u, cstring text);
 	void OnEnterLocation();
 	void OnEnterLevel();

@@ -13,6 +13,7 @@
 #include "ResourceManager.h"
 #include "Terrain.h"
 #include "UnitGroup.h"
+#include "EntityInterpolator.h"
 #include "Game.h"
 
 Level L;
@@ -50,7 +51,7 @@ void Level::ProcessUnitWarps()
 				RemoveElement(building.units, warp.unit);
 				warp.unit->in_building = -1;
 				warp.unit->rot = building.outside_rot;
-				game.WarpUnit(*warp.unit, building.outside_spawn);
+				WarpUnit(*warp.unit, building.outside_spawn);
 				local_ctx.units->push_back(warp.unit);
 			}
 			else
@@ -68,19 +69,19 @@ void Level::ProcessUnitWarps()
 			RemoveElement(GetContext(*warp.unit).units, warp.unit);
 			warp.unit->in_building = building.ctx.building_id;
 			Vec3 pos;
-			if(!game.WarpToArea(building.ctx, (warp.unit->in_arena == 0 ? building.arena1 : building.arena2), warp.unit->GetUnitRadius(), pos, 20))
+			if(!WarpToArea(building.ctx, (warp.unit->in_arena == 0 ? building.arena1 : building.arena2), warp.unit->GetUnitRadius(), pos, 20))
 			{
 				// failed to exit from arena
 				warp.unit->in_building = -1;
 				warp.unit->rot = building.outside_rot;
-				game.WarpUnit(*warp.unit, building.outside_spawn);
+				WarpUnit(*warp.unit, building.outside_spawn);
 				local_ctx.units->push_back(warp.unit);
 				RemoveElement(game.at_arena, warp.unit);
 			}
 			else
 			{
 				warp.unit->rot = (warp.unit->in_arena == 0 ? PI : 0);
-				game.WarpUnit(*warp.unit, pos);
+				WarpUnit(*warp.unit, pos);
 				building.units.push_back(warp.unit);
 				warped_to_arena = true;
 			}
@@ -95,7 +96,7 @@ void Level::ProcessUnitWarps()
 				RemoveElement(city_ctx->inside_buildings[warp.unit->in_building]->units, warp.unit);
 			warp.unit->in_building = warp.where;
 			warp.unit->rot = PI;
-			game.WarpUnit(*warp.unit, building.inside_spawn);
+			WarpUnit(*warp.unit, building.inside_spawn);
 			building.units.push_back(warp.unit);
 		}
 
@@ -1748,12 +1749,10 @@ Unit* Level::SpawnUnitNearLocation(LevelContext& ctx, const Vec3 &pos, UnitData 
 Unit* Level::SpawnUnitInsideArea(LevelContext& ctx, const Box2d& area, UnitData& unit, int level)
 {
 	Vec3 pos;
-	Game& game = Game::Get();
-
-	if(!game.WarpToArea(ctx, area, unit.GetRadius(), pos))
+	if(!WarpToArea(ctx, area, unit.GetRadius(), pos))
 		return nullptr;
 
-	return game.CreateUnitWithAI(ctx, unit, level, nullptr, &pos);
+	return Game::Get().CreateUnitWithAI(ctx, unit, level, nullptr, &pos);
 }
 
 //=================================================================================================
@@ -1768,14 +1767,14 @@ Unit* Level::SpawnUnitInsideInn(UnitData& ud, int level, InsideBuilding* inn, in
 	bool ok = false;
 	if(IS_SET(flags, SU_MAIN_ROOM) || Rand() % 5 != 0)
 	{
-		if(game.WarpToArea(inn->ctx, inn->arena1, ud.GetRadius(), pos, 20) ||
-			game.WarpToArea(inn->ctx, inn->arena2, ud.GetRadius(), pos, 10))
+		if(WarpToArea(inn->ctx, inn->arena1, ud.GetRadius(), pos, 20) ||
+			WarpToArea(inn->ctx, inn->arena2, ud.GetRadius(), pos, 10))
 			ok = true;
 	}
 	else
 	{
-		if(game.WarpToArea(inn->ctx, inn->arena2, ud.GetRadius(), pos, 10) ||
-			game.WarpToArea(inn->ctx, inn->arena1, ud.GetRadius(), pos, 20))
+		if(WarpToArea(inn->ctx, inn->arena2, ud.GetRadius(), pos, 10) ||
+			WarpToArea(inn->ctx, inn->arena1, ud.GetRadius(), pos, 20))
 			ok = true;
 	}
 
@@ -2483,4 +2482,205 @@ void Level::SpawnBlood()
 	for(Unit* unit : blood_to_spawn)
 		CreateBlood(GetContext(*unit), *unit, true);
 	blood_to_spawn.clear();
+}
+
+//=================================================================================================
+void Level::WarpUnit(Unit& unit, const Vec3& pos)
+{
+	const float unit_radius = unit.GetUnitRadius();
+
+	unit.BreakAction(Unit::BREAK_ACTION_MODE::INSTANT, false, true);
+
+	global_col.clear();
+	LevelContext& ctx = GetContext(unit);
+	Level::IgnoreObjects ignore = { 0 };
+	const Unit* ignore_units[2] = { &unit, nullptr };
+	ignore.ignored_units = ignore_units;
+	GatherCollisionObjects(ctx, global_col, pos, 2.f + unit_radius, &ignore);
+
+	Vec3 tmp_pos = pos;
+	bool ok = false;
+	float radius = unit_radius;
+
+	for(int i = 0; i < 20; ++i)
+	{
+		if(!Collide(global_col, tmp_pos, unit_radius))
+		{
+			unit.pos = tmp_pos;
+			ok = true;
+			break;
+		}
+
+		tmp_pos = pos + Vec2::RandomPoissonDiscPoint().XZ() * radius;
+
+		if(i < 10)
+			radius += 0.25f;
+	}
+
+	assert(ok);
+
+	if(ctx.have_terrain)
+	{
+		Terrain* terrain = Game::Get().terrain;
+		if(terrain->IsInside(unit.pos))
+			terrain->SetH(unit.pos);
+	}
+
+	if(unit.cobj)
+		unit.UpdatePhysics(unit.pos);
+
+	unit.visual_pos = unit.pos;
+
+	if(Net::IsOnline())
+	{
+		if(unit.interp)
+			unit.interp->Reset(unit.pos, unit.rot);
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::WARP;
+		c.unit = &unit;
+		if(unit.IsPlayer())
+			unit.player->player_info->warping = true;
+	}
+}
+
+//=================================================================================================
+bool Level::WarpToArea(LevelContext& ctx, const Box2d& area, float radius, Vec3& pos, int tries)
+{
+	for(int i = 0; i < tries; ++i)
+	{
+		pos = area.GetRandomPos3();
+
+		global_col.clear();
+		GatherCollisionObjects(ctx, global_col, pos, radius, nullptr);
+
+		if(!Collide(global_col, pos, radius))
+			return true;
+	}
+
+	return false;
+}
+
+//=================================================================================================
+// zmienia tylko pozycjê bo ta funkcja jest wywo³ywana przy opuszczaniu miasta
+void Level::WarpToInn(Unit& unit)
+{
+	assert(city_ctx);
+
+	int id;
+	InsideBuilding* inn = city_ctx->FindInn(id);
+
+	WarpToArea(inn->ctx, (Rand() % 5 == 0 ? inn->arena2 : inn->arena1), unit.GetUnitRadius(), unit.pos, 20);
+	unit.visual_pos = unit.pos;
+	unit.in_building = id;
+}
+
+//=================================================================================================
+Trap* Level::CreateTrap(Int2 pt, TRAP_TYPE type, bool timed)
+{
+	struct TrapLocation
+	{
+		Int2 pt;
+		int dist, dir;
+	};
+
+	Trap* t = new Trap;
+	Trap& trap = *t;
+	local_ctx.traps->push_back(t);
+
+	auto& base = BaseTrap::traps[type];
+	trap.base = &base;
+	trap.hitted = nullptr;
+	trap.state = 0;
+	trap.pos = Vec3(2.f*pt.x + Random(trap.base->rw, 2.f - trap.base->rw), 0.f, 2.f*pt.y + Random(trap.base->h, 2.f - trap.base->h));
+	trap.obj.base = nullptr;
+	trap.obj.mesh = trap.base->mesh;
+	trap.obj.pos = trap.pos;
+	trap.obj.scale = 1.f;
+	trap.netid = Trap::netid_counter++;
+
+	if(type == TRAP_ARROW || type == TRAP_POISON)
+	{
+		trap.obj.rot = Vec3(0, 0, 0);
+
+		static vector<TrapLocation> possible;
+
+		InsideLocationLevel& lvl = ((InsideLocation*)location)->GetLevelData();
+
+		// ustal tile i dir
+		for(int i = 0; i < 4; ++i)
+		{
+			bool ok = false;
+			int j;
+
+			for(j = 1; j <= 10; ++j)
+			{
+				if(czy_blokuje2(lvl.map[pt.x + g_kierunek2[i].x*j + (pt.y + g_kierunek2[i].y*j)*lvl.w]))
+				{
+					if(j != 1)
+						ok = true;
+					break;
+				}
+			}
+
+			if(ok)
+			{
+				trap.tile = pt + g_kierunek2[i] * j;
+
+				if(Game::Get().CanShootAtLocation(Vec3(trap.pos.x + (2.f*j - 1.2f)*g_kierunek2[i].x, 1.f, trap.pos.z + (2.f*j - 1.2f)*g_kierunek2[i].y),
+					Vec3(trap.pos.x, 1.f, trap.pos.z)))
+				{
+					TrapLocation& tr = Add1(possible);
+					tr.pt = trap.tile;
+					tr.dist = j;
+					tr.dir = i;
+				}
+			}
+		}
+
+		if(!possible.empty())
+		{
+			if(possible.size() > 1)
+			{
+				std::sort(possible.begin(), possible.end(), [](TrapLocation& pt1, TrapLocation& pt2)
+				{
+					return abs(pt1.dist - 5) < abs(pt2.dist - 5);
+				});
+			}
+
+			trap.tile = possible[0].pt;
+			trap.dir = possible[0].dir;
+
+			possible.clear();
+		}
+		else
+		{
+			local_ctx.traps->pop_back();
+			delete t;
+			return nullptr;
+		}
+	}
+	else if(type == TRAP_SPEAR)
+	{
+		trap.obj.rot = Vec3(0, Random(MAX_ANGLE), 0);
+		trap.obj2.base = nullptr;
+		trap.obj2.mesh = trap.base->mesh2;
+		trap.obj2.pos = trap.obj.pos;
+		trap.obj2.rot = trap.obj.rot;
+		trap.obj2.scale = 1.f;
+		trap.obj2.pos.y -= 2.f;
+		trap.hitted = new vector<Unit*>;
+	}
+	else
+	{
+		trap.obj.rot = Vec3(0, PI / 2 * (Rand() % 4), 0);
+		trap.obj.base = &Game::Get().obj_alpha;
+	}
+
+	if(timed)
+	{
+		trap.state = -1;
+		trap.time = 2.f;
+	}
+
+	return &trap;
 }

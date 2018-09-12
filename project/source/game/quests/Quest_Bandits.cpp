@@ -60,8 +60,6 @@ GameDialog* Quest_Bandits::GetDialog(int type2)
 //=================================================================================================
 void WarpToThroneBanditBoss()
 {
-	Game& game = Game::Get();
-
 	// search for boss
 	UnitData* ud = UnitData::Get("q_bandyci_szef");
 	Unit* u = nullptr;
@@ -80,7 +78,7 @@ void WarpToThroneBanditBoss()
 	assert(use);
 
 	// warp boss to throne
-	game.WarpUnit(*u, use->pos);
+	L.WarpUnit(*u, use->pos);
 }
 
 //=================================================================================================

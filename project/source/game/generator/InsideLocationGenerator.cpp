@@ -286,7 +286,6 @@ InsideLocationLevel& InsideLocationGenerator::GetLevelData()
 //=================================================================================================
 void InsideLocationGenerator::GenerateTraps()
 {
-	Game& game = Game::Get();
 	BaseLocation& base = g_base_locations[inside->target];
 
 	if(!IS_SET(base.traps, TRAPS_NORMAL | TRAPS_MAGIC))
@@ -380,7 +379,7 @@ void InsideLocationGenerator::GenerateTraps()
 				&& !OR2_EQ(lvl.map[x + (y + 1)*lvl.w].type, SCHODY_DOL, SCHODY_GORA))
 			{
 				if(Rand() % 500 < szansa + max(0, 30 - Int2::Distance(pt, Int2(x, y))))
-					game.CreateTrap(Int2(x, y), traps[Rand() % traps.size()]);
+					L.CreateTrap(Int2(x, y), traps[Rand() % traps.size()]);
 			}
 		}
 	}
@@ -508,7 +507,7 @@ void InsideLocationGenerator::RegenerateTraps()
 					}
 
 					if(ok)
-						game.CreateTrap(Int2(x, y), TRAP_FIREBALL);
+						L.CreateTrap(Int2(x, y), TRAP_FIREBALL);
 				}
 			}
 		}

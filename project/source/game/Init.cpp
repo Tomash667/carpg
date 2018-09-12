@@ -754,18 +754,6 @@ void Game::AddLoadTasks()
 		else
 			ud.mesh = aHumanBase;
 
-		// sounds
-		SoundPack& sounds = *ud.sounds;
-		if(!nosound && !sounds.inited)
-		{
-			sounds.inited = true;
-			for(int i = 0; i < SOUND_MAX; ++i)
-			{
-				if(!sounds.filename[i].empty())
-					sounds.sound[i] = sound_mgr.Get(sounds.filename[i]);
-			}
-		}
-
 		// textures
 		if(ud.tex && !ud.tex->inited)
 		{
@@ -803,10 +791,6 @@ void Game::AddLoadTasks()
 		sound_mgr.AddLoadTask("cloth-heavy.wav", sItem[5]); // shield
 		sound_mgr.AddLoadTask("sword-unsheathe.wav", sItem[6]); // weapon
 		sound_mgr.AddLoadTask("interface3.wav", sItem[7]);
-		sound_mgr.AddLoadTask("hello-3.mp3", sTalk[0]);
-		sound_mgr.AddLoadTask("hello-4.mp3", sTalk[1]);
-		sound_mgr.AddLoadTask("hmph.wav", sTalk[2]);
-		sound_mgr.AddLoadTask("huh-2.mp3", sTalk[3]);
 		sound_mgr.AddLoadTask("chest_open.mp3", sChestOpen);
 		sound_mgr.AddLoadTask("chest_close.mp3", sChestClose);
 		sound_mgr.AddLoadTask("door_budge.mp3", sDoorBudge);
@@ -826,10 +810,6 @@ void Game::AddLoadTasks()
 		sound_mgr.AddLoadTask("arena_porazka.mp3", sArenaLost);
 		sound_mgr.AddLoadTask("unlock.mp3", sUnlock);
 		sound_mgr.AddLoadTask("TouchofDeath.ogg", sEvil);
-		sound_mgr.AddLoadTask("shade8.wav", sXarTalk);
-		sound_mgr.AddLoadTask("ogre1.wav", sOrcTalk);
-		sound_mgr.AddLoadTask("goblin-7.wav", sGoblinTalk);
-		sound_mgr.AddLoadTask("golem_alert.mp3", sGolemTalk);
 		sound_mgr.AddLoadTask("eat.mp3", sEat);
 		sound_mgr.AddLoadTask("whooshy-puff.wav", sSummon);
 	}

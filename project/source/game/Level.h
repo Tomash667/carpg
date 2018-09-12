@@ -105,6 +105,11 @@ public:
 	bool CollideWithStairsRect(const CollisionObject& co, const Box2d& box) const;
 	void CreateBlood(LevelContext& ctx, const Unit& unit, bool fully_created = false);
 	void SpawnBlood();
+	void WarpUnit(Unit& unit, const Vec3& pos);
+	bool WarpToArea(LevelContext& ctx, const Box2d& area, float radius, Vec3& pos, int tries = 10);
+	void WarpToInn(Unit& unit);
+	// zwraca tymczasowy wskaŸnik na stworzon¹ pu³apkê lub nullptr (mo¿e siê nie udaæ tylko dla ARROW i POISON)
+	Trap* CreateTrap(Int2 pt, TRAP_TYPE type, bool timed = false);
 
 	Location* location; // same as W.current_location
 	int location_index; // same as W.current_location_index

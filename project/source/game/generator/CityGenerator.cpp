@@ -2673,8 +2673,6 @@ void CityGenerator::RemoveTemporaryUnits()
 //=================================================================================================
 void CityGenerator::RepositionUnits()
 {
-	Game& game = Game::Get();
-
 	const int a = int(0.15f*OutsideLocation::size) + 3;
 	const int b = int(0.85f*OutsideLocation::size) - 3;
 
@@ -2692,7 +2690,7 @@ void CityGenerator::RepositionUnits()
 		if(u.IsAlive() && u.IsAI())
 		{
 			if(u.ai->goto_inn)
-				game.WarpToArea(inn->ctx, (Rand() % 5 == 0 ? inn->arena2 : inn->arena1), u.GetUnitRadius(), u.pos);
+				L.WarpToArea(inn->ctx, (Rand() % 5 == 0 ? inn->arena2 : inn->arena1), u.GetUnitRadius(), u.pos);
 			else if(u.data == citizen || u.data == guard)
 			{
 				for(int j = 0; j < 50; ++j)
@@ -2700,7 +2698,7 @@ void CityGenerator::RepositionUnits()
 					Int2 pt(Random(a, b), Random(a, b));
 					if(city->tiles[pt(OutsideLocation::size)].IsRoadOrPath())
 					{
-						game.WarpUnit(u, Vec3(2.f*pt.x + 1, 0, 2.f*pt.y + 1));
+						L.WarpUnit(u, Vec3(2.f*pt.x + 1, 0, 2.f*pt.y + 1));
 						break;
 					}
 				}

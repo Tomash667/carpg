@@ -3315,8 +3315,8 @@ void Unit::CreateMesh(CREATE_MESH mode)
 					auto& sound_mgr = ResourceManager::Get<Sound>();
 					for(int i = 0; i<SLOT_MAX; ++i)
 					{
-						if(data->sounds->sound[i])
-							sound_mgr.AddLoadTask(data->sounds->sound[i]);
+						for(SoundPtr sound : data->sounds->sounds[i])
+							sound_mgr.AddLoadTask(sound);
 					}
 				}
 				if(data->tex)
@@ -3344,8 +3344,8 @@ void Unit::CreateMesh(CREATE_MESH mode)
 				auto& sound_mgr = ResourceManager::Get<Sound>();
 				for(int i = 0; i<SLOT_MAX; ++i)
 				{
-					if(data->sounds->sound[i])
-						sound_mgr.Load(data->sounds->sound[i]);
+					for(SoundPtr sound : data->sounds->sounds[i])
+						sound_mgr.Load(sound);
 				}
 			}
 			if(data->tex)
@@ -3853,7 +3853,7 @@ void Unit::Standup()
 			ai->timer = Random(2.f, 5.f);
 		}
 
-		Game::Get().WarpUnit(*this, pos);
+		L.WarpUnit(*this, pos);
 	}
 }
 
@@ -3959,10 +3959,10 @@ void Unit::Die(LevelContext* ctx, Unit* killer)
 
 	// dŸwiêk
 	SOUND snd = nullptr;
-	if(data->sounds->sound[SOUND_DEATH])
-		snd = data->sounds->sound[SOUND_DEATH]->sound;
-	else if(data->sounds->sound[SOUND_PAIN])
-		snd = data->sounds->sound[SOUND_PAIN]->sound;
+	if(data->sounds->Have(SOUND_DEATH))
+		snd = data->sounds->Random(SOUND_DEATH)->sound;
+	else if(data->sounds->Have(SOUND_PAIN))
+		snd = data->sounds->Random(SOUND_PAIN)->sound;
 	if(snd)
 		PlaySound(snd, 2.f);
 
@@ -4063,4 +4063,12 @@ void Unit::UpdatePhysics(const Vec3& pos)
 	cobj->getWorldTransform().setOrigin(bpos);
 	cobj->getCollisionShape()->getAabb(cobj->getWorldTransform(), a_min, a_max);
 	game.phy_broadphase->setAabb(cobj->getBroadphaseHandle(), a_min, a_max, game.phy_dispatcher);
+}
+
+//=================================================================================================
+SOUND Unit::GetTalkSound() const
+{
+	if(data->sounds->Have(SOUND_TALK))
+		return data->sounds->Random(SOUND_TALK)->sound;
+	return nullptr;
 }
