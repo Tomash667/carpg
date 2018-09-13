@@ -90,7 +90,7 @@ void MpBox::OnInput(const string& str)
 			f.WriteCasted<byte>(game.my_id);
 			f << str;
 			N.peer->Send(&game.net_stream, MEDIUM_PRIORITY, RELIABLE, 0, Net::IsServer() ? UNASSIGNED_SYSTEM_ADDRESS : game.server, Net::IsServer());
-			game.StreamWrite(game.net_stream, Stream_Chat, Net::IsServer() ? UNASSIGNED_SYSTEM_ADDRESS : game.server);
+			N.StreamWrite(game.net_stream, Stream_Chat, Net::IsServer() ? UNASSIGNED_SYSTEM_ADDRESS : game.server);
 		}
 		// add text
 		cstring s = Format("%s: %s", game.player_name.c_str(), str.c_str());

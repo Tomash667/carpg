@@ -247,6 +247,7 @@ void Game::LoadLanguageFiles()
 	SetHeroNames();
 	SetGameText();
 	SetStatsText();
+	N.LoadLanguage();
 
 	txLoadGuiTextures = Str("loadGuiTextures");
 	txLoadParticles = Str("loadParticles");
@@ -436,7 +437,7 @@ void Game::StartGameMode()
 			Warn("Quickstart: Can't create server, no player nick.");
 			break;
 		}
-		if(server_name.empty())
+		if(N.server_name.empty())
 		{
 			Warn("Quickstart: Can't create server, no server name.");
 			break;
@@ -465,7 +466,7 @@ void Game::StartGameMode()
 
 		try
 		{
-			InitServer();
+			N.InitServer();
 		}
 		catch(cstring err)
 		{

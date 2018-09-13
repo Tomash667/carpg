@@ -496,8 +496,8 @@ void Game::SaveGame(GameWriter& f)
 
 	if(Net::IsOnline())
 	{
-		f << server_name;
-		f << server_pswd;
+		f << N.server_name;
+		f << N.password;
 		f << N.active_players;
 		f << N.max_players;
 		f << last_id;
@@ -1040,8 +1040,8 @@ void Game::LoadGame(GameReader& f)
 
 	if(mp_load)
 	{
-		f >> server_name;
-		f >> server_pswd;
+		f >> N.server_name;
+		f >> N.password;
 		f >> N.active_players;
 		f >> N.max_players;
 		f >> last_id;

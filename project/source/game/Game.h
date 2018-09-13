@@ -409,7 +409,7 @@ public:
 		txInvalidPswd, txCantJoin2, txServerFull, txInvalidData, txNickUsed, txInvalidVersion, txInvalidVersion2, txInvalidNick, txGeneratingWorld, txLoadedWorld, txWorldDataError, txLoadedPlayer,
 		txPlayerDataError, txGeneratingLocation, txLoadingLocation, txLoadingLocationError, txLoadingChars, txLoadingCharsError, txSendingWorld, txMpNPCLeft, txLoadingLevel, txDisconnecting,
 		txLost, txLeft, txLost2, txUnconnected, txDisconnected, txClosing, txKicked, txUnknown, txUnknown2, txWaitingForServer, txStartingGame, txPreparingWorld, txInvalidCrc;
-	cstring txCreateServerFailed, txInitConnectionFailed, txServer, txYouAreLeader, txRolledNumber, txPcIsLeader, txReceivedGold, txYouDisconnected, txYouKicked,
+	cstring txServer, txYouAreLeader, txRolledNumber, txPcIsLeader, txReceivedGold, txYouDisconnected, txYouKicked,
 		txGamePaused, txGameResumed, txDevmodeOn, txDevmodeOff, txPlayerLeft, txPlayerDisconnected, txPlayerQuit, txPlayerKicked, txServerClosed;
 	cstring txYell[3];
 	cstring txHaveErrors;
@@ -1034,15 +1034,13 @@ public:
 
 	//-----------------------------------------------------------------
 	// MULTIPLAYER
-	string server_name, player_name, server_pswd, server_ip, enter_pswd, server_name2;
-	uint autostart_count;//, kick_timer;
+	string player_name, server_ip, enter_pswd, server_name2;
+	uint autostart_count;
 	int max_players2;
 	int my_id; // moje unikalne id
 	int last_id;
 	int last_startup_id;
-	bool sv_startup, was_client, players_left;
-	BitStream server_info;
-	vector<byte> packet_data;
+	bool was_client, players_left;
 	vector<PlayerInfo*> old_players;
 	SystemAddress server;
 	int leader_id, kick_id;
@@ -1084,7 +1082,6 @@ public:
 	bool mp_load, mp_load_worldmap, mp_use_interp;
 	float mp_interp;
 	float interpolate_timer;
-	int mp_port;
 	bool paused, pick_autojoin;
 
 	// zwraca czy pozycja siê zmieni³a
@@ -1092,8 +1089,6 @@ public:
 	void InterpolateUnits(float dt);
 	void InterpolatePlayers(float dt);
 
-	void InitServer();
-	void InitClient();
 	int GetPlayerIndex(int id);
 	void AddServerMsg(cstring msg);
 	void KickPlayer(PlayerInfo& info);
@@ -1121,8 +1116,6 @@ public:
 	void Server_Whisper(BitStreamReader& f, PlayerInfo& info, Packet* packet);
 	void ServerProcessUnits(vector<Unit*>& units);
 	GroundItem* FindItemNetid(int netid, LevelContext** ctx = nullptr);
-	PlayerInfo& GetPlayerInfo(int id);
-	PlayerInfo* GetPlayerInfoTry(int id);
 	void UpdateWarpData(float dt);
 	void Net_SpawnUnit(Unit* unit)
 	{
@@ -1170,32 +1163,6 @@ public:
 	void RemovePlayer(PlayerInfo& info);
 	void ClosePeer(bool wait = false);
 	void DeleteOldPlayers();
-
-	BitStream& StreamStart(Packet* packet, StreamLogType type);
-	void StreamEnd();
-	void StreamError();
-	template<typename... Args>
-	inline void StreamError(cstring msg, const Args&... args)
-	{
-		Error(msg, args...);
-		StreamError();
-	}
-	void StreamWrite(vector<byte>& data, StreamLogType type, const SystemAddress& adr)
-	{
-		StreamWrite(data.data(), data.size(), type, adr);
-	}
-	void StreamWrite(BitStream& data, StreamLogType type, const SystemAddress& adr)
-	{
-		StreamWrite(data.GetData(), data.GetNumberOfBytesUsed(), type, adr);
-	}
-	void StreamWrite(Packet* packet, StreamLogType type, const SystemAddress& adr)
-	{
-		StreamWrite(packet->data, packet->length, type, adr);
-	}
-	void StreamWrite(const void* data, uint size, StreamLogType type, const SystemAddress& adr);
-
-	BitStream current_stream;
-	Packet* current_packet;
 
 	//-----------------------------------------------------------------
 	// WORLD MAP

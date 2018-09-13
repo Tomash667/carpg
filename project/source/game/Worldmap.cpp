@@ -39,6 +39,7 @@
 #include "Quest_Tournament.h"
 #include "LocationGeneratorFactory.h"
 #include "Texture.h"
+#include "BitStreamFunc.h"
 
 extern Matrix m1, m2, m3, m4;
 
@@ -104,13 +105,12 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 
 	if(Net::IsOnline() && N.active_players > 1)
 	{
-		packet_data.resize(4);
-		packet_data[0] = ID_CHANGE_LEVEL;
-		packet_data[1] = (byte)L.location_index;
-		packet_data[2] = 0;
-		packet_data[3] = (W.GetState() == World::State::INSIDE_ENCOUNTER ? 1 : 0);
-		int ack = N.peer->Send((cstring)&packet_data[0], 4, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
-		StreamWrite(packet_data, Stream_TransferServer, UNASSIGNED_SYSTEM_ADDRESS);
+		BitStreamWriter f;
+		f << ID_CHANGE_LEVEL;
+		f << (byte)L.location_index;
+		f << (byte)0;
+		f << (W.GetState() == World::State::INSIDE_ENCOUNTER);
+		int ack = N.SendAll(f, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT, Stream_TransferServer);
 		for(auto info : N.players)
 		{
 			if(info->id == my_id)

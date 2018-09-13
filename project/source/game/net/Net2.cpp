@@ -4,13 +4,21 @@
 #include "BitStreamFunc.h"
 #include "Version.h"
 #include "Level.h"
+#include "Language.h"
+#include "ErrorHandler.h"
 #include "Game.h"
 
 Net N;
 const float CHANGE_LEVEL_TIMER = 5.f;
 
-Net::Net() : peer(nullptr)
+Net::Net() : peer(nullptr), current_packet(nullptr)
 {
+}
+
+void Net::LoadLanguage()
+{
+	txCreateServerFailed = Str("createServerFailed");
+	txInitConnectionFailed = Str("initConnectionFailed");
 }
 
 void Net::Cleanup()
@@ -59,7 +67,40 @@ PlayerInfo* Net::TryGetPlayer(int id)
 void Net::Send(BitStreamWriter& f, PacketPriority priority, PacketReliability reliability, const SystemAddress& adr, StreamLogType type)
 {
 	peer->Send(&f.GetBitStream(), priority, reliability, 0, adr, false);
-	Game::Get().StreamWrite(f.GetBitStream(), type, adr);
+	StreamWrite(f.GetBitStream(), type, adr);
+}
+
+//=================================================================================================
+void Net::InitServer()
+{
+	Info("Creating server (port %d)...", port);
+
+	if(!peer)
+		peer = RakPeerInterface::GetInstance();
+
+	SocketDescriptor sd(port, 0);
+	sd.socketFamily = AF_INET;
+	StartupResult r = peer->Startup(max_players + 4, &sd, 1);
+	if(r != RAKNET_STARTED)
+	{
+		Error("Failed to create server: RakNet error %d.", r);
+		throw Format(txCreateServerFailed, r);
+	}
+
+	if(!password.empty())
+	{
+		Info("Set server password.");
+		peer->SetIncomingPassword(password.c_str(), password.length());
+	}
+
+	peer->SetMaximumIncomingConnections((word)max_players + 4);
+	DEBUG_DO(peer->SetTimeoutTime(60 * 60 * 1000, UNASSIGNED_SYSTEM_ADDRESS));
+
+	Info("Server created. Waiting for connection.");
+
+	SetMode(Mode::Server);
+	starting = false;
+	Info("sv_online = true");
 }
 
 //=================================================================================================
@@ -81,12 +122,12 @@ void Net::UpdateServerInfo()
 	f.WriteCasted<byte>(active_players);
 	f.WriteCasted<byte>(max_players);
 	byte flags = 0;
-	if(!game.server_pswd.empty())
+	if(!password.empty())
 		flags |= SERVER_PASSWORD;
 	if(game.mp_load)
 		flags |= SERVER_SAVED;
 	f.WriteCasted<byte>(flags);
-	f << game.server_name;
+	f << server_name;
 
 	peer->SetOfflinePingResponse(f.GetData(), f.GetSize());
 }
@@ -116,10 +157,75 @@ void Net::OnChangeLevel(int level)
 
 uint Net::SendAll(BitStreamWriter& f, PacketPriority priority, PacketReliability reliability, StreamLogType type)
 {
-	Game& game = Game::Get();
 	if(active_players <= 1)
 		return 0;
 	uint ack = peer->Send(&f.GetBitStream(), priority, reliability, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
-	game.StreamWrite(f.GetBitStream(), type, UNASSIGNED_SYSTEM_ADDRESS);
+	StreamWrite(f.GetBitStream(), type, UNASSIGNED_SYSTEM_ADDRESS);
 	return ack;
+}
+
+//=================================================================================================
+void Net::InitClient()
+{
+	Info("Initlializing client...");
+
+	if(!peer)
+		peer = RakPeerInterface::GetInstance();
+
+	SocketDescriptor sd;
+	sd.socketFamily = AF_INET;
+	StartupResult r = peer->Startup(1, &sd, 1);
+	if(r != RAKNET_STARTED)
+	{
+		Error("Failed to create client: RakNet error %d.", r);
+		throw Format(txInitConnectionFailed, r);
+	}
+	peer->SetMaximumIncomingConnections(0);
+
+	SetMode(Mode::Client);
+	Info("sv_online = true");
+
+	DEBUG_DO(peer->SetTimeoutTime(60 * 60 * 1000, UNASSIGNED_SYSTEM_ADDRESS));
+}
+
+//=================================================================================================
+BitStream& Net::StreamStart(Packet* packet, StreamLogType type)
+{
+	assert(packet);
+	assert(!current_packet);
+	if(current_packet)
+		StreamError("Unclosed stream.");
+
+	current_packet = packet;
+	current_stream.~BitStream();
+	new((void*)&current_stream)BitStream(packet->data, packet->length, false);
+	ErrorHandler::Get().StreamStart(current_packet, (int)type);
+
+	return current_stream;
+}
+
+//=================================================================================================
+void Net::StreamEnd()
+{
+	if(!current_packet)
+		return;
+
+	ErrorHandler::Get().StreamEnd(true);
+	current_packet = nullptr;
+}
+
+//=================================================================================================
+void Net::StreamError()
+{
+	if(!current_packet)
+		return;
+
+	ErrorHandler::Get().StreamEnd(false);
+	current_packet = nullptr;
+}
+
+//=================================================================================================
+void Net::StreamWrite(const void* data, uint size, StreamLogType type, const SystemAddress& adr)
+{
+	ErrorHandler::Get().StreamWrite(data, size, type, adr);
 }

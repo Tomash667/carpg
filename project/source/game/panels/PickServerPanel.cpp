@@ -84,14 +84,14 @@ void PickServerPanel::Update(float dt)
 	if(ping_timer < 0.f)
 	{
 		ping_timer = 1.f;
-		N.peer->Ping("255.255.255.255", (word)game->mp_port, true);
+		N.peer->Ping("255.255.255.255", (word)N.port, true);
 	}
 
 	// listen for packets
 	Packet* packet;
 	for(packet = N.peer->Receive(); packet; N.peer->DeallocatePacket(packet), packet = N.peer->Receive())
 	{
-		BitStream& stream = game->StreamStart(packet, Stream_PickServer);
+		BitStream& stream = N.StreamStart(packet, Stream_PickServer);
 		BitStreamReader reader(stream);
 		byte msg_id;
 		reader >> msg_id;
@@ -107,14 +107,14 @@ void PickServerPanel::Update(float dt)
 				reader >> sign;
 				if(!reader)
 				{
-					game->StreamError("PickServer: Broken packet from %s.", packet->systemAddress.ToString());
+					N.StreamError("PickServer: Broken packet from %s.", packet->systemAddress.ToString());
 					break;
 				}
 				if(sign[0] != 'C' || sign[1] != 'A')
 				{
 					Warn("PickServer: Unknown response from %s, this is not CaRpg server (0x%x%x).",
 						packet->systemAddress.ToString(), byte(sign[0]), byte(sign[1]));
-					game->StreamError();
+					N.StreamError();
 					break;
 				}
 
@@ -129,7 +129,7 @@ void PickServerPanel::Update(float dt)
 				if(!reader)
 				{
 					Warn("PickServer: Broken response from %.", packet->systemAddress.ToString());
-					game->StreamError();
+					N.StreamError();
 					break;
 				}
 
@@ -192,11 +192,11 @@ void PickServerPanel::Update(float dt)
 			break;
 		default:
 			Warn("PickServer: Unknown packet %d from %s.", msg_id, packet->systemAddress.ToString());
-			game->StreamError();
+			N.StreamError();
 			break;
 		}
 
-		game->StreamEnd();
+		N.StreamEnd();
 	}
 
 	// update servers
@@ -254,7 +254,7 @@ void PickServerPanel::Show()
 {
 	try
 	{
-		game->InitClient();
+		N.InitClient();
 	}
 	catch(cstring err)
 	{
@@ -263,7 +263,7 @@ void PickServerPanel::Show()
 	}
 
 	Info("Pinging servers.");
-	N.peer->Ping("255.255.255.255", (word)game->mp_port, true);
+	N.peer->Ping("255.255.255.255", (word)N.port, true);
 
 	ping_timer = 1.f;
 	servers.clear();

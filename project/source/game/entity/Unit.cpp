@@ -1952,7 +1952,7 @@ bool Unit::Read(BitStreamReader& f)
 			Error("Invalid player %d free days %d.", player->id, player->free_days);
 			return false;
 		}
-		PlayerInfo* info = game.GetPlayerInfoTry(player->id);
+		PlayerInfo* info = N.TryGetPlayer(player->id);
 		if(!info)
 		{
 			Error("Invalid player id %d.", player->id);

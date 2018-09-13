@@ -133,6 +133,7 @@ public:
 	static vector<NetChange> changes;
 
 	Net();
+	void LoadLanguage();
 	void Cleanup();
 
 	//****************************************************************************
@@ -147,23 +148,54 @@ public:
 
 	RakPeerInterface* peer;
 	vector<PlayerInfo*> players; // contains players that left too
+	int port;
 
 	//****************************************************************************
 	// Server
 	//****************************************************************************
 public:
+	void InitServer();
 	void UpdateServerInfo();
 	void OnChangeLevel(int level);
 	uint SendAll(BitStreamWriter& f, PacketPriority priority, PacketReliability reliability, StreamLogType type);
 
 	uint active_players, max_players;
+	string server_name, password;
+	bool starting;
 
 	//****************************************************************************
 	// Client
 	//****************************************************************************
+	void InitClient();
 
 	//****************************************************************************
+	BitStream& StreamStart(Packet* packet, StreamLogType type);
+	void StreamEnd();
+	void StreamError();
+	template<typename... Args>
+	inline void StreamError(cstring msg, const Args&... args)
+	{
+		Error(msg, args...);
+		StreamError();
+	}
+	void StreamWrite(vector<byte>& data, StreamLogType type, const SystemAddress& adr)
+	{
+		StreamWrite(data.data(), data.size(), type, adr);
+	}
+	void StreamWrite(BitStream& data, StreamLogType type, const SystemAddress& adr)
+	{
+		StreamWrite(data.GetData(), data.GetNumberOfBytesUsed(), type, adr);
+	}
+	void StreamWrite(Packet* packet, StreamLogType type, const SystemAddress& adr)
+	{
+		StreamWrite(packet->data, packet->length, type, adr);
+	}
+	void StreamWrite(const void* data, uint size, StreamLogType type, const SystemAddress& adr);
+
 private:
 	static Mode mode;
+	BitStream current_stream;
+	Packet* current_packet;
+	cstring txCreateServerFailed, txInitConnectionFailed;
 };
 extern Net N;

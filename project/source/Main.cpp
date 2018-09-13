@@ -672,10 +672,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	game.player_name = cfg.GetString("nick", "");
 #define LIMIT(x) if(x.length() > 16) x = x.substr(0,16)
 	LIMIT(game.player_name);
-	game.server_name = cfg.GetString("server_name", "");
-	LIMIT(game.server_name);
-	game.server_pswd = cfg.GetString("server_pswd", "");
-	LIMIT(game.server_pswd);
+	N.server_name = cfg.GetString("server_name", "");
+	LIMIT(N.server_name);
+	N.password = cfg.GetString("server_pswd", "");
+	LIMIT(N.password);
 	N.max_players = Clamp(cfg.GetUint("server_players", DEFAULT_PLAYERS), MIN_PLAYERS, MAX_PLAYERS);
 	game.server_ip = cfg.GetString("server_ip", "");
 	game.mp_timeout = Clamp(cfg.GetFloat("timeout", 10.f), 1.f, 3600.f);
@@ -729,8 +729,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	if(game.autostart_count > MAX_PLAYERS)
 		game.autostart_count = 0;
 
-	//game.kick_timer = max(0, cfg.GetInt("kick_timer", 900));
-	game.mp_port = Clamp(cfg.GetInt("port", PORT), 0, 0xFFFF);
+	N.port = Clamp(cfg.GetInt("port", PORT), 0, 0xFFFF);
 
 	// autopicked class in quickstart
 	{

@@ -1085,7 +1085,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							f << ID_SERVER_SAY;
 							f << text;
 							N.peer->Send(&net_stream, MEDIUM_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
-							StreamWrite(net_stream, Stream_Chat, UNASSIGNED_SYSTEM_ADDRESS);
+							N.StreamWrite(net_stream, Stream_Chat, UNASSIGNED_SYSTEM_ADDRESS);
 						}
 						AddServerMsg(text.c_str());
 						Info("SERWER: %s", text.c_str());
@@ -1228,7 +1228,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					break;
 				case CMD_START:
 					{
-						if(sv_startup)
+						if(N.starting)
 						{
 							Msg("Server is already starting.");
 							break;
@@ -1249,7 +1249,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						{
 							// rozpocznij odliczanie do startu
 							extern const int STARTUP_TIMER;
-							sv_startup = true;
+							N.starting = true;
 							last_startup_id = STARTUP_TIMER;
 							startup_timer = float(STARTUP_TIMER);
 							BitStreamWriter f;
@@ -1277,7 +1277,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							N.SendAll(f, MEDIUM_PRIORITY, RELIABLE, Stream_Chat);
 						else
 							N.Send(f, MEDIUM_PRIORITY, RELIABLE, server, Stream_Chat);
-						StreamWrite(net_stream, Stream_Chat, Net::IsServer() ? UNASSIGNED_SYSTEM_ADDRESS : server);
+						N.StreamWrite(net_stream, Stream_Chat, Net::IsServer() ? UNASSIGNED_SYSTEM_ADDRESS : server);
 						cstring s = Format("%s: %s", N.GetMe().name.c_str(), text.c_str());
 						AddMsg(s);
 						Info(s);
@@ -1474,7 +1474,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 				case CMD_QS:
 					if(Net::IsServer())
 					{
-						if(!sv_startup)
+						if(!N.starting)
 						{
 							PlayerInfo& info = N.GetMe();
 							if(!info.ready)
@@ -1503,14 +1503,13 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							{
 								// rozpocznij odliczanie do startu
 								extern const int STARTUP_TIMER;
-								sv_startup = true;
+								N.starting = true;
 								last_startup_id = STARTUP_TIMER;
 								startup_timer = float(STARTUP_TIMER);
-								packet_data.resize(2);
-								packet_data[0] = ID_TIMER;
-								packet_data[1] = (byte)STARTUP_TIMER;
-								N.peer->Send((cstring)&packet_data[0], 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
-								StreamWrite(&packet_data[0], 2, Stream_UpdateLobbyServer, UNASSIGNED_SYSTEM_ADDRESS);
+								BitStreamWriter f;
+								f << ID_TIMER;
+								f << (byte)STARTUP_TIMER;
+								N.SendAll(f, IMMEDIATE_PRIORITY, RELIABLE, Stream_UpdateLobbyServer);
 							}
 							else
 								Msg(error_text);
