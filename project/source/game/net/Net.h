@@ -63,6 +63,25 @@ enum class NetState
 };
 
 //-----------------------------------------------------------------------------
+enum StreamLogType
+{
+	Stream_None,
+	Stream_PickServer,
+	Stream_PingIp,
+	Stream_Connect,
+	Stream_Quitting,
+	Stream_QuittingServer,
+	Stream_Transfer,
+	Stream_TransferServer,
+	Stream_ServerSend,
+	Stream_UpdateLobbyServer,
+	Stream_UpdateLobbyClient,
+	Stream_UpdateGameServer,
+	Stream_UpdateGameClient,
+	Stream_Chat
+};
+
+//-----------------------------------------------------------------------------
 class Net
 {
 public:
@@ -120,21 +139,30 @@ public:
 	// Common
 	//****************************************************************************
 public:
+	PlayerInfo& GetMe() { return *players[0]; }
+	PlayerInfo* FindPlayer(Cstring nick);
+	PlayerInfo* FindPlayer(const SystemAddress& adr);
+	PlayerInfo* TryGetPlayer(int id);
+	void Send(BitStreamWriter& f, PacketPriority priority, PacketReliability reliability, const SystemAddress& adr, StreamLogType type);
+
 	RakPeerInterface* peer;
-	
+	vector<PlayerInfo*> players; // contains players that left too
+
 	//****************************************************************************
 	// Server
 	//****************************************************************************
 public:
 	void UpdateServerInfo();
+	void OnChangeLevel(int level);
+	uint SendAll(BitStreamWriter& f, PacketPriority priority, PacketReliability reliability, StreamLogType type);
 
-private:
-	BitStream server_info;
+	uint active_players, max_players;
 
 	//****************************************************************************
 	// Client
 	//****************************************************************************
 
+	//****************************************************************************
 private:
 	static Mode mode;
 };

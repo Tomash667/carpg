@@ -3,6 +3,7 @@
 #include "PlayerInfo.h"
 #include "SaveState.h"
 #include "NetChangePlayer.h"
+#include "Net.h"
 
 //=================================================================================================
 PlayerInfo::PlayerInfo() : pc(nullptr), u(nullptr), clas(Class::INVALID), left(LEFT_NO), update_flags(0), ready(false), loaded(false), warping(false)
@@ -49,4 +50,17 @@ void PlayerInfo::Load(FileReader& f)
 	if(old_left == 0 || old_left == -1)
 		left = LEFT_NO;
 	loaded = false;
+}
+
+//=================================================================================================
+int PlayerInfo::GetIndex() const
+{
+	int index = 0;
+	for(PlayerInfo* info : N.players)
+	{
+		if(info == this)
+			return index;
+		++index;
+	}
+	return -1;
 }

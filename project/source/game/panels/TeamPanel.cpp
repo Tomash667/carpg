@@ -468,11 +468,7 @@ void TeamPanel::OnKick(int id)
 	if(!Team.IsTeamMember(*target))
 		SimpleDialog(txAlreadyLeft);
 	else
-	{
-		int index = game.GetPlayerIndex(target->player->id);
-		if(index != -1)
-			game.KickPlayer(index);
-	}
+		game.KickPlayer(*target->player->player_info);
 }
 
 //=================================================================================================

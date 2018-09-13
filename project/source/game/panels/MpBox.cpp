@@ -81,7 +81,7 @@ void MpBox::OnInput(const string& str)
 		game.ParseCommand(str.substr(1), PrintMsgFunc(&game, &Game::AddMultiMsg), PS_CHAT);
 	else
 	{
-		if(Net::IsOnline() && game.players != 1)
+		if(Net::IsOnline() && N.active_players != 1)
 		{
 			// send text to server / other players
 			game.net_stream.Reset();

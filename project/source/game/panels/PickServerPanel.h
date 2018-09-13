@@ -12,7 +12,7 @@ public:
 	{
 		string name;
 		SystemAddress adr;
-		int players, max_players;
+		uint active_players, max_players;
 		int flags;
 		float timer;
 		bool valid_version;

@@ -47,7 +47,7 @@ struct PlayerInfo
 	int id, ack, update_flags, buffs;
 	SystemAddress adr;
 	float timer, update_timer, yspeed;
-	bool ready, devmode, warping, loaded;
+	bool ready, devmode, warping, loaded, local;
 	HumanData hd;
 	CreatedCharacter cc;
 	vector<string> notes;
@@ -55,10 +55,8 @@ struct PlayerInfo
 	vector<NetChangePlayer> changes;
 
 	PlayerInfo();
-	void UpdateGold()
-	{
-		update_flags |= PlayerInfo::UF_GOLD;
-	}
+	void UpdateGold() { update_flags |= PlayerInfo::UF_GOLD; }
 	void Save(FileWriter& f);
 	void Load(FileReader& f);
+	int GetIndex() const;
 };

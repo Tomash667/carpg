@@ -137,7 +137,7 @@ void ServerPanel::Draw(ControlDrawData*)
 
 	// tekst
 	Rect r = { 340 + global_pos.x, 355 + global_pos.y, 340 + 185 + global_pos.x, 355 + 160 + global_pos.y };
-	GUI.DrawText(GUI.default_font, Format(txServerText, game->server_name2.c_str(), game->players, game->max_players2, game->enter_pswd.empty() ? GUI.txNo : GUI.txYes), 0, Color::Black, r, &r);
+	GUI.DrawText(GUI.default_font, Format(txServerText, game->server_name2.c_str(), N.active_players, game->max_players2, game->enter_pswd.empty() ? GUI.txNo : GUI.txYes), 0, Color::Black, r, &r);
 }
 
 //=================================================================================================
@@ -206,7 +206,7 @@ void ServerPanel::Event(GuiEvent e)
 		{
 		case IdPickCharacter: // pick character / change character
 			{
-				PlayerInfo& info = *game->game_players[0];
+				PlayerInfo& info = N.GetMe();
 				if(info.clas != Class::INVALID)
 				{
 					// already have character, redo
@@ -224,7 +224,7 @@ void ServerPanel::Event(GuiEvent e)
 			break;
 		case IdReady: // ready / unready
 			{
-				PlayerInfo& info = *game->game_players[0];
+				PlayerInfo& info = N.GetMe();
 				info.ready = !info.ready;
 				game->ChangeReady();
 			}
@@ -238,7 +238,7 @@ void ServerPanel::Event(GuiEvent e)
 					AddMsg(txCantKickMyself);
 				else
 				{
-					PlayerInfo& info = *game->game_players[grid.selected];
+					PlayerInfo& info = *N.players[grid.selected];
 					if(info.state != PlayerInfo::IN_LOBBY)
 						AddMsg(txCantKickUnconnected);
 					else
@@ -266,7 +266,7 @@ void ServerPanel::Event(GuiEvent e)
 				AddMsg(txNeedSelectedPlayer);
 			else
 			{
-				PlayerInfo& info = *game->game_players[grid.selected];
+				PlayerInfo& info = *N.players[grid.selected];
 				if(info.id == game->leader_id)
 					AddMsg(txAlreadyLeader);
 				else if(info.state == PlayerInfo::IN_LOBBY)
@@ -284,7 +284,7 @@ void ServerPanel::Event(GuiEvent e)
 			{
 				cstring error_text = nullptr;
 
-				for(auto player : game->game_players)
+				for(auto player : N.players)
 				{
 					if(!player->ready)
 					{
@@ -347,7 +347,7 @@ void ServerPanel::Show()
 //=================================================================================================
 void ServerPanel::GetCell(int item, int column, Cell& cell)
 {
-	PlayerInfo& info = *game->game_players[item];
+	PlayerInfo& info = *N.players[item];
 
 	if(column == 0)
 		cell.img = (info.ready ? tGotowy : tNieGotowy);
@@ -377,7 +377,7 @@ void ServerPanel::ExitLobby(VoidF f)
 		// wy³¹cz info o serwerze
 		N.peer->SetOfflinePingResponse(nullptr, 0);
 
-		if(game->players > 1)
+		if(N.active_players > 1)
 		{
 			// roz³¹cz graczy
 			Info("ServerPanel: Disconnecting clients.");
@@ -385,7 +385,7 @@ void ServerPanel::ExitLobby(VoidF f)
 			N.peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 			game->StreamWrite(b, 2, Stream_UpdateLobbyServer, UNASSIGNED_SYSTEM_ADDRESS);
 			game->net_mode = Game::NM_QUITTING_SERVER;
-			--game->players;
+			--N.active_players;
 			game->net_timer = T_WAIT_FOR_DISCONNECT;
 			game->info_box->Show(txDisconnecting);
 			game->net_callback = f;
@@ -423,9 +423,9 @@ void ServerPanel::OnKick(int id)
 {
 	if(id == BUTTON_YES)
 	{
-		int index = game->GetPlayerIndex(game->kick_id);
-		if(index != -1)
-			game->KickPlayer(index);
+		PlayerInfo* info = N.TryGetPlayer(game->kick_id);
+		if(info)
+			game->KickPlayer(*info);
 	}
 }
 
@@ -437,7 +437,7 @@ void ServerPanel::OnInput(const string& str)
 	else
 	{
 		// wyœlij tekst
-		if(game->players != 1)
+		if(N.active_players != 1)
 		{
 			game->net_stream.Reset();
 			BitStreamWriter f(game->net_stream);
@@ -461,7 +461,7 @@ void ServerPanel::StopStartup()
 	game->sv_startup = false;
 	bts[4].text = txStart;
 
-	if(game->players > 1)
+	if(N.active_players > 1)
 	{
 		byte c = ID_END_TIMER;
 		N.peer->Send((cstring)&c, 1, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
@@ -502,7 +502,7 @@ void ServerPanel::CheckAutopick()
 //=================================================================================================
 void ServerPanel::PickClass(Class clas, bool ready)
 {
-	PlayerInfo& info = *game->game_players[0];
+	PlayerInfo& info = N.GetMe();
 	info.clas = clas;
 	game->RandomCharacter(info.clas, game->hair_redo_index, info.hd, info.cc);
 	bts[0].text = txChangeChar;
@@ -523,7 +523,7 @@ void ServerPanel::PickClass(Class clas, bool ready)
 	}
 	else
 	{
-		if(game->players > 1)
+		if(N.active_players > 1)
 			game->AddLobbyUpdate(Int2(Lobby_UpdatePlayer, 0));
 		game->CheckReady();
 	}

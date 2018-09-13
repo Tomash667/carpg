@@ -1048,25 +1048,22 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					if(t.Next())
 					{
 						const string& player_nick = t.MustGetItem();
-						int index = FindPlayerIndex(player_nick.c_str(), true);
-						if(index == -1)
+						PlayerInfo* info = N.FindPlayer(player_nick);
+						if(!info)
 							Msg("No player with nick '%s'.", player_nick.c_str());
 						else if(t.NextLine())
 						{
 							const string& text = t.MustGetItem();
-							PlayerInfo& info = *game_players[index];
-							if(info.id == my_id)
+							if(info->local)
 								Msg("Whispers in your head: %s", text.c_str());
 							else
 							{
-								net_stream.Reset();
-								BitStreamWriter f(net_stream);
+								BitStreamWriter f;
 								f << ID_WHISPER;
-								f.WriteCasted<byte>(Net::IsServer() ? my_id : info.id);
+								f.WriteCasted<byte>(Net::IsServer() ? my_id : info->id);
 								f << text;
-								N.peer->Send(&net_stream, MEDIUM_PRIORITY, RELIABLE, 0, Net::IsServer() ? info.adr : server, false);
-								StreamWrite(net_stream, Stream_Chat, Net::IsServer() ? info.adr : server);
-								cstring s = Format("@%s: %s", info.name.c_str(), text.c_str());
+								N.Send(f, MEDIUM_PRIORITY, RELIABLE, Net::IsServer() ? info->adr : server, Stream_Chat);
+								cstring s = Format("@%s: %s", info->name.c_str(), text.c_str());
 								AddMsg(s);
 								Info(s);
 							}
@@ -1081,7 +1078,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					if(t.NextLine())
 					{
 						const string& text = t.MustGetItem();
-						if(players > 1)
+						if(N.active_players > 1)
 						{
 							net_stream.Reset();
 							BitStreamWriter f(net_stream);
@@ -1102,70 +1099,66 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					if(t.Next())
 					{
 						const string& player_name = t.MustGetItem();
-						int index = FindPlayerIndex(player_name.c_str(), true);
-						if(index == -1)
+						PlayerInfo* info = N.FindPlayer(player_name);
+						if(!info)
 							Msg("No player with nick '%s'.", player_name.c_str());
 						else
-							KickPlayer(index);
+							KickPlayer(*info);
 					}
 					else
 						Msg("You need to enter player nick.");
 					break;
 				case CMD_READY:
 					{
-						PlayerInfo& info = *game_players[0];
+						PlayerInfo& info = N.GetMe();
 						info.ready = !info.ready;
 						ChangeReady();
 					}
 					break;
 				case CMD_LEADER:
-					if(t.Next())
+					if(!t.Next())
+						Msg("You need to enter leader nick.");
+					else
 					{
 						const string& player_name = t.MustGetItem();
-						int index = FindPlayerIndex(player_name.c_str(), true);
-						if(index == -1)
+						PlayerInfo* info = N.FindPlayer(player_name);
+						if(!info)
 							Msg("No player with nick '%s'.", player_name.c_str());
+						else if(leader_id == info->id)
+							Msg("Player '%s' is already a leader.", player_name.c_str());
+						else if(!Net::IsServer() && leader_id != my_id)
+							Msg("You can't change a leader."); // must be current leader or server
 						else
 						{
-							PlayerInfo& info = *game_players[index];
-							if(leader_id == info.id)
-								Msg("Player '%s' is already a leader.", player_name.c_str());
-							else if(Net::IsServer() || leader_id == my_id)
+							if(server_panel->visible)
 							{
-								if(server_panel->visible)
+								if(Net::IsServer())
 								{
-									if(Net::IsServer())
-									{
-										leader_id = info.id;
-										AddLobbyUpdate(Int2(Lobby_ChangeLeader, 0));
-									}
-									else
-										Msg("You can't change a leader.");
+									leader_id = info->id;
+									AddLobbyUpdate(Int2(Lobby_ChangeLeader, 0));
 								}
 								else
-								{
-									NetChange& c = Add1(Net::changes);
-									c.type = NetChange::CHANGE_LEADER;
-									c.id = info.id;
-
-									if(Net::IsServer())
-									{
-										leader_id = info.id;
-										Team.leader = info.u;
-
-										if(dialog_enc)
-											dialog_enc->bts[0].state = (IsLeader() ? Button::NONE : Button::DISABLED);
-									}
-								}
-
-								AddMsg(Format("Leader changed to '%s'.", info.name.c_str()));
+									Msg("You can't change a leader.");
 							}
 							else
-								Msg("You can't change a leader.");
+							{
+								NetChange& c = Add1(Net::changes);
+								c.type = NetChange::CHANGE_LEADER;
+								c.id = info->id;
+
+								if(Net::IsServer())
+								{
+									leader_id = info->id;
+									Team.leader = info->u;
+
+									if(dialog_enc)
+										dialog_enc->bts[0].state = (IsLeader() ? Button::NONE : Button::DISABLED);
+								}
+							}
+
+							AddMsg(Format("Leader changed to '%s'.", info->name.c_str()));
 						}
 					}
-					else
-						Msg("You need to enter leader nick.");
 					break;
 				case CMD_EXIT:
 					ExitToMenu();
@@ -1243,7 +1236,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 
 						cstring error_text = nullptr;
 
-						for(auto info : game_players)
+						for(PlayerInfo* info : N.players)
 						{
 							if(!info->ready)
 							{
@@ -1259,11 +1252,10 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							sv_startup = true;
 							last_startup_id = STARTUP_TIMER;
 							startup_timer = float(STARTUP_TIMER);
-							packet_data.resize(2);
-							packet_data[0] = ID_TIMER;
-							packet_data[1] = (byte)STARTUP_TIMER;
-							N.peer->Send((cstring)&packet_data[0], 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
-							StreamWrite(&packet_data[0], 2, Stream_UpdateLobbyServer, UNASSIGNED_SYSTEM_ADDRESS);
+							BitStreamWriter f;
+							f << ID_TIMER;
+							f << (byte)STARTUP_TIMER;
+							N.SendAll(f, IMMEDIATE_PRIORITY, RELIABLE, Stream_UpdateLobbyServer);
 							server_panel->bts[4].text = server_panel->txStop;
 							cstring s = Format(server_panel->txStartingIn, STARTUP_TIMER);
 							AddMsg(s);
@@ -1277,14 +1269,16 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					if(t.NextLine())
 					{
 						const string& text = t.MustGetItem();
-						net_stream.Reset();
-						BitStreamWriter f(net_stream);
+						BitStreamWriter f;
 						f << ID_SAY;
 						f.WriteCasted<byte>(my_id);
 						f << text;
-						N.peer->Send(&net_stream, MEDIUM_PRIORITY, RELIABLE, 0, Net::IsServer() ? UNASSIGNED_SYSTEM_ADDRESS : server, Net::IsServer());
+						if(Net::IsServer())
+							N.SendAll(f, MEDIUM_PRIORITY, RELIABLE, Stream_Chat);
+						else
+							N.Send(f, MEDIUM_PRIORITY, RELIABLE, server, Stream_Chat);
 						StreamWrite(net_stream, Stream_Chat, Net::IsServer() ? UNASSIGNED_SYSTEM_ADDRESS : server);
-						cstring s = Format("%s: %s", game_players[0]->name.c_str(), text.c_str());
+						cstring s = Format("%s: %s", N.GetMe().name.c_str(), text.c_str());
 						AddMsg(s);
 						Info(s);
 					}
@@ -1300,13 +1294,12 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							bool b = t.MustGetBool();
 							if(player_name == "all")
 							{
-								for(auto pinfo : game_players)
+								for(PlayerInfo* info : N.players)
 								{
-									auto& info = *pinfo;
-									if(info.left == PlayerInfo::LEFT_NO && info.devmode != b && info.id != 0)
+									if(info->left == PlayerInfo::LEFT_NO && info->devmode != b && info->id != 0)
 									{
-										info.devmode = b;
-										NetChangePlayer& c = Add1(info.u->player->player_info->changes);
+										info->devmode = b;
+										NetChangePlayer& c = Add1(info->pc->player_info->changes);
 										c.type = NetChangePlayer::DEVMODE;
 										c.id = (b ? 1 : 0);
 									}
@@ -1314,19 +1307,15 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							}
 							else
 							{
-								int index = FindPlayerIndex(player_name.c_str(), true);
-								if(index == -1)
+								PlayerInfo* info = N.FindPlayer(player_name);
+								if(!info)
 									Msg("No player with nick '%s'.", player_name.c_str());
-								else
+								else if(info->devmode != b)
 								{
-									PlayerInfo& info = *game_players[index];
-									if(info.devmode != b)
-									{
-										info.devmode = b;
-										NetChangePlayer& c = Add1(info.u->player->player_info->changes);
-										c.type = NetChangePlayer::DEVMODE;
-										c.id = (b ? 1 : 0);
-									}
+									info->devmode = b;
+									NetChangePlayer& c = Add1(info->pc->player_info->changes);
+									c.type = NetChangePlayer::DEVMODE;
+									c.id = (b ? 1 : 0);
 								}
 							}
 						}
@@ -1336,12 +1325,11 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							{
 								LocalString s = "Players devmode: ";
 								bool any = false;
-								for(auto pinfo : game_players)
+								for(PlayerInfo* info : N.players)
 								{
-									auto& info = *pinfo;
-									if(!info.left && info.id != 0)
+									if(info->left == PlayerInfo::LEFT_NO && info->id != 0)
 									{
-										s += Format("%s(%d), ", info.name.c_str(), info.devmode ? 1 : 0);
+										s += Format("%s(%d), ", info->name.c_str(), info->devmode ? 1 : 0);
 										any = true;
 									}
 								}
@@ -1356,11 +1344,11 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							}
 							else
 							{
-								int index = FindPlayerIndex(player_name.c_str(), true);
-								if(index == -1)
+								PlayerInfo* info = N.FindPlayer(player_name);
+								if(!info)
 									Msg("No player with nick '%s'.", player_name.c_str());
 								else
-									Msg("Player devmode: %s(%d).", player_name.c_str(), game_players[index]->devmode ? 1 : 0);
+									Msg("Player devmode: %s(%d).", player_name.c_str(), info->devmode ? 1 : 0);
 							}
 						}
 					}
@@ -1488,7 +1476,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					{
 						if(!sv_startup)
 						{
-							PlayerInfo& info = *game_players[0];
+							PlayerInfo& info = N.GetMe();
 							if(!info.ready)
 							{
 								if(info.clas == Class::INVALID)
@@ -1502,7 +1490,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 
 							cstring error_text = nullptr;
 
-							for(auto info : game_players)
+							for(PlayerInfo* info : N.players)
 							{
 								if(!info->ready)
 								{
@@ -1530,7 +1518,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					}
 					else
 					{
-						PlayerInfo& info = *game_players[0];
+						PlayerInfo& info = N.GetMe();
 						if(!info.ready)
 						{
 							if(info.clas == Class::INVALID)

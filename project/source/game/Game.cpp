@@ -973,7 +973,6 @@ void Game::OnCleanup()
 	delete dungeon_shape_data;
 
 	draw_batch.Clear();
-	DeleteElements(game_players);
 	DeleteElements(old_players);
 	SM.Cleanup();
 	N.Cleanup();

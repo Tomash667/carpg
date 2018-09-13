@@ -102,7 +102,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 	if(!reenter)
 		InitQuadTree();
 
-	if(Net::IsOnline() && players > 1)
+	if(Net::IsOnline() && N.active_players > 1)
 	{
 		packet_data.resize(4);
 		packet_data[0] = ID_CHANGE_LEVEL;
@@ -111,7 +111,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 		packet_data[3] = (W.GetState() == World::State::INSIDE_ENCOUNTER ? 1 : 0);
 		int ack = N.peer->Send((cstring)&packet_data[0], 4, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 		StreamWrite(packet_data, Stream_TransferServer, UNASSIGNED_SYSTEM_ADDRESS);
-		for(auto info : game_players)
+		for(auto info : N.players)
 		{
 			if(info->id == my_id)
 				info->state = PlayerInfo::IN_GAME;
@@ -201,14 +201,14 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 	{
 		net_mode = NM_SERVER_SEND;
 		net_state = NetState::Server_Send;
-		if(players > 1)
+		if(N.active_players > 1)
 		{
 			net_stream.Reset();
 			PrepareLevelData(net_stream, loaded_resources);
 			Info("Generated location packet: %d.", net_stream.GetNumberOfBytesUsed());
 		}
 		else
-			game_players[0]->state = PlayerInfo::IN_GAME;
+			N.GetMe().state = PlayerInfo::IN_GAME;
 
 		info_box->Show(txWaitingForPlayers);
 	}

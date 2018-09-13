@@ -120,9 +120,9 @@ void PickServerPanel::Update(float dt)
 
 				// info about server
 				uint version;
-				byte players, players_max, flags;
+				byte active_players, players_max, flags;
 				reader >> version;
-				reader >> players;
+				reader >> active_players;
 				reader >> players_max;
 				reader >> flags;
 				const string& server_name = reader.ReadString1();
@@ -146,13 +146,13 @@ void PickServerPanel::Update(float dt)
 						found = true;
 						Info("PickServer: Updated server info %s.", it->adr.ToString());
 						it->name = server_name;
-						it->players = players;
+						it->active_players = active_players;
 						it->max_players = players_max;
 						it->flags = flags;
 						it->timer = 0.f;
 						it->valid_version = valid_version;
 
-						if(game->pick_autojoin && it->players != it->max_players && it->valid_version)
+						if(game->pick_autojoin && it->active_players != it->max_players && it->valid_version)
 						{
 							// autojoin server
 							bts[0].state = Button::NONE;
@@ -171,7 +171,7 @@ void PickServerPanel::Update(float dt)
 					Info("PickServer: Added server info %s.", packet->systemAddress.ToString());
 					ServerData& sd = Add1(servers);
 					sd.name = server_name;
-					sd.players = players;
+					sd.active_players = active_players;
 					sd.max_players = players_max;
 					sd.adr = packet->systemAddress;
 					sd.flags = flags;
@@ -179,7 +179,7 @@ void PickServerPanel::Update(float dt)
 					sd.valid_version = valid_version;
 					grid.AddItem();
 
-					if(game->pick_autojoin && sd.players != sd.max_players && sd.valid_version)
+					if(game->pick_autojoin && sd.active_players != sd.max_players && sd.valid_version)
 					{
 						// autojoin server
 						bts[0].state = Button::NONE;
@@ -289,7 +289,7 @@ void PickServerPanel::GetCell(int item, int column, Cell& cell)
 	{
 		cell.text_color->color = (server.valid_version ? Color::Black : Color::Red);
 		if(column == 1)
-			cell.text_color->text = Format("%d/%d", server.players, server.max_players);
+			cell.text_color->text = Format("%d/%d", server.active_players, server.max_players);
 		else
 			cell.text_color->text = server.name.c_str();
 	}

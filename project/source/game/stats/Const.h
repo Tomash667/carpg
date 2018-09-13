@@ -4,8 +4,8 @@
 const int FRAMES = 30; // iloœæ aktualizacji na sekundê w multiplayer
 const float TICK = 1.f / FRAMES;
 
-const int MIN_PLAYERS = 1; // minimum slotów na graczy na serwerze
-const int MAX_PLAYERS = 8; // max slotów na graczy na serweerze
+const uint MIN_PLAYERS = 1; // minimum slotów na graczy na serwerze
+const uint MAX_PLAYERS = 8; // max slotów na graczy na serweerze
 const int DEFAULT_PLAYERS = 6; // domyœlna liczba slotów
 const int PORT = 37557; // port gry
 

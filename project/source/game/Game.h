@@ -190,24 +190,6 @@ struct SuperShader
 	uint id;
 };
 
-enum StreamLogType
-{
-	Stream_None,
-	Stream_PickServer,
-	Stream_PingIp,
-	Stream_Connect,
-	Stream_Quitting,
-	Stream_QuittingServer,
-	Stream_Transfer,
-	Stream_TransferServer,
-	Stream_ServerSend,
-	Stream_UpdateLobbyServer,
-	Stream_UpdateLobbyClient,
-	Stream_UpdateGameServer,
-	Stream_UpdateGameClient,
-	Stream_Chat
-};
-
 enum class AnyVarType
 {
 	Bool
@@ -1053,16 +1035,15 @@ public:
 	//-----------------------------------------------------------------
 	// MULTIPLAYER
 	string server_name, player_name, server_pswd, server_ip, enter_pswd, server_name2;
-	int autostart_count;//, kick_timer;
-	int players; // aktualna liczba graczy w grze
-	int max_players, max_players2; // maksymalna liczba graczy w grze
+	uint autostart_count;//, kick_timer;
+	int max_players2;
 	int my_id; // moje unikalne id
 	int last_id;
 	int last_startup_id;
 	bool sv_startup, was_client, players_left;
 	BitStream server_info;
 	vector<byte> packet_data;
-	vector<PlayerInfo*> game_players, old_players;
+	vector<PlayerInfo*> old_players;
 	SystemAddress server;
 	int leader_id, kick_id;
 	float startup_timer;
@@ -1113,11 +1094,9 @@ public:
 
 	void InitServer();
 	void InitClient();
-	int FindPlayerIndex(cstring nick, bool not_left = false);
-	int FindPlayerIndex(const SystemAddress& adr);
 	int GetPlayerIndex(int id);
 	void AddServerMsg(cstring msg);
-	void KickPlayer(int index);
+	void KickPlayer(PlayerInfo& info);
 	void ChangeReady();
 	void CheckReady();
 	void AddMsg(cstring msg);
@@ -1125,7 +1104,7 @@ public:
 	void ForceRedraw();
 	void PrepareLevelData(BitStream& stream, bool loaded_resources);
 	bool ReadLevelData(BitStreamReader& f);
-	void SendPlayerData(int index);
+	void SendPlayerData(PlayerInfo& info);
 	bool ReadPlayerData(BitStreamReader& stream);
 	void UpdateServer(float dt);
 	bool ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info);

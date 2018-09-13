@@ -3,8 +3,24 @@
 #include "BitStreamFunc.h"
 
 //-----------------------------------------------------------------------------
-BitStreamWriter::BitStreamWriter(BitStream& bitstream) : bitstream(bitstream), total_size(bitstream.GetNumberOfBytesUsed())
+static ObjectPool<BitStream> bitstream_pool;
+
+//-----------------------------------------------------------------------------
+BitStreamWriter::BitStreamWriter() : bitstream(*bitstream_pool.Get()), total_size(bitstream.GetNumberOfBytesUsed()), owned(true)
 {
+}
+
+BitStreamWriter::BitStreamWriter(BitStream& bitstream) : bitstream(bitstream), total_size(bitstream.GetNumberOfBytesUsed()), owned(false)
+{
+}
+
+BitStreamWriter::~BitStreamWriter()
+{
+	if(owned)
+	{
+		bitstream.Reset();
+		bitstream_pool.Free(&bitstream);
+	}
 }
 
 void BitStreamWriter::Write(const void* ptr, uint size)
@@ -26,6 +42,16 @@ bool BitStreamWriter::SetPos(uint pos)
 		return false;
 	bitstream.SetWriteOffset(BYTES_TO_BITS(pos));
 	return true;
+}
+
+cstring BitStreamWriter::GetData() const
+{
+	return (cstring)bitstream.GetData();
+}
+
+uint BitStreamWriter::GetSize() const
+{
+	return bitstream.GetNumberOfBytesUsed();
 }
 
 //-----------------------------------------------------------------------------

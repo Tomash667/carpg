@@ -164,7 +164,7 @@ bool Game::SaveGameCommon(cstring filename, int slot, cstring text)
 
 		if(Net::IsOnline())
 		{
-			ss.multiplayers = players;
+			ss.multiplayers = N.active_players;
 			cfg.Add("multiplayers", Format("%d", ss.multiplayers));
 		}
 
@@ -498,17 +498,17 @@ void Game::SaveGame(GameWriter& f)
 	{
 		f << server_name;
 		f << server_pswd;
-		f << players;
-		f << max_players;
+		f << N.active_players;
+		f << N.max_players;
 		f << last_id;
 		uint count = 0;
-		for(auto info : game_players)
+		for(auto info : N.players)
 		{
 			if(info->left == PlayerInfo::LEFT_NO)
 				++count;
 		}
 		f << count;
-		for(PlayerInfo* info : game_players)
+		for(PlayerInfo* info : N.players)
 		{
 			if(info->left == PlayerInfo::LEFT_NO)
 				info->Save(f);
@@ -1042,8 +1042,8 @@ void Game::LoadGame(GameReader& f)
 	{
 		f >> server_name;
 		f >> server_pswd;
-		f >> players;
-		f >> max_players;
+		f >> N.active_players;
+		f >> N.max_players;
 		f >> last_id;
 		f >> count;
 		DeleteElements(old_players);

@@ -701,20 +701,18 @@ void Game::UpdateGame(float dt)
 
 	// sanity checks
 #ifdef _DEBUG
-
 	if(Net::IsLocal())
 	{
 		assert(pc->is_local);
 		if(Net::IsServer())
 		{
-			for(auto pinfo : game_players)
+			for(PlayerInfo* info : N.players)
 			{
-				auto& info = *pinfo;
-				if(!info.left)
+				if(info->left == PlayerInfo::LEFT_NO)
 				{
-					assert(info.pc == info.pc->player_info->pc);
-					if(info.id != 0)
-						assert(!info.pc->is_local);
+					assert(info->pc == info->pc->player_info->pc && info->local == info->pc->is_local);
+					if(info->id != 0)
+						assert(!info->pc->is_local);
 				}
 			}
 		}
@@ -1215,9 +1213,9 @@ void Game::UpdateGame(float dt)
 	}
 	else if(Net::IsServer())
 	{
-		for(auto info : game_players)
+		for(PlayerInfo* info : N.players)
 		{
-			if(info->left)
+			if(info->left != PlayerInfo::LEFT_NO)
 				continue;
 			DialogContext& ctx = *info->u->player->dialog_ctx;
 			if(ctx.dialog_mode)
@@ -1257,7 +1255,7 @@ void Game::UpdateGame(float dt)
 	pc->Update(dt);
 	if(Net::IsServer())
 	{
-		for(auto info : game_players)
+		for(PlayerInfo* info : N.players)
 		{
 			if(info->left == PlayerInfo::LEFT_NO && info->pc != pc)
 				info->pc->Update(dt, false);
@@ -7863,7 +7861,7 @@ void Game::UpdateUnitInventory(Unit& u, bool notify)
 		RemoveNullItems(u.items);
 		SortItems(u.items);
 
-		if(Net::IsOnline() && players > 1 && notify)
+		if(Net::IsOnline() && N.active_players > 1 && notify)
 		{
 			for(int i = 0; i < SLOT_MAX; ++i)
 			{
@@ -9174,7 +9172,7 @@ void Game::ChangeLevel(int where)
 	if(!in_tutorial && QM.quest_crazies->crazies_state >= Quest_Crazies::State::PickedStone && QM.quest_crazies->crazies_state < Quest_Crazies::State::End)
 		QM.quest_crazies->CheckStone();
 
-	if(Net::IsOnline() && players > 1)
+	if(Net::IsOnline() && N.active_players > 1)
 	{
 		int level = L.dungeon_level;
 		if(where == -1)
@@ -9182,26 +9180,7 @@ void Game::ChangeLevel(int where)
 		else
 			++level;
 		if(level >= 0)
-		{
-			packet_data.resize(4);
-			packet_data[0] = ID_CHANGE_LEVEL;
-			packet_data[1] = (byte)L.location_index;
-			packet_data[2] = (byte)level;
-			packet_data[3] = 0;
-			int ack = N.peer->Send((cstring)&packet_data[0], 4, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
-			StreamWrite(packet_data.data(), 3, Stream_TransferServer, UNASSIGNED_SYSTEM_ADDRESS);
-			for(auto info : game_players)
-			{
-				if(info->id == my_id)
-					info->state = PlayerInfo::IN_GAME;
-				else
-				{
-					info->state = PlayerInfo::WAITING_FOR_RESPONSE;
-					info->ack = ack;
-					info->timer = 5.f;
-				}
-			}
-		}
+			N.OnChangeLevel(level);
 
 		Net_FilterServerChanges();
 	}
@@ -9292,7 +9271,7 @@ void Game::ChangeLevel(int where)
 
 	SetMusic();
 
-	if(Net::IsOnline() && players > 1)
+	if(Net::IsOnline() && N.active_players > 1)
 	{
 		net_mode = NM_SERVER_SEND;
 		net_state = NetState::Server_Send;
@@ -15329,10 +15308,10 @@ DialogContext* Game::FindDialogContext(Unit* talker)
 		return &dialog_context;
 	if(Net::IsOnline())
 	{
-		for(PlayerInfo* player : game_players)
+		for(PlayerInfo* info : N.players)
 		{
-			if(player->pc->dialog_ctx->talker == talker)
-				return player->pc->dialog_ctx;
+			if(info->pc->dialog_ctx->talker == talker)
+				return info->pc->dialog_ctx;
 		}
 	}
 	return nullptr;
@@ -16400,7 +16379,7 @@ void Game::RemoveItem(Unit& unit, int i_index, uint count)
 		unit.slots[type] = nullptr;
 		removed = true;
 
-		if(Net::IsServer() && players > 1)
+		if(Net::IsServer() && N.active_players > 1)
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::CHANGE_EQUIPMENT;
