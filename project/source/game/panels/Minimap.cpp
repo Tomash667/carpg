@@ -39,7 +39,9 @@ void Minimap::Draw(ControlDrawData* /*cdd*/)
 
 	// portale
 	Portal* p = L.location->portal;
-	InsideLocationLevel* lvl = game.TryGetLevelData();
+	InsideLocationLevel* lvl = nullptr;
+	if(L.location->type == L_DUNGEON || L.location->type == L_CRYPT || L.location->type == L_CAVE)
+		lvl = &((InsideLocation*)L.location)->GetLevelData();
 	while(p)
 	{
 		if(!lvl || (L.dungeon_level == p->at_level && lvl->IsTileVisible(p->pos)))

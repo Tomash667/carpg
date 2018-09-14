@@ -361,7 +361,7 @@ void ServerPanel::GetCell(int item, int column, Cell& cell)
 }
 
 //=================================================================================================
-void ServerPanel::ExitLobby(VoidF f)
+void ServerPanel::ExitLobby(VoidF callback)
 {
 	Info("ServerPanel: Exiting lobby.");
 
@@ -388,26 +388,26 @@ void ServerPanel::ExitLobby(VoidF f)
 			--N.active_players;
 			game->net_timer = T_WAIT_FOR_DISCONNECT;
 			game->info_box->Show(txDisconnecting);
-			game->net_callback = f;
+			game->net_callback = callback;
 		}
 		else
 		{
 			// nie ma graczy, mo¿na zamkn¹æ
 			game->ClosePeer();
 			CloseDialog();
-			if(f)
-				f();
+			if(callback)
+				callback();
 		}
 	}
 	else
 	{
-		const byte b = ID_LEAVE;
-		N.peer->Send((cstring)&b, 1, IMMEDIATE_PRIORITY, RELIABLE, 0, game->server, false);
-		N.StreamWrite(&b, 1, Stream_UpdateLobbyClient, game->server);
+		BitStreamWriter f;
+		f << ID_LEAVE;
+		N.SendClient(f, IMMEDIATE_PRIORITY, RELIABLE, Stream_UpdateLobbyClient);
 		game->info_box->Show(txDisconnecting);
 		game->net_mode = Game::NM_QUITTING;
 		game->net_timer = T_WAIT_FOR_DISCONNECT;
-		game->net_callback = f;
+		game->net_callback = callback;
 		CloseDialog();
 	}
 }
@@ -439,13 +439,14 @@ void ServerPanel::OnInput(const string& str)
 		// wyœlij tekst
 		if(N.active_players != 1)
 		{
-			game->net_stream.Reset();
-			BitStreamWriter f(game->net_stream);
+			BitStreamWriter f;
 			f << ID_SAY;
 			f.WriteCasted<byte>(game->my_id);
 			f << str;
-			N.peer->Send(&game->net_stream, MEDIUM_PRIORITY, RELIABLE, 0, Net::IsServer() ? UNASSIGNED_SYSTEM_ADDRESS : game->server, Net::IsServer());
-			N.StreamWrite(game->net_stream, Stream_Chat, Net::IsServer() ? UNASSIGNED_SYSTEM_ADDRESS : game->server);
+			if(Net::IsServer())
+				N.SendAll(f, MEDIUM_PRIORITY, RELIABLE, Stream_Chat);
+			else
+				N.SendClient(f, MEDIUM_PRIORITY, RELIABLE, Stream_Chat);
 		}
 		cstring s = Format("%s: %s", game->player_name.c_str(), str.c_str());
 		AddMsg(s);
@@ -512,14 +513,11 @@ void ServerPanel::PickClass(Class clas, bool ready)
 	if(Net::IsClient())
 	{
 		Info("ServerPanel: Sent pick class packet.");
-		BitStream& stream = game->net_stream;
-		stream.Reset();
-		BitStreamWriter f(stream);
+		BitStreamWriter f;
 		f << ID_PICK_CHARACTER;
 		WriteCharacterData(f, info.clas, info.hd, info.cc);
 		f << ready;
-		N.peer->Send(&stream, IMMEDIATE_PRIORITY, RELIABLE, 0, game->server, false);
-		N.StreamWrite(stream, Stream_UpdateLobbyClient, game->server);
+		N.SendClient(f, IMMEDIATE_PRIORITY, RELIABLE, Stream_UpdateLobbyClient);
 	}
 	else
 	{

@@ -84,13 +84,14 @@ void MpBox::OnInput(const string& str)
 		if(Net::IsOnline() && N.active_players != 1)
 		{
 			// send text to server / other players
-			game.net_stream.Reset();
-			BitStreamWriter f(game.net_stream);
+			BitStreamWriter f;
 			f << ID_SAY;
 			f.WriteCasted<byte>(game.my_id);
 			f << str;
-			N.peer->Send(&game.net_stream, MEDIUM_PRIORITY, RELIABLE, 0, Net::IsServer() ? UNASSIGNED_SYSTEM_ADDRESS : game.server, Net::IsServer());
-			N.StreamWrite(game.net_stream, Stream_Chat, Net::IsServer() ? UNASSIGNED_SYSTEM_ADDRESS : game.server);
+			if(Net::IsServer())
+				N.SendAll(f, MEDIUM_PRIORITY, RELIABLE, Stream_Chat);
+			else
+				N.SendClient(f, MEDIUM_PRIORITY, RELIABLE, Stream_Chat);
 		}
 		// add text
 		cstring s = Format("%s: %s", game.player_name.c_str(), str.c_str());

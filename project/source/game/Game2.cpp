@@ -9275,9 +9275,9 @@ void Game::ChangeLevel(int where)
 	{
 		net_mode = NM_SERVER_SEND;
 		net_state = NetState::Server_Send;
-		net_stream.Reset();
-		PrepareLevelData(net_stream, loaded_resources);
-		Info("Generated location packet: %d.", net_stream.GetNumberOfBytesUsed());
+		prepared_stream.Reset();
+		PrepareLevelData(prepared_stream, loaded_resources);
+		Info("Generated location packet: %d.", prepared_stream.GetNumberOfBytesUsed());
 		info_box->Show(txWaitingForPlayers);
 	}
 	else
@@ -16458,14 +16458,6 @@ Int2 Game::GetSpawnPoint()
 		return lvl.GetDownStairsFrontTile();
 	else
 		return lvl.GetUpStairsFrontTile();
-}
-
-InsideLocationLevel* Game::TryGetLevelData()
-{
-	if(L.location->type == L_DUNGEON || L.location->type == L_CRYPT || L.location->type == L_CAVE)
-		return &((InsideLocation*)L.location)->GetLevelData();
-	else
-		return nullptr;
 }
 
 void Game::SetOutsideParams()

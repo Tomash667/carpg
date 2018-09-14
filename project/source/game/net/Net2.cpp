@@ -11,7 +11,7 @@
 Net N;
 const float CHANGE_LEVEL_TIMER = 5.f;
 
-Net::Net() : peer(nullptr), current_packet(nullptr)
+Net::Net() : peer(nullptr), current_packet(nullptr), mp_use_interp(true), mp_interp(0.05f)
 {
 }
 
@@ -27,6 +27,21 @@ void Net::Cleanup()
 	if(peer)
 		RakPeerInterface::DestroyInstance(peer);
 }
+
+//=================================================================================================
+void Net::WriteNetVars(BitStreamWriter& f)
+{
+	f << mp_use_interp;
+	f << mp_interp;
+}
+
+//=================================================================================================
+void Net::ReadNetVars(BitStreamReader& f)
+{
+	f >> mp_use_interp;
+	f >> mp_interp;
+}
+
 
 PlayerInfo* Net::FindPlayer(Cstring nick)
 {
@@ -62,12 +77,6 @@ PlayerInfo* Net::TryGetPlayer(int id)
 		}
 	}
 	return nullptr;
-}
-
-void Net::Send(BitStreamWriter& f, PacketPriority priority, PacketReliability reliability, const SystemAddress& adr, StreamLogType type)
-{
-	peer->Send(&f.GetBitStream(), priority, reliability, 0, adr, false);
-	StreamWrite(f.GetBitStream(), type, adr);
 }
 
 //=================================================================================================
@@ -155,8 +164,16 @@ void Net::OnChangeLevel(int level)
 	}
 }
 
+void Net::SendServer(BitStreamWriter& f, PacketPriority priority, PacketReliability reliability, const SystemAddress& adr, StreamLogType type)
+{
+	assert(IsServer());
+	peer->Send(&f.GetBitStream(), priority, reliability, 0, adr, false);
+	StreamWrite(f.GetBitStream(), type, adr);
+}
+
 uint Net::SendAll(BitStreamWriter& f, PacketPriority priority, PacketReliability reliability, StreamLogType type)
 {
+	assert(IsServer());
 	if(active_players <= 1)
 		return 0;
 	uint ack = peer->Send(&f.GetBitStream(), priority, reliability, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
@@ -186,6 +203,13 @@ void Net::InitClient()
 	Info("sv_online = true");
 
 	DEBUG_DO(peer->SetTimeoutTime(60 * 60 * 1000, UNASSIGNED_SYSTEM_ADDRESS));
+}
+
+void Net::SendClient(BitStreamWriter& f, PacketPriority priority, PacketReliability reliability, StreamLogType type)
+{
+	assert(IsClient());
+	peer->Send(&f.GetBitStream(), priority, reliability, 0, server, false);
+	StreamWrite(f.GetBitStream(), type, server);
 }
 
 //=================================================================================================

@@ -522,8 +522,8 @@ void Game::SaveGame(GameWriter& f)
 		f << Trap::netid_counter;
 		f << Door::netid_counter;
 		f << Electro::netid_counter;
-		f << mp_use_interp;
-		f << mp_interp;
+		f << N.mp_use_interp;
+		f << N.mp_interp;
 
 		f << check_id;
 		++check_id;
@@ -1062,8 +1062,8 @@ void Game::LoadGame(GameReader& f)
 		f >> Trap::netid_counter;
 		f >> Door::netid_counter;
 		f >> Electro::netid_counter;
-		f >> mp_use_interp;
-		f >> mp_interp;
+		f >> N.mp_use_interp;
+		f >> N.mp_interp;
 
 		f >> read_id;
 		if(read_id != check_id)

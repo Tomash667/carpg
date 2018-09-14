@@ -135,6 +135,8 @@ public:
 	Net();
 	void LoadLanguage();
 	void Cleanup();
+	void WriteNetVars(BitStreamWriter& f);
+	void ReadNetVars(BitStreamReader& f);
 
 	//****************************************************************************
 	// Common
@@ -144,11 +146,12 @@ public:
 	PlayerInfo* FindPlayer(Cstring nick);
 	PlayerInfo* FindPlayer(const SystemAddress& adr);
 	PlayerInfo* TryGetPlayer(int id);
-	void Send(BitStreamWriter& f, PacketPriority priority, PacketReliability reliability, const SystemAddress& adr, StreamLogType type);
 
 	RakPeerInterface* peer;
 	vector<PlayerInfo*> players; // contains players that left too
+	float mp_interp;
 	int port;
+	bool mp_use_interp;
 
 	//****************************************************************************
 	// Server
@@ -157,6 +160,7 @@ public:
 	void InitServer();
 	void UpdateServerInfo();
 	void OnChangeLevel(int level);
+	void SendServer(BitStreamWriter& f, PacketPriority priority, PacketReliability reliability, const SystemAddress& adr, StreamLogType type);
 	uint SendAll(BitStreamWriter& f, PacketPriority priority, PacketReliability reliability, StreamLogType type);
 
 	uint active_players, max_players;
@@ -167,6 +171,9 @@ public:
 	// Client
 	//****************************************************************************
 	void InitClient();
+	void SendClient(BitStreamWriter& f, PacketPriority priority, PacketReliability reliability, StreamLogType type);
+
+	SystemAddress server;
 
 	//****************************************************************************
 	BitStream& StreamStart(Packet* packet, StreamLogType type);

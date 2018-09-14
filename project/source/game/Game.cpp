@@ -60,7 +60,7 @@ Game::Game() : have_console(false), vbParticle(nullptr), quickstart(QUICKSTART_N
 cl_lighting(true), draw_particle_sphere(false), draw_unit_radius(false), draw_hitbox(false), noai(false), testing(false), game_speed(1.f), devmode(false),
 draw_phy(false), draw_col(false), force_seed(0), next_seed(0), force_seed_all(false), alpha_test_state(-1), debug_info(false), dont_wander(false),
 check_updates(true), skip_tutorial(false), portal_anim(0), debug_info2(false), music_type(MusicType::None),
-koniec_gry(false), net_stream(64 * 1024), net_stream2(64 * 1024), mp_interp(0.05f), mp_use_interp(true),
+koniec_gry(false), prepared_stream(64 * 1024),
 paused(false), pick_autojoin(false), draw_flags(0xFFFFFFFF), tMiniSave(nullptr), prev_game_state(GS_LOAD), tSave(nullptr), sItemRegion(nullptr),
 sItemRegionRot(nullptr), sChar(nullptr), sSave(nullptr), in_tutorial(false), cursor_allow_move(true), mp_load(false), was_client(false), sCustom(nullptr),
 cl_postfx(true), mp_timeout(10.f), sshader_pool(nullptr), cl_normalmap(true), cl_specularmap(true), dungeon_tex_wrap(true), profiler_mode(0),

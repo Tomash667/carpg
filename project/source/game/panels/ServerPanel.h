@@ -29,7 +29,7 @@ public:
 
 	void Show();
 	void GetCell(int item, int column, Cell& cell);
-	void ExitLobby(VoidF f = nullptr);
+	void ExitLobby(VoidF callback = nullptr);
 	void AddMsg(cstring text);
 	void OnKick(int id);
 	void OnInput(const string& str);

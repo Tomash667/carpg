@@ -51,8 +51,8 @@ void Game::AddCommands()
 	cmds.push_back(ConsoleCommand(&next_seed, "next_seed", "Random seed used in next map generation", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&dont_wander, "dont_wander", "citizens don't wander around city (dont_wander 0/1)", F_ANYWHERE | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&draw_flags, "draw_flags", "set which elements of game draw (draw_flags int)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&mp_interp, "mp_interp", "interpolation interval (mp_interp 0.f-1.f)", F_MULTIPLAYER | F_WORLD_MAP | F_MP_VAR, 0.f, 1.f));
-	cmds.push_back(ConsoleCommand(&mp_use_interp, "mp_use_interp", "set use of interpolation (mp_use_interp 0/1)", F_MULTIPLAYER | F_WORLD_MAP | F_MP_VAR));
+	cmds.push_back(ConsoleCommand(&N.mp_interp, "mp_interp", "interpolation interval (mp_interp 0.f-1.f)", F_MULTIPLAYER | F_WORLD_MAP | F_MP_VAR, 0.f, 1.f));
+	cmds.push_back(ConsoleCommand(&N.mp_use_interp, "mp_use_interp", "set use of interpolation (mp_use_interp 0/1)", F_MULTIPLAYER | F_WORLD_MAP | F_MP_VAR));
 	cmds.push_back(ConsoleCommand(&cl_postfx, "cl_postfx", "use post effects (cl_postfx 0/1)", F_ANYWHERE | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&cl_normalmap, "cl_normalmap", "use normal mapping (cl_normalmap 0/1)", F_ANYWHERE | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&cl_specularmap, "cl_specularmap", "use specular mapping (cl_specularmap 0/1)", F_ANYWHERE | F_WORLD_MAP));
@@ -1062,7 +1062,10 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								f << ID_WHISPER;
 								f.WriteCasted<byte>(Net::IsServer() ? my_id : info->id);
 								f << text;
-								N.Send(f, MEDIUM_PRIORITY, RELIABLE, Net::IsServer() ? info->adr : server, Stream_Chat);
+								if(Net::IsServer())
+									N.SendServer(f, MEDIUM_PRIORITY, RELIABLE, info->adr, Stream_Chat);
+								else
+									N.SendClient(f, MEDIUM_PRIORITY, RELIABLE, Stream_Chat);
 								cstring s = Format("@%s: %s", info->name.c_str(), text.c_str());
 								AddMsg(s);
 								Info(s);
@@ -1080,12 +1083,10 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						const string& text = t.MustGetItem();
 						if(N.active_players > 1)
 						{
-							net_stream.Reset();
-							BitStreamWriter f(net_stream);
+							BitStreamWriter f;
 							f << ID_SERVER_SAY;
 							f << text;
-							N.peer->Send(&net_stream, MEDIUM_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
-							N.StreamWrite(net_stream, Stream_Chat, UNASSIGNED_SYSTEM_ADDRESS);
+							N.SendAll(f, MEDIUM_PRIORITY, RELIABLE, Stream_Chat);
 						}
 						AddServerMsg(text.c_str());
 						Info("SERWER: %s", text.c_str());
@@ -1276,8 +1277,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						if(Net::IsServer())
 							N.SendAll(f, MEDIUM_PRIORITY, RELIABLE, Stream_Chat);
 						else
-							N.Send(f, MEDIUM_PRIORITY, RELIABLE, server, Stream_Chat);
-						N.StreamWrite(net_stream, Stream_Chat, Net::IsServer() ? UNASSIGNED_SYSTEM_ADDRESS : server);
+							N.SendClient(f, MEDIUM_PRIORITY, RELIABLE, Stream_Chat);
 						cstring s = Format("%s: %s", N.GetMe().name.c_str(), text.c_str());
 						AddMsg(s);
 						Info(s);

@@ -169,7 +169,7 @@ void Game::KickPlayer(PlayerInfo& info)
 	BitStreamWriter f;
 	f << ID_SERVER_CLOSE;
 	f << (byte)1;
-	N.Send(f, MEDIUM_PRIORITY, RELIABLE, info.adr, Stream_None);
+	N.SendServer(f, MEDIUM_PRIORITY, RELIABLE, info.adr, Stream_None);
 
 	info.state = PlayerInfo::REMOVING;
 
@@ -191,20 +191,6 @@ void Game::KickPlayer(PlayerInfo& info)
 		info.left = PlayerInfo::LEFT_KICK;
 		players_left = true;
 	}
-}
-
-//=================================================================================================
-int Game::GetPlayerIndex(int id)
-{
-	assert(InRange(id, 0, 255));
-	int index = 0;
-	for(PlayerInfo* info : N.players)
-	{
-		if(info->id == id)
-			return index;
-		++index;
-	}
-	return -1;
 }
 
 //=================================================================================================
@@ -697,8 +683,7 @@ bool Game::ReadLevelData(BitStreamReader& f)
 void Game::SendPlayerData(PlayerInfo& info)
 {
 	Unit& unit = *info.u;
-	net_stream2.Reset();
-	BitStreamWriter f(net_stream2);
+	BitStreamWriter f;
 
 	f << ID_PLAYER_DATA;
 	f << unit.netid;
@@ -744,8 +729,7 @@ void Game::SendPlayerData(PlayerInfo& info)
 
 	f.WriteCasted<byte>(0xFF);
 
-	N.peer->Send(&net_stream2, HIGH_PRIORITY, RELIABLE, 0, info.adr, false);
-	N.StreamWrite(net_stream2, Stream_TransferServer, info.adr);
+	N.SendServer(f, HIGH_PRIORITY, RELIABLE, info.adr, Stream_TransferServer);
 }
 
 //=================================================================================================
@@ -964,8 +948,7 @@ void Game::UpdateServer(float dt)
 			Net::PushChange(NetChange::CHANGE_FLAGS);
 
 		update_timer = 0;
-		net_stream.Reset();
-		BitStreamWriter f(net_stream);
+		BitStreamWriter f;
 		f << ID_CHANGES;
 
 		// dodaj zmiany pozycji jednostek i ai_mode
@@ -992,8 +975,7 @@ void Game::UpdateServer(float dt)
 		WriteServerChanges(f);
 		Net::changes.clear();
 		assert(net_talk.empty());
-		N.peer->Send(&net_stream, HIGH_PRIORITY, RELIABLE_ORDERED, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
-		N.StreamWrite(net_stream, Stream_UpdateGameServer, UNASSIGNED_SYSTEM_ADDRESS);
+		N.SendAll(f, HIGH_PRIORITY, RELIABLE_ORDERED, Stream_UpdateGameServer);
 
 		for(PlayerInfo* ptr_info : N.players)
 		{
@@ -1021,11 +1003,9 @@ void Game::UpdateServer(float dt)
 			// write & send updates
 			if(!info.changes.empty() || info.update_flags)
 			{
-				net_stream.Reset();
-				BitStreamWriter f(net_stream);
+				BitStreamWriter f;
 				WriteServerChangesForPlayer(f, info);
-				N.peer->Send(&net_stream, HIGH_PRIORITY, RELIABLE_ORDERED, 0, info.adr, false);
-				N.StreamWrite(net_stream, Stream_UpdateGameServer, info.adr);
+				N.SendServer(f, HIGH_PRIORITY, RELIABLE_ORDERED, info.adr, Stream_UpdateGameServer);
 				info.update_flags = 0;
 				info.changes.clear();
 			}
@@ -3920,7 +3900,7 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 			minimap_reveal_mp.clear();
 			break;
 		case NetChange::CHANGE_MP_VARS:
-			WriteNetVars(f);
+			N.WriteNetVars(f);
 			break;
 		case NetChange::SECRET_TEXT:
 			f << Quest_Secret::GetNote().desc;
@@ -4300,8 +4280,7 @@ void Game::UpdateClient(float dt)
 	if(update_timer >= TICK)
 	{
 		update_timer = 0;
-		net_stream.Reset();
-		BitStreamWriter f(net_stream);
+		BitStreamWriter f;
 		f << ID_CONTROL;
 		if(game_state == GS_LEVEL)
 		{
@@ -4315,8 +4294,7 @@ void Game::UpdateClient(float dt)
 			f << false;
 		WriteClientChanges(f);
 		Net::changes.clear();
-		N.peer->Send(&net_stream, HIGH_PRIORITY, RELIABLE_ORDERED, 0, server, false);
-		N.StreamWrite(net_stream, Stream_UpdateGameClient, server);
+		N.SendClient(f, HIGH_PRIORITY, RELIABLE_ORDERED, Stream_UpdateGameClient);
 	}
 
 	if(exit_from_server)
@@ -5455,7 +5433,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					{
 						info->left = reason;
 						RemovePlayer(*info);
-						N.players.erase(N.players.begin() + GetPlayerIndex(info->id));
+						N.players.erase(N.players.begin() + info->GetIndex());
 						delete info;
 					}
 				}
@@ -6536,7 +6514,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 			break;
 		// multiplayer vars changed
 		case NetChange::CHANGE_MP_VARS:
-			ReadNetVars(f);
+			N.ReadNetVars(f);
 			if(!f)
 				N.StreamError("Update client: Broken CHANGE_MP_VARS.");
 			break;
@@ -7824,16 +7802,15 @@ void Game::Client_Say(BitStreamReader& f)
 		N.StreamError("Client_Say: Broken packet.");
 	else
 	{
-		int index = GetPlayerIndex(id);
-		if(index == -1)
+		PlayerInfo* info = N.TryGetPlayer(id);
+		if(!info)
 			N.StreamError("Client_Say: Broken packet, missing player %d.", id);
 		else
 		{
-			PlayerInfo& info = *N.players[index];
-			cstring s = Format("%s: %s", info.name.c_str(), text.c_str());
+			cstring s = Format("%s: %s", info->name.c_str(), text.c_str());
 			AddMsg(s);
 			if(game_state == GS_LEVEL)
-				game_gui->AddSpeechBubble(info.u, text.c_str());
+				game_gui->AddSpeechBubble(info->u, text.c_str());
 		}
 	}
 }
@@ -7849,12 +7826,12 @@ void Game::Client_Whisper(BitStreamReader& f)
 		N.StreamError("Client_Whisper: Broken packet.");
 	else
 	{
-		int index = GetPlayerIndex(id);
-		if(index == -1)
+		PlayerInfo* info = N.TryGetPlayer(id);
+		if(!info)
 			N.StreamError("Client_Whisper: Broken packet, missing player %d.", id);
 		else
 		{
-			cstring s = Format("%s@: %s", N.players[index]->name.c_str(), text.c_str());
+			cstring s = Format("%s@: %s", info->name.c_str(), text.c_str());
 			AddMsg(s);
 		}
 	}
@@ -7918,15 +7895,14 @@ void Game::Server_Whisper(BitStreamReader& f, PlayerInfo& info, Packet* packet)
 		else
 		{
 			// wiadomoúÊ do kogoú innego
-			int index = GetPlayerIndex(id);
-			if(index == -1)
+			PlayerInfo* info2 = N.TryGetPlayer(id);
+			if(!info2)
 				N.StreamError("Server_Whisper: Broken packet from %s to missing player %d.", info.name.c_str(), id);
 			else
 			{
-				PlayerInfo& info2 = *N.players[index];
 				packet->data[1] = (byte)info.id;
-				N.peer->Send((cstring)packet->data, packet->length, MEDIUM_PRIORITY, RELIABLE, 0, info2.adr, false);
-				N.StreamWrite(packet, Stream_Chat, info2.adr);
+				N.peer->Send((cstring)packet->data, packet->length, MEDIUM_PRIORITY, RELIABLE, 0, info2->adr, false);
+				N.StreamWrite(packet, Stream_Chat, info2->adr);
 			}
 		}
 	}
@@ -8244,7 +8220,7 @@ void Game::PrepareWorldData(BitStreamWriter& f)
 	GameStats::Get().Write(f);
 
 	// mp vars
-	WriteNetVars(f);
+	N.WriteNetVars(f);
 
 	// quest items
 	f.WriteCasted<word>(Net::changes.size());
@@ -8298,7 +8274,7 @@ bool Game::ReadWorldData(BitStreamReader& f)
 	}
 
 	// mp vars
-	ReadNetVars(f);
+	N.ReadNetVars(f);
 	if(!f)
 	{
 		Error("Read world: Broken packet for mp vars.");
@@ -8367,20 +8343,6 @@ bool Game::ReadWorldData(BitStreamReader& f)
 	}
 
 	return true;
-}
-
-//=================================================================================================
-void Game::WriteNetVars(BitStreamWriter& f)
-{
-	f << mp_use_interp;
-	f << mp_interp;
-}
-
-//=================================================================================================
-void Game::ReadNetVars(BitStreamReader& f)
-{
-	f >> mp_use_interp;
-	f >> mp_interp;
 }
 
 //=================================================================================================
@@ -8454,9 +8416,9 @@ void Game::UpdateInterpolator(EntityInterpolator* e, float dt, Vec3& pos, float&
 	for(int i = 0; i < EntityInterpolator::MAX_ENTRIES; ++i)
 		e->entries[i].timer += dt;
 
-	if(mp_use_interp)
+	if(N.mp_use_interp)
 	{
-		if(e->entries[0].timer > mp_interp)
+		if(e->entries[0].timer > N.mp_interp)
 		{
 			// nie ma nowszej klatki
 			// extrapolation ? nie dziú...
@@ -8468,19 +8430,19 @@ void Game::UpdateInterpolator(EntityInterpolator* e, float dt, Vec3& pos, float&
 			// znajdü odpowiednie klatki
 			for(int i = 0; i < e->valid_entries; ++i)
 			{
-				if(Equal(e->entries[i].timer, mp_interp))
+				if(Equal(e->entries[i].timer, N.mp_interp))
 				{
 					// rÛwne trafienie w klatke
 					pos = e->entries[i].pos;
 					rot = e->entries[i].rot;
 					return;
 				}
-				else if(e->entries[i].timer > mp_interp)
+				else if(e->entries[i].timer > N.mp_interp)
 				{
 					// interpolacja pomiÍdzy dwoma klatkami ([i-1],[i])
 					EntityInterpolator::Entry& e1 = e->entries[i - 1];
 					EntityInterpolator::Entry& e2 = e->entries[i];
-					float t = (mp_interp - e1.timer) / (e2.timer - e1.timer);
+					float t = (N.mp_interp - e1.timer) / (e2.timer - e1.timer);
 					pos = Vec3::Lerp(e1.pos, e2.pos, t);
 					rot = Clip(Slerp(e1.rot, e2.rot, t));
 					return;

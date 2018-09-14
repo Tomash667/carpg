@@ -203,9 +203,9 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 		net_state = NetState::Server_Send;
 		if(N.active_players > 1)
 		{
-			net_stream.Reset();
-			PrepareLevelData(net_stream, loaded_resources);
-			Info("Generated location packet: %d.", net_stream.GetNumberOfBytesUsed());
+			prepared_stream.Reset();
+			PrepareLevelData(prepared_stream, loaded_resources);
+			Info("Generated location packet: %d.", prepared_stream.GetNumberOfBytesUsed());
 		}
 		else
 			N.GetMe().state = PlayerInfo::IN_GAME;

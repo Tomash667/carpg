@@ -921,7 +921,6 @@ public:
 
 	Unit* FindPlayerTradingWithUnit(Unit& u);
 	Int2 GetSpawnPoint();
-	InsideLocationLevel* TryGetLevelData();
 	bool ValidateTarget(Unit& u, Unit* target);
 
 	void UpdateLights(vector<Light>& lights);
@@ -1042,7 +1041,6 @@ public:
 	int last_startup_id;
 	bool was_client, players_left;
 	vector<PlayerInfo*> old_players;
-	SystemAddress server;
 	int leader_id, kick_id;
 	float startup_timer;
 	enum NET_MODE
@@ -1061,7 +1059,7 @@ public:
 	float net_timer, update_timer, mp_timeout;
 	vector<Int2> lobby_updates;
 	void AddLobbyUpdate(const Int2& u);
-	BitStream net_stream, net_stream2;
+	BitStream prepared_stream;
 	bool change_title_a;
 	bool level_generated;
 	int skip_id_counter;
@@ -1079,8 +1077,7 @@ public:
 	// u¿ywane u klienta który nie zapamiêtuje zmiennej 'pc'
 	bool godmode, noclip, invisible;
 	vector<Int2> minimap_reveal_mp;
-	bool mp_load, mp_load_worldmap, mp_use_interp;
-	float mp_interp;
+	bool mp_load, mp_load_worldmap;
 	float interpolate_timer;
 	bool paused, pick_autojoin;
 
@@ -1089,7 +1086,6 @@ public:
 	void InterpolateUnits(float dt);
 	void InterpolatePlayers(float dt);
 
-	int GetPlayerIndex(int id);
 	void AddServerMsg(cstring msg);
 	void KickPlayer(PlayerInfo& info);
 	void ChangeReady();
@@ -1149,8 +1145,6 @@ public:
 	PlayerInfo* FindOldPlayer(cstring nick);
 	void PrepareWorldData(BitStreamWriter& f);
 	bool ReadWorldData(BitStreamReader& f);
-	void WriteNetVars(BitStreamWriter& f);
-	void ReadNetVars(BitStreamReader& f);
 	void WritePlayerStartData(BitStreamWriter& f, PlayerInfo& info);
 	bool ReadPlayerStartData(BitStreamReader& f);
 	bool CheckMoveNet(Unit& unit, const Vec3& pos);
