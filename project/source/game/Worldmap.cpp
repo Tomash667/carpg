@@ -60,16 +60,12 @@ void Game::GenerateWorld()
 	Info("Randomness integrity: %d", RandVal());
 }
 
-bool Game::EnterLocation(int level, int from_portal, bool close_portal)
+void Game::EnterLocation(int level, int from_portal, bool close_portal)
 {
 	Location& l = *L.location;
-	if(l.type == L_ACADEMY)
-	{
-		ShowAcademyText();
-		return false;
-	}
 
 	world_map->visible = false;
+	game_gui->Reset();
 	game_gui->visible = true;
 
 	const bool reenter = L.is_open;
@@ -87,7 +83,6 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 	L.event_handler = nullptr;
 	pc_data.before_player = BP_NONE;
 	arena_free = true; //zabezpieczenie :3
-	unit_views.clear();
 	Inventory::lock = nullptr;
 
 	bool first = false;
@@ -229,8 +224,6 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 
 	Info("Randomness integrity: %d", RandVal());
 	Info("Entered location.");
-
-	return true;
 }
 
 template<typename T>

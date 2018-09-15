@@ -7,6 +7,7 @@
 #include "GetNumberDialog.h"
 #include "Team.h"
 #include "SoundManager.h"
+#include "GameMessages.h"
 
 //-----------------------------------------------------------------------------
 enum ButtonId
@@ -245,7 +246,7 @@ void TeamPanel::Event(GuiEvent e)
 	case Bt_GiveGold:
 	case Bt_Leader:
 	case Bt_Kick:
-		game.AddGameMsg2(txPickCharacter, 1.5f, GMS_PICK_CHARACTER);
+		game.game_messages->AddGameMsg2(txPickCharacter, 1.5f, GMS_PICK_CHARACTER);
 		picking = true;
 		picked = -1;
 		mode = e;

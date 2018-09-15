@@ -112,7 +112,6 @@ ForLocation::ForLocation(int loc, int level)
 	case L_FOREST:
 	case L_MOONWELL:
 	case L_ENCOUNTER:
-	case L_ACADEMY:
 	case L_CAMP:
 		{
 			assert(level == -1);

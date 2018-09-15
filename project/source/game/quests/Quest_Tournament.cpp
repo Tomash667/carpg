@@ -14,6 +14,7 @@
 #include "Language.h"
 #include "GameGui.h"
 #include "Game.h"
+#include "GameMessages.h"
 
 //=================================================================================================
 void Quest_Tournament::InitOnce()
@@ -491,7 +492,7 @@ void Quest_Tournament::Update(float dt)
 						other_fighter = p.second;
 						Talk(Format(txTour[11], p.first->GetRealName()));
 						if(!p.first->to_remove && p.first->IsPlayer())
-							game.AddGameMsg3(p.first->player, GMS_LEFT_EVENT);
+							game.game_messages->AddGameMsg3(p.first->player, GMS_LEFT_EVENT);
 					}
 					else if(p.second->to_remove || !p.second->IsStanding() || p.second->frozen != FROZEN::NO
 						|| !(Vec3::Distance2d(p.second->pos, master->pos) <= 64.f || p.second->in_building == arena))
@@ -501,7 +502,7 @@ void Quest_Tournament::Update(float dt)
 						units.push_back(p.first);
 						Talk(Format(txTour[12], p.second->GetRealName(), p.first->GetRealName()));
 						if(!p.second->to_remove && p.second->IsPlayer())
-							game.AddGameMsg3(p.second->player, GMS_LEFT_EVENT);
+							game.game_messages->AddGameMsg3(p.second->player, GMS_LEFT_EVENT);
 					}
 					else
 					{
@@ -569,7 +570,7 @@ void Quest_Tournament::Update(float dt)
 						// second unit left too
 						Talk(Format(txTour[13], other_fighter->GetRealName()));
 						if(!other_fighter->to_remove && other_fighter->IsPlayer())
-							game.AddGameMsg3(other_fighter->player, GMS_LEFT_EVENT);
+							game.game_messages->AddGameMsg3(other_fighter->player, GMS_LEFT_EVENT);
 					}
 					else
 					{
@@ -749,7 +750,7 @@ void Quest_Tournament::VerifyUnit(Unit* unit)
 	{
 		unit->player->leaving_event = leaving_event;
 		if(leaving_event)
-			Game::Get().AddGameMsg3(GMS_GETTING_OUT_OF_RANGE);
+			Game::Get().game_messages->AddGameMsg3(GMS_GETTING_OUT_OF_RANGE);
 	}
 }
 

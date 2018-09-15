@@ -9,6 +9,7 @@
 #include "Location.h"
 #include "Language.h"
 #include "Game.h"
+#include "GameMessages.h"
 
 //=================================================================================================
 void Quest_Secret::InitOnce()
@@ -118,7 +119,7 @@ bool Quest_Secret::CheckMoonStone(GroundItem* item, Unit& unit)
 	if(state == SECRET_NONE && W.GetCurrentLocation()->type == L_MOONWELL && item->item->id == "krystal"
 		&& Vec3::Distance2d(item->pos, Vec3(128.f, 0, 128.f)) < 1.2f)
 	{
-		Game::Get().AddGameMsg(txSecretAppear, 3.f);
+		Game::Get().game_messages->AddGameMsg(txSecretAppear, 3.f);
 		state = SECRET_DROPPED_STONE;
 		Location& l = *W.CreateLocation(L_DUNGEON, Vec2(0, 0), -128.f, DWARF_FORT, SG_CHALLANGE, false, 3);
 		l.st = 18;

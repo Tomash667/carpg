@@ -86,6 +86,7 @@ public:
 	void Load(FileReader& f);
 	bool IsMouseInsideDialog() const { return PointInRect(GUI.cursor_pos, dialog_pos, dialog_size); }
 	void Setup();
+	void RemoveUnit(Unit* unit);
 
 	// panels
 	GamePanelContainer* gp_trade;
@@ -102,6 +103,14 @@ public:
 	bool use_cursor;
 
 private:
+	struct UnitView
+	{
+		Unit* unit;
+		Vec3 last_pos;
+		float time;
+		bool valid;
+	};
+
 	struct SortedUnitView
 	{
 		Unit* unit;
@@ -126,6 +135,7 @@ private:
 	void UpdateSpeechBubbles(float dt);
 	void GetTooltip(TooltipController*, int group, int id);
 	void SortUnits();
+	void UpdatePlayerView(float dt);
 
 	Game& game;
 	TooltipController tooltip;
@@ -141,4 +151,5 @@ private:
 	vector<SortedSpeechBubble> sorted_speech_bbs;
 	cstring txMenu, txDeath, txDeathAlone, txGameTimeout, txChest, txDoor, txDoorLocked, txPressEsc, txHp, txStamina;
 	Int2 debug_info_size, dialog_pos, dialog_size, profiler_size;
+	vector<UnitView> unit_views;
 };

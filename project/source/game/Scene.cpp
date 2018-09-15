@@ -9,6 +9,7 @@
 #include "Portal.h"
 #include "Level.h"
 #include "SuperShader.h"
+#include "GameMessages.h"
 #include "DirectX.h"
 
 //-----------------------------------------------------------------------------
@@ -3912,7 +3913,7 @@ void Game::DrawTrailParticles(const vector<TrailParticleEmitter*>& tpes)
 		{
 			Error("Trail particle emitter error, id = %d!", id);
 #ifdef _DEBUG
-			AddGameMsg("Trail particle emitter error!", 2.f);
+			game_messages->AddGameMsg("Trail particle emitter error!", 2.f);
 #endif
 			continue;
 		}

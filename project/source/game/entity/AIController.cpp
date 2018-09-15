@@ -7,6 +7,7 @@
 #include "InsideLocation.h"
 #include "GameFile.h"
 #include "Level.h"
+#include "GameMessages.h"
 
 //=================================================================================================
 void AIController::Init(Unit* _unit)
@@ -214,7 +215,7 @@ void AIController::Load(GameReader& f)
 				escape_room = nullptr;
 #ifdef _DEBUG
 				Warn("%s had escape_room %d.", unit->GetName(), room_id);
-				Game::Get().AddGameMsg("Unit had escape room!", 5.f);
+				Game::Get().game_messages->AddGameMsg("Unit had escape room!", 5.f);
 #endif
 			}
 		}

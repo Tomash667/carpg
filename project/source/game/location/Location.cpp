@@ -10,7 +10,7 @@
 #include "GameFile.h"
 
 //-----------------------------------------------------------------------------
-cstring txCamp, txCave, txCity, txCrypt, txDungeon, txForest, txVillage, txMoonwell, txOtherness, txAcademy;
+cstring txCamp, txCave, txCity, txCrypt, txDungeon, txForest, txVillage, txMoonwell, txOtherness;
 vector<string> txLocationStart, txLocationEnd;
 
 //=================================================================================================
@@ -25,7 +25,6 @@ void SetLocationNames()
 	txVillage = Str("village");
 	txMoonwell = Str("moonwell");
 	txOtherness = Str("otherness");
-	txAcademy = Str("academy");
 }
 
 //=================================================================================================
@@ -70,9 +69,6 @@ void Location::GenerateName()
 		break;
 	case L_MOONWELL:
 		name = txMoonwell;
-		return;
-	case L_ACADEMY:
-		name = txAcademy;
 		return;
 	default:
 		assert(0);
@@ -203,9 +199,6 @@ void Location::Load(GameReader& f, bool, LOCATION_TOKEN token)
 			break;
 		case L_MOONWELL:
 			image = LI_MOONWELL;
-			break;
-		case L_ACADEMY:
-			image = LI_ACADEMY;
 			break;
 		}
 	}

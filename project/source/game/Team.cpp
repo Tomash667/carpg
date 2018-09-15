@@ -14,6 +14,7 @@
 #include "Quest_Mages.h"
 #include "Quest_Orcs.h"
 #include "Game.h"
+#include "GameMessages.h"
 
 
 TeamSingleton Team;
@@ -1155,7 +1156,7 @@ void TeamSingleton::ValidateTeamItems()
 	}
 
 	if(errors)
-		Game::Get().AddGameMsg(Format("%d hero inventory errors!", errors), 10.f);
+		Game::Get().game_messages->AddGameMsg(Format("%d hero inventory errors!", errors), 10.f);
 }
 
 //-----------------------------------------------------------------------------

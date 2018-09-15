@@ -24,6 +24,11 @@
 #include "Level.h"
 
 //-----------------------------------------------------------------------------
+const float UNIT_VIEW_A = 0.2f;
+const float UNIT_VIEW_B = 0.4f;
+const int UNIT_VIEW_MUL = 5;
+
+//-----------------------------------------------------------------------------
 enum class TooltipGroup
 {
 	Sidebar,
@@ -100,6 +105,7 @@ GameGui::GameGui() : debug_info_size(0, 0), profiler_size(0, 0), use_cursor(fals
 	Add(minimap);
 
 	game_messages = new GameMessages;
+	game.game_messages = game_messages;
 
 	action_panel = new ActionPanel;
 	Add(action_panel);
@@ -208,7 +214,7 @@ void GameGui::DrawFront()
 	{
 		// near enemies/allies
 		sorted_units.clear();
-		for(vector<UnitView>::iterator it = game.unit_views.begin(), end = game.unit_views.end(); it != end; ++it)
+		for(vector<UnitView>::iterator it = unit_views.begin(), end = unit_views.end(); it != end; ++it)
 		{
 			int alpha;
 
@@ -254,7 +260,7 @@ void GameGui::DrawFront()
 		{
 			Unit* u = game.pc_data.before_player_ptr.unit;
 			bool dont_draw = false;
-			for(vector<UnitView>::iterator it = game.unit_views.begin(), end = game.unit_views.end(); it != end; ++it)
+			for(vector<UnitView>::iterator it = unit_views.begin(), end = unit_views.end(); it != end; ++it)
 			{
 				if(it->unit == u)
 				{
@@ -731,6 +737,7 @@ void GameGui::Update(float dt)
 
 	Container::Update(dt);
 
+	UpdatePlayerView(dt);
 	UpdateSpeechBubbles(dt);
 
 	game_messages->Update(dt);
@@ -1033,6 +1040,7 @@ void GameGui::Reset()
 	Event(GuiEvent_Show);
 	use_cursor = false;
 	sidebar = 0.f;
+	unit_views.clear();
 }
 
 //=================================================================================================
@@ -1474,4 +1482,144 @@ void GameGui::SortUnits()
 	{
 		return a.dist > b.dist;
 	});
+}
+
+//=================================================================================================
+void GameGui::UpdatePlayerView(float dt)
+{
+	LevelContext& ctx = L.GetContext(*game.pc->unit);
+	Unit& u = *game.pc->unit;
+
+	// mark previous views as invalid
+	for(vector<UnitView>::iterator it = unit_views.begin(), end = unit_views.end(); it != end; ++it)
+		it->valid = false;
+
+	// check units inside player view
+	for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
+	{
+		Unit& u2 = **it;
+		if(&u == &u2 || u2.to_remove)
+			continue;
+
+		bool mark = false;
+		if(game.IsEnemy(u, u2))
+		{
+			if(u2.IsAlive())
+				mark = true;
+		}
+		else if(game.IsFriend(u, u2))
+			mark = true;
+
+		// oznaczanie pobliskich postaci
+		if(mark)
+		{
+			float dist = Vec3::Distance(u.visual_pos, u2.visual_pos);
+
+			if(dist < ALERT_RANGE.x && game.cam.frustum.SphereToFrustum(u2.visual_pos, u2.GetSphereRadius()) && game.CanSee(u, u2))
+			{
+				// dodaj do pobliskich jednostek
+				bool jest = false;
+				for(vector<UnitView>::iterator it2 = unit_views.begin(), end2 = unit_views.end(); it2 != end2; ++it2)
+				{
+					if(it2->unit == *it)
+					{
+						jest = true;
+						it2->valid = true;
+						it2->last_pos = u2.GetUnitTextPos();
+						break;
+					}
+				}
+				if(!jest)
+				{
+					UnitView& uv = Add1(unit_views);
+					uv.valid = true;
+					uv.unit = *it;
+					uv.time = 0.f;
+					uv.last_pos = u2.GetUnitTextPos();
+				}
+			}
+		}
+	}
+
+	// aktualizuj pobliskie postacie
+	// 0.0 -> 0.1 niewidoczne
+	// 0.1 -> 0.2 alpha 0->255
+	// -0.2 -> -0.1 widoczne
+	// -0.1 -> 0.0 alpha 255->0
+	for(vector<UnitView>::iterator it = unit_views.begin(), end = unit_views.end(); it != end;)
+	{
+		bool removed = false;
+
+		if(it->valid)
+		{
+			if(it->time >= 0.f)
+				it->time += dt;
+			else if(it->time < -UNIT_VIEW_A)
+				it->time = UNIT_VIEW_B;
+			else
+				it->time = -it->time;
+		}
+		else
+		{
+			if(it->time >= 0.f)
+			{
+				if(it->time < UNIT_VIEW_A)
+				{
+					// usuñ
+					if(it + 1 == end)
+					{
+						unit_views.pop_back();
+						break;
+					}
+					else
+					{
+						std::iter_swap(it, end - 1);
+						unit_views.pop_back();
+						end = unit_views.end();
+						removed = true;
+					}
+				}
+				else if(it->time < UNIT_VIEW_B)
+					it->time = -it->time;
+				else
+					it->time = -UNIT_VIEW_B;
+			}
+			else
+			{
+				it->time += dt;
+				if(it->time >= 0.f)
+				{
+					// usuñ
+					if(it + 1 == end)
+					{
+						unit_views.pop_back();
+						break;
+					}
+					else
+					{
+						std::iter_swap(it, end - 1);
+						unit_views.pop_back();
+						end = unit_views.end();
+						removed = true;
+					}
+				}
+			}
+		}
+
+		if(!removed)
+			++it;
+	}
+}
+
+//=================================================================================================
+void GameGui::RemoveUnit(Unit* unit)
+{
+	for(vector<UnitView>::iterator it = unit_views.begin(), end = unit_views.end(); it != end; ++it)
+	{
+		if(it->unit == unit)
+		{
+			unit_views.erase(it);
+			break;
+		}
+	}
 }

@@ -8,6 +8,7 @@
 #include "GameFile.h"
 #include "World.h"
 #include "GameGui.h"
+#include "GameMessages.h"
 
 Game* Quest::game;
 
@@ -61,7 +62,7 @@ void Quest::OnStart(cstring name)
 	quest_manager.quests.push_back(this);
 	RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
 	game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-	game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+	game->game_messages->AddGameMsg3(GMS_JOURNAL_UPDATED);
 	if(Net::IsOnline())
 	{
 		NetChange& c = Add1(Net::changes);
@@ -77,7 +78,7 @@ void Quest::OnUpdate(const std::initializer_list<cstring>& new_msgs)
 	for(cstring msg : new_msgs)
 		msgs.push_back(msg);
 	game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-	game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+	game->game_messages->AddGameMsg3(GMS_JOURNAL_UPDATED);
 	if(Net::IsOnline())
 	{
 

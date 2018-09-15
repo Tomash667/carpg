@@ -1272,35 +1272,17 @@ void Game::SetGameText()
 	txPvpRefuse = Str("pvpRefuse");
 	txWin = Str("win");
 	txWinMp = Str("winMp");
-	txINeedWeapon = Str("iNeedWeapon");
-	txNoHpp = Str("noHpp");
-	txCantDo = Str("cantDo");
-	txDontLootFollower = Str("dontLootFollower");
-	txDontLootArena = Str("dontLootArena");
-	txUnlockedDoor = Str("unlockedDoor");
-	txNeedKey = Str("needKey");
 	txLevelUp = Str("levelUp");
 	txLevelDown = Str("levelDown");
 	txLocationText = Str("locationText");
 	txLocationTextMap = Str("locationTextMap");
 	txRegeneratingLevel = Str("regeneratingLevel");
-	txGmsLooted = Str("gmsLooted");
-	txGmsRumor = Str("gmsRumor");
-	txGmsJournalUpdated = Str("gmsJournalUpdated");
-	txGmsUsed = Str("gmsUsed");
-	txGmsUnitBusy = Str("gmsUnitBusy");
-	txGmsGatherTeam = Str("gmsGatherTeam");
-	txGmsNotLeader = Str("gmsNotLeader");
-	txGmsNotInCombat = Str("gmsNotInCombat");
+	txReallyQuit = Str("reallyQuit");
 	txGainTextAttrib = Str("gainTextAttrib");
 	txGainTextSkill = Str("gainTextSkill");
 	txNeedItem = Str("needItem");
-	txReallyQuit = Str("reallyQuit");
-	txGmsAddedItem = Str("gmsAddedItem");
 	txGmsAddedItems = Str("gmsAddedItems");
-	txGmsGettingOutOfRange = Str("gmsGettingOutOfRange");
-	txGmsLeftEvent = Str("gmsLeftEvent");
-
+	
 	// plotki
 	LoadArray(txRumor, "rumor_");
 	LoadArray(txRumorD, "rumor_d_");

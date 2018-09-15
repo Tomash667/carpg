@@ -112,7 +112,7 @@ void InsideLocationGenerator::OnEnter()
 			RegenerateTraps();
 		}
 
-		game.OnReenterLevel(L.local_ctx);
+		L.OnReenterLevel();
 
 		// odtwórz jednostki
 		if(respawn_units)

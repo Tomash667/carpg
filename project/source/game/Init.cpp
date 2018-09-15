@@ -23,6 +23,7 @@
 #include "Pathfinding.h"
 #include "Level.h"
 #include "SuperShader.h"
+#include "GameMessages.h"
 
 extern void HumanPredraw(void* ptr, Matrix* mat, int n);
 extern const int ITEM_IMAGE_SIZE;
@@ -249,6 +250,7 @@ void Game::LoadLanguageFiles()
 	SetGameText();
 	SetStatsText();
 	N.LoadLanguage();
+	game_messages->LoadLanguage();
 
 	txLoadGuiTextures = Str("loadGuiTextures");
 	txLoadParticles = Str("loadParticles");

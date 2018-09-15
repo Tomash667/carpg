@@ -47,7 +47,6 @@ enum GAME_STATE
 	GS_QUIT
 };
 
-extern const float ATTACK_RANGE;
 extern const Vec2 ALERT_RANGE;
 extern const float PICKUP_RANGE;
 extern const float ARROW_TIMER;
@@ -60,40 +59,6 @@ struct AttachedSound
 };
 
 static_assert(sizeof(time_t) == sizeof(__int64), "time_t needs to be 64 bit");
-
-struct UnitView
-{
-	Unit* unit;
-	Vec3 last_pos;
-	float time;
-	bool valid;
-};
-
-enum GMS
-{
-	GMS_NEED_WEAPON = 1,
-	GMS_NEED_KEY,
-	GMS_DONT_LOOT_FOLLOWER,
-	GMS_JOURNAL_UPDATED,
-	GMS_GATHER_TEAM,
-	GMS_ADDED_RUMOR,
-	GMS_UNLOCK_DOOR,
-	GMS_CANT_DO,
-	GMS_UNIT_BUSY,
-	GMS_NOT_NOW,
-	GMS_NOT_IN_COMBAT,
-	GMS_IS_LOOTED,
-	GMS_USED,
-	GMS_DONT_LOOT_ARENA,
-	GMS_NOT_LEADER,
-	GMS_ONLY_LEADER_CAN_TRAVEL,
-	GMS_NO_POTION,
-	GMS_GAME_SAVED,
-	GMS_PICK_CHARACTER,
-	GMS_ADDED_ITEM,
-	GMS_GETTING_OUT_OF_RANGE,
-	GMS_LEFT_EVENT
-};
 
 enum class FALLBACK
 {
@@ -146,10 +111,6 @@ enum DRAW_FLAGS
 };
 
 typedef delegate<void(cstring)> PrintMsgFunc;
-
-const float UNIT_VIEW_A = 0.2f;
-const float UNIT_VIEW_B = 0.4f;
-const int UNIT_VIEW_MUL = 5;
 
 struct PostEffect
 {
@@ -348,10 +309,8 @@ public:
 	cstring txCantSaveGame, txSaveFailed, txSavedGameN, txLoadFailed, txQuickSave, txGameSaved, txLoadingLocations, txLoadingData, txLoadingQuests, txEndOfLoading,
 		txCantSaveNow, txOnlyServerCanSave, txCantLoadGame, txOnlyServerCanLoad, txLoadSignature, txLoadVersion, txLoadSaveVersionOld, txLoadMP, txLoadSP, txLoadError,
 		txLoadErrorGeneric, txLoadOpenError;
-	cstring txPvpRefuse, txWin, txWinMp, txINeedWeapon, txNoHpp, txCantDo, txDontLootFollower, txDontLootArena, txUnlockedDoor,
-		txNeedKey, txLevelUp, txLevelDown, txLocationText, txLocationTextMap, txRegeneratingLevel, txGmsLooted, txGmsRumor, txGmsJournalUpdated, txGmsUsed,
-		txGmsUnitBusy, txGmsGatherTeam, txGmsNotLeader, txGmsNotInCombat, txGainTextAttrib, txGainTextSkill, txNeedItem, txReallyQuit,
-		txGmsAddedItem, txGmsAddedItems, txGmsGettingOutOfRange, txGmsLeftEvent;
+	cstring txPvpRefuse, txWin, txWinMp, txLevelUp, txLevelDown, txLocationText, txLocationTextMap, txRegeneratingLevel, txGainTextAttrib, txGainTextSkill,
+		txNeedItem, txGmsAddedItems, txReallyQuit;
 	cstring txRumor[28], txRumorD[7];
 	cstring txMayorQFailed[3], txQuestAlreadyGiven[2], txMayorNoQ[2], txCaptainQFailed[2], txCaptainNoQ[2], txLocationDiscovered[2], txAllDiscovered[2], txCampDiscovered[2],
 		txAllCampDiscovered[2], txNoQRumors[2], txRumorQ[9], txNeedMoreGold, txNoNearLoc, txNearLoc, txNearLocEmpty[2], txNearLocCleared, txNearLocEnemy[2], txNoNews[2], txAllNews[2], txPvpTooFar,
@@ -446,7 +405,6 @@ public:
 	uint force_seed, next_seed;
 	vector<AttachedSound> attached_sounds;
 	SaveSlot single_saves[MAX_SAVE_SLOTS], multi_saves[MAX_SAVE_SLOTS];
-	vector<UnitView> unit_views;
 
 	MeshInstance* GetBowInstance(Mesh* mesh);
 
@@ -535,10 +493,6 @@ public:
 
 	void UpdateArena(float dt);
 	void CleanArena();
-
-	//--------------------------------------
-	// QUESTS
-	void ShowAcademyText();
 
 	//
 	vector<Unit*> warp_to_inn;
@@ -730,10 +684,6 @@ public:
 	void ClearGameVarsOnLoad();
 	void ClearGame();
 	cstring FormatString(DialogContext& ctx, const string& str_part);
-	void AddGameMsg(cstring msg, float time);
-	void AddGameMsg2(cstring msg, float time, int id = -1);
-	void AddGameMsg3(GMS id);
-	void AddGameMsg3(PlayerController* player, GMS id);
 	int CalculateQuestReward(int gold);
 	void AddReward(int gold) { AddGold(CalculateQuestReward(gold), nullptr, true, txQuestCompletedGold, 4.f, false); }
 	void UpdateDungeonMinimap(bool send);
@@ -743,7 +693,6 @@ public:
 	SOUND GetItemSound(const Item* item);
 	cstring GetCurrentLocationText();
 	void Unit_StopUsingUsable(LevelContext& ctx, Unit& unit, bool send = true);
-	void OnReenterLevel(LevelContext& ctx);
 	void EnterLevel(LocationGenerator* loc_gen);
 	void LeaveLevel(bool clear = false);
 	void LeaveLevel(LevelContext& ctx, bool clear);
@@ -812,7 +761,6 @@ public:
 	void RemoveQuestUnits(bool on_leave);
 	void UpdateGame2(float dt);
 	void SetUnitWeaponState(Unit& unit, bool wyjmuje, WeaponType co);
-	void UpdatePlayerView();
 	void OnCloseInventory();
 	void CloseInventory();
 	void CloseAllPanels(bool close_mp_box = false);
@@ -868,6 +816,7 @@ public:
 	// panele
 	LoadScreen* load_screen;
 	GameGui* game_gui;
+	GameMessages* game_messages;
 	MainMenu* main_menu;
 	WorldMapGui* world_map;
 	GlobalGui* global_gui;
@@ -1083,7 +1032,7 @@ public:
 
 	//-----------------------------------------------------------------
 	// WORLD MAP
-	bool EnterLocation(int level = 0, int from_portal = -1, bool close_portal = false);
+	void EnterLocation(int level = 0, int from_portal = -1, bool close_portal = false);
 	void GenerateWorld();
 	void LeaveLocation(bool clear = false, bool end_buffs = true);
 	void Event_RandomEncounter(int id);

@@ -26,7 +26,6 @@ enum LOCATION
 	L_FOREST, // las, zazwyczaj pusty, czasem potwory lub bandyci maj¹ tu ma³y obóz
 	L_MOONWELL, // jak las ale ze wzgórzem na œrodku i fontann¹
 	L_ENCOUNTER, // losowe spotkanie na drodze
-	L_ACADEMY,
 	L_MAX,
 	L_NULL
 };
@@ -42,7 +41,6 @@ enum LOCATION_IMAGE
 	LI_CRYPT,
 	LI_FOREST,
 	LI_MOONWELL,
-	LI_ACADEMY,
 	LI_MAX
 };
 

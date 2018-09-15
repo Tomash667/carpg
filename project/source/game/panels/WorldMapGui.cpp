@@ -56,7 +56,6 @@ void WorldMapGui::LoadData()
 	tex_mgr.AddLoadTask("cave.png", tMapIcon[LI_CAVE]);
 	tex_mgr.AddLoadTask("forest.png", tMapIcon[LI_FOREST]);
 	tex_mgr.AddLoadTask("moonwell.png", tMapIcon[LI_MOONWELL]);
-	tex_mgr.AddLoadTask("academy.png", tMapIcon[LI_ACADEMY]);
 	tex_mgr.AddLoadTask("worldmap.jpg", tWorldMap);
 	tex_mgr.AddLoadTask("selected.png", tSelected[0]);
 	tex_mgr.AddLoadTask("selected2.png", tSelected[1]);
@@ -273,7 +272,7 @@ void WorldMapGui::Update(float dt)
 						}
 					}
 					else
-						game.AddGameMsg2(txOnlyLeaderCanTravel, 3.f, GMS_ONLY_LEADER_CAN_TRAVEL);
+						game_messages->AddGameMsg2(txOnlyLeaderCanTravel, 3.f, GMS_ONLY_LEADER_CAN_TRAVEL);
 				}
 				else if(game.devmode && picked_location != W.GetCurrentLocationIndex() && Key.PressedRelease('T'))
 				{
@@ -295,7 +294,7 @@ void WorldMapGui::Update(float dt)
 						}
 					}
 					else
-						game.AddGameMsg2(txOnlyLeaderCanTravel, 3.f, GMS_ONLY_LEADER_CAN_TRAVEL);
+						game_messages->AddGameMsg2(txOnlyLeaderCanTravel, 3.f, GMS_ONLY_LEADER_CAN_TRAVEL);
 				}
 			}
 		}

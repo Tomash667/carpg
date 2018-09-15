@@ -2308,9 +2308,7 @@ void CityGenerator::OnEnter()
 			}
 		}
 
-		game.OnReenterLevel(L.local_ctx);
-		for(InsideBuilding* inside : city->inside_buildings)
-			game.OnReenterLevel(inside->ctx);
+		L.OnReenterLevel();
 	}
 
 	if(!reenter)

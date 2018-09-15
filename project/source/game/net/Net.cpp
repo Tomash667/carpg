@@ -34,6 +34,7 @@
 #include "World.h"
 #include "Level.h"
 #include "LocationGeneratorFactory.h"
+#include "GameMessages.h"
 
 vector<NetChange> Net::changes;
 Net::Mode Net::mode;
@@ -157,7 +158,7 @@ void Game::AddServerMsg(cstring msg)
 		server_panel->AddMsg(s);
 	else
 	{
-		AddGameMsg(msg, 2.f + float(strlen(msg)) / 10);
+		game_messages->AddGameMsg(msg, 2.f + float(strlen(msg)) / 10);
 		AddMultiMsg(s);
 	}
 }
@@ -2935,11 +2936,9 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 		case NetChange::ENTER_LOCATION:
 			if(game_state == GS_WORLDMAP && W.GetState() == World::State::ON_MAP && Team.IsLeader(info.u))
 			{
-				if(EnterLocation())
-				{
-					N.StreamEnd();
-					return false;
-				}
+				EnterLocation();
+				N.StreamEnd();
+				return false;
 			}
 			else
 				N.StreamError("Update server: ENTER_LOCATION from %s, not leader or not on map.", info.name.c_str());
@@ -3707,7 +3706,6 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 		case NetChange::CHEAT_SHOW_MINIMAP:
 		case NetChange::END_OF_GAME:
 		case NetChange::GAME_SAVED:
-		case NetChange::ACADEMY_TEXT:
 		case NetChange::END_TRAVEL:
 			break;
 		case NetChange::CHEST_OPEN:
@@ -5075,7 +5073,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					N.StreamError("Update client: Broken ADD_RUMOR.");
 				else
 				{
-					AddGameMsg3(GMS_ADDED_RUMOR);
+					game_messages->AddGameMsg3(GMS_ADDED_RUMOR);
 					game_gui->journal->GetRumors().push_back(text);
 					game_gui->journal->NeedUpdate(Journal::Rumors);
 				}
@@ -5268,7 +5266,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 
 				quest->state = Quest::Started;
 				game_gui->journal->NeedUpdate(Journal::Quests, quest->quest_index);
-				AddGameMsg3(GMS_JOURNAL_UPDATED);
+				game_messages->AddGameMsg3(GMS_JOURNAL_UPDATED);
 				quest_manager.quests.push_back(quest);
 			}
 			break;
@@ -5294,7 +5292,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					quest->state = (Quest::State)state;
 					quest->msgs.push_back(msg);
 					game_gui->journal->NeedUpdate(Journal::Quests, quest->quest_index);
-					AddGameMsg3(GMS_JOURNAL_UPDATED);
+					game_messages->AddGameMsg3(GMS_JOURNAL_UPDATED);
 				}
 			}
 			break;
@@ -5364,7 +5362,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 						}
 					}
 					game_gui->journal->NeedUpdate(Journal::Quests, quest->quest_index);
-					AddGameMsg3(GMS_JOURNAL_UPDATED);
+					game_messages->AddGameMsg3(GMS_JOURNAL_UPDATED);
 				}
 			}
 			break;
@@ -6521,7 +6519,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 		// game saved notification
 		case NetChange::GAME_SAVED:
 			AddMultiMsg(txGameSaved);
-			AddGameMsg3(GMS_GAME_SAVED);
+			game_messages->AddGameMsg3(GMS_GAME_SAVED);
 			break;
 		// ai left team due too many team members
 		case NetChange::HERO_LEAVE:
@@ -6633,10 +6631,6 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 						sound_mgr->PlaySound3d(unit->usable->base->sound->sound, unit->GetCenter(), 2.f, 5.f);
 				}
 			}
-			break;
-		// show text when trying to enter academy
-		case NetChange::ACADEMY_TEXT:
-			ShowAcademyText();
 			break;
 		// break unit action
 		case NetChange::BREAK_ACTION:
@@ -6796,7 +6790,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 
 					if(!can_loot)
 					{
-						AddGameMsg3(GMS_IS_LOOTED);
+						game_messages->AddGameMsg3(GMS_IS_LOOTED);
 						pc->action = PlayerController::Action_None;
 						break;
 					}
@@ -6829,9 +6823,9 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 					else
 					{
 						if(default_msg)
-							AddGameMsg(Format(txGoldPlus, count), 3.f);
+							game_messages->AddGameMsg(Format(txGoldPlus, count), 3.f);
 						else
-							AddGameMsg(Format(txQuestCompletedGold, count), 4.f);
+							game_messages->AddGameMsg(Format(txQuestCompletedGold, count), 4.f);
 						sound_mgr->PlaySound2d(sCoins);
 					}
 				}
@@ -6847,7 +6841,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 					{
 						// unit is busy
 						pc->action = PlayerController::Action_None;
-						AddGameMsg3(GMS_UNIT_BUSY);
+						game_messages->AddGameMsg3(GMS_UNIT_BUSY);
 					}
 					else
 					{
@@ -7076,7 +7070,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 				break;
 			// someone else is using usable
 			case NetChangePlayer::USE_USABLE:
-				AddGameMsg3(GMS_USED);
+				game_messages->AddGameMsg3(GMS_USED);
 				if(pc->action == PlayerController::Action_LootContainer)
 					pc->action = PlayerController::Action_None;
 				if(pc->unit->action == A_PREPARE)
@@ -7218,7 +7212,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 					else if(reason != CanLeaveLocationResult::InCombat && reason != CanLeaveLocationResult::TeamTooFar)
 						N.StreamError("Update single client: CANT_LEAVE_LOCATION, invalid reason %u.", (byte)reason);
 					else
-						AddGameMsg3(reason == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
+						game_messages->AddGameMsg3(reason == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
 				}
 				break;
 			// force player to look at unit
@@ -7435,7 +7429,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 					else if(count <= 1)
 						N.StreamError("Update single client: ADDED_ITEMS_MSG, invalid count %u.", count);
 					else
-						AddGameMsg(Format(txGmsAddedItems, (int)count), 3.f);
+						game_messages->AddGameMsg(Format(txGmsAddedItems, (int)count), 3.f);
 				}
 				break;
 			// player stat changed
@@ -7504,7 +7498,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 					if(!f)
 						N.StreamError("Update single client: Broken GAME_MESSAGE.");
 					else
-						AddGameMsg3((GMS)gm_id);
+						game_messages->AddGameMsg3((GMS)gm_id);
 				}
 				break;
 			// run script result

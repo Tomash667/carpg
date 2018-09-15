@@ -1159,7 +1159,7 @@ void Game::Quicksave(bool from_console)
 	if(SaveGameSlot(MAX_SAVE_SLOTS, txQuickSave))
 	{
 		if(!from_console)
-			AddGameMsg3(GMS_GAME_SAVED);
+			game_messages->AddGameMsg3(GMS_GAME_SAVED);
 	}
 }
 
@@ -1246,7 +1246,7 @@ void Game::RemoveUnusedAiAndCheck()
 		cstring s = Format("Removed unused ais: %u.", prev_size - ais.size());
 		Warn(s);
 #ifdef _DEBUG
-		AddGameMsg(s, 10.f);
+		game_messages->AddGameMsg(s, 10.f);
 #endif
 	}
 
@@ -1259,7 +1259,7 @@ void Game::RemoveUnusedAiAndCheck()
 			CheckUnitsAi((*it)->ctx, err_count);
 	}
 	if(err_count)
-		AddGameMsg(Format("CheckUnitsAi: %d errors!", err_count), 10.f);
+		game_messages->AddGameMsg(Format("CheckUnitsAi: %d errors!", err_count), 10.f);
 #endif
 }
 

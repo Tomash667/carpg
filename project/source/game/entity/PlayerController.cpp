@@ -8,6 +8,7 @@
 #include "Class.h"
 #include "Action.h"
 #include "Level.h"
+#include "GameMessages.h"
 
 //=================================================================================================
 PlayerController::~PlayerController()
@@ -926,9 +927,9 @@ void PlayerController::AddItemMessage(uint count)
 	{
 		Game& game = Game::Get();
 		if(count == 1u)
-			game.AddGameMsg3(GMS_ADDED_ITEM);
+			game.game_messages->AddGameMsg3(GMS_ADDED_ITEM);
 		else
-			game.AddGameMsg(Format(game.txGmsAddedItems, count), 3.f);
+			game.game_messages->AddGameMsg(Format(game.txGmsAddedItems, count), 3.f);
 	}
 	else
 	{

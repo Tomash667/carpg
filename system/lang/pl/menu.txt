@@ -560,7 +560,6 @@ dungeon = "Podziemia"
 forest = "Las"
 village = "Wioska"
 moonwell = "Ksiê¿ycowa studnia"
-academy = "Akademia"
 otherness = "Innoœæ"
 
 // mapa
@@ -1105,12 +1104,12 @@ quest263 = "Otrzyma³em nagrodê za zabicie %s. Zadanie ukoñczone!"
 quest264 = " i "
 quest265 = "Odzyskaj paczkê"
 quest266 = "gobliny zaatakowa³y"
-// removed 267-270
+// removed 267-271
 quest267 = ""
 quest268 = ""
 quest269 = ""
 quest270 = ""
-quest271 = "Akademia jest w budowie, wkrótce zostanie otwarta..."
+quest271 = ""
 quest272 = "Marco Bartoli"
 quest273 = "Arto"
 quest274 = "Sir Foltest Denhoff"

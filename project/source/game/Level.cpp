@@ -2978,3 +2978,55 @@ int Level::GetChestDifficultyLevel() const
 	else
 		return st;
 }
+
+//=================================================================================================
+void Level::OnReenterLevel()
+{
+	Game& game = Game::Get();
+
+	for(LevelContext& ctx : ForEachContext())
+	{
+		// odtwórz skrzynie
+		if(ctx.chests)
+		{
+			for(vector<Chest*>::iterator it = ctx.chests->begin(), end = ctx.chests->end(); it != end; ++it)
+			{
+				Chest& chest = **it;
+
+				chest.mesh_inst = new MeshInstance(game.aChest);
+			}
+		}
+
+		// odtwórz drzwi
+		if(ctx.doors)
+		{
+			for(vector<Door*>::iterator it = ctx.doors->begin(), end = ctx.doors->end(); it != end; ++it)
+			{
+				Door& door = **it;
+
+				// animowany model
+				door.mesh_inst = new MeshInstance(door.door2 ? game.aDoor2 : game.aDoor);
+				door.mesh_inst->groups[0].speed = 2.f;
+
+				// fizyka
+				door.phy = new btCollisionObject;
+				door.phy->setCollisionShape(game.shape_door);
+				door.phy->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_DOOR);
+				btTransform& tr = door.phy->getWorldTransform();
+				Vec3 pos = door.pos;
+				pos.y += 1.319f;
+				tr.setOrigin(ToVector3(pos));
+				tr.setRotation(btQuaternion(door.rot, 0, 0));
+				game.phy_world->addCollisionObject(door.phy, CG_DOOR);
+
+				// czy otwarte
+				if(door.state == Door::Open)
+				{
+					btVector3& pos = door.phy->getWorldTransform().getOrigin();
+					pos.setY(pos.y() - 100.f);
+					door.mesh_inst->SetToEnd(door.mesh_inst->mesh->anims[0].name.c_str());
+				}
+			}
+		}
+	}
+}

@@ -159,7 +159,6 @@ struct NetChange
 		GAME_STATS, // game stats showed at end of game [auto:int-kills]
 		USABLE_SOUND, // play usable object sound for unit [int(netid)-unit]
 		YELL, // player yell to move ai []
-		ACADEMY_TEXT, // show when trying to enter academy []
 		BREAK_ACTION, // break unit action [int(netid)-unit]
 		STUN, // unit stun - not shield bash [int(netid)-unit, f[0]-length]
 		CHEAT_STUN, // player used cheat 'stun' [int(netid)-unit, f[0]-length]

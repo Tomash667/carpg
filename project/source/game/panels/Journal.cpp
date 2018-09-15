@@ -10,6 +10,7 @@
 #include "Quest.h"
 #include "ResourceManager.h"
 #include "World.h"
+#include "GameMessages.h"
 
 //=================================================================================================
 Journal::Journal() : mode(Quests), game(Game::Get())
@@ -539,7 +540,7 @@ void Journal::AddRumor(cstring text)
 
 	rumors.push_back(Format(txAddTime, W.GetDate(), text));
 	NeedUpdate(Journal::Rumors);
-	game.AddGameMsg3(GMS_ADDED_RUMOR);
+	game.game_messages->AddGameMsg3(GMS_ADDED_RUMOR);
 }
 
 //=================================================================================================

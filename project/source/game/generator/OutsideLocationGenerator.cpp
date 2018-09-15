@@ -171,7 +171,7 @@ void OutsideLocationGenerator::OnEnter()
 		if(days > 10)
 			GenerateItems();
 
-		game.OnReenterLevel(L.local_ctx);
+		L.OnReenterLevel();
 	}
 
 	// create colliders

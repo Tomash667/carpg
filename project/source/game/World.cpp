@@ -302,7 +302,6 @@ Location* World::CreateLocation(LOCATION type, int levels, bool is_village)
 	case L_FOREST:
 	case L_ENCOUNTER:
 	case L_MOONWELL:
-	case L_ACADEMY:
 		{
 			LOCATION_IMAGE image;
 			switch(type)
@@ -313,9 +312,6 @@ Location* World::CreateLocation(LOCATION type, int levels, bool is_village)
 				break;
 			case L_MOONWELL:
 				image = LI_MOONWELL;
-				break;
-			case L_ACADEMY:
-				image = LI_ACADEMY;
 				break;
 			}
 			OutsideLocation* loc = new OutsideLocation;
@@ -869,6 +865,7 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 	else
 		current_index = -1;
 	int step = 0;
+	bool removed_academy = false;
 	for(Location*& loc : locations)
 	{
 		++index;
@@ -909,6 +906,14 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 
 			loc->index = index;
 			loc->Load(f, current_index == index, loc_token);
+
+			const int OLD_ACADEMY = 8;
+			if(LOAD_VERSION < V_FEATURE && loc->type == OLD_ACADEMY)
+			{
+				removed_academy = true;
+				delete loc;
+				loc = nullptr;
+			}
 		}
 		else
 			loc = nullptr;
@@ -944,6 +949,8 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 		++check_id;
 	}
 	f >> empty_locations;
+	if(removed_academy)
+		++empty_locations;
 	f >> create_camp;
 	f >> world_pos;
 	f >> reveal_timer;
@@ -1173,7 +1180,6 @@ bool World::Read(BitStreamReader& f)
 		case L_ENCOUNTER:
 		case L_CAMP:
 		case L_MOONWELL:
-		case L_ACADEMY:
 			loc = new OutsideLocation;
 			break;
 		case L_CITY:
