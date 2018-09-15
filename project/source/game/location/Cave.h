@@ -5,6 +5,7 @@
 #include "BaseLocation.h"
 
 //-----------------------------------------------------------------------------
+// Cave location
 struct Cave : public SingleInsideLocation
 {
 	vector<Int2> holes;

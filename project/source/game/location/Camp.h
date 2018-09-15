@@ -4,6 +4,7 @@
 #include "OutsideLocation.h"
 
 //-----------------------------------------------------------------------------
+// Camp location
 struct Camp : public OutsideLocation
 {
 	int create_time;

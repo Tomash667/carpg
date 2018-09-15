@@ -141,7 +141,7 @@ void OutsideLocationGenerator::OnEnter()
 	else if(!reenter)
 	{
 		if(days > 0)
-			game.UpdateLocation(days, 100, false);
+			L.UpdateLocation(days, 100, false);
 
 		if(need_reset)
 		{

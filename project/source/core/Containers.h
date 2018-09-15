@@ -1358,3 +1358,19 @@ struct BufferHandle
 private:
 	Buffer* buf;
 };
+
+//-----------------------------------------------------------------------------
+template<typename T>
+struct RemoveRandomPred
+{
+	int chance, a, b;
+
+	RemoveRandomPred(int chance, int a, int b)
+	{
+	}
+
+	bool operator () (const T&)
+	{
+		return Random(a, b) < chance;
+	}
+};

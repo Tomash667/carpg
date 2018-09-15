@@ -470,6 +470,7 @@
     <ClCompile Include="source\game\generator\SecretLocationGenerator.cpp" />
     <ClCompile Include="source\game\helpers\LoadingHandler.cpp" />
     <ClCompile Include="source\game\Level.cpp" />
+    <ClCompile Include="source\game\location\LevelArea.cpp" />
     <ClCompile Include="source\game\net\BitStreamFunc.cpp" />
     <ClCompile Include="source\game\net\EntityInterpolator.cpp" />
     <ClCompile Include="source\game\net\Net2.cpp" />
@@ -515,7 +516,6 @@
     <ClCompile Include="source\game\Game.cpp" />
     <ClCompile Include="source\game\Game2.cpp" />
     <ClCompile Include="source\game\GameCommon.cpp" />
-    <ClCompile Include="source\game\Game_LevelArea.cpp" />
     <ClCompile Include="source\game\generator\CityGenerator.cpp" />
     <ClCompile Include="source\game\generator\Mapa2.cpp" />
     <ClCompile Include="source\game\GameGuiInit.cpp" />

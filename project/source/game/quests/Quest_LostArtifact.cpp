@@ -178,7 +178,7 @@ bool Quest_LostArtifact::IsTimedout() const
 bool Quest_LostArtifact::OnTimeout(TimeoutType ttype)
 {
 	if(done)
-		game->RemoveQuestGroundItem(game->ForLevel(target_loc, at_level), refid);
+		ForLocation(target_loc, at_level)->RemoveQuestGroundItem(refid);
 
 	OnUpdate(game->txQuest[277]);
 	return true;

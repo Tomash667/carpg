@@ -538,7 +538,7 @@ ObjectEntity Level::SpawnObjectEntity(LevelContext& ctx, BaseObject* base, const
 		chest->rot = rot;
 		chest->pos = pos;
 		chest->handler = nullptr;
-		chest->looted = false;
+		chest->user = nullptr;
 		ctx.chests->push_back(chest);
 		if(Net::IsOnline())
 			chest->netid = Chest::netid_counter++;
@@ -2683,4 +2683,148 @@ Trap* Level::CreateTrap(Int2 pt, TRAP_TYPE type, bool timed)
 	}
 
 	return &trap;
+}
+
+void Level::UpdateLocation(int days, int open_chance, bool reset)
+{
+	// up³yw czasu
+	// 1-10 dni (usuñ zw³oki)
+	// 5-30 dni (usuñ krew)
+	// 1+ zamknij/otwórz drzwi
+	for(LevelContext& ctx : ForEachContext())
+	{
+		if(days <= 10)
+		{
+			// usuñ niektóre zw³oki i przedmioty
+			for(Unit*& u : *ctx.units)
+			{
+				if(!u->IsAlive() && Random(4, 10) < days)
+				{
+					delete u;
+					u = nullptr;
+				}
+			}
+			RemoveNullElements(ctx.units);
+			auto from = std::remove_if(ctx.items->begin(), ctx.items->end(), RemoveRandomPred<GroundItem*>(days, 0, 10));
+			auto end = ctx.items->end();
+			if(from != end)
+			{
+				for(vector<GroundItem*>::iterator it = from; it != end; ++it)
+					delete *it;
+				ctx.items->erase(from, end);
+			}
+		}
+		else
+		{
+			// usuñ wszystkie zw³oki i przedmioty
+			if(reset)
+			{
+				for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
+					delete *it;
+				ctx.units->clear();
+			}
+			else
+			{
+				for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
+				{
+					if(!(*it)->IsAlive())
+					{
+						delete *it;
+						*it = nullptr;
+					}
+				}
+				RemoveNullElements(ctx.units);
+			}
+			DeleteElements(ctx.items);
+		}
+
+		// wylecz jednostki
+		if(!reset)
+		{
+			for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
+			{
+				if((*it)->IsAlive())
+					(*it)->NaturalHealing(days);
+			}
+		}
+
+		if(days > 30)
+		{
+			// usuñ krew
+			ctx.bloods->clear();
+		}
+		else if(days >= 5)
+		{
+			// usuñ czêœciowo krew
+			RemoveElements(ctx.bloods, RemoveRandomPred<Blood>(days, 4, 30));
+		}
+
+		if(ctx.traps)
+		{
+			if(days > 30)
+			{
+				// usuñ wszystkie jednorazowe pu³apki
+				for(vector<Trap*>::iterator it = ctx.traps->begin(), end = ctx.traps->end(); it != end;)
+				{
+					if((*it)->base->type == TRAP_FIREBALL)
+					{
+						delete *it;
+						if(it + 1 == end)
+						{
+							ctx.traps->pop_back();
+							break;
+						}
+						else
+						{
+							std::iter_swap(it, end - 1);
+							ctx.traps->pop_back();
+							end = ctx.traps->end();
+						}
+					}
+					else
+						++it;
+				}
+			}
+			else if(days >= 5)
+			{
+				// usuñ czêœæ 1razowych pu³apek
+				for(vector<Trap*>::iterator it = ctx.traps->begin(), end = ctx.traps->end(); it != end;)
+				{
+					if((*it)->base->type == TRAP_FIREBALL && Rand() % 30 < days)
+					{
+						delete *it;
+						if(it + 1 == end)
+						{
+							ctx.traps->pop_back();
+							break;
+						}
+						else
+						{
+							std::iter_swap(it, end - 1);
+							ctx.traps->pop_back();
+							end = ctx.traps->end();
+						}
+					}
+					else
+						++it;
+				}
+			}
+		}
+
+		// losowo otwórz/zamknij drzwi
+		if(ctx.doors)
+		{
+			for(vector<Door*>::iterator it = ctx.doors->begin(), end = ctx.doors->end(); it != end; ++it)
+			{
+				Door& door = **it;
+				if(door.locked == 0)
+				{
+					if(Rand() % 100 < open_chance)
+						door.state = Door::Open;
+					else
+						door.state = Door::Closed;
+				}
+			}
+		}
+	}
 }

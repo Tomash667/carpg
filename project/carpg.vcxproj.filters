@@ -377,9 +377,6 @@
     <ClCompile Include="source\game\Dialogs.cpp">
       <Filter>3. game</Filter>
     </ClCompile>
-    <ClCompile Include="source\game\Game_LevelArea.cpp">
-      <Filter>3. game</Filter>
-    </ClCompile>
     <ClCompile Include="source\ErrorHandler.cpp" />
     <ClCompile Include="source\core\Config.cpp">
       <Filter>1. core</Filter>
@@ -756,6 +753,9 @@
     </ClCompile>
     <ClCompile Include="source\game\net\Net2.cpp">
       <Filter>3. game\net</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\location\LevelArea.cpp">
+      <Filter>3. game\location</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

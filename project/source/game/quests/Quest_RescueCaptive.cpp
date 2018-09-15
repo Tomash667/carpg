@@ -295,7 +295,7 @@ bool Quest_RescueCaptive::OnTimeout(TimeoutType ttype)
 		if(captive)
 		{
 			captive->event_handler = nullptr;
-			game->RemoveUnit(game->ForLevel(target_loc, at_level), captive);
+			ForLocation(target_loc, at_level)->RemoveUnit(captive);
 			captive = nullptr;
 		}
 

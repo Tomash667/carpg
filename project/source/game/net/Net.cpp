@@ -1579,7 +1579,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 
 				NetChangePlayer& c = Add1(info.changes);
 				c.type = NetChangePlayer::LOOT;
-				if(chest->looted)
+				if(chest->user)
 				{
 					// someone else is already looting this chest
 					c.id = 0;
@@ -1588,7 +1588,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				{
 					// start looting chest
 					c.id = 1;
-					chest->looted = true;
+					chest->user = player.unit;
 					player.action = PlayerController::Action_LootChest;
 					player.action_chest = chest;
 					player.chest_trade = &chest->items;
@@ -1777,7 +1777,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 
 					// add item
 					if(player.action == PlayerController::Action_LootChest)
-						AddItem(*player.action_chest, slot.item, count, team_count, false);
+						player.action_chest->AddItem(slot.item, count, team_count, false);
 					else if(player.action == PlayerController::Action_LootContainer)
 						player.action_container->container->AddItem(slot.item, count, team_count);
 					else if(player.action == PlayerController::Action_Trade)
@@ -1851,7 +1851,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					int price = GetItemPrice(slot, unit, false);
 					// add new item
 					if(player.action == PlayerController::Action_LootChest)
-						AddItem(*player.action_chest, slot, 1u, 0u, false);
+						player.action_chest->AddItem(slot, 1u, 0u, false);
 					else if(player.action == PlayerController::Action_LootContainer)
 						player.action_container->container->AddItem(slot, 1u, 0u);
 					else if(player.action == PlayerController::Action_Trade)
@@ -1958,7 +1958,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 
 			if(player.action == PlayerController::Action_LootChest)
 			{
-				player.action_chest->looted = false;
+				player.action_chest->user = nullptr;
 				player.action_chest->mesh_inst->Play(&player.action_chest->mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
 				sound_mgr->PlaySound3d(sChestClose, player.action_chest->GetCenter(), 2.f, 5.f);
 				NetChange& c = Add1(Net::changes);
@@ -7015,7 +7015,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 						else
 						{
 							PreloadItem(item);
-							AddItem(*chest, item, (uint)count, (uint)team_count);
+							chest->AddItem(item, (uint)count, (uint)team_count, false);
 						}
 					}
 				}

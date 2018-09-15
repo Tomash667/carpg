@@ -63,7 +63,7 @@ void InsideLocationGenerator::OnEnter()
 		game.LoadingStep(game.txRegeneratingLevel);
 
 		if(days > 0)
-			game.UpdateLocation(L.local_ctx, days, base.door_open, need_reset);
+			L.UpdateLocation(days, base.door_open, need_reset);
 
 		bool respawn_units = HandleUpdate(days);
 

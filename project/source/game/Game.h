@@ -906,18 +906,9 @@ public:
 	{
 		AddItem(unit, item.item, item.count, item.team_count, send_msg);
 	}
-	// dodaje przedmiot do skrzyni (obs³uguje otwarty ekwipunek i multiplayer)
-	void AddItem(Chest& chest, const Item* item, uint count, uint team_count, bool send_msg = true);
-	void AddItem(Chest& chest, const Item* item, uint count = 1, bool is_team = true, bool send_msg = true)
-	{
-		AddItem(chest, item, count, is_team ? count : 0, send_msg);
-	}
 	// usuwa przedmiot z ekwipunku (obs³uguje otwarty ekwipunek, lock i multiplayer), dla 0 usuwa wszystko
 	void RemoveItem(Unit& unit, int i_index, uint count);
 	bool RemoveItem(Unit& unit, const Item* item, uint count);
-
-	// szuka gracza który u¿ywa skrzyni, jeœli u¿ywa nie-gracz to zwraca nullptr (aktualnie tylko gracz mo¿e ale w przysz³oœci nie)
-	Unit* FindChestUserIfPlayer(Chest* chest);
 
 	Unit* FindPlayerTradingWithUnit(Unit& u);
 	Int2 GetSpawnPoint();
@@ -929,16 +920,6 @@ public:
 	void PlayerYell(Unit& u);
 	bool CanBuySell(const Item* item);
 	void SetOutsideParams();
-
-	// level area
-	LevelAreaContext* ForLevel(int loc, int level = -1);
-	GroundItem* FindQuestGroundItem(LevelAreaContext* lac, int quest_refid, LevelAreaContext::Entry** entry = nullptr, int* item_index = nullptr);
-	Unit* FindUnitWithQuestItem(LevelAreaContext* lac, int quest_refid, LevelAreaContext::Entry** entry = nullptr, int* unit_index = nullptr, int* item_iindex = nullptr);
-	bool FindUnit(LevelAreaContext* lac, Unit* unit, LevelAreaContext::Entry** entry = nullptr, int* unit_index = nullptr);
-	Unit* FindUnit(LevelAreaContext* lac, UnitData* data, LevelAreaContext::Entry** entry = nullptr, int* unit_index = nullptr);
-	bool RemoveQuestGroundItem(LevelAreaContext* lac, int quest_refid);
-	bool RemoveQuestItemFromUnit(LevelAreaContext* lac, int quest_refid);
-	bool RemoveUnit(LevelAreaContext* lac, Unit* unit);
 
 	//-----------------------------------------------------------------
 	// GUI
@@ -1164,8 +1145,6 @@ public:
 	void GenerateWorld();
 	void LeaveLocation(bool clear = false, bool end_buffs = true);
 	void Event_RandomEncounter(int id);
-	void UpdateLocation(LevelContext& ctx, int days, int open_chance, bool reset);
-	void UpdateLocation(int days, int open_chance, bool reset);
 
 	Config cfg;
 	void SaveCfg();

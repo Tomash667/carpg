@@ -2270,7 +2270,7 @@ void CityGenerator::OnEnter()
 		int days;
 		city->CheckUpdate(days, W.GetWorldtime());
 		if(days > 0)
-			game.UpdateLocation(days, 100, false);
+			L.UpdateLocation(days, 100, false);
 
 		// apply temp context
 		for(InsideBuilding* inside : city->inside_buildings)

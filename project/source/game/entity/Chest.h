@@ -26,7 +26,7 @@ struct Chest : public ItemContainer
 	MeshInstance* mesh_inst;
 	ChestEventHandler* handler;
 	// temporary - not saved
-	bool looted;
+	Unit* user;
 
 	static const int MIN_SIZE = 20;
 	static int netid_counter;
@@ -44,4 +44,6 @@ struct Chest : public ItemContainer
 		p.y += 0.5f;
 		return p;
 	}
+	bool AddItem(const Item* item, uint count, uint team_count, bool notify = true);
+	bool AddItem(const Item* item, uint count = 1) { return AddItem(item, count, count); }
 };

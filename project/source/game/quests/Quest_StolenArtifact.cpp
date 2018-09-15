@@ -208,7 +208,7 @@ bool Quest_StolenArtifact::IsTimedout() const
 bool Quest_StolenArtifact::OnTimeout(TimeoutType ttype)
 {
 	if(done)
-		game->RemoveQuestItemFromUnit(game->ForLevel(target_loc, at_level), refid);
+		ForLocation(target_loc, at_level)->RemoveQuestItemFromUnit(refid);
 
 	OnUpdate(game->txQuest[277]);
 	return true;

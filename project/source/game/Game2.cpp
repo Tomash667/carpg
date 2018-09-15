@@ -2321,7 +2321,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			}
 			else if(Net::IsLocal())
 			{
-				if(pc_data.before_player_ptr.chest->looted)
+				if(pc_data.before_player_ptr.chest->user)
 				{
 					// ktoœ ju¿ zajmuje siê t¹ skrzyni¹
 					AddGameMsg3(GMS_IS_LOOTED);
@@ -2331,7 +2331,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					// rozpocznij ograbianie skrzyni
 					pc->action = PlayerController::Action_LootChest;
 					pc->action_chest = pc_data.before_player_ptr.chest;
-					pc->action_chest->looted = true;
+					pc->action_chest->user = pc->unit;
 					pc->chest_trade = &pc->action_chest->items;
 					CloseGamePanels();
 					inventory_mode = I_LOOT_CHEST;
@@ -12678,7 +12678,7 @@ void Game::DeleteUnit(Unit* unit)
 			case PlayerController::Action_LootChest:
 				{
 					// close chest
-					unit->player->action_chest->looted = false;
+					unit->player->action_chest->user = nullptr;
 					unit->player->action_chest->mesh_inst->Play(&unit->player->action_chest->mesh_inst->mesh->anims[0],
 						PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
 					sound_mgr->PlaySound3d(sChestClose, unit->player->action_chest->GetCenter(), 2.f, 5.f);
@@ -14889,7 +14889,7 @@ void Game::OnCloseInventory()
 	}
 	else if(inventory_mode == I_LOOT_CHEST && Net::IsLocal())
 	{
-		pc->action_chest->looted = false;
+		pc->action_chest->user = nullptr;
 		pc->action_chest->mesh_inst->Play(&pc->action_chest->mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
 		sound_mgr->PlaySound3d(sChestClose, pc->action_chest->GetCenter(), 2.f, 5.f);
 	}
@@ -16264,34 +16264,6 @@ void Game::AddItem(Unit& unit, const Item* item, uint count, uint team_count, bo
 		BuildTmpInventory(rebuild_id);
 }
 
-void Game::AddItem(Chest& chest, const Item* item, uint count, uint team_count, bool send_msg)
-{
-	assert(item && count && team_count <= count);
-
-	// dodaj przedmiot
-	chest.AddItem(item, count, team_count);
-
-	// komunikat
-	if(send_msg && chest.looted)
-	{
-		Unit* u = FindChestUserIfPlayer(&chest);
-		if(u)
-		{
-			// dodaj komunikat o dodaniu przedmiotu do skrzyni
-			NetChangePlayer& c = Add1(u->player->player_info->changes);
-			c.type = NetChangePlayer::ADD_ITEMS_CHEST;
-			c.item = item;
-			c.id = chest.netid;
-			c.ile = count;
-			c.a = team_count;
-		}
-	}
-
-	// czy trzeba przebudowaæ tymczasowy ekwipunek
-	if(game_gui->gp_trade->visible && pc->action == PlayerController::Action_LootChest && pc->action_chest == &chest)
-		BuildTmpInventory(1);
-}
-
 // zbuduj tymczasowy ekwipunek który ³¹czy slots i items postaci
 void Game::BuildTmpInventory(int index)
 {
@@ -16339,19 +16311,6 @@ void Game::BuildTmpInventory(int index)
 	// nie za³o¿one przedmioty
 	for(int i = 0, ile = (int)items->size(); i < ile; ++i)
 		ids.push_back(i);
-}
-
-Unit* Game::FindChestUserIfPlayer(Chest* chest)
-{
-	assert(chest && chest->looted);
-
-	for(Unit* unit : Team.active_members)
-	{
-		if(unit->IsPlayer() && unit->player->action == PlayerController::Action_LootChest && unit->player->action_chest == chest)
-			return unit;
-	}
-
-	return nullptr;
 }
 
 void Game::RemoveItem(Unit& unit, int i_index, uint count)
