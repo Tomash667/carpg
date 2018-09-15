@@ -5,6 +5,8 @@
 
 class Quest_Tutorial final : public ChestEventHandler, public UnitEventHandler
 {
+	friend class TutorialLocationGenerator;
+
 	struct Text
 	{
 		cstring text;

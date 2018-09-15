@@ -3,7 +3,7 @@
 #include "Level.h"
 #include "City.h"
 #include "InsideBuilding.h"
-#include "InsideLocation.h"
+#include "MultiInsideLocation.h"
 #include "InsideLocationLevel.h"
 #include "Door.h"
 #include "Trap.h"
@@ -1347,6 +1347,69 @@ void Level::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding
 
 	if(inside)
 		inside->ctx.masks = (!inside->masks.empty() ? &inside->masks : nullptr);
+}
+
+//=================================================================================================
+void Level::RecreateObjects(bool spawn_pes)
+{
+	for(LevelContext& ctx : ForEachContext())
+	{
+		int flags = Level::SOE_DONT_CREATE_LIGHT;
+		if(!spawn_pes)
+			flags |= Level::SOE_DONT_SPAWN_PARTICLES;
+
+		// dotyczy tylko pochodni
+		if(ctx.type == LevelContext::Inside)
+		{
+			InsideLocation* inside = (InsideLocation*)location;
+			BaseLocation& base = g_base_locations[inside->target];
+			if(IS_SET(base.options, BLO_MAGIC_LIGHT))
+				flags |= Level::SOE_MAGIC_LIGHT;
+		}
+
+		for(vector<Object*>::iterator it = ctx.objects->begin(), end = ctx.objects->end(); it != end; ++it)
+		{
+			Object& obj = **it;
+			BaseObject* base_obj = obj.base;
+
+			if(!base_obj)
+				continue;
+
+			if(IS_SET(base_obj->flags, OBJ_BUILDING))
+			{
+				float rot = obj.rot.y;
+				int roti;
+				if(Equal(rot, 0))
+					roti = 0;
+				else if(Equal(rot, PI / 2))
+					roti = 1;
+				else if(Equal(rot, PI))
+					roti = 2;
+				else if(Equal(rot, PI * 3 / 2))
+					roti = 3;
+				else
+				{
+					assert(0);
+					roti = 0;
+					rot = 0.f;
+				}
+
+				ProcessBuildingObjects(ctx, nullptr, nullptr, base_obj->mesh, nullptr, rot, roti, obj.pos, nullptr, nullptr, true);
+			}
+			else
+				SpawnObjectExtras(ctx, base_obj, obj.pos, obj.rot.y, &obj, obj.scale, flags);
+		}
+
+		if(ctx.chests)
+		{
+			BaseObject* chest = BaseObject::Get("chest");
+			for(vector<Chest*>::iterator it = ctx.chests->begin(), end = ctx.chests->end(); it != end; ++it)
+				SpawnObjectExtras(ctx, chest, (*it)->pos, (*it)->rot, nullptr, 1.f, flags);
+		}
+
+		for(vector<Usable*>::iterator it = ctx.usables->begin(), end = ctx.usables->end(); it != end; ++it)
+			SpawnObjectExtras(ctx, (*it)->base, (*it)->pos, (*it)->rot, *it, 1.f, flags);
+	}
 }
 
 //=================================================================================================
@@ -2739,6 +2802,7 @@ Trap* Level::CreateTrap(Int2 pt, TRAP_TYPE type, bool timed)
 	return &trap;
 }
 
+//=================================================================================================
 void Level::UpdateLocation(int days, int open_chance, bool reset)
 {
 	// up³yw czasu
@@ -2881,4 +2945,36 @@ void Level::UpdateLocation(int days, int open_chance, bool reset)
 			}
 		}
 	}
+}
+
+//=================================================================================================
+int Level::GetDifficultyLevel() const
+{
+	if(location->outside)
+		return location->st;
+	else
+	{
+		InsideLocation* inside = (InsideLocation*)location;
+		if(inside->IsMultilevel())
+			return (int)Lerp(max(3.f, float(inside->st) / 2), float(inside->st), float(dungeon_level) / (((MultiInsideLocation*)inside)->levels.size() - 1));
+		else
+			return inside->st;
+	}
+}
+
+//=================================================================================================
+int Level::GetChestDifficultyLevel() const
+{
+	int st = GetDifficultyLevel();
+	if(location->spawn == SG_NONE)
+	{
+		if(st > 10)
+			return 3;
+		else if(st > 5)
+			return 2;
+		else
+			return 1;
+	}
+	else
+		return st;
 }

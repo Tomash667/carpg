@@ -16,6 +16,7 @@ enum ROOMTYPE_FLAGS
 	RT_REPEAT = 1 << 0,
 	RT_TREASURE = 1 << 1
 };
+
 //-----------------------------------------------------------------------------
 // Typ pomieszczenia
 struct RoomType

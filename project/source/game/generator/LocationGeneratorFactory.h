@@ -19,4 +19,5 @@ private:
 	LabyrinthGenerator* labyrinth;
 	MoonwellGenerator* moonwell;
 	SecretLocationGenerator* secret;
+	TutorialLocationGenerator* tutorial;
 };

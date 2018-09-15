@@ -1,6 +1,7 @@
 #pragma once
 
 #include "LocationGenerator.h"
+#include "ObjectEntity.h"
 
 class InsideLocationGenerator : public LocationGenerator
 {
@@ -14,9 +15,12 @@ public:
 
 protected:
 	InsideLocationLevel& GetLevelData();
+	void GenerateDungeonObjects();
+	ObjectEntity GenerateDungeonObject(InsideLocationLevel& lvl, Room& room, BaseObject* base, vector<Vec3>& on_wall, vector<Int2>& blocks, int flags);
 	void GenerateTraps();
 	void RegenerateTraps();
 	void RespawnTraps();
+	void GenerateDungeonTreasure(vector<Chest*>& chests, int level, bool extra = false);
 	void SpawnHeroesInsideDungeon();
 
 	InsideLocation* inside;

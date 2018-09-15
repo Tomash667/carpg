@@ -13,6 +13,8 @@
 #include "Portal.h"
 #include "Texture.h"
 #include "GameStats.h"
+#include "RoomType.h"
+#include "ItemHelper.h"
 #include "Game.h"
 
 //=================================================================================================
@@ -88,7 +90,7 @@ void InsideLocationGenerator::OnEnter()
 				(*it)->items.clear();
 
 			// nowa zawartoœæ skrzyni
-			int dlevel = game.GetDungeonLevel();
+			int dlevel = L.GetDifficultyLevel();
 			for(vector<Chest*>::iterator it = L.local_ctx.chests->begin(), end = L.local_ctx.chests->end(); it != end; ++it)
 			{
 				Chest& chest = **it;
@@ -102,7 +104,7 @@ void InsideLocationGenerator::OnEnter()
 					if(r->IsInside((*it2)->pos))
 						room_chests.push_back(*it2);
 				}
-				game.GenerateDungeonTreasure(room_chests, dlevel);
+				GenerateDungeonTreasure(room_chests, dlevel);
 				room_chests.clear();
 			}
 
@@ -118,7 +120,7 @@ void InsideLocationGenerator::OnEnter()
 		RespawnTraps();
 
 		// odtwórz fizykê
-		game.RespawnObjectColliders();
+		L.RecreateObjects();
 
 		if(need_reset)
 			GenerateUnits();
@@ -281,6 +283,458 @@ void InsideLocationGenerator::OnEnter()
 InsideLocationLevel& InsideLocationGenerator::GetLevelData()
 {
 	return inside->GetLevelData();
+}
+
+//=================================================================================================
+void InsideLocationGenerator::GenerateDungeonObjects()
+{
+	Game& game = Game::Get();
+	InsideLocationLevel& lvl = GetLevelData();
+	BaseLocation& base = g_base_locations[inside->target];
+	static vector<Chest*> room_chests;
+	static vector<Vec3> on_wall;
+	static vector<Int2> blocks;
+	int chest_lvl = L.GetChestDifficultyLevel();
+
+	// schody w górê
+	if(inside->HaveUpStairs())
+	{
+		Object* o = new Object;
+		o->mesh = game.aStairsUp;
+		o->pos = pt_to_pos(lvl.staircase_up);
+		o->rot = Vec3(0, dir_to_rot(lvl.staircase_up_dir), 0);
+		o->scale = 1;
+		o->base = nullptr;
+		L.local_ctx.objects->push_back(o);
+	}
+	else
+		L.SpawnObjectEntity(L.local_ctx, BaseObject::Get("portal"), inside->portal->pos, inside->portal->rot);
+
+	// schody w dó³
+	if(inside->HaveDownStairs())
+	{
+		Object* o = new Object;
+		o->mesh = (lvl.staircase_down_in_wall ? game.aStairsDown2 : game.aStairsDown);
+		o->pos = pt_to_pos(lvl.staircase_down);
+		o->rot = Vec3(0, dir_to_rot(lvl.staircase_down_dir), 0);
+		o->scale = 1;
+		o->base = nullptr;
+		L.local_ctx.objects->push_back(o);
+	}
+
+	// kratki, drzwi
+	for(int y = 0; y < lvl.h; ++y)
+	{
+		for(int x = 0; x < lvl.w; ++x)
+		{
+			POLE p = lvl.map[x + y * lvl.w].type;
+			if(p == KRATKA || p == KRATKA_PODLOGA)
+			{
+				Object* o = new Object;
+				o->mesh = game.aGrating;
+				o->rot = Vec3(0, 0, 0);
+				o->pos = Vec3(float(x * 2), 0, float(y * 2));
+				o->scale = 1;
+				o->base = nullptr;
+				L.local_ctx.objects->push_back(o);
+			}
+			if(p == KRATKA || p == KRATKA_SUFIT)
+			{
+				Object* o = new Object;
+				o->mesh = game.aGrating;
+				o->rot = Vec3(0, 0, 0);
+				o->pos = Vec3(float(x * 2), 4, float(y * 2));
+				o->scale = 1;
+				o->base = nullptr;
+				L.local_ctx.objects->push_back(o);
+			}
+			if(p == DRZWI)
+			{
+				Object* o = new Object;
+				o->mesh = game.aDoorWall;
+				if(IS_SET(lvl.map[x + y * lvl.w].flags, Pole::F_DRUGA_TEKSTURA))
+					o->mesh = game.aDoorWall2;
+				o->pos = Vec3(float(x * 2) + 1, 0, float(y * 2) + 1);
+				o->scale = 1;
+				o->base = nullptr;
+				L.local_ctx.objects->push_back(o);
+
+				if(czy_blokuje2(lvl.map[x - 1 + y * lvl.w].type))
+				{
+					o->rot = Vec3(0, 0, 0);
+					int mov = 0;
+					if(lvl.rooms[lvl.map[x + (y - 1)*lvl.w].room].IsCorridor())
+						++mov;
+					if(lvl.rooms[lvl.map[x + (y + 1)*lvl.w].room].IsCorridor())
+						--mov;
+					if(mov == 1)
+						o->pos.z += 0.8229f;
+					else if(mov == -1)
+						o->pos.z -= 0.8229f;
+				}
+				else
+				{
+					o->rot = Vec3(0, PI / 2, 0);
+					int mov = 0;
+					if(lvl.rooms[lvl.map[x - 1 + y * lvl.w].room].IsCorridor())
+						++mov;
+					if(lvl.rooms[lvl.map[x + 1 + y * lvl.w].room].IsCorridor())
+						--mov;
+					if(mov == 1)
+						o->pos.x += 0.8229f;
+					else if(mov == -1)
+						o->pos.x -= 0.8229f;
+				}
+
+				if(Rand() % 100 < base.door_chance || IS_SET(lvl.map[x + y * lvl.w].flags, Pole::F_SPECJALNE))
+				{
+					Door* door = new Door;
+					L.local_ctx.doors->push_back(door);
+					door->pt = Int2(x, y);
+					door->pos = o->pos;
+					door->rot = o->rot.y;
+					door->state = Door::Closed;
+					door->mesh_inst = new MeshInstance(game.aDoor);
+					door->mesh_inst->groups[0].speed = 2.f;
+					door->phy = new btCollisionObject;
+					door->phy->setCollisionShape(game.shape_door);
+					door->phy->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_DOOR);
+					door->locked = LOCK_NONE;
+					door->netid = Door::netid_counter++;
+					btTransform& tr = door->phy->getWorldTransform();
+					Vec3 pos = door->pos;
+					pos.y += 1.319f;
+					tr.setOrigin(ToVector3(pos));
+					tr.setRotation(btQuaternion(door->rot, 0, 0));
+					game.phy_world->addCollisionObject(door->phy, CG_DOOR);
+
+					if(IS_SET(lvl.map[x + y * lvl.w].flags, Pole::F_SPECJALNE))
+						door->locked = LOCK_ORCS;
+					else if(Rand() % 100 < base.door_open)
+					{
+						door->state = Door::Open;
+						btVector3& pos = door->phy->getWorldTransform().getOrigin();
+						pos.setY(pos.y() - 100.f);
+						door->mesh_inst->SetToEnd(door->mesh_inst->mesh->anims[0].name.c_str());
+					}
+				}
+				else
+					lvl.map[x + y * lvl.w].type = OTWOR_NA_DRZWI;
+			}
+		}
+	}
+
+	// dotyczy tylko pochodni
+	int flags = 0;
+	if(IS_SET(base.options, BLO_MAGIC_LIGHT))
+		flags = Level::SOE_MAGIC_LIGHT;
+
+	bool wymagany = false;
+	if(base.wymagany.room)
+		wymagany = true;
+
+	for(vector<Room>::iterator it = lvl.rooms.begin(), end = lvl.rooms.end(); it != end; ++it)
+	{
+		if(it->IsCorridor())
+			continue;
+
+		game.AddRoomColliders(lvl, *it, blocks);
+
+		// choose room type
+		RoomType* rt;
+		if(it->target != RoomTarget::None)
+		{
+			if(it->target == RoomTarget::Treasury)
+				rt = FindRoomType("krypta_skarb");
+			else if(it->target == RoomTarget::Throne)
+				rt = FindRoomType("tron");
+			else if(it->target == RoomTarget::PortalCreate)
+				rt = FindRoomType("portal");
+			else
+			{
+				Int2 pt;
+				if(it->target == RoomTarget::StairsDown)
+					pt = lvl.staircase_down;
+				else if(it->target == RoomTarget::StairsUp)
+					pt = lvl.staircase_up;
+				else if(it->target == RoomTarget::Portal)
+				{
+					if(inside->portal)
+						pt = pos_to_pt(inside->portal->pos);
+					else
+					{
+						Object* o = L.local_ctx.FindObject(BaseObject::Get("portal"));
+						if(o)
+							pt = pos_to_pt(o->pos);
+						else
+							pt = it->CenterTile();
+					}
+				}
+
+				for(int y = -1; y <= 1; ++y)
+				{
+					for(int x = -1; x <= 1; ++x)
+						blocks.push_back(Int2(pt.x + x, pt.y + y));
+				}
+
+				if(base.schody.room)
+					rt = base.schody.room;
+				else
+					rt = base.GetRandomRoomType();
+			}
+		}
+		else
+		{
+			if(wymagany)
+				rt = base.wymagany.room;
+			else
+				rt = base.GetRandomRoomType();
+		}
+
+		int fail = 10;
+		bool wymagany_obiekt = false;
+
+		// try to spawn all objects
+		for(uint i = 0; i < rt->count && fail > 0; ++i)
+		{
+			bool is_group = false;
+			BaseObject* base = BaseObject::Get(rt->objs[i].id, &is_group);
+			int count = rt->objs[i].count.Random();
+
+			for(int j = 0; j < count && fail > 0; ++j)
+			{
+				auto e = GenerateDungeonObject(lvl, *it, base, on_wall, blocks, flags);
+				if(!e)
+				{
+					if(IS_SET(base->flags, OBJ_IMPORTANT))
+						--j;
+					--fail;
+					continue;
+				}
+
+				if(e.type == ObjectEntity::CHEST)
+					room_chests.push_back(e);
+
+				if(IS_SET(base->flags, OBJ_REQUIRED))
+					wymagany_obiekt = true;
+
+				if(is_group)
+					base = BaseObject::Get(rt->objs[i].id);
+			}
+		}
+
+		if(wymagany && wymagany_obiekt && it->target == RoomTarget::None)
+			wymagany = false;
+
+		if(!room_chests.empty())
+		{
+			bool extra = IS_SET(rt->flags, RT_TREASURE);
+			GenerateDungeonTreasure(room_chests, chest_lvl, extra);
+			room_chests.clear();
+		}
+
+		on_wall.clear();
+		blocks.clear();
+	}
+
+	if(wymagany)
+		throw "Failed to generate required object!";
+
+	if(L.local_ctx.chests->empty())
+	{
+		// niech w podziemiach bêdzie minimum 1 skrzynia
+		BaseObject* base = BaseObject::Get("chest");
+		for(int i = 0; i < 100; ++i)
+		{
+			on_wall.clear();
+			blocks.clear();
+			Room& r = lvl.rooms[Rand() % lvl.rooms.size()];
+			if(r.target == RoomTarget::None)
+			{
+				game.AddRoomColliders(lvl, r, blocks);
+
+				auto e = GenerateDungeonObject(lvl, r, base, on_wall, blocks, flags);
+				if(e)
+				{
+					GenerateDungeonTreasure(*L.local_ctx.chests, chest_lvl);
+					break;
+				}
+			}
+		}
+	}
+}
+
+//=================================================================================================
+ObjectEntity InsideLocationGenerator::GenerateDungeonObject(InsideLocationLevel& lvl, Room& room, BaseObject* base, vector<Vec3>& on_wall,
+	vector<Int2>& blocks, int flags)
+{
+	Vec3 pos;
+	float rot;
+	Vec2 shift;
+
+	if(base->type == OBJ_CYLINDER)
+	{
+		shift.x = base->r + base->extra_dist;
+		shift.y = base->r + base->extra_dist;
+	}
+	else
+		shift = base->size + Vec2(base->extra_dist, base->extra_dist);
+
+	if(IS_SET(base->flags, OBJ_NEAR_WALL))
+	{
+		Int2 tile;
+		int dir;
+		if(!lvl.GetRandomNearWallTile(room, tile, dir, IS_SET(base->flags, OBJ_ON_WALL)))
+			return nullptr;
+
+		rot = dir_to_rot(dir);
+
+		if(dir == 2 || dir == 3)
+			pos = Vec3(2.f*tile.x + sin(rot)*(2.f - shift.y - 0.01f) + 2, 0.f, 2.f*tile.y + cos(rot)*(2.f - shift.y - 0.01f) + 2);
+		else
+			pos = Vec3(2.f*tile.x + sin(rot)*(2.f - shift.y - 0.01f), 0.f, 2.f*tile.y + cos(rot)*(2.f - shift.y - 0.01f));
+
+		if(IS_SET(base->flags, OBJ_ON_WALL))
+		{
+			switch(dir)
+			{
+			case 0:
+				pos.x += 1.f;
+				break;
+			case 1:
+				pos.z += 1.f;
+				break;
+			case 2:
+				pos.x -= 1.f;
+				break;
+			case 3:
+				pos.z -= 1.f;
+				break;
+			}
+
+			for(vector<Vec3>::iterator it2 = on_wall.begin(), end2 = on_wall.end(); it2 != end2; ++it2)
+			{
+				float dist = Vec3::Distance2d(*it2, pos);
+				if(dist < 2.f)
+					return nullptr;
+			}
+		}
+		else
+		{
+			switch(dir)
+			{
+			case 0:
+				pos.x += Random(0.2f, 1.8f);
+				break;
+			case 1:
+				pos.z += Random(0.2f, 1.8f);
+				break;
+			case 2:
+				pos.x -= Random(0.2f, 1.8f);
+				break;
+			case 3:
+				pos.z -= Random(0.2f, 1.8f);
+				break;
+			}
+		}
+	}
+	else if(IS_SET(base->flags, OBJ_IN_MIDDLE))
+	{
+		rot = PI / 2 * (Rand() % 4);
+		pos = room.Center();
+		switch(Rand() % 4)
+		{
+		case 0:
+			pos.x += 2;
+			break;
+		case 1:
+			pos.x -= 2;
+			break;
+		case 2:
+			pos.z += 2;
+			break;
+		case 3:
+			pos.z -= 2;
+			break;
+		}
+	}
+	else
+	{
+		rot = Random(MAX_ANGLE);
+		float margin = (base->type == OBJ_CYLINDER ? base->r : max(base->size.x, base->size.y));
+		if(!room.GetRandomPos(margin, pos))
+			return nullptr;
+	}
+
+	if(IS_SET(base->flags, OBJ_HIGH))
+		pos.y += 1.5f;
+
+	if(base->type == OBJ_HITBOX)
+	{
+		// sprawdŸ kolizje z blokami
+		if(!IS_SET(base->flags, OBJ_NO_PHYSICS))
+		{
+			if(NotZero(rot))
+			{
+				RotRect r1, r2;
+				r1.center.x = pos.x;
+				r1.center.y = pos.z;
+				r1.rot = rot;
+				r1.size = shift;
+				r2.rot = 0;
+				r2.size = Vec2(1, 1);
+				for(vector<Int2>::iterator b_it = blocks.begin(), b_end = blocks.end(); b_it != b_end; ++b_it)
+				{
+					r2.center.x = 2.f*b_it->x + 1.f;
+					r2.center.y = 2.f*b_it->y + 1.f;
+					if(RotatedRectanglesCollision(r1, r2))
+						return nullptr;
+				}
+			}
+			else
+			{
+				for(vector<Int2>::iterator b_it = blocks.begin(), b_end = blocks.end(); b_it != b_end; ++b_it)
+				{
+					if(RectangleToRectangle(pos.x - shift.x, pos.z - shift.y, pos.x + shift.x, pos.z + shift.y,
+						2.f*b_it->x, 2.f*b_it->y, 2.f*(b_it->x + 1), 2.f*(b_it->y + 1)))
+						return nullptr;
+				}
+			}
+		}
+
+		// sprawdŸ kolizje z innymi obiektami
+		Level::IgnoreObjects ignore = { 0 };
+		ignore.ignore_blocks = true;
+		L.global_col.clear();
+		L.GatherCollisionObjects(L.local_ctx, L.global_col, pos, max(shift.x, shift.y) * SQRT_2, &ignore);
+		if(!L.global_col.empty() && L.Collide(L.global_col, Box2d(pos.x - shift.x, pos.z - shift.y, pos.x + shift.x, pos.z + shift.y), 0.8f, rot))
+			return nullptr;
+	}
+	else
+	{
+		// sprawdŸ kolizje z blokami
+		if(!IS_SET(base->flags, OBJ_NO_PHYSICS))
+		{
+			for(vector<Int2>::iterator b_it = blocks.begin(), b_end = blocks.end(); b_it != b_end; ++b_it)
+			{
+				if(CircleToRectangle(pos.x, pos.z, shift.x, 2.f*b_it->x + 1.f, 2.f*b_it->y + 1.f, 1.f, 1.f))
+					return nullptr;
+			}
+		}
+
+		// sprawdŸ kolizje z innymi obiektami
+		Level::IgnoreObjects ignore = { 0 };
+		ignore.ignore_blocks = true;
+		L.global_col.clear();
+		L.GatherCollisionObjects(L.local_ctx, L.global_col, pos, base->r, &ignore);
+		if(!L.global_col.empty() && L.Collide(L.global_col, pos, base->r + 0.8f))
+			return nullptr;
+	}
+
+	if(IS_SET(base->flags, OBJ_ON_WALL))
+		on_wall.push_back(pos);
+
+	return L.SpawnObjectEntity(L.local_ctx, base, pos, rot, 1.f, flags);
 }
 
 //=================================================================================================
@@ -592,10 +1046,29 @@ void InsideLocationGenerator::OnLoad()
 	L.ApplyContext(inside, L.local_ctx);
 	game.SetDungeonParamsAndTextures(base);
 
-	game.RespawnObjectColliders(false);
+	L.RecreateObjects(false);
 	game.SpawnDungeonColliders();
 
 	CreateMinimap();
+}
+
+//=================================================================================================
+void InsideLocationGenerator::GenerateDungeonTreasure(vector<Chest*>& chests, int level, bool extra)
+{
+	int gold;
+	if(chests.size() == 1)
+	{
+		vector<ItemSlot>& items = chests.front()->items;
+		ItemHelper::GenerateTreasure(level, 10, items, gold, extra);
+		InsertItemBare(items, Item::gold, (uint)gold, (uint)gold);
+		SortItems(items);
+	}
+	else
+	{
+		static vector<ItemSlot> items;
+		ItemHelper::GenerateTreasure(level, 9 + 2 * chests.size(), items, gold, extra);
+		ItemHelper::SplitTreasure(items, gold, &chests[0], chests.size());
+	}
 }
 
 //=================================================================================================

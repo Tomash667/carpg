@@ -81,8 +81,6 @@ void ForestGenerator::GenerateObjects()
 //=================================================================================================
 void ForestGenerator::GenerateUnits()
 {
-	Game& game = Game::Get();
-
 	// zbierz grupy
 	static TmpUnitGroup groups[4] = {
 		{ UnitGroup::TryGet("wolfs") },
@@ -91,7 +89,7 @@ void ForestGenerator::GenerateUnits()
 		{ UnitGroup::TryGet("animals") }
 	};
 	UnitData* ud_hunter = UnitData::Get("wild_hunter");
-	const int level = game.GetDungeonLevel();
+	const int level = L.GetDifficultyLevel();
 	static vector<Vec2> poss;
 	poss.clear();
 	OutsideLocation* outside = (OutsideLocation*)L.location;

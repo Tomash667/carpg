@@ -64,6 +64,7 @@ public:
 	// roti jest u¿ywane tylko do ustalenia czy k¹t jest zerowy czy nie, mo¿na przerobiæ t¹ funkcjê ¿eby tego nie u¿ywa³a wogóle
 	void ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding* inside, Mesh* mesh, Mesh* inside_mesh, float rot, int roti,
 		const Vec3& shift, Building* type, CityBuilding* building, bool recreate = false, Vec3* out_point = nullptr);
+	void RecreateObjects(bool spawn_pes = true);
 	ObjectEntity SpawnObjectNearLocation(LevelContext& ctx, BaseObject* obj, const Vec2& pos, float rot, float range = 2.f, float margin = 0.3f,
 		float scale = 1.f);
 	ObjectEntity SpawnObjectNearLocation(LevelContext& ctx, BaseObject* obj, const Vec2& pos, const Vec2& rot_target, float range = 2.f, float margin = 0.3f,
@@ -113,6 +114,8 @@ public:
 	// zwraca tymczasowy wskaŸnik na stworzon¹ pu³apkê lub nullptr (mo¿e siê nie udaæ tylko dla ARROW i POISON)
 	Trap* CreateTrap(Int2 pt, TRAP_TYPE type, bool timed = false);
 	void UpdateLocation(int days, int open_chance, bool reset);
+	int GetDifficultyLevel() const;
+	int GetChestDifficultyLevel() const;
 
 	Location* location; // same as W.current_location
 	int location_index; // same as W.current_location_index

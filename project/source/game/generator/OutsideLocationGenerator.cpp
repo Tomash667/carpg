@@ -159,7 +159,7 @@ void OutsideLocationGenerator::OnEnter()
 
 		// recreate colliders
 		game.LoadingStep(game.txGeneratingPhysics);
-		game.RespawnObjectColliders();
+		L.RecreateObjects();
 
 		// respawn units
 		game.LoadingStep(game.txGeneratingUnits);
@@ -412,7 +412,7 @@ void OutsideLocationGenerator::OnLoad()
 	L.city_ctx = nullptr;
 	ApplyTiles();
 
-	game.RespawnObjectColliders(false);
+	L.RecreateObjects(false);
 	game.SpawnTerrainCollider();
 	SpawnOutsideBariers();
 	game.InitQuadTree();

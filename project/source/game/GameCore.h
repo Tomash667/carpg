@@ -151,6 +151,7 @@ class LocationGenerator;
 class LocationGeneratorFactory;
 class MoonwellGenerator;
 class SecretLocationGenerator;
+class TutorialLocationGenerator;
 
 //-----------------------------------------------------------------------------
 enum EncounterMode;

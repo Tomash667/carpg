@@ -537,8 +537,6 @@ void CaveGenerator::GenerateObjects()
 //=================================================================================================
 void CaveGenerator::GenerateUnits()
 {
-	Game& game = Game::Get();
-
 	// zbierz grupy
 	static TmpUnitGroup e[3] = {
 		{ UnitGroup::TryGet("wolfs") },
@@ -549,7 +547,7 @@ void CaveGenerator::GenerateUnits()
 	static vector<Int2> tiles;
 	Cave* cave = (Cave*)loc;
 	InsideLocationLevel& lvl = cave->GetLevelData();
-	int level = game.GetDungeonLevel();
+	int level = L.GetDifficultyLevel();
 	tiles.clear();
 	tiles.push_back(lvl.staircase_up);
 

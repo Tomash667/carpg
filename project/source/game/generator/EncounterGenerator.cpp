@@ -14,6 +14,7 @@
 #include "QuestManager.h"
 #include "Quest_Crazies.h"
 #include "UnitGroup.h"
+#include "ItemHelper.h"
 #include "Game.h"
 
 //=================================================================================================
@@ -260,7 +261,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 				if(chest)
 				{
 					int gold;
-					game.GenerateTreasure(5, 5, chest->items, gold, false);
+					ItemHelper::GenerateTreasure(5, 5, chest->items, gold, false);
 					InsertItemBare(chest->items, Item::gold, (uint)gold);
 					SortItems(chest->items);
 				}

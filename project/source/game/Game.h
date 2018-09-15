@@ -21,7 +21,6 @@
 #include "LevelArea.h"
 #include "SaveSlot.h"
 #include "ResourceManager.h"
-#include "ObjectEntity.h"
 
 //-----------------------------------------------------------------------------
 // Tryb szybkiego uruchamiania gry
@@ -46,19 +45,6 @@ enum GAME_STATE
 	GS_LOAD,
 	GS_EXIT_TO_MENU,
 	GS_QUIT
-};
-
-enum COLLISION_GROUP
-{
-	CG_TERRAIN = 1 << 7,
-	CG_BUILDING = 1 << 8,
-	CG_UNIT = 1 << 9,
-	CG_OBJECT = 1 << 10,
-	CG_DOOR = 1 << 11,
-	CG_COLLIDER = 1 << 12,
-	CG_CAMERA_COLLIDER = 1 << 13,
-	CG_BARRIER = 1 << 14, // blocks only units
-	// max 1 << 15
 };
 
 extern const float ATTACK_RANGE;
@@ -694,23 +680,16 @@ public:
 	bool CanShootAtLocation2(const Unit& me, const void* ptr, const Vec3& to) const;
 	void LoadItemsData();
 	void SpawnTerrainCollider();
-	void GenerateDungeonObjects();
-	ObjectEntity GenerateDungeonObject(InsideLocationLevel& lvl, Room& room, BaseObject* base, vector<Vec3>& on_wall, vector<Int2>& blocks, int flags);
 	void AddRoomColliders(InsideLocationLevel& lvl, Room& room, vector<Int2>& blocks);
-	void GenerateDungeonTreasure(vector<Chest*>& chests, int level, bool extra = false);
 	Unit* CreateUnitWithAI(LevelContext& ctx, UnitData& unit, int level = -1, Human* human_data = nullptr, const Vec3* pos = nullptr, const float* rot = nullptr, AIController** ai = nullptr);
 	void ChangeLevel(int where);
 	void AddPlayerTeam(const Vec3& pos, float rot, bool reenter, bool hide_weapon);
 	void OpenDoorsByTeam(const Int2& pt);
 	void ExitToMap();
-	void RespawnObjectColliders(bool spawn_pes = true);
-	void SetRoomPointers();
 	SOUND GetMaterialSound(MATERIAL_TYPE m1, MATERIAL_TYPE m2);
 	void PlayAttachedSound(Unit& unit, SOUND sound, float smin, float smax = 0.f);
 	void StopAllSounds();
 	ATTACK_RESULT DoGenericAttack(LevelContext& ctx, Unit& attacker, Unit& hitted, const Vec3& hitpoint, float dmg, int dmg_type, bool bash);
-	int GetDungeonLevel();
-	int GetDungeonLevelChest();
 	void SaveGame(GameWriter& f);
 	void LoadGame(GameReader& f);
 	void RemoveUnusedAiAndCheck();
@@ -761,7 +740,6 @@ public:
 	void DungeonReveal(const Int2& tile);
 	void SaveStock(FileWriter& f, vector<ItemSlot>& cnt);
 	void LoadStock(FileReader& f, vector<ItemSlot>& cnt);
-	void GenerateDungeonObjects2();
 	SOUND GetItemSound(const Item* item);
 	cstring GetCurrentLocationText();
 	void Unit_StopUsingUsable(LevelContext& ctx, Unit& unit, bool send = true);
@@ -786,8 +764,6 @@ public:
 	bool RemoveItemFromWorld(const Item* item);
 	bool IsBetterItem(Unit& unit, const Item* item, int* value = nullptr);
 	// to by mog³o byæ globalna funkcj¹
-	void GenerateTreasure(int level, int count, vector<ItemSlot>& items, int& gold, bool extra);
-	void SplitTreasure(vector<ItemSlot>& items, int gold, Chest** chests, int count);
 	void PlayHitSound(MATERIAL_TYPE mat_bron, MATERIAL_TYPE mat_cialo, const Vec3& hitpoint, float range, bool dmg);
 	// wczytywanie
 	void LoadingStart(int steps);

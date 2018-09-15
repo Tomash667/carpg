@@ -230,6 +230,8 @@
     <ClInclude Include="source\game\generator\MoonwellGenerator.h" />
     <ClInclude Include="source\game\generator\OutsideLocationGenerator.h" />
     <ClInclude Include="source\game\generator\SecretLocationGenerator.h" />
+    <ClInclude Include="source\game\generator\TutorialLocationGenerator.h" />
+    <ClInclude Include="source\game\helpers\ItemHelper.h" />
     <ClInclude Include="source\game\helpers\LoadingHandler.h" />
     <ClInclude Include="source\game\Level.h" />
     <ClInclude Include="source\game\net\BitStreamFunc.h" />
@@ -470,6 +472,8 @@
     <ClCompile Include="source\game\generator\MoonwellGenerator.cpp" />
     <ClCompile Include="source\game\generator\OutsideLocationGenerator.cpp" />
     <ClCompile Include="source\game\generator\SecretLocationGenerator.cpp" />
+    <ClCompile Include="source\game\generator\TutorialLocationGenerator.cpp" />
+    <ClCompile Include="source\game\helpers\ItemHelper.cpp" />
     <ClCompile Include="source\game\helpers\LoadingHandler.cpp" />
     <ClCompile Include="source\game\Level.cpp" />
     <ClCompile Include="source\game\location\LevelArea.cpp" />

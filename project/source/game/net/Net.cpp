@@ -667,7 +667,7 @@ bool Game::ReadLevelData(BitStreamReader& f)
 		return false;
 	}
 
-	RespawnObjectColliders();
+	L.RecreateObjects();
 	if(W.IsBossLevel())
 		SetMusic();
 	else

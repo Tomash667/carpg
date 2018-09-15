@@ -401,11 +401,9 @@ void LabyrinthGenerator::Generate()
 //=================================================================================================
 void LabyrinthGenerator::GenerateObjects()
 {
-	Game& game = Game::Get();
 	InsideLocationLevel& lvl = GetLevelData();
 
-	game.GenerateDungeonObjects2();
-	game.GenerateDungeonObjects();
+	GenerateDungeonObjects();
 	GenerateTraps();
 
 	BaseObject* torch = BaseObject::Get("torch");
@@ -430,8 +428,6 @@ void LabyrinthGenerator::GenerateObjects()
 //=================================================================================================
 void LabyrinthGenerator::GenerateUnits()
 {
-	Game& game = Game::Get();
-
 	// ustal jakie jednostki mo¿na tu wygenerowaæ
 	cstring group_id;
 	int count, tries;
@@ -447,7 +443,7 @@ void LabyrinthGenerator::GenerateUnits()
 		count = 20;
 		tries = 100;
 	}
-	int level = game.GetDungeonLevel();
+	int level = L.GetDifficultyLevel();
 	static TmpUnitGroup t;
 	t.group = UnitGroup::TryGet(group_id);
 	t.Fill(level);

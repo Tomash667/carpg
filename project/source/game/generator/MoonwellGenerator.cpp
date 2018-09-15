@@ -118,8 +118,6 @@ void MoonwellGenerator::GenerateObjects()
 //=================================================================================================
 void MoonwellGenerator::GenerateUnits()
 {
-	Game& game = Game::Get();
-
 	// zbierz grupy
 	static TmpUnitGroup groups[4] = {
 		{ UnitGroup::TryGet("wolfs") },
@@ -128,7 +126,7 @@ void MoonwellGenerator::GenerateUnits()
 		{ UnitGroup::TryGet("animals") }
 	};
 	UnitData* ud_hunter = UnitData::Get("wild_hunter");
-	int level = game.GetDungeonLevel();
+	int level = L.GetDifficultyLevel();
 	static vector<Vec2> poss;
 	poss.clear();
 	poss.push_back(Vec2(team_pos.x, team_pos.z));

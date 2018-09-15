@@ -250,24 +250,20 @@ void DungeonGenerator::Generate()
 //=================================================================================================
 void DungeonGenerator::GenerateObjects()
 {
-	Game& game = Game::Get();
-	game.GenerateDungeonObjects2();
-	game.GenerateDungeonObjects();
+	GenerateDungeonObjects();
 	GenerateTraps();
 }
 
 //=================================================================================================
 void DungeonGenerator::GenerateUnits()
 {
-	Game& game = Game::Get();
-
 	SPAWN_GROUP spawn_group;
 	int base_level;
 
 	if(L.location->spawn != SG_CHALLANGE)
 	{
 		spawn_group = L.location->spawn;
-		base_level = game.GetDungeonLevel();
+		base_level = L.GetDifficultyLevel();
 	}
 	else
 	{

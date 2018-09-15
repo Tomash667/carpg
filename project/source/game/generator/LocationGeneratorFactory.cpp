@@ -11,6 +11,7 @@
 #include "LabyrinthGenerator.h"
 #include "MoonwellGenerator.h"
 #include "SecretLocationGenerator.h"
+#include "TutorialLocationGenerator.h"
 #include "BaseLocation.h"
 #include "Level.h"
 #include "QuestManager.h"
@@ -28,6 +29,7 @@ void LocationGeneratorFactory::InitOnce()
 	labyrinth = new LabyrinthGenerator;
 	moonwell = new MoonwellGenerator;
 	secret = new SecretLocationGenerator;
+	tutorial = new TutorialLocationGenerator;
 
 	OutsideLocationGenerator::InitOnce();
 }
@@ -44,6 +46,7 @@ void LocationGeneratorFactory::Clear()
 	delete labyrinth;
 	delete moonwell;
 	delete secret;
+	delete tutorial;
 }
 
 //=================================================================================================
@@ -77,7 +80,9 @@ LocationGenerator* LocationGeneratorFactory::Get(Location* loc, bool first, bool
 		{
 			InsideLocation* inside = (InsideLocation*)loc;
 			BaseLocation& base = g_base_locations[inside->target];
-			if(IS_SET(base.options, BLO_LABIRYNTH))
+			if(inside->target == TUTORIAL_FORT)
+				loc_gen = tutorial;
+			else if(IS_SET(base.options, BLO_LABIRYNTH))
 				loc_gen = labyrinth;
 			else
 				loc_gen = dungeon;

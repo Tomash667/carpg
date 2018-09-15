@@ -4,6 +4,7 @@
 #include "Game.h"
 #include "SaveState.h"
 #include "BitStreamFunc.h"
+#include "Collision.h"
 #include "Game.h"
 
 int Door::netid_counter;

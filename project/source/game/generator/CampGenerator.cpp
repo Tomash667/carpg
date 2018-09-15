@@ -7,7 +7,7 @@
 #include "Level.h"
 #include "Chest.h"
 #include "UnitGroup.h"
-#include "Game.h"
+#include "ItemHelper.h"
 
 
 cstring camp_objs[] = {
@@ -73,8 +73,6 @@ int CampGenerator::HandleUpdate()
 //=================================================================================================
 void CampGenerator::GenerateObjects()
 {
-	Game& game = Game::Get();
-
 	SpawnForestObjects();
 
 	vector<Vec2> pts;
@@ -145,7 +143,7 @@ void CampGenerator::GenerateObjects()
 				int gold, level = L.location->st;
 				Chest* chest = (Chest*)e;
 
-				game.GenerateTreasure(level, 5, chest->items, gold, false);
+				ItemHelper::GenerateTreasure(level, 5, chest->items, gold, false);
 				InsertItemBare(chest->items, Item::gold, (uint)gold);
 				SortItems(chest->items);
 			}

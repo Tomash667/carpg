@@ -2286,7 +2286,7 @@ void CityGenerator::OnEnter()
 
 		// recreate physics
 		game.LoadingStep(game.txGeneratingPhysics);
-		game.RespawnObjectColliders();
+		L.RecreateObjects();
 		RespawnBuildingPhysics();
 
 		if(city->reset)
@@ -2917,7 +2917,7 @@ void CityGenerator::OnLoad()
 	L.city_ctx = (City*)loc;
 	ApplyTiles();
 
-	game.RespawnObjectColliders(false);
+	L.RecreateObjects(false);
 	game.SpawnTerrainCollider();
 	RespawnBuildingPhysics();
 	SpawnCityPhysics();

@@ -3,6 +3,7 @@
 #include "GameCore.h"
 #include "BaseLocation.h"
 #include "ResourceManager.h"
+#include "RoomType.h"
 
 //-----------------------------------------------------------------------------
 RoomStrChance fort_ludzi_pokoje[] = {
@@ -249,6 +250,31 @@ void BaseLocation::PreloadTextures()
 				bl.tex.ceil.tex_normal = tex_mgr.Get(bl.tex.ceil.id_normal);
 			if(bl.tex.ceil.id_specular)
 				bl.tex.ceil.tex_specular = tex_mgr.Get(bl.tex.ceil.id_specular);
+		}
+	}
+}
+
+//=================================================================================================
+void BaseLocation::SetRoomPointers()
+{
+	for(uint i = 0; i < n_base_locations; ++i)
+	{
+		BaseLocation& base = g_base_locations[i];
+
+		if(base.schody.id)
+			base.schody.room = FindRoomType(base.schody.id);
+
+		if(base.wymagany.id)
+			base.wymagany.room = FindRoomType(base.wymagany.id);
+
+		if(base.rooms)
+		{
+			base.room_total = 0;
+			for(uint j = 0; j < base.room_count; ++j)
+			{
+				base.rooms[j].room = FindRoomType(base.rooms[j].id);
+				base.room_total += base.rooms[j].chance;
+			}
 		}
 	}
 }
