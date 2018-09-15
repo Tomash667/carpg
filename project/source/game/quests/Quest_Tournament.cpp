@@ -264,7 +264,7 @@ void Quest_Tournament::GenerateUnits()
 		if(ShouldJoin(u) && !u.IsFollowingTeamMember())
 		{
 			u.BreakAction(Unit::BREAK_ACTION_MODE::INSTANT, true);
-			game.WarpNearLocation(L.local_ctx, u, pos, 12.f, false);
+			L.WarpNearLocation(L.local_ctx, u, pos, 12.f, false);
 		}
 	}
 	InsideBuilding* inn = L.city_ctx->FindInn();
@@ -275,7 +275,7 @@ void Quest_Tournament::GenerateUnits()
 		{
 			u.BreakAction(Unit::BREAK_ACTION_MODE::INSTANT, true);
 			u.in_building = -1;
-			game.WarpNearLocation(L.local_ctx, u, pos, 12.f, false);
+			L.WarpNearLocation(L.local_ctx, u, pos, 12.f, false);
 			L.local_ctx.units->push_back(&u);
 			it = inn->units.erase(it);
 			end = inn->units.end();

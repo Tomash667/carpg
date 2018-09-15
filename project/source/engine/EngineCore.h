@@ -13,6 +13,7 @@ struct TrailParticleEmitter;
 class Engine;
 class ResourceManager;
 class SoundManager;
+class SuperShader;
 
 // Resource types
 struct Mesh;

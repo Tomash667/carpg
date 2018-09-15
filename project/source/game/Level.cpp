@@ -298,6 +298,18 @@ Door* Level::FindDoor(int netid)
 }
 
 //=================================================================================================
+Door* Level::FindDoor(LevelContext& ctx, const Int2& pt)
+{
+	for(vector<Door*>::iterator it = ctx.doors->begin(), end = ctx.doors->end(); it != end; ++it)
+	{
+		if((*it)->pt == pt)
+			return *it;
+	}
+
+	return nullptr;
+}
+
+//=================================================================================================
 Trap* Level::FindTrap(int netid)
 {
 	if(local_ctx.traps)
@@ -2572,6 +2584,48 @@ void Level::WarpToInn(Unit& unit)
 	WarpToArea(inn->ctx, (Rand() % 5 == 0 ? inn->arena2 : inn->arena1), unit.GetUnitRadius(), unit.pos, 20);
 	unit.visual_pos = unit.pos;
 	unit.in_building = id;
+}
+
+//=================================================================================================
+void Level::WarpNearLocation(LevelContext& ctx, Unit& unit, const Vec3& pos, float extra_radius, bool allow_exact, int tries)
+{
+	const float radius = unit.GetUnitRadius();
+
+	global_col.clear();
+	IgnoreObjects ignore = { 0 };
+	const Unit* ignore_units[2] = { &unit, nullptr };
+	ignore.ignored_units = ignore_units;
+	GatherCollisionObjects(ctx, global_col, pos, extra_radius + radius, &ignore);
+
+	Vec3 tmp_pos = pos;
+	if(!allow_exact)
+		tmp_pos += Vec2::RandomPoissonDiscPoint().XZ() * extra_radius;
+
+	for(int i = 0; i < tries; ++i)
+	{
+		if(!Collide(global_col, tmp_pos, radius))
+			break;
+
+		tmp_pos = pos + Vec2::RandomPoissonDiscPoint().XZ() * extra_radius;
+	}
+
+	unit.pos = tmp_pos;
+	Game::Get().MoveUnit(unit, true);
+	unit.visual_pos = unit.pos;
+
+	if(Net::IsOnline())
+	{
+		if(unit.interp)
+			unit.interp->Reset(unit.pos, unit.rot);
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::WARP;
+		c.unit = &unit;
+		if(unit.IsPlayer())
+			unit.player->player_info->warping = true;
+	}
+
+	if(unit.cobj)
+		unit.UpdatePhysics(unit.pos);
 }
 
 //=================================================================================================

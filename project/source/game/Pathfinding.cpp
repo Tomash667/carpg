@@ -57,7 +57,6 @@ bool Pathfinding::FindPath(LevelContext& ctx, const Int2& _start_tile, const Int
 		return true;
 	}
 
-	Game& game = Game::Get();
 	static vector<Point> do_sprawdzenia;
 	do_sprawdzenia.clear();
 
@@ -345,7 +344,7 @@ bool Pathfinding::FindPath(LevelContext& ctx, const Int2& _start_tile, const Int
 
 						if(m[pt1(w)].type == DRZWI)
 						{
-							Door* door = game.FindDoor(ctx, pt1);
+							Door* door = L.FindDoor(ctx, pt1);
 							if(door && door->IsBlocking())
 							{
 								// ustal gdzie s¹ drzwi na polu i czy z tej strony mo¿na na nie wejœæ
@@ -444,21 +443,21 @@ bool Pathfinding::FindPath(LevelContext& ctx, const Int2& _start_tile, const Int
 
 						if(m[pt2(w)].type == DRZWI)
 						{
-							Door* door = game.FindDoor(ctx, pt2);
+							Door* door = L.FindDoor(ctx, pt2);
 							if(door && door->IsBlocking())
 								ok = false;
 						}
 
 						if(ok && m[kierunek2[i].x + pt.pt.x + pt.pt.y*w].type == DRZWI)
 						{
-							Door* door = game.FindDoor(ctx, Int2(kierunek2[i].x + pt.pt.x, pt.pt.y));
+							Door* door = L.FindDoor(ctx, Int2(kierunek2[i].x + pt.pt.x, pt.pt.y));
 							if(door && door->IsBlocking())
 								ok = false;
 						}
 
 						if(ok && m[pt.pt.x + (kierunek2[i].y + pt.pt.y)*w].type == DRZWI)
 						{
-							Door* door = game.FindDoor(ctx, Int2(pt.pt.x, kierunek2[i].y + pt.pt.y));
+							Door* door = L.FindDoor(ctx, Int2(pt.pt.x, kierunek2[i].y + pt.pt.y));
 							if(door && door->IsBlocking())
 								ok = false;
 						}

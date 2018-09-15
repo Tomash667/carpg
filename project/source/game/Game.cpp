@@ -32,6 +32,7 @@
 #include "QuestManager.h"
 #include "Quest_Contest.h"
 #include "LocationGeneratorFactory.h"
+#include "SuperShader.h"
 #include "DirectX.h"
 
 // limit fps
@@ -63,10 +64,10 @@ check_updates(true), skip_tutorial(false), portal_anim(0), debug_info2(false), m
 koniec_gry(false), prepared_stream(64 * 1024),
 paused(false), pick_autojoin(false), draw_flags(0xFFFFFFFF), tMiniSave(nullptr), prev_game_state(GS_LOAD), tSave(nullptr), sItemRegion(nullptr),
 sItemRegionRot(nullptr), sChar(nullptr), sSave(nullptr), in_tutorial(false), cursor_allow_move(true), mp_load(false), was_client(false), sCustom(nullptr),
-cl_postfx(true), mp_timeout(10.f), sshader_pool(nullptr), cl_normalmap(true), cl_specularmap(true), dungeon_tex_wrap(true), profiler_mode(0),
+cl_postfx(true), mp_timeout(10.f), cl_normalmap(true), cl_specularmap(true), dungeon_tex_wrap(true), profiler_mode(0),
 grass_range(40.f), vbInstancing(nullptr), vb_instancing_max(0), screenshot_format(ImageFormat::JPG), quickstart_class(Class::RANDOM),
 autopick_class(Class::INVALID), game_state(GS_LOAD), default_devmode(false), default_player_devmode(false), finished_tutorial(false),
-quickstart_slot(MAX_SAVE_SLOTS), arena_free(true), autoready(false), loc_gen_factory(nullptr), pathfinding(nullptr)
+quickstart_slot(MAX_SAVE_SLOTS), arena_free(true), autoready(false), loc_gen_factory(nullptr), pathfinding(nullptr), super_shader(new SuperShader)
 {
 #ifdef _DEBUG
 	default_devmode = true;
@@ -94,6 +95,7 @@ quickstart_slot(MAX_SAVE_SLOTS), arena_free(true), autoready(false), loc_gen_fac
 //=================================================================================================
 Game::~Game()
 {
+	delete super_shader;
 }
 
 //=================================================================================================
@@ -647,8 +649,7 @@ void Game::OnReload()
 	if(eGrass)
 		V(eGrass->OnResetDevice());
 
-	for(vector<SuperShader>::iterator it = sshaders.begin(), end = sshaders.end(); it != end; ++it)
-		V(it->e->OnResetDevice());
+	super_shader->OnReload();
 
 	CreateTextures();
 	BuildDungeon();
@@ -683,8 +684,7 @@ void Game::OnReset()
 	if(eGrass)
 		V(eGrass->OnLostDevice());
 
-	for(vector<SuperShader>::iterator it = sshaders.begin(), end = sshaders.end(); it != end; ++it)
-		V(it->e->OnLostDevice());
+	super_shader->OnReset();
 
 	SafeRelease(tItemRegion);
 	SafeRelease(tItemRegionRot);
@@ -1593,168 +1593,13 @@ bool Game::CanBuySell(const Item* item)
 }
 
 //=================================================================================================
-void Game::InitSuperShader()
-{
-	V(D3DXCreateEffectPool(&sshader_pool));
-
-	FileReader f(Format("%s/shaders/super.fx", g_system_dir.c_str()));
-	FileTime file_time = f.GetTime();
-	if(file_time != sshader_edit_time)
-	{
-		f.ReadToString(sshader_code);
-		sshader_edit_time = file_time;
-	}
-
-	GetSuperShader(0);
-
-	SetupSuperShader();
-}
-
-//=================================================================================================
-uint Game::GetSuperShaderId(bool animated, bool have_binormals, bool fog, bool specular, bool normal, bool point_light, bool dir_light) const
-{
-	uint id = 0;
-	if(animated)
-		id |= (1 << SSS_ANIMATED);
-	if(have_binormals)
-		id |= (1 << SSS_HAVE_BINORMALS);
-	if(fog)
-		id |= (1 << SSS_FOG);
-	if(specular)
-		id |= (1 << SSS_SPECULAR);
-	if(normal)
-		id |= (1 << SSS_NORMAL);
-	if(point_light)
-		id |= (1 << SSS_POINT_LIGHT);
-	if(dir_light)
-		id |= (1 << SSS_DIR_LIGHT);
-	return id;
-}
-
-//=================================================================================================
-SuperShader* Game::GetSuperShader(uint id)
-{
-	for(vector<SuperShader>::iterator it = sshaders.begin(), end = sshaders.end(); it != end; ++it)
-	{
-		if(it->id == id)
-			return &*it;
-	}
-
-	return CompileSuperShader(id);
-}
-
-//=================================================================================================
-SuperShader* Game::CompileSuperShader(uint id)
-{
-	D3DXMACRO macros[10] = { 0 };
-	uint i = 0;
-
-	if(IS_SET(id, 1 << SSS_ANIMATED))
-	{
-		macros[i].Name = "ANIMATED";
-		macros[i].Definition = "1";
-		++i;
-	}
-	if(IS_SET(id, 1 << SSS_HAVE_BINORMALS))
-	{
-		macros[i].Name = "HAVE_BINORMALS";
-		macros[i].Definition = "1";
-		++i;
-	}
-	if(IS_SET(id, 1 << SSS_FOG))
-	{
-		macros[i].Name = "FOG";
-		macros[i].Definition = "1";
-		++i;
-	}
-	if(IS_SET(id, 1 << SSS_SPECULAR))
-	{
-		macros[i].Name = "SPECULAR_MAP";
-		macros[i].Definition = "1";
-		++i;
-	}
-	if(IS_SET(id, 1 << SSS_NORMAL))
-	{
-		macros[i].Name = "NORMAL_MAP";
-		macros[i].Definition = "1";
-		++i;
-	}
-	if(IS_SET(id, 1 << SSS_POINT_LIGHT))
-	{
-		macros[i].Name = "POINT_LIGHT";
-		macros[i].Definition = "1";
-		++i;
-
-		macros[i].Name = "LIGHTS";
-		macros[i].Definition = (shader_version == 2 ? "2" : "3");
-		++i;
-	}
-	else if(IS_SET(id, 1 << SSS_DIR_LIGHT))
-	{
-		macros[i].Name = "DIR_LIGHT";
-		macros[i].Definition = "1";
-		++i;
-	}
-
-	macros[i].Name = "VS_VERSION";
-	macros[i].Definition = (shader_version == 3 ? "vs_3_0" : "vs_2_0");
-	++i;
-
-	macros[i].Name = "PS_VERSION";
-	macros[i].Definition = (shader_version == 3 ? "ps_3_0" : "ps_2_0");
-	++i;
-
-	Info("Compiling super shader: %u", id);
-
-	CompileShaderParams params = { "super.fx" };
-	params.cache_name = Format("%d_super%u.fcx", shader_version, id);
-	params.file_time = sshader_edit_time;
-	params.input = &sshader_code;
-	params.macros = macros;
-	params.pool = sshader_pool;
-
-	SuperShader& s = Add1(sshaders);
-	s.e = CompileShader(params);
-	s.id = id;
-
-	return &s;
-}
-
-//=================================================================================================
-void Game::SetupSuperShader()
-{
-	ID3DXEffect* e = sshaders[0].e;
-
-	Info("Setting up super shader parameters.");
-	hSMatCombined = e->GetParameterByName(nullptr, "matCombined");
-	hSMatWorld = e->GetParameterByName(nullptr, "matWorld");
-	hSMatBones = e->GetParameterByName(nullptr, "matBones");
-	hSTint = e->GetParameterByName(nullptr, "tint");
-	hSAmbientColor = e->GetParameterByName(nullptr, "ambientColor");
-	hSFogColor = e->GetParameterByName(nullptr, "fogColor");
-	hSFogParams = e->GetParameterByName(nullptr, "fogParams");
-	hSLightDir = e->GetParameterByName(nullptr, "lightDir");
-	hSLightColor = e->GetParameterByName(nullptr, "lightColor");
-	hSLights = e->GetParameterByName(nullptr, "lights");
-	hSSpecularColor = e->GetParameterByName(nullptr, "specularColor");
-	hSSpecularIntensity = e->GetParameterByName(nullptr, "specularIntensity");
-	hSSpecularHardness = e->GetParameterByName(nullptr, "specularHardness");
-	hSCameraPos = e->GetParameterByName(nullptr, "cameraPos");
-	hSTexDiffuse = e->GetParameterByName(nullptr, "texDiffuse");
-	hSTexNormal = e->GetParameterByName(nullptr, "texNormal");
-	hSTexSpecular = e->GetParameterByName(nullptr, "texSpecular");
-	assert(hSMatCombined && hSMatWorld && hSMatBones && hSTint && hSAmbientColor && hSFogColor && hSFogParams && hSLightDir && hSLightColor && hSLights && hSSpecularColor && hSSpecularIntensity
-		&& hSSpecularHardness && hSCameraPos && hSTexDiffuse && hSTexNormal && hSTexSpecular);
-}
-
-//=================================================================================================
 void Game::ReloadShaders()
 {
 	Info("Reloading shaders...");
 
 	ReleaseShaders();
 
-	InitSuperShader();
+	super_shader->Init();
 
 	try
 	{
@@ -1791,10 +1636,7 @@ void Game::ReleaseShaders()
 	SafeRelease(eGlow);
 	SafeRelease(eGrass);
 
-	SafeRelease(sshader_pool);
-	for(vector<SuperShader>::iterator it = sshaders.begin(), end = sshaders.end(); it != end; ++it)
-		SafeRelease(it->e);
-	sshaders.clear();
+	super_shader->Release();
 }
 
 //=================================================================================================

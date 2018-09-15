@@ -17,6 +17,7 @@ protected:
 	void GenerateTraps();
 	void RegenerateTraps();
 	void RespawnTraps();
+	void SpawnHeroesInsideDungeon();
 
 	InsideLocation* inside;
 };

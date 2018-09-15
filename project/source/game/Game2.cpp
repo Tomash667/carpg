@@ -426,7 +426,7 @@ void Game::SetupCamera(float dt)
 					if(vdNaDrzwi->RayToMesh(to, dist, pos, rot, tout) && tout < min_tout)
 						min_tout = tout;
 
-					Door* door = FindDoor(ctx, Int2(x, z));
+					Door* door = L.FindDoor(ctx, Int2(x, z));
 					if(door && door->IsBlocking())
 					{
 						// 0.842f, 1.319f, 0.181f
@@ -6021,7 +6021,7 @@ bool Game::CanSee(Unit& u1, Unit& u2)
 					return false;
 				if(lvl.map[x + y * lvl.w].type == DRZWI)
 				{
-					Door* door = FindDoor(ctx, Int2(x, y));
+					Door* door = L.FindDoor(ctx, Int2(x, y));
 					if(door && door->IsBlocking())
 					{
 						// 0.842f, 1.319f, 0.181f
@@ -6138,7 +6138,7 @@ bool Game::CanSee(const Vec3& v1, const Vec3& v2)
 					return false;
 				if(lvl.map[x + y * lvl.w].type == DRZWI)
 				{
-					Door* door = FindDoor(ctx, Int2(x, y));
+					Door* door = L.FindDoor(ctx, Int2(x, y));
 					if(door && door->IsBlocking())
 					{
 						// 0.842f, 1.319f, 0.181f
@@ -9342,7 +9342,7 @@ void Game::AddPlayerTeam(const Vec3& pos, float rot, bool reenter, bool hide_wea
 			u.ai->timer = Random(2.f, 5.f);
 		}
 
-		WarpNearLocation(L.local_ctx, u, pos, L.city_ctx ? 4.f : 2.f, true, 20);
+		L.WarpNearLocation(L.local_ctx, u, pos, L.city_ctx ? 4.f : 2.f, true, 20);
 		u.visual_pos = u.pos;
 
 		if(!L.location->outside)
@@ -11345,17 +11345,6 @@ void Game::UpdateDungeonMinimap(bool send)
 	minimap_reveal.clear();
 }
 
-Door* Game::FindDoor(LevelContext& ctx, const Int2& pt)
-{
-	for(vector<Door*>::iterator it = ctx.doors->begin(), end = ctx.doors->end(); it != end; ++it)
-	{
-		if((*it)->pt == pt)
-			return *it;
-	}
-
-	return nullptr;
-}
-
 SOUND Game::GetItemSound(const Item* item)
 {
 	assert(item);
@@ -13343,264 +13332,6 @@ Game::CanLeaveLocationResult Game::CanLeaveLocation(Unit& unit)
 	return CanLeaveLocationResult::Yes;
 }
 
-void Game::SpawnHeroesInsideDungeon()
-{
-	InsideLocation* inside = (InsideLocation*)L.location;
-	InsideLocationLevel& lvl = inside->GetLevelData();
-
-	Room* p = lvl.GetUpStairsRoom();
-	int room_id = lvl.GetRoomId(p);
-	int chance = 23;
-	bool first = true;
-
-	vector<std::pair<Room*, int> > sprawdzone;
-	vector<int> ok_room;
-	sprawdzone.push_back(std::make_pair(p, room_id));
-
-	while(true)
-	{
-		p = sprawdzone.back().first;
-		for(vector<int>::iterator it = p->connected.begin(), end = p->connected.end(); it != end; ++it)
-		{
-			room_id = *it;
-			bool ok = true;
-			for(vector<std::pair<Room*, int> >::iterator it2 = sprawdzone.begin(), end2 = sprawdzone.end(); it2 != end2; ++it2)
-			{
-				if(room_id == it2->second)
-				{
-					ok = false;
-					break;
-				}
-			}
-			if(ok && (Rand() % 20 < chance || Rand() % 3 == 0 || first))
-				ok_room.push_back(room_id);
-		}
-
-		first = false;
-
-		if(ok_room.empty())
-			break;
-		else
-		{
-			room_id = ok_room[Rand() % ok_room.size()];
-			ok_room.clear();
-			sprawdzone.push_back(std::make_pair(&lvl.rooms[room_id], room_id));
-			--chance;
-		}
-	}
-
-	// cofnij ich z korytarza
-	while(sprawdzone.back().first->IsCorridor())
-		sprawdzone.pop_back();
-
-	int gold = 0;
-	vector<ItemSlot> items;
-	LocalVector<Chest*> chests;
-
-	// pozabijaj jednostki w pokojach, ograb skrzynie
-	// trochê to nieefektywne :/
-	vector<std::pair<Room*, int> >::iterator end = sprawdzone.end();
-	if(Rand() % 2 == 0)
-		--end;
-	for(vector<Unit*>::iterator it2 = L.local_ctx.units->begin(), end2 = L.local_ctx.units->end(); it2 != end2; ++it2)
-	{
-		Unit& u = **it2;
-		if(u.IsAlive() && IsEnemy(*pc->unit, u))
-		{
-			for(vector<std::pair<Room*, int> >::iterator it = sprawdzone.begin(); it != end; ++it)
-			{
-				if(it->first->IsInside(u.pos))
-				{
-					gold += u.gold;
-					for(int i = 0; i < SLOT_MAX; ++i)
-					{
-						if(u.slots[i] && u.slots[i]->GetWeightValue() >= 5.f)
-						{
-							ItemSlot& slot = Add1(items);
-							slot.item = u.slots[i];
-							slot.count = slot.team_count = 1u;
-							u.weight -= u.slots[i]->weight;
-							u.slots[i] = nullptr;
-						}
-					}
-					for(vector<ItemSlot>::iterator it3 = u.items.begin(), end3 = u.items.end(); it3 != end3;)
-					{
-						if(it3->item->GetWeightValue() >= 5.f)
-						{
-							u.weight -= it3->item->weight * it3->count;
-							items.push_back(*it3);
-							it3 = u.items.erase(it3);
-							end3 = u.items.end();
-						}
-						else
-							++it3;
-					}
-					u.gold = 0;
-					u.live_state = Unit::DEAD;
-					if(u.data->mesh->IsLoaded())
-					{
-						u.animation = u.current_animation = ANI_DIE;
-						u.SetAnimationAtEnd(NAMES::ani_die);
-						L.CreateBlood(L.local_ctx, u, true);
-					}
-					else
-						L.blood_to_spawn.push_back(&u);
-					u.hp = 0.f;
-					++GameStats::Get().total_kills;
-
-					// przenieœ fizyke
-					btVector3 a_min, a_max;
-					u.cobj->getWorldTransform().setOrigin(btVector3(1000, 1000, 1000));
-					u.cobj->getCollisionShape()->getAabb(u.cobj->getWorldTransform(), a_min, a_max);
-					phy_broadphase->setAabb(u.cobj->getBroadphaseHandle(), a_min, a_max, phy_dispatcher);
-
-					if(u.event_handler)
-						u.event_handler->HandleUnitEvent(UnitEventHandler::DIE, &u);
-					break;
-				}
-			}
-		}
-	}
-	for(vector<Chest*>::iterator it2 = L.local_ctx.chests->begin(), end2 = L.local_ctx.chests->end(); it2 != end2; ++it2)
-	{
-		for(vector<std::pair<Room*, int> >::iterator it = sprawdzone.begin(); it != end; ++it)
-		{
-			if(it->first->IsInside((*it2)->pos))
-			{
-				for(vector<ItemSlot>::iterator it3 = (*it2)->items.begin(), end3 = (*it2)->items.end(); it3 != end3;)
-				{
-					if(it3->item->type == IT_GOLD)
-					{
-						gold += it3->count;
-						it3 = (*it2)->items.erase(it3);
-						end3 = (*it2)->items.end();
-					}
-					else if(it3->item->GetWeightValue() >= 5.f)
-					{
-						items.push_back(*it3);
-						it3 = (*it2)->items.erase(it3);
-						end3 = (*it2)->items.end();
-					}
-					else
-						++it3;
-				}
-				chests->push_back(*it2);
-				break;
-			}
-		}
-	}
-
-	// otwórz drzwi pomiêdzy obszarami
-	for(vector<std::pair<Room*, int> >::iterator it2 = sprawdzone.begin(), end2 = sprawdzone.end(); it2 != end2; ++it2)
-	{
-		Room& a = *it2->first,
-			&b = lvl.rooms[it2->second];
-
-		// wspólny obszar pomiêdzy pokojami
-		int x1 = max(a.pos.x, b.pos.x),
-			x2 = min(a.pos.x + a.size.x, b.pos.x + b.size.x),
-			y1 = max(a.pos.y, b.pos.y),
-			y2 = min(a.pos.y + a.size.y, b.pos.y + b.size.y);
-
-		// szukaj drzwi
-		for(int y = y1; y < y2; ++y)
-		{
-			for(int x = x1; x < x2; ++x)
-			{
-				Pole& po = lvl.map[x + y * lvl.w];
-				if(po.type == DRZWI)
-				{
-					Door* door = lvl.FindDoor(Int2(x, y));
-					if(door && door->state == Door::Closed)
-					{
-						door->state = Door::Open;
-						btVector3& pos = door->phy->getWorldTransform().getOrigin();
-						pos.setY(pos.y() - 100.f);
-						door->mesh_inst->SetToEnd(&door->mesh_inst->mesh->anims[0]);
-					}
-				}
-			}
-		}
-	}
-
-	// stwórz bohaterów
-	int count = Random(2, 4);
-	LocalVector<Unit*> heroes;
-	p = sprawdzone.back().first;
-	int team_level = Random(4, 13);
-	for(int i = 0; i < count; ++i)
-	{
-		int level = team_level + Random(-2, 2);
-		Unit* u = L.SpawnUnitInsideRoom(*p, ClassInfo::GetRandomData(), level);
-		if(u)
-			heroes->push_back(u);
-		else
-			break;
-	}
-
-	// sortuj przedmioty wed³ug wartoœci
-	std::sort(items.begin(), items.end(), [](const ItemSlot& a, const ItemSlot& b)
-	{
-		return a.item->GetWeightValue() < b.item->GetWeightValue();
-	});
-
-	// rozdziel z³oto
-	int gold_per_hero = gold / heroes->size();
-	for(vector<Unit*>::iterator it = heroes->begin(), end = heroes->end(); it != end; ++it)
-		(*it)->gold += gold_per_hero;
-	gold -= gold_per_hero * heroes->size();
-	if(gold)
-		heroes->back()->gold += gold;
-
-	// rozdziel przedmioty
-	vector<Unit*>::iterator heroes_it = heroes->begin(), heroes_end = heroes->end();
-	while(!items.empty())
-	{
-		ItemSlot& item = items.back();
-		for(int i = 0, ile = item.count; i < ile; ++i)
-		{
-			if((*heroes_it)->CanTake(item.item))
-			{
-				(*heroes_it)->AddItemAndEquipIfNone(item.item);
-				--item.count;
-				++heroes_it;
-				if(heroes_it == heroes_end)
-					heroes_it = heroes->begin();
-			}
-			else
-			{
-				// ten heros nie mo¿e wzi¹œæ tego przedmiotu, jest szansa ¿e wzi¹³by jakiœ l¿ejszy i tañszy ale ma³a
-				heroes_it = heroes->erase(heroes_it);
-				if(heroes->empty())
-					break;
-				heroes_end = heroes->end();
-				if(heroes_it == heroes_end)
-					heroes_it = heroes->begin();
-			}
-		}
-		if(heroes->empty())
-			break;
-		items.pop_back();
-	}
-
-	// pozosta³e przedmioty schowaj do skrzyni o ile jest co i gdzie
-	if(!chests->empty() && !items.empty())
-	{
-		chests.Shuffle();
-		vector<Chest*>::iterator chest_begin = chests->begin(), chest_end = chests->end(), chest_it = chest_begin;
-		for(vector<ItemSlot>::iterator it = items.begin(), end = items.end(); it != end; ++it)
-		{
-			(*chest_it)->AddItem(it->item, it->count);
-			++chest_it;
-			if(chest_it == chest_end)
-				chest_it = chest_begin;
-		}
-	}
-
-	// sprawdŸ czy lokacja oczyszczona (raczej nie jest)
-	CheckIfLocationCleared();
-}
-
 void Game::GenerateQuestUnits()
 {
 	if(QM.quest_sawmill->sawmill_state == Quest_Sawmill::State::None && L.location_index == QM.quest_sawmill->start_loc)
@@ -15315,47 +15046,6 @@ DialogContext* Game::FindDialogContext(Unit* talker)
 		}
 	}
 	return nullptr;
-}
-
-void Game::WarpNearLocation(LevelContext& ctx, Unit& unit, const Vec3& pos, float extra_radius, bool allow_exact, int tries)
-{
-	const float radius = unit.GetUnitRadius();
-
-	L.global_col.clear();
-	Level::IgnoreObjects ignore = { 0 };
-	const Unit* ignore_units[2] = { &unit, nullptr };
-	ignore.ignored_units = ignore_units;
-	L.GatherCollisionObjects(ctx, L.global_col, pos, extra_radius + radius, &ignore);
-
-	Vec3 tmp_pos = pos;
-	if(!allow_exact)
-		tmp_pos += Vec2::RandomPoissonDiscPoint().XZ() * extra_radius;
-
-	for(int i = 0; i < tries; ++i)
-	{
-		if(!L.Collide(L.global_col, tmp_pos, radius))
-			break;
-
-		tmp_pos = pos + Vec2::RandomPoissonDiscPoint().XZ() * extra_radius;
-	}
-
-	unit.pos = tmp_pos;
-	MoveUnit(unit, true);
-	unit.visual_pos = unit.pos;
-
-	if(Net::IsOnline())
-	{
-		if(unit.interp)
-			unit.interp->Reset(unit.pos, unit.rot);
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::WARP;
-		c.unit = &unit;
-		if(unit.IsPlayer())
-			unit.player->player_info->warping = true;
-	}
-
-	if(unit.cobj)
-		unit.UpdatePhysics(unit.pos);
 }
 
 /* mode: 0 - normal training

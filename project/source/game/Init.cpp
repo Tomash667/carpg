@@ -22,6 +22,7 @@
 #include "LocationGeneratorFactory.h"
 #include "Pathfinding.h"
 #include "Level.h"
+#include "SuperShader.h"
 
 extern void HumanPredraw(void* ptr, Matrix* mat, int n);
 extern const int ITEM_IMAGE_SIZE;
@@ -270,7 +271,7 @@ void Game::ConfigureGame()
 	load_screen->Tick(txConfiguringGame);
 
 	InitScene();
-	InitSuperShader();
+	super_shader->Init();
 	AddCommands();
 	InitGui();
 	ResetGameKeys();

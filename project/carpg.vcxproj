@@ -196,6 +196,7 @@
     <ClInclude Include="source\engine\ResourceManager.h" />
     <ClInclude Include="source\engine\SoundManager.h" />
     <ClInclude Include="source\engine\StartupOptions.h" />
+    <ClInclude Include="source\engine\SuperShader.h" />
     <ClInclude Include="source\engine\Terrain.h" />
     <ClInclude Include="source\engine\Texture.h" />
     <ClInclude Include="source\engine\VertexData.h" />
@@ -442,6 +443,7 @@
     <ClCompile Include="source\engine\Physics.cpp" />
     <ClCompile Include="source\engine\ResourceManager.cpp" />
     <ClCompile Include="source\engine\SoundManager.cpp" />
+    <ClCompile Include="source\engine\SuperShader.cpp" />
     <ClCompile Include="source\engine\Terrain.cpp" />
     <ClCompile Include="source\engine\Texture.cpp" />
     <ClCompile Include="source\engine\VertexData.cpp" />

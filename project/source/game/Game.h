@@ -173,23 +173,6 @@ struct PostEffect
 	Vec4 skill;
 };
 
-enum SuperShaderSwitches
-{
-	SSS_ANIMATED,
-	SSS_HAVE_BINORMALS,
-	SSS_FOG,
-	SSS_SPECULAR,
-	SSS_NORMAL,
-	SSS_POINT_LIGHT,
-	SSS_DIR_LIGHT
-};
-
-struct SuperShader
-{
-	ID3DXEffect* e;
-	uint id;
-};
-
 enum class AnyVarType
 {
 	Bool
@@ -267,26 +250,12 @@ public:
 	QUICKSTART quickstart;
 	int quickstart_slot;
 
-	// supershader
-	string sshader_code;
-	FileTime sshader_edit_time;
-	ID3DXEffectPool* sshader_pool;
-	vector<SuperShader> sshaders;
-	D3DXHANDLE hSMatCombined, hSMatWorld, hSMatBones, hSTint, hSAmbientColor, hSFogColor, hSFogParams, hSLightDir, hSLightColor, hSLights, hSSpecularColor, hSSpecularIntensity,
-		hSSpecularHardness, hSCameraPos, hSTexDiffuse, hSTexNormal, hSTexSpecular;
-	void InitSuperShader();
-	uint GetSuperShaderId(bool animated, bool have_binormals, bool fog, bool specular, bool normal, bool point_light, bool dir_light) const;
-	SuperShader* GetSuperShader(uint id);
-	SuperShader* CompileSuperShader(uint id);
-
-	bool dungeon_tex_wrap;
-
-	void SetupSuperShader();
 	void ReloadShaders();
 	void ReleaseShaders();
 	void ShaderVersionChanged();
 
 	// scene
+	bool dungeon_tex_wrap;
 	bool cl_normalmap, cl_specularmap, cl_glow;
 	DrawBatch draw_batch;
 	VDefault blood_v[4];
@@ -792,7 +761,6 @@ public:
 	void DungeonReveal(const Int2& tile);
 	void SaveStock(FileWriter& f, vector<ItemSlot>& cnt);
 	void LoadStock(FileReader& f, vector<ItemSlot>& cnt);
-	Door* FindDoor(LevelContext& ctx, const Int2& pt);
 	void GenerateDungeonObjects2();
 	SOUND GetItemSound(const Item* item);
 	cstring GetCurrentLocationText();
@@ -861,7 +829,6 @@ public:
 		InCombat
 	};
 	CanLeaveLocationResult CanLeaveLocation(Unit& unit);
-	void SpawnHeroesInsideDungeon();
 	void GenerateQuestUnits();
 	void GenerateQuestUnits2(bool on_enter);
 	void UpdateQuests(int days);
@@ -881,7 +848,6 @@ public:
 	void StartPvp(PlayerController* player, Unit* unit);
 	void UpdateGameNet(float dt);
 	void CheckCredit(bool require_update = false, bool ignore = false);
-	void WarpNearLocation(LevelContext& ctx, Unit& uint, const Vec3& pos, float extra_radius, bool allow_exact, int tries = 20);
 	void Train(Unit& unit, bool is_skill, int co, int mode = 0);
 	void ShowStatGain(bool is_skill, int what, int value);
 	void ActivateChangeLeaderButton(bool activate);
@@ -1156,4 +1122,5 @@ public:
 	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 	LocationGeneratorFactory* loc_gen_factory;
 	Pathfinding* pathfinding;
+	SuperShader* super_shader;
 };

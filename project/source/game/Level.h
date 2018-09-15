@@ -45,6 +45,7 @@ public:
 	Unit* FindUnit(delegate<bool(Unit*)> pred);
 	Usable* FindUsable(int netid);
 	Door* FindDoor(int netid);
+	Door* FindDoor(LevelContext& ctx, const Int2& pt);
 	Trap* FindTrap(int netid);
 	Chest* FindChest(int netid);
 	Electro* FindElectro(int netid);
@@ -108,6 +109,7 @@ public:
 	void WarpUnit(Unit& unit, const Vec3& pos);
 	bool WarpToArea(LevelContext& ctx, const Box2d& area, float radius, Vec3& pos, int tries = 10);
 	void WarpToInn(Unit& unit);
+	void WarpNearLocation(LevelContext& ctx, Unit& uint, const Vec3& pos, float extra_radius, bool allow_exact, int tries = 20);
 	// zwraca tymczasowy wskaŸnik na stworzon¹ pu³apkê lub nullptr (mo¿e siê nie udaæ tylko dla ARROW i POISON)
 	Trap* CreateTrap(Int2 pt, TRAP_TYPE type, bool timed = false);
 	void UpdateLocation(int days, int open_chance, bool reset);

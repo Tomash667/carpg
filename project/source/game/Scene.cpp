@@ -8,6 +8,7 @@
 #include "Profiler.h"
 #include "Portal.h"
 #include "Level.h"
+#include "SuperShader.h"
 #include "DirectX.h"
 
 //-----------------------------------------------------------------------------
@@ -3332,18 +3333,19 @@ void Game::DrawDungeon(const vector<DungeonPart>& parts, const vector<Lights>& l
 				V(e->EndPass());
 				V(e->End());
 			}
-			e = GetSuperShader(GetSuperShaderId(false, true, cl_fog, cl_specularmap && dp.tp->specular != nullptr, cl_normalmap && dp.tp->normal != nullptr, cl_lighting, false))->e;
+			e = super_shader->GetShader(super_shader->GetShaderId(false, true, cl_fog, cl_specularmap && dp.tp->specular != nullptr,
+				cl_normalmap && dp.tp->normal != nullptr, cl_lighting, false));
 			if(first)
 			{
 				first = false;
-				V(e->SetVector(hSTint, (D3DXVECTOR4*)&Vec4(1, 1, 1, 1)));
-				V(e->SetVector(hSAmbientColor, (D3DXVECTOR4*)&GetAmbientColor()));
-				V(e->SetVector(hSFogColor, (D3DXVECTOR4*)&GetFogColor()));
-				V(e->SetVector(hSFogParams, (D3DXVECTOR4*)&GetFogParams()));
-				V(e->SetVector(hSCameraPos, (D3DXVECTOR4*)&cam.center));
-				V(e->SetVector(hSSpecularColor, (D3DXVECTOR4*)&Vec4(1, 1, 1, 1)));
-				V(e->SetFloat(hSSpecularIntensity, 0.2f));
-				V(e->SetFloat(hSSpecularHardness, 10));
+				V(e->SetVector(super_shader->hTint, (D3DXVECTOR4*)&Vec4(1, 1, 1, 1)));
+				V(e->SetVector(super_shader->hAmbientColor, (D3DXVECTOR4*)&GetAmbientColor()));
+				V(e->SetVector(super_shader->hFogColor, (D3DXVECTOR4*)&GetFogColor()));
+				V(e->SetVector(super_shader->hFogParams, (D3DXVECTOR4*)&GetFogParams()));
+				V(e->SetVector(super_shader->hCameraPos, (D3DXVECTOR4*)&cam.center));
+				V(e->SetVector(super_shader->hSpecularColor, (D3DXVECTOR4*)&Vec4(1, 1, 1, 1)));
+				V(e->SetFloat(super_shader->hSpecularIntensity, 0.2f));
+				V(e->SetFloat(super_shader->hSpecularHardness, 10));
 			}
 			V(e->Begin(&passes, 0));
 			V(e->BeginPass(0));
@@ -3353,20 +3355,20 @@ void Game::DrawDungeon(const vector<DungeonPart>& parts, const vector<Lights>& l
 		if(last_pack != dp.tp)
 		{
 			last_pack = dp.tp;
-			V(e->SetTexture(hSTexDiffuse, last_pack->diffuse->tex));
+			V(e->SetTexture(super_shader->hTexDiffuse, last_pack->diffuse->tex));
 			if(cl_normalmap && last_pack->normal)
-				V(e->SetTexture(hSTexNormal, last_pack->normal->tex));
+				V(e->SetTexture(super_shader->hTexNormal, last_pack->normal->tex));
 			if(cl_specularmap && last_pack->specular)
-				V(e->SetTexture(hSTexSpecular, last_pack->specular->tex));
+				V(e->SetTexture(super_shader->hTexSpecular, last_pack->specular->tex));
 		}
 
 		// set matrices
 		const NodeMatrix& m = matrices[dp.matrix];
-		V(e->SetMatrix(hSMatCombined, (D3DXMATRIX*)&m.matCombined));
-		V(e->SetMatrix(hSMatWorld, (D3DXMATRIX*)&m.matWorld));
+		V(e->SetMatrix(super_shader->hMatCombined, (D3DXMATRIX*)&m.matCombined));
+		V(e->SetMatrix(super_shader->hMatWorld, (D3DXMATRIX*)&m.matWorld));
 
 		// set lights
-		V(e->SetRawValue(hSLights, &lights[dp.lights].ld[0], 0, sizeof(LightData) * 3));
+		V(e->SetRawValue(super_shader->hLights, &lights[dp.lights].ld[0], 0, sizeof(LightData) * 3));
 
 		// draw
 		V(e->CommitChanges());
@@ -3389,15 +3391,15 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 	Vec4 ambientColor = GetAmbientColor();
 
 	// setup effect
-	ID3DXEffect* e = sshaders.front().e;
-	V(e->SetVector(hSAmbientColor, (D3DXVECTOR4*)&ambientColor));
-	V(e->SetVector(hSFogColor, (D3DXVECTOR4*)&fogColor));
-	V(e->SetVector(hSFogParams, (D3DXVECTOR4*)&fogParams));
-	V(e->SetVector(hSCameraPos, (D3DXVECTOR4*)&cam.center));
+	ID3DXEffect* e = super_shader->GetEffect();
+	V(e->SetVector(super_shader->hAmbientColor, (D3DXVECTOR4*)&ambientColor));
+	V(e->SetVector(super_shader->hFogColor, (D3DXVECTOR4*)&fogColor));
+	V(e->SetVector(super_shader->hFogParams, (D3DXVECTOR4*)&fogParams));
+	V(e->SetVector(super_shader->hCameraPos, (D3DXVECTOR4*)&cam.center));
 	if(outside)
 	{
-		V(e->SetVector(hSLightDir, (D3DXVECTOR4*)&lightDir));
-		V(e->SetVector(hSLightColor, (D3DXVECTOR4*)&lightColor));
+		V(e->SetVector(super_shader->hLightDir, (D3DXVECTOR4*)&lightDir));
+		V(e->SetVector(super_shader->hLightColor, (D3DXVECTOR4*)&lightColor));
 	}
 
 	// modele
@@ -3420,14 +3422,14 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 				inside_begin = false;
 			}
 			current_flags = node->flags;
-			e = GetSuperShader(GetSuperShaderId(
+			e = super_shader->GetShader(super_shader->GetShaderId(
 				IS_SET(node->flags, SceneNode::F_ANIMATED),
 				IS_SET(node->flags, SceneNode::F_BINORMALS),
 				cl_fog,
 				cl_specularmap && IS_SET(node->flags, SceneNode::F_SPECULAR_MAP),
 				cl_normalmap && IS_SET(node->flags, SceneNode::F_NORMAL_MAP),
 				cl_lighting && !outside,
-				cl_lighting && outside))->e;
+				cl_lighting && outside));
 			D3DXHANDLE tech;
 			V(e->FindNextValidTechnique(nullptr, &tech));
 			V(e->SetTechnique(tech));
@@ -3442,13 +3444,13 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 			m1 = node->mat * cam.matViewProj;
 		else
 			m1 = node->mat.Inverse() * cam.matViewProj;
-		V(e->SetMatrix(hSMatCombined, (D3DXMATRIX*)&m1));
-		V(e->SetMatrix(hSMatWorld, (D3DXMATRIX*)&node->mat));
-		V(e->SetVector(hSTint, (D3DXVECTOR4*)&node->tint));
+		V(e->SetMatrix(super_shader->hMatCombined, (D3DXMATRIX*)&m1));
+		V(e->SetMatrix(super_shader->hMatWorld, (D3DXMATRIX*)&node->mat));
+		V(e->SetVector(super_shader->hTint, (D3DXVECTOR4*)&node->tint));
 		if(IS_SET(node->flags, SceneNode::F_ANIMATED))
 		{
 			const MeshInstance& mesh_inst = node->GetMeshInstance();
-			V(e->SetMatrixArray(hSMatBones, (D3DXMATRIX*)&mesh_inst.mat_bones[0], mesh_inst.mat_bones.size()));
+			V(e->SetMatrixArray(super_shader->hMatBones, (D3DXMATRIX*)&mesh_inst.mat_bones[0], mesh_inst.mat_bones.size()));
 		}
 
 		// ustaw model
@@ -3462,7 +3464,7 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 
 		// œwiat³a
 		if(!outside)
-			V(e->SetRawValue(hSLights, &lights[node->lights].ld[0], 0, sizeof(LightData) * 3));
+			V(e->SetRawValue(super_shader->hLights, &lights[node->lights].ld[0], 0, sizeof(LightData) * 3));
 
 		// renderowanie
 		if(!IS_SET(node->subs, SPLIT_INDEX))
@@ -3475,16 +3477,16 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 				const Mesh::Submesh& sub = mesh.subs[i];
 
 				// tekstura
-				V(e->SetTexture(hSTexDiffuse, mesh.GetTexture(i, node->tex_override)));
+				V(e->SetTexture(super_shader->hTexDiffuse, mesh.GetTexture(i, node->tex_override)));
 				if(cl_normalmap && IS_SET(current_flags, SceneNode::F_NORMAL_MAP))
-					V(e->SetTexture(hSTexNormal, sub.tex_normal->tex));
+					V(e->SetTexture(super_shader->hTexNormal, sub.tex_normal->tex));
 				if(cl_specularmap && IS_SET(current_flags, SceneNode::F_SPECULAR_MAP))
-					V(e->SetTexture(hSTexSpecular, sub.tex_specular->tex));
+					V(e->SetTexture(super_shader->hTexSpecular, sub.tex_specular->tex));
 
 				// ustawienia œwiat³a
-				V(e->SetVector(hSSpecularColor, (D3DXVECTOR4*)&sub.specular_color));
-				V(e->SetFloat(hSSpecularIntensity, sub.specular_intensity));
-				V(e->SetFloat(hSSpecularHardness, (float)sub.specular_hardness));
+				V(e->SetVector(super_shader->hSpecularColor, (D3DXVECTOR4*)&sub.specular_color));
+				V(e->SetFloat(super_shader->hSpecularIntensity, sub.specular_intensity));
+				V(e->SetFloat(super_shader->hSpecularHardness, (float)sub.specular_hardness));
 
 				if(!inside_begin)
 				{
@@ -3503,16 +3505,16 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 			const Mesh::Submesh& sub = mesh.subs[index];
 
 			// tekstura
-			V(e->SetTexture(hSTexDiffuse, mesh.GetTexture(index, node->tex_override)));
+			V(e->SetTexture(super_shader->hTexDiffuse, mesh.GetTexture(index, node->tex_override)));
 			if(cl_normalmap && IS_SET(current_flags, SceneNode::F_NORMAL_MAP))
-				V(e->SetTexture(hSTexNormal, sub.tex_normal->tex));
+				V(e->SetTexture(super_shader->hTexNormal, sub.tex_normal->tex));
 			if(cl_specularmap && IS_SET(current_flags, SceneNode::F_SPECULAR_MAP))
-				V(e->SetTexture(hSTexSpecular, sub.tex_specular->tex));
+				V(e->SetTexture(super_shader->hTexSpecular, sub.tex_specular->tex));
 
 			// ustawienia œwiat³a
-			V(e->SetVector(hSSpecularColor, (D3DXVECTOR4*)&sub.specular_color));
-			V(e->SetFloat(hSSpecularIntensity, sub.specular_intensity));
-			V(e->SetFloat(hSSpecularHardness, (float)sub.specular_hardness));
+			V(e->SetVector(super_shader->hSpecularColor, (D3DXVECTOR4*)&sub.specular_color));
+			V(e->SetFloat(super_shader->hSpecularIntensity, sub.specular_intensity));
+			V(e->SetFloat(super_shader->hSpecularHardness, (float)sub.specular_hardness));
 
 			if(!inside_begin)
 			{
@@ -3609,9 +3611,9 @@ void Game::DrawBloods(bool outside, const vector<Blood*>& bloods, const vector<L
 	SetNoCulling(false);
 	SetNoZWrite(true);
 
-	ID3DXEffect* e = GetSuperShader(GetSuperShaderId(false, false, cl_fog, false, false, !outside && cl_lighting, outside && cl_lighting))->e;
+	ID3DXEffect* e = super_shader->GetShader(super_shader->GetShaderId(false, false, cl_fog, false, false, !outside && cl_lighting, outside && cl_lighting));
 	V(device->SetVertexDeclaration(vertex_decl[VDI_DEFAULT]));
-	V(e->SetVector(hSTint, (D3DXVECTOR4*)&Vec4(1, 1, 1, 1)));
+	V(e->SetVector(super_shader->hTint, (D3DXVECTOR4*)&Vec4(1, 1, 1, 1)));
 
 	V(e->Begin(&passes, 0));
 	V(e->BeginPass(0));
@@ -3674,13 +3676,13 @@ void Game::DrawBloods(bool outside, const vector<Blood*>& bloods, const vector<L
 		// setup shader
 		m1 = Matrix::Translation(blood.pos);
 		m2 = m1 * cam.matViewProj;
-		V(e->SetMatrix(hSMatCombined, (D3DXMATRIX*)&m2));
-		V(e->SetMatrix(hSMatWorld, (D3DXMATRIX*)&m1));
-		V(e->SetTexture(hSTexDiffuse, tKrewSlad[blood.type]->tex));
+		V(e->SetMatrix(super_shader->hMatCombined, (D3DXMATRIX*)&m2));
+		V(e->SetMatrix(super_shader->hMatWorld, (D3DXMATRIX*)&m1));
+		V(e->SetTexture(super_shader->hTexDiffuse, tKrewSlad[blood.type]->tex));
 
 		// lights
 		if(!outside)
-			V(e->SetRawValue(hSLights, &lights[blood.lights].ld[0], 0, sizeof(LightData) * 3));
+			V(e->SetRawValue(super_shader->hLights, &lights[blood.lights].ld[0], 0, sizeof(LightData) * 3));
 
 		// draw
 		V(e->CommitChanges());
