@@ -25,10 +25,11 @@ public:
 	void Init();
 	void Save(GameWriter& f);
 	void Load(GameReader& f);
-	void Special(DialogContext& ctx, cstring msg) override;
+	bool Special(DialogContext& ctx, cstring msg) override;
 	bool SpecialIf(DialogContext& ctx, cstring msg) override;
 	bool CheckMoonStone(GroundItem* item, Unit& unit);
 	static Item& GetNote() { return *Item::Get("sekret_kartka"); }
+	void UpdateFight();
 
 	SecretState state;
 	int where, where2;

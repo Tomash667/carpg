@@ -20,6 +20,7 @@ using namespace SLNet;
 
 //-----------------------------------------------------------------------------
 class ActionPanel;
+class Arena;
 class BitStreamReader;
 class BitStreamWriter;
 class BookPanel;

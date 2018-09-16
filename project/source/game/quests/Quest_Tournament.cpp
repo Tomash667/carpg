@@ -15,6 +15,7 @@
 #include "GameGui.h"
 #include "Game.h"
 #include "GameMessages.h"
+#include "Arena.h"
 
 //=================================================================================================
 void Quest_Tournament::InitOnce()
@@ -75,7 +76,7 @@ void Quest_Tournament::Load(GameReader& f)
 }
 
 //=================================================================================================
-void Quest_Tournament::Special(DialogContext& ctx, cstring msg)
+bool Quest_Tournament::Special(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "ironfist_start") == 0)
 	{
@@ -112,6 +113,7 @@ void Quest_Tournament::Special(DialogContext& ctx, cstring msg)
 			c.ile = 0;
 		}
 	}
+	return false;
 }
 
 //=================================================================================================
@@ -305,7 +307,7 @@ void Quest_Tournament::GenerateUnits()
 void Quest_Tournament::Update(float dt)
 {
 	Game& game = Game::Get();
-	if(game.arena_free && !master->IsAlive())
+	if(game.arena->free && !master->IsAlive())
 	{
 		Clean();
 		return;
@@ -393,7 +395,7 @@ void Quest_Tournament::Update(float dt)
 					// tell how many units joined
 					state2 = 4;
 					Talk(Format(txTour[3], pairs.size() * 2 + (skipped_unit ? 1 : 0)));
-					game.SpawnArenaViewers(5);
+					game.arena->SpawnArenaViewers(5);
 				}
 				else
 				{
@@ -509,13 +511,9 @@ void Quest_Tournament::Update(float dt)
 						// fight
 						master->busy = Unit::Busy_No;
 						state3 = 4;
-						game.arena_free = false;
-						game.arena_tryb = Game::Arena_Zawody;
-						game.arena_etap = Game::Arena_OdliczanieDoPrzeniesienia;
-						game.arena_t = 0.f;
-						game.at_arena.clear();
-						game.at_arena.push_back(p.first);
-						game.at_arena.push_back(p.second);
+						game.arena->Start(Arena::TOURNAMENT);
+						game.arena->units.push_back(p.first);
+						game.arena->units.push_back(p.second);
 
 						p.first->busy = Unit::Busy_No;
 						p.first->frozen = FROZEN::YES;
@@ -616,7 +614,7 @@ void Quest_Tournament::Update(float dt)
 							units.clear();
 							state2 = 2;
 
-							game.RemoveArenaViewers();
+							game.arena->RemoveArenaViewers();
 						}
 						else
 						{
@@ -647,7 +645,7 @@ void Quest_Tournament::Update(float dt)
 					static const Item* p1 = Item::Get("p_hp");
 					static const Item* p2 = Item::Get("p_hp2");
 					static const Item* p3 = Item::Get("p_hp3");
-					for(vector<Unit*>::iterator it = game.at_arena.begin(), end = game.at_arena.end(); it != end; ++it)
+					for(vector<Unit*>::iterator it = game.arena->units.begin(), end = game.arena->units.end(); it != end; ++it)
 					{
 						Unit& u = **it;
 						float mhp = u.hpmax - u.hp;
@@ -679,12 +677,12 @@ void Quest_Tournament::Update(float dt)
 					}
 
 					// winner goes to next round
-					Unit* winner = game.at_arena[game.arena_wynik];
+					Unit* winner = game.arena->units[game.arena->result];
 					winner->busy = Unit::Busy_Tournament;
 					units.push_back(winner);
 					Talk(Format(txTour[Rand() % 2 == 0 ? 19 : 20], winner->GetRealName()));
 					state3 = 3;
-					game.at_arena.clear();
+					game.arena->units.clear();
 				}
 			}
 		}
@@ -781,7 +779,7 @@ void Quest_Tournament::Talk(cstring text)
 {
 	Game& game = Game::Get();
 	game.UnitTalk(*master, text);
-	Vec3 pos = game.GetArena()->exit_area.Midpoint().XZ(1.5f);
+	Vec3 pos = L.GetArena()->exit_area.Midpoint().XZ(1.5f);
 	game.game_gui->AddSpeechBubble(pos, text);
 	if(Net::IsOnline())
 	{
@@ -819,8 +817,8 @@ void Quest_Tournament::Train(Unit& u)
 void Quest_Tournament::Clean()
 {
 	Game& game = Game::Get();
-	if(!game.arena_free)
-		game.CleanArena();
+	if(!game.arena->free)
+		game.arena->Clean();
 
 	for(auto& unit : units)
 		unit->busy = Unit::Busy_No;

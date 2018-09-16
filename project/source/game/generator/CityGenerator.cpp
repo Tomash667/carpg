@@ -13,6 +13,7 @@
 #include "OutsideObject.h"
 #include "AIController.h"
 #include "Texture.h"
+#include "Arena.h"
 #include "Game.h"
 
 enum RoadFlags
@@ -2228,7 +2229,7 @@ void CityGenerator::OnEnter()
 {
 	Game& game = Game::Get();
 	L.city_ctx = city;
-	game.arena_free = true;
+	game.arena->free = true;
 
 	if(!reenter)
 	{

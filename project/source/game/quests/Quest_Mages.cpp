@@ -111,7 +111,7 @@ bool Quest_Mages::IfNeedTalk(cstring topic) const
 }
 
 //=================================================================================================
-void Quest_Mages::Special(DialogContext& ctx, cstring msg)
+bool Quest_Mages::Special(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "q_magowie_zaplac") == 0)
 	{
@@ -123,6 +123,7 @@ void Quest_Mages::Special(DialogContext& ctx, cstring msg)
 	{
 		assert(0);
 	}
+	return false;
 }
 
 //=================================================================================================

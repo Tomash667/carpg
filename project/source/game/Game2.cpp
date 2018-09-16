@@ -62,6 +62,7 @@
 #include "DungeonGenerator.h"
 #include "Texture.h"
 #include "Pathfinding.h"
+#include "Arena.h"
 
 const int SAVE_VERSION = V_CURRENT;
 int LOAD_VERSION;
@@ -1191,24 +1192,7 @@ void Game::UpdateGame(float dt)
 	SetupCamera(dt);
 
 #ifdef _DEBUG
-	if(Net::IsLocal() && arena_free)
-	{
-		int err_count = 0;
-		for(Unit* unit : Team.members)
-		{
-			for(Unit* unit2 : Team.members)
-			{
-				if(unit != unit2 && !IsFriend(*unit, *unit2))
-				{
-					Warn("%s (%d,%d) i %s (%d,%d) are not friends!", unit->data->id.c_str(), unit->in_arena, unit->IsTeamMember() ? 1 : 0,
-						unit2->data->id.c_str(), unit2->in_arena, unit2->IsTeamMember() ? 1 : 0);
-					++err_count;
-				}
-			}
-		}
-		if(err_count)
-			game_messages->AddGameMsg(Format("%d arena friends errors!", err_count), 10.f);
-	}
+	arena->Verify();
 #endif
 }
 
@@ -2837,7 +2821,7 @@ void Game::UseAction(PlayerController* p, bool from_server, const Vec3* pos)
 				unit->summoner = p->unit;
 				unit->in_arena = p->unit->in_arena;
 				if(unit->in_arena != -1)
-					at_arena.push_back(unit);
+					arena->units.push_back(unit);
 				if(Net::IsServer())
 					Net_SpawnUnit(unit);
 				Team.AddTeamMember(unit, true);
@@ -3305,7 +3289,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					if(strncmp(text, "$player", 7) == 0)
 					{
 						int id = int(text[7] - '1');
-						ctx.choices.push_back(DialogChoice(ctx.dialog_pos + 1, near_players_str[id].c_str(), ctx.dialog_level + 1));
+						ctx.choices.push_back(DialogChoice(ctx.dialog_pos + 1, arena->near_players_str[id].c_str(), ctx.dialog_level + 1));
 					}
 					else
 						ctx.choices.push_back(DialogChoice(ctx.dialog_pos + 1, "!Broken choice!", ctx.dialog_level + 1));
@@ -3822,8 +3806,9 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 
 bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_level)
 {
-	if(QM.HandleSpecial(ctx, msg))
-		return false;
+	bool result;
+	if(QM.HandleSpecial(ctx, msg, result))
+		return result;
 
 	if(strcmp(msg, "burmistrz_quest") == 0)
 	{
@@ -3970,8 +3955,6 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 			StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_START), if_level, quest);
 		}
 	}
-	else if(strcmp(msg, "arena_combat1") == 0 || strcmp(msg, "arena_combat2") == 0 || strcmp(msg, "arena_combat3") == 0)
-		StartArenaCombat(msg[strlen("arena_combat")] - '0');
 	else if(strcmp(msg, "rest1") == 0 || strcmp(msg, "rest5") == 0 || strcmp(msg, "rest10") == 0 || strcmp(msg, "rest30") == 0)
 	{
 		// rest in inn
@@ -4520,11 +4503,6 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 		Team.TeamShareSellItem(ctx);
 	else if(strcmp(msg, "share_decline") == 0)
 		Team.TeamShareDecline(ctx);
-	else if(strcmp(msg, "pvp") == 0)
-	{
-		// walka z towarzyszem
-		StartPvp(ctx.pc, ctx.talker);
-	}
 	else if(strcmp(msg, "attack") == 0)
 	{
 		// ta komenda jest zbyt ogólna, jeœli bêdzie kilka takich grup to wystarczy ¿e jedna tego u¿yje to wszyscy zaatakuj¹, nie obs³uguje te¿ budynków
@@ -4607,8 +4585,6 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 		ctx.talker->hero->mode = HeroData::Leave;
 		ctx.talker->dont_attack = false;
 	}
-	else if(strcmp(msg, "use_arena") == 0)
-		arena_free = false;
 	else if(strcmp(msg, "news") == 0)
 	{
 		if(ctx.update_news)
@@ -4648,57 +4624,6 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 		assert(ctx.talker->IsHero());
 		ctx.talker->hero->melee = false;
 	}
-	else if(strcmp(msg, "pvp_gather") == 0)
-	{
-		near_players.clear();
-		for(Unit* unit : Team.active_members)
-		{
-			if(unit->IsPlayer() && unit->player != ctx.pc && Vec3::Distance2d(unit->pos, L.city_ctx->arena_pos) < 5.f)
-				near_players.push_back(unit);
-		}
-		near_players_str.resize(near_players.size());
-		for(uint i = 0, size = near_players.size(); i != size; ++i)
-			near_players_str[i] = Format(txPvpWith, near_players[i]->player->name.c_str());
-	}
-	else if(strncmp(msg, "pvp", 3) == 0)
-	{
-		int id = int(msg[3] - '1');
-		Unit* u = near_players[id];
-		if(Vec3::Distance2d(u->pos, L.city_ctx->arena_pos) > 5.f)
-		{
-			ctx.dialog_s_text = Format(txPvpTooFar, u->player->name.c_str());
-			DialogTalk(ctx, ctx.dialog_s_text.c_str());
-			++ctx.dialog_pos;
-			return true;
-		}
-		else
-		{
-			if(u->player->is_local)
-			{
-				DialogInfo info;
-				info.event = DialogEvent(this, &Game::Event_Pvp);
-				info.name = "pvp";
-				info.order = ORDER_TOP;
-				info.parent = nullptr;
-				info.pause = false;
-				info.text = Format(txPvp, ctx.pc->name.c_str());
-				info.type = DIALOG_YESNO;
-				dialog_pvp = GUI.ShowDialog(info);
-				pvp_unit = near_players[id];
-			}
-			else
-			{
-				NetChangePlayer& c = Add1(near_players[id]->player->player_info->changes);
-				c.type = NetChangePlayer::PVP;
-				c.id = ctx.pc->id;
-			}
-
-			pvp_response.ok = true;
-			pvp_response.from = ctx.pc->unit;
-			pvp_response.to = u;
-			pvp_response.timer = 0.f;
-		}
-	}
 	else if(strcmp(msg, "crazy_give_item") == 0)
 	{
 		crazy_give_item = GetRandomItem(100);
@@ -4719,9 +4644,7 @@ bool Game::ExecuteGameDialogSpecialIf(DialogContext& ctx, cstring msg)
 	if(QM.HandleSpecialIf(ctx, msg, result))
 		return result;
 
-	if(strcmp(msg, "arena_combat") == 0)
-		return !W.IsSameWeek(L.city_ctx->arena_time);
-	else if(strcmp(msg, "have_team") == 0)
+	if(strcmp(msg, "have_team") == 0)
 		return Team.HaveTeamMember();
 	else if(strcmp(msg, "have_pc_team") == 0)
 		return Team.HaveOtherPlayer();
@@ -4803,8 +4726,6 @@ bool Game::ExecuteGameDialogSpecialIf(DialogContext& ctx, cstring msg)
 	}
 	else if(strcmp(msg, "is_healthy") == 0)
 		return ctx.talker->GetHpp() >= 0.75f;
-	else if(strcmp(msg, "is_arena_free") == 0)
-		return arena_free;
 	else if(strcmp(msg, "is_bandit") == 0)
 		return Team.is_bandit;
 	else if(strcmp(msg, "is_ginger") == 0)
@@ -4850,14 +4771,6 @@ bool Game::ExecuteGameDialogSpecialIf(DialogContext& ctx, cstring msg)
 		return ctx.talker->hero->melee;
 	else if(strcmp(msg, "is_leader") == 0)
 		return ctx.pc->unit == Team.leader;
-	else if(strncmp(msg, "have_player", 11) == 0)
-	{
-		int id = int(msg[11] - '1');
-		if(id < (int)near_players.size())
-			return true;
-	}
-	else if(strcmp(msg, "waiting_for_pvp") == 0)
-		return pvp_response.ok;
 	else if(strcmp(msg, "in_city") == 0)
 		return L.city_ctx != nullptr;
 	else
@@ -10484,11 +10397,10 @@ void Game::ClearGameVarsOnNewGameOrLoad()
 	draw_flags = 0xFFFFFFFF;
 	game_gui->Reset();
 	game_gui->journal->Reset();
-	arena_viewers.clear();
+	arena->Reset();
 	debug_info = false;
 	debug_info2 = false;
 	dialog_enc = nullptr;
-	dialog_pvp = nullptr;
 	game_gui->visible = false;
 	Inventory::lock = nullptr;
 	world_map->picked_location = -1;
@@ -10531,11 +10443,8 @@ void Game::ClearGameVarsOnNewGame()
 	GameStats::Get().Reset();
 	Team.Reset();
 	dont_wander = false;
-	arena_fighter = nullptr;
 	pc_data.picking_item_state = 0;
-	arena_tryb = Arena_Brak;
 	L.is_open = false;
-	arena_free = true;
 	game_gui->PositionPanels();
 	ClearGui(true);
 	game_gui->mp_box->visible = Net::IsOnline();
@@ -11710,190 +11619,6 @@ void Game::VerifyItemResources(const Item* item)
 	assert(item->icon);
 }
 
-void Game::StartArenaCombat(int level)
-{
-	assert(InRange(level, 1, 3));
-
-	int ile, lvl;
-
-	switch(Rand() % 5)
-	{
-	case 0:
-		ile = 1;
-		lvl = level * 5 + 1;
-		break;
-	case 1:
-		ile = 1;
-		lvl = level * 5;
-		break;
-	case 2:
-		ile = 2;
-		lvl = level * 5 - 1;
-		break;
-	case 3:
-		ile = 2;
-		lvl = level * 5 - 2;
-		break;
-	case 4:
-		ile = 3;
-		lvl = level * 5 - 3;
-		break;
-	}
-
-	arena_free = false;
-	arena_tryb = Arena_Walka;
-	arena_etap = Arena_OdliczanieDoPrzeniesienia;
-	arena_t = 0.f;
-	arena_poziom = level;
-	L.city_ctx->arena_time = W.GetWorldtime();
-	at_arena.clear();
-
-	// dodaj gracza na arenê
-	if(current_dialog->is_local)
-	{
-		fallback_type = FALLBACK::ARENA;
-		fallback_t = -1.f;
-	}
-	else
-	{
-		NetChangePlayer& c = Add1(current_dialog->pc->player_info->changes);
-		c.type = NetChangePlayer::ENTER_ARENA;
-		current_dialog->pc->arena_fights++;
-	}
-
-	current_dialog->pc->unit->frozen = FROZEN::YES;
-	current_dialog->pc->unit->in_arena = 0;
-	at_arena.push_back(current_dialog->pc->unit);
-
-	if(Net::IsOnline())
-	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::CHANGE_ARENA_STATE;
-		c.unit = current_dialog->pc->unit;
-	}
-
-	for(Unit* unit : Team.members)
-	{
-		if(unit->frozen != FROZEN::NO || Vec3::Distance2d(unit->pos, L.city_ctx->arena_pos) > 5.f)
-			continue;
-		if(unit->IsPlayer())
-		{
-			if(unit->frozen == FROZEN::NO)
-			{
-				unit->BreakAction(Unit::BREAK_ACTION_MODE::NORMAL, true, true);
-
-				unit->frozen = FROZEN::YES;
-				unit->in_arena = 0;
-				at_arena.push_back(unit);
-
-				unit->player->arena_fights++;
-				if(Net::IsOnline())
-					unit->player->stat_flags |= STAT_ARENA_FIGHTS;
-
-				if(unit->player == pc)
-				{
-					fallback_type = FALLBACK::ARENA;
-					fallback_t = -1.f;
-				}
-				else
-				{
-					NetChangePlayer& c = Add1(unit->player->player_info->changes);
-					c.type = NetChangePlayer::ENTER_ARENA;
-				}
-
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::CHANGE_ARENA_STATE;
-				c.unit = unit;
-			}
-		}
-		else if(unit->IsHero() && unit->CanFollow())
-		{
-			unit->frozen = FROZEN::YES;
-			unit->in_arena = 0;
-			unit->hero->following = current_dialog->pc->unit;
-			at_arena.push_back(unit);
-
-			if(Net::IsOnline())
-			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::CHANGE_ARENA_STATE;
-				c.unit = unit;
-			}
-		}
-	}
-
-	if(at_arena.size() > 3)
-	{
-		lvl += (at_arena.size() - 3) / 2 + 1;
-		while(lvl > level * 5 + 2)
-		{
-			lvl -= 2;
-			++ile;
-		}
-	}
-
-	cstring list_id;
-	switch(level)
-	{
-	default:
-	case 1:
-		list_id = "arena_easy";
-		SpawnArenaViewers(1);
-		break;
-	case 2:
-		list_id = "arena_medium";
-		SpawnArenaViewers(3);
-		break;
-	case 3:
-		list_id = "arena_hard";
-		SpawnArenaViewers(5);
-		break;
-	}
-
-	auto list = UnitGroupList::Get(list_id);
-	auto group = list->groups[Rand() % list->groups.size()];
-
-	TmpUnitGroup part;
-	part.group = group;
-	part.total = 0;
-	for(auto& entry : part.group->entries)
-	{
-		if(lvl >= entry.ud->level.x)
-		{
-			auto& new_entry = Add1(part.entries);
-			new_entry.ud = entry.ud;
-			new_entry.count = entry.count;
-			if(lvl < entry.ud->level.y)
-				new_entry.count = max(1, new_entry.count / 2);
-			part.total += new_entry.count;
-		}
-	}
-
-	InsideBuilding* arena = GetArena();
-
-	for(int i = 0; i < ile; ++i)
-	{
-		int x = Rand() % part.total, y = 0;
-		for(auto& entry : part.entries)
-		{
-			y += entry.count;
-			if(x < y)
-			{
-				Unit* u = L.SpawnUnitInsideArea(arena->ctx, arena->arena2, *entry.ud, lvl);
-				u->rot = 0.f;
-				u->in_arena = 1;
-				u->frozen = FROZEN::YES;
-				at_arena.push_back(u);
-
-				if(Net::IsOnline())
-					Net_SpawnUnit(u);
-
-				break;
-			}
-		}
-	}
-}
-
 void Game::DeleteUnit(Unit* unit)
 {
 	assert(unit);
@@ -11945,11 +11670,11 @@ void Game::DeleteUnit(Unit* unit)
 
 		if(QM.quest_contest->state >= Quest_Contest::CONTEST_STARTING)
 			RemoveElementTry(QM.quest_contest->units, unit);
-		if(!arena_free)
+		if(!arena->free)
 		{
-			RemoveElementTry(at_arena, unit);
-			if(arena_fighter == unit)
-				arena_fighter = nullptr;
+			RemoveElementTry(arena->units, unit);
+			if(arena->fighter == unit)
+				arena->fighter = nullptr;
 		}
 
 		if(unit->usable)
@@ -12184,18 +11909,6 @@ int Game::CalculateQuestReward(int gold)
 	return gold * (90 + Team.GetActiveTeamSize() * 10) / 100;
 }
 
-void Game::AddGoldArena(int count)
-{
-	vector<Unit*> v;
-	for(vector<Unit*>::iterator it = at_arena.begin(), end = at_arena.end(); it != end; ++it)
-	{
-		if((*it)->in_arena == 0)
-			v.push_back(*it);
-	}
-
-	AddGold(count * (85 + v.size() * 15) / 100, &v, true);
-}
-
 bool Game::IsBetterItem(Unit& unit, const Item* item, int* value)
 {
 	assert(item && item->IsWearable());
@@ -12330,51 +12043,6 @@ void Game::CheckIfLocationCleared()
 				W.AddNews(Format(txNewsLocCleared, L.location->name.c_str()));
 		}
 	}
-}
-
-void Game::SpawnArenaViewers(int count)
-{
-	assert(InRange(count, 1, 9));
-
-	vector<Mesh::Point*> points;
-	UnitData& ud = *UnitData::Get("viewer");
-	InsideBuilding* arena = GetArena();
-	Mesh* mesh = arena->type->inside_mesh;
-
-	for(vector<Mesh::Point>::iterator it = mesh->attach_points.begin(), end = mesh->attach_points.end(); it != end; ++it)
-	{
-		if(strncmp(it->name.c_str(), "o_s_viewer_", 11) == 0)
-			points.push_back(&*it);
-	}
-
-	while(count > 0)
-	{
-		int id = Rand() % points.size();
-		Mesh::Point* pt = points[id];
-		points.erase(points.begin() + id);
-		Vec3 pos(pt->mat._41 + arena->offset.x, pt->mat._42, pt->mat._43 + arena->offset.y);
-		Vec3 look_at(arena->offset.x, 0, arena->offset.y);
-		Unit* u = L.SpawnUnitNearLocation(arena->ctx, pos, ud, &look_at, -1, 2.f);
-		if(u && Net::IsOnline())
-			Net_SpawnUnit(u);
-		--count;
-		u->ai->loc_timer = Random(6.f, 12.f);
-		arena_viewers.push_back(u);
-	}
-}
-
-void Game::RemoveArenaViewers()
-{
-	UnitData* ud = UnitData::Get("viewer");
-	LevelContext& ctx = GetArena()->ctx;
-
-	for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
-	{
-		if((*it)->data == ud)
-			L.RemoveUnit(*it);
-	}
-
-	arena_viewers.clear();
 }
 
 bool Game::CanWander(Unit& u)
@@ -13084,8 +12752,8 @@ bool Game::RemoveQuestItem(const Item* item, int refid)
 void Game::UpdateGame2(float dt)
 {
 	// arena
-	if(arena_tryb != Arena_Brak)
-		UpdateArena(dt);
+	if(arena->mode != Arena::NONE)
+		arena->Update(dt);
 
 	// tournament
 	if(QM.quest_tournament->GetState() != Quest_Tournament::TOURNAMENT_NOT_DONE)
@@ -13206,388 +12874,7 @@ void Game::UpdateGame2(float dt)
 	// secret quest
 	Quest_Secret* secret = QM.quest_secret;
 	if(secret->state == Quest_Secret::SECRET_FIGHT)
-	{
-		int ile[2] = { 0 };
-
-		for(vector<Unit*>::iterator it = at_arena.begin(), end = at_arena.end(); it != end; ++it)
-		{
-			if((*it)->IsStanding())
-				ile[(*it)->in_arena]++;
-		}
-
-		if(at_arena[0]->hp < 10.f)
-			ile[1] = 0;
-
-		if(ile[0] == 0 || ile[1] == 0)
-		{
-			// o¿yw wszystkich
-			for(Unit* unit : at_arena)
-			{
-				unit->in_arena = -1;
-				if(unit->hp <= 0.f)
-				{
-					unit->HealPoison();
-					unit->live_state = Unit::ALIVE;
-					unit->mesh_inst->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
-					unit->mesh_inst->groups[0].speed = 1.f;
-					unit->action = A_ANIMATION;
-					unit->animation = ANI_PLAY;
-					if(unit->IsAI())
-						unit->ai->Reset();
-					if(Net::IsOnline())
-					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::STAND_UP;
-						c.unit = unit;
-					}
-				}
-
-				if(Net::IsOnline())
-				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::CHANGE_ARENA_STATE;
-					c.unit = unit;
-				}
-			}
-
-			at_arena[0]->hp = at_arena[0]->hpmax;
-			if(Net::IsOnline())
-			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::UPDATE_HP;
-				c.unit = at_arena[0];
-			}
-
-			if(ile[0])
-			{
-				// gracz wygra³
-				secret->state = Quest_Secret::SECRET_WIN;
-				at_arena[0]->StartAutoTalk();
-			}
-			else
-			{
-				// gracz przegra³
-				secret->state = Quest_Secret::SECRET_LOST;
-			}
-
-			at_arena.clear();
-		}
-	}
-}
-
-//=================================================================================================
-void Game::UpdateArena(float dt)
-{
-	if(arena_etap == Arena_OdliczanieDoPrzeniesienia)
-	{
-		arena_t += dt * 2;
-		if(arena_t >= 1.f)
-		{
-			if(arena_tryb == Arena_Walka)
-			{
-				for(vector<Unit*>::iterator it = at_arena.begin(), end = at_arena.end(); it != end; ++it)
-				{
-					if((*it)->in_arena == 0)
-						L.WarpUnit(*it, WARP_ARENA);
-				}
-			}
-			else
-			{
-				for(auto unit : at_arena)
-					L.WarpUnit(unit, WARP_ARENA);
-
-				if(!at_arena.empty())
-				{
-					at_arena[0]->in_arena = 0;
-					if(Net::IsOnline())
-					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::CHANGE_ARENA_STATE;
-						c.unit = at_arena[0];
-					}
-					if(at_arena.size() >= 2)
-					{
-						at_arena[1]->in_arena = 1;
-						if(Net::IsOnline())
-						{
-							NetChange& c = Add1(Net::changes);
-							c.type = NetChange::CHANGE_ARENA_STATE;
-							c.unit = at_arena[1];
-						}
-					}
-				}
-			}
-
-			// reset cooldowns
-			for(auto unit : at_arena)
-			{
-				if(unit->IsPlayer())
-					unit->player->RefreshCooldown();
-			}
-
-			arena_etap = Arena_OdliczanieDoStartu;
-			arena_t = 0.f;
-		}
-	}
-	else if(arena_etap == Arena_OdliczanieDoStartu)
-	{
-		arena_t += dt;
-		if(arena_t >= 2.f)
-		{
-			if(GetArena()->ctx.building_id == pc->unit->in_building)
-				sound_mgr->PlaySound2d(sArenaFight);
-			if(Net::IsOnline())
-			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::ARENA_SOUND;
-				c.id = 0;
-			}
-			arena_etap = Arena_TrwaWalka;
-			for(vector<Unit*>::iterator it = at_arena.begin(), end = at_arena.end(); it != end; ++it)
-			{
-				(*it)->frozen = FROZEN::NO;
-				if((*it)->IsPlayer() && (*it)->player != pc)
-				{
-					NetChangePlayer& c = Add1((*it)->player->player_info->changes);
-					c.type = NetChangePlayer::START_ARENA_COMBAT;
-				}
-			}
-		}
-	}
-	else if(arena_etap == Arena_TrwaWalka)
-	{
-		// talking by observers
-		for(vector<Unit*>::iterator it = arena_viewers.begin(), end = arena_viewers.end(); it != end; ++it)
-		{
-			Unit& u = **it;
-			u.ai->loc_timer -= dt;
-			if(u.ai->loc_timer <= 0.f)
-			{
-				u.ai->loc_timer = Random(6.f, 12.f);
-
-				cstring text;
-				if(Rand() % 2 == 0)
-					text = RandomString(txArenaText);
-				else
-					text = Format(RandomString(txArenaTextU), GetRandomArenaHero()->GetRealName());
-
-				UnitTalk(u, text);
-			}
-		}
-
-		// count how many are still alive
-		int count[2] = { 0 }, alive[2] = { 0 };
-		for(Unit* unit : at_arena)
-		{
-			++count[unit->in_arena];
-			if(unit->live_state != Unit::DEAD)
-				++alive[unit->in_arena];
-		}
-
-		if(alive[0] == 0 || alive[1] == 0)
-		{
-			arena_etap = Arena_OdliczanieDoKonca;
-			arena_t = 0.f;
-			bool victory_sound;
-			if(alive[0] == 0)
-			{
-				arena_wynik = 1;
-				victory_sound = false;
-			}
-			else
-			{
-				arena_wynik = 0;
-				victory_sound = true;
-			}
-			if(arena_tryb != Arena_Walka)
-			{
-				if(count[0] == 0 || count[1] == 0)
-					victory_sound = false; // someone quit
-				else
-					victory_sound = true;
-			}
-
-			if(GetArena()->ctx.building_id == pc->unit->in_building)
-				sound_mgr->PlaySound2d(victory_sound ? sArenaWin : sArenaLost);
-			if(Net::IsOnline())
-			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::ARENA_SOUND;
-				c.id = victory_sound ? 1 : 2;
-			}
-		}
-	}
-	else if(arena_etap == Arena_OdliczanieDoKonca)
-	{
-		arena_t += dt;
-		if(arena_t >= 2.f)
-		{
-			for(vector<Unit*>::iterator it = at_arena.begin(), end = at_arena.end(); it != end; ++it)
-			{
-				(*it)->frozen = FROZEN::YES;
-				if((*it)->IsPlayer())
-				{
-					if((*it)->player == pc)
-					{
-						fallback_type = FALLBACK::ARENA_EXIT;
-						fallback_t = -1.f;
-					}
-					else
-					{
-						NetChangePlayer& c = Add1((*it)->player->player_info->changes);
-						c.type = NetChangePlayer::EXIT_ARENA;
-					}
-				}
-			}
-
-			arena_etap = Arena_OdliczanieDoWyjscia;
-			arena_t = 0.f;
-		}
-	}
-	else
-	{
-		arena_t += dt * 2;
-		if(arena_t >= 1.f)
-		{
-			if(arena_tryb == Arena_Walka)
-			{
-				if(arena_wynik == 0)
-				{
-					int ile;
-					switch(arena_poziom)
-					{
-					case 1:
-						ile = 150;
-						break;
-					case 2:
-						ile = 350;
-						break;
-					case 3:
-						ile = 750;
-						break;
-					}
-
-					AddGoldArena(ile);
-				}
-
-				for(Unit* unit : at_arena)
-				{
-					if(unit->in_arena != 0)
-					{
-						L.RemoveUnit(unit);
-						continue;
-					}
-
-					unit->frozen = FROZEN::NO;
-					unit->in_arena = -1;
-					if(unit->hp <= 0.f)
-					{
-						unit->HealPoison();
-						unit->live_state = Unit::ALIVE;
-						unit->mesh_inst->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
-						unit->mesh_inst->groups[0].speed = 1.f;
-						unit->action = A_ANIMATION;
-						unit->animation = ANI_PLAY;
-						if(unit->IsAI())
-							unit->ai->Reset();
-						if(Net::IsOnline())
-						{
-							NetChange& c = Add1(Net::changes);
-							c.type = NetChange::STAND_UP;
-							c.unit = unit;
-						}
-					}
-
-					L.WarpUnit(unit, WARP_OUTSIDE);
-
-					if(Net::IsOnline())
-					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::CHANGE_ARENA_STATE;
-						c.unit = unit;
-					}
-				}
-			}
-			else
-			{
-				for(Unit* unit : at_arena)
-				{
-					unit->frozen = FROZEN::NO;
-					unit->in_arena = -1;
-					if(unit->hp <= 0.f)
-					{
-						unit->HealPoison();
-						unit->live_state = Unit::ALIVE;
-						unit->mesh_inst->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
-						unit->mesh_inst->groups[0].speed = 1.f;
-						unit->action = A_ANIMATION;
-						unit->animation = ANI_PLAY;
-						if(unit->IsAI())
-							unit->ai->Reset();
-						if(Net::IsOnline())
-						{
-							NetChange& c = Add1(Net::changes);
-							c.type = NetChange::STAND_UP;
-							c.unit = unit;
-						}
-					}
-
-					L.WarpUnit(unit, WARP_OUTSIDE);
-
-					if(Net::IsOnline())
-					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::CHANGE_ARENA_STATE;
-						c.unit = unit;
-					}
-				}
-
-				if(arena_tryb == Arena_Pvp && arena_fighter && arena_fighter->IsHero())
-				{
-					arena_fighter->hero->lost_pvp = (arena_wynik == 0);
-					StartDialog2(pvp_player, arena_fighter, FindDialog(IS_SET(arena_fighter->data->flags, F_CRAZY) ? "crazy_pvp" : "hero_pvp"));
-				}
-			}
-
-			if(arena_tryb != Arena_Zawody)
-			{
-				RemoveArenaViewers();
-				at_arena.clear();
-			}
-			else
-				QM.quest_tournament->FinishCombat();
-			arena_tryb = Arena_Brak;
-			arena_free = true;
-		}
-	}
-}
-
-//=================================================================================================
-void Game::CleanArena()
-{
-	InsideBuilding* arena = L.city_ctx->FindInsideBuilding(BuildingGroup::BG_ARENA);
-
-	// wyrzuæ ludzi z areny
-	for(vector<Unit*>::iterator it = at_arena.begin(), end = at_arena.end(); it != end; ++it)
-	{
-		Unit& u = **it;
-		u.frozen = FROZEN::NO;
-		u.in_arena = -1;
-		u.in_building = -1;
-		u.busy = Unit::Busy_No;
-		if(u.hp <= 0.f)
-		{
-			u.HealPoison();
-			u.live_state = Unit::ALIVE;
-		}
-		if(u.IsAI())
-			u.ai->Reset();
-		L.WarpUnit(u, arena->outside_spawn);
-		u.rot = arena->outside_rot;
-	}
-	RemoveArenaViewers();
-	arena_free = true;
-	arena_tryb = Arena_Brak;
+		secret->UpdateFight();
 }
 
 void Game::SetUnitWeaponState(Unit& u, bool wyjmuje, WeaponType co)
@@ -13958,41 +13245,6 @@ bool Game::Cheat_KillAll(int typ, Unit& unit, Unit* ignore)
 	return true;
 }
 
-void Game::Event_Pvp(int id)
-{
-	dialog_pvp = nullptr;
-	if(!pvp_response.ok)
-		return;
-
-	if(Net::IsServer())
-	{
-		if(id == BUTTON_YES)
-		{
-			// zaakceptuj pvp
-			StartPvp(pvp_response.from->player, pvp_response.to);
-		}
-		else
-		{
-			// nie akceptuj pvp
-			NetChangePlayer& c = Add1(pvp_response.from->player->player_info->changes);
-			c.type = NetChangePlayer::NO_PVP;
-			c.id = pvp_response.to->player->id;
-		}
-	}
-	else
-	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::PVP;
-		c.unit = pvp_unit;
-		if(id == BUTTON_YES)
-			c.id = 1;
-		else
-			c.id = 0;
-	}
-
-	pvp_response.ok = false;
-}
-
 void Game::Cheat_ShowMinimap()
 {
 	if(!L.location->outside)
@@ -14010,74 +13262,6 @@ void Game::Cheat_ShowMinimap()
 		if(Net::IsServer())
 			Net::PushChange(NetChange::CHEAT_SHOW_MINIMAP);
 	}
-}
-
-void Game::StartPvp(PlayerController* player, Unit* unit)
-{
-	arena_free = false;
-	arena_tryb = Arena_Pvp;
-	arena_etap = Arena_OdliczanieDoPrzeniesienia;
-	arena_t = 0.f;
-	at_arena.clear();
-
-	// fallback gracza
-	if(player == pc)
-	{
-		fallback_type = FALLBACK::ARENA;
-		fallback_t = -1.f;
-	}
-	else
-	{
-		NetChangePlayer& c = Add1(player->player_info->changes);
-		c.type = NetChangePlayer::ENTER_ARENA;
-	}
-
-	// fallback postaci
-	if(unit->IsPlayer())
-	{
-		if(unit->player == pc)
-		{
-			fallback_type = FALLBACK::ARENA;
-			fallback_t = -1.f;
-		}
-		else
-		{
-			NetChangePlayer& c = Add1(player->player_info->changes);
-			c.type = NetChangePlayer::ENTER_ARENA;
-		}
-	}
-
-	// dodaj do areny
-	player->unit->frozen = FROZEN::YES;
-	player->arena_fights++;
-	if(Net::IsOnline())
-		player->stat_flags |= STAT_ARENA_FIGHTS;
-	at_arena.push_back(player->unit);
-	unit->frozen = FROZEN::YES;
-	at_arena.push_back(unit);
-	if(unit->IsHero())
-		unit->hero->following = player->unit;
-	else if(unit->IsPlayer())
-	{
-		unit->player->arena_fights++;
-		if(Net::IsOnline())
-			unit->player->stat_flags |= STAT_ARENA_FIGHTS;
-	}
-	pvp_player = player;
-	arena_fighter = unit;
-
-	// stwórz obserwatorów na arenie na podstawie poziomu postaci
-	player->unit->level = player->unit->CalculateLevel();
-	if(unit->IsPlayer())
-		unit->level = unit->CalculateLevel();
-	int level = max(player->unit->level, unit->level);
-
-	if(level < 7)
-		SpawnArenaViewers(1);
-	else if(level < 14)
-		SpawnArenaViewers(2);
-	else
-		SpawnArenaViewers(3);
 }
 
 void Game::UpdateGameNet(float dt)
@@ -14285,18 +13469,6 @@ void Game::PayCredit(PlayerController* player, int ile)
 
 	if(Net::IsOnline())
 		Net::PushChange(NetChange::UPDATE_CREDIT);
-}
-
-InsideBuilding* Game::GetArena()
-{
-	assert(L.city_ctx);
-	for(InsideBuilding* b : L.city_ctx->inside_buildings)
-	{
-		if(b->type->group == BuildingGroup::BG_ARENA)
-			return b;
-	}
-	assert(0);
-	return nullptr;
 }
 
 void Game::CreateSaveImage(cstring filename)
@@ -14756,19 +13928,6 @@ void Game::OnEnterLevel()
 
 	if(talker)
 		UnitTalk(*talker, text);
-}
-
-Unit* Game::GetRandomArenaHero()
-{
-	LocalVector<Unit*> v;
-
-	for(vector<Unit*>::iterator it = at_arena.begin(), end = at_arena.end(); it != end; ++it)
-	{
-		if((*it)->IsPlayer() || (*it)->IsHero())
-			v->push_back(*it);
-	}
-
-	return v->at(Rand() % v->size());
 }
 
 cstring Game::GetRandomIdleText(Unit& u)

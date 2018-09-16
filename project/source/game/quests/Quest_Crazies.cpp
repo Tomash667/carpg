@@ -136,7 +136,7 @@ void Quest_Crazies::LoadOld(GameReader& f)
 }
 
 //=================================================================================================
-void Quest_Crazies::Special(DialogContext& ctx, cstring msg)
+bool Quest_Crazies::Special(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "crazies_talked") == 0)
 	{
@@ -149,6 +149,11 @@ void Quest_Crazies::Special(DialogContext& ctx, cstring msg)
 		game->RemoveItem(*ctx.pc->unit, kamien, 1);
 		ctx.pc->unit->ModGold(10);
 	}
+	else
+	{
+		assert(0);
+	}
+	return false;
 }
 
 //=================================================================================================

@@ -126,7 +126,7 @@ bool Quest_BanditsCollectToll::OnTimeout(TimeoutType ttype)
 }
 
 //=================================================================================================
-void Quest_BanditsCollectToll::Special(DialogContext& ctx, cstring msg)
+bool Quest_BanditsCollectToll::Special(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "pay_500") == 0)
 	{
@@ -137,6 +137,7 @@ void Quest_BanditsCollectToll::Special(DialogContext& ctx, cstring msg)
 	{
 		assert(0);
 	}
+	return false;
 }
 
 //=================================================================================================

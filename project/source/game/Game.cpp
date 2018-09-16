@@ -33,6 +33,7 @@
 #include "Quest_Contest.h"
 #include "LocationGeneratorFactory.h"
 #include "SuperShader.h"
+#include "Arena.h"
 #include "DirectX.h"
 
 // limit fps
@@ -67,7 +68,7 @@ sItemRegionRot(nullptr), sChar(nullptr), sSave(nullptr), in_tutorial(false), cur
 cl_postfx(true), mp_timeout(10.f), cl_normalmap(true), cl_specularmap(true), dungeon_tex_wrap(true), profiler_mode(0),
 grass_range(40.f), vbInstancing(nullptr), vb_instancing_max(0), screenshot_format(ImageFormat::JPG), quickstart_class(Class::RANDOM),
 autopick_class(Class::INVALID), game_state(GS_LOAD), default_devmode(false), default_player_devmode(false), finished_tutorial(false),
-quickstart_slot(MAX_SAVE_SLOTS), arena_free(true), autoready(false), loc_gen_factory(nullptr), pathfinding(nullptr), super_shader(new SuperShader)
+quickstart_slot(MAX_SAVE_SLOTS), autoready(false), loc_gen_factory(nullptr), pathfinding(nullptr), super_shader(new SuperShader), arena(new Arena)
 {
 #ifdef _DEBUG
 	default_devmode = true;
@@ -467,41 +468,7 @@ void Game::OnTick(float dt)
 	if(game_menu->visible)
 		game_menu->Set(CanSaveGame(), CanLoadGame(), hardcore_mode);
 
-	if(!paused)
-	{
-		// pytanie o pvp
-		if(game_state == GS_LEVEL && Net::IsOnline())
-		{
-			if(pvp_response.ok)
-			{
-				pvp_response.timer += dt;
-				if(pvp_response.timer >= 5.f)
-				{
-					pvp_response.ok = false;
-					if(pvp_response.to == pc->unit)
-					{
-						dialog_pvp->CloseDialog();
-						RemoveElement(GUI.created_dialogs, dialog_pvp);
-						delete dialog_pvp;
-						dialog_pvp = nullptr;
-					}
-					if(Net::IsServer())
-					{
-						if(pvp_response.from == pc->unit)
-							AddMsg(Format(txPvpRefuse, pvp_response.to->player->name.c_str()));
-						else
-						{
-							NetChangePlayer& c = Add1(pvp_response.from->player->player_info->changes);
-							c.type = NetChangePlayer::NO_PVP;
-							c.id = pvp_response.to->player->id;
-						}
-					}
-				}
-			}
-		}
-		else
-			pvp_response.ok = false;
-	}
+	arena->UpdatePvpRequest(dt);
 
 	// aktualizacja gry
 	if(!koniec_gry)
@@ -1307,13 +1274,8 @@ void Game::SetGameText()
 	LoadArray(txNearLocEnemy, "nearLocEnemy");
 	LoadArray(txNoNews, "noNews");
 	LoadArray(txAllNews, "allNews");
-	txPvpTooFar = Str("pvpTooFar");
-	txPvp = Str("pvp");
-	txPvpWith = Str("pvpWith");
 	txNewsCampCleared = Str("newsCampCleared");
 	txNewsLocCleared = Str("newsLocCleared");
-	LoadArray(txArenaText, "arenaText");
-	LoadArray(txArenaTextU, "arenaTextU");
 	txAllNearLoc = Str("allNearLoc");
 
 	// dystans / si³a

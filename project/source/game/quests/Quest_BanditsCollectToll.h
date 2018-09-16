@@ -22,7 +22,7 @@ public:
 	cstring FormatString(const string& str) override;
 	bool IsTimedout() const override;
 	bool OnTimeout(TimeoutType ttype) override;
-	void Special(DialogContext& ctx, cstring msg) override;
+	bool Special(DialogContext& ctx, cstring msg) override;
 	bool HandleLocationEvent(LocationEventHandler::Event event) override;
 	bool IfNeedTalk(cstring topic) const override;
 	void Save(GameWriter& f) override;

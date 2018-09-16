@@ -67,6 +67,9 @@
     <Filter Include="3. game\script">
       <UniqueIdentifier>{686e4789-ffae-4b38-8307-8b1d7e1d50e1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="3. game\events">
+      <UniqueIdentifier>{611f9aef-8d8e-4ffd-bd54-a5732babb50e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\resource\PickLanguage.cpp">
@@ -765,6 +768,9 @@
     </ClCompile>
     <ClCompile Include="source\game\helpers\ItemHelper.cpp">
       <Filter>3. game\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\events\Arena.cpp">
+      <Filter>3. game\events</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1542,6 +1548,9 @@
     </ClInclude>
     <ClInclude Include="source\game\helpers\ItemHelper.h">
       <Filter>3. game\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\events\Arena.h">
+      <Filter>3. game\events</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

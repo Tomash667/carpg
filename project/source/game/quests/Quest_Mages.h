@@ -34,7 +34,7 @@ public:
 	void SetProgress(int prog2) override;
 	cstring FormatString(const string& str) override;
 	bool IfNeedTalk(cstring topic) const override;
-	void Special(DialogContext& ctx, cstring msg) override;
+	bool Special(DialogContext& ctx, cstring msg) override;
 	bool SpecialIf(DialogContext& ctx, cstring msg) override;
 	bool Load(GameReader& f) override;
 };

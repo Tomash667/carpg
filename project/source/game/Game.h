@@ -313,8 +313,8 @@ public:
 		txNeedItem, txGmsAddedItems, txReallyQuit;
 	cstring txRumor[28], txRumorD[7];
 	cstring txMayorQFailed[3], txQuestAlreadyGiven[2], txMayorNoQ[2], txCaptainQFailed[2], txCaptainNoQ[2], txLocationDiscovered[2], txAllDiscovered[2], txCampDiscovered[2],
-		txAllCampDiscovered[2], txNoQRumors[2], txRumorQ[9], txNeedMoreGold, txNoNearLoc, txNearLoc, txNearLocEmpty[2], txNearLocCleared, txNearLocEnemy[2], txNoNews[2], txAllNews[2], txPvpTooFar,
-		txPvp, txPvpWith, txNewsCampCleared, txNewsLocCleared, txArenaText[3], txArenaTextU[5], txAllNearLoc;
+		txAllCampDiscovered[2], txNoQRumors[2], txRumorQ[9], txNeedMoreGold, txNoNearLoc, txNearLoc, txNearLocEmpty[2], txNearLocCleared, txNearLocEnemy[2], txNoNews[2], txAllNews[2],
+		txNewsCampCleared, txNewsLocCleared, txAllNearLoc;
 	cstring txNear, txFar, txVeryFar, txELvlVeryWeak[2], txELvlWeak[2], txELvlAverage[2], txELvlQuiteStrong[2], txELvlStrong[2];
 	cstring txSGOOrcs, txSGOGoblins, txSGOBandits, txSGOEnemies, txSGOUndead, txSGOMages, txSGOGolems, txSGOMagesAndGolems, txSGOUnk, txSGOPowerfull;
 	cstring txArthur, txMineBuilt, txAncientArmory, txPortalClosed, txPortalClosedNews, txHiddenPlace, txOrcCamp, txPortalClose, txPortalCloseLevel, txXarDanger, txGorushDanger, txGorushCombat,
@@ -455,44 +455,6 @@ public:
 	FALLBACK fallback_type;
 	int fallback_1, fallback_2;
 	float fallback_t;
-
-	//--------------------------------------
-	// ARENA
-	enum TrybArena
-	{
-		Arena_Brak,
-		Arena_Walka,
-		Arena_Pvp,
-		Arena_Zawody
-	} arena_tryb;
-	enum EtapAreny
-	{
-		Arena_OdliczanieDoPrzeniesienia,
-		Arena_OdliczanieDoStartu,
-		Arena_TrwaWalka,
-		Arena_OdliczanieDoKonca,
-		Arena_OdliczanieDoWyjscia
-	} arena_etap;
-	int arena_poziom; // poziom trudnoœci walki na arenie [1-3]
-	int arena_wynik; // wynik walki na arenia [0 - gracz wygra³, 1 - gracz przegra³]
-	vector<Unit*> at_arena; // jednostki na arenie
-	float arena_t; // licznik czasu na arenie
-	bool arena_free; // czy arena jest wolna
-	Unit* arena_fighter; // postaæ z któr¹ walczy siê na arenie w pvp
-	vector<Unit*> near_players;
-	vector<string> near_players_str;
-	Unit* pvp_unit;
-	struct PvpResponse
-	{
-		Unit* from, *to;
-		float timer;
-		bool ok;
-	} pvp_response;
-	PlayerController* pvp_player;
-	vector<Unit*> arena_viewers;
-
-	void UpdateArena(float dt);
-	void CleanArena();
 
 	//
 	vector<Unit*> warp_to_inn;
@@ -706,7 +668,6 @@ public:
 			return leader_id == my_id;
 	}
 	void AddGold(int count, vector<Unit*>* to = nullptr, bool show = false, cstring msg = txGoldPlus, float time = 3.f, bool defmsg = true);
-	void AddGoldArena(int count);
 	bool IsAnyoneTalking() const;
 	bool FindQuestItem2(Unit* unit, cstring id, Quest** quest, int* i_index, bool not_active = false);
 	bool RemoveQuestItem(const Item* item, int refid = -1);
@@ -729,8 +690,6 @@ public:
 	void VerifyUnitResources(Unit* unit);
 	void VerifyItemResources(const Item* item);
 	//
-	void StartArenaCombat(int level);
-	InsideBuilding* GetArena();
 	void DeleteUnit(Unit* unit);
 	void DialogTalk(DialogContext& ctx, cstring msg);
 	void GenerateHeroName(HeroData& hero);
@@ -741,8 +700,6 @@ public:
 	}
 	const Item* GetBetterItem(const Item* item);
 	void CheckIfLocationCleared();
-	void SpawnArenaViewers(int count);
-	void RemoveArenaViewers();
 	bool CanWander(Unit& u);
 	float PlayerAngleY();
 	Vec3 GetExitPos(Unit& u, bool force_border = false);
@@ -767,9 +724,7 @@ public:
 	bool CanShowEndScreen();
 	void UpdateGameDialogClient();
 	bool Cheat_KillAll(int typ, Unit& unit, Unit* ignore);
-	void Event_Pvp(int id);
 	void Cheat_ShowMinimap();
-	void StartPvp(PlayerController* player, Unit* unit);
 	void UpdateGameNet(float dt);
 	void CheckCredit(bool require_update = false, bool ignore = false);
 	void Train(Unit& unit, bool is_skill, int co, int mode = 0);
@@ -782,7 +737,6 @@ public:
 	void OnEnterLocation();
 	void OnEnterLevel();
 	void OnEnterLevelOrLocation();
-	Unit* GetRandomArenaHero();
 	cstring GetRandomIdleText(Unit& u);
 	void HandleQuestEvent(Quest_Event* event);
 
@@ -834,7 +788,6 @@ public:
 	Controls* controls;
 	// inne
 	DialogBox* dialog_enc;
-	DialogBox* dialog_pvp;
 	bool cursor_allow_move;
 
 	void UpdateGui(float dt);
@@ -1048,4 +1001,5 @@ public:
 	LocationGeneratorFactory* loc_gen_factory;
 	Pathfinding* pathfinding;
 	SuperShader* super_shader;
+	Arena* arena;
 };

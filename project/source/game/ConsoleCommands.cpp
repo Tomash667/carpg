@@ -20,6 +20,7 @@
 #include "ScriptManager.h"
 #include "World.h"
 #include "Level.h"
+#include "Arena.h"
 #include "DirectX.h"
 
 //-----------------------------------------------------------------------------
@@ -697,7 +698,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 									else if(in_arena != -1)
 									{
 										u->in_arena = in_arena;
-										at_arena.push_back(u);
+										arena->units.push_back(u);
 									}
 									if(Net::IsOnline())
 										Net_SpawnUnit(u);

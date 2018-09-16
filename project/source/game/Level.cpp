@@ -14,6 +14,7 @@
 #include "Terrain.h"
 #include "UnitGroup.h"
 #include "EntityInterpolator.h"
+#include "Arena.h"
 #include "Game.h"
 
 Level L;
@@ -65,7 +66,7 @@ void Level::ProcessUnitWarps()
 		else if(warp.where == WARP_ARENA)
 		{
 			// warp to arena
-			InsideBuilding& building = *game.GetArena();
+			InsideBuilding& building = *GetArena();
 			RemoveElement(GetContext(*warp.unit).units, warp.unit);
 			warp.unit->in_building = building.ctx.building_id;
 			Vec3 pos;
@@ -76,7 +77,7 @@ void Level::ProcessUnitWarps()
 				warp.unit->rot = building.outside_rot;
 				WarpUnit(*warp.unit, building.outside_spawn);
 				local_ctx.units->push_back(warp.unit);
-				RemoveElement(game.at_arena, warp.unit);
+				RemoveElement(game.arena->units, warp.unit);
 			}
 			else
 			{
@@ -125,7 +126,7 @@ void Level::ProcessUnitWarps()
 		Vec3 pt1(0, 0, 0), pt2(0, 0, 0);
 		int count1 = 0, count2 = 0;
 
-		for(vector<Unit*>::iterator it = game.at_arena.begin(), end = game.at_arena.end(); it != end; ++it)
+		for(vector<Unit*>::iterator it = game.arena->units.begin(), end = game.arena->units.end(); it != end; ++it)
 		{
 			if((*it)->in_arena == 0)
 			{
@@ -143,18 +144,18 @@ void Level::ProcessUnitWarps()
 			pt1 /= (float)count1;
 		else
 		{
-			InsideBuilding& building = *game.GetArena();
+			InsideBuilding& building = *GetArena();
 			pt1 = ((building.arena1.Midpoint() + building.arena2.Midpoint()) / 2).XZ();
 		}
 		if(count2 > 0)
 			pt2 /= (float)count2;
 		else
 		{
-			InsideBuilding& building = *game.GetArena();
+			InsideBuilding& building = *GetArena();
 			pt2 = ((building.arena1.Midpoint() + building.arena2.Midpoint()) / 2).XZ();
 		}
 
-		for(vector<Unit*>::iterator it = game.at_arena.begin(), end = game.at_arena.end(); it != end; ++it)
+		for(vector<Unit*>::iterator it = game.arena->units.begin(), end = game.arena->units.end(); it != end; ++it)
 			(*it)->rot = Vec3::LookAtAngle((*it)->pos, (*it)->in_arena == 0 ? pt2 : pt1);
 	}
 }
@@ -3029,4 +3030,17 @@ void Level::OnReenterLevel()
 			}
 		}
 	}
+}
+
+//=================================================================================================
+InsideBuilding* Level::GetArena()
+{
+	assert(city_ctx);
+	for(InsideBuilding* b : city_ctx->inside_buildings)
+	{
+		if(b->type->group == BuildingGroup::BG_ARENA)
+			return b;
+	}
+	assert(0);
+	return nullptr;
 }

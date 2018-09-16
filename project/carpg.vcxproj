@@ -55,7 +55,7 @@
       <SDLCheck>true</SDLCheck>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>source;source\core;source\engine;source\engine\gui;source\game;source\game\entity;source\game\generator;source\game\helpers;source\game\location;source\game\net;source\game\panels;source\game\quests;source\game\script;source\game\stats;source\game\system;source\resource;..\external\angelscript_sdk\angelscript\include;..\external\angelscript_sdk\add_on;..\external\Bullet\src;..\external\DirectX\Include;..\external\DirectXMath\Inc;..\external\FMod\inc;..\external\SLikeNet\Source\include;..\external\Visual Leak Detector\include;..\external\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>source;source\core;source\engine;source\engine\gui;source\game;source\game\entity;source\game\events;source\game\generator;source\game\helpers;source\game\location;source\game\net;source\game\panels;source\game\quests;source\game\script;source\game\stats;source\game\system;source\resource;..\external\angelscript_sdk\angelscript\include;..\external\angelscript_sdk\add_on;..\external\Bullet\src;..\external\DirectX\Include;..\external\DirectXMath\Inc;..\external\FMod\inc;..\external\SLikeNet\Source\include;..\external\Visual Leak Detector\include;..\external\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>false</MultiProcessorCompilation>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <AdditionalOptions>/w34706 /w34702 /w34189 /w34265 /w34266 /w34928 %(AdditionalOptions)</AdditionalOptions>
@@ -93,7 +93,7 @@
       <SDLCheck>true</SDLCheck>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>source;source\core;source\engine;source\engine\gui;source\game;source\game\entity;source\game\generator;source\game\helpers;source\game\location;source\game\net;source\game\panels;source\game\quests;source\game\script;source\game\stats;source\game\system;source\resource;..\external\angelscript_sdk\angelscript\include;..\external\angelscript_sdk\add_on;..\external\Bullet\src;..\external\DirectX\Include;..\external\DirectXMath\Inc;..\external\FMod\inc;..\external\SLikeNet\Source\include;..\external\Visual Leak Detector\include;..\external\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>source;source\core;source\engine;source\engine\gui;source\game;source\game\entity;source\game\events;source\game\generator;source\game\helpers;source\game\location;source\game\net;source\game\panels;source\game\quests;source\game\script;source\game\stats;source\game\system;source\resource;..\external\angelscript_sdk\angelscript\include;..\external\angelscript_sdk\add_on;..\external\Bullet\src;..\external\DirectX\Include;..\external\DirectXMath\Inc;..\external\FMod\inc;..\external\SLikeNet\Source\include;..\external\Visual Leak Detector\include;..\external\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -216,6 +216,7 @@
     <ClInclude Include="source\game\entity\TerrainTile.h" />
     <ClInclude Include="source\game\entity\Tile.h" />
     <ClInclude Include="source\game\entity\UnitEventHandler.h" />
+    <ClInclude Include="source\game\events\Arena.h" />
     <ClInclude Include="source\game\GameCore.h" />
     <ClInclude Include="source\game\GameStats.h" />
     <ClInclude Include="source\game\generator\CampGenerator.h" />
@@ -458,6 +459,7 @@
     <ClCompile Include="source\game\entity\Room.cpp" />
     <ClCompile Include="source\game\entity\TerrainTile.cpp" />
     <ClCompile Include="source\game\entity\Tile.cpp" />
+    <ClCompile Include="source\game\events\Arena.cpp" />
     <ClCompile Include="source\game\GameFile.cpp" />
     <ClCompile Include="source\game\GameStats.cpp" />
     <ClCompile Include="source\game\generator\CampGenerator.cpp" />

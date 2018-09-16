@@ -87,7 +87,7 @@ void Quest_Contest::Load(GameReader& f)
 }
 
 //=================================================================================================
-void Quest_Contest::Special(DialogContext& ctx, cstring msg)
+bool Quest_Contest::Special(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "contest_start") == 0)
 	{
@@ -109,6 +109,7 @@ void Quest_Contest::Special(DialogContext& ctx, cstring msg)
 		game.AddItem(*ctx.pc->unit, ItemList::GetItem("contest_reward"), 1, false);
 		ctx.pc->AddItemMessage(1u);
 	}
+	return false;
 }
 
 //=================================================================================================

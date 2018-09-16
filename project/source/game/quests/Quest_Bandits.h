@@ -42,7 +42,7 @@ public:
 	void SetProgress(int prog2) override;
 	cstring FormatString(const string& str) override;
 	bool IfNeedTalk(cstring topic) const override;
-	void Special(DialogContext& ctx, cstring msg) override;
+	bool Special(DialogContext& ctx, cstring msg) override;
 	bool HandleLocationEvent(LocationEventHandler::Event event) override;
 	void HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit) override;
 	void Save(GameWriter& f) override;

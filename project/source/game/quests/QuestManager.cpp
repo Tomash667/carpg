@@ -796,20 +796,18 @@ bool QuestManager::SetForcedQuest(const string& name)
 }
 
 //=================================================================================================
-bool QuestManager::HandleSpecial(DialogContext& ctx, cstring msg)
+bool QuestManager::HandleSpecialGeneric(std::map<string, QuestHandler*>& handlers, DialogContext& ctx, cstring msg, bool& result)
 {
-	auto it = special_handlers.find(msg);
-	if(it == special_handlers.end())
-		return false;
-	it->second->Special(ctx, msg);
-	return true;
-}
-
-//=================================================================================================
-bool QuestManager::HandleSpecialIf(DialogContext& ctx, cstring msg, bool& result)
-{
-	auto it = special_if_handlers.find(msg);
-	if(it == special_if_handlers.end())
+	std::map<string, QuestHandler*>::iterator it;
+	cstring slash = strrchr(msg, '\\');
+	if(slash)
+	{
+		tmp_str = string(msg, slash - msg);
+		it = handlers.find(tmp_str); // FIXME verify
+	}
+	else
+		it = handlers.find(msg);
+	if(it == handlers.end())
 		return false;
 	result = it->second->SpecialIf(ctx, msg);
 	return true;

@@ -40,6 +40,7 @@
 #include "LocationGeneratorFactory.h"
 #include "Texture.h"
 #include "BitStreamFunc.h"
+#include "Arena.h"
 
 extern Matrix m1, m2, m3, m4;
 
@@ -82,7 +83,7 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 	L.dungeon_level = level;
 	L.event_handler = nullptr;
 	pc_data.before_player = BP_NONE;
-	arena_free = true; //zabezpieczenie :3
+	arena->Reset();
 	Inventory::lock = nullptr;
 
 	bool first = false;
@@ -376,8 +377,8 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 		if(QM.quest_tournament->GetState() != Quest_Tournament::TOURNAMENT_NOT_DONE)
 			QM.quest_tournament->Clean();
 		// arena
-		if(!arena_free)
-			CleanArena();
+		if(!arena->free)
+			arena->Clean();
 	}
 
 	if(clear)
@@ -391,8 +392,6 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 		return;
 
 	Info("Leaving location.");
-
-	pvp_response.ok = false;
 
 	if(Net::IsLocal() && (QM.quest_crazies->check_stone
 		|| (QM.quest_crazies->crazies_state >= Quest_Crazies::State::PickedStone && QM.quest_crazies->crazies_state < Quest_Crazies::State::End)))

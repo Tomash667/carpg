@@ -30,6 +30,7 @@
 #include "Level.h"
 #include "LoadingHandler.h"
 #include "LocationGeneratorFactory.h"
+#include "Arena.h"
 
 enum SaveFlags
 {
@@ -54,7 +55,7 @@ bool Game::CanSaveGame() const
 	}
 	else
 	{
-		if(in_tutorial || arena_tryb != Arena_Brak || QM.quest_contest->state >= Quest_Contest::CONTEST_STARTING
+		if(in_tutorial || arena->mode != Arena::NONE || QM.quest_contest->state >= Quest_Contest::CONTEST_STARTING
 			|| QM.quest_tournament->GetState() != Quest_Tournament::TOURNAMENT_NOT_DONE)
 			return false;
 	}
@@ -560,7 +561,7 @@ void Game::LoadGame(GameReader& f)
 	ClearGameVarsOnLoad();
 	StopAllSounds();
 	in_tutorial = false;
-	arena_free = true;
+	arena->Reset();
 	pc_data.autowalk = false;
 	ai_bow_targets.clear();
 	ai_cast_targets.clear();
@@ -827,10 +828,7 @@ void Game::LoadGame(GameReader& f)
 
 	// rumors/notes
 	game_gui->journal->Load(f);
-
-	// arena
-	arena_tryb = Arena_Brak;
-
+	
 	f >> read_id;
 	if(read_id != check_id)
 		throw "Error reading data before team.";

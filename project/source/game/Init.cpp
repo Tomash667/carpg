@@ -24,6 +24,7 @@
 #include "Level.h"
 #include "SuperShader.h"
 #include "GameMessages.h"
+#include "Arena.h"
 
 extern void HumanPredraw(void* ptr, Matrix* mat, int n);
 extern const int ITEM_IMAGE_SIZE;
@@ -251,6 +252,7 @@ void Game::LoadLanguageFiles()
 	SetStatsText();
 	N.LoadLanguage();
 	game_messages->LoadLanguage();
+	arena->LoadLanguage();
 
 	txLoadGuiTextures = Str("loadGuiTextures");
 	txLoadParticles = Str("loadParticles");
@@ -333,6 +335,7 @@ void Game::PostconfigureGame()
 	create_character->Init();
 	QM.InitOnce();
 	W.InitOnce(world_map);
+	arena->InitOnce();
 
 	// load gui textures that require instant loading
 	GUI.GetLayout()->LoadDefault();

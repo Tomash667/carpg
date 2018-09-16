@@ -250,7 +250,7 @@ bool Quest_Bandits::IfNeedTalk(cstring topic) const
 }
 
 //=================================================================================================
-void Quest_Bandits::Special(DialogContext& ctx, cstring msg)
+bool Quest_Bandits::Special(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "bandyci_daj_paczke") == 0)
 	{
@@ -262,6 +262,7 @@ void Quest_Bandits::Special(DialogContext& ctx, cstring msg)
 	{
 		assert(0);
 	}
+	return false;
 }
 
 //=================================================================================================

@@ -35,6 +35,7 @@
 #include "Level.h"
 #include "LocationGeneratorFactory.h"
 #include "GameMessages.h"
+#include "Arena.h"
 
 vector<NetChange> Net::changes;
 Net::Mode Net::mode;
@@ -2649,7 +2650,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							else if(in_arena != -1)
 							{
 								spawned->in_arena = in_arena;
-								at_arena.push_back(spawned);
+								arena->units.push_back(spawned);
 							}
 							if(Net::IsOnline())
 								Net_SpawnUnit(spawned);
@@ -2725,40 +2726,8 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				f >> accepted;
 				if(!f)
 					N.StreamError("Update server: Broken PVP from %s.", info.name.c_str());
-				else if(pvp_response.ok && pvp_response.to == info.u)
-				{
-					if(accepted)
-					{
-						StartPvp(pvp_response.from->player, pvp_response.to);
-						pvp_response.ok = false;
-					}
-					else
-					{
-						if(pvp_response.from->player == pc)
-						{
-							AddMsg(Format(txPvpRefuse, info.name.c_str()));
-							pvp_response.ok = false;
-						}
-						else
-						{
-							NetChangePlayer& c = Add1(pvp_response.from->player->player_info->changes);
-							c.type = NetChangePlayer::NO_PVP;
-							c.id = pvp_response.to->player->id;
-						}
-					}
-
-					if(pvp_response.ok && pvp_response.to == pc->unit)
-					{
-						if(dialog_pvp)
-						{
-							GUI.CloseDialog(dialog_pvp);
-							RemoveElement(GUI.created_dialogs, dialog_pvp);
-							delete dialog_pvp;
-							dialog_pvp = nullptr;
-						}
-						pvp_response.ok = false;
-					}
-				}
+				else
+					arena->HandlePvpResponse(info, accepted);
 			}
 			break;
 		// leader wants to leave location
@@ -4224,17 +4193,7 @@ void Game::UpdateClient(float dt)
 					load_screen->visible = true;
 					game_gui->visible = false;
 					world_map->visible = false;
-					if(pvp_response.ok && pvp_response.to == pc->unit)
-					{
-						if(dialog_pvp)
-						{
-							GUI.CloseDialog(dialog_pvp);
-							RemoveElement(GUI.created_dialogs, dialog_pvp);
-							delete dialog_pvp;
-							dialog_pvp = nullptr;
-						}
-						pvp_response.ok = false;
-					}
+					arena->ClosePvpDialog();
 					if(dialog_enc)
 					{
 						GUI.CloseDialog(dialog_enc);
@@ -5667,7 +5626,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				f >> type;
 				if(!f)
 					N.StreamError("Update client: Broken ARENA_SOUND.");
-				else if(L.city_ctx && IS_SET(L.city_ctx->flags, City::HaveArena) && GetArena()->ctx.building_id == pc->unit->in_building)
+				else if(L.city_ctx && IS_SET(L.city_ctx->flags, City::HaveArena) && L.GetArena()->ctx.building_id == pc->unit->in_building)
 				{
 					SOUND snd;
 					if(type == 0)
@@ -7144,22 +7103,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 						if(!info)
 							N.StreamError("Update single client: PVP, invalid player id %u.", player_id);
 						else
-						{
-							pvp_unit = info->u;
-							DialogInfo info;
-							info.event = DialogEvent(this, &Game::Event_Pvp);
-							info.name = "pvp";
-							info.order = ORDER_TOP;
-							info.parent = nullptr;
-							info.pause = false;
-							info.text = Format(txPvp, pvp_unit->player->name.c_str());
-							info.type = DIALOG_YESNO;
-							dialog_pvp = GUI.ShowDialog(info);
-
-							pvp_response.ok = true;
-							pvp_response.timer = 0.f;
-							pvp_response.to = pc->unit;
-						}
+							arena->ShowPvpRequest(info->u);
 					}
 				}
 				break;
@@ -8059,7 +8003,7 @@ void Game::Net_OnNewGameServer()
 	}
 
 	update_timer = 0.f;
-	pvp_response.ok = false;
+	arena->Reset();
 	anyone_talking = false;
 	mp_warps.clear();
 	minimap_reveal_mp.clear();

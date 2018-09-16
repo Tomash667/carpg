@@ -16,7 +16,7 @@ public:
 	void Init();
 	void Save(GameWriter& f);
 	void Load(GameReader& f);
-	void Special(DialogContext& ctx, cstring msg) override;
+	bool Special(DialogContext& ctx, cstring msg) override;
 	bool SpecialIf(DialogContext& ctx, cstring msg) override;
 	cstring FormatString(const string& str) override;
 	void Progress();
