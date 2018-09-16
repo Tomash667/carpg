@@ -5,6 +5,7 @@
 #include "LocationHelper.h"
 #include "Profiler.h"
 #include "Level.h"
+#include "ResourceManager.h"
 #include "DirectX.h"
 
 enum QuadPartType

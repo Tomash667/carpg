@@ -7,7 +7,7 @@ TextureLock::TextureLock(TEX tex) : tex(tex)
 {
 	assert(tex);
 	D3DLOCKED_RECT lock;
-	tex->LockRect(0, &lock, nullptr, 0);
+	V(tex->LockRect(0, &lock, nullptr, 0));
 	data = (byte*)lock.pBits;
 	pitch = lock.Pitch;
 }
@@ -15,12 +15,13 @@ TextureLock::TextureLock(TEX tex) : tex(tex)
 TextureLock::~TextureLock()
 {
 	if(tex)
-		tex->UnlockRect(0);
+		V(tex->UnlockRect(0));
 }
 
 void TextureLock::GenerateMipSubLevels()
 {
 	assert(tex);
+	V(tex->UnlockRect(0));
 	tex->GenerateMipSubLevels();
 	tex = nullptr;
 }

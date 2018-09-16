@@ -16,6 +16,7 @@
 #include "Level.h"
 #include "LocationGeneratorFactory.h"
 #include "SoundManager.h"
+#include "ParticleSystem.h"
 #include "Game.h"
 
 //=================================================================================================

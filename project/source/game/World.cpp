@@ -54,7 +54,6 @@ struct TmpLocation : public Location
 //-----------------------------------------------------------------------------
 void World::InitOnce(WorldMapGui* gui)
 {
-	assert(gui); // FIXME - remove if working
 	this->gui = gui;
 	txDate = Str("dateFormat");
 	txRandomEncounter = Str("randomEncounter");
@@ -256,7 +255,6 @@ int World::CreateCamp(const Vec2& pos, SPAWN_GROUP group, float range, bool allo
 	Camp* loc = new Camp;
 	loc->state = LS_UNKNOWN;
 	loc->active_quest = nullptr;
-	loc->GenerateName();
 	loc->type = L_CAMP;
 	loc->image = LI_CAMP;
 	loc->last_visit = -1;
@@ -265,6 +263,7 @@ int World::CreateCamp(const Vec2& pos, SPAWN_GROUP group, float range, bool allo
 	loc->spawn = group;
 	loc->pos = pos;
 	loc->create_time = worldtime;
+	loc->GenerateName();
 
 	FindPlaceForLocation(loc->pos, range, allow_exact);
 
@@ -1292,7 +1291,7 @@ bool World::IsSameWeek(int worldtime2) const
 
 cstring World::GetDate() const
 {
-	return Format("%d-%d-%d", year, month + 1, day + 1);
+	return Format(txDate, year, month + 1, day + 1);
 }
 
 int World::GetRandomSettlementIndex(int excluded) const

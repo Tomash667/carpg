@@ -16,6 +16,7 @@
 void ForestGenerator::Generate()
 {
 	CreateMap();
+	RandomizeTerrainTexture();
 
 	// randomize height
 	terrain->SetHeightMap(outside->h);

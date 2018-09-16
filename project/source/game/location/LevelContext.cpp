@@ -6,6 +6,8 @@
 #include "Level.h"
 #include "City.h"
 #include "Room.h"
+#include "ParticleSystem.h"
+#include "GroundItem.h"
 
 //=================================================================================================
 void TmpLevelContext::Clear()

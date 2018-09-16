@@ -22,6 +22,8 @@
 #include "Profiler.h"
 #include "GameStats.h"
 #include "Level.h"
+#include "GroundItem.h"
+#include "ResourceManager.h"
 
 //-----------------------------------------------------------------------------
 const float UNIT_VIEW_A = 0.2f;
@@ -105,6 +107,7 @@ GameGui::GameGui() : debug_info_size(0, 0), profiler_size(0, 0), use_cursor(fals
 	Add(minimap);
 
 	game_messages = new GameMessages;
+	game_messages->LoadLanguage();
 	game.game_messages = game_messages;
 
 	action_panel = new ActionPanel;

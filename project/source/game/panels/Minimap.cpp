@@ -7,6 +7,7 @@
 #include "Team.h"
 #include "Portal.h"
 #include "Level.h"
+#include "ResourceManager.h"
 
 //=================================================================================================
 Minimap::Minimap()
@@ -119,10 +120,6 @@ void Minimap::Draw(ControlDrawData* /*cdd*/)
 //=================================================================================================
 void Minimap::Update(float dt)
 {
-	Game& game = Game::Get();
-
-	minimap_size = game.minimap_size;
-
 	if(L.city_ctx)
 	{
 		for(vector<Text>::iterator it = texts.begin(), end = texts.end(); it != end; ++it)
@@ -180,22 +177,20 @@ void Minimap::Hide()
 //=================================================================================================
 void Minimap::Build()
 {
-	if(L.city_ctx)
+	minimap_size = Game::Get().minimap_size;
+	if(L.city_ctx && L.city_ctx != city)
 	{
-		if(L.city_ctx != city)
-		{
-			city = L.city_ctx;
-			texts.clear();
+		city = L.city_ctx;
+		texts.clear();
 
-			for(CityBuilding& b : city->buildings)
+		for(CityBuilding& b : city->buildings)
+		{
+			if(IS_SET(b.type->flags, Building::HAVE_NAME))
 			{
-				if(IS_SET(b.type->flags, Building::HAVE_NAME))
-				{
-					Text& text = Add1(texts);
-					text.text = b.type->name.c_str();
-					text.size = GUI.default_font->CalculateSize(b.type->name);
-					text.pos = text.anchor = TransformTile(b.pt);
-				}
+				Text& text = Add1(texts);
+				text.text = b.type->name.c_str();
+				text.size = GUI.default_font->CalculateSize(b.type->name);
+				text.pos = text.anchor = TransformTile(b.pt);
 			}
 		}
 	}

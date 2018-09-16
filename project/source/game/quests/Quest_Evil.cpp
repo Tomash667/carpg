@@ -16,6 +16,8 @@
 #include "World.h"
 #include "Level.h"
 #include "Pathfinding.h"
+#include "ResourceManager.h"
+#include "ParticleSystem.h"
 
 //=================================================================================================
 void Quest_Evil::Init()

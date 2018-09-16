@@ -84,7 +84,11 @@ void OutsideLocationGenerator::CreateMap()
 		outside->h = new float[(s + 1)*(s + 1)];
 		memset(outside->tiles, 0, sizeof(TerrainTile)*s*s);
 	}
+}
 
+//=================================================================================================
+void OutsideLocationGenerator::RandomizeTerrainTexture()
+{
 	// set random grass texture
 	Perlin perlin2(4, 4, 1);
 	for(int i = 0, y = 0; y < s; ++y)

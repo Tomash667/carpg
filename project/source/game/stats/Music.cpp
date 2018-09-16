@@ -7,6 +7,7 @@
 #include "World.h"
 #include "QuestManager.h"
 #include "Quest_Secret.h"
+#include "ResourceManager.h"
 
 //-----------------------------------------------------------------------------
 vector<Music*> Music::musics;

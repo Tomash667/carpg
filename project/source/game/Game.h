@@ -3,14 +3,10 @@
 #include "Engine.h"
 #include "Const.h"
 #include "GameCommon.h"
-#include "Object.h"
 #include "ConsoleCommands.h"
 #include "Net.h"
-#include "Building.h"
 #include "Dialog.h"
 #include "BaseLocation.h"
-#include "GroundItem.h"
-#include "ParticleSystem.h"
 #include "GameKeys.h"
 #include "SceneNode.h"
 #include "QuadTree.h"
@@ -18,9 +14,7 @@
 #include "PlayerInfo.h"
 #include "Camera.h"
 #include "Config.h"
-#include "LevelArea.h"
 #include "SaveSlot.h"
-#include "ResourceManager.h"
 
 //-----------------------------------------------------------------------------
 // Tryb szybkiego uruchamiania gry
@@ -745,10 +739,6 @@ public:
 	void AddItem(Unit& unit, const Item* item, uint count = 1, bool is_team = true, bool send_msg = true)
 	{
 		AddItem(unit, item, count, is_team ? count : 0, send_msg);
-	}
-	void AddItem(Unit& unit, const GroundItem& item, bool send_msg = true)
-	{
-		AddItem(unit, item.item, item.count, item.team_count, send_msg);
 	}
 	// usuwa przedmiot z ekwipunku (obs³uguje otwarty ekwipunek, lock i multiplayer), dla 0 usuwa wszystko
 	void RemoveItem(Unit& unit, int i_index, uint count);

@@ -31,6 +31,7 @@
 #include "LoadingHandler.h"
 #include "LocationGeneratorFactory.h"
 #include "Arena.h"
+#include "ParticleSystem.h"
 
 enum SaveFlags
 {

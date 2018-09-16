@@ -16,6 +16,7 @@
 #include "EntityInterpolator.h"
 #include "Arena.h"
 #include "Game.h"
+#include "ParticleSystem.h"
 
 Level L;
 

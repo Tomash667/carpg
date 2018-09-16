@@ -29,6 +29,7 @@
 #include "MpBox.h"
 #include "PickFileDialog.h"
 #include "GlobalGui.h"
+#include "ResourceManager.h"
 
 //=================================================================================================
 void Game::OnResize()

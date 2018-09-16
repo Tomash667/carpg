@@ -25,6 +25,8 @@
 #include "SuperShader.h"
 #include "GameMessages.h"
 #include "Arena.h"
+#include "ResourceManager.h"
+#include "Building.h"
 
 extern void HumanPredraw(void* ptr, Matrix* mat, int n);
 extern const int ITEM_IMAGE_SIZE;
@@ -251,7 +253,6 @@ void Game::LoadLanguageFiles()
 	SetGameText();
 	SetStatsText();
 	N.LoadLanguage();
-	game_messages->LoadLanguage();
 	arena->LoadLanguage();
 
 	txLoadGuiTextures = Str("loadGuiTextures");
@@ -990,6 +991,5 @@ void Game::LoadItemsData()
 //=================================================================================================
 void Game::CleanupSystems()
 {
-	delete loc_gen_factory;
 	delete pathfinding;
 }

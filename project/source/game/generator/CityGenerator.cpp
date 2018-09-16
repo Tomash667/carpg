@@ -2085,6 +2085,7 @@ void CityGenerator::Generate()
 	else
 		Info("Generating city map.");
 
+	CreateMap();
 	Init(city->tiles, city->h, OutsideLocation::size, OutsideLocation::size);
 	SetRoadSize(3, 32);
 	SetTerrainNoise(Random(3, 5), Random(3.f, 8.f), 1.f, village ? Random(2.f, 10.f) : Random(1.f, 2.f));

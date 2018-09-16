@@ -8,6 +8,7 @@
 #include "Team.h"
 #include "SoundManager.h"
 #include "GameMessages.h"
+#include "ResourceManager.h"
 
 //-----------------------------------------------------------------------------
 enum ButtonId

@@ -12,6 +12,7 @@
 #include "GameMessages.h"
 #include "Arena.h"
 #include "AIController.h"
+#include "GroundItem.h"
 
 //=================================================================================================
 void Quest_Secret::InitOnce()

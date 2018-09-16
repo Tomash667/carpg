@@ -18,6 +18,7 @@ public:
 
 protected:
 	void CreateMap();
+	void RandomizeTerrainTexture();
 	void ApplyTiles();
 	void SpawnOutsideBariers();
 

@@ -63,6 +63,7 @@
 #include "Texture.h"
 #include "Pathfinding.h"
 #include "Arena.h"
+#include "ResourceManager.h"
 
 const int SAVE_VERSION = V_CURRENT;
 int LOAD_VERSION;
@@ -2352,7 +2353,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 				if(Net::IsLocal())
 				{
-					AddItem(u, item);
+					AddItem(u, item.item, item.count, item.team_count);
 
 					if(item.item->type == IT_GOLD)
 						sound_mgr->PlaySound2d(sCoins);
@@ -10465,14 +10466,15 @@ void Game::ClearGameVarsOnLoad()
 	ClearGameVarsOnNewGameOrLoad();
 }
 
-// czyszczenie gry
+// called before starting new game/loading/at exit
 void Game::ClearGame()
 {
 	Info("Clearing game.");
 
 	draw_batch.Clear();
 
-	LeaveLocation(true, false);
+	if(prev_game_state != GS_MAIN_MENU)
+		LeaveLocation(true, false);
 
 	if((game_state == GS_WORLDMAP || prev_game_state == GS_WORLDMAP) && !L.is_open && Net::IsLocal() && !was_client)
 	{
@@ -10498,7 +10500,7 @@ void Game::ClearGame()
 	L.city_ctx = nullptr;
 
 	// usuñ quest
-	QM.Cleanup();
+	QM.Clear();
 	DeleteElements(quest_items);
 
 	W.Reset();

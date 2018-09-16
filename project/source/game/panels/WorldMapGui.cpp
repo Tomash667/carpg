@@ -18,6 +18,7 @@
 #include "World.h"
 #include "Level.h"
 #include "GameStats.h"
+#include "ResourceManager.h"
 #include "DirectX.h"
 
 //=================================================================================================

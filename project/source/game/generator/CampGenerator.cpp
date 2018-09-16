@@ -35,6 +35,7 @@ BaseObject* camp_objs_ptrs[n_camp_objs];
 void CampGenerator::Generate()
 {
 	CreateMap();
+	RandomizeTerrainTexture();
 
 	// randomize height
 	terrain->SetHeightMap(outside->h);

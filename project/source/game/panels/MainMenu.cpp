@@ -4,6 +4,7 @@
 #include "Language.h"
 #include "Version.h"
 #include "DialogBox.h"
+#include "ResourceManager.h"
 #include "Game.h"
 #define far
 #include <wininet.h>

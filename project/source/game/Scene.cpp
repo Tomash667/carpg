@@ -10,6 +10,7 @@
 #include "Level.h"
 #include "SuperShader.h"
 #include "GameMessages.h"
+#include "ParticleSystem.h"
 #include "DirectX.h"
 
 //-----------------------------------------------------------------------------

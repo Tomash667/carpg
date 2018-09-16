@@ -35,6 +35,7 @@
 #include "SuperShader.h"
 #include "Arena.h"
 #include "DirectX.h"
+#include "ResourceManager.h"
 
 // limit fps
 #define LIMIT_DT 0.3f
@@ -97,6 +98,7 @@ quickstart_slot(MAX_SAVE_SLOTS), autoready(false), loc_gen_factory(nullptr), pat
 Game::~Game()
 {
 	delete super_shader;
+	delete arena;
 }
 
 //=================================================================================================
@@ -886,6 +888,7 @@ void Game::OnCleanup()
 	ClearQuadtree();
 	CleanupDialogs();
 	Language::Cleanup();
+	QM.Cleanup();
 
 	// shadery
 	ReleaseShaders();
@@ -943,6 +946,8 @@ void Game::OnCleanup()
 	DeleteElements(old_players);
 	SM.Cleanup();
 	N.Cleanup();
+	loc_gen_factory->Clear();
+	delete loc_gen_factory;
 }
 
 //=================================================================================================

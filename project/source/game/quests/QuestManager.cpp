@@ -79,13 +79,18 @@ void QuestManager::InitOnce()
 //=================================================================================================
 void QuestManager::Cleanup()
 {
-	DeleteElements(quests);
-	DeleteElements(unaccepted_quests);
-	DeleteElements(quest_item_requests);
 	delete quest_contest;
 	delete quest_secret;
 	delete quest_tournament;
 	delete quest_tutorial;
+}
+
+//=================================================================================================
+void QuestManager::Clear()
+{
+	DeleteElements(quests);
+	DeleteElements(unaccepted_quests);
+	DeleteElements(quest_item_requests);
 }
 
 //=================================================================================================

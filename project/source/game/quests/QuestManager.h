@@ -47,6 +47,7 @@ class QuestManager
 {
 public:
 	void InitOnce();
+	void Cleanup();
 	void InitQuests(bool devmode);
 	Quest* CreateQuest(QUEST quest_id);
 	Quest* GetMayorQuest();
@@ -54,7 +55,7 @@ public:
 	Quest* GetAdventurerQuest();
 	void AddQuestItemRequest(const Item** item, cstring name, int quest_refid, vector<ItemSlot>* items, Unit* unit = nullptr);
 	void Reset();
-	void Cleanup();
+	void Clear();
 	void Update(int days);
 	void Write(BitStreamWriter& f);
 	bool Read(BitStreamReader& f);

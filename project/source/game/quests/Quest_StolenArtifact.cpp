@@ -7,6 +7,7 @@
 #include "GameFile.h"
 #include "QuestManager.h"
 #include "World.h"
+#include "LevelArea.h"
 
 //=================================================================================================
 void Quest_StolenArtifact::Start()

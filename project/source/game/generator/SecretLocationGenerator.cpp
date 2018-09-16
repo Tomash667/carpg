@@ -17,6 +17,7 @@ void SecretLocationGenerator::Generate()
 	QM.quest_secret->state = Quest_Secret::SECRET_GENERATED2;
 
 	CreateMap();
+	RandomizeTerrainTexture();
 
 	// randomize height
 	terrain->SetHeightMap(outside->h);
@@ -194,4 +195,11 @@ void SecretLocationGenerator::GenerateItems()
 void SecretLocationGenerator::SpawnTeam()
 {
 	Game::Get().AddPlayerTeam(Vec3(128.f, 0.f, 66.f), PI, false, false);
+}
+
+//=================================================================================================
+int SecretLocationGenerator::HandleUpdate()
+{
+	// don't reset location
+	return 0;
 }

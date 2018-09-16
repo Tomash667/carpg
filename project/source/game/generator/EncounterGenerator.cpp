@@ -32,6 +32,7 @@ void EncounterGenerator::Generate()
 	enc_kierunek = Rand() % 4;
 
 	CreateMap();
+	RandomizeTerrainTexture();
 
 	// randomize height
 	terrain->SetHeightMap(outside->h);

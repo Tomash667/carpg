@@ -12,6 +12,7 @@
 #include "Team.h"
 #include "BookPanel.h"
 #include "SoundManager.h"
+#include "ResourceManager.h"
 #include "DirectX.h"
 
 /* UWAGI CO DO ZMIENNYCH

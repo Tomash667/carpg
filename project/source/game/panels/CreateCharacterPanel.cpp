@@ -7,6 +7,7 @@
 #include "GetTextDialog.h"
 #include "Language.h"
 #include "PickItemDialog.h"
+#include "ResourceManager.h"
 #include "DirectX.h"
 
 //-----------------------------------------------------------------------------

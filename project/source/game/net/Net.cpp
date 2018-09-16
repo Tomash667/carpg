@@ -36,6 +36,8 @@
 #include "LocationGeneratorFactory.h"
 #include "GameMessages.h"
 #include "Arena.h"
+#include "ParticleSystem.h"
+#include "ResourceManager.h"
 
 vector<NetChange> Net::changes;
 Net::Mode Net::mode;
