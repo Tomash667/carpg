@@ -6,6 +6,7 @@
 #include "InsideLocation.h"
 #include "QuestManager.h"
 #include "Quest_Tutorial.h"
+#include "ItemHelper.h"
 #include "Game.h"
 
 struct RoomInfo
@@ -291,7 +292,7 @@ void TutorialLocationGenerator::OnEnter()
 	}
 
 	// trader stock
-	game.GenerateMerchantItems(game.chest_merchant, 500);
+	ItemHelper::GenerateMerchantItems(game.chest_merchant, 500);
 
 	game.SpawnDungeonColliders();
 	CreateMinimap();

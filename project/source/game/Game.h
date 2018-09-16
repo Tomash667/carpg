@@ -533,8 +533,6 @@ public:
 	void UpdateGameDialog(DialogContext& ctx, float dt);
 	bool ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_level);
 	bool ExecuteGameDialogSpecialIf(DialogContext& ctx, cstring msg);
-	void GenerateStockItems();
-	void GenerateMerchantItems(vector<ItemSlot>& items, int price_limit);
 	void ApplyLocationTexturePack(TexturePack& floor, TexturePack& wall, TexturePack& ceil, LocationTexturePack& tex);
 	void ApplyLocationTexturePack(TexturePack& pack, LocationTexturePack::Entry& e, TexturePack& pack_def);
 	void SetDungeonParamsAndTextures(BaseLocation& base);

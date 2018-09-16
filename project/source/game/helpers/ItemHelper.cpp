@@ -2,6 +2,7 @@
 #include "GameCore.h"
 #include "ItemHelper.h"
 #include "Chest.h"
+#include "Stock.h"
 
 int wartosc_skarbu[] = {
 	10, //0
@@ -26,6 +27,19 @@ int wartosc_skarbu[] = {
 	7600, //19
 	8500 //20
 };
+
+template<typename T>
+void InsertRandomItem(vector<ItemSlot>& container, vector<T*>& items, int price_limit, int exclude_flags, uint count = 1)
+{
+	for(int i = 0; i < 100; ++i)
+	{
+		T* item = items[Rand() % items.size()];
+		if(item->value > price_limit || IS_SET(item->flags, exclude_flags))
+			continue;
+		InsertItemBare(container, item, count);
+		return;
+	}
+}
 
 //=================================================================================================
 void ItemHelper::GenerateTreasure(int level, int _count, vector<ItemSlot>& items, int& gold, bool extra)
@@ -118,4 +132,103 @@ void ItemHelper::SplitTreasure(vector<ItemSlot>& items, int gold, Chest** chests
 		slot.Set(Item::gold, ile, ile);
 		SortItems(chests[i]->items);
 	}
+}
+
+//=================================================================================================
+void ItemHelper::GenerateMerchantItems(vector<ItemSlot>& items, int price_limit)
+{
+	items.clear();
+	InsertItemBare(items, Item::Get("p_nreg"), Random(5, 10));
+	InsertItemBare(items, Item::Get("p_hp"), Random(5, 10));
+	for(int i = 0, count = Random(15, 20); i < count; ++i)
+	{
+		switch(Rand() % 6)
+		{
+		case IT_WEAPON:
+			InsertRandomItem(items, Weapon::weapons, price_limit, ITEM_NOT_SHOP | ITEM_NOT_MERCHANT);
+			break;
+		case IT_BOW:
+			InsertRandomItem(items, Bow::bows, price_limit, ITEM_NOT_SHOP | ITEM_NOT_MERCHANT);
+			break;
+		case IT_SHIELD:
+			InsertRandomItem(items, Shield::shields, price_limit, ITEM_NOT_SHOP | ITEM_NOT_MERCHANT);
+			break;
+		case IT_ARMOR:
+			InsertRandomItem(items, Armor::armors, price_limit, ITEM_NOT_SHOP | ITEM_NOT_MERCHANT);
+			break;
+		case IT_CONSUMABLE:
+			InsertRandomItem(items, Consumable::consumables, price_limit / 5, ITEM_NOT_SHOP | ITEM_NOT_MERCHANT, Random(2, 5));
+			break;
+		case IT_OTHER:
+			InsertRandomItem(items, OtherItem::others, price_limit, ITEM_NOT_SHOP | ITEM_NOT_MERCHANT);
+			break;
+		}
+	}
+	SortItems(items);
+}
+
+//=================================================================================================
+void ItemHelper::GenerateBlacksmithItems(vector<ItemSlot>& items, int price_limit, int count_mod, bool is_city)
+{
+	items.clear();
+	for(int i = 0, count = Random(12, 18) + count_mod; i < count; ++i)
+	{
+		switch(Rand() % 4)
+		{
+		case IT_WEAPON:
+			InsertRandomItem(items, Weapon::weapons, price_limit, ITEM_NOT_SHOP | ITEM_NOT_BLACKSMITH);
+			break;
+		case IT_BOW:
+			InsertRandomItem(items, Bow::bows, price_limit, ITEM_NOT_SHOP | ITEM_NOT_BLACKSMITH);
+			break;
+		case IT_SHIELD:
+			InsertRandomItem(items, Shield::shields, price_limit, ITEM_NOT_SHOP | ITEM_NOT_BLACKSMITH);
+			break;
+		case IT_ARMOR:
+			InsertRandomItem(items, Armor::armors, price_limit, ITEM_NOT_SHOP | ITEM_NOT_BLACKSMITH);
+			break;
+		}
+	}
+	// basic equipment
+	Stock::Get("blacksmith")->Parse(5, is_city, items);
+	SortItems(items);
+}
+
+//=================================================================================================
+void ItemHelper::GenerateAlchemistItems(vector<ItemSlot>& items, int count_mod)
+{
+	items.clear();
+	for(int i = 0, count = Random(8, 12) + count_mod; i < count; ++i)
+		InsertRandomItem(items, Consumable::consumables, 99999, ITEM_NOT_SHOP | ITEM_NOT_ALCHEMIST, Random(3, 6));
+	SortItems(items);
+}
+
+//=================================================================================================
+void ItemHelper::GenerateInnkeeperItems(vector<ItemSlot>& items, int count_mod, bool is_city)
+{
+	items.clear();
+	Stock::Get("innkeeper")->Parse(5, is_city, items);
+	const ItemList* lis2 = ItemList::Get("normal_food").lis;
+	for(uint i = 0, count = Random(10, 20) + count_mod; i < count; ++i)
+		InsertItemBare(items, lis2->Get());
+	SortItems(items);
+}
+
+//=================================================================================================
+void ItemHelper::GenerateFoodSellerItems(vector<ItemSlot>& items, bool is_city)
+{
+	items.clear();
+	const ItemList* lis = ItemList::Get("food_and_drink").lis;
+	for(const Item* item : lis->items)
+	{
+		uint value = Random(50, 100);
+		if(!is_city)
+			value /= 2;
+		InsertItemBare(items, item, value / item->value);
+	}
+	if(Rand() % 4 == 0)
+		InsertItemBare(items, Item::Get("frying_pan"));
+	if(Rand() % 4 == 0)
+		InsertItemBare(items, Item::Get("ladle"));
+	SortItems(items);
 }

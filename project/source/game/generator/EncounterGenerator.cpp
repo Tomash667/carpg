@@ -240,7 +240,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 				group_name = "merchant_guards";
 				count = Random(2, 4);
 				level = Random(3, 8);
-				game.GenerateMerchantItems(game.chest_merchant, 1000);
+				ItemHelper::GenerateMerchantItems(game.chest_merchant, 1000);
 			}
 			break;
 		case SE_HEROES:

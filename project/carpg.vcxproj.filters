@@ -117,9 +117,6 @@
     <ClCompile Include="source\game\Scene.cpp">
       <Filter>3. game</Filter>
     </ClCompile>
-    <ClCompile Include="source\game\Worldmap.cpp">
-      <Filter>3. game</Filter>
-    </ClCompile>
     <ClCompile Include="source\game\entity\AIController.cpp">
       <Filter>3. game\entity</Filter>
     </ClCompile>

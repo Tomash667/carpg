@@ -51,7 +51,7 @@ struct TmpLocation : public Location
 };
 
 
-//-----------------------------------------------------------------------------
+//=================================================================================================
 void World::InitOnce(WorldMapGui* gui)
 {
 	this->gui = gui;
@@ -73,11 +73,13 @@ void World::InitOnce(WorldMapGui* gui)
 	txEncGoblins = Str("encGoblins");
 }
 
+//=================================================================================================
 void World::Cleanup()
 {
 	Reset();
 }
 
+//=================================================================================================
 void World::OnNewGame()
 {
 	travel_location_index = -1;
@@ -92,6 +94,7 @@ void World::OnNewGame()
 	first_city = true;
 }
 
+//=================================================================================================
 void World::Reset()
 {
 	DeleteElements(locations);
@@ -99,6 +102,7 @@ void World::Reset()
 	DeleteElements(news);
 }
 
+//=================================================================================================
 void World::Update(int days, UpdateMode mode)
 {
 	assert(days > 0);
@@ -136,6 +140,7 @@ void World::Update(int days, UpdateMode mode)
 	}
 }
 
+//=================================================================================================
 void World::UpdateDate(int days)
 {
 	worldtime += days;
@@ -157,6 +162,7 @@ void World::UpdateDate(int days)
 		Net::PushChange(NetChange::WORLD_TIME);
 }
 
+//=================================================================================================
 void World::SpawnCamps(int days)
 {
 	create_camp += days;
@@ -180,6 +186,7 @@ void World::SpawnCamps(int days)
 	}
 }
 
+//=================================================================================================
 void World::UpdateEncounters()
 {
 	for(vector<Encounter*>::iterator it = encounters.begin(), end = encounters.end(); it != end; ++it)
@@ -201,6 +208,7 @@ void World::UpdateEncounters()
 	}
 }
 
+//=================================================================================================
 void World::UpdateLocations()
 {
 	LoopAndRemove(locations, [this](Location* loc)
@@ -237,6 +245,7 @@ void World::UpdateLocations()
 	});
 }
 
+//=================================================================================================
 void World::UpdateNews()
 {
 	LoopAndRemove(news, [this](News* news)
@@ -250,6 +259,7 @@ void World::UpdateNews()
 	});
 }
 
+//=================================================================================================
 int World::CreateCamp(const Vec2& pos, SPAWN_GROUP group, float range, bool allow_exact)
 {
 	Camp* loc = new Camp;
@@ -270,6 +280,7 @@ int World::CreateCamp(const Vec2& pos, SPAWN_GROUP group, float range, bool allo
 	return AddLocation(loc);
 }
 
+//=================================================================================================
 Location* World::CreateLocation(LOCATION type, int levels, bool is_village)
 {
 	switch(type)
@@ -340,6 +351,7 @@ Location* World::CreateLocation(LOCATION type, int levels, bool is_village)
 	}
 }
 
+//=================================================================================================
 // Create location
 // If range<0 then position is random and range is positive
 // Dungeon levels
@@ -409,6 +421,7 @@ Location* World::CreateLocation(LOCATION type, const Vec2& pos, float range, int
 	return loc;
 }
 
+//=================================================================================================
 void World::AddLocations(uint count, AddLocationsCallback clbk, float valid_dist, bool unique_name)
 {
 	for(uint i = 0; i < count; ++i)
@@ -466,6 +479,7 @@ void World::AddLocations(uint count, AddLocationsCallback clbk, float valid_dist
 	}
 }
 
+//=================================================================================================
 int World::AddLocation(Location* loc)
 {
 	assert(loc);
@@ -505,6 +519,7 @@ int World::AddLocation(Location* loc)
 	}
 }
 
+//=================================================================================================
 void World::AddLocationAtIndex(Location* loc)
 {
 	assert(loc && loc->index >= 0);
@@ -514,6 +529,7 @@ void World::AddLocationAtIndex(Location* loc)
 	locations[loc->index] = loc;
 }
 
+//=================================================================================================
 void World::RemoveLocation(int index)
 {
 	assert(VerifyLocation(index));
@@ -527,6 +543,7 @@ void World::RemoveLocation(int index)
 	}
 }
 
+//=================================================================================================
 void World::GenerateWorld(int start_location_type, int start_location_target)
 {
 	// generate cities
@@ -769,6 +786,7 @@ void World::GenerateWorld(int start_location_type, int start_location_target)
 	L.location = current_location;
 }
 
+//=================================================================================================
 void World::Save(GameWriter& f)
 {
 	f << state;
@@ -836,6 +854,7 @@ void World::Save(GameWriter& f)
 	f << boss_levels;
 }
 
+//=================================================================================================
 void World::Load(GameReader& f, LoadingHandler& loading)
 {
 	f >> state;
@@ -850,6 +869,7 @@ void World::Load(GameReader& f, LoadingHandler& loading)
 	f >> boss_levels;
 }
 
+//=================================================================================================
 void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 {
 	byte read_id,
@@ -864,7 +884,7 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 	else
 		current_index = -1;
 	int step = 0;
-	bool removed_academy = false;
+	Location* academy = nullptr;
 	for(Location*& loc : locations)
 	{
 		++index;
@@ -908,11 +928,7 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 
 			const int OLD_ACADEMY = 8;
 			if(LOAD_VERSION < V_FEATURE && loc->type == OLD_ACADEMY)
-			{
-				removed_academy = true;
-				delete loc;
-				loc = nullptr;
-			}
+				academy = loc;
 		}
 		else
 			loc = nullptr;
@@ -948,8 +964,6 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 		++check_id;
 	}
 	f >> empty_locations;
-	if(removed_academy)
-		++empty_locations;
 	f >> create_camp;
 	f >> world_pos;
 	f >> reveal_timer;
@@ -970,6 +984,14 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 	if(current_location_index != -1)
 	{
 		current_location = locations[current_location_index];
+		if(current_location == academy)
+		{
+			current_location_index = GetNearestSettlement(academy->pos);
+			locations[academy->index] = nullptr;
+			++empty_locations;
+			delete academy;
+			current_location = locations[current_location_index];
+		}
 		L.location = current_location;
 	}
 	else
@@ -979,6 +1001,7 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 	}
 }
 
+//=================================================================================================
 void World::LoadNews(GameReader& f)
 {
 	uint count;
@@ -992,6 +1015,7 @@ void World::LoadNews(GameReader& f)
 	}
 }
 
+//=================================================================================================
 void World::LoadOld(GameReader& f, LoadingHandler& loading, int part)
 {
 	if(part == 0)
@@ -1054,6 +1078,7 @@ void World::LoadOld(GameReader& f, LoadingHandler& loading, int part)
 	}
 }
 
+//=================================================================================================
 void World::Write(BitStreamWriter& f)
 {
 	// time
@@ -1101,6 +1126,7 @@ void World::Write(BitStreamWriter& f)
 		f << false;
 }
 
+//=================================================================================================
 void World::WriteTime(BitStreamWriter& f)
 {
 	f << worldtime;
@@ -1109,6 +1135,7 @@ void World::WriteTime(BitStreamWriter& f)
 	f << year;
 }
 
+//=================================================================================================
 bool World::Read(BitStreamReader& f)
 {
 	// time
@@ -1272,6 +1299,7 @@ bool World::Read(BitStreamReader& f)
 	return true;
 }
 
+//=================================================================================================
 void World::ReadTime(BitStreamReader& f)
 {
 	f >> worldtime;
@@ -1280,6 +1308,7 @@ void World::ReadTime(BitStreamReader& f)
 	f >> year;
 }
 
+//=================================================================================================
 bool World::IsSameWeek(int worldtime2) const
 {
 	if(worldtime2 == -1)
@@ -1289,11 +1318,13 @@ bool World::IsSameWeek(int worldtime2) const
 	return week == week2;
 }
 
+//=================================================================================================
 cstring World::GetDate() const
 {
 	return Format(txDate, year, month + 1, day + 1);
 }
 
+//=================================================================================================
 int World::GetRandomSettlementIndex(int excluded) const
 {
 	int index = Rand() % excluded;
@@ -1302,6 +1333,7 @@ int World::GetRandomSettlementIndex(int excluded) const
 	return index;
 }
 
+//=================================================================================================
 int World::GetRandomFreeSettlementIndex(int excluded) const
 {
 	int index = Rand() % settlements,
@@ -1314,6 +1346,7 @@ int World::GetRandomFreeSettlementIndex(int excluded) const
 	return (tries == 0 ? -1 : index);
 }
 
+//=================================================================================================
 int World::GetRandomCityIndex(int excluded) const
 {
 	int count = 0;
@@ -1331,6 +1364,7 @@ int World::GetRandomCityIndex(int excluded) const
 	return index;
 }
 
+//=================================================================================================
 // Get random 0-settlement, 1-city, 2-village; excluded from used list
 int World::GetRandomSettlementIndex(const vector<int>& used, int type) const
 {
@@ -1377,6 +1411,7 @@ int World::GetRandomSettlementIndex(const vector<int>& used, int type) const
 	return index;
 }
 
+//=================================================================================================
 int World::GetClosestLocation(LOCATION type, const Vec2& pos, int target)
 {
 	int best = -1, index = 0;
@@ -1400,6 +1435,7 @@ int World::GetClosestLocation(LOCATION type, const Vec2& pos, int target)
 	return best;
 }
 
+//=================================================================================================
 int World::GetClosestLocationNotTarget(LOCATION type, const Vec2& pos, int not_target)
 {
 	int best = -1, index = 0;
@@ -1423,6 +1459,7 @@ int World::GetClosestLocationNotTarget(LOCATION type, const Vec2& pos, int not_t
 	return best;
 }
 
+//=================================================================================================
 bool World::FindPlaceForLocation(Vec2& pos, float range, bool allow_exact)
 {
 	Vec2 pt;
@@ -1456,6 +1493,7 @@ bool World::FindPlaceForLocation(Vec2& pos, float range, bool allow_exact)
 	return false;
 }
 
+//=================================================================================================
 // Searches for location with selected spawn group
 // If cleared respawns enemies
 // If nothing found creates camp
@@ -1513,6 +1551,7 @@ int World::GetRandomSpawnLocation(const Vec2& pos, SPAWN_GROUP group, float rang
 	return CreateCamp(pos, group, range / 2);
 }
 
+//=================================================================================================
 int World::GetNearestLocation(const Vec2& pos, int flags, bool not_quest, int target_flags)
 {
 	assert(flags);
@@ -1544,6 +1583,7 @@ int World::GetNearestLocation(const Vec2& pos, int flags, bool not_quest, int ta
 	return best_index;
 }
 
+//=================================================================================================
 void World::ExitToMap()
 {
 	if(state == State::INSIDE_ENCOUNTER)
@@ -1558,6 +1598,7 @@ void World::ExitToMap()
 		state = State::ON_MAP;
 }
 
+//=================================================================================================
 void World::ChangeLevel(int index, bool encounter)
 {
 	state = encounter ? State::INSIDE_ENCOUNTER : State::INSIDE_LOCATION;
@@ -1567,6 +1608,7 @@ void World::ChangeLevel(int index, bool encounter)
 	L.location = current_location;
 }
 
+//=================================================================================================
 void World::StartInLocation(Location* loc)
 {
 	locations.push_back(loc);
@@ -1579,6 +1621,7 @@ void World::StartInLocation(Location* loc)
 	L.is_open = true;
 }
 
+//=================================================================================================
 void World::StartEncounter()
 {
 	state = State::INSIDE_ENCOUNTER;
@@ -1588,6 +1631,7 @@ void World::StartEncounter()
 	L.location = current_location;
 }
 
+//=================================================================================================
 void World::Travel(int index)
 {
 	state = State::TRAVEL;
@@ -1611,6 +1655,7 @@ void World::Travel(int index)
 	}
 }
 
+//=================================================================================================
 void World::UpdateTravel(float dt)
 {
 	Game& game = Game::Get();
@@ -1705,6 +1750,7 @@ void World::UpdateTravel(float dt)
 	}
 }
 
+//=================================================================================================
 void World::StartEncounter(int enc, int what)
 {
 	state = State::ENCOUNTER;
@@ -1836,6 +1882,7 @@ void World::StartEncounter(int enc, int what)
 	gui->ShowEncounterMessage(text);
 }
 
+//=================================================================================================
 void World::EndTravel()
 {
 	if(state != State::TRAVEL)
@@ -1853,6 +1900,7 @@ void World::EndTravel()
 		Net::PushChange(NetChange::END_TRAVEL);
 }
 
+//=================================================================================================
 void World::Warp(int index)
 {
 	current_location_index = index;
@@ -1864,6 +1912,7 @@ void World::Warp(int index)
 	world_pos = loc.pos;
 }
 
+//=================================================================================================
 Encounter* World::AddEncounter(int& index)
 {
 	for(int i = 0, size = (int)encounters.size(); i < size; ++i)
@@ -1882,6 +1931,7 @@ Encounter* World::AddEncounter(int& index)
 	return enc;
 }
 
+//=================================================================================================
 void World::RemoveEncounter(int index)
 {
 	assert(InRange(index, 0, (int)encounters.size() - 1) && encounters[index]);
@@ -1889,12 +1939,14 @@ void World::RemoveEncounter(int index)
 	encounters[index] = nullptr;
 }
 
+//=================================================================================================
 Encounter* World::GetEncounter(int index)
 {
 	assert(InRange(index, 0, (int)encounters.size() - 1) && encounters[index]);
 	return encounters[index];
 }
 
+//=================================================================================================
 Encounter* World::RecreateEncounter(int index)
 {
 	assert(InRange(index, 0, (int)encounters.size() - 1));
@@ -2000,6 +2052,7 @@ void World::SetTravelDir(const Vec3& pos)
 		travel_dir = Lerp(1.f / 4 * PI, 3.f / 4 * PI, 1.f - (unit_pos.x - border) / (map_size - border * 2));
 }
 
+//=================================================================================================
 // Mark all locations as known
 void World::Reveal()
 {
@@ -2010,6 +2063,7 @@ void World::Reveal()
 	}
 }
 
+//=================================================================================================
 void World::AddNews(cstring text)
 {
 	assert(text);
@@ -2021,6 +2075,7 @@ void World::AddNews(cstring text)
 	news.push_back(n);
 }
 
+//=================================================================================================
 void World::AddBossLevel(const Int2& pos)
 {
 	if(Net::IsLocal())
@@ -2029,6 +2084,7 @@ void World::AddBossLevel(const Int2& pos)
 		boss_level_mp = true;
 }
 
+//=================================================================================================
 bool World::RemoveBossLevel(const Int2& pos)
 {
 	if(Net::IsLocal())
@@ -2043,6 +2099,7 @@ bool World::RemoveBossLevel(const Int2& pos)
 	return RemoveElementTry(boss_levels, pos);
 }
 
+//=================================================================================================
 bool World::IsBossLevel(const Int2& pos) const
 {
 	if(Net::IsLocal())
@@ -2055,6 +2112,7 @@ bool World::IsBossLevel(const Int2& pos) const
 	return false;
 }
 
+//=================================================================================================
 bool World::CheckFirstCity()
 {
 	if(first_city)
@@ -2065,6 +2123,7 @@ bool World::CheckFirstCity()
 	return false;
 }
 
+//=================================================================================================
 void World::DeleteCamp(Camp* camp, bool remove)
 {
 	assert(camp);
@@ -2087,6 +2146,7 @@ void World::DeleteCamp(Camp* camp, bool remove)
 		RemoveLocation(index);
 }
 
+//=================================================================================================
 void World::AbadonLocation(Location* loc)
 {
 	assert(loc);
@@ -2140,6 +2200,7 @@ void World::AbadonLocation(Location* loc)
 	loc->last_visit = worldtime;
 }
 
+//=================================================================================================
 int World::FindWorldUnit(Unit* unit, int hint_loc, int hint_loc2, int* out_level)
 {
 	assert(unit);

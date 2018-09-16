@@ -145,6 +145,7 @@ private:
 	void SpawnTemporaryUnits();
 	void RemoveTemporaryUnits();
 	void RepositionUnits();
+	void GenerateStockItems();
 	void GeneratePickableItems();
 	void CreateMinimap() override;
 	void OnLoad() override;
