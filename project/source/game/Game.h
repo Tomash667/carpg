@@ -497,7 +497,6 @@ public:
 	int tmp_inventory_shift[2];
 
 	void BuildTmpInventory(int index);
-	int GetItemPrice(const Item* item, Unit& unit, bool buy);
 
 	void Draw();
 	void ExitToMenu();

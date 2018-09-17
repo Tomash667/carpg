@@ -15,6 +15,7 @@
 #include "Quest_Orcs.h"
 #include "Game.h"
 #include "GameMessages.h"
+#include "ItemHelper.h"
 
 
 TeamSingleton Team;
@@ -1207,7 +1208,7 @@ void TeamSingleton::CheckUnitOverload(Unit& unit)
 		ItemToSell& to_sell = items_to_sell.back();
 		ItemSlot& slot = unit.items[to_sell.index];
 		__assume(slot.item != nullptr);
-		int price = game.GetItemPrice(slot.item, unit, false);
+		int price = ItemHelper::GetItemPrice(slot.item, unit, false);
 		if(slot.team_count == 0)
 			unit.gold += price;
 		else

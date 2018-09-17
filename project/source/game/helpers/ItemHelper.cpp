@@ -3,6 +3,7 @@
 #include "ItemHelper.h"
 #include "Chest.h"
 #include "Stock.h"
+#include "Unit.h"
 
 int wartosc_skarbu[] = {
 	10, //0
@@ -27,6 +28,11 @@ int wartosc_skarbu[] = {
 	7600, //19
 	8500 //20
 };
+
+const float price_mod_buy[] = { 1.25f, 1.0f, 0.75f };
+const float price_mod_sell[] = { 0.25f, 0.5f, 0.75f };
+const float price_mod_buy_v[] = { 1.25f, 1.0f, 0.9f };
+const float price_mod_sell_v[] = { 0.5f, 0.75f, 0.9f };
 
 template<typename T>
 void InsertRandomItem(vector<ItemSlot>& container, vector<T*>& items, int price_limit, int exclude_flags, uint count = 1)
@@ -231,4 +237,46 @@ void ItemHelper::GenerateFoodSellerItems(vector<ItemSlot>& items, bool is_city)
 	if(Rand() % 4 == 0)
 		InsertItemBare(items, Item::Get("ladle"));
 	SortItems(items);
+}
+
+//=================================================================================================
+int ItemHelper::GetItemPrice(const Item* item, Unit& unit, bool buy)
+{
+	assert(item);
+
+	int cha = unit.Get(AttributeId::CHA);
+	const float* mod_table;
+
+	if(item->type == IT_OTHER && item->ToOther().other_type == Valuable)
+	{
+		if(buy)
+			mod_table = price_mod_buy_v;
+		else
+			mod_table = price_mod_sell_v;
+	}
+	else
+	{
+		if(buy)
+			mod_table = price_mod_buy;
+		else
+			mod_table = price_mod_sell;
+	}
+
+	float mod;
+	if(cha <= 1)
+		mod = mod_table[0];
+	else if(cha < 50)
+		mod = Lerp(mod_table[0], mod_table[1], float(cha) / 50);
+	else if(cha == 50)
+		mod = mod_table[1];
+	else if(cha < 100)
+		mod = Lerp(mod_table[1], mod_table[2], float(cha - 50) / 50);
+	else
+		mod = mod_table[2];
+
+	int price = int(mod * item->value);
+	if(price == 0 && buy)
+		price = 1;
+
+	return price;
 }

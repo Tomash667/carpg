@@ -38,6 +38,7 @@
 #include "Arena.h"
 #include "ParticleSystem.h"
 #include "ResourceManager.h"
+#include "ItemHelper.h"
 
 vector<NetChange> Net::changes;
 Net::Mode Net::mode;
@@ -1677,7 +1678,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						uint team_count = (player.action == PlayerController::Action_Trade ? 0 : min((uint)count, slot.team_count));
 						AddItem(unit, slot.item, (uint)count, team_count, false);
 						if(player.action == PlayerController::Action_Trade)
-							unit.gold -= GetItemPrice(slot.item, unit, true) * count;
+							unit.gold -= ItemHelper::GetItemPrice(slot.item, unit, true) * count;
 						else if(player.action == PlayerController::Action_ShareItems && slot.item->type == IT_CONSUMABLE
 							&& slot.item->ToConsumable().effect == E_HEAL)
 							player.action_unit->ai->have_potion = 1;
@@ -1787,7 +1788,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					else if(player.action == PlayerController::Action_Trade)
 					{
 						InsertItem(*player.chest_trade, slot.item, count, team_count);
-						int price = GetItemPrice(slot.item, unit, false);
+						int price = ItemHelper::GetItemPrice(slot.item, unit, false);
 						if(team_count)
 							AddGold(price * team_count);
 						uint normal_count = count - team_count;
@@ -1809,7 +1810,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						else if(player.action == PlayerController::Action_GiveItems)
 						{
 							add_as_team = 0;
-							int price = GetItemPrice(slot.item, unit, false);
+							int price = ItemHelper::GetItemPrice(slot.item, unit, false);
 							if(t->gold >= price)
 							{
 								t->gold -= price;
@@ -1852,7 +1853,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					}
 
 					const Item*& slot = unit.slots[type];
-					int price = GetItemPrice(slot, unit, false);
+					int price = ItemHelper::GetItemPrice(slot, unit, false);
 					// add new item
 					if(player.action == PlayerController::Action_LootChest)
 						player.action_chest->AddItem(slot, 1u, 0u, false);

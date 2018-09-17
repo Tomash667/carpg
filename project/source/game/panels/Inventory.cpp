@@ -13,6 +13,7 @@
 #include "BookPanel.h"
 #include "SoundManager.h"
 #include "ResourceManager.h"
+#include "ItemHelper.h"
 #include "DirectX.h"
 
 /* UWAGI CO DO ZMIENNYCH
@@ -1324,7 +1325,7 @@ void Inventory::FormatBox(int group, string& text, string& small_text, TEX& img)
 		if(mode == TRADE_MY)
 		{
 			text += '\n';
-			int price = game.GetItemPrice(item, *game.pc->unit, false);
+			int price = ItemHelper::GetItemPrice(item, *game.pc->unit, false);
 			if(price == 0 || !game.CanBuySell(item))
 				text += txWontBuy;
 			else
@@ -1332,7 +1333,7 @@ void Inventory::FormatBox(int group, string& text, string& small_text, TEX& img)
 		}
 		else if(mode == TRADE_OTHER)
 		{
-			int price = game.GetItemPrice(item, *game.pc->unit, true);
+			int price = ItemHelper::GetItemPrice(item, *game.pc->unit, true);
 			text += '\n';
 			text += Format(txPrice, price);
 		}
@@ -1474,7 +1475,7 @@ void Inventory::OnSellItem(int id)
 void Inventory::BuyItem(int index, uint count)
 {
 	ItemSlot& slot = items->at(index);
-	int price = game.GetItemPrice(slot.item, *game.pc->unit, true) * count;
+	int price = ItemHelper::GetItemPrice(slot.item, *game.pc->unit, true) * count;
 
 	if(price > game.pc->unit->gold)
 	{
@@ -1527,7 +1528,7 @@ void Inventory::SellItem(int index, uint count)
 	// dodaj z³oto
 	if(Net::IsLocal())
 	{
-		int price = game.GetItemPrice(slot.item, *game.pc->unit, false);
+		int price = ItemHelper::GetItemPrice(slot.item, *game.pc->unit, false);
 		if(team_count)
 			game.AddGold(price * team_count);
 		if(normal_count)
@@ -1571,7 +1572,7 @@ void Inventory::SellSlotItem(ITEM_SLOT slot)
 	game.sound_mgr->PlaySound2d(game.GetItemSound(item));
 	game.sound_mgr->PlaySound2d(game.sCoins);
 	// dodaj z³oto
-	unit->gold += game.GetItemPrice(item, *game.pc->unit, false);
+	unit->gold += ItemHelper::GetItemPrice(item, *game.pc->unit, false);
 	// dodaj przedmiot kupcowi
 	InsertItem(*unit->player->chest_trade, item, 1, 0);
 	UpdateGrid(false);
@@ -1951,7 +1952,7 @@ void Inventory::OnGiveItem(int id)
 
 	// dodaj
 	Unit* t = unit->player->action_unit;
-	int price = game.GetItemPrice(item, *game.pc->unit, false);
+	int price = ItemHelper::GetItemPrice(item, *game.pc->unit, false);
 	switch(give_item_mode)
 	{
 	case 0: // kredyt
