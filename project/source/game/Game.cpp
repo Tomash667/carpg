@@ -45,6 +45,7 @@
 #include "InfoBox.h"
 #include "LoadScreen.h"
 #include "Portal.h"
+#include "GlobalGui.h"
 
 // limit fps
 #define LIMIT_DT 0.3f
@@ -1991,7 +1992,7 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 	{
 		clear_color = clear_color2;
 		game_state = GS_LEVEL;
-		load_screen->visible = false;
+		gui->load_screen->visible = false;
 		main_menu->visible = false;
 		game_gui->visible = true;
 	}

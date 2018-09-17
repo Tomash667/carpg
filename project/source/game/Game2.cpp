@@ -63,6 +63,7 @@
 #include "Arena.h"
 #include "ResourceManager.h"
 #include "ItemHelper.h"
+#include "GlobalGui.h"
 
 const int SAVE_VERSION = V_CURRENT;
 int LOAD_VERSION;
@@ -8630,7 +8631,7 @@ void Game::ChangeLevel(int where)
 	{
 		clear_color = clear_color2;
 		game_state = GS_LEVEL;
-		load_screen->visible = false;
+		gui->load_screen->visible = false;
 		main_menu->visible = false;
 		game_gui->visible = true;
 	}
@@ -11162,7 +11163,7 @@ void Game::PlayHitSound(MATERIAL_TYPE mat2, MATERIAL_TYPE mat, const Vec3& hitpo
 
 void Game::LoadingStart(int steps)
 {
-	load_screen->Reset();
+	gui->load_screen->Reset();
 	loading_t.Reset();
 	loading_dt = 0.f;
 	loading_cap = 0.66f;
@@ -11170,7 +11171,7 @@ void Game::LoadingStart(int steps)
 	loading_index = 0;
 	clear_color = Color::Black;
 	game_state = GS_LOAD;
-	load_screen->visible = true;
+	gui->load_screen->visible = true;
 	main_menu->visible = false;
 	game_gui->visible = false;
 	ResourceManager::Get().PrepareLoadScreen(loading_cap);
@@ -11185,7 +11186,7 @@ void Game::LoadingStep(cstring text, int end)
 		progress = loading_cap;
 	else
 		progress = 1.f;
-	load_screen->SetProgressOptional(progress, text);
+	gui->load_screen->SetProgressOptional(progress, text);
 
 	if(end != 2)
 	{

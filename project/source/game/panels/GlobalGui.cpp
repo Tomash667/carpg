@@ -3,10 +3,43 @@
 #include "GlobalGui.h"
 #include "World.h"
 #include "Level.h"
+#include "LoadScreen.h"
+#include "GameDialogBox.h"
 #include "Game.h"
+
+GlobalGui::GlobalGui() : load_screen(nullptr)
+{
+}
+
+GlobalGui::~GlobalGui()
+{
+	delete load_screen;
+}
+
+void GlobalGui::InitOnce()
+{
+	Game& game = Game::Get();
+
+	GUI.Init(game.device, game.sprite);
+	GUI.AddFont("Florence-Regular.otf");
+	GUI.default_font = GUI.CreateFont("Arial", 12, 800, 512, 2);
+	GUI.fBig = GUI.CreateFont("Florence Regular", 28, 800, 512);
+	GUI.fSmall = GUI.CreateFont("Arial", 10, 500, 512);
+	GUI.InitLayout();
+
+	GameDialogBox::game = &game;
+
+	// load screen
+	load_screen = new LoadScreen;
+	GUI.Add(load_screen);
+
+	GUI.Add(this);
+}
 
 void GlobalGui::Draw(ControlDrawData*)
 {
+	Container::Draw();
+
 	FIXME;
 	if(!Any(Game::Get().game_state, GS_LEVEL, GS_WORLDMAP))
 		return;

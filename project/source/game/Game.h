@@ -727,12 +727,9 @@ public:
 	//-----------------------------------------------------------------
 	// GUI
 	// panele
-	LoadScreen* load_screen;
-	GameGui* game_gui;
 	GameMessages* game_messages;
 	MainMenu* main_menu;
 	WorldMapGui* world_map;
-	GlobalGui* global_gui;
 	// dialogi
 	Console* console;
 	GameMenu* game_menu;
@@ -753,7 +750,6 @@ public:
 	void CloseGamePanels();
 	void SetGamePanels();
 	void NullGui();
-	void PreinitGui();
 	void InitGui();
 	void LoadGuiData();
 	void RemoveGui();
@@ -962,6 +958,7 @@ public:
 	SuperShader* super_shader;
 	Arena* arena;
 	InventoryBase* inventory;
+	GlobalGui* gui;
 
 private:
 	vector<std::pair<GameComponent*,bool>> components;

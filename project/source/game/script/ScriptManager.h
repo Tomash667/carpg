@@ -1,5 +1,7 @@
 #pragma once
 
+#include "GameComponent.h"
+
 #ifdef _DEBUG
 #	define CHECKED(x) { int _r = (x); assert(_r >= 0); }
 #else
@@ -19,12 +21,12 @@ struct ScriptException
 	ScriptException(cstring msg, const Args&... args) : ScriptException(Format(msg, args...)) {}
 };
 
-class ScriptManager
+class ScriptManager : public GameComponent
 {
 public:
 	ScriptManager();
-	void Init();
-	void Cleanup();
+	void InitOnce() override;
+	void Cleanup() override;
 	void RegisterCommon();
 	void RegisterGame();
 	void SetContext(PlayerController* pc, Unit* target);

@@ -34,6 +34,7 @@
 #include "Level.h"
 #include "QuestManager.h"
 #include "Quest_Tutorial.h"
+#include "GlobalGui.h"
 
 extern string g_ctime;
 
@@ -1295,7 +1296,7 @@ void Game::UpdateClientTransfer(float dt)
 					Info("NM_TRANSFER: Starting at world map.");
 					clear_color = Color::White;
 					game_state = GS_WORLDMAP;
-					load_screen->visible = false;
+					gui->load_screen->visible = false;
 					main_menu->visible = false;
 					game_gui->visible = false;
 					world_map->visible = true;
@@ -1326,7 +1327,7 @@ void Game::UpdateClientTransfer(float dt)
 					Info("NM_TRANSFER: Level started.");
 					clear_color = clear_color2;
 					game_state = GS_LEVEL;
-					load_screen->visible = false;
+					gui->load_screen->visible = false;
 					main_menu->visible = false;
 					game_gui->visible = true;
 					world_map->visible = false;
@@ -1497,7 +1498,7 @@ void Game::UpdateServerTransfer(float dt)
 			fallback_type = FALLBACK::NONE;
 			fallback_t = -0.5f;
 			main_menu->visible = false;
-			load_screen->visible = true;
+			gui->load_screen->visible = true;
 			clear_color = Color::Black;
 			GenerateWorld();
 			QM.InitQuests(devmode);
@@ -1753,7 +1754,7 @@ void Game::UpdateServerTransfer(float dt)
 
 				clear_color = clear_color2;
 				game_state = GS_WORLDMAP;
-				load_screen->visible = false;
+				gui->load_screen->visible = false;
 				world_map->visible = true;
 				game_gui->visible = false;
 				main_menu->visible = false;
@@ -2027,7 +2028,7 @@ void Game::UpdateServerSend(float dt)
 		clear_color = clear_color2;
 		game_state = GS_LEVEL;
 		info_box->CloseDialog();
-		load_screen->visible = false;
+		gui->load_screen->visible = false;
 		main_menu->visible = false;
 		game_gui->visible = true;
 		world_map->visible = false;

@@ -33,6 +33,7 @@
 #include "Arena.h"
 #include "ParticleSystem.h"
 #include "Inventory.h"
+#include "GlobalGui.h"
 
 enum SaveFlags
 {
@@ -1092,7 +1093,7 @@ void Game::LoadGame(GameReader& f)
 	}
 
 	LoadResources(txEndOfLoading, game_state2 == GS_WORLDMAP);
-	load_screen->visible = false;
+	gui->load_screen->visible = false;
 
 #ifdef _DEBUG
 	Team.ValidateTeamItems();

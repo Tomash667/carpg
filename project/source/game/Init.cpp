@@ -27,6 +27,7 @@
 #include "Arena.h"
 #include "ResourceManager.h"
 #include "Building.h"
+#include "GlobalGui.h"
 
 extern void HumanPredraw(void* ptr, Matrix* mat, int n);
 extern const int ITEM_IMAGE_SIZE;
@@ -75,24 +76,25 @@ void Game::PreconfigureGame()
 	// set animesh callback
 	MeshInstance::Predraw = HumanPredraw;
 
-	PreinitGui();
-	CreateVertexDeclarations();
-	PreloadLanguage();
-	PreloadData();
-	CreatePlaceholderResources();
-	ResourceManager::Get().SetLoadScreen(load_screen);
-
 	// game components
 	pathfinding = new Pathfinding;
 	arena = new Arena;
 	loc_gen_factory = new LocationGeneratorFactory;
-	components.push_back(std::pair<GameComponent*, bool>(&W, false));
-	components.push_back(std::pair<GameComponent*, bool>(pathfinding, true));
-	components.push_back(std::pair<GameComponent*, bool>(&QM, false));
-	components.push_back(std::pair<GameComponent*, bool>(arena, true));
-	components.push_back(std::pair<GameComponent*, bool>(loc_gen_factory, true));
+	gui = new GlobalGui;
+	components.push_back(std::make_pair(&W, false));
+	components.push_back(std::make_pair(pathfinding, true));
+	components.push_back(std::make_pair(&QM, false));
+	components.push_back(std::make_pair(arena, true));
+	components.push_back(std::make_pair(loc_gen_factory, true));
+	components.push_back(std::make_pair(gui, true));
 	for(std::pair<GameComponent*, bool>& component : components)
 		component.first->InitOnce();
+
+	CreateVertexDeclarations();
+	PreloadLanguage();
+	PreloadData();
+	CreatePlaceholderResources();
+	ResourceManager::Get().SetLoadScreen(gui->load_screen);
 }
 
 //=================================================================================================
@@ -154,7 +156,7 @@ void Game::PreloadData()
 	ResourceManager::Get().AddDir("data/preload");
 
 	// loadscreen textures
-	load_screen->LoadData();
+	gui->load_screen->LoadData();
 
 	// gui shader
 	eGui = CompileShader("gui.fx");
@@ -177,12 +179,12 @@ void Game::PreloadData()
 void Game::LoadSystem()
 {
 	Info("Game: Loading system.");
-	load_screen->Setup(0.f, 0.33f, 14, txCreatingListOfFiles);
+	gui->load_screen->Setup(0.f, 0.33f, 14, txCreatingListOfFiles);
 
 	AddFilesystem();
 	LoadDatafiles();
 	LoadLanguageFiles();
-	load_screen->Tick(txLoadingShaders);
+	gui->load_screen->Tick(txLoadingShaders);
 	LoadShaders();
 	ConfigureGame();
 	InitScripts();
@@ -216,31 +218,31 @@ void Game::LoadDatafiles()
 		switch(id)
 		{
 		case content::Id::Items:
-			load_screen->Tick(txLoadingItems);
+			gui->load_screen->Tick(txLoadingItems);
 			break;
 		case content::Id::Objects:
-			load_screen->Tick(txLoadingObjects);
+			gui->load_screen->Tick(txLoadingObjects);
 			break;
 		case content::Id::Spells:
-			load_screen->Tick(txLoadingSpells);
+			gui->load_screen->Tick(txLoadingSpells);
 			break;
 		case content::Id::Dialogs:
-			load_screen->Tick(txLoadingDialogs);
+			gui->load_screen->Tick(txLoadingDialogs);
 			break;
 		case content::Id::Units:
-			load_screen->Tick(txLoadingUnits);
+			gui->load_screen->Tick(txLoadingUnits);
 			break;
 		case content::Id::Buildings:
-			load_screen->Tick(txLoadingBuildings);
+			gui->load_screen->Tick(txLoadingBuildings);
 			break;
 		case content::Id::Musics:
-			load_screen->Tick(txLoadingMusics);
+			gui->load_screen->Tick(txLoadingMusics);
 			break;
 		}
 	});
 
 	// required
-	load_screen->Tick(txLoadingRequires);
+	gui->load_screen->Tick(txLoadingRequires);
 	LoadRequiredStats(load_errors);
 }
 
@@ -250,7 +252,7 @@ void Game::LoadDatafiles()
 void Game::LoadLanguageFiles()
 {
 	Info("Game: Loading language files.");
-	load_screen->Tick(txLoadingLanguageFiles);
+	gui->load_screen->Tick(txLoadingLanguageFiles);
 
 	Language::LoadFile("menu.txt");
 	Language::LoadFile("stats.txt");
@@ -287,7 +289,7 @@ void Game::LoadLanguageFiles()
 void Game::ConfigureGame()
 {
 	Info("Game: Configuring game.");
-	load_screen->Tick(txConfiguringGame);
+	gui->load_screen->Tick(txConfiguringGame);
 
 	InitScene();
 	super_shader->Init();
@@ -422,7 +424,7 @@ void Game::PostconfigureGame()
 	clear_color = Color::Black;
 	game_state = GS_MAIN_MENU;
 	game_state = GS_MAIN_MENU;
-	load_screen->visible = false;
+	gui->load_screen->visible = false;
 	main_menu->visible = true;
 	if(music_type != MusicType::Intro)
 		SetMusic(MusicType::Title);
@@ -545,7 +547,7 @@ void Game::StartGameMode()
 //=================================================================================================
 void Game::AddLoadTasks()
 {
-	load_screen->Tick(txPreloadAssets);
+	gui->load_screen->Tick(txPreloadAssets);
 
 	auto& res_mgr = ResourceManager::Get();
 	auto& tex_mgr = ResourceManager::Get<Texture>();

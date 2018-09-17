@@ -18,6 +18,7 @@
 #include "SoundManager.h"
 #include "ParticleSystem.h"
 #include "Game.h"
+#include "GlobalGui.h"
 
 //=================================================================================================
 void Quest_Tutorial::LoadLanguage()
@@ -69,7 +70,7 @@ void Quest_Tutorial::Start()
 	game.LoadResources("", false);
 	L.event_handler = nullptr;
 	game.SetMusic();
-	game.load_screen->visible = false;
+	game.gui->load_screen->visible = false;
 	game.main_menu->visible = false;
 	game.game_gui->visible = true;
 	game.world_map->visible = false;

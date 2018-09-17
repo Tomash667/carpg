@@ -73,25 +73,6 @@ void Game::SetGamePanels()
 }
 
 //=================================================================================================
-void Game::PreinitGui()
-{
-	GUI.Init(device, sprite);
-
-	GUI.AddFont("Florence-Regular.otf");
-	GUI.default_font = GUI.CreateFont("Arial", 12, 800, 512, 2);
-	GUI.fBig = GUI.CreateFont("Florence Regular", 28, 800, 512);
-	GUI.fSmall = GUI.CreateFont("Arial", 10, 500, 512);
-
-	GUI.InitLayout();
-
-	GameDialogBox::game = this;
-
-	// load screen
-	load_screen = new LoadScreen;
-	GUI.Add(load_screen);
-}
-
-//=================================================================================================
 void Game::InitGui()
 {
 	/* UK£AD GUI
@@ -140,11 +121,7 @@ void Game::InitGui()
 	// worldmap
 	world_map = new WorldMapGui;
 	GUI.Add(world_map);
-
-	// global gui
-	global_gui = new GlobalGui;
-	GUI.Add(global_gui);
-
+	
 	// konsola
 	DialogInfo info;
 	info.event = nullptr;
@@ -253,7 +230,6 @@ void Game::NullGui()
 	main_menu = nullptr;
 	world_map = nullptr;
 	game_gui = nullptr;
-	global_gui = nullptr;
 	console = nullptr;
 	game_menu = nullptr;
 	options = nullptr;
@@ -264,14 +240,12 @@ void Game::NullGui()
 	pick_server_panel = nullptr;
 	server_panel = nullptr;
 	info_box = nullptr;
-	load_screen = nullptr;
 	controls = nullptr;
 }
 
 //=================================================================================================
 void Game::RemoveGui()
 {
-	delete global_gui;
 	delete game_gui;
 	delete main_menu;
 	delete world_map;
@@ -288,7 +262,6 @@ void Game::RemoveGui()
 	delete GetTextDialog::self;
 	delete GetNumberDialog::self;
 	delete PickItemDialog::self;
-	delete load_screen;
 	delete controls;
 	gui::PickFileDialog::Destroy();
 }

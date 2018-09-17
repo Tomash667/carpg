@@ -39,6 +39,7 @@
 #include "ParticleSystem.h"
 #include "ResourceManager.h"
 #include "ItemHelper.h"
+#include "GlobalGui.h"
 
 vector<NetChange> Net::changes;
 Net::Mode Net::mode;
@@ -4193,7 +4194,7 @@ void Game::UpdateClient(float dt)
 					net_mode = NM_TRANSFER;
 					net_state = NetState::Client_ChangingLevel;
 					clear_color = Color::Black;
-					load_screen->visible = true;
+					gui->load_screen->visible = true;
 					game_gui->visible = false;
 					world_map->visible = false;
 					arena->ClosePvpDialog();
