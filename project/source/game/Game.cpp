@@ -634,14 +634,14 @@ void Game::OnReload()
 	// rebuild minimap texture
 	if(game_state == GS_LEVEL)
 		loc_gen_factory->Get(L.location)->CreateMinimap();
-	Inventory::OnReload();
+	inventory->OnReload();
 }
 
 //=================================================================================================
 void Game::OnReset()
 {
 	GUI.OnReset();
-	Inventory::OnReset();
+	inventory->OnReset();
 
 	if(eMesh)
 		V(eMesh->OnLostDevice());
@@ -1861,7 +1861,7 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 	L.event_handler = nullptr;
 	pc_data.before_player = BP_NONE;
 	arena->Reset();
-	Inventory::lock = nullptr;
+	inventory->lock = nullptr;
 
 	bool first = false;
 

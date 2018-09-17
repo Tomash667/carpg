@@ -72,18 +72,6 @@ enum class FALLBACK
 	CLIENT2
 };
 
-enum InventoryMode
-{
-	I_NONE,
-	I_INVENTORY,
-	I_LOOT_BODY,
-	I_LOOT_CHEST,
-	I_TRADE,
-	I_SHARE,
-	I_GIVE,
-	I_LOOT_CONTAINER
-};
-
 enum DRAW_FLAGS
 {
 	DF_TERRAIN = 1 << 0,
@@ -343,12 +331,8 @@ public:
 
 	//---------------------------------
 	// GUI / HANDEL
-	InventoryMode inventory_mode;
 	vector<ItemSlot> chest_merchant, chest_blacksmith, chest_alchemist, chest_innkeeper, chest_food_seller, chest_trade;
 	bool* trader_buy;
-
-	void StartTrade(InventoryMode mode, Unit& unit);
-	void StartTrade(InventoryMode mode, vector<ItemSlot>& items, Unit* unit = nullptr);
 
 	//---------------------------------
 	// RYSOWANIE
@@ -481,23 +465,12 @@ public:
 	float grayout;
 	bool cl_postfx;
 
-	// zwraca losowy przedmiot o maksymalnej cenie, ta funkcja jest powolna!
-	// mo¿e zwróciæ questowy przedmiot jeœli bêdzie wystarczaj¹co tani, lub unikat!
-	const Item* GetRandomItem(int max_value);
-
 	// klawisze
 	void InitGameKeys();
 	void ResetGameKeys();
 	void SaveGameKeys();
 	void LoadGameKeys();
-
-	// przedmioty w czasie grabienia itp s¹ tu przechowywane indeksy
-	// ujemne wartoœci odnosz¹ siê do slotów (SLOT_WEAPON = -SLOT_WEAPON-1), pozytywne do zwyk³ych przedmiotów
-	vector<int> tmp_inventory[2];
-	int tmp_inventory_shift[2];
-
-	void BuildTmpInventory(int index);
-
+	
 	void Draw();
 	void ExitToMenu();
 	void DoExitToMenu();
@@ -989,4 +962,5 @@ public:
 	Pathfinding* pathfinding;
 	SuperShader* super_shader;
 	Arena* arena;
+	InventoryBase* inventory;
 };

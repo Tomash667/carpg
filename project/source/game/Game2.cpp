@@ -22,9 +22,8 @@
 #include "Quest_Crazies.h"
 #include "Version.h"
 #include "LocationHelper.h"
-#include "InsideLocation.h"
 #include "MultiInsideLocation.h"
-#include "Cave.h"
+#include "SingleInsideLocation.h"
 #include "Encounter.h"
 #include "GameGui.h"
 #include "Console.h"
@@ -58,12 +57,12 @@
 #include "Quest_Tutorial.h"
 #include "Debug.h"
 #include "LocationGeneratorFactory.h"
-#include "CaveGenerator.h"
 #include "DungeonGenerator.h"
 #include "Texture.h"
 #include "Pathfinding.h"
 #include "Arena.h"
 #include "ResourceManager.h"
+#include "ItemHelper.h"
 
 const int SAVE_VERSION = V_CURRENT;
 int LOAD_VERSION;
@@ -888,7 +887,7 @@ void Game::UpdateGame(float dt)
 	// obracanie kamery góra/dó³
 	if(!Net::IsLocal() || Team.IsAnyoneAlive())
 	{
-		if(dialog_context.dialog_mode && inventory_mode <= I_INVENTORY)
+		if(dialog_context.dialog_mode && inventory->mode <= I_INVENTORY)
 		{
 			cam.free_rot = false;
 			if(cam.real_rot.y > 4.2875104f)
@@ -1005,7 +1004,7 @@ void Game::UpdateGame(float dt)
 	// aktualizuj gracza
 	if(pc_data.wasted_key != VK_NONE && Key.Up(pc_data.wasted_key))
 		pc_data.wasted_key = VK_NONE;
-	if(dialog_context.dialog_mode || pc->unit->look_target || inventory_mode > I_INVENTORY)
+	if(dialog_context.dialog_mode || pc->unit->look_target || inventory->mode > I_INVENTORY)
 	{
 		Vec3 pos;
 		if(pc->unit->look_target)
@@ -1016,19 +1015,19 @@ void Game::UpdateGame(float dt)
 				pos = pc->unit->look_target->pos;
 			pc->unit->animation = ANI_STAND;
 		}
-		else if(inventory_mode == I_LOOT_CHEST)
+		else if(inventory->mode == I_LOOT_CHEST)
 		{
 			assert(pc->action == PlayerController::Action_LootChest);
 			pos = pc->action_chest->pos;
 			pc->unit->animation = ANI_KNEELS;
 		}
-		else if(inventory_mode == I_LOOT_BODY)
+		else if(inventory->mode == I_LOOT_BODY)
 		{
 			assert(pc->action == PlayerController::Action_LootUnit);
 			pos = pc->action_unit->GetLootCenter();
 			pc->unit->animation = ANI_KNEELS;
 		}
-		else if(inventory_mode == I_LOOT_CONTAINER)
+		else if(inventory->mode == I_LOOT_CONTAINER)
 		{
 			// TODO: animacja
 			assert(pc->action == PlayerController::Action_LootContainer);
@@ -1042,7 +1041,7 @@ void Game::UpdateGame(float dt)
 		}
 		else
 		{
-			assert(pc->action == InventoryModeToActionRequired(inventory_mode));
+			assert(pc->action == InventoryModeToActionRequired(inventory->mode));
 			pos = pc->action_unit->pos;
 			pc->unit->animation = ANI_STAND;
 		}
@@ -1066,9 +1065,9 @@ void Game::UpdateGame(float dt)
 			}
 		}
 
-		if(inventory_mode > I_INVENTORY)
+		if(inventory->mode > I_INVENTORY)
 		{
-			if(inventory_mode == I_LOOT_BODY)
+			if(inventory->mode == I_LOOT_BODY)
 			{
 				if(pc->action_unit->IsAlive())
 				{
@@ -1076,7 +1075,7 @@ void Game::UpdateGame(float dt)
 					CloseInventory();
 				}
 			}
-			else if(inventory_mode == I_TRADE || inventory_mode == I_SHARE || inventory_mode == I_GIVE)
+			else if(inventory->mode == I_TRADE || inventory->mode == I_SHARE || inventory->mode == I_GIVE)
 			{
 				if(!pc->action_unit->IsStanding() || !pc->action_unit->IsIdle())
 				{
@@ -2143,7 +2142,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						pc->action_unit = u2;
 						u2->busy = Unit::Busy_Looted;
 						pc->chest_trade = &u2->items;
-						StartTrade(I_LOOT_BODY, *u2);
+						inventory->StartTrade(I_LOOT_BODY, *u2);
 					}
 				}
 				else
@@ -2206,14 +2205,14 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					pc->action_chest->user = pc->unit;
 					pc->chest_trade = &pc->action_chest->items;
 					CloseGamePanels();
-					inventory_mode = I_LOOT_CHEST;
-					BuildTmpInventory(0);
+					inventory->mode = I_LOOT_CHEST;
+					inventory->BuildTmpInventory(0);
 					game_gui->inv_trade_mine->mode = Inventory::LOOT_MY;
-					BuildTmpInventory(1);
+					inventory->BuildTmpInventory(1);
 					game_gui->inv_trade_other->unit = nullptr;
 					game_gui->inv_trade_other->items = &pc->action_chest->items;
 					game_gui->inv_trade_other->slots = nullptr;
-					game_gui->inv_trade_other->title = Inventory::txLootingChest;
+					game_gui->inv_trade_other->title = inventory->txLootingChest;
 					game_gui->inv_trade_other->mode = Inventory::LOOT_OTHER;
 					game_gui->gp_trade->Show();
 
@@ -3405,7 +3404,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				}
 
 				if(ctx.is_local)
-					StartTrade(I_TRADE, *ctx.pc->chest_trade, t);
+					inventory->StartTrade(I_TRADE, *ctx.pc->chest_trade, t);
 				else
 				{
 					NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
@@ -4460,7 +4459,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 		ctx.pc->action_unit = t;
 		ctx.pc->chest_trade = &t->items;
 		if(ctx.is_local)
-			StartTrade(I_GIVE, *t);
+			inventory->StartTrade(I_GIVE, *t);
 		else
 		{
 			NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
@@ -4477,7 +4476,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 		ctx.pc->action_unit = t;
 		ctx.pc->chest_trade = &t->items;
 		if(ctx.is_local)
-			StartTrade(I_SHARE, *t);
+			inventory->StartTrade(I_SHARE, *t);
 		else
 		{
 			NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
@@ -4627,7 +4626,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 	}
 	else if(strcmp(msg, "crazy_give_item") == 0)
 	{
-		crazy_give_item = GetRandomItem(100);
+		crazy_give_item = ItemHelper::GetRandomItem(100);
 		ctx.pc->unit->AddItem2(crazy_give_item, 1u, 0u);
 	}
 	else
@@ -10387,7 +10386,7 @@ void Game::BuildRefidTables()
 
 void Game::ClearGameVarsOnNewGameOrLoad()
 {
-	inventory_mode = I_NONE;
+	inventory->mode = I_NONE;
 	dialog_context.dialog_mode = false;
 	dialog_context.is_local = true;
 	death_screen = 0;
@@ -10403,7 +10402,7 @@ void Game::ClearGameVarsOnNewGameOrLoad()
 	debug_info2 = false;
 	dialog_enc = nullptr;
 	game_gui->visible = false;
-	Inventory::lock = nullptr;
+	inventory->lock = nullptr;
 	world_map->picked_location = -1;
 	post_effects.clear();
 	grayout = 0.f;
@@ -10811,7 +10810,7 @@ void Game::EnterLevel(LocationGenerator* loc_gen)
 		Info("Entering location '%s' level %d.", L.location->name.c_str(), L.dungeon_level + 1);
 
 	show_mp_panel = true;
-	Inventory::lock = nullptr;
+	inventory->lock = nullptr;
 
 	loc_gen->OnEnter();
 
@@ -10862,7 +10861,7 @@ void Game::LeaveLevel(bool clear)
 	pc_data.rot_buf = 0.f;
 	pc_data.selected_unit = nullptr;
 	dialog_context.dialog_mode = false;
-	inventory_mode = I_NONE;
+	inventory->mode = I_NONE;
 	pc_data.before_player = BP_NONE;
 }
 
@@ -12990,7 +12989,7 @@ void Game::SetUnitWeaponState(Unit& u, bool wyjmuje, WeaponType co)
 
 void Game::OnCloseInventory()
 {
-	if(inventory_mode == I_TRADE)
+	if(inventory->mode == I_TRADE)
 	{
 		if(Net::IsLocal())
 		{
@@ -13000,7 +12999,7 @@ void Game::OnCloseInventory()
 		else
 			Net::PushChange(NetChange::STOP_TRADE);
 	}
-	else if(inventory_mode == I_SHARE || inventory_mode == I_GIVE)
+	else if(inventory->mode == I_SHARE || inventory->mode == I_GIVE)
 	{
 		if(Net::IsLocal())
 		{
@@ -13010,13 +13009,13 @@ void Game::OnCloseInventory()
 		else
 			Net::PushChange(NetChange::STOP_TRADE);
 	}
-	else if(inventory_mode == I_LOOT_CHEST && Net::IsLocal())
+	else if(inventory->mode == I_LOOT_CHEST && Net::IsLocal())
 	{
 		pc->action_chest->user = nullptr;
 		pc->action_chest->mesh_inst->Play(&pc->action_chest->mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
 		sound_mgr->PlaySound3d(sChestClose, pc->action_chest->GetCenter(), 2.f, 5.f);
 	}
-	else if(inventory_mode == I_LOOT_CONTAINER)
+	else if(inventory->mode == I_LOOT_CONTAINER)
 	{
 		if(Net::IsLocal())
 		{
@@ -13034,11 +13033,11 @@ void Game::OnCloseInventory()
 			Net::PushChange(NetChange::STOP_TRADE);
 	}
 
-	if(Net::IsOnline() && (inventory_mode == I_LOOT_BODY || inventory_mode == I_LOOT_CHEST))
+	if(Net::IsOnline() && (inventory->mode == I_LOOT_BODY || inventory->mode == I_LOOT_CHEST))
 	{
 		if(Net::IsClient())
 			Net::PushChange(NetChange::STOP_TRADE);
-		else if(inventory_mode == I_LOOT_BODY)
+		else if(inventory->mode == I_LOOT_BODY)
 			pc->action_unit->busy = Unit::Busy_No;
 		else
 		{
@@ -13052,14 +13051,14 @@ void Game::OnCloseInventory()
 		pc->next_action = NA_NONE;
 
 	pc->action = PlayerController::Action_None;
-	inventory_mode = I_NONE;
+	inventory->mode = I_NONE;
 }
 
 // zamyka ekwipunek i wszystkie okna które on móg³by utworzyæ
 void Game::CloseInventory()
 {
 	OnCloseInventory();
-	inventory_mode = I_NONE;
+	inventory->mode = I_NONE;
 	if(game_gui)
 	{
 		game_gui->inventory->Hide();
@@ -13557,14 +13556,14 @@ void Game::PlayerUseUsable(Usable* usable, bool after_action)
 			pc->action_container = &use;
 			pc->chest_trade = &pc->action_container->container->items;
 			CloseGamePanels();
-			inventory_mode = I_LOOT_CONTAINER;
-			BuildTmpInventory(0);
+			inventory->mode = I_LOOT_CONTAINER;
+			inventory->BuildTmpInventory(0);
 			game_gui->inv_trade_mine->mode = Inventory::LOOT_MY;
-			BuildTmpInventory(1);
+			inventory->BuildTmpInventory(1);
 			game_gui->inv_trade_other->unit = nullptr;
 			game_gui->inv_trade_other->items = &pc->action_container->container->items;
 			game_gui->inv_trade_other->slots = nullptr;
-			game_gui->inv_trade_other->title = Format("%s - %s", Inventory::txLooting, use.base->name.c_str());
+			game_gui->inv_trade_other->title = Format("%s - %s", inventory->txLooting, use.base->name.c_str());
 			game_gui->inv_trade_other->mode = Inventory::LOOT_OTHER;
 			game_gui->gp_trade->Show();
 		}
@@ -14058,105 +14057,6 @@ bool Game::RemoveItemFromWorld(const Item* item)
 	return false;
 }
 
-const Item* Game::GetRandomItem(int max_value)
-{
-	int type = Rand() % 6;
-
-	LocalVector<const Item*> items;
-
-	switch(type)
-	{
-	case 0:
-		for(Weapon* w : Weapon::weapons)
-		{
-			if(w->value <= max_value && w->CanBeGenerated())
-				items->push_back(w);
-		}
-		break;
-	case 1:
-		for(Bow* b : Bow::bows)
-		{
-			if(b->value <= max_value && b->CanBeGenerated())
-				items->push_back(b);
-		}
-		break;
-	case 2:
-		for(Shield* s : Shield::shields)
-		{
-			if(s->value <= max_value && s->CanBeGenerated())
-				items->push_back(s);
-		}
-		break;
-	case 3:
-		for(Armor* a : Armor::armors)
-		{
-			if(a->value <= max_value && a->CanBeGenerated())
-				items->push_back(a);
-		}
-		break;
-	case 4:
-		for(Consumable* c : Consumable::consumables)
-		{
-			if(c->value <= max_value && c->CanBeGenerated())
-				items->push_back(c);
-		}
-		break;
-	case 5:
-		for(OtherItem* o : OtherItem::others)
-		{
-			if(o->value <= max_value && o->CanBeGenerated())
-				items->push_back(o);
-		}
-		break;
-	}
-
-	return items->at(Rand() % items->size());
-}
-
-int xdif(int a, int b)
-{
-	if(a == b)
-		return 0;
-	else if(a < b)
-	{
-		a += 10;
-		if(a >= b)
-			return 1;
-		a += 25;
-		if(a >= b)
-			return 2;
-		a += 50;
-		if(a >= b)
-			return 3;
-		a += 100;
-		if(a >= b)
-			return 4;
-		a += 150;
-		if(a >= b)
-			return 5;
-		return 6;
-	}
-	else
-	{
-		b += 10;
-		if(b >= a)
-			return -1;
-		b += 25;
-		if(b >= a)
-			return -2;
-		b += 50;
-		if(b >= a)
-			return -3;
-		b += 100;
-		if(b >= a)
-			return -4;
-		b += 150;
-		if(b >= a)
-			return -5;
-		return -6;
-	}
-}
-
 void Game::AddItem(Unit& unit, const Item* item, uint count, uint team_count, bool send_msg)
 {
 	assert(item && count && team_count <= count);
@@ -14215,56 +14115,7 @@ void Game::AddItem(Unit& unit, const Item* item, uint count, uint team_count, bo
 	else if(game_gui->gp_trade->visible && game_gui->inv_trade_other->unit == &unit)
 		rebuild_id = 1;
 	if(rebuild_id != -1)
-		BuildTmpInventory(rebuild_id);
-}
-
-// zbuduj tymczasowy ekwipunek który ³¹czy slots i items postaci
-void Game::BuildTmpInventory(int index)
-{
-	assert(index == 0 || index == 1);
-
-	vector<int>& ids = tmp_inventory[index];
-	const Item** slots;
-	vector<ItemSlot>* items;
-	int& shift = tmp_inventory_shift[index];
-	shift = 0;
-
-	if(index == 0)
-	{
-		// przedmioty gracza
-		slots = pc->unit->slots;
-		items = &pc->unit->items;
-	}
-	else
-	{
-		// przedmioty innej postaci, w skrzyni
-		if(pc->action == PlayerController::Action_LootChest
-			|| pc->action == PlayerController::Action_Trade
-			|| pc->action == PlayerController::Action_LootContainer)
-			slots = nullptr;
-		else
-			slots = pc->action_unit->slots;
-		items = pc->chest_trade;
-	}
-
-	ids.clear();
-
-	// jeœli to postaæ to dodaj za³o¿one przedmioty
-	if(slots)
-	{
-		for(int i = 0; i < SLOT_MAX; ++i)
-		{
-			if(slots[i])
-			{
-				ids.push_back(-i - 1);
-				++shift;
-			}
-		}
-	}
-
-	// nie za³o¿one przedmioty
-	for(int i = 0, ile = (int)items->size(); i < ile; ++i)
-		ids.push_back(i);
+		inventory->BuildTmpInventory(rebuild_id);
 }
 
 void Game::RemoveItem(Unit& unit, int i_index, uint count)
@@ -14345,10 +14196,10 @@ void Game::RemoveItem(Unit& unit, int i_index, uint count)
 	if(pc->unit == &unit)
 	{
 		if(game_gui->inventory->visible || game_gui->gp_trade->visible)
-			BuildTmpInventory(0);
+			inventory->BuildTmpInventory(0);
 	}
 	else if(game_gui->gp_trade->visible && game_gui->inv_trade_other->unit == &unit)
-		BuildTmpInventory(1);
+		inventory->BuildTmpInventory(1);
 }
 
 bool Game::RemoveItem(Unit& unit, const Item* item, uint count)
@@ -14394,94 +14245,6 @@ void Game::OnEnterLevelOrLocation()
 		for(auto unit : Team.members)
 			unit->frozen = FROZEN::NO;
 	}
-}
-
-void Game::StartTrade(InventoryMode mode, Unit& unit)
-{
-	CloseGamePanels();
-	inventory_mode = mode;
-	Inventory& my = *game_gui->inv_trade_mine;
-	Inventory& other = *game_gui->inv_trade_other;
-
-	other.unit = &unit;
-	other.items = &unit.items;
-	other.slots = unit.slots;
-
-	switch(mode)
-	{
-	case I_LOOT_BODY:
-		my.mode = Inventory::LOOT_MY;
-		other.mode = Inventory::LOOT_OTHER;
-		other.title = Format("%s - %s", Inventory::txLooting, unit.GetName());
-		break;
-	case I_SHARE:
-		my.mode = Inventory::SHARE_MY;
-		other.mode = Inventory::SHARE_OTHER;
-		other.title = Format("%s - %s", Inventory::txShareItems, unit.GetName());
-		pc->action = PlayerController::Action_ShareItems;
-		pc->action_unit = &unit;
-		pc->chest_trade = &unit.items;
-		break;
-	case I_GIVE:
-		my.mode = Inventory::GIVE_MY;
-		other.mode = Inventory::GIVE_OTHER;
-		other.title = Format("%s - %s", Inventory::txGiveItems, unit.GetName());
-		pc->action = PlayerController::Action_GiveItems;
-		pc->action_unit = &unit;
-		pc->chest_trade = &unit.items;
-		break;
-	default:
-		assert(0);
-		break;
-	}
-
-	BuildTmpInventory(0);
-	BuildTmpInventory(1);
-	game_gui->gp_trade->Show();
-}
-
-void Game::StartTrade(InventoryMode mode, vector<ItemSlot>& items, Unit* unit)
-{
-	CloseGamePanels();
-	inventory_mode = mode;
-	Inventory& my = *game_gui->inv_trade_mine;
-	Inventory& other = *game_gui->inv_trade_other;
-
-	other.items = &items;
-	other.slots = nullptr;
-
-	switch(mode)
-	{
-	case I_LOOT_CHEST:
-		my.mode = Inventory::LOOT_MY;
-		other.mode = Inventory::LOOT_OTHER;
-		other.unit = nullptr;
-		other.title = Inventory::txLootingChest;
-		break;
-	case I_TRADE:
-		assert(unit);
-		my.mode = Inventory::TRADE_MY;
-		other.mode = Inventory::TRADE_OTHER;
-		other.unit = unit;
-		other.title = Format("%s - %s", Inventory::txTrading, unit->GetName());
-		pc->action = PlayerController::Action_Trade;
-		pc->action_unit = unit;
-		pc->chest_trade = &items;
-		break;
-	case I_LOOT_CONTAINER:
-		my.mode = Inventory::LOOT_MY;
-		other.mode = Inventory::LOOT_OTHER;
-		other.unit = nullptr;
-		other.title = Format("%s - %s", Inventory::txLooting, pc->action_container->base->name.c_str());
-		break;
-	default:
-		assert(0);
-		break;
-	}
-
-	BuildTmpInventory(0);
-	BuildTmpInventory(1);
-	game_gui->gp_trade->Show();
 }
 
 void Game::VerifyObjects()

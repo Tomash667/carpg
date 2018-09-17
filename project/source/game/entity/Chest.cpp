@@ -3,6 +3,7 @@
 #include "Chest.h"
 #include "Game.h"
 #include "BitStreamFunc.h"
+#include "Inventory.h"
 
 int Chest::netid_counter;
 
@@ -97,7 +98,7 @@ bool Chest::AddItem(const Item* item, uint count, uint team_count, bool notify)
 	if(user && user->IsPlayer())
 	{
 		if(user->player->is_local)
-			Game::Get().BuildTmpInventory(1);
+			Game::Get().inventory->BuildTmpInventory(1);
 		else if(notify)
 		{
 			NetChangePlayer& c = Add1(user->player->player_info->changes);

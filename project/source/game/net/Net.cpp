@@ -6766,11 +6766,11 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 
 					// start trade
 					if(pc->action == PlayerController::Action_LootUnit)
-						StartTrade(I_LOOT_BODY, *pc->action_unit);
+						inventory->StartTrade(I_LOOT_BODY, *pc->action_unit);
 					else if(pc->action == PlayerController::Action_LootContainer)
-						StartTrade(I_LOOT_CONTAINER, pc->action_container->container->items);
+						inventory->StartTrade(I_LOOT_CONTAINER, pc->action_container->container->items);
 					else
-						StartTrade(I_LOOT_CHEST, pc->action_chest->items);
+						inventory->StartTrade(I_LOOT_CHEST, pc->action_chest->items);
 				}
 				break;
 			// message about gained gold
@@ -6901,7 +6901,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 					else if(id == "food_seller")
 						trader_buy = foodseller_buy;
 
-					StartTrade(I_TRADE, chest_trade, trader);
+					inventory->StartTrade(I_TRADE, chest_trade, trader);
 				}
 				break;
 			// add multiple same items to inventory
@@ -7067,7 +7067,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 						if(!ReadItemListTeam(f, unit.items))
 							N.StreamError("Update single client: Broken %s.", name);
 						else
-							StartTrade(type == NetChangePlayer::START_SHARE ? I_SHARE : I_GIVE, unit);
+							inventory->StartTrade(type == NetChangePlayer::START_SHARE ? I_SHARE : I_GIVE, unit);
 					}
 					else
 					{

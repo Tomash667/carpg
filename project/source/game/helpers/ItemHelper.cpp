@@ -280,3 +280,61 @@ int ItemHelper::GetItemPrice(const Item* item, Unit& unit, bool buy)
 
 	return price;
 }
+
+//=================================================================================================
+// zwraca losowy przedmiot o maksymalnej cenie, ta funkcja jest powolna!
+// mo¿e zwróciæ questowy przedmiot jeœli bêdzie wystarczaj¹co tani, lub unikat!
+const Item* ItemHelper::GetRandomItem(int max_value)
+{
+	int type = Rand() % 6;
+
+	LocalVector<const Item*> items;
+
+	switch(type)
+	{
+	case 0:
+		for(Weapon* w : Weapon::weapons)
+		{
+			if(w->value <= max_value && w->CanBeGenerated())
+				items->push_back(w);
+		}
+		break;
+	case 1:
+		for(Bow* b : Bow::bows)
+		{
+			if(b->value <= max_value && b->CanBeGenerated())
+				items->push_back(b);
+		}
+		break;
+	case 2:
+		for(Shield* s : Shield::shields)
+		{
+			if(s->value <= max_value && s->CanBeGenerated())
+				items->push_back(s);
+		}
+		break;
+	case 3:
+		for(Armor* a : Armor::armors)
+		{
+			if(a->value <= max_value && a->CanBeGenerated())
+				items->push_back(a);
+		}
+		break;
+	case 4:
+		for(Consumable* c : Consumable::consumables)
+		{
+			if(c->value <= max_value && c->CanBeGenerated())
+				items->push_back(c);
+		}
+		break;
+	case 5:
+		for(OtherItem* o : OtherItem::others)
+		{
+			if(o->value <= max_value && o->CanBeGenerated())
+				items->push_back(o);
+		}
+		break;
+	}
+
+	return items->at(Rand() % items->size());
+}

@@ -64,11 +64,11 @@ void Game::CloseGamePanels()
 //=================================================================================================
 void Game::SetGamePanels()
 {
-	game_gui->inv_trade_mine->i_items = game_gui->inventory->i_items = &tmp_inventory[0];
+	game_gui->inv_trade_mine->i_items = game_gui->inventory->i_items = &inventory->tmp_inventory[0];
 	game_gui->inv_trade_mine->items = game_gui->inventory->items = &pc->unit->items;
 	game_gui->inv_trade_mine->slots = game_gui->inventory->slots = pc->unit->slots;
 	game_gui->inv_trade_mine->unit = game_gui->inventory->unit = pc->unit;
-	game_gui->inv_trade_other->i_items = &tmp_inventory[1];
+	game_gui->inv_trade_other->i_items = &inventory->tmp_inventory[1];
 	game_gui->stats->pc = pc;
 }
 
@@ -239,7 +239,7 @@ void Game::LoadGuiData()
 	main_menu->LoadData();
 	create_character->LoadData();
 	game_gui->LoadData();
-	Inventory::LoadData();
+	inventory->LoadData();
 	world_map->LoadData();
 	server_panel->LoadData();
 	pick_server_panel->LoadData();

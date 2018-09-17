@@ -72,10 +72,10 @@ GameGui::GameGui() : debug_info_size(0, 0), profiler_size(0, 0), use_cursor(fals
 	mp_box = new MpBox;
 	Add(mp_box);
 
-	Inventory::LoadText();
-	inventory = new Inventory;
+	game.inventory->LoadText();
+	inventory = new Inventory(*game.inventory);
 	inventory->InitTooltip();
-	inventory->title = Inventory::txInventory;
+	inventory->title = game.inventory->txInventory;
 	inventory->mode = Inventory::INVENTORY;
 	inventory->visible = false;
 	Add(inventory);
@@ -89,13 +89,13 @@ GameGui::GameGui() : debug_info_size(0, 0), profiler_size(0, 0), use_cursor(fals
 	gp_trade = new GamePanelContainer;
 	Add(gp_trade);
 
-	inv_trade_mine = new Inventory;
-	inv_trade_mine->title = Inventory::txInventory;
+	inv_trade_mine = new Inventory(*game.inventory);
+	inv_trade_mine->title = game.inventory->txInventory;
 	inv_trade_mine->focus = true;
 	gp_trade->Add(inv_trade_mine);
 
-	inv_trade_other = new Inventory;
-	inv_trade_other->title = Inventory::txInventory;
+	inv_trade_other = new Inventory(*game.inventory);
+	inv_trade_other->title = game.inventory->txInventory;
 	gp_trade->Add(inv_trade_other);
 
 	gp_trade->Hide();

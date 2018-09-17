@@ -32,6 +32,7 @@
 #include "LocationGeneratorFactory.h"
 #include "Arena.h"
 #include "ParticleSystem.h"
+#include "Inventory.h"
 
 enum SaveFlags
 {
@@ -1029,7 +1030,7 @@ void Game::LoadGame(GameReader& f)
 	Team.ClearOnNewGameOrLoad();
 	fallback_type = FALLBACK::NONE;
 	fallback_t = -0.5f;
-	inventory_mode = I_NONE;
+	inventory->mode = I_NONE;
 	pc_data.before_player = BP_NONE;
 	pc_data.selected_unit = nullptr;
 	pc_data.selected_target = nullptr;

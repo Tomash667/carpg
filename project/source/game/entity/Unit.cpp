@@ -3654,8 +3654,8 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 		if(player == game.pc)
 		{
 			game.pc_data.action_ready = false;
-			Inventory::lock = nullptr;
-			if(game.inventory_mode > I_INVENTORY)
+			game.inventory->lock = nullptr;
+			if(game.inventory->mode > I_INVENTORY)
 				game.CloseInventory();
 
 			if(player->action == PlayerController::Action_Talk)
