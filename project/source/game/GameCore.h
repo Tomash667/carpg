@@ -29,6 +29,7 @@ class Controls;
 class CreateCharacterPanel;
 class CreateServerPanel;
 class Game;
+class GameComponent;
 class GameGui;
 class GameMenu;
 class GameMessages;

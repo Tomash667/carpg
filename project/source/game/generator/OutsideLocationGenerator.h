@@ -1,7 +1,9 @@
 #pragma once
 
+//-----------------------------------------------------------------------------
 #include "LocationGenerator.h"
 
+//-----------------------------------------------------------------------------
 class OutsideLocationGenerator : public LocationGenerator
 {
 public:

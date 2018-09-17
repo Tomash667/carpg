@@ -132,7 +132,6 @@ public:
 	~Game();
 
 	void OnCleanup() override;
-	void CleanupSystems();
 	void OnDraw();
 	void OnDraw(bool normal = true);
 	void OnTick(float dt);
@@ -963,4 +962,7 @@ public:
 	SuperShader* super_shader;
 	Arena* arena;
 	InventoryBase* inventory;
+
+private:
+	vector<std::pair<GameComponent*,bool>> components;
 };

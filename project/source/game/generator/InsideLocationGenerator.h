@@ -1,8 +1,10 @@
 #pragma once
 
+//-----------------------------------------------------------------------------
 #include "LocationGenerator.h"
 #include "ObjectEntity.h"
 
+//-----------------------------------------------------------------------------
 class InsideLocationGenerator : public LocationGenerator
 {
 public:

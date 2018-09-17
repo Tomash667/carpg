@@ -31,8 +31,11 @@ void Quest_Tournament::InitOnce()
 	QM.RegisterSpecialIfHandler(this, "ironfist_joined");
 	QM.RegisterSpecialIfHandler(this, "ironfist_winner");
 	QM.RegisterFormatString(this, "ironfist_city");
+}
 
-
+//=================================================================================================
+void Quest_Tournament::LoadLanguage()
+{
 	LoadArray(txTour, "tour");
 	LoadArray(txAiJoinTour, "aiJoinTour");
 }

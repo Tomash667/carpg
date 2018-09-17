@@ -78,7 +78,7 @@ sItemRegionRot(nullptr), sChar(nullptr), sSave(nullptr), in_tutorial(false), cur
 cl_postfx(true), mp_timeout(10.f), cl_normalmap(true), cl_specularmap(true), dungeon_tex_wrap(true), profiler_mode(0),
 grass_range(40.f), vbInstancing(nullptr), vb_instancing_max(0), screenshot_format(ImageFormat::JPG), quickstart_class(Class::RANDOM),
 autopick_class(Class::INVALID), game_state(GS_LOAD), default_devmode(false), default_player_devmode(false), finished_tutorial(false),
-quickstart_slot(MAX_SAVE_SLOTS), autoready(false), loc_gen_factory(nullptr), pathfinding(nullptr), super_shader(new SuperShader), arena(new Arena)
+quickstart_slot(MAX_SAVE_SLOTS), autoready(false), super_shader(new SuperShader)
 {
 #ifdef _DEBUG
 	default_devmode = true;
@@ -107,7 +107,6 @@ quickstart_slot(MAX_SAVE_SLOTS), autoready(false), loc_gen_factory(nullptr), pat
 Game::~Game()
 {
 	delete super_shader;
-	delete arena;
 }
 
 //=================================================================================================
@@ -889,7 +888,13 @@ void Game::OnCleanup()
 	if(game_state != GS_QUIT)
 		ClearGame();
 
-	CleanupSystems();
+	for(std::pair<GameComponent*, bool>& component : components)
+	{
+		component.first->Cleanup();
+		if(component.second)
+			delete component.first;
+	}
+
 	RemoveGui();
 	GUI.OnClean();
 	CleanScene();
@@ -897,7 +902,6 @@ void Game::OnCleanup()
 	ClearQuadtree();
 	CleanupDialogs();
 	Language::Cleanup();
-	QM.Cleanup();
 
 	// shadery
 	ReleaseShaders();
@@ -955,8 +959,6 @@ void Game::OnCleanup()
 	DeleteElements(old_players);
 	SM.Cleanup();
 	N.Cleanup();
-	loc_gen_factory->Clear();
-	delete loc_gen_factory;
 }
 
 //=================================================================================================

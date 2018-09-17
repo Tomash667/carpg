@@ -1,7 +1,9 @@
 #pragma once
 
+//-----------------------------------------------------------------------------
 #include "OutsideLocationGenerator.h"
 
+//-----------------------------------------------------------------------------
 class MoonwellGenerator final : public OutsideLocationGenerator
 {
 public:

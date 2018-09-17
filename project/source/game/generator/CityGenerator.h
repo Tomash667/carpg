@@ -1,5 +1,6 @@
 #pragma once
 
+//-----------------------------------------------------------------------------
 #include "OutsideLocationGenerator.h"
 #include "GameCommon.h"
 #include "TerrainTile.h"
@@ -8,6 +9,7 @@
 #include "EntryPoint.h"
 #include "LevelContext.h"
 
+//-----------------------------------------------------------------------------
 class CityGenerator final : public OutsideLocationGenerator
 {
 	enum EntryDir

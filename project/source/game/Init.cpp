@@ -81,6 +81,18 @@ void Game::PreconfigureGame()
 	PreloadData();
 	CreatePlaceholderResources();
 	ResourceManager::Get().SetLoadScreen(load_screen);
+
+	// game components
+	pathfinding = new Pathfinding;
+	arena = new Arena;
+	loc_gen_factory = new LocationGeneratorFactory;
+	components.push_back(std::pair<GameComponent*, bool>(&W, false));
+	components.push_back(std::pair<GameComponent*, bool>(pathfinding, true));
+	components.push_back(std::pair<GameComponent*, bool>(&QM, false));
+	components.push_back(std::pair<GameComponent*, bool>(arena, true));
+	components.push_back(std::pair<GameComponent*, bool>(loc_gen_factory, true));
+	for(std::pair<GameComponent*, bool>& component : components)
+		component.first->InitOnce();
 }
 
 //=================================================================================================
@@ -253,7 +265,6 @@ void Game::LoadLanguageFiles()
 	SetGameText();
 	SetStatsText();
 	N.LoadLanguage();
-	arena->LoadLanguage();
 
 	txLoadGuiTextures = Str("loadGuiTextures");
 	txLoadParticles = Str("loadParticles");
@@ -265,6 +276,9 @@ void Game::LoadLanguageFiles()
 	txGenerateWorld = Str("generateWorld");
 
 	txHaveErrors = Str("haveErrors");
+
+	for(std::pair<GameComponent*, bool>& component : components)
+		component.first->LoadLanguage();
 }
 
 //=================================================================================================
@@ -334,9 +348,8 @@ void Game::PostconfigureGame()
 	LockCursor();
 	CreateCollisionShapes();
 	create_character->Init();
-	QM.InitOnce();
-	W.InitOnce(world_map);
-	arena->InitOnce();
+	for(std::pair<GameComponent*, bool>& component : components)
+		component.first->PostInit();
 
 	// load gui textures that require instant loading
 	GUI.GetLayout()->LoadDefault();
@@ -351,12 +364,6 @@ void Game::PostconfigureGame()
 	terrain->Init(device, terrain_options);
 	terrain->Build();
 	terrain->RemoveHeightMap(true);
-
-	// location generator factory
-	loc_gen_factory = new LocationGeneratorFactory;
-	loc_gen_factory->InitOnce();
-
-	pathfinding = new Pathfinding;
 
 	// get pointer to gold item
 	Item::gold = Item::Get("gold");
@@ -986,10 +993,4 @@ void Game::LoadItemsData()
 	auto list = ItemList::Get("normal_food");
 	for(auto item : list.lis->items)
 		PreloadItem(item);
-}
-
-//=================================================================================================
-void Game::CleanupSystems()
-{
-	delete pathfinding;
 }

@@ -29,7 +29,11 @@ void Quest_Contest::InitOnce()
 	QM.RegisterSpecialIfHandler(this, "contest_joined");
 	QM.RegisterSpecialIfHandler(this, "contest_winner");
 	QM.RegisterFormatString(this, "contest_loc");
+}
 
+//=================================================================================================
+void Quest_Contest::LoadLanguage()
+{
 	txContestNoWinner = Str("contestNoWinner");
 	txContestStart = Str("contestStart");
 	LoadArray(txContestTalk, "contestTalk");

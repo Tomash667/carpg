@@ -23,7 +23,11 @@ void Quest_Secret::InitOnce()
 	QM.RegisterSpecialIfHandler(this, "secret_can_fight");
 	QM.RegisterSpecialIfHandler(this, "secret_win");
 	QM.RegisterSpecialIfHandler(this, "secret_can_get_reward");
+}
 
+//=================================================================================================
+void Quest_Secret::LoadLanguage()
+{
 	txSecretAppear = Str("secretAppear");
 }
 

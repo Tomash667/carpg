@@ -1,5 +1,6 @@
 #pragma once
 
+//-----------------------------------------------------------------------------
 class LocationGenerator
 {
 	friend class LocationGeneratorFactory;

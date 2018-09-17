@@ -13,6 +13,7 @@ public:
 	};
 
 	void InitOnce();
+	void LoadLanguage();
 	void Init();
 	void Save(GameWriter& f);
 	void Load(GameReader& f);

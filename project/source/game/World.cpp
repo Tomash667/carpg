@@ -52,9 +52,14 @@ struct TmpLocation : public Location
 
 
 //=================================================================================================
-void World::InitOnce(WorldMapGui* gui)
+void World::InitOnce()
 {
-	this->gui = gui;
+	gui = Game::Get().world_map;
+}
+
+//=================================================================================================
+void World::LoadLanguage()
+{
 	txDate = Str("dateFormat");
 	txRandomEncounter = Str("randomEncounter");
 	txEncCrazyMage = Str("encCrazyMage");

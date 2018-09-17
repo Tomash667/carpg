@@ -30,12 +30,16 @@ void LocationGeneratorFactory::InitOnce()
 	moonwell = new MoonwellGenerator;
 	secret = new SecretLocationGenerator;
 	tutorial = new TutorialLocationGenerator;
+}
 
+//=================================================================================================
+void LocationGeneratorFactory::PostInit()
+{
 	OutsideLocationGenerator::InitOnce();
 }
 
 //=================================================================================================
-void LocationGeneratorFactory::Clear()
+void LocationGeneratorFactory::Cleanup()
 {
 	delete camp;
 	delete cave;

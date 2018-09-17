@@ -1,7 +1,9 @@
 #pragma once
 
+#include "GameComponent.h"
+
 //-----------------------------------------------------------------------------
-class Pathfinding
+class Pathfinding : public GameComponent
 {
 	friend struct AStarSort;
 

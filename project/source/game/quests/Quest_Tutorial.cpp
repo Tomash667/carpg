@@ -20,7 +20,7 @@
 #include "Game.h"
 
 //=================================================================================================
-void Quest_Tutorial::InitOnce()
+void Quest_Tutorial::LoadLanguage()
 {
 	LoadArray(txTut, "tut");
 	txTutNote = Str("tutNote");

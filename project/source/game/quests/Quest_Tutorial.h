@@ -24,7 +24,7 @@ public:
 		Exit
 	};
 
-	void InitOnce();
+	void LoadLanguage();
 	void Start();
 	void Update();
 	void Finish(int);

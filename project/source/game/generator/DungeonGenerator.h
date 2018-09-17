@@ -1,7 +1,9 @@
 #pragma once
 
+//-----------------------------------------------------------------------------
 #include "InsideLocationGenerator.h"
 
+//-----------------------------------------------------------------------------
 class DungeonGenerator final : public InsideLocationGenerator
 {
 public:

@@ -1,6 +1,7 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+#include "GameComponent.h"
 #include "QuestConsts.h"
 
 //-----------------------------------------------------------------------------
@@ -18,11 +19,6 @@ class Quest_Sawmill;
 class Quest_Secret;
 class Quest_Tournament;
 class Quest_Tutorial;
-struct Item;
-struct ItemSlot;
-struct Quest;
-struct Quest_Dungeon;
-struct Unit;
 
 //-----------------------------------------------------------------------------
 struct QuestItemRequest
@@ -43,11 +39,12 @@ struct QuestInfo
 };
 
 //-----------------------------------------------------------------------------
-class QuestManager
+class QuestManager : public GameComponent
 {
 public:
-	void InitOnce();
-	void Cleanup();
+	void InitOnce() override;
+	void LoadLanguage() override;
+	void Cleanup() override;
 	void InitQuests(bool devmode);
 	Quest* CreateQuest(QUEST quest_id);
 	Quest* GetMayorQuest();

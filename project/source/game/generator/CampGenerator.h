@@ -1,7 +1,9 @@
 #pragma once
 
+//-----------------------------------------------------------------------------
 #include "OutsideLocationGenerator.h"
 
+//-----------------------------------------------------------------------------
 class CampGenerator final : public OutsideLocationGenerator
 {
 public:

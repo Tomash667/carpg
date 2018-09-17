@@ -1549,6 +1549,9 @@
     <ClInclude Include="source\game\events\Arena.h">
       <Filter>3. game\events</Filter>
     </ClInclude>
+    <ClInclude Include="source\game\GameComponent.h">
+      <Filter>3. game</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="source\resource\resource.rc">

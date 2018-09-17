@@ -72,6 +72,7 @@ GameGui::GameGui() : debug_info_size(0, 0), profiler_size(0, 0), use_cursor(fals
 	mp_box = new MpBox;
 	Add(mp_box);
 
+	game.inventory = new InventoryBase;
 	game.inventory->LoadText();
 	inventory = new Inventory(*game.inventory);
 	inventory->InitTooltip();
@@ -132,6 +133,7 @@ GameGui::~GameGui()
 	delete gp_trade;
 	delete action_panel;
 	delete book_panel;
+	delete game.inventory;
 
 	SpeechBubblePool.Free(speech_bbs);
 }

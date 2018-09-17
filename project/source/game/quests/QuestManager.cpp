@@ -73,7 +73,15 @@ void QuestManager::InitOnce()
 	quest_tournament = new Quest_Tournament;
 	quest_tournament->InitOnce();
 	quest_tutorial = new Quest_Tutorial;
-	quest_tutorial->InitOnce();
+}
+
+//=================================================================================================
+void QuestManager::LoadLanguage()
+{
+	quest_contest->LoadLanguage();
+	quest_secret->LoadLanguage();
+	quest_tournament->LoadLanguage();
+	quest_tutorial->LoadLanguage();
 }
 
 //=================================================================================================
