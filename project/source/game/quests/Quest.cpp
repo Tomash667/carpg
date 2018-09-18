@@ -62,8 +62,8 @@ void Quest::OnStart(cstring name)
 	quest_index = quest_manager.quests.size();
 	quest_manager.quests.push_back(this);
 	RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
-	game->gui->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-	game->game_messages->AddGameMsg3(GMS_JOURNAL_UPDATED);
+	game->gui->journal->NeedUpdate(Journal::Quests, quest_index);
+	game->gui->messages->AddGameMsg3(GMS_JOURNAL_UPDATED);
 	if(Net::IsOnline())
 	{
 		NetChange& c = Add1(Net::changes);
@@ -78,8 +78,8 @@ void Quest::OnUpdate(const std::initializer_list<cstring>& new_msgs)
 	assert(new_msgs.size() > 0u);
 	for(cstring msg : new_msgs)
 		msgs.push_back(msg);
-	game->gui->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-	game->game_messages->AddGameMsg3(GMS_JOURNAL_UPDATED);
+	game->gui->journal->NeedUpdate(Journal::Quests, quest_index);
+	game->gui->messages->AddGameMsg3(GMS_JOURNAL_UPDATED);
 	if(Net::IsOnline())
 	{
 

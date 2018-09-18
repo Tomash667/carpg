@@ -412,7 +412,7 @@ void Game::UpdateAi(float dt)
 							u.usable->user ? u.usable->user->data->id.c_str() : "nullptr");
 						u.usable = nullptr;
 #ifdef _DEBUG
-						game_messages->AddGameMsg("Invalid usable user!", 5.f);
+						gui->messages->AddGameMsg("Invalid usable user!", 5.f);
 #endif
 					}
 					if(u.action == A_BLOCK)
@@ -431,7 +431,7 @@ void Game::UpdateAi(float dt)
 						}
 						Warn("Unit %s (%s) blocks in idle.", u.data->id.c_str(), u.GetName());
 #ifdef _DEBUG
-						game_messages->AddGameMsg("Unit blocks in idle!", 5.f);
+						gui->messages->AddGameMsg("Unit blocks in idle!", 5.f);
 #endif
 					}
 					if(u.look_target && !u.usable)

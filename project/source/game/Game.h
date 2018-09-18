@@ -725,31 +725,11 @@ public:
 
 	//-----------------------------------------------------------------
 	// GUI
-	// panele
-	GameMessages* game_messages;
-	MainMenu* main_menu;
-	WorldMapGui* world_map;
-	// dialogi
-	Console* console;
-	GameMenu* game_menu;
-	Options* options;
-	SaveLoad* saveload;
-	CreateCharacterPanel* create_character;
-	MultiplayerPanel* multiplayer_panel;
-	CreateServerPanel* create_server_panel;
-	PickServerPanel* pick_server_panel;
-	ServerPanel* server_panel;
-	InfoBox* info_box;
-	Controls* controls;
 	// inne
 	DialogBox* dialog_enc;
 	bool cursor_allow_move;
 
 	void UpdateGui(float dt);
-	void NullGui();
-	void InitGui();
-	void LoadGuiData();
-	void RemoveGui();
 
 	//-----------------------------------------------------------------
 	// MENU / MAIN MENU / OPTIONS

@@ -36,8 +36,8 @@ void Quest_Tutorial::Start()
 	game.LoadingStart(1);
 
 	HumanData hd;
-	hd.Get(*game.create_character->unit->human_data);
-	game.NewGameCommon(game.create_character->clas, game.create_character->name.c_str(), hd, game.create_character->cc, true);
+	hd.Get(*game.gui->create_character->unit->human_data);
+	game.NewGameCommon(game.gui->create_character->clas, game.gui->create_character->name.c_str(), hd, game.gui->create_character->cc, true);
 	game.in_tutorial = true;
 	state = 0;
 	texts.clear();
@@ -53,7 +53,7 @@ void Quest_Tutorial::Start()
 	game.pc->unit->slots[SLOT_ARMOR] = item;
 	game.pc->unit->weight += game.pc->unit->slots[SLOT_ARMOR]->weight;
 	game.pc->unit->gold = 10;
-	game.gui->game_gui->journal->GetNotes().push_back(txTutNote);
+	game.gui->journal->GetNotes().push_back(txTutNote);
 
 	// startowa lokacja
 	SingleInsideLocation* loc = new SingleInsideLocation;
@@ -71,9 +71,9 @@ void Quest_Tutorial::Start()
 	L.event_handler = nullptr;
 	game.SetMusic();
 	game.gui->load_screen->visible = false;
-	game.main_menu->visible = false;
+	game.gui->main_menu->visible = false;
 	game.gui->game_gui->visible = true;
-	game.world_map->visible = false;
+	game.gui->world_map->visible = false;
 	game.clear_color = game.clear_color2;
 	game.cam.Reset();
 }

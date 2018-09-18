@@ -8,6 +8,7 @@
 #include "Version.h"
 #include "BitStreamFunc.h"
 #include "ResourceManager.h"
+#include "GlobalGui.h"
 
 //=================================================================================================
 PickServerPanel::PickServerPanel(const DialogInfo& info) : GameDialogBox(info)
@@ -258,7 +259,7 @@ void PickServerPanel::Show()
 	}
 	catch(cstring err)
 	{
-		GUI.SimpleDialog(err, (Control*)game->main_menu);
+		GUI.SimpleDialog(err, (Control*)game->gui->main_menu);
 		return;
 	}
 

@@ -89,16 +89,6 @@ public:
 	void Setup();
 	void RemoveUnit(Unit* unit);
 
-	// panels
-	StatsPanel* stats;
-	TeamPanel* team_panel;
-	Journal* journal;
-	Minimap* minimap;
-	MpBox* mp_box;
-	GameMessages* game_messages;
-	ActionPanel* action_panel;
-	BookPanel* book_panel;
-	//
 	bool use_cursor;
 
 private:

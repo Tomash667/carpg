@@ -136,7 +136,7 @@ void Inventory::OnReload()
 //=================================================================================================
 void Inventory::Setup(PlayerController* pc)
 {
-	inv_trade_mine->i_items = inv_mine->i_items = &gtmp_inventory[0];
+	inv_trade_mine->i_items = inv_mine->i_items = &tmp_inventory[0];
 	inv_trade_mine->items = inv_mine->items = &pc->unit->items;
 	inv_trade_mine->slots = inv_mine->slots = pc->unit->slots;
 	inv_trade_mine->unit = inv_mine->unit = pc->unit;
@@ -482,7 +482,7 @@ void InventoryPanel::Update(float dt)
 {
 	GamePanel::Update(dt);
 
-	if(game.gui->game_gui->book_panel->visible)
+	if(game.gui->book->visible)
 		return;
 
 	if(base.lock && base.lock.is_give)
@@ -2382,8 +2382,8 @@ void InventoryPanel::Show()
 //=================================================================================================
 void InventoryPanel::Hide()
 {
-	if(game.gui->game_gui->book_panel->visible)
-		game.gui->game_gui->book_panel->Hide();
+	if(game.gui->book->visible)
+		game.gui->book->Hide();
 	LostFocus();
 	visible = false;
 	item_visible = nullptr;
@@ -2408,7 +2408,7 @@ void InventoryPanel::UpdateGrid(bool mine)
 void InventoryPanel::ReadBook(const Item* item)
 {
 	assert(item && item->type == IT_BOOK);
-	game.gui->game_gui->book_panel->Show((const Book*)item);
+	game.gui->book->Show((const Book*)item);
 	base.tooltip.Clear();
 }
 

@@ -56,46 +56,11 @@ GameGui::GameGui() : debug_info_size(0, 0), profiler_size(0, 0), use_cursor(fals
 	visible = false;
 
 	tooltip.Init(TooltipGetText(this, &GameGui::GetTooltip));
-
-	// add panels
-	mp_box = new MpBox;
-	Add(mp_box);
-
-	stats = new StatsPanel;
-	Add(stats);
-
-	team_panel = new TeamPanel;
-	Add(team_panel);
-
-	journal = new Journal;
-	Add(journal);
-
-	minimap = new Minimap;
-	Add(minimap);
-
-	game_messages = new GameMessages;
-	game_messages->LoadLanguage();
-	game.game_messages = game_messages;
-
-	action_panel = new ActionPanel;
-	Add(action_panel);
-
-	book_panel = new BookPanel;
-	Add(book_panel);
 }
 
 //=================================================================================================
 GameGui::~GameGui()
 {
-	delete game_messages;
-	delete stats;
-	delete journal;
-	delete team_panel;
-	delete minimap;
-	delete mp_box;
-	delete action_panel;
-	delete book_panel;
-
 	SpeechBubblePool.Free(speech_bbs);
 }
 
@@ -124,7 +89,7 @@ void GameGui::Draw(ControlDrawData*)
 
 	DrawBack();
 
-	game_messages->Draw();
+	game.gui->messages->Draw();
 }
 
 //=================================================================================================
@@ -722,7 +687,7 @@ void GameGui::Update(float dt)
 	UpdatePlayerView(dt);
 	UpdateSpeechBubbles(dt);
 
-	game_messages->Update(dt);
+	game.gui->messages->Update(dt);
 
 	if(!GUI.HaveDialog() && !Game::Get().dialog_context.dialog_mode && Key.Down(VK_MENU))
 		use_cursor = true;
@@ -762,18 +727,17 @@ void GameGui::Update(float dt)
 	if(Net::IsOnline())
 		--max;
 
-	GlobalGui* gui = game.gui;
-	sidebar_state[(int)SideButtonId::InventoryPanel] = (gui->inventory->visible ? 2 : 0);
-	sidebar_state[(int)SideButtonId::Journal] = (journal->visible ? 2 : 0);
-	sidebar_state[(int)SideButtonId::Stats] = (stats->visible ? 2 : 0);
-	sidebar_state[(int)SideButtonId::Team] = (team_panel->visible ? 2 : 0);
-	sidebar_state[(int)SideButtonId::Minimap] = (minimap->visible ? 2 : 0);
-	sidebar_state[(int)SideButtonId::Action] = (action_panel->visible ? 2 : 0);
+	sidebar_state[(int)SideButtonId::InventoryPanel] = (game.gui->inventory->inv_mine->visible ? 2 : 0);
+	sidebar_state[(int)SideButtonId::Journal] = (game.gui->journal->visible ? 2 : 0);
+	sidebar_state[(int)SideButtonId::Stats] = (game.gui->stats->visible ? 2 : 0);
+	sidebar_state[(int)SideButtonId::Team] = (game.gui->team->visible ? 2 : 0);
+	sidebar_state[(int)SideButtonId::Minimap] = (game.gui->minimap->visible ? 2 : 0);
+	sidebar_state[(int)SideButtonId::Action] = (game.gui->actions->visible ? 2 : 0);
 	sidebar_state[(int)SideButtonId::Talk] = 0;
 	sidebar_state[(int)SideButtonId::Menu] = 0;
 
 	bool anything = use_cursor;
-	if(gp_trade->visible)
+	if(game.gui->inventory->gp_trade->visible)
 		anything = true;
 	bool show_tooltips = anything;
 	if(!anything)
@@ -872,7 +836,7 @@ void GameGui::Update(float dt)
 						break;
 					case SideButtonId::Minimap:
 						ShowPanel(OpenPanel::Minimap);
-						if(minimap->visible)
+						if(game.gui->minimap->visible)
 							use_cursor = true;
 						break;
 					case SideButtonId::Journal:
@@ -888,7 +852,7 @@ void GameGui::Update(float dt)
 						ShowPanel(OpenPanel::Stats);
 						break;
 					case SideButtonId::Talk:
-						mp_box->visible = !mp_box->visible;
+						game.gui->mp_box->visible = !game.gui->mp_box->visible;
 						break;
 					}
 				}
@@ -1158,7 +1122,7 @@ void GameGui::GetTooltip(TooltipController*, int _group, int id)
 			switch((SideButtonId)id)
 			{
 			case SideButtonId::Menu:
-				tooltip.text = Format("%s (%s)", txMenu, game.controls->key_text[VK_ESCAPE]);
+				tooltip.text = Format("%s (%s)", txMenu, game.gui->controls->key_text[VK_ESCAPE]);
 				return;
 			case SideButtonId::Team:
 				gk = GK_TEAM_PANEL;
@@ -1218,28 +1182,34 @@ void GameGui::GetTooltip(TooltipController*, int _group, int id)
 //=================================================================================================
 bool GameGui::HavePanelOpen() const
 {
-	return stats->visible || inventory->visible || team_panel->visible || gp_trade->visible || journal->visible || minimap->visible || action_panel->visible;
+	return game.gui->stats->visible
+		|| game.gui->inventory->inv_mine->visible
+		|| game.gui->inventory->gp_trade->visible
+		|| game.gui->team->visible
+		|| game.gui->journal->visible
+		|| game.gui->minimap->visible
+		|| game.gui->actions->visible;
 }
 
 //=================================================================================================
 void GameGui::ClosePanels(bool close_mp_box)
 {
-	if(stats->visible)
-		stats->Hide();
-	if(inventory->visible)
-		inventory->Hide();
-	if(team_panel->visible)
-		team_panel->Hide();
-	if(journal->visible)
-		journal->Hide();
-	if(minimap->visible)
-		minimap->Hide();
-	if(gp_trade->visible)
-		gp_trade->Hide();
-	if(close_mp_box && mp_box->visible)
-		mp_box->visible = false;
-	if(action_panel->visible)
-		action_panel->Hide();
+	if(game.gui->stats->visible)
+		game.gui->stats->Hide();
+	if(game.gui->inventory->inv_mine->visible)
+		game.gui->inventory->inv_mine->Hide();
+	if(game.gui->team->visible)
+		game.gui->team->Hide();
+	if(game.gui->journal->visible)
+		game.gui->journal->Hide();
+	if(game.gui->minimap->visible)
+		game.gui->minimap->Hide();
+	if(game.gui->inventory->gp_trade->visible)
+		game.gui->inventory->gp_trade->Hide();
+	if(close_mp_box && game.gui->mp_box->visible)
+		game.gui->mp_box->visible = false;
+	if(game.gui->actions->visible)
+		game.gui->actions->Hide();
 }
 
 //=================================================================================================
@@ -1271,43 +1241,43 @@ void GameGui::LoadData()
 	tex_mgr.AddLoadTask("action_cooldown.png", tActionCooldown);
 
 	BuffInfo::LoadImages();
-	journal->LoadData();
-	minimap->LoadData();
-	team_panel->LoadData();
-	action_panel->LoadData();
-	book_panel->LoadData();
+	game.gui->journal->LoadData();
+	game.gui->minimap->LoadData();
+	game.gui->team->LoadData();
+	game.gui->actions->LoadData();
+	game.gui->book->LoadData();
 }
 
 //=================================================================================================
 void GameGui::GetGamePanels(vector<GamePanel*>& panels)
 {
-	panels.push_back(inventory);
-	panels.push_back(stats);
-	panels.push_back(team_panel);
-	panels.push_back(journal);
-	panels.push_back(minimap);
-	panels.push_back(inv_trade_mine);
-	panels.push_back(inv_trade_other);
-	panels.push_back(mp_box);
-	panels.push_back(action_panel);
+	panels.push_back(game.gui->inventory->inv_mine);
+	panels.push_back(game.gui->stats);
+	panels.push_back(game.gui->team);
+	panels.push_back(game.gui->journal);
+	panels.push_back(game.gui->minimap);
+	panels.push_back(game.gui->inventory->inv_trade_mine);
+	panels.push_back(game.gui->inventory->inv_trade_other);
+	panels.push_back(game.gui->mp_box);
+	panels.push_back(game.gui->actions);
 }
 
 //=================================================================================================
 OpenPanel GameGui::GetOpenPanel()
 {
-	if(stats->visible)
+	if(game.gui->stats->visible)
 		return OpenPanel::Stats;
-	else if(inventory->visible)
+	else if(game.gui->inventory->inv_mine->visible)
 		return OpenPanel::InventoryPanel;
-	else if(team_panel->visible)
+	else if(game.gui->team->visible)
 		return OpenPanel::Team;
-	else if(journal->visible)
+	else if(game.gui->journal->visible)
 		return OpenPanel::Journal;
-	else if(minimap->visible)
+	else if(game.gui->minimap->visible)
 		return OpenPanel::Minimap;
-	else if(gp_trade->visible)
+	else if(game.gui->inventory->gp_trade->visible)
 		return OpenPanel::Trade;
-	else if(action_panel->visible)
+	else if(game.gui->actions->visible)
 		return OpenPanel::Action;
 	else
 		return OpenPanel::None;
@@ -1325,26 +1295,26 @@ void GameGui::ShowPanel(OpenPanel to_open, OpenPanel open)
 	case OpenPanel::None:
 		break;
 	case OpenPanel::Stats:
-		stats->Hide();
+		game.gui->stats->Hide();
 		break;
 	case OpenPanel::InventoryPanel:
-		inventory->Hide();
+		game.gui->inventory->inv_mine->Hide();
 		break;
 	case OpenPanel::Team:
-		team_panel->Hide();
+		game.gui->team->Hide();
 		break;
 	case OpenPanel::Journal:
-		journal->Hide();
+		game.gui->journal->Hide();
 		break;
 	case OpenPanel::Minimap:
-		minimap->Hide();
+		game.gui->minimap->Hide();
 		break;
 	case OpenPanel::Trade:
 		game.OnCloseInventory();
-		gp_trade->Hide();
+		game.gui->inventory->gp_trade->Hide();
 		break;
 	case OpenPanel::Action:
-		action_panel->Hide();
+		game.gui->actions->Hide();
 		break;
 	}
 
@@ -1354,22 +1324,22 @@ void GameGui::ShowPanel(OpenPanel to_open, OpenPanel open)
 		switch(to_open)
 		{
 		case OpenPanel::Stats:
-			stats->Show();
+			game.gui->stats->Show();
 			break;
 		case OpenPanel::InventoryPanel:
-			inventory->Show();
+			game.gui->inventory->inv_mine->Show();
 			break;
 		case OpenPanel::Team:
-			team_panel->Show();
+			game.gui->team->Show();
 			break;
 		case OpenPanel::Journal:
-			journal->Show();
+			game.gui->journal->Show();
 			break;
 		case OpenPanel::Minimap:
-			minimap->Show();
+			game.gui->minimap->Show();
 			break;
 		case OpenPanel::Action:
-			action_panel->Show();
+			game.gui->actions->Show();
 			break;
 		}
 	}
@@ -1384,24 +1354,25 @@ void GameGui::PositionPanels()
 	Int2 pos = Int2(int(scale * 48), int(scale * 32));
 	Int2 size = Int2(GUI.wnd_size.x - pos.x * 2, GUI.wnd_size.y - pos.x * 2);
 
-	stats->global_pos = stats->pos = pos;
-	stats->size = size;
-	team_panel->global_pos = team_panel->pos = pos;
-	team_panel->size = size;
-	inventory->global_pos = inventory->pos = pos;
-	inventory->size = size;
-	inv_trade_other->global_pos = inv_trade_other->pos = pos;
-	inv_trade_other->size = Int2(size.x, (size.y - 32) / 2);
-	inv_trade_mine->global_pos = inv_trade_mine->pos = Int2(pos.x, inv_trade_other->pos.y + inv_trade_other->size.y + 16);
-	inv_trade_mine->size = inv_trade_other->size;
-	minimap->size = Int2(size.y, size.y);
-	minimap->global_pos = minimap->pos = Int2((GUI.wnd_size.x - minimap->size.x) / 2, (GUI.wnd_size.y - minimap->size.y) / 2);
-	journal->size = minimap->size;
-	journal->global_pos = journal->pos = minimap->pos;
-	mp_box->size = Int2((GUI.wnd_size.x - 32) / 2, (GUI.wnd_size.y - 64) / 4);
-	mp_box->global_pos = mp_box->pos = Int2(GUI.wnd_size.x - pos.x - mp_box->size.x, GUI.wnd_size.y - pos.x - mp_box->size.y);
-	action_panel->global_pos = action_panel->pos = pos;
-	action_panel->size = size;
+	game.gui->stats->global_pos = game.gui->stats->pos = pos;
+	game.gui->stats->size = size;
+	game.gui->team->global_pos = game.gui->team->pos = pos;
+	game.gui->team->size = size;
+	game.gui->inventory->inv_mine->global_pos = game.gui->inventory->inv_mine->pos = pos;
+	game.gui->inventory->inv_mine->size = size;
+	game.gui->inventory->inv_trade_other->global_pos = game.gui->inventory->inv_trade_other->pos = pos;
+	game.gui->inventory->inv_trade_other->size = Int2(size.x, (size.y - 32) / 2);
+	game.gui->inventory->inv_trade_mine->global_pos = game.gui->inventory->inv_trade_mine->pos
+		= Int2(pos.x, game.gui->inventory->inv_trade_other->pos.y + game.gui->inventory->inv_trade_other->size.y + 16);
+	game.gui->inventory->inv_trade_mine->size = game.gui->inventory->inv_trade_other->size;
+	game.gui->minimap->size = Int2(size.y, size.y);
+	game.gui->minimap->global_pos = game.gui->minimap->pos = Int2((GUI.wnd_size.x - game.gui->minimap->size.x) / 2, (GUI.wnd_size.y - game.gui->minimap->size.y) / 2);
+	game.gui->journal->size = game.gui->minimap->size;
+	game.gui->journal->global_pos = game.gui->journal->pos = game.gui->minimap->pos;
+	game.gui->mp_box->size = Int2((GUI.wnd_size.x - 32) / 2, (GUI.wnd_size.y - 64) / 4);
+	game.gui->mp_box->global_pos = game.gui->mp_box->pos = Int2(GUI.wnd_size.x - pos.x - game.gui->mp_box->size.x, GUI.wnd_size.y - pos.x - game.gui->mp_box->size.y);
+	game.gui->actions->global_pos = game.gui->actions->pos = pos;
+	game.gui->actions->size = size;
 
 	LocalVector<GamePanel*> panels;
 	GetGamePanels(panels);
@@ -1455,7 +1426,7 @@ void GameGui::Setup()
 		action = nullptr;
 	else
 		action = &game.pc->GetAction();
-	action_panel->Init(action);
+	game.gui->actions->Init(action);
 }
 
 //=================================================================================================

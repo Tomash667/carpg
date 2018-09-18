@@ -6,6 +6,7 @@
 #include "InfoBox.h"
 #include "BitStreamFunc.h"
 #include "ResourceManager.h"
+#include "GlobalGui.h"
 
 //-----------------------------------------------------------------------------
 enum ButtonId
@@ -387,7 +388,7 @@ void ServerPanel::ExitLobby(VoidF callback)
 			game->net_mode = Game::NM_QUITTING_SERVER;
 			--N.active_players;
 			game->net_timer = T_WAIT_FOR_DISCONNECT;
-			game->info_box->Show(txDisconnecting);
+			game->gui->info_box->Show(txDisconnecting);
 			game->net_callback = callback;
 		}
 		else
@@ -404,7 +405,7 @@ void ServerPanel::ExitLobby(VoidF callback)
 		BitStreamWriter f;
 		f << ID_LEAVE;
 		N.SendClient(f, IMMEDIATE_PRIORITY, RELIABLE, Stream_UpdateLobbyClient);
-		game->info_box->Show(txDisconnecting);
+		game->gui->info_box->Show(txDisconnecting);
 		game->net_mode = Game::NM_QUITTING;
 		game->net_timer = T_WAIT_FOR_DISCONNECT;
 		game->net_callback = callback;

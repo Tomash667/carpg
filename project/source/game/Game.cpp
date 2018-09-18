@@ -96,7 +96,6 @@ quickstart_slot(MAX_SAVE_SLOTS), autoready(false), super_shader(new SuperShader)
 	dialog_context.is_local = true;
 
 	ClearPointers();
-	NullGui();
 
 	uv_mod = Terrain::DEFAULT_UV_MOD;
 	cam.draw_range = 80.f;
@@ -356,7 +355,7 @@ void Game::OnTick(float dt)
 	{
 		// konsola
 		if(!GUI.HaveTopDialog("dialog_alt_f4") && !GUI.HaveDialog("console") && GKey.KeyDownUpAllowed(GK_CONSOLE))
-			GUI.ShowDialog(console);
+			GUI.ShowDialog(gui->console);
 
 		// uwolnienie myszki
 		if(!IsFullscreen() && IsActive() && IsCursorLocked() && Key.Shortcut(KEY_CONTROL, 'U'))
@@ -376,7 +375,7 @@ void Game::OnTick(float dt)
 	}
 
 	// obs³uga paneli
-	if(GUI.HaveDialog() || (gui->game_gui->mp_box->visible && gui->game_gui->mp_box->itb.focus))
+	if(GUI.HaveDialog() || (gui->mp_box->visible && gui->mp_box->itb.focus))
 		GKey.allow_input = GameKeys::ALLOW_NONE;
 	else if(GKey.AllowKeyboard() && game_state == GS_LEVEL && death_screen == 0 && !dialog_context.dialog_mode)
 	{
@@ -430,7 +429,7 @@ void Game::OnTick(float dt)
 
 	// mp box
 	if((game_state == GS_LEVEL || game_state == GS_WORLDMAP) && GKey.KeyPressedReleaseAllowed(GK_TALK_BOX))
-		gui->game_gui->mp_box->visible = !gui->game_gui->mp_box->visible;
+		gui->mp_box->visible = !gui->mp_box->visible;
 
 	// update gui
 	UpdateGui(dt);
@@ -447,7 +446,7 @@ void Game::OnTick(float dt)
 	}
 
 	// handle blocking input by gui
-	if(GUI.HaveDialog() || (gui->game_gui->mp_box->visible && gui->game_gui->mp_box->itb.focus))
+	if(GUI.HaveDialog() || (gui->mp_box->visible && gui->mp_box->itb.focus))
 		GKey.allow_input = GameKeys::ALLOW_NONE;
 	else if(GKey.AllowKeyboard() && game_state == GS_LEVEL && death_screen == 0 && !dialog_context.dialog_mode)
 	{
@@ -476,8 +475,8 @@ void Game::OnTick(float dt)
 	if(GKey.AllowKeyboard() && CanShowMenu() && Key.PressedRelease(VK_ESCAPE))
 		ShowMenu();
 
-	if(game_menu->visible)
-		game_menu->Set(CanSaveGame(), CanLoadGame(), hardcore_mode);
+	if(gui->game_menu->visible)
+		gui->game_menu->Set(CanSaveGame(), CanLoadGame(), hardcore_mode);
 
 	arena->UpdatePvpRequest(dt);
 
@@ -533,11 +532,11 @@ void Game::OnTick(float dt)
 		UpdateGameNet(dt);
 
 	// aktywacja mp_box
-	if(GKey.AllowKeyboard() && game_state == GS_LEVEL && gui->game_gui->mp_box->visible && !gui->game_gui->mp_box->itb.focus && Key.PressedRelease(VK_RETURN))
+	if(GKey.AllowKeyboard() && game_state == GS_LEVEL && gui->mp_box->visible && !gui->mp_box->itb.focus && Key.PressedRelease(VK_RETURN))
 	{
-		gui->game_gui->mp_box->itb.focus = true;
-		gui->game_gui->mp_box->Event(GuiEvent_GainFocus);
-		gui->game_gui->mp_box->itb.Event(GuiEvent_GainFocus);
+		gui->mp_box->itb.focus = true;
+		gui->mp_box->Event(GuiEvent_GainFocus);
+		gui->mp_box->itb.Event(GuiEvent_GainFocus);
 	}
 
 	Profiler::g_profiler.End();
@@ -554,7 +553,7 @@ void Game::GetTitle(LocalString& s)
 	s += " -  DEBUG";
 #endif
 
-	if(change_title_a && ((game_state != GS_MAIN_MENU && game_state != GS_LOAD) || (server_panel && server_panel->visible)))
+	if(change_title_a && ((game_state != GS_MAIN_MENU && game_state != GS_LOAD) || (gui->server && gui->server->visible)))
 	{
 		if(Net::IsOnline())
 		{
@@ -800,10 +799,10 @@ void Game::DoExitToMenu()
 
 	CloseAllPanels();
 	GUI.CloseDialogs();
-	game_menu->visible = false;
+	gui->game_menu->visible = false;
 	gui->game_gui->visible = false;
-	world_map->visible = false;
-	main_menu->visible = true;
+	gui->world_map->visible = false;
+	gui->main_menu->visible = true;
 	units_mesh_load.clear();
 
 	if(change_title_a)
@@ -896,7 +895,6 @@ void Game::OnCleanup()
 			delete component.first;
 	}
 
-	RemoveGui();
 	GUI.OnClean();
 	CleanScene();
 	DeleteElements(bow_instances);
@@ -1800,11 +1798,11 @@ cstring Game::GetShortcutText(GAME_KEYS key, cstring action)
 		action = k.text;
 
 	if(first_key && second_key)
-		return Format("%s (%s, %s)", action, controls->key_text[k[0]], controls->key_text[k[1]]);
+		return Format("%s (%s, %s)", action, gui->controls->key_text[k[0]], gui->controls->key_text[k[1]]);
 	else if(first_key || second_key)
 	{
 		byte used = k[first_key ? 0 : 1];
-		return Format("%s (%s)", action, controls->key_text[used]);
+		return Format("%s (%s)", action, gui->controls->key_text[used]);
 	}
 	else
 		return action;
@@ -1845,7 +1843,7 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 {
 	Location& l = *L.location;
 
-	world_map->visible = false;
+	gui->world_map->visible = false;
 	gui->game_gui->Reset();
 	gui->game_gui->visible = true;
 
@@ -1986,14 +1984,14 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 		else
 			N.GetMe().state = PlayerInfo::IN_GAME;
 
-		info_box->Show(txWaitingForPlayers);
+		gui->info_box->Show(txWaitingForPlayers);
 	}
 	else
 	{
 		clear_color = clear_color2;
 		game_state = GS_LEVEL;
 		gui->load_screen->visible = false;
-		main_menu->visible = false;
+		gui->main_menu->visible = false;
 		gui->game_gui->visible = true;
 	}
 

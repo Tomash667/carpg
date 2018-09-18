@@ -10,7 +10,6 @@
 #include "QuestManager.h"
 #include "MultiInsideLocation.h"
 #include "GlobalGui.h"
-#include "GameGui.h"
 #include "AIController.h"
 #include "Team.h"
 #include "World.h"
@@ -50,14 +49,14 @@ void Quest_Orcs::SetProgress(int prog2)
 			if(prog != Progress::None)
 				return;
 			if(quest_manager.RemoveQuestRumor(P_ORKOWIE))
-				game->gui->game_gui->journal->AddRumor(Format(game->txQuest[189], GetStartLocationName()));
+				game->gui->journal->AddRumor(Format(game->txQuest[189], GetStartLocationName()));
 			QM.quest_orcs2->orcs_state = Quest_Orcs2::State::GuardTalked;
 		}
 		break;
 	case Progress::NotAccepted:
 		{
 			if(quest_manager.RemoveQuestRumor(P_ORKOWIE))
-				game->gui->game_gui->journal->AddRumor(Format(game->txQuest[190], GetStartLocationName()));
+				game->gui->journal->AddRumor(Format(game->txQuest[190], GetStartLocationName()));
 			// mark guard to remove
 			Unit*& u = QM.quest_orcs2->guard;
 			if(u)

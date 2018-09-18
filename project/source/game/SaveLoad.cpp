@@ -91,7 +91,7 @@ bool Game::SaveGameSlot(int slot, cstring text)
 	if(!CanSaveGame())
 	{
 		// w tej chwili nie mo¿na zapisaæ gry
-		GUI.SimpleDialog(Net::IsClient() ? txOnlyServerCanSave : txCantSaveGame, saveload->visible ? saveload : nullptr);
+		GUI.SimpleDialog(Net::IsClient() ? txOnlyServerCanSave : txCantSaveGame, gui->saveload->visible ? gui->saveload : nullptr);
 		return false;
 	}
 
@@ -131,7 +131,7 @@ bool Game::SaveGameCommon(cstring filename, int slot, cstring text)
 	if(!f)
 	{
 		Error(txLoadOpenError, filename, GetLastError());
-		GUI.SimpleDialog(txSaveFailed, saveload->visible ? saveload : nullptr);
+		GUI.SimpleDialog(txSaveFailed, gui->saveload->visible ? gui->saveload : nullptr);
 		return false;
 	}
 
@@ -224,12 +224,12 @@ void Game::LoadGameCommon(cstring filename, int slot)
 
 	prev_game_state = game_state;
 	if(mp_load)
-		multiplayer_panel->visible = false;
+		gui->multiplayer->visible = false;
 	else
 	{
-		main_menu->visible = false;
+		gui->main_menu->visible = false;
 		gui->game_gui->visible = false;
-		world_map->visible = false;
+		gui->world_map->visible = false;
 	}
 	LoadingStart(9);
 
@@ -275,20 +275,20 @@ void Game::LoadGameCommon(cstring filename, int slot)
 		if(game_state == GS_LEVEL)
 		{
 			gui->game_gui->visible = true;
-			world_map->visible = false;
+			gui->world_map->visible = false;
 		}
 		else
 		{
 			gui->game_gui->visible = false;
-			world_map->visible = true;
+			gui->world_map->visible = true;
 		}
 		gui->Setup(pc);
 	}
 	else
 	{
-		saveload->visible = true;
-		multiplayer_panel->visible = true;
-		main_menu->visible = true;
+		gui->saveload->visible = true;
+		gui->multiplayer->visible = true;
+		gui->main_menu->visible = true;
 	}
 }
 
@@ -444,11 +444,11 @@ void Game::SaveGame(GameWriter& f)
 		ai->Save(f);
 
 	// game messages & speech bubbles
-	gui->game_gui->game_messages->Save(f);
+	gui->messages->Save(f);
 	gui->game_gui->Save(f);
 
 	// rumors/notes
-	gui->game_gui->journal->Save(f);
+	gui->journal->Save(f);
 
 	f << check_id;
 	++check_id;
@@ -826,11 +826,11 @@ void Game::LoadGame(GameReader& f)
 	}
 
 	// game messages & speech bubbles
-	gui->game_gui->game_messages->Load(f);
+	gui->messages->Load(f);
 	gui->game_gui->Load(f);
 
 	// rumors/notes
-	gui->game_gui->journal->Load(f);
+	gui->journal->Load(f);
 
 	f >> read_id;
 	if(read_id != check_id)
@@ -1160,7 +1160,7 @@ void Game::Quicksave(bool from_console)
 	if(SaveGameSlot(MAX_SAVE_SLOTS, txQuickSave))
 	{
 		if(!from_console)
-			game_messages->AddGameMsg3(GMS_GAME_SAVED);
+			gui->messages->AddGameMsg3(GMS_GAME_SAVED);
 	}
 }
 
@@ -1247,7 +1247,7 @@ void Game::RemoveUnusedAiAndCheck()
 		cstring s = Format("Removed unused ais: %u.", prev_size - ais.size());
 		Warn(s);
 #ifdef _DEBUG
-		game_messages->AddGameMsg(s, 10.f);
+		gui->messages->AddGameMsg(s, 10.f);
 #endif
 	}
 
@@ -1260,7 +1260,7 @@ void Game::RemoveUnusedAiAndCheck()
 			CheckUnitsAi((*it)->ctx, err_count);
 	}
 	if(err_count)
-		game_messages->AddGameMsg(Format("CheckUnitsAi: %d errors!", err_count), 10.f);
+		gui->messages->AddGameMsg(Format("CheckUnitsAi: %d errors!", err_count), 10.f);
 #endif
 }
 

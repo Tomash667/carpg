@@ -296,7 +296,6 @@ void Game::ConfigureGame()
 	InitScene();
 	super_shader->Init();
 	AddCommands();
-	InitGui();
 	ResetGameKeys();
 	LoadGameKeys();
 	SetMeshSpecular();
@@ -343,7 +342,7 @@ void Game::PostconfigureGame()
 
 	LockCursor();
 	CreateCollisionShapes();
-	create_character->Init();
+	gui->create_character->Init();
 	for(std::pair<GameComponent*, bool>& component : components)
 		component.first->PostInit();
 
@@ -419,7 +418,7 @@ void Game::PostconfigureGame()
 	game_state = GS_MAIN_MENU;
 	game_state = GS_MAIN_MENU;
 	gui->load_screen->visible = false;
-	main_menu->visible = true;
+	gui->main_menu->visible = true;
 	if(music_type != MusicType::Intro)
 		SetMusic(MusicType::Title);
 
@@ -484,7 +483,7 @@ void Game::StartGameMode()
 			break;
 		}
 
-		server_panel->Show();
+		gui->server->Show();
 		Net_OnNewGameServer();
 		N.UpdateServerInfo();
 
@@ -496,7 +495,7 @@ void Game::StartGameMode()
 		{
 			autoready = true;
 			pick_autojoin = true;
-			pick_server_panel->Show();
+			gui->pick_server->Show();
 		}
 		else
 			Warn("Quickstart: Can't join server, no player nick.");
@@ -553,7 +552,6 @@ void Game::AddLoadTasks()
 
 	// gui textures
 	res_mgr.AddTaskCategory(txLoadGuiTextures);
-	LoadGuiData();
 	tex_mgr.AddLoadTask("emerytura.jpg", tEmerytura);
 	tex_mgr.AddLoadTask("equipped.png", tEquipped);
 	tex_mgr.AddLoadTask("czern.bmp", tCzern);

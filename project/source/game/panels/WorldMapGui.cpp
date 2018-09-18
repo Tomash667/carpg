@@ -40,10 +40,6 @@ WorldMapGui::WorldMapGui() : game(Game::Get())
 	txDays = Str("days");
 	txOnlyLeaderCanTravel = Str("onlyLeaderCanTravel");
 	txBuildings = Str("buildings");
-
-	mp_box = game.gui->game_gui->mp_box;
-	journal = game.gui->game_gui->journal;
-	game_messages = game.gui->game_gui->game_messages;
 }
 
 //=================================================================================================
@@ -179,8 +175,8 @@ void WorldMapGui::Draw(ControlDrawData*)
 	if(mp_box->visible)
 		mp_box->Draw();
 
-	if(journal->visible)
-		journal->Draw();
+	if(game.gui->journal->visible)
+		game.gui->journal->Draw();
 
 	game_messages->Draw();
 }
@@ -203,13 +199,13 @@ void WorldMapGui::Update(float dt)
 	if(game.koniec_gry)
 		return;
 
-	if(journal->visible)
+	if(game.gui->journal->visible)
 	{
-		journal->focus = true;
-		journal->Update(dt);
+		game.gui->journal->focus = true;
+		game.gui->journal->Update(dt);
 	}
-	if(!GUI.HaveDialog() && !(mp_box->visible && mp_box->itb.focus) && Key.Focus() && game.death_screen == 0 && !journal->visible && GKey.PressedRelease(GK_JOURNAL))
-		journal->Show();
+	if(!GUI.HaveDialog() && !(mp_box->visible && mp_box->itb.focus) && Key.Focus() && game.death_screen == 0 && !game.gui->journal->visible && GKey.PressedRelease(GK_JOURNAL))
+		game.gui->journal->Show();
 
 	if(W.travel_location_index != -1)
 		picked_location = W.travel_location_index;
@@ -221,7 +217,7 @@ void WorldMapGui::Update(float dt)
 
 		W.UpdateTravel(dt);
 	}
-	else if(W.GetState() != World::State::ENCOUNTER && !journal->visible)
+	else if(W.GetState() != World::State::ENCOUNTER && !game.gui->journal->visible)
 	{
 		Vec2 cursor_pos(float(GUI.cursor_pos.x), float(GUI.cursor_pos.y));
 		Location* loc = nullptr;

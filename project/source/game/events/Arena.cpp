@@ -10,6 +10,7 @@
 #include "City.h"
 #include "Language.h"
 #include "Game.h"
+#include "GlobalGui.h"
 #include "GameMessages.h"
 #include "QuestManager.h"
 #include "Quest_Tournament.h"
@@ -242,7 +243,7 @@ void Arena::Verify()
 			}
 		}
 		if(err_count)
-			game.game_messages->AddGameMsg(Format("%d arena friends errors!", err_count), 10.f);
+			game.gui->messages->AddGameMsg(Format("%d arena friends errors!", err_count), 10.f);
 	}
 }
 

@@ -1706,7 +1706,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				else
 				{
 					// komunikat o braku broni
-					game_messages->AddGameMsg3(GMS_NEED_WEAPON);
+					gui->messages->AddGameMsg3(GMS_NEED_WEAPON);
 				}
 			}
 		}
@@ -2034,7 +2034,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			if(wypij != -1)
 				u.ConsumeItem(wypij);
 			else
-				game_messages->AddGameMsg3(GMS_NO_POTION);
+				gui->messages->AddGameMsg3(GMS_NO_POTION);
 		}
 	} // allow_input == ALLOW_INPUT || allow_input == ALLOW_KEYBOARD
 
@@ -2120,21 +2120,21 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				else if(u2->live_state == Unit::FALL)
 				{
 					// nie mo¿na okradaæ osoby która zaraz wstanie
-					game_messages->AddGameMsg3(GMS_CANT_DO);
+					gui->messages->AddGameMsg3(GMS_CANT_DO);
 				}
 				else if(u2->IsFollower() || u2->IsPlayer())
 				{
 					// nie mo¿na okradaæ sojuszników
-					game_messages->AddGameMsg3(GMS_DONT_LOOT_FOLLOWER);
+					gui->messages->AddGameMsg3(GMS_DONT_LOOT_FOLLOWER);
 				}
 				else if(u2->in_arena != -1)
-					game_messages->AddGameMsg3(GMS_DONT_LOOT_ARENA);
+					gui->messages->AddGameMsg3(GMS_DONT_LOOT_ARENA);
 				else if(Net::IsLocal())
 				{
 					if(Net::IsOnline() && u2->busy == Unit::Busy_Looted)
 					{
 						// ktoœ ju¿ ograbia zw³oki
-						game_messages->AddGameMsg3(GMS_IS_LOOTED);
+						gui->messages->AddGameMsg3(GMS_IS_LOOTED);
 					}
 					else
 					{
@@ -2164,7 +2164,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					if(u2->busy != Unit::Busy_No || !u2->CanTalk())
 					{
 						// osoba jest czymœ zajêta
-						game_messages->AddGameMsg3(GMS_UNIT_BUSY);
+						gui->messages->AddGameMsg3(GMS_UNIT_BUSY);
 					}
 					else
 					{
@@ -2196,7 +2196,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				if(pc_data.before_player_ptr.chest->user)
 				{
 					// ktoœ ju¿ zajmuje siê t¹ skrzyni¹
-					game_messages->AddGameMsg3(GMS_IS_LOOTED);
+					gui->messages->AddGameMsg3(GMS_IS_LOOTED);
 				}
 				else
 				{
@@ -2275,7 +2275,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					if(key && pc->unit->HaveItem(Item::Get(key)))
 					{
 						sound_mgr->PlaySound3d(sUnlock, center, 2.f, 5.f);
-						game_messages->AddGameMsg3(GMS_UNLOCK_DOOR);
+						gui->messages->AddGameMsg3(GMS_UNLOCK_DOOR);
 						if(!L.location->outside)
 							minimap_opened_doors = true;
 						door->locked = LOCK_NONE;
@@ -2294,7 +2294,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					}
 					else
 					{
-						game_messages->AddGameMsg3(GMS_NEED_KEY);
+						gui->messages->AddGameMsg3(GMS_NEED_KEY);
 						sound_mgr->PlaySound3d(sDoorClosed[Rand() % 2], center, 2.f, 5.f);
 					}
 				}
@@ -4183,7 +4183,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 						return true;
 					}
 
-					gui->game_gui->journal->AddRumor(ctx.dialog_s_text.c_str());
+					gui->journal->AddRumor(ctx.dialog_s_text.c_str());
 					DialogTalk(ctx, ctx.dialog_s_text.c_str());
 					++ctx.dialog_pos;
 					return true;
@@ -4794,7 +4794,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 							if(it->exit_area.IsInside(unit.pos))
 							{
 								if(!IsLeader())
-									game_messages->AddGameMsg3(GMS_NOT_LEADER);
+									gui->messages->AddGameMsg3(GMS_NOT_LEADER);
 								else
 								{
 									if(Net::IsLocal())
@@ -4806,7 +4806,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 											W.SetTravelDir(unit.pos);
 										}
 										else
-											game_messages->AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
+											gui->messages->AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
 									}
 									else
 										Net_LeaveLocation(WHERE_OUTSIDE);
@@ -4819,7 +4819,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 						&& (unit.pos.x < 33.f || unit.pos.x > 256.f - 33.f || unit.pos.z < 33.f || unit.pos.z > 256.f - 33.f))
 					{
 						if(!IsLeader())
-							game_messages->AddGameMsg3(GMS_NOT_LEADER);
+							gui->messages->AddGameMsg3(GMS_NOT_LEADER);
 						else if(!Net::IsLocal())
 							Net_LeaveLocation(WHERE_OUTSIDE);
 						else
@@ -4831,7 +4831,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 								W.SetTravelDir(unit.pos);
 							}
 							else
-								game_messages->AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
+								gui->messages->AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
 						}
 					}
 
@@ -4963,13 +4963,13 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 								Net::PushChange(NetChange::LEAVE_LOCATION);
 						}
 						else
-							game_messages->AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
+							gui->messages->AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
 					}
 					else
 						Net_LeaveLocation(WHERE_LEVEL_UP);
 				}
 				else
-					game_messages->AddGameMsg3(GMS_NOT_LEADER);
+					gui->messages->AddGameMsg3(GMS_NOT_LEADER);
 			}
 		}
 		else if(pt == lvl.staircase_down)
@@ -5016,13 +5016,13 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 								Net::PushChange(NetChange::LEAVE_LOCATION);
 						}
 						else
-							game_messages->AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
+							gui->messages->AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
 					}
 					else
 						Net_LeaveLocation(WHERE_LEVEL_DOWN);
 				}
 				else
-					game_messages->AddGameMsg3(GMS_NOT_LEADER);
+					gui->messages->AddGameMsg3(GMS_NOT_LEADER);
 			}
 		}
 		else
@@ -5059,13 +5059,13 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 									Net::PushChange(NetChange::LEAVE_LOCATION);
 							}
 							else
-								game_messages->AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
+								gui->messages->AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
 						}
 						else
 							Net_LeaveLocation(WHERE_PORTAL + index);
 					}
 					else
-						game_messages->AddGameMsg3(GMS_NOT_LEADER);
+						gui->messages->AddGameMsg3(GMS_NOT_LEADER);
 
 					break;
 				}
@@ -6886,7 +6886,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 #ifdef _DEBUG
 				Warn("Unit %s dont have shooting animation, LS:%d A:%D ANI:%d PANI:%d ETA:%d.", u.GetName(), u.live_state, u.action, u.animation,
 					u.current_animation, u.animation_state);
-				game_messages->AddGameMsg("Unit don't have shooting animation!", 5.f);
+				gui->messages->AddGameMsg("Unit don't have shooting animation!", 5.f);
 #endif
 				goto koniec_strzelania;
 			}
@@ -8611,14 +8611,14 @@ void Game::ChangeLevel(int where)
 		prepared_stream.Reset();
 		PrepareLevelData(prepared_stream, loaded_resources);
 		Info("Generated location packet: %d.", prepared_stream.GetNumberOfBytesUsed());
-		info_box->Show(txWaitingForPlayers);
+		gui->info_box->Show(txWaitingForPlayers);
 	}
 	else
 	{
 		clear_color = clear_color2;
 		game_state = GS_LEVEL;
 		gui->load_screen->visible = false;
-		main_menu->visible = false;
+		gui->main_menu->visible = false;
 		gui->game_gui->visible = true;
 	}
 
@@ -8734,7 +8734,7 @@ void Game::ExitToMap()
 		Net::PushChange(NetChange::EXIT_TO_MAP);
 
 	show_mp_panel = true;
-	world_map->visible = true;
+	gui->world_map->visible = true;
 	gui->game_gui->visible = false;
 }
 
@@ -10379,18 +10379,18 @@ void Game::ClearGameVarsOnNewGameOrLoad()
 	death_screen = 0;
 	koniec_gry = false;
 	minimap_reveal.clear();
-	gui->game_gui->minimap->city = nullptr;
+	gui->minimap->city = nullptr;
 	Team.ClearOnNewGameOrLoad();
 	draw_flags = 0xFFFFFFFF;
 	gui->game_gui->Reset();
-	gui->game_gui->journal->Reset();
+	gui->journal->Reset();
 	arena->Reset();
 	debug_info = false;
 	debug_info2 = false;
 	dialog_enc = nullptr;
 	gui->game_gui->visible = false;
 	gui->inventory->lock = nullptr;
-	world_map->picked_location = -1;
+	gui->world_map->picked_location = -1;
 	post_effects.clear();
 	grayout = 0.f;
 	cam.Reset();
@@ -10434,7 +10434,7 @@ void Game::ClearGameVarsOnNewGame()
 	L.is_open = false;
 	gui->game_gui->PositionPanels();
 	gui->Clear(true);
-	gui->game_gui->mp_box->visible = Net::IsOnline();
+	gui->mp_box->visible = Net::IsOnline();
 	drunk_anim = 0.f;
 	L.light_angle = Random(PI * 2);
 	cam.Reset();
@@ -11158,7 +11158,7 @@ void Game::LoadingStart(int steps)
 	clear_color = Color::Black;
 	game_state = GS_LOAD;
 	gui->load_screen->visible = true;
-	main_menu->visible = false;
+	gui->main_menu->visible = false;
 	gui->game_gui->visible = false;
 	ResourceManager::Get().PrepareLoadScreen(loading_cap);
 }
@@ -11749,7 +11749,7 @@ void Game::AddGold(int count, vector<Unit*>* units, bool show, cstring msg, floa
 		if(show && u.IsPlayer())
 		{
 			if(&u == pc->unit)
-				game_messages->AddGameMsg(Format(msg, count), time);
+				gui->messages->AddGameMsg(Format(msg, count), time);
 			else
 			{
 				NetChangePlayer& c = Add1(u.player->player_info->changes);
@@ -11869,7 +11869,7 @@ void Game::AddGold(int count, vector<Unit*>* units, bool show, cstring msg, floa
 				else
 				{
 					if(show)
-						game_messages->AddGameMsg(Format(msg, pc->gold_get), time);
+						gui->messages->AddGameMsg(Format(msg, pc->gold_get), time);
 				}
 			}
 			else if(u.hero->gained_gold && u.busy == Unit::Busy_Trading)
@@ -11889,7 +11889,7 @@ void Game::AddGold(int count, vector<Unit*>* units, bool show, cstring msg, floa
 			Net::PushChange(NetChange::UPDATE_CREDIT);
 	}
 	else if(show)
-		game_messages->AddGameMsg(Format(msg, pc->gold_get), time);
+		gui->messages->AddGameMsg(Format(msg, pc->gold_get), time);
 }
 
 int Game::CalculateQuestReward(int gold)
@@ -13254,7 +13254,7 @@ void Game::Cheat_ShowMinimap()
 
 void Game::UpdateGameNet(float dt)
 {
-	if(info_box->visible)
+	if(gui->info_box->visible)
 		return;
 
 	if(Net::IsServer())
@@ -13424,12 +13424,12 @@ void Game::ShowStatGain(bool is_skill, int what, int value)
 		name = Attribute::attributes[what].name.c_str();
 	}
 
-	game_messages->AddGameMsg(Format(text, name, value), 3.f);
+	gui->messages->AddGameMsg(Format(text, name, value), 3.f);
 }
 
 void Game::ActivateChangeLeaderButton(bool activate)
 {
-	gui->game_gui->team_panel->bt[2].state = (activate ? Button::NONE : Button::DISABLED);
+	gui->team->bt[2].state = (activate ? Button::NONE : Button::DISABLED);
 }
 
 void Game::PayCredit(PlayerController* player, int ile)
@@ -13451,7 +13451,7 @@ void Game::PayCredit(PlayerController* player, int ile)
 		Warn("Player '%s' paid %d credit and now have %d!", player->name.c_str(), ile, player->credit);
 		player->credit = 0;
 #ifdef _DEBUG
-		game_messages->AddGameMsg("Player has invalid credit!", 5.f);
+		gui->messages->AddGameMsg("Player has invalid credit!", 5.f);
 #endif
 	}
 
@@ -13510,7 +13510,7 @@ void Game::PlayerUseUsable(Usable* usable, bool after_action)
 	{
 		if(!u.HaveItem(bu.item) && u.slots[SLOT_WEAPON] != bu.item)
 		{
-			game_messages->AddGameMsg2(Format(txNeedItem, bu.item->name.c_str()), 2.f);
+			gui->messages->AddGameMsg2(Format(txNeedItem, bu.item->name.c_str()), 2.f);
 			ok = false;
 		}
 		else if(pc->unit->weapon_state != WS_HIDDEN && (bu.item != &pc->unit->GetWeapon() || pc->unit->HaveShield()))

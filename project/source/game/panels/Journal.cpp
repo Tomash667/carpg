@@ -10,6 +10,7 @@
 #include "Quest.h"
 #include "ResourceManager.h"
 #include "World.h"
+#include "GlobalGui.h"
 #include "GameMessages.h"
 
 //=================================================================================================
@@ -540,7 +541,7 @@ void Journal::AddRumor(cstring text)
 
 	rumors.push_back(Format(txAddTime, W.GetDate(), text));
 	NeedUpdate(Journal::Rumors);
-	game.game_messages->AddGameMsg3(GMS_ADDED_RUMOR);
+	game.gui->messages->AddGameMsg3(GMS_ADDED_RUMOR);
 }
 
 //=================================================================================================

@@ -8,7 +8,6 @@
 #include "Quest_Evil.h"
 #include "Net.h"
 #include "GlobalGui.h"
-#include "GameGui.h"
 #include "TeamPanel.h"
 #include "UnitHelper.h"
 #include "AIController.h"
@@ -101,8 +100,8 @@ void TeamSingleton::AddTeamMember(Unit* unit, bool free)
 
 	// update TeamPanel if open
 	Game& game = Game::Get();
-	if(game.gui->game_gui->team_panel->visible)
-		game.gui->game_gui->team_panel->Changed();
+	if(game.gui->team->visible)
+		game.gui->team->Changed();
 
 	// send info to other players
 	if(Net::IsOnline())
@@ -133,8 +132,8 @@ void TeamSingleton::RemoveTeamMember(Unit* unit)
 
 	// update TeamPanel if open
 	Game& game = Game::Get();
-	if(game.gui->game_gui->team_panel->visible)
-		game.gui->game_gui->team_panel->Changed();
+	if(game.gui->team->visible)
+		game.gui->team->Changed();
 
 	// send info to other players
 	if(Net::IsOnline())
@@ -1158,7 +1157,7 @@ void TeamSingleton::ValidateTeamItems()
 	}
 
 	if(errors)
-		Game::Get().game_messages->AddGameMsg(Format("%d hero inventory errors!", errors), 10.f);
+		Game::Get().gui->messages->AddGameMsg(Format("%d hero inventory errors!", errors), 10.f);
 }
 
 //-----------------------------------------------------------------------------

@@ -10,7 +10,6 @@
 #include "QuestManager.h"
 #include "InsideLocation.h"
 #include "GlobalGui.h"
-#include "GameGui.h"
 #include "AIController.h"
 #include "Team.h"
 #include "Portal.h"
@@ -80,7 +79,7 @@ void Quest_Evil::SetProgress(int prog2)
 		// nie zaakceptowano
 		{
 			if(!quest_manager.RemoveQuestRumor(P_ZLO))
-				game->gui->game_gui->journal->AddRumor(Format(game->txQuest[232], GetStartLocationName()));
+				game->gui->journal->AddRumor(Format(game->txQuest[232], GetStartLocationName()));
 		}
 		break;
 	case Progress::Started:

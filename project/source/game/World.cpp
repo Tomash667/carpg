@@ -24,6 +24,7 @@
 #include "Quest_Mages.h"
 #include "Game.h"
 #include "Debug.h"
+#include "GlobalGui.h"
 #include "WorldMapGui.h"
 
 
@@ -54,7 +55,7 @@ struct TmpLocation : public Location
 //=================================================================================================
 void World::InitOnce()
 {
-	gui = Game::Get().world_map;
+	gui = Game::Get().gui->world_map;
 }
 
 //=================================================================================================

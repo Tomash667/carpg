@@ -13,6 +13,7 @@
 #include "AIController.h"
 #include "Language.h"
 #include "Game.h"
+#include "GlobalGui.h"
 #include "GameMessages.h"
 
 //=================================================================================================
@@ -246,7 +247,7 @@ void Quest_Contest::Update(float dt)
 			{
 				unit->player->leaving_event = leaving_event;
 				if(leaving_event)
-					game.game_messages->AddGameMsg3(unit->player, GMS_GETTING_OUT_OF_RANGE);
+					game.gui->messages->AddGameMsg3(unit->player, GMS_GETTING_OUT_OF_RANGE);
 			}
 		}
 
@@ -309,7 +310,7 @@ void Quest_Contest::Update(float dt)
 				if(kick || u.in_building != id || u.frozen != FROZEN::NO || !u.IsStanding())
 				{
 					if(u.IsPlayer())
-						game.game_messages->AddGameMsg3(u.player, GMS_LEFT_EVENT);
+						game.gui->messages->AddGameMsg3(u.player, GMS_LEFT_EVENT);
 					*it = nullptr;
 					removed = true;
 				}

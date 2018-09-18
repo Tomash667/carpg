@@ -7,6 +7,7 @@
 #include "GetNumberDialog.h"
 #include "Team.h"
 #include "SoundManager.h"
+#include "GlobalGui.h"
 #include "GameMessages.h"
 #include "ResourceManager.h"
 
@@ -247,7 +248,7 @@ void TeamPanel::Event(GuiEvent e)
 	case Bt_GiveGold:
 	case Bt_Leader:
 	case Bt_Kick:
-		game.game_messages->AddGameMsg2(txPickCharacter, 1.5f, GMS_PICK_CHARACTER);
+		game.gui->messages->AddGameMsg2(txPickCharacter, 1.5f, GMS_PICK_CHARACTER);
 		picking = true;
 		picked = -1;
 		mode = e;

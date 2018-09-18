@@ -180,7 +180,7 @@ void Unit::SetGold(int new_gold)
 		if(player->is_local)
 		{
 			Game& game = Game::Get();
-			game.game_messages->AddGameMsg(Format(game.txGoldPlus, dif), 3.f);
+			game.gui->messages->AddGameMsg(Format(game.txGoldPlus, dif), 3.f);
 			game.sound_mgr->PlaySound2d(game.sCoins);
 		}
 		else

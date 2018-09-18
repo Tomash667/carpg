@@ -149,7 +149,7 @@ void Game::AddCommands()
 //=================================================================================================
 void Game::AddConsoleMsg(cstring msg)
 {
-	console->AddText(msg);
+	gui->console->AddText(msg);
 }
 
 //=================================================================================================
@@ -218,7 +218,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 
 			if(!IS_ALL_SET(it->flags, F_ANYWHERE))
 			{
-				if(server_panel->visible)
+				if(gui->server->visible)
 				{
 					if(!IS_SET(it->flags, F_LOBBY))
 					{
@@ -589,7 +589,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 
 								if(!IS_ALL_SET(it->flags, F_ANYWHERE))
 								{
-									if(server_panel->visible)
+									if(gui->server->visible)
 									{
 										if(!IS_SET(it->flags, F_LOBBY))
 											ok = false;
@@ -966,15 +966,15 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								LoadGameSlot(slot);
 							else
 								LoadGameFilename(name.get_ref());
-							GUI.CloseDialog(console);
+							GUI.CloseDialog(gui->console);
 						}
 						catch(const SaveException& ex)
 						{
 							cstring error = Format("Failed to load game: %s", ex.msg);
 							Error(error);
 							Msg(error);
-							if(!GUI.HaveDialog(console))
-								GUI.ShowDialog(console);
+							if(!GUI.HaveDialog(gui->console))
+								GUI.ShowDialog(gui->console);
 						}
 					}
 					else
@@ -1133,7 +1133,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							Msg("You can't change a leader."); // must be current leader or server
 						else
 						{
-							if(server_panel->visible)
+							if(gui->server->visible)
 							{
 								if(Net::IsServer())
 								{
@@ -1167,7 +1167,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					ExitToMenu();
 					break;
 				case CMD_RANDOM:
-					if(server_panel->visible)
+					if(gui->server->visible)
 					{
 						if(t.Next())
 						{
@@ -1201,7 +1201,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								{
 									if(ClassInfo::IsPickable(ci->class_id))
 									{
-										server_panel->PickClass(ci->class_id, false);
+										gui->server->PickClass(ci->class_id, false);
 										Msg("You picked Random character.");
 									}
 									else
@@ -1213,7 +1213,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						}
 						else
 						{
-							server_panel->PickClass(Class::RANDOM, false);
+							gui->server->PickClass(Class::RANDOM, false);
 							Msg("You picked Random character.");
 						}
 					}
@@ -1259,8 +1259,8 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							f << ID_TIMER;
 							f << (byte)STARTUP_TIMER;
 							N.SendAll(f, IMMEDIATE_PRIORITY, RELIABLE, Stream_UpdateLobbyServer);
-							server_panel->bts[4].text = server_panel->txStop;
-							cstring s = Format(server_panel->txStartingIn, STARTUP_TIMER);
+							gui->server->bts[4].text = gui->server->txStop;
+							cstring s = Format(gui->server->txStartingIn, STARTUP_TIMER);
 							AddMsg(s);
 							Info(s);
 						}
@@ -1482,7 +1482,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							if(!info.ready)
 							{
 								if(info.clas == Class::INVALID)
-									server_panel->PickClass(Class::RANDOM, true);
+									gui->server->PickClass(Class::RANDOM, true);
 								else
 								{
 									info.ready = true;
@@ -1523,7 +1523,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						if(!info.ready)
 						{
 							if(info.clas == Class::INVALID)
-								server_panel->PickClass(Class::RANDOM, true);
+								gui->server->PickClass(Class::RANDOM, true);
 							else
 							{
 								info.ready = true;
@@ -1536,13 +1536,13 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					switch(source)
 					{
 					case PS_CONSOLE:
-						console->Reset();
+						gui->console->Reset();
 						break;
 					case PS_CHAT:
-						gui->game_gui->mp_box->itb.Reset();
+						gui->mp_box->itb.Reset();
 						break;
 					case PS_LOBBY:
-						server_panel->itb.Reset();
+						gui->server->itb.Reset();
 						break;
 					case PS_UNKNOWN:
 					default:

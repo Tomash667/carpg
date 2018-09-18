@@ -13,12 +13,36 @@ public:
 	void Prepare() override;
 	void InitOnce() override;
 	void LoadLanguage() override;
+	void LoadData();
 	void Draw(ControlDrawData*) override;
 	void LoadOldGui(FileReader& f);
 	void Clear(bool reset_mpbox);
 	void Setup(PlayerController* pc);
 
+	// panels
 	LoadScreen* load_screen;
 	GameGui* game_gui;
 	Inventory* inventory;
+	StatsPanel* stats;
+	TeamPanel* team;
+	Journal* journal;
+	Minimap* minimap;
+	ActionPanel* actions;
+	BookPanel* book;
+	GameMessages* messages;
+	MpBox* mp_box;
+	WorldMapGui* world_map;
+	MainMenu* main_menu;
+	// dialogs
+	Console* console;
+	GameMenu* game_menu;
+	Options* options;
+	SaveLoad* saveload;
+	CreateCharacterPanel* create_character;
+	MultiplayerPanel* multiplayer;
+	CreateServerPanel* create_server;
+	PickServerPanel* pick_server;
+	ServerPanel* server;
+	InfoBox* info_box;
+	Controls* controls;
 };
