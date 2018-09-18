@@ -5,18 +5,24 @@
 #include "Level.h"
 #include "LoadScreen.h"
 #include "GameDialogBox.h"
+#include "GameGui.h"
+#include "GameMessages.h"
+#include "MpBox.h"
+#include "Inventory.h"
+#include "StatsPanel.h"
 #include "Game.h"
 
-GlobalGui::GlobalGui() : load_screen(nullptr)
+GlobalGui::GlobalGui() : load_screen(nullptr), game_gui(nullptr)
 {
 }
 
 GlobalGui::~GlobalGui()
 {
 	delete load_screen;
+	delete game_gui;
 }
 
-void GlobalGui::InitOnce()
+void GlobalGui::Prepare()
 {
 	Game& game = Game::Get();
 
@@ -32,8 +38,28 @@ void GlobalGui::InitOnce()
 	// load screen
 	load_screen = new LoadScreen;
 	GUI.Add(load_screen);
+}
+
+void GlobalGui::InitOnce()
+{
+	// game gui
+	game_gui = new GameGui;
+	game_gui->LoadData();
+	GUI.Add(game_gui);
+
+	// inventory
+	inventory = new Inventory;
+	inventory->InitOnce();
+	game_gui->Add(inventory->inv_mine);
+	game_gui->Add(inventory->gp_trade);
 
 	GUI.Add(this);
+}
+
+void GlobalGui::LoadLanguage()
+{
+	game_gui->LoadLanguage();
+	inventory->LoadLanguage();
 }
 
 void GlobalGui::Draw(ControlDrawData*)
@@ -69,4 +95,37 @@ void GlobalGui::Draw(ControlDrawData*)
 		0, Color::Black, Rect(0, 0, 500, 200));
 	assert(W.GetCurrentLocation() == L.location);
 	assert(W.GetCurrentLocationIndex() == L.location_index);
+}
+
+void GlobalGui::LoadOldGui(FileReader& f)
+{
+	// old gui settings, now removed
+	LocalVector<GamePanel*> panels;
+	game_gui->GetGamePanels(panels);
+	Int2 prev_wnd_size, _pos, _size;
+	f >> prev_wnd_size;
+	for(vector<GamePanel*>::iterator it = panels->begin(), end = panels->end(); it != end; ++it)
+	{
+		f >> _pos;
+		f >> _size;
+	}
+}
+
+//=================================================================================================
+// Clear gui state after new game/loading/entering new location
+void GlobalGui::Clear(bool reset_mpbox)
+{
+	if(game_gui)
+	{
+		game_gui->Reset();
+		game_gui->game_messages->Reset();
+		if(game_gui->mp_box && reset_mpbox)
+			game_gui->mp_box->visible = false;
+	}
+}
+
+void GlobalGui::Setup(PlayerController* pc)
+{
+	inventory->Setup(pc);
+	game_gui->stats->pc = pc;
 }

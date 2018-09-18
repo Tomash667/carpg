@@ -24,6 +24,7 @@
 #include "Level.h"
 #include "GroundItem.h"
 #include "ResourceManager.h"
+#include "GlobalGui.h"
 
 //-----------------------------------------------------------------------------
 const float UNIT_VIEW_A = 0.2f;
@@ -51,18 +52,6 @@ static ObjectPool<SpeechBubble> SpeechBubblePool;
 //=================================================================================================
 GameGui::GameGui() : debug_info_size(0, 0), profiler_size(0, 0), use_cursor(false), game(Game::Get())
 {
-	txDeath = Str("death");
-	txDeathAlone = Str("deathAlone");
-	txGameTimeout = Str("gameTimeout");
-	txChest = Str("chest");
-	txDoor = Str("door");
-	txDoorLocked = Str("doorLocked");
-	txPressEsc = Str("pressEsc");
-	txMenu = Str("menu");
-	txHp = Str("hp");
-	txStamina = Str("stamina");
-	BuffInfo::LoadText();
-
 	scrollbar.parent = this;
 	visible = false;
 
@@ -72,34 +61,11 @@ GameGui::GameGui() : debug_info_size(0, 0), profiler_size(0, 0), use_cursor(fals
 	mp_box = new MpBox;
 	Add(mp_box);
 
-	game.inventory = new InventoryBase;
-	game.inventory->LoadText();
-	inventory = new Inventory(*game.inventory);
-	inventory->InitTooltip();
-	inventory->title = game.inventory->txInventory;
-	inventory->mode = Inventory::INVENTORY;
-	inventory->visible = false;
-	Add(inventory);
-
 	stats = new StatsPanel;
 	Add(stats);
 
 	team_panel = new TeamPanel;
 	Add(team_panel);
-
-	gp_trade = new GamePanelContainer;
-	Add(gp_trade);
-
-	inv_trade_mine = new Inventory(*game.inventory);
-	inv_trade_mine->title = game.inventory->txInventory;
-	inv_trade_mine->focus = true;
-	gp_trade->Add(inv_trade_mine);
-
-	inv_trade_other = new Inventory(*game.inventory);
-	inv_trade_other->title = game.inventory->txInventory;
-	gp_trade->Add(inv_trade_other);
-
-	gp_trade->Hide();
 
 	journal = new Journal;
 	Add(journal);
@@ -122,20 +88,31 @@ GameGui::GameGui() : debug_info_size(0, 0), profiler_size(0, 0), use_cursor(fals
 GameGui::~GameGui()
 {
 	delete game_messages;
-	delete inventory;
 	delete stats;
 	delete journal;
 	delete team_panel;
 	delete minimap;
 	delete mp_box;
-	delete inv_trade_mine;
-	delete inv_trade_other;
-	delete gp_trade;
 	delete action_panel;
 	delete book_panel;
-	delete game.inventory;
 
 	SpeechBubblePool.Free(speech_bbs);
+}
+
+//=================================================================================================
+void GameGui::LoadLanguage()
+{
+	txDeath = Str("death");
+	txDeathAlone = Str("deathAlone");
+	txGameTimeout = Str("gameTimeout");
+	txChest = Str("chest");
+	txDoor = Str("door");
+	txDoorLocked = Str("doorLocked");
+	txPressEsc = Str("pressEsc");
+	txMenu = Str("menu");
+	txHp = Str("hp");
+	txStamina = Str("stamina");
+	BuffInfo::LoadText();
 }
 
 //=================================================================================================
@@ -785,7 +762,8 @@ void GameGui::Update(float dt)
 	if(Net::IsOnline())
 		--max;
 
-	sidebar_state[(int)SideButtonId::Inventory] = (inventory->visible ? 2 : 0);
+	GlobalGui* gui = game.gui;
+	sidebar_state[(int)SideButtonId::InventoryPanel] = (gui->inventory->visible ? 2 : 0);
 	sidebar_state[(int)SideButtonId::Journal] = (journal->visible ? 2 : 0);
 	sidebar_state[(int)SideButtonId::Stats] = (stats->visible ? 2 : 0);
 	sidebar_state[(int)SideButtonId::Team] = (team_panel->visible ? 2 : 0);
@@ -900,8 +878,8 @@ void GameGui::Update(float dt)
 					case SideButtonId::Journal:
 						ShowPanel(OpenPanel::Journal);
 						break;
-					case SideButtonId::Inventory:
-						ShowPanel(OpenPanel::Inventory);
+					case SideButtonId::InventoryPanel:
+						ShowPanel(OpenPanel::InventoryPanel);
 						break;
 					case SideButtonId::Action:
 						ShowPanel(OpenPanel::Action);
@@ -1191,7 +1169,7 @@ void GameGui::GetTooltip(TooltipController*, int _group, int id)
 			case SideButtonId::Journal:
 				gk = GK_JOURNAL;
 				break;
-			case SideButtonId::Inventory:
+			case SideButtonId::InventoryPanel:
 				gk = GK_INVENTORY;
 				break;
 			case SideButtonId::Action:
@@ -1283,7 +1261,7 @@ void GameGui::LoadData()
 	tex_mgr.AddLoadTask("bt_team.png", tSideButton[(int)SideButtonId::Team]);
 	tex_mgr.AddLoadTask("bt_minimap.png", tSideButton[(int)SideButtonId::Minimap]);
 	tex_mgr.AddLoadTask("bt_journal.png", tSideButton[(int)SideButtonId::Journal]);
-	tex_mgr.AddLoadTask("bt_inventory.png", tSideButton[(int)SideButtonId::Inventory]);
+	tex_mgr.AddLoadTask("bt_inventory.png", tSideButton[(int)SideButtonId::InventoryPanel]);
 	tex_mgr.AddLoadTask("bt_action.png", tSideButton[(int)SideButtonId::Action]);
 	tex_mgr.AddLoadTask("bt_stats.png", tSideButton[(int)SideButtonId::Stats]);
 	tex_mgr.AddLoadTask("bt_talk.png", tSideButton[(int)SideButtonId::Talk]);
@@ -1320,7 +1298,7 @@ OpenPanel GameGui::GetOpenPanel()
 	if(stats->visible)
 		return OpenPanel::Stats;
 	else if(inventory->visible)
-		return OpenPanel::Inventory;
+		return OpenPanel::InventoryPanel;
 	else if(team_panel->visible)
 		return OpenPanel::Team;
 	else if(journal->visible)
@@ -1349,7 +1327,7 @@ void GameGui::ShowPanel(OpenPanel to_open, OpenPanel open)
 	case OpenPanel::Stats:
 		stats->Hide();
 		break;
-	case OpenPanel::Inventory:
+	case OpenPanel::InventoryPanel:
 		inventory->Hide();
 		break;
 	case OpenPanel::Team:
@@ -1378,7 +1356,7 @@ void GameGui::ShowPanel(OpenPanel to_open, OpenPanel open)
 		case OpenPanel::Stats:
 			stats->Show();
 			break;
-		case OpenPanel::Inventory:
+		case OpenPanel::InventoryPanel:
 			inventory->Show();
 			break;
 		case OpenPanel::Team:

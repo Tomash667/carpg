@@ -2,6 +2,7 @@
 #include "GameCore.h"
 #include "MpBox.h"
 #include "Game.h"
+#include "GlobalGui.h"
 #include "GameGui.h"
 #include "BitStreamFunc.h"
 
@@ -34,7 +35,7 @@ void MpBox::Draw(ControlDrawData*)
 void MpBox::Update(float dt)
 {
 	// hack for mp_box focus
-	focusable = Game::Get().game_gui->CanFocusMpBox();
+	focusable = Game::Get().gui->game_gui->CanFocusMpBox();
 
 	bool prev_focus = focus;
 	focus = focusable;
@@ -97,6 +98,6 @@ void MpBox::OnInput(const string& str)
 		cstring s = Format("%s: %s", game.player_name.c_str(), str.c_str());
 		game.AddMultiMsg(s);
 		if(game.game_state == GS_LEVEL)
-			game.game_gui->AddSpeechBubble(game.pc->unit, str.c_str());
+			game.gui->game_gui->AddSpeechBubble(game.pc->unit, str.c_str());
 	}
 }

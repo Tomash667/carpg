@@ -8,6 +8,7 @@
 #include "InsideLocation.h"
 #include "City.h"
 #include "ServerPanel.h"
+#include "GlobalGui.h"
 #include "GameGui.h"
 #include "Console.h"
 #include "MpBox.h"
@@ -1092,7 +1093,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						AddServerMsg(text.c_str());
 						Info("SERWER: %s", text.c_str());
 						if(game_state == GS_LEVEL)
-							game_gui->AddSpeechBubble(pc->unit, text.c_str());
+							gui->game_gui->AddSpeechBubble(pc->unit, text.c_str());
 					}
 					else
 						Msg("You need to enter message.");
@@ -1538,7 +1539,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						console->Reset();
 						break;
 					case PS_CHAT:
-						game_gui->mp_box->itb.Reset();
+						gui->game_gui->mp_box->itb.Reset();
 						break;
 					case PS_LOBBY:
 						server_panel->itb.Reset();

@@ -7,6 +7,7 @@
 #include "QuestManager.h"
 #include "Quest_Evil.h"
 #include "Net.h"
+#include "GlobalGui.h"
 #include "GameGui.h"
 #include "TeamPanel.h"
 #include "UnitHelper.h"
@@ -100,8 +101,8 @@ void TeamSingleton::AddTeamMember(Unit* unit, bool free)
 
 	// update TeamPanel if open
 	Game& game = Game::Get();
-	if(game.game_gui->team_panel->visible)
-		game.game_gui->team_panel->Changed();
+	if(game.gui->game_gui->team_panel->visible)
+		game.gui->game_gui->team_panel->Changed();
 
 	// send info to other players
 	if(Net::IsOnline())
@@ -132,8 +133,8 @@ void TeamSingleton::RemoveTeamMember(Unit* unit)
 
 	// update TeamPanel if open
 	Game& game = Game::Get();
-	if(game.game_gui->team_panel->visible)
-		game.game_gui->team_panel->Changed();
+	if(game.gui->game_gui->team_panel->visible)
+		game.gui->game_gui->team_panel->Changed();
 
 	// send info to other players
 	if(Net::IsOnline())

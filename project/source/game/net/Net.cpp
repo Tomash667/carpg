@@ -760,7 +760,7 @@ bool Game::ReadPlayerData(BitStreamReader& f)
 	pc = unit->player;
 	pc->player_info = &info;
 	info.pc = pc;
-	game_gui->Setup();
+	gui->game_gui->Setup();
 
 	// items
 	for(int i = 0; i < SLOT_MAX; ++i)
@@ -3707,7 +3707,7 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 			f.WriteCasted<byte>(c.id);
 			break;
 		case NetChange::ADD_RUMOR:
-			f << game_gui->journal->GetRumors()[c.id];
+			f << gui->game_gui->journal->GetRumors()[c.id];
 			break;
 		case NetChange::HAIR_COLOR:
 			f << c.unit->netid;
@@ -4195,7 +4195,7 @@ void Game::UpdateClient(float dt)
 					net_state = NetState::Client_ChangingLevel;
 					clear_color = Color::Black;
 					gui->load_screen->visible = true;
-					game_gui->visible = false;
+					gui->game_gui->visible = false;
 					world_map->visible = false;
 					arena->ClosePvpDialog();
 					if(dialog_enc)
@@ -4973,7 +4973,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 						N.StreamError("Update client: TALK, missing unit %d.", netid);
 					else
 					{
-						game_gui->AddSpeechBubble(unit, text.c_str());
+						gui->game_gui->AddSpeechBubble(unit, text.c_str());
 						unit->bubble->skip_id = skip_id;
 
 						if(animation != 0)
@@ -5009,7 +5009,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				if(!f)
 					N.StreamError("Update client: Broken TALK_POS.");
 				else
-					game_gui->AddSpeechBubble(pos, text.c_str());
+					gui->game_gui->AddSpeechBubble(pos, text.c_str());
 			}
 			break;
 		// change location state
@@ -5037,8 +5037,8 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				else
 				{
 					game_messages->AddGameMsg3(GMS_ADDED_RUMOR);
-					game_gui->journal->GetRumors().push_back(text);
-					game_gui->journal->NeedUpdate(Journal::Rumors);
+					gui->game_gui->journal->GetRumors().push_back(text);
+					gui->game_gui->journal->NeedUpdate(Journal::Rumors);
 				}
 			}
 			break;
@@ -5228,7 +5228,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				}
 
 				quest->state = Quest::Started;
-				game_gui->journal->NeedUpdate(Journal::Quests, quest->quest_index);
+				gui->game_gui->journal->NeedUpdate(Journal::Quests, quest->quest_index);
 				game_messages->AddGameMsg3(GMS_JOURNAL_UPDATED);
 				quest_manager.quests.push_back(quest);
 			}
@@ -5254,7 +5254,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				{
 					quest->state = (Quest::State)state;
 					quest->msgs.push_back(msg);
-					game_gui->journal->NeedUpdate(Journal::Quests, quest->quest_index);
+					gui->game_gui->journal->NeedUpdate(Journal::Quests, quest->quest_index);
 					game_messages->AddGameMsg3(GMS_JOURNAL_UPDATED);
 				}
 			}
@@ -5324,7 +5324,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 							break;
 						}
 					}
-					game_gui->journal->NeedUpdate(Journal::Quests, quest->quest_index);
+					gui->game_gui->journal->NeedUpdate(Journal::Quests, quest->quest_index);
 					game_messages->AddGameMsg3(GMS_JOURNAL_UPDATED);
 				}
 			}
@@ -5530,8 +5530,8 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 						Team.members.push_back(unit);
 						if(!free)
 							Team.active_members.push_back(unit);
-						if(game_gui->team_panel->visible)
-							game_gui->team_panel->Changed();
+						if(gui->game_gui->team_panel->visible)
+							gui->game_gui->team_panel->Changed();
 					}
 				}
 			}
@@ -5556,8 +5556,8 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 						RemoveElement(Team.members, unit);
 						if(!unit->hero->free)
 							RemoveElement(Team.active_members, unit);
-						if(game_gui->team_panel->visible)
-							game_gui->team_panel->Changed();
+						if(gui->game_gui->team_panel->visible)
+							gui->game_gui->team_panel->Changed();
 					}
 				}
 			}
@@ -6767,11 +6767,11 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 
 					// start trade
 					if(pc->action == PlayerController::Action_LootUnit)
-						inventory->StartTrade(I_LOOT_BODY, *pc->action_unit);
+						gui->inventory->StartTrade(I_LOOT_BODY, *pc->action_unit);
 					else if(pc->action == PlayerController::Action_LootContainer)
-						inventory->StartTrade(I_LOOT_CONTAINER, pc->action_container->container->items);
+						gui->inventory->StartTrade(I_LOOT_CONTAINER, pc->action_container->container->items);
 					else
-						inventory->StartTrade(I_LOOT_CHEST, pc->action_chest->items);
+						gui->inventory->StartTrade(I_LOOT_CHEST, pc->action_chest->items);
 				}
 				break;
 			// message about gained gold
@@ -6860,7 +6860,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 								break;
 							}
 						}
-						game_gui->UpdateScrollbar(dialog_choices.size());
+						gui->game_gui->UpdateScrollbar(dialog_choices.size());
 					}
 				}
 				break;
@@ -6902,7 +6902,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 					else if(id == "food_seller")
 						trader_buy = foodseller_buy;
 
-					inventory->StartTrade(I_TRADE, chest_trade, trader);
+					gui->inventory->StartTrade(I_TRADE, chest_trade, trader);
 				}
 				break;
 			// add multiple same items to inventory
@@ -7068,7 +7068,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 						if(!ReadItemListTeam(f, unit.items))
 							N.StreamError("Update single client: Broken %s.", name);
 						else
-							inventory->StartTrade(type == NetChangePlayer::START_SHARE ? I_SHARE : I_GIVE, unit);
+							gui->inventory->StartTrade(type == NetChangePlayer::START_SHARE ? I_SHARE : I_GIVE, unit);
 					}
 					else
 					{
@@ -7091,7 +7091,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 					if(!f)
 						N.StreamError("Update single client: Broken IS_BETTER_ITEM.");
 					else
-						game_gui->inv_trade_mine->IsBetterItemResponse(is_better);
+						gui->inventory->inv_trade_mine->IsBetterItemResponse(is_better);
 				}
 				break;
 			// question about pvp
@@ -7634,7 +7634,7 @@ void Game::WriteClientChanges(BitStreamWriter& f)
 		case NetChange::END_TRAVEL:
 			break;
 		case NetChange::ADD_NOTE:
-			f << game_gui->journal->GetNotes().back();
+			f << gui->game_gui->journal->GetNotes().back();
 			break;
 		case NetChange::USE_USABLE:
 			f << c.id;
@@ -7752,7 +7752,7 @@ void Game::Client_Say(BitStreamReader& f)
 			cstring s = Format("%s: %s", info->name.c_str(), text.c_str());
 			AddMsg(s);
 			if(game_state == GS_LEVEL)
-				game_gui->AddSpeechBubble(info->u, text.c_str());
+				gui->game_gui->AddSpeechBubble(info->u, text.c_str());
 		}
 	}
 }
@@ -7814,7 +7814,7 @@ void Game::Server_Say(BitStream& stream, PlayerInfo& info, Packet* packet)
 		}
 
 		if(game_state == GS_LEVEL)
-			game_gui->AddSpeechBubble(info.u, text.c_str());
+			gui->game_gui->AddSpeechBubble(info.u, text.c_str());
 	}
 }
 
@@ -7949,8 +7949,8 @@ void Game::Net_OnNewGameClient()
 		StringPool.Free(net_talk);
 	paused = false;
 	hardcore_mode = false;
-	game_gui->mp_box->Reset();
-	game_gui->mp_box->visible = true;
+	gui->game_gui->mp_box->Reset();
+	gui->game_gui->mp_box->visible = true;
 }
 
 //=================================================================================================
@@ -8018,8 +8018,8 @@ void Game::Net_OnNewGameServer()
 	max_players2 = N.max_players;
 	server_name2 = N.server_name;
 	enter_pswd = (N.password.empty() ? "" : "1");
-	game_gui->mp_box->Reset();
-	game_gui->mp_box->visible = true;
+	gui->game_gui->mp_box->Reset();
+	gui->game_gui->mp_box->visible = true;
 }
 
 //=================================================================================================
@@ -8156,7 +8156,7 @@ void Game::PrepareWorldData(BitStreamWriter& f)
 	QM.Write(f);
 
 	// rumors
-	f.WriteStringArray<byte, word>(game_gui->journal->GetRumors());
+	f.WriteStringArray<byte, word>(gui->game_gui->journal->GetRumors());
 
 	// stats
 	GameStats::Get().Write(f);
@@ -8200,7 +8200,7 @@ bool Game::ReadWorldData(BitStreamReader& f)
 		return false;
 
 	// rumors
-	f.ReadStringArray<byte, word>(game_gui->journal->GetRumors());
+	f.ReadStringArray<byte, word>(gui->game_gui->journal->GetRumors());
 	if(!f)
 	{
 		Error("Read world: Broken packet for rumors.");
@@ -8437,7 +8437,7 @@ bool Game::ReadPlayerStartData(BitStreamReader& f)
 {
 	byte flags;
 	f >> flags;
-	f.ReadStringArray<word, word>(game_gui->journal->GetNotes());
+	f.ReadStringArray<word, word>(gui->game_gui->journal->GetNotes());
 	if(!f)
 		return false;
 

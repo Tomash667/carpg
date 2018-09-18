@@ -11,6 +11,7 @@
 #include "Encounter.h"
 #include "InsideLocation.h"
 #include "City.h"
+#include "GlobalGui.h"
 #include "GameGui.h"
 #include "MpBox.h"
 #include "GameMessages.h"
@@ -40,9 +41,9 @@ WorldMapGui::WorldMapGui() : game(Game::Get())
 	txOnlyLeaderCanTravel = Str("onlyLeaderCanTravel");
 	txBuildings = Str("buildings");
 
-	mp_box = game.game_gui->mp_box;
-	journal = game.game_gui->journal;
-	game_messages = game.game_gui->game_messages;
+	mp_box = game.gui->game_gui->mp_box;
+	journal = game.gui->game_gui->journal;
+	game_messages = game.gui->game_gui->game_messages;
 }
 
 //=================================================================================================

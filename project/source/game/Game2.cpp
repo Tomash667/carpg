@@ -888,7 +888,7 @@ void Game::UpdateGame(float dt)
 	// obracanie kamery góra/dó³
 	if(!Net::IsLocal() || Team.IsAnyoneAlive())
 	{
-		if(dialog_context.dialog_mode && inventory->mode <= I_INVENTORY)
+		if(dialog_context.dialog_mode && gui->inventory->mode <= I_INVENTORY)
 		{
 			cam.free_rot = false;
 			if(cam.real_rot.y > 4.2875104f)
@@ -959,7 +959,7 @@ void Game::UpdateGame(float dt)
 	// przybli¿anie/oddalanie kamery
 	if(GKey.AllowMouse())
 	{
-		if(!dialog_context.dialog_mode || !dialog_context.show_choices || !game_gui->IsMouseInsideDialog())
+		if(!dialog_context.dialog_mode || !dialog_context.show_choices || !gui->game_gui->IsMouseInsideDialog())
 		{
 			cam.dist -= Key.GetMouseWheel();
 			cam.dist = Clamp(cam.dist, 0.5f, 6.f);
@@ -1005,7 +1005,7 @@ void Game::UpdateGame(float dt)
 	// aktualizuj gracza
 	if(pc_data.wasted_key != VK_NONE && Key.Up(pc_data.wasted_key))
 		pc_data.wasted_key = VK_NONE;
-	if(dialog_context.dialog_mode || pc->unit->look_target || inventory->mode > I_INVENTORY)
+	if(dialog_context.dialog_mode || pc->unit->look_target || gui->inventory->mode > I_INVENTORY)
 	{
 		Vec3 pos;
 		if(pc->unit->look_target)
@@ -1016,19 +1016,19 @@ void Game::UpdateGame(float dt)
 				pos = pc->unit->look_target->pos;
 			pc->unit->animation = ANI_STAND;
 		}
-		else if(inventory->mode == I_LOOT_CHEST)
+		else if(gui->inventory->mode == I_LOOT_CHEST)
 		{
 			assert(pc->action == PlayerController::Action_LootChest);
 			pos = pc->action_chest->pos;
 			pc->unit->animation = ANI_KNEELS;
 		}
-		else if(inventory->mode == I_LOOT_BODY)
+		else if(gui->inventory->mode == I_LOOT_BODY)
 		{
 			assert(pc->action == PlayerController::Action_LootUnit);
 			pos = pc->action_unit->GetLootCenter();
 			pc->unit->animation = ANI_KNEELS;
 		}
-		else if(inventory->mode == I_LOOT_CONTAINER)
+		else if(gui->inventory->mode == I_LOOT_CONTAINER)
 		{
 			// TODO: animacja
 			assert(pc->action == PlayerController::Action_LootContainer);
@@ -1042,7 +1042,7 @@ void Game::UpdateGame(float dt)
 		}
 		else
 		{
-			assert(pc->action == InventoryModeToActionRequired(inventory->mode));
+			assert(pc->action == InventoryModeToActionRequired(gui->inventory->mode));
 			pos = pc->action_unit->pos;
 			pc->unit->animation = ANI_STAND;
 		}
@@ -1066,9 +1066,9 @@ void Game::UpdateGame(float dt)
 			}
 		}
 
-		if(inventory->mode > I_INVENTORY)
+		if(gui->inventory->mode > I_INVENTORY)
 		{
-			if(inventory->mode == I_LOOT_BODY)
+			if(gui->inventory->mode == I_LOOT_BODY)
 			{
 				if(pc->action_unit->IsAlive())
 				{
@@ -1076,7 +1076,7 @@ void Game::UpdateGame(float dt)
 					CloseInventory();
 				}
 			}
-			else if(inventory->mode == I_TRADE || inventory->mode == I_SHARE || inventory->mode == I_GIVE)
+			else if(gui->inventory->mode == I_TRADE || gui->inventory->mode == I_SHARE || gui->inventory->mode == I_GIVE)
 			{
 				if(!pc->action_unit->IsStanding() || !pc->action_unit->IsIdle())
 				{
@@ -2143,7 +2143,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						pc->action_unit = u2;
 						u2->busy = Unit::Busy_Looted;
 						pc->chest_trade = &u2->items;
-						inventory->StartTrade(I_LOOT_BODY, *u2);
+						gui->inventory->StartTrade(I_LOOT_BODY, *u2);
 					}
 				}
 				else
@@ -2201,21 +2201,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				else
 				{
 					// rozpocznij ograbianie skrzyni
-					pc->action = PlayerController::Action_LootChest;
-					pc->action_chest = pc_data.before_player_ptr.chest;
-					pc->action_chest->user = pc->unit;
-					pc->chest_trade = &pc->action_chest->items;
-					CloseGamePanels();
-					inventory->mode = I_LOOT_CHEST;
-					inventory->BuildTmpInventory(0);
-					game_gui->inv_trade_mine->mode = Inventory::LOOT_MY;
-					inventory->BuildTmpInventory(1);
-					game_gui->inv_trade_other->unit = nullptr;
-					game_gui->inv_trade_other->items = &pc->action_chest->items;
-					game_gui->inv_trade_other->slots = nullptr;
-					game_gui->inv_trade_other->title = inventory->txLootingChest;
-					game_gui->inv_trade_other->mode = Inventory::LOOT_OTHER;
-					game_gui->gp_trade->Show();
+					gui->inventory->StartTrade2(I_LOOT_CHEST, pc_data.before_player_ptr.chest);
 
 					// animacja / dŸwiêk
 					pc->action_chest->mesh_inst->Play(&pc->action_chest->mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END, 0);
@@ -3191,12 +3177,12 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				ok = true;
 		}
 		else
-			ok = game_gui->UpdateChoice(ctx, ctx.choices.size());
+			ok = gui->game_gui->UpdateChoice(ctx, ctx.choices.size());
 
 		if(ok)
 		{
 			cstring msg = ctx.choices[ctx.choice_selected].msg;
-			game_gui->AddSpeechBubble(ctx.pc->unit, msg);
+			gui->game_gui->AddSpeechBubble(ctx.pc->unit, msg);
 
 			if(Net::IsOnline())
 			{
@@ -3341,7 +3327,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				{
 					ctx.choice_selected = 0;
 					dialog_cursor_pos = Int2(-1, -1);
-					game_gui->UpdateScrollbar(ctx.choices.size());
+					gui->game_gui->UpdateScrollbar(ctx.choices.size());
 				}
 				else
 				{
@@ -3405,7 +3391,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				}
 
 				if(ctx.is_local)
-					inventory->StartTrade(I_TRADE, *ctx.pc->chest_trade, t);
+					gui->inventory->StartTrade(I_TRADE, *ctx.pc->chest_trade, t);
 				else
 				{
 					NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
@@ -4197,7 +4183,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 						return true;
 					}
 
-					game_gui->journal->AddRumor(ctx.dialog_s_text.c_str());
+					gui->game_gui->journal->AddRumor(ctx.dialog_s_text.c_str());
 					DialogTalk(ctx, ctx.dialog_s_text.c_str());
 					++ctx.dialog_pos;
 					return true;
@@ -4460,7 +4446,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 		ctx.pc->action_unit = t;
 		ctx.pc->chest_trade = &t->items;
 		if(ctx.is_local)
-			inventory->StartTrade(I_GIVE, *t);
+			gui->inventory->StartTrade(I_GIVE, *t);
 		else
 		{
 			NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
@@ -4477,7 +4463,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 		ctx.pc->action_unit = t;
 		ctx.pc->chest_trade = &t->items;
 		if(ctx.is_local)
-			inventory->StartTrade(I_SHARE, *t);
+			gui->inventory->StartTrade(I_SHARE, *t);
 		else
 		{
 			NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
@@ -6667,27 +6653,27 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 							// unequip item
 						case NA_REMOVE:
 							if(u.slots[pc->next_action_data.slot])
-								game_gui->inventory->RemoveSlotItem(pc->next_action_data.slot);
+								gui->inventory->inv_mine->RemoveSlotItem(pc->next_action_data.slot);
 							break;
 							// equip item after unequiping old one
 						case NA_EQUIP:
 							{
 								int index = pc->GetNextActionItemIndex();
 								if(index != -1)
-									game_gui->inventory->EquipSlotItem(index);
+									gui->inventory->inv_mine->EquipSlotItem(index);
 							}
 							break;
 							// drop item after hiding it
 						case NA_DROP:
 							if(u.slots[pc->next_action_data.slot])
-								game_gui->inventory->DropSlotItem(pc->next_action_data.slot);
+								gui->inventory->inv_mine->DropSlotItem(pc->next_action_data.slot);
 							break;
 							// use consumable
 						case NA_CONSUME:
 							{
 								int index = pc->GetNextActionItemIndex();
 								if(index != -1)
-									game_gui->inventory->ConsumeItem(index);
+									gui->inventory->inv_mine->ConsumeItem(index);
 							}
 							break;
 							//  use usable
@@ -6698,17 +6684,17 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 							// sell equipped item
 						case NA_SELL:
 							if(u.slots[pc->next_action_data.slot])
-								game_gui->inv_trade_mine->SellSlotItem(pc->next_action_data.slot);
+								gui->inventory->inv_trade_mine->SellSlotItem(pc->next_action_data.slot);
 							break;
 							// put equipped item in container
 						case NA_PUT:
 							if(u.slots[pc->next_action_data.slot])
-								game_gui->inv_trade_mine->PutSlotItem(pc->next_action_data.slot);
+								gui->inventory->inv_trade_mine->PutSlotItem(pc->next_action_data.slot);
 							break;
 							// give equipped item
 						case NA_GIVE:
 							if(u.slots[pc->next_action_data.slot])
-								game_gui->inv_trade_mine->GiveSlotItem(pc->next_action_data.slot);
+								gui->inventory->inv_trade_mine->GiveSlotItem(pc->next_action_data.slot);
 							break;
 						}
 
@@ -8633,7 +8619,7 @@ void Game::ChangeLevel(int where)
 		game_state = GS_LEVEL;
 		gui->load_screen->visible = false;
 		main_menu->visible = false;
-		game_gui->visible = true;
+		gui->game_gui->visible = true;
 	}
 
 	Info("Randomness integrity: %d", RandVal());
@@ -8749,7 +8735,7 @@ void Game::ExitToMap()
 
 	show_mp_panel = true;
 	world_map->visible = true;
-	game_gui->visible = false;
+	gui->game_gui->visible = false;
 }
 
 SOUND Game::GetMaterialSound(MATERIAL_TYPE atakuje, MATERIAL_TYPE trafiony)
@@ -10387,23 +10373,23 @@ void Game::BuildRefidTables()
 
 void Game::ClearGameVarsOnNewGameOrLoad()
 {
-	inventory->mode = I_NONE;
+	gui->inventory->mode = I_NONE;
 	dialog_context.dialog_mode = false;
 	dialog_context.is_local = true;
 	death_screen = 0;
 	koniec_gry = false;
 	minimap_reveal.clear();
-	game_gui->minimap->city = nullptr;
+	gui->game_gui->minimap->city = nullptr;
 	Team.ClearOnNewGameOrLoad();
 	draw_flags = 0xFFFFFFFF;
-	game_gui->Reset();
-	game_gui->journal->Reset();
+	gui->game_gui->Reset();
+	gui->game_gui->journal->Reset();
 	arena->Reset();
 	debug_info = false;
 	debug_info2 = false;
 	dialog_enc = nullptr;
-	game_gui->visible = false;
-	inventory->lock = nullptr;
+	gui->game_gui->visible = false;
+	gui->inventory->lock = nullptr;
 	world_map->picked_location = -1;
 	post_effects.clear();
 	grayout = 0.f;
@@ -10446,9 +10432,9 @@ void Game::ClearGameVarsOnNewGame()
 	dont_wander = false;
 	pc_data.picking_item_state = 0;
 	L.is_open = false;
-	game_gui->PositionPanels();
-	ClearGui(true);
-	game_gui->mp_box->visible = Net::IsOnline();
+	gui->game_gui->PositionPanels();
+	gui->Clear(true);
+	gui->game_gui->mp_box->visible = Net::IsOnline();
 	drunk_anim = 0.f;
 	L.light_angle = Random(PI * 2);
 	cam.Reset();
@@ -10505,7 +10491,7 @@ void Game::ClearGame()
 
 	W.Reset();
 
-	ClearGui(true);
+	gui->Clear(true);
 }
 
 cstring Game::FormatString(DialogContext& ctx, const string& str_part)
@@ -10811,7 +10797,7 @@ void Game::EnterLevel(LocationGenerator* loc_gen)
 		Info("Entering location '%s' level %d.", L.location->name.c_str(), L.dungeon_level + 1);
 
 	show_mp_panel = true;
-	inventory->lock = nullptr;
+	gui->inventory->lock = nullptr;
 
 	loc_gen->OnEnter();
 
@@ -10826,8 +10812,8 @@ void Game::LeaveLevel(bool clear)
 {
 	Info("Leaving level.");
 
-	if(game_gui)
-		game_gui->Reset();
+	if(gui->game_gui)
+		gui->game_gui->Reset();
 
 	for(vector<Unit*>::iterator it = warp_to_inn.begin(), end = warp_to_inn.end(); it != end; ++it)
 		L.WarpToInn(**it);
@@ -10862,7 +10848,7 @@ void Game::LeaveLevel(bool clear)
 	pc_data.rot_buf = 0.f;
 	pc_data.selected_unit = nullptr;
 	dialog_context.dialog_mode = false;
-	inventory->mode = I_NONE;
+	gui->inventory->mode = I_NONE;
 	pc_data.before_player = BP_NONE;
 }
 
@@ -11173,7 +11159,7 @@ void Game::LoadingStart(int steps)
 	game_state = GS_LOAD;
 	gui->load_screen->visible = true;
 	main_menu->visible = false;
-	game_gui->visible = false;
+	gui->game_gui->visible = false;
 	ResourceManager::Get().PrepareLoadScreen(loading_cap);
 }
 
@@ -11628,7 +11614,7 @@ void Game::DeleteUnit(Unit* unit)
 	if(game_state != GS_WORLDMAP)
 	{
 		RemoveElement(L.GetContext(*unit).units, unit);
-		game_gui->RemoveUnit(unit);
+		gui->game_gui->RemoveUnit(unit);
 		if(pc_data.before_player == BP_UNIT && pc_data.before_player_ptr.unit == unit)
 			pc_data.before_player = BP_NONE;
 		if(unit == pc_data.selected_target)
@@ -11730,7 +11716,7 @@ void Game::DialogTalk(DialogContext& ctx, cstring msg)
 	else
 		ani = 0;
 
-	game_gui->AddSpeechBubble(ctx.talker, ctx.dialog_text);
+	gui->game_gui->AddSpeechBubble(ctx.talker, ctx.dialog_text);
 
 	ctx.pc->Train(TrainWhat::Talk, 0.f, 0);
 
@@ -12990,7 +12976,7 @@ void Game::SetUnitWeaponState(Unit& u, bool wyjmuje, WeaponType co)
 
 void Game::OnCloseInventory()
 {
-	if(inventory->mode == I_TRADE)
+	if(gui->inventory->mode == I_TRADE)
 	{
 		if(Net::IsLocal())
 		{
@@ -13000,7 +12986,7 @@ void Game::OnCloseInventory()
 		else
 			Net::PushChange(NetChange::STOP_TRADE);
 	}
-	else if(inventory->mode == I_SHARE || inventory->mode == I_GIVE)
+	else if(gui->inventory->mode == I_SHARE || gui->inventory->mode == I_GIVE)
 	{
 		if(Net::IsLocal())
 		{
@@ -13010,13 +12996,13 @@ void Game::OnCloseInventory()
 		else
 			Net::PushChange(NetChange::STOP_TRADE);
 	}
-	else if(inventory->mode == I_LOOT_CHEST && Net::IsLocal())
+	else if(gui->inventory->mode == I_LOOT_CHEST && Net::IsLocal())
 	{
 		pc->action_chest->user = nullptr;
 		pc->action_chest->mesh_inst->Play(&pc->action_chest->mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
 		sound_mgr->PlaySound3d(sChestClose, pc->action_chest->GetCenter(), 2.f, 5.f);
 	}
-	else if(inventory->mode == I_LOOT_CONTAINER)
+	else if(gui->inventory->mode == I_LOOT_CONTAINER)
 	{
 		if(Net::IsLocal())
 		{
@@ -13034,11 +13020,11 @@ void Game::OnCloseInventory()
 			Net::PushChange(NetChange::STOP_TRADE);
 	}
 
-	if(Net::IsOnline() && (inventory->mode == I_LOOT_BODY || inventory->mode == I_LOOT_CHEST))
+	if(Net::IsOnline() && (gui->inventory->mode == I_LOOT_BODY || gui->inventory->mode == I_LOOT_CHEST))
 	{
 		if(Net::IsClient())
 			Net::PushChange(NetChange::STOP_TRADE);
-		else if(inventory->mode == I_LOOT_BODY)
+		else if(gui->inventory->mode == I_LOOT_BODY)
 			pc->action_unit->busy = Unit::Busy_No;
 		else
 		{
@@ -13052,25 +13038,25 @@ void Game::OnCloseInventory()
 		pc->next_action = NA_NONE;
 
 	pc->action = PlayerController::Action_None;
-	inventory->mode = I_NONE;
+	gui->inventory->mode = I_NONE;
 }
 
 // zamyka ekwipunek i wszystkie okna które on móg³by utworzyæ
 void Game::CloseInventory()
 {
 	OnCloseInventory();
-	inventory->mode = I_NONE;
-	if(game_gui)
+	gui->inventory->mode = I_NONE;
+	if(gui->game_gui)
 	{
-		game_gui->inventory->Hide();
-		game_gui->gp_trade->Hide();
+		gui->inventory->inv_mine->Hide();
+		gui->inventory->gp_trade->Hide();
 	}
 }
 
 void Game::CloseAllPanels(bool close_mp_box)
 {
-	if(game_gui)
-		game_gui->ClosePanels(close_mp_box);
+	if(gui->game_gui)
+		gui->game_gui->ClosePanels(close_mp_box);
 }
 
 bool Game::CanShowEndScreen()
@@ -13085,7 +13071,7 @@ void Game::UpdateGameDialogClient()
 {
 	if(dialog_context.show_choices)
 	{
-		if(game_gui->UpdateChoice(dialog_context, dialog_choices.size()))
+		if(gui->game_gui->UpdateChoice(dialog_context, dialog_choices.size()))
 		{
 			dialog_context.show_choices = false;
 			dialog_context.dialog_text = "";
@@ -13443,7 +13429,7 @@ void Game::ShowStatGain(bool is_skill, int what, int value)
 
 void Game::ActivateChangeLeaderButton(bool activate)
 {
-	game_gui->team_panel->bt[2].state = (activate ? Button::NONE : Button::DISABLED);
+	gui->game_gui->team_panel->bt[2].state = (activate ? Button::NONE : Button::DISABLED);
 }
 
 void Game::PayCredit(PlayerController* player, int ile)
@@ -13553,20 +13539,7 @@ void Game::PlayerUseUsable(Usable* usable, bool after_action)
 		if(IS_SET(bu.use_flags, BaseUsable::CONTAINER))
 		{
 			// loot container
-			pc->action = PlayerController::Action_LootContainer;
-			pc->action_container = &use;
-			pc->chest_trade = &pc->action_container->container->items;
-			CloseGamePanels();
-			inventory->mode = I_LOOT_CONTAINER;
-			inventory->BuildTmpInventory(0);
-			game_gui->inv_trade_mine->mode = Inventory::LOOT_MY;
-			inventory->BuildTmpInventory(1);
-			game_gui->inv_trade_other->unit = nullptr;
-			game_gui->inv_trade_other->items = &pc->action_container->container->items;
-			game_gui->inv_trade_other->slots = nullptr;
-			game_gui->inv_trade_other->title = Format("%s - %s", inventory->txLooting, use.base->name.c_str());
-			game_gui->inv_trade_other->mode = Inventory::LOOT_OTHER;
-			game_gui->gp_trade->Show();
+			gui->inventory->StartTrade2(I_LOOT_CONTAINER, &use);
 		}
 		else
 		{
@@ -13614,7 +13587,7 @@ void Game::UnitTalk(Unit& u, cstring text)
 {
 	assert(text && Net::IsLocal());
 
-	game_gui->AddSpeechBubble(&u, text);
+	gui->game_gui->AddSpeechBubble(&u, text);
 
 	int ani = 0;
 	if(u.data->type == UNIT_TYPE::HUMAN && u.action == A_NONE && Rand() % 3 != 0)
@@ -14110,13 +14083,13 @@ void Game::AddItem(Unit& unit, const Item* item, uint count, uint team_count, bo
 	int rebuild_id = -1;
 	if(&unit == pc->unit)
 	{
-		if(game_gui->inventory->visible || game_gui->gp_trade->visible)
+		if(gui->inventory->inv_mine->visible || gui->inventory->gp_trade->visible)
 			rebuild_id = 0;
 	}
-	else if(game_gui->gp_trade->visible && game_gui->inv_trade_other->unit == &unit)
+	else if(gui->inventory->gp_trade->visible && gui->inventory->inv_trade_other->unit == &unit)
 		rebuild_id = 1;
 	if(rebuild_id != -1)
-		inventory->BuildTmpInventory(rebuild_id);
+		gui->inventory->BuildTmpInventory(rebuild_id);
 }
 
 void Game::RemoveItem(Unit& unit, int i_index, uint count)
@@ -14196,11 +14169,11 @@ void Game::RemoveItem(Unit& unit, int i_index, uint count)
 	// aktualizuj tymczasowy ekwipunek
 	if(pc->unit == &unit)
 	{
-		if(game_gui->inventory->visible || game_gui->gp_trade->visible)
-			inventory->BuildTmpInventory(0);
+		if(gui->inventory->inv_mine->visible || gui->inventory->gp_trade->visible)
+			gui->inventory->BuildTmpInventory(0);
 	}
-	else if(game_gui->gp_trade->visible && game_gui->inv_trade_other->unit == &unit)
-		inventory->BuildTmpInventory(1);
+	else if(gui->inventory->gp_trade->visible && gui->inventory->inv_trade_other->unit == &unit)
+		gui->inventory->BuildTmpInventory(1);
 }
 
 bool Game::RemoveItem(Unit& unit, const Item* item, uint count)
@@ -14236,7 +14209,7 @@ void Game::SetOutsideParams()
 
 void Game::OnEnterLevelOrLocation()
 {
-	ClearGui(false);
+	gui->Clear(false);
 	lights_dt = 1.f;
 	pc_data.autowalk = false;
 	fallback_t = -0.5f;

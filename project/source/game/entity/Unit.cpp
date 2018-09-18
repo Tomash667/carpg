@@ -23,6 +23,7 @@
 #include "GameMessages.h"
 #include "GroundItem.h"
 #include "ResourceManager.h"
+#include "GlobalGui.h"
 
 const float Unit::AUTO_TALK_WAIT = 0.333f;
 const float Unit::STAMINA_BOW_ATTACK = 100.f;
@@ -3654,8 +3655,8 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 		if(player == game.pc)
 		{
 			game.pc_data.action_ready = false;
-			game.inventory->lock = nullptr;
-			if(game.inventory->mode > I_INVENTORY)
+			game.gui->inventory->lock = nullptr;
+			if(game.gui->inventory->mode > I_INVENTORY)
 				game.CloseInventory();
 
 			if(player->action == PlayerController::Action_Talk)

@@ -53,7 +53,7 @@ void Quest_Tutorial::Start()
 	game.pc->unit->slots[SLOT_ARMOR] = item;
 	game.pc->unit->weight += game.pc->unit->slots[SLOT_ARMOR]->weight;
 	game.pc->unit->gold = 10;
-	game.game_gui->journal->GetNotes().push_back(txTutNote);
+	game.gui->game_gui->journal->GetNotes().push_back(txTutNote);
 
 	// startowa lokacja
 	SingleInsideLocation* loc = new SingleInsideLocation;
@@ -65,14 +65,14 @@ void Quest_Tutorial::Start()
 	L.dungeon_level = 0;
 
 	game.loc_gen_factory->Get(L.location)->OnEnter();
-	
+
 	// go!
 	game.LoadResources("", false);
 	L.event_handler = nullptr;
 	game.SetMusic();
 	game.gui->load_screen->visible = false;
 	game.main_menu->visible = false;
-	game.game_gui->visible = true;
+	game.gui->game_gui->visible = true;
 	game.world_map->visible = false;
 	game.clear_color = game.clear_color2;
 	game.cam.Reset();

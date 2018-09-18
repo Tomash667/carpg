@@ -48,7 +48,7 @@ const float T_WAIT_FOR_DATA = 5.f;
 //=================================================================================================
 bool Game::CanShowMenu()
 {
-	return !GUI.HaveDialog() && !game_gui->HavePanelOpen() && !main_menu->visible && game_state != GS_MAIN_MENU && death_screen != 3 && !koniec_gry
+	return !GUI.HaveDialog() && !gui->game_gui->HavePanelOpen() && !main_menu->visible && game_state != GS_MAIN_MENU && death_screen != 3 && !koniec_gry
 		&& !dialog_context.dialog_mode;
 }
 
@@ -388,7 +388,7 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 	dialog_context.pc = pc;
 
 	ClearGameVarsOnNewGame();
-	SetGamePanels();
+	gui->Setup(pc);
 
 	if(!tutorial && cc.HavePerk(Perk::Leader))
 	{
@@ -400,7 +400,7 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 		Team.free_recruit = false;
 		npc->hero->SetupMelee();
 	}
-	game_gui->Setup();
+	gui->game_gui->Setup();
 
 	fallback_type = FALLBACK::NONE;
 	fallback_t = -0.5f;
@@ -1298,7 +1298,7 @@ void Game::UpdateClientTransfer(float dt)
 					game_state = GS_WORLDMAP;
 					gui->load_screen->visible = false;
 					main_menu->visible = false;
-					game_gui->visible = false;
+					gui->game_gui->visible = false;
 					world_map->visible = true;
 					W.SetState(World::State::ON_MAP);
 					info_box->CloseDialog();
@@ -1329,7 +1329,7 @@ void Game::UpdateClientTransfer(float dt)
 					game_state = GS_LEVEL;
 					gui->load_screen->visible = false;
 					main_menu->visible = false;
-					game_gui->visible = true;
+					gui->game_gui->visible = true;
 					world_map->visible = false;
 					info_box->CloseDialog();
 					update_timer = 0.f;
@@ -1341,7 +1341,7 @@ void Game::UpdateClientTransfer(float dt)
 						ChangeTitle();
 					N.StreamEnd();
 					N.peer->DeallocatePacket(packet);
-					SetGamePanels();
+					gui->Setup(pc);
 					OnEnterLevelOrLocation();
 				}
 				else
@@ -1756,7 +1756,7 @@ void Game::UpdateServerTransfer(float dt)
 				game_state = GS_WORLDMAP;
 				gui->load_screen->visible = false;
 				world_map->visible = true;
-				game_gui->visible = false;
+				gui->game_gui->visible = false;
 				main_menu->visible = false;
 				mp_load = false;
 				clear_color = Color::White;
@@ -2030,11 +2030,11 @@ void Game::UpdateServerSend(float dt)
 		info_box->CloseDialog();
 		gui->load_screen->visible = false;
 		main_menu->visible = false;
-		game_gui->visible = true;
+		gui->game_gui->visible = true;
 		world_map->visible = false;
 		mp_load = false;
 		SetMusic();
-		SetGamePanels();
+		gui->Setup(pc);
 		ProcessLeftPlayers();
 	}
 }
@@ -2169,7 +2169,7 @@ void Game::AddMultiMsg(cstring _msg)
 {
 	assert(_msg);
 
-	game_gui->mp_box->itb.Add(_msg);
+	gui->game_gui->mp_box->itb.Add(_msg);
 }
 
 void Game::Quit()

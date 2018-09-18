@@ -165,7 +165,6 @@ public:
 	void SetGameText();
 	void SetStatsText();
 	void ConfigureGame();
-	void InitScripts();
 
 	// loading data
 	void LoadData();
@@ -747,14 +746,10 @@ public:
 	bool cursor_allow_move;
 
 	void UpdateGui(float dt);
-	void CloseGamePanels();
-	void SetGamePanels();
 	void NullGui();
 	void InitGui();
 	void LoadGuiData();
 	void RemoveGui();
-	void LoadGui(FileReader& f);
-	void ClearGui(bool reset_mpbox);
 
 	//-----------------------------------------------------------------
 	// MENU / MAIN MENU / OPTIONS
@@ -957,7 +952,6 @@ public:
 	Pathfinding* pathfinding;
 	SuperShader* super_shader;
 	Arena* arena;
-	InventoryBase* inventory;
 	GlobalGui* gui;
 
 private:

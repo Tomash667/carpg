@@ -10,7 +10,7 @@ enum class OpenPanel
 {
 	None,
 	Stats,
-	Inventory,
+	InventoryPanel,
 	Team,
 	Journal,
 	Minimap,
@@ -26,7 +26,7 @@ enum class SideButtonId
 	Team,
 	Minimap,
 	Journal,
-	Inventory,
+	InventoryPanel,
 	Action,
 	Stats,
 	Talk,
@@ -64,6 +64,7 @@ public:
 	GameGui();
 	~GameGui();
 
+	void LoadLanguage();
 	void Draw(ControlDrawData* cdd = nullptr) override;
 	void Update(float dt) override;
 	bool NeedCursor() const override;
@@ -89,8 +90,6 @@ public:
 	void RemoveUnit(Unit* unit);
 
 	// panels
-	GamePanelContainer* gp_trade;
-	Inventory* inventory, *inv_trade_mine, *inv_trade_other;
 	StatsPanel* stats;
 	TeamPanel* team_panel;
 	Journal* journal;

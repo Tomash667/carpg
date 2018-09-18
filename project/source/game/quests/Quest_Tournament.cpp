@@ -12,6 +12,7 @@
 #include "AIController.h"
 #include "Team.h"
 #include "Language.h"
+#include "GlobalGui.h"
 #include "GameGui.h"
 #include "Game.h"
 #include "GameMessages.h"
@@ -783,7 +784,7 @@ void Quest_Tournament::Talk(cstring text)
 	Game& game = Game::Get();
 	game.UnitTalk(*master, text);
 	Vec3 pos = L.GetArena()->exit_area.Midpoint().XZ(1.5f);
-	game.game_gui->AddSpeechBubble(pos, text);
+	game.gui->game_gui->AddSpeechBubble(pos, text);
 	if(Net::IsOnline())
 	{
 		NetChange& c = Add1(Net::changes);

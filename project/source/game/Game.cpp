@@ -376,17 +376,17 @@ void Game::OnTick(float dt)
 	}
 
 	// obs³uga paneli
-	if(GUI.HaveDialog() || (game_gui->mp_box->visible && game_gui->mp_box->itb.focus))
+	if(GUI.HaveDialog() || (gui->game_gui->mp_box->visible && gui->game_gui->mp_box->itb.focus))
 		GKey.allow_input = GameKeys::ALLOW_NONE;
 	else if(GKey.AllowKeyboard() && game_state == GS_LEVEL && death_screen == 0 && !dialog_context.dialog_mode)
 	{
-		OpenPanel open = game_gui->GetOpenPanel(),
+		OpenPanel open = gui->game_gui->GetOpenPanel(),
 			to_open = OpenPanel::None;
 
 		if (GKey.PressedRelease(GK_STATS))
 			to_open = OpenPanel::Stats;
 		else if (GKey.PressedRelease(GK_INVENTORY))
-			to_open = OpenPanel::Inventory;
+			to_open = OpenPanel::InventoryPanel;
 		else if (GKey.PressedRelease(GK_TEAM_PANEL))
 			to_open = OpenPanel::Team;
 		else if (GKey.PressedRelease(GK_JOURNAL))
@@ -399,18 +399,18 @@ void Game::OnTick(float dt)
 			to_open = OpenPanel::Trade; // ShowPanel hide when already opened
 
 		if(to_open != OpenPanel::None)
-			game_gui->ShowPanel(to_open, open);
+			gui->game_gui->ShowPanel(to_open, open);
 
 		switch(open)
 		{
 		case OpenPanel::None:
 		case OpenPanel::Minimap:
 		default:
-			if(game_gui->use_cursor)
+			if(gui->game_gui->use_cursor)
 				GKey.allow_input = GameKeys::ALLOW_KEYBOARD;
 			break;
 		case OpenPanel::Stats:
-		case OpenPanel::Inventory:
+		case OpenPanel::InventoryPanel:
 		case OpenPanel::Team:
 		case OpenPanel::Trade:
 		case OpenPanel::Action:
@@ -430,7 +430,7 @@ void Game::OnTick(float dt)
 
 	// mp box
 	if((game_state == GS_LEVEL || game_state == GS_WORLDMAP) && GKey.KeyPressedReleaseAllowed(GK_TALK_BOX))
-		game_gui->mp_box->visible = !game_gui->mp_box->visible;
+		gui->game_gui->mp_box->visible = !gui->game_gui->mp_box->visible;
 
 	// update gui
 	UpdateGui(dt);
@@ -447,20 +447,20 @@ void Game::OnTick(float dt)
 	}
 
 	// handle blocking input by gui
-	if(GUI.HaveDialog() || (game_gui->mp_box->visible && game_gui->mp_box->itb.focus))
+	if(GUI.HaveDialog() || (gui->game_gui->mp_box->visible && gui->game_gui->mp_box->itb.focus))
 		GKey.allow_input = GameKeys::ALLOW_NONE;
 	else if(GKey.AllowKeyboard() && game_state == GS_LEVEL && death_screen == 0 && !dialog_context.dialog_mode)
 	{
-		switch(game_gui->GetOpenPanel())
+		switch(gui->game_gui->GetOpenPanel())
 		{
 		case OpenPanel::None:
 		case OpenPanel::Minimap:
 		default:
-			if(game_gui->use_cursor)
+			if(gui->game_gui->use_cursor)
 				GKey.allow_input = GameKeys::ALLOW_KEYBOARD;
 			break;
 		case OpenPanel::Stats:
-		case OpenPanel::Inventory:
+		case OpenPanel::InventoryPanel:
 		case OpenPanel::Team:
 		case OpenPanel::Trade:
 		case OpenPanel::Action:
@@ -533,11 +533,11 @@ void Game::OnTick(float dt)
 		UpdateGameNet(dt);
 
 	// aktywacja mp_box
-	if(GKey.AllowKeyboard() && game_state == GS_LEVEL && game_gui->mp_box->visible && !game_gui->mp_box->itb.focus && Key.PressedRelease(VK_RETURN))
+	if(GKey.AllowKeyboard() && game_state == GS_LEVEL && gui->game_gui->mp_box->visible && !gui->game_gui->mp_box->itb.focus && Key.PressedRelease(VK_RETURN))
 	{
-		game_gui->mp_box->itb.focus = true;
-		game_gui->mp_box->Event(GuiEvent_GainFocus);
-		game_gui->mp_box->itb.Event(GuiEvent_GainFocus);
+		gui->game_gui->mp_box->itb.focus = true;
+		gui->game_gui->mp_box->Event(GuiEvent_GainFocus);
+		gui->game_gui->mp_box->itb.Event(GuiEvent_GainFocus);
 	}
 
 	Profiler::g_profiler.End();
@@ -634,14 +634,14 @@ void Game::OnReload()
 	// rebuild minimap texture
 	if(game_state == GS_LEVEL)
 		loc_gen_factory->Get(L.location)->CreateMinimap();
-	inventory->OnReload();
+	gui->inventory->OnReload();
 }
 
 //=================================================================================================
 void Game::OnReset()
 {
 	GUI.OnReset();
-	inventory->OnReset();
+	gui->inventory->OnReset();
 
 	if(eMesh)
 		V(eMesh->OnLostDevice());
@@ -801,7 +801,7 @@ void Game::DoExitToMenu()
 	CloseAllPanels();
 	GUI.CloseDialogs();
 	game_menu->visible = false;
-	game_gui->visible = false;
+	gui->game_gui->visible = false;
 	world_map->visible = false;
 	main_menu->visible = true;
 	units_mesh_load.clear();
@@ -1846,8 +1846,8 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 	Location& l = *L.location;
 
 	world_map->visible = false;
-	game_gui->Reset();
-	game_gui->visible = true;
+	gui->game_gui->Reset();
+	gui->game_gui->visible = true;
 
 	const bool reenter = L.is_open;
 	L.is_open = true;
@@ -1864,7 +1864,7 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 	L.event_handler = nullptr;
 	pc_data.before_player = BP_NONE;
 	arena->Reset();
-	inventory->lock = nullptr;
+	gui->inventory->lock = nullptr;
 
 	bool first = false;
 
@@ -1994,7 +1994,7 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 		game_state = GS_LEVEL;
 		gui->load_screen->visible = false;
 		main_menu->visible = false;
-		game_gui->visible = true;
+		gui->game_gui->visible = true;
 	}
 
 	if(L.location->outside)

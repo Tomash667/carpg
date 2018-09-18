@@ -50,7 +50,7 @@ ScriptManager::ScriptManager() : engine(nullptr), module(nullptr)
 {
 }
 
-void ScriptManager::Init()
+void ScriptManager::InitOnce()
 {
 	Info("Initializing ScriptManager...");
 

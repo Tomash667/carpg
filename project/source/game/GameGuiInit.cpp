@@ -35,16 +35,16 @@
 void Game::OnResize()
 {
 	GUI.OnResize();
-	if(game_gui)
-		game_gui->PositionPanels();
+	if(gui->game_gui)
+		gui->game_gui->PositionPanels();
 	console->Event(GuiEvent_WindowResize);
 }
 
 //=================================================================================================
 void Game::OnFocus(bool focus, const Int2& activation_point)
 {
-	if(!focus && game_gui)
-		game_gui->use_cursor = false;
+	if(!focus && gui->game_gui)
+		gui->game_gui->use_cursor = false;
 	if(focus && activation_point.x != -1)
 		GUI.cursor_pos = activation_point;
 }
@@ -53,23 +53,6 @@ void Game::OnFocus(bool focus, const Int2& activation_point)
 void Game::UpdateGui(float dt)
 {
 	GUI.Update(dt, cursor_allow_move ? mouse_sensitivity_f : -1.f);
-}
-
-//=================================================================================================
-void Game::CloseGamePanels()
-{
-	game_gui->ClosePanels();
-}
-
-//=================================================================================================
-void Game::SetGamePanels()
-{
-	game_gui->inv_trade_mine->i_items = game_gui->inventory->i_items = &inventory->tmp_inventory[0];
-	game_gui->inv_trade_mine->items = game_gui->inventory->items = &pc->unit->items;
-	game_gui->inv_trade_mine->slots = game_gui->inventory->slots = pc->unit->slots;
-	game_gui->inv_trade_mine->unit = game_gui->inventory->unit = pc->unit;
-	game_gui->inv_trade_other->i_items = &inventory->tmp_inventory[1];
-	game_gui->stats->pc = pc;
 }
 
 //=================================================================================================
@@ -110,10 +93,6 @@ void Game::InitGui()
 		info_box
 	*/
 
-	// game gui
-	game_gui = new GameGui;
-	GUI.Add(game_gui);
-
 	// main menu
 	main_menu = new MainMenu(this, DialogEvent(this, &Game::MainMenuEvent), check_updates);
 	GUI.Add(main_menu);
@@ -121,7 +100,7 @@ void Game::InitGui()
 	// worldmap
 	world_map = new WorldMapGui;
 	GUI.Add(world_map);
-	
+
 	// konsola
 	DialogInfo info;
 	info.event = nullptr;
@@ -215,8 +194,6 @@ void Game::LoadGuiData()
 
 	main_menu->LoadData();
 	create_character->LoadData();
-	game_gui->LoadData();
-	inventory->LoadData();
 	world_map->LoadData();
 	server_panel->LoadData();
 	pick_server_panel->LoadData();
@@ -229,7 +206,6 @@ void Game::NullGui()
 {
 	main_menu = nullptr;
 	world_map = nullptr;
-	game_gui = nullptr;
 	console = nullptr;
 	game_menu = nullptr;
 	options = nullptr;
@@ -246,7 +222,6 @@ void Game::NullGui()
 //=================================================================================================
 void Game::RemoveGui()
 {
-	delete game_gui;
 	delete main_menu;
 	delete world_map;
 	delete console;
@@ -266,30 +241,3 @@ void Game::RemoveGui()
 	gui::PickFileDialog::Destroy();
 }
 
-//=================================================================================================
-// Only for back compability, ignored now
-void Game::LoadGui(FileReader& f)
-{
-	LocalVector<GamePanel*> panels;
-	game_gui->GetGamePanels(panels);
-	Int2 prev_wnd_size, _pos, _size;
-	f >> prev_wnd_size;
-	for(vector<GamePanel*>::iterator it = panels->begin(), end = panels->end(); it != end; ++it)
-	{
-		f >> _pos;
-		f >> _size;
-	}
-}
-
-//=================================================================================================
-// Clear gui state after new game/loading/entering new location
-void Game::ClearGui(bool reset_mpbox)
-{
-	if(game_gui)
-	{
-		game_gui->Reset();
-		game_gui->game_messages->Reset();
-		if(game_gui->mp_box && reset_mpbox)
-			game_gui->mp_box->visible = false;
-	}
-}

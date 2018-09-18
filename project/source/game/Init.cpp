@@ -88,7 +88,7 @@ void Game::PreconfigureGame()
 	components.push_back(std::make_pair(loc_gen_factory, true));
 	components.push_back(std::make_pair(gui, true));
 	for(std::pair<GameComponent*, bool>& component : components)
-		component.first->InitOnce();
+		component.first->Prepare();
 
 	CreateVertexDeclarations();
 	PreloadLanguage();
@@ -187,7 +187,6 @@ void Game::LoadSystem()
 	gui->load_screen->Tick(txLoadingShaders);
 	LoadShaders();
 	ConfigureGame();
-	InitScripts();
 }
 
 //=================================================================================================
@@ -291,6 +290,9 @@ void Game::ConfigureGame()
 	Info("Game: Configuring game.");
 	gui->load_screen->Tick(txConfiguringGame);
 
+	for(std::pair<GameComponent*, bool>& component : components)
+		component.first->InitOnce();
+
 	InitScene();
 	super_shader->Init();
 	AddCommands();
@@ -317,14 +319,6 @@ void Game::ConfigureGame()
 	}
 
 	CreateTextures();
-}
-
-//=================================================================================================
-// Init game scripts
-//=================================================================================================
-void Game::InitScripts()
-{
-	SM.Init();
 }
 
 //=================================================================================================

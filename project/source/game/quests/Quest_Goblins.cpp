@@ -9,6 +9,7 @@
 #include "QuestManager.h"
 #include "Encounter.h"
 #include "InsideLocation.h"
+#include "GlobalGui.h"
 #include "GameGui.h"
 #include "Team.h"
 #include "World.h"
@@ -126,7 +127,7 @@ void Quest_Goblins::SetProgress(int prog2)
 		// nie zaakceptowano
 		{
 			if(quest_manager.RemoveQuestRumor(P_GOBLINY))
-				game->game_gui->journal->AddRumor(Format(game->txQuest[211], GetStartLocationName()));
+				game->gui->game_gui->journal->AddRumor(Format(game->txQuest[211], GetStartLocationName()));
 		}
 		break;
 	case Progress::Started:

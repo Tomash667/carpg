@@ -40,7 +40,7 @@ class GameWriter;
 class GlobalGui;
 class InfoBox;
 class Inventory;
-class InventoryBase;
+class InventoryPanel;
 class Journal;
 class Level;
 class LevelAreaContext;

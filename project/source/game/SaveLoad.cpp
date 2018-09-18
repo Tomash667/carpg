@@ -228,7 +228,7 @@ void Game::LoadGameCommon(cstring filename, int slot)
 	else
 	{
 		main_menu->visible = false;
-		game_gui->visible = false;
+		gui->game_gui->visible = false;
 		world_map->visible = false;
 	}
 	LoadingStart(9);
@@ -274,15 +274,15 @@ void Game::LoadGameCommon(cstring filename, int slot)
 	{
 		if(game_state == GS_LEVEL)
 		{
-			game_gui->visible = true;
+			gui->game_gui->visible = true;
 			world_map->visible = false;
 		}
 		else
 		{
-			game_gui->visible = false;
+			gui->game_gui->visible = false;
 			world_map->visible = true;
 		}
-		SetGamePanels();
+		gui->Setup(pc);
 	}
 	else
 	{
@@ -444,11 +444,11 @@ void Game::SaveGame(GameWriter& f)
 		ai->Save(f);
 
 	// game messages & speech bubbles
-	game_gui->game_messages->Save(f);
-	game_gui->Save(f);
+	gui->game_gui->game_messages->Save(f);
+	gui->game_gui->Save(f);
 
 	// rumors/notes
-	game_gui->journal->Save(f);
+	gui->game_gui->journal->Save(f);
 
 	f << check_id;
 	++check_id;
@@ -826,12 +826,12 @@ void Game::LoadGame(GameReader& f)
 	}
 
 	// game messages & speech bubbles
-	game_gui->game_messages->Load(f);
-	game_gui->Load(f);
+	gui->game_gui->game_messages->Load(f);
+	gui->game_gui->Load(f);
 
 	// rumors/notes
-	game_gui->journal->Load(f);
-	
+	gui->game_gui->journal->Load(f);
+
 	f >> read_id;
 	if(read_id != check_id)
 		throw "Error reading data before team.";
@@ -920,8 +920,8 @@ void Game::LoadGame(GameReader& f)
 
 	// gui
 	if(LOAD_VERSION <= V_0_3)
-		LoadGui(f);
-	game_gui->PositionPanels();
+		gui->LoadOldGui(f);
+	gui->game_gui->PositionPanels();
 
 	// cele ai
 	if(!ai_bow_targets.empty())
@@ -1031,13 +1031,13 @@ void Game::LoadGame(GameReader& f)
 	Team.ClearOnNewGameOrLoad();
 	fallback_type = FALLBACK::NONE;
 	fallback_t = -0.5f;
-	inventory->mode = I_NONE;
+	gui->inventory->mode = I_NONE;
 	pc_data.before_player = BP_NONE;
 	pc_data.selected_unit = nullptr;
 	pc_data.selected_target = nullptr;
 	dialog_context.pc = pc;
 	dialog_context.dialog_mode = false;
-	game_gui->Setup();
+	gui->game_gui->Setup();
 
 	if(mp_load)
 	{

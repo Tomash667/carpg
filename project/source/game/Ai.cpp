@@ -16,6 +16,7 @@
 #include "Quest_Tournament.h"
 #include "Pathfinding.h"
 #include "GameMessages.h"
+#include "GlobalGui.h"
 
 const float JUMP_BACK_MIN_RANGE = 4.f;
 const float JUMP_BACK_TIMER = 0.2f;
@@ -1183,7 +1184,7 @@ void Game::UpdateAi(float dt)
 											cstring msg = GetRandomIdleText(u);
 
 											int ani = 0;
-											game_gui->AddSpeechBubble(&u, msg);
+											gui->game_gui->AddSpeechBubble(&u, msg);
 											if(Rand() % 3 != 0)
 											{
 												ani = Rand() % 2 + 1;

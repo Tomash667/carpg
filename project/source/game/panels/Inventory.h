@@ -21,7 +21,7 @@ enum InventoryMode
 };
 
 //-----------------------------------------------------------------------------
-class InventoryBase
+class Inventory
 {
 public:
 	// item lock - keeps track of item while inventory is changing
@@ -66,15 +66,19 @@ public:
 		}
 	};
 
-	void LoadText();
-	void LoadData();
+	void InitOnce();
+	void LoadLanguage();
 	void OnReset();
 	void OnReload();
+	void Setup(PlayerController* pc);
 	void StartTrade(InventoryMode mode, Unit& unit);
 	void StartTrade(InventoryMode mode, vector<ItemSlot>& items, Unit* unit = nullptr);
+	void StartTrade2(InventoryMode mode, void* ptr);
 	void BuildTmpInventory(int index);
 
 	InventoryMode mode;
+	GamePanelContainer* gp_trade;
+	InventoryPanel* inv_mine, *inv_trade_mine, *inv_trade_other;
 	// przedmioty w czasie grabienia itp s¹ tu przechowywane indeksy
 	// ujemne wartoœci odnosz¹ siê do slotów (SLOT_WEAPON = -SLOT_WEAPON-1), pozytywne do zwyk³ych przedmiotów
 	vector<int> tmp_inventory[2];
@@ -91,7 +95,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class Inventory : public GamePanel
+class InventoryPanel : public GamePanel
 {
 public:
 	enum Mode
@@ -107,7 +111,7 @@ public:
 		SHARE_OTHER
 	};
 
-	Inventory(InventoryBase& base);
+	InventoryPanel(Inventory& base);
 
 	void Draw(ControlDrawData* cdd = nullptr) override;
 	void Update(float dt) override;
@@ -168,7 +172,7 @@ private:
 	int GetLockIndexAndRelease();
 	int GetLockIndexOrSlotAndRelease();
 
-	InventoryBase& base;
+	Inventory& base;
 	Game& game;
 	float rot;
 	const Item* item_visible;
