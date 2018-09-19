@@ -10387,7 +10387,7 @@ void Game::ClearGameVarsOnNewGameOrLoad()
 	arena->Reset();
 	debug_info = false;
 	debug_info2 = false;
-	dialog_enc = nullptr;
+	gui->world_map->dialog_enc = nullptr;
 	gui->game_gui->visible = false;
 	gui->inventory->lock = nullptr;
 	gui->world_map->picked_location = -1;

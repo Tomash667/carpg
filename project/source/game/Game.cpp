@@ -75,7 +75,7 @@ draw_phy(false), draw_col(false), force_seed(0), next_seed(0), force_seed_all(fa
 check_updates(true), skip_tutorial(false), portal_anim(0), debug_info2(false), music_type(MusicType::None),
 koniec_gry(false), prepared_stream(64 * 1024),
 paused(false), pick_autojoin(false), draw_flags(0xFFFFFFFF), tMiniSave(nullptr), prev_game_state(GS_LOAD), tSave(nullptr), sItemRegion(nullptr),
-sItemRegionRot(nullptr), sChar(nullptr), sSave(nullptr), in_tutorial(false), cursor_allow_move(true), mp_load(false), was_client(false), sCustom(nullptr),
+sItemRegionRot(nullptr), sChar(nullptr), sSave(nullptr), in_tutorial(false), mp_load(false), was_client(false), sCustom(nullptr),
 cl_postfx(true), mp_timeout(10.f), cl_normalmap(true), cl_specularmap(true), dungeon_tex_wrap(true), profiler_mode(0),
 grass_range(40.f), vbInstancing(nullptr), vb_instancing_max(0), screenshot_format(ImageFormat::JPG), quickstart_class(Class::RANDOM),
 autopick_class(Class::INVALID), game_state(GS_LOAD), default_devmode(false), default_player_devmode(false), finished_tutorial(false),
@@ -432,7 +432,7 @@ void Game::OnTick(float dt)
 		gui->mp_box->visible = !gui->mp_box->visible;
 
 	// update gui
-	UpdateGui(dt);
+	gui->Update(dt);
 	if(game_state == GS_EXIT_TO_MENU)
 	{
 		ExitToMenu();
@@ -2102,9 +2102,21 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 
 void Game::Event_RandomEncounter(int)
 {
-	dialog_enc = nullptr;
+	gui->world_map->dialog_enc = nullptr;
 	if(Net::IsOnline())
 		Net::PushChange(NetChange::CLOSE_ENCOUNTER);
 	W.StartEncounter();
 	EnterLocation();
+}
+
+//=================================================================================================
+void Game::OnResize()
+{
+	gui->OnResize();
+}
+
+//=================================================================================================
+void Game::OnFocus(bool focus, const Int2& activation_point)
+{
+	gui->OnFocus(focus, activation_point);
 }

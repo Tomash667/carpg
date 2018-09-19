@@ -10,6 +10,7 @@
 #include "ServerPanel.h"
 #include "GlobalGui.h"
 #include "GameGui.h"
+#include "WorldMapGui.h"
 #include "Console.h"
 #include "MpBox.h"
 #include "AIController.h"
@@ -1154,8 +1155,8 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 									leader_id = info->id;
 									Team.leader = info->u;
 
-									if(dialog_enc)
-										dialog_enc->bts[0].state = (IsLeader() ? Button::NONE : Button::DISABLED);
+									if(gui->world_map->dialog_enc)
+										gui->world_map->dialog_enc->bts[0].state = (IsLeader() ? Button::NONE : Button::DISABLED);
 								}
 							}
 

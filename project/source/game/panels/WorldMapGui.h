@@ -30,6 +30,7 @@ public:
 	GameMessages* game_messages;
 	cstring txGameTimeout, txWorldDate, txCurrentLoc, txCitizens, txAvailable, txTarget, txDistance, txTravelTime, txDay, txDays, txOnlyLeaderCanTravel;
 	int picked_location;
+	DialogBox* dialog_enc;
 
 private:
 	void AppendLocationText(Location& loc, string& s);

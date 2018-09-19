@@ -527,7 +527,6 @@
     <ClCompile Include="source\game\GameCommon.cpp" />
     <ClCompile Include="source\game\generator\CityGenerator.cpp" />
     <ClCompile Include="source\game\generator\Mapa2.cpp" />
-    <ClCompile Include="source\game\GameGuiInit.cpp" />
     <ClCompile Include="source\game\helpers\UnitHelper.cpp" />
     <ClCompile Include="source\game\Init.cpp" />
     <ClCompile Include="source\game\Language.cpp" />

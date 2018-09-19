@@ -574,9 +574,6 @@
     <ClCompile Include="source\engine\gui\DialogBox.cpp">
       <Filter>2. engine\gui\dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="source\game\GameGuiInit.cpp">
-      <Filter>3. game</Filter>
-    </ClCompile>
     <ClCompile Include="source\engine\gui\Gui.cpp">
       <Filter>2. engine\gui</Filter>
     </ClCompile>

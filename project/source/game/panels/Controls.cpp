@@ -4,6 +4,7 @@
 #include "GameKeys.h"
 #include "Language.h"
 #include "Game.h"
+#include "GlobalGui.h"
 
 //-----------------------------------------------------------------------------
 // 0x01 - pickable key
@@ -446,7 +447,7 @@ void Controls::SelectCell(int item, int column, int button)
 		picked_n = column - 1;
 		cursor_tick = 0.f;
 		Key.key_callback = KeyDownCallback(this, &Controls::OnKey);
-		game->cursor_allow_move = false;
+		game->gui->cursor_allow_move = false;
 	}
 	else
 		GKey[item][column - 1] = VK_NONE;
@@ -459,14 +460,14 @@ void Controls::OnKey(int key)
 	{
 		picked = -1;
 		Key.key_callback = nullptr;
-		game->cursor_allow_move = true;
+		game->gui->cursor_allow_move = true;
 	}
 	else if(key < n_texts && IS_SET(in_text[key], 0x01))
 	{
 		GKey[picked][picked_n] = (byte)key;
 		picked = -1;
 		Key.key_callback = nullptr;
-		game->cursor_allow_move = true;
+		game->gui->cursor_allow_move = true;
 		changed = true;
 	}
 }

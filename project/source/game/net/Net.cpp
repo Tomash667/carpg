@@ -2922,12 +2922,12 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 			break;
 		// close encounter message box
 		case NetChange::CLOSE_ENCOUNTER:
-			if(dialog_enc)
+			if(gui->world_map->dialog_enc)
 			{
-				GUI.CloseDialog(dialog_enc);
-				RemoveElement(GUI.created_dialogs, dialog_enc);
-				delete dialog_enc;
-				dialog_enc = nullptr;
+				GUI.CloseDialog(gui->world_map->dialog_enc);
+				RemoveElement(GUI.created_dialogs, gui->world_map->dialog_enc);
+				delete gui->world_map->dialog_enc;
+				gui->world_map->dialog_enc = nullptr;
 			}
 			Net::PushChange(NetChange::CLOSE_ENCOUNTER);
 			Event_RandomEncounter(0);
@@ -4198,12 +4198,12 @@ void Game::UpdateClient(float dt)
 					gui->game_gui->visible = false;
 					gui->world_map->visible = false;
 					arena->ClosePvpDialog();
-					if(dialog_enc)
+					if(gui->world_map->dialog_enc)
 					{
-						GUI.CloseDialog(dialog_enc);
-						RemoveElement(GUI.created_dialogs, dialog_enc);
-						delete dialog_enc;
-						dialog_enc = nullptr;
+						GUI.CloseDialog(gui->world_map->dialog_enc);
+						RemoveElement(GUI.created_dialogs, gui->world_map->dialog_enc);
+						delete gui->world_map->dialog_enc;
+						gui->world_map->dialog_enc = nullptr;
 					}
 					N.peer->DeallocatePacket(packet);
 					N.StreamError();
@@ -5348,8 +5348,8 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 							AddMsg(Format(txPcIsLeader, info->name.c_str()));
 						Team.leader = info->u;
 
-						if(dialog_enc)
-							dialog_enc->bts[0].state = (IsLeader() ? Button::NONE : Button::DISABLED);
+						if(gui->world_map->dialog_enc)
+							gui->world_map->dialog_enc->bts[0].state = (IsLeader() ? Button::NONE : Button::DISABLED);
 
 						ActivateChangeLeaderButton(IsLeader());
 					}
@@ -5903,7 +5903,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					DialogInfo info;
 					info.event = [this](int)
 					{
-						dialog_enc = nullptr;
+						gui->world_map->dialog_enc = nullptr;
 						Net::PushChange(NetChange::CLOSE_ENCOUNTER);
 					};
 					info.name = "encounter";
@@ -5913,9 +5913,9 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					info.type = DIALOG_OK;
 					info.text = text;
 
-					dialog_enc = GUI.ShowDialog(info);
+					gui->world_map->dialog_enc = GUI.ShowDialog(info);
 					if(!IsLeader())
-						dialog_enc->bts[0].state = Button::DISABLED;
+						gui->world_map->dialog_enc->bts[0].state = Button::DISABLED;
 					assert(W.GetState() == World::State::TRAVEL);
 					W.SetState(World::State::ENCOUNTER);
 				}
@@ -5923,12 +5923,12 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 			break;
 		// close encounter message box
 		case NetChange::CLOSE_ENCOUNTER:
-			if(dialog_enc)
+			if(gui->world_map->dialog_enc)
 			{
-				GUI.CloseDialog(dialog_enc);
-				RemoveElement(GUI.created_dialogs, dialog_enc);
-				delete dialog_enc;
-				dialog_enc = nullptr;
+				GUI.CloseDialog(gui->world_map->dialog_enc);
+				RemoveElement(GUI.created_dialogs, gui->world_map->dialog_enc);
+				delete gui->world_map->dialog_enc;
+				gui->world_map->dialog_enc = nullptr;
 			}
 			break;
 		// close portal in location
@@ -8525,8 +8525,8 @@ void Game::ProcessLeftPlayers()
 			c2.type = NetChange::CHANGE_LEADER;
 			c2.id = my_id;
 
-			if(dialog_enc)
-				dialog_enc->bts[0].state = Button::NONE;
+			if(gui->world_map->dialog_enc)
+				gui->world_map->dialog_enc->bts[0].state = Button::NONE;
 
 			AddMsg(txYouAreLeader);
 		}

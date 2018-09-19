@@ -724,14 +724,6 @@ public:
 	void SetOutsideParams();
 
 	//-----------------------------------------------------------------
-	// GUI
-	// inne
-	DialogBox* dialog_enc;
-	bool cursor_allow_move;
-
-	void UpdateGui(float dt);
-
-	//-----------------------------------------------------------------
 	// MENU / MAIN MENU / OPTIONS
 	Class quickstart_class, autopick_class; // mo¿na po³¹czyæ
 	string quickstart_name;

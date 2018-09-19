@@ -15,9 +15,12 @@ public:
 	void LoadLanguage() override;
 	void LoadData();
 	void Draw(ControlDrawData*) override;
+	void UpdateGui(float dt);
 	void LoadOldGui(FileReader& f);
 	void Clear(bool reset_mpbox);
 	void Setup(PlayerController* pc);
+	void OnResize();
+	void OnFocus(bool focus, const Int2& activation_point);
 
 	// panels
 	LoadScreen* load_screen;
@@ -45,4 +48,6 @@ public:
 	ServerPanel* server;
 	InfoBox* info_box;
 	Controls* controls;
+	// settings
+	bool cursor_allow_move;
 };

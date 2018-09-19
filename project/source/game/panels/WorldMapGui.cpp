@@ -403,7 +403,7 @@ void WorldMapGui::ShowEncounterMessage(cstring text)
 	info.pause = true;
 	info.text = text;
 	info.type = DIALOG_OK;
-	game.dialog_enc = GUI.ShowDialog(info);
+	dialog_enc = GUI.ShowDialog(info);
 
 	if(Net::IsOnline())
 	{
@@ -414,6 +414,6 @@ void WorldMapGui::ShowEncounterMessage(cstring text)
 
 		// disable button when server is not leader
 		if(!game.IsLeader())
-			game.dialog_enc->bts[0].state = Button::DISABLED;
+			dialog_enc->bts[0].state = Button::DISABLED;
 	}
 }

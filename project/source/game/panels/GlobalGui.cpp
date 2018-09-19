@@ -38,7 +38,7 @@
 GlobalGui::GlobalGui() : load_screen(nullptr), game_gui(nullptr), inventory(nullptr), stats(nullptr), team(nullptr), journal(nullptr), minimap(nullptr),
 actions(nullptr), book(nullptr), messages(nullptr), mp_box(nullptr), world_map(nullptr), main_menu(nullptr), console(nullptr), game_menu(nullptr),
 options(nullptr), saveload(nullptr), create_character(nullptr), multiplayer(nullptr), create_server(nullptr), pick_server(nullptr), server(nullptr),
-info_box(nullptr), controls(nullptr)
+info_box(nullptr), controls(nullptr), cursor_allow_move(true)
 {
 }
 
@@ -268,6 +268,11 @@ void GlobalGui::Draw(ControlDrawData*)
 	assert(W.GetCurrentLocationIndex() == L.location_index);
 }
 
+void GlobalGui::UpdateGui(float dt)
+{
+	GUI.Update(dt, cursor_allow_move ? Game::Get().mouse_sensitivity_f : -1.f);
+}
+
 void GlobalGui::LoadOldGui(FileReader& f)
 {
 	// old gui settings, now removed
@@ -299,4 +304,22 @@ void GlobalGui::Setup(PlayerController* pc)
 {
 	inventory->Setup(pc);
 	stats->pc = pc;
+}
+
+//=================================================================================================
+void GlobalGui::OnResize()
+{
+	GUI.OnResize();
+	if(game_gui)
+		game_gui->PositionPanels();
+	console->Event(GuiEvent_WindowResize);
+}
+
+//=================================================================================================
+void GlobalGui::OnFocus(bool focus, const Int2& activation_point)
+{
+	if(!focus && game_gui)
+		game_gui->use_cursor = false;
+	if(focus && activation_point.x != -1)
+		GUI.cursor_pos = activation_point;
 }
