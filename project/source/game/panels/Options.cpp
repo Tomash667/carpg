@@ -3,10 +3,10 @@
 #include "Options.h"
 #include "Language.h"
 #include "KeyStates.h"
+#include "GlobalGui.h"
 #include "Game.h"
 #include "MenuList.h"
 #include "SoundManager.h"
-#include "DirectX.h"
 
 //-----------------------------------------------------------------------------
 cstring txQuality, txMsNone;
@@ -169,24 +169,19 @@ Options::Options(const DialogInfo& info) : GameDialogBox(info)
 	res.pos = Int2(20, 80);
 	res.size = Int2(250, 200);
 	res.event_handler = DialogEvent(this, &Options::OnChangeRes);
+	vector<Resolution> resolutions;
+	game->GetResolutions(resolutions);
 	LocalVector<Res*> vres;
-	uint display_modes = game->d3d->GetAdapterModeCount(game->used_adapter, DISPLAY_FORMAT);
-	for(uint i = 0; i < display_modes; ++i)
-	{
-		D3DDISPLAYMODE d_mode;
-		V(game->d3d->EnumAdapterModes(game->used_adapter, DISPLAY_FORMAT, i, &d_mode));
-		if(d_mode.Width >= (uint)Engine::MIN_WINDOW_SIZE.x && d_mode.Height >= (uint)Engine::MIN_WINDOW_SIZE.y)
-			vres->push_back(new Res(Int2(d_mode.Width, d_mode.Height), d_mode.RefreshRate));
-	}
-	// sortuj
+	for(Resolution& r : resolutions)
+		vres->push_back(new Res(r.size, r.hz));
 	std::sort(vres->begin(), vres->end(), ResPred);
-	// dodaj do listboxa i wybierz
 	int index = 0;
 	for(auto r : vres)
 	{
 		res.Add(r);
 		if(r->size == game->GetWindowSize() && r->hz == game->wnd_hz)
 			res.SetIndex(index);
+		++index;
 	}
 	res.Initialize();
 	res.ScrollTo(res.GetIndex(), true);
@@ -202,22 +197,15 @@ Options::Options(const DialogInfo& info) : GameDialogBox(info)
 	game->GetMultisampling(ms, msq);
 	if(ms == 0)
 		multisampling.SetIndex(0);
+	vector<Int2> ms_modes;
+	game->GetMultisamplingModes(ms_modes);
 	index = 1;
-	for(int j = 2; j <= 16; ++j)
+	for(Int2& mode : ms_modes)
 	{
-		DWORD levels, levels2;
-		if(SUCCEEDED(game->d3d->CheckDeviceMultiSampleType(game->used_adapter, D3DDEVTYPE_HAL, BACKBUFFER_FORMAT, FALSE, (D3DMULTISAMPLE_TYPE)j, &levels)) &&
-			SUCCEEDED(game->d3d->CheckDeviceMultiSampleType(game->used_adapter, D3DDEVTYPE_HAL, ZBUFFER_FORMAT, FALSE, (D3DMULTISAMPLE_TYPE)j, &levels2)))
-		{
-			int level = min(levels, levels2);
-			for(int i = 0; i < level; ++i)
-			{
-				multisampling.Add(new MultisamplingItem(j, i));
-				if(ms == j && msq == i)
-					multisampling.SetIndex(index);
-			}
-			++index;
-		}
+		multisampling.Add(new MultisamplingItem(mode.x, mode.y));
+		if(ms == mode.x && msq == mode.y)
+			multisampling.SetIndex(index);
+		++index;
 	}
 	multisampling.Initialize();
 
@@ -337,7 +325,7 @@ void Options::Update(float dt)
 				mouse_sensitivity = value;
 			else
 				grass_range = value;
-			event(IdSoundVolume + i);
+			Event((GuiEvent)(IdSoundVolume + i));
 		}
 	}
 	for(int i = 0; i < 2; ++i)
@@ -385,7 +373,48 @@ void Options::Event(GuiEvent e)
 	else if(e == GuiEvent_LostFocus)
 		res.Event(GuiEvent_LostFocus);
 	else if(e >= GuiEvent_Custom)
-		event((Id)e);
+	{
+		switch((Id)e)
+		{
+		case IdOk:
+			CloseDialog();
+			game->SaveOptions();
+			break;
+		case IdFullscreen:
+			game->ChangeMode(check[0].checked);
+			break;
+		case IdChangeRes:
+			break;
+		case IdSoundVolume:
+			game->sound_mgr->SetSoundVolume(sound_volume);
+			break;
+		case IdMusicVolume:
+			game->sound_mgr->SetMusicVolume(music_volume);
+			break;
+		case IdMouseSensitivity:
+			game->settings.mouse_sensitivity = mouse_sensitivity;
+			game->settings.mouse_sensitivity_f = Lerp(0.5f, 1.5f, float(game->settings.mouse_sensitivity) / 100);
+			break;
+		case IdGrassRange:
+			game->grass_range = (float)game->grass_range;
+			break;
+		case IdControls:
+			GUI.ShowDialog((DialogBox*)game->gui->controls);
+			break;
+		case IdGlow:
+			game->cl_glow = check[1].checked;
+			break;
+		case IdNormal:
+			game->cl_normalmap = check[2].checked;
+			break;
+		case IdSpecular:
+			game->cl_specularmap = check[3].checked;
+			break;
+		case IdVsync:
+			game->SetVsync(!game->GetVsync());
+			break;
+		}
+	}
 }
 
 //=================================================================================================
@@ -441,9 +470,9 @@ void Options::SetOptions()
 		music_volume = sound_mgr->GetMusicVolume();
 		scroll[1].SetValue(float(music_volume) / 100.f);
 	}
-	if(mouse_sensitivity != game->mouse_sensitivity)
+	if(mouse_sensitivity != game->settings.mouse_sensitivity)
 	{
-		mouse_sensitivity = game->mouse_sensitivity;
+		mouse_sensitivity = game->settings.mouse_sensitivity;
 		scroll[2].SetValue(float(mouse_sensitivity) / 100.f);
 	}
 	if(grass_range != game->grass_range)
@@ -458,7 +487,7 @@ void Options::OnChangeRes(int)
 {
 	Res& r = *res.GetItemCast<Res>();
 	game->ChangeMode(r.size, game->IsFullscreen(), r.hz);
-	event(IdChangeRes);
+	Event((GuiEvent)IdChangeRes);
 }
 
 //=================================================================================================

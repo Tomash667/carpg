@@ -15,6 +15,7 @@
 #include "Camera.h"
 #include "Config.h"
 #include "SaveSlot.h"
+#include "Settings.h"
 
 //-----------------------------------------------------------------------------
 // Tryb szybkiego uruchamiania gry
@@ -355,11 +356,10 @@ public:
 
 	//---------------------------------
 	// KONSOLA I KOMENDY
+	Settings settings;
 	bool have_console, inactive_update, noai, devmode, default_devmode, default_player_devmode, debug_info, debug_info2, dont_wander;
 	string cfg_file;
 	vector<ConsoleCommand> cmds;
-	int mouse_sensitivity;
-	float mouse_sensitivity_f;
 	vector<ConfigVar> config_vars;
 
 	void SetupConfigVars();
@@ -468,7 +468,7 @@ public:
 	void ResetGameKeys();
 	void SaveGameKeys();
 	void LoadGameKeys();
-	
+
 	void Draw();
 	void ExitToMenu();
 	void DoExitToMenu();
@@ -732,9 +732,7 @@ public:
 	int hair_redo_index;
 
 	bool CanShowMenu();
-	void MainMenuEvent(int index);
 	void MenuEvent(int id);
-	void OptionsEvent(int id);
 	void SaveLoadEvent(int id);
 	void SaveEvent(int id);
 	void SaveOptions();

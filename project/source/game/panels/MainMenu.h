@@ -19,17 +19,13 @@ public:
 		IdQuit
 	};
 
-	MainMenu(Game* game, DialogEvent event, bool check_updates);
-
+	MainMenu(Game* game);
 	void Draw(ControlDrawData* cdd) override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
 	bool NeedCursor() const override { return true; }
-
 	void LoadData();
-
-	HANDLE check_version_thread;
-	cstring txInfoText, txVersion;
+	void ShutdownThread();
 
 private:
 	static const uint BUTTONS = 7u;
@@ -38,10 +34,11 @@ private:
 	void OnNewVersion(int id);
 
 	Game* game;
+	HANDLE check_version_thread;
 	Button bt[BUTTONS];
 	TEX tBackground, tLogo;
-	DialogEvent event;
 	int check_version; // 0 - nie sprawdzono, 1 - trwa sprawdzanie, 2 - b³¹d, 3 - brak nowej wersji, 4 - jest nowa wersja
 	string version_text;
+	cstring txInfoText, txVersion;
 	bool check_updates;
 };

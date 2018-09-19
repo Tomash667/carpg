@@ -665,8 +665,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	options.music_volume = Clamp(cfg.GetInt("music_volume", 50), 0, 100);
 
 	// ustawienia myszki
-	game.mouse_sensitivity = Clamp(cfg.GetInt("mouse_sensitivity", 50), 0, 100);
-	game.mouse_sensitivity_f = Lerp(0.5f, 1.5f, float(game.mouse_sensitivity) / 100);
+	game.settings.mouse_sensitivity = Clamp(cfg.GetInt("mouse_sensitivity", 50), 0, 100);
+	game.settings.mouse_sensitivity_f = Lerp(0.5f, 1.5f, float(game.settings.mouse_sensitivity) / 100);
 
 	// tryb multiplayer
 	game.player_name = cfg.GetString("nick", "");

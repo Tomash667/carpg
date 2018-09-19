@@ -59,38 +59,6 @@ void Game::ShowMenu()
 }
 
 //=================================================================================================
-void Game::MainMenuEvent(int id)
-{
-	switch(id)
-	{
-	case MainMenu::IdNewGame:
-		Net::SetMode(Net::Mode::Singleplayer);
-		ShowCreateCharacterPanel(true);
-		break;
-	case MainMenu::IdLoadGame:
-		Net::SetMode(Net::Mode::Singleplayer);
-		ShowLoadPanel();
-		break;
-	case MainMenu::IdMultiplayer:
-		mp_load = false;
-		gui->multiplayer->Show();
-		break;
-	case MainMenu::IdOptions:
-		ShowOptions();
-		break;
-	case MainMenu::IdInfo:
-		GUI.SimpleDialog(Format(gui->main_menu->txInfoText, VERSION_STR, g_ctime.c_str()), nullptr);
-		break;
-	case MainMenu::IdWebsite:
-		io::OpenUrl(Format("http://carpg.pl/redirect.php?language=%s", Language::prefix.c_str()));
-		break;
-	case MainMenu::IdQuit:
-		Quit();
-		break;
-	}
-}
-
-//=================================================================================================
 void Game::MenuEvent(int index)
 {
 	switch(index)
@@ -123,54 +91,6 @@ void Game::MenuEvent(int index)
 		break;
 	case GameMenu::IdQuit: // wyjdŸ
 		ShowQuitDialog();
-		break;
-	}
-}
-
-//=================================================================================================
-void Game::OptionsEvent(int index)
-{
-	if(index == Options::IdOk)
-	{
-		GUI.CloseDialog(gui->options);
-		SaveOptions();
-		return;
-	}
-
-	switch(index)
-	{
-	case Options::IdFullscreen:
-		ChangeMode(gui->options->check[0].checked);
-		break;
-	case Options::IdChangeRes:
-		break;
-	case Options::IdSoundVolume:
-		sound_mgr->SetSoundVolume(gui->options->sound_volume);
-		break;
-	case Options::IdMusicVolume:
-		sound_mgr->SetMusicVolume(gui->options->music_volume);
-		break;
-	case Options::IdMouseSensitivity:
-		mouse_sensitivity = gui->options->mouse_sensitivity;
-		mouse_sensitivity_f = Lerp(0.5f, 1.5f, float(mouse_sensitivity) / 100);
-		break;
-	case Options::IdGrassRange:
-		grass_range = (float)gui->options->grass_range;
-		break;
-	case Options::IdControls:
-		GUI.ShowDialog(gui->controls);
-		break;
-	case Options::IdGlow:
-		cl_glow = gui->options->check[1].checked;
-		break;
-	case Options::IdNormal:
-		cl_normalmap = gui->options->check[2].checked;
-		break;
-	case Options::IdSpecular:
-		cl_specularmap = gui->options->check[3].checked;
-		break;
-	case Options::IdVsync:
-		SetVsync(!GetVsync());
 		break;
 	}
 }
@@ -264,7 +184,7 @@ void Game::SaveOptions()
 	cfg.Add("cl_specularmap", cl_specularmap);
 	cfg.Add("sound_volume", Format("%d", sound_mgr->GetSoundVolume()));
 	cfg.Add("music_volume", Format("%d", sound_mgr->GetMusicVolume()));
-	cfg.Add("mouse_sensitivity", Format("%d", mouse_sensitivity));
+	cfg.Add("mouse_sensitivity", Format("%d", settings.mouse_sensitivity));
 	cfg.Add("grass_range", Format("%g", grass_range));
 	cfg.Add("resolution", Format("%dx%d", GetWindowSize().x, GetWindowSize().y));
 	cfg.Add("refresh", Format("%d", wnd_hz));
@@ -2176,13 +2096,7 @@ void Game::Quit()
 {
 	Info("Game: Quit.");
 
-	if(gui->main_menu->check_version_thread)
-	{
-		TerminateThread(gui->main_menu->check_version_thread, 0);
-		CloseHandle(gui->main_menu->check_version_thread);
-		gui->main_menu->check_version_thread = nullptr;
-	}
-
+	gui->main_menu->ShutdownThread();
 	if(Net::IsOnline())
 		CloseConnection(VoidF(this, &Game::DoQuit));
 	else

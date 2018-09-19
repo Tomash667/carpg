@@ -135,7 +135,7 @@ void GlobalGui::InitOnce()
 	GUI.Add(world_map);
 
 	// main menu
-	main_menu = new MainMenu(&game, DialogEvent(&game, &Game::MainMenuEvent), game.check_updates);
+	main_menu = new MainMenu(&game);
 	main_menu->LoadData();
 	GUI.Add(main_menu);
 
@@ -158,7 +158,6 @@ void GlobalGui::InitOnce()
 	game_menu->LoadData();
 
 	info.name = "options";
-	info.event = DialogEvent(&game, &Game::OptionsEvent);
 	options = new Options(info);
 
 	info.name = "saveload";
@@ -270,7 +269,7 @@ void GlobalGui::Draw(ControlDrawData*)
 
 void GlobalGui::UpdateGui(float dt)
 {
-	GUI.Update(dt, cursor_allow_move ? Game::Get().mouse_sensitivity_f : -1.f);
+	GUI.Update(dt, cursor_allow_move ? Game::Get().settings.mouse_sensitivity_f : -1.f);
 }
 
 void GlobalGui::LoadOldGui(FileReader& f)

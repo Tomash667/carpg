@@ -912,7 +912,7 @@ void Game::UpdateGame(float dt)
 				const float c_cam_angle_max = PI * 1.8f - 0.1f;
 
 				int div = (pc->unit->action == A_SHOOT ? 800 : 400);
-				cam.real_rot.y += -float(Key.GetMouseDif().y) * mouse_sensitivity_f / div;
+				cam.real_rot.y += -float(Key.GetMouseDif().y) * settings.mouse_sensitivity_f / div;
 				if(cam.real_rot.y > c_cam_angle_max)
 					cam.real_rot.y = c_cam_angle_max;
 				if(cam.real_rot.y < c_cam_angle_min)
@@ -932,7 +932,7 @@ void Game::UpdateGame(float dt)
 					if(GKey.KeyUpAllowed(cam.free_rot_key))
 						cam.free_rot = false;
 					else
-						cam.real_rot.x = Clip(cam.real_rot.x + float(Key.GetMouseDif().x) * mouse_sensitivity_f / 400);
+						cam.real_rot.x = Clip(cam.real_rot.x + float(Key.GetMouseDif().x) * settings.mouse_sensitivity_f / 400);
 				}
 			}
 			else
@@ -1433,7 +1433,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 		{
 			int div = (pc->unit->action == A_SHOOT ? 800 : 400);
 			pc_data.rot_buf *= (1.f - dt * 2);
-			pc_data.rot_buf += float(Key.GetMouseDif().x) * mouse_sensitivity_f / div;
+			pc_data.rot_buf += float(Key.GetMouseDif().x) * settings.mouse_sensitivity_f / div;
 			if(pc_data.rot_buf > 0.1f)
 				pc_data.rot_buf = 0.1f;
 			else if(pc_data.rot_buf < -0.1f)

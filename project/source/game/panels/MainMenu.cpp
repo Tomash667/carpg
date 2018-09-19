@@ -6,6 +6,8 @@
 #include "DialogBox.h"
 #include "ResourceManager.h"
 #include "Game.h"
+#include "GlobalGui.h"
+#include "MultiPlayerPanel.h"
 #define far
 #include <wininet.h>
 #include <process.h>
@@ -26,6 +28,7 @@ enum CheckVersionResult
 CriticalSection csCheckVersion;
 CheckVersionResult version_check_result;
 uint version_check_error, version_new;
+extern string g_ctime;
 
 //=================================================================================================
 CheckVersionResult CheckVersion(HINTERNET internet, cstring url, uint& error, uint& version)
@@ -91,8 +94,7 @@ uint __stdcall CheckVersion(void*)
 }
 
 //=================================================================================================
-MainMenu::MainMenu(Game* game, DialogEvent event, bool check_updates) : check_version(0), check_version_thread(nullptr), check_updates(check_updates),
-game(game), event(event)
+MainMenu::MainMenu(Game* game) : game(game), check_version(0), check_version_thread(nullptr), check_updates(game->check_updates)
 {
 	focusable = true;
 	visible = false;
@@ -176,7 +178,7 @@ void MainMenu::Update(float dt)
 		bt[i].mouse_focus = focus;
 		bt[i].Update(dt);
 	}
-	
+
 	if(check_version == 0)
 	{
 #ifdef _DEBUG
@@ -269,8 +271,33 @@ void MainMenu::Event(GuiEvent e)
 		PlaceButtons();
 	else if(e >= GuiEvent_Custom)
 	{
-		if(event)
-			event(e);
+		switch(e)
+		{
+		case IdNewGame:
+			Net::SetMode(Net::Mode::Singleplayer);
+			game->ShowCreateCharacterPanel(true);
+			break;
+		case IdLoadGame:
+			Net::SetMode(Net::Mode::Singleplayer);
+			game->ShowLoadPanel();
+			break;
+		case IdMultiplayer:
+			game->mp_load = false;
+			game->gui->multiplayer->Show();
+			break;
+		case IdOptions:
+			game->ShowOptions();
+			break;
+		case IdInfo:
+			GUI.SimpleDialog(Format(txInfoText, VERSION_STR, g_ctime.c_str()), nullptr);
+			break;
+		case IdWebsite:
+			io::OpenUrl(Format("http://carpg.pl/redirect.php?language=%s", Language::prefix.c_str()));
+			break;
+		case IdQuit:
+			game->Quit();
+			break;
+		}
 	}
 }
 
@@ -292,4 +319,15 @@ void MainMenu::OnNewVersion(int id)
 {
 	if(id == BUTTON_YES)
 		io::OpenUrl(Format("http://carpg.pl/redirect.php?action=download&language=%s", Language::prefix.c_str()));
+}
+
+//=================================================================================================
+void MainMenu::ShutdownThread()
+{
+	if(check_version_thread)
+	{
+		TerminateThread(check_version_thread, 0);
+		CloseHandle(check_version_thread);
+		check_version_thread = nullptr;
+	}
 }

@@ -1421,3 +1421,34 @@ void Engine::SetVsync(bool new_vsync)
 	vsync = new_vsync;
 	Reset(true);
 }
+
+//=================================================================================================
+void Engine::GetResolutions(vector<Resolution>& v) const
+{
+	v.clear();
+	uint display_modes = d3d->GetAdapterModeCount(used_adapter, DISPLAY_FORMAT);
+	for(uint i = 0; i < display_modes; ++i)
+	{
+		D3DDISPLAYMODE d_mode;
+		V(d3d->EnumAdapterModes(used_adapter, DISPLAY_FORMAT, i, &d_mode));
+		if(d_mode.Width >= (uint)MIN_WINDOW_SIZE.x && d_mode.Height >= (uint)MIN_WINDOW_SIZE.y)
+			v.push_back({ Int2(d_mode.Width, d_mode.Height), d_mode.RefreshRate });
+	}
+}
+
+//=================================================================================================
+void Engine::GetMultisamplingModes(vector<Int2>& v) const
+{
+	v.clear();
+	for(int j = 2; j <= 16; ++j)
+	{
+		DWORD levels, levels2;
+		if(SUCCEEDED(d3d->CheckDeviceMultiSampleType(used_adapter, D3DDEVTYPE_HAL, BACKBUFFER_FORMAT, FALSE, (D3DMULTISAMPLE_TYPE)j, &levels))
+			&& SUCCEEDED(d3d->CheckDeviceMultiSampleType(used_adapter, D3DDEVTYPE_HAL, ZBUFFER_FORMAT, FALSE, (D3DMULTISAMPLE_TYPE)j, &levels2)))
+		{
+			int level = min(levels, levels2);
+			for(int i = 0; i < level; ++i)
+				v.push_back(Int2(j, i));
+		}
+	}
+}
