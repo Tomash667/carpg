@@ -11,6 +11,7 @@ struct StartupOptions;
 struct TaskData;
 struct Terrain;
 struct TrailParticleEmitter;
+class DebugDrawer;
 class Engine;
 class Pak;
 class ResourceManager;

@@ -766,6 +766,9 @@
     <ClCompile Include="source\game\events\Arena.cpp">
       <Filter>3. game\events</Filter>
     </ClCompile>
+    <ClCompile Include="source\engine\DebugDrawer.cpp">
+      <Filter>2. engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\resource\resource1.h">
@@ -1551,6 +1554,12 @@
     </ClInclude>
     <ClInclude Include="source\game\Settings.h">
       <Filter>3. game</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\DebugDrawer.h">
+      <Filter>2. engine</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\ShaderHandler.h">
+      <Filter>2. engine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

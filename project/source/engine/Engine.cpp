@@ -4,6 +4,7 @@
 #include "ResourceManager.h"
 #include "SoundManager.h"
 #include "StartupOptions.h"
+#include "DebugDrawer.h"
 #include "DirectX.h"
 
 //-----------------------------------------------------------------------------
@@ -1232,6 +1233,7 @@ bool Engine::Start(StartupOptions& options)
 		sound_mgr->Init(options);
 		InitPhysics();
 		ResourceManager::Get().Init(device, sound_mgr);
+		debug_drawer.reset(new DebugDrawer);
 	}
 	catch(cstring e)
 	{

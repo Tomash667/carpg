@@ -23,7 +23,6 @@
 #include "World.h"
 #include "Level.h"
 #include "Arena.h"
-#include "DirectX.h"
 
 //-----------------------------------------------------------------------------
 extern string g_ctime;
@@ -1420,32 +1419,31 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								pick_hz = false;
 							}
 						}
-						uint display_modes = d3d->GetAdapterModeCount(used_adapter, DISPLAY_FORMAT);
-						for(uint i = 0; i < display_modes; ++i)
+						vector<Resolution> resolutions;
+						GetResolutions(resolutions);
+						for(const Resolution& res : resolutions)
 						{
-							D3DDISPLAYMODE d_mode;
-							V(d3d->EnumAdapterModes(used_adapter, DISPLAY_FORMAT, i, &d_mode));
-							if(w == d_mode.Width)
+							if(w == res.size.x)
 							{
 								if(pick_h)
 								{
-									if((int)d_mode.Height >= h)
+									if((int)res.size.y >= h)
 									{
-										h = d_mode.Height;
-										if((int)d_mode.RefreshRate > hz)
-											hz = d_mode.RefreshRate;
+										h = res.size.y;
+										if((int)res.hz > hz)
+											hz = res.hz;
 										valid = true;
 									}
 								}
-								else if(h == d_mode.Height)
+								else if(h == res.size.y)
 								{
 									if(pick_hz)
 									{
-										if((int)d_mode.RefreshRate > hz)
-											hz = d_mode.RefreshRate;
+										if((int)res.hz > hz)
+											hz = res.hz;
 										valid = true;
 									}
-									else if(hz == d_mode.RefreshRate)
+									else if(hz == res.hz)
 									{
 										valid = true;
 										break;
@@ -1462,15 +1460,11 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					{
 						// wypisz aktualn¹ rozdzielczoœæ i dostêpne
 						LocalString s = Format("Current resolution %dx%d (%d Hz). Available: ", GetWindowSize().x, GetWindowSize().y, wnd_hz);
-						uint display_modes = d3d->GetAdapterModeCount(used_adapter, DISPLAY_FORMAT);
-						for(uint i = 0; i < display_modes; ++i)
-						{
-							D3DDISPLAYMODE d_mode;
-							V(d3d->EnumAdapterModes(used_adapter, DISPLAY_FORMAT, i, &d_mode));
-							s += Format("%dx%d(%d)", d_mode.Width, d_mode.Height, d_mode.RefreshRate);
-							if(i + 1 != display_modes)
-								s += ", ";
-						}
+						vector<Resolution> resolutions;
+						GetResolutions(resolutions);
+						for(const Resolution& res : resolutions)
+							s += Format("%dx%d(%d), ", res.size.x, res.size.y, res.hz);
+						s.pop(2u);
 						Msg(s);
 					}
 					break;

@@ -144,6 +144,7 @@
     <ClInclude Include="source\core\Timer.h" />
     <ClInclude Include="source\core\Tokenizer.h" />
     <ClInclude Include="source\core\WindowsIncludes.h" />
+    <ClInclude Include="source\engine\DebugDrawer.h" />
     <ClInclude Include="source\engine\DirectX.h" />
     <ClInclude Include="source\engine\FileFormat.h" />
     <ClInclude Include="source\engine\Font.h" />
@@ -194,6 +195,7 @@
     <ClInclude Include="source\engine\Physics.h" />
     <ClInclude Include="source\engine\Resource.h" />
     <ClInclude Include="source\engine\ResourceManager.h" />
+    <ClInclude Include="source\engine\ShaderHandler.h" />
     <ClInclude Include="source\engine\SoundManager.h" />
     <ClInclude Include="source\engine\StartupOptions.h" />
     <ClInclude Include="source\engine\SuperShader.h" />
@@ -406,6 +408,7 @@
     <ClCompile Include="source\core\Text.cpp" />
     <ClCompile Include="source\core\Timer.cpp" />
     <ClCompile Include="source\core\Tokenizer.cpp" />
+    <ClCompile Include="source\engine\DebugDrawer.cpp" />
     <ClCompile Include="source\engine\Font.cpp" />
     <ClCompile Include="source\engine\gui\Button.cpp" />
     <ClCompile Include="source\engine\gui\CheckBox.cpp" />

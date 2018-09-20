@@ -70,6 +70,7 @@ public:
 	const Int2& GetWindowSize() const { return wnd_size; }
 	void GetResolutions(vector<Resolution>& v) const;
 	void GetMultisamplingModes(vector<Int2>& v) const;
+	DebugDrawer* GetDebugDrawer() { return debug_drawer.get(); }
 
 	void SetAlphaBlend(bool use_alphablend);
 	void SetAlphaTest(bool use_alphatest);
@@ -148,4 +149,6 @@ private:
 
 	// render
 	bool vsync;
+
+	std::unique_ptr<DebugDrawer> debug_drawer;
 };

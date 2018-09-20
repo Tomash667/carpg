@@ -6,16 +6,7 @@
 #include "InsideLocation.h"
 #include "Game.h"
 #include "Terrain.h"
-#include "DirectX.h"
-
-
-//-----------------------------------------------------------------------------
-#ifdef DRAW_LOCAL_PATH
-#	ifndef _DEBUG
-#		error "DRAW_LOCAL_PATH in release!"
-#	endif
-#endif
-
+#include "DebugDrawer.h"
 
 //-----------------------------------------------------------------------------
 const float SS = 0.25f;//0.25f/8;
@@ -719,46 +710,52 @@ int Pathfinding::FindLocalPath(LevelContext& ctx, vector<Int2>& _path, const Int
 		std::sort(do_sprawdzenia.begin(), do_sprawdzenia.end(), sortownik);
 	}
 
-	// set debug path drawing
-#ifdef DRAW_LOCAL_PATH
-	if(marked == _me)
-		test_pf_outside = (L.location->outside && _me->in_building == -1);
-#endif
-
-	if(a_map[my_rel(w)].stan == 0)
+	if(debug_draw)
 	{
-		// path not found
-#ifdef DRAW_LOCAL_PATH
+		if(marked == _me)
+			test_pf_outside = (L.location->outside && _me->in_building == -1);
+
+		if(a_map[my_rel(w)].stan == 0)
+		{
+			if(marked == _me)
+			{
+				test_pf.push_back(std::pair<Vec2, int>(Vec2(0.25f*my_tile.x, 0.25f*my_tile.y), 1));
+				test_pf.push_back(std::pair<Vec2, int>(Vec2(0.25f*target_tile.x, 0.25f*target_tile.y), 1));
+			}
+			return 5;
+		}
+
 		if(marked == _me)
 		{
 			test_pf.push_back(std::pair<Vec2, int>(Vec2(0.25f*my_tile.x, 0.25f*my_tile.y), 1));
 			test_pf.push_back(std::pair<Vec2, int>(Vec2(0.25f*target_tile.x, 0.25f*target_tile.y), 1));
 		}
-#endif
-		return 5;
-	}
 
-#ifdef DRAW_LOCAL_PATH
-	if(marked == _me)
+		// populate path vector (and debug drawing)
+		Int2 p = my_rel;
+
+		do
+		{
+			if(marked == _me)
+				test_pf.push_back(std::pair<Vec2, int>(Vec2(0.25f*(p.x + minx), 0.25f*(p.y + miny)), 1));
+			_path.push_back(Int2(p.x + minx, p.y + miny));
+			p = a_map[p(w)].prev;
+		} while(p != target_rel);
+	}
+	else
 	{
-		test_pf.push_back(std::pair<Vec2, int>(Vec2(0.25f*my_tile.x, 0.25f*my_tile.y), 1));
-		test_pf.push_back(std::pair<Vec2, int>(Vec2(0.25f*target_tile.x, 0.25f*target_tile.y), 1));
-	}
-#endif
+		if(a_map[my_rel(w)].stan == 0)
+			return 5;
 
-	// populate path vector (and debug drawing)
-	Int2 p = my_rel;
+		// populate path vector (and debug drawing)
+		Int2 p = my_rel;
 
-	do
-	{
-#ifdef DRAW_LOCAL_PATH
-		if(marked == _me)
-			test_pf.push_back(std::pair<Vec2, int>(Vec2(0.25f*(p.x + minx), 0.25f*(p.y + miny)), 1));
-#endif
-		_path.push_back(Int2(p.x + minx, p.y + miny));
-		p = a_map[p(w)].prev;
+		do
+		{
+			_path.push_back(Int2(p.x + minx, p.y + miny));
+			p = a_map[p(w)].prev;
+		} while(p != target_rel);
 	}
-	while(p != target_rel);
 
 	_path.push_back(target_tile);
 	std::reverse(_path.begin(), _path.end());
@@ -768,23 +765,13 @@ int Pathfinding::FindLocalPath(LevelContext& ctx, vector<Int2>& _path, const Int
 }
 
 //=================================================================================================
-void Pathfinding::DebugDraw()
+void Pathfinding::Draw(DebugDrawer* dd)
 {
-#ifdef DRAW_LOCAL_PATH
+	if(test_pf.empty() || !debug_draw)
+		return;
+
 	Game& game = Game::Get();
-
-	uint passes;
-
-	V(game.eMesh->SetTechnique(game.techMeshSimple2));
-	V(game.eMesh->Begin(&passes, 0));
-	V(game.eMesh->BeginPass(0));
-
-	V(game.eMesh->SetMatrix(game.hMeshCombined, (const D3DXMATRIX*)&game.cam.matViewProj));
-	V(game.eMesh->CommitChanges());
-
-	game.SetAlphaBlend(true);
-	game.SetAlphaTest(false);
-	game.SetNoZWrite(false);
+	dd->BeginBatch();
 
 	for(vector<std::pair<Vec2, int> >::iterator it = test_pf.begin(), end = test_pf.end(); it != end; ++it)
 	{
@@ -816,13 +803,8 @@ void Pathfinding::DebugDraw()
 			break;
 		}
 
-		V(game.eMesh->SetVector(game.hMeshTint, (const D3DXVECTOR4*)&color));
-		V(game.eMesh->CommitChanges());
-
-		game.device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, v, sizeof(Vec3));
+		dd->AddQuad(v, color);
 	}
 
-	V(game.eMesh->EndPass());
-	V(game.eMesh->End());
-#endif
+	dd->EndBatch();
 }

@@ -46,6 +46,7 @@
 #include "LoadScreen.h"
 #include "Portal.h"
 #include "GlobalGui.h"
+#include "DebugDrawer.h"
 
 // limit fps
 #define LIMIT_DT 0.3f
@@ -148,6 +149,9 @@ void Game::OnDraw(bool normal)
 				DrawGlowingNodes(false);
 				V(device->BeginScene());
 			}
+
+			// debug draw
+			GetDebugDrawer()->Draw();
 		}
 
 		// draw gui
