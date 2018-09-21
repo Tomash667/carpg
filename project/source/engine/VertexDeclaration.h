@@ -74,6 +74,9 @@ struct VTex
 //-----------------------------------------------------------------------------
 struct VColor
 {
+	VColor() {}
+	VColor(const Vec3& pos, const Vec4& color) : pos(pos), color(color) {}
+
 	Vec3 pos;
 	Vec4 color;
 };

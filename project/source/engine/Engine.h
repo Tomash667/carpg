@@ -114,6 +114,7 @@ protected:
 	virtual void OnFocus(bool focus, const Int2& activation_point) = 0;
 
 private:
+	void Init();
 	void AdjustWindowSize();
 	void ChangeMode();
 	void Cleanup();
@@ -151,4 +152,5 @@ private:
 	bool vsync;
 
 	std::unique_ptr<DebugDrawer> debug_drawer;
+	vector<ShaderHandler*> shaders;
 };

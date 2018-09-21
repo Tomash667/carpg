@@ -1227,13 +1227,7 @@ bool Engine::Start(StartupOptions& options)
 	// initialize engine
 	try
 	{
-		InitWindow(options);
-		InitRender();
-		sound_mgr = new SoundManager;
-		sound_mgr->Init(options);
-		InitPhysics();
-		ResourceManager::Get().Init(device, sound_mgr);
-		debug_drawer.reset(new DebugDrawer);
+		Init();
 	}
 	catch(cstring e)
 	{
@@ -1266,6 +1260,19 @@ bool Engine::Start(StartupOptions& options)
 	// cleanup
 	Cleanup();
 	return true;
+}
+
+//=================================================================================================
+void Engine::Init()
+{
+	InitWindow(options);
+	InitRender();
+	sound_mgr = new SoundManager;
+	sound_mgr->Init(options);
+	InitPhysics();
+	ResourceManager::Get().Init(device, sound_mgr);
+	debug_drawer.reset(new DebugDrawer);
+	debug_drawer->InitOnce();
 }
 
 //=================================================================================================

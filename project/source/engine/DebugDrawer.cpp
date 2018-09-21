@@ -44,12 +44,14 @@ void DebugDrawer::OnRelease()
 void DebugDrawer::Draw()
 {
 	if(handler)
-		handler(this);
+	{
+		Engine& engine = Engine::Get();
+		engine.SetAlphaBlend(true);
+		engine.SetAlphaTest(false);
+		engine.SetNoZWrite(false);
 
-	// ! move
-	game.SetAlphaBlend(true);
-	game.SetAlphaTest(false);
-	game.SetNoZWrite(false);
+		handler(this);
+	}
 }
 
 void DebugDrawer::BeginBatch()
@@ -58,10 +60,23 @@ void DebugDrawer::BeginBatch()
 	batch = true;
 }
 
+void DebugDrawer::AddQuad(const Vec3(&pts)[4], const Vec4& color)
+{
+	verts.push_back(VColor(pts[0], color));
+	verts.push_back(VColor(pts[1], color));
+	verts.push_back(VColor(pts[2], color));
+	verts.push_back(VColor(pts[2], color));
+	verts.push_back(VColor(pts[1], color));
+	verts.push_back(VColor(pts[3], color));
+}
+
 void DebugDrawer::EndBatch()
 {
 	assert(batch);
 	batch = false;
+
+	if(verts.empty())
+		return;
 
 	if(!vb || verts.size() > vb_size)
 	{
@@ -81,10 +96,8 @@ void DebugDrawer::EndBatch()
 	V(effect->Begin(&passes, 0));
 	V(effect->BeginPass(0));
 
-	V(effect->SetMatrix(hMeshCombined, (const D3DXMATRIX*)&game.cam.matViewProj));
+	V(effect->SetMatrix(hMatCombined, (const D3DXMATRIX*)&game.cam.matViewProj));
 	V(effect->CommitChanges());
-
-
 
 	V(Engine::Get().device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, verts.size() / 3));
 

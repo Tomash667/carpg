@@ -16,6 +16,7 @@ public:
 	void OnRelease() override;
 	void Draw();
 	void BeginBatch();
+	void AddQuad(const Vec3(&pts)[4], const Vec4& color);
 	void EndBatch();
 
 	Handler GetHandler() const { return handler; }
