@@ -4,6 +4,7 @@
 #include "FileFormat.h"
 
 // Engine types
+struct CameraBase;
 struct Font;
 struct MeshInstance;
 struct ParticleEmitter;
@@ -15,6 +16,7 @@ class DebugDrawer;
 class Engine;
 class Pak;
 class ResourceManager;
+class ShaderHandler;
 class SoundManager;
 class SuperShader;
 

@@ -47,6 +47,7 @@
 #include "Portal.h"
 #include "GlobalGui.h"
 #include "DebugDrawer.h"
+#include "Pathfinding.h"
 
 // limit fps
 #define LIMIT_DT 0.3f
@@ -179,6 +180,9 @@ void Game::OnDraw(bool normal)
 			V(device->EndScene());
 			if(pc_data.before_player != BP_NONE && !draw_batch.glow_nodes.empty())
 				DrawGlowingNodes(true);
+
+			// debug draw
+			GetDebugDrawer()->Draw();
 		}
 
 		PROFILER_BLOCK("PostEffects");
@@ -274,6 +278,13 @@ void Game::OnDraw(bool normal)
 	}
 
 	Profiler::g_profiler.End();
+}
+
+//=================================================================================================
+void Game::OnDebugDraw(DebugDrawer* dd)
+{
+	if(pathfinding->IsDebugDraw())
+		pathfinding->Draw(dd);
 }
 
 //=================================================================================================
@@ -1575,6 +1586,9 @@ void Game::ReloadShaders()
 		ePostFx = CompileShader("post.fx");
 		eGlow = CompileShader("glow.fx");
 		eGrass = CompileShader("grass.fx");
+
+		for(ShaderHandler* shader : shaders)
+			shader->OnInit();
 	}
 	catch(cstring err)
 	{
@@ -1598,6 +1612,9 @@ void Game::ReleaseShaders()
 	SafeRelease(ePostFx);
 	SafeRelease(eGlow);
 	SafeRelease(eGrass);
+
+	for(ShaderHandler* shader : shaders)
+		shader->OnRelease();
 
 	super_shader->Release();
 }

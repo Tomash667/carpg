@@ -1561,6 +1561,9 @@
     <ClInclude Include="source\engine\ShaderHandler.h">
       <Filter>2. engine</Filter>
     </ClInclude>
+    <ClInclude Include="source\engine\CameraBase.h">
+      <Filter>2. engine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="source\resource\resource.rc">

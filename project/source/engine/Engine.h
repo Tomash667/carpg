@@ -33,7 +33,7 @@ class Engine
 {
 public:
 	Engine();
-	virtual ~Engine() {}
+	virtual ~Engine();
 
 	static Engine& Get() { return *engine; }
 
@@ -53,6 +53,7 @@ public:
 	bool Start(StartupOptions& options);
 	void UnlockCursor(bool lock_on_focus = true);
 	void LockCursor();
+	void RegisterShader(ShaderHandler* shader);
 
 	bool IsActive() const { return active; }
 	bool IsCursorLocked() const { return locked_cursor; }
@@ -100,6 +101,7 @@ public:
 	static const Int2 DEFAULT_WINDOW_SIZE;
 
 	SoundManager* sound_mgr;
+	CameraBase* cam_base;
 
 protected:
 	// funkcje implementowane przez Game
@@ -114,7 +116,7 @@ protected:
 	virtual void OnFocus(bool focus, const Int2& activation_point) = 0;
 
 private:
-	void Init();
+	void Init(StartupOptions& options);
 	void AdjustWindowSize();
 	void ChangeMode();
 	void Cleanup();
@@ -152,5 +154,7 @@ private:
 	bool vsync;
 
 	std::unique_ptr<DebugDrawer> debug_drawer;
+
+protected:
 	vector<ShaderHandler*> shaders;
 };

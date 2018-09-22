@@ -135,6 +135,7 @@ public:
 	void OnCleanup() override;
 	void OnDraw();
 	void OnDraw(bool normal = true);
+	void OnDebugDraw(DebugDrawer* dd);
 	void OnTick(float dt);
 	void OnChar(char c);
 	void OnReload();

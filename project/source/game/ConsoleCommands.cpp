@@ -23,6 +23,7 @@
 #include "World.h"
 #include "Level.h"
 #include "Arena.h"
+#include "Pathfinding.h"
 
 //-----------------------------------------------------------------------------
 extern string g_ctime;
@@ -126,6 +127,7 @@ void Game::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_FORCE_QUEST, "force_quest", "force next random quest to select (use list quest or none/reset)", F_SERVER | F_GAME | F_WORLD_MAP | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_STUN, "stun", "stun unit for time (stun [length=1] [1 = self])", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_REFRESH_COOLDOWN, "refresh_cooldown", "refresh action cooldown/charges", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_DRAW_PATH, "draw_path", "draw debug pathfinding", F_GAME | F_CHEAT));
 
 	// verify all commands are added
 #ifdef _DEBUG
@@ -1657,6 +1659,11 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					pc->RefreshCooldown();
 					if(!Net::IsLocal())
 						Net::PushChange(NetChange::CHEAT_REFRESH_COOLDOWN);
+					break;
+				case CMD_DRAW_PATH:
+					if(t.Next() && t.IsInt() && Any(t.GetInt(), 0, 1))
+						pathfinding->SetDebugDraw(t.GetInt() == 1);
+					Msg("draw_path %d", pathfinding->IsDebugDraw() ? 1 : 0);
 					break;
 				default:
 					assert(0);

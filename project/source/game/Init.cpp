@@ -72,6 +72,7 @@ void Game::PreconfigureGame()
 	Info("Game: Preconfiguring game.");
 
 	UnlockCursor(false);
+	cam_base = &cam;
 
 	// set animesh callback
 	MeshInstance::Predraw = HumanPredraw;

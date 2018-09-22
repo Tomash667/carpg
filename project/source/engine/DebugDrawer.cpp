@@ -2,19 +2,24 @@
 #include "EngineCore.h"
 #include "DebugDrawer.h"
 #include "Engine.h"
+#include "CameraBase.h"
 #include "DirectX.h"
 
 DebugDrawer::DebugDrawer() : effect(nullptr), vb(nullptr)
 {
 }
 
+DebugDrawer::~DebugDrawer() = default;
+
 void DebugDrawer::InitOnce()
 {
-	effect = Engine::Get().CompileShader("debug.fx");
+	Engine::Get().RegisterShader(this);
 }
 
 void DebugDrawer::OnInit()
 {
+	effect = Engine::Get().CompileShader("debug.fx");
+
 	hTechSimple = effect->GetTechniqueByName("simple");
 	assert(hTechSimple);
 
@@ -78,10 +83,12 @@ void DebugDrawer::EndBatch()
 	if(verts.empty())
 		return;
 
+	Engine& engine = Engine::Get();
+
 	if(!vb || verts.size() > vb_size)
 	{
 		SafeRelease(vb);
-		V(Engine::Get().device->CreateVertexBuffer(verts.size() * sizeof(VColor), D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC, 0, D3DPOOL_DEFAULT, &vb, nullptr));
+		V(engine.device->CreateVertexBuffer(verts.size() * sizeof(VColor), D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC, 0, D3DPOOL_DEFAULT, &vb, nullptr));
 		vb_size = verts.size();
 	}
 
@@ -96,10 +103,10 @@ void DebugDrawer::EndBatch()
 	V(effect->Begin(&passes, 0));
 	V(effect->BeginPass(0));
 
-	V(effect->SetMatrix(hMatCombined, (const D3DXMATRIX*)&game.cam.matViewProj));
+	V(effect->SetMatrix(hMatCombined, (const D3DXMATRIX*)&engine.cam_base->matViewProj));
 	V(effect->CommitChanges());
 
-	V(Engine::Get().device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, verts.size() / 3));
+	V(engine.device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, verts.size() / 3));
 
 	V(effect->EndPass());
 	V(effect->End());

@@ -28,6 +28,9 @@ clear_color(Color::Black), res_freed(false), vsync(true), active(false), activat
 }
 
 //=================================================================================================
+Engine::~Engine() = default;
+
+//=================================================================================================
 // Adjust window size to take exact value
 void Engine::AdjustWindowSize()
 {
@@ -945,6 +948,7 @@ void Engine::Render(bool dont_call_present)
 			throw Format("Engine: Lost directx device (%d).", hr);
 	}
 
+	assert(cam_base);
 	OnDraw();
 
 	if(!dont_call_present)
@@ -971,6 +975,8 @@ bool Engine::Reset(bool force)
 	{
 		res_freed = true;
 		V(sprite->OnLostDevice());
+		for(ShaderHandler* shader : shaders)
+			shader->OnReset();
 		OnReset();
 	}
 
@@ -998,6 +1004,8 @@ bool Engine::Reset(bool force)
 
 	// reload resources
 	SetDefaultRenderState();
+	for(ShaderHandler* shader : shaders)
+		shader->OnReload();
 	OnReload();
 	V(sprite->OnResetDevice());
 	lost_device = false;
@@ -1227,7 +1235,7 @@ bool Engine::Start(StartupOptions& options)
 	// initialize engine
 	try
 	{
-		Init();
+		Init(options);
 	}
 	catch(cstring e)
 	{
@@ -1263,7 +1271,7 @@ bool Engine::Start(StartupOptions& options)
 }
 
 //=================================================================================================
-void Engine::Init()
+void Engine::Init(StartupOptions& options)
 {
 	InitWindow(options);
 	InitRender();
@@ -1460,4 +1468,12 @@ void Engine::GetMultisamplingModes(vector<Int2>& v) const
 				v.push_back(Int2(j, i));
 		}
 	}
+}
+
+//=================================================================================================
+void Engine::RegisterShader(ShaderHandler* shader)
+{
+	assert(shader);
+	shaders.push_back(shader);
+	shader->OnInit();
 }

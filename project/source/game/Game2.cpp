@@ -125,8 +125,6 @@ void Game::Draw()
 
 	ListDrawObjects(ctx, cam.frustum, outside);
 	DrawScene(outside);
-
-	pathfinding->DebugDraw();
 }
 
 //=================================================================================================

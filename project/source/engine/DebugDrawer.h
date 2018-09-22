@@ -9,6 +9,7 @@ public:
 	typedef delegate<void(DebugDrawer*)> Handler;
 
 	DebugDrawer();
+	~DebugDrawer();
 	void InitOnce();
 	void OnInit() override;
 	void OnReset() override;

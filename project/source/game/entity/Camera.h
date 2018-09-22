@@ -1,11 +1,14 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-struct Camera
+#include "CameraBase.h"
+
+//-----------------------------------------------------------------------------
+struct Camera : public CameraBase
 {
 	Vec3 from, to, center, real_from, real_to;
 	Vec2 rot, real_rot;
-	Matrix matViewProj, matViewInv;
+	Matrix matViewInv;
 	float dist, tmp_dist, draw_range, springiness, d;
 	FrustumPlanes frustum, frustum2;
 	byte free_rot_key;
