@@ -176,18 +176,19 @@ void WorldMapGui::Draw(ControlDrawData*)
 		GUI.DrawText(GUI.default_font, text, DTF_CENTER | DTF_BOTTOM, color, rect);
 	}
 
-	if(mp_box->visible)
-		mp_box->Draw();
+	if(game.gui->mp_box->visible)
+		game.gui->mp_box->Draw();
 
 	if(game.gui->journal->visible)
 		game.gui->journal->Draw();
 
-	game_messages->Draw();
+	game.gui->messages->Draw();
 }
 
 //=================================================================================================
 void WorldMapGui::Update(float dt)
 {
+	MpBox* mp_box = game.gui->mp_box;
 	if(mp_box->visible)
 	{
 		mp_box->focus = true;
@@ -274,7 +275,7 @@ void WorldMapGui::Update(float dt)
 						}
 					}
 					else
-						game_messages->AddGameMsg2(txOnlyLeaderCanTravel, 3.f, GMS_ONLY_LEADER_CAN_TRAVEL);
+						game.gui->messages->AddGameMsg2(txOnlyLeaderCanTravel, 3.f, GMS_ONLY_LEADER_CAN_TRAVEL);
 				}
 				else if(game.devmode && picked_location != W.GetCurrentLocationIndex() && Key.PressedRelease('T'))
 				{
@@ -296,7 +297,7 @@ void WorldMapGui::Update(float dt)
 						}
 					}
 					else
-						game_messages->AddGameMsg2(txOnlyLeaderCanTravel, 3.f, GMS_ONLY_LEADER_CAN_TRAVEL);
+						game.gui->messages->AddGameMsg2(txOnlyLeaderCanTravel, 3.f, GMS_ONLY_LEADER_CAN_TRAVEL);
 				}
 			}
 		}
@@ -304,16 +305,16 @@ void WorldMapGui::Update(float dt)
 			picked_location = -1;
 	}
 
-	game_messages->Update(dt);
+	game.gui->messages->Update(dt);
 }
 
 //=================================================================================================
 void WorldMapGui::Event(GuiEvent e)
 {
 	if(e == GuiEvent_GainFocus)
-		mp_box->GainFocus();
+		game.gui->mp_box->GainFocus();
 	else if(e == GuiEvent_LostFocus)
-		mp_box->LostFocus();
+		game.gui->mp_box->LostFocus();
 }
 
 //=================================================================================================

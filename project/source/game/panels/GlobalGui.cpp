@@ -265,7 +265,6 @@ void GlobalGui::LoadData()
 void GlobalGui::PostInit()
 {
 	create_character->Init();
-
 	// load gui textures that require instant loading
 	GUI.GetLayout()->LoadDefault();
 }

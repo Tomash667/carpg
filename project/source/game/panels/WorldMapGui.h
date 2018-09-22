@@ -25,8 +25,6 @@ public:
 	}
 	void ShowEncounterMessage(cstring text);
 
-	MpBox* mp_box;
-	GameMessages* game_messages;
 	cstring txGameTimeout, txWorldDate, txCurrentLoc, txCitizens, txAvailable, txTarget, txDistance, txTravelTime, txDay, txDays, txOnlyLeaderCanTravel;
 	int picked_location;
 	DialogBox* dialog_enc;

@@ -22,7 +22,6 @@
 #include "Pathfinding.h"
 #include "Level.h"
 #include "SuperShader.h"
-#include "GameMessages.h"
 #include "Arena.h"
 #include "ResourceManager.h"
 #include "Building.h"
@@ -88,6 +87,7 @@ void Game::PreconfigureGame()
 	components.push_back(arena);
 	components.push_back(loc_gen_factory);
 	components.push_back(gui);
+	components.push_back(&L);
 	for(GameComponent* component : components)
 		component->Prepare();
 
@@ -591,7 +591,6 @@ void Game::AddLoadTasks()
 	tIskra = tex_mgr.AddLoadTask("iskra.png");
 	tSpawn = tex_mgr.AddLoadTask("spawn_fog.png");
 	tex_mgr.AddLoadTask("lighting_line.png", tLightingLine);
-	L.LoadData();
 
 	// physic meshes
 	res_mgr.AddTaskCategory(txLoadPhysicMeshes);

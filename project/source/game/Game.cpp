@@ -958,6 +958,7 @@ void Game::OnCleanup()
 	draw_batch.Clear();
 	DeleteElements(old_players);
 	N.Cleanup();
+	super_shader->Cleanup();
 }
 
 //=================================================================================================

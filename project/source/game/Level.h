@@ -1,8 +1,11 @@
 #pragma once
 
+//-----------------------------------------------------------------------------
+#include "GameComponent.h"
 #include "LevelContext.h"
 #include "ObjectEntity.h"
 
+//-----------------------------------------------------------------------------
 enum EnterFrom
 {
 	ENTER_FROM_PORTAL = 0,
@@ -11,13 +14,15 @@ enum EnterFrom
 	ENTER_FROM_DOWN_LEVEL = -3
 };
 
+//-----------------------------------------------------------------------------
 enum WarpTo
 {
 	WARP_OUTSIDE = -1,
 	WARP_ARENA = -2
 };
 
-class Level
+//-----------------------------------------------------------------------------
+class Level : public GameComponent
 {
 	struct UnitWarpData
 	{
@@ -26,7 +31,7 @@ class Level
 	};
 
 public:
-	void LoadData();
+	void LoadData() override;
 	void Reset();
 	void WarpUnit(Unit* unit, int where)
 	{
