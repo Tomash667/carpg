@@ -85,28 +85,6 @@ public:
 //=================================================================================================
 Options::Options(const DialogInfo& info) : GameDialogBox(info)
 {
-	txOPTIONS = Str("OPTIONS");
-	txResolution = Str("resolution");
-	txMultisampling = Str("multisampling");
-	txLanguage = Str("language");
-	txMultisamplingError = Str("multisamplingError");
-	txNeedRestart = Str("needRestart");
-	txSoundVolume = Str("soundVolume");
-	txMusicVolume = Str("musicVolume");
-	txMouseSensitivity = Str("mouseSensitivity");
-	txGrassRange = Str("grassRange");
-
-	txQuality = Str("quality");
-	txMsNone = Str("msNone");
-
-	cstring ids[] = {
-		"fullscreenMode",
-		"glow",
-		"normalMap",
-		"specularMap",
-		"vsync"
-	};
-
 	size = Int2(570, 460);
 	bts.resize(2);
 
@@ -117,25 +95,10 @@ Options::Options(const DialogInfo& info) : GameDialogBox(info)
 		check[i].id = IdFullscreen + i;
 		check[i].parent = this;
 		check[i].size = Int2(size.x - 44, 32);
-		check[i].text = Str(ids[i]);
 		check[i].pos = offset;
 		offset.y += 32 + 10;
 	}
-
-	bts[0].id = IdOk;
-	bts[0].parent = this;
-	bts[0].text = Str("ok");
-	bts[0].size = GUI.default_font->CalculateSize(bts[0].text) + Int2(24, 24);
-
-	bts[1].id = IdControls;
-	bts[1].parent = this;
-	bts[1].text = Str("controls");
-	bts[1].size = GUI.default_font->CalculateSize(bts[1].text) + Int2(24, 24);
-
-	bts[0].size.x = bts[1].size.x = max(bts[0].size.x, bts[1].size.x);
-	bts[0].pos = Int2(20, 410);
-	bts[1].pos = Int2(bts[0].size.x + 40, 410);
-
+	
 	scroll[0].pos = Int2(290, 290);
 	scroll[0].size = Int2(250, 16);
 	scroll[0].total = 100;
@@ -163,6 +126,62 @@ Options::Options(const DialogInfo& info) : GameDialogBox(info)
 	scroll[3].part = 10;
 	scroll[3].offset = 0;
 	scroll[3].hscrollbar = true;
+
+	// jêzyk
+	language.SetCollapsed(true);
+	language.parent = this;
+	language.pos = Int2(20, 383);
+	language.size = Int2(250, 25);
+	language.event_handler = DialogEvent(this, &Options::OnChangeLanguage);
+	int index = 0;
+	for(Language::LanguageMap* p_lmap : Language::GetLanguages())
+	{
+		Language::LanguageMap& lmap = *p_lmap;
+		string& dir = lmap["dir"];
+		language.Add(new LanguageItem(dir, Format("%s, %s, %s", dir.c_str(), lmap["englishName"].c_str(), lmap["localName"].c_str())));
+		if(dir == Language::prefix)
+			language.SetIndex(index);
+		++index;
+	}
+	language.Initialize();
+
+	visible = false;
+}
+
+//=================================================================================================
+void Options::LoadLanguage()
+{
+	txOPTIONS = Str("OPTIONS");
+	txResolution = Str("resolution");
+	txMultisampling = Str("multisampling");
+	txLanguage = Str("language");
+	txMultisamplingError = Str("multisamplingError");
+	txNeedRestart = Str("needRestart");
+	txSoundVolume = Str("soundVolume");
+	txMusicVolume = Str("musicVolume");
+	txMouseSensitivity = Str("mouseSensitivity");
+	txGrassRange = Str("grassRange");
+
+	txQuality = Str("quality");
+	txMsNone = Str("msNone");
+
+	check[0].text = Str("fullscreenMode");
+	check[1].text = Str("glow");
+	check[2].text = Str("normalMap");
+	check[3].text = Str("specularMap");
+	check[4].text = Str("vsync");
+
+	bts[0].id = IdOk;
+	bts[0].parent = this;
+	bts[0].text = Str("ok");
+	bts[0].size = GUI.default_font->CalculateSize(bts[0].text) + Int2(24, 24);
+	bts[1].id = IdControls;
+	bts[1].parent = this;
+	bts[1].text = Str("controls");
+	bts[1].size = GUI.default_font->CalculateSize(bts[1].text) + Int2(24, 24);
+	bts[0].size.x = bts[1].size.x = max(bts[0].size.x, bts[1].size.x);
+	bts[0].pos = Int2(20, 410);
+	bts[1].pos = Int2(bts[0].size.x + 40, 410);
 
 	// lista rozdzielczoœci
 	res.parent = this;
@@ -208,26 +227,6 @@ Options::Options(const DialogInfo& info) : GameDialogBox(info)
 		++index;
 	}
 	multisampling.Initialize();
-
-	// jêzyk
-	language.SetCollapsed(true);
-	language.parent = this;
-	language.pos = Int2(20, 383);
-	language.size = Int2(250, 25);
-	language.event_handler = DialogEvent(this, &Options::OnChangeLanguage);
-	index = 0;
-	for(Language::LanguageMap* p_lmap : Language::GetLanguages())
-	{
-		Language::LanguageMap& lmap = *p_lmap;
-		string& dir = lmap["dir"];
-		language.Add(new LanguageItem(dir, Format("%s, %s, %s", dir.c_str(), lmap["englishName"].c_str(), lmap["localName"].c_str())));
-		if(dir == Language::prefix)
-			language.SetIndex(index);
-		++index;
-	}
-	language.Initialize();
-
-	visible = false;
 }
 
 //=================================================================================================

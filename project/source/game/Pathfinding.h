@@ -20,7 +20,7 @@ class Pathfinding : public GameComponent
 	};
 
 public:
-	Pathfinding() : debug_draw(false) {}
+	void Cleanup() override { delete this; }
 	bool FindPath(LevelContext& ctx, const Int2& start_tile, const Int2& target_tile, vector<Int2>& path, bool can_open_doors = true, bool wedrowanie = false, vector<Int2>* blocked = nullptr);
 	int FindLocalPath(LevelContext& ctx, vector<Int2>& path, const Int2& my_tile, const Int2& target_tile, const Unit* me, const Unit* other, const void* usable = nullptr, bool is_end_point = false);
 	void Draw(DebugDrawer* dd);

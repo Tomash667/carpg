@@ -25,20 +25,25 @@ TeamPanel::TeamPanel() : game(Game::Get())
 {
 	visible = false;
 
-	bt[0].text = Str("giveGold");
 	bt[0].id = Bt_GiveGold;
 	bt[0].parent = this;
-	bt[1].text = Str("payCredit");
 	bt[1].id = Bt_PayCredit;
 	bt[1].parent = this;
-	bt[2].text = Str("changeLeader");
 	bt[2].id = Bt_Leader;
 	bt[2].parent = this;
-	bt[3].text = Str("kick");
 	bt[3].id = Bt_Kick;
 	bt[3].parent = this;
 
 	UpdateButtons();
+}
+
+//=================================================================================================
+void TeamPanel::LoadLanguage()
+{
+	bt[0].text = Str("giveGold");
+	bt[1].text = Str("payCredit");
+	bt[2].text = Str("changeLeader");
+	bt[3].text = Str("kick");
 
 	txTeam = Str("team");
 	txCharInTeam = Str("charInTeam");
@@ -63,18 +68,6 @@ TeamPanel::TeamPanel() : game(Game::Get())
 	txReallyKick = Str("reallyKick");
 	txAlreadyLeft = Str("alreadyLeft");
 	txCAlreadyLeft = Str("cAlreadyLeft");
-}
-
-//=================================================================================================
-inline int& GetCredit(Unit& u)
-{
-	if(u.IsPlayer())
-		return u.player->credit;
-	else
-	{
-		assert(u.IsFollower());
-		return u.hero->credit;
-	}
 }
 
 //=================================================================================================
@@ -126,7 +119,7 @@ void TeamPanel::Draw(ControlDrawData*)
 			offset.y + 32
 		};
 		s = "$h+";
-		s += Format(txCharInTeam, u->GetName(), u->IsPlayer() ? pc_share : (u->hero->free ? 0 : 10), GetCredit(*u));
+		s += Format(txCharInTeam, u->GetName(), u->IsPlayer() ? pc_share : (u->hero->free ? 0 : 10), u->GetCredit());
 		if(u->IsPlayer() && Net::IsOnline())
 		{
 			if(Net::IsServer())

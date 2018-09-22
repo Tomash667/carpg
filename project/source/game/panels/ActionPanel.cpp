@@ -10,12 +10,15 @@
 ActionPanel::ActionPanel()
 {
 	visible = false;
+	tooltip.Init(TooltipGetText(this, &ActionPanel::GetTooltip));
+}
 
+//=================================================================================================
+void ActionPanel::LoadLanguage()
+{
 	txActions = Str("actions");
 	txCooldown = Str("cooldown");
 	txCooldownCharges = Str("cooldownCharges");
-
-	tooltip.Init(TooltipGetText(this, &ActionPanel::GetTooltip));
 }
 
 //=================================================================================================

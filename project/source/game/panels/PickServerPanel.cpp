@@ -16,29 +16,43 @@ PickServerPanel::PickServerPanel(const DialogInfo& info) : GameDialogBox(info)
 	size = Int2(524, 340);
 	bts.resize(2);
 
-	txUnknownResponse = Str("unknownResponse");
-	txUnknownResponse2 = Str("unknownResponse2");
-	txBrokenResponse = Str("brokenResponse");
-
 	bts[0].size = Int2(180, 44);
 	bts[0].pos = Int2(336, 30);
 	bts[0].id = GuiEvent_Custom + BUTTON_OK;
-	bts[0].text = Str("join");
 	bts[0].parent = this;
 
 	bts[1].size = Int2(180, 44);
 	bts[1].pos = Int2(336, 80);
 	bts[1].id = GuiEvent_Custom + BUTTON_CANCEL;
-	bts[1].text = GUI.txCancel;
 	bts[1].parent = this;
 
 	grid.pos = Int2(8, 8);
 	grid.size = Int2(320, 300);
 	grid.event = GridEvent(this, &PickServerPanel::GetCell);
+}
+
+//=================================================================================================
+void PickServerPanel::LoadLanguage()
+{
+	txUnknownResponse = Str("unknownResponse");
+	txUnknownResponse2 = Str("unknownResponse2");
+	txBrokenResponse = Str("brokenResponse");
+
+	bts[0].text = Str("join");
+	bts[1].text = GUI.txCancel;
+
 	grid.AddColumn(Grid::IMGSET, 50);
 	grid.AddColumn(Grid::TEXT_COLOR, 100, Str("players"));
 	grid.AddColumn(Grid::TEXT_COLOR, 150, Str("name2"));
 	grid.Init();
+}
+
+//=================================================================================================
+void PickServerPanel::LoadData()
+{
+	auto& tex_mgr = ResourceManager::Get<Texture>();
+	tex_mgr.AddLoadTask("save-16.png", tIcoZapis);
+	tex_mgr.AddLoadTask("padlock-16.png", tIcoHaslo);
 }
 
 //=================================================================================================
@@ -294,12 +308,4 @@ void PickServerPanel::GetCell(int item, int column, Cell& cell)
 		else
 			cell.text_color->text = server.name.c_str();
 	}
-}
-
-//=================================================================================================
-void PickServerPanel::LoadData()
-{
-	auto& tex_mgr = ResourceManager::Get<Texture>();
-	tex_mgr.AddLoadTask("save-16.png", tIcoZapis);
-	tex_mgr.AddLoadTask("padlock-16.png", tIcoHaslo);
 }

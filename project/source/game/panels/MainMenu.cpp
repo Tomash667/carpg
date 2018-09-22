@@ -98,7 +98,11 @@ MainMenu::MainMenu(Game* game) : game(game), check_version(0), check_version_thr
 {
 	focusable = true;
 	visible = false;
+}
 
+//=================================================================================================
+void MainMenu::LoadLanguage()
+{
 	txInfoText = Str("infoText");
 	txVersion = Str("version");
 

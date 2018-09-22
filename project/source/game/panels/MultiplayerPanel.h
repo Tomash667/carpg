@@ -9,11 +9,10 @@ class MultiplayerPanel : public GameDialogBox
 {
 public:
 	explicit MultiplayerPanel(const DialogInfo& info);
-
+	void LoadLanguage();
 	void Draw(ControlDrawData* cdd = nullptr) override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
-
 	void Show();
 
 	enum ButtonId

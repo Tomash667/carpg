@@ -34,6 +34,7 @@ public:
 
 	void InitOnce() override;
 	void LoadLanguage() override;
+	void Cleanup() override { delete this; }
 	void Start(Mode mode);
 	void Reset();
 	bool Special(DialogContext& ctx, cstring msg) override;

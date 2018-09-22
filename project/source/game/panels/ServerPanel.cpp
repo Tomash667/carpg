@@ -25,6 +25,60 @@ ServerPanel::ServerPanel(const DialogInfo& info) : GameDialogBox(info)
 	size = Int2(540, 510);
 	bts.resize(6);
 
+	const Int2 bt_size(180, 44);
+
+	bts[0].id = IdPickCharacter;
+	bts[0].parent = this;
+	bts[0].pos = Int2(340, 30);
+	bts[0].size = bt_size;
+
+	bts[1].id = IdReady;
+	bts[1].parent = this;
+	bts[1].pos = Int2(340, 80);
+	bts[1].size = bt_size;
+
+	bts[2].id = IdKick;
+	bts[2].parent = this;
+	bts[2].pos = Int2(340, 130);
+	bts[2].size = bt_size;
+
+	bts[3].id = IdLeader;
+	bts[3].parent = this;
+	bts[3].pos = Int2(340, 180);
+	bts[3].size = bt_size;
+
+	bts[4].id = IdStart;
+	bts[4].parent = this;
+	bts[4].pos = Int2(340, 230);
+	bts[4].size = bt_size;
+
+	bts[5].id = IdCancel;
+	bts[5].parent = this;
+	bts[5].pos = Int2(340, 280);
+	bts[5].size = bt_size;
+
+	grid.pos = Int2(10, 10);
+	grid.size = Int2(320, 300);
+	grid.event = GridEvent(this, &ServerPanel::GetCell);
+	grid.selection_type = Grid::BACKGROUND;
+	grid.selection_color = Color(0, 255, 0, 128);
+
+	itb.parent = this;
+	itb.max_cache = 10;
+	itb.max_lines = 100;
+	itb.esc_clear = false;
+	itb.lose_focus = false;
+	itb.pos = Int2(10, 320);
+	itb.size = Int2(320, 182);
+	itb.event = InputEvent(this, &ServerPanel::OnInput);
+	itb.Init();
+
+	visible = false;
+}
+
+//=================================================================================================
+void ServerPanel::LoadLanguage()
+{
 	txReady = Str("ready");
 	txNotReady = Str("notReady");
 	txStart = Str("start");
@@ -55,65 +109,17 @@ ServerPanel::ServerPanel(const DialogInfo& info) : GameDialogBox(info)
 	txNeedSelectedPlayer = Str("needSelectedPlayer");
 	txServerText = Str("serverText");
 
-	const Int2 bt_size(180, 44);
-
-	bts[0].id = IdPickCharacter;
-	bts[0].parent = this;
-	bts[0].text = txPickChar; // Zmieñ postaæ
-	bts[0].pos = Int2(340, 30);
-	bts[0].size = bt_size;
-
-	bts[1].id = IdReady;
-	bts[1].parent = this;
-	bts[1].text = txReady; // Niegotowy
-	bts[1].pos = Int2(340, 80);
-	bts[1].size = bt_size;
-
-	bts[2].id = IdKick;
-	bts[2].parent = this;
-	bts[2].text = txKick; // Anuluj
-	bts[2].pos = Int2(340, 130);
-	bts[2].size = bt_size;
-
-	bts[3].id = IdLeader;
-	bts[3].parent = this;
+	bts[0].text = txPickChar; // change char
+	bts[1].text = txReady; // not ready
+	bts[2].text = txKick; // cancel
 	bts[3].text = txSetLeader;
-	bts[3].pos = Int2(340, 180);
-	bts[3].size = bt_size;
-
-	bts[4].id = IdStart;
-	bts[4].parent = this;
 	bts[4].text = txStart;
-	bts[4].pos = Int2(340, 230);
-	bts[4].size = bt_size;
-
-	bts[5].id = IdCancel;
-	bts[5].parent = this;
 	bts[5].text = GUI.txCancel;
-	bts[5].pos = Int2(340, 280);
-	bts[5].size = bt_size;
 
-	grid.pos = Int2(10, 10);
-	grid.size = Int2(320, 300);
-	grid.event = GridEvent(this, &ServerPanel::GetCell);
-	grid.selection_type = Grid::BACKGROUND;
-	grid.selection_color = Color(0, 255, 0, 128);
 	grid.AddColumn(Grid::IMG, 20);
 	grid.AddColumn(Grid::TEXT_COLOR, 140, txNick);
 	grid.AddColumn(Grid::TEXT, 140, txChar);
 	grid.Init();
-
-	itb.parent = this;
-	itb.max_cache = 10;
-	itb.max_lines = 100;
-	itb.esc_clear = false;
-	itb.lose_focus = false;
-	itb.pos = Int2(10, 320);
-	itb.size = Int2(320, 182);
-	itb.event = InputEvent(this, &ServerPanel::OnInput);
-	itb.Init();
-
-	visible = false;
 }
 
 //=================================================================================================

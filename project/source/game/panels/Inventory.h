@@ -66,8 +66,10 @@ public:
 		}
 	};
 
+	~Inventory();
 	void InitOnce();
 	void LoadLanguage();
+	void LoadData();
 	void OnReset();
 	void OnReload();
 	void Setup(PlayerController* pc);

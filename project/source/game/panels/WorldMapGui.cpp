@@ -27,7 +27,11 @@ WorldMapGui::WorldMapGui() : game(Game::Get())
 {
 	focusable = true;
 	visible = false;
+}
 
+//=================================================================================================
+void WorldMapGui::LoadLanguage()
+{
 	txGameTimeout = Str("gameTimeout");
 	txWorldDate = Str("worldDate");
 	txCurrentLoc = Str("currentLoc");

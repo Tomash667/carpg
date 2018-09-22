@@ -32,41 +32,38 @@ const int INDEX_CARRY = -3;
 
 
 //=================================================================================================
+Inventory::~Inventory()
+{
+	delete inv_mine;
+	delete inv_trade_mine;
+	delete inv_trade_other;
+	delete gp_trade;
+}
+
+//=================================================================================================
 void Inventory::InitOnce()
 {
 	inv_mine = new InventoryPanel(*this);
 	inv_mine->InitTooltip();
-	inv_mine->title = txInventory;
 	inv_mine->mode = InventoryPanel::INVENTORY;
 	inv_mine->visible = false;
 
 	gp_trade = new GamePanelContainer;
 
 	inv_trade_mine = new InventoryPanel(*this);
-	inv_trade_mine->title = txInventory;
 	inv_trade_mine->focus = true;
 	gp_trade->Add(inv_trade_mine);
 
 	inv_trade_other = new InventoryPanel(*this);
-	inv_trade_other->title = txInventory;
 	gp_trade->Add(inv_trade_other);
 
 	gp_trade->Hide();
-
-	auto& tex_mgr = ResourceManager::Get<Texture>();
-	tex_mgr.AddLoadTask("item_bar.png", tItemBar);
-	tex_mgr.AddLoadTask("equipped.png", tEquipped);
-	tex_mgr.AddLoadTask("coins.png", tGold);
-	tex_mgr.AddLoadTask("star_hq.png", tStarHq);
-	tex_mgr.AddLoadTask("star_m.png", tStarM);
-	tex_mgr.AddLoadTask("star_u.png", tStarU);
-	tex_mgr.AddLoadTask("team_item.png", tTeamItem);
 }
 
 //=================================================================================================
 void Inventory::LoadLanguage()
 {
-	auto section = Language::GetSection("InventoryPanel");
+	auto section = Language::GetSection("Inventory");
 	txGoldAndCredit = section.Get("goldAndCredit");
 	txGoldDropInfo = section.Get("goldDropInfo");
 	txCarryShort = section.Get("carryShort");
@@ -110,6 +107,26 @@ void Inventory::LoadLanguage()
 	txNpcCantCarry = section.Get("npcCantCarry");
 	txStatsFor = section.Get("statsFor");
 	txShowStatsFor = section.Get("showStatsFor");
+
+	inv_mine->bt.text = txTakeAll;
+	inv_mine->title = txInventory;
+	inv_trade_mine->bt.text = txTakeAll;
+	inv_trade_mine->title = txInventory;
+	inv_trade_other->bt.text = txTakeAll;
+	inv_trade_other->title = txInventory;
+}
+
+//=================================================================================================
+void Inventory::LoadData()
+{
+	auto& tex_mgr = ResourceManager::Get<Texture>();
+	tex_mgr.AddLoadTask("item_bar.png", tItemBar);
+	tex_mgr.AddLoadTask("equipped.png", tEquipped);
+	tex_mgr.AddLoadTask("coins.png", tGold);
+	tex_mgr.AddLoadTask("star_hq.png", tStarHq);
+	tex_mgr.AddLoadTask("star_m.png", tStarM);
+	tex_mgr.AddLoadTask("star_u.png", tStarU);
+	tex_mgr.AddLoadTask("team_item.png", tTeamItem);
 }
 
 //=================================================================================================
@@ -337,7 +354,6 @@ InventoryPanel::InventoryPanel(Inventory& base) : base(base), last_item(nullptr)
 	scrollbar.total = 100;
 	scrollbar.offset = 0;
 	scrollbar.part = 100;
-	bt.text = base.txTakeAll;
 	bt.id = GuiEvent_Custom;
 	bt.parent = this;
 }

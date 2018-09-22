@@ -447,7 +447,7 @@ void Game::OnTick(float dt)
 		gui->mp_box->visible = !gui->mp_box->visible;
 
 	// update gui
-	gui->Update(dt);
+	gui->UpdateGui(dt);
 	if(game_state == GS_EXIT_TO_MENU)
 	{
 		ExitToMenu();
@@ -632,16 +632,12 @@ void Game::OnReload()
 		V(eSkybox->OnResetDevice());
 	if(eArea)
 		V(eArea->OnResetDevice());
-	if(eGui)
-		V(eGui->OnResetDevice());
 	if(ePostFx)
 		V(ePostFx->OnResetDevice());
 	if(eGlow)
 		V(eGlow->OnResetDevice());
 	if(eGrass)
 		V(eGrass->OnResetDevice());
-
-	super_shader->OnReload();
 
 	CreateTextures();
 	BuildDungeon();
@@ -667,16 +663,12 @@ void Game::OnReset()
 		V(eSkybox->OnLostDevice());
 	if(eArea)
 		V(eArea->OnLostDevice());
-	if(eGui)
-		V(eGui->OnLostDevice());
 	if(ePostFx)
 		V(ePostFx->OnLostDevice());
 	if(eGlow)
 		V(eGlow->OnLostDevice());
 	if(eGrass)
 		V(eGrass->OnLostDevice());
-
-	super_shader->OnReset();
 
 	SafeRelease(tItemRegion);
 	SafeRelease(tItemRegionRot);
@@ -841,7 +833,6 @@ void Game::ClearPointers()
 	eTerrain = nullptr;
 	eSkybox = nullptr;
 	eArea = nullptr;
-	eGui = nullptr;
 	ePostFx = nullptr;
 	eGlow = nullptr;
 	eGrass = nullptr;
@@ -900,22 +891,17 @@ void Game::ClearPointers()
 //=================================================================================================
 void Game::OnCleanup()
 {
-	if(game_state != GS_QUIT)
+	if(game_state != GS_QUIT && game_state != GS_LOAD_MENU)
 		ClearGame();
 
-	for(std::pair<GameComponent*, bool>& component : components)
-	{
-		component.first->Cleanup();
-		if(component.second)
-			delete component.first;
-	}
+	for(GameComponent* component : components)
+		component->Cleanup();
 
 	GUI.OnClean();
 	CleanScene();
 	DeleteElements(bow_instances);
 	ClearQuadtree();
 	CleanupDialogs();
-	Language::Cleanup();
 
 	// shadery
 	ReleaseShaders();
@@ -971,7 +957,6 @@ void Game::OnCleanup()
 
 	draw_batch.Clear();
 	DeleteElements(old_players);
-	SM.Cleanup();
 	N.Cleanup();
 }
 
@@ -1573,8 +1558,6 @@ void Game::ReloadShaders()
 
 	ReleaseShaders();
 
-	super_shader->Init();
-
 	try
 	{
 		eMesh = CompileShader("mesh.fx");
@@ -1582,7 +1565,6 @@ void Game::ReloadShaders()
 		eSkybox = CompileShader("skybox.fx");
 		eTerrain = CompileShader("terrain.fx");
 		eArea = CompileShader("area.fx");
-		eGui = CompileShader("gui.fx");
 		ePostFx = CompileShader("post.fx");
 		eGlow = CompileShader("glow.fx");
 		eGrass = CompileShader("grass.fx");
@@ -1597,7 +1579,6 @@ void Game::ReloadShaders()
 	}
 
 	SetupShaders();
-	GUI.SetShader(eGui);
 }
 
 //=================================================================================================
@@ -1608,15 +1589,12 @@ void Game::ReleaseShaders()
 	SafeRelease(eTerrain);
 	SafeRelease(eSkybox);
 	SafeRelease(eArea);
-	SafeRelease(eGui);
 	SafeRelease(ePostFx);
 	SafeRelease(eGlow);
 	SafeRelease(eGrass);
 
 	for(ShaderHandler* shader : shaders)
 		shader->OnRelease();
-
-	super_shader->Release();
 }
 
 //=================================================================================================

@@ -5,6 +5,15 @@
 #include "Engine.h"
 
 //=================================================================================================
+void LoadScreen::LoadData()
+{
+	auto& tex_mgr = ResourceManager::Get<Texture>();
+	tLoadbarBg = tex_mgr.GetLoadedRaw("loadbar_bg.png");
+	tLoadbar = tex_mgr.GetLoadedRaw("loadbar.png");
+	tBackground = tex_mgr.GetLoadedRaw("load_bg.jpg");
+}
+
+//=================================================================================================
 void LoadScreen::Draw(ControlDrawData*)
 {
 	// background
@@ -23,15 +32,6 @@ void LoadScreen::Draw(ControlDrawData*)
 	// text
 	Rect r2 = { 32, 0, GUI.wnd_size.x - 32, LONG(GUI.wnd_size.y - img_size.y - 32) };
 	GUI.DrawText(GUI.default_font, text, DTF_CENTER | DTF_BOTTOM, Color::White, r2);
-}
-
-//=================================================================================================
-void LoadScreen::LoadData()
-{
-	auto& tex_mgr = ResourceManager::Get<Texture>();
-	tLoadbarBg = tex_mgr.GetLoadedRaw("loadbar_bg.png");
-	tLoadbar = tex_mgr.GetLoadedRaw("loadbar.png");
-	tBackground = tex_mgr.GetLoadedRaw("load_bg.jpg");
 }
 
 //=================================================================================================

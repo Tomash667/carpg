@@ -19,6 +19,12 @@ Journal::Journal() : mode(Quests), game(Game::Get())
 	visible = false;
 	Reset();
 
+	font_height = GUI.default_font->height;
+}
+
+//=================================================================================================
+void Journal::LoadLanguage()
+{
 	txAdd = Str("add");
 	txNoteText = Str("noteText");
 	txNoQuests = Str("noQuests");
@@ -27,7 +33,6 @@ Journal::Journal() : mode(Quests), game(Game::Get())
 	txAddNote = Str("addNote");
 	txAddTime = Str("addTime");
 
-	font_height = GUI.default_font->height;
 }
 
 //=================================================================================================

@@ -51,6 +51,8 @@ void LocationGeneratorFactory::Cleanup()
 	delete moonwell;
 	delete secret;
 	delete tutorial;
+
+	delete this;
 }
 
 //=================================================================================================

@@ -40,6 +40,7 @@
 #include "ResourceManager.h"
 #include "ItemHelper.h"
 #include "GlobalGui.h"
+#include "FOV.h"
 
 vector<NetChange> Net::changes;
 Net::Mode Net::mode;
@@ -1068,7 +1069,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						// reveal minimap
 						Int2 new_tile(int(new_pos.x / 2), int(new_pos.z / 2));
 						if(Int2(int(unit.pos.x / 2), int(unit.pos.z / 2)) != new_tile)
-							DungeonReveal(new_tile);
+							FOV::DungeonReveal(new_tile, minimap_reveal);
 					}
 					unit.pos = new_pos;
 					unit.UpdatePhysics(unit.pos);

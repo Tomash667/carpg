@@ -44,7 +44,7 @@ public:
 	static const float TRAVEL_SPEED;
 
 	// general
-	void InitOnce();
+	void InitOnce() override;
 	void LoadLanguage() override;
 	void Cleanup() override;
 	void OnNewGame();

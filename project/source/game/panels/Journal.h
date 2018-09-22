@@ -22,11 +22,11 @@ public:
 	};
 
 	Journal();
-
+	void LoadLanguage();
+	void LoadData();
 	void Draw(ControlDrawData* cdd = nullptr) override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
-
 	void Reset();
 	void Show();
 	void Hide();
@@ -34,7 +34,6 @@ public:
 	void AddEntry(cstring text, int color, bool singleline);
 	void OnAddNote(int id);
 	void NeedUpdate(Mode mode, int quest_index = 0);
-	void LoadData();
 	void AddRumor(cstring text);
 	void Save(FileWriter& f);
 	void Load(FileReader& f);

@@ -10,7 +10,7 @@ struct ColorVertexOutput
 {
 	float4 pos : POSITION;
 	float4 color : COLOR0;
-}
+};
 
 void vs_simple(in ColorVertex In, out ColorVertexOutput Out)
 {

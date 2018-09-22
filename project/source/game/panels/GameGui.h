@@ -63,13 +63,12 @@ class GameGui : public Container
 public:
 	GameGui();
 	~GameGui();
-
 	void LoadLanguage();
+	void LoadData();
 	void Draw(ControlDrawData* cdd = nullptr) override;
 	void Update(float dt) override;
 	bool NeedCursor() const override;
 	void Event(GuiEvent e) override;
-
 	void AddSpeechBubble(Unit* unit, cstring text);
 	void AddSpeechBubble(const Vec3& pos, cstring text);
 	void Reset();
@@ -78,7 +77,6 @@ public:
 	bool HavePanelOpen() const;
 	bool CanFocusMpBox() const { return !HavePanelOpen(); }
 	void ClosePanels(bool close_mp_box = false);
-	void LoadData();
 	void GetGamePanels(vector<GamePanel*>& panels);
 	OpenPanel GetOpenPanel();
 	void ShowPanel(OpenPanel p, OpenPanel open = OpenPanel::Unknown);

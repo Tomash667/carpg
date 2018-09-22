@@ -220,6 +220,7 @@
     <ClInclude Include="source\game\entity\Tile.h" />
     <ClInclude Include="source\game\entity\UnitEventHandler.h" />
     <ClInclude Include="source\game\events\Arena.h" />
+    <ClInclude Include="source\game\FOV.h" />
     <ClInclude Include="source\game\GameComponent.h" />
     <ClInclude Include="source\game\GameCore.h" />
     <ClInclude Include="source\game\GameStats.h" />

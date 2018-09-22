@@ -22,11 +22,11 @@ class ServerPanel : public GameDialogBox
 {
 public:
 	explicit ServerPanel(const DialogInfo& info);
-
+	void LoadLanguage();
+	void LoadData();
 	void Draw(ControlDrawData* cdd = nullptr) override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
-
 	void Show();
 	void GetCell(int item, int column, Cell& cell);
 	void ExitLobby(VoidF callback = nullptr);
@@ -37,7 +37,6 @@ public:
 	void UseLoadedCharacter(bool have);
 	void CheckAutopick();
 	void PickClass(Class clas, bool ready);
-	void LoadData();
 
 	Grid grid;
 	cstring txReady, txNotReady, txStart, txStop, txStarting, txPickChar, txKick, txNone, txSetLeader, txNick, txChar, txLoadedCharInfo, txNotLoadedCharInfo, txChangeChar, txCantKickMyself,

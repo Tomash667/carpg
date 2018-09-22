@@ -16,6 +16,22 @@ Minimap::Minimap()
 }
 
 //=================================================================================================
+void Minimap::LoadData()
+{
+	auto& tex_mgr = ResourceManager::Get<Texture>();
+	tex_mgr.AddLoadTask("mini_unit.png", tMiniunit[0]);
+	tex_mgr.AddLoadTask("mini_unit2.png", tMiniunit[1]);
+	tex_mgr.AddLoadTask("mini_unit3.png", tMiniunit[2]);
+	tex_mgr.AddLoadTask("mini_unit4.png", tMiniunit[3]);
+	tex_mgr.AddLoadTask("mini_unit5.png", tMiniunit[4]);
+	tex_mgr.AddLoadTask("schody_dol.png", tSchodyDol);
+	tex_mgr.AddLoadTask("schody_gora.png", tSchodyGora);
+	tex_mgr.AddLoadTask("mini_bag.png", tMinibag);
+	tex_mgr.AddLoadTask("mini_bag2.png", tMinibag2);
+	tex_mgr.AddLoadTask("mini_portal.png", tMiniportal);
+}
+
+//=================================================================================================
 void Minimap::Draw(ControlDrawData* /*cdd*/)
 {
 	Game& game = Game::Get();
@@ -194,22 +210,6 @@ void Minimap::Build()
 			}
 		}
 	}
-}
-
-//=================================================================================================
-void Minimap::LoadData()
-{
-	auto& tex_mgr = ResourceManager::Get<Texture>();
-	tex_mgr.AddLoadTask("mini_unit.png", tMiniunit[0]);
-	tex_mgr.AddLoadTask("mini_unit2.png", tMiniunit[1]);
-	tex_mgr.AddLoadTask("mini_unit3.png", tMiniunit[2]);
-	tex_mgr.AddLoadTask("mini_unit4.png", tMiniunit[3]);
-	tex_mgr.AddLoadTask("mini_unit5.png", tMiniunit[4]);
-	tex_mgr.AddLoadTask("schody_dol.png", tSchodyDol);
-	tex_mgr.AddLoadTask("schody_gora.png", tSchodyGora);
-	tex_mgr.AddLoadTask("mini_bag.png", tMinibag);
-	tex_mgr.AddLoadTask("mini_bag2.png", tMinibag2);
-	tex_mgr.AddLoadTask("mini_portal.png", tMiniportal);
 }
 
 //=================================================================================================

@@ -1564,6 +1564,9 @@
     <ClInclude Include="source\engine\CameraBase.h">
       <Filter>2. engine</Filter>
     </ClInclude>
+    <ClInclude Include="source\game\FOV.h">
+      <Filter>3. game</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="source\resource\resource.rc">

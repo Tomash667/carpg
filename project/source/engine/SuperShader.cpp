@@ -13,10 +13,21 @@ SuperShader::SuperShader() : pool(nullptr)
 }
 
 //=================================================================================================
-void SuperShader::Init()
+void SuperShader::InitOnce()
 {
 	V(D3DXCreateEffectPool(&pool));
+	Engine::Get().RegisterShader(this);
+}
 
+//=================================================================================================
+void SuperShader::Cleanup()
+{
+	SafeRelease(pool);
+}
+
+//=================================================================================================
+void SuperShader::OnInit()
+{
 	FileReader f(Format("%s/shaders/super.fx", g_system_dir.c_str()));
 	FileTime file_time = f.GetTime();
 	if(file_time != edit_time)
@@ -25,25 +36,9 @@ void SuperShader::Init()
 		edit_time = file_time;
 	}
 
-	GetShader(0);
-	Setup();
-}
-
-//=================================================================================================
-void SuperShader::Release()
-{
-	SafeRelease(pool);
-	for(vector<Shader>::iterator it = shaders.begin(), end = shaders.end(); it != end; ++it)
-		SafeRelease(it->e);
-	shaders.clear();
-}
-
-//=================================================================================================
-void SuperShader::Setup()
-{
-	ID3DXEffect* e = shaders[0].e;
-
 	Info("Setting up super shader parameters.");
+	GetShader(0);
+	ID3DXEffect* e = shaders[0].e;
 	hMatCombined = e->GetParameterByName(nullptr, "matCombined");
 	hMatWorld = e->GetParameterByName(nullptr, "matWorld");
 	hMatBones = e->GetParameterByName(nullptr, "matBones");
@@ -63,6 +58,28 @@ void SuperShader::Setup()
 	hTexSpecular = e->GetParameterByName(nullptr, "texSpecular");
 	assert(hMatCombined && hMatWorld && hMatBones && hTint && hAmbientColor && hFogColor && hFogParams && hLightDir && hLightColor && hLights && hSpecularColor
 		&& hSpecularIntensity && hSpecularHardness && hCameraPos && hTexDiffuse && hTexNormal && hTexSpecular);
+}
+
+//=================================================================================================
+void SuperShader::OnReload()
+{
+	for(vector<Shader>::iterator it = shaders.begin(), end = shaders.end(); it != end; ++it)
+		V(it->e->OnResetDevice());
+}
+
+//=================================================================================================
+void SuperShader::OnReset()
+{
+	for(vector<Shader>::iterator it = shaders.begin(), end = shaders.end(); it != end; ++it)
+		V(it->e->OnLostDevice());
+}
+
+//=================================================================================================
+void SuperShader::OnRelease()
+{
+	for(vector<Shader>::iterator it = shaders.begin(), end = shaders.end(); it != end; ++it)
+		SafeRelease(it->e);
+	shaders.clear();
 }
 
 //=================================================================================================
@@ -174,18 +191,4 @@ ID3DXEffect* SuperShader::CompileShader(uint id)
 	s.id = id;
 
 	return s.e;
-}
-
-//=================================================================================================
-void SuperShader::OnReload()
-{
-	for(vector<Shader>::iterator it = shaders.begin(), end = shaders.end(); it != end; ++it)
-		V(it->e->OnResetDevice());
-}
-
-//=================================================================================================
-void SuperShader::OnReset()
-{
-	for(vector<Shader>::iterator it = shaders.begin(), end = shaders.end(); it != end; ++it)
-		V(it->e->OnLostDevice());
 }

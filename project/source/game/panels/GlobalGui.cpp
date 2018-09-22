@@ -35,13 +35,15 @@
 #include "ResourceManager.h"
 #include "Game.h"
 
-GlobalGui::GlobalGui() : load_screen(nullptr), game_gui(nullptr), inventory(nullptr), stats(nullptr), team(nullptr), journal(nullptr), minimap(nullptr),
-actions(nullptr), book(nullptr), messages(nullptr), mp_box(nullptr), world_map(nullptr), main_menu(nullptr), console(nullptr), game_menu(nullptr),
-options(nullptr), saveload(nullptr), create_character(nullptr), multiplayer(nullptr), create_server(nullptr), pick_server(nullptr), server(nullptr),
-info_box(nullptr), controls(nullptr), cursor_allow_move(true)
+//=================================================================================================
+GlobalGui::GlobalGui() : load_screen(nullptr), game_gui(nullptr), inventory(nullptr), stats(nullptr), team(nullptr),
+journal(nullptr), minimap(nullptr), actions(nullptr), book(nullptr), messages(nullptr), mp_box(nullptr), world_map(nullptr), main_menu(nullptr),
+console(nullptr), game_menu(nullptr), options(nullptr), saveload(nullptr), create_character(nullptr), multiplayer(nullptr), create_server(nullptr),
+pick_server(nullptr), server(nullptr), info_box(nullptr), controls(nullptr), cursor_allow_move(true)
 {
 }
 
+//=================================================================================================
 GlobalGui::~GlobalGui()
 {
 	delete load_screen;
@@ -74,6 +76,7 @@ GlobalGui::~GlobalGui()
 	gui::PickFileDialog::Destroy();
 }
 
+//=================================================================================================
 void GlobalGui::Prepare()
 {
 	Game& game = Game::Get();
@@ -92,13 +95,13 @@ void GlobalGui::Prepare()
 	GUI.Add(load_screen);
 }
 
+//=================================================================================================
 void GlobalGui::InitOnce()
 {
 	Game& game = Game::Get();
 
 	// game gui & panels
 	game_gui = new GameGui;
-	game_gui->LoadData();
 	GUI.Add(game_gui);
 
 	inventory = new Inventory;
@@ -131,12 +134,10 @@ void GlobalGui::InitOnce()
 
 	// worldmap
 	world_map = new WorldMapGui;
-	world_map->LoadData();
 	GUI.Add(world_map);
 
 	// main menu
 	main_menu = new MainMenu(&game);
-	main_menu->LoadData();
 	GUI.Add(main_menu);
 
 	// dialogs
@@ -149,13 +150,11 @@ void GlobalGui::InitOnce()
 	info.order = ORDER_TOPMOST;
 	info.type = DIALOG_CUSTOM;
 	console = new Console(info);
-	console->LoadData();
 
 	info.name = "game_menu";
 	info.event = DialogEvent(&game, &Game::MenuEvent);
 	info.order = ORDER_TOP;
 	game_menu = new GameMenu(info);
-	game_menu->LoadData();
 
 	info.name = "options";
 	options = new Options(info);
@@ -175,17 +174,14 @@ void GlobalGui::InitOnce()
 	info.name = "create_server";
 	info.event = DialogEvent(&game, &Game::CreateServerEvent);
 	create_server = new CreateServerPanel(info);
-	create_character->LoadData();
 
 	info.name = "pick_server";
 	info.event = DialogEvent(&game, &Game::OnPickServer);
 	pick_server = new PickServerPanel(info);
-	pick_server->LoadData();
 
 	info.name = "server";
 	info.event = nullptr;
 	server = new ServerPanel(info);
-	server->LoadData();
 
 	info.name = "info_box";
 	info_box = new InfoBox(info);
@@ -195,16 +191,34 @@ void GlobalGui::InitOnce()
 	controls = new Controls(info);
 
 	GUI.Add(this);
-	LoadData();
 }
 
+//=================================================================================================
 void GlobalGui::LoadLanguage()
 {
+	GUI.SetText();
+
+	actions->LoadLanguage();
+	controls->LoadLanguage();
+	create_character->LoadLanguage();
+	create_server->LoadLanguage();
 	game_gui->LoadLanguage();
+	game_menu->LoadLanguage();
 	inventory->LoadLanguage();
+	journal->LoadLanguage();
+	main_menu->LoadLanguage();
 	messages->LoadLanguage();
+	multiplayer->LoadLanguage();
+	options->LoadLanguage();
+	pick_server->LoadLanguage();
+	saveload->LoadLanguage();
+	stats->LoadLanguage();
+	server->LoadLanguage();
+	team->LoadLanguage();
+	world_map->LoadLanguage();
 }
 
+//=================================================================================================
 void GlobalGui::LoadData()
 {
 	auto& tex_mgr = ResourceManager::Get<Texture>();
@@ -230,8 +244,39 @@ void GlobalGui::LoadData()
 	tex_mgr.AddLoadTask("close_hover.png", PickItemDialog::custom_x.tex[Button::HOVER]);
 	tex_mgr.AddLoadTask("close_down.png", PickItemDialog::custom_x.tex[Button::DOWN]);
 	tex_mgr.AddLoadTask("close_disabled.png", PickItemDialog::custom_x.tex[Button::DISABLED]);
+
+	actions->LoadData();
+	book->LoadData();
+	console->LoadData();
+	create_character->LoadData();
+	game_gui->LoadData();
+	game_menu->LoadData();
+	inventory->LoadData();
+	journal->LoadData();
+	main_menu->LoadData();
+	minimap->LoadData();
+	pick_server->LoadData();
+	server->LoadData();
+	team->LoadData();
+	world_map->LoadData();
 }
 
+//=================================================================================================
+void GlobalGui::PostInit()
+{
+	create_character->Init();
+
+	// load gui textures that require instant loading
+	GUI.GetLayout()->LoadDefault();
+}
+
+//=================================================================================================
+void GlobalGui::Cleanup()
+{
+	delete this;
+}
+
+//=================================================================================================
 void GlobalGui::Draw(ControlDrawData*)
 {
 	Container::Draw();
@@ -267,11 +312,13 @@ void GlobalGui::Draw(ControlDrawData*)
 	assert(W.GetCurrentLocationIndex() == L.location_index);
 }
 
+//=================================================================================================
 void GlobalGui::UpdateGui(float dt)
 {
 	GUI.Update(dt, cursor_allow_move ? Game::Get().settings.mouse_sensitivity_f : -1.f);
 }
 
+//=================================================================================================
 void GlobalGui::LoadOldGui(FileReader& f)
 {
 	// old gui settings, now removed
@@ -299,6 +346,7 @@ void GlobalGui::Clear(bool reset_mpbox)
 	}
 }
 
+//=================================================================================================
 void GlobalGui::Setup(PlayerController* pc)
 {
 	inventory->Setup(pc);

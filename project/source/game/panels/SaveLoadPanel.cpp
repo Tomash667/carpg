@@ -10,6 +10,29 @@
 //=================================================================================================
 SaveLoad::SaveLoad(const DialogInfo& info) : DialogBox(info), choice(0), tMiniSave(nullptr)
 {
+	size = Int2(610, 400);
+
+	bt[0].pos = Int2(238, 344);
+	bt[0].parent = this;
+	bt[0].id = IdOk;
+	bt[0].size = Int2(160, 50);
+
+	bt[1].pos = Int2(238 + 160 + 16, 344);
+	bt[1].parent = this;
+	bt[1].id = IdCancel;
+	bt[1].size = Int2(160, 50);
+
+	textbox.pos = Int2(265, 52);
+	textbox.size = Int2(297, 88);
+	textbox.parent = this;
+	textbox.SetMultiline(true);
+	textbox.SetReadonly(true);
+	textbox.AddScrollbar();
+}
+
+//=================================================================================================
+void SaveLoad::LoadLanguage()
+{
 	txSaving = Str("SAVINGGAME");
 	txLoading = Str("LOADINGGAME");
 	txSave = Str("save");
@@ -22,25 +45,7 @@ SaveLoad::SaveLoad(const DialogInfo& info) : DialogBox(info), choice(0), tMiniSa
 	txSavePlayers = Str("savePlayers");
 	txSaveName = Str("saveName");
 
-	size = Int2(610, 400);
-
-	bt[0].pos = Int2(238, 344);
-	bt[0].parent = this;
-	bt[0].id = IdOk;
-	bt[0].size = Int2(160, 50);
-
-	bt[1].pos = Int2(238 + 160 + 16, 344);
-	bt[1].parent = this;
-	bt[1].id = IdCancel;
-	bt[1].size = Int2(160, 50);
 	bt[1].text = GUI.txCancel;
-
-	textbox.pos = Int2(265, 52);
-	textbox.size = Int2(297, 88);
-	textbox.parent = this;
-	textbox.SetMultiline(true);
-	textbox.SetReadonly(true);
-	textbox.AddScrollbar();
 }
 
 //=================================================================================================

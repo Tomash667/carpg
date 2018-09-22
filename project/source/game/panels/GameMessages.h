@@ -44,10 +44,9 @@ struct GameMsg
 class GameMessages : public Control
 {
 public:
+	void LoadLanguage();
 	void Draw(ControlDrawData* cdd = nullptr) override;
 	void Update(float dt) override;
-
-	void LoadLanguage();
 	void Reset();
 	void Save(FileWriter& f) const;
 	void Load(FileReader& f);

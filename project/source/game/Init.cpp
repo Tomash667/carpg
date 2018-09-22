@@ -5,7 +5,6 @@
 #include "Terrain.h"
 #include "Content.h"
 #include "LoadScreen.h"
-#include "CreateCharacterPanel.h"
 #include "MainMenu.h"
 #include "ServerPanel.h"
 #include "PickServerPanel.h"
@@ -39,6 +38,7 @@ extern string g_system_dir;
 bool Game::InitGame()
 {
 	Info("Game: Initializing game.");
+	game_state = GS_LOAD_MENU;
 
 	try
 	{
@@ -82,14 +82,14 @@ void Game::PreconfigureGame()
 	arena = new Arena;
 	loc_gen_factory = new LocationGeneratorFactory;
 	gui = new GlobalGui;
-	components.push_back(std::make_pair(&W, false));
-	components.push_back(std::make_pair(pathfinding, true));
-	components.push_back(std::make_pair(&QM, false));
-	components.push_back(std::make_pair(arena, true));
-	components.push_back(std::make_pair(loc_gen_factory, true));
-	components.push_back(std::make_pair(gui, true));
-	for(std::pair<GameComponent*, bool>& component : components)
-		component.first->Prepare();
+	components.push_back(&W);
+	components.push_back(pathfinding);
+	components.push_back(&QM);
+	components.push_back(arena);
+	components.push_back(loc_gen_factory);
+	components.push_back(gui);
+	for(GameComponent* component : components)
+		component->Prepare();
 
 	CreateVertexDeclarations();
 	PreloadLanguage();
@@ -159,10 +159,6 @@ void Game::PreloadData()
 	// loadscreen textures
 	gui->load_screen->LoadData();
 
-	// gui shader
-	eGui = CompileShader("gui.fx");
-	GUI.SetShader(eGui);
-
 	// intro music
 	if(!sound_mgr->IsMusicDisabled())
 	{
@@ -182,6 +178,8 @@ void Game::LoadSystem()
 	Info("Game: Loading system.");
 	gui->load_screen->Setup(0.f, 0.33f, 14, txCreatingListOfFiles);
 
+	for(GameComponent* component : components)
+		component->InitOnce();
 	AddFilesystem();
 	LoadDatafiles();
 	LoadLanguageFiles();
@@ -259,7 +257,6 @@ void Game::LoadLanguageFiles()
 	Language::LoadLanguageFiles();
 	LoadDialogTexts();
 
-	GUI.SetText();
 	SetGameCommonText();
 	SetItemStatsText();
 	SetLocationNames();
@@ -279,8 +276,8 @@ void Game::LoadLanguageFiles()
 
 	txHaveErrors = Str("haveErrors");
 
-	for(std::pair<GameComponent*, bool>& component : components)
-		component.first->LoadLanguage();
+	for(GameComponent* component : components)
+		component->LoadLanguage();
 }
 
 //=================================================================================================
@@ -291,11 +288,8 @@ void Game::ConfigureGame()
 	Info("Game: Configuring game.");
 	gui->load_screen->Tick(txConfiguringGame);
 
-	for(std::pair<GameComponent*, bool>& component : components)
-		component.first->InitOnce();
-
 	InitScene();
-	super_shader->Init();
+	super_shader->InitOnce();
 	AddCommands();
 	ResetGameKeys();
 	LoadGameKeys();
@@ -331,6 +325,8 @@ void Game::LoadData()
 
 	res_mgr.PrepareLoadScreen(0.33f);
 	AddLoadTasks();
+	for(GameComponent* component : components)
+		component->LoadData();
 	res_mgr.StartLoadScreen();
 }
 
@@ -343,12 +339,8 @@ void Game::PostconfigureGame()
 
 	LockCursor();
 	CreateCollisionShapes();
-	gui->create_character->Init();
-	for(std::pair<GameComponent*, bool>& component : components)
-		component.first->PostInit();
-
-	// load gui textures that require instant loading
-	GUI.GetLayout()->LoadDefault();
+	for(GameComponent* component : components)
+		component->PostInit();
 
 	// init terrain
 	terrain = new Terrain;

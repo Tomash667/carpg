@@ -39,7 +39,8 @@ enum GAME_STATE
 	GS_LEVEL,
 	GS_LOAD,
 	GS_EXIT_TO_MENU,
-	GS_QUIT
+	GS_QUIT,
+	GS_LOAD_MENU
 };
 
 extern const Vec2 ALERT_RANGE;
@@ -259,7 +260,7 @@ public:
 	TEX tCzern, tEmerytura, tPortal, tLightingLine, tRip, tEquipped, tMiniSave, tWarning, tError;
 	TexturePtr tKrew[BLOOD_MAX], tKrewSlad[BLOOD_MAX], tIskra, tSpawn;
 	TexturePack tFloor[2], tWall[2], tCeil[2], tFloorBase, tWallBase, tCeilBase;
-	ID3DXEffect* eMesh, *eParticle, *eSkybox, *eTerrain, *eArea, *eGui, *ePostFx, *eGlow, *eGrass;
+	ID3DXEffect* eMesh, *eParticle, *eSkybox, *eTerrain, *eArea, *ePostFx, *eGlow, *eGrass;
 	D3DXHANDLE techMesh, techMeshDir, techMeshSimple, techMeshSimple2, techMeshExplo, techParticle, techSkybox, techTerrain, techArea, techTrail, techGlowMesh,
 		techGlowAni, techGrass;
 	D3DXHANDLE hAniCombined, hAniWorld, hAniBones, hAniTex, hAniFogColor, hAniFogParam, hAniTint, hAniHairColor, hAniAmbientColor, hAniLightDir,
@@ -612,7 +613,6 @@ public:
 	int CalculateQuestReward(int gold);
 	void AddReward(int gold) { AddGold(CalculateQuestReward(gold), nullptr, true, txQuestCompletedGold, 4.f, false); }
 	void UpdateDungeonMinimap(bool send);
-	void DungeonReveal(const Int2& tile);
 	void SaveStock(FileWriter& f, vector<ItemSlot>& cnt);
 	void LoadStock(FileReader& f, vector<ItemSlot>& cnt);
 	SOUND GetItemSound(const Item* item);
@@ -926,5 +926,5 @@ public:
 	GlobalGui* gui;
 
 private:
-	vector<std::pair<GameComponent*,bool>> components;
+	vector<GameComponent*> components;
 };

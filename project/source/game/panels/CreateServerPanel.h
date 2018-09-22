@@ -10,11 +10,10 @@ class CreateServerPanel : public GameDialogBox
 {
 public:
 	explicit CreateServerPanel(const DialogInfo& info);
-
+	void LoadLanguage();
 	void Draw(ControlDrawData* cdd = nullptr) override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
-
 	void Show();
 
 	TextBox textbox[3];

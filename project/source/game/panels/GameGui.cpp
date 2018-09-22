@@ -81,6 +81,37 @@ void GameGui::LoadLanguage()
 }
 
 //=================================================================================================
+void GameGui::LoadData()
+{
+	auto& tex_mgr = ResourceManager::Get<Texture>();
+	tex_mgr.AddLoadTask("crosshair.png", tCrosshair);
+	tex_mgr.AddLoadTask("bubble.png", tBubble);
+	tex_mgr.AddLoadTask("czerwono.png", tObwodkaBolu);
+	tex_mgr.AddLoadTask("bar.png", tBar);
+	tex_mgr.AddLoadTask("hp_bar.png", tHpBar);
+	tex_mgr.AddLoadTask("poisoned_hp_bar.png", tPoisonedHpBar);
+	tex_mgr.AddLoadTask("stamina_bar.png", tStaminaBar);
+	tex_mgr.AddLoadTask("mana_bar.png", tManaBar);
+	tex_mgr.AddLoadTask("shortcut.png", tShortcut);
+	tex_mgr.AddLoadTask("shortcut_hover.png", tShortcutHover);
+	tex_mgr.AddLoadTask("shortcut_down.png", tShortcutDown);
+	tex_mgr.AddLoadTask("bt_menu.png", tSideButton[(int)SideButtonId::Menu]);
+	tex_mgr.AddLoadTask("bt_team.png", tSideButton[(int)SideButtonId::Team]);
+	tex_mgr.AddLoadTask("bt_minimap.png", tSideButton[(int)SideButtonId::Minimap]);
+	tex_mgr.AddLoadTask("bt_journal.png", tSideButton[(int)SideButtonId::Journal]);
+	tex_mgr.AddLoadTask("bt_inventory.png", tSideButton[(int)SideButtonId::InventoryPanel]);
+	tex_mgr.AddLoadTask("bt_action.png", tSideButton[(int)SideButtonId::Action]);
+	tex_mgr.AddLoadTask("bt_stats.png", tSideButton[(int)SideButtonId::Stats]);
+	tex_mgr.AddLoadTask("bt_talk.png", tSideButton[(int)SideButtonId::Talk]);
+	tex_mgr.AddLoadTask("minihp.png", tMinihp[0]);
+	tex_mgr.AddLoadTask("minihp2.png", tMinihp[1]);
+	tex_mgr.AddLoadTask("ministamina.png", tMinistamina);
+	tex_mgr.AddLoadTask("action_cooldown.png", tActionCooldown);
+
+	BuffInfo::LoadImages();
+}
+
+//=================================================================================================
 void GameGui::Draw(ControlDrawData*)
 {
 	DrawFront();
@@ -1210,42 +1241,6 @@ void GameGui::ClosePanels(bool close_mp_box)
 		game.gui->mp_box->visible = false;
 	if(game.gui->actions->visible)
 		game.gui->actions->Hide();
-}
-
-//=================================================================================================
-void GameGui::LoadData()
-{
-	auto& tex_mgr = ResourceManager::Get<Texture>();
-	tex_mgr.AddLoadTask("crosshair.png", tCrosshair);
-	tex_mgr.AddLoadTask("bubble.png", tBubble);
-	tex_mgr.AddLoadTask("czerwono.png", tObwodkaBolu);
-	tex_mgr.AddLoadTask("bar.png", tBar);
-	tex_mgr.AddLoadTask("hp_bar.png", tHpBar);
-	tex_mgr.AddLoadTask("poisoned_hp_bar.png", tPoisonedHpBar);
-	tex_mgr.AddLoadTask("stamina_bar.png", tStaminaBar);
-	tex_mgr.AddLoadTask("mana_bar.png", tManaBar);
-	tex_mgr.AddLoadTask("shortcut.png", tShortcut);
-	tex_mgr.AddLoadTask("shortcut_hover.png", tShortcutHover);
-	tex_mgr.AddLoadTask("shortcut_down.png", tShortcutDown);
-	tex_mgr.AddLoadTask("bt_menu.png", tSideButton[(int)SideButtonId::Menu]);
-	tex_mgr.AddLoadTask("bt_team.png", tSideButton[(int)SideButtonId::Team]);
-	tex_mgr.AddLoadTask("bt_minimap.png", tSideButton[(int)SideButtonId::Minimap]);
-	tex_mgr.AddLoadTask("bt_journal.png", tSideButton[(int)SideButtonId::Journal]);
-	tex_mgr.AddLoadTask("bt_inventory.png", tSideButton[(int)SideButtonId::InventoryPanel]);
-	tex_mgr.AddLoadTask("bt_action.png", tSideButton[(int)SideButtonId::Action]);
-	tex_mgr.AddLoadTask("bt_stats.png", tSideButton[(int)SideButtonId::Stats]);
-	tex_mgr.AddLoadTask("bt_talk.png", tSideButton[(int)SideButtonId::Talk]);
-	tex_mgr.AddLoadTask("minihp.png", tMinihp[0]);
-	tex_mgr.AddLoadTask("minihp2.png", tMinihp[1]);
-	tex_mgr.AddLoadTask("ministamina.png", tMinistamina);
-	tex_mgr.AddLoadTask("action_cooldown.png", tActionCooldown);
-
-	BuffInfo::LoadImages();
-	game.gui->journal->LoadData();
-	game.gui->minimap->LoadData();
-	game.gui->team->LoadData();
-	game.gui->actions->LoadData();
-	game.gui->book->LoadData();
 }
 
 //=================================================================================================

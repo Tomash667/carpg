@@ -13,7 +13,9 @@ public:
 	void Prepare() override;
 	void InitOnce() override;
 	void LoadLanguage() override;
-	void LoadData();
+	void LoadData() override;
+	void PostInit() override;
+	void Cleanup() override;
 	void Draw(ControlDrawData*) override;
 	void UpdateGui(float dt);
 	void LoadOldGui(FileReader& f);

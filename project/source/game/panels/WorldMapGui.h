@@ -9,13 +9,12 @@ class WorldMapGui : public Control
 {
 public:
 	WorldMapGui();
-
+	void LoadLanguage();
+	void LoadData();
 	void Draw(ControlDrawData* cdd = nullptr) override;
 	void Update(float dt) override;
 	bool NeedCursor() const override { return true; }
 	void Event(GuiEvent e) override;
-
-	void LoadData();
 	Int2 WorldPosToScreen(const Int2& pt) const
 	{
 		return Int2(pt.x, 600 - pt.y);

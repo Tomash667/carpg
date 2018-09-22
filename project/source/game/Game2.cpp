@@ -64,6 +64,7 @@
 #include "ResourceManager.h"
 #include "ItemHelper.h"
 #include "GlobalGui.h"
+#include "FOV.h"
 
 const int SAVE_VERSION = V_CURRENT;
 int LOAD_VERSION;
@@ -1125,7 +1126,7 @@ void Game::UpdateGame(float dt)
 		for(Unit* unit : Team.active_members)
 		{
 			if(unit->IsPlayer())
-				DungeonReveal(Int2(int(unit->pos.x / 2), int(unit->pos.z / 2)));
+				FOV::DungeonReveal(Int2(int(unit->pos.x / 2), int(unit->pos.z / 2)), minimap_reveal);
 		}
 	}
 	UpdateDungeonMinimap(true);
@@ -1562,7 +1563,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					{
 						Int2 new_tile(int(u.pos.x / 2), int(u.pos.z / 2));
 						if(new_tile != prev_tile)
-							DungeonReveal(new_tile);
+							FOV::DungeonReveal(new_tile, minimap_reveal);
 					}
 				}
 
@@ -8677,7 +8678,7 @@ void Game::AddPlayerTeam(const Vec3& pos, float rot, bool reenter, bool hide_wea
 		u.visual_pos = u.pos;
 
 		if(!L.location->outside)
-			DungeonReveal(Int2(int(u.pos.x / 2), int(u.pos.z / 2)));
+			FOV::DungeonReveal(Int2(int(u.pos.x / 2), int(u.pos.z / 2)), minimap_reveal);
 
 		if(u.interp)
 			u.interp->Reset(u.pos, u.rot);

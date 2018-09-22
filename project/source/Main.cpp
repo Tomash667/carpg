@@ -920,6 +920,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	//-------------------------------------------------------------------------
 	// sprz¹tanie
+	Language::Cleanup();
 	delete[] cmd_line;
 	delete[] argv;
 	delete Logger::global;

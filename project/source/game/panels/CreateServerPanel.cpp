@@ -12,20 +12,14 @@ CreateServerPanel::CreateServerPanel(const DialogInfo& info) : GameDialogBox(inf
 	size = Int2(344, 320);
 	bts.resize(2);
 
-	txCreateServer = Str("createServer");
-	txEnterServerName = Str("enterServerName");
-	txInvalidPlayersCount = Str("invalidPlayersCount");
-
 	const Int2 bt_size(180, 44);
 	const int x = (size.x - bt_size.x) / 2;
 
-	bts[0].text = Str("create");
 	bts[0].id = GuiEvent_Custom + BUTTON_OK;
 	bts[0].parent = this;
 	bts[0].pos = Int2(x, 220);
 	bts[0].size = bt_size;
 
-	bts[1].text = GUI.txCancel;
 	bts[1].id = GuiEvent_Custom + BUTTON_CANCEL;
 	bts[1].parent = this;
 	bts[1].pos = Int2(x, 270);
@@ -35,7 +29,6 @@ CreateServerPanel::CreateServerPanel(const DialogInfo& info) : GameDialogBox(inf
 	textbox[0].parent = this;
 	textbox[0].pos = Int2(60, 70);
 	textbox[0].size = Int2(200, 32);
-	textbox[0].label = Str("serverName");
 
 	textbox[1].limit = 16;
 	textbox[1].parent = this;
@@ -44,19 +37,32 @@ CreateServerPanel::CreateServerPanel(const DialogInfo& info) : GameDialogBox(inf
 	textbox[1].SetNumeric(true);
 	textbox[1].num_min = MIN_PLAYERS;
 	textbox[1].num_max = MAX_PLAYERS;
-	textbox[1].label = Str("serverPlayers");
 
 	textbox[2].limit = 16;
 	textbox[2].parent = this;
 	textbox[2].pos = Int2(60, 170);
 	textbox[2].size = Int2(200, 32);
-	textbox[2].label = Str("serverPswd");
 
 	for(int i = 0; i < 2; ++i)
 		cont.Add(bts[i]);
 
 	for(int i = 0; i < 3; ++i)
 		cont.Add(textbox[i]);
+}
+
+//=================================================================================================
+void CreateServerPanel::LoadLanguage()
+{
+	txCreateServer = Str("createServer");
+	txEnterServerName = Str("enterServerName");
+	txInvalidPlayersCount = Str("invalidPlayersCount");
+
+	bts[0].text = Str("create");
+	bts[1].text = GUI.txCancel;
+
+	textbox[0].label = Str("serverName");
+	textbox[1].label = Str("serverPlayers");
+	textbox[2].label = Str("serverPswd");
 }
 
 //=================================================================================================

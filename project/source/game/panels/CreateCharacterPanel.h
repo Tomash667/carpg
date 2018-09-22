@@ -42,13 +42,12 @@ public:
 
 	explicit CreateCharacterPanel(DialogInfo& info);
 	~CreateCharacterPanel();
-
+	void LoadLanguage();
+	void LoadData();
 	void Draw(ControlDrawData* cdd = nullptr) override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
-
 	void Init();
-	void LoadData();
 	void Show(bool enter_name);
 	void ShowRedo(Class clas, int hair_index, HumanData& hd, CreatedCharacter& cc);
 

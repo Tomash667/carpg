@@ -19,14 +19,13 @@ public:
 	};
 
 	explicit PickServerPanel(const DialogInfo& info);
-
+	void LoadLanguage();
+	void LoadData();
 	void Draw(ControlDrawData* cdd = nullptr) override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
-
 	void Show();
 	void GetCell(int item, int column, Cell& cell);
-	void LoadData();
 
 	Grid grid;
 	vector<ServerData> servers;
