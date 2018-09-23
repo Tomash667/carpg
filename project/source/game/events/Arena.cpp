@@ -255,31 +255,28 @@ void Arena::UpdatePvpRequest(float dt)
 	Game& game = Game::Get();
 	if(game.paused)
 		return;
-	if(game.game_state == GS_LEVEL && Net::IsOnline())
+	if(game.game_state == GS_LEVEL && Net::IsOnline() && pvp_response.ok)
 	{
-		if(pvp_response.ok)
+		pvp_response.timer += dt;
+		if(pvp_response.timer >= 5.f)
 		{
-			pvp_response.timer += dt;
-			if(pvp_response.timer >= 5.f)
+			pvp_response.ok = false;
+			if(pvp_response.to == game.pc->unit)
 			{
-				pvp_response.ok = false;
-				if(pvp_response.to == game.pc->unit)
+				dialog_pvp->CloseDialog();
+				RemoveElement(GUI.created_dialogs, dialog_pvp);
+				delete dialog_pvp;
+				dialog_pvp = nullptr;
+			}
+			if(Net::IsServer())
+			{
+				if(pvp_response.from == game.pc->unit)
+					game.AddMsg(Format(game.txPvpRefuse, pvp_response.to->player->name.c_str()));
+				else
 				{
-					dialog_pvp->CloseDialog();
-					RemoveElement(GUI.created_dialogs, dialog_pvp);
-					delete dialog_pvp;
-					dialog_pvp = nullptr;
-				}
-				if(Net::IsServer())
-				{
-					if(pvp_response.from == game.pc->unit)
-						game.AddMsg(Format(game.txPvpRefuse, pvp_response.to->player->name.c_str()));
-					else
-					{
-						NetChangePlayer& c = Add1(pvp_response.from->player->player_info->changes);
-						c.type = NetChangePlayer::NO_PVP;
-						c.id = pvp_response.to->player->id;
-					}
+					NetChangePlayer& c = Add1(pvp_response.from->player->player_info->changes);
+					c.type = NetChangePlayer::NO_PVP;
+					c.id = pvp_response.to->player->id;
 				}
 			}
 		}
@@ -367,8 +364,7 @@ void Arena::StartArenaCombat(int level)
 				units.push_back(unit);
 
 				unit->player->arena_fights++;
-				if(Net::IsOnline())
-					unit->player->stat_flags |= STAT_ARENA_FIGHTS;
+				unit->player->stat_flags |= STAT_ARENA_FIGHTS;
 
 				if(unit->player == game.pc)
 				{
@@ -481,17 +477,11 @@ void Arena::HandlePvpResponse(PlayerInfo& info, bool accepted)
 	if(pvp_response.ok && pvp_response.to == info.u)
 	{
 		if(accepted)
-		{
 			StartPvp(pvp_response.from->player, pvp_response.to);
-			pvp_response.ok = false;
-		}
 		else
 		{
 			if(pvp_response.from->player == game.pc)
-			{
 				game.AddMsg(Format(game.txPvpRefuse, info.name.c_str()));
-				pvp_response.ok = false;
-			}
 			else
 			{
 				NetChangePlayer& c = Add1(pvp_response.from->player->player_info->changes);
@@ -500,17 +490,15 @@ void Arena::HandlePvpResponse(PlayerInfo& info, bool accepted)
 			}
 		}
 
-		if(pvp_response.ok && pvp_response.to == game.pc->unit)
+		if(pvp_response.ok && pvp_response.to == game.pc->unit && dialog_pvp)
 		{
-			if(dialog_pvp)
-			{
-				GUI.CloseDialog(dialog_pvp);
-				RemoveElement(GUI.created_dialogs, dialog_pvp);
-				delete dialog_pvp;
-				dialog_pvp = nullptr;
-			}
-			pvp_response.ok = false;
+			GUI.CloseDialog(dialog_pvp);
+			RemoveElement(GUI.created_dialogs, dialog_pvp);
+			delete dialog_pvp;
+			dialog_pvp = nullptr;
 		}
+
+		pvp_response.ok = false;
 	}
 }
 
@@ -547,7 +535,7 @@ void Arena::StartPvp(PlayerController* player, Unit* unit)
 		}
 		else
 		{
-			NetChangePlayer& c = Add1(player->player_info->changes);
+			NetChangePlayer& c = Add1(unit->player->player_info->changes);
 			c.type = NetChangePlayer::ENTER_ARENA;
 		}
 	}
@@ -555,8 +543,7 @@ void Arena::StartPvp(PlayerController* player, Unit* unit)
 	// dodaj do areny
 	player->unit->frozen = FROZEN::YES;
 	player->arena_fights++;
-	if(Net::IsOnline())
-		player->stat_flags |= STAT_ARENA_FIGHTS;
+	player->stat_flags |= STAT_ARENA_FIGHTS;
 	units.push_back(player->unit);
 	unit->frozen = FROZEN::YES;
 	units.push_back(unit);
@@ -565,8 +552,7 @@ void Arena::StartPvp(PlayerController* player, Unit* unit)
 	else if(unit->IsPlayer())
 	{
 		unit->player->arena_fights++;
-		if(Net::IsOnline())
-			unit->player->stat_flags |= STAT_ARENA_FIGHTS;
+		unit->player->stat_flags |= STAT_ARENA_FIGHTS;
 	}
 	pvp_player = player;
 	fighter = unit;

@@ -140,7 +140,8 @@ void Game::InitScene()
 	portal_v[2].color = Vec4(1, 1, 1, 0.5f);
 	portal_v[3].color = Vec4(1, 1, 1, 0.5f);
 
-	BuildDungeon();
+	if(!vbDungeon)
+		BuildDungeon();
 }
 
 //=================================================================================================

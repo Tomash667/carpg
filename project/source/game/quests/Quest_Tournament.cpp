@@ -529,8 +529,7 @@ void Quest_Tournament::Update(float dt)
 						if(p.first->IsPlayer())
 						{
 							p.first->player->arena_fights++;
-							if(Net::IsOnline())
-								p.first->player->stat_flags |= STAT_ARENA_FIGHTS;
+							p.first->player->stat_flags |= STAT_ARENA_FIGHTS;
 							if(p.first->player == game.pc)
 							{
 								game.fallback_type = FALLBACK::ARENA;
@@ -548,8 +547,7 @@ void Quest_Tournament::Update(float dt)
 						if(p.second->IsPlayer())
 						{
 							p.second->player->arena_fights++;
-							if(Net::IsOnline())
-								p.second->player->stat_flags |= STAT_ARENA_FIGHTS;
+							p.second->player->stat_flags |= STAT_ARENA_FIGHTS;
 							if(p.second->player == game.pc)
 							{
 								game.fallback_type = FALLBACK::ARENA;

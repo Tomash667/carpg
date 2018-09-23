@@ -620,8 +620,6 @@ bool Game::Start0(StartupOptions& options)
 //=================================================================================================
 void Game::OnReload()
 {
-	GUI.OnReload();
-
 	if(eMesh)
 		V(eMesh->OnResetDevice());
 	if(eParticle)
@@ -644,14 +642,15 @@ void Game::OnReload()
 	// rebuild minimap texture
 	if(game_state == GS_LEVEL)
 		loc_gen_factory->Get(L.location)->CreateMinimap();
-	gui->inventory->OnReload();
+	if(gui && gui->inventory)
+		gui->inventory->OnReload();
 }
 
 //=================================================================================================
 void Game::OnReset()
 {
-	GUI.OnReset();
-	gui->inventory->OnReset();
+	if(gui && gui->inventory)
+		gui->inventory->OnReset();
 
 	if(eMesh)
 		V(eMesh->OnLostDevice());
@@ -963,6 +962,9 @@ void Game::OnCleanup()
 //=================================================================================================
 void Game::CreateTextures()
 {
+	if(tItemRegion)
+		return;
+
 	auto& wnd_size = GetWindowSize();
 
 	V(device->CreateTexture(64, 64, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tItemRegion, nullptr));

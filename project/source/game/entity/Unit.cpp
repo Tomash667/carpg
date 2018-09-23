@@ -3921,14 +3921,12 @@ void Unit::Die(LevelContext* ctx, Unit* killer)
 		if(killer && killer->IsPlayer())
 		{
 			++killer->player->kills;
-			if(Net::IsOnline())
-				killer->player->stat_flags |= STAT_KILLS;
+			killer->player->stat_flags |= STAT_KILLS;
 		}
 		if(IsPlayer())
 		{
 			++player->knocks;
-			if(Net::IsOnline())
-				player->stat_flags |= STAT_KNOCKS;
+			player->stat_flags |= STAT_KNOCKS;
 			if(player->is_local)
 				game.pc_data.before_player = BP_NONE;
 		}
