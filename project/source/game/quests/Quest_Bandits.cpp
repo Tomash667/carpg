@@ -259,9 +259,16 @@ bool Quest_Bandits::Special(DialogContext& ctx, cstring msg)
 		game->RemoveQuestItem(item);
 	}
 	else
-	{
 		assert(0);
-	}
+	return false;
+}
+
+//=================================================================================================
+bool Quest_Bandits::SpecialIf(DialogContext& ctx, cstring msg)
+{
+	if(strcmp(msg, "q_bandyci_straznikow_daj") == 0)
+		return prog == Progress::NeedTalkWithCaptain && W.GetCurrentLocationIndex() == start_loc;
+	assert(0);
 	return false;
 }
 
@@ -399,12 +406,4 @@ void Quest_Bandits::LoadOld(GameReader& f)
 	f >> bandits_state;
 	f >> timer;
 	f >> agent;
-}
-
-//=================================================================================================
-bool Quest_Bandits::SpecialIf(DialogContext& ctx, cstring msg)
-{
-	if(strcmp(msg, "q_bandyci_straznikow_daj") == 0)
-		return prog == Progress::NeedTalkWithCaptain && W.GetCurrentLocationIndex() == start_loc;
-	return false;
 }

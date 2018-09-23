@@ -40,7 +40,7 @@ public:
 		uwd.where = where;
 	}
 	void ProcessUnitWarps();
-	void ProcessRemoveUnits(bool clear);
+	void ProcessRemoveUnits(bool leave);
 	LevelContextEnumerator ForEachContext() { return LevelContextEnumerator(location); }
 	void ApplyContext(ILevel* level, LevelContext& ctx);
 	LevelContext& GetContext(Unit& unit);

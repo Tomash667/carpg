@@ -240,11 +240,8 @@ bool Quest_Mine::SpecialIf(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "udzialy_w_kopalni") == 0)
 		return mine_state == State::Shares;
-	else
-	{
-		assert(0);
-		return false;
-	}
+	assert(0);
+	return false;
 }
 
 //=================================================================================================

@@ -117,6 +117,8 @@ bool Quest_Tournament::Special(DialogContext& ctx, cstring msg)
 			c.ile = 0;
 		}
 	}
+	else
+		assert(0);
 	return false;
 }
 
@@ -150,6 +152,7 @@ bool Quest_Tournament::SpecialIf(DialogContext& ctx, cstring msg)
 			else
 				return true;
 		}
+		return false;
 	}
 	else if(strcmp(msg, "ironfist_joined") == 0)
 	{
@@ -158,9 +161,11 @@ bool Quest_Tournament::SpecialIf(DialogContext& ctx, cstring msg)
 			if(ctx.pc->unit == u)
 				return true;
 		}
+		return false;
 	}
 	else if(strcmp(msg, "ironfist_winner") == 0)
 		return winner == ctx.pc->unit;
+	assert(0);
 	return false;
 }
 

@@ -711,7 +711,7 @@ void Game::UpdateGame(float dt)
 			{
 				if(info->left == PlayerInfo::LEFT_NO)
 				{
-					assert(info->pc == info->pc->player_info->pc && info->local == info->pc->is_local);
+					assert(info->pc == info->pc->player_info->pc);
 					if(info->id != 0)
 						assert(!info->pc->is_local);
 				}
@@ -10829,9 +10829,8 @@ void Game::LeaveLevel(bool clear)
 				ctx.tmp_ctx = nullptr;
 			}
 		}
-		if(L.city_ctx && !Net::IsLocal())
+		if(L.city_ctx && (!Net::IsLocal() || was_client))
 			DeleteElements(L.city_ctx->inside_buildings);
-		L.is_open = false;
 	}
 
 	ais.clear();
@@ -10854,7 +10853,7 @@ void Game::LeaveLevel(bool clear)
 void Game::LeaveLevel(LevelContext& ctx, bool clear)
 {
 	// cleanup units
-	if(Net::IsLocal() && !clear)
+	if(Net::IsLocal() && !clear && !was_client)
 	{
 		for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
 		{
@@ -10969,7 +10968,7 @@ void Game::LeaveLevel(LevelContext& ctx, bool clear)
 	DeleteElements(ctx.pes);
 	DeleteElements(ctx.tpes);
 
-	if(Net::IsLocal())
+	if(Net::IsLocal() && !was_client)
 	{
 		// usuñ modele skrzyni
 		if(ctx.chests)
@@ -11610,7 +11609,7 @@ void Game::DeleteUnit(Unit* unit)
 {
 	assert(unit);
 
-	if(game_state != GS_WORLDMAP)
+	if(L.is_open)
 	{
 		RemoveElement(L.GetContext(*unit).units, unit);
 		gui->game_gui->RemoveUnit(unit);

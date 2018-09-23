@@ -43,6 +43,7 @@ public:
 	cstring FormatString(const string& str) override;
 	bool IfNeedTalk(cstring topic) const override;
 	bool Special(DialogContext& ctx, cstring msg) override;
+	bool SpecialIf(DialogContext& ctx, cstring msg) override;
 	bool HandleLocationEvent(LocationEventHandler::Event event) override;
 	void HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit) override;
 	void Save(GameWriter& f) override;
@@ -50,7 +51,6 @@ public:
 	void LoadOld(GameReader& f);
 	int GetUnitEventHandlerQuestRefid() override { return refid; }
 	int GetLocationEventHandlerQuestRefid() override { return refid; }
-	bool SpecialIf(DialogContext& ctx, cstring msg) override;
 
 	State bandits_state;
 	float timer;

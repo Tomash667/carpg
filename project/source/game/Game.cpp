@@ -897,7 +897,6 @@ void Game::OnCleanup()
 	for(GameComponent* component : components)
 		component->Cleanup();
 
-	GUI.OnClean();
 	CleanScene();
 	DeleteElements(bow_instances);
 	ClearQuadtree();
@@ -2009,7 +2008,7 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 // dru¿yna opuœci³a lokacje
 void Game::LeaveLocation(bool clear, bool end_buffs)
 {
-	if(Net::IsLocal())
+	if(Net::IsLocal() && !was_client)
 	{
 		// zawody
 		if(QM.quest_tournament->GetState() != Quest_Tournament::TOURNAMENT_NOT_DONE)

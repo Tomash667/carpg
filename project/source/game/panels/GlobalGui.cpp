@@ -272,6 +272,7 @@ void GlobalGui::PostInit()
 //=================================================================================================
 void GlobalGui::Cleanup()
 {
+	GUI.OnClean();
 	delete this;
 }
 

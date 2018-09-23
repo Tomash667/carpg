@@ -120,9 +120,7 @@ bool Quest_Mages::Special(DialogContext& ctx, cstring msg)
 		QM.quest_mages2->paid = true;
 	}
 	else
-	{
 		assert(0);
-	}
 	return false;
 }
 
@@ -131,11 +129,8 @@ bool Quest_Mages::SpecialIf(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "q_magowie_zaplacono") == 0)
 		return QM.quest_mages2->paid;
-	else
-	{
-		assert(0);
-		return false;
-	}
+	assert(0);
+	return false;
 }
 
 //=================================================================================================
@@ -455,9 +450,11 @@ bool Quest_Mages2::SpecialIf(DialogContext& ctx, cstring msg)
 			SetProgress(Progress::BoughtPotion);
 			return true;
 		}
+		return false;
 	}
 	else if(strcmp(msg, "q_magowie_nie_ukonczono") == 0)
 		return mages_state != State::Completed;
+	assert(0);
 	return false;
 }
 

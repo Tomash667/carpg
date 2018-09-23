@@ -145,14 +145,11 @@ bool Quest_Crazies::Special(DialogContext& ctx, cstring msg)
 	}
 	else if(strcmp(msg, "crazies_sell_stone") == 0)
 	{
-		const Item* kamien = Item::Get("q_szaleni_kamien");
-		game->RemoveItem(*ctx.pc->unit, kamien, 1);
+		game->RemoveItem(*ctx.pc->unit, stone, 1);
 		ctx.pc->unit->ModGold(10);
 	}
 	else
-	{
 		assert(0);
-	}
 	return false;
 }
 
@@ -163,6 +160,7 @@ bool Quest_Crazies::SpecialIf(DialogContext& ctx, cstring msg)
 		return crazies_state == State::None;
 	else if(strcmp(msg, "crazies_need_talk") == 0)
 		return crazies_state == State::FirstAttack;
+	assert(0);
 	return false;
 }
 
@@ -171,8 +169,7 @@ void Quest_Crazies::CheckStone()
 {
 	check_stone = false;
 
-	const Item* kamien = Item::Get("q_szaleni_kamien");
-	if(!Team.FindItemInTeam(kamien, -1, nullptr, nullptr, false))
+	if(!Team.FindItemInTeam(stone, -1, nullptr, nullptr, false))
 	{
 		// usuñ kamieñ z gry o ile to nie encounter bo i tak jest resetowany
 		if(L.location->type != L_ENCOUNTER)
@@ -184,7 +181,7 @@ void Quest_Crazies::CheckStone()
 				{
 					Chest* chest;
 					int slot;
-					if(L.local_ctx.FindItemInChest(kamien, &chest, &slot))
+					if(L.local_ctx.FindItemInChest(stone, &chest, &slot))
 					{
 						// w³o¿y³ kamieñ, koniec questa
 						chest->items.erase(chest->items.begin() + slot);
@@ -194,11 +191,11 @@ void Quest_Crazies::CheckStone()
 				}
 			}
 
-			game->RemoveItemFromWorld(kamien);
+			game->RemoveItemFromWorld(stone);
 		}
 
 		// dodaj kamieñ przywódcy
-		Team.leader->AddItem(kamien, 1, false);
+		Team.leader->AddItem(stone, 1, false);
 	}
 
 	if(crazies_state == State::TalkedWithCrazy)

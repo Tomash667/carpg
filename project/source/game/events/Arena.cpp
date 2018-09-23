@@ -126,6 +126,8 @@ bool Arena::Special(DialogContext& ctx, cstring msg)
 			pvp_response.timer = 0.f;
 		}
 	}
+	else
+		assert(0);
 	return false;
 }
 
@@ -139,11 +141,11 @@ bool Arena::SpecialIf(DialogContext& ctx, cstring msg)
 	else if(strncmp(msg, "have_player/", 12) == 0)
 	{
 		int id = int(msg[12] - '1');
-		if(id < (int)near_players.size())
-			return true;
+		return id < (int)near_players.size();
 	}
 	else if(strcmp(msg, "waiting_for_pvp") == 0)
 		return pvp_response.ok;
+	assert(0);
 	return false;
 }
 

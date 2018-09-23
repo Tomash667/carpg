@@ -97,6 +97,8 @@ bool Quest_Secret::Special(DialogContext& ctx, cstring msg)
 		const Item* item = Item::Get("sword_forbidden");
 		ctx.pc->unit->AddItem2(item, 1u, 1u);
 	}
+	else
+		assert(0);
 	return false;
 }
 
@@ -110,6 +112,7 @@ bool Quest_Secret::SpecialIf(DialogContext& ctx, cstring msg)
 			state = SECRET_TALKED;
 			return true;
 		}
+		return false;
 	}
 	else if(strcmp(msg, "secret_can_fight") == 0)
 		return state == SECRET_TALKED;
@@ -117,6 +120,7 @@ bool Quest_Secret::SpecialIf(DialogContext& ctx, cstring msg)
 		return Any(state, SECRET_WIN, SECRET_REWARD);
 	else if(strcmp(msg, "secret_can_get_reward") == 0)
 		return state == SECRET_WIN;
+	assert(0);
 	return false;
 }
 

@@ -209,33 +209,6 @@ void Game::PrepareLevelData(BitStream& stream, bool loaded_resources)
 	f << loaded_resources;
 	L.location->Write(f);
 
-	// usable objects
-	f.WriteCasted<byte>(L.local_ctx.usables->size());
-	for(Usable* usable : *L.local_ctx.usables)
-		usable->Write(f);
-	// units
-	f.WriteCasted<byte>(L.local_ctx.units->size());
-	for(Unit* unit : *L.local_ctx.units)
-		unit->Write(f);
-	// ground items
-	f.WriteCasted<byte>(L.local_ctx.items->size());
-	for(GroundItem* item : *L.local_ctx.items)
-		item->Write(f);
-	// bloods
-	f.WriteCasted<word>(L.local_ctx.bloods->size());
-	for(Blood& blood : *L.local_ctx.bloods)
-		blood.Write(f);
-	// objects
-	f.WriteCasted<word>(L.local_ctx.objects->size());
-	for(Object* object : *L.local_ctx.objects)
-		object->Write(f);
-	// chests
-	f.WriteCasted<byte>(L.local_ctx.chests->size());
-	for(Chest* chest : *L.local_ctx.chests)
-		chest->Write(f);
-
-	L.location->WritePortals(f);
-
 	// items preload
 	f << items_load.size();
 	for(const Item* item : items_load)
@@ -300,7 +273,6 @@ bool Game::ReadLevelData(BitStreamReader& f)
 	pc_data.rot_buf = 0.f;
 	show_mp_panel = true;
 	W.RemoveBossLevel();
-	L.is_open = true;
 
 	bool loaded_resources;
 	f >> mp_load;
@@ -311,130 +283,15 @@ bool Game::ReadLevelData(BitStreamReader& f)
 		return false;
 	}
 
-	if(L.location->Read(f))
+	if(!L.location->Read(f))
 	{
 		Error("Read level: Failed to read location.");
 		return false;
 	}
 
+	L.is_open = true;
 	loc_gen_factory->Get(L.location)->OnLoad();
 	RequireLoadingResources(L.location, &loaded_resources);
-
-	// usable objects
-	byte count;
-	f >> count;
-
-	if(!f.Ensure(count * Usable::MIN_SIZE))
-	{
-		Error("Read level: Broken usable object count.");
-		return false;
-	}
-	L.local_ctx.usables->resize(count);
-	for(Usable*& usable : *L.local_ctx.usables)
-	{
-		usable = new Usable;
-		if(!usable->Read(f))
-		{
-			Error("Read level: Broken usable object.");
-			return false;
-		}
-	}
-
-	// units
-	f >> count;
-	if(!f.Ensure(count * Unit::MIN_SIZE))
-	{
-		Error("Read level: Broken unit count.");
-		return false;
-	}
-	L.local_ctx.units->resize(count);
-	for(Unit*& unit : *L.local_ctx.units)
-	{
-		unit = new Unit;
-		if(!unit->Read(f))
-		{
-			Error("Read level: Broken unit.");
-			return false;
-		}
-	}
-
-	// ground items
-	f >> count;
-	if(!f.Ensure(count * GroundItem::MIN_SIZE))
-	{
-		Error("Read level: Broken ground item count.");
-		return false;
-	}
-	L.local_ctx.items->resize(count);
-	for(GroundItem*& item : *L.local_ctx.items)
-	{
-		item = new GroundItem;
-		if(!item->Read(f))
-		{
-			Error("Read level: Broken ground item.");
-			return false;
-		}
-	}
-
-	// bloods
-	word count2;
-	f >> count2;
-	if(!f.Ensure(count2 * Blood::MIN_SIZE))
-	{
-		Error("Read level: Broken blood count.");
-		return false;
-	}
-	L.local_ctx.bloods->resize(count2);
-	for(Blood& blood : *L.local_ctx.bloods)
-		blood.Read(f);
-	if(!f)
-	{
-		Error("Read level: Broken blood.");
-		return false;
-	}
-
-	// objects
-	f >> count2;
-	if(!f.Ensure(count2 * Object::MIN_SIZE))
-	{
-		Error("Read level: Broken object count.");
-		return false;
-	}
-	L.local_ctx.objects->resize(count2);
-	for(Object*& object : *L.local_ctx.objects)
-	{
-		object = new Object;
-		if(!object->Read(f))
-		{
-			Error("Read level: Broken object.");
-			return false;
-		}
-	}
-
-	// chests
-	f >> count;
-	if(!f.Ensure(count * Chest::MIN_SIZE))
-	{
-		Error("Read level: Broken chest count.");
-		return false;
-	}
-	L.local_ctx.chests->resize(count);
-	for(Chest*& chest : *L.local_ctx.chests)
-	{
-		chest = new Chest;
-		if(!chest->Read(f))
-		{
-			Error("Read level: Broken chest.");
-			return false;
-		}
-	}
-
-	// portals
-	if(!L.location->ReadPortals(f, L.dungeon_level))
-	{
-		Error("Read level: Broken portals.");
-		return false;
-	}
 
 	// items to preload
 	uint items_load_count = f.Read<uint>();
@@ -491,6 +348,7 @@ bool Game::ReadLevelData(BitStreamReader& f)
 	if(mp_load)
 	{
 		// bullets
+		byte count;
 		f >> count;
 		if(!f.Ensure(count * Bullet::MIN_SIZE))
 		{
@@ -674,15 +532,11 @@ bool Game::ReadLevelData(BitStreamReader& f)
 		return false;
 	}
 
-	L.RecreateObjects();
 	if(W.IsBossLevel())
 		SetMusic();
 	else
 		SetMusic(music);
-
-	InitQuadTree();
-	CalculateQuadtree();
-
+	
 	return true;
 }
 
@@ -8209,7 +8063,7 @@ bool Game::ReadWorldData(BitStreamReader& f)
 	}
 
 	// game stats
-	W.ReadTime(f);
+	GameStats::Get().Read(f);
 	if(!f)
 	{
 		Error("Read world: Broken packet for game stats.");

@@ -134,9 +134,7 @@ bool Quest_BanditsCollectToll::Special(DialogContext& ctx, cstring msg)
 		ctx.talker->gold += 500;
 	}
 	else
-	{
 		assert(0);
-	}
 	return false;
 }
 

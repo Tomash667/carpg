@@ -53,12 +53,6 @@ struct TmpLocation : public Location
 
 
 //=================================================================================================
-void World::InitOnce()
-{
-	gui = Game::Get().gui->world_map;
-}
-
-//=================================================================================================
 void World::LoadLanguage()
 {
 	txDate = Str("dateFormat");
@@ -77,6 +71,12 @@ void World::LoadLanguage()
 	txEncAnimals = Str("encAnimals");
 	txEncOrcs = Str("encOrcs");
 	txEncGoblins = Str("encGoblins");
+}
+
+//=================================================================================================
+void World::PostInit()
+{
+	gui = Game::Get().gui->world_map;
 }
 
 //=================================================================================================

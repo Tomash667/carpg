@@ -162,21 +162,21 @@ void Level::ProcessUnitWarps()
 }
 
 //=================================================================================================
-void Level::ProcessRemoveUnits(bool clear)
+void Level::ProcessRemoveUnits(bool leave)
 {
 	Game& game = Game::Get();
-	if(clear)
-	{
-		for(Unit* unit : to_remove)
-			game.DeleteUnit(unit);
-	}
-	else
+	if(leave)
 	{
 		for(Unit* unit : to_remove)
 		{
 			RemoveElement(GetContext(*unit).units, unit);
 			delete unit;
 		}
+	}
+	else
+	{
+		for(Unit* unit : to_remove)
+			game.DeleteUnit(unit);
 	}
 	to_remove.clear();
 }

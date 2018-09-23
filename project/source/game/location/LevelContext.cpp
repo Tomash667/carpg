@@ -237,6 +237,7 @@ Chest* LevelContext::GetRandomFarChest(const Int2& pt)
 	return far_chests[index].first;
 }
 
+//=================================================================================================
 void LevelContext::SetTmpCtx(TmpLevelContext* ctx)
 {
 	assert(ctx);
@@ -251,6 +252,7 @@ void LevelContext::SetTmpCtx(TmpLevelContext* ctx)
 	ctx->Clear();
 }
 
+//=================================================================================================
 Unit* LevelContext::FindUnit(UnitData* ud)
 {
 	assert(ud);
@@ -264,6 +266,7 @@ Unit* LevelContext::FindUnit(UnitData* ud)
 	return nullptr;
 }
 
+//=================================================================================================
 Usable* LevelContext::FindUsable(BaseUsable* base)
 {
 	assert(base);
@@ -288,6 +291,7 @@ LevelContext& LevelContextEnumerator::Iterator::operator * () const
 		return ((City*)loc)->inside_buildings[index]->ctx;
 }
 
+//=================================================================================================
 LevelContextEnumerator::Iterator& LevelContextEnumerator::Iterator::operator ++ ()
 {
 	++index;

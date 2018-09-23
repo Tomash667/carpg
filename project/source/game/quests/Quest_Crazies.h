@@ -40,4 +40,7 @@ public:
 	State crazies_state;
 	int days;
 	bool check_stone;
+
+private:
+	const Item* stone;
 };

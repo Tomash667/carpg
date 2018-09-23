@@ -115,14 +115,14 @@ void OutsideLocationGenerator::OnEnter()
 	if(!reenter)
 		L.ApplyContext(outside, L.local_ctx);
 
+	if(!reenter)
+		ApplyTiles();
+
 	int days;
 	bool need_reset = outside->CheckUpdate(days, W.GetWorldtime());
 	int update = HandleUpdate();
 	if(update != 1)
 		need_reset = false;
-
-	if(!reenter)
-		ApplyTiles();
 
 	game.SetOutsideParams();
 

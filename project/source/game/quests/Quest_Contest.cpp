@@ -114,6 +114,8 @@ bool Quest_Contest::Special(DialogContext& ctx, cstring msg)
 		game.AddItem(*ctx.pc->unit, ItemList::GetItem("contest_reward"), 1, false);
 		ctx.pc->AddItemMessage(1u);
 	}
+	else
+		assert(0);
 	return false;
 }
 
@@ -125,11 +127,11 @@ bool Quest_Contest::SpecialIf(DialogContext& ctx, cstring msg)
 	else if(strcmp(msg, "contest_here") == 0)
 		return where == W.GetCurrentLocationIndex();
 	else if(strcmp(msg, "contest_today") == 0)
-		return state == Quest_Contest::CONTEST_TODAY;
-	else if(strcmp(msg, "chlanie_trwa") == 0)
-		return state == Quest_Contest::CONTEST_IN_PROGRESS;
+		return state == CONTEST_TODAY;
+	else if(strcmp(msg, "contest_in_progress") == 0)
+		return state == CONTEST_IN_PROGRESS;
 	else if(strcmp(msg, "contest_started") == 0)
-		return state == Quest_Contest::CONTEST_STARTING;
+		return state == CONTEST_STARTING;
 	else if(strcmp(msg, "contest_joined") == 0)
 	{
 		for(Unit* u : units)
@@ -141,6 +143,7 @@ bool Quest_Contest::SpecialIf(DialogContext& ctx, cstring msg)
 	}
 	else if(strcmp(msg, "contest_winner") == 0)
 		return winner == ctx.pc->unit;
+	assert(0);
 	return false;
 }
 

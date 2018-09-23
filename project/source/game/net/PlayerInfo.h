@@ -47,7 +47,7 @@ struct PlayerInfo
 	int id, ack, update_flags, buffs;
 	SystemAddress adr;
 	float timer, update_timer, yspeed;
-	bool ready, devmode, warping, loaded, local;
+	bool ready, devmode, warping, loaded;
 	HumanData hd;
 	CreatedCharacter cc;
 	vector<string> notes;

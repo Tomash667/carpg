@@ -127,11 +127,8 @@ bool Quest_Sawmill::SpecialIf(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "czy_tartak") == 0)
 		return W.GetCurrentLocationIndex() == target_loc;
-	else
-	{
-		assert(0);
-		return false;
-	}
+	assert(0);
+	return false;
 }
 
 //=================================================================================================

@@ -25,8 +25,5 @@ public:
 	bool HandleLocationEvent(LocationEventHandler::Event event) override;
 	bool IfNeedTalk(cstring topic) const override;
 	bool Load(GameReader& f) override;
-	int GetLocationEventHandlerQuestRefid() override
-	{
-		return refid;
-	}
+	int GetLocationEventHandlerQuestRefid() override { return refid; }
 };

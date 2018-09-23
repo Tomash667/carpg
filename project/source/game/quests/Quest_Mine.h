@@ -62,14 +62,8 @@ public:
 	bool SpecialIf(DialogContext& ctx, cstring msg) override;
 	bool HandleLocationEvent(LocationEventHandler::Event event) override;
 	void HandleChestEvent(ChestEventHandler::Event event, Chest* chest) override;
-	int GetLocationEventHandlerQuestRefid() override
-	{
-		return refid;
-	}
-	int GetChestEventHandlerQuestRefid() override
-	{
-		return refid;
-	}
+	int GetLocationEventHandlerQuestRefid() override { return refid; }
+	int GetChestEventHandlerQuestRefid() override { return refid; }
 	void Save(GameWriter& f) override;
 	bool Load(GameReader& f) override;
 	void LoadOld(GameReader& f);

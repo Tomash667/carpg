@@ -164,6 +164,7 @@ bool Quest_Orcs::SpecialIf(DialogContext& ctx, cstring msg)
 		return QM.quest_orcs2->orcs_state == Quest_Orcs2::State::OrcJoined || QM.quest_orcs2->orcs_state == Quest_Orcs2::State::CompletedJoined;
 	else if(strcmp(msg, "q_orkowie_to_miasto") == 0)
 		return W.GetCurrentLocationIndex() == start_loc;
+	assert(0);
 	return false;
 }
 
@@ -580,6 +581,7 @@ bool Quest_Orcs2::SpecialIf(DialogContext& ctx, cstring msg)
 		return orcs_state >= State::Accepted;
 	else if(strcmp(msg, "q_orkowie_nie_ukonczono") == 0)
 		return orcs_state < State::Completed;
+	assert(0);
 	return false;
 }
 

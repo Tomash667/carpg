@@ -421,6 +421,7 @@ bool Quest_Evil::SpecialIf(DialogContext& ctx, cstring msg)
 			&& prog == Progress::TalkedWithCaptain)
 			return true;
 	}
+	assert(0);
 	return false;
 }
 

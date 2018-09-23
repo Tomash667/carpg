@@ -404,11 +404,11 @@ bool Quest_Goblins::SpecialIf(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "q_gobliny_zapytaj") == 0)
 	{
-		if(goblins_state >= State::MageTalked
+		return goblins_state >= State::MageTalked
 			&& goblins_state < State::KnownLocation
 			&& L.location_index == start_loc
-			&& prog != Progress::TalkedWithInnkeeper)
-			return true;
+			&& prog != Progress::TalkedWithInnkeeper;
 	}
+	assert(0);
 	return false;
 }

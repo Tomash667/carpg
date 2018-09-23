@@ -71,7 +71,7 @@ PlayerInfo* Net::TryGetPlayer(int id)
 	{
 		if(info->id == id)
 		{
-			if(info->left != PlayerInfo::LEFT_NO)
+			if(info->left == PlayerInfo::LEFT_NO)
 				return info;
 			break;
 		}

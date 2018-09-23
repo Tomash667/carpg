@@ -1058,7 +1058,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						else if(t.NextLine())
 						{
 							const string& text = t.MustGetItem();
-							if(info->local)
+							if(info->pc->IsLocal())
 								Msg("Whispers in your head: %s", text.c_str());
 							else
 							{

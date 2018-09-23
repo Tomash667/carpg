@@ -184,11 +184,8 @@ bool Quest_DeliverParcel::SpecialIf(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "q_deliver_parcel_after") == 0)
 		return W.GetWorldtime() - start_time < 30 && Rand() % 2 == 0;
-	else
-	{
-		assert(0);
-		return false;
-	}
+	assert(0);
+	return false;
 }
 
 //=================================================================================================
