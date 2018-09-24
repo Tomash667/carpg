@@ -376,7 +376,7 @@ void Game::MultiplayerPanelEvent(int id)
 		Net::changes.clear();
 		if(!net_talk.empty())
 			StringPool.Free(net_talk);
-		ShowLoadPanel();
+		gui->ShowLoadPanel();
 		break;
 	}
 }

@@ -3,13 +3,13 @@ float4x4 matCombined;
 struct ColorVertex
 {
   float3 pos : POSITION;
-  float4 color : COLOR0;
+  float4 color : COLOR;
 };
 
 struct ColorVertexOutput
 {
 	float4 pos : POSITION;
-	float4 color : COLOR0;
+	float4 color : COLOR;
 };
 
 void vs_simple(in ColorVertex In, out ColorVertexOutput Out)

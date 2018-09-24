@@ -59,7 +59,7 @@ public:
 	// save/load
 	void Save(GameWriter& f);
 	void Load(GameReader& f, LoadingHandler& loading);
-	void LoadOld(GameReader& f, LoadingHandler& loading, int part);
+	void LoadOld(GameReader& f, LoadingHandler& loading, int part, bool inside);
 	void Write(BitStreamWriter& f);
 	void WriteTime(BitStreamWriter& f);
 	bool Read(BitStreamReader& f);

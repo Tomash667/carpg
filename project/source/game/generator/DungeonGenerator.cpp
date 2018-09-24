@@ -19,9 +19,7 @@ void DungeonGenerator::Generate()
 {
 	InsideLocation* inside = (InsideLocation*)loc;
 	BaseLocation& base = g_base_locations[inside->target];
-	InsideLocationLevel& lvl = inside->GetLevelData();
-
-	inside->SetActiveLevel(0);
+	inside->SetActiveLevel(L.dungeon_level);
 	if(inside->IsMultilevel())
 	{
 		MultiInsideLocation* multi = (MultiInsideLocation*)inside;
@@ -30,6 +28,7 @@ void DungeonGenerator::Generate()
 	}
 	Info("Generating dungeon, target %d.", inside->target);
 
+	InsideLocationLevel& lvl = inside->GetLevelData();
 	assert(!lvl.map);
 
 	OpcjeMapy opcje;

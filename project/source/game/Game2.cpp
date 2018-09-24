@@ -8543,7 +8543,6 @@ void Game::ChangeLevel(int where)
 			MultiInsideLocation* inside = (MultiInsideLocation*)L.location;
 			LeaveLevel();
 			--L.dungeon_level;
-			inside->SetActiveLevel(L.dungeon_level);
 			LocationGenerator* loc_gen = loc_gen_factory->Get(inside);
 			L.enter_from = ENTER_FROM_DOWN_LEVEL;
 			EnterLevel(loc_gen);
@@ -8565,8 +8564,6 @@ void Game::ChangeLevel(int where)
 		// poziom w dó³
 		LeaveLevel();
 		++L.dungeon_level;
-
-		inside->SetActiveLevel(L.dungeon_level);
 
 		LocationGenerator* loc_gen = loc_gen_factory->Get(inside);
 
@@ -10397,6 +10394,7 @@ void Game::ClearGameVarsOnNewGameOrLoad()
 	pc_data.Reset();
 	SM.Reset();
 	L.Reset();
+	pathfinding->SetTarget(nullptr);
 
 #ifdef DRAW_LOCAL_PATH
 	marked = nullptr;

@@ -26,6 +26,7 @@
 #include "ResourceManager.h"
 #include "Building.h"
 #include "GlobalGui.h"
+#include "DebugDrawer.h"
 
 extern void HumanPredraw(void* ptr, Matrix* mat, int n);
 extern const int ITEM_IMAGE_SIZE;
@@ -341,6 +342,8 @@ void Game::PostconfigureGame()
 	CreateCollisionShapes();
 	for(GameComponent* component : components)
 		component->PostInit();
+
+	GetDebugDrawer()->SetHandler(delegate<void(DebugDrawer*)>(this, &Game::OnDebugDraw));
 
 	// init terrain
 	terrain = new Terrain;

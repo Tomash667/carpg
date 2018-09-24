@@ -650,8 +650,8 @@ void QuestManager::Load(GameReader& f)
 	}
 
 	// load pseudo-quests
-	quest_secret->Load(f);
 	quest_contest->Load(f);
+	quest_secret->Load(f);
 	quest_tournament->Load(f);
 }
 

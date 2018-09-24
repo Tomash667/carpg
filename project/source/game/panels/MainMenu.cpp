@@ -282,7 +282,7 @@ void MainMenu::Event(GuiEvent e)
 			break;
 		case IdLoadGame:
 			Net::SetMode(Net::Mode::Singleplayer);
-			game->ShowLoadPanel();
+			game->gui->ShowLoadPanel();
 			break;
 		case IdMultiplayer:
 			game->gui->ShowMultiplayer();

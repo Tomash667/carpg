@@ -35,6 +35,7 @@
 #include "ParticleSystem.h"
 #include "Inventory.h"
 #include "GlobalGui.h"
+#include "Pathfinding.h"
 
 enum SaveFlags
 {
@@ -451,6 +452,7 @@ void Game::SaveGame(GameWriter& f)
 	// rumors/notes
 	gui->journal->Save(f);
 
+	check_id = (byte)W.GetLocations().size();
 	f << check_id;
 	++check_id;
 
@@ -672,7 +674,7 @@ void Game::LoadGame(GameReader& f)
 		GameStats::Get().LoadOld(f, 0);
 
 		// world day/month/year/worldtime
-		W.LoadOld(f, loading, 0);
+		W.LoadOld(f, loading, 0, false);
 
 		// game state
 		f >> game_state2;
@@ -682,7 +684,7 @@ void Game::LoadGame(GameReader& f)
 
 		// world map
 		LoadingStep(txLoadingLocations);
-		W.LoadOld(f, loading, 1);
+		W.LoadOld(f, loading, 1, game_state2 == GS_LEVEL);
 	}
 
 	uint count;
@@ -710,7 +712,7 @@ void Game::LoadGame(GameReader& f)
 		}
 	}
 	if(LOAD_VERSION < V_FEATURE)
-		W.LoadOld(f, loading, 3);
+		W.LoadOld(f, loading, 3, false);
 	f >> L.enter_from;
 	if(LOAD_VERSION >= V_0_3)
 		f >> L.light_angle;
@@ -764,6 +766,9 @@ void Game::LoadGame(GameReader& f)
 		f >> no_sound;
 	}
 	f >> noai;
+#ifdef _DEBUG
+	noai = true;
+#endif
 	f >> dont_wander;
 	if(LOAD_VERSION >= V_0_4)
 	{
@@ -833,6 +838,7 @@ void Game::LoadGame(GameReader& f)
 	// rumors/notes
 	gui->journal->Load(f);
 
+	check_id = (byte)W.GetLocations().size();
 	f >> read_id;
 	if(read_id != check_id)
 		throw "Error reading data before team.";
@@ -850,7 +856,7 @@ void Game::LoadGame(GameReader& f)
 	SM.Load(f);
 
 	if(LOAD_VERSION < V_FEATURE)
-		W.LoadOld(f, loading, 2);
+		W.LoadOld(f, loading, 2, false);
 
 	f >> read_id;
 	if(read_id != check_id)

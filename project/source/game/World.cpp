@@ -1022,7 +1022,7 @@ void World::LoadNews(GameReader& f)
 }
 
 //=================================================================================================
-void World::LoadOld(GameReader& f, LoadingHandler& loading, int part)
+void World::LoadOld(GameReader& f, LoadingHandler& loading, int part, bool inside)
 {
 	if(part == 0)
 	{
@@ -1043,7 +1043,10 @@ void World::LoadOld(GameReader& f, LoadingHandler& loading, int part)
 		switch(old_state)
 		{
 		case WS_MAIN:
-			state = State::ON_MAP;
+			if(inside)
+				state = State::INSIDE_LOCATION;
+			else
+				state = State::ON_MAP;
 			break;
 		case WS_TRAVEL:
 			state = State::INSIDE_ENCOUNTER;
@@ -1073,7 +1076,6 @@ void World::LoadOld(GameReader& f, LoadingHandler& loading, int part)
 		}
 		if(LOAD_VERSION < V_0_3)
 			travel_dir = Clip(-travel_dir);
-		encounters.resize(f.Read<uint>(), nullptr);
 	}
 	else if(part == 2)
 		LoadNews(f);

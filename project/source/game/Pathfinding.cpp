@@ -508,10 +508,8 @@ int Pathfinding::FindLocalPath(LevelContext& ctx, vector<Int2>& _path, const Int
 	assert(_me);
 
 	_path.clear();
-#ifdef DRAW_LOCAL_PATH
 	if(marked == _me)
 		test_pf.clear();
-#endif
 
 	if(my_tile == target_tile)
 		return 3;
@@ -556,20 +554,28 @@ int Pathfinding::FindLocalPath(LevelContext& ctx, vector<Int2>& _path, const Int
 
 	const float r = _me->GetUnitRadius() - 0.25f / 2;
 
-	for(int y = miny, y2 = 0; y < maxy; ++y, ++y2)
+	if(marked == _me)
 	{
-		for(int x = minx, x2 = 0; x < maxx; ++x, ++x2)
+		for(int y = miny, y2 = 0; y < maxy; ++y, ++y2)
 		{
-			if(!L.Collide(L.global_col, Box2d(0.25f*x, 0.25f*y, 0.25f*(x + 1), 0.25f*(y + 1)), r))
+			for(int x = minx, x2 = 0; x < maxx; ++x, ++x2)
 			{
-#ifdef DRAW_LOCAL_PATH
-				if(marked == _me)
+				if(!L.Collide(L.global_col, Box2d(0.25f*x, 0.25f*y, 0.25f*(x + 1), 0.25f*(y + 1)), r))
+				{
 					test_pf.push_back(std::pair<Vec2, int>(Vec2(0.25f*x, 0.25f*y), 0));
-#endif
-				local_pfmap[x2 + y2 * w] = false;
+					local_pfmap[x2 + y2 * w] = false;
+				}
+				else
+					local_pfmap[x2 + y2 * w] = true;
 			}
-			else
-				local_pfmap[x2 + y2 * w] = true;
+		}
+	}
+	else
+	{
+		for(int y = miny, y2 = 0; y < maxy; ++y, ++y2)
+		{
+			for(int x = minx, x2 = 0; x < maxx; ++x, ++x2)
+				local_pfmap[x2 + y2 * w] = L.Collide(L.global_col, Box2d(0.25f*x, 0.25f*y, 0.25f*(x + 1), 0.25f*(y + 1)), r);
 		}
 	}
 
@@ -710,7 +716,7 @@ int Pathfinding::FindLocalPath(LevelContext& ctx, vector<Int2>& _path, const Int
 		std::sort(do_sprawdzenia.begin(), do_sprawdzenia.end(), sortownik);
 	}
 
-	if(debug_draw)
+	if(marked)
 	{
 		if(marked == _me)
 			test_pf_outside = (L.location->outside && _me->in_building == -1);
@@ -767,8 +773,8 @@ int Pathfinding::FindLocalPath(LevelContext& ctx, vector<Int2>& _path, const Int
 //=================================================================================================
 void Pathfinding::Draw(DebugDrawer* dd)
 {
-	if(test_pf.empty() || !debug_draw)
-		return;
+	//if(test_pf.empty() || !marked)
+	//	return;
 
 	Game& game = Game::Get();
 	dd->BeginBatch();

@@ -127,7 +127,7 @@ void Game::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_FORCE_QUEST, "force_quest", "force next random quest to select (use list quest or none/reset)", F_SERVER | F_GAME | F_WORLD_MAP | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_STUN, "stun", "stun unit for time (stun [length=1] [1 = self])", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_REFRESH_COOLDOWN, "refresh_cooldown", "refresh action cooldown/charges", F_GAME | F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_DRAW_PATH, "draw_path", "draw debug pathfinding", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_DRAW_PATH, "draw_path", "draw debug pathfinding, look at target", F_GAME | F_CHEAT));
 
 	// verify all commands are added
 #ifdef _DEBUG
@@ -1661,9 +1661,16 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						Net::PushChange(NetChange::CHEAT_REFRESH_COOLDOWN);
 					break;
 				case CMD_DRAW_PATH:
-					if(t.Next() && t.IsInt() && Any(t.GetInt(), 0, 1))
-						pathfinding->SetDebugDraw(t.GetInt() == 1);
-					Msg("draw_path %d", pathfinding->IsDebugDraw() ? 1 : 0);
+					if(pc_data.before_player == BP_UNIT)
+					{
+						pathfinding->SetTarget(pc_data.before_player_ptr.unit);
+						Msg("Set draw path target.");
+					}
+					else
+					{
+						pathfinding->SetTarget(nullptr);
+						Msg("Removed draw path target.");
+					}
 					break;
 				default:
 					assert(0);
