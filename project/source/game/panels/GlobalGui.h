@@ -23,6 +23,10 @@ public:
 	void Setup(PlayerController* pc);
 	void OnResize();
 	void OnFocus(bool focus, const Int2& activation_point);
+	void ShowOptions();
+	void ShowMultiplayer();
+	void ShowSavePanel();
+	void ShowLoadPanel();
 
 	// panels
 	LoadScreen* load_screen;

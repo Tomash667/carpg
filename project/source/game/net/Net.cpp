@@ -271,7 +271,6 @@ bool Game::ReadLevelData(BitStreamReader& f)
 {
 	cam.Reset();
 	pc_data.rot_buf = 0.f;
-	show_mp_panel = true;
 	W.RemoveBossLevel();
 
 	bool loaded_resources;
@@ -536,7 +535,7 @@ bool Game::ReadLevelData(BitStreamReader& f)
 		SetMusic();
 	else
 		SetMusic(music);
-	
+
 	return true;
 }
 

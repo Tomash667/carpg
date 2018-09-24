@@ -38,7 +38,7 @@ void Quest_Tutorial::Start()
 	HumanData hd;
 	hd.Get(*game.gui->create_character->unit->human_data);
 	game.NewGameCommon(game.gui->create_character->clas, game.gui->create_character->name.c_str(), hd, game.gui->create_character->cc, true);
-	game.in_tutorial = true;
+	in_tutorial = true;
 	state = 0;
 	texts.clear();
 	shield = nullptr;
@@ -275,7 +275,7 @@ void Quest_Tutorial::Finish(int)
 {
 	Game& game = Game::Get();
 	GUI.GetDialog("tut_end")->visible = false;
-	game.finished_tutorial = true;
+	finished_tutorial = true;
 	game.ClearGame();
 	game.StartNewGame();
 }

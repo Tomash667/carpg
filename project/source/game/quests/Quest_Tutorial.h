@@ -24,6 +24,7 @@ public:
 		Exit
 	};
 
+	Quest_Tutorial() : in_tutorial(false), finished_tutorial(false) {}
 	void LoadLanguage();
 	void Start();
 	void Update();
@@ -42,4 +43,7 @@ private:
 	Object* shield, *shield2;
 	Chest* chests[2];
 	cstring txTut[10], txTutNote, txTutLoc;
+
+public:
+	bool in_tutorial, finished_tutorial;
 };

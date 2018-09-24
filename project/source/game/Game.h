@@ -434,12 +434,7 @@ public:
 	int fallback_1, fallback_2;
 	float fallback_t;
 
-	//
-	vector<Unit*> warp_to_inn;
-
-	bool show_mp_panel;
 	int draw_flags;
-	bool in_tutorial, finished_tutorial;
 
 	// muzyka
 	MusicType music_type;
@@ -737,10 +732,7 @@ public:
 	void SaveLoadEvent(int id);
 	void SaveEvent(int id);
 	void SaveOptions();
-	void ShowOptions();
 	void ShowMenu();
-	void ShowSavePanel();
-	void ShowLoadPanel();
 	void StartNewGame();
 	void NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharacter& cc, bool tutorial);
 	void ShowCreateCharacterPanel(bool enter_name, bool redo = false);

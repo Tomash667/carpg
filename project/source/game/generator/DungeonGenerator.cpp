@@ -21,7 +21,6 @@ void DungeonGenerator::Generate()
 	BaseLocation& base = g_base_locations[inside->target];
 	InsideLocationLevel& lvl = inside->GetLevelData();
 
-	// FIXME: dla EnterLevel
 	inside->SetActiveLevel(0);
 	if(inside->IsMultilevel())
 	{

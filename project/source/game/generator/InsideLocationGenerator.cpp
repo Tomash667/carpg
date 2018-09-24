@@ -57,7 +57,6 @@ void InsideLocationGenerator::OnEnter()
 		game.LoadingStep(game.txGeneratingUnits);
 		GenerateUnits();
 
-		// FIXME - add step for generating items
 		GenerateItems();
 	}
 	else if(!reenter)

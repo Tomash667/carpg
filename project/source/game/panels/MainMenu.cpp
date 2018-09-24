@@ -7,7 +7,6 @@
 #include "ResourceManager.h"
 #include "Game.h"
 #include "GlobalGui.h"
-#include "MultiPlayerPanel.h"
 #define far
 #include <wininet.h>
 #include <process.h>
@@ -286,11 +285,10 @@ void MainMenu::Event(GuiEvent e)
 			game->ShowLoadPanel();
 			break;
 		case IdMultiplayer:
-			game->mp_load = false;
-			game->gui->multiplayer->Show();
+			game->gui->ShowMultiplayer();
 			break;
 		case IdOptions:
-			game->ShowOptions();
+			game->gui->ShowOptions();
 			break;
 		case IdInfo:
 			GUI.SimpleDialog(Format(txInfoText, VERSION_STR, g_ctime.c_str()), nullptr);

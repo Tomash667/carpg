@@ -67,13 +67,13 @@ void Game::MenuEvent(int index)
 		GUI.CloseDialog(gui->game_menu);
 		break;
 	case GameMenu::IdSaveGame: // zapisz
-		ShowSavePanel();
+		gui->ShowSavePanel();
 		break;
 	case GameMenu::IdLoadGame: // wczytaj
-		ShowLoadPanel();
+		gui->ShowLoadPanel();
 		break;
 	case GameMenu::IdOptions: // opcje
-		ShowOptions();
+		gui->ShowOptions();
 		break;
 	case GameMenu::IdExit: // wróæ do menu
 		{
@@ -199,26 +199,6 @@ void Game::SaveOptions()
 }
 
 //=================================================================================================
-void Game::ShowOptions()
-{
-	GUI.ShowDialog(gui->options);
-}
-
-//=================================================================================================
-void Game::ShowSavePanel()
-{
-	gui->saveload->SetSaveMode(true, Net::IsOnline(), Net::IsOnline() ? multi_saves : single_saves);
-	GUI.ShowDialog(gui->saveload);
-}
-
-//=================================================================================================
-void Game::ShowLoadPanel()
-{
-	gui->saveload->SetSaveMode(false, mp_load, mp_load ? multi_saves : single_saves);
-	GUI.ShowDialog(gui->saveload);
-}
-
-//=================================================================================================
 void Game::StartNewGame()
 {
 	HumanData hd;
@@ -272,7 +252,7 @@ void Game::StartQuickGame()
 //=================================================================================================
 void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharacter& cc, bool tutorial)
 {
-	in_tutorial = tutorial;
+	QM.quest_tutorial->in_tutorial = tutorial;
 	gui->main_menu->visible = false;
 	Net::SetMode(Net::Mode::Singleplayer);
 	game_state = GS_LEVEL;
@@ -300,10 +280,10 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 	pc->dialog_ctx->pc = pc;
 	pc->dialog_ctx->is_local = true;
 	cc.Apply(*pc);
-	if(finished_tutorial)
+	if(QM.quest_tutorial->finished_tutorial)
 	{
 		u->AddItem(Item::Get("book_adventurer"), 1u, false);
-		finished_tutorial = false;
+		QM.quest_tutorial->finished_tutorial = false;
 	}
 	dialog_context.pc = pc;
 

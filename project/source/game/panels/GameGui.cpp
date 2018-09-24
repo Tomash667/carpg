@@ -25,6 +25,8 @@
 #include "GroundItem.h"
 #include "ResourceManager.h"
 #include "GlobalGui.h"
+#include "QuestManager.h"
+#include "Quest_Tutorial.h"
 
 //-----------------------------------------------------------------------------
 const float UNIT_VIEW_A = 0.2f;
@@ -389,7 +391,7 @@ void GameGui::DrawFront()
 	Int2 spos(256.f*wnd_scale + offset, GUI.wnd_size.y - offset);
 
 	// action
-	if(!game.in_tutorial)
+	if(!QM.quest_tutorial->in_tutorial)
 	{
 		auto& action = game.pc->GetAction();
 		PlayerController& pc = *game.pc;
@@ -819,7 +821,7 @@ void GameGui::Update(float dt)
 		}
 
 		// action
-		if(!game.in_tutorial)
+		if(!QM.quest_tutorial->in_tutorial)
 		{
 			auto& action = game.pc->GetAction();
 			const float pad = 2.f;
@@ -1417,7 +1419,7 @@ void GameGui::Load(FileReader& f)
 void GameGui::Setup()
 {
 	Action* action;
-	if(game.in_tutorial)
+	if(QM.quest_tutorial->in_tutorial)
 		action = nullptr;
 	else
 		action = &game.pc->GetAction();

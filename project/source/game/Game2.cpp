@@ -745,7 +745,7 @@ void Game::UpdateGame(float dt)
 
 	minimap_opened_doors = false;
 
-	if(in_tutorial && !Net::IsOnline())
+	if(QM.quest_tutorial->in_tutorial && !Net::IsOnline())
 		QM.quest_tutorial->Update();
 
 	drunk_anim = Clip(drunk_anim + dt);
@@ -760,7 +760,7 @@ void Game::UpdateGame(float dt)
 
 	UpdateFallback(dt);
 
-	if(Net::IsLocal() && !in_tutorial)
+	if(Net::IsLocal() && !QM.quest_tutorial->in_tutorial)
 	{
 		// aktualizuj arene/wymiane sprzêtu/zawody w piciu/questy
 		UpdateGame2(dt);
@@ -2630,7 +2630,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 	// action
 	if(!pc_data.action_ready)
 	{
-		if(u.frozen == FROZEN::NO && u.action == A_NONE && GKey.KeyPressedReleaseAllowed(GK_ACTION) && pc->CanUseAction() && !in_tutorial)
+		if(u.frozen == FROZEN::NO && u.action == A_NONE && GKey.KeyPressedReleaseAllowed(GK_ACTION) && pc->CanUseAction() && !QM.quest_tutorial->in_tutorial)
 		{
 			pc_data.action_ready = true;
 			pc_data.action_ok = false;
@@ -8104,7 +8104,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 				pe->Init();
 				ctx.pes->push_back(pe);
 
-				if(Net::IsLocal() && in_tutorial && callback.target)
+				if(Net::IsLocal() && QM.quest_tutorial->in_tutorial && callback.target)
 				{
 					void* ptr = callback.target->getUserPointer();
 					QM.quest_tutorial->HandleBulletCollision(ptr);
@@ -8501,7 +8501,8 @@ void Game::ChangeLevel(int where)
 	L.event_handler = nullptr;
 	UpdateDungeonMinimap(false);
 
-	if(!in_tutorial && QM.quest_crazies->crazies_state >= Quest_Crazies::State::PickedStone && QM.quest_crazies->crazies_state < Quest_Crazies::State::End)
+	if(!QM.quest_tutorial->in_tutorial && QM.quest_crazies->crazies_state >= Quest_Crazies::State::PickedStone
+		&& QM.quest_crazies->crazies_state < Quest_Crazies::State::End)
 		QM.quest_crazies->CheckStone();
 
 	if(Net::IsOnline() && N.active_players > 1)
@@ -8522,7 +8523,7 @@ void Game::ChangeLevel(int where)
 		// poziom w górê
 		if(L.dungeon_level == 0)
 		{
-			if(in_tutorial)
+			if(QM.quest_tutorial->in_tutorial)
 			{
 				QM.quest_tutorial->OnEvent(Quest_Tutorial::Exit);
 				fallback_type = FALLBACK::CLIENT;
@@ -8732,7 +8733,6 @@ void Game::ExitToMap()
 	if(Net::IsServer())
 		Net::PushChange(NetChange::EXIT_TO_MAP);
 
-	show_mp_panel = true;
 	gui->world_map->visible = true;
 	gui->game_gui->visible = false;
 }
@@ -10795,7 +10795,6 @@ void Game::EnterLevel(LocationGenerator* loc_gen)
 	if(!loc_gen->first)
 		Info("Entering location '%s' level %d.", L.location->name.c_str(), L.dungeon_level + 1);
 
-	show_mp_panel = true;
 	gui->inventory->lock = nullptr;
 
 	loc_gen->OnEnter();
@@ -10813,11 +10812,7 @@ void Game::LeaveLevel(bool clear)
 
 	if(gui->game_gui)
 		gui->game_gui->Reset();
-
-	for(vector<Unit*>::iterator it = warp_to_inn.begin(), end = warp_to_inn.end(); it != end; ++it)
-		L.WarpToInn(**it);
-	warp_to_inn.clear();
-
+	
 	if(L.is_open)
 	{
 		for(LevelContext& ctx : L.ForEachContext())

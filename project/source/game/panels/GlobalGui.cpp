@@ -307,7 +307,7 @@ void GlobalGui::Draw(ControlDrawData*)
 	}
 	GUI.DrawText(GUI.default_font, Format("state:%s\nlocation: %p %s\nindex: %d\ntravel index:%d", state, W.GetCurrentLocation(),
 		W.GetCurrentLocation() ? W.GetCurrentLocation()->name.c_str() : "", W.GetCurrentLocationIndex(), W.GetTravelLocationIndex()),
-		0, Color::Black, Rect(0, 0, 500, 200));
+		0, Color::Black, Rect(5, 5, 500, 200));
 	assert(W.GetCurrentLocation() == L.location);
 	assert(W.GetCurrentLocationIndex() == L.location_index);
 }
@@ -369,4 +369,33 @@ void GlobalGui::OnFocus(bool focus, const Int2& activation_point)
 		game_gui->use_cursor = false;
 	if(focus && activation_point.x != -1)
 		GUI.cursor_pos = activation_point;
+}
+
+//=================================================================================================
+void GlobalGui::ShowOptions()
+{
+	GUI.ShowDialog(options);
+}
+
+//=================================================================================================
+void GlobalGui::ShowMultiplayer()
+{
+	Game::Get().mp_load = false;
+	multiplayer->Show();
+}
+
+//=================================================================================================
+void GlobalGui::ShowSavePanel()
+{
+	Game& game = Game::Get();
+	saveload->SetSaveMode(true, Net::IsOnline(), Net::IsOnline() ? game.multi_saves : game.single_saves);
+	GUI.ShowDialog(saveload);
+}
+
+//=================================================================================================
+void GlobalGui::ShowLoadPanel()
+{
+	Game& game = Game::Get();
+	saveload->SetSaveMode(false, game.mp_load, game.mp_load ? game.multi_saves : game.single_saves);
+	GUI.ShowDialog(saveload);
 }

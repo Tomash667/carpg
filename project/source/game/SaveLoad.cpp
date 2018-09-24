@@ -8,6 +8,7 @@
 #include "Quest_Contest.h"
 #include "Quest_Secret.h"
 #include "Quest_Tournament.h"
+#include "Quest_Tutorial.h"
 #include "GameFile.h"
 #include "GameStats.h"
 #include "City.h"
@@ -58,7 +59,7 @@ bool Game::CanSaveGame() const
 	}
 	else
 	{
-		if(in_tutorial || arena->mode != Arena::NONE || QM.quest_contest->state >= Quest_Contest::CONTEST_STARTING
+		if(QM.quest_tutorial->in_tutorial || arena->mode != Arena::NONE || QM.quest_contest->state >= Quest_Contest::CONTEST_STARTING
 			|| QM.quest_tournament->GetState() != Quest_Tournament::TOURNAMENT_NOT_DONE)
 			return false;
 	}
@@ -563,7 +564,7 @@ void Game::LoadGame(GameReader& f)
 	ClearGame();
 	ClearGameVarsOnLoad();
 	StopAllSounds();
-	in_tutorial = false;
+	QM.quest_tutorial->in_tutorial = false;
 	arena->Reset();
 	pc_data.autowalk = false;
 	ai_bow_targets.clear();
