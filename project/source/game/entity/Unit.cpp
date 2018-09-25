@@ -30,6 +30,8 @@ const float Unit::STAMINA_BOW_ATTACK = 100.f;
 const float Unit::STAMINA_BASH_ATTACK = 50.f;
 const float Unit::STAMINA_UNARMED_ATTACK = 50.f;
 const float Unit::STAMINA_RESTORE_TIMER = 0.5f;
+vector<Unit*> Unit::refid_table;
+vector<std::pair<Unit**, int>> Unit::refid_request;
 int Unit::netid_counter;
 static Unit* SUMMONER_PLACEHOLDER = (Unit*)0xFA4E1111;
 
@@ -845,7 +847,7 @@ void Unit::UpdateEffects(float dt)
 	// update alcohol value
 	if(alco_sum > 0.f)
 	{
-		alcohol += alco_sum*dt;
+		alcohol += alco_sum * dt;
 		if(alcohol >= hpmax && live_state == ALIVE)
 			Fall();
 		if(IsPlayer() && !player->is_local)
@@ -1224,7 +1226,8 @@ int Unit::GetRandomAttack() const
 			int n = Rand() % data->frames->attacks;
 			if(IS_SET(data->frames->extra->e[n].flags, a))
 				return n;
-		} while(1);
+		}
+		while(1);
 	}
 	else
 		return Rand() % data->frames->attacks;
@@ -2953,7 +2956,7 @@ void Unit::ApplyStat(AttributeId a, int old, bool calculate_skill)
 			if(Net::IsLocal())
 			{
 				RecalculateStamina();
-				if(!fake_unit && Net::IsServer() && IsPlayer() &&! player->is_local)
+				if(!fake_unit && Net::IsServer() && IsPlayer() && !player->is_local)
 					player->player_info->update_flags |= PlayerInfo::UF_STAMINA;
 			}
 			else
@@ -3356,7 +3359,7 @@ void Unit::CreateMesh(CREATE_MESH mode)
 				if(data->sounds)
 				{
 					auto& sound_mgr = ResourceManager::Get<Sound>();
-					for(int i = 0; i<SLOT_MAX; ++i)
+					for(int i = 0; i < SLOT_MAX; ++i)
 					{
 						for(SoundPtr sound : data->sounds->sounds[i])
 							sound_mgr.AddLoadTask(sound);
@@ -3385,7 +3388,7 @@ void Unit::CreateMesh(CREATE_MESH mode)
 			if(data->sounds)
 			{
 				auto& sound_mgr = ResourceManager::Get<Sound>();
-				for(int i = 0; i<SLOT_MAX; ++i)
+				for(int i = 0; i < SLOT_MAX; ++i)
 				{
 					for(SoundPtr sound : data->sounds->sounds[i])
 						sound_mgr.Load(sound);
@@ -3941,7 +3944,7 @@ void Unit::Die(LevelContext* ctx, Unit* killer)
 		if(IsTeamMember())
 			raise_timer = Random(5.f, 7.f);
 		else
-			game.CheckIfLocationCleared();
+			L.CheckIfLocationCleared();
 
 		// event
 		if(event_handler)
@@ -4112,4 +4115,263 @@ SOUND Unit::GetTalkSound() const
 	if(data->sounds->Have(SOUND_TALK))
 		return data->sounds->Random(SOUND_TALK)->sound;
 	return nullptr;
+}
+
+//=================================================================================================
+void Unit::SetWeaponState(bool takes_out, WeaponType co)
+{
+	if(takes_out)
+	{
+		switch(weapon_state)
+		{
+		case WS_HIDDEN:
+			// wyjmij bron
+			mesh_inst->Play(GetTakeWeaponAnimation(co == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
+			action = A_TAKE_WEAPON;
+			weapon_taken = co;
+			weapon_state = WS_TAKING;
+			animation_state = 0;
+			break;
+		case WS_HIDING:
+			if(weapon_hiding == co)
+			{
+				if(animation_state == 0)
+				{
+					// jeszcze nie schowa³ tej broni, wy³¹cz grupê
+					action = A_NONE;
+					weapon_taken = weapon_hiding;
+					weapon_hiding = W_NONE;
+					weapon_state = WS_TAKEN;
+					mesh_inst->Deactivate(1);
+				}
+				else
+				{
+					// schowa³ broñ, zacznij wyci¹gaæ
+					weapon_taken = weapon_hiding;
+					weapon_hiding = W_NONE;
+					weapon_state = WS_TAKING;
+					CLEAR_BIT(mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
+				}
+			}
+			else
+			{
+				// chowa broñ, zacznij wyci¹gaæ
+				mesh_inst->Play(GetTakeWeaponAnimation(co == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
+				action = A_TAKE_WEAPON;
+				weapon_taken = co;
+				weapon_hiding = W_NONE;
+				weapon_state = WS_TAKING;
+				animation_state = 0;
+			}
+			break;
+		case WS_TAKING:
+		case WS_TAKEN:
+			if(weapon_taken != co)
+			{
+				// wyjmuje z³¹ broñ, zacznij wyjmowaæ dobr¹
+				// lub
+				// powinien mieæ wyjêt¹ broñ, ale nie t¹!
+				mesh_inst->Play(GetTakeWeaponAnimation(co == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
+				action = A_TAKE_WEAPON;
+				weapon_taken = co;
+				weapon_hiding = W_NONE;
+				weapon_state = WS_TAKING;
+				animation_state = 0;
+			}
+			break;
+		}
+	}
+	else // chowa
+	{
+		switch(weapon_state)
+		{
+		case WS_HIDDEN:
+			// schowana to schowana, nie ma co sprawdzaæ czy to ta
+			break;
+		case WS_HIDING:
+			if(weapon_hiding != co)
+			{
+				// chowa z³¹ broñ, zamieñ
+				weapon_hiding = co;
+			}
+			break;
+		case WS_TAKING:
+			if(animation_state == 0)
+			{
+				// jeszcze nie wyj¹³ broni z pasa, po prostu wy³¹cz t¹ grupe
+				action = A_NONE;
+				weapon_taken = W_NONE;
+				weapon_state = WS_HIDDEN;
+				mesh_inst->Deactivate(1);
+			}
+			else
+			{
+				// wyj¹³ broñ z pasa, zacznij chowaæ
+				weapon_hiding = weapon_taken;
+				weapon_taken = W_NONE;
+				weapon_state = WS_HIDING;
+				animation_state = 0;
+				SET_BIT(mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
+			}
+			break;
+		case WS_TAKEN:
+			// zacznij chowaæ
+			mesh_inst->Play(GetTakeWeaponAnimation(co == W_ONE_HANDED), PLAY_ONCE | PLAY_BACK | PLAY_PRIO1, 1);
+			weapon_hiding = co;
+			weapon_taken = W_NONE;
+			weapon_state = WS_HIDING;
+			action = A_TAKE_WEAPON;
+			animation_state = 0;
+			break;
+		}
+	}
+}
+
+//=================================================================================================
+// dzia³a tylko dla cz³onków dru¿yny!
+void Unit::UpdateInventory(bool notify)
+{
+	bool changes = false;
+	int index = 0;
+	const Item* prev_slots[SLOT_MAX];
+	for(int i = 0; i < SLOT_MAX; ++i)
+		prev_slots[i] = slots[i];
+
+	for(vector<ItemSlot>::iterator it = items.begin(), end = items.end(); it != end; ++it, ++index)
+	{
+		if(!it->item || it->team_count != 0)
+			continue;
+
+		switch(it->item->type)
+		{
+		case IT_WEAPON:
+			if(!HaveWeapon())
+			{
+				slots[SLOT_WEAPON] = it->item;
+				it->item = nullptr;
+				changes = true;
+			}
+			else if(IS_SET(data->flags, F_MAGE))
+			{
+				if(IS_SET(it->item->flags, ITEM_MAGE))
+				{
+					if(IS_SET(GetWeapon().flags, ITEM_MAGE))
+					{
+						if(GetWeapon().value < it->item->value)
+						{
+							std::swap(slots[SLOT_WEAPON], it->item);
+							changes = true;
+						}
+					}
+					else
+					{
+						std::swap(slots[SLOT_WEAPON], it->item);
+						changes = true;
+					}
+				}
+				else
+				{
+					if(!IS_SET(GetWeapon().flags, ITEM_MAGE) && IsBetterWeapon(it->item->ToWeapon()))
+					{
+						std::swap(slots[SLOT_WEAPON], it->item);
+						changes = true;
+					}
+				}
+			}
+			else if(IsBetterWeapon(it->item->ToWeapon()))
+			{
+				std::swap(slots[SLOT_WEAPON], it->item);
+				changes = true;
+			}
+			break;
+		case IT_BOW:
+			if(!HaveBow())
+			{
+				slots[SLOT_BOW] = it->item;
+				it->item = nullptr;
+				changes = true;
+			}
+			else if(GetBow().value < it->item->value)
+			{
+				std::swap(slots[SLOT_BOW], it->item);
+				changes = true;
+			}
+			break;
+		case IT_ARMOR:
+			if(!HaveArmor())
+			{
+				slots[SLOT_ARMOR] = it->item;
+				it->item = nullptr;
+				changes = true;
+			}
+			else if(IS_SET(data->flags, F_MAGE))
+			{
+				if(IS_SET(it->item->flags, ITEM_MAGE))
+				{
+					if(IS_SET(GetArmor().flags, ITEM_MAGE))
+					{
+						if(it->item->value > GetArmor().value)
+						{
+							std::swap(slots[SLOT_ARMOR], it->item);
+							changes = true;
+						}
+					}
+					else
+					{
+						std::swap(slots[SLOT_ARMOR], it->item);
+						changes = true;
+					}
+				}
+				else
+				{
+					if(!IS_SET(GetArmor().flags, ITEM_MAGE) && IsBetterArmor(it->item->ToArmor()))
+					{
+						std::swap(slots[SLOT_ARMOR], it->item);
+						changes = true;
+					}
+				}
+			}
+			else if(IsBetterArmor(it->item->ToArmor()))
+			{
+				std::swap(slots[SLOT_ARMOR], it->item);
+				changes = true;
+			}
+			break;
+		case IT_SHIELD:
+			if(!HaveShield())
+			{
+				slots[SLOT_SHIELD] = it->item;
+				it->item = nullptr;
+				changes = true;
+			}
+			else if(GetShield().value < it->item->value)
+			{
+				std::swap(slots[SLOT_SHIELD], it->item);
+				changes = true;
+			}
+			break;
+		default:
+			break;
+		}
+	}
+
+	if(changes)
+	{
+		RemoveNullItems(items);
+		SortItems(items);
+
+		if(Net::IsOnline() && N.active_players > 1 && notify)
+		{
+			for(int i = 0; i < SLOT_MAX; ++i)
+			{
+				if(slots[i] != prev_slots[i])
+				{
+					NetChange& c = Add1(Net::changes);
+					c.unit = this;
+					c.type = NetChange::CHANGE_EQUIPMENT;
+					c.id = i;
+				}
+			}
+		}
+	}
 }

@@ -24,6 +24,7 @@
 #include "Level.h"
 #include "Arena.h"
 #include "Pathfinding.h"
+#include "Quest_Tournament.h"
 
 //-----------------------------------------------------------------------------
 extern string g_ctime;
@@ -1663,7 +1664,9 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 				case CMD_DRAW_PATH:
 					if(pc_data.before_player == BP_UNIT)
 					{
-						pathfinding->SetTarget(pc_data.before_player_ptr.unit);
+						//pathfinding->SetTarget(pc_data.before_player_ptr.unit);
+						FIXME;
+						QM.quest_tournament->winner = pc_data.before_player_ptr.unit;
 						Msg("Set draw path target.");
 					}
 					else

@@ -542,8 +542,8 @@ void QuestManager::Save(GameWriter& f)
 	f << quest_rumor;
 	f << force;
 
-	quest_contest->Save(f);
 	quest_secret->Save(f);
+	quest_contest->Save(f);
 	quest_tournament->Save(f);
 }
 
@@ -650,8 +650,8 @@ void QuestManager::Load(GameReader& f)
 	}
 
 	// load pseudo-quests
-	quest_contest->Load(f);
 	quest_secret->Load(f);
+	quest_contest->Load(f);
 	quest_tournament->Load(f);
 }
 

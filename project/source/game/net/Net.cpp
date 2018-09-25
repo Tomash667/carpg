@@ -1071,7 +1071,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				else
 				{
 					unit.mesh_inst->groups[1].speed = 1.f;
-					SetUnitWeaponState(unit, !hide, weapon_type);
+					unit.SetWeaponState(!hide, weapon_type);
 					// send to other players
 					if(N.active_players > 2)
 					{
@@ -1681,7 +1681,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 								t->ai->have_potion = 1;
 							if(player.action == PlayerController::Action_GiveItems)
 							{
-								UpdateUnitInventory(*t);
+								t->UpdateInventory();
 								NetChangePlayer& c = Add1(info.changes);
 								c.type = NetChangePlayer::UPDATE_TRADER_INVENTORY;
 								c.unit = t;
@@ -1730,7 +1730,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 								player.action_unit->gold -= price;
 								unit.gold += price;
 							}
-							UpdateUnitInventory(*player.action_unit);
+							player.action_unit->UpdateInventory();
 							NetChangePlayer& c = Add1(info.changes);
 							c.type = NetChangePlayer::UPDATE_TRADER_INVENTORY;
 							c.unit = player.action_unit;
@@ -1864,7 +1864,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				{
 					slot.team_count = 0;
 					player.credit += slot.item->value / 2;
-					CheckCredit(true);
+					Team.CheckCredit(true);
 				}
 				else
 				{
@@ -4223,7 +4223,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					{
 						if(unit->mesh_inst->mesh->head.n_groups > 1)
 							unit->mesh_inst->groups[1].speed = 1.f;
-						SetUnitWeaponState(*unit, !hide, type);
+						unit->SetWeaponState(!hide, type);
 					}
 				}
 			}
@@ -8385,7 +8385,7 @@ void Game::ProcessLeftPlayers()
 			AddMsg(txYouAreLeader);
 		}
 
-		CheckCredit();
+		Team.CheckCredit();
 		delete pinfo;
 
 		return true;

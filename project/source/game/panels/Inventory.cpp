@@ -1644,7 +1644,7 @@ void InventoryPanel::OnTakeItem(int id)
 	slot.team_count = 0;
 
 	if(Net::IsLocal())
-		game.CheckCredit(true);
+		Team.CheckCredit(true);
 	else
 	{
 		NetChange& c = Add1(Net::changes);
@@ -2179,7 +2179,7 @@ void InventoryPanel::OnGiveItem(int id)
 	case 0: // kredyt
 		t->hero->credit += price;
 		if(Net::IsLocal())
-			game.CheckCredit(true);
+			Team.CheckCredit(true);
 		break;
 	case 1: // z³oto
 		if(t->gold < price)
@@ -2214,7 +2214,7 @@ void InventoryPanel::OnGiveItem(int id)
 	// ustaw przedmioty
 	if(Net::IsLocal())
 	{
-		game.UpdateUnitInventory(*t);
+		t->UpdateInventory();
 		base.BuildTmpInventory(1);
 	}
 	// komunikat

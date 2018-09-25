@@ -31,7 +31,7 @@ public:
 	void Clean();
 	void FinishCombat() { state3 = 5; }
 
-private:
+public: // FIXME
 	UnitData& GetRandomHeroData();
 	void StartTournament(Unit* arena_master);
 	bool ShouldJoin(Unit& u);

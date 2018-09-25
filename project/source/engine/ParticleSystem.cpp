@@ -4,6 +4,9 @@
 #include "ResourceManager.h"
 #include "ParticleSystem.h"
 
+vector<ParticleEmitter*> ParticleEmitter::refid_table;
+vector<TrailParticleEmitter*> TrailParticleEmitter::refid_table;
+
 //=================================================================================================
 float drop_range(float v, float t)
 {

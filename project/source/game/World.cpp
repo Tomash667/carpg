@@ -932,7 +932,7 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 			loc->index = index;
 			loc->Load(f, current_index == index, loc_token);
 
-			const int OLD_ACADEMY = 8;
+			const int OLD_ACADEMY = 9;
 			if(LOAD_VERSION < V_FEATURE && loc->type == OLD_ACADEMY)
 				academy = loc;
 		}
@@ -986,7 +986,6 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 	}
 	encounters.resize(f.Read<uint>(), nullptr);
 
-	L.location_index = current_location_index;
 	if(current_location_index != -1)
 	{
 		current_location = locations[current_location_index];
@@ -997,14 +996,15 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 			++empty_locations;
 			delete academy;
 			current_location = locations[current_location_index];
+			if(current_location->state == LS_KNOWN)
+				current_location->state = LS_VISITED;
+			world_pos = current_location->pos;
 		}
-		L.location = current_location;
 	}
 	else
-	{
 		current_location = nullptr;
-		L.location = nullptr;
-	}
+	L.location_index = current_location_index;
+	L.location = current_location;
 }
 
 //=================================================================================================

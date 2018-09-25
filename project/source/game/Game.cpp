@@ -1257,8 +1257,6 @@ void Game::SetGameText()
 	txWinMp = Str("winMp");
 	txLevelUp = Str("levelUp");
 	txLevelDown = Str("levelDown");
-	txLocationText = Str("locationText");
-	txLocationTextMap = Str("locationTextMap");
 	txRegeneratingLevel = Str("regeneratingLevel");
 	txReallyQuit = Str("reallyQuit");
 	txGainTextAttrib = Str("gainTextAttrib");
@@ -1290,8 +1288,6 @@ void Game::SetGameText()
 	LoadArray(txNearLocEnemy, "nearLocEnemy");
 	LoadArray(txNoNews, "noNews");
 	LoadArray(txAllNews, "allNews");
-	txNewsCampCleared = Str("newsCampCleared");
-	txNewsLocCleared = Str("newsLocCleared");
 	txAllNearLoc = Str("allNearLoc");
 
 	// dystans / si³a
@@ -1960,7 +1956,7 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 	LoadResources(txLoadingComplete, false);
 
 	l.last_visit = W.GetWorldtime();
-	CheckIfLocationCleared();
+	L.CheckIfLocationCleared();
 	cam.Reset();
 	pc_data.rot_buf = 0.f;
 	SetMusic();

@@ -31,6 +31,7 @@ class Level : public GameComponent
 	};
 
 public:
+	void LoadLanguage() override;
 	void LoadData() override;
 	void Reset();
 	void WarpUnit(Unit* unit, int where)
@@ -123,6 +124,8 @@ public:
 	int GetChestDifficultyLevel() const;
 	void OnReenterLevel();
 	InsideBuilding* GetArena();
+	cstring GetCurrentLocationText();
+	void CheckIfLocationCleared();
 
 	Location* location; // same as W.current_location
 	int location_index; // same as W.current_location_index
@@ -142,6 +145,7 @@ private:
 	vector<UnitWarpData> unit_warp_data;
 	TexturePtr tFlare, tFlare2, tWater;
 	Matrix m1, m2, m3;
+
 	// pickable items
 	struct PickableItem
 	{
@@ -152,5 +156,7 @@ private:
 	Object* pickable_obj;
 	vector<Box> pickable_spawns;
 	vector<PickableItem> pickable_items;
+
+	cstring txLocationText, txLocationTextMap, txNewsCampCleared, txNewsLocCleared;
 };
 extern Level L;

@@ -22,6 +22,8 @@ enum OLD_USABLE_ID
 	U_MAX
 };
 
+vector<Usable*> Usable::refid_table;
+vector<UsableRequest> Usable::refid_request;
 int Usable::netid_counter;
 
 //=================================================================================================

@@ -3790,6 +3790,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 	}
 }
 
+//=================================================================================================
 bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_level)
 {
 	bool result;
@@ -4480,7 +4481,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 		ctx.talker->hero->credit = 0;
 		ctx.talker->ai->city_wander = true;
 		ctx.talker->ai->loc_timer = Random(5.f, 10.f);
-		CheckCredit(false);
+		Team.CheckCredit(false);
 		ctx.talker->temporary = true;
 	}
 	else if(strcmp(msg, "give_item_credit") == 0)
@@ -4624,6 +4625,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 	return false;
 }
 
+//=================================================================================================
 bool Game::ExecuteGameDialogSpecialIf(DialogContext& ctx, cstring msg)
 {
 	bool result;
@@ -7515,154 +7517,6 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 	}
 }
 
-// dzia³a tylko dla cz³onków dru¿yny!
-void Game::UpdateUnitInventory(Unit& u, bool notify)
-{
-	bool changes = false;
-	int index = 0;
-	const Item* prev_slots[SLOT_MAX];
-	for(int i = 0; i < SLOT_MAX; ++i)
-		prev_slots[i] = u.slots[i];
-
-	for(vector<ItemSlot>::iterator it = u.items.begin(), end = u.items.end(); it != end; ++it, ++index)
-	{
-		if(!it->item || it->team_count != 0)
-			continue;
-
-		switch(it->item->type)
-		{
-		case IT_WEAPON:
-			if(!u.HaveWeapon())
-			{
-				u.slots[SLOT_WEAPON] = it->item;
-				it->item = nullptr;
-				changes = true;
-			}
-			else if(IS_SET(u.data->flags, F_MAGE))
-			{
-				if(IS_SET(it->item->flags, ITEM_MAGE))
-				{
-					if(IS_SET(u.GetWeapon().flags, ITEM_MAGE))
-					{
-						if(u.GetWeapon().value < it->item->value)
-						{
-							std::swap(u.slots[SLOT_WEAPON], it->item);
-							changes = true;
-						}
-					}
-					else
-					{
-						std::swap(u.slots[SLOT_WEAPON], it->item);
-						changes = true;
-					}
-				}
-				else
-				{
-					if(!IS_SET(u.GetWeapon().flags, ITEM_MAGE) && u.IsBetterWeapon(it->item->ToWeapon()))
-					{
-						std::swap(u.slots[SLOT_WEAPON], it->item);
-						changes = true;
-					}
-				}
-			}
-			else if(u.IsBetterWeapon(it->item->ToWeapon()))
-			{
-				std::swap(u.slots[SLOT_WEAPON], it->item);
-				changes = true;
-			}
-			break;
-		case IT_BOW:
-			if(!u.HaveBow())
-			{
-				u.slots[SLOT_BOW] = it->item;
-				it->item = nullptr;
-				changes = true;
-			}
-			else if(u.GetBow().value < it->item->value)
-			{
-				std::swap(u.slots[SLOT_BOW], it->item);
-				changes = true;
-			}
-			break;
-		case IT_ARMOR:
-			if(!u.HaveArmor())
-			{
-				u.slots[SLOT_ARMOR] = it->item;
-				it->item = nullptr;
-				changes = true;
-			}
-			else if(IS_SET(u.data->flags, F_MAGE))
-			{
-				if(IS_SET(it->item->flags, ITEM_MAGE))
-				{
-					if(IS_SET(u.GetArmor().flags, ITEM_MAGE))
-					{
-						if(it->item->value > u.GetArmor().value)
-						{
-							std::swap(u.slots[SLOT_ARMOR], it->item);
-							changes = true;
-						}
-					}
-					else
-					{
-						std::swap(u.slots[SLOT_ARMOR], it->item);
-						changes = true;
-					}
-				}
-				else
-				{
-					if(!IS_SET(u.GetArmor().flags, ITEM_MAGE) && u.IsBetterArmor(it->item->ToArmor()))
-					{
-						std::swap(u.slots[SLOT_ARMOR], it->item);
-						changes = true;
-					}
-				}
-			}
-			else if(u.IsBetterArmor(it->item->ToArmor()))
-			{
-				std::swap(u.slots[SLOT_ARMOR], it->item);
-				changes = true;
-			}
-			break;
-		case IT_SHIELD:
-			if(!u.HaveShield())
-			{
-				u.slots[SLOT_SHIELD] = it->item;
-				it->item = nullptr;
-				changes = true;
-			}
-			else if(u.GetShield().value < it->item->value)
-			{
-				std::swap(u.slots[SLOT_SHIELD], it->item);
-				changes = true;
-			}
-			break;
-		default:
-			break;
-		}
-	}
-
-	if(changes)
-	{
-		RemoveNullItems(u.items);
-		SortItems(u.items);
-
-		if(Net::IsOnline() && N.active_players > 1 && notify)
-		{
-			for(int i = 0; i < SLOT_MAX; ++i)
-			{
-				if(u.slots[i] != prev_slots[i])
-				{
-					NetChange& c = Add1(Net::changes);
-					c.unit = &u;
-					c.type = NetChange::CHANGE_EQUIPMENT;
-					c.id = i;
-				}
-			}
-		}
-	}
-}
-
 bool Game::DoShieldSmash(LevelContext& ctx, Unit& attacker)
 {
 	assert(attacker.HaveShield());
@@ -8402,55 +8256,6 @@ void Game::SpawnTerrainCollider()
 	phy_world->addCollisionObject(obj_terrain, CG_TERRAIN);
 }
 
-void Game::AddRoomColliders(InsideLocationLevel& lvl, Room& room, vector<Int2>& blocks)
-{
-	// add colliding blocks
-	for(int x = 0; x < room.size.x; ++x)
-	{
-		// top
-		POLE co = lvl.map[room.pos.x + x + (room.pos.y + room.size.y - 1)*lvl.w].type;
-		if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
-		{
-			blocks.push_back(Int2(room.pos.x + x, room.pos.y + room.size.y - 1));
-			blocks.push_back(Int2(room.pos.x + x, room.pos.y + room.size.y - 2));
-		}
-		else if(co == SCIANA || co == BLOKADA_SCIANA)
-			blocks.push_back(Int2(room.pos.x + x, room.pos.y + room.size.y - 1));
-
-		// bottom
-		co = lvl.map[room.pos.x + x + room.pos.y*lvl.w].type;
-		if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
-		{
-			blocks.push_back(Int2(room.pos.x + x, room.pos.y));
-			blocks.push_back(Int2(room.pos.x + x, room.pos.y + 1));
-		}
-		else if(co == SCIANA || co == BLOKADA_SCIANA)
-			blocks.push_back(Int2(room.pos.x + x, room.pos.y));
-	}
-	for(int y = 0; y < room.size.y; ++y)
-	{
-		// left
-		POLE co = lvl.map[room.pos.x + (room.pos.y + y)*lvl.w].type;
-		if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
-		{
-			blocks.push_back(Int2(room.pos.x, room.pos.y + y));
-			blocks.push_back(Int2(room.pos.x + 1, room.pos.y + y));
-		}
-		else if(co == SCIANA || co == BLOKADA_SCIANA)
-			blocks.push_back(Int2(room.pos.x, room.pos.y + y));
-
-		// right
-		co = lvl.map[room.pos.x + room.size.x - 1 + (room.pos.y + y)*lvl.w].type;
-		if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
-		{
-			blocks.push_back(Int2(room.pos.x + room.size.x - 1, room.pos.y + y));
-			blocks.push_back(Int2(room.pos.x + room.size.x - 2, room.pos.y + y));
-		}
-		else if(co == SCIANA || co == BLOKADA_SCIANA)
-			blocks.push_back(Int2(room.pos.x + room.size.x - 1, room.pos.y + y));
-	}
-}
-
 Unit* Game::CreateUnitWithAI(LevelContext& ctx, UnitData& unit, int level, Human* human_data, const Vec3* pos, const float* rot, AIController** ai)
 {
 	Unit* u = CreateUnit(unit, level, human_data);
@@ -8595,7 +8400,7 @@ void Game::ChangeLevel(int where)
 	}
 
 	L.location->last_visit = W.GetWorldtime();
-	CheckIfLocationCleared();
+	L.CheckIfLocationCleared();
 	bool loaded_resources = RequireLoadingResources(L.location, nullptr);
 	LoadResources(txLoadingComplete, false);
 
@@ -10339,13 +10144,6 @@ void Game::UpdateAttachedSounds(float dt)
 	}
 }
 
-vector<Unit*> Unit::refid_table;
-vector<std::pair<Unit**, int> > Unit::refid_request;
-vector<ParticleEmitter*> ParticleEmitter::refid_table;
-vector<TrailParticleEmitter*> TrailParticleEmitter::refid_table;
-vector<Usable*> Usable::refid_table;
-vector<UsableRequest> Usable::refid_request;
-
 void Game::BuildRefidTables()
 {
 	// jednostki i u¿ywalne
@@ -10607,25 +10405,6 @@ SOUND Game::GetItemSound(const Item* item)
 	default:
 		return sItem[7];
 	}
-}
-
-cstring Game::GetCurrentLocationText()
-{
-	if(game_state == GS_LEVEL)
-	{
-		if(L.location->outside)
-			return L.location->name.c_str();
-		else
-		{
-			InsideLocation* inside = (InsideLocation*)L.location;
-			if(inside->IsMultilevel())
-				return Format(txLocationText, L.location->name.c_str(), L.dungeon_level + 1);
-			else
-				return L.location->name.c_str();
-		}
-	}
-	else
-		return Format(txLocationTextMap, W.GetCurrentLocation()->name.c_str());
 }
 
 void Game::Unit_StopUsingUsable(LevelContext& ctx, Unit& u, bool send)
@@ -11888,66 +11667,6 @@ int Game::CalculateQuestReward(int gold)
 	return gold * (90 + Team.GetActiveTeamSize() * 10) / 100;
 }
 
-const Item* Game::GetBetterItem(const Item* item)
-{
-	assert(item);
-
-	auto it = better_items.find(item);
-	if(it != better_items.end())
-		return it->second;
-
-	return nullptr;
-}
-
-void Game::CheckIfLocationCleared()
-{
-	if(L.city_ctx)
-		return;
-
-	bool is_clear = true;
-	for(vector<Unit*>::iterator it = L.local_ctx.units->begin(), end = L.local_ctx.units->end(); it != end; ++it)
-	{
-		if((*it)->IsAlive() && IsEnemy(*pc->unit, **it, true))
-		{
-			is_clear = false;
-			break;
-		}
-	}
-
-	if(is_clear)
-	{
-		bool cleared = false;
-		if(!L.location->outside)
-		{
-			InsideLocation* inside = (InsideLocation*)L.location;
-			if(inside->IsMultilevel())
-			{
-				if(((MultiInsideLocation*)inside)->LevelCleared())
-					cleared = true;
-			}
-			else
-				cleared = true;
-		}
-		else
-			cleared = true;
-
-		if(cleared)
-			L.location->state = LS_CLEARED;
-
-		bool prevent = false;
-		if(L.event_handler)
-			prevent = L.event_handler->HandleLocationEvent(LocationEventHandler::CLEARED);
-
-		if(cleared && prevent && L.location->spawn != SG_NONE)
-		{
-			if(L.location->type == L_CAMP)
-				W.AddNews(Format(txNewsCampCleared, W.GetLocation(W.GetNearestSettlement(L.location->pos))->name.c_str()));
-			else
-				W.AddNews(Format(txNewsLocCleared, L.location->name.c_str()));
-		}
-	}
-}
-
 bool Game::CanWander(Unit& u)
 {
 	if(L.city_ctx && u.ai->loc_timer <= 0.f && !dont_wander && IS_SET(u.data->flags, F_AI_WANDERS))
@@ -12780,115 +12499,6 @@ void Game::UpdateGame2(float dt)
 		secret->UpdateFight();
 }
 
-void Game::SetUnitWeaponState(Unit& u, bool wyjmuje, WeaponType co)
-{
-	if(wyjmuje)
-	{
-		switch(u.weapon_state)
-		{
-		case WS_HIDDEN:
-			// wyjmij bron
-			u.mesh_inst->Play(u.GetTakeWeaponAnimation(co == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
-			u.action = A_TAKE_WEAPON;
-			u.weapon_taken = co;
-			u.weapon_state = WS_TAKING;
-			u.animation_state = 0;
-			break;
-		case WS_HIDING:
-			if(u.weapon_hiding == co)
-			{
-				if(u.animation_state == 0)
-				{
-					// jeszcze nie schowa³ tej broni, wy³¹cz grupê
-					u.action = A_NONE;
-					u.weapon_taken = u.weapon_hiding;
-					u.weapon_hiding = W_NONE;
-					u.weapon_state = WS_TAKEN;
-					u.mesh_inst->Deactivate(1);
-				}
-				else
-				{
-					// schowa³ broñ, zacznij wyci¹gaæ
-					u.weapon_taken = u.weapon_hiding;
-					u.weapon_hiding = W_NONE;
-					u.weapon_state = WS_TAKING;
-					CLEAR_BIT(u.mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
-				}
-			}
-			else
-			{
-				// chowa broñ, zacznij wyci¹gaæ
-				u.mesh_inst->Play(u.GetTakeWeaponAnimation(co == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
-				u.action = A_TAKE_WEAPON;
-				u.weapon_taken = co;
-				u.weapon_hiding = W_NONE;
-				u.weapon_state = WS_TAKING;
-				u.animation_state = 0;
-			}
-			break;
-		case WS_TAKING:
-		case WS_TAKEN:
-			if(u.weapon_taken != co)
-			{
-				// wyjmuje z³¹ broñ, zacznij wyjmowaæ dobr¹
-				// lub
-				// powinien mieæ wyjêt¹ broñ, ale nie t¹!
-				u.mesh_inst->Play(u.GetTakeWeaponAnimation(co == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
-				u.action = A_TAKE_WEAPON;
-				u.weapon_taken = co;
-				u.weapon_hiding = W_NONE;
-				u.weapon_state = WS_TAKING;
-				u.animation_state = 0;
-			}
-			break;
-		}
-	}
-	else // chowa
-	{
-		switch(u.weapon_state)
-		{
-		case WS_HIDDEN:
-			// schowana to schowana, nie ma co sprawdzaæ czy to ta
-			break;
-		case WS_HIDING:
-			if(u.weapon_hiding != co)
-			{
-				// chowa z³¹ broñ, zamieñ
-				u.weapon_hiding = co;
-			}
-			break;
-		case WS_TAKING:
-			if(u.animation_state == 0)
-			{
-				// jeszcze nie wyj¹³ broni z pasa, po prostu wy³¹cz t¹ grupe
-				u.action = A_NONE;
-				u.weapon_taken = W_NONE;
-				u.weapon_state = WS_HIDDEN;
-				u.mesh_inst->Deactivate(1);
-			}
-			else
-			{
-				// wyj¹³ broñ z pasa, zacznij chowaæ
-				u.weapon_hiding = u.weapon_taken;
-				u.weapon_taken = W_NONE;
-				u.weapon_state = WS_HIDING;
-				u.animation_state = 0;
-				SET_BIT(u.mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
-			}
-			break;
-		case WS_TAKEN:
-			// zacznij chowaæ
-			u.mesh_inst->Play(u.GetTakeWeaponAnimation(co == W_ONE_HANDED), PLAY_ONCE | PLAY_BACK | PLAY_PRIO1, 1);
-			u.weapon_hiding = co;
-			u.weapon_taken = W_NONE;
-			u.weapon_state = WS_HIDING;
-			u.action = A_TAKE_WEAPON;
-			u.animation_state = 0;
-			break;
-		}
-	}
-}
-
 void Game::OnCloseInventory()
 {
 	if(gui->inventory->mode == I_TRADE)
@@ -13176,34 +12786,6 @@ void Game::UpdateGameNet(float dt)
 		UpdateServer(dt);
 	else
 		UpdateClient(dt);
-}
-
-void Game::CheckCredit(bool require_update, bool ignore)
-{
-	if(Team.GetActiveTeamSize() > 1)
-	{
-		vector<Unit*>& active_team = Team.active_members;
-		int ile = active_team.front()->GetCredit();
-
-		for(vector<Unit*>::iterator it = active_team.begin() + 1, end = active_team.end(); it != end; ++it)
-		{
-			int kredyt = (*it)->GetCredit();
-			if(kredyt < ile)
-				ile = kredyt;
-		}
-
-		if(ile > 0)
-		{
-			require_update = true;
-			for(vector<Unit*>::iterator it = active_team.begin(), end = active_team.end(); it != end; ++it)
-				(*it)->GetCredit() -= ile;
-		}
-	}
-	else
-		pc->credit = 0;
-
-	if(!ignore && require_update && Net::IsOnline())
-		Net::PushChange(NetChange::UPDATE_CREDIT);
 }
 
 void Game::StartDialog2(PlayerController* player, Unit* talker, GameDialog* dialog)

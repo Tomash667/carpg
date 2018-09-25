@@ -414,6 +414,8 @@ void TeamSingleton::Load(GameReader& f)
 	f >> crazies_attack;
 	f >> is_bandit;
 	f >> free_recruit;
+
+	CheckCredit(false, true);
 }
 
 void TeamSingleton::Reset()
@@ -659,7 +661,7 @@ void TeamSingleton::UpdateTeamItemShares()
 					{
 						// NPC own better item, just equip it
 						state = 0;
-						game.UpdateUnitInventory(*tsi.to);
+						tsi.to->UpdateInventory();
 					}
 					else if(tsi.from->IsHero())
 					{
@@ -672,7 +674,7 @@ void TeamSingleton::UpdateTeamItemShares()
 							tsi.to->gold -= value;
 							tsi.from->gold += value;
 							tsi.from->items.erase(tsi.from->items.begin() + tsi.index);
-							game.UpdateUnitInventory(*tsi.to);
+							tsi.to->UpdateInventory();
 							CheckUnitOverload(*tsi.to);
 						}
 					}
@@ -743,14 +745,13 @@ void TeamSingleton::TeamShareGiveItemCredit(DialogContext& ctx)
 	TeamShareItem& tsi = team_shares[ctx.team_share_id];
 	if(CheckTeamShareItem(tsi))
 	{
-		Game& game = Game::Get();
 		if(tsi.from != tsi.to)
 		{
 			tsi.to->AddItem(tsi.item, 1, false);
 			if(tsi.from->IsPlayer())
 				tsi.from->weight -= tsi.item->weight;
 			tsi.to->hero->credit += tsi.item->value / 2;
-			game.CheckCredit(true);
+			CheckCredit(true);
 			tsi.from->items.erase(tsi.from->items.begin() + tsi.index);
 			if(!ctx.is_local && tsi.from == ctx.pc->unit)
 			{
@@ -759,15 +760,15 @@ void TeamSingleton::TeamShareGiveItemCredit(DialogContext& ctx)
 				c.id = tsi.index;
 				c.ile = 1;
 			}
-			game.UpdateUnitInventory(*tsi.to);
+			tsi.to->UpdateInventory();
 			CheckUnitOverload(*tsi.to);
 		}
 		else
 		{
 			tsi.to->hero->credit += tsi.item->value / 2;
 			tsi.to->items[tsi.index].team_count = 0;
-			game.CheckCredit(true);
-			game.UpdateUnitInventory(*tsi.to);
+			CheckCredit(true);
+			tsi.to->UpdateInventory();
 		}
 	}
 }
@@ -792,7 +793,7 @@ void TeamSingleton::TeamShareSellItem(DialogContext& ctx)
 			c.ile = 1;
 			tsi.from->player->player_info->UpdateGold();
 		}
-		Game::Get().UpdateUnitInventory(*tsi.to);
+		tsi.to->UpdateInventory();
 		CheckUnitOverload(*tsi.to);
 	}
 }
@@ -839,7 +840,6 @@ void TeamSingleton::TeamShareDecline(DialogContext& ctx)
 //=================================================================================================
 void TeamSingleton::BuyTeamItems()
 {
-	Game& game = Game::Get();
 	const Item* hp1 = Item::Get("p_hp");
 	const Item* hp2 = Item::Get("p_hp2");
 	const Item* hp3 = Item::Get("p_hp3");
@@ -957,7 +957,7 @@ void TeamSingleton::BuyTeamItems()
 			const Item* weapon = u.slots[SLOT_WEAPON];
 			while(true)
 			{
-				const Item* item = game.GetBetterItem(weapon);
+				const Item* item = ItemHelper::GetBetterItem(weapon);
 				if(item && u.gold >= item->value)
 				{
 					if(u.IsBetterWeapon(item->ToWeapon()))
@@ -979,7 +979,7 @@ void TeamSingleton::BuyTeamItems()
 		if(!u.HaveBow())
 			item = UnitHelper::GetBaseBow(lis);
 		else
-			item = game.GetBetterItem(&u.GetBow());
+			item = ItemHelper::GetBetterItem(&u.GetBow());
 		if(item && u.gold >= item->value)
 		{
 			u.AddItem(item, 1, false);
@@ -990,7 +990,7 @@ void TeamSingleton::BuyTeamItems()
 		if(!u.HaveArmor())
 			item = UnitHelper::GetBaseArmor(u, lis);
 		else
-			item = game.GetBetterItem(&u.GetArmor());
+			item = ItemHelper::GetBetterItem(&u.GetArmor());
 		if(item && u.gold >= item->value && u.IsBetterArmor(item->ToArmor()))
 		{
 			u.AddItem(item, 1, false);
@@ -1001,7 +1001,7 @@ void TeamSingleton::BuyTeamItems()
 		if(!u.HaveShield())
 			item = UnitHelper::GetBaseShield(lis);
 		else
-			item = game.GetBetterItem(&u.GetShield());
+			item = ItemHelper::GetBetterItem(&u.GetShield());
 		if(item && u.gold >= item->value)
 		{
 			u.AddItem(item, 1, false);
@@ -1009,7 +1009,7 @@ void TeamSingleton::BuyTeamItems()
 		}
 
 		// za³ó¿ nowe przedmioty
-		game.UpdateUnitInventory(u, false);
+		u.UpdateInventory(false);
 		u.ai->have_potion = 2;
 
 		// sprzedaj stare przedmioty
@@ -1221,4 +1221,32 @@ void TeamSingleton::CheckUnitOverload(Unit& unit)
 		game.AddGold(team_gold);
 
 	assert(unit.weight <= unit.weight_max);
+}
+
+//=================================================================================================
+void TeamSingleton::CheckCredit(bool require_update, bool ignore)
+{
+	if(GetActiveTeamSize() > 1)
+	{
+		int max_credit = active_members.front()->GetCredit();
+
+		for(vector<Unit*>::iterator it = active_members.begin() + 1, end = active_members.end(); it != end; ++it)
+		{
+			int credit = (*it)->GetCredit();
+			if(credit < max_credit)
+				max_credit = credit;
+		}
+
+		if(max_credit > 0)
+		{
+			require_update = true;
+			for(vector<Unit*>::iterator it = active_members.begin(), end = active_members.end(); it != end; ++it)
+				(*it)->GetCredit() -= max_credit;
+		}
+	}
+	else
+		active_members[0]->player->credit = 0;
+
+	if(!ignore && require_update && Net::IsOnline())
+		Net::PushChange(NetChange::UPDATE_CREDIT);
 }

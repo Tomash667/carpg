@@ -714,7 +714,7 @@ void Quest_Orcs2::ChangeClass(OrcClass new_orc_class)
 	for(auto& slot : orc->items)
 		game->PreloadItem(slot.item);
 	orc->MakeItemsTeam(false);
-	game->UpdateUnitInventory(*orc);
+	orc->UpdateInventory();
 
 	OnUpdate(Format(game->txQuest[210], class_name));
 

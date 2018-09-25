@@ -150,7 +150,7 @@ bool Game::SaveGameCommon(cstring filename, int slot, cstring text)
 		ss.game_day = W.GetDay();
 		ss.game_month = W.GetMonth();
 		ss.game_year = W.GetYear();
-		ss.location = GetCurrentLocationText();
+		ss.location = L.GetCurrentLocationText();
 		ss.player_name = pc->name;
 		ss.player_class = pc->unit->GetClass();
 		ss.save_date = time(nullptr);
@@ -846,7 +846,6 @@ void Game::LoadGame(GameReader& f)
 
 	// wczytaj dru¿ynê
 	Team.Load(f);
-	CheckCredit(false, true);
 
 	// load quests
 	LoadingStep(txLoadingQuests);

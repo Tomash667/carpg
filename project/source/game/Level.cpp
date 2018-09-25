@@ -17,8 +17,19 @@
 #include "Arena.h"
 #include "Game.h"
 #include "ParticleSystem.h"
+#include "Language.h"
+#include "World.h"
 
 Level L;
+
+//=================================================================================================
+void Level::LoadLanguage()
+{
+	txLocationText = Str("locationText");
+	txLocationTextMap = Str("locationTextMap");
+	txNewsCampCleared = Str("newsCampCleared");
+	txNewsLocCleared = Str("newsLocCleared");
+}
 
 //=================================================================================================
 void Level::LoadData()
@@ -3044,4 +3055,75 @@ InsideBuilding* Level::GetArena()
 	}
 	assert(0);
 	return nullptr;
+}
+
+//=================================================================================================
+cstring Level::GetCurrentLocationText()
+{
+	if(is_open)
+	{
+		if(location->outside)
+			return location->name.c_str();
+		else
+		{
+			InsideLocation* inside = (InsideLocation*)location;
+			if(inside->IsMultilevel())
+				return Format(txLocationText, location->name.c_str(), dungeon_level + 1);
+			else
+				return location->name.c_str();
+		}
+	}
+	else
+		return Format(txLocationTextMap, location->name.c_str());
+}
+
+//=================================================================================================
+void Level::CheckIfLocationCleared()
+{
+	if(city_ctx)
+		return;
+
+	Game& game = Game::Get();
+	bool is_clear = true;
+	for(vector<Unit*>::iterator it = local_ctx.units->begin(), end = local_ctx.units->end(); it != end; ++it)
+	{
+		if((*it)->IsAlive() && game.IsEnemy(*game.pc->unit, **it, true))
+		{
+			is_clear = false;
+			break;
+		}
+	}
+
+	if(is_clear)
+	{
+		bool cleared = false;
+		if(!location->outside)
+		{
+			InsideLocation* inside = (InsideLocation*)location;
+			if(inside->IsMultilevel())
+			{
+				if(((MultiInsideLocation*)inside)->LevelCleared())
+					cleared = true;
+			}
+			else
+				cleared = true;
+		}
+		else
+			cleared = true;
+
+		if(cleared)
+			location->state = LS_CLEARED;
+
+		bool prevent = false;
+		if(event_handler)
+			prevent = event_handler->HandleLocationEvent(LocationEventHandler::CLEARED);
+
+		if(cleared && prevent && location->spawn != SG_NONE)
+		{
+			if(location->type == L_CAMP)
+				W.AddNews(Format(txNewsCampCleared, W.GetLocation(W.GetNearestSettlement(location->pos))->name.c_str()));
+			else
+				W.AddNews(Format(txNewsLocCleared, location->name.c_str()));
+		}
+	}
 }

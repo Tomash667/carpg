@@ -1566,7 +1566,7 @@ void Game::UpdateServerTransfer(float dt)
 
 		// recalculate credit if someone left
 		if(anyone_left)
-			CheckCredit(false, true);
+			Team.CheckCredit(false, true);
 
 		// set leader
 		PlayerInfo* leader_info = N.TryGetPlayer(leader_id);
@@ -1621,7 +1621,7 @@ void Game::UpdateServerTransfer(float dt)
 			ok = true;
 			if(anyone_removed)
 			{
-				CheckCredit(false, true);
+				Team.CheckCredit(false, true);
 				if(leader_id == -1)
 				{
 					leader_id = 0;

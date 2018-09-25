@@ -130,7 +130,7 @@ void Minimap::Draw(ControlDrawData* /*cdd*/)
 
 	// nazwa lokacji
 	Rect rect = { 0,0,GUI.wnd_size.x - 8,GUI.wnd_size.y - 8 };
-	GUI.DrawText(GUI.default_font, game.GetCurrentLocationText(), DTF_RIGHT | DTF_OUTLINE, Color(255, 0, 0, 222), rect);
+	GUI.DrawText(GUI.default_font, L.GetCurrentLocationText(), DTF_RIGHT | DTF_OUTLINE, Color(255, 0, 0, 222), rect);
 }
 
 //=================================================================================================

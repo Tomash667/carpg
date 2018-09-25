@@ -11,4 +11,5 @@ namespace ItemHelper
 	void GenerateFoodSellerItems(vector<ItemSlot>& items, bool is_city);
 	int GetItemPrice(const Item* item, Unit& unit, bool buy);
 	const Item* GetRandomItem(int max_value);
+	const Item* GetBetterItem(const Item* item);
 }

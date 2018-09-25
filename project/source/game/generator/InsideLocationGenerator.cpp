@@ -285,6 +285,56 @@ InsideLocationLevel& InsideLocationGenerator::GetLevelData()
 }
 
 //=================================================================================================
+void InsideLocationGenerator::AddRoomColliders(InsideLocationLevel& lvl, Room& room, vector<Int2>& blocks)
+{
+	// add colliding blocks
+	for(int x = 0; x < room.size.x; ++x)
+	{
+		// top
+		POLE co = lvl.map[room.pos.x + x + (room.pos.y + room.size.y - 1)*lvl.w].type;
+		if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
+		{
+			blocks.push_back(Int2(room.pos.x + x, room.pos.y + room.size.y - 1));
+			blocks.push_back(Int2(room.pos.x + x, room.pos.y + room.size.y - 2));
+		}
+		else if(co == SCIANA || co == BLOKADA_SCIANA)
+			blocks.push_back(Int2(room.pos.x + x, room.pos.y + room.size.y - 1));
+
+		// bottom
+		co = lvl.map[room.pos.x + x + room.pos.y*lvl.w].type;
+		if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
+		{
+			blocks.push_back(Int2(room.pos.x + x, room.pos.y));
+			blocks.push_back(Int2(room.pos.x + x, room.pos.y + 1));
+		}
+		else if(co == SCIANA || co == BLOKADA_SCIANA)
+			blocks.push_back(Int2(room.pos.x + x, room.pos.y));
+	}
+	for(int y = 0; y < room.size.y; ++y)
+	{
+		// left
+		POLE co = lvl.map[room.pos.x + (room.pos.y + y)*lvl.w].type;
+		if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
+		{
+			blocks.push_back(Int2(room.pos.x, room.pos.y + y));
+			blocks.push_back(Int2(room.pos.x + 1, room.pos.y + y));
+		}
+		else if(co == SCIANA || co == BLOKADA_SCIANA)
+			blocks.push_back(Int2(room.pos.x, room.pos.y + y));
+
+		// right
+		co = lvl.map[room.pos.x + room.size.x - 1 + (room.pos.y + y)*lvl.w].type;
+		if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
+		{
+			blocks.push_back(Int2(room.pos.x + room.size.x - 1, room.pos.y + y));
+			blocks.push_back(Int2(room.pos.x + room.size.x - 2, room.pos.y + y));
+		}
+		else if(co == SCIANA || co == BLOKADA_SCIANA)
+			blocks.push_back(Int2(room.pos.x + room.size.x - 1, room.pos.y + y));
+	}
+}
+
+//=================================================================================================
 void InsideLocationGenerator::GenerateDungeonObjects()
 {
 	Game& game = Game::Get();
@@ -437,7 +487,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 		if(it->IsCorridor())
 			continue;
 
-		game.AddRoomColliders(lvl, *it, blocks);
+		AddRoomColliders(lvl, *it, blocks);
 
 		// choose room type
 		RoomType* rt;
@@ -550,7 +600,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 			Room& r = lvl.rooms[Rand() % lvl.rooms.size()];
 			if(r.target == RoomTarget::None)
 			{
-				game.AddRoomColliders(lvl, r, blocks);
+				AddRoomColliders(lvl, r, blocks);
 
 				auto e = GenerateDungeonObject(lvl, r, base, on_wall, blocks, flags);
 				if(e)
@@ -1326,5 +1376,5 @@ void InsideLocationGenerator::SpawnHeroesInsideDungeon()
 	}
 
 	// sprawdü czy lokacja oczyszczona (raczej nie jest)
-	game.CheckIfLocationCleared();
+	L.CheckIfLocationCleared();
 }

@@ -853,6 +853,8 @@ struct Unit
 	void CreatePhysics(bool position = false);
 	void UpdatePhysics(const Vec3& pos);
 	SOUND GetTalkSound() const;
+	void SetWeaponState(bool takes_out, WeaponType co);
+	void UpdateInventory(bool notify = true);
 
 	//-----------------------------------------------------------------------------
 	static vector<Unit*> refid_table;

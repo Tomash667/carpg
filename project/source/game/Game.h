@@ -292,12 +292,11 @@ public:
 	cstring txCantSaveGame, txSaveFailed, txSavedGameN, txLoadFailed, txQuickSave, txGameSaved, txLoadingLocations, txLoadingData, txLoadingQuests, txEndOfLoading,
 		txCantSaveNow, txOnlyServerCanSave, txCantLoadGame, txOnlyServerCanLoad, txLoadSignature, txLoadVersion, txLoadSaveVersionOld, txLoadMP, txLoadSP, txLoadError,
 		txLoadErrorGeneric, txLoadOpenError;
-	cstring txPvpRefuse, txWin, txWinMp, txLevelUp, txLevelDown, txLocationText, txLocationTextMap, txRegeneratingLevel, txGainTextAttrib, txGainTextSkill,
-		txNeedItem, txGmsAddedItems, txReallyQuit;
+	cstring txPvpRefuse, txWin, txWinMp, txLevelUp, txLevelDown, txRegeneratingLevel, txGainTextAttrib, txGainTextSkill, txNeedItem, txGmsAddedItems, txReallyQuit;
 	cstring txRumor[28], txRumorD[7];
 	cstring txMayorQFailed[3], txQuestAlreadyGiven[2], txMayorNoQ[2], txCaptainQFailed[2], txCaptainNoQ[2], txLocationDiscovered[2], txAllDiscovered[2], txCampDiscovered[2],
 		txAllCampDiscovered[2], txNoQRumors[2], txRumorQ[9], txNeedMoreGold, txNoNearLoc, txNearLoc, txNearLocEmpty[2], txNearLocCleared, txNearLocEnemy[2], txNoNews[2], txAllNews[2],
-		txNewsCampCleared, txNewsLocCleared, txAllNearLoc;
+		txAllNearLoc;
 	cstring txNear, txFar, txVeryFar, txELvlVeryWeak[2], txELvlWeak[2], txELvlAverage[2], txELvlQuiteStrong[2], txELvlStrong[2];
 	cstring txSGOOrcs, txSGOGoblins, txSGOBandits, txSGOEnemies, txSGOUndead, txSGOMages, txSGOGolems, txSGOMagesAndGolems, txSGOUnk, txSGOPowerfull;
 	cstring txArthur, txMineBuilt, txAncientArmory, txPortalClosed, txPortalClosedNews, txHiddenPlace, txOrcCamp, txPortalClose, txPortalCloseLevel, txXarDanger, txGorushDanger, txGorushCombat,
@@ -535,7 +534,6 @@ public:
 	};
 	void GiveDmg(LevelContext& ctx, Unit* giver, float dmg, Unit& taker, const Vec3* hitpoint = nullptr, int dmg_flags = 0);
 	void UpdateUnits(LevelContext& ctx, float dt);
-	void UpdateUnitInventory(Unit& unit, bool notify = true);
 	bool CanLoadGame() const;
 	bool CanSaveGame() const;
 	bool DoShieldSmash(LevelContext& ctx, Unit& attacker);
@@ -555,7 +553,6 @@ public:
 	bool CanShootAtLocation2(const Unit& me, const void* ptr, const Vec3& to) const;
 	void LoadItemsData();
 	void SpawnTerrainCollider();
-	void AddRoomColliders(InsideLocationLevel& lvl, Room& room, vector<Int2>& blocks);
 	Unit* CreateUnitWithAI(LevelContext& ctx, UnitData& unit, int level = -1, Human* human_data = nullptr, const Vec3* pos = nullptr, const float* rot = nullptr, AIController** ai = nullptr);
 	void ChangeLevel(int where);
 	void AddPlayerTeam(const Vec3& pos, float rot, bool reenter, bool hide_weapon);
@@ -611,7 +608,6 @@ public:
 	void SaveStock(FileWriter& f, vector<ItemSlot>& cnt);
 	void LoadStock(FileReader& f, vector<ItemSlot>& cnt);
 	SOUND GetItemSound(const Item* item);
-	cstring GetCurrentLocationText();
 	void Unit_StopUsingUsable(LevelContext& ctx, Unit& unit, bool send = true);
 	void EnterLevel(LocationGenerator* loc_gen);
 	void LeaveLevel(bool clear = false);
@@ -655,8 +651,6 @@ public:
 	{
 		return !GKey.KeyDownAllowed(GK_WALK);
 	}
-	const Item* GetBetterItem(const Item* item);
-	void CheckIfLocationCleared();
 	bool CanWander(Unit& u);
 	float PlayerAngleY();
 	Vec3 GetExitPos(Unit& u, bool force_border = false);
@@ -674,7 +668,6 @@ public:
 	void RemoveQuestUnit(UnitData* ud, bool on_leave);
 	void RemoveQuestUnits(bool on_leave);
 	void UpdateGame2(float dt);
-	void SetUnitWeaponState(Unit& unit, bool wyjmuje, WeaponType co);
 	void OnCloseInventory();
 	void CloseInventory();
 	void CloseAllPanels(bool close_mp_box = false);
@@ -683,7 +676,6 @@ public:
 	bool Cheat_KillAll(int typ, Unit& unit, Unit* ignore);
 	void Cheat_ShowMinimap();
 	void UpdateGameNet(float dt);
-	void CheckCredit(bool require_update = false, bool ignore = false);
 	void Train(Unit& unit, bool is_skill, int co, int mode = 0);
 	void ShowStatGain(bool is_skill, int what, int value);
 	void ActivateChangeLeaderButton(bool activate);

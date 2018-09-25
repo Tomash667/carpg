@@ -17,6 +17,7 @@ public:
 
 protected:
 	InsideLocationLevel& GetLevelData();
+	void AddRoomColliders(InsideLocationLevel& lvl, Room& room, vector<Int2>& blocks);
 	void GenerateDungeonObjects();
 	ObjectEntity GenerateDungeonObject(InsideLocationLevel& lvl, Room& room, BaseObject* base, vector<Vec3>& on_wall, vector<Int2>& blocks, int flags);
 	void GenerateTraps();

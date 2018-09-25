@@ -338,3 +338,15 @@ const Item* ItemHelper::GetRandomItem(int max_value)
 
 	return items->at(Rand() % items->size());
 }
+
+//=================================================================================================
+const Item* ItemHelper::GetBetterItem(const Item* item)
+{
+	assert(item);
+
+	auto it = better_items.find(item);
+	if(it != better_items.end())
+		return it->second;
+
+	return nullptr;
+}
