@@ -512,7 +512,6 @@ void TeamSingleton::CheckTeamItemShares()
 		return;
 	}
 
-	Game& game = Game::Get();
 	team_shares.clear();
 	uint pos_a, pos_b;
 
@@ -538,7 +537,7 @@ void TeamSingleton::CheckTeamItemShares()
 					}
 
 					int value;
-					if(game.IsBetterItem(*unit, slot.item, &value))
+					if(unit->IsBetterItem(slot.item, &value))
 					{
 						TeamShareItem& tsi = Add1(team_shares);
 						tsi.from = other_unit;
@@ -626,7 +625,7 @@ void TeamSingleton::UpdateTeamItemShares()
 	else
 	{
 		ItemSlot& slot = tsi.from->items[tsi.index];
-		if(!game.IsBetterItem(*tsi.to, tsi.item))
+		if(!tsi.to->IsBetterItem(tsi.item))
 			state = 0;
 		else
 		{

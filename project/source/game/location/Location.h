@@ -5,19 +5,17 @@
 #include "LevelContext.h"
 
 //-----------------------------------------------------------------------------
-// rodzaj lokacji
+// Location types
 //-----------------------------------------------------------------------------
-// po dodaniu nowej lokacji trzeba w wielu miejscach pozmieniaæ coœ, tu jest ich lista:
-// CreateLocation
-// WorldMapGui::LoadData
-// EnterLocation
-// Location::GenerateName
-// DrawMinimap
-// LevelAreaContext* Game::ForLevel(int loc, int level)
-// -- niekompletna --
+// Changes required after adding new location:
+// + World
+// + LocationGeneratorFactory
+// + Location::GenerateName
+// + WorldMapGui::LoadData
+// + LevelArea
 enum LOCATION
 {
-	L_CITY, // miasto otoczone kamiennym murem i wie¿yczki, przez œrodek biegnie kamienna droga,
+	L_CITY, // miasto otoczone kamiennym murem i wie¿yczki, przez œrodek biegnie kamienna droga
 	L_VILLAGE_OLD, // removed (left for backward compability)
 	L_CAVE, // jaskinia, jakieœ zwierzêta/potwory/ewentualnie bandyci
 	L_CAMP, // obóz bandytów/poszukiwaczy przygód/wojska (tymczasowa lokacja)

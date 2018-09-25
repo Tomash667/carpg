@@ -10810,7 +10810,7 @@ void Game::LeaveLevel(bool clear)
 
 	if(gui->game_gui)
 		gui->game_gui->Reset();
-	
+
 	if(L.is_open)
 	{
 		for(LevelContext& ctx : L.ForEachContext())
@@ -11886,82 +11886,6 @@ void Game::AddGold(int count, vector<Unit*>* units, bool show, cstring msg, floa
 int Game::CalculateQuestReward(int gold)
 {
 	return gold * (90 + Team.GetActiveTeamSize() * 10) / 100;
-}
-
-bool Game::IsBetterItem(Unit& unit, const Item* item, int* value)
-{
-	assert(item && item->IsWearable());
-
-	switch(item->type)
-	{
-	case IT_WEAPON:
-		if(!IS_SET(unit.data->flags, F_MAGE))
-			return unit.IsBetterWeapon(item->ToWeapon(), value);
-		else
-		{
-			if(IS_SET(item->flags, ITEM_MAGE) && item->value > unit.GetWeapon().value)
-			{
-				if(value)
-					*value = item->value;
-				return true;
-			}
-			else
-				return false;
-		}
-	case IT_BOW:
-		if(!unit.HaveBow())
-		{
-			if(value)
-				*value = item->value;
-			return true;
-		}
-		else
-		{
-			if(unit.GetBow().value < item->value)
-			{
-				if(value)
-					*value = item->value;
-				return true;
-			}
-			else
-				return false;
-		}
-	case IT_ARMOR:
-		if(!IS_SET(unit.data->flags, F_MAGE))
-			return unit.IsBetterArmor(item->ToArmor(), value);
-		else
-		{
-			if(IS_SET(item->flags, ITEM_MAGE) && item->value > unit.GetArmor().value)
-			{
-				if(value)
-					*value = item->value;
-				return true;
-			}
-			else
-				return false;
-		}
-	case IT_SHIELD:
-		if(!unit.HaveShield())
-		{
-			if(value)
-				*value = item->value;
-			return true;
-		}
-		else
-		{
-			if(unit.GetShield().value < item->value)
-			{
-				if(value)
-					*value = item->value;
-				return true;
-			}
-			else
-				return false;
-		}
-	default:
-		assert(0);
-		return false;
-	}
 }
 
 const Item* Game::GetBetterItem(const Item* item)

@@ -630,7 +630,6 @@ public:
 	bool FindQuestItem2(Unit* unit, cstring id, Quest** quest, int* i_index, bool not_active = false);
 	bool RemoveQuestItem(const Item* item, int refid = -1);
 	bool RemoveItemFromWorld(const Item* item);
-	bool IsBetterItem(Unit& unit, const Item* item, int* value = nullptr);
 	// to by mog³o byæ globalna funkcj¹
 	void PlayHitSound(MATERIAL_TYPE mat_bron, MATERIAL_TYPE mat_cialo, const Vec3& hitpoint, float range, bool dmg);
 	// wczytywanie

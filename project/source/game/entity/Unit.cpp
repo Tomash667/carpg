@@ -1077,15 +1077,6 @@ float Unit::CalculateWeaponPros(const Weapon& weapon) const
 }
 
 //=================================================================================================
-bool Unit::IsBetterWeapon(const Weapon& weapon) const
-{
-	if(!HaveWeapon())
-		return true;
-
-	return CalculateWeaponPros(GetWeapon()) < CalculateWeaponPros(weapon);
-}
-
-//=================================================================================================
 bool Unit::IsBetterWeapon(const Weapon& weapon, int* value) const
 {
 	if(!HaveWeapon())
@@ -1103,15 +1094,6 @@ bool Unit::IsBetterWeapon(const Weapon& weapon, int* value) const
 	}
 	else
 		return CalculateWeaponPros(GetWeapon()) < CalculateWeaponPros(weapon);
-}
-
-//=================================================================================================
-bool Unit::IsBetterArmor(const Armor& armor) const
-{
-	if(!HaveArmor())
-		return true;
-
-	return CalculateDefense() < CalculateDefense(&armor);
 }
 
 //=================================================================================================
@@ -2564,27 +2546,84 @@ float Unit::CalculateBaseDefense() const
 }
 
 //=================================================================================================
-bool Unit::IsBetterItem(const Item* item) const
+bool Unit::IsBetterItem(const Item* item, int* value) const
 {
 	assert(item);
 
 	switch(item->type)
 	{
 	case IT_WEAPON:
-		return IsBetterWeapon(item->ToWeapon());
-	case IT_ARMOR:
-		return IsBetterArmor(item->ToArmor());
-	case IT_SHIELD:
-		if(HaveShield())
-			return item->value > GetShield().value;
-		else
+		if(!HaveWeapon())
+		{
+			if(value)
+				*value = item->value;
 			return true;
+		}
+		else if(!IS_SET(data->flags, F_MAGE))
+			return IsBetterWeapon(item->ToWeapon(), value);
+		else
+		{
+			if(IS_SET(item->flags, ITEM_MAGE) && item->value > GetWeapon().value)
+			{
+				if(value)
+					*value = item->value;
+				return true;
+			}
+			else
+				return false;
+		}
 	case IT_BOW:
-		if(HaveBow())
-			return item->value > GetBow().value;
-		else
+		if(!HaveBow())
+		{
+			if(value)
+				*value = item->value;
 			return true;
+		}
+		else
+		{
+			if(GetBow().value < item->value)
+			{
+				if(value)
+					*value = item->value;
+				return true;
+			}
+			else
+				return false;
+		}
+	case IT_ARMOR:
+		if(!IS_SET(data->flags, F_MAGE))
+			return IsBetterArmor(item->ToArmor(), value);
+		else
+		{
+			if(IS_SET(item->flags, ITEM_MAGE) && item->value > GetArmor().value)
+			{
+				if(value)
+					*value = item->value;
+				return true;
+			}
+			else
+				return false;
+		}
+	case IT_SHIELD:
+		if(!HaveShield())
+		{
+			if(value)
+				*value = item->value;
+			return true;
+		}
+		else
+		{
+			if(GetShield().value < item->value)
+			{
+				if(value)
+					*value = item->value;
+				return true;
+			}
+			else
+				return false;
+		}
 	default:
+		assert(0);
 		return false;
 	}
 }

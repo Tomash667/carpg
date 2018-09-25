@@ -2255,7 +2255,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					const Item* item = unit.GetIIndexItem(i_index);
 					if(item)
 					{
-						if(IsBetterItem(*player.action_unit, item))
+						if(player.action_unit->IsBetterItem(item))
 							c.id = 1;
 					}
 					else
