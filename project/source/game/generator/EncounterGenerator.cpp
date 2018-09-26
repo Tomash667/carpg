@@ -133,7 +133,7 @@ void EncounterGenerator::OnEnter()
 
 	// create colliders
 	game.LoadingStep(game.txRecreatingObjects);
-	game.SpawnTerrainCollider();
+	L.SpawnTerrainCollider();
 	SpawnOutsideBariers();
 
 	// generate units

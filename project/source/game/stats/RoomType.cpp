@@ -217,7 +217,7 @@ ObjEntry objs_portal[] = {
 };
 
 //-----------------------------------------------------------------------------
-RoomType g_room_types[] = {
+RoomType RoomType::types[] = {
 	"sypialnia",  objs_sypialnia, countof(objs_sypialnia), RT_REPEAT,
 	"pokoj_dowodcy", objs_pokoj_dowodcy, countof(objs_pokoj_dowodcy), 0,
 	"biblioteczka", objs_biblioteczka, countof(objs_biblioteczka), 0,
@@ -242,32 +242,32 @@ RoomType g_room_types[] = {
 	"tron", objs_tron, countof(objs_tron), 0,
 	"portal", objs_portal, countof(objs_portal), 0
 };
-int n_room_types = countof(g_room_types);
+int RoomType::types_count = countof(types);
 
-RoomType* FindRoomType(cstring id)
+RoomType* RoomType::Find(cstring id)
 {
 	assert(id);
 
-	for(int i = 0; i < n_room_types; ++i)
+	for(RoomType& type : types)
 	{
-		if(strcmp(id, g_room_types[i].id) == 0)
-			return &g_room_types[i];
+		if(strcmp(id, type.id) == 0)
+			return &type;
 	}
 
 	assert(0);
-	return &g_room_types[0];
+	return &types[0];
 }
 
 void RoomType::Validate(uint& err)
 {
-	for(auto& room_type : g_room_types)
+	for(RoomType& type : types)
 	{
-		for(uint i = 0; i < room_type.count; ++i)
+		for(uint i = 0; i < type.count; ++i)
 		{
-			if(!BaseObject::TryGet(room_type.objs[i].id))
+			if(!BaseObject::TryGet(type.objs[i].id))
 			{
 				++err;
-				Error("Missing object '%s' in room '%s'.", room_type.objs[i].id, room_type.id);
+				Error("Missing object '%s' in room '%s'.", type.objs[i].id, type.id);
 			}
 		}
 	}

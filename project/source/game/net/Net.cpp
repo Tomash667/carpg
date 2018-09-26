@@ -6842,7 +6842,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 					else if(count <= 0)
 						N.StreamError("Update single client: REMOVE_ITEMS, invalid count %d.", count);
 					else
-						RemoveItem(*pc->unit, i_index, count);
+						pc->unit->RemoveItem(i_index, (uint)count);
 				}
 				break;
 			// remove items from traded inventory which is trading with player
@@ -6864,7 +6864,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 						else if(!pc->IsTradingWith(unit))
 							N.StreamError("Update single client: REMOVE_ITEMS_TRADER, unit %d (%s) is not trading with player.", netid, unit->data->id.c_str());
 						else
-							RemoveItem(*unit, i_index, count);
+							unit->RemoveItem(i_index, (uint)count);
 					}
 				}
 				break;

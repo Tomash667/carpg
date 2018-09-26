@@ -2318,7 +2318,7 @@ void CityGenerator::OnEnter()
 	{
 		// create colliders
 		game.LoadingStep(game.txRecreatingObjects);
-		game.SpawnTerrainCollider();
+		L.SpawnTerrainCollider();
 		SpawnCityPhysics();
 		SpawnOutsideBariers();
 	}
@@ -2954,7 +2954,7 @@ void CityGenerator::OnLoad()
 	ApplyTiles();
 
 	L.RecreateObjects(false);
-	game.SpawnTerrainCollider();
+	L.SpawnTerrainCollider();
 	RespawnBuildingPhysics();
 	SpawnCityPhysics();
 	game.InitQuadTree();

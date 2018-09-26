@@ -145,7 +145,7 @@ bool Quest_Crazies::Special(DialogContext& ctx, cstring msg)
 	}
 	else if(strcmp(msg, "crazies_sell_stone") == 0)
 	{
-		game->RemoveItem(*ctx.pc->unit, stone, 1);
+		ctx.pc->unit->RemoveItem(stone, 1);
 		ctx.pc->unit->ModGold(10);
 	}
 	else

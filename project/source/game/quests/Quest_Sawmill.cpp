@@ -237,7 +237,7 @@ void Quest_Sawmill::GenerateSawmill(bool in_progress)
 	wys /= tiles.size();
 	for(vector<Int2>::iterator it = tiles.begin(), end = tiles.end(); it != end; ++it)
 		h[it->x + it->y*_s] = wys;
-	game->terrain->Rebuild(true);
+	L.terrain->Rebuild(true);
 
 	// usuñ obiekty
 	LoopAndRemove(*L.local_ctx.objects, [](const Object* obj)

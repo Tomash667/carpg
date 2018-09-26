@@ -66,6 +66,7 @@ public:
 	void BuyTeamItems();
 	void ValidateTeamItems();
 	void CheckCredit(bool require_update = false, bool ignore = false);
+	bool RemoveQuestItem(const Item* item, int refid = -1);
 
 	vector<Unit*> members; // all team members
 	vector<Unit*> active_members; // team members that get gold (without quest units)

@@ -773,10 +773,9 @@ int Pathfinding::FindLocalPath(LevelContext& ctx, vector<Int2>& _path, const Int
 //=================================================================================================
 void Pathfinding::Draw(DebugDrawer* dd)
 {
-	//if(test_pf.empty() || !marked)
-	//	return;
+	if(test_pf.empty() || !marked)
+		return;
 
-	Game& game = Game::Get();
 	dd->BeginBatch();
 
 	for(vector<std::pair<Vec2, int> >::iterator it = test_pf.begin(), end = test_pf.end(); it != end; ++it)
@@ -790,7 +789,7 @@ void Pathfinding::Draw(DebugDrawer* dd)
 
 		if(test_pf_outside)
 		{
-			float h = game.terrain->GetH(v[0].x, v[0].z) + 0.1f;
+			float h = L.terrain->GetH(v[0].x, v[0].z) + 0.1f;
 			for(int i = 0; i < 4; ++i)
 				v[i].y = h;
 		}

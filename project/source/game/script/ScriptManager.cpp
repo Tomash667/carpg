@@ -261,7 +261,7 @@ void Unit_RemoveItem(Unit* unit, const string& id)
 {
 	Item* item = Item::TryGet(id);
 	if(item)
-		Game::Get().RemoveItem(*unit, item, 1u);
+		unit->RemoveItem(item, 1u);
 }
 
 void ScriptManager::RegisterGame()

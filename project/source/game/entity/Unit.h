@@ -532,7 +532,10 @@ struct Unit
 	static const int INVALID_IINDEX = (-SLOT_INVALID - 1);
 	int FindItem(const Item* item, int quest_refid = -1) const;
 	int FindQuestItem(int quest_refid) const;
+	bool FindQuestItem(cstring id, Quest** quest, int* i_index, bool not_active = false);
 	void RemoveItem(int iindex, bool active_location = true);
+	void RemoveItem(int i_index, uint count);
+	bool RemoveItem(const Item* item, uint count);
 	int CountItem(const Item* item);
 	//float CalculateBowAttackSpeed();
 	cstring GetName() const

@@ -318,7 +318,7 @@ void Game::SetupCamera(float dt)
 		OutsideLocation* outside = (OutsideLocation*)L.location;
 
 		// terrain
-		tout = terrain->Raytest(to, to + dist);
+		tout = L.terrain->Raytest(to, to + dist);
 		if(tout < min_tout && tout > 0.f)
 			min_tout = tout;
 
@@ -3538,7 +3538,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			if(if_level == ctx.dialog_level)
 			{
 				cstring msg = ctx.dialog->strs[(int)de.msg].c_str();
-				bool ok = FindQuestItem2(ctx.pc->unit, msg, nullptr, nullptr, ctx.not_active);
+				bool ok = ctx.pc->unit->FindQuestItem(msg, nullptr, nullptr, ctx.not_active);
 				if(ctx.negate_if)
 				{
 					ctx.negate_if = false;
@@ -3556,7 +3556,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				cstring msg = ctx.dialog->strs[(int)de.msg].c_str();
 
 				Quest* quest;
-				if(FindQuestItem2(ctx.pc->unit, msg, &quest, nullptr))
+				if(ctx.pc->unit->FindQuestItem(msg, &quest, nullptr))
 					StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_NEXT), if_level, quest);
 			}
 			break;
@@ -4779,9 +4779,9 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 	{
 		if(unit.in_building == -1)
 		{
-			if(terrain->IsInside(unit.pos))
+			if(L.terrain->IsInside(unit.pos))
 			{
-				terrain->SetH(unit.pos);
+				L.terrain->SetH(unit.pos);
 				if(warped)
 					return;
 				if(unit.IsPlayer() && WantExitLevel() && unit.frozen == FROZEN::NO && !dash)
@@ -8241,21 +8241,6 @@ bool Game::CanShootAtLocation2(const Unit& me, const void* ptr, const Vec3& to) 
 	return callback.clear;
 }
 
-void Game::SpawnTerrainCollider()
-{
-	if(terrain_shape)
-		delete terrain_shape;
-
-	terrain_shape = new btHeightfieldTerrainShape(OutsideLocation::size + 1, OutsideLocation::size + 1, terrain->GetHeightMap(), 1.f, 0.f, 10.f, 1, PHY_FLOAT, false);
-	terrain_shape->setLocalScaling(btVector3(2.f, 1.f, 2.f));
-
-	obj_terrain = new btCollisionObject;
-	obj_terrain->setCollisionShape(terrain_shape);
-	obj_terrain->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_TERRAIN);
-	obj_terrain->getWorldTransform().setOrigin(btVector3(float(OutsideLocation::size), 5.f, float(OutsideLocation::size)));
-	phy_world->addCollisionObject(obj_terrain, CG_TERRAIN);
-}
-
 Unit* Game::CreateUnitWithAI(LevelContext& ctx, UnitData& unit, int level, Human* human_data, const Vec3* pos, const float* rot, AIController** ai)
 {
 	Unit* u = CreateUnit(unit, level, human_data);
@@ -8266,7 +8251,7 @@ Unit* Game::CreateUnitWithAI(LevelContext& ctx, UnitData& unit, int level, Human
 		if(ctx.type == LevelContext::Outside)
 		{
 			Vec3 pt = *pos;
-			terrain->SetH(pt);
+			L.terrain->SetH(pt);
 			u->pos = pt;
 		}
 		else
@@ -10431,7 +10416,7 @@ void Game::Unit_StopUsingUsable(LevelContext& ctx, Unit& u, bool send)
 		if(!L.Collide(L.global_col, tmp_pos, unit_radius))
 		{
 			if(i != 0 && ctx.have_terrain)
-				tmp_pos.y = terrain->GetH(tmp_pos);
+				tmp_pos.y = L.terrain->GetH(tmp_pos);
 			u.target_pos = tmp_pos;
 			ok = true;
 			break;
@@ -12357,20 +12342,6 @@ bool Game::IsAnyoneTalking() const
 		return anyone_talking;
 }
 
-bool Game::RemoveQuestItem(const Item* item, int refid)
-{
-	Unit* unit;
-	int slot_id;
-
-	if(Team.FindItemInTeam(item, refid, &unit, &slot_id))
-	{
-		RemoveItem(*unit, slot_id, 1);
-		return true;
-	}
-	else
-		return false;
-}
-
 void Game::UpdateGame2(float dt)
 {
 	// arena
@@ -12617,88 +12588,6 @@ void Game::UpdateGameDialogClient()
 			dialog_context.skip_id = -1;
 		}
 	}
-}
-
-bool Game::FindQuestItem2(Unit* unit, cstring id, Quest** out_quest, int* i_index, bool not_active)
-{
-	assert(unit && id);
-
-	if(id[1] == '$')
-	{
-		// szukaj w za³o¿onych przedmiotach
-		for(int i = 0; i < SLOT_MAX; ++i)
-		{
-			if(unit->slots[i] && unit->slots[i]->IsQuest())
-			{
-				Quest* quest = QM.FindQuest(unit->slots[i]->refid, !not_active);
-				if(quest && (not_active || quest->IsActive()) && quest->IfHaveQuestItem2(id))
-				{
-					if(i_index)
-						*i_index = SlotToIIndex(ITEM_SLOT(i));
-					if(out_quest)
-						*out_quest = quest;
-					return true;
-				}
-			}
-		}
-
-		// szukaj w nie za³o¿onych
-		int index = 0;
-		for(vector<ItemSlot>::iterator it2 = unit->items.begin(), end2 = unit->items.end(); it2 != end2; ++it2, ++index)
-		{
-			if(it2->item && it2->item->IsQuest())
-			{
-				Quest* quest = QM.FindQuest(it2->item->refid, !not_active);
-				if(quest && (not_active || quest->IsActive()) && quest->IfHaveQuestItem2(id))
-				{
-					if(i_index)
-						*i_index = index;
-					if(out_quest)
-						*out_quest = quest;
-					return true;
-				}
-			}
-		}
-	}
-	else
-	{
-		// szukaj w za³o¿onych przedmiotach
-		for(int i = 0; i < SLOT_MAX; ++i)
-		{
-			if(unit->slots[i] && unit->slots[i]->IsQuest() && unit->slots[i]->id == id)
-			{
-				Quest* quest = QM.FindQuest(unit->slots[i]->refid, !not_active);
-				if(quest && (not_active || quest->IsActive()) && quest->IfHaveQuestItem())
-				{
-					if(i_index)
-						*i_index = SlotToIIndex(ITEM_SLOT(i));
-					if(out_quest)
-						*out_quest = quest;
-					return true;
-				}
-			}
-		}
-
-		// szukaj w nie za³o¿onych
-		int index = 0;
-		for(vector<ItemSlot>::iterator it2 = unit->items.begin(), end2 = unit->items.end(); it2 != end2; ++it2, ++index)
-		{
-			if(it2->item && it2->item->IsQuest() && it2->item->id == id)
-			{
-				Quest* quest = QM.FindQuest(it2->item->refid, !not_active);
-				if(quest && (not_active || quest->IsActive()) && quest->IfHaveQuestItem())
-				{
-					if(i_index)
-						*i_index = index;
-					if(out_quest)
-						*out_quest = quest;
-					return true;
-				}
-			}
-		}
-	}
-
-	return false;
 }
 
 bool Game::Cheat_KillAll(int typ, Unit& unit, Unit* ignore)
@@ -13566,99 +13455,6 @@ void Game::AddItem(Unit& unit, const Item* item, uint count, uint team_count, bo
 		rebuild_id = 1;
 	if(rebuild_id != -1)
 		gui->inventory->BuildTmpInventory(rebuild_id);
-}
-
-void Game::RemoveItem(Unit& unit, int i_index, uint count)
-{
-	// usuñ przedmiot
-	bool removed = false;
-	if(i_index >= 0)
-	{
-		ItemSlot& s = unit.items[i_index];
-		uint ile = (count == 0 ? s.count : min(s.count, count));
-		s.count -= ile;
-		if(s.count == 0)
-		{
-			removed = true;
-			unit.items.erase(unit.items.begin() + i_index);
-		}
-		else if(s.team_count > 0)
-			s.team_count -= min(s.team_count, ile);
-		unit.weight -= s.item->weight*ile;
-	}
-	else
-	{
-		ITEM_SLOT type = IIndexToSlot(i_index);
-		unit.weight -= unit.slots[type]->weight;
-		unit.slots[type] = nullptr;
-		removed = true;
-
-		if(Net::IsServer() && N.active_players > 1)
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::CHANGE_EQUIPMENT;
-			c.unit = &unit;
-			c.id = type;
-		}
-	}
-
-	// komunikat
-	if(Net::IsServer())
-	{
-		if(unit.IsPlayer())
-		{
-			if(!unit.player->is_local)
-			{
-				// dodaj komunikat o usuniêciu przedmiotu
-				NetChangePlayer& c = Add1(unit.player->player_info->changes);
-				c.type = NetChangePlayer::REMOVE_ITEMS;
-				c.id = i_index;
-				c.ile = count;
-			}
-		}
-		else
-		{
-			Unit* t = nullptr;
-
-			// szukaj gracza który handluje z t¹ postaci¹
-			for(Unit* member : Team.active_members)
-			{
-				if(member->IsPlayer() && member->player->IsTradingWith(&unit))
-				{
-					t = member;
-					break;
-				}
-			}
-
-			if(t && t->player != pc)
-			{
-				// dodaj komunikat o dodaniu przedmiotu
-				NetChangePlayer& c = Add1(t->player->player_info->changes);
-				c.type = NetChangePlayer::REMOVE_ITEMS_TRADER;
-				c.id = unit.netid;
-				c.ile = count;
-				c.a = i_index;
-			}
-		}
-	}
-
-	// aktualizuj tymczasowy ekwipunek
-	if(pc->unit == &unit)
-	{
-		if(gui->inventory->inv_mine->visible || gui->inventory->gp_trade->visible)
-			gui->inventory->BuildTmpInventory(0);
-	}
-	else if(gui->inventory->gp_trade->visible && gui->inventory->inv_trade_other->unit == &unit)
-		gui->inventory->BuildTmpInventory(1);
-}
-
-bool Game::RemoveItem(Unit& unit, const Item* item, uint count)
-{
-	int i_index = unit.FindItem(item);
-	if(i_index == Unit::INVALID_IINDEX)
-		return false;
-	RemoveItem(unit, i_index, count);
-	return true;
 }
 
 Int2 Game::GetSpawnPoint()

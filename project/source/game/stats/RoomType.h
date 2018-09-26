@@ -26,10 +26,8 @@ struct RoomType
 	uint count;
 	int flags;
 
+	static RoomType* Find(cstring id);
 	static void Validate(uint& err);
+	static RoomType types[];
+	static int types_count;
 };
-extern RoomType g_room_types[];
-extern int n_room_types;
-
-//-----------------------------------------------------------------------------
-RoomType* FindRoomType(cstring id);

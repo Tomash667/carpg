@@ -64,7 +64,7 @@ void Quest_Mages::SetProgress(int prog2)
 
 			const Item* item = Item::Get("q_magowie_kula");
 			game->current_dialog->talker->AddItem(item, 1, true);
-			game->RemoveItem(*game->current_dialog->pc->unit, item, 1);
+			game->current_dialog->pc->unit->RemoveItem(item, 1);
 			QM.quest_mages2->scholar = game->current_dialog->talker;
 			QM.quest_mages2->mages_state = Quest_Mages2::State::ScholarWaits;
 
@@ -210,7 +210,7 @@ void Quest_Mages2::SetProgress(int prog2)
 		// daj piwo, chce wódy
 		{
 			const Item* piwo = Item::Get("beer");
-			game->RemoveItem(*game->current_dialog->pc->unit, piwo, 1);
+			game->current_dialog->pc->unit->RemoveItem(piwo, 1);
 			game->current_dialog->talker->action = A_NONE;
 			game->current_dialog->talker->ConsumeItem(piwo->ToConsumable());
 			game->current_dialog->dialog_wait = 2.5f;
@@ -222,7 +222,7 @@ void Quest_Mages2::SetProgress(int prog2)
 		// da³eœ wóde
 		{
 			const Item* woda = Item::Get("vodka");
-			game->RemoveItem(*game->current_dialog->pc->unit, woda, 1);
+			game->current_dialog->pc->unit->RemoveItem(woda, 1);
 			game->current_dialog->talker->action = A_NONE;
 			game->current_dialog->talker->ConsumeItem(woda->ToConsumable());
 			game->current_dialog->dialog_wait = 2.5f;
@@ -275,7 +275,7 @@ void Quest_Mages2::SetProgress(int prog2)
 		// wypi³ miksturkê
 		{
 			const Item* mikstura = Item::Get("q_magowie_potion");
-			game->RemoveItem(*game->current_dialog->pc->unit, mikstura, 1);
+			game->current_dialog->pc->unit->RemoveItem(mikstura, 1);
 			game->current_dialog->talker->action = A_NONE;
 			game->current_dialog->talker->ConsumeItem(mikstura->ToConsumable());
 			game->current_dialog->dialog_wait = 3.f;

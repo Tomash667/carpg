@@ -31,8 +31,11 @@ class Level : public GameComponent
 	};
 
 public:
+	Level();
 	void LoadLanguage() override;
 	void LoadData() override;
+	void PostInit() override;
+	void Cleanup() override;
 	void Reset();
 	void WarpUnit(Unit* unit, int where)
 	{
@@ -127,10 +130,14 @@ public:
 	cstring GetCurrentLocationText();
 	void CheckIfLocationCleared();
 	bool RemoveItemFromWorld(const Item* item);
+	void SpawnTerrainCollider();
 
 	Location* location; // same as W.current_location
 	int location_index; // same as W.current_location_index
 	int dungeon_level;
+	Terrain* terrain;
+	btHeightfieldTerrainShape* terrain_shape;
+	btCollisionObject* obj_terrain;
 	LocationEventHandler* event_handler;
 	LevelContext local_ctx;
 	City* city_ctx; // pointer to city or nullptr when not inside city

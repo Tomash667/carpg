@@ -23,6 +23,11 @@
 Level L;
 
 //=================================================================================================
+Level::Level() : terrain(nullptr), terrain_shape(nullptr)
+{
+}
+
+//=================================================================================================
 void Level::LoadLanguage()
 {
 	txLocationText = Str("locationText");
@@ -38,6 +43,27 @@ void Level::LoadData()
 	tFlare = tex_mgr.AddLoadTask("flare.png");
 	tFlare2 = tex_mgr.AddLoadTask("flare2.png");
 	tWater = tex_mgr.AddLoadTask("water.png");
+}
+
+//=================================================================================================
+void Level::PostInit()
+{
+	terrain = new Terrain;
+	TerrainOptions terrain_options;
+	terrain_options.n_parts = 8;
+	terrain_options.tex_size = 256;
+	terrain_options.tile_size = 2.f;
+	terrain_options.tiles_per_part = 16;
+	terrain->Init(Game::Get().device, terrain_options);
+	terrain->Build();
+	terrain->RemoveHeightMap(true);
+}
+
+//=================================================================================================
+void Level::Cleanup()
+{
+	delete terrain;
+	delete terrain_shape;
 }
 
 //=================================================================================================
@@ -939,7 +965,7 @@ void Level::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding
 				if(base)
 				{
 					if(ctx.type == LevelContext::Outside)
-						game.terrain->SetH(pos);
+						terrain->SetH(pos);
 					float r;
 					switch(c)
 					{
@@ -974,7 +1000,7 @@ void Level::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding
 
 				if(ctx.type == LevelContext::Outside)
 				{
-					game.terrain->SetH(pos);
+					terrain->SetH(pos);
 					pos.y += 2.f;
 				}
 
@@ -1006,7 +1032,7 @@ void Level::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding
 					shape = new btBoxShape(btVector3(pt.size.x, 16.f, pt.size.z));
 					if(ctx.type == LevelContext::Outside)
 					{
-						game.terrain->SetH(pos);
+						terrain->SetH(pos);
 						pos.y += 8.f;
 					}
 					else
@@ -1016,7 +1042,7 @@ void Level::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding
 				{
 					shape = new btBoxShape(btVector3(pt.size.x, pt.size.y, pt.size.z));
 					if(ctx.type == LevelContext::Outside)
-						pos.y += game.terrain->GetH(pos);
+						pos.y += terrain->GetH(pos);
 				}
 				game.shapes.push_back(shape);
 				btCollisionObject* co = new btCollisionObject;
@@ -1038,7 +1064,7 @@ void Level::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding
 			{
 				btBoxShape* shape = new btBoxShape(btVector3(pt.size.x, pt.size.y, pt.size.z));
 				if(ctx.type == LevelContext::Outside)
-					pos.y += game.terrain->GetH(pos);
+					pos.y += terrain->GetH(pos);
 				game.shapes.push_back(shape);
 				btCollisionObject* co = new btCollisionObject;
 				co->setCollisionShape(shape);
@@ -1053,7 +1079,7 @@ void Level::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding
 			else if(token == "squarecam")
 			{
 				if(ctx.type == LevelContext::Outside)
-					pos.y += game.terrain->GetH(pos);
+					pos.y += terrain->GetH(pos);
 
 				btBoxShape* shape = new btBoxShape(btVector3(pt.size.x, pt.size.y, pt.size.z));
 				game.shapes.push_back(shape);
@@ -1123,7 +1149,7 @@ void Level::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding
 					inside->enter_area.v2.x = pos.x + w;
 					inside->enter_area.v2.y = pos.z + h;
 					Vec2 mid = inside->enter_area.Midpoint();
-					inside->enter_y = game.terrain->GetH(mid.x, mid.y) + 0.1f;
+					inside->enter_y = terrain->GetH(mid.x, mid.y) + 0.1f;
 					inside->type = type;
 					inside->outside_rot = rot;
 					inside->top = -1.f;
@@ -1171,7 +1197,7 @@ void Level::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding
 					else
 					{
 						spawn_point = pos;
-						game.terrain->SetH(spawn_point);
+						terrain->SetH(spawn_point);
 					}
 
 					have_spawn = true;
@@ -1245,7 +1271,7 @@ void Level::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding
 					if(building)
 					{
 						building->walk_pt = pos;
-						game.terrain->SetH(building->walk_pt);
+						terrain->SetH(building->walk_pt);
 					}
 					else if(out_point)
 						*out_point = pos;
@@ -1341,7 +1367,7 @@ void Level::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding
 				if(obj)
 				{
 					if(ctx.type == LevelContext::Outside)
-						game.terrain->SetH(pos);
+						terrain->SetH(pos);
 					SpawnObjectEntity(ctx, obj, pos, Clip(pt.rot.y + rot), 1.f, 0, nullptr, variant);
 				}
 			}
@@ -1428,7 +1454,6 @@ void Level::RecreateObjects(bool spawn_pes)
 //=================================================================================================
 ObjectEntity Level::SpawnObjectNearLocation(LevelContext& ctx, BaseObject* obj, const Vec2& pos, float rot, float range, float margin, float scale)
 {
-	Game& game = Game::Get();
 	bool ok = false;
 	if(obj->type == OBJ_CYLINDER)
 	{
@@ -1452,7 +1477,7 @@ ObjectEntity Level::SpawnObjectNearLocation(LevelContext& ctx, BaseObject* obj, 
 			return nullptr;
 
 		if(ctx.type == LevelContext::Outside)
-			game.terrain->SetH(pt);
+			terrain->SetH(pt);
 
 		return SpawnObjectEntity(ctx, obj, pt, rot, scale);
 	}
@@ -1487,7 +1512,7 @@ ObjectEntity Level::SpawnObjectNearLocation(LevelContext& ctx, BaseObject* obj, 
 			return nullptr;
 
 		if(ctx.type == LevelContext::Outside)
-			game.terrain->SetH(pt);
+			terrain->SetH(pt);
 
 		return SpawnObjectEntity(ctx, obj, pt, rot, scale);
 	}
@@ -1501,7 +1526,6 @@ ObjectEntity Level::SpawnObjectNearLocation(LevelContext& ctx, BaseObject* obj, 
 		return SpawnObjectNearLocation(ctx, obj, pos, Vec2::LookAtAngle(pos, rot_target), range, margin, scale);
 	else
 	{
-		Game& game = Game::Get();
 		global_col.clear();
 		Vec3 pt(pos.x, 0, pos.y);
 		GatherCollisionObjects(ctx, global_col, pt, sqrt(obj->size.x + obj->size.y) + margin + range);
@@ -1533,7 +1557,7 @@ ObjectEntity Level::SpawnObjectNearLocation(LevelContext& ctx, BaseObject* obj, 
 			return nullptr;
 
 		if(ctx.type == LevelContext::Outside)
-			game.terrain->SetH(pt);
+			terrain->SetH(pt);
 
 		return SpawnObjectEntity(ctx, obj, pt, rot, scale);
 	}
@@ -1573,7 +1597,7 @@ void Level::AddGroundItem(LevelContext& ctx, GroundItem* item)
 	assert(item);
 
 	if(ctx.type == LevelContext::Outside)
-		Game::Get().terrain->SetH(item->pos);
+		terrain->SetH(item->pos);
 	ctx.items->push_back(item);
 
 	if(Net::IsOnline())
@@ -1658,7 +1682,7 @@ GroundItem* Level::SpawnGroundItemInsideRadius(const Item* item, const Vec2& pos
 			gi->rot = Random(MAX_ANGLE);
 			gi->pos = pt;
 			if(local_ctx.type == LevelContext::Outside)
-				Game::Get().terrain->SetH(gi->pos);
+				terrain->SetH(gi->pos);
 			gi->item = item;
 			gi->netid = GroundItem::netid_counter++;
 			local_ctx.items->push_back(gi);
@@ -1695,7 +1719,7 @@ GroundItem* Level::SpawnGroundItemInsideRegion(const Item* item, const Vec2& pos
 			gi->rot = Random(MAX_ANGLE);
 			gi->pos = pt;
 			if(local_ctx.type == LevelContext::Outside)
-				Game::Get().terrain->SetH(gi->pos);
+				terrain->SetH(gi->pos);
 			gi->item = item;
 			gi->netid = GroundItem::netid_counter++;
 			local_ctx.items->push_back(gi);
@@ -2554,8 +2578,8 @@ void Level::CreateBlood(LevelContext& ctx, const Unit& u, bool fully_created)
 
 	if(ctx.have_terrain)
 	{
-		b.pos.y = game.terrain->GetH(b.pos) + 0.05f;
-		game.terrain->GetAngle(b.pos.x, b.pos.z, b.normal);
+		b.pos.y = terrain->GetH(b.pos) + 0.05f;
+		terrain->GetAngle(b.pos.x, b.pos.z, b.normal);
 	}
 	else
 	{
@@ -2607,12 +2631,8 @@ void Level::WarpUnit(Unit& unit, const Vec3& pos)
 
 	assert(ok);
 
-	if(ctx.have_terrain)
-	{
-		Terrain* terrain = Game::Get().terrain;
-		if(terrain->IsInside(unit.pos))
-			terrain->SetH(unit.pos);
-	}
+	if(ctx.have_terrain && terrain->IsInside(unit.pos))
+		terrain->SetH(unit.pos);
 
 	if(unit.cobj)
 		unit.UpdatePhysics(unit.pos);
@@ -3127,6 +3147,7 @@ void Level::CheckIfLocationCleared()
 		}
 	}
 }
+
 //=================================================================================================
 // usuwa podany przedmiot ze œwiata
 // u¿ywane w queœcie z kamieniem szaleñców
@@ -3139,4 +3160,20 @@ bool Level::RemoveItemFromWorld(const Item* item)
 			return true;
 	}
 	return false;
+}
+
+//=================================================================================================
+void Level::SpawnTerrainCollider()
+{
+	if(terrain_shape)
+		delete terrain_shape;
+
+	terrain_shape = new btHeightfieldTerrainShape(OutsideLocation::size + 1, OutsideLocation::size + 1, terrain->GetHeightMap(), 1.f, 0.f, 10.f, 1, PHY_FLOAT, false);
+	terrain_shape->setLocalScaling(btVector3(2.f, 1.f, 2.f));
+
+	obj_terrain = new btCollisionObject;
+	obj_terrain->setCollisionShape(terrain_shape);
+	obj_terrain->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_TERRAIN);
+	obj_terrain->getWorldTransform().setOrigin(btVector3(float(OutsideLocation::size), 5.f, float(OutsideLocation::size)));
+	Game::Get().phy_world->addCollisionObject(obj_terrain, CG_TERRAIN);
 }

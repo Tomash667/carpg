@@ -338,7 +338,6 @@ public:
 	// RYSOWANIE
 	Matrix mat;
 	int particle_count;
-	Terrain* terrain;
 	VB vbDungeon;
 	IB ibDungeon;
 	Int2 dungeon_part[16], dungeon_part2[16], dungeon_part3[16], dungeon_part4[16];
@@ -405,9 +404,8 @@ public:
 	// FIZYKA
 	btCollisionShape* shape_wall, *shape_low_ceiling, *shape_arrow, *shape_ceiling, *shape_floor, *shape_door, *shape_block, *shape_schody, *shape_schody_c[2],
 		*shape_summon, *shape_barrier;
-	btHeightfieldTerrainShape* terrain_shape;
 	btBvhTriangleMeshShape* dungeon_shape;
-	btCollisionObject* obj_terrain, *obj_dungeon;
+	btCollisionObject* obj_dungeon;
 	vector<btCollisionShape*> shapes;
 	vector<CameraCollider> cam_colliders;
 	vector<Vec3> dungeon_shape_pos;
@@ -552,7 +550,6 @@ public:
 	bool CanShootAtLocation(const Vec3& from, const Vec3& to) const;
 	bool CanShootAtLocation2(const Unit& me, const void* ptr, const Vec3& to) const;
 	void LoadItemsData();
-	void SpawnTerrainCollider();
 	Unit* CreateUnitWithAI(LevelContext& ctx, UnitData& unit, int level = -1, Human* human_data = nullptr, const Vec3* pos = nullptr, const float* rot = nullptr, AIController** ai = nullptr);
 	void ChangeLevel(int where);
 	void AddPlayerTeam(const Vec3& pos, float rot, bool reenter, bool hide_weapon);
@@ -623,8 +620,6 @@ public:
 	}
 	void AddGold(int count, vector<Unit*>* to = nullptr, bool show = false, cstring msg = txGoldPlus, float time = 3.f, bool defmsg = true);
 	bool IsAnyoneTalking() const;
-	bool FindQuestItem2(Unit* unit, cstring id, Quest** quest, int* i_index, bool not_active = false);
-	bool RemoveQuestItem(const Item* item, int refid = -1);
 	// to by mog³o byæ globalna funkcj¹
 	void PlayHitSound(MATERIAL_TYPE mat_bron, MATERIAL_TYPE mat_cialo, const Vec3& hitpoint, float range, bool dmg);
 	// wczytywanie
@@ -694,9 +689,6 @@ public:
 	{
 		AddItem(unit, item, count, is_team ? count : 0, send_msg);
 	}
-	// usuwa przedmiot z ekwipunku (obs³uguje otwarty ekwipunek, lock i multiplayer), dla 0 usuwa wszystko
-	void RemoveItem(Unit& unit, int i_index, uint count);
-	bool RemoveItem(Unit& unit, const Item* item, uint count);
 
 	Unit* FindPlayerTradingWithUnit(Unit& u);
 	Int2 GetSpawnPoint();

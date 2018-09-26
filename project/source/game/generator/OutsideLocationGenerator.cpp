@@ -58,7 +58,7 @@ void OutsideLocationGenerator::InitOnce()
 void OutsideLocationGenerator::Init()
 {
 	outside = (OutsideLocation*)loc;
-	terrain = Game::Get().terrain;
+	terrain = L.terrain;
 }
 
 //=================================================================================================
@@ -182,7 +182,7 @@ void OutsideLocationGenerator::OnEnter()
 	if(!reenter)
 	{
 		game.LoadingStep(game.txRecreatingObjects);
-		game.SpawnTerrainCollider();
+		L.SpawnTerrainCollider();
 		SpawnOutsideBariers();
 	}
 
@@ -417,7 +417,7 @@ void OutsideLocationGenerator::OnLoad()
 	ApplyTiles();
 
 	L.RecreateObjects(false);
-	game.SpawnTerrainCollider();
+	L.SpawnTerrainCollider();
 	SpawnOutsideBariers();
 	game.InitQuadTree();
 	game.CalculateQuadtree();

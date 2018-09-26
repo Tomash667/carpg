@@ -345,17 +345,6 @@ void Game::PostconfigureGame()
 
 	GetDebugDrawer()->SetHandler(delegate<void(DebugDrawer*)>(this, &Game::OnDebugDraw));
 
-	// init terrain
-	terrain = new Terrain;
-	TerrainOptions terrain_options;
-	terrain_options.n_parts = 8;
-	terrain_options.tex_size = 256;
-	terrain_options.tile_size = 2.f;
-	terrain_options.tiles_per_part = 16;
-	terrain->Init(device, terrain_options);
-	terrain->Build();
-	terrain->RemoveHeightMap(true);
-
 	// get pointer to gold item
 	Item::gold = Item::Get("gold");
 

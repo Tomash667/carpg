@@ -860,10 +860,6 @@ void Game::ClearPointers()
 	vdSchodyDol = nullptr;
 	vdNaDrzwi = nullptr;
 
-	// teren
-	terrain = nullptr;
-	terrain_shape = nullptr;
-
 	// fizyka
 	shape_wall = nullptr;
 	shape_low_ceiling = nullptr;
@@ -931,10 +927,6 @@ void Game::OnCleanup()
 		SafeRelease(it.second);
 
 	content::CleanupContent();
-
-	// teren
-	delete terrain;
-	delete terrain_shape;
 
 	// fizyka
 	delete shape_wall;

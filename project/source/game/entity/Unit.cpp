@@ -2377,6 +2377,89 @@ int Unit::FindQuestItem(int quest_refid) const
 }
 
 //=================================================================================================
+bool Unit::FindQuestItem(cstring id, Quest** out_quest, int* i_index, bool not_active)
+{
+	assert(id);
+
+	if(id[1] == '$')
+	{
+		// szukaj w za³o¿onych przedmiotach
+		for(int i = 0; i < SLOT_MAX; ++i)
+		{
+			if(slots[i] && slots[i]->IsQuest())
+			{
+				Quest* quest = QM.FindQuest(slots[i]->refid, !not_active);
+				if(quest && (not_active || quest->IsActive()) && quest->IfHaveQuestItem2(id))
+				{
+					if(i_index)
+						*i_index = SlotToIIndex(ITEM_SLOT(i));
+					if(out_quest)
+						*out_quest = quest;
+					return true;
+				}
+			}
+		}
+
+		// szukaj w nie za³o¿onych
+		int index = 0;
+		for(vector<ItemSlot>::iterator it2 = items.begin(), end2 = items.end(); it2 != end2; ++it2, ++index)
+		{
+			if(it2->item && it2->item->IsQuest())
+			{
+				Quest* quest = QM.FindQuest(it2->item->refid, !not_active);
+				if(quest && (not_active || quest->IsActive()) && quest->IfHaveQuestItem2(id))
+				{
+					if(i_index)
+						*i_index = index;
+					if(out_quest)
+						*out_quest = quest;
+					return true;
+				}
+			}
+		}
+	}
+	else
+	{
+		// szukaj w za³o¿onych przedmiotach
+		for(int i = 0; i < SLOT_MAX; ++i)
+		{
+			if(slots[i] && slots[i]->IsQuest() && slots[i]->id == id)
+			{
+				Quest* quest = QM.FindQuest(slots[i]->refid, !not_active);
+				if(quest && (not_active || quest->IsActive()) && quest->IfHaveQuestItem())
+				{
+					if(i_index)
+						*i_index = SlotToIIndex(ITEM_SLOT(i));
+					if(out_quest)
+						*out_quest = quest;
+					return true;
+				}
+			}
+		}
+
+		// szukaj w nie za³o¿onych
+		int index = 0;
+		for(vector<ItemSlot>::iterator it2 = items.begin(), end2 = items.end(); it2 != end2; ++it2, ++index)
+		{
+			if(it2->item && it2->item->IsQuest() && it2->item->id == id)
+			{
+				Quest* quest = QM.FindQuest(it2->item->refid, !not_active);
+				if(quest && (not_active || quest->IsActive()) && quest->IfHaveQuestItem())
+				{
+					if(i_index)
+						*i_index = index;
+					if(out_quest)
+						*out_quest = quest;
+					return true;
+				}
+			}
+		}
+	}
+
+	return false;
+}
+
+//=================================================================================================
 // currently using this on pc, looted units is not written
 void Unit::RemoveItem(int iindex, bool active_location)
 {
@@ -2399,6 +2482,104 @@ void Unit::RemoveItem(int iindex, bool active_location)
 			c.id = s;
 		}
 	}
+}
+
+//=================================================================================================
+// usuwa przedmiot z ekwipunku (obs³uguje otwarty ekwipunek, lock i multiplayer), dla 0 usuwa wszystko
+void Unit::RemoveItem(int i_index, uint count)
+{
+	Game& game = Game::Get();
+
+	// usuñ przedmiot
+	bool removed = false;
+	if(i_index >= 0)
+	{
+		ItemSlot& s = items[i_index];
+		uint ile = (count == 0 ? s.count : min(s.count, count));
+		s.count -= ile;
+		if(s.count == 0)
+		{
+			removed = true;
+			items.erase(items.begin() + i_index);
+		}
+		else if(s.team_count > 0)
+			s.team_count -= min(s.team_count, ile);
+		weight -= s.item->weight*ile;
+	}
+	else
+	{
+		ITEM_SLOT type = IIndexToSlot(i_index);
+		weight -= slots[type]->weight;
+		slots[type] = nullptr;
+		removed = true;
+
+		if(Net::IsServer() && N.active_players > 1)
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::CHANGE_EQUIPMENT;
+			c.unit = this;
+			c.id = type;
+		}
+	}
+
+	// komunikat
+	if(Net::IsServer())
+	{
+		if(IsPlayer())
+		{
+			if(!player->is_local)
+			{
+				// dodaj komunikat o usuniêciu przedmiotu
+				NetChangePlayer& c = Add1(player->player_info->changes);
+				c.type = NetChangePlayer::REMOVE_ITEMS;
+				c.id = i_index;
+				c.ile = count;
+			}
+		}
+		else
+		{
+			Unit* t = nullptr;
+
+			// szukaj gracza który handluje z t¹ postaci¹
+			for(Unit* member : Team.active_members)
+			{
+				if(member->IsPlayer() && member->player->IsTradingWith(this))
+				{
+					t = member;
+					break;
+				}
+			}
+
+			if(t && t->player != game.pc)
+			{
+				// dodaj komunikat o dodaniu przedmiotu
+				NetChangePlayer& c = Add1(t->player->player_info->changes);
+				c.type = NetChangePlayer::REMOVE_ITEMS_TRADER;
+				c.id = netid;
+				c.ile = count;
+				c.a = i_index;
+			}
+		}
+	}
+
+	// aktualizuj tymczasowy ekwipunek
+	if(game.pc->unit == this)
+	{
+		if(game.gui->inventory->inv_mine->visible || game.gui->inventory->gp_trade->visible)
+			game.gui->inventory->BuildTmpInventory(0);
+	}
+	else if(game.gui->inventory->gp_trade->visible && game.gui->inventory->inv_trade_other->unit == this)
+		game.gui->inventory->BuildTmpInventory(1);
+}
+
+//=================================================================================================
+bool Unit::RemoveItem(const Item* item, uint count)
+{
+	int i_index = FindItem(item);
+	if(i_index == INVALID_IINDEX)
+		return false;
+	RemoveItem(i_index, count);
+	return true;
 }
 
 //=================================================================================================

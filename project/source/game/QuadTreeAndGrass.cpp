@@ -290,10 +290,10 @@ void Game::ListGrass()
 							for(int i = 0; i < 6; ++i)
 							{
 								pos = Vec3(2.f*x + Random(2.f), 0.f, 2.f*y + Random(2.f));
-								terrain->GetAngle(pos.x, pos.z, angle);
+								L.terrain->GetAngle(pos.x, pos.z, angle);
 								if(angle.y < 0.7f)
 									continue;
-								terrain->SetH(pos);
+								L.terrain->SetH(pos);
 								part.grass.push_back(Matrix::Scale(Random(3.f, 4.f)) * Matrix::RotationY(Random(MAX_ANGLE)) * Matrix::Translation(pos));
 							}
 						}
@@ -302,7 +302,7 @@ void Game::ListGrass()
 							for(int i = 0; i < 4; ++i)
 							{
 								pos = Vec3(2.f*x + 0.1f + Random(1.8f), 0, 2.f*y + 0.1f + Random(1.8f));
-								terrain->SetH(pos);
+								L.terrain->SetH(pos);
 								part.grass.push_back(Matrix::Scale(Random(2.f, 3.f)) * Matrix::RotationY(Random(MAX_ANGLE)) * Matrix::Translation(pos));
 							}
 						}
@@ -317,7 +317,7 @@ void Game::ListGrass()
 							for(int i = 0; i < 1; ++i)
 							{
 								pos = Vec3(2.f*x + 0.5f + Random(1.f), 0, 2.f*y + 0.5f + Random(1.f));
-								terrain->SetH(pos);
+								L.terrain->SetH(pos);
 								part.grass2.push_back(Matrix::Scale(Random(3.f, 4.f)) * Matrix::RotationY(Random(MAX_ANGLE)) * Matrix::Translation(pos));
 							}
 						}
@@ -349,7 +349,7 @@ void Game::SetTerrainTextures()
 	for(int i = 0; i < 5; ++i)
 		tex_mgr.AddLoadTask(tex[i]);
 
-	terrain->SetTextures(tex);
+	L.terrain->SetTextures(tex);
 }
 
 void Game::ClearQuadtree()

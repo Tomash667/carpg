@@ -1590,7 +1590,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						return;
 					break;
 				case CMD_TILE_INFO:
-					if(L.location->outside && pc->unit->in_building == -1 && terrain->IsInside(pc->unit->pos))
+					if(L.location->outside && pc->unit->in_building == -1 && L.terrain->IsInside(pc->unit->pos))
 					{
 						OutsideLocation* outside = (OutsideLocation*)L.location;
 						const TerrainTile& t = outside->tiles[pos_to_pt(pc->unit->pos)(outside->size)];

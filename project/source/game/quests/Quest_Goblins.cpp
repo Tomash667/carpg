@@ -165,7 +165,7 @@ void Quest_Goblins::SetProgress(int prog2)
 	case Progress::BowStolen:
 		// gobliny ukrad³y ³uk
 		{
-			game->RemoveQuestItem(Item::Get("q_gobliny_luk"));
+			Team.RemoveQuestItem(Item::Get("q_gobliny_luk"));
 			OnUpdate(game->txQuest[220]);
 			W.RemoveEncounter(enc);
 			enc = -1;
@@ -207,7 +207,7 @@ void Quest_Goblins::SetProgress(int prog2)
 		{
 			state = Quest::Completed;
 			const Item* item = Item::Get("q_gobliny_luk");
-			game->RemoveItem(*game->current_dialog->pc->unit, item, 1);
+			game->current_dialog->pc->unit->RemoveItem(item, 1);
 			game->current_dialog->talker->AddItem(item, 1, true);
 			game->AddReward(500);
 			OnUpdate(game->txQuest[224]);

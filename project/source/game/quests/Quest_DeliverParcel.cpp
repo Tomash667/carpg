@@ -9,6 +9,7 @@
 #include "Encounter.h"
 #include "GameFile.h"
 #include "World.h"
+#include "Team.h"
 
 //=================================================================================================
 void Quest_DeliverParcel::Start()
@@ -132,7 +133,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			RemoveEncounter();
 
 			game->current_dialog->talker->AddItem(&parcel, 1, true);
-			game->RemoveQuestItem(&parcel, refid);
+			Team.RemoveQuestItem(&parcel, refid);
 
 			OnUpdate(game->txQuest[16]);
 		}

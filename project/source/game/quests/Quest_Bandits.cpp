@@ -11,6 +11,7 @@
 #include "AIController.h"
 #include "World.h"
 #include "Level.h"
+#include "Team.h"
 
 //=================================================================================================
 void Quest_Bandits::Init()
@@ -164,7 +165,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			OnUpdate(game->txQuest[158]);
 			target_loc = camp_loc;
 			location_event_handler = this;
-			game->RemoveItem(*game->current_dialog->pc->unit, Item::Get("q_bandyci_list"), 1);
+			game->current_dialog->pc->unit->RemoveItem(Item::Get("q_bandyci_list"), 1);
 		}
 		break;
 	case Progress::NeedClearCamp:
@@ -256,7 +257,7 @@ bool Quest_Bandits::Special(DialogContext& ctx, cstring msg)
 	{
 		const Item* item = Item::Get("q_bandyci_paczka");
 		ctx.talker->AddItem(item, 1, true);
-		game->RemoveQuestItem(item);
+		Team.RemoveQuestItem(item);
 	}
 	else
 		assert(0);

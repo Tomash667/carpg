@@ -1250,3 +1250,18 @@ void TeamSingleton::CheckCredit(bool require_update, bool ignore)
 	if(!ignore && require_update && Net::IsOnline())
 		Net::PushChange(NetChange::UPDATE_CREDIT);
 }
+
+//=================================================================================================
+bool TeamSingleton::RemoveQuestItem(const Item* item, int refid)
+{
+	Unit* unit;
+	int slot_id;
+
+	if(FindItemInTeam(item, refid, &unit, &slot_id))
+	{
+		unit->RemoveItem(slot_id, 1u);
+		return true;
+	}
+	else
+		return false;
+}

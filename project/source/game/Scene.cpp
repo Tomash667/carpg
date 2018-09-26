@@ -587,10 +587,10 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 	// teren
 	if(ctx.type == LevelContext::Outside && IS_SET(draw_flags, DF_TERRAIN))
 	{
-		uint parts = terrain->GetPartsCount();
+		uint parts = L.terrain->GetPartsCount();
 		for(uint i = 0; i < parts; ++i)
 		{
-			if(frustum.BoxToFrustum(terrain->GetPart(i)->GetBox()))
+			if(frustum.BoxToFrustum(L.terrain->GetPart(i)->GetBox()))
 				draw_batch.terrain_parts.push_back(i);
 		}
 	}
@@ -1919,7 +1919,7 @@ void Game::PrepareAreaPath()
 			Matrix mat = Matrix::RotationY(rot);
 			for(int i = 0; i < steps; ++i)
 			{
-				float current_h = terrain->GetH(active_pos) + h;
+				float current_h = L.terrain->GetH(active_pos) + h;
 				area.points.push_back(Vec3::Transform(Vec3(-action.area_size.y, current_h, active_step), mat) + unit_offset);
 				area.points.push_back(Vec3::Transform(Vec3(+action.area_size.y, current_h, active_step), mat) + unit_offset);
 
@@ -2125,7 +2125,7 @@ void Game::PrepareAreaPathCircle(Area2& area, float radius, float range, float r
 	{
 		area.points[i] = Vec3::Transform(area.points[i], mat) + pc->unit->pos;
 		if(outside)
-			area.points[i].y = terrain->GetH(area.points[i]) + h;
+			area.points[i].y = L.terrain->GetH(area.points[i]) + h;
 	}
 
 	area.faces.clear();
@@ -3271,8 +3271,8 @@ void Game::DrawTerrain(const vector<uint>& parts)
 	V(eTerrain->SetTechnique(techTerrain));
 	V(eTerrain->SetMatrix(hTerrainWorld, (D3DXMATRIX*)&m1));
 	V(eTerrain->SetMatrix(hTerrainCombined, (D3DXMATRIX*)&m2));
-	V(eTerrain->SetTexture(hTerrainTexBlend, terrain->GetSplatTexture()));
-	auto tex = terrain->GetTextures();
+	V(eTerrain->SetTexture(hTerrainTexBlend, L.terrain->GetSplatTexture()));
+	auto tex = L.terrain->GetTextures();
 	for(int i = 0; i < 5; ++i)
 		V(eTerrain->SetTexture(hTerrainTex[i], tex[i]->tex));
 	V(eTerrain->SetVector(hTerrainFogColor, (D3DXVECTOR4*)&fogColor));
@@ -3283,11 +3283,11 @@ void Game::DrawTerrain(const vector<uint>& parts)
 
 	VB vb;
 	IB ib;
-	LPD3DXMESH mesh = terrain->GetMesh();
+	LPD3DXMESH mesh = L.terrain->GetMesh();
 	V(mesh->GetVertexBuffer(&vb));
 	V(mesh->GetIndexBuffer(&ib));
 	uint n_verts, part_tris;
-	terrain->GetDrawOptions(n_verts, part_tris);
+	L.terrain->GetDrawOptions(n_verts, part_tris);
 
 	V(device->SetVertexDeclaration(vertex_decl[VDI_TERRAIN]));
 	V(device->SetStreamSource(0, vb, 0, sizeof(VTerrain)));
@@ -4171,6 +4171,6 @@ void Game::DrawAreas(const vector<Area>& areas, float range, const vector<Area2*
 //=================================================================================================
 void Game::UvModChanged()
 {
-	terrain->uv_mod = uv_mod;
-	terrain->RebuildUv();
+	L.terrain->uv_mod = uv_mod;
+	L.terrain->RebuildUv();
 }

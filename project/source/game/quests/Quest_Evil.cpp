@@ -196,7 +196,7 @@ void Quest_Evil::SetProgress(int prog2)
 			Unit& u = *game->current_dialog->talker;
 			const Item* item = Item::Get("q_zlo_ksiega");
 			u.AddItem(item, 1, true);
-			game->RemoveItem(*game->current_dialog->pc->unit, item, 1);
+			game->current_dialog->pc->unit->RemoveItem(item, 1);
 			Team.AddTeamMember(&u, true);
 
 			evil_state = State::ClosingPortals;
