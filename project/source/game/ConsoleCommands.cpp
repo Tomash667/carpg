@@ -129,6 +129,7 @@ void Game::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_STUN, "stun", "stun unit for time (stun [length=1] [1 = self])", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_REFRESH_COOLDOWN, "refresh_cooldown", "refresh action cooldown/charges", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_DRAW_PATH, "draw_path", "draw debug pathfinding, look at target", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_VERIFY, "verify", "verify game state integrity", F_GAME | F_CHEAT));
 
 	// verify all commands are added
 #ifdef _DEBUG
@@ -1664,9 +1665,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 				case CMD_DRAW_PATH:
 					if(pc_data.before_player == BP_UNIT)
 					{
-						//pathfinding->SetTarget(pc_data.before_player_ptr.unit);
-						FIXME;
-						QM.quest_tournament->winner = pc_data.before_player_ptr.unit;
+						pathfinding->SetTarget(pc_data.before_player_ptr.unit);
 						Msg("Set draw path target.");
 					}
 					else
@@ -1674,6 +1673,9 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						pathfinding->SetTarget(nullptr);
 						Msg("Removed draw path target.");
 					}
+					break;
+				case CMD_VERIFY:
+					W.VerifyObjects();
 					break;
 				default:
 					assert(0);

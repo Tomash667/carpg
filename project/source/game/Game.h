@@ -241,8 +241,6 @@ public:
 	void SetTerrainTextures();
 	void ClearQuadtree();
 	void ClearGrass();
-	void VerifyObjects();
-	void VerifyObjects(vector<Object*>& objects, int& errors);
 	void CalculateQuadtree();
 	void ListQuadtreeNodes();
 

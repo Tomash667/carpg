@@ -407,19 +407,17 @@ bool Quest_Evil::SpecialIf(DialogContext& ctx, cstring msg)
 	}
 	else if(strcmp(msg, "q_zlo_kapitan") == 0)
 	{
-		if(W.GetCurrentLocationIndex() == mage_loc
+		return W.GetCurrentLocationIndex() == mage_loc
 			&& evil_state >= State::GeneratedMage
 			&& evil_state < State::ClosingPortals
-			&& InRange((Progress)prog, Progress::MageToldAboutStolenBook, Progress::TalkedWithMayor))
-			return true;
+			&& InRange((Progress)prog, Progress::MageToldAboutStolenBook, Progress::TalkedWithMayor);
 	}
 	else if(strcmp(msg, "q_zlo_burmistrz") == 0)
 	{
-		if(W.GetCurrentLocationIndex() == mage_loc
+		return W.GetCurrentLocationIndex() == mage_loc
 			&& evil_state >= State::GeneratedMage
 			&& evil_state < State::ClosingPortals
-			&& prog == Progress::TalkedWithCaptain)
-			return true;
+			&& prog == Progress::TalkedWithCaptain;
 	}
 	assert(0);
 	return false;

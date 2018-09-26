@@ -494,11 +494,11 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 		if(it->target != RoomTarget::None)
 		{
 			if(it->target == RoomTarget::Treasury)
-				rt = FindRoomType("krypta_skarb");
+				rt = RoomType::Find("krypta_skarb");
 			else if(it->target == RoomTarget::Throne)
-				rt = FindRoomType("tron");
+				rt = RoomType::Find("tron");
 			else if(it->target == RoomTarget::PortalCreate)
-				rt = FindRoomType("portal");
+				rt = RoomType::Find("portal");
 			else
 			{
 				Int2 pt;

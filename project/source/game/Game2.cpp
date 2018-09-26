@@ -695,11 +695,6 @@ void Game::UpdateGame(float dt)
 
 	PROFILER_BLOCK("UpdateGame");
 
-	/*#ifdef _DEBUG
-		if(Key.Pressed('9'))
-			VerifyObjects();
-	#endif*/
-
 	// sanity checks
 #ifdef _DEBUG
 	if(Net::IsLocal())
@@ -13490,88 +13485,6 @@ void Game::OnEnterLevelOrLocation()
 	{
 		for(auto unit : Team.members)
 			unit->frozen = FROZEN::NO;
-	}
-}
-
-void Game::VerifyObjects()
-{
-	int errors = 0, e;
-
-	for(Location* l : W.GetLocations())
-	{
-		if(!l)
-			continue;
-		if(l->outside)
-		{
-			OutsideLocation* outside = (OutsideLocation*)l;
-			e = 0;
-			VerifyObjects(outside->objects, e);
-			if(e > 0)
-			{
-				Error("%d errors in outside location '%s'.", e, outside->name.c_str());
-				errors += e;
-			}
-			if(l->type == L_CITY)
-			{
-				City* city = (City*)outside;
-				for(InsideBuilding* ib : city->inside_buildings)
-				{
-					e = 0;
-					VerifyObjects(ib->objects, e);
-					if(e > 0)
-					{
-						Error("%d errors in city '%s', building '%s'.", e, city->name.c_str(), ib->type->id.c_str());
-						errors += e;
-					}
-				}
-			}
-		}
-		else
-		{
-			InsideLocation* inside = (InsideLocation*)l;
-			if(inside->IsMultilevel())
-			{
-				MultiInsideLocation* m = (MultiInsideLocation*)inside;
-				int index = 1;
-				for(auto& lvl : m->levels)
-				{
-					e = 0;
-					VerifyObjects(lvl.objects, e);
-					if(e > 0)
-					{
-						Error("%d errors in multi inside location '%s' at level %d.", e, m->name.c_str(), index);
-						errors += e;
-					}
-					++index;
-				}
-			}
-			else
-			{
-				SingleInsideLocation* s = (SingleInsideLocation*)inside;
-				e = 0;
-				VerifyObjects(s->objects, e);
-				if(e > 0)
-				{
-					Error("%d errors in single inside location '%s'.", e, s->name.c_str());
-					errors += e;
-				}
-			}
-		}
-	}
-
-	if(errors > 0)
-		throw Format("Veryify objects failed with %d errors. Check log for details.", errors);
-}
-
-void Game::VerifyObjects(vector<Object*>& objects, int& errors)
-{
-	for(Object* o : objects)
-	{
-		if(!o->mesh && !o->base)
-		{
-			Error("Broken object at (%g,%g,%g).", o->pos.x, o->pos.y, o->pos.z);
-			++errors;
-		}
 	}
 }
 

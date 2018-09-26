@@ -141,6 +141,8 @@ public:
 	// misc
 	bool CheckFirstCity();
 	int FindWorldUnit(Unit* unit, int hint_loc = -1, int hint_loc2 = -1, int* level = nullptr);
+	void VerifyObjects();
+	void VerifyObjects(vector<Object*>& objects, int& errors);
 
 private:
 	WorldMapGui* gui;

@@ -262,17 +262,17 @@ void BaseLocation::SetRoomPointers()
 		BaseLocation& base = g_base_locations[i];
 
 		if(base.schody.id)
-			base.schody.room = FindRoomType(base.schody.id);
+			base.schody.room = RoomType::Find(base.schody.id);
 
 		if(base.wymagany.id)
-			base.wymagany.room = FindRoomType(base.wymagany.id);
+			base.wymagany.room = RoomType::Find(base.wymagany.id);
 
 		if(base.rooms)
 		{
 			base.room_total = 0;
 			for(uint j = 0; j < base.room_count; ++j)
 			{
-				base.rooms[j].room = FindRoomType(base.rooms[j].id);
+				base.rooms[j].room = RoomType::Find(base.rooms[j].id);
 				base.room_total += base.rooms[j].chance;
 			}
 		}

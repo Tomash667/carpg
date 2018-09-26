@@ -2957,6 +2957,7 @@ void CityGenerator::OnLoad()
 	L.SpawnTerrainCollider();
 	RespawnBuildingPhysics();
 	SpawnCityPhysics();
+	SpawnOutsideBariers();
 	game.InitQuadTree();
 	game.CalculateQuadtree();
 

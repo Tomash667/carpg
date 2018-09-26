@@ -217,10 +217,11 @@ void World::UpdateEncounters()
 //=================================================================================================
 void World::UpdateLocations()
 {
-	LoopAndRemove(locations, [this](Location* loc)
+	for(auto it = locations.begin(), end = locations.end(); it != end; ++it)
 	{
+		Location* loc = *it;
 		if(!loc || loc->active_quest || loc->type == L_ENCOUNTER)
-			return false;
+			continue;
 		if(loc->type == L_CAMP)
 		{
 			Camp* camp = (Camp*)loc;
@@ -230,7 +231,16 @@ void World::UpdateLocations()
 			{
 				// remove camp
 				DeleteCamp(camp, false);
-				return true;
+				if(it + 1 == end)
+				{
+					locations.pop_back();
+					break;
+				}
+				else
+				{
+					++empty_locations;
+					*it = nullptr;
+				}
 			}
 		}
 		else if(loc->last_visit != -1 && worldtime - loc->last_visit >= 30)
@@ -247,8 +257,7 @@ void World::UpdateLocations()
 					((MultiInsideLocation*)inside)->Reset();
 			}
 		}
-		return false;
-	});
+	}
 }
 
 //=================================================================================================
@@ -2247,4 +2256,88 @@ int World::FindWorldUnit(Unit* unit, int hint_loc, int hint_loc2, int* out_level
 	}
 
 	return -1;
+}
+
+//=================================================================================================
+void World::VerifyObjects()
+{
+	int errors = 0, e;
+
+	for(Location* l : locations)
+	{
+		if(!l)
+			continue;
+		if(l->outside)
+		{
+			OutsideLocation* outside = (OutsideLocation*)l;
+			e = 0;
+			VerifyObjects(outside->objects, e);
+			if(e > 0)
+			{
+				Error("%d errors in outside location '%s'.", e, outside->name.c_str());
+				errors += e;
+			}
+			if(l->type == L_CITY)
+			{
+				City* city = (City*)outside;
+				for(InsideBuilding* ib : city->inside_buildings)
+				{
+					e = 0;
+					VerifyObjects(ib->objects, e);
+					if(e > 0)
+					{
+						Error("%d errors in city '%s', building '%s'.", e, city->name.c_str(), ib->type->id.c_str());
+						errors += e;
+					}
+				}
+			}
+		}
+		else
+		{
+			InsideLocation* inside = (InsideLocation*)l;
+			if(inside->IsMultilevel())
+			{
+				MultiInsideLocation* m = (MultiInsideLocation*)inside;
+				int index = 1;
+				for(auto& lvl : m->levels)
+				{
+					e = 0;
+					VerifyObjects(lvl.objects, e);
+					if(e > 0)
+					{
+						Error("%d errors in multi inside location '%s' at level %d.", e, m->name.c_str(), index);
+						errors += e;
+					}
+					++index;
+				}
+			}
+			else
+			{
+				SingleInsideLocation* s = (SingleInsideLocation*)inside;
+				e = 0;
+				VerifyObjects(s->objects, e);
+				if(e > 0)
+				{
+					Error("%d errors in single inside location '%s'.", e, s->name.c_str());
+					errors += e;
+				}
+			}
+		}
+	}
+
+	if(errors > 0)
+		throw Format("Veryify objects failed with %d errors. Check log for details.", errors);
+}
+
+//=================================================================================================
+void World::VerifyObjects(vector<Object*>& objects, int& errors)
+{
+	for(Object* o : objects)
+	{
+		if(!o->mesh && !o->base)
+		{
+			Error("Broken object at (%g,%g,%g).", o->pos.x, o->pos.y, o->pos.z);
+			++errors;
+		}
+	}
 }

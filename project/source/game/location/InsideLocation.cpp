@@ -88,6 +88,7 @@ void InsideLocation::Write(BitStreamWriter& f)
 //=================================================================================================
 bool InsideLocation::Read(BitStreamReader& f)
 {
+	SetActiveLevel(L.dungeon_level);
 	InsideLocationLevel& lvl = GetLevelData();
 	f.ReadCasted<byte>(target);
 	f >> from_portal;

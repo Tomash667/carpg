@@ -15,6 +15,7 @@ public:
 	void InitOnce();
 	void LoadLanguage();
 	void Init();
+	void Clear();
 	void Save(GameWriter& f);
 	void Load(GameReader& f);
 	bool Special(DialogContext& ctx, cstring msg) override;
@@ -31,7 +32,7 @@ public:
 	void Clean();
 	void FinishCombat() { state3 = 5; }
 
-public: // FIXME
+private:
 	UnitData& GetRandomHeroData();
 	void StartTournament(Unit* arena_master);
 	bool ShouldJoin(Unit& u);
