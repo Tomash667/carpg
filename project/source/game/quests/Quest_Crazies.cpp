@@ -191,7 +191,7 @@ void Quest_Crazies::CheckStone()
 				}
 			}
 
-			game->RemoveItemFromWorld(stone);
+			L.RemoveItemFromWorld(stone);
 		}
 
 		// dodaj kamieñ przywódcy

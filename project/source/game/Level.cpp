@@ -3127,3 +3127,16 @@ void Level::CheckIfLocationCleared()
 		}
 	}
 }
+//=================================================================================================
+// usuwa podany przedmiot ze œwiata
+// u¿ywane w queœcie z kamieniem szaleñców
+bool Level::RemoveItemFromWorld(const Item* item)
+{
+	assert(item);
+	for(LevelContext& ctx : ForEachContext())
+	{
+		if(ctx.RemoveItemFromWorld(item))
+			return true;
+	}
+	return false;
+}

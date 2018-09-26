@@ -20,6 +20,8 @@ Output
 /bin/*
 /other
 /paks/out
+/project/lib
+/project/output
 
 /tools/converter/Debug
 /tools/converter/Release
@@ -33,5 +35,3 @@ Output
 /tools/extractor/Release
 /tools/text_comparer/Debug
 /tools/text_comparer/Release
-
-/external/lib

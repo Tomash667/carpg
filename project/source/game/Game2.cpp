@@ -13507,27 +13507,6 @@ cstring Game::GetRandomIdleText(Unit& u)
 	}
 }
 
-// usuwa podany przedmiot ze œwiata
-// u¿ywane w queœcie z kamieniem szaleñców
-bool Game::RemoveItemFromWorld(const Item* item)
-{
-	assert(item);
-
-	if(L.local_ctx.RemoveItemFromWorld(item))
-		return true;
-
-	if(L.city_ctx)
-	{
-		for(vector<InsideBuilding*>::iterator it = L.city_ctx->inside_buildings.begin(), end = L.city_ctx->inside_buildings.end(); it != end; ++it)
-		{
-			if((*it)->ctx.RemoveItemFromWorld(item))
-				return true;
-		}
-	}
-
-	return false;
-}
-
 void Game::AddItem(Unit& unit, const Item* item, uint count, uint team_count, bool send_msg)
 {
 	assert(item && count && team_count <= count);

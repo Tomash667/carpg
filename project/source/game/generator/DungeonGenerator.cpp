@@ -293,7 +293,7 @@ void DungeonGenerator::GenerateUnits()
 
 	// opcje wejœciowe (póki co tu)
 	// musi byæ w sumie 100%
-	int szansa_na_brak = 10,
+	const int szansa_na_brak = 10,
 		szansa_na_1 = 20,
 		szansa_na_2 = 30,
 		szansa_na_3 = 40,
