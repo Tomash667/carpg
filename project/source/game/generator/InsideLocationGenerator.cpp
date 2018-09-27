@@ -632,12 +632,11 @@ ObjectEntity InsideLocationGenerator::GenerateDungeonObject(InsideLocationLevel&
 	if(IS_SET(base->flags, OBJ_NEAR_WALL))
 	{
 		Int2 tile;
-		int dir;
+		GameDirection dir;
 		if(!lvl.GetRandomNearWallTile(room, tile, dir, IS_SET(base->flags, OBJ_ON_WALL)))
 			return nullptr;
 
 		rot = dir_to_rot(dir);
-
 		if(dir == 2 || dir == 3)
 			pos = Vec3(2.f*tile.x + sin(rot)*(2.f - shift.y - 0.01f) + 2, 0.f, 2.f*tile.y + cos(rot)*(2.f - shift.y - 0.01f) + 2);
 		else

@@ -28,8 +28,7 @@ int EncounterGenerator::GetNumberOfSteps()
 //=================================================================================================
 void EncounterGenerator::Generate()
 {
-	// 0 - right, 1 - up, 2 - left, 3 - down
-	enc_kierunek = Rand() % 4;
+	enter_dir = (GameDirection)(Rand() % 4);
 
 	CreateMap();
 	RandomizeTerrainTexture();
@@ -49,7 +48,7 @@ void EncounterGenerator::Generate()
 	}
 
 	// create road
-	if(enc_kierunek == 0 || enc_kierunek == 2)
+	if(enter_dir == GDIR_LEFT || enter_dir == GDIR_RIGHT)
 	{
 		for(uint y = 62; y < 66; ++y)
 		{
@@ -95,7 +94,7 @@ void EncounterGenerator::Generate()
 	}
 
 	// flatten road
-	if(enc_kierunek == 0 || enc_kierunek == 2)
+	if(enter_dir == GDIR_LEFT || enter_dir == GDIR_RIGHT)
 	{
 		for(uint y = 61; y <= 67; ++y)
 		{
@@ -129,7 +128,7 @@ void EncounterGenerator::OnEnter()
 
 	// generate objects
 	game.LoadingStep(game.txGeneratingObjects);
-	SpawnForestObjects((enc_kierunek == 0 || enc_kierunek == 2) ? 0 : 1);
+	SpawnForestObjects((enter_dir == GDIR_LEFT || enter_dir == GDIR_RIGHT) ? 0 : 1);
 
 	// create colliders
 	game.LoadingStep(game.txRecreatingObjects);
@@ -167,18 +166,18 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 	Game& game = Game::Get();
 
 	Vec3 look_pt;
-	switch(enc_kierunek)
+	switch(enter_dir)
 	{
-	case 0:
+	case GDIR_RIGHT:
 		look_pt = Vec3(133.f, 0.f, 128.f);
 		break;
-	case 1:
+	case GDIR_UP:
 		look_pt = Vec3(128.f, 0.f, 133.f);
 		break;
-	case 2:
+	case GDIR_LEFT:
 		look_pt = Vec3(123.f, 0.f, 128.f);
 		break;
-	case 3:
+	case GDIR_DOWN:
 		look_pt = Vec3(128.f, 0.f, 123.f);
 		break;
 	}
@@ -373,18 +372,18 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 	Vec3 spawn_pos(128.f, 0, 128.f);
 	if(od_tylu)
 	{
-		switch(enc_kierunek)
+		switch(enter_dir)
 		{
-		case 0:
+		case GDIR_RIGHT:
 			spawn_pos = Vec3(140.f, 0, 128.f);
 			break;
-		case 1:
+		case GDIR_UP:
 			spawn_pos = Vec3(128.f, 0.f, 140.f);
 			break;
-		case 2:
+		case GDIR_LEFT:
 			spawn_pos = Vec3(116.f, 0.f, 128.f);
 			break;
-		case 3:
+		case GDIR_DOWN:
 			spawn_pos = Vec3(128.f, 0.f, 116.f);
 			break;
 		}
@@ -433,36 +432,34 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 //=================================================================================================
 void EncounterGenerator::SpawnEncounterTeam()
 {
-	assert(InRange(enc_kierunek, 0, 3));
-
 	Vec3 pos;
 	float dir;
 
 	Vec3 look_pt;
-	switch(enc_kierunek)
+	switch(enter_dir)
 	{
-	case 0:
+	case GDIR_RIGHT:
 		if(far_encounter)
 			pos = Vec3(140.f, 0.f, 128.f);
 		else
 			pos = Vec3(135.f, 0.f, 128.f);
 		dir = PI / 2;
 		break;
-	case 1:
+	case GDIR_UP:
 		if(far_encounter)
 			pos = Vec3(128.f, 0.f, 140.f);
 		else
 			pos = Vec3(128.f, 0.f, 135.f);
 		dir = 0;
 		break;
-	case 2:
+	case GDIR_LEFT:
 		if(far_encounter)
 			pos = Vec3(116.f, 0.f, 128.f);
 		else
 			pos = Vec3(121.f, 0.f, 128.f);
 		dir = 3.f / 2 * PI;
 		break;
-	case 3:
+	case GDIR_DOWN:
 		if(far_encounter)
 			pos = Vec3(128.f, 0.f, 116.f);
 		else

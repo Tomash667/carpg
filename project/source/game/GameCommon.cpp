@@ -51,7 +51,7 @@ void SetGameCommonText()
 //          |
 //         \|/
 //          0
-KIERUNEK AngleToDir(float angle)
+Direction AngleToDir(float angle)
 {
 	assert(InRange(angle, 0.f, 2 * PI));
 	if(angle < 1.f / 8 * PI)
@@ -75,7 +75,7 @@ KIERUNEK AngleToDir(float angle)
 }
 
 //=================================================================================================
-KIERUNEK GetLocationDir(const Vec2& from, const Vec2& to)
+Direction GetLocationDir(const Vec2& from, const Vec2& to)
 {
 	return AngleToDir(Vec2::LookAtAngle(from, to));
 }

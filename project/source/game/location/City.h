@@ -13,7 +13,7 @@ struct CityBuilding
 {
 	Building* type;
 	Int2 pt, unit_pt;
-	int rot;
+	GameDirection rot;
 	Vec3 walk_pt;
 
 	CityBuilding() {}

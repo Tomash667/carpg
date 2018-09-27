@@ -24,8 +24,8 @@ private:
 	int FillCave(bool* m, bool* m2, int start);
 	int Finish(bool* m, bool* m2);
 	int TryGenerate();
-	void GenerateCave(Pole*& tiles, int size, Int2& stairs, int& stairs_dir, vector<Int2>& holes, Rect* ext);
-	void CreateStairs(Pole* tiles, Int2& stairs, int& stairs_dir);
+	void GenerateCave(Pole*& tiles, int size, Int2& stairs, GameDirection& stairs_dir, vector<Int2>& holes, Rect* ext);
+	void CreateStairs(Pole* tiles, Int2& stairs, GameDirection& stairs_dir);
 	void CreateHoles(Pole* tiles, vector<Int2>& holes);
 	void GenerateMushrooms(int days_since = 10);
 

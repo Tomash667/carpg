@@ -149,7 +149,7 @@ int LabyrinthGenerator::TryGenerate(const Int2& maze_size, const Int2& room_size
 }
 
 //=================================================================================================
-void LabyrinthGenerator::GenerateLabyrinth(Pole*& tiles, const Int2& size, const Int2& room_size, Int2& stairs, int& stairs_dir, Int2& room_pos,
+void LabyrinthGenerator::GenerateLabyrinth(Pole*& tiles, const Int2& size, const Int2& room_size, Int2& stairs, GameDirection& stairs_dir, Int2& room_pos,
 	int grating_chance)
 {
 	// mo¿na by daæ, ¿e nie ma centralnego pokoju
@@ -195,7 +195,7 @@ void LabyrinthGenerator::GenerateLabyrinth(Pole*& tiles, const Int2& size, const
 }
 
 //=================================================================================================
-void LabyrinthGenerator::CreateStairs(Pole* tiles, const Int2& size, Int2& stairs, int& stairs_dir)
+void LabyrinthGenerator::CreateStairs(Pole* tiles, const Int2& size, Int2& stairs, GameDirection& stairs_dir)
 {
 	int order[4] = { 0,1,2,3 };
 	for(int i = 0; i < 5; ++i)
@@ -341,13 +341,13 @@ void LabyrinthGenerator::CreateStairs(Pole* tiles, const Int2& size, Int2& stair
 
 	// ustal kierunek schodów
 	if(tiles[stairs.x + (stairs.y + 1)*size.x].type == PUSTE)
-		stairs_dir = 2;
+		stairs_dir = GDIR_UP;
 	else if(tiles[stairs.x - 1 + stairs.y*size.x].type == PUSTE)
-		stairs_dir = 1;
+		stairs_dir = GDIR_LEFT;
 	else if(tiles[stairs.x + (stairs.y - 1)*size.x].type == PUSTE)
-		stairs_dir = 0;
+		stairs_dir = GDIR_DOWN;
 	else if(tiles[stairs.x + 1 + stairs.y*size.x].type == PUSTE)
-		stairs_dir = 3;
+		stairs_dir = GDIR_RIGHT;
 	else
 	{
 		assert(0);

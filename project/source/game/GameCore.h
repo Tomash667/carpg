@@ -159,7 +159,9 @@ class SecretLocationGenerator;
 class TutorialLocationGenerator;
 
 //-----------------------------------------------------------------------------
+enum Direction;
 enum EncounterMode;
+enum GameDirection;
 enum TRAP_TYPE;
 enum SPAWN_GROUP;
 enum SpecialEncounter;

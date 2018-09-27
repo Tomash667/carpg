@@ -2803,8 +2803,6 @@ void Game::UseAction(PlayerController* p, bool from_server, const Vec3* pos)
 				unit->in_arena = p->unit->in_arena;
 				if(unit->in_arena != -1)
 					arena->units.push_back(unit);
-				if(Net::IsServer())
-					Net_SpawnUnit(unit);
 				Team.AddTeamMember(unit, true);
 				SpawnUnitEffect(*unit);
 			}
@@ -4805,7 +4803,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 											gui->messages->AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
 									}
 									else
-										Net_LeaveLocation(WHERE_OUTSIDE);
+										Net_LeaveLocation(ENTER_FROM_OUTSIDE);
 								}
 								break;
 							}
@@ -4817,7 +4815,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 						if(!IsLeader())
 							gui->messages->AddGameMsg3(GMS_NOT_LEADER);
 						else if(!Net::IsLocal())
-							Net_LeaveLocation(WHERE_OUTSIDE);
+							Net_LeaveLocation(ENTER_FROM_OUTSIDE);
 						else
 						{
 							auto result = CanLeaveLocation(unit);
@@ -4920,19 +4918,19 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 			Box2d box;
 			switch(lvl.staircase_up_dir)
 			{
-			case 0:
+			case GDIR_DOWN:
 				unit.pos.y = (unit.pos.z - 2.f*lvl.staircase_up.y) / 2;
 				box = Box2d(2.f*lvl.staircase_up.x, 2.f*lvl.staircase_up.y + 1.4f, 2.f*(lvl.staircase_up.x + 1), 2.f*(lvl.staircase_up.y + 1));
 				break;
-			case 1:
+			case GDIR_LEFT:
 				unit.pos.y = (unit.pos.x - 2.f*lvl.staircase_up.x) / 2;
 				box = Box2d(2.f*lvl.staircase_up.x + 1.4f, 2.f*lvl.staircase_up.y, 2.f*(lvl.staircase_up.x + 1), 2.f*(lvl.staircase_up.y + 1));
 				break;
-			case 2:
+			case GDIR_UP:
 				unit.pos.y = (2.f*lvl.staircase_up.y - unit.pos.z) / 2 + 1.f;
 				box = Box2d(2.f*lvl.staircase_up.x, 2.f*lvl.staircase_up.y, 2.f*(lvl.staircase_up.x + 1), 2.f*lvl.staircase_up.y + 0.6f);
 				break;
-			case 3:
+			case GDIR_RIGHT:
 				unit.pos.y = (2.f*lvl.staircase_up.x - unit.pos.x) / 2 + 1.f;
 				box = Box2d(2.f*lvl.staircase_up.x, 2.f*lvl.staircase_up.y, 2.f*lvl.staircase_up.x + 0.6f, 2.f*(lvl.staircase_up.y + 1));
 				break;
@@ -4962,7 +4960,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 							gui->messages->AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
 					}
 					else
-						Net_LeaveLocation(WHERE_LEVEL_UP);
+						Net_LeaveLocation(ENTER_FROM_UP_LEVEL);
 				}
 				else
 					gui->messages->AddGameMsg3(GMS_NOT_LEADER);
@@ -4973,19 +4971,19 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 			Box2d box;
 			switch(lvl.staircase_down_dir)
 			{
-			case 0:
+			case GDIR_DOWN:
 				unit.pos.y = (unit.pos.z - 2.f*lvl.staircase_down.y)*-1.f;
 				box = Box2d(2.f*lvl.staircase_down.x, 2.f*lvl.staircase_down.y + 1.4f, 2.f*(lvl.staircase_down.x + 1), 2.f*(lvl.staircase_down.y + 1));
 				break;
-			case 1:
+			case GDIR_LEFT:
 				unit.pos.y = (unit.pos.x - 2.f*lvl.staircase_down.x)*-1.f;
 				box = Box2d(2.f*lvl.staircase_down.x + 1.4f, 2.f*lvl.staircase_down.y, 2.f*(lvl.staircase_down.x + 1), 2.f*(lvl.staircase_down.y + 1));
 				break;
-			case 2:
+			case GDIR_UP:
 				unit.pos.y = (2.f*lvl.staircase_down.y - unit.pos.z)*-1.f - 2.f;
 				box = Box2d(2.f*lvl.staircase_down.x, 2.f*lvl.staircase_down.y, 2.f*(lvl.staircase_down.x + 1), 2.f*lvl.staircase_down.y + 0.6f);
 				break;
-			case 3:
+			case GDIR_RIGHT:
 				unit.pos.y = (2.f*lvl.staircase_down.x - unit.pos.x)*-1.f - 2.f;
 				box = Box2d(2.f*lvl.staircase_down.x, 2.f*lvl.staircase_down.y, 2.f*lvl.staircase_down.x + 0.6f, 2.f*(lvl.staircase_down.y + 1));
 				break;
@@ -5015,7 +5013,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 							gui->messages->AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
 					}
 					else
-						Net_LeaveLocation(WHERE_LEVEL_DOWN);
+						Net_LeaveLocation(ENTER_FROM_DOWN_LEVEL);
 				}
 				else
 					gui->messages->AddGameMsg3(GMS_NOT_LEADER);
@@ -5058,7 +5056,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 								gui->messages->AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
 						}
 						else
-							Net_LeaveLocation(WHERE_PORTAL + index);
+							Net_LeaveLocation(ENTER_FROM_PORTAL + index);
 					}
 					else
 						gui->messages->AddGameMsg3(GMS_NOT_LEADER);
@@ -5493,7 +5491,15 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	}
 
 	if(Net::IsServer())
+	{
 		u->netid = Unit::netid_counter++;
+		if(!L.entering)
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::SPAWN_UNIT;
+			c.unit = u;
+		}
+	}
 
 	return u;
 }
@@ -8283,6 +8289,7 @@ void Game::ChangeLevel(int where)
 
 	Info(where == 1 ? "Changing level to lower." : "Changing level to upper.");
 
+	L.entering = true;
 	L.event_handler = nullptr;
 	UpdateDungeonMinimap(false);
 
@@ -8405,6 +8412,7 @@ void Game::ChangeLevel(int where)
 	}
 
 	Info("Randomness integrity: %d", RandVal());
+	L.entering = false;
 }
 
 void Game::AddPlayerTeam(const Vec3& pos, float rot, bool reenter, bool hide_weapon)
@@ -12025,7 +12033,7 @@ void Game::GenerateQuestUnits()
 		}
 	}
 
-	GenerateQuestUnits2(true);
+	GenerateQuestUnits2();
 
 	if(QM.quest_evil->evil_state == Quest_Evil::State::GenerateMage && L.location_index == QM.quest_evil->mage_loc)
 	{
@@ -12044,15 +12052,13 @@ void Game::GenerateQuestUnits()
 		QM.quest_tournament->GenerateUnits();
 }
 
-void Game::GenerateQuestUnits2(bool on_enter)
+void Game::GenerateQuestUnits2()
 {
 	if(QM.quest_goblins->goblins_state == Quest_Goblins::State::Counting && QM.quest_goblins->days <= 0)
 	{
 		Unit* u = L.SpawnUnitNearLocation(L.GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("q_gobliny_poslaniec"), &Team.leader->pos, -2, 2.f);
 		if(u)
 		{
-			if(Net::IsOnline() && !on_enter)
-				Net_SpawnUnit(u);
 			QM.quest_goblins->messenger = u;
 			u->StartAutoTalk(true);
 			if(devmode)
@@ -12065,8 +12071,6 @@ void Game::GenerateQuestUnits2(bool on_enter)
 		Unit* u = L.SpawnUnitNearLocation(L.GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("q_gobliny_mag"), &Team.leader->pos, 5, 2.f);
 		if(u)
 		{
-			if(Net::IsOnline() && !on_enter)
-				Net_SpawnUnit(u);
 			QM.quest_goblins->messenger = u;
 			QM.quest_goblins->goblins_state = Quest_Goblins::State::GeneratedMage;
 			u->StartAutoTalk(true);
@@ -12095,8 +12099,6 @@ void Game::UpdateQuests(int days)
 			Unit* u = L.SpawnUnitNearLocation(L.GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("poslaniec_tartak"), &Team.leader->pos, -2, 2.f);
 			if(u)
 			{
-				if(Net::IsOnline())
-					Net_SpawnUnit(u);
 				QM.quest_sawmill->messenger = u;
 				u->StartAutoTalk(true);
 			}
@@ -12127,8 +12129,6 @@ void Game::UpdateQuests(int days)
 					Unit* u = L.SpawnUnitNearLocation(L.GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("poslaniec_kopalnia"), &Team.leader->pos, -2, 2.f);
 					if(u)
 					{
-						if(Net::IsOnline())
-							Net_SpawnUnit(u);
 						W.AddNews(Format(txMineBuilt, W.GetLocation(QM.quest_mine->target_loc)->name.c_str()));
 						QM.quest_mine->messenger = u;
 						u->StartAutoTalk(true);
@@ -12159,8 +12159,6 @@ void Game::UpdateQuests(int days)
 			Unit* u = L.SpawnUnitNearLocation(L.GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("poslaniec_kopalnia"), &Team.leader->pos, -2, 2.f);
 			if(u)
 			{
-				if(Net::IsOnline())
-					Net_SpawnUnit(u);
 				QM.quest_mine->messenger = u;
 				u->StartAutoTalk(true);
 			}
@@ -12206,7 +12204,7 @@ void Game::UpdateQuests(int days)
 	QM.quest_tournament->Progress();
 
 	if(L.city_ctx)
-		GenerateQuestUnits2(false);
+		GenerateQuestUnits2();
 }
 
 void Game::RemoveQuestUnit(UnitData* ud, bool on_leave)
@@ -12363,8 +12361,6 @@ void Game::UpdateGame2(float dt)
 			Unit* u = L.SpawnUnitNearLocation(L.GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("agent"), &Team.leader->pos, -2, 2.f);
 			if(u)
 			{
-				if(Net::IsOnline())
-					Net_SpawnUnit(u);
 				QM.quest_bandits->bandits_state = Quest_Bandits::State::AgentCome;
 				QM.quest_bandits->agent = u;
 				u->StartAutoTalk(true);
@@ -12390,19 +12386,14 @@ void Game::UpdateGame2(float dt)
 			{
 				QM.quest_evil->evil_state = Quest_Evil::State::Summoning;
 				sound_mgr->PlaySound2d(sEvil);
+				if(Net::IsOnline())
+					Net::PushChange(NetChange::EVIL_SOUND);
 				QM.quest_evil->SetProgress(Quest_Evil::Progress::AltarEvent);
 				// spawn undead
 				InsideLocation* inside = (InsideLocation*)L.location;
 				inside->spawn = SG_UNDEAD;
-				uint offset = L.local_ctx.units->size();
 				DungeonGenerator* gen = (DungeonGenerator*)loc_gen_factory->Get(L.location);
 				gen->GenerateUnits();
-				if(Net::IsOnline())
-				{
-					Net::PushChange(NetChange::EVIL_SOUND);
-					for(uint i = offset, ile = L.local_ctx.units->size(); i < ile; ++i)
-						Net_SpawnUnit(L.local_ctx.units->at(i));
-				}
 				break;
 			}
 		}

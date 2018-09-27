@@ -705,8 +705,6 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 										u->in_arena = in_arena;
 										arena->units.push_back(u);
 									}
-									if(Net::IsOnline())
-										Net_SpawnUnit(u);
 								}
 							}
 							else

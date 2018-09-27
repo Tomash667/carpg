@@ -192,7 +192,7 @@ int CaveGenerator::TryGenerate()
 }
 
 //=================================================================================================
-void CaveGenerator::GenerateCave(Pole*& tiles, int size, Int2& stairs, int& stairs_dir, vector<Int2>& holes, Rect* ext)
+void CaveGenerator::GenerateCave(Pole*& tiles, int size, Int2& stairs, GameDirection& stairs_dir, vector<Int2>& holes, Rect* ext)
 {
 	assert(InRange(size, 10, 100));
 
@@ -232,7 +232,7 @@ void CaveGenerator::GenerateCave(Pole*& tiles, int size, Int2& stairs, int& stai
 }
 
 //=================================================================================================
-void CaveGenerator::CreateStairs(Pole* tiles, Int2& stairs, int& stairs_dir)
+void CaveGenerator::CreateStairs(Pole* tiles, Int2& stairs, GameDirection& stairs_dir)
 {
 	do
 	{
@@ -240,19 +240,19 @@ void CaveGenerator::CreateStairs(Pole* tiles, Int2& stairs, int& stairs_dir)
 
 		switch(Rand() % 4)
 		{
-		case 0: // dó³
+		case GDIR_DOWN:
 			dir = Int2(0, -1);
 			pt = Int2((Random(1, size - 2) + Random(1, size - 2)) / 2, size - 1);
 			break;
-		case 1: // lewa
+		case GDIR_LEFT:
 			dir = Int2(1, 0);
 			pt = Int2(0, (Random(1, size - 2) + Random(1, size - 2)) / 2);
 			break;
-		case 2: // góra
+		case GDIR_UP:
 			dir = Int2(0, 1);
 			pt = Int2((Random(1, size - 2) + Random(1, size - 2)) / 2, 0);
 			break;
-		case 3: // prawa
+		case GDIR_RIGHT:
 			dir = Int2(-1, 0);
 			pt = Int2(size - 1, (Random(1, size - 2) + Random(1, size - 2)) / 2);
 			break;
@@ -267,32 +267,33 @@ void CaveGenerator::CreateStairs(Pole* tiles, Int2& stairs, int& stairs_dir)
 			{
 				pt -= dir;
 				// sprawdŸ z ilu stron jest puste pole
-				int count = 0, dir2;
+				int count = 0;
+				GameDirection stairs_dir_result;
 				if(tiles[pt.x - 1 + pt.y*size].type == PUSTE)
 				{
 					++count;
-					dir2 = 1;
+					stairs_dir_result = GDIR_LEFT;
 				}
 				if(tiles[pt.x + 1 + pt.y*size].type == PUSTE)
 				{
 					++count;
-					dir2 = 3;
+					stairs_dir_result = GDIR_RIGHT;
 				}
 				if(tiles[pt.x + (pt.y - 1)*size].type == PUSTE)
 				{
 					++count;
-					dir2 = 0;
+					stairs_dir_result = GDIR_DOWN;
 				}
 				if(tiles[pt.x + (pt.y + 1)*size].type == PUSTE)
 				{
 					++count;
-					dir2 = 2;
+					stairs_dir_result = GDIR_UP;
 				}
 
 				if(count == 1)
 				{
 					stairs = pt;
-					stairs_dir = dir2;
+					stairs_dir = stairs_dir_result;
 					tiles[pt.x + pt.y*size].type = SCHODY_GORA;
 					return;
 				}

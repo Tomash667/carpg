@@ -89,9 +89,9 @@ Room* InsideLocationLevel::GetRoom(const Int2& pt)
 }
 
 //=================================================================================================
-bool InsideLocationLevel::GetRandomNearWallTile(const Room& room, Int2& _tile, int& _rot, bool nocol)
+bool InsideLocationLevel::GetRandomNearWallTile(const Room& room, Int2& tile, GameDirection& rot, bool nocol)
 {
-	_rot = Rand() % 4;
+	rot = (GameDirection)(Rand() % 4);
 
 	int tries = 0;
 
@@ -99,55 +99,55 @@ bool InsideLocationLevel::GetRandomNearWallTile(const Room& room, Int2& _tile, i
 	{
 		int tries2 = 10;
 
-		switch(_rot)
+		switch(rot)
 		{
-		case 2:
+		case GDIR_UP:
 			// górna œciana, obj \/
 			do
 			{
-				_tile.x = Random(room.pos.x + 1, room.pos.x + room.size.x - 2);
-				_tile.y = room.pos.y + 1;
+				tile.x = Random(room.pos.x + 1, room.pos.x + room.size.x - 2);
+				tile.y = room.pos.y + 1;
 
-				if(czy_blokuje2(map[_tile.x + (_tile.y - 1)*w]) && !czy_blokuje21(map[_tile.x + _tile.y*w]) && (nocol || !czy_blokuje21(map[_tile.x + (_tile.y + 1)*w])))
+				if(czy_blokuje2(map[tile.x + (tile.y - 1)*w]) && !czy_blokuje21(map[tile.x + tile.y*w]) && (nocol || !czy_blokuje21(map[tile.x + (tile.y + 1)*w])))
 					return true;
 
 				--tries2;
 			} while(tries2 > 0);
 			break;
-		case 1:
+		case GDIR_LEFT:
 			// prawa œciana, obj <
 			do
 			{
-				_tile.x = room.pos.x + room.size.x - 2;
-				_tile.y = Random(room.pos.y + 1, room.pos.y + room.size.y - 2);
+				tile.x = room.pos.x + room.size.x - 2;
+				tile.y = Random(room.pos.y + 1, room.pos.y + room.size.y - 2);
 
-				if(czy_blokuje2(map[_tile.x + 1 + _tile.y*w]) && !czy_blokuje21(map[_tile.x + _tile.y*w]) && (nocol || !czy_blokuje21(map[_tile.x - 1 + _tile.y*w])))
+				if(czy_blokuje2(map[tile.x + 1 + tile.y*w]) && !czy_blokuje21(map[tile.x + tile.y*w]) && (nocol || !czy_blokuje21(map[tile.x - 1 + tile.y*w])))
 					return true;
 
 				--tries2;
 			} while(tries2 > 0);
 			break;
-		case 0:
+		case GDIR_DOWN:
 			// dolna œciana, obj /|
 			do
 			{
-				_tile.x = Random(room.pos.x + 1, room.pos.x + room.size.x - 2);
-				_tile.y = room.pos.y + room.size.y - 2;
+				tile.x = Random(room.pos.x + 1, room.pos.x + room.size.x - 2);
+				tile.y = room.pos.y + room.size.y - 2;
 
-				if(czy_blokuje2(map[_tile.x + (_tile.y + 1)*w]) && !czy_blokuje21(map[_tile.x + _tile.y*w]) && (nocol || !czy_blokuje21(map[_tile.x + (_tile.y - 1)*w])))
+				if(czy_blokuje2(map[tile.x + (tile.y + 1)*w]) && !czy_blokuje21(map[tile.x + tile.y*w]) && (nocol || !czy_blokuje21(map[tile.x + (tile.y - 1)*w])))
 					return true;
 
 				--tries2;
 			} while(tries2 > 0);
 			break;
-		case 3:
+		case GDIR_RIGHT:
 			// lewa œciana, obj >
 			do
 			{
-				_tile.x = room.pos.x + 1;
-				_tile.y = Random(room.pos.y + 1, room.pos.y + room.size.y - 2);
+				tile.x = room.pos.x + 1;
+				tile.y = Random(room.pos.y + 1, room.pos.y + room.size.y - 2);
 
-				if(czy_blokuje2(map[_tile.x - 1 + _tile.y*w]) && !czy_blokuje21(map[_tile.x + _tile.y*w]) && (nocol || !czy_blokuje21(map[_tile.x + 1 + _tile.y*w])))
+				if(czy_blokuje2(map[tile.x - 1 + tile.y*w]) && !czy_blokuje21(map[tile.x + tile.y*w]) && (nocol || !czy_blokuje21(map[tile.x + 1 + tile.y*w])))
 					return true;
 
 				--tries2;
@@ -156,7 +156,7 @@ bool InsideLocationLevel::GetRandomNearWallTile(const Room& room, Int2& _tile, i
 		}
 
 		++tries;
-		_rot = (_rot + 1) % 4;
+		rot = (GameDirection)((rot + 1) % 4);
 	} while(tries <= 3);
 
 	return false;
@@ -168,7 +168,7 @@ void InsideLocationLevel::SaveLevel(GameWriter& f, bool local)
 	f << w;
 	f << h;
 	f.Write(map, sizeof(Pole)*w*h);
-	
+
 	// units
 	f << units.size();
 	for(Unit* unit : units)

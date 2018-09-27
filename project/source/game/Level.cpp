@@ -2477,8 +2477,7 @@ bool Level::CollideWithStairs(const CollisionObject& _co, const Vec3& _pos, floa
 	InsideLocation* inside = (InsideLocation*)location;
 	InsideLocationLevel& lvl = inside->GetLevelData();
 
-	int dir;
-
+	GameDirection dir;
 	if(_co.extra == 0)
 	{
 		assert(!lvl.staircase_down_in_wall);
@@ -2487,25 +2486,25 @@ bool Level::CollideWithStairs(const CollisionObject& _co, const Vec3& _pos, floa
 	else
 		dir = lvl.staircase_up_dir;
 
-	if(dir != 0)
+	if(dir != GDIR_DOWN)
 	{
 		if(CircleToRectangle(_pos.x, _pos.z, _radius, _co.pt.x, _co.pt.y - 0.95f, 1.f, 0.05f))
 			return true;
 	}
 
-	if(dir != 1)
+	if(dir != GDIR_LEFT)
 	{
 		if(CircleToRectangle(_pos.x, _pos.z, _radius, _co.pt.x - 0.95f, _co.pt.y, 0.05f, 1.f))
 			return true;
 	}
 
-	if(dir != 2)
+	if(dir != GDIR_UP)
 	{
 		if(CircleToRectangle(_pos.x, _pos.z, _radius, _co.pt.x, _co.pt.y + 0.95f, 1.f, 0.05f))
 			return true;
 	}
 
-	if(dir != 3)
+	if(dir != GDIR_RIGHT)
 	{
 		if(CircleToRectangle(_pos.x, _pos.z, _radius, _co.pt.x + 0.95f, _co.pt.y, 0.05f, 1.f))
 			return true;
@@ -2522,8 +2521,7 @@ bool Level::CollideWithStairsRect(const CollisionObject& _co, const Box2d& _box)
 	InsideLocation* inside = (InsideLocation*)location;
 	InsideLocationLevel& lvl = inside->GetLevelData();
 
-	int dir;
-
+	GameDirection dir;
 	if(_co.extra == 0)
 	{
 		assert(!lvl.staircase_down_in_wall);
@@ -2532,25 +2530,25 @@ bool Level::CollideWithStairsRect(const CollisionObject& _co, const Box2d& _box)
 	else
 		dir = lvl.staircase_up_dir;
 
-	if(dir != 0)
+	if(dir != GDIR_DOWN)
 	{
 		if(RectangleToRectangle(_box.v1.x, _box.v1.y, _box.v2.x, _box.v2.y, _co.pt.x - 1.f, _co.pt.y - 1.f, _co.pt.x + 1.f, _co.pt.y - 0.9f))
 			return true;
 	}
 
-	if(dir != 1)
+	if(dir != GDIR_LEFT)
 	{
 		if(RectangleToRectangle(_box.v1.x, _box.v1.y, _box.v2.x, _box.v2.y, _co.pt.x - 1.f, _co.pt.y - 1.f, _co.pt.x - 0.9f, _co.pt.y + 1.f))
 			return true;
 	}
 
-	if(dir != 2)
+	if(dir != GDIR_UP)
 	{
 		if(RectangleToRectangle(_box.v1.x, _box.v1.y, _box.v2.x, _box.v2.y, _co.pt.x - 1.f, _co.pt.y + 0.9f, _co.pt.x + 1.f, _co.pt.y + 1.f))
 			return true;
 	}
 
-	if(dir != 3)
+	if(dir != GDIR_RIGHT)
 	{
 		if(RectangleToRectangle(_box.v1.x, _box.v1.y, _box.v2.x, _box.v2.y, _co.pt.x + 0.9f, _co.pt.y - 1.f, _co.pt.x + 1.f, _co.pt.y + 1.f))
 			return true;
@@ -2730,7 +2728,8 @@ Trap* Level::CreateTrap(Int2 pt, TRAP_TYPE type, bool timed)
 	struct TrapLocation
 	{
 		Int2 pt;
-		int dist, dir;
+		int dist;
+		GameDirection dir;
 	};
 
 	Trap* t = new Trap;
@@ -2759,6 +2758,7 @@ Trap* Level::CreateTrap(Int2 pt, TRAP_TYPE type, bool timed)
 		// ustal tile i dir
 		for(int i = 0; i < 4; ++i)
 		{
+			GameDirection dir = (GameDirection)i;
 			bool ok = false;
 			int j;
 
@@ -2782,7 +2782,7 @@ Trap* Level::CreateTrap(Int2 pt, TRAP_TYPE type, bool timed)
 					TrapLocation& tr = Add1(possible);
 					tr.pt = trap.tile;
 					tr.dist = j;
-					tr.dir = i;
+					tr.dir = dir;
 				}
 			}
 		}

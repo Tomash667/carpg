@@ -154,7 +154,6 @@ void Arena::SpawnArenaViewers(int count)
 {
 	assert(InRange(count, 1, 9));
 
-	Game& game = Game::Get();
 	vector<Mesh::Point*> points;
 	UnitData& ud = *UnitData::Get("viewer");
 	InsideBuilding* arena = L.GetArena();
@@ -174,11 +173,9 @@ void Arena::SpawnArenaViewers(int count)
 		Vec3 pos(pt->mat._41 + arena->offset.x, pt->mat._42, pt->mat._43 + arena->offset.y);
 		Vec3 look_at(arena->offset.x, 0, arena->offset.y);
 		Unit* u = L.SpawnUnitNearLocation(arena->ctx, pos, ud, &look_at, -1, 2.f);
-		if(u && Net::IsOnline())
-			game.Net_SpawnUnit(u);
-		--count;
 		u->ai->loc_timer = Random(6.f, 12.f);
 		viewers.push_back(u);
+		--count;
 	}
 }
 
@@ -460,10 +457,6 @@ void Arena::StartArenaCombat(int level)
 				u->in_arena = 1;
 				u->frozen = FROZEN::YES;
 				units.push_back(u);
-
-				if(Net::IsOnline())
-					game.Net_SpawnUnit(u);
-
 				break;
 			}
 		}

@@ -252,6 +252,7 @@ void Game::StartQuickGame()
 //=================================================================================================
 void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharacter& cc, bool tutorial)
 {
+	L.entering = true;
 	QM.quest_tutorial->in_tutorial = tutorial;
 	gui->main_menu->visible = false;
 	Net::SetMode(Net::Mode::Singleplayer);

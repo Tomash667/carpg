@@ -872,7 +872,7 @@ bool Quest_Mine::GenerateMine(CaveGenerator* cave_gen)
 				//  ___ #__ #_#
 				if(lvl.map[x + y * lvl.w].type == PUSTE && Rand() % 3 != 0 && !IS_SET(lvl.map[x + y * lvl.w].flags, Pole::F_DRUGA_TEKSTURA))
 				{
-					int dir = -1;
+					GameDirection dir = GDIR_INVALID;
 
 					// ma byæ œciana i wolne z ty³u oraz wolne na lewo lub prawo lub zajête z obu stron
 					// __#
@@ -880,28 +880,28 @@ bool Quest_Mine::GenerateMine(CaveGenerator* cave_gen)
 					// __#
 					if(P(-1, 0) && S(1, 0) && S(1, -1) && S(1, 1) && ((P(-1, -1) && P(0, -1)) || (P(-1, 1) && P(0, 1)) || (S(-1, -1) && S(0, -1) && S(-1, 1) && S(0, 1))))
 					{
-						dir = 1;
+						dir = GDIR_LEFT;
 					}
 					// #__
 					// #?_
 					// #__
 					else if(P(1, 0) && S(-1, 0) && S(-1, 1) && S(-1, -1) && ((P(0, -1) && P(1, -1)) || (P(0, 1) && P(1, 1)) || (S(0, -1) && S(1, -1) && S(0, 1) && S(1, 1))))
 					{
-						dir = 3;
+						dir = GDIR_RIGHT;
 					}
 					// ###
 					// _?_
 					// ___
 					else if(P(0, 1) && S(0, -1) && S(-1, -1) && S(1, -1) && ((P(-1, 0) && P(-1, 1)) || (P(1, 0) && P(1, 1)) || (S(-1, 0) && S(-1, 1) && S(1, 0) && S(1, 1))))
 					{
-						dir = 0;
+						dir = GDIR_DOWN;
 					}
 					// ___
 					// _?_
 					// ###
 					else if(P(0, -1) && S(0, 1) && S(-1, 1) && S(1, 1) && ((P(-1, 0) && P(-1, -1)) || (P(1, 0) && P(1, -1)) || (S(-1, 0) && S(-1, -1) && S(1, 0) && S(1, -1))))
 					{
-						dir = 2;
+						dir = GDIR_UP;
 					}
 
 					if(dir != -1)
@@ -910,16 +910,16 @@ bool Quest_Mine::GenerateMine(CaveGenerator* cave_gen)
 
 						switch(dir)
 						{
-						case 0:
+						case GDIR_DOWN:
 							pos.z -= 1.f;
 							break;
-						case 1:
+						case GDIR_LEFT:
 							pos.x -= 1.f;
 							break;
-						case 2:
+						case GDIR_UP:
 							pos.z += 1.f;
 							break;
-						case 3:
+						case GDIR_RIGHT:
 							pos.x += 1.f;
 							break;
 						}

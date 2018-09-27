@@ -172,7 +172,7 @@ void TutorialLocationGenerator::OnEnter()
 			case '/':
 				p.type = SCHODY_GORA;
 				lvl.staircase_up = Int2(x, y);
-				lvl.staircase_up_dir = 2;
+				lvl.staircase_up_dir = GDIR_UP;
 				break;
 			case '+':
 				p.type = DRZWI;

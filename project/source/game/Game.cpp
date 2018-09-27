@@ -1830,6 +1830,7 @@ void Game::GenerateWorld()
 void Game::EnterLocation(int level, int from_portal, bool close_portal)
 {
 	Location& l = *L.location;
+	L.entering = true;
 
 	gui->world_map->visible = false;
 	gui->game_gui->Reset();
@@ -1991,6 +1992,7 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 
 	Info("Randomness integrity: %d", RandVal());
 	Info("Entered location.");
+	L.entering = false;
 }
 
 

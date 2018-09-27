@@ -593,9 +593,5 @@ void Quest_Contest::SpawnDrunkmans()
 	UnitData& pijak = *UnitData::Get("pijak");
 	int ile = Random(4, 6);
 	for(int i = 0; i < ile; ++i)
-	{
-		Unit* u = L.SpawnUnitInsideInn(pijak, Random(2, 15), inn, Level::SU_TEMPORARY | Level::SU_MAIN_ROOM);
-		if(u && Net::IsOnline())
-			Game::Get().Net_SpawnUnit(u);
-	}
+		L.SpawnUnitInsideInn(pijak, Random(2, 15), inn, Level::SU_TEMPORARY | Level::SU_MAIN_ROOM);
 }

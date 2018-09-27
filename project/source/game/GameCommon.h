@@ -4,20 +4,21 @@
 void SetGameCommonText();
 
 //-----------------------------------------------------------------------------
-enum GAME_DIR
+enum GameDirection
 {
 	GDIR_DOWN,
 	GDIR_LEFT,
 	GDIR_UP,
-	GDIR_RIGHT
+	GDIR_RIGHT,
+	GDIR_INVALID = -1
 };
 
 extern const Int2 g_kierunek2[4];
 
 //-----------------------------------------------------------------------------
-inline float dir_to_rot(int _dir)
+inline float dir_to_rot(GameDirection dir)
 {
-	switch(_dir)
+	switch(dir)
 	{
 	case GDIR_DOWN:
 		return 0;
@@ -34,18 +35,15 @@ inline float dir_to_rot(int _dir)
 }
 
 //-----------------------------------------------------------------------------
-inline Int2 dir_to_pos(int _dir)
+inline Int2 dir_to_pos(GameDirection dir)
 {
-	assert(InRange(_dir, 0, 4));
-
 	const Int2 k[4] = {
 		Int2(0,-1),
 		Int2(-1,0),
 		Int2(0,1),
 		Int2(1,0)
 	};
-
-	return k[_dir];
+	return k[dir];
 }
 
 //-----------------------------------------------------------------------------
@@ -61,7 +59,7 @@ inline Int2 pos_to_pt(const Vec3& pos)
 }
 
 //-----------------------------------------------------------------------------
-enum KIERUNEK
+enum Direction
 {
 	DIR_N,
 	DIR_S,
@@ -76,8 +74,8 @@ extern cstring kierunek_nazwa[];
 extern cstring kierunek_nazwa_s[];
 
 //-----------------------------------------------------------------------------
-KIERUNEK AngleToDir(float angle);
-KIERUNEK GetLocationDir(const Vec2& from, const Vec2& to);
+Direction AngleToDir(float angle);
+Direction GetLocationDir(const Vec2& from, const Vec2& to);
 inline cstring GetLocationDirName(const Vec2& from, const Vec2& to)
 {
 	return kierunek_nazwa[GetLocationDir(from, to)];

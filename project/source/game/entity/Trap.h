@@ -9,7 +9,8 @@ struct Trap
 {
 	int netid;
 	BaseTrap* base;
-	int state, dir;
+	int state;
+	GameDirection dir;
 	float time;
 	vector<Unit*>* hitted;
 	Int2 tile;

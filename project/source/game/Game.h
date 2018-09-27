@@ -655,7 +655,7 @@ public:
 	};
 	CanLeaveLocationResult CanLeaveLocation(Unit& unit);
 	void GenerateQuestUnits();
-	void GenerateQuestUnits2(bool on_enter);
+	void GenerateQuestUnits2();
 	void UpdateQuests(int days);
 	void RemoveQuestUnit(UnitData* ud, bool on_leave);
 	void RemoveQuestUnits(bool on_leave);
@@ -831,19 +831,6 @@ public:
 	void ServerProcessUnits(vector<Unit*>& units);
 	GroundItem* FindItemNetid(int netid, LevelContext** ctx = nullptr);
 	void UpdateWarpData(float dt);
-	void Net_SpawnUnit(Unit* unit)
-	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::SPAWN_UNIT;
-		c.unit = unit;
-	}
-	enum Where
-	{
-		WHERE_LEVEL_UP = -1,
-		WHERE_LEVEL_DOWN = -2,
-		WHERE_OUTSIDE = -3,
-		WHERE_PORTAL = 0
-	};
 	void Net_LeaveLocation(int where)
 	{
 		NetChange& c = Add1(Net::changes);

@@ -271,7 +271,6 @@ bool Quest_Tournament::ShouldJoin(Unit& u)
 //=================================================================================================
 void Quest_Tournament::GenerateUnits()
 {
-	Game& game = Game::Get();
 	Vec3 pos = L.city_ctx->FindBuilding(BuildingGroup::BG_ARENA)->walk_pt;
 	master = L.local_ctx.FindUnit("arena_master");
 
@@ -308,11 +307,7 @@ void Quest_Tournament::GenerateUnits()
 	{
 		Unit* u = L.SpawnUnitNearLocation(L.local_ctx, pos, GetRandomHeroData(), nullptr, Random(5, 20), 12.f);
 		if(u)
-		{
 			u->temporary = true;
-			if(Net::IsOnline())
-				game.Net_SpawnUnit(u);
-		}
 	}
 
 	generated = true;

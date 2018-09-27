@@ -176,7 +176,7 @@ void DungeonGenerator::Generate()
 		}
 
 		Room& r = lvl.rooms[id];
-		vector<std::pair<Int2, int> > good_pts;
+		vector<std::pair<Int2, GameDirection>> good_pts;
 
 		for(int y = 1; y < r.size.y - 1; ++y)
 		{
@@ -191,39 +191,39 @@ void DungeonGenerator::Generate()
 #define P(xx,yy) (lvl.At(r.pos+Int2(x+xx,y+yy)).type == PUSTE)
 #define B(xx,yy) (lvl.At(r.pos+Int2(x+xx,y+yy)).type == SCIANA)
 
-					int dir = -1;
+					GameDirection dir = GDIR_INVALID;
 
 					// __#
 					// _?#
 					// __#
 					if(P(-1, 0) && B(1, 0) && B(1, -1) && B(1, 1) && ((P(-1, -1) && P(0, -1)) || (P(-1, 1) && P(0, 1)) || (B(-1, -1) && B(0, -1) && B(-1, 1) && B(0, 1))))
 					{
-						dir = 1;
+						dir = GDIR_LEFT;
 					}
 					// #__
 					// #?_
 					// #__
 					else if(P(1, 0) && B(-1, 0) && B(-1, 1) && B(-1, -1) && ((P(0, -1) && P(1, -1)) || (P(0, 1) && P(1, 1)) || (B(0, -1) && B(1, -1) && B(0, 1) && B(1, 1))))
 					{
-						dir = 3;
+						dir = GDIR_RIGHT;
 					}
 					// ###
 					// _?_
 					// ___
 					else if(P(0, 1) && B(0, -1) && B(-1, -1) && B(1, -1) && ((P(-1, 0) && P(-1, 1)) || (P(1, 0) && P(1, 1)) || (B(-1, 0) && B(-1, 1) && B(1, 0) && B(1, 1))))
 					{
-						dir = 2;
+						dir = GDIR_UP;
 					}
 					// ___
 					// _?_
 					// ###
 					else if(P(0, -1) && B(0, 1) && B(-1, 1) && B(1, 1) && ((P(-1, 0) && P(-1, -1)) || (P(1, 0) && P(1, -1)) || (B(-1, 0) && B(-1, -1) && B(1, 0) && B(1, -1))))
 					{
-						dir = 0;
+						dir = GDIR_DOWN;
 					}
 
-					if(dir != -1)
-						good_pts.push_back(std::pair<Int2, int>(r.pos + Int2(x, y), dir));
+					if(dir != GDIR_INVALID)
+						good_pts.push_back(std::make_pair(r.pos + Int2(x, y), dir));
 #undef P
 #undef B
 				}
@@ -233,7 +233,7 @@ void DungeonGenerator::Generate()
 		if(good_pts.empty())
 			goto powtorz;
 
-		std::pair<Int2, int>& pt = good_pts[Rand() % good_pts.size()];
+		std::pair<Int2, GameDirection>& pt = good_pts[Rand() % good_pts.size()];
 
 		const Vec3 pos(2.f*pt.first.x + 1, 0, 2.f*pt.first.y + 1);
 		float rot = Clip(dir_to_rot(pt.second) + PI);

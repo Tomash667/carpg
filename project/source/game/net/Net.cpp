@@ -2510,8 +2510,6 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 								spawned->in_arena = in_arena;
 								arena->units.push_back(spawned);
 							}
-							if(Net::IsOnline())
-								Net_SpawnUnit(spawned);
 						}
 					}
 				}
@@ -2603,14 +2601,14 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					if(result == CanLeaveLocationResult::Yes)
 					{
 						Net::PushChange(NetChange::LEAVE_LOCATION);
-						if(type == WHERE_OUTSIDE)
+						if(type == ENTER_FROM_OUTSIDE)
 							fallback_type = FALLBACK::EXIT;
-						else if(type == WHERE_LEVEL_UP)
+						else if(type == ENTER_FROM_UP_LEVEL)
 						{
 							fallback_type = FALLBACK::CHANGE_LEVEL;
 							fallback_1 = -1;
 						}
-						else if(type == WHERE_LEVEL_DOWN)
+						else if(type == ENTER_FROM_DOWN_LEVEL)
 						{
 							fallback_type = FALLBACK::CHANGE_LEVEL;
 							fallback_1 = +1;

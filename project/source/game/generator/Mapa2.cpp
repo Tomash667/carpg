@@ -3,6 +3,7 @@
 #include "Mapa2.h"
 #include "BitStreamFunc.h"
 #include "SaveState.h"
+#include "GameCommon.h"
 
 const float Room::HEIGHT = 4.f;
 const float Room::HEIGHT_LOW = 3.f;
@@ -921,7 +922,7 @@ struct PosDir
 	}
 };
 
-bool dodaj_schody(OpcjeMapy& _opcje, Room& room, Int2& _pozycja, int& _kierunek, POLE _schody, bool& _w_scianie)
+bool dodaj_schody(OpcjeMapy& _opcje, Room& room, Int2& _pozycja, GameDirection& _kierunek, POLE _schody, bool& _w_scianie)
 {
 #define B(_xx,_yy) (czy_blokuje2(_opcje.mapa[x+_xx+(y+_yy)*_opcje.w].type))
 #define P(_xx,_yy) (!czy_blokuje21(_opcje.mapa[x+_xx+(y+_yy)*_opcje.w].type))
@@ -947,28 +948,28 @@ bool dodaj_schody(OpcjeMapy& _opcje, Room& room, Int2& _pozycja, int& _kierunek,
 					// ##
 					// #>
 					if(B(-1, 1) && B(0, 1) && B(-1, 0))
-						wybor.push_back(PosDir(x, y, BIT(0) | BIT(3), false, room));
+						wybor.push_back(PosDir(x, y, BIT(GDIR_DOWN) | BIT(GDIR_RIGHT), false, room));
 				}
 				if(right && top)
 				{
 					// ##
 					// >#
 					if(B(0, 1) && B(1, 1) && B(1, 0))
-						wybor.push_back(PosDir(x, y, BIT(0) | BIT(1), false, room));
+						wybor.push_back(PosDir(x, y, BIT(GDIR_DOWN) | BIT(GDIR_LEFT), false, room));
 				}
 				if(left && bottom)
 				{
 					// #>
 					// ##
 					if(B(-1, 0) && B(-1, -1) && B(0, -1))
-						wybor.push_back(PosDir(x, y, BIT(2) | BIT(3), false, room));
+						wybor.push_back(PosDir(x, y, BIT(GDIR_UP) | BIT(GDIR_RIGHT), false, room));
 				}
 				if(right && bottom)
 				{
 					// <#
 					// ##
 					if(B(1, 0) && B(0, -1) && B(1, -1))
-						wybor.push_back(PosDir(x, y, BIT(1) | BIT(2), false, room));
+						wybor.push_back(PosDir(x, y, BIT(GDIR_LEFT) | BIT(GDIR_UP), false, room));
 				}
 				if(left && top && bottom)
 				{
@@ -976,7 +977,7 @@ bool dodaj_schody(OpcjeMapy& _opcje, Room& room, Int2& _pozycja, int& _kierunek,
 					// #>
 					// #_
 					if(B(-1, 1) && P(0, 1) && B(-1, 0) && B(-1, -1) && P(0, -1))
-						wybor.push_back(PosDir(x, y, BIT(0) | BIT(2) | BIT(3), false, room));
+						wybor.push_back(PosDir(x, y, BIT(GDIR_DOWN) | BIT(GDIR_UP) | BIT(GDIR_RIGHT), false, room));
 				}
 				if(right && top && bottom)
 				{
@@ -984,21 +985,21 @@ bool dodaj_schody(OpcjeMapy& _opcje, Room& room, Int2& _pozycja, int& _kierunek,
 					// <#
 					// _#
 					if(P(0, 1) && B(1, 1) && B(1, 0) && P(0, -1) && B(1, -1))
-						wybor.push_back(PosDir(x, y, BIT(0) | BIT(1) | BIT(2), false, room));
+						wybor.push_back(PosDir(x, y, BIT(GDIR_DOWN) | BIT(GDIR_LEFT) | BIT(GDIR_UP), false, room));
 				}
 				if(top && left && right)
 				{
 					// ###
 					// _>_
 					if(B(-1, 1) && B(0, 1) && B(1, 1) && P(-1, 0) && P(1, 0))
-						wybor.push_back(PosDir(x, y, BIT(0) | BIT(1) | BIT(3), false, room));
+						wybor.push_back(PosDir(x, y, BIT(GDIR_DOWN) | BIT(GDIR_LEFT) | BIT(GDIR_RIGHT), false, room));
 				}
 				if(bottom && left && right)
 				{
 					// _>_
 					// ###
 					if(P(-1, 0) && P(1, 0) && B(-1, -1) && B(0, -1) && B(1, -1))
-						wybor.push_back(PosDir(x, y, BIT(1) | BIT(2) | BIT(3), false, room));
+						wybor.push_back(PosDir(x, y, BIT(GDIR_LEFT) | BIT(GDIR_UP) | BIT(GDIR_RIGHT), false, room));
 				}
 				if(left && right && top && bottom)
 				{
@@ -1006,7 +1007,7 @@ bool dodaj_schody(OpcjeMapy& _opcje, Room& room, Int2& _pozycja, int& _kierunek,
 					//  _<_
 					//  ___
 					if(P(-1, -1) && P(0, -1) && P(1, -1) && P(-1, 0) && P(1, 0) && P(-1, 1) && P(0, 1) && P(1, 1))
-						wybor.push_back(PosDir(x, y, BIT(0) | BIT(1) | BIT(2) | BIT(3), false, room));
+						wybor.push_back(PosDir(x, y, BIT(GDIR_DOWN) | BIT(GDIR_LEFT) | BIT(GDIR_UP) | BIT(GDIR_RIGHT), false, room));
 				}
 			}
 			else if((p.type == SCIANA || p.type == BLOKADA_SCIANA) && (x > 0) && (x<int(_opcje.w - 1)) && (y > 0) && (y<int(_opcje.h - 1)))
@@ -1015,25 +1016,25 @@ bool dodaj_schody(OpcjeMapy& _opcje, Room& room, Int2& _pozycja, int& _kierunek,
 				// #>_
 				// ##
 				if(B(-1, 1) && B(0, 1) && B(-1, 0) && P(1, 0) && B(-1, -1) && B(0, -1))
-					wybor.push_back(PosDir(x, y, BIT(3), true, room));
+					wybor.push_back(PosDir(x, y, BIT(GDIR_RIGHT), true, room));
 
 				//  ##
 				// _<#
 				//  ##
 				if(B(0, 1) && B(1, 1) && P(-1, 0) && B(1, 0) && B(0, -1) && B(1, -1))
-					wybor.push_back(PosDir(x, y, BIT(1), true, room));
+					wybor.push_back(PosDir(x, y, BIT(GDIR_LEFT), true, room));
 
 				// ###
 				// #>#
 				//  _
 				if(B(-1, 1) && B(0, 1) && B(1, 1) && B(-1, 0) && B(1, 0) && P(0, -1))
-					wybor.push_back(PosDir(x, y, BIT(0), true, room));
+					wybor.push_back(PosDir(x, y, BIT(GDIR_DOWN), true, room));
 
 				//  _
 				// #<#
 				// ###
 				if(P(0, 1) && B(-1, 0) && B(1, 0) && B(-1, -1) && B(0, -1) && B(1, -1))
-					wybor.push_back(PosDir(x, y, BIT(2), true, room));
+					wybor.push_back(PosDir(x, y, BIT(GDIR_UP), true, room));
 			}
 		}
 	}
@@ -1075,100 +1076,100 @@ bool dodaj_schody(OpcjeMapy& _opcje, Room& room, Int2& _pozycja, int& _kierunek,
 	case 0:
 		assert(0);
 		return false;
-	case BIT(0):
-		_kierunek = 0;
+	case BIT(GDIR_DOWN):
+		_kierunek = GDIR_DOWN;
 		break;
-	case BIT(1):
-		_kierunek = 1;
+	case BIT(GDIR_LEFT):
+		_kierunek = GDIR_LEFT;
 		break;
-	case BIT(2):
-		_kierunek = 2;
+	case BIT(GDIR_UP):
+		_kierunek = GDIR_UP;
 		break;
-	case BIT(3):
-		_kierunek = 3;
+	case BIT(GDIR_RIGHT):
+		_kierunek = GDIR_RIGHT;
 		break;
-	case BIT(0) | BIT(1):
+	case BIT(GDIR_DOWN) | BIT(GDIR_LEFT):
 		if(Rand() % 2 == 0)
-			_kierunek = 0;
+			_kierunek = GDIR_DOWN;
 		else
-			_kierunek = 1;
+			_kierunek = GDIR_LEFT;
 		break;
-	case BIT(0) | BIT(2):
+	case BIT(GDIR_DOWN) | BIT(GDIR_UP):
 		if(Rand() % 2 == 0)
-			_kierunek = 0;
+			_kierunek = GDIR_DOWN;
 		else
-			_kierunek = 2;
+			_kierunek = GDIR_UP;
 		break;
-	case BIT(0) | BIT(3):
+	case BIT(GDIR_DOWN) | BIT(GDIR_RIGHT):
 		if(Rand() % 2 == 0)
-			_kierunek = 0;
+			_kierunek = GDIR_DOWN;
 		else
-			_kierunek = 3;
+			_kierunek = GDIR_RIGHT;
 		break;
-	case BIT(1) | BIT(2):
+	case BIT(GDIR_LEFT) | BIT(GDIR_UP):
 		if(Rand() % 2 == 0)
-			_kierunek = 1;
+			_kierunek = GDIR_LEFT;
 		else
-			_kierunek = 2;
+			_kierunek = GDIR_UP;
 		break;
-	case BIT(1) | BIT(3):
+	case BIT(GDIR_LEFT) | BIT(GDIR_RIGHT):
 		if(Rand() % 2 == 0)
-			_kierunek = 1;
+			_kierunek = GDIR_LEFT;
 		else
-			_kierunek = 3;
+			_kierunek = GDIR_RIGHT;
 		break;
-	case BIT(2) | BIT(3):
+	case BIT(GDIR_UP) | BIT(GDIR_RIGHT):
 		if(Rand() % 2 == 0)
-			_kierunek = 2;
+			_kierunek = GDIR_UP;
 		else
-			_kierunek = 3;
+			_kierunek = GDIR_RIGHT;
 		break;
-	case BIT(0) | BIT(1) | BIT(2):
+	case BIT(GDIR_DOWN) | BIT(GDIR_LEFT) | BIT(GDIR_UP):
 		{
 			int t = Rand() % 3;
 			if(t == 0)
-				_kierunek = 0;
+				_kierunek = GDIR_DOWN;
 			else if(t == 1)
-				_kierunek = 1;
+				_kierunek = GDIR_LEFT;
 			else
-				_kierunek = 2;
+				_kierunek = GDIR_UP;
 		}
 		break;
-	case BIT(0) | BIT(1) | BIT(3):
+	case BIT(GDIR_DOWN) | BIT(GDIR_LEFT) | BIT(GDIR_RIGHT):
 		{
 			int t = Rand() % 3;
 			if(t == 0)
-				_kierunek = 0;
+				_kierunek = GDIR_DOWN;
 			else if(t == 1)
-				_kierunek = 1;
+				_kierunek = GDIR_LEFT;
 			else
-				_kierunek = 3;
+				_kierunek = GDIR_RIGHT;
 		}
 		break;
-	case BIT(0) | BIT(2) | BIT(3):
+	case BIT(GDIR_DOWN) | BIT(GDIR_UP) | BIT(GDIR_RIGHT):
 		{
 			int t = Rand() % 3;
 			if(t == 0)
-				_kierunek = 0;
+				_kierunek = GDIR_DOWN;
 			else if(t == 1)
-				_kierunek = 2;
+				_kierunek = GDIR_UP;
 			else
-				_kierunek = 3;
+				_kierunek = GDIR_RIGHT;
 		}
 		break;
-	case BIT(1) | BIT(2) | BIT(3):
+	case BIT(GDIR_LEFT) | BIT(GDIR_UP) | BIT(GDIR_RIGHT):
 		{
 			int t = Rand() % 3;
 			if(t == 0)
-				_kierunek = 1;
+				_kierunek = GDIR_LEFT;
 			else if(t == 1)
-				_kierunek = 2;
+				_kierunek = GDIR_UP;
 			else
-				_kierunek = 3;
+				_kierunek = GDIR_RIGHT;
 		}
 		break;
-	case BIT(0) | BIT(1) | BIT(2) | BIT(3):
-		_kierunek = Rand() % 4;
+	case BIT(GDIR_DOWN) | BIT(GDIR_LEFT) | BIT(GDIR_UP) | BIT(GDIR_RIGHT):
+		_kierunek = (GameDirection)(Rand() % 4);
 		break;
 	default:
 		assert(0);
@@ -1186,7 +1187,7 @@ bool SortujPokoje(Int2& a, Int2& b)
 	return a.y < b.y;
 }
 
-bool generuj_schody2(OpcjeMapy& _opcje, vector<Room*>& rooms, OpcjeMapy::GDZIE_SCHODY _gdzie, Room*& room, Int2& _pozycja, int& _kierunek, bool _gora, bool& _w_scianie)
+bool generuj_schody2(OpcjeMapy& _opcje, vector<Room*>& rooms, OpcjeMapy::GDZIE_SCHODY _gdzie, Room*& room, Int2& _pozycja, GameDirection& _kierunek, bool _gora, bool& _w_scianie)
 {
 	switch(_gdzie)
 	{

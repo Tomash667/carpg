@@ -62,7 +62,7 @@ struct OpcjeMapy
 	Pole* mapa;
 	vector<Room>* rooms;
 	Room* schody_gora_pokoj, *schody_dol_pokoj;
-	int schody_gora_kierunek, schody_dol_kierunek;
+	GameDirection schody_gora_kierunek, schody_dol_kierunek;
 	Int2 schody_gora_pozycja, schody_dol_pozycja;
 
 	// output

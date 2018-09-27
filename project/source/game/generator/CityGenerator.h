@@ -100,7 +100,7 @@ public:
 	void Init(TerrainTile* tiles, float* height, int w, int h);
 	void SetRoadSize(int road_size, int road_part);
 	void SetTerrainNoise(int octaves, float frequency, float hmin, float hmax);
-	void GenerateMainRoad(RoadType type, GAME_DIR dir, int roads, bool plaza, int swap, vector<EntryPoint>& entry_points, int& gates, bool fill_roads);
+	void GenerateMainRoad(RoadType type, GameDirection dir, int roads, bool plaza, int swap, vector<EntryPoint>& entry_points, int& gates, bool fill_roads);
 	void GenerateBuildings(vector<ToBuild>& tobuild);
 	void RandomizeHeight();
 	void FlattenRoad();
@@ -110,9 +110,9 @@ public:
 	void GenerateFields();
 	void ApplyWallTiles(int gates);
 	void GenerateRoads(TERRAIN_TILE road_tile, int tries);
-	int MakeRoad(const Int2& pt, GAME_DIR dir, int road_index, int& collided_road);
-	void FillRoad(const Int2& pt, GAME_DIR dir, int dist);
-	bool MakeAndFillRoad(const Int2& pt, GAME_DIR dir, int road_index);
+	int MakeRoad(const Int2& pt, GameDirection dir, int road_index, int& collided_road);
+	void FillRoad(const Int2& pt, GameDirection dir, int dist);
+	bool MakeAndFillRoad(const Int2& pt, GameDirection dir, int road_index);
 	void CheckTiles(TERRAIN_TILE t);
 	void Test();
 
@@ -168,7 +168,7 @@ private:
 	vector<Road2> roads;
 	vector<int> road_ids;
 	TERRAIN_TILE road_tile;
-	vector<BuildPt> valid_pts;
+	vector<std::pair<Int2, GameDirection>> valid_pts;
 	Int2 well_pt;
 	bool have_well;
 };
