@@ -45,11 +45,11 @@ struct InsideLocationLevel : public LevelArea
 	}
 	Int2 GetUpStairsFrontTile() const
 	{
-		return staircase_up + dir_to_pos(staircase_up_dir);
+		return staircase_up + DirToPos(staircase_up_dir);
 	}
 	Int2 GetDownStairsFrontTile() const
 	{
-		return staircase_down + dir_to_pos(staircase_down_dir);
+		return staircase_down + DirToPos(staircase_down_dir);
 	}
 	Room* GetRandomRoom()
 	{
@@ -82,7 +82,7 @@ struct InsideLocationLevel : public LevelArea
 
 	bool IsTileVisible(const Vec3& pos) const
 	{
-		Int2 pt = pos_to_pt(pos);
+		Int2 pt = PosToPt(pos);
 		return IS_SET(map[pt(w)].flags, Pole::F_ODKRYTE);
 	}
 

@@ -2764,7 +2764,7 @@ Trap* Level::CreateTrap(Int2 pt, TRAP_TYPE type, bool timed)
 
 			for(j = 1; j <= 10; ++j)
 			{
-				if(czy_blokuje2(lvl.map[pt.x + g_kierunek2[i].x*j + (pt.y + g_kierunek2[i].y*j)*lvl.w]))
+				if(czy_blokuje2(lvl.map[pt.x + DirToPos(dir).x*j + (pt.y + DirToPos(dir).y*j)*lvl.w]))
 				{
 					if(j != 1)
 						ok = true;
@@ -2774,9 +2774,9 @@ Trap* Level::CreateTrap(Int2 pt, TRAP_TYPE type, bool timed)
 
 			if(ok)
 			{
-				trap.tile = pt + g_kierunek2[i] * j;
+				trap.tile = pt + DirToPos(dir) * j;
 
-				if(Game::Get().CanShootAtLocation(Vec3(trap.pos.x + (2.f*j - 1.2f)*g_kierunek2[i].x, 1.f, trap.pos.z + (2.f*j - 1.2f)*g_kierunek2[i].y),
+				if(Game::Get().CanShootAtLocation(Vec3(trap.pos.x + (2.f*j - 1.2f)*DirToPos(dir).x, 1.f, trap.pos.z + (2.f*j - 1.2f)*DirToPos(dir).y),
 					Vec3(trap.pos.x, 1.f, trap.pos.z)))
 				{
 					TrapLocation& tr = Add1(possible);

@@ -579,7 +579,7 @@ void Quest_Evil::GenerateBloodyAltar()
 
 	// dodaj krew
 	vector<Int2> path;
-	game->pathfinding->FindPath(L.local_ctx, lvl.staircase_up, pos_to_pt(obj->pos), path);
+	game->pathfinding->FindPath(L.local_ctx, lvl.staircase_up, PosToPt(obj->pos), path);
 	for(vector<Int2>::iterator it = path.begin(), end = path.end(); it != end; ++it)
 	{
 		if(it != path.begin())

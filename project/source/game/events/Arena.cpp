@@ -174,6 +174,7 @@ void Arena::SpawnArenaViewers(int count)
 		Vec3 look_at(arena->offset.x, 0, arena->offset.y);
 		Unit* u = L.SpawnUnitNearLocation(arena->ctx, pos, ud, &look_at, -1, 2.f);
 		u->ai->loc_timer = Random(6.f, 12.f);
+		u->temporary = true;
 		viewers.push_back(u);
 		--count;
 	}

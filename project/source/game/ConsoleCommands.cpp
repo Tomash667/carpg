@@ -1592,7 +1592,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					if(L.location->outside && pc->unit->in_building == -1 && L.terrain->IsInside(pc->unit->pos))
 					{
 						OutsideLocation* outside = (OutsideLocation*)L.location;
-						const TerrainTile& t = outside->tiles[pos_to_pt(pc->unit->pos)(outside->size)];
+						const TerrainTile& t = outside->tiles[PosToPt(pc->unit->pos)(outside->size)];
 						Msg(t.GetInfo());
 					}
 					else

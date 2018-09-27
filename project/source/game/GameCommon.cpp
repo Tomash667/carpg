@@ -8,16 +8,8 @@
 vector<uint> _to_remove;
 
 //-----------------------------------------------------------------------------
-const Int2 g_kierunek2[4] = {
-	Int2(0,-1),
-	Int2(-1,0),
-	Int2(0,1),
-	Int2(1,0)
-};
-
-//-----------------------------------------------------------------------------
-cstring kierunek_nazwa[8];
-cstring kierunek_nazwa_s[] = {
+cstring dir_name[8];
+cstring dir_name_short[] = {
 	"N",
 	"S",
 	"E",
@@ -31,14 +23,14 @@ cstring kierunek_nazwa_s[] = {
 //=================================================================================================
 void SetGameCommonText()
 {
-	kierunek_nazwa[DIR_N] = Str("dirN");
-	kierunek_nazwa[DIR_S] = Str("dirS");
-	kierunek_nazwa[DIR_E] = Str("dirE");
-	kierunek_nazwa[DIR_W] = Str("dirW");
-	kierunek_nazwa[DIR_NE] = Str("dirNE");
-	kierunek_nazwa[DIR_NW] = Str("dirNW");
-	kierunek_nazwa[DIR_SE] = Str("dirSE");
-	kierunek_nazwa[DIR_SW] = Str("dirSW");
+	dir_name[DIR_N] = Str("dirN");
+	dir_name[DIR_S] = Str("dirS");
+	dir_name[DIR_E] = Str("dirE");
+	dir_name[DIR_W] = Str("dirW");
+	dir_name[DIR_NE] = Str("dirNE");
+	dir_name[DIR_NW] = Str("dirNW");
+	dir_name[DIR_SE] = Str("dirSE");
+	dir_name[DIR_SW] = Str("dirSW");
 }
 
 //=================================================================================================

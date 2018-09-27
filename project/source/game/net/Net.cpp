@@ -2821,13 +2821,13 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					if(!is_down)
 					{
 						Int2 tile = lvl.GetUpStairsFrontTile();
-						unit.rot = dir_to_rot(lvl.staircase_up_dir);
+						unit.rot = DirToRot(lvl.staircase_up_dir);
 						L.WarpUnit(unit, Vec3(2.f*tile.x + 1.f, 0.f, 2.f*tile.y + 1.f));
 					}
 					else
 					{
 						Int2 tile = lvl.GetDownStairsFrontTile();
-						unit.rot = dir_to_rot(lvl.staircase_down_dir);
+						unit.rot = DirToRot(lvl.staircase_down_dir);
 						L.WarpUnit(unit, Vec3(2.f*tile.x + 1.f, 0.f, 2.f*tile.y + 1.f));
 					}
 				}

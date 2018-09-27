@@ -60,7 +60,7 @@ void Quest_DeliverLetter::SetProgress(int prog2)
 			Location& loc2 = GetStartLocation();
 			msgs.push_back(Format(game->txQuest[3], LocationHelper::IsCity(loc2) ? game->txForMayor : game->txForSoltys, loc2.name.c_str(), W.GetDate()));
 			msgs.push_back(Format(game->txQuest[4], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str(),
-				kierunek_nazwa[GetLocationDir(loc2.pos, loc.pos)]));
+				dir_name[GetLocationDir(loc2.pos, loc.pos)]));
 		}
 		break;
 	case Progress::Timeout:
@@ -108,7 +108,7 @@ cstring Quest_DeliverLetter::FormatString(const string& str)
 	else if(str == "target_locname")
 		return loc.name.c_str();
 	else if(str == "target_dir")
-		return kierunek_nazwa[GetLocationDir(GetStartLocation().pos, loc.pos)];
+		return dir_name[GetLocationDir(GetStartLocation().pos, loc.pos)];
 	else
 	{
 		assert(0);

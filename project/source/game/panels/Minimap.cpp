@@ -62,7 +62,7 @@ void Minimap::Draw(ControlDrawData* /*cdd*/)
 	while(p)
 	{
 		if(!lvl || (L.dungeon_level == p->at_level && lvl->IsTileVisible(p->pos)))
-			GUI.DrawSprite(tMiniportal, Int2(TileToPoint(pos_to_pt(p->pos))) - Int2(24, 8), Color::Alpha(180));
+			GUI.DrawSprite(tMiniportal, Int2(TileToPoint(PosToPt(p->pos))) - Int2(24, 8), Color::Alpha(180));
 		p = p->next_portal;
 	}
 

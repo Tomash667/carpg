@@ -924,7 +924,7 @@ bool Quest_Mine::GenerateMine(CaveGenerator* cave_gen)
 							break;
 						}
 
-						float rot = Clip(dir_to_rot(dir) + PI);
+						float rot = Clip(DirToRot(dir) + PI);
 						static float radius = max(iron_vein->size.x, iron_vein->size.y) * SQRT_2;
 
 						Level::IgnoreObjects ignore = { 0 };
@@ -1020,10 +1020,10 @@ bool Quest_Mine::GenerateMine(CaveGenerator* cave_gen)
 		int odl = 1;
 		while(lvl.map[pt(lvl.w)].type == PUSTE && odl < 5)
 		{
-			pt += g_kierunek2[lvl.staircase_up_dir];
+			pt += DirToPos(lvl.staircase_up_dir);
 			++odl;
 		}
-		pt -= g_kierunek2[lvl.staircase_up_dir];
+		pt -= DirToPos(lvl.staircase_up_dir);
 
 		L.SpawnUnitNearLocation(L.local_ctx, Vec3(2.f*pt.x + 1, 0, 2.f*pt.y + 1), *UnitData::Get("gornik_szef"), &Vec3(2.f*lvl.staircase_up.x + 1, 0, 2.f*lvl.staircase_up.y + 1), -2);
 
@@ -1073,10 +1073,10 @@ bool Quest_Mine::GenerateMine(CaveGenerator* cave_gen)
 					int odl = 1;
 					while(lvl.map[pt(lvl.w)].type == PUSTE && odl < 5)
 					{
-						pt += g_kierunek2[lvl.staircase_up_dir];
+						pt += DirToPos(lvl.staircase_up_dir);
 						++odl;
 					}
-					pt -= g_kierunek2[lvl.staircase_up_dir];
+					pt -= DirToPos(lvl.staircase_up_dir);
 
 					L.WarpUnit(*u, Vec3(2.f*pt.x + 1, 0, 2.f*pt.y + 1));
 				}

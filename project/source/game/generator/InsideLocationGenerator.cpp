@@ -257,21 +257,21 @@ void InsideLocationGenerator::OnEnter()
 		if(L.enter_from == ENTER_FROM_DOWN_LEVEL)
 		{
 			spawn_pt = lvl.GetDownStairsFrontTile();
-			spawn_rot = dir_to_rot(lvl.staircase_down_dir);
+			spawn_rot = DirToRot(lvl.staircase_down_dir);
 		}
 		else
 		{
 			spawn_pt = lvl.GetUpStairsFrontTile();
-			spawn_rot = dir_to_rot(lvl.staircase_up_dir);
+			spawn_rot = DirToRot(lvl.staircase_up_dir);
 		}
-		spawn_pos = pt_to_pos(spawn_pt);
+		spawn_pos = PtToPos(spawn_pt);
 	}
 	else
 	{
 		Portal* portal = inside->GetPortal(L.enter_from);
 		spawn_pos = portal->GetSpawnPos();
 		spawn_rot = Clip(portal->rot + PI);
-		spawn_pt = pos_to_pt(spawn_pos);
+		spawn_pt = PosToPt(spawn_pos);
 	}
 
 	game.AddPlayerTeam(spawn_pos, spawn_rot, reenter, L.enter_from == ENTER_FROM_OUTSIDE);
@@ -350,8 +350,8 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 	{
 		Object* o = new Object;
 		o->mesh = game.aStairsUp;
-		o->pos = pt_to_pos(lvl.staircase_up);
-		o->rot = Vec3(0, dir_to_rot(lvl.staircase_up_dir), 0);
+		o->pos = PtToPos(lvl.staircase_up);
+		o->rot = Vec3(0, DirToRot(lvl.staircase_up_dir), 0);
 		o->scale = 1;
 		o->base = nullptr;
 		L.local_ctx.objects->push_back(o);
@@ -364,8 +364,8 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 	{
 		Object* o = new Object;
 		o->mesh = (lvl.staircase_down_in_wall ? game.aStairsDown2 : game.aStairsDown);
-		o->pos = pt_to_pos(lvl.staircase_down);
-		o->rot = Vec3(0, dir_to_rot(lvl.staircase_down_dir), 0);
+		o->pos = PtToPos(lvl.staircase_down);
+		o->rot = Vec3(0, DirToRot(lvl.staircase_down_dir), 0);
 		o->scale = 1;
 		o->base = nullptr;
 		L.local_ctx.objects->push_back(o);
@@ -509,12 +509,12 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 				else if(it->target == RoomTarget::Portal)
 				{
 					if(inside->portal)
-						pt = pos_to_pt(inside->portal->pos);
+						pt = PosToPt(inside->portal->pos);
 					else
 					{
 						Object* o = L.local_ctx.FindObject(BaseObject::Get("portal"));
 						if(o)
-							pt = pos_to_pt(o->pos);
+							pt = PosToPt(o->pos);
 						else
 							pt = it->CenterTile();
 					}
@@ -636,7 +636,7 @@ ObjectEntity InsideLocationGenerator::GenerateDungeonObject(InsideLocationLevel&
 		if(!lvl.GetRandomNearWallTile(room, tile, dir, IS_SET(base->flags, OBJ_ON_WALL)))
 			return nullptr;
 
-		rot = dir_to_rot(dir);
+		rot = DirToRot(dir);
 		if(dir == 2 || dir == 3)
 			pos = Vec3(2.f*tile.x + sin(rot)*(2.f - shift.y - 0.01f) + 2, 0.f, 2.f*tile.y + cos(rot)*(2.f - shift.y - 0.01f) + 2);
 		else

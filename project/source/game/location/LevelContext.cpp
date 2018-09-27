@@ -191,7 +191,7 @@ Chest* LevelContext::GetRandomFarChest(const Int2& pt)
 {
 	vector<std::pair<Chest*, float> > far_chests;
 	float close_dist = -1.f;
-	Vec3 pos = pt_to_pos(pt);
+	Vec3 pos = PtToPos(pt);
 
 	// znajdü 5 najdalszych skrzyni
 	for(vector<Chest*>::iterator it = chests->begin(), end = chests->end(); it != end; ++it)

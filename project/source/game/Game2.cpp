@@ -383,13 +383,13 @@ void Game::SetupCamera(float dt)
 				}
 				if(p.type == SCHODY_GORA)
 				{
-					if(vdSchodyGora->RayToMesh(to, dist, pt_to_pos(lvl.staircase_up), dir_to_rot(lvl.staircase_up_dir), tout) && tout < min_tout)
+					if(vdSchodyGora->RayToMesh(to, dist, PtToPos(lvl.staircase_up), DirToRot(lvl.staircase_up_dir), tout) && tout < min_tout)
 						min_tout = tout;
 				}
 				else if(p.type == SCHODY_DOL)
 				{
 					if(!lvl.staircase_down_in_wall
-						&& vdSchodyDol->RayToMesh(to, dist, pt_to_pos(lvl.staircase_down), dir_to_rot(lvl.staircase_down_dir), tout) && tout < min_tout)
+						&& vdSchodyDol->RayToMesh(to, dist, PtToPos(lvl.staircase_down), DirToRot(lvl.staircase_down_dir), tout) && tout < min_tout)
 						min_tout = tout;
 				}
 				else if(p.type == DRZWI || p.type == OTWOR_NA_DRZWI)
@@ -806,7 +806,7 @@ void Game::UpdateGame(float dt)
 					if(Net::IsLocal())
 					{
 						Int2 tile = lvl.GetUpStairsFrontTile();
-						pc->unit->rot = dir_to_rot(lvl.staircase_up_dir);
+						pc->unit->rot = DirToRot(lvl.staircase_up_dir);
 						L.WarpUnit(*pc->unit, Vec3(2.f*tile.x + 1.f, 0.f, 2.f*tile.y + 1.f));
 					}
 					else
@@ -840,7 +840,7 @@ void Game::UpdateGame(float dt)
 					if(Net::IsLocal())
 					{
 						Int2 tile = lvl.GetDownStairsFrontTile();
-						pc->unit->rot = dir_to_rot(lvl.staircase_down_dir);
+						pc->unit->rot = DirToRot(lvl.staircase_down_dir);
 						L.WarpUnit(*pc->unit, Vec3(2.f*tile.x + 1.f, 0.f, 2.f*tile.y + 1.f));
 					}
 					else
@@ -4911,7 +4911,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 	{
 		InsideLocation* inside = (InsideLocation*)L.location;
 		InsideLocationLevel& lvl = inside->GetLevelData();
-		Int2 pt = pos_to_pt(unit.pos);
+		Int2 pt = PosToPt(unit.pos);
 
 		if(pt == lvl.staircase_up)
 		{
@@ -8031,7 +8031,7 @@ void Game::SpawnDungeonColliders()
 		cobj->setCollisionShape(shape_schody);
 		cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BUILDING);
 		cobj->getWorldTransform().setOrigin(btVector3(2.f*lvl.staircase_up.x + 1.f, 0.f, 2.f*lvl.staircase_up.y + 1.f));
-		cobj->getWorldTransform().setRotation(btQuaternion(dir_to_rot(lvl.staircase_up_dir), 0, 0));
+		cobj->getWorldTransform().setRotation(btQuaternion(DirToRot(lvl.staircase_up_dir), 0, 0));
 		phy_world->addCollisionObject(cobj, CG_BUILDING);
 	}
 
@@ -8483,7 +8483,7 @@ void Game::OpenDoorsByTeam(const Int2& pt)
 	InsideLocationLevel& lvl = inside->GetLevelData();
 	for(Unit* unit : Team.members)
 	{
-		Int2 unit_pt = pos_to_pt(unit->pos);
+		Int2 unit_pt = PosToPt(unit->pos);
 		if(pathfinding->FindPath(L.local_ctx, unit_pt, pt, tmp_path))
 		{
 			for(vector<Int2>::iterator it2 = tmp_path.begin(), end2 = tmp_path.end(); it2 != end2; ++it2)
@@ -9490,11 +9490,11 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 						b.backstab = 0;
 						b.attack = float(trap.base->dmg);
 						b.mesh = aArrow;
-						b.pos = Vec3(2.f*trap.tile.x + trap.pos.x - float(int(trap.pos.x / 2) * 2) + Random(-trap.base->rw, trap.base->rw) - 1.2f*g_kierunek2[trap.dir].x,
+						b.pos = Vec3(2.f*trap.tile.x + trap.pos.x - float(int(trap.pos.x / 2) * 2) + Random(-trap.base->rw, trap.base->rw) - 1.2f*DirToPos(trap.dir).x,
 							Random(0.5f, 1.5f),
-							2.f*trap.tile.y + trap.pos.z - float(int(trap.pos.z / 2) * 2) + Random(-trap.base->h, trap.base->h) - 1.2f*g_kierunek2[trap.dir].y);
+							2.f*trap.tile.y + trap.pos.z - float(int(trap.pos.z / 2) * 2) + Random(-trap.base->h, trap.base->h) - 1.2f*DirToPos(trap.dir).y);
 						b.start_pos = b.pos;
-						b.rot = Vec3(0, dir_to_rot(trap.dir), 0);
+						b.rot = Vec3(0, DirToRot(trap.dir), 0);
 						b.owner = nullptr;
 						b.pe = nullptr;
 						b.remove = false;
@@ -13449,7 +13449,7 @@ Int2 Game::GetSpawnPoint()
 	InsideLocationLevel& lvl = inside->GetLevelData();
 
 	if(L.enter_from >= ENTER_FROM_PORTAL)
-		return pos_to_pt(inside->GetPortal(L.enter_from)->GetSpawnPos());
+		return PosToPt(inside->GetPortal(L.enter_from)->GetSpawnPos());
 	else if(L.enter_from == ENTER_FROM_DOWN_LEVEL)
 		return lvl.GetDownStairsFrontTile();
 	else
@@ -13536,7 +13536,7 @@ void Game::HandleQuestEvent(Quest_Event* event)
 			Room& room = lvl->GetRoom(event->spawn_unit_room, inside->HaveDownStairs());
 			for(Unit* unit : *L.local_ctx.units)
 			{
-				if(unit != spawned && IsFriend(*unit, *spawned) && lvl->GetRoom(pos_to_pt(unit->pos)) == &room)
+				if(unit != spawned && IsFriend(*unit, *spawned) && lvl->GetRoom(PosToPt(unit->pos)) == &room)
 				{
 					unit->dont_attack = spawned->dont_attack;
 					unit->guard_target = spawned;
@@ -13550,7 +13550,7 @@ void Game::HandleQuestEvent(Quest_Event* event)
 	{
 		Room* room;
 		if(spawned && event->spawn_2_guard_1)
-			room = lvl->GetRoom(pos_to_pt(spawned->pos));
+			room = lvl->GetRoom(PosToPt(spawned->pos));
 		else
 			room = &lvl->GetRoom(event->spawn_unit_room2, inside->HaveDownStairs());
 		spawned2 = L.SpawnUnitInsideRoomOrNear(*lvl, *room, *event->unit_to_spawn2, event->unit_spawn_level2);

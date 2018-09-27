@@ -499,7 +499,7 @@ void GameGui::DrawBack()
 		if(game.devmode)
 		{
 			text = Format("Pos: %g; %g; %g (%d; %d)\nRot: %g %s\nFps: %g", FLT10(u.pos.x), FLT10(u.pos.y), FLT10(u.pos.z), int(u.pos.x / 2), int(u.pos.z / 2),
-				FLT100(u.rot), kierunek_nazwa_s[AngleToDir(Clip(u.rot))], FLT10(game.GetFps()));
+				FLT100(u.rot), dir_name_short[AngleToDir(Clip(u.rot))], FLT10(game.GetFps()));
 		}
 		else
 			text = Format("Fps: %g", FLT10(game.GetFps()));

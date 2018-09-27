@@ -89,6 +89,7 @@ void Game::PreconfigureGame()
 	components.push_back(loc_gen_factory);
 	components.push_back(gui);
 	components.push_back(&L);
+	components.push_back(&SM);
 	for(GameComponent* component : components)
 		component->Prepare();
 

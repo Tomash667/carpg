@@ -1791,7 +1791,7 @@ void Game::ListAreas(LevelContext& ctx)
 		if(inside->HaveUpStairs())
 		{
 			Area& a = Add1(draw_batch.areas);
-			a.v[0] = a.v[1] = a.v[2] = a.v[3] = pt_to_pos(lvl.staircase_up);
+			a.v[0] = a.v[1] = a.v[2] = a.v[3] = PtToPos(lvl.staircase_up);
 			switch(lvl.staircase_up_dir)
 			{
 			case GDIR_DOWN:
@@ -1823,7 +1823,7 @@ void Game::ListAreas(LevelContext& ctx)
 		if(inside->HaveDownStairs())
 		{
 			Area& a = Add1(draw_batch.areas);
-			a.v[0] = a.v[1] = a.v[2] = a.v[3] = pt_to_pos(lvl.staircase_down);
+			a.v[0] = a.v[1] = a.v[2] = a.v[3] = PtToPos(lvl.staircase_down);
 			switch(lvl.staircase_down_dir)
 			{
 			case GDIR_DOWN:

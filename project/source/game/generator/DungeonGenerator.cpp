@@ -236,7 +236,7 @@ void DungeonGenerator::Generate()
 		std::pair<Int2, GameDirection>& pt = good_pts[Rand() % good_pts.size()];
 
 		const Vec3 pos(2.f*pt.first.x + 1, 0, 2.f*pt.first.y + 1);
-		float rot = Clip(dir_to_rot(pt.second) + PI);
+		float rot = Clip(DirToRot(pt.second) + PI);
 
 		inside->portal->pos = pos;
 		inside->portal->rot = rot;
@@ -311,7 +311,7 @@ void DungeonGenerator::GenerateUnits()
 	if(!inside->HaveDownStairs())
 		pt2 = Int2(-1000, -1000);
 	if(inside->from_portal)
-		pt = pos_to_pt(inside->portal->pos);
+		pt = PosToPt(inside->portal->pos);
 
 	for(vector<Room>::iterator it = lvl.rooms.begin(), end = lvl.rooms.end(); it != end; ++it)
 	{

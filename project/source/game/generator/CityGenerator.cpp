@@ -495,7 +495,7 @@ void CityGenerator::GenerateMainRoad(RoadType type, GameDirection dir, int rocky
 			for(int x = -5; x <= 5; ++x)
 			{
 				Int2 pt = Int2(center.x - x, center.y - y);
-				if(Vec3::Distance(pt_to_pos(pt), pt_to_pos(center)) <= 10.f)
+				if(Vec3::Distance(PtToPos(pt), PtToPos(center)) <= 10.f)
 					tiles[pt(w)].Set(rocky_roads > 0 ? TT_ROAD : TT_SAND, TT_GRASS, 0, TM_ROAD);
 			}
 		}
@@ -2463,7 +2463,7 @@ void CityGenerator::SpawnBuildings()
 		else if(r == GDIR_RIGHT)
 			r = GDIR_LEFT;
 
-		L.ProcessBuildingObjects(L.local_ctx, city, nullptr, b->mesh, b->inside_mesh, dir_to_rot(r), r,
+		L.ProcessBuildingObjects(L.local_ctx, city, nullptr, b->mesh, b->inside_mesh, DirToRot(r), r,
 			Vec3(float(it->pt.x + b->shift[it->rot].x) * 2, 0.f, float(it->pt.y + b->shift[it->rot].y) * 2), it->type, &*it);
 	}
 }
@@ -2493,7 +2493,7 @@ void CityGenerator::SpawnObjects()
 	// well
 	if(have_well)
 	{
-		Vec3 pos = pt_to_pos(well_pt);
+		Vec3 pos = PtToPos(well_pt);
 		terrain->SetH(pos);
 		L.SpawnObjectEntity(L.local_ctx, BaseObject::Get("coveredwell"), pos, PI / 2 * (Rand() % 4), 1.f, 0, nullptr);
 	}
@@ -2997,7 +2997,7 @@ void CityGenerator::RespawnBuildingPhysics()
 		else if(r == GDIR_RIGHT)
 			r = GDIR_LEFT;
 
-		L.ProcessBuildingObjects(L.local_ctx, city, nullptr, b->mesh, nullptr, dir_to_rot(r), r,
+		L.ProcessBuildingObjects(L.local_ctx, city, nullptr, b->mesh, nullptr, DirToRot(r), r,
 			Vec3(float(it->pt.x + b->shift[it->rot].x) * 2, 1.f, float(it->pt.y + b->shift[it->rot].y) * 2), nullptr, &*it, true);
 	}
 

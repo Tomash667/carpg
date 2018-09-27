@@ -371,8 +371,8 @@ void CaveGenerator::GenerateObjects()
 
 	Object* o = new Object;
 	o->mesh = game.aStairsUp;
-	o->pos = pt_to_pos(lvl.staircase_up);
-	o->rot = Vec3(0, dir_to_rot(lvl.staircase_up_dir), 0);
+	o->pos = PtToPos(lvl.staircase_up);
+	o->rot = Vec3(0, DirToRot(lvl.staircase_up_dir), 0);
 	o->scale = 1;
 	o->base = nullptr;
 	L.local_ctx.objects->push_back(o);
