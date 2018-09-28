@@ -23,7 +23,7 @@
 Level L;
 
 //=================================================================================================
-Level::Level() : terrain(nullptr), terrain_shape(nullptr)
+Level::Level() : terrain(nullptr), terrain_shape(nullptr), dungeon_shape(nullptr), dungeon_shape_data(nullptr), shape_wall(nullptr)
 {
 }
 
@@ -48,13 +48,17 @@ void Level::LoadData()
 //=================================================================================================
 void Level::PostInit()
 {
+	Game& game = Game::Get();
+
+	phy_world = game.phy_world;
+
 	terrain = new Terrain;
 	TerrainOptions terrain_options;
 	terrain_options.n_parts = 8;
 	terrain_options.tex_size = 256;
 	terrain_options.tile_size = 2.f;
 	terrain_options.tiles_per_part = 16;
-	terrain->Init(Game::Get().device, terrain_options);
+	terrain->Init(game.device, terrain_options);
 	terrain->Build();
 	terrain->RemoveHeightMap(true);
 }
@@ -64,6 +68,8 @@ void Level::Cleanup()
 {
 	delete terrain;
 	delete terrain_shape;
+	delete dungeon_shape;
+	delete dungeon_shape_data;
 }
 
 //=================================================================================================
@@ -792,7 +798,7 @@ void Level::SpawnObjectExtras(LevelContext& ctx, BaseObject* obj, const Vec3& po
 				c.type = CollisionObject::RECTANGLE;
 		}
 
-		game.phy_world->addCollisionObject(cobj, group);
+		phy_world->addCollisionObject(cobj, group);
 
 		if(IS_SET(obj->flags, OBJ_PHYSICS_PTR))
 		{
@@ -829,7 +835,7 @@ void Level::SpawnObjectExtras(LevelContext& ctx, BaseObject* obj, const Vec3& po
 		cobj->setCollisionShape(shape);
 		cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_OBJECT);
 		cobj->getWorldTransform().setOrigin(btVector3(pos.x, pos.y + obj->h / 2 * scale, pos.z));
-		game.phy_world->addCollisionObject(cobj, CG_OBJECT);
+		phy_world->addCollisionObject(cobj, CG_OBJECT);
 	}
 
 	if(IS_SET(obj->flags, OBJ_CAM_COLLIDERS))
@@ -850,7 +856,7 @@ void Level::SpawnObjectExtras(LevelContext& ctx, BaseObject* obj, const Vec3& po
 			co->setCollisionShape(shape);
 			co->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_CAMERA_COLLIDER);
 			co->getWorldTransform().setOrigin(ToVector3(pos2));
-			game.phy_world->addCollisionObject(co, CG_CAMERA_COLLIDER);
+			phy_world->addCollisionObject(co, CG_CAMERA_COLLIDER);
 			if(roti != 0)
 				co->getWorldTransform().setRotation(btQuaternion(rot, 0, 0));
 
@@ -1011,7 +1017,7 @@ void Level::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding
 				int group = (is_wall ? CG_BUILDING : CG_COLLIDER);
 				co->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | group);
 				co->getWorldTransform().setOrigin(ToVector3(pos));
-				game.phy_world->addCollisionObject(co, group);
+				phy_world->addCollisionObject(co, group);
 			}
 			else if(token == "square" || token == "squarev" || token == "squarevn" || token == "squarevp")
 			{
@@ -1050,7 +1056,7 @@ void Level::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding
 				int group = (is_wall ? CG_BUILDING : CG_COLLIDER);
 				co->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | group);
 				co->getWorldTransform().setOrigin(ToVector3(pos));
-				game.phy_world->addCollisionObject(co, group);
+				phy_world->addCollisionObject(co, group);
 
 				if(roti != 0)
 				{
@@ -1071,7 +1077,7 @@ void Level::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding
 				int group = CG_COLLIDER;
 				co->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | group);
 				co->getWorldTransform().setOrigin(ToVector3(pos));
-				game.phy_world->addCollisionObject(co, group);
+				phy_world->addCollisionObject(co, group);
 
 				if(roti != 0)
 					co->getWorldTransform().setRotation(btQuaternion(rot, 0, 0));
@@ -1087,7 +1093,7 @@ void Level::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding
 				co->setCollisionShape(shape);
 				co->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_CAMERA_COLLIDER);
 				co->getWorldTransform().setOrigin(ToVector3(pos));
-				game.phy_world->addCollisionObject(co, CG_CAMERA_COLLIDER);
+				phy_world->addCollisionObject(co, CG_CAMERA_COLLIDER);
 				if(roti != 0)
 					co->getWorldTransform().setRotation(btQuaternion(rot, 0, 0));
 
@@ -1227,7 +1233,7 @@ void Level::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding
 					pos.y += 1.319f;
 					tr.setOrigin(ToVector3(pos));
 					tr.setRotation(btQuaternion(door->rot, 0, 0));
-					game.phy_world->addCollisionObject(door->phy, CG_DOOR);
+					phy_world->addCollisionObject(door->phy, CG_DOOR);
 
 					if(token != "door") // door2 are closed now, this is intended
 					{
@@ -3050,7 +3056,7 @@ void Level::OnReenterLevel()
 				pos.y += 1.319f;
 				tr.setOrigin(ToVector3(pos));
 				tr.setRotation(btQuaternion(door.rot, 0, 0));
-				game.phy_world->addCollisionObject(door.phy, CG_DOOR);
+				phy_world->addCollisionObject(door.phy, CG_DOOR);
 
 				// czy otwarte
 				if(door.state == Door::Open)
@@ -3175,5 +3181,158 @@ void Level::SpawnTerrainCollider()
 	obj_terrain->setCollisionShape(terrain_shape);
 	obj_terrain->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_TERRAIN);
 	obj_terrain->getWorldTransform().setOrigin(btVector3(float(OutsideLocation::size), 5.f, float(OutsideLocation::size)));
-	Game::Get().phy_world->addCollisionObject(obj_terrain, CG_TERRAIN);
+	phy_world->addCollisionObject(obj_terrain, CG_TERRAIN);
+}
+
+//=================================================================================================
+void Level::SpawnDungeonColliders()
+{
+	assert(!location->outside);
+
+	InsideLocation* inside = (InsideLocation*)location;
+	InsideLocationLevel& lvl = inside->GetLevelData();
+	Pole* m = lvl.map;
+	int w = lvl.w,
+		h = lvl.h;
+
+	for(int y = 1; y < h - 1; ++y)
+	{
+		for(int x = 1; x < w - 1; ++x)
+		{
+			if(czy_blokuje2(m[x + y * w]) && (!czy_blokuje2(m[x - 1 + (y - 1)*w]) || !czy_blokuje2(m[x + (y - 1)*w]) || !czy_blokuje2(m[x + 1 + (y - 1)*w]) ||
+				!czy_blokuje2(m[x - 1 + y * w]) || !czy_blokuje2(m[x + 1 + y * w]) ||
+				!czy_blokuje2(m[x - 1 + (y + 1)*w]) || !czy_blokuje2(m[x + (y + 1)*w]) || !czy_blokuje2(m[x + 1 + (y + 1)*w])))
+			{
+				SpawnDungeonCollider(Vec3(2.f*x + 1.f, 2.f, 2.f*y + 1.f));
+			}
+		}
+	}
+
+	// left/right wall
+	for(int i = 1; i < h - 1; ++i)
+	{
+		// left
+		if(czy_blokuje2(m[i*w]) && !czy_blokuje2(m[1 + i * w]))
+			SpawnDungeonCollider(Vec3(1.f, 2.f, 2.f*i + 1.f));
+
+		// right
+		if(czy_blokuje2(m[i*w + w - 1]) && !czy_blokuje2(m[w - 2 + i * w]))
+			SpawnDungeonCollider(Vec3(2.f*(w - 1) + 1.f, 2.f, 2.f*i + 1.f));
+	}
+
+	// front/back wall
+	for(int i = 1; i < lvl.w - 1; ++i)
+	{
+		// front
+		if(czy_blokuje2(m[i + (h - 1)*w]) && !czy_blokuje2(m[i + (h - 2)*w]))
+			SpawnDungeonCollider(Vec3(2.f*i + 1.f, 2.f, 2.f*(h - 1) + 1.f));
+
+		// back
+		if(czy_blokuje2(m[i]) && !czy_blokuje2(m[i + w]))
+			SpawnDungeonCollider(Vec3(2.f*i + 1.f, 2.f, 1.f));
+	}
+
+	// up stairs
+	if(inside->HaveUpStairs())
+	{
+		btCollisionObject* cobj = new btCollisionObject;
+		cobj->setCollisionShape(shape_stairs);
+		cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BUILDING);
+		cobj->getWorldTransform().setOrigin(btVector3(2.f*lvl.staircase_up.x + 1.f, 0.f, 2.f*lvl.staircase_up.y + 1.f));
+		cobj->getWorldTransform().setRotation(btQuaternion(DirToRot(lvl.staircase_up_dir), 0, 0));
+		phy_world->addCollisionObject(cobj, CG_BUILDING);
+	}
+
+	// room floors/ceilings
+	dungeon_shape_pos.clear();
+	dungeon_shape_index.clear();
+	int index = 0;
+
+	if((inside->type == L_DUNGEON && inside->target == LABIRYNTH) || inside->type == L_CAVE)
+	{
+		const float h = Room::HEIGHT;
+		for(int x = 0; x < 16; ++x)
+		{
+			for(int y = 0; y < 16; ++y)
+			{
+				// floor
+				dungeon_shape_pos.push_back(Vec3(2.f * x * lvl.w / 16, 0, 2.f * y * lvl.h / 16));
+				dungeon_shape_pos.push_back(Vec3(2.f * (x + 1) * lvl.w / 16, 0, 2.f * y * lvl.h / 16));
+				dungeon_shape_pos.push_back(Vec3(2.f * x * lvl.w / 16, 0, 2.f * (y + 1) * lvl.h / 16));
+				dungeon_shape_pos.push_back(Vec3(2.f * (x + 1) * lvl.w / 16, 0, 2.f * (y + 1) * lvl.h / 16));
+				dungeon_shape_index.push_back(index);
+				dungeon_shape_index.push_back(index + 1);
+				dungeon_shape_index.push_back(index + 2);
+				dungeon_shape_index.push_back(index + 2);
+				dungeon_shape_index.push_back(index + 1);
+				dungeon_shape_index.push_back(index + 3);
+				index += 4;
+
+				// ceil
+				dungeon_shape_pos.push_back(Vec3(2.f * x * lvl.w / 16, h, 2.f * y * lvl.h / 16));
+				dungeon_shape_pos.push_back(Vec3(2.f * (x + 1) * lvl.w / 16, h, 2.f * y * lvl.h / 16));
+				dungeon_shape_pos.push_back(Vec3(2.f * x * lvl.w / 16, h, 2.f * (y + 1) * lvl.h / 16));
+				dungeon_shape_pos.push_back(Vec3(2.f * (x + 1) * lvl.w / 16, h, 2.f * (y + 1) * lvl.h / 16));
+				dungeon_shape_index.push_back(index);
+				dungeon_shape_index.push_back(index + 2);
+				dungeon_shape_index.push_back(index + 1);
+				dungeon_shape_index.push_back(index + 2);
+				dungeon_shape_index.push_back(index + 3);
+				dungeon_shape_index.push_back(index + 1);
+				index += 4;
+			}
+		}
+	}
+
+	for(Room& room : lvl.rooms)
+	{
+		// floor
+		dungeon_shape_pos.push_back(Vec3(2.f * room.pos.x, 0, 2.f * room.pos.y));
+		dungeon_shape_pos.push_back(Vec3(2.f * (room.pos.x + room.size.x), 0, 2.f * room.pos.y));
+		dungeon_shape_pos.push_back(Vec3(2.f * room.pos.x, 0, 2.f * (room.pos.y + room.size.y)));
+		dungeon_shape_pos.push_back(Vec3(2.f * (room.pos.x + room.size.x), 0, 2.f * (room.pos.y + room.size.y)));
+		dungeon_shape_index.push_back(index);
+		dungeon_shape_index.push_back(index + 1);
+		dungeon_shape_index.push_back(index + 2);
+		dungeon_shape_index.push_back(index + 2);
+		dungeon_shape_index.push_back(index + 1);
+		dungeon_shape_index.push_back(index + 3);
+		index += 4;
+
+		// ceil
+		const float h = (room.IsCorridor() ? Room::HEIGHT_LOW : Room::HEIGHT);
+		dungeon_shape_pos.push_back(Vec3(2.f * room.pos.x, h, 2.f * room.pos.y));
+		dungeon_shape_pos.push_back(Vec3(2.f * (room.pos.x + room.size.x), h, 2.f * room.pos.y));
+		dungeon_shape_pos.push_back(Vec3(2.f * room.pos.x, h, 2.f * (room.pos.y + room.size.y)));
+		dungeon_shape_pos.push_back(Vec3(2.f * (room.pos.x + room.size.x), h, 2.f * (room.pos.y + room.size.y)));
+		dungeon_shape_index.push_back(index);
+		dungeon_shape_index.push_back(index + 2);
+		dungeon_shape_index.push_back(index + 1);
+		dungeon_shape_index.push_back(index + 2);
+		dungeon_shape_index.push_back(index + 3);
+		dungeon_shape_index.push_back(index + 1);
+		index += 4;
+	}
+
+	delete dungeon_shape;
+	delete dungeon_shape_data;
+
+	dungeon_shape_data = new btTriangleIndexVertexArray(dungeon_shape_index.size() / 3, dungeon_shape_index.data(), sizeof(int) * 3,
+		dungeon_shape_pos.size(), (btScalar*)dungeon_shape_pos.data(), sizeof(Vec3));
+	dungeon_shape = new btBvhTriangleMeshShape(dungeon_shape_data, true);
+
+	obj_dungeon = new btCollisionObject;
+	obj_dungeon->setCollisionShape(dungeon_shape);
+	obj_dungeon->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BUILDING);
+	phy_world->addCollisionObject(obj_dungeon, CG_BUILDING);
+}
+
+//=================================================================================================
+void Level::SpawnDungeonCollider(const Vec3& pos)
+{
+	auto cobj = new btCollisionObject;
+	cobj->setCollisionShape(shape_wall);
+	cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BUILDING);
+	cobj->getWorldTransform().setOrigin(ToVector3(pos));
+	phy_world->addCollisionObject(cobj, CG_BUILDING);
 }

@@ -6,6 +6,7 @@
 #include "StartupOptions.h"
 #include "DebugDrawer.h"
 #include "DirectX.h"
+#include "Physics.h"
 
 //-----------------------------------------------------------------------------
 const Int2 Engine::MIN_WINDOW_SIZE = Int2(800, 600);
@@ -20,15 +21,17 @@ HRESULT _d_hr;
 #endif
 
 //=================================================================================================
-Engine::Engine() : engine_shutdown(false), timer(false), hwnd(nullptr), d3d(nullptr), device(nullptr), sprite(nullptr), phy_config(nullptr),
-phy_dispatcher(nullptr), phy_broadphase(nullptr), phy_world(nullptr), cursor_visible(true), replace_cursor(false), locked_cursor(true), lost_device(false),
-clear_color(Color::Black), res_freed(false), vsync(true), active(false), activation_point(-1, -1), sound_mgr(nullptr)
+Engine::Engine() : engine_shutdown(false), timer(false), hwnd(nullptr), d3d(nullptr), device(nullptr), sprite(nullptr), cursor_visible(true),
+replace_cursor(false), locked_cursor(true), lost_device(false), clear_color(Color::Black), res_freed(false), vsync(true), active(false),
+activation_point(-1, -1), phy_world(nullptr)
 {
 	engine = this;
 }
 
 //=================================================================================================
-Engine::~Engine() = default;
+Engine::~Engine()
+{
+}
 
 //=================================================================================================
 // Adjust window size to take exact value
@@ -215,13 +218,7 @@ void Engine::Cleanup()
 	SafeRelease(device);
 	SafeRelease(d3d);
 
-	// fizyka
-	delete phy_world;
-	delete phy_broadphase;
-	delete phy_dispatcher;
-	delete phy_config;
-
-	delete sound_mgr;
+	CustomCollisionWorld::Cleanup(phy_world);
 }
 
 //=================================================================================================
@@ -669,18 +666,6 @@ bool Engine::MsgToKey(uint msg, uint wParam, byte& key, int& result)
 	}
 
 	return down;
-}
-
-//=================================================================================================
-// Initialize Bullet Physics
-void Engine::InitPhysics()
-{
-	phy_config = new btDefaultCollisionConfiguration;
-	phy_dispatcher = new btCollisionDispatcher(phy_config);
-	phy_broadphase = new btDbvtBroadphase;
-	phy_world = new CustomCollisionWorld(phy_dispatcher, phy_broadphase, phy_config);
-
-	Info("Engine: Bullet physics system created.");
 }
 
 //=================================================================================================
@@ -1275,10 +1260,10 @@ void Engine::Init(StartupOptions& options)
 {
 	InitWindow(options);
 	InitRender();
-	sound_mgr = new SoundManager;
+	sound_mgr.reset(new SoundManager);
 	sound_mgr->Init(options);
-	InitPhysics();
-	ResourceManager::Get().Init(device, sound_mgr);
+	phy_world = CustomCollisionWorld::Init();
+	ResourceManager::Get().Init(device, sound_mgr.get());
 	debug_drawer.reset(new DebugDrawer);
 	debug_drawer->InitOnce();
 }

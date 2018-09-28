@@ -861,20 +861,14 @@ void Game::ClearPointers()
 	vdNaDrzwi = nullptr;
 
 	// fizyka
-	shape_wall = nullptr;
 	shape_low_ceiling = nullptr;
 	shape_ceiling = nullptr;
 	shape_floor = nullptr;
 	shape_door = nullptr;
 	shape_block = nullptr;
-	shape_schody_c[0] = nullptr;
-	shape_schody_c[1] = nullptr;
-	shape_schody = nullptr;
 	shape_summon = nullptr;
 	shape_barrier = nullptr;
 	shape_arrow = nullptr;
-	dungeon_shape = nullptr;
-	dungeon_shape_data = nullptr;
 
 	// vertex declarations
 	for(int i = 0; i < VDI_MAX; ++i)
@@ -941,8 +935,6 @@ void Game::OnCleanup()
 	delete shape_barrier;
 	delete shape_schody;
 	delete shape_arrow;
-	delete dungeon_shape;
-	delete dungeon_shape_data;
 
 	draw_batch.Clear();
 	DeleteElements(old_players);

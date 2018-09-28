@@ -3,7 +3,6 @@
 //-----------------------------------------------------------------------------
 #include "Timer.h"
 #include "KeyStates.h"
-#include "Physics.h"
 
 //-----------------------------------------------------------------------------
 #define DISPLAY_FORMAT D3DFMT_X8R8G8B8
@@ -90,17 +89,13 @@ public:
 	Color clear_color;
 	int wnd_hz, used_adapter, shader_version;
 
-	// bullet physics
-	btDefaultCollisionConfiguration* phy_config;
-	btCollisionDispatcher* phy_dispatcher;
-	btDbvtBroadphase* phy_broadphase;
 	CustomCollisionWorld* phy_world;
+	std::unique_ptr<SoundManager> sound_mgr;
 
 	// constants
 	static const Int2 MIN_WINDOW_SIZE;
 	static const Int2 DEFAULT_WINDOW_SIZE;
 
-	SoundManager* sound_mgr;
 	CameraBase* cam_base;
 
 protected:
@@ -124,7 +119,6 @@ private:
 	void GatherParams(D3DPRESENT_PARAMETERS& d3dpp);
 	long HandleEvent(HWND hwnd, uint msg, uint wParam, long lParam);
 	bool MsgToKey(uint msg, uint wParam, byte& key, int& result);
-	void InitPhysics();
 	void InitRender();
 	void InitWindow(StartupOptions& options);
 	void LogMultisampling();

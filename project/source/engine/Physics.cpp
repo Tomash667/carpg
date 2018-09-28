@@ -3,6 +3,37 @@
 #include "Physics.h"
 
 //=================================================================================================
+CustomCollisionWorld::CustomCollisionWorld(btDispatcher* dispatcher, btBroadphaseInterface* broadphase, btCollisionConfiguration* config) :
+	btCollisionWorld(dispatcher, broadphase, config), config(config), dispatcher(dispatcher), broadphase(broadphase)
+{
+}
+
+//=================================================================================================
+CustomCollisionWorld* CustomCollisionWorld::Init()
+{
+	btDefaultCollisionConfiguration* config = new btDefaultCollisionConfiguration;
+	btCollisionDispatcher* dispatcher = new btCollisionDispatcher(config);
+	btDbvtBroadphase* broadphase = new btDbvtBroadphase;
+	CustomCollisionWorld* world = new CustomCollisionWorld(dispatcher, broadphase, config);
+	Info("Engine: Bullet physics system created.");
+	return world;
+}
+
+//=================================================================================================
+void CustomCollisionWorld::Cleanup(CustomCollisionWorld* world)
+{
+	if(!world)
+		return;
+	btCollisionConfiguration* config = world->config;
+	btDispatcher* dispatcher = world->dispatcher;
+	btBroadphaseInterface* broadphase = world->broadphase;
+	delete world;
+	delete broadphase;
+	delete dispatcher;
+	delete config;
+}
+
+//=================================================================================================
 void CustomCollisionWorld::Reset()
 {
 	btOverlappingPairCache* cache = m_broadphasePairCache->getOverlappingPairCache();

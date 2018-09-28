@@ -12,6 +12,7 @@ struct StartupOptions;
 struct TaskData;
 struct Terrain;
 struct TrailParticleEmitter;
+class CustomCollisionWorld;
 class DebugDrawer;
 class Engine;
 class Pak;
@@ -72,3 +73,10 @@ namespace FMOD
 	class System;
 }
 typedef FMOD::Sound* SOUND;
+
+// Bullet physics types
+class btBvhTriangleMeshShape;
+class btCollisionObject;
+class btCollisionShape;
+class btHeightfieldTerrainShape;
+class btTriangleIndexVertexArray;

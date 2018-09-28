@@ -294,7 +294,7 @@ void TutorialLocationGenerator::OnEnter()
 	// trader stock
 	ItemHelper::GenerateMerchantItems(game.chest_merchant, 500);
 
-	game.SpawnDungeonColliders();
+	L.SpawnDungeonColliders();
 	CreateMinimap();
 	game.AddPlayerTeam(Vec3(2.f*start_tile.x + 1, 0, 2.f*start_tile.y + 1), 0, false, true);
 }

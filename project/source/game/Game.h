@@ -400,15 +400,10 @@ public:
 
 	//---------------------------------
 	// FIZYKA
-	btCollisionShape* shape_wall, *shape_low_ceiling, *shape_arrow, *shape_ceiling, *shape_floor, *shape_door, *shape_block, *shape_schody, *shape_schody_c[2],
+	btCollisionShape* shape_low_ceiling, *shape_arrow, *shape_ceiling, *shape_floor, *shape_door, *shape_block,
 		*shape_summon, *shape_barrier;
-	btBvhTriangleMeshShape* dungeon_shape;
-	btCollisionObject* obj_dungeon;
 	vector<btCollisionShape*> shapes;
 	vector<CameraCollider> cam_colliders;
-	vector<Vec3> dungeon_shape_pos;
-	vector<int> dungeon_shape_index;
-	btTriangleIndexVertexArray* dungeon_shape_data;
 
 	//---------------------------------
 	// WCZYTYWANIE
@@ -539,8 +534,6 @@ public:
 	Vec4 GetLightColor();
 	Vec4 GetLightDir();
 	void UpdateBullets(LevelContext& ctx, float dt);
-	void SpawnDungeonColliders();
-	void SpawnDungeonCollider(const Vec3& pos);
 	void RemoveColliders();
 	void CreateCollisionShapes();
 	Vec3 PredictTargetPos(const Unit& me, const Unit& target, float bullet_speed) const;

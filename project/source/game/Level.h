@@ -131,13 +131,27 @@ public:
 	void CheckIfLocationCleared();
 	bool RemoveItemFromWorld(const Item* item);
 	void SpawnTerrainCollider();
+	void SpawnDungeonColliders();
+	void SpawnDungeonCollider(const Vec3& pos);
 
 	Location* location; // same as W.current_location
 	int location_index; // same as W.current_location_index
 	int dungeon_level;
+
+	// terrain
 	Terrain* terrain;
 	btHeightfieldTerrainShape* terrain_shape;
 	btCollisionObject* obj_terrain;
+
+	// dungeon
+	btCollisionShape* shape_wall, *shape_stairs, *shape_stairs_part[2];
+	btBvhTriangleMeshShape* dungeon_shape;
+	btCollisionObject* obj_dungeon;
+	vector<Vec3> dungeon_shape_pos;
+	vector<int> dungeon_shape_index;
+	btTriangleIndexVertexArray* dungeon_shape_data;
+
+	CustomCollisionWorld* phy_world;
 	LocationEventHandler* event_handler;
 	LevelContext local_ctx;
 	City* city_ctx; // pointer to city or nullptr when not inside city

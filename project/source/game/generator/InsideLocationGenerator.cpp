@@ -175,7 +175,7 @@ void InsideLocationGenerator::OnEnter()
 
 	// stwórz obiekty kolizji
 	if(!reenter)
-		game.SpawnDungeonColliders();
+		L.SpawnDungeonColliders();
 
 	// generuj minimapê
 	game.LoadingStep(game.txGeneratingMinimap);
@@ -1095,7 +1095,7 @@ void InsideLocationGenerator::OnLoad()
 	game.SetDungeonParamsAndTextures(base);
 
 	L.RecreateObjects(false);
-	game.SpawnDungeonColliders();
+	L.SpawnDungeonColliders();
 
 	CreateMinimap();
 }
