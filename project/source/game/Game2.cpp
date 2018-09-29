@@ -555,7 +555,7 @@ void Game::SetupCamera(float dt)
 	}
 
 	// camera colliders
-	for(vector<CameraCollider>::iterator it = cam_colliders.begin(), end = cam_colliders.end(); it != end; ++it)
+	for(vector<CameraCollider>::iterator it = L.cam_colliders.begin(), end = L.cam_colliders.end(); it != end; ++it)
 	{
 		if(RayToBox(to, dist, it->box, &tout) && tout < min_tout && tout > 0.f)
 			min_tout = tout;
@@ -2151,7 +2151,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					pc->chest_trade = &u2->items;
 				}
 			}
-			else if(u2->IsAI() && u2->IsIdle() && u2->in_arena == -1 && u2->data->dialog && !IsEnemy(u, *u2))
+			else if(u2->IsAI() && u2->IsIdle() && u2->in_arena == -1 && u2->data->dialog && !u.IsEnemy(*u2))
 			{
 				if(Net::IsLocal())
 				{
@@ -4502,7 +4502,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 		{
 			for(vector<Unit*>::iterator it = L.local_ctx.units->begin(), end = L.local_ctx.units->end(); it != end; ++it)
 			{
-				if((*it)->dont_attack && IsEnemy(**it, *Team.leader, true))
+				if((*it)->dont_attack && (*it)->IsEnemy(*Team.leader, true))
 				{
 					(*it)->dont_attack = false;
 					(*it)->ai->change_ai_mode = true;
@@ -5668,98 +5668,6 @@ void Game::ParseItemScript(Unit& unit, const ItemScript* script)
 	}
 }
 
-bool Game::IsEnemy(Unit &u1, Unit &u2, bool ignore_dont_attack)
-{
-	if(u1.in_arena == -1 && u2.in_arena == -1)
-	{
-		if(!ignore_dont_attack)
-		{
-			if(u1.IsAI() && u1.IsDontAttack())
-				return false;
-			if(u2.IsAI() && u2.IsDontAttack())
-				return false;
-		}
-
-		UNIT_GROUP g1 = u1.data->group,
-			g2 = u2.data->group;
-
-		if(u1.IsTeamMember())
-			g1 = G_TEAM;
-		if(u2.IsTeamMember())
-			g2 = G_TEAM;
-
-		if(g1 == g2)
-			return false;
-		else if(g1 == G_CITIZENS)
-		{
-			if(g2 == G_CRAZIES)
-				return true;
-			else if(g2 == G_TEAM)
-				return Team.is_bandit || u1.WantAttackTeam();
-			else
-				return true;
-		}
-		else if(g1 == G_CRAZIES)
-		{
-			if(g2 == G_CITIZENS)
-				return true;
-			else if(g2 == G_TEAM)
-				return Team.crazies_attack || u1.WantAttackTeam();
-			else
-				return true;
-		}
-		else if(g1 == G_TEAM)
-		{
-			if(u2.WantAttackTeam())
-				return true;
-			else if(g2 == G_CITIZENS)
-				return Team.is_bandit;
-			else if(g2 == G_CRAZIES)
-				return Team.crazies_attack;
-			else
-				return true;
-		}
-		else
-			return true;
-	}
-	else
-	{
-		if(u1.in_arena == -1 || u2.in_arena == -1)
-			return false;
-		else if(u1.in_arena == u2.in_arena)
-			return false;
-		else
-			return true;
-	}
-}
-
-bool Game::IsFriend(Unit& u1, Unit& u2)
-{
-	if(u1.in_arena == -1 && u2.in_arena == -1)
-	{
-		if(u1.IsTeamMember())
-		{
-			if(u2.IsTeamMember())
-				return true;
-			else if(u2.IsAI() && !Team.is_bandit && u2.IsAssist())
-				return true;
-			else
-				return false;
-		}
-		else if(u2.IsTeamMember())
-		{
-			if(u1.IsAI() && !Team.is_bandit && u1.IsAssist())
-				return true;
-			else
-				return false;
-		}
-		else
-			return (u1.data->group == u2.data->group);
-	}
-	else
-		return u1.in_arena == u2.in_arena;
-}
-
 bool Game::CanSee(Unit& u1, Unit& u2)
 {
 	if(u1.in_building != u2.in_building)
@@ -6128,7 +6036,7 @@ bool Game::CheckForHit(LevelContext& ctx, Unit& _unit, Unit*& _hitted, Mesh::Poi
 	// szukaj kolizji
 	for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
 	{
-		if(*it == &_unit || !(*it)->IsAlive() || Vec3::Distance((*it)->pos, _unit.pos) > 5.f || IsFriend(_unit, **it))
+		if(*it == &_unit || !(*it)->IsAlive() || Vec3::Distance((*it)->pos, _unit.pos) > 5.f || _unit.IsFriend(**it))
 			continue;
 
 		Box box2;
@@ -7404,7 +7312,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 						{
 							// deal damage/stun
 							bool move_forward = true;
-							if(!IsFriend(*unit, u))
+							if(!unit->IsFriend(u))
 							{
 								if(!u.player->IsHit(unit))
 								{
@@ -7722,7 +7630,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 
 			if(!it->spell)
 			{
-				if(it->owner && IsFriend(*it->owner, *hitted) || it->attack < -50.f)
+				if(it->owner && it->owner->IsFriend(*hitted) || it->attack < -50.f)
 				{
 					// friendly fire
 					if(hitted->action == A_BLOCK && AngleDiff(Clip(it->rot.y + PI), hitted->rot) < PI * 2 / 5)
@@ -7861,7 +7769,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 			else
 			{
 				// trafienie w postaæ z czara
-				if(it->owner && IsFriend(*it->owner, *hitted))
+				if(it->owner && it->owner->IsFriend(*hitted))
 				{
 					// frendly fire
 					SpellHitEffect(ctx, *it, hitpoint, hitted);
@@ -7975,14 +7883,6 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 
 	if(deletions)
 		RemoveElements(ctx.bullets, [](const Bullet& b) { return b.remove; });
-}
-
-void Game::RemoveColliders()
-{
-	if(phy_world)
-		phy_world->Reset();
-
-	DeleteElements(shapes);
 }
 
 Vec3 Game::PredictTargetPos(const Unit& me, const Unit& target, float bullet_speed) const
@@ -8741,7 +8641,7 @@ void Game::CastSpell(LevelContext& ctx, Unit& u)
 			if(RayTest(coord, u.target_pos, &u, hitpoint, hitted) && hitted)
 			{
 				// trafiono w cel
-				if(!IS_SET(hitted->data->flags2, F2_BLOODLESS) && !IsFriend(u, *hitted))
+				if(!IS_SET(hitted->data->flags2, F2_BLOODLESS) && !u.IsFriend(*hitted))
 				{
 					Drain& drain = Add1(ctx.drains);
 					drain.from = hitted;
@@ -8777,7 +8677,7 @@ void Game::CastSpell(LevelContext& ctx, Unit& u)
 			for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
 			{
 				if((*it)->live_state == Unit::DEAD
-					&& !IsEnemy(u, **it)
+					&& !u.IsEnemy(**it)
 					&& IS_SET((*it)->data->flags, F_UNDEAD)
 					&& Vec3::Distance(u.target_pos, (*it)->pos) < 0.5f)
 				{
@@ -8847,7 +8747,7 @@ void Game::CastSpell(LevelContext& ctx, Unit& u)
 		{
 			for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
 			{
-				if(!IsEnemy(u, **it) && !IS_SET((*it)->data->flags, F_UNDEAD) && Vec3::Distance(u.target_pos, (*it)->pos) < 0.5f)
+				if(!u.IsEnemy(**it) && !IS_SET((*it)->data->flags, F_UNDEAD) && Vec3::Distance(u.target_pos, (*it)->pos) < 0.5f)
 				{
 					Unit& u2 = **it;
 					u2.hp += float(spell.dmg + spell.dmg_bonus*(u.level + u.CalculateMagicPower()));
@@ -8997,7 +8897,7 @@ void Game::UpdateExplosions(LevelContext& ctx, float dt)
 			// zadaj obra¿enia
 			for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
 			{
-				if(!(*it2)->IsAlive() || ((*it)->owner && IsFriend(*(*it)->owner, **it2)))
+				if(!(*it2)->IsAlive() || ((*it)->owner && (*it)->owner->IsFriend(**it2)))
 					continue;
 
 				// sprawdŸ czy ju¿ nie zosta³ trafiony
@@ -9682,7 +9582,7 @@ void Game::UpdateElectros(LevelContext& ctx, float dt)
 			if(e.lines.back().t >= 0.25f)
 			{
 				// zadaj obra¿enia
-				if(!IsFriend(*e.owner, *e.hitted.back()))
+				if(!e.owner->IsFriend(*e.hitted.back()))
 				{
 					if(e.hitted.back()->IsAI())
 						AI_HitReaction(*e.hitted.back(), e.start_pos);
@@ -10410,9 +10310,8 @@ void Game::LeaveLevel(bool clear)
 	}
 
 	ais.clear();
-	RemoveColliders();
+	L.RemoveColliders();
 	StopAllSounds();
-	cam_colliders.clear();
 
 	ClearQuadtree();
 
@@ -11335,7 +11234,7 @@ void Game::AddGold(int count, vector<Unit*>* units, bool show, cstring msg, floa
 		}
 		else if(!u.IsPlayer() && u.busy == Unit::Busy_Trading)
 		{
-			Unit* trader = FindPlayerTradingWithUnit(u);
+			Unit* trader = Team.FindPlayerTradingWithUnit(u);
 			if(trader != pc->unit)
 			{
 				NetChangePlayer& c = Add1(trader->player->player_info->changes);
@@ -11448,7 +11347,7 @@ void Game::AddGold(int count, vector<Unit*>* units, bool show, cstring msg, floa
 			}
 			else if(u.hero->gained_gold && u.busy == Unit::Busy_Trading)
 			{
-				Unit* trader = FindPlayerTradingWithUnit(u);
+				Unit* trader = Team.FindPlayerTradingWithUnit(u);
 				if(trader != pc->unit)
 				{
 					NetChangePlayer& c = Add1(trader->player->player_info->changes);
@@ -11649,7 +11548,7 @@ Game::CanLeaveLocationResult Game::CanLeaveLocation(Unit& unit)
 			for(vector<Unit*>::iterator it2 = L.local_ctx.units->begin(), end2 = L.local_ctx.units->end(); it2 != end2; ++it2)
 			{
 				Unit& u2 = **it2;
-				if(&u != &u2 && u2.IsStanding() && IsEnemy(u, u2) && u2.IsAI() && u2.ai->in_combat && Vec3::Distance2d(u.pos, u2.pos) < ALERT_RANGE.x && CanSee(u, u2))
+				if(&u != &u2 && u2.IsStanding() && u.IsEnemy(u2) && u2.IsAI() && u2.ai->in_combat && Vec3::Distance2d(u.pos, u2.pos) < ALERT_RANGE.x && CanSee(u, u2))
 					return CanLeaveLocationResult::InCombat;
 			}
 		}
@@ -11668,7 +11567,7 @@ Game::CanLeaveLocationResult Game::CanLeaveLocation(Unit& unit)
 			for(vector<Unit*>::iterator it2 = L.local_ctx.units->begin(), end2 = L.local_ctx.units->end(); it2 != end2; ++it2)
 			{
 				Unit& u2 = **it2;
-				if(&u != &u2 && u2.IsStanding() && IsEnemy(u, u2) && u2.IsAI() && u2.ai->in_combat && Vec3::Distance2d(u.pos, u2.pos) < ALERT_RANGE.x && CanSee(u, u2))
+				if(&u != &u2 && u2.IsStanding() && u.IsEnemy(u2) && u2.IsAI() && u2.ai->in_combat && Vec3::Distance2d(u.pos, u2.pos) < ALERT_RANGE.x && CanSee(u, u2))
 					return CanLeaveLocationResult::InCombat;
 			}
 		}
@@ -12411,7 +12310,7 @@ bool Game::Cheat_KillAll(int typ, Unit& unit, Unit* ignore)
 	case 0:
 		for(vector<Unit*>::iterator it = L.local_ctx.units->begin(), end = L.local_ctx.units->end(); it != end; ++it)
 		{
-			if((*it)->IsAlive() && IsEnemy(**it, unit) && *it != ignore)
+			if((*it)->IsAlive() && (*it)->IsEnemy(unit) && *it != ignore)
 				GiveDmg(L.local_ctx, nullptr, (*it)->hp, **it, nullptr);
 		}
 		if(L.city_ctx)
@@ -12420,7 +12319,7 @@ bool Game::Cheat_KillAll(int typ, Unit& unit, Unit* ignore)
 			{
 				for(vector<Unit*>::iterator it = (*it2)->units.begin(), end = (*it2)->units.end(); it != end; ++it)
 				{
-					if((*it)->IsAlive() && IsEnemy(**it, unit) && *it != ignore)
+					if((*it)->IsAlive() && (*it)->IsEnemy(unit) && *it != ignore)
 						GiveDmg((*it2)->ctx, nullptr, (*it)->hp, **it, nullptr);
 				}
 			}
@@ -13352,7 +13251,7 @@ void Game::HandleQuestEvent(Quest_Event* event)
 			Room& room = lvl->GetRoom(event->spawn_unit_room, inside->HaveDownStairs());
 			for(Unit* unit : *L.local_ctx.units)
 			{
-				if(unit != spawned && IsFriend(*unit, *spawned) && lvl->GetRoom(PosToPt(unit->pos)) == &room)
+				if(unit != spawned && unit->IsFriend(*spawned) && lvl->GetRoom(PosToPt(unit->pos)) == &room)
 				{
 					unit->dont_attack = spawned->dont_attack;
 					unit->guard_target = spawned;
@@ -13389,7 +13288,7 @@ void Game::HandleQuestEvent(Quest_Event* event)
 			Unit* best = nullptr;
 			for(Unit* unit : *L.local_ctx.units)
 			{
-				if(unit->IsAlive() && IsEnemy(*unit, *pc->unit) && (!best || unit->level > best->level))
+				if(unit->IsAlive() && unit->IsEnemy(*pc->unit) && (!best || unit->level > best->level))
 					best = unit;
 			}
 			assert(best);

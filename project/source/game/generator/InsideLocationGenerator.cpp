@@ -1182,7 +1182,7 @@ void InsideLocationGenerator::SpawnHeroesInsideDungeon()
 	for(vector<Unit*>::iterator it2 = L.local_ctx.units->begin(), end2 = L.local_ctx.units->end(); it2 != end2; ++it2)
 	{
 		Unit& u = **it2;
-		if(u.IsAlive() && game.IsEnemy(*game.pc->unit, u))
+		if(u.IsAlive() && game.pc->unit->IsEnemy(u))
 		{
 			for(vector<std::pair<Room*, int> >::iterator it = sprawdzone.begin(); it != end; ++it)
 			{

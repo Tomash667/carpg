@@ -133,6 +133,7 @@ public:
 	void SpawnTerrainCollider();
 	void SpawnDungeonColliders();
 	void SpawnDungeonCollider(const Vec3& pos);
+	void RemoveColliders();
 
 	Location* location; // same as W.current_location
 	int location_index; // same as W.current_location_index
@@ -148,6 +149,8 @@ public:
 	vector<Vec3> dungeon_shape_pos;
 	vector<int> dungeon_shape_index;
 	btTriangleIndexVertexArray* dungeon_shape_data;
+	vector<btCollisionShape*> shapes;
+	vector<CameraCollider> cam_colliders;
 
 	Terrain* terrain;
 	LocationEventHandler* event_handler;

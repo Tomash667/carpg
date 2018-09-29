@@ -3024,9 +3024,9 @@ void Game::DrawGlowingNodes(bool use_postfx)
 		if(glow.type == GlowNode::Unit)
 		{
 			Unit& unit = *(Unit*)glow.ptr;
-			if(IsEnemy(*pc->unit, unit))
+			if(pc->unit->IsEnemy(unit))
 				glow_color = Vec4(1, 0, 0, 1);
-			else if(IsFriend(*pc->unit, unit))
+			else if(pc->unit->IsFriend(unit))
 				glow_color = Vec4(0, 1, 0, 1);
 			else
 				glow_color = Vec4(1, 1, 0, 1);

@@ -4006,7 +4006,7 @@ void Unit::TryStandup(float dt)
 					ok = true;
 					for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
 					{
-						if((*it)->IsStanding() && game.IsEnemy(*this, **it) && Vec3::Distance(pos, (*it)->pos) <= 20.f && game.CanSee(*this, **it))
+						if((*it)->IsStanding() && IsEnemy(**it) && Vec3::Distance(pos, (*it)->pos) <= 20.f && game.CanSee(*this, **it))
 						{
 							ok = false;
 							break;
@@ -4114,7 +4114,7 @@ void Unit::Die(LevelContext* ctx, Unit* killer)
 		// og³oœ œmieræ
 		for(vector<Unit*>::iterator it = ctx->units->begin(), end = ctx->units->end(); it != end; ++it)
 		{
-			if((*it)->IsPlayer() || !(*it)->IsStanding() || !game.IsFriend(*this, **it))
+			if((*it)->IsPlayer() || !(*it)->IsStanding() || !IsFriend(**it))
 				continue;
 
 			if(Vec3::Distance(pos, (*it)->pos) <= 20.f && game.CanSee(*this, **it))
@@ -4553,4 +4553,98 @@ void Unit::UpdateInventory(bool notify)
 			}
 		}
 	}
+}
+
+//=================================================================================================
+bool Unit::IsEnemy(Unit &u, bool ignore_dont_attack) const
+{
+	if(in_arena == -1 && u.in_arena == -1)
+	{
+		if(!ignore_dont_attack)
+		{
+			if(IsAI() && IsDontAttack())
+				return false;
+			if(u.IsAI() && u.IsDontAttack())
+				return false;
+		}
+
+		UNIT_GROUP g1 = data->group,
+			g2 = u.data->group;
+
+		if(IsTeamMember())
+			g1 = G_TEAM;
+		if(u.IsTeamMember())
+			g2 = G_TEAM;
+
+		if(g1 == g2)
+			return false;
+		else if(g1 == G_CITIZENS)
+		{
+			if(g2 == G_CRAZIES)
+				return true;
+			else if(g2 == G_TEAM)
+				return Team.is_bandit || WantAttackTeam();
+			else
+				return true;
+		}
+		else if(g1 == G_CRAZIES)
+		{
+			if(g2 == G_CITIZENS)
+				return true;
+			else if(g2 == G_TEAM)
+				return Team.crazies_attack || WantAttackTeam();
+			else
+				return true;
+		}
+		else if(g1 == G_TEAM)
+		{
+			if(u.WantAttackTeam())
+				return true;
+			else if(g2 == G_CITIZENS)
+				return Team.is_bandit;
+			else if(g2 == G_CRAZIES)
+				return Team.crazies_attack;
+			else
+				return true;
+		}
+		else
+			return true;
+	}
+	else
+	{
+		if(in_arena == -1 || u.in_arena == -1)
+			return false;
+		else if(in_arena == u.in_arena)
+			return false;
+		else
+			return true;
+	}
+}
+
+//=================================================================================================
+bool Unit::IsFriend(Unit& u) const
+{
+	if(in_arena == -1 && u.in_arena == -1)
+	{
+		if(IsTeamMember())
+		{
+			if(u.IsTeamMember())
+				return true;
+			else if(u.IsAI() && !Team.is_bandit && u.IsAssist())
+				return true;
+			else
+				return false;
+		}
+		else if(u.IsTeamMember())
+		{
+			if(IsAI() && !Team.is_bandit && IsAssist())
+				return true;
+			else
+				return false;
+		}
+		else
+			return (data->group == u.data->group);
+	}
+	else
+		return in_arena == u.in_arena;
 }

@@ -858,6 +858,8 @@ struct Unit
 	SOUND GetTalkSound() const;
 	void SetWeaponState(bool takes_out, WeaponType co);
 	void UpdateInventory(bool notify = true);
+	bool IsEnemy(Unit& u, bool ignore_dont_attack = false) const;
+	bool IsFriend(Unit& u) const;
 
 	//-----------------------------------------------------------------------------
 	static vector<Unit*> refid_table;

@@ -668,7 +668,7 @@ void GameGui::DrawUnitInfo(cstring text, Unit& unit, const Vec3& pos, int alpha)
 		text_color = Color::White;
 		alpha = 255;
 	}
-	else if(game.IsEnemy(unit, *game.pc->unit))
+	else if(unit.IsEnemy(*game.pc->unit))
 		text_color = Color(255, 0, 0, alpha);
 	else
 		text_color = Color(0, 255, 0, alpha);
@@ -1453,12 +1453,12 @@ void GameGui::UpdatePlayerView(float dt)
 			continue;
 
 		bool mark = false;
-		if(game.IsEnemy(u, u2))
+		if(u.IsEnemy(u2))
 		{
 			if(u2.IsAlive())
 				mark = true;
 		}
-		else if(game.IsFriend(u, u2))
+		else if(u.IsFriend(u2))
 			mark = true;
 
 		// oznaczanie pobliskich postaci

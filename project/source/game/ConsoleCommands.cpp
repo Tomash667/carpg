@@ -812,7 +812,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					{
 						for(AIController* ai : ais)
 						{
-							if(IsEnemy(*ai->unit, *pc->unit) && Vec3::Distance(ai->unit->pos, pc->unit->pos) < ALERT_RANGE.x && CanSee(*ai->unit, *pc->unit))
+							if(ai->unit->IsEnemy(*pc->unit) && Vec3::Distance(ai->unit->pos, pc->unit->pos) < ALERT_RANGE.x && CanSee(*ai->unit, *pc->unit))
 							{
 								ai->morale = -10;
 								ai->target_last_pos = pc->unit->pos;

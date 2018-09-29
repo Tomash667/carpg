@@ -1371,18 +1371,6 @@ void Game::SetGameText()
 }
 
 //=================================================================================================
-Unit* Game::FindPlayerTradingWithUnit(Unit& u)
-{
-	for(Unit* unit : Team.active_members)
-	{
-		if(unit->IsPlayer() && unit->player->IsTradingWith(&u))
-			return unit;
-	}
-
-	return nullptr;
-}
-
-//=================================================================================================
 bool Game::ValidateTarget(Unit& u, Unit* target)
 {
 	assert(target);
@@ -1463,10 +1451,9 @@ void Game::PlayerYell(Unit& u)
 	for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
 	{
 		Unit& u2 = **it;
-		if(u2.IsAI() && u2.IsStanding() && !IsEnemy(u, u2) && !IsFriend(u, u2) && u2.busy == Unit::Busy_No && u2.frozen == FROZEN::NO && !u2.usable
+		if(u2.IsAI() && u2.IsStanding() && !u.IsEnemy(u2) && !u.IsFriend(u2) && u2.busy == Unit::Busy_No && u2.frozen == FROZEN::NO && !u2.usable
 			&& u2.ai->state == AIController::Idle && !IS_SET(u2.data->flags, F_AI_STAY)
-			&& 	(u2.ai->idle_action == AIController::Idle_None || u2.ai->idle_action == AIController::Idle_Animation || u2.ai->idle_action == AIController::Idle_Rot
-				|| u2.ai->idle_action == AIController::Idle_Look))
+			&& Any(u2.ai->idle_action, AIController::Idle_None, AIController::Idle_Animation, AIController::Idle_Rot, AIController::Idle_Look))
 		{
 			u2.ai->idle_action = AIController::Idle_MoveAway;
 			u2.ai->idle_data.unit = &u;

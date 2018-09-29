@@ -962,50 +962,7 @@ void Game::LoadGame(GameReader& f)
 	{
 		AIController& ai = **it;
 		int refid = (int)ai.cast_target;
-		if(refid == -1)
-		{
-			// zapis z wersji < 2, szukaj w pobli¿u punktu
-			LevelContext& ctx = L.GetContext(*ai.unit);
-			Spell* spell = ai.unit->data->spells->spell[ai.unit->attack_id];
-			float dist2, best_dist2 = spell->range;
-			ai.cast_target = nullptr;
-
-			if(IS_SET(spell->flags, Spell::Raise))
-			{
-				// czar o¿ywiania
-				for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
-				{
-					if(!(*it2)->to_remove && (*it2)->live_state == Unit::DEAD && !IsEnemy(*ai.unit, **it2) && IS_SET((*it2)->data->flags, F_UNDEAD) &&
-						(dist2 = Vec3::Distance(ai.target_last_pos, (*it2)->pos)) < best_dist2 && CanSee(*ai.unit, **it2))
-					{
-						best_dist2 = dist2;
-						ai.cast_target = *it2;
-					}
-				}
-			}
-			else
-			{
-				// czar leczenia
-				for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
-				{
-					if(!(*it2)->to_remove && !IsEnemy(*ai.unit, **it2) && !IS_SET((*it2)->data->flags, F_UNDEAD) && (*it2)->hpmax - (*it2)->hp > 100.f &&
-						(dist2 = Vec3::Distance(ai.target_last_pos, (*it2)->pos)) < best_dist2 && CanSee(*ai.unit, **it2))
-					{
-						best_dist2 = dist2;
-						ai.cast_target = *it2;
-					}
-				}
-			}
-
-			if(!ai.cast_target)
-			{
-				ai.state = AIController::Idle;
-				ai.idle_action = AIController::Idle_None;
-				ai.timer = Random(1.f, 2.f);
-			}
-		}
-		else
-			ai.cast_target = Unit::GetByRefid(refid);
+		ai.cast_target = Unit::GetByRefid(refid);
 	}
 
 	// questy zwi¹zane z lokacjami

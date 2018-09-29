@@ -188,7 +188,7 @@ void Game::UpdateAi(float dt)
 		float best_dist = ALERT_RANGE.x + 0.1f, dist;
 		for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
 		{
-			if((*it2)->to_remove || !(*it2)->IsAlive() || (*it2)->invisible || !IsEnemy(u, **it2))
+			if((*it2)->to_remove || !(*it2)->IsAlive() || (*it2)->invisible || !u.IsEnemy(**it2))
 				continue;
 
 			dist = Vec3::Distance(u.pos, (*it2)->pos);
@@ -257,8 +257,8 @@ void Game::UpdateAi(float dt)
 						// o¿ywianie trupów
 						for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
 						{
-							if(!(*it2)->to_remove && (*it2)->live_state == Unit::DEAD && !IsEnemy(u, **it2) && IS_SET((*it2)->data->flags, F_UNDEAD) &&
-								(dist = Vec3::Distance(u.pos, (*it2)->pos)) < spell_range && CanSee(u, **it2))
+							if(!(*it2)->to_remove && (*it2)->live_state == Unit::DEAD && !u.IsEnemy(**it2) && IS_SET((*it2)->data->flags, F_UNDEAD)
+								&& (dist = Vec3::Distance(u.pos, (*it2)->pos)) < spell_range && CanSee(u, **it2))
 							{
 								float prio = (*it2)->hpmax - dist * 10;
 								if(prio > best_prio)
@@ -274,8 +274,8 @@ void Game::UpdateAi(float dt)
 						// leczenie
 						for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
 						{
-							if(!(*it2)->to_remove && !IsEnemy(u, **it2) && !IS_SET((*it2)->data->flags, F_UNDEAD) && (*it2)->hpmax - (*it2)->hp > 100.f &&
-								(dist = Vec3::Distance(u.pos, (*it2)->pos)) < spell_range && CanSee(u, **it2))
+							if(!(*it2)->to_remove && !u.IsEnemy(**it2) && !IS_SET((*it2)->data->flags, F_UNDEAD) && (*it2)->hpmax - (*it2)->hp > 100.f
+								&& (dist = Vec3::Distance(u.pos, (*it2)->pos)) < spell_range && CanSee(u, **it2))
 							{
 								float prio = (*it2)->hpmax - (*it2)->hp;
 								if(*it2 == &u)
@@ -1792,7 +1792,7 @@ void Game::UpdateAi(float dt)
 
 							for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
 							{
-								if(!(*it2)->to_remove && (*it2)->IsStanding() && !(*it2)->invisible && IsEnemy(u, **it2) && (*it2)->action == A_ATTACK && !(*it2)->hitted
+								if(!(*it2)->to_remove && (*it2)->IsStanding() && !(*it2)->invisible && u.IsEnemy(**it2) && (*it2)->action == A_ATTACK && !(*it2)->hitted
 									&& (*it2)->animation_state < 2)
 								{
 									float dist = Vec3::Distance(u.pos, (*it2)->pos);
@@ -2044,7 +2044,7 @@ void Game::UpdateAi(float dt)
 								close_enemies.clear();
 								for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
 								{
-									if((*it2)->to_remove || !(*it2)->IsStanding() || (*it2)->invisible || !IsEnemy(u, **it2))
+									if((*it2)->to_remove || !(*it2)->IsStanding() || (*it2)->invisible || !u.IsEnemy(**it2))
 										continue;
 
 									if(Vec3::Distance(u.pos, (*it2)->pos) < ALERT_RANGE.x + 0.1f)
@@ -2139,7 +2139,7 @@ void Game::UpdateAi(float dt)
 
 					for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
 					{
-						if(!(*it2)->to_remove && (*it2)->IsStanding() && !(*it2)->invisible && IsEnemy(u, **it2) && (*it2)->action == A_ATTACK && !(*it2)->hitted
+						if(!(*it2)->to_remove && (*it2)->IsStanding() && !(*it2)->invisible && u.IsEnemy(**it2) && (*it2)->action == A_ATTACK && !(*it2)->hitted
 							&& (*it2)->animation_state < 2)
 						{
 							float dist = Vec3::Distance(u.pos, (*it2)->pos);
@@ -2216,7 +2216,7 @@ void Game::UpdateAi(float dt)
 
 					for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
 					{
-						if(!(*it2)->to_remove && (*it2)->IsStanding() && !(*it2)->invisible && IsEnemy(u, **it2))
+						if(!(*it2)->to_remove && (*it2)->IsStanding() && !(*it2)->invisible && u.IsEnemy(**it2))
 						{
 							float dist = Vec3::Distance(u.pos, (*it2)->pos);
 							if(dist < best_dist)
@@ -2353,7 +2353,7 @@ void Game::UpdateAi(float dt)
 
 					for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
 					{
-						if(!(*it2)->to_remove && (*it2)->IsStanding() && !(*it2)->invisible && IsEnemy(u, **it2))
+						if(!(*it2)->to_remove && (*it2)->IsStanding() && !(*it2)->invisible && u.IsEnemy(**it2))
 						{
 							float dist = Vec3::Distance(u.pos, (*it2)->pos);
 							if(dist < best_dist)
@@ -2890,7 +2890,7 @@ void Game::AI_Shout(LevelContext& ctx, AIController& ai)
 	// alarm near allies
 	for(Unit* u : *ctx.units)
 	{
-		if(u->to_remove || &unit == u || !u->IsStanding() || u->IsPlayer() || !IsFriend(unit, *u) || u->ai->state == AIController::Fighting
+		if(u->to_remove || &unit == u || !u->IsStanding() || u->IsPlayer() || !unit.IsFriend(*u) || u->ai->state == AIController::Fighting
 			|| u->ai->alert_target || u->dont_attack)
 			continue;
 
@@ -2998,7 +2998,7 @@ void Game::AI_HitReaction(Unit& unit, const Vec3& pos)
 		// alarm near allies
 		for(Unit* u : *L.local_ctx.units)
 		{
-			if(u->to_remove || &unit == u || !u->IsStanding() || u->IsPlayer() || !IsFriend(unit, *u) || u->dont_attack)
+			if(u->to_remove || &unit == u || !u->IsStanding() || u->IsPlayer() || !unit.IsFriend(*u) || u->dont_attack)
 				continue;
 
 			if((u->ai->state == AIController::Idle || u->ai->state == AIController::SearchEnemy) && Vec3::Distance(unit.pos, u->pos) <= 20.f && CanSee(unit, *u))
@@ -3085,7 +3085,7 @@ void Game::CheckAutoTalk(Unit& unit, float dt)
 				if(&talk_target == &check_unit || &unit == &check_unit)
 					continue;
 
-				if(check_unit.IsAlive() && IsEnemy(talk_target, check_unit) && check_unit.IsAI() && !check_unit.dont_attack
+				if(check_unit.IsAlive() && talk_target.IsEnemy(check_unit) && check_unit.IsAI() && !check_unit.dont_attack
 					&& Vec3::Distance2d(talk_target.pos, check_unit.pos) < ALERT_RANGE.x && CanSee(check_unit, talk_target))
 				{
 					ok = false;

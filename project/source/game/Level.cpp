@@ -869,7 +869,7 @@ void Level::SpawnObjectExtras(LevelContext& ctx, BaseObject* obj, const Vec3& po
 
 		btCollisionObject* cobj = new btCollisionObject;
 		btCylinderShape* shape = new btCylinderShape(btVector3(obj->r*scale, obj->h*scale, obj->r*scale));
-		game.shapes.push_back(shape);
+		shapes.push_back(shape);
 		cobj->setCollisionShape(shape);
 		cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_OBJECT);
 		cobj->getWorldTransform().setOrigin(btVector3(pos.x, pos.y + obj->h / 2 * scale, pos.z));
@@ -889,7 +889,7 @@ void Level::SpawnObjectExtras(LevelContext& ctx, BaseObject* obj, const Vec3& po
 			Vec3 pos2 = Vec3::TransformZero(m2) + pos;
 
 			btBoxShape* shape = new btBoxShape(btVector3(pt.size.x, pt.size.y, pt.size.z));
-			game.shapes.push_back(shape);
+			shapes.push_back(shape);
 			btCollisionObject* co = new btCollisionObject;
 			co->setCollisionShape(shape);
 			co->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_CAMERA_COLLIDER);
@@ -902,7 +902,7 @@ void Level::SpawnObjectExtras(LevelContext& ctx, BaseObject* obj, const Vec3& po
 			if(roti == 1 || roti == 3)
 				std::swap(w, h);
 
-			CameraCollider& cc = Add1(game.cam_colliders);
+			CameraCollider& cc = Add1(cam_colliders);
 			cc.box.v1.x = pos2.x - w;
 			cc.box.v2.x = pos2.x + w;
 			cc.box.v1.z = pos2.z - h;
@@ -1049,7 +1049,7 @@ void Level::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding
 				}
 
 				btCylinderShape* shape = new btCylinderShape(btVector3(pt.size.x, 4.f, pt.size.z));
-				game.shapes.push_back(shape);
+				shapes.push_back(shape);
 				btCollisionObject* co = new btCollisionObject;
 				co->setCollisionShape(shape);
 				int group = (is_wall ? CG_BUILDING : CG_COLLIDER);
@@ -1088,7 +1088,7 @@ void Level::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding
 					if(ctx.type == LevelContext::Outside)
 						pos.y += terrain->GetH(pos);
 				}
-				game.shapes.push_back(shape);
+				shapes.push_back(shape);
 				btCollisionObject* co = new btCollisionObject;
 				co->setCollisionShape(shape);
 				int group = (is_wall ? CG_BUILDING : CG_COLLIDER);
@@ -1109,7 +1109,7 @@ void Level::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding
 				btBoxShape* shape = new btBoxShape(btVector3(pt.size.x, pt.size.y, pt.size.z));
 				if(ctx.type == LevelContext::Outside)
 					pos.y += terrain->GetH(pos);
-				game.shapes.push_back(shape);
+				shapes.push_back(shape);
 				btCollisionObject* co = new btCollisionObject;
 				co->setCollisionShape(shape);
 				int group = CG_COLLIDER;
@@ -1126,7 +1126,7 @@ void Level::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding
 					pos.y += terrain->GetH(pos);
 
 				btBoxShape* shape = new btBoxShape(btVector3(pt.size.x, pt.size.y, pt.size.z));
-				game.shapes.push_back(shape);
+				shapes.push_back(shape);
 				btCollisionObject* co = new btCollisionObject;
 				co->setCollisionShape(shape);
 				co->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_CAMERA_COLLIDER);
@@ -1139,7 +1139,7 @@ void Level::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding
 				if(roti == 1 || roti == 3)
 					std::swap(w, h);
 
-				CameraCollider& cc = Add1(game.cam_colliders);
+				CameraCollider& cc = Add1(cam_colliders);
 				cc.box.v1.x = pos.x - w;
 				cc.box.v2.x = pos.x + w;
 				cc.box.v1.z = pos.z - h;
@@ -3151,7 +3151,7 @@ void Level::CheckIfLocationCleared()
 	bool is_clear = true;
 	for(vector<Unit*>::iterator it = local_ctx.units->begin(), end = local_ctx.units->end(); it != end; ++it)
 	{
-		if((*it)->IsAlive() && game.IsEnemy(*game.pc->unit, **it, true))
+		if((*it)->IsAlive() && game.pc->unit->IsEnemy(**it, true))
 		{
 			is_clear = false;
 			break;
@@ -3373,4 +3373,14 @@ void Level::SpawnDungeonCollider(const Vec3& pos)
 	cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BUILDING);
 	cobj->getWorldTransform().setOrigin(ToVector3(pos));
 	phy_world->addCollisionObject(cobj, CG_BUILDING);
+}
+
+//=================================================================================================
+void Level::RemoveColliders()
+{
+	if(phy_world)
+		phy_world->Reset();
+
+	DeleteElements(shapes);
+	cam_colliders.clear();
 }

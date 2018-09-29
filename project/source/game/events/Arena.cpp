@@ -234,7 +234,7 @@ void Arena::Verify()
 		{
 			for(Unit* unit2 : Team.members)
 			{
-				if(unit != unit2 && !game.IsFriend(*unit, *unit2))
+				if(unit != unit2 && !unit->IsFriend(*unit2))
 				{
 					Warn("%s (%d,%d) i %s (%d,%d) are not friends!", unit->data->id.c_str(), unit->in_arena, unit->IsTeamMember() ? 1 : 0,
 						unit2->data->id.c_str(), unit2->in_arena, unit2->IsTeamMember() ? 1 : 0);

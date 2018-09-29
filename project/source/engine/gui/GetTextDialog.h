@@ -7,7 +7,8 @@
 //-----------------------------------------------------------------------------
 struct GetTextDialogParams
 {
-	GetTextDialogParams(cstring text, string& _input) : text(text), input(&_input), parent(nullptr), event(nullptr), limit(0), lines(1), width(300), custom_names(nullptr), multiline(false)
+	GetTextDialogParams(cstring text, string& input) : text(text), input(&input), parent(nullptr), event(nullptr), limit(0), lines(1), width(300),
+		custom_names(nullptr), multiline(false)
 	{
 	}
 

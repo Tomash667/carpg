@@ -167,7 +167,7 @@ Unit* LevelAreaContext::FindUnitWithQuestItem(int quest_refid, LevelAreaContext:
 		for(int i = 0, len = (int)e.area->units.size(); i < len; ++i)
 		{
 			Unit* unit = e.area->units[i];
-			if(unit->IsAlive() && game.IsEnemy(*unit, *game.pc->unit))
+			if(unit->IsAlive() && unit->IsEnemy(*game.pc->unit))
 			{
 				int iindex = unit->FindQuestItem(quest_refid);
 				if(iindex != Unit::INVALID_IINDEX)

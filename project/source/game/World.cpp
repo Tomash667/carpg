@@ -2180,7 +2180,7 @@ void World::AbadonLocation(Location* loc)
 		// remove units
 		for(Unit*& u : outside->units)
 		{
-			if(u->IsAlive() && game.IsEnemy(*game.pc->unit, *u))
+			if(u->IsAlive() && game.pc->unit->IsEnemy(*u))
 			{
 				u->to_remove = true;
 				L.to_remove.push_back(u);
@@ -2200,7 +2200,7 @@ void World::AbadonLocation(Location* loc)
 		for(Unit*& u : outside->units)
 		{
 			__assume(u != nullptr);
-			if(u->IsAlive() && game.IsEnemy(*game.pc->unit, *u))
+			if(u->IsAlive() && game.pc->unit->IsEnemy(*u))
 			{
 				delete u;
 				u = nullptr;

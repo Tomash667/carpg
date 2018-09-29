@@ -399,11 +399,6 @@ public:
 	DialogContext* FindDialogContext(Unit* talker);
 
 	//---------------------------------
-	// FIZYKA
-	vector<btCollisionShape*> shapes;
-	vector<CameraCollider> cam_colliders;
-
-	//---------------------------------
 	// WCZYTYWANIE
 	float loading_dt, loading_cap;
 	Timer loading_t;
@@ -498,8 +493,6 @@ public:
 	void TestUnitSpells(const SpellList& spells, string& errors, uint& count);
 	Unit* CreateUnit(UnitData& base, int level = -1, Human* human_data = nullptr, Unit* test_unit = nullptr, bool create_physics = true, bool custom = false);
 	void ParseItemScript(Unit& unit, const ItemScript* script);
-	bool IsEnemy(Unit& u1, Unit& u2, bool ignore_dont_attack = false);
-	bool IsFriend(Unit& u1, Unit& u2);
 	bool CanSee(Unit& unit, Unit& unit2);
 	// nie dzia³a dla budynków bo nie uwzglêdnia obiektów
 	bool CanSee(const Vec3& v1, const Vec3& v2);
@@ -532,7 +525,6 @@ public:
 	Vec4 GetLightColor();
 	Vec4 GetLightDir();
 	void UpdateBullets(LevelContext& ctx, float dt);
-	void RemoveColliders();
 	Vec3 PredictTargetPos(const Unit& me, const Unit& target, float bullet_speed) const;
 	bool CanShootAtLocation(const Unit& me, const Unit& target, const Vec3& pos) const { return CanShootAtLocation2(me, &target, pos); }
 	bool CanShootAtLocation(const Vec3& from, const Vec3& to) const;
@@ -678,7 +670,6 @@ public:
 		AddItem(unit, item, count, is_team ? count : 0, send_msg);
 	}
 
-	Unit* FindPlayerTradingWithUnit(Unit& u);
 	Int2 GetSpawnPoint();
 	bool ValidateTarget(Unit& u, Unit* target);
 
@@ -698,7 +689,6 @@ public:
 
 	bool CanShowMenu();
 	void SaveLoadEvent(int id);
-	void SaveEvent(int id);
 	void SaveOptions();
 	void StartNewGame();
 	void NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharacter& cc, bool tutorial);

@@ -1265,3 +1265,15 @@ bool TeamSingleton::RemoveQuestItem(const Item* item, int refid)
 	else
 		return false;
 }
+
+//=================================================================================================
+Unit* TeamSingleton::FindPlayerTradingWithUnit(Unit& u)
+{
+	for(Unit* unit : active_members)
+	{
+		if(unit->IsPlayer() && unit->player->IsTradingWith(&u))
+			return unit;
+	}
+
+	return nullptr;
+}

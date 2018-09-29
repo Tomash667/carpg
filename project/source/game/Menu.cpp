@@ -85,7 +85,13 @@ void Game::SaveLoadEvent(int id)
 					save_input_text.clear();
 				GetTextDialogParams params(gui->saveload->txSaveName, save_input_text);
 				params.custom_names = names;
-				params.event = delegate<void(int)>(this, &Game::SaveEvent);
+				params.event = [this](int id)
+				{
+					if(id == BUTTON_OK && SaveGameSlot(gui->saveload->choice + 1, save_input_text.c_str()))
+					{
+						GUI.CloseDialog(gui->saveload);
+					}
+				};
 				params.parent = gui->saveload;
 				GetTextDialog::Show(params);
 			}
@@ -115,19 +121,6 @@ void Game::SaveLoadEvent(int id)
 				GUI.SimpleDialog(dialog_text, gui->saveload);
 				mp_load = false;
 			}
-		}
-	}
-}
-
-//=================================================================================================
-void Game::SaveEvent(int id)
-{
-	if(id == BUTTON_OK)
-	{
-		if(SaveGameSlot(gui->saveload->choice + 1, save_input_text.c_str()))
-		{
-			// zapisywanie siê uda³o, zamknij okno zapisu
-			GUI.CloseDialog(gui->saveload);
 		}
 	}
 }
