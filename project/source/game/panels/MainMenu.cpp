@@ -278,7 +278,7 @@ void MainMenu::Event(GuiEvent e)
 		{
 		case IdNewGame:
 			Net::SetMode(Net::Mode::Singleplayer);
-			game->ShowCreateCharacterPanel(true);
+			game->gui->ShowCreateCharacterPanel(true);
 			break;
 		case IdLoadGame:
 			Net::SetMode(Net::Mode::Singleplayer);

@@ -34,6 +34,7 @@
 #include "PickFileDialog.h"
 #include "ResourceManager.h"
 #include "Game.h"
+#include "Language.h"
 
 //=================================================================================================
 GlobalGui::GlobalGui() : load_screen(nullptr), game_gui(nullptr), inventory(nullptr), stats(nullptr), team(nullptr),
@@ -152,7 +153,6 @@ void GlobalGui::InitOnce()
 	console = new Console(info);
 
 	info.name = "game_menu";
-	info.event = DialogEvent(&game, &Game::MenuEvent);
 	info.order = ORDER_TOP;
 	game_menu = new GameMenu(info);
 
@@ -197,6 +197,8 @@ void GlobalGui::InitOnce()
 void GlobalGui::LoadLanguage()
 {
 	GUI.SetText();
+
+	txReallyQuit = Str("reallyQuit");
 
 	actions->LoadLanguage();
 	controls->LoadLanguage();
@@ -372,12 +374,6 @@ void GlobalGui::OnFocus(bool focus, const Int2& activation_point)
 }
 
 //=================================================================================================
-void GlobalGui::ShowOptions()
-{
-	GUI.ShowDialog(options);
-}
-
-//=================================================================================================
 void GlobalGui::ShowMultiplayer()
 {
 	Game::Get().mp_load = false;
@@ -398,4 +394,38 @@ void GlobalGui::ShowLoadPanel()
 	Game& game = Game::Get();
 	saveload->SetSaveMode(false, game.mp_load, game.mp_load ? game.multi_saves : game.single_saves);
 	GUI.ShowDialog(saveload);
+}
+
+//=================================================================================================
+void GlobalGui::ShowQuitDialog()
+{
+	DialogInfo di;
+	di.text = txReallyQuit;
+	di.event = [](int id)
+	{
+		if(id == BUTTON_YES)
+		{
+			GUI.GetDialog("dialog_alt_f4")->visible = false;
+			Game::Get().Quit();
+		}
+	};
+	di.type = DIALOG_YESNO;
+	di.name = "dialog_alt_f4";
+	di.parent = nullptr;
+	di.order = ORDER_TOPMOST;
+	di.pause = true;
+
+	GUI.ShowDialog(di);
+}
+
+//=================================================================================================
+void GlobalGui::ShowCreateCharacterPanel(bool require_name, bool redo)
+{
+	if(redo)
+	{
+		PlayerInfo& info = N.GetMe();
+		create_character->ShowRedo(info.clas, info.hd, info.cc);
+	}
+	else
+		create_character->Show(require_name);
 }

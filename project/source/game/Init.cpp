@@ -340,7 +340,6 @@ void Game::PostconfigureGame()
 	Info("Game: Postconfiguring game.");
 
 	LockCursor();
-	CreateCollisionShapes();
 	for(GameComponent* component : components)
 		component->PostInit();
 

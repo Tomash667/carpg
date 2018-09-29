@@ -640,12 +640,12 @@ void Game::LoadGame(GameReader& f)
 	if(mp_load)
 	{
 		if(!online_save)
-			throw SaveException(txLoadMP, "Save is from singleplayer mode.");
+			throw SaveException(txLoadSP, "Save is from singleplayer mode.");
 	}
 	else
 	{
 		if(online_save)
-			throw SaveException(txLoadSP, "Save is from multiplayer mode.");
+			throw SaveException(txLoadMP, "Save is from multiplayer mode.");
 	}
 
 	Info("Loading save. Version %s, start %s, format %d, mp %d, debug %d.", VersionToString(version), VersionToString(start_version), LOAD_VERSION,

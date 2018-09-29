@@ -4276,18 +4276,16 @@ void Unit::CreatePhysics(bool position)
 		cobj->getWorldTransform().setOrigin(bpos);
 	}
 
-	Game::Get().phy_world->addCollisionObject(cobj, CG_UNIT);
+	L.phy_world->addCollisionObject(cobj, CG_UNIT);
 }
 
 //=================================================================================================
 void Unit::UpdatePhysics(const Vec3& pos)
 {
-	Game& game = Game::Get();
 	btVector3 a_min, a_max, bpos(ToVector3(IsAlive() ? pos : Vec3(1000, 1000, 1000)));
 	bpos.setY(pos.y + max(MIN_H, GetUnitHeight()) / 2);
 	cobj->getWorldTransform().setOrigin(bpos);
-	cobj->getCollisionShape()->getAabb(cobj->getWorldTransform(), a_min, a_max);
-	game.phy_broadphase->setAabb(cobj->getBroadphaseHandle(), a_min, a_max, game.phy_dispatcher);
+	L.phy_world->UpdateAabb(cobj);
 }
 
 //=================================================================================================

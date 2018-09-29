@@ -23,10 +23,13 @@ public:
 	void Setup(PlayerController* pc);
 	void OnResize();
 	void OnFocus(bool focus, const Int2& activation_point);
-	void ShowOptions();
+	void ShowMenu() { GUI.ShowDialog((DialogBox*)game_menu); }
+	void ShowOptions() { GUI.ShowDialog((DialogBox*)options); }
 	void ShowMultiplayer();
 	void ShowSavePanel();
 	void ShowLoadPanel();
+	void ShowQuitDialog();
+	void ShowCreateCharacterPanel(bool enter_name, bool redo = false);
 
 	// panels
 	LoadScreen* load_screen;
@@ -56,4 +59,7 @@ public:
 	Controls* controls;
 	// settings
 	bool cursor_allow_move;
+
+private:
+	cstring txReallyQuit;
 };

@@ -53,3 +53,11 @@ void CustomCollisionWorld::Reset()
 	m_collisionObjects.clear();
 	m_broadphasePairCache->resetPool(m_dispatcher1);
 }
+
+//=================================================================================================
+void CustomCollisionWorld::UpdateAabb(btCollisionObject* cobj)
+{
+	btVector3 a_min, a_max;
+	cobj->getCollisionShape()->getAabb(cobj->getWorldTransform(), a_min, a_max);
+	broadphase->setAabb(cobj->getBroadphaseHandle(), a_min, a_max, dispatcher);
+}

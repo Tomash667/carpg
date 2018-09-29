@@ -350,7 +350,7 @@ void Game::OnTick(float dt)
 
 	// szybkie wyjœcie z gry (alt+f4)
 	if(Key.Focus() && Key.Down(VK_MENU) && Key.Down(VK_F4) && !GUI.HaveTopDialog("dialog_alt_f4"))
-		ShowQuitDialog();
+		gui->ShowQuitDialog();
 
 	if(koniec_gry)
 	{
@@ -486,10 +486,7 @@ void Game::OnTick(float dt)
 
 	// otwórz menu
 	if(GKey.AllowKeyboard() && CanShowMenu() && Key.PressedRelease(VK_ESCAPE))
-		ShowMenu();
-
-	if(gui->game_menu->visible)
-		gui->game_menu->Set(CanSaveGame(), CanLoadGame(), hardcore_mode);
+		gui->ShowMenu();
 
 	arena->UpdatePvpRequest(dt);
 
@@ -859,17 +856,7 @@ void Game::ClearPointers()
 	vdSchodyGora = nullptr;
 	vdSchodyDol = nullptr;
 	vdNaDrzwi = nullptr;
-
-	// fizyka
-	shape_low_ceiling = nullptr;
-	shape_ceiling = nullptr;
-	shape_floor = nullptr;
-	shape_door = nullptr;
-	shape_block = nullptr;
-	shape_summon = nullptr;
-	shape_barrier = nullptr;
-	shape_arrow = nullptr;
-
+	
 	// vertex declarations
 	for(int i = 0; i < VDI_MAX; ++i)
 		vertex_decl[i] = nullptr;
@@ -921,20 +908,6 @@ void Game::OnCleanup()
 		SafeRelease(it.second);
 
 	content::CleanupContent();
-
-	// fizyka
-	delete shape_wall;
-	delete shape_low_ceiling;
-	delete shape_ceiling;
-	delete shape_floor;
-	delete shape_door;
-	delete shape_block;
-	delete shape_schody_c[0];
-	delete shape_schody_c[1];
-	delete shape_summon;
-	delete shape_barrier;
-	delete shape_schody;
-	delete shape_arrow;
 
 	draw_batch.Clear();
 	DeleteElements(old_players);
@@ -1242,7 +1215,6 @@ void Game::SetGameText()
 	txLevelUp = Str("levelUp");
 	txLevelDown = Str("levelDown");
 	txRegeneratingLevel = Str("regeneratingLevel");
-	txReallyQuit = Str("reallyQuit");
 	txGainTextAttrib = Str("gainTextAttrib");
 	txGainTextSkill = Str("gainTextSkill");
 	txNeedItem = Str("needItem");

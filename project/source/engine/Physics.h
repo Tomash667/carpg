@@ -14,6 +14,7 @@ public:
 	static CustomCollisionWorld* Init();
 	static void Cleanup(CustomCollisionWorld* world);
 	void Reset();
+	void UpdateAabb(btCollisionObject* cobj);
 
 private:
 	btCollisionConfiguration* config;

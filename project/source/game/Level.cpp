@@ -23,7 +23,8 @@
 Level L;
 
 //=================================================================================================
-Level::Level() : terrain(nullptr), terrain_shape(nullptr), dungeon_shape(nullptr), dungeon_shape_data(nullptr), shape_wall(nullptr)
+Level::Level() : terrain(nullptr), terrain_shape(nullptr), dungeon_shape(nullptr), dungeon_shape_data(nullptr), shape_wall(nullptr), shape_stairs(nullptr),
+shape_stairs_part(), shape_block(nullptr), shape_barrier(nullptr), shape_door(nullptr), shape_arrow(nullptr), shape_summon(nullptr)
 {
 }
 
@@ -61,6 +62,34 @@ void Level::PostInit()
 	terrain->Init(game.device, terrain_options);
 	terrain->Build();
 	terrain->RemoveHeightMap(true);
+
+	// collision shapes
+	const float size = 256.f;
+	const float border = 32.f;
+
+	shape_wall = new btBoxShape(btVector3(1.f, 2.f, 1.f));
+	btCompoundShape* s = new btCompoundShape;
+	btBoxShape* b = new btBoxShape(btVector3(1.f, 2.f, 0.1f));
+	shape_stairs_part[0] = b;
+	btTransform tr;
+	tr.setIdentity();
+	tr.setOrigin(btVector3(0.f, 2.f, 0.95f));
+	s->addChildShape(tr, b);
+	b = new btBoxShape(btVector3(0.1f, 2.f, 1.f));
+	shape_stairs_part[1] = b;
+	tr.setOrigin(btVector3(-0.95f, 2.f, 0.f));
+	s->addChildShape(tr, b);
+	tr.setOrigin(btVector3(0.95f, 2.f, 0.f));
+	s->addChildShape(tr, b);
+	shape_stairs = s;
+	shape_door = new btBoxShape(btVector3(0.842f, 1.319f, 0.181f));
+	shape_block = new btBoxShape(btVector3(1.f, 4.f, 1.f));
+	shape_barrier = new btBoxShape(btVector3(size / 2, 40.f, border / 2));
+	shape_summon = new btCylinderShape(btVector3(1.5f / 2, 0.75f, 1.5f / 2));
+
+	Mesh::Point* point = game.aArrow->FindPoint("Empty");
+	assert(point && point->IsBox());
+	shape_arrow = new btBoxShape(ToVector3(point->size));
 }
 
 //=================================================================================================
@@ -70,6 +99,15 @@ void Level::Cleanup()
 	delete terrain_shape;
 	delete dungeon_shape;
 	delete dungeon_shape_data;
+	delete shape_wall;
+	delete shape_stairs_part[0];
+	delete shape_stairs_part[1];
+	delete shape_stairs;
+	delete shape_block;
+	delete shape_barrier;
+	delete shape_door;
+	delete shape_arrow;
+	delete shape_summon;
 }
 
 //=================================================================================================
@@ -1223,7 +1261,7 @@ void Level::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding
 					door->mesh_inst = new MeshInstance(door->door2 ? game.aDoor2 : game.aDoor);
 					door->mesh_inst->groups[0].speed = 2.f;
 					door->phy = new btCollisionObject;
-					door->phy->setCollisionShape(game.shape_door);
+					door->phy->setCollisionShape(L.shape_door);
 					door->phy->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_DOOR);
 					door->locked = LOCK_NONE;
 					door->netid = Door::netid_counter++;
@@ -3049,7 +3087,7 @@ void Level::OnReenterLevel()
 
 				// fizyka
 				door.phy = new btCollisionObject;
-				door.phy->setCollisionShape(game.shape_door);
+				door.phy->setCollisionShape(L.shape_door);
 				door.phy->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_DOOR);
 				btTransform& tr = door.phy->getWorldTransform();
 				Vec3 pos = door.pos;

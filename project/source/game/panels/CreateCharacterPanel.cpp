@@ -545,7 +545,11 @@ void CreateCharacterPanel::Event(GuiEvent e)
 				else if(cc.sp != 0 || cc.perks != 0)
 				{
 					DialogInfo di;
-					di.event = DialogEvent(this, &CreateCharacterPanel::OnShowWarning);
+					di.event = [this](int id)
+					{
+						if(id == BUTTON_YES)
+							mode = Mode::PickAppearance;
+					};
 					di.name = "create_char_warn";
 					di.order = ORDER_TOP;
 					di.parent = this;
@@ -568,13 +572,22 @@ void CreateCharacterPanel::Event(GuiEvent e)
 			if(enter_name)
 			{
 				GetTextDialogParams params(Format("%s:", txName), player_name);
-				params.event = DialogEvent(this, &CreateCharacterPanel::OnEnterName);
+				params.event = [this](int id)
+				{
+					if(id == BUTTON_OK)
+					{
+						last_hair_color_index = hair_color_index;
+						CloseDialog();
+						event(BUTTON_OK);
+					}
+				};
 				params.limit = 16;
 				params.parent = this;
 				GetTextDialog::Show(params);
 			}
 			else
 			{
+				last_hair_color_index = hair_color_index;
 				CloseDialog();
 				event(BUTTON_OK);
 			}
@@ -618,16 +631,6 @@ void CreateCharacterPanel::Event(GuiEvent e)
 			}
 			break;
 		}
-	}
-}
-
-//=================================================================================================
-void CreateCharacterPanel::OnEnterName(int id)
-{
-	if(id == BUTTON_OK)
-	{
-		CloseDialog();
-		event(BUTTON_OK);
 	}
 }
 
@@ -966,14 +969,15 @@ void CreateCharacterPanel::RandomAppearance()
 	u.human_data->beard = Rand() % MAX_BEARD - 1;
 	u.human_data->hair = Rand() % MAX_HAIR - 1;
 	u.human_data->mustache = Rand() % MAX_MUSTACHE - 1;
-	hair_index = Rand() % n_hair_colors;
-	u.human_data->hair_color = g_hair_colors[hair_index];
+	hair_color_index = Rand() % n_hair_colors;
+	u.human_data->hair_color = g_hair_colors[hair_color_index];
 	u.human_data->height = Random(0.95f, 1.05f);
 	u.human_data->ApplyScale(game->aHumanBase);
+	SetControls();
 }
 
 //=================================================================================================
-void CreateCharacterPanel::Show(bool _enter_name)
+void CreateCharacterPanel::Show(bool enter_name)
 {
 	clas = ClassInfo::GetRandomPlayer();
 	lbClasses.Select(lbClasses.FindIndex((int)clas));
@@ -981,7 +985,7 @@ void CreateCharacterPanel::Show(bool _enter_name)
 	RandomAppearance();
 
 	reset_skills_perks = true;
-	enter_name = _enter_name;
+	this->enter_name = enter_name;
 	mode = Mode::PickClass;
 
 	SetControls();
@@ -992,14 +996,14 @@ void CreateCharacterPanel::Show(bool _enter_name)
 }
 
 //=================================================================================================
-void CreateCharacterPanel::ShowRedo(Class _clas, int _hair_index, HumanData& hd, CreatedCharacter& _cc)
+void CreateCharacterPanel::ShowRedo(Class clas, HumanData& hd, CreatedCharacter& cc)
 {
-	clas = _clas;
+	this->clas = clas;
 	lbClasses.Select(lbClasses.FindIndex((int)clas));
 	ClassChanged();
-	hair_index = _hair_index;
+	hair_color_index = last_hair_color_index;
 	unit->ApplyHumanData(hd);
-	cc = _cc;
+	this->cc = cc;
 	RebuildSkillsFlow();
 	RebuildPerksFlow();
 
@@ -1022,7 +1026,7 @@ void CreateCharacterPanel::SetControls()
 	slider[1].text = Format("%s %d/%d", txMustache, slider[1].val, slider[1].maxv);
 	slider[2].val = unit->human_data->beard + 1;
 	slider[2].text = Format("%s %d/%d", txBeard, slider[2].val, slider[2].maxv);
-	slider[3].val = hair_index;
+	slider[3].val = hair_color_index;
 	slider[3].text = Format("%s %d/%d", txHairColor, slider[3].val, slider[3].maxv);
 	slider[4].val = int((unit->human_data->height - 0.9f) * 500);
 	slider[4].text = Format("%s %d/%d", txSize, slider[4].val, slider[4].maxv);
@@ -1071,9 +1075,9 @@ cstring CreateCharacterPanel::GetText(int group, int id)
 }
 
 //=================================================================================================
-void CreateCharacterPanel::GetTooltip(TooltipController* _tool, int group, int id)
+void CreateCharacterPanel::GetTooltip(TooltipController* ptr_tool, int group, int id)
 {
-	TooltipController& tool = *_tool;
+	TooltipController& tool = *ptr_tool;
 
 	switch((Group)group)
 	{
@@ -1404,13 +1408,6 @@ void CreateCharacterPanel::ResetSkillsPerks()
 	RebuildPerksFlow();
 	flowSkills.ResetScrollbar();
 	flowPerks.ResetScrollbar();
-}
-
-//=================================================================================================
-void CreateCharacterPanel::OnShowWarning(int id)
-{
-	if(id == BUTTON_YES)
-		mode = Mode::PickAppearance;
 }
 
 //=================================================================================================

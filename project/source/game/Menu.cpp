@@ -53,49 +53,6 @@ bool Game::CanShowMenu()
 }
 
 //=================================================================================================
-void Game::ShowMenu()
-{
-	GUI.ShowDialog(gui->game_menu);
-}
-
-//=================================================================================================
-void Game::MenuEvent(int index)
-{
-	switch(index)
-	{
-	case GameMenu::IdReturnToGame: // wróæ
-		GUI.CloseDialog(gui->game_menu);
-		break;
-	case GameMenu::IdSaveGame: // zapisz
-		gui->ShowSavePanel();
-		break;
-	case GameMenu::IdLoadGame: // wczytaj
-		gui->ShowLoadPanel();
-		break;
-	case GameMenu::IdOptions: // opcje
-		gui->ShowOptions();
-		break;
-	case GameMenu::IdExit: // wróæ do menu
-		{
-			DialogInfo info;
-			info.event = delegate<void(int)>(this, &Game::OnExit);
-			info.name = "exit_to_menu";
-			info.parent = nullptr;
-			info.pause = true;
-			info.text = gui->game_menu->txExitToMenuDialog;
-			info.order = ORDER_TOP;
-			info.type = DIALOG_YESNO;
-
-			GUI.ShowDialog(info);
-		}
-		break;
-	case GameMenu::IdQuit: // wyjdŸ
-		ShowQuitDialog();
-		break;
-	}
-}
-
-//=================================================================================================
 void Game::SaveLoadEvent(int id)
 {
 	if(id == SaveLoad::IdCancel)
@@ -204,35 +161,6 @@ void Game::StartNewGame()
 	HumanData hd;
 	hd.Get(*gui->create_character->unit->human_data);
 	NewGameCommon(gui->create_character->clas, gui->create_character->player_name.c_str(), hd, gui->create_character->cc, false);
-}
-
-//=================================================================================================
-void Game::OnQuit(int id)
-{
-	if(id == BUTTON_YES)
-	{
-		GUI.GetDialog("dialog_alt_f4")->visible = false;
-		Quit();
-	}
-}
-
-//=================================================================================================
-void Game::OnExit(int id)
-{
-	if(id == BUTTON_YES)
-		ExitToMenu();
-}
-
-//=================================================================================================
-void Game::ShowCreateCharacterPanel(bool require_name, bool redo)
-{
-	if(redo)
-	{
-		PlayerInfo& info = N.GetMe();
-		gui->create_character->ShowRedo(info.clas, hair_redo_index, info.hd, info.cc);
-	}
-	else
-		gui->create_character->Show(require_name);
 }
 
 //=================================================================================================
@@ -3082,20 +3010,6 @@ bool Game::DoLobbyUpdate(BitStreamReader& f)
 	}
 
 	return true;
-}
-
-void Game::ShowQuitDialog()
-{
-	DialogInfo di;
-	di.text = txReallyQuit;
-	di.event = delegate<void(int)>(this, &Game::OnQuit);
-	di.type = DIALOG_YESNO;
-	di.name = "dialog_alt_f4";
-	di.parent = nullptr;
-	di.order = ORDER_TOPMOST;
-	di.pause = true;
-
-	GUI.ShowDialog(di);
 }
 
 void Game::OnCreateCharacter(int id)

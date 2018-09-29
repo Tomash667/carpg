@@ -290,7 +290,7 @@ public:
 	cstring txCantSaveGame, txSaveFailed, txSavedGameN, txLoadFailed, txQuickSave, txGameSaved, txLoadingLocations, txLoadingData, txLoadingQuests, txEndOfLoading,
 		txCantSaveNow, txOnlyServerCanSave, txCantLoadGame, txOnlyServerCanLoad, txLoadSignature, txLoadVersion, txLoadSaveVersionOld, txLoadMP, txLoadSP, txLoadError,
 		txLoadErrorGeneric, txLoadOpenError;
-	cstring txPvpRefuse, txWin, txWinMp, txLevelUp, txLevelDown, txRegeneratingLevel, txGainTextAttrib, txGainTextSkill, txNeedItem, txGmsAddedItems, txReallyQuit;
+	cstring txPvpRefuse, txWin, txWinMp, txLevelUp, txLevelDown, txRegeneratingLevel, txGainTextAttrib, txGainTextSkill, txNeedItem, txGmsAddedItems;
 	cstring txRumor[28], txRumorD[7];
 	cstring txMayorQFailed[3], txQuestAlreadyGiven[2], txMayorNoQ[2], txCaptainQFailed[2], txCaptainNoQ[2], txLocationDiscovered[2], txAllDiscovered[2], txCampDiscovered[2],
 		txAllCampDiscovered[2], txNoQRumors[2], txRumorQ[9], txNeedMoreGold, txNoNearLoc, txNearLoc, txNearLocEmpty[2], txNearLocCleared, txNearLocEnemy[2], txNoNews[2], txAllNews[2],
@@ -400,8 +400,6 @@ public:
 
 	//---------------------------------
 	// FIZYKA
-	btCollisionShape* shape_low_ceiling, *shape_arrow, *shape_ceiling, *shape_floor, *shape_door, *shape_block,
-		*shape_summon, *shape_barrier;
 	vector<btCollisionShape*> shapes;
 	vector<CameraCollider> cam_colliders;
 
@@ -535,7 +533,6 @@ public:
 	Vec4 GetLightDir();
 	void UpdateBullets(LevelContext& ctx, float dt);
 	void RemoveColliders();
-	void CreateCollisionShapes();
 	Vec3 PredictTargetPos(const Unit& me, const Unit& target, float bullet_speed) const;
 	bool CanShootAtLocation(const Unit& me, const Unit& target, const Vec3& pos) const { return CanShootAtLocation2(me, &target, pos); }
 	bool CanShootAtLocation(const Vec3& from, const Vec3& to) const;
@@ -698,17 +695,13 @@ public:
 	string quickstart_name;
 	bool check_updates, skip_tutorial, autoready;
 	string save_input_text;
-	int hair_redo_index;
 
 	bool CanShowMenu();
-	void MenuEvent(int id);
 	void SaveLoadEvent(int id);
 	void SaveEvent(int id);
 	void SaveOptions();
-	void ShowMenu();
 	void StartNewGame();
 	void NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharacter& cc, bool tutorial);
-	void ShowCreateCharacterPanel(bool enter_name, bool redo = false);
 	void StartQuickGame();
 	void MultiplayerPanelEvent(int id);
 	void CreateServerEvent(int id);
@@ -732,9 +725,6 @@ public:
 	bool DoLobbyUpdate(BitStreamReader& f);
 	void OnCreateCharacter(int id);
 	void OnPlayTutorial(int id);
-	void OnQuit(int);
-	void OnExit(int);
-	void ShowQuitDialog();
 	void OnPickServer(int id);
 	void EndConnecting(cstring msg, bool wait = false);
 	void CloseConnection(VoidF f);

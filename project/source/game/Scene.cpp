@@ -2004,8 +2004,8 @@ void Game::PrepareAreaPath()
 		float t, end_t;
 		Vec3 dir_normal(sin(rot), 0, cos(rot));
 		Vec3 dir = dir_normal * range;
-		LineTest(shape_summon, from, dir, clbk, t, &t_forward, true, &end_t);
-		LineTest(shape_summon, from + dir, -dir, clbk, t, &t_backward);
+		LineTest(L.shape_summon, from, dir, clbk, t, &t_forward, true, &end_t);
+		LineTest(L.shape_summon, from + dir, -dir, clbk, t, &t_backward);
 
 		// merge t's to find free spots, we only use last one
 		static vector<std::pair<float, bool>> t_merged;
@@ -3580,12 +3580,12 @@ void Game::DrawDebugNodes(const vector<DebugSceneNode*>& nodes)
 		{
 			btTriangleIndexVertexArray* mesh = (btTriangleIndexVertexArray*)node.mesh_ptr;
 			// currently only dungeon mesh is supported here
-			assert(mesh == dungeon_shape_data);
+			assert(mesh == L.dungeon_shape_data);
 			V(device->SetVertexDeclaration(vertex_decl[VDI_POS]));
 			V(eMesh->CommitChanges());
 
-			V(device->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, dungeon_shape_pos.size(), dungeon_shape_index.size() / 3, dungeon_shape_index.data(),
-				D3DFMT_INDEX32, dungeon_shape_pos.data(), sizeof(Vec3)));
+			V(device->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, L.dungeon_shape_pos.size(), L.dungeon_shape_index.size() / 3, L.dungeon_shape_index.data(),
+				D3DFMT_INDEX32, L.dungeon_shape_pos.data(), sizeof(Vec3)));
 		}
 		else
 		{

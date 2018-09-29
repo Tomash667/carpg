@@ -446,7 +446,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 					door->mesh_inst = new MeshInstance(game.aDoor);
 					door->mesh_inst->groups[0].speed = 2.f;
 					door->phy = new btCollisionObject;
-					door->phy->setCollisionShape(game.shape_door);
+					door->phy->setCollisionShape(L.shape_door);
 					door->phy->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_DOOR);
 					door->locked = LOCK_NONE;
 					door->netid = Door::netid_counter++;
@@ -1224,13 +1224,7 @@ void InsideLocationGenerator::SpawnHeroesInsideDungeon()
 						L.blood_to_spawn.push_back(&u);
 					u.hp = 0.f;
 					++GameStats::Get().total_kills;
-
-					// przenieœ fizyke
-					btVector3 a_min, a_max;
-					u.cobj->getWorldTransform().setOrigin(btVector3(1000, 1000, 1000));
-					u.cobj->getCollisionShape()->getAabb(u.cobj->getWorldTransform(), a_min, a_max);
-					game.phy_broadphase->setAabb(u.cobj->getBroadphaseHandle(), a_min, a_max, game.phy_dispatcher);
-
+					u.UpdatePhysics(Vec3::Zero);
 					if(u.event_handler)
 						u.event_handler->HandleUnitEvent(UnitEventHandler::DIE, &u);
 					break;

@@ -458,7 +458,7 @@ void Options::SetOptions()
 		}
 	}
 
-	SoundManager* sound_mgr = game->sound_mgr;
+	SoundManager* sound_mgr = game->sound_mgr.get();
 	if(sound_volume != sound_mgr->GetSoundVolume())
 	{
 		sound_volume = sound_mgr->GetSoundVolume();

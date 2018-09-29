@@ -49,7 +49,7 @@ public:
 	void Event(GuiEvent e) override;
 	void Init();
 	void Show(bool enter_name);
-	void ShowRedo(Class clas, int hair_index, HumanData& hd, CreatedCharacter& cc);
+	void ShowRedo(Class clas, HumanData& hd, CreatedCharacter& cc);
 
 	// data
 	CustomButton custom_x, custom_bt[2];
@@ -59,7 +59,7 @@ public:
 	Class clas;
 	string player_name;
 	Unit* unit;
-	int hair_index;
+	int hair_color_index, last_hair_color_index;
 
 private:
 	enum DOLL_ANIM
@@ -79,7 +79,6 @@ private:
 
 	void SetControls();
 	void SetCharacter();
-	void OnEnterName(int id);
 	void RenderUnit();
 	void UpdateUnit(float dt);
 	void OnChangeClass(int index);
@@ -91,7 +90,6 @@ private:
 	void RebuildSkillsFlow();
 	void RebuildPerksFlow();
 	void ResetSkillsPerks();
-	void OnShowWarning(int id);
 	void PickAttribute(cstring text, Perk picked_perk);
 	void PickSkill(cstring text, Perk picked_perk, bool positive = true, int multiple = 0);
 	void OnPickAttributeForPerk(int id);

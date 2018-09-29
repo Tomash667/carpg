@@ -2965,7 +2965,6 @@ void CityGenerator::OnLoad()
 //=================================================================================================
 void CityGenerator::SpawnCityPhysics()
 {
-	Game& game = Game::Get();
 	TerrainTile* tiles = city->tiles;
 
 	for(int z = 0; z < City::size; ++z)
@@ -2975,10 +2974,10 @@ void CityGenerator::SpawnCityPhysics()
 			if(tiles[x + z * OutsideLocation::size].mode == TM_BUILDING_BLOCK)
 			{
 				btCollisionObject* cobj = new btCollisionObject;
-				cobj->setCollisionShape(game.shape_block);
+				cobj->setCollisionShape(L.shape_block);
 				cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BUILDING);
 				cobj->getWorldTransform().setOrigin(btVector3(2.f*x + 1.f, terrain->GetH(2.f*x + 1.f, 2.f*x + 1), 2.f*z + 1.f));
-				game.phy_world->addCollisionObject(cobj, CG_BUILDING);
+				L.phy_world->addCollisionObject(cobj, CG_BUILDING);
 			}
 		}
 	}

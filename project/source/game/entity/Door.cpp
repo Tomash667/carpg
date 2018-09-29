@@ -5,7 +5,7 @@
 #include "SaveState.h"
 #include "BitStreamFunc.h"
 #include "Collision.h"
-#include "Game.h"
+#include "Level.h"
 
 int Door::netid_counter;
 
@@ -46,7 +46,7 @@ void Door::Load(FileReader& f, bool local)
 		mesh_inst->Load(f);
 
 		phy = new btCollisionObject;
-		phy->setCollisionShape(game.shape_door);
+		phy->setCollisionShape(L.shape_door);
 		phy->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_DOOR);
 
 		btTransform& tr = phy->getWorldTransform();
@@ -103,7 +103,7 @@ bool Door::Read(BitStreamReader& f)
 	mesh_inst = new MeshInstance(door2 ? game.aDoor2 : game.aDoor);
 	mesh_inst->groups[0].speed = 2.f;
 	phy = new btCollisionObject;
-	phy->setCollisionShape(game.shape_door);
+	phy->setCollisionShape(L.shape_door);
 	phy->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_DOOR);
 
 	btTransform& tr = phy->getWorldTransform();

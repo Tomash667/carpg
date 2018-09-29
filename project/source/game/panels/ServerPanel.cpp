@@ -7,6 +7,7 @@
 #include "BitStreamFunc.h"
 #include "ResourceManager.h"
 #include "GlobalGui.h"
+#include "CreateCharacterPanel.h"
 
 //-----------------------------------------------------------------------------
 enum ButtonId
@@ -223,10 +224,10 @@ void ServerPanel::Event(GuiEvent e)
 						info.ready = false;
 						game->ChangeReady();
 					}
-					game->ShowCreateCharacterPanel(false, true);
+					game->gui->ShowCreateCharacterPanel(false, true);
 				}
 				else
-					game->ShowCreateCharacterPanel(false);
+					game->gui->ShowCreateCharacterPanel(false);
 			}
 			break;
 		case IdReady: // ready / unready
@@ -512,7 +513,7 @@ void ServerPanel::PickClass(Class clas, bool ready)
 {
 	PlayerInfo& info = N.GetMe();
 	info.clas = clas;
-	game->RandomCharacter(info.clas, game->hair_redo_index, info.hd, info.cc);
+	game->RandomCharacter(info.clas, game->gui->create_character->last_hair_color_index, info.hd, info.cc);
 	bts[0].text = txChangeChar;
 	bts[1].state = Button::NONE;
 	bts[1].text = (ready ? txNotReady : txReady);

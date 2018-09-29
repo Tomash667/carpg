@@ -861,7 +861,7 @@ void GameGui::Update(float dt)
 					switch((SideButtonId)i)
 					{
 					case SideButtonId::Menu:
-						game.ShowMenu();
+						game.gui->ShowMenu();
 						use_cursor = false;
 						break;
 					case SideButtonId::Team:

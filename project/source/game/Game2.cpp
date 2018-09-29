@@ -7683,7 +7683,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 		// do contact test
 		btCollisionShape* shape;
 		if(!it->spell)
-			shape = shape_arrow;
+			shape = L.shape_arrow;
 		else
 			shape = it->spell->shape;
 		assert(shape->isConvex());
@@ -7983,39 +7983,6 @@ void Game::RemoveColliders()
 		phy_world->Reset();
 
 	DeleteElements(shapes);
-}
-
-void Game::CreateCollisionShapes()
-{
-	const float size = 256.f;
-	const float border = 32.f;
-
-	shape_wall = new btBoxShape(btVector3(1.f, 2.f, 1.f));
-	shape_low_ceiling = new btBoxShape(btVector3(1.f, 0.5f, 1.f));
-	shape_ceiling = new btStaticPlaneShape(btVector3(0.f, -1.f, 0.f), 4.f);
-	shape_floor = new btStaticPlaneShape(btVector3(0.f, 1.f, 0.f), 0.f);
-	shape_door = new btBoxShape(btVector3(0.842f, 1.319f, 0.181f));
-	shape_block = new btBoxShape(btVector3(1.f, 4.f, 1.f));
-	btCompoundShape* s = new btCompoundShape;
-	btBoxShape* b = new btBoxShape(btVector3(1.f, 2.f, 0.1f));
-	shape_schody_c[0] = b;
-	btTransform tr;
-	tr.setIdentity();
-	tr.setOrigin(btVector3(0.f, 2.f, 0.95f));
-	s->addChildShape(tr, b);
-	b = new btBoxShape(btVector3(0.1f, 2.f, 1.f));
-	shape_schody_c[1] = b;
-	tr.setOrigin(btVector3(-0.95f, 2.f, 0.f));
-	s->addChildShape(tr, b);
-	tr.setOrigin(btVector3(0.95f, 2.f, 0.f));
-	s->addChildShape(tr, b);
-	shape_schody = s;
-	shape_summon = new btCylinderShape(btVector3(1.5f / 2, 0.75f, 1.5f / 2));
-	shape_barrier = new btBoxShape(btVector3(size / 2, 40.f, border / 2));
-
-	Mesh::Point* point = aArrow->FindPoint("Empty");
-	assert(point && point->IsBox());
-	shape_arrow = new btBoxShape(ToVector3(point->size));
 }
 
 Vec3 Game::PredictTargetPos(const Unit& me, const Unit& target, float bullet_speed) const
