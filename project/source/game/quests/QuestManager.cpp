@@ -663,7 +663,7 @@ void QuestManager::Load(GameReader& f)
 	quest_crazies = (Quest_Crazies*)FindQuestById(Q_CRAZIES);
 	quest_crazies->Init();
 
-	if(LOAD_VERSION < V_FEATURE && !quest_mages2)
+	if(LOAD_VERSION < V_DEV && !quest_mages2)
 	{
 		quest_mages2 = new Quest_Mages2;
 		quest_mages2->refid = quest_counter++;

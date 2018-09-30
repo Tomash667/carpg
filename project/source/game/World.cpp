@@ -942,7 +942,7 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 			loc->Load(f, current_index == index, loc_token);
 
 			const int OLD_ACADEMY = 9;
-			if(LOAD_VERSION < V_FEATURE && loc->type == OLD_ACADEMY)
+			if(LOAD_VERSION < V_DEV && loc->type == OLD_ACADEMY)
 				academy = loc;
 		}
 		else

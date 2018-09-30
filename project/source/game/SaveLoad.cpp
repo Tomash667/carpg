@@ -653,7 +653,7 @@ void Game::LoadGame(GameReader& f)
 
 	LoadingHandler loading;
 	GAME_STATE game_state2;
-	if(LOAD_VERSION >= V_FEATURE)
+	if(LOAD_VERSION >= V_DEV)
 	{
 		hardcore_mode = IS_SET(flags, SF_HARDCORE);
 
@@ -711,7 +711,7 @@ void Game::LoadGame(GameReader& f)
 			}
 		}
 	}
-	if(LOAD_VERSION < V_FEATURE)
+	if(LOAD_VERSION < V_DEV)
 		W.LoadOld(f, loading, 3, false);
 	f >> L.enter_from;
 	if(LOAD_VERSION >= V_0_3)
@@ -854,7 +854,7 @@ void Game::LoadGame(GameReader& f)
 
 	SM.Load(f);
 
-	if(LOAD_VERSION < V_FEATURE)
+	if(LOAD_VERSION < V_DEV)
 		W.LoadOld(f, loading, 2, false);
 
 	f >> read_id;

@@ -525,7 +525,7 @@ void ScriptManager::Load(FileReader& f)
 		return;
 
 	// global vars
-	if(LOAD_VERSION >= V_FEATURE)
+	if(LOAD_VERSION >= V_DEV)
 		globals.Load(f);
 
 	// unit vars
