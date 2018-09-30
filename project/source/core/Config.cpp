@@ -26,6 +26,18 @@ void Config::Add(cstring name, cstring value)
 }
 
 //=================================================================================================
+Config::Entry* Config::GetEntry(cstring name)
+{
+	assert(name);
+	for(vector<Entry>::iterator it = entries.begin(), end = entries.end(); it != end; ++it)
+	{
+		if(it->name == name)
+			return &*it;
+	}
+	return nullptr;
+}
+
+//=================================================================================================
 bool Config::GetBool(cstring name, bool def)
 {
 	Entry* e = GetEntry(name);
@@ -295,4 +307,89 @@ void Config::Remove(cstring name)
 		}
 	}
 	assert(0);
+}
+
+//=================================================================================================
+void Config::ParseConfigVar(cstring arg)
+{
+	assert(arg);
+
+	int index = StrCharIndex(arg, '=');
+	if(index == -1 || index == 0)
+	{
+		Warn("Broken command line variable '%s'.", arg);
+		return;
+	}
+
+	ConfigVar* var = nullptr;
+	for(ConfigVar& v : config_vars)
+	{
+		if(strncmp(arg, v.name, index) == 0)
+		{
+			var = &v;
+			break;
+		}
+	}
+	if(!var)
+	{
+		Warn("Missing config variable '%.*s'.", index, arg);
+		return;
+	}
+
+	cstring value = arg + index + 1;
+	if(!*value)
+	{
+		Warn("Missing command line variable value '%s'.", arg);
+		return;
+	}
+
+	switch(var->type)
+	{
+	case AnyVarType::Bool:
+		{
+			bool b;
+			if(!TextHelper::ToBool(value, b))
+			{
+				Warn("Value for config variable '%s' must be bool, found '%s'.", var->name, value);
+				return;
+			}
+			var->new_value._bool = b;
+			var->have_new_value = true;
+		}
+		break;
+	}
+}
+
+//=================================================================================================
+void Config::LoadConfigVars()
+{
+	for(ConfigVar& v : config_vars)
+	{
+		Config::Entry* entry = GetEntry(v.name);
+		if(!entry)
+			continue;
+
+		switch(v.type)
+		{
+		case AnyVarType::Bool:
+			if(!TextHelper::ToBool(entry->value.c_str(), v.ptr->_bool))
+			{
+				Warn("Value for config variable '%s' must be bool, found '%s'.", v.name, entry->value.c_str());
+				return;
+			}
+			break;
+		}
+	}
+
+	for(ConfigVar& v : config_vars)
+	{
+		if(!v.have_new_value)
+			continue;
+		switch(v.type)
+		{
+		case AnyVarType::Bool:
+			v.ptr->_bool = v.new_value._bool;
+			break;
+		}
+	}
 }

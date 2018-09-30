@@ -4,7 +4,9 @@
 #include "ResourceManager.h"
 #include "SoundManager.h"
 #include "StartupOptions.h"
+#include "DebugDrawer.h"
 #include "DirectX.h"
+#include "Physics.h"
 
 //-----------------------------------------------------------------------------
 const Int2 Engine::MIN_WINDOW_SIZE = Int2(800, 600);
@@ -19,11 +21,16 @@ HRESULT _d_hr;
 #endif
 
 //=================================================================================================
-Engine::Engine() : engine_shutdown(false), timer(false), hwnd(nullptr), d3d(nullptr), device(nullptr), sprite(nullptr), phy_config(nullptr),
-phy_dispatcher(nullptr), phy_broadphase(nullptr), phy_world(nullptr), cursor_visible(true), replace_cursor(false), locked_cursor(true), lost_device(false),
-clear_color(Color::Black), res_freed(false), vsync(true), active(false), activation_point(-1, -1), sound_mgr(nullptr)
+Engine::Engine() : engine_shutdown(false), timer(false), hwnd(nullptr), d3d(nullptr), device(nullptr), sprite(nullptr), cursor_visible(true),
+replace_cursor(false), locked_cursor(true), lost_device(false), clear_color(Color::Black), res_freed(false), vsync(true), active(false),
+activation_point(-1, -1), phy_world(nullptr)
 {
 	engine = this;
+}
+
+//=================================================================================================
+Engine::~Engine()
+{
 }
 
 //=================================================================================================
@@ -211,13 +218,7 @@ void Engine::Cleanup()
 	SafeRelease(device);
 	SafeRelease(d3d);
 
-	// fizyka
-	delete phy_world;
-	delete phy_broadphase;
-	delete phy_dispatcher;
-	delete phy_config;
-
-	delete sound_mgr;
+	CustomCollisionWorld::Cleanup(phy_world);
 }
 
 //=================================================================================================
@@ -668,18 +669,6 @@ bool Engine::MsgToKey(uint msg, uint wParam, byte& key, int& result)
 }
 
 //=================================================================================================
-// Initialize Bullet Physics
-void Engine::InitPhysics()
-{
-	phy_config = new btDefaultCollisionConfiguration;
-	phy_dispatcher = new btCollisionDispatcher(phy_config);
-	phy_broadphase = new btDbvtBroadphase;
-	phy_world = new CustomCollisionWorld(phy_dispatcher, phy_broadphase, phy_config);
-
-	Info("Engine: Bullet physics system created.");
-}
-
-//=================================================================================================
 // Initialize Directx 9 rendering
 void Engine::InitRender()
 {
@@ -944,6 +933,7 @@ void Engine::Render(bool dont_call_present)
 			throw Format("Engine: Lost directx device (%d).", hr);
 	}
 
+	assert(cam_base);
 	OnDraw();
 
 	if(!dont_call_present)
@@ -970,6 +960,8 @@ bool Engine::Reset(bool force)
 	{
 		res_freed = true;
 		V(sprite->OnLostDevice());
+		for(ShaderHandler* shader : shaders)
+			shader->OnReset();
 		OnReset();
 	}
 
@@ -997,6 +989,8 @@ bool Engine::Reset(bool force)
 
 	// reload resources
 	SetDefaultRenderState();
+	for(ShaderHandler* shader : shaders)
+		shader->OnReload();
 	OnReload();
 	V(sprite->OnResetDevice());
 	lost_device = false;
@@ -1226,12 +1220,7 @@ bool Engine::Start(StartupOptions& options)
 	// initialize engine
 	try
 	{
-		InitWindow(options);
-		InitRender();
-		sound_mgr = new SoundManager;
-		sound_mgr->Init(options);
-		InitPhysics();
-		ResourceManager::Get().Init(device, sound_mgr);
+		Init(options);
 	}
 	catch(cstring e)
 	{
@@ -1264,6 +1253,19 @@ bool Engine::Start(StartupOptions& options)
 	// cleanup
 	Cleanup();
 	return true;
+}
+
+//=================================================================================================
+void Engine::Init(StartupOptions& options)
+{
+	InitWindow(options);
+	InitRender();
+	sound_mgr.reset(new SoundManager);
+	sound_mgr->Init(options);
+	phy_world = CustomCollisionWorld::Init();
+	ResourceManager::Get().Init(device, sound_mgr.get());
+	debug_drawer.reset(new DebugDrawer);
+	debug_drawer->InitOnce();
 }
 
 //=================================================================================================
@@ -1420,4 +1422,43 @@ void Engine::SetVsync(bool new_vsync)
 
 	vsync = new_vsync;
 	Reset(true);
+}
+
+//=================================================================================================
+void Engine::GetResolutions(vector<Resolution>& v) const
+{
+	v.clear();
+	uint display_modes = d3d->GetAdapterModeCount(used_adapter, DISPLAY_FORMAT);
+	for(uint i = 0; i < display_modes; ++i)
+	{
+		D3DDISPLAYMODE d_mode;
+		V(d3d->EnumAdapterModes(used_adapter, DISPLAY_FORMAT, i, &d_mode));
+		if(d_mode.Width >= (uint)MIN_WINDOW_SIZE.x && d_mode.Height >= (uint)MIN_WINDOW_SIZE.y)
+			v.push_back({ Int2(d_mode.Width, d_mode.Height), d_mode.RefreshRate });
+	}
+}
+
+//=================================================================================================
+void Engine::GetMultisamplingModes(vector<Int2>& v) const
+{
+	v.clear();
+	for(int j = 2; j <= 16; ++j)
+	{
+		DWORD levels, levels2;
+		if(SUCCEEDED(d3d->CheckDeviceMultiSampleType(used_adapter, D3DDEVTYPE_HAL, BACKBUFFER_FORMAT, FALSE, (D3DMULTISAMPLE_TYPE)j, &levels))
+			&& SUCCEEDED(d3d->CheckDeviceMultiSampleType(used_adapter, D3DDEVTYPE_HAL, ZBUFFER_FORMAT, FALSE, (D3DMULTISAMPLE_TYPE)j, &levels2)))
+		{
+			int level = min(levels, levels2);
+			for(int i = 0; i < level; ++i)
+				v.push_back(Int2(j, i));
+		}
+	}
+}
+
+//=================================================================================================
+void Engine::RegisterShader(ShaderHandler* shader)
+{
+	assert(shader);
+	shaders.push_back(shader);
+	shader->OnInit();
 }

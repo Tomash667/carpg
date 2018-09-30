@@ -25,19 +25,17 @@ public:
 		Finished
 	};
 
+	void Init();
 	void Start() override;
 	GameDialog* GetDialog(int type2) override;
 	void SetProgress(int prog2) override;
 	cstring FormatString(const string& str) override;
 	bool IfNeedTalk(cstring topic) const override;
-	bool IfSpecial(DialogContext& ctx, cstring msg) override;
-	void HandleLocationEvent(LocationEventHandler::Event event) override;
+	bool SpecialIf(DialogContext& ctx, cstring msg) override;
+	bool HandleLocationEvent(LocationEventHandler::Event event) override;
 	void Save(GameWriter& f) override;
 	bool Load(GameReader& f) override;
-	int GetLocationEventHandlerQuestRefid() override
-	{
-		return refid;
-	}
+	int GetLocationEventHandlerQuestRefid() override { return refid; }
 
 private:
 	int dungeon_levels, levels_cleared;
@@ -103,21 +101,21 @@ public:
 		AboutBoss
 	};
 
-	void Start();
+	void Init();
+	void Start() override;
 	GameDialog* GetDialog(int type2) override;
 	void SetProgress(int prog2) override;
 	cstring FormatString(const string& str) override;
 	bool IfNeedTalk(cstring topic) const override;
 	bool IfQuestEvent() const override;
-	bool IfSpecial(DialogContext& ctx, cstring msg) override;
-	void HandleLocationEvent(LocationEventHandler::Event event) override;
+	bool SpecialIf(DialogContext& ctx, cstring msg) override;
+	bool HandleLocationEvent(LocationEventHandler::Event event) override;
 	void HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit) override;
 	int GetUnitEventHandlerQuestRefid() override { return refid; }
 	int GetLocationEventHandlerQuestRefid() override { return refid; }
 	void Save(GameWriter& f) override;
 	bool Load(GameReader& f) override;
 	void LoadOld(GameReader& f);
-
 	OrcClass GetOrcClass() const { return orc_class; }
 
 	State orcs_state;

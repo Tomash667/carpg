@@ -77,7 +77,7 @@ struct ToBuild
 {
 	Building* type;
 	Int2 pt, unit_pt;
-	int rot;
+	GameDirection rot;
 	bool required;
 
 	ToBuild(Building* type, bool required = true) : type(type), required(required) {}

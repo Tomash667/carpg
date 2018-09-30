@@ -6,11 +6,15 @@
 #include "Journal.h"
 #include "QuestManager.h"
 #include "GameFile.h"
+#include "World.h"
+#include "GlobalGui.h"
+#include "GameGui.h"
+#include "GameMessages.h"
 
 Game* Quest::game;
 
 //=================================================================================================
-Quest::Quest() : quest_manager(QuestManager::Get()), state(Hidden), prog(0), timeout(false)
+Quest::Quest() : quest_manager(QM), state(Hidden), prog(0), timeout(false)
 {
 }
 
@@ -50,15 +54,57 @@ bool Quest::Load(GameReader& f)
 }
 
 //=================================================================================================
+void Quest::OnStart(cstring name)
+{
+	start_time = W.GetWorldtime();
+	state = Quest::Started;
+	this->name = name;
+	quest_index = quest_manager.quests.size();
+	quest_manager.quests.push_back(this);
+	RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
+	game->gui->journal->NeedUpdate(Journal::Quests, quest_index);
+	game->gui->messages->AddGameMsg3(GMS_JOURNAL_UPDATED);
+	if(Net::IsOnline())
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::ADD_QUEST;
+		c.id = refid;
+	}
+}
+
+//=================================================================================================
+void Quest::OnUpdate(const std::initializer_list<cstring>& new_msgs)
+{
+	assert(new_msgs.size() > 0u);
+	for(cstring msg : new_msgs)
+		msgs.push_back(msg);
+	game->gui->journal->NeedUpdate(Journal::Quests, quest_index);
+	game->gui->messages->AddGameMsg3(GMS_JOURNAL_UPDATED);
+	if(Net::IsOnline())
+	{
+
+		NetChange& c = Add1(Net::changes);
+		c.id = refid;
+		if(new_msgs.size() == 1u)
+			c.type = NetChange::UPDATE_QUEST;
+		else
+		{
+			c.type = NetChange::UPDATE_QUEST_MULTI;
+			c.ile = new_msgs.size();
+		}
+	}
+}
+
+//=================================================================================================
 Location& Quest::GetStartLocation()
 {
-	return *game->locations[start_loc];
+	return *W.GetLocation(start_loc);
 }
 
 //=================================================================================================
 const Location& Quest::GetStartLocation() const
 {
-	return *game->locations[start_loc];
+	return *W.GetLocation(start_loc);
 }
 
 //=================================================================================================
@@ -88,12 +134,8 @@ bool Quest_Dungeon::Load(GameReader& f)
 		f >> at_level;
 	else
 		at_level = -1;
-	if(LOAD_VERSION < V_0_4 && target_loc != -1)
-	{
-		Location* loc = game->locations[target_loc];
-		if(loc->outside)
-			at_level = -1;
-	}
+	if(LOAD_VERSION < V_0_4 && target_loc != -1 && GetTargetLocation().outside)
+		at_level = -1;
 
 	return true;
 }
@@ -101,13 +143,13 @@ bool Quest_Dungeon::Load(GameReader& f)
 //=================================================================================================
 Location& Quest_Dungeon::GetTargetLocation()
 {
-	return *game->locations[target_loc];
+	return *W.GetLocation(target_loc);
 }
 
 //=================================================================================================
 const Location& Quest_Dungeon::GetTargetLocation() const
 {
-	return *game->locations[target_loc];
+	return *W.GetLocation(target_loc);
 }
 
 //=================================================================================================
@@ -142,7 +184,7 @@ void Quest_Encounter::RemoveEncounter()
 {
 	if(enc == -1)
 		return;
-	game->RemoveEncounter(enc);
+	W.RemoveEncounter(enc);
 	enc = -1;
 }
 

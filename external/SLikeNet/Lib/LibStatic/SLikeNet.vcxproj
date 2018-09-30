@@ -68,10 +68,10 @@
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionName)_$(ProjectName)_$(Configuration)_$(Platform)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IntDir>Output\$(ProjectName)\$(Configuration)\</IntDir>
+    <IntDir>$(SolutionDir)output\$(ProjectName)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IntDir>Output\$(ProjectName)\$(Configuration)\</IntDir>
+    <IntDir>$(SolutionDir)output\$(ProjectName)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

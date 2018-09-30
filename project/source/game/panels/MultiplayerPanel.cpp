@@ -11,39 +11,29 @@ MultiplayerPanel::MultiplayerPanel(const DialogInfo& info) : GameDialogBox(info)
 	size = Int2(344, 380);
 	bts.resize(5);
 
-	txMultiplayerGame = Str("multiplayerGame");
-	txNick = Str("nick");
-	txNeedEnterNick = Str("needEnterNick");
-	txEnterValidNick = Str("enterValidNick");
-
 	const Int2 bt_size(180, 44);
 	const int x = (size.x - bt_size.x) / 2;
 
-	bts[0].text = Str("joinLAN");
 	bts[0].parent = this;
 	bts[0].id = IdJoinLan;
 	bts[0].size = bt_size;
 	bts[0].pos = Int2(x, 100);
 
-	bts[1].text = Str("joinIP");
 	bts[1].parent = this;
 	bts[1].id = IdJoinIp;
 	bts[1].size = bt_size;
 	bts[1].pos = Int2(x, 150);
 
-	bts[2].text = Str("host");
 	bts[2].parent = this;
 	bts[2].id = IdCreate;
 	bts[2].size = bt_size;
 	bts[2].pos = Int2(x, 200);
 
-	bts[3].text = Str("load");
 	bts[3].parent = this;
 	bts[3].id = IdLoad;
 	bts[3].size = bt_size;
 	bts[3].pos = Int2(x, 250);
 
-	bts[4].text = GUI.txCancel;
 	bts[4].parent = this;
 	bts[4].id = IdCancel;
 	bts[4].size = bt_size;
@@ -55,6 +45,21 @@ MultiplayerPanel::MultiplayerPanel(const DialogInfo& info) : GameDialogBox(info)
 	textbox.size = Int2(200, 32);
 
 	visible = false;
+}
+
+//=================================================================================================
+void MultiplayerPanel::LoadLanguage()
+{
+	txMultiplayerGame = Str("multiplayerGame");
+	txNick = Str("nick");
+	txNeedEnterNick = Str("needEnterNick");
+	txEnterValidNick = Str("enterValidNick");
+
+	bts[0].text = Str("joinLAN");
+	bts[1].text = Str("joinIP");
+	bts[2].text = Str("host");
+	bts[3].text = Str("load");
+	bts[4].text = GUI.txCancel;
 }
 
 //=================================================================================================

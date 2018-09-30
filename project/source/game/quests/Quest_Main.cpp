@@ -3,6 +3,8 @@
 #include "Quest_Main.h"
 #include "GameFile.h"
 
+// removed in V_0_5
+
 //=================================================================================================
 void Quest_Main::Start()
 {

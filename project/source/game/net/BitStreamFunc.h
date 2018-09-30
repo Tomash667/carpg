@@ -7,15 +7,32 @@
 class BitStreamWriter : public StreamWriter
 {
 public:
+	BitStreamWriter();
 	BitStreamWriter(BitStream& bitstream);
+	~BitStreamWriter();
 
 	using StreamWriter::Write;
+	using StreamWriter::operator <<;
 	void Write(const void* ptr, uint size) override;
 	uint GetPos() const override;
 	bool SetPos(uint pos) override;
+	cstring GetData() const;
+	uint GetSize() const;
+	BitStream& GetBitStream() const { return bitstream; }
+
+	void operator << (const Item& item);
+	void operator << (const Item* item)
+	{
+		if(item)
+			operator << (*item);
+		else
+			Write0();
+	}
 
 private:
 	BitStream& bitstream;
+	uint total_size;
+	bool owned;
 };
 
 //=================================================================================================
@@ -31,6 +48,7 @@ public:
 	uint GetPos() const override;
 	uint GetSize() const override;
 	bool SetPos(uint pos) override;
+	BitStream& GetBitStream() const { return bitstream; }
 
 private:
 	BitStream& bitstream;

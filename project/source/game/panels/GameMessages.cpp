@@ -5,9 +5,35 @@
 #include "Language.h"
 
 //=================================================================================================
-GameMessages::GameMessages()
+void GameMessages::LoadLanguage()
 {
 	txGamePausedBig = Str("gamePausedBig");
+	txINeedWeapon = Str("iNeedWeapon");
+	txNoHpp = Str("noHpp");
+	txCantDo = Str("cantDo");
+	txDontLootFollower = Str("dontLootFollower");
+	txDontLootArena = Str("dontLootArena");
+	txUnlockedDoor = Str("unlockedDoor");
+	txNeedKey = Str("needKey");
+	txGmsLooted = Str("gmsLooted");
+	txGmsRumor = Str("gmsRumor");
+	txGmsJournalUpdated = Str("gmsJournalUpdated");
+	txGmsUsed = Str("gmsUsed");
+	txGmsUnitBusy = Str("gmsUnitBusy");
+	txGmsGatherTeam = Str("gmsGatherTeam");
+	txGmsNotLeader = Str("gmsNotLeader");
+	txGmsNotInCombat = Str("gmsNotInCombat");
+	txGmsAddedItem = Str("gmsAddedItem");
+	txGmsGettingOutOfRange = Str("gmsGettingOutOfRange");
+	txGmsLeftEvent = Str("gmsLeftEvent");
+	txGameSaved = Str("gameSaved");
+}
+
+//=================================================================================================
+void GameMessages::Reset()
+{
+	msgs.clear();
+	msgs_h = 0;
 }
 
 //=================================================================================================
@@ -67,13 +93,6 @@ void GameMessages::Update(float dt)
 		float target_h = float(GUI.wnd_size.y) / 2 - float(total_h) / 2 + h;
 		m.pos.y += (target_h - m.pos.y)*dt * 2;
 	}
-}
-
-//=================================================================================================
-void GameMessages::Reset()
-{
-	msgs.clear();
-	msgs_h = 0;
 }
 
 //=================================================================================================
@@ -161,4 +180,102 @@ void GameMessages::AddMessageIfNotExists(cstring text, float time, int type)
 	}
 
 	AddMessage(text, time, type);
+}
+
+//=================================================================================================
+void GameMessages::AddGameMsg3(GMS id)
+{
+	cstring text;
+	float time = 3.f;
+	bool repeat = false;
+
+	switch(id)
+	{
+	case GMS_IS_LOOTED:
+		text = txGmsLooted;
+		break;
+	case GMS_ADDED_RUMOR:
+		repeat = true;
+		text = txGmsRumor;
+		break;
+	case GMS_JOURNAL_UPDATED:
+		repeat = true;
+		text = txGmsJournalUpdated;
+		break;
+	case GMS_USED:
+		text = txGmsUsed;
+		time = 2.f;
+		break;
+	case GMS_UNIT_BUSY:
+		text = txGmsUnitBusy;
+		break;
+	case GMS_GATHER_TEAM:
+		text = txGmsGatherTeam;
+		break;
+	case GMS_NOT_LEADER:
+		text = txGmsNotLeader;
+		break;
+	case GMS_NOT_IN_COMBAT:
+		text = txGmsNotInCombat;
+		break;
+	case GMS_ADDED_ITEM:
+		text = txGmsAddedItem;
+		repeat = true;
+		break;
+	case GMS_GETTING_OUT_OF_RANGE:
+		text = txGmsGettingOutOfRange;
+		break;
+	case GMS_LEFT_EVENT:
+		text = txGmsLeftEvent;
+		break;
+	case GMS_GAME_SAVED:
+		text = txGameSaved;
+		time = 1.f;
+		break;
+	case GMS_NEED_WEAPON:
+		text = txINeedWeapon;
+		time = 2.f;
+		break;
+	case GMS_NO_POTION:
+		text = txNoHpp;
+		time = 2.f;
+		break;
+	case GMS_CANT_DO:
+		text = txCantDo;
+		break;
+	case GMS_DONT_LOOT_FOLLOWER:
+		text = txDontLootFollower;
+		break;
+	case GMS_DONT_LOOT_ARENA:
+		text = txDontLootArena;
+		break;
+	case GMS_UNLOCK_DOOR:
+		text = txUnlockedDoor;
+		break;
+	case GMS_NEED_KEY:
+		text = txNeedKey;
+		break;
+	default:
+		assert(0);
+		return;
+	}
+
+	if(repeat)
+		AddGameMsg(text, time);
+	else
+		AddGameMsg2(text, time, id);
+}
+
+//=================================================================================================
+void GameMessages::AddGameMsg3(PlayerController* player, GMS id)
+{
+	assert(player);
+	if(player->is_local)
+		AddGameMsg3(id);
+	else
+	{
+		NetChangePlayer& c = Add1(player->player_info->changes);
+		c.type = NetChangePlayer::GAME_MESSAGE;
+		c.id = id;
+	}
 }

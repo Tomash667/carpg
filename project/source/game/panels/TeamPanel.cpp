@@ -7,6 +7,9 @@
 #include "GetNumberDialog.h"
 #include "Team.h"
 #include "SoundManager.h"
+#include "GlobalGui.h"
+#include "GameMessages.h"
+#include "ResourceManager.h"
 
 //-----------------------------------------------------------------------------
 enum ButtonId
@@ -22,20 +25,25 @@ TeamPanel::TeamPanel() : game(Game::Get())
 {
 	visible = false;
 
-	bt[0].text = Str("giveGold");
 	bt[0].id = Bt_GiveGold;
 	bt[0].parent = this;
-	bt[1].text = Str("payCredit");
 	bt[1].id = Bt_PayCredit;
 	bt[1].parent = this;
-	bt[2].text = Str("changeLeader");
 	bt[2].id = Bt_Leader;
 	bt[2].parent = this;
-	bt[3].text = Str("kick");
 	bt[3].id = Bt_Kick;
 	bt[3].parent = this;
 
 	UpdateButtons();
+}
+
+//=================================================================================================
+void TeamPanel::LoadLanguage()
+{
+	bt[0].text = Str("giveGold");
+	bt[1].text = Str("payCredit");
+	bt[2].text = Str("changeLeader");
+	bt[3].text = Str("kick");
 
 	txTeam = Str("team");
 	txCharInTeam = Str("charInTeam");
@@ -60,18 +68,6 @@ TeamPanel::TeamPanel() : game(Game::Get())
 	txReallyKick = Str("reallyKick");
 	txAlreadyLeft = Str("alreadyLeft");
 	txCAlreadyLeft = Str("cAlreadyLeft");
-}
-
-//=================================================================================================
-inline int& GetCredit(Unit& u)
-{
-	if(u.IsPlayer())
-		return u.player->credit;
-	else
-	{
-		assert(u.IsFollower());
-		return u.hero->credit;
-	}
 }
 
 //=================================================================================================
@@ -123,16 +119,16 @@ void TeamPanel::Draw(ControlDrawData*)
 			offset.y + 32
 		};
 		s = "$h+";
-		s += Format(txCharInTeam, u->GetName(), u->IsPlayer() ? pc_share : (u->hero->free ? 0 : 10), GetCredit(*u));
+		s += Format(txCharInTeam, u->GetName(), u->IsPlayer() ? pc_share : (u->hero->free ? 0 : 10), u->GetCredit());
 		if(u->IsPlayer() && Net::IsOnline())
 		{
 			if(Net::IsServer())
 			{
 				if(u != game.pc->unit)
-					s += Format(txPing, game.peer->GetAveragePing(u->player->player_info->adr));
+					s += Format(txPing, N.peer->GetAveragePing(u->player->player_info->adr));
 			}
 			else if(u == game.pc->unit)
-				s += Format(txPing, game.peer->GetAveragePing(game.server));
+				s += Format(txPing, N.peer->GetAveragePing(N.server));
 			s += Format(txDays, u->player->free_days);
 		}
 		s += ")$h-";
@@ -245,7 +241,7 @@ void TeamPanel::Event(GuiEvent e)
 	case Bt_GiveGold:
 	case Bt_Leader:
 	case Bt_Kick:
-		game.AddGameMsg2(txPickCharacter, 1.5f, GMS_PICK_CHARACTER);
+		game.gui->messages->AddGameMsg2(txPickCharacter, 1.5f, GMS_PICK_CHARACTER);
 		picking = true;
 		picked = -1;
 		mode = e;
@@ -468,11 +464,7 @@ void TeamPanel::OnKick(int id)
 	if(!Team.IsTeamMember(*target))
 		SimpleDialog(txAlreadyLeft);
 	else
-	{
-		int index = game.GetPlayerIndex(target->player->id);
-		if(index != -1)
-			game.KickPlayer(index);
-	}
+		game.KickPlayer(*target->player->player_info);
 }
 
 //=================================================================================================

@@ -29,5 +29,7 @@ struct InsideBuilding final : public ILevel, public LevelArea
 	void ApplyContext(LevelContext& ctx);
 	void Save(GameWriter& f, bool local);
 	void Load(GameReader& f, bool local);
+	void Write(BitStreamWriter& f);
+	bool Load(BitStreamReader& f);
 	Unit* FindUnit(const UnitData* ud) const;
 };

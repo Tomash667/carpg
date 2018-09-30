@@ -9,6 +9,9 @@
 #include "QuestManager.h"
 #include "Quest.h"
 #include "ResourceManager.h"
+#include "World.h"
+#include "GlobalGui.h"
+#include "GameMessages.h"
 
 //=================================================================================================
 Journal::Journal() : mode(Quests), game(Game::Get())
@@ -16,6 +19,12 @@ Journal::Journal() : mode(Quests), game(Game::Get())
 	visible = false;
 	Reset();
 
+	font_height = GUI.default_font->height;
+}
+
+//=================================================================================================
+void Journal::LoadLanguage()
+{
 	txAdd = Str("add");
 	txNoteText = Str("noteText");
 	txNoQuests = Str("noQuests");
@@ -24,7 +33,6 @@ Journal::Journal() : mode(Quests), game(Game::Get())
 	txAddNote = Str("addNote");
 	txAddTime = Str("addTime");
 
-	font_height = GUI.default_font->height;
 }
 
 //=================================================================================================
@@ -71,11 +79,25 @@ void Journal::Draw(ControlDrawData* /*cdd*/)
 //=================================================================================================
 void Journal::Update(float dt)
 {
+	for(std::pair<Mode, int>& change : changes)
+	{
+		if(mode == change.first)
+		{
+			if(mode == Quests && details)
+			{
+				if(change.second == open_quest)
+					Build();
+			}
+			else
+				Build();
+		}
+	}
+
 	if(!focus)
 		return;
 
 	Mode new_mode = Invalid;
-	QuestManager& quest_manager = QuestManager::Get();
+	QuestManager& quest_manager = QM;
 
 	if(Key.Focus())
 	{
@@ -358,7 +380,7 @@ void Journal::Build()
 	if(mode == Quests)
 	{
 		// quests
-		QuestManager& quest_manager = QuestManager::Get();
+		QuestManager& quest_manager = QM;
 		if(!details)
 		{
 			// list of quests
@@ -485,7 +507,7 @@ void Journal::OnAddNote(int id)
 {
 	if(id == BUTTON_OK)
 	{
-		notes.push_back(Format(txAddTime, game.day + 1, game.month + 1, game.year, input.c_str()));
+		notes.push_back(Format(txAddTime, W.GetDate(), input.c_str()));
 		Build();
 		if(!Net::IsLocal())
 			Net::PushChange(NetChange::ADD_NOTE);
@@ -495,16 +517,7 @@ void Journal::OnAddNote(int id)
 //=================================================================================================
 void Journal::NeedUpdate(Mode at_mode, int quest_id)
 {
-	if(mode == at_mode)
-	{
-		if(mode == Quests && details)
-		{
-			if(quest_id == open_quest)
-				Build();
-		}
-		else
-			Build();
-	}
+	changes.push_back(std::make_pair(at_mode, quest_id));
 }
 
 //=================================================================================================
@@ -531,9 +544,9 @@ void Journal::AddRumor(cstring text)
 		c.id = rumors.size();
 	}
 
-	rumors.push_back(Format(txAddTime, game.day + 1, game.month + 1, game.year, text));
+	rumors.push_back(Format(txAddTime, W.GetDate(), text));
 	NeedUpdate(Journal::Rumors);
-	game.AddGameMsg3(GMS_ADDED_RUMOR);
+	game.gui->messages->AddGameMsg3(GMS_ADDED_RUMOR);
 }
 
 //=================================================================================================

@@ -20,6 +20,18 @@
 #include "ActionPanel.h"
 #include "BookPanel.h"
 #include "Profiler.h"
+#include "GameStats.h"
+#include "Level.h"
+#include "GroundItem.h"
+#include "ResourceManager.h"
+#include "GlobalGui.h"
+#include "QuestManager.h"
+#include "Quest_Tutorial.h"
+
+//-----------------------------------------------------------------------------
+const float UNIT_VIEW_A = 0.2f;
+const float UNIT_VIEW_B = 0.4f;
+const int UNIT_VIEW_MUL = 5;
 
 //-----------------------------------------------------------------------------
 enum class TooltipGroup
@@ -42,6 +54,21 @@ static ObjectPool<SpeechBubble> SpeechBubblePool;
 //=================================================================================================
 GameGui::GameGui() : debug_info_size(0, 0), profiler_size(0, 0), use_cursor(false), game(Game::Get())
 {
+	scrollbar.parent = this;
+	visible = false;
+
+	tooltip.Init(TooltipGetText(this, &GameGui::GetTooltip));
+}
+
+//=================================================================================================
+GameGui::~GameGui()
+{
+	SpeechBubblePool.Free(speech_bbs);
+}
+
+//=================================================================================================
+void GameGui::LoadLanguage()
+{
 	txDeath = Str("death");
 	txDeathAlone = Str("deathAlone");
 	txGameTimeout = Str("gameTimeout");
@@ -53,76 +80,37 @@ GameGui::GameGui() : debug_info_size(0, 0), profiler_size(0, 0), use_cursor(fals
 	txHp = Str("hp");
 	txStamina = Str("stamina");
 	BuffInfo::LoadText();
-
-	scrollbar.parent = this;
-	visible = false;
-
-	tooltip.Init(TooltipGetText(this, &GameGui::GetTooltip));
-
-	// add panels
-	mp_box = new MpBox;
-	Add(mp_box);
-
-	Inventory::LoadText();
-	inventory = new Inventory;
-	inventory->InitTooltip();
-	inventory->title = Inventory::txInventory;
-	inventory->mode = Inventory::INVENTORY;
-	inventory->visible = false;
-	Add(inventory);
-
-	stats = new StatsPanel;
-	Add(stats);
-
-	team_panel = new TeamPanel;
-	Add(team_panel);
-
-	gp_trade = new GamePanelContainer;
-	Add(gp_trade);
-
-	inv_trade_mine = new Inventory;
-	inv_trade_mine->title = Inventory::txInventory;
-	inv_trade_mine->focus = true;
-	gp_trade->Add(inv_trade_mine);
-
-	inv_trade_other = new Inventory;
-	inv_trade_other->title = Inventory::txInventory;
-	gp_trade->Add(inv_trade_other);
-
-	gp_trade->Hide();
-
-	journal = new Journal;
-	Add(journal);
-
-	minimap = new Minimap;
-	Add(minimap);
-
-	game_messages = new GameMessages;
-
-	action_panel = new ActionPanel;
-	Add(action_panel);
-
-	book_panel = new BookPanel;
-	Add(book_panel);
 }
 
 //=================================================================================================
-GameGui::~GameGui()
+void GameGui::LoadData()
 {
-	delete game_messages;
-	delete inventory;
-	delete stats;
-	delete journal;
-	delete team_panel;
-	delete minimap;
-	delete mp_box;
-	delete inv_trade_mine;
-	delete inv_trade_other;
-	delete gp_trade;
-	delete action_panel;
-	delete book_panel;
+	auto& tex_mgr = ResourceManager::Get<Texture>();
+	tex_mgr.AddLoadTask("crosshair.png", tCrosshair);
+	tex_mgr.AddLoadTask("bubble.png", tBubble);
+	tex_mgr.AddLoadTask("czerwono.png", tObwodkaBolu);
+	tex_mgr.AddLoadTask("bar.png", tBar);
+	tex_mgr.AddLoadTask("hp_bar.png", tHpBar);
+	tex_mgr.AddLoadTask("poisoned_hp_bar.png", tPoisonedHpBar);
+	tex_mgr.AddLoadTask("stamina_bar.png", tStaminaBar);
+	tex_mgr.AddLoadTask("mana_bar.png", tManaBar);
+	tex_mgr.AddLoadTask("shortcut.png", tShortcut);
+	tex_mgr.AddLoadTask("shortcut_hover.png", tShortcutHover);
+	tex_mgr.AddLoadTask("shortcut_down.png", tShortcutDown);
+	tex_mgr.AddLoadTask("bt_menu.png", tSideButton[(int)SideButtonId::Menu]);
+	tex_mgr.AddLoadTask("bt_team.png", tSideButton[(int)SideButtonId::Team]);
+	tex_mgr.AddLoadTask("bt_minimap.png", tSideButton[(int)SideButtonId::Minimap]);
+	tex_mgr.AddLoadTask("bt_journal.png", tSideButton[(int)SideButtonId::Journal]);
+	tex_mgr.AddLoadTask("bt_inventory.png", tSideButton[(int)SideButtonId::InventoryPanel]);
+	tex_mgr.AddLoadTask("bt_action.png", tSideButton[(int)SideButtonId::Action]);
+	tex_mgr.AddLoadTask("bt_stats.png", tSideButton[(int)SideButtonId::Stats]);
+	tex_mgr.AddLoadTask("bt_talk.png", tSideButton[(int)SideButtonId::Talk]);
+	tex_mgr.AddLoadTask("minihp.png", tMinihp[0]);
+	tex_mgr.AddLoadTask("minihp2.png", tMinihp[1]);
+	tex_mgr.AddLoadTask("ministamina.png", tMinistamina);
+	tex_mgr.AddLoadTask("action_cooldown.png", tActionCooldown);
 
-	SpeechBubblePool.Free(speech_bbs);
+	BuffInfo::LoadImages();
 }
 
 //=================================================================================================
@@ -134,7 +122,7 @@ void GameGui::Draw(ControlDrawData*)
 
 	DrawBack();
 
-	game_messages->Draw();
+	game.gui->messages->Draw();
 }
 
 //=================================================================================================
@@ -168,7 +156,7 @@ void GameGui::DrawFront()
 	if(game.debug_info)
 	{
 		sorted_units.clear();
-		vector<Unit*>& units = *game.GetContext(*game.pc->unit).units;
+		vector<Unit*>& units = *L.GetContext(*game.pc->unit).units;
 		for(auto unit : units)
 		{
 			if(!unit->IsAlive())
@@ -206,7 +194,7 @@ void GameGui::DrawFront()
 	{
 		// near enemies/allies
 		sorted_units.clear();
-		for(vector<UnitView>::iterator it = game.unit_views.begin(), end = game.unit_views.end(); it != end; ++it)
+		for(vector<UnitView>::iterator it = unit_views.begin(), end = unit_views.end(); it != end; ++it)
 		{
 			int alpha;
 
@@ -252,7 +240,7 @@ void GameGui::DrawFront()
 		{
 			Unit* u = game.pc_data.before_player_ptr.unit;
 			bool dont_draw = false;
-			for(vector<UnitView>::iterator it = game.unit_views.begin(), end = game.unit_views.end(); it != end; ++it)
+			for(vector<UnitView>::iterator it = unit_views.begin(), end = unit_views.end(); it != end; ++it)
 			{
 				if(it->unit == u)
 				{
@@ -403,7 +391,7 @@ void GameGui::DrawFront()
 	Int2 spos(256.f*wnd_scale + offset, GUI.wnd_size.y - offset);
 
 	// action
-	if(!game.in_tutorial)
+	if(!QM.quest_tutorial->in_tutorial)
 	{
 		auto& action = game.pc->GetAction();
 		PlayerController& pc = *game.pc;
@@ -483,12 +471,12 @@ void GameGui::DrawFront()
 	}
 
 	// œciemnianie
-	if(game.fallback_co != FALLBACK::NO)
+	if(game.fallback_type != FALLBACK::NO)
 	{
 		int alpha;
 		if(game.fallback_t < 0.f)
 		{
-			if(game.fallback_co == FALLBACK::NONE)
+			if(game.fallback_type == FALLBACK::NONE)
 				alpha = 255;
 			else
 				alpha = int((1.f + game.fallback_t) * 255);
@@ -511,7 +499,7 @@ void GameGui::DrawBack()
 		if(game.devmode)
 		{
 			text = Format("Pos: %g; %g; %g (%d; %d)\nRot: %g %s\nFps: %g", FLT10(u.pos.x), FLT10(u.pos.y), FLT10(u.pos.z), int(u.pos.x / 2), int(u.pos.z / 2),
-				FLT100(u.rot), kierunek_nazwa_s[AngleToDir(Clip(u.rot))], FLT10(game.GetFps()));
+				FLT100(u.rot), dir_name_short[AngleToDir(Clip(u.rot))], FLT10(game.GetFps()));
 		}
 		else
 			text = Format("Fps: %g", FLT10(game.GetFps()));
@@ -569,7 +557,7 @@ void GameGui::DrawDeathScreen()
 			Int2 img_size = gui::GetSize(game.tRip);
 			GUI.DrawSprite(game.tRip, Center(img_size), color);
 
-			cstring text = Format(game.death_solo ? txDeathAlone : txDeath, game.pc->kills, game.total_kills - game.pc->kills);
+			cstring text = Format(game.death_solo ? txDeathAlone : txDeath, game.pc->kills, GameStats::Get().total_kills - game.pc->kills);
 			cstring text2 = Format("%s\n\n%s", text, game.death_screen == 3 ? txPressEsc : "\n");
 			Rect rect = { 0, 0, GUI.wnd_size.x, GUI.wnd_size.y };
 			GUI.DrawText(GUI.default_font, text2, DTF_CENTER | DTF_BOTTOM, color, rect);
@@ -593,7 +581,7 @@ void GameGui::DrawEndOfGameScreen()
 	GUI.DrawSprite(game.tEmerytura, sprite_pos, color);
 
 	// tekst
-	cstring text = Format(txGameTimeout, game.pc->kills, game.total_kills - game.pc->kills);
+	cstring text = Format(txGameTimeout, game.pc->kills, GameStats::Get().total_kills - game.pc->kills);
 	cstring text2 = Format("%s\n\n%s", text, game.death_fade >= 1.f ? txPressEsc : "\n");
 	Rect rect = { 0, 0, GUI.wnd_size.x, GUI.wnd_size.y };
 	GUI.DrawText(GUI.default_font, text2, DTF_CENTER | DTF_BOTTOM, color, rect);
@@ -680,7 +668,7 @@ void GameGui::DrawUnitInfo(cstring text, Unit& unit, const Vec3& pos, int alpha)
 		text_color = Color::White;
 		alpha = 255;
 	}
-	else if(game.IsEnemy(unit, *game.pc->unit))
+	else if(unit.IsEnemy(*game.pc->unit))
 		text_color = Color(255, 0, 0, alpha);
 	else
 		text_color = Color(0, 255, 0, alpha);
@@ -729,9 +717,10 @@ void GameGui::Update(float dt)
 
 	Container::Update(dt);
 
+	UpdatePlayerView(dt);
 	UpdateSpeechBubbles(dt);
 
-	game_messages->Update(dt);
+	game.gui->messages->Update(dt);
 
 	if(!GUI.HaveDialog() && !Game::Get().dialog_context.dialog_mode && Key.Down(VK_MENU))
 		use_cursor = true;
@@ -771,17 +760,17 @@ void GameGui::Update(float dt)
 	if(Net::IsOnline())
 		--max;
 
-	sidebar_state[(int)SideButtonId::Inventory] = (inventory->visible ? 2 : 0);
-	sidebar_state[(int)SideButtonId::Journal] = (journal->visible ? 2 : 0);
-	sidebar_state[(int)SideButtonId::Stats] = (stats->visible ? 2 : 0);
-	sidebar_state[(int)SideButtonId::Team] = (team_panel->visible ? 2 : 0);
-	sidebar_state[(int)SideButtonId::Minimap] = (minimap->visible ? 2 : 0);
-	sidebar_state[(int)SideButtonId::Action] = (action_panel->visible ? 2 : 0);
+	sidebar_state[(int)SideButtonId::InventoryPanel] = (game.gui->inventory->inv_mine->visible ? 2 : 0);
+	sidebar_state[(int)SideButtonId::Journal] = (game.gui->journal->visible ? 2 : 0);
+	sidebar_state[(int)SideButtonId::Stats] = (game.gui->stats->visible ? 2 : 0);
+	sidebar_state[(int)SideButtonId::Team] = (game.gui->team->visible ? 2 : 0);
+	sidebar_state[(int)SideButtonId::Minimap] = (game.gui->minimap->visible ? 2 : 0);
+	sidebar_state[(int)SideButtonId::Action] = (game.gui->actions->visible ? 2 : 0);
 	sidebar_state[(int)SideButtonId::Talk] = 0;
 	sidebar_state[(int)SideButtonId::Menu] = 0;
 
 	bool anything = use_cursor;
-	if(gp_trade->visible)
+	if(game.gui->inventory->gp_trade->visible)
 		anything = true;
 	bool show_tooltips = anything;
 	if(!anything)
@@ -832,7 +821,7 @@ void GameGui::Update(float dt)
 		}
 
 		// action
-		if(!game.in_tutorial)
+		if(!QM.quest_tutorial->in_tutorial)
 		{
 			auto& action = game.pc->GetAction();
 			const float pad = 2.f;
@@ -872,7 +861,7 @@ void GameGui::Update(float dt)
 					switch((SideButtonId)i)
 					{
 					case SideButtonId::Menu:
-						game.ShowMenu();
+						game.gui->ShowMenu();
 						use_cursor = false;
 						break;
 					case SideButtonId::Team:
@@ -880,14 +869,14 @@ void GameGui::Update(float dt)
 						break;
 					case SideButtonId::Minimap:
 						ShowPanel(OpenPanel::Minimap);
-						if(minimap->visible)
+						if(game.gui->minimap->visible)
 							use_cursor = true;
 						break;
 					case SideButtonId::Journal:
 						ShowPanel(OpenPanel::Journal);
 						break;
-					case SideButtonId::Inventory:
-						ShowPanel(OpenPanel::Inventory);
+					case SideButtonId::InventoryPanel:
+						ShowPanel(OpenPanel::InventoryPanel);
 						break;
 					case SideButtonId::Action:
 						ShowPanel(OpenPanel::Action);
@@ -896,7 +885,7 @@ void GameGui::Update(float dt)
 						ShowPanel(OpenPanel::Stats);
 						break;
 					case SideButtonId::Talk:
-						mp_box->visible = !mp_box->visible;
+						game.gui->mp_box->visible = !game.gui->mp_box->visible;
 						break;
 					}
 				}
@@ -1031,6 +1020,7 @@ void GameGui::Reset()
 	Event(GuiEvent_Show);
 	use_cursor = false;
 	sidebar = 0.f;
+	unit_views.clear();
 }
 
 //=================================================================================================
@@ -1058,12 +1048,12 @@ bool GameGui::UpdateChoice(DialogContext& ctx, int choices)
 
 	// strza³ka w górê/dó³
 	bool moved = false;
-	if(ctx.choice_selected != 0 && game.KeyPressedReleaseAllowed(GK_MOVE_FORWARD))
+	if(ctx.choice_selected != 0 && GKey.KeyPressedReleaseAllowed(GK_MOVE_FORWARD))
 	{
 		--ctx.choice_selected;
 		moved = true;
 	}
-	if(ctx.choice_selected != choices - 1 && game.KeyPressedReleaseAllowed(GK_MOVE_BACK))
+	if(ctx.choice_selected != choices - 1 && GKey.KeyPressedReleaseAllowed(GK_MOVE_BACK))
 	{
 		++ctx.choice_selected;
 		moved = true;
@@ -1078,7 +1068,7 @@ bool GameGui::UpdateChoice(DialogContext& ctx, int choices)
 	}
 
 	// wybór opcji dialogowej z klawiatury (1,2,3,..,9,0)
-	if(game.AllowKeyboard() && !Key.Down(VK_SHIFT))
+	if(GKey.AllowKeyboard() && !Key.Down(VK_SHIFT))
 	{
 		for(int i = 0; i < min(10, choices); ++i)
 		{
@@ -1099,16 +1089,16 @@ bool GameGui::UpdateChoice(DialogContext& ctx, int choices)
 	}
 
 	// wybieranie enterem/esc/spacj¹
-	if(game.KeyPressedReleaseAllowed(GK_SELECT_DIALOG))
+	if(GKey.KeyPressedReleaseAllowed(GK_SELECT_DIALOG))
 		return true;
-	else if(ctx.dialog_esc != -1 && game.AllowKeyboard() && Key.PressedRelease(VK_ESCAPE))
+	else if(ctx.dialog_esc != -1 && GKey.AllowKeyboard() && Key.PressedRelease(VK_ESCAPE))
 	{
 		ctx.choice_selected = ctx.dialog_esc;
 		return true;
 	}
 
 	// wybieranie klikniêciem
-	if(game.AllowMouse() && cursor_choice != -1 && Key.PressedRelease(VK_LBUTTON))
+	if(GKey.AllowMouse() && cursor_choice != -1 && Key.PressedRelease(VK_LBUTTON))
 	{
 		if(ctx.is_local)
 			game.pc_data.wasted_key = VK_LBUTTON;
@@ -1165,7 +1155,7 @@ void GameGui::GetTooltip(TooltipController*, int _group, int id)
 			switch((SideButtonId)id)
 			{
 			case SideButtonId::Menu:
-				tooltip.text = Format("%s (%s)", txMenu, game.controls->key_text[VK_ESCAPE]);
+				tooltip.text = Format("%s (%s)", txMenu, game.gui->controls->key_text[VK_ESCAPE]);
 				return;
 			case SideButtonId::Team:
 				gk = GK_TEAM_PANEL;
@@ -1176,7 +1166,7 @@ void GameGui::GetTooltip(TooltipController*, int _group, int id)
 			case SideButtonId::Journal:
 				gk = GK_JOURNAL;
 				break;
-			case SideButtonId::Inventory:
+			case SideButtonId::InventoryPanel:
 				gk = GK_INVENTORY;
 				break;
 			case SideButtonId::Action:
@@ -1225,96 +1215,66 @@ void GameGui::GetTooltip(TooltipController*, int _group, int id)
 //=================================================================================================
 bool GameGui::HavePanelOpen() const
 {
-	return stats->visible || inventory->visible || team_panel->visible || gp_trade->visible || journal->visible || minimap->visible || action_panel->visible;
+	return game.gui->stats->visible
+		|| game.gui->inventory->inv_mine->visible
+		|| game.gui->inventory->gp_trade->visible
+		|| game.gui->team->visible
+		|| game.gui->journal->visible
+		|| game.gui->minimap->visible
+		|| game.gui->actions->visible;
 }
 
 //=================================================================================================
 void GameGui::ClosePanels(bool close_mp_box)
 {
-	if(stats->visible)
-		stats->Hide();
-	if(inventory->visible)
-		inventory->Hide();
-	if(team_panel->visible)
-		team_panel->Hide();
-	if(journal->visible)
-		journal->Hide();
-	if(minimap->visible)
-		minimap->Hide();
-	if(gp_trade->visible)
-		gp_trade->Hide();
-	if(close_mp_box && mp_box->visible)
-		mp_box->visible = false;
-	if(action_panel->visible)
-		action_panel->Hide();
-}
-
-//=================================================================================================
-void GameGui::LoadData()
-{
-	auto& tex_mgr = ResourceManager::Get<Texture>();
-	tex_mgr.AddLoadTask("crosshair.png", tCrosshair);
-	tex_mgr.AddLoadTask("bubble.png", tBubble);
-	tex_mgr.AddLoadTask("czerwono.png", tObwodkaBolu);
-	tex_mgr.AddLoadTask("bar.png", tBar);
-	tex_mgr.AddLoadTask("hp_bar.png", tHpBar);
-	tex_mgr.AddLoadTask("poisoned_hp_bar.png", tPoisonedHpBar);
-	tex_mgr.AddLoadTask("stamina_bar.png", tStaminaBar);
-	tex_mgr.AddLoadTask("mana_bar.png", tManaBar);
-	tex_mgr.AddLoadTask("shortcut.png", tShortcut);
-	tex_mgr.AddLoadTask("shortcut_hover.png", tShortcutHover);
-	tex_mgr.AddLoadTask("shortcut_down.png", tShortcutDown);
-	tex_mgr.AddLoadTask("bt_menu.png", tSideButton[(int)SideButtonId::Menu]);
-	tex_mgr.AddLoadTask("bt_team.png", tSideButton[(int)SideButtonId::Team]);
-	tex_mgr.AddLoadTask("bt_minimap.png", tSideButton[(int)SideButtonId::Minimap]);
-	tex_mgr.AddLoadTask("bt_journal.png", tSideButton[(int)SideButtonId::Journal]);
-	tex_mgr.AddLoadTask("bt_inventory.png", tSideButton[(int)SideButtonId::Inventory]);
-	tex_mgr.AddLoadTask("bt_action.png", tSideButton[(int)SideButtonId::Action]);
-	tex_mgr.AddLoadTask("bt_stats.png", tSideButton[(int)SideButtonId::Stats]);
-	tex_mgr.AddLoadTask("bt_talk.png", tSideButton[(int)SideButtonId::Talk]);
-	tex_mgr.AddLoadTask("minihp.png", tMinihp[0]);
-	tex_mgr.AddLoadTask("minihp2.png", tMinihp[1]);
-	tex_mgr.AddLoadTask("ministamina.png", tMinistamina);
-	tex_mgr.AddLoadTask("action_cooldown.png", tActionCooldown);
-
-	BuffInfo::LoadImages();
-	journal->LoadData();
-	minimap->LoadData();
-	team_panel->LoadData();
-	action_panel->LoadData();
-	book_panel->LoadData();
+	if(game.gui->stats->visible)
+		game.gui->stats->Hide();
+	if(game.gui->inventory->inv_mine->visible)
+		game.gui->inventory->inv_mine->Hide();
+	if(game.gui->team->visible)
+		game.gui->team->Hide();
+	if(game.gui->journal->visible)
+		game.gui->journal->Hide();
+	if(game.gui->minimap->visible)
+		game.gui->minimap->Hide();
+	if(game.gui->inventory->gp_trade->visible)
+		game.gui->inventory->gp_trade->Hide();
+	if(close_mp_box && game.gui->mp_box->visible)
+		game.gui->mp_box->visible = false;
+	if(game.gui->actions->visible)
+		game.gui->actions->Hide();
 }
 
 //=================================================================================================
 void GameGui::GetGamePanels(vector<GamePanel*>& panels)
 {
-	panels.push_back(inventory);
-	panels.push_back(stats);
-	panels.push_back(team_panel);
-	panels.push_back(journal);
-	panels.push_back(minimap);
-	panels.push_back(inv_trade_mine);
-	panels.push_back(inv_trade_other);
-	panels.push_back(mp_box);
-	panels.push_back(action_panel);
+	panels.push_back(game.gui->inventory->inv_mine);
+	panels.push_back(game.gui->stats);
+	panels.push_back(game.gui->team);
+	panels.push_back(game.gui->journal);
+	panels.push_back(game.gui->minimap);
+	panels.push_back(game.gui->inventory->inv_trade_mine);
+	panels.push_back(game.gui->inventory->inv_trade_other);
+	panels.push_back(game.gui->mp_box);
+	panels.push_back(game.gui->actions);
 }
 
 //=================================================================================================
 OpenPanel GameGui::GetOpenPanel()
 {
-	if(stats->visible)
+	if(game.gui->stats->visible)
 		return OpenPanel::Stats;
-	else if(inventory->visible)
-		return OpenPanel::Inventory;
-	else if(team_panel->visible)
+	else if(game.gui->inventory->inv_mine->visible)
+		return OpenPanel::InventoryPanel;
+	else if(game.gui->team->visible)
 		return OpenPanel::Team;
-	else if(journal->visible)
+	else if(game.gui->journal->visible)
 		return OpenPanel::Journal;
-	else if(minimap->visible)
+	else if(game.gui->minimap->visible)
 		return OpenPanel::Minimap;
-	else if(gp_trade->visible)
+	else if(game.gui->inventory->gp_trade->visible)
 		return OpenPanel::Trade;
-	else if(action_panel->visible)
+	else if(game.gui->actions->visible)
 		return OpenPanel::Action;
 	else
 		return OpenPanel::None;
@@ -1332,26 +1292,26 @@ void GameGui::ShowPanel(OpenPanel to_open, OpenPanel open)
 	case OpenPanel::None:
 		break;
 	case OpenPanel::Stats:
-		stats->Hide();
+		game.gui->stats->Hide();
 		break;
-	case OpenPanel::Inventory:
-		inventory->Hide();
+	case OpenPanel::InventoryPanel:
+		game.gui->inventory->inv_mine->Hide();
 		break;
 	case OpenPanel::Team:
-		team_panel->Hide();
+		game.gui->team->Hide();
 		break;
 	case OpenPanel::Journal:
-		journal->Hide();
+		game.gui->journal->Hide();
 		break;
 	case OpenPanel::Minimap:
-		minimap->Hide();
+		game.gui->minimap->Hide();
 		break;
 	case OpenPanel::Trade:
 		game.OnCloseInventory();
-		gp_trade->Hide();
+		game.gui->inventory->gp_trade->Hide();
 		break;
 	case OpenPanel::Action:
-		action_panel->Hide();
+		game.gui->actions->Hide();
 		break;
 	}
 
@@ -1361,22 +1321,22 @@ void GameGui::ShowPanel(OpenPanel to_open, OpenPanel open)
 		switch(to_open)
 		{
 		case OpenPanel::Stats:
-			stats->Show();
+			game.gui->stats->Show();
 			break;
-		case OpenPanel::Inventory:
-			inventory->Show();
+		case OpenPanel::InventoryPanel:
+			game.gui->inventory->inv_mine->Show();
 			break;
 		case OpenPanel::Team:
-			team_panel->Show();
+			game.gui->team->Show();
 			break;
 		case OpenPanel::Journal:
-			journal->Show();
+			game.gui->journal->Show();
 			break;
 		case OpenPanel::Minimap:
-			minimap->Show();
+			game.gui->minimap->Show();
 			break;
 		case OpenPanel::Action:
-			action_panel->Show();
+			game.gui->actions->Show();
 			break;
 		}
 	}
@@ -1391,24 +1351,25 @@ void GameGui::PositionPanels()
 	Int2 pos = Int2(int(scale * 48), int(scale * 32));
 	Int2 size = Int2(GUI.wnd_size.x - pos.x * 2, GUI.wnd_size.y - pos.x * 2);
 
-	stats->global_pos = stats->pos = pos;
-	stats->size = size;
-	team_panel->global_pos = team_panel->pos = pos;
-	team_panel->size = size;
-	inventory->global_pos = inventory->pos = pos;
-	inventory->size = size;
-	inv_trade_other->global_pos = inv_trade_other->pos = pos;
-	inv_trade_other->size = Int2(size.x, (size.y - 32) / 2);
-	inv_trade_mine->global_pos = inv_trade_mine->pos = Int2(pos.x, inv_trade_other->pos.y + inv_trade_other->size.y + 16);
-	inv_trade_mine->size = inv_trade_other->size;
-	minimap->size = Int2(size.y, size.y);
-	minimap->global_pos = minimap->pos = Int2((GUI.wnd_size.x - minimap->size.x) / 2, (GUI.wnd_size.y - minimap->size.y) / 2);
-	journal->size = minimap->size;
-	journal->global_pos = journal->pos = minimap->pos;
-	mp_box->size = Int2((GUI.wnd_size.x - 32) / 2, (GUI.wnd_size.y - 64) / 4);
-	mp_box->global_pos = mp_box->pos = Int2(GUI.wnd_size.x - pos.x - mp_box->size.x, GUI.wnd_size.y - pos.x - mp_box->size.y);
-	action_panel->global_pos = action_panel->pos = pos;
-	action_panel->size = size;
+	game.gui->stats->global_pos = game.gui->stats->pos = pos;
+	game.gui->stats->size = size;
+	game.gui->team->global_pos = game.gui->team->pos = pos;
+	game.gui->team->size = size;
+	game.gui->inventory->inv_mine->global_pos = game.gui->inventory->inv_mine->pos = pos;
+	game.gui->inventory->inv_mine->size = size;
+	game.gui->inventory->inv_trade_other->global_pos = game.gui->inventory->inv_trade_other->pos = pos;
+	game.gui->inventory->inv_trade_other->size = Int2(size.x, (size.y - 32) / 2);
+	game.gui->inventory->inv_trade_mine->global_pos = game.gui->inventory->inv_trade_mine->pos
+		= Int2(pos.x, game.gui->inventory->inv_trade_other->pos.y + game.gui->inventory->inv_trade_other->size.y + 16);
+	game.gui->inventory->inv_trade_mine->size = game.gui->inventory->inv_trade_other->size;
+	game.gui->minimap->size = Int2(size.y, size.y);
+	game.gui->minimap->global_pos = game.gui->minimap->pos = Int2((GUI.wnd_size.x - game.gui->minimap->size.x) / 2, (GUI.wnd_size.y - game.gui->minimap->size.y) / 2);
+	game.gui->journal->size = game.gui->minimap->size;
+	game.gui->journal->global_pos = game.gui->journal->pos = game.gui->minimap->pos;
+	game.gui->mp_box->size = Int2((GUI.wnd_size.x - 32) / 2, (GUI.wnd_size.y - 64) / 4);
+	game.gui->mp_box->global_pos = game.gui->mp_box->pos = Int2(GUI.wnd_size.x - pos.x - game.gui->mp_box->size.x, GUI.wnd_size.y - pos.x - game.gui->mp_box->size.y);
+	game.gui->actions->global_pos = game.gui->actions->pos = pos;
+	game.gui->actions->size = size;
 
 	LocalVector<GamePanel*> panels;
 	GetGamePanels(panels);
@@ -1458,11 +1419,11 @@ void GameGui::Load(FileReader& f)
 void GameGui::Setup()
 {
 	Action* action;
-	if(game.in_tutorial)
+	if(QM.quest_tutorial->in_tutorial)
 		action = nullptr;
 	else
 		action = &game.pc->GetAction();
-	action_panel->Init(action);
+	game.gui->actions->Init(action);
 }
 
 //=================================================================================================
@@ -1472,4 +1433,144 @@ void GameGui::SortUnits()
 	{
 		return a.dist > b.dist;
 	});
+}
+
+//=================================================================================================
+void GameGui::UpdatePlayerView(float dt)
+{
+	LevelContext& ctx = L.GetContext(*game.pc->unit);
+	Unit& u = *game.pc->unit;
+
+	// mark previous views as invalid
+	for(vector<UnitView>::iterator it = unit_views.begin(), end = unit_views.end(); it != end; ++it)
+		it->valid = false;
+
+	// check units inside player view
+	for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
+	{
+		Unit& u2 = **it;
+		if(&u == &u2 || u2.to_remove)
+			continue;
+
+		bool mark = false;
+		if(u.IsEnemy(u2))
+		{
+			if(u2.IsAlive())
+				mark = true;
+		}
+		else if(u.IsFriend(u2))
+			mark = true;
+
+		// oznaczanie pobliskich postaci
+		if(mark)
+		{
+			float dist = Vec3::Distance(u.visual_pos, u2.visual_pos);
+
+			if(dist < ALERT_RANGE.x && game.cam.frustum.SphereToFrustum(u2.visual_pos, u2.GetSphereRadius()) && game.CanSee(u, u2))
+			{
+				// dodaj do pobliskich jednostek
+				bool jest = false;
+				for(vector<UnitView>::iterator it2 = unit_views.begin(), end2 = unit_views.end(); it2 != end2; ++it2)
+				{
+					if(it2->unit == *it)
+					{
+						jest = true;
+						it2->valid = true;
+						it2->last_pos = u2.GetUnitTextPos();
+						break;
+					}
+				}
+				if(!jest)
+				{
+					UnitView& uv = Add1(unit_views);
+					uv.valid = true;
+					uv.unit = *it;
+					uv.time = 0.f;
+					uv.last_pos = u2.GetUnitTextPos();
+				}
+			}
+		}
+	}
+
+	// aktualizuj pobliskie postacie
+	// 0.0 -> 0.1 niewidoczne
+	// 0.1 -> 0.2 alpha 0->255
+	// -0.2 -> -0.1 widoczne
+	// -0.1 -> 0.0 alpha 255->0
+	for(vector<UnitView>::iterator it = unit_views.begin(), end = unit_views.end(); it != end;)
+	{
+		bool removed = false;
+
+		if(it->valid)
+		{
+			if(it->time >= 0.f)
+				it->time += dt;
+			else if(it->time < -UNIT_VIEW_A)
+				it->time = UNIT_VIEW_B;
+			else
+				it->time = -it->time;
+		}
+		else
+		{
+			if(it->time >= 0.f)
+			{
+				if(it->time < UNIT_VIEW_A)
+				{
+					// usuñ
+					if(it + 1 == end)
+					{
+						unit_views.pop_back();
+						break;
+					}
+					else
+					{
+						std::iter_swap(it, end - 1);
+						unit_views.pop_back();
+						end = unit_views.end();
+						removed = true;
+					}
+				}
+				else if(it->time < UNIT_VIEW_B)
+					it->time = -it->time;
+				else
+					it->time = -UNIT_VIEW_B;
+			}
+			else
+			{
+				it->time += dt;
+				if(it->time >= 0.f)
+				{
+					// usuñ
+					if(it + 1 == end)
+					{
+						unit_views.pop_back();
+						break;
+					}
+					else
+					{
+						std::iter_swap(it, end - 1);
+						unit_views.pop_back();
+						end = unit_views.end();
+						removed = true;
+					}
+				}
+			}
+		}
+
+		if(!removed)
+			++it;
+	}
+}
+
+//=================================================================================================
+void GameGui::RemoveUnit(Unit* unit)
+{
+	for(vector<UnitView>::iterator it = unit_views.begin(), end = unit_views.end(); it != end; ++it)
+	{
+		if(it->unit == unit)
+		{
+			unit_views.erase(it);
+			break;
+		}
+	}
 }

@@ -74,8 +74,6 @@ public:
 private:
 	struct WritePacket : ObjectPoolProxy<WritePacket>
 	{
-		virtual ~WritePacket() {}
-
 		vector<byte> data;
 		uint size;
 		int type;

@@ -61,19 +61,6 @@ struct DialogChoice
 };
 
 //-----------------------------------------------------------------------------
-struct Unit;
-struct Quest;
-struct Item;
-struct PlayerController;
-
-//-----------------------------------------------------------------------------
-struct News
-{
-	string text;
-	int add_time;
-};
-
-//-----------------------------------------------------------------------------
 struct GameDialog
 {
 	struct Text
@@ -142,4 +129,4 @@ uint LoadDialogs(uint& crc, uint& errors);
 void LoadDialogTexts();
 GameDialog* FindDialog(cstring id);
 void CleanupDialogs();
-void VerifyDialogs(ScriptManager* script_mgr, uint& errors);
+void VerifyDialogs(uint& errors);

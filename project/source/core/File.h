@@ -267,6 +267,7 @@ public:
 		}
 		else
 		{
+			v.resize(size);
 			Read((char*)v.data(), sizeof(CastType)*size);
 			T* to = v.data() + size - 1;
 			CastType* from = ((CastType*)v.data()) + size - 1;
@@ -489,7 +490,7 @@ public:
 	template<typename T>
 	void WriteVector4(const vector<T>& v)
 	{
-		WriteVector<short>(v);
+		WriteVector<uint>(v);
 	}
 	template<typename T>
 	void Write(const vector<T>& v)

@@ -3,10 +3,10 @@
 #include "Options.h"
 #include "Language.h"
 #include "KeyStates.h"
+#include "GlobalGui.h"
 #include "Game.h"
 #include "MenuList.h"
 #include "SoundManager.h"
-#include "DirectX.h"
 
 //-----------------------------------------------------------------------------
 cstring txQuality, txMsNone;
@@ -85,28 +85,6 @@ public:
 //=================================================================================================
 Options::Options(const DialogInfo& info) : GameDialogBox(info)
 {
-	txOPTIONS = Str("OPTIONS");
-	txResolution = Str("resolution");
-	txMultisampling = Str("multisampling");
-	txLanguage = Str("language");
-	txMultisamplingError = Str("multisamplingError");
-	txNeedRestart = Str("needRestart");
-	txSoundVolume = Str("soundVolume");
-	txMusicVolume = Str("musicVolume");
-	txMouseSensitivity = Str("mouseSensitivity");
-	txGrassRange = Str("grassRange");
-
-	txQuality = Str("quality");
-	txMsNone = Str("msNone");
-
-	cstring ids[] = {
-		"fullscreenMode",
-		"glow",
-		"normalMap",
-		"specularMap",
-		"vsync"
-	};
-
 	size = Int2(570, 460);
 	bts.resize(2);
 
@@ -117,25 +95,10 @@ Options::Options(const DialogInfo& info) : GameDialogBox(info)
 		check[i].id = IdFullscreen + i;
 		check[i].parent = this;
 		check[i].size = Int2(size.x - 44, 32);
-		check[i].text = Str(ids[i]);
 		check[i].pos = offset;
 		offset.y += 32 + 10;
 	}
-
-	bts[0].id = IdOk;
-	bts[0].parent = this;
-	bts[0].text = Str("ok");
-	bts[0].size = GUI.default_font->CalculateSize(bts[0].text) + Int2(24, 24);
-
-	bts[1].id = IdControls;
-	bts[1].parent = this;
-	bts[1].text = Str("controls");
-	bts[1].size = GUI.default_font->CalculateSize(bts[1].text) + Int2(24, 24);
-
-	bts[0].size.x = bts[1].size.x = max(bts[0].size.x, bts[1].size.x);
-	bts[0].pos = Int2(20, 410);
-	bts[1].pos = Int2(bts[0].size.x + 40, 410);
-
+	
 	scroll[0].pos = Int2(290, 290);
 	scroll[0].size = Int2(250, 16);
 	scroll[0].total = 100;
@@ -164,29 +127,80 @@ Options::Options(const DialogInfo& info) : GameDialogBox(info)
 	scroll[3].offset = 0;
 	scroll[3].hscrollbar = true;
 
+	// jêzyk
+	language.SetCollapsed(true);
+	language.parent = this;
+	language.pos = Int2(20, 383);
+	language.size = Int2(250, 25);
+	language.event_handler = DialogEvent(this, &Options::OnChangeLanguage);
+	int index = 0;
+	for(Language::LanguageMap* p_lmap : Language::GetLanguages())
+	{
+		Language::LanguageMap& lmap = *p_lmap;
+		string& dir = lmap["dir"];
+		language.Add(new LanguageItem(dir, Format("%s, %s, %s", dir.c_str(), lmap["englishName"].c_str(), lmap["localName"].c_str())));
+		if(dir == Language::prefix)
+			language.SetIndex(index);
+		++index;
+	}
+	language.Initialize();
+
+	visible = false;
+}
+
+//=================================================================================================
+void Options::LoadLanguage()
+{
+	txOPTIONS = Str("OPTIONS");
+	txResolution = Str("resolution");
+	txMultisampling = Str("multisampling");
+	txLanguage = Str("language");
+	txMultisamplingError = Str("multisamplingError");
+	txNeedRestart = Str("needRestart");
+	txSoundVolume = Str("soundVolume");
+	txMusicVolume = Str("musicVolume");
+	txMouseSensitivity = Str("mouseSensitivity");
+	txGrassRange = Str("grassRange");
+
+	txQuality = Str("quality");
+	txMsNone = Str("msNone");
+
+	check[0].text = Str("fullscreenMode");
+	check[1].text = Str("glow");
+	check[2].text = Str("normalMap");
+	check[3].text = Str("specularMap");
+	check[4].text = Str("vsync");
+
+	bts[0].id = IdOk;
+	bts[0].parent = this;
+	bts[0].text = Str("ok");
+	bts[0].size = GUI.default_font->CalculateSize(bts[0].text) + Int2(24, 24);
+	bts[1].id = IdControls;
+	bts[1].parent = this;
+	bts[1].text = Str("controls");
+	bts[1].size = GUI.default_font->CalculateSize(bts[1].text) + Int2(24, 24);
+	bts[0].size.x = bts[1].size.x = max(bts[0].size.x, bts[1].size.x);
+	bts[0].pos = Int2(20, 410);
+	bts[1].pos = Int2(bts[0].size.x + 40, 410);
+
 	// lista rozdzielczoœci
 	res.parent = this;
 	res.pos = Int2(20, 80);
 	res.size = Int2(250, 200);
 	res.event_handler = DialogEvent(this, &Options::OnChangeRes);
+	vector<Resolution> resolutions;
+	game->GetResolutions(resolutions);
 	LocalVector<Res*> vres;
-	uint display_modes = game->d3d->GetAdapterModeCount(game->used_adapter, DISPLAY_FORMAT);
-	for(uint i = 0; i < display_modes; ++i)
-	{
-		D3DDISPLAYMODE d_mode;
-		V(game->d3d->EnumAdapterModes(game->used_adapter, DISPLAY_FORMAT, i, &d_mode));
-		if(d_mode.Width >= (uint)Engine::MIN_WINDOW_SIZE.x && d_mode.Height >= (uint)Engine::MIN_WINDOW_SIZE.y)
-			vres->push_back(new Res(Int2(d_mode.Width, d_mode.Height), d_mode.RefreshRate));
-	}
-	// sortuj
+	for(Resolution& r : resolutions)
+		vres->push_back(new Res(r.size, r.hz));
 	std::sort(vres->begin(), vres->end(), ResPred);
-	// dodaj do listboxa i wybierz
 	int index = 0;
 	for(auto r : vres)
 	{
 		res.Add(r);
 		if(r->size == game->GetWindowSize() && r->hz == game->wnd_hz)
 			res.SetIndex(index);
+		++index;
 	}
 	res.Initialize();
 	res.ScrollTo(res.GetIndex(), true);
@@ -202,44 +216,17 @@ Options::Options(const DialogInfo& info) : GameDialogBox(info)
 	game->GetMultisampling(ms, msq);
 	if(ms == 0)
 		multisampling.SetIndex(0);
+	vector<Int2> ms_modes;
+	game->GetMultisamplingModes(ms_modes);
 	index = 1;
-	for(int j = 2; j <= 16; ++j)
+	for(Int2& mode : ms_modes)
 	{
-		DWORD levels, levels2;
-		if(SUCCEEDED(game->d3d->CheckDeviceMultiSampleType(game->used_adapter, D3DDEVTYPE_HAL, BACKBUFFER_FORMAT, FALSE, (D3DMULTISAMPLE_TYPE)j, &levels)) &&
-			SUCCEEDED(game->d3d->CheckDeviceMultiSampleType(game->used_adapter, D3DDEVTYPE_HAL, ZBUFFER_FORMAT, FALSE, (D3DMULTISAMPLE_TYPE)j, &levels2)))
-		{
-			int level = min(levels, levels2);
-			for(int i = 0; i < level; ++i)
-			{
-				multisampling.Add(new MultisamplingItem(j, i));
-				if(ms == j && msq == i)
-					multisampling.SetIndex(index);
-			}
-			++index;
-		}
-	}
-	multisampling.Initialize();
-
-	// jêzyk
-	language.SetCollapsed(true);
-	language.parent = this;
-	language.pos = Int2(20, 383);
-	language.size = Int2(250, 25);
-	language.event_handler = DialogEvent(this, &Options::OnChangeLanguage);
-	index = 0;
-	for(Language::LanguageMap* p_lmap : Language::GetLanguages())
-	{
-		Language::LanguageMap& lmap = *p_lmap;
-		string& dir = lmap["dir"];
-		language.Add(new LanguageItem(dir, Format("%s, %s, %s", dir.c_str(), lmap["englishName"].c_str(), lmap["localName"].c_str())));
-		if(dir == Language::prefix)
-			language.SetIndex(index);
+		multisampling.Add(new MultisamplingItem(mode.x, mode.y));
+		if(ms == mode.x && msq == mode.y)
+			multisampling.SetIndex(index);
 		++index;
 	}
-	language.Initialize();
-
-	visible = false;
+	multisampling.Initialize();
 }
 
 //=================================================================================================
@@ -337,7 +324,7 @@ void Options::Update(float dt)
 				mouse_sensitivity = value;
 			else
 				grass_range = value;
-			event(IdSoundVolume + i);
+			Event((GuiEvent)(IdSoundVolume + i));
 		}
 	}
 	for(int i = 0; i < 2; ++i)
@@ -385,7 +372,48 @@ void Options::Event(GuiEvent e)
 	else if(e == GuiEvent_LostFocus)
 		res.Event(GuiEvent_LostFocus);
 	else if(e >= GuiEvent_Custom)
-		event((Id)e);
+	{
+		switch((Id)e)
+		{
+		case IdOk:
+			CloseDialog();
+			game->SaveOptions();
+			break;
+		case IdFullscreen:
+			game->ChangeMode(check[0].checked);
+			break;
+		case IdChangeRes:
+			break;
+		case IdSoundVolume:
+			game->sound_mgr->SetSoundVolume(sound_volume);
+			break;
+		case IdMusicVolume:
+			game->sound_mgr->SetMusicVolume(music_volume);
+			break;
+		case IdMouseSensitivity:
+			game->settings.mouse_sensitivity = mouse_sensitivity;
+			game->settings.mouse_sensitivity_f = Lerp(0.5f, 1.5f, float(game->settings.mouse_sensitivity) / 100);
+			break;
+		case IdGrassRange:
+			game->grass_range = (float)game->grass_range;
+			break;
+		case IdControls:
+			GUI.ShowDialog((DialogBox*)game->gui->controls);
+			break;
+		case IdGlow:
+			game->cl_glow = check[1].checked;
+			break;
+		case IdNormal:
+			game->cl_normalmap = check[2].checked;
+			break;
+		case IdSpecular:
+			game->cl_specularmap = check[3].checked;
+			break;
+		case IdVsync:
+			game->SetVsync(!game->GetVsync());
+			break;
+		}
+	}
 }
 
 //=================================================================================================
@@ -430,7 +458,7 @@ void Options::SetOptions()
 		}
 	}
 
-	SoundManager* sound_mgr = game->sound_mgr;
+	SoundManager* sound_mgr = game->sound_mgr.get();
 	if(sound_volume != sound_mgr->GetSoundVolume())
 	{
 		sound_volume = sound_mgr->GetSoundVolume();
@@ -441,9 +469,9 @@ void Options::SetOptions()
 		music_volume = sound_mgr->GetMusicVolume();
 		scroll[1].SetValue(float(music_volume) / 100.f);
 	}
-	if(mouse_sensitivity != game->mouse_sensitivity)
+	if(mouse_sensitivity != game->settings.mouse_sensitivity)
 	{
-		mouse_sensitivity = game->mouse_sensitivity;
+		mouse_sensitivity = game->settings.mouse_sensitivity;
 		scroll[2].SetValue(float(mouse_sensitivity) / 100.f);
 	}
 	if(grass_range != game->grass_range)
@@ -458,7 +486,7 @@ void Options::OnChangeRes(int)
 {
 	Res& r = *res.GetItemCast<Res>();
 	game->ChangeMode(r.size, game->IsFullscreen(), r.hz);
-	event(IdChangeRes);
+	Event((GuiEvent)IdChangeRes);
 }
 
 //=================================================================================================

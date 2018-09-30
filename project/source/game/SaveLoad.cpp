@@ -1,25 +1,18 @@
-// zapisywanie/wczytywanie gry
 #include "Pch.h"
 #include "GameCore.h"
 #include "Game.h"
 #include "SaveState.h"
 #include "Version.h"
 #include "QuestManager.h"
-#include "Quest_Sawmill.h"
-#include "Quest_Bandits.h"
-#include "Quest_Mine.h"
-#include "Quest_Goblins.h"
-#include "Quest_Mages.h"
-#include "Quest_Orcs.h"
-#include "Quest_Evil.h"
-#include "Quest_Crazies.h"
+#include "Quest.h"
+#include "Quest_Contest.h"
+#include "Quest_Secret.h"
+#include "Quest_Tournament.h"
+#include "Quest_Tutorial.h"
 #include "GameFile.h"
 #include "GameStats.h"
-#include "MultiInsideLocation.h"
-#include "OutsideLocation.h"
 #include "City.h"
-#include "CaveLocation.h"
-#include "Camp.h"
+#include "Cave.h"
 #include "Gui.h"
 #include "SaveLoadPanel.h"
 #include "MultiplayerPanel.h"
@@ -34,6 +27,15 @@
 #include "Journal.h"
 #include "SoundManager.h"
 #include "ScriptManager.h"
+#include "World.h"
+#include "Level.h"
+#include "LoadingHandler.h"
+#include "LocationGeneratorFactory.h"
+#include "Arena.h"
+#include "ParticleSystem.h"
+#include "Inventory.h"
+#include "GlobalGui.h"
+#include "Pathfinding.h"
 
 enum SaveFlags
 {
@@ -41,23 +43,25 @@ enum SaveFlags
 	SF_ONLINE = 1 << 0,
 	//SF_DEV = 1 << 1,
 	SF_DEBUG = 1 << 2,
-	//SF_BETA = 1 << 3
+	//SF_BETA = 1 << 3,
+	SF_HARDCORE = 1 << 4
 };
 
 //=================================================================================================
 bool Game::CanSaveGame() const
 {
-	if(game_state == GS_MAIN_MENU || secret_state == SECRET_FIGHT)
+	if(game_state == GS_MAIN_MENU || QM.quest_secret->state == Quest_Secret::SECRET_FIGHT)
 		return false;
 
 	if(game_state == GS_WORLDMAP)
 	{
-		if(world_state == WS_TRAVEL || world_state == WS_ENCOUNTER)
+		if(Any(W.GetState(), World::State::TRAVEL, World::State::ENCOUNTER))
 			return false;
 	}
 	else
 	{
-		if(in_tutorial || arena_tryb != Arena_Brak || contest_state >= CONTEST_STARTING || tournament_state != TOURNAMENT_NOT_DONE)
+		if(QM.quest_tutorial->in_tutorial || arena->mode != Arena::NONE || QM.quest_contest->state >= Quest_Contest::CONTEST_STARTING
+			|| QM.quest_tournament->GetState() != Quest_Tournament::TOURNAMENT_NOT_DONE)
 			return false;
 	}
 
@@ -89,12 +93,12 @@ bool Game::SaveGameSlot(int slot, cstring text)
 	if(!CanSaveGame())
 	{
 		// w tej chwili nie mo¿na zapisaæ gry
-		GUI.SimpleDialog(Net::IsClient() ? txOnlyServerCanSave : txCantSaveGame, saveload->visible ? saveload : nullptr);
+		GUI.SimpleDialog(Net::IsClient() ? txOnlyServerCanSave : txCantSaveGame, gui->saveload->visible ? gui->saveload : nullptr);
 		return false;
 	}
 
 	cstring filename = Format(Net::IsOnline() ? "saves/multi/%d.sav" : "saves/single/%d.sav", slot);
-	return SaveGameCommon(filename, true, text);
+	return SaveGameCommon(filename, slot, text);
 }
 
 //=================================================================================================
@@ -129,7 +133,7 @@ bool Game::SaveGameCommon(cstring filename, int slot, cstring text)
 	if(!f)
 	{
 		Error(txLoadOpenError, filename, GetLastError());
-		GUI.SimpleDialog(txSaveFailed, saveload->visible ? saveload : nullptr);
+		GUI.SimpleDialog(txSaveFailed, gui->saveload->visible ? gui->saveload : nullptr);
 		return false;
 	}
 
@@ -143,10 +147,10 @@ bool Game::SaveGameCommon(cstring filename, int slot, cstring text)
 	{
 		SaveSlot& ss = (Net::IsOnline() ? multi_saves[slot - 1] : single_saves[slot - 1]);
 		ss.valid = true;
-		ss.game_day = day;
-		ss.game_month = month;
-		ss.game_year = year;
-		ss.location = GetCurrentLocationText();
+		ss.game_day = W.GetDay();
+		ss.game_month = W.GetMonth();
+		ss.game_year = W.GetYear();
+		ss.location = L.GetCurrentLocationText();
 		ss.player_name = pc->name;
 		ss.player_class = pc->unit->GetClass();
 		ss.save_date = time(nullptr);
@@ -154,9 +158,9 @@ bool Game::SaveGameCommon(cstring filename, int slot, cstring text)
 		ss.hardcore = hardcore_mode;
 
 		Config cfg;
-		cfg.Add("game_day", Format("%d", day));
-		cfg.Add("game_month", Format("%d", month));
-		cfg.Add("game_year", Format("%d", year));
+		cfg.Add("game_day", Format("%d", ss.game_day));
+		cfg.Add("game_month", Format("%d", ss.game_month));
+		cfg.Add("game_year", Format("%d", ss.game_year));
 		cfg.Add("location", ss.location.c_str());
 		cfg.Add("player_name", ss.player_name.c_str());
 		cfg.Add("player_class", ClassInfo::classes[(int)ss.player_class].id);
@@ -166,7 +170,7 @@ bool Game::SaveGameCommon(cstring filename, int slot, cstring text)
 
 		if(Net::IsOnline())
 		{
-			ss.multiplayers = players;
+			ss.multiplayers = N.active_players;
 			cfg.Add("multiplayers", Format("%d", ss.multiplayers));
 		}
 
@@ -222,12 +226,12 @@ void Game::LoadGameCommon(cstring filename, int slot)
 
 	prev_game_state = game_state;
 	if(mp_load)
-		multiplayer_panel->visible = false;
+		gui->multiplayer->visible = false;
 	else
 	{
-		main_menu->visible = false;
-		game_gui->visible = false;
-		world_map->visible = false;
+		gui->main_menu->visible = false;
+		gui->game_gui->visible = false;
+		gui->world_map->visible = false;
 	}
 	LoadingStart(9);
 
@@ -272,21 +276,21 @@ void Game::LoadGameCommon(cstring filename, int slot)
 	{
 		if(game_state == GS_LEVEL)
 		{
-			game_gui->visible = true;
-			world_map->visible = false;
+			gui->game_gui->visible = true;
+			gui->world_map->visible = false;
 		}
 		else
 		{
-			game_gui->visible = false;
-			world_map->visible = true;
+			gui->game_gui->visible = false;
+			gui->world_map->visible = true;
 		}
-		SetGamePanels();
+		gui->Setup(pc);
 	}
 	else
 	{
-		saveload->visible = true;
-		multiplayer_panel->visible = true;
-		main_menu->visible = true;
+		gui->saveload->visible = true;
+		gui->multiplayer->visible = true;
+		gui->main_menu->visible = true;
 	}
 }
 
@@ -367,10 +371,11 @@ void Game::SaveGame(GameWriter& f)
 	if(Net::IsOnline())
 		Net_PreSave();
 	UpdateDungeonMinimap(false);
-	ProcessUnitWarps();
-	ProcessRemoveUnits();
-	if(game_state == GS_WORLDMAP && open_location != -1)
+	L.ProcessUnitWarps();
+	L.ProcessRemoveUnits(false);
+	if(game_state == GS_WORLDMAP && L.is_open)
 		LeaveLocation(false, false);
+	BuildRefidTables();
 
 	// signature
 	byte sign[4] = { 'C','R','S','V' };
@@ -382,80 +387,30 @@ void Game::SaveGame(GameWriter& f)
 	f << start_version;
 	f << content::version;
 
-	// is online / dev
+	// save flags
 	byte flags = (Net::IsOnline() ? SF_ONLINE : 0);
 #ifdef _DEBUG
 	flags |= SF_DEBUG;
 #endif
+	if(hardcore_mode)
+		flags |= SF_HARDCORE;
 	f << flags;
 
-	// is hardcore
-	f << hardcore_mode;
-	f << total_kills;
-
-	// world state
-	f << year;
-	f << month;
-	f << day;
-	f << worldtime;
-	f << game_state;
+	// game stats
 	GameStats::Get().Save(f);
 
-	BuildRefidTables();
+	f << game_state;
+	W.Save(f);
+
 
 	byte check_id = 0;
 
-	// world map
-	f << world_state;
-	f << current_location;
-	f << locations.size();
-	for(Location* loc : locations)
-	{
-		LOCATION_TOKEN loc_token;
-		if(loc)
-			loc_token = loc->GetToken();
-		else
-			loc_token = LT_NULL;
-		f << loc_token;
-
-		if(loc_token != LT_NULL)
-		{
-			if(loc_token == LT_MULTI_DUNGEON)
-			{
-				int levels = ((MultiInsideLocation*)loc)->levels.size();
-				f << levels;
-			}
-			loc->Save(f, (game_state == GS_LEVEL && location == loc));
-		}
-
-		f << check_id;
-		++check_id;
-	}
-	f << empty_locations;
-	f << create_camp;
-	f << world_pos;
-	f << travel_time2;
-	f << szansa_na_spotkanie;
-	f << settlements;
-	f << encounter_loc;
-	f << world_dir;
-	if(world_state == WS_TRAVEL)
-	{
-		f << picked_location;
-		f << travel_day;
-		f << travel_start;
-		f << travel_time;
-		f << guards_enc_reward;
-	}
-	f << encs.size();
 	if(game_state == GS_LEVEL)
-		f << (location_event_handler ? location_event_handler->GetLocationEventHandlerQuestRefid() : -1);
+		f << (L.event_handler ? L.event_handler->GetLocationEventHandlerQuestRefid() : -1);
 	else
 		Team.SaveOnWorldmap(f);
-	f << first_city;
-	f << boss_levels;
-	f << enter_from;
-	f << light_angle;
+	f << L.enter_from;
+	f << L.light_angle;
 
 	// camera
 	f << cam.real_rot.y;
@@ -483,7 +438,7 @@ void Game::SaveGame(GameWriter& f)
 	f << next_seed;
 	f << draw_flags;
 	f << pc->unit->refid;
-	f << dungeon_level;
+	f << L.dungeon_level;
 	f << portal_anim;
 	f << drunk_anim;
 	f << ais.size();
@@ -491,12 +446,13 @@ void Game::SaveGame(GameWriter& f)
 		ai->Save(f);
 
 	// game messages & speech bubbles
-	game_gui->game_messages->Save(f);
-	game_gui->Save(f);
+	gui->messages->Save(f);
+	gui->game_gui->Save(f);
 
 	// rumors/notes
-	game_gui->journal->Save(f);
+	gui->journal->Save(f);
 
+	check_id = (byte)W.GetLocations().size();
 	f << check_id;
 	++check_id;
 
@@ -504,17 +460,8 @@ void Game::SaveGame(GameWriter& f)
 	Team.Save(f);
 
 	// save quests
-	QuestManager::Get().Save(f);
-	SaveQuestsData(f);
-	script_mgr->Save(f);
-
-	// newsy
-	f << news.size();
-	for(News* n : news)
-	{
-		f << n->add_time;
-		f.WriteString2(n->text);
-	}
+	QM.Save(f);
+	SM.Save(f);
 
 	f << check_id;
 	++check_id;
@@ -522,32 +469,32 @@ void Game::SaveGame(GameWriter& f)
 	if(game_state == GS_LEVEL)
 	{
 		// particles
-		f << local_ctx.pes->size();
-		for(ParticleEmitter* pe : *local_ctx.pes)
+		f << L.local_ctx.pes->size();
+		for(ParticleEmitter* pe : *L.local_ctx.pes)
 			pe->Save(f);
 
-		f << local_ctx.tpes->size();
-		for(TrailParticleEmitter* tpe : *local_ctx.tpes)
+		f << L.local_ctx.tpes->size();
+		for(TrailParticleEmitter* tpe : *L.local_ctx.tpes)
 			tpe->Save(f);
 
 		// explosions
-		f << local_ctx.explos->size();;
-		for(Explo* explo : *local_ctx.explos)
+		f << L.local_ctx.explos->size();;
+		for(Explo* explo : *L.local_ctx.explos)
 			explo->Save(f);
 
 		// electric effects
-		f << local_ctx.electros->size();
-		for(Electro* electro : *local_ctx.electros)
+		f << L.local_ctx.electros->size();
+		for(Electro* electro : *L.local_ctx.electros)
 			electro->Save(f);
 
 		// drain effects
-		f << local_ctx.drains->size();
-		for(Drain& drain : *local_ctx.drains)
+		f << L.local_ctx.drains->size();
+		for(Drain& drain : *L.local_ctx.drains)
 			drain.Save(f);
 
 		// bullets
-		f << local_ctx.bullets->size();
-		for(Bullet& bullet : *local_ctx.bullets)
+		f << L.local_ctx.bullets->size();
+		for(Bullet& bullet : *L.local_ctx.bullets)
 			bullet.Save(f);
 
 		f << check_id;
@@ -556,19 +503,19 @@ void Game::SaveGame(GameWriter& f)
 
 	if(Net::IsOnline())
 	{
-		f << server_name;
-		f << server_pswd;
-		f << players;
-		f << max_players;
-		f << last_id;
+		f << N.server_name;
+		f << N.password;
+		f << N.active_players;
+		f << N.max_players;
+		f << N.last_id;
 		uint count = 0;
-		for(auto info : game_players)
+		for(auto info : N.players)
 		{
 			if(info->left == PlayerInfo::LEFT_NO)
 				++count;
 		}
 		f << count;
-		for(PlayerInfo* info : game_players)
+		for(PlayerInfo* info : N.players)
 		{
 			if(info->left == PlayerInfo::LEFT_NO)
 				info->Save(f);
@@ -582,8 +529,8 @@ void Game::SaveGame(GameWriter& f)
 		f << Trap::netid_counter;
 		f << Door::netid_counter;
 		f << Electro::netid_counter;
-		f << mp_use_interp;
-		f << mp_interp;
+		f << N.mp_use_interp;
+		f << N.mp_interp;
 
 		f << check_id;
 		++check_id;
@@ -614,44 +561,13 @@ void Game::SaveStock(FileWriter& f, vector<ItemSlot>& cnt)
 }
 
 //=================================================================================================
-void Game::SaveQuestsData(GameWriter& f)
-{
-	// secret
-	f << secret_state;
-	f << GetSecretNote()->desc;
-	f << secret_where;
-	f << secret_where2;
-
-	// drinking contest
-	f << contest_where;
-	f << contest_state;
-	f << contest_generated;
-	f << contest_winner;
-	if(contest_state >= CONTEST_STARTING)
-	{
-		f << contest_state2;
-		f << contest_time;
-		f << contest_units.size();
-		for(Unit* unit : contest_units)
-			f << unit->refid;
-	}
-
-	// arena tournament
-	f << tournament_year;
-	f << tournament_city;
-	f << tournament_city_year;
-	f << tournament_winner;
-	f << tournament_generated;
-}
-
-//=================================================================================================
 void Game::LoadGame(GameReader& f)
 {
 	ClearGame();
 	ClearGameVarsOnLoad();
 	StopAllSounds();
-	in_tutorial = false;
-	arena_free = true;
+	QM.quest_tutorial->in_tutorial = false;
+	arena->Reset();
 	pc_data.autowalk = false;
 	ai_bow_targets.clear();
 	ai_cast_targets.clear();
@@ -659,6 +575,12 @@ void Game::LoadGame(GameReader& f)
 	load_unit_handler.clear();
 	load_chest_handler.clear();
 	units_mesh_load.clear();
+	Unit::refid_table.clear();
+	Usable::refid_table.clear();
+	ParticleEmitter::refid_table.clear();
+	TrailParticleEmitter::refid_table.clear();
+
+	byte check_id = 0, read_id;
 
 	// signature
 	byte sign[4] = { 'C','R','S','V' };
@@ -711,150 +633,61 @@ void Game::LoadGame(GameReader& f)
 	if(content::require_update)
 		Info("Loading old system version. Content update required.");
 
-	// is online / dev
+	// save flags
 	byte flags;
 	f >> flags;
 	bool online_save = IS_SET(flags, SF_ONLINE);
 	if(mp_load)
 	{
 		if(!online_save)
-			throw SaveException(txLoadMP, "Save is from singleplayer mode.");
+			throw SaveException(txLoadSP, "Save is from singleplayer mode.");
 	}
 	else
 	{
 		if(online_save)
-			throw SaveException(txLoadSP, "Save is from multiplayer mode.");
+			throw SaveException(txLoadMP, "Save is from multiplayer mode.");
 	}
 
 	Info("Loading save. Version %s, start %s, format %d, mp %d, debug %d.", VersionToString(version), VersionToString(start_version), LOAD_VERSION,
 		online_save ? 1 : 0, IS_SET(flags, SF_DEBUG) ? 1 : 0);
 
-	f >> hardcore_mode;
-	f >> total_kills;
-
-	// world state
+	LoadingHandler loading;
 	GAME_STATE game_state2;
-	f >> year;
-	f >> month;
-	f >> day;
-	f >> worldtime;
-	f >> game_state2;
-	GameStats::Get().Load(f);
-
-	Unit::refid_table.clear();
-	Usable::refid_table.clear();
-	ParticleEmitter::refid_table.clear();
-	TrailParticleEmitter::refid_table.clear();
-
-	byte check_id = 0, read_id;
-
-	// world map
-	LoadingStep(txLoadingLocations);
-	f >> world_state;
-	f >> current_location;
-	uint count = f.Read<uint>();
-	locations.resize(count);
-	int index = 0;
-	int step = 0;
-	for(Location*& loc : locations)
+	if(LOAD_VERSION >= V_DEV)
 	{
-		LOCATION_TOKEN loc_token;
-		f >> loc_token;
-		
-		if(loc_token != LT_NULL)
-		{
-			switch(loc_token)
-			{
-			case LT_OUTSIDE:
-				loc = new OutsideLocation;
-				break;
-			case LT_CITY:
-			case LT_VILLAGE_OLD:
-				loc = new City;
-				break;
-			case LT_CAVE:
-				loc = new CaveLocation;
-				break;
-			case LT_SINGLE_DUNGEON:
-				loc = new SingleInsideLocation;
-				break;
-			case LT_MULTI_DUNGEON:
-				{
-					int levels = f.Read<int>();
-					loc = new MultiInsideLocation(levels);
-				}
-				break;
-			case LT_CAMP:
-				loc = new Camp;
-				break;
-			default:
-				assert(0);
-				loc = new OutsideLocation;
-				break;
-			}
+		hardcore_mode = IS_SET(flags, SF_HARDCORE);
 
-			loc->Load(f, (game_state2 == GS_LEVEL && current_location == index), loc_token);
-		}
-		else
-			loc = nullptr;
+		// game stats
+		GameStats::Get().Load(f);
 
-		if(step == 0)
-		{
-			if(index >= int(count) / 4)
-			{
-				++step;
-				LoadingStep();
-			}
-		}
-		else if(step == 1)
-		{
-			if(index >= int(count) / 2)
-			{
-				++step;
-				LoadingStep();
-			}
-		}
-		else if(step == 2)
-		{
-			if(index >= int(count) * 3 / 4)
-			{
-				++step;
-				LoadingStep();
-			}
-		}
+		// game state
+		f >> game_state2;
 
-		f >> read_id;
-		if(read_id != check_id)
-			throw Format("Error while reading location %s (%d).", loc ? loc->name.c_str() : "nullptr", index);
-		++check_id;
+		// world map
+		LoadingStep(txLoadingLocations);
+		W.Load(f, loading);
 	}
-	f >> empty_locations;
-	f >> create_camp;
-	f >> world_pos;
-	f >> travel_time2;
-	f >> szansa_na_spotkanie;
-	f >> settlements;
-	f >> encounter_loc;
-	f >> world_dir;
-	if(world_state == WS_TRAVEL)
+	else
 	{
-		f >> picked_location;
-		f >> travel_day;
-		f >> travel_start;
-		f >> travel_time;
-		f >> guards_enc_reward;
+		// game stats (is hardcore, total_kills)
+		f >> hardcore_mode;
+		GameStats::Get().LoadOld(f, 0);
+
+		// world day/month/year/worldtime
+		W.LoadOld(f, loading, 0, false);
+
+		// game state
+		f >> game_state2;
+
+		// game stats (play time)
+		GameStats::Get().LoadOld(f, 1);
+
+		// world map
+		LoadingStep(txLoadingLocations);
+		W.LoadOld(f, loading, 1, game_state2 == GS_LEVEL);
 	}
-	else if(world_state == WS_ENCOUNTER)
-	{
-		world_state = WS_TRAVEL;
-		travel_start = world_pos = locations[0]->pos;
-		picked_location = 0;
-		travel_time = 1.f;
-		travel_day = 0;
-	}
-	if(LOAD_VERSION < V_0_3)
-		world_dir = Clip(-world_dir);
-	encs.resize(f.Read<uint>(), nullptr);
+
+	uint count;
 	int location_event_handler_quest_refid;
 	if(game_state2 == GS_LEVEL)
 		f >> location_event_handler_quest_refid;
@@ -878,26 +711,13 @@ void Game::LoadGame(GameReader& f)
 			}
 		}
 	}
-	if(current_location != -1)
-	{
-		location = locations[current_location];
-		if(location->type == L_CITY)
-			city_ctx = (City*)location;
-		else
-			city_ctx = nullptr;
-	}
-	else
-	{
-		location = nullptr;
-		city_ctx = nullptr;
-	}
-	f >> first_city;
-	f >> boss_levels;
-	f >> enter_from;
+	if(LOAD_VERSION < V_DEV)
+		W.LoadOld(f, loading, 3, false);
+	f >> L.enter_from;
 	if(LOAD_VERSION >= V_0_3)
-		f >> light_angle;
+		f >> L.light_angle;
 	else
-		light_angle = Random(PI * 2);
+		L.light_angle = Random(PI * 2);
 
 	// set entities pointers
 	LoadingStep(txLoadingData);
@@ -946,6 +766,9 @@ void Game::LoadGame(GameReader& f)
 		f >> no_sound;
 	}
 	f >> noai;
+#ifdef _DEBUG
+	noai = true;
+#endif
 	f >> dont_wander;
 	if(LOAD_VERSION >= V_0_4)
 	{
@@ -990,7 +813,7 @@ void Game::LoadGame(GameReader& f)
 	pc->dialog_ctx = &dialog_context;
 	dialog_context.dialog_mode = false;
 	dialog_context.is_local = true;
-	f >> dungeon_level;
+	f >> L.dungeon_level;
 	if(LOAD_VERSION >= V_0_2_20)
 	{
 		f >> portal_anim;
@@ -1009,15 +832,13 @@ void Game::LoadGame(GameReader& f)
 	}
 
 	// game messages & speech bubbles
-	game_gui->game_messages->Load(f);
-	game_gui->Load(f);
+	gui->messages->Load(f);
+	gui->game_gui->Load(f);
 
 	// rumors/notes
-	game_gui->journal->Load(f);
+	gui->journal->Load(f);
 
-	// arena
-	arena_tryb = Arena_Brak;
-
+	check_id = (byte)W.GetLocations().size();
 	f >> read_id;
 	if(read_id != check_id)
 		throw "Error reading data before team.";
@@ -1025,69 +846,16 @@ void Game::LoadGame(GameReader& f)
 
 	// wczytaj dru¿ynê
 	Team.Load(f);
-	CheckCredit(false, true);
 
 	// load quests
 	LoadingStep(txLoadingQuests);
-	QuestManager& quest_manager = QuestManager::Get();
+	QuestManager& quest_manager = QM;
 	quest_manager.Load(f);
 
-	quest_sawmill = (Quest_Sawmill*)quest_manager.FindQuestById(Q_SAWMILL);
-	quest_mine = (Quest_Mine*)quest_manager.FindQuestById(Q_MINE);
-	quest_bandits = (Quest_Bandits*)quest_manager.FindQuestById(Q_BANDITS);
-	quest_goblins = (Quest_Goblins*)quest_manager.FindQuestById(Q_GOBLINS);
-	quest_mages = (Quest_Mages*)quest_manager.FindQuestById(Q_MAGES);
-	quest_mages2 = (Quest_Mages2*)quest_manager.FindQuestById(Q_MAGES2);
-	quest_orcs = (Quest_Orcs*)quest_manager.FindQuestById(Q_ORCS);
-	quest_orcs2 = (Quest_Orcs2*)quest_manager.FindQuestById(Q_ORCS2);
-	quest_evil = (Quest_Evil*)quest_manager.FindQuestById(Q_EVIL);
-	quest_crazies = (Quest_Crazies*)quest_manager.FindQuestById(Q_CRAZIES);
+	SM.Load(f);
 
-	if(!quest_mages2)
-	{
-		quest_mages2 = new Quest_Mages2;
-		quest_mages2->refid = quest_manager.quest_counter++;
-		quest_mages2->Start();
-		quest_manager.unaccepted_quests.push_back(quest_mages2);
-	}
-
-	for(vector<QuestItemRequest*>::iterator it = quest_manager.quest_item_requests.begin(), end = quest_manager.quest_item_requests.end(); it != end; ++it)
-	{
-		QuestItemRequest* qir = *it;
-		*qir->item = quest_manager.FindQuestItem(qir->name.c_str(), qir->quest_refid);
-		if(qir->items)
-		{
-			bool ok = true;
-			for(vector<ItemSlot>::iterator it2 = qir->items->begin(), end2 = qir->items->end(); it2 != end2; ++it2)
-			{
-				if(it2->item == QUEST_ITEM_PLACEHOLDER)
-				{
-					ok = false;
-					break;
-				}
-			}
-			if(ok && (LOAD_VERSION < V_0_7_1 || content::require_update))
-			{
-				SortItems(*qir->items);
-				if(qir->unit)
-					qir->unit->RecalculateWeight();
-			}
-		}
-		delete *it;
-	}
-	quest_manager.quest_item_requests.clear();
-	LoadQuestsData(f);
-	script_mgr->Load(f);
-
-	// news
-	f >> count;
-	news.resize(count);
-	for(News*& n : news)
-	{
-		n = new News;
-		f >> n->add_time;
-		f.ReadString2(n->text);
-	}
+	if(LOAD_VERSION < V_DEV)
+		W.LoadOld(f, loading, 2, false);
 
 	f >> read_id;
 	if(read_id != check_id)
@@ -1098,60 +866,22 @@ void Game::LoadGame(GameReader& f)
 
 	if(game_state2 == GS_LEVEL)
 	{
-		open_location = current_location;
+		L.is_open = true;
 
-		if(location->outside)
-		{
-			OutsideLocation* outside = (OutsideLocation*)location;
-
-			SetOutsideParams();
-			SetTerrainTextures();
-
-			ApplyContext(location, local_ctx);
-			ApplyTiles(outside->h, outside->tiles);
-
-			RespawnObjectColliders(false);
-			SpawnTerrainCollider();
-
-			if(city_ctx)
-			{
-				RespawnBuildingPhysics();
-				SpawnCityPhysics();
-				CreateCityMinimap();
-			}
-			else
-			{
-				SpawnOutsideBariers();
-				CreateForestMinimap();
-			}
-
-			InitQuadTree();
-		}
-		else
-		{
-			InsideLocation* inside = (InsideLocation*)location;
-			inside->SetActiveLevel(dungeon_level);
-			BaseLocation& base = g_base_locations[inside->target];
-
-			ApplyContext(inside, local_ctx);
-			SetDungeonParamsAndTextures(base);
-
-			RespawnObjectColliders(false);
-			SpawnDungeonColliders();
-			CreateDungeonMinimap();
-		}
+		LocationGenerator* loc_gen = loc_gen_factory->Get(L.location);
+		loc_gen->OnLoad();
 
 		// particles
-		local_ctx.pes->resize(f.Read<uint>());
-		for(ParticleEmitter*& pe : *local_ctx.pes)
+		L.local_ctx.pes->resize(f.Read<uint>());
+		for(ParticleEmitter*& pe : *L.local_ctx.pes)
 		{
 			pe = new ParticleEmitter;
 			ParticleEmitter::AddRefid(pe);
 			pe->Load(f);
 		}
 
-		local_ctx.tpes->resize(f.Read<uint>());
-		for(TrailParticleEmitter* tpe : *local_ctx.tpes)
+		L.local_ctx.tpes->resize(f.Read<uint>());
+		for(TrailParticleEmitter* tpe : *L.local_ctx.tpes)
 		{
 			tpe = new TrailParticleEmitter;
 			TrailParticleEmitter::AddRefid(tpe);
@@ -1159,29 +889,29 @@ void Game::LoadGame(GameReader& f)
 		}
 
 		// explosions
-		local_ctx.explos->resize(f.Read<uint>());
-		for(Explo*& explo : *local_ctx.explos)
+		L.local_ctx.explos->resize(f.Read<uint>());
+		for(Explo*& explo : *L.local_ctx.explos)
 		{
 			explo = new Explo;
 			explo->Load(f);
 		}
 
 		// electric effects
-		local_ctx.electros->resize(f.Read<uint>());
-		for(Electro*& electro : *local_ctx.electros)
+		L.local_ctx.electros->resize(f.Read<uint>());
+		for(Electro*& electro : *L.local_ctx.electros)
 		{
 			electro = new Electro;
 			electro->Load(f);
 		}
 
 		// drain effects
-		local_ctx.drains->resize(f.Read<uint>());
-		for(Drain& drain : *local_ctx.drains)
+		L.local_ctx.drains->resize(f.Read<uint>());
+		for(Drain& drain : *L.local_ctx.drains)
 			drain.Load(f);
 
 		// bullets
-		local_ctx.bullets->resize(f.Read<uint>());
-		for(Bullet& bullet : *local_ctx.bullets)
+		L.local_ctx.bullets->resize(f.Read<uint>());
+		for(Bullet& bullet : *L.local_ctx.bullets)
 			bullet.Load(f);
 
 		f >> read_id;
@@ -1189,19 +919,15 @@ void Game::LoadGame(GameReader& f)
 			throw "Failed to read level data.";
 		++check_id;
 
-		local_ctx_valid = true;
 		RemoveUnusedAiAndCheck();
 	}
 	else
-	{
-		open_location = -1;
-		local_ctx_valid = false;
-	}
+		L.is_open = false;
 
 	// gui
 	if(LOAD_VERSION <= V_0_3)
-		LoadGui(f);
-	game_gui->PositionPanels();
+		gui->LoadOldGui(f);
+	gui->game_gui->PositionPanels();
 
 	// cele ai
 	if(!ai_bow_targets.empty())
@@ -1210,7 +936,7 @@ void Game::LoadGame(GameReader& f)
 		for(vector<AIController*>::iterator it = ai_bow_targets.begin(), end = ai_bow_targets.end(); it != end; ++it)
 		{
 			AIController& ai = **it;
-			LevelContext& ctx = Game::Get().GetContext(*ai.unit);
+			LevelContext& ctx = L.GetContext(*ai.unit);
 			Object* ptr = nullptr;
 			float dist, best_dist;
 			for(vector<Object*>::iterator it = ctx.objects->begin(), end = ctx.objects->end(); it != end; ++it)
@@ -1236,50 +962,7 @@ void Game::LoadGame(GameReader& f)
 	{
 		AIController& ai = **it;
 		int refid = (int)ai.cast_target;
-		if(refid == -1)
-		{
-			// zapis z wersji < 2, szukaj w pobli¿u punktu
-			LevelContext& ctx = GetContext(*ai.unit);
-			Spell* spell = ai.unit->data->spells->spell[ai.unit->attack_id];
-			float dist2, best_dist2 = spell->range;
-			ai.cast_target = nullptr;
-
-			if(IS_SET(spell->flags, Spell::Raise))
-			{
-				// czar o¿ywiania
-				for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
-				{
-					if(!(*it2)->to_remove && (*it2)->live_state == Unit::DEAD && !IsEnemy(*ai.unit, **it2) && IS_SET((*it2)->data->flags, F_UNDEAD) &&
-						(dist2 = Vec3::Distance(ai.target_last_pos, (*it2)->pos)) < best_dist2 && CanSee(*ai.unit, **it2))
-					{
-						best_dist2 = dist2;
-						ai.cast_target = *it2;
-					}
-				}
-			}
-			else
-			{
-				// czar leczenia
-				for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
-				{
-					if(!(*it2)->to_remove && !IsEnemy(*ai.unit, **it2) && !IS_SET((*it2)->data->flags, F_UNDEAD) && (*it2)->hpmax - (*it2)->hp > 100.f &&
-						(dist2 = Vec3::Distance(ai.target_last_pos, (*it2)->pos)) < best_dist2 && CanSee(*ai.unit, **it2))
-					{
-						best_dist2 = dist2;
-						ai.cast_target = *it2;
-					}
-				}
-			}
-
-			if(!ai.cast_target)
-			{
-				ai.state = AIController::Idle;
-				ai.idle_action = AIController::Idle_None;
-				ai.timer = Random(1.f, 2.f);
-			}
-		}
-		else
-			ai.cast_target = Unit::GetByRefid(refid);
+		ai.cast_target = Unit::GetByRefid(refid);
 	}
 
 	// questy zwi¹zane z lokacjami
@@ -1302,36 +985,30 @@ void Game::LoadGame(GameReader& f)
 		assert((*it)->handler);
 	}
 
-	if(tournament_generated)
-		tournament_master = FindUnitByIdLocal("arena_master");
-	else
-		tournament_master = nullptr;
-
 	minimap_reveal.clear();
 	dialog_context.dialog_mode = false;
 	if(location_event_handler_quest_refid != -1)
-		location_event_handler = dynamic_cast<LocationEventHandler*>(quest_manager.FindQuest(location_event_handler_quest_refid));
+		L.event_handler = dynamic_cast<LocationEventHandler*>(quest_manager.FindQuest(location_event_handler_quest_refid));
 	else
-		location_event_handler = nullptr;
-	team_shares.clear();
-	team_share_id = -1;
-	fallback_co = FALLBACK::NONE;
+		L.event_handler = nullptr;
+	Team.ClearOnNewGameOrLoad();
+	fallback_type = FALLBACK::NONE;
 	fallback_t = -0.5f;
-	inventory_mode = I_NONE;
+	gui->inventory->mode = I_NONE;
 	pc_data.before_player = BP_NONE;
 	pc_data.selected_unit = nullptr;
 	pc_data.selected_target = nullptr;
 	dialog_context.pc = pc;
 	dialog_context.dialog_mode = false;
-	game_gui->Setup();
+	gui->game_gui->Setup();
 
 	if(mp_load)
 	{
-		f >> server_name;
-		f >> server_pswd;
-		f >> players;
-		f >> max_players;
-		f >> last_id;
+		f >> N.server_name;
+		f >> N.password;
+		f >> N.active_players;
+		f >> N.max_players;
+		f >> N.last_id;
 		f >> count;
 		DeleteElements(old_players);
 		old_players.resize(count);
@@ -1349,8 +1026,8 @@ void Game::LoadGame(GameReader& f)
 		f >> Trap::netid_counter;
 		f >> Door::netid_counter;
 		f >> Electro::netid_counter;
-		f >> mp_use_interp;
-		f >> mp_interp;
+		f >> N.mp_use_interp;
+		f >> N.mp_interp;
 
 		f >> read_id;
 		if(read_id != check_id)
@@ -1369,38 +1046,6 @@ void Game::LoadGame(GameReader& f)
 			throw "Missing EOS.";
 	}
 
-	if(enter_from == ENTER_FROM_UNKNOWN && game_state2 == GS_LEVEL)
-	{
-		// zgadnij sk¹d przysz³a dru¿yna
-		if(current_location == secret_where2)
-			enter_from = ENTER_FROM_PORTAL;
-		else if(location->type == L_DUNGEON)
-		{
-			InsideLocation* inside = (InsideLocation*)location;
-			if(inside->from_portal)
-				enter_from = ENTER_FROM_PORTAL;
-			else
-			{
-				if(dungeon_level == 0)
-					enter_from = ENTER_FROM_OUTSIDE;
-				else
-					enter_from = ENTER_FROM_UP_LEVEL;
-			}
-		}
-		else if(location->type == L_CRYPT)
-		{
-			if(dungeon_level == 0)
-				enter_from = ENTER_FROM_OUTSIDE;
-			else
-				enter_from = ENTER_FROM_UP_LEVEL;
-		}
-		else
-			enter_from = ENTER_FROM_OUTSIDE;
-	}
-
-	if(location->outside)
-		CalculateQuadtree();
-
 	// load music
 	LoadingStep(txLoadMusic);
 	if(!sound_mgr->IsMusicDisabled())
@@ -1411,10 +1056,10 @@ void Game::LoadGame(GameReader& f)
 	}
 
 	LoadResources(txEndOfLoading, game_state2 == GS_WORLDMAP);
-	load_screen->visible = false;
+	gui->load_screen->visible = false;
 
 #ifdef _DEBUG
-	ValidateTeamItems();
+	Team.ValidateTeamItems();
 #endif
 
 	Info("Game loaded.");
@@ -1428,10 +1073,7 @@ void Game::LoadGame(GameReader& f)
 	if(game_state2 == GS_LEVEL)
 		SetMusic();
 	else
-	{
-		picked_location = -1;
 		SetMusic(MusicType::Travel);
-	}
 	game_state = game_state2;
 	clear_color = clear_color2;
 }
@@ -1456,7 +1098,7 @@ void Game::LoadStock(FileReader& f, vector<ItemSlot>& cnt)
 		{
 			int quest_refid;
 			f >> quest_refid;
-			QuestManager::Get().AddQuestItemRequest(&slot.item, item_id.c_str(), quest_refid, &cnt);
+			QM.AddQuestItemRequest(&slot.item, item_id.c_str(), quest_refid, &cnt);
 			slot.item = QUEST_ITEM_PLACEHOLDER;
 			can_sort = false;
 		}
@@ -1464,54 +1106,6 @@ void Game::LoadStock(FileReader& f, vector<ItemSlot>& cnt)
 
 	if(can_sort && (LOAD_VERSION < V_0_2_20 || content::require_update))
 		SortItems(cnt);
-}
-
-//=================================================================================================
-void Game::LoadQuestsData(GameReader& f)
-{
-	// load quests old data (now are stored inside quest)
-	if(LOAD_VERSION < V_0_4)
-	{
-		quest_sawmill->LoadOld(f);
-		quest_mine->LoadOld(f);
-		quest_bandits->LoadOld(f);
-		quest_mages2->LoadOld(f);
-		quest_orcs2->LoadOld(f);
-		quest_goblins->LoadOld(f);
-		quest_evil->LoadOld(f);
-		quest_crazies->LoadOld(f);
-	}
-
-	// secret
-	f >> secret_state;
-	f >> GetSecretNote()->desc;
-	f >> secret_where;
-	f >> secret_where2;
-	if(secret_state > SECRET_NONE && !BaseObject::Get("tomashu_dom")->mesh)
-		throw "Save uses 'data.pak' file which is missing!";
-
-	// drinking contest
-	f >> contest_where;
-	f >> contest_state;
-	f >> contest_generated;
-	f >> contest_winner;
-	if(contest_state >= CONTEST_STARTING)
-	{
-		f >> contest_state2;
-		f >> contest_time;
-		contest_units.resize(f.Read<uint>());
-		for(Unit*& unit : contest_units)
-			f >> unit;
-	}
-
-	// arena tournament
-	f >> tournament_year;
-	f >> tournament_city;
-	f >> tournament_city_year;
-	f >> tournament_winner;
-	f >> tournament_generated;
-	tournament_state = TOURNAMENT_NOT_DONE;
-	tournament_units.clear();
 }
 
 //=================================================================================================
@@ -1529,7 +1123,7 @@ void Game::Quicksave(bool from_console)
 	if(SaveGameSlot(MAX_SAVE_SLOTS, txQuickSave))
 	{
 		if(!from_console)
-			AddGameMsg3(GMS_GAME_SAVED);
+			gui->messages->AddGameMsg3(GMS_GAME_SAVED);
 	}
 }
 
@@ -1580,7 +1174,7 @@ void Game::RemoveUnusedAiAndCheck()
 	for(vector<AIController*>::iterator it = ais.begin(), end = ais.end(); it != end; ++it)
 	{
 		bool ok = false;
-		for(vector<Unit*>::iterator it2 = local_ctx.units->begin(), end2 = local_ctx.units->end(); it2 != end2; ++it2)
+		for(vector<Unit*>::iterator it2 = L.local_ctx.units->begin(), end2 = L.local_ctx.units->end(); it2 != end2; ++it2)
 		{
 			if((*it2)->ai == *it)
 			{
@@ -1588,9 +1182,9 @@ void Game::RemoveUnusedAiAndCheck()
 				break;
 			}
 		}
-		if(!ok && city_ctx)
+		if(!ok && L.city_ctx)
 		{
-			for(vector<InsideBuilding*>::iterator it2 = city_ctx->inside_buildings.begin(), end2 = city_ctx->inside_buildings.end(); it2 != end2 && !ok; ++it2)
+			for(vector<InsideBuilding*>::iterator it2 = L.city_ctx->inside_buildings.begin(), end2 = L.city_ctx->inside_buildings.end(); it2 != end2 && !ok; ++it2)
 			{
 				for(vector<Unit*>::iterator it3 = (*it2)->units.begin(), end3 = (*it2)->units.end(); it3 != end3; ++it3)
 				{
@@ -1616,20 +1210,20 @@ void Game::RemoveUnusedAiAndCheck()
 		cstring s = Format("Removed unused ais: %u.", prev_size - ais.size());
 		Warn(s);
 #ifdef _DEBUG
-		AddGameMsg(s, 10.f);
+		gui->messages->AddGameMsg(s, 10.f);
 #endif
 	}
 
 #ifdef _DEBUG
 	int err_count = 0;
-	CheckUnitsAi(local_ctx, err_count);
-	if(city_ctx)
+	CheckUnitsAi(L.local_ctx, err_count);
+	if(L.city_ctx)
 	{
-		for(vector<InsideBuilding*>::iterator it = city_ctx->inside_buildings.begin(), end = city_ctx->inside_buildings.end(); it != end; ++it)
+		for(vector<InsideBuilding*>::iterator it = L.city_ctx->inside_buildings.begin(), end = L.city_ctx->inside_buildings.end(); it != end; ++it)
 			CheckUnitsAi((*it)->ctx, err_count);
 	}
 	if(err_count)
-		AddGameMsg(Format("CheckUnitsAi: %d errors!", err_count), 10.f);
+		gui->messages->AddGameMsg(Format("CheckUnitsAi: %d errors!", err_count), 10.f);
 #endif
 }
 

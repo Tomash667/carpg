@@ -21,6 +21,12 @@ public:
 		unit = Unit::GetByRefid(refid);
 	}
 
+	void operator >> (SmartPtr<Unit>& unit)
+	{
+		int refid = Read<int>();
+		unit = Unit::GetByRefid(refid);
+	}
+
 	void operator >> (HumanData& hd)
 	{
 		hd.Load(*this);
@@ -64,6 +70,12 @@ public:
 	using FileWriter::operator <<;
 
 	void operator << (Unit* u)
+	{
+		int refid = (u ? u->refid : -1);
+		FileWriter::operator << (refid);
+	}
+
+	void operator << (const SmartPtr<Unit>& u)
 	{
 		int refid = (u ? u->refid : -1);
 		FileWriter::operator << (refid);

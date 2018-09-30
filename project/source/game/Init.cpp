@@ -5,7 +5,6 @@
 #include "Terrain.h"
 #include "Content.h"
 #include "LoadScreen.h"
-#include "CreateCharacterPanel.h"
 #include "MainMenu.h"
 #include "ServerPanel.h"
 #include "PickServerPanel.h"
@@ -17,7 +16,17 @@
 #include "SoundManager.h"
 #include "ScriptManager.h"
 #include "SaveState.h"
+#include "World.h"
 #include "DirectX.h"
+#include "LocationGeneratorFactory.h"
+#include "Pathfinding.h"
+#include "Level.h"
+#include "SuperShader.h"
+#include "Arena.h"
+#include "ResourceManager.h"
+#include "Building.h"
+#include "GlobalGui.h"
+#include "DebugDrawer.h"
 
 extern void HumanPredraw(void* ptr, Matrix* mat, int n);
 extern const int ITEM_IMAGE_SIZE;
@@ -29,6 +38,7 @@ extern string g_system_dir;
 bool Game::InitGame()
 {
 	Info("Game: Initializing game.");
+	game_state = GS_LOAD_MENU;
 
 	try
 	{
@@ -62,16 +72,32 @@ void Game::PreconfigureGame()
 	Info("Game: Preconfiguring game.");
 
 	UnlockCursor(false);
+	cam_base = &cam;
 
 	// set animesh callback
 	MeshInstance::Predraw = HumanPredraw;
 
-	PreinitGui();
+	// game components
+	pathfinding = new Pathfinding;
+	arena = new Arena;
+	loc_gen_factory = new LocationGeneratorFactory;
+	gui = new GlobalGui;
+	components.push_back(&W);
+	components.push_back(pathfinding);
+	components.push_back(&QM);
+	components.push_back(arena);
+	components.push_back(loc_gen_factory);
+	components.push_back(gui);
+	components.push_back(&L);
+	components.push_back(&SM);
+	for(GameComponent* component : components)
+		component->Prepare();
+
 	CreateVertexDeclarations();
 	PreloadLanguage();
 	PreloadData();
 	CreatePlaceholderResources();
-	ResourceManager::Get().SetLoadScreen(load_screen);
+	ResourceManager::Get().SetLoadScreen(gui->load_screen);
 }
 
 //=================================================================================================
@@ -133,11 +159,7 @@ void Game::PreloadData()
 	ResourceManager::Get().AddDir("data/preload");
 
 	// loadscreen textures
-	load_screen->LoadData();
-
-	// gui shader
-	eGui = CompileShader("gui.fx");
-	GUI.SetShader(eGui);
+	gui->load_screen->LoadData();
 
 	// intro music
 	if(!sound_mgr->IsMusicDisabled())
@@ -156,15 +178,16 @@ void Game::PreloadData()
 void Game::LoadSystem()
 {
 	Info("Game: Loading system.");
-	load_screen->Setup(0.f, 0.33f, 14, txCreatingListOfFiles);
+	gui->load_screen->Setup(0.f, 0.33f, 14, txCreatingListOfFiles);
 
+	for(GameComponent* component : components)
+		component->InitOnce();
 	AddFilesystem();
 	LoadDatafiles();
 	LoadLanguageFiles();
-	load_screen->Tick(txLoadingShaders);
+	gui->load_screen->Tick(txLoadingShaders);
 	LoadShaders();
 	ConfigureGame();
-	InitScripts();
 }
 
 //=================================================================================================
@@ -195,31 +218,31 @@ void Game::LoadDatafiles()
 		switch(id)
 		{
 		case content::Id::Items:
-			load_screen->Tick(txLoadingItems);
+			gui->load_screen->Tick(txLoadingItems);
 			break;
 		case content::Id::Objects:
-			load_screen->Tick(txLoadingObjects);
+			gui->load_screen->Tick(txLoadingObjects);
 			break;
 		case content::Id::Spells:
-			load_screen->Tick(txLoadingSpells);
+			gui->load_screen->Tick(txLoadingSpells);
 			break;
 		case content::Id::Dialogs:
-			load_screen->Tick(txLoadingDialogs);
+			gui->load_screen->Tick(txLoadingDialogs);
 			break;
 		case content::Id::Units:
-			load_screen->Tick(txLoadingUnits);
+			gui->load_screen->Tick(txLoadingUnits);
 			break;
 		case content::Id::Buildings:
-			load_screen->Tick(txLoadingBuildings);
+			gui->load_screen->Tick(txLoadingBuildings);
 			break;
 		case content::Id::Musics:
-			load_screen->Tick(txLoadingMusics);
+			gui->load_screen->Tick(txLoadingMusics);
 			break;
 		}
 	});
 
 	// required
-	load_screen->Tick(txLoadingRequires);
+	gui->load_screen->Tick(txLoadingRequires);
 	LoadRequiredStats(load_errors);
 }
 
@@ -229,20 +252,20 @@ void Game::LoadDatafiles()
 void Game::LoadLanguageFiles()
 {
 	Info("Game: Loading language files.");
-	load_screen->Tick(txLoadingLanguageFiles);
+	gui->load_screen->Tick(txLoadingLanguageFiles);
 
 	Language::LoadFile("menu.txt");
 	Language::LoadFile("stats.txt");
 	Language::LoadLanguageFiles();
 	LoadDialogTexts();
 
-	GUI.SetText();
 	SetGameCommonText();
 	SetItemStatsText();
 	SetLocationNames();
 	SetHeroNames();
 	SetGameText();
 	SetStatsText();
+	N.LoadLanguage();
 
 	txLoadGuiTextures = Str("loadGuiTextures");
 	txLoadParticles = Str("loadParticles");
@@ -254,6 +277,9 @@ void Game::LoadLanguageFiles()
 	txGenerateWorld = Str("generateWorld");
 
 	txHaveErrors = Str("haveErrors");
+
+	for(GameComponent* component : components)
+		component->LoadLanguage();
 }
 
 //=================================================================================================
@@ -262,17 +288,16 @@ void Game::LoadLanguageFiles()
 void Game::ConfigureGame()
 {
 	Info("Game: Configuring game.");
-	load_screen->Tick(txConfiguringGame);
+	gui->load_screen->Tick(txConfiguringGame);
 
 	InitScene();
-	InitSuperShader();
+	super_shader->InitOnce();
 	AddCommands();
-	InitGui();
 	ResetGameKeys();
 	LoadGameKeys();
 	SetMeshSpecular();
 	LoadSaveSlots();
-	SetRoomPointers();
+	BaseLocation::SetRoomPointers();
 
 	for(int i = 0; i < SG_MAX; ++i)
 	{
@@ -293,15 +318,6 @@ void Game::ConfigureGame()
 }
 
 //=================================================================================================
-// Init game scripts
-//=================================================================================================
-void Game::InitScripts()
-{
-	script_mgr = new ScriptManager;
-	script_mgr->Init();
-}
-
-//=================================================================================================
 // Load game data.
 //=================================================================================================
 void Game::LoadData()
@@ -311,6 +327,8 @@ void Game::LoadData()
 
 	res_mgr.PrepareLoadScreen(0.33f);
 	AddLoadTasks();
+	for(GameComponent* component : components)
+		component->LoadData();
 	res_mgr.StartLoadScreen();
 }
 
@@ -322,26 +340,13 @@ void Game::PostconfigureGame()
 	Info("Game: Postconfiguring game.");
 
 	LockCursor();
-	CreateCollisionShapes();
-	create_character->Init();
-	QuestManager::Get().Init();
+	for(GameComponent* component : components)
+		component->PostInit();
 
-	// load gui textures that require instant loading
-	GUI.GetLayout()->LoadDefault();
-
-	// init terrain
-	terrain = new Terrain;
-	TerrainOptions terrain_options;
-	terrain_options.n_parts = 8;
-	terrain_options.tex_size = 256;
-	terrain_options.tile_size = 2.f;
-	terrain_options.tiles_per_part = 16;
-	terrain->Init(device, terrain_options);
-	terrain->Build();
-	terrain->RemoveHeightMap(true);
+	GetDebugDrawer()->SetHandler(delegate<void(DebugDrawer*)>(this, &Game::OnDebugDraw));
 
 	// get pointer to gold item
-	gold_item_ptr = Item::Get("gold");
+	Item::gold = Item::Get("gold");
 
 	// copy first dungeon texture to second
 	tFloor[1] = tFloorBase;
@@ -397,8 +402,8 @@ void Game::PostconfigureGame()
 	clear_color = Color::Black;
 	game_state = GS_MAIN_MENU;
 	game_state = GS_MAIN_MENU;
-	load_screen->visible = false;
-	main_menu->visible = true;
+	gui->load_screen->visible = false;
+	gui->main_menu->visible = true;
 	if(music_type != MusicType::Intro)
 		SetMusic(MusicType::Title);
 
@@ -426,7 +431,7 @@ void Game::StartGameMode()
 			Warn("Quickstart: Can't create server, no player nick.");
 			break;
 		}
-		if(server_name.empty())
+		if(N.server_name.empty())
 		{
 			Warn("Quickstart: Can't create server, no server name.");
 			break;
@@ -438,7 +443,7 @@ void Game::StartGameMode()
 			{
 				mp_load = true;
 				LoadGameSlot(quickstart_slot);
-				autoready = true;
+				gui->server->autoready = true;
 			}
 			catch(const SaveException& ex)
 			{
@@ -455,7 +460,7 @@ void Game::StartGameMode()
 
 		try
 		{
-			InitServer();
+			N.InitServer();
 		}
 		catch(cstring err)
 		{
@@ -463,19 +468,14 @@ void Game::StartGameMode()
 			break;
 		}
 
-		server_panel->Show();
 		Net_OnNewGameServer();
-		UpdateServerInfo();
-
-		if(change_title_a)
-			ChangeTitle();
 		break;
 	case QUICKSTART_JOIN_LAN:
 		if(!player_name.empty())
 		{
-			autoready = true;
+			gui->server->autoready = true;
 			pick_autojoin = true;
-			pick_server_panel->Show();
+			gui->pick_server->Show();
 		}
 		else
 			Warn("Quickstart: Can't join server, no player nick.");
@@ -485,7 +485,7 @@ void Game::StartGameMode()
 		{
 			if(!server_ip.empty())
 			{
-				autoready = true;
+				gui->server->autoready = true;
 				QuickJoinIp();
 			}
 			else
@@ -520,7 +520,7 @@ void Game::StartGameMode()
 //=================================================================================================
 void Game::AddLoadTasks()
 {
-	load_screen->Tick(txPreloadAssets);
+	gui->load_screen->Tick(txPreloadAssets);
 
 	auto& res_mgr = ResourceManager::Get();
 	auto& tex_mgr = ResourceManager::Get<Texture>();
@@ -532,7 +532,6 @@ void Game::AddLoadTasks()
 
 	// gui textures
 	res_mgr.AddTaskCategory(txLoadGuiTextures);
-	LoadGuiData();
 	tex_mgr.AddLoadTask("emerytura.jpg", tEmerytura);
 	tex_mgr.AddLoadTask("equipped.png", tEquipped);
 	tex_mgr.AddLoadTask("czern.bmp", tCzern);
@@ -577,9 +576,6 @@ void Game::AddLoadTasks()
 	tKrewSlad[BLOOD_ROCK] = nullptr;
 	tKrewSlad[BLOOD_IRON] = nullptr;
 	tIskra = tex_mgr.AddLoadTask("iskra.png");
-	tWoda = tex_mgr.AddLoadTask("water.png");
-	tFlare = tex_mgr.AddLoadTask("flare.png");
-	tFlare2 = tex_mgr.AddLoadTask("flare2.png");
 	tSpawn = tex_mgr.AddLoadTask("spawn_fog.png");
 	tex_mgr.AddLoadTask("lighting_line.png", tLightingLine);
 
@@ -746,18 +742,6 @@ void Game::AddLoadTasks()
 		else
 			ud.mesh = aHumanBase;
 
-		// sounds
-		SoundPack& sounds = *ud.sounds;
-		if(!nosound && !sounds.inited)
-		{
-			sounds.inited = true;
-			for(int i = 0; i < SOUND_MAX; ++i)
-			{
-				if(!sounds.filename[i].empty())
-					sounds.sound[i] = sound_mgr.Get(sounds.filename[i]);
-			}
-		}
-
 		// textures
 		if(ud.tex && !ud.tex->inited)
 		{
@@ -795,10 +779,6 @@ void Game::AddLoadTasks()
 		sound_mgr.AddLoadTask("cloth-heavy.wav", sItem[5]); // shield
 		sound_mgr.AddLoadTask("sword-unsheathe.wav", sItem[6]); // weapon
 		sound_mgr.AddLoadTask("interface3.wav", sItem[7]);
-		sound_mgr.AddLoadTask("hello-3.mp3", sTalk[0]);
-		sound_mgr.AddLoadTask("hello-4.mp3", sTalk[1]);
-		sound_mgr.AddLoadTask("hmph.wav", sTalk[2]);
-		sound_mgr.AddLoadTask("huh-2.mp3", sTalk[3]);
 		sound_mgr.AddLoadTask("chest_open.mp3", sChestOpen);
 		sound_mgr.AddLoadTask("chest_close.mp3", sChestClose);
 		sound_mgr.AddLoadTask("door_budge.mp3", sDoorBudge);
@@ -818,10 +798,6 @@ void Game::AddLoadTasks()
 		sound_mgr.AddLoadTask("arena_porazka.mp3", sArenaLost);
 		sound_mgr.AddLoadTask("unlock.mp3", sUnlock);
 		sound_mgr.AddLoadTask("TouchofDeath.ogg", sEvil);
-		sound_mgr.AddLoadTask("shade8.wav", sXarTalk);
-		sound_mgr.AddLoadTask("ogre1.wav", sOrcTalk);
-		sound_mgr.AddLoadTask("goblin-7.wav", sGoblinTalk);
-		sound_mgr.AddLoadTask("golem_alert.mp3", sGolemTalk);
 		sound_mgr.AddLoadTask("eat.mp3", sEat);
 		sound_mgr.AddLoadTask("whooshy-puff.wav", sSummon);
 	}

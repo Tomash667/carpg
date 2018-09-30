@@ -25,8 +25,7 @@ enum SAVE_VERSION
 
 	// use this versions in development on different branches
 	V_MAIN = V_NEXT, // main bugfix branch
-	V_DEV = V_NEXT, // development branch
-	V_FEATURE = V_NEXT // feature branch
+	V_DEV = V_NEXT // development/feature branch
 };
 
 //-----------------------------------------------------------------------------

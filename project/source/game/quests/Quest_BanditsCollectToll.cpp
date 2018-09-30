@@ -7,17 +7,17 @@
 #include "QuestManager.h"
 #include "Encounter.h"
 #include "City.h"
-#include "GameGui.h"
 #include "SoundManager.h"
 #include "GameFile.h"
+#include "World.h"
 
 //=================================================================================================
 void Quest_BanditsCollectToll::Start()
 {
 	quest_id = Q_BANDITS_COLLECT_TOLL;
 	type = QuestType::Captain;
-	start_loc = game->current_location;
-	other_loc = game->GetRandomSettlement(start_loc);
+	start_loc = W.GetCurrentLocationIndex();
+	other_loc = W.GetRandomSettlementIndex(start_loc);
 }
 
 //=================================================================================================
@@ -46,36 +46,25 @@ void Quest_BanditsCollectToll::SetProgress(int prog2)
 	case Progress::Started:
 		// quest accepted
 		{
-			start_time = game->worldtime;
-			state = Quest::Started;
-			name = game->txQuest[51];
+			OnStart(game->txQuest[51]);
 
-			Location& sl = *game->locations[start_loc];
-			Location& ol = *game->locations[other_loc];
+			Location& sl = GetStartLocation();
+			Location& ol = *W.GetLocation(other_loc);
 
-			Encounter* e = game->AddEncounter(enc);
+			Encounter* e = W.AddEncounter(enc);
 			e->dialog = FindDialog("q_bandits_collect_toll_talk");
 			e->dont_attack = true;
-			e->grupa = SG_BANDYCI;
+			e->group = SG_BANDITS;
 			e->pos = (sl.pos + ol.pos) / 2;
 			e->quest = this;
-			e->szansa = 50;
+			e->chance = 50;
 			e->text = game->txQuest[52];
 			e->timed = true;
-			e->zasieg = 64;
+			e->range = 64;
 			e->location_event_handler = this;
 
-			quest_index = quest_manager.quests.size();
-			quest_manager.quests.push_back(this);
-			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
-
-			msgs.push_back(Format(game->txQuest[29], sl.name.c_str(), game->day + 1, game->month + 1, game->year));
+			msgs.push_back(Format(game->txQuest[29], sl.name.c_str(), W.GetDate()));
 			msgs.push_back(Format(game->txQuest[53], sl.name.c_str(), ol.name.c_str(), GetLocationDirName(sl.pos, ol.pos)));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-
-			if(Net::IsOnline())
-				game->Net_AddQuest(refid);
 		}
 		break;
 	case Progress::Timout:
@@ -83,40 +72,25 @@ void Quest_BanditsCollectToll::SetProgress(int prog2)
 		{
 			state = Quest::Failed;
 			RemoveEncounter();
-			((City*)game->locations[start_loc])->quest_captain = CityQuestState::Failed;
-			msgs.push_back(game->txQuest[54]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
+			((City&)GetStartLocation()).quest_captain = CityQuestState::Failed;
+			OnUpdate(game->txQuest[54]);
 		}
 		break;
 	case Progress::KilledBandits:
 		// player killed bandits
 		{
-			msgs.push_back(game->txQuest[55]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+			OnUpdate(game->txQuest[55]);
 			RemoveEncounter();
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
 		}
 		break;
 	case Progress::Finished:
 		// player talked with captain after killing bandits, end of quest
 		{
 			state = Quest::Completed;
-			msgs.push_back(game->txQuest[56]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+			OnUpdate(game->txQuest[56]);
 			game->AddReward(400);
-			((City*)game->locations[start_loc])->quest_captain = CityQuestState::None;
-			game->AddNews(game->txQuest[278]);
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
+			((City&)GetStartLocation()).quest_captain = CityQuestState::None;
+			W.AddNews(game->txQuest[278]);
 		}
 		break;
 	}
@@ -126,11 +100,11 @@ void Quest_BanditsCollectToll::SetProgress(int prog2)
 cstring Quest_BanditsCollectToll::FormatString(const string& str)
 {
 	if(str == "start_loc")
-		return game->locations[start_loc]->name.c_str();
+		return GetStartLocationName();
 	else if(str == "other_loc")
-		return game->locations[other_loc]->name.c_str();
+		return W.GetLocation(other_loc)->name.c_str();
 	else if(str == "other_dir")
-		return GetLocationDirName(game->locations[start_loc]->pos, game->locations[other_loc]->pos);
+		return GetLocationDirName(GetStartLocation().pos, W.GetLocation(other_loc)->pos);
 	else
 	{
 		assert(0);
@@ -141,21 +115,18 @@ cstring Quest_BanditsCollectToll::FormatString(const string& str)
 //=================================================================================================
 bool Quest_BanditsCollectToll::IsTimedout() const
 {
-	return game->worldtime - start_time > 15;
+	return W.GetWorldtime() - start_time > 15;
 }
 
 //=================================================================================================
 bool Quest_BanditsCollectToll::OnTimeout(TimeoutType ttype)
 {
-	msgs.push_back(game->txQuest[277]);
-	game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-	game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-
+	OnUpdate(game->txQuest[277]);
 	return true;
 }
 
 //=================================================================================================
-void Quest_BanditsCollectToll::Special(DialogContext& ctx, cstring msg)
+bool Quest_BanditsCollectToll::Special(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "pay_500") == 0)
 	{
@@ -163,16 +134,16 @@ void Quest_BanditsCollectToll::Special(DialogContext& ctx, cstring msg)
 		ctx.talker->gold += 500;
 	}
 	else
-	{
 		assert(0);
-	}
+	return false;
 }
 
 //=================================================================================================
-void Quest_BanditsCollectToll::HandleLocationEvent(LocationEventHandler::Event event)
+bool Quest_BanditsCollectToll::HandleLocationEvent(LocationEventHandler::Event event)
 {
 	if(event == LocationEventHandler::CLEARED && prog == Progress::Started)
 		SetProgress(Progress::KilledBandits);
+	return false;
 }
 
 //=================================================================================================
@@ -198,19 +169,19 @@ bool Quest_BanditsCollectToll::Load(GameReader& f)
 
 	if(enc != -1)
 	{
-		Location& sl = *game->locations[start_loc];
-		Location& ol = *game->locations[other_loc];
+		Location& sl = GetStartLocation();
+		Location& ol = *W.GetLocation(other_loc);
 
-		Encounter* e = game->RecreateEncounter(enc);
+		Encounter* e = W.RecreateEncounter(enc);
 		e->dialog = FindDialog("q_bandits_collect_toll_talk");
 		e->dont_attack = true;
-		e->grupa = SG_BANDYCI;
+		e->group = SG_BANDITS;
 		e->pos = (sl.pos + ol.pos) / 2;
 		e->quest = this;
-		e->szansa = 50;
+		e->chance = 50;
 		e->text = game->txQuest[52];
 		e->timed = true;
-		e->zasieg = 64;
+		e->range = 64;
 		e->location_event_handler = this;
 	}
 

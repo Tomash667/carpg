@@ -9,12 +9,11 @@ class ActionPanel : public GamePanel
 {
 public:
 	ActionPanel();
-
+	void LoadLanguage();
+	void LoadData();
 	void Draw(ControlDrawData* cdd = nullptr) override;
 	void Event(GuiEvent e) override;
 	void Update(float dt) override;
-
-	void LoadData();
 	void Init(Action* action);
 
 private:

@@ -13,7 +13,7 @@ struct CityBuilding
 {
 	Building* type;
 	Int2 pt, unit_pt;
-	int rot;
+	GameDirection rot;
 	Vec3 walk_pt;
 
 	CityBuilding() {}
@@ -51,7 +51,9 @@ struct City : public OutsideLocation
 	};
 
 	SettlementType settlement_type;
-	int citizens, citizens_world, quest_mayor_time, quest_captain_time, arena_time, gates, flags, variant;
+	int citizens, citizens_world, quest_mayor_time, quest_captain_time,
+		arena_time, // last arena combat worldtime or -1
+		gates, flags, variant;
 	CityQuestState quest_mayor, quest_captain;
 	vector<CityBuilding> buildings; // when visited this contain buildings to spawn (only type), after entering it is fully filled
 	vector<InsideBuilding*> inside_buildings;
@@ -69,11 +71,15 @@ struct City : public OutsideLocation
 	// from Location
 	void Save(GameWriter& f, bool local) override;
 	void Load(GameReader& f, bool local, LOCATION_TOKEN token) override;
-	void BuildRefidTable() override;
+	void Write(BitStreamWriter& f) override;
+	bool Read(BitStreamReader& f) override;
+	void BuildRefidTables() override;
 	bool FindUnit(Unit* unit, int* level) override;
 	Unit* FindUnit(UnitData* data, int& at_level) override;
 	LOCATION_TOKEN GetToken() const override { return LT_CITY; }
 
+	void GenerateCityBuildings(vector<Building*>& buildings, bool required);
+	void PrepareCityBuildings(vector<ToBuild>& tobuild);
 	bool IsInsideCity(const Vec3& _pos);
 	InsideBuilding* FindInsideBuilding(Building* type);
 	InsideBuilding* FindInsideBuilding(BuildingGroup* group);
@@ -83,4 +89,5 @@ struct City : public OutsideLocation
 	CityBuilding* FindBuilding(BuildingGroup* group);
 	CityBuilding* FindBuilding(Building* type);
 	bool IsVillage() const { return settlement_type == SettlementType::Village; }
+	void GetEntry(Vec3& pos, float& rot);
 };

@@ -34,8 +34,8 @@ public:
 	void SetProgress(int prog2) override;
 	cstring FormatString(const string& str) override;
 	bool IfNeedTalk(cstring topic) const override;
-	void Special(DialogContext& ctx, cstring msg) override;
-	bool IfSpecial(DialogContext& ctx, cstring msg) override;
+	bool Special(DialogContext& ctx, cstring msg) override;
+	bool SpecialIf(DialogContext& ctx, cstring msg) override;
 	bool Load(GameReader& f) override;
 };
 
@@ -94,12 +94,13 @@ public:
 		BeforeBoss
 	};
 
+	void Init();
 	void Start() override;
 	GameDialog* GetDialog(int type2) override;
 	void SetProgress(int prog2) override;
 	cstring FormatString(const string& str) override;
 	bool IfNeedTalk(cstring topic) const override;
-	bool IfSpecial(DialogContext& ctx, cstring msg) override;
+	bool SpecialIf(DialogContext& ctx, cstring msg) override;
 	void HandleUnitEvent(UnitEventHandler::TYPE event_type, Unit* unit) override;
 	int GetUnitEventHandlerQuestRefid() override { return refid; }
 	void Save(GameWriter& f) override;

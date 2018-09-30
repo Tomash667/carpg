@@ -7,17 +7,18 @@
 #include "GameFile.h"
 #include "QuestManager.h"
 #include "City.h"
-#include "GameGui.h"
 #include "AIController.h"
 #include "SaveState.h"
 #include "Team.h"
+#include "World.h"
+#include "Level.h"
 
 //=================================================================================================
 void Quest_RescueCaptive::Start()
 {
 	quest_id = Q_RESCUE_CAPTIVE;
 	type = QuestType::Captain;
-	start_loc = game->current_location;
+	start_loc = W.GetCurrentLocationIndex();
 	group = GetRandomGroup();
 }
 
@@ -50,16 +51,14 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 	case Progress::Started:
 		// received quest
 		{
-			target_loc = game->GetRandomSpawnLocation(game->locations[start_loc]->pos, group);
+			OnStart(game->txQuest[28]);
+			quest_manager.quests_timeout.push_back(this);
 
-			Location& loc = *game->locations[start_loc];
-			Location& loc2 = *game->locations[target_loc];
-			bool now_known = false;
-			if(loc2.state == LS_UNKNOWN)
-			{
-				loc2.state = LS_KNOWN;
-				now_known = true;
-			}
+			target_loc = W.GetRandomSpawnLocation(W.GetLocation(start_loc)->pos, group);
+
+			Location& loc = GetStartLocation();
+			Location& loc2 = GetTargetLocation();
+			loc2.SetKnown();
 
 			loc2.active_quest = this;
 			unit_to_spawn = UnitData::Get("captive");
@@ -67,25 +66,21 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 			at_level = loc2.GetRandomLevel();
 			unit_event_handler = this;
 			send_spawn_event = true;
-
-			start_time = game->worldtime;
-			state = Quest::Started;
-			name = game->txQuest[28];
 			captive = nullptr;
 
-			msgs.push_back(Format(game->txQuest[29], loc.name.c_str(), game->day + 1, game->month + 1, game->year));
+			msgs.push_back(Format(game->txQuest[29], loc.name.c_str(), W.GetDate()));
 
 			cstring co;
 			switch(group)
 			{
-			case SG_BANDYCI:
+			case SG_BANDITS:
 			default:
 				co = game->txQuest[30];
 				break;
-			case SG_ORKOWIE:
+			case SG_ORCS:
 				co = game->txQuest[31];
 				break;
-			case SG_GOBLINY:
+			case SG_GOBLINS:
 				co = game->txQuest[32];
 				break;
 			}
@@ -100,32 +95,12 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 				game->target_loc_is_camp = false;
 				msgs.push_back(Format(game->txQuest[34], loc.name.c_str(), co, loc2.name.c_str(), GetLocationDirName(loc.pos, loc2.pos)));
 			}
-
-			quest_index = quest_manager.quests.size();
-			quest_manager.quests.push_back(this);
-			quest_manager.quests_timeout.push_back(this);
-			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
-
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-
-			if(Net::IsOnline())
-			{
-				game->Net_AddQuest(refid);
-				if(now_known)
-					game->Net_ChangeLocationState(target_loc, false);
-			}
 		}
 		break;
 	case Progress::FoundCaptive:
 		// found captive
 		{
-			msgs.push_back(game->txQuest[35]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
+			OnUpdate(game->txQuest[35]);
 		}
 		break;
 	case Progress::CaptiveDie:
@@ -137,12 +112,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 				captive = nullptr;
 			}
 
-			msgs.push_back(game->txQuest[36]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
+			OnUpdate(game->txQuest[36]);
 		}
 		break;
 	case Progress::Timeout:
@@ -150,26 +120,21 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 		{
 			state = Quest::Failed;
 
-			((City*)game->locations[start_loc])->quest_captain = CityQuestState::Failed;
+			((City&)GetStartLocation()).quest_captain = CityQuestState::Failed;
 			if(target_loc != -1)
 			{
-				Location& loc = *game->locations[target_loc];
+				Location& loc = GetTargetLocation();
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
 			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
 
-			msgs.push_back(game->txQuest[37]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+			OnUpdate(game->txQuest[37]);
 			if(captive)
 			{
 				captive->event_handler = nullptr;
 				captive = nullptr;
 			}
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
 		}
 		break;
 	case Progress::Finished:
@@ -178,24 +143,19 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 			state = Quest::Completed;
 			game->AddReward(1000);
 
-			((City*)game->locations[start_loc])->quest_captain = CityQuestState::None;
+			((City&)GetStartLocation()).quest_captain = CityQuestState::None;
 			if(target_loc != -1)
 			{
-				Location& loc = *game->locations[target_loc];
+				Location& loc = GetTargetLocation();
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
 			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
-			game->RemoveTeamMember(captive);
+			Team.RemoveTeamMember(captive);
 
-			game->RemoveUnit(captive);
+			L.RemoveUnit(captive);
 			captive->event_handler = nullptr;
-			msgs.push_back(Format(game->txQuest[38], game->locations[start_loc]->name.c_str()));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
+			OnUpdate(Format(game->txQuest[38], GetStartLocationName()));
 
 			captive = nullptr;
 		}
@@ -209,12 +169,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 				captive = nullptr;
 			}
 
-			msgs.push_back(game->txQuest[39]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
+			OnUpdate(game->txQuest[39]);
 		}
 		break;
 	case Progress::ReportDeath:
@@ -227,21 +182,16 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 				captive = nullptr;
 			}
 
-			((City*)game->locations[start_loc])->quest_captain = CityQuestState::Failed;
+			((City&)GetStartLocation()).quest_captain = CityQuestState::Failed;
 			if(target_loc != -1)
 			{
-				Location& loc = *game->locations[target_loc];
+				Location& loc = GetTargetLocation();
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
 			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
 
-			msgs.push_back(game->txQuest[40]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
+			OnUpdate(game->txQuest[40]);
 		}
 		break;
 	case Progress::ReportEscape:
@@ -255,28 +205,23 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 				captive = nullptr;
 			}
 
-			((City*)game->locations[start_loc])->quest_captain = CityQuestState::None;
+			((City&)GetStartLocation()).quest_captain = CityQuestState::None;
 			if(target_loc != -1)
 			{
-				Location& loc = *game->locations[target_loc];
+				Location& loc = GetTargetLocation();
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
 
-			msgs.push_back(Format(game->txQuest[41], game->locations[start_loc]->name.c_str()));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+			OnUpdate(Format(game->txQuest[41], GetStartLocationName()));
 			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
 		}
 		break;
 	case Progress::CaptiveLeftInCity:
 		// captive was left in city
 		{
 			if(captive->hero->team_member)
-				game->RemoveTeamMember(captive);
+				Team.RemoveTeamMember(captive);
 			captive->dont_attack = false;
 			captive->ai->goto_inn = true;
 			captive->ai->timer = 0.f;
@@ -284,12 +229,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 			captive->event_handler = nullptr;
 			captive = nullptr;
 
-			msgs.push_back(Format(game->txQuest[42], game->city_ctx->name.c_str()));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
+			OnUpdate(Format(game->txQuest[42], L.city_ctx->name.c_str()));
 		}
 		break;
 	}
@@ -302,11 +242,11 @@ cstring Quest_RescueCaptive::FormatString(const string& str)
 	{
 		switch(group)
 		{
-		case SG_BANDYCI:
+		case SG_BANDITS:
 			return game->txQuest[43];
-		case SG_ORKOWIE:
+		case SG_ORCS:
 			return game->txQuest[44];
-		case SG_GOBLINY:
+		case SG_GOBLINS:
 			return game->txQuest[45];
 		default:
 			assert(0);
@@ -317,11 +257,11 @@ cstring Quest_RescueCaptive::FormatString(const string& str)
 	{
 		switch(group)
 		{
-		case SG_BANDYCI:
+		case SG_BANDITS:
 			return game->txQuest[47];
-		case SG_ORKOWIE:
+		case SG_ORCS:
 			return game->txQuest[48];
-		case SG_GOBLINY:
+		case SG_GOBLINS:
 			return game->txQuest[49];
 		default:
 			assert(0);
@@ -329,11 +269,11 @@ cstring Quest_RescueCaptive::FormatString(const string& str)
 		}
 	}
 	else if(str == "locname")
-		return game->locations[target_loc]->name.c_str();
+		return GetTargetLocationName();
 	else if(str == "target_dir")
-		return GetLocationDirName(game->locations[start_loc]->pos, game->locations[target_loc]->pos);
+		return GetLocationDirName(GetStartLocation().pos, GetTargetLocation().pos);
 	else if(str == "start_loc")
-		return game->locations[start_loc]->name.c_str();
+		return GetStartLocationName();
 	else
 	{
 		assert(0);
@@ -344,7 +284,7 @@ cstring Quest_RescueCaptive::FormatString(const string& str)
 //=================================================================================================
 bool Quest_RescueCaptive::IsTimedout() const
 {
-	return game->worldtime - start_time > 30;
+	return W.GetWorldtime() - start_time > 30;
 }
 
 //=================================================================================================
@@ -355,13 +295,11 @@ bool Quest_RescueCaptive::OnTimeout(TimeoutType ttype)
 		if(captive)
 		{
 			captive->event_handler = nullptr;
-			game->RemoveUnit(game->ForLevel(target_loc, at_level), captive);
+			ForLocation(target_loc, at_level)->RemoveUnit(captive);
 			captive = nullptr;
 		}
 
-		msgs.push_back(game->txQuest[277]);
-		game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-		game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+		OnUpdate(game->txQuest[277]);
 	}
 
 	return true;
@@ -391,7 +329,7 @@ bool Quest_RescueCaptive::IfNeedTalk(cstring topic) const
 {
 	if(strcmp(topic, "captive") != 0)
 		return false;
-	if(game->current_location == start_loc)
+	if(W.GetCurrentLocationIndex() == start_loc)
 	{
 		if(prog == Progress::CaptiveDie || prog == Progress::CaptiveEscape || prog == Progress::CaptiveLeftInCity)
 			return true;
@@ -400,7 +338,7 @@ bool Quest_RescueCaptive::IfNeedTalk(cstring topic) const
 		else
 			return false;
 	}
-	else if(game->current_location == target_loc && prog == Progress::Started)
+	else if(W.GetCurrentLocationIndex() == target_loc && prog == Progress::Started)
 		return true;
 	else
 		return false;
@@ -450,11 +388,11 @@ SPAWN_GROUP Quest_RescueCaptive::GetRandomGroup() const
 	default:
 	case 0:
 	case 1:
-		return SG_BANDYCI;
+		return SG_BANDITS;
 	case 2:
-		return SG_ORKOWIE;
+		return SG_ORCS;
 		break;
 	case 3:
-		return SG_GOBLINY;
+		return SG_GOBLINS;
 	}
 }

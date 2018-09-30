@@ -6,7 +6,6 @@
 #include "ParticleSystem.h"
 #include "Language.h"
 #include "Version.h"
-#include "CityGenerator.h"
 #include "Quest_Mages.h"
 #include "Content.h"
 #include "OutsideLocation.h"
@@ -28,7 +27,27 @@
 #include "ScriptManager.h"
 #include "Inventory.h"
 #include "Profiler.h"
+#include "World.h"
+#include "Level.h"
+#include "QuestManager.h"
+#include "Quest_Contest.h"
+#include "Quest_Crazies.h"
+#include "Quest_Orcs.h"
+#include "Quest_Tournament.h"
+#include "LocationGeneratorFactory.h"
+#include "SuperShader.h"
+#include "Arena.h"
 #include "DirectX.h"
+#include "ResourceManager.h"
+#include "BitStreamFunc.h"
+#include "City.h"
+#include "MultiInsideLocation.h"
+#include "InfoBox.h"
+#include "LoadScreen.h"
+#include "Portal.h"
+#include "GlobalGui.h"
+#include "DebugDrawer.h"
+#include "Pathfinding.h"
 
 // limit fps
 #define LIMIT_DT 0.3f
@@ -52,17 +71,15 @@ extern string g_system_dir;
 extern cstring RESTART_MUTEX_NAME;
 
 //=================================================================================================
-Game::Game() : have_console(false), vbParticle(nullptr), peer(nullptr), quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0), cl_fog(true),
+Game::Game() : have_console(false), vbParticle(nullptr), quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0), cl_fog(true),
 cl_lighting(true), draw_particle_sphere(false), draw_unit_radius(false), draw_hitbox(false), noai(false), testing(false), game_speed(1.f), devmode(false),
-draw_phy(false), draw_col(false), force_seed(0), next_seed(0), force_seed_all(false), alpha_test_state(-1), debug_info(false), dont_wander(false),
-local_ctx_valid(false), city_ctx(nullptr), check_updates(true), skip_tutorial(false), portal_anim(0), debug_info2(false), music_type(MusicType::None),
-contest_state(CONTEST_NOT_DONE), koniec_gry(false), net_stream(64 * 1024), net_stream2(64 * 1024), mp_interp(0.05f), mp_use_interp(true), mp_port(PORT),
+force_seed(0), next_seed(0), force_seed_all(false), alpha_test_state(-1), debug_info(false), dont_wander(false),
+check_updates(true), skip_tutorial(false), portal_anim(0), debug_info2(false), music_type(MusicType::None), koniec_gry(false), prepared_stream(64 * 1024),
 paused(false), pick_autojoin(false), draw_flags(0xFFFFFFFF), tMiniSave(nullptr), prev_game_state(GS_LOAD), tSave(nullptr), sItemRegion(nullptr),
-sItemRegionRot(nullptr), sChar(nullptr), sSave(nullptr), in_tutorial(false), cursor_allow_move(true), mp_load(false), was_client(false), sCustom(nullptr),
-cl_postfx(true), mp_timeout(10.f), sshader_pool(nullptr), cl_normalmap(true), cl_specularmap(true), dungeon_tex_wrap(true), profiler_mode(0),
-grass_range(40.f), vbInstancing(nullptr), vb_instancing_max(0), screenshot_format(ImageFormat::JPG), quickstart_class(Class::RANDOM),
-autopick_class(Class::INVALID), current_packet(nullptr), game_state(GS_LOAD), default_devmode(false), default_player_devmode(false), finished_tutorial(false),
-script_mgr(nullptr), quickstart_slot(MAX_SAVE_SLOTS), tournament_state(TOURNAMENT_NOT_DONE), arena_free(true), autoready(false)
+sItemRegionRot(nullptr), sChar(nullptr), sSave(nullptr), mp_load(false), was_client(false), sCustom(nullptr), cl_postfx(true), mp_timeout(10.f),
+cl_normalmap(true), cl_specularmap(true), dungeon_tex_wrap(true), profiler_mode(0), grass_range(40.f), vbInstancing(nullptr), vb_instancing_max(0),
+screenshot_format(ImageFormat::JPG), quickstart_class(Class::RANDOM), game_state(GS_LOAD), default_devmode(false),
+default_player_devmode(false), quickstart_slot(MAX_SAVE_SLOTS), super_shader(new SuperShader)
 {
 #ifdef _DEBUG
 	default_devmode = true;
@@ -79,13 +96,9 @@ script_mgr(nullptr), quickstart_slot(MAX_SAVE_SLOTS), tournament_state(TOURNAMEN
 	dialog_context.is_local = true;
 
 	ClearPointers();
-	NullGui();
 
-	light_angle = 0.f;
 	uv_mod = Terrain::DEFAULT_UV_MOD;
 	cam.draw_range = 80.f;
-
-	gen = new CityGenerator;
 
 	SetupConfigVars();
 }
@@ -93,7 +106,7 @@ script_mgr(nullptr), quickstart_slot(MAX_SAVE_SLOTS), tournament_state(TOURNAMEN
 //=================================================================================================
 Game::~Game()
 {
-	delete gen;
+	delete super_shader;
 }
 
 //=================================================================================================
@@ -135,6 +148,9 @@ void Game::OnDraw(bool normal)
 				DrawGlowingNodes(false);
 				V(device->BeginScene());
 			}
+
+			// debug draw
+			GetDebugDrawer()->Draw();
 		}
 
 		// draw gui
@@ -162,6 +178,9 @@ void Game::OnDraw(bool normal)
 			V(device->EndScene());
 			if(pc_data.before_player != BP_NONE && !draw_batch.glow_nodes.empty())
 				DrawGlowingNodes(true);
+
+			// debug draw
+			GetDebugDrawer()->Draw();
 		}
 
 		PROFILER_BLOCK("PostEffects");
@@ -260,6 +279,13 @@ void Game::OnDraw(bool normal)
 }
 
 //=================================================================================================
+void Game::OnDebugDraw(DebugDrawer* dd)
+{
+	if(pathfinding->IsDebugDraw())
+		pathfinding->Draw(dd);
+}
+
+//=================================================================================================
 void HumanPredraw(void* ptr, Matrix* mat, int n)
 {
 	if(n != 0)
@@ -302,7 +328,7 @@ void Game::OnTick(float dt)
 			GameStats::Get().Update(dt);
 	}
 
-	allow_input = ALLOW_INPUT;
+	GKey.allow_input = GameKeys::ALLOW_INPUT;
 
 	// utracono urz¹dzenie directx lub okno nie aktywne
 	if(IsLostDevice() || !IsActive() || !IsCursorLocked())
@@ -324,25 +350,25 @@ void Game::OnTick(float dt)
 
 	// szybkie wyjœcie z gry (alt+f4)
 	if(Key.Focus() && Key.Down(VK_MENU) && Key.Down(VK_F4) && !GUI.HaveTopDialog("dialog_alt_f4"))
-		ShowQuitDialog();
+		gui->ShowQuitDialog();
 
 	if(koniec_gry)
 	{
 		death_fade += dt;
-		if(death_fade >= 1.f && AllowKeyboard() && Key.PressedRelease(VK_ESCAPE))
+		if(death_fade >= 1.f && GKey.AllowKeyboard() && Key.PressedRelease(VK_ESCAPE))
 		{
 			ExitToMenu();
 			koniec_gry = false;
 		}
-		allow_input = ALLOW_NONE;
+		GKey.allow_input = GameKeys::ALLOW_NONE;
 	}
 
 	// globalna obs³uga klawiszy
-	if(allow_input == ALLOW_INPUT)
+	if(GKey.allow_input == GameKeys::ALLOW_INPUT)
 	{
 		// konsola
-		if(!GUI.HaveTopDialog("dialog_alt_f4") && !GUI.HaveDialog("console") && KeyDownUpAllowed(GK_CONSOLE))
-			GUI.ShowDialog(console);
+		if(!GUI.HaveTopDialog("dialog_alt_f4") && !GUI.HaveDialog("console") && GKey.KeyDownUpAllowed(GK_CONSOLE))
+			GUI.ShowDialog(gui->console);
 
 		// uwolnienie myszki
 		if(!IsFullscreen() && IsActive() && IsCursorLocked() && Key.Shortcut(KEY_CONTROL, 'U'))
@@ -357,35 +383,22 @@ void Game::OnTick(float dt)
 			TakeScreenshot(Key.Down(VK_SHIFT));
 
 		// zatrzymywanie/wznawianie gry
-		if(KeyPressedReleaseAllowed(GK_PAUSE))
-		{
-			if(Net::IsSingleplayer())
-				paused = !paused;
-			else if(Net::IsServer())
-			{
-				paused = !paused;
-				AddMultiMsg(paused ? txGamePaused : txGameResumed);
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::PAUSED;
-				c.id = (paused ? 1 : 0);
-				if(paused && game_state == GS_WORLDMAP && world_state == WS_TRAVEL)
-					Net::PushChange(NetChange::UPDATE_MAP_POS);
-			}
-		}
+		if(GKey.KeyPressedReleaseAllowed(GK_PAUSE) && !Net::IsClient())
+			PauseGame();
 	}
 
 	// obs³uga paneli
-	if(GUI.HaveDialog() || (game_gui->mp_box->visible && game_gui->mp_box->itb.focus))
-		allow_input = ALLOW_NONE;
-	else if(AllowKeyboard() && game_state == GS_LEVEL && death_screen == 0 && !dialog_context.dialog_mode)
+	if(GUI.HaveDialog() || (gui->mp_box->visible && gui->mp_box->itb.focus))
+		GKey.allow_input = GameKeys::ALLOW_NONE;
+	else if(GKey.AllowKeyboard() && game_state == GS_LEVEL && death_screen == 0 && !dialog_context.dialog_mode)
 	{
-		OpenPanel open = game_gui->GetOpenPanel(),
+		OpenPanel open = gui->game_gui->GetOpenPanel(),
 			to_open = OpenPanel::None;
 
 		if (GKey.PressedRelease(GK_STATS))
 			to_open = OpenPanel::Stats;
 		else if (GKey.PressedRelease(GK_INVENTORY))
-			to_open = OpenPanel::Inventory;
+			to_open = OpenPanel::InventoryPanel;
 		else if (GKey.PressedRelease(GK_TEAM_PANEL))
 			to_open = OpenPanel::Team;
 		else if (GKey.PressedRelease(GK_JOURNAL))
@@ -398,41 +411,41 @@ void Game::OnTick(float dt)
 			to_open = OpenPanel::Trade; // ShowPanel hide when already opened
 
 		if(to_open != OpenPanel::None)
-			game_gui->ShowPanel(to_open, open);
+			gui->game_gui->ShowPanel(to_open, open);
 
 		switch(open)
 		{
 		case OpenPanel::None:
 		case OpenPanel::Minimap:
 		default:
-			if(game_gui->use_cursor)
-				allow_input = ALLOW_KEYBOARD;
+			if(gui->game_gui->use_cursor)
+				GKey.allow_input = GameKeys::ALLOW_KEYBOARD;
 			break;
 		case OpenPanel::Stats:
-		case OpenPanel::Inventory:
+		case OpenPanel::InventoryPanel:
 		case OpenPanel::Team:
 		case OpenPanel::Trade:
 		case OpenPanel::Action:
 		case OpenPanel::Journal:
-			allow_input = ALLOW_KEYBOARD;
+			GKey.allow_input = GameKeys::ALLOW_KEYBOARD;
 			break;
 		}
 	}
 
 	// quicksave, quickload
 	bool console_open = GUI.HaveTopDialog("console");
-	bool special_key_allowed = (allow_input == ALLOW_KEYBOARD || allow_input == ALLOW_INPUT || (!GUI.HaveDialog() || console_open));
-	if(KeyPressedReleaseSpecial(GK_QUICKSAVE, special_key_allowed))
+	bool special_key_allowed = (GKey.allow_input == GameKeys::ALLOW_KEYBOARD || GKey.allow_input == GameKeys::ALLOW_INPUT || (!GUI.HaveDialog() || console_open));
+	if(GKey.KeyPressedReleaseSpecial(GK_QUICKSAVE, special_key_allowed))
 		Quicksave(console_open);
-	if(KeyPressedReleaseSpecial(GK_QUICKLOAD, special_key_allowed))
+	if(GKey.KeyPressedReleaseSpecial(GK_QUICKLOAD, special_key_allowed))
 		Quickload(console_open);
 
 	// mp box
-	if((game_state == GS_LEVEL || game_state == GS_WORLDMAP) && KeyPressedReleaseAllowed(GK_TALK_BOX))
-		game_gui->mp_box->visible = !game_gui->mp_box->visible;
+	if((game_state == GS_LEVEL || game_state == GS_WORLDMAP) && GKey.KeyPressedReleaseAllowed(GK_TALK_BOX))
+		gui->mp_box->visible = !gui->mp_box->visible;
 
 	// update gui
-	UpdateGui(dt);
+	gui->UpdateGui(dt);
 	if(game_state == GS_EXIT_TO_MENU)
 	{
 		ExitToMenu();
@@ -446,73 +459,36 @@ void Game::OnTick(float dt)
 	}
 
 	// handle blocking input by gui
-	if(GUI.HaveDialog() || (game_gui->mp_box->visible && game_gui->mp_box->itb.focus))
-		allow_input = ALLOW_NONE;
-	else if(AllowKeyboard() && game_state == GS_LEVEL && death_screen == 0 && !dialog_context.dialog_mode)
+	if(GUI.HaveDialog() || (gui->mp_box->visible && gui->mp_box->itb.focus))
+		GKey.allow_input = GameKeys::ALLOW_NONE;
+	else if(GKey.AllowKeyboard() && game_state == GS_LEVEL && death_screen == 0 && !dialog_context.dialog_mode)
 	{
-		switch(game_gui->GetOpenPanel())
+		switch(gui->game_gui->GetOpenPanel())
 		{
 		case OpenPanel::None:
 		case OpenPanel::Minimap:
 		default:
-			if(game_gui->use_cursor)
-				allow_input = ALLOW_KEYBOARD;
+			if(gui->game_gui->use_cursor)
+				GKey.allow_input = GameKeys::ALLOW_KEYBOARD;
 			break;
 		case OpenPanel::Stats:
-		case OpenPanel::Inventory:
+		case OpenPanel::InventoryPanel:
 		case OpenPanel::Team:
 		case OpenPanel::Trade:
 		case OpenPanel::Action:
 		case OpenPanel::Journal:
-			allow_input = ALLOW_KEYBOARD;
+			GKey.allow_input = GameKeys::ALLOW_KEYBOARD;
 			break;
 		}
 	}
 	else
-		allow_input = ALLOW_INPUT;
+		GKey.allow_input = GameKeys::ALLOW_INPUT;
 
 	// otwórz menu
-	if(AllowKeyboard() && CanShowMenu() && Key.PressedRelease(VK_ESCAPE))
-		ShowMenu();
+	if(GKey.AllowKeyboard() && CanShowMenu() && Key.PressedRelease(VK_ESCAPE))
+		gui->ShowMenu();
 
-	if(game_menu->visible)
-		game_menu->Set(CanSaveGame(), CanLoadGame(), hardcore_mode);
-
-	if(!paused)
-	{
-		// pytanie o pvp
-		if(game_state == GS_LEVEL && Net::IsOnline())
-		{
-			if(pvp_response.ok)
-			{
-				pvp_response.timer += dt;
-				if(pvp_response.timer >= 5.f)
-				{
-					pvp_response.ok = false;
-					if(pvp_response.to == pc->unit)
-					{
-						dialog_pvp->CloseDialog();
-						RemoveElement(GUI.created_dialogs, dialog_pvp);
-						delete dialog_pvp;
-						dialog_pvp = nullptr;
-					}
-					if(Net::IsServer())
-					{
-						if(pvp_response.from == pc->unit)
-							AddMsg(Format(txPvpRefuse, pvp_response.to->player->name.c_str()));
-						else
-						{
-							NetChangePlayer& c = Add1(pvp_response.from->player->player_info->changes);
-							c.type = NetChangePlayer::NO_PVP;
-							c.id = pvp_response.to->player->id;
-						}
-					}
-				}
-			}
-		}
-		else
-			pvp_response.ok = false;
-	}
+	arena->UpdatePvpRequest(dt);
 
 	// aktualizacja gry
 	if(!koniec_gry)
@@ -526,7 +502,7 @@ void Game::OnTick(float dt)
 				{
 					if (Net::IsOnline())
 						UpdateWarpData(dt);
-					ProcessUnitWarps();
+					L.ProcessUnitWarps();
 				}
 				SetupCamera(dt);
 				if(Net::IsOnline())
@@ -543,7 +519,7 @@ void Game::OnTick(float dt)
 					{
 						if (Net::IsOnline())
 							UpdateWarpData(dt);
-						ProcessUnitWarps();
+						L.ProcessUnitWarps();
 					}
 					SetupCamera(dt);
 				}
@@ -566,11 +542,11 @@ void Game::OnTick(float dt)
 		UpdateGameNet(dt);
 
 	// aktywacja mp_box
-	if(AllowKeyboard() && game_state == GS_LEVEL && game_gui->mp_box->visible && !game_gui->mp_box->itb.focus && Key.PressedRelease(VK_RETURN))
+	if(GKey.AllowKeyboard() && game_state == GS_LEVEL && gui->mp_box->visible && !gui->mp_box->itb.focus && Key.PressedRelease(VK_RETURN))
 	{
-		game_gui->mp_box->itb.focus = true;
-		game_gui->mp_box->Event(GuiEvent_GainFocus);
-		game_gui->mp_box->itb.Event(GuiEvent_GainFocus);
+		gui->mp_box->itb.focus = true;
+		gui->mp_box->Event(GuiEvent_GainFocus);
+		gui->mp_box->itb.Event(GuiEvent_GainFocus);
 	}
 
 	Profiler::g_profiler.End();
@@ -587,7 +563,7 @@ void Game::GetTitle(LocalString& s)
 	s += " -  DEBUG";
 #endif
 
-	if(change_title_a && ((game_state != GS_MAIN_MENU && game_state != GS_LOAD) || (server_panel && server_panel->visible)))
+	if(change_title_a && ((game_state != GS_MAIN_MENU && game_state != GS_LOAD) || (gui->server && gui->server->visible)))
 	{
 		if(Net::IsOnline())
 		{
@@ -636,31 +612,9 @@ bool Game::Start0(StartupOptions& options)
 	return Start(options);
 }
 
-struct Point
-{
-	Int2 pt, prev;
-};
-
-struct AStarSort
-{
-	AStarSort(vector<APoint>& a_map, int rozmiar) : a_map(a_map), rozmiar(rozmiar)
-	{
-	}
-
-	bool operator() (const Point& pt1, const Point& pt2) const
-	{
-		return a_map[pt1.pt.x + pt1.pt.y*rozmiar].suma > a_map[pt2.pt.x + pt2.pt.y*rozmiar].suma;
-	}
-
-	vector<APoint>& a_map;
-	int rozmiar;
-};
-
 //=================================================================================================
 void Game::OnReload()
 {
-	GUI.OnReload();
-
 	if(eMesh)
 		V(eMesh->OnResetDevice());
 	if(eParticle)
@@ -671,8 +625,6 @@ void Game::OnReload()
 		V(eSkybox->OnResetDevice());
 	if(eArea)
 		V(eArea->OnResetDevice());
-	if(eGui)
-		V(eGui->OnResetDevice());
 	if(ePostFx)
 		V(ePostFx->OnResetDevice());
 	if(eGlow)
@@ -680,20 +632,20 @@ void Game::OnReload()
 	if(eGrass)
 		V(eGrass->OnResetDevice());
 
-	for(vector<SuperShader>::iterator it = sshaders.begin(), end = sshaders.end(); it != end; ++it)
-		V(it->e->OnResetDevice());
-
 	CreateTextures();
 	BuildDungeon();
-	RebuildMinimap();
-	Inventory::OnReload();
+	// rebuild minimap texture
+	if(game_state == GS_LEVEL)
+		loc_gen_factory->Get(L.location)->CreateMinimap();
+	if(gui && gui->inventory)
+		gui->inventory->OnReload();
 }
 
 //=================================================================================================
 void Game::OnReset()
 {
-	GUI.OnReset();
-	Inventory::OnReset();
+	if(gui && gui->inventory)
+		gui->inventory->OnReset();
 
 	if(eMesh)
 		V(eMesh->OnLostDevice());
@@ -705,17 +657,12 @@ void Game::OnReset()
 		V(eSkybox->OnLostDevice());
 	if(eArea)
 		V(eArea->OnLostDevice());
-	if(eGui)
-		V(eGui->OnLostDevice());
 	if(ePostFx)
 		V(ePostFx->OnLostDevice());
 	if(eGlow)
 		V(eGlow->OnLostDevice());
 	if(eGrass)
 		V(eGrass->OnLostDevice());
-
-	for(vector<SuperShader>::iterator it = sshaders.begin(), end = sshaders.end(); it != end; ++it)
-		V(it->e->OnLostDevice());
 
 	SafeRelease(tItemRegion);
 	SafeRelease(tItemRegionRot);
@@ -849,830 +796,18 @@ void Game::DoExitToMenu()
 	was_client = false;
 
 	SetMusic(MusicType::Title);
-	contest_state = CONTEST_NOT_DONE;
 	koniec_gry = false;
 
 	CloseAllPanels();
 	GUI.CloseDialogs();
-	game_menu->visible = false;
-	game_gui->visible = false;
-	world_map->visible = false;
-	main_menu->visible = true;
+	gui->game_menu->visible = false;
+	gui->game_gui->visible = false;
+	gui->world_map->visible = false;
+	gui->main_menu->visible = true;
 	units_mesh_load.clear();
 
 	if(change_title_a)
 		ChangeTitle();
-}
-
-//=================================================================================================
-// szuka œcie¿ki u¿ywaj¹c algorytmu A-Star
-// zwraca true jeœli znaleziono i w wektorze jest ta œcie¿ka, w œcie¿ce nie ma pocz¹tkowego kafelka
-bool Game::FindPath(LevelContext& ctx, const Int2& _start_tile, const Int2& _target_tile, vector<Int2>& _path, bool can_open_doors, bool wedrowanie, vector<Int2>* blocked)
-{
-	if(_start_tile == _target_tile || ctx.type == LevelContext::Building)
-	{
-		// jest w tym samym miejscu
-		_path.clear();
-		_path.push_back(_target_tile);
-		return true;
-	}
-
-	static vector<Point> do_sprawdzenia;
-	do_sprawdzenia.clear();
-
-	if(ctx.type == LevelContext::Outside)
-	{
-		// zewnêtrze
-		OutsideLocation* outside = (OutsideLocation*)location;
-		const TerrainTile* m = outside->tiles;
-		const int w = OutsideLocation::size;
-
-		// czy poza map¹
-		if(!outside->IsInside(_start_tile) || !outside->IsInside(_target_tile))
-			return false;
-
-		// czy na blokuj¹cym miejscu
-		if(m[_start_tile(w)].IsBlocking() || m[_target_tile(w)].IsBlocking())
-			return false;
-
-		// powiêksz mapê
-		const uint size = uint(w*w);
-		if(size > a_map.size())
-			a_map.resize(size);
-
-		// wyzeruj
-		memset(&a_map[0], 0, sizeof(APoint)*size);
-		_path.clear();
-
-		// apply blocked tiles
-		if(blocked)
-		{
-			for(vector<Int2>::iterator it = blocked->begin(), end = blocked->end(); it != end; ++it)
-				a_map[(*it)(w)].stan = 1;
-			if(a_map[_start_tile(w)].stan == 1 || a_map[_target_tile(w)].stan == 1)
-				return false;
-		}
-
-		// dodaj pierwszy kafelek do sprawdzenia
-		APoint apt, prev_apt;
-		apt.suma = apt.odleglosc = 10 * (abs(_target_tile.x - _start_tile.x) + abs(_target_tile.y - _start_tile.y));
-		apt.stan = 1;
-		apt.koszt = 0;
-		a_map[_start_tile(w)] = apt;
-
-		Point pt, new_pt;
-		pt.pt = pt.prev = _start_tile;
-		do_sprawdzenia.push_back(pt);
-
-		AStarSort sortownik(a_map, w);
-
-		// szukaj drogi
-		while(!do_sprawdzenia.empty())
-		{
-			pt = do_sprawdzenia.back();
-			do_sprawdzenia.pop_back();
-
-			apt = a_map[pt.pt(w)];
-			prev_apt = a_map[pt.prev(w)];
-
-			if(pt.pt == _target_tile)
-			{
-				APoint& ept = a_map[pt.pt(w)];
-				ept.stan = 1;
-				ept.prev = pt.prev;
-				break;
-			}
-
-			const Int2 kierunek[4] = {
-				Int2(0,1),
-				Int2(1,0),
-				Int2(0,-1),
-				Int2(-1,0)
-			};
-
-			const Int2 kierunek2[4] = {
-				Int2(1,1),
-				Int2(1,-1),
-				Int2(-1,1),
-				Int2(-1,-1)
-			};
-
-			for(int i = 0; i < 4; ++i)
-			{
-				const Int2& pt1 = kierunek[i] + pt.pt;
-				const Int2& pt2 = kierunek2[i] + pt.pt;
-
-				if(pt1.x >= 0 && pt1.y >= 0 && pt1.x < w - 1 && pt1.y < w - 1 && a_map[pt1(w)].stan == 0 && !m[pt1(w)].IsBlocking())
-				{
-					apt.prev = pt.pt;
-					apt.koszt = prev_apt.koszt + 10;
-					if(wedrowanie)
-					{
-						TERRAIN_TILE type = m[pt1(w)].t;
-						if(type == TT_SAND)
-							apt.koszt += 10;
-						else if(type != TT_ROAD)
-							apt.koszt += 30;
-					}
-					apt.odleglosc = (abs(pt1.x - _target_tile.x) + abs(pt1.y - _target_tile.y)) * 10;
-					apt.suma = apt.odleglosc + apt.koszt;
-					apt.stan = 1;
-					a_map[pt1(w)] = apt;
-
-					new_pt.pt = pt1;
-					new_pt.prev = pt.pt;
-					do_sprawdzenia.push_back(new_pt);
-				}
-
-				if(pt2.x >= 0 && pt2.y >= 0 && pt2.x < w - 1 && pt2.y < w - 1 && a_map[pt2(w)].stan == 0 &&
-					!m[pt2(w)].IsBlocking() &&
-					!m[kierunek2[i].x + pt.pt.x + pt.pt.y*w].IsBlocking() &&
-					!m[pt.pt.x + (kierunek2[i].y + pt.pt.y)*w].IsBlocking())
-				{
-					apt.prev = pt.pt;
-					apt.koszt = prev_apt.koszt + 15;
-					if(wedrowanie)
-					{
-						TERRAIN_TILE type = m[pt2(w)].t;
-						if(type == TT_SAND)
-							apt.koszt += 10;
-						else if(type != TT_ROAD)
-							apt.koszt += 30;
-					}
-					apt.odleglosc = (abs(pt2.x - _target_tile.x) + abs(pt2.y - _target_tile.y)) * 10;
-					apt.suma = apt.odleglosc + apt.koszt;
-					apt.stan = 1;
-					a_map[pt2(w)] = apt;
-
-					new_pt.pt = pt2;
-					new_pt.prev = pt.pt;
-					do_sprawdzenia.push_back(new_pt);
-				}
-			}
-
-			std::sort(do_sprawdzenia.begin(), do_sprawdzenia.end(), sortownik);
-		}
-
-		// jeœli cel jest niezbadany to nie znaleziono œcie¿ki
-		if(a_map[_target_tile(w)].stan == 0)
-			return false;
-
-		// wype³nij elementami œcie¿kê
-		_path.push_back(_target_tile);
-
-		Int2 p;
-
-		while((p = _path.back()) != _start_tile)
-			_path.push_back(a_map[p(w)].prev);
-	}
-	else
-	{
-		// wnêtrze
-		InsideLocation* inside = (InsideLocation*)location;
-		InsideLocationLevel& lvl = inside->GetLevelData();
-		const Pole* m = lvl.map;
-		const int w = lvl.w, h = lvl.h;
-
-		// czy poza map¹
-		if(!lvl.IsInside(_start_tile) || !lvl.IsInside(_target_tile))
-			return false;
-
-		// czy na blokuj¹cym miejscu
-		if(czy_blokuje2(m[_start_tile(w)]) || czy_blokuje2(m[_target_tile(w)]))
-			return false;
-
-		// powiêksz mapê
-		const uint size = uint(w*h);
-		if(size > a_map.size())
-			a_map.resize(size);
-
-		// wyzeruj
-		memset(&a_map[0], 0, sizeof(APoint)*size);
-		_path.clear();
-
-		// apply blocked tiles
-		if(blocked)
-		{
-			for(vector<Int2>::iterator it = blocked->begin(), end = blocked->end(); it != end; ++it)
-				a_map[(*it)(w)].stan = 1;
-			if(a_map[_start_tile(w)].stan == 1 || a_map[_target_tile(w)].stan == 1)
-				return false;
-		}
-
-		// dodaj pierwszy kafelek do sprawdzenia
-		APoint apt, prev_apt;
-		apt.suma = apt.odleglosc = 10 * (abs(_target_tile.x - _start_tile.x) + abs(_target_tile.y - _start_tile.y));
-		apt.stan = 1;
-		apt.koszt = 0;
-		a_map[_start_tile(w)] = apt;
-
-		Point pt, new_pt;
-		pt.pt = pt.prev = _start_tile;
-		do_sprawdzenia.push_back(pt);
-
-		AStarSort sortownik(a_map, w);
-
-		// szukaj drogi
-		while(!do_sprawdzenia.empty())
-		{
-			pt = do_sprawdzenia.back();
-			do_sprawdzenia.pop_back();
-
-			prev_apt = a_map[pt.pt(w)];
-
-			//Info("(%d,%d)->(%d,%d), K:%d D:%d S:%d", pt.prev.x, pt.prev.y, pt.pt.x, pt.pt.y, prev_apt.koszt, prev_apt.odleglosc, prev_apt.suma);
-
-			if(pt.pt == _target_tile)
-			{
-				APoint& ept = a_map[pt.pt(w)];
-				ept.stan = 1;
-				ept.prev = pt.prev;
-				break;
-			}
-
-			const Int2 kierunek[4] = {
-				Int2(0,1),
-				Int2(1,0),
-				Int2(0,-1),
-				Int2(-1,0)
-			};
-
-			const Int2 kierunek2[4] = {
-				Int2(1,1),
-				Int2(1,-1),
-				Int2(-1,1),
-				Int2(-1,-1)
-			};
-
-			if(can_open_doors)
-			{
-				for(int i = 0; i < 4; ++i)
-				{
-					const Int2& pt1 = kierunek[i] + pt.pt;
-					const Int2& pt2 = kierunek2[i] + pt.pt;
-
-					if(pt1.x >= 0 && pt1.y >= 0 && pt1.x < w - 1 && pt1.y < h - 1 && !czy_blokuje2(m[pt1(w)]))
-					{
-						apt.prev = pt.pt;
-						apt.koszt = prev_apt.koszt + 10;
-						apt.odleglosc = (abs(pt1.x - _target_tile.x) + abs(pt1.y - _target_tile.y)) * 10;
-						apt.suma = apt.odleglosc + apt.koszt;
-
-						if(a_map[pt1(w)].IsLower(apt.suma))
-						{
-							apt.stan = 1;
-							a_map[pt1(w)] = apt;
-
-							new_pt.pt = pt1;
-							new_pt.prev = pt.pt;
-							do_sprawdzenia.push_back(new_pt);
-						}
-					}
-
-					if(pt2.x >= 0 && pt2.y >= 0 && pt2.x < w - 1 && pt2.y < h - 1 &&
-						!czy_blokuje2(m[pt2(w)]) &&
-						!czy_blokuje2(m[kierunek2[i].x + pt.pt.x + pt.pt.y*w]) &&
-						!czy_blokuje2(m[pt.pt.x + (kierunek2[i].y + pt.pt.y)*w]))
-					{
-						apt.prev = pt.pt;
-						apt.koszt = prev_apt.koszt + 15;
-						apt.odleglosc = (abs(pt2.x - _target_tile.x) + abs(pt2.y - _target_tile.y)) * 10;
-						apt.suma = apt.odleglosc + apt.koszt;
-
-						if(a_map[pt2(w)].IsLower(apt.suma))
-						{
-							apt.stan = 1;
-							a_map[pt2(w)] = apt;
-
-							new_pt.pt = pt2;
-							new_pt.prev = pt.pt;
-							do_sprawdzenia.push_back(new_pt);
-						}
-					}
-				}
-			}
-			else
-			{
-				for(int i = 0; i < 4; ++i)
-				{
-					const Int2& pt1 = kierunek[i] + pt.pt;
-					const Int2& pt2 = kierunek2[i] + pt.pt;
-
-					if(pt1.x >= 0 && pt1.y >= 0 && pt1.x < w - 1 && pt1.y < h - 1 && !czy_blokuje2(m[pt1(w)]))
-					{
-						int ok = 2; // 2-ok i dodaj, 1-ok, 0-nie
-
-						if(m[pt1(w)].type == DRZWI)
-						{
-							Door* door = FindDoor(ctx, pt1);
-							if(door && door->IsBlocking())
-							{
-								// ustal gdzie s¹ drzwi na polu i czy z tej strony mo¿na na nie wejœæ
-								if(czy_blokuje2(lvl.map[pt1.x - 1 + pt1.y*lvl.w].type))
-								{
-									// #   #
-									// #---#
-									// #   #
-									int mov = 0;
-									if(lvl.rooms[lvl.map[pt1.x + (pt1.y - 1)*lvl.w].room].IsCorridor())
-										++mov;
-									if(lvl.rooms[lvl.map[pt1.x + (pt1.y + 1)*lvl.w].room].IsCorridor())
-										--mov;
-									if(mov == 1)
-									{
-										// #---#
-										// #   #
-										// #   #
-										if(i != 0)
-											ok = 0;
-									}
-									else if(mov == -1)
-									{
-										// #   #
-										// #   #
-										// #---#
-										if(i != 2)
-											ok = 0;
-									}
-									else
-										ok = 1;
-								}
-								else
-								{
-									// ###
-									//  |
-									//  |
-									// ###
-									int mov = 0;
-									if(lvl.rooms[lvl.map[pt1.x - 1 + pt1.y*lvl.w].room].IsCorridor())
-										++mov;
-									if(lvl.rooms[lvl.map[pt1.x + 1 + pt1.y*lvl.w].room].IsCorridor())
-										--mov;
-									if(mov == 1)
-									{
-										// ###
-										//   |
-										//   |
-										// ###
-										if(i != 1)
-											ok = 0;
-									}
-									else if(mov == -1)
-									{
-										// ###
-										// |
-										// |
-										// ###
-										if(i != 3)
-											ok = 0;
-									}
-									else
-										ok = 1;
-								}
-							}
-						}
-
-						if(ok)
-						{
-							apt.prev = pt.pt;
-							apt.koszt = prev_apt.koszt + 10;
-							apt.odleglosc = (abs(pt1.x - _target_tile.x) + abs(pt1.y - _target_tile.y)) * 10;
-							apt.suma = apt.odleglosc + apt.koszt;
-
-							if(a_map[pt1(w)].IsLower(apt.suma))
-							{
-								apt.stan = 1;
-								a_map[pt1(w)] = apt;
-
-								if(ok == 2)
-								{
-									new_pt.pt = pt1;
-									new_pt.prev = pt.pt;
-									do_sprawdzenia.push_back(new_pt);
-								}
-							}
-						}
-					}
-
-					if(pt2.x >= 0 && pt2.y >= 0 && pt2.x < w - 1 && pt2.y < h - 1 &&
-						!czy_blokuje2(m[pt2(w)]) &&
-						!czy_blokuje2(m[kierunek2[i].x + pt.pt.x + pt.pt.y*w]) &&
-						!czy_blokuje2(m[pt.pt.x + (kierunek2[i].y + pt.pt.y)*w]))
-					{
-						bool ok = true;
-
-						if(m[pt2(w)].type == DRZWI)
-						{
-							Door* door = FindDoor(ctx, pt2);
-							if(door && door->IsBlocking())
-								ok = false;
-						}
-
-						if(ok && m[kierunek2[i].x + pt.pt.x + pt.pt.y*w].type == DRZWI)
-						{
-							Door* door = FindDoor(ctx, Int2(kierunek2[i].x + pt.pt.x, pt.pt.y));
-							if(door && door->IsBlocking())
-								ok = false;
-						}
-
-						if(ok && m[pt.pt.x + (kierunek2[i].y + pt.pt.y)*w].type == DRZWI)
-						{
-							Door* door = FindDoor(ctx, Int2(pt.pt.x, kierunek2[i].y + pt.pt.y));
-							if(door && door->IsBlocking())
-								ok = false;
-						}
-
-						if(ok)
-						{
-							apt.prev = pt.pt;
-							apt.koszt = prev_apt.koszt + 15;
-							apt.odleglosc = (abs(pt2.x - _target_tile.x) + abs(pt2.y - _target_tile.y)) * 10;
-							apt.suma = apt.odleglosc + apt.koszt;
-
-							if(a_map[pt2(w)].IsLower(apt.suma))
-							{
-								apt.stan = 1;
-								a_map[pt2(w)] = apt;
-
-								new_pt.pt = pt2;
-								new_pt.prev = pt.pt;
-								do_sprawdzenia.push_back(new_pt);
-							}
-						}
-					}
-				}
-			}
-
-			std::sort(do_sprawdzenia.begin(), do_sprawdzenia.end(), sortownik);
-		}
-
-		// jeœli cel jest niezbadany to nie znaleziono œcie¿ki
-		if(a_map[_target_tile(w)].stan == 0)
-			return false;
-
-		// wype³nij elementami œcie¿kê
-		_path.push_back(_target_tile);
-
-		Int2 p;
-
-		while((p = _path.back()) != _start_tile)
-			_path.push_back(a_map[p(w)].prev);
-	}
-
-	// usuñ ostatni element œcie¿ki
-	_path.pop_back();
-
-	return true;
-}
-
-//=================================================================================================
-Int2 Game::RandomNearTile(const Int2& _tile)
-{
-	struct DoSprawdzenia
-	{
-		int ile;
-		Int2 tile[3];
-	};
-	static vector<Int2> tiles;
-
-	const DoSprawdzenia allowed[] = {
-		{2, Int2(-2,0), Int2(-1,0), Int2(0,0)},
-		{1, Int2(-1,0), Int2(0,0), Int2(0,0)},
-		{3, Int2(-1,1), Int2(-1,0), Int2(0,1)},
-		{3, Int2(-1,-1), Int2(-1,0), Int2(0,-1)},
-		{2, Int2(2,0), Int2(1,0), Int2(0,0)},
-		{1, Int2(1,0), Int2(0,0), Int2(0,0)},
-		{3, Int2(1,1), Int2(1,0), Int2(0,1)},
-		{3, Int2(1,-1), Int2(1,0), Int2(0,-1)},
-		{2, Int2(0,2), Int2(0,1), Int2(0,0)},
-		{1, Int2(0,1), Int2(0,0), Int2(0,0)},
-		{2, Int2(0,-2), Int2(0,0), Int2(0,0)},
-		{1, Int2(0,-1),  Int2(0,0), Int2(0,0)}
-	};
-
-	bool blokuje = true;
-
-	if(location->outside)
-	{
-		OutsideLocation* outside = (OutsideLocation*)location;
-		const TerrainTile* m = outside->tiles;
-		const int w = OutsideLocation::size;
-
-		for(uint i = 0; i < 12; ++i)
-		{
-			const int x = _tile.x + allowed[i].tile[0].x,
-				y = _tile.y + allowed[i].tile[0].y;
-			if(!outside->IsInside(x, y))
-				continue;
-			if(m[x + y*w].IsBlocking())
-				continue;
-			blokuje = false;
-			for(int j = 1; j < allowed[i].ile; ++j)
-			{
-				if(m[_tile.x + allowed[i].tile[j].x + (_tile.y + allowed[i].tile[j].y)*w].IsBlocking())
-				{
-					blokuje = true;
-					break;
-				}
-			}
-			if(!blokuje)
-				tiles.push_back(allowed[i].tile[0]);
-		}
-	}
-	else
-	{
-		InsideLocation* inside = (InsideLocation*)location;
-		InsideLocationLevel& lvl = inside->GetLevelData();
-		const Pole* m = lvl.map;
-		const int w = lvl.w;
-
-		for(uint i = 0; i < 12; ++i)
-		{
-			const int x = _tile.x + allowed[i].tile[0].x,
-				y = _tile.y + allowed[i].tile[0].y;
-			if(!lvl.IsInside(x, y))
-				continue;
-			if(czy_blokuje2(m[x + y*w]))
-				continue;
-			blokuje = false;
-			for(int j = 1; j < allowed[i].ile; ++j)
-			{
-				if(czy_blokuje2(m[_tile.x + allowed[i].tile[j].x + (_tile.y + allowed[i].tile[j].y)*w]))
-				{
-					blokuje = true;
-					break;
-				}
-			}
-			if(!blokuje)
-				tiles.push_back(allowed[i].tile[0]);
-		}
-	}
-
-	if(tiles.empty())
-		return _tile;
-	else
-		return tiles[Rand() % tiles.size()] + _tile;
-}
-
-//=================================================================================================
-// 0 - path found
-// 1 - start pos and target pos too far
-// 2 - start location is blocked
-// 3 - start tile and target tile is equal
-// 4 - target tile is blocked
-// 5 - path not found
-int Game::FindLocalPath(LevelContext& ctx, vector<Int2>& _path, const Int2& my_tile, const Int2& target_tile, const Unit* _me, const Unit* _other, const void* usable, bool is_end_point)
-{
-	assert(_me);
-
-	_path.clear();
-#ifdef DRAW_LOCAL_PATH
-	if(marked == _me)
-		test_pf.clear();
-#endif
-
-	if(my_tile == target_tile)
-		return 3;
-
-	int dist = Int2::Distance(my_tile, target_tile);
-	if(dist >= 32)
-		return 1;
-
-	// œrodek
-	const Int2 center_tile((my_tile + target_tile) / 2);
-
-	int minx = max(ctx.mine.x * 8, center_tile.x - 15),
-		miny = max(ctx.mine.y * 8, center_tile.y - 15),
-		maxx = min(ctx.maxe.x * 8 - 1, center_tile.x + 16),
-		maxy = min(ctx.maxe.y * 8 - 1, center_tile.y + 16);
-
-	int w = maxx - minx,
-		h = maxy - miny;
-
-	uint size = (w + 1)*(h + 1);
-
-	if(a_map.size() < size)
-		a_map.resize(size);
-	memset(&a_map[0], 0, sizeof(APoint)*size);
-	if(local_pfmap.size() < size)
-		local_pfmap.resize(size);
-
-	const Unit* ignored_units[3] = { _me, 0 };
-	if(_other)
-		ignored_units[1] = _other;
-	IgnoreObjects ignore = { 0 };
-	ignore.ignored_units = (const Unit**)ignored_units;
-	const void* ignored_objects[2] = { 0 };
-	if(usable)
-	{
-		ignored_objects[0] = usable;
-		ignore.ignored_objects = ignored_objects;
-	}
-
-	global_col.clear();
-	GatherCollisionObjects(ctx, global_col, Box2d(float(minx) / 4 - 0.25f, float(miny) / 4 - 0.25f, float(maxx) / 4 + 0.25f, float(maxy) / 4 + 0.25f), &ignore);
-
-	const float r = _me->GetUnitRadius() - 0.25f / 2;
-
-	for(int y = miny, y2 = 0; y < maxy; ++y, ++y2)
-	{
-		for(int x = minx, x2 = 0; x < maxx; ++x, ++x2)
-		{
-			if(!Collide(global_col, Box2d(0.25f*x, 0.25f*y, 0.25f*(x + 1), 0.25f*(y + 1)), r))
-			{
-#ifdef DRAW_LOCAL_PATH
-				if(marked == _me)
-					test_pf.push_back(std::pair<Vec2, int>(Vec2(0.25f*x, 0.25f*y), 0));
-#endif
-				local_pfmap[x2 + y2*w] = false;
-			}
-			else
-				local_pfmap[x2 + y2*w] = true;
-		}
-	}
-
-	const Int2 target_rel(target_tile.x - minx, target_tile.y - miny),
-		my_rel(my_tile.x - minx, my_tile.y - miny);
-
-	// target tile is blocked
-	if(!is_end_point && local_pfmap[target_rel(w)])
-		return 4;
-
-	// oznacz moje pole jako wolne
-	local_pfmap[my_rel(w)] = false;
-	const Int2 neis[8] = {
-		Int2(-1,-1),
-		Int2(0,-1),
-		Int2(1,-1),
-		Int2(-1,0),
-		Int2(1,0),
-		Int2(-1,1),
-		Int2(0,1),
-		Int2(1,1)
-	};
-
-	bool jest = false;
-	for(int i = 0; i < 8; ++i)
-	{
-		Int2 pt = my_rel + neis[i];
-		if(pt.x < 0 || pt.y < 0 || pt.x > 32 || pt.y > 32)
-			continue;
-		if(!local_pfmap[pt(w)])
-		{
-			jest = true;
-			break;
-		}
-	}
-
-	if(!jest)
-		return 2;
-
-	// dodaj pierwszy punkt do sprawdzenia
-	static vector<Point> do_sprawdzenia;
-	do_sprawdzenia.clear();
-	{
-		Point& pt = Add1(do_sprawdzenia);
-		pt.pt = target_rel;
-		pt.prev = Int2(0, 0);
-	}
-
-	APoint apt, prev_apt;
-	apt.odleglosc = apt.suma = Int2::Distance(my_rel, target_rel) * 10;
-	apt.koszt = 0;
-	apt.stan = 1;
-	apt.prev = Int2(0, 0);
-	a_map[target_rel(w)] = apt;
-
-	AStarSort sortownik(a_map, w);
-	Point new_pt;
-
-	const int MAX_STEPS = 100;
-	int steps = 0;
-
-	// rozpocznij szukanie œcie¿ki
-	while(!do_sprawdzenia.empty())
-	{
-		Point pt = do_sprawdzenia.back();
-		do_sprawdzenia.pop_back();
-		prev_apt = a_map[pt.pt(w)];
-
-		if(pt.pt == my_rel)
-		{
-			APoint& ept = a_map[pt.pt(w)];
-			ept.stan = 1;
-			ept.prev = pt.prev;
-			break;
-		}
-
-		const Int2 kierunek[4] = {
-			Int2(0,1),
-			Int2(1,0),
-			Int2(0,-1),
-			Int2(-1,0)
-		};
-
-		const Int2 kierunek2[4] = {
-			Int2(1,1),
-			Int2(1,-1),
-			Int2(-1,1),
-			Int2(-1,-1)
-		};
-
-		for(int i = 0; i < 4; ++i)
-		{
-			const Int2& pt1 = kierunek[i] + pt.pt;
-			const Int2& pt2 = kierunek2[i] + pt.pt;
-
-			if(pt1.x >= 0 && pt1.y >= 0 && pt1.x < w - 1 && pt1.y < h - 1 && !local_pfmap[pt1(w)])
-			{
-				apt.prev = pt.pt;
-				apt.koszt = prev_apt.koszt + 10;
-				apt.odleglosc = Int2::Distance(pt1, my_rel) * 10;
-				apt.suma = apt.odleglosc + apt.koszt;
-
-				if(a_map[pt1(w)].IsLower(apt.suma))
-				{
-					apt.stan = 1;
-					a_map[pt1(w)] = apt;
-
-					new_pt.pt = pt1;
-					new_pt.prev = pt.pt;
-					do_sprawdzenia.push_back(new_pt);
-				}
-			}
-
-			if(pt2.x >= 0 && pt2.y >= 0 && pt2.x < w - 1 && pt2.y < h - 1 && !local_pfmap[pt2(w)] /*&&
-				!local_pfmap[kierunek2[i].x+pt.pt.x+pt.pt.y*w] && !local_pfmap[pt.pt.x+(kierunek2[i].y+pt.pt.y)*w]*/)
-			{
-				apt.prev = pt.pt;
-				apt.koszt = prev_apt.koszt + 15;
-				apt.odleglosc = Int2::Distance(pt2, my_rel) * 10;
-				apt.suma = apt.odleglosc + apt.koszt;
-
-				if(a_map[pt2(w)].IsLower(apt.suma))
-				{
-					apt.stan = 1;
-					a_map[pt2(w)] = apt;
-
-					new_pt.pt = pt2;
-					new_pt.prev = pt.pt;
-					do_sprawdzenia.push_back(new_pt);
-				}
-			}
-		}
-
-		++steps;
-		if(steps > MAX_STEPS)
-			break;
-
-		std::sort(do_sprawdzenia.begin(), do_sprawdzenia.end(), sortownik);
-	}
-
-	// set debug path drawing
-#ifdef DRAW_LOCAL_PATH
-	if(marked == _me)
-		test_pf_outside = (location->outside && _me->in_building == -1);
-#endif
-
-	if(a_map[my_rel(w)].stan == 0)
-	{
-		// path not found
-#ifdef DRAW_LOCAL_PATH
-		if(marked == _me)
-		{
-			test_pf.push_back(std::pair<Vec2, int>(Vec2(0.25f*my_tile.x, 0.25f*my_tile.y), 1));
-			test_pf.push_back(std::pair<Vec2, int>(Vec2(0.25f*target_tile.x, 0.25f*target_tile.y), 1));
-		}
-#endif
-		return 5;
-	}
-
-#ifdef DRAW_LOCAL_PATH
-	if(marked == _me)
-	{
-		test_pf.push_back(std::pair<Vec2, int>(Vec2(0.25f*my_tile.x, 0.25f*my_tile.y), 1));
-		test_pf.push_back(std::pair<Vec2, int>(Vec2(0.25f*target_tile.x, 0.25f*target_tile.y), 1));
-	}
-#endif
-
-	// populate path vector (and debug drawing)
-	Int2 p = my_rel;
-
-	do
-	{
-#ifdef DRAW_LOCAL_PATH
-		if(marked == _me)
-			test_pf.push_back(std::pair<Vec2, int>(Vec2(0.25f*(p.x + minx), 0.25f*(p.y + miny)), 1));
-#endif
-		_path.push_back(Int2(p.x + minx, p.y + miny));
-		p = a_map[p(w)].prev;
-	} while(p != target_rel);
-
-	_path.push_back(target_tile);
-	std::reverse(_path.begin(), _path.end());
-	_path.pop_back();
-
-	return 0;
 }
 
 //=================================================================================================
@@ -1692,7 +827,6 @@ void Game::ClearPointers()
 	eTerrain = nullptr;
 	eSkybox = nullptr;
 	eArea = nullptr;
-	eGui = nullptr;
 	ePostFx = nullptr;
 	eGlow = nullptr;
 	eGrass = nullptr;
@@ -1722,27 +856,7 @@ void Game::ClearPointers()
 	vdSchodyGora = nullptr;
 	vdSchodyDol = nullptr;
 	vdNaDrzwi = nullptr;
-
-	// teren
-	terrain = nullptr;
-	terrain_shape = nullptr;
-
-	// fizyka
-	shape_wall = nullptr;
-	shape_low_ceiling = nullptr;
-	shape_ceiling = nullptr;
-	shape_floor = nullptr;
-	shape_door = nullptr;
-	shape_block = nullptr;
-	shape_schody_c[0] = nullptr;
-	shape_schody_c[1] = nullptr;
-	shape_schody = nullptr;
-	shape_summon = nullptr;
-	shape_barrier = nullptr;
-	shape_arrow = nullptr;
-	dungeon_shape = nullptr;
-	dungeon_shape_data = nullptr;
-
+	
 	// vertex declarations
 	for(int i = 0; i < VDI_MAX; ++i)
 		vertex_decl[i] = nullptr;
@@ -1751,19 +865,20 @@ void Game::ClearPointers()
 //=================================================================================================
 void Game::OnCleanup()
 {
-	if(game_state != GS_QUIT)
+	if(game_state != GS_QUIT && game_state != GS_LOAD_MENU)
 		ClearGame();
 
-	RemoveGui();
-	GUI.OnClean();
+	for(GameComponent* component : components)
+		component->Cleanup();
+
 	CleanScene();
 	DeleteElements(bow_instances);
 	ClearQuadtree();
 	CleanupDialogs();
-	Language::Cleanup();
 
 	// shadery
 	ReleaseShaders();
+	super_shader->Cleanup();
 
 	// bufory wierzcho³ków i indeksy
 	SafeRelease(vbParticle);
@@ -1794,40 +909,18 @@ void Game::OnCleanup()
 
 	content::CleanupContent();
 
-	// teren
-	delete terrain;
-	delete terrain_shape;
-
-	// fizyka
-	delete shape_wall;
-	delete shape_low_ceiling;
-	delete shape_ceiling;
-	delete shape_floor;
-	delete shape_door;
-	delete shape_block;
-	delete shape_schody_c[0];
-	delete shape_schody_c[1];
-	delete shape_summon;
-	delete shape_barrier;
-	delete shape_schody;
-	delete shape_arrow;
-	delete dungeon_shape;
-	delete dungeon_shape_data;
-
 	draw_batch.Clear();
-	free_cave_data();
-	DeleteElements(game_players);
 	DeleteElements(old_players);
-
-	delete script_mgr;
-
-	if(peer)
-		SLNet::RakPeerInterface::DestroyInstance(peer);
+	N.Cleanup();
+	super_shader->Cleanup();
 }
 
 //=================================================================================================
 void Game::CreateTextures()
 {
+	if(tItemRegion)
+		return;
+
 	auto& wnd_size = GetWindowSize();
 
 	V(device->CreateTexture(64, 64, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tItemRegion, nullptr));
@@ -2026,25 +1119,22 @@ void Game::RestartGame()
 void Game::SetStatsText()
 {
 	// typ broni
-	WeaponTypeInfo::info[WT_SHORT].name = Str("wt_shortBlade");
-	WeaponTypeInfo::info[WT_LONG].name = Str("wt_longBlade");
-	WeaponTypeInfo::info[WT_MACE].name = Str("wt_blunt");
+	WeaponTypeInfo::info[WT_SHORT_BLADE].name = Str("wt_shortBlade");
+	WeaponTypeInfo::info[WT_LONG_BLADE].name = Str("wt_longBlade");
+	WeaponTypeInfo::info[WT_BLUNT].name = Str("wt_blunt");
 	WeaponTypeInfo::info[WT_AXE].name = Str("wt_axe");
 }
 
 //=================================================================================================
 void Game::SetGameText()
 {
-#define LOAD_ARRAY(var, str) for(uint i=0; i<countof(var); ++i) var[i] = Str(Format(str "%d", i))
-
 	txGoldPlus = Str("goldPlus");
 	txQuestCompletedGold = Str("questCompletedGold");
 
 	// ai
-	LOAD_ARRAY(txAiNoHpPot, "aiNoHpPot");
-	LOAD_ARRAY(txAiJoinTour, "aiJoinTour");
-	LOAD_ARRAY(txAiCity, "aiCity");
-	LOAD_ARRAY(txAiVillage, "aiVillage");
+	LoadArray(txAiNoHpPot, "aiNoHpPot");
+	LoadArray(txAiCity, "aiCity");
+	LoadArray(txAiVillage, "aiVillage");
 	txAiMoonwell = Str("aiMoonwell");
 	txAiForest = Str("aiForest");
 	txAiCampEmpty = Str("aiCampEmpty");
@@ -2062,26 +1152,22 @@ void Game::SetGameText()
 	txAiNoEnemies = Str("aiNoEnemies");
 	txAiNearEnemies = Str("aiNearEnemies");
 	txAiCave = Str("aiCave");
-	LOAD_ARRAY(txAiInsaneText, "aiInsaneText");
-	LOAD_ARRAY(txAiDefaultText, "aiDefaultText");
-	LOAD_ARRAY(txAiOutsideText, "aiOutsideText");
-	LOAD_ARRAY(txAiInsideText, "aiInsideText");
-	LOAD_ARRAY(txAiHumanText, "aiHumanText");
-	LOAD_ARRAY(txAiOrcText, "aiOrcText");
-	LOAD_ARRAY(txAiGoblinText, "aiGoblinText");
-	LOAD_ARRAY(txAiMageText, "aiMageText");
-	LOAD_ARRAY(txAiSecretText, "aiSecretText");
-	LOAD_ARRAY(txAiHeroDungeonText, "aiHeroDungeonText");
-	LOAD_ARRAY(txAiHeroCityText, "aiHeroCityText");
-	LOAD_ARRAY(txAiBanditText, "aiBanditText");
-	LOAD_ARRAY(txAiHeroOutsideText, "aiHeroOutsideText");
-	LOAD_ARRAY(txAiDrunkMageText, "aiDrunkMageText");
-	LOAD_ARRAY(txAiDrunkText, "aiDrunkText");
-	LOAD_ARRAY(txAiDrunkmanText, "aiDrunkmanText");
-
-	// nazwy lokacji
-	txRandomEncounter = Str("randomEncounter");
-	txCamp = Str("camp");
+	LoadArray(txAiInsaneText, "aiInsaneText");
+	LoadArray(txAiDefaultText, "aiDefaultText");
+	LoadArray(txAiOutsideText, "aiOutsideText");
+	LoadArray(txAiInsideText, "aiInsideText");
+	LoadArray(txAiHumanText, "aiHumanText");
+	LoadArray(txAiOrcText, "aiOrcText");
+	LoadArray(txAiGoblinText, "aiGoblinText");
+	LoadArray(txAiMageText, "aiMageText");
+	LoadArray(txAiSecretText, "aiSecretText");
+	LoadArray(txAiHeroDungeonText, "aiHeroDungeonText");
+	LoadArray(txAiHeroCityText, "aiHeroCityText");
+	LoadArray(txAiBanditText, "aiBanditText");
+	LoadArray(txAiHeroOutsideText, "aiHeroOutsideText");
+	LoadArray(txAiDrunkMageText, "aiDrunkMageText");
+	LoadArray(txAiDrunkText, "aiDrunkText");
+	LoadArray(txAiDrunkmanText, "aiDrunkmanText");
 
 	// mapa
 	txEnteringLocation = Str("enteringLocation");
@@ -2097,25 +1183,8 @@ void Game::SetGameText()
 	txWaitingForPlayers = Str("waitingForPlayers");
 	txLoadingResources = Str("loadingResources");
 
-	// zawody w piciu
-	txContestNoWinner = Str("contestNoWinner");
-	txContestStart = Str("contestStart");
-	LOAD_ARRAY(txContestTalk, "contestTalk");
-	txContestWin = Str("contestWin");
-	txContestWinNews = Str("contestWinNews");
-	txContestDraw = Str("contestDraw");
-	txContestPrize = Str("contestPrize");
-	txContestNoPeople = Str("contestNoPeople");
-
-	// samouczek
-	LOAD_ARRAY(txTut, "tut");
-	txTutNote = Str("tutNote");
-	txTutLoc = Str("tutLoc");
 	txTutPlay = Str("tutPlay");
 	txTutTick = Str("tutTick");
-
-	// zawody
-	LOAD_ARRAY(txTour, "tour");
 
 	txCantSaveGame = Str("cantSaveGame");
 	txSaveFailed = Str("saveFailed");
@@ -2143,78 +1212,49 @@ void Game::SetGameText()
 	txPvpRefuse = Str("pvpRefuse");
 	txWin = Str("win");
 	txWinMp = Str("winMp");
-	txINeedWeapon = Str("iNeedWeapon");
-	txNoHpp = Str("noHpp");
-	txCantDo = Str("cantDo");
-	txDontLootFollower = Str("dontLootFollower");
-	txDontLootArena = Str("dontLootArena");
-	txUnlockedDoor = Str("unlockedDoor");
-	txNeedKey = Str("needKey");
 	txLevelUp = Str("levelUp");
 	txLevelDown = Str("levelDown");
-	txLocationText = Str("locationText");
-	txLocationTextMap = Str("locationTextMap");
 	txRegeneratingLevel = Str("regeneratingLevel");
-	txGmsLooted = Str("gmsLooted");
-	txGmsRumor = Str("gmsRumor");
-	txGmsJournalUpdated = Str("gmsJournalUpdated");
-	txGmsUsed = Str("gmsUsed");
-	txGmsUnitBusy = Str("gmsUnitBusy");
-	txGmsGatherTeam = Str("gmsGatherTeam");
-	txGmsNotLeader = Str("gmsNotLeader");
-	txGmsNotInCombat = Str("gmsNotInCombat");
 	txGainTextAttrib = Str("gainTextAttrib");
 	txGainTextSkill = Str("gainTextSkill");
 	txNeedItem = Str("needItem");
-	txReallyQuit = Str("reallyQuit");
-	txSecretAppear = Str("secretAppear");
-	txGmsAddedItem = Str("gmsAddedItem");
 	txGmsAddedItems = Str("gmsAddedItems");
-	txGmsGettingOutOfRange = Str("gmsGettingOutOfRange");
-	txGmsLeftEvent = Str("gmsLeftEvent");
 
 	// plotki
-	LOAD_ARRAY(txRumor, "rumor_");
-	LOAD_ARRAY(txRumorD, "rumor_d_");
+	LoadArray(txRumor, "rumor_");
+	LoadArray(txRumorD, "rumor_d_");
 
 	// dialogi 1
-	LOAD_ARRAY(txMayorQFailed, "mayorQFailed");
-	LOAD_ARRAY(txQuestAlreadyGiven, "questAlreadyGiven");
-	LOAD_ARRAY(txMayorNoQ, "mayorNoQ");
-	LOAD_ARRAY(txCaptainQFailed, "captainQFailed");
-	LOAD_ARRAY(txCaptainNoQ, "captainNoQ");
-	LOAD_ARRAY(txLocationDiscovered, "locationDiscovered");
-	LOAD_ARRAY(txAllDiscovered, "allDiscovered");
-	LOAD_ARRAY(txCampDiscovered, "campDiscovered");
-	LOAD_ARRAY(txAllCampDiscovered, "allCampDiscovered");
-	LOAD_ARRAY(txNoQRumors, "noQRumors");
-	LOAD_ARRAY(txRumorQ, "rumorQ");
+	LoadArray(txMayorQFailed, "mayorQFailed");
+	LoadArray(txQuestAlreadyGiven, "questAlreadyGiven");
+	LoadArray(txMayorNoQ, "mayorNoQ");
+	LoadArray(txCaptainQFailed, "captainQFailed");
+	LoadArray(txCaptainNoQ, "captainNoQ");
+	LoadArray(txLocationDiscovered, "locationDiscovered");
+	LoadArray(txAllDiscovered, "allDiscovered");
+	LoadArray(txCampDiscovered, "campDiscovered");
+	LoadArray(txAllCampDiscovered, "allCampDiscovered");
+	LoadArray(txNoQRumors, "noQRumors");
+	LoadArray(txRumorQ, "rumorQ");
 	txNeedMoreGold = Str("needMoreGold");
 	txNoNearLoc = Str("noNearLoc");
 	txNearLoc = Str("nearLoc");
-	LOAD_ARRAY(txNearLocEmpty, "nearLocEmpty");
+	LoadArray(txNearLocEmpty, "nearLocEmpty");
 	txNearLocCleared = Str("nearLocCleared");
-	LOAD_ARRAY(txNearLocEnemy, "nearLocEnemy");
-	LOAD_ARRAY(txNoNews, "noNews");
-	LOAD_ARRAY(txAllNews, "allNews");
-	txPvpTooFar = Str("pvpTooFar");
-	txPvp = Str("pvp");
-	txPvpWith = Str("pvpWith");
-	txNewsCampCleared = Str("newsCampCleared");
-	txNewsLocCleared = Str("newsLocCleared");
-	LOAD_ARRAY(txArenaText, "arenaText");
-	LOAD_ARRAY(txArenaTextU, "arenaTextU");
+	LoadArray(txNearLocEnemy, "nearLocEnemy");
+	LoadArray(txNoNews, "noNews");
+	LoadArray(txAllNews, "allNews");
 	txAllNearLoc = Str("allNearLoc");
 
 	// dystans / si³a
 	txNear = Str("near");
 	txFar = Str("far");
 	txVeryFar = Str("veryFar");
-	LOAD_ARRAY(txELvlVeryWeak, "eLvlVeryWeak");
-	LOAD_ARRAY(txELvlWeak, "eLvlWeak");
-	LOAD_ARRAY(txELvlAverage, "eLvlAverage");
-	LOAD_ARRAY(txELvlQuiteStrong, "eLvlQuiteStrong");
-	LOAD_ARRAY(txELvlStrong, "eLvlStrong");
+	LoadArray(txELvlVeryWeak, "eLvlVeryWeak");
+	LoadArray(txELvlWeak, "eLvlWeak");
+	LoadArray(txELvlAverage, "eLvlAverage");
+	LoadArray(txELvlQuiteStrong, "eLvlQuiteStrong");
+	LoadArray(txELvlStrong, "eLvlStrong");
 
 	// questy
 	txArthur = Str("arthur");
@@ -2232,7 +1272,7 @@ void Game::SetGameText()
 	txMageHere = Str("mageHere");
 	txMageEnter = Str("mageEnter");
 	txMageFinal = Str("mageFinal");
-	LOAD_ARRAY(txQuest, "quest");
+	LoadArray(txQuest, "quest");
 	txForMayor = Str("forMayor");
 	txForSoltys = Str("forSoltys");
 
@@ -2271,23 +1311,10 @@ void Game::SetGameText()
 	txMpNPCLeft = Str("mpNPCLeft");
 	txLoadingLevel = Str("loadingLevel");
 	txDisconnecting = Str("disconnecting");
-	txDisconnected = Str("disconnected");
-	txLost = Str("lost");
-	txLeft = Str("left");
-	txLost2 = Str("left2");
-	txUnconnected = Str("unconnected");
-	txClosing = Str("closing");
-	txKicked = Str("kicked");
-	txUnknown = Str("unknown");
-	txUnknown2 = Str("unknown2");
-	txWaitingForServer = Str("waitingForServer");
-	txStartingGame = Str("startingGame");
 	txPreparingWorld = Str("preparingWorld");
 	txInvalidCrc = Str("invalidCrc");
 
 	// net
-	txCreateServerFailed = Str("createServerFailed");
-	txInitConnectionFailed = Str("initConnectionFailed");
 	txServer = Str("server");
 	txPlayerKicked = Str("playerKicked");
 	txYouAreLeader = Str("youAreLeader");
@@ -2327,21 +1354,9 @@ void Game::SetGameText()
 	}
 
 	// dialogi
-	LOAD_ARRAY(txYell, "yell");
+	LoadArray(txYell, "yell");
 
 	TakenPerk::LoadText();
-}
-
-//=================================================================================================
-Unit* Game::FindPlayerTradingWithUnit(Unit& u)
-{
-	for(Unit* unit : Team.active_members)
-	{
-		if(unit->IsPlayer() && unit->player->IsTradingWith(&u))
-			return unit;
-	}
-
-	return nullptr;
 }
 
 //=================================================================================================
@@ -2349,7 +1364,7 @@ bool Game::ValidateTarget(Unit& u, Unit* target)
 {
 	assert(target);
 
-	LevelContext& ctx = GetContext(u);
+	LevelContext& ctx = L.GetContext(u);
 
 	for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
 	{
@@ -2368,310 +1383,6 @@ void Game::UpdateLights(vector<Light>& lights)
 		Light& s = *it;
 		s.t_pos = s.pos + Vec3::Random(Vec3(-0.05f, -0.05f, -0.05f), Vec3(0.05f, 0.05f, 0.05f));
 		s.t_color = (s.color + Vec3::Random(Vec3(-0.1f, -0.1f, -0.1f), Vec3(0.1f, 0.1f, 0.1f))).Clamped();
-	}
-}
-
-//=================================================================================================
-bool Game::IsDrunkman(Unit& u)
-{
-	if(IS_SET(u.data->flags, F_AI_DRUNKMAN))
-		return true;
-	else if(IS_SET(u.data->flags3, F3_DRUNK_MAGE))
-		return quest_mages2->mages_state < Quest_Mages2::State::MageCured;
-	else if(IS_SET(u.data->flags3, F3_DRUNKMAN_AFTER_CONTEST))
-		return contest_state == CONTEST_DONE;
-	else
-		return false;
-}
-
-//=================================================================================================
-void Game::PlayUnitSound(Unit& u, SOUND snd, float range)
-{
-	sound_mgr->PlaySound3d(snd, u.GetHeadSoundPos(), range);
-}
-
-//=================================================================================================
-void Game::UnitFall(Unit& u)
-{
-	ACTION prev_action = u.action;
-	u.live_state = Unit::FALLING;
-
-	if(Net::IsLocal())
-	{
-		// przerwij akcjê
-		BreakUnitAction(u, BREAK_ACTION_MODE::FALL);
-
-		// wstawanie
-		u.raise_timer = Random(5.f, 7.f);
-
-		// event
-		if(u.event_handler)
-			u.event_handler->HandleUnitEvent(UnitEventHandler::FALL, &u);
-
-		// komunikat
-		if(Net::IsOnline())
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::FALL;
-			c.unit = &u;
-		}
-
-		if(u.player == pc)
-			pc_data.before_player = BP_NONE;
-	}
-	else
-	{
-		// przerwij akcjê
-		BreakUnitAction(u, BREAK_ACTION_MODE::FALL);
-
-		// komunikat
-		if(&u == pc->unit)
-		{
-			u.raise_timer = Random(5.f, 7.f);
-			pc_data.before_player = BP_NONE;
-		}
-	}
-
-	if(prev_action == A_ANIMATION)
-	{
-		u.action = A_NONE;
-		u.current_animation = ANI_STAND;
-	}
-	u.animation = ANI_DIE;
-	u.talking = false;
-	u.mesh_inst->need_update = true;
-}
-
-//=================================================================================================
-void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
-{
-	ACTION prev_action = u.action;
-
-	if(u.live_state == Unit::FALL)
-	{
-		// postaæ ju¿ le¿y na ziemi, dodaj krew
-		CreateBlood(GetContext(u), u);
-		u.live_state = Unit::DEAD;
-	}
-	else
-		u.live_state = Unit::DYING;
-
-	if(Net::IsLocal())
-	{
-		// przerwij akcjê
-		BreakUnitAction(u, BREAK_ACTION_MODE::FALL);
-
-		// dodaj z³oto do ekwipunku
-		if(u.gold && !(u.IsPlayer() || u.IsFollower()))
-		{
-			u.AddItem(gold_item_ptr, (uint)u.gold);
-			u.gold = 0;
-		}
-
-		// og³oœ œmieræ
-		for(vector<Unit*>::iterator it = ctx->units->begin(), end = ctx->units->end(); it != end; ++it)
-		{
-			if((*it)->IsPlayer() || !(*it)->IsStanding() || !IsFriend(u, **it))
-				continue;
-
-			if(Vec3::Distance(u.pos, (*it)->pos) <= 20.f && CanSee(u, **it))
-				(*it)->ai->morale -= 2.f;
-		}
-
-		// o¿ywianie / sprawdŸ czy lokacja oczyszczona
-		if(u.IsTeamMember())
-			u.raise_timer = Random(5.f, 7.f);
-		else
-			CheckIfLocationCleared();
-
-		// event
-		if(u.event_handler)
-			u.event_handler->HandleUnitEvent(UnitEventHandler::DIE, &u);
-
-		// muzyka bossa
-		if(IS_SET(u.data->flags2, F2_BOSS))
-		{
-			if(RemoveElementTry(boss_levels, Int2(current_location, dungeon_level)))
-				SetMusic();
-		}
-
-		// komunikat
-		if(Net::IsOnline())
-		{
-			NetChange& c2 = Add1(Net::changes);
-			c2.type = NetChange::DIE;
-			c2.unit = &u;
-		}
-
-		// statystyki
-		++total_kills;
-		if(killer && killer->IsPlayer())
-		{
-			++killer->player->kills;
-			if(Net::IsOnline())
-				killer->player->stat_flags |= STAT_KILLS;
-		}
-		if(u.IsPlayer())
-		{
-			++u.player->knocks;
-			if(Net::IsOnline())
-				u.player->stat_flags |= STAT_KNOCKS;
-			if(u.player == pc)
-				pc_data.before_player = BP_NONE;
-		}
-	}
-	else
-	{
-		u.hp = 0.f;
-
-		// przerwij akcjê
-		BreakUnitAction(u, BREAK_ACTION_MODE::FALL);
-
-		// o¿ywianie
-		if(&u == pc->unit)
-		{
-			u.raise_timer = Random(5.f, 7.f);
-			pc_data.before_player = BP_NONE;
-		}
-
-		// muzyka bossa
-		if(IS_SET(u.data->flags2, F2_BOSS) && boss_level_mp)
-		{
-			boss_level_mp = false;
-			SetMusic();
-		}
-	}
-
-	if(prev_action == A_ANIMATION)
-	{
-		u.action = A_NONE;
-		u.current_animation = ANI_STAND;
-	}
-	u.animation = ANI_DIE;
-	u.talking = false;
-	u.mesh_inst->need_update = true;
-
-	// dŸwiêk
-	SOUND snd = nullptr;
-	if(u.data->sounds->sound[SOUND_DEATH])
-		snd = u.data->sounds->sound[SOUND_DEATH]->sound;
-	else if(u.data->sounds->sound[SOUND_PAIN])
-		snd = u.data->sounds->sound[SOUND_PAIN]->sound;
-	if(snd)
-		PlayUnitSound(u, snd, 2.f);
-
-	// przenieœ fizyke
-	UpdateUnitPhysics(u, u.pos);
-}
-
-//=================================================================================================
-void Game::UnitTryStandup(Unit& u, float dt)
-{
-	if(u.in_arena != -1 || death_screen != 0)
-		return;
-
-	u.raise_timer -= dt;
-	bool ok = false;
-
-	if(u.live_state == Unit::DEAD)
-	{
-		if(u.IsTeamMember())
-		{
-			if(u.hp > 0.f && u.raise_timer > 0.1f)
-				u.raise_timer = 0.1f;
-
-			if(u.raise_timer <= 0.f)
-			{
-				u.RemovePoison();
-
-				if(u.alcohol > u.hpmax)
-				{
-					// móg³by wstaæ ale jest zbyt pijany
-					u.live_state = Unit::FALL;
-					UpdateUnitPhysics(u, u.pos);
-				}
-				else
-				{
-					// sprawdŸ czy nie ma wrogów
-					LevelContext& ctx = GetContext(u);
-					ok = true;
-					for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
-					{
-						if((*it)->IsStanding() && IsEnemy(u, **it) && Vec3::Distance(u.pos, (*it)->pos) <= 20.f && CanSee(u, **it))
-						{
-							ok = false;
-							break;
-						}
-					}
-				}
-
-				if(!ok)
-				{
-					if(u.hp > 0.f)
-						u.raise_timer = 0.1f;
-					else
-						u.raise_timer = Random(1.f, 2.f);
-				}
-			}
-		}
-	}
-	else if(u.live_state == Unit::FALL)
-	{
-		if(u.raise_timer <= 0.f)
-		{
-			if(u.alcohol < u.hpmax)
-				ok = true;
-			else
-				u.raise_timer = Random(1.f, 2.f);
-		}
-	}
-
-	if(ok)
-	{
-		UnitStandup(u);
-
-		if(Net::IsOnline())
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::STAND_UP;
-			c.unit = &u;
-		}
-	}
-}
-
-//=================================================================================================
-void Game::UnitStandup(Unit& u)
-{
-	u.HealPoison();
-	u.live_state = Unit::ALIVE;
-	Mesh::Animation* anim = u.mesh_inst->mesh->GetAnimation("wstaje2");
-	if(anim)
-	{
-		u.mesh_inst->Play(anim, PLAY_ONCE | PLAY_PRIO3, 0);
-		u.mesh_inst->groups[0].speed = 1.f;
-		u.action = A_STAND_UP;
-		u.animation = ANI_PLAY;
-	}
-	else
-		u.action = A_NONE;
-	u.used_item = nullptr;
-
-	if(Net::IsLocal())
-	{
-		if(u.IsAI())
-		{
-			if(u.ai->state != AIController::Idle)
-			{
-				u.ai->state = AIController::Idle;
-				u.ai->change_ai_mode = true;
-			}
-			u.ai->alert_target = nullptr;
-			u.ai->idle_action = AIController::Idle_None;
-			u.ai->target = nullptr;
-			u.ai->timer = Random(2.f, 5.f);
-		}
-
-		WarpUnit(u, u.pos);
 	}
 }
 
@@ -2723,16 +1434,15 @@ void Game::UpdatePostEffects(float dt)
 //=================================================================================================
 void Game::PlayerYell(Unit& u)
 {
-	UnitTalk(u, random_string(txYell));
+	UnitTalk(u, RandomString(txYell));
 
-	LevelContext& ctx = GetContext(u);
+	LevelContext& ctx = L.GetContext(u);
 	for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
 	{
 		Unit& u2 = **it;
-		if(u2.IsAI() && u2.IsStanding() && !IsEnemy(u, u2) && !IsFriend(u, u2) && u2.busy == Unit::Busy_No && u2.frozen == FROZEN::NO && !u2.usable
+		if(u2.IsAI() && u2.IsStanding() && !u.IsEnemy(u2) && !u.IsFriend(u2) && u2.busy == Unit::Busy_No && u2.frozen == FROZEN::NO && !u2.usable
 			&& u2.ai->state == AIController::Idle && !IS_SET(u2.data->flags, F_AI_STAY)
-			&& 	(u2.ai->idle_action == AIController::Idle_None || u2.ai->idle_action == AIController::Idle_Animation || u2.ai->idle_action == AIController::Idle_Rot
-				|| u2.ai->idle_action == AIController::Idle_Look))
+			&& Any(u2.ai->idle_action, AIController::Idle_None, AIController::Idle_Animation, AIController::Idle_Rot, AIController::Idle_Look))
 		{
 			u2.ai->idle_action = AIController::Idle_MoveAway;
 			u2.ai->idle_data.unit = &u;
@@ -2771,168 +1481,11 @@ bool Game::CanBuySell(const Item* item)
 }
 
 //=================================================================================================
-void Game::InitSuperShader()
-{
-	V(D3DXCreateEffectPool(&sshader_pool));
-
-	FileReader f(Format("%s/shaders/super.fx", g_system_dir.c_str()));
-	FileTime file_time = f.GetTime();
-	if(file_time != sshader_edit_time)
-	{
-		f.ReadToString(sshader_code);
-		sshader_edit_time = file_time;
-	}
-
-	GetSuperShader(0);
-
-	SetupSuperShader();
-}
-
-//=================================================================================================
-uint Game::GetSuperShaderId(bool animated, bool have_binormals, bool fog, bool specular, bool normal, bool point_light, bool dir_light) const
-{
-	uint id = 0;
-	if(animated)
-		id |= (1 << SSS_ANIMATED);
-	if(have_binormals)
-		id |= (1 << SSS_HAVE_BINORMALS);
-	if(fog)
-		id |= (1 << SSS_FOG);
-	if(specular)
-		id |= (1 << SSS_SPECULAR);
-	if(normal)
-		id |= (1 << SSS_NORMAL);
-	if(point_light)
-		id |= (1 << SSS_POINT_LIGHT);
-	if(dir_light)
-		id |= (1 << SSS_DIR_LIGHT);
-	return id;
-}
-
-//=================================================================================================
-SuperShader* Game::GetSuperShader(uint id)
-{
-	for(vector<SuperShader>::iterator it = sshaders.begin(), end = sshaders.end(); it != end; ++it)
-	{
-		if(it->id == id)
-			return &*it;
-	}
-
-	return CompileSuperShader(id);
-}
-
-//=================================================================================================
-SuperShader* Game::CompileSuperShader(uint id)
-{
-	D3DXMACRO macros[10] = { 0 };
-	uint i = 0;
-
-	if(IS_SET(id, 1 << SSS_ANIMATED))
-	{
-		macros[i].Name = "ANIMATED";
-		macros[i].Definition = "1";
-		++i;
-	}
-	if(IS_SET(id, 1 << SSS_HAVE_BINORMALS))
-	{
-		macros[i].Name = "HAVE_BINORMALS";
-		macros[i].Definition = "1";
-		++i;
-	}
-	if(IS_SET(id, 1 << SSS_FOG))
-	{
-		macros[i].Name = "FOG";
-		macros[i].Definition = "1";
-		++i;
-	}
-	if(IS_SET(id, 1 << SSS_SPECULAR))
-	{
-		macros[i].Name = "SPECULAR_MAP";
-		macros[i].Definition = "1";
-		++i;
-	}
-	if(IS_SET(id, 1 << SSS_NORMAL))
-	{
-		macros[i].Name = "NORMAL_MAP";
-		macros[i].Definition = "1";
-		++i;
-	}
-	if(IS_SET(id, 1 << SSS_POINT_LIGHT))
-	{
-		macros[i].Name = "POINT_LIGHT";
-		macros[i].Definition = "1";
-		++i;
-
-		macros[i].Name = "LIGHTS";
-		macros[i].Definition = (shader_version == 2 ? "2" : "3");
-		++i;
-	}
-	else if(IS_SET(id, 1 << SSS_DIR_LIGHT))
-	{
-		macros[i].Name = "DIR_LIGHT";
-		macros[i].Definition = "1";
-		++i;
-	}
-
-	macros[i].Name = "VS_VERSION";
-	macros[i].Definition = (shader_version == 3 ? "vs_3_0" : "vs_2_0");
-	++i;
-
-	macros[i].Name = "PS_VERSION";
-	macros[i].Definition = (shader_version == 3 ? "ps_3_0" : "ps_2_0");
-	++i;
-
-	Info("Compiling super shader: %u", id);
-
-	CompileShaderParams params = { "super.fx" };
-	params.cache_name = Format("%d_super%u.fcx", shader_version, id);
-	params.file_time = sshader_edit_time;
-	params.input = &sshader_code;
-	params.macros = macros;
-	params.pool = sshader_pool;
-
-	SuperShader& s = Add1(sshaders);
-	s.e = CompileShader(params);
-	s.id = id;
-
-	return &s;
-}
-
-//=================================================================================================
-void Game::SetupSuperShader()
-{
-	ID3DXEffect* e = sshaders[0].e;
-
-	Info("Setting up super shader parameters.");
-	hSMatCombined = e->GetParameterByName(nullptr, "matCombined");
-	hSMatWorld = e->GetParameterByName(nullptr, "matWorld");
-	hSMatBones = e->GetParameterByName(nullptr, "matBones");
-	hSTint = e->GetParameterByName(nullptr, "tint");
-	hSAmbientColor = e->GetParameterByName(nullptr, "ambientColor");
-	hSFogColor = e->GetParameterByName(nullptr, "fogColor");
-	hSFogParams = e->GetParameterByName(nullptr, "fogParams");
-	hSLightDir = e->GetParameterByName(nullptr, "lightDir");
-	hSLightColor = e->GetParameterByName(nullptr, "lightColor");
-	hSLights = e->GetParameterByName(nullptr, "lights");
-	hSSpecularColor = e->GetParameterByName(nullptr, "specularColor");
-	hSSpecularIntensity = e->GetParameterByName(nullptr, "specularIntensity");
-	hSSpecularHardness = e->GetParameterByName(nullptr, "specularHardness");
-	hSCameraPos = e->GetParameterByName(nullptr, "cameraPos");
-	hSTexDiffuse = e->GetParameterByName(nullptr, "texDiffuse");
-	hSTexNormal = e->GetParameterByName(nullptr, "texNormal");
-	hSTexSpecular = e->GetParameterByName(nullptr, "texSpecular");
-	assert(hSMatCombined && hSMatWorld && hSMatBones && hSTint && hSAmbientColor && hSFogColor && hSFogParams && hSLightDir && hSLightColor && hSLights && hSSpecularColor && hSSpecularIntensity
-		&& hSSpecularHardness && hSCameraPos && hSTexDiffuse && hSTexNormal && hSTexSpecular);
-}
-
-//=================================================================================================
 void Game::ReloadShaders()
 {
 	Info("Reloading shaders...");
 
 	ReleaseShaders();
-
-	InitSuperShader();
 
 	try
 	{
@@ -2941,10 +1494,12 @@ void Game::ReloadShaders()
 		eSkybox = CompileShader("skybox.fx");
 		eTerrain = CompileShader("terrain.fx");
 		eArea = CompileShader("area.fx");
-		eGui = CompileShader("gui.fx");
 		ePostFx = CompileShader("post.fx");
 		eGlow = CompileShader("glow.fx");
 		eGrass = CompileShader("grass.fx");
+
+		for(ShaderHandler* shader : shaders)
+			shader->OnInit();
 	}
 	catch(cstring err)
 	{
@@ -2953,7 +1508,6 @@ void Game::ReloadShaders()
 	}
 
 	SetupShaders();
-	GUI.SetShader(eGui);
 }
 
 //=================================================================================================
@@ -2964,15 +1518,12 @@ void Game::ReleaseShaders()
 	SafeRelease(eTerrain);
 	SafeRelease(eSkybox);
 	SafeRelease(eArea);
-	SafeRelease(eGui);
 	SafeRelease(ePostFx);
 	SafeRelease(eGlow);
 	SafeRelease(eGrass);
 
-	SafeRelease(sshader_pool);
-	for(vector<SuperShader>::iterator it = sshaders.begin(), end = sshaders.end(); it != end; ++it)
-		SafeRelease(it->e);
-	sshaders.clear();
+	for(ShaderHandler* shader : shaders)
+		shader->OnRelease();
 }
 
 //=================================================================================================
@@ -3050,7 +1601,7 @@ uint Game::ValidateGameData(bool major)
 	PerkInfo::Validate(err);
 	RoomType::Validate(err);
 	if(major)
-		VerifyDialogs(script_mgr, err);
+		VerifyDialogs(err);
 
 	if(err == 0)
 		Info("Test: Validation succeeded.");
@@ -3076,94 +1627,8 @@ MeshInstance* Game::GetBowInstance(Mesh* mesh)
 
 void Game::SetupConfigVars()
 {
-	config_vars.push_back(ConfigVar("devmode", default_devmode));
-	config_vars.push_back(ConfigVar("players_devmode", default_player_devmode));
-}
-
-void Game::ParseConfigVar(cstring arg)
-{
-	assert(arg);
-
-	int index = StrCharIndex(arg, '=');
-	if(index == -1 || index == 0)
-	{
-		Warn("Broken command line variable '%s'.", arg);
-		return;
-	}
-
-	ConfigVar* var = nullptr;
-	for(ConfigVar& v : config_vars)
-	{
-		if(strncmp(arg, v.name, index) == 0)
-		{
-			var = &v;
-			break;
-		}
-	}
-	if(!var)
-	{
-		Warn("Missing config variable '%.*s'.", index, arg);
-		return;
-	}
-
-	cstring value = arg + index + 1;
-	if(!*value)
-	{
-		Warn("Missing command line variable value '%s'.", arg);
-		return;
-	}
-
-	switch(var->type)
-	{
-	case AnyVarType::Bool:
-		{
-			bool b;
-			if(!TextHelper::ToBool(value, b))
-			{
-				Warn("Value for config variable '%s' must be bool, found '%s'.", var->name, value);
-				return;
-			}
-			var->new_value._bool = b;
-			var->have_new_value = true;
-		}
-		break;
-	}
-}
-
-void Game::SetConfigVarsFromFile()
-{
-	for(ConfigVar& v : config_vars)
-	{
-		Config::Entry* entry = cfg.GetEntry(v.name);
-		if(!entry)
-			continue;
-
-		switch(v.type)
-		{
-		case AnyVarType::Bool:
-			if(!TextHelper::ToBool(entry->value.c_str(), v.ptr->_bool))
-			{
-				Warn("Value for config variable '%s' must be bool, found '%s'.", v.name, entry->value.c_str());
-				return;
-			}
-			break;
-		}
-	}
-}
-
-void Game::ApplyConfigVars()
-{
-	for(ConfigVar& v : config_vars)
-	{
-		if(!v.have_new_value)
-			continue;
-		switch(v.type)
-		{
-		case AnyVarType::Bool:
-			v.ptr->_bool = v.new_value._bool;
-			break;
-		}
-	}
+	cfg.AddVar(ConfigVar("devmode", default_devmode));
+	cfg.AddVar(ConfigVar("players_devmode", default_player_devmode));
 }
 
 cstring Game::GetShortcutText(GAME_KEYS key, cstring action)
@@ -3175,12 +1640,326 @@ cstring Game::GetShortcutText(GAME_KEYS key, cstring action)
 		action = k.text;
 
 	if(first_key && second_key)
-		return Format("%s (%s, %s)", action, controls->key_text[k[0]], controls->key_text[k[1]]);
+		return Format("%s (%s, %s)", action, gui->controls->key_text[k[0]], gui->controls->key_text[k[1]]);
 	else if(first_key || second_key)
 	{
 		byte used = k[first_key ? 0 : 1];
-		return Format("%s (%s)", action, controls->key_text[used]);
+		return Format("%s (%s)", action, gui->controls->key_text[used]);
 	}
 	else
 		return action;
+}
+
+void Game::PauseGame()
+{
+	paused = !paused;
+	if(Net::IsOnline())
+	{
+		AddMultiMsg(paused ? txGamePaused : txGameResumed);
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::PAUSED;
+		c.id = (paused ? 1 : 0);
+		if(paused && game_state == GS_WORLDMAP && W.GetState() == World::State::TRAVEL)
+			Net::PushChange(NetChange::UPDATE_MAP_POS);
+	}
+}
+
+void Game::GenerateWorld()
+{
+	if(next_seed != 0)
+	{
+		Srand(next_seed);
+		next_seed = 0;
+	}
+	else if(force_seed != 0 && force_seed_all)
+		Srand(force_seed);
+
+	Info("Generating world, seed %u.", RandVal());
+
+	W.GenerateWorld();
+
+	Info("Randomness integrity: %d", RandVal());
+}
+
+void Game::EnterLocation(int level, int from_portal, bool close_portal)
+{
+	Location& l = *L.location;
+	L.entering = true;
+
+	gui->world_map->visible = false;
+	gui->game_gui->Reset();
+	gui->game_gui->visible = true;
+
+	const bool reenter = L.is_open;
+	L.is_open = true;
+	if(W.GetState() != World::State::INSIDE_ENCOUNTER)
+		W.SetState(World::State::INSIDE_LOCATION);
+	if(from_portal != -1)
+		L.enter_from = ENTER_FROM_PORTAL + from_portal;
+	else
+		L.enter_from = ENTER_FROM_OUTSIDE;
+	if(!reenter)
+		L.light_angle = Random(PI * 2);
+
+	L.dungeon_level = level;
+	L.event_handler = nullptr;
+	pc_data.before_player = BP_NONE;
+	arena->Reset();
+	gui->inventory->lock = nullptr;
+
+	bool first = false;
+
+	if(l.state != LS_ENTERED && l.state != LS_CLEARED)
+	{
+		first = true;
+		level_generated = true;
+	}
+	else
+		level_generated = false;
+
+	if(!reenter)
+		InitQuadTree();
+
+	if(Net::IsOnline() && N.active_players > 1)
+	{
+		BitStreamWriter f;
+		f << ID_CHANGE_LEVEL;
+		f << (byte)L.location_index;
+		f << (byte)0;
+		f << (W.GetState() == World::State::INSIDE_ENCOUNTER);
+		int ack = N.SendAll(f, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT, Stream_TransferServer);
+		for(auto info : N.players)
+		{
+			if(info->id == my_id)
+				info->state = PlayerInfo::IN_GAME;
+			else
+			{
+				info->state = PlayerInfo::WAITING_FOR_RESPONSE;
+				info->ack = ack;
+				info->timer = 5.f;
+			}
+		}
+		Net_FilterServerChanges();
+	}
+
+	// calculate number of loading steps for drawing progress bar
+	LocationGenerator* loc_gen = loc_gen_factory->Get(&l, first, reenter);
+	int steps = loc_gen->GetNumberOfSteps();
+	LoadingStart(steps);
+	LoadingStep(txEnteringLocation);
+
+	// generate map on first visit
+	if(l.state != LS_ENTERED && l.state != LS_CLEARED)
+	{
+		if(next_seed != 0)
+		{
+			Srand(next_seed);
+			next_seed = 0;
+		}
+		else if(force_seed != 0 && force_seed_all)
+			Srand(force_seed);
+
+		// log what is required to generate location for testing
+		if(l.type == L_CITY)
+		{
+			City* city = (City*)&l;
+			Info("Generating location '%s', seed %u [%d].", l.name.c_str(), RandVal(), city->citizens);
+		}
+		else
+			Info("Generating location '%s', seed %u.", l.name.c_str(), RandVal());
+		l.seed = RandVal();
+		if(!l.outside)
+		{
+			InsideLocation* inside = (InsideLocation*)L.location;
+			if(inside->IsMultilevel())
+			{
+				MultiInsideLocation* multi = (MultiInsideLocation*)inside;
+				multi->infos[L.dungeon_level].seed = l.seed;
+			}
+		}
+
+		// nie odwiedzono, trzeba wygenerowaæ
+		l.state = LS_ENTERED;
+
+		LoadingStep(txGeneratingMap);
+
+		loc_gen->Generate();
+	}
+	else if(l.type != L_DUNGEON && l.type != L_CRYPT)
+		Info("Entering location '%s'.", l.name.c_str());
+
+	L.city_ctx = nullptr;
+
+	if(L.location->outside)
+	{
+		loc_gen->OnEnter();
+		SetTerrainTextures();
+		CalculateQuadtree();
+	}
+	else
+		EnterLevel(loc_gen);
+
+	bool loaded_resources = RequireLoadingResources(L.location, nullptr);
+	LoadResources(txLoadingComplete, false);
+
+	l.last_visit = W.GetWorldtime();
+	L.CheckIfLocationCleared();
+	cam.Reset();
+	pc_data.rot_buf = 0.f;
+	SetMusic();
+
+	if(close_portal)
+	{
+		delete L.location->portal;
+		L.location->portal = nullptr;
+	}
+
+	if(Net::IsOnline())
+	{
+		net_mode = NM_SERVER_SEND;
+		net_state = NetState::Server_Send;
+		if(N.active_players > 1)
+		{
+			prepared_stream.Reset();
+			PrepareLevelData(prepared_stream, loaded_resources);
+			Info("Generated location packet: %d.", prepared_stream.GetNumberOfBytesUsed());
+		}
+		else
+			N.GetMe().state = PlayerInfo::IN_GAME;
+
+		gui->info_box->Show(txWaitingForPlayers);
+	}
+	else
+	{
+		clear_color = clear_color2;
+		game_state = GS_LEVEL;
+		gui->load_screen->visible = false;
+		gui->main_menu->visible = false;
+		gui->game_gui->visible = true;
+	}
+
+	if(L.location->outside)
+	{
+		OnEnterLevelOrLocation();
+		OnEnterLocation();
+	}
+
+	Info("Randomness integrity: %d", RandVal());
+	Info("Entered location.");
+	L.entering = false;
+}
+
+
+// dru¿yna opuœci³a lokacje
+void Game::LeaveLocation(bool clear, bool end_buffs)
+{
+	if(!L.is_open)
+		return;
+
+	if(Net::IsLocal() && !was_client)
+	{
+		// zawody
+		if(QM.quest_tournament->GetState() != Quest_Tournament::TOURNAMENT_NOT_DONE)
+			QM.quest_tournament->Clean();
+		// arena
+		if(!arena->free)
+			arena->Clean();
+	}
+
+	if(clear)
+	{
+		LeaveLevel(true);
+		return;
+	}
+
+	Info("Leaving location.");
+
+	if(Net::IsLocal() && (QM.quest_crazies->check_stone
+		|| (QM.quest_crazies->crazies_state >= Quest_Crazies::State::PickedStone && QM.quest_crazies->crazies_state < Quest_Crazies::State::End)))
+		QM.quest_crazies->CheckStone();
+
+	// drinking contest
+	Quest_Contest* contest = QM.quest_contest;
+	if(contest->state >= Quest_Contest::CONTEST_STARTING)
+		contest->Cleanup();
+
+	// clear blood & bodies from orc base
+	if(Net::IsLocal() && QM.quest_orcs2->orcs_state == Quest_Orcs2::State::ClearDungeon && L.location_index == QM.quest_orcs2->target_loc)
+	{
+		QM.quest_orcs2->orcs_state = Quest_Orcs2::State::End;
+		L.UpdateLocation(31, 100, false);
+	}
+
+	if(L.city_ctx && game_state != GS_EXIT_TO_MENU && Net::IsLocal())
+	{
+		// opuszczanie miasta
+		Team.BuyTeamItems();
+	}
+
+	LeaveLevel();
+
+	if(L.is_open)
+	{
+		if(Net::IsLocal())
+		{
+			// usuñ questowe postacie
+			RemoveQuestUnits(true);
+		}
+
+		L.ProcessRemoveUnits(true);
+
+		if(L.location->type == L_ENCOUNTER)
+		{
+			OutsideLocation* outside = (OutsideLocation*)L.location;
+			outside->bloods.clear();
+			DeleteElements(outside->objects);
+			DeleteElements(outside->chests);
+			DeleteElements(outside->items);
+			outside->objects.clear();
+			DeleteElements(outside->usables);
+			for(vector<Unit*>::iterator it = outside->units.begin(), end = outside->units.end(); it != end; ++it)
+				delete *it;
+			outside->units.clear();
+		}
+	}
+
+	if(Team.crazies_attack)
+	{
+		Team.crazies_attack = false;
+		if(Net::IsOnline())
+			Net::PushChange(NetChange::CHANGE_FLAGS);
+	}
+
+	if(!Net::IsLocal())
+		pc = nullptr;
+	else if(end_buffs)
+	{
+		// usuñ tymczasowe bufy
+		for(Unit* unit : Team.members)
+			unit->EndEffects();
+	}
+
+	L.is_open = false;
+	L.city_ctx = nullptr;
+}
+
+void Game::Event_RandomEncounter(int)
+{
+	gui->world_map->dialog_enc = nullptr;
+	if(Net::IsOnline())
+		Net::PushChange(NetChange::CLOSE_ENCOUNTER);
+	W.StartEncounter();
+	EnterLocation();
+}
+
+//=================================================================================================
+void Game::OnResize()
+{
+	gui->OnResize();
+}
+
+//=================================================================================================
+void Game::OnFocus(bool focus, const Int2& activation_point)
+{
+	gui->OnFocus(focus, activation_point);
 }

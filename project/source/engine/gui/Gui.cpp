@@ -28,7 +28,7 @@ TEX IGUI::tBox, IGUI::tBox2, IGUI::tPix, IGUI::tDown;
 
 //=================================================================================================
 IGUI::IGUI() : default_font(nullptr), tFontTarget(nullptr), vb(nullptr), vb2(nullptr), cursor_mode(CURSOR_NORMAL), vb2_locked(false), focused_ctrl(nullptr),
-active_notifications(), tPixel(nullptr), layout(nullptr), overlay(nullptr), grayscale(false), vertex_decl(nullptr)
+active_notifications(), tPixel(nullptr), layout(nullptr), overlay(nullptr), grayscale(false), vertex_decl(nullptr), effect(nullptr)
 {
 }
 
@@ -80,6 +80,44 @@ void IGUI::Init(IDirect3DDevice9* _device, ID3DXSprite* _sprite)
 		D3DDECL_END()
 	};
 	V(device->CreateVertexDeclaration(v, &vertex_decl));
+
+	Engine::Get().RegisterShader(this);
+}
+
+//=================================================================================================
+void IGUI::OnInit()
+{
+	effect = Engine::Get().CompileShader("gui.fx");
+	techGui = effect->GetTechniqueByName("gui");
+	techGui2 = effect->GetTechniqueByName("gui2");
+	techGuiGrayscale = effect->GetTechniqueByName("gui_grayscale");
+	hGuiSize = effect->GetParameterByName(nullptr, "size");
+	hGuiTex = effect->GetParameterByName(nullptr, "tex0");
+	assert(techGui && techGui2 && techGuiGrayscale && hGuiSize && hGuiTex);
+}
+
+//=================================================================================================
+void IGUI::OnReset()
+{
+	if(effect)
+		effect->OnLostDevice();
+	SafeRelease(vb);
+	SafeRelease(vb2);
+	SafeRelease(tFontTarget);
+}
+
+//=================================================================================================
+void IGUI::OnReload()
+{
+	if(effect)
+		effect->OnResetDevice();
+	CreateVertexBuffer();
+}
+
+//=================================================================================================
+void IGUI::OnRelease()
+{
+	SafeRelease(effect);
 }
 
 //=================================================================================================
@@ -95,20 +133,6 @@ void IGUI::SetText()
 	txYes = Str("yes");
 	txNo = Str("no");
 	txCancel = Str("cancel");
-}
-
-//=================================================================================================
-void IGUI::SetShader(ID3DXEffect* e)
-{
-	assert(e);
-
-	eGui = e;
-	techGui = eGui->GetTechniqueByName("gui");
-	techGui2 = eGui->GetTechniqueByName("gui2");
-	techGuiGrayscale = eGui->GetTechniqueByName("gui_grayscale");
-	hGuiSize = eGui->GetParameterByName(nullptr, "size");
-	hGuiTex = eGui->GetParameterByName(nullptr, "tex0");
-	assert(techGui && techGui2 && techGuiGrayscale && hGuiSize && hGuiTex);
 }
 
 //=================================================================================================
@@ -1101,8 +1125,8 @@ void IGUI::Flush(bool lock)
 			if(tCurrent2 != tSet)
 			{
 				tSet = tCurrent2;
-				V(eGui->SetTexture(hGuiTex, tSet));
-				V(eGui->CommitChanges());
+				V(effect->SetTexture(hGuiTex, tSet));
+				V(effect->CommitChanges());
 			}
 
 			// rysuj
@@ -1119,8 +1143,8 @@ void IGUI::Flush(bool lock)
 		if(tCurrent != tSet)
 		{
 			tSet = tCurrent;
-			V(eGui->SetTexture(hGuiTex, tSet));
-			V(eGui->CommitChanges());
+			V(effect->SetTexture(hGuiTex, tSet));
+			V(effect->CommitChanges());
 		}
 
 		// rysuj
@@ -1158,11 +1182,11 @@ void IGUI::Draw(bool draw_layers, bool draw_dialogs)
 
 	UINT passes;
 
-	V(eGui->SetTechnique(techGui));
+	V(effect->SetTechnique(techGui));
 	Vec4 wnd_s(float(wnd_size.x), float(wnd_size.y), 0, 0);
-	V(eGui->SetVector(hGuiSize, (D3DXVECTOR4*)&wnd_s));
-	V(eGui->Begin(&passes, 0));
-	V(eGui->BeginPass(0));
+	V(effect->SetVector(hGuiSize, (D3DXVECTOR4*)&wnd_s));
+	V(effect->Begin(&passes, 0));
+	V(effect->BeginPass(0));
 
 	// rysowanie
 	if(draw_layers)
@@ -1181,8 +1205,8 @@ void IGUI::Draw(bool draw_layers, bool draw_dialogs)
 		DrawSprite(tCursor[cursor_mode], pos);
 	}
 
-	V(eGui->EndPass());
-	V(eGui->End());
+	V(effect->EndPass());
+	V(effect->End());
 }
 
 //=================================================================================================
@@ -1487,20 +1511,6 @@ void IGUI::DrawSprite(TEX t, const Int2& pos, Color color, const Rect* clipping)
 		in_buffer = 1;
 		Flush();
 	}
-}
-
-//=================================================================================================
-void IGUI::OnReset()
-{
-	SafeRelease(vb);
-	SafeRelease(vb2);
-	SafeRelease(tFontTarget);
-}
-
-//=================================================================================================
-void IGUI::OnReload()
-{
-	CreateVertexBuffer();
 }
 
 //=================================================================================================
@@ -2177,23 +2187,23 @@ void IGUI::DrawLine(const Vec2* lines, uint count, Color color, bool strip)
 //=================================================================================================
 void IGUI::LineBegin()
 {
-	eGui->EndPass();
-	eGui->End();
-	eGui->SetTechnique(techGui2);
+	effect->EndPass();
+	effect->End();
+	effect->SetTechnique(techGui2);
 	UINT passes;
-	eGui->Begin(&passes, 0);
-	eGui->BeginPass(0);
+	effect->Begin(&passes, 0);
+	effect->BeginPass(0);
 }
 
 //=================================================================================================
 void IGUI::LineEnd()
 {
-	eGui->EndPass();
-	eGui->End();
-	eGui->SetTechnique(techGui);
+	effect->EndPass();
+	effect->End();
+	effect->SetTechnique(techGui);
 	UINT passes;
-	eGui->Begin(&passes, 0);
-	eGui->BeginPass(0);
+	effect->Begin(&passes, 0);
+	effect->BeginPass(0);
 }
 
 //=================================================================================================
@@ -2703,12 +2713,12 @@ void IGUI::UseGrayscale(bool grayscale)
 	assert(grayscale != this->grayscale);
 	this->grayscale = grayscale;
 
-	eGui->EndPass();
-	eGui->End();
-	eGui->SetTechnique(grayscale ? techGuiGrayscale : techGui);
+	effect->EndPass();
+	effect->End();
+	effect->SetTechnique(grayscale ? techGuiGrayscale : techGui);
 	UINT passes;
-	eGui->Begin(&passes, 0);
-	eGui->BeginPass(0);
+	effect->Begin(&passes, 0);
+	effect->BeginPass(0);
 }
 
 //=================================================================================================

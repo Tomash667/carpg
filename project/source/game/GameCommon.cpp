@@ -8,8 +8,8 @@
 vector<uint> _to_remove;
 
 //-----------------------------------------------------------------------------
-cstring kierunek_nazwa[8];
-cstring kierunek_nazwa_s[] = {
+cstring dir_name[8];
+cstring dir_name_short[] = {
 	"N",
 	"S",
 	"E",
@@ -23,14 +23,14 @@ cstring kierunek_nazwa_s[] = {
 //=================================================================================================
 void SetGameCommonText()
 {
-	kierunek_nazwa[DIR_N] = Str("dirN");
-	kierunek_nazwa[DIR_S] = Str("dirS");
-	kierunek_nazwa[DIR_E] = Str("dirE");
-	kierunek_nazwa[DIR_W] = Str("dirW");
-	kierunek_nazwa[DIR_NE] = Str("dirNE");
-	kierunek_nazwa[DIR_NW] = Str("dirNW");
-	kierunek_nazwa[DIR_SE] = Str("dirSE");
-	kierunek_nazwa[DIR_SW] = Str("dirSW");
+	dir_name[DIR_N] = Str("dirN");
+	dir_name[DIR_S] = Str("dirS");
+	dir_name[DIR_E] = Str("dirE");
+	dir_name[DIR_W] = Str("dirW");
+	dir_name[DIR_NE] = Str("dirNE");
+	dir_name[DIR_NW] = Str("dirNW");
+	dir_name[DIR_SE] = Str("dirSE");
+	dir_name[DIR_SW] = Str("dirSW");
 }
 
 //=================================================================================================
@@ -43,7 +43,7 @@ void SetGameCommonText()
 //          |
 //         \|/
 //          0
-KIERUNEK AngleToDir(float angle)
+Direction AngleToDir(float angle)
 {
 	assert(InRange(angle, 0.f, 2 * PI));
 	if(angle < 1.f / 8 * PI)
@@ -67,7 +67,7 @@ KIERUNEK AngleToDir(float angle)
 }
 
 //=================================================================================================
-KIERUNEK GetLocationDir(const Vec2& from, const Vec2& to)
+Direction GetLocationDir(const Vec2& from, const Vec2& to)
 {
 	return AngleToDir(Vec2::LookAtAngle(from, to));
 }

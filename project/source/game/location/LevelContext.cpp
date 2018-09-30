@@ -3,6 +3,11 @@
 #include "LevelContext.h"
 #include "Game.h"
 #include "Chest.h"
+#include "Level.h"
+#include "City.h"
+#include "Room.h"
+#include "ParticleSystem.h"
+#include "GroundItem.h"
 
 //=================================================================================================
 void TmpLevelContext::Clear()
@@ -17,6 +22,21 @@ void TmpLevelContext::Clear()
 }
 
 //=================================================================================================
+void LevelContext::BuildRefidTables()
+{
+	for(vector<ParticleEmitter*>::iterator it2 = pes->begin(), end2 = pes->end(); it2 != end2; ++it2)
+	{
+		(*it2)->refid = (int)ParticleEmitter::refid_table.size();
+		ParticleEmitter::refid_table.push_back(*it2);
+	}
+	for(vector<TrailParticleEmitter*>::iterator it2 = tpes->begin(), end2 = tpes->end(); it2 != end2; ++it2)
+	{
+		(*it2)->refid = (int)TrailParticleEmitter::refid_table.size();
+		TrailParticleEmitter::refid_table.push_back(*it2);
+	}
+}
+
+//=================================================================================================
 void LevelContext::RemoveDeadUnits()
 {
 	for(vector<Unit*>::iterator it = units->begin(), end = units->end(); it != end; ++it)
@@ -24,7 +44,7 @@ void LevelContext::RemoveDeadUnits()
 		if((*it)->live_state == Unit::DEAD && (*it)->IsAI())
 		{
 			(*it)->to_remove = true;
-			Game::Get().to_remove.push_back(*it);
+			L.to_remove.push_back(*it);
 			if(it + 1 == end)
 			{
 				units->pop_back();
@@ -171,7 +191,7 @@ Chest* LevelContext::GetRandomFarChest(const Int2& pt)
 {
 	vector<std::pair<Chest*, float> > far_chests;
 	float close_dist = -1.f;
-	Vec3 pos = pt_to_pos(pt);
+	Vec3 pos = PtToPos(pt);
 
 	// znajdü 5 najdalszych skrzyni
 	for(vector<Chest*>::iterator it = chests->begin(), end = chests->end(); it != end; ++it)
@@ -217,6 +237,7 @@ Chest* LevelContext::GetRandomFarChest(const Int2& pt)
 	return far_chests[index].first;
 }
 
+//=================================================================================================
 void LevelContext::SetTmpCtx(TmpLevelContext* ctx)
 {
 	assert(ctx);
@@ -231,7 +252,8 @@ void LevelContext::SetTmpCtx(TmpLevelContext* ctx)
 	ctx->Clear();
 }
 
-Unit* LevelContext::FindUnitById(UnitData* ud)
+//=================================================================================================
+Unit* LevelContext::FindUnit(UnitData* ud)
 {
 	assert(ud);
 
@@ -244,6 +266,7 @@ Unit* LevelContext::FindUnitById(UnitData* ud)
 	return nullptr;
 }
 
+//=================================================================================================
 Usable* LevelContext::FindUsable(BaseUsable* base)
 {
 	assert(base);
@@ -255,4 +278,24 @@ Usable* LevelContext::FindUsable(BaseUsable* base)
 	}
 
 	return nullptr;
+}
+
+
+//=================================================================================================
+LevelContext& LevelContextEnumerator::Iterator::operator * () const
+{
+	assert(index != -2);
+	if(index == -1)
+		return L.local_ctx;
+	else
+		return ((City*)loc)->inside_buildings[index]->ctx;
+}
+
+//=================================================================================================
+LevelContextEnumerator::Iterator& LevelContextEnumerator::Iterator::operator ++ ()
+{
+	++index;
+	if(loc->type != L_CITY || index >= (int)((City*)loc)->inside_buildings.size())
+		index = -2;
+	return *this;
 }

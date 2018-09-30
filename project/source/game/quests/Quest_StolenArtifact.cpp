@@ -6,32 +6,33 @@
 #include "Journal.h"
 #include "GameFile.h"
 #include "QuestManager.h"
-#include "GameGui.h"
+#include "World.h"
+#include "LevelArea.h"
 
 //=================================================================================================
 void Quest_StolenArtifact::Start()
 {
 	quest_id = Q_STOLEN_ARTIFACT;
 	type = QuestType::Random;
-	start_loc = game->current_location;
+	start_loc = W.GetCurrentLocationIndex();
 	item = OtherItem::artifacts[Rand() % OtherItem::artifacts.size()];
 	switch(Rand() % 6)
 	{
 	case 0:
-		group = SG_BANDYCI;
+		group = SG_BANDITS;
 		break;
 	case 1:
-		group = SG_ORKOWIE;
+		group = SG_ORCS;
 		break;
 	case 2:
-		group = SG_GOBLINY;
+		group = SG_GOBLINS;
 		break;
 	case 3:
 	case 4:
-		group = SG_MAGOWIE;
+		group = SG_MAGES;
 		break;
 	case 5:
-		group = SG_ZLO;
+		group = SG_EVIL;
 		break;
 	}
 }
@@ -61,11 +62,10 @@ void Quest_StolenArtifact::SetProgress(int prog2)
 	{
 	case Progress::Started:
 		{
-			start_time = game->worldtime;
-			state = Quest::Started;
-			name = game->txQuest[86];
+			OnStart(game->txQuest[86]);
+			quest_manager.quests_timeout.push_back(this);
 
-			CreateItemCopy(quest_item, item);
+			item->CreateCopy(quest_item);
 			quest_item.id = Format("$%s", item->id.c_str());
 			quest_item.refid = refid;
 			spawn_item = Quest_Dungeon::Item_GiveSpawned;
@@ -73,34 +73,29 @@ void Quest_StolenArtifact::SetProgress(int prog2)
 			unit_to_spawn = g_spawn_groups[group].GetSpawnLeader();
 			unit_spawn_level = -3;
 
-			Location& sl = *game->locations[start_loc];
-			target_loc = game->GetRandomSpawnLocation(sl.pos, group);
-			Location& tl = *game->locations[target_loc];
+			Location& sl = GetStartLocation();
+			target_loc = W.GetRandomSpawnLocation(sl.pos, group);
+			Location& tl = GetTargetLocation();
 			at_level = tl.GetRandomLevel();
 			tl.active_quest = this;
-			bool now_known = false;
-			if(tl.state == LS_UNKNOWN)
-			{
-				tl.state = LS_KNOWN;
-				now_known = true;
-			}
+			tl.SetKnown();
 
 			cstring kto;
 			switch(group)
 			{
-			case SG_BANDYCI:
+			case SG_BANDITS:
 				kto = game->txQuest[87];
 				break;
-			case SG_GOBLINY:
+			case SG_GOBLINS:
 				kto = game->txQuest[88];
 				break;
-			case SG_ORKOWIE:
+			case SG_ORCS:
 				kto = game->txQuest[89];
 				break;
-			case SG_MAGOWIE:
+			case SG_MAGES:
 				kto = game->txQuest[90];
 				break;
-			case SG_ZLO:
+			case SG_EVIL:
 				kto = game->txQuest[91];
 				break;
 			default:
@@ -108,24 +103,10 @@ void Quest_StolenArtifact::SetProgress(int prog2)
 				break;
 			}
 
-			quest_index = quest_manager.quests.size();
-			quest_manager.quests.push_back(this);
-			quest_manager.quests_timeout.push_back(this);
-			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
 			game->current_dialog->talker->temporary = false;
 
-			msgs.push_back(Format(game->txQuest[82], sl.name.c_str(), game->day + 1, game->month + 1, game->year));
+			msgs.push_back(Format(game->txQuest[82], sl.name.c_str(), W.GetDate()));
 			msgs.push_back(Format(game->txQuest[93], item->name.c_str(), kto, tl.name.c_str(), GetLocationDirName(sl.pos, tl.pos)));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-
-			if(Net::IsOnline())
-			{
-				game->Net_AddQuest(refid);
-				game->Net_RegisterItem(&quest_item, item);
-				if(now_known)
-					game->Net_ChangeLocationState(target_loc, false);
-			}
 		}
 		break;
 	case Progress::Finished:
@@ -133,25 +114,16 @@ void Quest_StolenArtifact::SetProgress(int prog2)
 			state = Quest::Completed;
 			if(target_loc != -1)
 			{
-				Location& loc = *game->locations[target_loc];
+				Location& loc = GetTargetLocation();
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
 			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
-			msgs.push_back(game->txQuest[94]);
+			OnUpdate(game->txQuest[94]);
 			game->AddReward(1200);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->current_dialog->talker->temporary = true;
 			game->current_dialog->talker->AddItem(&quest_item, 1, true);
 			game->current_dialog->pc->unit->RemoveQuestItem(refid);
-
-			if(Net::IsOnline())
-			{
-				game->Net_UpdateQuest(refid);
-				if(!game->current_dialog->is_local)
-					game->Net_RemoveQuestItem(game->current_dialog->pc, refid);
-			}
 		}
 		break;
 	case Progress::Timeout:
@@ -159,18 +131,13 @@ void Quest_StolenArtifact::SetProgress(int prog2)
 			state = Quest::Failed;
 			if(target_loc != -1)
 			{
-				Location& loc = *game->locations[target_loc];
+				Location& loc = GetTargetLocation();
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
 			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
-			msgs.push_back(game->txQuest[95]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+			OnUpdate(game->txQuest[95]);
 			game->current_dialog->talker->temporary = true;
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
 		}
 		break;
 	}
@@ -182,24 +149,24 @@ cstring Quest_StolenArtifact::FormatString(const string& str)
 	if(str == "przedmiot")
 		return item->name.c_str();
 	else if(str == "target_loc")
-		return game->locations[target_loc]->name.c_str();
+		return GetTargetLocationName();
 	else if(str == "target_dir")
-		return GetLocationDirName(game->locations[start_loc]->pos, game->locations[target_loc]->pos);
+		return GetLocationDirName(GetStartLocation().pos, GetTargetLocation().pos);
 	else if(str == "random_loc")
-		return game->locations[game->GetRandomSettlement(start_loc)]->name.c_str();
+		return W.GetRandomSettlement(start_loc)->name.c_str();
 	else if(str == "Bandyci_ukradli")
 	{
 		switch(group)
 		{
-		case SG_BANDYCI:
+		case SG_BANDITS:
 			return game->txQuest[96];
-		case SG_ORKOWIE:
+		case SG_ORCS:
 			return game->txQuest[97];
-		case SG_GOBLINY:
+		case SG_GOBLINS:
 			return game->txQuest[98];
-		case SG_MAGOWIE:
+		case SG_MAGES:
 			return game->txQuest[99];
-		case SG_ZLO:
+		case SG_EVIL:
 			return game->txQuest[100];
 		default:
 			assert(0);
@@ -210,15 +177,15 @@ cstring Quest_StolenArtifact::FormatString(const string& str)
 	{
 		switch(group)
 		{
-		case SG_BANDYCI:
+		case SG_BANDITS:
 			return game->txQuest[101];
-		case SG_ORKOWIE:
+		case SG_ORCS:
 			return game->txQuest[102];
-		case SG_GOBLINY:
+		case SG_GOBLINS:
 			return game->txQuest[103];
-		case SG_MAGOWIE:
+		case SG_MAGES:
 			return game->txQuest[104];
-		case SG_ZLO:
+		case SG_EVIL:
 			return game->txQuest[105];
 		default:
 			assert(0);
@@ -235,19 +202,16 @@ cstring Quest_StolenArtifact::FormatString(const string& str)
 //=================================================================================================
 bool Quest_StolenArtifact::IsTimedout() const
 {
-	return game->worldtime - start_time > 60;
+	return W.GetWorldtime() - start_time > 60;
 }
 
 //=================================================================================================
 bool Quest_StolenArtifact::OnTimeout(TimeoutType ttype)
 {
 	if(done)
-		game->RemoveQuestItemFromUnit(game->ForLevel(target_loc, at_level), refid);
+		ForLocation(target_loc, at_level)->RemoveQuestItemFromUnit(refid);
 
-	msgs.push_back(game->txQuest[277]);
-	game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-	game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-
+	OnUpdate(game->txQuest[277]);
 	return true;
 }
 
@@ -280,16 +244,13 @@ bool Quest_StolenArtifact::Load(GameReader& f)
 	f.LoadArtifact(item);
 	f >> group;
 
-	CreateItemCopy(quest_item, item);
+	item->CreateCopy(quest_item);
 	quest_item.id = Format("$%s", item->id.c_str());
 	quest_item.refid = refid;
 	spawn_item = Quest_Dungeon::Item_GiveSpawned;
 	item_to_give[0] = &quest_item;
 	unit_to_spawn = g_spawn_groups[group].GetSpawnLeader();
 	unit_spawn_level = -3;
-
-	if(game->mp_load)
-		game->Net_RegisterItem(&quest_item, item);
 
 	return true;
 }

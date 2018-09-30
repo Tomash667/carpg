@@ -1,5 +1,7 @@
 #pragma once
 
+//-----------------------------------------------------------------------------
+#include "ShaderHandler.h"
 #include "Font.h"
 #include "Layout.h"
 #include "VertexDeclaration.h"
@@ -124,7 +126,7 @@ namespace gui
 
 //-----------------------------------------------------------------------------
 // GUI
-class IGUI
+class IGUI : public ShaderHandler
 {
 	struct Notification
 	{
@@ -149,9 +151,12 @@ public:
 	IGUI();
 	~IGUI();
 	void Init(IDirect3DDevice9* device, ID3DXSprite* sprite);
+	void OnInit() override;
+	void OnReset() override;
+	void OnReload() override;
+	void OnRelease() override;
 	void InitLayout();
 	void SetText();
-	void SetShader(ID3DXEffect* e);
 	void Draw(bool draw_layers, bool draw_dialogs);
 	bool AddFont(cstring filename);
 	Font* CreateFont(cstring name, int size, int weight, int tex_size, int outline = 0);
@@ -171,8 +176,6 @@ public:
 	void DrawItem(TEX t, const Int2& item_pos, const Int2& item_size, Color color, int corner = 16, int size = 64, const Box2d* clip_rect = nullptr);
 	void Update(float dt, float mouse_speed);
 	void DrawSprite(TEX t, const Int2& pos, Color color = Color::White, const Rect* clipping = nullptr);
-	void OnReset();
-	void OnReload();
 	void OnClean();
 	void OnChar(char c);
 	DialogBox* ShowDialog(const DialogInfo& info);
@@ -278,7 +281,7 @@ private:
 	TEX tSet, tCurrent, tCurrent2, tPixel;
 	int max_tex_size;
 	vector<Font*> fonts;
-	ID3DXEffect* eGui;
+	ID3DXEffect* effect;
 	D3DXHANDLE techGui, techGui2, techGuiGrayscale;
 	D3DXHANDLE hGuiSize, hGuiTex;
 	Container* layer, *dialog_layer;

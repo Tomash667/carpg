@@ -20,13 +20,11 @@ public:
 	};
 
 	explicit GameMenu(const DialogInfo& info);
-
-	void Draw(ControlDrawData* cdd/* =nullptr */) override;
+	void LoadLanguage();
+	void LoadData();
+	void Draw(ControlDrawData*) override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
-
-	void Set(bool can_save, bool can_load, bool hardcore_mode);
-	void LoadData();
 
 	TEX tLogo;
 	Button bt[6];

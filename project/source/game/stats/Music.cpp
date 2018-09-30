@@ -3,6 +3,11 @@
 #include "Game.h"
 #include "Content.h"
 #include "SoundManager.h"
+#include "Level.h"
+#include "World.h"
+#include "QuestManager.h"
+#include "Quest_Secret.h"
+#include "ResourceManager.h"
 
 //-----------------------------------------------------------------------------
 vector<Music*> Music::musics;
@@ -11,7 +16,7 @@ extern string g_system_dir;
 //=================================================================================================
 MusicType Game::GetLocationMusic()
 {
-	switch(location->type)
+	switch(L.location->type)
 	{
 	case L_CITY:
 		return MusicType::City;
@@ -22,7 +27,7 @@ MusicType Game::GetLocationMusic()
 		return MusicType::Dungeon;
 	case L_FOREST:
 	case L_CAMP:
-		if(current_location == secret_where2)
+		if(L.location_index == QM.quest_secret->where2)
 			return MusicType::Moonwell;
 		else
 			return MusicType::Forest;
@@ -114,19 +119,10 @@ void Game::SetMusic()
 	if(sound_mgr->IsMusicDisabled())
 		return;
 
-	if(!Net::IsLocal() && boss_level_mp)
+	if(W.IsBossLevel(Int2(L.location_index, L.dungeon_level)))
 	{
 		SetMusic(MusicType::Boss);
 		return;
-	}
-
-	for(vector<Int2>::iterator it = boss_levels.begin(), end = boss_levels.end(); it != end; ++it)
-	{
-		if(current_location == it->x && dungeon_level == it->y)
-		{
-			SetMusic(MusicType::Boss);
-			return;
-		}
 	}
 
 	SetMusic(GetLocationMusic());

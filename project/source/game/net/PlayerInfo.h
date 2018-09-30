@@ -55,10 +55,8 @@ struct PlayerInfo
 	vector<NetChangePlayer> changes;
 
 	PlayerInfo();
-	void UpdateGold()
-	{
-		update_flags |= PlayerInfo::UF_GOLD;
-	}
+	void UpdateGold() { update_flags |= PlayerInfo::UF_GOLD; }
 	void Save(FileWriter& f);
 	void Load(FileReader& f);
+	int GetIndex() const;
 };

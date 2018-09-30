@@ -1,5 +1,7 @@
 #pragma once
 
+#include "VertexDeclaration.h"
+
 // helper class to calculate clipping
 class GuiRect
 {

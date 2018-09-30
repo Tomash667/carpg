@@ -234,7 +234,7 @@ dialog innkeeper {
 	37 "No"
 	38 "Regret..."
 	39 "Contest are held here 21.09. If you want, come back then."
-	40 "Contest are held 21.09 in $chlanie_loc$."
+	40 "Contest are held 21.09 in $contest_loc$."
 	41 "What do you do here?"
 	42 "I am owner of this inn. I sell drinks and food, rent rooms for travelers."
 	43 "Gossip"

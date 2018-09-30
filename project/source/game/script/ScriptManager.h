@@ -1,5 +1,7 @@
 #pragma once
 
+#include "GameComponent.h"
+
 #ifdef _DEBUG
 #	define CHECKED(x) { int _r = (x); assert(_r >= 0); }
 #else
@@ -10,7 +12,6 @@ class asIScriptEngine;
 class asIScriptModule;
 class TypeBuilder;
 struct asSFuncPtr;
-struct VarsContainer;
 
 struct ScriptException
 {
@@ -20,12 +21,12 @@ struct ScriptException
 	ScriptException(cstring msg, const Args&... args) : ScriptException(Format(msg, args...)) {}
 };
 
-class ScriptManager
+class ScriptManager : public GameComponent
 {
 public:
 	ScriptManager();
-	~ScriptManager();
-	void Init();
+	void InitOnce() override;
+	void Cleanup() override;
 	void RegisterCommon();
 	void RegisterGame();
 	void SetContext(PlayerController* pc, Unit* target);
@@ -39,7 +40,8 @@ public:
 	TypeBuilder AddType(cstring name);
 	TypeBuilder ForType(cstring name);
 	VarsContainer* GetVars(Unit* unit);
-	void Clear();
+	Var& GetVar(cstring name);
+	void Reset();
 	void Save(FileWriter& f);
 	void Load(FileReader& f);
 
@@ -55,3 +57,5 @@ private:
 	PlayerController* pc;
 	Unit* target;
 };
+
+extern ScriptManager SM;

@@ -7,6 +7,9 @@
 #include "BitStreamFunc.h"
 #include "Class.h"
 #include "Action.h"
+#include "Level.h"
+#include "GlobalGui.h"
+#include "GameMessages.h"
 
 //=================================================================================================
 PlayerController::~PlayerController()
@@ -205,12 +208,14 @@ void PlayerController::Train(SkillId skill, int points)
 			game.ShowStatGain(true, s, gained);
 		else
 		{
-			NetChangePlayer& c = game.AddChange(NetChangePlayer::GAIN_STAT, this);
+			NetChangePlayer& c = Add1(player_info->changes);
+			c.type = NetChangePlayer::GAIN_STAT;
 			c.id = 1;
 			c.a = s;
 			c.ile = gained;
 
-			NetChangePlayer& c2 = game.AddChange(NetChangePlayer::STAT_CHANGED, this);
+			NetChangePlayer& c2 = Add1(player_info->changes);
+			c2.type = NetChangePlayer::STAT_CHANGED;
 			c2.id = (int)ChangedStatType::SKILL;
 			c2.a = s;
 			c2.ile = value;
@@ -254,12 +259,14 @@ void PlayerController::Train(AttributeId attrib, int points)
 			game.ShowStatGain(false, a, gained);
 		else
 		{
-			NetChangePlayer& c = game.AddChange(NetChangePlayer::GAIN_STAT, this);
+			NetChangePlayer& c = Add1(player_info->changes);
+			c.type = NetChangePlayer::GAIN_STAT;
 			c.id = 0;
 			c.a = a;
 			c.ile = gained;
 
-			NetChangePlayer& c2 = game.AddChange(NetChangePlayer::STAT_CHANGED, this);
+			NetChangePlayer& c2 = Add1(player_info->changes);
+			c2.type = NetChangePlayer::STAT_CHANGED;
 			c2.id = (int)ChangedStatType::ATTRIBUTE;
 			c2.a = a;
 			c2.ile = value;
@@ -861,7 +868,7 @@ bool PlayerController::Read(BitStreamReader& f)
 			int index = f.Read<int>();
 			if(!f)
 				return false;
-			next_action_data.usable = Game::Get().FindUsable(index);
+			next_action_data.usable = L.FindUsable(index);
 		}
 		break;
 	default:
@@ -911,4 +918,32 @@ bool PlayerController::IsHit(Unit* unit) const
 int PlayerController::GetNextActionItemIndex() const
 {
 	return FindItemIndex(unit->items, next_action_data.index, next_action_data.item, false);
+}
+
+//=================================================================================================
+void PlayerController::AddItemMessage(uint count)
+{
+	assert(count != 0u);
+	if(IsLocal())
+	{
+		Game& game = Game::Get();
+		if(count == 1u)
+			game.gui->messages->AddGameMsg3(GMS_ADDED_ITEM);
+		else
+			game.gui->messages->AddGameMsg(Format(game.txGmsAddedItems, count), 3.f);
+	}
+	else
+	{
+		NetChangePlayer& c2 = Add1(player_info->changes);
+		if(count == 1u)
+		{
+			c2.type = NetChangePlayer::GAME_MESSAGE;
+			c2.id = GMS_ADDED_ITEM;
+		}
+		else
+		{
+			c2.type = NetChangePlayer::ADDED_ITEMS_MSG;
+			c2.ile = count;
+		}
+	}
 }

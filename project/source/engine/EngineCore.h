@@ -4,15 +4,22 @@
 #include "FileFormat.h"
 
 // Engine types
+struct CameraBase;
 struct Font;
 struct MeshInstance;
 struct ParticleEmitter;
 struct StartupOptions;
+struct TaskData;
 struct Terrain;
 struct TrailParticleEmitter;
+class CustomCollisionWorld;
+class DebugDrawer;
 class Engine;
+class Pak;
 class ResourceManager;
+class ShaderHandler;
 class SoundManager;
+class SuperShader;
 
 // Resource types
 struct Mesh;
@@ -66,3 +73,10 @@ namespace FMOD
 	class System;
 }
 typedef FMOD::Sound* SOUND;
+
+// Bullet physics types
+class btBvhTriangleMeshShape;
+class btCollisionObject;
+class btCollisionShape;
+class btHeightfieldTerrainShape;
+class btTriangleIndexVertexArray;

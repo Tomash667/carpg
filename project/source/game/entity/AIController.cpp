@@ -6,6 +6,9 @@
 #include "SaveState.h"
 #include "InsideLocation.h"
 #include "GameFile.h"
+#include "Level.h"
+#include "GlobalGui.h"
+#include "GameMessages.h"
 
 //=================================================================================================
 void AIController::Init(Unit* _unit)
@@ -206,15 +209,14 @@ void AIController::Load(GameReader& f)
 		int room_id = f.Read<int>();
 		if(room_id != -1)
 		{
-			Game& game = Game::Get();
-			if(!game.location->outside)
-				escape_room = &((InsideLocation*)game.location)->GetLevelData().rooms[room_id];
+			if(!L.location->outside)
+				escape_room = &((InsideLocation*)L.location)->GetLevelData().rooms[room_id];
 			else
 			{
 				escape_room = nullptr;
 #ifdef _DEBUG
 				Warn("%s had escape_room %d.", unit->GetName(), room_id);
-				game.AddGameMsg("Unit had escape room!", 5.f);
+				Game::Get().gui->messages->AddGameMsg("Unit had escape room!", 5.f);
 #endif
 			}
 		}
@@ -289,7 +291,7 @@ bool AIController::CheckPotion(bool in_combat)
 				if(unit->busy == Unit::Busy_No && unit->IsFollower() && !unit->summoner)
 				{
 					Game& game = Game::Get();
-					game.UnitTalk(*unit, random_string(game.txAiNoHpPot));
+					game.UnitTalk(*unit, RandomString(game.txAiNoHpPot));
 				}
 				have_potion = 0;
 				return false;
@@ -351,7 +353,7 @@ float AIController::GetMorale() const
 int AIController::GetEscapeRoomId() const
 {
 	if(escape_room)
-		return ((InsideLocation*)Game::Get().location)->GetLevelData().GetRoomId(escape_room);
+		return ((InsideLocation*)L.location)->GetLevelData().GetRoomId(escape_room);
 	else
 		return -1;
 }

@@ -2,6 +2,7 @@
 #include "GameCore.h"
 #include "Game.h"
 #include "Language.h"
+#include "World.h"
 
 //-----------------------------------------------------------------------------
 cstring txNameFrom, txNameSonOf, txNameSonOfPost, txNameSonOfInvalid, txNamePrefix;
@@ -46,10 +47,10 @@ void Game::GenerateHeroName(Class clas, bool szalony, string& hero_name)
 		hero_name += txNamePrefix;
 		hero_name += random_item(ci.nicknames);
 	}
-	else if((type == 0 || type == 4) && !locations.empty())
+	else if((type == 0 || type == 4) && !W.GetLocations().empty())
 	{
 		hero_name += txNameFrom;
-		hero_name += locations[Rand() % settlements]->name;
+		hero_name += W.GetRandomSettlement()->name;
 	}
 	else if(type == 0 || type == 1 || type == 4 || type == 5)
 	{

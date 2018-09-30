@@ -25,7 +25,7 @@ public:
 	cstring FormatString(const string& str) override;
 	bool IsTimedout() const override;
 	bool OnTimeout(TimeoutType ttype) override;
-	bool IfSpecial(DialogContext& ctx, cstring msg) override;
+	bool SpecialIf(DialogContext& ctx, cstring msg) override;
 	bool IfHaveQuestItem() const override;
 	const Item* GetQuestItem() override;
 	void Save(GameWriter& f) override;

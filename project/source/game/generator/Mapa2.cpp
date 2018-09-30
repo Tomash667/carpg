@@ -3,6 +3,7 @@
 #include "Mapa2.h"
 #include "BitStreamFunc.h"
 #include "SaveState.h"
+#include "GameCommon.h"
 
 const float Room::HEIGHT = 4.f;
 const float Room::HEIGHT_LOW = 3.f;
@@ -59,23 +60,6 @@ namespace Mapa
 		DODAJ_KORYTARZ
 	};
 
-	//-----------------------------------------------------------------------------
-	// Graficzna reprezentacja pola mapy
-	const char znak[] = {
-		' ', // NIEUZYTE
-		'_', // PUSTE
-		'<', // SCHODY_GORA
-		'>', // SCHODY_DOL
-		'+', // DRZWI
-		'-', // OTWOR_NA_DRZWI
-		'/', // KRATKA_PODLOGA
-		'^', // KRATKA_SUFIT
-		'|', // KRATKA
-		'#', // SCIANA
-		'@', // BLOKADA
-		'$' // BLOKADA_SCIANA
-	};
-
 	bool czy_sciana_laczaca(int x, int y, int id1, int id2);
 	void dodaj_pokoj(int x, int y, int w, int h, DODAJ dodaj, int id = -1);
 	void dodaj_pokoj(const Room& pokoj, int id = -1) { dodaj_pokoj(pokoj.pos.x, pokoj.pos.y, pokoj.size.x, pokoj.size.y, NIE_DODAWAJ, id); }
@@ -83,11 +67,9 @@ namespace Mapa
 	void oznacz_korytarze();
 	void polacz_korytarze();
 	void polacz_pokoje();
-	void rysuj();
 	bool sprawdz_pokoj(int x, int y, int w, int h);
 	void stworz_korytarz(Int2& pt, DIR dir);
 	void szukaj_polaczenia(int x, int y, int id);
-	void ustaw_flagi();
 	void ustaw_sciane(POLE& pole);
 	void ustaw_wzor();
 	DIR wolna_droga(int id);
@@ -328,7 +310,7 @@ namespace Mapa
 			generuj_schody(*opcje);
 
 		// generuj flagi pól
-		ustaw_flagi();
+		Pole::SetupFlags(opcje->mapa, Int2(opcje->w, opcje->h));
 	}
 
 	//=================================================================================================
@@ -507,19 +489,6 @@ namespace Mapa
 					}
 				}
 			}
-		}
-	}
-
-	//=================================================================================================
-	// Rysuje podziemia
-	//=================================================================================================
-	void rysuj()
-	{
-		for(int y = opcje->h - 1; y >= 0; --y)
-		{
-			for(int x = 0; x < opcje->w; ++x)
-				putchar(znak[mapa[x + y*opcje->w].type]);
-			putchar('\n');
 		}
 	}
 
@@ -907,7 +876,7 @@ bool generuj_mape2(OpcjeMapy& _opcje, bool recreate)
 		return (_opcje.blad == 0);
 
 	if(_opcje.devmode)
-		Mapa::rysuj();
+		Pole::DebugDraw(_opcje.mapa, Int2(_opcje.w, _opcje.h));
 
 	return (_opcje.blad == 0);
 }
@@ -926,7 +895,7 @@ bool kontynuuj_generowanie_mapy(OpcjeMapy& _opcje)
 	Mapa::ustaw_flagi();
 
 	if(_opcje.devmode)
-		Mapa::rysuj();
+		Pole::DebugDraw(_opcje.mapa, Int2(_opcje.w, _opcje.h));
 
 	return (_opcje.blad == 0);
 }
@@ -953,7 +922,7 @@ struct PosDir
 	}
 };
 
-bool dodaj_schody(OpcjeMapy& _opcje, Room& room, Int2& _pozycja, int& _kierunek, POLE _schody, bool& _w_scianie)
+bool dodaj_schody(OpcjeMapy& _opcje, Room& room, Int2& _pozycja, GameDirection& _kierunek, POLE _schody, bool& _w_scianie)
 {
 #define B(_xx,_yy) (czy_blokuje2(_opcje.mapa[x+_xx+(y+_yy)*_opcje.w].type))
 #define P(_xx,_yy) (!czy_blokuje21(_opcje.mapa[x+_xx+(y+_yy)*_opcje.w].type))
@@ -979,28 +948,28 @@ bool dodaj_schody(OpcjeMapy& _opcje, Room& room, Int2& _pozycja, int& _kierunek,
 					// ##
 					// #>
 					if(B(-1, 1) && B(0, 1) && B(-1, 0))
-						wybor.push_back(PosDir(x, y, BIT(0) | BIT(3), false, room));
+						wybor.push_back(PosDir(x, y, BIT(GDIR_DOWN) | BIT(GDIR_RIGHT), false, room));
 				}
 				if(right && top)
 				{
 					// ##
 					// >#
 					if(B(0, 1) && B(1, 1) && B(1, 0))
-						wybor.push_back(PosDir(x, y, BIT(0) | BIT(1), false, room));
+						wybor.push_back(PosDir(x, y, BIT(GDIR_DOWN) | BIT(GDIR_LEFT), false, room));
 				}
 				if(left && bottom)
 				{
 					// #>
 					// ##
 					if(B(-1, 0) && B(-1, -1) && B(0, -1))
-						wybor.push_back(PosDir(x, y, BIT(2) | BIT(3), false, room));
+						wybor.push_back(PosDir(x, y, BIT(GDIR_UP) | BIT(GDIR_RIGHT), false, room));
 				}
 				if(right && bottom)
 				{
 					// <#
 					// ##
 					if(B(1, 0) && B(0, -1) && B(1, -1))
-						wybor.push_back(PosDir(x, y, BIT(1) | BIT(2), false, room));
+						wybor.push_back(PosDir(x, y, BIT(GDIR_LEFT) | BIT(GDIR_UP), false, room));
 				}
 				if(left && top && bottom)
 				{
@@ -1008,7 +977,7 @@ bool dodaj_schody(OpcjeMapy& _opcje, Room& room, Int2& _pozycja, int& _kierunek,
 					// #>
 					// #_
 					if(B(-1, 1) && P(0, 1) && B(-1, 0) && B(-1, -1) && P(0, -1))
-						wybor.push_back(PosDir(x, y, BIT(0) | BIT(2) | BIT(3), false, room));
+						wybor.push_back(PosDir(x, y, BIT(GDIR_DOWN) | BIT(GDIR_UP) | BIT(GDIR_RIGHT), false, room));
 				}
 				if(right && top && bottom)
 				{
@@ -1016,21 +985,21 @@ bool dodaj_schody(OpcjeMapy& _opcje, Room& room, Int2& _pozycja, int& _kierunek,
 					// <#
 					// _#
 					if(P(0, 1) && B(1, 1) && B(1, 0) && P(0, -1) && B(1, -1))
-						wybor.push_back(PosDir(x, y, BIT(0) | BIT(1) | BIT(2), false, room));
+						wybor.push_back(PosDir(x, y, BIT(GDIR_DOWN) | BIT(GDIR_LEFT) | BIT(GDIR_UP), false, room));
 				}
 				if(top && left && right)
 				{
 					// ###
 					// _>_
 					if(B(-1, 1) && B(0, 1) && B(1, 1) && P(-1, 0) && P(1, 0))
-						wybor.push_back(PosDir(x, y, BIT(0) | BIT(1) | BIT(3), false, room));
+						wybor.push_back(PosDir(x, y, BIT(GDIR_DOWN) | BIT(GDIR_LEFT) | BIT(GDIR_RIGHT), false, room));
 				}
 				if(bottom && left && right)
 				{
 					// _>_
 					// ###
 					if(P(-1, 0) && P(1, 0) && B(-1, -1) && B(0, -1) && B(1, -1))
-						wybor.push_back(PosDir(x, y, BIT(1) | BIT(2) | BIT(3), false, room));
+						wybor.push_back(PosDir(x, y, BIT(GDIR_LEFT) | BIT(GDIR_UP) | BIT(GDIR_RIGHT), false, room));
 				}
 				if(left && right && top && bottom)
 				{
@@ -1038,7 +1007,7 @@ bool dodaj_schody(OpcjeMapy& _opcje, Room& room, Int2& _pozycja, int& _kierunek,
 					//  _<_
 					//  ___
 					if(P(-1, -1) && P(0, -1) && P(1, -1) && P(-1, 0) && P(1, 0) && P(-1, 1) && P(0, 1) && P(1, 1))
-						wybor.push_back(PosDir(x, y, BIT(0) | BIT(1) | BIT(2) | BIT(3), false, room));
+						wybor.push_back(PosDir(x, y, BIT(GDIR_DOWN) | BIT(GDIR_LEFT) | BIT(GDIR_UP) | BIT(GDIR_RIGHT), false, room));
 				}
 			}
 			else if((p.type == SCIANA || p.type == BLOKADA_SCIANA) && (x > 0) && (x<int(_opcje.w - 1)) && (y > 0) && (y<int(_opcje.h - 1)))
@@ -1047,25 +1016,25 @@ bool dodaj_schody(OpcjeMapy& _opcje, Room& room, Int2& _pozycja, int& _kierunek,
 				// #>_
 				// ##
 				if(B(-1, 1) && B(0, 1) && B(-1, 0) && P(1, 0) && B(-1, -1) && B(0, -1))
-					wybor.push_back(PosDir(x, y, BIT(3), true, room));
+					wybor.push_back(PosDir(x, y, BIT(GDIR_RIGHT), true, room));
 
 				//  ##
 				// _<#
 				//  ##
 				if(B(0, 1) && B(1, 1) && P(-1, 0) && B(1, 0) && B(0, -1) && B(1, -1))
-					wybor.push_back(PosDir(x, y, BIT(1), true, room));
+					wybor.push_back(PosDir(x, y, BIT(GDIR_LEFT), true, room));
 
 				// ###
 				// #>#
 				//  _
 				if(B(-1, 1) && B(0, 1) && B(1, 1) && B(-1, 0) && B(1, 0) && P(0, -1))
-					wybor.push_back(PosDir(x, y, BIT(0), true, room));
+					wybor.push_back(PosDir(x, y, BIT(GDIR_DOWN), true, room));
 
 				//  _
 				// #<#
 				// ###
 				if(P(0, 1) && B(-1, 0) && B(1, 0) && B(-1, -1) && B(0, -1) && B(1, -1))
-					wybor.push_back(PosDir(x, y, BIT(2), true, room));
+					wybor.push_back(PosDir(x, y, BIT(GDIR_UP), true, room));
 			}
 		}
 	}
@@ -1107,100 +1076,100 @@ bool dodaj_schody(OpcjeMapy& _opcje, Room& room, Int2& _pozycja, int& _kierunek,
 	case 0:
 		assert(0);
 		return false;
-	case BIT(0):
-		_kierunek = 0;
+	case BIT(GDIR_DOWN):
+		_kierunek = GDIR_DOWN;
 		break;
-	case BIT(1):
-		_kierunek = 1;
+	case BIT(GDIR_LEFT):
+		_kierunek = GDIR_LEFT;
 		break;
-	case BIT(2):
-		_kierunek = 2;
+	case BIT(GDIR_UP):
+		_kierunek = GDIR_UP;
 		break;
-	case BIT(3):
-		_kierunek = 3;
+	case BIT(GDIR_RIGHT):
+		_kierunek = GDIR_RIGHT;
 		break;
-	case BIT(0) | BIT(1):
+	case BIT(GDIR_DOWN) | BIT(GDIR_LEFT):
 		if(Rand() % 2 == 0)
-			_kierunek = 0;
+			_kierunek = GDIR_DOWN;
 		else
-			_kierunek = 1;
+			_kierunek = GDIR_LEFT;
 		break;
-	case BIT(0) | BIT(2):
+	case BIT(GDIR_DOWN) | BIT(GDIR_UP):
 		if(Rand() % 2 == 0)
-			_kierunek = 0;
+			_kierunek = GDIR_DOWN;
 		else
-			_kierunek = 2;
+			_kierunek = GDIR_UP;
 		break;
-	case BIT(0) | BIT(3):
+	case BIT(GDIR_DOWN) | BIT(GDIR_RIGHT):
 		if(Rand() % 2 == 0)
-			_kierunek = 0;
+			_kierunek = GDIR_DOWN;
 		else
-			_kierunek = 3;
+			_kierunek = GDIR_RIGHT;
 		break;
-	case BIT(1) | BIT(2):
+	case BIT(GDIR_LEFT) | BIT(GDIR_UP):
 		if(Rand() % 2 == 0)
-			_kierunek = 1;
+			_kierunek = GDIR_LEFT;
 		else
-			_kierunek = 2;
+			_kierunek = GDIR_UP;
 		break;
-	case BIT(1) | BIT(3):
+	case BIT(GDIR_LEFT) | BIT(GDIR_RIGHT):
 		if(Rand() % 2 == 0)
-			_kierunek = 1;
+			_kierunek = GDIR_LEFT;
 		else
-			_kierunek = 3;
+			_kierunek = GDIR_RIGHT;
 		break;
-	case BIT(2) | BIT(3):
+	case BIT(GDIR_UP) | BIT(GDIR_RIGHT):
 		if(Rand() % 2 == 0)
-			_kierunek = 2;
+			_kierunek = GDIR_UP;
 		else
-			_kierunek = 3;
+			_kierunek = GDIR_RIGHT;
 		break;
-	case BIT(0) | BIT(1) | BIT(2):
+	case BIT(GDIR_DOWN) | BIT(GDIR_LEFT) | BIT(GDIR_UP):
 		{
 			int t = Rand() % 3;
 			if(t == 0)
-				_kierunek = 0;
+				_kierunek = GDIR_DOWN;
 			else if(t == 1)
-				_kierunek = 1;
+				_kierunek = GDIR_LEFT;
 			else
-				_kierunek = 2;
+				_kierunek = GDIR_UP;
 		}
 		break;
-	case BIT(0) | BIT(1) | BIT(3):
+	case BIT(GDIR_DOWN) | BIT(GDIR_LEFT) | BIT(GDIR_RIGHT):
 		{
 			int t = Rand() % 3;
 			if(t == 0)
-				_kierunek = 0;
+				_kierunek = GDIR_DOWN;
 			else if(t == 1)
-				_kierunek = 1;
+				_kierunek = GDIR_LEFT;
 			else
-				_kierunek = 3;
+				_kierunek = GDIR_RIGHT;
 		}
 		break;
-	case BIT(0) | BIT(2) | BIT(3):
+	case BIT(GDIR_DOWN) | BIT(GDIR_UP) | BIT(GDIR_RIGHT):
 		{
 			int t = Rand() % 3;
 			if(t == 0)
-				_kierunek = 0;
+				_kierunek = GDIR_DOWN;
 			else if(t == 1)
-				_kierunek = 2;
+				_kierunek = GDIR_UP;
 			else
-				_kierunek = 3;
+				_kierunek = GDIR_RIGHT;
 		}
 		break;
-	case BIT(1) | BIT(2) | BIT(3):
+	case BIT(GDIR_LEFT) | BIT(GDIR_UP) | BIT(GDIR_RIGHT):
 		{
 			int t = Rand() % 3;
 			if(t == 0)
-				_kierunek = 1;
+				_kierunek = GDIR_LEFT;
 			else if(t == 1)
-				_kierunek = 2;
+				_kierunek = GDIR_UP;
 			else
-				_kierunek = 3;
+				_kierunek = GDIR_RIGHT;
 		}
 		break;
-	case BIT(0) | BIT(1) | BIT(2) | BIT(3):
-		_kierunek = Rand() % 4;
+	case BIT(GDIR_DOWN) | BIT(GDIR_LEFT) | BIT(GDIR_UP) | BIT(GDIR_RIGHT):
+		_kierunek = (GameDirection)(Rand() % 4);
 		break;
 	default:
 		assert(0);
@@ -1218,7 +1187,7 @@ bool SortujPokoje(Int2& a, Int2& b)
 	return a.y < b.y;
 }
 
-bool generuj_schody2(OpcjeMapy& _opcje, vector<Room*>& rooms, OpcjeMapy::GDZIE_SCHODY _gdzie, Room*& room, Int2& _pozycja, int& _kierunek, bool _gora, bool& _w_scianie)
+bool generuj_schody2(OpcjeMapy& _opcje, vector<Room*>& rooms, OpcjeMapy::GDZIE_SCHODY _gdzie, Room*& room, Int2& _pozycja, GameDirection& _kierunek, bool _gora, bool& _w_scianie)
 {
 	switch(_gdzie)
 	{
@@ -1327,809 +1296,9 @@ bool generuj_schody(OpcjeMapy& _opcje)
 	return true;
 }
 
-void rysuj_mape_konsola(Pole* _mapa, uint _w, uint _h)
-{
-	assert(_mapa && _w && _h);
-
-	OpcjeMapy opcje;
-	opcje.mapa = _mapa;
-	opcje.w = _w;
-	opcje.h = _h;
-
-	Mapa::mapa = _mapa;
-	Mapa::opcje = &opcje;
-	Mapa::rysuj();
-}
-
-vector<bool> maze;
-
-int generate_labirynth2(const Int2& maze_size, const Int2& room_size, Int2& room_pos, Int2& doors)
-{
-	list<Int2> drillers;
-	maze.resize(maze_size.x * maze_size.y, false);
-	for(vector<bool>::iterator it = maze.begin(), end = maze.end(); it != end; ++it)
-		*it = false;
-
-	int mx = maze_size.x / 2 - room_size.x / 2,
-		my = maze_size.y / 2 - room_size.y / 2;
-	room_pos.x = mx;
-	room_pos.y = my;
-
-	for(int y = 0; y < room_size.y; ++y)
-	{
-		for(int x = 0; x < room_size.x; ++x)
-		{
-			maze[x + mx + (y + my)*maze_size.x] = true;
-		}
-	}
-
-	Int2 start, start2;
-	int dir;
-
-	switch(Rand() % 4)
-	{
-	case 0:
-		start.x = maze_size.x / 2;
-		start.y = maze_size.y / 2 + room_size.y / 2;
-		start2 = start;
-		start.y--;
-		dir = 1;
-		break;
-	case 1:
-		start.x = maze_size.x / 2 - room_size.x / 2;
-		start.y = maze_size.y / 2;
-		start2 = start;
-		start2.x--;
-		dir = 2;
-		break;
-	case 2:
-		start.x = maze_size.x / 2;
-		start.y = maze_size.y / 2 - room_size.y / 2;
-		start2 = start;
-		start2.y--;
-		dir = 0;
-		break;
-	case 3:
-		start.x = maze_size.x / 2 + room_size.x / 2;
-		start.y = maze_size.y / 2;
-		start2 = start;
-		start.x--;
-		dir = 3;
-		break;
-	}
-	drillers.push_back(start2);
-	/*maze[start2.x+start2.y*maze_size.x] = true;
-	maze[start.x+start.y*maze_size.x] = false;
-	draw_maze();
-	_getch();
-	system("cls");
-	maze[start2.x+start2.y*maze_size.x] = false;
-	maze[start.x+start.y*maze_size.x] = true;*/
-
-	int pc = 0;
-
-	while(!drillers.empty())
-	{
-		list<Int2>::iterator m, _m;//,temp;
-		m = drillers.begin();
-		_m = drillers.end();
-		while(m != _m)
-		{
-			bool remove_driller = false;
-			switch(dir)
-			{
-			case 0:
-				m->y -= 2;
-				if(m->y < 0 || maze[m->y*maze_size.x + m->x])
-				{
-					remove_driller = true;
-					break;
-				}
-				maze[(m->y + 1)*maze_size.x + m->x] = true;
-				break;
-			case 1:
-				m->y += 2;
-				if(m->y >= maze_size.y || maze[m->y*maze_size.x + m->x])
-				{
-					remove_driller = true;
-					break;
-				}
-				maze[(m->y - 1)*maze_size.x + m->x] = true;
-				break;
-			case 2:
-				m->x -= 2;
-				if(m->x < 0 || maze[m->y*maze_size.x + m->x])
-				{
-					remove_driller = true;
-					break;
-				}
-				maze[m->y*maze_size.x + m->x + 1] = true;
-				break;
-			case 3:
-				m->x += 2;
-				if(m->x >= maze_size.x || maze[m->y*maze_size.x + m->x])
-				{
-					remove_driller = true;
-					break;
-				}
-				maze[m->y*maze_size.x + m->x - 1] = true;
-				break;
-			}
-			if(remove_driller)
-				m = drillers.erase(m);
-			else
-			{
-				drillers.push_back(*m);
-				// uncomment the line below to make the maze easier
-				// if (Rand()%2)
-				drillers.push_back(*m);
-
-				maze[m->x + m->y*maze_size.x] = true;
-				++m;
-				++pc;
-			}
-
-			dir = Rand() % 4;
-		}
-	}
-
-	for(int x = 0; x < room_size.x; ++x)
-	{
-		maze[mx + x + my*maze_size.x] = false;
-		maze[mx + x + (my + room_size.y - 1)*maze_size.x] = false;
-	}
-	for(int y = 0; y < room_size.y; ++y)
-	{
-		maze[mx + (my + y)*maze_size.x] = false;
-		maze[mx + room_size.x - 1 + (my + y)*maze_size.x] = false;
-	}
-	maze[start.x + start.y*maze_size.x] = true;
-	maze[start2.x + start2.y*maze_size.x] = true;
-
-	doors = Int2(start.x, start.y);
-
-	return pc;
-}
-
 inline bool IsInside(const Int2& pt, const Int2& start, const Int2& size)
 {
 	return (pt.x >= start.x && pt.y >= start.y && pt.x < start.x + size.x && pt.y < start.y + size.y);
-}
-
-void generate_labirynth(Pole*& mapa, const Int2& size, const Int2& room_size, Int2& stairs, int& stairs_dir, Int2& room_pos, int kraty_szansa, bool devmode)
-{
-	// mo¿na by daæ, ¿e nie ma centralnego pokoju
-	assert(room_size.x > 4 && room_size.y > 4 && size.x >= room_size.x * 2 + 4 && size.y >= room_size.y * 2 + 4);
-	Int2 maze_size(size.x - 2, size.y - 2), doors;
-
-	while(generate_labirynth2(maze_size, room_size, room_pos, doors) < 600);
-
-	++room_pos.x;
-	++room_pos.y;
-	mapa = new Pole[size.x*size.y];
-	memset(mapa, 0, sizeof(Pole)*size.x*size.y);
-
-	// kopiuj mapê
-	for(int y = 0; y < maze_size.y; ++y)
-	{
-		for(int x = 0; x < maze_size.x; ++x)
-			mapa[x + 1 + (y + 1)*size.x].type = (maze[x + y*maze_size.x] ? PUSTE : SCIANA);
-	}
-
-	mapa[doors.x + 1 + (doors.y + 1)*size.x].type = DRZWI;
-
-	// blokady
-	for(int x = 0; x < size.x; ++x)
-	{
-		mapa[x].type = BLOKADA_SCIANA;
-		mapa[x + (size.y - 1)*size.x].type = BLOKADA_SCIANA;
-	}
-
-	for(int y = 1; y < size.y - 1; ++y)
-	{
-		mapa[y*size.x].type = BLOKADA_SCIANA;
-		mapa[size.x - 1 + y*size.x].type = BLOKADA_SCIANA;
-	}
-
-	// schody
-	int order[4] = { 0,1,2,3 };
-	for(int i = 0; i < 5; ++i)
-		std::swap(order[Rand() % 4], order[Rand() % 4]);
-	bool ok = false;
-	for(int i = 0; i < 4 && !ok; ++i)
-	{
-		switch(order[i])
-		{
-		case 0: // dó³
-			{
-				int start = Random(1, size.x - 1);
-				int p = start;
-				do
-				{
-					if(mapa[p + size.x].type == PUSTE)
-					{
-						int ile = 0;
-						if(mapa[p - 1 + size.x].type != PUSTE)
-							++ile;
-						if(mapa[p + 1 + size.x].type != PUSTE)
-							++ile;
-						if(mapa[p].type != PUSTE)
-							++ile;
-						if(mapa[p + size.x * 2].type != PUSTE)
-							++ile;
-
-						if(ile == 3)
-						{
-							stairs.x = p;
-							stairs.y = 1;
-							ok = true;
-							break;
-						}
-					}
-					++p;
-					if(p == size.x)
-						p = 1;
-				} while(p != start);
-			}
-			break;
-		case 1: // lewa
-			{
-				int start = Random(1, size.y - 1);
-				int p = start;
-				do
-				{
-					if(mapa[1 + p*size.x].type == PUSTE)
-					{
-						int ile = 0;
-						if(mapa[p*size.x].type != PUSTE)
-							++ile;
-						if(mapa[2 + p*size.x].type != PUSTE)
-							++ile;
-						if(mapa[1 + (p - 1)*size.x].type != PUSTE)
-							++ile;
-						if(mapa[1 + (p + 1)*size.x].type != PUSTE)
-							++ile;
-
-						if(ile == 3)
-						{
-							stairs.x = 1;
-							stairs.y = p;
-							ok = true;
-							break;
-						}
-					}
-					++p;
-					if(p == size.x)
-						p = 1;
-				} while(p != start);
-			}
-			break;
-		case 2: // góra
-			{
-				int start = Random(1, size.x - 1);
-				int p = start;
-				do
-				{
-					if(mapa[p + (size.y - 2)*size.x].type == PUSTE)
-					{
-						int ile = 0;
-						if(mapa[p - 1 + (size.y - 2)*size.x].type != PUSTE)
-							++ile;
-						if(mapa[p + 1 + (size.y - 2)*size.x].type != PUSTE)
-							++ile;
-						if(mapa[p + (size.y - 1)*size.x].type != PUSTE)
-							++ile;
-						if(mapa[p + (size.y - 3)*size.x].type != PUSTE)
-							++ile;
-
-						if(ile == 3)
-						{
-							stairs.x = p;
-							stairs.y = size.y - 2;
-							ok = true;
-							break;
-						}
-					}
-					++p;
-					if(p == size.x)
-						p = 1;
-				} while(p != start);
-			}
-			break;
-		case 3: // prawa
-			{
-				int start = Random(1, size.y - 1);
-				int p = start;
-				do
-				{
-					if(mapa[size.x - 2 + p*size.x].type == PUSTE)
-					{
-						int ile = 0;
-						if(mapa[size.x - 3 + p*size.x].type != PUSTE)
-							++ile;
-						if(mapa[size.x - 1 + p*size.x].type != PUSTE)
-							++ile;
-						if(mapa[size.x - 2 + (p - 1)*size.x].type != PUSTE)
-							++ile;
-						if(mapa[size.x - 2 + (p + 1)*size.x].type != PUSTE)
-							++ile;
-
-						if(ile == 3)
-						{
-							stairs.x = size.x - 2;
-							stairs.y = p;
-							ok = true;
-							break;
-						}
-					}
-					++p;
-					if(p == size.x)
-						p = 1;
-				} while(p != start);
-			}
-			break;
-		}
-	}
-	if(!ok)
-		throw "Failed to generate labirynth.";
-	mapa[stairs.x + stairs.y*size.x].type = SCHODY_GORA;
-
-	// ustal kierunek schodów
-	if(mapa[stairs.x + (stairs.y + 1)*size.x].type == PUSTE)
-		stairs_dir = 2;
-	else if(mapa[stairs.x - 1 + stairs.y*size.x].type == PUSTE)
-		stairs_dir = 1;
-	else if(mapa[stairs.x + (stairs.y - 1)*size.x].type == PUSTE)
-		stairs_dir = 0;
-	else if(mapa[stairs.x + 1 + stairs.y*size.x].type == PUSTE)
-		stairs_dir = 3;
-	else
-	{
-		assert(0);
-	}
-
-	// kraty
-	if(kraty_szansa > 0)
-	{
-		for(int y = 1; y < size.y - 1; ++y)
-		{
-			for(int x = 1; x < size.x - 1; ++x)
-			{
-				Pole& p = mapa[x + y*size.x];
-				if(p.type == PUSTE && !IsInside(Int2(x, y), room_pos, room_size) && Rand() % 100 < kraty_szansa)
-				{
-					int j = Rand() % 3;
-					if(j == 0)
-						p.type = KRATKA_PODLOGA;
-					else if(j == 1)
-						p.type = KRATKA_SUFIT;
-					else
-						p.type = KRATKA;
-				}
-			}
-		}
-	}
-
-	// flagi
-	Mapa::mapa = mapa;
-	OpcjeMapy opcje;
-	opcje.w = size.x;
-	opcje.h = size.y;
-	Mapa::opcje = &opcje;
-	Mapa::ustaw_flagi();
-
-	// rysuj
-	if(devmode)
-		Mapa::rysuj();
-}
-
-namespace Cave
-{
-	int size = 45, size2 = size*size;
-	bool* m1 = nullptr, *m2 = nullptr;
-	int fill = 50;
-	int iter = 3;
-	int minx, miny, maxx, maxy;
-
-	void fill_map(bool* m)
-	{
-		for(int i = 0; i < size2; ++i)
-		{
-			m[i] = (Rand() % 100 < fill);
-		}
-	}
-
-	void draw_map(bool* m)
-	{
-		for(int y = 0; y < size; ++y)
-		{
-			for(int x = 0; x < size; ++x)
-				printf("%c", m[x + y*size] ? '#' : ' ');
-			printf("\n");
-		}
-		printf("\n");
-	}
-
-	void make(bool* m1, bool* m2)
-	{
-		for(int y = 1; y < size - 1; ++y)
-		{
-			for(int x = 1; x < size - 1; ++x)
-			{
-				int ile = 0;
-				for(int yy = -1; yy <= 1; ++yy)
-				{
-					for(int xx = -1; xx <= 1; ++xx)
-					{
-						if(m1[x + xx + (y + yy)*size])
-							++ile;
-					}
-				}
-
-				m2[x + y*size] = (ile >= 5);
-			}
-		}
-
-		for(int i = 0; i < size; ++i)
-		{
-			m2[i] = m1[i];
-			m2[i + (size - 1)*size] = m1[i + (size - 1)*size];
-			m2[i*size] = m1[i*size];
-			m2[i*size + size - 1] = m1[i*size + size - 1];
-		}
-	}
-
-	std::vector<int> v;
-
-	int calc_fill(bool* m, bool* m2, int start)
-	{
-		int ile = 0;
-		v.push_back(start);
-		m2[start] = true;
-
-		do
-		{
-			int i = v.back();
-			v.pop_back();
-			++ile;
-			m2[i] = true;
-
-			int x = i%size;
-			int y = i / size;
-
-#define T(x) if(!m[x] && !m2[x]) { m2[x] = true; v.push_back(x); }
-
-			if(x > 0)
-				T(x - 1 + y*size);
-			if(x < size - 1)
-				T(x + 1 + y*size);
-			if(y < 0)
-				T(x + (y - 1)*size);
-			if(y < size - 1)
-				T(x + (y + 1)*size);
-
-#undef T
-		} while(!v.empty());
-
-		return ile;
-	}
-
-	int fill_cave(bool* m, bool* m2, int start)
-	{
-		v.push_back(start);
-		m[start] = true;
-		memset(m2, 1, sizeof(bool)*size2);
-		int c = 1;
-
-		do
-		{
-			int i = v.back();
-			v.pop_back();
-
-			int x = i%size;
-			int y = i / size;
-
-			if(x < minx)
-				minx = x;
-			if(y < miny)
-				miny = y;
-			if(x > maxx)
-				maxx = x;
-			if(y > maxy)
-				maxy = y;
-
-#define T(t) if(!m[t]) { v.push_back(t); m[t] = true; m2[t] = false; ++c; }
-
-			if(x > 0)
-				T(x - 1 + y*size);
-			if(x < size - 1)
-				T(x + 1 + y*size);
-			if(y < 0)
-				T(x + (y - 1)*size);
-			if(y < size - 1)
-				T(x + (y + 1)*size);
-
-#undef T
-		} while(!v.empty());
-
-		//draw_map(m2);
-		//_getch();
-
-		return c;
-	}
-
-	int finish(bool* m, bool* m2)
-	{
-		memset(m2, 0, sizeof(bool)*size2);
-		int top = -1, topi = -1;
-
-		// znajdŸ najwiêkszy obszar
-		for(int i = 0; i < size2; ++i)
-		{
-			if(!m[i] || m2[i])
-				continue;
-
-			int ile = calc_fill(m, m2, i);
-			if(ile > top)
-			{
-				top = ile;
-				topi = i;
-			}
-		}
-
-		// wype³nij obszar
-		minx = size;
-		miny = size;
-		maxx = 0;
-		maxy = 0;
-		return fill_cave(m, m2, topi);
-	}
-
-	int generate(int _size)
-	{
-		size2 = _size*_size;
-
-		if(!m1 || _size > size)
-		{
-			delete[] m1;
-			delete[] m2;
-			m1 = new bool[size2];
-			m2 = new bool[size2];
-		}
-
-		size = _size;
-
-		// wype³nij losowo
-		fill_map(m1);
-		//draw_map(m1);
-		//_getch();
-
-		// celluar automata
-		for(int i = 0; i < iter; ++i)
-		{
-			make(m1, m2);
-			bool* m = m1;
-			m1 = m2;
-			m2 = m;
-
-			// krawêdzie
-			for(int j = 0; j < size; ++j)
-			{
-				m1[j] = true;
-				m1[j + (size - 1)*size] = true;
-				m1[j*size + size - 1] = true;
-				m1[j*size] = true;
-			}
-
-			//draw_map(m1);
-			//_getch();
-		}
-
-		// wybierz najwiêkszy obszar i go wype³nij
-		return finish(m1, m2);
-	}
-
-	void free_cave_data()
-	{
-		delete[] m1;
-		delete[] m2;
-	}
-};
-
-void generate_cave(Pole*& mapa, int size, Int2& stairs, int& stairs_dir, vector<Int2>& holes, Rect* ext, bool devmode)
-{
-	assert(InRange(size, 10, 100));
-
-	int size2 = size*size;
-
-	while(Cave::generate(size) < 200);
-
-	mapa = new Pole[size2];
-	memset(mapa, 0, sizeof(Pole)*size2);
-
-	// rozmiar
-	if(ext)
-		ext->Set(Cave::minx, Cave::miny, Cave::maxx + 1, Cave::maxy + 1);
-
-	// kopiuj
-	for(int i = 0; i < size2; ++i)
-		mapa[i].type = (Cave::m2[i] ? SCIANA : PUSTE);
-
-	// schody
-	do
-	{
-		Int2 pt, dir;
-
-		switch(Rand() % 4)
-		{
-		case 0: // dó³
-			dir = Int2(0, -1);
-			pt = Int2((Random(1, size - 2) + Random(1, size - 2)) / 2, size - 1);
-			break;
-		case 1: // lewa
-			dir = Int2(1, 0);
-			pt = Int2(0, (Random(1, size - 2) + Random(1, size - 2)) / 2);
-			break;
-		case 2: // góra
-			dir = Int2(0, 1);
-			pt = Int2((Random(1, size - 2) + Random(1, size - 2)) / 2, 0);
-			break;
-		case 3: // prawa
-			dir = Int2(-1, 0);
-			pt = Int2(size - 1, (Random(1, size - 2) + Random(1, size - 2)) / 2);
-			break;
-		}
-
-		do
-		{
-			pt += dir;
-			if(pt.x == -1 || pt.x == size || pt.y == -1 || pt.y == size)
-				break;
-			if(mapa[pt.x + pt.y*size].type == PUSTE)
-			{
-				pt -= dir;
-				// sprawdŸ z ilu stron jest puste pole
-				int ile = 0, dir2;
-				if(mapa[pt.x - 1 + pt.y*size].type == PUSTE)
-				{
-					++ile;
-					dir2 = 1;
-				}
-				if(mapa[pt.x + 1 + pt.y*size].type == PUSTE)
-				{
-					++ile;
-					dir2 = 3;
-				}
-				if(mapa[pt.x + (pt.y - 1)*size].type == PUSTE)
-				{
-					++ile;
-					dir2 = 0;
-				}
-				if(mapa[pt.x + (pt.y + 1)*size].type == PUSTE)
-				{
-					++ile;
-					dir2 = 2;
-				}
-
-				if(ile == 1)
-				{
-					stairs = pt;
-					stairs_dir = dir2;
-					mapa[pt.x + pt.y*size].type = SCHODY_GORA;
-					goto dalej;
-				}
-				else
-					break;
-			}
-		} while(1);
-	} while(1);
-
-dalej:
-
-	// losowe dziury w suficie
-	for(int count = 0, tries = 50; tries > 0 && count < 15; --tries)
-	{
-		Int2 pt(Random(1, size - 1), Random(1, size - 1));
-		if(mapa[pt.x + pt.y*size].type == PUSTE)
-		{
-			bool ok = true;
-			for(vector<Int2>::iterator it = holes.begin(), end = holes.end(); it != end; ++it)
-			{
-				if(Int2::Distance(pt, *it) < 5)
-				{
-					ok = false;
-					break;
-				}
-			}
-
-			if(ok)
-			{
-				mapa[pt.x + pt.y*size].type = KRATKA_SUFIT;
-				holes.push_back(pt);
-				++count;
-			}
-		}
-	}
-
-	// flagi
-	Mapa::mapa = mapa;
-	OpcjeMapy opcje;
-	opcje.w = opcje.h = size;
-	Mapa::opcje = &opcje;
-	Mapa::ustaw_flagi();
-
-	// rysuj
-	if(devmode)
-		Mapa::rysuj();
-}
-
-void regenerate_cave_flags(Pole* mapa, int size)
-{
-	assert(mapa && InRange(size, 10, 100));
-
-	// clear all flags (except F_NISKI_SUFIT, F_DRUGA_TEKSTURA, F_ODKRYTE)
-	for(int i = 0, s = size*size; i < s; ++i)
-		CLEAR_BIT(mapa[i].flags, 0xFFFFFFFF & ~Pole::F_NISKI_SUFIT & ~Pole::F_DRUGA_TEKSTURA & ~Pole::F_ODKRYTE);
-
-	// ustaw flagi
-	Mapa::mapa = mapa;
-	OpcjeMapy opcje;
-	opcje.w = opcje.h = size;
-	Mapa::opcje = &opcje;
-	Mapa::ustaw_flagi();
-}
-
-void free_cave_data()
-{
-	Cave::free_cave_data();
-}
-
-//=================================================================================================
-void Room::Save(FileWriter& f)
-{
-	f << pos;
-	f << size;
-	f << connected;
-	f << target;
-}
-
-//=================================================================================================
-void Room::Load(FileReader& f)
-{
-	f >> pos;
-	f >> size;
-	f >> connected;
-	if(LOAD_VERSION >= V_0_5)
-		f >> target;
-	else
-	{
-		int old_target;
-		bool corridor;
-		f >> old_target;
-		f >> corridor;
-		if(old_target == 0)
-			target = (corridor ? RoomTarget::Corridor : RoomTarget::None);
-		else
-			target = (RoomTarget)(old_target + 1);
-	}
-}
-
-//=================================================================================================
-void Room::Write(BitStreamWriter& f) const
-{
-	f << pos;
-	f << size;
-	f.WriteVectorCasted<byte, byte>(connected);
-	f.WriteCasted<byte>(target);
-}
-
-//=================================================================================================
-void Room::Read(BitStreamReader& f)
-{
-	f >> pos;
-	f >> size;
-	f.ReadVectorCasted<byte, byte>(connected);
-	f.ReadCasted<byte>(target);
 }
 
 // zwraca pole oznaczone ?
@@ -2177,18 +1346,4 @@ ok:
 
 	assert(0 && "Brak pola ³¹cz¹cego!");
 	return Int2(-1, -1);
-}
-
-void ustaw_flagi(Pole* mapa, uint wh)
-{
-	assert(mapa && wh > 0);
-
-	OpcjeMapy opcje;
-	opcje.mapa = mapa;
-	opcje.w = wh;
-	opcje.h = wh;
-
-	Mapa::opcje = &opcje;
-	Mapa::mapa = mapa;
-	Mapa::ustaw_flagi();
 }

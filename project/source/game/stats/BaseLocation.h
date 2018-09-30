@@ -150,7 +150,9 @@ struct BaseLocation
 	LocationTexturePack tex;
 
 	RoomType* GetRandomRoomType() const;
+	SPAWN_GROUP GetRandomSpawnGroup() const;
 	static void PreloadTextures();
+	static void SetRoomPointers();
 };
 extern BaseLocation g_base_locations[];
 extern const uint n_base_locations;

@@ -1,4 +1,3 @@
-// komendy w konsoli
 #pragma once
 
 //-----------------------------------------------------------------------------
@@ -63,6 +62,8 @@ enum CMD
 	CMD_FORCE_QUEST,
 	CMD_STUN,
 	CMD_REFRESH_COOLDOWN,
+	CMD_DRAW_PATH,
+	CMD_VERIFY,
 
 	CMD_MAX
 };

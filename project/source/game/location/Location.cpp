@@ -10,7 +10,7 @@
 #include "GameFile.h"
 
 //-----------------------------------------------------------------------------
-cstring txCamp, txCave, txCity, txCrypt, txDungeon, txForest, txVillage, txMoonwell, txOtherness, txAcademy;
+cstring txCamp, txCave, txCity, txCrypt, txDungeon, txForest, txVillage, txMoonwell, txOtherness;
 vector<string> txLocationStart, txLocationEnd;
 
 //=================================================================================================
@@ -25,7 +25,6 @@ void SetLocationNames()
 	txVillage = Str("village");
 	txMoonwell = Str("moonwell");
 	txOtherness = Str("otherness");
-	txAcademy = Str("academy");
 }
 
 //=================================================================================================
@@ -49,7 +48,7 @@ void Location::GenerateName()
 	{
 	case L_CAMP:
 		name = txCamp;
-		break;
+		return;
 	case L_CAVE:
 		name = txCave;
 		break;
@@ -70,9 +69,6 @@ void Location::GenerateName()
 		break;
 	case L_MOONWELL:
 		name = txMoonwell;
-		return;
-	case L_ACADEMY:
-		name = txAcademy;
 		return;
 	default:
 		assert(0);
@@ -204,9 +200,6 @@ void Location::Load(GameReader& f, bool, LOCATION_TOKEN token)
 		case L_MOONWELL:
 			image = LI_MOONWELL;
 			break;
-		case L_ACADEMY:
-			image = LI_ACADEMY;
-			break;
 		}
 	}
 
@@ -335,4 +328,18 @@ bool Location::ReadPortals(BitStreamReader& f, int at_level)
 	}
 
 	return true;
+}
+
+void Location::SetKnown()
+{
+	if(state == LS_UNKNOWN)
+	{
+		state = LS_KNOWN;
+		if(Net::IsServer())
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::CHANGE_LOCATION_STATE;
+			c.id = index;
+		}
+	}
 }

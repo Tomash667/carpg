@@ -2,6 +2,7 @@
 #include "GameCore.h"
 #include "Game.h"
 #include "SaveState.h"
+#include "Level.h"
 
 //=================================================================================================
 void HeroData::Init(Unit& _unit)
@@ -83,7 +84,7 @@ void HeroData::PassTime(int days, bool travel)
 {
 	// czy bohater odpoczywa?
 	bool resting;
-	if(Game::Get().city_ctx && !travel)
+	if(L.city_ctx && !travel)
 	{
 		resting = true;
 		expe += days;

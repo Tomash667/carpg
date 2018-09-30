@@ -17,6 +17,16 @@ struct TeamInfo
 class TeamSingleton
 {
 public:
+	struct TeamShareItem
+	{
+		Unit* from, *to;
+		const Item* item;
+		int index, value, priority;
+		bool is_team;
+	};
+
+	void AddTeamMember(Unit* unit, bool free);
+	void RemoveTeamMember(Unit* unit);
 	Unit* FindActiveTeamMember(int netid);
 	bool FindItemInTeam(const Item* item, int refid, Unit** unit_result, int* i_index, bool check_npc = true);
 	Unit* FindTeamMember(cstring id);
@@ -44,8 +54,20 @@ public:
 	bool IsTeamNotBusy();
 	void Load(GameReader& f);
 	void Reset();
+	void ClearOnNewGameOrLoad();
 	void Save(GameWriter& f);
 	void SaveOnWorldmap(GameWriter& f);
+	void Update(int days, bool travel);
+	void CheckTeamItemShares();
+	void UpdateTeamItemShares();
+	void TeamShareGiveItemCredit(DialogContext& ctx);
+	void TeamShareSellItem(DialogContext& ctx);
+	void TeamShareDecline(DialogContext& ctx);
+	void BuyTeamItems();
+	void ValidateTeamItems();
+	void CheckCredit(bool require_update = false, bool ignore = false);
+	bool RemoveQuestItem(const Item* item, int refid = -1);
+	Unit* FindPlayerTradingWithUnit(Unit& u);
 
 	vector<Unit*> members; // all team members
 	vector<Unit*> active_members; // team members that get gold (without quest units)
@@ -53,6 +75,14 @@ public:
 	bool crazies_attack, // team attacked by crazies on current level
 		free_recruit, // first hero joins for free if playing alone
 		is_bandit; // attacked npc, now npc's are aggresive
+
+private:
+	bool CheckTeamShareItem(TeamShareItem& tsi);
+	void CheckUnitOverload(Unit& unit);
+
+	// team shares, not saved
+	vector<TeamShareItem> team_shares;
+	int team_share_id;
 };
 
 extern TeamSingleton Team;

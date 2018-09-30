@@ -187,6 +187,10 @@ struct Item
 		return float(value) / weight;
 	}
 
+	void CreateCopy(Item& item) const;
+	Item* CreateCopy() const;
+	void Rename(cstring name);
+
 	string id, mesh_id, name, desc;
 	int weight, value, flags, refid;
 	ITEM_TYPE type;
@@ -195,6 +199,7 @@ struct Item
 	TEX icon;
 	ResourceState state;
 
+	static const Item* gold;
 	static ItemsMap items;
 	static Item* TryGet(Cstring id);
 	static Item* Get(Cstring id)
@@ -210,9 +215,9 @@ struct Item
 // Weapon types
 enum WEAPON_TYPE
 {
-	WT_SHORT,
-	WT_LONG,
-	WT_MACE,
+	WT_SHORT_BLADE,
+	WT_LONG_BLADE,
+	WT_BLUNT,
 	WT_AXE
 };
 
@@ -234,13 +239,13 @@ inline const WeaponTypeInfo& GetWeaponTypeInfo(SkillId s)
 	{
 	default:
 	case SkillId::SHORT_BLADE:
-		return WeaponTypeInfo::info[WT_SHORT];
+		return WeaponTypeInfo::info[WT_SHORT_BLADE];
 	case SkillId::LONG_BLADE:
-		return WeaponTypeInfo::info[WT_LONG];
+		return WeaponTypeInfo::info[WT_LONG_BLADE];
 	case SkillId::AXE:
 		return WeaponTypeInfo::info[WT_AXE];
 	case SkillId::BLUNT:
-		return WeaponTypeInfo::info[WT_MACE];
+		return WeaponTypeInfo::info[WT_BLUNT];
 	}
 }
 
@@ -248,7 +253,7 @@ inline const WeaponTypeInfo& GetWeaponTypeInfo(SkillId s)
 // Weapon
 struct Weapon : public Item
 {
-	Weapon() : Item(IT_WEAPON), dmg(10), dmg_type(DMG_BLUNT), req_str(10), weapon_type(WT_MACE), material(MAT_WOOD) {}
+	Weapon() : Item(IT_WEAPON), dmg(10), dmg_type(DMG_BLUNT), req_str(10), weapon_type(WT_BLUNT), material(MAT_WOOD) {}
 
 	const WeaponTypeInfo& GetInfo() const
 	{
@@ -408,6 +413,8 @@ struct Book : public Item
 	bool runic;
 
 	static vector<Book*> books;
+	// get random book for shelf (can be nullptr)
+	static const Item* GetRandom();
 };
 
 
@@ -518,8 +525,6 @@ struct StartItem
 //-----------------------------------------------------------------------------
 bool ItemCmp(const Item* a, const Item* b);
 const Item* FindItemOrList(Cstring id, ItemListResult& lis);
-void CreateItemCopy(Item& item, const Item* base_item);
-Item* CreateItemCopy(const Item* item);
 
 //-----------------------------------------------------------------------------
 extern std::map<const Item*, Item*> better_items;

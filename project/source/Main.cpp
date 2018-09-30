@@ -449,6 +449,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	LogProcessorFeatures();
 
 	Game game;
+	Config& cfg = Game::Get().cfg;
 	StartupOptions options;
 	Bool3 windowed = None,
 		console = None;
@@ -478,7 +479,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 		cstring arg = argv[i] + 1;
 		if(c == '+')
-			game.ParseConfigVar(arg);
+			cfg.ParseConfigVar(arg);
 		else
 		{
 			if(strcmp(arg, "config") == 0)
@@ -567,7 +568,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	//-------------------------------------------------------------------------
 	// wczytaj plik konfiguracyjny
 	Info("Loading config file");
-	Config& cfg = Game::Get().cfg;
 	Config::Result result = cfg.Load(game.cfg_file.c_str());
 	if(result == Config::NO_FILE)
 		Info("Config file not found '%s'.", game.cfg_file.c_str());
@@ -665,18 +665,18 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	options.music_volume = Clamp(cfg.GetInt("music_volume", 50), 0, 100);
 
 	// ustawienia myszki
-	game.mouse_sensitivity = Clamp(cfg.GetInt("mouse_sensitivity", 50), 0, 100);
-	game.mouse_sensitivity_f = Lerp(0.5f, 1.5f, float(game.mouse_sensitivity) / 100);
+	game.settings.mouse_sensitivity = Clamp(cfg.GetInt("mouse_sensitivity", 50), 0, 100);
+	game.settings.mouse_sensitivity_f = Lerp(0.5f, 1.5f, float(game.settings.mouse_sensitivity) / 100);
 
 	// tryb multiplayer
 	game.player_name = cfg.GetString("nick", "");
 #define LIMIT(x) if(x.length() > 16) x = x.substr(0,16)
 	LIMIT(game.player_name);
-	game.server_name = cfg.GetString("server_name", "");
-	LIMIT(game.server_name);
-	game.server_pswd = cfg.GetString("server_pswd", "");
-	LIMIT(game.server_pswd);
-	game.max_players = Clamp(cfg.GetInt("server_players", DEFAULT_PLAYERS), MIN_PLAYERS, MAX_PLAYERS);
+	N.server_name = cfg.GetString("server_name", "");
+	LIMIT(N.server_name);
+	N.password = cfg.GetString("server_pswd", "");
+	LIMIT(N.password);
+	N.max_players = Clamp(cfg.GetUint("server_players", DEFAULT_PLAYERS), MIN_PLAYERS, MAX_PLAYERS);
 	game.server_ip = cfg.GetString("server_ip", "");
 	game.mp_timeout = Clamp(cfg.GetFloat("timeout", 10.f), 1.f, 3600.f);
 
@@ -701,38 +701,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	if(slot != -1 && slot >= 1 && slot <= MAX_SAVE_SLOTS)
 		game.quickstart_slot = slot;
 
-	// autopicked class in MP
-	{
-		const string& clas = cfg.GetString("autopick", "");
-		if(!clas.empty())
-		{
-			if(clas == "random")
-				game.autopick_class = Class::RANDOM;
-			else
-			{
-				ClassInfo* ci = ClassInfo::Find(clas);
-				if(ci)
-				{
-					if(ClassInfo::IsPickable(ci->class_id))
-						game.autopick_class = ci->class_id;
-					else
-						Warn("Settings [autopick]: Class '%s' is not pickable by players.", clas.c_str());
-				}
-				else
-					Warn("Settings [autopick]: Invalid class '%s'.", clas.c_str());
-			}
-		}
-	}
-
-	// autostart serwera
-	game.autostart_count = cfg.GetInt("autostart");
-	if(game.autostart_count < -1)
-		game.autostart_count = -1;
-	else if(game.autostart_count > MAX_PLAYERS || game.autostart_count == 0)
-		game.autostart_count = -1;
-
-	//game.kick_timer = max(0, cfg.GetInt("kick_timer", 900));
-	game.mp_port = Clamp(cfg.GetInt("port", PORT), 0, 0xFFFF);
+	N.port = Clamp(cfg.GetInt("port", PORT), 0, 0xFFFF);
 
 	// autopicked class in quickstart
 	{
@@ -818,8 +787,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		}
 	}
 	
-	game.SetConfigVarsFromFile();
-	game.ApplyConfigVars();
+	cfg.LoadConfigVars();
 
 	//-------------------------------------------------------------------------
 	// logger
@@ -923,6 +891,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	//-------------------------------------------------------------------------
 	// sprz¹tanie
+	Language::Cleanup();
 	delete[] cmd_line;
 	delete[] argv;
 	delete Logger::global;

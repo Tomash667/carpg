@@ -4,6 +4,12 @@
 #include "Tokenizer.h"
 
 //-----------------------------------------------------------------------------
+enum class AnyVarType
+{
+	Bool
+};
+
+//-----------------------------------------------------------------------------
 enum Bool3
 {
 	False,
@@ -16,6 +22,24 @@ inline bool ToBool(Bool3 b)
 {
 	return (b == True);
 }
+
+//-----------------------------------------------------------------------------
+union AnyVar
+{
+	bool _bool;
+};
+
+//-----------------------------------------------------------------------------
+struct ConfigVar
+{
+	cstring name;
+	AnyVarType type;
+	AnyVar* ptr;
+	AnyVar new_value;
+	bool have_new_value, need_save;
+
+	ConfigVar(cstring name, bool& _bool) : name(name), type(AnyVarType::Bool), ptr((AnyVar*)&_bool), have_new_value(false), need_save(false) {}
+};
 
 //-----------------------------------------------------------------------------
 class Config
@@ -49,14 +73,17 @@ public:
 	};
 
 	void Add(cstring name, cstring value);
-	void Add(cstring name, bool value)
-	{
-		Add(name, value ? "1" : "0");
-	}
+	void Add(cstring name, bool value) { Add(name, value ? "1" : "0"); }
+	void AddVar(ConfigVar& var) { config_vars.push_back(var); }
 	Result Load(cstring filename);
 	Result Save(cstring filename);
 	void Remove(cstring name);
+	void ParseConfigVar(cstring var);
+	void LoadConfigVars();
 
+	int GetVersion() const { return version; }
+	const string& GetError() const { return error; }
+	Entry* GetEntry(cstring name);
 	bool GetBool(cstring name, bool def = false);
 	Bool3 GetBool3(cstring name, Bool3 def = None);
 	const string& GetString(cstring name);
@@ -88,23 +115,10 @@ public:
 		}
 	}
 
-	int GetVersion() const { return version; }
-	const string& GetError() const { return error; }
-
-	Entry* GetEntry(cstring name)
-	{
-		assert(name);
-		for(vector<Entry>::iterator it = entries.begin(), end = entries.end(); it != end; ++it)
-		{
-			if(it->name == name)
-				return &*it;
-		}
-		return nullptr;
-	}
-
 private:
 	vector<Entry> entries;
 	string tmpstr, error;
 	int version;
 	Tokenizer t;
+	vector<ConfigVar> config_vars;
 };

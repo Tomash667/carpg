@@ -43,9 +43,9 @@ void SingleInsideLocation::Load(GameReader& f, bool local, LOCATION_TOKEN token)
 }
 
 //=================================================================================================
-void SingleInsideLocation::BuildRefidTable()
+void SingleInsideLocation::BuildRefidTables()
 {
-	InsideLocationLevel::BuildRefidTable();
+	InsideLocationLevel::BuildRefidTables();
 }
 
 //=================================================================================================

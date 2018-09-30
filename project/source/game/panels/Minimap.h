@@ -8,16 +8,15 @@ class Minimap : public GamePanel
 {
 public:
 	Minimap();
-
+	void LoadData();
 	void Draw(ControlDrawData* cdd = nullptr) override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
 	bool NeedCursor() const override { return false; }
-
 	void Show();
 	void Hide();
 	void Build();
-	void LoadData();
+	Vec2 GetMapPosition(Unit& unit);
 
 	// przekszata³ca z pozycji œwiata do punktu na mapie (gdzie punkt (0,0) to lewy dolny róg mapy, a (1,1) to prawy górny)
 	Vec2 TransformCoord(const Vec2& pt)
@@ -55,11 +54,11 @@ public:
 		Vec2 pos, anchor;
 	};
 
-	int minimap_size;
 	Matrix m1;
 	vector<Text> texts;
 	City* city;
 
 private:
 	TEX tMiniunit[5], tSchodyDol, tSchodyGora, tMinibag, tMinibag2, tMiniportal;
+	int minimap_size;
 };

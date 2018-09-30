@@ -36,25 +36,21 @@ public:
 		AgentLeft
 	};
 
+	void Init();
 	void Start() override;
 	GameDialog* GetDialog(int type2) override;
 	void SetProgress(int prog2) override;
 	cstring FormatString(const string& str) override;
 	bool IfNeedTalk(cstring topic) const override;
-	void Special(DialogContext& ctx, cstring msg) override;
-	void HandleLocationEvent(LocationEventHandler::Event event) override;
+	bool Special(DialogContext& ctx, cstring msg) override;
+	bool SpecialIf(DialogContext& ctx, cstring msg) override;
+	bool HandleLocationEvent(LocationEventHandler::Event event) override;
 	void HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit) override;
 	void Save(GameWriter& f) override;
 	bool Load(GameReader& f) override;
 	void LoadOld(GameReader& f);
-	int GetUnitEventHandlerQuestRefid() override
-	{
-		return refid;
-	}
-	int GetLocationEventHandlerQuestRefid() override
-	{
-		return refid;
-	}
+	int GetUnitEventHandlerQuestRefid() override { return refid; }
+	int GetLocationEventHandlerQuestRefid() override { return refid; }
 
 	State bandits_state;
 	float timer;

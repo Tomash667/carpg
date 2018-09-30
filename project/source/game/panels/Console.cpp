@@ -23,6 +23,12 @@ Console::Console(const DialogInfo& info) : GameDialogBox(info), added(false)
 }
 
 //=================================================================================================
+void Console::LoadData()
+{
+	ResourceManager::Get<Texture>().AddLoadTask("tlo_konsoli.jpg", tBackground);
+}
+
+//=================================================================================================
 void Console::Draw(ControlDrawData*)
 {
 	// t³o
@@ -40,7 +46,7 @@ void Console::Update(float dt)
 	itb.Update(dt);
 	if(Key.Focus())
 	{
-		if(game->KeyDownUp(GK_CONSOLE))
+		if(GKey.KeyDownUp(GK_CONSOLE))
 		{
 			Event(GuiEvent_LostFocus);
 			GUI.CloseDialog(this);
@@ -86,10 +92,4 @@ void Console::AddText(cstring str)
 void Console::OnInput(const string& str)
 {
 	Game::Get().ParseCommand(str, PrintMsgFunc(this, &Console::AddText), PS_CONSOLE);
-}
-//=================================================================================================
-
-void Console::LoadData()
-{
-	ResourceManager::Get<Texture>().AddLoadTask("tlo_konsoli.jpg", tBackground);
 }

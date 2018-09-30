@@ -1,7 +1,9 @@
 #pragma once
 
+//-----------------------------------------------------------------------------
 #include "EngineCore.h"
 #include "File.h"
+#include "Physics.h"
 #include "WindowsIncludes.h"
 #define far
 #define IN
@@ -14,10 +16,12 @@
 #undef OUT
 #undef NULL
 
+//-----------------------------------------------------------------------------
 using namespace SLNet;
 
 //-----------------------------------------------------------------------------
 class ActionPanel;
+class Arena;
 class BitStreamReader;
 class BitStreamWriter;
 class BookPanel;
@@ -26,6 +30,7 @@ class Controls;
 class CreateCharacterPanel;
 class CreateServerPanel;
 class Game;
+class GameComponent;
 class GameGui;
 class GameMenu;
 class GameMessages;
@@ -33,15 +38,20 @@ class GamePanel;
 class GamePanelContainer;
 class GameReader;
 class GameWriter;
+class GlobalGui;
 class InfoBox;
 class Inventory;
+class InventoryPanel;
 class Journal;
+class Level;
 class LevelAreaContext;
+class LoadScreen;
 class MainMenu;
 class Minimap;
 class MpBox;
 class MultiplayerPanel;
 class Options;
+class Pathfinding;
 class PickServerPanel;
 class QuestManager;
 class SaveLoad;
@@ -66,7 +76,6 @@ struct Bullet;
 struct Camera;
 struct CameraCollider;
 struct Chest;
-struct City;
 struct CityBuilding;
 struct CollisionObject;
 struct Consumable;
@@ -87,19 +96,26 @@ struct Item;
 struct ItemList;
 struct ItemListResult;
 struct ItemSlot;
-struct InsideBuilding;
-struct InsideLocationLevel;
+struct LevelContext;
 struct LeveledItemList;
 struct Light;
-struct Location;
+struct LoadingHandler;
+struct LocationEventHandler;
+struct LocationTexturePack;
 struct NetChangePlayer;
+struct News;
 struct Object;
+struct OutsideObject;
 struct OtherItem;
+struct Pole;
 struct PlayerController;
 struct PlayerInfo;
 struct Portal;
+struct Quest;
 struct Quest_Dungeon;
+struct Quest_Encounter;
 struct Quest_Event;
+struct QuestHandler;
 struct Room;
 struct Shield;
 struct SpeechBubble;
@@ -109,9 +125,45 @@ struct Trap;
 struct Unit;
 struct UnitData;
 struct UnitEventHandler;
+struct UnitGroup;
 struct Usable;
+struct Var;
+struct VarsContainer;
 struct Weapon;
 
 //-----------------------------------------------------------------------------
+// Locations
+struct Camp;
+struct Cave;
+struct City;
+struct InsideBuilding;
+struct InsideLocation;
+struct InsideLocationLevel;
+struct Location;
+struct MultiInsideLocation;
+struct OutsideLocation;
+struct SingleInsideLocation;
+
+//-----------------------------------------------------------------------------
+// Location generators
+class CampGenerator;
+class CaveGenerator;
+class CityGenerator;
+class DungeonGenerator;
+class EncounterGenerator;
+class ForestGenerator;
+class LabyrinthGenerator;
+class LocationGenerator;
+class LocationGeneratorFactory;
+class MoonwellGenerator;
+class SecretLocationGenerator;
+class TutorialLocationGenerator;
+
+//-----------------------------------------------------------------------------
+enum Direction;
+enum EncounterMode;
+enum GameDirection;
 enum TRAP_TYPE;
+enum SPAWN_GROUP;
+enum SpecialEncounter;
 enum class OLD_BUILDING;

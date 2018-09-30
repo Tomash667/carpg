@@ -1,6 +1,8 @@
 #pragma once
 
-#include "Mapa2.h"
+#include "Tile.h"
+#include "Room.h"
+#include "Light.h"
 #include "Unit.h"
 #include "Chest.h"
 #include "Trap.h"
@@ -25,26 +27,15 @@ struct InsideLocationLevel : public LevelArea
 	vector<Usable*> usables;
 	vector<Blood> bloods;
 	Int2 staircase_up, staircase_down;
-	int staircase_up_dir, staircase_down_dir;
+	GameDirection staircase_up_dir, staircase_down_dir;
 	bool staircase_down_in_wall;
 
-	InsideLocationLevel() : map(nullptr)
-	{
-	}
+	InsideLocationLevel() : map(nullptr) {}
 	~InsideLocationLevel();
 
-	bool IsInside(int _x, int _y) const
-	{
-		return _x >= 0 && _y >= 0 && _x < w && _y < h;
-	}
-	bool IsInside(const Int2& _pt) const
-	{
-		return IsInside(_pt.x, _pt.y);
-	}
-	Vec3 GetRandomPos() const
-	{
-		return Vec3(Random(2.f*w), 0, Random(2.f*h));
-	}
+	bool IsInside(int x, int y) const { return x >= 0 && y >= 0 && x < w && y < h; }
+	bool IsInside(const Int2& pt) const { return IsInside(pt.x, pt.y); }
+	Vec3 GetRandomPos() const { return Vec3(Random(2.f*w), 0, Random(2.f*h)); }
 	Room* GetNearestRoom(const Vec3& pos);
 	Room* FindEscapeRoom(const Vec3& my_pos, const Vec3& enemy_pos);
 	int GetRoomId(Room* room) const
@@ -54,17 +45,17 @@ struct InsideLocationLevel : public LevelArea
 	}
 	Int2 GetUpStairsFrontTile() const
 	{
-		return staircase_up + dir_to_pos(staircase_up_dir);
+		return staircase_up + DirToPos(staircase_up_dir);
 	}
 	Int2 GetDownStairsFrontTile() const
 	{
-		return staircase_down + dir_to_pos(staircase_down_dir);
+		return staircase_down + DirToPos(staircase_down_dir);
 	}
 	Room* GetRandomRoom()
 	{
 		return &rooms[Rand() % rooms.size()];
 	}
-	bool GetRandomNearWallTile(const Room& pokoj, Int2& tile, int& rot, bool nocol = false);
+	bool GetRandomNearWallTile(const Room& pokoj, Int2& tile, GameDirection& rot, bool nocol = false);
 	Room& GetFarRoom(bool have_down_stairs, bool no_target = false);
 	Room* GetRoom(const Int2& pt);
 	Room* GetUpStairsRoom()
@@ -79,7 +70,7 @@ struct InsideLocationLevel : public LevelArea
 	void SaveLevel(GameWriter& f, bool local);
 	void LoadLevel(GameReader& f, bool local);
 
-	void BuildRefidTable();
+	void BuildRefidTables();
 
 	Pole& At(const Int2& pt)
 	{
@@ -91,7 +82,7 @@ struct InsideLocationLevel : public LevelArea
 
 	bool IsTileVisible(const Vec3& pos) const
 	{
-		Int2 pt = pos_to_pt(pos);
+		Int2 pt = PosToPt(pos);
 		return IS_SET(map[pt(w)].flags, Pole::F_ODKRYTE);
 	}
 
@@ -108,4 +99,5 @@ struct InsideLocationLevel : public LevelArea
 	Unit* FindUnit(UnitData* data);
 	Chest* FindChestWithItem(const Item* item, int* index);
 	Chest* FindChestWithQuestItem(int quest_refid, int* index);
+	Room& GetRoom(RoomTarget target, bool down_stairs);
 };

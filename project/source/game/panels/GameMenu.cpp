@@ -4,9 +4,17 @@
 #include "Language.h"
 #include "KeyStates.h"
 #include "ResourceManager.h"
+#include "Game.h"
+#include "GlobalGui.h"
 
 //=================================================================================================
 GameMenu::GameMenu(const DialogInfo& info) : DialogBox(info), prev_can_save(true), prev_can_load(true), prev_hardcore_mode(false)
+{
+	visible = false;
+}
+
+//=================================================================================================
+void GameMenu::LoadLanguage()
 {
 	txSave = Str("saveGame");
 	txSaveAndExit = Str("saveAndExit");
@@ -44,12 +52,16 @@ GameMenu::GameMenu(const DialogInfo& info) : DialogBox(info), prev_can_save(true
 		bt[i].size = maxsize;
 		offset.y += maxsize.y + 8;
 	}
-
-	visible = false;
 }
 
 //=================================================================================================
-void GameMenu::Draw(ControlDrawData* /*cdd*/)
+void GameMenu::LoadData()
+{
+	ResourceManager::Get<Texture>().AddLoadTask("logo_small.png", tLogo);
+}
+
+//=================================================================================================
+void GameMenu::Draw(ControlDrawData*)
 {
 	GUI.DrawSpriteFull(tBackground, Color::Alpha(128));
 	GUI.DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
@@ -63,6 +75,29 @@ void GameMenu::Draw(ControlDrawData* /*cdd*/)
 //=================================================================================================
 void GameMenu::Update(float dt)
 {
+	Game& game = Game::Get();
+	bool can_save = game.CanSaveGame(),
+		can_load = game.CanLoadGame(),
+		hardcore_mode = game.hardcore_mode;
+
+	if(can_save != prev_can_save)
+	{
+		bt[1].state = (can_save ? Button::NONE : Button::DISABLED);
+		prev_can_save = can_save;
+	}
+
+	if(can_load != prev_can_load)
+	{
+		bt[2].state = (can_load ? Button::NONE : Button::DISABLED);
+		prev_can_load = can_load;
+	}
+
+	if(hardcore_mode != prev_hardcore_mode)
+	{
+		bt[1].text = (hardcore_mode ? txSaveAndExit : txSave);
+		prev_hardcore_mode = hardcore_mode;
+	}
+
 	for(int i = 0; i < 6; ++i)
 	{
 		bt[i].mouse_focus = focus;
@@ -88,35 +123,42 @@ void GameMenu::Event(GuiEvent e)
 		visible = false;
 	else if(e >= GuiEvent_Custom)
 	{
-		if(event)
-			event(e);
-	}
-}
+		Game& game = Game::Get();
+		switch((ButtonId)e)
+		{
+		case IdReturnToGame:
+			CloseDialog();
+			break;
+		case IdSaveGame:
+			game.gui->ShowSavePanel();
+			break;
+		case IdLoadGame:
+			game.gui->ShowLoadPanel();
+			break;
+		case IdOptions:
+			game.gui->ShowOptions();
+			break;
+		case IdExit:
+			{
+				DialogInfo info;
+				info.event = [](int id)
+				{
+					if(id == BUTTON_YES)
+						Game::Get().ExitToMenu();
+				};
+				info.name = "exit_to_menu";
+				info.parent = nullptr;
+				info.pause = true;
+				info.text = txExitToMenuDialog;
+				info.order = ORDER_TOP;
+				info.type = DIALOG_YESNO;
 
-//=================================================================================================
-void GameMenu::Set(bool can_save, bool can_load, bool hardcore_mode)
-{
-	if(can_save != prev_can_save)
-	{
-		bt[1].state = (can_save ? Button::NONE : Button::DISABLED);
-		prev_can_save = can_save;
+				GUI.ShowDialog(info);
+			}
+			break;
+		case IdQuit:
+			game.gui->ShowQuitDialog();
+			break;
+		}
 	}
-
-	if(can_load != prev_can_load)
-	{
-		bt[2].state = (can_load ? Button::NONE : Button::DISABLED);
-		prev_can_load = can_load;
-	}
-
-	if(hardcore_mode != prev_hardcore_mode)
-	{
-		bt[1].text = (hardcore_mode ? txSaveAndExit : txSave);
-		prev_hardcore_mode = hardcore_mode;
-	}
-}
-
-//=================================================================================================
-void GameMenu::LoadData()
-{
-	ResourceManager::Get<Texture>().AddLoadTask("logo_small.png", tLogo);
 }

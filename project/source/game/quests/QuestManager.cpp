@@ -4,10 +4,14 @@
 #include "QuestManager.h"
 #include "SaveState.h"
 #include "GameFile.h"
+#include "World.h"
+#include "Content.h"
+#include "Net.h"
 
 #include "Quest_Bandits.h"
 #include "Quest_BanditsCollectToll.h"
 #include "Quest_CampNearCity.h"
+#include "Quest_Contest.h"
 #include "Quest_Crazies.h"
 #include "Quest_DeliverLetter.h"
 #include "Quest_DeliverParcel.h"
@@ -23,15 +27,18 @@
 #include "Quest_RescueCaptive.h"
 #include "Quest_RetrievePackage.h"
 #include "Quest_Sawmill.h"
+#include "Quest_Secret.h"
 #include "Quest_SpreadNews.h"
 #include "Quest_StolenArtifact.h"
+#include "Quest_Tournament.h"
+#include "Quest_Tutorial.h"
 #include "Quest_Wanted.h"
 
 //-----------------------------------------------------------------------------
-QuestManager Singleton<QuestManager>::instance;
+QuestManager QM;
 
 //=================================================================================================
-void QuestManager::Init()
+void QuestManager::InitOnce()
 {
 	force = Q_FORCE_DISABLED;
 
@@ -58,6 +65,151 @@ void QuestManager::Init()
 	infos.push_back({ Q_CRAZIES, QuestType::Unique, "crazies" });
 	infos.push_back({ Q_WANTED, QuestType::Captain, "wanted" });
 	infos.push_back({ Q_MAIN, QuestType::Unique, "main" });
+
+	// create pseudo quests
+	quest_contest = new Quest_Contest;
+	quest_contest->InitOnce();
+	quest_secret = new Quest_Secret;
+	quest_secret->InitOnce();
+	quest_tournament = new Quest_Tournament;
+	quest_tournament->InitOnce();
+	quest_tutorial = new Quest_Tutorial;
+}
+
+//=================================================================================================
+void QuestManager::LoadLanguage()
+{
+	quest_contest->LoadLanguage();
+	quest_secret->LoadLanguage();
+	quest_tournament->LoadLanguage();
+	quest_tutorial->LoadLanguage();
+}
+
+//=================================================================================================
+void QuestManager::Cleanup()
+{
+	delete quest_contest;
+	delete quest_secret;
+	delete quest_tournament;
+	delete quest_tutorial;
+}
+
+//=================================================================================================
+void QuestManager::Clear()
+{
+	DeleteElements(quests);
+	DeleteElements(unaccepted_quests);
+	DeleteElements(quest_item_requests);
+	DeleteElements(quest_items);
+	quest_tournament->Clear();
+}
+
+//=================================================================================================
+void QuestManager::InitQuests(bool devmode)
+{
+	vector<int> used;
+
+	// goblins
+	quest_goblins = new Quest_Goblins;
+	quest_goblins->Init();
+	quest_goblins->start_loc = W.GetRandomSettlementIndex(used, 1);
+	quest_goblins->refid = quest_counter++;
+	quest_goblins->Start();
+	unaccepted_quests.push_back(quest_goblins);
+	used.push_back(quest_goblins->start_loc);
+
+	// bandits
+	quest_bandits = new Quest_Bandits;
+	quest_bandits->Init();
+	quest_bandits->start_loc = W.GetRandomSettlementIndex(used, 1);
+	quest_bandits->refid = quest_counter++;
+	quest_bandits->Start();
+	unaccepted_quests.push_back(quest_bandits);
+	used.push_back(quest_bandits->start_loc);
+
+	// sawmill
+	quest_sawmill = new Quest_Sawmill;
+	quest_sawmill->start_loc = W.GetRandomSettlementIndex(used);
+	quest_sawmill->refid = quest_counter++;
+	quest_sawmill->Start();
+	unaccepted_quests.push_back(quest_sawmill);
+	used.push_back(quest_sawmill->start_loc);
+
+	// mine
+	quest_mine = new Quest_Mine;
+	quest_mine->start_loc = W.GetRandomSettlementIndex(used);
+	quest_mine->target_loc = W.GetClosestLocation(L_CAVE, W.GetLocation(quest_mine->start_loc)->pos);
+	quest_mine->refid = quest_counter++;
+	quest_mine->Start();
+	unaccepted_quests.push_back(quest_mine);
+	used.push_back(quest_mine->start_loc);
+
+	// mages
+	quest_mages = new Quest_Mages;
+	quest_mages->start_loc = W.GetRandomSettlementIndex(used);
+	quest_mages->refid = quest_counter++;
+	quest_mages->Start();
+	unaccepted_quests.push_back(quest_mages);
+	used.push_back(quest_mages->start_loc);
+
+	// mages2
+	quest_mages2 = new Quest_Mages2;
+	quest_mages2->Init();
+	quest_mages2->refid = quest_counter++;
+	quest_mages2->Start();
+	unaccepted_quests.push_back(quest_mages2);
+	quest_rumor[P_MAGOWIE2] = true;
+	--quest_rumor_counter;
+
+	// orcs
+	quest_orcs = new Quest_Orcs;
+	quest_orcs->Init();
+	quest_orcs->start_loc = W.GetRandomSettlementIndex(used);
+	quest_orcs->refid = quest_counter++;
+	quest_orcs->Start();
+	unaccepted_quests.push_back(quest_orcs);
+	used.push_back(quest_orcs->start_loc);
+
+	// orcs2
+	quest_orcs2 = new Quest_Orcs2;
+	quest_orcs2->Init();
+	quest_orcs2->refid = quest_counter++;
+	quest_orcs2->Start();
+	unaccepted_quests.push_back(quest_orcs2);
+
+	// evil
+	quest_evil = new Quest_Evil;
+	quest_evil->Init();
+	quest_evil->start_loc = W.GetRandomSettlementIndex(used);
+	quest_evil->refid = quest_counter++;
+	quest_evil->Start();
+	unaccepted_quests.push_back(quest_evil);
+	used.push_back(quest_evil->start_loc);
+
+	// crazies
+	quest_crazies = new Quest_Crazies;
+	quest_crazies->Init();
+	quest_crazies->refid = quest_counter++;
+	quest_crazies->Start();
+	unaccepted_quests.push_back(quest_crazies);
+
+	// pseudo quests
+	quest_contest->Init();
+	quest_secret->Init();
+	quest_tournament->Init();
+
+	if(devmode)
+	{
+		Info("Quest 'Sawmill' - %s.", W.GetLocation(quest_sawmill->start_loc)->name.c_str());
+		Info("Quest 'Mine' - %s, %s.", W.GetLocation(quest_mine->start_loc)->name.c_str(), W.GetLocation(quest_mine->target_loc)->name.c_str());
+		Info("Quest 'Bandits' - %s.", W.GetLocation(quest_bandits->start_loc)->name.c_str());
+		Info("Quest 'Mages' - %s.", W.GetLocation(quest_mages->start_loc)->name.c_str());
+		Info("Quest 'Orcs' - %s.", W.GetLocation(quest_orcs->start_loc)->name.c_str());
+		Info("Quest 'Goblins' - %s.", W.GetLocation(quest_goblins->start_loc)->name.c_str());
+		Info("Quest 'Evil' - %s.", W.GetLocation(quest_evil->start_loc)->name.c_str());
+		Info("Tournament - %s.", W.GetLocation(quest_tournament->GetCity())->name.c_str());
+		Info("Contest - %s.", W.GetLocation(quest_contest->where)->name.c_str());
+	}
 }
 
 //=================================================================================================
@@ -265,16 +417,66 @@ void QuestManager::Reset()
 }
 
 //=================================================================================================
-void QuestManager::Cleanup()
+void QuestManager::Update(int days)
 {
-	DeleteElements(quests);
-	DeleteElements(unaccepted_quests);
-	DeleteElements(quest_item_requests);
+	// mark quest locations as not quest / remove quest camps
+	LoopAndRemove(quests_timeout, [this](Quest_Dungeon* quest)
+	{
+		if(!quest->IsTimedout())
+			return false;
+
+		Location* loc = W.GetLocation(quest->target_loc);
+		bool in_camp = false;
+
+		if(loc->type == L_CAMP && (quest->target_loc == W.GetTravelLocationIndex() || quest->target_loc == W.GetCurrentLocationIndex()))
+			in_camp = true;
+
+		if(!quest->timeout)
+		{
+			bool ok = quest->OnTimeout(in_camp ? TIMEOUT_CAMP : TIMEOUT_NORMAL);
+			if(ok)
+				quest->timeout = true;
+			else
+				return false;
+		}
+
+		if(in_camp)
+			return false;
+
+		loc->active_quest = nullptr;
+
+		if(loc->type == L_CAMP)
+		{
+			quest->target_loc = -1;
+			W.DeleteCamp((Camp*)loc);
+		}
+
+		return true;
+	});
+
+	// quest timeouts, not attached to location
+	LoopAndRemove(quests_timeout2, [](Quest* quest)
+	{
+		if(quest->IsTimedout() && quest->OnTimeout(TIMEOUT2))
+		{
+			quest->timeout = true;
+			return true;
+		}
+		return false;
+	});
+
+	// update contest
+	if(quest_contest->year != W.GetYear())
+	{
+		quest_contest->year = W.GetYear();
+		quest_contest->where = W.GetRandomSettlementIndex(quest_contest->where);
+	}
 }
 
 //=================================================================================================
 void QuestManager::Write(BitStreamWriter& f)
 {
+	// quests
 	f.WriteCasted<word>(quests.size());
 	for(Quest* quest : quests)
 	{
@@ -283,11 +485,25 @@ void QuestManager::Write(BitStreamWriter& f)
 		f << quest->name;
 		f.WriteStringArray<byte, word>(quest->msgs);
 	}
+
+	// quest items
+	f.WriteCasted<word>(Net::changes.size());
+	for(NetChange& c : Net::changes)
+	{
+		assert(c.type == NetChange::REGISTER_ITEM);
+		f << c.base_item->id;
+		f << c.item2->id;
+		f << c.item2->name;
+		f << c.item2->desc;
+		f << c.item2->refid;
+	}
+	Net::changes.clear();
 }
 
 //=================================================================================================
 bool QuestManager::Read(BitStreamReader& f)
 {
+	// quests
 	const int QUEST_MIN_SIZE = sizeof(int) + sizeof(byte) * 3;
 	word quest_count;
 	f >> quest_count;
@@ -313,6 +529,51 @@ bool QuestManager::Read(BitStreamReader& f)
 			return false;
 		}
 		++index;
+	}
+
+	// quest items
+	const int QUEST_ITEM_MIN_SIZE = 7;
+	word quest_items_count;
+	f >> quest_items_count;
+	if(!f.Ensure(QUEST_ITEM_MIN_SIZE * quest_items_count))
+	{
+		Error("Read world: Broken packet for quest items.");
+		return false;
+	}
+	quest_items.reserve(quest_items_count);
+	for(word i = 0; i < quest_items_count; ++i)
+	{
+		const string& item_id = f.ReadString1();
+		if(!f)
+		{
+			Error("Read world: Broken packet for quest item %u.", i);
+			return false;
+		}
+
+		const Item* base_item;
+		if(item_id[0] == '$')
+			base_item = Item::TryGet(item_id.c_str() + 1);
+		else
+			base_item = Item::TryGet(item_id);
+		if(!base_item)
+		{
+			Error("Read world: Missing quest item '%s' (%u).", item_id.c_str(), i);
+			return false;
+		}
+
+		Item* item = base_item->CreateCopy();
+		f >> item->id;
+		f >> item->name;
+		f >> item->desc;
+		f >> item->refid;
+		if(!f)
+		{
+			Error("Read world: Broken packet for quest item %u (2).", i);
+			delete item;
+			return false;
+		}
+		else
+			quest_items.push_back(item);
 	}
 
 	return true;
@@ -343,6 +604,10 @@ void QuestManager::Save(GameWriter& f)
 	f << quest_rumor_counter;
 	f << quest_rumor;
 	f << force;
+
+	quest_secret->Save(f);
+	quest_contest->Save(f);
+	quest_tournament->Save(f);
 }
 
 //=================================================================================================
@@ -379,6 +644,78 @@ void QuestManager::Load(GameReader& f)
 		f >> force;
 	else
 		force = Q_FORCE_DISABLED;
+
+	// get quest pointers
+	quest_sawmill = (Quest_Sawmill*)FindQuestById(Q_SAWMILL);
+	quest_mine = (Quest_Mine*)FindQuestById(Q_MINE);
+	quest_bandits = (Quest_Bandits*)FindQuestById(Q_BANDITS);
+	quest_bandits->Init();
+	quest_goblins = (Quest_Goblins*)FindQuestById(Q_GOBLINS);
+	quest_goblins->Init();
+	quest_mages = (Quest_Mages*)FindQuestById(Q_MAGES);
+	quest_mages2 = (Quest_Mages2*)FindQuestById(Q_MAGES2);
+	quest_orcs = (Quest_Orcs*)FindQuestById(Q_ORCS);
+	quest_orcs->Init();
+	quest_orcs2 = (Quest_Orcs2*)FindQuestById(Q_ORCS2);
+	quest_orcs2->Init();
+	quest_evil = (Quest_Evil*)FindQuestById(Q_EVIL);
+	quest_evil->Init();
+	quest_crazies = (Quest_Crazies*)FindQuestById(Q_CRAZIES);
+	quest_crazies->Init();
+
+	if(LOAD_VERSION < V_DEV && !quest_mages2)
+	{
+		quest_mages2 = new Quest_Mages2;
+		quest_mages2->refid = quest_counter++;
+		quest_mages2->Start();
+		unaccepted_quests.push_back(quest_mages2);
+	}
+	quest_mages2->Init();
+
+	// process quest item requests
+	for(vector<QuestItemRequest*>::iterator it = quest_item_requests.begin(), end = quest_item_requests.end(); it != end; ++it)
+	{
+		QuestItemRequest* qir = *it;
+		*qir->item = FindQuestItem(qir->name.c_str(), qir->quest_refid);
+		if(qir->items)
+		{
+			bool ok = true;
+			for(vector<ItemSlot>::iterator it2 = qir->items->begin(), end2 = qir->items->end(); it2 != end2; ++it2)
+			{
+				if(it2->item == QUEST_ITEM_PLACEHOLDER)
+				{
+					ok = false;
+					break;
+				}
+			}
+			if(ok && (LOAD_VERSION < V_0_7_1 || content::require_update))
+			{
+				SortItems(*qir->items);
+				if(qir->unit)
+					qir->unit->RecalculateWeight();
+			}
+		}
+		delete *it;
+	}
+	quest_item_requests.clear();
+
+	// load quests old data (now are stored inside quest)
+	if(LOAD_VERSION < V_0_4)
+	{
+		quest_sawmill->LoadOld(f);
+		quest_mine->LoadOld(f);
+		quest_bandits->LoadOld(f);
+		quest_mages2->LoadOld(f);
+		quest_orcs2->LoadOld(f);
+		quest_goblins->LoadOld(f);
+		quest_evil->LoadOld(f);
+		quest_crazies->LoadOld(f);
+	}
+
+	// load pseudo-quests
+	quest_secret->Load(f);
+	quest_contest->Load(f);
+	quest_tournament->Load(f);
 }
 
 //=================================================================================================
@@ -532,4 +869,65 @@ bool QuestManager::SetForcedQuest(const string& name)
 	}
 
 	return false;
+}
+
+//=================================================================================================
+bool QuestManager::HandleSpecial(DialogContext& ctx, cstring msg, bool& result)
+{
+	std::map<string, QuestHandler*>::iterator it;
+	cstring slash = strrchr(msg, '/');
+	if(slash)
+	{
+		tmp_str = string(msg, slash - msg);
+		it = special_handlers.find(tmp_str);
+	}
+	else
+		it = special_handlers.find(msg);
+	if(it == special_handlers.end())
+		return false;
+	result = it->second->Special(ctx, msg);
+	return true;
+}
+
+//=================================================================================================
+bool QuestManager::HandleSpecialIf(DialogContext& ctx, cstring msg, bool& result)
+{
+	std::map<string, QuestHandler*>::iterator it;
+	cstring slash = strrchr(msg, '/');
+	if(slash)
+	{
+		tmp_str = string(msg, slash - msg);
+		it = special_if_handlers.find(tmp_str);
+	}
+	else
+		it = special_if_handlers.find(msg);
+	if(it == special_if_handlers.end())
+		return false;
+	result = it->second->SpecialIf(ctx, msg);
+	return true;
+}
+
+//=================================================================================================
+bool QuestManager::HandleFormatString(const string& str, cstring& result)
+{
+	auto it = format_str_handlers.find(str);
+	if(it == format_str_handlers.end())
+		return false;
+	result = it->second->FormatString(str);
+	assert(result);
+	return true;
+}
+
+//=================================================================================================
+const Item* QuestManager::FindQuestItemClient(cstring id, int refid) const
+{
+	assert(id);
+
+	for(Item* item : quest_items)
+	{
+		if(item->id == id && (refid == -1 || item->IsQuest(refid)))
+			return item;
+	}
+
+	return nullptr;
 }

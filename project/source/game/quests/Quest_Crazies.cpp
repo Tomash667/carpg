@@ -7,7 +7,19 @@
 #include "SaveState.h"
 #include "GameFile.h"
 #include "QuestManager.h"
-#include "GameGui.h"
+#include "World.h"
+#include "Level.h"
+#include "AIController.h"
+#include "Team.h"
+
+//=================================================================================================
+void Quest_Crazies::Init()
+{
+	QM.RegisterSpecialHandler(this, "crazies_talked");
+	QM.RegisterSpecialHandler(this, "crazies_sell_stone");
+	QM.RegisterSpecialIfHandler(this, "crazies_not_asked");
+	QM.RegisterSpecialIfHandler(this, "crazies_need_talk");
+}
 
 //=================================================================================================
 void Quest_Crazies::Start()
@@ -15,7 +27,6 @@ void Quest_Crazies::Start()
 	type = QuestType::Unique;
 	quest_id = Q_CRAZIES;
 	target_loc = -1;
-	name = game->txQuest[253];
 	crazies_state = State::None;
 	days = 0;
 	check_stone = false;
@@ -35,40 +46,23 @@ void Quest_Crazies::SetProgress(int prog2)
 	{
 	case Progress::Started: // zaatakowano przez unk
 		{
-			state = Quest::Started;
-
-			quest_index = quest_manager.quests.size();
-			quest_manager.quests.push_back(this);
-			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
-			msgs.push_back(Format(game->txQuest[170], game->day + 1, game->month + 1, game->year));
+			OnStart(game->txQuest[253]);
+			msgs.push_back(Format(game->txQuest[170], W.GetDate()));
 			msgs.push_back(game->txQuest[254]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-
-			if(Net::IsOnline())
-				game->Net_AddQuest(refid);
 		}
 		break;
 	case Progress::KnowLocation: // trener powiedzia³ o labiryncie
 		{
-			target_loc = game->CreateLocation(L_DUNGEON, Vec2(0, 0), -128.f, LABIRYNTH, SG_UNK, false);
-			start_loc = game->current_location;
-			Location& loc = GetTargetLocation();
+			start_loc = W.GetCurrentLocationIndex();
+			Location& loc = *W.CreateLocation(L_DUNGEON, Vec2(0, 0), -128.f, LABIRYNTH, SG_UNKNOWN, false);
 			loc.active_quest = this;
-			loc.state = LS_KNOWN;
+			loc.SetKnown();
 			loc.st = 13;
+			target_loc = loc.index;
 
 			crazies_state = State::TalkedTrainer;
 
-			msgs.push_back(Format(game->txQuest[255], game->location->name.c_str(), loc.name.c_str(), GetTargetLocationDir()));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-
-			if(Net::IsOnline())
-			{
-				game->Net_UpdateQuest(refid);
-				game->Net_ChangeLocationState(target_loc, false);
-			}
+			OnUpdate(Format(game->txQuest[255], W.GetCurrentLocation()->name.c_str(), loc.name.c_str(), GetTargetLocationDir()));
 		}
 		break;
 	case Progress::Finished: // schowano kamieñ do skrzyni
@@ -78,13 +72,8 @@ void Quest_Crazies::SetProgress(int prog2)
 
 			crazies_state = State::End;
 
-			msgs.push_back(game->txQuest[256]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+			OnUpdate(game->txQuest[256]);
 			quest_manager.EndUniqueQuest();
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
 		}
 	}
 }
@@ -144,4 +133,74 @@ void Quest_Crazies::LoadOld(GameReader& f)
 
 	// days was missing in save!
 	days = 13;
+}
+
+//=================================================================================================
+bool Quest_Crazies::Special(DialogContext& ctx, cstring msg)
+{
+	if(strcmp(msg, "crazies_talked") == 0)
+	{
+		ctx.talker->ai->morale = -100.f;
+		crazies_state = State::TalkedWithCrazy;
+	}
+	else if(strcmp(msg, "crazies_sell_stone") == 0)
+	{
+		ctx.pc->unit->RemoveItem(stone, 1);
+		ctx.pc->unit->ModGold(10);
+	}
+	else
+		assert(0);
+	return false;
+}
+
+//=================================================================================================
+bool Quest_Crazies::SpecialIf(DialogContext& ctx, cstring msg)
+{
+	if(strcmp(msg, "crazies_not_asked") == 0)
+		return crazies_state == State::None;
+	else if(strcmp(msg, "crazies_need_talk") == 0)
+		return crazies_state == State::FirstAttack;
+	assert(0);
+	return false;
+}
+
+//=================================================================================================
+void Quest_Crazies::CheckStone()
+{
+	check_stone = false;
+
+	if(!Team.FindItemInTeam(stone, -1, nullptr, nullptr, false))
+	{
+		// usuñ kamieñ z gry o ile to nie encounter bo i tak jest resetowany
+		if(L.location->type != L_ENCOUNTER)
+		{
+			if(target_loc == L.location_index)
+			{
+				// jest w dobrym miejscu, sprawdŸ czy w³o¿y³ kamieñ do skrzyni
+				if(L.local_ctx.chests && L.local_ctx.chests->size() > 0)
+				{
+					Chest* chest;
+					int slot;
+					if(L.local_ctx.FindItemInChest(stone, &chest, &slot))
+					{
+						// w³o¿y³ kamieñ, koniec questa
+						chest->items.erase(chest->items.begin() + slot);
+						SetProgress(Progress::Finished);
+						return;
+					}
+				}
+			}
+
+			L.RemoveItemFromWorld(stone);
+		}
+
+		// dodaj kamieñ przywódcy
+		Team.leader->AddItem(stone, 1, false);
+	}
+
+	if(crazies_state == State::TalkedWithCrazy)
+	{
+		crazies_state = State::PickedStone;
+		days = 13;
+	}
 }

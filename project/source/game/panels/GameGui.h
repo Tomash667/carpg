@@ -10,7 +10,7 @@ enum class OpenPanel
 {
 	None,
 	Stats,
-	Inventory,
+	InventoryPanel,
 	Team,
 	Journal,
 	Minimap,
@@ -26,7 +26,7 @@ enum class SideButtonId
 	Team,
 	Minimap,
 	Journal,
-	Inventory,
+	InventoryPanel,
 	Action,
 	Stats,
 	Talk,
@@ -63,12 +63,12 @@ class GameGui : public Container
 public:
 	GameGui();
 	~GameGui();
-
+	void LoadLanguage();
+	void LoadData();
 	void Draw(ControlDrawData* cdd = nullptr) override;
 	void Update(float dt) override;
 	bool NeedCursor() const override;
 	void Event(GuiEvent e) override;
-
 	void AddSpeechBubble(Unit* unit, cstring text);
 	void AddSpeechBubble(const Vec3& pos, cstring text);
 	void Reset();
@@ -77,7 +77,6 @@ public:
 	bool HavePanelOpen() const;
 	bool CanFocusMpBox() const { return !HavePanelOpen(); }
 	void ClosePanels(bool close_mp_box = false);
-	void LoadData();
 	void GetGamePanels(vector<GamePanel*>& panels);
 	OpenPanel GetOpenPanel();
 	void ShowPanel(OpenPanel p, OpenPanel open = OpenPanel::Unknown);
@@ -86,22 +85,19 @@ public:
 	void Load(FileReader& f);
 	bool IsMouseInsideDialog() const { return PointInRect(GUI.cursor_pos, dialog_pos, dialog_size); }
 	void Setup();
+	void RemoveUnit(Unit* unit);
 
-	// panels
-	GamePanelContainer* gp_trade;
-	Inventory* inventory, *inv_trade_mine, *inv_trade_other;
-	StatsPanel* stats;
-	TeamPanel* team_panel;
-	Journal* journal;
-	Minimap* minimap;
-	MpBox* mp_box;
-	GameMessages* game_messages;
-	ActionPanel* action_panel;
-	BookPanel* book_panel;
-	//
 	bool use_cursor;
 
 private:
+	struct UnitView
+	{
+		Unit* unit;
+		Vec3 last_pos;
+		float time;
+		bool valid;
+	};
+
 	struct SortedUnitView
 	{
 		Unit* unit;
@@ -126,6 +122,7 @@ private:
 	void UpdateSpeechBubbles(float dt);
 	void GetTooltip(TooltipController*, int group, int id);
 	void SortUnits();
+	void UpdatePlayerView(float dt);
 
 	Game& game;
 	TooltipController tooltip;
@@ -141,4 +138,5 @@ private:
 	vector<SortedSpeechBubble> sorted_speech_bbs;
 	cstring txMenu, txDeath, txDeathAlone, txGameTimeout, txChest, txDoor, txDoorLocked, txPressEsc, txHp, txStamina;
 	Int2 debug_info_size, dialog_pos, dialog_size, profiler_size;
+	vector<UnitView> unit_views;
 };

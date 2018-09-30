@@ -4,6 +4,8 @@
 #include "Terrain.h"
 #include "LocationHelper.h"
 #include "Profiler.h"
+#include "Level.h"
+#include "ResourceManager.h"
 #include "DirectX.h"
 
 enum QuadPartType
@@ -255,7 +257,7 @@ void Game::ListGrass()
 		return;
 
 	PROFILER_BLOCK("ListGrass");
-	OutsideLocation* outside = (OutsideLocation*)location;
+	OutsideLocation* outside = (OutsideLocation*)L.location;
 	Vec3 pos, angle;
 	Vec2 from = cam.from.XZ();
 	float in_dist = grass_range * grass_range;
@@ -288,10 +290,10 @@ void Game::ListGrass()
 							for(int i = 0; i < 6; ++i)
 							{
 								pos = Vec3(2.f*x + Random(2.f), 0.f, 2.f*y + Random(2.f));
-								terrain->GetAngle(pos.x, pos.z, angle);
+								L.terrain->GetAngle(pos.x, pos.z, angle);
 								if(angle.y < 0.7f)
 									continue;
-								terrain->SetH(pos);
+								L.terrain->SetH(pos);
 								part.grass.push_back(Matrix::Scale(Random(3.f, 4.f)) * Matrix::RotationY(Random(MAX_ANGLE)) * Matrix::Translation(pos));
 							}
 						}
@@ -300,7 +302,7 @@ void Game::ListGrass()
 							for(int i = 0; i < 4; ++i)
 							{
 								pos = Vec3(2.f*x + 0.1f + Random(1.8f), 0, 2.f*y + 0.1f + Random(1.8f));
-								terrain->SetH(pos);
+								L.terrain->SetH(pos);
 								part.grass.push_back(Matrix::Scale(Random(2.f, 3.f)) * Matrix::RotationY(Random(MAX_ANGLE)) * Matrix::Translation(pos));
 							}
 						}
@@ -315,7 +317,7 @@ void Game::ListGrass()
 							for(int i = 0; i < 1; ++i)
 							{
 								pos = Vec3(2.f*x + 0.5f + Random(1.f), 0, 2.f*y + 0.5f + Random(1.f));
-								terrain->SetH(pos);
+								L.terrain->SetH(pos);
 								part.grass2.push_back(Matrix::Scale(Random(3.f, 4.f)) * Matrix::RotationY(Random(MAX_ANGLE)) * Matrix::Translation(pos));
 							}
 						}
@@ -340,14 +342,14 @@ void Game::ListGrass()
 void Game::SetTerrainTextures()
 {
 	TexturePtr tex[5] = { tTrawa, tTrawa2, tTrawa3, tZiemia, tDroga };
-	if(LocationHelper::IsVillage(location))
+	if(LocationHelper::IsVillage(L.location))
 		tex[2] = tPole;
 
 	auto& tex_mgr = ResourceManager::Get<Texture>();
 	for(int i = 0; i < 5; ++i)
 		tex_mgr.AddLoadTask(tex[i]);
 
-	terrain->SetTextures(tex);
+	L.terrain->SetTextures(tex);
 }
 
 void Game::ClearQuadtree()
@@ -379,10 +381,10 @@ void Game::ClearGrass()
 
 void Game::CalculateQuadtree()
 {
-	if(local_ctx.type != LevelContext::Outside)
+	if(L.local_ctx.type != LevelContext::Outside)
 		return;
 	
-	for(Object* obj : *local_ctx.objects)
+	for(Object* obj : *L.local_ctx.objects)
 	{
 		auto node = (LevelPart*)quadtree.GetNode(obj->pos.XZ(), obj->GetRadius());
 		node->objects.push_back(QuadObj(obj));

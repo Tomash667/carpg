@@ -42,7 +42,7 @@ dialog merchant
 			talk 5
 			choice 6
 			{
-				special "szaleni_sprzedaj"
+				special "crazies_sell_stone"
 				talk 7
 				restart
 			}
@@ -326,7 +326,7 @@ dialog trainer
 	{
 		choice 24
 		{
-			if special "q_szaleni_trzeba_pogadac"
+			if special "crazies_need_talk"
 			{
 				do_quest2 "szaleni"
 				restart
@@ -463,7 +463,7 @@ dialog guard_captain
 //==============================================================================
 dialog innkeeper
 {
-	if special "chlanie_trwa"
+	if special "contest_in_progress"
 	{
 		talk 0
 		end
@@ -483,7 +483,7 @@ dialog innkeeper
 		choice 3
 		{
 			talk 4
-			special "chlanie_nagroda"
+			special "contest_reward"
 			restart
 		}
 	}
@@ -499,7 +499,7 @@ dialog innkeeper
 			talk 6
 			choice 7
 			{
-				special "chlanie_udzial"
+				special "contest_join"
 				talk 8
 				end
 			}
@@ -583,7 +583,7 @@ dialog innkeeper
 				talk 34
 				choice 35
 				{
-					special "chlanie_start"
+					special "contest_start"
 					talk 36
 					end
 				}
@@ -703,23 +703,23 @@ dialog arena_master
 	}
 	choice 14
 	{
-		if special "arena_combat"
+		if special "arena_can_combat"
 		{
 			talk 15
 			talk 16
 			choice 17
 			{
-				special "arena_combat1"
+				special "arena_combat/1"
 				end
 			}
 			choice 18
 			{
-				special "arena_combat2"
+				special "arena_combat/2"
 				end
 			}
 			choice 19
 			{
-				special "arena_combat3"
+				special "arena_combat/3"
 				end
 			}
 			escape choice 20
@@ -741,59 +741,59 @@ dialog arena_master
 			if special "have_npc_team"
 				talk 24
 			special "pvp_gather"
-			if special "have_player1"
+			if special "have_player/1"
 			{
 				choice 25
 				{
-					special "pvp1"
+					special "pvp/1"
 					end
 				}
 			}
-			if special "have_player2"
+			if special "have_player/2"
 			{
 				choice 26
 				{
-					special "pvp2"
+					special "pvp/2"
 					end
 				}
 			}
-			if special "have_player3"
+			if special "have_player/3"
 			{
 				choice 27
 				{
-					special "pvp3"
+					special "pvp/3"
 					end
 				}
 			}
-			if special "have_player4"
+			if special "have_player/4"
 			{
 				choice 28
 				{
-					special "pvp4"
+					special "pvp/4"
 					end
 				}
 			}
-			if special "have_player5"
+			if special "have_player/5"
 			{
 				choice 29
 				{
-					special "pvp5"
+					special "pvp/5"
 					end
 				}
 			}
-			if special "have_player6"
+			if special "have_player/6"
 			{
 				choice 30
 				{
-					special "pvp6"
+					special "pvp/6"
 					end
 				}
 			}
-			if special "have_player7"
+			if special "have_player/7"
 			{
 				choice 31
 				{
-					special "pvp7"
+					special "pvp/7"
 					end
 				}
 			}
@@ -917,7 +917,7 @@ dialog hero
 					{
 						special "use_arena"
 						talk 3
-						special "pvp"
+						special "start_pvp"
 						end
 					}
 					else
@@ -1177,7 +1177,7 @@ dialog crazy
 					{
 						special "use_arena"
 						talk 3
-						special "pvp"
+						special "start_pvp"
 						end
 					}
 					else
@@ -1359,13 +1359,13 @@ dialog crazy
 			special "hero_about"
 			restart
 		}
-		if special "szaleni_nie_zapytano"
+		if special "crazies_not_asked"
 		{
 			choice 44
 			{
 				talk 45
 				talk 46
-				special "szaleni_powiedzial"
+				special "crazies_talked"
 				special "attack"
 				end
 			}
@@ -1940,10 +1940,10 @@ dialog crazies_encounter
 //==============================================================================
 dialog tomashu
 {
-	if special "sekret_can_get_reward"
+	if special "secret_can_get_reward"
 	{
 		talk 0
-		special "sekret_daj"
+		special "secret_reward"
 		talk 1
 		end
 	}
@@ -1970,7 +1970,7 @@ dialog tomashu
 	}
 	choice 10
 	{
-		if special "sekret_can_fight"
+		if special "secret_can_fight"
 		{
 			talk 11
 			talk 12
@@ -1978,7 +1978,7 @@ dialog tomashu
 			talk 14
 			choice 15
 			{
-				special "sekret_atak"
+				special "secret_attack"
 				end
 			}
 			escape choice 16
@@ -1991,7 +1991,7 @@ dialog tomashu
 		else
 		{
 			talk 18
-			if special "sekret_win"
+			if special "secret_win"
 				talk 19
 			else
 				talk 20

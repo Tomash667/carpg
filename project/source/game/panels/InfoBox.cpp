@@ -3,6 +3,7 @@
 #include "InfoBox.h"
 #include "Game.h"
 #include "LoadScreen.h"
+#include "GlobalGui.h"
 
 //=================================================================================================
 InfoBox::InfoBox(const DialogInfo& info) : GameDialogBox(info)
@@ -14,7 +15,7 @@ InfoBox::InfoBox(const DialogInfo& info) : GameDialogBox(info)
 void InfoBox::Draw(ControlDrawData*)
 {
 	// t³o
-	if(!game->load_screen->visible)
+	if(!game->gui->load_screen->visible)
 		GUI.DrawSpriteFull(tBackground, Color::Alpha(128));
 
 	// panel

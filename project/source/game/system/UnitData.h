@@ -150,6 +150,7 @@ enum SOUND_ID
 	SOUND_PAIN,
 	SOUND_DEATH,
 	SOUND_ATTACK,
+	SOUND_TALK,
 	SOUND_MAX
 };
 
@@ -158,11 +159,19 @@ enum SOUND_ID
 struct SoundPack
 {
 	string id;
-	string filename[SOUND_MAX];
-	SoundPtr sound[SOUND_MAX];
+	vector<SoundPtr> sounds[SOUND_MAX];
 	bool inited;
 
-	SoundPack() : inited(false), sound() {}
+	SoundPack() : inited(false) {}
+	bool Have(SOUND_ID sound_id) const { return !sounds[sound_id].empty(); }
+	SoundPtr Random(SOUND_ID sound_id) const
+	{
+		auto& e = sounds[sound_id];
+		if(e.empty())
+			return nullptr;
+		else
+			return e[Rand() % e.size()];
+	}
 
 	static vector<SoundPack*> packs;
 	static SoundPack* TryGet(Cstring id);

@@ -467,7 +467,7 @@ public:
 	static void Free(vector<T*>& ts) { GetPool().Free(ts); }
 	static void SafeFree(vector <T*>& ts) { GetPool().SafeFree(ts); }
 	static void Cleanup() { GetPool().Cleanup(); }
-	virtual void Free() { Free((T*)this); }
+	void Free() { Free((T*)this); }
 
 private:
 	static ObjectPool<T>& GetPool() { static ObjectPool<T> pool; return pool; }
@@ -1036,18 +1036,6 @@ inline int GetIndex(const vector<T>& items, Pred pred)
 }
 
 //-----------------------------------------------------------------------------
-template<typename T, typename U>
-inline bool In(T val, const std::initializer_list<U>& lis)
-{
-	for(U t : lis)
-	{
-		if(t == (T)val)
-			return true;
-	}
-	return false;
-}
-
-//-----------------------------------------------------------------------------
 template<typename T>
 class SafeVector
 {
@@ -1369,4 +1357,20 @@ struct BufferHandle
 
 private:
 	Buffer* buf;
+};
+
+//-----------------------------------------------------------------------------
+template<typename T>
+struct RemoveRandomPred
+{
+	int chance, a, b;
+
+	RemoveRandomPred(int chance, int a, int b)
+	{
+	}
+
+	bool operator () (const T&)
+	{
+		return Random(a, b) < chance;
+	}
 };

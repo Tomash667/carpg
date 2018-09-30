@@ -22,15 +22,12 @@ public:
 	cstring FormatString(const string& str) override;
 	bool IsTimedout() const override;
 	bool OnTimeout(TimeoutType ttype) override;
-	void Special(DialogContext& ctx, cstring msg) override;
-	void HandleLocationEvent(LocationEventHandler::Event event) override;
+	bool Special(DialogContext& ctx, cstring msg) override;
+	bool HandleLocationEvent(LocationEventHandler::Event event) override;
 	bool IfNeedTalk(cstring topic) const override;
 	void Save(GameWriter& f) override;
 	bool Load(GameReader& f) override;
-	int GetLocationEventHandlerQuestRefid() override
-	{
-		return refid;
-	}
+	int GetLocationEventHandlerQuestRefid() override { return refid; }
 
 private:
 	int other_loc;

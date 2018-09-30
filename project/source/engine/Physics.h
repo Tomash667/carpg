@@ -1,15 +1,25 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+#define NULL nullptr
+#include <btBulletCollisionCommon.h>
+#include <BulletCollision\CollisionShapes\btHeightfieldTerrainShape.h>
+#undef NULL
+
+//-----------------------------------------------------------------------------
 class CustomCollisionWorld : public btCollisionWorld
 {
 public:
-	CustomCollisionWorld(btDispatcher* dispatcher, btBroadphaseInterface* broadphasePairCache, btCollisionConfiguration* collisionConfiguration) :
-		btCollisionWorld(dispatcher, broadphasePairCache, collisionConfiguration)
-	{
-	}
-
+	CustomCollisionWorld(btDispatcher* dispatcher, btBroadphaseInterface* broadphase, btCollisionConfiguration* config);
+	static CustomCollisionWorld* Init();
+	static void Cleanup(CustomCollisionWorld* world);
 	void Reset();
+	void UpdateAabb(btCollisionObject* cobj);
+
+private:
+	btCollisionConfiguration* config;
+	btDispatcher* dispatcher;
+	btBroadphaseInterface* broadphase;
 };
 
 //-----------------------------------------------------------------------------

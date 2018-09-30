@@ -7,6 +7,7 @@
 #include "GetTextDialog.h"
 #include "Language.h"
 #include "PickItemDialog.h"
+#include "ResourceManager.h"
 #include "DirectX.h"
 
 //-----------------------------------------------------------------------------
@@ -32,29 +33,6 @@ enum ButtonId
 //=================================================================================================
 CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : GameDialogBox(info), unit(nullptr)
 {
-	txHardcoreMode = Str("hardcoreMode");
-	txHair = Str("hair");
-	txMustache = Str("mustache");
-	txBeard = Str("beard");
-	txHairColor = Str("hairColor");
-	txSize = Str("size");
-	txCharacterCreation = Str("characterCreation");
-	txName = Str("name");
-	txAttributes = Str("attributes");
-	txRelatedAttributes = Str("relatedAttributes");
-	txCreateCharWarn = Str("createCharWarn");
-	txSkillPoints = Str("skillPoints");
-	txPerkPoints = Str("perkPoints");
-	txPickAttribIncrease = Str("pickAttribIncrease");
-	txPickAttribDecrease = Str("pickAttribDecrease");
-	txPickTwoSkillsDecrease = Str("pickTwoSkillsDecrease");
-	txPickSkillIncrease = Str("pickSkillIncrease");
-	txAvailablePerks = Str("availablePerks");
-	txUnavailablePerks = Str("unavailablePerks");
-	txTakenPerks = Str("takenPerks");
-	txCreateCharTooMany = Str("createCharTooMany");
-	txFlawExtraPerk = Str("flawExtraPerk");
-
 	size = Int2(600, 500);
 	unit = new Unit;
 	unit->human_data = new Human;
@@ -75,25 +53,21 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : GameDialogBox(inf
 	btCancel.pos = Int2(size.x - 32 - 16, 16);
 
 	btBack.id = IdBack;
-	btBack.text = Str("goBack");
 	btBack.size = Int2(100, 44);
 	btBack.parent = this;
 	btBack.pos = Int2(16, size.y - 60);
 
 	btNext.id = IdNext;
-	btNext.text = Str("next");
 	btNext.size = Int2(100, 44);
 	btNext.parent = this;
 	btNext.pos = Int2(size.x - 100 - 16, size.y - 60);
 
 	btCreate.id = IdCreate;
-	btCreate.text = Str("create");
 	btCreate.size = Int2(100, 44);
 	btCreate.parent = this;
 	btCreate.pos = Int2(size.x - 100 - 16, size.y - 60);
 
 	btRandomSet.id = IdRandomSet;
-	btRandomSet.text = Str("randomSet");
 	btRandomSet.size = Int2(100, 44);
 	btRandomSet.parent = this;
 	btRandomSet.pos = Int2(size.x / 2 - 50, size.y - 60);
@@ -102,7 +76,6 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : GameDialogBox(inf
 	checkbox.checked = false;
 	checkbox.id = IdHardcore;
 	checkbox.parent = this;
-	checkbox.text = txHardcoreMode;
 	checkbox.pos = Int2(20, 350);
 	checkbox.size = Int2(200, 32);
 
@@ -112,7 +85,6 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : GameDialogBox(inf
 		s.minv = 0;
 		s.maxv = MAX_HAIR - 1;
 		s.val = 0;
-		s.text = txHair;
 		s.pos = Int2(20, 100);
 		s.parent = this;
 	}
@@ -123,7 +95,6 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : GameDialogBox(inf
 		s.minv = 0;
 		s.maxv = MAX_MUSTACHE - 1;
 		s.val = 0;
-		s.text = txMustache;
 		s.pos = Int2(20, 150);
 		s.parent = this;
 	}
@@ -134,7 +105,6 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : GameDialogBox(inf
 		s.minv = 0;
 		s.maxv = MAX_BEARD - 1;
 		s.val = 0;
-		s.text = txBeard;
 		s.pos = Int2(20, 200);
 		s.parent = this;
 	}
@@ -145,7 +115,6 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : GameDialogBox(inf
 		s.minv = 0;
 		s.maxv = n_hair_colors - 1;
 		s.val = 0;
-		s.text = txHairColor;
 		s.pos = Int2(20, 250);
 		s.parent = this;
 	}
@@ -156,7 +125,6 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : GameDialogBox(inf
 		s.minv = 0;
 		s.maxv = 100;
 		s.val = 50;
-		s.text = txSize;
 		s.pos = Int2(20, 300);
 		s.parent = this;
 		s.SetHold(true);
@@ -178,7 +146,6 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : GameDialogBox(inf
 	tbInfo.pos = Int2(130, 335);
 	tbInfo.size = Int2(341, 93);
 	tbInfo.SetReadonly(true);
-	tbInfo.SetText(Str("createCharText"));
 	tbInfo.AddScrollbar();
 
 	flow_pos = Int2(368, 73 - 18);
@@ -212,6 +179,67 @@ CreateCharacterPanel::~CreateCharacterPanel()
 		unit->bow_instance = nullptr;
 	}
 	delete unit;
+}
+
+//=================================================================================================
+void CreateCharacterPanel::LoadLanguage()
+{
+	txHardcoreMode = Str("hardcoreMode");
+	txHair = Str("hair");
+	txMustache = Str("mustache");
+	txBeard = Str("beard");
+	txHairColor = Str("hairColor");
+	txSize = Str("size");
+	txCharacterCreation = Str("characterCreation");
+	txName = Str("name");
+	txAttributes = Str("attributes");
+	txRelatedAttributes = Str("relatedAttributes");
+	txCreateCharWarn = Str("createCharWarn");
+	txSkillPoints = Str("skillPoints");
+	txPerkPoints = Str("perkPoints");
+	txPickAttribIncrease = Str("pickAttribIncrease");
+	txPickAttribDecrease = Str("pickAttribDecrease");
+	txPickTwoSkillsDecrease = Str("pickTwoSkillsDecrease");
+	txPickSkillIncrease = Str("pickSkillIncrease");
+	txAvailablePerks = Str("availablePerks");
+	txUnavailablePerks = Str("unavailablePerks");
+	txTakenPerks = Str("takenPerks");
+	txCreateCharTooMany = Str("createCharTooMany");
+	txFlawExtraPerk = Str("flawExtraPerk");
+
+	btBack.text = Str("goBack");
+	btNext.text = Str("next");
+	btCreate.text = Str("create");
+	btRandomSet.text = Str("randomSet");
+
+	checkbox.text = txHardcoreMode;
+
+	slider[0].text = txHair;
+	slider[1].text = txMustache;
+	slider[2].text = txBeard;
+	slider[3].text = txHairColor;
+	slider[4].text = txSize;
+
+	tbInfo.SetText(Str("createCharText"));
+}
+
+//=================================================================================================
+void CreateCharacterPanel::LoadData()
+{
+	auto& tex_mgr = ResourceManager::Get<Texture>();
+	tex_mgr.AddLoadTask("klasa_cecha.png", tKlasaCecha);
+	tex_mgr.AddLoadTask("close.png", custom_x.tex[Button::NONE]);
+	tex_mgr.AddLoadTask("close_hover.png", custom_x.tex[Button::HOVER]);
+	tex_mgr.AddLoadTask("close_down.png", custom_x.tex[Button::DOWN]);
+	tex_mgr.AddLoadTask("close_disabled.png", custom_x.tex[Button::DISABLED]);
+	tex_mgr.AddLoadTask("plus.png", custom_bt[0].tex[Button::NONE]);
+	tex_mgr.AddLoadTask("plus_hover.png", custom_bt[0].tex[Button::HOVER]);
+	tex_mgr.AddLoadTask("plus_down.png", custom_bt[0].tex[Button::DOWN]);
+	tex_mgr.AddLoadTask("plus_disabled.png", custom_bt[0].tex[Button::DISABLED]);
+	tex_mgr.AddLoadTask("minus.png", custom_bt[1].tex[Button::NONE]);
+	tex_mgr.AddLoadTask("minus_hover.png", custom_bt[1].tex[Button::HOVER]);
+	tex_mgr.AddLoadTask("minus_down.png", custom_bt[1].tex[Button::DOWN]);
+	tex_mgr.AddLoadTask("minus_disabled.png", custom_bt[1].tex[Button::DISABLED]);
 }
 
 //=================================================================================================
@@ -517,7 +545,11 @@ void CreateCharacterPanel::Event(GuiEvent e)
 				else if(cc.sp != 0 || cc.perks != 0)
 				{
 					DialogInfo di;
-					di.event = DialogEvent(this, &CreateCharacterPanel::OnShowWarning);
+					di.event = [this](int id)
+					{
+						if(id == BUTTON_YES)
+							mode = Mode::PickAppearance;
+					};
 					di.name = "create_char_warn";
 					di.order = ORDER_TOP;
 					di.parent = this;
@@ -540,13 +572,22 @@ void CreateCharacterPanel::Event(GuiEvent e)
 			if(enter_name)
 			{
 				GetTextDialogParams params(Format("%s:", txName), player_name);
-				params.event = DialogEvent(this, &CreateCharacterPanel::OnEnterName);
+				params.event = [this](int id)
+				{
+					if(id == BUTTON_OK)
+					{
+						last_hair_color_index = hair_color_index;
+						CloseDialog();
+						event(BUTTON_OK);
+					}
+				};
 				params.limit = 16;
 				params.parent = this;
 				GetTextDialog::Show(params);
 			}
 			else
 			{
+				last_hair_color_index = hair_color_index;
 				CloseDialog();
 				event(BUTTON_OK);
 			}
@@ -590,16 +631,6 @@ void CreateCharacterPanel::Event(GuiEvent e)
 			}
 			break;
 		}
-	}
-}
-
-//=================================================================================================
-void CreateCharacterPanel::OnEnterName(int id)
-{
-	if(id == BUTTON_OK)
-	{
-		CloseDialog();
-		event(BUTTON_OK);
 	}
 }
 
@@ -932,39 +963,21 @@ void CreateCharacterPanel::Init()
 }
 
 //=================================================================================================
-void CreateCharacterPanel::LoadData()
-{
-	auto& tex_mgr = ResourceManager::Get<Texture>();
-	tex_mgr.AddLoadTask("klasa_cecha.png", tKlasaCecha);
-	tex_mgr.AddLoadTask("close.png", custom_x.tex[Button::NONE]);
-	tex_mgr.AddLoadTask("close_hover.png", custom_x.tex[Button::HOVER]);
-	tex_mgr.AddLoadTask("close_down.png", custom_x.tex[Button::DOWN]);
-	tex_mgr.AddLoadTask("close_disabled.png", custom_x.tex[Button::DISABLED]);
-	tex_mgr.AddLoadTask("plus.png", custom_bt[0].tex[Button::NONE]);
-	tex_mgr.AddLoadTask("plus_hover.png", custom_bt[0].tex[Button::HOVER]);
-	tex_mgr.AddLoadTask("plus_down.png", custom_bt[0].tex[Button::DOWN]);
-	tex_mgr.AddLoadTask("plus_disabled.png", custom_bt[0].tex[Button::DISABLED]);
-	tex_mgr.AddLoadTask("minus.png", custom_bt[1].tex[Button::NONE]);
-	tex_mgr.AddLoadTask("minus_hover.png", custom_bt[1].tex[Button::HOVER]);
-	tex_mgr.AddLoadTask("minus_down.png", custom_bt[1].tex[Button::DOWN]);
-	tex_mgr.AddLoadTask("minus_disabled.png", custom_bt[1].tex[Button::DISABLED]);
-}
-
-//=================================================================================================
 void CreateCharacterPanel::RandomAppearance()
 {
 	Unit& u = *unit;
 	u.human_data->beard = Rand() % MAX_BEARD - 1;
 	u.human_data->hair = Rand() % MAX_HAIR - 1;
 	u.human_data->mustache = Rand() % MAX_MUSTACHE - 1;
-	hair_index = Rand() % n_hair_colors;
-	u.human_data->hair_color = g_hair_colors[hair_index];
+	hair_color_index = Rand() % n_hair_colors;
+	u.human_data->hair_color = g_hair_colors[hair_color_index];
 	u.human_data->height = Random(0.95f, 1.05f);
 	u.human_data->ApplyScale(game->aHumanBase);
+	SetControls();
 }
 
 //=================================================================================================
-void CreateCharacterPanel::Show(bool _enter_name)
+void CreateCharacterPanel::Show(bool enter_name)
 {
 	clas = ClassInfo::GetRandomPlayer();
 	lbClasses.Select(lbClasses.FindIndex((int)clas));
@@ -972,7 +985,7 @@ void CreateCharacterPanel::Show(bool _enter_name)
 	RandomAppearance();
 
 	reset_skills_perks = true;
-	enter_name = _enter_name;
+	this->enter_name = enter_name;
 	mode = Mode::PickClass;
 
 	SetControls();
@@ -983,14 +996,14 @@ void CreateCharacterPanel::Show(bool _enter_name)
 }
 
 //=================================================================================================
-void CreateCharacterPanel::ShowRedo(Class _clas, int _hair_index, HumanData& hd, CreatedCharacter& _cc)
+void CreateCharacterPanel::ShowRedo(Class clas, HumanData& hd, CreatedCharacter& cc)
 {
-	clas = _clas;
+	this->clas = clas;
 	lbClasses.Select(lbClasses.FindIndex((int)clas));
 	ClassChanged();
-	hair_index = _hair_index;
+	hair_color_index = last_hair_color_index;
 	unit->ApplyHumanData(hd);
-	cc = _cc;
+	this->cc = cc;
 	RebuildSkillsFlow();
 	RebuildPerksFlow();
 
@@ -1013,7 +1026,7 @@ void CreateCharacterPanel::SetControls()
 	slider[1].text = Format("%s %d/%d", txMustache, slider[1].val, slider[1].maxv);
 	slider[2].val = unit->human_data->beard + 1;
 	slider[2].text = Format("%s %d/%d", txBeard, slider[2].val, slider[2].maxv);
-	slider[3].val = hair_index;
+	slider[3].val = hair_color_index;
 	slider[3].text = Format("%s %d/%d", txHairColor, slider[3].val, slider[3].maxv);
 	slider[4].val = int((unit->human_data->height - 0.9f) * 500);
 	slider[4].text = Format("%s %d/%d", txSize, slider[4].val, slider[4].maxv);
@@ -1062,9 +1075,9 @@ cstring CreateCharacterPanel::GetText(int group, int id)
 }
 
 //=================================================================================================
-void CreateCharacterPanel::GetTooltip(TooltipController* _tool, int group, int id)
+void CreateCharacterPanel::GetTooltip(TooltipController* ptr_tool, int group, int id)
 {
-	TooltipController& tool = *_tool;
+	TooltipController& tool = *ptr_tool;
 
 	switch((Group)group)
 	{
@@ -1395,13 +1408,6 @@ void CreateCharacterPanel::ResetSkillsPerks()
 	RebuildPerksFlow();
 	flowSkills.ResetScrollbar();
 	flowPerks.ResetScrollbar();
-}
-
-//=================================================================================================
-void CreateCharacterPanel::OnShowWarning(int id)
-{
-	if(id == BUTTON_YES)
-		mode = Mode::PickAppearance;
 }
 
 //=================================================================================================

@@ -4,6 +4,7 @@
 #include "GameKeys.h"
 #include "Language.h"
 #include "Game.h"
+#include "GlobalGui.h"
 
 //-----------------------------------------------------------------------------
 // 0x01 - pickable key
@@ -282,25 +283,31 @@ Controls::Controls(const DialogInfo& info) : GameDialogBox(info), picked(-1)
 	bts[0].size = Int2(180, 44);
 	bts[0].pos = Int2(50, 316);
 	bts[0].id = Button_Reset;
-	bts[0].text = Str("resetKeys");
 	bts[0].parent = this;
 
 	bts[1].size = Int2(180, 44);
 	bts[1].pos = Int2(size.x - 180 - 50, 316);
 	bts[1].id = Button_Ok;
-	bts[1].text = GUI.txOk;
 	bts[1].parent = this;
 
 	grid.size = Int2(570, 300);
 	grid.pos = Int2(8, 8);
-	grid.AddColumn(Grid::TEXT, 200, Str("action"));
-	grid.AddColumn(Grid::TEXT, 175, Str("key_1"));
-	grid.AddColumn(Grid::TEXT, 175, Str("key_2"));
 	grid.items = GK_MAX;
 	grid.event = GridEvent(this, &Controls::GetCell);
 	grid.select_event = SelectGridEvent(this, &Controls::SelectCell);
 	grid.single_line = true;
 	grid.selection_type = Grid::NONE;
+}
+
+//=================================================================================================
+void Controls::LoadLanguage()
+{
+	bts[0].text = Str("resetKeys");
+	bts[1].text = GUI.txOk;
+
+	grid.AddColumn(Grid::TEXT, 200, Str("action"));
+	grid.AddColumn(Grid::TEXT, 175, Str("key_1"));
+	grid.AddColumn(Grid::TEXT, 175, Str("key_2"));
 	grid.Init();
 
 	InitKeyText();
@@ -446,7 +453,7 @@ void Controls::SelectCell(int item, int column, int button)
 		picked_n = column - 1;
 		cursor_tick = 0.f;
 		Key.key_callback = KeyDownCallback(this, &Controls::OnKey);
-		game->cursor_allow_move = false;
+		game->gui->cursor_allow_move = false;
 	}
 	else
 		GKey[item][column - 1] = VK_NONE;
@@ -459,14 +466,14 @@ void Controls::OnKey(int key)
 	{
 		picked = -1;
 		Key.key_callback = nullptr;
-		game->cursor_allow_move = true;
+		game->gui->cursor_allow_move = true;
 	}
 	else if(key < n_texts && IS_SET(in_text[key], 0x01))
 	{
 		GKey[picked][picked_n] = (byte)key;
 		picked = -1;
 		Key.key_callback = nullptr;
-		game->cursor_allow_move = true;
+		game->gui->cursor_allow_move = true;
 		changed = true;
 	}
 }

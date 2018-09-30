@@ -8,6 +8,7 @@
 #include "Version.h"
 #include "BitStreamFunc.h"
 #include "ResourceManager.h"
+#include "GlobalGui.h"
 
 //=================================================================================================
 PickServerPanel::PickServerPanel(const DialogInfo& info) : GameDialogBox(info)
@@ -15,29 +16,43 @@ PickServerPanel::PickServerPanel(const DialogInfo& info) : GameDialogBox(info)
 	size = Int2(524, 340);
 	bts.resize(2);
 
-	txUnknownResponse = Str("unknownResponse");
-	txUnknownResponse2 = Str("unknownResponse2");
-	txBrokenResponse = Str("brokenResponse");
-
 	bts[0].size = Int2(180, 44);
 	bts[0].pos = Int2(336, 30);
 	bts[0].id = GuiEvent_Custom + BUTTON_OK;
-	bts[0].text = Str("join");
 	bts[0].parent = this;
 
 	bts[1].size = Int2(180, 44);
 	bts[1].pos = Int2(336, 80);
 	bts[1].id = GuiEvent_Custom + BUTTON_CANCEL;
-	bts[1].text = GUI.txCancel;
 	bts[1].parent = this;
 
 	grid.pos = Int2(8, 8);
 	grid.size = Int2(320, 300);
 	grid.event = GridEvent(this, &PickServerPanel::GetCell);
+}
+
+//=================================================================================================
+void PickServerPanel::LoadLanguage()
+{
+	txUnknownResponse = Str("unknownResponse");
+	txUnknownResponse2 = Str("unknownResponse2");
+	txBrokenResponse = Str("brokenResponse");
+
+	bts[0].text = Str("join");
+	bts[1].text = GUI.txCancel;
+
 	grid.AddColumn(Grid::IMGSET, 50);
 	grid.AddColumn(Grid::TEXT_COLOR, 100, Str("players"));
 	grid.AddColumn(Grid::TEXT_COLOR, 150, Str("name2"));
 	grid.Init();
+}
+
+//=================================================================================================
+void PickServerPanel::LoadData()
+{
+	auto& tex_mgr = ResourceManager::Get<Texture>();
+	tex_mgr.AddLoadTask("save-16.png", tIcoZapis);
+	tex_mgr.AddLoadTask("padlock-16.png", tIcoHaslo);
 }
 
 //=================================================================================================
@@ -84,14 +99,14 @@ void PickServerPanel::Update(float dt)
 	if(ping_timer < 0.f)
 	{
 		ping_timer = 1.f;
-		game->peer->Ping("255.255.255.255", (word)game->mp_port, true);
+		N.peer->Ping("255.255.255.255", (word)N.port, true);
 	}
 
 	// listen for packets
 	Packet* packet;
-	for(packet = game->peer->Receive(); packet; game->peer->DeallocatePacket(packet), packet = game->peer->Receive())
+	for(packet = N.peer->Receive(); packet; N.peer->DeallocatePacket(packet), packet = N.peer->Receive())
 	{
-		BitStream& stream = game->StreamStart(packet, Stream_PickServer);
+		BitStream& stream = N.StreamStart(packet, Stream_PickServer);
 		BitStreamReader reader(stream);
 		byte msg_id;
 		reader >> msg_id;
@@ -107,29 +122,29 @@ void PickServerPanel::Update(float dt)
 				reader >> sign;
 				if(!reader)
 				{
-					game->StreamError("PickServer: Broken packet from %s.", packet->systemAddress.ToString());
+					N.StreamError("PickServer: Broken packet from %s.", packet->systemAddress.ToString());
 					break;
 				}
 				if(sign[0] != 'C' || sign[1] != 'A')
 				{
 					Warn("PickServer: Unknown response from %s, this is not CaRpg server (0x%x%x).",
 						packet->systemAddress.ToString(), byte(sign[0]), byte(sign[1]));
-					game->StreamError();
+					N.StreamError();
 					break;
 				}
 
 				// info about server
 				uint version;
-				byte players, players_max, flags;
+				byte active_players, players_max, flags;
 				reader >> version;
-				reader >> players;
+				reader >> active_players;
 				reader >> players_max;
 				reader >> flags;
 				const string& server_name = reader.ReadString1();
 				if(!reader)
 				{
 					Warn("PickServer: Broken response from %.", packet->systemAddress.ToString());
-					game->StreamError();
+					N.StreamError();
 					break;
 				}
 
@@ -146,13 +161,13 @@ void PickServerPanel::Update(float dt)
 						found = true;
 						Info("PickServer: Updated server info %s.", it->adr.ToString());
 						it->name = server_name;
-						it->players = players;
+						it->active_players = active_players;
 						it->max_players = players_max;
 						it->flags = flags;
 						it->timer = 0.f;
 						it->valid_version = valid_version;
 
-						if(game->pick_autojoin && it->players != it->max_players && it->valid_version)
+						if(game->pick_autojoin && it->active_players != it->max_players && it->valid_version)
 						{
 							// autojoin server
 							bts[0].state = Button::NONE;
@@ -171,7 +186,7 @@ void PickServerPanel::Update(float dt)
 					Info("PickServer: Added server info %s.", packet->systemAddress.ToString());
 					ServerData& sd = Add1(servers);
 					sd.name = server_name;
-					sd.players = players;
+					sd.active_players = active_players;
 					sd.max_players = players_max;
 					sd.adr = packet->systemAddress;
 					sd.flags = flags;
@@ -179,7 +194,7 @@ void PickServerPanel::Update(float dt)
 					sd.valid_version = valid_version;
 					grid.AddItem();
 
-					if(game->pick_autojoin && sd.players != sd.max_players && sd.valid_version)
+					if(game->pick_autojoin && sd.active_players != sd.max_players && sd.valid_version)
 					{
 						// autojoin server
 						bts[0].state = Button::NONE;
@@ -192,11 +207,11 @@ void PickServerPanel::Update(float dt)
 			break;
 		default:
 			Warn("PickServer: Unknown packet %d from %s.", msg_id, packet->systemAddress.ToString());
-			game->StreamError();
+			N.StreamError();
 			break;
 		}
 
-		game->StreamEnd();
+		N.StreamEnd();
 	}
 
 	// update servers
@@ -254,16 +269,16 @@ void PickServerPanel::Show()
 {
 	try
 	{
-		game->InitClient();
+		N.InitClient();
 	}
 	catch(cstring err)
 	{
-		GUI.SimpleDialog(err, (Control*)game->main_menu);
+		GUI.SimpleDialog(err, (Control*)game->gui->main_menu);
 		return;
 	}
 
 	Info("Pinging servers.");
-	game->peer->Ping("255.255.255.255", (word)game->mp_port, true);
+	N.peer->Ping("255.255.255.255", (word)N.port, true);
 
 	ping_timer = 1.f;
 	servers.clear();
@@ -289,16 +304,8 @@ void PickServerPanel::GetCell(int item, int column, Cell& cell)
 	{
 		cell.text_color->color = (server.valid_version ? Color::Black : Color::Red);
 		if(column == 1)
-			cell.text_color->text = Format("%d/%d", server.players, server.max_players);
+			cell.text_color->text = Format("%d/%d", server.active_players, server.max_players);
 		else
 			cell.text_color->text = server.name.c_str();
 	}
-}
-
-//=================================================================================================
-void PickServerPanel::LoadData()
-{
-	auto& tex_mgr = ResourceManager::Get<Texture>();
-	tex_mgr.AddLoadTask("save-16.png", tIcoZapis);
-	tex_mgr.AddLoadTask("padlock-16.png", tIcoHaslo);
 }

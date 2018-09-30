@@ -1118,6 +1118,7 @@ sounds human {
 	see_enemy "hey.mp3"
 	pain "aahhzz.mp3"
 	death "ahhh.mp3"
+	talk {"hello-3.mp3" "hello-4.mp3" "hmph.wav" "huh-2.mp3"}
 }
 
 sounds wolf {
@@ -1153,23 +1154,27 @@ sounds skeleton {
 sounds golem {
 	see_enemy "golem_alert.mp3"
 	death "earthquake.wav"
+	talk "golem_alert.mp3"
 }
 
 sounds golem_iron {
 	see_enemy "golem_alert.mp3"
 	death "irongolem_break.mp3"
+	talk "golem_alert.mp3"
 }
 
 sounds goblin {
 	see_enemy "goblin-3.wav"
 	pain "goblin-11.wav"
 	death "goblin-15.wav"
+	talk "goblin-7.wav"
 }
 
 sounds orc {
 	see_enemy "ogre2.wav"
 	pain "ogre5.wav"
 	death "ogre3.wav"
+	talk "ogre1.wav"
 }
 
 sounds undead {
@@ -2356,6 +2361,7 @@ unit q_zlo_boss : base_human {
 		see_enemy "shade8.wav"
 		pain "shade5.wav"
 		death "scream.wav"
+		talk "shade8.wav"
 	}
 	tex {
 		null

@@ -6,12 +6,15 @@
 #include "Game.h"
 #include "Language.h"
 #include "GetNumberDialog.h"
+#include "GlobalGui.h"
 #include "GameGui.h"
 #include "AIController.h"
 #include "Chest.h"
 #include "Team.h"
 #include "BookPanel.h"
 #include "SoundManager.h"
+#include "ResourceManager.h"
+#include "ItemHelper.h"
 #include "DirectX.h"
 
 /* UWAGI CO DO ZMIENNYCH
@@ -24,36 +27,41 @@ last_index to tutaj t_index
 */
 
 //-----------------------------------------------------------------------------
-TEX Inventory::tItemBar, Inventory::tEquipped, Inventory::tGold, Inventory::tStarHq, Inventory::tStarM, Inventory::tStarU, Inventory::tTeamItem;
-cstring Inventory::txGoldAndCredit, Inventory::txGoldDropInfo, Inventory::txCarryShort, Inventory::txCarry, Inventory::txCarryInfo, Inventory::txTeamItem,
-	Inventory::txCantWear, Inventory::txCantDoNow, Inventory::txBuyTeamDialog, Inventory::txDropGoldCount, Inventory::txDropNoGold, Inventory::txDropNotNow,
-	Inventory::txDropItemCount, Inventory::txWontBuy, Inventory::txPrice, Inventory::txNeedMoreGoldItem, Inventory::txBuyItemCount, Inventory::txSellItemCount,
-	Inventory::txLooting, Inventory::txLootingChest, Inventory::txTrading, Inventory::txPutGoldCount, Inventory::txLootItemCount, Inventory::txPutItemCount,
-	Inventory::txTakeAll, Inventory::txInventory, Inventory::txShareItems, Inventory::txGiveItems, Inventory::txPutGold, Inventory::txGiveGold,
-	Inventory::txGiveGoldCount, Inventory::txShareGiveItemCount, Inventory::txCanCarryTeamOnly, Inventory::txWontGiveItem, Inventory::txShareTakeItemCount,
-	Inventory::txWontTakeItem, Inventory::txSellTeamItem, Inventory::txSellItem, Inventory::txSellFreeItem, Inventory::txGivePotionCount,
-	Inventory::txNpcCantCarry, Inventory::txStatsFor, Inventory::txShowStatsFor;
-Inventory::ItemLock Inventory::lock;
-TooltipController Inventory::tooltip;
-bool Inventory::tex_replaced;
+const int INDEX_GOLD = -2;
+const int INDEX_CARRY = -3;
 
-//-----------------------------------------------------------------------------
-#define INDEX_GOLD -2
-#define INDEX_CARRY -3
 
 //=================================================================================================
-Inventory::Inventory() : last_item(nullptr), i_items(nullptr), game(Game::Get()), for_unit(false)
+Inventory::~Inventory()
 {
-	scrollbar.total = 100;
-	scrollbar.offset = 0;
-	scrollbar.part = 100;
-	bt.text = txTakeAll;
-	bt.id = GuiEvent_Custom;
-	bt.parent = this;
+	delete inv_mine;
+	delete inv_trade_mine;
+	delete inv_trade_other;
+	delete gp_trade;
 }
 
 //=================================================================================================
-void Inventory::LoadText()
+void Inventory::InitOnce()
+{
+	inv_mine = new InventoryPanel(*this);
+	inv_mine->InitTooltip();
+	inv_mine->mode = InventoryPanel::INVENTORY;
+	inv_mine->visible = false;
+
+	gp_trade = new GamePanelContainer;
+
+	inv_trade_mine = new InventoryPanel(*this);
+	inv_trade_mine->focus = true;
+	gp_trade->Add(inv_trade_mine);
+
+	inv_trade_other = new InventoryPanel(*this);
+	gp_trade->Add(inv_trade_other);
+
+	gp_trade->Hide();
+}
+
+//=================================================================================================
+void Inventory::LoadLanguage()
 {
 	auto section = Language::GetSection("Inventory");
 	txGoldAndCredit = section.Get("goldAndCredit");
@@ -99,6 +107,13 @@ void Inventory::LoadText()
 	txNpcCantCarry = section.Get("npcCantCarry");
 	txStatsFor = section.Get("statsFor");
 	txShowStatsFor = section.Get("showStatsFor");
+
+	inv_mine->bt.text = txTakeAll;
+	inv_mine->title = txInventory;
+	inv_trade_mine->bt.text = txTakeAll;
+	inv_trade_mine->title = txInventory;
+	inv_trade_other->bt.text = txTakeAll;
+	inv_trade_other->title = txInventory;
 }
 
 //=================================================================================================
@@ -136,13 +151,221 @@ void Inventory::OnReload()
 }
 
 //=================================================================================================
-void Inventory::InitTooltip()
+void Inventory::Setup(PlayerController* pc)
 {
-	tooltip.Init(TooltipGetText(this, &Inventory::GetTooltip));
+	inv_trade_mine->i_items = inv_mine->i_items = &tmp_inventory[0];
+	inv_trade_mine->items = inv_mine->items = &pc->unit->items;
+	inv_trade_mine->slots = inv_mine->slots = pc->unit->slots;
+	inv_trade_mine->unit = inv_mine->unit = pc->unit;
+	inv_trade_other->i_items = &tmp_inventory[1];
 }
 
 //=================================================================================================
-void Inventory::Draw(ControlDrawData*)
+void Inventory::StartTrade(InventoryMode mode, Unit& unit)
+{
+	Game& game = Game::Get();
+	game.gui->game_gui->ClosePanels();
+	this->mode = mode;
+	PlayerController* pc = game.pc;
+
+	inv_trade_other->unit = &unit;
+	inv_trade_other->items = &unit.items;
+	inv_trade_other->slots = unit.slots;
+
+	switch(mode)
+	{
+	case I_LOOT_BODY:
+		inv_trade_mine->mode = InventoryPanel::LOOT_MY;
+		inv_trade_other->mode = InventoryPanel::LOOT_OTHER;
+		inv_trade_other->title = Format("%s - %s", txLooting, unit.GetName());
+		break;
+	case I_SHARE:
+		inv_trade_mine->mode = InventoryPanel::SHARE_MY;
+		inv_trade_other->mode = InventoryPanel::SHARE_OTHER;
+		inv_trade_other->title = Format("%s - %s", txShareItems, unit.GetName());
+		pc->action = PlayerController::Action_ShareItems;
+		pc->action_unit = &unit;
+		pc->chest_trade = &unit.items;
+		break;
+	case I_GIVE:
+		inv_trade_mine->mode = InventoryPanel::GIVE_MY;
+		inv_trade_other->mode = InventoryPanel::GIVE_OTHER;
+		inv_trade_other->title = Format("%s - %s", txGiveItems, unit.GetName());
+		pc->action = PlayerController::Action_GiveItems;
+		pc->action_unit = &unit;
+		pc->chest_trade = &unit.items;
+		break;
+	default:
+		assert(0);
+		break;
+	}
+
+	BuildTmpInventory(0);
+	BuildTmpInventory(1);
+	gp_trade->Show();
+}
+
+//=================================================================================================
+void Inventory::StartTrade(InventoryMode mode, vector<ItemSlot>& items, Unit* unit)
+{
+	Game& game = Game::Get();
+	game.gui->game_gui->ClosePanels();
+	this->mode = mode;
+	PlayerController* pc = game.pc;
+
+	inv_trade_other->items = &items;
+	inv_trade_other->slots = nullptr;
+
+	switch(mode)
+	{
+	case I_LOOT_CHEST:
+		inv_trade_mine->mode = InventoryPanel::LOOT_MY;
+		inv_trade_other->mode = InventoryPanel::LOOT_OTHER;
+		inv_trade_other->unit = nullptr;
+		inv_trade_other->title = txLootingChest;
+		break;
+	case I_TRADE:
+		assert(unit);
+		inv_trade_mine->mode = InventoryPanel::TRADE_MY;
+		inv_trade_other->mode = InventoryPanel::TRADE_OTHER;
+		inv_trade_other->unit = unit;
+		inv_trade_other->title = Format("%s - %s", txTrading, unit->GetName());
+		pc->action = PlayerController::Action_Trade;
+		pc->action_unit = unit;
+		pc->chest_trade = &items;
+		break;
+	case I_LOOT_CONTAINER:
+		inv_trade_mine->mode = InventoryPanel::LOOT_MY;
+		inv_trade_other->mode = InventoryPanel::LOOT_OTHER;
+		inv_trade_other->unit = nullptr;
+		inv_trade_other->title = Format("%s - %s", txLooting, pc->action_container->base->name.c_str());
+		break;
+	default:
+		assert(0);
+		break;
+	}
+
+	BuildTmpInventory(0);
+	BuildTmpInventory(1);
+	gp_trade->Show();
+}
+
+//=================================================================================================
+void Inventory::StartTrade2(InventoryMode mode, void* ptr)
+{
+	Game& game = Game::Get();
+	PlayerController* pc = game.pc;
+	game.gui->game_gui->ClosePanels();
+	mode = I_LOOT_CHEST;
+
+	switch(mode)
+	{
+	case I_LOOT_CHEST:
+		{
+			Chest* chest = (Chest*)ptr;
+			pc->action = PlayerController::Action_LootChest;
+			pc->action_chest = chest;
+			pc->action_chest->user = pc->unit;
+			pc->chest_trade = &pc->action_chest->items;
+			inv_trade_mine->mode = InventoryPanel::LOOT_MY;
+			inv_trade_other->unit = nullptr;
+			inv_trade_other->items = &chest->items;
+			inv_trade_other->slots = nullptr;
+			inv_trade_other->title = txLootingChest;
+			inv_trade_other->mode = InventoryPanel::LOOT_OTHER;
+		}
+		break;
+	case I_LOOT_CONTAINER:
+		{
+			Usable* usable = (Usable*)ptr;
+			pc->action = PlayerController::Action_LootContainer;
+			pc->action_container = usable;
+			pc->chest_trade = &pc->action_container->container->items;
+			inv_trade_mine->mode = InventoryPanel::LOOT_MY;
+			inv_trade_other->unit = nullptr;
+			inv_trade_other->items = &pc->action_container->container->items;
+			inv_trade_other->slots = nullptr;
+			inv_trade_other->title = Format("%s - %s", txLooting, usable->base->name.c_str());
+			inv_trade_other->mode = InventoryPanel::LOOT_OTHER;
+		}
+		break;
+	}
+
+	BuildTmpInventory(0);
+	BuildTmpInventory(1);
+	gp_trade->Show();
+}
+
+//=================================================================================================
+// zbuduj tymczasowy ekwipunek który ³¹czy slots i items postaci
+void Inventory::BuildTmpInventory(int index)
+{
+	assert(index == 0 || index == 1);
+
+	PlayerController* pc = Game::Get().pc;
+	vector<int>& ids = tmp_inventory[index];
+	const Item** slots;
+	vector<ItemSlot>* items;
+	int& shift = tmp_inventory_shift[index];
+	shift = 0;
+
+	if(index == 0)
+	{
+		// przedmioty gracza
+		slots = pc->unit->slots;
+		items = &pc->unit->items;
+	}
+	else
+	{
+		// przedmioty innej postaci, w skrzyni
+		if(pc->action == PlayerController::Action_LootChest
+			|| pc->action == PlayerController::Action_Trade
+			|| pc->action == PlayerController::Action_LootContainer)
+			slots = nullptr;
+		else
+			slots = pc->action_unit->slots;
+		items = pc->chest_trade;
+	}
+
+	ids.clear();
+
+	// jeœli to postaæ to dodaj za³o¿one przedmioty
+	if(slots)
+	{
+		for(int i = 0; i < SLOT_MAX; ++i)
+		{
+			if(slots[i])
+			{
+				ids.push_back(-i - 1);
+				++shift;
+			}
+		}
+	}
+
+	// nie za³o¿one przedmioty
+	for(int i = 0, ile = (int)items->size(); i < ile; ++i)
+		ids.push_back(i);
+}
+
+
+//=================================================================================================
+InventoryPanel::InventoryPanel(Inventory& base) : base(base), last_item(nullptr), i_items(nullptr), game(Game::Get()), for_unit(false)
+{
+	scrollbar.total = 100;
+	scrollbar.offset = 0;
+	scrollbar.part = 100;
+	bt.id = GuiEvent_Custom;
+	bt.parent = this;
+}
+
+//=================================================================================================
+void InventoryPanel::InitTooltip()
+{
+	base.tooltip.Init(TooltipGetText(this, &InventoryPanel::GetTooltip));
+}
+
+//=================================================================================================
+void InventoryPanel::Draw(ControlDrawData*)
 {
 	GamePanel::Draw();
 
@@ -161,9 +384,9 @@ void Inventory::Draw(ControlDrawData*)
 	if(mode != TRADE_OTHER && mode != LOOT_OTHER)
 	{
 		load = unit->GetLoad();
-		GUI.DrawItem(tItemBar, Int2(shift_x, bar_y), Int2(bar_size, 32), Color::White, 4);
-		GUI.DrawItem(tEquipped, Int2(shift_x + bar_size + 10, bar_y), Int2(int(min(1.f, load)*bar_size), 32), Color::White, 4);
-		GUI.DrawItem(tItemBar, Int2(shift_x + bar_size + 10, bar_y), Int2(bar_size, 32), Color::White, 4);
+		GUI.DrawItem(base.tItemBar, Int2(shift_x, bar_y), Int2(bar_size, 32), Color::White, 4);
+		GUI.DrawItem(base.tEquipped, Int2(shift_x + bar_size + 10, bar_y), Int2(int(min(1.f, load)*bar_size), 32), Color::White, 4);
+		GUI.DrawItem(base.tItemBar, Int2(shift_x + bar_size + 10, bar_y), Int2(bar_size, 32), Color::White, 4);
 	}
 	else if(mode == LOOT_OTHER)
 		bt.Draw();
@@ -180,7 +403,7 @@ void Inventory::Draw(ControlDrawData*)
 	if(mode != TRADE_OTHER && mode != LOOT_OTHER)
 	{
 		// ikona z³ota
-		GUI.DrawSprite(tGold, Int2(shift_x, bar_y));
+		GUI.DrawSprite(base.tGold, Int2(shift_x, bar_y));
 
 		// z³oto
 		rect = Rect::Create(Int2(shift_x, bar_y), Int2(bar_size, 32));
@@ -189,7 +412,7 @@ void Inventory::Draw(ControlDrawData*)
 		// udŸwig
 		rect.Left() = shift_x + bar_size + 10;
 		rect.Right() = rect.Left() + bar_size;
-		cstring weight_str = Format(txCarryShort, float(unit->weight) / 10, float(unit->weight_max) / 10);
+		cstring weight_str = Format(base.txCarryShort, float(unit->weight) / 10, float(unit->weight_max) / 10);
 		int w = GUI.default_font->LineWidth(weight_str);
 		GUI.DrawText(GUI.default_font, (w > bar_size ? Format("%g/%g", float(unit->weight) / 10, float(unit->weight_max) / 10) : weight_str),
 			DTF_CENTER | DTF_VCENTER, (load > 1.f ? Color::Red : Color::Black), rect);
@@ -199,7 +422,7 @@ void Inventory::Draw(ControlDrawData*)
 	for(int y = 0; y < ile_h; ++y)
 	{
 		for(int x = 0; x < ile_w; ++x)
-			GUI.DrawSprite(tItemBar, Int2(shift_x + x * 63, shift_y + y * 63));
+			GUI.DrawSprite(base.tItemBar, Int2(shift_x + x * 63, shift_y + y * 63));
 	}
 
 	// rysuj przedmioty
@@ -234,7 +457,7 @@ void Inventory::Draw(ControlDrawData*)
 
 		// obrazek za³o¿onego przedmiotu
 		if(i_item < 0)
-			GUI.DrawSprite(tEquipped, Int2(shift_x + x * 63, shift_y + y * 63));
+			GUI.DrawSprite(base.tEquipped, Int2(shift_x + x * 63, shift_y + y * 63));
 
 		// item icon
 		GUI.DrawSprite(item->icon, Int2(shift_x + x * 63, shift_y + y * 63));
@@ -242,11 +465,11 @@ void Inventory::Draw(ControlDrawData*)
 		// item quality icon
 		TEX icon;
 		if(IS_SET(item->flags, ITEM_HQ))
-			icon = tStarHq;
+			icon = base.tStarHq;
 		else if(IS_SET(item->flags, ITEM_MAGICAL))
-			icon = tStarM;
+			icon = base.tStarM;
 		else if(IS_SET(item->flags, ITEM_UNIQUE))
-			icon = tStarU;
+			icon = base.tStarU;
 		else
 			icon = nullptr;
 		if(icon)
@@ -254,7 +477,7 @@ void Inventory::Draw(ControlDrawData*)
 
 		// team item icon
 		if(have_team && team != 0)
-			GUI.DrawSprite(tTeamItem, Int2(shift_x + x * 63, shift_y + y * 63), team == 2 ? Color::Black : Color(0, 0, 0, 128));
+			GUI.DrawSprite(base.tTeamItem, Int2(shift_x + x * 63, shift_y + y * 63), team == 2 ? Color::Black : Color(0, 0, 0, 128));
 
 		// count
 		if(count > 1)
@@ -265,26 +488,26 @@ void Inventory::Draw(ControlDrawData*)
 	}
 
 	if(mode == INVENTORY)
-		tooltip.Draw();
+		base.tooltip.Draw();
 	else
 		DrawBox();
 }
 
 //=================================================================================================
-void Inventory::Update(float dt)
+void InventoryPanel::Update(float dt)
 {
 	GamePanel::Update(dt);
 
-	if(game.game_gui->book_panel->visible)
+	if(game.gui->book->visible)
 		return;
 
-	if(lock && lock.is_give)
+	if(base.lock && base.lock.is_give)
 	{
-		lock.timer -= dt;
-		if(lock.timer <= 0.f)
+		base.lock.timer -= dt;
+		if(base.lock.timer <= 0.f)
 		{
 			Error("IS_BETTER_ITEM timed out.");
-			lock = nullptr;
+			base.lock = nullptr;
 		}
 	}
 
@@ -371,12 +594,12 @@ void Inventory::Update(float dt)
 	}
 
 	// klawisz to podnoszenia wszystkich przedmiotów
-	if(mode == LOOT_OTHER && (focus || game.game_gui->inv_trade_mine->focus) && Key.Focus() && GKey.PressedRelease(GK_TAKE_ALL))
+	if(mode == LOOT_OTHER && (focus || base.inv_trade_mine->focus) && Key.Focus() && GKey.PressedRelease(GK_TAKE_ALL))
 		Event(GuiEvent_Custom);
 
 	// aktualizuj box
 	if(mode == INVENTORY)
-		tooltip.UpdateTooltip(dt, new_index, -1);
+		base.tooltip.UpdateTooltip(dt, new_index, -1);
 	else
 	{
 		bool old_for_unit = for_unit;
@@ -417,7 +640,7 @@ void Inventory::Update(float dt)
 
 		last_item = item;
 
-		if(!focus || !(game.pc->unit->action == A_NONE || game.pc->unit->CanDoWhileUsing()) || lock)
+		if(!focus || !(game.pc->unit->action == A_NONE || game.pc->unit->CanDoWhileUsing()) || base.lock)
 			return;
 
 		// obs³uga kilkania w ekwipunku
@@ -425,7 +648,7 @@ void Inventory::Update(float dt)
 		{
 			// wyrzuæ przedmiot
 			if(IS_SET(item->flags, ITEM_DONT_DROP) && game.IsAnyoneTalking())
-				GUI.SimpleDialog(txCantDoNow, this);
+				GUI.SimpleDialog(base.txCantDoNow, this);
 			else
 			{
 				if(!slot)
@@ -450,8 +673,8 @@ void Inventory::Update(float dt)
 						unit->DropItems(i_index, 0);
 						last_index = INDEX_INVALID;
 						if(mode == INVENTORY)
-							tooltip.Clear();
-						game.BuildTmpInventory(0);
+							base.tooltip.Clear();
+						base.BuildTmpInventory(0);
 						UpdateScrollbar();
 					}
 					else if(Key.Down(VK_CONTROL) || slot->count == 1)
@@ -459,11 +682,11 @@ void Inventory::Update(float dt)
 						// wyrzuæ jeden
 						if(unit->DropItem(i_index))
 						{
-							game.BuildTmpInventory(0);
+							base.BuildTmpInventory(0);
 							UpdateScrollbar();
 							last_index = INDEX_INVALID;
 							if(mode == INVENTORY)
-								tooltip.Clear();
+								base.tooltip.Clear();
 						}
 						else
 							FormatBox();
@@ -472,11 +695,11 @@ void Inventory::Update(float dt)
 					{
 						// wyrzuæ okreœlon¹ liczbê
 						counter = 1;
-						lock.Lock(i_index, *slot);
-						GetNumberDialog::Show(this, delegate<void(int)>(this, &Inventory::OnDropItem), txDropItemCount, 0, slot->count, &counter);
+						base.lock.Lock(i_index, *slot);
+						GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnDropItem), base.txDropItemCount, 0, slot->count, &counter);
 						last_index = INDEX_INVALID;
 						if(mode == INVENTORY)
-							tooltip.Clear();
+							base.tooltip.Clear();
 					}
 				}
 			}
@@ -507,18 +730,18 @@ void Inventory::Update(float dt)
 					if(item->IsWearableByHuman() && slot->team_count > 0 && Team.GetActiveTeamSize() > 1)
 					{
 						DialogInfo di;
-						di.event = delegate<void(int)>(this, &Inventory::OnTakeItem);
+						di.event = delegate<void(int)>(this, &InventoryPanel::OnTakeItem);
 						di.name = "takeover_item";
 						di.parent = this;
 						di.pause = false;
-						di.text = txBuyTeamDialog;
+						di.text = base.txBuyTeamDialog;
 						di.order = ORDER_NORMAL;
 						di.type = DIALOG_YESNO;
 						GUI.ShowDialog(di);
-						lock.Lock(i_index, *slot);
+						base.lock.Lock(i_index, *slot);
 						last_index = INDEX_INVALID;
 						if(mode == INVENTORY)
-							tooltip.Clear();
+							base.tooltip.Clear();
 					}
 					else if(item->type == IT_CONSUMABLE)
 						ConsumeItem(i_index);
@@ -546,7 +769,7 @@ void Inventory::Update(float dt)
 								if(item->ToArmor().armor_type != ArmorUnitType::HUMAN)
 								{
 									ok = false;
-									GUI.SimpleDialog(txCantWear, this);
+									GUI.SimpleDialog(base.txCantWear, this);
 								}
 							}
 
@@ -559,7 +782,7 @@ void Inventory::Update(float dt)
 			case TRADE_MY:
 				// selling items
 				if(item->value <= 1 || !game.CanBuySell(item))
-					GUI.SimpleDialog(txWontBuy, this);
+					GUI.SimpleDialog(base.txWontBuy, this);
 				else if(!slot)
 				{
 					// za³o¿ony przedmiot
@@ -587,11 +810,11 @@ void Inventory::Update(float dt)
 						else
 						{
 							counter = 1;
-							lock.Lock(i_index, *slot);
-							GetNumberDialog::Show(this, delegate<void(int)>(this, &Inventory::OnSellItem), txSellItemCount, 0, slot->count, &counter);
+							base.lock.Lock(i_index, *slot);
+							GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnSellItem), base.txSellItemCount, 0, slot->count, &counter);
 							last_index = INDEX_INVALID;
 							if(mode == INVENTORY)
-								tooltip.Clear();
+								base.tooltip.Clear();
 							break;
 						}
 					}
@@ -615,11 +838,11 @@ void Inventory::Update(float dt)
 						else
 						{
 							counter = 1;
-							lock.Lock(i_index, *slot);
-							GetNumberDialog::Show(this, delegate<void(int)>(this, &Inventory::OnBuyItem), txBuyItemCount, 0, slot->count, &counter);
+							base.lock.Lock(i_index, *slot);
+							GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnBuyItem), base.txBuyItemCount, 0, slot->count, &counter);
 							last_index = INDEX_INVALID;
 							if(mode == INVENTORY)
-								tooltip.Clear();
+								base.tooltip.Clear();
 							break;
 						}
 					}
@@ -644,11 +867,11 @@ void Inventory::Update(float dt)
 						else
 						{
 							counter = 1;
-							lock.Lock(i_index, *slot);
-							GetNumberDialog::Show(this, delegate<void(int)>(this, &Inventory::OnPutItem), txPutItemCount, 0, slot->count, &counter);
+							base.lock.Lock(i_index, *slot);
+							GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnPutItem), base.txPutItemCount, 0, slot->count, &counter);
 							last_index = INDEX_INVALID;
 							if(mode == INVENTORY)
-								tooltip.Clear();
+								base.tooltip.Clear();
 							break;
 						}
 					}
@@ -705,11 +928,11 @@ void Inventory::Update(float dt)
 						else
 						{
 							counter = 1;
-							lock.Lock(i_index, *slot);
-							GetNumberDialog::Show(this, delegate<void(int)>(this, &Inventory::OnLootItem), txLootItemCount, 0, slot->count, &counter);
+							base.lock.Lock(i_index, *slot);
+							GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnLootItem), base.txLootItemCount, 0, slot->count, &counter);
 							last_index = INDEX_INVALID;
 							if(mode == INVENTORY)
-								tooltip.Clear();
+								base.tooltip.Clear();
 							break;
 						}
 					}
@@ -723,10 +946,10 @@ void Inventory::Update(float dt)
 					// za³o¿ony przedmiot
 					last_index = INDEX_INVALID;
 					if(mode == INVENTORY)
-						tooltip.Clear();
+						base.tooltip.Clear();
 					// dodaj
 					game.pc->unit->AddItem(item);
-					game.BuildTmpInventory(0);
+					base.BuildTmpInventory(0);
 					// usuñ
 					if(slot_type == SLOT_WEAPON && slots[SLOT_WEAPON] == unit->used_item)
 					{
@@ -740,7 +963,7 @@ void Inventory::Update(float dt)
 					}
 					slots[slot_type] = nullptr;
 					unit->weight -= item->weight;
-					game.BuildTmpInventory(1);
+					base.BuildTmpInventory(1);
 					// dŸwiêk
 					game.sound_mgr->PlaySound2d(game.GetItemSound(item));
 					// komunikat
@@ -777,12 +1000,12 @@ void Inventory::Update(float dt)
 						else
 						{
 							counter = 1;
-							lock.Lock(i_index, *slot);
-							GetNumberDialog::Show(this, delegate<void(int)>(this, &Inventory::OnShareGiveItem),
-								txShareGiveItemCount, 0, slot->team_count, &counter);
+							base.lock.Lock(i_index, *slot);
+							GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnShareGiveItem),
+								base.txShareGiveItemCount, 0, slot->team_count, &counter);
 							last_index = INDEX_INVALID;
 							if(mode == INVENTORY)
-								tooltip.Clear();
+								base.tooltip.Clear();
 							break;
 						}
 					}
@@ -793,14 +1016,14 @@ void Inventory::Update(float dt)
 					if(t->CanTake(item))
 						ShareGiveItem(i_index, ile);
 					else
-						GUI.SimpleDialog(Format(txNpcCantCarry, t->GetName()), this);
+						GUI.SimpleDialog(Format(base.txNpcCantCarry, t->GetName()), this);
 				}
 				else
 				{
 					last_index = INDEX_INVALID;
 					if(mode == INVENTORY)
-						tooltip.Clear();
-					GUI.SimpleDialog(txCanCarryTeamOnly, this);
+						base.tooltip.Clear();
+					GUI.SimpleDialog(base.txCanCarryTeamOnly, this);
 				}
 				break;
 			case SHARE_OTHER:
@@ -819,12 +1042,12 @@ void Inventory::Update(float dt)
 						else
 						{
 							counter = 1;
-							lock.Lock(i_index, *slot);
-							GetNumberDialog::Show(this, delegate<void(int)>(this, &Inventory::OnShareTakeItem), txShareTakeItemCount, 0, slot->team_count,
+							base.lock.Lock(i_index, *slot);
+							GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnShareTakeItem), base.txShareTakeItemCount, 0, slot->team_count,
 								&counter);
 							last_index = INDEX_INVALID;
 							if(mode == INVENTORY)
-								tooltip.Clear();
+								base.tooltip.Clear();
 							break;
 						}
 					}
@@ -837,8 +1060,8 @@ void Inventory::Update(float dt)
 				{
 					last_index = INDEX_INVALID;
 					if(mode == INVENTORY)
-						tooltip.Clear();
-					GUI.SimpleDialog(txWontGiveItem, this);
+						base.tooltip.Clear();
+					GUI.SimpleDialog(base.txWontGiveItem, this);
 				}
 				break;
 			case GIVE_MY:
@@ -851,35 +1074,35 @@ void Inventory::Update(float dt)
 					{
 						last_index = INDEX_INVALID;
 						if(mode == INVENTORY)
-							tooltip.Clear();
+							base.tooltip.Clear();
 
 						if(Net::IsLocal())
 						{
 							if(!t->IsBetterItem(item))
-								GUI.SimpleDialog(txWontTakeItem, this);
+								GUI.SimpleDialog(base.txWontTakeItem, this);
 							else if(t->CanTake(item))
 							{
 								DialogInfo info;
 								if(slot->team_count > 0)
 								{
 									// daj dru¿ynowy przedmiot
-									info.text = Format(txSellTeamItem, item->value / 2);
+									info.text = Format(base.txSellTeamItem, item->value / 2);
 									give_item_mode = 0;
 								}
 								else if(t->gold >= item->value / 2)
 								{
 									// odkup przedmiot
-									info.text = Format(txSellItem, item->value / 2);
+									info.text = Format(base.txSellItem, item->value / 2);
 									give_item_mode = 1;
 								}
 								else
 								{
 									// zaproponuj inn¹ cenê
-									info.text = Format(txSellFreeItem, item->value / 2);
+									info.text = Format(base.txSellFreeItem, item->value / 2);
 									give_item_mode = 2;
 								}
-								lock.Lock(i_index, *slot);
-								info.event = delegate<void(int)>(this, &Inventory::OnGiveItem);
+								base.lock.Lock(i_index, *slot);
+								info.event = delegate<void(int)>(this, &InventoryPanel::OnGiveItem);
 								info.order = ORDER_NORMAL;
 								info.parent = this;
 								info.type = DIALOG_YESNO;
@@ -887,11 +1110,11 @@ void Inventory::Update(float dt)
 								GUI.ShowDialog(info);
 							}
 							else
-								GUI.SimpleDialog(Format(txNpcCantCarry, t->GetName()), this);
+								GUI.SimpleDialog(Format(base.txNpcCantCarry, t->GetName()), this);
 						}
 						else
 						{
-							lock.Lock(i_index, *slot, true);
+							base.lock.Lock(i_index, *slot, true);
 							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::IS_BETTER_ITEM;
 							c.id = i_index;
@@ -909,11 +1132,11 @@ void Inventory::Update(float dt)
 							else
 							{
 								counter = 1;
-								lock.Lock(i_index, *slot);
-								GetNumberDialog::Show(this, delegate<void(int)>(this, &Inventory::OnGivePotion), txGivePotionCount, 0, slot->count, &counter);
+								base.lock.Lock(i_index, *slot);
+								GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnGivePotion), base.txGivePotionCount, 0, slot->count, &counter);
 								last_index = INDEX_INVALID;
 								if(mode == INVENTORY)
-									tooltip.Clear();
+									base.tooltip.Clear();
 								break;
 							}
 						}
@@ -923,14 +1146,14 @@ void Inventory::Update(float dt)
 						if(t->CanTake(item, ile))
 							GivePotion(i_index, ile);
 						else
-							GUI.SimpleDialog(Format(txNpcCantCarry, t->GetName()), this);
+							GUI.SimpleDialog(Format(base.txNpcCantCarry, t->GetName()), this);
 					}
 					else
 					{
 						last_index = INDEX_INVALID;
 						if(mode == INVENTORY)
-							tooltip.Clear();
-						GUI.SimpleDialog(txWontTakeItem, this);
+							base.tooltip.Clear();
+						GUI.SimpleDialog(base.txWontTakeItem, this);
 					}
 				}
 				else
@@ -953,19 +1176,19 @@ void Inventory::Update(float dt)
 									GiveSlotItem(slot_type);
 							}
 							else
-								GUI.SimpleDialog(Format(txNpcCantCarry, t->GetName()), this);
+								GUI.SimpleDialog(Format(base.txNpcCantCarry, t->GetName()), this);
 						}
 						else
 						{
 							last_index = INDEX_INVALID;
 							if(mode == INVENTORY)
-								tooltip.Clear();
-							GUI.SimpleDialog(txWontTakeItem, this);
+								base.tooltip.Clear();
+							GUI.SimpleDialog(base.txWontTakeItem, this);
 						}
 					}
 					else
 					{
-						lock.Lock(slot_type, true);
+						base.lock.Lock(slot_type, true);
 						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::IS_BETTER_ITEM;
 						c.id = i_index;
@@ -975,21 +1198,21 @@ void Inventory::Update(float dt)
 			}
 		}
 	}
-	else if(new_index == INDEX_GOLD && mode != GIVE_OTHER && mode != SHARE_OTHER && !lock)
+	else if(new_index == INDEX_GOLD && mode != GIVE_OTHER && mode != SHARE_OTHER && !base.lock)
 	{
 		// wyrzucanie/chowanie/dawanie z³ota
 		if(Key.PressedRelease(VK_LBUTTON))
 		{
 			last_index = INDEX_INVALID;
 			if(mode == INVENTORY)
-				tooltip.Clear();
+				base.tooltip.Clear();
 			counter = 0;
 			if(mode == INVENTORY)
-				GetNumberDialog::Show(this, delegate<void(int)>(this, &Inventory::OnDropGold), txDropGoldCount, 0, unit->gold, &counter);
+				GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnDropGold), base.txDropGoldCount, 0, unit->gold, &counter);
 			else if(mode == LOOT_MY)
-				GetNumberDialog::Show(this, delegate<void(int)>(this, &Inventory::OnPutGold), txPutGoldCount, 0, unit->gold, &counter);
+				GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnPutGold), base.txPutGoldCount, 0, unit->gold, &counter);
 			else if(mode == GIVE_MY || mode == SHARE_MY)
-				GetNumberDialog::Show(this, delegate<void(int)>(this, &Inventory::OnGiveGold), txGiveGoldCount, 0, unit->gold, &counter);
+				GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnGiveGold), base.txGiveGoldCount, 0, unit->gold, &counter);
 		}
 	}
 
@@ -998,7 +1221,7 @@ void Inventory::Update(float dt)
 }
 
 //=================================================================================================
-void Inventory::Event(GuiEvent e)
+void InventoryPanel::Event(GuiEvent e)
 {
 	GamePanel::Event(e);
 
@@ -1021,7 +1244,7 @@ void Inventory::Event(GuiEvent e)
 		bt.global_pos = global_pos + bt.pos;
 		if(e == GuiEvent_Show)
 		{
-			tooltip.Clear();
+			base.tooltip.Clear();
 			bt.text = Game::Get().GetShortcutText(GK_TAKE_ALL);
 		}
 	}
@@ -1092,7 +1315,7 @@ void Inventory::Event(GuiEvent e)
 			if(it->item->type == IT_GOLD)
 			{
 				zloto = true;
-				game.pc->unit->AddItem(game.gold_item_ptr, it->count, it->team_count);
+				game.pc->unit->AddItem(Item::gold, it->count, it->team_count);
 			}
 			else
 			{
@@ -1132,13 +1355,13 @@ void Inventory::Event(GuiEvent e)
 		// zamknij ekwipunek
 		if(changes)
 			SortItems(itms);
-		game.game_gui->gp_trade->Hide();
+		base.gp_trade->Hide();
 		game.OnCloseInventory();
 	}
 }
 
 //=================================================================================================
-bool Inventory::SlotRequireHideWeapon(ITEM_SLOT slot)
+bool InventoryPanel::SlotRequireHideWeapon(ITEM_SLOT slot)
 {
 	switch(slot)
 	{
@@ -1154,12 +1377,12 @@ bool Inventory::SlotRequireHideWeapon(ITEM_SLOT slot)
 
 //=================================================================================================
 // przek³ada przedmiot ze slotu do ekwipunku
-void Inventory::RemoveSlotItem(ITEM_SLOT slot)
+void InventoryPanel::RemoveSlotItem(ITEM_SLOT slot)
 {
 	unit->AddItem(slots[slot], 1, false);
 	unit->weight -= slots[slot]->weight;
 	slots[slot] = nullptr;
-	game.BuildTmpInventory(0);
+	base.BuildTmpInventory(0);
 
 	if(Net::IsOnline())
 	{
@@ -1176,31 +1399,31 @@ void Inventory::RemoveSlotItem(ITEM_SLOT slot)
 }
 
 //=================================================================================================
-void Inventory::DropSlotItem(ITEM_SLOT slot)
+void InventoryPanel::DropSlotItem(ITEM_SLOT slot)
 {
 	unit->DropItem(slot);
-	game.BuildTmpInventory(0);
+	base.BuildTmpInventory(0);
 	UpdateScrollbar();
 }
 
 //=================================================================================================
-void Inventory::ConsumeItem(int index)
+void InventoryPanel::ConsumeItem(int index)
 {
 	int w = unit->ConsumeItem(index);
 	if(w == 0)
 	{
 		last_index = INDEX_INVALID;
 		if(mode == INVENTORY)
-			tooltip.Clear();
-		game.BuildTmpInventory(0);
+			base.tooltip.Clear();
+		base.BuildTmpInventory(0);
 		UpdateScrollbar();
 	}
-	else if(w == 1 && last_index - game.tmp_inventory_shift[0] == index)
+	else if(w == 1 && last_index - base.tmp_inventory_shift[0] == index)
 		FormatBox();
 }
 
 //=================================================================================================
-void Inventory::EquipSlotItem(ITEM_SLOT slot, int i_index)
+void InventoryPanel::EquipSlotItem(ITEM_SLOT slot, int i_index)
 {
 	if(slots[slot])
 	{
@@ -1220,10 +1443,10 @@ void Inventory::EquipSlotItem(ITEM_SLOT slot, int i_index)
 		items->erase(items->begin() + i_index);
 	}
 
-	game.BuildTmpInventory(0);
+	base.BuildTmpInventory(0);
 	last_index = INDEX_INVALID;
 	if(mode == INVENTORY)
-		tooltip.Clear();
+		base.tooltip.Clear();
 
 	if(Net::IsOnline())
 	{
@@ -1240,27 +1463,27 @@ void Inventory::EquipSlotItem(ITEM_SLOT slot, int i_index)
 }
 
 //=================================================================================================
-void Inventory::EquipSlotItem(int index)
+void InventoryPanel::EquipSlotItem(int index)
 {
 	EquipSlotItem(ItemTypeToSlot(items->at(index).item->type), index);
 }
 
 //=================================================================================================
-void Inventory::FormatBox()
+void InventoryPanel::FormatBox()
 {
 	FormatBox(last_index, box_text, box_text_small, box_img);
 }
 
 //=================================================================================================
-void Inventory::FormatBox(int group, string& text, string& small_text, TEX& img)
+void InventoryPanel::FormatBox(int group, string& text, string& small_text, TEX& img)
 {
 	if(group == INDEX_GOLD)
 	{
-		text = Format(txGoldAndCredit, unit->gold, unit->IsPlayer() ? unit->player->credit : unit->hero->credit);
+		text = Format(base.txGoldAndCredit, unit->gold, unit->IsPlayer() ? unit->player->credit : unit->hero->credit);
 		switch(mode)
 		{
 		case INVENTORY:
-			small_text = txGoldDropInfo;
+			small_text = base.txGoldDropInfo;
 			break;
 		case TRADE_MY:
 		case TRADE_OTHER:
@@ -1270,20 +1493,20 @@ void Inventory::FormatBox(int group, string& text, string& small_text, TEX& img)
 			small_text.clear();
 			break;
 		case LOOT_MY:
-			small_text = txPutGold;
+			small_text = base.txPutGold;
 			break;
 		case SHARE_MY:
 		case GIVE_MY:
-			small_text = txGiveGold;
+			small_text = base.txGiveGold;
 			break;
 		}
-		img = tGold;
+		img = base.tGold;
 		item_visible = nullptr;
 	}
 	else if(group == INDEX_CARRY)
 	{
-		text = Format(txCarry, float(unit->weight) / 10, int(unit->GetLoad() * 100), float(unit->weight_max) / 10);
-		small_text = txCarryInfo;
+		text = Format(base.txCarry, float(unit->weight) / 10, int(unit->GetLoad() * 100), float(unit->weight_max) / 10);
+		small_text = base.txCarryInfo;
 		img = nullptr;
 		item_visible = nullptr;
 	}
@@ -1316,24 +1539,24 @@ void Inventory::FormatBox(int group, string& text, string& small_text, TEX& img)
 		if(mode != TRADE_OTHER && team_count && Team.GetActiveTeamSize() > 1)
 		{
 			text += '\n';
-			text += txTeamItem;
+			text += base.txTeamItem;
 			if(count != 1)
 				text += Format(" (%d)", team_count);
 		}
 		if(mode == TRADE_MY)
 		{
 			text += '\n';
-			int price = game.GetItemPrice(item, *game.pc->unit, false);
+			int price = ItemHelper::GetItemPrice(item, *game.pc->unit, false);
 			if(price == 0 || !game.CanBuySell(item))
-				text += txWontBuy;
+				text += base.txWontBuy;
 			else
-				text += Format(txPrice, price);
+				text += Format(base.txPrice, price);
 		}
 		else if(mode == TRADE_OTHER)
 		{
-			int price = game.GetItemPrice(item, *game.pc->unit, true);
+			int price = ItemHelper::GetItemPrice(item, *game.pc->unit, true);
 			text += '\n';
-			text += Format(txPrice, price);
+			text += Format(base.txPrice, price);
 		}
 		small_text = item->desc;
 		if(AllowForUnit())
@@ -1341,9 +1564,9 @@ void Inventory::FormatBox(int group, string& text, string& small_text, TEX& img)
 			if(!small_text.empty())
 				small_text += '\n';
 			if(for_unit)
-				small_text += Format(txStatsFor, game.pc->action_unit->GetName());
+				small_text += Format(base.txStatsFor, game.pc->action_unit->GetName());
 			else
-				small_text += Format(txShowStatsFor, game.pc->action_unit->GetName());
+				small_text += Format(base.txShowStatsFor, game.pc->action_unit->GetName());
 		}
 
 		if(item->mesh)
@@ -1361,56 +1584,56 @@ void Inventory::FormatBox(int group, string& text, string& small_text, TEX& img)
 }
 
 //=================================================================================================
-void Inventory::GetTooltip(TooltipController*, int group, int)
+void InventoryPanel::GetTooltip(TooltipController*, int group, int)
 {
 	if(group == INDEX_INVALID)
 	{
 		item_visible = nullptr;
-		tooltip.anything = false;
+		base.tooltip.anything = false;
 		return;
 	}
 
-	tooltip.anything = true;
-	tooltip.big_text.clear();
+	base.tooltip.anything = true;
+	base.tooltip.big_text.clear();
 
-	FormatBox(group, tooltip.text, tooltip.small_text, tooltip.img);
+	FormatBox(group, base.tooltip.text, base.tooltip.small_text, base.tooltip.img);
 }
 
 //=================================================================================================
-void Inventory::OnDropGold(int id)
+void InventoryPanel::OnDropGold(int id)
 {
 	if(id == BUTTON_CANCEL || counter == 0)
 		return;
 
 	if(counter > unit->gold)
-		GUI.SimpleDialog(txDropNoGold, this);
+		GUI.SimpleDialog(base.txDropNoGold, this);
 	else if(!unit->CanAct())
-		GUI.SimpleDialog(txDropNotNow, this);
+		GUI.SimpleDialog(base.txDropNotNow, this);
 	else
-		game.DropGold(counter);
+		game.pc->unit->DropGold(counter);
 }
 
 //=================================================================================================
-void Inventory::OnDropItem(int id)
+void InventoryPanel::OnDropItem(int id)
 {
 	int index = GetLockIndexAndRelease();
 	if(id == BUTTON_CANCEL || counter == 0 || index == -1)
 		return;
 
 	if(!unit->CanAct())
-		GUI.SimpleDialog(txDropNotNow, this);
+		GUI.SimpleDialog(base.txDropNotNow, this);
 	else
 	{
 		if(unit->DropItems(index, counter))
 		{
-			game.BuildTmpInventory(0);
+			base.BuildTmpInventory(0);
 			UpdateScrollbar();
 		}
 	}
 }
 
 //=================================================================================================
-void Inventory::OnTakeItem(int id)
+void InventoryPanel::OnTakeItem(int id)
 {
 	int index = GetLockIndexAndRelease();
 	if(id == BUTTON_NO || index == -1)
@@ -1421,7 +1644,7 @@ void Inventory::OnTakeItem(int id)
 	slot.team_count = 0;
 
 	if(Net::IsLocal())
-		game.CheckCredit(true);
+		Team.CheckCredit(true);
 	else
 	{
 		NetChange& c = Add1(Net::changes);
@@ -1431,7 +1654,7 @@ void Inventory::OnTakeItem(int id)
 }
 
 //=================================================================================================
-void Inventory::UpdateScrollbar()
+void InventoryPanel::UpdateScrollbar()
 {
 	if(!i_items)
 		return;
@@ -1454,7 +1677,7 @@ void Inventory::UpdateScrollbar()
 }
 
 //=================================================================================================
-void Inventory::OnBuyItem(int id)
+void InventoryPanel::OnBuyItem(int id)
 {
 	int index = GetLockIndexAndRelease();
 	if(id == BUTTON_OK && counter > 0 && index != -1)
@@ -1462,7 +1685,7 @@ void Inventory::OnBuyItem(int id)
 }
 
 //=================================================================================================
-void Inventory::OnSellItem(int id)
+void InventoryPanel::OnSellItem(int id)
 {
 	int index = GetLockIndexAndRelease();
 	if(id == BUTTON_OK && counter > 0 && index != -1)
@@ -1470,15 +1693,15 @@ void Inventory::OnSellItem(int id)
 }
 
 //=================================================================================================
-void Inventory::BuyItem(int index, uint count)
+void InventoryPanel::BuyItem(int index, uint count)
 {
 	ItemSlot& slot = items->at(index);
-	int price = game.GetItemPrice(slot.item, *game.pc->unit, true) * count;
+	int price = ItemHelper::GetItemPrice(slot.item, *game.pc->unit, true) * count;
 
 	if(price > game.pc->unit->gold)
 	{
 		// gracz ma za ma³o z³ota
-		GUI.SimpleDialog(Format(txNeedMoreGoldItem, price - game.pc->unit->gold, slot.item->name.c_str()), this);
+		GUI.SimpleDialog(Format(base.txNeedMoreGoldItem, price - game.pc->unit->gold, slot.item->name.c_str()), this);
 	}
 	else
 	{
@@ -1496,7 +1719,7 @@ void Inventory::BuyItem(int index, uint count)
 		{
 			last_index = INDEX_INVALID;
 			if(mode == INVENTORY)
-				tooltip.Clear();
+				base.tooltip.Clear();
 			items->erase(items->begin() + index);
 			UpdateGrid(false);
 		}
@@ -1514,7 +1737,7 @@ void Inventory::BuyItem(int index, uint count)
 }
 
 //=================================================================================================
-void Inventory::SellItem(int index, uint count)
+void InventoryPanel::SellItem(int index, uint count)
 {
 	ItemSlot& slot = items->at(index);
 	uint team_count = min(count, slot.team_count);
@@ -1526,7 +1749,7 @@ void Inventory::SellItem(int index, uint count)
 	// dodaj z³oto
 	if(Net::IsLocal())
 	{
-		int price = game.GetItemPrice(slot.item, *game.pc->unit, false);
+		int price = ItemHelper::GetItemPrice(slot.item, *game.pc->unit, false);
 		if(team_count)
 			game.AddGold(price * team_count);
 		if(normal_count)
@@ -1542,7 +1765,7 @@ void Inventory::SellItem(int index, uint count)
 	{
 		last_index = INDEX_INVALID;
 		if(mode == INVENTORY)
-			tooltip.Clear();
+			base.tooltip.Clear();
 		items->erase(items->begin() + index);
 		UpdateGrid(true);
 	}
@@ -1562,7 +1785,7 @@ void Inventory::SellItem(int index, uint count)
 }
 
 //=================================================================================================
-void Inventory::SellSlotItem(ITEM_SLOT slot)
+void InventoryPanel::SellSlotItem(ITEM_SLOT slot)
 {
 	const Item* item = slots[slot];
 
@@ -1570,7 +1793,7 @@ void Inventory::SellSlotItem(ITEM_SLOT slot)
 	game.sound_mgr->PlaySound2d(game.GetItemSound(item));
 	game.sound_mgr->PlaySound2d(game.sCoins);
 	// dodaj z³oto
-	unit->gold += game.GetItemPrice(item, *game.pc->unit, false);
+	unit->gold += ItemHelper::GetItemPrice(item, *game.pc->unit, false);
 	// dodaj przedmiot kupcowi
 	InsertItem(*unit->player->chest_trade, item, 1, 0);
 	UpdateGrid(false);
@@ -1598,17 +1821,17 @@ void Inventory::SellSlotItem(ITEM_SLOT slot)
 }
 
 //=================================================================================================
-void Inventory::OnPutGold(int id)
+void InventoryPanel::OnPutGold(int id)
 {
 	if(id == BUTTON_OK && counter > 0 && unit->gold >= counter)
 	{
 		if(counter > game.pc->unit->gold)
 		{
-			GUI.SimpleDialog(txDropNoGold, this);
+			GUI.SimpleDialog(base.txDropNoGold, this);
 			return;
 		}
 		// dodaj z³oto
-		if(!InsertItem(*unit->player->chest_trade, game.gold_item_ptr, counter, 0))
+		if(!InsertItem(*unit->player->chest_trade, Item::gold, counter, 0))
 			UpdateGrid(false);
 		// usuñ
 		unit->gold -= counter;
@@ -1624,7 +1847,7 @@ void Inventory::OnPutGold(int id)
 }
 
 //=================================================================================================
-void Inventory::OnLootItem(int id)
+void InventoryPanel::OnLootItem(int id)
 {
 	int index = GetLockIndexAndRelease();
 	if(id == BUTTON_OK && counter > 0 && index != -1)
@@ -1632,7 +1855,7 @@ void Inventory::OnLootItem(int id)
 }
 
 //=================================================================================================
-void Inventory::LootItem(int index, uint count)
+void InventoryPanel::LootItem(int index, uint count)
 {
 	ItemSlot& slot = items->at(index);
 	uint team_count = min(count, slot.team_count);
@@ -1642,7 +1865,7 @@ void Inventory::LootItem(int index, uint count)
 	if(!game.pc->unit->AddItem(slot.item, count, team_count))
 		UpdateGrid(true);
 	// usuñ
-	if(game.inventory_mode == I_LOOT_BODY)
+	if(base.mode == I_LOOT_BODY)
 	{
 		unit->weight -= slot.item->weight*count;
 		if(slot.item == unit->used_item)
@@ -1661,7 +1884,7 @@ void Inventory::LootItem(int index, uint count)
 	{
 		last_index = INDEX_INVALID;
 		if(mode == INVENTORY)
-			tooltip.Clear();
+			base.tooltip.Clear();
 		items->erase(items->begin() + index);
 		UpdateGrid(false);
 	}
@@ -1681,7 +1904,7 @@ void Inventory::LootItem(int index, uint count)
 }
 
 //=================================================================================================
-void Inventory::OnPutItem(int id)
+void InventoryPanel::OnPutItem(int id)
 {
 	int index = GetLockIndexAndRelease();
 	if(id == BUTTON_OK && counter > 0 && index != -1)
@@ -1689,7 +1912,7 @@ void Inventory::OnPutItem(int id)
 }
 
 //=================================================================================================
-void Inventory::PutItem(int index, uint count)
+void InventoryPanel::PutItem(int index, uint count)
 {
 	ItemSlot& slot = items->at(index);
 	uint team_count = min(count, slot.team_count);
@@ -1698,12 +1921,12 @@ void Inventory::PutItem(int index, uint count)
 	game.sound_mgr->PlaySound2d(game.GetItemSound(slot.item));
 
 	// add to container
-	if(game.inventory_mode == I_LOOT_BODY)
+	if(base.mode == I_LOOT_BODY)
 	{
 		if(!unit->player->action_unit->AddItem(slot.item, count, team_count))
 			UpdateGrid(false);
 	}
-	else if(game.inventory_mode == I_LOOT_CONTAINER)
+	else if(base.mode == I_LOOT_CONTAINER)
 	{
 		if(!unit->player->action_container->container->AddItem(slot.item, count, team_count))
 			UpdateGrid(false);
@@ -1721,7 +1944,7 @@ void Inventory::PutItem(int index, uint count)
 	{
 		last_index = INDEX_INVALID;
 		if(mode == INVENTORY)
-			tooltip.Clear();
+			base.tooltip.Clear();
 		items->erase(items->begin() + index);
 		UpdateGrid(true);
 	}
@@ -1742,20 +1965,20 @@ void Inventory::PutItem(int index, uint count)
 }
 
 //=================================================================================================
-void Inventory::PutSlotItem(ITEM_SLOT slot)
+void InventoryPanel::PutSlotItem(ITEM_SLOT slot)
 {
 	const Item* item = slots[slot];
 	last_index = INDEX_INVALID;
 	if(mode == INVENTORY)
-		tooltip.Clear();
+		base.tooltip.Clear();
 
 	// play sound
 	game.sound_mgr->PlaySound2d(game.GetItemSound(item));
 
 	// add to container
-	if(game.inventory_mode == I_LOOT_BODY)
+	if(base.mode == I_LOOT_BODY)
 		unit->player->action_unit->AddItem(item, 1u, 0u);
-	else if(game.inventory_mode == I_LOOT_CONTAINER)
+	else if(base.mode == I_LOOT_CONTAINER)
 		unit->player->action_container->container->AddItem(item, 1u, 0u);
 	else
 		unit->player->action_chest->AddItem(item, 1u, 0u);
@@ -1786,13 +2009,13 @@ void Inventory::PutSlotItem(ITEM_SLOT slot)
 }
 
 //=================================================================================================
-void Inventory::OnGiveGold(int id)
+void InventoryPanel::OnGiveGold(int id)
 {
 	if(id == BUTTON_OK && counter > 0)
 	{
 		if(counter > game.pc->unit->gold)
 		{
-			GUI.SimpleDialog(txDropNoGold, this);
+			GUI.SimpleDialog(base.txDropNoGold, this);
 			return;
 		}
 
@@ -1822,7 +2045,7 @@ void Inventory::OnGiveGold(int id)
 }
 
 //=================================================================================================
-void Inventory::OnShareGiveItem(int id)
+void InventoryPanel::OnShareGiveItem(int id)
 {
 	int index = GetLockIndexAndRelease();
 	if(id == BUTTON_OK && counter > 0 && index != -1)
@@ -1831,12 +2054,12 @@ void Inventory::OnShareGiveItem(int id)
 		if(t->CanTake(items->at(index).item, counter))
 			ShareGiveItem(index, counter);
 		else
-			GUI.SimpleDialog(Format(txNpcCantCarry, t->GetName()), this);
+			GUI.SimpleDialog(Format(base.txNpcCantCarry, t->GetName()), this);
 	}
 }
 
 //=================================================================================================
-void Inventory::OnShareTakeItem(int id)
+void InventoryPanel::OnShareTakeItem(int id)
 {
 	int index = GetLockIndexAndRelease();
 	if(id == BUTTON_OK && counter > 0 && index != -1)
@@ -1844,7 +2067,7 @@ void Inventory::OnShareTakeItem(int id)
 }
 
 //=================================================================================================
-void Inventory::ShareGiveItem(int index, uint count)
+void InventoryPanel::ShareGiveItem(int index, uint count)
 {
 	ItemSlot& slot = items->at(index);
 	const Item* item = slot.item;
@@ -1861,7 +2084,7 @@ void Inventory::ShareGiveItem(int index, uint count)
 	{
 		last_index = INDEX_INVALID;
 		if(mode == INVENTORY)
-			tooltip.Clear();
+			base.tooltip.Clear();
 		items->erase(items->begin() + index);
 		UpdateGrid(true);
 	}
@@ -1883,7 +2106,7 @@ void Inventory::ShareGiveItem(int index, uint count)
 }
 
 //=================================================================================================
-void Inventory::ShareTakeItem(int index, uint count)
+void InventoryPanel::ShareTakeItem(int index, uint count)
 {
 	ItemSlot& slot = items->at(index);
 	const Item* item = slot.item;
@@ -1900,7 +2123,7 @@ void Inventory::ShareTakeItem(int index, uint count)
 	{
 		last_index = INDEX_INVALID;
 		if(mode == INVENTORY)
-			tooltip.Clear();
+			base.tooltip.Clear();
 		items->erase(items->begin() + index);
 		UpdateGrid(false);
 	}
@@ -1922,7 +2145,7 @@ void Inventory::ShareTakeItem(int index, uint count)
 }
 
 //=================================================================================================
-void Inventory::OnGiveItem(int id)
+void InventoryPanel::OnGiveItem(int id)
 {
 	int iindex = GetLockIndexOrSlotAndRelease();
 	if(id != BUTTON_YES || iindex == Unit::INVALID_IINDEX)
@@ -1930,7 +2153,7 @@ void Inventory::OnGiveItem(int id)
 
 	last_index = INDEX_INVALID;
 	if(mode == INVENTORY)
-		tooltip.Clear();
+		base.tooltip.Clear();
 	const Item* item;
 	ItemSlot* slot;
 	ITEM_SLOT slot_type;
@@ -1950,13 +2173,13 @@ void Inventory::OnGiveItem(int id)
 
 	// dodaj
 	Unit* t = unit->player->action_unit;
-	int price = game.GetItemPrice(item, *game.pc->unit, false);
+	int price = ItemHelper::GetItemPrice(item, *game.pc->unit, false);
 	switch(give_item_mode)
 	{
 	case 0: // kredyt
 		t->hero->credit += price;
 		if(Net::IsLocal())
-			game.CheckCredit(true);
+			Team.CheckCredit(true);
 		break;
 	case 1: // z³oto
 		if(t->gold < price)
@@ -1991,8 +2214,8 @@ void Inventory::OnGiveItem(int id)
 	// ustaw przedmioty
 	if(Net::IsLocal())
 	{
-		game.UpdateUnitInventory(*t);
-		game.BuildTmpInventory(1);
+		t->UpdateInventory();
+		base.BuildTmpInventory(1);
 	}
 	// komunikat
 	if(!Net::IsLocal())
@@ -2005,7 +2228,7 @@ void Inventory::OnGiveItem(int id)
 }
 
 //=================================================================================================
-void Inventory::OnGivePotion(int id)
+void InventoryPanel::OnGivePotion(int id)
 {
 	int index = GetLockIndexAndRelease();
 	if(id == BUTTON_OK && counter > 0 && index != -1)
@@ -2014,12 +2237,12 @@ void Inventory::OnGivePotion(int id)
 		if(t->CanTake(items->at(index).item, counter))
 			GivePotion(index, counter);
 		else
-			GUI.SimpleDialog(Format(txNpcCantCarry, t->GetName()), this);
+			GUI.SimpleDialog(Format(base.txNpcCantCarry, t->GetName()), this);
 	}
 }
 
 //=================================================================================================
-void Inventory::GivePotion(int index, uint count)
+void InventoryPanel::GivePotion(int index, uint count)
 {
 	ItemSlot& slot = items->at(index);
 	uint team_count = min(count, slot.team_count);
@@ -2035,7 +2258,7 @@ void Inventory::GivePotion(int index, uint count)
 	{
 		last_index = INDEX_INVALID;
 		if(mode == INVENTORY)
-			tooltip.Clear();
+			base.tooltip.Clear();
 		items->erase(items->begin() + index);
 		UpdateGrid(true);
 	}
@@ -2057,28 +2280,28 @@ void Inventory::GivePotion(int index, uint count)
 }
 
 //=================================================================================================
-void Inventory::GiveSlotItem(ITEM_SLOT slot)
+void InventoryPanel::GiveSlotItem(ITEM_SLOT slot)
 {
 	last_index = INDEX_INVALID;
 	if(mode == INVENTORY)
-		tooltip.Clear();
+		base.tooltip.Clear();
 	DialogInfo info;
 	const Item* item = slots[slot];
 	if(unit->player->action_unit->gold >= item->value / 2)
 	{
 		// odkup przedmiot
-		info.text = Format(txSellItem, item->value / 2);
+		info.text = Format(base.txSellItem, item->value / 2);
 		give_item_mode = 1;
 	}
 	else
 	{
 		// zaproponuj inn¹ cenê
-		info.text = Format(txSellFreeItem, item->value / 2);
+		info.text = Format(base.txSellFreeItem, item->value / 2);
 		give_item_mode = 2;
 	}
 
-	lock.Lock(slot);
-	info.event = delegate<void(int)>(this, &Inventory::OnGiveItem);
+	base.lock.Lock(slot);
+	info.event = delegate<void(int)>(this, &InventoryPanel::OnGiveItem);
 	info.order = ORDER_NORMAL;
 	info.parent = this;
 	info.type = DIALOG_YESNO;
@@ -2087,21 +2310,21 @@ void Inventory::GiveSlotItem(ITEM_SLOT slot)
 }
 
 //=================================================================================================
-void Inventory::IsBetterItemResponse(bool is_better)
+void InventoryPanel::IsBetterItemResponse(bool is_better)
 {
-	if(!lock || !lock.is_give)
+	if(!base.lock || !base.lock.is_give)
 	{
-		Error("Inventory::IsBetterItemResponse, inventory not is_give locked.");
+		Error("InventoryPanel::IsBetterItemResponse, inventory not is_give locked.");
 		return;
 	}
 
 	int iindex = GetLockIndexOrSlotAndRelease();
 	if(iindex == Unit::INVALID_IINDEX)
-		Warn("Inventory::IsBetterItem, item removed.");
+		Warn("InventoryPanel::IsBetterItem, item removed.");
 	else if(game.pc->action != PlayerController::Action_GiveItems)
-		Warn("Inventory::IsBetterItem, no longer giving items.");
+		Warn("InventoryPanel::IsBetterItem, no longer giving items.");
 	else if(!is_better)
-		GUI.SimpleDialog(txWontTakeItem, this);
+		GUI.SimpleDialog(base.txWontTakeItem, this);
 	else
 	{
 		Unit* t = game.pc->action_unit;
@@ -2110,31 +2333,31 @@ void Inventory::IsBetterItemResponse(bool is_better)
 			// not equipped item
 			ItemSlot& slot = unit->items[iindex];
 			if(!t->CanTake(slot.item))
-				GUI.SimpleDialog(Format(txNpcCantCarry, t->GetName()), this);
+				GUI.SimpleDialog(Format(base.txNpcCantCarry, t->GetName()), this);
 			else
 			{
 				DialogInfo info;
 				if(slot.team_count > 0)
 				{
 					// give team item
-					info.text = Format(txSellTeamItem, slot.item->value / 2);
+					info.text = Format(base.txSellTeamItem, slot.item->value / 2);
 					give_item_mode = 0;
 				}
 				else if(t->gold >= slot.item->value / 2)
 				{
 					// sell item
-					info.text = Format(txSellItem, slot.item->value / 2);
+					info.text = Format(base.txSellItem, slot.item->value / 2);
 					give_item_mode = 1;
 				}
 				else
 				{
 					// give item for free
-					info.text = Format(txSellFreeItem, slot.item->value / 2);
+					info.text = Format(base.txSellFreeItem, slot.item->value / 2);
 					give_item_mode = 2;
 				}
 
-				lock.Lock(iindex, slot);
-				info.event = delegate<void(int)>(this, &Inventory::OnGiveItem);
+				base.lock.Lock(iindex, slot);
+				info.event = delegate<void(int)>(this, &InventoryPanel::OnGiveItem);
 				info.order = ORDER_NORMAL;
 				info.parent = this;
 				info.type = DIALOG_YESNO;
@@ -2148,7 +2371,7 @@ void Inventory::IsBetterItemResponse(bool is_better)
 			ITEM_SLOT slot_type = IIndexToSlot(iindex);
 			const Item*& item = unit->slots[slot_type];
 			if(!t->CanTake(item))
-				GUI.SimpleDialog(Format(txNpcCantCarry, t->GetName()), this);
+				GUI.SimpleDialog(Format(base.txNpcCantCarry, t->GetName()), this);
 			else if(SlotRequireHideWeapon(slot_type))
 			{
 				// hide equipped item and give it
@@ -2163,9 +2386,9 @@ void Inventory::IsBetterItemResponse(bool is_better)
 }
 
 //=================================================================================================
-void Inventory::Show()
+void InventoryPanel::Show()
 {
-	game.BuildTmpInventory(0);
+	base.BuildTmpInventory(0);
 	visible = true;
 	item_visible = nullptr;
 	Event(GuiEvent_Show);
@@ -2173,62 +2396,62 @@ void Inventory::Show()
 }
 
 //=================================================================================================
-void Inventory::Hide()
+void InventoryPanel::Hide()
 {
-	if(game.game_gui->book_panel->visible)
-		game.game_gui->book_panel->Hide();
+	if(game.gui->book->visible)
+		game.gui->book->Hide();
 	LostFocus();
 	visible = false;
 	item_visible = nullptr;
 }
 
 //=================================================================================================
-void Inventory::UpdateGrid(bool mine)
+void InventoryPanel::UpdateGrid(bool mine)
 {
 	if(mine)
 	{
-		game.BuildTmpInventory(0);
-		game.game_gui->inv_trade_mine->UpdateScrollbar();
+		base.BuildTmpInventory(0);
+		base.inv_trade_mine->UpdateScrollbar();
 	}
 	else
 	{
-		game.BuildTmpInventory(1);
-		game.game_gui->inv_trade_other->UpdateScrollbar();
+		base.BuildTmpInventory(1);
+		base.inv_trade_other->UpdateScrollbar();
 	}
 }
 
 //=================================================================================================
-void Inventory::ReadBook(const Item* item)
+void InventoryPanel::ReadBook(const Item* item)
 {
 	assert(item && item->type == IT_BOOK);
-	game.game_gui->book_panel->Show((const Book*)item);
-	tooltip.Clear();
+	game.gui->book->Show((const Book*)item);
+	base.tooltip.Clear();
 }
 
 //=================================================================================================
-int Inventory::GetLockIndexAndRelease()
+int InventoryPanel::GetLockIndexAndRelease()
 {
-	assert(lock);
-	int index = FindItemIndex(*items, lock.index, lock.item, lock.is_team);
-	lock = nullptr;
+	assert(base.lock);
+	int index = FindItemIndex(*items, base.lock.index, base.lock.item, base.lock.is_team);
+	base.lock = nullptr;
 	return index;
 }
 
 //=================================================================================================
-int Inventory::GetLockIndexOrSlotAndRelease()
+int InventoryPanel::GetLockIndexOrSlotAndRelease()
 {
-	assert(lock);
+	assert(base.lock);
 	int iindex;
-	if(lock.slot == SLOT_INVALID)
+	if(base.lock.slot == SLOT_INVALID)
 	{
-		iindex = FindItemIndex(*items, lock.index, lock.item, lock.is_team);
+		iindex = FindItemIndex(*items, base.lock.index, base.lock.item, base.lock.is_team);
 		if(iindex == -1)
 			iindex = Unit::INVALID_IINDEX;
 	}
-	else if(slots && slots[(int)lock.slot])
-		iindex = SlotToIIndex(lock.slot);
+	else if(slots && slots[(int)base.lock.slot])
+		iindex = SlotToIIndex(base.lock.slot);
 	else
 		iindex = Unit::INVALID_IINDEX;
-	lock = nullptr;
+	base.lock = nullptr;
 	return iindex;
 }

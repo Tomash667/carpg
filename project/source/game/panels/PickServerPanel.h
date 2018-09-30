@@ -12,21 +12,20 @@ public:
 	{
 		string name;
 		SystemAddress adr;
-		int players, max_players;
+		uint active_players, max_players;
 		int flags;
 		float timer;
 		bool valid_version;
 	};
 
 	explicit PickServerPanel(const DialogInfo& info);
-
+	void LoadLanguage();
+	void LoadData();
 	void Draw(ControlDrawData* cdd = nullptr) override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
-
 	void Show();
 	void GetCell(int item, int column, Cell& cell);
-	void LoadData();
 
 	Grid grid;
 	vector<ServerData> servers;

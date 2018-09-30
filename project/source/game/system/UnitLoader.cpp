@@ -7,6 +7,7 @@
 #include "ItemScript.h"
 #include "Item.h"
 #include "Spell.h"
+#include "ResourceManager.h"
 
 //-----------------------------------------------------------------------------
 class UnitLoader : public ContentLoader
@@ -84,14 +85,6 @@ class UnitLoader : public ContentLoader
 	enum ProfileKeyword
 	{
 		PK_FIXED
-	};
-
-	enum SoundType
-	{
-		ST_SEE_ENEMY,
-		ST_PAIN,
-		ST_DEATH,
-		ST_ATTACK
 	};
 
 	enum FrameKeyword
@@ -418,10 +411,11 @@ class UnitLoader : public ContentLoader
 		t.AddKeyword("fixed", PK_FIXED, G_PROFILE_KEYWORD);
 
 		t.AddKeywords(G_SOUND_TYPE, {
-			{ "see_enemy", ST_SEE_ENEMY },
-			{ "pain", ST_PAIN },
-			{ "death", ST_DEATH },
-			{ "attack", ST_ATTACK }
+			{ "see_enemy", SOUND_SEE_ENEMY },
+			{ "pain", SOUND_PAIN },
+			{ "death", SOUND_DEATH },
+			{ "attack", SOUND_ATTACK },
+			{ "talk", SOUND_TALK }
 		});
 
 		t.AddKeywords(G_FRAME_KEYWORD, {
@@ -1327,18 +1321,48 @@ class UnitLoader : public ContentLoader
 	//=================================================================================================
 	void ParseSounds(Ptr<SoundPack>& pack)
 	{
+		auto& sound_mgr = ResourceManager::Get().For<Sound>();
+
 		// {
 		t.AssertSymbol('{');
 		t.Next();
 
 		while(!t.IsSymbol('}'))
 		{
-			SoundType type = (SoundType)t.MustGetKeywordId(G_SOUND_TYPE);
+			SOUND_ID type = (SOUND_ID)t.MustGetKeywordId(G_SOUND_TYPE);
+			crc.Update(type);
+			vector<SoundPtr>& entries = pack->sounds[type];
 			t.Next();
 
-			pack->filename[(int)type] = t.MustGetString();
-			crc.Update(type);
-			crc.Update(pack->filename[(int)type]);
+			if(t.IsSymbol('{'))
+			{
+				t.Next();
+				while(!t.IsSymbol('}'))
+				{
+					const string& filename = t.MustGetString();
+					SoundPtr sound = sound_mgr.Get(filename);
+					if(!sound)
+						LoadError("Missing sound '%s'.", filename.c_str());
+					else
+					{
+						entries.push_back(sound);
+						crc.Update(filename);
+					}
+					t.Next();
+				}
+			}
+			else
+			{
+				const string& filename = t.MustGetString();
+				SoundPtr sound = sound_mgr.Get(filename);
+				if(!sound)
+					LoadError("Missing sound '%s'.", filename.c_str());
+				else
+				{
+					entries.push_back(sound);
+					crc.Update(filename);
+				}
+			}
 			t.Next();
 		}
 

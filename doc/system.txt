@@ -1,14 +1,19 @@
+Singletons:
+QM - QuestManager
+W - World
+L - Levle
+
 Pozycja w CaRpg:
    Z+
   /|\
    |
    |
    +-----> X+
-   
+
    X - lewo, prawo +
    Y - dó³, góra   +
    Z - ty³, przód  +
-   
+
 Mapa (lokacji, œwiata):
  (0,h)--------(w,h)
    |            |
@@ -16,7 +21,7 @@ Mapa (lokacji, œwiata):
    |            |
    |            |
  (0,0)--------(w,0)
- 
+
 Obrót w CaRpg:
 w radianach
         PI
@@ -132,7 +137,7 @@ Powietrze ---+--- Ziemia
              |
              |
             Woda
-            
+
 POD¯YWIO£Y:
 woda - zimno, kwas
 powietrze - elektrycznoœæ, trucizna
@@ -155,7 +160,7 @@ KIERUNEK ZWRACANY PRZEZ angle()
 	5/4 PI  \|/     7/4 PI
            3/2 PI
 
-		   
+
 =====================================================================================================
 New multiplayer game
 * Enter new location
@@ -182,7 +187,7 @@ New multiplayer game
 							| <- ID_READY
  ID_START ->				|
                             | DONE
- 
+
 =====================================================================================================
 odpoczynek u klienta
 SERWER		KLIENT

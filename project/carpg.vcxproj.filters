@@ -67,6 +67,9 @@
     <Filter Include="3. game\script">
       <UniqueIdentifier>{686e4789-ffae-4b38-8307-8b1d7e1d50e1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="3. game\events">
+      <UniqueIdentifier>{611f9aef-8d8e-4ffd-bd54-a5732babb50e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\resource\PickLanguage.cpp">
@@ -114,18 +117,6 @@
     <ClCompile Include="source\game\Scene.cpp">
       <Filter>3. game</Filter>
     </ClCompile>
-    <ClCompile Include="source\game\Tournament.cpp">
-      <Filter>3. game</Filter>
-    </ClCompile>
-    <ClCompile Include="source\game\Tutorial.cpp">
-      <Filter>3. game</Filter>
-    </ClCompile>
-    <ClCompile Include="source\game\Worldmap.cpp">
-      <Filter>3. game</Filter>
-    </ClCompile>
-    <ClCompile Include="source\game\Worldstate.cpp">
-      <Filter>3. game</Filter>
-    </ClCompile>
     <ClCompile Include="source\game\entity\AIController.cpp">
       <Filter>3. game\entity</Filter>
     </ClCompile>
@@ -169,9 +160,6 @@
       <Filter>3. game\generator</Filter>
     </ClCompile>
     <ClCompile Include="source\game\location\Camp.cpp">
-      <Filter>3. game\location</Filter>
-    </ClCompile>
-    <ClCompile Include="source\game\location\CaveLocation.cpp">
       <Filter>3. game\location</Filter>
     </ClCompile>
     <ClCompile Include="source\game\location\InsideBuilding.cpp">
@@ -389,12 +377,6 @@
     <ClCompile Include="source\game\Dialogs.cpp">
       <Filter>3. game</Filter>
     </ClCompile>
-    <ClCompile Include="source\game\Game_LevelArea.cpp">
-      <Filter>3. game</Filter>
-    </ClCompile>
-    <ClCompile Include="source\game\TeamItems.cpp">
-      <Filter>3. game</Filter>
-    </ClCompile>
     <ClCompile Include="source\ErrorHandler.cpp" />
     <ClCompile Include="source\core\Config.cpp">
       <Filter>1. core</Filter>
@@ -482,9 +464,6 @@
     </ClCompile>
     <ClCompile Include="source\engine\VertexData.cpp">
       <Filter>2. engine</Filter>
-    </ClCompile>
-    <ClCompile Include="source\game\TerrainTile.cpp">
-      <Filter>3. game</Filter>
     </ClCompile>
     <ClCompile Include="source\game\entity\Usable.cpp">
       <Filter>3. game\entity</Filter>
@@ -595,9 +574,6 @@
     <ClCompile Include="source\engine\gui\DialogBox.cpp">
       <Filter>2. engine\gui\dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="source\game\GameGuiInit.cpp">
-      <Filter>3. game</Filter>
-    </ClCompile>
     <ClCompile Include="source\engine\gui\Gui.cpp">
       <Filter>2. engine\gui</Filter>
     </ClCompile>
@@ -691,6 +667,108 @@
     <ClCompile Include="source\game\entity\Camera.cpp">
       <Filter>3. game\entity</Filter>
     </ClCompile>
+    <ClCompile Include="source\game\net\EntityInterpolator.cpp">
+      <Filter>3. game\net</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\World.cpp">
+      <Filter>3. game</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\Level.cpp">
+      <Filter>3. game</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\panels\GlobalGui.cpp">
+      <Filter>3. game\panels</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\helpers\LoadingHandler.cpp">
+      <Filter>3. game\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\quests\Quest_Contest.cpp">
+      <Filter>3. game\quests</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\quests\Quest_Secret.cpp">
+      <Filter>3. game\quests</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\quests\Quest_Tournament.cpp">
+      <Filter>3. game\quests</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\generator\LocationGeneratorFactory.cpp">
+      <Filter>3. game\generator</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\generator\LocationGenerator.cpp">
+      <Filter>3. game\generator</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\generator\EncounterGenerator.cpp">
+      <Filter>3. game\generator</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\generator\ForestGenerator.cpp">
+      <Filter>3. game\generator</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\generator\DungeonGenerator.cpp">
+      <Filter>3. game\generator</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\generator\CaveGenerator.cpp">
+      <Filter>3. game\generator</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\entity\Room.cpp">
+      <Filter>3. game\entity</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\entity\Tile.cpp">
+      <Filter>3. game\entity</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\generator\LabyrinthGenerator.cpp">
+      <Filter>3. game\generator</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\generator\InsideLocationGenerator.cpp">
+      <Filter>3. game\generator</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\generator\OutsideLocationGenerator.cpp">
+      <Filter>3. game\generator</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\generator\MoonwellGenerator.cpp">
+      <Filter>3. game\generator</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\generator\CampGenerator.cpp">
+      <Filter>3. game\generator</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\generator\SecretLocationGenerator.cpp">
+      <Filter>3. game\generator</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\location\Cave.cpp">
+      <Filter>3. game\location</Filter>
+    </ClCompile>
+    <ClCompile Include="source\engine\Texture.cpp">
+      <Filter>2. engine</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\Pathfinding.cpp">
+      <Filter>3. game</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\quests\Quest_Tutorial.cpp">
+      <Filter>3. game\quests</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\entity\TerrainTile.cpp">
+      <Filter>3. game\entity</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\net\Net2.cpp">
+      <Filter>3. game\net</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\location\LevelArea.cpp">
+      <Filter>3. game\location</Filter>
+    </ClCompile>
+    <ClCompile Include="source\engine\SuperShader.cpp">
+      <Filter>2. engine</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\generator\TutorialLocationGenerator.cpp">
+      <Filter>3. game\generator</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\helpers\ItemHelper.cpp">
+      <Filter>3. game\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\events\Arena.cpp">
+      <Filter>3. game\events</Filter>
+    </ClCompile>
+    <ClCompile Include="source\engine\DebugDrawer.cpp">
+      <Filter>2. engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\resource\resource1.h">
@@ -707,9 +785,6 @@
     </ClInclude>
     <ClInclude Include="source\core\Tokenizer.h">
       <Filter>1. core</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\Collision.h">
-      <Filter>3. game</Filter>
     </ClInclude>
     <ClInclude Include="source\game\ConsoleCommands.h">
       <Filter>3. game</Filter>
@@ -781,9 +856,6 @@
       <Filter>3. game\generator</Filter>
     </ClInclude>
     <ClInclude Include="source\game\location\Camp.h">
-      <Filter>3. game\location</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\location\CaveLocation.h">
       <Filter>3. game\location</Filter>
     </ClInclude>
     <ClInclude Include="source\game\location\EntryPoint.h">
@@ -1050,9 +1122,6 @@
     <ClInclude Include="source\game\quests\QuestConsts.h">
       <Filter>3. game\quests</Filter>
     </ClInclude>
-    <ClInclude Include="source\game\Encounter.h">
-      <Filter>3. game</Filter>
-    </ClInclude>
     <ClInclude Include="source\game\Team.h">
       <Filter>3. game</Filter>
     </ClInclude>
@@ -1124,9 +1193,6 @@
     </ClInclude>
     <ClInclude Include="source\engine\VertexData.h">
       <Filter>2. engine</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\TerrainTile.h">
-      <Filter>3. game</Filter>
     </ClInclude>
     <ClInclude Include="source\game\entity\Usable.h">
       <Filter>3. game\entity</Filter>
@@ -1368,6 +1434,138 @@
     </ClInclude>
     <ClInclude Include="source\game\entity\Portal.h">
       <Filter>3. game\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\World.h">
+      <Filter>3. game</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\net\EntityInterpolator.h">
+      <Filter>3. game\net</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\Level.h">
+      <Filter>3. game</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\panels\GlobalGui.h">
+      <Filter>3. game\panels</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\helpers\LoadingHandler.h">
+      <Filter>3. game\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\entity\News.h">
+      <Filter>3. game\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\quests\Quest_Contest.h">
+      <Filter>3. game\quests</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\quests\Quest_Secret.h">
+      <Filter>3. game\quests</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\quests\Quest_Tournament.h">
+      <Filter>3. game\quests</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\Debug.h">
+      <Filter>3. game</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\entity\Encounter.h">
+      <Filter>3. game\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\quests\QuestHandler.h">
+      <Filter>3. game\quests</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\generator\LocationGenerator.h">
+      <Filter>3. game\generator</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\generator\LocationGeneratorFactory.h">
+      <Filter>3. game\generator</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\generator\EncounterGenerator.h">
+      <Filter>3. game\generator</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\generator\ForestGenerator.h">
+      <Filter>3. game\generator</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\generator\DungeonGenerator.h">
+      <Filter>3. game\generator</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\generator\CaveGenerator.h">
+      <Filter>3. game\generator</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\entity\Tile.h">
+      <Filter>3. game\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\entity\Room.h">
+      <Filter>3. game\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\generator\LabyrinthGenerator.h">
+      <Filter>3. game\generator</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\generator\InsideLocationGenerator.h">
+      <Filter>3. game\generator</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\entity\OutsideObject.h">
+      <Filter>3. game\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\generator\OutsideLocationGenerator.h">
+      <Filter>3. game\generator</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\generator\MoonwellGenerator.h">
+      <Filter>3. game\generator</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\generator\CampGenerator.h">
+      <Filter>3. game\generator</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\generator\SecretLocationGenerator.h">
+      <Filter>3. game\generator</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\location\Cave.h">
+      <Filter>3. game\location</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\Texture.h">
+      <Filter>2. engine</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\Pathfinding.h">
+      <Filter>3. game</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\quests\Quest_Tutorial.h">
+      <Filter>3. game\quests</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\entity\ObjectEntity.h">
+      <Filter>3. game\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\entity\Collision.h">
+      <Filter>3. game\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\entity\TerrainTile.h">
+      <Filter>3. game\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\SuperShader.h">
+      <Filter>2. engine</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\generator\TutorialLocationGenerator.h">
+      <Filter>3. game\generator</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\helpers\ItemHelper.h">
+      <Filter>3. game\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\events\Arena.h">
+      <Filter>3. game\events</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\GameComponent.h">
+      <Filter>3. game</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\Settings.h">
+      <Filter>3. game</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\DebugDrawer.h">
+      <Filter>2. engine</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\ShaderHandler.h">
+      <Filter>2. engine</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\CameraBase.h">
+      <Filter>2. engine</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\FOV.h">
+      <Filter>3. game</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

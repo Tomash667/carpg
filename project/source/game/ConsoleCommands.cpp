@@ -1,4 +1,3 @@
-// komendy w konsoli
 #include "Pch.h"
 #include "GameCore.h"
 #include "ConsoleCommands.h"
@@ -9,7 +8,9 @@
 #include "InsideLocation.h"
 #include "City.h"
 #include "ServerPanel.h"
+#include "GlobalGui.h"
 #include "GameGui.h"
+#include "WorldMapGui.h"
 #include "Console.h"
 #include "MpBox.h"
 #include "AIController.h"
@@ -19,7 +20,11 @@
 #include "QuestManager.h"
 #include "BuildingGroup.h"
 #include "ScriptManager.h"
-#include "DirectX.h"
+#include "World.h"
+#include "Level.h"
+#include "Arena.h"
+#include "Pathfinding.h"
+#include "Quest_Tournament.h"
 
 //-----------------------------------------------------------------------------
 extern string g_ctime;
@@ -50,8 +55,8 @@ void Game::AddCommands()
 	cmds.push_back(ConsoleCommand(&next_seed, "next_seed", "Random seed used in next map generation", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&dont_wander, "dont_wander", "citizens don't wander around city (dont_wander 0/1)", F_ANYWHERE | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&draw_flags, "draw_flags", "set which elements of game draw (draw_flags int)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&mp_interp, "mp_interp", "interpolation interval (mp_interp 0.f-1.f)", F_MULTIPLAYER | F_WORLD_MAP | F_MP_VAR, 0.f, 1.f));
-	cmds.push_back(ConsoleCommand(&mp_use_interp, "mp_use_interp", "set use of interpolation (mp_use_interp 0/1)", F_MULTIPLAYER | F_WORLD_MAP | F_MP_VAR));
+	cmds.push_back(ConsoleCommand(&N.mp_interp, "mp_interp", "interpolation interval (mp_interp 0.f-1.f)", F_MULTIPLAYER | F_WORLD_MAP | F_MP_VAR, 0.f, 1.f));
+	cmds.push_back(ConsoleCommand(&N.mp_use_interp, "mp_use_interp", "set use of interpolation (mp_use_interp 0/1)", F_MULTIPLAYER | F_WORLD_MAP | F_MP_VAR));
 	cmds.push_back(ConsoleCommand(&cl_postfx, "cl_postfx", "use post effects (cl_postfx 0/1)", F_ANYWHERE | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&cl_normalmap, "cl_normalmap", "use normal mapping (cl_normalmap 0/1)", F_ANYWHERE | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&cl_specularmap, "cl_specularmap", "use specular mapping (cl_specularmap 0/1)", F_ANYWHERE | F_WORLD_MAP));
@@ -123,6 +128,8 @@ void Game::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_FORCE_QUEST, "force_quest", "force next random quest to select (use list quest or none/reset)", F_SERVER | F_GAME | F_WORLD_MAP | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_STUN, "stun", "stun unit for time (stun [length=1] [1 = self])", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_REFRESH_COOLDOWN, "refresh_cooldown", "refresh action cooldown/charges", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_DRAW_PATH, "draw_path", "draw debug pathfinding, look at target", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_VERIFY, "verify", "verify game state integrity", F_GAME | F_CHEAT));
 
 	// verify all commands are added
 #ifdef _DEBUG
@@ -146,7 +153,7 @@ void Game::AddCommands()
 //=================================================================================================
 void Game::AddConsoleMsg(cstring msg)
 {
-	console->AddText(msg);
+	gui->console->AddText(msg);
 }
 
 //=================================================================================================
@@ -181,12 +188,12 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 			cstring code = t.GetTextRest();
 			if(Net::IsLocal())
 			{
-				string& output = script_mgr->OpenOutput();
-				script_mgr->SetContext(pc, pc_data.selected_target);
-				script_mgr->RunScript(code);
+				string& output = SM.OpenOutput();
+				SM.SetContext(pc, pc_data.selected_target);
+				SM.RunScript(code);
 				if(!output.empty())
 					Msg(output.c_str());
-				script_mgr->CloseOutput();
+				SM.CloseOutput();
 			}
 			else
 			{
@@ -215,7 +222,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 
 			if(!IS_ALL_SET(it->flags, F_ANYWHERE))
 			{
-				if(server_panel->visible)
+				if(gui->server->visible)
 				{
 					if(!IS_SET(it->flags, F_LOBBY))
 					{
@@ -387,15 +394,15 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					break;
 				case CMD_REVEAL:
 					if(Net::IsLocal())
-						Cheat_Reveal();
+						W.Reveal();
 					else
 						Net::PushChange(NetChange::CHEAT_REVEAL);
 					break;
 				case CMD_MAP2CONSOLE:
-					if(game_state == GS_LEVEL && !location->outside)
+					if(game_state == GS_LEVEL && !L.location->outside)
 					{
-						InsideLocationLevel& lvl = ((InsideLocation*)location)->GetLevelData();
-						rysuj_mape_konsola(lvl.map, lvl.w, lvl.h);
+						InsideLocationLevel& lvl = ((InsideLocation*)L.location)->GetLevelData();
+						Pole::DebugDraw(lvl.map, Int2(lvl.w, lvl.h));
 					}
 					else
 						Msg("You need to be inside dungeon!");
@@ -586,7 +593,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 
 								if(!IS_ALL_SET(it->flags, F_ANYWHERE))
 								{
-									if(server_panel->visible)
+									if(gui->server->visible)
 									{
 										if(!IS_SET(it->flags, F_LOBBY))
 											ok = false;
@@ -683,11 +690,11 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 
 							if(Net::IsLocal())
 							{
-								LevelContext& ctx = GetContext(*pc->unit);
+								LevelContext& ctx = L.GetContext(*pc->unit);
 
 								for(int i = 0; i < ile; ++i)
 								{
-									Unit* u = SpawnUnitNearLocation(ctx, pc->unit->GetFrontPos(), *data, &pc->unit->pos, level);
+									Unit* u = L.SpawnUnitNearLocation(ctx, pc->unit->GetFrontPos(), *data, &pc->unit->pos, level);
 									if(!u)
 									{
 										Msg("No free space for unit '%s'!", data->id.c_str());
@@ -696,10 +703,8 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 									else if(in_arena != -1)
 									{
 										u->in_arena = in_arena;
-										at_arena.push_back(u);
+										arena->units.push_back(u);
 									}
-									if(Net::IsOnline())
-										Net_SpawnUnit(u);
 								}
 							}
 							else
@@ -737,7 +742,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					if(pc_data.selected_target)
 					{
 						if(Net::IsLocal())
-							GiveDmg(GetContext(*pc->unit), nullptr, pc_data.selected_target->hpmax, *pc_data.selected_target);
+							GiveDmg(L.GetContext(*pc->unit), nullptr, pc_data.selected_target->hpmax, *pc_data.selected_target);
 						else
 						{
 							NetChange& c = Add1(Net::changes);
@@ -781,7 +786,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					break;
 				case CMD_SUICIDE:
 					if(Net::IsLocal())
-						GiveDmg(GetContext(*pc->unit), nullptr, pc->unit->hpmax, *pc->unit);
+						GiveDmg(L.GetContext(*pc->unit), nullptr, pc->unit->hpmax, *pc->unit);
 					else
 						Net::PushChange(NetChange::CHEAT_SUICIDE);
 					break;
@@ -807,7 +812,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					{
 						for(AIController* ai : ais)
 						{
-							if(IsEnemy(*ai->unit, *pc->unit) && Vec3::Distance(ai->unit->pos, pc->unit->pos) < ALERT_RANGE.x && CanSee(*ai->unit, *pc->unit))
+							if(ai->unit->IsEnemy(*pc->unit) && Vec3::Distance(ai->unit->pos, pc->unit->pos) < ALERT_RANGE.x && CanSee(*ai->unit, *pc->unit))
 							{
 								ai->morale = -10;
 								ai->target_last_pos = pc->unit->pos;
@@ -963,15 +968,15 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								LoadGameSlot(slot);
 							else
 								LoadGameFilename(name.get_ref());
-							GUI.CloseDialog(console);
+							GUI.CloseDialog(gui->console);
 						}
 						catch(const SaveException& ex)
 						{
 							cstring error = Format("Failed to load game: %s", ex.msg);
 							Error(error);
 							Msg(error);
-							if(!GUI.HaveDialog(console))
-								GUI.ShowDialog(console);
+							if(!GUI.HaveDialog(gui->console))
+								GUI.ShowDialog(gui->console);
 						}
 					}
 					else
@@ -991,7 +996,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						if(ile > 0)
 						{
 							if(Net::IsLocal())
-								WorldProgress(ile, WPM_SKIP);
+								W.Update(ile, World::UM_SKIP);
 							else
 							{
 								NetChange& c = Add1(Net::changes);
@@ -1013,16 +1018,16 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						}
 
 						bool ok = false;
-						if(city_ctx)
+						if(L.city_ctx)
 						{
 							int index;
-							InsideBuilding* building = city_ctx->FindInsideBuilding(group, index);
+							InsideBuilding* building = L.city_ctx->FindInsideBuilding(group, index);
 							if(building)
 							{
 								// wejdŸ do budynku
 								if(Net::IsLocal())
 								{
-									fallback_co = FALLBACK::ENTER;
+									fallback_type = FALLBACK::ENTER;
 									fallback_t = -1.f;
 									fallback_1 = index;
 									pc->unit->frozen = (pc->unit->usable ? FROZEN::YES_NO_ANIM : FROZEN::YES);
@@ -1047,25 +1052,25 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					if(t.Next())
 					{
 						const string& player_nick = t.MustGetItem();
-						int index = FindPlayerIndex(player_nick.c_str(), true);
-						if(index == -1)
+						PlayerInfo* info = N.FindPlayer(player_nick);
+						if(!info)
 							Msg("No player with nick '%s'.", player_nick.c_str());
 						else if(t.NextLine())
 						{
 							const string& text = t.MustGetItem();
-							PlayerInfo& info = *game_players[index];
-							if(info.id == my_id)
+							if(info->pc->IsLocal())
 								Msg("Whispers in your head: %s", text.c_str());
 							else
 							{
-								net_stream.Reset();
-								BitStreamWriter f(net_stream);
+								BitStreamWriter f;
 								f << ID_WHISPER;
-								f.WriteCasted<byte>(Net::IsServer() ? my_id : info.id);
+								f.WriteCasted<byte>(Net::IsServer() ? my_id : info->id);
 								f << text;
-								peer->Send(&net_stream, MEDIUM_PRIORITY, RELIABLE, 0, Net::IsServer() ? info.adr : server, false);
-								StreamWrite(net_stream, Stream_Chat, Net::IsServer() ? info.adr : server);
-								cstring s = Format("@%s: %s", info.name.c_str(), text.c_str());
+								if(Net::IsServer())
+									N.SendServer(f, MEDIUM_PRIORITY, RELIABLE, info->adr, Stream_Chat);
+								else
+									N.SendClient(f, MEDIUM_PRIORITY, RELIABLE, Stream_Chat);
+								cstring s = Format("@%s: %s", info->name.c_str(), text.c_str());
 								AddMsg(s);
 								Info(s);
 							}
@@ -1080,19 +1085,17 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					if(t.NextLine())
 					{
 						const string& text = t.MustGetItem();
-						if(players > 1)
+						if(N.active_players > 1)
 						{
-							net_stream.Reset();
-							BitStreamWriter f(net_stream);
+							BitStreamWriter f;
 							f << ID_SERVER_SAY;
 							f << text;
-							peer->Send(&net_stream, MEDIUM_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
-							StreamWrite(net_stream, Stream_Chat, UNASSIGNED_SYSTEM_ADDRESS);
+							N.SendAll(f, MEDIUM_PRIORITY, RELIABLE, Stream_Chat);
 						}
 						AddServerMsg(text.c_str());
 						Info("SERWER: %s", text.c_str());
 						if(game_state == GS_LEVEL)
-							game_gui->AddSpeechBubble(pc->unit, text.c_str());
+							gui->game_gui->AddSpeechBubble(pc->unit, text.c_str());
 					}
 					else
 						Msg("You need to enter message.");
@@ -1101,76 +1104,72 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					if(t.Next())
 					{
 						const string& player_name = t.MustGetItem();
-						int index = FindPlayerIndex(player_name.c_str(), true);
-						if(index == -1)
+						PlayerInfo* info = N.FindPlayer(player_name);
+						if(!info)
 							Msg("No player with nick '%s'.", player_name.c_str());
 						else
-							KickPlayer(index);
+							KickPlayer(*info);
 					}
 					else
 						Msg("You need to enter player nick.");
 					break;
 				case CMD_READY:
 					{
-						PlayerInfo& info = *game_players[0];
+						PlayerInfo& info = N.GetMe();
 						info.ready = !info.ready;
-						ChangeReady();
+						gui->server->ChangeReady();
 					}
 					break;
 				case CMD_LEADER:
-					if(t.Next())
+					if(!t.Next())
+						Msg("You need to enter leader nick.");
+					else
 					{
 						const string& player_name = t.MustGetItem();
-						int index = FindPlayerIndex(player_name.c_str(), true);
-						if(index == -1)
+						PlayerInfo* info = N.FindPlayer(player_name);
+						if(!info)
 							Msg("No player with nick '%s'.", player_name.c_str());
+						else if(leader_id == info->id)
+							Msg("Player '%s' is already a leader.", player_name.c_str());
+						else if(!Net::IsServer() && leader_id != my_id)
+							Msg("You can't change a leader."); // must be current leader or server
 						else
 						{
-							PlayerInfo& info = *game_players[index];
-							if(leader_id == info.id)
-								Msg("Player '%s' is already a leader.", player_name.c_str());
-							else if(Net::IsServer() || leader_id == my_id)
+							if(gui->server->visible)
 							{
-								if(server_panel->visible)
+								if(Net::IsServer())
 								{
-									if(Net::IsServer())
-									{
-										leader_id = info.id;
-										AddLobbyUpdate(Int2(Lobby_ChangeLeader, 0));
-									}
-									else
-										Msg("You can't change a leader.");
+									leader_id = info->id;
+									gui->server->AddLobbyUpdate(Int2(Lobby_ChangeLeader, 0));
 								}
 								else
-								{
-									NetChange& c = Add1(Net::changes);
-									c.type = NetChange::CHANGE_LEADER;
-									c.id = info.id;
-
-									if(Net::IsServer())
-									{
-										leader_id = info.id;
-										Team.leader = info.u;
-
-										if(dialog_enc)
-											dialog_enc->bts[0].state = (IsLeader() ? Button::NONE : Button::DISABLED);
-									}
-								}
-
-								AddMsg(Format("Leader changed to '%s'.", info.name.c_str()));
+									Msg("You can't change a leader.");
 							}
 							else
-								Msg("You can't change a leader.");
+							{
+								NetChange& c = Add1(Net::changes);
+								c.type = NetChange::CHANGE_LEADER;
+								c.id = info->id;
+
+								if(Net::IsServer())
+								{
+									leader_id = info->id;
+									Team.leader = info->u;
+
+									if(gui->world_map->dialog_enc)
+										gui->world_map->dialog_enc->bts[0].state = (IsLeader() ? Button::NONE : Button::DISABLED);
+								}
+							}
+
+							AddMsg(Format("Leader changed to '%s'.", info->name.c_str()));
 						}
 					}
-					else
-						Msg("You need to enter leader nick.");
 					break;
 				case CMD_EXIT:
 					ExitToMenu();
 					break;
 				case CMD_RANDOM:
-					if(server_panel->visible)
+					if(gui->server->visible)
 					{
 						if(t.Next())
 						{
@@ -1204,7 +1203,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								{
 									if(ClassInfo::IsPickable(ci->class_id))
 									{
-										server_panel->PickClass(ci->class_id, false);
+										gui->server->PickClass(ci->class_id, false);
 										Msg("You picked Random character.");
 									}
 									else
@@ -1216,7 +1215,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						}
 						else
 						{
-							server_panel->PickClass(Class::RANDOM, false);
+							gui->server->PickClass(Class::RANDOM, false);
 							Msg("You picked Random character.");
 						}
 					}
@@ -1234,56 +1233,24 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					break;
 				case CMD_START:
 					{
-						if(sv_startup)
-						{
-							Msg("Server is already starting.");
-							break;
-						}
-
-						cstring error_text = nullptr;
-
-						for(auto info : game_players)
-						{
-							if(!info->ready)
-							{
-								error_text = "Not everyone is ready.";
-								break;
-							}
-						}
-
-						if(!error_text)
-						{
-							// rozpocznij odliczanie do startu
-							extern const int STARTUP_TIMER;
-							sv_startup = true;
-							last_startup_id = STARTUP_TIMER;
-							startup_timer = float(STARTUP_TIMER);
-							packet_data.resize(2);
-							packet_data[0] = ID_TIMER;
-							packet_data[1] = (byte)STARTUP_TIMER;
-							peer->Send((cstring)&packet_data[0], 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
-							StreamWrite(&packet_data[0], 2, Stream_UpdateLobbyServer, UNASSIGNED_SYSTEM_ADDRESS);
-							server_panel->bts[4].text = server_panel->txStop;
-							cstring s = Format(server_panel->txStartingIn, STARTUP_TIMER);
-							AddMsg(s);
-							Info(s);
-						}
-						else
-							Msg(error_text);
+						cstring msg = gui->server->TryStart();
+						if(msg)
+							Msg(msg);
 					}
 					break;
 				case CMD_SAY:
 					if(t.NextLine())
 					{
 						const string& text = t.MustGetItem();
-						net_stream.Reset();
-						BitStreamWriter f(net_stream);
+						BitStreamWriter f;
 						f << ID_SAY;
 						f.WriteCasted<byte>(my_id);
 						f << text;
-						peer->Send(&net_stream, MEDIUM_PRIORITY, RELIABLE, 0, Net::IsServer() ? UNASSIGNED_SYSTEM_ADDRESS : server, Net::IsServer());
-						StreamWrite(net_stream, Stream_Chat, Net::IsServer() ? UNASSIGNED_SYSTEM_ADDRESS : server);
-						cstring s = Format("%s: %s", game_players[0]->name.c_str(), text.c_str());
+						if(Net::IsServer())
+							N.SendAll(f, MEDIUM_PRIORITY, RELIABLE, Stream_Chat);
+						else
+							N.SendClient(f, MEDIUM_PRIORITY, RELIABLE, Stream_Chat);
+						cstring s = Format("%s: %s", N.GetMe().name.c_str(), text.c_str());
 						AddMsg(s);
 						Info(s);
 					}
@@ -1299,13 +1266,12 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							bool b = t.MustGetBool();
 							if(player_name == "all")
 							{
-								for(auto pinfo : game_players)
+								for(PlayerInfo* info : N.players)
 								{
-									auto& info = *pinfo;
-									if(info.left == PlayerInfo::LEFT_NO && info.devmode != b && info.id != 0)
+									if(info->left == PlayerInfo::LEFT_NO && info->devmode != b && info->id != 0)
 									{
-										info.devmode = b;
-										NetChangePlayer& c = Add1(info.u->player->player_info->changes);
+										info->devmode = b;
+										NetChangePlayer& c = Add1(info->pc->player_info->changes);
 										c.type = NetChangePlayer::DEVMODE;
 										c.id = (b ? 1 : 0);
 									}
@@ -1313,19 +1279,15 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							}
 							else
 							{
-								int index = FindPlayerIndex(player_name.c_str(), true);
-								if(index == -1)
+								PlayerInfo* info = N.FindPlayer(player_name);
+								if(!info)
 									Msg("No player with nick '%s'.", player_name.c_str());
-								else
+								else if(info->devmode != b)
 								{
-									PlayerInfo& info = *game_players[index];
-									if(info.devmode != b)
-									{
-										info.devmode = b;
-										NetChangePlayer& c = Add1(info.u->player->player_info->changes);
-										c.type = NetChangePlayer::DEVMODE;
-										c.id = (b ? 1 : 0);
-									}
+									info->devmode = b;
+									NetChangePlayer& c = Add1(info->pc->player_info->changes);
+									c.type = NetChangePlayer::DEVMODE;
+									c.id = (b ? 1 : 0);
 								}
 							}
 						}
@@ -1335,12 +1297,11 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							{
 								LocalString s = "Players devmode: ";
 								bool any = false;
-								for(auto pinfo : game_players)
+								for(PlayerInfo* info : N.players)
 								{
-									auto& info = *pinfo;
-									if(!info.left && info.id != 0)
+									if(info->left == PlayerInfo::LEFT_NO && info->id != 0)
 									{
-										s += Format("%s(%d), ", info.name.c_str(), info.devmode ? 1 : 0);
+										s += Format("%s(%d), ", info->name.c_str(), info->devmode ? 1 : 0);
 										any = true;
 									}
 								}
@@ -1355,11 +1316,11 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							}
 							else
 							{
-								int index = FindPlayerIndex(player_name.c_str(), true);
-								if(index == -1)
+								PlayerInfo* info = N.FindPlayer(player_name);
+								if(!info)
 									Msg("No player with nick '%s'.", player_name.c_str());
 								else
-									Msg("Player devmode: %s(%d).", player_name.c_str(), game_players[index]->devmode ? 1 : 0);
+									Msg("Player devmode: %s(%d).", player_name.c_str(), info->devmode ? 1 : 0);
 							}
 						}
 					}
@@ -1380,16 +1341,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					Msg("noai = %d", noai ? 1 : 0);
 					break;
 				case CMD_PAUSE:
-					paused = !paused;
-					if(Net::IsOnline())
-					{
-						AddMultiMsg(paused ? txGamePaused : txGameResumed);
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::PAUSED;
-						c.id = (paused ? 1 : 0);
-						if(paused && game_state == GS_WORLDMAP && world_state == WS_TRAVEL)
-							Net::PushChange(NetChange::UPDATE_MAP_POS);
-					}
+					PauseGame();
 					break;
 				case CMD_MULTISAMPLING:
 					if(t.Next())
@@ -1437,32 +1389,31 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								pick_hz = false;
 							}
 						}
-						uint display_modes = d3d->GetAdapterModeCount(used_adapter, DISPLAY_FORMAT);
-						for(uint i = 0; i < display_modes; ++i)
+						vector<Resolution> resolutions;
+						GetResolutions(resolutions);
+						for(const Resolution& res : resolutions)
 						{
-							D3DDISPLAYMODE d_mode;
-							V(d3d->EnumAdapterModes(used_adapter, DISPLAY_FORMAT, i, &d_mode));
-							if(w == d_mode.Width)
+							if(w == res.size.x)
 							{
 								if(pick_h)
 								{
-									if((int)d_mode.Height >= h)
+									if((int)res.size.y >= h)
 									{
-										h = d_mode.Height;
-										if((int)d_mode.RefreshRate > hz)
-											hz = d_mode.RefreshRate;
+										h = res.size.y;
+										if((int)res.hz > hz)
+											hz = res.hz;
 										valid = true;
 									}
 								}
-								else if(h == d_mode.Height)
+								else if(h == res.size.y)
 								{
 									if(pick_hz)
 									{
-										if((int)d_mode.RefreshRate > hz)
-											hz = d_mode.RefreshRate;
+										if((int)res.hz > hz)
+											hz = res.hz;
 										valid = true;
 									}
-									else if(hz == d_mode.RefreshRate)
+									else if(hz == res.hz)
 									{
 										valid = true;
 										break;
@@ -1479,89 +1430,29 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					{
 						// wypisz aktualn¹ rozdzielczoœæ i dostêpne
 						LocalString s = Format("Current resolution %dx%d (%d Hz). Available: ", GetWindowSize().x, GetWindowSize().y, wnd_hz);
-						uint display_modes = d3d->GetAdapterModeCount(used_adapter, DISPLAY_FORMAT);
-						for(uint i = 0; i < display_modes; ++i)
-						{
-							D3DDISPLAYMODE d_mode;
-							V(d3d->EnumAdapterModes(used_adapter, DISPLAY_FORMAT, i, &d_mode));
-							s += Format("%dx%d(%d)", d_mode.Width, d_mode.Height, d_mode.RefreshRate);
-							if(i + 1 != display_modes)
-								s += ", ";
-						}
+						vector<Resolution> resolutions;
+						GetResolutions(resolutions);
+						for(const Resolution& res : resolutions)
+							s += Format("%dx%d(%d), ", res.size.x, res.size.y, res.hz);
+						s.pop(2u);
 						Msg(s);
 					}
 					break;
 				case CMD_QS:
-					if(Net::IsServer())
-					{
-						if(!sv_startup)
-						{
-							PlayerInfo& info = *game_players[0];
-							if(!info.ready)
-							{
-								if(info.clas == Class::INVALID)
-									server_panel->PickClass(Class::RANDOM, true);
-								else
-								{
-									info.ready = true;
-									CheckReady();
-								}
-							}
-
-							cstring error_text = nullptr;
-
-							for(auto info : game_players)
-							{
-								if(!info->ready)
-								{
-									error_text = "Not everyone is ready.";
-									break;
-								}
-							}
-
-							if(!error_text)
-							{
-								// rozpocznij odliczanie do startu
-								extern const int STARTUP_TIMER;
-								sv_startup = true;
-								last_startup_id = STARTUP_TIMER;
-								startup_timer = float(STARTUP_TIMER);
-								packet_data.resize(2);
-								packet_data[0] = ID_TIMER;
-								packet_data[1] = (byte)STARTUP_TIMER;
-								peer->Send((cstring)&packet_data[0], 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
-								StreamWrite(&packet_data[0], 2, Stream_UpdateLobbyServer, UNASSIGNED_SYSTEM_ADDRESS);
-							}
-							else
-								Msg(error_text);
-						}
-					}
-					else
-					{
-						PlayerInfo& info = *game_players[0];
-						if(!info.ready)
-						{
-							if(info.clas == Class::INVALID)
-								server_panel->PickClass(Class::RANDOM, true);
-							else
-							{
-								info.ready = true;
-								ChangeReady();
-							}
-						}
-					}
+					if(!gui->server->Quickstart())
+						Msg("Not everyone is ready.");
 					break;
 				case CMD_CLEAR:
 					switch(source)
 					{
 					case PS_CONSOLE:
-						console->Reset();
+						gui->console->Reset();
 						break;
 					case PS_CHAT:
-						game_gui->mp_box->itb.Reset();
+						gui->mp_box->itb.Reset();
 						break;
 					case PS_LOBBY:
-						server_panel->itb.Reset();
+						gui->server->itb.Reset();
 						break;
 					case PS_UNKNOWN:
 					default:
@@ -1586,11 +1477,11 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						if(Net::IsLocal())
 						{
 							if(it->cmd == CMD_HURT)
-								GiveDmg(GetContext(*u), nullptr, 100.f, *u);
+								GiveDmg(L.GetContext(*u), nullptr, 100.f, *u);
 							else if(it->cmd == CMD_BREAK_ACTION)
-								BreakUnitAction(*u, BREAK_ACTION_MODE::NORMAL, true);
+								u->BreakAction(Unit::BREAK_ACTION_MODE::NORMAL, true);
 							else
-								UnitFall(*u);
+								u->Fall();
 						}
 						else
 						{
@@ -1611,10 +1502,10 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						return;
 					break;
 				case CMD_TILE_INFO:
-					if(location->outside && pc->unit->in_building == -1 && terrain->IsInside(pc->unit->pos))
+					if(L.location->outside && pc->unit->in_building == -1 && L.terrain->IsInside(pc->unit->pos))
 					{
-						OutsideLocation* outside = (OutsideLocation*)location;
-						const TerrainTile& t = outside->tiles[pos_to_pt(pc->unit->pos)(outside->size)];
+						OutsideLocation* outside = (OutsideLocation*)L.location;
+						const TerrainTile& t = outside->tiles[PosToPt(pc->unit->pos)(outside->size)];
 						Msg(t.GetInfo());
 					}
 					else
@@ -1630,21 +1521,20 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					break;
 				case CMD_FORCE_QUEST:
 					{
-						auto& qm = QuestManager::Get();
 						if(t.Next())
 						{
 							const string& id = t.MustGetItem();
-							if(!qm.SetForcedQuest(id))
+							if(!QM.SetForcedQuest(id))
 								Msg("Invalid quest id '%s'.", id.c_str());
 						}
-						auto force = qm.GetForcedQuest();
+						auto force = QM.GetForcedQuest();
 						cstring name;
 						if(force == Q_FORCE_DISABLED)
 							name = "disabled";
 						else if(force == Q_FORCE_NONE)
 							name = "none";
 						else
-							name = qm.GetQuestInfos()[force].name;
+							name = QM.GetQuestInfos()[force].name;
 						Msg("Forced quest: %s", name);
 					}
 					break;
@@ -1682,6 +1572,21 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					pc->RefreshCooldown();
 					if(!Net::IsLocal())
 						Net::PushChange(NetChange::CHEAT_REFRESH_COOLDOWN);
+					break;
+				case CMD_DRAW_PATH:
+					if(pc_data.before_player == BP_UNIT)
+					{
+						pathfinding->SetTarget(pc_data.before_player_ptr.unit);
+						Msg("Set draw path target.");
+					}
+					else
+					{
+						pathfinding->SetTarget(nullptr);
+						Msg("Removed draw path target.");
+					}
+					break;
+				case CMD_VERIFY:
+					W.VerifyObjects();
 					break;
 				default:
 					assert(0);
@@ -1892,7 +1797,7 @@ void Game::CmdList(Tokenizer& t)
 	case LIST_QUEST:
 		{
 			LocalVector2<const QuestInfo*> quests;
-			for(auto& info : QuestManager::Get().GetQuestInfos())
+			for(auto& info : QM.GetQuestInfos())
 			{
 				if(match.empty() || _strnicmp(match.c_str(), info.name, match.length()) == 0)
 					quests.push_back(&info);

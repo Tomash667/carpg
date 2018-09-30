@@ -14,6 +14,21 @@ BookPanel::BookPanel() : book(nullptr), scale(0, 0)
 }
 
 //=================================================================================================
+void BookPanel::LoadData()
+{
+	auto& tex_mgr = ResourceManager::Get<Texture>();
+	tex_mgr.AddLoadTask("strzalka_l.png", tArrowL);
+	tex_mgr.AddLoadTask("strzalka_p.png", tArrowR);
+
+	if(!Game::Get().sound_mgr->IsSoundDisabled())
+		ResourceManager::Get<Sound>().AddLoadTask("page-turn.wav", sound);
+
+	GUI.AddFont("Dwarf Runes.ttf");
+	normal_font = GUI.CreateFont("Arial", 16, 800, 512);
+	runic_font = GUI.CreateFont("Dwarf Runes", 16, 800, 512);
+}
+
+//=================================================================================================
 void BookPanel::Draw(ControlDrawData*)
 {
 	if(!book)
@@ -172,21 +187,6 @@ Font* BookPanel::GetFont()
 		return runic_font;
 	else
 		return normal_font;
-}
-
-//=================================================================================================
-void BookPanel::LoadData()
-{
-	auto& tex_mgr = ResourceManager::Get<Texture>();
-	tex_mgr.AddLoadTask("strzalka_l.png", tArrowL);
-	tex_mgr.AddLoadTask("strzalka_p.png", tArrowR);
-
-	if(!Game::Get().sound_mgr->IsSoundDisabled())
-		ResourceManager::Get<Sound>().AddLoadTask("page-turn.wav", sound);
-
-	GUI.AddFont("Dwarf Runes.ttf");
-	normal_font = GUI.CreateFont("Arial", 16, 800, 512);
-	runic_font = GUI.CreateFont("Dwarf Runes", 16, 800, 512);
 }
 
 //=================================================================================================

@@ -7,6 +7,10 @@
 #include "Object.h"
 #include "Unit.h"
 #include "GameFile.h"
+#include "BuildingScript.h"
+#include "World.h"
+#include "Level.h"
+#include "BitStreamFunc.h"
 
 //=================================================================================================
 City::~City()
@@ -553,9 +557,113 @@ void City::Load(GameReader& f, bool local, LOCATION_TOKEN token)
 }
 
 //=================================================================================================
-void City::BuildRefidTable()
+void City::Write(BitStreamWriter& f)
 {
-	OutsideLocation::BuildRefidTable();
+	OutsideLocation::Write(f);
+
+	f.WriteCasted<byte>(flags);
+	f.WriteCasted<byte>(entry_points.size());
+	for(EntryPoint& entry_point : entry_points)
+	{
+		f << entry_point.exit_area;
+		f << entry_point.exit_y;
+	}
+	f.WriteCasted<byte>(buildings.size());
+	for(CityBuilding& building : buildings)
+	{
+		f << building.type->id;
+		f << building.pt;
+		f.WriteCasted<byte>(building.rot);
+	}
+	f.WriteCasted<byte>(inside_buildings.size());
+	for(InsideBuilding* inside_building : inside_buildings)
+		inside_building->Write(f);
+}
+
+//=================================================================================================
+bool City::Read(BitStreamReader& f)
+{
+	OutsideLocation::Read(f);
+
+	// entry points
+	const int ENTRY_POINT_MIN_SIZE = 20;
+	byte count;
+	f.ReadCasted<byte>(flags);
+	f >> count;
+	if(!f.Ensure(count * ENTRY_POINT_MIN_SIZE))
+	{
+		Error("Read level: Broken packet for city.");
+		return false;
+	}
+	entry_points.resize(count);
+	for(EntryPoint& entry : entry_points)
+	{
+		f.Read(entry.exit_area);
+		f.Read(entry.exit_y);
+	}
+	if(!f)
+	{
+		Error("Read level: Broken packet for entry points.");
+		return false;
+	}
+
+	// buildings
+	const int BUILDING_MIN_SIZE = 10;
+	f >> count;
+	if(!f.Ensure(BUILDING_MIN_SIZE * count))
+	{
+		Error("Read level: Broken packet for buildings count.");
+		return false;
+	}
+	buildings.resize(count);
+	for(CityBuilding& building : buildings)
+	{
+		const string& building_id = f.ReadString1();
+		f >> building.pt;
+		f.ReadCasted<byte>(building.rot);
+		if(!f)
+		{
+			Error("Read level: Broken packet for buildings.");
+			return false;
+		}
+		building.type = Building::Get(building_id);
+		if(!building.type)
+		{
+			Error("Read level: Invalid building id '%s'.", building_id.c_str());
+			return false;
+		}
+	}
+
+	// inside buildings
+	const int INSIDE_BUILDING_MIN_SIZE = 73;
+	f >> count;
+	if(!f.Ensure(INSIDE_BUILDING_MIN_SIZE * count))
+	{
+		Error("Read level: Broken packet for inside buildings count.");
+		return false;
+	}
+	inside_buildings.resize(count);
+	int index = 0;
+	for(InsideBuilding*& ib : inside_buildings)
+	{
+		ib = new InsideBuilding;
+		L.ApplyContext(ib, ib->ctx);
+		ib->ctx.building_id = index;
+		if(!ib->Load(f))
+		{
+			Error("Read level: Failed to loading inside building %d.", index);
+			return false;
+		}
+		++index;
+	}
+
+	return true;
+}
+
+//=================================================================================================
+void City::BuildRefidTables()
+{
+	OutsideLocation::BuildRefidTables();
 
 	for(vector<InsideBuilding*>::iterator it2 = inside_buildings.begin(), end2 = inside_buildings.end(); it2 != end2; ++it2)
 	{
@@ -572,23 +680,6 @@ void City::BuildRefidTable()
 		}
 	}
 }
-
-//=================================================================================================
-/*Unit* City::FindUnitInsideBuilding(const UnitData* ud, BUILDING building_type) const
-{
-	assert(ud);
-
-	for(vector<InsideBuilding*>::const_iterator it = inside_buildings.begin(), end = inside_buildings.end(); it != end; ++it)
-	{
-		if((*it)->type == building_type)
-		{
-			return (*it)->FindUnit(ud);
-		}
-	}
-
-	assert(0);
-	return nullptr;
-}*/
 
 //=================================================================================================
 bool City::FindUnit(Unit* unit, int* level)
@@ -721,4 +812,302 @@ CityBuilding* City::FindBuilding(Building* type)
 			return &b;
 	}
 	return nullptr;
+}
+
+//=================================================================================================
+void City::GenerateCityBuildings(vector<Building*>& buildings, bool required)
+{
+	BuildingScript* script = BuildingScript::Get(IsVillage() ? "village" : "city");
+	if(variant == -1)
+		variant = Rand() % script->variants.size();
+
+	BuildingScript::Variant* v = script->variants[variant];
+	int* code = v->code.data();
+	int* end = code + v->code.size();
+	for(uint i = 0; i < BuildingScript::MAX_VARS; ++i)
+		script->vars[i] = 0;
+	script->vars[BuildingScript::V_COUNT] = 1;
+	script->vars[BuildingScript::V_CITIZENS] = citizens;
+	script->vars[BuildingScript::V_CITIZENS_WORLD] = citizens_world;
+	if(!required)
+		code += script->required_offset;
+
+	vector<int> stack;
+	int if_level = 0, if_depth = 0;
+	int shuffle_start = -1;
+	int& building_count = script->vars[BuildingScript::V_COUNT];
+
+	while(code != end)
+	{
+		BuildingScript::Code c = (BuildingScript::Code)*code++;
+		switch(c)
+		{
+		case BuildingScript::BS_ADD_BUILDING:
+			if(if_level == if_depth)
+			{
+				BuildingScript::Code type = (BuildingScript::Code)*code++;
+				if(type == BuildingScript::BS_BUILDING)
+				{
+					Building* b = (Building*)*code++;
+					for(int i = 0; i < building_count; ++i)
+						buildings.push_back(b);
+				}
+				else
+				{
+					BuildingGroup* bg = (BuildingGroup*)*code++;
+					for(int i = 0; i < building_count; ++i)
+						buildings.push_back(random_item(bg->buildings));
+				}
+			}
+			else
+				code += 2;
+			break;
+		case BuildingScript::BS_RANDOM:
+			{
+				uint count = (uint)*code++;
+				if(if_level != if_depth)
+				{
+					code += count * 2;
+					break;
+				}
+
+				for(int i = 0; i < building_count; ++i)
+				{
+					uint index = Rand() % count;
+					BuildingScript::Code type = (BuildingScript::Code)*(code + index * 2);
+					if(type == BuildingScript::BS_BUILDING)
+					{
+						Building* b = (Building*)*(code + index * 2 + 1);
+						buildings.push_back(b);
+					}
+					else
+					{
+						BuildingGroup* bg = (BuildingGroup*)*(code + index * 2 + 1);
+						buildings.push_back(random_item(bg->buildings));
+					}
+				}
+
+				code += count * 2;
+			}
+			break;
+		case BuildingScript::BS_SHUFFLE_START:
+			if(if_level == if_depth)
+				shuffle_start = (int)buildings.size();
+			break;
+		case BuildingScript::BS_SHUFFLE_END:
+			if(if_level == if_depth)
+			{
+				int new_pos = (int)buildings.size();
+				if(new_pos - shuffle_start >= 2)
+					std::random_shuffle(buildings.begin() + shuffle_start, buildings.end(), MyRand);
+				shuffle_start = -1;
+			}
+			break;
+		case BuildingScript::BS_REQUIRED_OFF:
+			if(required)
+				goto cleanup;
+			break;
+		case BuildingScript::BS_PUSH_INT:
+			if(if_level == if_depth)
+				stack.push_back(*code++);
+			else
+				++code;
+			break;
+		case BuildingScript::BS_PUSH_VAR:
+			if(if_level == if_depth)
+				stack.push_back(script->vars[*code++]);
+			else
+				++code;
+			break;
+		case BuildingScript::BS_SET_VAR:
+			if(if_level == if_depth)
+			{
+				script->vars[*code++] = stack.back();
+				stack.pop_back();
+			}
+			else
+				++code;
+			break;
+		case BuildingScript::BS_INC:
+			if(if_level == if_depth)
+				++script->vars[*code++];
+			else
+				++code;
+			break;
+		case BuildingScript::BS_DEC:
+			if(if_level == if_depth)
+				--script->vars[*code++];
+			else
+				++code;
+			break;
+		case BuildingScript::BS_IF:
+			if(if_level == if_depth)
+			{
+				BuildingScript::Code op = (BuildingScript::Code)*code++;
+				int right = stack.back();
+				stack.pop_back();
+				int left = stack.back();
+				stack.pop_back();
+				bool ok = false;
+				switch(op)
+				{
+				case BuildingScript::BS_EQUAL:
+					ok = (left == right);
+					break;
+				case BuildingScript::BS_NOT_EQUAL:
+					ok = (left != right);
+					break;
+				case BuildingScript::BS_GREATER:
+					ok = (left > right);
+					break;
+				case BuildingScript::BS_GREATER_EQUAL:
+					ok = (left >= right);
+					break;
+				case BuildingScript::BS_LESS:
+					ok = (left < right);
+					break;
+				case BuildingScript::BS_LESS_EQUAL:
+					ok = (left <= right);
+					break;
+				}
+				++if_level;
+				if(ok)
+					++if_depth;
+			}
+			else
+			{
+				++code;
+				++if_level;
+			}
+			break;
+		case BuildingScript::BS_IF_RAND:
+			if(if_level == if_depth)
+			{
+				int a = stack.back();
+				stack.pop_back();
+				if(a > 0 && Rand() % a == 0)
+					++if_depth;
+			}
+			++if_level;
+			break;
+		case BuildingScript::BS_ELSE:
+			if(if_level == if_depth)
+				--if_depth;
+			break;
+		case BuildingScript::BS_ENDIF:
+			if(if_level == if_depth)
+				--if_depth;
+			--if_level;
+			break;
+		case BuildingScript::BS_CALL:
+		case BuildingScript::BS_ADD:
+		case BuildingScript::BS_SUB:
+		case BuildingScript::BS_MUL:
+		case BuildingScript::BS_DIV:
+			if(if_level == if_depth)
+			{
+				int b = stack.back();
+				stack.pop_back();
+				int a = stack.back();
+				stack.pop_back();
+				int result = 0;
+				switch(c)
+				{
+				case BuildingScript::BS_CALL:
+					if(a == b)
+						result = a;
+					else if(b > a)
+						result = Random(a, b);
+					break;
+				case BuildingScript::BS_ADD:
+					result = a + b;
+					break;
+				case BuildingScript::BS_SUB:
+					result = a - b;
+					break;
+				case BuildingScript::BS_MUL:
+					result = a * b;
+					break;
+				case BuildingScript::BS_DIV:
+					if(b != 0)
+						result = a / b;
+					break;
+				}
+				stack.push_back(result);
+			}
+			break;
+		case BuildingScript::BS_NEG:
+			if(if_level == if_depth)
+				stack.back() = -stack.back();
+			break;
+		}
+	}
+
+cleanup:
+	citizens = script->vars[BuildingScript::V_CITIZENS];
+	citizens_world = script->vars[BuildingScript::V_CITIZENS_WORLD];
+}
+
+//=================================================================================================
+void City::GetEntry(Vec3& pos, float& rot)
+{
+	if(entry_points.size() == 1)
+	{
+		pos = entry_points[0].spawn_area.Midpoint().XZ();
+		rot = entry_points[0].spawn_rot;
+	}
+	else
+	{
+		// check which spawn rot i closest to entry rot
+		float best_dif = 999.f;
+		int best_index = -1, index = 0;
+		float dir = Clip(-W.GetTravelDir() + PI / 2);
+		for(vector<EntryPoint>::iterator it = entry_points.begin(), end = entry_points.end(); it != end; ++it, ++index)
+		{
+			float dif = AngleDiff(dir, it->spawn_rot);
+			if(dif < best_dif)
+			{
+				best_dif = dif;
+				best_index = index;
+			}
+		}
+		pos = entry_points[best_index].spawn_area.Midpoint().XZ();
+		rot = entry_points[best_index].spawn_rot;
+	}
+}
+
+//=================================================================================================
+void City::PrepareCityBuildings(vector<ToBuild>& tobuild)
+{
+	// required buildings
+	tobuild.reserve(buildings.size());
+	for(CityBuilding& cb : buildings)
+		tobuild.push_back(ToBuild(cb.type, true));
+	buildings.clear();
+
+	// not required buildings
+	LocalVector2<Building*> buildings;
+	GenerateCityBuildings(buildings.Get(), false);
+	tobuild.reserve(tobuild.size() + buildings.size());
+	for(Building* b : buildings)
+		tobuild.push_back(ToBuild(b, false));
+
+	// set flags
+	for(ToBuild& tb : tobuild)
+	{
+		if(tb.type->group == BuildingGroup::BG_TRAINING_GROUNDS)
+			flags |= HaveTrainingGrounds;
+		else if(tb.type->group == BuildingGroup::BG_BLACKSMITH)
+			flags |= HaveBlacksmith;
+		else if(tb.type->group == BuildingGroup::BG_MERCHANT)
+			flags |= HaveMerchant;
+		else if(tb.type->group == BuildingGroup::BG_ALCHEMIST)
+			flags |= HaveAlchemist;
+		else if(tb.type->group == BuildingGroup::BG_FOOD_SELLER)
+			flags |= HaveFoodSeller;
+		else if(tb.type->group == BuildingGroup::BG_INN)
+			flags |= HaveInn;
+		else if(tb.type->group == BuildingGroup::BG_ARENA)
+			flags |= HaveArena;
+	}
 }

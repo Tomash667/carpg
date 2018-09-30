@@ -7,6 +7,8 @@
 #include "Chest.h"
 #include "GroundItem.h"
 #include "GameFile.h"
+#include "BitStreamFunc.h"
+#include "Level.h"
 
 namespace OLD
 {
@@ -249,7 +251,179 @@ void OutsideLocation::Load(GameReader& f, bool local, LOCATION_TOKEN token)
 }
 
 //=================================================================================================
-void OutsideLocation::BuildRefidTable()
+void OutsideLocation::Write(BitStreamWriter& f)
+{
+	f.Write((cstring)tiles, sizeof(TerrainTile)*size*size);
+	f.Write((cstring)h, sizeof(float)*(size + 1)*(size + 1));
+	f << L.light_angle;
+
+	// usable objects
+	f.WriteCasted<byte>(usables.size());
+	for(Usable* usable : usables)
+		usable->Write(f);
+	// units
+	f.WriteCasted<byte>(units.size());
+	for(Unit* unit : units)
+		unit->Write(f);
+	// ground items
+	f.WriteCasted<byte>(items.size());
+	for(GroundItem* item : items)
+		item->Write(f);
+	// bloods
+	f.WriteCasted<word>(bloods.size());
+	for(Blood& blood : bloods)
+		blood.Write(f);
+	// objects
+	f.WriteCasted<word>(objects.size());
+	for(Object* object : objects)
+		object->Write(f);
+	// chests
+	f.WriteCasted<byte>(chests.size());
+	for(Chest* chest : chests)
+		chest->Write(f);
+
+	WritePortals(f);
+}
+
+//=================================================================================================
+bool OutsideLocation::Read(BitStreamReader& f)
+{
+	int size11 = size*size;
+	int size22 = size + 1;
+	size22 *= size22;
+	if(!tiles)
+		tiles = new TerrainTile[size11];
+	if(!h)
+		h = new float[size22];
+	f.Read((char*)tiles, sizeof(TerrainTile)*size11);
+	f.Read((char*)h, sizeof(float)*size22);
+	f >> L.light_angle;
+	if(!f)
+	{
+		Error("Read level: Broken packet for terrain.");
+		return false;
+	}
+
+	// usable objects
+	byte count;
+	f >> count;
+	if(!f.Ensure(count * Usable::MIN_SIZE))
+	{
+		Error("Read level: Broken usable object count.");
+		return false;
+	}
+	usables.resize(count);
+	for(Usable*& usable : usables)
+	{
+		usable = new Usable;
+		if(!usable->Read(f))
+		{
+			Error("Read level: Broken usable object.");
+			return false;
+		}
+	}
+
+	// units
+	f >> count;
+	if(!f.Ensure(count * Unit::MIN_SIZE))
+	{
+		Error("Read level: Broken unit count.");
+		return false;
+	}
+	units.resize(count);
+	for(Unit*& unit : units)
+	{
+		unit = new Unit;
+		if(!unit->Read(f))
+		{
+			Error("Read level: Broken unit.");
+			return false;
+		}
+	}
+
+	// ground items
+	f >> count;
+	if(!f.Ensure(count * GroundItem::MIN_SIZE))
+	{
+		Error("Read level: Broken ground item count.");
+		return false;
+	}
+	items.resize(count);
+	for(GroundItem*& item : items)
+	{
+		item = new GroundItem;
+		if(!item->Read(f))
+		{
+			Error("Read level: Broken ground item.");
+			return false;
+		}
+	}
+
+	// bloods
+	word count2;
+	f >> count2;
+	if(!f.Ensure(count2 * Blood::MIN_SIZE))
+	{
+		Error("Read level: Broken blood count.");
+		return false;
+	}
+	bloods.resize(count2);
+	for(Blood& blood : bloods)
+		blood.Read(f);
+	if(!f)
+	{
+		Error("Read level: Broken blood.");
+		return false;
+	}
+
+	// objects
+	f >> count2;
+	if(!f.Ensure(count2 * Object::MIN_SIZE))
+	{
+		Error("Read level: Broken object count.");
+		return false;
+	}
+	objects.resize(count2);
+	for(Object*& object : objects)
+	{
+		object = new Object;
+		if(!object->Read(f))
+		{
+			Error("Read level: Broken object.");
+			return false;
+		}
+	}
+
+	// chests
+	f >> count;
+	if(!f.Ensure(count * Chest::MIN_SIZE))
+	{
+		Error("Read level: Broken chest count.");
+		return false;
+	}
+	chests.resize(count);
+	for(Chest*& chest : chests)
+	{
+		chest = new Chest;
+		if(!chest->Read(f))
+		{
+			Error("Read level: Broken chest.");
+			return false;
+		}
+	}
+
+	// portals
+	if(!ReadPortals(f, L.dungeon_level))
+	{
+		Error("Read level: Broken portals.");
+		return false;
+	}
+
+	return true;
+}
+
+//=================================================================================================
+void OutsideLocation::BuildRefidTables()
 {
 	for(vector<Unit*>::iterator it = units.begin(), end = units.end(); it != end; ++it)
 	{

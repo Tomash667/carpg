@@ -10,11 +10,11 @@ class TeamPanel : public GamePanel
 {
 public:
 	TeamPanel();
-
+	void LoadLanguage();
+	void LoadData();
 	void Draw(ControlDrawData*) override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
-
 	void Show();
 	void Hide();
 	void Changed();
@@ -25,7 +25,6 @@ public:
 	void Kick();
 	void OnGiveGold(int id);
 	void OnKick(int id);
-	void LoadData();
 
 	TEX tKorona, tCzaszka;
 	Scrollbar scrollbar;

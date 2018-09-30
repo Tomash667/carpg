@@ -2,6 +2,9 @@
 #include "GameCore.h"
 #include "Chest.h"
 #include "Game.h"
+#include "BitStreamFunc.h"
+#include "Inventory.h"
+#include "GlobalGui.h"
 
 int Chest::netid_counter;
 
@@ -38,7 +41,7 @@ void Chest::Load(FileReader& f, bool local)
 	f >> pos;
 	f >> rot;
 	f >> netid;
-	looted = false;
+	user = nullptr;
 
 	if(local)
 	{
@@ -66,4 +69,47 @@ void Chest::Load(FileReader& f, bool local)
 		handler = (ChestEventHandler*)refid;
 		Game::Get().load_chest_handler.push_back(this);
 	}
+}
+
+//=================================================================================================
+void Chest::Write(BitStreamWriter& f)
+{
+	f << pos;
+	f << rot;
+	f << netid;
+}
+
+//=================================================================================================
+bool Chest::Read(BitStreamReader& f)
+{
+	f >> pos;
+	f >> rot;
+	f >> netid;
+	if(!f)
+		return false;
+	mesh_inst = new MeshInstance(Game::Get().aChest);
+	return true;
+}
+
+//=================================================================================================
+bool Chest::AddItem(const Item* item, uint count, uint team_count, bool notify)
+{
+	bool stacked = ItemContainer::AddItem(item, count, team_count);
+
+	if(user && user->IsPlayer())
+	{
+		if(user->player->is_local)
+			Game::Get().gui->inventory->BuildTmpInventory(1);
+		else if(notify)
+		{
+			NetChangePlayer& c = Add1(user->player->player_info->changes);
+			c.type = NetChangePlayer::ADD_ITEMS_CHEST;
+			c.item = item;
+			c.id = netid;
+			c.ile = count;
+			c.a = team_count;
+		}
+	}
+
+	return stacked;
 }

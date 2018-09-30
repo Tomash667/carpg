@@ -1,10 +1,11 @@
 #pragma once
 
+#include "QuestHandler.h"
 #include "Chest.h"
 #include "Location.h"
 #include "Item.h"
 #include "Unit.h"
-#include "Mapa2.h"
+#include "Room.h"
 #include "QuestConsts.h"
 
 //-----------------------------------------------------------------------------
@@ -25,7 +26,7 @@ enum TimeoutType
 };
 
 //-----------------------------------------------------------------------------
-struct Quest
+struct Quest : public QuestHandler
 {
 	enum State
 	{
@@ -52,7 +53,6 @@ struct Quest
 	virtual void Start() = 0;
 	virtual GameDialog* GetDialog(int type2) = 0;
 	virtual void SetProgress(int prog2) = 0;
-	virtual cstring FormatString(const string& str) = 0;
 	// called on quest timeout, return true if timeout handled (if false it will be called on next time update)
 	virtual bool OnTimeout(TimeoutType ttype) { return true; }
 
@@ -61,14 +61,18 @@ struct Quest
 	virtual bool IfHaveQuestItem2(cstring id) const { return false; }
 	virtual bool IfNeedTalk(cstring topic) const { return false; }
 	virtual bool IfQuestEvent() const { return false; }
-	virtual void Special(DialogContext& ctx, cstring msg) {}
-	virtual bool IfSpecial(DialogContext& ctx, cstring msg) { return false; }
 	virtual const Item* GetQuestItem() { return nullptr; }
 
 	virtual void Save(GameWriter& f);
 	virtual bool Load(GameReader& f);
 
-	// to powinno byæ inline ale nie wysz³o :/
+	void OnStart(cstring name);
+	void OnUpdate(const std::initializer_list<cstring>& msgs);
+	template<typename ...Args>
+	void OnUpdate(Args... args)
+	{
+		OnUpdate({ args... });
+	}
 	Location& GetStartLocation();
 	const Location& GetStartLocation() const;
 	cstring GetStartLocationName() const;

@@ -829,7 +829,7 @@ void CleanupDialogs()
 }
 
 //=================================================================================================
-void VerifyDialogs(ScriptManager* script_mgr, uint& errors)
+void VerifyDialogs(uint& errors)
 {
 	Info("Test: Checking dialogs...");
 
@@ -843,9 +843,9 @@ void VerifyDialogs(ScriptManager* script_mgr, uint& errors)
 			cstring str = dialog->strs[script.index].c_str();
 			bool ok;
 			if(script.is_if)
-				ok = script_mgr->RunIfScript(str, true);
+				ok = SM.RunIfScript(str, true);
 			else
-				ok = script_mgr->RunScript(str, true);
+				ok = SM.RunScript(str, true);
 			if(!ok)
 				++errors;
 		}

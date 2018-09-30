@@ -134,6 +134,15 @@ struct Unit
 		LS_MAX_OVERLOADED // >= 200%
 	};
 
+	// used in mp by clients
+	enum AiMode
+	{
+		AI_MODE_DONT_ATTACK = 1 << 0,
+		AI_MODE_ASSIST = 1 << 1,
+		AI_MODE_IDLE = 1 << 3,
+		AI_MODE_ATTACK_TEAM = 1 << 4
+	};
+
 	enum class CREATE_MESH
 	{
 		NORMAL,
@@ -180,7 +189,7 @@ struct Unit
 	SpeechBubble* bubble;
 	SmartPtr<Unit> look_target;
 	Unit *guard_target, *summoner;
-	int ai_mode; // u klienta w MP (0x01-dont_attack, 0x02-assist, 0x04-not_idle)
+	int ai_mode;
 	enum Busy
 	{
 		Busy_No,
@@ -219,6 +228,11 @@ struct Unit
 	bool IsStanding() const { return live_state == ALIVE; }
 	// czy ¿yje
 	bool IsAlive() const { return live_state < DYING; }
+	bool IsIdle() const;
+	bool IsAssist() const;
+	bool IsDontAttack() const;
+	bool WantAttackTeam() const;
+	byte GetAiMode() const;
 	void RecalculateWeight();
 	// konsumuje przedmiot (zwraca 0-u¿yto ostatni, 1-u¿yto nie ostatni, 2-chowa broñ, 3-zajêty)
 	int ConsumeItem(int index);
@@ -313,19 +327,12 @@ struct Unit
 	Vec3 GetLootCenter() const;
 
 	float CalculateWeaponPros(const Weapon& weapon) const;
-	bool IsBetterWeapon(const Weapon& weapon) const;
-	bool IsBetterWeapon(const Weapon& weapon, int* value) const;
-	bool IsBetterArmor(const Armor& armor) const;
-	bool IsBetterArmor(const Armor& armor, int* value) const;
-	bool IsBetterItem(const Item* item) const;
-	bool IsPlayer() const
-	{
-		return (player != nullptr);
-	}
-	bool IsAI() const
-	{
-		return !IsPlayer();
-	}
+	bool IsBetterWeapon(const Weapon& weapon, int* value = nullptr) const;
+	bool IsBetterArmor(const Armor& armor, int* value = nullptr) const;
+	bool IsBetterItem(const Item* item, int* value = nullptr) const;
+	bool IsPlayer() const { return (player != nullptr); }
+	bool IsClient() const { return IsPlayer() && !player->IsLocal(); }
+	bool IsAI() const { return !IsPlayer(); }
 	float GetRotationSpeed() const
 	{
 		return data->rot_speed * (0.6f + 1.f / 150 * CalculateMobility()) * GetWalkLoad() * GetArmorMovement();
@@ -420,6 +427,8 @@ struct Unit
 	int GetRandomAttack() const;
 	void Save(GameWriter& f, bool local);
 	void Load(GameReader& f, bool local);
+	void Write(BitStreamWriter& f);
+	bool Read(BitStreamReader& f);
 	Effect* FindEffect(EffectId effect);
 	bool FindEffect(EffectId effect, float* value);
 	Vec3 GetCenter() const
@@ -523,7 +532,10 @@ struct Unit
 	static const int INVALID_IINDEX = (-SLOT_INVALID - 1);
 	int FindItem(const Item* item, int quest_refid = -1) const;
 	int FindQuestItem(int quest_refid) const;
+	bool FindQuestItem(cstring id, Quest** quest, int* i_index, bool not_active = false);
 	void RemoveItem(int iindex, bool active_location = true);
+	void RemoveItem(int i_index, uint count);
+	bool RemoveItem(const Item* item, uint count);
 	int CountItem(const Item* item);
 	//float CalculateBowAttackSpeed();
 	cstring GetName() const
@@ -617,6 +629,8 @@ struct Unit
 	{
 		return AddItem(item, count, is_team ? count : 0);
 	}
+	// add item and show game message, send net notification, calls preload
+	void AddItem2(const Item* item, uint count, uint team_count, bool show_msg = true);
 	// dodaje przedmiot i zak³ada jeœli nie ma takiego typu, przedmiot jest dru¿ynowy
 	void AddItemAndEquipIfNone(const Item* item, uint count = 1);
 	// zwraca udŸwig postaci (0-brak obci¹¿enia, 1-maksymalne, >1 przeci¹¿ony)
@@ -825,6 +839,27 @@ struct Unit
 
 	void ApplyStun(float length);
 	void UseUsable(Usable* usable);
+	enum class BREAK_ACTION_MODE
+	{
+		NORMAL,
+		FALL,
+		INSTANT
+	};
+	void BreakAction(BREAK_ACTION_MODE mode = BREAK_ACTION_MODE::NORMAL, bool notify = false, bool allow_animation = false);
+	void Fall();
+	void TryStandup(float dt);
+	void Standup();
+	void Die(LevelContext* ctx, Unit* killer);
+	void DropGold(int count);
+	bool IsDrunkman() const;
+	void PlaySound(SOUND snd, float range = 1.f);
+	void CreatePhysics(bool position = false);
+	void UpdatePhysics(const Vec3& pos);
+	SOUND GetTalkSound() const;
+	void SetWeaponState(bool takes_out, WeaponType co);
+	void UpdateInventory(bool notify = true);
+	bool IsEnemy(Unit& u, bool ignore_dont_attack = false) const;
+	bool IsFriend(Unit& u) const;
 
 	//-----------------------------------------------------------------------------
 	static vector<Unit*> refid_table;

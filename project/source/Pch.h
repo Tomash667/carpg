@@ -38,10 +38,6 @@
 #include <algorithm>
 #include <limits>
 #include <string>
-#ifndef COMMON_ONLY
-#	include <btBulletCollisionCommon.h>
-#	include <BulletCollision\CollisionShapes\btHeightfieldTerrainShape.h>
-#endif
 #include <map>
 #include <set>
 #include <unordered_map>

@@ -1,11 +1,13 @@
-// przedmiot
 #include "Pch.h"
 #include "GameCore.h"
 #include "Item.h"
 #include "Crc.h"
 #include "ResourceManager.h"
+#include "Net.h"
+#include "Game.h"
 
 extern string g_system_dir;
+const Item* Item::gold;
 ItemsMap Item::items;
 std::map<string, Item*> item_aliases;
 vector<ItemList*> ItemList::lists;
@@ -25,9 +27,9 @@ std::map<const Item*, Item*> better_items;
 //-----------------------------------------------------------------------------
 // adding new types here will require changes in CreatedCharacter::GetStartingItems
 WeaponTypeInfo WeaponTypeInfo::info[] = {
-	nullptr, 0.5f, 0.5f, 0.4f, 1.1f, 0.002f, SkillId::SHORT_BLADE, 40.f, // WT_SHORT
-	nullptr, 0.75f, 0.25f, 0.33f, 1.f, 0.0015f, SkillId::LONG_BLADE, 50.f, // WT_LONG
-	nullptr, 0.85f, 0.15f, 0.29f, 0.9f, 0.00075f, SkillId::BLUNT, 60.f, // WT_MACE
+	nullptr, 0.5f, 0.5f, 0.4f, 1.1f, 0.002f, SkillId::SHORT_BLADE, 40.f, // WT_SHORT_BLADE
+	nullptr, 0.75f, 0.25f, 0.33f, 1.f, 0.0015f, SkillId::LONG_BLADE, 50.f, // WT_LONG_BLADE
+	nullptr, 0.85f, 0.15f, 0.29f, 0.9f, 0.00075f, SkillId::BLUNT, 60.f, // WT_BLUNT
 	nullptr, 0.8f, 0.2f, 0.31f, 0.95f, 0.001f, SkillId::AXE, 60.f, // WT_AXE
 };
 
@@ -216,14 +218,17 @@ bool ItemCmp(const Item* a, const Item* b)
 }
 
 //=================================================================================================
-void CreateItemCopy(Item& item, const Item* base_item)
+void Item::CreateCopy(Item& item) const
 {
-	switch(base_item->type)
+	Game& game = Game::Get();
+	game.PreloadItem(this);
+
+	switch(type)
 	{
 	case IT_OTHER:
 		{
 			OtherItem& o = (OtherItem&)item;
-			const OtherItem& o2 = base_item->ToOther();
+			const OtherItem& o2 = ToOther();
 			o.mesh = o2.mesh;
 			o.desc = o2.desc;
 			o.flags = o2.flags;
@@ -244,17 +249,25 @@ void CreateItemCopy(Item& item, const Item* base_item)
 		assert(0); // not implemented
 		break;
 	}
+
+	if(Net::IsServer() || game.mp_load)
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::REGISTER_ITEM;
+		c.item2 = &item;
+		c.base_item = this;
+	}
 }
 
 //=================================================================================================
-Item* CreateItemCopy(const Item* item)
+Item* Item::CreateCopy() const
 {
-	switch(item->type)
+	switch(type)
 	{
 	case IT_OTHER:
 		{
 			OtherItem* o = new OtherItem;
-			CreateItemCopy(*o, item);
+			CreateCopy(*o);
 			return o;
 		}
 		break;
@@ -269,6 +282,19 @@ Item* CreateItemCopy(const Item* item)
 		// not implemented yet, YAGNI!
 		assert(0);
 		return nullptr;
+	}
+}
+
+//=================================================================================================
+void Item::Rename(cstring name)
+{
+	assert(name);
+	this->name = name;
+	if(Net::IsOnline())
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::RENAME_ITEM;
+		c.base_item = this;
 	}
 }
 
@@ -353,6 +379,17 @@ BookScheme* BookScheme::TryGet(Cstring id)
 	}
 
 	return nullptr;
+}
+
+//=================================================================================================
+const Item* Book::GetRandom()
+{
+	if(Rand() % 2 == 0)
+		return nullptr;
+	if(Rand() % 50 == 0)
+		return ItemList::GetItem("rare_books");
+	else
+		return ItemList::GetItem("books");
 }
 
 //=================================================================================================

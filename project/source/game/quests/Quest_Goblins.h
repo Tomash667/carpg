@@ -50,6 +50,7 @@ public:
 		KnownLocation
 	};
 
+	void Init();
 	void Start() override;
 	GameDialog* GetDialog(int type2) override;
 	void SetProgress(int prog2) override;
@@ -60,6 +61,7 @@ public:
 	void Save(GameWriter& f) override;
 	bool Load(GameReader& f) override;
 	void LoadOld(GameReader& f);
+	bool SpecialIf(DialogContext& ctx, cstring msg) override;
 
 	State goblins_state;
 	int days;

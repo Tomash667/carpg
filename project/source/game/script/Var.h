@@ -91,6 +91,20 @@ struct Var
 	{
 		return _float;
 	}
+
+	bool operator == (bool value) const
+	{
+		return IsBool(value);
+	}
+	bool operator != (bool value) const
+	{
+		return !IsBool(value);
+	}
+
+	void operator = (bool value)
+	{
+		SetBool(value);
+	}
 };
 
 struct VarsContainer
@@ -99,6 +113,7 @@ struct VarsContainer
 	Var* Get(const string& id);
 	void Save(FileWriter& f);
 	void Load(FileReader& f);
+	void Clear();
 
 	std::map<string, Var*> vars;
 };

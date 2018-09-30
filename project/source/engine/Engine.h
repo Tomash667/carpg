@@ -3,7 +3,6 @@
 //-----------------------------------------------------------------------------
 #include "Timer.h"
 #include "KeyStates.h"
-#include "Physics.h"
 
 //-----------------------------------------------------------------------------
 #define DISPLAY_FORMAT D3DFMT_X8R8G8B8
@@ -22,11 +21,18 @@ struct CompileShaderParams
 };
 
 //-----------------------------------------------------------------------------
+struct Resolution
+{
+	Int2 size;
+	uint hz;
+};
+
+//-----------------------------------------------------------------------------
 class Engine
 {
 public:
 	Engine();
-	virtual ~Engine() {}
+	virtual ~Engine();
 
 	static Engine& Get() { return *engine; }
 
@@ -46,6 +52,7 @@ public:
 	bool Start(StartupOptions& options);
 	void UnlockCursor(bool lock_on_focus = true);
 	void LockCursor();
+	void RegisterShader(ShaderHandler* shader);
 
 	bool IsActive() const { return active; }
 	bool IsCursorLocked() const { return locked_cursor; }
@@ -61,6 +68,9 @@ public:
 	HWND GetWindowHandle() const { return hwnd; }
 	bool GetVsync() const { return vsync; }
 	const Int2& GetWindowSize() const { return wnd_size; }
+	void GetResolutions(vector<Resolution>& v) const;
+	void GetMultisamplingModes(vector<Int2>& v) const;
+	DebugDrawer* GetDebugDrawer() { return debug_drawer.get(); }
 
 	void SetAlphaBlend(bool use_alphablend);
 	void SetAlphaTest(bool use_alphatest);
@@ -79,17 +89,14 @@ public:
 	Color clear_color;
 	int wnd_hz, used_adapter, shader_version;
 
-	// bullet physics
-	btDefaultCollisionConfiguration* phy_config;
-	btCollisionDispatcher* phy_dispatcher;
-	btDbvtBroadphase* phy_broadphase;
 	CustomCollisionWorld* phy_world;
+	std::unique_ptr<SoundManager> sound_mgr;
 
 	// constants
 	static const Int2 MIN_WINDOW_SIZE;
 	static const Int2 DEFAULT_WINDOW_SIZE;
 
-	SoundManager* sound_mgr;
+	CameraBase* cam_base;
 
 protected:
 	// funkcje implementowane przez Game
@@ -104,6 +111,7 @@ protected:
 	virtual void OnFocus(bool focus, const Int2& activation_point) = 0;
 
 private:
+	void Init(StartupOptions& options);
 	void AdjustWindowSize();
 	void ChangeMode();
 	void Cleanup();
@@ -111,7 +119,6 @@ private:
 	void GatherParams(D3DPRESENT_PARAMETERS& d3dpp);
 	long HandleEvent(HWND hwnd, uint msg, uint wParam, long lParam);
 	bool MsgToKey(uint msg, uint wParam, byte& key, int& result);
-	void InitPhysics();
 	void InitRender();
 	void InitWindow(StartupOptions& options);
 	void LogMultisampling();
@@ -139,4 +146,9 @@ private:
 
 	// render
 	bool vsync;
+
+	std::unique_ptr<DebugDrawer> debug_drawer;
+
+protected:
+	vector<ShaderHandler*> shaders;
 };

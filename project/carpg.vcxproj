@@ -41,11 +41,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <TargetName>carpg_d</TargetName>
-    <IntDir>Output\$(ProjectName)\$(Configuration)\</IntDir>
+    <IntDir>$(SolutionDir)output\$(ProjectName)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)..\bin\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IntDir>Output\$(ProjectName)\$(Configuration)\</IntDir>
+    <IntDir>$(SolutionDir)output\$(ProjectName)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)..\bin\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -55,7 +55,7 @@
       <SDLCheck>true</SDLCheck>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>source;source\core;source\engine;source\engine\gui;source\game;source\game\entity;source\game\generator;source\game\helpers;source\game\location;source\game\net;source\game\panels;source\game\quests;source\game\script;source\game\stats;source\game\system;source\resource;..\external\angelscript_sdk\angelscript\include;..\external\angelscript_sdk\add_on;..\external\Bullet\src;..\external\DirectX\Include;..\external\DirectXMath\Inc;..\external\FMod\inc;..\external\SLikeNet\Source\include;..\external\Visual Leak Detector\include;..\external\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>source;source\core;source\engine;source\engine\gui;source\game;source\game\entity;source\game\events;source\game\generator;source\game\helpers;source\game\location;source\game\net;source\game\panels;source\game\quests;source\game\script;source\game\stats;source\game\system;source\resource;..\external\angelscript_sdk\angelscript\include;..\external\angelscript_sdk\add_on;..\external\Bullet\src;..\external\DirectX\Include;..\external\DirectXMath\Inc;..\external\FMod\inc;..\external\SLikeNet\Source\include;..\external\Visual Leak Detector\include;..\external\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>false</MultiProcessorCompilation>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <AdditionalOptions>/w34706 /w34702 /w34189 /w34265 /w34266 /w34928 %(AdditionalOptions)</AdditionalOptions>
@@ -65,7 +65,7 @@
     <Link>
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
-      <AdditionalLibraryDirectories>../external/DirectX/Lib/x86;../external/FMod/lib;../external/Visual Leak Detector/lib/Win32;../external/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>../external/DirectX/Lib/x86;../external/FMod/lib;../external/Visual Leak Detector/lib/Win32;lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>angelscript_addon_debug.lib;angelscript_debug.lib;d3d9.lib;d3dx9d.lib;SLikeNet_debug.lib;ws2_32.lib;fmodex_vc.lib;dbghelp.lib;LinearMath_debug.lib;BulletCollision_debug.lib;zlib_debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/ignore:4098 %(AdditionalOptions)</AdditionalOptions>
     </Link>
@@ -93,7 +93,7 @@
       <SDLCheck>true</SDLCheck>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>source;source\core;source\engine;source\engine\gui;source\game;source\game\entity;source\game\generator;source\game\helpers;source\game\location;source\game\net;source\game\panels;source\game\quests;source\game\script;source\game\stats;source\game\system;source\resource;..\external\angelscript_sdk\angelscript\include;..\external\angelscript_sdk\add_on;..\external\Bullet\src;..\external\DirectX\Include;..\external\DirectXMath\Inc;..\external\FMod\inc;..\external\SLikeNet\Source\include;..\external\Visual Leak Detector\include;..\external\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>source;source\core;source\engine;source\engine\gui;source\game;source\game\entity;source\game\events;source\game\generator;source\game\helpers;source\game\location;source\game\net;source\game\panels;source\game\quests;source\game\script;source\game\stats;source\game\system;source\resource;..\external\angelscript_sdk\angelscript\include;..\external\angelscript_sdk\add_on;..\external\Bullet\src;..\external\DirectX\Include;..\external\DirectXMath\Inc;..\external\FMod\inc;..\external\SLikeNet\Source\include;..\external\Visual Leak Detector\include;..\external\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -105,7 +105,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <SubSystem>Windows</SubSystem>
-      <AdditionalLibraryDirectories>../external/DirectX/Lib/x86;../external/FMod/lib;../external/Visual Leak Detector/lib/Win32;../external/lib;F:\SLikeNet\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>../external/DirectX/Lib/x86;../external/FMod/lib;../external/Visual Leak Detector/lib/Win32;lib;F:\SLikeNet\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>angelscript_addon.lib;angelscript.lib;d3d9.lib;d3dx9.lib;SLikeNet.lib;ws2_32.lib;fmodex_vc.lib;dbghelp.lib;LinearMath.lib;BulletCollision.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/ignore:4098 %(AdditionalOptions)</AdditionalOptions>
     </Link>
@@ -144,6 +144,8 @@
     <ClInclude Include="source\core\Timer.h" />
     <ClInclude Include="source\core\Tokenizer.h" />
     <ClInclude Include="source\core\WindowsIncludes.h" />
+    <ClInclude Include="source\engine\CameraBase.h" />
+    <ClInclude Include="source\engine\DebugDrawer.h" />
     <ClInclude Include="source\engine\DirectX.h" />
     <ClInclude Include="source\engine\FileFormat.h" />
     <ClInclude Include="source\engine\Font.h" />
@@ -194,22 +196,52 @@
     <ClInclude Include="source\engine\Physics.h" />
     <ClInclude Include="source\engine\Resource.h" />
     <ClInclude Include="source\engine\ResourceManager.h" />
+    <ClInclude Include="source\engine\ShaderHandler.h" />
     <ClInclude Include="source\engine\SoundManager.h" />
     <ClInclude Include="source\engine\StartupOptions.h" />
+    <ClInclude Include="source\engine\SuperShader.h" />
     <ClInclude Include="source\engine\Terrain.h" />
+    <ClInclude Include="source\engine\Texture.h" />
     <ClInclude Include="source\engine\VertexData.h" />
     <ClInclude Include="source\engine\VertexDeclaration.h" />
     <ClInclude Include="source\ErrorHandler.h" />
-    <ClInclude Include="source\game\Collision.h" />
     <ClInclude Include="source\game\ConsoleCommands.h" />
-    <ClInclude Include="source\game\Encounter.h" />
+    <ClInclude Include="source\game\Debug.h" />
     <ClInclude Include="source\game\entity\BloodType.h" />
+    <ClInclude Include="source\game\entity\Collision.h" />
+    <ClInclude Include="source\game\entity\Encounter.h" />
     <ClInclude Include="source\game\entity\ItemContainer.h" />
+    <ClInclude Include="source\game\entity\News.h" />
+    <ClInclude Include="source\game\entity\ObjectEntity.h" />
+    <ClInclude Include="source\game\entity\OutsideObject.h" />
     <ClInclude Include="source\game\entity\Portal.h" />
+    <ClInclude Include="source\game\entity\Room.h" />
+    <ClInclude Include="source\game\entity\TerrainTile.h" />
+    <ClInclude Include="source\game\entity\Tile.h" />
     <ClInclude Include="source\game\entity\UnitEventHandler.h" />
+    <ClInclude Include="source\game\events\Arena.h" />
+    <ClInclude Include="source\game\FOV.h" />
+    <ClInclude Include="source\game\GameComponent.h" />
     <ClInclude Include="source\game\GameCore.h" />
     <ClInclude Include="source\game\GameStats.h" />
+    <ClInclude Include="source\game\generator\CampGenerator.h" />
+    <ClInclude Include="source\game\generator\CaveGenerator.h" />
+    <ClInclude Include="source\game\generator\DungeonGenerator.h" />
+    <ClInclude Include="source\game\generator\EncounterGenerator.h" />
+    <ClInclude Include="source\game\generator\ForestGenerator.h" />
+    <ClInclude Include="source\game\generator\InsideLocationGenerator.h" />
+    <ClInclude Include="source\game\generator\LabyrinthGenerator.h" />
+    <ClInclude Include="source\game\generator\LocationGenerator.h" />
+    <ClInclude Include="source\game\generator\LocationGeneratorFactory.h" />
+    <ClInclude Include="source\game\generator\MoonwellGenerator.h" />
+    <ClInclude Include="source\game\generator\OutsideLocationGenerator.h" />
+    <ClInclude Include="source\game\generator\SecretLocationGenerator.h" />
+    <ClInclude Include="source\game\generator\TutorialLocationGenerator.h" />
+    <ClInclude Include="source\game\helpers\ItemHelper.h" />
+    <ClInclude Include="source\game\helpers\LoadingHandler.h" />
+    <ClInclude Include="source\game\Level.h" />
     <ClInclude Include="source\game\net\BitStreamFunc.h" />
+    <ClInclude Include="source\game\net\EntityInterpolator.h" />
     <ClInclude Include="source\game\net\GamePacket.h" />
     <ClInclude Include="source\game\net\NetChange.h" />
     <ClInclude Include="source\game\net\NetChangePlayer.h" />
@@ -217,10 +249,18 @@
     <ClInclude Include="source\game\panels\ActionPanel.h" />
     <ClInclude Include="source\game\panels\BookPanel.h" />
     <ClInclude Include="source\game\panels\GameDialogBox.h" />
+    <ClInclude Include="source\game\panels\GlobalGui.h" />
+    <ClInclude Include="source\game\Pathfinding.h" />
+    <ClInclude Include="source\game\quests\QuestHandler.h" />
     <ClInclude Include="source\game\quests\QuestConsts.h" />
+    <ClInclude Include="source\game\quests\Quest_Contest.h" />
+    <ClInclude Include="source\game\quests\Quest_Secret.h" />
+    <ClInclude Include="source\game\quests\Quest_Tournament.h" />
+    <ClInclude Include="source\game\quests\Quest_Tutorial.h" />
     <ClInclude Include="source\game\script\TypeBuilder.h" />
     <ClInclude Include="source\game\script\ScriptManager.h" />
     <ClInclude Include="source\game\script\Var.h" />
+    <ClInclude Include="source\game\Settings.h" />
     <ClInclude Include="source\game\stats\Action.h" />
     <ClInclude Include="source\game\stats\Buff.h" />
     <ClInclude Include="source\game\system\BaseObject.h" />
@@ -261,7 +301,7 @@
     <ClInclude Include="source\game\helpers\UnitHelper.h" />
     <ClInclude Include="source\game\Language.h" />
     <ClInclude Include="source\game\location\Camp.h" />
-    <ClInclude Include="source\game\location\CaveLocation.h" />
+    <ClInclude Include="source\game\location\Cave.h" />
     <ClInclude Include="source\game\location\City.h" />
     <ClInclude Include="source\game\location\EntryPoint.h" />
     <ClInclude Include="source\game\location\InsideBuilding.h" />
@@ -348,7 +388,7 @@
     <ClInclude Include="source\game\system\UnitData.h" />
     <ClInclude Include="source\game\system\UnitGroup.h" />
     <ClInclude Include="source\game\Team.h" />
-    <ClInclude Include="source\game\TerrainTile.h" />
+    <ClInclude Include="source\game\World.h" />
     <ClInclude Include="source\Pch.h" />
     <ClInclude Include="source\resource\resource1.h" />
     <ClInclude Include="source\Utility.h" />
@@ -370,6 +410,7 @@
     <ClCompile Include="source\core\Text.cpp" />
     <ClCompile Include="source\core\Timer.cpp" />
     <ClCompile Include="source\core\Tokenizer.cpp" />
+    <ClCompile Include="source\engine\DebugDrawer.cpp" />
     <ClCompile Include="source\engine\Font.cpp" />
     <ClCompile Include="source\engine\gui\Button.cpp" />
     <ClCompile Include="source\engine\gui\CheckBox.cpp" />
@@ -412,7 +453,9 @@
     <ClCompile Include="source\engine\Physics.cpp" />
     <ClCompile Include="source\engine\ResourceManager.cpp" />
     <ClCompile Include="source\engine\SoundManager.cpp" />
+    <ClCompile Include="source\engine\SuperShader.cpp" />
     <ClCompile Include="source\engine\Terrain.cpp" />
+    <ClCompile Include="source\engine\Texture.cpp" />
     <ClCompile Include="source\engine\VertexData.cpp" />
     <ClCompile Include="source\ErrorHandler.cpp" />
     <ClCompile Include="source\game\Ai.cpp" />
@@ -420,12 +463,41 @@
     <ClCompile Include="source\game\entity\Camera.cpp" />
     <ClCompile Include="source\game\entity\ItemContainer.cpp" />
     <ClCompile Include="source\game\entity\Portal.cpp" />
+    <ClCompile Include="source\game\entity\Room.cpp" />
+    <ClCompile Include="source\game\entity\TerrainTile.cpp" />
+    <ClCompile Include="source\game\entity\Tile.cpp" />
+    <ClCompile Include="source\game\events\Arena.cpp" />
     <ClCompile Include="source\game\GameFile.cpp" />
     <ClCompile Include="source\game\GameStats.cpp" />
+    <ClCompile Include="source\game\generator\CampGenerator.cpp" />
+    <ClCompile Include="source\game\generator\CaveGenerator.cpp" />
+    <ClCompile Include="source\game\generator\DungeonGenerator.cpp" />
+    <ClCompile Include="source\game\generator\EncounterGenerator.cpp" />
+    <ClCompile Include="source\game\generator\ForestGenerator.cpp" />
+    <ClCompile Include="source\game\generator\InsideLocationGenerator.cpp" />
+    <ClCompile Include="source\game\generator\LabyrinthGenerator.cpp" />
+    <ClCompile Include="source\game\generator\LocationGenerator.cpp" />
+    <ClCompile Include="source\game\generator\LocationGeneratorFactory.cpp" />
+    <ClCompile Include="source\game\generator\MoonwellGenerator.cpp" />
+    <ClCompile Include="source\game\generator\OutsideLocationGenerator.cpp" />
+    <ClCompile Include="source\game\generator\SecretLocationGenerator.cpp" />
+    <ClCompile Include="source\game\generator\TutorialLocationGenerator.cpp" />
+    <ClCompile Include="source\game\helpers\ItemHelper.cpp" />
+    <ClCompile Include="source\game\helpers\LoadingHandler.cpp" />
+    <ClCompile Include="source\game\Level.cpp" />
+    <ClCompile Include="source\game\location\LevelArea.cpp" />
     <ClCompile Include="source\game\net\BitStreamFunc.cpp" />
+    <ClCompile Include="source\game\net\EntityInterpolator.cpp" />
+    <ClCompile Include="source\game\net\Net2.cpp" />
     <ClCompile Include="source\game\net\PlayerInfo.cpp" />
     <ClCompile Include="source\game\panels\ActionPanel.cpp" />
     <ClCompile Include="source\game\panels\BookPanel.cpp" />
+    <ClCompile Include="source\game\panels\GlobalGui.cpp" />
+    <ClCompile Include="source\game\Pathfinding.cpp" />
+    <ClCompile Include="source\game\quests\Quest_Contest.cpp" />
+    <ClCompile Include="source\game\quests\Quest_Secret.cpp" />
+    <ClCompile Include="source\game\quests\Quest_Tournament.cpp" />
+    <ClCompile Include="source\game\quests\Quest_Tutorial.cpp" />
     <ClCompile Include="source\game\script\ScriptManager.cpp" />
     <ClCompile Include="source\game\script\Var.cpp" />
     <ClCompile Include="source\game\stats\Action.cpp" />
@@ -459,15 +531,13 @@
     <ClCompile Include="source\game\Game.cpp" />
     <ClCompile Include="source\game\Game2.cpp" />
     <ClCompile Include="source\game\GameCommon.cpp" />
-    <ClCompile Include="source\game\Game_LevelArea.cpp" />
     <ClCompile Include="source\game\generator\CityGenerator.cpp" />
     <ClCompile Include="source\game\generator\Mapa2.cpp" />
-    <ClCompile Include="source\game\GameGuiInit.cpp" />
     <ClCompile Include="source\game\helpers\UnitHelper.cpp" />
     <ClCompile Include="source\game\Init.cpp" />
     <ClCompile Include="source\game\Language.cpp" />
     <ClCompile Include="source\game\location\Camp.cpp" />
-    <ClCompile Include="source\game\location\CaveLocation.cpp" />
+    <ClCompile Include="source\game\location\Cave.cpp" />
     <ClCompile Include="source\game\location\City.cpp" />
     <ClCompile Include="source\game\location\InsideBuilding.cpp" />
     <ClCompile Include="source\game\location\InsideLocation.cpp" />
@@ -555,12 +625,7 @@
     <ClCompile Include="source\game\system\UnitGroup.cpp" />
     <ClCompile Include="source\game\system\UnitLoader.cpp" />
     <ClCompile Include="source\game\Team.cpp" />
-    <ClCompile Include="source\game\TeamItems.cpp" />
-    <ClCompile Include="source\game\TerrainTile.cpp" />
-    <ClCompile Include="source\game\Tournament.cpp" />
-    <ClCompile Include="source\game\Tutorial.cpp" />
-    <ClCompile Include="source\game\Worldmap.cpp" />
-    <ClCompile Include="source\game\Worldstate.cpp" />
+    <ClCompile Include="source\game\World.cpp" />
     <ClCompile Include="source\Main.cpp" />
     <ClCompile Include="source\Pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
