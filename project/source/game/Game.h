@@ -684,7 +684,7 @@ public:
 	// MENU / MAIN MENU / OPTIONS
 	Class quickstart_class, autopick_class; // mo¿na po³¹czyæ
 	string quickstart_name;
-	bool check_updates, skip_tutorial, autoready;
+	bool check_updates, skip_tutorial;
 	string save_input_text;
 
 	bool CanShowMenu();
@@ -709,10 +709,6 @@ public:
 	void AddMultiMsg(cstring msg);
 	void Quit();
 	bool ValidateNick(cstring nick);
-	void UpdateLobbyNet(float dt);
-	void UpdateLobbyNetClient(float dt);
-	void UpdateLobbyNetServer(float dt);
-	bool DoLobbyUpdate(BitStreamReader& f);
 	void OnCreateCharacter(int id);
 	void OnPlayTutorial(int id);
 	void OnPickServer(int id);
@@ -724,16 +720,13 @@ public:
 
 	//-----------------------------------------------------------------
 	// MULTIPLAYER
-	string player_name, server_ip, enter_pswd, server_name2;
+	string player_name, server_ip, enter_pswd;
 	uint autostart_count;
-	int max_players2;
 	int my_id; // moje unikalne id
 	int last_id;
-	int last_startup_id;
 	bool was_client, players_left;
 	vector<PlayerInfo*> old_players;
 	int leader_id, kick_id;
-	float startup_timer;
 	enum NET_MODE
 	{
 		NM_CONNECT_IP, // ³¹czenie serwera z klientem (0 - pingowanie, 1 - podawanie has³a, 2 - ³¹czenie)
@@ -748,8 +741,6 @@ public:
 	VoidF net_callback;
 	string net_adr;
 	float net_timer, update_timer, mp_timeout;
-	vector<Int2> lobby_updates;
-	void AddLobbyUpdate(const Int2& u);
 	BitStream prepared_stream;
 	bool change_title_a;
 	bool level_generated;
@@ -779,8 +770,6 @@ public:
 
 	void AddServerMsg(cstring msg);
 	void KickPlayer(PlayerInfo& info);
-	void ChangeReady();
-	void CheckReady();
 	void AddMsg(cstring msg);
 	void OnEnterPassword(int id);
 	void ForceRedraw();

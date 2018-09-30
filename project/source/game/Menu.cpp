@@ -38,10 +38,8 @@
 
 extern string g_ctime;
 
-// STA£E
-const float T_WAIT_FOR_HELLO = 5.f;
+// consts
 const float T_TRY_CONNECT = 5.f;
-const float T_LOBBY_UPDATE = 0.2f;
 const int T_SHUTDOWN = 1000;
 const float T_WAIT_FOR_DATA = 5.f;
 
@@ -364,58 +362,8 @@ void Game::CreateServerEvent(int id)
 			return;
 		}
 
-		// przejdŸ do okna serwera
-		gui->server->Show();
 		Net_OnNewGameServer();
-		N.UpdateServerInfo();
-
-		if(change_title_a)
-			ChangeTitle();
 	}
-}
-
-//=================================================================================================
-void Game::CheckReady()
-{
-	bool all_ready = true;
-
-	for(PlayerInfo* info : N.players)
-	{
-		if(!info->ready)
-		{
-			all_ready = false;
-			break;
-		}
-	}
-
-	if(all_ready)
-		gui->server->bts[4].state = Button::NONE;
-	else
-		gui->server->bts[4].state = Button::DISABLED;
-
-	if(N.starting)
-		gui->server->StopStartup();
-}
-
-//=================================================================================================
-void Game::ChangeReady()
-{
-	if(Net::IsServer())
-	{
-		// zmieñ info
-		if(N.active_players > 1)
-			AddLobbyUpdate(Int2(Lobby_UpdatePlayer, 0));
-		CheckReady();
-	}
-	else
-	{
-		BitStreamWriter f;
-		f << ID_CHANGE_READY;
-		f << N.GetMe().ready;
-		N.SendClient(f, HIGH_PRIORITY, RELIABLE_ORDERED, Stream_UpdateLobbyClient);
-	}
-
-	gui->server->bts[1].text = (N.GetMe().ready ? gui->server->txNotReady : gui->server->txReady);
 }
 
 //=================================================================================================
@@ -625,9 +573,9 @@ void Game::UpdateClientConnectingIp(float dt)
 			}
 
 			// set server status
-			max_players2 = max_players;
-			server_name2 = server_name_r;
-			Info("NM_CONNECT_IP(0): Server information. Name:%s; players:%d/%d; flags:%d.", server_name2.c_str(), players, max_players, flags);
+			gui->server->max_players = max_players;
+			gui->server->server_name = server_name_r;
+			Info("NM_CONNECT_IP(0): Server information. Name:%s; players:%d/%d; flags:%d.", server_name_r.c_str(), players, max_players, flags);
 			if(IS_SET(flags, 0xFC))
 				Warn("NM_CONNECT_IP(0): Unknown server flags.");
 			N.server = packet->systemAddress;
@@ -638,7 +586,7 @@ void Game::UpdateClientConnectingIp(float dt)
 				// password is required
 				net_state = NetState::Client_WaitingForPassword;
 				gui->info_box->Show(txWaitingForPswd);
-				GetTextDialogParams params(Format(txEnterPswd, server_name2.c_str()), enter_pswd);
+				GetTextDialogParams params(Format(txEnterPswd, server_name_r.c_str()), enter_pswd);
 				params.event = DialogEvent(this, &Game::OnEnterPassword);
 				params.limit = 16;
 				params.parent = gui->info_box;
@@ -654,8 +602,8 @@ void Game::UpdateClientConnectingIp(float dt)
 					// connecting...
 					net_timer = T_CONNECT;
 					net_state = NetState::Client_Connecting;
-					gui->info_box->Show(Format(txConnectingTo, server_name2.c_str()));
-					Info("NM_CONNECT_IP(0): Connecting to server %s...", server_name2.c_str());
+					gui->info_box->Show(Format(txConnectingTo, server_name_r.c_str()));
+					Info("NM_CONNECT_IP(0): Connecting to server %s...", server_name_r.c_str());
 				}
 				else
 				{
@@ -768,13 +716,16 @@ void Game::UpdateClientConnectingIp(float dt)
 						EndConnecting(txCantJoin, true);
 						return;
 					}
-					reader.ReadCasted<byte>(info.clas);
-					if(load_char == 2 && !reader)
+					if(load_char == 2)
 					{
-						N.StreamError("NM_CONNECT_IP(2): Broken packet ID_JOIN(3).");
-						N.peer->DeallocatePacket(packet);
-						EndConnecting(txCantJoin, true);
-						return;
+						reader.ReadCasted<byte>(info.clas);
+						if(!reader)
+						{
+							N.StreamError("NM_CONNECT_IP(2): Broken packet ID_JOIN(3).");
+							N.peer->DeallocatePacket(packet);
+							EndConnecting(txCantJoin, true);
+							return;
+						}
 					}
 
 					N.StreamEnd();
@@ -1938,8 +1889,8 @@ void Game::OnEnterPassword(int id)
 		{
 			net_state = NetState::Client_Connecting;;
 			net_timer = T_CONNECT;
-			gui->info_box->Show(Format(txConnectingTo, server_name2.c_str()));
-			Info("NM_CONNECT_IP(1): Connecting to server %s...", server_name2.c_str());
+			gui->info_box->Show(Format(txConnectingTo, gui->server->server_name.c_str()));
+			Info("NM_CONNECT_IP(1): Connecting to server %s...", gui->server->server_name.c_str());
 		}
 		else
 		{
@@ -2125,886 +2076,6 @@ bool Game::ValidateNick(cstring nick)
 	return true;
 }
 
-void Game::UpdateLobbyNet(float dt)
-{
-	if(autoready)
-	{
-		PlayerInfo& info = N.GetMe();
-		if(!info.ready)
-		{
-			info.ready = true;
-			ChangeReady();
-		}
-		autoready = false;
-	}
-
-	if(Net::IsServer())
-		UpdateLobbyNetServer(dt);
-	else
-		UpdateLobbyNetClient(dt);
-}
-
-void Game::UpdateLobbyNetClient(float dt)
-{
-	// obs³uga komunikatów otrzymywanych przez klienta
-	for(Packet* packet = N.peer->Receive(); packet; N.peer->DeallocatePacket(packet), packet = N.peer->Receive())
-	{
-		BitStream& stream = N.StreamStart(packet, Stream_UpdateLobbyClient);
-		BitStreamReader reader(stream);
-		byte msg_id;
-		reader >> msg_id;
-
-		switch(msg_id)
-		{
-		case ID_SAY:
-			Client_Say(reader);
-			break;
-		case ID_WHISPER:
-			Client_Whisper(reader);
-			break;
-		case ID_SERVER_SAY:
-			Client_ServerSay(reader);
-			break;
-		case ID_LOBBY_UPDATE:
-			if(!DoLobbyUpdate(reader))
-				N.StreamError();
-			break;
-		case ID_DISCONNECTION_NOTIFICATION:
-		case ID_CONNECTION_LOST:
-		case ID_SERVER_CLOSE:
-			{
-				cstring reason, reason_eng;
-				if(msg_id == ID_DISCONNECTION_NOTIFICATION)
-				{
-					reason = txDisconnected;
-					reason_eng = "disconnected";
-				}
-				else if(msg_id == ID_CONNECTION_LOST)
-				{
-					reason = txLostConnection;
-					reason_eng = "lost connection";
-				}
-				else if(packet->length == 2)
-				{
-					switch(packet->data[1])
-					{
-					case 0:
-						reason = txClosing;
-						reason_eng = "closing";
-						break;
-					case 1:
-						reason = txKicked;
-						reason_eng = "kicked";
-						break;
-					default:
-						reason = Format(txUnknown, packet->data[1]);
-						reason_eng = Format("unknown (%d)", packet->data[1]);
-						break;
-					}
-				}
-				else
-				{
-					reason = txUnknown2;
-					reason_eng = "unknown";
-				}
-
-				Info("UpdateLobbyNet: Disconnected from server: %s.", reason_eng);
-				GUI.SimpleDialog(Format(txUnconnected, reason), nullptr);
-
-				gui->server->CloseDialog();
-				N.StreamEnd();
-				N.peer->DeallocatePacket(packet);
-				ClosePeer(true);
-				return;
-			}
-		case ID_TIMER:
-			if(packet->length != 2)
-				N.StreamError("UpdateLobbyNet: Broken packet ID_TIMER.");
-			else
-			{
-				Info("UpdateLobbyNet: Starting in %d...", packet->data[1]);
-				gui->server->AddMsg(Format(gui->server->txStartingIn, packet->data[1]));
-			}
-			break;
-		case ID_END_TIMER:
-			Info("UpdateLobbyNet: Startup canceled.");
-			AddMsg(gui->server->txStartingStop);
-			break;
-		case ID_PICK_CHARACTER:
-			if(packet->length != 2)
-				N.StreamError("UpdateLobbyNet: Broken packet ID_PICK_CHARACTER.");
-			else
-			{
-				bool ok = (packet->data[1] != 0);
-				if(ok)
-					Info("UpdateLobbyNet: Character pick accepted.");
-				else
-				{
-					Warn("UpdateLobbyNet: Character pick refused.");
-					PlayerInfo& info = N.GetMe();
-					info.ready = false;
-					info.clas = Class::INVALID;
-					gui->server->bts[0].state = Button::NONE;
-					gui->server->bts[0].text = gui->server->txPickChar;
-					gui->server->bts[1].state = Button::DISABLED;
-				}
-			}
-			break;
-		case ID_STARTUP:
-			if(packet->length != 2)
-				N.StreamError("UpdateLobbyNet: Broken packet ID_STARTUP.");
-			else
-			{
-				Info("UpdateLobbyNet: Starting in 0...");
-				gui->server->AddMsg(Format(gui->server->txStartingIn, 0));
-
-				// close lobby and wait for server
-				mp_load_worldmap = (packet->data[1] == 1);
-				Info("UpdateLobbyNet: Waiting for server.");
-				LoadingStart(mp_load_worldmap ? 4 : 9);
-				gui->main_menu->visible = false;
-				gui->server->CloseDialog();
-				gui->info_box->Show(txWaitingForServer);
-				net_mode = NM_TRANSFER;
-				net_state = NetState::Client_BeforeTransfer;
-				N.StreamEnd();
-				N.peer->DeallocatePacket(packet);
-				return;
-			}
-			break;
-		default:
-			Warn("UpdateLobbyNet: Unknown packet: %u.", msg_id);
-			N.StreamError();
-			break;
-		}
-
-		N.StreamEnd();
-	}
-}
-
-void Game::UpdateLobbyNetServer(float dt)
-{
-	if(!N.starting && autostart_count != 0u && autostart_count <= N.active_players)
-	{
-		bool ok = true;
-		for(auto info : N.players)
-		{
-			if(!info->ready)
-			{
-				ok = false;
-				break;
-			}
-		}
-
-		if(ok)
-		{
-			// automatyczne uruchamianie gry, rozpocznij odliczanie
-			Info("UpdateLobbyNet: Automatic server startup.");
-			autostart_count = 0u;
-			N.starting = true;
-			startup_timer = float(STARTUP_TIMER);
-			last_startup_id = STARTUP_TIMER;
-			byte b[] = { ID_TIMER, STARTUP_TIMER };
-			N.peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
-			N.StreamWrite(b, 2, Stream_UpdateLobbyServer, UNASSIGNED_SYSTEM_ADDRESS);
-			gui->server->bts[5].text = gui->server->txStop;
-			gui->server->AddMsg(Format(gui->server->txStarting, STARTUP_TIMER));
-			Info("UpdateLobbyNet: Starting in %d...", STARTUP_TIMER);
-		}
-	}
-
-	for(Packet* packet = N.peer->Receive(); packet; N.peer->DeallocatePacket(packet), packet = N.peer->Receive())
-	{
-		BitStream& stream = N.StreamStart(packet, Stream_UpdateLobbyServer);
-		BitStreamReader reader(stream);
-		byte msg_id;
-		reader >> msg_id;
-
-		// pobierz informacje o graczu
-		PlayerInfo* info = N.FindPlayer(packet->systemAddress);
-		if(info && info->state == PlayerInfo::REMOVING)
-		{
-			if(msg_id == ID_DISCONNECTION_NOTIFICATION || msg_id == ID_CONNECTION_LOST)
-			{
-				// nie odes³a³ informacji tylko siê roz³¹czy³
-				Info(!info->name.empty() ? Format("UpdateLobbyNet: Player %s has disconnected.", info->name.c_str()) :
-					Format("UpdateLobbyNet: %s has disconnected.", packet->systemAddress.ToString()));
-				--N.active_players;
-				if(N.active_players > 1)
-					AddLobbyUpdate(Int2(Lobby_ChangeCount, 0));
-				N.UpdateServerInfo();
-				int index = info->GetIndex();
-				gui->server->grid.RemoveItem(index);
-				auto it = N.players.begin() + index;
-				delete *it;
-				N.players.erase(it);
-			}
-			else
-			{
-				// nieznany komunikat od roz³¹czanego gracz, ignorujemy go
-				Info("UpdateLobbyNet: Ignoring packet from %s while disconnecting.",
-					!info->name.empty() ? info->name.c_str() : packet->systemAddress.ToString());
-			}
-
-			N.StreamEnd();
-			continue;
-		}
-
-		switch(msg_id)
-		{
-		case ID_UNCONNECTED_PING:
-		case ID_UNCONNECTED_PING_OPEN_CONNECTIONS:
-			assert(!info);
-			Info("UpdateLobbyNet: Ping from %s.", packet->systemAddress.ToString());
-			break;
-		case ID_NEW_INCOMING_CONNECTION:
-			if(info)
-				Warn("UpdateLobbyNet: Packet about connecting from already connected player %s.", info->name.c_str());
-			else
-			{
-				Info("UpdateLobbyNet: New connection from %s.", packet->systemAddress.ToString());
-
-				// ustal id dla nowego gracza
-				do
-				{
-					last_id = (last_id + 1) % 256;
-					bool ok = true;
-					for(auto info : N.players)
-					{
-						if(info->id == last_id)
-						{
-							ok = false;
-							break;
-						}
-					}
-					if(ok)
-						break;
-				} while(1);
-
-				// dodaj
-				auto pinfo = new PlayerInfo;
-				N.players.push_back(pinfo);
-
-				auto& info = *pinfo;
-				info.adr = packet->systemAddress;
-				info.id = last_id;
-				gui->server->grid.AddItem();
-
-				if(N.active_players == N.max_players)
-				{
-					// brak miejsca na serwerze, wyœlij komunikat i czekaj a¿ siê roz³¹czy
-					byte b[] = { ID_CANT_JOIN, 0 };
-					N.peer->Send((cstring)b, 2, MEDIUM_PRIORITY, RELIABLE, 0, packet->systemAddress, false);
-					N.StreamWrite(b, 2, Stream_UpdateLobbyServer, packet->systemAddress);
-					info.state = PlayerInfo::REMOVING;
-					info.timer = T_WAIT_FOR_DISCONNECT;
-					info.left = PlayerInfo::LEFT_SERVER_FULL;
-				}
-				else
-				{
-					// czekaj a¿ wyœle komunikat o wersji, nick
-					info.state = PlayerInfo::WAITING_FOR_HELLO;
-					info.timer = T_WAIT_FOR_HELLO;
-					info.devmode = default_player_devmode;
-					info.buffs = 0;
-					if(N.active_players > 1)
-						AddLobbyUpdate(Int2(Lobby_ChangeCount, 0));
-					++N.active_players;
-					N.UpdateServerInfo();
-				}
-			}
-			break;
-		case ID_DISCONNECTION_NOTIFICATION:
-		case ID_CONNECTION_LOST:
-			// klient siê roz³¹czy³
-			{
-				bool dis = (msg_id == ID_CONNECTION_LOST);
-				if(!info)
-				{
-					Warn(dis ? "UpdateLobbyNet: Disconnect notification from unconnected address %s." :
-						"UpdateLobbyNet: Lost connection with unconnected address %s.", packet->systemAddress.ToString());
-				}
-				else
-				{
-					int index = info->GetIndex();
-					gui->server->grid.RemoveItem(index);
-					if(info->state == PlayerInfo::WAITING_FOR_HELLO)
-					{
-						// roz³¹czy³ siê przed przyjêciem do lobby, mo¿na go usun¹æ
-						gui->server->AddMsg(Format(dis ? txDisconnected : txLost, packet->systemAddress.ToString()));
-						Info("UpdateLobbyNet: %s %s.", packet->systemAddress.ToString(), dis ? "disconnected" : "lost connection");
-						auto it = N.players.begin() + index;
-						delete *it;
-						N.players.erase(it);
-						--N.active_players;
-						if(N.active_players > 1)
-							AddLobbyUpdate(Int2(Lobby_ChangeCount, 0));
-						N.UpdateServerInfo();
-					}
-					else
-					{
-						// roz³¹czy³ siê bêd¹c w lobby
-						--N.active_players;
-						gui->server->AddMsg(Format(dis ? txLeft : txLost2, info->name.c_str()));
-						Info("UpdateLobbyNet: Player %s %s.", info->name.c_str(), dis ? "disconnected" : "lost connection");
-						if(N.active_players > 1)
-						{
-							AddLobbyUpdate(Int2(Lobby_RemovePlayer, info->id));
-							AddLobbyUpdate(Int2(Lobby_ChangeCount, 0));
-						}
-						if(leader_id == info->id)
-						{
-							// serwer zostaje przywódc¹
-							Info("UpdateLobbyNet: You are leader now.");
-							leader_id = my_id;
-							if(N.active_players > 1)
-								AddLobbyUpdate(Int2(Lobby_ChangeLeader, 0));
-							gui->server->AddMsg(gui->server->txYouAreLeader);
-						}
-						auto it = N.players.begin() + index;
-						delete *it;
-						N.players.erase(it);
-						N.UpdateServerInfo();
-						CheckReady();
-					}
-				}
-			}
-			break;
-		case ID_HELLO:
-			// informacje od gracza
-			if(!info)
-				Warn("UpdateLobbyNet: Packet ID_HELLO from unconnected client %s.", packet->systemAddress.ToString());
-			else if(info->state != PlayerInfo::WAITING_FOR_HELLO)
-				Warn("UpdateLobbyNet: Packet ID_HELLO from player %s who already joined.", info->name.c_str());
-			else
-			{
-				int version;
-				cstring reason_text = nullptr;
-				int include_extra = 0;
-				uint my_crc, player_crc;
-				content::Id type;
-				cstring type_str;
-				JoinResult reason = JoinResult::Ok;
-
-				reader >> version;
-				content::ReadCrc(reader);
-				reader >> info->name;
-				if(!reader)
-				{
-					// failed to read packet
-					reason = JoinResult::BrokenPacket;
-					reason_text = Format("UpdateLobbyNet: Broken packet ID_HELLO from %s.", packet->systemAddress.ToString());
-				}
-				else if(version != VERSION)
-				{
-					// version mismatch
-					reason = JoinResult::InvalidVersion;
-					reason_text = Format("UpdateLobbbyNet: Invalid version from %s. Our (%s) vs (%s).", packet->systemAddress.ToString(),
-						VersionToString(version), VERSION_STR);
-				}
-				else if(!content::ValidateCrc(type, my_crc, player_crc, type_str))
-				{
-					// invalid game type manager crc
-					reason = JoinResult::InvalidCrc;
-					reason_text = Format("UpdateLobbyNet: Invalid %s crc from %s. Our (%p) vs (%p).", type_str, packet->systemAddress.ToString(), my_crc,
-						player_crc);
-					include_extra = 2;
-				}
-				else if(!ValidateNick(info->name.c_str()))
-				{
-					// invalid nick
-					reason = JoinResult::InvalidNick;
-					reason_text = Format("UpdateLobbyNet: Invalid nick (%s) from %s.", info->name.c_str(), packet->systemAddress.ToString());
-				}
-				else
-				{
-					// check if nick is unique
-					bool ok = true;
-					for(auto info2 : N.players)
-					{
-						if(info2->id != info->id && info2->state == PlayerInfo::IN_LOBBY && info2->name == info->name)
-						{
-							ok = false;
-							break;
-						}
-					}
-					if(!ok)
-					{
-						// nick is already used
-						reason = JoinResult::TakenNick;
-						reason_text = Format("UpdateLobbyNet: Nick already in use (%s) from %s.", info->name.c_str(), packet->systemAddress.ToString());
-					}
-				}
-
-				BitStreamWriter fw;
-				if(reason != JoinResult::Ok)
-				{
-					Warn(reason_text);
-					N.StreamError();
-					fw << ID_CANT_JOIN;
-					fw.WriteCasted<byte>(reason);
-					if(include_extra != 0)
-						fw << my_crc;
-					if(include_extra == 2)
-						fw.WriteCasted<byte>(type);
-					N.SendServer(fw, MEDIUM_PRIORITY, RELIABLE, packet->systemAddress, Stream_UpdateLobbyServer);
-					info->state = PlayerInfo::REMOVING;
-					info->timer = T_WAIT_FOR_DISCONNECT;
-				}
-				else
-				{
-					// everything is ok, let player join
-					if(N.active_players > 2)
-						AddLobbyUpdate(Int2(Lobby_AddPlayer, info->id));
-					fw << ID_JOIN;
-					fw.WriteCasted<byte>(info->id);
-					fw.WriteCasted<byte>(N.active_players);
-					fw.WriteCasted<byte>(leader_id);
-					fw.Write0();
-					int count = 0;
-					for(auto info2 : N.players)
-					{
-						if(info2->id == info->id || info2->state != PlayerInfo::IN_LOBBY)
-							continue;
-						++count;
-						fw.WriteCasted<byte>(info2->id);
-						fw.WriteCasted<byte>(info2->ready ? 1 : 0);
-						fw.WriteCasted<byte>(info2->clas);
-						fw << info2->name;
-					}
-					fw.Patch<byte>(4, count);
-					if(mp_load)
-					{
-						// informacja o postaci w zapisie
-						PlayerInfo* old = FindOldPlayer(info->name.c_str());
-						if(old)
-						{
-							fw.WriteCasted<byte>(2);
-							fw.WriteCasted<byte>(old->clas);
-
-							info->clas = old->clas;
-							info->loaded = true;
-							info->devmode = old->devmode;
-							info->hd.CopyFrom(old->hd);
-							info->notes = old->notes;
-
-							if(N.active_players > 2)
-								AddLobbyUpdate(Int2(Lobby_UpdatePlayer, info->id));
-
-							Info("UpdateLobbyNet: Player %s is using loaded character.", info->name.c_str());
-						}
-						else
-							fw.Write1();
-					}
-					else
-						fw.Write0();
-					N.SendServer(fw, HIGH_PRIORITY, RELIABLE, packet->systemAddress, Stream_UpdateLobbyServer);
-					info->state = PlayerInfo::IN_LOBBY;
-
-					gui->server->AddMsg(Format(gui->server->txJoined, info->name.c_str()));
-					Info("UpdateLobbyNet: Player %s (%s) joined, id: %d.", info->name.c_str(), packet->systemAddress.ToString(), info->id);
-
-					CheckReady();
-				}
-			}
-			break;
-		case ID_CHANGE_READY:
-			if(!info)
-				Warn("UpdateLobbyNet: Packet ID_CHANGE_READY from unconnected client %s.", packet->systemAddress.ToString());
-			else
-			{
-				bool ready;
-				reader >> ready;
-				if(!reader)
-					N.StreamError("UpdateLobbyNet: Broken packet ID_CHANGE_READY from client %s.", info->name.c_str());
-				else if(ready != info->ready)
-				{
-					info->ready = ready;
-					if(N.active_players > 2)
-						AddLobbyUpdate(Int2(Lobby_UpdatePlayer, info->id));
-					CheckReady();
-				}
-			}
-			break;
-		case ID_SAY:
-			if(!info)
-				Warn("UpdateLobbyNet: Packet ID_SAY from unconnected client %s.", packet->systemAddress.ToString());
-			else
-				Server_Say(stream, *info, packet);
-			break;
-		case ID_WHISPER:
-			if(!info)
-				Warn("UpdateLobbyNet: Packet ID_WHISPER from unconnected client %s.", packet->systemAddress.ToString());
-			else
-				Server_Whisper(reader, *info, packet);
-			break;
-		case ID_LEAVE:
-			if(!info)
-				Warn("UpdateLobbyNet: Packet ID_LEAVE from unconnected client %.", packet->systemAddress.ToString());
-			else
-			{
-				// czekano na dane a on zquitowa³ mimo braku takiej mo¿liwoœci :S
-				cstring name = info->state == PlayerInfo::WAITING_FOR_HELLO ? info->adr.ToString() : info->name.c_str();
-				gui->server->AddMsg(Format(gui->server->txPlayerLeft, name));
-				Info("UpdateLobbyNet: Player %s left lobby.", name);
-				--N.active_players;
-				if(N.active_players > 1)
-				{
-					AddLobbyUpdate(Int2(Lobby_ChangeCount, 0));
-					if(info->state == PlayerInfo::IN_LOBBY)
-						AddLobbyUpdate(Int2(Lobby_RemovePlayer, info->id));
-				}
-				int index = info->GetIndex();
-				gui->server->grid.RemoveItem(index);
-				N.UpdateServerInfo();
-				N.peer->CloseConnection(packet->systemAddress, true);
-				auto it = N.players.begin() + index;
-				delete *it;
-				N.players.erase(it);
-				CheckReady();
-			}
-			break;
-		case ID_PICK_CHARACTER:
-			if(!info || info->state != PlayerInfo::IN_LOBBY)
-				Warn("UpdateLobbyNet: Packet ID_PICK_CHARACTER from player not in lobby %s.", packet->systemAddress.ToString());
-			else
-			{
-				Class old_class = info->clas;
-				bool old_ready = info->ready;
-				int result = ReadCharacterData(reader, info->clas, info->hd, info->cc);
-				byte ok = 0;
-				if(result == 0)
-				{
-					reader >> info->ready;
-					if(reader)
-					{
-						ok = 1;
-						Info("Received character from '%s'.", info->name.c_str());
-					}
-					else
-						N.StreamError("UpdateLobbyNet: Broken packet ID_PICK_CHARACTER from '%s'.", info->name.c_str());
-				}
-				else
-				{
-					cstring err[3] = {
-						"read error",
-						"value error",
-						"validation error"
-					};
-
-					N.StreamError("UpdateLobbyNet: Packet ID_PICK_CHARACTER from '%s' %s.", info->name.c_str(), err[result - 1]);
-				}
-
-				if(ok == 0)
-				{
-					info->ready = false;
-					info->clas = Class::INVALID;
-				}
-				CheckReady();
-
-				// send info to other N.active_players
-				if((old_ready != info->ready || old_class != info->clas) && N.active_players > 2)
-					AddLobbyUpdate(Int2(Lobby_UpdatePlayer, info->id));
-
-				// send result
-				byte packet[2] = { ID_PICK_CHARACTER, ok };
-				N.peer->Send((cstring)packet, 2, HIGH_PRIORITY, RELIABLE, 0, info->adr, false);
-				N.StreamWrite(packet, 2, Stream_UpdateLobbyServer, info->adr);
-			}
-			break;
-		default:
-			Warn("UpdateLobbyNet: Unknown packet from %s: %u.", info ? info->name.c_str() : packet->systemAddress.ToString(), msg_id);
-			N.StreamError();
-			break;
-		}
-
-		N.StreamEnd();
-	}
-
-	int index = 0;
-	for(vector<PlayerInfo*>::iterator it = N.players.begin(), end = N.players.end(); it != end;)
-	{
-		auto& info = **it;
-		if(info.state != PlayerInfo::IN_LOBBY)
-		{
-			info.timer -= dt;
-			if(info.timer <= 0.f)
-			{
-				// czas oczekiwania min¹³, zkickuj
-				Info("UpdateLobbyNet: Removed %s due to inactivity.", info.adr.ToString());
-				N.peer->CloseConnection(info.adr, false);
-				--N.active_players;
-				if(N.active_players > 1)
-					AddLobbyUpdate(Int2(Lobby_RemovePlayer, 0));
-				delete *it;
-				it = N.players.erase(it);
-				end = N.players.end();
-				gui->server->grid.RemoveItem(index);
-			}
-			else
-			{
-				++index;
-				++it;
-			}
-		}
-		else
-		{
-			++it;
-			++index;
-		}
-	}
-
-	// wysy³anie aktualizacji lobby
-	update_timer += dt;
-	if(update_timer >= T_LOBBY_UPDATE)
-	{
-		update_timer = 0.f;
-		if(!lobby_updates.empty())
-		{
-			assert(lobby_updates.size() < 255);
-			if(N.active_players > 1)
-			{
-				// aktualizacje w lobby
-				BitStreamWriter f;
-				f << ID_LOBBY_UPDATE;
-				f.Write0();
-				int count = 0;
-				for(uint i = 0; i < min(lobby_updates.size(), 255u); ++i)
-				{
-					Int2& u = lobby_updates[i];
-					switch(u.x)
-					{
-					case Lobby_UpdatePlayer:
-						{
-							PlayerInfo* info = N.TryGetPlayer(u.y);
-							if(info)
-							{
-								++count;
-								f.WriteCasted<byte>(u.x);
-								f.WriteCasted<byte>(info->id);
-								f << info->ready;
-								f.WriteCasted<byte>(info->clas);
-							}
-						}
-						break;
-					case Lobby_AddPlayer:
-						{
-							PlayerInfo* info = N.TryGetPlayer(u.y);
-							if(info)
-							{
-								++count;
-								f.WriteCasted<byte>(u.x);
-								f.WriteCasted<byte>(info->id);
-								f << info->name;
-							}
-						}
-						break;
-					case Lobby_RemovePlayer:
-					case Lobby_KickPlayer:
-						++count;
-						f.WriteCasted<byte>(u.x);
-						f.WriteCasted<byte>(u.y);
-						break;
-					case Lobby_ChangeCount:
-						++count;
-						f.WriteCasted<byte>(u.x);
-						f.WriteCasted<byte>(N.active_players);
-						break;
-					case Lobby_ChangeLeader:
-						++count;
-						f.WriteCasted<byte>(u.x);
-						f.WriteCasted<byte>(leader_id);
-						break;
-					default:
-						assert(0);
-						break;
-					}
-				}
-				f.Patch<byte>(1, count);
-				N.SendAll(f, HIGH_PRIORITY, RELIABLE_ORDERED, Stream_UpdateLobbyServer);
-			}
-			lobby_updates.clear();
-		}
-	}
-
-	// starting game
-	if(N.starting)
-	{
-		startup_timer -= dt;
-		int co = int(startup_timer) + 1;
-		int d = -1;
-		if(startup_timer <= 0.f)
-		{
-			// change server status
-			Info("UpdateLobbyNet: Starting game.");
-			N.starting = false;
-			d = 0;
-			N.peer->SetMaximumIncomingConnections(0);
-			net_mode = NM_TRANSFER_SERVER;
-			net_timer = mp_timeout;
-			net_state = NetState::Server_Starting;
-			// kick N.active_players that connected but didn't join
-			for(vector<PlayerInfo*>::iterator it = N.players.begin(), end = N.players.end(); it != end;)
-			{
-				auto& info = **it;
-				if(info.state != PlayerInfo::IN_LOBBY)
-				{
-					N.peer->CloseConnection(info.adr, true);
-					Warn("UpdateLobbyNet: Disconnecting %s.", info.adr.ToString());
-					delete *it;
-					it = N.players.erase(it);
-					end = N.players.end();
-					--N.active_players;
-				}
-				else
-					++it;
-			}
-			gui->server->CloseDialog();
-			gui->info_box->Show(txStartingGame);
-		}
-		else if(co != last_startup_id)
-		{
-			last_startup_id = co;
-			d = co;
-		}
-		if(d != -1)
-		{
-			Info("UpdateLobbyNet: Starting in %d...", d);
-			gui->server->AddMsg(Format(gui->server->txStartingIn, d));
-			byte b[2];
-			if(d == 0)
-			{
-				b[0] = ID_STARTUP;
-				b[1] = (mp_load && !L.is_open ? 1 : 0);
-			}
-			else
-			{
-				b[0] = ID_TIMER;
-				b[1] = (byte)d;
-			}
-			N.peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
-			N.StreamWrite(b, 2, Stream_UpdateLobbyServer, UNASSIGNED_SYSTEM_ADDRESS);
-		}
-	}
-}
-
-bool Game::DoLobbyUpdate(BitStreamReader& f)
-{
-	byte count;
-	f >> count;
-	if(!f)
-	{
-		Error("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE.");
-		return false;
-	}
-
-	for(int i = 0; i < count; ++i)
-	{
-		byte type, id;
-		f >> type;
-		f >> id;
-		if(!f)
-		{
-			Error("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE at index %d.", i);
-			return false;
-		}
-
-		switch(type)
-		{
-		case Lobby_UpdatePlayer:
-			{
-				PlayerInfo* info = N.TryGetPlayer(id);
-				if(!info)
-				{
-					Error("UpdateLobbyNet: Broken Lobby_UpdatePlayer, invalid player id %d.", id);
-					return false;
-				}
-				f >> info->ready;
-				f.ReadCasted<byte>(info->clas);
-				if(!f)
-				{
-					Error("UpdateLobbyNet: Broken Lobby_UpdatePlayer.");
-					return false;
-				}
-				if(!ClassInfo::IsPickable(info->clas))
-				{
-					Error("UpdateLobbyNet: Broken Lobby_UpdatePlayer, player %d have class %d: %s.", id, info->clas);
-					return false;
-				}
-			}
-			break;
-		case Lobby_AddPlayer:
-			{
-				const string& name = f.ReadString1();
-				if(!f)
-				{
-					Error("UpdateLobbyNet: Broken Lobby_AddPlayer.");
-					return false;
-				}
-				else if(id != my_id)
-				{
-					auto pinfo = new PlayerInfo;
-					N.players.push_back(pinfo);
-
-					auto& info = *pinfo;
-					info.state = PlayerInfo::IN_LOBBY;
-					info.id = id;
-					info.loaded = true;
-					info.name = name;
-					gui->server->grid.AddItem();
-
-					gui->server->AddMsg(Format(gui->server->txJoined, name.c_str()));
-					Info("UpdateLobbyNet: Player %s joined lobby.", name.c_str());
-				}
-			}
-			break;
-		case Lobby_RemovePlayer:
-		case Lobby_KickPlayer:
-			{
-				bool is_kick = (type == Lobby_KickPlayer);
-				PlayerInfo* info = N.TryGetPlayer(id);
-				if(!info)
-				{
-					Error("UpdateLobbyNet: Broken Lobby_Remove/KickPlayer, invalid player id %d.", id);
-					return false;
-				}
-				Info("UpdateLobbyNet: Player %s %s.", info->name.c_str(), is_kick ? "was kicked" : "left lobby");
-				gui->server->AddMsg(Format(is_kick ? txPlayerKicked : txPlayerLeft, info->name.c_str()));
-				int index = info->GetIndex();
-				gui->server->grid.RemoveItem(index);
-				auto it = N.players.begin() + index;
-				delete *it;
-				N.players.erase(it);
-			}
-			break;
-		case Lobby_ChangeCount:
-			N.active_players = id;
-			break;
-		case Lobby_ChangeLeader:
-			{
-				PlayerInfo* info = N.TryGetPlayer(id);
-				if(!info)
-				{
-					Error("UpdateLobbyNet: Broken Lobby_ChangeLeader, invalid player id %d", id);
-					return false;
-				}
-				Info("%s is now leader.", info->name.c_str());
-				leader_id = id;
-				if(my_id == id)
-					gui->server->AddMsg(gui->server->txYouAreLeader);
-				else
-					gui->server->AddMsg(Format(gui->server->txLeaderChanged, info->name.c_str()));
-			}
-			break;
-		default:
-			Error("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE, unknown change type %d.", type);
-			return false;
-		}
-	}
-
-	return true;
-}
-
 void Game::OnCreateCharacter(int id)
 {
 	if(id != BUTTON_OK)
@@ -3024,7 +2095,7 @@ void Game::OnCreateCharacter(int id)
 		if(Net::IsServer())
 		{
 			if(info.clas != old_class && N.active_players > 1)
-				AddLobbyUpdate(Int2(Lobby_UpdatePlayer, 0));
+				gui->server->AddLobbyUpdate(Int2(Lobby_UpdatePlayer, 0));
 		}
 		else
 		{
@@ -3087,8 +2158,8 @@ void Game::OnPickServer(int id)
 	{
 		PickServerPanel::ServerData& info = gui->pick_server->servers[gui->pick_server->grid.selected];
 		N.server = info.adr;
-		server_name2 = info.name;
-		max_players2 = info.max_players;
+		gui->server->server_name = info.name;
+		gui->server->max_players = info.max_players;
 		N.active_players = info.active_players;
 		if(IS_SET(info.flags, SERVER_PASSWORD))
 		{
@@ -3097,7 +2168,7 @@ void Game::OnPickServer(int id)
 			net_state = NetState::Client_WaitingForPassword;
 			net_tries = 1;
 			gui->info_box->Show(txWaitingForPswd);
-			GetTextDialogParams params(Format(txEnterPswd, server_name2.c_str()), enter_pswd);
+			GetTextDialogParams params(Format(txEnterPswd, gui->server->server_name.c_str()), enter_pswd);
 			params.event = DialogEvent(this, &Game::OnEnterPassword);
 			params.limit = 16;
 			params.parent = gui->info_box;
@@ -3160,14 +2231,4 @@ void Game::ClearAndExitToMenu(cstring msg)
 	ClosePeer();
 	ExitToMenu();
 	GUI.SimpleDialog(msg, gui->main_menu);
-}
-
-void Game::AddLobbyUpdate(const Int2& u)
-{
-	for(Int2& update : lobby_updates)
-	{
-		if(update == u)
-			return;
-	}
-	lobby_updates.push_back(u);
 }

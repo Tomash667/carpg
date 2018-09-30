@@ -157,7 +157,6 @@ public:
 	void OnRelease() override;
 	void InitLayout();
 	void SetText();
-	void SetShader(ID3DXEffect* e);
 	void Draw(bool draw_layers, bool draw_dialogs);
 	bool AddFont(cstring filename);
 	Font* CreateFont(cstring name, int size, int weight, int tex_size, int outline = 0);

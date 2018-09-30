@@ -23,11 +23,4 @@ const int I_CONNECT_TRIES = 5; // liczba prób po³¹czenia (ca³kowity czas ³¹czeni
 const float T_CONNECT = 5.f; // czas na po³¹czenie do serwera
 const int I_SHUTDOWN = 1000;
 
-// czas odliczania do uruchomienia gry
-#ifdef _DEBUG
-const int STARTUP_TIMER = 1;
-#else
-const int STARTUP_TIMER = 3;
-#endif
-
 const int MAX_LEVEL = 25;

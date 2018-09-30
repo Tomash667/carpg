@@ -1117,7 +1117,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					{
 						PlayerInfo& info = N.GetMe();
 						info.ready = !info.ready;
-						ChangeReady();
+						gui->server->ChangeReady();
 					}
 					break;
 				case CMD_LEADER:
@@ -1140,7 +1140,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								if(Net::IsServer())
 								{
 									leader_id = info->id;
-									AddLobbyUpdate(Int2(Lobby_ChangeLeader, 0));
+									gui->server->AddLobbyUpdate(Int2(Lobby_ChangeLeader, 0));
 								}
 								else
 									Msg("You can't change a leader.");
@@ -1233,41 +1233,9 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					break;
 				case CMD_START:
 					{
-						if(N.starting)
-						{
-							Msg("Server is already starting.");
-							break;
-						}
-
-						cstring error_text = nullptr;
-
-						for(PlayerInfo* info : N.players)
-						{
-							if(!info->ready)
-							{
-								error_text = "Not everyone is ready.";
-								break;
-							}
-						}
-
-						if(!error_text)
-						{
-							// rozpocznij odliczanie do startu
-							extern const int STARTUP_TIMER;
-							N.starting = true;
-							last_startup_id = STARTUP_TIMER;
-							startup_timer = float(STARTUP_TIMER);
-							BitStreamWriter f;
-							f << ID_TIMER;
-							f << (byte)STARTUP_TIMER;
-							N.SendAll(f, IMMEDIATE_PRIORITY, RELIABLE, Stream_UpdateLobbyServer);
-							gui->server->bts[4].text = gui->server->txStop;
-							cstring s = Format(gui->server->txStartingIn, STARTUP_TIMER);
-							AddMsg(s);
-							Info(s);
-						}
-						else
-							Msg(error_text);
+						cstring msg = gui->server->TryStart();
+						if(msg)
+							Msg(msg);
 					}
 					break;
 				case CMD_SAY:
@@ -1471,63 +1439,8 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					}
 					break;
 				case CMD_QS:
-					if(Net::IsServer())
-					{
-						if(!N.starting)
-						{
-							PlayerInfo& info = N.GetMe();
-							if(!info.ready)
-							{
-								if(info.clas == Class::INVALID)
-									gui->server->PickClass(Class::RANDOM, true);
-								else
-								{
-									info.ready = true;
-									CheckReady();
-								}
-							}
-
-							cstring error_text = nullptr;
-
-							for(PlayerInfo* info : N.players)
-							{
-								if(!info->ready)
-								{
-									error_text = "Not everyone is ready.";
-									break;
-								}
-							}
-
-							if(!error_text)
-							{
-								// rozpocznij odliczanie do startu
-								extern const int STARTUP_TIMER;
-								N.starting = true;
-								last_startup_id = STARTUP_TIMER;
-								startup_timer = float(STARTUP_TIMER);
-								BitStreamWriter f;
-								f << ID_TIMER;
-								f << (byte)STARTUP_TIMER;
-								N.SendAll(f, IMMEDIATE_PRIORITY, RELIABLE, Stream_UpdateLobbyServer);
-							}
-							else
-								Msg(error_text);
-						}
-					}
-					else
-					{
-						PlayerInfo& info = N.GetMe();
-						if(!info.ready)
-						{
-							if(info.clas == Class::INVALID)
-								gui->server->PickClass(Class::RANDOM, true);
-							else
-							{
-								info.ready = true;
-								ChangeReady();
-							}
-						}
-					}
+					if(!gui->server->Quickstart())
+						Msg("Not everyone is ready.");
 					break;
 				case CMD_CLEAR:
 					switch(source)

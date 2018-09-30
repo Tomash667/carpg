@@ -443,7 +443,7 @@ void Game::StartGameMode()
 			{
 				mp_load = true;
 				LoadGameSlot(quickstart_slot);
-				autoready = true;
+				gui->server->autoready = true;
 			}
 			catch(const SaveException& ex)
 			{
@@ -468,17 +468,12 @@ void Game::StartGameMode()
 			break;
 		}
 
-		gui->server->Show();
 		Net_OnNewGameServer();
-		N.UpdateServerInfo();
-
-		if(change_title_a)
-			ChangeTitle();
 		break;
 	case QUICKSTART_JOIN_LAN:
 		if(!player_name.empty())
 		{
-			autoready = true;
+			gui->server->autoready = true;
 			pick_autojoin = true;
 			gui->pick_server->Show();
 		}
@@ -490,7 +485,7 @@ void Game::StartGameMode()
 		{
 			if(!server_ip.empty())
 			{
-				autoready = true;
+				gui->server->autoready = true;
 				QuickJoinIp();
 			}
 			else

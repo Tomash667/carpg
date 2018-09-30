@@ -158,14 +158,12 @@ public:
 	//****************************************************************************
 public:
 	void InitServer();
-	void UpdateServerInfo();
 	void OnChangeLevel(int level);
 	void SendServer(BitStreamWriter& f, PacketPriority priority, PacketReliability reliability, const SystemAddress& adr, StreamLogType type);
 	uint SendAll(BitStreamWriter& f, PacketPriority priority, PacketReliability reliability, StreamLogType type);
 
 	uint active_players, max_players;
 	string server_name, password;
-	bool starting;
 
 	//****************************************************************************
 	// Client

@@ -186,12 +186,10 @@ void Game::KickPlayer(PlayerInfo& info)
 		Info("Player %s was kicked.", info.name.c_str());
 
 		if(N.active_players > 2)
-			AddLobbyUpdate(Int2(Lobby_KickPlayer, info.id));
+			gui->server->AddLobbyUpdate(Int2(Lobby_KickPlayer, info.id));
 
-		// puki co tylko dla lobby
-		CheckReady();
-
-		N.UpdateServerInfo();
+		gui->server->CheckReady();
+		gui->server->UpdateServerInfo();
 	}
 	else
 	{
@@ -7867,11 +7865,16 @@ void Game::Net_OnNewGameServer()
 		Net::changes.clear(); // przy wczytywaniu jest czyszczone przed wczytaniem i w net_changes s¹ zapisane quest_items
 	if(!net_talk.empty())
 		StringPool.Free(net_talk);
-	max_players2 = N.max_players;
-	server_name2 = N.server_name;
+	gui->server->max_players = N.max_players;
+	gui->server->server_name = N.server_name;
+	gui->server->UpdateServerInfo();
+	gui->server->Show();
 	enter_pswd = (N.password.empty() ? "" : "1");
 	gui->mp_box->Reset();
 	gui->mp_box->visible = true;
+
+	if(change_title_a)
+		ChangeTitle();
 }
 
 //=================================================================================================

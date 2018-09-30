@@ -108,37 +108,7 @@ void Net::InitServer()
 	Info("Server created. Waiting for connection.");
 
 	SetMode(Mode::Server);
-	starting = false;
 	Info("sv_online = true");
-}
-
-//=================================================================================================
-void Net::UpdateServerInfo()
-{
-	Game& game = Game::Get();
-
-	// 0 char C
-	// 1 char A
-	// 2-5 int - version
-	// 6 byte - players count
-	// 7 byte - max players
-	// 8 byte - flags
-	// 9+ byte - name
-	BitStreamWriter f;
-	f.WriteCasted<byte>('C');
-	f.WriteCasted<byte>('A');
-	f << VERSION;
-	f.WriteCasted<byte>(active_players);
-	f.WriteCasted<byte>(max_players);
-	byte flags = 0;
-	if(!password.empty())
-		flags |= SERVER_PASSWORD;
-	if(game.mp_load)
-		flags |= SERVER_SAVED;
-	f.WriteCasted<byte>(flags);
-	f << server_name;
-
-	peer->SetOfflinePingResponse(f.GetData(), f.GetSize());
 }
 
 void Net::OnChangeLevel(int level)

@@ -9958,8 +9958,7 @@ void Game::ClearGame()
 
 	draw_batch.Clear();
 
-	if(game_state != GS_MAIN_MENU && prev_game_state != GS_MAIN_MENU)
-		LeaveLocation(true, false);
+	LeaveLocation(true, false);
 
 	if((game_state == GS_WORLDMAP || prev_game_state == GS_WORLDMAP) && !L.is_open && Net::IsLocal() && !was_client)
 	{

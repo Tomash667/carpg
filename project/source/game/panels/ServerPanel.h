@@ -26,6 +26,11 @@ public:
 	void LoadData();
 	void Draw(ControlDrawData* cdd = nullptr) override;
 	void Update(float dt) override;
+	void UpdateLobby(float dt);
+	void UpdateLobbyClient(float dt);
+	bool DoLobbyUpdate(BitStreamReader& f);
+	void UpdateLobbyServer(float dt);
+	void UpdateServerInfo();
 	void Event(GuiEvent e) override;
 	void Show();
 	void GetCell(int item, int column, Cell& cell);
@@ -37,11 +42,23 @@ public:
 	void UseLoadedCharacter(bool have);
 	void CheckAutopick();
 	void PickClass(Class clas, bool ready);
+	void AddLobbyUpdate(const Int2& u);
+	void ChangeReady();
+	void CheckReady();
+	bool Quickstart();
+	cstring TryStart();
+	void Start();
 
 	Grid grid;
-	cstring txReady, txNotReady, txStart, txStop, txStarting, txPickChar, txKick, txNone, txSetLeader, txNick, txChar, txLoadedCharInfo, txNotLoadedCharInfo, txChangeChar, txCantKickMyself,
-		txCantKickUnconnected, txReallyKick, txAlreadyLeader, txLeaderChanged, txNotJoinedYet, txNotAllReady, txStartingIn, txStartingStop, txDisconnecting, txYouAreLeader, txJoined, txPlayerLeft,
-		txNeedSelectedPlayer, txServerText;
 	InputTextBox itb;
+	vector<Int2> lobby_updates;
+	string server_name;
+	uint max_players;
+	float update_timer, startup_timer;
+	int last_startup_sec;
+	bool starting, autoready;
+	cstring txReady, txNotReady, txStart, txStop, txPickChar, txKick, txNone, txSetLeader, txNick, txChar, txLoadedCharInfo, txNotLoadedCharInfo, txChangeChar,
+		txCantKickMyself, txCantKickUnconnected, txReallyKick, txAlreadyLeader, txLeaderChanged, txNotJoinedYet, txNotAllReady, txStartingIn, txStartingStop,
+		txDisconnecting, txYouAreLeader, txJoined, txPlayerLeft, txNeedSelectedPlayer, txServerText;
 	TEX tGotowy, tNieGotowy;
 };

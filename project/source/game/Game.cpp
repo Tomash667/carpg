@@ -79,7 +79,7 @@ paused(false), pick_autojoin(false), draw_flags(0xFFFFFFFF), tMiniSave(nullptr),
 sItemRegionRot(nullptr), sChar(nullptr), sSave(nullptr), mp_load(false), was_client(false), sCustom(nullptr), cl_postfx(true), mp_timeout(10.f),
 cl_normalmap(true), cl_specularmap(true), dungeon_tex_wrap(true), profiler_mode(0), grass_range(40.f), vbInstancing(nullptr), vb_instancing_max(0),
 screenshot_format(ImageFormat::JPG), quickstart_class(Class::RANDOM), autopick_class(Class::INVALID), game_state(GS_LOAD), default_devmode(false),
-default_player_devmode(false), quickstart_slot(MAX_SAVE_SLOTS), autoready(false), super_shader(new SuperShader)
+default_player_devmode(false), quickstart_slot(MAX_SAVE_SLOTS), super_shader(new SuperShader)
 {
 #ifdef _DEBUG
 	default_devmode = true;
@@ -1950,6 +1950,9 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 // dru¿yna opuœci³a lokacje
 void Game::LeaveLocation(bool clear, bool end_buffs)
 {
+	if(!L.is_open)
+		return;
+
 	if(Net::IsLocal() && !was_client)
 	{
 		// zawody
@@ -1962,13 +1965,9 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 
 	if(clear)
 	{
-		if(L.is_open)
-			LeaveLevel(true);
+		LeaveLevel(true);
 		return;
 	}
-
-	if(!L.is_open)
-		return;
 
 	Info("Leaving location.");
 
