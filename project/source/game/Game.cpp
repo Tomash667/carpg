@@ -78,7 +78,7 @@ check_updates(true), skip_tutorial(false), portal_anim(0), debug_info2(false), m
 paused(false), pick_autojoin(false), draw_flags(0xFFFFFFFF), tMiniSave(nullptr), prev_game_state(GS_LOAD), tSave(nullptr), sItemRegion(nullptr),
 sItemRegionRot(nullptr), sChar(nullptr), sSave(nullptr), mp_load(false), was_client(false), sCustom(nullptr), cl_postfx(true), mp_timeout(10.f),
 cl_normalmap(true), cl_specularmap(true), dungeon_tex_wrap(true), profiler_mode(0), grass_range(40.f), vbInstancing(nullptr), vb_instancing_max(0),
-screenshot_format(ImageFormat::JPG), quickstart_class(Class::RANDOM), autopick_class(Class::INVALID), game_state(GS_LOAD), default_devmode(false),
+screenshot_format(ImageFormat::JPG), quickstart_class(Class::RANDOM), game_state(GS_LOAD), default_devmode(false),
 default_player_devmode(false), quickstart_slot(MAX_SAVE_SLOTS), super_shader(new SuperShader)
 {
 #ifdef _DEBUG
@@ -1311,17 +1311,6 @@ void Game::SetGameText()
 	txMpNPCLeft = Str("mpNPCLeft");
 	txLoadingLevel = Str("loadingLevel");
 	txDisconnecting = Str("disconnecting");
-	txDisconnected = Str("disconnected");
-	txLost = Str("lost");
-	txLeft = Str("left");
-	txLost2 = Str("left2");
-	txUnconnected = Str("unconnected");
-	txClosing = Str("closing");
-	txKicked = Str("kicked");
-	txUnknown = Str("unknown");
-	txUnknown2 = Str("unknown2");
-	txWaitingForServer = Str("waitingForServer");
-	txStartingGame = Str("startingGame");
 	txPreparingWorld = Str("preparingWorld");
 	txInvalidCrc = Str("invalidCrc");
 
@@ -1638,94 +1627,8 @@ MeshInstance* Game::GetBowInstance(Mesh* mesh)
 
 void Game::SetupConfigVars()
 {
-	config_vars.push_back(ConfigVar("devmode", default_devmode));
-	config_vars.push_back(ConfigVar("players_devmode", default_player_devmode));
-}
-
-void Game::ParseConfigVar(cstring arg)
-{
-	assert(arg);
-
-	int index = StrCharIndex(arg, '=');
-	if(index == -1 || index == 0)
-	{
-		Warn("Broken command line variable '%s'.", arg);
-		return;
-	}
-
-	ConfigVar* var = nullptr;
-	for(ConfigVar& v : config_vars)
-	{
-		if(strncmp(arg, v.name, index) == 0)
-		{
-			var = &v;
-			break;
-		}
-	}
-	if(!var)
-	{
-		Warn("Missing config variable '%.*s'.", index, arg);
-		return;
-	}
-
-	cstring value = arg + index + 1;
-	if(!*value)
-	{
-		Warn("Missing command line variable value '%s'.", arg);
-		return;
-	}
-
-	switch(var->type)
-	{
-	case AnyVarType::Bool:
-		{
-			bool b;
-			if(!TextHelper::ToBool(value, b))
-			{
-				Warn("Value for config variable '%s' must be bool, found '%s'.", var->name, value);
-				return;
-			}
-			var->new_value._bool = b;
-			var->have_new_value = true;
-		}
-		break;
-	}
-}
-
-void Game::SetConfigVarsFromFile()
-{
-	for(ConfigVar& v : config_vars)
-	{
-		Config::Entry* entry = cfg.GetEntry(v.name);
-		if(!entry)
-			continue;
-
-		switch(v.type)
-		{
-		case AnyVarType::Bool:
-			if(!TextHelper::ToBool(entry->value.c_str(), v.ptr->_bool))
-			{
-				Warn("Value for config variable '%s' must be bool, found '%s'.", v.name, entry->value.c_str());
-				return;
-			}
-			break;
-		}
-	}
-}
-
-void Game::ApplyConfigVars()
-{
-	for(ConfigVar& v : config_vars)
-	{
-		if(!v.have_new_value)
-			continue;
-		switch(v.type)
-		{
-		case AnyVarType::Bool:
-			v.ptr->_bool = v.new_value._bool;
-			break;
-		}
-	}
+	cfg.AddVar(ConfigVar("devmode", default_devmode));
+	cfg.AddVar(ConfigVar("players_devmode", default_player_devmode));
 }
 
 cstring Game::GetShortcutText(GAME_KEYS key, cstring action)

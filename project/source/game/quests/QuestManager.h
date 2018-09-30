@@ -75,12 +75,14 @@ public:
 	bool HandleSpecial(DialogContext& ctx, cstring msg, bool& result);
 	bool HandleSpecialIf(DialogContext& ctx, cstring msg, bool& result);
 	bool HandleFormatString(const string& str, cstring& result);
+	const Item* FindQuestItemClient(cstring id, int refid) const;
 
 	vector<Quest*> unaccepted_quests;
 	vector<Quest*> quests;
 	vector<Quest_Dungeon*> quests_timeout;
 	vector<Quest*> quests_timeout2;
 	vector<QuestItemRequest*> quest_item_requests;
+	vector<Item*> quest_items;
 	Quest_Sawmill* quest_sawmill;
 	Quest_Mine* quest_mine;
 	Quest_Bandits* quest_bandits;

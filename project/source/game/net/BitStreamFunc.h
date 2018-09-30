@@ -12,12 +12,22 @@ public:
 	~BitStreamWriter();
 
 	using StreamWriter::Write;
+	using StreamWriter::operator <<;
 	void Write(const void* ptr, uint size) override;
 	uint GetPos() const override;
 	bool SetPos(uint pos) override;
 	cstring GetData() const;
 	uint GetSize() const;
 	BitStream& GetBitStream() const { return bitstream; }
+
+	void operator << (const Item& item);
+	void operator << (const Item* item)
+	{
+		if(item)
+			operator << (*item);
+		else
+			Write0();
+	}
 
 private:
 	BitStream& bitstream;

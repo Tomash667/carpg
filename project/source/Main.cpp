@@ -449,6 +449,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	LogProcessorFeatures();
 
 	Game game;
+	Config& cfg = Game::Get().cfg;
 	StartupOptions options;
 	Bool3 windowed = None,
 		console = None;
@@ -478,7 +479,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 		cstring arg = argv[i] + 1;
 		if(c == '+')
-			game.ParseConfigVar(arg);
+			cfg.ParseConfigVar(arg);
 		else
 		{
 			if(strcmp(arg, "config") == 0)
@@ -567,7 +568,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	//-------------------------------------------------------------------------
 	// wczytaj plik konfiguracyjny
 	Info("Loading config file");
-	Config& cfg = Game::Get().cfg;
 	Config::Result result = cfg.Load(game.cfg_file.c_str());
 	if(result == Config::NO_FILE)
 		Info("Config file not found '%s'.", game.cfg_file.c_str());
@@ -701,34 +701,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	if(slot != -1 && slot >= 1 && slot <= MAX_SAVE_SLOTS)
 		game.quickstart_slot = slot;
 
-	// autopicked class in MP
-	{
-		const string& clas = cfg.GetString("autopick", "");
-		if(!clas.empty())
-		{
-			if(clas == "random")
-				game.autopick_class = Class::RANDOM;
-			else
-			{
-				ClassInfo* ci = ClassInfo::Find(clas);
-				if(ci)
-				{
-					if(ClassInfo::IsPickable(ci->class_id))
-						game.autopick_class = ci->class_id;
-					else
-						Warn("Settings [autopick]: Class '%s' is not pickable by players.", clas.c_str());
-				}
-				else
-					Warn("Settings [autopick]: Invalid class '%s'.", clas.c_str());
-			}
-		}
-	}
-
-	// autostart serwera
-	game.autostart_count = cfg.GetUint("autostart");
-	if(game.autostart_count > MAX_PLAYERS)
-		game.autostart_count = 0;
-
 	N.port = Clamp(cfg.GetInt("port", PORT), 0, 0xFFFF);
 
 	// autopicked class in quickstart
@@ -815,8 +787,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		}
 	}
 	
-	game.SetConfigVarsFromFile();
-	game.ApplyConfigVars();
+	cfg.LoadConfigVars();
 
 	//-------------------------------------------------------------------------
 	// logger

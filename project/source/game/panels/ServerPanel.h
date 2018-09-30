@@ -53,12 +53,14 @@ public:
 	InputTextBox itb;
 	vector<Int2> lobby_updates;
 	string server_name;
-	uint max_players;
 	float update_timer, startup_timer;
+	uint max_players, autostart_count;
 	int last_startup_sec;
-	bool starting, autoready;
+	Class autopick_class;
+	bool starting, autoready, password;
 	cstring txReady, txNotReady, txStart, txStop, txPickChar, txKick, txNone, txSetLeader, txNick, txChar, txLoadedCharInfo, txNotLoadedCharInfo, txChangeChar,
 		txCantKickMyself, txCantKickUnconnected, txReallyKick, txAlreadyLeader, txLeaderChanged, txNotJoinedYet, txNotAllReady, txStartingIn, txStartingStop,
-		txDisconnecting, txYouAreLeader, txJoined, txPlayerLeft, txNeedSelectedPlayer, txServerText;
+		txDisconnecting, txYouAreLeader, txJoined, txPlayerLeft, txNeedSelectedPlayer, txServerText, txDisconnected, txClosing, txKicked, txUnknown,
+		txUnconnected, txIpLostConnection, txPlayerLostConnection, txLeft, txStartingGame, txWaitingForServer;
 	TEX tGotowy, tNieGotowy;
 };

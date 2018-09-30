@@ -6,6 +6,7 @@
 #include "GameFile.h"
 #include "World.h"
 #include "Content.h"
+#include "Net.h"
 
 #include "Quest_Bandits.h"
 #include "Quest_BanditsCollectToll.h"
@@ -99,6 +100,7 @@ void QuestManager::Clear()
 	DeleteElements(quests);
 	DeleteElements(unaccepted_quests);
 	DeleteElements(quest_item_requests);
+	DeleteElements(quest_items);
 	quest_tournament->Clear();
 }
 
@@ -474,6 +476,7 @@ void QuestManager::Update(int days)
 //=================================================================================================
 void QuestManager::Write(BitStreamWriter& f)
 {
+	// quests
 	f.WriteCasted<word>(quests.size());
 	for(Quest* quest : quests)
 	{
@@ -482,11 +485,25 @@ void QuestManager::Write(BitStreamWriter& f)
 		f << quest->name;
 		f.WriteStringArray<byte, word>(quest->msgs);
 	}
+
+	// quest items
+	f.WriteCasted<word>(Net::changes.size());
+	for(NetChange& c : Net::changes)
+	{
+		assert(c.type == NetChange::REGISTER_ITEM);
+		f << c.base_item->id;
+		f << c.item2->id;
+		f << c.item2->name;
+		f << c.item2->desc;
+		f << c.item2->refid;
+	}
+	Net::changes.clear();
 }
 
 //=================================================================================================
 bool QuestManager::Read(BitStreamReader& f)
 {
+	// quests
 	const int QUEST_MIN_SIZE = sizeof(int) + sizeof(byte) * 3;
 	word quest_count;
 	f >> quest_count;
@@ -512,6 +529,51 @@ bool QuestManager::Read(BitStreamReader& f)
 			return false;
 		}
 		++index;
+	}
+
+	// quest items
+	const int QUEST_ITEM_MIN_SIZE = 7;
+	word quest_items_count;
+	f >> quest_items_count;
+	if(!f.Ensure(QUEST_ITEM_MIN_SIZE * quest_items_count))
+	{
+		Error("Read world: Broken packet for quest items.");
+		return false;
+	}
+	quest_items.reserve(quest_items_count);
+	for(word i = 0; i < quest_items_count; ++i)
+	{
+		const string& item_id = f.ReadString1();
+		if(!f)
+		{
+			Error("Read world: Broken packet for quest item %u.", i);
+			return false;
+		}
+
+		const Item* base_item;
+		if(item_id[0] == '$')
+			base_item = Item::TryGet(item_id.c_str() + 1);
+		else
+			base_item = Item::TryGet(item_id);
+		if(!base_item)
+		{
+			Error("Read world: Missing quest item '%s' (%u).", item_id.c_str(), i);
+			return false;
+		}
+
+		Item* item = base_item->CreateCopy();
+		f >> item->id;
+		f >> item->name;
+		f >> item->desc;
+		f >> item->refid;
+		if(!f)
+		{
+			Error("Read world: Broken packet for quest item %u (2).", i);
+			delete item;
+			return false;
+		}
+		else
+			quest_items.push_back(item);
 	}
 
 	return true;
@@ -854,4 +916,18 @@ bool QuestManager::HandleFormatString(const string& str, cstring& result)
 	result = it->second->FormatString(str);
 	assert(result);
 	return true;
+}
+
+//=================================================================================================
+const Item* QuestManager::FindQuestItemClient(cstring id, int refid) const
+{
+	assert(id);
+
+	for(Item* item : quest_items)
+	{
+		if(item->id == id && (refid == -1 || item->IsQuest(refid)))
+			return item;
+	}
+
+	return nullptr;
 }

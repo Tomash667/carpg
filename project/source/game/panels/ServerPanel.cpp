@@ -34,7 +34,7 @@ enum ButtonId
 };
 
 //=================================================================================================
-ServerPanel::ServerPanel(const DialogInfo& info) : GameDialogBox(info), autoready(false)
+ServerPanel::ServerPanel(const DialogInfo& info) : GameDialogBox(info), autoready(false), autopick_class(Class::INVALID)
 {
 	size = Int2(540, 510);
 	bts.resize(6);
@@ -88,6 +88,31 @@ ServerPanel::ServerPanel(const DialogInfo& info) : GameDialogBox(info), autoread
 	itb.Init();
 
 	visible = false;
+
+	// config
+	autostart_count = game->cfg.GetUint("autostart");
+	if(autostart_count > MAX_PLAYERS)
+		autostart_count = 0;
+
+	const string& clas = game->cfg.GetString("autopick", "");
+	if(!clas.empty())
+	{
+		if(clas == "random")
+			autopick_class = Class::RANDOM;
+		else
+		{
+			ClassInfo* ci = ClassInfo::Find(clas);
+			if(ci)
+			{
+				if(ClassInfo::IsPickable(ci->class_id))
+					autopick_class = ci->class_id;
+				else
+					Warn("Settings [autopick]: Class '%s' is not pickable by players.", clas.c_str());
+			}
+			else
+				Warn("Settings [autopick]: Invalid class '%s'.", clas.c_str());
+		}
+	}
 }
 
 //=================================================================================================
@@ -121,6 +146,16 @@ void ServerPanel::LoadLanguage()
 	txPlayerLeft = Str("playerLeft");
 	txNeedSelectedPlayer = Str("needSelectedPlayer");
 	txServerText = Str("serverText");
+	txDisconnected = Str("disconnected");
+	txClosing = Str("closing");
+	txKicked = Str("kicked");
+	txUnknown = Str("unknown");
+	txUnconnected = Str("unconnected");
+	txIpLostConnection = Str("ipLostConnection");
+	txPlayerLostConnection = Str("playerLostConnection");
+	txLeft = Str("left");
+	txStartingGame = Str("startingGame");
+	txWaitingForServer = Str("waitingForServer");
 
 	bts[0].text = txPickChar; // change char
 	bts[1].text = txReady; // not ready
@@ -165,7 +200,7 @@ void ServerPanel::Draw(ControlDrawData*)
 
 	// tekst
 	Rect r = { 340 + global_pos.x, 355 + global_pos.y, 340 + 185 + global_pos.x, 355 + 160 + global_pos.y };
-	GUI.DrawText(GUI.default_font, Format(txServerText, server_name.c_str(), N.active_players, max_players, game->enter_pswd.empty() ? GUI.txNo : GUI.txYes),
+	GUI.DrawText(GUI.default_font, Format(txServerText, server_name.c_str(), N.active_players, max_players, password ? GUI.txNo : GUI.txYes),
 		0, Color::Black, r, &r);
 }
 
@@ -247,7 +282,7 @@ void ServerPanel::UpdateLobbyClient(float dt)
 				cstring reason, reason_eng;
 				if(msg_id == ID_DISCONNECTION_NOTIFICATION)
 				{
-					reason = game->txDisconnected;
+					reason = txDisconnected;
 					reason_eng = "disconnected";
 				}
 				else if(msg_id == ID_CONNECTION_LOST)
@@ -255,32 +290,29 @@ void ServerPanel::UpdateLobbyClient(float dt)
 					reason = game->txLostConnection;
 					reason_eng = "lost connection";
 				}
-				else if(packet->length == 2)
+				else if(packet->length == 2 && Any(packet->data[1], 0, 1))
 				{
 					switch(packet->data[1])
 					{
+					default:
 					case 0:
-						reason = game->txClosing;
+						reason = txClosing;
 						reason_eng = "closing";
 						break;
 					case 1:
-						reason = game->txKicked;
+						reason = txKicked;
 						reason_eng = "kicked";
-						break;
-					default:
-						reason = Format(game->txUnknown, packet->data[1]);
-						reason_eng = Format("unknown (%d)", packet->data[1]);
 						break;
 					}
 				}
 				else
 				{
-					reason = game->txUnknown2;
+					reason = txUnknown;
 					reason_eng = "unknown";
 				}
 
 				Info("ServerPanel: Disconnected from server: %s.", reason_eng);
-				GUI.SimpleDialog(Format(game->txUnconnected, reason), nullptr);
+				GUI.SimpleDialog(Format(txUnconnected, reason), nullptr);
 
 				CloseDialog();
 				N.StreamEnd();
@@ -335,7 +367,7 @@ void ServerPanel::UpdateLobbyClient(float dt)
 				game->LoadingStart(game->mp_load_worldmap ? 4 : 9);
 				game->gui->main_menu->visible = false;
 				CloseDialog();
-				game->gui->info_box->Show(game->txWaitingForServer);
+				game->gui->info_box->Show(txWaitingForServer);
 				game->net_mode = Game::NM_TRANSFER;
 				game->net_state = NetState::Client_BeforeTransfer;
 				N.StreamEnd();
@@ -475,7 +507,7 @@ bool ServerPanel::DoLobbyUpdate(BitStreamReader& f)
 void ServerPanel::UpdateLobbyServer(float dt)
 {
 	// handle autostart
-	if(!starting && game->autostart_count != 0u && game->autostart_count <= N.active_players)
+	if(!starting && autostart_count != 0u && autostart_count <= N.active_players)
 	{
 		bool ok = true;
 		for(auto info : N.players)
@@ -490,7 +522,7 @@ void ServerPanel::UpdateLobbyServer(float dt)
 		if(ok)
 		{
 			Info("ServerPanel: Automatic server startup.");
-			game->autostart_count = 0u;
+			autostart_count = 0u;
 			Start();
 		}
 	}
@@ -546,36 +578,17 @@ void ServerPanel::UpdateLobbyServer(float dt)
 			{
 				Info("ServerPanel: New connection from %s.", packet->systemAddress.ToString());
 
-				// ustal id dla nowego gracza
-				do
-				{
-					game->last_id = (game->last_id + 1) % 256;
-					bool ok = true;
-					for(auto info : N.players)
-					{
-						if(info->id == game->last_id)
-						{
-							ok = false;
-							break;
-						}
-					}
-					if(ok)
-						break;
-				}
-				while(1);
-
-				// dodaj
-				auto pinfo = new PlayerInfo;
+				// add new player
+				PlayerInfo* pinfo = new PlayerInfo;
 				N.players.push_back(pinfo);
-
-				auto& info = *pinfo;
+				PlayerInfo& info = *pinfo;
 				info.adr = packet->systemAddress;
-				info.id = game->last_id;
+				info.id = N.GetNewPlayerId();
 				grid.AddItem();
 
 				if(N.active_players == N.max_players)
 				{
-					// brak miejsca na serwerze, wyœlij komunikat i czekaj a¿ siê roz³¹czy
+					// server is full, send message and wait to disconnect
 					byte b[] = { ID_CANT_JOIN, 0 };
 					N.peer->Send((cstring)b, 2, MEDIUM_PRIORITY, RELIABLE, 0, packet->systemAddress, false);
 					N.StreamWrite(b, 2, Stream_UpdateLobbyServer, packet->systemAddress);
@@ -585,7 +598,7 @@ void ServerPanel::UpdateLobbyServer(float dt)
 				}
 				else
 				{
-					// czekaj a¿ wyœle komunikat o wersji, nick
+					// wait to receive info about version, nick
 					info.state = PlayerInfo::WAITING_FOR_HELLO;
 					info.timer = T_WAIT_FOR_HELLO;
 					info.devmode = game->default_player_devmode;
@@ -614,7 +627,7 @@ void ServerPanel::UpdateLobbyServer(float dt)
 					if(info->state == PlayerInfo::WAITING_FOR_HELLO)
 					{
 						// roz³¹czy³ siê przed przyjêciem do lobby, mo¿na go usun¹æ
-						AddMsg(Format(dis ? game->txDisconnected : game->txLost, packet->systemAddress.ToString()));
+						AddMsg(Format(dis ? txDisconnected : txIpLostConnection, packet->systemAddress.ToString()));
 						Info("ServerPanel: %s %s.", packet->systemAddress.ToString(), dis ? "disconnected" : "lost connection");
 						auto it = N.players.begin() + index;
 						delete *it;
@@ -628,7 +641,7 @@ void ServerPanel::UpdateLobbyServer(float dt)
 					{
 						// roz³¹czy³ siê bêd¹c w lobby
 						--N.active_players;
-						AddMsg(Format(dis ? game->txLeft : game->txLost2, info->name.c_str()));
+						AddMsg(Format(dis ? txLeft : txPlayerLostConnection, info->name.c_str()));
 						Info("ServerPanel: Player %s %s.", info->name.c_str(), dis ? "disconnected" : "lost connection");
 						if(N.active_players > 1)
 						{
@@ -1026,7 +1039,7 @@ void ServerPanel::UpdateLobbyServer(float dt)
 			game->net_mode = Game::NM_TRANSFER_SERVER;
 			game->net_timer = game->mp_timeout;
 			game->net_state = NetState::Server_Starting;
-			// kick N.active_players that connected but didn't join
+			// kick players that connected but didn't join
 			for(vector<PlayerInfo*>::iterator it = N.players.begin(), end = N.players.end(); it != end;)
 			{
 				auto& info = **it;
@@ -1043,7 +1056,7 @@ void ServerPanel::UpdateLobbyServer(float dt)
 					++it;
 			}
 			CloseDialog();
-			game->gui->info_box->Show(game->txStartingGame);
+			game->gui->info_box->Show(txStartingGame);
 		}
 		else if(sec != last_startup_sec)
 		{
@@ -1088,7 +1101,7 @@ void ServerPanel::UpdateServerInfo()
 	f.WriteCasted<byte>(N.active_players);
 	f.WriteCasted<byte>(max_players);
 	byte flags = 0;
-	if(!N.password.empty())
+	if(password)
 		flags |= SERVER_PASSWORD;
 	if(game->mp_load)
 		flags |= SERVER_SAVED;
@@ -1398,7 +1411,7 @@ void ServerPanel::UseLoadedCharacter(bool have)
 	if(have)
 	{
 		Info("ServerPanel: Joined loaded game with existing character.");
-		game->autopick_class = Class::INVALID;
+		autopick_class = Class::INVALID;
 		bts[0].state = Button::DISABLED;
 		bts[1].state = Button::NONE;
 		AddMsg(txLoadedCharInfo);
@@ -1413,11 +1426,11 @@ void ServerPanel::UseLoadedCharacter(bool have)
 //=================================================================================================
 void ServerPanel::CheckAutopick()
 {
-	if(game->autopick_class != Class::INVALID)
+	if(autopick_class != Class::INVALID)
 	{
 		Info("ServerPanel: Autopicking character.");
-		PickClass(game->autopick_class, true);
-		game->autopick_class = Class::INVALID;
+		PickClass(autopick_class, true);
+		autopick_class = Class::INVALID;
 		autoready = false;
 	}
 }

@@ -151,6 +151,25 @@ uint Net::SendAll(BitStreamWriter& f, PacketPriority priority, PacketReliability
 	return ack;
 }
 
+int Net::GetNewPlayerId()
+{
+	while(true)
+	{
+		last_id = (last_id + 1) % 256;
+		bool ok = true;
+		for(PlayerInfo* info : players)
+		{
+			if(info->id == last_id)
+			{
+				ok = false;
+				break;
+			}
+		}
+		if(ok)
+			return last_id;
+	}
+}
+
 //=================================================================================================
 void Net::InitClient()
 {

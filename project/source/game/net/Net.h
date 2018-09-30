@@ -161,13 +161,16 @@ public:
 	void OnChangeLevel(int level);
 	void SendServer(BitStreamWriter& f, PacketPriority priority, PacketReliability reliability, const SystemAddress& adr, StreamLogType type);
 	uint SendAll(BitStreamWriter& f, PacketPriority priority, PacketReliability reliability, StreamLogType type);
+	int GetNewPlayerId();
 
 	uint active_players, max_players;
 	string server_name, password;
+	int last_id;
 
 	//****************************************************************************
 	// Client
 	//****************************************************************************
+public:
 	void InitClient();
 	void SendClient(BitStreamWriter& f, PacketPriority priority, PacketReliability reliability, StreamLogType type);
 

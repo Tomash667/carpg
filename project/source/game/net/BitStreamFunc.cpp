@@ -1,6 +1,7 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "BitStreamFunc.h"
+#include "Item.h"
 
 //-----------------------------------------------------------------------------
 static ObjectPool<BitStream> bitstream_pool;
@@ -52,6 +53,13 @@ cstring BitStreamWriter::GetData() const
 uint BitStreamWriter::GetSize() const
 {
 	return bitstream.GetNumberOfBytesUsed();
+}
+
+void BitStreamWriter::operator << (const Item& item)
+{
+	operator << (item.id);
+	if(item.id[0] == '$')
+		operator << (item.refid);
 }
 
 //-----------------------------------------------------------------------------

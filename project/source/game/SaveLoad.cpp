@@ -507,7 +507,7 @@ void Game::SaveGame(GameWriter& f)
 		f << N.password;
 		f << N.active_players;
 		f << N.max_players;
-		f << last_id;
+		f << N.last_id;
 		uint count = 0;
 		for(auto info : N.players)
 		{
@@ -1008,7 +1008,7 @@ void Game::LoadGame(GameReader& f)
 		f >> N.password;
 		f >> N.active_players;
 		f >> N.max_players;
-		f >> last_id;
+		f >> N.last_id;
 		f >> count;
 		DeleteElements(old_players);
 		old_players.resize(count);

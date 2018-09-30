@@ -51,44 +51,12 @@ extern bool innkeeper_buy[];
 extern bool foodseller_buy[];
 
 //=================================================================================================
-inline bool ReadItemSimple(BitStreamReader& f, const Item*& item)
-{
-	const string& item_id = f.ReadString1();
-	if(!f)
-		return false;
-
-	if(item_id[0] == '$')
-		item = Item::TryGet(item_id.c_str() + 1);
-	else
-		item = Item::TryGet(item_id);
-
-	return (item != nullptr);
-}
-
-//=================================================================================================
-inline void WriteBaseItem(BitStreamWriter& f, const Item& item)
-{
-	f << item.id;
-	if(item.id[0] == '$')
-		f << item.refid;
-}
-
-//=================================================================================================
-inline void WriteBaseItem(BitStreamWriter& f, const Item* item)
-{
-	if(item)
-		WriteBaseItem(f, *item);
-	else
-		f.Write0();
-}
-
-//=================================================================================================
 inline void WriteItemList(BitStreamWriter& f, vector<ItemSlot>& items)
 {
 	f << items.size();
 	for(ItemSlot& slot : items)
 	{
-		WriteBaseItem(f, *slot.item);
+		f << *slot.item;
 		f << slot.count;
 	}
 }
@@ -99,7 +67,7 @@ inline void WriteItemListTeam(BitStreamWriter& f, vector<ItemSlot>& items)
 	f << items.size();
 	for(ItemSlot& slot : items)
 	{
-		WriteBaseItem(f, *slot.item);
+		f << *slot.item;
 		f << slot.count;
 		f << slot.team_count;
 	}
@@ -324,7 +292,7 @@ bool Game::ReadLevelData(BitStreamReader& f)
 				Error("Read level: Broken quest item preload '%u'.", i);
 				return false;
 			}
-			const Item* item = FindQuestItemClient(item_id.c_str(), refid);
+			const Item* item = QM.FindQuestItemClient(item_id.c_str(), refid);
 			if(!item)
 			{
 				Error("Read level: Missing quest item preload '%s' (%d).", item_id.c_str(), refid);
@@ -3390,7 +3358,7 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 		case NetChange::CHANGE_EQUIPMENT:
 			f << c.unit->netid;
 			f.WriteCasted<byte>(c.id);
-			WriteBaseItem(f, c.unit->slots[c.id]);
+			f << c.unit->slots[c.id];
 			break;
 		case NetChange::TAKE_WEAPON:
 			{
@@ -3862,13 +3830,13 @@ void Game::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 				f << c.id;
 				f << c.ile;
 				f << c.a;
-				WriteBaseItem(f, c.item);
+				f << c.item;
 				break;
 			case NetChangePlayer::ADD_ITEMS_CHEST:
 				f << c.id;
 				f << c.ile;
 				f << c.a;
-				WriteBaseItem(f, c.item);
+				f << c.item;
 				break;
 			case NetChangePlayer::REMOVE_ITEMS:
 				f << c.id;
@@ -5043,7 +5011,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 						if(!f)
 							N.StreamError("Update client: Broken REGISTER_ITEM(3).");
 						else
-							quest_items.push_back(item);
+							QM.quest_items.push_back(item);
 					}
 				}
 			}
@@ -5120,7 +5088,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				else
 				{
 					bool found = false;
-					for(Item* item : quest_items)
+					for(Item* item : QM.quest_items)
 					{
 						if(item->refid == refid && item->id == item_id)
 						{
@@ -7786,7 +7754,7 @@ void Game::UpdateWarpData(float dt)
 //=================================================================================================
 void Game::Net_OnNewGameClient()
 {
-	DeleteElements(quest_items);
+	DeleteElements(QM.quest_items);
 	devmode = default_devmode;
 	train_move = 0.f;
 	anyone_talking = false;
@@ -7810,7 +7778,7 @@ void Game::Net_OnNewGameServer()
 	DeleteElements(N.players);
 	my_id = 0;
 	leader_id = 0;
-	last_id = 0;
+	N.last_id = 0;
 	paused = false;
 	hardcore_mode = false;
 
@@ -7867,28 +7835,14 @@ void Game::Net_OnNewGameServer()
 		StringPool.Free(net_talk);
 	gui->server->max_players = N.max_players;
 	gui->server->server_name = N.server_name;
+	gui->server->password = !N.password.empty();
 	gui->server->UpdateServerInfo();
 	gui->server->Show();
-	enter_pswd = (N.password.empty() ? "" : "1");
 	gui->mp_box->Reset();
 	gui->mp_box->visible = true;
 
 	if(change_title_a)
 		ChangeTitle();
-}
-
-//=================================================================================================
-const Item* Game::FindQuestItemClient(cstring id, int refid) const
-{
-	assert(id);
-
-	for(Item* item : quest_items)
-	{
-		if(item->id == id && (refid == -1 || item->IsQuest(refid)))
-			return item;
-	}
-
-	return nullptr;
 }
 
 //=================================================================================================
@@ -7910,7 +7864,7 @@ int Game::ReadItemAndFind(BitStreamReader& f, const Item*& item) const
 		if(!f)
 			return -2;
 
-		item = FindQuestItemClient(item_id.c_str(), quest_refid);
+		item = QM.FindQuestItemClient(item_id.c_str(), quest_refid);
 		if(!item)
 		{
 			Warn("Missing quest item '%s' (%d).", item_id.c_str(), quest_refid);
@@ -8018,19 +7972,6 @@ void Game::PrepareWorldData(BitStreamWriter& f)
 
 	// mp vars
 	N.WriteNetVars(f);
-
-	// quest items
-	f.WriteCasted<word>(Net::changes.size());
-	for(NetChange& c : Net::changes)
-	{
-		assert(c.type == NetChange::REGISTER_ITEM);
-		f << c.base_item->id;
-		f << c.item2->id;
-		f << c.item2->name;
-		f << c.item2->desc;
-		f << c.item2->refid;
-	}
-	Net::changes.clear();
 	if(!net_talk.empty())
 		StringPool.Free(net_talk);
 
@@ -8076,42 +8017,6 @@ bool Game::ReadWorldData(BitStreamReader& f)
 	{
 		Error("Read world: Broken packet for mp vars.");
 		return false;
-	}
-
-	// questowe przedmioty
-	const int QUEST_ITEM_MIN_SIZE = 7;
-	word quest_items_count;
-	f >> quest_items_count;
-	if(!f.Ensure(QUEST_ITEM_MIN_SIZE * quest_items_count))
-	{
-		Error("Read world: Broken packet for quest items.");
-		return false;
-	}
-	quest_items.reserve(quest_items_count);
-	for(word i = 0; i < quest_items_count; ++i)
-	{
-		const Item* base_item;
-		if(!ReadItemSimple(f, base_item))
-		{
-			Error("Read world: Broken packet for quest item %u.", i);
-			return false;
-		}
-		else
-		{
-			Item* item = base_item->CreateCopy();
-			f >> item->id;
-			f >> item->name;
-			f >> item->desc;
-			f >> item->refid;
-			if(!f)
-			{
-				Error("Read world: Broken packet for quest item %u (2).", i);
-				delete item;
-				return false;
-			}
-			else
-				quest_items.push_back(item);
-		}
 	}
 
 	// secret note text

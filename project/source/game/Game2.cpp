@@ -9983,9 +9983,7 @@ void Game::ClearGame()
 	L.is_open = false;
 	L.city_ctx = nullptr;
 
-	// usuñ quest
 	QM.Clear();
-	DeleteElements(quest_items);
 
 	W.Reset();
 

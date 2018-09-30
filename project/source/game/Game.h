@@ -104,27 +104,6 @@ struct PostEffect
 	Vec4 skill;
 };
 
-enum class AnyVarType
-{
-	Bool
-};
-
-union AnyVar
-{
-	bool _bool;
-};
-
-struct ConfigVar
-{
-	cstring name;
-	AnyVarType type;
-	AnyVar* ptr;
-	AnyVar new_value;
-	bool have_new_value, need_save;
-
-	ConfigVar(cstring name, bool& _bool) : name(name), type(AnyVarType::Bool), ptr((AnyVar*)&_bool), have_new_value(false), need_save(false) {}
-};
-
 typedef std::map<Mesh*, TEX> ItemTextureMap;
 
 class Game final : public Engine
@@ -302,7 +281,7 @@ public:
 	cstring txEnterIp, txConnecting, txInvalidIp, txWaitingForPswd, txEnterPswd, txConnectingTo, txConnectTimeout, txConnectInvalid, txConnectVersion, txConnectRaknet, txCantJoin, txLostConnection,
 		txInvalidPswd, txCantJoin2, txServerFull, txInvalidData, txNickUsed, txInvalidVersion, txInvalidVersion2, txInvalidNick, txGeneratingWorld, txLoadedWorld, txWorldDataError, txLoadedPlayer,
 		txPlayerDataError, txGeneratingLocation, txLoadingLocation, txLoadingLocationError, txLoadingChars, txLoadingCharsError, txSendingWorld, txMpNPCLeft, txLoadingLevel, txDisconnecting,
-		txLost, txLeft, txLost2, txUnconnected, txDisconnected, txClosing, txKicked, txUnknown, txUnknown2, txWaitingForServer, txStartingGame, txPreparingWorld, txInvalidCrc;
+		txPreparingWorld, txInvalidCrc;
 	cstring txServer, txYouAreLeader, txRolledNumber, txPcIsLeader, txReceivedGold, txYouDisconnected, txYouKicked,
 		txGamePaused, txGameResumed, txDevmodeOn, txDevmodeOff, txPlayerLeft, txPlayerDisconnected, txPlayerQuit, txPlayerKicked, txServerClosed;
 	cstring txYell[3];
@@ -358,12 +337,8 @@ public:
 	bool have_console, inactive_update, noai, devmode, default_devmode, default_player_devmode, debug_info, debug_info2, dont_wander;
 	string cfg_file;
 	vector<ConsoleCommand> cmds;
-	vector<ConfigVar> config_vars;
 
 	void SetupConfigVars();
-	void ParseConfigVar(cstring var);
-	void SetConfigVarsFromFile();
-	void ApplyConfigVars();
 
 	//---------------------------------
 	// GRA
@@ -682,7 +657,7 @@ public:
 
 	//-----------------------------------------------------------------
 	// MENU / MAIN MENU / OPTIONS
-	Class quickstart_class, autopick_class; // mo¿na po³¹czyæ
+	Class quickstart_class;
 	string quickstart_name;
 	bool check_updates, skip_tutorial;
 	string save_input_text;
@@ -721,9 +696,7 @@ public:
 	//-----------------------------------------------------------------
 	// MULTIPLAYER
 	string player_name, server_ip, enter_pswd;
-	uint autostart_count;
 	int my_id; // moje unikalne id
-	int last_id;
 	bool was_client, players_left;
 	vector<PlayerInfo*> old_players;
 	int leader_id, kick_id;
@@ -753,7 +726,6 @@ public:
 		float timer;
 	};
 	vector<WarpData> mp_warps;
-	vector<Item*> quest_items;
 	float train_move; // u¿ywane przez klienta do trenowania przez chodzenie
 	bool anyone_talking;
 	// u¿ywane u klienta który nie zapamiêtuje zmiennej 'pc'
@@ -801,8 +773,6 @@ public:
 	}
 	void Net_OnNewGameServer();
 	void Net_OnNewGameClient();
-	// szuka questowych przedmiotów u klienta
-	const Item* FindQuestItemClient(cstring id, int refid) const;
 	// read item id and return it (can be quest item or gold), results: -2 read error, -1 not found, 0 empty, 1 ok
 	int ReadItemAndFind(BitStreamReader& f, const Item*& item) const;
 	bool ReadItemList(BitStreamReader& f, vector<ItemSlot>& items);
