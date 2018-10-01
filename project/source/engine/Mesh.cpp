@@ -305,7 +305,6 @@ void Mesh::SetVertexSizeDecl()
 	}
 	else
 	{
-		vertex_size = sizeof(Vec3);
 		if(IS_SET(head.flags, F_ANIMATED))
 		{
 			if(IS_SET(head.flags, F_TANGENTS))

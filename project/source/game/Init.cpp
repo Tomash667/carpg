@@ -646,7 +646,7 @@ void Game::AddLoadTasks()
 
 			Mesh::Point* pt = t.mesh->FindPoint("hitbox");
 			assert(pt);
-			if(pt->type == Mesh::Point::Box)
+			if(pt->type == Mesh::Point::BOX)
 			{
 				t.rw = pt->size.x;
 				t.h = pt->size.z;

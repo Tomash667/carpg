@@ -484,7 +484,7 @@ class QmshExporter(bpy.types.Operator):
 		
 	ConverterPath = StringProperty(
 		name="Converter path",
-		default="F:\\carpg\\other\\mesh\\converter.exe")
+		default="D:\\carpg\\other\\mesh\\converter.exe")
 		
 	def export_convert(self):
 		FilePath = self.filepath

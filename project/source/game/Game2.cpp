@@ -13028,13 +13028,13 @@ cstring Game::GetRandomIdleText(Unit& u)
 				int id;
 				if(L.city_ctx->FindInn(id) && id == u.in_building)
 				{
-					if(IS_SET(u.data->flags, F_AI_DRUNKMAN) || QM.quest_tournament->GetState() != Quest_Tournament::TOURNAMENT_STARTING)
+					if(IS_SET(u.data->flags, F_AI_DRUNKMAN) || QM.quest_contest->state != Quest_Contest::CONTEST_TODAY)
 					{
 						if(Rand() % 3 == 0)
 							return RandomString(txAiDrunkText);
 					}
 					else
-						return RandomString(txAiDrunkmanText);
+						return RandomString(txAiDrunkContestText);
 				}
 			}
 			if(n < 10)

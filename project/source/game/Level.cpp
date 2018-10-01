@@ -1621,7 +1621,7 @@ void Level::PickableItemBegin(LevelContext& ctx, Object& o)
 	{
 		if(strncmp(it->name.c_str(), "spawn_", 6) == 0)
 		{
-			assert(it->type == Mesh::Point::Box);
+			assert(it->type == Mesh::Point::BOX);
 			Box box(it->mat._41, it->mat._42, it->mat._43);
 			box.v1.x -= it->size.x - 0.05f;
 			box.v1.z -= it->size.z - 0.05f;

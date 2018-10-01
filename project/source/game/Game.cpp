@@ -1167,7 +1167,7 @@ void Game::SetGameText()
 	LoadArray(txAiHeroOutsideText, "aiHeroOutsideText");
 	LoadArray(txAiDrunkMageText, "aiDrunkMageText");
 	LoadArray(txAiDrunkText, "aiDrunkText");
-	LoadArray(txAiDrunkmanText, "aiDrunkmanText");
+	LoadArray(txAiDrunkContestText, "aiDrunkContestText");
 
 	// mapa
 	txEnteringLocation = Str("enteringLocation");

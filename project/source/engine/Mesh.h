@@ -110,7 +110,7 @@ struct Mesh : public Resource
 		{
 			OTHER,
 			SPHERE,
-			Box
+			BOX
 		};
 
 		string name;
@@ -123,7 +123,7 @@ struct Mesh : public Resource
 		static const uint MIN_SIZE = 73;
 
 		bool IsSphere() const { return type == SPHERE; }
-		bool IsBox() const { return type == Box; }
+		bool IsBox() const { return type == BOX; }
 	};
 
 	struct Split
