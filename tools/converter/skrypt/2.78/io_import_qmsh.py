@@ -17,6 +17,7 @@ import os
 import struct
 import bmesh
 from random import random
+import configparser
 
 ################################################################################
 def IsSet(flags, bit):
@@ -36,12 +37,14 @@ class Box:
 class Vertex:
 	def Read(self, f, type):
 		self.pos = f.ReadVec3()
+		self.pos = (self.pos[0], self.pos[2], self.pos[1])
 		if type == 'ANI' or type == 'TANG_ANI':
 			self.weights = f.ReadFloat()
 			self.indices = f.ReadUint()
 		if type != 'POS':
 			self.normal = f.ReadVec3()
 			self.tex = f.ReadVec2()
+			self.tex[1] = 1.0 - self.tex[1]
 		if type == 'TANG' or type == 'TANG_ANI':
 			self.tangent = f.ReadVec3()
 			self.binormal = f.ReadVec3()
@@ -302,9 +305,49 @@ class Qmsh:
 			group = QmshBoneGroup()
 			group.Read(f)
 			self.groups.append(group)
+			
+################################################################################
+class Config:
+	def __init__(self):
+		config_path = bpy.utils.user_resource('CONFIG', path='scripts', create=True)
+		self.filepath = os.path.join(config_path, 'io_import_qmsh.cfg')
+		self.config = configparser.ConfigParser()
+		self.config.read(self.filepath)
+		if not self.config.has_section('settings'):
+			self.config['settings'] = {'loadImages': 'True',
+				'imagesPath': 'D:\\carpg\\bin\\data\\textures'}
+		s = self.config['settings']
+		self.loadImages = s.getboolean('loadImages')
+		self.imagesPath = s['imagesPath']
+	def Save(self):
+		s = self.config['settings']
+		s['loadImages'] = str(self.loadImages)
+		s['imagesPath'] = self.imagesPath
+		with open(self.filepath, 'w') as configfile:
+			self.config.write(configfile)
 
 ################################################################################
-def Import(filepath):
+def FindImage(filename, imagesPath):
+	for root, dirs, files in os.walk(imagesPath):
+		for file in files:
+			if file == filename:
+				return os.path.join(root, file)
+	return None
+
+################################################################################
+def LoadImage(filename, config):
+	if config.loadImages:
+		filepath = FindImage(filename, config.imagesPath)
+		if not filepath is None:
+			img = bpy.data.images.load(filepath)
+			return img
+	img = bpy.data.images.new(sub.tex, 1, 1)
+	img.filepath = sub.tex
+	img.source = 'FILE'
+	return img
+
+################################################################################
+def Import(filepath, config):
 	print("Loading file "+filepath+".")
 	with FileReader(filepath) as f:
 		mesh = Qmsh()
@@ -318,12 +361,14 @@ def Import(filepath):
 	# create faces
 	new_faces = []
 	for f in mesh.tris:
+		#print("%g %g %g" % (f[0], f[1], f[2]))
 		new_faces.append(bm.faces.new((new_verts[f[0]], new_verts[f[1]], new_verts[f[2]])))
 	bm.faces.ensure_lookup_table()
 	index = 0
 	for sub in mesh.subs:
 		# add material
 		mat = bpy.data.materials.new(sub.name)
+		mat.use_shadeless = True
 		mat.diffuse_color = (random(), random(), random())
 		mat.specular_color = sub.specular_color
 		mat.specular_hardness = sub.specular_hardness
@@ -334,10 +379,9 @@ def Import(filepath):
 		tex_slot = mat.texture_slots.add()
 		tex_slot.texture = tex
 		# add image
-		img = bpy.data.images.new(sub.tex, 1, 1)
-		img.filepath = sub.tex
-		img.source = 'FILE'
+		img = LoadImage(sub.tex, config)
 		tex.image = img
+		sub.image = img
 		# set material index
 		for i in range(sub.first, sub.first+sub.tris):
 			bm.faces[i].material_index = index
@@ -345,6 +389,61 @@ def Import(filepath):
 	bm.to_mesh(mesh_data)
 	obj = bpy.data.objects.new(name='Obj', object_data=mesh_data)
 	bpy.context.scene.objects.link(obj)
+	# uv map
+	uv_map = mesh_data.uv_textures.new()
+	uv_data = uv_map.data
+	uvs = mesh_data.uv_layers[0].data
+	for sub in mesh.subs:
+		for i in range(sub.first, sub.first+sub.tris):
+			uv_data[i].image = sub.image
+	for i in range(mesh.head.n_tris):
+		f = mesh.tris[i]
+		uvs[i*3+0].uv = mesh.verts[f[0]].tex
+		uvs[i*3+1].uv = mesh.verts[f[1]].tex
+		uvs[i*3+2].uv = mesh.verts[f[2]].tex
+	# armature
+	if mesh.head.IsAnimated() and not mesh.head.IsStatic():
+		armature = bpy.data.armatures.new(name='Armature')
+		obj_arm = bpy.data.objects.new(name='Armature', object_data=armature)
+		bpy.context.scene.objects.link(obj_arm)
+		bpy.context.scene.objects.active = obj_arm
+		bpy.ops.object.mode_set(mode='EDIT')
+		for bone in mesh.bones:
+			if bone.name == "zero":
+				continue
+			b = armature.edit_bones.new(bone.name)
+			b.head = (1.0, 1.0, 0.0)
+			b.tail = (1.0, 1.0, 1.0)
+		bpy.ops.object.mode_set(mode='OBJECT')
+	# add points
+	#for point in mesh.points:
+	#	empty = bpy.data.objects.new(name=point.name, object_data=None)
+	#	if empty.type == 0:
+	#		empty.empty_draw_type = 'ARROWS'
+	#	elif empty.type == 1:
+	#		empty.empty_draw_type = 'SPHERE'
+	#	else:
+	#		empty.empty_draw_type = 'CUBE'
+	#	bpy.context.scene.objects.link(empty)
+	# remove doubled vertices
+	bm.clear()
+	bm.from_mesh(mesh_data)
+	bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=0.00001)
+	bm.to_mesh(mesh_data)
+	mesh_data.update()
+	bm.free()
+	# tris to quads
+	bpy.context.scene.objects.active = obj
+	bpy.ops.object.editmode_toggle()
+	bpy.ops.mesh.select_all()
+	bpy.ops.mesh.tris_convert_to_quads()
+	bpy.ops.mesh.select_all()
+	bpy.ops.mesh.tris_convert_to_quads()
+	bpy.ops.object.editmode_toggle()
+	# switch to textured mode
+	area = next(area for area in bpy.context.screen.areas if area.type == 'VIEW_3D')
+	space = next(space for space in area.spaces if space.type == 'VIEW_3D')
+	space.viewport_shade = 'TEXTURED'
 	print("Import finished.");
 	
 ################################################################################
@@ -355,14 +454,24 @@ class QmshImporter(bpy.types.Operator):
 	bl_idname = "import.qmsh"
 	bl_label = "Import QMSH"
 	
+	config = Config()
+	
+	loadImages = BoolProperty(
+		name="LoadImages",
+		default=config.loadImages)
+		
+	imagesPath = StringProperty(
+		name="Converter path",
+		default=config.imagesPath)
+	
 	filepath = StringProperty(subtype='FILE_PATH')
-		
-	def export_convert(self):
-		return Import(self.filepath)
-		
+	
 	def execute(self, context):
+		self.config.loadImages = self.loadImages
+		self.config.imagesPath = self.imagesPath
+		self.config.Save()
 		try:
-			self.export_convert()
+			Import(self.filepath, self.config)
 		except ImporterException as error:
 			msg = 'Exporter error: '+str(error)
 			print(msg)
@@ -370,9 +479,6 @@ class QmshImporter(bpy.types.Operator):
 		return {"FINISHED"}
 	
 	def invoke(self, context, event):
-		mode = bpy.context.mode
-		if mode == "EDIT_MESH" or mode == "EDIT_ARMATURE":
-			mode = "OBJECT"
 		if not self.filepath:
 			self.filepath = bpy.path.ensure_ext(os.path.splitext(bpy.data.filepath)[0], ".qmsh")
 		WindowManager = context.window_manager
@@ -382,15 +488,15 @@ class QmshImporter(bpy.types.Operator):
 ################################################################################
 # funkcje pluginu
 def menu_func(self, context):
-    self.layout.operator(QmshImporter.bl_idname, text="Qmsh (.qmsh)")
+	self.layout.operator(QmshImporter.bl_idname, text="Qmsh (.qmsh)")
 
 def register():
-    bpy.utils.register_module(__name__)
-    bpy.types.INFO_MT_file_import.append(menu_func)
+	bpy.utils.register_module(__name__)
+	bpy.types.INFO_MT_file_import.append(menu_func)
 
 def unregister():
-    bpy.utils.unregister_module(__name__)
-    bpy.types.INFO_MT_file_import.remove(menu_func)
+	bpy.utils.unregister_module(__name__)
+	bpy.types.INFO_MT_file_import.remove(menu_func)
 
 if __name__ == "__main__":
 	register()
