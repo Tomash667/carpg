@@ -19,7 +19,6 @@ ObjectPool<SceneNode> node_pool;
 ObjectPool<DebugSceneNode> debug_node_pool;
 ObjectPool<Area2> area2_pool;
 extern Matrix m1, m2, m3, m4;
-extern UINT passes;
 
 //-----------------------------------------------------------------------------
 struct IBOX
@@ -512,13 +511,13 @@ void Game::FillDungeonPart(Int2* _part, word* faces, int& index, word offset)
 
 	_part[0] = Int2(0, 0);
 
-	int ile;
+	int count;
 
 	for(int i = 1; i < 16; ++i)
 	{
 		_part[i].x = index;
 
-		ile = 0;
+		count = 0;
 		if(i & 0x01)
 		{
 			faces[index++] = offset;
@@ -527,7 +526,7 @@ void Game::FillDungeonPart(Int2* _part, word* faces, int& index, word offset)
 			faces[index++] = offset + 2;
 			faces[index++] = offset + 1;
 			faces[index++] = offset + 3;
-			++ile;
+			++count;
 		}
 		if(i & 0x02)
 		{
@@ -537,7 +536,7 @@ void Game::FillDungeonPart(Int2* _part, word* faces, int& index, word offset)
 			faces[index++] = offset + 6;
 			faces[index++] = offset + 5;
 			faces[index++] = offset + 7;
-			++ile;
+			++count;
 		}
 		if(i & 0x04)
 		{
@@ -547,7 +546,7 @@ void Game::FillDungeonPart(Int2* _part, word* faces, int& index, word offset)
 			faces[index++] = offset + 10;
 			faces[index++] = offset + 9;
 			faces[index++] = offset + 11;
-			++ile;
+			++count;
 		}
 		if(i & 0x08)
 		{
@@ -557,10 +556,10 @@ void Game::FillDungeonPart(Int2* _part, word* faces, int& index, word offset)
 			faces[index++] = offset + 14;
 			faces[index++] = offset + 13;
 			faces[index++] = offset + 15;
-			++ile;
+			++count;
 		}
 
-		_part[i].y = ile * 2;
+		_part[i].y = count * 2;
 	}
 }
 
@@ -1084,9 +1083,9 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 			case COMPOUND_SHAPE_PROXYTYPE:
 				{
 					const btCompoundShape* compound = (const btCompoundShape*)shape;
-					int ile = compound->getNumChildShapes();
+					int count = compound->getNumChildShapes();
 
-					for(int i = 0; i < ile; ++i)
+					for(int i = 0; i < count; ++i)
 					{
 						const btCollisionShape* child = compound->getChildShape(i);
 						if(child->getShapeType() == BOX_SHAPE_PROXYTYPE)
@@ -2179,8 +2178,8 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 				for(int x = 0; x < it->size.x; ++x)
 				{
 					// czy coœ jest na tym polu
-					Pole& p = lvl.map[(x + it->pos.x) + (y + it->pos.y)*lvl.w];
-					if(p.room != index || p.flags == 0 || p.flags == Pole::F_ODKRYTE)
+					Tile& p = lvl.map[(x + it->pos.x) + (y + it->pos.y)*lvl.w];
+					if(p.room != index || p.flags == 0 || p.flags == Tile::F_REVEALED)
 						continue;
 
 					// ustaw œwiat³a
@@ -2250,10 +2249,10 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 					m.matWorld = Matrix::Translation(2.f*(it->pos.x + x), 0, 2.f*(it->pos.y + y));
 					m.matCombined = m.matWorld * cam.matViewProj;
 
-					int tex_id = (IS_SET(p.flags, Pole::F_DRUGA_TEKSTURA) ? 1 : 0);
+					int tex_id = (IS_SET(p.flags, Tile::F_SECOND_TEXTURE) ? 1 : 0);
 
 					// pod³oga
-					if(IS_SET(p.flags, Pole::F_PODLOGA))
+					if(IS_SET(p.flags, Tile::F_FLOOR))
 					{
 						DungeonPart& dp = Add1(draw_batch.dungeon_parts);
 						dp.tp = &tFloor[tex_id];
@@ -2264,11 +2263,11 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 					}
 
 					// sufit
-					if(IS_SET(p.flags, Pole::F_SUFIT | Pole::F_NISKI_SUFIT))
+					if(IS_SET(p.flags, Tile::F_CEILING | Tile::F_LOW_CEILING))
 					{
 						DungeonPart& dp = Add1(draw_batch.dungeon_parts);
 						dp.tp = &tCeil[tex_id];
-						dp.start_index = IS_SET(p.flags, Pole::F_NISKI_SUFIT) ? 12 : 6;
+						dp.start_index = IS_SET(p.flags, Tile::F_LOW_CEILING) ? 12 : 6;
 						dp.primitive_count = 2;
 						dp.matrix = matrix_id;
 						dp.lights = lights_id;
@@ -2362,8 +2361,8 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 		// dla ka¿dego pola
 		for(vector<Int2>::iterator it = tiles.begin(), end = tiles.end(); it != end; ++it)
 		{
-			Pole& p = lvl.map[it->x + it->y*lvl.w];
-			if(p.flags == 0 || p.flags == Pole::F_ODKRYTE)
+			Tile& p = lvl.map[it->x + it->y*lvl.w];
+			if(p.flags == 0 || p.flags == Tile::F_REVEALED)
 				continue;
 
 			Box box(2.f*it->x, -4.f, 2.f*it->y, 2.f*(it->x + 1), 8.f, 2.f*(it->y + 1));
@@ -2436,10 +2435,10 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 			m.matWorld = Matrix::Translation(2.f*it->x, 0, 2.f*it->y);
 			m.matCombined = m.matWorld * cam.matViewProj;
 
-			int tex_id = (IS_SET(p.flags, Pole::F_DRUGA_TEKSTURA) ? 1 : 0);
+			int tex_id = (IS_SET(p.flags, Tile::F_SECOND_TEXTURE) ? 1 : 0);
 
 			// pod³oga
-			if(IS_SET(p.flags, Pole::F_PODLOGA))
+			if(IS_SET(p.flags, Tile::F_FLOOR))
 			{
 				DungeonPart& dp = Add1(draw_batch.dungeon_parts);
 				dp.tp = &tFloor[tex_id];
@@ -2450,11 +2449,11 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 			}
 
 			// sufit
-			if(IS_SET(p.flags, Pole::F_SUFIT | Pole::F_NISKI_SUFIT))
+			if(IS_SET(p.flags, Tile::F_CEILING | Tile::F_LOW_CEILING))
 			{
 				DungeonPart& dp = Add1(draw_batch.dungeon_parts);
 				dp.tp = &tCeil[tex_id];
-				dp.start_index = IS_SET(p.flags, Pole::F_NISKI_SUFIT) ? 12 : 6;
+				dp.start_index = IS_SET(p.flags, Tile::F_LOW_CEILING) ? 12 : 6;
 				dp.primitive_count = 2;
 				dp.matrix = matrix_id;
 				dp.lights = lights_id;
@@ -2969,6 +2968,7 @@ void Game::DrawGlowingNodes(bool use_postfx)
 	int prev_mode = -1;
 	Vec4 glow_color;
 	Mesh* mesh;
+	uint passes;
 
 	for(vector<GlowNode>::iterator it = draw_batch.glow_nodes.begin(), end = draw_batch.glow_nodes.end(); it != end; ++it)
 	{
@@ -3229,6 +3229,7 @@ void Game::DrawSkybox()
 	SetNoCulling(false);
 	SetNoZWrite(true);
 
+	uint passes;
 	m2 = Matrix::Translation(cam.center) * cam.matViewProj;
 
 	V(device->SetVertexDeclaration(vertex_decl[aSkybox->vertex_decl]));
@@ -3259,6 +3260,7 @@ void Game::DrawTerrain(const vector<uint>& parts)
 	SetNoCulling(false);
 	SetNoZWrite(false);
 
+	uint passes;
 	Vec4 fogColor = GetFogColor();
 	Vec4 fogParams = GetFogParams();
 	Vec4 lightDir = GetLightDir();
@@ -3322,6 +3324,7 @@ void Game::DrawDungeon(const vector<DungeonPart>& parts, const vector<Lights>& l
 	ID3DXEffect* e = nullptr;
 	bool first = true;
 	TexturePack* last_pack = nullptr;
+	uint passes;
 
 	for(vector<DungeonPart>::const_iterator it = parts.begin(), end = parts.end(); it != end; ++it)
 	{
@@ -3407,6 +3410,7 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 	}
 
 	// modele
+	uint passes;
 	int current_flags = -1;
 	bool inside_begin = false;
 	const Mesh* prev_mesh = nullptr;
@@ -3550,6 +3554,7 @@ void Game::DrawDebugNodes(const vector<DebugSceneNode*>& nodes)
 	V(device->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME));
 	V(device->SetRenderState(D3DRS_ZENABLE, FALSE));
 
+	uint passes;
 	V(eMesh->SetTechnique(techMeshSimple2));
 	V(eMesh->Begin(&passes, 0));
 	V(eMesh->BeginPass(0));
@@ -3619,6 +3624,7 @@ void Game::DrawBloods(bool outside, const vector<Blood*>& bloods, const vector<L
 	V(device->SetVertexDeclaration(vertex_decl[VDI_DEFAULT]));
 	V(e->SetVector(super_shader->hTint, (D3DXVECTOR4*)&Vec4(1, 1, 1, 1)));
 
+	uint passes;
 	V(e->Begin(&passes, 0));
 	V(e->BeginPass(0));
 
@@ -3707,6 +3713,7 @@ void Game::DrawBillboards(const vector<Billboard>& billboards)
 
 	V(device->SetVertexDeclaration(vertex_decl[VDI_PARTICLE]));
 
+	uint passes;
 	V(eParticle->SetTechnique(techParticle));
 	V(eParticle->SetMatrix(hParticleCombined, (D3DXMATRIX*)&cam.matViewProj));
 	V(eParticle->Begin(&passes, 0));
@@ -3745,6 +3752,7 @@ void Game::DrawExplosions(const vector<Explo*>& explos)
 	V(device->SetStreamSource(0, mesh->vb, 0, mesh->vertex_size));
 	V(device->SetIndices(mesh->ib));
 
+	uint passes;
 	V(eMesh->SetTechnique(techMeshExplo));
 	V(eMesh->Begin(&passes, 0));
 	V(eMesh->BeginPass(0));
@@ -3787,6 +3795,7 @@ void Game::DrawParticles(const vector<ParticleEmitter*>& pes)
 
 	V(device->SetVertexDeclaration(vertex_decl[VDI_PARTICLE]));
 
+	uint passes;
 	V(eParticle->SetTechnique(techParticle));
 	V(eParticle->SetMatrix(hParticleCombined, (D3DXMATRIX*)&cam.matViewProj));
 	V(eParticle->Begin(&passes, 0));
@@ -3894,6 +3903,7 @@ void Game::DrawTrailParticles(const vector<TrailParticleEmitter*>& tpes)
 
 	V(device->SetVertexDeclaration(vertex_decl[VDI_COLOR]));
 
+	uint passes;
 	V(eParticle->SetTechnique(techTrail));
 	V(eParticle->SetMatrix(hParticleCombined, (D3DXMATRIX*)&cam.matViewProj));
 	V(eParticle->Begin(&passes, 0));
@@ -3957,6 +3967,7 @@ void Game::DrawLightings(const vector<Electro*>& electros)
 	V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE));
 	V(device->SetVertexDeclaration(vertex_decl[VDI_PARTICLE]));
 
+	uint passes;
 	V(eParticle->SetTechnique(techParticle));
 	V(eParticle->SetTexture(hParticleTex, tLightingLine));
 	V(eParticle->SetMatrix(hParticleCombined, (D3DXMATRIX*)&cam.matViewProj));
@@ -3997,9 +4008,9 @@ void Game::DrawLightings(const vector<Electro*>& electros)
 			for(int i = 0; i < 2; ++i)
 				prev[i] = Vec3::Transform(pos[i], m1);
 
-			const int ile = int(it2->pts.size());
+			const int count = int(it2->pts.size());
 
-			for(int j = 1; j < ile; ++j)
+			for(int j = 1; j < count; ++j)
 			{
 				// nastêpny punkt
 				cam.matViewInv._41 = it2->pts[j].x;
@@ -4016,7 +4027,7 @@ void Game::DrawLightings(const vector<Electro*>& electros)
 				v[2].pos = next[0];
 				v[3].pos = next[1];
 
-				float a = float(ile - min(ile, (int)abs(j - ile * (it2->t / 0.25f)))) / ile;
+				float a = float(count - min(count, (int)abs(j - count * (it2->t / 0.25f)))) / count;
 				float b = min(0.5f, a * a);
 
 				for(int i = 0; i < 4; ++i)
@@ -4061,7 +4072,7 @@ void Game::DrawStunEffects(const vector<StunEffect>& stuns)
 	V(device->SetIndices(mesh.ib));
 	V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE));
 
-	UINT passes;
+	uint passes;
 	V(eMesh->Begin(&passes, 0));
 	V(eMesh->BeginPass(0));
 
@@ -4095,6 +4106,7 @@ void Game::DrawPortals(const vector<Portal*>& portals)
 	SetNoCulling(true);
 	SetNoZWrite(false);
 
+	uint passes;
 	V(device->SetVertexDeclaration(vertex_decl[VDI_PARTICLE]));
 	V(eParticle->SetTechnique(techParticle));
 	V(eParticle->SetTexture(hParticleTex, tPortal));
@@ -4134,6 +4146,7 @@ void Game::DrawAreas(const vector<Area>& areas, float range, const vector<Area2*
 	playerPos.y += 0.75f;
 	V(eArea->SetVector(hAreaPlayerPos, (D3DXVECTOR4*)&playerPos));
 	V(eArea->SetFloat(hAreaRange, range));
+	uint passes;
 	V(eArea->Begin(&passes, 0));
 	V(eArea->BeginPass(0));
 

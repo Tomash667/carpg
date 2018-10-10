@@ -114,7 +114,7 @@ void Quest_Mine::SetProgress(int prog2)
 			mine_state2 = State2::InBuild;
 			days = 0;
 			days_required = Random(30, 45);
-			quest_manager.RemoveQuestRumor(P_KOPALNIA);
+			quest_manager.RemoveQuestRumor(R_MINE);
 		}
 		break;
 	case Progress::GotFirstGold:
@@ -138,7 +138,7 @@ void Quest_Mine::SetProgress(int prog2)
 			mine_state2 = State2::InBuild;
 			days = 0;
 			days_required = Random(30, 45);
-			quest_manager.RemoveQuestRumor(P_KOPALNIA);
+			quest_manager.RemoveQuestRumor(R_MINE);
 		}
 		break;
 	case Progress::NeedTalk:
@@ -443,11 +443,11 @@ bool Quest_Mine::GenerateMine(CaveGenerator* cave_gen)
 		{
 			for(int x = 1; x < lvl.w - 1; ++x)
 			{
-				if(lvl.map[x + y * lvl.w].type == SCIANA)
+				if(lvl.map[x + y * lvl.w].type == WALL)
 				{
 #define A(xx,yy) lvl.map[x+(xx)+(y+(yy))*lvl.w].type
-					if(Rand() % 2 == 0 && (!czy_blokuje21(A(-1, 0)) || !czy_blokuje21(A(1, 0)) || !czy_blokuje21(A(0, -1)) || !czy_blokuje21(A(0, 1))) &&
-						(A(-1, -1) != SCHODY_GORA && A(-1, 1) != SCHODY_GORA && A(1, -1) != SCHODY_GORA && A(1, 1) != SCHODY_GORA))
+					if(Rand() % 2 == 0 && (!IsBlocking2(A(-1, 0)) || !IsBlocking2(A(1, 0)) || !IsBlocking2(A(0, -1)) || !IsBlocking2(A(0, 1))) &&
+						(A(-1, -1) != STAIRS_UP && A(-1, 1) != STAIRS_UP && A(1, -1) != STAIRS_UP && A(1, 1) != STAIRS_UP))
 					{
 						nowe.push_back(Int2(x, y));
 					}
@@ -458,7 +458,7 @@ bool Quest_Mine::GenerateMine(CaveGenerator* cave_gen)
 
 		// nie potrzebnie dwa razy to robi jeœli powiêksz = 2
 		for(vector<Int2>::iterator it = nowe.begin(), end = nowe.end(); it != end; ++it)
-			lvl.map[it->x + it->y*lvl.w].type = PUSTE;
+			lvl.map[it->x + it->y*lvl.w].type = EMPTY;
 	}
 
 	// generuj portal
@@ -478,7 +478,7 @@ bool Quest_Mine::GenerateMine(CaveGenerator* cave_gen)
 				{
 					for(int w = 0; w < 5; ++w)
 					{
-						if(lvl.map[x + w + (y + h)*lvl.w].type != SCIANA)
+						if(lvl.map[x + w + (y + h)*lvl.w].type != WALL)
 							goto dalej;
 					}
 				}
@@ -538,14 +538,14 @@ bool Quest_Mine::GenerateMine(CaveGenerator* cave_gen)
 		};
 		for(uint i = 0; i < countof(p_blokady); ++i)
 		{
-			Pole& p = lvl.map[(pt + p_blokady[i])(lvl.w)];
-			p.type = BLOKADA;
+			Tile& p = lvl.map[(pt + p_blokady[i])(lvl.w)];
+			p.type = BLOCKADE;
 			p.flags = 0;
 		}
 		for(uint i = 0; i < countof(p_zajete); ++i)
 		{
-			Pole& p = lvl.map[(pt + p_zajete[i])(lvl.w)];
-			p.type = ZAJETE;
+			Tile& p = lvl.map[(pt + p_zajete[i])(lvl.w)];
+			p.type = USED;
 			p.flags = 0;
 		}
 
@@ -558,7 +558,7 @@ bool Quest_Mine::GenerateMine(CaveGenerator* cave_gen)
 		{
 			for(int x = 1; x < lvl.w - 1; ++x)
 			{
-				if(lvl.map[x + y * lvl.w].type == PUSTE)
+				if(lvl.map[x + y * lvl.w].type == EMPTY)
 				{
 					int dist = Int2::Distance(Int2(x, y), center);
 					if(dist < best_dist && dist > 2)
@@ -581,20 +581,20 @@ bool Quest_Mine::GenerateMine(CaveGenerator* cave_gen)
 				if(closest.x > center.x)
 				{
 					--closest.x;
-					Pole& p = lvl.map[closest.x + closest.y*lvl.w];
-					if(p.type == ZAJETE)
+					Tile& p = lvl.map[closest.x + closest.y*lvl.w];
+					if(p.type == USED)
 					{
 						end_pt = closest;
 						break;
 					}
-					else if(p.type == BLOKADA)
+					else if(p.type == BLOCKADE)
 					{
 						++closest.x;
 						goto po_y;
 					}
 					else
 					{
-						p.type = PUSTE;
+						p.type = EMPTY;
 						p.flags = 0;
 						nowe.push_back(closest);
 					}
@@ -602,20 +602,20 @@ bool Quest_Mine::GenerateMine(CaveGenerator* cave_gen)
 				else
 				{
 					++closest.x;
-					Pole& p = lvl.map[closest.x + closest.y*lvl.w];
-					if(p.type == ZAJETE)
+					Tile& p = lvl.map[closest.x + closest.y*lvl.w];
+					if(p.type == USED)
 					{
 						end_pt = closest;
 						break;
 					}
-					else if(p.type == BLOKADA)
+					else if(p.type == BLOCKADE)
 					{
 						--closest.x;
 						goto po_y;
 					}
 					else
 					{
-						p.type = PUSTE;
+						p.type = EMPTY;
 						p.flags = 0;
 						nowe.push_back(closest);
 					}
@@ -627,20 +627,20 @@ bool Quest_Mine::GenerateMine(CaveGenerator* cave_gen)
 				if(closest.y > center.y)
 				{
 					--closest.y;
-					Pole& p = lvl.map[closest.x + closest.y*lvl.w];
-					if(p.type == ZAJETE)
+					Tile& p = lvl.map[closest.x + closest.y*lvl.w];
+					if(p.type == USED)
 					{
 						end_pt = closest;
 						break;
 					}
-					else if(p.type == BLOKADA)
+					else if(p.type == BLOCKADE)
 					{
 						++closest.y;
 						goto po_x;
 					}
 					else
 					{
-						p.type = PUSTE;
+						p.type = EMPTY;
 						p.flags = 0;
 						nowe.push_back(closest);
 					}
@@ -648,20 +648,20 @@ bool Quest_Mine::GenerateMine(CaveGenerator* cave_gen)
 				else
 				{
 					++closest.y;
-					Pole& p = lvl.map[closest.x + closest.y*lvl.w];
-					if(p.type == ZAJETE)
+					Tile& p = lvl.map[closest.x + closest.y*lvl.w];
+					if(p.type == USED)
 					{
 						end_pt = closest;
 						break;
 					}
-					else if(p.type == BLOKADA)
+					else if(p.type == BLOCKADE)
 					{
 						--closest.y;
 						goto po_x;
 					}
 					else
 					{
-						p.type = PUSTE;
+						p.type = EMPTY;
 						p.flags = 0;
 						nowe.push_back(closest);
 					}
@@ -672,25 +672,25 @@ bool Quest_Mine::GenerateMine(CaveGenerator* cave_gen)
 		// ustaw œciany
 		for(uint i = 0; i < countof(p_blokady); ++i)
 		{
-			Pole& p = lvl.map[(pt + p_blokady[i])(lvl.w)];
-			p.type = SCIANA;
+			Tile& p = lvl.map[(pt + p_blokady[i])(lvl.w)];
+			p.type = WALL;
 		}
 		for(uint i = 0; i < countof(p_zajete); ++i)
 		{
-			Pole& p = lvl.map[(pt + p_zajete[i])(lvl.w)];
-			p.type = SCIANA;
+			Tile& p = lvl.map[(pt + p_zajete[i])(lvl.w)];
+			p.type = WALL;
 		}
 		for(int y = 1; y < 4; ++y)
 		{
 			for(int x = 1; x < 4; ++x)
 			{
-				Pole& p = lvl.map[pt.x + x + (pt.y + y)*lvl.w];
-				p.type = PUSTE;
-				p.flags = Pole::F_DRUGA_TEKSTURA;
+				Tile& p = lvl.map[pt.x + x + (pt.y + y)*lvl.w];
+				p.type = EMPTY;
+				p.flags = Tile::F_SECOND_TEXTURE;
 			}
 		}
-		Pole& p = lvl.map[end_pt(lvl.w)];
-		p.type = DRZWI;
+		Tile& p = lvl.map[end_pt(lvl.w)];
+		p.type = DOORS;
 		p.flags = 0;
 
 		// ustaw pokój
@@ -716,7 +716,7 @@ bool Quest_Mine::GenerateMine(CaveGenerator* cave_gen)
 			Room& r2 = Add1(lvl.rooms);
 			r2.target = RoomTarget::Corridor;
 
-			if(czy_blokuje2(lvl.map[end_pt.x - 1 + end_pt.y*lvl.w].type))
+			if(IsBlocking(lvl.map[end_pt.x - 1 + end_pt.y*lvl.w].type))
 			{
 				o->rot = Vec3(0, 0, 0);
 				if(end_pt.y > center.y)
@@ -862,15 +862,15 @@ bool Quest_Mine::GenerateMine(CaveGenerator* cave_gen)
 				if(Rand() % 3 == 0)
 					continue;
 
-#define P(xx,yy) !czy_blokuje21(lvl.map[x-(xx)+(y+(yy))*lvl.w])
+#define P(xx,yy) !IsBlocking2(lvl.map[x-(xx)+(y+(yy))*lvl.w])
 #undef S
-#define S(xx,yy) lvl.map[x-(xx)+(y+(yy))*lvl.w].type == SCIANA
+#define S(xx,yy) lvl.map[x-(xx)+(y+(yy))*lvl.w].type == WALL
 
 				// ruda jest generowana dla takich przypadków, w tym obróconych
 				//  ### ### ###
 				//  _?_ #?_ #?#
 				//  ___ #__ #_#
-				if(lvl.map[x + y * lvl.w].type == PUSTE && Rand() % 3 != 0 && !IS_SET(lvl.map[x + y * lvl.w].flags, Pole::F_DRUGA_TEKSTURA))
+				if(lvl.map[x + y * lvl.w].type == EMPTY && Rand() % 3 != 0 && !IS_SET(lvl.map[x + y * lvl.w].flags, Tile::F_SECOND_TEXTURE))
 				{
 					GameDirection dir = GDIR_INVALID;
 
@@ -1018,7 +1018,7 @@ bool Quest_Mine::GenerateMine(CaveGenerator* cave_gen)
 		// szef górników na wprost wejœcia
 		Int2 pt = lvl.GetUpStairsFrontTile();
 		int odl = 1;
-		while(lvl.map[pt(lvl.w)].type == PUSTE && odl < 5)
+		while(lvl.map[pt(lvl.w)].type == EMPTY && odl < 5)
 		{
 			pt += DirToPos(lvl.staircase_up_dir);
 			++odl;
@@ -1034,8 +1034,8 @@ bool Quest_Mine::GenerateMine(CaveGenerator* cave_gen)
 			for(int j = 0; j < 15; ++j)
 			{
 				Int2 tile = cave->GetRandomTile();
-				const Pole& p = lvl.At(tile);
-				if(p.type == PUSTE && !IS_SET(p.flags, Pole::F_DRUGA_TEKSTURA))
+				const Tile& p = lvl.At(tile);
+				if(p.type == EMPTY && !IS_SET(p.flags, Tile::F_SECOND_TEXTURE))
 				{
 					L.SpawnUnitNearLocation(L.local_ctx, Vec3(2.f*tile.x + Random(0.4f, 1.6f), 0, 2.f*tile.y + Random(0.4f, 1.6f)), gornik, nullptr, -2);
 					break;
@@ -1059,8 +1059,8 @@ bool Quest_Mine::GenerateMine(CaveGenerator* cave_gen)
 					for(int i = 0; i < 10; ++i)
 					{
 						Int2 tile = cave->GetRandomTile();
-						const Pole& p = lvl.At(tile);
-						if(p.type == PUSTE && !IS_SET(p.flags, Pole::F_DRUGA_TEKSTURA))
+						const Tile& p = lvl.At(tile);
+						if(p.type == EMPTY && !IS_SET(p.flags, Tile::F_SECOND_TEXTURE))
 						{
 							L.WarpUnit(*u, Vec3(2.f*tile.x + Random(0.4f, 1.6f), 0, 2.f*tile.y + Random(0.4f, 1.6f)));
 							break;
@@ -1071,7 +1071,7 @@ bool Quest_Mine::GenerateMine(CaveGenerator* cave_gen)
 				{
 					Int2 pt = lvl.GetUpStairsFrontTile();
 					int odl = 1;
-					while(lvl.map[pt(lvl.w)].type == PUSTE && odl < 5)
+					while(lvl.map[pt(lvl.w)].type == EMPTY && odl < 5)
 					{
 						pt += DirToPos(lvl.staircase_up_dir);
 						++odl;

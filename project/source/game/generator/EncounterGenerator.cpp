@@ -468,5 +468,5 @@ void EncounterGenerator::SpawnEncounterTeam()
 		break;
 	}
 
-	Game::Get().AddPlayerTeam(pos, dir, false, true);
+	L.AddPlayerTeam(pos, dir, false, true);
 }

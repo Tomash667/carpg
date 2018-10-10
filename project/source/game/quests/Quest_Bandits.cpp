@@ -114,7 +114,7 @@ void Quest_Bandits::SetProgress(int prog2)
 		else
 		{
 			OnStart(game->txQuest[153]);
-			quest_manager.RemoveQuestRumor(P_BANDYCI);
+			quest_manager.RemoveQuestRumor(R_BANDITS);
 
 			const Item* item = Item::Get("q_bandyci_paczka");
 			game->current_dialog->pc->unit->AddItem2(item, 1u, 1u);

@@ -51,79 +51,6 @@ bool Game::CanShowMenu()
 }
 
 //=================================================================================================
-void Game::SaveLoadEvent(int id)
-{
-	if(id == SaveLoad::IdCancel)
-	{
-		mp_load = false;
-		GUI.CloseDialog(gui->saveload);
-	}
-	else
-	{
-		// zapisz/wczytaj
-		if(gui->saveload->save_mode)
-		{
-			// zapisywanie
-			SaveSlot& slot = gui->saveload->slots[gui->saveload->choice];
-			if(gui->saveload->choice == MAX_SAVE_SLOTS - 1)
-			{
-				// szybki zapis
-				GUI.CloseDialog(gui->saveload);
-				SaveGameSlot(gui->saveload->choice + 1, gui->saveload->txQuickSave);
-			}
-			else
-			{
-				// podaj tytu³ zapisu
-				cstring names[] = { nullptr, gui->saveload->txSave };
-				if(slot.valid)
-					save_input_text = slot.text;
-				else if(hardcore_mode)
-					save_input_text = hardcore_savename;
-				else
-					save_input_text.clear();
-				GetTextDialogParams params(gui->saveload->txSaveName, save_input_text);
-				params.custom_names = names;
-				params.event = [this](int id)
-				{
-					if(id == BUTTON_OK && SaveGameSlot(gui->saveload->choice + 1, save_input_text.c_str()))
-					{
-						GUI.CloseDialog(gui->saveload);
-					}
-				};
-				params.parent = gui->saveload;
-				GetTextDialog::Show(params);
-			}
-		}
-		else
-		{
-			// wczytywanie
-			try
-			{
-				GUI.CloseDialog(gui->saveload);
-				if(gui->game_menu->visible)
-					GUI.CloseDialog(gui->game_menu);
-
-				LoadGameSlot(gui->saveload->choice + 1);
-
-				if(mp_load)
-					gui->create_server->Show();
-			}
-			catch(const SaveException& ex)
-			{
-				Error("Failed to load game: %s", ex.msg);
-				cstring dialog_text;
-				if(ex.localized_msg)
-					dialog_text = Format("%s%s", txLoadError, ex.localized_msg);
-				else
-					dialog_text = txLoadErrorGeneric;
-				GUI.SimpleDialog(dialog_text, gui->saveload);
-				mp_load = false;
-			}
-		}
-	}
-}
-
-//=================================================================================================
 void Game::SaveOptions()
 {
 	cfg.Add("fullscreen", IsFullscreen());
@@ -133,7 +60,7 @@ void Game::SaveOptions()
 	cfg.Add("sound_volume", Format("%d", sound_mgr->GetSoundVolume()));
 	cfg.Add("music_volume", Format("%d", sound_mgr->GetMusicVolume()));
 	cfg.Add("mouse_sensitivity", Format("%d", settings.mouse_sensitivity));
-	cfg.Add("grass_range", Format("%g", grass_range));
+	cfg.Add("grass_range", Format("%g", settings.grass_range));
 	cfg.Add("resolution", Format("%dx%d", GetWindowSize().x, GetWindowSize().y));
 	cfg.Add("refresh", Format("%d", wnd_hz));
 	cfg.Add("skip_tutorial", skip_tutorial);
@@ -207,7 +134,7 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 	}
 	dialog_context.pc = pc;
 
-	ClearGameVarsOnNewGame();
+	ClearGameVars(true);
 	gui->Setup(pc);
 
 	if(!tutorial && cc.HavePerk(Perk::Leader))
@@ -260,7 +187,7 @@ void Game::MultiplayerPanelEvent(int id)
 	}
 
 	// sprawdŸ czy nick jest poprawny
-	if(!ValidateNick(player_name.c_str()))
+	if(!N.ValidateNick(player_name.c_str()))
 	{
 		GUI.SimpleDialog(gui->multiplayer->txEnterValidNick, gui->multiplayer);
 		return;
@@ -292,11 +219,11 @@ void Game::MultiplayerPanelEvent(int id)
 		break;
 	case MultiplayerPanel::IdLoad:
 		// wczytaj grê
-		mp_load = true;
+		N.mp_load = true;
 		Net::changes.clear();
 		if(!net_talk.empty())
 			StringPool.Free(net_talk);
-		gui->ShowLoadPanel();
+		gui->saveload->ShowLoadPanel();
 		break;
 	}
 }
@@ -306,10 +233,10 @@ void Game::CreateServerEvent(int id)
 {
 	if(id == BUTTON_CANCEL)
 	{
-		if(mp_load)
+		if(N.mp_load)
 		{
 			ClearGame();
-			mp_load = false;
+			N.mp_load = false;
 		}
 		gui->create_server->CloseDialog();
 	}
@@ -743,7 +670,6 @@ void Game::UpdateClientConnectingIp(float dt)
 					if(gui->multiplayer->visible)
 						gui->multiplayer->CloseDialog();
 					gui->server->Show();
-					gui->server->grid.AddItems(count + 1);
 					if(load_char != 0)
 						gui->server->UseLoadedCharacter(load_char == 2);
 					if(load_char != 2)
@@ -915,7 +841,7 @@ void Game::UpdateClientTransfer(float dt)
 				Info("NM_TRANSFER: Received world data.");
 
 				LoadingStep("");
-				ClearGameVarsOnNewGame();
+				ClearGameVars(true);
 				Net_OnNewGameClient();
 
 				fallback_type = FALLBACK::NONE;
@@ -952,7 +878,7 @@ void Game::UpdateClientTransfer(float dt)
 				if(ReadPlayerStartData(reader))
 				{
 					// odeœlij informacje o gotowoœci
-					if(mp_load_worldmap)
+					if(N.mp_load_worldmap)
 						LoadResources("", true);
 					else
 						LoadingStep("");
@@ -1048,7 +974,7 @@ void Game::UpdateClientTransfer(float dt)
 				{
 					Info("NM_TRANSFER: Loaded player data.");
 					LoadResources("", false);
-					mp_load = false;
+					N.mp_load = false;
 					BitStreamWriter f;
 					f << ID_READY;
 					f << (byte)3;
@@ -1059,12 +985,12 @@ void Game::UpdateClientTransfer(float dt)
 				N.StreamError("NM_TRANSFER: Received ID_PLAYER_DATA with net state %d.", net_state);
 			break;
 		case ID_START:
-			if(mp_load_worldmap)
+			if(N.mp_load_worldmap)
 			{
 				// start on worldmap
 				if(net_state == NetState::Client_ReceivedPlayerStartData)
 				{
-					mp_load_worldmap = false;
+					N.mp_load_worldmap = false;
 					net_state = NetState::Client_StartOnWorldmap;
 					Info("NM_TRANSFER: Starting at world map.");
 					clear_color = Color::White;
@@ -1253,7 +1179,7 @@ void Game::UpdateServerTransfer(float dt)
 
 	if(net_state == NetState::Server_Starting)
 	{
-		if(!mp_load)
+		if(!N.mp_load)
 		{
 			gui->info_box->Show(txGeneratingWorld);
 
@@ -1266,7 +1192,7 @@ void Game::UpdateServerTransfer(float dt)
 			}
 
 			// do it
-			ClearGameVarsOnNewGame();
+			ClearGameVars(true);
 			Team.free_recruit = false;
 			fallback_type = FALLBACK::NONE;
 			fallback_t = -0.5f;
@@ -1319,7 +1245,7 @@ void Game::UpdateServerTransfer(float dt)
 		vector<Unit*> prev_team;
 
 		// create team
-		if(mp_load)
+		if(N.mp_load)
 			prev_team = Team.members;
 		Team.members.clear();
 		Team.active_members.clear();
@@ -1352,12 +1278,12 @@ void Game::UpdateServerTransfer(float dt)
 				if(info.cc.HavePerk(Perk::Leader))
 					++leader_perk;
 
-				if(mp_load)
+				if(N.mp_load)
 					PreloadUnit(u);
 			}
 			else
 			{
-				PlayerInfo* old = FindOldPlayer(info.name.c_str());
+				PlayerInfo* old = N.FindOldPlayer(info.name.c_str());
 				old->loaded = true;
 				u = old->u;
 				info.u = u;
@@ -1427,7 +1353,7 @@ void Game::UpdateServerTransfer(float dt)
 			}
 		}
 
-		if(!mp_load && leader_perk > 0 && Team.GetActiveTeamSize() < Team.GetMaxSize())
+		if(!N.mp_load && leader_perk > 0 && Team.GetActiveTeamSize() < Team.GetMaxSize())
 		{
 			Unit* npc = CreateUnit(ClassInfo::GetRandomData(), 2 * leader_perk, nullptr, nullptr, false);
 			npc->ai = new AIController;
@@ -1512,7 +1438,7 @@ void Game::UpdateServerTransfer(float dt)
 	{
 		// enter location
 		gui->info_box->Show(txLoadingLevel);
-		if(!mp_load)
+		if(!N.mp_load)
 			EnterLocation();
 		else
 		{
@@ -1523,7 +1449,7 @@ void Game::UpdateServerTransfer(float dt)
 				N.peer->Send((cstring)&b, 1, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 				N.StreamWrite(&b, 1, Stream_TransferServer, UNASSIGNED_SYSTEM_ADDRESS);
 
-				DeleteOldPlayers();
+				N.DeleteOldPlayers();
 
 				clear_color = clear_color2;
 				game_state = GS_WORLDMAP;
@@ -1531,7 +1457,7 @@ void Game::UpdateServerTransfer(float dt)
 				gui->world_map->visible = true;
 				gui->game_gui->visible = false;
 				gui->main_menu->visible = false;
-				mp_load = false;
+				N.mp_load = false;
 				clear_color = Color::White;
 				W.SetState(World::State::ON_MAP);
 				update_timer = 0.f;
@@ -1651,7 +1577,7 @@ void Game::UpdateServerTransfer(float dt)
 					}
 				}
 
-				DeleteOldPlayers();
+				N.DeleteOldPlayers();
 				LoadResources("", false);
 
 				net_mode = NM_SERVER_SEND;
@@ -1805,7 +1731,7 @@ void Game::UpdateServerSend(float dt)
 		gui->main_menu->visible = false;
 		gui->game_gui->visible = true;
 		gui->world_map->visible = false;
-		mp_load = false;
+		N.mp_load = false;
 		SetMusic();
 		gui->Setup(pc);
 		ProcessLeftPlayers();
@@ -2056,26 +1982,6 @@ void Game::CloseConnection(VoidF f)
 	}
 }
 
-bool Game::ValidateNick(cstring nick)
-{
-	assert(nick);
-
-	int len = strlen(nick);
-	if(len == 0)
-		return false;
-
-	for(int i = 0; i < len; ++i)
-	{
-		if(!(isalnum(nick[i]) || nick[i] == '_'))
-			return false;
-	}
-
-	if(strcmp(nick, "all") == 0)
-		return false;
-
-	return true;
-}
-
 void Game::OnCreateCharacter(int id)
 {
 	if(id != BUTTON_OK)
@@ -2199,28 +2105,6 @@ void Game::OnPickServer(int id)
 			}
 		}
 	}
-}
-
-void Game::DeleteOldPlayers()
-{
-	const bool in_level = L.is_open;
-	for(vector<PlayerInfo*>::iterator it = old_players.begin(), end = old_players.end(); it != end; ++it)
-	{
-		auto& info = **it;
-		if(!info.loaded && info.u)
-		{
-			if(in_level)
-				RemoveElement(L.GetContext(*info.u).units, info.u);
-			if(info.u->cobj)
-			{
-				delete info.u->cobj->getCollisionShape();
-				phy_world->removeCollisionObject(info.u->cobj);
-				delete info.u->cobj;
-			}
-			delete info.u;
-		}
-	}
-	DeleteElements(old_players);
 }
 
 void Game::ClearAndExitToMenu(cstring msg)

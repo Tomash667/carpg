@@ -21,6 +21,7 @@
 #include "GameStats.h"
 #include "ResourceManager.h"
 #include "DirectX.h"
+#include "Team.h"
 
 //=================================================================================================
 WorldMapGui::WorldMapGui() : game(Game::Get())
@@ -253,7 +254,7 @@ void WorldMapGui::Update(float dt)
 			{
 				if(Key.PressedRelease(VK_LBUTTON))
 				{
-					if(game.IsLeader())
+					if(Team.IsLeader())
 					{
 						if(picked_location != W.GetCurrentLocationIndex())
 						{
@@ -279,7 +280,7 @@ void WorldMapGui::Update(float dt)
 				}
 				else if(game.devmode && picked_location != W.GetCurrentLocationIndex() && Key.PressedRelease('T'))
 				{
-					if(game.IsLeader())
+					if(Team.IsLeader())
 					{
 						if(L.is_open)
 						{
@@ -288,7 +289,7 @@ void WorldMapGui::Update(float dt)
 						}
 
 						W.Warp(picked_location);
-						
+
 						if(Net::IsOnline())
 						{
 							NetChange& c = Add1(Net::changes);
@@ -418,7 +419,7 @@ void WorldMapGui::ShowEncounterMessage(cstring text)
 		*c.str = text;
 
 		// disable button when server is not leader
-		if(!game.IsLeader())
+		if(!Team.IsLeader())
 			dialog_enc->bts[0].state = Button::DISABLED;
 	}
 }

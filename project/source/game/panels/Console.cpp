@@ -83,13 +83,7 @@ void Console::Event(GuiEvent e)
 }
 
 //=================================================================================================
-void Console::AddText(cstring str)
-{
-	itb.Add(str);
-}
-
-//=================================================================================================
 void Console::OnInput(const string& str)
 {
-	Game::Get().ParseCommand(str, PrintMsgFunc(this, &Console::AddText), PS_CONSOLE);
+	Game::Get().ParseCommand(str, PrintMsgFunc(this, &Console::AddMsg), PS_CONSOLE);
 }

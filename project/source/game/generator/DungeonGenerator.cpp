@@ -120,9 +120,9 @@ void DungeonGenerator::Generate()
 			lvl.rooms[id].target = RoomTarget::Prison;
 			// dodaj drzwi
 			Int2 pt = pole_laczace(id, lvl.rooms[id].connected.front());
-			Pole& p = opcje.mapa[pt.x + pt.y*opcje.w];
-			p.type = DRZWI;
-			p.flags |= Pole::F_SPECJALNE;
+			Tile& p = opcje.mapa[pt.x + pt.y*opcje.w];
+			p.type = DOORS;
+			p.flags |= Tile::F_SPECIAL;
 
 			if(!kontynuuj_generowanie_mapy(opcje))
 			{
@@ -157,7 +157,7 @@ void DungeonGenerator::Generate()
 		for(int y = 0; y < r.size.y; ++y)
 		{
 			for(int x = 0; x < r.size.x; ++x)
-				lvl.map[r.pos.x + x + (r.pos.y + y)*lvl.w].flags |= Pole::F_DRUGA_TEKSTURA;
+				lvl.map[r.pos.x + x + (r.pos.y + y)*lvl.w].flags |= Tile::F_SECOND_TEXTURE;
 		}
 	}
 
@@ -182,14 +182,14 @@ void DungeonGenerator::Generate()
 		{
 			for(int x = 1; x < r.size.x - 1; ++x)
 			{
-				if(lvl.At(r.pos + Int2(x, y)).type == PUSTE)
+				if(lvl.At(r.pos + Int2(x, y)).type == EMPTY)
 				{
 					// opcje:
 					// ___ #__
 					// _?_ #?_
 					// ### ###
-#define P(xx,yy) (lvl.At(r.pos+Int2(x+xx,y+yy)).type == PUSTE)
-#define B(xx,yy) (lvl.At(r.pos+Int2(x+xx,y+yy)).type == SCIANA)
+#define P(xx,yy) (lvl.At(r.pos+Int2(x+xx,y+yy)).type == EMPTY)
+#define B(xx,yy) (lvl.At(r.pos+Int2(x+xx,y+yy)).type == WALL)
 
 					GameDirection dir = GDIR_INVALID;
 
@@ -315,7 +315,7 @@ void DungeonGenerator::GenerateUnits()
 
 	for(vector<Room>::iterator it = lvl.rooms.begin(), end = lvl.rooms.end(); it != end; ++it)
 	{
-		int ile;
+		int count;
 
 		if(it->target == RoomTarget::Treasury || it->target == RoomTarget::Prison)
 			continue;
@@ -323,7 +323,7 @@ void DungeonGenerator::GenerateUnits()
 		if(it->IsCorridor())
 		{
 			if(Rand() % 100 < szansa_na_wrog_w_korytarz)
-				ile = 1;
+				count = 1;
 			else
 				continue;
 		}
@@ -333,18 +333,18 @@ void DungeonGenerator::GenerateUnits()
 			if(x < szansa[0])
 				continue;
 			else if(x < szansa[1])
-				ile = 1;
+				count = 1;
 			else if(x < szansa[2])
-				ile = 2;
+				count = 2;
 			else
-				ile = 3;
+				count = 3;
 		}
 
-		TmpUnitGroup& part = groups[ile - 1];
+		TmpUnitGroup& part = groups[count - 1];
 		if(part.total == 0)
 			continue;
 
-		for(int i = 0; i < ile; ++i)
+		for(int i = 0; i < count; ++i)
 		{
 			int x = Rand() % part.total,
 				y = 0;

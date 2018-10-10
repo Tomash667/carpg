@@ -1,4 +1,3 @@
-// konsola w grze, otwierana tyld¹
 #pragma once
 
 //-----------------------------------------------------------------------------
@@ -6,6 +5,7 @@
 #include "InputTextBox.h"
 
 //-----------------------------------------------------------------------------
+// Ingame console, opened with tilde (~)
 class Console : public GameDialogBox, public OnCharHandler
 {
 public:
@@ -14,7 +14,7 @@ public:
 	void Draw(ControlDrawData* cdd = nullptr) override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
-	void AddText(cstring str);
+	void AddMsg(cstring str) { itb.Add(str); }
 	void OnInput(const string& str);
 	void Reset() { itb.Reset(); }
 

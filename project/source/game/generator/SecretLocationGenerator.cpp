@@ -9,7 +9,6 @@
 #include "Perlin.h"
 #include "Portal.h"
 #include "Level.h"
-#include "Game.h"
 
 //=================================================================================================
 void SecretLocationGenerator::Generate()
@@ -194,7 +193,7 @@ void SecretLocationGenerator::GenerateItems()
 //=================================================================================================
 void SecretLocationGenerator::SpawnTeam()
 {
-	Game::Get().AddPlayerTeam(Vec3(128.f, 0.f, 66.f), PI, false, false);
+	L.AddPlayerTeam(Vec3(128.f, 0.f, 66.f), PI, false, false);
 }
 
 //=================================================================================================

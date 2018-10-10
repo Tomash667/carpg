@@ -3,96 +3,97 @@
 #include "Tile.h"
 
 static const char tile_char[] = {
-	' ', // NIEUZYTE
-	'_', // PUSTE
-	'<', // SCHODY_GORA
-	'>', // SCHODY_DOL
-	'+', // DRZWI
-	'-', // OTWOR_NA_DRZWI
-	'/', // KRATKA_PODLOGA
-	'^', // KRATKA_SUFIT
-	'|', // KRATKA
-	'#', // SCIANA
-	'@', // BLOKADA
-	'$' // BLOKADA_SCIANA
+	' ', // UNUSED
+	'_', // EMPTY
+	'<', // STAIRS_UP
+	'>', // STAIRS_DOWN
+	'+', // DOORS
+	'-', // HOLE_FOR_DOORS
+	'/', // BARS_FLOOR
+	'^', // BARS_CEILING
+	'|', // BARS
+	'#', // WALL
+	'@', // BLOCKADE
+	'$', // BLOCKADE_WALL
+	'X' // USED
 };
 
-void Pole::SetupFlags(Pole* tiles, const Int2& size)
+void Tile::SetupFlags(Tile* tiles, const Int2& size)
 {
 	for(int y = 0; y < size.y; ++y)
 	{
 		for(int x = 0; x < size.x; ++x)
 		{
-			Pole& p = tiles[x + y * size.x];
-			if(p.type != PUSTE && p.type != DRZWI && p.type != KRATKA && p.type != KRATKA_PODLOGA && p.type != KRATKA_SUFIT && p.type != SCHODY_DOL)
+			Tile& p = tiles[x + y * size.x];
+			if(p.type != EMPTY && p.type != DOORS && p.type != BARS && p.type != BARS_FLOOR && p.type != BARS_CEILING && p.type != STAIRS_DOWN)
 				continue;
 
 			// pod³oga
-			if(p.type == KRATKA || p.type == KRATKA_PODLOGA)
+			if(p.type == BARS || p.type == BARS_FLOOR)
 			{
-				p.flags |= Pole::F_KRATKA_PODLOGA;
+				p.flags |= Tile::F_BARS_FLOOR;
 
-				if(!OR2_EQ(tiles[x - 1 + y * size.x].type, KRATKA, KRATKA_PODLOGA))
-					p.flags |= Pole::F_DZIURA_PRAWA;
-				if(!OR2_EQ(tiles[x + 1 + y * size.x].type, KRATKA, KRATKA_PODLOGA))
-					p.flags |= Pole::F_DZIURA_LEWA;
-				if(!OR2_EQ(tiles[x + (y - 1)*size.x].type, KRATKA, KRATKA_PODLOGA))
-					p.flags |= Pole::F_DZIURA_TYL;
-				if(!OR2_EQ(tiles[x + (y + 1)*size.x].type, KRATKA, KRATKA_PODLOGA))
-					p.flags |= Pole::F_DZIURA_PRZOD;
+				if(!OR2_EQ(tiles[x - 1 + y * size.x].type, BARS, BARS_FLOOR))
+					p.flags |= Tile::F_HOLE_RIGHT;
+				if(!OR2_EQ(tiles[x + 1 + y * size.x].type, BARS, BARS_FLOOR))
+					p.flags |= Tile::F_HOLE_LEFT;
+				if(!OR2_EQ(tiles[x + (y - 1)*size.x].type, BARS, BARS_FLOOR))
+					p.flags |= Tile::F_HOLE_BACK;
+				if(!OR2_EQ(tiles[x + (y + 1)*size.x].type, BARS, BARS_FLOOR))
+					p.flags |= Tile::F_HOLE_FRONT;
 			}
-			else if(p.type != SCHODY_DOL)
-				p.flags |= Pole::F_PODLOGA;
+			else if(p.type != STAIRS_DOWN)
+				p.flags |= Tile::F_FLOOR;
 
-			if(p.type == KRATKA || p.type == KRATKA_SUFIT)
-				assert(!IS_SET(p.flags, Pole::F_NISKI_SUFIT));
+			if(p.type == BARS || p.type == BARS_CEILING)
+				assert(!IS_SET(p.flags, Tile::F_LOW_CEILING));
 
-			if(!IS_SET(p.flags, Pole::F_NISKI_SUFIT))
+			if(!IS_SET(p.flags, Tile::F_LOW_CEILING))
 			{
-				if(IS_SET(tiles[x - 1 + y * size.x].flags, Pole::F_NISKI_SUFIT))
-					p.flags |= Pole::F_PODSUFIT_PRAWA;
-				if(IS_SET(tiles[x + 1 + y * size.x].flags, Pole::F_NISKI_SUFIT))
-					p.flags |= Pole::F_PODSUFIT_LEWA;
-				if(IS_SET(tiles[x + (y - 1)*size.x].flags, Pole::F_NISKI_SUFIT))
-					p.flags |= Pole::F_PODSUFIT_TYL;
-				if(IS_SET(tiles[x + (y + 1)*size.x].flags, Pole::F_NISKI_SUFIT))
-					p.flags |= Pole::F_PODSUFIT_PRZOD;
+				if(IS_SET(tiles[x - 1 + y * size.x].flags, Tile::F_LOW_CEILING))
+					p.flags |= Tile::F_CEIL_RIGHT;
+				if(IS_SET(tiles[x + 1 + y * size.x].flags, Tile::F_LOW_CEILING))
+					p.flags |= Tile::F_CEIL_LEFT;
+				if(IS_SET(tiles[x + (y - 1)*size.x].flags, Tile::F_LOW_CEILING))
+					p.flags |= Tile::F_CEIL_BACK;
+				if(IS_SET(tiles[x + (y + 1)*size.x].flags, Tile::F_LOW_CEILING))
+					p.flags |= Tile::F_CEIL_FRONT;
 
 				// dziura w suficie
-				if(p.type == KRATKA || p.type == KRATKA_SUFIT)
+				if(p.type == BARS || p.type == BARS_CEILING)
 				{
-					p.flags |= Pole::F_KRATKA_SUFIT;
+					p.flags |= Tile::F_BARS_CEILING;
 
-					if(!OR2_EQ(tiles[x - 1 + y * size.x].type, KRATKA, KRATKA_SUFIT))
-						p.flags |= Pole::F_GORA_PRAWA;
-					if(!OR2_EQ(tiles[x + 1 + y * size.x].type, KRATKA, KRATKA_SUFIT))
-						p.flags |= Pole::F_GORA_LEWA;
-					if(!OR2_EQ(tiles[x + (y - 1)*size.x].type, KRATKA, KRATKA_SUFIT))
-						p.flags |= Pole::F_GORA_TYL;
-					if(!OR2_EQ(tiles[x + (y + 1)*size.x].type, KRATKA, KRATKA_SUFIT))
-						p.flags |= Pole::F_GORA_PRZOD;
+					if(!OR2_EQ(tiles[x - 1 + y * size.x].type, BARS, BARS_CEILING))
+						p.flags |= Tile::F_UP_RIGHT;
+					if(!OR2_EQ(tiles[x + 1 + y * size.x].type, BARS, BARS_CEILING))
+						p.flags |= Tile::F_UP_LEFT;
+					if(!OR2_EQ(tiles[x + (y - 1)*size.x].type, BARS, BARS_CEILING))
+						p.flags |= Tile::F_UP_BACK;
+					if(!OR2_EQ(tiles[x + (y + 1)*size.x].type, BARS, BARS_CEILING))
+						p.flags |= Tile::F_UP_FRONT;
 				}
 				else
 				{
 					// normalny sufit w tym miejscu
-					p.flags |= Pole::F_SUFIT;
+					p.flags |= Tile::F_CEILING;
 				}
 			}
 
 			// œciany
-			if(OR2_EQ(tiles[x - 1 + y * size.x].type, SCIANA, BLOKADA_SCIANA))
-				p.flags |= Pole::F_SCIANA_PRAWA;
-			if(OR2_EQ(tiles[x + 1 + y * size.x].type, SCIANA, BLOKADA_SCIANA))
-				p.flags |= Pole::F_SCIANA_LEWA;
-			if(OR2_EQ(tiles[x + (y - 1)*size.x].type, SCIANA, BLOKADA_SCIANA))
-				p.flags |= Pole::F_SCIANA_TYL;
-			if(OR2_EQ(tiles[x + (y + 1)*size.x].type, SCIANA, BLOKADA_SCIANA))
-				p.flags |= Pole::F_SCIANA_PRZOD;
+			if(OR2_EQ(tiles[x - 1 + y * size.x].type, WALL, BLOCKADE_WALL))
+				p.flags |= Tile::F_WALL_RIGHT;
+			if(OR2_EQ(tiles[x + 1 + y * size.x].type, WALL, BLOCKADE_WALL))
+				p.flags |= Tile::F_WALL_LEFT;
+			if(OR2_EQ(tiles[x + (y - 1)*size.x].type, WALL, BLOCKADE_WALL))
+				p.flags |= Tile::F_WALL_BACK;
+			if(OR2_EQ(tiles[x + (y + 1)*size.x].type, WALL, BLOCKADE_WALL))
+				p.flags |= Tile::F_WALL_FRONT;
 		}
 	}
 }
 
-void Pole::DebugDraw(Pole* tiles, const Int2& size)
+void Tile::DebugDraw(Tile* tiles, const Int2& size)
 {
 	for(int y = size.y - 1; y >= 0; --y)
 	{

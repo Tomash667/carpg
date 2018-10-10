@@ -65,7 +65,7 @@ public:
 	Quest* FindUnacceptedQuest(int refid);
 	const Item* FindQuestItem(cstring name, int refid);
 	void EndUniqueQuest();
-	bool RemoveQuestRumor(PLOTKA_QUESTOWA rumor_id);
+	bool RemoveQuestRumor(QUEST_RUMOR rumor_id);
 	bool SetForcedQuest(const string& name);
 	QUEST GetForcedQuest() const { return force; }
 	const vector<QuestInfo>& GetQuestInfos() const { return infos; }
@@ -101,7 +101,7 @@ public:
 	int unique_quests_completed;
 	bool unique_completed_show;
 	int quest_rumor_counter;
-	bool quest_rumor[P_MAX];
+	bool quest_rumor[R_MAX];
 
 private:
 	void LoadQuests(GameReader& f, vector<Quest*>& quests);

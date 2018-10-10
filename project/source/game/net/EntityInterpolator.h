@@ -23,4 +23,5 @@ struct EntityInterpolator
 
 	void Reset(const Vec3& pos, float rot);
 	void Add(const Vec3& pos, float rot);
+	void Update(float dt, Vec3& pos, float& rot);
 };

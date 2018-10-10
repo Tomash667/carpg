@@ -24,7 +24,7 @@ public:
 	void Draw(ControlDrawData* cdd = nullptr) override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
-	void Show();
+	void Show(bool pick_autojoin = false);
 	void GetCell(int item, int column, Cell& cell);
 
 	Grid grid;
@@ -34,4 +34,5 @@ public:
 
 private:
 	TEX tIcoHaslo, tIcoZapis;
+	bool pick_autojoin;
 };

@@ -78,7 +78,7 @@ void Quest_Evil::SetProgress(int prog2)
 	case Progress::NotAccepted:
 		// nie zaakceptowano
 		{
-			if(!quest_manager.RemoveQuestRumor(P_ZLO))
+			if(!quest_manager.RemoveQuestRumor(R_EVIL))
 				game->gui->journal->AddRumor(Format(game->txQuest[232], GetStartLocationName()));
 		}
 		break;
@@ -90,7 +90,7 @@ void Quest_Evil::SetProgress(int prog2)
 		{
 			OnStart(game->txQuest[233]);
 			// usuñ plotkê
-			quest_manager.RemoveQuestRumor(P_ZLO);
+			quest_manager.RemoveQuestRumor(R_EVIL);
 			// lokacja
 			Location& target = *W.CreateLocation(L_DUNGEON, W.GetWorldPos(), 128.f, OLD_TEMPLE, SG_NONE, false, 1);
 			target.SetKnown();

@@ -26,6 +26,8 @@ namespace internal
 	}
 }
 
+class NamespaceBuilder;
+
 class TypeBuilder
 {
 public:
@@ -80,6 +82,8 @@ public:
 		return *this;
 	}
 
+	NamespaceBuilder WithNamespace();
+
 private:
 	cstring name;
 	asIScriptEngine* engine;
@@ -125,3 +129,94 @@ public:
 		return *this;
 	}
 };
+
+class GlobalFunctionBuilder
+{
+public:
+	GlobalFunctionBuilder(asIScriptEngine* engine) : engine(engine) {}
+
+	void AddFunction(cstring decl, const asSFuncPtr& funcPointer, void* auxiliary)
+	{
+		if(auxiliary)
+		{
+			CHECKED(engine->RegisterGlobalFunction(decl, funcPointer, asCALL_THISCALL_ASGLOBAL, auxiliary));
+		}
+		else
+		{
+			CHECKED(engine->RegisterGlobalFunction(decl, funcPointer, asCALL_CDECL));
+		}
+	}
+
+	void AddGenericFunction(cstring decl, const asSFuncPtr& funcPointer)
+	{
+		CHECKED(engine->RegisterGlobalFunction(decl, funcPointer, asCALL_GENERIC));
+	}
+
+	void AddEnum(cstring name, std::initializer_list<std::pair<cstring, int>> const& values)
+	{
+		CHECKED(engine->RegisterEnum(name));
+		for(auto& pair : values)
+		{
+			CHECKED(engine->RegisterEnumValue(name, pair.first, pair.second));
+		}
+	}
+
+protected:
+	asIScriptEngine* engine;
+};
+
+class NamespaceBuilder : public GlobalFunctionBuilder
+{
+public:
+	NamespaceBuilder(asIScriptEngine* engine, cstring ns, void* auxiliary) : GlobalFunctionBuilder(engine), auxiliary(auxiliary) { SetNamespace(ns); }
+	~NamespaceBuilder() { SetNamespace(""); }
+	NamespaceBuilder& AddFunction(cstring decl, const asSFuncPtr& funcPointer)
+	{
+		GlobalFunctionBuilder::AddFunction(decl, funcPointer, auxiliary);
+		return *this;
+	}
+
+private:
+	void SetNamespace(cstring ns) { CHECKED(engine->SetDefaultNamespace(ns)); }
+	void* auxiliary;
+};
+
+class ScriptBuilder : public GlobalFunctionBuilder
+{
+public:
+	ScriptBuilder(asIScriptEngine* engine) : GlobalFunctionBuilder(engine) {}
+
+	ScriptBuilder& AddFunction(cstring decl, const asSFuncPtr& funcPointer)
+	{
+		GlobalFunctionBuilder::AddFunction(decl, funcPointer, nullptr);
+		return *this;
+	}
+
+	TypeBuilder AddType(cstring name)
+	{
+		CHECKED(engine->RegisterObjectType(name, 0, asOBJ_REF | asOBJ_NOCOUNT));
+		return TypeBuilder(name, engine);
+	}
+
+	template<typename T>
+	SpecificTypeBuilder<T> AddStruct(cstring name)
+	{
+		CHECKED(engine->RegisterObjectType(name, sizeof(T), asOBJ_VALUE | asOBJ_POD | asGetTypeTraits<T>()));
+		return SpecificTypeBuilder<T>(name, engine);
+	}
+
+	TypeBuilder ForType(cstring name)
+	{
+		return TypeBuilder(name, engine);
+	}
+
+	NamespaceBuilder BeginNamespace(cstring ns, void* auxiliary = nullptr)
+	{
+		return NamespaceBuilder(engine, ns, auxiliary);
+	}
+};
+
+inline NamespaceBuilder TypeBuilder::WithNamespace()
+{
+	return NamespaceBuilder(engine, name, nullptr);
+}

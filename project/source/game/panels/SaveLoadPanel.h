@@ -1,13 +1,13 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "DialogBox.h"
+#include "GameDialogBox.h"
 #include "Button.h"
 #include "SaveSlot.h"
 #include "TextBox.h"
 
 //-----------------------------------------------------------------------------
-class SaveLoad : public DialogBox
+class SaveLoad : public GameDialogBox
 {
 public:
 	enum Id
@@ -23,12 +23,22 @@ public:
 	void Event(GuiEvent e) override;
 	void SetSaveMode(bool save_mode, bool online, SaveSlot* slots);
 	void SetText();
+	void UpdateSaveInfo(int slot);
+	void RemoveHardcoreSave(int slot);
+	void LoadSaveSlots();
+	void ShowSavePanel();
+	void ShowLoadPanel();
+	bool TryLoad(int slot, bool quickload = false);
 
-	Button bt[2];
-	cstring txSaving, txLoading, txSave, txLoad, txSaveN, txQuickSave, txEmptySlot, txSaveDate, txSaveTime, txSavePlayers, txSaveName;
-	bool save_mode, online;
+private:
+	SaveSlot single_saves[MAX_SAVE_SLOTS], multi_saves[MAX_SAVE_SLOTS];
 	SaveSlot* slots;
-	int choice;
-	TEX tMiniSave;
 	TextBox textbox;
+	Button bt[2];
+	int choice;
+	cstring txSaving, txLoading, txSave, txLoad, txSaveN, txQuickSave, txEmptySlot, txSaveDate, txSaveTime, txSavePlayers, txSaveName, txSavedGameN,
+		txLoadError, txLoadErrorGeneric;
+	TEX tMiniSave;
+	string save_input_text, hardcore_savename;
+	bool save_mode, online;
 };

@@ -7,7 +7,6 @@ enum DialogType
 	DTF_TRADE,
 	DTF_END_CHOICE,
 	DTF_TALK,
-	DTF_TALK2,
 	DTF_RESTART,
 	DTF_END,
 	DTF_END2,
@@ -46,7 +45,7 @@ enum DialogType
 struct DialogEntry
 {
 	DialogType type;
-	cstring msg;
+	int value;
 };
 
 //-----------------------------------------------------------------------------
@@ -55,9 +54,7 @@ struct DialogChoice
 	int pos, lvl;
 	cstring msg;
 
-	DialogChoice(int _pos, cstring _msg, int _lvl) : pos(_pos), msg(_msg), lvl(_lvl)
-	{
-	}
+	DialogChoice(int _pos, cstring _msg, int _lvl) : pos(_pos), msg(_msg), lvl(_lvl) {}
 };
 
 //-----------------------------------------------------------------------------
@@ -65,14 +62,25 @@ struct GameDialog
 {
 	struct Text
 	{
-		int id, next;
-		bool exists;
+		int index, next, script;
+		bool exists, formatted;
+
+		Text() : index(-1), next(-1), script(-1), exists(false), formatted(false) {}
+		Text(int index) : index(index), next(-1), script(-1), exists(true), formatted(false) {}
 	};
 
 	struct Script
 	{
-		uint index;
-		bool is_if;
+		enum Type
+		{
+			NORMAL,
+			IF,
+			STRING
+		};
+		int index, next;
+		Type type;
+
+		Script(int index, Type type) : index(index), next(-1), type(type) {}
 	};
 
 	string id;
@@ -108,7 +116,7 @@ struct DialogContext
 	Unit* talker; // postaæ z któr¹ siê rozmawia
 	float dialog_wait; // czas wyœwietlania opcji dialogowej
 	bool dialog_once; // wyœwietlanie opcji dialogowej tylko raz
-	cstring ostatnia_plotka;
+	cstring last_rumor;
 	bool is_local;
 	PlayerController* pc;
 	int skip_id; // u¿ywane w mp do pomijania dialogów
@@ -122,6 +130,7 @@ struct DialogContext
 	vector<Entry> prev;
 
 	cstring GetText(int index);
+	GameDialog::Text& GetTextInner(int index);
 };
 
 //-----------------------------------------------------------------------------

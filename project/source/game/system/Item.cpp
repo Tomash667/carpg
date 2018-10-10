@@ -250,7 +250,7 @@ void Item::CreateCopy(Item& item) const
 		break;
 	}
 
-	if(Net::IsServer() || game.mp_load)
+	if(Net::IsServer() || N.mp_load)
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::REGISTER_ITEM;

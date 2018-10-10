@@ -14,7 +14,6 @@
 #include "PlayerInfo.h"
 #include "Camera.h"
 #include "Config.h"
-#include "SaveSlot.h"
 #include "Settings.h"
 
 //-----------------------------------------------------------------------------
@@ -174,11 +173,10 @@ public:
 	IDirect3DVertexDeclaration9* vertex_decl[VDI_MAX];
 	int uv_mod;
 	QuadTree quadtree;
-	float grass_range;
 	LevelParts level_parts;
 	VB vbInstancing;
 	uint vb_instancing_max;
-	vector< const vector<Matrix>* > grass_patches[2];
+	vector<const vector<Matrix>*> grass_patches[2];
 	uint grass_count[2];
 	float lights_dt;
 
@@ -266,10 +264,10 @@ public:
 	cstring txEnteringLocation, txGeneratingMap, txGeneratingBuildings, txGeneratingObjects, txGeneratingUnits, txGeneratingItems, txGeneratingPhysics, txRecreatingObjects, txGeneratingMinimap,
 		txLoadingComplete, txWaitingForPlayers, txLoadingResources;
 	cstring txTutPlay, txTutTick;
-	cstring txCantSaveGame, txSaveFailed, txSavedGameN, txLoadFailed, txQuickSave, txGameSaved, txLoadingLocations, txLoadingData, txLoadingQuests, txEndOfLoading,
-		txCantSaveNow, txOnlyServerCanSave, txCantLoadGame, txOnlyServerCanLoad, txLoadSignature, txLoadVersion, txLoadSaveVersionOld, txLoadMP, txLoadSP, txLoadError,
-		txLoadErrorGeneric, txLoadOpenError;
-	cstring txPvpRefuse, txWin, txWinMp, txLevelUp, txLevelDown, txRegeneratingLevel, txGainTextAttrib, txGainTextSkill, txNeedItem, txGmsAddedItems;
+	cstring txCantSaveGame, txSaveFailed, txLoadFailed, txQuickSave, txGameSaved, txLoadingLocations, txLoadingData, txLoadingQuests, txEndOfLoading,
+		txCantSaveNow, txOnlyServerCanSave, txCantLoadGame, txOnlyServerCanLoad, txLoadSignature, txLoadVersion, txLoadSaveVersionOld, txLoadMP, txLoadSP,
+		txLoadOpenError;
+	cstring txPvpRefuse, txWin, txWinMp, txLevelUp, txLevelDown, txRegeneratingLevel, txNeedItem, txGmsAddedItems;
 	cstring txRumor[28], txRumorD[7];
 	cstring txMayorQFailed[3], txQuestAlreadyGiven[2], txMayorNoQ[2], txCaptainQFailed[2], txCaptainNoQ[2], txLocationDiscovered[2], txAllDiscovered[2], txCampDiscovered[2],
 		txAllCampDiscovered[2], txNoQRumors[2], txRumorQ[9], txNeedMoreGold, txNoNearLoc, txNearLoc, txNearLocEmpty[2], txNearLocCleared, txNearLocEnemy[2], txNoNews[2], txAllNews[2],
@@ -320,7 +318,6 @@ public:
 	Int2 dungeon_part[16], dungeon_part2[16], dungeon_part3[16], dungeon_part4[16];
 	vector<ParticleEmitter*> pes2;
 	Vec4 fog_color, fog_params, ambient_color;
-	int alpha_test_state;
 	bool cl_fog, cl_lighting, draw_particle_sphere, draw_unit_radius, draw_hitbox, draw_phy, draw_col;
 	BaseObject obj_alpha;
 	float portal_anim, drunk_anim;
@@ -349,11 +346,9 @@ public:
 	int death_screen;
 	float death_fade, game_speed;
 	vector<MeshInstance*> bow_instances;
-	Pak* pak;
 	vector<AIController*> ais;
 	uint force_seed, next_seed;
 	vector<AttachedSound> attached_sounds;
-	SaveSlot single_saves[MAX_SAVE_SLOTS], multi_saves[MAX_SAVE_SLOTS];
 
 	MeshInstance* GetBowInstance(Mesh* mesh);
 
@@ -367,7 +362,6 @@ public:
 	// DIALOGI
 	DialogContext dialog_context;
 	DialogContext* current_dialog;
-	Int2 dialog_cursor_pos; // ostatnia pozycja myszki przy wyborze dialogu
 	vector<string> dialog_choices; // u¿ywane w MP u klienta
 	string predialog;
 
@@ -379,12 +373,6 @@ public:
 	Timer loading_t;
 	int loading_steps, loading_index;
 	Color clear_color2;
-
-	//---------------------------------
-	// MINIMAPA
-	bool minimap_opened_doors;
-	vector<Int2> minimap_reveal;
-	uint minimap_size;
 
 	//---------------------------------
 	// FALLBACK
@@ -413,8 +401,6 @@ public:
 	vector<Chest*> load_chest_handler;
 
 	bool hardcore_mode, hardcore_option;
-	string hardcore_savename;
-	const Item* crazy_give_item; // dawany przedmiot, nie trzeba zapisywaæ
 	float grayout;
 	bool cl_postfx;
 
@@ -429,7 +415,7 @@ public:
 	void DoExitToMenu();
 	void GenerateItemImage(TaskData& task_data);
 	TEX TryGenerateItemImage(const Item& item);
-	SURFACE DrawItemImage(const Item& item, TEX tex, SURFACE surface, float rot);
+	SURFACE DrawItemImage(const Item& item, TEX tex, SURFACE surface, float rot, bool require_surface = true);
 	void SetupObject(BaseObject& obj);
 	void SetupCamera(float dt);
 	void LoadShaders();
@@ -445,10 +431,9 @@ public:
 	int CheckMove(Vec3& pos, const Vec3& dir, float radius, Unit* me, bool* is_small = nullptr);
 	int CheckMovePhase(Vec3& pos, const Vec3& dir, float radius, Unit* me, bool* is_small = nullptr);
 
-	void ParseCommand(const string& str, PrintMsgFunc print_func = nullptr, PARSE_SOURCE ps = PS_UNKNOWN);
+	void ParseCommand(const string& str, PrintMsgFunc print_func, PARSE_SOURCE ps = PS_UNKNOWN);
 	void CmdList(Tokenizer& t);
 	void AddCommands();
-	void AddConsoleMsg(cstring msg);
 	void UpdateAi(float dt);
 	void CheckAutoTalk(Unit& unit, float dt);
 	void StartDialog(DialogContext& ctx, Unit* talker, GameDialog* dialog = nullptr);
@@ -468,9 +453,6 @@ public:
 	void TestUnitSpells(const SpellList& spells, string& errors, uint& count);
 	Unit* CreateUnit(UnitData& base, int level = -1, Human* human_data = nullptr, Unit* test_unit = nullptr, bool create_physics = true, bool custom = false);
 	void ParseItemScript(Unit& unit, const ItemScript* script);
-	bool CanSee(Unit& unit, Unit& unit2);
-	// nie dzia³a dla budynków bo nie uwzglêdnia obiektów
-	bool CanSee(const Vec3& v1, const Vec3& v2);
 	bool CheckForHit(LevelContext& ctx, Unit& unit, Unit*& hitted, Vec3& hitpoint);
 	bool CheckForHit(LevelContext& ctx, Unit& unit, Unit*& hitted, Mesh::Point& hitbox, Mesh::Point* bone, Vec3& hitpoint);
 	void UpdateParticles(LevelContext& ctx, float dt);
@@ -507,7 +489,6 @@ public:
 	void LoadItemsData();
 	Unit* CreateUnitWithAI(LevelContext& ctx, UnitData& unit, int level = -1, Human* human_data = nullptr, const Vec3* pos = nullptr, const float* rot = nullptr, AIController** ai = nullptr);
 	void ChangeLevel(int where);
-	void AddPlayerTeam(const Vec3& pos, float rot, bool reenter, bool hide_weapon);
 	void OpenDoorsByTeam(const Int2& pt);
 	void ExitToMap();
 	SOUND GetMaterialSound(MATERIAL_TYPE m1, MATERIAL_TYPE m2);
@@ -546,17 +527,13 @@ public:
 	void LoadGameSlot(int slot);
 	void LoadGameFilename(const string& name);
 	void LoadGameCommon(cstring filename, int slot);
-	void LoadSaveSlots();
 	void Quicksave(bool from_console);
 	bool Quickload(bool from_console);
-	void ClearGameVarsOnNewGameOrLoad();
-	void ClearGameVarsOnNewGame();
-	void ClearGameVarsOnLoad();
+	void ClearGameVars(bool new_game);
 	void ClearGame();
 	cstring FormatString(DialogContext& ctx, const string& str_part);
 	int CalculateQuestReward(int gold);
 	void AddReward(int gold) { AddGold(CalculateQuestReward(gold), nullptr, true, txQuestCompletedGold, 4.f, false); }
-	void UpdateDungeonMinimap(bool send);
 	void SaveStock(FileWriter& f, vector<ItemSlot>& cnt);
 	void LoadStock(FileReader& f, vector<ItemSlot>& cnt);
 	SOUND GetItemSound(const Item* item);
@@ -565,14 +542,6 @@ public:
 	void LeaveLevel(bool clear = false);
 	void LeaveLevel(LevelContext& ctx, bool clear);
 	void UpdateContext(LevelContext& ctx, float dt);
-	// dru¿yna
-	bool IsLeader()
-	{
-		if(Net::IsSingleplayer())
-			return true;
-		else
-			return leader_id == my_id;
-	}
 	void AddGold(int count, vector<Unit*>* to = nullptr, bool show = false, cstring msg = txGoldPlus, float time = 3.f, bool defmsg = true);
 	bool IsAnyoneTalking() const;
 	// to by mog³o byæ globalna funkcj¹
@@ -602,7 +571,6 @@ public:
 	}
 	bool CanWander(Unit& u);
 	float PlayerAngleY();
-	Vec3 GetExitPos(Unit& u, bool force_border = false);
 	void AttackReaction(Unit& attacked, Unit& attacker);
 	enum class CanLeaveLocationResult
 	{
@@ -622,13 +590,8 @@ public:
 	void CloseAllPanels(bool close_mp_box = false);
 	bool CanShowEndScreen();
 	void UpdateGameDialogClient();
-	bool Cheat_KillAll(int typ, Unit& unit, Unit* ignore);
-	void Cheat_ShowMinimap();
 	void UpdateGameNet(float dt);
 	void Train(Unit& unit, bool is_skill, int co, int mode = 0);
-	void ShowStatGain(bool is_skill, int what, int value);
-	void ActivateChangeLeaderButton(bool activate);
-	void PayCredit(PlayerController* player, int ile);
 	void CreateSaveImage(cstring filename);
 	void PlayerUseUsable(Usable* u, bool after_action);
 	void UnitTalk(Unit& u, cstring text);
@@ -645,7 +608,6 @@ public:
 		AddItem(unit, item, count, is_team ? count : 0, send_msg);
 	}
 
-	Int2 GetSpawnPoint();
 	bool ValidateTarget(Unit& u, Unit* target);
 
 	void UpdateLights(vector<Light>& lights);
@@ -660,10 +622,8 @@ public:
 	Class quickstart_class;
 	string quickstart_name;
 	bool check_updates, skip_tutorial;
-	string save_input_text;
 
 	bool CanShowMenu();
-	void SaveLoadEvent(int id);
 	void SaveOptions();
 	void StartNewGame();
 	void NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharacter& cc, bool tutorial);
@@ -683,7 +643,6 @@ public:
 	void QuickJoinIp();
 	void AddMultiMsg(cstring msg);
 	void Quit();
-	bool ValidateNick(cstring nick);
 	void OnCreateCharacter(int id);
 	void OnPlayTutorial(int id);
 	void OnPickServer(int id);
@@ -698,8 +657,7 @@ public:
 	string player_name, server_ip, enter_pswd;
 	int my_id; // moje unikalne id
 	bool was_client, players_left;
-	vector<PlayerInfo*> old_players;
-	int leader_id, kick_id;
+	int leader_id;
 	enum NET_MODE
 	{
 		NM_CONNECT_IP, // ³¹czenie serwera z klientem (0 - pingowanie, 1 - podawanie has³a, 2 - ³¹czenie)
@@ -716,7 +674,6 @@ public:
 	float net_timer, update_timer, mp_timeout;
 	BitStream prepared_stream;
 	bool change_title_a;
-	bool level_generated;
 	int skip_id_counter;
 	vector<string*> net_talk;
 	struct WarpData
@@ -730,15 +687,8 @@ public:
 	bool anyone_talking;
 	// u¿ywane u klienta który nie zapamiêtuje zmiennej 'pc'
 	bool godmode, noclip, invisible;
-	vector<Int2> minimap_reveal_mp;
-	bool mp_load, mp_load_worldmap;
 	float interpolate_timer;
-	bool paused, pick_autojoin;
-
-	// zwraca czy pozycja siê zmieni³a
-	void UpdateInterpolator(EntityInterpolator* e, float dt, Vec3& pos, float& rot);
-	void InterpolateUnits(float dt);
-	void InterpolatePlayers(float dt);
+	bool paused;
 
 	void AddServerMsg(cstring msg);
 	void KickPlayer(PlayerInfo& info);
@@ -763,7 +713,6 @@ public:
 	void Server_Say(BitStream& stream, PlayerInfo& info, Packet* packet);
 	void Server_Whisper(BitStreamReader& f, PlayerInfo& info, Packet* packet);
 	void ServerProcessUnits(vector<Unit*>& units);
-	GroundItem* FindItemNetid(int netid, LevelContext** ctx = nullptr);
 	void UpdateWarpData(float dt);
 	void Net_LeaveLocation(int where)
 	{
@@ -777,9 +726,6 @@ public:
 	int ReadItemAndFind(BitStreamReader& f, const Item*& item) const;
 	bool ReadItemList(BitStreamReader& f, vector<ItemSlot>& items);
 	bool ReadItemListTeam(BitStreamReader& f, vector<ItemSlot>& items, bool skip = false);
-	void ReequipItemsMP(Unit& unit); // zak³ada przedmioty które ma w ekipunku, dostaje broñ jeœli nie ma, podnosi z³oto
-	void UseDays(PlayerController* player, int count);
-	PlayerInfo* FindOldPlayer(cstring nick);
 	void PrepareWorldData(BitStreamWriter& f);
 	bool ReadWorldData(BitStreamReader& f);
 	void WritePlayerStartData(BitStreamWriter& f, PlayerInfo& info);
@@ -793,7 +739,6 @@ public:
 	void ProcessLeftPlayers();
 	void RemovePlayer(PlayerInfo& info);
 	void ClosePeer(bool wait = false);
-	void DeleteOldPlayers();
 
 	//-----------------------------------------------------------------
 	// WORLD MAP

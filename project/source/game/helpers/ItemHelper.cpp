@@ -125,17 +125,17 @@ void ItemHelper::SplitTreasure(vector<ItemSlot>& items, int gold, Chest** chests
 		}
 	}
 
-	int ile = gold / count - 1;
-	if(ile < 0)
-		ile = 0;
-	gold -= ile * count;
+	int divided_count = gold / count - 1;
+	if(divided_count < 0)
+		divided_count = 0;
+	gold -= divided_count * count;
 
 	for(int i = 0; i < count; ++i)
 	{
 		if(i == count - 1)
-			ile += gold;
+			divided_count += gold;
 		ItemSlot& slot = Add1(chests[i]->items);
-		slot.Set(Item::gold, ile, ile);
+		slot.Set(Item::gold, divided_count, divided_count);
 		SortItems(chests[i]->items);
 	}
 }

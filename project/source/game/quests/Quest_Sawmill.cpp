@@ -81,7 +81,7 @@ void Quest_Sawmill::SetProgress(int prog2)
 			days = 0;
 			sawmill_state = State::InBuild;
 
-			quest_manager.RemoveQuestRumor(P_TARTAK);
+			quest_manager.RemoveQuestRumor(R_SAWMILL);
 
 			OnUpdate(game->txQuest[128]);
 		}
@@ -278,8 +278,8 @@ void Quest_Sawmill::GenerateSawmill(bool in_progress)
 		}
 
 		// generuj innych drwali
-		int ile = Random(5, 10);
-		for(int i = 0; i < ile; ++i)
+		int count = Random(5, 10);
+		for(int i = 0; i < count; ++i)
 		{
 			Unit* u = L.SpawnUnitNearLocation(L.local_ctx, Vec3::Random(Vec3(128 - 16, 0, 128 - 16), Vec3(128 + 16, 0, 128 + 16)), ud2, nullptr, -2);
 			if(u)
@@ -312,8 +312,8 @@ void Quest_Sawmill::GenerateSawmill(bool in_progress)
 		}
 
 		// inni drwale
-		int ile = Random(5, 10);
-		for(int i = 0; i < ile; ++i)
+		int count = Random(5, 10);
+		for(int i = 0; i < count; ++i)
 		{
 			Unit* u = L.SpawnUnitNearLocation(L.local_ctx, Vec3::Random(Vec3(128 - 16, 0, 128 - 16), Vec3(128 + 16, 0, 128 + 16)), ud2, nullptr, -2);
 			if(u)

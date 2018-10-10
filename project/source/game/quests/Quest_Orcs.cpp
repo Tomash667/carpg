@@ -48,14 +48,14 @@ void Quest_Orcs::SetProgress(int prog2)
 		{
 			if(prog != Progress::None)
 				return;
-			if(quest_manager.RemoveQuestRumor(P_ORKOWIE))
+			if(quest_manager.RemoveQuestRumor(R_ORCS))
 				game->gui->journal->AddRumor(Format(game->txQuest[189], GetStartLocationName()));
 			QM.quest_orcs2->orcs_state = Quest_Orcs2::State::GuardTalked;
 		}
 		break;
 	case Progress::NotAccepted:
 		{
-			if(quest_manager.RemoveQuestRumor(P_ORKOWIE))
+			if(quest_manager.RemoveQuestRumor(R_ORCS))
 				game->gui->journal->AddRumor(Format(game->txQuest[190], GetStartLocationName()));
 			// mark guard to remove
 			Unit*& u = QM.quest_orcs2->guard;
@@ -72,7 +72,7 @@ void Quest_Orcs::SetProgress(int prog2)
 		{
 			OnStart(game->txQuest[191]);
 			// remove rumor from pool
-			quest_manager.RemoveQuestRumor(P_ORKOWIE);
+			quest_manager.RemoveQuestRumor(R_ORCS);
 			// mark guard to remove
 			Unit*& u = QM.quest_orcs2->guard;
 			if(u)

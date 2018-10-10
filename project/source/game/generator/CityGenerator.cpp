@@ -2333,7 +2333,7 @@ void CityGenerator::OnEnter()
 	Vec3 spawn_pos;
 	float spawn_dir;
 	city->GetEntry(spawn_pos, spawn_dir);
-	game.AddPlayerTeam(spawn_pos, spawn_dir, reenter, true);
+	L.AddPlayerTeam(spawn_pos, spawn_dir, reenter, true);
 
 	if(!reenter)
 		game.GenerateQuestUnits();
@@ -2568,7 +2568,7 @@ void CityGenerator::SpawnUnits()
 	UnitData* dweller = UnitData::Get(city->IsVillage() ? "villager" : "citizen");
 
 	// pijacy w karczmie
-	for(int i = 0, ile = Random(1, city->citizens / 3); i < ile; ++i)
+	for(int i = 0, count = Random(1, city->citizens / 3); i < count; ++i)
 	{
 		if(!L.SpawnUnitInsideInn(*dweller, -2))
 			break;
@@ -2593,7 +2593,7 @@ void CityGenerator::SpawnUnits()
 
 	// stra¿nicy
 	UnitData* guard = UnitData::Get("guard_move");
-	for(int i = 0, ile = city->IsVillage() ? 3 : 6; i < ile; ++i)
+	for(int i = 0, count = city->IsVillage() ? 3 : 6; i < count; ++i)
 	{
 		for(int j = 0; j < 50; ++j)
 		{
@@ -2773,9 +2773,9 @@ void CityGenerator::GeneratePickableItems()
 		else if(obj.base == shelves)
 		{
 			L.PickableItemBegin(inn->ctx, obj);
-			for(int i = 0, ile = Random(3, 5); i < ile; ++i)
+			for(int i = 0, count = Random(3, 5); i < count; ++i)
 				L.PickableItemAdd(beer);
-			for(int i = 0, ile = Random(1, 3); i < ile; ++i)
+			for(int i = 0, count = Random(1, 3); i < count; ++i)
 				L.PickableItemAdd(vodka);
 		}
 	}
@@ -2935,7 +2935,7 @@ void CityGenerator::CreateMinimap()
 		}
 	}
 
-	game.minimap_size = OutsideLocation::size;
+	L.minimap_size = OutsideLocation::size;
 }
 
 //=================================================================================================

@@ -7,6 +7,7 @@
 #include "ResourceManager.h"
 #include "Game.h"
 #include "GlobalGui.h"
+#include "SaveLoadPanel.h"
 #define far
 #include <wininet.h>
 #include <process.h>
@@ -282,7 +283,7 @@ void MainMenu::Event(GuiEvent e)
 			break;
 		case IdLoadGame:
 			Net::SetMode(Net::Mode::Singleplayer);
-			game->gui->ShowLoadPanel();
+			game->gui->saveload->ShowLoadPanel();
 			break;
 		case IdMultiplayer:
 			game->gui->ShowMultiplayer();

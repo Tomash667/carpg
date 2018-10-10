@@ -51,13 +51,13 @@ void Slider::Update(float dt)
 				if(hold_tmp > 0.f)
 					hold_tmp = 0.f;
 				hold_tmp -= hold_val*dt;
-				int ile = (int)ceil(hold_tmp);
-				if(ile)
+				int count = (int)ceil(hold_tmp);
+				if(count)
 				{
-					val += ile;
+					val += count;
 					if(val < minv)
 						val = minv;
-					hold_tmp -= ile;
+					hold_tmp -= count;
 					parent->Event((GuiEvent)id);
 					minstep = true;
 				}
@@ -72,13 +72,13 @@ void Slider::Update(float dt)
 				if(hold_tmp < 0.f)
 					hold_tmp = 0.f;
 				hold_tmp += hold_val*dt;
-				int ile = (int)floor(hold_tmp);
-				if(ile)
+				int count = (int)floor(hold_tmp);
+				if(count)
 				{
-					val += ile;
+					val += count;
 					if(val > maxv)
 						val = maxv;
-					hold_tmp -= ile;
+					hold_tmp -= count;
 					parent->Event((GuiEvent)id);
 					minstep = true;
 				}

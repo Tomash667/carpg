@@ -16,7 +16,7 @@
 //-----------------------------------------------------------------------------
 struct InsideLocationLevel : public LevelArea
 {
-	Pole* map;
+	Tile* map;
 	int w, h;
 	vector<Chest*> chests;
 	vector<Object*> objects;
@@ -72,7 +72,7 @@ struct InsideLocationLevel : public LevelArea
 
 	void BuildRefidTables();
 
-	Pole& At(const Int2& pt)
+	Tile& At(const Int2& pt)
 	{
 		assert(IsInside(pt));
 		return map[pt(w)];
@@ -83,7 +83,7 @@ struct InsideLocationLevel : public LevelArea
 	bool IsTileVisible(const Vec3& pos) const
 	{
 		Int2 pt = PosToPt(pos);
-		return IS_SET(map[pt(w)].flags, Pole::F_ODKRYTE);
+		return IS_SET(map[pt(w)].flags, Tile::F_REVEALED);
 	}
 
 	bool IsValidWalkPos(const Vec3& pos, float radius) const

@@ -108,7 +108,7 @@ bool InsideLocationLevel::GetRandomNearWallTile(const Room& room, Int2& tile, Ga
 				tile.x = Random(room.pos.x + 1, room.pos.x + room.size.x - 2);
 				tile.y = room.pos.y + 1;
 
-				if(czy_blokuje2(map[tile.x + (tile.y - 1)*w]) && !czy_blokuje21(map[tile.x + tile.y*w]) && (nocol || !czy_blokuje21(map[tile.x + (tile.y + 1)*w])))
+				if(IsBlocking(map[tile.x + (tile.y - 1)*w]) && !IsBlocking2(map[tile.x + tile.y*w]) && (nocol || !IsBlocking2(map[tile.x + (tile.y + 1)*w])))
 					return true;
 
 				--tries2;
@@ -121,7 +121,7 @@ bool InsideLocationLevel::GetRandomNearWallTile(const Room& room, Int2& tile, Ga
 				tile.x = room.pos.x + room.size.x - 2;
 				tile.y = Random(room.pos.y + 1, room.pos.y + room.size.y - 2);
 
-				if(czy_blokuje2(map[tile.x + 1 + tile.y*w]) && !czy_blokuje21(map[tile.x + tile.y*w]) && (nocol || !czy_blokuje21(map[tile.x - 1 + tile.y*w])))
+				if(IsBlocking(map[tile.x + 1 + tile.y*w]) && !IsBlocking2(map[tile.x + tile.y*w]) && (nocol || !IsBlocking2(map[tile.x - 1 + tile.y*w])))
 					return true;
 
 				--tries2;
@@ -134,7 +134,7 @@ bool InsideLocationLevel::GetRandomNearWallTile(const Room& room, Int2& tile, Ga
 				tile.x = Random(room.pos.x + 1, room.pos.x + room.size.x - 2);
 				tile.y = room.pos.y + room.size.y - 2;
 
-				if(czy_blokuje2(map[tile.x + (tile.y + 1)*w]) && !czy_blokuje21(map[tile.x + tile.y*w]) && (nocol || !czy_blokuje21(map[tile.x + (tile.y - 1)*w])))
+				if(IsBlocking(map[tile.x + (tile.y + 1)*w]) && !IsBlocking2(map[tile.x + tile.y*w]) && (nocol || !IsBlocking2(map[tile.x + (tile.y - 1)*w])))
 					return true;
 
 				--tries2;
@@ -147,7 +147,7 @@ bool InsideLocationLevel::GetRandomNearWallTile(const Room& room, Int2& tile, Ga
 				tile.x = room.pos.x + 1;
 				tile.y = Random(room.pos.y + 1, room.pos.y + room.size.y - 2);
 
-				if(czy_blokuje2(map[tile.x - 1 + tile.y*w]) && !czy_blokuje21(map[tile.x + tile.y*w]) && (nocol || !czy_blokuje21(map[tile.x + 1 + tile.y*w])))
+				if(IsBlocking(map[tile.x - 1 + tile.y*w]) && !IsBlocking2(map[tile.x + tile.y*w]) && (nocol || !IsBlocking2(map[tile.x + 1 + tile.y*w])))
 					return true;
 
 				--tries2;
@@ -167,7 +167,7 @@ void InsideLocationLevel::SaveLevel(GameWriter& f, bool local)
 {
 	f << w;
 	f << h;
-	f.Write(map, sizeof(Pole)*w*h);
+	f.Write(map, sizeof(Tile)*w*h);
 
 	// units
 	f << units.size();
@@ -231,8 +231,8 @@ void InsideLocationLevel::LoadLevel(GameReader& f, bool local)
 {
 	f >> w;
 	f >> h;
-	map = new Pole[w*h];
-	f.Read(map, sizeof(Pole)*w*h);
+	map = new Tile[w*h];
+	f.Read(map, sizeof(Tile)*w*h);
 
 	// units
 	units.resize(f.Read<uint>());

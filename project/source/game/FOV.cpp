@@ -83,7 +83,7 @@ namespace FOV
 	Int2 source, extent, quadrant;
 	int w;
 	vector<Door*>* doors;
-	Pole* mapa;
+	Tile* mapa;
 	vector<Int2>* reveal;
 	list<Bump> steepBumps;
 	list<Bump> shallowBumps;
@@ -105,17 +105,17 @@ namespace FOV
 			return true;
 
 		Int2 real_pt(x, y);
-		Pole& p = mapa[real_pt.x + real_pt.y*w];
+		Tile& p = mapa[real_pt.x + real_pt.y*w];
 
-		return (czy_blokuje2(p) || (p.type == DRZWI && findDoorBlocking(real_pt)));
+		return (IsBlocking(p) || (p.type == DOORS && findDoorBlocking(real_pt)));
 	}
 
 	inline void visit(int x, int y)
 	{
 		if(x < 0 || y < 0 || x >= w || y >= w)
 			return;
-		Pole& p = mapa[x + y*w];
-		if(!IS_SET(p.flags, Pole::F_ODKRYTE))
+		Tile& p = mapa[x + y*w];
+		if(!IS_SET(p.flags, Tile::F_REVEALED))
 			reveal->push_back(Int2(x, w - y - 1));
 	}
 
@@ -337,7 +337,7 @@ namespace FOV
 		reveal = &revealed_tiles;
 
 		// jeœli gracz stoi w zamkniêtych drzwiach to nic nie odkrywaj
-		if(lvl.map[tile(lvl.w)].type == DRZWI && findDoorBlocking(tile))
+		if(lvl.map[tile(lvl.w)].type == DOORS && findDoorBlocking(tile))
 			return;
 
 		calculateFov();

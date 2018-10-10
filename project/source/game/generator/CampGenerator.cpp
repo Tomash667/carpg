@@ -111,7 +111,7 @@ void CampGenerator::GenerateObjects()
 		if(L.SpawnObjectNearLocation(L.local_ctx, Rand() % 5 == 0 ? ognisko_zgaszone : ognisko, pt, Random(MAX_ANGLE)))
 		{
 			// namioty / pos³ania
-			for(int j = 0, ile = Random(4, 7); j < ile; ++j)
+			for(int j = 0, count = Random(4, 7); j < count; ++j)
 			{
 				float kat = Random(MAX_ANGLE);
 				bool czy_namiot = (Rand() % 2 == 0);
