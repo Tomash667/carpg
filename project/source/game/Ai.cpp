@@ -193,7 +193,7 @@ void Game::UpdateAi(float dt)
 
 			dist = Vec3::Distance(u.pos, (*it2)->pos);
 
-			if(dist < best_dist && CanSee(u, **it2))
+			if(dist < best_dist && L.CanSee(u, **it2))
 			{
 				best_dist = dist;
 				enemy = *it2;
@@ -258,7 +258,7 @@ void Game::UpdateAi(float dt)
 						for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
 						{
 							if(!(*it2)->to_remove && (*it2)->live_state == Unit::DEAD && !u.IsEnemy(**it2) && IS_SET((*it2)->data->flags, F_UNDEAD)
-								&& (dist = Vec3::Distance(u.pos, (*it2)->pos)) < spell_range && CanSee(u, **it2))
+								&& (dist = Vec3::Distance(u.pos, (*it2)->pos)) < spell_range && L.CanSee(u, **it2))
 							{
 								float prio = (*it2)->hpmax - dist * 10;
 								if(prio > best_prio)
@@ -275,7 +275,7 @@ void Game::UpdateAi(float dt)
 						for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
 						{
 							if(!(*it2)->to_remove && !u.IsEnemy(**it2) && !IS_SET((*it2)->data->flags, F_UNDEAD) && (*it2)->hpmax - (*it2)->hp > 100.f
-								&& (dist = Vec3::Distance(u.pos, (*it2)->pos)) < spell_range && CanSee(u, **it2))
+								&& (dist = Vec3::Distance(u.pos, (*it2)->pos)) < spell_range && L.CanSee(u, **it2))
 							{
 								float prio = (*it2)->hpmax - (*it2)->hp;
 								if(*it2 == &u)
@@ -461,7 +461,7 @@ void Game::UpdateAi(float dt)
 							ai.timer = Random(30.f, 40.f);
 							ai.idle_data.area.id = -1;
 							ai.idle_data.area.pos = (u.in_building == -1 ?
-								GetExitPos(u) :
+								L.GetExitPos(u) :
 								L.city_ctx->inside_buildings[u.in_building]->exit_area.Midpoint().XZ());
 						}
 					}
@@ -1025,7 +1025,7 @@ void Game::UpdateAi(float dt)
 											if((*it2)->to_remove || !(*it2)->IsStanding() || (*it2)->invisible || *it2 == &u)
 												continue;
 
-											if(Vec3::Distance(u.pos, (*it2)->pos) < 10.f && CanSee(u, **it2))
+											if(Vec3::Distance(u.pos, (*it2)->pos) < 10.f && L.CanSee(u, **it2))
 												close_enemies.push_back(*it2);
 										}
 										if(!close_enemies.empty())
@@ -1059,7 +1059,7 @@ void Game::UpdateAi(float dt)
 											if((*it2)->to_remove || !(*it2)->IsStanding() || (*it2)->invisible || *it2 == &u)
 												continue;
 
-											if(Vec3::Distance(u.pos, (*it2)->pos) < d && CanSee(u, **it2))
+											if(Vec3::Distance(u.pos, (*it2)->pos) < d && L.CanSee(u, **it2))
 												close_enemies.push_back(*it2);
 										}
 										if(!close_enemies.empty())
@@ -1152,7 +1152,7 @@ void Game::UpdateAi(float dt)
 								}
 								break;
 							case AIController::Idle_Look:
-								if(ai.idle_data.unit->to_remove || Vec3::Distance2d(u.pos, ai.idle_data.unit->pos) > 10.f || !CanSee(u, *ai.idle_data.unit))
+								if(ai.idle_data.unit->to_remove || Vec3::Distance2d(u.pos, ai.idle_data.unit->pos) > 10.f || !L.CanSee(u, *ai.idle_data.unit))
 								{
 									// skoñcz siê patrzyæ
 									ai.idle_action = AIController::Idle_Rot;
@@ -1173,7 +1173,7 @@ void Game::UpdateAi(float dt)
 							case AIController::Idle_WalkTo:
 								if(ai.idle_data.unit->IsStanding() && !ai.idle_data.unit->to_remove)
 								{
-									if(CanSee(u, *ai.idle_data.unit))
+									if(L.CanSee(u, *ai.idle_data.unit))
 									{
 										if(Vec3::Distance2d(u.pos, ai.idle_data.unit->pos) < 1.5f)
 										{
@@ -1215,7 +1215,7 @@ void Game::UpdateAi(float dt)
 												c.str = StringPool.Get();
 												*c.str = msg;
 												c.id = ani;
-												c.ile = 0;
+												c.count = 0;
 												net_talk.push_back(c.str);
 											}
 										}
@@ -1337,7 +1337,7 @@ void Game::UpdateAi(float dt)
 													c.type = NetChange::USE_USABLE;
 													c.unit = &u;
 													c.id = use.netid;
-													c.ile = (read_papers ? USE_USABLE_START_SPECIAL : USE_USABLE_START);
+													c.count = (read_papers ? USE_USABLE_START_SPECIAL : USE_USABLE_START);
 												}
 											}
 											else
@@ -1456,7 +1456,7 @@ void Game::UpdateAi(float dt)
 									if(L.city_ctx && !IS_SET(L.city_ctx->flags, City::HaveExit) && ai.idle_data.area.id == -1 && u.in_building == -1)
 									{
 										// in exit area, go to border
-										ai.idle_data.area.pos = GetExitPos(u, true);
+										ai.idle_data.area.pos = L.GetExitPos(u, true);
 										ai.idle_data.area.id = -2;
 									}
 									else
@@ -2554,7 +2554,7 @@ void Game::UpdateAi(float dt)
 						{
 							// otwórz magicznie drzwi :o
 							if(!L.location->outside)
-								minimap_opened_doors = true;
+								L.minimap_opened_doors = true;
 							door.state = Door::Opening;
 							door.mesh_inst->Play(&door.mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);
 							door.mesh_inst->frame_end_info = false;
@@ -2568,7 +2568,7 @@ void Game::UpdateAi(float dt)
 								NetChange& c = Add1(Net::changes);
 								c.type = NetChange::USE_DOOR;
 								c.id = door.netid;
-								c.ile = 0;
+								c.count = 0;
 							}
 						}
 					}
@@ -2894,7 +2894,7 @@ void Game::AI_Shout(LevelContext& ctx, AIController& ai)
 			|| u->ai->alert_target || u->dont_attack)
 			continue;
 
-		if(Vec3::Distance(unit.pos, u->pos) <= 20.f && CanSee(unit, *u))
+		if(Vec3::Distance(unit.pos, u->pos) <= 20.f && L.CanSee(unit, *u))
 		{
 			u->ai->alert_target = ai.target;
 			u->ai->alert_target_pos = ai.target_last_pos;
@@ -3001,7 +3001,8 @@ void Game::AI_HitReaction(Unit& unit, const Vec3& pos)
 			if(u->to_remove || &unit == u || !u->IsStanding() || u->IsPlayer() || !unit.IsFriend(*u) || u->dont_attack)
 				continue;
 
-			if((u->ai->state == AIController::Idle || u->ai->state == AIController::SearchEnemy) && Vec3::Distance(unit.pos, u->pos) <= 20.f && CanSee(unit, *u))
+			if((u->ai->state == AIController::Idle || u->ai->state == AIController::SearchEnemy)
+				&& Vec3::Distance(unit.pos, u->pos) <= 20.f && L.CanSee(unit, *u))
 			{
 				AIController* ai2 = u->ai;
 				ai2->target_last_pos = pos;
@@ -3076,7 +3077,7 @@ void Game::CheckAutoTalk(Unit& unit, float dt)
 	for(auto& near_unit : near_units)
 	{
 		Unit& talk_target = *near_unit.unit;
-		if(CanSee(unit, talk_target))
+		if(L.CanSee(unit, talk_target))
 		{
 			bool ok = true;
 			for(vector<Unit*>::iterator it2 = L.local_ctx.units->begin(), end2 = L.local_ctx.units->end(); it2 != end2; ++it2)
@@ -3086,7 +3087,7 @@ void Game::CheckAutoTalk(Unit& unit, float dt)
 					continue;
 
 				if(check_unit.IsAlive() && talk_target.IsEnemy(check_unit) && check_unit.IsAI() && !check_unit.dont_attack
-					&& Vec3::Distance2d(talk_target.pos, check_unit.pos) < ALERT_RANGE.x && CanSee(check_unit, talk_target))
+					&& Vec3::Distance2d(talk_target.pos, check_unit.pos) < ALERT_RANGE.x && L.CanSee(check_unit, talk_target))
 				{
 					ok = false;
 					break;

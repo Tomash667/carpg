@@ -101,22 +101,22 @@ void Quest_SpreadNews::SetProgress(int prog2)
 	case Progress::Deliver:
 		// player told news to mayor
 		{
-			uint ile = 0;
+			uint count = 0;
 			for(vector<Entry>::iterator it = entries.begin(), end = entries.end(); it != end; ++it)
 			{
 				if(W.GetCurrentLocationIndex() == it->location)
 				{
 					it->given = true;
-					++ile;
+					++count;
 				}
 				else if(it->given)
-					++ile;
+					++count;
 			}
 
 			Location& loc = *W.GetCurrentLocation();
 			cstring msg = Format(game->txQuest[18], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str());
 
-			if(ile == entries.size())
+			if(count == entries.size())
 			{
 				prog = Progress::Deliver;
 				OnUpdate({ msg, Format(game->txQuest[19], GetStartLocationName()) });

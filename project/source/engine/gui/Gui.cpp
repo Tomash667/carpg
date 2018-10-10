@@ -1180,7 +1180,7 @@ void IGUI::Draw(bool draw_layers, bool draw_dialogs)
 	tCurrent = nullptr;
 	tCurrent2 = nullptr;
 
-	UINT passes;
+	uint passes;
 
 	V(effect->SetTechnique(techGui));
 	Vec4 wnd_s(float(wnd_size.x), float(wnd_size.y), 0, 0);
@@ -2149,7 +2149,7 @@ void IGUI::DrawLine(const Vec2* lines, uint count, Color color, bool strip)
 	Lock();
 
 	Vec4 col = Color(color);
-	uint ile = count;
+	uint counter = count;
 
 	if(strip)
 	{
@@ -2157,7 +2157,7 @@ void IGUI::DrawLine(const Vec2* lines, uint count, Color color, bool strip)
 		v->color = col;
 		++v;
 
-		while(ile--)
+		while(counter--)
 		{
 			v->pos = (*lines++).XY();
 			v->color = col;
@@ -2166,7 +2166,7 @@ void IGUI::DrawLine(const Vec2* lines, uint count, Color color, bool strip)
 	}
 	else
 	{
-		while(ile--)
+		while(counter--)
 		{
 			v->pos = (*lines++).XY();
 			v->color = col;
@@ -2190,7 +2190,7 @@ void IGUI::LineBegin()
 	effect->EndPass();
 	effect->End();
 	effect->SetTechnique(techGui2);
-	UINT passes;
+	uint passes;
 	effect->Begin(&passes, 0);
 	effect->BeginPass(0);
 }
@@ -2201,7 +2201,7 @@ void IGUI::LineEnd()
 	effect->EndPass();
 	effect->End();
 	effect->SetTechnique(techGui);
-	UINT passes;
+	uint passes;
 	effect->Begin(&passes, 0);
 	effect->BeginPass(0);
 }
@@ -2716,7 +2716,7 @@ void IGUI::UseGrayscale(bool grayscale)
 	effect->EndPass();
 	effect->End();
 	effect->SetTechnique(grayscale ? techGuiGrayscale : techGui);
-	UINT passes;
+	uint passes;
 	effect->Begin(&passes, 0);
 	effect->BeginPass(0);
 }

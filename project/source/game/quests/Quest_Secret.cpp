@@ -156,18 +156,18 @@ bool Quest_Secret::CheckMoonStone(GroundItem* item, Unit& unit)
 void Quest_Secret::UpdateFight()
 {
 	Arena* arena = Game::Get().arena;
-	int ile[2] = { 0 };
+	int count[2] = { 0 };
 
 	for(vector<Unit*>::iterator it = arena->units.begin(), end = arena->units.end(); it != end; ++it)
 	{
 		if((*it)->IsStanding())
-			ile[(*it)->in_arena]++;
+			count[(*it)->in_arena]++;
 	}
 
 	if(arena->units[0]->hp < 10.f)
-		ile[1] = 0;
+		count[1] = 0;
 
-	if(ile[0] == 0 || ile[1] == 0)
+	if(count[0] == 0 || count[1] == 0)
 	{
 		// o¿yw wszystkich
 		for(Unit* unit : arena->units)
@@ -207,7 +207,7 @@ void Quest_Secret::UpdateFight()
 			c.unit = arena->units[0];
 		}
 
-		if(ile[0])
+		if(count[0])
 		{
 			// gracz wygra³
 			state = SECRET_WIN;

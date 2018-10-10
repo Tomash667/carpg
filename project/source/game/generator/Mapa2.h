@@ -59,7 +59,7 @@ struct OpcjeMapy
 	bool stop;
 
 	// input/output
-	Pole* mapa;
+	Tile* mapa;
 	vector<Room>* rooms;
 	Room* schody_gora_pokoj, *schody_dol_pokoj;
 	GameDirection schody_gora_kierunek, schody_dol_kierunek;

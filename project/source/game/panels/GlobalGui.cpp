@@ -105,6 +105,9 @@ void GlobalGui::InitOnce()
 	game_gui = new GameGui;
 	GUI.Add(game_gui);
 
+	mp_box = new MpBox;
+	game_gui->Add(mp_box);
+
 	inventory = new Inventory;
 	inventory->InitOnce();
 	game_gui->Add(inventory->inv_mine);
@@ -129,9 +132,6 @@ void GlobalGui::InitOnce()
 	game_gui->Add(book);
 
 	messages = new GameMessages;
-
-	mp_box = new MpBox;
-	game_gui->Add(mp_box);
 
 	// worldmap
 	world_map = new WorldMapGui;
@@ -160,7 +160,6 @@ void GlobalGui::InitOnce()
 	options = new Options(info);
 
 	info.name = "saveload";
-	info.event = DialogEvent(&game, &Game::SaveLoadEvent);
 	saveload = new SaveLoad(info);
 
 	info.name = "create_character";
@@ -267,6 +266,8 @@ void GlobalGui::LoadData()
 void GlobalGui::PostInit()
 {
 	create_character->Init();
+	saveload->LoadSaveSlots();
+
 	// load gui textures that require instant loading
 	GUI.GetLayout()->LoadDefault();
 }
@@ -376,24 +377,8 @@ void GlobalGui::OnFocus(bool focus, const Int2& activation_point)
 //=================================================================================================
 void GlobalGui::ShowMultiplayer()
 {
-	Game::Get().mp_load = false;
+	N.mp_load = false;
 	multiplayer->Show();
-}
-
-//=================================================================================================
-void GlobalGui::ShowSavePanel()
-{
-	Game& game = Game::Get();
-	saveload->SetSaveMode(true, Net::IsOnline(), Net::IsOnline() ? game.multi_saves : game.single_saves);
-	GUI.ShowDialog(saveload);
-}
-
-//=================================================================================================
-void GlobalGui::ShowLoadPanel()
-{
-	Game& game = Game::Get();
-	saveload->SetSaveMode(false, game.mp_load, game.mp_load ? game.multi_saves : game.single_saves);
-	GUI.ShowDialog(saveload);
 }
 
 //=================================================================================================

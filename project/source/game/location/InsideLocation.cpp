@@ -33,7 +33,7 @@ void InsideLocation::Write(BitStreamWriter& f)
 	f << from_portal;
 	// map
 	f.WriteCasted<byte>(lvl.w);
-	f.Write((cstring)lvl.map, sizeof(Pole)*lvl.w*lvl.h);
+	f.Write((cstring)lvl.map, sizeof(Tile)*lvl.w*lvl.h);
 	// lights
 	f.WriteCasted<byte>(lvl.lights.size());
 	for(Light& light : lvl.lights)
@@ -93,7 +93,7 @@ bool InsideLocation::Read(BitStreamReader& f)
 	f.ReadCasted<byte>(target);
 	f >> from_portal;
 	f.ReadCasted<byte>(lvl.w);
-	if(!f.Ensure(lvl.w * lvl.w * sizeof(Pole)))
+	if(!f.Ensure(lvl.w * lvl.w * sizeof(Tile)))
 	{
 		Error("Read level: Broken packet for inside location.");
 		return false;
@@ -102,8 +102,8 @@ bool InsideLocation::Read(BitStreamReader& f)
 	// map
 	lvl.h = lvl.w;
 	if(!lvl.map)
-		lvl.map = new Pole[lvl.w * lvl.h];
-	f.Read(lvl.map, lvl.w * lvl.w * sizeof(Pole));
+		lvl.map = new Tile[lvl.w * lvl.h];
+	f.Read(lvl.map, lvl.w * lvl.w * sizeof(Tile));
 
 	// lights
 	byte count;

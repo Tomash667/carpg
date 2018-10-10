@@ -7,6 +7,7 @@
 #include "ErrorHandler.h"
 #include "Utility.h"
 #include "StartupOptions.h"
+#include "SaveSlot.h"
 
 //-----------------------------------------------------------------------------
 cstring RESTART_MUTEX_NAME = "CARPG-RESTART-MUTEX";
@@ -767,9 +768,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		game.shader_version = -1;
 	}
 	options.vsync = cfg.GetBool("vsync", true);
-	game.grass_range = cfg.GetFloat("grass_range", 40.f);
-	if(game.grass_range < 0.f)
-		game.grass_range = 0.f;
+	game.settings.grass_range = cfg.GetFloat("grass_range", 40.f);
+	if(game.settings.grass_range < 0.f)
+		game.settings.grass_range = 0.f;
 	{
 		const string& screenshot_format = cfg.GetString("screenshot_format", "jpg");
 		if(screenshot_format == "jpg")
@@ -786,18 +787,18 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			game.screenshot_format = ImageFormat::JPG;
 		}
 	}
-	
+
 	cfg.LoadConfigVars();
 
 	//-------------------------------------------------------------------------
 	// logger
-	int ile = 0;
+	int count = 0;
 	if(game.have_console)
-		++ile;
+		++count;
 	if(log_to_file)
-		++ile;
+		++count;
 
-	if(ile == 2)
+	if(count == 2)
 	{
 		MultiLogger* multi = new MultiLogger;
 		ConsoleLogger* clog = new ConsoleLogger;
@@ -807,7 +808,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		plog.Apply(multi);
 		Logger::global = multi;
 	}
-	else if(ile == 1)
+	else if(count == 1)
 	{
 		if(game.have_console)
 		{

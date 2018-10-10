@@ -817,7 +817,7 @@ void Engine::InitWindow(StartupOptions& options)
 	// register window class
 	WNDCLASSEX wc = {
 		sizeof(WNDCLASSEX), CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS,
-		[](HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) -> LRESULT { return Engine::Get().HandleEvent(hwnd, msg, wParam, lParam); },
+		[](HWND hwnd, uint msg, WPARAM wParam, LPARAM lParam) -> LRESULT { return Engine::Get().HandleEvent(hwnd, msg, wParam, lParam); },
 		0, 0, GetModuleHandle(nullptr), LoadIcon(GetModuleHandle(nullptr), "Icon"), LoadCursor(nullptr, IDC_ARROW), (HBRUSH)GetStockObject(BLACK_BRUSH),
 		nullptr, "Krystal", nullptr
 	};

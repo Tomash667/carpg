@@ -248,7 +248,7 @@ Available commands:
 	set_stat - set player statistics (setstat stat value), use setstat ? to get list of stats.
 	set_seed - set randomness seed (set_seed uint).
 	shader_version - force shader version (shader_version 2/3).
-	show_minimap - reveal minimap.
+	reveal_minimap - reveal dungeon minimap.
 	skip_days - skip days [skip_days [count]).
 	spawn_unit - create unit in front of player (spawn_unit id [level count arena]).
 	speed - game speed (speed 0-10).
@@ -266,7 +266,7 @@ Available commands:
 In configuration file (by default carpg.cfg) you can use such options:
 	* autopick (random warrior hunter rogue) - automatically picks character in
 		multiplayer and set as ready. Works only once
-	* autostart (ile>=1) - automatically starts up when specified number of players
+	* autostart (count>=1) - automatically starts up when specified number of players
 		join and are ready
 	* change_title (true [false]) - change window title depending on game mode.
 	* check_updates ([true] false) - check for game updates

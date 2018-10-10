@@ -64,7 +64,7 @@ void Game::AddCommands()
 	cmds.push_back(ConsoleCommand(&uv_mod, "uv_mod", "terrain uv mod (uv_mod 1-256)", F_ANYWHERE, 1, 256, VoidF(this, &Game::UvModChanged)));
 	cmds.push_back(ConsoleCommand(&shader_version, "shader_version", "force shader version (shader_version 2/3)", F_ANYWHERE | F_WORLD_MAP, 2, 3, VoidF(this, &Game::ShaderVersionChanged)));
 	cmds.push_back(ConsoleCommand(&profiler_mode, "profiler", "profiler execution: 0-disabled, 1-update, 2-rendering", F_ANYWHERE | F_WORLD_MAP, 0, 2));
-	cmds.push_back(ConsoleCommand(&grass_range, "grass_range", "grass draw range", F_ANYWHERE | F_WORLD_MAP, 0.f));
+	cmds.push_back(ConsoleCommand(&settings.grass_range, "grass_range", "grass draw range", F_ANYWHERE | F_WORLD_MAP, 0.f));
 	cmds.push_back(ConsoleCommand(&devmode, "devmode", "developer mode (devmode 0/1)", F_GAME | F_SERVER | F_WORLD_MAP | F_MENU));
 
 	cmds.push_back(ConsoleCommand(CMD_WHISPER, "whisper", "send private message to player (whisper nick msg)", F_LOBBY | F_MULTIPLAYER | F_WORLD_MAP | F_NO_ECHO));
@@ -84,7 +84,7 @@ void Game::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_KILLALL, "killall", "kills all enemy units in current level, with 1 it kills allies too, ignore unit in front of player (killall [0/1])", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_SAVE, "save", "save game (save 1-10 [text] or filename)", F_GAME | F_WORLD_MAP | F_SERVER));
 	cmds.push_back(ConsoleCommand(CMD_LOAD, "load", "load game (load 1-10 or filename)", F_GAME | F_WORLD_MAP | F_MENU | F_SERVER));
-	cmds.push_back(ConsoleCommand(CMD_SHOW_MINIMAP, "show_minimap", "reveal minimap", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_REVEAL_MINIMAP, "reveal_minimap", "reveal dungeon minimap", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_SKIP_DAYS, "skip_days", "skip days [skip_days [count])", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_LIST, "list", "display list of types, don't enter type to list possible choices (list type [filter])", F_ANYWHERE));
 	cmds.push_back(ConsoleCommand(CMD_HEAL_UNIT, "heal_unit", "heal unit in front of player", F_GAME | F_CHEAT));
@@ -151,16 +151,8 @@ void Game::AddCommands()
 }
 
 //=================================================================================================
-void Game::AddConsoleMsg(cstring msg)
-{
-	gui->console->AddText(msg);
-}
-
-//=================================================================================================
 void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURCE source)
 {
-	if(!print_func)
-		print_func = PrintMsgFunc(this, &Game::AddConsoleMsg);
 	g_print_func = print_func;
 
 	Tokenizer t(Tokenizer::F_JOIN_MINUS);
@@ -402,7 +394,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					if(game_state == GS_LEVEL && !L.location->outside)
 					{
 						InsideLocationLevel& lvl = ((InsideLocation*)L.location)->GetLevelData();
-						Pole::DebugDraw(lvl.map, Int2(lvl.w, lvl.h));
+						Tile::DebugDraw(lvl.map, Int2(lvl.w, lvl.h));
 					}
 					else
 						Msg("You need to be inside dungeon!");
@@ -438,7 +430,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								NetChange& c = Add1(Net::changes);
 								c.type = NetChange::CHEAT_ADD_ITEM;
 								c.base_item = item;
-								c.ile = count;
+								c.count = count;
 								c.id = is_team ? 1 : 0;
 							}
 						}
@@ -466,7 +458,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::CHEAT_ADD_GOLD;
 							c.id = (is_team ? 1 : 0);
-							c.ile = count;
+							c.count = count;
 						}
 					}
 					else
@@ -567,7 +559,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								NetChange& c = Add1(Net::changes);
 								c.type = (it->cmd == CMD_SET_STAT ? NetChange::CHEAT_SET_STAT : NetChange::CHEAT_MOD_STAT);
 								c.id = co;
-								c.ile = (skill ? 1 : 0);
+								c.count = (skill ? 1 : 0);
 								c.i = num;
 							}
 						}
@@ -676,13 +668,13 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							Msg("Missing base unit '%s'!", id.c_str());
 						else
 						{
-							int level = -1, ile = 1, in_arena = -1;
+							int level = -1, count = 1, in_arena = -1;
 							if(t.Next())
 							{
 								level = t.MustGetInt();
 								if(t.Next())
 								{
-									ile = t.MustGetInt();
+									count = t.MustGetInt();
 									if(t.Next())
 										in_arena = Clamp(t.MustGetInt(), -1, 1);
 								}
@@ -692,7 +684,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							{
 								LevelContext& ctx = L.GetContext(*pc->unit);
 
-								for(int i = 0; i < ile; ++i)
+								for(int i = 0; i < count; ++i)
 								{
 									Unit* u = L.SpawnUnitNearLocation(ctx, pc->unit->GetFrontPos(), *data, &pc->unit->pos, level);
 									if(!u)
@@ -712,7 +704,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								NetChange& c = Add1(Net::changes);
 								c.type = NetChange::CHEAT_SPAWN_UNIT;
 								c.base_unit = data;
-								c.ile = ile;
+								c.count = count;
 								c.id = level;
 								c.i = in_arena;
 							}
@@ -812,7 +804,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					{
 						for(AIController* ai : ais)
 						{
-							if(ai->unit->IsEnemy(*pc->unit) && Vec3::Distance(ai->unit->pos, pc->unit->pos) < ALERT_RANGE.x && CanSee(*ai->unit, *pc->unit))
+							if(ai->unit->IsEnemy(*pc->unit) && Vec3::Distance(ai->unit->pos, pc->unit->pos) < ALERT_RANGE.x && L.CanSee(*ai->unit, *pc->unit))
 							{
 								ai->morale = -10;
 								ai->target_last_pos = pc->unit->pos;
@@ -908,14 +900,14 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					break;
 				case CMD_KILLALL:
 					{
-						int typ = 0;
+						int mode = 0;
 						if(t.Next())
-							typ = t.MustGetInt();
+							mode = t.MustGetInt();
 						Unit* ignore = nullptr;
 						if(pc_data.before_player == BP_UNIT)
 							ignore = pc_data.before_player_ptr.unit;
-						if(!Cheat_KillAll(typ, *pc->unit, ignore))
-							Msg("Unknown parameter '%d'.", typ);
+						if(!L.KillAll(mode, *pc->unit, ignore))
+							Msg("Unknown mode '%d'.", mode);
 					}
 					break;
 				case CMD_SAVE:
@@ -982,26 +974,26 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					else
 						Msg(Net::IsClient() ? "Only server can load game." : "You can't load game in this moment.");
 					break;
-				case CMD_SHOW_MINIMAP:
+				case CMD_REVEAL_MINIMAP:
 					if(Net::IsLocal())
-						Cheat_ShowMinimap();
+						L.RevealMinimap();
 					else
-						Net::PushChange(NetChange::CHEAT_SHOW_MINIMAP);
+						Net::PushChange(NetChange::CHEAT_REVEAL_MINIMAP);
 					break;
 				case CMD_SKIP_DAYS:
 					{
-						int ile = 1;
+						int count = 1;
 						if(t.Next())
-							ile = t.MustGetInt();
-						if(ile > 0)
+							count = t.MustGetInt();
+						if(count > 0)
 						{
 							if(Net::IsLocal())
-								W.Update(ile, World::UM_SKIP);
+								W.Update(count, World::UM_SKIP);
 							else
 							{
 								NetChange& c = Add1(Net::changes);
 								c.type = NetChange::CHEAT_SKIP_DAYS;
-								c.id = ile;
+								c.id = count;
 							}
 						}
 					}
@@ -1157,7 +1149,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 									Team.leader = info->u;
 
 									if(gui->world_map->dialog_enc)
-										gui->world_map->dialog_enc->bts[0].state = (IsLeader() ? Button::NONE : Button::DISABLED);
+										gui->world_map->dialog_enc->bts[0].state = (Team.IsLeader() ? Button::NONE : Button::DISABLED);
 								}
 							}
 

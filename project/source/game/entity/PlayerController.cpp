@@ -10,6 +10,8 @@
 #include "Level.h"
 #include "GlobalGui.h"
 #include "GameMessages.h"
+#include "Team.h"
+#include "World.h"
 
 //=================================================================================================
 PlayerController::~PlayerController()
@@ -203,22 +205,21 @@ void PlayerController::Train(SkillId skill, int points)
 	{
 		recalculate_level = true;
 		unit->Set(skill, value);
-		Game& game = Game::Get();
 		if(is_local)
-			game.ShowStatGain(true, s, gained);
+			Game::Get().gui->messages->ShowStatGain(true, s, gained);
 		else
 		{
 			NetChangePlayer& c = Add1(player_info->changes);
 			c.type = NetChangePlayer::GAIN_STAT;
 			c.id = 1;
 			c.a = s;
-			c.ile = gained;
+			c.count = gained;
 
 			NetChangePlayer& c2 = Add1(player_info->changes);
 			c2.type = NetChangePlayer::STAT_CHANGED;
 			c2.id = (int)ChangedStatType::SKILL;
 			c2.a = s;
-			c2.ile = value;
+			c2.count = value;
 		}
 	}
 }
@@ -254,22 +255,21 @@ void PlayerController::Train(AttributeId attrib, int points)
 	{
 		recalculate_level = true;
 		unit->Set(attrib, value);
-		Game& game = Game::Get();
 		if(is_local)
-			game.ShowStatGain(false, a, gained);
+			Game::Get().gui->messages->ShowStatGain(false, a, gained);
 		else
 		{
 			NetChangePlayer& c = Add1(player_info->changes);
 			c.type = NetChangePlayer::GAIN_STAT;
 			c.id = 0;
 			c.a = a;
-			c.ile = gained;
+			c.count = gained;
 
 			NetChangePlayer& c2 = Add1(player_info->changes);
 			c2.type = NetChangePlayer::STAT_CHANGED;
 			c2.id = (int)ChangedStatType::ATTRIBUTE;
 			c2.a = a;
-			c2.ile = value;
+			c2.count = value;
 		}
 	}
 }
@@ -943,7 +943,54 @@ void PlayerController::AddItemMessage(uint count)
 		else
 		{
 			c2.type = NetChangePlayer::ADDED_ITEMS_MSG;
-			c2.ile = count;
+			c2.count = count;
 		}
 	}
+}
+
+//=================================================================================================
+void PlayerController::PayCredit(int count)
+{
+	LocalVector<Unit*> units;
+	for(Unit* u : Team.active_members)
+	{
+		if(u != unit)
+			units->push_back(u);
+	}
+
+	Game::Get().AddGold(count, units, false);
+
+	credit -= count;
+	if(credit < 0)
+	{
+		Warn("Player '%s' paid %d credit and now have %d!", name.c_str(), count, credit);
+		credit = 0;
+	}
+
+	if(Net::IsOnline())
+		Net::PushChange(NetChange::UPDATE_CREDIT);
+}
+
+//=================================================================================================
+void PlayerController::UseDays(int count)
+{
+	assert(count > 0);
+
+	if(free_days >= count)
+		free_days -= count;
+	else
+	{
+		count -= free_days;
+		free_days = 0;
+
+		for(auto info : N.players)
+		{
+			if(info->left == PlayerInfo::LEFT_NO && info->pc != this)
+				info->pc->free_days += count;
+		}
+
+		W.Update(count, World::UM_NORMAL);
+	}
+
+	Net::PushChange(NetChange::UPDATE_FREE_DAYS);
 }

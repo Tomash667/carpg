@@ -120,7 +120,7 @@ bool Quest_Tournament::Special(DialogContext& ctx, cstring msg)
 			NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
 			c.type = NetChangePlayer::TRAIN;
 			c.id = 2;
-			c.ile = 0;
+			c.count = 0;
 		}
 	}
 	else

@@ -174,8 +174,8 @@ void ServerPanel::LoadLanguage()
 void ServerPanel::LoadData()
 {
 	auto& tex_mgr = ResourceManager::Get<Texture>();
-	tex_mgr.AddLoadTask("gotowy.png", tGotowy);
-	tex_mgr.AddLoadTask("niegotowy.png", tNieGotowy);
+	tex_mgr.AddLoadTask("gotowy.png", tReady);
+	tex_mgr.AddLoadTask("niegotowy.png", tNotReady);
 }
 
 //=================================================================================================
@@ -188,8 +188,8 @@ void ServerPanel::Draw(ControlDrawData*)
 	GUI.DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
 
 	// przyciski
-	int ile = (Net::IsServer() ? 6 : 3);
-	for(int i = 0; i < ile; ++i)
+	int count = (Net::IsServer() ? 6 : 3);
+	for(int i = 0; i < count; ++i)
 		bts[i].Draw();
 
 	// input
@@ -208,8 +208,8 @@ void ServerPanel::Draw(ControlDrawData*)
 void ServerPanel::Update(float dt)
 {
 	// przyciski
-	int ile = (Net::IsServer() ? 6 : 3);
-	for(int i = 0; i < ile; ++i)
+	int count = (Net::IsServer() ? 6 : 3);
+	for(int i = 0; i < count; ++i)
 	{
 		bts[i].mouse_focus = focus;
 		bts[i].Update(dt);
@@ -362,9 +362,9 @@ void ServerPanel::UpdateLobbyClient(float dt)
 				AddMsg(Format(txStartingIn, 0));
 
 				// close lobby and wait for server
-				game->mp_load_worldmap = (packet->data[1] == 1);
+				N.mp_load_worldmap = (packet->data[1] == 1);
 				Info("ServerPanel: Waiting for server.");
-				game->LoadingStart(game->mp_load_worldmap ? 4 : 9);
+				game->LoadingStart(N.mp_load_worldmap ? 4 : 9);
 				game->gui->main_menu->visible = false;
 				CloseDialog();
 				game->gui->info_box->Show(txWaitingForServer);
@@ -706,7 +706,7 @@ void ServerPanel::UpdateLobbyServer(float dt)
 						player_crc);
 					include_extra = 2;
 				}
-				else if(!game->ValidateNick(info->name.c_str()))
+				else if(!N.ValidateNick(info->name.c_str()))
 				{
 					// invalid nick
 					reason = JoinResult::InvalidNick;
@@ -769,10 +769,10 @@ void ServerPanel::UpdateLobbyServer(float dt)
 						fw << info2->name;
 					}
 					fw.Patch<byte>(4, count);
-					if(game->mp_load)
+					if(N.mp_load)
 					{
 						// informacja o postaci w zapisie
-						PlayerInfo* old = game->FindOldPlayer(info->name.c_str());
+						PlayerInfo* old = N.FindOldPlayer(info->name.c_str());
 						if(old)
 						{
 							fw.WriteCasted<byte>(2);
@@ -1071,7 +1071,7 @@ void ServerPanel::UpdateLobbyServer(float dt)
 			if(d == 0)
 			{
 				b[0] = ID_STARTUP;
-				b[1] = (game->mp_load && !L.is_open ? 1 : 0);
+				b[1] = (N.mp_load && !L.is_open ? 1 : 0);
 			}
 			else
 			{
@@ -1103,7 +1103,7 @@ void ServerPanel::UpdateServerInfo()
 	byte flags = 0;
 	if(password)
 		flags |= SERVER_PASSWORD;
-	if(game->mp_load)
+	if(N.mp_load)
 		flags |= SERVER_SAVED;
 	f.WriteCasted<byte>(flags);
 	f << server_name;
@@ -1190,7 +1190,7 @@ void ServerPanel::Event(GuiEvent e)
 					else
 					{
 						// na pewno?
-						game->kick_id = info.id;
+						kick_id = info.id;
 						DialogInfo di;
 						di.event = DialogEvent(this, &ServerPanel::OnKick);
 						di.name = "kick";
@@ -1275,6 +1275,7 @@ void ServerPanel::Show()
 
 	itb.Reset();
 	grid.Reset();
+	grid.AddItems(N.players.size());
 
 	GUI.ShowDialog(this);
 }
@@ -1285,7 +1286,7 @@ void ServerPanel::GetCell(int item, int column, Cell& cell)
 	PlayerInfo& info = *N.players[item];
 
 	if(column == 0)
-		cell.img = (info.ready ? tGotowy : tNieGotowy);
+		cell.img = (info.ready ? tReady : tNotReady);
 	else if(column == 1)
 	{
 		cell.text_color->text = (info.state == PlayerInfo::IN_LOBBY ? info.name.c_str() : info.adr.ToString());
@@ -1302,7 +1303,7 @@ void ServerPanel::ExitLobby(VoidF callback)
 
 	if(Net::IsServer())
 	{
-		if(game->mp_load)
+		if(N.mp_load)
 			game->ClearGame();
 
 		Info("ServerPanel: Closing server.");
@@ -1358,7 +1359,7 @@ void ServerPanel::OnKick(int id)
 {
 	if(id == BUTTON_YES)
 	{
-		PlayerInfo* info = N.TryGetPlayer(game->kick_id);
+		PlayerInfo* info = N.TryGetPlayer(kick_id);
 		if(info)
 			game->KickPlayer(*info);
 	}

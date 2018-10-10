@@ -6,6 +6,7 @@
 #include "ResourceManager.h"
 #include "Game.h"
 #include "GlobalGui.h"
+#include "SaveLoadPanel.h"
 
 //=================================================================================================
 GameMenu::GameMenu(const DialogInfo& info) : DialogBox(info), prev_can_save(true), prev_can_load(true), prev_hardcore_mode(false)
@@ -130,10 +131,10 @@ void GameMenu::Event(GuiEvent e)
 			CloseDialog();
 			break;
 		case IdSaveGame:
-			game.gui->ShowSavePanel();
+			game.gui->saveload->ShowSavePanel();
 			break;
 		case IdLoadGame:
-			game.gui->ShowLoadPanel();
+			game.gui->saveload->ShowLoadPanel();
 			break;
 		case IdOptions:
 			game.gui->ShowOptions();

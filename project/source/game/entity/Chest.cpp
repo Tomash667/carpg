@@ -106,7 +106,7 @@ bool Chest::AddItem(const Item* item, uint count, uint team_count, bool notify)
 			c.type = NetChangePlayer::ADD_ITEMS_CHEST;
 			c.item = item;
 			c.id = netid;
-			c.ile = count;
+			c.count = count;
 			c.a = team_count;
 		}
 	}

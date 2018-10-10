@@ -47,7 +47,7 @@ namespace Mapa
 		Int2(0,0) // BRAK
 	};
 
-	Pole* mapa;
+	Tile* mapa;
 	OpcjeMapy* opcje;
 	vector<int> wolne;
 
@@ -70,16 +70,16 @@ namespace Mapa
 	bool sprawdz_pokoj(int x, int y, int w, int h);
 	void stworz_korytarz(Int2& pt, DIR dir);
 	void szukaj_polaczenia(int x, int y, int id);
-	void ustaw_sciane(POLE& pole);
+	void ustaw_sciane(TILE_TYPE& pole);
 	void ustaw_wzor();
 	DIR wolna_droga(int id);
 
 #define H(_x,_y) mapa[(_x)+(_y)*opcje->w].type
 #define HR(_x,_y) mapa[(_x)+(_y)*opcje->w].room
 
-	bool wolne_pole(POLE p)
+	bool wolne_pole(TILE_TYPE p)
 	{
-		return (p == PUSTE || p == KRATKA || p == KRATKA_PODLOGA || p == KRATKA_SUFIT);
+		return (p == EMPTY || p == BARS || p == BARS_FLOOR || p == BARS_CEILING);
 	}
 
 	//=================================================================================================
@@ -127,8 +127,8 @@ namespace Mapa
 		{
 			for(int xx = x + 1; xx < x + w - 1; ++xx)
 			{
-				assert(H(xx, yy) == NIEUZYTE);
-				H(xx, yy) = PUSTE;
+				assert(H(xx, yy) == UNUSED);
+				H(xx, yy) = EMPTY;
 				HR(xx, yy) = (word)id;
 			}
 		}
@@ -239,7 +239,7 @@ namespace Mapa
 
 				if(sprawdz_pokoj(pt.x, pt.y, w, h))
 				{
-					mapa[id].type = DRZWI;
+					mapa[id].type = DOORS;
 					dodaj_pokoj(pt.x, pt.y, w, h, DODAJ_POKOJ);
 				}
 			}
@@ -278,21 +278,21 @@ namespace Mapa
 			{
 				for(int x = 1; x < opcje->h - 1; ++x)
 				{
-					Pole& p = mapa[x + y*opcje->w];
-					if(p.type == PUSTE && Rand() % 100 < opcje->kraty_szansa)
+					Tile& p = mapa[x + y*opcje->w];
+					if(p.type == EMPTY && Rand() % 100 < opcje->kraty_szansa)
 					{
-						if(!IS_SET(p.flags, Pole::F_NISKI_SUFIT))
+						if(!IS_SET(p.flags, Tile::F_LOW_CEILING))
 						{
 							int j = Rand() % 3;
 							if(j == 0)
-								p.type = KRATKA_PODLOGA;
+								p.type = BARS_FLOOR;
 							else if(j == 1)
-								p.type = KRATKA_SUFIT;
+								p.type = BARS_CEILING;
 							else
-								p.type = KRATKA;
+								p.type = BARS;
 						}
 						else if(Rand() % 3 == 0)
-							p.type = KRATKA_PODLOGA;
+							p.type = BARS_FLOOR;
 					}
 				}
 			}
@@ -310,7 +310,7 @@ namespace Mapa
 			generuj_schody(*opcje);
 
 		// generuj flagi pól
-		Pole::SetupFlags(opcje->mapa, Int2(opcje->w, opcje->h));
+		Tile::SetupFlags(opcje->mapa, Int2(opcje->w, opcje->h));
 	}
 
 	//=================================================================================================
@@ -327,9 +327,9 @@ namespace Mapa
 			{
 				for(int x = 0; x < it->size.x; ++x)
 				{
-					Pole& p = mapa[x + it->pos.x + (y + it->pos.y)*opcje->w];
-					if(p.type == PUSTE || p.type == DRZWI || p.type == KRATKA_PODLOGA)
-						p.flags = Pole::F_NISKI_SUFIT;
+					Tile& p = mapa[x + it->pos.x + (y + it->pos.y)*opcje->w];
+					if(p.type == EMPTY || p.type == DOORS || p.type == BARS_FLOOR)
+						p.flags = Tile::F_LOW_CEILING;
 				}
 			}
 		}
@@ -366,11 +366,11 @@ namespace Mapa
 				{
 					for(int x = x1; x < x2; ++x)
 					{
-						Pole& po = mapa[x + y*opcje->w];
-						if(po.type == DRZWI)
+						Tile& po = mapa[x + y*opcje->w];
+						if(po.type == DOORS)
 						{
 							assert(po.room == index || po.room == *it2);
-							po.type = PUSTE;
+							po.type = EMPTY;
 							goto usunieto_drzwi;
 						}
 					}
@@ -387,9 +387,9 @@ namespace Mapa
 			{
 				for(int x = 0; x < it->size.x; ++x)
 				{
-					Pole& p = mapa[x + it->pos.x + (y + it->pos.y)*opcje->w];
-					if(p.type == PUSTE || p.type == DRZWI || p.type == KRATKA_PODLOGA)
-						p.flags = Pole::F_NISKI_SUFIT;
+					Tile& p = mapa[x + it->pos.x + (y + it->pos.y)*opcje->w];
+					if(p.type == EMPTY || p.type == DOORS || p.type == BARS_FLOOR)
+						p.flags = Tile::F_LOW_CEILING;
 				}
 			}
 		}
@@ -482,9 +482,9 @@ namespace Mapa
 					{
 						if(czy_sciana_laczaca(x, y, index, *it2))
 						{
-							Pole& po = mapa[x + y*opcje->w];
-							if(po.type == SCIANA || po.type == DRZWI)
-								po.type = PUSTE;
+							Tile& po = mapa[x + y*opcje->w];
+							if(po.type == WALL || po.type == DOORS)
+								po.type = EMPTY;
 						}
 					}
 				}
@@ -504,28 +504,28 @@ namespace Mapa
 		{
 			for(int xx = x + 1; xx < x + w - 1; ++xx)
 			{
-				if(H(xx, yy) != NIEUZYTE)
+				if(H(xx, yy) != UNUSED)
 					return false;
 			}
 		}
 
 		for(int i = 0; i < w; ++i)
 		{
-			POLE p = H(x + i, y);
-			if(p != NIEUZYTE && p != SCIANA && p != BLOKADA && p != BLOKADA_SCIANA)
+			TILE_TYPE p = H(x + i, y);
+			if(p != UNUSED && p != WALL && p != BLOCKADE && p != BLOCKADE_WALL)
 				return false;
 			p = H(x + i, y + h - 1);
-			if(p != NIEUZYTE && p != SCIANA && p != BLOKADA && p != BLOKADA_SCIANA)
+			if(p != UNUSED && p != WALL && p != BLOCKADE && p != BLOCKADE_WALL)
 				return false;
 		}
 
 		for(int i = 0; i < h; ++i)
 		{
-			POLE p = H(x, y + i);
-			if(p != NIEUZYTE && p != SCIANA && p != BLOKADA && p != BLOKADA_SCIANA)
+			TILE_TYPE p = H(x, y + i);
+			if(p != UNUSED && p != WALL && p != BLOCKADE && p != BLOCKADE_WALL)
 				return false;
 			p = H(x + w - 1, y + i);
-			if(p != NIEUZYTE && p != SCIANA && p != BLOKADA && p != BLOKADA_SCIANA)
+			if(p != UNUSED && p != WALL && p != BLOCKADE && p != BLOCKADE_WALL)
 				return false;
 		}
 
@@ -571,7 +571,7 @@ namespace Mapa
 
 		if(sprawdz_pokoj(pt.x, pt.y, w, h))
 		{
-			H(_pt.x, _pt.y) = DRZWI;
+			H(_pt.x, _pt.y) = DOORS;
 			dodaj_pokoj(pt.x, pt.y, w, h, DODAJ_KORYTARZ);
 		}
 	}
@@ -583,9 +583,9 @@ namespace Mapa
 	{
 		Room& r = opcje->rooms->at(id);
 
-		if(H(x, y) == DRZWI)
+		if(H(x, y) == DOORS)
 		{
-			if(x > 0 && H(x - 1, y) == PUSTE)
+			if(x > 0 && H(x - 1, y) == EMPTY)
 			{
 				int to_id = HR(x - 1, y);
 				if(to_id != id)
@@ -607,7 +607,7 @@ namespace Mapa
 				}
 			}
 
-			if(x<int(opcje->w - 1) && H(x + 1, y) == PUSTE)
+			if(x<int(opcje->w - 1) && H(x + 1, y) == EMPTY)
 			{
 				int to_id = HR(x + 1, y);
 				if(to_id != id)
@@ -629,7 +629,7 @@ namespace Mapa
 				}
 			}
 
-			if(y > 0 && H(x, y - 1) == PUSTE)
+			if(y > 0 && H(x, y - 1) == EMPTY)
 			{
 				int to_id = HR(x, y - 1);
 				if(to_id != id)
@@ -651,7 +651,7 @@ namespace Mapa
 				}
 			}
 
-			if(y<int(opcje->h - 1) && H(x, y + 1) == PUSTE)
+			if(y<int(opcje->h - 1) && H(x, y + 1) == EMPTY)
 			{
 				int to_id = HR(x, y + 1);
 				if(to_id != id)
@@ -681,71 +681,71 @@ namespace Mapa
 		{
 			for(int x = 0; x < opcje->w; ++x)
 			{
-				Pole& p = mapa[x + y*opcje->w];
-				if(p.type != PUSTE && p.type != DRZWI && p.type != KRATKA && p.type != KRATKA_PODLOGA && p.type != KRATKA_SUFIT && p.type != SCHODY_DOL)
+				Tile& p = mapa[x + y*opcje->w];
+				if(p.type != EMPTY && p.type != DOORS && p.type != BARS && p.type != BARS_FLOOR && p.type != BARS_CEILING && p.type != STAIRS_DOWN)
 					continue;
 
 				// pod³oga
-				if(p.type == KRATKA || p.type == KRATKA_PODLOGA)
+				if(p.type == BARS || p.type == BARS_FLOOR)
 				{
-					p.flags |= Pole::F_KRATKA_PODLOGA;
+					p.flags |= Tile::F_BARS_FLOOR;
 
-					if(!OR2_EQ(mapa[x - 1 + y*opcje->w].type, KRATKA, KRATKA_PODLOGA))
-						p.flags |= Pole::F_DZIURA_PRAWA;
-					if(!OR2_EQ(mapa[x + 1 + y*opcje->w].type, KRATKA, KRATKA_PODLOGA))
-						p.flags |= Pole::F_DZIURA_LEWA;
-					if(!OR2_EQ(mapa[x + (y - 1)*opcje->w].type, KRATKA, KRATKA_PODLOGA))
-						p.flags |= Pole::F_DZIURA_TYL;
-					if(!OR2_EQ(mapa[x + (y + 1)*opcje->w].type, KRATKA, KRATKA_PODLOGA))
-						p.flags |= Pole::F_DZIURA_PRZOD;
+					if(!OR2_EQ(mapa[x - 1 + y*opcje->w].type, BARS, BARS_FLOOR))
+						p.flags |= Tile::F_HOLE_RIGHT;
+					if(!OR2_EQ(mapa[x + 1 + y*opcje->w].type, BARS, BARS_FLOOR))
+						p.flags |= Tile::F_HOLE_LEFT;
+					if(!OR2_EQ(mapa[x + (y - 1)*opcje->w].type, BARS, BARS_FLOOR))
+						p.flags |= Tile::F_HOLE_BACK;
+					if(!OR2_EQ(mapa[x + (y + 1)*opcje->w].type, BARS, BARS_FLOOR))
+						p.flags |= Tile::F_HOLE_FRONT;
 				}
-				else if(p.type != SCHODY_DOL)
-					p.flags |= Pole::F_PODLOGA;
+				else if(p.type != STAIRS_DOWN)
+					p.flags |= Tile::F_FLOOR;
 
-				if(p.type == KRATKA || p.type == KRATKA_SUFIT)
-					assert(!IS_SET(p.flags, Pole::F_NISKI_SUFIT));
+				if(p.type == BARS || p.type == BARS_CEILING)
+					assert(!IS_SET(p.flags, Tile::F_LOW_CEILING));
 
-				if(!IS_SET(p.flags, Pole::F_NISKI_SUFIT))
+				if(!IS_SET(p.flags, Tile::F_LOW_CEILING))
 				{
-					if(IS_SET(mapa[x - 1 + y*opcje->w].flags, Pole::F_NISKI_SUFIT))
-						p.flags |= Pole::F_PODSUFIT_PRAWA;
-					if(IS_SET(mapa[x + 1 + y*opcje->w].flags, Pole::F_NISKI_SUFIT))
-						p.flags |= Pole::F_PODSUFIT_LEWA;
-					if(IS_SET(mapa[x + (y - 1)*opcje->w].flags, Pole::F_NISKI_SUFIT))
-						p.flags |= Pole::F_PODSUFIT_TYL;
-					if(IS_SET(mapa[x + (y + 1)*opcje->w].flags, Pole::F_NISKI_SUFIT))
-						p.flags |= Pole::F_PODSUFIT_PRZOD;
+					if(IS_SET(mapa[x - 1 + y*opcje->w].flags, Tile::F_LOW_CEILING))
+						p.flags |= Tile::F_CEIL_RIGHT;
+					if(IS_SET(mapa[x + 1 + y*opcje->w].flags, Tile::F_LOW_CEILING))
+						p.flags |= Tile::F_CEIL_LEFT;
+					if(IS_SET(mapa[x + (y - 1)*opcje->w].flags, Tile::F_LOW_CEILING))
+						p.flags |= Tile::F_CEIL_BACK;
+					if(IS_SET(mapa[x + (y + 1)*opcje->w].flags, Tile::F_LOW_CEILING))
+						p.flags |= Tile::F_CEIL_FRONT;
 
 					// dziura w suficie
-					if(p.type == KRATKA || p.type == KRATKA_SUFIT)
+					if(p.type == BARS || p.type == BARS_CEILING)
 					{
-						p.flags |= Pole::F_KRATKA_SUFIT;
+						p.flags |= Tile::F_BARS_CEILING;
 
-						if(!OR2_EQ(mapa[x - 1 + y*opcje->w].type, KRATKA, KRATKA_SUFIT))
-							p.flags |= Pole::F_GORA_PRAWA;
-						if(!OR2_EQ(mapa[x + 1 + y*opcje->w].type, KRATKA, KRATKA_SUFIT))
-							p.flags |= Pole::F_GORA_LEWA;
-						if(!OR2_EQ(mapa[x + (y - 1)*opcje->w].type, KRATKA, KRATKA_SUFIT))
-							p.flags |= Pole::F_GORA_TYL;
-						if(!OR2_EQ(mapa[x + (y + 1)*opcje->w].type, KRATKA, KRATKA_SUFIT))
-							p.flags |= Pole::F_GORA_PRZOD;
+						if(!OR2_EQ(mapa[x - 1 + y*opcje->w].type, BARS, BARS_CEILING))
+							p.flags |= Tile::F_UP_RIGHT;
+						if(!OR2_EQ(mapa[x + 1 + y*opcje->w].type, BARS, BARS_CEILING))
+							p.flags |= Tile::F_UP_LEFT;
+						if(!OR2_EQ(mapa[x + (y - 1)*opcje->w].type, BARS, BARS_CEILING))
+							p.flags |= Tile::F_UP_BACK;
+						if(!OR2_EQ(mapa[x + (y + 1)*opcje->w].type, BARS, BARS_CEILING))
+							p.flags |= Tile::F_UP_FRONT;
 					}
 					else
 					{
 						// normalny sufit w tym miejscu
-						p.flags |= Pole::F_SUFIT;
+						p.flags |= Tile::F_CEILING;
 					}
 				}
 
 				// œciany
-				if(OR2_EQ(mapa[x - 1 + y*opcje->w].type, SCIANA, BLOKADA_SCIANA))
-					p.flags |= Pole::F_SCIANA_PRAWA;
-				if(OR2_EQ(mapa[x + 1 + y*opcje->w].type, SCIANA, BLOKADA_SCIANA))
-					p.flags |= Pole::F_SCIANA_LEWA;
-				if(OR2_EQ(mapa[x + (y - 1)*opcje->w].type, SCIANA, BLOKADA_SCIANA))
-					p.flags |= Pole::F_SCIANA_TYL;
-				if(OR2_EQ(mapa[x + (y + 1)*opcje->w].type, SCIANA, BLOKADA_SCIANA))
-					p.flags |= Pole::F_SCIANA_PRZOD;
+				if(OR2_EQ(mapa[x - 1 + y*opcje->w].type, WALL, BLOCKADE_WALL))
+					p.flags |= Tile::F_WALL_RIGHT;
+				if(OR2_EQ(mapa[x + 1 + y*opcje->w].type, WALL, BLOCKADE_WALL))
+					p.flags |= Tile::F_WALL_LEFT;
+				if(OR2_EQ(mapa[x + (y - 1)*opcje->w].type, WALL, BLOCKADE_WALL))
+					p.flags |= Tile::F_WALL_BACK;
+				if(OR2_EQ(mapa[x + (y + 1)*opcje->w].type, WALL, BLOCKADE_WALL))
+					p.flags |= Tile::F_WALL_FRONT;
 			}
 		}
 	}
@@ -753,14 +753,14 @@ namespace Mapa
 	//=================================================================================================
 	// Ustawia œcianê na danym polu
 	//=================================================================================================
-	void ustaw_sciane(POLE& pole)
+	void ustaw_sciane(TILE_TYPE& pole)
 	{
-		assert(pole == NIEUZYTE || pole == SCIANA || pole == BLOKADA || pole == BLOKADA_SCIANA || pole == DRZWI);
+		assert(pole == UNUSED || pole == WALL || pole == BLOCKADE || pole == BLOCKADE_WALL || pole == DOORS);
 
-		if(pole == NIEUZYTE)
-			pole = SCIANA;
-		else if(pole == BLOKADA)
-			pole = BLOKADA_SCIANA;
+		if(pole == UNUSED)
+			pole = WALL;
+		else if(pole == BLOCKADE)
+			pole = BLOCKADE_WALL;
 	}
 
 	//=================================================================================================
@@ -768,20 +768,20 @@ namespace Mapa
 	//=================================================================================================
 	void ustaw_wzor()
 	{
-		memset(mapa, 0, sizeof(Pole)*opcje->w*opcje->h);
+		memset(mapa, 0, sizeof(Tile)*opcje->w*opcje->h);
 
 		if(opcje->ksztalt == OpcjeMapy::PROSTOKAT)
 		{
 			for(int x = 0; x < opcje->w; ++x)
 			{
-				H(x, 0) = BLOKADA;
-				H(x, opcje->h - 1) = BLOKADA;
+				H(x, 0) = BLOCKADE;
+				H(x, opcje->h - 1) = BLOCKADE;
 			}
 
 			for(int y = 0; y < opcje->h; ++y)
 			{
-				H(0, y) = BLOKADA;
-				H(opcje->w - 1, y) = BLOKADA;
+				H(0, y) = BLOCKADE;
+				H(opcje->w - 1, y) = BLOCKADE;
 			}
 		}
 		else if(opcje->ksztalt == OpcjeMapy::OKRAG)
@@ -794,7 +794,7 @@ namespace Mapa
 				for(int x = 0; x < opcje->w; ++x)
 				{
 					if(Distance(float(x - 1) / w, float(y - 1) / h, 1.f, 1.f) > 1.f)
-						mapa[x + y*opcje->w].type = BLOKADA;
+						mapa[x + y*opcje->w].type = BLOCKADE;
 				}
 			}
 		}
@@ -815,34 +815,34 @@ namespace Mapa
 			return BRAK;
 
 		DIR jest = BRAK;
-		int ile = 0;
+		int count = 0;
 
-		if(mapa[id - 1].type == PUSTE)
+		if(mapa[id - 1].type == EMPTY)
 		{
-			++ile;
+			++count;
 			jest = LEWO;
 		}
-		if(mapa[id + 1].type == PUSTE)
+		if(mapa[id + 1].type == EMPTY)
 		{
-			++ile;
+			++count;
 			jest = PRAWO;
 		}
-		if(mapa[id + opcje->w].type == PUSTE)
+		if(mapa[id + opcje->w].type == EMPTY)
 		{
-			++ile;
+			++count;
 			jest = GORA;
 		}
-		if(mapa[id - opcje->w].type == PUSTE)
+		if(mapa[id - opcje->w].type == EMPTY)
 		{
-			++ile;
+			++count;
 			jest = DOL;
 		}
 
-		if(ile != 1)
+		if(count != 1)
 			return BRAK;
 
 		const Int2& od = kierunek[odwrotnosc[jest]];
-		if(mapa[id + od.x + od.y*opcje->w].type != NIEUZYTE)
+		if(mapa[id + od.x + od.y*opcje->w].type != UNUSED)
 			return BRAK;
 
 		return odwrotnosc[jest];
@@ -863,7 +863,7 @@ bool generuj_mape2(OpcjeMapy& _opcje, bool recreate)
 	assert(_opcje.korytarz_szansa == 0 || (_opcje.rozmiar_korytarz.x >= 3 && _opcje.rozmiar_korytarz.y >= _opcje.rozmiar_korytarz.x));
 
 	if(!recreate)
-		Mapa::mapa = new Pole[_opcje.w * _opcje.h];
+		Mapa::mapa = new Tile[_opcje.w * _opcje.h];
 	Mapa::opcje = &_opcje;
 	Mapa::wolne.clear();
 
@@ -876,7 +876,7 @@ bool generuj_mape2(OpcjeMapy& _opcje, bool recreate)
 		return (_opcje.blad == 0);
 
 	if(_opcje.devmode)
-		Pole::DebugDraw(_opcje.mapa, Int2(_opcje.w, _opcje.h));
+		Tile::DebugDraw(_opcje.mapa, Int2(_opcje.w, _opcje.h));
 
 	return (_opcje.blad == 0);
 }
@@ -895,7 +895,7 @@ bool kontynuuj_generowanie_mapy(OpcjeMapy& _opcje)
 	Mapa::ustaw_flagi();
 
 	if(_opcje.devmode)
-		Pole::DebugDraw(_opcje.mapa, Int2(_opcje.w, _opcje.h));
+		Tile::DebugDraw(_opcje.mapa, Int2(_opcje.w, _opcje.h));
 
 	return (_opcje.blad == 0);
 }
@@ -922,10 +922,10 @@ struct PosDir
 	}
 };
 
-bool dodaj_schody(OpcjeMapy& _opcje, Room& room, Int2& _pozycja, GameDirection& _kierunek, POLE _schody, bool& _w_scianie)
+bool dodaj_schody(OpcjeMapy& _opcje, Room& room, Int2& _pozycja, GameDirection& _kierunek, TILE_TYPE _schody, bool& _w_scianie)
 {
-#define B(_xx,_yy) (czy_blokuje2(_opcje.mapa[x+_xx+(y+_yy)*_opcje.w].type))
-#define P(_xx,_yy) (!czy_blokuje21(_opcje.mapa[x+_xx+(y+_yy)*_opcje.w].type))
+#define B(_xx,_yy) (IsBlocking(_opcje.mapa[x+_xx+(y+_yy)*_opcje.w].type))
+#define P(_xx,_yy) (!IsBlocking2(_opcje.mapa[x+_xx+(y+_yy)*_opcje.w].type))
 
 	static vector<PosDir> wybor;
 	wybor.clear();
@@ -935,8 +935,8 @@ bool dodaj_schody(OpcjeMapy& _opcje, Room& room, Int2& _pozycja, GameDirection& 
 	{
 		for(int x = max(1, room.pos.x); x < min(_opcje.w - 1, room.size.x + room.pos.x); ++x)
 		{
-			Pole& p = _opcje.mapa[x + y*_opcje.w];
-			if(p.type == PUSTE)
+			Tile& p = _opcje.mapa[x + y*_opcje.w];
+			if(p.type == EMPTY)
 			{
 				const bool left = (x > 0);
 				const bool right = (x<int(_opcje.w - 1));
@@ -1010,7 +1010,7 @@ bool dodaj_schody(OpcjeMapy& _opcje, Room& room, Int2& _pozycja, GameDirection& 
 						wybor.push_back(PosDir(x, y, BIT(GDIR_DOWN) | BIT(GDIR_LEFT) | BIT(GDIR_UP) | BIT(GDIR_RIGHT), false, room));
 				}
 			}
-			else if((p.type == SCIANA || p.type == BLOKADA_SCIANA) && (x > 0) && (x<int(_opcje.w - 1)) && (y > 0) && (y<int(_opcje.h - 1)))
+			else if((p.type == WALL || p.type == BLOCKADE_WALL) && (x > 0) && (x<int(_opcje.w - 1)) && (y > 0) && (y<int(_opcje.h - 1)))
 			{
 				// ##
 				// #>_
@@ -1045,16 +1045,16 @@ bool dodaj_schody(OpcjeMapy& _opcje, Room& room, Int2& _pozycja, GameDirection& 
 	std::sort(wybor.begin(), wybor.end());
 
 	int best_prio = wybor.front().prio;
-	int ile = 0;
+	int count = 0;
 
 	vector<PosDir>::iterator it = wybor.begin(), end = wybor.end();
 	while(it != end && it->prio == best_prio)
 	{
 		++it;
-		++ile;
+		++count;
 	}
 
-	PosDir& pd = wybor[Rand() % ile];
+	PosDir& pd = wybor[Rand() % count];
 	_pozycja = pd.pos;
 	_opcje.mapa[pd.pos.x + pd.pos.y*_opcje.w].type = _schody;
 	_w_scianie = pd.w_scianie;
@@ -1063,11 +1063,11 @@ bool dodaj_schody(OpcjeMapy& _opcje, Room& room, Int2& _pozycja, GameDirection& 
 	{
 		for(int x = max(0, pd.pos.x - 1); x <= min(int(_opcje.w), pd.pos.x + 1); ++x)
 		{
-			POLE& p = _opcje.mapa[x + y*_opcje.w].type;
-			if(p == NIEUZYTE)
-				p = SCIANA;
-			else if(p == BLOKADA)
-				p = BLOKADA_SCIANA;
+			TILE_TYPE& p = _opcje.mapa[x + y*_opcje.w].type;
+			if(p == UNUSED)
+				p = WALL;
+			else if(p == BLOCKADE)
+				p = BLOCKADE_WALL;
 		}
 	}
 
@@ -1200,7 +1200,7 @@ bool generuj_schody2(OpcjeMapy& _opcje, vector<Room*>& rooms, OpcjeMapy::GDZIE_S
 				std::iter_swap(rooms.begin() + id, rooms.end() - 1);
 			rooms.pop_back();
 
-			if(dodaj_schody(_opcje, *r, _pozycja, _kierunek, (_gora ? SCHODY_GORA : SCHODY_DOL), _w_scianie))
+			if(dodaj_schody(_opcje, *r, _pozycja, _kierunek, (_gora ? STAIRS_UP : STAIRS_DOWN), _w_scianie))
 			{
 				r->target = (_gora ? RoomTarget::StairsUp : RoomTarget::StairsDown);
 				room = r;
@@ -1224,7 +1224,7 @@ bool generuj_schody2(OpcjeMapy& _opcje, vector<Room*>& rooms, OpcjeMapy::GDZIE_S
 				int p_id = p.back().x;
 				p.pop_back();
 
-				if(dodaj_schody(_opcje, *rooms[p_id], _pozycja, _kierunek, (_gora ? SCHODY_GORA : SCHODY_DOL), _w_scianie))
+				if(dodaj_schody(_opcje, *rooms[p_id], _pozycja, _kierunek, (_gora ? STAIRS_UP : STAIRS_DOWN), _w_scianie))
 				{
 					rooms[p_id]->target = (_gora ? RoomTarget::StairsUp : RoomTarget::StairsDown);
 					room = rooms[p_id];
@@ -1338,8 +1338,8 @@ ok:
 	{
 		for(int x = x1; x < x2; ++x)
 		{
-			Pole& po = Mapa::mapa[x + y*Mapa::opcje->w];
-			if(po.type == PUSTE || po.type == DRZWI)
+			Tile& po = Mapa::mapa[x + y*Mapa::opcje->w];
+			if(po.type == EMPTY || po.type == DOORS)
 				return Int2(x, y);
 		}
 	}

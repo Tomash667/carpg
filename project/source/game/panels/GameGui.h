@@ -87,6 +87,7 @@ public:
 	void Setup();
 	void RemoveUnit(Unit* unit);
 
+	Int2 dialog_cursor_pos;
 	bool use_cursor;
 
 private:
@@ -131,8 +132,8 @@ private:
 	vector<SortedUnitView> sorted_units;
 	float sidebar;
 	int sidebar_state[(int)SideButtonId::Max];
-	TEX tBar, tHpBar, tPoisonedHpBar, tStaminaBar, tManaBar, tShortcut, tShortcutHover, tShortcutDown, tSideButton[(int)SideButtonId::Max], tMinihp[2], tMinistamina,
-		tCrosshair, tBubble, tObwodkaBolu, tActionCooldown;
+	TEX tBar, tHpBar, tPoisonedHpBar, tStaminaBar, tManaBar, tShortcut, tShortcutHover, tShortcutDown, tSideButton[(int)SideButtonId::Max], tMinihp[2],
+		tMinistamina, tCrosshair, tBubble, tObwodkaBolu, tActionCooldown;
 	Scrollbar scrollbar;
 	vector<SpeechBubble*> speech_bbs;
 	vector<SortedSpeechBubble> sorted_speech_bbs;

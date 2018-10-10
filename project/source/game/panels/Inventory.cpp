@@ -15,7 +15,6 @@
 #include "SoundManager.h"
 #include "ResourceManager.h"
 #include "ItemHelper.h"
-#include "DirectX.h"
 
 /* UWAGI CO DO ZMIENNYCH
 index - indeks do items [0, 1, 2, 3...]
@@ -343,7 +342,7 @@ void Inventory::BuildTmpInventory(int index)
 	}
 
 	// nie za³o¿one przedmioty
-	for(int i = 0, ile = (int)items->size(); i < ile; ++i)
+	for(int i = 0, count = (int)items->size(); i < count; ++i)
 		ids.push_back(i);
 }
 
@@ -369,8 +368,8 @@ void InventoryPanel::Draw(ControlDrawData*)
 {
 	GamePanel::Draw();
 
-	int ile_w = (size.x - 48) / 63;
-	int ile_h = (size.y - 64 - 34) / 63;
+	int cells_w = (size.x - 48) / 63;
+	int cells_h = (size.y - 64 - 34) / 63;
 	int shift_x = pos.x + 12 + (size.x - 48) % 63 / 2;
 	int shift_y = pos.y + 48 + (size.y - 64 - 34) % 63 / 2;
 
@@ -378,8 +377,8 @@ void InventoryPanel::Draw(ControlDrawData*)
 	scrollbar.Draw();
 
 	// miejsce na z³oto i udŸwig
-	int bar_size = (ile_w * 63 - 8) / 2;
-	int bar_y = shift_y + ile_h * 63 + 8;
+	int bar_size = (cells_w * 63 - 8) / 2;
+	int bar_y = shift_y + cells_h * 63 + 8;
 	float load = 0.f;
 	if(mode != TRADE_OTHER && mode != LOOT_OTHER)
 	{
@@ -419,16 +418,16 @@ void InventoryPanel::Draw(ControlDrawData*)
 	}
 
 	// rysuj kratki
-	for(int y = 0; y < ile_h; ++y)
+	for(int y = 0; y < cells_h; ++y)
 	{
-		for(int x = 0; x < ile_w; ++x)
+		for(int x = 0; x < cells_w; ++x)
 			GUI.DrawSprite(base.tItemBar, Int2(shift_x + x * 63, shift_y + y * 63));
 	}
 
 	// rysuj przedmioty
 	bool have_team = Team.GetActiveTeamSize() > 1 && mode != TRADE_OTHER;
-	int shift = int(scrollbar.offset / 63)*ile_w;
-	for(int i = 0, ile = min(ile_w*ile_h, (int)i_items->size() - shift); i < ile; ++i)
+	int shift = int(scrollbar.offset / 63)*cells_w;
+	for(int i = 0, cells = min(cells_w*cells_h, (int)i_items->size() - shift); i < cells; ++i)
 	{
 		int i_item = i_items->at(i + shift);
 		const Item* item;
@@ -452,8 +451,8 @@ void InventoryPanel::Draw(ControlDrawData*)
 				team = 1;
 		}
 
-		int x = i%ile_w,
-			y = i / ile_w;
+		int x = i%cells_w,
+			y = i / cells_w;
 
 		// obrazek za³o¿onego przedmiotu
 		if(i_item < 0)
@@ -511,8 +510,8 @@ void InventoryPanel::Update(float dt)
 		}
 	}
 
-	int ile_w = (size.x - 48) / 63;
-	int ile_h = (size.y - 64 - 34) / 63;
+	int cells_w = (size.x - 48) / 63;
+	int cells_h = (size.y - 64 - 34) / 63;
 	int shift_x = pos.x + 12 + (size.x - 48) % 63 / 2;
 	int shift_y = pos.y + 48 + (size.y - 64 - 34) % 63 / 2;
 
@@ -530,7 +529,7 @@ void InventoryPanel::Update(float dt)
 		scrollbar.Update(dt);
 	}
 
-	int shift = int(scrollbar.offset / 63)*ile_w;
+	int shift = int(scrollbar.offset / 63)*cells_w;
 
 	if(last_index >= 0)
 	{
@@ -562,16 +561,16 @@ void InventoryPanel::Update(float dt)
 		{
 			int x = (cursor_pos.x - shift_x) / 63,
 				y = (cursor_pos.y - shift_y) / 63;
-			if(x >= 0 && x < ile_w && y >= 0 && y < ile_h)
+			if(x >= 0 && x < cells_w && y >= 0 && y < cells_h)
 			{
-				int i = x + y*ile_w;
+				int i = x + y*cells_w;
 				if(i < (int)i_items->size() - shift)
 					new_index = i + shift;
 			}
 		}
 
-		int bar_size = (ile_w * 63 - 8) / 2;
-		int bar_y = shift_y + ile_h * 63 + 8;
+		int bar_size = (cells_w * 63 - 8) / 2;
+		int bar_y = shift_y + cells_h * 63 + 8;
 
 		// pasek ze z³otem lub udŸwigiem
 		if(mode != TRADE_OTHER && mode != LOOT_OTHER)
@@ -612,11 +611,7 @@ void InventoryPanel::Update(float dt)
 			item_visible = nullptr;
 	}
 	if(item_visible)
-	{
-		SURFACE surface = game.DrawItemImage(*item_visible, game.tItemRegionRot, game.sItemRegionRot, rot);
-		surface->Release();
-		rot += PI * dt;
-	}
+		game.DrawItemImage(*item_visible, game.tItemRegionRot, game.sItemRegionRot, rot, false);
 
 	if(new_index >= 0)
 	{
@@ -800,13 +795,13 @@ void InventoryPanel::Update(float dt)
 				{
 					// nie za³o¿ony przedmiot
 					// ustal ile gracz chce sprzedaæ przedmiotów
-					uint ile;
+					uint count;
 					if(item->IsStackable() && slot->count != 1)
 					{
 						if(Key.Down(VK_SHIFT))
-							ile = slot->count;
+							count = slot->count;
 						else if(Key.Down(VK_CONTROL))
-							ile = 1;
+							count = 1;
 						else
 						{
 							counter = 1;
@@ -819,22 +814,22 @@ void InventoryPanel::Update(float dt)
 						}
 					}
 					else
-						ile = 1;
+						count = 1;
 
-					SellItem(i_index, ile);
+					SellItem(i_index, count);
 				}
 				break;
 			case TRADE_OTHER:
 				// buying items
 				{
 					// ustal ile gracz chce kupiæ przedmiotów
-					uint ile;
+					uint count;
 					if(item->IsStackable() && slot->count != 1)
 					{
 						if(Key.Down(VK_SHIFT))
-							ile = slot->count;
+							count = slot->count;
 						else if(Key.Down(VK_CONTROL))
-							ile = 1;
+							count = 1;
 						else
 						{
 							counter = 1;
@@ -847,9 +842,9 @@ void InventoryPanel::Update(float dt)
 						}
 					}
 					else
-						ile = 1;
+						count = 1;
 
-					BuyItem(i_index, ile);
+					BuyItem(i_index, count);
 				}
 				break;
 			case LOOT_MY:
@@ -857,13 +852,13 @@ void InventoryPanel::Update(float dt)
 				if(slot)
 				{
 					// nie za³o¿ony przedmiot
-					uint ile;
+					uint count;
 					if(item->IsStackable() && slot->count != 1)
 					{
 						if(Key.Down(VK_SHIFT))
-							ile = slot->count;
+							count = slot->count;
 						else if(Key.Down(VK_CONTROL))
-							ile = 1;
+							count = 1;
 						else
 						{
 							counter = 1;
@@ -876,9 +871,9 @@ void InventoryPanel::Update(float dt)
 						}
 					}
 					else
-						ile = 1;
+						count = 1;
 
-					PutItem(i_index, ile);
+					PutItem(i_index, count);
 				}
 				else
 				{
@@ -899,7 +894,7 @@ void InventoryPanel::Update(float dt)
 				if(slot)
 				{
 					// nie za³o¿ony przedmiot
-					uint ile;
+					uint count;
 					if(item->IsStackable() && slot->count != 1)
 					{
 						int option;
@@ -922,9 +917,9 @@ void InventoryPanel::Update(float dt)
 								option = 0;
 						}
 						if(option == 2)
-							ile = slot->count;
+							count = slot->count;
 						else if(option == 1)
-							ile = 1;
+							count = 1;
 						else
 						{
 							counter = 1;
@@ -937,9 +932,9 @@ void InventoryPanel::Update(float dt)
 						}
 					}
 					else
-						ile = 1;
+						count = 1;
 
-					LootItem(i_index, ile);
+					LootItem(i_index, count);
 				}
 				else
 				{
@@ -980,7 +975,7 @@ void InventoryPanel::Update(float dt)
 						{
 							c.type = NetChange::GET_ITEM;
 							c.id = i_index;
-							c.ile = 1;
+							c.count = 1;
 						}
 					}
 				}
@@ -990,13 +985,13 @@ void InventoryPanel::Update(float dt)
 				if(slot && slot->team_count > 0)
 				{
 					// nie za³o¿ony przedmiot
-					uint ile;
+					uint count;
 					if(item->IsStackable() && slot->team_count != 1)
 					{
 						if(Key.Down(VK_CONTROL))
-							ile = 1;
+							count = 1;
 						else if(Key.Down(VK_SHIFT))
-							ile = slot->team_count;
+							count = slot->team_count;
 						else
 						{
 							counter = 1;
@@ -1010,11 +1005,11 @@ void InventoryPanel::Update(float dt)
 						}
 					}
 					else
-						ile = 1;
+						count = 1;
 
 					Unit* t = unit->player->action_unit;
 					if(t->CanTake(item))
-						ShareGiveItem(i_index, ile);
+						ShareGiveItem(i_index, count);
 					else
 						GUI.SimpleDialog(Format(base.txNpcCantCarry, t->GetName()), this);
 				}
@@ -1032,13 +1027,13 @@ void InventoryPanel::Update(float dt)
 				if(slot && slot->team_count > 0)
 				{
 					// nie za³o¿ony przedmiot
-					uint ile;
+					uint count;
 					if(item->IsStackable() && slot->team_count != 1)
 					{
 						if(Key.Down(VK_SHIFT))
-							ile = 1;
+							count = 1;
 						else if(Key.Down(VK_CONTROL))
-							ile = slot->team_count;
+							count = slot->team_count;
 						else
 						{
 							counter = 1;
@@ -1052,9 +1047,9 @@ void InventoryPanel::Update(float dt)
 						}
 					}
 					else
-						ile = 1;
+						count = 1;
 
-					ShareTakeItem(i_index, ile);
+					ShareTakeItem(i_index, count);
 				}
 				else
 				{
@@ -1122,13 +1117,13 @@ void InventoryPanel::Update(float dt)
 					}
 					else if(item->type == IT_CONSUMABLE && item->ToConsumable().IsHealingPotion())
 					{
-						uint ile;
+						uint count;
 						if(slot->count != 1)
 						{
 							if(Key.Down(VK_CONTROL))
-								ile = 1;
+								count = 1;
 							else if(Key.Down(VK_SHIFT))
-								ile = slot->count;
+								count = slot->count;
 							else
 							{
 								counter = 1;
@@ -1141,10 +1136,10 @@ void InventoryPanel::Update(float dt)
 							}
 						}
 						else
-							ile = 1;
+							count = 1;
 
-						if(t->CanTake(item, ile))
-							GivePotion(i_index, ile);
+						if(t->CanTake(item, count))
+							GivePotion(i_index, count);
 						else
 							GUI.SimpleDialog(Format(base.txNpcCantCarry, t->GetName()), this);
 					}
@@ -1233,12 +1228,12 @@ void InventoryPanel::Event(GuiEvent e)
 	else if(e == GuiEvent_Resize || e == GuiEvent_GainFocus || e == GuiEvent_Show)
 	{
 		UpdateScrollbar();
-		int ile_w = (size.x - 48) / 63;
-		int ile_h = (size.y - 64 - 34) / 63;
+		int cells_w = (size.x - 48) / 63;
+		int cells_h = (size.y - 64 - 34) / 63;
 		int shift_x = 12 + (size.x - 48) % 63 / 2;
 		int shift_y = 48 + (size.y - 64 - 34) % 63 / 2;
-		int bar_size = (ile_w * 63 - 8) / 2;
-		int bar_y = shift_y + ile_h * 63 + 8;
+		int bar_size = (cells_w * 63 - 8) / 2;
+		int bar_y = shift_y + cells_h * 63 + 8;
 		bt.pos = Int2(shift_x + bar_size + 10, bar_y);
 		bt.size = Int2(bar_size, 36);
 		bt.global_pos = global_pos + bt.pos;
@@ -1659,16 +1654,16 @@ void InventoryPanel::UpdateScrollbar()
 	if(!i_items)
 		return;
 
-	int ile_w = (size.x - 48) / 63;
-	int ile_h = (size.y - 64 - 34) / 63;
+	int cells_w = (size.x - 48) / 63;
+	int cells_h = (size.y - 64 - 34) / 63;
 	int shift_x = pos.x + 12 + (size.x - 48) % 63 / 2;
 	int shift_y = pos.y + 48 + (size.y - 64 - 34) % 63 / 2;
-	int ile = i_items->size();
-	int s = ((ile + ile_w - 1) / ile_w) * 63;
-	scrollbar.size = Int2(16, ile_h * 63);
+	int count = i_items->size();
+	int s = ((count + cells_w - 1) / cells_w) * 63;
+	scrollbar.size = Int2(16, cells_h * 63);
 	scrollbar.total = s;
 	scrollbar.part = min(s, scrollbar.size.y);
-	scrollbar.pos = Int2(shift_x + ile_w * 63 + 8 - pos.x, shift_y - pos.y);
+	scrollbar.pos = Int2(shift_x + cells_w * 63 + 8 - pos.x, shift_y - pos.y);
 	scrollbar.global_pos = global_pos + scrollbar.pos;
 	if(scrollbar.offset + scrollbar.part > scrollbar.total)
 		scrollbar.offset = float(scrollbar.total - scrollbar.part);
@@ -1731,7 +1726,7 @@ void InventoryPanel::BuyItem(int index, uint count)
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::GET_ITEM;
 			c.id = index;
-			c.ile = count;
+			c.count = count;
 		}
 	}
 }
@@ -1780,7 +1775,7 @@ void InventoryPanel::SellItem(int index, uint count)
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::PUT_ITEM;
 		c.id = index;
-		c.ile = count;
+		c.count = count;
 	}
 }
 
@@ -1815,7 +1810,7 @@ void InventoryPanel::SellSlotItem(ITEM_SLOT slot)
 		{
 			c.type = NetChange::PUT_ITEM;
 			c.id = SlotToIIndex(slot);
-			c.ile = 1;
+			c.count = 1;
 		}
 	}
 }
@@ -1841,7 +1836,7 @@ void InventoryPanel::OnPutGold(int id)
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::PUT_GOLD;
-			c.ile = counter;
+			c.count = counter;
 		}
 	}
 }
@@ -1899,7 +1894,7 @@ void InventoryPanel::LootItem(int index, uint count)
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::GET_ITEM;
 		c.id = index;
-		c.ile = count;
+		c.count = count;
 	}
 }
 
@@ -1960,7 +1955,7 @@ void InventoryPanel::PutItem(int index, uint count)
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::PUT_ITEM;
 		c.id = index;
-		c.ile = count;
+		c.count = count;
 	}
 }
 
@@ -2003,7 +1998,7 @@ void InventoryPanel::PutSlotItem(ITEM_SLOT slot)
 		{
 			c.type = NetChange::PUT_ITEM;
 			c.id = SlotToIIndex(slot);
-			c.ile = 1;
+			c.count = 1;
 		}
 	}
 }
@@ -2030,7 +2025,7 @@ void InventoryPanel::OnGiveGold(int id)
 				NetChangePlayer& c = Add1(u->player->player_info->changes);
 				c.type = NetChangePlayer::GOLD_RECEIVED;
 				c.id = game.pc->id;
-				c.ile = counter;
+				c.count = counter;
 				u->player->player_info->UpdateGold();
 			}
 		}
@@ -2039,7 +2034,7 @@ void InventoryPanel::OnGiveGold(int id)
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::GIVE_GOLD;
 			c.id = u->netid;
-			c.ile = counter;
+			c.count = counter;
 		}
 	}
 }
@@ -2099,7 +2094,7 @@ void InventoryPanel::ShareGiveItem(int index, uint count)
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::PUT_ITEM;
 		c.id = index;
-		c.ile = count;
+		c.count = count;
 	}
 	else if(item->type == IT_CONSUMABLE && item->ToConsumable().effect == E_HEAL)
 		unit->player->action_unit->ai->have_potion = 2;
@@ -2138,7 +2133,7 @@ void InventoryPanel::ShareTakeItem(int index, uint count)
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::GET_ITEM;
 		c.id = index;
-		c.ile = count;
+		c.count = count;
 	}
 	else if(item->type == IT_CONSUMABLE && item->ToConsumable().effect == E_HEAL)
 		unit->ai->have_potion = 1;
@@ -2223,7 +2218,7 @@ void InventoryPanel::OnGiveItem(int id)
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::PUT_ITEM;
 		c.id = iindex;
-		c.ile = 1;
+		c.count = 1;
 	}
 }
 
@@ -2273,7 +2268,7 @@ void InventoryPanel::GivePotion(int index, uint count)
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::PUT_ITEM;
 		c.id = index;
-		c.ile = count;
+		c.count = count;
 	}
 	else
 		unit->player->action_unit->ai->have_potion = 2;

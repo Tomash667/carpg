@@ -45,18 +45,18 @@ enum QUEST
 static const int UNIQUE_QUESTS = 8;
 
 //-----------------------------------------------------------------------------
-enum PLOTKA_QUESTOWA
+enum QUEST_RUMOR
 {
-	P_TARTAK,
-	P_KOPALNIA,
-	P_ZAWODY_W_PICIU,
-	P_BANDYCI,
-	P_MAGOWIE,
-	P_MAGOWIE2,
-	P_ORKOWIE,
-	P_GOBLINY,
-	P_ZLO,
-	P_MAX
+	R_SAWMILL,
+	R_MINE,
+	R_CONTEST,
+	R_BANDITS,
+	R_MAGES,
+	R_MAGES2,
+	R_ORCS,
+	R_GOBLINS,
+	R_EVIL,
+	R_MAX
 };
 
 //-----------------------------------------------------------------------------

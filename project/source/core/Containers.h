@@ -712,6 +712,11 @@ struct LocalVector
 		return *v;
 	}
 
+	operator vector<T>* ()
+	{
+		return v;
+	}
+
 	vector<T>* operator -> ()
 	{
 		return v;
@@ -842,11 +847,25 @@ inline T& random_item(LocalVector2<T>& v)
 }
 
 //-----------------------------------------------------------------------------
-// Loop over list and erase elements that returned true
+// Loop over items and erase elements that returned true
 template<typename T, typename Action>
 inline void LoopAndRemove(vector<T>& items, Action action)
 {
 	items.erase(std::remove_if(items.begin(), items.end(), action), items.end());
+}
+template<typename Key, typename Value, typename Action>
+inline void LoopAndRemove(std::map<Key, Value>& items, Action action)
+{
+	for(auto it = items.begin(), end = items.end(); it != end;)
+	{
+		if(action(it->second))
+		{
+			it = items.erase(it);
+			end = items.end();
+		}
+		else
+			++it;
+	}
 }
 
 template<typename T>

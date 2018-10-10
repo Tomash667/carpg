@@ -90,7 +90,7 @@ void Quest::OnUpdate(const std::initializer_list<cstring>& new_msgs)
 		else
 		{
 			c.type = NetChange::UPDATE_QUEST_MULTI;
-			c.ile = new_msgs.size();
+			c.count = new_msgs.size();
 		}
 	}
 }

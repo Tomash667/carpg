@@ -48,6 +48,7 @@
 #include "GlobalGui.h"
 #include "DebugDrawer.h"
 #include "Pathfinding.h"
+#include "SaveSlot.h"
 
 // limit fps
 #define LIMIT_DT 0.3f
@@ -73,11 +74,11 @@ extern cstring RESTART_MUTEX_NAME;
 //=================================================================================================
 Game::Game() : have_console(false), vbParticle(nullptr), quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0), cl_fog(true),
 cl_lighting(true), draw_particle_sphere(false), draw_unit_radius(false), draw_hitbox(false), noai(false), testing(false), game_speed(1.f), devmode(false),
-force_seed(0), next_seed(0), force_seed_all(false), alpha_test_state(-1), debug_info(false), dont_wander(false),
+force_seed(0), next_seed(0), force_seed_all(false), debug_info(false), dont_wander(false),
 check_updates(true), skip_tutorial(false), portal_anim(0), debug_info2(false), music_type(MusicType::None), koniec_gry(false), prepared_stream(64 * 1024),
-paused(false), pick_autojoin(false), draw_flags(0xFFFFFFFF), tMiniSave(nullptr), prev_game_state(GS_LOAD), tSave(nullptr), sItemRegion(nullptr),
-sItemRegionRot(nullptr), sChar(nullptr), sSave(nullptr), mp_load(false), was_client(false), sCustom(nullptr), cl_postfx(true), mp_timeout(10.f),
-cl_normalmap(true), cl_specularmap(true), dungeon_tex_wrap(true), profiler_mode(0), grass_range(40.f), vbInstancing(nullptr), vb_instancing_max(0),
+paused(false), draw_flags(0xFFFFFFFF), tMiniSave(nullptr), prev_game_state(GS_LOAD), tSave(nullptr), sItemRegion(nullptr),
+sItemRegionRot(nullptr), sChar(nullptr), sSave(nullptr), was_client(false), sCustom(nullptr), cl_postfx(true), mp_timeout(10.f),
+cl_normalmap(true), cl_specularmap(true), dungeon_tex_wrap(true), profiler_mode(0), vbInstancing(nullptr), vb_instancing_max(0),
 screenshot_format(ImageFormat::JPG), quickstart_class(Class::RANDOM), game_state(GS_LOAD), default_devmode(false),
 default_player_devmode(false), quickstart_slot(MAX_SAVE_SLOTS), super_shader(new SuperShader)
 {
@@ -208,7 +209,7 @@ void Game::OnDraw(bool normal)
 		SetNoCulling(false);
 		SetNoZWrite(true);
 
-		UINT passes;
+		uint passes;
 		int index_surf = 1;
 		for(vector<PostEffect>::iterator it = post_effects.begin(), end = post_effects.end(); it != end; ++it)
 		{
@@ -713,7 +714,7 @@ void Game::TakeScreenshot(bool no_gui)
 	if(FAILED(hr))
 	{
 		cstring msg = Format("Failed to get front buffer data to save screenshot (%d)!", hr);
-		AddConsoleMsg(msg);
+		gui->console->AddMsg(msg);
 		Error(msg);
 	}
 	else
@@ -761,7 +762,7 @@ void Game::TakeScreenshot(bool no_gui)
 		D3DXSaveSurfaceToFileA(path, format, back_buffer, nullptr, nullptr);
 
 		cstring msg = Format("Screenshot saved to '%s'.", path);
-		AddConsoleMsg(msg);
+		gui->console->AddMsg(msg);
 		Info(msg);
 
 		back_buffer->Release();
@@ -792,7 +793,7 @@ void Game::DoExitToMenu()
 
 	game_state = GS_MAIN_MENU;
 	paused = false;
-	mp_load = false;
+	N.mp_load = false;
 	was_client = false;
 
 	SetMusic(MusicType::Title);
@@ -856,7 +857,7 @@ void Game::ClearPointers()
 	vdSchodyGora = nullptr;
 	vdSchodyDol = nullptr;
 	vdNaDrzwi = nullptr;
-	
+
 	// vertex declarations
 	for(int i = 0; i < VDI_MAX; ++i)
 		vertex_decl[i] = nullptr;
@@ -910,7 +911,6 @@ void Game::OnCleanup()
 	content::CleanupContent();
 
 	draw_batch.Clear();
-	DeleteElements(old_players);
 	N.Cleanup();
 	super_shader->Cleanup();
 }
@@ -1167,7 +1167,7 @@ void Game::SetGameText()
 	LoadArray(txAiHeroOutsideText, "aiHeroOutsideText");
 	LoadArray(txAiDrunkMageText, "aiDrunkMageText");
 	LoadArray(txAiDrunkText, "aiDrunkText");
-	LoadArray(txAiDrunkmanText, "aiDrunkmanText");
+	LoadArray(txAiDrunkContestText, "aiDrunkContestText");
 
 	// mapa
 	txEnteringLocation = Str("enteringLocation");
@@ -1188,7 +1188,6 @@ void Game::SetGameText()
 
 	txCantSaveGame = Str("cantSaveGame");
 	txSaveFailed = Str("saveFailed");
-	txSavedGameN = Str("savedGameN");
 	txLoadFailed = Str("loadFailed");
 	txQuickSave = Str("quickSave");
 	txGameSaved = Str("gameSaved");
@@ -1205,8 +1204,6 @@ void Game::SetGameText()
 	txLoadSaveVersionOld = Str("loadSaveVersionOld");
 	txLoadMP = Str("loadMP");
 	txLoadSP = Str("loadSP");
-	txLoadError = Str("loadError");
-	txLoadErrorGeneric = Str("loadErrorGeneric");
 	txLoadOpenError = Str("loadOpenError");
 
 	txPvpRefuse = Str("pvpRefuse");
@@ -1215,8 +1212,6 @@ void Game::SetGameText()
 	txLevelUp = Str("levelUp");
 	txLevelDown = Str("levelDown");
 	txRegeneratingLevel = Str("regeneratingLevel");
-	txGainTextAttrib = Str("gainTextAttrib");
-	txGainTextSkill = Str("gainTextSkill");
 	txNeedItem = Str("needItem");
 	txGmsAddedItems = Str("gmsAddedItems");
 
@@ -1600,8 +1595,7 @@ uint Game::ValidateGameData(bool major)
 	Item::Validate(err);
 	PerkInfo::Validate(err);
 	RoomType::Validate(err);
-	if(major)
-		VerifyDialogs(err);
+	VerifyDialogs(err);
 
 	if(err == 0)
 		Info("Test: Validation succeeded.");
@@ -1710,12 +1704,7 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 	bool first = false;
 
 	if(l.state != LS_ENTERED && l.state != LS_CLEARED)
-	{
 		first = true;
-		level_generated = true;
-	}
-	else
-		level_generated = false;
 
 	if(!reenter)
 		InitQuadTree();

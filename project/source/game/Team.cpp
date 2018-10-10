@@ -360,6 +360,11 @@ bool TeamSingleton::IsAnyoneAlive()
 	return false;
 }
 
+bool TeamSingleton::IsLeader()
+{
+	return leader->player->is_local;
+}
+
 bool TeamSingleton::IsTeamMember(Unit& unit)
 {
 	if(unit.IsPlayer())
@@ -758,7 +763,7 @@ void TeamSingleton::TeamShareGiveItemCredit(DialogContext& ctx)
 				NetChangePlayer& c = Add1(tsi.from->player->player_info->changes);
 				c.type = NetChangePlayer::REMOVE_ITEMS;
 				c.id = tsi.index;
-				c.ile = 1;
+				c.count = 1;
 			}
 			tsi.to->UpdateInventory();
 			CheckUnitOverload(*tsi.to);
@@ -790,7 +795,7 @@ void TeamSingleton::TeamShareSellItem(DialogContext& ctx)
 			NetChangePlayer& c = Add1(tsi.from->player->player_info->changes);
 			c.type = NetChangePlayer::REMOVE_ITEMS;
 			c.id = tsi.index;
-			c.ile = 1;
+			c.count = 1;
 			tsi.from->player->player_info->UpdateGold();
 		}
 		tsi.to->UpdateInventory();
@@ -937,15 +942,15 @@ void TeamSingleton::BuyTeamItems()
 		}
 
 		// darmowe miksturki dla biedaków
-		int ile = p1 / 2 - ile_hp;
-		if(ile > 0)
-			u.AddItem(hp1, (uint)ile, false);
-		ile = p2 / 2 - ile_hp2;
-		if(ile > 0)
-			u.AddItem(hp2, (uint)ile, false);
-		ile = p3 / 2 - ile_hp3;
-		if(ile > 0)
-			u.AddItem(hp3, (uint)ile, false);
+		int count = p1 / 2 - ile_hp;
+		if(count > 0)
+			u.AddItem(hp1, (uint)count, false);
+		count = p2 / 2 - ile_hp2;
+		if(count > 0)
+			u.AddItem(hp2, (uint)count, false);
+		count = p3 / 2 - ile_hp3;
+		if(count > 0)
+			u.AddItem(hp3, (uint)count, false);
 
 		// kup przedmioty
 		const ItemList* lis = ItemList::Get("base_items").lis;
@@ -1039,10 +1044,10 @@ void TeamSingleton::BuyTeamItems()
 	if(QM.quest_mages2->scholar && Any(QM.quest_mages2->mages_state, Quest_Mages2::State::MageRecruited, Quest_Mages2::State::OldMageJoined,
 		Quest_Mages2::State::OldMageRemembers, Quest_Mages2::State::BuyPotion))
 	{
-		int ile = max(0, 3 - QM.quest_mages2->scholar->CountItem(hp2));
-		if(ile)
+		int count = max(0, 3 - QM.quest_mages2->scholar->CountItem(hp2));
+		if(count)
 		{
-			QM.quest_mages2->scholar->AddItem(hp2, ile, false);
+			QM.quest_mages2->scholar->AddItem(hp2, count, false);
 			QM.quest_mages2->scholar->ai->have_potion = 2;
 		}
 	}
@@ -1072,15 +1077,15 @@ void TeamSingleton::BuyTeamItems()
 			break;
 		}
 
-		int ile = max(0, ile1 - QM.quest_orcs2->orc->CountItem(hp2));
-		if(ile)
-			QM.quest_orcs2->orc->AddItem(hp2, ile, false);
+		int count = max(0, ile1 - QM.quest_orcs2->orc->CountItem(hp2));
+		if(count)
+			QM.quest_orcs2->orc->AddItem(hp2, count, false);
 
 		if(ile2)
 		{
-			ile = max(0, ile2 - QM.quest_orcs2->orc->CountItem(hp3));
-			if(ile)
-				QM.quest_orcs2->orc->AddItem(hp3, ile, false);
+			count = max(0, ile2 - QM.quest_orcs2->orc->CountItem(hp3));
+			if(count)
+				QM.quest_orcs2->orc->AddItem(hp3, count, false);
 		}
 
 		QM.quest_orcs2->orc->ai->have_potion = 2;
@@ -1093,10 +1098,10 @@ void TeamSingleton::BuyTeamItems()
 
 		if(u)
 		{
-			int ile = max(0, 5 - u->CountItem(hp2));
-			if(ile)
+			int count = max(0, 5 - u->CountItem(hp2));
+			if(count)
 			{
-				u->AddItem(hp2, ile, false);
+				u->AddItem(hp2, count, false);
 				u->ai->have_potion = 2;
 			}
 		}

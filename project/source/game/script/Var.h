@@ -7,7 +7,8 @@ struct Var
 		None,
 		Bool,
 		Int,
-		Float
+		Float,
+		Item
 	};
 	Type type;
 	union
@@ -15,7 +16,10 @@ struct Var
 		bool _bool;
 		int _int;
 		float _float;
+		const Item* item;
+		void* ptr;
 	};
+	bool registered;
 
 	bool IsNone() const
 	{
@@ -110,10 +114,15 @@ struct Var
 struct VarsContainer
 {
 	~VarsContainer();
-	Var* Get(const string& id);
+	Var* Add(Var::Type type, const string& name, bool registered);
+	Var* Get(const string& name);
+	Var* TryGet(const string& name);
 	void Save(FileWriter& f);
 	void Load(FileReader& f);
 	void Clear();
+	bool IsEmpty() const { return vars.empty(); }
 
+private:
 	std::map<string, Var*> vars;
+	static string tmp_str;
 };

@@ -602,7 +602,7 @@ void GameGui::DrawSpeechBubbles()
 		else
 			pos = sb.last_pos;
 
-		if(Vec3::Distance(game.pc->unit->visual_pos, pos) > 20.f || !game.CanSee(game.pc->unit->pos, sb.last_pos))
+		if(Vec3::Distance(game.pc->unit->visual_pos, pos) > 20.f || !L.CanSee(game.pc->unit->pos, sb.last_pos))
 		{
 			sb.visible = false;
 			continue;
@@ -1039,9 +1039,9 @@ bool GameGui::UpdateChoice(DialogContext& ctx, int choices)
 	}
 
 	// zmiana zaznaczonego elementu myszk¹
-	if(GUI.cursor_pos != game.dialog_cursor_pos)
+	if(GUI.cursor_pos != dialog_cursor_pos)
 	{
-		game.dialog_cursor_pos = GUI.cursor_pos;
+		dialog_cursor_pos = GUI.cursor_pos;
 		if(cursor_choice != -1)
 			ctx.choice_selected = cursor_choice;
 	}
@@ -1109,7 +1109,7 @@ bool GameGui::UpdateChoice(DialogContext& ctx, int choices)
 	// aktualizacja paska przewijania
 	scrollbar.mouse_focus = focus;
 	if(Key.Focus() && PointInRect(GUI.cursor_pos, dialog_pos, dialog_size) && scrollbar.ApplyMouseWheel())
-		game.dialog_cursor_pos = Int2(-1, -1);
+		dialog_cursor_pos = Int2(-1, -1);
 	scrollbar.Update(0.f);
 
 	return false;
@@ -1466,7 +1466,7 @@ void GameGui::UpdatePlayerView(float dt)
 		{
 			float dist = Vec3::Distance(u.visual_pos, u2.visual_pos);
 
-			if(dist < ALERT_RANGE.x && game.cam.frustum.SphereToFrustum(u2.visual_pos, u2.GetSphereRadius()) && game.CanSee(u, u2))
+			if(dist < ALERT_RANGE.x && game.cam.frustum.SphereToFrustum(u2.visual_pos, u2.GetSphereRadius()) && L.CanSee(u, u2))
 			{
 				// dodaj do pobliskich jednostek
 				bool jest = false;

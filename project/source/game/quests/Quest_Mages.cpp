@@ -72,7 +72,7 @@ void Quest_Mages::SetProgress(int prog2)
 
 			game->AddReward(1500);
 			OnUpdate(game->txQuest[168]);
-			quest_manager.RemoveQuestRumor(P_MAGOWIE);
+			quest_manager.RemoveQuestRumor(R_MAGES);
 		}
 		break;
 	case Progress::EncounteredGolem:
@@ -80,7 +80,7 @@ void Quest_Mages::SetProgress(int prog2)
 			QM.quest_mages2->OnStart(game->txQuest[169]);
 			Quest_Mages2* q = QM.quest_mages2;
 			q->mages_state = Quest_Mages2::State::EncounteredGolem;
-			quest_manager.quest_rumor[P_MAGOWIE2] = false;
+			quest_manager.quest_rumor[R_MAGES2] = false;
 			++quest_manager.quest_rumor_counter;
 			q->msgs.push_back(Format(game->txQuest[170], W.GetDate()));
 			q->msgs.push_back(game->txQuest[171]);
@@ -386,7 +386,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			game->AddReward(5000);
 			OnUpdate(game->txQuest[188]);
 			quest_manager.EndUniqueQuest();
-			quest_manager.RemoveQuestRumor(P_MAGOWIE2);
+			quest_manager.RemoveQuestRumor(R_MAGES2);
 		}
 		break;
 	}

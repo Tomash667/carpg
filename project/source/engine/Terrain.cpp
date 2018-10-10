@@ -325,7 +325,7 @@ void Terrain::RoundHeight()
 	assert(state > 0);
 
 	float sum;
-	int ile;
+	int count;
 
 #define H(xx,zz) h[x+(xx)+(z+(zz))*hszer]
 
@@ -337,35 +337,35 @@ void Terrain::RoundHeight()
 	{
 		for(uint x = 0; x < hszer; ++x)
 		{
-			ile = 1;
+			count = 1;
 			sum = H(0, 0);
 
 			// wysokoœæ z prawej
 			if(x < hszer - 1)
 			{
 				sum += H(1, 0);
-				++ile;
+				++count;
 			}
 			// wysokoœæ z lewej
 			if(x > 0)
 			{
 				sum += H(-1, 0);
-				++ile;
+				++count;
 			}
 			// wysokoœæ z góry
 			if(z < hszer - 1)
 			{
 				sum += H(0, 1);
-				++ile;
+				++count;
 			}
 			// wysokoœæ z do³u
 			if(z > 0)
 			{
 				sum += H(0, -1);
-				++ile;
+				++count;
 			}
 			// mo¿na by dodaæ jeszcze elementy na ukos
-			H(0, 0) = sum / ile;
+			H(0, 0) = sum / count;
 		}
 	}
 }

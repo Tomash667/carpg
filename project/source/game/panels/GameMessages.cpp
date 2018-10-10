@@ -27,6 +27,8 @@ void GameMessages::LoadLanguage()
 	txGmsGettingOutOfRange = Str("gmsGettingOutOfRange");
 	txGmsLeftEvent = Str("gmsLeftEvent");
 	txGameSaved = Str("gameSaved");
+	txGainTextAttrib = Str("gainTextAttrib");
+	txGainTextSkill = Str("gainTextSkill");
 }
 
 //=================================================================================================
@@ -278,4 +280,22 @@ void GameMessages::AddGameMsg3(PlayerController* player, GMS id)
 		c.type = NetChangePlayer::GAME_MESSAGE;
 		c.id = id;
 	}
+}
+
+//=================================================================================================
+void GameMessages::ShowStatGain(bool is_skill, int what, int value)
+{
+	cstring text, name;
+	if(is_skill)
+	{
+		text = txGainTextSkill;
+		name = Skill::skills[what].name.c_str();
+	}
+	else
+	{
+		text = txGainTextAttrib;
+		name = Attribute::attributes[what].name.c_str();
+	}
+
+	AddGameMsg(Format(text, name, value), 3.f);
 }

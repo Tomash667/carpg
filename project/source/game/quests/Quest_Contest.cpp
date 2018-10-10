@@ -591,7 +591,7 @@ void Quest_Contest::SpawnDrunkmans()
 	InsideBuilding* inn = L.city_ctx->FindInn();
 	generated = true;
 	UnitData& pijak = *UnitData::Get("pijak");
-	int ile = Random(4, 6);
-	for(int i = 0; i < ile; ++i)
+	int count = Random(4, 6);
+	for(int i = 0; i < count; ++i)
 		L.SpawnUnitInsideInn(pijak, Random(2, 15), inn, Level::SU_TEMPORARY | Level::SU_MAIN_ROOM);
 }

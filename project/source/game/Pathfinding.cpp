@@ -201,7 +201,7 @@ bool Pathfinding::FindPath(LevelContext& ctx, const Int2& _start_tile, const Int
 		// wnêtrze
 		InsideLocation* inside = (InsideLocation*)L.location;
 		InsideLocationLevel& lvl = inside->GetLevelData();
-		const Pole* m = lvl.map;
+		const Tile* m = lvl.map;
 		const int w = lvl.w, h = lvl.h;
 
 		// czy poza map¹
@@ -209,7 +209,7 @@ bool Pathfinding::FindPath(LevelContext& ctx, const Int2& _start_tile, const Int
 			return false;
 
 		// czy na blokuj¹cym miejscu
-		if(czy_blokuje2(m[_start_tile(w)]) || czy_blokuje2(m[_target_tile(w)]))
+		if(IsBlocking(m[_start_tile(w)]) || IsBlocking(m[_target_tile(w)]))
 			return false;
 
 		// powiêksz mapê
@@ -282,7 +282,7 @@ bool Pathfinding::FindPath(LevelContext& ctx, const Int2& _start_tile, const Int
 					const Int2& pt1 = kierunek[i] + pt.pt;
 					const Int2& pt2 = kierunek2[i] + pt.pt;
 
-					if(pt1.x >= 0 && pt1.y >= 0 && pt1.x < w - 1 && pt1.y < h - 1 && !czy_blokuje2(m[pt1(w)]))
+					if(pt1.x >= 0 && pt1.y >= 0 && pt1.x < w - 1 && pt1.y < h - 1 && !IsBlocking(m[pt1(w)]))
 					{
 						apt.prev = pt.pt;
 						apt.koszt = prev_apt.koszt + 10;
@@ -301,9 +301,9 @@ bool Pathfinding::FindPath(LevelContext& ctx, const Int2& _start_tile, const Int
 					}
 
 					if(pt2.x >= 0 && pt2.y >= 0 && pt2.x < w - 1 && pt2.y < h - 1 &&
-						!czy_blokuje2(m[pt2(w)]) &&
-						!czy_blokuje2(m[kierunek2[i].x + pt.pt.x + pt.pt.y*w]) &&
-						!czy_blokuje2(m[pt.pt.x + (kierunek2[i].y + pt.pt.y)*w]))
+						!IsBlocking(m[pt2(w)]) &&
+						!IsBlocking(m[kierunek2[i].x + pt.pt.x + pt.pt.y*w]) &&
+						!IsBlocking(m[pt.pt.x + (kierunek2[i].y + pt.pt.y)*w]))
 					{
 						apt.prev = pt.pt;
 						apt.koszt = prev_apt.koszt + 15;
@@ -329,17 +329,17 @@ bool Pathfinding::FindPath(LevelContext& ctx, const Int2& _start_tile, const Int
 					const Int2& pt1 = kierunek[i] + pt.pt;
 					const Int2& pt2 = kierunek2[i] + pt.pt;
 
-					if(pt1.x >= 0 && pt1.y >= 0 && pt1.x < w - 1 && pt1.y < h - 1 && !czy_blokuje2(m[pt1(w)]))
+					if(pt1.x >= 0 && pt1.y >= 0 && pt1.x < w - 1 && pt1.y < h - 1 && !IsBlocking(m[pt1(w)]))
 					{
 						int ok = 2; // 2-ok i dodaj, 1-ok, 0-nie
 
-						if(m[pt1(w)].type == DRZWI)
+						if(m[pt1(w)].type == DOORS)
 						{
 							Door* door = L.FindDoor(ctx, pt1);
 							if(door && door->IsBlocking())
 							{
 								// ustal gdzie s¹ drzwi na polu i czy z tej strony mo¿na na nie wejœæ
-								if(czy_blokuje2(lvl.map[pt1.x - 1 + pt1.y*lvl.w].type))
+								if(IsBlocking(lvl.map[pt1.x - 1 + pt1.y*lvl.w].type))
 								{
 									// #   #
 									// #---#
@@ -426,27 +426,27 @@ bool Pathfinding::FindPath(LevelContext& ctx, const Int2& _start_tile, const Int
 					}
 
 					if(pt2.x >= 0 && pt2.y >= 0 && pt2.x < w - 1 && pt2.y < h - 1 &&
-						!czy_blokuje2(m[pt2(w)]) &&
-						!czy_blokuje2(m[kierunek2[i].x + pt.pt.x + pt.pt.y*w]) &&
-						!czy_blokuje2(m[pt.pt.x + (kierunek2[i].y + pt.pt.y)*w]))
+						!IsBlocking(m[pt2(w)]) &&
+						!IsBlocking(m[kierunek2[i].x + pt.pt.x + pt.pt.y*w]) &&
+						!IsBlocking(m[pt.pt.x + (kierunek2[i].y + pt.pt.y)*w]))
 					{
 						bool ok = true;
 
-						if(m[pt2(w)].type == DRZWI)
+						if(m[pt2(w)].type == DOORS)
 						{
 							Door* door = L.FindDoor(ctx, pt2);
 							if(door && door->IsBlocking())
 								ok = false;
 						}
 
-						if(ok && m[kierunek2[i].x + pt.pt.x + pt.pt.y*w].type == DRZWI)
+						if(ok && m[kierunek2[i].x + pt.pt.x + pt.pt.y*w].type == DOORS)
 						{
 							Door* door = L.FindDoor(ctx, Int2(kierunek2[i].x + pt.pt.x, pt.pt.y));
 							if(door && door->IsBlocking())
 								ok = false;
 						}
 
-						if(ok && m[pt.pt.x + (kierunek2[i].y + pt.pt.y)*w].type == DRZWI)
+						if(ok && m[pt.pt.x + (kierunek2[i].y + pt.pt.y)*w].type == DOORS)
 						{
 							Door* door = L.FindDoor(ctx, Int2(pt.pt.x, kierunek2[i].y + pt.pt.y));
 							if(door && door->IsBlocking())

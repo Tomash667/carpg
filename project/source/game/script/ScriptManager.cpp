@@ -6,9 +6,9 @@
 #include <scriptstdstring/scriptstdstring.h>
 #include "TypeBuilder.h"
 #include "PlayerController.h"
-#include "Var.h"
 #include "SaveState.h"
 #include "Game.h"
+#include "ItemHelper.h"
 
 
 #ifdef _DEBUG
@@ -257,6 +257,11 @@ VarsContainer* Unit_GetVars(Unit* unit)
 	return SM.GetVars(unit);
 }
 
+const string& Item_GetName(const Item* item)
+{
+	return item->name;
+}
+
 void Unit_RemoveItem(Unit* unit, const string& id)
 {
 	Item* item = Item::TryGet(id);
@@ -264,9 +269,24 @@ void Unit_RemoveItem(Unit* unit, const string& id)
 		unit->RemoveItem(item, 1u);
 }
 
+void Unit_AddItem(Unit* unit, const Item* item)
+{
+	unit->AddItem2(item, 1u, 0u);
+}
+
+void Team_AddGold(uint gold)
+{
+	Game::Get().AddGold(gold, nullptr, true);
+}
+
 void ScriptManager::RegisterGame()
 {
 	// use generic type ??? for get is set
+
+	script_type_infos["bool"] = ScriptTypeInfo(Var::Type::Bool, false);
+	script_type_infos["int"] = ScriptTypeInfo(Var::Type::Int, false);
+	script_type_infos["float"] = ScriptTypeInfo(Var::Type::Float, false);
+	script_type_infos["Item"] = ScriptTypeInfo(Var::Type::Item, true);
 
 	AddType("Var")
 		.Method("bool IsNone() const", asMETHOD(Var, IsNone))
@@ -296,16 +316,25 @@ void ScriptManager::RegisterGame()
 		.Method("Var@ opIndex(const string& in)", asMETHOD(VarsContainer, Get))
 		.WithInstance("VarsContainer@ globals", &p_globals);
 
+	AddType("Item")
+		.Method("const string& get_name() const", asFUNCTION(Item_GetName))
+		.WithNamespace()
+		.AddFunction("Item@ GetRandom(int)", asFUNCTION(ItemHelper::GetRandomItem));
+
 	AddType("Unit")
 		.Method("int get_gold() const", asMETHOD(Unit, GetGold))
 		.Method("void set_gold(int)", asMETHOD(Unit, SetGold))
 		.Method("VarsContainer@ get_vars()", asFUNCTION(Unit_GetVars))
+		.Method("void AddItem(Item@)", asFUNCTION(Unit_AddItem))
 		.Method("void RemoveItem(const string& in)", asFUNCTION(Unit_RemoveItem))
 		.WithInstance("Unit@ target", &target);
 
 	AddType("Player")
 		.Member("Unit@ unit", offsetof(PlayerController, unit))
 		.WithInstance("Player@ pc", &pc);
+
+	WithNamespace("Team")
+		.AddFunction("void AddGold(uint)", asFUNCTION(Team_AddGold));
 }
 
 void ScriptManager::SetContext(PlayerController* pc, Unit* target)
@@ -416,6 +445,63 @@ bool ScriptManager::RunIfScript(cstring code, bool validate)
 	return ok;
 }
 
+bool ScriptManager::RunStringScript(cstring code, string& str, bool validate)
+{
+	assert(code);
+
+	// compile
+	auto tmp_module = engine->GetModule("RunScriptModule", asGM_ALWAYS_CREATE);
+	cstring packed_code = Format("string f() { return (%s); }", code);
+	asIScriptFunction* func;
+	int r = tmp_module->CompileFunction("RunScript", packed_code, -1, 0, &func);
+	if(r < 0)
+	{
+		Log(Logger::L_ERROR, Format("Failed to parse string script (%d).", r), code);
+		return false;
+	}
+
+	if(validate)
+	{
+		func->Release();
+		return true;
+	}
+
+	// run
+	auto tmp_context = engine->RequestContext();
+	r = tmp_context->Prepare(func);
+	if(r >= 0)
+	{
+		last_exception = nullptr;
+		r = tmp_context->Execute();
+	}
+
+	bool ok;
+	bool finished = (r == asEXECUTION_FINISHED);
+	if(!finished)
+	{
+		ok = false;
+		if(r == asEXECUTION_EXCEPTION)
+		{
+			cstring msg = last_exception ? last_exception : tmp_context->GetExceptionString();
+			Log(Logger::L_ERROR, Format("Script exception thrown \"%s\" in %s(%d).", msg, tmp_context->GetExceptionFunction()->GetName(),
+				tmp_context->GetExceptionFunction()), code);
+		}
+		else
+			Log(Logger::L_ERROR, Format("Script execution failed (%d).", r), code);
+	}
+	else
+	{
+		void* ptr = tmp_context->GetAddressOfReturnValue();
+		str = *(string*)ptr;
+		ok = true;
+	}
+
+	func->Release();
+	engine->ReturnContext(tmp_context);
+
+	return ok;
+}
+
 string& ScriptManager::OpenOutput()
 {
 	gather_output = true;
@@ -474,6 +560,12 @@ TypeBuilder ScriptManager::ForType(cstring name)
 	return builder;
 }
 
+NamespaceBuilder ScriptManager::WithNamespace(cstring name, void* auxiliary)
+{
+	assert(name);
+	return NamespaceBuilder(engine, name, auxiliary);
+}
+
 VarsContainer* ScriptManager::GetVars(Unit* unit)
 {
 	assert(unit);
@@ -509,7 +601,7 @@ void ScriptManager::Save(FileWriter& f)
 	uint pos = f.BeginPatch(count);
 	for(auto& e : unit_vars)
 	{
-		if(e.second->vars.empty())
+		if(e.second->IsEmpty())
 			continue;
 		++count;
 		f << e.first->refid;
@@ -538,4 +630,19 @@ void ScriptManager::Load(FileReader& f)
 		vars->Load(f);
 		unit_vars[unit] = vars;
 	}
+}
+
+ScriptManager::RegisterResult ScriptManager::RegisterGlobalVar(const string& type, bool is_ref, const string& name)
+{
+	auto it = script_type_infos.find(type);
+	if(it == script_type_infos.end() || it->second.require_ref != is_ref)
+		return InvalidType;
+	Var* var = globals.TryGet(name);
+	if(var)
+		return AlreadyExists;
+	var = globals.Add(it->second.type, name, true);
+	var->_int = 0;
+	cstring decl = Format("%s%s %s", type.c_str(), is_ref ? "@" : "", name.c_str());
+	CHECKED(engine->RegisterGlobalProperty(decl, &var->ptr));
+	return Ok;
 }

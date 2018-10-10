@@ -158,7 +158,7 @@ void QuestManager::InitQuests(bool devmode)
 	quest_mages2->refid = quest_counter++;
 	quest_mages2->Start();
 	unaccepted_quests.push_back(quest_mages2);
-	quest_rumor[P_MAGOWIE2] = true;
+	quest_rumor[R_MAGES] = true;
 	--quest_rumor_counter;
 
 	// orcs
@@ -411,8 +411,8 @@ void QuestManager::Reset()
 	quest_counter = 0;
 	unique_quests_completed = 0;
 	unique_completed_show = false;
-	quest_rumor_counter = P_MAX;
-	for(int i = 0; i < P_MAX; ++i)
+	quest_rumor_counter = R_MAX;
+	for(int i = 0; i < R_MAX; ++i)
 		quest_rumor[i] = false;
 }
 
@@ -833,7 +833,7 @@ void QuestManager::EndUniqueQuest()
 }
 
 //=================================================================================================
-bool QuestManager::RemoveQuestRumor(PLOTKA_QUESTOWA rumor_id)
+bool QuestManager::RemoveQuestRumor(QUEST_RUMOR rumor_id)
 {
 	if(!quest_rumor[rumor_id])
 	{
