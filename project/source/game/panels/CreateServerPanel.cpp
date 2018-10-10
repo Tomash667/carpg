@@ -4,7 +4,7 @@
 #include "Language.h"
 #include "KeyStates.h"
 #include "Const.h"
-#include "Game.h"
+#include "Net.h"
 
 //=================================================================================================
 CreateServerPanel::CreateServerPanel(const DialogInfo& info) : GameDialogBox(info)

@@ -11,7 +11,7 @@
 #include "GlobalGui.h"
 
 //=================================================================================================
-PickServerPanel::PickServerPanel(const DialogInfo& info) : GameDialogBox(info)
+PickServerPanel::PickServerPanel(const DialogInfo& info) : GameDialogBox(info), pick_autojoin(false)
 {
 	size = Int2(524, 340);
 	bts.resize(2);
@@ -167,11 +167,11 @@ void PickServerPanel::Update(float dt)
 						it->timer = 0.f;
 						it->valid_version = valid_version;
 
-						if(game->pick_autojoin && it->active_players != it->max_players && it->valid_version)
+						if(pick_autojoin && it->active_players != it->max_players && it->valid_version)
 						{
 							// autojoin server
 							bts[0].state = Button::NONE;
-							game->pick_autojoin = false;
+							pick_autojoin = false;
 							grid.selected = index;
 							Event(GuiEvent(GuiEvent_Custom + BUTTON_OK));
 						}
@@ -194,11 +194,11 @@ void PickServerPanel::Update(float dt)
 					sd.valid_version = valid_version;
 					grid.AddItem();
 
-					if(game->pick_autojoin && sd.active_players != sd.max_players && sd.valid_version)
+					if(pick_autojoin && sd.active_players != sd.max_players && sd.valid_version)
 					{
 						// autojoin server
 						bts[0].state = Button::NONE;
-						game->pick_autojoin = false;
+						pick_autojoin = false;
 						grid.selected = servers.size() - 1;
 						Event(GuiEvent(GuiEvent_Custom + BUTTON_OK));
 					}
@@ -265,8 +265,10 @@ void PickServerPanel::Event(GuiEvent e)
 }
 
 //=================================================================================================
-void PickServerPanel::Show()
+void PickServerPanel::Show(bool pick_autojoin)
 {
+	this->pick_autojoin = pick_autojoin;
+
 	try
 	{
 		N.InitClient();

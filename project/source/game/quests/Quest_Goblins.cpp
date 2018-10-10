@@ -125,7 +125,7 @@ void Quest_Goblins::SetProgress(int prog2)
 	case Progress::NotAccepted:
 		// nie zaakceptowano
 		{
-			if(quest_manager.RemoveQuestRumor(P_GOBLINY))
+			if(quest_manager.RemoveQuestRumor(R_GOBLINS))
 				game->gui->journal->AddRumor(Format(game->txQuest[211], GetStartLocationName()));
 		}
 		break;
@@ -134,7 +134,7 @@ void Quest_Goblins::SetProgress(int prog2)
 		{
 			OnStart(game->txQuest[212]);
 			// usuñ plotkê
-			quest_manager.RemoveQuestRumor(P_GOBLINY);
+			quest_manager.RemoveQuestRumor(R_GOBLINS);
 			// dodaj lokalizacje
 			target_loc = W.GetNearestLocation(GetStartLocation().pos, 1 << L_FOREST, true);
 			Location& target = GetTargetLocation();

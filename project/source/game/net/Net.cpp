@@ -40,6 +40,7 @@
 #include "ResourceManager.h"
 #include "ItemHelper.h"
 #include "GlobalGui.h"
+#include "Console.h"
 #include "FOV.h"
 
 vector<NetChange> Net::changes;
@@ -171,7 +172,7 @@ void Game::PrepareLevelData(BitStream& stream, bool loaded_resources)
 {
 	BitStreamWriter f(stream);
 	f << ID_LEVEL_DATA;
-	f << mp_load;
+	f << N.mp_load;
 	f << loaded_resources;
 	L.location->Write(f);
 
@@ -185,7 +186,7 @@ void Game::PrepareLevelData(BitStream& stream, bool loaded_resources)
 	}
 
 	// saved bullets, spells, explosions etc
-	if(mp_load)
+	if(N.mp_load)
 	{
 		// bullets
 		f.WriteCasted<byte>(L.local_ctx.bullets->size());
@@ -240,7 +241,7 @@ bool Game::ReadLevelData(BitStreamReader& f)
 	W.RemoveBossLevel();
 
 	bool loaded_resources;
-	f >> mp_load;
+	f >> N.mp_load;
 	f >> loaded_resources;
 	if(!f)
 	{
@@ -310,7 +311,7 @@ bool Game::ReadLevelData(BitStreamReader& f)
 	}
 
 	// multiplayer data
-	if(mp_load)
+	if(N.mp_load)
 	{
 		// bullets
 		byte count;
@@ -541,7 +542,7 @@ void Game::SendPlayerData(PlayerInfo& info)
 	f.WriteCasted<byte>(leader_id);
 
 	// multiplayer load data
-	if(mp_load)
+	if(N.mp_load)
 	{
 		int flags = 0;
 		if(unit.run_attack)
@@ -679,7 +680,7 @@ bool Game::ReadPlayerData(BitStreamReader& f)
 	pc->unit->invisible = invisible;
 
 	// multiplayer load data
-	if(mp_load)
+	if(N.mp_load)
 	{
 		byte flags;
 		f >> unit->attack_power;
@@ -711,7 +712,7 @@ void Game::UpdateServer(float dt)
 {
 	if(game_state == GS_LEVEL)
 	{
-		InterpolatePlayers(dt);
+		N.InterpolatePlayers(dt);
 		pc->unit->changed = true;
 	}
 
@@ -789,12 +790,12 @@ void Game::UpdateServer(float dt)
 		}
 
 		// wyúlij odkryte kawa≥ki minimapy
-		if(!minimap_reveal_mp.empty())
+		if(!L.minimap_reveal_mp.empty())
 		{
 			if(game_state == GS_LEVEL)
 				Net::PushChange(NetChange::REVEAL_MINIMAP);
 			else
-				minimap_reveal_mp.clear();
+				L.minimap_reveal_mp.clear();
 		}
 
 		// changes
@@ -888,7 +889,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						// reveal minimap
 						Int2 new_tile(int(new_pos.x / 2), int(new_pos.z / 2));
 						if(Int2(int(unit.pos.x / 2), int(unit.pos.z / 2)) != new_tile)
-							FOV::DungeonReveal(new_tile, minimap_reveal);
+							FOV::DungeonReveal(new_tile, L.minimap_reveal);
 					}
 					unit.pos = new_pos;
 					unit.UpdatePhysics(unit.pos);
@@ -1294,7 +1295,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				}
 
 				LevelContext* ctx;
-				GroundItem* item = FindItemNetid(netid, &ctx);
+				GroundItem* item = L.FindGroundItem(netid, &ctx);
 				if(!item)
 				{
 					N.StreamError("Update server: PICKUP_ITEM from %s, missing item %d.", info.name.c_str(), netid);
@@ -1316,7 +1317,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				NetChangePlayer& c = Add1(info.changes);
 				c.type = NetChangePlayer::PICKUP;
 				c.id = item->count;
-				c.ile = item->team_count;
+				c.count = item->team_count;
 
 				// send remove item to all players
 				NetChange& c2 = Add1(Net::changes);
@@ -1329,7 +1330,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					NetChange& c3 = Add1(Net::changes);
 					c3.type = NetChange::PICKUP_ITEM;
 					c3.unit = &unit;
-					c3.ile = (up_animation ? 1 : 0);
+					c3.count = (up_animation ? 1 : 0);
 				}
 
 				// remove item
@@ -1480,10 +1481,10 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						else
 						{
 							AddGold(team_count);
-							uint ile = slot.count - team_count;
-							if(ile)
+							uint count = slot.count - team_count;
+							if(count)
 							{
-								unit.gold += ile;
+								unit.gold += count;
 								info.UpdateGold();
 							}
 						}
@@ -1799,7 +1800,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				c.type = NetChange::USE_USABLE;
 				c.unit = info.u;
 				c.id = player.action_container->netid;
-				c.ile = USE_USABLE_END;
+				c.count = USE_USABLE_END;
 			}
 			else
 			{
@@ -2089,7 +2090,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				c.type = NetChange::USE_USABLE;
 				c.unit = info.u;
 				c.id = usable_netid;
-				c.ile = state;
+				c.count = state;
 			}
 			break;
 		// player used cheat 'suicide'
@@ -2155,7 +2156,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 			{
 				for(AIController* ai : ais)
 				{
-					if(ai->unit->IsEnemy(unit) && Vec3::Distance(ai->unit->pos, unit.pos) < ALERT_RANGE.x && CanSee(*ai->unit, unit))
+					if(ai->unit->IsEnemy(unit) && Vec3::Distance(ai->unit->pos, unit.pos) < ALERT_RANGE.x && L.CanSee(*ai->unit, unit))
 					{
 						ai->morale = -10;
 						ai->target_last_pos = unit.pos;
@@ -2169,9 +2170,9 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 		case NetChange::CHEAT_KILLALL:
 			{
 				int ignored_netid;
-				byte type;
+				byte mode;
 				f >> ignored_netid;
-				f >> type;
+				f >> mode;
 				if(!f)
 				{
 					N.StreamError("Update server: Broken CHEAT_KILLALL from %s.", info.name.c_str());
@@ -2197,8 +2198,8 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					}
 				}
 
-				if(!Cheat_KillAll(type, unit, ignored))
-					N.StreamError("Update server: CHEAT_KILLALL from %s, invalid type %u.", info.name.c_str(), type);
+				if(!L.KillAll(mode, unit, ignored))
+					N.StreamError("Update server: CHEAT_KILLALL from %s, invalid mode %u.", info.name.c_str(), mode);
 			}
 			break;
 		// client checks if item is better for npc
@@ -2339,12 +2340,12 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 			else
 				N.StreamError("Update server: Player %s used CHEAT_GOTO_MAP without devmode.", info.name.c_str());
 			break;
-		// player used cheat 'show_minimap'
-		case NetChange::CHEAT_SHOW_MINIMAP:
+		// player used cheat 'reveal_minimap'
+		case NetChange::CHEAT_REVEAL_MINIMAP:
 			if(info.devmode)
-				Cheat_ShowMinimap();
+				L.RevealMinimap();
 			else
-				N.StreamError("Update server: Player %s used CHEAT_SHOW_MINIMAP without devmode.", info.name.c_str());
+				N.StreamError("Update server: Player %s used CHEAT_REVEAL_MINIMAP without devmode.", info.name.c_str());
 			break;
 		// player used cheat 'add_gold' or 'add_team_gold'
 		case NetChange::CHEAT_ADD_GOLD:
@@ -2512,7 +2513,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							c.type = NetChangePlayer::STAT_CHANGED;
 							c.id = (int)ChangedStatType::SKILL;
 							c.a = what;
-							c.ile = v;
+							c.count = v;
 						}
 					}
 					else
@@ -2533,7 +2534,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							c.type = NetChangePlayer::STAT_CHANGED;
 							c.id = (int)ChangedStatType::ATTRIBUTE;
 							c.a = what;
-							c.ile = v;
+							c.count = v;
 						}
 					}
 					else
@@ -2694,7 +2695,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::USE_DOOR;
 				c.id = netid;
-				c.ile = (is_closing ? 1 : 0);
+				c.count = (is_closing ? 1 : 0);
 			}
 			break;
 		// leader wants to travel to location
@@ -2830,7 +2831,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				else
 				{
 					player.Rest(days, true);
-					UseDays(&player, days);
+					player.UseDays(days);
 					NetChangePlayer& c = Add1(info.changes);
 					c.type = NetChangePlayer::END_FALLBACK;
 				}
@@ -2869,7 +2870,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						Train(unit, type == 1, stat_type);
 					}
 					player.Rest(10, false);
-					UseDays(&player, 10);
+					player.UseDays(10);
 					NetChangePlayer& c = Add1(info.changes);
 					c.type = NetChangePlayer::END_FALLBACK;
 				}
@@ -2922,7 +2923,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				else
 				{
 					unit.gold -= count;
-					PayCredit(&player, count);
+					player.PayCredit(count);
 				}
 			}
 			break;
@@ -2958,7 +2959,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							NetChangePlayer& c = Add1(target->player->player_info->changes);
 							c.type = NetChangePlayer::GOLD_RECEIVED;
 							c.id = info.id;
-							c.ile = count;
+							c.count = count;
 							target->player->player_info->UpdateGold();
 						}
 						else
@@ -2973,7 +2974,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						NetChangePlayer& c = Add1(info.changes);
 						c.type = NetChangePlayer::UPDATE_TRADER_GOLD;
 						c.id = target->netid;
-						c.ile = target->gold;
+						c.count = target->gold;
 						info.UpdateGold();
 					}
 				}
@@ -3427,7 +3428,7 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 			break;
 		case NetChange::PICKUP_ITEM:
 			f << c.unit->netid;
-			f << (c.ile != 0);
+			f << (c.count != 0);
 			break;
 		case NetChange::SPAWN_ITEM:
 			c.item->Write(f);
@@ -3440,13 +3441,13 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 				const Item* item = (const Item*)c.id;
 				f << c.unit->netid;
 				f << item->id;
-				f << (c.ile != 0);
+				f << (c.count != 0);
 			}
 			break;
 		case NetChange::HIT_SOUND:
 			f << c.pos;
 			f.WriteCasted<byte>(c.id);
-			f.WriteCasted<byte>(c.ile);
+			f.WriteCasted<byte>(c.count);
 			break;
 		case NetChange::SHOOT_ARROW:
 			{
@@ -3494,7 +3495,7 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 		case NetChange::CLOSE_ENCOUNTER:
 		case NetChange::CLOSE_PORTAL:
 		case NetChange::CLEAN_ALTAR:
-		case NetChange::CHEAT_SHOW_MINIMAP:
+		case NetChange::CHEAT_REVEAL_MINIMAP:
 		case NetChange::END_OF_GAME:
 		case NetChange::GAME_SAVED:
 		case NetChange::END_TRAVEL:
@@ -3510,7 +3511,7 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 		case NetChange::TALK:
 			f << c.unit->netid;
 			f << (byte)c.id;
-			f << c.ile;
+			f << c.count;
 			f << *c.str;
 			StringPool.Free(c.str);
 			RemoveElement(net_talk, c.str);
@@ -3576,9 +3577,9 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 				Quest* q = QM.FindQuest(c.id, false);
 				f << q->refid;
 				f.WriteCasted<byte>(q->state);
-				f.WriteCasted<byte>(c.ile);
-				for(int i = 0; i < c.ile; ++i)
-					f.WriteString2(q->msgs[q->msgs.size() - c.ile + i]);
+				f.WriteCasted<byte>(c.count);
+				for(int i = 0; i < c.count; ++i)
+					f.WriteString2(q->msgs[q->msgs.size() - c.count + i]);
 			}
 			break;
 		case NetChange::CHANGE_LEADER:
@@ -3598,12 +3599,12 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 			break;
 		case NetChange::REMOVE_PLAYER:
 			f.WriteCasted<byte>(c.id);
-			f.WriteCasted<byte>(c.ile);
+			f.WriteCasted<byte>(c.count);
 			break;
 		case NetChange::USE_USABLE:
 			f << c.unit->netid;
 			f << c.id;
-			f.WriteCasted<byte>(c.ile);
+			f.WriteCasted<byte>(c.count);
 			break;
 		case NetChange::RECRUIT_NPC:
 			f << c.unit->netid;
@@ -3621,7 +3622,7 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 			break;
 		case NetChange::USE_DOOR:
 			f << c.id;
-			f << (c.ile != 0);
+			f << (c.count != 0);
 			break;
 		case NetChange::CREATE_EXPLOSION:
 			f << c.spell->id;
@@ -3680,13 +3681,13 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 			f << c.pos;
 			break;
 		case NetChange::REVEAL_MINIMAP:
-			f.WriteCasted<word>(minimap_reveal_mp.size());
-			for(vector<Int2>::iterator it2 = minimap_reveal_mp.begin(), end2 = minimap_reveal_mp.end(); it2 != end2; ++it2)
+			f.WriteCasted<word>(L.minimap_reveal_mp.size());
+			for(vector<Int2>::iterator it2 = L.minimap_reveal_mp.begin(), end2 = L.minimap_reveal_mp.end(); it2 != end2; ++it2)
 			{
 				f.WriteCasted<byte>(it2->x);
 				f.WriteCasted<byte>(it2->y);
 			}
-			minimap_reveal_mp.clear();
+			L.minimap_reveal_mp.clear();
 			break;
 		case NetChange::CHANGE_MP_VARS:
 			N.WriteNetVars(f);
@@ -3740,7 +3741,7 @@ void Game::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 			{
 			case NetChangePlayer::PICKUP:
 				f << c.id;
-				f << c.ile;
+				f << c.count;
 				break;
 			case NetChangePlayer::LOOT:
 				f << (c.id != 0);
@@ -3760,7 +3761,7 @@ void Game::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 				break;
 			case NetChangePlayer::GOLD_MSG:
 				f << (c.id != 0);
-				f << c.ile;
+				f << c.count;
 				break;
 			case NetChangePlayer::START_DIALOG:
 				f << c.id;
@@ -3804,7 +3805,7 @@ void Game::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 			case NetChangePlayer::ADD_ITEMS:
 				{
 					f << c.id;
-					f << c.ile;
+					f << c.count;
 					f << c.item->id;
 					if(c.item->id[0] == '$')
 						f << c.item->refid;
@@ -3812,44 +3813,44 @@ void Game::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 				break;
 			case NetChangePlayer::TRAIN:
 				f.WriteCasted<byte>(c.id);
-				f.WriteCasted<byte>(c.ile);
+				f.WriteCasted<byte>(c.count);
 				break;
 			case NetChangePlayer::UNSTUCK:
 				f << c.pos;
 				break;
 			case NetChangePlayer::GOLD_RECEIVED:
 				f.WriteCasted<byte>(c.id);
-				f << c.ile;
+				f << c.count;
 				break;
 			case NetChangePlayer::GAIN_STAT:
 				f << (c.id != 0);
 				f.WriteCasted<byte>(c.a);
-				f.WriteCasted<byte>(c.ile);
+				f.WriteCasted<byte>(c.count);
 				break;
 			case NetChangePlayer::ADD_ITEMS_TRADER:
 				f << c.id;
-				f << c.ile;
+				f << c.count;
 				f << c.a;
 				f << c.item;
 				break;
 			case NetChangePlayer::ADD_ITEMS_CHEST:
 				f << c.id;
-				f << c.ile;
+				f << c.count;
 				f << c.a;
 				f << c.item;
 				break;
 			case NetChangePlayer::REMOVE_ITEMS:
 				f << c.id;
-				f << c.ile;
+				f << c.count;
 				break;
 			case NetChangePlayer::REMOVE_ITEMS_TRADER:
 				f << c.id;
-				f << c.ile;
+				f << c.count;
 				f << c.a;
 				break;
 			case NetChangePlayer::UPDATE_TRADER_GOLD:
 				f << c.id;
-				f << c.ile;
+				f << c.count;
 				break;
 			case NetChangePlayer::UPDATE_TRADER_INVENTORY:
 				f << c.unit->netid;
@@ -3869,16 +3870,16 @@ void Game::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 					f << player.arena_fights;
 				break;
 			case NetChangePlayer::ADDED_ITEMS_MSG:
-				f.WriteCasted<byte>(c.ile);
+				f.WriteCasted<byte>(c.count);
 				break;
 			case NetChangePlayer::STAT_CHANGED:
 				f.WriteCasted<byte>(c.id);
 				f.WriteCasted<byte>(c.a);
-				f << c.ile;
+				f << c.count;
 				break;
 			case NetChangePlayer::ADD_PERK:
 				f.WriteCasted<byte>(c.id);
-				f << c.ile;
+				f << c.count;
 				break;
 			case NetChangePlayer::GAME_MESSAGE:
 				f << c.id;
@@ -3927,7 +3928,7 @@ void Game::UpdateClient(float dt)
 		}
 
 		// interpolacja pozycji/obrotu postaci
-		InterpolateUnits(dt);
+		N.InterpolateUnits(dt);
 	}
 
 	bool exit_from_server = false;
@@ -4529,7 +4530,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				else
 				{
 					LevelContext* ctx;
-					GroundItem* item = FindItemNetid(netid, &ctx);
+					GroundItem* item = L.FindGroundItem(netid, &ctx);
 					if(!item)
 						N.StreamError("Update client: REMOVE_ITEM, missing ground item %d.", netid);
 					else
@@ -5167,9 +5168,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 						Team.leader = info->u;
 
 						if(gui->world_map->dialog_enc)
-							gui->world_map->dialog_enc->bts[0].state = (IsLeader() ? Button::NONE : Button::DISABLED);
-
-						ActivateChangeLeaderButton(IsLeader());
+							gui->world_map->dialog_enc->bts[0].state = (Team.IsLeader() ? Button::NONE : Button::DISABLED);
 					}
 					else
 						N.StreamError("Update client: CHANGE_LEADER, missing player %u.", id);
@@ -5732,7 +5731,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					info.text = text;
 
 					gui->world_map->dialog_enc = GUI.ShowDialog(info);
-					if(!IsLeader())
+					if(!Team.IsLeader())
 						gui->world_map->dialog_enc->bts[0].state = Button::DISABLED;
 					assert(W.GetState() == World::State::TRAVEL);
 					W.SetState(World::State::ENCOUNTER);
@@ -6221,9 +6220,9 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				}
 			}
 			break;
-		// someone used cheat 'show_minimap'
-		case NetChange::CHEAT_SHOW_MINIMAP:
-			Cheat_ShowMinimap();
+		// someone used cheat 'reveal_minimap'
+		case NetChange::CHEAT_REVEAL_MINIMAP:
+			L.RevealMinimap();
 			break;
 		// revealing minimap
 		case NetChange::REVEAL_MINIMAP:
@@ -6239,7 +6238,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 						byte x, y;
 						f.Read(x);
 						f.Read(y);
-						minimap_reveal.push_back(Int2(x, y));
+						L.minimap_reveal.push_back(Int2(x, y));
 					}
 				}
 			}
@@ -7091,7 +7090,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 					if(!f)
 						N.StreamError("Update single client: Broken GAIN_STAT.");
 					else
-						ShowStatGain(is_skill, what, value);
+						gui->messages->ShowStatGain(is_skill, what, value);
 				}
 				break;
 			// update trader gold
@@ -7275,7 +7274,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 					if(!f)
 						N.StreamError("Update single client: Broken RUN_SCRIPT_RESULT.");
 					else
-						AddConsoleMsg(output->c_str());
+						gui->console->AddMsg(output->c_str());
 					StringPool.Free(output);
 				}
 				break;
@@ -7393,7 +7392,7 @@ void Game::WriteClientChanges(BitStreamWriter& f)
 			break;
 		case NetChange::DROP_ITEM:
 			f << c.id;
-			f << c.ile;
+			f << c.count;
 			break;
 		case NetChange::IDLE:
 		case NetChange::CHOICE:
@@ -7429,7 +7428,7 @@ void Game::WriteClientChanges(BitStreamWriter& f)
 			break;
 		case NetChange::CHEAT_ADD_GOLD:
 			f << (c.id == 1);
-			f << c.ile;
+			f << c.count;
 			break;
 		case NetChange::STOP_TRADE:
 		case NetChange::GET_ALL_ITEMS:
@@ -7442,7 +7441,7 @@ void Game::WriteClientChanges(BitStreamWriter& f)
 		case NetChange::CHEAT_HEAL:
 		case NetChange::CHEAT_REVEAL:
 		case NetChange::CHEAT_GOTO_MAP:
-		case NetChange::CHEAT_SHOW_MINIMAP:
+		case NetChange::CHEAT_REVEAL_MINIMAP:
 		case NetChange::ENTER_LOCATION:
 		case NetChange::TRAIN_MOVE:
 		case NetChange::CLOSE_ENCOUNTER:
@@ -7456,7 +7455,7 @@ void Game::WriteClientChanges(BitStreamWriter& f)
 			break;
 		case NetChange::USE_USABLE:
 			f << c.id;
-			f.WriteCasted<byte>(c.ile);
+			f.WriteCasted<byte>(c.count);
 			break;
 		case NetChange::CHEAT_KILLALL:
 			f << (c.unit ? c.unit->netid : -1);
@@ -7471,19 +7470,19 @@ void Game::WriteClientChanges(BitStreamWriter& f)
 			break;
 		case NetChange::CHEAT_ADD_ITEM:
 			f << c.base_item->id;
-			f << c.ile;
+			f << c.count;
 			f << (c.id != 0);
 			break;
 		case NetChange::CHEAT_SPAWN_UNIT:
 			f << c.base_unit->id;
-			f.WriteCasted<byte>(c.ile);
+			f.WriteCasted<byte>(c.count);
 			f.WriteCasted<char>(c.id);
 			f.WriteCasted<char>(c.i);
 			break;
 		case NetChange::CHEAT_SET_STAT:
 		case NetChange::CHEAT_MOD_STAT:
 			f.WriteCasted<byte>(c.id);
-			f << (c.ile != 0);
+			f << (c.count != 0);
 			f.WriteCasted<char>(c.i);
 			break;
 		case NetChange::LEAVE_LOCATION:
@@ -7491,20 +7490,20 @@ void Game::WriteClientChanges(BitStreamWriter& f)
 			break;
 		case NetChange::USE_DOOR:
 			f << c.id;
-			f << (c.ile != 0);
+			f << (c.count != 0);
 			break;
 		case NetChange::TRAIN:
 			f.WriteCasted<byte>(c.id);
-			f.WriteCasted<byte>(c.ile);
+			f.WriteCasted<byte>(c.count);
 			break;
 		case NetChange::GIVE_GOLD:
 		case NetChange::GET_ITEM:
 		case NetChange::PUT_ITEM:
 			f << c.id;
-			f << c.ile;
+			f << c.count;
 			break;
 		case NetChange::PUT_GOLD:
-			f << c.ile;
+			f << c.count;
 			break;
 		case NetChange::PLAYER_ACTION:
 			f << c.pos;
@@ -7691,38 +7690,6 @@ void Game::ServerProcessUnits(vector<Unit*>& units)
 }
 
 //=================================================================================================
-GroundItem* Game::FindItemNetid(int netid, LevelContext** ctx)
-{
-	for(vector<GroundItem*>::iterator it = L.local_ctx.items->begin(), end = L.local_ctx.items->end(); it != end; ++it)
-	{
-		if((*it)->netid == netid)
-		{
-			if(ctx)
-				*ctx = &L.local_ctx;
-			return *it;
-		}
-	}
-
-	if(L.city_ctx)
-	{
-		for(vector<InsideBuilding*>::iterator it = L.city_ctx->inside_buildings.begin(), end = L.city_ctx->inside_buildings.end(); it != end; ++it)
-		{
-			for(vector<GroundItem*>::iterator it2 = (*it)->items.begin(), end2 = (*it)->items.end(); it2 != end2; ++it2)
-			{
-				if((*it2)->netid == netid)
-				{
-					if(ctx)
-						*ctx = &(*it)->ctx;
-					return *it2;
-				}
-			}
-		}
-	}
-
-	return nullptr;
-}
-
-//=================================================================================================
 void Game::UpdateWarpData(float dt)
 {
 	for(vector<WarpData>::iterator it = mp_warps.begin(), end = mp_warps.end(); it != end;)
@@ -7784,7 +7751,6 @@ void Game::Net_OnNewGameServer()
 
 	auto info = new PlayerInfo;
 	N.players.push_back(info);
-	gui->server->grid.AddItem();
 
 	PlayerInfo& sp = *info;
 	sp.name = player_name;
@@ -7792,12 +7758,11 @@ void Game::Net_OnNewGameServer()
 	sp.state = PlayerInfo::IN_LOBBY;
 	sp.left = PlayerInfo::LEFT_NO;
 
-	if(!mp_load)
+	if(!N.mp_load)
 	{
 		Unit::netid_counter = 0;
 		GroundItem::netid_counter = 0;
 		Chest::netid_counter = 0;
-		skip_id_counter = 0;
 		Usable::netid_counter = 0;
 		Trap::netid_counter = 0;
 		Door::netid_counter = 0;
@@ -7808,7 +7773,7 @@ void Game::Net_OnNewGameServer()
 	else
 	{
 		// search for saved character
-		PlayerInfo* old = FindOldPlayer(player_name.c_str());
+		PlayerInfo* old = N.FindOldPlayer(player_name.c_str());
 		if(old)
 		{
 			sp.devmode = old->devmode;
@@ -7824,12 +7789,12 @@ void Game::Net_OnNewGameServer()
 		}
 	}
 
+	skip_id_counter = 0;
 	update_timer = 0.f;
 	arena->Reset();
 	anyone_talking = false;
 	mp_warps.clear();
-	minimap_reveal_mp.clear();
-	if(!mp_load)
+	if(!N.mp_load)
 		Net::changes.clear(); // przy wczytywaniu jest czyszczone przed wczytaniem i w net_changes sπ zapisane quest_items
 	if(!net_talk.empty())
 		StringPool.Free(net_talk);
@@ -7884,71 +7849,6 @@ int Game::ReadItemAndFind(BitStreamReader& f, const Item*& item) const
 		else
 			return 1;
 	}
-}
-
-//=================================================================================================
-void Game::ReequipItemsMP(Unit& unit)
-{
-	if(N.active_players > 1)
-	{
-		const Item* prev_slots[SLOT_MAX];
-
-		for(int i = 0; i < SLOT_MAX; ++i)
-			prev_slots[i] = unit.slots[i];
-
-		unit.ReequipItems();
-
-		for(int i = 0; i < SLOT_MAX; ++i)
-		{
-			if(unit.slots[i] != prev_slots[i])
-			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::CHANGE_EQUIPMENT;
-				c.unit = &unit;
-				c.id = i;
-			}
-		}
-	}
-	else
-		unit.ReequipItems();
-}
-
-//=================================================================================================
-void Game::UseDays(PlayerController* player, int count)
-{
-	assert(player && count > 0);
-
-	if(player->free_days >= count)
-		player->free_days -= count;
-	else
-	{
-		count -= player->free_days;
-		player->free_days = 0;
-
-		for(auto info : N.players)
-		{
-			if(info->left == PlayerInfo::LEFT_NO && info->pc != player)
-				info->pc->free_days += count;
-		}
-
-		W.Update(count, World::UM_NORMAL);
-	}
-
-	Net::PushChange(NetChange::UPDATE_FREE_DAYS);
-}
-
-//=================================================================================================
-PlayerInfo* Game::FindOldPlayer(cstring nick)
-{
-	assert(nick);
-
-	for(auto info : old_players)
-	{
-		if(info->name == nick)
-			return info;
-	}
-
-	return nullptr;
 }
 
 //=================================================================================================
@@ -8048,123 +7948,6 @@ bool Game::ReadWorldData(BitStreamReader& f)
 }
 
 //=================================================================================================
-void Game::InterpolateUnits(float dt)
-{
-	for(Unit* unit : *L.local_ctx.units)
-	{
-		if(unit != pc->unit)
-			UpdateInterpolator(unit->interp, dt, unit->visual_pos, unit->rot);
-		if(unit->mesh_inst->mesh->head.n_groups == 1)
-		{
-			if(!unit->mesh_inst->groups[0].anim)
-			{
-				unit->action = A_NONE;
-				unit->animation = ANI_STAND;
-			}
-		}
-		else
-		{
-			if(!unit->mesh_inst->groups[0].anim && !unit->mesh_inst->groups[1].anim)
-			{
-				unit->action = A_NONE;
-				unit->animation = ANI_STAND;
-			}
-		}
-	}
-	if(L.city_ctx)
-	{
-		for(InsideBuilding* inside : L.city_ctx->inside_buildings)
-		{
-			for(Unit* unit : inside->units)
-			{
-				if(unit != pc->unit)
-					UpdateInterpolator(unit->interp, dt, unit->visual_pos, unit->rot);
-				if(unit->mesh_inst->mesh->head.n_groups == 1)
-				{
-					if(!unit->mesh_inst->groups[0].anim)
-					{
-						unit->action = A_NONE;
-						unit->animation = ANI_STAND;
-					}
-				}
-				else
-				{
-					if(!unit->mesh_inst->groups[0].anim && !unit->mesh_inst->groups[1].anim)
-					{
-						unit->action = A_NONE;
-						unit->animation = ANI_STAND;
-					}
-				}
-			}
-		}
-	}
-}
-
-//=================================================================================================
-void Game::InterpolatePlayers(float dt)
-{
-	for(auto info : N.players)
-	{
-		if(info->id != my_id && info->left == PlayerInfo::LEFT_NO)
-			UpdateInterpolator(info->u->interp, dt, info->u->visual_pos, info->u->rot);
-	}
-}
-
-//=================================================================================================
-void Game::UpdateInterpolator(EntityInterpolator* e, float dt, Vec3& pos, float& rot)
-{
-	assert(e);
-
-	for(int i = 0; i < EntityInterpolator::MAX_ENTRIES; ++i)
-		e->entries[i].timer += dt;
-
-	if(N.mp_use_interp)
-	{
-		if(e->entries[0].timer > N.mp_interp)
-		{
-			// nie ma nowszej klatki
-			// extrapolation ? nie dziú...
-			pos = e->entries[0].pos;
-			rot = e->entries[0].rot;
-		}
-		else
-		{
-			// znajdü odpowiednie klatki
-			for(int i = 0; i < e->valid_entries; ++i)
-			{
-				if(Equal(e->entries[i].timer, N.mp_interp))
-				{
-					// rÛwne trafienie w klatke
-					pos = e->entries[i].pos;
-					rot = e->entries[i].rot;
-					return;
-				}
-				else if(e->entries[i].timer > N.mp_interp)
-				{
-					// interpolacja pomiÍdzy dwoma klatkami ([i-1],[i])
-					EntityInterpolator::Entry& e1 = e->entries[i - 1];
-					EntityInterpolator::Entry& e2 = e->entries[i];
-					float t = (N.mp_interp - e1.timer) / (e2.timer - e1.timer);
-					pos = Vec3::Lerp(e1.pos, e2.pos, t);
-					rot = Clip(Slerp(e1.rot, e2.rot, t));
-					return;
-				}
-			}
-
-			// brak ruchu do tej pory
-		}
-	}
-	else
-	{
-		// nie uøywa interpolacji
-		pos = e->entries[0].pos;
-		rot = e->entries[0].rot;
-	}
-
-	assert(rot >= 0.f && rot < PI * 2);
-}
-
-//=================================================================================================
 void Game::WritePlayerStartData(BitStreamWriter& f, PlayerInfo& info)
 {
 	f << ID_PLAYER_START_DATA;
@@ -8173,7 +7956,7 @@ void Game::WritePlayerStartData(BitStreamWriter& f, PlayerInfo& info)
 	byte flags = 0;
 	if(info.devmode)
 		flags |= 0x01;
-	if(mp_load)
+	if(N.mp_load)
 	{
 		if(info.u->invisible)
 			flags |= 0x02;
@@ -8273,7 +8056,7 @@ void Game::ProcessLeftPlayers()
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::REMOVE_PLAYER;
 		c.id = info.id;
-		c.ile = (int)info.left;
+		c.count = (int)info.left;
 
 		RemovePlayer(info);
 

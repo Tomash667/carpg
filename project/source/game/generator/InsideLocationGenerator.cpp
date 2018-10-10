@@ -274,7 +274,7 @@ void InsideLocationGenerator::OnEnter()
 		spawn_pt = PosToPt(spawn_pos);
 	}
 
-	game.AddPlayerTeam(spawn_pos, spawn_rot, reenter, L.enter_from == ENTER_FROM_OUTSIDE);
+	L.AddPlayerTeam(spawn_pos, spawn_rot, reenter, L.enter_from == ENTER_FROM_OUTSIDE);
 	game.OpenDoorsByTeam(spawn_pt);
 }
 
@@ -291,45 +291,45 @@ void InsideLocationGenerator::AddRoomColliders(InsideLocationLevel& lvl, Room& r
 	for(int x = 0; x < room.size.x; ++x)
 	{
 		// top
-		POLE co = lvl.map[room.pos.x + x + (room.pos.y + room.size.y - 1)*lvl.w].type;
-		if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
+		TILE_TYPE co = lvl.map[room.pos.x + x + (room.pos.y + room.size.y - 1)*lvl.w].type;
+		if(co == EMPTY || co == BARS || co == BARS_FLOOR || co == BARS_CEILING || co == DOORS || co == HOLE_FOR_DOORS)
 		{
 			blocks.push_back(Int2(room.pos.x + x, room.pos.y + room.size.y - 1));
 			blocks.push_back(Int2(room.pos.x + x, room.pos.y + room.size.y - 2));
 		}
-		else if(co == SCIANA || co == BLOKADA_SCIANA)
+		else if(co == WALL || co == BLOCKADE_WALL)
 			blocks.push_back(Int2(room.pos.x + x, room.pos.y + room.size.y - 1));
 
 		// bottom
 		co = lvl.map[room.pos.x + x + room.pos.y*lvl.w].type;
-		if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
+		if(co == EMPTY || co == BARS || co == BARS_FLOOR || co == BARS_CEILING || co == DOORS || co == HOLE_FOR_DOORS)
 		{
 			blocks.push_back(Int2(room.pos.x + x, room.pos.y));
 			blocks.push_back(Int2(room.pos.x + x, room.pos.y + 1));
 		}
-		else if(co == SCIANA || co == BLOKADA_SCIANA)
+		else if(co == WALL || co == BLOCKADE_WALL)
 			blocks.push_back(Int2(room.pos.x + x, room.pos.y));
 	}
 	for(int y = 0; y < room.size.y; ++y)
 	{
 		// left
-		POLE co = lvl.map[room.pos.x + (room.pos.y + y)*lvl.w].type;
-		if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
+		TILE_TYPE co = lvl.map[room.pos.x + (room.pos.y + y)*lvl.w].type;
+		if(co == EMPTY || co == BARS || co == BARS_FLOOR || co == BARS_CEILING || co == DOORS || co == HOLE_FOR_DOORS)
 		{
 			blocks.push_back(Int2(room.pos.x, room.pos.y + y));
 			blocks.push_back(Int2(room.pos.x + 1, room.pos.y + y));
 		}
-		else if(co == SCIANA || co == BLOKADA_SCIANA)
+		else if(co == WALL || co == BLOCKADE_WALL)
 			blocks.push_back(Int2(room.pos.x, room.pos.y + y));
 
 		// right
 		co = lvl.map[room.pos.x + room.size.x - 1 + (room.pos.y + y)*lvl.w].type;
-		if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
+		if(co == EMPTY || co == BARS || co == BARS_FLOOR || co == BARS_CEILING || co == DOORS || co == HOLE_FOR_DOORS)
 		{
 			blocks.push_back(Int2(room.pos.x + room.size.x - 1, room.pos.y + y));
 			blocks.push_back(Int2(room.pos.x + room.size.x - 2, room.pos.y + y));
 		}
-		else if(co == SCIANA || co == BLOKADA_SCIANA)
+		else if(co == WALL || co == BLOCKADE_WALL)
 			blocks.push_back(Int2(room.pos.x + room.size.x - 1, room.pos.y + y));
 	}
 }
@@ -376,8 +376,8 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 	{
 		for(int x = 0; x < lvl.w; ++x)
 		{
-			POLE p = lvl.map[x + y * lvl.w].type;
-			if(p == KRATKA || p == KRATKA_PODLOGA)
+			TILE_TYPE p = lvl.map[x + y * lvl.w].type;
+			if(p == BARS || p == BARS_FLOOR)
 			{
 				Object* o = new Object;
 				o->mesh = game.aGrating;
@@ -387,7 +387,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 				o->base = nullptr;
 				L.local_ctx.objects->push_back(o);
 			}
-			if(p == KRATKA || p == KRATKA_SUFIT)
+			if(p == BARS || p == BARS_CEILING)
 			{
 				Object* o = new Object;
 				o->mesh = game.aGrating;
@@ -397,18 +397,18 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 				o->base = nullptr;
 				L.local_ctx.objects->push_back(o);
 			}
-			if(p == DRZWI)
+			if(p == DOORS)
 			{
 				Object* o = new Object;
 				o->mesh = game.aDoorWall;
-				if(IS_SET(lvl.map[x + y * lvl.w].flags, Pole::F_DRUGA_TEKSTURA))
+				if(IS_SET(lvl.map[x + y * lvl.w].flags, Tile::F_SECOND_TEXTURE))
 					o->mesh = game.aDoorWall2;
 				o->pos = Vec3(float(x * 2) + 1, 0, float(y * 2) + 1);
 				o->scale = 1;
 				o->base = nullptr;
 				L.local_ctx.objects->push_back(o);
 
-				if(czy_blokuje2(lvl.map[x - 1 + y * lvl.w].type))
+				if(IsBlocking(lvl.map[x - 1 + y * lvl.w].type))
 				{
 					o->rot = Vec3(0, 0, 0);
 					int mov = 0;
@@ -435,7 +435,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 						o->pos.x -= 0.8229f;
 				}
 
-				if(Rand() % 100 < base.door_chance || IS_SET(lvl.map[x + y * lvl.w].flags, Pole::F_SPECJALNE))
+				if(Rand() % 100 < base.door_chance || IS_SET(lvl.map[x + y * lvl.w].flags, Tile::F_SPECIAL))
 				{
 					Door* door = new Door;
 					L.local_ctx.doors->push_back(door);
@@ -457,7 +457,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 					tr.setRotation(btQuaternion(door->rot, 0, 0));
 					game.phy_world->addCollisionObject(door->phy, CG_DOOR);
 
-					if(IS_SET(lvl.map[x + y * lvl.w].flags, Pole::F_SPECJALNE))
+					if(IS_SET(lvl.map[x + y * lvl.w].flags, Tile::F_SPECIAL))
 						door->locked = LOCK_ORCS;
 					else if(Rand() % 100 < base.door_open)
 					{
@@ -468,7 +468,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 					}
 				}
 				else
-					lvl.map[x + y * lvl.w].type = OTWOR_NA_DRZWI;
+					lvl.map[x + y * lvl.w].type = HOLE_FOR_DOORS;
 			}
 		}
 	}
@@ -874,11 +874,11 @@ void InsideLocationGenerator::GenerateTraps()
 	{
 		for(int x = 1; x < lvl.w - 1; ++x)
 		{
-			if(lvl.map[x + y * lvl.w].type == PUSTE
-				&& !OR2_EQ(lvl.map[x - 1 + y * lvl.w].type, SCHODY_DOL, SCHODY_GORA)
-				&& !OR2_EQ(lvl.map[x + 1 + y * lvl.w].type, SCHODY_DOL, SCHODY_GORA)
-				&& !OR2_EQ(lvl.map[x + (y - 1)*lvl.w].type, SCHODY_DOL, SCHODY_GORA)
-				&& !OR2_EQ(lvl.map[x + (y + 1)*lvl.w].type, SCHODY_DOL, SCHODY_GORA))
+			if(lvl.map[x + y * lvl.w].type == EMPTY
+				&& !OR2_EQ(lvl.map[x - 1 + y * lvl.w].type, STAIRS_DOWN, STAIRS_UP)
+				&& !OR2_EQ(lvl.map[x + 1 + y * lvl.w].type, STAIRS_DOWN, STAIRS_UP)
+				&& !OR2_EQ(lvl.map[x + (y - 1)*lvl.w].type, STAIRS_DOWN, STAIRS_UP)
+				&& !OR2_EQ(lvl.map[x + (y + 1)*lvl.w].type, STAIRS_DOWN, STAIRS_UP))
 			{
 				if(Rand() % 500 < szansa + max(0, 30 - Int2::Distance(pt, Int2(x, y))))
 					L.CreateTrap(Int2(x, y), traps[Rand() % traps.size()]);
@@ -970,11 +970,11 @@ void InsideLocationGenerator::RegenerateTraps()
 	{
 		for(int x = 1; x < lvl.w - 1; ++x)
 		{
-			if(lvl.map[x + y * lvl.w].type == PUSTE
-				&& !OR2_EQ(lvl.map[x - 1 + y * lvl.w].type, SCHODY_DOL, SCHODY_GORA)
-				&& !OR2_EQ(lvl.map[x + 1 + y * lvl.w].type, SCHODY_DOL, SCHODY_GORA)
-				&& !OR2_EQ(lvl.map[x + (y - 1)*lvl.w].type, SCHODY_DOL, SCHODY_GORA)
-				&& !OR2_EQ(lvl.map[x + (y + 1)*lvl.w].type, SCHODY_DOL, SCHODY_GORA))
+			if(lvl.map[x + y * lvl.w].type == EMPTY
+				&& !OR2_EQ(lvl.map[x - 1 + y * lvl.w].type, STAIRS_DOWN, STAIRS_UP)
+				&& !OR2_EQ(lvl.map[x + 1 + y * lvl.w].type, STAIRS_DOWN, STAIRS_UP)
+				&& !OR2_EQ(lvl.map[x + (y - 1)*lvl.w].type, STAIRS_DOWN, STAIRS_UP)
+				&& !OR2_EQ(lvl.map[x + (y + 1)*lvl.w].type, STAIRS_DOWN, STAIRS_UP))
 			{
 				int s = szansa + max(0, 30 - Int2::Distance(pt, Int2(x, y)));
 				if(IS_SET(base.traps, TRAPS_NORMAL))
@@ -1049,12 +1049,12 @@ void InsideLocationGenerator::CreateMinimap()
 		uint* pix = lock[y];
 		for(int x = 0; x < lvl.w; ++x)
 		{
-			Pole& p = lvl.map[x + (lvl.w - 1 - y)*lvl.w];
-			if(IS_SET(p.flags, Pole::F_ODKRYTE))
+			Tile& p = lvl.map[x + (lvl.w - 1 - y)*lvl.w];
+			if(IS_SET(p.flags, Tile::F_REVEALED))
 			{
-				if(OR2_EQ(p.type, SCIANA, BLOKADA_SCIANA))
+				if(OR2_EQ(p.type, WALL, BLOCKADE_WALL))
 					*pix = Color(100, 100, 100);
-				else if(p.type == DRZWI)
+				else if(p.type == DOORS)
 					*pix = Color(127, 51, 0);
 				else
 					*pix = Color(220, 220, 240);
@@ -1078,7 +1078,7 @@ void InsideLocationGenerator::CreateMinimap()
 		*pix = 0;
 	}
 
-	game.minimap_size = lvl.w;
+	L.minimap_size = lvl.w;
 }
 
 //=================================================================================================
@@ -1278,8 +1278,8 @@ void InsideLocationGenerator::SpawnHeroesInsideDungeon()
 		{
 			for(int x = x1; x < x2; ++x)
 			{
-				Pole& po = lvl.map[x + y * lvl.w];
-				if(po.type == DRZWI)
+				Tile& po = lvl.map[x + y * lvl.w];
+				if(po.type == DOORS)
 				{
 					Door* door = lvl.FindDoor(Int2(x, y));
 					if(door && door->state == Door::Closed)
@@ -1328,7 +1328,7 @@ void InsideLocationGenerator::SpawnHeroesInsideDungeon()
 	while(!items.empty())
 	{
 		ItemSlot& item = items.back();
-		for(int i = 0, ile = item.count; i < ile; ++i)
+		for(int i = 0, count = item.count; i < count; ++i)
 		{
 			if((*heroes_it)->CanTake(item.item))
 			{

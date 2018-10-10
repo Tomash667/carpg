@@ -1,68 +1,64 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-// Rodzaj pola mapy
-enum POLE : byte
+enum TILE_TYPE : byte
 {
-	NIEUZYTE,
-	PUSTE,
-	SCHODY_GORA,
-	SCHODY_DOL,
-	DRZWI,
-	OTWOR_NA_DRZWI,
-	KRATKA_PODLOGA,
-	KRATKA_SUFIT,
-	KRATKA,
-	SCIANA,
-	BLOKADA,
-	BLOKADA_SCIANA,
-	ZAJETE
+	UNUSED,
+	EMPTY,
+	STAIRS_UP,
+	STAIRS_DOWN,
+	DOORS,
+	HOLE_FOR_DOORS,
+	BARS_FLOOR,
+	BARS_CEILING,
+	BARS,
+	WALL,
+	BLOCKADE,
+	BLOCKADE_WALL,
+	USED
 };
 
 //-----------------------------------------------------------------------------
-// Struktura opisuj¹ca pole na mapie
-struct Pole
+struct Tile
 {
-	//-----------------------------------------------------------------------------
-	// Flagi pola
-	enum FLAGI
+	enum FLAGS
 	{
-		F_PODLOGA = 0x1,
-		F_SUFIT = 0x2,
-		F_NISKI_SUFIT = 0x4,
-		F_KRATKA_PODLOGA = 0x8,
-		F_KRATKA_SUFIT = 0x10,
+		F_FLOOR = 0x1,
+		F_CEILING = 0x2,
+		F_LOW_CEILING = 0x4,
+		F_BARS_FLOOR = 0x8,
+		F_BARS_CEILING = 0x10,
 
 		// unused 0x20 0x40 0x80
 
-		F_SCIANA_LEWA = 0x100,
-		F_SCIANA_PRAWA = 0x200,
-		F_SCIANA_PRZOD = 0x400,
-		F_SCIANA_TYL = 0x800,
+		F_WALL_LEFT = 0x100,
+		F_WALL_RIGHT = 0x200,
+		F_WALL_FRONT = 0x400,
+		F_WALL_BACK = 0x800,
 
-		F_PODSUFIT_LEWA = 0x1000,
-		F_PODSUFIT_PRAWA = 0x2000,
-		F_PODSUFIT_PRZOD = 0x4000,
-		F_PODSUFIT_TYL = 0x8000,
+		F_CEIL_LEFT = 0x1000,
+		F_CEIL_RIGHT = 0x2000,
+		F_CEIL_FRONT = 0x4000,
+		F_CEIL_BACK = 0x8000,
 
-		F_GORA_LEWA = 0x10000,
-		F_GORA_PRAWA = 0x20000,
-		F_GORA_PRZOD = 0x40000,
-		F_GORA_TYL = 0x80000,
+		F_UP_LEFT = 0x10000,
+		F_UP_RIGHT = 0x20000,
+		F_UP_FRONT = 0x40000,
+		F_UP_BACK = 0x80000,
 
-		F_DZIURA_LEWA = 0x100000,
-		F_DZIURA_PRAWA = 0x200000,
-		F_DZIURA_PRZOD = 0x400000,
-		F_DZIURA_TYL = 0x800000, // 1<<21
+		F_HOLE_LEFT = 0x100000,
+		F_HOLE_RIGHT = 0x200000,
+		F_HOLE_FRONT = 0x400000,
+		F_HOLE_BACK = 0x800000, // 1<<21
 
-		F_SPECJALNE = 1 << 29, // póki co u¿ywane do oznaczenia drzwi do wiêzienia
-		F_DRUGA_TEKSTURA = 1 << 30,
-		F_ODKRYTE = 1 << 31
+		F_SPECIAL = 1 << 29, // used to mark prison doors
+		F_SECOND_TEXTURE = 1 << 30,
+		F_REVEALED = 1 << 31
 	};
 
 	int flags;
 	word room;
-	POLE type;
+	TILE_TYPE type;
 	// jeszcze jest 1-2 bajty miejsca na coœ :o (jak pokój bêdzie byte)
 
 	// DDDDGGGGRRRRSSSS000KKNSP
@@ -75,29 +71,29 @@ struct Pole
 
 	bool IsWall() const
 	{
-		return type == SCIANA || type == BLOKADA_SCIANA;
+		return type == WALL || type == BLOCKADE_WALL;
 	}
 
-	static void SetupFlags(Pole* tiles, const Int2& size);
-	static void DebugDraw(Pole* tiles, const Int2& size);
+	static void SetupFlags(Tile* tiles, const Int2& size);
+	static void DebugDraw(Tile* tiles, const Int2& size);
 };
 
 //-----------------------------------------------------------------------------
-// Czy pole blokuje ruch
-inline bool czy_blokuje2(POLE p)
+// Is blocking movement
+inline bool IsBlocking(TILE_TYPE p)
 {
-	return p >= SCIANA || p == NIEUZYTE;
+	return p >= WALL || p == UNUSED;
 }
-inline bool czy_blokuje2(const Pole& p)
+inline bool IsBlocking(const Tile& p)
 {
-	return czy_blokuje2(p.type);
+	return IsBlocking(p.type);
 }
-inline bool czy_blokuje21(POLE p)
+// Is block movement or objects should not be placed here to block path
+inline bool IsBlocking2(TILE_TYPE p)
 {
-	// czy to pole blokuje ruch albo nie powinno na nim byæ obiektów bo zablokujê droge
-	return !(p == PUSTE || p == KRATKA || p == KRATKA_PODLOGA || p == KRATKA_SUFIT);
+	return !(p == EMPTY || p == BARS || p == BARS_FLOOR || p == BARS_CEILING);
 }
-inline bool czy_blokuje21(const Pole& p)
+inline bool IsBlocking2(const Tile& p)
 {
-	return czy_blokuje21(p.type);
+	return IsBlocking2(p.type);
 }

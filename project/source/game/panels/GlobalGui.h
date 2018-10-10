@@ -26,8 +26,6 @@ public:
 	void ShowMenu() { GUI.ShowDialog((DialogBox*)game_menu); }
 	void ShowOptions() { GUI.ShowDialog((DialogBox*)options); }
 	void ShowMultiplayer();
-	void ShowSavePanel();
-	void ShowLoadPanel();
 	void ShowQuitDialog();
 	void ShowCreateCharacterPanel(bool enter_name, bool redo = false);
 

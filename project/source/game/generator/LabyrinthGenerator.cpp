@@ -149,7 +149,7 @@ int LabyrinthGenerator::TryGenerate(const Int2& maze_size, const Int2& room_size
 }
 
 //=================================================================================================
-void LabyrinthGenerator::GenerateLabyrinth(Pole*& tiles, const Int2& size, const Int2& room_size, Int2& stairs, GameDirection& stairs_dir, Int2& room_pos,
+void LabyrinthGenerator::GenerateLabyrinth(Tile*& tiles, const Int2& size, const Int2& room_size, Int2& stairs, GameDirection& stairs_dir, Int2& room_pos,
 	int grating_chance)
 {
 	// mo¿na by daæ, ¿e nie ma centralnego pokoju
@@ -160,42 +160,42 @@ void LabyrinthGenerator::GenerateLabyrinth(Pole*& tiles, const Int2& size, const
 
 	++room_pos.x;
 	++room_pos.y;
-	tiles = new Pole[size.x*size.y];
-	memset(tiles, 0, sizeof(Pole)*size.x*size.y);
+	tiles = new Tile[size.x*size.y];
+	memset(tiles, 0, sizeof(Tile)*size.x*size.y);
 
 	// copy map
 	for(int y = 0; y < maze_size.y; ++y)
 	{
 		for(int x = 0; x < maze_size.x; ++x)
-			tiles[x + 1 + (y + 1)*size.x].type = (maze[x + y * maze_size.x] ? PUSTE : SCIANA);
+			tiles[x + 1 + (y + 1)*size.x].type = (maze[x + y * maze_size.x] ? EMPTY : WALL);
 	}
 
-	tiles[doors.x + 1 + (doors.y + 1)*size.x].type = DRZWI;
+	tiles[doors.x + 1 + (doors.y + 1)*size.x].type = DOORS;
 
 	// add blockades
 	for(int x = 0; x < size.x; ++x)
 	{
-		tiles[x].type = BLOKADA_SCIANA;
-		tiles[x + (size.y - 1)*size.x].type = BLOKADA_SCIANA;
+		tiles[x].type = BLOCKADE_WALL;
+		tiles[x + (size.y - 1)*size.x].type = BLOCKADE_WALL;
 	}
 
 	for(int y = 1; y < size.y - 1; ++y)
 	{
-		tiles[y*size.x].type = BLOKADA_SCIANA;
-		tiles[size.x - 1 + y * size.x].type = BLOKADA_SCIANA;
+		tiles[y*size.x].type = BLOCKADE_WALL;
+		tiles[size.x - 1 + y * size.x].type = BLOCKADE_WALL;
 	}
 
 	CreateStairs(tiles, size, stairs, stairs_dir);
 	CreateGratings(tiles, size, room_size, room_pos, grating_chance);
 
-	Pole::SetupFlags(tiles, size);
+	Tile::SetupFlags(tiles, size);
 
 	if(Game::Get().devmode)
-		Pole::DebugDraw(tiles, size);
+		Tile::DebugDraw(tiles, size);
 }
 
 //=================================================================================================
-void LabyrinthGenerator::CreateStairs(Pole* tiles, const Int2& size, Int2& stairs, GameDirection& stairs_dir)
+void LabyrinthGenerator::CreateStairs(Tile* tiles, const Int2& size, Int2& stairs, GameDirection& stairs_dir)
 {
 	int order[4] = { 0,1,2,3 };
 	for(int i = 0; i < 5; ++i)
@@ -211,19 +211,19 @@ void LabyrinthGenerator::CreateStairs(Pole* tiles, const Int2& size, Int2& stair
 				int p = start;
 				do
 				{
-					if(tiles[p + size.x].type == PUSTE)
+					if(tiles[p + size.x].type == EMPTY)
 					{
-						int ile = 0;
-						if(tiles[p - 1 + size.x].type != PUSTE)
-							++ile;
-						if(tiles[p + 1 + size.x].type != PUSTE)
-							++ile;
-						if(tiles[p].type != PUSTE)
-							++ile;
-						if(tiles[p + size.x * 2].type != PUSTE)
-							++ile;
+						int count = 0;
+						if(tiles[p - 1 + size.x].type != EMPTY)
+							++count;
+						if(tiles[p + 1 + size.x].type != EMPTY)
+							++count;
+						if(tiles[p].type != EMPTY)
+							++count;
+						if(tiles[p + size.x * 2].type != EMPTY)
+							++count;
 
-						if(ile == 3)
+						if(count == 3)
 						{
 							stairs.x = p;
 							stairs.y = 1;
@@ -243,19 +243,19 @@ void LabyrinthGenerator::CreateStairs(Pole* tiles, const Int2& size, Int2& stair
 				int p = start;
 				do
 				{
-					if(tiles[1 + p * size.x].type == PUSTE)
+					if(tiles[1 + p * size.x].type == EMPTY)
 					{
-						int ile = 0;
-						if(tiles[p*size.x].type != PUSTE)
-							++ile;
-						if(tiles[2 + p * size.x].type != PUSTE)
-							++ile;
-						if(tiles[1 + (p - 1)*size.x].type != PUSTE)
-							++ile;
-						if(tiles[1 + (p + 1)*size.x].type != PUSTE)
-							++ile;
+						int count = 0;
+						if(tiles[p*size.x].type != EMPTY)
+							++count;
+						if(tiles[2 + p * size.x].type != EMPTY)
+							++count;
+						if(tiles[1 + (p - 1)*size.x].type != EMPTY)
+							++count;
+						if(tiles[1 + (p + 1)*size.x].type != EMPTY)
+							++count;
 
-						if(ile == 3)
+						if(count == 3)
 						{
 							stairs.x = 1;
 							stairs.y = p;
@@ -275,19 +275,19 @@ void LabyrinthGenerator::CreateStairs(Pole* tiles, const Int2& size, Int2& stair
 				int p = start;
 				do
 				{
-					if(tiles[p + (size.y - 2)*size.x].type == PUSTE)
+					if(tiles[p + (size.y - 2)*size.x].type == EMPTY)
 					{
-						int ile = 0;
-						if(tiles[p - 1 + (size.y - 2)*size.x].type != PUSTE)
-							++ile;
-						if(tiles[p + 1 + (size.y - 2)*size.x].type != PUSTE)
-							++ile;
-						if(tiles[p + (size.y - 1)*size.x].type != PUSTE)
-							++ile;
-						if(tiles[p + (size.y - 3)*size.x].type != PUSTE)
-							++ile;
+						int count = 0;
+						if(tiles[p - 1 + (size.y - 2)*size.x].type != EMPTY)
+							++count;
+						if(tiles[p + 1 + (size.y - 2)*size.x].type != EMPTY)
+							++count;
+						if(tiles[p + (size.y - 1)*size.x].type != EMPTY)
+							++count;
+						if(tiles[p + (size.y - 3)*size.x].type != EMPTY)
+							++count;
 
-						if(ile == 3)
+						if(count == 3)
 						{
 							stairs.x = p;
 							stairs.y = size.y - 2;
@@ -307,19 +307,19 @@ void LabyrinthGenerator::CreateStairs(Pole* tiles, const Int2& size, Int2& stair
 				int p = start;
 				do
 				{
-					if(tiles[size.x - 2 + p * size.x].type == PUSTE)
+					if(tiles[size.x - 2 + p * size.x].type == EMPTY)
 					{
-						int ile = 0;
-						if(tiles[size.x - 3 + p * size.x].type != PUSTE)
-							++ile;
-						if(tiles[size.x - 1 + p * size.x].type != PUSTE)
-							++ile;
-						if(tiles[size.x - 2 + (p - 1)*size.x].type != PUSTE)
-							++ile;
-						if(tiles[size.x - 2 + (p + 1)*size.x].type != PUSTE)
-							++ile;
+						int count = 0;
+						if(tiles[size.x - 3 + p * size.x].type != EMPTY)
+							++count;
+						if(tiles[size.x - 1 + p * size.x].type != EMPTY)
+							++count;
+						if(tiles[size.x - 2 + (p - 1)*size.x].type != EMPTY)
+							++count;
+						if(tiles[size.x - 2 + (p + 1)*size.x].type != EMPTY)
+							++count;
 
-						if(ile == 3)
+						if(count == 3)
 						{
 							stairs.x = size.x - 2;
 							stairs.y = p;
@@ -337,16 +337,16 @@ void LabyrinthGenerator::CreateStairs(Pole* tiles, const Int2& size, Int2& stair
 	}
 	if(!ok)
 		throw "Failed to generate labirynth.";
-	tiles[stairs.x + stairs.y*size.x].type = SCHODY_GORA;
+	tiles[stairs.x + stairs.y*size.x].type = STAIRS_UP;
 
 	// ustal kierunek schodów
-	if(tiles[stairs.x + (stairs.y + 1)*size.x].type == PUSTE)
+	if(tiles[stairs.x + (stairs.y + 1)*size.x].type == EMPTY)
 		stairs_dir = GDIR_UP;
-	else if(tiles[stairs.x - 1 + stairs.y*size.x].type == PUSTE)
+	else if(tiles[stairs.x - 1 + stairs.y*size.x].type == EMPTY)
 		stairs_dir = GDIR_LEFT;
-	else if(tiles[stairs.x + (stairs.y - 1)*size.x].type == PUSTE)
+	else if(tiles[stairs.x + (stairs.y - 1)*size.x].type == EMPTY)
 		stairs_dir = GDIR_DOWN;
-	else if(tiles[stairs.x + 1 + stairs.y*size.x].type == PUSTE)
+	else if(tiles[stairs.x + 1 + stairs.y*size.x].type == EMPTY)
 		stairs_dir = GDIR_RIGHT;
 	else
 	{
@@ -355,7 +355,7 @@ void LabyrinthGenerator::CreateStairs(Pole* tiles, const Int2& size, Int2& stair
 }
 
 //=================================================================================================
-void LabyrinthGenerator::CreateGratings(Pole* tiles, const Int2& size, const Int2& room_size, const Int2& room_pos, int grating_chance)
+void LabyrinthGenerator::CreateGratings(Tile* tiles, const Int2& size, const Int2& room_size, const Int2& room_pos, int grating_chance)
 {
 	if(grating_chance <= 0)
 		return;
@@ -364,16 +364,16 @@ void LabyrinthGenerator::CreateGratings(Pole* tiles, const Int2& size, const Int
 	{
 		for(int x = 1; x < size.x - 1; ++x)
 		{
-			Pole& p = tiles[x + y * size.x];
-			if(p.type == PUSTE && !Rect::IsInside(room_pos, room_size, Int2(x,y)) && Rand() % 100 < grating_chance)
+			Tile& p = tiles[x + y * size.x];
+			if(p.type == EMPTY && !Rect::IsInside(room_pos, room_size, Int2(x,y)) && Rand() % 100 < grating_chance)
 			{
 				int j = Rand() % 3;
 				if(j == 0)
-					p.type = KRATKA_PODLOGA;
+					p.type = BARS_FLOOR;
 				else if(j == 1)
-					p.type = KRATKA_SUFIT;
+					p.type = BARS_CEILING;
 				else
-					p.type = KRATKA;
+					p.type = BARS;
 			}
 		}
 	}
@@ -411,13 +411,13 @@ void LabyrinthGenerator::GenerateObjects()
 	// torch near wall
 	Int2 pt = lvl.GetUpStairsFrontTile();
 	Vec3 pos;
-	if(czy_blokuje2(lvl.map[pt.x - 1 + pt.y*lvl.w].type))
+	if(IsBlocking(lvl.map[pt.x - 1 + pt.y*lvl.w].type))
 		pos = Vec3(2.f*pt.x + torch->size.x + 0.1f, 0.f, 2.f*pt.y + 1.f);
-	else if(czy_blokuje2(lvl.map[pt.x + 1 + pt.y*lvl.w].type))
+	else if(IsBlocking(lvl.map[pt.x + 1 + pt.y*lvl.w].type))
 		pos = Vec3(2.f*(pt.x + 1) - torch->size.x - 0.1f, 0.f, 2.f*pt.y + 1.f);
-	else if(czy_blokuje2(lvl.map[pt.x + (pt.y - 1)*lvl.w].type))
+	else if(IsBlocking(lvl.map[pt.x + (pt.y - 1)*lvl.w].type))
 		pos = Vec3(2.f*pt.x + 1.f, 0.f, 2.f*pt.y + torch->size.y + 0.1f);
-	else if(czy_blokuje2(lvl.map[pt.x + (pt.y + 1)*lvl.w].type))
+	else if(IsBlocking(lvl.map[pt.x + (pt.y + 1)*lvl.w].type))
 		pos = Vec3(2.f*pt.x + 1.f, 0.f, 2.f*(pt.y + 1) + torch->size.y - 0.1f);
 	L.SpawnObjectEntity(L.local_ctx, torch, pos, Random(MAX_ANGLE));
 
@@ -453,7 +453,7 @@ void LabyrinthGenerator::GenerateUnits()
 	for(int added = 0; added < count && tries; --tries)
 	{
 		Int2 pt(Random(1, lvl.w - 2), Random(1, lvl.h - 2));
-		if(czy_blokuje21(lvl.map[pt(lvl.w)]))
+		if(IsBlocking2(lvl.map[pt(lvl.w)]))
 			continue;
 		if(Int2::Distance(pt, lvl.staircase_up) < 5)
 			continue;

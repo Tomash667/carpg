@@ -198,7 +198,7 @@ void Game::DrawGrass()
 	Vec4 fogColor = GetFogColor();
 	Vec4 fogParams = GetFogParams();
 	Vec4 ambientColor(0.8f, 0.8f, 0.8f, 1.f);
-	UINT passes;
+	uint passes;
 	V(eGrass->SetTechnique(techGrass));
 	V(eGrass->SetVector(hGrassFogColor, (D3DXVECTOR4*)&fogColor));
 	V(eGrass->SetVector(hGrassFogParams, (D3DXVECTOR4*)&fogParams));
@@ -253,14 +253,14 @@ void Game::DrawGrass()
 
 void Game::ListGrass()
 {
-	if(grass_range < 0.5f)
+	if(settings.grass_range < 0.5f)
 		return;
 
 	PROFILER_BLOCK("ListGrass");
 	OutsideLocation* outside = (OutsideLocation*)L.location;
 	Vec3 pos, angle;
 	Vec2 from = cam.from.XZ();
-	float in_dist = grass_range * grass_range;
+	float in_dist = settings.grass_range * settings.grass_range;
 
 	for(LevelParts::iterator it = level_parts.begin(), end = level_parts.end(); it != end; ++it)
 	{

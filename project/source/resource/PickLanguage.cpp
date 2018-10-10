@@ -19,7 +19,7 @@ static vector<ListItem*> dialog_items;
 void UpdateTexts(HWND hwndDlg, int select_index);
 
 //=================================================================================================
-static INT_PTR CALLBACK PickLanguageDialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK PickLanguageDialogProc(HWND hwndDlg, uint uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{

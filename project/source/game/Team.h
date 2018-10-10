@@ -48,6 +48,7 @@ public:
 	bool HaveOtherPlayer();
 	bool HaveTeamMember() { return GetActiveTeamSize() > 1u; }
 	bool IsAnyoneAlive();
+	bool IsLeader();
 	bool IsLeader(const Unit& unit) { return &unit == GetLeader(); }
 	bool IsLeader(const Unit* unit) { assert(unit); return unit == GetLeader(); }
 	bool IsTeamMember(Unit& unit);

@@ -1675,8 +1675,6 @@ void World::Travel(int index)
 //=================================================================================================
 void World::UpdateTravel(float dt)
 {
-	Game& game = Game::Get();
-
 	travel_timer += dt;
 	const Vec2& end_pt = locations[travel_location_index]->pos;
 	float dist = Vec2::Distance(travel_start_pos, end_pt);
@@ -1691,7 +1689,7 @@ void World::UpdateTravel(float dt)
 	if(travel_timer * 3 >= dist / TRAVEL_SPEED)
 	{
 		// end of travel
-		if(game.IsLeader())
+		if(Team.IsLeader())
 			EndTravel();
 		else
 			world_pos = end_pt;

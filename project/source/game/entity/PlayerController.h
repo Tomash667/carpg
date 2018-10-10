@@ -211,6 +211,8 @@ struct PlayerController : public HeroPlayerCommon
 	bool IsHit(Unit* unit) const;
 	int GetNextActionItemIndex() const;
 	void AddItemMessage(uint count);
+	void PayCredit(int count);
+	void UseDays(int count);
 };
 
 //-----------------------------------------------------------------------------

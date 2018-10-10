@@ -137,6 +137,7 @@ public:
 	void Cleanup();
 	void WriteNetVars(BitStreamWriter& f);
 	void ReadNetVars(BitStreamReader& f);
+	bool ValidateNick(cstring nick);
 
 	//****************************************************************************
 	// Common
@@ -151,7 +152,7 @@ public:
 	vector<PlayerInfo*> players; // contains players that left too
 	float mp_interp;
 	int port;
-	bool mp_use_interp;
+	bool mp_load, mp_load_worldmap, mp_use_interp;
 
 	//****************************************************************************
 	// Server
@@ -162,7 +163,13 @@ public:
 	void SendServer(BitStreamWriter& f, PacketPriority priority, PacketReliability reliability, const SystemAddress& adr, StreamLogType type);
 	uint SendAll(BitStreamWriter& f, PacketPriority priority, PacketReliability reliability, StreamLogType type);
 	int GetNewPlayerId();
+	PlayerInfo* FindOldPlayer(cstring nick);
+	void DeleteOldPlayers();
+	void Save(GameWriter& f);
+	void Load(GameReader& f);
+	void InterpolatePlayers(float dt);
 
+	vector<PlayerInfo*> old_players;
 	uint active_players, max_players;
 	string server_name, password;
 	int last_id;
@@ -173,6 +180,7 @@ public:
 public:
 	void InitClient();
 	void SendClient(BitStreamWriter& f, PacketPriority priority, PacketReliability reliability, StreamLogType type);
+	void InterpolateUnits(float dt);
 
 	SystemAddress server;
 

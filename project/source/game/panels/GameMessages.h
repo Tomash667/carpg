@@ -56,10 +56,12 @@ public:
 	void AddGameMsg2(cstring msg, float time, int id = -1) { AddMessageIfNotExists(msg, time, id); }
 	void AddGameMsg3(GMS id);
 	void AddGameMsg3(PlayerController* player, GMS id);
+	void ShowStatGain(bool is_skill, int what, int value);
 
 private:
 	list<GameMsg> msgs;
 	int msgs_h;
-	cstring txGamePausedBig, txINeedWeapon, txNoHpp, txCantDo, txDontLootFollower, txDontLootArena, txUnlockedDoor, txNeedKey, txGmsLooted, txGmsRumor, txGmsJournalUpdated, txGmsUsed, txGmsUnitBusy, txGmsGatherTeam, txGmsNotLeader, txGmsNotInCombat,
-		 txGmsAddedItem, txGmsGettingOutOfRange, txGmsLeftEvent, txGameSaved;
+	cstring txGamePausedBig, txINeedWeapon, txNoHpp, txCantDo, txDontLootFollower, txDontLootArena, txUnlockedDoor, txNeedKey, txGmsLooted, txGmsRumor,
+		txGmsJournalUpdated, txGmsUsed, txGmsUnitBusy, txGmsGatherTeam, txGmsNotLeader, txGmsNotInCombat, txGmsAddedItem, txGmsGettingOutOfRange,
+		txGmsLeftEvent, txGameSaved, txGainTextAttrib, txGainTextSkill;
 };

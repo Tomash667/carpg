@@ -81,6 +81,7 @@ public:
 	void PickableItemBegin(LevelContext& ctx, Object& o);
 	void PickableItemAdd(const Item* item);
 	void AddGroundItem(LevelContext& ctx, GroundItem* item);
+	GroundItem* FindGroundItem(int netid, LevelContext** ctx = nullptr);
 	GroundItem* SpawnGroundItemInsideAnyRoom(InsideLocationLevel& lvl, const Item* item);
 	GroundItem* SpawnGroundItemInsideRoom(Room& room, const Item* item);
 	GroundItem* SpawnGroundItemInsideRadius(const Item* item, const Vec2& pos, float radius, bool try_exact = false);
@@ -134,6 +135,14 @@ public:
 	void SpawnDungeonColliders();
 	void SpawnDungeonCollider(const Vec3& pos);
 	void RemoveColliders();
+	Int2 GetSpawnPoint();
+	Vec3 GetExitPos(Unit& u, bool force_border = false);
+	bool CanSee(Unit& unit, Unit& unit2);
+	bool CanSee(const Vec3& v1, const Vec3& v2);
+	bool KillAll(int mode, Unit& unit, Unit* ignore);
+	void AddPlayerTeam(const Vec3& pos, float rot, bool reenter, bool hide_weapon);
+	void UpdateDungeonMinimap(bool in_level);
+	void RevealMinimap();
 
 	Location* location; // same as W.current_location
 	int location_index; // same as W.current_location_index
@@ -164,6 +173,11 @@ public:
 	ObjectPool<TmpLevelContext> tmp_ctx_pool;
 	vector<CollisionObject> global_col;
 	vector<Unit*> blood_to_spawn;
+
+	// minimap
+	bool minimap_opened_doors;
+	vector<Int2> minimap_reveal, minimap_reveal_mp;
+	uint minimap_size;
 
 private:
 	vector<UnitWarpData> unit_warp_data;

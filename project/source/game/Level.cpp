@@ -19,6 +19,10 @@
 #include "ParticleSystem.h"
 #include "Language.h"
 #include "World.h"
+#include "Portal.h"
+#include "Team.h"
+#include "FOV.h"
+#include "Texture.h"
 
 Level L;
 
@@ -115,6 +119,8 @@ void Level::Reset()
 {
 	unit_warp_data.clear();
 	to_remove.clear();
+	minimap_reveal.clear();
+	minimap_reveal_mp.clear();
 }
 
 //=================================================================================================
@@ -1261,7 +1267,7 @@ void Level::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding
 					door->mesh_inst = new MeshInstance(door->door2 ? game.aDoor2 : game.aDoor);
 					door->mesh_inst->groups[0].speed = 2.f;
 					door->phy = new btCollisionObject;
-					door->phy->setCollisionShape(L.shape_door);
+					door->phy->setCollisionShape(shape_door);
 					door->phy->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_DOOR);
 					door->locked = LOCK_NONE;
 					door->netid = Door::netid_counter++;
@@ -1654,6 +1660,25 @@ void Level::AddGroundItem(LevelContext& ctx, GroundItem* item)
 }
 
 //=================================================================================================
+GroundItem* Level::FindGroundItem(int netid, LevelContext** out_ctx)
+{
+	for(LevelContext& ctx : ForEachContext())
+	{
+		for(GroundItem* ground_item : *ctx.items)
+		{
+			if(ground_item->netid == netid)
+			{
+				if(out_ctx)
+					*out_ctx = &ctx;
+				return ground_item;
+			}
+		}
+	}
+
+	return nullptr;
+}
+
+//=================================================================================================
 GroundItem* Level::SpawnGroundItemInsideAnyRoom(InsideLocationLevel& lvl, const Item* item)
 {
 	assert(item);
@@ -2017,8 +2042,8 @@ void Level::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _
 			{
 				for(int x = minx; x <= maxx; ++x)
 				{
-					POLE co = lvl.map[x + z * lvl.w].type;
-					if(czy_blokuje2(co))
+					TILE_TYPE co = lvl.map[x + z * lvl.w].type;
+					if(IsBlocking(co))
 					{
 						CollisionObject& co = Add1(_objects);
 						co.pt = Vec2(2.f*x + 1.f, 2.f*z + 1.f);
@@ -2026,7 +2051,7 @@ void Level::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _
 						co.h = 1.f;
 						co.type = CollisionObject::RECTANGLE;
 					}
-					else if(co == SCHODY_DOL)
+					else if(co == STAIRS_DOWN)
 					{
 						if(!lvl.staircase_down_in_wall)
 						{
@@ -2038,7 +2063,7 @@ void Level::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _
 							co.type = CollisionObject::CUSTOM;
 						}
 					}
-					else if(co == SCHODY_GORA)
+					else if(co == STAIRS_UP)
 					{
 						CollisionObject& co = Add1(_objects);
 						co.pt = Vec2(2.f*x + 1.f, 2.f*z + 1.f);
@@ -2224,8 +2249,8 @@ void Level::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _
 			{
 				for(int x = minx; x <= maxx; ++x)
 				{
-					POLE co = lvl.map[x + z * lvl.w].type;
-					if(czy_blokuje2(co))
+					TILE_TYPE co = lvl.map[x + z * lvl.w].type;
+					if(IsBlocking(co))
 					{
 						CollisionObject& co = Add1(_objects);
 						co.pt = Vec2(2.f*x + 1.f, 2.f*z + 1.f);
@@ -2233,7 +2258,7 @@ void Level::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _
 						co.h = 1.f;
 						co.type = CollisionObject::RECTANGLE;
 					}
-					else if(co == SCHODY_DOL)
+					else if(co == STAIRS_DOWN)
 					{
 						if(!lvl.staircase_down_in_wall)
 						{
@@ -2245,7 +2270,7 @@ void Level::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _
 							co.type = CollisionObject::CUSTOM;
 						}
 					}
-					else if(co == SCHODY_GORA)
+					else if(co == STAIRS_UP)
 					{
 						CollisionObject& co = Add1(_objects);
 						co.pt = Vec2(2.f*x + 1.f, 2.f*z + 1.f);
@@ -2808,7 +2833,7 @@ Trap* Level::CreateTrap(Int2 pt, TRAP_TYPE type, bool timed)
 
 			for(j = 1; j <= 10; ++j)
 			{
-				if(czy_blokuje2(lvl.map[pt.x + DirToPos(dir).x*j + (pt.y + DirToPos(dir).y*j)*lvl.w]))
+				if(IsBlocking(lvl.map[pt.x + DirToPos(dir).x*j + (pt.y + DirToPos(dir).y*j)*lvl.w]))
 				{
 					if(j != 1)
 						ok = true;
@@ -3087,7 +3112,7 @@ void Level::OnReenterLevel()
 
 				// fizyka
 				door.phy = new btCollisionObject;
-				door.phy->setCollisionShape(L.shape_door);
+				door.phy->setCollisionShape(shape_door);
 				door.phy->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_DOOR);
 				btTransform& tr = door.phy->getWorldTransform();
 				Vec3 pos = door.pos;
@@ -3229,7 +3254,7 @@ void Level::SpawnDungeonColliders()
 
 	InsideLocation* inside = (InsideLocation*)location;
 	InsideLocationLevel& lvl = inside->GetLevelData();
-	Pole* m = lvl.map;
+	Tile* m = lvl.map;
 	int w = lvl.w,
 		h = lvl.h;
 
@@ -3237,9 +3262,9 @@ void Level::SpawnDungeonColliders()
 	{
 		for(int x = 1; x < w - 1; ++x)
 		{
-			if(czy_blokuje2(m[x + y * w]) && (!czy_blokuje2(m[x - 1 + (y - 1)*w]) || !czy_blokuje2(m[x + (y - 1)*w]) || !czy_blokuje2(m[x + 1 + (y - 1)*w]) ||
-				!czy_blokuje2(m[x - 1 + y * w]) || !czy_blokuje2(m[x + 1 + y * w]) ||
-				!czy_blokuje2(m[x - 1 + (y + 1)*w]) || !czy_blokuje2(m[x + (y + 1)*w]) || !czy_blokuje2(m[x + 1 + (y + 1)*w])))
+			if(IsBlocking(m[x + y * w]) && (!IsBlocking(m[x - 1 + (y - 1)*w]) || !IsBlocking(m[x + (y - 1)*w]) || !IsBlocking(m[x + 1 + (y - 1)*w]) ||
+				!IsBlocking(m[x - 1 + y * w]) || !IsBlocking(m[x + 1 + y * w]) ||
+				!IsBlocking(m[x - 1 + (y + 1)*w]) || !IsBlocking(m[x + (y + 1)*w]) || !IsBlocking(m[x + 1 + (y + 1)*w])))
 			{
 				SpawnDungeonCollider(Vec3(2.f*x + 1.f, 2.f, 2.f*y + 1.f));
 			}
@@ -3250,11 +3275,11 @@ void Level::SpawnDungeonColliders()
 	for(int i = 1; i < h - 1; ++i)
 	{
 		// left
-		if(czy_blokuje2(m[i*w]) && !czy_blokuje2(m[1 + i * w]))
+		if(IsBlocking(m[i*w]) && !IsBlocking(m[1 + i * w]))
 			SpawnDungeonCollider(Vec3(1.f, 2.f, 2.f*i + 1.f));
 
 		// right
-		if(czy_blokuje2(m[i*w + w - 1]) && !czy_blokuje2(m[w - 2 + i * w]))
+		if(IsBlocking(m[i*w + w - 1]) && !IsBlocking(m[w - 2 + i * w]))
 			SpawnDungeonCollider(Vec3(2.f*(w - 1) + 1.f, 2.f, 2.f*i + 1.f));
 	}
 
@@ -3262,11 +3287,11 @@ void Level::SpawnDungeonColliders()
 	for(int i = 1; i < lvl.w - 1; ++i)
 	{
 		// front
-		if(czy_blokuje2(m[i + (h - 1)*w]) && !czy_blokuje2(m[i + (h - 2)*w]))
+		if(IsBlocking(m[i + (h - 1)*w]) && !IsBlocking(m[i + (h - 2)*w]))
 			SpawnDungeonCollider(Vec3(2.f*i + 1.f, 2.f, 2.f*(h - 1) + 1.f));
 
 		// back
-		if(czy_blokuje2(m[i]) && !czy_blokuje2(m[i + w]))
+		if(IsBlocking(m[i]) && !IsBlocking(m[i + w]))
 			SpawnDungeonCollider(Vec3(2.f*i + 1.f, 2.f, 1.f));
 	}
 
@@ -3383,4 +3408,521 @@ void Level::RemoveColliders()
 
 	DeleteElements(shapes);
 	cam_colliders.clear();
+}
+
+//=================================================================================================
+Int2 Level::GetSpawnPoint()
+{
+	InsideLocation* inside = (InsideLocation*)location;
+	InsideLocationLevel& lvl = inside->GetLevelData();
+
+	if(enter_from >= ENTER_FROM_PORTAL)
+		return PosToPt(inside->GetPortal(enter_from)->GetSpawnPos());
+	else if(enter_from == ENTER_FROM_DOWN_LEVEL)
+		return lvl.GetDownStairsFrontTile();
+	else
+		return lvl.GetUpStairsFrontTile();
+}
+
+//=================================================================================================
+// Get nearest pos for unit to exit level
+Vec3 Level::GetExitPos(Unit& u, bool force_border)
+{
+	const Vec3& pos = u.pos;
+
+	if(location->outside)
+	{
+		if(u.in_building != -1)
+			return city_ctx->inside_buildings[u.in_building]->exit_area.Midpoint().XZ();
+		else if(city_ctx && !force_border)
+		{
+			float best_dist, dist;
+			int best_index = -1, index = 0;
+
+			for(vector<EntryPoint>::const_iterator it = city_ctx->entry_points.begin(), end = city_ctx->entry_points.end(); it != end; ++it, ++index)
+			{
+				if(it->exit_area.IsInside(u.pos))
+				{
+					// unit is already inside exit area, goto outside exit
+					best_index = -1;
+					break;
+				}
+				else
+				{
+					dist = Vec2::Distance(Vec2(u.pos.x, u.pos.z), it->exit_area.Midpoint());
+					if(best_index == -1 || dist < best_dist)
+					{
+						best_dist = dist;
+						best_index = index;
+					}
+				}
+			}
+
+			if(best_index != -1)
+				return city_ctx->entry_points[best_index].exit_area.Midpoint().XZ();
+		}
+
+		int best = 0;
+		float dist, best_dist;
+
+		// lewa krawêdŸ
+		best_dist = abs(pos.x - 32.f);
+
+		// prawa krawêdŸ
+		dist = abs(pos.x - (256.f - 32.f));
+		if(dist < best_dist)
+		{
+			best_dist = dist;
+			best = 1;
+		}
+
+		// górna krawêdŸ
+		dist = abs(pos.z - 32.f);
+		if(dist < best_dist)
+		{
+			best_dist = dist;
+			best = 2;
+		}
+
+		// dolna krawêdŸ
+		dist = abs(pos.z - (256.f - 32.f));
+		if(dist < best_dist)
+			best = 3;
+
+		switch(best)
+		{
+		default:
+			assert(0);
+		case 0:
+			return Vec3(32.f, 0, pos.z);
+		case 1:
+			return Vec3(256.f - 32.f, 0, pos.z);
+		case 2:
+			return Vec3(pos.x, 0, 32.f);
+		case 3:
+			return Vec3(pos.x, 0, 256.f - 32.f);
+		}
+	}
+	else
+	{
+		InsideLocation* inside = (InsideLocation*)location;
+		if(dungeon_level == 0 && inside->from_portal)
+			return inside->portal->pos;
+		Int2& pt = inside->GetLevelData().staircase_up;
+		return Vec3(2.f*pt.x + 1, 0, 2.f*pt.y + 1);
+	}
+}
+
+//=================================================================================================
+bool Level::CanSee(Unit& u1, Unit& u2)
+{
+	if(u1.in_building != u2.in_building)
+		return false;
+
+	Int2 tile1(int(u1.pos.x / 2), int(u1.pos.z / 2)),
+		tile2(int(u2.pos.x / 2), int(u2.pos.z / 2));
+
+	if(tile1 == tile2)
+		return true;
+
+	LevelContext& ctx = GetContext(u1);
+
+	if(ctx.type == LevelContext::Outside)
+	{
+		OutsideLocation* outside = (OutsideLocation*)location;
+
+		int xmin = max(0, min(tile1.x, tile2.x)),
+			xmax = min(OutsideLocation::size, max(tile1.x, tile2.x)),
+			ymin = max(0, min(tile1.y, tile2.y)),
+			ymax = min(OutsideLocation::size, max(tile1.y, tile2.y));
+
+		for(int y = ymin; y <= ymax; ++y)
+		{
+			for(int x = xmin; x <= xmax; ++x)
+			{
+				if(outside->tiles[x + y * OutsideLocation::size].mode >= TM_BUILDING_BLOCK
+					&& LineToRectangle(u1.pos, u2.pos, Vec2(2.f*x, 2.f*y), Vec2(2.f*(x + 1), 2.f*(y + 1))))
+					return false;
+			}
+		}
+	}
+	else if(ctx.type == LevelContext::Inside)
+	{
+		InsideLocation* inside = (InsideLocation*)location;
+		InsideLocationLevel& lvl = inside->GetLevelData();
+
+		int xmin = max(0, min(tile1.x, tile2.x)),
+			xmax = min(lvl.w, max(tile1.x, tile2.x)),
+			ymin = max(0, min(tile1.y, tile2.y)),
+			ymax = min(lvl.h, max(tile1.y, tile2.y));
+
+		for(int y = ymin; y <= ymax; ++y)
+		{
+			for(int x = xmin; x <= xmax; ++x)
+			{
+				if(IsBlocking(lvl.map[x + y * lvl.w].type) && LineToRectangle(u1.pos, u2.pos, Vec2(2.f*x, 2.f*y), Vec2(2.f*(x + 1), 2.f*(y + 1))))
+					return false;
+				if(lvl.map[x + y * lvl.w].type == DOORS)
+				{
+					Door* door = FindDoor(ctx, Int2(x, y));
+					if(door && door->IsBlocking())
+					{
+						// 0.842f, 1.319f, 0.181f
+						Box2d box(door->pos.x, door->pos.z);
+						if(door->rot == 0.f || door->rot == PI)
+						{
+							box.v1.x -= 1.f;
+							box.v2.x += 1.f;
+							box.v1.y -= 0.181f;
+							box.v2.y += 0.181f;
+						}
+						else
+						{
+							box.v1.y -= 1.f;
+							box.v2.y += 1.f;
+							box.v1.x -= 0.181f;
+							box.v2.x += 0.181f;
+						}
+
+						if(LineToRectangle(u1.pos, u2.pos, box.v1, box.v2))
+							return false;
+					}
+				}
+			}
+		}
+	}
+	else
+	{
+		// kolizje z obiektami
+		for(vector<CollisionObject>::iterator it = ctx.colliders->begin(), end = ctx.colliders->end(); it != end; ++it)
+		{
+			if(it->ptr != CAM_COLLIDER || it->type != CollisionObject::RECTANGLE)
+				continue;
+
+			Box2d box(it->pt.x - it->w, it->pt.y - it->h, it->pt.x + it->w, it->pt.y + it->h);
+			if(LineToRectangle(u1.pos, u2.pos, box.v1, box.v2))
+				return false;
+		}
+
+		// kolizje z drzwiami
+		for(vector<Door*>::iterator it = ctx.doors->begin(), end = ctx.doors->end(); it != end; ++it)
+		{
+			Door& door = **it;
+			if(door.IsBlocking())
+			{
+				Box2d box(door.pos.x, door.pos.z);
+				if(door.rot == 0.f || door.rot == PI)
+				{
+					box.v1.x -= 1.f;
+					box.v2.x += 1.f;
+					box.v1.y -= 0.181f;
+					box.v2.y += 0.181f;
+				}
+				else
+				{
+					box.v1.y -= 1.f;
+					box.v2.y += 1.f;
+					box.v1.x -= 0.181f;
+					box.v2.x += 0.181f;
+				}
+
+				if(LineToRectangle(u1.pos, u2.pos, box.v1, box.v2))
+					return false;
+			}
+		}
+	}
+
+	return true;
+}
+
+//=================================================================================================
+// don't work inside buildings
+bool Level::CanSee(const Vec3& v1, const Vec3& v2)
+{
+	Int2 tile1(int(v1.x / 2), int(v1.z / 2)),
+		tile2(int(v2.x / 2), int(v2.z / 2));
+
+	if(tile1 == tile2)
+		return true;
+
+	LevelContext& ctx = local_ctx;
+
+	if(ctx.type == LevelContext::Outside)
+	{
+		OutsideLocation* outside = (OutsideLocation*)location;
+
+		int xmin = max(0, min(tile1.x, tile2.x)),
+			xmax = min(OutsideLocation::size, max(tile1.x, tile2.x)),
+			ymin = max(0, min(tile1.y, tile2.y)),
+			ymax = min(OutsideLocation::size, max(tile1.y, tile2.y));
+
+		for(int y = ymin; y <= ymax; ++y)
+		{
+			for(int x = xmin; x <= xmax; ++x)
+			{
+				if(outside->tiles[x + y * OutsideLocation::size].mode >= TM_BUILDING_BLOCK && LineToRectangle(v1, v2, Vec2(2.f*x, 2.f*y), Vec2(2.f*(x + 1), 2.f*(y + 1))))
+					return false;
+			}
+		}
+	}
+	else if(ctx.type == LevelContext::Inside)
+	{
+		InsideLocation* inside = (InsideLocation*)location;
+		InsideLocationLevel& lvl = inside->GetLevelData();
+
+		int xmin = max(0, min(tile1.x, tile2.x)),
+			xmax = min(lvl.w, max(tile1.x, tile2.x)),
+			ymin = max(0, min(tile1.y, tile2.y)),
+			ymax = min(lvl.h, max(tile1.y, tile2.y));
+
+		for(int y = ymin; y <= ymax; ++y)
+		{
+			for(int x = xmin; x <= xmax; ++x)
+			{
+				if(IsBlocking(lvl.map[x + y * lvl.w].type) && LineToRectangle(v1, v2, Vec2(2.f*x, 2.f*y), Vec2(2.f*(x + 1), 2.f*(y + 1))))
+					return false;
+				if(lvl.map[x + y * lvl.w].type == DOORS)
+				{
+					Door* door = FindDoor(ctx, Int2(x, y));
+					if(door && door->IsBlocking())
+					{
+						// 0.842f, 1.319f, 0.181f
+						Box2d box(door->pos.x, door->pos.z);
+						if(door->rot == 0.f || door->rot == PI)
+						{
+							box.v1.x -= 1.f;
+							box.v2.x += 1.f;
+							box.v1.y -= 0.181f;
+							box.v2.y += 0.181f;
+						}
+						else
+						{
+							box.v1.y -= 1.f;
+							box.v2.y += 1.f;
+							box.v1.x -= 0.181f;
+							box.v2.x += 0.181f;
+						}
+
+						if(LineToRectangle(v1, v2, box.v1, box.v2))
+							return false;
+					}
+				}
+			}
+		}
+	}
+	else
+	{
+		// kolizje z obiektami
+		/*for(vector<CollisionObject>::iterator it = ctx.colliders->begin(), end = ctx.colliders->end(); it != end; ++it)
+		{
+			if(it->ptr != (void*)1 || it->type != CollisionObject::RECTANGLE)
+				continue;
+
+			Box2d box(it->pt.x-it->w, it->pt.y-it->h, it->pt.x+it->w, it->pt.y+it->h);
+			if(LineToRectangle(u1.pos, u2.pos, box.v1, box.v2))
+				return false;
+		}
+
+		// kolizje z drzwiami
+		for(vector<Door*>::iterator it = ctx.doors->begin(), end = ctx.doors->end(); it != end; ++it)
+		{
+			Door& door = **it;
+			if(door.IsBlocking())
+			{
+				Box2d box(door.pos.x, door.pos.z);
+				if(door.rot == 0.f || door.rot == PI)
+				{
+					box.v1.x -= 1.f;
+					box.v2.x += 1.f;
+					box.v1.y -= 0.181f;
+					box.v2.y += 0.181f;
+				}
+				else
+				{
+					box.v1.y -= 1.f;
+					box.v2.y += 1.f;
+					box.v1.x -= 0.181f;
+					box.v2.x += 0.181f;
+				}
+
+				if(LineToRectangle(u1.pos, u2.pos, box.v1, box.v2))
+					return false;
+			}
+		}*/
+	}
+
+	return true;
+}
+
+//=================================================================================================
+bool Level::KillAll(int mode, Unit& unit, Unit* ignore)
+{
+	if(!InRange(mode, 0, 1))
+		return false;
+
+	if(!Net::IsLocal())
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::CHEAT_KILLALL;
+		c.id = mode;
+		c.unit = ignore;
+		return true;
+	}
+
+	Game& game = Game::Get();
+
+	switch(mode)
+	{
+	case 0: // kill enemies
+		for(LevelContext& ctx : ForEachContext())
+		{
+			for(Unit* u : *ctx.units)
+			{
+				if(u->IsAlive() && u->IsEnemy(unit) && u != ignore)
+					game.GiveDmg(local_ctx, nullptr, u->hp, *u, nullptr);
+			}
+		}
+		break;
+	case 1: // kill all except player/ignore
+		for(LevelContext& ctx : ForEachContext())
+		{
+			for(Unit* u : *ctx.units)
+			{
+				if(u->IsAlive() && !u->IsPlayer() && u != ignore)
+					game.GiveDmg(local_ctx, nullptr, u->hp, *u, nullptr);
+			}
+		}
+		break;
+	}
+
+	return true;
+}
+
+//=================================================================================================
+void Level::AddPlayerTeam(const Vec3& pos, float rot, bool reenter, bool hide_weapon)
+{
+	Game& game = Game::Get();
+
+	for(Unit* unit : Team.members)
+	{
+		Unit& u = *unit;
+
+		if(!reenter)
+		{
+			local_ctx.units->push_back(&u);
+			u.CreatePhysics();
+			if(u.IsHero())
+				game.ais.push_back(u.ai);
+		}
+
+		if(hide_weapon || u.weapon_state == WS_HIDING)
+		{
+			u.weapon_state = WS_HIDDEN;
+			u.weapon_taken = W_NONE;
+			u.weapon_hiding = W_NONE;
+			if(u.action == A_TAKE_WEAPON)
+				u.action = A_NONE;
+		}
+		else if(u.weapon_state == WS_TAKING)
+			u.weapon_state = WS_TAKEN;
+
+		u.rot = rot;
+		u.animation = u.current_animation = ANI_STAND;
+		u.mesh_inst->Play(NAMES::ani_stand, PLAY_PRIO1, 0);
+		u.mesh_inst->groups[0].speed = 1.f;
+		u.BreakAction();
+		u.SetAnimationAtEnd();
+		if(u.in_building != -1)
+		{
+			if(reenter)
+			{
+				RemoveElement(GetContext(u).units, &u);
+				local_ctx.units->push_back(&u);
+			}
+			u.in_building = -1;
+		}
+
+		if(u.IsAI())
+		{
+			u.ai->state = AIController::Idle;
+			u.ai->idle_action = AIController::Idle_None;
+			u.ai->target = nullptr;
+			u.ai->alert_target = nullptr;
+			u.ai->timer = Random(2.f, 5.f);
+		}
+
+		WarpNearLocation(local_ctx, u, pos, city_ctx ? 4.f : 2.f, true, 20);
+		u.visual_pos = u.pos;
+
+		if(!location->outside)
+			FOV::DungeonReveal(Int2(int(u.pos.x / 2), int(u.pos.z / 2)), minimap_reveal);
+
+		if(u.interp)
+			u.interp->Reset(u.pos, u.rot);
+	}
+}
+
+//=================================================================================================
+void Level::UpdateDungeonMinimap(bool in_level)
+{
+	if(minimap_opened_doors)
+	{
+		for(Unit* unit : Team.active_members)
+		{
+			if(unit->IsPlayer())
+				FOV::DungeonReveal(Int2(int(unit->pos.x / 2), int(unit->pos.z / 2)), minimap_reveal);
+		}
+	}
+
+	if(minimap_reveal.empty())
+		return;
+
+	TextureLock lock(Game::Get().tMinimap);
+	InsideLocationLevel& lvl = ((InsideLocation*)location)->GetLevelData();
+
+	for(vector<Int2>::iterator it = minimap_reveal.begin(), end = minimap_reveal.end(); it != end; ++it)
+	{
+		Tile& p = lvl.map[it->x + (lvl.w - it->y - 1)*lvl.w];
+		SET_BIT(p.flags, Tile::F_REVEALED);
+		uint* pix = lock[it->y] + it->x;
+		if(OR2_EQ(p.type, WALL, BLOCKADE_WALL))
+			*pix = Color(100, 100, 100);
+		else if(p.type == DOORS)
+			*pix = Color(127, 51, 0);
+		else
+			*pix = Color(220, 220, 240);
+	}
+
+	if(Net::IsLocal())
+	{
+		if(in_level)
+		{
+			if(Net::IsOnline())
+				minimap_reveal_mp.insert(minimap_reveal_mp.end(), minimap_reveal.begin(), minimap_reveal.end());
+		}
+		else
+			minimap_reveal_mp.clear();
+	}
+
+	minimap_reveal.clear();
+}
+
+//=================================================================================================
+void Level::RevealMinimap()
+{
+	if(location->outside)
+		return;
+
+	InsideLocationLevel& lvl = ((InsideLocation*)location)->GetLevelData();
+
+	for(int y = 0; y < lvl.h; ++y)
+	{
+		for(int x = 0; x < lvl.w; ++x)
+			minimap_reveal.push_back(Int2(x, y));
+	}
+
+	UpdateDungeonMinimap(false);
+
+	if(Net::IsServer())
+		Net::PushChange(NetChange::CHEAT_REVEAL_MINIMAP);
 }

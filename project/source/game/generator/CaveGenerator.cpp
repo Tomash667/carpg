@@ -192,7 +192,7 @@ int CaveGenerator::TryGenerate()
 }
 
 //=================================================================================================
-void CaveGenerator::GenerateCave(Pole*& tiles, int size, Int2& stairs, GameDirection& stairs_dir, vector<Int2>& holes, Rect* ext)
+void CaveGenerator::GenerateCave(Tile*& tiles, int size, Int2& stairs, GameDirection& stairs_dir, vector<Int2>& holes, Rect* ext)
 {
 	assert(InRange(size, 10, 100));
 
@@ -210,8 +210,8 @@ void CaveGenerator::GenerateCave(Pole*& tiles, int size, Int2& stairs, GameDirec
 
 	while(TryGenerate() < 200);
 
-	tiles = new Pole[size2];
-	memset(tiles, 0, sizeof(Pole)*size2);
+	tiles = new Tile[size2];
+	memset(tiles, 0, sizeof(Tile)*size2);
 
 	// set size
 	if(ext)
@@ -219,12 +219,12 @@ void CaveGenerator::GenerateCave(Pole*& tiles, int size, Int2& stairs, GameDirec
 
 	// copy tiles
 	for(int i = 0; i < size2; ++i)
-		tiles[i].type = (m2[i] ? SCIANA : PUSTE);
+		tiles[i].type = (m2[i] ? WALL : EMPTY);
 
 	CreateStairs(tiles, stairs, stairs_dir);
 	CreateHoles(tiles, holes);
 
-	Pole::SetupFlags(tiles, Int2(size, size));
+	Tile::SetupFlags(tiles, Int2(size, size));
 
 	// rysuj
 	if(Game::Get().devmode)
@@ -232,7 +232,7 @@ void CaveGenerator::GenerateCave(Pole*& tiles, int size, Int2& stairs, GameDirec
 }
 
 //=================================================================================================
-void CaveGenerator::CreateStairs(Pole* tiles, Int2& stairs, GameDirection& stairs_dir)
+void CaveGenerator::CreateStairs(Tile* tiles, Int2& stairs, GameDirection& stairs_dir)
 {
 	do
 	{
@@ -263,28 +263,28 @@ void CaveGenerator::CreateStairs(Pole* tiles, Int2& stairs, GameDirection& stair
 			pt += dir;
 			if(pt.x == -1 || pt.x == size || pt.y == -1 || pt.y == size)
 				break;
-			if(tiles[pt.x + pt.y*size].type == PUSTE)
+			if(tiles[pt.x + pt.y*size].type == EMPTY)
 			{
 				pt -= dir;
 				// sprawdŸ z ilu stron jest puste pole
 				int count = 0;
 				GameDirection stairs_dir_result;
-				if(tiles[pt.x - 1 + pt.y*size].type == PUSTE)
+				if(tiles[pt.x - 1 + pt.y*size].type == EMPTY)
 				{
 					++count;
 					stairs_dir_result = GDIR_LEFT;
 				}
-				if(tiles[pt.x + 1 + pt.y*size].type == PUSTE)
+				if(tiles[pt.x + 1 + pt.y*size].type == EMPTY)
 				{
 					++count;
 					stairs_dir_result = GDIR_RIGHT;
 				}
-				if(tiles[pt.x + (pt.y - 1)*size].type == PUSTE)
+				if(tiles[pt.x + (pt.y - 1)*size].type == EMPTY)
 				{
 					++count;
 					stairs_dir_result = GDIR_DOWN;
 				}
-				if(tiles[pt.x + (pt.y + 1)*size].type == PUSTE)
+				if(tiles[pt.x + (pt.y + 1)*size].type == EMPTY)
 				{
 					++count;
 					stairs_dir_result = GDIR_UP;
@@ -294,7 +294,7 @@ void CaveGenerator::CreateStairs(Pole* tiles, Int2& stairs, GameDirection& stair
 				{
 					stairs = pt;
 					stairs_dir = stairs_dir_result;
-					tiles[pt.x + pt.y*size].type = SCHODY_GORA;
+					tiles[pt.x + pt.y*size].type = STAIRS_UP;
 					return;
 				}
 				else
@@ -305,12 +305,12 @@ void CaveGenerator::CreateStairs(Pole* tiles, Int2& stairs, GameDirection& stair
 }
 
 //=================================================================================================
-void CaveGenerator::CreateHoles(Pole* tiles, vector<Int2>& holes)
+void CaveGenerator::CreateHoles(Tile* tiles, vector<Int2>& holes)
 {
 	for(int count = 0, tries = 50; tries > 0 && count < 15; --tries)
 	{
 		Int2 pt(Random(1, size - 1), Random(1, size - 1));
-		if(tiles[pt.x + pt.y*size].type == PUSTE)
+		if(tiles[pt.x + pt.y*size].type == EMPTY)
 		{
 			bool ok = true;
 			for(vector<Int2>::iterator it = holes.begin(), end = holes.end(); it != end; ++it)
@@ -324,7 +324,7 @@ void CaveGenerator::CreateHoles(Pole* tiles, vector<Int2>& holes)
 
 			if(ok)
 			{
-				tiles[pt.x + pt.y*size].type = KRATKA_SUFIT;
+				tiles[pt.x + pt.y*size].type = BARS_CEILING;
 				holes.push_back(pt);
 				++count;
 			}
@@ -347,7 +347,7 @@ void CaveGenerator::Generate()
 void CaveGenerator::RegenerateFlags()
 {
 	InsideLocationLevel& lvl = GetLevelData();
-	Pole::SetupFlags(lvl.map, Int2(lvl.w, lvl.h));
+	Tile::SetupFlags(lvl.map, Int2(lvl.w, lvl.h));
 }
 
 //=================================================================================================
@@ -392,7 +392,7 @@ void CaveGenerator::GenerateObjects()
 	for(int count = 0, tries = 200; count < 50 && tries>0; --tries)
 	{
 		Int2 pt = cave->GetRandomTile();
-		if(lvl.map[pt.x + pt.y*lvl.w].type != PUSTE)
+		if(lvl.map[pt.x + pt.y*lvl.w].type != EMPTY)
 			continue;
 
 		bool ok = true;
@@ -426,7 +426,7 @@ void CaveGenerator::GenerateObjects()
 	{
 		Int2 pt = cave->GetRandomTile();
 
-		if(lvl.map[pt.x + pt.y*lvl.w].type == PUSTE)
+		if(lvl.map[pt.x + pt.y*lvl.w].type == EMPTY)
 		{
 			Object* o = new Object;
 			o->base = base_obj;
@@ -444,7 +444,7 @@ void CaveGenerator::GenerateObjects()
 	{
 		Int2 pt = cave->GetRandomTile();
 
-		if(lvl.map[pt.x + pt.y*lvl.w].type == PUSTE)
+		if(lvl.map[pt.x + pt.y*lvl.w].type == EMPTY)
 		{
 			Object* o = new Object;
 			o->base = base_obj;
@@ -463,7 +463,7 @@ void CaveGenerator::GenerateObjects()
 	{
 		Int2 pt = cave->GetRandomTile();
 
-		if(lvl.map[pt.x + pt.y*lvl.w].type == PUSTE)
+		if(lvl.map[pt.x + pt.y*lvl.w].type == EMPTY)
 		{
 			bool ok = true;
 
@@ -522,7 +522,7 @@ void CaveGenerator::GenerateObjects()
 							c.type = CollisionObject::RECTANGLE;
 					}
 
-					game.phy_world->addCollisionObject(cobj, CG_OBJECT);
+					L.phy_world->addCollisionObject(cobj, CG_OBJECT);
 				}
 
 				sta.push_back(pt);
@@ -559,7 +559,7 @@ void CaveGenerator::GenerateUnits()
 	for(int added = 0, tries = 50; added < 8 && tries>0; --tries)
 	{
 		Int2 pt = cave->GetRandomTile();
-		if(lvl.map[pt.x + pt.y*lvl.w].type != PUSTE)
+		if(lvl.map[pt.x + pt.y*lvl.w].type != EMPTY)
 			continue;
 
 		bool ok = true;
@@ -642,7 +642,7 @@ void CaveGenerator::GenerateMushrooms(int days_since)
 	for(int i = 0; i < days_since * 20; ++i)
 	{
 		pt = Int2::Random(Int2(1, 1), Int2(lvl.w - 2, lvl.h - 2));
-		if(OR2_EQ(lvl.map[pt.x + pt.y*lvl.w].type, PUSTE, KRATKA_SUFIT) && lvl.IsTileNearWall(pt, dir))
+		if(OR2_EQ(lvl.map[pt.x + pt.y*lvl.w].type, EMPTY, BARS_CEILING) && lvl.IsTileNearWall(pt, dir))
 		{
 			pos.x = 2.f*pt.x;
 			pos.y = 2.f*pt.y;

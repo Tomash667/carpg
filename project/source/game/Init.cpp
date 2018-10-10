@@ -26,6 +26,7 @@
 #include "ResourceManager.h"
 #include "Building.h"
 #include "GlobalGui.h"
+#include "SaveLoadPanel.h"
 #include "DebugDrawer.h"
 
 extern void HumanPredraw(void* ptr, Matrix* mat, int n);
@@ -296,7 +297,6 @@ void Game::ConfigureGame()
 	ResetGameKeys();
 	LoadGameKeys();
 	SetMeshSpecular();
-	LoadSaveSlots();
 	BaseLocation::SetRoomPointers();
 
 	for(int i = 0; i < SG_MAX; ++i)
@@ -439,21 +439,12 @@ void Game::StartGameMode()
 
 		if(quickstart == QUICKSTART_LOAD_MP)
 		{
-			try
-			{
-				mp_load = true;
-				LoadGameSlot(quickstart_slot);
+			N.mp_load = true;
+			if(gui->saveload->TryLoad(quickstart_slot))
 				gui->server->autoready = true;
-			}
-			catch(const SaveException& ex)
+			else
 			{
-				Error("Failed to quickload multiplayer game: %s", ex.msg);
-				cstring dialog_text;
-				if(ex.localized_msg)
-					dialog_text = Format("%s%s", txLoadError, ex.localized_msg);
-				else
-					dialog_text = txLoadErrorGeneric;
-				GUI.SimpleDialog(dialog_text, nullptr);
+				Error("Multiplayer quickload failed.");
 				break;
 			}
 		}
@@ -474,8 +465,7 @@ void Game::StartGameMode()
 		if(!player_name.empty())
 		{
 			gui->server->autoready = true;
-			pick_autojoin = true;
-			gui->pick_server->Show();
+			gui->pick_server->Show(true);
 		}
 		else
 			Warn("Quickstart: Can't join server, no player nick.");
@@ -495,21 +485,8 @@ void Game::StartGameMode()
 			Warn("Quickstart: Can't join server, no player nick.");
 		break;
 	case QUICKSTART_LOAD:
-		try
-		{
-			LoadGameSlot(quickstart_slot);
-		}
-		catch(const SaveException& ex)
-		{
-			Error("Failed to quickload game: %s", ex.msg);
-			cstring dialog_text;
-			if(ex.localized_msg)
-				dialog_text = Format("%s%s", txLoadError, ex.localized_msg);
-			else
-				dialog_text = txLoadErrorGeneric;
-			GUI.SimpleDialog(dialog_text, nullptr);
-			break;
-		}
+		if(!gui->saveload->TryLoad(quickstart_slot))
+			Error("Quickload failed.");
 		break;
 	default:
 		assert(0);

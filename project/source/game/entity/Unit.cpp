@@ -189,7 +189,7 @@ void Unit::SetGold(int new_gold)
 		{
 			NetChangePlayer& c = Add1(player->player_info->changes);
 			c.type = NetChangePlayer::GOLD_MSG;
-			c.ile = dif;
+			c.count = dif;
 			c.id = 1;
 			player->player_info->UpdateGold();
 		}
@@ -254,7 +254,7 @@ bool Unit::DropItem(int index)
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::DROP_ITEM;
 		c.id = index;
-		c.ile = 1;
+		c.count = 1;
 	}
 
 	return no_more;
@@ -305,7 +305,7 @@ void Unit::DropItem(ITEM_SLOT slot)
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::DROP_ITEM;
 		c.id = SlotToIIndex(slot);
-		c.ile = 1;
+		c.count = 1;
 	}
 }
 
@@ -364,7 +364,7 @@ bool Unit::DropItems(int index, uint count)
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::DROP_ITEM;
 		c.id = index;
-		c.ile = count;
+		c.count = count;
 	}
 
 	return no_more;
@@ -480,7 +480,7 @@ int Unit::ConsumeItem(int index)
 		{
 			c.unit = this;
 			c.id = (int)used_item;
-			c.ile = 0;
+			c.count = 0;
 		}
 		else
 			c.id = index;
@@ -514,7 +514,7 @@ void Unit::ConsumeItem(const Consumable& item, bool force, bool send)
 			c.type = NetChange::CONSUME_ITEM;
 			c.unit = this;
 			c.id = (int)&item;
-			c.ile = (force ? 1 : 0);
+			c.count = (force ? 1 : 0);
 		}
 	}
 }
@@ -681,7 +681,7 @@ void Unit::AddItem2(const Item* item, uint count, uint team_count, bool show_msg
 			c.type = NetChangePlayer::ADD_ITEMS;
 			c.item = item;
 			c.id = team_count;
-			c.ile = count;
+			c.count = count;
 		}
 		if(show_msg)
 			player->AddItemMessage(count);
@@ -1773,7 +1773,7 @@ void Unit::Write(BitStreamWriter& f)
 		f << GetAiMode();
 
 	// loaded data
-	if(Game::Get().mp_load)
+	if(N.mp_load)
 	{
 		f << netid;
 		mesh_inst->Write(f);
@@ -1966,7 +1966,7 @@ bool Unit::Read(BitStreamReader& f)
 	}
 
 	// mesh
-	CreateMesh(game.mp_load ? Unit::CREATE_MESH::PRELOAD : Unit::CREATE_MESH::NORMAL);
+	CreateMesh(N.mp_load ? Unit::CREATE_MESH::PRELOAD : Unit::CREATE_MESH::NORMAL);
 
 	action = A_NONE;
 	weapon_taken = W_NONE;
@@ -1990,7 +1990,7 @@ bool Unit::Read(BitStreamReader& f)
 	visual_pos = pos;
 	animation_state = 0;
 
-	if(game.mp_load)
+	if(N.mp_load)
 	{
 		// get current state in multiplayer
 		f >> netid;
@@ -2156,6 +2156,32 @@ int Unit::FindHealingPotion() const
 
 //=================================================================================================
 void Unit::ReequipItems()
+{
+	if(N.active_players > 1)
+	{
+		const Item* prev_slots[SLOT_MAX];
+		for(int i = 0; i < SLOT_MAX; ++i)
+			prev_slots[i] = slots[i];
+
+		ReequipItemsInternal();
+
+		for(int i = 0; i < SLOT_MAX; ++i)
+		{
+			if(slots[i] != prev_slots[i])
+			{
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::CHANGE_EQUIPMENT;
+				c.unit = this;
+				c.id = i;
+			}
+		}
+	}
+	else
+		ReequipItemsInternal();
+}
+
+//=================================================================================================
+void Unit::ReequipItemsInternal()
 {
 	bool changes = false;
 	for(ItemSlot& item_slot : items)
@@ -2495,16 +2521,16 @@ void Unit::RemoveItem(int i_index, uint count)
 	if(i_index >= 0)
 	{
 		ItemSlot& s = items[i_index];
-		uint ile = (count == 0 ? s.count : min(s.count, count));
-		s.count -= ile;
+		uint real_count = (count == 0 ? s.count : min(s.count, count));
+		s.count -= real_count;
 		if(s.count == 0)
 		{
 			removed = true;
 			items.erase(items.begin() + i_index);
 		}
 		else if(s.team_count > 0)
-			s.team_count -= min(s.team_count, ile);
-		weight -= s.item->weight*ile;
+			s.team_count -= min(s.team_count, real_count);
+		weight -= s.item->weight*real_count;
 	}
 	else
 	{
@@ -2533,7 +2559,7 @@ void Unit::RemoveItem(int i_index, uint count)
 				NetChangePlayer& c = Add1(player->player_info->changes);
 				c.type = NetChangePlayer::REMOVE_ITEMS;
 				c.id = i_index;
-				c.ile = count;
+				c.count = count;
 			}
 		}
 		else
@@ -2556,7 +2582,7 @@ void Unit::RemoveItem(int i_index, uint count)
 				NetChangePlayer& c = Add1(t->player->player_info->changes);
 				c.type = NetChangePlayer::REMOVE_ITEMS_TRADER;
 				c.id = netid;
-				c.ile = count;
+				c.count = count;
 				c.a = i_index;
 			}
 		}
@@ -2831,13 +2857,13 @@ int Unit::CountItem(const Item* item)
 	}
 	else
 	{
-		int ile = 0;
+		int count = 0;
 		for(vector<ItemSlot>::iterator it = items.begin(), end = items.end(); it != end; ++it)
 		{
 			if(it->item == item)
-				++ile;
+				++count;
 		}
-		return ile;
+		return count;
 	}
 }
 
@@ -4006,7 +4032,7 @@ void Unit::TryStandup(float dt)
 					ok = true;
 					for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
 					{
-						if((*it)->IsStanding() && IsEnemy(**it) && Vec3::Distance(pos, (*it)->pos) <= 20.f && game.CanSee(*this, **it))
+						if((*it)->IsStanding() && IsEnemy(**it) && Vec3::Distance(pos, (*it)->pos) <= 20.f && L.CanSee(*this, **it))
 						{
 							ok = false;
 							break;
@@ -4117,7 +4143,7 @@ void Unit::Die(LevelContext* ctx, Unit* killer)
 			if((*it)->IsPlayer() || !(*it)->IsStanding() || !IsFriend(**it))
 				continue;
 
-			if(Vec3::Distance(pos, (*it)->pos) <= 20.f && game.CanSee(*this, **it))
+			if(Vec3::Distance(pos, (*it)->pos) <= 20.f && L.CanSee(*this, **it))
 				(*it)->ai->morale -= 2.f;
 		}
 

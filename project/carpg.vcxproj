@@ -216,6 +216,7 @@
     <ClInclude Include="source\game\entity\OutsideObject.h" />
     <ClInclude Include="source\game\entity\Portal.h" />
     <ClInclude Include="source\game\entity\Room.h" />
+    <ClInclude Include="source\game\entity\SaveSlot.h" />
     <ClInclude Include="source\game\entity\TerrainTile.h" />
     <ClInclude Include="source\game\entity\Tile.h" />
     <ClInclude Include="source\game\entity\UnitEventHandler.h" />
@@ -360,7 +361,6 @@
     <ClInclude Include="source\game\quests\Quest_SpreadNews.h" />
     <ClInclude Include="source\game\quests\Quest_StolenArtifact.h" />
     <ClInclude Include="source\game\quests\Quest_Wanted.h" />
-    <ClInclude Include="source\game\SaveSlot.h" />
     <ClInclude Include="source\game\SaveState.h" />
     <ClInclude Include="source\game\stats\ArmorUnitType.h" />
     <ClInclude Include="source\game\stats\Attribute.h" />

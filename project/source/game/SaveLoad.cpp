@@ -35,6 +35,7 @@
 #include "ParticleSystem.h"
 #include "Inventory.h"
 #include "GlobalGui.h"
+#include "Console.h"
 #include "Pathfinding.h"
 
 enum SaveFlags
@@ -46,6 +47,10 @@ enum SaveFlags
 	//SF_BETA = 1 << 3,
 	SF_HARDCORE = 1 << 4
 };
+
+const int SAVE_VERSION = V_CURRENT;
+int LOAD_VERSION;
+const int MIN_SUPPORT_LOAD_VERSION = V_0_2_12;
 
 //=================================================================================================
 bool Game::CanSaveGame() const
@@ -140,41 +145,12 @@ bool Game::SaveGameCommon(cstring filename, int slot, cstring text)
 	SaveGame(f);
 
 	cstring msg = Format("Game saved '%s'.", filename);
-	AddConsoleMsg(msg);
+	gui->console->AddMsg(msg);
 	Info(msg);
 
 	if(slot != -1)
 	{
-		SaveSlot& ss = (Net::IsOnline() ? multi_saves[slot - 1] : single_saves[slot - 1]);
-		ss.valid = true;
-		ss.game_day = W.GetDay();
-		ss.game_month = W.GetMonth();
-		ss.game_year = W.GetYear();
-		ss.location = L.GetCurrentLocationText();
-		ss.player_name = pc->name;
-		ss.player_class = pc->unit->GetClass();
-		ss.save_date = time(nullptr);
-		ss.text = (text[0] != 0 ? text : Format(txSavedGameN, slot));
-		ss.hardcore = hardcore_mode;
-
-		Config cfg;
-		cfg.Add("game_day", Format("%d", ss.game_day));
-		cfg.Add("game_month", Format("%d", ss.game_month));
-		cfg.Add("game_year", Format("%d", ss.game_year));
-		cfg.Add("location", ss.location.c_str());
-		cfg.Add("player_name", ss.player_name.c_str());
-		cfg.Add("player_class", ClassInfo::classes[(int)ss.player_class].id);
-		cfg.Add("save_date", Format("%I64d", ss.save_date));
-		cfg.Add("text", ss.text.c_str());
-		cfg.Add("hardcore", ss.hardcore);
-
-		if(Net::IsOnline())
-		{
-			ss.multiplayers = N.active_players;
-			cfg.Add("multiplayers", Format("%d", ss.multiplayers));
-		}
-
-		cfg.Save(Format("saves/%s/%d.txt", Net::IsOnline() ? "multi" : "single", slot));
+		gui->saveload->UpdateSaveInfo(slot);
 
 		string path = Format("saves/%s/%d.jpg", Net::IsOnline() ? "multi" : "single", slot);
 		CreateSaveImage(path.c_str());
@@ -195,7 +171,7 @@ void Game::LoadGameSlot(int slot)
 {
 	assert(InRange(slot, 1, MAX_SAVE_SLOTS));
 
-	cstring filename = Format(mp_load ? "saves/multi/%d.sav" : "saves/single/%d.sav", slot);
+	cstring filename = Format(N.mp_load ? "saves/multi/%d.sav" : "saves/single/%d.sav", slot);
 	LoadGameCommon(filename, slot);
 }
 
@@ -225,7 +201,7 @@ void Game::LoadGameCommon(cstring filename, int slot)
 	}
 
 	prev_game_state = game_state;
-	if(mp_load)
+	if(N.mp_load)
 		gui->multiplayer->visible = false;
 	else
 	{
@@ -260,9 +236,7 @@ void Game::LoadGameCommon(cstring filename, int slot)
 
 		if(slot == -1)
 		{
-			SaveSlot& s = single_saves[slot - 1];
-			s.valid = false;
-			hardcore_savename = s.text;
+			gui->saveload->RemoveHardcoreSave(slot);
 
 			DeleteFile(Format(Net::IsOnline() ? "saves/multi/%d.sav" : "saves/single/%d.sav", slot));
 			DeleteFile(Format(Net::IsOnline() ? "saves/multi/%d.txt" : "saves/single/%d.txt", slot));
@@ -272,7 +246,7 @@ void Game::LoadGameCommon(cstring filename, int slot)
 			DeleteFile(filename);
 	}
 
-	if(!mp_load)
+	if(!N.mp_load)
 	{
 		if(game_state == GS_LEVEL)
 		{
@@ -295,74 +269,6 @@ void Game::LoadGameCommon(cstring filename, int slot)
 }
 
 //=================================================================================================
-void Game::LoadSaveSlots()
-{
-	for(int multi = 0; multi < 2; ++multi)
-	{
-		for(int i = 1; i <= MAX_SAVE_SLOTS; ++i)
-		{
-			SaveSlot& slot = (multi == 0 ? single_saves : multi_saves)[i - 1];
-			cstring filename = Format("saves/%s/%d.sav", multi == 0 ? "single" : "multi", i);
-			if(io::FileExists(filename))
-			{
-				slot.valid = true;
-				filename = Format("saves/%s/%d.txt", multi == 0 ? "single" : "multi", i);
-				if(io::FileExists(filename))
-				{
-					Config cfg;
-					cfg.Load(filename);
-					slot.player_name = cfg.GetString("player_name", "");
-					slot.location = cfg.GetString("location", "");
-					slot.text = cfg.GetString("text", "");
-					slot.game_day = cfg.GetInt("game_day");
-					slot.game_month = cfg.GetInt("game_month");
-					slot.game_year = cfg.GetInt("game_year");
-					slot.hardcore = cfg.GetBool("hardcore");
-					if(multi == 1)
-						slot.multiplayers = cfg.GetInt("multiplayers");
-					else
-						slot.multiplayers = -1;
-					slot.save_date = cfg.GetInt64("save_date");
-					const string& str = cfg.GetString("player_class");
-					if(str == "0")
-						slot.player_class = Class::WARRIOR;
-					else if(str == "1")
-						slot.player_class = Class::HUNTER;
-					else if(str == "2")
-						slot.player_class = Class::ROGUE;
-					else
-					{
-						ClassInfo* ci = ClassInfo::Find(str);
-						if(ci && ci->pickable)
-							slot.player_class = ci->class_id;
-						else
-							slot.player_class = Class::INVALID;
-					}
-				}
-				else
-				{
-					slot.player_name.clear();
-					slot.text.clear();
-					slot.location.clear();
-					slot.game_day = -1;
-					slot.game_month = -1;
-					slot.game_year = -1;
-					slot.player_class = Class::INVALID;
-					slot.multiplayers = -1;
-					slot.save_date = 0;
-					slot.hardcore = false;
-				}
-			}
-			else
-				slot.valid = false;
-
-			if(i == MAX_SAVE_SLOTS)
-				slot.text = txQuickSave;
-		}
-	}
-}
-
-//=================================================================================================
 void Game::SaveGame(GameWriter& f)
 {
 	Info("Saving...");
@@ -370,7 +276,7 @@ void Game::SaveGame(GameWriter& f)
 	// before saving update minimap, finish unit warps
 	if(Net::IsOnline())
 		Net_PreSave();
-	UpdateDungeonMinimap(false);
+	L.UpdateDungeonMinimap(false);
 	L.ProcessUnitWarps();
 	L.ProcessRemoveUnits(false);
 	if(game_state == GS_WORLDMAP && L.is_open)
@@ -503,34 +409,7 @@ void Game::SaveGame(GameWriter& f)
 
 	if(Net::IsOnline())
 	{
-		f << N.server_name;
-		f << N.password;
-		f << N.active_players;
-		f << N.max_players;
-		f << N.last_id;
-		uint count = 0;
-		for(auto info : N.players)
-		{
-			if(info->left == PlayerInfo::LEFT_NO)
-				++count;
-		}
-		f << count;
-		for(PlayerInfo* info : N.players)
-		{
-			if(info->left == PlayerInfo::LEFT_NO)
-				info->Save(f);
-		}
-		f << kick_id;
-		f << Unit::netid_counter;
-		f << GroundItem::netid_counter;
-		f << Chest::netid_counter;
-		f << Usable::netid_counter;
-		f << skip_id_counter;
-		f << Trap::netid_counter;
-		f << Door::netid_counter;
-		f << Electro::netid_counter;
-		f << N.mp_use_interp;
-		f << N.mp_interp;
+		N.Save(f);
 
 		f << check_id;
 		++check_id;
@@ -564,7 +443,7 @@ void Game::SaveStock(FileWriter& f, vector<ItemSlot>& cnt)
 void Game::LoadGame(GameReader& f)
 {
 	ClearGame();
-	ClearGameVarsOnLoad();
+	ClearGameVars(false);
 	StopAllSounds();
 	QM.quest_tutorial->in_tutorial = false;
 	arena->Reset();
@@ -637,7 +516,7 @@ void Game::LoadGame(GameReader& f)
 	byte flags;
 	f >> flags;
 	bool online_save = IS_SET(flags, SF_ONLINE);
-	if(mp_load)
+	if(N.mp_load)
 	{
 		if(!online_save)
 			throw SaveException(txLoadSP, "Save is from singleplayer mode.");
@@ -807,7 +686,7 @@ void Game::LoadGame(GameReader& f)
 	Unit* player;
 	f >> player;
 	pc = player->player;
-	if(!mp_load)
+	if(!N.mp_load)
 		pc->id = 0;
 	cam.real_rot.x = pc->unit->rot;
 	pc->dialog_ctx = &dialog_context;
@@ -985,7 +864,6 @@ void Game::LoadGame(GameReader& f)
 		assert((*it)->handler);
 	}
 
-	minimap_reveal.clear();
 	dialog_context.dialog_mode = false;
 	if(location_event_handler_quest_refid != -1)
 		L.event_handler = dynamic_cast<LocationEventHandler*>(quest_manager.FindQuest(location_event_handler_quest_refid));
@@ -1002,32 +880,9 @@ void Game::LoadGame(GameReader& f)
 	dialog_context.dialog_mode = false;
 	gui->game_gui->Setup();
 
-	if(mp_load)
+	if(N.mp_load)
 	{
-		f >> N.server_name;
-		f >> N.password;
-		f >> N.active_players;
-		f >> N.max_players;
-		f >> N.last_id;
-		f >> count;
-		DeleteElements(old_players);
-		old_players.resize(count);
-		for(uint i = 0; i < count; ++i)
-		{
-			old_players[i] = new PlayerInfo;
-			old_players[i]->Load(f);
-		}
-		f >> kick_id;
-		f >> Unit::netid_counter;
-		f >> GroundItem::netid_counter;
-		f >> Chest::netid_counter;
-		f >> Usable::netid_counter;
-		f >> skip_id_counter;
-		f >> Trap::netid_counter;
-		f >> Door::netid_counter;
-		f >> Electro::netid_counter;
-		f >> N.mp_use_interp;
-		f >> N.mp_interp;
+		N.Load(f);
 
 		f >> read_id;
 		if(read_id != check_id)
@@ -1064,7 +919,7 @@ void Game::LoadGame(GameReader& f)
 
 	Info("Game loaded.");
 
-	if(mp_load)
+	if(N.mp_load)
 	{
 		game_state = GS_MAIN_MENU;
 		return;
@@ -1114,7 +969,7 @@ void Game::Quicksave(bool from_console)
 	if(!CanSaveGame())
 	{
 		if(from_console)
-			AddConsoleMsg(Net::IsClient() ? "Only server can save game." : "Can't save game now.");
+			gui->console->AddMsg(Net::IsClient() ? "Only server can save game." : "Can't save game now.");
 		else
 			GUI.SimpleDialog(Net::IsClient() ? txOnlyServerCanSave : txCantSaveNow, nullptr);
 		return;
@@ -1133,35 +988,14 @@ bool Game::Quickload(bool from_console)
 	if(!CanLoadGame())
 	{
 		if(from_console)
-			AddConsoleMsg(Net::IsClient() ? "Only server can load game." : "Can't load game now.");
+			gui->console->AddMsg(Net::IsClient() ? "Only server can load game." : "Can't load game now.");
 		else
 			GUI.SimpleDialog(Net::IsClient() ? txOnlyServerCanLoad : txCantLoadGame, nullptr);
 		return true;
 	}
 
-	try
-	{
-		Net::SetMode(Net::Mode::Singleplayer);
-		LoadGameSlot(MAX_SAVE_SLOTS);
-	}
-	catch(const SaveException& ex)
-	{
-		if(ex.missing_file)
-		{
-			Warn("Missing quicksave.");
-			return false;
-		}
-
-		Error("Failed to load game: %s", ex.msg);
-		cstring dialog_text;
-		if(ex.localized_msg)
-			dialog_text = Format("%s%s", txLoadError, ex.localized_msg);
-		else
-			dialog_text = txLoadErrorGeneric;
-		GUI.SimpleDialog(dialog_text, nullptr);
-	}
-
-	return true;
+	Net::SetMode(Net::Mode::Singleplayer);
+	return gui->saveload->TryLoad(MAX_SAVE_SLOTS, true);
 }
 
 //=================================================================================================

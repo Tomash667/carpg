@@ -332,6 +332,7 @@ struct Unit
 	bool IsBetterItem(const Item* item, int* value = nullptr) const;
 	bool IsPlayer() const { return (player != nullptr); }
 	bool IsClient() const { return IsPlayer() && !player->IsLocal(); }
+	bool IsLocal() const { return IsPlayer() && player->IsLocal(); }
 	bool IsAI() const { return !IsPlayer(); }
 	float GetRotationSpeed() const
 	{
@@ -443,6 +444,9 @@ struct Unit
 		return data->attack_range;
 	}
 	void ReequipItems();
+private:
+	void ReequipItemsInternal();
+public:
 	bool CanUseWeapons() const
 	{
 		return data->type >= UNIT_TYPE::HUMANOID;

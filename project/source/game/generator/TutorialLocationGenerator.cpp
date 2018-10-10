@@ -154,35 +154,35 @@ void TutorialLocationGenerator::OnEnter()
 	}
 
 	// map
-	lvl.map = new Pole[22 * 22];
+	lvl.map = new Tile[22 * 22];
 	for(int y = 0; y < 22; ++y)
 	{
 		for(int x = 0; x < 22; ++x)
 		{
-			Pole& p = lvl.map[x + y * 22];
+			Tile& p = lvl.map[x + y * 22];
 			p.flags = 0;
 			switch(mapa_t[x + y * 22])
 			{
 			case ' ':
-				p.type = PUSTE;
+				p.type = EMPTY;
 				break;
 			case '#':
-				p.type = SCIANA;
+				p.type = WALL;
 				break;
 			case '/':
-				p.type = SCHODY_GORA;
+				p.type = STAIRS_UP;
 				lvl.staircase_up = Int2(x, y);
 				lvl.staircase_up_dir = GDIR_UP;
 				break;
 			case '+':
-				p.type = DRZWI;
+				p.type = DOORS;
 				break;
 			case '$':
-				p.type = BLOKADA;
+				p.type = BLOCKADE;
 				break;
 			case 'T':
 				{
-					p.type = PUSTE;
+					p.type = EMPTY;
 					Quest_Tutorial::Text& tt = Add1(quest.texts);
 					char c = mapa_t3[x + y * 22];
 					assert(InRange(c, '0', '9'));
@@ -194,7 +194,7 @@ void TutorialLocationGenerator::OnEnter()
 				break;
 			case 'S':
 				{
-					p.type = PUSTE;
+					p.type = EMPTY;
 					char c = mapa_t3[x + y * 22];
 					assert(InRange(c, '0', '9'));
 					switch((int)(c - '0'))
@@ -280,7 +280,7 @@ void TutorialLocationGenerator::OnEnter()
 	}
 
 	// objects
-	Pole::SetupFlags(lvl.map, Int2(22, 22));
+	Tile::SetupFlags(lvl.map, Int2(22, 22));
 	GenerateDungeonObjects();
 
 	// doors
@@ -296,5 +296,5 @@ void TutorialLocationGenerator::OnEnter()
 
 	L.SpawnDungeonColliders();
 	CreateMinimap();
-	game.AddPlayerTeam(Vec3(2.f*start_tile.x + 1, 0, 2.f*start_tile.y + 1), 0, false, true);
+	L.AddPlayerTeam(Vec3(2.f*start_tile.x + 1, 0, 2.f*start_tile.y + 1), 0, false, true);
 }

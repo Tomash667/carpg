@@ -48,9 +48,9 @@ void Minimap::Draw(ControlDrawData* /*cdd*/)
 		InsideLocation* inside = (InsideLocation*)L.location;
 		InsideLocationLevel& lvl = inside->GetLevelData();
 
-		if(inside->HaveDownStairs() && IS_SET(lvl.map[lvl.staircase_down(lvl.w)].flags, Pole::F_ODKRYTE))
+		if(inside->HaveDownStairs() && IS_SET(lvl.map[lvl.staircase_down(lvl.w)].flags, Tile::F_REVEALED))
 			GUI.DrawSprite(tSchodyDol, Int2(TileToPoint(lvl.staircase_down)) - Int2(16, 16), Color::Alpha(180));
-		if(inside->HaveUpStairs() && IS_SET(lvl.map[lvl.staircase_up(lvl.w)].flags, Pole::F_ODKRYTE))
+		if(inside->HaveUpStairs() && IS_SET(lvl.map[lvl.staircase_up(lvl.w)].flags, Tile::F_REVEALED))
 			GUI.DrawSprite(tSchodyGora, Int2(TileToPoint(lvl.staircase_up)) - Int2(16, 16), Color::Alpha(180));
 	}
 
@@ -193,7 +193,7 @@ void Minimap::Hide()
 //=================================================================================================
 void Minimap::Build()
 {
-	minimap_size = Game::Get().minimap_size;
+	minimap_size = L.minimap_size;
 	if(L.city_ctx && L.city_ctx != city)
 	{
 		city = L.city_ctx;

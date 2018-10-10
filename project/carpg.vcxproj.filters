@@ -801,9 +801,6 @@
     <ClInclude Include="source\game\GameKeys.h">
       <Filter>3. game</Filter>
     </ClInclude>
-    <ClInclude Include="source\game\SaveSlot.h">
-      <Filter>3. game</Filter>
-    </ClInclude>
     <ClInclude Include="source\game\SaveState.h">
       <Filter>3. game</Filter>
     </ClInclude>
@@ -1566,6 +1563,9 @@
     </ClInclude>
     <ClInclude Include="source\game\FOV.h">
       <Filter>3. game</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\entity\SaveSlot.h">
+      <Filter>3. game\entity</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

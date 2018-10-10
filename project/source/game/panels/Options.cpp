@@ -395,7 +395,7 @@ void Options::Event(GuiEvent e)
 			game->settings.mouse_sensitivity_f = Lerp(0.5f, 1.5f, float(game->settings.mouse_sensitivity) / 100);
 			break;
 		case IdGrassRange:
-			game->grass_range = (float)game->grass_range;
+			game->settings.grass_range = (float)grass_range;
 			break;
 		case IdControls:
 			GUI.ShowDialog((DialogBox*)game->gui->controls);
@@ -474,9 +474,9 @@ void Options::SetOptions()
 		mouse_sensitivity = game->settings.mouse_sensitivity;
 		scroll[2].SetValue(float(mouse_sensitivity) / 100.f);
 	}
-	if(grass_range != game->grass_range)
+	if(grass_range != game->settings.grass_range)
 	{
-		grass_range = (int)game->grass_range;
+		grass_range = (int)game->settings.grass_range;
 		scroll[3].SetValue(float(grass_range) / 100.f);
 	}
 }
