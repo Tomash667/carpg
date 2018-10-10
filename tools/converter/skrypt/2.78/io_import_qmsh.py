@@ -178,7 +178,8 @@ class QmshSubmesh:
 		self.specular_hardness = f.ReadInt()
 		if head.IsTangents():
 			self.tex_normal = f.ReadString()
-			self.normal_factor = f.ReadFloat()
+			if self.tex_normal != '':
+				self.normal_factor = f.ReadFloat()
 		else:
 			self.tex_normal = ''
 		self.tex_specular = f.ReadString()
