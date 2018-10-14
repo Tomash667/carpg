@@ -18,6 +18,7 @@ import struct
 import bmesh
 from random import random
 import configparser
+from bpy_extras.io_utils import ImportHelper
 
 ################################################################################
 def IsSet(flags, bit):
@@ -26,18 +27,43 @@ def IsSet(flags, bit):
 ################################################################################
 class ImporterException(Exception):
 	pass
-		
+
 ################################################################################
 class Box:
 	def __init__(self, min, max):
 		self.v1 = min
 		self.v2 = max
+		
+################################################################################
+def ConvertVec3(v):
+	return (v[0], v[2], v[1])
+	
+################################################################################
+def ConvertMatrix(m):
+	o = Matrix()
+	o[0][0] = m[0][0];
+	o[0][3] = m[0][3];
+	o[3][0] = m[3][0];
+	o[3][3] = m[3][3];
+	o[0][1] = m[0][2];
+	o[0][2] = m[0][1];
+	o[3][2] = m[3][1];
+	o[3][1] = m[3][2];
+	o[2][0] = m[1][0];
+	o[1][0] = m[2][0];
+	o[1][3] = m[2][3];
+	o[2][3] = m[1][3];
+	o[1][1] = m[2][2];
+	o[2][2] = m[1][1];
+	o[1][2] = m[2][1];
+	o[2][1] = m[1][2];
+	print(o)
+	return o
 
 ################################################################################
 class Vertex:
 	def Read(self, f, type):
-		self.pos = f.ReadVec3()
-		self.pos = (self.pos[0], self.pos[2], self.pos[1])
+		self.pos = ConvertVec3(f.ReadVec3())
 		if type == 'ANI' or type == 'TANG_ANI':
 			self.weights = f.ReadFloat()
 			self.indices = f.ReadUint()
@@ -67,7 +93,7 @@ class FileReader:
 	def ReadEOF(self):
 		r = self.f.read(1)
 		if len(r) != 0:
-			raise ImportException("End of file expected.")
+			raise ImporterException("End of file expected.")
 	def ReadByte(self):
 		return struct.unpack('B', self.Read(1))[0]
 	def ReadWord(self):
@@ -232,11 +258,11 @@ class QmshAnimation:
 class QmshPoint:
 	def Read(self, f):
 		self.name = f.ReadString()
-		self.mat = f.ReadMatrix()
+		self.mat = ConvertMatrix(f.ReadMatrix())
 		self.bone = f.ReadWord()
 		self.type = f.ReadWord()
-		self.size = f.ReadVec3()
-		self.rot = f.ReadVec3()
+		self.size = ConvertVec3(f.ReadVec3())
+		self.rot = ConvertVec3(f.ReadVec3())
 
 ################################################################################
 class Qmsh:
@@ -452,15 +478,19 @@ def Import(filepath, config):
 			b.tail = (1.0, 1.0, 1.0)
 		bpy.ops.object.mode_set(mode='OBJECT')
 	# add points
-	#for point in mesh.points:
-	#	empty = bpy.data.objects.new(name=point.name, object_data=None)
-	#	if empty.type == 0:
-	#		empty.empty_draw_type = 'ARROWS'
-	#	elif empty.type == 1:
-	#		empty.empty_draw_type = 'SPHERE'
-	#	else:
-	#		empty.empty_draw_type = 'CUBE'
-	#	bpy.context.scene.objects.link(empty)
+	for point in mesh.points:
+		empty = bpy.data.objects.new(name=point.name, object_data=None)
+		if empty.type == 0:
+			empty.empty_draw_type = 'ARROWS'
+		elif empty.type == 1:
+			empty.empty_draw_type = 'SPHERE'
+		else:
+			empty.empty_draw_type = 'CUBE'
+		empty.matrix_world = point.mat
+		empty.scale = point.size
+		empty.rotation_mode = 'QUATERNION'
+		empty.rotation_euler = point.rot
+		bpy.context.scene.objects.link(empty)
 	# remove doubled vertices
 	bm.clear()
 	bm.from_mesh(mesh_data)
@@ -484,7 +514,7 @@ def Import(filepath, config):
 	
 ################################################################################
 # Klasa importera
-class QmshImporter(bpy.types.Operator):
+class QmshImporter(bpy.types.Operator, ImportHelper):
 	"""Import from Qmsh format (.qmsh)"""
 	
 	bl_idname = "import.qmsh"
@@ -500,26 +530,19 @@ class QmshImporter(bpy.types.Operator):
 		name="Converter path",
 		default=config.imagesPath)
 	
-	filepath = StringProperty(subtype='FILE_PATH')
+	filter_glob = StringProperty(default="*.qmsh", options={'HIDDEN'})
 	
 	def execute(self, context):
 		self.config.loadImages = self.loadImages
 		self.config.imagesPath = self.imagesPath
 		self.config.Save()
 		try:
-			Import(self.filepath, self.config)
+			Import(self.properties.filepath, self.config)
 		except ImporterException as error:
 			msg = 'Exporter error: '+str(error)
 			print("ERROR: "+msg)
 			bpy.ops.error.message('INVOKE_DEFAULT', message = msg)
 		return {"FINISHED"}
-	
-	def invoke(self, context, event):
-		if not self.filepath:
-			self.filepath = bpy.path.ensure_ext(os.path.splitext(bpy.data.filepath)[0], ".qmsh")
-		WindowManager = context.window_manager
-		WindowManager.fileselect_add(self)
-		return {"RUNNING_MODAL"}
 
 ################################################################################
 # funkcje pluginu
