@@ -265,9 +265,21 @@ class Qmsh:
 			self.verts.append(v)
 	def ReadTriangles(self, f):
 		self.tris = []
+		self.broken_tris = []
 		for i in range(self.head.n_tris):
 			tri = [f.ReadWord(), f.ReadWord(), f.ReadWord()]
+			tri = (tri[0], tri[2], tri[1]) # convert to blender order
+			if tri[0] == tri[1] or tri[0] == tri[2] or tri[1] == tri[2]:
+				self.broken_tris.append(i)
 			self.tris.append(tri)
+		# try to fix broken faces, will be removed later
+		if len(self.broken_tris) > 0:
+			index = 2
+			for i in self.broken_tris:
+				face = self.GetFreeFace(index)
+				index = face[2] + 1
+				self.tris[i] = face
+						
 	def ReadSubmeshes(self, f):
 		self.subs = []
 		for i in range(self.head.n_subs):
@@ -306,6 +318,19 @@ class Qmsh:
 			group = QmshBoneGroup()
 			group.Read(f)
 			self.groups.append(group)
+	def IsFaceUsed(self, face):
+		face = sorted(face)
+		for tri in self.tris:
+			if face == sorted(tri):
+				return True
+		return False
+	def GetFreeFace(self, index):
+		face = (0,1,index)
+		while True:
+			if self.IsFaceUsed(face):
+				face = (face[0], face[1], face[2]+1)
+			else:
+				return face
 			
 ################################################################################
 class Config:
@@ -349,7 +374,7 @@ def LoadImage(filename, config):
 
 ################################################################################
 def Import(filepath, config):
-	print("Loading file "+filepath+".")
+	print("INFO: Loading file "+filepath+".")
 	with FileReader(filepath) as f:
 		mesh = Qmsh()
 		mesh.Read(f)
@@ -360,10 +385,8 @@ def Import(filepath, config):
 	for v in mesh.verts:
 		new_verts.append(bm.verts.new(v.pos))
 	# create faces
-	new_faces = []
 	for f in mesh.tris:
-		#print("%g %g %g" % (f[0], f[1], f[2]))
-		new_faces.append(bm.faces.new((new_verts[f[0]], new_verts[f[1]], new_verts[f[2]])))
+		bm.faces.new((new_verts[f[0]], new_verts[f[1]], new_verts[f[2]]))
 	bm.faces.ensure_lookup_table()
 	index = 0
 	for sub in mesh.subs:
@@ -402,6 +425,18 @@ def Import(filepath, config):
 		uvs[i*3+0].uv = mesh.verts[f[0]].tex
 		uvs[i*3+1].uv = mesh.verts[f[1]].tex
 		uvs[i*3+2].uv = mesh.verts[f[2]].tex
+	# remove broken tris
+	if len(mesh.broken_tris) > 0:
+		bm.clear()
+		bm.from_mesh(mesh_data)
+		to_delete = []
+		bm.faces.ensure_lookup_table()
+		for i in mesh.broken_tris:
+			to_delete.append(bm.faces[i])
+		bmesh.ops.delete(bm, geom=to_delete, context=5)  
+		bm.to_mesh(mesh_data)
+		mesh_data.update()
+		print("WARN: Removed %d broken tris." % len(mesh.broken_tris))
 	# armature
 	if mesh.head.IsAnimated() and not mesh.head.IsStatic():
 		armature = bpy.data.armatures.new(name='Armature')
@@ -445,7 +480,7 @@ def Import(filepath, config):
 	area = next(area for area in bpy.context.screen.areas if area.type == 'VIEW_3D')
 	space = next(space for space in area.spaces if space.type == 'VIEW_3D')
 	space.viewport_shade = 'TEXTURED'
-	print("Import finished.");
+	print("INFO: Import finished.");
 	
 ################################################################################
 # Klasa importera
@@ -475,7 +510,7 @@ class QmshImporter(bpy.types.Operator):
 			Import(self.filepath, self.config)
 		except ImporterException as error:
 			msg = 'Exporter error: '+str(error)
-			print(msg)
+			print("ERROR: "+msg)
 			bpy.ops.error.message('INVOKE_DEFAULT', message = msg)
 		return {"FINISHED"}
 	
