@@ -1,7 +1,6 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "Quest_RescueCaptive.h"
-#include "Dialog.h"
 #include "Game.h"
 #include "Journal.h"
 #include "GameFile.h"
@@ -28,14 +27,14 @@ GameDialog* Quest_RescueCaptive::GetDialog(int type2)
 	switch(type2)
 	{
 	case QUEST_DIALOG_START:
-		return FindDialog("q_rescue_captive_start");
+		return GameDialog::TryGet("q_rescue_captive_start");
 	case QUEST_DIALOG_FAIL:
-		return FindDialog("q_rescue_captive_timeout");
+		return GameDialog::TryGet("q_rescue_captive_timeout");
 	case QUEST_DIALOG_NEXT:
 		if(game->current_dialog->talker->data->id == "captive")
-			return FindDialog("q_rescue_captive_talk");
+			return GameDialog::TryGet("q_rescue_captive_talk");
 		else
-			return FindDialog("q_rescue_captive_end");
+			return GameDialog::TryGet("q_rescue_captive_end");
 	default:
 		assert(0);
 		return nullptr;

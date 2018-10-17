@@ -7,7 +7,6 @@
 #include "GameFile.h"
 #include "QuestManager.h"
 #include "Quest_Mages.h"
-#include "Dialog.h"
 #include "City.h"
 #include "InsideBuilding.h"
 #include "AIController.h"

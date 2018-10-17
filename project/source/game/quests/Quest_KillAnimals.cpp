@@ -1,7 +1,6 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "Quest_KillAnimals.h"
-#include "Dialog.h"
 #include "Game.h"
 #include "Journal.h"
 #include "QuestManager.h"
@@ -22,11 +21,11 @@ GameDialog* Quest_KillAnimals::GetDialog(int type2)
 	switch(type2)
 	{
 	case QUEST_DIALOG_START:
-		return FindDialog("q_kill_animals_start");
+		return GameDialog::TryGet("q_kill_animals_start");
 	case QUEST_DIALOG_FAIL:
-		return FindDialog("q_kill_animals_timeout");
+		return GameDialog::TryGet("q_kill_animals_timeout");
 	case QUEST_DIALOG_NEXT:
-		return FindDialog("q_kill_animals_end");
+		return GameDialog::TryGet("q_kill_animals_end");
 	default:
 		assert(0);
 		return nullptr;

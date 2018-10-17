@@ -1,7 +1,6 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "Quest_Mages.h"
-#include "Dialog.h"
 #include "Game.h"
 #include "Journal.h"
 #include "SaveState.h"
@@ -26,9 +25,9 @@ GameDialog* Quest_Mages::GetDialog(int type2)
 	assert(type2 == QUEST_DIALOG_NEXT);
 
 	if(game->current_dialog->talker->data->id == "q_magowie_uczony")
-		return FindDialog("q_mages_scholar");
+		return GameDialog::TryGet("q_mages_scholar");
 	else
-		return FindDialog("q_mages_golem");
+		return GameDialog::TryGet("q_mages_golem");
 }
 
 //=================================================================================================
@@ -174,11 +173,11 @@ GameDialog* Quest_Mages2::GetDialog(int type2)
 	assert(type2 == QUEST_DIALOG_NEXT);
 
 	if(game->current_dialog->talker->data->id == "q_magowie_stary")
-		return FindDialog("q_mages2_mage");
+		return GameDialog::TryGet("q_mages2_mage");
 	else if(game->current_dialog->talker->data->id == "q_magowie_boss")
-		return FindDialog("q_mages2_boss");
+		return GameDialog::TryGet("q_mages2_boss");
 	else
-		return FindDialog("q_mages2_captain");
+		return GameDialog::TryGet("q_mages2_captain");
 }
 
 //=================================================================================================

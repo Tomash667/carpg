@@ -183,6 +183,7 @@ public:
 	void InterpolateUnits(float dt);
 
 	SystemAddress server;
+	bool was_client;
 
 	//****************************************************************************
 	BitStream& StreamStart(Packet* packet, StreamLogType type);

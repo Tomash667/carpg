@@ -1,7 +1,6 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "Quest_FindArtifact.h"
-#include "Dialog.h"
 #include "Game.h"
 #include "Journal.h"
 #include "GameFile.h"
@@ -25,11 +24,11 @@ GameDialog* Quest_FindArtifact::GetDialog(int type2)
 	switch(type2)
 	{
 	case QUEST_DIALOG_START:
-		return FindDialog("q_find_artifact_start");
+		return GameDialog::TryGet("q_find_artifact_start");
 	case QUEST_DIALOG_NEXT:
-		return FindDialog("q_find_artifact_end");
+		return GameDialog::TryGet("q_find_artifact_end");
 	case QUEST_DIALOG_FAIL:
-		return FindDialog("q_find_artifact_timeout");
+		return GameDialog::TryGet("q_find_artifact_timeout");
 	default:
 		assert(0);
 		return nullptr;

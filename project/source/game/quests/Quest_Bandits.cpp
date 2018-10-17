@@ -1,7 +1,6 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "Quest_Bandits.h"
-#include "Dialog.h"
 #include "Game.h"
 #include "Journal.h"
 #include "GameFile.h"
@@ -55,7 +54,7 @@ GameDialog* Quest_Bandits::GetDialog(int type2)
 	else
 		dialog_id = "q_bandits_encounter";
 
-	return FindDialog(dialog_id);
+	return GameDialog::TryGet(dialog_id);
 }
 
 //=================================================================================================
@@ -99,7 +98,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			Location& sl = GetStartLocation();
 			Location& other = *W.GetLocation(other_loc);
 			Encounter* e = W.AddEncounter(enc);
-			e->dialog = FindDialog("q_bandits");
+			e->dialog = GameDialog::TryGet("q_bandits");
 			e->dont_attack = true;
 			e->group = SG_BANDITS;
 			e->location_event_handler = nullptr;
@@ -122,7 +121,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			Location& sl = GetStartLocation();
 			Location& other = *W.GetLocation(other_loc);
 			Encounter* e = W.AddEncounter(enc);
-			e->dialog = FindDialog("q_bandits");
+			e->dialog = GameDialog::TryGet("q_bandits");
 			e->dont_attack = true;
 			e->group = SG_BANDITS;
 			e->location_event_handler = nullptr;
@@ -365,7 +364,7 @@ bool Quest_Bandits::Load(GameReader& f)
 	if(enc != -1)
 	{
 		Encounter* e = W.RecreateEncounter(enc);
-		e->dialog = FindDialog("q_bandits");
+		e->dialog = GameDialog::TryGet("q_bandits");
 		e->dont_attack = true;
 		e->group = SG_BANDITS;
 		e->location_event_handler = nullptr;

@@ -1,7 +1,6 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "Quest_Evil.h"
-#include "Dialog.h"
 #include "Game.h"
 #include "Journal.h"
 #include "SaveState.h"
@@ -52,15 +51,15 @@ GameDialog* Quest_Evil::GetDialog(int type2)
 	const string& id = game->current_dialog->talker->data->id;
 
 	if(id == "q_zlo_kaplan")
-		return FindDialog("q_evil_cleric");
+		return GameDialog::TryGet("q_evil_cleric");
 	else if(id == "q_zlo_mag")
-		return FindDialog("q_evil_mage");
+		return GameDialog::TryGet("q_evil_mage");
 	else if(id == "q_zlo_boss")
-		return FindDialog("q_evil_boss");
+		return GameDialog::TryGet("q_evil_boss");
 	else if(id == "guard_captain")
-		return FindDialog("q_evil_captain");
+		return GameDialog::TryGet("q_evil_captain");
 	else if(id == "mayor" || id == "soltys")
-		return FindDialog("q_evil_mayor");
+		return GameDialog::TryGet("q_evil_mayor");
 	else
 	{
 		assert(0);

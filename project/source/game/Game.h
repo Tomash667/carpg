@@ -5,7 +5,7 @@
 #include "GameCommon.h"
 #include "ConsoleCommands.h"
 #include "Net.h"
-#include "Dialog.h"
+#include "DialogContext.h"
 #include "BaseLocation.h"
 #include "GameKeys.h"
 #include "SceneNode.h"
@@ -438,8 +438,6 @@ public:
 	void CheckAutoTalk(Unit& unit, float dt);
 	void StartDialog(DialogContext& ctx, Unit* talker, GameDialog* dialog = nullptr);
 	void StartDialog2(PlayerController* player, Unit* talker, GameDialog* dialog = nullptr);
-	void StartNextDialog(DialogContext& ctx, GameDialog* dialog, int& if_level, Quest* quest = nullptr);
-	void EndDialog(DialogContext& ctx);
 	void UpdateGameDialog(DialogContext& ctx, float dt);
 	bool ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_level);
 	bool ExecuteGameDialogSpecialIf(DialogContext& ctx, cstring msg);
@@ -656,7 +654,7 @@ public:
 	// MULTIPLAYER
 	string player_name, server_ip, enter_pswd;
 	int my_id; // moje unikalne id
-	bool was_client, players_left;
+	bool players_left;
 	int leader_id;
 	enum NET_MODE
 	{

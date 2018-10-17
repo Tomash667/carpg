@@ -77,7 +77,7 @@ cl_lighting(true), draw_particle_sphere(false), draw_unit_radius(false), draw_hi
 force_seed(0), next_seed(0), force_seed_all(false), debug_info(false), dont_wander(false),
 check_updates(true), skip_tutorial(false), portal_anim(0), debug_info2(false), music_type(MusicType::None), koniec_gry(false), prepared_stream(64 * 1024),
 paused(false), draw_flags(0xFFFFFFFF), tMiniSave(nullptr), prev_game_state(GS_LOAD), tSave(nullptr), sItemRegion(nullptr),
-sItemRegionRot(nullptr), sChar(nullptr), sSave(nullptr), was_client(false), sCustom(nullptr), cl_postfx(true), mp_timeout(10.f),
+sItemRegionRot(nullptr), sChar(nullptr), sSave(nullptr), sCustom(nullptr), cl_postfx(true), mp_timeout(10.f),
 cl_normalmap(true), cl_specularmap(true), dungeon_tex_wrap(true), profiler_mode(0), vbInstancing(nullptr), vb_instancing_max(0),
 screenshot_format(ImageFormat::JPG), quickstart_class(Class::RANDOM), game_state(GS_LOAD), default_devmode(false),
 default_player_devmode(false), quickstart_slot(MAX_SAVE_SLOTS), super_shader(new SuperShader)
@@ -794,7 +794,7 @@ void Game::DoExitToMenu()
 	game_state = GS_MAIN_MENU;
 	paused = false;
 	N.mp_load = false;
-	was_client = false;
+	N.was_client = false;
 
 	SetMusic(MusicType::Title);
 	koniec_gry = false;
@@ -875,7 +875,7 @@ void Game::OnCleanup()
 	CleanScene();
 	DeleteElements(bow_instances);
 	ClearQuadtree();
-	CleanupDialogs();
+	GameDialog::Cleanup();
 
 	// shadery
 	ReleaseShaders();
@@ -1595,7 +1595,7 @@ uint Game::ValidateGameData(bool major)
 	Item::Validate(err);
 	PerkInfo::Validate(err);
 	RoomType::Validate(err);
-	VerifyDialogs(err);
+	GameDialog::Verify(err);
 
 	if(err == 0)
 		Info("Test: Validation succeeded.");
@@ -1845,7 +1845,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 	if(!L.is_open)
 		return;
 
-	if(Net::IsLocal() && !was_client)
+	if(Net::IsLocal() && !N.was_client)
 	{
 		// zawody
 		if(QM.quest_tournament->GetState() != Quest_Tournament::TOURNAMENT_NOT_DONE)

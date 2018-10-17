@@ -18,7 +18,7 @@ Net N;
 const float CHANGE_LEVEL_TIMER = 5.f;
 
 //=================================================================================================
-Net::Net() : peer(nullptr), current_packet(nullptr), mp_load(false), mp_use_interp(true), mp_interp(0.05f)
+Net::Net() : peer(nullptr), current_packet(nullptr), mp_load(false), mp_use_interp(true), mp_interp(0.05f), was_client(false)
 {
 }
 

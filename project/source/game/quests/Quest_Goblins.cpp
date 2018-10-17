@@ -1,7 +1,6 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "Quest_Goblins.h"
-#include "Dialog.h"
 #include "Game.h"
 #include "Journal.h"
 #include "SaveState.h"
@@ -39,17 +38,17 @@ GameDialog* Quest_Goblins::GetDialog(int type2)
 	const string& id = game->current_dialog->talker->data->id;
 
 	if(id == "q_gobliny_szlachcic")
-		return FindDialog("q_goblins_nobleman");
+		return GameDialog::TryGet("q_goblins_nobleman");
 	else if(id == "q_gobliny_mag")
-		return FindDialog("q_goblins_mage");
+		return GameDialog::TryGet("q_goblins_mage");
 	else if(id == "innkeeper")
-		return FindDialog("q_goblins_innkeeper");
+		return GameDialog::TryGet("q_goblins_innkeeper");
 	else if(id == "q_gobliny_szlachcic2")
-		return FindDialog("q_goblins_boss");
+		return GameDialog::TryGet("q_goblins_boss");
 	else
 	{
 		assert(id == "q_gobliny_poslaniec");
-		return FindDialog("q_goblins_messenger");
+		return GameDialog::TryGet("q_goblins_messenger");
 	}
 }
 
@@ -150,7 +149,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			// encounter
 			Encounter* e = W.AddEncounter(enc);
 			e->check_func = CzyMajaStaryLuk;
-			e->dialog = FindDialog("q_goblins_encounter");
+			e->dialog = GameDialog::TryGet("q_goblins_encounter");
 			e->dont_attack = true;
 			e->group = SG_GOBLINS;
 			e->location_event_handler = nullptr;
@@ -370,7 +369,7 @@ bool Quest_Goblins::Load(GameReader& f)
 	{
 		Encounter* e = W.RecreateEncounter(enc);
 		e->check_func = CzyMajaStaryLuk;
-		e->dialog = FindDialog("q_goblins_encounter");
+		e->dialog = GameDialog::TryGet("q_goblins_encounter");
 		e->dont_attack = true;
 		e->group = SG_GOBLINS;
 		e->location_event_handler = nullptr;

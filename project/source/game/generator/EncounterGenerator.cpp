@@ -203,7 +203,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 		case SG_BANDITS:
 			group_name = "bandits";
 			dont_attack = true;
-			dialog = FindDialog("bandits");
+			dialog = GameDialog::TryGet("bandits");
 			break;
 		case SG_GOBLINS:
 			group_name = "goblins";
@@ -225,13 +225,13 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 			group_name = nullptr;
 			count = 1;
 			level = Random(10, 16);
-			dialog = FindDialog("crazy_mage_encounter");
+			dialog = GameDialog::TryGet("crazy_mage_encounter");
 			break;
 		case SE_CRAZY_HEROES:
 			group_name = "crazies";
 			count = Random(2, 4);
 			level = Random(2, 15);
-			dialog = FindDialog("crazies_encounter");
+			dialog = GameDialog::TryGet("crazies_encounter");
 			break;
 		case SE_MERCHANT:
 			{
@@ -302,7 +302,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 			essential = UnitData::Get("q_magowie_golem");
 			level = 8;
 			dont_attack = true;
-			dialog = FindDialog("q_mages");
+			dialog = GameDialog::TryGet("q_mages");
 			count = 1;
 			break;
 		case SE_CRAZY:
@@ -310,7 +310,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 			essential = UnitData::Get("q_szaleni_szaleniec");
 			level = 13;
 			dont_attack = true;
-			dialog = FindDialog("q_crazies");
+			dialog = GameDialog::TryGet("q_crazies");
 			count = 1;
 			QM.quest_crazies->check_stone = true;
 			kamien = true;

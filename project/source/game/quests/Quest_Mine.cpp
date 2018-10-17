@@ -1,7 +1,6 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "Quest_Mine.h"
-#include "Dialog.h"
 #include "Game.h"
 #include "Journal.h"
 #include "GameFile.h"
@@ -36,37 +35,37 @@ GameDialog* Quest_Mine::GetDialog(int type2)
 	if(type2 == QUEST_DIALOG_NEXT)
 	{
 		if(game->current_dialog->talker->data->id == "inwestor")
-			return FindDialog("q_mine_investor");
+			return GameDialog::TryGet("q_mine_investor");
 		else if(game->current_dialog->talker->data->id == "poslaniec_kopalnia")
 		{
 			if(prog == Quest_Mine::Progress::SelectedShares)
-				return FindDialog("q_mine_messenger");
+				return GameDialog::TryGet("q_mine_messenger");
 			else if(prog == Quest_Mine::Progress::GotFirstGold || prog == Quest_Mine::Progress::SelectedGold)
 			{
 				if(days >= days_required)
-					return FindDialog("q_mine_messenger2");
+					return GameDialog::TryGet("q_mine_messenger2");
 				else
-					return FindDialog("messenger_talked");
+					return GameDialog::TryGet("messenger_talked");
 			}
 			else if(prog == Quest_Mine::Progress::Invested)
 			{
 				if(days >= days_required)
-					return FindDialog("q_mine_messenger3");
+					return GameDialog::TryGet("q_mine_messenger3");
 				else
-					return FindDialog("messenger_talked");
+					return GameDialog::TryGet("messenger_talked");
 			}
 			else if(prog == Quest_Mine::Progress::UpgradedMine)
 			{
 				if(days >= days_required)
-					return FindDialog("q_mine_messenger4");
+					return GameDialog::TryGet("q_mine_messenger4");
 				else
-					return FindDialog("messenger_talked");
+					return GameDialog::TryGet("messenger_talked");
 			}
 			else
-				return FindDialog("messenger_talked");
+				return GameDialog::TryGet("messenger_talked");
 		}
 		else
-			return FindDialog("q_mine_boss");
+			return GameDialog::TryGet("q_mine_boss");
 	}
 	else
 	{

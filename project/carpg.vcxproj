@@ -271,7 +271,6 @@
     <ClInclude Include="source\game\system\BuildingScript.h" />
     <ClInclude Include="source\game\system\Content.h" />
     <ClInclude Include="source\game\system\ContentLoader.h" />
-    <ClInclude Include="source\game\Dialog.h" />
     <ClInclude Include="source\game\entity\AIController.h" />
     <ClInclude Include="source\game\entity\Blood.h" />
     <ClInclude Include="source\game\entity\Bullet.h" />
@@ -379,7 +378,9 @@
     <ClInclude Include="source\game\stats\SpawnGroup.h" />
     <ClInclude Include="source\game\stats\Spell.h" />
     <ClInclude Include="source\game\stats\UnitStats.h" />
+    <ClInclude Include="source\game\system\DialogContext.h" />
     <ClInclude Include="source\game\system\FrameInfo.h" />
+    <ClInclude Include="source\game\system\GameDialog.h" />
     <ClInclude Include="source\game\system\Item.h" />
     <ClInclude Include="source\game\system\ItemScript.h" />
     <ClInclude Include="source\game\system\ItemType.h" />
@@ -614,7 +615,9 @@
     <ClCompile Include="source\game\stats\Spell.cpp" />
     <ClCompile Include="source\game\stats\UnitStats.cpp" />
     <ClCompile Include="source\game\system\ContentLoader.cpp" />
+    <ClCompile Include="source\game\system\DialogContext.cpp" />
     <ClCompile Include="source\game\system\FrameInfo.cpp" />
+    <ClCompile Include="source\game\system\GameDialog.cpp" />
     <ClCompile Include="source\game\system\Item.cpp" />
     <ClCompile Include="source\game\system\ItemLoader.cpp" />
     <ClCompile Include="source\game\system\ItemScript.cpp" />

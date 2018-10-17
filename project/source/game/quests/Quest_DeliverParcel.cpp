@@ -1,7 +1,6 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "Quest_DeliverParcel.h"
-#include "Dialog.h"
 #include "Game.h"
 #include "Journal.h"
 #include "LocationHelper.h"
@@ -26,11 +25,11 @@ GameDialog* Quest_DeliverParcel::GetDialog(int dialog_type)
 	switch(dialog_type)
 	{
 	case QUEST_DIALOG_START:
-		return FindDialog("q_deliver_parcel_start");
+		return GameDialog::TryGet("q_deliver_parcel_start");
 	case QUEST_DIALOG_FAIL:
-		return FindDialog("q_deliver_parcel_timeout");
+		return GameDialog::TryGet("q_deliver_parcel_timeout");
 	case QUEST_DIALOG_NEXT:
-		return FindDialog("q_deliver_parcel_give");
+		return GameDialog::TryGet("q_deliver_parcel_give");
 	default:
 		assert(0);
 		return nullptr;
@@ -69,7 +68,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 				e->range = 64;
 				e->chance = 45;
 				e->dont_attack = true;
-				e->dialog = FindDialog("q_deliver_parcel_bandits");
+				e->dialog = GameDialog::TryGet("q_deliver_parcel_bandits");
 				e->group = SG_BANDITS;
 				e->text = game->txQuest[11];
 				e->quest = this;
@@ -237,7 +236,7 @@ bool Quest_DeliverParcel::Load(GameReader& f)
 		e->range = 64;
 		e->chance = 45;
 		e->dont_attack = true;
-		e->dialog = FindDialog("q_deliver_parcel_bandits");
+		e->dialog = GameDialog::TryGet("q_deliver_parcel_bandits");
 		e->group = SG_BANDITS;
 		e->text = game->txQuest[11];
 		e->quest = this;

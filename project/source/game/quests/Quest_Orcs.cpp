@@ -1,7 +1,6 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "Quest_Orcs.h"
-#include "Dialog.h"
 #include "Game.h"
 #include "Journal.h"
 #include "SaveState.h"
@@ -34,9 +33,9 @@ GameDialog* Quest_Orcs::GetDialog(int type2)
 	assert(type2 == QUEST_DIALOG_NEXT);
 
 	if(game->current_dialog->talker->data->id == "q_orkowie_straznik")
-		return FindDialog("q_orcs_guard");
+		return GameDialog::TryGet("q_orcs_guard");
 	else
-		return FindDialog("q_orcs_captain");
+		return GameDialog::TryGet("q_orcs_captain");
 }
 
 //=================================================================================================
@@ -243,13 +242,13 @@ GameDialog* Quest_Orcs2::GetDialog(int type2)
 	const string& id = game->current_dialog->talker->data->id;
 
 	if(id == "q_orkowie_slaby")
-		return FindDialog("q_orcs2_weak_orc");
+		return GameDialog::TryGet("q_orcs2_weak_orc");
 	else if(id == "q_orkowie_kowal")
-		return FindDialog("q_orcs2_blacksmith");
+		return GameDialog::TryGet("q_orcs2_blacksmith");
 	else if(id == "q_orkowie_gorush" || id == "q_orkowie_gorush_woj" || id == "q_orkowie_gorush_lowca" || id == "q_orkowie_gorush_szaman")
-		return FindDialog("q_orcs2_gorush");
+		return GameDialog::TryGet("q_orcs2_gorush");
 	else
-		return FindDialog("q_orcs2_orc");
+		return GameDialog::TryGet("q_orcs2_orc");
 }
 
 //=================================================================================================

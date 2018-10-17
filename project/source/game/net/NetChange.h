@@ -65,10 +65,9 @@ struct NetChange
 		WARP, // warp unit or notify server about warping SERVER[int(netid)-unit, auto:char-in building, Vec3-pos, float-rot] / CLIENT[]
 		ADD_NOTE, // player added note to journal [string1-text (automaticaly set)]
 		REGISTER_ITEM, // register new item [auto:string1(base_item.id)-item id, string1(item2.id)-id, string1(item2.name)-name, string1(item2.desc)-description, int(item2.refid)-item refid]
-		ADD_QUEST, // added quest [id = quest, auto: int(quest.refid), string1(quest.name), string2(quest.msgs[0]), string2(quest.msgs[1]))
-		UPDATE_QUEST, // update quest [id = quest, auto: int(quest.refid), byte(quest.state), string2(quest.msgs.back())]
+		ADD_QUEST, // added quest [int(id)-index, auto: string1-quest.name, string2-quest.msgs[0], string2-quest.msgs[1])
+		UPDATE_QUEST, // update quest [int(id)-index, auto: byte-quest.state, vector1<string2>-msgs (byte(count)-msgs count)]
 		RENAME_ITEM, // item rename [auto: int(base_item.refid), string1(base_item.id), string1(base_item.name)]
-		UPDATE_QUEST_MULTI, // update quest with multiple texts [id = quest, int(quest.refid)-(auto), byte(quest.state)-(auto), vector<size:byte(count), string2>]
 		REMOVE_PLAYER, // remove player from game [byte(id)-player id, byte(count)-PlayerInfo.LeftReason]
 		CHANGE_LEADER, // player wants to change leader or notification [byte(id)-player id]
 		RANDOM_NUMBER, // player get Random number SERVER[byte(unit.player.id), byte(id)-number] / CLIENT[byte(id)-number]

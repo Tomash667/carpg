@@ -61,14 +61,17 @@
     <Filter Include="3. game\system\items">
       <UniqueIdentifier>{538a0371-6a23-4988-b2e4-0735a1ab3812}</UniqueIdentifier>
     </Filter>
-    <Filter Include="3. game\system\unit">
-      <UniqueIdentifier>{2110a0ec-a4bb-43a5-bcc7-ad64a4a78f1a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="3. game\script">
       <UniqueIdentifier>{686e4789-ffae-4b38-8307-8b1d7e1d50e1}</UniqueIdentifier>
     </Filter>
     <Filter Include="3. game\events">
       <UniqueIdentifier>{611f9aef-8d8e-4ffd-bd54-a5732babb50e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3. game\system\units">
+      <UniqueIdentifier>{2110a0ec-a4bb-43a5-bcc7-ad64a4a78f1a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3. game\system\dialogs">
+      <UniqueIdentifier>{d2673175-c92d-4cb8-9d60-1e84843fb94b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -611,22 +614,22 @@
       <Filter>3. game\system\items</Filter>
     </ClCompile>
     <ClCompile Include="source\game\system\UnitLoader.cpp">
-      <Filter>3. game\system\unit</Filter>
+      <Filter>3. game\system\units</Filter>
     </ClCompile>
     <ClCompile Include="source\game\system\ItemScript.cpp">
-      <Filter>3. game\system\unit</Filter>
+      <Filter>3. game\system\units</Filter>
     </ClCompile>
     <ClCompile Include="source\game\system\UnitGroup.cpp">
-      <Filter>3. game\system\unit</Filter>
+      <Filter>3. game\system\units</Filter>
     </ClCompile>
     <ClCompile Include="source\game\system\FrameInfo.cpp">
-      <Filter>3. game\system\unit</Filter>
+      <Filter>3. game\system\units</Filter>
     </ClCompile>
     <ClCompile Include="source\game\system\StatProfile.cpp">
-      <Filter>3. game\system\unit</Filter>
+      <Filter>3. game\system\units</Filter>
     </ClCompile>
     <ClCompile Include="source\game\system\UnitData.cpp">
-      <Filter>3. game\system\unit</Filter>
+      <Filter>3. game\system\units</Filter>
     </ClCompile>
     <ClCompile Include="source\game\system\Stock.cpp">
       <Filter>3. game\system\items</Filter>
@@ -769,6 +772,12 @@
     <ClCompile Include="source\engine\DebugDrawer.cpp">
       <Filter>2. engine</Filter>
     </ClCompile>
+    <ClCompile Include="source\game\system\DialogContext.cpp">
+      <Filter>3. game\system\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\system\GameDialog.cpp">
+      <Filter>3. game\system\dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\resource\resource1.h">
@@ -787,9 +796,6 @@
       <Filter>1. core</Filter>
     </ClInclude>
     <ClInclude Include="source\game\ConsoleCommands.h">
-      <Filter>3. game</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\Dialog.h">
       <Filter>3. game</Filter>
     </ClInclude>
     <ClInclude Include="source\game\Game.h">
@@ -1358,19 +1364,19 @@
       <Filter>3. game\system\items</Filter>
     </ClInclude>
     <ClInclude Include="source\game\system\ItemScript.h">
-      <Filter>3. game\system\unit</Filter>
+      <Filter>3. game\system\units</Filter>
     </ClInclude>
     <ClInclude Include="source\game\system\UnitGroup.h">
-      <Filter>3. game\system\unit</Filter>
+      <Filter>3. game\system\units</Filter>
     </ClInclude>
     <ClInclude Include="source\game\system\FrameInfo.h">
-      <Filter>3. game\system\unit</Filter>
+      <Filter>3. game\system\units</Filter>
     </ClInclude>
     <ClInclude Include="source\game\system\StatProfile.h">
-      <Filter>3. game\system\unit</Filter>
+      <Filter>3. game\system\units</Filter>
     </ClInclude>
     <ClInclude Include="source\game\system\UnitData.h">
-      <Filter>3. game\system\unit</Filter>
+      <Filter>3. game\system\units</Filter>
     </ClInclude>
     <ClInclude Include="source\game\system\Stock.h">
       <Filter>3. game\system\items</Filter>
@@ -1566,6 +1572,12 @@
     </ClInclude>
     <ClInclude Include="source\game\entity\SaveSlot.h">
       <Filter>3. game\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\system\GameDialog.h">
+      <Filter>3. game\system\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\system\DialogContext.h">
+      <Filter>3. game\system\dialogs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

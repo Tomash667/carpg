@@ -1,7 +1,6 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "Quest_DeliverLetter.h"
-#include "Dialog.h"
 #include "Game.h"
 #include "Journal.h"
 #include "LocationHelper.h"
@@ -24,14 +23,14 @@ GameDialog* Quest_DeliverLetter::GetDialog(int dialog_type)
 	switch(dialog_type)
 	{
 	case QUEST_DIALOG_START:
-		return FindDialog("q_deliver_letter_start");
+		return GameDialog::TryGet("q_deliver_letter_start");
 	case QUEST_DIALOG_FAIL:
-		return FindDialog("q_deliver_letter_timeout");
+		return GameDialog::TryGet("q_deliver_letter_timeout");
 	case QUEST_DIALOG_NEXT:
 		if(prog == Progress::Started)
-			return FindDialog("q_deliver_letter_give");
+			return GameDialog::TryGet("q_deliver_letter_give");
 		else
-			return FindDialog("q_deliver_letter_end");
+			return GameDialog::TryGet("q_deliver_letter_end");
 	default:
 		assert(0);
 		return nullptr;

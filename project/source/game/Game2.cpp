@@ -1083,7 +1083,7 @@ void Game::UpdateGame(float dt)
 				|| dialog_context.talker->frozen != FROZEN::NO)
 			{
 				// rozmówca umar³ / jest usuwany / zaatakowa³ kogoœ
-				EndDialog(dialog_context);
+				dialog_context.EndDialog();
 			}
 		}
 
@@ -1132,7 +1132,7 @@ void Game::UpdateGame(float dt)
 			if(ctx.dialog_mode)
 			{
 				if(!ctx.talker->IsStanding() || !ctx.talker->IsIdle() || ctx.talker->to_remove || ctx.talker->frozen != FROZEN::NO)
-					EndDialog(ctx);
+					ctx.EndDialog();
 				else
 					UpdateGameDialog(ctx, dt);
 			}
@@ -3088,49 +3088,6 @@ void Game::StartDialog(DialogContext& ctx, Unit* talker, GameDialog* dialog)
 	}
 }
 
-//=================================================================================================
-void Game::EndDialog(DialogContext& ctx)
-{
-	ctx.choices.clear();
-	ctx.prev.clear();
-	ctx.dialog_mode = false;
-
-	if(ctx.talker->busy == Unit::Busy_Trading)
-	{
-		if(!ctx.is_local)
-		{
-			NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
-			c.type = NetChangePlayer::END_DIALOG;
-		}
-
-		return;
-	}
-
-	ctx.talker->busy = Unit::Busy_No;
-	ctx.talker->look_target = nullptr;
-	ctx.talker = nullptr;
-	ctx.pc->action = PlayerController::Action_None;
-
-	if(!ctx.is_local)
-	{
-		NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
-		c.type = NetChangePlayer::END_DIALOG;
-	}
-}
-
-//=================================================================================================
-void Game::StartNextDialog(DialogContext& ctx, GameDialog* dialog, int& if_level, Quest* quest)
-{
-	assert(dialog);
-
-	ctx.prev.push_back({ ctx.dialog, ctx.dialog_quest, ctx.dialog_pos, ctx.dialog_level });
-	ctx.dialog = dialog;
-	ctx.dialog_quest = quest;
-	ctx.dialog_pos = -1;
-	ctx.dialog_level = 0;
-	if_level = 0;
-}
-
 //							WEAPON	BOW		SHIELD	ARMOR	LETTER	POTION	OTHER	BOOK	GOLD
 bool merchant_buy[] = { true,	true,	true,	true,	true,	true,	true,	true,	false };
 bool blacksmith_buy[] = { true,	true,	true,	true,	false,	false,	false,	false,	false };
@@ -3231,7 +3188,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 
 	if(ctx.force_end)
 	{
-		EndDialog(ctx);
+		ctx.EndDialog();
 		return;
 	}
 
@@ -3262,7 +3219,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			{
 				if(ctx.prev.empty())
 				{
-					EndDialog(ctx);
+					ctx.EndDialog();
 					return;
 				}
 				else
@@ -3280,7 +3237,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 		case DTF_END2:
 			if(if_level == ctx.dialog_level)
 			{
-				EndDialog(ctx);
+				ctx.EndDialog();
 				return;
 			}
 			break;
@@ -3312,7 +3269,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			{
 				Unit* t = ctx.talker;
 				t->busy = Unit::Busy_Trading;
-				EndDialog(ctx);
+				ctx.EndDialog();
 				ctx.pc->action = PlayerController::Action_Trade;
 				ctx.pc->action_unit = t;
 				bool* old_trader_buy = trader_buy;
@@ -3463,7 +3420,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				if(quest && quest->IsActive() && quest->IsTimedout())
 				{
 					ctx.dialog_once = false;
-					StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_FAIL), if_level, quest);
+					ctx.StartNextDialog(quest->GetDialog(QUEST_DIALOG_FAIL), if_level, quest);
 				}
 			}
 			break;
@@ -3490,7 +3447,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 
 				Quest* quest;
 				if(ctx.pc->unit->FindQuestItem(msg, &quest, nullptr))
-					StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_NEXT), if_level, quest);
+					ctx.StartNextDialog(quest->GetDialog(QUEST_DIALOG_NEXT), if_level, quest);
 			}
 			break;
 		case DTF_IF_QUEST_PROGRESS:
@@ -3560,7 +3517,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				{
 					if(quest->IsActive() && quest->IfNeedTalk(msg))
 					{
-						StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_NEXT), if_level, quest);
+						ctx.StartNextDialog(quest->GetDialog(QUEST_DIALOG_NEXT), if_level, quest);
 						break;
 					}
 				}
@@ -3608,7 +3565,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				{
 					if(quest->IfNeedTalk(msg))
 					{
-						StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_NEXT), if_level, quest);
+						ctx.StartNextDialog(quest->GetDialog(QUEST_DIALOG_NEXT), if_level, quest);
 						break;
 					}
 				}
@@ -3619,7 +3576,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					{
 						if(quest->IfNeedTalk(msg))
 						{
-							StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_NEXT), if_level, quest);
+							ctx.StartNextDialog(quest->GetDialog(QUEST_DIALOG_NEXT), if_level, quest);
 							break;
 						}
 					}
@@ -3758,7 +3715,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 				quest->refid = QM.quest_counter++;
 				quest->Start();
 				QM.unaccepted_quests.push_back(quest);
-				StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_START), if_level, quest);
+				ctx.StartNextDialog(quest->GetDialog(QUEST_DIALOG_START), if_level, quest);
 			}
 			else
 				have_quest = false;
@@ -3770,7 +3727,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 			if(quest)
 			{
 				// quest nie zosta³ zaakceptowany
-				StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_START), if_level, quest);
+				ctx.StartNextDialog(quest->GetDialog(QUEST_DIALOG_START), if_level, quest);
 			}
 			else
 			{
@@ -3822,7 +3779,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 				quest->refid = QM.quest_counter++;
 				quest->Start();
 				QM.unaccepted_quests.push_back(quest);
-				StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_START), if_level, quest);
+				ctx.StartNextDialog(quest->GetDialog(QUEST_DIALOG_START), if_level, quest);
 			}
 			else
 				have_quest = false;
@@ -3834,7 +3791,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 			if(quest)
 			{
 				// quest nie zosta³ zaakceptowany
-				StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_START), if_level, quest);
+				ctx.StartNextDialog(quest->GetDialog(QUEST_DIALOG_START), if_level, quest);
 			}
 			else
 			{
@@ -3867,12 +3824,12 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 			ctx.talker->quest_refid = quest->refid;
 			quest->Start();
 			QM.unaccepted_quests.push_back(quest);
-			StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_START), if_level, quest);
+			ctx.StartNextDialog(quest->GetDialog(QUEST_DIALOG_START), if_level, quest);
 		}
 		else
 		{
 			Quest* quest = QM.FindUnacceptedQuest(ctx.talker->quest_refid);
-			StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_START), if_level, quest);
+			ctx.StartNextDialog(quest->GetDialog(QUEST_DIALOG_START), if_level, quest);
 		}
 	}
 	else if(strcmp(msg, "rest1") == 0 || strcmp(msg, "rest5") == 0 || strcmp(msg, "rest10") == 0 || strcmp(msg, "rest30") == 0)
@@ -4374,7 +4331,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 	{
 		Unit* t = ctx.talker;
 		t->busy = Unit::Busy_Trading;
-		EndDialog(ctx);
+		ctx.EndDialog();
 		ctx.pc->action = PlayerController::Action_GiveItems;
 		ctx.pc->action_unit = t;
 		ctx.pc->chest_trade = &t->items;
@@ -4391,7 +4348,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 	{
 		Unit* t = ctx.talker;
 		t->busy = Unit::Busy_Trading;
-		EndDialog(ctx);
+		ctx.EndDialog();
 		ctx.pc->action = PlayerController::Action_ShareItems;
 		ctx.pc->action_unit = t;
 		ctx.pc->chest_trade = &t->items;
@@ -9567,7 +9524,7 @@ void Game::ClearGame()
 
 	LeaveLocation(true, false);
 
-	if((game_state == GS_WORLDMAP || prev_game_state == GS_WORLDMAP) && !L.is_open && Net::IsLocal() && !was_client)
+	if((game_state == GS_WORLDMAP || prev_game_state == GS_WORLDMAP) && !L.is_open && Net::IsLocal() && !N.was_client)
 	{
 		for(Unit* unit : Team.members)
 		{
@@ -9877,7 +9834,7 @@ void Game::LeaveLevel(bool clear)
 				ctx.tmp_ctx = nullptr;
 			}
 		}
-		if(L.city_ctx && (!Net::IsLocal() || was_client))
+		if(L.city_ctx && (!Net::IsLocal() || N.was_client))
 			DeleteElements(L.city_ctx->inside_buildings);
 	}
 
@@ -9900,7 +9857,7 @@ void Game::LeaveLevel(bool clear)
 void Game::LeaveLevel(LevelContext& ctx, bool clear)
 {
 	// cleanup units
-	if(Net::IsLocal() && !clear && !was_client)
+	if(Net::IsLocal() && !clear && !N.was_client)
 	{
 		for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
 		{
@@ -10015,7 +9972,7 @@ void Game::LeaveLevel(LevelContext& ctx, bool clear)
 	DeleteElements(ctx.pes);
 	DeleteElements(ctx.tpes);
 
-	if(Net::IsLocal() && !was_client)
+	if(Net::IsLocal() && !N.was_client)
 	{
 		// usuñ modele skrzyni
 		if(ctx.chests)

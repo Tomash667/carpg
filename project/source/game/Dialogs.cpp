@@ -1,6 +1,6 @@
 #include "Pch.h"
 #include "GameCore.h"
-#include "Dialog.h"
+#include "GameDialog.h"
 #include "Game.h"
 #include "Crc.h"
 #include "Language.h"
@@ -8,8 +8,6 @@
 #include "Quest.h"
 
 extern string g_system_dir;
-typedef std::map<cstring, GameDialog*, CstringComparer> DialogsMap;
-DialogsMap dialogs;
 
 //=================================================================================================
 void CheckText(cstring text, bool talk2)
@@ -543,7 +541,7 @@ bool LoadDialog(Tokenizer& t, Crc& crc)
 			}
 		}
 
-		std::pair<DialogsMap::iterator, bool>& result = dialogs.insert(std::pair<cstring, GameDialog*>(dialog->id.c_str(), dialog));
+		std::pair<GameDialog::Map::iterator, bool>& result = GameDialog::dialogs.insert(std::pair<cstring, GameDialog*>(dialog->id.c_str(), dialog));
 		if(!result.second)
 			t.Throw("Dialog with that id already exists.");
 
@@ -695,7 +693,7 @@ uint LoadDialogs(uint& out_crc, uint& errors)
 	}
 
 	out_crc = crc.Get();
-	return dialogs.size();
+	return GameDialog::dialogs.size();
 }
 
 //=================================================================================================
@@ -763,7 +761,7 @@ bool LoadDialogText(Tokenizer& t)
 	try
 	{
 		const string& id = t.MustGetItemKeyword();
-		dialog = FindDialog(id.c_str());
+		dialog = GameDialog::TryGet(id.c_str());
 		if(!dialog)
 			t.Throw("Missing dialog '%s'.", id.c_str());
 
@@ -896,134 +894,4 @@ void LoadDialogTexts()
 
 	if(errors > 0)
 		Error("Failed to load dialog texts (%d errors), check log for details.", errors);
-}
-
-//=================================================================================================
-cstring DialogContext::GetText(int index)
-{
-	GameDialog::Text& text = GetTextInner(index);
-	cstring str = dialog->strs[text.index].c_str();
-
-	if(!text.formatted)
-		return str;
-
-	static string str_part;
-	dialog_s_text.clear();
-
-	for(uint i = 0, len = strlen(str); i < len; ++i)
-	{
-		if(str[i] == '$')
-		{
-			str_part.clear();
-			++i;
-			if(str[i] == '(')
-			{
-				++i;
-				while(str[i] != ')')
-				{
-					str_part.push_back(str[i]);
-					++i;
-				}
-				SM.RunStringScript(str_part.c_str(), str_part);
-				dialog_s_text += str_part;
-			}
-			else
-			{
-				while(str[i] != '$')
-				{
-					str_part.push_back(str[i]);
-					++i;
-				}
-				if(dialog_quest)
-					dialog_s_text += dialog_quest->FormatString(str_part);
-				else
-					dialog_s_text += Game::Get().FormatString(*this, str_part);
-			}
-		}
-		else
-			dialog_s_text.push_back(str[i]);
-	}
-
-	return dialog_s_text.c_str();
-}
-
-//=================================================================================================
-GameDialog::Text& DialogContext::GetTextInner(int index)
-{
-	GameDialog::Text& text = dialog->texts[index];
-	if(text.next == -1)
-		return text;
-	else
-	{
-		int count = 1;
-		GameDialog::Text* t = &dialog->texts[index];
-		while(t->next != -1)
-		{
-			++count;
-			t = &dialog->texts[t->next];
-		}
-		int id = Rand() % count;
-		t = &dialog->texts[index];
-		for(int i = 0; i <= id; ++i)
-		{
-			if(i == id)
-				return *t;
-			t = &dialog->texts[t->next];
-		}
-	}
-	return text;
-}
-
-//=================================================================================================
-GameDialog* FindDialog(cstring id)
-{
-	auto it = dialogs.find(id);
-	if(it == dialogs.end())
-		return nullptr;
-	else
-		return it->second;
-}
-
-//=================================================================================================
-void CleanupDialogs()
-{
-	for(auto& it : dialogs)
-		delete it.second;
-}
-
-//=================================================================================================
-void VerifyDialogs(uint& errors)
-{
-	Info("Test: Checking dialogs...");
-
-	string str_output;
-
-	for(auto& it : dialogs)
-	{
-		GameDialog* dialog = it.second;
-
-		// verify scripts
-		for(auto& script : dialog->scripts)
-		{
-			cstring str = dialog->strs[script.index].c_str();
-			bool ok;
-			switch(script.type)
-			{
-			default:
-				assert(0);
-				break;
-			case GameDialog::Script::NORMAL:
-				ok = SM.RunScript(str, true);
-				break;
-			case GameDialog::Script::IF:
-				ok = SM.RunIfScript(str, true);
-				break;
-			case GameDialog::Script::STRING:
-				ok = SM.RunStringScript(str, str_output, true);
-				break;
-			}
-			if(!ok)
-				++errors;
-		}
-	}
 }

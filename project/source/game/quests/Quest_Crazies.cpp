@@ -1,7 +1,6 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "Quest_Crazies.h"
-#include "Dialog.h"
 #include "Game.h"
 #include "Journal.h"
 #include "SaveState.h"
@@ -35,7 +34,7 @@ void Quest_Crazies::Start()
 //=================================================================================================
 GameDialog* Quest_Crazies::GetDialog(int type2)
 {
-	return FindDialog("q_crazies_trainer");
+	return GameDialog::TryGet("q_crazies_trainer");
 }
 
 //=================================================================================================

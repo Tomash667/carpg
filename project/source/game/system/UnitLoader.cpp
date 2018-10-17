@@ -3,7 +3,7 @@
 #include "UnitData.h"
 #include "UnitGroup.h"
 #include "ContentLoader.h"
-#include "Dialog.h"
+#include "GameDialog.h"
 #include "ItemScript.h"
 #include "Item.h"
 #include "Spell.h"
@@ -659,7 +659,7 @@ class UnitLoader : public ContentLoader
 			case P_DIALOG:
 				{
 					const string& id = t.MustGetItemKeyword();
-					unit->dialog = FindDialog(id.c_str());
+					unit->dialog = GameDialog::TryGet(id.c_str());
 					if(!unit->dialog)
 						t.Throw("Missing dialog '%s'.", id.c_str());
 					crc.Update(unit->id);

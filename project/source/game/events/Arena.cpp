@@ -2,7 +2,6 @@
 #include "GameCore.h"
 #include "Arena.h"
 #include "Team.h"
-#include "Dialog.h"
 #include "Unit.h"
 #include "AIController.h"
 #include "Level.h"
@@ -849,7 +848,7 @@ void Arena::Update(float dt)
 				if(mode == PVP && fighter && fighter->IsHero())
 				{
 					fighter->hero->lost_pvp = (result == 0);
-					game.StartDialog2(pvp_player, fighter, FindDialog(IS_SET(fighter->data->flags, F_CRAZY) ? "crazy_pvp" : "hero_pvp"));
+					game.StartDialog2(pvp_player, fighter, GameDialog::TryGet(IS_SET(fighter->data->flags, F_CRAZY) ? "crazy_pvp" : "hero_pvp"));
 				}
 			}
 

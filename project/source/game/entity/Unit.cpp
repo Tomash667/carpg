@@ -1470,7 +1470,7 @@ void Unit::Load(GameReader& f, bool local)
 			if(dialog_id.empty())
 				auto_talk_dialog = nullptr;
 			else
-				auto_talk_dialog = FindDialog(dialog_id.c_str());
+				auto_talk_dialog = GameDialog::TryGet(dialog_id.c_str());
 			f >> auto_talk_timer;
 		}
 	}
@@ -3941,7 +3941,7 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 		{
 			DialogContext* ctx = game.FindDialogContext(this);
 			if(ctx)
-				game.EndDialog(*ctx);
+				ctx->EndDialog();
 			busy = Busy_No;
 		}
 	}

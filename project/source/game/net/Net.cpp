@@ -3561,7 +3561,9 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 				Quest* q = QM.FindQuest(c.id, false);
 				f << q->refid;
 				f.WriteCasted<byte>(q->state);
-				f.WriteString2(q->msgs.back());
+				f.WriteCasted<byte>(c.count);
+				for(int i = 0; i < c.count; ++i)
+					f.WriteString2(q->msgs[q->msgs.size() - c.count + i]);
 			}
 			break;
 		case NetChange::RENAME_ITEM:
@@ -3570,16 +3572,6 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 				f << item->refid;
 				f << item->id;
 				f << item->name;
-			}
-			break;
-		case NetChange::UPDATE_QUEST_MULTI:
-			{
-				Quest* q = QM.FindQuest(c.id, false);
-				f << q->refid;
-				f.WriteCasted<byte>(q->state);
-				f.WriteCasted<byte>(c.count);
-				for(int i = 0; i < c.count; ++i)
-					f.WriteString2(q->msgs[q->msgs.size() - c.count + i]);
 			}
 			break;
 		case NetChange::CHANGE_LEADER:
@@ -5056,10 +5048,10 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 		case NetChange::UPDATE_QUEST:
 			{
 				int refid;
-				byte state;
+				byte state, count;
 				f >> refid;
 				f >> state;
-				const string& msg = f.ReadString2();
+				f >> count;
 				if(!f)
 				{
 					N.StreamError("Update client: Broken UPDATE_QUEST.");
@@ -5068,11 +5060,25 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 
 				Quest* quest = QM.FindQuest(refid, false);
 				if(!quest)
+				{
 					N.StreamError("Update client: UPDATE_QUEST, missing quest %d.", refid);
+					f.SkipStringArray<byte, word>();
+					if(!f)
+						Error("Update client: Broken UPDATE_QUEST(2).");
+				}
 				else
 				{
 					quest->state = (Quest::State)state;
-					quest->msgs.push_back(msg);
+					for(byte i = 0; i < count; ++i)
+					{
+						f.ReadString2(Add1(quest->msgs));
+						if(!f)
+						{
+							N.StreamError("Update client: Broken UPDATE_QUEST(3) on index %u.", i);
+							quest->msgs.pop_back();
+							break;
+						}
+					}
 					gui->journal->NeedUpdate(Journal::Quests, quest->quest_index);
 					gui->messages->AddGameMsg3(GMS_JOURNAL_UPDATED);
 				}
@@ -5105,46 +5111,6 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 						N.StreamError("Update client: RENAME_ITEM, missing quest item %d.", refid);
 						f.SkipString1();
 					}
-				}
-			}
-			break;
-		// update quest with multiple texts
-		case NetChange::UPDATE_QUEST_MULTI:
-			{
-				int refid;
-				byte state, count;
-				f >> refid;
-				f >> state;
-				f >> count;
-				if(!f)
-				{
-					N.StreamError("Update client: Broken UPDATE_QUEST_MULTI.");
-					break;
-				}
-
-				Quest* quest = QM.FindQuest(refid, false);
-				if(!quest)
-				{
-					N.StreamError("Update client: UPDATE_QUEST_MULTI, missing quest %d.", refid);
-					f.SkipStringArray<byte, word>();
-					if(!f)
-						Error("Update client: Broken UPDATE_QUEST_MULTI(2).");
-				}
-				else
-				{
-					quest->state = (Quest::State)state;
-					for(byte i = 0; i < count; ++i)
-					{
-						f.ReadString2(Add1(quest->msgs));
-						if(!f)
-						{
-							N.StreamError("Update client: Broken UPDATE_QUEST_MULTI(3) on index %u.", i);
-							quest->msgs.pop_back();
-							break;
-						}
-					}
-					gui->journal->NeedUpdate(Journal::Quests, quest->quest_index);
-					gui->messages->AddGameMsg3(GMS_JOURNAL_UPDATED);
 				}
 			}
 			break;
@@ -8153,7 +8119,6 @@ bool Game::FilterOut(NetChange& c)
 	case NetChange::ADD_QUEST:
 	case NetChange::UPDATE_QUEST:
 	case NetChange::RENAME_ITEM:
-	case NetChange::UPDATE_QUEST_MULTI:
 	case NetChange::REMOVE_PLAYER:
 	case NetChange::CHANGE_LEADER:
 	case NetChange::RANDOM_NUMBER:
@@ -8302,7 +8267,7 @@ void Game::ClosePeer(bool wait)
 	N.peer->Shutdown(wait ? I_SHUTDOWN : 0);
 	Info("sv_online = false");
 	if(Net::IsClient())
-		was_client = true;
+		N.was_client = true;
 	Net::changes.clear();
 	Net::SetMode(Net::Mode::Singleplayer);
 }

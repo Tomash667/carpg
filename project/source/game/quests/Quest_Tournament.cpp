@@ -4,7 +4,6 @@
 #include "GameFile.h"
 #include "World.h"
 #include "Level.h"
-#include "Dialog.h"
 #include "QuestManager.h"
 #include "Quest_Mages.h"
 #include "City.h"

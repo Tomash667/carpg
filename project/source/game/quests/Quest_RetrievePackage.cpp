@@ -1,7 +1,6 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "Quest_RetrievePackage.h"
-#include "Dialog.h"
 #include "Game.h"
 #include "Journal.h"
 #include "LocationHelper.h"
@@ -24,11 +23,11 @@ GameDialog* Quest_RetrievePackage::GetDialog(int type2)
 	switch(type2)
 	{
 	case QUEST_DIALOG_START:
-		return FindDialog("q_retrieve_package_start");
+		return GameDialog::TryGet("q_retrieve_package_start");
 	case QUEST_DIALOG_FAIL:
-		return FindDialog("q_retrieve_package_timeout");
+		return GameDialog::TryGet("q_retrieve_package_timeout");
 	case QUEST_DIALOG_NEXT:
-		return FindDialog("q_retrieve_package_end");
+		return GameDialog::TryGet("q_retrieve_package_end");
 	default:
 		assert(0);
 		return nullptr;

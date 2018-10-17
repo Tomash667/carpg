@@ -1,7 +1,6 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "Quest_BanditsCollectToll.h"
-#include "Dialog.h"
 #include "Game.h"
 #include "Journal.h"
 #include "QuestManager.h"
@@ -26,11 +25,11 @@ GameDialog* Quest_BanditsCollectToll::GetDialog(int type2)
 	switch(type2)
 	{
 	case QUEST_DIALOG_START:
-		return FindDialog("q_bandits_collect_toll_start");
+		return GameDialog::TryGet("q_bandits_collect_toll_start");
 	case QUEST_DIALOG_FAIL:
-		return FindDialog("q_bandits_collect_toll_timeout");
+		return GameDialog::TryGet("q_bandits_collect_toll_timeout");
 	case QUEST_DIALOG_NEXT:
-		return FindDialog("q_bandits_collect_toll_end");
+		return GameDialog::TryGet("q_bandits_collect_toll_end");
 	default:
 		assert(0);
 		return nullptr;
@@ -52,7 +51,7 @@ void Quest_BanditsCollectToll::SetProgress(int prog2)
 			Location& ol = *W.GetLocation(other_loc);
 
 			Encounter* e = W.AddEncounter(enc);
-			e->dialog = FindDialog("q_bandits_collect_toll_talk");
+			e->dialog = GameDialog::TryGet("q_bandits_collect_toll_talk");
 			e->dont_attack = true;
 			e->group = SG_BANDITS;
 			e->pos = (sl.pos + ol.pos) / 2;
@@ -173,7 +172,7 @@ bool Quest_BanditsCollectToll::Load(GameReader& f)
 		Location& ol = *W.GetLocation(other_loc);
 
 		Encounter* e = W.RecreateEncounter(enc);
-		e->dialog = FindDialog("q_bandits_collect_toll_talk");
+		e->dialog = GameDialog::TryGet("q_bandits_collect_toll_talk");
 		e->dont_attack = true;
 		e->group = SG_BANDITS;
 		e->pos = (sl.pos + ol.pos) / 2;
