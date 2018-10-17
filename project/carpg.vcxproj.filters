@@ -778,6 +778,9 @@
     <ClCompile Include="source\game\system\GameDialog.cpp">
       <Filter>3. game\system\dialogs</Filter>
     </ClCompile>
+    <ClCompile Include="source\game\system\DialogLoader.cpp">
+      <Filter>3. game\system\dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\resource\resource1.h">
@@ -1577,6 +1580,9 @@
       <Filter>3. game\system\dialogs</Filter>
     </ClInclude>
     <ClInclude Include="source\game\system\DialogContext.h">
+      <Filter>3. game\system\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\system\DialogLoader.h">
       <Filter>3. game\system\dialogs</Filter>
     </ClInclude>
   </ItemGroup>

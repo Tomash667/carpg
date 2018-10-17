@@ -379,6 +379,7 @@
     <ClInclude Include="source\game\stats\Spell.h" />
     <ClInclude Include="source\game\stats\UnitStats.h" />
     <ClInclude Include="source\game\system\DialogContext.h" />
+    <ClInclude Include="source\game\system\DialogLoader.h" />
     <ClInclude Include="source\game\system\FrameInfo.h" />
     <ClInclude Include="source\game\system\GameDialog.h" />
     <ClInclude Include="source\game\system\Item.h" />
@@ -616,6 +617,7 @@
     <ClCompile Include="source\game\stats\UnitStats.cpp" />
     <ClCompile Include="source\game\system\ContentLoader.cpp" />
     <ClCompile Include="source\game\system\DialogContext.cpp" />
+    <ClCompile Include="source\game\system\DialogLoader.cpp" />
     <ClCompile Include="source\game\system\FrameInfo.cpp" />
     <ClCompile Include="source\game\system\GameDialog.cpp" />
     <ClCompile Include="source\game\system\Item.cpp" />
