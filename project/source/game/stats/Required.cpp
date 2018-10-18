@@ -8,6 +8,8 @@
 #include "BaseUsable.h"
 #include "Stock.h"
 #include "UnitGroup.h"
+#include "Item.h"
+#include "UnitData.h"
 
 extern string g_system_dir;
 

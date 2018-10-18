@@ -275,7 +275,7 @@ void Game::SaveGame(GameWriter& f)
 
 	// before saving update minimap, finish unit warps
 	if(Net::IsOnline())
-		Net_PreSave();
+		ProcessLeftPlayers();
 	L.UpdateDungeonMinimap(false);
 	L.ProcessUnitWarps();
 	L.ProcessRemoveUnits(false);

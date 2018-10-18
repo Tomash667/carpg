@@ -14,6 +14,7 @@
 #include "Game.h"
 #include "GlobalGui.h"
 #include "GameMessages.h"
+#include "PlayerInfo.h"
 
 //=================================================================================================
 void Quest_Contest::InitOnce()

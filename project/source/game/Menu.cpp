@@ -35,6 +35,7 @@
 #include "QuestManager.h"
 #include "Quest_Tutorial.h"
 #include "GlobalGui.h"
+#include "PlayerInfo.h"
 
 extern string g_ctime;
 
@@ -362,7 +363,7 @@ void Game::EndConnecting(cstring msg, bool wait)
 		GUI.SimpleDialog(msg, gui->pick_server->visible ? (DialogBox*)gui->pick_server : (DialogBox*)gui->multiplayer);
 	if(wait)
 		ForceRedraw();
-	ClosePeer(wait);
+	N.ClosePeer(wait);
 }
 
 //=================================================================================================
@@ -807,7 +808,7 @@ void Game::UpdateClientTransfer(float dt)
 			Info("NM_TRANSFER: Lost connection with server.");
 			N.StreamEnd();
 			N.peer->DeallocatePacket(packet);
-			ClosePeer();
+			N.ClosePeer();
 			gui->info_box->CloseDialog();
 			ExitToMenu();
 			GUI.SimpleDialog(txLostConnection, nullptr);
@@ -1001,7 +1002,7 @@ void Game::UpdateClientTransfer(float dt)
 					gui->world_map->visible = true;
 					W.SetState(World::State::ON_MAP);
 					gui->info_box->CloseDialog();
-					update_timer = 0.f;
+					N.update_timer = 0.f;
 					leader_id = 0;
 					Team.leader = nullptr;
 					pc = nullptr;
@@ -1031,7 +1032,7 @@ void Game::UpdateClientTransfer(float dt)
 					gui->game_gui->visible = true;
 					gui->world_map->visible = false;
 					gui->info_box->CloseDialog();
-					update_timer = 0.f;
+					N.update_timer = 0.f;
 					fallback_type = FALLBACK::NONE;
 					fallback_t = -0.5f;
 					cam.Reset();
@@ -1071,7 +1072,7 @@ void Game::UpdateClientQuiting(float dt)
 		{
 			Info("NM_QUITTING: Server accepted disconnection.");
 			N.peer->DeallocatePacket(packet);
-			ClosePeer();
+			N.ClosePeer();
 			if(gui->server->visible)
 				gui->server->CloseDialog();
 			if(net_callback)
@@ -1088,7 +1089,7 @@ void Game::UpdateClientQuiting(float dt)
 	{
 		Warn("NM_QUITTING: Disconnected without accepting.");
 		N.peer->DeallocatePacket(packet);
-		ClosePeer();
+		N.ClosePeer();
 		if(gui->server->visible)
 			gui->server->CloseDialog();
 		if(net_callback)
@@ -1129,7 +1130,7 @@ void Game::UpdateServerTransfer(float dt)
 			{
 				Info("NM_TRANSFER_SERVER: Player %s left game.", info.name.c_str());
 				--N.active_players;
-				players_left = true;
+				N.players_left = true;
 				info.left = (msg_id == ID_CONNECTION_LOST ? PlayerInfo::LEFT_DISCONNECTED : PlayerInfo::LEFT_QUIT);
 			}
 			break;
@@ -1412,7 +1413,7 @@ void Game::UpdateServerTransfer(float dt)
 				{
 					Info("NM_TRANSFER_SERVER: Disconnecting player %s due no response.", info.name.c_str());
 					--N.active_players;
-					players_left = true;
+					N.players_left = true;
 					info.left = PlayerInfo::LEFT_TIMEOUT;
 					anyone_removed = true;
 				}
@@ -1460,7 +1461,7 @@ void Game::UpdateServerTransfer(float dt)
 				N.mp_load = false;
 				clear_color = Color::White;
 				W.SetState(World::State::ON_MAP);
-				update_timer = 0.f;
+				N.update_timer = 0.f;
 				SetMusic(MusicType::Travel);
 				ProcessLeftPlayers();
 				gui->info_box->CloseDialog();
@@ -1626,7 +1627,7 @@ void Game::UpdateServerSend(float dt)
 			{
 				Info("NM_SERVER_SEND: Player %s left game.", info.name.c_str());
 				--N.active_players;
-				players_left = true;
+				N.players_left = true;
 				info.left = (msg_id == ID_CONNECTION_LOST ? PlayerInfo::LEFT_DISCONNECTED : PlayerInfo::LEFT_QUIT);
 			}
 			return;
@@ -1691,7 +1692,7 @@ void Game::UpdateServerSend(float dt)
 				Info("NM_SERVER_SEND: Disconnecting player %s due to no response.", info.name.c_str());
 				N.peer->CloseConnection(info.adr, true, 0, IMMEDIATE_PRIORITY);
 				--N.active_players;
-				players_left = true;
+				N.players_left = true;
 				info.left = PlayerInfo::LEFT_TIMEOUT;
 			}
 			else
@@ -1711,8 +1712,6 @@ void Game::UpdateServerSend(float dt)
 			N.peer->Send((cstring)&b, 1, HIGH_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 			N.StreamWrite(&b, 1, Stream_TransferServer, UNASSIGNED_SYSTEM_ADDRESS);
 		}
-		for(auto info : N.players)
-			info->update_timer = 0.f;
 		for(vector<Unit*>::iterator it = L.local_ctx.units->begin(), end = L.local_ctx.units->end(); it != end; ++it)
 			(*it)->changed = false;
 		if(L.city_ctx)
@@ -1767,7 +1766,7 @@ void Game::UpdateServerQuiting(float dt)
 					N.StreamEnd();
 					N.peer->DeallocatePacket(packet);
 					Info("NM_QUITTING_SERVER: All players disconnected from server. Closing...");
-					ClosePeer();
+					N.ClosePeer();
 					gui->info_box->CloseDialog();
 					if(gui->server->visible)
 						gui->server->CloseDialog();
@@ -1789,7 +1788,7 @@ void Game::UpdateServerQuiting(float dt)
 	if(net_timer <= 0.f)
 	{
 		Warn("NM_QUITTING_SERVER: Not all players disconnected on time. Closing server...");
-		ClosePeer();
+		N.ClosePeer();
 		gui->info_box->CloseDialog();
 		if(gui->server->visible)
 			gui->server->CloseDialog();
@@ -1847,7 +1846,6 @@ void Game::QuickJoinIp()
 		}
 
 		Info("Pinging %s...", server_ip.c_str());
-		Info("sv_online = true");
 		Net::SetMode(Net::Mode::Client);
 		gui->info_box->Show(txConnecting);
 		net_mode = NM_CONNECT_IP;
@@ -1903,7 +1901,7 @@ void Game::CloseConnection(VoidF f)
 		case NM_TRANSFER:
 			gui->info_box->Show(txDisconnecting);
 			ForceRedraw();
-			ClosePeer(true);
+			N.ClosePeer(true);
 			f();
 			break;
 		case NM_TRANSFER_SERVER:
@@ -1919,7 +1917,7 @@ void Game::CloseConnection(VoidF f)
 			{
 				// roz³¹cz graczy
 				Info("ServerPanel: Disconnecting clients.");
-				const byte b[] = { ID_SERVER_CLOSE, 0 };
+				const byte b[] = { ID_SERVER_CLOSE, ServerClose_Closing };
 				N.peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 				N.StreamWrite(b, 2, Stream_TransferServer, UNASSIGNED_SYSTEM_ADDRESS);
 				net_mode = Game::NM_QUITTING_SERVER;
@@ -1932,7 +1930,7 @@ void Game::CloseConnection(VoidF f)
 			{
 				// nie ma graczy, mo¿na zamkn¹æ
 				gui->info_box->CloseDialog();
-				ClosePeer();
+				N.ClosePeer();
 				f();
 			}
 			break;
@@ -1955,7 +1953,7 @@ void Game::CloseConnection(VoidF f)
 			{
 				// roz³¹cz graczy
 				Info("ServerPanel: Disconnecting clients.");
-				const byte b[] = { ID_SERVER_CLOSE, 0 };
+				const byte b[] = { ID_SERVER_CLOSE, ServerClose_Closing };
 				N.peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 				N.StreamWrite(b, 2, Stream_TransferServer, UNASSIGNED_SYSTEM_ADDRESS);
 				net_mode = Game::NM_QUITTING_SERVER;
@@ -1967,7 +1965,7 @@ void Game::CloseConnection(VoidF f)
 			else
 			{
 				// nie ma graczy, mo¿na zamkn¹æ
-				ClosePeer();
+				N.ClosePeer();
 				if(f)
 					f();
 			}
@@ -1976,7 +1974,7 @@ void Game::CloseConnection(VoidF f)
 		{
 			gui->info_box->Show(txDisconnecting);
 			ForceRedraw();
-			ClosePeer(true);
+			N.ClosePeer(true);
 			f();
 		}
 	}
@@ -2056,7 +2054,7 @@ void Game::OnPickServer(int id)
 {
 	if(id == BUTTON_CANCEL)
 	{
-		ClosePeer();
+		N.ClosePeer();
 		N.peer->Shutdown(0);
 		gui->pick_server->CloseDialog();
 	}
@@ -2112,7 +2110,7 @@ void Game::ClearAndExitToMenu(cstring msg)
 	assert(msg);
 	Info("Clear game and exit to menu.");
 	ClearGame();
-	ClosePeer();
+	N.ClosePeer();
 	ExitToMenu();
 	GUI.SimpleDialog(msg, gui->main_menu);
 }

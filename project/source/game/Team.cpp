@@ -16,6 +16,7 @@
 #include "Game.h"
 #include "GameMessages.h"
 #include "ItemHelper.h"
+#include "PlayerInfo.h"
 
 
 TeamSingleton Team;

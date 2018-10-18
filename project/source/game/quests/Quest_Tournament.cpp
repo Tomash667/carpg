@@ -16,6 +16,7 @@
 #include "Game.h"
 #include "GameMessages.h"
 #include "Arena.h"
+#include "PlayerInfo.h"
 
 //=================================================================================================
 void Quest_Tournament::InitOnce()

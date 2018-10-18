@@ -147,10 +147,11 @@ public:
 	PlayerInfo* FindPlayer(Cstring nick);
 	PlayerInfo* FindPlayer(const SystemAddress& adr);
 	PlayerInfo* TryGetPlayer(int id);
+	void ClosePeer(bool wait = false);
 
 	RakPeerInterface* peer;
 	vector<PlayerInfo*> players; // contains players that left too
-	float mp_interp;
+	float update_timer, mp_interp;
 	int port;
 	bool mp_load, mp_load_worldmap, mp_use_interp;
 
@@ -168,11 +169,15 @@ public:
 	void Save(GameWriter& f);
 	void Load(GameReader& f);
 	void InterpolatePlayers(float dt);
+	void KickPlayer(PlayerInfo& info);
+	void FilterServerChanges();
+	bool FilterOut(NetChangePlayer& c);
 
 	vector<PlayerInfo*> old_players;
 	uint active_players, max_players;
 	string server_name, password;
 	int last_id;
+	bool players_left;
 
 	//****************************************************************************
 	// Client
@@ -181,6 +186,8 @@ public:
 	void InitClient();
 	void SendClient(BitStreamWriter& f, PacketPriority priority, PacketReliability reliability, StreamLogType type);
 	void InterpolateUnits(float dt);
+	void FilterClientChanges();
+	bool FilterOut(NetChange& c);
 
 	SystemAddress server;
 	bool was_client;

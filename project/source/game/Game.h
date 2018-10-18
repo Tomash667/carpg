@@ -11,10 +11,12 @@
 #include "SceneNode.h"
 #include "QuadTree.h"
 #include "Music.h"
-#include "PlayerInfo.h"
 #include "Camera.h"
 #include "Config.h"
 #include "Settings.h"
+#include "Blood.h"
+#include "BaseObject.h"
+#include "PlayerController.h"
 
 //-----------------------------------------------------------------------------
 // Tryb szybkiego uruchamiania gry
@@ -654,7 +656,6 @@ public:
 	// MULTIPLAYER
 	string player_name, server_ip, enter_pswd;
 	int my_id; // moje unikalne id
-	bool players_left;
 	int leader_id;
 	enum NET_MODE
 	{
@@ -669,7 +670,7 @@ public:
 	int net_tries;
 	VoidF net_callback;
 	string net_adr;
-	float net_timer, update_timer, mp_timeout;
+	float net_timer, mp_timeout;
 	BitStream prepared_stream;
 	bool change_title_a;
 	int skip_id_counter;
@@ -689,7 +690,6 @@ public:
 	bool paused;
 
 	void AddServerMsg(cstring msg);
-	void KickPlayer(PlayerInfo& info);
 	void AddMsg(cstring msg);
 	void OnEnterPassword(int id);
 	void ForceRedraw();
@@ -729,14 +729,8 @@ public:
 	void WritePlayerStartData(BitStreamWriter& f, PlayerInfo& info);
 	bool ReadPlayerStartData(BitStreamReader& f);
 	bool CheckMoveNet(Unit& unit, const Vec3& pos);
-	void Net_PreSave();
-	bool FilterOut(NetChange& c);
-	bool FilterOut(NetChangePlayer& c);
-	void Net_FilterServerChanges();
-	void Net_FilterClientChanges();
 	void ProcessLeftPlayers();
 	void RemovePlayer(PlayerInfo& info);
-	void ClosePeer(bool wait = false);
 
 	//-----------------------------------------------------------------
 	// WORLD MAP

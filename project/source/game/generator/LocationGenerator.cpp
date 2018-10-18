@@ -5,6 +5,7 @@
 #include "Level.h"
 #include "AIController.h"
 #include "Game.h"
+#include "Unit.h"
 
 //=================================================================================================
 int LocationGenerator::GetNumberOfSteps()

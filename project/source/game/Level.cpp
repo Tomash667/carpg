@@ -23,6 +23,7 @@
 #include "Team.h"
 #include "FOV.h"
 #include "Texture.h"
+#include "PlayerInfo.h"
 
 Level L;
 

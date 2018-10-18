@@ -2,7 +2,6 @@
 #include "GameCore.h"
 #include "UnitData.h"
 #include "ItemScript.h"
-#include "Dialog.h"
 #include "Spell.h"
 #include "Item.h"
 

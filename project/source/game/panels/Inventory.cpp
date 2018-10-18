@@ -15,6 +15,7 @@
 #include "SoundManager.h"
 #include "ResourceManager.h"
 #include "ItemHelper.h"
+#include "PlayerInfo.h"
 
 /* UWAGI CO DO ZMIENNYCH
 index - indeks do items [0, 1, 2, 3...]

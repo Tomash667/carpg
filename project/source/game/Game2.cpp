@@ -65,6 +65,7 @@
 #include "ItemHelper.h"
 #include "GlobalGui.h"
 #include "FOV.h"
+#include "PlayerInfo.h"
 
 const Vec2 ALERT_RANGE(20.f, 30.f);
 const float PICKUP_RANGE = 2.f;
@@ -7660,7 +7661,7 @@ void Game::ChangeLevel(int where)
 		if(level >= 0)
 			N.OnChangeLevel(level);
 
-		Net_FilterServerChanges();
+		N.FilterServerChanges();
 	}
 
 	if(where == -1)

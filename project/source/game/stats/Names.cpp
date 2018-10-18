@@ -3,6 +3,7 @@
 #include "Game.h"
 #include "Language.h"
 #include "World.h"
+#include "Unit.h"
 
 //-----------------------------------------------------------------------------
 cstring txNameFrom, txNameSonOf, txNameSonOfPost, txNameSonOfInvalid, txNamePrefix;

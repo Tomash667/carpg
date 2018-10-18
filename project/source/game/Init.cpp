@@ -28,6 +28,7 @@
 #include "GlobalGui.h"
 #include "SaveLoadPanel.h"
 #include "DebugDrawer.h"
+#include "Item.h"
 
 extern void HumanPredraw(void* ptr, Matrix* mat, int n);
 extern const int ITEM_IMAGE_SIZE;

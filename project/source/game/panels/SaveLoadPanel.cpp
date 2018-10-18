@@ -15,6 +15,7 @@
 #include "GetTextDialog.h"
 #include "GameMenu.h"
 #include "CreateServerPanel.h"
+#include "Unit.h"
 
 //=================================================================================================
 SaveLoad::SaveLoad(const DialogInfo& info) : GameDialogBox(info), choice(0), tMiniSave(nullptr)

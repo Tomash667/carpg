@@ -10,6 +10,7 @@
 #include "GlobalGui.h"
 #include "GameMessages.h"
 #include "ResourceManager.h"
+#include "PlayerInfo.h"
 
 //-----------------------------------------------------------------------------
 enum ButtonId
@@ -473,7 +474,7 @@ void TeamPanel::OnKick(int id)
 	if(!Team.IsTeamMember(*target))
 		SimpleDialog(txAlreadyLeft);
 	else
-		game.KickPlayer(*target->player->player_info);
+		N.KickPlayer(*target->player->player_info);
 }
 
 //=================================================================================================

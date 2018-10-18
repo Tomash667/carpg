@@ -4,6 +4,7 @@
 #include "ScriptManager.h"
 #include "Quest.h"
 #include "Game.h"
+#include "PlayerInfo.h"
 
 //=================================================================================================
 void DialogContext::StartNextDialog(GameDialog* dialog, int& if_level, Quest* quest)

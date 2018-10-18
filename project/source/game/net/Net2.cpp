@@ -13,9 +13,13 @@
 #include "Trap.h"
 #include "Door.h"
 #include "EntityInterpolator.h"
+#include "GlobalGui.h"
+#include "ServerPanel.h"
+#include "PlayerInfo.h"
 
 Net N;
 const float CHANGE_LEVEL_TIMER = 5.f;
+const int CLOSE_PEER_TIMER = 1000; // ms
 
 //=================================================================================================
 Net::Net() : peer(nullptr), current_packet(nullptr), mp_load(false), mp_use_interp(true), mp_interp(0.05f), was_client(false)
@@ -113,6 +117,19 @@ PlayerInfo* Net::TryGetPlayer(int id)
 }
 
 //=================================================================================================
+void Net::ClosePeer(bool wait)
+{
+	assert(peer);
+
+	Info("Net peer shutdown.");
+	peer->Shutdown(wait ? CLOSE_PEER_TIMER : 0);
+	if(IsClient())
+		was_client = true;
+	changes.clear();
+	SetMode(Mode::Singleplayer);
+}
+
+//=================================================================================================
 void Net::InitServer()
 {
 	Info("Creating server (port %d)...", port);
@@ -141,7 +158,6 @@ void Net::InitServer()
 	Info("Server created. Waiting for connection.");
 
 	SetMode(Mode::Server);
-	Info("sv_online = true");
 }
 
 //=================================================================================================
@@ -314,6 +330,102 @@ void Net::InterpolatePlayers(float dt)
 }
 
 //=================================================================================================
+void Net::KickPlayer(PlayerInfo& info)
+{
+	// send kick message
+	BitStreamWriter f;
+	f << ID_SERVER_CLOSE;
+	f << (byte)ServerClose_Kicked;
+	SendServer(f, MEDIUM_PRIORITY, RELIABLE, info.adr, Stream_None);
+
+	info.state = PlayerInfo::REMOVING;
+
+	Game& game = Game::Get();
+	ServerPanel* server_panel = game.gui->server;
+	if(server_panel->visible)
+	{
+		server_panel->AddMsg(Format(game.txPlayerKicked, info.name.c_str()));
+		Info("Player %s was kicked.", info.name.c_str());
+
+		if(active_players > 2)
+			server_panel->AddLobbyUpdate(Int2(Lobby_KickPlayer, info.id));
+
+		server_panel->CheckReady();
+		server_panel->UpdateServerInfo();
+	}
+	else
+	{
+		info.left = PlayerInfo::LEFT_KICK;
+		players_left = true;
+	}
+}
+
+//=================================================================================================
+void Net::FilterServerChanges()
+{
+	for(vector<NetChange>::iterator it = changes.begin(), end = changes.end(); it != end;)
+	{
+		if(FilterOut(*it))
+		{
+			if(it + 1 == end)
+			{
+				changes.pop_back();
+				break;
+			}
+			else
+			{
+				std::iter_swap(it, end - 1);
+				changes.pop_back();
+				end = changes.end();
+			}
+		}
+		else
+			++it;
+	}
+
+	for(PlayerInfo* info : N.players)
+	{
+		for(vector<NetChangePlayer>::iterator it = info->changes.begin(), end = info->changes.end(); it != end;)
+		{
+			if(FilterOut(*it))
+			{
+				if(it + 1 == end)
+				{
+					info->changes.pop_back();
+					break;
+				}
+				else
+				{
+					std::iter_swap(it, end - 1);
+					info->changes.pop_back();
+					end = info->changes.end();
+				}
+			}
+			else
+				++it;
+		}
+	}
+}
+
+//=================================================================================================
+bool Net::FilterOut(NetChangePlayer& c)
+{
+	switch(c.type)
+	{
+	case NetChangePlayer::GOLD_MSG:
+	case NetChangePlayer::DEVMODE:
+	case NetChangePlayer::GOLD_RECEIVED:
+	case NetChangePlayer::GAIN_STAT:
+	case NetChangePlayer::ADDED_ITEMS_MSG:
+	case NetChangePlayer::GAME_MESSAGE:
+	case NetChangePlayer::RUN_SCRIPT_RESULT:
+		return false;
+	default:
+		return true;
+	}
+}
+
+//=================================================================================================
 void Net::InitClient()
 {
 	Info("Initlializing client...");
@@ -332,7 +444,6 @@ void Net::InitClient()
 	peer->SetMaximumIncomingConnections(0);
 
 	SetMode(Mode::Client);
-	Info("sv_online = true");
 
 	DEBUG_DO(peer->SetTimeoutTime(60 * 60 * 1000, UNASSIGNED_SYSTEM_ADDRESS));
 }
@@ -371,6 +482,96 @@ void Net::InterpolateUnits(float dt)
 				}
 			}
 		}
+	}
+}
+
+//=================================================================================================
+void Net::FilterClientChanges()
+{
+	for(vector<NetChange>::iterator it = changes.begin(), end = changes.end(); it != end;)
+	{
+		if(FilterOut(*it))
+		{
+			if(it + 1 == end)
+			{
+				changes.pop_back();
+				break;
+			}
+			else
+			{
+				std::iter_swap(it, end - 1);
+				changes.pop_back();
+				end = changes.end();
+			}
+		}
+		else
+			++it;
+	}
+}
+
+
+//=================================================================================================
+bool Net::FilterOut(NetChange& c)
+{
+	switch(c.type)
+	{
+	case NetChange::CHANGE_EQUIPMENT:
+		return IsServer();
+	case NetChange::CHANGE_FLAGS:
+	case NetChange::UPDATE_CREDIT:
+	case NetChange::ALL_QUESTS_COMPLETED:
+	case NetChange::CHANGE_LOCATION_STATE:
+	case NetChange::ADD_RUMOR:
+	case NetChange::ADD_NOTE:
+	case NetChange::REGISTER_ITEM:
+	case NetChange::ADD_QUEST:
+	case NetChange::UPDATE_QUEST:
+	case NetChange::RENAME_ITEM:
+	case NetChange::REMOVE_PLAYER:
+	case NetChange::CHANGE_LEADER:
+	case NetChange::RANDOM_NUMBER:
+	case NetChange::CHEAT_SKIP_DAYS:
+	case NetChange::CHEAT_NOCLIP:
+	case NetChange::CHEAT_GODMODE:
+	case NetChange::CHEAT_INVISIBLE:
+	case NetChange::CHEAT_ADD_ITEM:
+	case NetChange::CHEAT_ADD_GOLD:
+	case NetChange::CHEAT_SET_STAT:
+	case NetChange::CHEAT_MOD_STAT:
+	case NetChange::CHEAT_REVEAL:
+	case NetChange::GAME_OVER:
+	case NetChange::CHEAT_CITIZEN:
+	case NetChange::WORLD_TIME:
+	case NetChange::TRAIN_MOVE:
+	case NetChange::ADD_LOCATION:
+	case NetChange::REMOVE_CAMP:
+	case NetChange::CHEAT_NOAI:
+	case NetChange::END_OF_GAME:
+	case NetChange::UPDATE_FREE_DAYS:
+	case NetChange::CHANGE_MP_VARS:
+	case NetChange::PAY_CREDIT:
+	case NetChange::GIVE_GOLD:
+	case NetChange::DROP_GOLD:
+	case NetChange::HERO_LEAVE:
+	case NetChange::PAUSED:
+	case NetChange::CLOSE_ENCOUNTER:
+	case NetChange::GAME_STATS:
+	case NetChange::CHANGE_ALWAYS_RUN:
+		return false;
+	case NetChange::TALK:
+	case NetChange::TALK_POS:
+		if(IsServer() && c.str)
+		{
+			StringPool.Free(c.str);
+			RemoveElement(Game::Get().net_talk, c.str);
+			c.str = nullptr;
+		}
+		return true;
+	case NetChange::RUN_SCRIPT:
+		StringPool.Free(c.str);
+		return true;
+	default:
+		return true;
 	}
 }
 

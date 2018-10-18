@@ -24,6 +24,7 @@
 #include "GroundItem.h"
 #include "ResourceManager.h"
 #include "GlobalGui.h"
+#include "PlayerInfo.h"
 
 const float Unit::AUTO_TALK_WAIT = 0.333f;
 const float Unit::STAMINA_BOW_ATTACK = 100.f;

@@ -21,6 +21,5 @@ const float T_WAIT_FOR_DISCONNECT = 1.f;
 const float T_CONNECT_PING = 1.f; // odstêp pomiêdzy pingowaniem serwera
 const int I_CONNECT_TRIES = 5; // liczba prób po³¹czenia (ca³kowity czas ³¹czenia z serwerem = T_CONNECT_PING*T_CONNECT_TRIES)
 const float T_CONNECT = 5.f; // czas na po³¹czenie do serwera
-const int I_SHUTDOWN = 1000;
 
 const int MAX_LEVEL = 25;

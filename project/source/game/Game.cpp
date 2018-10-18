@@ -49,6 +49,7 @@
 #include "DebugDrawer.h"
 #include "Pathfinding.h"
 #include "SaveSlot.h"
+#include "PlayerInfo.h"
 
 // limit fps
 #define LIMIT_DT 0.3f
@@ -1728,7 +1729,7 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 				info->timer = 5.f;
 			}
 		}
-		Net_FilterServerChanges();
+		N.FilterServerChanges();
 	}
 
 	// calculate number of loading steps for drawing progress bar

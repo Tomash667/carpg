@@ -85,7 +85,7 @@ enum GamePacket : byte
 	ID_LEAVE,
 
 	/* Closing server
-	byte - reason
+	byte(ServerCloseReason) - reason
 	*/
 	ID_SERVER_CLOSE,
 
@@ -177,4 +177,11 @@ enum GamePacket : byte
 	...
 	*/
 	ID_PLAYER_CHANGES
+};
+
+//-----------------------------------------------------------------------------
+enum ServerCloseReason
+{
+	ServerClose_Closing,
+	ServerClose_Kicked
 };

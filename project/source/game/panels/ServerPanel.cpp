@@ -12,6 +12,7 @@
 #include "Content.h"
 #include "Version.h"
 #include "Level.h"
+#include "PlayerInfo.h"
 
 //-----------------------------------------------------------------------------
 #ifdef _DEBUG
@@ -295,11 +296,11 @@ void ServerPanel::UpdateLobbyClient(float dt)
 					switch(packet->data[1])
 					{
 					default:
-					case 0:
+					case ServerClose_Closing:
 						reason = txClosing;
 						reason_eng = "closing";
 						break;
-					case 1:
+					case ServerClose_Kicked:
 						reason = txKicked;
 						reason_eng = "kicked";
 						break;
@@ -317,7 +318,7 @@ void ServerPanel::UpdateLobbyClient(float dt)
 				CloseDialog();
 				N.StreamEnd();
 				N.peer->DeallocatePacket(packet);
-				game->ClosePeer(true);
+				N.ClosePeer(true);
 				return;
 			}
 		case ID_TIMER:
@@ -1317,7 +1318,7 @@ void ServerPanel::ExitLobby(VoidF callback)
 		{
 			// roz³¹cz graczy
 			Info("ServerPanel: Disconnecting clients.");
-			const byte b[] = { ID_SERVER_CLOSE, 0 };
+			const byte b[] = { ID_SERVER_CLOSE, ServerClose_Closing };
 			N.peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 			N.StreamWrite(b, 2, Stream_UpdateLobbyServer, UNASSIGNED_SYSTEM_ADDRESS);
 			game->net_mode = Game::NM_QUITTING_SERVER;
@@ -1329,7 +1330,7 @@ void ServerPanel::ExitLobby(VoidF callback)
 		else
 		{
 			// nie ma graczy, mo¿na zamkn¹æ
-			game->ClosePeer();
+			N.ClosePeer();
 			CloseDialog();
 			if(callback)
 				callback();
@@ -1361,7 +1362,7 @@ void ServerPanel::OnKick(int id)
 	{
 		PlayerInfo* info = N.TryGetPlayer(kick_id);
 		if(info)
-			game->KickPlayer(*info);
+			N.KickPlayer(*info);
 	}
 }
 

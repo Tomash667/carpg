@@ -46,7 +46,7 @@ struct PlayerInfo
 	Class clas;
 	int id, ack, update_flags, buffs;
 	SystemAddress adr;
-	float timer, update_timer, yspeed;
+	float timer, yspeed;
 	bool ready, devmode, warping, loaded;
 	HumanData hd;
 	CreatedCharacter cc;

@@ -16,6 +16,7 @@
 #include "DialogBox.h"
 #include "UnitGroup.h"
 #include "SoundManager.h"
+#include "PlayerInfo.h"
 
 //=================================================================================================
 void Arena::InitOnce()

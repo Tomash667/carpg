@@ -27,6 +27,7 @@
 #include "GlobalGui.h"
 #include "QuestManager.h"
 #include "Quest_Tutorial.h"
+#include "PlayerInfo.h"
 
 //-----------------------------------------------------------------------------
 const float UNIT_VIEW_A = 0.2f;

@@ -42,6 +42,7 @@
 #include "GlobalGui.h"
 #include "Console.h"
 #include "FOV.h"
+#include "PlayerInfo.h"
 
 vector<NetChange> Net::changes;
 Net::Mode Net::mode;
@@ -135,35 +136,6 @@ void Game::AddServerMsg(cstring msg)
 	{
 		gui->messages->AddGameMsg(msg, 2.f + float(strlen(msg)) / 10);
 		AddMultiMsg(s);
-	}
-}
-
-//=================================================================================================
-void Game::KickPlayer(PlayerInfo& info)
-{
-	// wyœlij informacje o kicku
-	BitStreamWriter f;
-	f << ID_SERVER_CLOSE;
-	f << (byte)1;
-	N.SendServer(f, MEDIUM_PRIORITY, RELIABLE, info.adr, Stream_None);
-
-	info.state = PlayerInfo::REMOVING;
-
-	if(gui->server->visible)
-	{
-		AddMsg(Format(txPlayerKicked, info.name.c_str()));
-		Info("Player %s was kicked.", info.name.c_str());
-
-		if(N.active_players > 2)
-			gui->server->AddLobbyUpdate(Int2(Lobby_KickPlayer, info.id));
-
-		gui->server->CheckReady();
-		gui->server->UpdateServerInfo();
-	}
-	else
-	{
-		info.left = PlayerInfo::LEFT_KICK;
-		players_left = true;
 	}
 }
 
@@ -739,7 +711,7 @@ void Game::UpdateServer(float dt)
 		case ID_DISCONNECTION_NOTIFICATION:
 			Info(msg_id == ID_CONNECTION_LOST ? "Lost connection with player %s." : "Player %s has disconnected.", info.name.c_str());
 			--N.active_players;
-			players_left = true;
+			N.players_left = true;
 			info.left = (msg_id == ID_CONNECTION_LOST ? PlayerInfo::LEFT_DISCONNECTED : PlayerInfo::LEFT_QUIT);
 			break;
 		case ID_SAY:
@@ -766,15 +738,15 @@ void Game::UpdateServer(float dt)
 
 	ProcessLeftPlayers();
 
-	update_timer += dt;
-	if(update_timer >= TICK && N.active_players > 1)
+	N.update_timer += dt;
+	if(N.update_timer >= TICK && N.active_players > 1)
 	{
 		bool last_anyone_talking = anyone_talking;
 		anyone_talking = IsAnyoneTalking();
 		if(last_anyone_talking != anyone_talking)
 			Net::PushChange(NetChange::CHANGE_FLAGS);
 
-		update_timer = 0;
+		N.update_timer = 0;
 		BitStreamWriter f;
 		f << ID_CHANGES;
 
@@ -3969,7 +3941,7 @@ void Game::UpdateClient(float dt)
 			{
 				byte reason = (packet->length == 2 ? packet->data[1] : 0);
 				cstring reason_text, reason_text_int;
-				if(reason == 1)
+				if(reason == ServerClose_Kicked)
 				{
 					reason_text = "You have been kicked out.";
 					reason_text_int = txYouKicked;
@@ -4018,7 +3990,7 @@ void Game::UpdateClient(float dt)
 					}
 					N.peer->DeallocatePacket(packet);
 					N.StreamError();
-					Net_FilterClientChanges();
+					N.FilterClientChanges();
 					LoadingStart(4);
 					return;
 				}
@@ -4048,10 +4020,10 @@ void Game::UpdateClient(float dt)
 	}
 
 	// wyœli moj¹ pozycjê/akcjê
-	update_timer += dt;
-	if(update_timer >= TICK)
+	N.update_timer += dt;
+	if(N.update_timer >= TICK)
 	{
-		update_timer = 0;
+		N.update_timer = 0;
 		BitStreamWriter f;
 		f << ID_CONTROL;
 		if(game_state == GS_LEVEL)
@@ -7756,7 +7728,7 @@ void Game::Net_OnNewGameServer()
 	}
 
 	skip_id_counter = 0;
-	update_timer = 0.f;
+	N.update_timer = 0.f;
 	arena->Reset();
 	anyone_talking = false;
 	mp_warps.clear();
@@ -7996,20 +7968,9 @@ bool Game::CheckMoveNet(Unit& unit, const Vec3& pos)
 }
 
 //=================================================================================================
-void Game::Net_PreSave()
-{
-	// poinformuj graczy o zapisywaniu
-	//byte b = ID_SAVING;
-	//N.peer->Send((char*)&b, 1, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
-
-	// players_left
-	ProcessLeftPlayers();
-}
-
-//=================================================================================================
 void Game::ProcessLeftPlayers()
 {
-	if(!players_left)
+	if(!N.players_left)
 		return;
 
 	LoopAndRemove(N.players, [this](PlayerInfo* pinfo)
@@ -8046,7 +8007,7 @@ void Game::ProcessLeftPlayers()
 		return true;
 	});
 
-	players_left = false;
+	N.players_left = false;
 }
 
 //=================================================================================================
@@ -8100,174 +8061,4 @@ void Game::RemovePlayer(PlayerInfo& info)
 		unit->to_remove = true;
 	}
 	info.u = nullptr;
-}
-
-//=================================================================================================
-bool Game::FilterOut(NetChange& c)
-{
-	switch(c.type)
-	{
-	case NetChange::CHANGE_EQUIPMENT:
-		return Net::IsServer();
-	case NetChange::CHANGE_FLAGS:
-	case NetChange::UPDATE_CREDIT:
-	case NetChange::ALL_QUESTS_COMPLETED:
-	case NetChange::CHANGE_LOCATION_STATE:
-	case NetChange::ADD_RUMOR:
-	case NetChange::ADD_NOTE:
-	case NetChange::REGISTER_ITEM:
-	case NetChange::ADD_QUEST:
-	case NetChange::UPDATE_QUEST:
-	case NetChange::RENAME_ITEM:
-	case NetChange::REMOVE_PLAYER:
-	case NetChange::CHANGE_LEADER:
-	case NetChange::RANDOM_NUMBER:
-	case NetChange::CHEAT_SKIP_DAYS:
-	case NetChange::CHEAT_NOCLIP:
-	case NetChange::CHEAT_GODMODE:
-	case NetChange::CHEAT_INVISIBLE:
-	case NetChange::CHEAT_ADD_ITEM:
-	case NetChange::CHEAT_ADD_GOLD:
-	case NetChange::CHEAT_SET_STAT:
-	case NetChange::CHEAT_MOD_STAT:
-	case NetChange::CHEAT_REVEAL:
-	case NetChange::GAME_OVER:
-	case NetChange::CHEAT_CITIZEN:
-	case NetChange::WORLD_TIME:
-	case NetChange::TRAIN_MOVE:
-	case NetChange::ADD_LOCATION:
-	case NetChange::REMOVE_CAMP:
-	case NetChange::CHEAT_NOAI:
-	case NetChange::END_OF_GAME:
-	case NetChange::UPDATE_FREE_DAYS:
-	case NetChange::CHANGE_MP_VARS:
-	case NetChange::PAY_CREDIT:
-	case NetChange::GIVE_GOLD:
-	case NetChange::DROP_GOLD:
-	case NetChange::HERO_LEAVE:
-	case NetChange::PAUSED:
-	case NetChange::CLOSE_ENCOUNTER:
-	case NetChange::GAME_STATS:
-	case NetChange::CHANGE_ALWAYS_RUN:
-		return false;
-	case NetChange::TALK:
-	case NetChange::TALK_POS:
-		if(Net::IsServer() && c.str)
-		{
-			StringPool.Free(c.str);
-			RemoveElement(net_talk, c.str);
-			c.str = nullptr;
-		}
-		return true;
-	case NetChange::RUN_SCRIPT:
-		StringPool.Free(c.str);
-		return true;
-	default:
-		return true;
-		break;
-	}
-}
-
-//=================================================================================================
-bool Game::FilterOut(NetChangePlayer& c)
-{
-	switch(c.type)
-	{
-	case NetChangePlayer::GOLD_MSG:
-	case NetChangePlayer::DEVMODE:
-	case NetChangePlayer::GOLD_RECEIVED:
-	case NetChangePlayer::GAIN_STAT:
-	case NetChangePlayer::ADDED_ITEMS_MSG:
-	case NetChangePlayer::GAME_MESSAGE:
-	case NetChangePlayer::RUN_SCRIPT_RESULT:
-		return false;
-	default:
-		return true;
-		break;
-	}
-}
-
-//=================================================================================================
-void Game::Net_FilterClientChanges()
-{
-	for(vector<NetChange>::iterator it = Net::changes.begin(), end = Net::changes.end(); it != end;)
-	{
-		if(FilterOut(*it))
-		{
-			if(it + 1 == end)
-			{
-				Net::changes.pop_back();
-				break;
-			}
-			else
-			{
-				std::iter_swap(it, end - 1);
-				Net::changes.pop_back();
-				end = Net::changes.end();
-			}
-		}
-		else
-			++it;
-	}
-}
-
-//=================================================================================================
-void Game::Net_FilterServerChanges()
-{
-	for(vector<NetChange>::iterator it = Net::changes.begin(), end = Net::changes.end(); it != end;)
-	{
-		if(FilterOut(*it))
-		{
-			if(it + 1 == end)
-			{
-				Net::changes.pop_back();
-				break;
-			}
-			else
-			{
-				std::iter_swap(it, end - 1);
-				Net::changes.pop_back();
-				end = Net::changes.end();
-			}
-		}
-		else
-			++it;
-	}
-
-	for(PlayerInfo* info : N.players)
-	{
-		for(vector<NetChangePlayer>::iterator it = info->changes.begin(), end = info->changes.end(); it != end;)
-		{
-			if(FilterOut(*it))
-			{
-				if(it + 1 == end)
-				{
-					info->changes.pop_back();
-					break;
-				}
-				else
-				{
-					std::iter_swap(it, end - 1);
-					info->changes.pop_back();
-					end = info->changes.end();
-				}
-			}
-			else
-				++it;
-		}
-	}
-}
-
-//=================================================================================================
-void Game::ClosePeer(bool wait)
-{
-	assert(N.peer);
-
-	Info("Peer shutdown.");
-	N.peer->Shutdown(wait ? I_SHUTDOWN : 0);
-	Info("sv_online = false");
-	if(Net::IsClient())
-		N.was_client = true;
-	Net::changes.clear();
-	Net::SetMode(Net::Mode::Singleplayer);
 }

@@ -25,6 +25,7 @@
 #include "Arena.h"
 #include "Pathfinding.h"
 #include "Quest_Tournament.h"
+#include "PlayerInfo.h"
 
 //-----------------------------------------------------------------------------
 extern string g_ctime;
@@ -1100,7 +1101,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						if(!info)
 							Msg("No player with nick '%s'.", player_name.c_str());
 						else
-							KickPlayer(*info);
+							N.KickPlayer(*info);
 					}
 					else
 						Msg("You need to enter player nick.");
