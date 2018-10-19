@@ -163,8 +163,6 @@ void EncounterGenerator::OnEnter()
 //=================================================================================================
 void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest)
 {
-	Game& game = Game::Get();
-
 	Vec3 look_pt;
 	switch(enter_dir)
 	{
@@ -239,7 +237,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 				group_name = "merchant_guards";
 				count = Random(2, 4);
 				level = Random(3, 8);
-				ItemHelper::GenerateMerchantItems(game.chest_merchant, 1000);
+				ItemHelper::GenerateMerchantItems(essential->trader->items, 1000);
 			}
 			break;
 		case SE_HEROES:

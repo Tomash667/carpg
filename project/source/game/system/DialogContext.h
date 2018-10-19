@@ -41,7 +41,10 @@ struct DialogContext
 	bool not_active, can_skip, force_end, negate_if;
 	vector<Entry> prev;
 
+	static DialogContext* current;
+
 	void StartNextDialog(GameDialog* dialog, int& if_level, Quest* quest = nullptr);
+	void Update(float dt);
 	void EndDialog();
 	cstring GetText(int index);
 	GameDialog::Text& GetTextInner(int index);

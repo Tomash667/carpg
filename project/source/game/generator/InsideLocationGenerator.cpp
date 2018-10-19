@@ -152,11 +152,12 @@ void InsideLocationGenerator::OnEnter()
 							}
 						}
 
-						Unit* u = L.SpawnUnitInsideRoom(lvl.GetFarRoom(false), *UnitData::Get("q_orkowie_kowal"), -2, Int2(-999, -999), Int2(-999, -999));
+						UnitData* orc_smith = UnitData::Get("q_orkowie_kowal");
+						Unit* u = L.SpawnUnitInsideRoom(lvl.GetFarRoom(false), *orc_smith, -2, Int2(-999, -999), Int2(-999, -999));
 						if(u)
 							u->dont_attack = true;
 
-						vector<ItemSlot>& items = QM.quest_orcs2->wares;
+						vector<ItemSlot>& items = orc_smith->trader->items;
 						Stock::Get("orc_blacksmith")->Parse(0, false, items);
 						SortItems(items);
 					}

@@ -2730,15 +2730,15 @@ void CityGenerator::GenerateStockItems()
 	}
 
 	if(IS_SET(city.flags, City::HaveMerchant))
-		ItemHelper::GenerateMerchantItems(game.chest_merchant, price_limit);
+		ItemHelper::GenerateMerchantItems(UnitData::Get("merchant")->trader->items, price_limit);
 	if(IS_SET(city.flags, City::HaveBlacksmith))
-		ItemHelper::GenerateBlacksmithItems(game.chest_blacksmith, price_limit2, count_mod, is_city);
+		ItemHelper::GenerateBlacksmithItems(UnitData::Get("blacksmith")->trader->items, price_limit2, count_mod, is_city);
 	if(IS_SET(city.flags, City::HaveAlchemist))
-		ItemHelper::GenerateAlchemistItems(game.chest_alchemist, count_mod);
+		ItemHelper::GenerateAlchemistItems(UnitData::Get("alchemist")->trader->items, count_mod);
 	if(IS_SET(city.flags, City::HaveInn))
-		ItemHelper::GenerateInnkeeperItems(game.chest_innkeeper, count_mod, is_city);
+		ItemHelper::GenerateInnkeeperItems(UnitData::Get("innkeeper")->trader->items, count_mod, is_city);
 	if(IS_SET(city.flags, City::HaveFoodSeller))
-		ItemHelper::GenerateFoodSellerItems(game.chest_food_seller, is_city);
+		ItemHelper::GenerateFoodSellerItems(UnitData::Get("food_seller")->trader->items, is_city);
 }
 
 //=================================================================================================

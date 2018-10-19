@@ -1121,7 +1121,7 @@ void Game::UpdateGame(float dt)
 	if(Net::IsSingleplayer())
 	{
 		if(dialog_context.dialog_mode)
-			UpdateGameDialog(dialog_context, dt);
+			dialog_context.Update(dt);
 	}
 	else if(Net::IsServer())
 	{
@@ -1135,7 +1135,7 @@ void Game::UpdateGame(float dt)
 				if(!ctx.talker->IsStanding() || !ctx.talker->IsIdle() || ctx.talker->to_remove || ctx.talker->frozen != FROZEN::NO)
 					ctx.EndDialog();
 				else
-					UpdateGameDialog(ctx, dt);
+					ctx.Update(dt);
 			}
 		}
 	}
@@ -3086,598 +3086,6 @@ void Game::StartDialog(DialogContext& ctx, Unit* talker, GameDialog* dialog)
 	{
 		// zamknij gui
 		CloseAllPanels();
-	}
-}
-
-//							WEAPON	BOW		SHIELD	ARMOR	LETTER	POTION	OTHER	BOOK	GOLD
-bool merchant_buy[] = { true,	true,	true,	true,	true,	true,	true,	true,	false };
-bool blacksmith_buy[] = { true,	true,	true,	true,	false,	false,	false,	false,	false };
-bool alchemist_buy[] = { false,	false,	false,	false,	false,	true,	false,	false,	false };
-bool innkeeper_buy[] = { false,	false,	false,	false,	false,	true,	false,	false,	false };
-bool foodseller_buy[] = { false,	false,	false,	false,	false,	true,	false,	false,	false };
-
-//=================================================================================================
-void Game::UpdateGameDialog(DialogContext& ctx, float dt)
-{
-	current_dialog = &ctx;
-
-	// wyœwietlono opcje dialogowe, wybierz jedn¹ z nich (w mp czekaj na wybór)
-	if(ctx.show_choices)
-	{
-		bool ok = false;
-		if(!ctx.is_local)
-		{
-			if(ctx.choice_selected != -1)
-				ok = true;
-		}
-		else
-			ok = gui->game_gui->UpdateChoice(ctx, ctx.choices.size());
-
-		if(ok)
-		{
-			cstring msg = ctx.choices[ctx.choice_selected].msg;
-			gui->game_gui->AddSpeechBubble(ctx.pc->unit, msg);
-
-			if(Net::IsOnline())
-			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::TALK;
-				c.unit = ctx.pc->unit;
-				c.str = StringPool.Get();
-				*c.str = msg;
-				c.id = 0;
-				c.count = 0;
-				net_talk.push_back(c.str);
-			}
-
-			ctx.show_choices = false;
-			ctx.dialog_pos = ctx.choices[ctx.choice_selected].pos;
-			ctx.dialog_level = ctx.choices[ctx.choice_selected].lvl;
-			ctx.choices.clear();
-			ctx.choice_selected = -1;
-			ctx.dialog_esc = -1;
-		}
-		else
-			return;
-	}
-
-	if(ctx.dialog_wait > 0.f)
-	{
-		if(ctx.is_local)
-		{
-			bool skip = false;
-			if(ctx.can_skip)
-			{
-				if(GKey.KeyPressedReleaseAllowed(GK_SELECT_DIALOG)
-					|| GKey.KeyPressedReleaseAllowed(GK_SKIP_DIALOG)
-					|| (GKey.AllowKeyboard() && Key.PressedRelease(VK_ESCAPE)))
-					skip = true;
-				else
-				{
-					pc_data.wasted_key = GKey.KeyDoReturn(GK_ATTACK_USE, &KeyStates::PressedRelease);
-					if(pc_data.wasted_key != VK_NONE)
-						skip = true;
-				}
-			}
-
-			if(skip)
-				ctx.dialog_wait = -1.f;
-			else
-				ctx.dialog_wait -= dt;
-		}
-		else
-		{
-			if(ctx.choice_selected == 1)
-			{
-				ctx.dialog_wait = -1.f;
-				ctx.choice_selected = -1;
-			}
-			else
-				ctx.dialog_wait -= dt;
-		}
-
-		if(ctx.dialog_wait > 0.f)
-			return;
-	}
-
-	ctx.can_skip = true;
-	if(ctx.dialog_skip != -1)
-	{
-		ctx.dialog_pos = ctx.dialog_skip;
-		ctx.dialog_skip = -1;
-	}
-
-	if(ctx.force_end)
-	{
-		ctx.EndDialog();
-		return;
-	}
-
-	int if_level = ctx.dialog_level;
-
-	while(1)
-	{
-		DialogEntry& de = *(ctx.dialog->code.data() + ctx.dialog_pos);
-
-		switch(de.type)
-		{
-		case DTF_CHOICE:
-			if(if_level == ctx.dialog_level)
-			{
-				cstring text = ctx.GetText(de.value);
-				ctx.choices.push_back(DialogChoice(ctx.dialog_pos + 1, text, ctx.dialog_level + 1));
-			}
-			++if_level;
-			break;
-		case DTF_END_CHOICE:
-		case DTF_END_IF:
-			if(if_level == ctx.dialog_level)
-				--ctx.dialog_level;
-			--if_level;
-			break;
-		case DTF_END:
-			if(if_level == ctx.dialog_level)
-			{
-				if(ctx.prev.empty())
-				{
-					ctx.EndDialog();
-					return;
-				}
-				else
-				{
-					auto& prev = ctx.prev.back();
-					ctx.dialog = prev.dialog;
-					ctx.dialog_pos = prev.pos;
-					ctx.dialog_level = prev.level;
-					ctx.dialog_quest = prev.quest;
-					ctx.prev.pop_back();
-					if_level = ctx.dialog_level;
-				}
-			}
-			break;
-		case DTF_END2:
-			if(if_level == ctx.dialog_level)
-			{
-				ctx.EndDialog();
-				return;
-			}
-			break;
-		case DTF_SHOW_CHOICES:
-			if(if_level == ctx.dialog_level)
-			{
-				ctx.show_choices = true;
-				if(ctx.is_local)
-				{
-					ctx.choice_selected = 0;
-					gui->game_gui->dialog_cursor_pos = Int2(-1, -1);
-					gui->game_gui->UpdateScrollbar(ctx.choices.size());
-				}
-				else
-				{
-					ctx.choice_selected = -1;
-					NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
-					c.type = NetChangePlayer::SHOW_DIALOG_CHOICES;
-				}
-				return;
-			}
-			break;
-		case DTF_RESTART:
-			if(if_level == ctx.dialog_level)
-				ctx.dialog_pos = -1;
-			break;
-		case DTF_TRADE:
-			if(if_level == ctx.dialog_level)
-			{
-				Unit* t = ctx.talker;
-				t->busy = Unit::Busy_Trading;
-				ctx.EndDialog();
-				ctx.pc->action = PlayerController::Action_Trade;
-				ctx.pc->action_unit = t;
-				bool* old_trader_buy = trader_buy;
-
-				const string& id = t->data->id;
-
-				if(id == "blacksmith")
-				{
-					ctx.pc->chest_trade = &chest_blacksmith;
-					trader_buy = blacksmith_buy;
-				}
-				else if(id == "merchant" || id == "tut_czlowiek")
-				{
-					ctx.pc->chest_trade = &chest_merchant;
-					trader_buy = merchant_buy;
-				}
-				else if(id == "alchemist")
-				{
-					ctx.pc->chest_trade = &chest_alchemist;
-					trader_buy = alchemist_buy;
-				}
-				else if(id == "innkeeper")
-				{
-					ctx.pc->chest_trade = &chest_innkeeper;
-					trader_buy = innkeeper_buy;
-				}
-				else if(id == "q_orkowie_kowal")
-				{
-					ctx.pc->chest_trade = &QM.quest_orcs2->wares;
-					trader_buy = blacksmith_buy;
-				}
-				else if(id == "food_seller")
-				{
-					ctx.pc->chest_trade = &chest_food_seller;
-					trader_buy = foodseller_buy;
-				}
-				else
-				{
-					assert(0);
-					return;
-				}
-
-				if(ctx.is_local)
-					gui->inventory->StartTrade(I_TRADE, *ctx.pc->chest_trade, t);
-				else
-				{
-					NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
-					c.type = NetChangePlayer::START_TRADE;
-					c.id = t->netid;
-
-					trader_buy = old_trader_buy;
-				}
-
-				ctx.pc->Train(TrainWhat::Trade, 0.f, 0);
-
-				return;
-			}
-			break;
-		case DTF_TALK:
-			if(ctx.dialog_level == if_level)
-			{
-				cstring msg = ctx.GetText(de.value);
-				DialogTalk(ctx, msg);
-				++ctx.dialog_pos;
-				return;
-			}
-			break;
-		case DTF_SPECIAL:
-			if(ctx.dialog_level == if_level)
-			{
-				cstring msg = ctx.dialog->strs[de.value].c_str();
-				if(ExecuteGameDialogSpecial(ctx, msg, if_level))
-					return;
-			}
-			break;
-		case DTF_SET_QUEST_PROGRESS:
-			if(if_level == ctx.dialog_level)
-			{
-				assert(ctx.dialog_quest);
-				ctx.dialog_quest->SetProgress(de.value);
-				if(ctx.dialog_wait > 0.f)
-				{
-					++ctx.dialog_pos;
-					return;
-				}
-			}
-			break;
-		case DTF_IF_QUEST_TIMEOUT:
-			if(if_level == ctx.dialog_level)
-			{
-				assert(ctx.dialog_quest);
-				bool ok = (ctx.dialog_quest->IsActive() && ctx.dialog_quest->IsTimedout());
-				if(ctx.negate_if)
-				{
-					ctx.negate_if = false;
-					ok = !ok;
-				}
-				if(ok)
-					++ctx.dialog_level;
-			}
-			++if_level;
-			break;
-		case DTF_IF_RAND:
-			if(if_level == ctx.dialog_level)
-			{
-				bool ok = (Rand() % de.value == 0);
-				if(ctx.negate_if)
-				{
-					ctx.negate_if = false;
-					ok = !ok;
-				}
-				if(ok)
-					++ctx.dialog_level;
-			}
-			++if_level;
-			break;
-		case DTF_IF_ONCE:
-			if(if_level == ctx.dialog_level)
-			{
-				bool ok = ctx.dialog_once;
-				if(ctx.negate_if)
-				{
-					ctx.negate_if = false;
-					ok = !ok;
-				}
-				if(ok)
-				{
-					ctx.dialog_once = false;
-					++ctx.dialog_level;
-				}
-			}
-			++if_level;
-			break;
-		case DTF_DO_ONCE:
-			if(if_level == ctx.dialog_level)
-				ctx.dialog_once = false;
-			break;
-		case DTF_ELSE:
-			if(if_level == ctx.dialog_level)
-				--ctx.dialog_level;
-			else if(if_level == ctx.dialog_level + 1)
-				++ctx.dialog_level;
-			break;
-		case DTF_CHECK_QUEST_TIMEOUT:
-			if(if_level == ctx.dialog_level)
-			{
-				Quest* quest = QM.FindQuest(L.location_index, (QuestType)de.value);
-				if(quest && quest->IsActive() && quest->IsTimedout())
-				{
-					ctx.dialog_once = false;
-					ctx.StartNextDialog(quest->GetDialog(QUEST_DIALOG_FAIL), if_level, quest);
-				}
-			}
-			break;
-		case DTF_IF_HAVE_QUEST_ITEM:
-			if(if_level == ctx.dialog_level)
-			{
-				cstring msg = ctx.dialog->strs[de.value].c_str();
-				bool ok = ctx.pc->unit->FindQuestItem(msg, nullptr, nullptr, ctx.not_active);
-				if(ctx.negate_if)
-				{
-					ctx.negate_if = false;
-					ok = !ok;
-				}
-				if(ok)
-					++ctx.dialog_level;
-				ctx.not_active = false;
-			}
-			++if_level;
-			break;
-		case DTF_DO_QUEST_ITEM:
-			if(if_level == ctx.dialog_level)
-			{
-				cstring msg = ctx.dialog->strs[de.value].c_str();
-
-				Quest* quest;
-				if(ctx.pc->unit->FindQuestItem(msg, &quest, nullptr))
-					ctx.StartNextDialog(quest->GetDialog(QUEST_DIALOG_NEXT), if_level, quest);
-			}
-			break;
-		case DTF_IF_QUEST_PROGRESS:
-			if(if_level == ctx.dialog_level)
-			{
-				assert(ctx.dialog_quest);
-				bool ok = (ctx.dialog_quest->prog == de.value);
-				if(ctx.negate_if)
-				{
-					ctx.negate_if = false;
-					ok = !ok;
-				}
-				if(ok)
-					++ctx.dialog_level;
-			}
-			++if_level;
-			break;
-		case DTF_IF_QUEST_PROGRESS_RANGE:
-			if(if_level == ctx.dialog_level)
-			{
-				assert(ctx.dialog_quest);
-				int x = de.value & 0xFFFF;
-				int y = (de.value & 0xFFFF0000) >> 16;
-				assert(y > x);
-				bool ok = InRange(ctx.dialog_quest->prog, x, y);
-				if(ctx.negate_if)
-				{
-					ctx.negate_if = false;
-					ok = !ok;
-				}
-				if(ok)
-					++ctx.dialog_level;
-			}
-			++if_level;
-			break;
-		case DTF_IF_NEED_TALK:
-			if(if_level == ctx.dialog_level)
-			{
-				cstring msg = ctx.dialog->strs[de.value].c_str();
-				bool negate = false;
-				if(ctx.negate_if)
-				{
-					ctx.negate_if = false;
-					negate = true;
-				}
-
-				for(Quest* quest : QM.quests)
-				{
-					bool ok = (quest->IsActive() && quest->IfNeedTalk(msg));
-					if(negate)
-						ok = !ok;
-					if(ok)
-					{
-						++ctx.dialog_level;
-						break;
-					}
-				}
-			}
-			++if_level;
-			break;
-		case DTF_DO_QUEST:
-			if(if_level == ctx.dialog_level)
-			{
-				cstring msg = ctx.dialog->strs[de.value].c_str();
-
-				for(Quest* quest : QM.quests)
-				{
-					if(quest->IsActive() && quest->IfNeedTalk(msg))
-					{
-						ctx.StartNextDialog(quest->GetDialog(QUEST_DIALOG_NEXT), if_level, quest);
-						break;
-					}
-				}
-			}
-			break;
-		case DTF_ESCAPE_CHOICE:
-			if(if_level == ctx.dialog_level)
-				ctx.dialog_esc = (int)ctx.choices.size() - 1;
-			break;
-		case DTF_IF_SPECIAL:
-			if(if_level == ctx.dialog_level)
-			{
-				cstring msg = ctx.dialog->strs[de.value].c_str();
-				bool ok = ExecuteGameDialogSpecialIf(ctx, msg);
-				if(ctx.negate_if)
-				{
-					ctx.negate_if = false;
-					ok = !ok;
-				}
-				if(ok)
-					++ctx.dialog_level;
-			}
-			++if_level;
-			break;
-		case DTF_IF_CHOICES:
-			if(if_level == ctx.dialog_level)
-			{
-				bool ok = (ctx.choices.size() == de.value);
-				if(ctx.negate_if)
-				{
-					ctx.negate_if = false;
-					ok = !ok;
-				}
-				if(ok)
-					++ctx.dialog_level;
-			}
-			++if_level;
-			break;
-		case DTF_DO_QUEST2:
-			if(if_level == ctx.dialog_level)
-			{
-				cstring msg = ctx.dialog->strs[de.value].c_str();
-
-				for(Quest* quest : QM.quests)
-				{
-					if(quest->IfNeedTalk(msg))
-					{
-						ctx.StartNextDialog(quest->GetDialog(QUEST_DIALOG_NEXT), if_level, quest);
-						break;
-					}
-				}
-
-				if(ctx.dialog_pos != -1)
-				{
-					for(Quest* quest : QM.unaccepted_quests)
-					{
-						if(quest->IfNeedTalk(msg))
-						{
-							ctx.StartNextDialog(quest->GetDialog(QUEST_DIALOG_NEXT), if_level, quest);
-							break;
-						}
-					}
-				}
-			}
-			break;
-		case DTF_IF_HAVE_ITEM:
-			if(if_level == ctx.dialog_level)
-			{
-				const Item* item = (const Item*)de.value;
-				bool ok = ctx.pc->unit->HaveItem(item);
-				if(ctx.negate_if)
-				{
-					ctx.negate_if = false;
-					ok = !ok;
-				}
-				if(ok)
-					++ctx.dialog_level;
-			}
-			++if_level;
-			break;
-		case DTF_IF_QUEST_EVENT:
-			if(if_level == ctx.dialog_level)
-			{
-				assert(ctx.dialog_quest);
-				bool ok = ctx.dialog_quest->IfQuestEvent();
-				if(ctx.negate_if)
-				{
-					ctx.negate_if = false;
-					ok = !ok;
-				}
-				if(ok)
-					++ctx.dialog_level;
-			}
-			++if_level;
-			break;
-		case DTF_END_OF_DIALOG:
-			assert(0);
-			throw Format("Broken dialog '%s'.", ctx.dialog->id.c_str());
-		case DTF_NOT_ACTIVE:
-			ctx.not_active = true;
-			break;
-		case DTF_IF_QUEST_SPECIAL:
-			if(if_level == ctx.dialog_level)
-			{
-				assert(ctx.dialog_quest);
-				cstring msg = ctx.dialog->strs[de.value].c_str();
-				bool ok = ctx.dialog_quest->SpecialIf(ctx, msg);
-				if(ctx.negate_if)
-				{
-					ctx.negate_if = false;
-					ok = !ok;
-				}
-				if(ok)
-					++ctx.dialog_level;
-			}
-			++if_level;
-			break;
-		case DTF_QUEST_SPECIAL:
-			if(if_level == ctx.dialog_level)
-			{
-				assert(ctx.dialog_quest);
-				cstring msg = ctx.dialog->strs[de.value].c_str();
-				ctx.dialog_quest->Special(ctx, msg);
-			}
-			break;
-		case DTF_NOT:
-			if(if_level == ctx.dialog_level)
-				ctx.negate_if = true;
-			break;
-		case DTF_SCRIPT:
-			if(if_level == ctx.dialog_level)
-			{
-				cstring msg = ctx.dialog->strs[de.value].c_str();
-				SM.SetContext(ctx.pc, ctx.talker);
-				SM.RunScript(msg);
-			}
-			break;
-		case DTF_IF_SCRIPT:
-			if(if_level == ctx.dialog_level)
-			{
-				cstring msg = ctx.dialog->strs[de.value].c_str();
-				SM.SetContext(ctx.pc, ctx.talker);
-				bool ok = SM.RunIfScript(msg);
-				if(ctx.negate_if)
-				{
-					ctx.negate_if = false;
-					ok = !ok;
-				}
-				if(ok)
-					++ctx.dialog_level;
-			}
-			++if_level;
-			break;
-		default:
-			assert(0 && "Unknown dialog type!");
-			break;
-		}
-
-		++ctx.dialog_pos;
 	}
 }
 
@@ -10269,48 +9677,25 @@ void Game::PreloadResources(bool worldmap)
 
 	if(!worldmap)
 	{
-		// load units - units respawn so need to check everytime...
-		PreloadUnits(*L.local_ctx.units);
-		// some traps respawn
-		if(L.local_ctx.traps)
-			PreloadTraps(*L.local_ctx.traps);
-
-		// preload items, this info is sent by server so no need to redo this by clients (and it will be less complete)
-		if(Net::IsLocal())
+		for(LevelContext& ctx : L.ForEachContext())
 		{
-			for(auto ground_item : *L.local_ctx.items)
-				items_load.insert(ground_item->item);
-			for(auto chest : *L.local_ctx.chests)
-				PreloadItems(chest->items);
-			for(auto usable : *L.local_ctx.usables)
-			{
-				if(usable->container)
-					PreloadItems(usable->container->items);
-			}
-			PreloadItems(chest_merchant);
-			PreloadItems(chest_blacksmith);
-			PreloadItems(chest_alchemist);
-			PreloadItems(chest_innkeeper);
-			PreloadItems(chest_food_seller);
-			auto quest = (Quest_Orcs2*)QM.FindQuestById(Q_ORCS2);
-			if(quest)
-				PreloadItems(quest->wares);
-		}
+			// load units - units respawn so need to check everytime...
+			PreloadUnits(*ctx.units);
+			// some traps respawn
+			if(ctx.traps)
+				PreloadTraps(*ctx.traps);
 
-		if(L.city_ctx)
-		{
-			for(auto ib : L.city_ctx->inside_buildings)
+			// preload items, this info is sent by server so no need to redo this by clients (and it will be less complete)
+			if(Net::IsLocal())
 			{
-				PreloadUnits(ib->units);
-				if(Net::IsLocal())
+				for(GroundItem* ground_item : *ctx.items)
+					items_load.insert(ground_item->item);
+				for(Chest* chest : *ctx.chests)
+					PreloadItems(chest->items);
+				for(Usable* usable : *ctx.usables)
 				{
-					for(auto ground_item : ib->items)
-						items_load.insert(ground_item->item);
-					for(auto usable : ib->usables)
-					{
-						if(usable->container)
-							PreloadItems(usable->container->items);
-					}
+					if(usable->container)
+						PreloadItems(usable->container->items);
 				}
 			}
 		}
@@ -10323,7 +9708,7 @@ void Game::PreloadResources(bool worldmap)
 				LoadMusic(GetLocationMusic(), false, true);
 
 			// load objects
-			for(auto obj : *L.local_ctx.objects)
+			for(Object* obj : *L.local_ctx.objects)
 				mesh_mgr.AddLoadTask(obj->mesh);
 
 			// load usables
@@ -10332,9 +9717,9 @@ void Game::PreloadResources(bool worldmap)
 			if(L.city_ctx)
 			{
 				// load buildings
-				for(auto& b : L.city_ctx->buildings)
+				for(CityBuilding& b : L.city_ctx->buildings)
 				{
-					auto& type = *b.type;
+					Building& type = *b.type;
 					if(type.state == ResourceState::NotLoaded)
 					{
 						if(type.mesh)
@@ -10345,10 +9730,10 @@ void Game::PreloadResources(bool worldmap)
 					}
 				}
 
-				for(auto ib : L.city_ctx->inside_buildings)
+				for(InsideBuilding* ib : L.city_ctx->inside_buildings)
 				{
 					// load building objects
-					for(auto obj : ib->objects)
+					for(Object* obj : ib->objects)
 						mesh_mgr.AddLoadTask(obj->mesh);
 
 					// load building usables
@@ -10401,6 +9786,8 @@ void Game::PreloadUnit(Unit* unit)
 	auto& tex_mgr = ResourceManager::Get<Texture>();
 	auto& sound_mgr = ResourceManager::Get<Sound>();
 
+	UnitData& data = *unit->data;
+
 	if(Net::IsLocal())
 	{
 		for(uint i = 0; i < SLOT_MAX; ++i)
@@ -10409,9 +9796,10 @@ void Game::PreloadUnit(Unit* unit)
 				items_load.insert(unit->slots[i]);
 		}
 		PreloadItems(unit->items);
+		if(data.trader)
+			PreloadItems(data.trader->items);
 	}
 
-	auto& data = *unit->data;
 	if(data.state == ResourceState::Loaded)
 		return;
 

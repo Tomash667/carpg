@@ -46,11 +46,6 @@
 
 vector<NetChange> Net::changes;
 Net::Mode Net::mode;
-extern bool merchant_buy[];
-extern bool blacksmith_buy[];
-extern bool alchemist_buy[];
-extern bool innkeeper_buy[];
-extern bool foodseller_buy[];
 
 //=================================================================================================
 inline void WriteItemList(BitStreamWriter& f, vector<ItemSlot>& items)
@@ -6643,19 +6638,11 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 						N.StreamError("Update single client: START_TRADE, missing unit %d.", netid);
 						break;
 					}
-
-					const string& id = trader->data->id;
-
-					if(id == "blacksmith" || id == "q_orkowie_kowal")
-						trader_buy = blacksmith_buy;
-					else if(id == "merchant" || id == "tut_czlowiek")
-						trader_buy = merchant_buy;
-					else if(id == "alchemist")
-						trader_buy = alchemist_buy;
-					else if(id == "innkeeper")
-						trader_buy = innkeeper_buy;
-					else if(id == "food_seller")
-						trader_buy = foodseller_buy;
+					if(!trader->data->trader)
+					{
+						N.StreamError("Update single client: START_TRADER, unit '%s' is not a trader.", trader->data->id.c_str());
+						break;
+					}
 
 					gui->inventory->StartTrade(I_TRADE, chest_trade, trader);
 				}

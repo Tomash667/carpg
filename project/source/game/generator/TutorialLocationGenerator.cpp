@@ -199,13 +199,13 @@ void TutorialLocationGenerator::OnEnter()
 					assert(InRange(c, '0', '9'));
 					switch((int)(c - '0'))
 					{
-						/*0 - start
-						1 - skrzynia z broni¹,pancerzem,tarcz¹,z³otem [w dó³]
-						2 - manekin obrócony w lewo
-						3 - goblin obrócony w dó³
-						4 - skrzynia z ³ukiem,mikstórk¹,z³otem [w dó³]
-						5 - tarcza strzelniacza [w prawo]
-						6 - cz³owiek [w dó³]*/
+					/*0 - start
+					1 - skrzynia z broni¹,pancerzem,tarcz¹,z³otem [w dó³]
+					2 - manekin obrócony w lewo
+					3 - goblin obrócony w dó³
+					4 - skrzynia z ³ukiem,mikstórk¹,z³otem [w dó³]
+					5 - tarcza strzelniacza [w prawo]
+					6 - cz³owiek [w dó³]*/
 					case 0:
 						start_tile = Int2(x, y);
 						break;
@@ -292,7 +292,7 @@ void TutorialLocationGenerator::OnEnter()
 	}
 
 	// trader stock
-	ItemHelper::GenerateMerchantItems(game.chest_merchant, 500);
+	ItemHelper::GenerateMerchantItems(UnitData::Get("tut_czlowiek")->trader->items, 500);
 
 	L.SpawnDungeonColliders();
 	CreateMinimap();

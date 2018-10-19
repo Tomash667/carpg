@@ -122,7 +122,6 @@ public:
 	Talked talked;
 	int days;
 	Unit* guard, *orc;
-	vector<ItemSlot> wares;
 
 private:
 	void ChangeClass(OrcClass new_orc_class);

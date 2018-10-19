@@ -307,11 +307,6 @@ public:
 	std::set<const Item*> items_load;
 
 	//---------------------------------
-	// GUI / HANDEL
-	vector<ItemSlot> chest_merchant, chest_blacksmith, chest_alchemist, chest_innkeeper, chest_food_seller, chest_trade;
-	bool* trader_buy;
-
-	//---------------------------------
 	// RYSOWANIE
 	Matrix mat;
 	int particle_count;
@@ -440,7 +435,6 @@ public:
 	void CheckAutoTalk(Unit& unit, float dt);
 	void StartDialog(DialogContext& ctx, Unit* talker, GameDialog* dialog = nullptr);
 	void StartDialog2(PlayerController* player, Unit* talker, GameDialog* dialog = nullptr);
-	void UpdateGameDialog(DialogContext& ctx, float dt);
 	bool ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_level);
 	bool ExecuteGameDialogSpecialIf(DialogContext& ctx, cstring msg);
 	void ApplyLocationTexturePack(TexturePack& floor, TexturePack& wall, TexturePack& ceil, LocationTexturePack& tex);
@@ -614,7 +608,6 @@ public:
 	void UpdatePostEffects(float dt);
 
 	void PlayerYell(Unit& u);
-	bool CanBuySell(const Item* item);
 	void SetOutsideParams();
 
 	//-----------------------------------------------------------------
@@ -688,6 +681,7 @@ public:
 	bool godmode, noclip, invisible;
 	float interpolate_timer;
 	bool paused;
+	vector<ItemSlot> chest_trade; // used by clients when trading
 
 	void AddServerMsg(cstring msg);
 	void AddMsg(cstring msg);

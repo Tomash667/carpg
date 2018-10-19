@@ -15,7 +15,7 @@ If require special ordering:
 If can be generated:
 	Game2.cpp:GenerateTreasure
 Item.cpp:LoadItem
-Game2.cpp:GetItemSound, merchant_buy etc
+Game2.cpp:GetItemSound
 */
 enum ITEM_TYPE
 {
