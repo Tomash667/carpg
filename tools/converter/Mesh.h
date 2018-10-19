@@ -34,6 +34,24 @@ struct Mesh
 		int specular_hardness;
 		float normal_factor, specular_factor, specular_color_factor;
 
+		bool operator == (const Submesh& sub) const
+		{
+			return first == sub.first
+				&& tris == sub.tris
+				&& min_ind == sub.min_ind
+				&& n_ind == sub.n_ind
+				&& name == sub.name
+				&& tex == sub.tex
+				&& tex_normal == sub.tex_normal
+				&& tex_specular == sub.tex_specular
+				&& specular_color == sub.specular_color
+				&& specular_intensity == sub.specular_intensity
+				&& specular_hardness == sub.specular_hardness
+				&& normal_factor == sub.normal_factor
+				&& specular_factor == sub.specular_factor
+				&& specular_color_factor == sub.specular_color_factor;
+		}
+
 		static const uint MIN_SIZE = 10;
 	};
 
@@ -42,6 +60,13 @@ struct Mesh
 		word parent;
 		string name;
 		vector<byte> bones;
+
+		bool operator == (const BoneGroup& group) const
+		{
+			return parent == group.parent
+				&& name == group.name
+				&& bones == group.bones;
+		}
 
 		static const uint MIN_SIZE = 4;
 	};
@@ -54,6 +79,15 @@ struct Mesh
 		string name;
 		vector<word> childs;
 
+		bool operator == (const Bone& bone) const
+		{
+			return id == bone.id
+				&& parent == bone.parent
+				&& mat == bone.mat
+				&& name == bone.name
+				&& childs == bone.childs;
+		}
+
 		static const uint MIN_SIZE = 51;
 	};
 
@@ -62,12 +96,25 @@ struct Mesh
 		VEC3 pos;
 		QUATERNION rot;
 		float scale;
+
+		bool operator == (const KeyframeBone& keyframe_bone) const
+		{
+			return pos == keyframe_bone.pos
+				&& rot == keyframe_bone.rot
+				&& scale == keyframe_bone.scale;
+		}
 	};
 
 	struct Keyframe
 	{
 		float time;
 		vector<KeyframeBone> bones;
+
+		bool operator == (const Keyframe& keyframe) const
+		{
+			return time == keyframe.time
+				&& bones == keyframe.bones;
+		}
 	};
 
 	struct Animation
@@ -76,6 +123,14 @@ struct Mesh
 		float length;
 		word n_frames;
 		vector<Keyframe> frames;
+
+		bool operator == (const Animation& ani) const
+		{
+			return name == ani.name
+				&& length == ani.length
+				&& n_frames == ani.n_frames
+				&& frames == ani.frames;
+		}
 
 		static const uint MIN_SIZE = 7;
 	};
@@ -105,6 +160,16 @@ struct Mesh
 		bool IsBox() const
 		{
 			return type == Box;
+		}
+
+		bool operator == (const Point& point) const
+		{
+			return name == point.name
+				&& mat == point.mat
+				&& rot == point.rot
+				&& bone == point.bone
+				&& type == point.type
+				&& size == point.size;
 		}
 	};
 

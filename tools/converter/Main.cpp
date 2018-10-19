@@ -1,7 +1,7 @@
 #include "PCH.hpp"
 #include "MeshTask.hpp"
 
-const char* CONVERTER_VERSION = "20";
+const char* CONVERTER_VERSION = "20.1";
 
 string group_file, output_file;
 GROUP_OPTION gopt;
@@ -157,6 +157,7 @@ int main(int argc, char **argv)
 					"-phy - export only physic mesh (default extension .phy)\n"
 					"-normal - export normal mesh\n"
 					"-info FILE - show information about mesh (version etc)\n"
+					"-compare FILE FILE2 - compare two meshes and show differences\n"
 					"-upgrade FILE - upgrade mesh to newest version\n"
 					"-upgradedir DIR - upgrade all meshes in directory and subdirectories\n"
 					"-subdir - check subdirectories in upgradedir (default)\n"
@@ -223,6 +224,19 @@ int main(int argc, char **argv)
 				}
 				else
 					printf("Missing FILE for '-info'!\n");
+			}
+			else if(str == "-compare")
+			{
+				if(i + 2 < argc)
+				{
+					Compare(argv[i + 1], argv[i + 2]);
+					i += 2;
+				}
+				else
+				{
+					printf("Missing FILEs for '-compare'!\n");
+					++i;
+				}
 			}
 			else if(str == "-upgrade")
 			{
