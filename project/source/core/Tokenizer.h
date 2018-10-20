@@ -499,8 +499,7 @@ namespace tokenizer
 			if(!IsKeywordGroup(group))
 				Unexpected(T_KEYWORD_GROUP, &group);
 		}
-		template<typename T>
-		void AssertKeywordGroup(std::initializer_list<T> const & groups)
+		void AssertKeywordGroup(std::initializer_list<int> const & groups)
 		{
 			int group = IsKeywordGroup(groups);
 			if(group == MISSING_GROUP)

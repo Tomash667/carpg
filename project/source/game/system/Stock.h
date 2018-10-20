@@ -24,7 +24,10 @@ struct Stock
 {
 	string id;
 	vector<int> code;
+	asIScriptFunction* script;
 
+	Stock() : script(nullptr) {}
+	~Stock();
 	void Parse(int level, bool city, vector<ItemSlot>& items);
 
 private:

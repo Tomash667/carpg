@@ -3,6 +3,7 @@
 #include "Stock.h"
 #include "ItemSlot.h"
 #include "Item.h"
+#include "ScriptManager.h"
 
 //-----------------------------------------------------------------------------
 vector<Stock*> Stock::stocks;
@@ -24,6 +25,13 @@ inline bool CheckCity(CityBlock in_city, bool city)
 		return !city;
 	else
 		return true;
+}
+
+//=================================================================================================
+Stock::~Stock()
+{
+	if(script)
+		script->Release();
 }
 
 //=================================================================================================

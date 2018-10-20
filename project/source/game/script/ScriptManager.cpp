@@ -348,7 +348,7 @@ bool ScriptManager::RunScript(cstring code, bool validate)
 	assert(code);
 
 	// compile
-	auto tmp_module = engine->GetModule("RunScriptModule", asGM_ALWAYS_CREATE);
+	asIScriptModule* tmp_module = engine->GetModule("RunScriptModule", asGM_ALWAYS_CREATE);
 	cstring packed_code = Format("void f() { %s; }", code);
 	asIScriptFunction* func;
 	int r = tmp_module->CompileFunction("RunScript", packed_code, -1, 0, &func);
@@ -365,7 +365,7 @@ bool ScriptManager::RunScript(cstring code, bool validate)
 	}
 
 	// run
-	auto tmp_context = engine->RequestContext();
+	asIScriptContext* tmp_context = engine->RequestContext();
 	r = tmp_context->Prepare(func);
 	if(r >= 0)
 	{
@@ -397,7 +397,7 @@ bool ScriptManager::RunIfScript(cstring code, bool validate)
 	assert(code);
 
 	// compile
-	auto tmp_module = engine->GetModule("RunScriptModule", asGM_ALWAYS_CREATE);
+	asIScriptModule* tmp_module = engine->GetModule("RunScriptModule", asGM_ALWAYS_CREATE);
 	cstring packed_code = Format("bool f() { return (%s); }", code);
 	asIScriptFunction* func;
 	int r = tmp_module->CompileFunction("RunScript", packed_code, -1, 0, &func);
@@ -414,7 +414,7 @@ bool ScriptManager::RunIfScript(cstring code, bool validate)
 	}
 
 	// run
-	auto tmp_context = engine->RequestContext();
+	asIScriptContext* tmp_context = engine->RequestContext();
 	r = tmp_context->Prepare(func);
 	if(r >= 0)
 	{
@@ -450,7 +450,7 @@ bool ScriptManager::RunStringScript(cstring code, string& str, bool validate)
 	assert(code);
 
 	// compile
-	auto tmp_module = engine->GetModule("RunScriptModule", asGM_ALWAYS_CREATE);
+	asIScriptModule* tmp_module = engine->GetModule("RunScriptModule", asGM_ALWAYS_CREATE);
 	cstring packed_code = Format("string f() { return (%s); }", code);
 	asIScriptFunction* func;
 	int r = tmp_module->CompileFunction("RunScript", packed_code, -1, 0, &func);
@@ -467,7 +467,7 @@ bool ScriptManager::RunStringScript(cstring code, string& str, bool validate)
 	}
 
 	// run
-	auto tmp_context = engine->RequestContext();
+	asIScriptContext* tmp_context = engine->RequestContext();
 	r = tmp_context->Prepare(func);
 	if(r >= 0)
 	{
@@ -500,6 +500,53 @@ bool ScriptManager::RunStringScript(cstring code, string& str, bool validate)
 	engine->ReturnContext(tmp_context);
 
 	return ok;
+}
+
+asIScriptFunction* ScriptManager::PrepareScript(cstring code)
+{
+	assert(code);
+
+	// compile
+	asIScriptModule* tmp_module = engine->GetModule("RunScriptModule", asGM_ALWAYS_CREATE);
+	cstring packed_code = Format("void f() { %s; }", code);
+	asIScriptFunction* func;
+	int r = tmp_module->CompileFunction("RunScript", packed_code, -1, 0, &func);
+	if(r < 0)
+	{
+		Log(Logger::L_ERROR, Format("Failed to prepare script (%d).", r), code);
+		return nullptr;
+	}
+
+	return func;
+}
+
+bool ScriptManager::RunScript(asIScriptFunction* func)
+{
+	// run
+	asIScriptContext* tmp_context = engine->RequestContext();
+	int r = tmp_context->Prepare(func);
+	if(r >= 0)
+	{
+		last_exception = nullptr;
+		r = tmp_context->Execute();
+	}
+
+	bool finished = (r == asEXECUTION_FINISHED);
+	if(!finished)
+	{
+		if(r == asEXECUTION_EXCEPTION)
+		{
+			cstring msg = last_exception ? last_exception : tmp_context->GetExceptionString();
+			Log(Logger::L_ERROR, Format("Script exception thrown \"%s\" in %s(%d).", msg, tmp_context->GetExceptionFunction()->GetName(),
+				tmp_context->GetExceptionFunction()), code);
+		}
+		else
+			Log(Logger::L_ERROR, Format("Script execution failed (%d).", r), code);
+	}
+
+	engine->ReturnContext(tmp_context);
+
+	return finished;
 }
 
 string& ScriptManager::OpenOutput()

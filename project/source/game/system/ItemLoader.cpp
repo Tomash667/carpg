@@ -4,6 +4,7 @@
 #include "Stock.h"
 #include "ContentLoader.h"
 #include "ResourceManager.h"
+#include "ScriptManager.h"
 
 //-----------------------------------------------------------------------------
 class ItemLoader : public ContentLoader
@@ -59,7 +60,8 @@ class ItemLoader : public ContentLoader
 		SK_ELSE,
 		SK_CHANCE,
 		SK_RANDOM,
-		SK_SAME
+		SK_SAME,
+		SK_SCRIPT
 	};
 
 	enum BookSchemeProperty
@@ -261,7 +263,8 @@ public:
 			{ "else", SK_ELSE },
 			{ "chance", SK_CHANCE },
 			{ "random", SK_RANDOM },
-			{ "same", SK_SAME }
+			{ "same", SK_SAME },
+			{ "script", SK_SCRIPT }
 		});
 
 		t.AddKeywords(G_BOOK_SCHEME_PROPERTY, {
@@ -868,6 +871,18 @@ public:
 							stock->code.push_back((int)item);
 						}
 						t.Next();
+					}
+					break;
+				case SK_SCRIPT:
+					{
+						if(!stock->code.empty())
+							t.Throw("Stock script must be first command.");
+						if(stock->script)
+							t.Throw("Stock script already used.");
+						const string& block = t.GetBlock();
+						stock->script = SM.PrepareScript(block.c_str());
+						if(!stock->script)
+							t.Throw("Failed to parse script.");
 					}
 					break;
 				default:

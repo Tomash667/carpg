@@ -2305,9 +2305,55 @@ leveled_list mage_armor {
 }
 
 //------------------------------------------------------------------------------
-// BLACKSMITH STOCK (generate 1 of sets and random items)
+// STOCK SCRIPTS
 //------------------------------------------------------------------------------
+// merchant
+stock merchant {
+	// random items
+	script {
+		int price_limit;
+		if(Level::IsCity())
+			price_limit = Random(2000, 2500); // city
+		else if(Level::IsVillage())
+			price_limit = Random(500, 1000); // village
+		else if(Level::IsTutorial())
+			price_limit = 500; // tutorial
+		else
+			price_limit = 1000; // traveling merchant
+		for(int i=0,count=Random(15,20); i<count; ++i)
+		{
+			ITEM_TYPE type = Rand() % 6;
+			if(type == IT_CONSUMABLE)
+				StockScript::AddRandomItem(type, price_limit/5, ITEM_NOT_SHOP | ITEM_NOT_MERCHANT, Random(2,5));
+			else
+				StockScript::AddRandomItem(type, price_limit, ITEM_NOT_SHOP | ITEM_NOT_MERCHANT);
+		}
+	}
+	// potions
+	random 5 10 p_nreg
+	random 5 10 p_hp
+}
+
+// blacksmith - random equipment & 1 set of selected items
 stock blacksmith {
+	// basic equipment
+	script {
+		int count = Random(12, 18);
+		int price_limit;
+		if(Level::IsCity())
+			price_limit = 99999;
+		else
+		{
+			count -= Random(1, 3);
+			price_limit = Random(1250, 2500);
+		}		
+		for(int i=0; i<count; ++i)
+		{
+			ITEM_TYPE type = Rand() % 4;
+			StockScript::AddRandomItem(type, price_limit, ITEM_NOT_SHOP | ITEM_NOT_BLACKSMITH);
+		}
+	}
+	
 	// short blade
 	set {
 		dagger_short
@@ -2410,8 +2456,29 @@ stock blacksmith {
 	}
 }
 
-// innkeeper have this + random food
+// alchemist - random potions
+stock alchemist {
+	script {
+		int count = Random(12, 18);
+		if(!Level::IsCity())
+			count -= Random(1, 3);
+		for(int i=0; i<count; ++i)
+			StockScript::AddRandomItem(IT_CONSUMABLE, 99999, ITEM_NOT_SHOP | ITEM_NOT_ALCHEMIST, Random(3, 6));
+	}
+}
+
+// innkeeper drinks & food
 stock innkeeper {
+	// random food
+	script {
+		int count = Random(10, 20);
+		if(!Level::IsCity())
+			count -= Random(1, 3);
+		ItemList@ list = ItemList::Get("normal_food");
+		for(int i=0; i<count; ++i)
+			StockScript::AddItem(list.Get());
+	}
+	// drinks
 	city {
 		random 10 15 beer
 		random 8 12 vodka
@@ -2423,6 +2490,28 @@ stock innkeeper {
 		random 4 6 vodka
 		random 2 5 water
 		random 1 2 spirit
+	}
+}
+
+// food seller - food & drinks and sometimes cooking items
+stock food_seller {
+	script {
+		ItemList@ list = ItemList::Get("food_and_drink");
+		bool is_village = !Level::IsCity();
+		for(int i=0, count=list.Size(); i<count; ++i)
+		{
+			int value = Random(50, 100);
+			if(is_village)
+				value /= 2;
+			Item@ item = list.Get(i);
+			int count = value / item.value;
+			if(count > 0)
+				StockScript::AddItem(item, count);
+		}
+		if(Rand() % 4)
+			StockScript::AddItem(Item::Get("frying_pan"));
+		if(Rand() % 4)
+			StockScript::AddItem(Item::Get("ladle"));
 	}
 }
 

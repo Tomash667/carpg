@@ -8,6 +8,7 @@
 #include "Item.h"
 #include "Spell.h"
 #include "ResourceManager.h"
+#include "Stock.h"
 
 //-----------------------------------------------------------------------------
 class UnitLoader : public ContentLoader
@@ -123,6 +124,7 @@ class UnitLoader : public ContentLoader
 
 	enum TraderKeyword
 	{
+		TK_STOCK,
 		TK_GROUPS,
 		TK_INCLUDE
 	};
@@ -468,6 +470,7 @@ class UnitLoader : public ContentLoader
 			t.AddKeyword(clas.id, (int)clas.class_id, G_CLASS);
 
 		t.AddKeywords(G_TRADER_KEYWORD, {
+			{ "stock", TK_STOCK },
 			{ "groups", TK_GROUPS },
 			{ "include", TK_INCLUDE }
 		});
@@ -482,7 +485,7 @@ class UnitLoader : public ContentLoader
 			{ "book", IT_BOOK }
 		});
 
-		t.AddKeyword(G_CONSUMABLE_GROUP, {
+		t.AddKeywords(G_CONSUMABLE_GROUP, {
 			{ "food", Food },
 			{ "drink", Drink },
 			{ "potion", Potion }
@@ -823,8 +826,19 @@ class UnitLoader : public ContentLoader
 					t.Next();
 					t.AssertSymbol('{');
 					t.Next();
-					if(k == TK_GROUPS)
+					switch(k)
 					{
+					case TK_STOCK:
+						{
+							if(unit->trader->stock)
+								t.Throw("Unit trader stock already set.");
+							const string& stock_id = t.MustGetItem();
+							unit->trader->stock = Stock::TryGet(stock_id);
+							if(!unit->trader->stock)
+								LoadError("Missing trader stock '%s'.", stock_id.c_str());
+						}
+						break;
+					case TK_GROUPS:
 						while(!t.IsSymbol('{'))
 						{
 							t.AssertKeywordGroup({ G_ITEM_GROUP, G_CONSUMABLE_GROUP });
@@ -842,20 +856,22 @@ class UnitLoader : public ContentLoader
 								unit->trader->buy_consumable_flags |= (1 << group);
 							}
 						}
-					}
-					else
-					{
+						break;
+					case TK_INCLUDE:
 						while(!t.IsSymbol('}'))
 						{
 							const string& item_id = t.MustGetString();
 							const Item* item = Item::TryGet(item_id);
 							if(!item)
-								LoaderError("Missing trader item include '%s'.", item_id.c_str());
+								LoadError("Missing trader item include '%s'.", item_id.c_str());
 							else
 								unit->trader->includes.push_back(item);
 							t.Next();
 						}
+						break;
 					}
+					if(!unit->trader->stock)
+						LoadError("Unit trader stock not set.");
 					t.Next();
 				}
 				break;

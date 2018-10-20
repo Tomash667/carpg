@@ -20,6 +20,10 @@
 using namespace SLNet;
 
 //-----------------------------------------------------------------------------
+// angel script
+class asIScriptFunction;
+
+//-----------------------------------------------------------------------------
 class ActionPanel;
 class Arena;
 class BitStreamReader;
@@ -121,6 +125,7 @@ struct Shield;
 struct SpeechBubble;
 struct Spell;
 struct SpellList;
+struct Stock;
 struct TerrainTile;
 struct Tile;
 struct Trap;

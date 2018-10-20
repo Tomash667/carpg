@@ -36,6 +36,8 @@ public:
 	bool RunScript(cstring code, bool validate = false);
 	bool RunIfScript(cstring code, bool validate = false);
 	bool RunStringScript(cstring code, string& str, bool validate = false);
+	asIScriptFunction* PrepareScript(cstring code);
+	bool RunScript(asIScriptFunction* func);
 	string& OpenOutput();
 	void CloseOutput();
 	void Log(Logger::Level level, cstring msg, cstring code = nullptr);

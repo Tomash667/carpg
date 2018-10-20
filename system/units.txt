@@ -1380,6 +1380,7 @@ unit blacksmith : base_human {
 	flags | {ai_stay dont_eat}
 	items blacksmith
 	trader {
+		stock blacksmith
 		groups {weapon bow shield armor}
 	}
 	gold {500 1000}
@@ -1392,6 +1393,7 @@ unit merchant : base_human {
 	flags | {ai_stay ai_guard dont_eat}
 	items merchant
 	trader {
+		stock merchant
 		groups {weapon bow shield armor letter consumable other book}
 	}
 	gold {500 1000}
@@ -1405,6 +1407,7 @@ unit food_seller : base_human {
 	hp 500
 	items merchant
 	trader {
+		stock food_seller
 		groups {food drink}
 		include {ladle frying_pan}
 	}
@@ -1419,7 +1422,8 @@ unit alchemist : base_human {
 	hp 500
 	items alchemist
 	trader {
-		groups{potion}
+		stock alchemist
+		groups {potion}
 	}
 	gold {500 1000}
 	dialog alchemist
@@ -1440,6 +1444,7 @@ unit tut_czlowiek : base_human {
 	flags | ai_stay
 	items citizen
 	trader {
+		stock merchant
 		groups {weapon bow shield armor letter consumable other book}
 	}
 	gold {{10 50}{20 60}}
@@ -1544,6 +1549,7 @@ unit innkeeper : base_human {
 	flags | {ai_guard ai_stay limited_rot dont_eat talk_at_competition}
 	items innkeeper
 	trader {
+		stock innkeeper
 		groups {food drink}
 	}
 	gold {500 1000}
@@ -1894,6 +1900,7 @@ unit q_orkowie_kowal : friendly_orc {
 	def 10
 	items orc_fighter
 	trader {
+		stock orc_blacksmith
 		groups {weapon bow shield armor}
 	}
 	gold {100 200}
