@@ -281,12 +281,6 @@ int ItemList_Size(ItemList* lis)
 	return lis->items.size();
 }
 
-const ItemList* ItemList_Get(const string& list_id)
-{
-	ItemListResult result = ItemList::Get(list_id);
-	return result.lis;
-}
-
 void Unit_RemoveItem(Unit* unit, const string& id)
 {
 	Item* item = Item::TryGet(id);
@@ -393,7 +387,7 @@ void ScriptManager::RegisterGame()
 		.Member("const int value", offsetof(Item, value))
 		.Method("const string& get_name() const", asFUNCTION(Item_GetName))
 		.WithNamespace()
-		.AddFunction("Item@ Get(const string& in)", asFUNCTION(Item::Get))
+		.AddFunction("Item@ Get(const string& in)", asFUNCTION(Item::GetS))
 		.AddFunction("Item@ GetRandom(int)", asFUNCTION(ItemHelper::GetRandomItem));
 
 	AddType("ItemList")
@@ -401,7 +395,7 @@ void ScriptManager::RegisterGame()
 		.Method("Item@ Get(int)", asFUNCTION(ItemList_GetByIndex))
 		.Method("int Size()", asFUNCTION(ItemList_Size))
 		.WithNamespace()
-		.AddFunction("ItemList@ Get(const string& in)", asFUNCTION(ItemList_Get));
+		.AddFunction("ItemList@ Get(const string& in)", asFUNCTION(ItemList::GetS));
 
 	AddType("Unit")
 		.Method("int get_gold() const", asMETHOD(Unit, GetGold))
@@ -593,13 +587,15 @@ bool ScriptManager::RunStringScript(cstring code, string& str, bool validate)
 	return ok;
 }
 
-asIScriptFunction* ScriptManager::PrepareScript(cstring code)
+asIScriptFunction* ScriptManager::PrepareScript(cstring name, cstring code)
 {
 	assert(code);
 
 	// compile
 	asIScriptModule* tmp_module = engine->GetModule("RunScriptModule", asGM_ALWAYS_CREATE);
-	cstring packed_code = Format("void f() { %s; }", code);
+	if(!name)
+		name = "f";
+	cstring packed_code = Format("void %s() { %s; }", name, code);
 	asIScriptFunction* func;
 	int r = tmp_module->CompileFunction("RunScript", packed_code, -1, 0, &func);
 	if(r < 0)

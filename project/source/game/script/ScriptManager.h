@@ -45,7 +45,7 @@ public:
 	bool RunScript(cstring code, bool validate = false);
 	bool RunIfScript(cstring code, bool validate = false);
 	bool RunStringScript(cstring code, string& str, bool validate = false);
-	asIScriptFunction* PrepareScript(cstring code);
+	asIScriptFunction* PrepareScript(cstring name, cstring code);
 	bool RunScript(asIScriptFunction* func);
 	string& OpenOutput();
 	void CloseOutput();

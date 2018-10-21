@@ -865,7 +865,7 @@ public:
 						if(stock->script)
 							t.Throw("Stock script already used.");
 						const string& block = t.GetBlock('{', '}', false);
-						stock->script = SM.PrepareScript(block.c_str());
+						stock->script = SM.PrepareScript(Format("stock_%s", stock->id.c_str()), block.c_str());
 						if(!stock->script)
 							t.Throw("Failed to parse script.");
 						t.Next();

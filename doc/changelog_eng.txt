@@ -4,6 +4,7 @@ Changelog
 Version 0.8 (???):
 ! cannot load saves from version 0.2.10 or older
 + key to toggle run/walk
++ loading traders stock from file
 - fixed talking with unit that is standing up
 - fixed units rotating when talking for clients
 - wanted quest could select already used location where target will fail to spawn

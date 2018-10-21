@@ -42,7 +42,6 @@ void Stock::Parse(bool city, vector<ItemSlot>& items)
 	LocalVector2<int> sets;
 	bool in_set = false;
 	uint i = 0;
-	bool test_mode = false;
 
 	if(script)
 	{
@@ -140,20 +139,14 @@ redo_set:
 			in_city = CityBlock::ANY;
 			break;
 		case SE_START_SET:
-			if(!test_mode)
-			{
-				assert(!in_set);
-				sets.push_back(i + 1);
-				while(code[i] != SE_END_SET)
-					++i;
-			}
+			assert(!in_set);
+			sets.push_back(i + 1);
+			while(code[i] != SE_END_SET)
+				++i;
 			break;
 		case SE_END_SET:
-			if(!test_mode)
-			{
-				assert(in_set);
-				return;
-			}
+			assert(in_set);
+			sets.clear();
 			break;
 		default:
 			assert(0);

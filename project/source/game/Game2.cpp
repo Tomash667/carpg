@@ -9696,8 +9696,11 @@ void Game::PreloadResources(bool worldmap)
 			{
 				for(GroundItem* ground_item : *ctx.items)
 					items_load.insert(ground_item->item);
-				for(Chest* chest : *ctx.chests)
-					PreloadItems(chest->items);
+				if(ctx.chests)
+				{
+					for(Chest* chest : *ctx.chests)
+						PreloadItems(chest->items);
+				}
 				for(Usable* usable : *ctx.usables)
 				{
 					if(usable->container)

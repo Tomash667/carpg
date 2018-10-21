@@ -876,7 +876,6 @@ void Game::OnCleanup()
 	CleanScene();
 	DeleteElements(bow_instances);
 	ClearQuadtree();
-	GameDialog::Cleanup();
 
 	// shadery
 	ReleaseShaders();
