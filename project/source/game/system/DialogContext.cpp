@@ -211,7 +211,7 @@ void DialogContext::Update(float dt)
 				EndDialog();
 				pc->action = PlayerController::Action_Trade;
 				pc->action_unit = talker;
-				pc->chest_trade = &talker->data->trader->items;
+				pc->chest_trade = &talker->stock->items;
 
 				if(is_local)
 					game.gui->inventory->StartTrade(I_TRADE, *pc->chest_trade, talker);

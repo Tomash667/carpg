@@ -824,8 +824,6 @@ class UnitLoader : public ContentLoader
 				{
 					int k = t.MustGetKeywordId(G_TRADER_KEYWORD);
 					t.Next();
-					t.AssertSymbol('{');
-					t.Next();
 					switch(k)
 					{
 					case TK_STOCK:
@@ -839,7 +837,9 @@ class UnitLoader : public ContentLoader
 						}
 						break;
 					case TK_GROUPS:
-						while(!t.IsSymbol('{'))
+						t.AssertSymbol('{');
+						t.Next();
+						while(!t.IsSymbol('}'))
 						{
 							t.AssertKeywordGroup({ G_ITEM_GROUP, G_CONSUMABLE_GROUP });
 							if(t.IsKeywordGroup(G_ITEM_GROUP))
@@ -855,12 +855,15 @@ class UnitLoader : public ContentLoader
 								unit->trader->buy_flags |= (1 << IT_CONSUMABLE);
 								unit->trader->buy_consumable_flags |= (1 << group);
 							}
+							t.Next();
 						}
 						break;
 					case TK_INCLUDE:
+						t.AssertSymbol('{');
+						t.Next();
 						while(!t.IsSymbol('}'))
 						{
-							const string& item_id = t.MustGetString();
+							const string& item_id = t.MustGetItem();
 							const Item* item = Item::TryGet(item_id);
 							if(!item)
 								LoadError("Missing trader item include '%s'.", item_id.c_str());
@@ -870,10 +873,10 @@ class UnitLoader : public ContentLoader
 						}
 						break;
 					}
-					if(!unit->trader->stock)
-						LoadError("Unit trader stock not set.");
 					t.Next();
 				}
+				if(!unit->trader->stock)
+					LoadError("Unit trader stock not set.");
 				break;
 			default:
 				t.Unexpected();

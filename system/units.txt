@@ -1394,7 +1394,7 @@ unit merchant : base_human {
 	items merchant
 	trader {
 		stock merchant
-		groups {weapon bow shield armor letter consumable other book}
+		groups {weapon bow shield armor consumable other book}
 	}
 	gold {500 1000}
 	dialog merchant
@@ -1445,7 +1445,7 @@ unit tut_czlowiek : base_human {
 	items citizen
 	trader {
 		stock merchant
-		groups {weapon bow shield armor letter consumable other book}
+		groups {weapon bow shield armor consumable other book}
 	}
 	gold {{10 50}{20 60}}
 	dialog q_tutorial

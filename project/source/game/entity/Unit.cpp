@@ -43,6 +43,7 @@ Unit::~Unit()
 	delete human_data;
 	delete hero;
 	delete player;
+	delete stock;
 }
 
 //=================================================================================================
@@ -1257,6 +1258,16 @@ void Unit::Save(GameWriter& f, bool local)
 		else
 			f.Write0();
 	}
+	if(stock)
+	{
+		if(local || W.GetWorldtime() - stock->date < 10)
+			SaveStock(f);
+		else
+		{
+			delete stock;
+			stock = nullptr;
+		}
+	}
 
 	f << live_state;
 	f << pos;
@@ -1371,6 +1382,27 @@ void Unit::Save(GameWriter& f, bool local)
 }
 
 //=================================================================================================
+void Unit::SaveStock(GameWriter& f)
+{
+	vector<ItemSlot>& cnt = stock->items;
+
+	f << stock->date;
+	f << cnt.size();
+	for(ItemSlot& slot : cnt)
+	{
+		if(slot.item)
+		{
+			f << slot.item->id;
+			f << slot.count;
+			if(slot.item->id[0] == '$')
+				f << slot.item->refid;
+		}
+		else
+			f.Write0();
+	}
+}
+
+//=================================================================================================
 void Unit::Load(GameReader& f, bool local)
 {
 	human_data = nullptr;
@@ -1398,6 +1430,8 @@ void Unit::Load(GameReader& f, bool local)
 			can_sort = false;
 		}
 	}
+	if(LOAD_VERSION >= V_DEV && data->trader)
+		LoadStock(f);
 
 	// stats
 	f >> live_state;
@@ -1695,6 +1729,45 @@ void Unit::Load(GameReader& f, bool local)
 			player->SetRequiredPoints();
 		}
 	}
+}
+
+//=================================================================================================
+void Unit::LoadStock(GameReader& f)
+{
+	if(!stock)
+		stock = new TraderStock;
+
+	vector<ItemSlot>& cnt = stock->items;
+
+	f >> stock->date;
+	uint count;
+	f >> count;
+	if(count == 0)
+	{
+		cnt.clear();
+		return;
+	}
+
+	bool can_sort = true;
+	cnt.resize(count);
+	for(ItemSlot& slot : cnt)
+	{
+		const string& item_id = f.ReadString1();
+		f >> slot.count;
+		if(item_id[0] != '$')
+			slot.item = Item::Get(item_id);
+		else
+		{
+			int quest_refid;
+			f >> quest_refid;
+			QM.AddQuestItemRequest(&slot.item, item_id.c_str(), quest_refid, &cnt);
+			slot.item = QUEST_ITEM_PLACEHOLDER;
+			can_sort = false;
+		}
+	}
+
+	if(can_sort && (LOAD_VERSION < V_0_2_20 || content::require_update))
+		SortItems(cnt);
 }
 
 //=================================================================================================

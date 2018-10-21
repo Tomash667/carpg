@@ -1199,7 +1199,7 @@ void Tokenizer::Parse(Vec2& v)
 }
 
 //=================================================================================================
-const string& Tokenizer::GetBlock(char open, char close)
+const string& Tokenizer::GetBlock(char open, char close, bool include_symbol)
 {
 	AssertSymbol(open);
 	int opened = 1;
@@ -1213,7 +1213,10 @@ const string& Tokenizer::GetBlock(char open, char close)
 			--opened;
 			if(opened == 0)
 			{
-				normal_seek.item = str->substr(block_start, normal_seek.pos - block_start);
+				if(include_symbol)
+					normal_seek.item = str->substr(block_start, normal_seek.pos - block_start);
+				else
+					normal_seek.item = str->substr(block_start + 1, normal_seek.pos - block_start - 2);
 				return normal_seek.item;
 			}
 		}

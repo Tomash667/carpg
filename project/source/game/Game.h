@@ -528,8 +528,6 @@ public:
 	cstring FormatString(DialogContext& ctx, const string& str_part);
 	int CalculateQuestReward(int gold);
 	void AddReward(int gold) { AddGold(CalculateQuestReward(gold), nullptr, true, txQuestCompletedGold, 4.f, false); }
-	void SaveStock(FileWriter& f, vector<ItemSlot>& cnt);
-	void LoadStock(FileReader& f, vector<ItemSlot>& cnt);
 	SOUND GetItemSound(const Item* item);
 	void Unit_StopUsingUsable(LevelContext& ctx, Unit& unit, bool send = true);
 	void EnterLevel(LocationGenerator* loc_gen);

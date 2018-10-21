@@ -2322,7 +2322,7 @@ stock merchant {
 			price_limit = 1000; // traveling merchant
 		for(int i=0,count=Random(15,20); i<count; ++i)
 		{
-			ITEM_TYPE type = Rand() % 6;
+			ITEM_TYPE type = ITEM_TYPE(Rand() % 6);
 			if(type == IT_CONSUMABLE)
 				StockScript::AddRandomItem(type, price_limit/5, ITEM_NOT_SHOP | ITEM_NOT_MERCHANT, Random(2,5));
 			else
@@ -2349,7 +2349,7 @@ stock blacksmith {
 		}		
 		for(int i=0; i<count; ++i)
 		{
-			ITEM_TYPE type = Rand() % 4;
+			ITEM_TYPE type = ITEM_TYPE(Rand() % 4);
 			StockScript::AddRandomItem(type, price_limit, ITEM_NOT_SHOP | ITEM_NOT_BLACKSMITH);
 		}
 	}
@@ -2504,13 +2504,13 @@ stock food_seller {
 			if(is_village)
 				value /= 2;
 			Item@ item = list.Get(i);
-			int count = value / item.value;
-			if(count > 0)
-				StockScript::AddItem(item, count);
+			int add = value / item.value;
+			if(add > 0)
+				StockScript::AddItem(item, add);
 		}
-		if(Rand() % 4)
+		if(Rand() % 4 == 0)
 			StockScript::AddItem(Item::Get("frying_pan"));
-		if(Rand() % 4)
+		if(Rand() % 4 == 0)
 			StockScript::AddItem(Item::Get("ladle"));
 	}
 }

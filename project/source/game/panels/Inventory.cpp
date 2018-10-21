@@ -777,7 +777,7 @@ void InventoryPanel::Update(float dt)
 				break;
 			case TRADE_MY:
 				// selling items
-				if(item->value <= 1 || !game.CanBuySell(item))
+				if(item->value <= 1 || !unit->player->action_unit->data->trader->CanBuySell(item))
 					GUI.SimpleDialog(base.txWontBuy, this);
 				else if(!slot)
 				{
@@ -1543,7 +1543,7 @@ void InventoryPanel::FormatBox(int group, string& text, string& small_text, TEX&
 		{
 			text += '\n';
 			int price = ItemHelper::GetItemPrice(item, *game.pc->unit, false);
-			if(price == 0 || !game.CanBuySell(item))
+			if(price == 0 || !unit->player->action_unit->data->trader->CanBuySell(item))
 				text += base.txWontBuy;
 			else
 				text += Format(base.txPrice, price);

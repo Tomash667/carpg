@@ -23,6 +23,15 @@ struct ScriptException
 	ScriptException(cstring msg, const Args&... args) : ScriptException(Format(msg, args...)) {}
 };
 
+struct ScriptContext
+{
+	ScriptContext() : pc(nullptr), target(nullptr), stock(nullptr) {}
+
+	PlayerController* pc;
+	Unit* target;
+	vector<ItemSlot>* stock;
+};
+
 class ScriptManager : public GameComponent
 {
 public:
@@ -42,6 +51,8 @@ public:
 	void CloseOutput();
 	void Log(Logger::Level level, cstring msg, cstring code = nullptr);
 	void AddFunction(cstring decl, const asSFuncPtr& funcPointer);
+	// add enum with values {name, value}
+	void AddEnum(cstring name, std::initializer_list<std::pair<cstring, int>> const& values);
 	TypeBuilder AddType(cstring name);
 	TypeBuilder ForType(cstring name);
 	VarsContainer* GetVars(Unit* unit);
@@ -57,6 +68,7 @@ public:
 		AlreadyExists
 	};
 	RegisterResult RegisterGlobalVar(const string& type, bool is_ref, const string& name);
+	ScriptContext& GetContext() { return ctx; }
 
 private:
 	struct ScriptTypeInfo
@@ -75,10 +87,7 @@ private:
 	bool gather_output;
 	std::map<string, ScriptTypeInfo> script_type_infos;
 	std::unordered_map<Unit*, VarsContainer*> unit_vars;
-
-	// context
-	PlayerController* pc;
-	Unit* target;
+	ScriptContext ctx;
 };
 
 extern ScriptManager SM;

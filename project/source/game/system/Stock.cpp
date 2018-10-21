@@ -4,6 +4,7 @@
 #include "ItemSlot.h"
 #include "Item.h"
 #include "ScriptManager.h"
+#include <angelscript.h>
 
 //-----------------------------------------------------------------------------
 vector<Stock*> Stock::stocks;
@@ -35,13 +36,20 @@ Stock::~Stock()
 }
 
 //=================================================================================================
-void Stock::Parse(int level, bool city, vector<ItemSlot>& items)
+void Stock::Parse(bool city, vector<ItemSlot>& items)
 {
 	CityBlock in_city = CityBlock::ANY;
 	LocalVector2<int> sets;
 	bool in_set = false;
 	uint i = 0;
 	bool test_mode = false;
+
+	if(script)
+	{
+		SM.GetContext().stock = &items;
+		SM.RunScript(script);
+		SM.GetContext().stock = nullptr;
+	}
 
 redo_set:
 	for(; i < code.size(); ++i)
@@ -55,7 +63,7 @@ redo_set:
 				++i;
 				StockEntry type = (StockEntry)code[i];
 				++i;
-				AddItems(items, type, code[i], level, 1, true);
+				AddItems(items, type, code[i], 1, true);
 			}
 			else
 				i += 2;
@@ -69,7 +77,7 @@ redo_set:
 				++i;
 				StockEntry type = (StockEntry)code[i];
 				++i;
-				AddItems(items, type, code[i], level, (uint)count, action == SE_SAME_MULTIPLE);
+				AddItems(items, type, code[i], (uint)count, action == SE_SAME_MULTIPLE);
 			}
 			else
 				i += 3;
@@ -95,7 +103,7 @@ redo_set:
 					if(ch < total && !done)
 					{
 						done = true;
-						AddItems(items, type, c, level, 1, true);
+						AddItems(items, type, c, 1, true);
 					}
 				}
 			}
@@ -117,7 +125,7 @@ redo_set:
 				++i;
 				StockEntry type = (StockEntry)code[i];
 				++i;
-				AddItems(items, type, code[i], level, (uint)Random(a, b), action == SE_SAME_RANDOM);
+				AddItems(items, type, code[i], (uint)Random(a, b), action == SE_SAME_RANDOM);
 			}
 			else
 				i += 4;
@@ -159,10 +167,12 @@ redo_set:
 		in_set = true;
 		goto redo_set;
 	}
+
+	SortItems(items);
 }
 
 //=================================================================================================
-void Stock::AddItems(vector<ItemSlot>& items, StockEntry type, int code, int level, uint count, bool same)
+void Stock::AddItems(vector<ItemSlot>& items, StockEntry type, int code, uint count, bool same)
 {
 	switch(type)
 	{
@@ -178,18 +188,6 @@ void Stock::AddItems(vector<ItemSlot>& items, StockEntry type, int code, int lev
 			{
 				for(uint i = 0; i < count; ++i)
 					InsertItemBare(items, lis->Get());
-			}
-		}
-		break;
-	case SE_LEVELED_LIST:
-		{
-			LeveledItemList* llis = (LeveledItemList*)code;
-			if(same)
-				InsertItemBare(items, llis->Get(level), count);
-			else
-			{
-				for(uint i = 0; i < count; ++i)
-					InsertItemBare(items, llis->Get(level));
 			}
 		}
 		break;

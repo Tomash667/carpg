@@ -13,6 +13,7 @@
 #include "Team.h"
 #include "World.h"
 #include "Level.h"
+#include "ItemHelper.h"
 
 //=================================================================================================
 void Quest_Orcs::Init()
@@ -619,7 +620,6 @@ void Quest_Orcs2::Save(GameWriter& f)
 	f << guard;
 	f << orc;
 	f << orc_class;
-	game->SaveStock(f, wares);
 }
 
 //=================================================================================================
@@ -637,7 +637,8 @@ bool Quest_Orcs2::Load(GameReader& f)
 		f >> guard;
 		f >> orc;
 		f >> orc_class;
-		game->LoadStock(f, wares);
+		if(LOAD_VERSION < V_DEV)
+			ItemHelper::SkipStock(f);
 	}
 
 	if(!done)
@@ -671,7 +672,7 @@ void Quest_Orcs2::LoadOld(GameReader& f)
 	f >> guard;
 	f >> orc;
 	f >> orc_class;
-	game->LoadStock(f, wares);
+	ItemHelper::SkipStock(f);
 }
 
 //=================================================================================================

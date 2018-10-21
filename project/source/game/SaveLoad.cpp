@@ -37,6 +37,7 @@
 #include "GlobalGui.h"
 #include "Console.h"
 #include "Pathfinding.h"
+#include "ItemHelper.h"
 
 enum SaveFlags
 {
@@ -322,13 +323,6 @@ void Game::SaveGame(GameWriter& f)
 	f << cam.real_rot.y;
 	f << cam.dist;
 
-	// update traders stock
-	SaveStock(f, chest_merchant);
-	SaveStock(f, chest_blacksmith);
-	SaveStock(f, chest_alchemist);
-	SaveStock(f, chest_innkeeper);
-	SaveStock(f, chest_food_seller);
-
 	// vars
 	f << devmode;
 	f << noai;
@@ -419,24 +413,6 @@ void Game::SaveGame(GameWriter& f)
 	}
 
 	f.Write("EOS", 3);
-}
-
-//=================================================================================================
-void Game::SaveStock(FileWriter& f, vector<ItemSlot>& cnt)
-{
-	f << cnt.size();
-	for(ItemSlot& slot : cnt)
-	{
-		if(slot.item)
-		{
-			f << slot.item->id;
-			f << slot.count;
-			if(slot.item->id[0] == '$')
-				f << slot.item->refid;
-		}
-		else
-			f.Write0();
-	}
 }
 
 //=================================================================================================
@@ -623,14 +599,15 @@ void Game::LoadGame(GameReader& f)
 	pc_data.rot_buf = 0.f;
 
 	// traders stock
-	LoadStock(f, chest_merchant);
-	LoadStock(f, chest_blacksmith);
-	LoadStock(f, chest_alchemist);
-	LoadStock(f, chest_innkeeper);
-	if(LOAD_VERSION >= V_0_2_20)
-		LoadStock(f, chest_food_seller);
-	else
-		chest_food_seller.clear();
+	if(LOAD_VERSION < V_DEV)
+	{
+		ItemHelper::SkipStock(f); // merchant
+		ItemHelper::SkipStock(f); // blacksmith
+		ItemHelper::SkipStock(f); // alchemist
+		ItemHelper::SkipStock(f); // innkeeper
+		if(LOAD_VERSION >= V_0_2_20)
+			ItemHelper::SkipStock(f); // food_seller
+	}
 
 	// vars
 	if(LOAD_VERSION < V_0_5)
@@ -931,36 +908,6 @@ void Game::LoadGame(GameReader& f)
 		SetMusic(MusicType::Travel);
 	game_state = game_state2;
 	clear_color = clear_color2;
-}
-
-//=================================================================================================
-void Game::LoadStock(FileReader& f, vector<ItemSlot>& cnt)
-{
-	uint count;
-	f >> count;
-	if(count == 0)
-		return;
-
-	bool can_sort = true;
-	cnt.resize(count);
-	for(ItemSlot& slot : cnt)
-	{
-		const string& item_id = f.ReadString1();
-		f >> slot.count;
-		if(item_id[0] != '$')
-			slot.item = Item::Get(item_id);
-		else
-		{
-			int quest_refid;
-			f >> quest_refid;
-			QM.AddQuestItemRequest(&slot.item, item_id.c_str(), quest_refid, &cnt);
-			slot.item = QUEST_ITEM_PLACEHOLDER;
-			can_sort = false;
-		}
-	}
-
-	if(can_sort && (LOAD_VERSION < V_0_2_20 || content::require_update))
-		SortItems(cnt);
 }
 
 //=================================================================================================

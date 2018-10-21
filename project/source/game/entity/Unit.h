@@ -435,7 +435,9 @@ struct Unit
 	float GetAttackFrame(int frame) const;
 	int GetRandomAttack() const;
 	void Save(GameWriter& f, bool local);
+	void SaveStock(GameWriter& f);
 	void Load(GameReader& f, bool local);
+	void LoadStock(GameReader& f);
 	void Write(BitStreamWriter& f);
 	bool Read(BitStreamReader& f);
 	Effect* FindEffect(EffectId effect);

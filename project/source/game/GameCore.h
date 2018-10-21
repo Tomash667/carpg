@@ -170,6 +170,7 @@ class TutorialLocationGenerator;
 enum Direction;
 enum EncounterMode;
 enum GameDirection;
+enum ITEM_TYPE;
 enum MATERIAL_TYPE;
 enum TRAP_TYPE;
 enum SPAWN_GROUP;

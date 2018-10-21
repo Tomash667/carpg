@@ -234,10 +234,7 @@ void CreatedCharacter::Apply(PlayerController& pc)
 	for(int i = 0; i < SLOT_MAX; ++i)
 		pc.unit->slots[i] = items[i];
 	if(HavePerk(Perk::AlchemistApprentice))
-	{
-		Stock::Get("alchemist_apprentice")->Parse(0, false, pc.unit->items);
-		SortItems(pc.unit->items);
-	}
+		Stock::Get("alchemist_apprentice")->Parse(false, pc.unit->items);
 	pc.unit->MakeItemsTeam(false);
 	pc.unit->RecalculateWeight();
 }

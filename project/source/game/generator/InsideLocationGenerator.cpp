@@ -156,10 +156,6 @@ void InsideLocationGenerator::OnEnter()
 						Unit* u = L.SpawnUnitInsideRoom(lvl.GetFarRoom(false), *orc_smith, -2, Int2(-999, -999), Int2(-999, -999));
 						if(u)
 							u->dont_attack = true;
-
-						vector<ItemSlot>& items = orc_smith->trader->items;
-						Stock::Get("orc_blacksmith")->Parse(0, false, items);
-						SortItems(items);
 					}
 				}
 

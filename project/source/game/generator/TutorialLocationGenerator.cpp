@@ -6,7 +6,6 @@
 #include "InsideLocation.h"
 #include "QuestManager.h"
 #include "Quest_Tutorial.h"
-#include "ItemHelper.h"
 #include "Game.h"
 
 struct RoomInfo
@@ -290,9 +289,6 @@ void TutorialLocationGenerator::OnEnter()
 		assert(InRange(c, '0', '9'));
 		(*it)->locked = LOCK_TUTORIAL + int(c - '0');
 	}
-
-	// trader stock
-	ItemHelper::GenerateMerchantItems(UnitData::Get("tut_czlowiek")->trader->items, 500);
 
 	L.SpawnDungeonColliders();
 	CreateMinimap();

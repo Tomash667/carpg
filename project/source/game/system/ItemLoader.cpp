@@ -670,7 +670,7 @@ public:
 
 		Ptr<Stock> stock;
 		bool in_set = false, in_city = false, in_city_else;
-		ItemListResult used_list;
+		const ItemList* lis;
 
 		// id
 		stock->id = t.MustGetItemKeyword();
@@ -713,6 +713,7 @@ public:
 			else if(t.IsKeywordGroup(G_STOCK_KEYWORD))
 			{
 				StockKeyword k = (StockKeyword)t.GetKeywordId(G_STOCK_KEYWORD);
+				t.Next();
 
 				switch(k)
 				{
@@ -723,14 +724,12 @@ public:
 						t.Throw("Can't have set block inside city block.");
 					in_set = true;
 					stock->code.push_back(SE_START_SET);
-					t.Next();
 					t.AssertSymbol('{');
 					t.Next();
 					break;
 				case SK_CITY:
 					if(in_city)
 						t.Throw("Already in city block.");
-					t.Next();
 					if(t.IsSymbol('{'))
 					{
 						t.Next();
@@ -740,17 +739,14 @@ public:
 					}
 					else if(t.IsItem())
 					{
-						const Item* item = FindItemOrList(t.GetItem(), used_list);
+						const Item* item = GetItemOrList(lis);
 						stock->code.push_back(SE_CITY);
 						stock->code.push_back(SE_ADD);
-						if(used_list.lis != nullptr)
+						if(lis != nullptr)
 						{
-							StockEntry t = (used_list.is_leveled ? SE_LEVELED_LIST : SE_LIST);
-							stock->code.push_back(t);
-							stock->code.push_back((int)used_list.lis);
+							stock->code.push_back(SE_LIST);
+							stock->code.push_back((int)lis);
 						}
-						else if(!item)
-							t.Throw("Missing item '%s'.", t.GetItem().c_str());
 						else
 						{
 							stock->code.push_back(SE_ITEM);
@@ -766,7 +762,6 @@ public:
 					}
 					break;
 				case SK_CHANCE:
-					t.Next();
 					if(t.IsSymbol('{'))
 					{
 						// chance { item X   item2 Y   ... }
@@ -778,15 +773,12 @@ public:
 						int count = 0, chance = 0;
 						while(!t.IsSymbol('}'))
 						{
-							const Item* item = FindItemOrList(t.MustGetItem(), used_list);
-							if(used_list.lis != nullptr)
+							const Item* item = GetItemOrList(lis);
+							if(lis != nullptr)
 							{
-								StockEntry t = (used_list.is_leveled ? SE_LEVELED_LIST : SE_LIST);
-								stock->code.push_back(t);
-								stock->code.push_back((int)used_list.lis);
+								stock->code.push_back(SE_LIST);
+								stock->code.push_back((int)lis);
 							}
-							else if(!item)
-								t.Throw("Missing item '%s'.", t.GetItem().c_str());
 							else
 							{
 								stock->code.push_back(SE_ITEM);
@@ -815,15 +807,12 @@ public:
 						stock->code.push_back(2);
 						for(int i = 0; i < 2; ++i)
 						{
-							const Item* item = FindItemOrList(t.MustGetItem(), used_list);
-							if(used_list.lis != nullptr)
+							const Item* item = GetItemOrList(lis);
+							if(lis != nullptr)
 							{
-								StockEntry t = (used_list.is_leveled ? SE_LEVELED_LIST : SE_LIST);
-								stock->code.push_back(t);
-								stock->code.push_back((int)used_list.lis);
+								stock->code.push_back(SE_LIST);
+								stock->code.push_back((int)lis);
 							}
-							else if(!item)
-								t.Throw("Missing item '%s'.", t.GetItem().c_str());
 							else
 							{
 								stock->code.push_back(SE_ITEM);
@@ -837,7 +826,6 @@ public:
 				case SK_RANDOM:
 					{
 						// Random X Y [same] item
-						t.Next();
 						int a = t.MustGetInt();
 						t.Next();
 						int b = t.MustGetInt();
@@ -856,15 +844,12 @@ public:
 						stock->code.push_back(a);
 						stock->code.push_back(b);
 
-						const Item* item = FindItemOrList(t.MustGetItem(), used_list);
-						if(used_list.lis != nullptr)
+						const Item* item = GetItemOrList(lis);
+						if(lis != nullptr)
 						{
-							StockEntry t = (used_list.is_leveled ? SE_LEVELED_LIST : SE_LIST);
-							stock->code.push_back(t);
-							stock->code.push_back((int)used_list.lis);
+							stock->code.push_back(SE_LIST);
+							stock->code.push_back((int)lis);
 						}
-						else if(!item)
-							t.Throw("Missing item '%s'.", t.GetItem().c_str());
 						else
 						{
 							stock->code.push_back(SE_ITEM);
@@ -879,10 +864,11 @@ public:
 							t.Throw("Stock script must be first command.");
 						if(stock->script)
 							t.Throw("Stock script already used.");
-						const string& block = t.GetBlock();
+						const string& block = t.GetBlock('{', '}', false);
 						stock->script = SM.PrepareScript(block.c_str());
 						if(!stock->script)
 							t.Throw("Failed to parse script.");
+						t.Next();
 					}
 					break;
 				default:
@@ -908,15 +894,12 @@ public:
 				stock->code.push_back(type);
 				stock->code.push_back(count);
 
-				const Item* item = FindItemOrList(t.MustGetItem(), used_list);
-				if(used_list.lis != nullptr)
+				const Item* item = GetItemOrList(lis);
+				if(lis != nullptr)
 				{
-					StockEntry t = (used_list.is_leveled ? SE_LEVELED_LIST : SE_LIST);
-					stock->code.push_back(t);
-					stock->code.push_back((int)used_list.lis);
+					stock->code.push_back(SE_LIST);
+					stock->code.push_back((int)lis);
 				}
-				else if(!item)
-					t.Throw("Missing item '%s'.", t.GetItem().c_str());
 				else
 				{
 					stock->code.push_back(SE_ITEM);
@@ -929,15 +912,12 @@ public:
 				// item
 				stock->code.push_back(SE_ADD);
 
-				const Item* item = FindItemOrList(t.MustGetItem(), used_list);
-				if(used_list.lis != nullptr)
+				const Item* item = GetItemOrList(lis);
+				if(lis != nullptr)
 				{
-					StockEntry t = (used_list.is_leveled ? SE_LEVELED_LIST : SE_LIST);
-					stock->code.push_back(t);
-					stock->code.push_back((int)used_list.lis);
+					stock->code.push_back(SE_LIST);
+					stock->code.push_back((int)lis);
 				}
-				else if(!item)
-					t.Throw("Missing item '%s'.", t.GetItem().c_str());
 				else
 				{
 					stock->code.push_back(SE_ITEM);
@@ -949,10 +929,29 @@ public:
 				t.Unexpected();
 		}
 
-		if(stock->code.empty())
+		if(stock->code.empty() && !stock->script)
 			t.Throw("No code.");
 
 		Stock::stocks.push_back(stock.Pin());
+	}
+
+	//=================================================================================================
+	const Item* GetItemOrList(const ItemList*& lis)
+	{
+		ItemListResult result;
+		const string& item_id = t.GetItem();
+		const Item* item = FindItemOrList(item_id, result);
+		if(result.lis != nullptr)
+		{
+			if(result.is_leveled)
+				t.Throw("Can't use leveled list '%s' in stock script.", item_id.c_str());
+			lis = result.lis;
+			return nullptr;
+		}
+		else if(!item)
+			t.Throw("Missing item '%s'.", item_id.c_str());
+		lis = nullptr;
+		return item;
 	}
 
 	//=================================================================================================

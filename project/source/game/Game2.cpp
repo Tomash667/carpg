@@ -4715,6 +4715,12 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 				PreloadItem(slot.item);
 		}
 	}
+	if(base.trader && !test_unit)
+	{
+		u->stock = new TraderStock;
+		u->stock->date = W.GetWorldtime();
+		base.trader->stock->Parse(L.city_ctx != nullptr, u->stock->items);
+	}
 
 	// gold
 	float t;
@@ -9796,8 +9802,8 @@ void Game::PreloadUnit(Unit* unit)
 				items_load.insert(unit->slots[i]);
 		}
 		PreloadItems(unit->items);
-		if(data.trader)
-			PreloadItems(data.trader->items);
+		if(unit->stock)
+			PreloadItems(unit->stock->items);
 	}
 
 	if(data.state == ResourceState::Loaded)

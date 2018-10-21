@@ -136,9 +136,9 @@ void DialogLoader::LoadDialog(const string& id)
 	{
 		if(t.IsSymbol('}'))
 		{
-			t.Next();
 			if(if_state.empty())
 				break;
+			t.Next();
 			switch(if_state.back())
 			{
 			case IFS_INLINE_CHOICE:
@@ -581,9 +581,11 @@ void DialogLoader::LoadDialog(const string& id)
 		}
 	}
 
-	std::pair<GameDialog::Map::iterator, bool>& result = GameDialog::dialogs.insert(std::pair<cstring, GameDialog*>(dialog->id.c_str(), dialog));
+	std::pair<GameDialog::Map::iterator, bool>& result = GameDialog::dialogs.insert(std::pair<cstring, GameDialog*>(dialog->id.c_str(), dialog.Get()));
 	if(!result.second)
 		t.Throw("Dialog with that id already exists.");
+
+	dialog.Pin();
 }
 
 void DialogLoader::LoadGlobals()
