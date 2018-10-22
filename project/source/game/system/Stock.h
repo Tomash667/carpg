@@ -31,6 +31,7 @@ struct Stock
 
 private:
 	void AddItems(vector<ItemSlot>& items, StockEntry type, int code, uint count, bool same);
+	void ParseInternal(vector<ItemSlot>& items);
 
 public:
 	static vector<Stock*> stocks;

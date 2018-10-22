@@ -1346,7 +1346,7 @@ cstring World::GetDate() const
 //=================================================================================================
 int World::GetRandomSettlementIndex(int excluded) const
 {
-	int index = Rand() % excluded;
+	int index = Rand() % settlements;
 	if(index == excluded)
 		index = (index + 1) % excluded;
 	return index;

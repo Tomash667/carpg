@@ -48,7 +48,7 @@ void DialogContext::StartDialog(Unit* talker, GameDialog* dialog)
 	dialog_quest = nullptr;
 	dialog_skip = -1;
 	dialog_esc = -1;
-	talker = talker;
+	this->talker = talker;
 	if(Net::IsLocal())
 	{
 		// this vars are useless for clients, don't increase ref counter
@@ -62,7 +62,7 @@ void DialogContext::StartDialog(Unit* talker, GameDialog* dialog)
 	not_active = false;
 	choices.clear();
 	can_skip = true;
-	dialog = dialog ? dialog : talker->data->dialog;
+	this->dialog = dialog ? dialog : talker->data->dialog;
 	force_end = false;
 	negate_if = false;
 
@@ -90,12 +90,12 @@ void DialogContext::StartDialog(Unit* talker, GameDialog* dialog)
 }
 
 //=================================================================================================
-void DialogContext::StartNextDialog(GameDialog* dialog, int& if_level, Quest* quest)
+void DialogContext::StartNextDialog(GameDialog* new_dialog, int& if_level, Quest* quest)
 {
-	assert(dialog);
+	assert(new_dialog);
 
 	prev.push_back({ dialog, dialog_quest, dialog_pos, dialog_level });
-	dialog = dialog;
+	dialog = new_dialog;
 	dialog_quest = quest;
 	dialog_pos = -1;
 	dialog_level = 0;
@@ -688,15 +688,15 @@ void DialogContext::EndDialog()
 cstring DialogContext::GetText(int index)
 {
 	GameDialog::Text& text = GetTextInner(index);
-	cstring str = dialog->strs[text.index].c_str();
+	const string& str = dialog->strs[text.index];
 
 	if(!text.formatted)
-		return str;
+		return str.c_str();
 
 	static string str_part;
 	dialog_s_text.clear();
 
-	for(uint i = 0, len = strlen(str); i < len; ++i)
+	for(uint i = 0, len = str.length(); i < len; ++i)
 	{
 		if(str[i] == '$')
 		{
@@ -704,14 +704,11 @@ cstring DialogContext::GetText(int index)
 			++i;
 			if(str[i] == '(')
 			{
-				++i;
-				while(str[i] != ')')
-				{
-					str_part.push_back(str[i]);
-					++i;
-				}
+				uint pos = FindClosingPos(str, i);
+				str_part = str.substr(i + 1, pos - i - 1);
 				SM.RunStringScript(str_part.c_str(), str_part);
 				dialog_s_text += str_part;
+				i = pos;
 			}
 			else
 			{

@@ -9,6 +9,7 @@ Wersja 0.8 (???):
 - naprawione obracanie jednostek podczas dialogu u klienta
 - zadanie z listem goñczym wybiera³o losow¹ lokalizacje która by³a ju¿ u¿ywana, cel nie generowa³ siê
 - naprawiony wyciek pamiêci przy generowaniu kopalni
+- poprawki do dialogów burmistrza
 
 --------------------------------------------------------------------------------
 Wersja 0.7.1 (2018-04-15):

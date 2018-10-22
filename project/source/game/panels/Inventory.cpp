@@ -209,9 +209,9 @@ void Inventory::StartTrade(InventoryMode mode, Unit& unit)
 void Inventory::StartTrade(InventoryMode mode, vector<ItemSlot>& items, Unit* unit)
 {
 	Game& game = Game::Get();
+	PlayerController* pc = game.pc;
 	game.gui->game_gui->ClosePanels();
 	this->mode = mode;
-	PlayerController* pc = game.pc;
 
 	inv_trade_other->items = &items;
 	inv_trade_other->slots = nullptr;
@@ -256,7 +256,7 @@ void Inventory::StartTrade2(InventoryMode mode, void* ptr)
 	Game& game = Game::Get();
 	PlayerController* pc = game.pc;
 	game.gui->game_gui->ClosePanels();
-	mode = I_LOOT_CHEST;
+	this->mode = mode;
 
 	switch(mode)
 	{

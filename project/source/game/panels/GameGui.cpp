@@ -1408,6 +1408,8 @@ void GameGui::Load(FileReader& f)
 		SpeechBubble& sb = **it;
 		f.ReadString2(sb.text);
 		sb.unit = Unit::GetByRefid(f.Read<int>());
+		if(sb.unit)
+			sb.unit->bubble = &sb;
 		f >> sb.size;
 		f >> sb.time;
 		f >> sb.length;

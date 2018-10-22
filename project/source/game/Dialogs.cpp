@@ -21,27 +21,28 @@ void CheckText(cstring text, bool talk2)
 void CheckDialogText(GameDialog* dialog, int index)
 {
 	GameDialog::Text& text = dialog->texts[index];
-	string& str = dialog->strs[text.index];
+	string* str = &dialog->strs[text.index];
 	int prev_script = -1;
 
 	size_t pos = 0;
 	while(true)
 	{
-		size_t pos2 = str.find_first_of('$', pos);
+		size_t pos2 = str->find_first_of('$', pos);
 		if(pos2 == string::npos)
 			return;
 		++pos2;
-		if(str[pos2] == '(')
+		if(str->at(pos2) == '(')
 		{
-			pos = str.find_first_of(')', pos2);
+			pos = FindClosingPos(*str, pos2);
 			if(pos == string::npos)
 			{
-				Error("Broken game dialog text: %s", str.c_str());
+				Error("Broken game dialog text: %s", str->c_str());
 				text.formatted = false;
 				return;
 			}
 			int str_index = (int)dialog->strs.size();
-			dialog->strs.push_back(str.substr(pos2 + 1, pos - pos2 - 1));
+			dialog->strs.push_back(str->substr(pos2 + 1, pos - pos2 - 1));
+			str = &dialog->strs[text.index];
 			++pos;
 			if(prev_script == -1)
 			{
@@ -61,10 +62,10 @@ void CheckDialogText(GameDialog* dialog, int index)
 		}
 		else
 		{
-			pos = str.find_first_of('$', pos2);
+			pos = str->find_first_of('$', pos2);
 			if(pos == string::npos)
 			{
-				Error("Broken game dialog text: %s", str.c_str());
+				Error("Broken game dialog text: %s", str->c_str());
 				text.formatted = false;
 				return;
 			}

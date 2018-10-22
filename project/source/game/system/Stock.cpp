@@ -39,18 +39,25 @@ Stock::~Stock()
 //=================================================================================================
 void Stock::Parse(vector<ItemSlot>& items)
 {
-	CityBlock in_city = CityBlock::ANY;
-	LocalVector2<int> sets;
-	bool in_set = false;
-	bool city = L.IsCity();
-	uint i = 0;
-
 	if(script)
 	{
 		SM.GetContext().stock = &items;
 		SM.RunScript(script);
 		SM.GetContext().stock = nullptr;
 	}
+
+	ParseInternal(items);
+	SortItems(items);
+}
+
+//=================================================================================================
+void Stock::ParseInternal(vector<ItemSlot>& items)
+{
+	CityBlock in_city = CityBlock::ANY;
+	LocalVector2<int> sets;
+	bool in_set = false;
+	bool city = L.IsCity();
+	uint i = 0;
 
 	do
 	{
@@ -149,8 +156,7 @@ void Stock::Parse(vector<ItemSlot>& items)
 				break;
 			case SE_END_SET:
 				assert(in_set);
-				sets.clear();
-				break;
+				return;
 			default:
 				assert(0);
 				break;
@@ -166,8 +172,6 @@ void Stock::Parse(vector<ItemSlot>& items)
 			break;
 	}
 	while(true);
-
-	SortItems(items);
 }
 
 //=================================================================================================

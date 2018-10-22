@@ -9,6 +9,7 @@ Version 0.8 (???):
 - fixed units rotating when talking for clients
 - wanted quest could select already used location where target will fail to spawn
 - fixed memory leak when generating mine
+- mayor dialog fixes
 
 --------------------------------------------------------------------------------
 Version 0.7.1 (2018-04-15):
