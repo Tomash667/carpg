@@ -25,6 +25,7 @@
 #include "ResourceManager.h"
 #include "GlobalGui.h"
 #include "PlayerInfo.h"
+#include "Stock.h"
 
 const float Unit::AUTO_TALK_WAIT = 0.333f;
 const float Unit::STAMINA_BOW_ATTACK = 100.f;
@@ -4747,4 +4748,27 @@ bool Unit::IsFriend(Unit& u) const
 	}
 	else
 		return in_arena == u.in_arena;
+}
+
+//=================================================================================================
+void Unit::RefreshStock()
+{
+	assert(data->trader);
+
+	bool refresh;
+	int worldtime = W.GetWorldtime();
+	if(stock)
+		refresh = (worldtime - stock->date >= 10);
+	else
+	{
+		stock = new TraderStock;
+		refresh = true;
+	}
+
+	if(refresh)
+	{
+		stock->date = worldtime;
+		stock->items.clear();
+		data->trader->stock->Parse(stock->items);
+	}
 }

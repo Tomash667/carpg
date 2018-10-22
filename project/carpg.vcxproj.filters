@@ -204,9 +204,6 @@
     <ClCompile Include="source\game\stats\Material.cpp">
       <Filter>3. game\stats</Filter>
     </ClCompile>
-    <ClCompile Include="source\game\stats\Names.cpp">
-      <Filter>3. game\stats</Filter>
-    </ClCompile>
     <ClCompile Include="source\game\stats\RoomType.cpp">
       <Filter>3. game\stats</Filter>
     </ClCompile>
@@ -780,6 +777,9 @@
     </ClCompile>
     <ClCompile Include="source\game\system\DialogLoader.cpp">
       <Filter>3. game\system\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\generator\NameHelper.cpp">
+      <Filter>3. game\helpers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1584,6 +1584,9 @@
     </ClInclude>
     <ClInclude Include="source\game\system\DialogLoader.h">
       <Filter>3. game\system\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\generator\NameHelper.h">
+      <Filter>3. game\helpers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

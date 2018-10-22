@@ -3927,3 +3927,22 @@ void Level::RevealMinimap()
 	if(Net::IsServer())
 		Net::PushChange(NetChange::CHEAT_REVEAL_MINIMAP);
 }
+
+//=================================================================================================
+bool Level::IsCity()
+{
+	return location->type == L_CITY && ((City*)location)->settlement_type == City::SettlementType::City;
+}
+
+//=================================================================================================
+void Level::Update()
+{
+	for(LevelContext& ctx : ForEachContext())
+	{
+		for(Unit* unit : *ctx.units)
+		{
+			if(unit->data->trader)
+				unit->RefreshStock();
+		}
+	}
+}

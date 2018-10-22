@@ -29,6 +29,7 @@
 #include "SaveLoadPanel.h"
 #include "DebugDrawer.h"
 #include "Item.h"
+#include "NameHelper.h"
 
 extern void HumanPredraw(void* ptr, Matrix* mat, int n);
 extern const int ITEM_IMAGE_SIZE;
@@ -264,7 +265,7 @@ void Game::LoadLanguageFiles()
 	SetGameCommonText();
 	SetItemStatsText();
 	SetLocationNames();
-	SetHeroNames();
+	NameHelper::SetHeroNames();
 	SetGameText();
 	SetStatsText();
 	N.LoadLanguage();

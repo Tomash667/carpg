@@ -10,6 +10,10 @@
 #include "Inventory.h"
 #include "QuestManager.h"
 #include "Level.h"
+#include "World.h"
+#include "LocationHelper.h"
+#include "Arena.h"
+#include "NameHelper.h"
 
 DialogContext* DialogContext::current;
 
@@ -647,7 +651,7 @@ cstring DialogContext::GetText(int index)
 				if(dialog_quest)
 					dialog_s_text += dialog_quest->FormatString(str_part);
 				else
-					dialog_s_text += Game::Get().FormatString(*this, str_part);
+					dialog_s_text += FormatString(str_part);
 			}
 		}
 		else
@@ -682,4 +686,57 @@ GameDialog::Text& DialogContext::GetTextInner(int index)
 		}
 	}
 	return text;
+}
+
+//=================================================================================================
+cstring DialogContext::FormatString(const string& str_part)
+{
+	cstring result;
+	if(QM.HandleFormatString(str_part, result))
+		return result;
+
+	if(str_part == "burmistrzem")
+		return LocationHelper::IsCity(L.location) ? "burmistrzem" : "so³tysem";
+	else if(str_part == "mayor")
+		return LocationHelper::IsCity(L.location) ? "mayor" : "soltys";
+	else if(str_part == "rcitynhere")
+		return W.GetRandomSettlement(L.location_index)->name.c_str();
+	else if(str_part == "name")
+	{
+		assert(talker->IsHero());
+		return talker->hero->name.c_str();
+	}
+	else if(str_part == "join_cost")
+	{
+		assert(talker->IsHero());
+		return Format("%d", talker->hero->JoinCost());
+	}
+	else if(str_part == "item")
+	{
+		assert(team_share_id != -1);
+		return team_share_item->name.c_str();
+	}
+	else if(str_part == "item_value")
+	{
+		assert(team_share_id != -1);
+		return Format("%d", team_share_item->value / 2);
+	}
+	else if(str_part == "player_name")
+		return pc->name.c_str();
+	else if(str_part == "rhero")
+	{
+		static string str;
+		NameHelper::GenerateHeroName(ClassInfo::GetRandom(), Rand() % 4 == 0, str);
+		return str.c_str();
+	}
+	else if(strncmp(str_part.c_str(), "player/", 7) == 0)
+	{
+		int id = int(str_part[7] - '1');
+		return Game::Get().arena->near_players_str[id].c_str();
+	}
+	else
+	{
+		assert(0);
+		return "";
+	}
 }

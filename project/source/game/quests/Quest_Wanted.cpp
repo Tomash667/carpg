@@ -8,6 +8,7 @@
 #include "QuestManager.h"
 #include "City.h"
 #include "World.h"
+#include "NameHelper.h"
 
 //=================================================================================================
 void Quest_Wanted::Start()
@@ -50,7 +51,7 @@ void Quest_Wanted::SetProgress(int prog2)
 			OnStart(game->txQuest[257]);
 			quest_manager.quests_timeout.push_back(this);
 
-			game->GenerateHeroName(clas, crazy, unit_name);
+			NameHelper::GenerateHeroName(clas, crazy, unit_name);
 			target_loc = W.GetRandomFreeSettlementIndex(start_loc);
 			// jeœli nie ma wolnego miasta to powie jakieœ ale go tam nie bêdzie...
 			if(target_loc == -1)

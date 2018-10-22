@@ -235,6 +235,7 @@
     <ClInclude Include="source\game\generator\LocationGenerator.h" />
     <ClInclude Include="source\game\generator\LocationGeneratorFactory.h" />
     <ClInclude Include="source\game\generator\MoonwellGenerator.h" />
+    <ClInclude Include="source\game\generator\NameHelper.h" />
     <ClInclude Include="source\game\generator\OutsideLocationGenerator.h" />
     <ClInclude Include="source\game\generator\SecretLocationGenerator.h" />
     <ClInclude Include="source\game\generator\TutorialLocationGenerator.h" />
@@ -481,6 +482,7 @@
     <ClCompile Include="source\game\generator\LocationGenerator.cpp" />
     <ClCompile Include="source\game\generator\LocationGeneratorFactory.cpp" />
     <ClCompile Include="source\game\generator\MoonwellGenerator.cpp" />
+    <ClCompile Include="source\game\generator\NameHelper.cpp" />
     <ClCompile Include="source\game\generator\OutsideLocationGenerator.cpp" />
     <ClCompile Include="source\game\generator\SecretLocationGenerator.cpp" />
     <ClCompile Include="source\game\generator\TutorialLocationGenerator.cpp" />
@@ -607,7 +609,6 @@
     <ClCompile Include="source\game\stats\Effect.cpp" />
     <ClCompile Include="source\game\stats\Material.cpp" />
     <ClCompile Include="source\game\stats\Music.cpp" />
-    <ClCompile Include="source\game\stats\Names.cpp" />
     <ClCompile Include="source\game\stats\Perk.cpp" />
     <ClCompile Include="source\game\stats\Required.cpp" />
     <ClCompile Include="source\game\stats\RoomType.cpp" />

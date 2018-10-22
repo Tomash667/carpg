@@ -27,7 +27,7 @@ struct Stock
 
 	Stock() : script(nullptr) {}
 	~Stock();
-	void Parse(bool city, vector<ItemSlot>& items);
+	void Parse(vector<ItemSlot>& items);
 
 private:
 	void AddItems(vector<ItemSlot>& items, StockEntry type, int code, uint count, bool same);

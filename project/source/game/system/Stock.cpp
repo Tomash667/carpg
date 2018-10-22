@@ -3,6 +3,7 @@
 #include "Stock.h"
 #include "ItemSlot.h"
 #include "Item.h"
+#include "Level.h"
 #include "ScriptManager.h"
 #include <angelscript.h>
 
@@ -36,11 +37,12 @@ Stock::~Stock()
 }
 
 //=================================================================================================
-void Stock::Parse(bool city, vector<ItemSlot>& items)
+void Stock::Parse(vector<ItemSlot>& items)
 {
 	CityBlock in_city = CityBlock::ANY;
 	LocalVector2<int> sets;
 	bool in_set = false;
+	bool city = L.IsCity();
 	uint i = 0;
 
 	if(script)
@@ -50,116 +52,120 @@ void Stock::Parse(bool city, vector<ItemSlot>& items)
 		SM.GetContext().stock = nullptr;
 	}
 
-redo_set:
-	for(; i < code.size(); ++i)
+	do
 	{
-		StockEntry action = (StockEntry)code[i];
-		switch(action)
+		for(; i < code.size(); ++i)
 		{
-		case SE_ADD:
-			if(CheckCity(in_city, city))
+			StockEntry action = (StockEntry)code[i];
+			switch(action)
 			{
-				++i;
-				StockEntry type = (StockEntry)code[i];
-				++i;
-				AddItems(items, type, code[i], 1, true);
-			}
-			else
-				i += 2;
-			break;
-		case SE_MULTIPLE:
-		case SE_SAME_MULTIPLE:
-			if(CheckCity(in_city, city))
-			{
-				++i;
-				int count = code[i];
-				++i;
-				StockEntry type = (StockEntry)code[i];
-				++i;
-				AddItems(items, type, code[i], (uint)count, action == SE_SAME_MULTIPLE);
-			}
-			else
-				i += 3;
-			break;
-		case SE_CHANCE:
-			if(CheckCity(in_city, city))
-			{
-				++i;
-				int count = code[i];
-				++i;
-				int chance = code[i];
-				int ch = Rand() % chance;
-				int total = 0;
-				bool done = false;
-				for(int j = 0; j < count; ++j)
+			case SE_ADD:
+				if(CheckCity(in_city, city))
 				{
 					++i;
 					StockEntry type = (StockEntry)code[i];
 					++i;
-					int c = code[i];
+					AddItems(items, type, code[i], 1, true);
+				}
+				else
+					i += 2;
+				break;
+			case SE_MULTIPLE:
+			case SE_SAME_MULTIPLE:
+				if(CheckCity(in_city, city))
+				{
 					++i;
-					total += code[i];
-					if(ch < total && !done)
+					int count = code[i];
+					++i;
+					StockEntry type = (StockEntry)code[i];
+					++i;
+					AddItems(items, type, code[i], (uint)count, action == SE_SAME_MULTIPLE);
+				}
+				else
+					i += 3;
+				break;
+			case SE_CHANCE:
+				if(CheckCity(in_city, city))
+				{
+					++i;
+					int count = code[i];
+					++i;
+					int chance = code[i];
+					int ch = Rand() % chance;
+					int total = 0;
+					bool done = false;
+					for(int j = 0; j < count; ++j)
 					{
-						done = true;
-						AddItems(items, type, c, 1, true);
+						++i;
+						StockEntry type = (StockEntry)code[i];
+						++i;
+						int c = code[i];
+						++i;
+						total += code[i];
+						if(ch < total && !done)
+						{
+							done = true;
+							AddItems(items, type, c, 1, true);
+						}
 					}
 				}
+				else
+				{
+					++i;
+					int count = code[i];
+					i += 1 + 3 * count;
+				}
+				break;
+			case SE_RANDOM:
+			case SE_SAME_RANDOM:
+				if(CheckCity(in_city, city))
+				{
+					++i;
+					int a = code[i];
+					++i;
+					int b = code[i];
+					++i;
+					StockEntry type = (StockEntry)code[i];
+					++i;
+					AddItems(items, type, code[i], (uint)Random(a, b), action == SE_SAME_RANDOM);
+				}
+				else
+					i += 4;
+				break;
+			case SE_CITY:
+				in_city = CityBlock::IN;
+				break;
+			case SE_NOT_CITY:
+				in_city = CityBlock::OUT;
+				break;
+			case SE_ANY_CITY:
+				in_city = CityBlock::ANY;
+				break;
+			case SE_START_SET:
+				assert(!in_set);
+				sets.push_back(i + 1);
+				while(code[i] != SE_END_SET)
+					++i;
+				break;
+			case SE_END_SET:
+				assert(in_set);
+				sets.clear();
+				break;
+			default:
+				assert(0);
+				break;
 			}
-			else
-			{
-				++i;
-				int count = code[i];
-				i += 1 + 3 * count;
-			}
-			break;
-		case SE_RANDOM:
-		case SE_SAME_RANDOM:
-			if(CheckCity(in_city, city))
-			{
-				++i;
-				int a = code[i];
-				++i;
-				int b = code[i];
-				++i;
-				StockEntry type = (StockEntry)code[i];
-				++i;
-				AddItems(items, type, code[i], (uint)Random(a, b), action == SE_SAME_RANDOM);
-			}
-			else
-				i += 4;
-			break;
-		case SE_CITY:
-			in_city = CityBlock::IN;
-			break;
-		case SE_NOT_CITY:
-			in_city = CityBlock::OUT;
-			break;
-		case SE_ANY_CITY:
-			in_city = CityBlock::ANY;
-			break;
-		case SE_START_SET:
-			assert(!in_set);
-			sets.push_back(i + 1);
-			while(code[i] != SE_END_SET)
-				++i;
-			break;
-		case SE_END_SET:
-			assert(in_set);
-			sets.clear();
-			break;
-		default:
-			assert(0);
-			break;
 		}
-	}
 
-	if(sets.size() > 0)
-	{
-		i = sets[Rand() % sets.size()];
-		in_set = true;
-		goto redo_set;
+		if(sets.size() > 0)
+		{
+			i = sets[Rand() % sets.size()];
+			in_set = true;
+		}
+		else
+			break;
 	}
+	while(true);
 
 	SortItems(items);
 }

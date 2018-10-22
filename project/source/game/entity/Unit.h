@@ -874,6 +874,7 @@ public:
 	void UpdateInventory(bool notify = true);
 	bool IsEnemy(Unit& u, bool ignore_dont_attack = false) const;
 	bool IsFriend(Unit& u) const;
+	void RefreshStock();
 
 	//-----------------------------------------------------------------------------
 	static vector<Unit*> refid_table;

@@ -118,6 +118,8 @@ void World::Update(int days, UpdateMode mode)
 	UpdateDate(days);
 	SpawnCamps(days);
 	UpdateEncounters();
+	if(Any(state, State::INSIDE_LOCATION, State::INSIDE_ENCOUNTER))
+		L.Update();
 	UpdateLocations();
 	UpdateNews();
 	QM.Update(days);

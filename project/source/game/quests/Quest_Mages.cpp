@@ -10,6 +10,7 @@
 #include "SoundManager.h"
 #include "World.h"
 #include "Team.h"
+#include "NameHelper.h"
 
 //=================================================================================================
 void Quest_Mages::Start()
@@ -289,7 +290,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			target_loc = loc.index;
 			do
 			{
-				game->GenerateHeroName(Class::MAGE, false, evil_mage_name);
+				NameHelper::GenerateHeroName(Class::MAGE, false, evil_mage_name);
 			} while(good_mage_name == evil_mage_name);
 			done = false;
 			unit_event_handler = this;

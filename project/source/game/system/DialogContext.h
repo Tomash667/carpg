@@ -48,4 +48,5 @@ struct DialogContext
 	void EndDialog();
 	cstring GetText(int index);
 	GameDialog::Text& GetTextInner(int index);
+	cstring FormatString(const string& str_part);
 };

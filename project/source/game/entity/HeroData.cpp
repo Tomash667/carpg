@@ -1,10 +1,11 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "HeroData.h"
-#include "Game.h"
 #include "SaveState.h"
 #include "Level.h"
 #include "Unit.h"
+#include "NameHelper.h"
+#include "Const.h"
 
 //=================================================================================================
 void HeroData::Init(Unit& _unit)
@@ -25,7 +26,7 @@ void HeroData::Init(Unit& _unit)
 	split_gold = 0.f;
 
 	if(!IS_SET(unit->data->flags2, F2_SPECIFIC_NAME))
-		Game::Get().GenerateHeroName(*this);
+		NameHelper::GenerateHeroName(*this);
 }
 
 //=================================================================================================

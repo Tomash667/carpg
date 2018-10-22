@@ -143,6 +143,8 @@ public:
 	void AddPlayerTeam(const Vec3& pos, float rot, bool reenter, bool hide_weapon);
 	void UpdateDungeonMinimap(bool in_level);
 	void RevealMinimap();
+	bool IsCity();
+	void Update();
 
 	Location* location; // same as W.current_location
 	int location_index; // same as W.current_location_index

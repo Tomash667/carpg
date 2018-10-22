@@ -3523,7 +3523,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 						str_part.push_back(rumor[i]);
 						++i;
 					}
-					str += FormatString(ctx, str_part);
+					str += ctx.FormatString(str_part);
 				}
 				else
 					str.push_back(rumor[i]);
@@ -4719,7 +4719,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	{
 		u->stock = new TraderStock;
 		u->stock->date = W.GetWorldtime();
-		base.trader->stock->Parse(L.city_ctx != nullptr, u->stock->items);
+		base.trader->stock->Parse(u->stock->items);
 	}
 
 	// gold
@@ -8967,58 +8967,6 @@ void Game::ClearGame()
 	W.Reset();
 
 	gui->Clear(true);
-}
-
-cstring Game::FormatString(DialogContext& ctx, const string& str_part)
-{
-	cstring result;
-	if(QM.HandleFormatString(str_part, result))
-		return result;
-
-	if(str_part == "burmistrzem")
-		return LocationHelper::IsCity(L.location) ? "burmistrzem" : "so³tysem";
-	else if(str_part == "mayor")
-		return LocationHelper::IsCity(L.location) ? "mayor" : "soltys";
-	else if(str_part == "rcitynhere")
-		return W.GetRandomSettlement(L.location_index)->name.c_str();
-	else if(str_part == "name")
-	{
-		assert(ctx.talker->IsHero());
-		return ctx.talker->hero->name.c_str();
-	}
-	else if(str_part == "join_cost")
-	{
-		assert(ctx.talker->IsHero());
-		return Format("%d", ctx.talker->hero->JoinCost());
-	}
-	else if(str_part == "item")
-	{
-		assert(ctx.team_share_id != -1);
-		return ctx.team_share_item->name.c_str();
-	}
-	else if(str_part == "item_value")
-	{
-		assert(ctx.team_share_id != -1);
-		return Format("%d", ctx.team_share_item->value / 2);
-	}
-	else if(str_part == "player_name")
-		return current_dialog->pc->name.c_str();
-	else if(str_part == "rhero")
-	{
-		static string str;
-		GenerateHeroName(ClassInfo::GetRandom(), Rand() % 4 == 0, str);
-		return str.c_str();
-	}
-	else if(strncmp(str_part.c_str(), "player/", 7) == 0)
-	{
-		int id = int(str_part[7] - '1');
-		return arena->near_players_str[id].c_str();
-	}
-	else
-	{
-		assert(0);
-		return "";
-	}
 }
 
 SOUND Game::GetItemSound(const Item* item)

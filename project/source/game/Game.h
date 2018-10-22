@@ -144,7 +144,6 @@ public:
 	void LoadDatafiles();
 	bool LoadRequiredStats(uint& errors);
 	void LoadLanguageFiles();
-	void SetHeroNames();
 	void SetGameText();
 	void SetStatsText();
 	void ConfigureGame();
@@ -525,7 +524,6 @@ public:
 	bool Quickload(bool from_console);
 	void ClearGameVars(bool new_game);
 	void ClearGame();
-	cstring FormatString(DialogContext& ctx, const string& str_part);
 	int CalculateQuestReward(int gold);
 	void AddReward(int gold) { AddGold(CalculateQuestReward(gold), nullptr, true, txQuestCompletedGold, 4.f, false); }
 	SOUND GetItemSound(const Item* item);
@@ -555,8 +553,6 @@ public:
 	//
 	void DeleteUnit(Unit* unit);
 	void DialogTalk(DialogContext& ctx, cstring msg);
-	void GenerateHeroName(HeroData& hero);
-	void GenerateHeroName(Class clas, bool crazy, string& name);
 	bool WantExitLevel()
 	{
 		return !GKey.KeyDownAllowed(GK_WALK);
