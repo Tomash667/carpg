@@ -73,7 +73,7 @@ void Quest_Wanted::SetProgress(int prog2)
 			letter.name = game->txQuest[258];
 			letter.refid = refid;
 			letter.desc = Format(game->txQuest[259], level * 100, unit_name.c_str());
-			game->current_dialog->pc->unit->AddItem2(&letter, 1u, 1u);
+			DialogContext::current->pc->unit->AddItem2(&letter, 1u, 1u);
 
 			// wpis do dziennika
 			msgs.push_back(Format(game->txQuest[29], GetStartLocationName(), W.GetDate()));
@@ -132,7 +132,7 @@ cstring Quest_Wanted::FormatString(const string& str)
 	else if(str == "target_dir")
 		return GetTargetLocationDir();
 	else if(str == "player")
-		return game->current_dialog->pc->name.c_str();
+		return DialogContext::current->pc->name.c_str();
 	else
 	{
 		assert(0);
@@ -171,7 +171,7 @@ bool Quest_Wanted::OnTimeout(TimeoutType ttype)
 //=================================================================================================
 bool Quest_Wanted::IfHaveQuestItem() const
 {
-	return game->current_dialog->talker == target_unit;
+	return DialogContext::current->talker == target_unit;
 }
 
 //=================================================================================================

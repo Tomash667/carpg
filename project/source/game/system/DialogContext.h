@@ -43,6 +43,7 @@ struct DialogContext
 
 	static DialogContext* current;
 
+	void StartDialog(Unit* talker, GameDialog* dialog = nullptr);
 	void StartNextDialog(GameDialog* dialog, int& if_level, Quest* quest = nullptr);
 	void Update(float dt);
 	void EndDialog();

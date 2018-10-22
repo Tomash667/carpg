@@ -33,7 +33,7 @@ GameDialog* Quest_Orcs::GetDialog(int type2)
 {
 	assert(type2 == QUEST_DIALOG_NEXT);
 
-	if(game->current_dialog->talker->data->id == "q_orkowie_straznik")
+	if(DialogContext::current->talker->data->id == "q_orkowie_straznik")
 		return GameDialog::TryGet("q_orcs_guard");
 	else
 		return GameDialog::TryGet("q_orcs_captain");
@@ -240,7 +240,7 @@ GameDialog* Quest_Orcs2::GetDialog(int type2)
 {
 	assert(type2 == QUEST_DIALOG_NEXT);
 
-	const string& id = game->current_dialog->talker->data->id;
+	const string& id = DialogContext::current->talker->data->id;
 
 	if(id == "q_orkowie_slaby")
 		return GameDialog::TryGet("q_orcs2_weak_orc");
@@ -286,7 +286,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 	case Progress::TalkedOrc:
 		// zapisz gorusha
 		{
-			orc = game->current_dialog->talker;
+			orc = DialogContext::current->talker;
 			orc->RevealName(true);
 			orc->hero->name = game->txQuest[216];
 		}
@@ -310,7 +310,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 				QM.quest_orcs->target_loc = -1;
 			}
 			// do³¹cz do dru¿yny
-			Team.AddTeamMember(game->current_dialog->talker, true);
+			Team.AddTeamMember(DialogContext::current->talker, true);
 			Team.free_recruit = false;
 		}
 		break;
@@ -376,14 +376,14 @@ void Quest_Orcs2::SetProgress(int prog2)
 		// losowo
 		{
 			OrcClass clas;
-			if(game->current_dialog->pc->unit->GetClass() == Class::WARRIOR)
+			if(DialogContext::current->pc->unit->GetClass() == Class::WARRIOR)
 			{
 				if(Rand() % 2 == 0)
 					clas = OrcClass::Hunter;
 				else
 					clas = OrcClass::Shaman;
 			}
-			else if(game->current_dialog->pc->unit->GetClass() == Class::HUNTER)
+			else if(DialogContext::current->pc->unit->GetClass() == Class::HUNTER)
 			{
 				if(Rand() % 2 == 0)
 					clas = OrcClass::Warrior;

@@ -357,7 +357,6 @@ public:
 	//---------------------------------
 	// DIALOGI
 	DialogContext dialog_context;
-	DialogContext* current_dialog;
 	vector<string> dialog_choices; // u¿ywane w MP u klienta
 	string predialog;
 
@@ -432,8 +431,6 @@ public:
 	void AddCommands();
 	void UpdateAi(float dt);
 	void CheckAutoTalk(Unit& unit, float dt);
-	void StartDialog(DialogContext& ctx, Unit* talker, GameDialog* dialog = nullptr);
-	void StartDialog2(PlayerController* player, Unit* talker, GameDialog* dialog = nullptr);
 	void ApplyLocationTexturePack(TexturePack& floor, TexturePack& wall, TexturePack& ceil, LocationTexturePack& tex);
 	void ApplyLocationTexturePack(TexturePack& pack, LocationTexturePack::Entry& e, TexturePack& pack_def);
 	void SetDungeonParamsAndTextures(BaseLocation& base);

@@ -35,7 +35,7 @@ GameDialog* Quest_Goblins::GetDialog(int type2)
 {
 	assert(type2 == QUEST_DIALOG_NEXT);
 
-	const string& id = game->current_dialog->talker->data->id;
+	const string& id = DialogContext::current->talker->data->id;
 
 	if(id == "q_gobliny_szlachcic")
 		return GameDialog::TryGet("q_goblins_nobleman");
@@ -206,8 +206,8 @@ void Quest_Goblins::SetProgress(int prog2)
 		{
 			state = Quest::Completed;
 			const Item* item = Item::Get("q_gobliny_luk");
-			game->current_dialog->pc->unit->RemoveItem(item, 1);
-			game->current_dialog->talker->AddItem(item, 1, true);
+			DialogContext::current->pc->unit->RemoveItem(item, 1);
+			DialogContext::current->talker->AddItem(item, 1, true);
 			game->AddReward(500);
 			OnUpdate(game->txQuest[224]);
 			goblins_state = State::GivenBow;
@@ -234,7 +234,7 @@ void Quest_Goblins::SetProgress(int prog2)
 	case Progress::PayedAndTalkedAboutBow:
 		// zap³aci³eœ i powiedzia³eœ o ³uku
 		{
-			game->current_dialog->pc->unit->ModGold(-100);
+			DialogContext::current->pc->unit->ModGold(-100);
 
 			state = Quest::Started;
 			OnUpdate(game->txQuest[228]);

@@ -3113,7 +3113,7 @@ void Game::CheckAutoTalk(Unit& unit, float dt)
 		else
 		{
 			unit.auto_talk = AutoTalkMode::No;
-			StartDialog2(talk_player, &unit, unit.auto_talk_dialog);
+			talk_player->StartDialog(&unit, unit.auto_talk_dialog);
 		}
 	}
 	else if(unit.auto_talk == AutoTalkMode::Wait)

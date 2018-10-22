@@ -26,7 +26,7 @@ GameDialog* Quest_Sawmill::GetDialog(int type2)
 {
 	if(type2 == QUEST_DIALOG_NEXT)
 	{
-		if(game->current_dialog->talker->data->id == "artur_drwal")
+		if(DialogContext::current->talker->data->id == "artur_drwal")
 			return GameDialog::TryGet("q_sawmill_talk");
 		else
 			return GameDialog::TryGet("q_sawmill_messenger");

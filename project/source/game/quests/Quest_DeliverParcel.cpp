@@ -54,7 +54,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			parcel.id = "$parcel";
 			parcel.name = Format(game->txQuest[8], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str());
 			parcel.refid = refid;
-			game->current_dialog->pc->unit->AddItem2(&parcel, 1u, 1u);
+			DialogContext::current->pc->unit->AddItem2(&parcel, 1u, 1u);
 
 			Location& loc2 = GetStartLocation();
 			msgs.push_back(Format(game->txQuest[3], LocationHelper::IsCity(loc2) ? game->txForMayor : game->txForSoltys, loc2.name.c_str(), W.GetDate()));
@@ -83,7 +83,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			state = Quest::Failed;
 			((City&)GetStartLocation()).quest_mayor = CityQuestState::Failed;
 
-			game->current_dialog->pc->unit->RemoveQuestItem(refid);
+			DialogContext::current->pc->unit->RemoveQuestItem(refid);
 			game->AddReward(125);
 
 			OnUpdate(game->txQuest[12]);
@@ -108,7 +108,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			state = Quest::Completed;
 			((City&)GetStartLocation()).quest_mayor = CityQuestState::None;
 
-			game->current_dialog->pc->unit->RemoveQuestItem(refid);
+			DialogContext::current->pc->unit->RemoveQuestItem(refid);
 			game->AddReward(250);
 
 			RemoveEncounter();
@@ -131,7 +131,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 		{
 			RemoveEncounter();
 
-			game->current_dialog->talker->AddItem(&parcel, 1, true);
+			DialogContext::current->talker->AddItem(&parcel, 1, true);
 			Team.RemoveQuestItem(&parcel, refid);
 
 			OnUpdate(game->txQuest[16]);

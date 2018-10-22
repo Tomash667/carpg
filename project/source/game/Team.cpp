@@ -736,7 +736,7 @@ void TeamSingleton::UpdateTeamItemShares()
 			DialogContext& ctx = *player_to_ask->dialog_ctx;
 			ctx.team_share_id = team_share_id;
 			ctx.team_share_item = tsi.from->items[tsi.index].item;
-			game.StartDialog2(player_to_ask, tsi.to, dialog);
+			player_to_ask->StartDialog(tsi.to, dialog);
 		}
 
 		++team_share_id;

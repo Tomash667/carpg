@@ -54,7 +54,7 @@ void Quest_DeliverLetter::SetProgress(int prog2)
 			letter.id = "$letter";
 			letter.name = Format(game->txQuest[0], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str());
 			letter.refid = refid;
-			game->current_dialog->pc->unit->AddItem2(&letter, 1u, 1u);
+			DialogContext::current->pc->unit->AddItem2(&letter, 1u, 1u);
 
 			Location& loc2 = GetStartLocation();
 			msgs.push_back(Format(game->txQuest[3], LocationHelper::IsCity(loc2) ? game->txForMayor : game->txForSoltys, loc2.name.c_str(), W.GetDate()));
@@ -68,7 +68,7 @@ void Quest_DeliverLetter::SetProgress(int prog2)
 			state = Quest::Failed;
 			((City&)GetStartLocation()).quest_mayor = CityQuestState::Failed;
 			if(W.GetCurrentLocationIndex() == end_loc)
-				game->current_dialog->pc->unit->RemoveQuestItem(refid);
+				DialogContext::current->pc->unit->RemoveQuestItem(refid);
 
 			OnUpdate(game->txQuest[5]);
 		}
@@ -89,7 +89,7 @@ void Quest_DeliverLetter::SetProgress(int prog2)
 			game->AddReward(100);
 
 			((City&)GetStartLocation()).quest_mayor = CityQuestState::None;
-			game->current_dialog->pc->unit->RemoveQuestItem(refid);
+			DialogContext::current->pc->unit->RemoveQuestItem(refid);
 
 			OnUpdate(game->txQuest[7]);
 			RemoveElementTry(quest_manager.quests_timeout2, (Quest*)this);

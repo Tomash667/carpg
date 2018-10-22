@@ -1862,7 +1862,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				{
 					// start dialog
 					c.id = talk_to->netid;
-					StartDialog(*player.dialog_ctx, talk_to);
+					player.dialog_ctx->StartDialog(talk_to);
 				}
 			}
 			break;
@@ -6566,7 +6566,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 						{
 							pc->action = PlayerController::Action_Talk;
 							pc->action_unit = unit;
-							StartDialog(dialog_context, unit);
+							dialog_context.StartDialog(unit);
 							if(!predialog.empty())
 							{
 								dialog_context.dialog_s_text = predialog;

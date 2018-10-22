@@ -34,9 +34,9 @@ GameDialog* Quest_Mine::GetDialog(int type2)
 {
 	if(type2 == QUEST_DIALOG_NEXT)
 	{
-		if(game->current_dialog->talker->data->id == "inwestor")
+		if(DialogContext::current->talker->data->id == "inwestor")
 			return GameDialog::TryGet("q_mine_investor");
-		else if(game->current_dialog->talker->data->id == "poslaniec_kopalnia")
+		else if(DialogContext::current->talker->data->id == "poslaniec_kopalnia")
 		{
 			if(prog == Quest_Mine::Progress::SelectedShares)
 				return GameDialog::TryGet("q_mine_messenger");
@@ -162,7 +162,7 @@ void Quest_Mine::SetProgress(int prog2)
 		break;
 	case Progress::Invested:
 		{
-			game->current_dialog->pc->unit->ModGold(mine_state == State::Shares ? -10000 : -12000);
+			DialogContext::current->pc->unit->ModGold(mine_state == State::Shares ? -10000 : -12000);
 			OnUpdate(game->txQuest[142]);
 			mine_state2 = State2::InExpand;
 			days = 0;
@@ -196,7 +196,7 @@ void Quest_Mine::SetProgress(int prog2)
 		{
 			OnUpdate(game->txQuest[147]);
 			const Item* item = Item::Get("key_kopalnia");
-			game->current_dialog->pc->unit->AddItem2(item, 1u, 1u);
+			DialogContext::current->pc->unit->AddItem2(item, 1u, 1u);
 		}
 		break;
 	case Progress::Finished:

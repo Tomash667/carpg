@@ -8,6 +8,7 @@
 #include "GlobalGui.h"
 #include "GameGui.h"
 #include "Inventory.h"
+#include "Journal.h"
 #include "QuestManager.h"
 #include "Level.h"
 #include "World.h"
@@ -21,8 +22,72 @@
 #include "Quest_Orcs.h"
 #include "Quest_Goblins.h"
 #include "Quest_Evil.h"
+#include "Team.h"
+#include "AIController.h"
+#include "News.h"
+#include "MultiInsideLocation.h"
 
 DialogContext* DialogContext::current;
+
+//=================================================================================================
+void DialogContext::StartDialog(Unit* talker, GameDialog* dialog)
+{
+	assert(talker && !dialog_mode);
+
+	// use up auto talk
+	if((talker->auto_talk == AutoTalkMode::Yes || talker->auto_talk == AutoTalkMode::Wait) && talker->auto_talk_dialog == nullptr)
+		talker->auto_talk = AutoTalkMode::No;
+
+	dialog_mode = true;
+	dialog_wait = -1;
+	dialog_pos = 0;
+	show_choices = false;
+	dialog_text = nullptr;
+	dialog_level = 0;
+	dialog_once = true;
+	dialog_quest = nullptr;
+	dialog_skip = -1;
+	dialog_esc = -1;
+	talker = talker;
+	if(Net::IsLocal())
+	{
+		// this vars are useless for clients, don't increase ref counter
+		talker->busy = Unit::Busy_Talking;
+		talker->look_target = pc->unit;
+	}
+	update_news = true;
+	update_locations = 1;
+	pc->action = PlayerController::Action_Talk;
+	pc->action_unit = talker;
+	not_active = false;
+	choices.clear();
+	can_skip = true;
+	dialog = dialog ? dialog : talker->data->dialog;
+	force_end = false;
+	negate_if = false;
+
+	if(Net::IsLocal())
+	{
+		// dŸwiêk powitania
+		SOUND snd = talker->GetTalkSound();
+		if(snd)
+		{
+			Game::Get().PlayAttachedSound(*talker, snd, 2.f, 5.f);
+			if(Net::IsServer())
+			{
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::HELLO;
+				c.unit = talker;
+			}
+		}
+	}
+
+	if(is_local)
+	{
+		// zamknij gui
+		Game::Get().CloseAllPanels();
+	}
+}
 
 //=================================================================================================
 void DialogContext::StartNextDialog(GameDialog* dialog, int& if_level, Quest* quest)
@@ -1247,7 +1312,7 @@ bool DialogContext::ExecuteSpecial(cstring msg, int& if_level)
 				dialog_s_text += RandomString(game.txNearLocEmpty);
 		}
 		else if(loc.state == LS_CLEARED)
-			dialog_s_text += Format(txNearLocCleared, g_spawn_groups[loc.spawn].name);
+			dialog_s_text += Format(game.txNearLocCleared, g_spawn_groups[loc.spawn].name);
 		else
 		{
 			SpawnGroup& sg = g_spawn_groups[loc.spawn];
@@ -1255,42 +1320,42 @@ bool DialogContext::ExecuteSpecial(cstring msg, int& if_level)
 			if(loc.st < 5)
 			{
 				if(sg.k == K_I)
-					jacy = txELvlVeryWeak[0];
+					jacy = game.txELvlVeryWeak[0];
 				else
-					jacy = txELvlVeryWeak[1];
+					jacy = game.txELvlVeryWeak[1];
 			}
 			else if(loc.st < 8)
 			{
 				if(sg.k == K_I)
-					jacy = txELvlWeak[0];
+					jacy = game.txELvlWeak[0];
 				else
-					jacy = txELvlWeak[1];
+					jacy = game.txELvlWeak[1];
 			}
 			else if(loc.st < 11)
 			{
 				if(sg.k == K_I)
-					jacy = txELvlAverage[0];
+					jacy = game.txELvlAverage[0];
 				else
-					jacy = txELvlAverage[1];
+					jacy = game.txELvlAverage[1];
 			}
 			else if(loc.st < 14)
 			{
 				if(sg.k == K_I)
-					jacy = txELvlQuiteStrong[0];
+					jacy = game.txELvlQuiteStrong[0];
 				else
-					jacy = txELvlQuiteStrong[1];
+					jacy = game.txELvlQuiteStrong[1];
 			}
 			else
 			{
 				if(sg.k == K_I)
-					jacy = txELvlStrong[0];
+					jacy = game.txELvlStrong[0];
 				else
-					jacy = txELvlStrong[1];
+					jacy = game.txELvlStrong[1];
 			}
-			dialog_s_text += Format(RandomString(txNearLocEnemy), jacy, g_spawn_groups[loc.spawn].name);
+			dialog_s_text += Format(RandomString(game.txNearLocEnemy), jacy, g_spawn_groups[loc.spawn].name);
 		}
 
-		DialogTalk(ctx, dialog_s_text.c_str());
+		DialogTalk(dialog_s_text.c_str());
 		++dialog_pos;
 		return true;
 	}
@@ -1300,7 +1365,7 @@ bool DialogContext::ExecuteSpecial(cstring msg, int& if_level)
 	{
 		Class clas = talker->GetClass();
 		if(clas < Class::MAX)
-			DialogTalk(ctx, ClassInfo::classes[(int)clas].about.c_str());
+			DialogTalk(ClassInfo::classes[(int)clas].about.c_str());
 		++dialog_pos;
 		return true;
 	}
@@ -1351,7 +1416,7 @@ bool DialogContext::ExecuteSpecial(cstring msg, int& if_level)
 		pc->action_unit = t;
 		pc->chest_trade = &t->items;
 		if(is_local)
-			gui->inventory->StartTrade(I_GIVE, *t);
+			game.gui->inventory->StartTrade(I_GIVE, *t);
 		else
 		{
 			NetChangePlayer& c = Add1(pc->player_info->changes);
@@ -1368,7 +1433,7 @@ bool DialogContext::ExecuteSpecial(cstring msg, int& if_level)
 		pc->action_unit = t;
 		pc->chest_trade = &t->items;
 		if(is_local)
-			gui->inventory->StartTrade(I_SHARE, *t);
+			game.gui->inventory->StartTrade(I_SHARE, *t);
 		else
 		{
 			NetChangePlayer& c = Add1(pc->player_info->changes);
@@ -1390,11 +1455,11 @@ bool DialogContext::ExecuteSpecial(cstring msg, int& if_level)
 		talker->temporary = true;
 	}
 	else if(strcmp(msg, "give_item_credit") == 0)
-		Team.TeamShareGiveItemCredit(ctx);
+		Team.TeamShareGiveItemCredit(*this);
 	else if(strcmp(msg, "sell_item") == 0)
-		Team.TeamShareSellItem(ctx);
+		Team.TeamShareSellItem(*this);
 	else if(strcmp(msg, "share_decline") == 0)
-		Team.TeamShareDecline(ctx);
+		Team.TeamShareDecline(*this);
 	else if(strcmp(msg, "attack") == 0)
 	{
 		// ta komenda jest zbyt ogólna, jeœli bêdzie kilka takich grup to wystarczy ¿e jedna tego u¿yje to wszyscy zaatakuj¹, nie obs³uguje te¿ budynków
@@ -1483,7 +1548,7 @@ bool DialogContext::ExecuteSpecial(cstring msg, int& if_level)
 			active_news = W.GetNews();
 			if(active_news.empty())
 			{
-				DialogTalk(ctx, RandomString(txNoNews));
+				DialogTalk(RandomString(game.txNoNews));
 				++dialog_pos;
 				return true;
 			}
@@ -1491,7 +1556,7 @@ bool DialogContext::ExecuteSpecial(cstring msg, int& if_level)
 
 		if(active_news.empty())
 		{
-			DialogTalk(ctx, RandomString(txAllNews));
+			DialogTalk(RandomString(game.txAllNews));
 			++dialog_pos;
 			return true;
 		}
@@ -1500,7 +1565,7 @@ bool DialogContext::ExecuteSpecial(cstring msg, int& if_level)
 		News* news = active_news[id];
 		active_news.erase(active_news.begin() + id);
 
-		DialogTalk(ctx, news->text.c_str());
+		DialogTalk(news->text.c_str());
 		++dialog_pos;
 		return true;
 	}
@@ -1527,7 +1592,7 @@ bool DialogContext::ExecuteSpecial(cstring msg, int& if_level)
 bool DialogContext::ExecuteSpecialIf(cstring msg)
 {
 	bool result;
-	if(QM.HandleSpecialIf(ctx, msg, result))
+	if(QM.HandleSpecialIf(*this, msg, result))
 		return result;
 
 	if(strcmp(msg, "have_team") == 0)
@@ -1619,7 +1684,7 @@ bool DialogContext::ExecuteSpecialIf(cstring msg)
 	else if(strcmp(msg, "is_bald") == 0)
 		return pc->unit->human_data->hair == -1;
 	else if(strcmp(msg, "is_camp") == 0)
-		return target_loc_is_camp;
+		return Game::Get().target_loc_is_camp;
 	else if(strcmp(msg, "dont_have_quest") == 0)
 		return talker->quest_refid == -1;
 	else if(strcmp(msg, "have_unaccepted_quest") == 0)
@@ -1712,6 +1777,8 @@ void DialogContext::DialogTalk(cstring msg)
 {
 	assert(msg);
 
+	Game& game = Game::Get();
+
 	dialog_text = msg;
 	dialog_wait = 1.f + float(strlen(dialog_text)) / 20;
 
@@ -1727,7 +1794,7 @@ void DialogContext::DialogTalk(cstring msg)
 	else
 		ani = 0;
 
-	gui->game_gui->AddSpeechBubble(talker, dialog_text);
+	game.gui->game_gui->AddSpeechBubble(talker, dialog_text);
 
 	pc->Train(TrainWhat::Talk, 0.f, 0);
 
@@ -1739,8 +1806,8 @@ void DialogContext::DialogTalk(cstring msg)
 		c.str = StringPool.Get();
 		*c.str = msg;
 		c.id = ani;
-		c.count = skip_id_counter++;
+		c.count = game.skip_id_counter++;
 		skip_id = c.count;
-		net_talk.push_back(c.str);
+		game.net_talk.push_back(c.str);
 	}
 }

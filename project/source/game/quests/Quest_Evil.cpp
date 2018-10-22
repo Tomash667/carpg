@@ -48,7 +48,7 @@ GameDialog* Quest_Evil::GetDialog(int type2)
 {
 	assert(type2 == QUEST_DIALOG_NEXT);
 
-	const string& id = game->current_dialog->talker->data->id;
+	const string& id = DialogContext::current->talker->data->id;
 
 	if(id == "q_zlo_kaplan")
 		return GameDialog::TryGet("q_evil_cleric");
@@ -125,7 +125,7 @@ void Quest_Evil::SetProgress(int prog2)
 		{
 			OnUpdate(game->txQuest[239]);
 			W.AddNews(Format(game->txQuest[240], W.GetLocation(mage_loc)->name.c_str()));
-			game->current_dialog->talker->temporary = true;
+			DialogContext::current->talker->temporary = true;
 		}
 		break;
 	case Progress::TalkedWithCaptain:
@@ -145,7 +145,7 @@ void Quest_Evil::SetProgress(int prog2)
 		{
 			OnUpdate(game->txQuest[243]);
 			const Item* item = Item::Get("q_zlo_ksiega");
-			game->current_dialog->pc->unit->AddItem2(item, 1u, 1u);
+			DialogContext::current->pc->unit->AddItem2(item, 1u, 1u);
 		}
 		break;
 	case Progress::GivenBook:
@@ -192,10 +192,10 @@ void Quest_Evil::SetProgress(int prog2)
 			loc[1].next_event = &loc[2];
 
 			// dodaj jozana do dru¿yny
-			Unit& u = *game->current_dialog->talker;
+			Unit& u = *DialogContext::current->talker;
 			const Item* item = Item::Get("q_zlo_ksiega");
 			u.AddItem(item, 1, true);
-			game->current_dialog->pc->unit->RemoveItem(item, 1);
+			DialogContext::current->pc->unit->RemoveItem(item, 1);
 			Team.AddTeamMember(&u, true);
 
 			evil_state = State::ClosingPortals;
@@ -277,7 +277,7 @@ void Quest_Evil::SetProgress(int prog2)
 		{
 			evil_state = State::ClericLeaving;
 			// usuñ jozana z dru¿yny
-			Unit& u = *game->current_dialog->talker;
+			Unit& u = *DialogContext::current->talker;
 			Team.RemoveTeamMember(&u);
 			u.hero->mode = HeroData::Leave;
 		}

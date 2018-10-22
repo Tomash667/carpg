@@ -2148,7 +2148,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					else
 					{
 						// rozpocznij rozmowê
-						StartDialog(dialog_context, u2);
+						dialog_context.StartDialog(u2);
 						pc_data.before_player = BP_NONE;
 					}
 				}
@@ -3027,66 +3027,6 @@ int Game::CheckMovePhase(Vec3& _pos, const Vec3& _dir, float _radius, Unit* _me,
 
 	// nie ma drogi
 	return 0;
-}
-
-//=================================================================================================
-void Game::StartDialog(DialogContext& ctx, Unit* talker, GameDialog* dialog)
-{
-	assert(talker && !ctx.dialog_mode);
-
-	// use up auto talk
-	if((talker->auto_talk == AutoTalkMode::Yes || talker->auto_talk == AutoTalkMode::Wait) && talker->auto_talk_dialog == nullptr)
-		talker->auto_talk = AutoTalkMode::No;
-
-	ctx.dialog_mode = true;
-	ctx.dialog_wait = -1;
-	ctx.dialog_pos = 0;
-	ctx.show_choices = false;
-	ctx.dialog_text = nullptr;
-	ctx.dialog_level = 0;
-	ctx.dialog_once = true;
-	ctx.dialog_quest = nullptr;
-	ctx.dialog_skip = -1;
-	ctx.dialog_esc = -1;
-	ctx.talker = talker;
-	if(Net::IsLocal())
-	{
-		// this vars are useless for clients, don't increase ref counter
-		ctx.talker->busy = Unit::Busy_Talking;
-		ctx.talker->look_target = ctx.pc->unit;
-	}
-	ctx.update_news = true;
-	ctx.update_locations = 1;
-	ctx.pc->action = PlayerController::Action_Talk;
-	ctx.pc->action_unit = talker;
-	ctx.not_active = false;
-	ctx.choices.clear();
-	ctx.can_skip = true;
-	ctx.dialog = dialog ? dialog : talker->data->dialog;
-	ctx.force_end = false;
-	ctx.negate_if = false;
-
-	if(Net::IsLocal())
-	{
-		// dŸwiêk powitania
-		SOUND snd = ctx.talker->GetTalkSound();
-		if(snd)
-		{
-			PlayAttachedSound(*ctx.talker, snd, 2.f, 5.f);
-			if(Net::IsServer())
-			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::HELLO;
-				c.unit = ctx.talker;
-			}
-		}
-	}
-
-	if(ctx.is_local)
-	{
-		// zamknij gui
-		CloseAllPanels();
-	}
 }
 
 //=============================================================================
@@ -10088,22 +10028,6 @@ void Game::UpdateGameNet(float dt)
 		UpdateServer(dt);
 	else
 		UpdateClient(dt);
-}
-
-void Game::StartDialog2(PlayerController* player, Unit* talker, GameDialog* dialog)
-{
-	assert(player && talker);
-
-	DialogContext& ctx = *player->dialog_ctx;
-	assert(!ctx.dialog_mode);
-
-	if(player != pc)
-	{
-		NetChangePlayer& c = Add1(player->player_info->changes);
-		c.type = NetChangePlayer::START_DIALOG;
-		c.id = talker->netid;
-	}
-	StartDialog(ctx, talker, dialog);
 }
 
 DialogContext* Game::FindDialogContext(Unit* talker)

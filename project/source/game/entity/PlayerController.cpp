@@ -995,3 +995,21 @@ void PlayerController::UseDays(int count)
 
 	Net::PushChange(NetChange::UPDATE_FREE_DAYS);
 }
+
+//=================================================================================================
+void PlayerController::StartDialog(Unit* talker, GameDialog* dialog)
+{
+	assert(talker);
+
+	DialogContext& ctx = *dialog_ctx;
+	assert(!ctx.dialog_mode);
+
+	if(!is_local)
+	{
+		NetChangePlayer& c = Add1(player_info->changes);
+		c.type = NetChangePlayer::START_DIALOG;
+		c.id = talker->netid;
+	}
+
+	ctx.StartDialog(talker, dialog);
+}

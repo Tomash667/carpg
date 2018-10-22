@@ -155,7 +155,7 @@ void EncounterGenerator::OnEnter()
 	if(dialog)
 	{
 		DialogContext& ctx = *Team.leader->player->dialog_ctx;
-		game.StartDialog2(Team.leader->player, talker, dialog);
+		Team.leader->player->StartDialog(talker, dialog);
 		ctx.dialog_quest = quest;
 	}
 }

@@ -103,7 +103,7 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 			game->AddReward(500);
 
 			((City&)GetStartLocation()).quest_mayor = CityQuestState::None;
-			game->current_dialog->pc->unit->RemoveQuestItem(refid);
+			DialogContext::current->pc->unit->RemoveQuestItem(refid);
 			if(target_loc != -1)
 			{
 				Location& loc = GetTargetLocation();
