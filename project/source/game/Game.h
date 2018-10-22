@@ -434,8 +434,6 @@ public:
 	void CheckAutoTalk(Unit& unit, float dt);
 	void StartDialog(DialogContext& ctx, Unit* talker, GameDialog* dialog = nullptr);
 	void StartDialog2(PlayerController* player, Unit* talker, GameDialog* dialog = nullptr);
-	bool ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_level);
-	bool ExecuteGameDialogSpecialIf(DialogContext& ctx, cstring msg);
 	void ApplyLocationTexturePack(TexturePack& floor, TexturePack& wall, TexturePack& ceil, LocationTexturePack& tex);
 	void ApplyLocationTexturePack(TexturePack& pack, LocationTexturePack::Entry& e, TexturePack& pack_def);
 	void SetDungeonParamsAndTextures(BaseLocation& base);
@@ -552,7 +550,6 @@ public:
 	void VerifyItemResources(const Item* item);
 	//
 	void DeleteUnit(Unit* unit);
-	void DialogTalk(DialogContext& ctx, cstring msg);
 	bool WantExitLevel()
 	{
 		return !GKey.KeyDownAllowed(GK_WALK);

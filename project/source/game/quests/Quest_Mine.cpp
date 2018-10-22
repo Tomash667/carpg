@@ -217,8 +217,6 @@ cstring Quest_Mine::FormatString(const string& str)
 		return GetTargetLocationName();
 	else if(str == "target_dir")
 		return GetTargetLocationDir();
-	else if(str == "burmistrzem")
-		return LocationHelper::IsCity(GetStartLocation()) ? game->txQuest[150] : game->txQuest[151];
 	else if(str == "zloto")
 		return Format("%d", mine_state == State::Shares ? 10000 : 12000);
 	else

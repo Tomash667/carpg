@@ -299,10 +299,6 @@ cstring Quest_Evil::FormatString(const string& str)
 		return W.GetLocation(mage_loc)->name.c_str();
 	else if(str == "mage_dir")
 		return GetLocationDirName(GetStartLocation().pos, W.GetLocation(mage_loc)->pos);
-	else if(str == "burmistrza")
-		return LocationHelper::IsCity(W.GetCurrentLocation()) ? game->txForMayor : game->txForSoltys;
-	else if(str == "burmistrzem")
-		return LocationHelper::IsCity(W.GetCurrentLocation()) ? game->txQuest[251] : game->txQuest[252];
 	else if(str == "t1")
 		return W.GetLocation(loc[0].target_loc)->name.c_str();
 	else if(str == "t2")

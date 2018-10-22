@@ -73,7 +73,7 @@ dialog mayor {
 	6 "Finish telling news"
 	7 "Quest"
 	8 "What do you do here?"
-	9 "I'm the $burmistrzem$. Dealing with official matters on behalf of the king. Sometimes I have a task for adventurers like you."
+	9 "I'm the $(Level::IsCity() ? \"mayor\" : \"soltys\"). Dealing with official matters on behalf of the king. Sometimes I have a task for adventurers like you."
 	10 "Ask about strange stone"
 	11 {
 		"That's a first time I see such thing."
@@ -1248,8 +1248,8 @@ dialog q_evil_mage {
 dialog q_evil_captain {
 	0 "And what's with the book?"
 	1 "You want to stop summoning of the undead?"
-	2 "Talk to the $burmistrzem$, without his permission nothing can be done."
-	3 "You won't get anything without $burmistrza$ permission."
+	2 "Talk to the $(Level::IsCity() ? \"mayor\" : \"soltys\"), without his permission nothing can be done."
+	3 "You won't get anything without $(Level::IsCity() ? \"mayor\" : \"soltys\") permission."
 	4 "Okay, here's the book."
 	5 "Just do not lose it!"
 }
@@ -1556,7 +1556,7 @@ dialog q_mine_investor {
 	1 "Are you interested in working for me?"
 	2 "Welcome back."
 	3 "Work"
-	4 "In a nearby cave was discovered rich deposits of iron ore. I already have a deal with $burmistrzem$, I have permission to open a mine there."
+	4 "In a nearby cave was discovered rich deposits of iron ore. I already have a deal with $(Level::IsCity() ? \"mayor\" : \"soltys\"), I have permission to open a mine there."
 	5 "I need someone to clear the cave from monsters."
 	6 "In return, I offer you a share of the profits or gold, the choice is yours."
 	7 "Are you interested?"

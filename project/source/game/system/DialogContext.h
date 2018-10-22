@@ -48,5 +48,8 @@ struct DialogContext
 	void EndDialog();
 	cstring GetText(int index);
 	GameDialog::Text& GetTextInner(int index);
+	bool ExecuteSpecial(cstring msg, int& if_level);
+	bool ExecuteSpecialIf(cstring msg);
 	cstring FormatString(const string& str_part);
+	void DialogTalk(cstring msg);
 };
