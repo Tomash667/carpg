@@ -222,8 +222,8 @@ void Game::MultiplayerPanelEvent(int id)
 		// wczytaj grê
 		N.mp_load = true;
 		Net::changes.clear();
-		if(!net_talk.empty())
-			StringPool.Free(net_talk);
+		if(!N.net_strs.empty())
+			StringPool.Free(N.net_strs);
 		gui->saveload->ShowLoadPanel();
 		break;
 	}
@@ -347,8 +347,8 @@ void Game::OnEnterIp(int id)
 			net_state = NetState::Client_PingIp;
 			net_timer = T_CONNECT_PING;
 			net_tries = I_CONNECT_TRIES;
-			net_adr = adr.ToString(false);
-			N.peer->Ping(net_adr.c_str(), (word)N.port, false);
+			N.net_adr = adr.ToString(false);
+			N.peer->Ping(N.net_adr.c_str(), (word)N.port, false);
 		}
 		else
 			GUI.SimpleDialog(txInvalidIp, gui->multiplayer);
@@ -409,8 +409,8 @@ void Game::UpdateClientConnectingIp(float dt)
 			else
 			{
 				// ping another time...
-				Info("Pinging %s...", net_adr.c_str());
-				N.peer->Ping(net_adr.c_str(), (word)N.port, false);
+				Info("Pinging %s...", N.net_adr.c_str());
+				N.peer->Ping(N.net_adr.c_str(), (word)N.port, false);
 				--net_tries;
 				net_timer = T_CONNECT_PING;
 			}
@@ -849,7 +849,7 @@ void Game::UpdateClientTransfer(float dt)
 				fallback_t = -0.5f;
 				net_state = NetState::Client_ReceivedWorldData;
 
-				if(ReadWorldData(reader))
+				if(N.ReadWorldData(reader))
 				{
 					// odeœlij informacje o gotowoœci
 					BitStreamWriter f;
@@ -876,7 +876,7 @@ void Game::UpdateClientTransfer(float dt)
 			{
 				net_state = NetState::Client_ReceivedPlayerStartData;
 				LoadingStep("");
-				if(ReadPlayerStartData(reader))
+				if(N.ReadPlayerStartData(reader))
 				{
 					// odeœlij informacje o gotowoœci
 					if(N.mp_load_worldmap)
@@ -1148,7 +1148,7 @@ void Game::UpdateServerTransfer(float dt)
 					{
 						Info("NM_TRANSFER_SERVER: %s read world data.", info.name.c_str());
 						BitStreamWriter f;
-						WritePlayerStartData(f, info);
+						N.WritePlayerStartData(f, info);
 						N.SendServer(f, MEDIUM_PRIORITY, RELIABLE, info.adr, Stream_TransferServer);
 					}
 					else if(type == 1)
@@ -1226,7 +1226,7 @@ void Game::UpdateServerTransfer(float dt)
 
 			// prepare & send world data
 			BitStreamWriter f;
-			PrepareWorldData(f);
+			N.WriteWorldData(f);
 			N.SendAll(f, IMMEDIATE_PRIORITY, RELIABLE, Stream_TransferServer);
 			Info("NM_TRANSFER_SERVER: Send world data, size %d.", f.GetSize());
 			net_state = NetState::Server_WaitForPlayersToLoadWorld;
@@ -1855,8 +1855,8 @@ void Game::QuickJoinIp()
 #ifdef _DEBUG
 		net_tries *= 2;
 #endif
-		net_adr = adr.ToString(false);
-		N.peer->Ping(net_adr.c_str(), (word)N.port, false);
+		N.net_adr = adr.ToString(false);
+		N.peer->Ping(N.net_adr.c_str(), (word)N.port, false);
 	}
 	else
 		Warn("Can't quick connect to server, invalid ip.");

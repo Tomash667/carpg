@@ -84,6 +84,15 @@ enum StreamLogType
 //-----------------------------------------------------------------------------
 class Net
 {
+	enum StartFlags
+	{
+		SF_DEVMODE = 1 << 0,
+		SF_INVISIBLE = 1 << 1,
+		SF_NOCLIP = 1 << 2,
+		SF_GODMODE = 1 << 3,
+		SF_NOAI = 1 << 4
+	};
+
 public:
 	enum class Mode
 	{
@@ -151,6 +160,7 @@ public:
 
 	RakPeerInterface* peer;
 	vector<PlayerInfo*> players; // contains players that left too
+	vector<string*> net_strs;
 	float update_timer, mp_interp;
 	int port;
 	bool mp_load, mp_load_worldmap, mp_use_interp;
@@ -172,6 +182,9 @@ public:
 	void KickPlayer(PlayerInfo& info);
 	void FilterServerChanges();
 	bool FilterOut(NetChangePlayer& c);
+	void WriteWorldData(BitStreamWriter& f);
+	void WritePlayerStartData(BitStreamWriter& f, PlayerInfo& info);
+	void WriteLevelData(BitStream& stream, bool loaded_resources);
 
 	vector<PlayerInfo*> old_players;
 	uint active_players, max_players;
@@ -188,8 +201,12 @@ public:
 	void InterpolateUnits(float dt);
 	void FilterClientChanges();
 	bool FilterOut(NetChange& c);
+	bool ReadWorldData(BitStreamReader& f);
+	bool ReadPlayerStartData(BitStreamReader& f);
+	bool ReadLevelData(BitStreamReader& f);
 
 	SystemAddress server;
+	string net_adr;
 	bool was_client;
 
 	//****************************************************************************

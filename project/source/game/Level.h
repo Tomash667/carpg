@@ -145,6 +145,9 @@ public:
 	void RevealMinimap();
 	bool IsCity();
 	void Update();
+	void Write(BitStreamWriter& f);
+	void Read(BitStreamReader& f);
+	MusicType GetLocationMusic();
 
 	Location* location; // same as W.current_location
 	int location_index; // same as W.current_location_index

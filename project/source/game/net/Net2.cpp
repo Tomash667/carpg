@@ -15,7 +15,13 @@
 #include "EntityInterpolator.h"
 #include "GlobalGui.h"
 #include "ServerPanel.h"
+#include "Journal.h"
 #include "PlayerInfo.h"
+#include "World.h"
+#include "QuestManager.h"
+#include "Quest_Secret.h"
+#include "GameStats.h"
+#include "SoundManager.h"
 
 Net N;
 const float CHANGE_LEVEL_TIMER = 5.f;
@@ -383,7 +389,7 @@ void Net::FilterServerChanges()
 			++it;
 	}
 
-	for(PlayerInfo* info : N.players)
+	for(PlayerInfo* info : players)
 	{
 		for(vector<NetChangePlayer>::iterator it = info->changes.begin(), end = info->changes.end(); it != end;)
 		{
@@ -423,6 +429,89 @@ bool Net::FilterOut(NetChangePlayer& c)
 	default:
 		return true;
 	}
+}
+
+//=================================================================================================
+void Net::WriteWorldData(BitStreamWriter& f)
+{
+	Info("Preparing world data.");
+	Game& game = Game::Get();
+
+	f << ID_WORLD_DATA;
+
+	// world
+	W.Write(f);
+
+	// quests
+	QM.Write(f);
+
+	// rumors
+	f.WriteStringArray<byte, word>(game.gui->journal->GetRumors());
+
+	// stats
+	GameStats::Get().Write(f);
+
+	// mp vars
+	WriteNetVars(f);
+	if(!net_strs.empty())
+		StringPool.Free(net_strs);
+
+	// secret note text
+	f << Quest_Secret::GetNote().desc;
+
+	f.WriteCasted<byte>(0xFF);
+}
+
+//=================================================================================================
+void Net::WritePlayerStartData(BitStreamWriter& f, PlayerInfo& info)
+{
+	f << ID_PLAYER_START_DATA;
+
+	// flags
+	byte flags = 0;
+	if(info.devmode)
+		flags |= SF_DEVMODE;
+	if(mp_load)
+	{
+		if(info.u->invisible)
+			flags |= SF_INVISIBLE;
+		if(info.u->player->noclip)
+			flags |= SF_NOCLIP;
+		if(info.u->player->godmode)
+			flags |= SF_GODMODE;
+	}
+	if(Game::Get().noai)
+		flags |= SF_NOAI;
+	f << flags;
+
+	// notes
+	f.WriteStringArray<word, word>(info.notes);
+
+	f.WriteCasted<byte>(0xFF);
+}
+
+//=================================================================================================
+void Net::WriteLevelData(BitStream& stream, bool loaded_resources)
+{
+	BitStreamWriter f(stream);
+	f << ID_LEVEL_DATA;
+	f << mp_load;
+	f << loaded_resources;
+
+	// level
+	L.Write(f);
+
+	// items preload
+	f << items_load.size();
+	for(const Item* item : items_load)
+	{
+		f << item->id;
+		if(item->IsQuest())
+			f << item->refid;
+	}
+
+	f.WriteCasted<byte>(GetLocationMusic());
+	f.WriteCasted<byte>(0xFF);
 }
 
 //=================================================================================================
@@ -563,7 +652,7 @@ bool Net::FilterOut(NetChange& c)
 		if(IsServer() && c.str)
 		{
 			StringPool.Free(c.str);
-			RemoveElement(Game::Get().net_talk, c.str);
+			RemoveElement(net_strs, c.str);
 			c.str = nullptr;
 		}
 		return true;
@@ -573,6 +662,219 @@ bool Net::FilterOut(NetChange& c)
 	default:
 		return true;
 	}
+}
+
+//=================================================================================================
+bool Net::ReadWorldData(BitStreamReader& f)
+{
+	Game& game = Game::Get();
+
+	// world
+	if(!W.Read(f))
+	{
+		Error("Read world: Broken packet for world data.");
+		return false;
+	}
+
+	// quests
+	if(!QM.Read(f))
+		return false;
+
+	// rumors
+	f.ReadStringArray<byte, word>(game.gui->journal->GetRumors());
+	if(!f)
+	{
+		Error("Read world: Broken packet for rumors.");
+		return false;
+	}
+
+	// game stats
+	GameStats::Get().Read(f);
+	if(!f)
+	{
+		Error("Read world: Broken packet for game stats.");
+		return false;
+	}
+
+	// mp vars
+	ReadNetVars(f);
+	if(!f)
+	{
+		Error("Read world: Broken packet for mp vars.");
+		return false;
+	}
+
+	// secret note text
+	f >> Quest_Secret::GetNote().desc;
+	if(!f)
+	{
+		Error("Read world: Broken packet for secret note text.");
+		return false;
+	}
+
+	// checksum
+	byte check;
+	f >> check;
+	if(!f || check != 0xFF)
+	{
+		Error("Read world: Broken checksum.");
+		return false;
+	}
+
+	// load music
+	if(!game.sound_mgr->IsMusicDisabled())
+	{
+		game.LoadMusic(MusicType::Boss, false);
+		game.LoadMusic(MusicType::Death, false);
+		game.LoadMusic(MusicType::Travel, false);
+	}
+
+	return true;
+}
+
+//=================================================================================================
+bool Net::ReadPlayerStartData(BitStreamReader& f)
+{
+	Game& game = Game::Get();
+
+	byte flags;
+	f >> flags;
+	f.ReadStringArray<word, word>(game.gui->journal->GetNotes());
+	if(!f)
+		return false;
+
+	if(IS_SET(flags, SF_DEVMODE))
+		game.devmode = true;
+	if(IS_SET(flags, SF_INVISIBLE))
+		game.invisible = true;
+	if(IS_SET(flags, SF_NOCLIP))
+		game.noclip = true;
+	if(IS_SET(flags, SF_GODMODE))
+		game.godmode = true;
+	if(IS_SET(flags, SF_NOAI))
+		game.noai = true;
+
+	// checksum
+	byte check;
+	f >> check;
+	if(!f || check != 0xFF)
+	{
+		Error("Read player start data: Broken checksum.");
+		return false;
+	}
+
+	return true;
+}
+
+//=================================================================================================
+bool Game::ReadLevelData(BitStreamReader& f)
+{
+	cam.Reset();
+	pc_data.rot_buf = 0.f;
+	W.RemoveBossLevel();
+
+	bool loaded_resources;
+	f >> N.mp_load;
+	f >> loaded_resources;
+	if(!f)
+	{
+		Error("Read level: Broken packet for loading info.");
+		return false;
+	}
+
+	if(!L.location->Read(f))
+	{
+		Error("Read level: Failed to read location.");
+		return false;
+	}
+
+	L.is_open = true;
+	loc_gen_factory->Get(L.location)->OnLoad();
+	RequireLoadingResources(L.location, &loaded_resources);
+
+	// items to preload
+	uint items_load_count = f.Read<uint>();
+	if(!f.Ensure(items_load_count * 2))
+	{
+		Error("Read level: Broken items preload count.");
+		return false;
+	}
+	items_load.clear();
+	for(uint i = 0; i < items_load_count; ++i)
+	{
+		const string& item_id = f.ReadString1();
+		if(!f)
+		{
+			Error("Read level: Broken item preload '%u'.", i);
+			return false;
+		}
+		if(item_id[0] != '$')
+		{
+			auto item = Item::TryGet(item_id);
+			if(!item)
+			{
+				Error("Read level: Missing item preload '%s'.", item_id.c_str());
+				return false;
+			}
+			items_load.insert(item);
+		}
+		else
+		{
+			int refid = f.Read<int>();
+			if(!f)
+			{
+				Error("Read level: Broken quest item preload '%u'.", i);
+				return false;
+			}
+			const Item* item = QM.FindQuestItemClient(item_id.c_str(), refid);
+			if(!item)
+			{
+				Error("Read level: Missing quest item preload '%s' (%d).", item_id.c_str(), refid);
+				return false;
+			}
+			const Item* base = Item::TryGet(item_id.c_str() + 1);
+			if(!base)
+			{
+				Error("Read level: Missing quest item preload base '%s' (%d).", item_id.c_str(), refid);
+				return false;
+			}
+			items_load.insert(base);
+			items_load.insert(item);
+		}
+	}
+
+	// multiplayer data
+	if(N.mp_load)
+	{
+		
+	}
+
+	// music
+	MusicType music;
+	f.ReadCasted<byte>(music);
+	if(!f)
+	{
+		Error("Read level: Broken music.");
+		return false;
+	}
+	if(!sound_mgr->IsMusicDisabled())
+		LoadMusic(music, false);
+
+	// checksum
+	byte check;
+	f >> check;
+	if(!f || check != 0xFF)
+	{
+		Error("Read level: Broken checksum.");
+		return false;
+	}
+
+	if(W.IsBossLevel())
+		SetMusic();
+	else
+		SetMusic(music);
+
+	return true;
 }
 
 //=================================================================================================

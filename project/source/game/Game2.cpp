@@ -7930,8 +7930,8 @@ void Game::ClearGame()
 		prev_game_state = GS_LOAD;
 	}
 
-	if(!net_talk.empty())
-		StringPool.Free(net_talk);
+	if(!N.net_strs.empty())
+		StringPool.Free(N.net_strs);
 
 	// usuñ lokalizacje
 	L.is_open = false;
@@ -10282,7 +10282,7 @@ void Game::UnitTalk(Unit& u, cstring text)
 		*c.str = text;
 		c.id = ani;
 		c.count = -1;
-		net_talk.push_back(c.str);
+		N.net_strs.push_back(c.str);
 	}
 }
 

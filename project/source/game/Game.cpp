@@ -1809,7 +1809,6 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 	L.entering = false;
 }
 
-
 // dru¿yna opuœci³a lokacje
 void Game::LeaveLocation(bool clear, bool end_buffs)
 {

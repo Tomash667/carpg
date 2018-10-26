@@ -1216,7 +1216,7 @@ void Game::UpdateAi(float dt)
 												*c.str = msg;
 												c.id = ani;
 												c.count = 0;
-												net_talk.push_back(c.str);
+												N.net_strs.push_back(c.str);
 											}
 										}
 										else
