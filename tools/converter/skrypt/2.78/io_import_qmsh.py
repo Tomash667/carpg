@@ -36,28 +36,27 @@ class Box:
 		
 ################################################################################
 def ConvertVec3(v):
-	return (v[0], v[2], v[1])
+	return Vector((v[0], v[2], v[1]))
 	
 ################################################################################
 def ConvertMatrix(m):
 	o = Matrix()
-	o[0][0] = m[0][0];
-	o[0][3] = m[0][3];
-	o[3][0] = m[3][0];
-	o[3][3] = m[3][3];
-	o[0][1] = m[0][2];
-	o[0][2] = m[0][1];
-	o[3][2] = m[3][1];
-	o[3][1] = m[3][2];
-	o[2][0] = m[1][0];
-	o[1][0] = m[2][0];
-	o[1][3] = m[2][3];
-	o[2][3] = m[1][3];
-	o[1][1] = m[2][2];
-	o[2][2] = m[1][1];
-	o[1][2] = m[2][1];
-	o[2][1] = m[1][2];
-	print(o)
+	o[0][0] = m[0][0]
+	o[0][3] = m[0][3]
+	o[3][0] = m[3][0]
+	o[3][3] = m[3][3]
+	o[0][1] = m[0][2]
+	o[0][2] = m[0][1]
+	o[3][2] = m[3][1]
+	o[3][1] = m[3][2]
+	o[2][0] = m[1][0]
+	o[1][0] = m[2][0]
+	o[1][3] = m[2][3]
+	o[2][3] = m[1][3]
+	o[1][1] = m[2][2]
+	o[2][2] = m[1][1]
+	o[1][2] = m[2][1]
+	o[2][1] = m[1][2]
 	return o
 
 ################################################################################
@@ -126,146 +125,141 @@ class FileReader:
 		len = self.ReadByte()
 		s = self.Read(len)
 		return s.decode()
-		
-################################################################################
-class QmshHeader:
-	def IsTangents(self):
-		return IsSet(self.flags, 1)
-	def IsAnimated(self):
-		return IsSet(self.flags, 2)
-	def IsStatic(self):
-		return IsSet(self.flags, 4)
-	def IsPhysics(self):
-		return IsSet(self.flags, 8)
-	def IsSplit(self):
-		return IsSet(self.flags, 16)
-	def Read(self, f):
-		self.sign = f.Read(4)
-		self.version = f.ReadByte()
-		self.flags = f.ReadByte()
-		self.n_verts = f.ReadWord()
-		self.n_tris = f.ReadWord()
-		self.n_subs = f.ReadWord()
-		self.n_bones = f.ReadWord()
-		self.n_anims = f.ReadWord()
-		self.n_points = f.ReadWord()
-		self.n_groups = f.ReadWord()
-		self.radius = f.ReadFloat()
-		self.bbox = f.ReadBox()
-		self.points_offset = f.ReadUint()
-		self.cam_pos = f.ReadVec3()
-		self.cam_target = f.ReadVec3()
-		self.cam_up = f.ReadVec3()
-		if self.sign != b"QMSH":
-			raise ImporterException("Invalid file signature " + str(self.sign));
-		if self.version != 20:
-			raise ImporterException("Invalid file version " + str(self.version))
-		if self.n_bones >= 32:
-			raise ImporterException("Too many bones (" + str(self.n_bones) + ")")
-		if self.n_subs == 0:
-			raise ImporterException("Missing model mesh.")
-		if self.IsAnimated() and not self.IsStatic():
-			if self.n_bones == 0:
-				raise ImporterException("No bones.")
-			if self.n_groups == 0:
-				raise ImporterException("No bone groups.")
-		if self.IsSplit():
-			raise ImporterException("Split mesh not implemented.")
-	def SetVertexSize(self):
-		self.vertex_size = 3 * 4
-		self.vertex_type = 'POS'
-		if not self.IsPhysics():
-			if self.IsAnimated():
-				if self.IsTangents():
-					self.vertex_size = 16 * 4
-					self.vertex_type = 'TANG_ANI'
-				else:
-					self.vertex_size = 10 * 4
-					self.vertex_type = 'ANI'
-			else:
-				if self.IsTangents():
-					self.vertex_size = 14 * 4
-					self.vertex_type = 'TANG'
-				else:
-					self.vertex_size = 8 * 4
-					self.vertex_type = 'NORMAL'
-					
-################################################################################
-class QmshSubmesh:
-	def Read(self, f, head):
-		self.first = f.ReadWord()
-		self.tris = f.ReadWord()
-		self.min_ind = f.ReadWord()
-		self.n_ind = f.ReadWord()
-		self.name = f.ReadString()
-		self.tex = f.ReadString()
-		self.specular_color = f.ReadVec3()
-		self.specular_intensity = f.ReadFloat()
-		self.specular_hardness = f.ReadInt()
-		if head.IsTangents():
-			self.tex_normal = f.ReadString()
-			if self.tex_normal != '':
-				self.normal_factor = f.ReadFloat()
-		else:
-			self.tex_normal = ''
-		self.tex_specular = f.ReadString()
-		if self.tex_specular != '':
-			self.specular_factor = f.ReadFloat()
-			self.specular_color_factor = f.ReadFloat()
-			
-################################################################################
-class QmshBone:
-	def Read(self, f, bones):
-		self.childs = []
-		self.parent = f.ReadWord()
-		self.mat = f.ReadMatrix33()
-		self.name = f.ReadString()
-		bones[self.parent].childs.append(self)
-		
-################################################################################
-class QmshBoneGroup:
-	def Read(self, f):
-		self.name = f.ReadString()
-		self.parent = f.ReadWord()
-		self.bones = []
-		count = f.ReadByte()
-		for i in range(count):
-			self.bones.append(f.ReadByte())
-		
-################################################################################
-class QmshAnimation:
-	class Keyframe:
-		class KeyframeBone:
-			pass
-	def Read(self, f, head):
-		self.name = f.ReadString()
-		self.length = f.ReadFloat()
-		self.n_frames = f.ReadWord()
-		self.frames = []
-		for i in range(self.n_frames):
-			frame = QmshAnimation.Keyframe()
-			frame.time = f.ReadFloat()
-			frame.bones = []
-			for j in range(head.n_bones):
-				bone = QmshAnimation.Keyframe.KeyframeBone()
-				bone.pos = f.ReadVec3()
-				bone.rot = f.ReadQuaternion()
-				bone.scale = f.ReadFloat()
-				frame.bones.append(bone)
-			self.frames.append(frame)
-			
-################################################################################
-class QmshPoint:
-	def Read(self, f):
-		self.name = f.ReadString()
-		self.mat = ConvertMatrix(f.ReadMatrix())
-		self.bone = f.ReadWord()
-		self.type = f.ReadWord()
-		self.size = ConvertVec3(f.ReadVec3())
-		self.rot = ConvertVec3(f.ReadVec3())
 
 ################################################################################
 class Qmsh:
+	##-------------------------------------------------------------------------
+	class Header:
+		def IsTangents(self):
+			return IsSet(self.flags, 1)
+		def IsAnimated(self):
+			return IsSet(self.flags, 2)
+		def IsStatic(self):
+			return IsSet(self.flags, 4)
+		def IsPhysics(self):
+			return IsSet(self.flags, 8)
+		def IsSplit(self):
+			return IsSet(self.flags, 16)
+		def Read(self, f):
+			self.sign = f.Read(4)
+			self.version = f.ReadByte()
+			self.flags = f.ReadByte()
+			self.n_verts = f.ReadWord()
+			self.n_tris = f.ReadWord()
+			self.n_subs = f.ReadWord()
+			self.n_bones = f.ReadWord()
+			self.n_anims = f.ReadWord()
+			self.n_points = f.ReadWord()
+			self.n_groups = f.ReadWord()
+			self.radius = f.ReadFloat()
+			self.bbox = f.ReadBox()
+			self.points_offset = f.ReadUint()
+			self.cam_pos = ConvertVec3(f.ReadVec3())
+			self.cam_target = ConvertVec3(f.ReadVec3())
+			self.cam_up = ConvertVec3(f.ReadVec3())
+			if self.sign != b"QMSH":
+				raise ImporterException("Invalid file signature " + str(self.sign))
+			if self.version != 20:
+				raise ImporterException("Invalid file version " + str(self.version))
+			if self.n_bones >= 32:
+				raise ImporterException("Too many bones (" + str(self.n_bones) + ")")
+			if self.n_subs == 0:
+				raise ImporterException("Missing model mesh.")
+			if self.IsAnimated() and not self.IsStatic():
+				if self.n_bones == 0:
+					raise ImporterException("No bones.")
+				if self.n_groups == 0:
+					raise ImporterException("No bone groups.")
+			if self.IsSplit():
+				raise ImporterException("Split mesh not implemented.")
+		def SetVertexSize(self):
+			self.vertex_size = 3 * 4
+			self.vertex_type = 'POS'
+			if not self.IsPhysics():
+				if self.IsAnimated():
+					if self.IsTangents():
+						self.vertex_size = 16 * 4
+						self.vertex_type = 'TANG_ANI'
+					else:
+						self.vertex_size = 10 * 4
+						self.vertex_type = 'ANI'
+				else:
+					if self.IsTangents():
+						self.vertex_size = 14 * 4
+						self.vertex_type = 'TANG'
+					else:
+						self.vertex_size = 8 * 4
+						self.vertex_type = 'NORMAL'
+	##-------------------------------------------------------------------------
+	class Submesh:
+		def Read(self, f, head):
+			self.first = f.ReadWord()
+			self.tris = f.ReadWord()
+			self.min_ind = f.ReadWord()
+			self.n_ind = f.ReadWord()
+			self.name = f.ReadString()
+			self.tex = f.ReadString()
+			self.specular_color = f.ReadVec3()
+			self.specular_intensity = f.ReadFloat()
+			self.specular_hardness = f.ReadInt()
+			if head.IsTangents():
+				self.tex_normal = f.ReadString()
+				if self.tex_normal != '':
+					self.normal_factor = f.ReadFloat()
+			else:
+				self.tex_normal = ''
+			self.tex_specular = f.ReadString()
+			if self.tex_specular != '':
+				self.specular_factor = f.ReadFloat()
+				self.specular_color_factor = f.ReadFloat()
+	##-------------------------------------------------------------------------
+	class Bone:
+		def Read(self, f, bones):
+			self.childs = []
+			self.parent = f.ReadWord()
+			self.mat = f.ReadMatrix33()
+			self.name = f.ReadString()
+			bones[self.parent].childs.append(self)
+	##-------------------------------------------------------------------------
+	class BoneGroup:
+		def Read(self, f):
+			self.name = f.ReadString()
+			self.parent = f.ReadWord()
+			self.bones = []
+			count = f.ReadByte()
+			for i in range(count):
+				self.bones.append(f.ReadByte())	
+	##-------------------------------------------------------------------------
+	class Animation:
+		class Keyframe:
+			class KeyframeBone:
+				pass
+		def Read(self, f, head):
+			self.name = f.ReadString()
+			self.length = f.ReadFloat()
+			self.n_frames = f.ReadWord()
+			self.frames = []
+			for i in range(self.n_frames):
+				frame = Qmsh.Animation.Keyframe()
+				frame.time = f.ReadFloat()
+				frame.bones = []
+				for j in range(head.n_bones):
+					bone = Qmsh.Animation.Keyframe.KeyframeBone()
+					bone.pos = f.ReadVec3()
+					bone.rot = f.ReadQuaternion()
+					bone.scale = f.ReadFloat()
+					frame.bones.append(bone)
+				self.frames.append(frame)
+	##-------------------------------------------------------------------------
+	class Point:
+		def Read(self, f):
+			self.name = f.ReadString()
+			self.mat = ConvertMatrix(f.ReadMatrix())
+			self.bone = f.ReadWord()
+			self.type = f.ReadWord()
+			self.size = ConvertVec3(f.ReadVec3())
+			self.rot = ConvertVec3(f.ReadVec3())
+	##-------------------------------------------------------------------------
 	def Read(self, f):
 		self.ReadHeader(f)
 		self.ReadVertices(f)
@@ -280,7 +274,7 @@ class Qmsh:
 			self.ReadBoneGroups(f)
 		f.ReadEOF()
 	def ReadHeader(self, f):
-		self.head = QmshHeader()
+		self.head = Qmsh.Header()
 		self.head.Read(f)
 		self.head.SetVertexSize()
 	def ReadVertices(self, f):
@@ -305,16 +299,15 @@ class Qmsh:
 				face = self.GetFreeFace(index)
 				index = face[2] + 1
 				self.tris[i] = face
-						
 	def ReadSubmeshes(self, f):
 		self.subs = []
 		for i in range(self.head.n_subs):
-			sub = QmshSubmesh()
+			sub = Qmsh.Submesh()
 			sub.Read(f, self.head)
 			self.subs.append(sub)
 	def ReadBones(self, f):
 		self.bones = []
-		zero_bone = QmshBone()
+		zero_bone = Qmsh.Bone()
 		zero_bone.parent = 0
 		zero_bone.name = "zero"
 		zero_bone.id = 0
@@ -322,26 +315,26 @@ class Qmsh:
 		zero_bone.childs = []
 		self.bones.append(zero_bone)
 		for i in range(1, self.head.n_bones+1):
-			bone = QmshBone()
+			bone = Qmsh.Bone()
 			bone.id = i
 			bone.Read(f, self.bones)
 			self.bones.append(bone)
 	def ReadAnimations(self, f):
 		self.anims = []
 		for i in range(self.head.n_anims):
-			anim = QmshAnimation()
+			anim = Qmsh.Animation()
 			anim.Read(f, self.head)
 			self.anims.append(anim)
 	def ReadPoints(self, f):
 		self.points = []
 		for i in range(self.head.n_points):
-			point = QmshPoint()
+			point = Qmsh.Point()
 			point.Read(f)
 			self.points.append(point)
 	def ReadBoneGroups(self, f):
 		self.groups = []
 		for i in range(self.head.n_groups):
-			group = QmshBoneGroup()
+			group = Qmsh.BoneGroup()
 			group.Read(f)
 			self.groups.append(group)
 	def IsFaceUsed(self, face):
@@ -357,6 +350,16 @@ class Qmsh:
 				face = (face[0], face[1], face[2]+1)
 			else:
 				return face
+	def GetAnimatio(self, name):
+		for ani in self.anims:
+			if ani.name == name:
+				return ani
+		return None
+	def GetPoint(self, name):
+		for point in self.points:
+			if point.name == name:
+				return point
+		return None
 			
 ################################################################################
 class Config:
@@ -379,165 +382,247 @@ class Config:
 			self.config.write(configfile)
 
 ################################################################################
-def FindImage(filename, imagesPath):
-	for root, dirs, files in os.walk(imagesPath):
-		for file in files:
-			if file == filename:
-				return os.path.join(root, file)
-	return None
-
-################################################################################
-def LoadImage(filename, config):
-	if config.loadImages:
-		filepath = FindImage(filename, config.imagesPath)
-		if not filepath is None:
-			img = bpy.data.images.load(filepath)
-			return img
-	img = bpy.data.images.new(sub.tex, 1, 1)
-	img.filepath = sub.tex
-	img.source = 'FILE'
-	return img
-
-################################################################################
-def Import(filepath, config):
-	print("INFO: Loading file "+filepath+".")
-	with FileReader(filepath) as f:
-		mesh = Qmsh()
-		mesh.Read(f)
-	mesh_data = bpy.data.meshes.new(name='Mesh')
-	bm = bmesh.new()
-	# create vertices
-	new_verts = []
-	for v in mesh.verts:
-		new_verts.append(bm.verts.new(v.pos))
-	# create faces
-	for f in mesh.tris:
-		bm.faces.new((new_verts[f[0]], new_verts[f[1]], new_verts[f[2]]))
-	bm.faces.ensure_lookup_table()
-	index = 0
-	for sub in mesh.subs:
-		# add material
-		mat = bpy.data.materials.new(sub.name)
-		mat.use_shadeless = True
-		mat.diffuse_color = (random(), random(), random())
-		mat.specular_color = sub.specular_color
-		mat.specular_hardness = sub.specular_hardness
-		mat.specular_intensity = sub.specular_intensity
-		mesh_data.materials.append(mat)
-		# add texture
-		tex = bpy.data.textures.new('', 'IMAGE')
-		tex_slot = mat.texture_slots.add()
-		tex_slot.texture = tex
-		# add image
-		img = LoadImage(sub.tex, config)
-		tex.image = img
-		sub.image = img
-		# set material index
-		for i in range(sub.first, sub.first+sub.tris):
-			bm.faces[i].material_index = index
-		index += 1
-	bm.to_mesh(mesh_data)
-	obj = bpy.data.objects.new(name='Obj', object_data=mesh_data)
-	bpy.context.scene.objects.link(obj)
-	# uv map
-	uv_map = mesh_data.uv_textures.new()
-	uv_data = uv_map.data
-	uvs = mesh_data.uv_layers[0].data
-	for sub in mesh.subs:
-		for i in range(sub.first, sub.first+sub.tris):
-			uv_data[i].image = sub.image
-	for i in range(mesh.head.n_tris):
-		f = mesh.tris[i]
-		uvs[i*3+0].uv = mesh.verts[f[0]].tex
-		uvs[i*3+1].uv = mesh.verts[f[1]].tex
-		uvs[i*3+2].uv = mesh.verts[f[2]].tex
-	# remove broken tris
-	if len(mesh.broken_tris) > 0:
+class Importer:
+	def Run(self, filepath, config):
+		self.config = config
+		self.LoadMesh(filepath)
+		if config.useMerge:
+			self.ParseMergeScript(config.mergeScript)
+			self.ApplyMergeScript()
+		else:
+			self.Import()
+	def LoadMesh(self, filepath):
+		print("INFO: Loading file "+filepath+"...")
+		with FileReader(filepath) as f:
+			self.mesh = Qmsh()
+			self.mesh.Read(f)
+		print("INFO: Loaded mesh.")
+	def FindImage(self, filename):
+		for root, dirs, files in os.walk(self.config.imagesPath):
+			for file in files:
+				if file == filename:
+					return os.path.join(root, file)
+		return None
+	def LoadImage(self, filename):
+		if self.config.loadImages:
+			filepath = self.FindImage(filename)
+			if not filepath is None:
+				img = bpy.data.images.load(filepath)
+				return img
+		img = bpy.data.images.new(sub.tex, 1, 1)
+		img.filepath = sub.tex
+		img.source = 'FILE'
+		return img
+	def Import(self):
+		print("INFO: Importing mesh...")
+		mesh = self.mesh
+		mesh_data = bpy.data.meshes.new(name='Mesh')
+		bm = bmesh.new()
+		# create vertices
+		new_verts = []
+		for v in mesh.verts:
+			new_verts.append(bm.verts.new(v.pos))
+		# create faces
+		for f in mesh.tris:
+			bm.faces.new((new_verts[f[0]], new_verts[f[1]], new_verts[f[2]]))
+		bm.faces.ensure_lookup_table()
+		index = 0
+		for sub in mesh.subs:
+			# add material
+			mat = bpy.data.materials.new(sub.name)
+			mat.use_shadeless = True
+			mat.diffuse_color = (random(), random(), random())
+			mat.specular_color = sub.specular_color
+			mat.specular_hardness = sub.specular_hardness
+			mat.specular_intensity = sub.specular_intensity
+			mesh_data.materials.append(mat)
+			# add texture
+			tex = bpy.data.textures.new('', 'IMAGE')
+			tex_slot = mat.texture_slots.add()
+			tex_slot.texture = tex
+			# add image
+			img = self.LoadImage(sub.tex)
+			tex.image = img
+			sub.image = img
+			# set material index
+			for i in range(sub.first, sub.first+sub.tris):
+				bm.faces[i].material_index = index
+			index += 1
+		bm.to_mesh(mesh_data)
+		obj = bpy.data.objects.new(name='Obj', object_data=mesh_data)
+		bpy.context.scene.objects.link(obj)
+		# uv map
+		uv_map = mesh_data.uv_textures.new()
+		uv_data = uv_map.data
+		uvs = mesh_data.uv_layers[0].data
+		for sub in mesh.subs:
+			for i in range(sub.first, sub.first+sub.tris):
+				uv_data[i].image = sub.image
+		for i in range(mesh.head.n_tris):
+			f = mesh.tris[i]
+			uvs[i*3+0].uv = mesh.verts[f[0]].tex
+			uvs[i*3+1].uv = mesh.verts[f[1]].tex
+			uvs[i*3+2].uv = mesh.verts[f[2]].tex
+		# remove broken tris
+		if len(mesh.broken_tris) > 0:
+			bm.clear()
+			bm.from_mesh(mesh_data)
+			to_delete = []
+			bm.faces.ensure_lookup_table()
+			for i in mesh.broken_tris:
+				to_delete.append(bm.faces[i])
+			bmesh.ops.delete(bm, geom=to_delete, context=5)  
+			bm.to_mesh(mesh_data)
+			mesh_data.update()
+			print("WARN: Removed %d broken tris." % len(mesh.broken_tris))
+		# armature
+		if mesh.head.IsAnimated() and not mesh.head.IsStatic():
+			armature = bpy.data.armatures.new(name='Armature')
+			obj_arm = bpy.data.objects.new(name='Armature', object_data=armature)
+			bpy.context.scene.objects.link(obj_arm)
+			bpy.context.scene.objects.active = obj_arm
+			bpy.ops.object.mode_set(mode='EDIT')
+			for bone in mesh.bones:
+				if bone.name == "zero":
+					continue
+				b = armature.edit_bones.new(bone.name)
+				b.head = (1.0, 1.0, 0.0)
+				b.tail = (1.0, 1.0, 1.0)
+			bpy.ops.object.mode_set(mode='OBJECT')
+		# add points
+		for point in mesh.points:
+			empty = bpy.data.objects.new(name=point.name, object_data=None)
+			if empty.type == 0:
+				empty.empty_draw_type = 'ARROWS'
+			elif empty.type == 1:
+				empty.empty_draw_type = 'SPHERE'
+			else:
+				empty.empty_draw_type = 'CUBE'
+			empty.matrix_world = point.mat
+			empty.scale = point.size
+			empty.rotation_mode = 'QUATERNION'
+			empty.rotation_euler = point.rot
+			bpy.context.scene.objects.link(empty)
+		# remove doubled vertices
 		bm.clear()
 		bm.from_mesh(mesh_data)
-		to_delete = []
-		bm.faces.ensure_lookup_table()
-		for i in mesh.broken_tris:
-			to_delete.append(bm.faces[i])
-		bmesh.ops.delete(bm, geom=to_delete, context=5)  
+		bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=0.00001)
 		bm.to_mesh(mesh_data)
 		mesh_data.update()
-		print("WARN: Removed %d broken tris." % len(mesh.broken_tris))
-	# armature
-	if mesh.head.IsAnimated() and not mesh.head.IsStatic():
-		armature = bpy.data.armatures.new(name='Armature')
-		obj_arm = bpy.data.objects.new(name='Armature', object_data=armature)
-		bpy.context.scene.objects.link(obj_arm)
-		bpy.context.scene.objects.active = obj_arm
-		bpy.ops.object.mode_set(mode='EDIT')
-		for bone in mesh.bones:
-			if bone.name == "zero":
-				continue
-			b = armature.edit_bones.new(bone.name)
-			b.head = (1.0, 1.0, 0.0)
-			b.tail = (1.0, 1.0, 1.0)
-		bpy.ops.object.mode_set(mode='OBJECT')
-	# add points
-	for point in mesh.points:
-		empty = bpy.data.objects.new(name=point.name, object_data=None)
-		if empty.type == 0:
-			empty.empty_draw_type = 'ARROWS'
-		elif empty.type == 1:
-			empty.empty_draw_type = 'SPHERE'
-		else:
-			empty.empty_draw_type = 'CUBE'
-		empty.matrix_world = point.mat
-		empty.scale = point.size
-		empty.rotation_mode = 'QUATERNION'
-		empty.rotation_euler = point.rot
-		bpy.context.scene.objects.link(empty)
-	# remove doubled vertices
-	bm.clear()
-	bm.from_mesh(mesh_data)
-	bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=0.00001)
-	bm.to_mesh(mesh_data)
-	mesh_data.update()
-	bm.free()
-	# tris to quads
-	bpy.context.scene.objects.active = obj
-	bpy.ops.object.editmode_toggle()
-	bpy.ops.mesh.select_all()
-	bpy.ops.mesh.tris_convert_to_quads()
-	bpy.ops.mesh.select_all()
-	bpy.ops.mesh.tris_convert_to_quads()
-	bpy.ops.object.editmode_toggle()
-	# switch to textured mode
-	area = next(area for area in bpy.context.screen.areas if area.type == 'VIEW_3D')
-	space = next(space for space in area.spaces if space.type == 'VIEW_3D')
-	space.viewport_shade = 'TEXTURED'
-	print("INFO: Import finished.");
+		bm.free()
+		# tris to quads
+		bpy.context.scene.objects.active = obj
+		bpy.ops.object.editmode_toggle()
+		bpy.ops.mesh.select_all()
+		bpy.ops.mesh.tris_convert_to_quads()
+		bpy.ops.mesh.select_all()
+		bpy.ops.mesh.tris_convert_to_quads()
+		bpy.ops.object.editmode_toggle()
+		# switch to textured mode
+		area = next(area for area in bpy.context.screen.areas if area.type == 'VIEW_3D')
+		space = next(space for space in area.spaces if space.type == 'VIEW_3D')
+		space.viewport_shade = 'TEXTURED'
+		# camera
+		self.AddCamera()
+		print("INFO: Import finished.")
+	def ParseMergeScript(self, mergeScript):
+		print("INFO: Parsing merge script...")
+		script = []
+		strs = mergeScript.split()
+		i = 0
+		count = len(strs)
+		while True:
+			if i >= count:
+				break
+			op = strs[i]
+			if op != 'add' and op != 'replace':
+				raise ImporterException('Invalid operation %s.' % op)
+			i += 1
+			if i >= count:
+				raise ImporterException('Unexpected end of script.')
+			type = strs[i]
+			if type != 'animation' and type != 'point' and type != 'camera':
+				raise ImporterException('Invalid type %s.' % type)
+			obj = None
+			if type != 'camera':
+				i += 1
+				if i >= count:
+					raise ImporterException('Unexpected end of script.')
+				name = strs[i]
+				if type == 'animation':
+					obj = self.mesh.GetAnimation(name)
+					if obj is None:
+						raise ImporterException('Missing animation %s.' % name)
+				else:
+					obj = self.mesh.GetPoint(name)
+					if obj is None:
+						raise ImporterException('Missing point %s.' % name)
+			script.append((op, type, obj))
+			i += 1
+		self.script = script
+		print("INFO: Finished with %d operations." % len(script))
+		pass
+	def FindSkeleton(self):
+		return None #todo
+	def ApplyMergeScript(self):
+		if len(self.script) == 0:
+			print("INFO: Nothing to do.")
+			return
+		for cmd in self.script:
+			op = cmd[0]
+			type = cmd[1]
+			obj = cmd[2]
+			#if op == 'add':
+			#	if type == 'animation':
+			#		self.AddAnim
+			#	pass
+			#else:
+			#	pass
+	def AddCamera(self):
+		cam = bpy.data.cameras.new(name='Camera')
+		obj = bpy.data.objects.new(name='Camera', object_data=cam)
+		obj.location = self.mesh.head.cam_pos
+		dir = self.mesh.head.cam_target - obj.location
+		rot_quat = dir.to_track_quat('-Z', 'Y')
+		obj.rotation_euler = rot_quat.to_euler()
+		bpy.context.scene.objects.link(obj)
+		#cam.rotation_mode = 'QUATERNION'
+	def MergeCamera(self):
+		pass
+	def FindObject(self, type):
+		for obj in byp.context.selected_objects:
+			if obj.type == type:
+				return obj
+		for obj in bpy.context.scene.objects:
+			if obj.type == type:
+				return obj
+		return None
 	
 ################################################################################
 # Klasa importera
-class QmshImporter(bpy.types.Operator, ImportHelper):
+class QmshImporterOperator(bpy.types.Operator, ImportHelper):
 	"""Import from Qmsh format (.qmsh)"""
 	
 	bl_idname = "import.qmsh"
 	bl_label = "Import QMSH"
+	filter_glob = StringProperty(default="*.qmsh", options={'HIDDEN'})
 	
 	config = Config()
 	
-	loadImages = BoolProperty(
-		name="LoadImages",
-		default=config.loadImages)
-		
-	imagesPath = StringProperty(
-		name="Converter path",
-		default=config.imagesPath)
-	
-	filter_glob = StringProperty(default="*.qmsh", options={'HIDDEN'})
-	
+	loadImages = BoolProperty(name="Load images", default=config.loadImages)
+	imagesPath = StringProperty(name="Converter path", default=config.imagesPath)
+	useMerge = BoolProperty(name="Use merge", default=False)
+	mergeScript = StringProperty(name="Merge script")
+
 	def execute(self, context):
 		self.config.loadImages = self.loadImages
 		self.config.imagesPath = self.imagesPath
+		self.config.useMerge = self.useMerge
+		self.config.mergeScript = self.mergeScript
 		self.config.Save()
+		importer = Importer()
 		try:
-			Import(self.properties.filepath, self.config)
+			importer.Run(self.properties.filepath, self.config)
 		except ImporterException as error:
 			msg = 'Exporter error: '+str(error)
 			print("ERROR: "+msg)
@@ -547,7 +632,7 @@ class QmshImporter(bpy.types.Operator, ImportHelper):
 ################################################################################
 # funkcje pluginu
 def menu_func(self, context):
-	self.layout.operator(QmshImporter.bl_idname, text="Qmsh (.qmsh)")
+	self.layout.operator(QmshImporterOperator.bl_idname, text="Qmsh (.qmsh)")
 
 def register():
 	bpy.utils.register_module(__name__)
