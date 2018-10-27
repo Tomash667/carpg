@@ -37,7 +37,7 @@ perk talent {
 }*/
 perk alchemist {
 	name "Uczeñ alchemika"
-	desc "Pracowa³eœ jako uczeñ alchemika. Nie nauczy³eœ siê warzenia mikstur ale zato zdoby³eœ spor¹ liczbê mikstur."
+	desc "Pracowa³eœ jako uczeñ alchemika. Nie nauczy³eœ siê warzenia mikstur ale za to zdoby³eœ spor¹ liczbê mikstur."
 }
 perk wealthy {
 	name "Bogaty"

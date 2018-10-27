@@ -24,6 +24,8 @@
 #include "GroundItem.h"
 #include "ResourceManager.h"
 #include "GlobalGui.h"
+#include "PlayerInfo.h"
+#include "Stock.h"
 
 const float Unit::AUTO_TALK_WAIT = 0.333f;
 const float Unit::STAMINA_BOW_ATTACK = 100.f;
@@ -42,6 +44,7 @@ Unit::~Unit()
 	delete human_data;
 	delete hero;
 	delete player;
+	delete stock;
 }
 
 //=================================================================================================
@@ -1256,6 +1259,22 @@ void Unit::Save(GameWriter& f, bool local)
 		else
 			f.Write0();
 	}
+	if(stock)
+	{
+		if(local || W.GetWorldtime() - stock->date < 10)
+		{
+			f.Write1();
+			SaveStock(f);
+		}
+		else
+		{
+			delete stock;
+			stock = nullptr;
+			f.Write0();
+		}
+	}
+	else
+		f.Write0();
 
 	f << live_state;
 	f << pos;
@@ -1370,6 +1389,27 @@ void Unit::Save(GameWriter& f, bool local)
 }
 
 //=================================================================================================
+void Unit::SaveStock(GameWriter& f)
+{
+	vector<ItemSlot>& cnt = stock->items;
+
+	f << stock->date;
+	f << cnt.size();
+	for(ItemSlot& slot : cnt)
+	{
+		if(slot.item)
+		{
+			f << slot.item->id;
+			f << slot.count;
+			if(slot.item->id[0] == '$')
+				f << slot.item->refid;
+		}
+		else
+			f.Write0();
+	}
+}
+
+//=================================================================================================
 void Unit::Load(GameReader& f, bool local)
 {
 	human_data = nullptr;
@@ -1396,6 +1436,13 @@ void Unit::Load(GameReader& f, bool local)
 			slot.item = QUEST_ITEM_PLACEHOLDER;
 			can_sort = false;
 		}
+	}
+	if(LOAD_VERSION >= V_DEV)
+	{
+		if(f.Read0())
+			stock = nullptr;
+		else
+			LoadStock(f);
 	}
 
 	// stats
@@ -1470,7 +1517,7 @@ void Unit::Load(GameReader& f, bool local)
 			if(dialog_id.empty())
 				auto_talk_dialog = nullptr;
 			else
-				auto_talk_dialog = FindDialog(dialog_id.c_str());
+				auto_talk_dialog = GameDialog::TryGet(dialog_id.c_str());
 			f >> auto_talk_timer;
 		}
 	}
@@ -1694,6 +1741,45 @@ void Unit::Load(GameReader& f, bool local)
 			player->SetRequiredPoints();
 		}
 	}
+}
+
+//=================================================================================================
+void Unit::LoadStock(GameReader& f)
+{
+	if(!stock)
+		stock = new TraderStock;
+
+	vector<ItemSlot>& cnt = stock->items;
+
+	f >> stock->date;
+	uint count;
+	f >> count;
+	if(count == 0)
+	{
+		cnt.clear();
+		return;
+	}
+
+	bool can_sort = true;
+	cnt.resize(count);
+	for(ItemSlot& slot : cnt)
+	{
+		const string& item_id = f.ReadString1();
+		f >> slot.count;
+		if(item_id[0] != '$')
+			slot.item = Item::Get(item_id);
+		else
+		{
+			int quest_refid;
+			f >> quest_refid;
+			QM.AddQuestItemRequest(&slot.item, item_id.c_str(), quest_refid, &cnt);
+			slot.item = QUEST_ITEM_PLACEHOLDER;
+			can_sort = false;
+		}
+	}
+
+	if(can_sort && (LOAD_VERSION < V_0_2_20 || content::require_update))
+		SortItems(cnt);
 }
 
 //=================================================================================================
@@ -3941,7 +4027,7 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 		{
 			DialogContext* ctx = game.FindDialogContext(this);
 			if(ctx)
-				game.EndDialog(*ctx);
+				ctx->EndDialog();
 			busy = Busy_No;
 		}
 	}
@@ -4673,4 +4759,33 @@ bool Unit::IsFriend(Unit& u) const
 	}
 	else
 		return in_arena == u.in_arena;
+}
+
+//=================================================================================================
+void Unit::RefreshStock()
+{
+	assert(data->trader);
+
+	bool refresh;
+	int worldtime = W.GetWorldtime();
+	if(stock)
+		refresh = (worldtime - stock->date >= 10 && busy != Busy_Trading);
+	else
+	{
+		stock = new TraderStock;
+		refresh = true;
+	}
+
+	if(refresh)
+	{
+		stock->date = worldtime;
+		stock->items.clear();
+		data->trader->stock->Parse(stock->items);
+		if(!L.entering)
+		{
+			Game& game = Game::Get();
+			for(ItemSlot& slot : stock->items)
+				game.PreloadItem(slot.item);
+		}
+	}
 }

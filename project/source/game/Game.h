@@ -5,16 +5,18 @@
 #include "GameCommon.h"
 #include "ConsoleCommands.h"
 #include "Net.h"
-#include "Dialog.h"
+#include "DialogContext.h"
 #include "BaseLocation.h"
 #include "GameKeys.h"
 #include "SceneNode.h"
 #include "QuadTree.h"
 #include "Music.h"
-#include "PlayerInfo.h"
 #include "Camera.h"
 #include "Config.h"
 #include "Settings.h"
+#include "Blood.h"
+#include "BaseObject.h"
+#include "PlayerController.h"
 
 //-----------------------------------------------------------------------------
 // Tryb szybkiego uruchamiania gry
@@ -142,7 +144,6 @@ public:
 	void LoadDatafiles();
 	bool LoadRequiredStats(uint& errors);
 	void LoadLanguageFiles();
-	void SetHeroNames();
 	void SetGameText();
 	void SetStatsText();
 	void ConfigureGame();
@@ -305,11 +306,6 @@ public:
 	std::set<const Item*> items_load;
 
 	//---------------------------------
-	// GUI / HANDEL
-	vector<ItemSlot> chest_merchant, chest_blacksmith, chest_alchemist, chest_innkeeper, chest_food_seller, chest_trade;
-	bool* trader_buy;
-
-	//---------------------------------
 	// RYSOWANIE
 	Matrix mat;
 	int particle_count;
@@ -361,7 +357,6 @@ public:
 	//---------------------------------
 	// DIALOGI
 	DialogContext dialog_context;
-	DialogContext* current_dialog;
 	vector<string> dialog_choices; // u¿ywane w MP u klienta
 	string predialog;
 
@@ -387,7 +382,6 @@ public:
 	Music* last_music;
 	vector<Music*> tracks;
 	int track_id;
-	MusicType GetLocationMusic();
 	void LoadMusic(MusicType type, bool new_load_screen = true, bool task = false);
 	void SetMusic();
 	void SetMusic(MusicType type);
@@ -436,13 +430,6 @@ public:
 	void AddCommands();
 	void UpdateAi(float dt);
 	void CheckAutoTalk(Unit& unit, float dt);
-	void StartDialog(DialogContext& ctx, Unit* talker, GameDialog* dialog = nullptr);
-	void StartDialog2(PlayerController* player, Unit* talker, GameDialog* dialog = nullptr);
-	void StartNextDialog(DialogContext& ctx, GameDialog* dialog, int& if_level, Quest* quest = nullptr);
-	void EndDialog(DialogContext& ctx);
-	void UpdateGameDialog(DialogContext& ctx, float dt);
-	bool ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_level);
-	bool ExecuteGameDialogSpecialIf(DialogContext& ctx, cstring msg);
 	void ApplyLocationTexturePack(TexturePack& floor, TexturePack& wall, TexturePack& ceil, LocationTexturePack& tex);
 	void ApplyLocationTexturePack(TexturePack& pack, LocationTexturePack::Entry& e, TexturePack& pack_def);
 	void SetDungeonParamsAndTextures(BaseLocation& base);
@@ -531,11 +518,8 @@ public:
 	bool Quickload(bool from_console);
 	void ClearGameVars(bool new_game);
 	void ClearGame();
-	cstring FormatString(DialogContext& ctx, const string& str_part);
 	int CalculateQuestReward(int gold);
 	void AddReward(int gold) { AddGold(CalculateQuestReward(gold), nullptr, true, txQuestCompletedGold, 4.f, false); }
-	void SaveStock(FileWriter& f, vector<ItemSlot>& cnt);
-	void LoadStock(FileReader& f, vector<ItemSlot>& cnt);
 	SOUND GetItemSound(const Item* item);
 	void Unit_StopUsingUsable(LevelContext& ctx, Unit& unit, bool send = true);
 	void EnterLevel(LocationGenerator* loc_gen);
@@ -550,7 +534,6 @@ public:
 	void LoadingStart(int steps);
 	void LoadingStep(cstring text = nullptr, int end = 0);
 	void LoadResources(cstring text, bool worldmap);
-	bool RequireLoadingResources(Location* loc, bool* to_set);
 	void PreloadResources(bool worldmap);
 	void PreloadUsables(vector<Usable*>& usable);
 	void PreloadUnits(vector<Unit*>& units);
@@ -562,9 +545,6 @@ public:
 	void VerifyItemResources(const Item* item);
 	//
 	void DeleteUnit(Unit* unit);
-	void DialogTalk(DialogContext& ctx, cstring msg);
-	void GenerateHeroName(HeroData& hero);
-	void GenerateHeroName(Class clas, bool crazy, string& name);
 	bool WantExitLevel()
 	{
 		return !GKey.KeyDownAllowed(GK_WALK);
@@ -614,7 +594,6 @@ public:
 	void UpdatePostEffects(float dt);
 
 	void PlayerYell(Unit& u);
-	bool CanBuySell(const Item* item);
 	void SetOutsideParams();
 
 	//-----------------------------------------------------------------
@@ -655,9 +634,6 @@ public:
 	//-----------------------------------------------------------------
 	// MULTIPLAYER
 	string player_name, server_ip, enter_pswd;
-	int my_id; // moje unikalne id
-	bool was_client, players_left;
-	int leader_id;
 	enum NET_MODE
 	{
 		NM_CONNECT_IP, // ³¹czenie serwera z klientem (0 - pingowanie, 1 - podawanie has³a, 2 - ³¹czenie)
@@ -670,12 +646,10 @@ public:
 	NetState net_state;
 	int net_tries;
 	VoidF net_callback;
-	string net_adr;
-	float net_timer, update_timer, mp_timeout;
+	float net_timer, mp_timeout;
 	BitStream prepared_stream;
 	bool change_title_a;
 	int skip_id_counter;
-	vector<string*> net_talk;
 	struct WarpData
 	{
 		Unit* u;
@@ -689,14 +663,12 @@ public:
 	bool godmode, noclip, invisible;
 	float interpolate_timer;
 	bool paused;
+	vector<ItemSlot> chest_trade; // used by clients when trading
 
 	void AddServerMsg(cstring msg);
-	void KickPlayer(PlayerInfo& info);
 	void AddMsg(cstring msg);
 	void OnEnterPassword(int id);
 	void ForceRedraw();
-	void PrepareLevelData(BitStream& stream, bool loaded_resources);
-	bool ReadLevelData(BitStreamReader& f);
 	void SendPlayerData(PlayerInfo& info);
 	bool ReadPlayerData(BitStreamReader& stream);
 	void UpdateServer(float dt);
@@ -726,19 +698,9 @@ public:
 	int ReadItemAndFind(BitStreamReader& f, const Item*& item) const;
 	bool ReadItemList(BitStreamReader& f, vector<ItemSlot>& items);
 	bool ReadItemListTeam(BitStreamReader& f, vector<ItemSlot>& items, bool skip = false);
-	void PrepareWorldData(BitStreamWriter& f);
-	bool ReadWorldData(BitStreamReader& f);
-	void WritePlayerStartData(BitStreamWriter& f, PlayerInfo& info);
-	bool ReadPlayerStartData(BitStreamReader& f);
 	bool CheckMoveNet(Unit& unit, const Vec3& pos);
-	void Net_PreSave();
-	bool FilterOut(NetChange& c);
-	bool FilterOut(NetChangePlayer& c);
-	void Net_FilterServerChanges();
-	void Net_FilterClientChanges();
 	void ProcessLeftPlayers();
 	void RemovePlayer(PlayerInfo& info);
-	void ClosePeer(bool wait = false);
 
 	//-----------------------------------------------------------------
 	// WORLD MAP

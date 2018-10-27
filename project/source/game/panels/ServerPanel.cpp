@@ -12,6 +12,8 @@
 #include "Content.h"
 #include "Version.h"
 #include "Level.h"
+#include "PlayerInfo.h"
+#include "Team.h"
 
 //-----------------------------------------------------------------------------
 #ifdef _DEBUG
@@ -295,11 +297,11 @@ void ServerPanel::UpdateLobbyClient(float dt)
 					switch(packet->data[1])
 					{
 					default:
-					case 0:
+					case ServerClose_Closing:
 						reason = txClosing;
 						reason_eng = "closing";
 						break;
-					case 1:
+					case ServerClose_Kicked:
 						reason = txKicked;
 						reason_eng = "kicked";
 						break;
@@ -317,7 +319,7 @@ void ServerPanel::UpdateLobbyClient(float dt)
 				CloseDialog();
 				N.StreamEnd();
 				N.peer->DeallocatePacket(packet);
-				game->ClosePeer(true);
+				N.ClosePeer(true);
 				return;
 			}
 		case ID_TIMER:
@@ -439,7 +441,7 @@ bool ServerPanel::DoLobbyUpdate(BitStreamReader& f)
 					Error("ServerPanel: Broken Lobby_AddPlayer.");
 					return false;
 				}
-				else if(id != game->my_id)
+				else if(id != Team.my_id)
 				{
 					auto pinfo = new PlayerInfo;
 					N.players.push_back(pinfo);
@@ -487,8 +489,8 @@ bool ServerPanel::DoLobbyUpdate(BitStreamReader& f)
 					return false;
 				}
 				Info("%s is now leader.", info->name.c_str());
-				game->leader_id = id;
-				if(game->my_id == id)
+				Team.leader_id = id;
+				if(Team.my_id == id)
 					AddMsg(txYouAreLeader);
 				else
 					AddMsg(Format(txLeaderChanged, info->name.c_str()));
@@ -648,11 +650,11 @@ void ServerPanel::UpdateLobbyServer(float dt)
 							AddLobbyUpdate(Int2(Lobby_RemovePlayer, info->id));
 							AddLobbyUpdate(Int2(Lobby_ChangeCount, 0));
 						}
-						if(game->leader_id == info->id)
+						if(Team.leader_id == info->id)
 						{
 							// serwer zostaje przywódc¹
 							Info("ServerPanel: You are leader now.");
-							game->leader_id = game->my_id;
+							Team.leader_id = Team.my_id;
 							if(N.active_players > 1)
 								AddLobbyUpdate(Int2(Lobby_ChangeLeader, 0));
 							AddMsg(txYouAreLeader);
@@ -755,7 +757,7 @@ void ServerPanel::UpdateLobbyServer(float dt)
 					fw << ID_JOIN;
 					fw.WriteCasted<byte>(info->id);
 					fw.WriteCasted<byte>(N.active_players);
-					fw.WriteCasted<byte>(game->leader_id);
+					fw.WriteCasted<byte>(Team.leader_id);
 					fw.Write0();
 					int count = 0;
 					for(auto info2 : N.players)
@@ -1009,7 +1011,7 @@ void ServerPanel::UpdateLobbyServer(float dt)
 					case Lobby_ChangeLeader:
 						++count;
 						f.WriteCasted<byte>(u.x);
-						f.WriteCasted<byte>(game->leader_id);
+						f.WriteCasted<byte>(Team.leader_id);
 						break;
 					default:
 						assert(0);
@@ -1213,11 +1215,11 @@ void ServerPanel::Event(GuiEvent e)
 			else
 			{
 				PlayerInfo& info = *N.players[grid.selected];
-				if(info.id == game->leader_id)
+				if(info.id == Team.leader_id)
 					AddMsg(txAlreadyLeader);
 				else if(info.state == PlayerInfo::IN_LOBBY)
 				{
-					game->leader_id = info.id;
+					Team.leader_id = info.id;
 					AddLobbyUpdate(Int2(Lobby_ChangeLeader, 0));
 					AddMsg(Format(txLeaderChanged, info.name.c_str()));
 				}
@@ -1290,7 +1292,7 @@ void ServerPanel::GetCell(int item, int column, Cell& cell)
 	else if(column == 1)
 	{
 		cell.text_color->text = (info.state == PlayerInfo::IN_LOBBY ? info.name.c_str() : info.adr.ToString());
-		cell.text_color->color = (info.id == game->leader_id ? 0xFFFFD700 : Color::Black);
+		cell.text_color->color = (info.id == Team.leader_id ? 0xFFFFD700 : Color::Black);
 	}
 	else
 		cell.text = (info.clas == Class::INVALID ? txNone : ClassInfo::classes[(int)info.clas].name.c_str());
@@ -1317,7 +1319,7 @@ void ServerPanel::ExitLobby(VoidF callback)
 		{
 			// roz³¹cz graczy
 			Info("ServerPanel: Disconnecting clients.");
-			const byte b[] = { ID_SERVER_CLOSE, 0 };
+			const byte b[] = { ID_SERVER_CLOSE, ServerClose_Closing };
 			N.peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 			N.StreamWrite(b, 2, Stream_UpdateLobbyServer, UNASSIGNED_SYSTEM_ADDRESS);
 			game->net_mode = Game::NM_QUITTING_SERVER;
@@ -1329,7 +1331,7 @@ void ServerPanel::ExitLobby(VoidF callback)
 		else
 		{
 			// nie ma graczy, mo¿na zamkn¹æ
-			game->ClosePeer();
+			N.ClosePeer();
 			CloseDialog();
 			if(callback)
 				callback();
@@ -1361,7 +1363,7 @@ void ServerPanel::OnKick(int id)
 	{
 		PlayerInfo* info = N.TryGetPlayer(kick_id);
 		if(info)
-			game->KickPlayer(*info);
+			N.KickPlayer(*info);
 	}
 }
 
@@ -1377,7 +1379,7 @@ void ServerPanel::OnInput(const string& str)
 		{
 			BitStreamWriter f;
 			f << ID_SAY;
-			f.WriteCasted<byte>(game->my_id);
+			f.WriteCasted<byte>(Team.my_id);
 			f << str;
 			if(Net::IsServer())
 				N.SendAll(f, MEDIUM_PRIORITY, RELIABLE, Stream_Chat);

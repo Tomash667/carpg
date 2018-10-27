@@ -1,0 +1,60 @@
+Core functions:
+	void Info(const string& in msg) - show info msg.
+	void Warn(const string& in msg) - show warning msg.
+	void Error(const string& in msg) - show error msg.
+	string Format(const string& in format_str, ?& in ...) - return formatted string, takes 0 to 8 any arguments.
+	int Random(int a, int b) - returns random number in range <a,b>.
+	int Rand() - returns random int number.
+
+Enum ITEM_TYPE, values:
+	IT_WEAPON
+	IT_BOW
+	IT_SHIELD
+	IT_ARMOR
+	IT_OTHER
+	IT_CONSUMABLE
+	IT_BOOK
+	
+Enum ITEM_FLAGS:
+	ITEM_NOT_SHOP - not generated in shop.
+	ITEM_NOT_MERCHANT - not generated for merchant.
+	ITEM_NOT_BLACKSMITH - not generated for blacksmith.
+	ITEM_NOT_ALCHEMIST - not generated for alchemist.
+	
+Item type:
+	string name - readonly
+	int value - readonly
+Static methods:
+	Item@ Get(const string& in id) - return item with id.
+	Item@ GetRandom(int max_value) - returns random item with value <= max_value, can return quest item.
+	
+ItemList type:
+	Item@ Get() - return random item from list.
+	Item@ Get(int index) - return item from list by index.
+	int Size() - return size of list.
+Static methods:
+	ItemList@ Get(const string& in id) - return item list with id.
+
+Unit type:
+	int gold - modifying will show message.
+	VarsContainer@ vars - readonly
+	void AddItem(Item@ item) - add item, will show message.
+	void RemoveItem(const string& in item_id) - remove 1 item by id, will show message.
+Globals:
+	Unit@ target
+
+Player type:
+	Unit@ unit - unit player.
+Globals:
+	Player@ pc
+
+Team namespace:
+	void AddGold(uint gold) - add gold divided between team members, shows message.
+
+Level namespace:
+	bool IsCity() - true when inside city.
+	bool IsVillage() - true when inside village.
+	bool IsTutorial() - true when inside tutorial.
+
+StockScript namespace - can only be called from stock script:
+	void AddRandomItem(ITEM_TYPE type, int price_limit, int flags, int count = 1) - add random items to stock.

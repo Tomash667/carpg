@@ -35,6 +35,7 @@
 #include "ResourceManager.h"
 #include "Game.h"
 #include "Language.h"
+#include "PlayerInfo.h"
 
 //=================================================================================================
 GlobalGui::GlobalGui() : load_screen(nullptr), game_gui(nullptr), inventory(nullptr), stats(nullptr), team(nullptr),

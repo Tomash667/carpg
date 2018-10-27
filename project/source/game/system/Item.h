@@ -208,6 +208,10 @@ struct Item
 		assert(item);
 		return item;
 	}
+	static Item* GetS(const string& id)
+	{
+		return TryGet(id);
+	}
 	static void Validate(uint& err);
 };
 
@@ -434,6 +438,7 @@ struct ItemList
 	static vector<ItemList*> lists;
 	static ItemListResult TryGet(Cstring id);
 	static ItemListResult Get(Cstring id);
+	static const ItemList* GetS(const string& id);
 	static const Item* GetItem(Cstring id);
 };
 
@@ -500,6 +505,11 @@ inline ItemListResult ItemList::Get(Cstring id)
 	auto result = TryGet(id);
 	assert(result.lis != nullptr);
 	return result;
+}
+
+inline const ItemList* ItemList::GetS(const string& id)
+{
+	return TryGet(id).lis;
 }
 
 inline const Item* ItemList::GetItem(Cstring id)

@@ -1,7 +1,6 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "Quest_Orcs.h"
-#include "Dialog.h"
 #include "Game.h"
 #include "Journal.h"
 #include "SaveState.h"
@@ -14,6 +13,7 @@
 #include "Team.h"
 #include "World.h"
 #include "Level.h"
+#include "ItemHelper.h"
 
 //=================================================================================================
 void Quest_Orcs::Init()
@@ -33,10 +33,10 @@ GameDialog* Quest_Orcs::GetDialog(int type2)
 {
 	assert(type2 == QUEST_DIALOG_NEXT);
 
-	if(game->current_dialog->talker->data->id == "q_orkowie_straznik")
-		return FindDialog("q_orcs_guard");
+	if(DialogContext::current->talker->data->id == "q_orkowie_straznik")
+		return GameDialog::TryGet("q_orcs_guard");
 	else
-		return FindDialog("q_orcs_captain");
+		return GameDialog::TryGet("q_orcs_captain");
 }
 
 //=================================================================================================
@@ -240,16 +240,16 @@ GameDialog* Quest_Orcs2::GetDialog(int type2)
 {
 	assert(type2 == QUEST_DIALOG_NEXT);
 
-	const string& id = game->current_dialog->talker->data->id;
+	const string& id = DialogContext::current->talker->data->id;
 
 	if(id == "q_orkowie_slaby")
-		return FindDialog("q_orcs2_weak_orc");
+		return GameDialog::TryGet("q_orcs2_weak_orc");
 	else if(id == "q_orkowie_kowal")
-		return FindDialog("q_orcs2_blacksmith");
+		return GameDialog::TryGet("q_orcs2_blacksmith");
 	else if(id == "q_orkowie_gorush" || id == "q_orkowie_gorush_woj" || id == "q_orkowie_gorush_lowca" || id == "q_orkowie_gorush_szaman")
-		return FindDialog("q_orcs2_gorush");
+		return GameDialog::TryGet("q_orcs2_gorush");
 	else
-		return FindDialog("q_orcs2_orc");
+		return GameDialog::TryGet("q_orcs2_orc");
 }
 
 //=================================================================================================
@@ -286,7 +286,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 	case Progress::TalkedOrc:
 		// zapisz gorusha
 		{
-			orc = game->current_dialog->talker;
+			orc = DialogContext::current->talker;
 			orc->RevealName(true);
 			orc->hero->name = game->txQuest[216];
 		}
@@ -310,7 +310,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 				QM.quest_orcs->target_loc = -1;
 			}
 			// do³¹cz do dru¿yny
-			Team.AddTeamMember(game->current_dialog->talker, true);
+			Team.AddTeamMember(DialogContext::current->talker, true);
 			Team.free_recruit = false;
 		}
 		break;
@@ -376,14 +376,14 @@ void Quest_Orcs2::SetProgress(int prog2)
 		// losowo
 		{
 			OrcClass clas;
-			if(game->current_dialog->pc->unit->GetClass() == Class::WARRIOR)
+			if(DialogContext::current->pc->unit->GetClass() == Class::WARRIOR)
 			{
 				if(Rand() % 2 == 0)
 					clas = OrcClass::Hunter;
 				else
 					clas = OrcClass::Shaman;
 			}
-			else if(game->current_dialog->pc->unit->GetClass() == Class::HUNTER)
+			else if(DialogContext::current->pc->unit->GetClass() == Class::HUNTER)
 			{
 				if(Rand() % 2 == 0)
 					clas = OrcClass::Warrior;
@@ -620,7 +620,6 @@ void Quest_Orcs2::Save(GameWriter& f)
 	f << guard;
 	f << orc;
 	f << orc_class;
-	game->SaveStock(f, wares);
 }
 
 //=================================================================================================
@@ -638,7 +637,8 @@ bool Quest_Orcs2::Load(GameReader& f)
 		f >> guard;
 		f >> orc;
 		f >> orc_class;
-		game->LoadStock(f, wares);
+		if(LOAD_VERSION < V_DEV)
+			ItemHelper::SkipStock(f);
 	}
 
 	if(!done)
@@ -672,7 +672,7 @@ void Quest_Orcs2::LoadOld(GameReader& f)
 	f >> guard;
 	f >> orc;
 	f >> orc_class;
-	game->LoadStock(f, wares);
+	ItemHelper::SkipStock(f);
 }
 
 //=================================================================================================

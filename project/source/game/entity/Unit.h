@@ -103,6 +103,13 @@ enum class FROZEN
 };
 
 //-----------------------------------------------------------------------------
+struct TraderStock
+{
+	vector<ItemSlot> items;
+	int date;
+};
+
+//-----------------------------------------------------------------------------
 // jednostka w grze
 struct Unit
 {
@@ -206,10 +213,11 @@ struct Unit
 	GameDialog* auto_talk_dialog;
 	StaminaAction stamina_action;
 	float stamina_timer;
+	TraderStock* stock;
 
 	//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	Unit() : mesh_inst(nullptr), hero(nullptr), ai(nullptr), player(nullptr), cobj(nullptr), interp(nullptr), bow_instance(nullptr), fake_unit(false),
-		human_data(nullptr), stamina_action(SA_RESTORE_MORE), summoner(nullptr), moved(false), refs(1) {}
+		human_data(nullptr), stamina_action(SA_RESTORE_MORE), summoner(nullptr), moved(false), refs(1), stock(nullptr) {}
 	~Unit();
 
 	void AddRef() { ++refs; }
@@ -427,7 +435,9 @@ struct Unit
 	float GetAttackFrame(int frame) const;
 	int GetRandomAttack() const;
 	void Save(GameWriter& f, bool local);
+	void SaveStock(GameWriter& f);
 	void Load(GameReader& f, bool local);
+	void LoadStock(GameReader& f);
 	void Write(BitStreamWriter& f);
 	bool Read(BitStreamReader& f);
 	Effect* FindEffect(EffectId effect);
@@ -864,6 +874,7 @@ public:
 	void UpdateInventory(bool notify = true);
 	bool IsEnemy(Unit& u, bool ignore_dont_attack = false) const;
 	bool IsFriend(Unit& u) const;
+	void RefreshStock();
 
 	//-----------------------------------------------------------------------------
 	static vector<Unit*> refid_table;

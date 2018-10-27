@@ -478,3 +478,25 @@ void MakeDoubleZeroTerminated(char* dest, Cstring src)
 	*dest++ = 0;
 	*dest = 0;
 }
+//=================================================================================================
+uint FindClosingPos(const string& str, uint pos, char start, char end)
+{
+	assert(str[pos] == start);
+	uint count = 1, len = str.length();
+	++pos;
+	while(true)
+	{
+		if(pos == len)
+			return string::npos; // missing closing char
+		char c = str[pos];
+		if(c == start)
+			++count;
+		else if(c == end)
+		{
+			--count;
+			if(count == 0)
+				return pos;
+		}
+		++pos;
+	}
+}

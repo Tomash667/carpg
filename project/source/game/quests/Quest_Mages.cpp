@@ -1,7 +1,6 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "Quest_Mages.h"
-#include "Dialog.h"
 #include "Game.h"
 #include "Journal.h"
 #include "SaveState.h"
@@ -11,6 +10,7 @@
 #include "SoundManager.h"
 #include "World.h"
 #include "Team.h"
+#include "NameHelper.h"
 
 //=================================================================================================
 void Quest_Mages::Start()
@@ -25,10 +25,10 @@ GameDialog* Quest_Mages::GetDialog(int type2)
 {
 	assert(type2 == QUEST_DIALOG_NEXT);
 
-	if(game->current_dialog->talker->data->id == "q_magowie_uczony")
-		return FindDialog("q_mages_scholar");
+	if(DialogContext::current->talker->data->id == "q_magowie_uczony")
+		return GameDialog::TryGet("q_mages_scholar");
 	else
-		return FindDialog("q_mages_golem");
+		return GameDialog::TryGet("q_mages_golem");
 }
 
 //=================================================================================================
@@ -63,9 +63,9 @@ void Quest_Mages::SetProgress(int prog2)
 			state = Quest::Completed;
 
 			const Item* item = Item::Get("q_magowie_kula");
-			game->current_dialog->talker->AddItem(item, 1, true);
-			game->current_dialog->pc->unit->RemoveItem(item, 1);
-			QM.quest_mages2->scholar = game->current_dialog->talker;
+			DialogContext::current->talker->AddItem(item, 1, true);
+			DialogContext::current->pc->unit->RemoveItem(item, 1);
+			QM.quest_mages2->scholar = DialogContext::current->talker;
 			QM.quest_mages2->mages_state = Quest_Mages2::State::ScholarWaits;
 
 			GetTargetLocation().active_quest = nullptr;
@@ -173,12 +173,12 @@ GameDialog* Quest_Mages2::GetDialog(int type2)
 {
 	assert(type2 == QUEST_DIALOG_NEXT);
 
-	if(game->current_dialog->talker->data->id == "q_magowie_stary")
-		return FindDialog("q_mages2_mage");
-	else if(game->current_dialog->talker->data->id == "q_magowie_boss")
-		return FindDialog("q_mages2_boss");
+	if(DialogContext::current->talker->data->id == "q_magowie_stary")
+		return GameDialog::TryGet("q_mages2_mage");
+	else if(DialogContext::current->talker->data->id == "q_magowie_boss")
+		return GameDialog::TryGet("q_mages2_boss");
 	else
-		return FindDialog("q_mages2_captain");
+		return GameDialog::TryGet("q_mages2_captain");
 }
 
 //=================================================================================================
@@ -203,18 +203,18 @@ void Quest_Mages2::SetProgress(int prog2)
 	case Progress::MageWantsBeer:
 		// mag chce piwa
 		{
-			OnUpdate(Format(game->txQuest[174], game->current_dialog->talker->hero->name.c_str()));
+			OnUpdate(Format(game->txQuest[174], DialogContext::current->talker->hero->name.c_str()));
 		}
 		break;
 	case Progress::MageWantsVodka:
 		// daj piwo, chce wódy
 		{
 			const Item* piwo = Item::Get("beer");
-			game->current_dialog->pc->unit->RemoveItem(piwo, 1);
-			game->current_dialog->talker->action = A_NONE;
-			game->current_dialog->talker->ConsumeItem(piwo->ToConsumable());
-			game->current_dialog->dialog_wait = 2.5f;
-			game->current_dialog->can_skip = false;
+			DialogContext::current->pc->unit->RemoveItem(piwo, 1);
+			DialogContext::current->talker->action = A_NONE;
+			DialogContext::current->talker->ConsumeItem(piwo->ToConsumable());
+			DialogContext::current->dialog_wait = 2.5f;
+			DialogContext::current->can_skip = false;
 			OnUpdate(game->txQuest[175]);
 		}
 		break;
@@ -222,11 +222,11 @@ void Quest_Mages2::SetProgress(int prog2)
 		// da³eœ wóde
 		{
 			const Item* woda = Item::Get("vodka");
-			game->current_dialog->pc->unit->RemoveItem(woda, 1);
-			game->current_dialog->talker->action = A_NONE;
-			game->current_dialog->talker->ConsumeItem(woda->ToConsumable());
-			game->current_dialog->dialog_wait = 2.5f;
-			game->current_dialog->can_skip = false;
+			DialogContext::current->pc->unit->RemoveItem(woda, 1);
+			DialogContext::current->talker->action = A_NONE;
+			DialogContext::current->talker->ConsumeItem(woda->ToConsumable());
+			DialogContext::current->dialog_wait = 2.5f;
+			DialogContext::current->can_skip = false;
 			OnUpdate(game->txQuest[176]);
 		}
 		break;
@@ -237,20 +237,20 @@ void Quest_Mages2::SetProgress(int prog2)
 			loc.st = 1;
 			loc.SetKnown();
 			target_loc = loc.index;
-			Team.AddTeamMember(game->current_dialog->talker, true);
-			OnUpdate(Format(game->txQuest[177], game->current_dialog->talker->hero->name.c_str(), GetTargetLocationName(),
+			Team.AddTeamMember(DialogContext::current->talker, true);
+			OnUpdate(Format(game->txQuest[177], DialogContext::current->talker->hero->name.c_str(), GetTargetLocationName(),
 				GetLocationDirName(W.GetCurrentLocation()->pos, GetTargetLocation().pos), W.GetCurrentLocation()->name.c_str()));
 			mages_state = State::OldMageJoined;
 			timer = 0.f;
-			scholar = game->current_dialog->talker;
+			scholar = DialogContext::current->talker;
 		}
 		break;
 	case Progress::MageTalkedAboutTower:
 		// mag sobie przypomnia³ ¿e to jego wie¿a
 		{
-			game->current_dialog->talker->auto_talk = AutoTalkMode::No;
+			DialogContext::current->talker->auto_talk = AutoTalkMode::No;
 			mages_state = State::OldMageRemembers;
-			OnUpdate(Format(game->txQuest[178], game->current_dialog->talker->hero->name.c_str(), GetStartLocationName()));
+			OnUpdate(Format(game->txQuest[178], DialogContext::current->talker->hero->name.c_str(), GetStartLocationName()));
 		}
 		break;
 	case Progress::TalkedWithCaptain:
@@ -267,19 +267,19 @@ void Quest_Mages2::SetProgress(int prog2)
 			if(prog != Progress::BoughtPotion)
 				OnUpdate(game->txQuest[180]);
 			const Item* item = Item::Get("q_magowie_potion");
-			game->current_dialog->pc->unit->AddItem2(item, 1u, 0u);
-			game->current_dialog->pc->unit->ModGold(-150);
+			DialogContext::current->pc->unit->AddItem2(item, 1u, 0u);
+			DialogContext::current->pc->unit->ModGold(-150);
 		}
 		break;
 	case Progress::MageDrinkPotion:
 		// wypi³ miksturkê
 		{
 			const Item* mikstura = Item::Get("q_magowie_potion");
-			game->current_dialog->pc->unit->RemoveItem(mikstura, 1);
-			game->current_dialog->talker->action = A_NONE;
-			game->current_dialog->talker->ConsumeItem(mikstura->ToConsumable());
-			game->current_dialog->dialog_wait = 3.f;
-			game->current_dialog->can_skip = false;
+			DialogContext::current->pc->unit->RemoveItem(mikstura, 1);
+			DialogContext::current->talker->action = A_NONE;
+			DialogContext::current->talker->ConsumeItem(mikstura->ToConsumable());
+			DialogContext::current->dialog_wait = 3.f;
+			DialogContext::current->can_skip = false;
 			mages_state = State::MageCured;
 			OnUpdate(game->txQuest[181]);
 			GetTargetLocation().active_quest = nullptr;
@@ -290,7 +290,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			target_loc = loc.index;
 			do
 			{
-				game->GenerateHeroName(Class::MAGE, false, evil_mage_name);
+				NameHelper::GenerateHeroName(Class::MAGE, false, evil_mage_name);
 			} while(good_mage_name == evil_mage_name);
 			done = false;
 			unit_event_handler = this;
@@ -305,7 +305,7 @@ void Quest_Mages2::SetProgress(int prog2)
 	case Progress::NotRecruitMage:
 		// nie zrekrutowa³em maga
 		{
-			Unit* u = game->current_dialog->talker;
+			Unit* u = DialogContext::current->talker;
 			Team.RemoveTeamMember(u);
 			mages_state = State::MageLeaving;
 			good_mage_name = u->hero->name;
@@ -333,7 +333,7 @@ void Quest_Mages2::SetProgress(int prog2)
 	case Progress::RecruitMage:
 		// zrekrutowa³em maga
 		{
-			Unit* u = game->current_dialog->talker;
+			Unit* u = DialogContext::current->talker;
 			Location& target = GetTargetLocation();
 
 			if(prog == Progress::MageDrinkPotion)
@@ -365,9 +365,9 @@ void Quest_Mages2::SetProgress(int prog2)
 	case Progress::TalkedWithMage:
 		// porozmawiano z magiem po
 		{
-			OnUpdate(Format(game->txQuest[187], game->current_dialog->talker->hero->name.c_str(), evil_mage_name.c_str()));
+			OnUpdate(Format(game->txQuest[187], DialogContext::current->talker->hero->name.c_str(), evil_mage_name.c_str()));
 			// idŸ sobie
-			Unit* u = game->current_dialog->talker;
+			Unit* u = DialogContext::current->talker;
 			Team.RemoveTeamMember(u);
 			u->hero->mode = HeroData::Leave;
 			scholar = nullptr;
@@ -410,7 +410,7 @@ cstring Quest_Mages2::FormatString(const string& str)
 	else if(str == "target_dir2")
 		return GetLocationDirName(W.GetCurrentLocation()->pos, GetTargetLocation().pos);
 	else if(str == "name")
-		return game->current_dialog->talker->hero->name.c_str();
+		return DialogContext::current->talker->hero->name.c_str();
 	else if(str == "enemy")
 		return evil_mage_name.c_str();
 	else if(str == "dobry")

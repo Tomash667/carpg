@@ -266,3 +266,17 @@ void MultiInsideLocation::Reset()
 		it->cleared = false;
 	}
 }
+
+//=================================================================================================
+bool MultiInsideLocation::RequireLoadingResources(bool* to_set)
+{
+	LevelInfo& info = infos[active_level];
+	if(to_set)
+	{
+		bool result = info.loaded_resources;
+		info.loaded_resources = *to_set;
+		return result;
+	}
+	else
+		return info.loaded_resources;
+}

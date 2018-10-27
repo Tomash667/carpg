@@ -1,7 +1,6 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "Quest_Sawmill.h"
-#include "Dialog.h"
 #include "Game.h"
 #include "Journal.h"
 #include "GameFile.h"
@@ -27,10 +26,10 @@ GameDialog* Quest_Sawmill::GetDialog(int type2)
 {
 	if(type2 == QUEST_DIALOG_NEXT)
 	{
-		if(game->current_dialog->talker->data->id == "artur_drwal")
-			return FindDialog("q_sawmill_talk");
+		if(DialogContext::current->talker->data->id == "artur_drwal")
+			return GameDialog::TryGet("q_sawmill_talk");
 		else
-			return FindDialog("q_sawmill_messenger");
+			return GameDialog::TryGet("q_sawmill_messenger");
 	}
 	else
 	{

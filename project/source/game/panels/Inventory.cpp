@@ -15,6 +15,7 @@
 #include "SoundManager.h"
 #include "ResourceManager.h"
 #include "ItemHelper.h"
+#include "PlayerInfo.h"
 
 /* UWAGI CO DO ZMIENNYCH
 index - indeks do items [0, 1, 2, 3...]
@@ -208,9 +209,9 @@ void Inventory::StartTrade(InventoryMode mode, Unit& unit)
 void Inventory::StartTrade(InventoryMode mode, vector<ItemSlot>& items, Unit* unit)
 {
 	Game& game = Game::Get();
+	PlayerController* pc = game.pc;
 	game.gui->game_gui->ClosePanels();
 	this->mode = mode;
-	PlayerController* pc = game.pc;
 
 	inv_trade_other->items = &items;
 	inv_trade_other->slots = nullptr;
@@ -255,7 +256,7 @@ void Inventory::StartTrade2(InventoryMode mode, void* ptr)
 	Game& game = Game::Get();
 	PlayerController* pc = game.pc;
 	game.gui->game_gui->ClosePanels();
-	mode = I_LOOT_CHEST;
+	this->mode = mode;
 
 	switch(mode)
 	{
@@ -776,7 +777,7 @@ void InventoryPanel::Update(float dt)
 				break;
 			case TRADE_MY:
 				// selling items
-				if(item->value <= 1 || !game.CanBuySell(item))
+				if(item->value <= 1 || !unit->player->action_unit->data->trader->CanBuySell(item))
 					GUI.SimpleDialog(base.txWontBuy, this);
 				else if(!slot)
 				{
@@ -1542,7 +1543,7 @@ void InventoryPanel::FormatBox(int group, string& text, string& small_text, TEX&
 		{
 			text += '\n';
 			int price = ItemHelper::GetItemPrice(item, *game.pc->unit, false);
-			if(price == 0 || !game.CanBuySell(item))
+			if(price == 0 || !unit->player->action_unit->data->trader->CanBuySell(item))
 				text += base.txWontBuy;
 			else
 				text += Format(base.txPrice, price);

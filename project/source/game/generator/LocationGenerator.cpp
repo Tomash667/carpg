@@ -5,6 +5,7 @@
 #include "Level.h"
 #include "AIController.h"
 #include "Game.h"
+#include "Unit.h"
 
 //=================================================================================================
 int LocationGenerator::GetNumberOfSteps()
@@ -40,6 +41,10 @@ void LocationGenerator::RespawnUnits()
 			AIController* ai = new AIController;
 			ai->Init(u);
 			game.ais.push_back(ai);
+
+			// refresh stock
+			if(u->data->trader)
+				u->RefreshStock();
 		}
 	}
 }

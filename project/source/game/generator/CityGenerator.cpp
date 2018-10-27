@@ -14,7 +14,6 @@
 #include "AIController.h"
 #include "Texture.h"
 #include "Arena.h"
-#include "ItemHelper.h"
 #include "Game.h"
 
 enum RoadFlags
@@ -2256,7 +2255,6 @@ void CityGenerator::OnEnter()
 
 		// generate items
 		game.LoadingStep(game.txGeneratingItems);
-		GenerateStockItems();
 		GeneratePickableItems();
 		if(city->IsVillage())
 			SpawnForestItems(-2);
@@ -2300,7 +2298,6 @@ void CityGenerator::OnEnter()
 		if(days > 0)
 		{
 			game.LoadingStep(game.txGeneratingItems);
-			GenerateStockItems();
 			if(days >= 10)
 			{
 				GeneratePickableItems();
@@ -2704,41 +2701,6 @@ void CityGenerator::RepositionUnits()
 			}
 		}
 	}
-}
-
-//=================================================================================================
-void CityGenerator::GenerateStockItems()
-{
-	Game& game = Game::Get();
-	City& city = *(City*)loc;
-	int price_limit, price_limit2, count_mod;
-	bool is_city;
-
-	if(!city.IsVillage())
-	{
-		price_limit = Random(2000, 2500);
-		price_limit2 = 99999;
-		count_mod = 0;
-		is_city = true;
-	}
-	else
-	{
-		price_limit = Random(500, 1000);
-		price_limit2 = Random(1250, 2500);
-		count_mod = -Random(1, 3);
-		is_city = false;
-	}
-
-	if(IS_SET(city.flags, City::HaveMerchant))
-		ItemHelper::GenerateMerchantItems(game.chest_merchant, price_limit);
-	if(IS_SET(city.flags, City::HaveBlacksmith))
-		ItemHelper::GenerateBlacksmithItems(game.chest_blacksmith, price_limit2, count_mod, is_city);
-	if(IS_SET(city.flags, City::HaveAlchemist))
-		ItemHelper::GenerateAlchemistItems(game.chest_alchemist, count_mod);
-	if(IS_SET(city.flags, City::HaveInn))
-		ItemHelper::GenerateInnkeeperItems(game.chest_innkeeper, count_mod, is_city);
-	if(IS_SET(city.flags, City::HaveFoodSeller))
-		ItemHelper::GenerateFoodSellerItems(game.chest_food_seller, is_city);
 }
 
 //=================================================================================================

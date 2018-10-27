@@ -8,6 +8,8 @@
 #include "BaseUsable.h"
 #include "Stock.h"
 #include "UnitGroup.h"
+#include "Item.h"
+#include "UnitData.h"
 
 extern string g_system_dir;
 
@@ -290,7 +292,7 @@ bool Game::LoadRequiredStats(uint& errors)
 					break;
 				case R_DIALOG:
 					{
-						GameDialog* dialog = FindDialog(str.c_str());
+						GameDialog* dialog = GameDialog::TryGet(str.c_str());
 						if(!dialog)
 						{
 							Error("Missing required dialog '%s'.", str.c_str());

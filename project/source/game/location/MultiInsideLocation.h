@@ -33,12 +33,13 @@ struct MultiInsideLocation : public InsideLocation
 	bool CheckUpdate(int& days_passed, int worldtime) override;
 	int GetRandomLevel() const override;
 	int GetLastLevel() const override { return levels.size() - 1; }
+	bool RequireLoadingResources(bool* to_set) override;
 	// from InsideLocation
-	void SetActiveLevel(int _level) override
+	void SetActiveLevel(int level) override
 	{
-		assert(InRange(_level, 0, (int)levels.size()));
-		active_level = _level;
-		active = &levels[_level];
+		assert(InRange(level, 0, (int)levels.size()));
+		active_level = level;
+		active = &levels[level];
 	}
 	bool HaveUpStairs() const override { return !(from_portal && active_level == 0); }
 	bool HaveDownStairs() const override { return (active_level + 1 < (int)levels.size()); }

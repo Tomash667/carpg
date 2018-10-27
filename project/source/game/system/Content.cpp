@@ -3,7 +3,6 @@
 #include "Tokenizer.h"
 #include "Content.h"
 #include "Spell.h"
-#include "Dialog.h"
 #include "Music.h"
 #include "BitStreamFunc.h"
 
@@ -48,8 +47,7 @@ void content::LoadContent(delegate<void(Id)> callback)
 	callback(Id::Spells);
 
 	Info("Game: Loading dialogs.");
-	loaded = LoadDialogs(crc[(int)Id::Dialogs], errors);
-	Info("Game: Loaded dialogs: %u (crc %p).", loaded, crc[(int)Id::Dialogs]);
+	LoadDialogs();
 	callback(Id::Dialogs);
 
 	Info("Game: Loading units.");
@@ -97,6 +95,7 @@ void content::CleanupContent()
 	CleanupItems();
 	CleanupObjects();
 	CleanupSpells();
+	CleanupDialogs();
 	CleanupUnits();
 	CleanupBuildings();
 	CleanupMusics();

@@ -1,7 +1,6 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "Quest_Bandits.h"
-#include "Dialog.h"
 #include "Game.h"
 #include "Journal.h"
 #include "GameFile.h"
@@ -39,7 +38,7 @@ GameDialog* Quest_Bandits::GetDialog(int type2)
 {
 	assert(type2 == QUEST_DIALOG_NEXT);
 
-	const string& id = game->current_dialog->talker->data->id;
+	const string& id = DialogContext::current->talker->data->id;
 	cstring dialog_id;
 
 	if(id == "mistrz_agentow")
@@ -55,7 +54,7 @@ GameDialog* Quest_Bandits::GetDialog(int type2)
 	else
 		dialog_id = "q_bandits_encounter";
 
-	return FindDialog(dialog_id);
+	return GameDialog::TryGet(dialog_id);
 }
 
 //=================================================================================================
@@ -94,12 +93,12 @@ void Quest_Bandits::SetProgress(int prog2)
 		if(prog == Progress::FoundBandits)
 		{
 			const Item* item = Item::Get("q_bandyci_paczka");
-			if(!game->current_dialog->pc->unit->HaveItem(item))
-				game->current_dialog->pc->unit->AddItem2(item, 1u, 1u);
+			if(!DialogContext::current->pc->unit->HaveItem(item))
+				DialogContext::current->pc->unit->AddItem2(item, 1u, 1u);
 			Location& sl = GetStartLocation();
 			Location& other = *W.GetLocation(other_loc);
 			Encounter* e = W.AddEncounter(enc);
-			e->dialog = FindDialog("q_bandits");
+			e->dialog = GameDialog::TryGet("q_bandits");
 			e->dont_attack = true;
 			e->group = SG_BANDITS;
 			e->location_event_handler = nullptr;
@@ -117,12 +116,12 @@ void Quest_Bandits::SetProgress(int prog2)
 			quest_manager.RemoveQuestRumor(R_BANDITS);
 
 			const Item* item = Item::Get("q_bandyci_paczka");
-			game->current_dialog->pc->unit->AddItem2(item, 1u, 1u);
+			DialogContext::current->pc->unit->AddItem2(item, 1u, 1u);
 			other_loc = W.GetRandomSettlementIndex(start_loc);
 			Location& sl = GetStartLocation();
 			Location& other = *W.GetLocation(other_loc);
 			Encounter* e = W.AddEncounter(enc);
-			e->dialog = FindDialog("q_bandits");
+			e->dialog = GameDialog::TryGet("q_bandits");
 			e->dont_attack = true;
 			e->group = SG_BANDITS;
 			e->location_event_handler = nullptr;
@@ -144,7 +143,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			{
 				const Item* item = Item::Get("q_bandyci_list");
 				game->PreloadItem(item);
-				game->current_dialog->talker->AddItem(item, 1, true);
+				DialogContext::current->talker->AddItem(item, 1, true);
 			}
 			get_letter = true;
 			OnUpdate(game->txQuest[157]);
@@ -165,7 +164,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			OnUpdate(game->txQuest[158]);
 			target_loc = camp_loc;
 			location_event_handler = this;
-			game->current_dialog->pc->unit->RemoveItem(Item::Get("q_bandyci_list"), 1);
+			DialogContext::current->pc->unit->RemoveItem(Item::Get("q_bandyci_list"), 1);
 		}
 		break;
 	case Progress::NeedClearCamp:
@@ -200,8 +199,8 @@ void Quest_Bandits::SetProgress(int prog2)
 		// porazmawiano z agentem, powiedzia³ gdzie jest skrytka i idzie sobie
 		{
 			bandits_state = State::AgentTalked;
-			game->current_dialog->talker->hero->mode = HeroData::Leave;
-			game->current_dialog->talker->event_handler = this;
+			DialogContext::current->talker->hero->mode = HeroData::Leave;
+			DialogContext::current->talker->event_handler = this;
 			Location& target = *W.CreateLocation(L_DUNGEON, GetStartLocation().pos, 64.f, THRONE_VAULT, SG_BANDITS, false);
 			target.active_quest = this;
 			target.SetKnown();
@@ -234,7 +233,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			state = Quest::Completed;
 			OnUpdate(game->txQuest[164]);
 			// ustaw arto na temporary ¿eby sobie poszed³
-			game->current_dialog->talker->temporary = true;
+			DialogContext::current->talker->temporary = true;
 			game->AddReward(5000);
 			quest_manager.EndUniqueQuest();
 		}
@@ -365,7 +364,7 @@ bool Quest_Bandits::Load(GameReader& f)
 	if(enc != -1)
 	{
 		Encounter* e = W.RecreateEncounter(enc);
-		e->dialog = FindDialog("q_bandits");
+		e->dialog = GameDialog::TryGet("q_bandits");
 		e->dont_attack = true;
 		e->group = SG_BANDITS;
 		e->location_event_handler = nullptr;

@@ -3,6 +3,7 @@
 #include "GameMessages.h"
 #include "Game.h"
 #include "Language.h"
+#include "PlayerInfo.h"
 
 //=================================================================================================
 void GameMessages::LoadLanguage()

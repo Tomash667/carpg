@@ -1,7 +1,6 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "Quest_Mine.h"
-#include "Dialog.h"
 #include "Game.h"
 #include "Journal.h"
 #include "GameFile.h"
@@ -35,38 +34,38 @@ GameDialog* Quest_Mine::GetDialog(int type2)
 {
 	if(type2 == QUEST_DIALOG_NEXT)
 	{
-		if(game->current_dialog->talker->data->id == "inwestor")
-			return FindDialog("q_mine_investor");
-		else if(game->current_dialog->talker->data->id == "poslaniec_kopalnia")
+		if(DialogContext::current->talker->data->id == "inwestor")
+			return GameDialog::TryGet("q_mine_investor");
+		else if(DialogContext::current->talker->data->id == "poslaniec_kopalnia")
 		{
 			if(prog == Quest_Mine::Progress::SelectedShares)
-				return FindDialog("q_mine_messenger");
+				return GameDialog::TryGet("q_mine_messenger");
 			else if(prog == Quest_Mine::Progress::GotFirstGold || prog == Quest_Mine::Progress::SelectedGold)
 			{
 				if(days >= days_required)
-					return FindDialog("q_mine_messenger2");
+					return GameDialog::TryGet("q_mine_messenger2");
 				else
-					return FindDialog("messenger_talked");
+					return GameDialog::TryGet("messenger_talked");
 			}
 			else if(prog == Quest_Mine::Progress::Invested)
 			{
 				if(days >= days_required)
-					return FindDialog("q_mine_messenger3");
+					return GameDialog::TryGet("q_mine_messenger3");
 				else
-					return FindDialog("messenger_talked");
+					return GameDialog::TryGet("messenger_talked");
 			}
 			else if(prog == Quest_Mine::Progress::UpgradedMine)
 			{
 				if(days >= days_required)
-					return FindDialog("q_mine_messenger4");
+					return GameDialog::TryGet("q_mine_messenger4");
 				else
-					return FindDialog("messenger_talked");
+					return GameDialog::TryGet("messenger_talked");
 			}
 			else
-				return FindDialog("messenger_talked");
+				return GameDialog::TryGet("messenger_talked");
 		}
 		else
-			return FindDialog("q_mine_boss");
+			return GameDialog::TryGet("q_mine_boss");
 	}
 	else
 	{
@@ -163,7 +162,7 @@ void Quest_Mine::SetProgress(int prog2)
 		break;
 	case Progress::Invested:
 		{
-			game->current_dialog->pc->unit->ModGold(mine_state == State::Shares ? -10000 : -12000);
+			DialogContext::current->pc->unit->ModGold(mine_state == State::Shares ? -10000 : -12000);
 			OnUpdate(game->txQuest[142]);
 			mine_state2 = State2::InExpand;
 			days = 0;
@@ -197,7 +196,7 @@ void Quest_Mine::SetProgress(int prog2)
 		{
 			OnUpdate(game->txQuest[147]);
 			const Item* item = Item::Get("key_kopalnia");
-			game->current_dialog->pc->unit->AddItem2(item, 1u, 1u);
+			DialogContext::current->pc->unit->AddItem2(item, 1u, 1u);
 		}
 		break;
 	case Progress::Finished:
@@ -218,8 +217,6 @@ cstring Quest_Mine::FormatString(const string& str)
 		return GetTargetLocationName();
 	else if(str == "target_dir")
 		return GetTargetLocationDir();
-	else if(str == "burmistrzem")
-		return LocationHelper::IsCity(GetStartLocation()) ? game->txQuest[150] : game->txQuest[151];
 	else if(str == "zloto")
 		return Format("%d", mine_state == State::Shares ? 10000 : 12000);
 	else

@@ -4,7 +4,6 @@
 #include "GameFile.h"
 #include "World.h"
 #include "Level.h"
-#include "Dialog.h"
 #include "QuestManager.h"
 #include "Quest_Mages.h"
 #include "City.h"
@@ -17,6 +16,7 @@
 #include "Game.h"
 #include "GameMessages.h"
 #include "Arena.h"
+#include "PlayerInfo.h"
 
 //=================================================================================================
 void Quest_Tournament::InitOnce()
@@ -796,7 +796,7 @@ void Quest_Tournament::Talk(cstring text)
 		c.pos = pos;
 		c.str = StringPool.Get();
 		*c.str = text;
-		game.net_talk.push_back(c.str);
+		N.net_strs.push_back(c.str);
 	}
 }
 

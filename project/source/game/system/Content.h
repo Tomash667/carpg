@@ -27,12 +27,14 @@ namespace content
 	void LoadVersion();
 	void LoadItems();
 	void LoadObjects();
+	void LoadDialogs();
 	void LoadUnits();
 	void LoadBuildings();
 	void CleanupContent();
 	void CleanupItems();
 	void CleanupObjects();
 	void CleanupSpells();
+	void CleanupDialogs();
 	void CleanupUnits();
 	void CleanupBuildings();
 	void CleanupMusics();

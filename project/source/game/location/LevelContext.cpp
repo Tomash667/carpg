@@ -8,6 +8,7 @@
 #include "Room.h"
 #include "ParticleSystem.h"
 #include "GroundItem.h"
+#include "Unit.h"
 
 //=================================================================================================
 void TmpLevelContext::Clear()

@@ -213,6 +213,7 @@ struct PlayerController : public HeroPlayerCommon
 	void AddItemMessage(uint count);
 	void PayCredit(int count);
 	void UseDays(int count);
+	void StartDialog(Unit* talker, GameDialog* dialog = nullptr);
 };
 
 //-----------------------------------------------------------------------------
