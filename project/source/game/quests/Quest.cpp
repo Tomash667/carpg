@@ -85,13 +85,8 @@ void Quest::OnUpdate(const std::initializer_list<cstring>& new_msgs)
 
 		NetChange& c = Add1(Net::changes);
 		c.id = refid;
-		if(new_msgs.size() == 1u)
-			c.type = NetChange::UPDATE_QUEST;
-		else
-		{
-			c.type = NetChange::UPDATE_QUEST_MULTI;
-			c.count = new_msgs.size();
-		}
+		c.type = NetChange::UPDATE_QUEST;
+		c.count = new_msgs.size();
 	}
 }
 

@@ -4,10 +4,12 @@ Historia zmian
 Wersja 0.8 (???):
 ! nie mo¿na wczytywaæ ju¿ zapisów z wersji 0.2.10 lub starszej
 + klawisz prze³¹cz bieg/chodzenie
++ wczytywanie ekwipunku handlarzy z pliku, odœwie¿anie ekwipunku handlarzy co 10 dni a nie tylko po wejœciu do lokalizacji
 - naprawione rozmawianie z jednostkami które wstaj¹
 - naprawione obracanie jednostek podczas dialogu u klienta
 - zadanie z listem goñczym wybiera³o losow¹ lokalizacje która by³a ju¿ u¿ywana, cel nie generowa³ siê
 - naprawiony wyciek pamiêci przy generowaniu kopalni
+- poprawki do dialogów burmistrza
 
 --------------------------------------------------------------------------------
 Wersja 0.7.1 (2018-04-15):

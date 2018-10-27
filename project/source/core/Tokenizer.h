@@ -499,12 +499,11 @@ namespace tokenizer
 			if(!IsKeywordGroup(group))
 				Unexpected(T_KEYWORD_GROUP, &group);
 		}
-		template<typename T>
-		void AssertKeywordGroup(std::initializer_list<T> const & groups)
+		void AssertKeywordGroup(std::initializer_list<int> const & groups)
 		{
 			int group = IsKeywordGroup(groups);
 			if(group == MISSING_GROUP)
-				StartUnexpected().AddList(T_KEYWORD_GROUP, groups);
+				StartUnexpected().AddList(T_KEYWORD_GROUP, groups).Throw();
 		}
 		void AssertText() const
 		{
@@ -632,7 +631,7 @@ namespace tokenizer
 			}
 			return EMPTY_GROUP;
 		}
-		const string& GetBlock(char open = '{', char close = '}');
+		const string& GetBlock(char open = '{', char close = '}', bool include_symbol = true);
 		const string& GetItemOrString() const
 		{
 			assert(IsItemOrString());
@@ -744,7 +743,7 @@ namespace tokenizer
 		{
 			int group = IsKeywordGroup(groups);
 			if(group == MISSING_GROUP)
-				StartUnexpected().AddList(T_KEYWORD_GROUP, groups);
+				StartUnexpected().AddList(T_KEYWORD_GROUP, groups).Throw();
 			return (T)group;
 		}
 		const string& MustGetText() const

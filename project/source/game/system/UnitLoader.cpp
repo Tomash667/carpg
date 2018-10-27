@@ -3,11 +3,12 @@
 #include "UnitData.h"
 #include "UnitGroup.h"
 #include "ContentLoader.h"
-#include "Dialog.h"
+#include "GameDialog.h"
 #include "ItemScript.h"
 #include "Item.h"
 #include "Spell.h"
 #include "ResourceManager.h"
+#include "Stock.h"
 
 //-----------------------------------------------------------------------------
 class UnitLoader : public ContentLoader
@@ -34,7 +35,10 @@ class UnitLoader : public ContentLoader
 		G_SPELL_KEYWORD,
 		G_ITEM_KEYWORD,
 		G_GROUP_KEYWORD,
-		G_CLASS
+		G_CLASS,
+		G_TRADER_KEYWORD,
+		G_ITEM_GROUP,
+		G_CONSUMABLE_GROUP
 	};
 
 	enum UnitDataType
@@ -79,7 +83,8 @@ class UnitLoader : public ContentLoader
 		P_WIDTH,
 		P_ATTACK_RANGE,
 		P_ARMOR_TYPE,
-		P_CLASS
+		P_CLASS,
+		P_TRADER
 	};
 
 	enum ProfileKeyword
@@ -115,6 +120,13 @@ class UnitLoader : public ContentLoader
 	{
 		GK_LEADER,
 		GK_GROUP
+	};
+
+	enum TraderKeyword
+	{
+		TK_STOCK,
+		TK_GROUPS,
+		TK_INCLUDE
 	};
 
 	enum IfState
@@ -273,7 +285,8 @@ class UnitLoader : public ContentLoader
 			{ "width", P_WIDTH },
 			{ "attack_range", P_ATTACK_RANGE },
 			{ "armor_type", P_ARMOR_TYPE },
-			{ "class", P_CLASS }
+			{ "class", P_CLASS },
+			{ "trader", P_TRADER }
 		});
 
 		t.AddKeywords(G_MATERIAL, {
@@ -455,6 +468,28 @@ class UnitLoader : public ContentLoader
 
 		for(ClassInfo& clas : ClassInfo::classes)
 			t.AddKeyword(clas.id, (int)clas.class_id, G_CLASS);
+
+		t.AddKeywords(G_TRADER_KEYWORD, {
+			{ "stock", TK_STOCK },
+			{ "groups", TK_GROUPS },
+			{ "include", TK_INCLUDE }
+		});
+
+		t.AddKeywords(G_ITEM_GROUP, {
+			{ "weapon", IT_WEAPON },
+			{ "bow", IT_BOW },
+			{ "shield", IT_SHIELD },
+			{ "armor", IT_ARMOR },
+			{ "other", IT_OTHER },
+			{ "consumable", IT_CONSUMABLE },
+			{ "book", IT_BOOK }
+		});
+
+		t.AddKeywords(G_CONSUMABLE_GROUP, {
+			{ "food", Food },
+			{ "drink", Drink },
+			{ "potion", Potion }
+		});
 	}
 
 	//=================================================================================================
@@ -659,7 +694,7 @@ class UnitLoader : public ContentLoader
 			case P_DIALOG:
 				{
 					const string& id = t.MustGetItemKeyword();
-					unit->dialog = FindDialog(id.c_str());
+					unit->dialog = GameDialog::TryGet(id.c_str());
 					if(!unit->dialog)
 						t.Throw("Missing dialog '%s'.", id.c_str());
 					crc.Update(unit->id);
@@ -778,6 +813,70 @@ class UnitLoader : public ContentLoader
 			case P_CLASS:
 				unit->clas = (Class)t.MustGetKeywordId(G_CLASS);
 				crc.Update(unit->clas);
+				break;
+			case P_TRADER:
+				if(unit->trader)
+					t.Throw("Unit is already marked as trader.");
+				unit->trader = new TraderInfo;
+				t.AssertSymbol('{');
+				t.Next();
+				while(!t.IsSymbol('}'))
+				{
+					int k = t.MustGetKeywordId(G_TRADER_KEYWORD);
+					t.Next();
+					switch(k)
+					{
+					case TK_STOCK:
+						{
+							if(unit->trader->stock)
+								t.Throw("Unit trader stock already set.");
+							const string& stock_id = t.MustGetItem();
+							unit->trader->stock = Stock::TryGet(stock_id);
+							if(!unit->trader->stock)
+								LoadError("Missing trader stock '%s'.", stock_id.c_str());
+						}
+						break;
+					case TK_GROUPS:
+						t.AssertSymbol('{');
+						t.Next();
+						while(!t.IsSymbol('}'))
+						{
+							t.AssertKeywordGroup({ G_ITEM_GROUP, G_CONSUMABLE_GROUP });
+							if(t.IsKeywordGroup(G_ITEM_GROUP))
+							{
+								int group = t.GetKeywordId(G_ITEM_GROUP);
+								unit->trader->buy_flags |= (1 << group);
+								if(group == IT_CONSUMABLE)
+									unit->trader->buy_consumable_flags = 0xFF;
+							}
+							else
+							{
+								int group = t.GetKeywordId(G_CONSUMABLE_GROUP);
+								unit->trader->buy_flags |= (1 << IT_CONSUMABLE);
+								unit->trader->buy_consumable_flags |= (1 << group);
+							}
+							t.Next();
+						}
+						break;
+					case TK_INCLUDE:
+						t.AssertSymbol('{');
+						t.Next();
+						while(!t.IsSymbol('}'))
+						{
+							const string& item_id = t.MustGetItem();
+							const Item* item = Item::TryGet(item_id);
+							if(!item)
+								LoadError("Missing trader item include '%s'.", item_id.c_str());
+							else
+								unit->trader->includes.push_back(item);
+							t.Next();
+						}
+						break;
+					}
+					t.Next();
+				}
+				if(!unit->trader->stock)
+					LoadError("Unit trader stock not set.");
 				break;
 			default:
 				t.Unexpected();

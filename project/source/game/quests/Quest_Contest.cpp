@@ -7,7 +7,6 @@
 #include "GameFile.h"
 #include "QuestManager.h"
 #include "Quest_Mages.h"
-#include "Dialog.h"
 #include "City.h"
 #include "InsideBuilding.h"
 #include "AIController.h"
@@ -15,6 +14,7 @@
 #include "Game.h"
 #include "GlobalGui.h"
 #include "GameMessages.h"
+#include "PlayerInfo.h"
 
 //=================================================================================================
 void Quest_Contest::InitOnce()

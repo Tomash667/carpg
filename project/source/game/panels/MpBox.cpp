@@ -5,6 +5,7 @@
 #include "GlobalGui.h"
 #include "GameGui.h"
 #include "BitStreamFunc.h"
+#include "Team.h"
 
 //=================================================================================================
 MpBox::MpBox() : have_focus(false)
@@ -87,7 +88,7 @@ void MpBox::OnInput(const string& str)
 			// send text to server / other players
 			BitStreamWriter f;
 			f << ID_SAY;
-			f.WriteCasted<byte>(game.my_id);
+			f.WriteCasted<byte>(Team.my_id);
 			f << str;
 			if(Net::IsServer())
 				N.SendAll(f, MEDIUM_PRIORITY, RELIABLE, Stream_Chat);

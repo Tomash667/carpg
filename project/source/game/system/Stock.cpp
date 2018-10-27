@@ -3,6 +3,9 @@
 #include "Stock.h"
 #include "ItemSlot.h"
 #include "Item.h"
+#include "Level.h"
+#include "ScriptManager.h"
+#include <angelscript.h>
 
 //-----------------------------------------------------------------------------
 vector<Stock*> Stock::stocks;
@@ -27,134 +30,152 @@ inline bool CheckCity(CityBlock in_city, bool city)
 }
 
 //=================================================================================================
-void Stock::Parse(int level, bool city, vector<ItemSlot>& items)
+Stock::~Stock()
+{
+	if(script)
+		script->Release();
+}
+
+//=================================================================================================
+void Stock::Parse(vector<ItemSlot>& items)
+{
+	if(script)
+	{
+		SM.GetContext().stock = &items;
+		SM.RunScript(script);
+		SM.GetContext().stock = nullptr;
+	}
+
+	ParseInternal(items);
+	SortItems(items);
+}
+
+//=================================================================================================
+void Stock::ParseInternal(vector<ItemSlot>& items)
 {
 	CityBlock in_city = CityBlock::ANY;
 	LocalVector2<int> sets;
 	bool in_set = false;
+	bool city = L.IsCity();
 	uint i = 0;
-	bool test_mode = false;
 
-redo_set:
-	for(; i < code.size(); ++i)
+	do
 	{
-		StockEntry action = (StockEntry)code[i];
-		switch(action)
+		for(; i < code.size(); ++i)
 		{
-		case SE_ADD:
-			if(CheckCity(in_city, city))
+			StockEntry action = (StockEntry)code[i];
+			switch(action)
 			{
-				++i;
-				StockEntry type = (StockEntry)code[i];
-				++i;
-				AddItems(items, type, code[i], level, 1, true);
-			}
-			else
-				i += 2;
-			break;
-		case SE_MULTIPLE:
-		case SE_SAME_MULTIPLE:
-			if(CheckCity(in_city, city))
-			{
-				++i;
-				int count = code[i];
-				++i;
-				StockEntry type = (StockEntry)code[i];
-				++i;
-				AddItems(items, type, code[i], level, (uint)count, action == SE_SAME_MULTIPLE);
-			}
-			else
-				i += 3;
-			break;
-		case SE_CHANCE:
-			if(CheckCity(in_city, city))
-			{
-				++i;
-				int count = code[i];
-				++i;
-				int chance = code[i];
-				int ch = Rand() % chance;
-				int total = 0;
-				bool done = false;
-				for(int j = 0; j < count; ++j)
+			case SE_ADD:
+				if(CheckCity(in_city, city))
 				{
 					++i;
 					StockEntry type = (StockEntry)code[i];
 					++i;
-					int c = code[i];
+					AddItems(items, type, code[i], 1, true);
+				}
+				else
+					i += 2;
+				break;
+			case SE_MULTIPLE:
+			case SE_SAME_MULTIPLE:
+				if(CheckCity(in_city, city))
+				{
 					++i;
-					total += code[i];
-					if(ch < total && !done)
+					int count = code[i];
+					++i;
+					StockEntry type = (StockEntry)code[i];
+					++i;
+					AddItems(items, type, code[i], (uint)count, action == SE_SAME_MULTIPLE);
+				}
+				else
+					i += 3;
+				break;
+			case SE_CHANCE:
+				if(CheckCity(in_city, city))
+				{
+					++i;
+					int count = code[i];
+					++i;
+					int chance = code[i];
+					int ch = Rand() % chance;
+					int total = 0;
+					bool done = false;
+					for(int j = 0; j < count; ++j)
 					{
-						done = true;
-						AddItems(items, type, c, level, 1, true);
+						++i;
+						StockEntry type = (StockEntry)code[i];
+						++i;
+						int c = code[i];
+						++i;
+						total += code[i];
+						if(ch < total && !done)
+						{
+							done = true;
+							AddItems(items, type, c, 1, true);
+						}
 					}
 				}
-			}
-			else
-			{
-				++i;
-				int count = code[i];
-				i += 1 + 3 * count;
-			}
-			break;
-		case SE_RANDOM:
-		case SE_SAME_RANDOM:
-			if(CheckCity(in_city, city))
-			{
-				++i;
-				int a = code[i];
-				++i;
-				int b = code[i];
-				++i;
-				StockEntry type = (StockEntry)code[i];
-				++i;
-				AddItems(items, type, code[i], level, (uint)Random(a, b), action == SE_SAME_RANDOM);
-			}
-			else
-				i += 4;
-			break;
-		case SE_CITY:
-			in_city = CityBlock::IN;
-			break;
-		case SE_NOT_CITY:
-			in_city = CityBlock::OUT;
-			break;
-		case SE_ANY_CITY:
-			in_city = CityBlock::ANY;
-			break;
-		case SE_START_SET:
-			if(!test_mode)
-			{
+				else
+				{
+					++i;
+					int count = code[i];
+					i += 1 + 3 * count;
+				}
+				break;
+			case SE_RANDOM:
+			case SE_SAME_RANDOM:
+				if(CheckCity(in_city, city))
+				{
+					++i;
+					int a = code[i];
+					++i;
+					int b = code[i];
+					++i;
+					StockEntry type = (StockEntry)code[i];
+					++i;
+					AddItems(items, type, code[i], (uint)Random(a, b), action == SE_SAME_RANDOM);
+				}
+				else
+					i += 4;
+				break;
+			case SE_CITY:
+				in_city = CityBlock::IN;
+				break;
+			case SE_NOT_CITY:
+				in_city = CityBlock::OUT;
+				break;
+			case SE_ANY_CITY:
+				in_city = CityBlock::ANY;
+				break;
+			case SE_START_SET:
 				assert(!in_set);
 				sets.push_back(i + 1);
 				while(code[i] != SE_END_SET)
 					++i;
-			}
-			break;
-		case SE_END_SET:
-			if(!test_mode)
-			{
+				break;
+			case SE_END_SET:
 				assert(in_set);
 				return;
+			default:
+				assert(0);
+				break;
 			}
-			break;
-		default:
-			assert(0);
-			break;
 		}
-	}
 
-	if(sets.size() > 0)
-	{
-		i = sets[Rand() % sets.size()];
-		in_set = true;
-		goto redo_set;
+		if(sets.size() > 0)
+		{
+			i = sets[Rand() % sets.size()];
+			in_set = true;
+		}
+		else
+			break;
 	}
+	while(true);
 }
 
 //=================================================================================================
-void Stock::AddItems(vector<ItemSlot>& items, StockEntry type, int code, int level, uint count, bool same)
+void Stock::AddItems(vector<ItemSlot>& items, StockEntry type, int code, uint count, bool same)
 {
 	switch(type)
 	{
@@ -170,18 +191,6 @@ void Stock::AddItems(vector<ItemSlot>& items, StockEntry type, int code, int lev
 			{
 				for(uint i = 0; i < count; ++i)
 					InsertItemBare(items, lis->Get());
-			}
-		}
-		break;
-	case SE_LEVELED_LIST:
-		{
-			LeveledItemList* llis = (LeveledItemList*)code;
-			if(same)
-				InsertItemBare(items, llis->Get(level), count);
-			else
-			{
-				for(uint i = 0; i < count; ++i)
-					InsertItemBare(items, llis->Get(level));
 			}
 		}
 		break;

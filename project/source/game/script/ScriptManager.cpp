@@ -9,6 +9,10 @@
 #include "SaveState.h"
 #include "Game.h"
 #include "ItemHelper.h"
+#include "Level.h"
+#include "City.h"
+#include "InsideLocation.h"
+#include "BaseLocation.h"
 
 
 #ifdef _DEBUG
@@ -219,6 +223,9 @@ void ScriptManager::RegisterCommon()
 		func_sign += ", ?& in)";
 	}
 
+	AddFunction("int Random(int, int)", asFUNCTIONPR(Random, (int, int), int));
+	AddFunction("int Rand()", asFUNCTIONPR(Rand, (), int));
+
 	/*sm.AddStruct<Int2>("Int2")
 		.Constructor<int, int>("void f(int, int)")
 		.Constructor<const Int2&>("void f(const Int2& in)")
@@ -262,6 +269,18 @@ const string& Item_GetName(const Item* item)
 	return item->name;
 }
 
+const Item* ItemList_GetByIndex(ItemList* lis, int index)
+{
+	if(index < 0 || index >= (int)lis->items.size())
+		throw ScriptException("Invalid index.");
+	return lis->items[index];
+}
+
+int ItemList_Size(ItemList* lis)
+{
+	return lis->items.size();
+}
+
 void Unit_RemoveItem(Unit* unit, const string& id)
 {
 	Item* item = Item::TryGet(id);
@@ -277,6 +296,37 @@ void Unit_AddItem(Unit* unit, const Item* item)
 void Team_AddGold(uint gold)
 {
 	Game::Get().AddGold(gold, nullptr, true);
+}
+
+bool Level_IsCity()
+{
+	return L.location->type == L_CITY && ((City*)L.location)->settlement_type == City::SettlementType::City;
+}
+
+bool Level_IsVillage()
+{
+	return L.location->type == L_CITY && ((City*)L.location)->settlement_type == City::SettlementType::Village;
+}
+
+bool Level_IsTutorial()
+{
+	return L.location->type == L_DUNGEON && ((InsideLocation*)L.location)->target == TUTORIAL_FORT;
+}
+
+void StockScript_AddItem(const Item* item, uint count)
+{
+	vector<ItemSlot>* stock = SM.GetContext().stock;
+	if(!stock)
+		throw ScriptException("This method must be called from StockScript.");
+	InsertItemBare(*stock, item, count);
+}
+
+void StockScript_AddRandomItem(ITEM_TYPE type, int price_limit, int flags, uint count)
+{
+	vector<ItemSlot>* stock = SM.GetContext().stock;
+	if(!stock)
+		throw ScriptException("This method must be called from StockScript.");
+	ItemHelper::AddRandomItem(*stock, type, price_limit, flags, count);
 }
 
 void ScriptManager::RegisterGame()
@@ -316,10 +366,36 @@ void ScriptManager::RegisterGame()
 		.Method("Var@ opIndex(const string& in)", asMETHOD(VarsContainer, Get))
 		.WithInstance("VarsContainer@ globals", &p_globals);
 
+	AddEnum("ITEM_TYPE", {
+		{ "IT_WEAPON", IT_WEAPON },
+		{ "IT_BOW", IT_BOW },
+		{ "IT_SHIELD", IT_SHIELD },
+		{ "IT_ARMOR", IT_ARMOR },
+		{ "IT_OTHER", IT_OTHER },
+		{ "IT_CONSUMABLE", IT_CONSUMABLE },
+		{ "IT_BOOK", IT_BOOK }
+		});
+
+	AddEnum("ITEM_FLAGS", {
+		{ "ITEM_NOT_SHOP", ITEM_NOT_SHOP },
+		{ "ITEM_NOT_MERCHANT", ITEM_NOT_MERCHANT },
+		{ "ITEM_NOT_BLACKSMITH", ITEM_NOT_BLACKSMITH },
+		{ "ITEM_NOT_ALCHEMIST", ITEM_NOT_ALCHEMIST }
+	});
+
 	AddType("Item")
+		.Member("const int value", offsetof(Item, value))
 		.Method("const string& get_name() const", asFUNCTION(Item_GetName))
 		.WithNamespace()
+		.AddFunction("Item@ Get(const string& in)", asFUNCTION(Item::GetS))
 		.AddFunction("Item@ GetRandom(int)", asFUNCTION(ItemHelper::GetRandomItem));
+
+	AddType("ItemList")
+		.Method("Item@ Get()", asMETHODPR(ItemList, Get, () const, const Item*))
+		.Method("Item@ Get(int)", asFUNCTION(ItemList_GetByIndex))
+		.Method("int Size()", asFUNCTION(ItemList_Size))
+		.WithNamespace()
+		.AddFunction("ItemList@ Get(const string& in)", asFUNCTION(ItemList::GetS));
 
 	AddType("Unit")
 		.Method("int get_gold() const", asMETHOD(Unit, GetGold))
@@ -327,20 +403,29 @@ void ScriptManager::RegisterGame()
 		.Method("VarsContainer@ get_vars()", asFUNCTION(Unit_GetVars))
 		.Method("void AddItem(Item@)", asFUNCTION(Unit_AddItem))
 		.Method("void RemoveItem(const string& in)", asFUNCTION(Unit_RemoveItem))
-		.WithInstance("Unit@ target", &target);
+		.WithInstance("Unit@ target", &ctx.target);
 
 	AddType("Player")
 		.Member("Unit@ unit", offsetof(PlayerController, unit))
-		.WithInstance("Player@ pc", &pc);
+		.WithInstance("Player@ pc", &ctx.pc);
 
 	WithNamespace("Team")
 		.AddFunction("void AddGold(uint)", asFUNCTION(Team_AddGold));
+
+	WithNamespace("Level")
+		.AddFunction("bool IsCity()", asFUNCTION(Level_IsCity))
+		.AddFunction("bool IsVillage()", asFUNCTION(Level_IsVillage))
+		.AddFunction("bool IsTutorial()", asFUNCTION(Level_IsTutorial));
+
+	WithNamespace("StockScript")
+		.AddFunction("void AddItem(Item@, uint = 1)", asFUNCTION(StockScript_AddItem))
+		.AddFunction("void AddRandomItem(ITEM_TYPE, int, int, uint = 1)", asFUNCTION(StockScript_AddRandomItem));
 }
 
 void ScriptManager::SetContext(PlayerController* pc, Unit* target)
 {
-	this->pc = pc;
-	this->target = target;
+	ctx.pc = pc;
+	ctx.target = target;
 }
 
 bool ScriptManager::RunScript(cstring code, bool validate)
@@ -348,7 +433,7 @@ bool ScriptManager::RunScript(cstring code, bool validate)
 	assert(code);
 
 	// compile
-	auto tmp_module = engine->GetModule("RunScriptModule", asGM_ALWAYS_CREATE);
+	asIScriptModule* tmp_module = engine->GetModule("RunScriptModule", asGM_ALWAYS_CREATE);
 	cstring packed_code = Format("void f() { %s; }", code);
 	asIScriptFunction* func;
 	int r = tmp_module->CompileFunction("RunScript", packed_code, -1, 0, &func);
@@ -365,7 +450,7 @@ bool ScriptManager::RunScript(cstring code, bool validate)
 	}
 
 	// run
-	auto tmp_context = engine->RequestContext();
+	asIScriptContext* tmp_context = engine->RequestContext();
 	r = tmp_context->Prepare(func);
 	if(r >= 0)
 	{
@@ -397,7 +482,7 @@ bool ScriptManager::RunIfScript(cstring code, bool validate)
 	assert(code);
 
 	// compile
-	auto tmp_module = engine->GetModule("RunScriptModule", asGM_ALWAYS_CREATE);
+	asIScriptModule* tmp_module = engine->GetModule("RunScriptModule", asGM_ALWAYS_CREATE);
 	cstring packed_code = Format("bool f() { return (%s); }", code);
 	asIScriptFunction* func;
 	int r = tmp_module->CompileFunction("RunScript", packed_code, -1, 0, &func);
@@ -414,7 +499,7 @@ bool ScriptManager::RunIfScript(cstring code, bool validate)
 	}
 
 	// run
-	auto tmp_context = engine->RequestContext();
+	asIScriptContext* tmp_context = engine->RequestContext();
 	r = tmp_context->Prepare(func);
 	if(r >= 0)
 	{
@@ -450,7 +535,7 @@ bool ScriptManager::RunStringScript(cstring code, string& str, bool validate)
 	assert(code);
 
 	// compile
-	auto tmp_module = engine->GetModule("RunScriptModule", asGM_ALWAYS_CREATE);
+	asIScriptModule* tmp_module = engine->GetModule("RunScriptModule", asGM_ALWAYS_CREATE);
 	cstring packed_code = Format("string f() { return (%s); }", code);
 	asIScriptFunction* func;
 	int r = tmp_module->CompileFunction("RunScript", packed_code, -1, 0, &func);
@@ -467,7 +552,7 @@ bool ScriptManager::RunStringScript(cstring code, string& str, bool validate)
 	}
 
 	// run
-	auto tmp_context = engine->RequestContext();
+	asIScriptContext* tmp_context = engine->RequestContext();
 	r = tmp_context->Prepare(func);
 	if(r >= 0)
 	{
@@ -500,6 +585,55 @@ bool ScriptManager::RunStringScript(cstring code, string& str, bool validate)
 	engine->ReturnContext(tmp_context);
 
 	return ok;
+}
+
+asIScriptFunction* ScriptManager::PrepareScript(cstring name, cstring code)
+{
+	assert(code);
+
+	// compile
+	asIScriptModule* tmp_module = engine->GetModule("RunScriptModule", asGM_ALWAYS_CREATE);
+	if(!name)
+		name = "f";
+	cstring packed_code = Format("void %s() { %s; }", name, code);
+	asIScriptFunction* func;
+	int r = tmp_module->CompileFunction("RunScript", packed_code, -1, 0, &func);
+	if(r < 0)
+	{
+		Log(Logger::L_ERROR, Format("Failed to prepare script (%d).", r), code);
+		return nullptr;
+	}
+
+	return func;
+}
+
+bool ScriptManager::RunScript(asIScriptFunction* func)
+{
+	// run
+	asIScriptContext* tmp_context = engine->RequestContext();
+	int r = tmp_context->Prepare(func);
+	if(r >= 0)
+	{
+		last_exception = nullptr;
+		r = tmp_context->Execute();
+	}
+
+	bool finished = (r == asEXECUTION_FINISHED);
+	if(!finished)
+	{
+		if(r == asEXECUTION_EXCEPTION)
+		{
+			cstring msg = last_exception ? last_exception : tmp_context->GetExceptionString();
+			Log(Logger::L_ERROR, Format("Script exception thrown \"%s\" in %s(%d).", msg, tmp_context->GetExceptionFunction()->GetName(),
+				tmp_context->GetExceptionFunction()));
+		}
+		else
+			Log(Logger::L_ERROR, Format("Script execution failed (%d).", r));
+	}
+
+	engine->ReturnContext(tmp_context);
+
+	return finished;
 }
 
 string& ScriptManager::OpenOutput()
@@ -544,6 +678,14 @@ void ScriptManager::AddFunction(cstring decl, const asSFuncPtr& funcPointer)
 {
 	assert(decl);
 	CHECKED(engine->RegisterGlobalFunction(decl, funcPointer, asCALL_CDECL));
+}
+
+void ScriptManager::AddEnum(cstring name, std::initializer_list<std::pair<cstring, int>> const& values)
+{
+	assert(name);
+	CHECKED(engine->RegisterEnum(name));
+	for(const std::pair<cstring, int>& value : values)
+		CHECKED(engine->RegisterEnumValue(name, value.first, value.second));
 }
 
 TypeBuilder ScriptManager::AddType(cstring name)

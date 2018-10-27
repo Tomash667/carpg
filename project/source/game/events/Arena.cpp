@@ -2,7 +2,6 @@
 #include "GameCore.h"
 #include "Arena.h"
 #include "Team.h"
-#include "Dialog.h"
 #include "Unit.h"
 #include "AIController.h"
 #include "Level.h"
@@ -17,6 +16,7 @@
 #include "DialogBox.h"
 #include "UnitGroup.h"
 #include "SoundManager.h"
+#include "PlayerInfo.h"
 
 //=================================================================================================
 void Arena::InitOnce()
@@ -94,7 +94,7 @@ bool Arena::Special(DialogContext& ctx, cstring msg)
 		if(Vec3::Distance2d(u->pos, L.city_ctx->arena_pos) > 5.f)
 		{
 			ctx.dialog_s_text = Format(txPvpTooFar, u->player->name.c_str());
-			Game::Get().DialogTalk(ctx, ctx.dialog_s_text.c_str());
+			ctx.DialogTalk(ctx.dialog_s_text.c_str());
 			++ctx.dialog_pos;
 			return true;
 		}
@@ -289,6 +289,7 @@ void Arena::StartArenaCombat(int level)
 	assert(InRange(level, 1, 3));
 
 	Game& game = Game::Get();
+	DialogContext& ctx = *DialogContext::current;
 	int count, lvl;
 
 	switch(Rand() % 5)
@@ -324,27 +325,27 @@ void Arena::StartArenaCombat(int level)
 	units.clear();
 
 	// dodaj gracza na arenê
-	if(game.current_dialog->is_local)
+	if(ctx.is_local)
 	{
 		game.fallback_type = FALLBACK::ARENA;
 		game.fallback_t = -1.f;
 	}
 	else
 	{
-		NetChangePlayer& c = Add1(game.current_dialog->pc->player_info->changes);
+		NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
 		c.type = NetChangePlayer::ENTER_ARENA;
-		game.current_dialog->pc->arena_fights++;
+		ctx.pc->arena_fights++;
 	}
 
-	game.current_dialog->pc->unit->frozen = FROZEN::YES;
-	game.current_dialog->pc->unit->in_arena = 0;
-	units.push_back(game.current_dialog->pc->unit);
+	ctx.pc->unit->frozen = FROZEN::YES;
+	ctx.pc->unit->in_arena = 0;
+	units.push_back(ctx.pc->unit);
 
 	if(Net::IsOnline())
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::CHANGE_ARENA_STATE;
-		c.unit = game.current_dialog->pc->unit;
+		c.unit = ctx.pc->unit;
 	}
 
 	for(Unit* unit : Team.members)
@@ -384,7 +385,7 @@ void Arena::StartArenaCombat(int level)
 		{
 			unit->frozen = FROZEN::YES;
 			unit->in_arena = 0;
-			unit->hero->following = game.current_dialog->pc->unit;
+			unit->hero->following = ctx.pc->unit;
 			units.push_back(unit);
 
 			if(Net::IsOnline())
@@ -849,7 +850,7 @@ void Arena::Update(float dt)
 				if(mode == PVP && fighter && fighter->IsHero())
 				{
 					fighter->hero->lost_pvp = (result == 0);
-					game.StartDialog2(pvp_player, fighter, FindDialog(IS_SET(fighter->data->flags, F_CRAZY) ? "crazy_pvp" : "hero_pvp"));
+					pvp_player->StartDialog(fighter, GameDialog::TryGet(IS_SET(fighter->data->flags, F_CRAZY) ? "crazy_pvp" : "hero_pvp"));
 				}
 			}
 

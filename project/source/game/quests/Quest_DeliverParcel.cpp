@@ -1,7 +1,6 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "Quest_DeliverParcel.h"
-#include "Dialog.h"
 #include "Game.h"
 #include "Journal.h"
 #include "LocationHelper.h"
@@ -26,11 +25,11 @@ GameDialog* Quest_DeliverParcel::GetDialog(int dialog_type)
 	switch(dialog_type)
 	{
 	case QUEST_DIALOG_START:
-		return FindDialog("q_deliver_parcel_start");
+		return GameDialog::TryGet("q_deliver_parcel_start");
 	case QUEST_DIALOG_FAIL:
-		return FindDialog("q_deliver_parcel_timeout");
+		return GameDialog::TryGet("q_deliver_parcel_timeout");
 	case QUEST_DIALOG_NEXT:
-		return FindDialog("q_deliver_parcel_give");
+		return GameDialog::TryGet("q_deliver_parcel_give");
 	default:
 		assert(0);
 		return nullptr;
@@ -55,7 +54,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			parcel.id = "$parcel";
 			parcel.name = Format(game->txQuest[8], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str());
 			parcel.refid = refid;
-			game->current_dialog->pc->unit->AddItem2(&parcel, 1u, 1u);
+			DialogContext::current->pc->unit->AddItem2(&parcel, 1u, 1u);
 
 			Location& loc2 = GetStartLocation();
 			msgs.push_back(Format(game->txQuest[3], LocationHelper::IsCity(loc2) ? game->txForMayor : game->txForSoltys, loc2.name.c_str(), W.GetDate()));
@@ -69,7 +68,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 				e->range = 64;
 				e->chance = 45;
 				e->dont_attack = true;
-				e->dialog = FindDialog("q_deliver_parcel_bandits");
+				e->dialog = GameDialog::TryGet("q_deliver_parcel_bandits");
 				e->group = SG_BANDITS;
 				e->text = game->txQuest[11];
 				e->quest = this;
@@ -84,7 +83,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			state = Quest::Failed;
 			((City&)GetStartLocation()).quest_mayor = CityQuestState::Failed;
 
-			game->current_dialog->pc->unit->RemoveQuestItem(refid);
+			DialogContext::current->pc->unit->RemoveQuestItem(refid);
 			game->AddReward(125);
 
 			OnUpdate(game->txQuest[12]);
@@ -109,7 +108,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			state = Quest::Completed;
 			((City&)GetStartLocation()).quest_mayor = CityQuestState::None;
 
-			game->current_dialog->pc->unit->RemoveQuestItem(refid);
+			DialogContext::current->pc->unit->RemoveQuestItem(refid);
 			game->AddReward(250);
 
 			RemoveEncounter();
@@ -132,7 +131,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 		{
 			RemoveEncounter();
 
-			game->current_dialog->talker->AddItem(&parcel, 1, true);
+			DialogContext::current->talker->AddItem(&parcel, 1, true);
 			Team.RemoveQuestItem(&parcel, refid);
 
 			OnUpdate(game->txQuest[16]);
@@ -237,7 +236,7 @@ bool Quest_DeliverParcel::Load(GameReader& f)
 		e->range = 64;
 		e->chance = 45;
 		e->dont_attack = true;
-		e->dialog = FindDialog("q_deliver_parcel_bandits");
+		e->dialog = GameDialog::TryGet("q_deliver_parcel_bandits");
 		e->group = SG_BANDITS;
 		e->text = game->txQuest[11];
 		e->quest = this;

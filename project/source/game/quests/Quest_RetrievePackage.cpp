@@ -1,7 +1,6 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "Quest_RetrievePackage.h"
-#include "Dialog.h"
 #include "Game.h"
 #include "Journal.h"
 #include "LocationHelper.h"
@@ -24,11 +23,11 @@ GameDialog* Quest_RetrievePackage::GetDialog(int type2)
 	switch(type2)
 	{
 	case QUEST_DIALOG_START:
-		return FindDialog("q_retrieve_package_start");
+		return GameDialog::TryGet("q_retrieve_package_start");
 	case QUEST_DIALOG_FAIL:
-		return FindDialog("q_retrieve_package_timeout");
+		return GameDialog::TryGet("q_retrieve_package_timeout");
 	case QUEST_DIALOG_NEXT:
-		return FindDialog("q_retrieve_package_end");
+		return GameDialog::TryGet("q_retrieve_package_end");
 	default:
 		assert(0);
 		return nullptr;
@@ -104,7 +103,7 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 			game->AddReward(500);
 
 			((City&)GetStartLocation()).quest_mayor = CityQuestState::None;
-			game->current_dialog->pc->unit->RemoveQuestItem(refid);
+			DialogContext::current->pc->unit->RemoveQuestItem(refid);
 			if(target_loc != -1)
 			{
 				Location& loc = GetTargetLocation();

@@ -5,6 +5,7 @@
 #include "BitStreamFunc.h"
 #include "Inventory.h"
 #include "GlobalGui.h"
+#include "PlayerInfo.h"
 
 int Chest::netid_counter;
 

@@ -5,7 +5,7 @@
 #include "Stock.h"
 #include "Unit.h"
 
-int wartosc_skarbu[] = {
+int treasure_value[] = {
 	10, //0
 	50, //1
 	100, //2
@@ -35,7 +35,7 @@ const float price_mod_buy_v[] = { 1.25f, 1.0f, 0.9f };
 const float price_mod_sell_v[] = { 0.5f, 0.75f, 0.9f };
 
 template<typename T>
-void InsertRandomItem(vector<ItemSlot>& container, vector<T*>& items, int price_limit, int exclude_flags, uint count = 1)
+void InsertRandomItem(vector<ItemSlot>& container, vector<T*>& items, int price_limit, int exclude_flags, uint count)
 {
 	for(int i = 0; i < 100; ++i)
 	{
@@ -52,7 +52,7 @@ void ItemHelper::GenerateTreasure(int level, int _count, vector<ItemSlot>& items
 {
 	assert(InRange(level, 1, 20));
 
-	int value = Random(wartosc_skarbu[level - 1], wartosc_skarbu[level]);
+	int value = Random(treasure_value[level - 1], treasure_value[level]);
 
 	items.clear();
 
@@ -138,105 +138,6 @@ void ItemHelper::SplitTreasure(vector<ItemSlot>& items, int gold, Chest** chests
 		slot.Set(Item::gold, divided_count, divided_count);
 		SortItems(chests[i]->items);
 	}
-}
-
-//=================================================================================================
-void ItemHelper::GenerateMerchantItems(vector<ItemSlot>& items, int price_limit)
-{
-	items.clear();
-	InsertItemBare(items, Item::Get("p_nreg"), Random(5, 10));
-	InsertItemBare(items, Item::Get("p_hp"), Random(5, 10));
-	for(int i = 0, count = Random(15, 20); i < count; ++i)
-	{
-		switch(Rand() % 6)
-		{
-		case IT_WEAPON:
-			InsertRandomItem(items, Weapon::weapons, price_limit, ITEM_NOT_SHOP | ITEM_NOT_MERCHANT);
-			break;
-		case IT_BOW:
-			InsertRandomItem(items, Bow::bows, price_limit, ITEM_NOT_SHOP | ITEM_NOT_MERCHANT);
-			break;
-		case IT_SHIELD:
-			InsertRandomItem(items, Shield::shields, price_limit, ITEM_NOT_SHOP | ITEM_NOT_MERCHANT);
-			break;
-		case IT_ARMOR:
-			InsertRandomItem(items, Armor::armors, price_limit, ITEM_NOT_SHOP | ITEM_NOT_MERCHANT);
-			break;
-		case IT_CONSUMABLE:
-			InsertRandomItem(items, Consumable::consumables, price_limit / 5, ITEM_NOT_SHOP | ITEM_NOT_MERCHANT, Random(2, 5));
-			break;
-		case IT_OTHER:
-			InsertRandomItem(items, OtherItem::others, price_limit, ITEM_NOT_SHOP | ITEM_NOT_MERCHANT);
-			break;
-		}
-	}
-	SortItems(items);
-}
-
-//=================================================================================================
-void ItemHelper::GenerateBlacksmithItems(vector<ItemSlot>& items, int price_limit, int count_mod, bool is_city)
-{
-	items.clear();
-	for(int i = 0, count = Random(12, 18) + count_mod; i < count; ++i)
-	{
-		switch(Rand() % 4)
-		{
-		case IT_WEAPON:
-			InsertRandomItem(items, Weapon::weapons, price_limit, ITEM_NOT_SHOP | ITEM_NOT_BLACKSMITH);
-			break;
-		case IT_BOW:
-			InsertRandomItem(items, Bow::bows, price_limit, ITEM_NOT_SHOP | ITEM_NOT_BLACKSMITH);
-			break;
-		case IT_SHIELD:
-			InsertRandomItem(items, Shield::shields, price_limit, ITEM_NOT_SHOP | ITEM_NOT_BLACKSMITH);
-			break;
-		case IT_ARMOR:
-			InsertRandomItem(items, Armor::armors, price_limit, ITEM_NOT_SHOP | ITEM_NOT_BLACKSMITH);
-			break;
-		}
-	}
-	// basic equipment
-	Stock::Get("blacksmith")->Parse(5, is_city, items);
-	SortItems(items);
-}
-
-//=================================================================================================
-void ItemHelper::GenerateAlchemistItems(vector<ItemSlot>& items, int count_mod)
-{
-	items.clear();
-	for(int i = 0, count = Random(8, 12) + count_mod; i < count; ++i)
-		InsertRandomItem(items, Consumable::consumables, 99999, ITEM_NOT_SHOP | ITEM_NOT_ALCHEMIST, Random(3, 6));
-	SortItems(items);
-}
-
-//=================================================================================================
-void ItemHelper::GenerateInnkeeperItems(vector<ItemSlot>& items, int count_mod, bool is_city)
-{
-	items.clear();
-	Stock::Get("innkeeper")->Parse(5, is_city, items);
-	const ItemList* lis2 = ItemList::Get("normal_food").lis;
-	for(uint i = 0, count = Random(10, 20) + count_mod; i < count; ++i)
-		InsertItemBare(items, lis2->Get());
-	SortItems(items);
-}
-
-//=================================================================================================
-void ItemHelper::GenerateFoodSellerItems(vector<ItemSlot>& items, bool is_city)
-{
-	items.clear();
-	const ItemList* lis = ItemList::Get("food_and_drink").lis;
-	for(const Item* item : lis->items)
-	{
-		uint value = Random(50, 100);
-		if(!is_city)
-			value /= 2;
-		InsertItemBare(items, item, value / item->value);
-	}
-	if(Rand() % 4 == 0)
-		InsertItemBare(items, Item::Get("frying_pan"));
-	if(Rand() % 4 == 0)
-		InsertItemBare(items, Item::Get("ladle"));
-	SortItems(items);
 }
 
 //=================================================================================================
@@ -349,4 +250,50 @@ const Item* ItemHelper::GetBetterItem(const Item* item)
 		return it->second;
 
 	return nullptr;
+}
+
+//=================================================================================================
+void ItemHelper::SkipStock(FileReader& f)
+{
+	uint count;
+	f >> count;
+	if(count == 0)
+		return;
+
+	for(uint i = 0; i < count; ++i)
+	{
+		const string& item_id = f.ReadString1();
+		f.Skip<uint>(); // count
+		if(item_id[0] == '$')
+			f.Skip<int>(); // quest_refid
+	}
+}
+
+//=================================================================================================
+void ItemHelper::AddRandomItem(vector<ItemSlot>& items, ITEM_TYPE type, int price_limit, int flags, uint count)
+{
+	switch(type)
+	{
+	case IT_WEAPON:
+		InsertRandomItem(items, Weapon::weapons, price_limit, flags, count);
+		break;
+	case IT_BOW:
+		InsertRandomItem(items, Bow::bows, price_limit, flags, count);
+		break;
+	case IT_SHIELD:
+		InsertRandomItem(items, Shield::shields, price_limit, flags, count);
+		break;
+	case IT_ARMOR:
+		InsertRandomItem(items, Armor::armors, price_limit, flags, count);
+		break;
+	case IT_OTHER:
+		InsertRandomItem(items, OtherItem::others, price_limit, flags, count);
+		break;
+	case IT_CONSUMABLE:
+		InsertRandomItem(items, Consumable::consumables, price_limit, flags, count);
+		break;
+	case IT_BOOK:
+		InsertRandomItem(items, Book::books, price_limit, flags, count);
+		break;
+	}
 }

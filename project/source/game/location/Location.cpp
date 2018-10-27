@@ -330,6 +330,7 @@ bool Location::ReadPortals(BitStreamReader& f, int at_level)
 	return true;
 }
 
+//=================================================================================================
 void Location::SetKnown()
 {
 	if(state == LS_UNKNOWN)
@@ -342,4 +343,18 @@ void Location::SetKnown()
 			c.id = index;
 		}
 	}
+}
+
+//=================================================================================================
+// set if passed, returns prev value
+bool Location::RequireLoadingResources(bool* to_set)
+{
+	if(to_set)
+	{
+		bool result = loaded_resources;
+		loaded_resources = *to_set;
+		return result;
+	}
+	else
+		return loaded_resources;
 }

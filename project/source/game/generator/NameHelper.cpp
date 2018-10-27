@@ -1,15 +1,16 @@
 #include "Pch.h"
 #include "GameCore.h"
-#include "Game.h"
+#include "NameHelper.h"
 #include "Language.h"
 #include "World.h"
+#include "Unit.h"
 
 //-----------------------------------------------------------------------------
 cstring txNameFrom, txNameSonOf, txNameSonOfPost, txNameSonOfInvalid, txNamePrefix;
 vector<string> name_random, nickname_random, crazy_name;
 
 //=================================================================================================
-void Game::SetHeroNames()
+void NameHelper::SetHeroNames()
 {
 	txNameFrom = Str("name_from");
 	txNameSonOf = Str("name_sonOf");
@@ -19,15 +20,15 @@ void Game::SetHeroNames()
 }
 
 //=================================================================================================
-void Game::GenerateHeroName(HeroData& hero)
+void NameHelper::GenerateHeroName(HeroData& hero)
 {
 	return GenerateHeroName(hero.unit->GetClass(), IS_SET(hero.unit->data->flags, F_CRAZY), hero.name);
 }
 
 //=================================================================================================
-void Game::GenerateHeroName(Class clas, bool szalony, string& hero_name)
+void NameHelper::GenerateHeroName(Class clas, bool crazy, string& hero_name)
 {
-	if(szalony)
+	if(crazy)
 	{
 		hero_name = random_item(crazy_name);
 		return;
@@ -40,7 +41,7 @@ void Game::GenerateHeroName(Class clas, bool szalony, string& hero_name)
 		hero_name = random_item(name_random);
 
 	hero_name += " ";
-	
+
 	int type = Rand() % 7;
 	if(type < 4 && !ci.nicknames.empty())
 	{

@@ -2,7 +2,6 @@
 #include "GameCore.h"
 #include "UnitData.h"
 #include "ItemScript.h"
-#include "Dialog.h"
 #include "Spell.h"
 #include "Item.h"
 
@@ -124,4 +123,29 @@ void UnitData::Validate(uint& err)
 			Error("Test: Missing unit '%s' name.", unit->id.c_str());
 		}
 	}
+}
+
+bool TraderInfo::CanBuySell(const Item* item)
+{
+	assert(item);
+
+	if(IS_SET(buy_flags, (1 << item->type)))
+	{
+		if(item->type == IT_CONSUMABLE)
+		{
+			const Consumable* c = (const Consumable*)item;
+			if(IS_SET(buy_consumable_flags, (1 << c->cons_type)))
+				return true;
+		}
+		else
+			return true;
+	}
+
+	for(const Item* item2 : includes)
+	{
+		if(item2 == item)
+			return true;
+	}
+
+	return false;
 }

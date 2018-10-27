@@ -84,6 +84,15 @@ enum StreamLogType
 //-----------------------------------------------------------------------------
 class Net
 {
+	enum StartFlags
+	{
+		SF_DEVMODE = 1 << 0,
+		SF_INVISIBLE = 1 << 1,
+		SF_NOCLIP = 1 << 2,
+		SF_GODMODE = 1 << 3,
+		SF_NOAI = 1 << 4
+	};
+
 public:
 	enum class Mode
 	{
@@ -147,10 +156,12 @@ public:
 	PlayerInfo* FindPlayer(Cstring nick);
 	PlayerInfo* FindPlayer(const SystemAddress& adr);
 	PlayerInfo* TryGetPlayer(int id);
+	void ClosePeer(bool wait = false);
 
 	RakPeerInterface* peer;
 	vector<PlayerInfo*> players; // contains players that left too
-	float mp_interp;
+	vector<string*> net_strs;
+	float update_timer, mp_interp;
 	int port;
 	bool mp_load, mp_load_worldmap, mp_use_interp;
 
@@ -168,11 +179,18 @@ public:
 	void Save(GameWriter& f);
 	void Load(GameReader& f);
 	void InterpolatePlayers(float dt);
+	void KickPlayer(PlayerInfo& info);
+	void FilterServerChanges();
+	bool FilterOut(NetChangePlayer& c);
+	void WriteWorldData(BitStreamWriter& f);
+	void WritePlayerStartData(BitStreamWriter& f, PlayerInfo& info);
+	void WriteLevelData(BitStream& stream, bool loaded_resources);
 
 	vector<PlayerInfo*> old_players;
 	uint active_players, max_players;
 	string server_name, password;
 	int last_id;
+	bool players_left;
 
 	//****************************************************************************
 	// Client
@@ -181,8 +199,15 @@ public:
 	void InitClient();
 	void SendClient(BitStreamWriter& f, PacketPriority priority, PacketReliability reliability, StreamLogType type);
 	void InterpolateUnits(float dt);
+	void FilterClientChanges();
+	bool FilterOut(NetChange& c);
+	bool ReadWorldData(BitStreamReader& f);
+	bool ReadPlayerStartData(BitStreamReader& f);
+	bool ReadLevelData(BitStreamReader& f);
 
 	SystemAddress server;
+	string net_adr;
+	bool was_client;
 
 	//****************************************************************************
 	BitStream& StreamStart(Packet* packet, StreamLogType type);

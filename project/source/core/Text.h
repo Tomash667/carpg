@@ -222,3 +222,5 @@ inline cstring RandomString(cstring(&strs)[N])
 {
 	return strs[Rand() % N];
 }
+
+uint FindClosingPos(const string& str, uint pos, char start = '(', char end = ')');

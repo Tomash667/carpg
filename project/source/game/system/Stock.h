@@ -14,7 +14,6 @@ enum StockEntry
 	SE_START_SET,
 	SE_END_SET,
 	SE_LIST,
-	SE_LEVELED_LIST,
 	SE_SAME_MULTIPLE,
 	SE_SAME_RANDOM
 };
@@ -24,11 +23,15 @@ struct Stock
 {
 	string id;
 	vector<int> code;
+	asIScriptFunction* script;
 
-	void Parse(int level, bool city, vector<ItemSlot>& items);
+	Stock() : script(nullptr) {}
+	~Stock();
+	void Parse(vector<ItemSlot>& items);
 
 private:
-	void AddItems(vector<ItemSlot>& items, StockEntry type, int code, int level, uint count, bool same);
+	void AddItems(vector<ItemSlot>& items, StockEntry type, int code, uint count, bool same);
+	void ParseInternal(vector<ItemSlot>& items);
 
 public:
 	static vector<Stock*> stocks;

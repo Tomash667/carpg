@@ -1,7 +1,6 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "Quest_Wanted.h"
-#include "Dialog.h"
 #include "Game.h"
 #include "Journal.h"
 #include "SaveState.h"
@@ -9,6 +8,7 @@
 #include "QuestManager.h"
 #include "City.h"
 #include "World.h"
+#include "NameHelper.h"
 
 //=================================================================================================
 void Quest_Wanted::Start()
@@ -29,11 +29,11 @@ GameDialog* Quest_Wanted::GetDialog(int type2)
 	switch(type2)
 	{
 	case QUEST_DIALOG_START:
-		return FindDialog("q_wanted_start");
+		return GameDialog::TryGet("q_wanted_start");
 	case QUEST_DIALOG_FAIL:
-		return FindDialog("q_wanted_timeout");
+		return GameDialog::TryGet("q_wanted_timeout");
 	case QUEST_DIALOG_NEXT:
-		return FindDialog("q_wanted_end");
+		return GameDialog::TryGet("q_wanted_end");
 	default:
 		assert(0);
 		return nullptr;
@@ -51,7 +51,7 @@ void Quest_Wanted::SetProgress(int prog2)
 			OnStart(game->txQuest[257]);
 			quest_manager.quests_timeout.push_back(this);
 
-			game->GenerateHeroName(clas, crazy, unit_name);
+			NameHelper::GenerateHeroName(clas, crazy, unit_name);
 			target_loc = W.GetRandomFreeSettlementIndex(start_loc);
 			// jeœli nie ma wolnego miasta to powie jakieœ ale go tam nie bêdzie...
 			if(target_loc == -1)
@@ -73,7 +73,7 @@ void Quest_Wanted::SetProgress(int prog2)
 			letter.name = game->txQuest[258];
 			letter.refid = refid;
 			letter.desc = Format(game->txQuest[259], level * 100, unit_name.c_str());
-			game->current_dialog->pc->unit->AddItem2(&letter, 1u, 1u);
+			DialogContext::current->pc->unit->AddItem2(&letter, 1u, 1u);
 
 			// wpis do dziennika
 			msgs.push_back(Format(game->txQuest[29], GetStartLocationName(), W.GetDate()));
@@ -132,7 +132,7 @@ cstring Quest_Wanted::FormatString(const string& str)
 	else if(str == "target_dir")
 		return GetTargetLocationDir();
 	else if(str == "player")
-		return game->current_dialog->pc->name.c_str();
+		return DialogContext::current->pc->name.c_str();
 	else
 	{
 		assert(0);
@@ -171,7 +171,7 @@ bool Quest_Wanted::OnTimeout(TimeoutType ttype)
 //=================================================================================================
 bool Quest_Wanted::IfHaveQuestItem() const
 {
-	return game->current_dialog->talker == target_unit;
+	return DialogContext::current->talker == target_unit;
 }
 
 //=================================================================================================

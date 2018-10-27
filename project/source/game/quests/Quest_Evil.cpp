@@ -1,7 +1,6 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "Quest_Evil.h"
-#include "Dialog.h"
 #include "Game.h"
 #include "Journal.h"
 #include "SaveState.h"
@@ -49,18 +48,18 @@ GameDialog* Quest_Evil::GetDialog(int type2)
 {
 	assert(type2 == QUEST_DIALOG_NEXT);
 
-	const string& id = game->current_dialog->talker->data->id;
+	const string& id = DialogContext::current->talker->data->id;
 
 	if(id == "q_zlo_kaplan")
-		return FindDialog("q_evil_cleric");
+		return GameDialog::TryGet("q_evil_cleric");
 	else if(id == "q_zlo_mag")
-		return FindDialog("q_evil_mage");
+		return GameDialog::TryGet("q_evil_mage");
 	else if(id == "q_zlo_boss")
-		return FindDialog("q_evil_boss");
+		return GameDialog::TryGet("q_evil_boss");
 	else if(id == "guard_captain")
-		return FindDialog("q_evil_captain");
+		return GameDialog::TryGet("q_evil_captain");
 	else if(id == "mayor" || id == "soltys")
-		return FindDialog("q_evil_mayor");
+		return GameDialog::TryGet("q_evil_mayor");
 	else
 	{
 		assert(0);
@@ -126,7 +125,7 @@ void Quest_Evil::SetProgress(int prog2)
 		{
 			OnUpdate(game->txQuest[239]);
 			W.AddNews(Format(game->txQuest[240], W.GetLocation(mage_loc)->name.c_str()));
-			game->current_dialog->talker->temporary = true;
+			DialogContext::current->talker->temporary = true;
 		}
 		break;
 	case Progress::TalkedWithCaptain:
@@ -146,7 +145,7 @@ void Quest_Evil::SetProgress(int prog2)
 		{
 			OnUpdate(game->txQuest[243]);
 			const Item* item = Item::Get("q_zlo_ksiega");
-			game->current_dialog->pc->unit->AddItem2(item, 1u, 1u);
+			DialogContext::current->pc->unit->AddItem2(item, 1u, 1u);
 		}
 		break;
 	case Progress::GivenBook:
@@ -193,10 +192,10 @@ void Quest_Evil::SetProgress(int prog2)
 			loc[1].next_event = &loc[2];
 
 			// dodaj jozana do dru¿yny
-			Unit& u = *game->current_dialog->talker;
+			Unit& u = *DialogContext::current->talker;
 			const Item* item = Item::Get("q_zlo_ksiega");
 			u.AddItem(item, 1, true);
-			game->current_dialog->pc->unit->RemoveItem(item, 1);
+			DialogContext::current->pc->unit->RemoveItem(item, 1);
 			Team.AddTeamMember(&u, true);
 
 			evil_state = State::ClosingPortals;
@@ -278,7 +277,7 @@ void Quest_Evil::SetProgress(int prog2)
 		{
 			evil_state = State::ClericLeaving;
 			// usuñ jozana z dru¿yny
-			Unit& u = *game->current_dialog->talker;
+			Unit& u = *DialogContext::current->talker;
 			Team.RemoveTeamMember(&u);
 			u.hero->mode = HeroData::Leave;
 		}
@@ -300,10 +299,6 @@ cstring Quest_Evil::FormatString(const string& str)
 		return W.GetLocation(mage_loc)->name.c_str();
 	else if(str == "mage_dir")
 		return GetLocationDirName(GetStartLocation().pos, W.GetLocation(mage_loc)->pos);
-	else if(str == "burmistrza")
-		return LocationHelper::IsCity(W.GetCurrentLocation()) ? game->txForMayor : game->txForSoltys;
-	else if(str == "burmistrzem")
-		return LocationHelper::IsCity(W.GetCurrentLocation()) ? game->txQuest[251] : game->txQuest[252];
 	else if(str == "t1")
 		return W.GetLocation(loc[0].target_loc)->name.c_str();
 	else if(str == "t2")

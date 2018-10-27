@@ -3,6 +3,7 @@
 #include "Trap.h"
 #include "Game.h"
 #include "BitStreamFunc.h"
+#include "Unit.h"
 
 int Trap::netid_counter;
 

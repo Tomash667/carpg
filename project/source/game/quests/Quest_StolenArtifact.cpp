@@ -1,7 +1,6 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "Quest_StolenArtifact.h"
-#include "Dialog.h"
 #include "Game.h"
 #include "Journal.h"
 #include "GameFile.h"
@@ -43,11 +42,11 @@ GameDialog* Quest_StolenArtifact::GetDialog(int type2)
 	switch(type2)
 	{
 	case QUEST_DIALOG_START:
-		return FindDialog("q_stolen_artifact_start");
+		return GameDialog::TryGet("q_stolen_artifact_start");
 	case QUEST_DIALOG_NEXT:
-		return FindDialog("q_stolen_artifact_end");
+		return GameDialog::TryGet("q_stolen_artifact_end");
 	case QUEST_DIALOG_FAIL:
-		return FindDialog("q_stolen_artifact_timeout");
+		return GameDialog::TryGet("q_stolen_artifact_timeout");
 	default:
 		assert(0);
 		return nullptr;
@@ -103,7 +102,7 @@ void Quest_StolenArtifact::SetProgress(int prog2)
 				break;
 			}
 
-			game->current_dialog->talker->temporary = false;
+			DialogContext::current->talker->temporary = false;
 
 			msgs.push_back(Format(game->txQuest[82], sl.name.c_str(), W.GetDate()));
 			msgs.push_back(Format(game->txQuest[93], item->name.c_str(), kto, tl.name.c_str(), GetLocationDirName(sl.pos, tl.pos)));
@@ -121,9 +120,9 @@ void Quest_StolenArtifact::SetProgress(int prog2)
 			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
 			OnUpdate(game->txQuest[94]);
 			game->AddReward(1200);
-			game->current_dialog->talker->temporary = true;
-			game->current_dialog->talker->AddItem(&quest_item, 1, true);
-			game->current_dialog->pc->unit->RemoveQuestItem(refid);
+			DialogContext::current->talker->temporary = true;
+			DialogContext::current->talker->AddItem(&quest_item, 1, true);
+			DialogContext::current->pc->unit->RemoveQuestItem(refid);
 		}
 		break;
 	case Progress::Timeout:
@@ -137,7 +136,7 @@ void Quest_StolenArtifact::SetProgress(int prog2)
 			}
 			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
 			OnUpdate(game->txQuest[95]);
-			game->current_dialog->talker->temporary = true;
+			DialogContext::current->talker->temporary = true;
 		}
 		break;
 	}

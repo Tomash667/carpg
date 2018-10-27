@@ -16,6 +16,7 @@
 #include "Game.h"
 #include "GameMessages.h"
 #include "ItemHelper.h"
+#include "PlayerInfo.h"
 
 
 TeamSingleton Team;
@@ -360,11 +361,6 @@ bool TeamSingleton::IsAnyoneAlive()
 	return false;
 }
 
-bool TeamSingleton::IsLeader()
-{
-	return leader->player->is_local;
-}
-
 bool TeamSingleton::IsTeamMember(Unit& unit)
 {
 	if(unit.IsPlayer())
@@ -691,7 +687,7 @@ void TeamSingleton::UpdateTeamItemShares()
 							if(Vec3::Distance2d(tsi.from->pos, tsi.to->pos) > 8.f)
 								state = 0;
 							else if(tsi.from->busy == Unit::Busy_No && tsi.from->player->action == PlayerController::Action_None)
-								dialog = FindDialog(IS_SET(tsi.to->data->flags, F_CRAZY) ? "crazy_buy_item" : "hero_buy_item");
+								dialog = GameDialog::TryGet(IS_SET(tsi.to->data->flags, F_CRAZY) ? "crazy_buy_item" : "hero_buy_item");
 							else
 								state = 2;
 						}
@@ -707,7 +703,7 @@ void TeamSingleton::UpdateTeamItemShares()
 						if(Vec3::Distance2d(tsi.to->pos, leader->pos) > 8.f)
 							state = 0;
 						else if(leader->busy == Unit::Busy_No && leader->player->action == PlayerController::Action_None)
-							dialog = FindDialog(IS_SET(tsi.to->data->flags, F_CRAZY) ? "crazy_get_item" : "hero_get_item");
+							dialog = GameDialog::TryGet(IS_SET(tsi.to->data->flags, F_CRAZY) ? "crazy_get_item" : "hero_get_item");
 						else
 							state = 2;
 					}
@@ -717,7 +713,7 @@ void TeamSingleton::UpdateTeamItemShares()
 						if(Vec3::Distance2d(tsi.from->pos, tsi.to->pos) > 8.f)
 							state = 0;
 						else if(tsi.from->busy == Unit::Busy_No && tsi.from->player->action == PlayerController::Action_None)
-							dialog = FindDialog(IS_SET(tsi.to->data->flags, F_CRAZY) ? "crazy_get_item" : "hero_get_item");
+							dialog = GameDialog::TryGet(IS_SET(tsi.to->data->flags, F_CRAZY) ? "crazy_get_item" : "hero_get_item");
 						else
 							state = 2;
 					}
@@ -735,7 +731,7 @@ void TeamSingleton::UpdateTeamItemShares()
 			DialogContext& ctx = *player_to_ask->dialog_ctx;
 			ctx.team_share_id = team_share_id;
 			ctx.team_share_item = tsi.from->items[tsi.index].item;
-			game.StartDialog2(player_to_ask, tsi.to, dialog);
+			player_to_ask->StartDialog(tsi.to, dialog);
 		}
 
 		++team_share_id;

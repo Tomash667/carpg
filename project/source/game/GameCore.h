@@ -20,6 +20,10 @@
 using namespace SLNet;
 
 //-----------------------------------------------------------------------------
+// angel script
+class asIScriptFunction;
+
+//-----------------------------------------------------------------------------
 class ActionPanel;
 class Arena;
 class BitStreamReader;
@@ -95,6 +99,7 @@ struct HumanData;
 struct Item;
 struct ItemList;
 struct ItemListResult;
+struct ItemScript;
 struct ItemSlot;
 struct LevelContext;
 struct LeveledItemList;
@@ -119,6 +124,8 @@ struct Room;
 struct Shield;
 struct SpeechBubble;
 struct Spell;
+struct SpellList;
+struct Stock;
 struct TerrainTile;
 struct Tile;
 struct Trap;
@@ -163,8 +170,11 @@ class TutorialLocationGenerator;
 enum Direction;
 enum EncounterMode;
 enum GameDirection;
+enum ITEM_TYPE;
+enum MATERIAL_TYPE;
 enum TRAP_TYPE;
 enum SPAWN_GROUP;
 enum SpecialEncounter;
 enum class Class;
 enum class OLD_BUILDING;
+enum class MusicType;

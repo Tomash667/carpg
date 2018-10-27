@@ -9,6 +9,7 @@
 #include "PickItemDialog.h"
 #include "ResourceManager.h"
 #include "DirectX.h"
+#include "Unit.h"
 
 //-----------------------------------------------------------------------------
 const int SECTION_H = 40;
