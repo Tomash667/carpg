@@ -1,6 +1,9 @@
 CHANGELOG
 Minor updates have changes only in exporter/converer, don't affect qmsh file.
 ---------------------------
+???:
+* handling of smooth/flat lighting
+
 v20:
 QMSH:
 * points offset in header
