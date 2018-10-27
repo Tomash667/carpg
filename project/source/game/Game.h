@@ -634,8 +634,6 @@ public:
 	//-----------------------------------------------------------------
 	// MULTIPLAYER
 	string player_name, server_ip, enter_pswd;
-	int my_id; // moje unikalne id
-	int leader_id;
 	enum NET_MODE
 	{
 		NM_CONNECT_IP, // ³¹czenie serwera z klientem (0 - pingowanie, 1 - podawanie has³a, 2 - ³¹czenie)

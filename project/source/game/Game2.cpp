@@ -3695,6 +3695,11 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 		u->stock = new TraderStock;
 		u->stock->date = W.GetWorldtime();
 		base.trader->stock->Parse(u->stock->items);
+		if(!L.entering)
+		{
+			for(ItemSlot& slot : u->stock->items)
+				PreloadItem(slot.item);
+		}
 	}
 
 	// gold

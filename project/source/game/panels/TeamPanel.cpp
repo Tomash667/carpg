@@ -378,9 +378,9 @@ void TeamPanel::ChangeLeader()
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::CHANGE_LEADER;
-			c.id = game.my_id;
+			c.id = Team.my_id;
 
-			game.leader_id = game.my_id;
+			Team.leader_id = Team.my_id;
 			Team.leader = game.pc->unit;
 
 			game.AddMultiMsg(txYouAreLeader);
@@ -398,7 +398,7 @@ void TeamPanel::ChangeLeader()
 
 		if(Net::IsServer())
 		{
-			game.leader_id = c.id;
+			Team.leader_id = c.id;
 			Team.leader = target;
 
 			game.AddMultiMsg(Format(txPcIsLeader, target->GetName()));

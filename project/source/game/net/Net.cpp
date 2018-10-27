@@ -167,7 +167,7 @@ void Game::SendPlayerData(PlayerInfo& info)
 		if(other_unit != &unit)
 			f << other_unit->netid;
 	}
-	f.WriteCasted<byte>(leader_id);
+	f.WriteCasted<byte>(Team.leader_id);
 
 	// multiplayer load data
 	if(N.mp_load)
@@ -288,16 +288,16 @@ bool Game::ReadPlayerData(BitStreamReader& f)
 		if(team_member->IsPlayer() || !team_member->hero->free)
 			Team.active_members.push_back(team_member);
 	}
-	f.ReadCasted<byte>(leader_id);
+	f.ReadCasted<byte>(Team.leader_id);
 	if(!f)
 	{
 		Error("Read player data: Broken team leader.");
 		return false;
 	}
-	PlayerInfo* leader_info = N.TryGetPlayer(leader_id);
+	PlayerInfo* leader_info = N.TryGetPlayer(Team.leader_id);
 	if(!leader_info)
 	{
-		Error("Read player data: Missing player %d.", leader_id);
+		Error("Read player data: Missing player %d.", Team.leader_id);
 		return false;
 	}
 	Team.leader = leader_info->u;
@@ -435,7 +435,7 @@ void Game::UpdateServer(float dt)
 		for(PlayerInfo* ptr_info : N.players)
 		{
 			auto& info = *ptr_info;
-			if(info.id == my_id || info.left != PlayerInfo::LEFT_NO)
+			if(info.id == Team.my_id || info.left != PlayerInfo::LEFT_NO)
 				continue;
 
 			// update stats
@@ -2511,7 +2511,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				f >> id;
 				if(!f)
 					N.StreamError("Update server: Broken CHANGE_LEADER from %s.", info.name.c_str());
-				else if(leader_id != info.id)
+				else if(Team.leader_id != info.id)
 					N.StreamError("Update server: CHANGE_LEADER from %s, player is not leader.", info.name.c_str());
 				else
 				{
@@ -2522,10 +2522,10 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						break;
 					}
 
-					leader_id = id;
+					Team.leader_id = id;
 					Team.leader = new_leader->u;
 
-					if(leader_id == my_id)
+					if(Team.leader_id == Team.my_id)
 						AddMsg(txYouAreLeader);
 					else
 						AddMsg(Format(txPcIsLeader, Team.leader->player->name.c_str()));
@@ -4754,8 +4754,8 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					PlayerInfo* info = N.TryGetPlayer(id);
 					if(info)
 					{
-						leader_id = id;
-						if(leader_id == my_id)
+						Team.leader_id = id;
+						if(Team.leader_id == Team.my_id)
 							AddMsg(txYouAreLeader);
 						else
 							AddMsg(Format(txPcIsLeader, info->name.c_str()));
@@ -4777,7 +4777,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				f >> number;
 				if(!f)
 					N.StreamError("Update client: Broken RANDOM_NUMBER.");
-				else if(player_id != my_id)
+				else if(player_id != Team.my_id)
 				{
 					PlayerInfo* info = N.TryGetPlayer(player_id);
 					if(info)
@@ -4801,7 +4801,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					PlayerInfo* info = N.TryGetPlayer(player_id);
 					if(!info)
 						N.StreamError("Update client: REMOVE_PLAYER, missing player %u.", player_id);
-					else if(player_id != my_id)
+					else if(player_id != Team.my_id)
 					{
 						info->left = reason;
 						RemovePlayer(*info);
@@ -7231,7 +7231,7 @@ void Game::Server_Whisper(BitStreamReader& f, PlayerInfo& info, Packet* packet)
 		N.StreamError("Server_Whisper: Broken packet from %s.", info.name.c_str());
 	else
 	{
-		if(id == my_id)
+		if(id == Team.my_id)
 		{
 			// wiadomoœæ do mnie
 			cstring str = Format("%s@: %s", info.name.c_str(), text.c_str());
@@ -7329,8 +7329,8 @@ void Game::Net_OnNewGameServer()
 {
 	N.active_players = 1;
 	DeleteElements(N.players);
-	my_id = 0;
-	leader_id = 0;
+	Team.my_id = 0;
+	Team.leader_id = 0;
 	N.last_id = 0;
 	paused = false;
 	hardcore_mode = false;
@@ -7479,13 +7479,13 @@ void Game::ProcessLeftPlayers()
 
 		RemovePlayer(info);
 
-		if(leader_id == c.id)
+		if(Team.leader_id == c.id)
 		{
-			leader_id = my_id;
+			Team.leader_id = Team.my_id;
 			Team.leader = pc->unit;
 			NetChange& c2 = Add1(Net::changes);
 			c2.type = NetChange::CHANGE_LEADER;
-			c2.id = my_id;
+			c2.id = Team.my_id;
 
 			if(gui->world_map->dialog_enc)
 				gui->world_map->dialog_enc->bts[0].state = Button::NONE;

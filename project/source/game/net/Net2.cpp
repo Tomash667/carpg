@@ -22,6 +22,7 @@
 #include "Quest_Secret.h"
 #include "GameStats.h"
 #include "SoundManager.h"
+#include "Team.h"
 
 Net N;
 const float CHANGE_LEVEL_TIMER = 5.f;
@@ -176,10 +177,9 @@ void Net::OnChangeLevel(int level)
 	f << false;
 
 	uint ack = SendAll(f, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT, Stream_TransferServer);
-	Game& game = Game::Get();
 	for(PlayerInfo* info : players)
 	{
-		if(info->id == game.my_id)
+		if(info->id == Team.my_id)
 			info->state = PlayerInfo::IN_GAME;
 		else
 		{

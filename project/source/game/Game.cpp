@@ -1690,7 +1690,7 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 		int ack = N.SendAll(f, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT, Stream_TransferServer);
 		for(auto info : N.players)
 		{
-			if(info->id == my_id)
+			if(info->id == Team.my_id)
 				info->state = PlayerInfo::IN_GAME;
 			else
 			{

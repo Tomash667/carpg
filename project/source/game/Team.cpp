@@ -361,11 +361,6 @@ bool TeamSingleton::IsAnyoneAlive()
 	return false;
 }
 
-bool TeamSingleton::IsLeader()
-{
-	return leader->player->is_local;
-}
-
 bool TeamSingleton::IsTeamMember(Unit& unit)
 {
 	if(unit.IsPlayer())

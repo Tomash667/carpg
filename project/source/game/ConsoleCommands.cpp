@@ -1057,7 +1057,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							{
 								BitStreamWriter f;
 								f << ID_WHISPER;
-								f.WriteCasted<byte>(Net::IsServer() ? my_id : info->id);
+								f.WriteCasted<byte>(Net::IsServer() ? Team.my_id : info->id);
 								f << text;
 								if(Net::IsServer())
 									N.SendServer(f, MEDIUM_PRIORITY, RELIABLE, info->adr, Stream_Chat);
@@ -1122,9 +1122,9 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						PlayerInfo* info = N.FindPlayer(player_name);
 						if(!info)
 							Msg("No player with nick '%s'.", player_name.c_str());
-						else if(leader_id == info->id)
+						else if(Team.leader_id == info->id)
 							Msg("Player '%s' is already a leader.", player_name.c_str());
-						else if(!Net::IsServer() && leader_id != my_id)
+						else if(!Net::IsServer() && Team.leader_id != Team.my_id)
 							Msg("You can't change a leader."); // must be current leader or server
 						else
 						{
@@ -1132,7 +1132,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							{
 								if(Net::IsServer())
 								{
-									leader_id = info->id;
+									Team.leader_id = info->id;
 									gui->server->AddLobbyUpdate(Int2(Lobby_ChangeLeader, 0));
 								}
 								else
@@ -1146,7 +1146,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 
 								if(Net::IsServer())
 								{
-									leader_id = info->id;
+									Team.leader_id = info->id;
 									Team.leader = info->u;
 
 									if(gui->world_map->dialog_enc)
@@ -1237,7 +1237,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						const string& text = t.MustGetItem();
 						BitStreamWriter f;
 						f << ID_SAY;
-						f.WriteCasted<byte>(my_id);
+						f.WriteCasted<byte>(Team.my_id);
 						f << text;
 						if(Net::IsServer())
 							N.SendAll(f, MEDIUM_PRIORITY, RELIABLE, Stream_Chat);

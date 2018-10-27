@@ -576,9 +576,9 @@ void Game::UpdateClientConnectingIp(float dt)
 				// server accepted and sent info about players and my id
 				{
 					int count, load_char;
-					reader.ReadCasted<byte>(my_id);
+					reader.ReadCasted<byte>(Team.my_id);
 					reader.ReadCasted<byte>(N.active_players);
-					reader.ReadCasted<byte>(leader_id);
+					reader.ReadCasted<byte>(Team.leader_id);
 					reader.ReadCasted<byte>(count);
 					if(!reader)
 					{
@@ -596,7 +596,7 @@ void Game::UpdateClientConnectingIp(float dt)
 					info.clas = Class::INVALID;
 					info.ready = false;
 					info.name = player_name;
-					info.id = my_id;
+					info.id = Team.my_id;
 					info.state = PlayerInfo::IN_LOBBY;
 					info.update_flags = 0;
 					info.left = PlayerInfo::LEFT_NO;
@@ -660,9 +660,9 @@ void Game::UpdateClientConnectingIp(float dt)
 					N.peer->DeallocatePacket(packet);
 
 					// read leader
-					if(!N.TryGetPlayer(leader_id))
+					if(!N.TryGetPlayer(Team.leader_id))
 					{
-						Error("NM_CONNECT_IP(2): Broken packet ID_JOIN, no player with leader id %d.", leader_id);
+						Error("NM_CONNECT_IP(2): Broken packet ID_JOIN, no player with leader id %d.", Team.leader_id);
 						EndConnecting(txCantJoin, true);
 						return;
 					}
@@ -1003,7 +1003,7 @@ void Game::UpdateClientTransfer(float dt)
 					W.SetState(World::State::ON_MAP);
 					gui->info_box->CloseDialog();
 					N.update_timer = 0.f;
-					leader_id = 0;
+					Team.leader_id = 0;
 					Team.leader = nullptr;
 					pc = nullptr;
 					SetMusic(MusicType::Travel);
@@ -1233,7 +1233,7 @@ void Game::UpdateServerTransfer(float dt)
 			net_timer = mp_timeout;
 			for(auto info : N.players)
 			{
-				if(info->id != my_id)
+				if(info->id != Team.my_id)
 					info->ready = false;
 				else
 					info->ready = true;
@@ -1296,7 +1296,7 @@ void Game::UpdateServerTransfer(float dt)
 
 			info.pc = u->player;
 			u->player->player_info = &info;
-			if(info.id == my_id)
+			if(info.id == Team.my_id)
 			{
 				pc = u->player;
 				u->player->dialog_ctx = &dialog_context;
@@ -1369,12 +1369,12 @@ void Game::UpdateServerTransfer(float dt)
 			Team.CheckCredit(false, true);
 
 		// set leader
-		PlayerInfo* leader_info = N.TryGetPlayer(leader_id);
+		PlayerInfo* leader_info = N.TryGetPlayer(Team.leader_id);
 		if(leader_info)
 			Team.leader = leader_info->u;
 		else
 		{
-			leader_id = 0;
+			Team.leader_id = 0;
 			Team.leader = N.GetMe().u;
 		}
 
@@ -1422,9 +1422,9 @@ void Game::UpdateServerTransfer(float dt)
 			if(anyone_removed)
 			{
 				Team.CheckCredit(false, true);
-				if(leader_id == -1)
+				if(Team.leader_id == -1)
 				{
-					leader_id = 0;
+					Team.leader_id = 0;
 					Team.leader = N.GetMe().u;
 				}
 			}
@@ -1478,7 +1478,7 @@ void Game::UpdateServerTransfer(float dt)
 				int ack = N.SendAll(f, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT, Stream_TransferServer);
 				for(auto info : N.players)
 				{
-					if(info->id == my_id)
+					if(info->id == Team.my_id)
 						info->state = PlayerInfo::IN_GAME;
 					else
 					{

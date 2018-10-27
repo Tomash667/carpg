@@ -48,7 +48,7 @@ public:
 	bool HaveOtherPlayer();
 	bool HaveTeamMember() { return GetActiveTeamSize() > 1u; }
 	bool IsAnyoneAlive();
-	bool IsLeader();
+	bool IsLeader() { return my_id == leader_id; }
 	bool IsLeader(const Unit& unit) { return &unit == GetLeader(); }
 	bool IsLeader(const Unit* unit) { assert(unit); return unit == GetLeader(); }
 	bool IsTeamMember(Unit& unit);
@@ -73,6 +73,7 @@ public:
 	vector<Unit*> members; // all team members
 	vector<Unit*> active_members; // team members that get gold (without quest units)
 	Unit* leader;
+	int my_id, leader_id;
 	bool crazies_attack, // team attacked by crazies on current level
 		free_recruit, // first hero joins for free if playing alone
 		is_bandit; // attacked npc, now npc's are aggresive
