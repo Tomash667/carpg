@@ -938,7 +938,7 @@ void Game::UpdateClientTransfer(float dt)
 				net_state = NetState::Client_ReceivedLevelData;
 				gui->info_box->Show(txLoadingLocation);
 				LoadingStep("");
-				if(!ReadLevelData(reader))
+				if(!N.ReadLevelData(reader))
 				{
 					N.StreamError("NM_TRANSFER: Failed to read location data.");
 					N.peer->DeallocatePacket(packet);
@@ -1586,7 +1586,7 @@ void Game::UpdateServerTransfer(float dt)
 				if(N.active_players > 1)
 				{
 					prepared_stream.Reset();
-					PrepareLevelData(prepared_stream, false);
+					N.WriteLevelData(prepared_stream, false);
 					Info("NM_TRANSFER_SERVER: Generated level packet: %d.", prepared_stream.GetNumberOfBytesUsed());
 					gui->info_box->Show(txWaitingForPlayers);
 				}

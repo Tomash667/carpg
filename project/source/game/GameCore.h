@@ -177,3 +177,4 @@ enum SPAWN_GROUP;
 enum SpecialEncounter;
 enum class Class;
 enum class OLD_BUILDING;
+enum class MusicType;

@@ -25,6 +25,11 @@
 #include "Texture.h"
 #include "PlayerInfo.h"
 #include "BitStreamFunc.h"
+#include "Spell.h"
+#include "QuestManager.h"
+#include "Quest_Secret.h"
+#include "LocationGeneratorFactory.h"
+#include "SoundManager.h"
 
 Level L;
 
@@ -3952,6 +3957,7 @@ void Level::Update()
 void Level::Write(BitStreamWriter& f)
 {
 	location->Write(f);
+	f.WriteCasted<byte>(GetLocationMusic());
 
 	if(!N.mp_load)
 		return;
@@ -3997,8 +4003,39 @@ void Level::Write(BitStreamWriter& f)
 	}
 }
 
-void Level::Read(BitStreamReader& f)
+bool Level::Read(BitStreamReader& f, bool loaded_resources)
 {
+	Game& game = Game::Get();
+
+	// location
+	if(!location->Read(f))
+	{
+		Error("Read level: Failed to read location.");
+		return false;
+	}
+
+	is_open = true;
+	game.loc_gen_factory->Get(location)->OnLoad();
+	location->RequireLoadingResources(&loaded_resources);
+
+	// music
+	MusicType music;
+	f.ReadCasted<byte>(music);
+	if(!f)
+	{
+		Error("Read level: Broken music.");
+		return false;
+	}
+	if(!game.sound_mgr->IsMusicDisabled())
+		game.LoadMusic(music, false);
+	if(W.IsBossLevel())
+		game.SetMusic();
+	else
+		game.SetMusic(music);
+
+	if(!N.mp_load)
+		return true;
+
 	// bullets
 	byte count;
 	f >> count;
@@ -4025,7 +4062,7 @@ void Level::Read(BitStreamReader& f)
 		if(spell_id.empty())
 		{
 			bullet.spell = nullptr;
-			bullet.mesh = aArrow;
+			bullet.mesh = game.aArrow;
 			bullet.pe = nullptr;
 			bullet.remove = false;
 			bullet.tex = nullptr;
@@ -4162,6 +4199,8 @@ void Level::Read(BitStreamReader& f)
 			electro->lines.back().t = t;
 		}
 	}
+
+	return true;
 }
 
 //=================================================================================================

@@ -4769,7 +4769,7 @@ void Unit::RefreshStock()
 	bool refresh;
 	int worldtime = W.GetWorldtime();
 	if(stock)
-		refresh = (worldtime - stock->date >= 10);
+		refresh = (worldtime - stock->date >= 10 && busy != Busy_Trading);
 	else
 	{
 		stock = new TraderStock;
@@ -4781,14 +4781,11 @@ void Unit::RefreshStock()
 		stock->date = worldtime;
 		stock->items.clear();
 		data->trader->stock->Parse(stock->items);
-		for(ItemSlot& slot : stock->items)
+		if(!L.entering)
 		{
-			if(slot.item->state != ResourceState::Loaded)
-			{
-				int a = 3;
-			}
+			Game& game = Game::Get();
+			for(ItemSlot& slot : stock->items)
+				game.PreloadItem(slot.item);
 		}
-		Game::Get().PreloadItems(stock->items);
-		FIXME;
 	}
 }

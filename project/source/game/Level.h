@@ -146,7 +146,7 @@ public:
 	bool IsCity();
 	void Update();
 	void Write(BitStreamWriter& f);
-	void Read(BitStreamReader& f);
+	bool Read(BitStreamReader& f, bool loaded_resources);
 	MusicType GetLocationMusic();
 
 	Location* location; // same as W.current_location

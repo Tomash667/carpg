@@ -6131,7 +6131,7 @@ void Game::ChangeLevel(int where)
 
 	L.location->last_visit = W.GetWorldtime();
 	L.CheckIfLocationCleared();
-	bool loaded_resources = RequireLoadingResources(L.location, nullptr);
+	bool loaded_resources = L.location->RequireLoadingResources(nullptr);
 	LoadResources(txLoadingComplete, false);
 
 	SetMusic();
@@ -6141,7 +6141,7 @@ void Game::ChangeLevel(int where)
 		net_mode = NM_SERVER_SEND;
 		net_state = NetState::Server_Send;
 		prepared_stream.Reset();
-		PrepareLevelData(prepared_stream, loaded_resources);
+		N.WriteLevelData(prepared_stream, loaded_resources);
 		Info("Generated location packet: %d.", prepared_stream.GetNumberOfBytesUsed());
 		gui->info_box->Show(txWaitingForPlayers);
 	}
@@ -8575,27 +8575,6 @@ void Game::LoadResources(cstring text, bool worldmap)
 	LoadingStep(text, 2);
 }
 
-// set if passed, returns prev value
-bool Game::RequireLoadingResources(Location* loc, bool* to_set)
-{
-	bool result;
-	if(loc->GetLastLevel() == 0)
-	{
-		result = loc->loaded_resources;
-		if(to_set)
-			loc->loaded_resources = *to_set;
-	}
-	else
-	{
-		MultiInsideLocation* multi = (MultiInsideLocation*)loc;
-		auto& info = multi->infos[L.dungeon_level];
-		result = info.loaded_resources;
-		if(to_set)
-			info.loaded_resources = *to_set;
-	}
-	return result;
-}
-
 // When there is something new to load, add task to load it when entering location etc
 void Game::PreloadResources(bool worldmap)
 {
@@ -8633,11 +8612,11 @@ void Game::PreloadResources(bool worldmap)
 		}
 
 		bool new_value = true;
-		if(RequireLoadingResources(L.location, &new_value) == false)
+		if(L.location->RequireLoadingResources(&new_value) == false)
 		{
 			// load music
 			if(!sound_mgr->IsMusicDisabled())
-				LoadMusic(GetLocationMusic(), false, true);
+				LoadMusic(L.GetLocationMusic(), false, true);
 
 			// load objects
 			for(Object* obj : *L.local_ctx.objects)

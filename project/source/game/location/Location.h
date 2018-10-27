@@ -111,6 +111,7 @@ struct Location : public ILevel
 	virtual LOCATION_TOKEN GetToken() const { return LT_NULL; }
 	virtual int GetRandomLevel() const { return -1; }
 	virtual int GetLastLevel() const { return 0; }
+	virtual bool RequireLoadingResources(bool* to_set);
 
 	void GenerateName();
 	Portal* GetPortal(int index);

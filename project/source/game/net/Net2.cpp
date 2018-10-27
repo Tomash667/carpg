@@ -502,6 +502,7 @@ void Net::WriteLevelData(BitStream& stream, bool loaded_resources)
 	L.Write(f);
 
 	// items preload
+	std::set<const Item*>& items_load = Game::Get().items_load;
 	f << items_load.size();
 	for(const Item* item : items_load)
 	{
@@ -510,7 +511,6 @@ void Net::WriteLevelData(BitStream& stream, bool loaded_resources)
 			f << item->refid;
 	}
 
-	f.WriteCasted<byte>(GetLocationMusic());
 	f.WriteCasted<byte>(0xFF);
 }
 
@@ -767,10 +767,11 @@ bool Net::ReadPlayerStartData(BitStreamReader& f)
 }
 
 //=================================================================================================
-bool Game::ReadLevelData(BitStreamReader& f)
+bool Net::ReadLevelData(BitStreamReader& f)
 {
-	cam.Reset();
-	pc_data.rot_buf = 0.f;
+	Game& game = Game::Get();
+	game.cam.Reset();
+	game.pc_data.rot_buf = 0.f;
 	W.RemoveBossLevel();
 
 	bool loaded_resources;
@@ -782,15 +783,8 @@ bool Game::ReadLevelData(BitStreamReader& f)
 		return false;
 	}
 
-	if(!L.location->Read(f))
-	{
-		Error("Read level: Failed to read location.");
+	if(!L.Read(f, loaded_resources))
 		return false;
-	}
-
-	L.is_open = true;
-	loc_gen_factory->Get(L.location)->OnLoad();
-	RequireLoadingResources(L.location, &loaded_resources);
 
 	// items to preload
 	uint items_load_count = f.Read<uint>();
@@ -799,6 +793,7 @@ bool Game::ReadLevelData(BitStreamReader& f)
 		Error("Read level: Broken items preload count.");
 		return false;
 	}
+	std::set<const Item*>& items_load = game.items_load;
 	items_load.clear();
 	for(uint i = 0; i < items_load_count; ++i)
 	{
@@ -843,23 +838,6 @@ bool Game::ReadLevelData(BitStreamReader& f)
 		}
 	}
 
-	// multiplayer data
-	if(N.mp_load)
-	{
-		
-	}
-
-	// music
-	MusicType music;
-	f.ReadCasted<byte>(music);
-	if(!f)
-	{
-		Error("Read level: Broken music.");
-		return false;
-	}
-	if(!sound_mgr->IsMusicDisabled())
-		LoadMusic(music, false);
-
 	// checksum
 	byte check;
 	f >> check;
@@ -868,11 +846,6 @@ bool Game::ReadLevelData(BitStreamReader& f)
 		Error("Read level: Broken checksum.");
 		return false;
 	}
-
-	if(W.IsBossLevel())
-		SetMusic();
-	else
-		SetMusic(music);
 
 	return true;
 }

@@ -97,7 +97,7 @@ void Game::SetMusic()
 		return;
 	}
 
-	SetMusic(GetLocationMusic());
+	SetMusic(L.GetLocationMusic());
 }
 
 //=================================================================================================

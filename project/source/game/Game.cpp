@@ -1759,7 +1759,7 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 	else
 		EnterLevel(loc_gen);
 
-	bool loaded_resources = RequireLoadingResources(L.location, nullptr);
+	bool loaded_resources = L.location->RequireLoadingResources(nullptr);
 	LoadResources(txLoadingComplete, false);
 
 	l.last_visit = W.GetWorldtime();
@@ -1781,7 +1781,7 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 		if(N.active_players > 1)
 		{
 			prepared_stream.Reset();
-			PrepareLevelData(prepared_stream, loaded_resources);
+			N.WriteLevelData(prepared_stream, loaded_resources);
 			Info("Generated location packet: %d.", prepared_stream.GetNumberOfBytesUsed());
 		}
 		else
