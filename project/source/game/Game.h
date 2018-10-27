@@ -382,7 +382,6 @@ public:
 	Music* last_music;
 	vector<Music*> tracks;
 	int track_id;
-	MusicType GetLocationMusic();
 	void LoadMusic(MusicType type, bool new_load_screen = true, bool task = false);
 	void SetMusic();
 	void SetMusic(MusicType type);
@@ -650,12 +649,10 @@ public:
 	NetState net_state;
 	int net_tries;
 	VoidF net_callback;
-	string net_adr;
 	float net_timer, mp_timeout;
 	BitStream prepared_stream;
 	bool change_title_a;
 	int skip_id_counter;
-	vector<string*> net_talk;
 	struct WarpData
 	{
 		Unit* u;
@@ -675,8 +672,6 @@ public:
 	void AddMsg(cstring msg);
 	void OnEnterPassword(int id);
 	void ForceRedraw();
-	void PrepareLevelData(BitStream& stream, bool loaded_resources);
-	bool ReadLevelData(BitStreamReader& f);
 	void SendPlayerData(PlayerInfo& info);
 	bool ReadPlayerData(BitStreamReader& stream);
 	void UpdateServer(float dt);
@@ -706,10 +701,6 @@ public:
 	int ReadItemAndFind(BitStreamReader& f, const Item*& item) const;
 	bool ReadItemList(BitStreamReader& f, vector<ItemSlot>& items);
 	bool ReadItemListTeam(BitStreamReader& f, vector<ItemSlot>& items, bool skip = false);
-	void PrepareWorldData(BitStreamWriter& f);
-	bool ReadWorldData(BitStreamReader& f);
-	void WritePlayerStartData(BitStreamWriter& f, PlayerInfo& info);
-	bool ReadPlayerStartData(BitStreamReader& f);
 	bool CheckMoveNet(Unit& unit, const Vec3& pos);
 	void ProcessLeftPlayers();
 	void RemovePlayer(PlayerInfo& info);

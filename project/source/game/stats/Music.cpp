@@ -14,34 +14,6 @@ vector<Music*> Music::musics;
 extern string g_system_dir;
 
 //=================================================================================================
-MusicType Game::GetLocationMusic()
-{
-	switch(L.location->type)
-	{
-	case L_CITY:
-		return MusicType::City;
-	case L_CRYPT:
-		return MusicType::Crypt;
-	case L_DUNGEON:
-	case L_CAVE:
-		return MusicType::Dungeon;
-	case L_FOREST:
-	case L_CAMP:
-		if(L.location_index == QM.quest_secret->where2)
-			return MusicType::Moonwell;
-		else
-			return MusicType::Forest;
-	case L_ENCOUNTER:
-		return MusicType::Travel;
-	case L_MOONWELL:
-		return MusicType::Moonwell;
-	default:
-		assert(0);
-		return MusicType::Dungeon;
-	}
-}
-
-//=================================================================================================
 void Game::SetMusic(MusicType type)
 {
 	if(sound_mgr->IsMusicDisabled() || type == music_type)

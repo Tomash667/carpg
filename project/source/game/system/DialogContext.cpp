@@ -134,7 +134,7 @@ void DialogContext::Update(float dt)
 				*c.str = msg;
 				c.id = 0;
 				c.count = 0;
-				game.net_talk.push_back(c.str);
+				N.net_strs.push_back(c.str);
 			}
 
 			show_choices = false;
@@ -1805,6 +1805,6 @@ void DialogContext::DialogTalk(cstring msg)
 		c.id = ani;
 		c.count = game.skip_id_counter++;
 		skip_id = c.count;
-		game.net_talk.push_back(c.str);
+		N.net_strs.push_back(c.str);
 	}
 }

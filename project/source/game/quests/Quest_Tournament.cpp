@@ -796,7 +796,7 @@ void Quest_Tournament::Talk(cstring text)
 		c.pos = pos;
 		c.str = StringPool.Get();
 		*c.str = text;
-		game.net_talk.push_back(c.str);
+		N.net_strs.push_back(c.str);
 	}
 }
 
