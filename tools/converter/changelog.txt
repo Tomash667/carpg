@@ -1,8 +1,10 @@
 CHANGELOG
 Minor updates have changes only in exporter/converer, don't affect qmsh file.
 ---------------------------
-???:
+v20.1:
+CONVERTER:
 * handling of smooth/flat lighting
+* compare command
 
 v20:
 QMSH:
