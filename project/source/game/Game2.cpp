@@ -8760,9 +8760,9 @@ void Game::PreloadItems(vector<ItemSlot>& items)
 		items_load.insert(slot.item);
 }
 
-void Game::PreloadItem(const Item* citem)
+void Game::PreloadItem(const Item* p_item)
 {
-	Item& item = *(Item*)citem;
+	Item& item = *(Item*)p_item;
 	if(item.state == ResourceState::Loaded)
 		return;
 

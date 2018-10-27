@@ -1262,13 +1262,19 @@ void Unit::Save(GameWriter& f, bool local)
 	if(stock)
 	{
 		if(local || W.GetWorldtime() - stock->date < 10)
+		{
+			f.Write1();
 			SaveStock(f);
+		}
 		else
 		{
 			delete stock;
 			stock = nullptr;
+			f.Write0();
 		}
 	}
+	else
+		f.Write0();
 
 	f << live_state;
 	f << pos;
@@ -1431,8 +1437,13 @@ void Unit::Load(GameReader& f, bool local)
 			can_sort = false;
 		}
 	}
-	if(LOAD_VERSION >= V_DEV && data->trader)
-		LoadStock(f);
+	if(LOAD_VERSION >= V_DEV)
+	{
+		if(f.Read0())
+			stock = nullptr;
+		else
+			LoadStock(f);
+	}
 
 	// stats
 	f >> live_state;
@@ -4770,5 +4781,14 @@ void Unit::RefreshStock()
 		stock->date = worldtime;
 		stock->items.clear();
 		data->trader->stock->Parse(stock->items);
+		for(ItemSlot& slot : stock->items)
+		{
+			if(slot.item->state != ResourceState::Loaded)
+			{
+				int a = 3;
+			}
+		}
+		Game::Get().PreloadItems(stock->items);
+		FIXME;
 	}
 }

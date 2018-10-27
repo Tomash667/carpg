@@ -1,4 +1,7 @@
 //==============================================================================
+// UWAGA - plik ma kodowanie ANSI ale bloki w skrypcie musz¹ mieæ UTF8 wiêc widaæ dziwne znaczki zamiast polskich liter
+// jest task na wykorzystanie UTF8 wszêdzie :)
+//==============================================================================
 dialog blacksmith {
 	0 {
 		"Witaj. Sprzedajê tylko towary najwy¿szej jakoœci."
@@ -73,7 +76,7 @@ dialog mayor {
 	6 "Ukoñcz roznoszenie wieœci"
 	7 "Zadanie"
 	8 "Czym siê zajmujesz?"
-	9 "Jestem $(Level::IsCity() ? \"burmistrzem\" : \"so³tysem\"). Zajmuje siê urzêdowymi sprawami w imieniu króla. Czasami mam zadania dla poszukiwaczy przygód takich jak ty."
+	9 "Jestem $(Level::IsCity() ? \"burmistrzem\" : \"so\\xB3tysem\"). Zajmuje siê urzêdowymi sprawami w imieniu króla. Czasami mam zadania dla poszukiwaczy przygód takich jak ty."
 	10 "Zapytaj o dziwny kamieñ"
 	11 {
 		"Pierwszy raz coœ takiego widzê."
@@ -1248,8 +1251,8 @@ dialog q_evil_mage {
 dialog q_evil_captain {
 	0 "A na co ci ta ksiêga?"
 	1 "Chcesz powstrzymaæ przywo³ywanie nieumar³ych?"
-	2 "Porozmawiaj z $(Level::IsCity() ? \"burmistrzem\" : \"so³tysem\"), bez jego pozwolenia nic ci nie dam."
-	3 "Bez pozwolenia $(Level::IsCity() ? \"burmistrza\" : \"so³tysa\") nic nie dostaniesz."
+	2 "Porozmawiaj z $(Level::IsCity() ? \"burmistrzem\" : \"so\\xB3tysem\"), bez jego pozwolenia nic ci nie dam."
+	3 "Bez pozwolenia $(Level::IsCity() ? \"burmistrza\" : \"so\\xB3tysa\") nic nie dostaniesz."
 	4 "Dobra, masz tu t¹ ksiêgê."
 	5 "Tylko jej nie zgub!"
 }
@@ -1556,7 +1559,7 @@ dialog q_mine_investor {
 	1 "Jesteœ zainteresowany prac¹ dla mnie?"
 	2 "Witaj ponownie."
 	3 "Praca"
-	4 "W pobliskiej jaskini odkryto bogate z³o¿a rudy ¿elaza. Dogada³em siê ju¿ z $(Level::IsCity() ? \"burmistrzem\" : \"so³tysem\"), mam zezwolenie na otwarcie tam kopalni."
+	4 "W pobliskiej jaskini odkryto bogate z³o¿a rudy ¿elaza. Dogada³em siê ju¿ z $(Level::IsCity() ? \"burmistrzem\" : \"so\\xB3tysem\"), mam zezwolenie na otwarcie tam kopalni."
 	5 "Potrzebuje kogoœ kto oczyœci t¹ jaskiniê z potworów."
 	6 "W zamian mogê ci zaproponowaæ udzia³ w zyskach lub z³oto, wybór nale¿y do ciebie."
 	7 "Jesteœ zainteresowany?"
