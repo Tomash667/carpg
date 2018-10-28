@@ -10,7 +10,7 @@ bl_info = {
 
 import bpy
 from bpy.props import StringProperty, BoolProperty
-from math import pi
+from math import pi, sqrt
 import subprocess
 from mathutils import Vector, Quaternion, Matrix
 import os
@@ -23,6 +23,53 @@ from bpy_extras.io_utils import ImportHelper
 ################################################################################
 def IsSet(flags, bit):
 	return (flags & bit) != 0
+	
+################################################################################
+def QuaternionLookRotation(fro, to, up):
+	vector = (fro - to).normalized()
+	vector2 = up.normalized().cross(vector).normalized()
+	vector3 = vector.cross(vector2)
+	m00 = vector2.x
+	m01 = vector2.y
+	m02 = vector2.z
+	m10 = vector3.x
+	m11 = vector3.y
+	m12 = vector3.z
+	m20 = vector.x
+	m21 = vector.y
+	m22 = vector.z
+
+	num8 = (m00 + m11) + m22
+	q = Quaternion()
+	if num8 > 0:
+		num = sqrt(num8 + 1)
+		q.w = num * 0.5
+		num = 0.5 / num
+		q.x = (m12 - m21) * num
+		q.y = (m20 - m02) * num
+		q.z = (m01 - m10) * num
+	elif m00 >= m11 and m00 >= m22:
+		num7 = sqrt(((1 + m00) - m11) - m22)
+		num4 = 0.5 / num7
+		q.x = 0.5 * num7
+		q.y = (m01 + m10) * num4
+		q.z = (m02 + m20) * num4
+		q.w = (m12 - m21) * num4
+	elif m11 > m22:
+		num6 = sqrt(((1 + m11) - m00) - m22)
+		num3 = 0.5 / num6
+		q.x = (m10+ m01) * num3
+		q.y = 0.5 * num6
+		q.z = (m21 + m12) * num3
+		q.w = (m20 - m02) * num3
+	else:
+		num5 = sqrt(((1 + m22) - m00) - m11)
+		num2 = 0.5 / num5
+		q.x = (m20 + m02) * num2
+		q.y = (m21 + m12) * num2
+		q.z = 0.5 * num5
+		q.w = (m01 - m10) * num2
+	return q
 
 ################################################################################
 class ImporterException(Exception):
@@ -368,21 +415,35 @@ class Config:
 		self.filepath = os.path.join(config_path, 'io_import_qmsh.cfg')
 		self.config = configparser.ConfigParser()
 		self.config.read(self.filepath)
-		if not self.config.has_section('settings'):
-			self.config['settings'] = {'loadImages': 'True',
-				'imagesPath': 'D:\\carpg\\bin\\data\\textures'}
+		self.Init()
 		s = self.config['settings']
 		self.loadImages = s.getboolean('loadImages')
 		self.imagesPath = s['imagesPath']
+		self.setResolution = s.getboolean('setResolution')
+	def Init(self):
+		dict = {'loadImages': 'True',
+				'imagesPath': 'D:\\carpg\\bin\\data\\textures',
+				'setResolution': 'True'}
+		if not self.config.has_section('settings'):
+			self.config['settings'] = dict
+			return
+		s = self.config['settings']
+		for k, v in dict.items():
+			if not self.config.has_option('settings', k):
+				s[k] = v
 	def Save(self):
 		s = self.config['settings']
 		s['loadImages'] = str(self.loadImages)
 		s['imagesPath'] = self.imagesPath
+		s['setResolution'] = str(self.setResolution)
 		with open(self.filepath, 'w') as configfile:
 			self.config.write(configfile)
 
 ################################################################################
 class Importer:
+	def __init__(self):
+		self.warnings = 0
+		self.last_cam = None
 	def Run(self, filepath, config):
 		self.config = config
 		self.LoadMesh(filepath)
@@ -391,6 +452,8 @@ class Importer:
 			self.ApplyMergeScript()
 		else:
 			self.Import()
+		if self.config.setResolution:
+			self.SetResolution()
 	def LoadMesh(self, filepath):
 		print("INFO: Loading file "+filepath+"...")
 		with FileReader(filepath) as f:
@@ -474,7 +537,7 @@ class Importer:
 			bmesh.ops.delete(bm, geom=to_delete, context=5)  
 			bm.to_mesh(mesh_data)
 			mesh_data.update()
-			print("WARN: Removed %d broken tris." % len(mesh.broken_tris))
+			Warn("Removed %d broken tris." % len(mesh.broken_tris))
 		# armature
 		if mesh.head.IsAnimated() and not mesh.head.IsStatic():
 			armature = bpy.data.armatures.new(name='Armature')
@@ -572,23 +635,37 @@ class Importer:
 			op = cmd[0]
 			type = cmd[1]
 			obj = cmd[2]
-			#if op == 'add':
-			#	if type == 'animation':
-			#		self.AddAnim
-			#	pass
-			#else:
-			#	pass
+			if op == 'add':
+				if type == 'animation':
+					pass
+				elif type == 'point':
+					pass
+				elif type == 'camera':
+					self.AddCamera()
+			else:
+				if type == 'animation':
+					pass
+				elif type == 'point':
+					pass
+				elif type == 'camera':
+					self.MergeCamera()
 	def AddCamera(self):
 		cam = bpy.data.cameras.new(name='Camera')
 		obj = bpy.data.objects.new(name='Camera', object_data=cam)
-		obj.location = self.mesh.head.cam_pos
-		dir = self.mesh.head.cam_target - obj.location
-		rot_quat = dir.to_track_quat('-Z', 'Y')
-		obj.rotation_euler = rot_quat.to_euler()
+		self.SetCameraParams(obj)
 		bpy.context.scene.objects.link(obj)
-		#cam.rotation_mode = 'QUATERNION'
+		self.last_cam = obj
 	def MergeCamera(self):
-		pass
+		cam = FindObject('CAMERA')
+		if cam is None:
+			Warn('Missing camera to merge.')
+		else:
+			self.SetCameraParams(cam)
+			self.last_cam = cam
+	def SetCameraParams(self, cam):
+		cam.location = self.mesh.head.cam_pos
+		cam.rotation_mode = 'QUATERNION'
+		cam.rotation_quaternion = QuaternionLookRotation(self.mesh.head.cam_pos, self.mesh.head.cam_target, self.mesh.head.cam_up)
 	def FindObject(self, type):
 		for obj in byp.context.selected_objects:
 			if obj.type == type:
@@ -597,7 +674,23 @@ class Importer:
 			if obj.type == type:
 				return obj
 		return None
-	
+	def SetResolution(self):
+		scene = bpy.context.scene
+		render = scene.render
+		render.resolution_x = 256
+		render.resolution_y = 256
+		render.resolution_percentage = 100
+		if self.last_cam is None:
+			self.last_cam = self.FindObject('CAMERA')
+		if self.last_cam is not None:
+			scene.camera = self.last_cam
+			for area in bpy.context.screen.areas:
+				if area.type == 'VIEW_3D':
+					area.spaces[0].region_3d.view_perspective = 'CAMERA'
+	def Warn(self, msg):
+		print('WARN:' + msg)
+		self.warnings += 1
+
 ################################################################################
 # Klasa importera
 class QmshImporterOperator(bpy.types.Operator, ImportHelper):
@@ -611,21 +704,27 @@ class QmshImporterOperator(bpy.types.Operator, ImportHelper):
 	
 	loadImages = BoolProperty(name="Load images", default=config.loadImages)
 	imagesPath = StringProperty(name="Converter path", default=config.imagesPath)
+	setResolution = BoolProperty(name='Set resolution', default=config.setResolution)
 	useMerge = BoolProperty(name="Use merge", default=False)
 	mergeScript = StringProperty(name="Merge script")
 
 	def execute(self, context):
 		self.config.loadImages = self.loadImages
 		self.config.imagesPath = self.imagesPath
+		self.config.setResolution = self.setResolution
 		self.config.useMerge = self.useMerge
 		self.config.mergeScript = self.mergeScript
 		self.config.Save()
 		importer = Importer()
 		try:
 			importer.Run(self.properties.filepath, self.config)
+			if importer.warnings != 0:
+				msg = 'Finished with %d warnings.' % importer.warnings
+				print('WARN: ' + msg)
+				bpy.ops.error.message('INVOKE_DEFAULT', message = msg)
 		except ImporterException as error:
-			msg = 'Exporter error: '+str(error)
-			print("ERROR: "+msg)
+			msg = 'Exporter error: ' +str(error)
+			print("ERROR: " + msg)
 			bpy.ops.error.message('INVOKE_DEFAULT', message = msg)
 		return {"FINISHED"}
 
