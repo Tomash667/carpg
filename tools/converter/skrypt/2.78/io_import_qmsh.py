@@ -112,7 +112,8 @@ class Vertex:
 		self.pos = ConvertVec3(f.ReadVec3())
 		if type == 'ANI' or type == 'TANG_ANI':
 			self.weights = f.ReadFloat()
-			self.indices = f.ReadUint()
+			indices = f.ReadUint()
+			self.indices = (indices & 0xFF, (indices & 0xFF00) >> 8)
 		if type != 'POS':
 			self.normal = f.ReadVec3()
 			self.tex = f.ReadVec2()
@@ -444,6 +445,7 @@ class Importer:
 	def __init__(self):
 		self.warnings = 0
 		self.last_cam = None
+		self.skeleton = None
 	def Run(self, filepath, config):
 		self.config = config
 		self.LoadMesh(filepath)
@@ -526,6 +528,14 @@ class Importer:
 			uvs[i*3+0].uv = mesh.verts[f[0]].tex
 			uvs[i*3+1].uv = mesh.verts[f[1]].tex
 			uvs[i*3+2].uv = mesh.verts[f[2]].tex
+		# vertex groups
+		if len(mesh.bones) > 1 and mesh.head.IsAnimated():
+			for bone in mesh.bones:
+				obj.vertex_groups.new(name=bone.name)
+			i = 0
+			for v in mesh.verts:
+				obj.vertex_groups[v.indices[0]].add([i], v.weights, 'ADD')
+				obj.vertex_groups[v.indices[1]].add([i], 1 - v.weights, 'ADD')
 		# remove broken tris
 		if len(mesh.broken_tris) > 0:
 			bm.clear()
@@ -541,6 +551,7 @@ class Importer:
 		# armature
 		if mesh.head.IsAnimated() and not mesh.head.IsStatic():
 			armature = bpy.data.armatures.new(name='Armature')
+			self.skeleton = armature
 			obj_arm = bpy.data.objects.new(name='Armature', object_data=armature)
 			bpy.context.scene.objects.link(obj_arm)
 			bpy.context.scene.objects.active = obj_arm
@@ -551,21 +562,15 @@ class Importer:
 				b = armature.edit_bones.new(bone.name)
 				b.head = (1.0, 1.0, 0.0)
 				b.tail = (1.0, 1.0, 1.0)
+				if bone.parent != 0:
+					b.parent = armature.edit_bones[bone.parent]
 			bpy.ops.object.mode_set(mode='OBJECT')
-		# add points
-		for point in mesh.points:
-			empty = bpy.data.objects.new(name=point.name, object_data=None)
-			if empty.type == 0:
-				empty.empty_draw_type = 'ARROWS'
-			elif empty.type == 1:
-				empty.empty_draw_type = 'SPHERE'
-			else:
-				empty.empty_draw_type = 'CUBE'
-			empty.matrix_world = point.mat
-			empty.scale = point.size
-			empty.rotation_mode = 'QUATERNION'
-			empty.rotation_euler = point.rot
-			bpy.context.scene.objects.link(empty)
+			# animations
+			for anim in mesh.anims:
+				self.AddAnimation(anim)
+		# add points FIXME
+		#for point in mesh.points:
+		#	self.AddPoint(point)
 		# remove doubled vertices
 		bm.clear()
 		bm.from_mesh(mesh_data)
@@ -607,6 +612,7 @@ class Importer:
 			if type != 'animation' and type != 'point' and type != 'camera':
 				raise ImporterException('Invalid type %s.' % type)
 			obj = None
+			obj2 = None
 			if type != 'camera':
 				i += 1
 				if i >= count:
@@ -616,17 +622,37 @@ class Importer:
 					obj = self.mesh.GetAnimation(name)
 					if obj is None:
 						raise ImporterException('Missing animation %s.' % name)
+					if op == 'replace':
+						self.FindSkeleton()
+						obj2 = self.FindAnimation(name)
+						if obj2 is None:
+							raise ImporterException('Missing animation to merge %s.' % name)
 				else:
 					obj = self.mesh.GetPoint(name)
 					if obj is None:
 						raise ImporterException('Missing point %s.' % name)
-			script.append((op, type, obj))
+					if op == 'replace':
+						obj2 = self.FindPoint(name)
+						if obj2 is None:
+							raise ImporterException('Missing point to merge %s.' % name)
+			script.append((op, type, obj, obj2))
 			i += 1
 		self.script = script
 		print("INFO: Finished with %d operations." % len(script))
 		pass
 	def FindSkeleton(self):
-		return None #todo
+		if self.skeleton is not None:
+			return
+		self.skeleton = self.FindObject('ARMATURE')
+		if self.skeleton is None:
+			raise ImporterException('Missing skeleton.')
+	def FindAnimation(self, name):
+		for action in bpy.data.actions:
+			if action.name == name:
+				return action
+		return None
+	def FindPoint(self, name):
+		return self.FindObject('EMPTY', name)
 	def ApplyMergeScript(self):
 		if len(self.script) == 0:
 			print("INFO: Nothing to do.")
@@ -635,20 +661,48 @@ class Importer:
 			op = cmd[0]
 			type = cmd[1]
 			obj = cmd[2]
+			obj2 = cmd[3]
 			if op == 'add':
 				if type == 'animation':
-					pass
+					self.AddAnimation(obj)
 				elif type == 'point':
-					pass
+					self.AddPoint(obj)
 				elif type == 'camera':
 					self.AddCamera()
 			else:
 				if type == 'animation':
-					pass
+					self.MergeAnimation(obj, obj2)
 				elif type == 'point':
-					pass
+					self.MergePoint(obj, obj2)
 				elif type == 'camera':
 					self.MergeCamera()
+	def AddAnimation(self, anim):
+		a = bpy.data.actions.new(anim.name)
+		boneiter = iter(self.mesh.bones)
+		next(boneiter)
+		for bone in boneiter:
+			group = a.groups.new(name = bone.name)
+			f_cu_x = a.fcurves.new(data_path='pose.bones["%s"].location', index=0)
+			f_cu_x.keyframe_points.add(anim.n_frames)
+			# always use BEZIER
+		# TODO - ustawienie F
+	def MergeAnimation(self, anim, existing):
+		pass #TODO
+	def AddPoint(self, point):
+		empty = bpy.data.objects.new(name=point.name, object_data=None)
+		if empty.type == 0:
+			empty.empty_draw_type = 'ARROWS'
+		elif empty.type == 1:
+			empty.empty_draw_type = 'SPHERE'
+		else:
+			empty.empty_draw_type = 'CUBE'
+		empty.matrix_world = point.mat
+		empty.scale = point.size
+		empty.rotation_mode = 'QUATERNION'
+		empty.rotation_euler = point.rot
+		bpy.context.scene.objects.link(empty)
+	def MergePoint(self, point, empty):
+		pass #TODO
 	def AddCamera(self):
 		cam = bpy.data.cameras.new(name='Camera')
 		obj = bpy.data.objects.new(name='Camera', object_data=cam)
@@ -666,12 +720,12 @@ class Importer:
 		cam.location = self.mesh.head.cam_pos
 		cam.rotation_mode = 'QUATERNION'
 		cam.rotation_quaternion = QuaternionLookRotation(self.mesh.head.cam_pos, self.mesh.head.cam_target, self.mesh.head.cam_up)
-	def FindObject(self, type):
+	def FindObject(self, type, name = None):
 		for obj in byp.context.selected_objects:
-			if obj.type == type:
+			if obj.type == type and (name is None or obj.nam == name):
 				return obj
 		for obj in bpy.context.scene.objects:
-			if obj.type == type:
+			if obj.type == type and (name is None or obj.nam == name):
 				return obj
 		return None
 	def SetResolution(self):
