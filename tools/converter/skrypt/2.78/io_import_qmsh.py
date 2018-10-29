@@ -21,6 +21,9 @@ import configparser
 from bpy_extras.io_utils import ImportHelper
 
 ################################################################################
+fps = 25
+
+################################################################################
 def IsSet(flags, bit):
 	return (flags & bit) != 0
 	
@@ -293,11 +296,17 @@ class Qmsh:
 				frame.bones = []
 				for j in range(head.n_bones):
 					bone = Qmsh.Animation.Keyframe.KeyframeBone()
-					bone.pos = f.ReadVec3()
+					bone.pos = ConvertVec3(f.ReadVec3())
 					bone.rot = f.ReadQuaternion()
 					bone.scale = f.ReadFloat()
 					frame.bones.append(bone)
 				self.frames.append(frame)
+		def UseScale(self, bone_i):
+			for frame in self.frames:
+				if frame.bones[bone_i].scale != 1:
+					return True
+			return False
+				
 	##-------------------------------------------------------------------------
 	class Point:
 		def Read(self, f):
@@ -398,7 +407,7 @@ class Qmsh:
 				face = (face[0], face[1], face[2]+1)
 			else:
 				return face
-	def GetAnimatio(self, name):
+	def GetAnimation(self, name):
 		for ani in self.anims:
 			if ani.name == name:
 				return ani
@@ -536,6 +545,7 @@ class Importer:
 			for v in mesh.verts:
 				obj.vertex_groups[v.indices[0]].add([i], v.weights, 'ADD')
 				obj.vertex_groups[v.indices[1]].add([i], 1 - v.weights, 'ADD')
+				i += 1
 		# remove broken tris
 		if len(mesh.broken_tris) > 0:
 			bm.clear()
@@ -563,11 +573,17 @@ class Importer:
 				b.head = (1.0, 1.0, 0.0)
 				b.tail = (1.0, 1.0, 1.0)
 				if bone.parent != 0:
-					b.parent = armature.edit_bones[bone.parent]
+					b.parent = armature.edit_bones[bone.parent - 1]
 			bpy.ops.object.mode_set(mode='OBJECT')
 			# animations
 			for anim in mesh.anims:
 				self.AddAnimation(anim)
+			# add armature modifier
+			bpy.context.scene.objects.active = obj
+			bpy.ops.object.modifier_add(type='ARMATURE')
+			mod = obj.modifiers['Armature']
+			mod.object = obj_arm
+			mod.use_vertex_groups = True
 		# add points FIXME
 		#for point in mesh.points:
 		#	self.AddPoint(point)
@@ -677,15 +693,46 @@ class Importer:
 				elif type == 'camera':
 					self.MergeCamera()
 	def AddAnimation(self, anim):
+		class ActionHelper:
+			def __init__(self, ani, bone_i, bone_name, use_scale):
+				self.curves = {}
+				self.ani = ani
+				self.use_scale = use_scale
+				self.group = ani.groups.new(name = bone_name)
+				self.AddCurves('location', 3, bone_name)
+				self.AddCurves('rotation_quaternion', 4, bone_name)
+				if self.use_scale:
+					self.AddCurves('scale', 3, bone_name)
+			def AddCurves(self, name, count, bone_name):
+				for i in range(count):
+					curve = self.ani.fcurves.new(data_path='pose.bones["%s"].%s' % (bone_name, name), index=i)
+					curve.group = self.group
+					self.curves[name + str(i)] = curve
+			def SetFrames(self, count):
+				for name, curve in self.curves.items():
+					curve.keyframe_points.add(count)
+			def SetParams(self, i, time, framebone):
+				self.curves['location0'].keyframe_points[i].co = (time, framebone.pos[0])
+				self.curves['location1'].keyframe_points[i].co = (time, framebone.pos[1])
+				self.curves['location2'].keyframe_points[i].co = (time, framebone.pos[2])
+				self.curves['rotation_quaternion0'].keyframe_points[i].co = (time, framebone.rot[0])
+				self.curves['rotation_quaternion1'].keyframe_points[i].co = (time, framebone.rot[1])
+				self.curves['rotation_quaternion2'].keyframe_points[i].co = (time, framebone.rot[2])
+				self.curves['rotation_quaternion3'].keyframe_points[i].co = (time, framebone.rot[3])
+				if self.use_scale:
+					self.curves['scale0'].keyframe_points[i].co = (time, framebone.scale)
+					self.curves['scale1'].keyframe_points[i].co = (time, framebone.scale)
+					self.curves['scale2'].keyframe_points[i].co = (time, framebone.scale)
 		a = bpy.data.actions.new(anim.name)
-		boneiter = iter(self.mesh.bones)
-		next(boneiter)
-		for bone in boneiter:
-			group = a.groups.new(name = bone.name)
-			f_cu_x = a.fcurves.new(data_path='pose.bones["%s"].location', index=0)
-			f_cu_x.keyframe_points.add(anim.n_frames)
-			# always use BEZIER
-		# TODO - ustawienie F
+		for bone_i in range(1, self.mesh.head.n_bones):
+			bone = self.mesh.bones[bone_i]
+			h = ActionHelper(a, bone_i, bone.name, anim.UseScale(bone_i - 1))
+			h.SetFrames(anim.n_frames)
+			for i in range(anim.n_frames):
+				frame = anim.frames[i]
+				framebone = frame.bones[bone_i - 1]
+				h.SetParams(i, frame.time * fps, framebone)
+		a.use_fake_user = True
 	def MergeAnimation(self, anim, existing):
 		pass #TODO
 	def AddPoint(self, point):
@@ -721,7 +768,7 @@ class Importer:
 		cam.rotation_mode = 'QUATERNION'
 		cam.rotation_quaternion = QuaternionLookRotation(self.mesh.head.cam_pos, self.mesh.head.cam_target, self.mesh.head.cam_up)
 	def FindObject(self, type, name = None):
-		for obj in byp.context.selected_objects:
+		for obj in bpy.context.selected_objects:
 			if obj.type == type and (name is None or obj.nam == name):
 				return obj
 		for obj in bpy.context.scene.objects:
