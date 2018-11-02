@@ -572,6 +572,7 @@ class Importer:
 				b = armature.edit_bones.new(bone.name)
 				b.head = (1.0, 1.0, 0.0)
 				b.tail = (1.0, 1.0, 1.0)
+				#b.matrix = 
 				if bone.parent != 0:
 					b.parent = armature.edit_bones[bone.parent - 1]
 			bpy.ops.object.mode_set(mode='OBJECT')
@@ -715,14 +716,17 @@ class Importer:
 				self.curves['location0'].keyframe_points[i].co = (time, framebone.pos[0])
 				self.curves['location1'].keyframe_points[i].co = (time, framebone.pos[1])
 				self.curves['location2'].keyframe_points[i].co = (time, framebone.pos[2])
-				self.curves['rotation_quaternion0'].keyframe_points[i].co = (time, framebone.rot[0])
-				self.curves['rotation_quaternion1'].keyframe_points[i].co = (time, framebone.rot[1])
-				self.curves['rotation_quaternion2'].keyframe_points[i].co = (time, framebone.rot[2])
-				self.curves['rotation_quaternion3'].keyframe_points[i].co = (time, framebone.rot[3])
+				self.curves['rotation_quaternion0'].keyframe_points[i].co = (time, -framebone.rot[3]) # W negated value
+				self.curves['rotation_quaternion1'].keyframe_points[i].co = (time, framebone.rot[0]) # X
+				self.curves['rotation_quaternion2'].keyframe_points[i].co = (time, framebone.rot[2]) # Y
+				self.curves['rotation_quaternion3'].keyframe_points[i].co = (time, framebone.rot[1]) # Z
 				if self.use_scale:
 					self.curves['scale0'].keyframe_points[i].co = (time, framebone.scale)
 					self.curves['scale1'].keyframe_points[i].co = (time, framebone.scale)
 					self.curves['scale2'].keyframe_points[i].co = (time, framebone.scale)
+			def Update(self):
+				for name, curve in self.curves.items():
+					curve.update()
 		a = bpy.data.actions.new(anim.name)
 		for bone_i in range(1, self.mesh.head.n_bones):
 			bone = self.mesh.bones[bone_i]
@@ -731,7 +735,8 @@ class Importer:
 			for i in range(anim.n_frames):
 				frame = anim.frames[i]
 				framebone = frame.bones[bone_i - 1]
-				h.SetParams(i, frame.time * fps, framebone)
+				h.SetParams(i, round(frame.time * fps), framebone)
+			h.Update()
 		a.use_fake_user = True
 	def MergeAnimation(self, anim, existing):
 		pass #TODO
