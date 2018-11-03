@@ -51,74 +51,74 @@ enum VertexDeclarationId
 
 struct VDefault
 {
-	VEC3 pos;
-	VEC3 normal;
-	VEC2 tex;
+	Vec3 pos;
+	Vec3 normal;
+	Vec2 tex;
 };
 
 struct VAnimated
 {
-	VEC3 pos;
+	Vec3 pos;
 	float weights;
 	uint indices;
-	VEC3 normal;
-	VEC2 tex;
+	Vec3 normal;
+	Vec2 tex;
 };
 
 struct VTangent
 {
-	VEC3 pos;
-	VEC3 normal;
-	VEC2 tex;
-	VEC3 tangent;
-	VEC3 binormal;
+	Vec3 pos;
+	Vec3 normal;
+	Vec2 tex;
+	Vec3 tangent;
+	Vec3 binormal;
 };
 
 struct VAnimatedTangent
 {
-	VEC3 pos;
+	Vec3 pos;
 	float weights;
 	uint indices;
-	VEC3 normal;
-	VEC2 tex;
-	VEC3 tangent;
-	VEC3 binormal;
+	Vec3 normal;
+	Vec2 tex;
+	Vec3 tangent;
+	Vec3 binormal;
 };
 
 struct VTex
 {
-	VEC3 pos;
-	VEC2 tex;
+	Vec3 pos;
+	Vec2 tex;
 };
 
 struct VColor
 {
-	VEC3 pos;
-	VEC4 color;
+	Vec3 pos;
+	Vec4 color;
 };
 
 struct VParticle
 {
-	VEC3 pos;
-	VEC2 tex;
-	VEC4 color;
+	Vec3 pos;
+	Vec2 tex;
+	Vec4 color;
 };
 
 struct VTerrain
 {
-	VEC3 pos;
-	VEC3 normal;
-	VEC2 tex;
-	VEC2 tex2;
+	Vec3 pos;
+	Vec3 normal;
+	Vec2 tex;
+	Vec2 tex2;
 };
 
 struct VPos
 {
-	VEC3 pos;
+	Vec3 pos;
 };
 
 
-const VEC3 DefaultSpecularColor(1, 1, 1);
+const Vec3 DefaultSpecularColor(1, 1, 1);
 const float DefaultSpecularIntensity = 0.2f;
 const int DefaultSpecularHardness = 10;
 
@@ -155,7 +155,7 @@ void Mesh::Load(cstring path)
 		throw "Failed to read file header.";
 	if(memcmp(head.format, "QMSH", 4) != 0)
 		throw Formats("Invalid file signature '%.4s'.", head.format);
-	if(head.version < 12 || head.version > 20)
+	if(head.version < 12 || head.version > 21)
 		throw Formats("Invalid file version '%d'.", head.version);
 	if(head.n_bones >= 32)
 		throw Formats("Too many bones (%d).", head.n_bones);
@@ -181,20 +181,20 @@ void Mesh::Load(cstring path)
 		if(head.version >= 15)
 			f.Read(cam_up);
 		else
-			cam_up = VEC3(0, 1, 0);
+			cam_up = Vec3(0, 1, 0);
 		//if(!stream)
 		//	throw "Missing camera data.";
 	}
 	else
 	{
-		cam_pos = VEC3(1, 1, 1);
-		cam_target = VEC3(0, 0, 0);
-		cam_up = VEC3(0, 1, 0);
+		cam_pos = Vec3(1, 1, 1);
+		cam_target = Vec3(0, 0, 0);
+		cam_up = Vec3(0, 1, 0);
 	}
 
 	// vertex size
 	if(IS_SET(head.flags, F_PHYSICS))
-		vertex_size = sizeof(VEC3);
+		vertex_size = sizeof(Vec3);
 	else
 	{
 		if(IS_SET(head.flags, F_ANIMATED))
@@ -298,7 +298,7 @@ void Mesh::Load(cstring path)
 		}
 
 		//if(!stream)
-		//	throw Format("Failed to read submesh %u.", i);
+		//	throw format("Failed to read submesh %u.", i);
 	}
 
 	// animation data
@@ -336,6 +336,10 @@ void Mesh::Load(cstring path)
 		//if(!stream)
 		//	throw "Failed to read bones data.";
 
+		// bone groups
+		if(head.version >= 21)
+			LoadBoneGroups(f);
+
 		// animations
 		//size = Animation::MIN_SIZE * head.n_anims;
 		//if(!f.Ensure(size))
@@ -352,7 +356,7 @@ void Mesh::Load(cstring path)
 
 			//size = anim.n_frames * (4 + sizeof(KeyframeBone) * head.n_bones);
 			//if(!f.Ensure(size))
-			//	throw Format("Failed to read animation %u data.", i);
+			//	throw format("Failed to read animation %u data.", i);
 
 			anim.frames.resize(anim.n_frames);
 
@@ -393,65 +397,18 @@ void Mesh::Load(cstring path)
 		if(head.version >= 19)
 		{
 			f.Read(p.rot);
-			//p.rot.y = Clip(-p.rot.y);
+			if(head.version < 21)
+				p.rot.y = Clip(-p.rot.y);
 		}
 		else
 		{
 			// fallback, it was often wrong but thats the way it was (works good for PI/2 and PI*3/2, inverted for 0 and PI, bad for other)
-			p.rot = VEC3(0, -GetYaw(p.mat), 0);
+			p.rot = Vec3(0, -GetYaw(p.mat), 0);
 		}
 	}
 
-	if(IS_SET(head.flags, F_ANIMATED) && !IS_SET(head.flags, F_STATIC))
-	{
-		// groups
-		if(head.version == 12 && head.n_groups < 2)
-		{
-			head.n_groups = 1;
-			groups.resize(1);
-
-			BoneGroup& gr = groups[0];
-			gr.name = "default";
-			gr.parent = 0;
-			gr.bones.reserve(head.n_bones - 1);
-
-			for(word i = 1; i < head.n_bones; ++i)
-				gr.bones.push_back((byte)i);
-		}
-		else
-		{
-			//if(!f.Ensure(BoneGroup::MIN_SIZE * head.n_groups))
-			//	throw "Failed to read bone groups.";
-			groups.resize(head.n_groups);
-			for(word i = 0; i < head.n_groups; ++i)
-			{
-				BoneGroup& gr = groups[i];
-
-				f.ReadString1(&gr.name);
-
-				// parent group
-				f.Read(gr.parent);
-				assert(gr.parent < head.n_groups);
-				assert(gr.parent != i || i == 0);
-
-				// bone indexes
-				byte count;
-				f.Read(count);
-				gr.bones.resize(count);
-				f.Read(gr.bones.data(), gr.bones.size());
-				if(head.version == 12)
-				{
-					for(byte& b : gr.bones)
-						++b;
-				}
-			}
-		}
-
-		//if(!stream)
-		//	throw "Failed to read bone groups data.";
-
-		//SetupBoneMatrices();
-	}
+	if(head.version < 21 && IS_SET(head.flags, F_ANIMATED) && !IS_SET(head.flags, F_STATIC))
+		LoadBoneGroups(f);
 
 	// splits
 	if(IS_SET(head.flags, F_SPLIT))
@@ -464,7 +421,53 @@ void Mesh::Load(cstring path)
 	}
 
 	old_ver = head.version;
-	head.version = 20;
+	head.version = 21;
+}
+
+void Mesh::LoadBoneGroups(common::FileStream& f)
+{
+	// groups
+	if(head.version == 12 && head.n_groups < 2)
+	{
+		head.n_groups = 1;
+		groups.resize(1);
+
+		BoneGroup& gr = groups[0];
+		gr.name = "default";
+		gr.parent = 0;
+		gr.bones.reserve(head.n_bones - 1);
+
+		for(word i = 1; i < head.n_bones; ++i)
+			gr.bones.push_back((byte)i);
+	}
+	else
+	{
+		//if(!f.Ensure(BoneGroup::MIN_SIZE * head.n_groups))
+		//	throw "Failed to read bone groups.";
+		groups.resize(head.n_groups);
+		for(word i = 0; i < head.n_groups; ++i)
+		{
+			BoneGroup& gr = groups[i];
+
+			f.ReadString1(&gr.name);
+
+			// parent group
+			f.Read(gr.parent);
+			assert(gr.parent < head.n_groups);
+			assert(gr.parent != i || i == 0);
+
+			// bone indexes
+			byte count;
+			f.Read(count);
+			gr.bones.resize(count);
+			f.Read(gr.bones.data(), gr.bones.size());
+			if(head.version == 12)
+			{
+				for(byte& b : gr.bones)
+					++b;
+			}
+		}
+	}
 }
 
 void Mesh::Save(cstring path)

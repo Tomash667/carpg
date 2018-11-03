@@ -29,7 +29,7 @@ struct Mesh
 		word n_ind; // odpowiednik parametru DrawIndexedPrimitive - NumVertices (tylko wyra¿ony w trójk¹tach)
 		string name;//, normal_name, specular_name;
 		string tex, tex_normal, tex_specular;
-		VEC3 specular_color;
+		Vec3 specular_color;
 		float specular_intensity;
 		int specular_hardness;
 		float normal_factor, specular_factor, specular_color_factor;
@@ -93,7 +93,7 @@ struct Mesh
 
 	struct KeyframeBone
 	{
-		VEC3 pos;
+		Vec3 pos;
 		QUATERNION rot;
 		float scale;
 
@@ -146,10 +146,10 @@ struct Mesh
 
 		string name;
 		MATRIX mat;
-		VEC3 rot;
+		Vec3 rot;
 		word bone;
 		Type type;
-		VEC3 size;
+		Vec3 size;
 
 		static const uint MIN_SIZE = 73;
 
@@ -175,7 +175,7 @@ struct Mesh
 
 	struct Split
 	{
-		VEC3 pos;
+		Vec3 pos;
 		float radius;
 		BOX box;
 	};
@@ -190,6 +190,7 @@ struct Mesh
 	}
 	void LoadSafe(cstring path);
 	void Load(cstring path);
+	void LoadBoneGroups(common::FileStream& f);
 	void Save(cstring path);
 
 	Header head;
@@ -200,7 +201,7 @@ struct Mesh
 	vector<Point> attach_points;
 	vector<BoneGroup> groups;
 	vector<Split> splits;
-	VEC3 cam_pos, cam_target, cam_up;
+	Vec3 cam_pos, cam_target, cam_up;
 
 	byte old_ver;
 	byte* vdata;

@@ -30,15 +30,16 @@
     <ClCompile Include="Common\Tokenizer.cpp">
       <Filter>Common</Filter>
     </ClCompile>
-    <ClCompile Include="GlobalCode.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MeshMender.cpp" />
     <ClCompile Include="MeshTask.cpp" />
     <ClCompile Include="PCH.cpp" />
-    <ClCompile Include="Loader.cpp" />
     <ClCompile Include="Mesh.cpp">
       <Filter>external</Filter>
     </ClCompile>
+    <ClCompile Include="QmshTmpLoader.cpp" />
+    <ClCompile Include="QmshSaver.cpp" />
+    <ClCompile Include="Converter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common\Base.hpp">
@@ -59,7 +60,6 @@
     <ClInclude Include="Common\Tokenizer.hpp">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="GlobalCode.hpp" />
     <ClInclude Include="MeshMender.h" />
     <ClInclude Include="MeshTask.hpp" />
     <ClInclude Include="PCH.hpp" />
@@ -67,6 +67,11 @@
     <ClInclude Include="Mesh.h">
       <Filter>external</Filter>
     </ClInclude>
+    <ClInclude Include="QmshTmp.h" />
+    <ClInclude Include="QmshTmpLoader.h" />
+    <ClInclude Include="Converter.h" />
+    <ClInclude Include="QmshSaver.h" />
+    <ClInclude Include="ConversionData.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="changelog.txt">

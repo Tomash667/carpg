@@ -5,31 +5,31 @@
 //using namespace nv;
 #define nvCheck(x)
 
-/*bool operator<( const VEC3 & lhs, const VEC3 & rhs )
+/*bool operator<( const Vec3 & lhs, const Vec3 & rhs )
 {
 	return true;
 }*/
 
-VEC3 normalize(const VEC3& v,float = 0.f)
+Vec3 normalize(const Vec3& v,float = 0.f)
 {
-	VEC3 out;
+	Vec3 out;
 	D3DXVec3Normalize((D3DXVECTOR3*)&out,(D3DXVECTOR3*)&v);
 	return out;
 }
 
-float dot(const VEC3& v1,const VEC3& v2)
+float dot(const Vec3& v1,const Vec3& v2)
 {
 	return D3DXVec3Dot((D3DXVECTOR3*)&v1,(D3DXVECTOR3*)&v2);
 }
 
-VEC3 cross(const VEC3& v1,const VEC3& v2)
+Vec3 cross(const Vec3& v1,const Vec3& v2)
 {
-	VEC3 out;
+	Vec3 out;
 	D3DXVec3Cross((D3DXVECTOR3*)&out,(D3DXVECTOR3*)&v1,(D3DXVECTOR3*)&v2);
 	return out;
 }
 
-VEC3 normalizeSafe(const VEC3& v, const VEC3& fallback, float epsilon)
+Vec3 normalizeSafe(const Vec3& v, const Vec3& fallback, float epsilon)
 {
 	float l = D3DXVec3Length((D3DXVECTOR3*)&v);
 	if (abs(l)<=epsilon) {
@@ -38,7 +38,7 @@ VEC3 normalizeSafe(const VEC3& v, const VEC3& fallback, float epsilon)
 	return v * (1.0f / l);
 }
 
-float length(const VEC3& v)
+float length(const Vec3& v)
 {
 	return D3DXVec3Length((D3DXVECTOR3*)&v);
 }
@@ -70,14 +70,14 @@ public:
 		nvCheck(t1 && t2);
 		//for checking the angle, we want these to be normalized,
 		//they may not be for whatever reason
-		VEC3 tmp1 = normalize(t1->normal);
-		VEC3 tmp2 = normalize(t2->normal);
+		Vec3 tmp1 = normalize(t1->normal);
+		Vec3 tmp2 = normalize(t2->normal);
 
 		if (dot(tmp1, tmp2) >= minCreaseAngle)
 		{
 			return true;
 		}
-		else if( ( tmp1 == VEC3(0,0,0) ) && ( tmp2 == VEC3(0,0,0) ) )
+		else if( ( tmp1 == Vec3(0,0,0) ) && ( tmp2 == Vec3(0,0,0) ) )
 		{
 			// check for them both being null, then they are 
 			// welcome to smooth no matter what the minCreaseAngle is
@@ -95,14 +95,14 @@ public:
 		nvCheck(t1 && t2);
 		//for checking the angle, we want these to be normalized,
 		//they may not be for whatever reason
-		VEC3 tmp1 = normalize(t1->tangent, 0.0f);
-		VEC3 tmp2 = normalize(t2->tangent, 0.0f);
+		Vec3 tmp1 = normalize(t1->tangent, 0.0f);
+		Vec3 tmp2 = normalize(t2->tangent, 0.0f);
 
 		if (dot(tmp1, tmp2) >= minCreaseAngle)
 		{
 			return true;
 		}
-		else if( ( tmp1 == VEC3(0,0,0) ) && ( tmp2 == VEC3(0,0,0) ) )
+		else if( ( tmp1 == Vec3(0,0,0) ) && ( tmp2 == Vec3(0,0,0) ) )
 		{
 			// check for them both being null, then they are 
 			// welcome to smooth no matter what the minCreaseAngle is
@@ -121,14 +121,14 @@ public:
 		nvCheck(t1 && t2);
 		//for checking the angle, we want these to be normalized,
 		//they may not be for whatever reason
-		VEC3 tmp1 = normalize(t1->binormal, 0.0f);
-		VEC3 tmp2 = normalize(t2->binormal, 0.0f);
+		Vec3 tmp1 = normalize(t1->binormal, 0.0f);
+		Vec3 tmp2 = normalize(t2->binormal, 0.0f);
 
 		if (dot(tmp1, tmp2) >= minCreaseAngle)
 		{
 			return true;
 		}
-		else if (tmp1 == VEC3(0,0,0) && tmp2 == VEC3(0,0,0))
+		else if (tmp1 == Vec3(0,0,0) && tmp2 == Vec3(0,0,0))
 		{
 			// check for them both being null, then they are 
 			// welcome to smooth no matter what the minCreaseAngle is
@@ -174,7 +174,7 @@ void MeshMender::UpdateIndices(const size_t oldIndex , const size_t newIndex , T
 void MeshMender::ProcessNormals(TriangleList& possibleNeighbors,
 								std::vector< Vertex >&    theVerts,
 								std::vector< unsigned int >& mappingNewToOldVert,
-								VEC3 workingPosition)
+								Vec3 workingPosition)
 {
 	NeighborGroupList neighborGroups;//a fresh group for each pass
 
@@ -199,13 +199,13 @@ void MeshMender::ProcessNormals(TriangleList& possibleNeighbors,
 	}
 
 	
-	std::vector<VEC3> groupNormalVectors;
+	std::vector<Vec3> groupNormalVectors;
 
 	for(unsigned int i = 0; i < neighborGroups.size(); ++i)
 	{
 		//for each group, calculate the group normal
 		const TriangleList & curGroup = neighborGroups[i];
-		VEC3 gnorm( 0.0f, 0.0f, 0.0f );
+		Vec3 gnorm( 0.0f, 0.0f, 0.0f );
 
 		nvCheck(curGroup.size()!=0 && "should not be a zero group here.");
 		for(size_t t = 0; t < curGroup.size(); ++t) //for each triangle in the group, 
@@ -272,7 +272,7 @@ void MeshMender::ProcessNormals(TriangleList& possibleNeighbors,
 void MeshMender::ProcessTangents(TriangleList& possibleNeighbors,
 								std::vector<Vertex> & theVerts,
 								std::vector<unsigned int> & mappingNewToOldVert,
-								VEC3 workingPosition)
+								Vec3 workingPosition)
 {
 	NeighborGroupList neighborGroups;//a fresh group for each pass
 
@@ -296,11 +296,11 @@ void MeshMender::ProcessTangents(TriangleList& possibleNeighbors,
 		}
 	}
 
-	std::vector<VEC3> groupTangentVectors;
+	std::vector<Vec3> groupTangentVectors;
 
 	for(unsigned int i=0; i<neighborGroups.size(); ++i)
 	{
-		VEC3 gtang(0,0,0);
+		Vec3 gtang(0,0,0);
 		for(unsigned int t = 0; t < neighborGroups[i].size(); ++t)//for each triangle in the group, 
 		{
 			TriID tID = neighborGroups[i][t];
@@ -363,7 +363,7 @@ void MeshMender::ProcessTangents(TriangleList& possibleNeighbors,
 void MeshMender::ProcessBinormals(TriangleList& possibleNeighbors,
 								std::vector< Vertex >&    theVerts,
 								std::vector< unsigned int >& mappingNewToOldVert,
-								VEC3 workingPosition)
+								Vec3 workingPosition)
 {
 	NeighborGroupList neighborGroups;//a fresh group for each pass
 
@@ -389,12 +389,12 @@ void MeshMender::ProcessBinormals(TriangleList& possibleNeighbors,
 	}
 
 
-	std::vector<VEC3> groupBinormalVectors;
+	std::vector<Vec3> groupBinormalVectors;
 
 	
 	for(unsigned int i=0; i<neighborGroups.size(); ++i)
 	{
-		VEC3 gbinormal(0,0,0);
+		Vec3 gbinormal(0,0,0);
 		for(unsigned int t = 0; t < neighborGroups[i].size(); ++t)//for each triangle in the group, 
 		{
 			TriID tID = neighborGroups[i][t];
@@ -485,7 +485,7 @@ bool MeshMender::Mend(
 		vert!= m_VertexChildrenMap.end();
 		++vert)
 	{
-		VEC3 workingPosition = vert->first;
+		Vec3 workingPosition = vert->first;
 
 		TriangleList& possibleNeighbors = vert->second;
 		if(computeNormals == CALCULATE_NORMALS)
@@ -612,11 +612,11 @@ bool MeshMender::TriHasEdge(const size_t& p0,
 	return false;
 }
 
-bool MeshMender::TriHasEdge(const VEC3& p0,
-							const VEC3& p1,
-							const VEC3& triA,
-							const VEC3& triB,
-							const VEC3& triC)
+bool MeshMender::TriHasEdge(const Vec3& p0,
+							const Vec3& p1,
+							const Vec3& triA,
+							const Vec3& triB,
+							const Vec3& triC)
 {
 	if ( ( ( p0 == triB ) && ( p1 == triA ) ) ||
 	     ( ( p0 == triA ) && ( p1 == triB ) ) )
@@ -682,13 +682,13 @@ bool MeshMender::SharesEdge(Triangle* triA,
 		return SharesEdgeRespectSplits(triA, triB, theVerts);
 	}
 
-	VEC3 a1 = theVerts[ triA->indices[0] ].pos;
-	VEC3 b1 = theVerts[ triA->indices[1] ].pos;
-	VEC3 c1 = theVerts[ triA->indices[2] ].pos;
+	Vec3 a1 = theVerts[ triA->indices[0] ].pos;
+	Vec3 b1 = theVerts[ triA->indices[1] ].pos;
+	Vec3 c1 = theVerts[ triA->indices[2] ].pos;
 
-	VEC3 a2 = theVerts[ triB->indices[0] ].pos;
-	VEC3 b2 = theVerts[ triB->indices[1] ].pos;
-	VEC3 c2 = theVerts[ triB->indices[2] ].pos;
+	Vec3 a2 = theVerts[ triB->indices[0] ].pos;
+	Vec3 b2 = theVerts[ triB->indices[1] ].pos;
+	Vec3 c2 = theVerts[ triB->indices[2] ].pos;
 
 	//edge B1->A1
 	if( TriHasEdge(b1,a1,a2,b2,c2)  )
@@ -747,7 +747,7 @@ void MeshMender::SetUpData(
 
 		for(size_t indx = 0 ; indx < 3 ; ++indx )
 		{
-			VEC3 v = theVerts[m_Triangles[i].indices[indx]].pos;
+			Vec3 v = theVerts[m_Triangles[i].indices[indx]].pos;
 			VertexChildrenMap::iterator iter = m_VertexChildrenMap.find( v );
 			if(iter != m_VertexChildrenMap.end())
 			{
@@ -774,15 +774,15 @@ void MeshMender::SetUpFaceVectors(Triangle& t,
 
 	if(computeNormals == CALCULATE_NORMALS)
 	{ 
-		VEC3 edge0 = verts[t.indices[1]].pos - verts[t.indices[0]].pos;
-		VEC3 edge1 = verts[t.indices[2]].pos - verts[t.indices[0]].pos;
+		Vec3 edge0 = verts[t.indices[1]].pos - verts[t.indices[0]].pos;
+		Vec3 edge1 = verts[t.indices[2]].pos - verts[t.indices[0]].pos;
 
 		t.normal = cross(edge0, edge1);
 
 		if (WeightNormalsByArea < 1.0f)
 		{
-			VEC3 normalizedNorm = normalize(t.normal);
-			VEC3 finalNorm = (normalizedNorm * (1.0f - WeightNormalsByArea)) + (t.normal * WeightNormalsByArea);
+			Vec3 normalizedNorm = normalize(t.normal);
+			Vec3 finalNorm = (normalizedNorm * (1.0f - WeightNormalsByArea)) + (t.normal * WeightNormalsByArea);
 			t.normal = finalNorm;
 		}
 	}
@@ -821,16 +821,16 @@ void MeshMender::OrthogonalizeTangentsAndBinormals(
 		//NOTE: this should maybe happen with the final smoothed N, T, and B
 		//will try it here and see what the results look like
 
-		VEC3 tmpTan = theVerts[i].tangent;
-		VEC3 tmpNorm = theVerts[i].normal;
-		VEC3 tmpBin = theVerts[i].binormal;
+		Vec3 tmpTan = theVerts[i].tangent;
+		Vec3 tmpNorm = theVerts[i].normal;
+		Vec3 tmpBin = theVerts[i].binormal;
 
 
-		VEC3 newT = tmpTan - (dot(tmpNorm, tmpTan) * tmpNorm );
-		VEC3 newB = tmpBin - (dot(tmpNorm, tmpBin) * tmpNorm) - (dot(newT, tmpBin) * newT);
+		Vec3 newT = tmpTan - (dot(tmpNorm, tmpTan) * tmpNorm );
+		Vec3 newB = tmpBin - (dot(tmpNorm, tmpBin) * tmpNorm) - (dot(newT, tmpBin) * newT);
 
-		theVerts[i].tangent = normalizeSafe(newT, VEC3(0,0,0), 0.0f);
-		theVerts[i].binormal = normalizeSafe(newB, VEC3(0,0,0), 0.0f);
+		theVerts[i].tangent = normalizeSafe(newT, Vec3(0,0,0), 0.0f);
+		theVerts[i].binormal = normalizeSafe(newB, Vec3(0,0,0), 0.0f);
 
 		//this is where we can do a final check for zero length vectors
 		//and set them to something appropriate
@@ -860,12 +860,12 @@ void MeshMender::OrthogonalizeTangentsAndBinormals(
 			{
 				//both vectors are invalid, so we should create something
 				//that is at least valid if not correct
-				VEC3 xAxis( 1.0f , 0.0f , 0.0f);
-				VEC3 yAxis( 0.0f , 1.0f , 0.0f);
+				Vec3 xAxis( 1.0f , 0.0f , 0.0f);
+				Vec3 yAxis( 0.0f , 1.0f , 0.0f);
 				//I'm checking two possible axis, because the normal could be one of them,
 				//and we want to chose a different one to start making our valid basis.
 				//I can find out which is further away from it by checking the dot product
-				VEC3 startAxis;
+				Vec3 startAxis;
 
 				if( dot(xAxis, theVerts[i].normal) < dot(yAxis, theVerts[i].normal) )
 				{
@@ -898,8 +898,8 @@ void MeshMender::OrthogonalizeTangentsAndBinormals(
 void MeshMender::GetGradients( const MeshMender::Vertex& v0,
                                const MeshMender::Vertex& v1,
                                const MeshMender::Vertex& v2,
-                               VEC3& tangent,
-                               VEC3& binormal) const
+                               Vec3& tangent,
+                               Vec3& binormal) const
 {
 	//using Eric Lengyel's approach with a few modifications
 	//from Mathematics for 3D Game Programmming and Computer Graphics
@@ -909,9 +909,9 @@ void MeshMender::GetGradients( const MeshMender::Vertex& v0,
 	// to <0,0,1>, straight up out of the texture map
 
 	//let P = v1 - v0
-	VEC3 P = v1.pos - v0.pos;
+	Vec3 P = v1.pos - v0.pos;
 	//let Q = v2 - v0
-	VEC3 Q = v2.pos - v0.pos;
+	Vec3 Q = v2.pos - v0.pos;
 	float s1 = v1.s - v0.s;
 	float t1 = v1.t - v0.t;
 	float s2 = v2.s - v0.s;
@@ -945,10 +945,10 @@ void MeshMender::GetGradients( const MeshMender::Vertex& v0,
 		tmp = 1.0f/(s1*t2 - s2*t1 );
 	}
 	
-	tangent = VEC3(t2*P.x - t1*Q.x, t2*P.y - t1*Q.y, t2*P.z - t1*Q.z);
+	tangent = Vec3(t2*P.x - t1*Q.x, t2*P.y - t1*Q.y, t2*P.z - t1*Q.z);
 	tangent = tmp * tangent;
 
-	binormal = VEC3(s1*Q.x - s2*P.x, s1*Q.y - s2*P.y, s1*Q.z - s2*P.z);
+	binormal = Vec3(s1*Q.x - s2*P.x, s1*Q.y - s2*P.y, s1*Q.z - s2*P.z);
 	binormal = tmp * binormal;
 
 	//after these vectors are smoothed together,

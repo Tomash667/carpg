@@ -1,20 +1,27 @@
 CHANGELOG
 Minor updates have changes only in exporter/converer, don't affect qmsh file.
 ---------------------------
-v20.1:
+v21:
++ script importer (from .qmsh file)
+EXPORT SCRIPT (v21):
++ saving/loading config, better file selector
++ exporting bone groups
+MESH (v21):
++ moved bone groups after bones
++ fixed points rotation
 CONVERTER:
 * handling of smooth/flat lighting
 * compare command
 
 v20:
-QMSH:
-* points offset in header
-SCRIPT (v19.1):
-* export script can run converter to export directly to qmsh file
-* update for lastest blender version
-* fix default filename
+MESH (v20):
++ points offset in header
+EXPORT SCRIPT (v19.1):
++ export script can run converter to export directly to qmsh file
++ update for lastest blender version
++ fix default filename
 CONVERTER:
-* new commands
++ new commands
 	-info FILE - show file info (version etc)
 	-upgrade FILE - upgrade mesh to newest version
 	-upgradedir PATH - upgrade all meshes to newest version
@@ -22,34 +29,34 @@ CONVERTER:
 	-noforce - don't force mesh upgrade (default)
 	-subdir - check subdirectories for upgradedir (default)
 	-nosubdir - don't check subdirectories for upgradedir
-* default extension .phy for physics
-* converter return 0 (success) or 1 (failed)
++ default extension .phy for physics
++ converter return 0 (success) or 1 (failed)
 
 v19:
-* using euler angles in point
-* removed semicolon in matrices
++ using euler angles in point
++ removed semicolon in matrices
 
 v18:
-* simplified exporter
-* exporting diffuse/specular material color
-* submesh split groups
-* don't export bone groups where there is no bones
++ simplified exporter
++ exporting diffuse/specular material color
++ submesh split groups
++ don't export bone groups where there is no bones
 
 v17:
-* removed unused values
-* using normals from blender
-* force export tangents
++ removed unused values
++ using normals from blender
++ force export tangents
 
 v16:
-* normalmap (normal_factor), specularmap (specular_factor, specular_color_factor)
++ normalmap (normal_factor), specularmap (specular_factor, specular_color_factor)
 
 v15:
-* set camera Vec3 up
++ set camera Vec3 up
 
 v14:
-* point size in Vec3 not float, so they can have different dimensions
++ point size in Vec3 not float, so they can have different dimensions
 
 v13:
-* setup camera Vec3 from, to
-* changed bone indexing to add +1
-* saving Vec3 physic mesh
++ setup camera Vec3 from, to
++ changed bone indexing to add +1
++ saving Vec3 physic mesh

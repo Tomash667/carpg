@@ -1735,3 +1735,10 @@ struct StrToSth_obj< std::vector<T> >
 	}
 	static inline bool IsSupported() { return true; }
 };
+
+//---------------------------------------------------------------------------------
+// NEW
+
+typedef const char* cstring;
+
+cstring format(cstring str, ...);

@@ -572,7 +572,7 @@ class Importer:
 				b = armature.edit_bones.new(bone.name)
 				b.head = (1.0, 1.0, 0.0)
 				b.tail = (1.0, 1.0, 1.0)
-				#b.matrix = 
+				b.matrix = bone.mat
 				if bone.parent != 0:
 					b.parent = armature.edit_bones[bone.parent - 1]
 			bpy.ops.object.mode_set(mode='OBJECT')

@@ -1,7 +1,9 @@
 #include "PCH.hpp"
 #include "MeshTask.hpp"
+#include "QmshTmpLoader.h"
+#include "Qmsh.h"
 
-const char* CONVERTER_VERSION = "20.1";
+const char* CONVERTER_VERSION = "21";
 
 string group_file, output_file;
 GROUP_OPTION gopt;
@@ -128,7 +130,8 @@ int main(int argc, char **argv)
 
 	if(argc == 1)
 	{
-		printf("QMSH converter, version %s (output %d).\nUsage: \"converter FILE.qmsh.tmp\". Use \"converter -h\" for list of commands.\n", CONVERTER_VERSION, QMSH_VERSION);
+		printf("QMSH converter, version %s (output %d).\nUsage: \"converter FILE.qmsh.tmp\". Use \"converter -h\" for list of commands.\n",
+			CONVERTER_VERSION, QMSH::VERSION);
 		return 0;
 	}
 	export_phy = false;
@@ -169,7 +172,7 @@ int main(int argc, char **argv)
 			else if(str == "-v")
 			{
 				printf("Converter version %s\nHandled input file version: %d..%d\nOutput file version: %d\n",
-					CONVERTER_VERSION, QMSH_TMP_VERSION_MIN, QMSH_TMP_VERSION_MAX, QMSH_VERSION);
+					CONVERTER_VERSION, QmshTmpLoader::QMSH_TMP_HANDLED_VERSION.x, QmshTmpLoader::QMSH_TMP_HANDLED_VERSION.y, QMSH::VERSION);
 			}
 			else if(str == "-g1")
 				gopt = GO_ONE;

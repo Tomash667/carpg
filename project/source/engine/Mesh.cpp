@@ -183,6 +183,10 @@ void Mesh::Load(StreamReader& stream, IDirect3DDevice9* device)
 		if(!stream)
 			throw "Failed to read bones data.";
 
+		// bone groups (version >= 21)
+		if(head.version >= 21)
+			LoadBoneGroups(stream);
+
 		// animations
 		size = Animation::MIN_SIZE * head.n_anims;
 		if(!stream.Ensure(size))
@@ -217,35 +221,9 @@ void Mesh::Load(StreamReader& stream, IDirect3DDevice9* device)
 
 	LoadPoints(stream);
 
-	// bone groups
-	if(IS_SET(head.flags, F_ANIMATED) && !IS_SET(head.flags, F_STATIC))
-	{
-		if(!stream.Ensure(BoneGroup::MIN_SIZE * head.n_groups))
-			throw "Failed to read bone groups.";
-		groups.resize(head.n_groups);
-		for(word i = 0; i < head.n_groups; ++i)
-		{
-			BoneGroup& gr = groups[i];
-
-			stream.Read(gr.name);
-
-			// parent group
-			stream.Read(gr.parent);
-			assert(gr.parent < head.n_groups);
-			assert(gr.parent != i || i == 0);
-
-			// bone indexes
-			byte count;
-			stream.Read(count);
-			gr.bones.resize(count);
-			stream.Read(gr.bones.data(), gr.bones.size());
-		}
-
-		if(!stream)
-			throw "Failed to read bone groups data.";
-
-		SetupBoneMatrices();
-	}
+	// bone groups (version < 21)
+	if(head.version < 21 && IS_SET(head.flags, F_ANIMATED) && !IS_SET(head.flags, F_STATIC))
+		LoadBoneGroups(stream);
 
 	// splits
 	if(IS_SET(head.flags, F_SPLIT))
@@ -278,7 +256,7 @@ void Mesh::LoadHeader(StreamReader& stream)
 		throw "Failed to read file header.";
 	if(memcmp(head.format, "QMSH", 4) != 0)
 		throw Format("Invalid file signature '%.4s'.", head.format);
-	if(head.version < 12 || head.version > 20)
+	if(head.version < 12 || head.version > 21)
 		throw Format("Invalid file version '%u'.", head.version);
 	if(head.version < 20)
 		throw Format("Unsupported file version '%u'.", head.version);
@@ -351,8 +329,38 @@ void Mesh::LoadPoints(StreamReader& stream)
 		stream.Read(p.type);
 		stream.Read(p.size);
 		stream.Read(p.rot);
-		p.rot.y = Clip(-p.rot.y);
+		if(head.version < 21)
+			p.rot.y = Clip(-p.rot.y);
 	}
+}
+
+void Mesh::LoadBoneGroups(StreamReader& stream)
+{
+	if(!stream.Ensure(BoneGroup::MIN_SIZE * head.n_groups))
+		throw "Failed to read bone groups.";
+	groups.resize(head.n_groups);
+	for(word i = 0; i < head.n_groups; ++i)
+	{
+		BoneGroup& gr = groups[i];
+
+		stream.Read(gr.name);
+
+		// parent group
+		stream.Read(gr.parent);
+		assert(gr.parent < head.n_groups);
+		assert(gr.parent != i || i == 0);
+
+		// bone indexes
+		byte count;
+		stream.Read(count);
+		gr.bones.resize(count);
+		stream.Read(gr.bones.data(), gr.bones.size());
+	}
+
+	if(!stream)
+		throw "Failed to read bone groups data.";
+
+	SetupBoneMatrices();
 }
 
 //=================================================================================================
