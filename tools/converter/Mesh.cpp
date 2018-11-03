@@ -549,6 +549,22 @@ void Mesh::Save(cstring path)
 			f.WriteString1(bone.name);
 		}
 
+		// bone groups
+		for(word i = 0; i < head.n_groups; ++i)
+		{
+			BoneGroup& gr = groups[i];
+
+			f.WriteString1(gr.name);
+
+			// parent group
+			f.Write(gr.parent);
+
+			// bone indexes
+			byte count = gr.bones.size();
+			f.Write(count);
+			f.Write(gr.bones.data(), gr.bones.size());
+		}
+
 		// animations
 		for(byte i = 0; i < head.n_anims; ++i)
 		{
@@ -581,24 +597,6 @@ void Mesh::Save(cstring path)
 		f.Write(p.type);
 		f.Write(p.size);
 		f.Write(p.rot);
-	}
-
-	if(IS_SET(head.flags, F_ANIMATED) && !IS_SET(head.flags, F_STATIC))
-	{
-		for(word i = 0; i < head.n_groups; ++i)
-		{
-			BoneGroup& gr = groups[i];
-
-			f.WriteString1(gr.name);
-
-			// parent group
-			f.Write(gr.parent);
-
-			// bone indexes
-			byte count = gr.bones.size();
-			f.Write(count);
-			f.Write(gr.bones.data(), gr.bones.size());
-		}
 	}
 
 	// splits

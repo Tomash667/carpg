@@ -1,5 +1,6 @@
 #include "PCH.hpp"
 #include "Converter.h"
+#include "Mesh.h"
 
 // Przechowuje dane na temat wybranej koœci we wsp. globalnych modelu w uk³adzie DirectX
 struct BONE_INTER_DATA
@@ -17,6 +18,16 @@ struct INTERMEDIATE_VERTEX_SKIN_DATA
 	uint1 Index1;
 	uint1 Index2;
 	float Weight1;
+};
+
+cstring point_types[Mesh::Point::MAX] = {
+	"PLAIN_AXES",
+	"SPHERE",
+	"BOX",
+	"ARROWS",
+	"SINGLE_ARROW",
+	"CIRCLE",
+	"CONE"
 };
 
 void Converter::ConvertQmshTmpToQmsh(QMSH *Out, tmp::QMSH &QmshTmp, ConversionData& cs)
@@ -297,14 +308,17 @@ void Converter::ConvertQmshTmpToQmsh(QMSH *Out, tmp::QMSH &QmshTmp, ConversionDa
 
 		point->name = pt.name;
 		point->size = pt.size;
-
-		if(pt.type == "CUBE")
-			point->type = 2;
-		else if(pt.type == "SPHERE")
-			point->type = 1;
-		else
-			point->type = 0;
-
+		point->type = (uint2)-1;
+		for(int i = 0; i < Mesh::Point::MAX; ++i)
+		{
+			if(pt.type == point_types[i])
+			{
+				point->type = i;
+				break;
+			}
+		}
+		if(point->type == (uint2)-1)
+			throw Error(format("Invalid point type '%s'.", pt.type.c_str()));
 		BlenderToDirectxTransform(&point->matrix, pt.matrix);
 		BlenderToDirectxTransform(&point->rot, pt.rot);
 

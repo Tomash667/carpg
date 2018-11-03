@@ -210,7 +210,7 @@ class Qmsh:
 			self.cam_up = ConvertVec3(f.ReadVec3())
 			if self.sign != b"QMSH":
 				raise ImporterException("Invalid file signature " + str(self.sign))
-			if self.version != 20:
+			if self.version < 20 or self.version > 21:
 				raise ImporterException("Invalid file version " + str(self.version))
 			if self.n_bones >= 32:
 				raise ImporterException("Too many bones (" + str(self.n_bones) + ")")
@@ -313,7 +313,15 @@ class Qmsh:
 			self.name = f.ReadString()
 			self.mat = ConvertMatrix(f.ReadMatrix())
 			self.bone = f.ReadWord()
-			self.type = f.ReadWord()
+			empty_types = {
+				0: 'PLAIN_AXES',
+				1: 'SPHERE',
+				2: 'BOX',
+				3: 'ARROWS',
+				4: 'SINGLE_ARROW',
+				5: 'CIRCLE',
+				6: 'CONE' }
+			self.type = empty_types.get(f.ReadWord(), 'PLAIN_AXES')
 			self.size = ConvertVec3(f.ReadVec3())
 			self.rot = ConvertVec3(f.ReadVec3())
 	##-------------------------------------------------------------------------
@@ -324,10 +332,12 @@ class Qmsh:
 		self.ReadSubmeshes(f)
 		if self.head.IsAnimated() and not self.head.IsStatic():
 			self.ReadBones(f)
+			if self.head.version >= 21:
+				self.ReadBoneGroups(f)
 			self.ReadAnimations(f)
 			self.head.n_bones += 1 # add zero bone
 		self.ReadPoints(f)
-		if self.head.IsAnimated() and not self.head.IsStatic():
+		if self.head.version < 21 and self.head.IsAnimated() and not self.head.IsStatic():
 			self.ReadBoneGroups(f)
 		f.ReadEOF()
 	def ReadHeader(self, f):

@@ -139,9 +139,14 @@ struct Mesh
 	{
 		enum Type : word
 		{
-			OTHER,
+			PLAIN_AXES,
 			SPHERE,
-			Box
+			BOX,
+			ARROWS,
+			SINGLE_ARROW,
+			CIRCLE,
+			CONE,
+			MAX
 		};
 
 		string name;
@@ -159,7 +164,7 @@ struct Mesh
 		}
 		bool IsBox() const
 		{
-			return type == Box;
+			return type == BOX;
 		}
 
 		bool operator == (const Point& point) const

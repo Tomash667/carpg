@@ -107,9 +107,13 @@ struct Mesh : public Resource
 	{
 		enum Type : word
 		{
-			OTHER,
+			PLAIN_AXES,
 			SPHERE,
-			BOX
+			BOX,
+			ARROWS,
+			SINGLE_ARROW,
+			CIRCLE,
+			CONE
 		};
 
 		string name;

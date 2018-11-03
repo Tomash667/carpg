@@ -99,10 +99,10 @@ struct QMSH
 	uint Flags;
 	std::vector<QMSH_VERTEX> Vertices;
 	std::vector<uint2> Indices;
-	std::vector< shared_ptr<QMSH_SUBMESH> > Submeshes;
-	std::vector< shared_ptr<QMSH_BONE> > Bones; // Tylko kiedy Flags & SKINNING
-	std::vector< shared_ptr<QMSH_ANIMATION> > Animations; // Tylko kiedy Flags & SKINNING
-	std::vector< shared_ptr<QMSH_POINT> > Points;
+	std::vector<shared_ptr<QMSH_SUBMESH>> Submeshes;
+	std::vector<shared_ptr<QMSH_BONE>> Bones; // Tylko kiedy Flags & SKINNING
+	std::vector<shared_ptr<QMSH_ANIMATION>> Animations; // Tylko kiedy Flags & SKINNING
+	std::vector<shared_ptr<QMSH_POINT>> Points;
 	std::vector<QMSH_GROUP> Groups;
 
 	// Bry³y otaczaj¹ce
