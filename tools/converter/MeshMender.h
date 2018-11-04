@@ -3,7 +3,7 @@
 #pragma warning( disable : 4786)
 #pragma warning( disable : 4100)
 
-/*bool operator<( const VEC3 & lhs, const VEC3 & rhs )
+/*bool operator<( const Vec3 & lhs, const Vec3 & rhs )
 {
 	//needed to have a vertex in a map.
 	//must be an absolute sort so that we can reliably find the exact
@@ -39,12 +39,12 @@ public:
 	
 	struct Vertex
 	{
-		VEC3 pos;
-		VEC3 normal;
+		Vec3 pos;
+		Vec3 normal;
 		float s;
 		float t;
-		VEC3 tangent;
-		VEC3 binormal;
+		Vec3 tangent;
+		Vec3 binormal;
 		
 		Vertex() : 
 			pos(0.0f ,0.0f ,0.0f ),
@@ -176,9 +176,9 @@ protected:
 		size_t indices[3];
 
 		// per face values
-		VEC3 normal;
-		VEC3 tangent;
-		VEC3 binormal;
+		Vec3 normal;
+		Vec3 tangent;
+		Vec3 binormal;
 
 		// helper flags
 		bool handled; 
@@ -192,7 +192,7 @@ protected:
 
 	//each vertex has a set of triangles that contain it.
 	//those triangles are considered to be that vertex's children
-	typedef std::map<VEC3, TriangleList> VertexChildrenMap;
+	typedef std::map<Vec3, TriangleList> VertexChildrenMap;
 	VertexChildrenMap m_VertexChildrenMap;
 
 	//a neighbor group is defined to be the list of traingles
@@ -237,8 +237,8 @@ protected:
 	void GetGradients(const MeshMender::Vertex & v0,
 					  const MeshMender::Vertex & v1,
 					  const MeshMender::Vertex & v2,
-					  VEC3 & tangent,
-					  VEC3 & binormal) const;
+					  Vec3 & tangent,
+					  Vec3 & binormal) const;
 
 	void OrthogonalizeTangentsAndBinormals(std::vector<Vertex> & theVerts);
 
@@ -248,11 +248,11 @@ protected:
 								std::vector<unsigned int> & theIndices,
 								std::vector<unsigned int> & mappingNewToOldVert);
 
-	bool TriHasEdge(const VEC3 & p0,
-					const VEC3 & p1,
-					const VEC3 & triA,
-					const VEC3 & triB,
-					const VEC3 & triC);
+	bool TriHasEdge(const Vec3 & p0,
+					const Vec3 & p1,
+					const Vec3 & triA,
+					const Vec3 & triB,
+					const Vec3 & triC);
 
 	bool TriHasEdge(const size_t & p0,
 					const size_t & p1,
@@ -263,17 +263,17 @@ protected:
 	void ProcessNormals(TriangleList& possibleNeighbors,
 						std::vector<Vertex> & theVerts,
 						std::vector<unsigned int> & mappingNewToOldVert,
-						VEC3 workingPosition);
+						Vec3 workingPosition);
 	
 	void ProcessTangents(TriangleList& possibleNeighbors,
 						 std::vector<Vertex> & theVerts,
 						 std::vector<unsigned int> & mappingNewToOldVert,
-						 VEC3 workingPosition);
+						 Vec3 workingPosition);
 	
 	void ProcessBinormals(TriangleList& possibleNeighbors,
 						  std::vector<Vertex> & theVerts,
 						  std::vector<unsigned int> & mappingNewToOldVert,
-						  VEC3 workingPosition);
+						  Vec3 workingPosition);
 
 	
 	//make any triangle that used the oldIndex use the newIndex instead
