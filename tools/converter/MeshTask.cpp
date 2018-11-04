@@ -179,6 +179,26 @@ void Compare(const char* path1, const char* path2)
 	else if(mesh1->vdata_size != mesh2->vdata_size || memcmp(mesh1->vdata, mesh2->vdata, mesh1->vdata_size) != 0)
 	{
 		printf("Verts data differences\n");
+		if(mesh1->vertex_size == mesh2->vertex_size && mesh1->vdata_size == mesh2->vdata_size)
+		{
+			uint vs = mesh1->vertex_size;
+			int found = 0;
+			for(uint i = 0; i < mesh1->head.n_verts; ++i)
+			{
+				byte* v1 = mesh1->vdata + i * vs;
+				byte* v2 = mesh2->vdata + i * vs;
+				if(memcmp(v1, v2, vs) != 0)
+				{
+					printf("Differences at vertex %u\n", i);
+					VAnimated* va = (VAnimated*)v1;
+					VAnimated* vb = (VAnimated*)v2;
+					++found;
+					if(found == 5)
+						break;
+				}
+			}
+		}
+
 		any = true;
 	}
 

@@ -444,7 +444,9 @@ def ExportQmsh(data):
 def RunExport(filepath, config):
 	if config.runConverter and not os.path.isfile(config.converterPath):
 		raise ExporterException("Invalid converter path.")
-	if filepath.endswith('.qmsh'):
+	if filepath.endswith('.qmsh.tmp.qmsh'):
+		filepath = filepath[:-4]
+	elif filepath.endswith('.qmsh'):
 		filepath += '.tmp'
 	data = ExporterData(filepath, config.textureNames, config.useExistingArmature, config.applyModifiers, config.forceTangents)
 	if not ExportQmsh(data):

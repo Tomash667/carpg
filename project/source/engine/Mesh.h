@@ -148,6 +148,7 @@ struct Mesh : public Resource
 	void SetVertexSizeDecl();
 	void LoadPoints(StreamReader& stream);
 	void LoadBoneGroups(StreamReader& stream);
+	void LoadMatrix33(StreamReader& stream, Matrix& m);
 	static void LoadVertexData(VertexData* vd, StreamReader& stream);
 	Animation* GetAnimation(cstring name);
 	Bone* GetBone(cstring name);

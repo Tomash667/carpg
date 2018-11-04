@@ -21,9 +21,6 @@ import configparser
 from bpy_extras.io_utils import ImportHelper
 
 ################################################################################
-fps = 25
-
-################################################################################
 def IsSet(flags, bit):
 	return (flags & bit) != 0
 	
@@ -356,7 +353,7 @@ class Qmsh:
 			self.head.n_bones += 1 # add zero bone
 		else:
 			self.bones = []
-			self.bone_groups = []
+			self.groups = []
 		self.ReadPoints(f)
 		if self.head.version < 21 and self.head.IsAnimated() and not self.head.IsStatic():
 			self.ReadBoneGroups(f)
@@ -486,6 +483,7 @@ class Importer:
 		self.warnings = 0
 		self.last_cam = None
 		self.skeleton = None
+		self.fps = bpy.context.scene.render.fps
 	def Run(self, filepath, config):
 		self.config = config
 		self.LoadMesh(filepath)
@@ -591,11 +589,13 @@ class Importer:
 			Warn("Removed %d broken tris." % len(mesh.broken_tris))
 		# armature
 		if mesh.head.IsAnimated() and not mesh.head.IsStatic():
+			# create skeleton
 			armature = bpy.data.armatures.new(name='Armature')
 			obj_arm = bpy.data.objects.new(name='Armature', object_data=armature)
 			self.skeleton = obj_arm
 			bpy.context.scene.objects.link(obj_arm)
 			bpy.context.scene.objects.active = obj_arm
+			# add bones
 			bpy.ops.object.mode_set(mode='EDIT')
 			for bone in mesh.bones:
 				if bone.name == "zero":
@@ -610,6 +610,22 @@ class Importer:
 				if bone.parent != 0:
 					b.parent = armature.edit_bones[bone.parent - 1]
 			bpy.ops.object.mode_set(mode='OBJECT')
+			# add bone groups
+			if len(self.mesh.groups) > 1:
+				i = 0
+				pose = obj_arm.pose
+				for group in self.mesh.groups:
+					name = group.name
+					if group.parent != i:
+						name += '#' + self.mesh.groups[group.parent].name
+					bone_group = pose.bone_groups.new(name = name)
+					for bone_i in group.bones:
+						bone_name = self.mesh.bones[bone_i].name
+						for bone in pose.bones:
+							if bone.name == bone_name:
+								bone.bone_group = bone_group
+								break
+					i += 1
 			# animations
 			for anim in mesh.anims:
 				self.AddAnimation(anim)
@@ -769,24 +785,28 @@ class Importer:
 			for i in range(anim.n_frames):
 				frame = anim.frames[i]
 				framebone = frame.bones[bone_i - 1]
-				h.SetParams(i, round(frame.time * fps), framebone)
+				h.SetParams(i, round(frame.time * self.fps), framebone)
 			h.Update()
 		a.use_fake_user = True
 	def MergeAnimation(self, anim, existing):
-		pass #TODO
+		bpy.data.actions.remove(existing, do_unlink=True)
+		self.AddAnimation(anim)
 	def AddPoint(self, point):
 		empty = bpy.data.objects.new(name=point.name, object_data=None)
 		empty.empty_draw_type = point.type
-		empty.scale = point.size
 		if point.bone <= self.mesh.head.n_bones:
 			bone = self.mesh.bones[point.bone]
 			empty.parent = self.skeleton
 			empty.parent_type = 'BONE'
 			empty.parent_bone = bone.name
 		empty.matrix_world = point.mat
+		empty.scale = point.size
 		bpy.context.scene.objects.link(empty)
 	def MergePoint(self, point, empty):
-		pass #TODO
+		bpy.ops.object.select_all(action='DESELECT')
+		empty.select = True
+		bpy.ops.object.delete() 
+		self.AddPoint(point)
 	def AddCamera(self):
 		cam = bpy.data.cameras.new(name='Camera')
 		obj = bpy.data.objects.new(name='Camera', object_data=cam)
@@ -806,10 +826,10 @@ class Importer:
 		cam.rotation_quaternion = QuaternionLookRotation(self.mesh.head.cam_pos, self.mesh.head.cam_target, self.mesh.head.cam_up)
 	def FindObject(self, type, name = None):
 		for obj in bpy.context.selected_objects:
-			if obj.type == type and (name is None or obj.nam == name):
+			if obj.type == type and (name is None or obj.name == name):
 				return obj
 		for obj in bpy.context.scene.objects:
-			if obj.type == type and (name is None or obj.nam == name):
+			if obj.type == type and (name is None or obj.name == name):
 				return obj
 		return None
 	def SetResolution(self):

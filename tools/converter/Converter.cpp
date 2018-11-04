@@ -348,8 +348,6 @@ void Converter::TmpToQmsh_Bones(QMSH *Out, std::vector<BONE_INTER_DATA> *OutBone
 	MATRIX ArmatureToWorldMat;
 	AssemblyBlenderObjectMatrix(&ArmatureToWorldMat, TmpArmature.Position, TmpArmature.Orientation, TmpArmature.Size);
 	BlenderToDirectxTransform(&ArmatureToWorldMat);
-	//MATRIX WorldToArmatureMat;
-	//Inverse(&WorldToArmatureMat, ArmatureToWorldMat);
 
 	// Dla ka¿dej koœci g³ównego poziomu
 	for(uint bi = 0; bi < TmpArmature.Bones.size(); bi++)

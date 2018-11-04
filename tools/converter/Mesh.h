@@ -1,5 +1,73 @@
 #pragma once
 
+struct VDefault
+{
+	Vec3 pos;
+	Vec3 normal;
+	Vec2 tex;
+};
+
+struct VAnimated
+{
+	Vec3 pos;
+	float weights;
+	uint indices;
+	Vec3 normal;
+	Vec2 tex;
+};
+
+struct VTangent
+{
+	Vec3 pos;
+	Vec3 normal;
+	Vec2 tex;
+	Vec3 tangent;
+	Vec3 binormal;
+};
+
+struct VAnimatedTangent
+{
+	Vec3 pos;
+	float weights;
+	uint indices;
+	Vec3 normal;
+	Vec2 tex;
+	Vec3 tangent;
+	Vec3 binormal;
+};
+
+struct VTex
+{
+	Vec3 pos;
+	Vec2 tex;
+};
+
+struct VColor
+{
+	Vec3 pos;
+	Vec4 color;
+};
+
+struct VParticle
+{
+	Vec3 pos;
+	Vec2 tex;
+	Vec4 color;
+};
+
+struct VTerrain
+{
+	Vec3 pos;
+	Vec3 normal;
+	Vec2 tex;
+	Vec2 tex2;
+};
+
+struct VPos
+{
+	Vec3 pos;
+};
+
 struct Mesh
 {
 	enum MESH_FLAGS
