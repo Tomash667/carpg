@@ -36,6 +36,8 @@ struct QMSH_BONE
 	uint ParentIndex;
 	// Macierz przeszta³caj¹ca ze wsp. danej koœci do wsp. koœci nadrzêdnej w Bind Pose, ³¹cznie z translacj¹
 	MATRIX Matrix;
+	MATRIX RawMatrix;
+	Vec4 head, tail;
 
 	// Indeksy podkoœci, indeksowane równie¿ od 1
 	// Tylko runtime, tego nie ma w pliku
@@ -46,8 +48,7 @@ struct QMSH_BONE
 
 	// czy koœæ nie odkszta³ca modelu ?
 	bool non_mesh;
-
-	Vec3 point;
+	bool connected;
 };
 
 struct QMSH_KEYFRAME_BONE

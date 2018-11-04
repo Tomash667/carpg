@@ -145,6 +145,26 @@ void Mesh::LoadSafe(cstring path)
 	}
 }
 
+void ReadMatrix33(common::FileStream& f, MATRIX& m)
+{
+	f.Read(m._11);
+	f.Read(m._12);
+	f.Read(m._13);
+	m._14 = 0;
+	f.Read(m._21);
+	f.Read(m._22);
+	f.Read(m._23);
+	m._24 = 0;
+	f.Read(m._31);
+	f.Read(m._32);
+	f.Read(m._33);
+	m._34 = 0;
+	f.Read(m._41);
+	f.Read(m._42);
+	f.Read(m._43);
+	m._44 = 1;
+}
+
 void Mesh::Load(cstring path)
 {
 	FileStream f(path, FM_READ);
@@ -314,23 +334,26 @@ void Mesh::Load(cstring path)
 		for(byte i = 0; i < head.n_bones; ++i)
 		{
 			Bone& bone = bones[i];
-
-			f.Read(bone.parent);
-
-			f.Read(bone.mat._11);
-			f.Read(bone.mat._12);
-			f.Read(bone.mat._13);
-			f.Read(bone.mat._21);
-			f.Read(bone.mat._22);
-			f.Read(bone.mat._23);
-			f.Read(bone.mat._31);
-			f.Read(bone.mat._32);
-			f.Read(bone.mat._33);
-			f.Read(bone.mat._41);
-			f.Read(bone.mat._42);
-			f.Read(bone.mat._43);
-
-			f.ReadString1(&bone.name);
+			if(head.version >= 21)
+			{
+				f.ReadString1(&bone.name);
+				f.Read(bone.parent);
+				ReadMatrix33(f, bone.mat);
+				f.Read(bone.raw_mat);
+				f.Read(bone.head);
+				f.Read(bone.tail);
+				f.Read(bone.connected);
+			}
+			else
+			{
+				f.Read(bone.parent);
+				ReadMatrix33(f, bone.mat);
+				bone.raw_mat = bone.mat;
+				bone.head = Vec4(1, 1, 0, 0.1f);
+				bone.tail = Vec4(1, 1, 1, 0.1f);
+				bone.connected = false;
+				f.ReadString1(&bone.name);
+			}
 		}
 
 		//if(!stream)
@@ -530,9 +553,8 @@ void Mesh::Save(cstring path)
 		for(byte i = 0; i < head.n_bones; ++i)
 		{
 			Bone& bone = bones[i];
-
+			f.WriteString1(bone.name);
 			f.Write(bone.parent);
-
 			f.Write(bone.mat._11);
 			f.Write(bone.mat._12);
 			f.Write(bone.mat._13);
@@ -545,8 +567,10 @@ void Mesh::Save(cstring path)
 			f.Write(bone.mat._41);
 			f.Write(bone.mat._42);
 			f.Write(bone.mat._43);
-
-			f.WriteString1(bone.name);
+			f.Write(bone.raw_mat);
+			f.Write(bone.head);
+			f.Write(bone.tail);
+			f.Write(bone.connected);
 		}
 
 		// bone groups

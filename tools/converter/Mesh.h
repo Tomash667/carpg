@@ -73,19 +73,25 @@ struct Mesh
 
 	struct Bone
 	{
+		string name;
 		word id;
 		word parent;
-		MATRIX mat;
-		string name;
+		MATRIX mat, raw_mat;
+		Vec4 head, tail;
 		vector<word> childs;
+		bool connected;
 
 		bool operator == (const Bone& bone) const
 		{
-			return id == bone.id
+			return name == bone.name
+				&& id == bone.id
 				&& parent == bone.parent
 				&& mat == bone.mat
-				&& name == bone.name
-				&& childs == bone.childs;
+				&& raw_mat == bone.raw_mat
+				&& head == bone.head
+				&& tail == bone.tail
+				&& childs == bone.childs
+				&& connected == bone.connected;
 		}
 
 		static const uint MIN_SIZE = 51;

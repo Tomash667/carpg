@@ -6,7 +6,9 @@ v21:
 EXPORT SCRIPT (v21):
 + saving/loading config, better file selector
 + exporting bone groups
++ removed exporting of unused bonespace head/tail/length/matrix
 MESH (v21):
++ added more bone info to allow importing back to blender
 + moved bone groups after bones
 + fixed points rotation
 CONVERTER:

@@ -103,24 +103,25 @@ void QmshSaver::SaveQmsh(const QMSH &Qmsh, const string &FileName)
 		// bones
 		for(uint bi = 0; bi < Qmsh.Bones.size(); bi++)
 		{
-			F.WriteEx((uint2)Qmsh.Bones[bi]->ParentIndex);
-
-			F.WriteEx(Qmsh.Bones[bi]->Matrix._11);
-			F.WriteEx(Qmsh.Bones[bi]->Matrix._12);
-			F.WriteEx(Qmsh.Bones[bi]->Matrix._13);
-			F.WriteEx(Qmsh.Bones[bi]->Matrix._21);
-			F.WriteEx(Qmsh.Bones[bi]->Matrix._22);
-			F.WriteEx(Qmsh.Bones[bi]->Matrix._23);
-			F.WriteEx(Qmsh.Bones[bi]->Matrix._31);
-			F.WriteEx(Qmsh.Bones[bi]->Matrix._32);
-			F.WriteEx(Qmsh.Bones[bi]->Matrix._33);
-			F.WriteEx(Qmsh.Bones[bi]->Matrix._41);
-			F.WriteEx(Qmsh.Bones[bi]->Matrix._42);
-			F.WriteEx(Qmsh.Bones[bi]->Matrix._43);
-
-			//F.WriteEx(Qmsh.Bones[bi]->point);
-
-			F.WriteString1(Qmsh.Bones[bi]->Name);
+			QMSH_BONE& bone = *Qmsh.Bones[bi].get();
+			F.WriteString1(bone.Name);
+			F.WriteEx((uint2)bone.ParentIndex);
+			F.WriteEx(bone.Matrix._11);
+			F.WriteEx(bone.Matrix._12);
+			F.WriteEx(bone.Matrix._13);
+			F.WriteEx(bone.Matrix._21);
+			F.WriteEx(bone.Matrix._22);
+			F.WriteEx(bone.Matrix._23);
+			F.WriteEx(bone.Matrix._31);
+			F.WriteEx(bone.Matrix._32);
+			F.WriteEx(bone.Matrix._33);
+			F.WriteEx(bone.Matrix._41);
+			F.WriteEx(bone.Matrix._42);
+			F.WriteEx(bone.Matrix._43);
+			F.Write(bone.RawMatrix);
+			F.Write(bone.head);
+			F.Write(bone.tail);
+			F.Write(bone.connected);
 		}
 
 		// bone groups

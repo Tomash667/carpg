@@ -911,38 +911,63 @@ void QmshTmpLoader::ParseBone(tmp::BONE *Out, Tokenizer &t, int wersja)
 	// head
 	t.AssertKeyword(T_HEAD);
 	t.Next();
-	ParseVec3(&Out->Head_Bonespace, t);
-	ParseVec3(&Out->Head_Armaturespace, t);
+	if(wersja < 21)
+	{
+		// old bonespace head pos
+		Vec3 unused;
+		ParseVec3(&unused, t);
+	}
+	ParseVec3(&Out->Head, t);
 	Out->HeadRadius = t.MustGetFloat();
 	t.Next();
 
 	// tail
 	t.AssertKeyword(T_TAIL);
 	t.Next();
-	ParseVec3(&Out->Tail_Bonespace, t);
-	ParseVec3(&Out->Tail_Armaturespace, t);
+	if(wersja < 21)
+	{
+		// old bonespace tail pos
+		Vec3 unused;
+		ParseVec3(&unused, t);
+	}
+	ParseVec3(&Out->Tail, t);
 	Out->TailRadius = t.MustGetFloat();
 	t.Next();
 
 	// Reszta
 	if(wersja < 17)
 	{
+		// old roll
 		t.MustGetFloat();
 		t.Next();
 		t.MustGetFloat();
 		t.Next();
 	}
-	Out->Length = t.MustGetFloat();
-	t.Next();
+	if(wersja < 21)
+	{
+		// old length
+		t.MustGetFloat();
+		t.Next();
+	}
+	else
+	{
+		Out->connected = (t.MustGetInt4() == 1);
+		t.Next();
+	}
 	if(wersja < 17)
 	{
-		Out->Weight = t.MustGetFloat();
+		t.MustGetFloat();
 		t.Next();
 	}
 
 	// Macierze
-	ParseMatrix3x3(&Out->Matrix_Bonespace, t, wersja < 19);
-	ParseMatrix4x4(&Out->Matrix_Armaturespace, t, wersja < 19);
+	if(wersja < 21)
+	{
+		// old bonespace matrix
+		MATRIX m;
+		ParseMatrix3x3(&m, t, wersja < 19);
+	}
+	ParseMatrix4x4(&Out->Matrix, t, wersja < 19);
 
 	t.AssertSymbol('}');
 	t.Next();

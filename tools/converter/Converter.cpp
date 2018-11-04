@@ -23,7 +23,7 @@ struct INTERMEDIATE_VERTEX_SKIN_DATA
 cstring point_types[Mesh::Point::MAX] = {
 	"PLAIN_AXES",
 	"SPHERE",
-	"BOX",
+	"CUBE",
 	"ARROWS",
 	"SINGLE_ARROW",
 	"CIRCLE",
@@ -396,9 +396,9 @@ void Converter::TmpToQmsh_Bones(QMSH *Out, std::vector<BONE_INTER_DATA> *OutBone
 				bid.TmpBoneIndex = bj;
 
 				Vec3 v;
-				BlenderToDirectxTransform(&v, InBone.Head_Armaturespace);
+				BlenderToDirectxTransform(&v, InBone.Head);
 				Transform(&bid.HeadPos, v, ArmatureToWorldMat);
-				BlenderToDirectxTransform(&v, InBone.Tail_Armaturespace);
+				BlenderToDirectxTransform(&v, InBone.Tail);
 				Transform(&bid.TailPos, v, ArmatureToWorldMat);
 
 				if(!float_equal(TmpArmature.Size.x, TmpArmature.Size.y) || !float_equal(TmpArmature.Size.y, TmpArmature.Size.z))
@@ -427,12 +427,16 @@ void Converter::TmpToQmsh_Bone(QMSH_BONE *Out, uint OutIndex, QMSH *OutQmsh, con
 	// TmpBone.Matrix_Armaturespace zawiera przekszta³cenie ze wsp. lokalnych tej koœci do wsp. armature w uk³. Blender
 	// BoneToArmature zawiera przekszta³cenie ze wsp. lokalnych tej koœci do wsp. armature w uk³. DirectX
 	MATRIX BoneToArmature;
-	BlenderToDirectxTransform(&BoneToArmature, TmpBone.Matrix_Armaturespace);
+	BlenderToDirectxTransform(&BoneToArmature, TmpBone.Matrix);
 	// Out->Matrix bêdzie zwiera³o przekszta³cenie ze wsp. tej koœci do jej parenta w uk³. DirectX
 	Out->Matrix = BoneToArmature * WorldToParent;
-	BlenderToDirectxTransform(&Out->point, TmpBone.Head_Armaturespace);
 	MATRIX ArmatureToBone;
 	Inverse(&ArmatureToBone, BoneToArmature);
+
+	Out->RawMatrix = TmpBone.Matrix;
+	Out->head = Vec4(TmpBone.Head, TmpBone.HeadRadius);
+	Out->tail = Vec4(TmpBone.Tail, TmpBone.TailRadius);
+	Out->connected = TmpBone.connected;
 
 	// Koœci potomne
 	for(uint bi = 0; bi < TmpArmature.Bones.size(); bi++)
@@ -1016,6 +1020,9 @@ float Converter::PointToBone(const Vec3 &Pt,
 
 void Converter::CreateBoneGroups(QMSH& qmsh, const tmp::QMSH &QmshTmp, ConversionData& cs)
 {
+	if(QmshTmp.Armature == nullptr)
+		return;
+
 	if(!QmshTmp.Armature->Groups.empty())
 	{
 		// use exported bone groups

@@ -242,17 +242,11 @@ def ProcessArmatureObject(data,obj):
 			sBoneGroup = bone_groups[foundPoseBone.bone_group]
 		data.file.write("\t\t\tgroup %s\n" % QuoteString(sBoneGroup))
 		# Head
-		data.file.write("\t\t\thead %f,%f,%f %f,%f,%f %f\n" % (bone.head[0], bone.head[1], bone.head[2], bone.head_local[0], bone.head_local[1], bone.head_local[2], bone.head_radius))
+		data.file.write("\t\t\thead %f,%f,%f %f\n" % (bone.head_local[0], bone.head_local[1], bone.head_local[2], bone.head_radius))
 		# Tail
-		data.file.write("\t\t\ttail %f,%f,%f %f,%f,%f %f\n" % (bone.tail[0], bone.tail[1], bone.tail[2], bone.tail_local[0], bone.tail_local[1], bone.tail_local[2], bone.tail_radius))	
-		# Length
-		data.file.write("\t\t\t%f\n" % bone.length)
-		# Pusta linia
-		data.file.write("\n")
-		# Macierz w BONESPACE (jest 3x3)
-		m = bone.matrix.transposed()
-		for iRow in range(3):
-			data.file.write("\t\t\t%f, %f, %f\n" % (m[iRow][0], m[iRow][1], m[iRow][2]))
+		data.file.write("\t\t\ttail %f,%f,%f %f\n" % (bone.tail_local[0], bone.tail_local[1], bone.tail_local[2], bone.tail_radius))	
+		# Is connected
+		data.file.write("\t\t\t%d\n" % int(bone.use_connect))
 		# Pusta linia
 		data.file.write("\n")
 		# Macierz w ARMATURESPACE (jest 4x4)

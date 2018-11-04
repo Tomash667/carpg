@@ -74,18 +74,12 @@ namespace tmp
 		string Name;
 		string Parent; // £añcuch pusty jeœli nie ma parenta
 		string Group;
-		Vec3 Head_Bonespace;
-		Vec3 Head_Armaturespace;
+		Vec3 Head;
 		float HeadRadius;
-		Vec3 Tail_Bonespace;
-		Vec3 Tail_Armaturespace;
+		Vec3 Tail;
 		float TailRadius;
-		float Roll_Bonespace;
-		float Roll_Armaturespace;
-		float Length;
-		float Weight;
-		MATRIX Matrix_Bonespace; // Liczy siê tylko minor 3x3, reszta jest jak w jednostkowej
-		MATRIX Matrix_Armaturespace; // Jest pe³na 4x4
+		MATRIX Matrix;
+		bool connected;
 	};
 
 	struct ARMATURE

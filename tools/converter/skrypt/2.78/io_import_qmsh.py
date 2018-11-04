@@ -144,6 +144,8 @@ class FileReader:
 		r = self.f.read(1)
 		if len(r) != 0:
 			raise ImporterException("End of file expected.")
+	def ReadBool(self):
+		return struct.unpack('B', self.Read(1))[0] != 0
 	def ReadByte(self):
 		return struct.unpack('B', self.Read(1))[0]
 	def ReadWord(self):
@@ -265,11 +267,28 @@ class Qmsh:
 				self.specular_color_factor = f.ReadFloat()
 	##-------------------------------------------------------------------------
 	class Bone:
-		def Read(self, f, bones):
+		def Read(self, f, bones, version):
 			self.childs = []
-			self.parent = f.ReadWord()
-			self.mat = f.ReadMatrix33()
-			self.name = f.ReadString()
+			if version >= 21:
+				self.name = f.ReadString()
+				self.parent = f.ReadWord()
+				self.mat = f.ReadMatrix33()
+				self.raw_mat = f.ReadMatrix().transposed()
+				self.head = f.ReadVec3()
+				self.head_radius = f.ReadFloat()
+				self.tail = f.ReadVec3()
+				self.tail_radius = f.ReadFloat()
+				self.connected = f.ReadBool()
+			else:
+				self.parent = f.ReadWord()
+				self.mat = f.ReadMatrix33()
+				self.raw_mat = self.mat
+				self.name = f.ReadString()
+				self.head = (1.0, 1.0, 0.0)
+				self.head_radius = 0.1
+				self.tail = (1.0, 1.0, 1.0)
+				self.tail_radius = 0.1
+				self.connected = False
 			bones[self.parent].childs.append(self)
 	##-------------------------------------------------------------------------
 	class BoneGroup:
@@ -306,17 +325,16 @@ class Qmsh:
 				if frame.bones[bone_i].scale != 1:
 					return True
 			return False
-				
 	##-------------------------------------------------------------------------
 	class Point:
 		def Read(self, f):
 			self.name = f.ReadString()
-			self.mat = ConvertMatrix(f.ReadMatrix())
+			self.mat = ConvertMatrix(f.ReadMatrix()).transposed()
 			self.bone = f.ReadWord()
 			empty_types = {
 				0: 'PLAIN_AXES',
 				1: 'SPHERE',
-				2: 'BOX',
+				2: 'CUBE',
 				3: 'ARROWS',
 				4: 'SINGLE_ARROW',
 				5: 'CIRCLE',
@@ -336,6 +354,9 @@ class Qmsh:
 				self.ReadBoneGroups(f)
 			self.ReadAnimations(f)
 			self.head.n_bones += 1 # add zero bone
+		else:
+			self.bones = []
+			self.bone_groups = []
 		self.ReadPoints(f)
 		if self.head.version < 21 and self.head.IsAnimated() and not self.head.IsStatic():
 			self.ReadBoneGroups(f)
@@ -384,7 +405,7 @@ class Qmsh:
 		for i in range(1, self.head.n_bones+1):
 			bone = Qmsh.Bone()
 			bone.id = i
-			bone.Read(f, self.bones)
+			bone.Read(f, self.bones, self.head.version)
 			self.bones.append(bone)
 	def ReadAnimations(self, f):
 		self.anims = []
@@ -571,8 +592,8 @@ class Importer:
 		# armature
 		if mesh.head.IsAnimated() and not mesh.head.IsStatic():
 			armature = bpy.data.armatures.new(name='Armature')
-			self.skeleton = armature
 			obj_arm = bpy.data.objects.new(name='Armature', object_data=armature)
+			self.skeleton = obj_arm
 			bpy.context.scene.objects.link(obj_arm)
 			bpy.context.scene.objects.active = obj_arm
 			bpy.ops.object.mode_set(mode='EDIT')
@@ -580,9 +601,12 @@ class Importer:
 				if bone.name == "zero":
 					continue
 				b = armature.edit_bones.new(bone.name)
-				b.head = (1.0, 1.0, 0.0)
-				b.tail = (1.0, 1.0, 1.0)
-				b.matrix = bone.mat
+				b.head = bone.head
+				b.head_radius = bone.head_radius
+				b.tail = bone.tail
+				b.tail_radius = bone.tail_radius
+				b.matrix = bone.raw_mat
+				b.use_connect = bone.connected
 				if bone.parent != 0:
 					b.parent = armature.edit_bones[bone.parent - 1]
 			bpy.ops.object.mode_set(mode='OBJECT')
@@ -595,9 +619,9 @@ class Importer:
 			mod = obj.modifiers['Armature']
 			mod.object = obj_arm
 			mod.use_vertex_groups = True
-		# add points FIXME
-		#for point in mesh.points:
-		#	self.AddPoint(point)
+		# add points
+		for point in mesh.points:
+			self.AddPoint(point)
 		# remove doubled vertices
 		bm.clear()
 		bm.from_mesh(mesh_data)
@@ -752,16 +776,14 @@ class Importer:
 		pass #TODO
 	def AddPoint(self, point):
 		empty = bpy.data.objects.new(name=point.name, object_data=None)
-		if empty.type == 0:
-			empty.empty_draw_type = 'ARROWS'
-		elif empty.type == 1:
-			empty.empty_draw_type = 'SPHERE'
-		else:
-			empty.empty_draw_type = 'CUBE'
-		empty.matrix_world = point.mat
+		empty.empty_draw_type = point.type
 		empty.scale = point.size
-		empty.rotation_mode = 'QUATERNION'
-		empty.rotation_euler = point.rot
+		if point.bone <= self.mesh.head.n_bones:
+			bone = self.mesh.bones[point.bone]
+			empty.parent = self.skeleton
+			empty.parent_type = 'BONE'
+			empty.parent_bone = bone.name
+		empty.matrix_world = point.mat
 		bpy.context.scene.objects.link(empty)
 	def MergePoint(self, point, empty):
 		pass #TODO

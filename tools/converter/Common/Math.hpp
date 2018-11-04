@@ -251,6 +251,7 @@ struct Vec4
 	Vec4() { }
 	Vec4(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) { }
 	Vec4(float *Array) : x(Array[0]), y(Array[1]), z(Array[2]), w(Array[3]) { }
+	Vec4(const Vec3& v, float w) : x(v.x), y(v.y), z(v.z), w(w) { }
 
 	bool operator == (const Vec4 &v) const { return x == v.x && y == v.y && z == v.z && w == v.w; }
 	bool operator != (const Vec4 &v) const { return x != v.x || y != v.y || z != v.z || w != v.w; }
