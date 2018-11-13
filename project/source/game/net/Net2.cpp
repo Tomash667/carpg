@@ -861,7 +861,7 @@ BitStream& Net::StreamStart(Packet* packet, StreamLogType type)
 	current_packet = packet;
 	current_stream.~BitStream();
 	new((void*)&current_stream)BitStream(packet->data, packet->length, false);
-	ErrorHandler::Get().StreamStart(current_packet, (int)type);
+	ErrorHandler::Get().StartStream(current_packet, (int)type);
 
 	return current_stream;
 }
@@ -872,7 +872,7 @@ void Net::StreamEnd()
 	if(!current_packet)
 		return;
 
-	ErrorHandler::Get().StreamEnd(true);
+	ErrorHandler::Get().EndStream(true);
 	current_packet = nullptr;
 }
 
@@ -882,12 +882,12 @@ void Net::StreamError()
 	if(!current_packet)
 		return;
 
-	ErrorHandler::Get().StreamEnd(false);
+	ErrorHandler::Get().EndStream(false);
 	current_packet = nullptr;
 }
 
 //=================================================================================================
 void Net::StreamWrite(const void* data, uint size, StreamLogType type, const SystemAddress& adr)
 {
-	ErrorHandler::Get().StreamWrite(data, size, type, adr);
+	ErrorHandler::Get().WriteStream(data, size, type, adr);
 }

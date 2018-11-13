@@ -128,12 +128,12 @@ TextLogger* GetTextLogger()
 }
 
 //=================================================================================================
-ErrorHandler::ErrorHandler() : crash_mode(CrashMode::Normal), stream_log_mode(StreamLogMode::Errors), stream_log_file("log.stream"), current_packet(nullptr)
+ErrorHandler::ErrorHandler() : crash_mode(ENUM_CRASH_MODE::E_Normal), stream_log_mode(ENUM_STREAMLOG_MODE::E_Errors), stream_log_file("log.stream"), current_packet(nullptr)
 {
 }
 
 //=================================================================================================
-void ErrorHandler::RegisterHandler()
+void ErrorHandler::HandleRegister()
 {
 	if(!IsDebuggerPresent())
 	{
@@ -157,7 +157,7 @@ long ErrorHandler::HandleCrash(EXCEPTION_POINTERS* exc)
 		ToString(crash_mode));
 
 	// if disabled simply return
-	if(crash_mode == CrashMode::None)
+	if(crash_mode == ENUM_CRASH_MODE::E_None)
 	{
 		Error("Crash mode set to none.");
 		return EXCEPTION_EXECUTE_HANDLER;
@@ -193,13 +193,13 @@ long ErrorHandler::HandleCrash(EXCEPTION_POINTERS* exc)
 			switch(crash_mode)
 			{
 			default:
-			case CrashMode::Normal:
+			case ENUM_CRASH_MODE::E_Normal:
 				minidump_type = MiniDumpNormal;
 				break;
-			case CrashMode::DataSeg:
+			case ENUM_CRASH_MODE::E_DataSeg:
 				minidump_type = MiniDumpWithDataSegs;
 				break;
-			case CrashMode::Full:
+			case ENUM_CRASH_MODE::E_Full:
 				minidump_type = (MINIDUMP_TYPE)(MiniDumpWithDataSegs | MiniDumpWithFullMemory);
 				break;
 			}
@@ -226,7 +226,7 @@ long ErrorHandler::HandleCrash(EXCEPTION_POINTERS* exc)
 	if(stream_log.IsOpen())
 	{
 		if(current_packet)
-			StreamEnd(false);
+			EndStream(false);
 		stream_log.Flush();
 		if(stream_log.GetSize() > 0)
 			CopyFile(stream_log_file.c_str(), Format("crashes/crash%s.stream", str_time), FALSE);
@@ -262,27 +262,27 @@ void ErrorHandler::ReadConfiguration(Config& cfg)
 		{
 		default:
 		case 0:
-			crash_mode = CrashMode::Normal;
+			crash_mode = ENUM_CRASH_MODE::E_Normal;
 			break;
 		case 1:
-			crash_mode = CrashMode::DataSeg;
+			crash_mode = ENUM_CRASH_MODE::E_DataSeg;
 			break;
 		case 2:
-			crash_mode = CrashMode::Full;
+			crash_mode = ENUM_CRASH_MODE::E_Full;
 			break;
 		}
 	}
 	else
 	{
-		Config::GetResult result = cfg.TryGetEnum<CrashMode>("crash_mode", crash_mode, {
-			{ "none", CrashMode::None },
-			{ "normal", CrashMode::Normal },
-			{ "dataseg", CrashMode::DataSeg },
-			{ "full", CrashMode::Full }
+		Config::GetResult result = cfg.TryGetEnum<ENUM_CRASH_MODE>("crash_mode", crash_mode, {
+			{ "none", ENUM_CRASH_MODE::E_None },
+			{ "normal", ENUM_CRASH_MODE::E_Normal },
+			{ "dataseg", ENUM_CRASH_MODE::E_DataSeg },
+			{ "full", ENUM_CRASH_MODE::E_Full }
 		});
 		if(result != Config::GET_OK)
 		{
-			crash_mode = CrashMode::Normal;
+			crash_mode = ENUM_CRASH_MODE::E_Normal;
 			if(result == Config::GET_INVALID)
 				Error("Settings: Invalid crash mode '%s'.", cfg.GetString("crash_mode").c_str());
 		}
@@ -290,14 +290,14 @@ void ErrorHandler::ReadConfiguration(Config& cfg)
 	Info("Settings: crash_mode = %s", ToString(crash_mode));
 
 	// stream log mode
-	Config::GetResult result = cfg.TryGetEnum<StreamLogMode>("stream_log_mode", stream_log_mode, {
-		{ "none", StreamLogMode::None },
-		{ "errors", StreamLogMode::Errors },
-		{ "full", StreamLogMode::Full }
+	Config::GetResult result = cfg.TryGetEnum<ENUM_STREAMLOG_MODE>("stream_log_mode", stream_log_mode, {
+		{ "none", ENUM_STREAMLOG_MODE::E_None },
+		{ "errors", ENUM_STREAMLOG_MODE::E_Errors },
+		{ "full", ENUM_STREAMLOG_MODE::E_Full }
 	});
 	if(result != Config::GET_OK)
 	{
-		stream_log_mode = StreamLogMode::Errors;
+		stream_log_mode = ENUM_STREAMLOG_MODE::E_Errors;
 		if(result == Config::GET_INVALID)
 			Error("Settings: Invalid stream log mode '%s'.", cfg.GetString("stream_log_mode").c_str());
 	}
@@ -329,7 +329,7 @@ void ErrorHandler::ReadConfiguration(Config& cfg)
 }
 
 //=================================================================================================
-void ErrorHandler::StreamStart(Packet* packet, int type)
+void ErrorHandler::StartStream(Packet* packet, int type)
 {
 	assert(packet);
 	assert(!current_packet);
@@ -339,9 +339,9 @@ void ErrorHandler::StreamStart(Packet* packet, int type)
 }
 
 //=================================================================================================
-void ErrorHandler::StreamEnd(bool ok)
+void ErrorHandler::EndStream(bool ok)
 {
-	if(!stream_log.IsOpen() && (stream_log_mode == StreamLogMode::None || (stream_log_mode == StreamLogMode::Errors && ok)))
+	if(!stream_log.IsOpen() && (stream_log_mode == ENUM_STREAMLOG_MODE::E_None || (stream_log_mode == ENUM_STREAMLOG_MODE::E_Errors && ok)))
 	{
 		current_packet = nullptr;
 		return;
@@ -375,11 +375,11 @@ void ErrorHandler::StreamEnd(bool ok)
 }
 
 //=================================================================================================
-void ErrorHandler::StreamWrite(const void* data, uint size, int type, const SystemAddress& adr)
+void ErrorHandler::WriteStream(const void* data, uint size, int type, const SystemAddress& adr)
 {
 	assert(data && size > 0);
 
-	if (!stream_log.IsOpen() || stream_log_mode != StreamLogMode::Full)
+	if (!stream_log.IsOpen() || stream_log_mode != ENUM_STREAMLOG_MODE::E_Full)
 		return;
 
 	if(current_packet)
