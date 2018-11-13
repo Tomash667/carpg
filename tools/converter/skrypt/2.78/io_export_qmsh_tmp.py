@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Qmsh.tmp",
     "author": "Tomashu",
-    "version": (0, 19, 1),
+    "version": (0, 21, 0),
     "blender": (2, 7, 8),
     "location": "File > Export > Qmsh.tmp",
     "description": "Export to Qmsh.tmp",
@@ -21,9 +21,11 @@ from math import pi
 import subprocess
 import mathutils
 import os
+from bpy_extras.io_utils import ExportHelper
+import configparser
 
 ################################################################################
-class MyException(Exception):
+class ExporterException(Exception):
 	pass
 
 ################################################################################
@@ -46,8 +48,7 @@ class ExporterData:
 		self.warnings = self.warnings + 1
 		print("Warning: " + msg)
 	def Error(self,msg):
-		print("Error: " + msg)
-		raise MyException
+		raise ExporterException(msg)
 
 ################################################################################
 def QuoteString(s):
@@ -206,28 +207,46 @@ def ProcessArmatureObject(data,obj):
 	Scaling = obj.scale
 	data.file.write("\t\t%f,%f,%f\n" % (Scaling[0], Scaling[1], Scaling[2]))
 	
-	# Dla kolejnych kosci
+	# Bone groups
+	pose = obj.pose
+	bone_groups = {}
+	for bone_group in obj.pose.bone_groups:
+		s = bone_group.name.split('#')
+		if len(s) == 2:
+			name = s[0]
+			parent = s[1]
+		else:
+			name = s[0]
+			parent = ''
+		data.file.write("\t\tgroup %s {\n\t\t\tparent %s\n\t\t}\n" % (QuoteString(name), QuoteString(parent)))
+		bone_groups[bone_group] = name
+	
+	# Bones
 	for bone in armature.bones:
-		# Poczatek
 		data.file.write("\t\tbone %s {\n" % QuoteString(bone.name))
 		# Parent
 		if bone.parent == None:
 			sBoneParent = ""
 		else:
 			sBoneParent = bone.parent.name
-		data.file.write("\t\t\t%s\n" % QuoteString(sBoneParent))
+		data.file.write("\t\t\tparent %s\n" % QuoteString(sBoneParent))
+		# Group
+		foundPoseBone = None
+		for poseBone in pose.bones:
+			if poseBone.name == bone.name:
+				foundPoseBone = poseBone
+				break
+		if foundPoseBone is None or foundPoseBone.bone_group is None:
+			sBoneGroup = ""
+		else:
+			sBoneGroup = bone_groups[foundPoseBone.bone_group]
+		data.file.write("\t\t\tgroup %s\n" % QuoteString(sBoneGroup))
 		# Head
-		data.file.write("\t\t\thead %f,%f,%f %f,%f,%f %f\n" % (bone.head[0], bone.head[1], bone.head[2], bone.head_local[0], bone.head_local[1], bone.head_local[2], bone.head_radius))
+		data.file.write("\t\t\thead %f,%f,%f %f\n" % (bone.head_local[0], bone.head_local[1], bone.head_local[2], bone.head_radius))
 		# Tail
-		data.file.write("\t\t\ttail %f,%f,%f %f,%f,%f %f\n" % (bone.tail[0], bone.tail[1], bone.tail[2], bone.tail_local[0], bone.tail_local[1], bone.tail_local[2], bone.tail_radius))	
-		# Length
-		data.file.write("\t\t\t%f\n" % bone.length)
-		# Pusta linia
-		data.file.write("\n")
-		# Macierz w BONESPACE (jest 3x3)
-		m = bone.matrix.transposed()
-		for iRow in range(3):
-			data.file.write("\t\t\t%f, %f, %f\n" % (m[iRow][0], m[iRow][1], m[iRow][2]))
+		data.file.write("\t\t\ttail %f,%f,%f %f\n" % (bone.tail_local[0], bone.tail_local[1], bone.tail_local[2], bone.tail_radius))	
+		# Is connected
+		data.file.write("\t\t\t%d\n" % int(bone.use_connect))
 		# Pusta linia
 		data.file.write("\n")
 		# Macierz w ARMATURESPACE (jest 4x4)
@@ -384,7 +403,7 @@ def ExportQmsh(data):
 	try:
 		try:
 			# Zapis do pliku naglowka
-			data.file.write("QMSH TMP 19\n")
+			data.file.write("QMSH TMP 21\n")
 			# Przetworz wszystkie obiekty biezacej sceny
 			print("Saving objects %d" % len(bpy.context.selected_objects))
 			data.file.write("objects {\n")
@@ -407,7 +426,7 @@ def ExportQmsh(data):
 				sEndMessage = "Succeeded with %i warnings." % data.warnings
 			print(sEndMessage)
 			return True
-		except MyException:
+		except ExporterException:
 			try:
 				data.file.close()
 				os.remove(data.path)
@@ -422,108 +441,126 @@ def ExportQmsh(data):
 	print()
 	
 ################################################################################
-# Okno z bledem
-class MessageOperator(bpy.types.Operator):
-    bl_idname = "error.message"
-    bl_label = "Message"
-    message = StringProperty()
- 
-    def execute(self, context):
-        self.report({'INFO'}, self.message)
-        print(self.message)
-        return {'FINISHED'}
- 
-    def invoke(self, context, event):
-        wm = context.window_manager
-        return wm.invoke_popup(self, width=400, height=200)
- 
-    def draw(self, context):
-        self.layout.label("A message has arrived")
-        self.layout.prop(self, "message")
-        self.layout.operator("error.ok")
-class OkOperator(bpy.types.Operator):
-    bl_idname = "error.ok"
-    bl_label = "OK"
-    def execute(self, context):
-        return {'FINISHED'}
+def RunExport(filepath, config):
+	if config.runConverter and not os.path.isfile(config.converterPath):
+		raise ExporterException("Invalid converter path.")
+	if filepath.endswith('.qmsh.tmp.qmsh'):
+		filepath = filepath[:-4]
+	elif filepath.endswith('.qmsh'):
+		filepath += '.tmp'
+	data = ExporterData(filepath, config.textureNames, config.useExistingArmature, config.applyModifiers, config.forceTangents)
+	if not ExportQmsh(data):
+		return False
+	if config.runConverter:
+		cmd = '"' + config.converterPath + '" "' + filepath + '"'
+		print("Command: %s" % cmd)
+		sub = subprocess.Popen(cmd)
+		if sub.wait() != 0:
+			return False
+		os.remove(data.path)
+	return True
+
+################################################################################
+class Config:
+	def __init__(self):
+		config_path = bpy.utils.user_resource('CONFIG', path='scripts', create=True)
+		self.filepath = os.path.join(config_path, 'io_export_qmsh_tmp.cfg')
+		self.config = configparser.ConfigParser()
+		self.config.read(self.filepath)
+		self.Init()
+		s = self.config['settings']
+		self.textureNames = s.getboolean('textureNames')
+		self.useExistingArmature = s.getboolean('useExistingArmature')
+		self.applyModifiers = s.getboolean('applyModifiers')
+		self.forceTangents = s.getboolean('forceTangents')
+		self.runConverter = s.getboolean('runConverter')
+		self.converterPath = s['converterPath']
+	def Init(self):
+		dict = {'textureNames': 'True',
+				'useExistingArmature': 'False',
+				'applyModifiers': 'True',
+				'forceTangents': 'False',
+				'runConverter': 'True',
+				'converterPath': 'D:\\carpg\\other\\mesh\\converter.exe'}
+		if not self.config.has_section('settings'):
+			self.config['settings'] = dict
+			return
+		s = self.config['settings']
+		for k, v in dict.items():
+			if not self.config.has_option('settings', k):
+				s[k] = v
+	def Save(self):
+		s = self.config['settings']
+		s['textureNames'] = str(self.textureNames)
+		s['useExistingArmature'] = str(self.useExistingArmature)
+		s['applyModifiers'] = str(self.applyModifiers)
+		s['forceTangents'] = str(self.forceTangents)
+		s['runConverter'] = str(self.runConverter)
+		s['converterPath'] = self.converterPath
+		with open(self.filepath, 'w') as configfile:
+			self.config.write(configfile)
 
 ################################################################################
 # Klasa eksportera
-class QmshExporter(bpy.types.Operator):
+class QmshExporterOperator(bpy.types.Operator, ExportHelper):
 	"""Export to the Qmsh temporary format (.qmsh.tmp)"""
 	
 	bl_idname = "export.qmsh"
-	bl_label = "Export QMSH.TMP"
+	bl_label = "Export QMSH"
+	filename_ext = ".qmsh"
+	filter_glob = StringProperty(default="*.qmsh;*.qmsh.tmp", options={'HIDDEN'})
 	
-	filepath = StringProperty(subtype='FILE_PATH')
+	config = Config()
 	
 	TextureNames = BoolProperty(
 		name="Export texture names",
 		description="File will contain texture names, otherwise only material name",
-		default=True)
+		default=config.textureNames)
 	
 	UseExistingArmature = BoolProperty(
 		name="Use existing armature",
 		description="Don't export armature and animations, only vertex groups",
-		default=False)
+		default=config.useExistingArmature)
 	
 	ApplyModifiers = BoolProperty(
 		name="Apply modifiers",
 		description="Apply mesh modifiers before exporting mesh",
-		default=True)
+		default=config.applyModifiers)
 	
 	ForceTangents = BoolProperty(
 		name="Force tangents",
 		description="Force export tangents, by default exported only if mesh use normal map",
-		default=False)
+		default=config.forceTangents)
 		
-	RunConvert = BoolProperty(
+	RunConverter = BoolProperty(
 		name="Run converter",
 		description="Run converter to process qmsh.tmp into qmsh",
-		default=True)
+		default=config.runConverter)
 		
 	ConverterPath = StringProperty(
 		name="Converter path",
-		default="D:\\carpg\\other\\mesh\\converter.exe")
-		
-	def export_convert(self):
-		FilePath = self.filepath
-		runConvert = self.RunConvert
-		converterPath = self.ConverterPath
-		if not os.path.isfile(converterPath):
-			return False
-		data = ExporterData(self.filepath,self.TextureNames,self.UseExistingArmature,self.ApplyModifiers,self.ForceTangents)
-		if not ExportQmsh(data):
-			return False
-		if runConvert:
-			cmd = '"' + converterPath + '" "' + self.filepath + '"'
-			print("Command: %s" % cmd)
-			sub = subprocess.Popen(cmd)
-			if sub.wait() != 0:
-				return False
-			os.remove(data.path)
-		return True
+		default=config.converterPath)
 		
 	def execute(self, context):
-		if not self.export_convert():
-			bpy.ops.error.message('INVOKE_DEFAULT', message = 'Exporter error, check console.')
+		self.config.textureNames = self.TextureNames
+		self.config.useExistingArmature = self.UseExistingArmature
+		self.config.applyModifiers = self.ApplyModifiers
+		self.config.forceTangents = self.ForceTangents
+		self.config.runConverter = self.RunConverter
+		self.config.converterPath = self.ConverterPath
+		self.config.Save()
+		try:
+			RunExport(self.properties.filepath, self.config)
+		except ExporterException as error:
+			msg = 'Exporter error: ' +str(error)
+			print("ERROR: " + msg)
+			bpy.ops.error.message('INVOKE_DEFAULT', message = msg)
 		return {"FINISHED"}
-	
-	def invoke(self, context, event):
-		print('invoke')
-		mode = bpy.context.mode
-		if mode == "EDIT_MESH" or mode == "EDIT_ARMATURE":
-			mode = "OBJECT"
-		if not self.filepath:
-			self.filepath = bpy.path.ensure_ext(os.path.splitext(bpy.data.filepath)[0], ".qmsh.tmp")
-		WindowManager = context.window_manager
-		WindowManager.fileselect_add(self)
-		return {"RUNNING_MODAL"}
 
 ################################################################################
 # funkcje pluginu
 def menu_func(self, context):
-    self.layout.operator(QmshExporter.bl_idname, text="Qmsh (.qmsh.tmp)")
+    self.layout.operator(QmshExporterOperator.bl_idname, text="Qmsh (.qmsh.tmp)")
 
 def register():
     bpy.utils.register_module(__name__)
@@ -534,6 +571,4 @@ def unregister():
     bpy.types.INFO_MT_file_export.remove(menu_func)
 
 if __name__ == "__main__":
-	bpy.utils.register_class(OkOperator)
-	bpy.utils.register_class(MessageOperator)
 	register()

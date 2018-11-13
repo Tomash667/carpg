@@ -49,76 +49,7 @@ enum VertexDeclarationId
 	VDI_MAX
 };
 
-struct VDefault
-{
-	VEC3 pos;
-	VEC3 normal;
-	VEC2 tex;
-};
-
-struct VAnimated
-{
-	VEC3 pos;
-	float weights;
-	uint indices;
-	VEC3 normal;
-	VEC2 tex;
-};
-
-struct VTangent
-{
-	VEC3 pos;
-	VEC3 normal;
-	VEC2 tex;
-	VEC3 tangent;
-	VEC3 binormal;
-};
-
-struct VAnimatedTangent
-{
-	VEC3 pos;
-	float weights;
-	uint indices;
-	VEC3 normal;
-	VEC2 tex;
-	VEC3 tangent;
-	VEC3 binormal;
-};
-
-struct VTex
-{
-	VEC3 pos;
-	VEC2 tex;
-};
-
-struct VColor
-{
-	VEC3 pos;
-	VEC4 color;
-};
-
-struct VParticle
-{
-	VEC3 pos;
-	VEC2 tex;
-	VEC4 color;
-};
-
-struct VTerrain
-{
-	VEC3 pos;
-	VEC3 normal;
-	VEC2 tex;
-	VEC2 tex2;
-};
-
-struct VPos
-{
-	VEC3 pos;
-};
-
-
-const VEC3 DefaultSpecularColor(1, 1, 1);
+const Vec3 DefaultSpecularColor(1, 1, 1);
 const float DefaultSpecularIntensity = 0.2f;
 const int DefaultSpecularHardness = 10;
 
@@ -145,6 +76,26 @@ void Mesh::LoadSafe(cstring path)
 	}
 }
 
+void ReadMatrix33(common::FileStream& f, MATRIX& m)
+{
+	f.Read(m._11);
+	f.Read(m._12);
+	f.Read(m._13);
+	m._14 = 0;
+	f.Read(m._21);
+	f.Read(m._22);
+	f.Read(m._23);
+	m._24 = 0;
+	f.Read(m._31);
+	f.Read(m._32);
+	f.Read(m._33);
+	m._34 = 0;
+	f.Read(m._41);
+	f.Read(m._42);
+	f.Read(m._43);
+	m._44 = 1;
+}
+
 void Mesh::Load(cstring path)
 {
 	FileStream f(path, FM_READ);
@@ -155,7 +106,7 @@ void Mesh::Load(cstring path)
 		throw "Failed to read file header.";
 	if(memcmp(head.format, "QMSH", 4) != 0)
 		throw Formats("Invalid file signature '%.4s'.", head.format);
-	if(head.version < 12 || head.version > 20)
+	if(head.version < 12 || head.version > 21)
 		throw Formats("Invalid file version '%d'.", head.version);
 	if(head.n_bones >= 32)
 		throw Formats("Too many bones (%d).", head.n_bones);
@@ -181,20 +132,20 @@ void Mesh::Load(cstring path)
 		if(head.version >= 15)
 			f.Read(cam_up);
 		else
-			cam_up = VEC3(0, 1, 0);
+			cam_up = Vec3(0, 1, 0);
 		//if(!stream)
 		//	throw "Missing camera data.";
 	}
 	else
 	{
-		cam_pos = VEC3(1, 1, 1);
-		cam_target = VEC3(0, 0, 0);
-		cam_up = VEC3(0, 1, 0);
+		cam_pos = Vec3(1, 1, 1);
+		cam_target = Vec3(0, 0, 0);
+		cam_up = Vec3(0, 1, 0);
 	}
 
 	// vertex size
 	if(IS_SET(head.flags, F_PHYSICS))
-		vertex_size = sizeof(VEC3);
+		vertex_size = sizeof(Vec3);
 	else
 	{
 		if(IS_SET(head.flags, F_ANIMATED))
@@ -298,7 +249,7 @@ void Mesh::Load(cstring path)
 		}
 
 		//if(!stream)
-		//	throw Format("Failed to read submesh %u.", i);
+		//	throw format("Failed to read submesh %u.", i);
 	}
 
 	// animation data
@@ -314,27 +265,34 @@ void Mesh::Load(cstring path)
 		for(byte i = 0; i < head.n_bones; ++i)
 		{
 			Bone& bone = bones[i];
-
-			f.Read(bone.parent);
-
-			f.Read(bone.mat._11);
-			f.Read(bone.mat._12);
-			f.Read(bone.mat._13);
-			f.Read(bone.mat._21);
-			f.Read(bone.mat._22);
-			f.Read(bone.mat._23);
-			f.Read(bone.mat._31);
-			f.Read(bone.mat._32);
-			f.Read(bone.mat._33);
-			f.Read(bone.mat._41);
-			f.Read(bone.mat._42);
-			f.Read(bone.mat._43);
-
-			f.ReadString1(&bone.name);
+			if(head.version >= 21)
+			{
+				f.ReadString1(&bone.name);
+				f.Read(bone.parent);
+				ReadMatrix33(f, bone.mat);
+				f.Read(bone.raw_mat);
+				f.Read(bone.head);
+				f.Read(bone.tail);
+				f.Read(bone.connected);
+			}
+			else
+			{
+				f.Read(bone.parent);
+				ReadMatrix33(f, bone.mat);
+				bone.raw_mat = bone.mat;
+				bone.head = Vec4(1, 1, 0, 0.1f);
+				bone.tail = Vec4(1, 1, 1, 0.1f);
+				bone.connected = false;
+				f.ReadString1(&bone.name);
+			}
 		}
 
 		//if(!stream)
 		//	throw "Failed to read bones data.";
+
+		// bone groups
+		if(head.version >= 21)
+			LoadBoneGroups(f);
 
 		// animations
 		//size = Animation::MIN_SIZE * head.n_anims;
@@ -352,7 +310,7 @@ void Mesh::Load(cstring path)
 
 			//size = anim.n_frames * (4 + sizeof(KeyframeBone) * head.n_bones);
 			//if(!f.Ensure(size))
-			//	throw Format("Failed to read animation %u data.", i);
+			//	throw format("Failed to read animation %u data.", i);
 
 			anim.frames.resize(anim.n_frames);
 
@@ -393,65 +351,18 @@ void Mesh::Load(cstring path)
 		if(head.version >= 19)
 		{
 			f.Read(p.rot);
-			//p.rot.y = Clip(-p.rot.y);
+			if(head.version < 21)
+				p.rot.y = Clip(-p.rot.y);
 		}
 		else
 		{
 			// fallback, it was often wrong but thats the way it was (works good for PI/2 and PI*3/2, inverted for 0 and PI, bad for other)
-			p.rot = VEC3(0, -GetYaw(p.mat), 0);
+			p.rot = Vec3(0, -GetYaw(p.mat), 0);
 		}
 	}
 
-	if(IS_SET(head.flags, F_ANIMATED) && !IS_SET(head.flags, F_STATIC))
-	{
-		// groups
-		if(head.version == 12 && head.n_groups < 2)
-		{
-			head.n_groups = 1;
-			groups.resize(1);
-
-			BoneGroup& gr = groups[0];
-			gr.name = "default";
-			gr.parent = 0;
-			gr.bones.reserve(head.n_bones - 1);
-
-			for(word i = 1; i < head.n_bones; ++i)
-				gr.bones.push_back((byte)i);
-		}
-		else
-		{
-			//if(!f.Ensure(BoneGroup::MIN_SIZE * head.n_groups))
-			//	throw "Failed to read bone groups.";
-			groups.resize(head.n_groups);
-			for(word i = 0; i < head.n_groups; ++i)
-			{
-				BoneGroup& gr = groups[i];
-
-				f.ReadString1(&gr.name);
-
-				// parent group
-				f.Read(gr.parent);
-				assert(gr.parent < head.n_groups);
-				assert(gr.parent != i || i == 0);
-
-				// bone indexes
-				byte count;
-				f.Read(count);
-				gr.bones.resize(count);
-				f.Read(gr.bones.data(), gr.bones.size());
-				if(head.version == 12)
-				{
-					for(byte& b : gr.bones)
-						++b;
-				}
-			}
-		}
-
-		//if(!stream)
-		//	throw "Failed to read bone groups data.";
-
-		//SetupBoneMatrices();
-	}
+	if(head.version < 21 && IS_SET(head.flags, F_ANIMATED) && !IS_SET(head.flags, F_STATIC))
+		LoadBoneGroups(f);
 
 	// splits
 	if(IS_SET(head.flags, F_SPLIT))
@@ -464,7 +375,53 @@ void Mesh::Load(cstring path)
 	}
 
 	old_ver = head.version;
-	head.version = 20;
+	head.version = 21;
+}
+
+void Mesh::LoadBoneGroups(common::FileStream& f)
+{
+	// groups
+	if(head.version == 12 && head.n_groups < 2)
+	{
+		head.n_groups = 1;
+		groups.resize(1);
+
+		BoneGroup& gr = groups[0];
+		gr.name = "default";
+		gr.parent = 0;
+		gr.bones.reserve(head.n_bones - 1);
+
+		for(word i = 1; i < head.n_bones; ++i)
+			gr.bones.push_back((byte)i);
+	}
+	else
+	{
+		//if(!f.Ensure(BoneGroup::MIN_SIZE * head.n_groups))
+		//	throw "Failed to read bone groups.";
+		groups.resize(head.n_groups);
+		for(word i = 0; i < head.n_groups; ++i)
+		{
+			BoneGroup& gr = groups[i];
+
+			f.ReadString1(&gr.name);
+
+			// parent group
+			f.Read(gr.parent);
+			assert(gr.parent < head.n_groups);
+			assert(gr.parent != i || i == 0);
+
+			// bone indexes
+			byte count;
+			f.Read(count);
+			gr.bones.resize(count);
+			f.Read(gr.bones.data(), gr.bones.size());
+			if(head.version == 12)
+			{
+				for(byte& b : gr.bones)
+					++b;
+			}
+		}
+	}
 }
 
 void Mesh::Save(cstring path)
@@ -527,9 +484,8 @@ void Mesh::Save(cstring path)
 		for(byte i = 0; i < head.n_bones; ++i)
 		{
 			Bone& bone = bones[i];
-
+			f.WriteString1(bone.name);
 			f.Write(bone.parent);
-
 			f.Write(bone.mat._11);
 			f.Write(bone.mat._12);
 			f.Write(bone.mat._13);
@@ -542,8 +498,26 @@ void Mesh::Save(cstring path)
 			f.Write(bone.mat._41);
 			f.Write(bone.mat._42);
 			f.Write(bone.mat._43);
+			f.Write(bone.raw_mat);
+			f.Write(bone.head);
+			f.Write(bone.tail);
+			f.Write(bone.connected);
+		}
 
-			f.WriteString1(bone.name);
+		// bone groups
+		for(word i = 0; i < head.n_groups; ++i)
+		{
+			BoneGroup& gr = groups[i];
+
+			f.WriteString1(gr.name);
+
+			// parent group
+			f.Write(gr.parent);
+
+			// bone indexes
+			byte count = gr.bones.size();
+			f.Write(count);
+			f.Write(gr.bones.data(), gr.bones.size());
 		}
 
 		// animations
@@ -578,24 +552,6 @@ void Mesh::Save(cstring path)
 		f.Write(p.type);
 		f.Write(p.size);
 		f.Write(p.rot);
-	}
-
-	if(IS_SET(head.flags, F_ANIMATED) && !IS_SET(head.flags, F_STATIC))
-	{
-		for(word i = 0; i < head.n_groups; ++i)
-		{
-			BoneGroup& gr = groups[i];
-
-			f.WriteString1(gr.name);
-
-			// parent group
-			f.Write(gr.parent);
-
-			// bone indexes
-			byte count = gr.bones.size();
-			f.Write(count);
-			f.Write(gr.bones.data(), gr.bones.size());
-		}
 	}
 
 	// splits

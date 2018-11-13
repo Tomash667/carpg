@@ -154,34 +154,35 @@ void Mesh::Load(StreamReader& stream, IDirect3DDevice9* device)
 		for(byte i = 1; i <= head.n_bones; ++i)
 		{
 			Bone& bone = bones[i];
-
 			bone.id = i;
-			stream.Read(bone.parent);
 
-			stream.Read(bone.mat._11);
-			stream.Read(bone.mat._12);
-			stream.Read(bone.mat._13);
-			bone.mat._14 = 0;
-			stream.Read(bone.mat._21);
-			stream.Read(bone.mat._22);
-			stream.Read(bone.mat._23);
-			bone.mat._24 = 0;
-			stream.Read(bone.mat._31);
-			stream.Read(bone.mat._32);
-			stream.Read(bone.mat._33);
-			bone.mat._34 = 0;
-			stream.Read(bone.mat._41);
-			stream.Read(bone.mat._42);
-			stream.Read(bone.mat._43);
-			bone.mat._44 = 1;
-
-			stream.Read(bone.name);
+			if(head.version >= 21)
+			{
+				stream.Read(bone.name);
+				stream.Read(bone.parent);
+				LoadMatrix33(stream, bone.mat);
+				stream.Skip(sizeof(Matrix) + sizeof(Vec4) * 2 + sizeof(bool));
+			}
+			else
+			{
+				stream.Read(bone.parent);
+				LoadMatrix33(stream, bone.mat);
+				stream.Read(bone.name);
+			}
 
 			bones[bone.parent].childs.push_back(i);
 		}
 
 		if(!stream)
 			throw "Failed to read bones data.";
+
+		// bone groups (version >= 21)
+		if(head.version >= 21)
+		{
+			++head.n_bones; // remove when removed zero bone
+			LoadBoneGroups(stream);
+			--head.n_bones;
+		}
 
 		// animations
 		size = Animation::MIN_SIZE * head.n_anims;
@@ -217,35 +218,9 @@ void Mesh::Load(StreamReader& stream, IDirect3DDevice9* device)
 
 	LoadPoints(stream);
 
-	// bone groups
-	if(IS_SET(head.flags, F_ANIMATED) && !IS_SET(head.flags, F_STATIC))
-	{
-		if(!stream.Ensure(BoneGroup::MIN_SIZE * head.n_groups))
-			throw "Failed to read bone groups.";
-		groups.resize(head.n_groups);
-		for(word i = 0; i < head.n_groups; ++i)
-		{
-			BoneGroup& gr = groups[i];
-
-			stream.Read(gr.name);
-
-			// parent group
-			stream.Read(gr.parent);
-			assert(gr.parent < head.n_groups);
-			assert(gr.parent != i || i == 0);
-
-			// bone indexes
-			byte count;
-			stream.Read(count);
-			gr.bones.resize(count);
-			stream.Read(gr.bones.data(), gr.bones.size());
-		}
-
-		if(!stream)
-			throw "Failed to read bone groups data.";
-
-		SetupBoneMatrices();
-	}
+	// bone groups (version < 21)
+	if(head.version < 21 && IS_SET(head.flags, F_ANIMATED) && !IS_SET(head.flags, F_STATIC))
+		LoadBoneGroups(stream);
 
 	// splits
 	if(IS_SET(head.flags, F_SPLIT))
@@ -278,7 +253,7 @@ void Mesh::LoadHeader(StreamReader& stream)
 		throw "Failed to read file header.";
 	if(memcmp(head.format, "QMSH", 4) != 0)
 		throw Format("Invalid file signature '%.4s'.", head.format);
-	if(head.version < 12 || head.version > 20)
+	if(head.version < 12 || head.version > 21)
 		throw Format("Invalid file version '%u'.", head.version);
 	if(head.version < 20)
 		throw Format("Unsupported file version '%u'.", head.version);
@@ -351,8 +326,58 @@ void Mesh::LoadPoints(StreamReader& stream)
 		stream.Read(p.type);
 		stream.Read(p.size);
 		stream.Read(p.rot);
-		p.rot.y = Clip(-p.rot.y);
+		if(head.version < 21)
+			p.rot.y = Clip(-p.rot.y);
 	}
+}
+
+void Mesh::LoadBoneGroups(StreamReader& stream)
+{
+	if(!stream.Ensure(BoneGroup::MIN_SIZE * head.n_groups))
+		throw "Failed to read bone groups.";
+	groups.resize(head.n_groups);
+	for(word i = 0; i < head.n_groups; ++i)
+	{
+		BoneGroup& gr = groups[i];
+
+		stream.Read(gr.name);
+
+		// parent group
+		stream.Read(gr.parent);
+		assert(gr.parent < head.n_groups);
+		assert(gr.parent != i || i == 0);
+
+		// bone indexes
+		byte count;
+		stream.Read(count);
+		gr.bones.resize(count);
+		stream.Read(gr.bones.data(), gr.bones.size());
+	}
+
+	if(!stream)
+		throw "Failed to read bone groups data.";
+
+	SetupBoneMatrices();
+}
+
+void Mesh::LoadMatrix33(StreamReader& stream, Matrix& m)
+{
+	stream.Read(m._11);
+	stream.Read(m._12);
+	stream.Read(m._13);
+	m._14 = 0;
+	stream.Read(m._21);
+	stream.Read(m._22);
+	stream.Read(m._23);
+	m._24 = 0;
+	stream.Read(m._31);
+	stream.Read(m._32);
+	stream.Read(m._33);
+	m._34 = 0;
+	stream.Read(m._41);
+	stream.Read(m._42);
+	stream.Read(m._43);
+	m._44 = 1;
 }
 
 //=================================================================================================

@@ -1,5 +1,73 @@
 #pragma once
 
+struct VDefault
+{
+	Vec3 pos;
+	Vec3 normal;
+	Vec2 tex;
+};
+
+struct VAnimated
+{
+	Vec3 pos;
+	float weights;
+	uint indices;
+	Vec3 normal;
+	Vec2 tex;
+};
+
+struct VTangent
+{
+	Vec3 pos;
+	Vec3 normal;
+	Vec2 tex;
+	Vec3 tangent;
+	Vec3 binormal;
+};
+
+struct VAnimatedTangent
+{
+	Vec3 pos;
+	float weights;
+	uint indices;
+	Vec3 normal;
+	Vec2 tex;
+	Vec3 tangent;
+	Vec3 binormal;
+};
+
+struct VTex
+{
+	Vec3 pos;
+	Vec2 tex;
+};
+
+struct VColor
+{
+	Vec3 pos;
+	Vec4 color;
+};
+
+struct VParticle
+{
+	Vec3 pos;
+	Vec2 tex;
+	Vec4 color;
+};
+
+struct VTerrain
+{
+	Vec3 pos;
+	Vec3 normal;
+	Vec2 tex;
+	Vec2 tex2;
+};
+
+struct VPos
+{
+	Vec3 pos;
+};
+
 struct Mesh
 {
 	enum MESH_FLAGS
@@ -29,10 +97,28 @@ struct Mesh
 		word n_ind; // odpowiednik parametru DrawIndexedPrimitive - NumVertices (tylko wyra¿ony w trójk¹tach)
 		string name;//, normal_name, specular_name;
 		string tex, tex_normal, tex_specular;
-		VEC3 specular_color;
+		Vec3 specular_color;
 		float specular_intensity;
 		int specular_hardness;
 		float normal_factor, specular_factor, specular_color_factor;
+
+		bool operator == (const Submesh& sub) const
+		{
+			return first == sub.first
+				&& tris == sub.tris
+				&& min_ind == sub.min_ind
+				&& n_ind == sub.n_ind
+				&& name == sub.name
+				&& tex == sub.tex
+				&& tex_normal == sub.tex_normal
+				&& tex_specular == sub.tex_specular
+				&& specular_color == sub.specular_color
+				&& specular_intensity == sub.specular_intensity
+				&& specular_hardness == sub.specular_hardness
+				&& normal_factor == sub.normal_factor
+				&& specular_factor == sub.specular_factor
+				&& specular_color_factor == sub.specular_color_factor;
+		}
 
 		static const uint MIN_SIZE = 10;
 	};
@@ -43,31 +129,66 @@ struct Mesh
 		string name;
 		vector<byte> bones;
 
+		bool operator == (const BoneGroup& group) const
+		{
+			return parent == group.parent
+				&& name == group.name
+				&& bones == group.bones;
+		}
+
 		static const uint MIN_SIZE = 4;
 	};
 
 	struct Bone
 	{
+		string name;
 		word id;
 		word parent;
-		MATRIX mat;
-		string name;
+		MATRIX mat, raw_mat;
+		Vec4 head, tail;
 		vector<word> childs;
+		bool connected;
+
+		bool operator == (const Bone& bone) const
+		{
+			return name == bone.name
+				&& id == bone.id
+				&& parent == bone.parent
+				&& mat == bone.mat
+				&& raw_mat == bone.raw_mat
+				&& head == bone.head
+				&& tail == bone.tail
+				&& childs == bone.childs
+				&& connected == bone.connected;
+		}
 
 		static const uint MIN_SIZE = 51;
 	};
 
 	struct KeyframeBone
 	{
-		VEC3 pos;
+		Vec3 pos;
 		QUATERNION rot;
 		float scale;
+
+		bool operator == (const KeyframeBone& keyframe_bone) const
+		{
+			return pos == keyframe_bone.pos
+				&& rot == keyframe_bone.rot
+				&& scale == keyframe_bone.scale;
+		}
 	};
 
 	struct Keyframe
 	{
 		float time;
 		vector<KeyframeBone> bones;
+
+		bool operator == (const Keyframe& keyframe) const
+		{
+			return time == keyframe.time
+				&& bones == keyframe.bones;
+		}
 	};
 
 	struct Animation
@@ -77,6 +198,14 @@ struct Mesh
 		word n_frames;
 		vector<Keyframe> frames;
 
+		bool operator == (const Animation& ani) const
+		{
+			return name == ani.name
+				&& length == ani.length
+				&& n_frames == ani.n_frames
+				&& frames == ani.frames;
+		}
+
 		static const uint MIN_SIZE = 7;
 	};
 
@@ -84,17 +213,22 @@ struct Mesh
 	{
 		enum Type : word
 		{
-			OTHER,
+			PLAIN_AXES,
 			SPHERE,
-			Box
+			BOX,
+			ARROWS,
+			SINGLE_ARROW,
+			CIRCLE,
+			CONE,
+			MAX
 		};
 
 		string name;
 		MATRIX mat;
-		VEC3 rot;
+		Vec3 rot;
 		word bone;
 		Type type;
-		VEC3 size;
+		Vec3 size;
 
 		static const uint MIN_SIZE = 73;
 
@@ -104,13 +238,23 @@ struct Mesh
 		}
 		bool IsBox() const
 		{
-			return type == Box;
+			return type == BOX;
+		}
+
+		bool operator == (const Point& point) const
+		{
+			return name == point.name
+				&& mat == point.mat
+				&& rot == point.rot
+				&& bone == point.bone
+				&& type == point.type
+				&& size == point.size;
 		}
 	};
 
 	struct Split
 	{
-		VEC3 pos;
+		Vec3 pos;
 		float radius;
 		BOX box;
 	};
@@ -125,6 +269,7 @@ struct Mesh
 	}
 	void LoadSafe(cstring path);
 	void Load(cstring path);
+	void LoadBoneGroups(common::FileStream& f);
 	void Save(cstring path);
 
 	Header head;
@@ -135,7 +280,7 @@ struct Mesh
 	vector<Point> attach_points;
 	vector<BoneGroup> groups;
 	vector<Split> splits;
-	VEC3 cam_pos, cam_target, cam_up;
+	Vec3 cam_pos, cam_target, cam_up;
 
 	byte old_ver;
 	byte* vdata;

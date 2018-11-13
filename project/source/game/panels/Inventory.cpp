@@ -612,7 +612,10 @@ void InventoryPanel::Update(float dt)
 			item_visible = nullptr;
 	}
 	if(item_visible)
+	{
 		game.DrawItemImage(*item_visible, game.tItemRegionRot, game.sItemRegionRot, rot, false);
+		rot += PI * dt / 2;
+	}
 
 	if(new_index >= 0)
 	{
@@ -1375,8 +1378,10 @@ bool InventoryPanel::SlotRequireHideWeapon(ITEM_SLOT slot)
 // przek³ada przedmiot ze slotu do ekwipunku
 void InventoryPanel::RemoveSlotItem(ITEM_SLOT slot)
 {
-	unit->AddItem(slots[slot], 1, false);
-	unit->weight -= slots[slot]->weight;
+	const Item* item = slots[slot];
+	game.sound_mgr->PlaySound2d(game.GetItemSound(item));
+	unit->AddItem(item, 1, false);
+	unit->weight -= item->weight;
 	slots[slot] = nullptr;
 	base.BuildTmpInventory(0);
 
@@ -1397,6 +1402,7 @@ void InventoryPanel::RemoveSlotItem(ITEM_SLOT slot)
 //=================================================================================================
 void InventoryPanel::DropSlotItem(ITEM_SLOT slot)
 {
+	game.sound_mgr->PlaySound2d(game.GetItemSound(slots[slot]));
 	unit->DropItem(slot);
 	base.BuildTmpInventory(0);
 	UpdateScrollbar();
@@ -1421,11 +1427,16 @@ void InventoryPanel::ConsumeItem(int index)
 //=================================================================================================
 void InventoryPanel::EquipSlotItem(ITEM_SLOT slot, int i_index)
 {
+	const Item* item = items->at(i_index).item;
+
+	// play sound
+	game.sound_mgr->PlaySound2d(game.GetItemSound(item));
+
 	if(slots[slot])
 	{
 		const Item* prev_item = slots[slot];
 		// ustaw slot
-		slots[slot] = items->at(i_index).item;
+		slots[slot] = item;
 		items->erase(items->begin() + i_index);
 		// dodaj stary przedmiot
 		unit->AddItem(prev_item, 1, false);
@@ -1434,7 +1445,7 @@ void InventoryPanel::EquipSlotItem(ITEM_SLOT slot, int i_index)
 	else
 	{
 		// ustaw slot
-		slots[slot] = items->at(i_index).item;
+		slots[slot] = item;
 		// usuñ przedmiot
 		items->erase(items->begin() + i_index);
 	}

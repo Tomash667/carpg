@@ -15,7 +15,6 @@ NASTÊPNA WERSJA:
 - brak zerowej koœci bo i po co
 - materia³y
 - mo¿liwe 32 bit indices jako flaga
-- zmiana nazwy na Mesh, MeshInstance
 - lepsze Predraw
 */
 struct Mesh : public Resource
@@ -108,9 +107,13 @@ struct Mesh : public Resource
 	{
 		enum Type : word
 		{
-			OTHER,
+			PLAIN_AXES,
 			SPHERE,
-			BOX
+			BOX,
+			ARROWS,
+			SINGLE_ARROW,
+			CIRCLE,
+			CONE
 		};
 
 		string name;
@@ -144,6 +147,8 @@ struct Mesh : public Resource
 	void LoadHeader(StreamReader& stream);
 	void SetVertexSizeDecl();
 	void LoadPoints(StreamReader& stream);
+	void LoadBoneGroups(StreamReader& stream);
+	void LoadMatrix33(StreamReader& stream, Matrix& m);
 	static void LoadVertexData(VertexData* vd, StreamReader& stream);
 	Animation* GetAnimation(cstring name);
 	Bone* GetBone(cstring name);

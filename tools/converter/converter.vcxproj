@@ -73,6 +73,7 @@
       <DataExecutionPrevention />
       <TargetMachine>MachineX86</TargetMachine>
       <AdditionalLibraryDirectories>..\..\external\DirectX\Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -105,8 +106,7 @@
     <ClCompile Include="Common\Math.cpp" />
     <ClCompile Include="Common\Stream.cpp" />
     <ClCompile Include="Common\Tokenizer.cpp" />
-    <ClCompile Include="GlobalCode.cpp" />
-    <ClCompile Include="Loader.cpp" />
+    <ClCompile Include="Converter.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="MeshMender.cpp" />
@@ -115,6 +115,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="QmshSaver.cpp" />
+    <ClCompile Include="QmshTmpLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common\Base.hpp" />
@@ -123,12 +125,16 @@
     <ClInclude Include="Common\Math.hpp" />
     <ClInclude Include="Common\Stream.hpp" />
     <ClInclude Include="Common\Tokenizer.hpp" />
-    <ClInclude Include="GlobalCode.hpp" />
+    <ClInclude Include="ConversionData.h" />
+    <ClInclude Include="Converter.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="MeshMender.h" />
     <ClInclude Include="MeshTask.hpp" />
     <ClInclude Include="PCH.hpp" />
     <ClInclude Include="Qmsh.h" />
+    <ClInclude Include="QmshSaver.h" />
+    <ClInclude Include="QmshTmp.h" />
+    <ClInclude Include="QmshTmpLoader.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="changelog.txt" />
