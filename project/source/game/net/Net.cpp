@@ -43,6 +43,7 @@
 #include "Console.h"
 #include "FOV.h"
 #include "PlayerInfo.h"
+#include "CommandParser.h"
 
 vector<NetChange> Net::changes;
 Net::Mode Net::mode;
@@ -155,9 +156,10 @@ void Game::SendPlayerData(PlayerInfo& info)
 
 	// data
 	unit.stats.Write(f);
-	unit.unmod_stats.Write(f);
+	unit.base_stat.Write(f);
 	f << unit.gold;
 	f << unit.stamina;
+	f << unit.effects;
 	unit.player->Write(f);
 
 	// other team members
@@ -241,9 +243,10 @@ bool Game::ReadPlayerData(BitStreamReader& f)
 	unit->player->Init(*unit, true);
 
 	unit->stats.Read(f);
-	unit->unmod_stats.Read(f);
+	unit->base_stat.Read(f);
 	f >> unit->gold;
 	f >> unit->stamina;
+	f >> unit->effects;
 	if(!f || !pc->Read(f))
 	{
 		Error("Read player data: Broken stats.");
@@ -445,14 +448,6 @@ void Game::UpdateServer(float dt)
 				c.id = info.u->player->stat_flags;
 				c.type = NetChangePlayer::PLAYER_STATS;
 				info.u->player->stat_flags = 0;
-			}
-
-			// update bufs
-			int buffs = info.u->GetBuffs();
-			if(buffs != info.buffs)
-			{
-				info.buffs = buffs;
-				info.update_flags |= PlayerInfo::UF_BUFFS;
 			}
 
 			// write & send updates
@@ -1128,7 +1123,11 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						uint team_count = (player.action == PlayerController::Action_Trade ? 0 : min((uint)count, slot.team_count));
 						AddItem(unit, slot.item, (uint)count, team_count, false);
 						if(player.action == PlayerController::Action_Trade)
-							unit.gold -= ItemHelper::GetItemPrice(slot.item, unit, true) * count;
+						{
+							int price = ItemHelper::GetItemPrice(slot.item, unit, true) * count;
+							unit.gold -= price;
+							player.Train(TrainWhat::Trade, (float)price, 0);
+						}
 						else if(player.action == PlayerController::Action_ShareItems && slot.item->type == IT_CONSUMABLE
 							&& slot.item->ToConsumable().effect == E_HEAL)
 							player.action_unit->ai->have_potion = 1;
@@ -1239,6 +1238,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					{
 						InsertItem(*player.chest_trade, slot.item, count, team_count);
 						int price = ItemHelper::GetItemPrice(slot.item, unit, false);
+						player.Train(TrainWhat::Trade, (float)price * count, 0);
 						if(team_count)
 							AddGold(price * team_count);
 						uint normal_count = count - team_count;
@@ -1265,6 +1265,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							{
 								t->gold -= price;
 								unit.gold += price;
+								player.Train(TrainWhat::Trade, (float)price, 0);
 							}
 							if(slot.item->type == IT_CONSUMABLE && slot.item->ToConsumable().effect == E_HEAL)
 								t->ai->have_potion = 2;
@@ -1313,6 +1314,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					{
 						InsertItem(*player.chest_trade, slot, 1u, 0u);
 						unit.gold += price;
+						player.Train(TrainWhat::Trade, (float)price, 0);
 					}
 					else
 					{
@@ -1324,6 +1326,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 								// sold for gold
 								player.action_unit->gold -= price;
 								unit.gold += price;
+								player.Train(TrainWhat::Trade, (float)price, 0);
 							}
 							player.action_unit->UpdateInventory();
 							NetChangePlayer& c = Add1(info.changes);
@@ -1422,7 +1425,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 			}
 			else if(player.action == PlayerController::Action_LootContainer)
 			{
-				player.unit->UseUsable(nullptr);
+				unit.UseUsable(nullptr);
 
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::USE_USABLE;
@@ -2132,12 +2135,12 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					{
 						int num = +value;
 						if(type == NetChange::CHEAT_MOD_STAT)
-							num += info.u->unmod_stats.skill[what];
+							num += info.u->base_stat.skill[what];
 						int v = Clamp(num, Skill::MIN, Skill::MAX);
-						if(v != info.u->unmod_stats.skill[what])
+						if(v != info.u->base_stat.skill[what])
 						{
 							info.u->Set((SkillId)what, v);
-							NetChangePlayer& c = Add1(info.pc->player_info->changes);
+							NetChangePlayer& c = Add1(player.player_info->changes);
 							c.type = NetChangePlayer::STAT_CHANGED;
 							c.id = (int)ChangedStatType::SKILL;
 							c.a = what;
@@ -2153,12 +2156,12 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					{
 						int num = +value;
 						if(type == NetChange::CHEAT_MOD_STAT)
-							num += info.u->unmod_stats.attrib[what];
+							num += info.u->base_stat.attrib[what];
 						int v = Clamp(num, Attribute::MIN, Attribute::MAX);
-						if(v != info.u->unmod_stats.attrib[what])
+						if(v != info.u->base_stat.attrib[what])
 						{
 							info.u->Set((AttributeId)what, v);
-							NetChangePlayer& c = Add1(info.pc->player_info->changes);
+							NetChangePlayer& c = Add1(player.player_info->changes);
 							c.type = NetChangePlayer::STAT_CHANGED;
 							c.id = (int)ChangedStatType::ATTRIBUTE;
 							c.a = what;
@@ -2800,7 +2803,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 			if(!info.devmode)
 				N.StreamError("Update server: Player %s used CHEAT_REFRESH_COOLDOWN without devmode.", info.name.c_str());
 			else
-				info.pc->RefreshCooldown();
+				player.RefreshCooldown();
 			break;
 		// client fallback ended
 		case NetChange::END_FALLBACK:
@@ -2852,53 +2855,53 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 		// player set next action
 		case NetChange::SET_NEXT_ACTION:
 			{
-				f.ReadCasted<byte>(info.pc->next_action);
+				f.ReadCasted<byte>(player.next_action);
 				if(!f)
 				{
 					N.StreamError("Update server: Broken SET_NEXT_ACTION from '%s'.", info.name.c_str());
-					info.pc->next_action = NA_NONE;
+					player.next_action = NA_NONE;
 					break;
 				}
-				switch(info.pc->next_action)
+				switch(player.next_action)
 				{
 				case NA_NONE:
 					break;
 				case NA_REMOVE:
 				case NA_DROP:
-					f.ReadCasted<byte>(info.pc->next_action_data.slot);
+					f.ReadCasted<byte>(player.next_action_data.slot);
 					if(!f)
 					{
 						N.StreamError("Update server: Broken SET_NEXT_ACTION(2) from '%s'.", info.name.c_str());
-						info.pc->next_action = NA_NONE;
+						player.next_action = NA_NONE;
 					}
-					else if(!IsValid(info.pc->next_action_data.slot) || !info.pc->unit->slots[info.pc->next_action_data.slot])
+					else if(!IsValid(player.next_action_data.slot) || !unit.slots[player.next_action_data.slot])
 					{
-						N.StreamError("Update server: SET_NEXT_ACTION, invalid slot %d from '%s'.", info.pc->next_action_data.slot, info.name.c_str());
-						info.pc->next_action = NA_NONE;
+						N.StreamError("Update server: SET_NEXT_ACTION, invalid slot %d from '%s'.", player.next_action_data.slot, info.name.c_str());
+						player.next_action = NA_NONE;
 					}
 					break;
 				case NA_EQUIP:
 				case NA_CONSUME:
 					{
-						f >> info.pc->next_action_data.index;
+						f >> player.next_action_data.index;
 						const string& item_id = f.ReadString1();
 						if(!f)
 						{
 							N.StreamError("Update server: Broken SET_NEXT_ACTION(3) from '%s'.", info.name.c_str());
-							info.pc->next_action = NA_NONE;
+							player.next_action = NA_NONE;
 						}
-						else if(info.pc->next_action_data.index < 0 || (uint)info.pc->next_action_data.index >= info.u->items.size())
+						else if(player.next_action_data.index < 0 || (uint)player.next_action_data.index >= info.u->items.size())
 						{
-							N.StreamError("Update server: SET_NEXT_ACTION, invalid index %d from '%s'.", info.pc->next_action_data.index, info.name.c_str());
-							info.pc->next_action = NA_NONE;
+							N.StreamError("Update server: SET_NEXT_ACTION, invalid index %d from '%s'.", player.next_action_data.index, info.name.c_str());
+							player.next_action = NA_NONE;
 						}
 						else
 						{
-							info.pc->next_action_data.item = Item::TryGet(item_id);
-							if(!info.pc->next_action_data.item)
+							player.next_action_data.item = Item::TryGet(item_id);
+							if(!player.next_action_data.item)
 							{
 								N.StreamError("Update server: SET_NEXT_ACTION, invalid item '%s' from '%s'.", item_id.c_str(), info.name.c_str());
-								info.pc->next_action = NA_NONE;
+								player.next_action = NA_NONE;
 							}
 						}
 					}
@@ -2910,22 +2913,22 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						if(!f)
 						{
 							N.StreamError("Update server: Broken SET_NEXT_ACTION(4) from '%s'.", info.name.c_str());
-							info.pc->next_action = NA_NONE;
+							player.next_action = NA_NONE;
 						}
 						else
 						{
-							info.pc->next_action_data.usable = L.FindUsable(netid);
-							if(!info.pc->next_action_data.usable)
+							player.next_action_data.usable = L.FindUsable(netid);
+							if(!player.next_action_data.usable)
 							{
 								N.StreamError("Update server: SET_NEXT_ACTION, invalid usable %d from '%s'.", netid, info.name.c_str());
-								info.pc->next_action = NA_NONE;
+								player.next_action = NA_NONE;
 							}
 						}
 					}
 					break;
 				default:
-					N.StreamError("Update server: SET_NEXT_ACTION, invalid action %d from '%s'.", info.pc->next_action, info.name.c_str());
-					info.pc->next_action = NA_NONE;
+					N.StreamError("Update server: SET_NEXT_ACTION, invalid action %d from '%s'.", player.next_action, info.name.c_str());
+					player.next_action = NA_NONE;
 					break;
 				}
 			}
@@ -2938,7 +2941,55 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				if(!f)
 					N.StreamError("Update server: Broken CHANGE_ALWAYS_RUN from %s.", info.name.c_str());
 				else
-					info.pc->always_run = always_run;
+					player.always_run = always_run;
+			}
+			break;
+		// player used generic command
+		case NetChange::GENERIC_CMD:
+			{
+				byte len;
+				f >> len;
+				if(!f.Ensure(len))
+					N.StreamError("Update server: Broken GENERIC_CMD (length %u) from %s.", len, info.name.c_str());
+				else if(!info.devmode)
+				{
+					N.StreamError("Update server: Player %s used GENERIC_CMD without devmode.", info.name.c_str());
+					f.Skip(len);
+				}
+				else if(!cmdp->ParseStream(f, info))
+					N.StreamError("Update server: Failed to parse GENERIC_CMD (length %u) from %s.", len, info.name.c_str());
+			}
+			break;
+		// player used item
+		case NetChange::USE_ITEM:
+			{
+				int index;
+				f >> index;
+				if(!f)
+				{
+					N.StreamError("Update server: Broken USE_ITEM from %s.", info.name.c_str());
+					break;
+				}
+				if(index < 0 || index >= (int)unit.items.size())
+				{
+					N.StreamError("Update server: USE_ITEM, invalid index %d from %s.", index, info.name.c_str());
+					break;
+				}
+				ItemSlot& slot = unit.items[index];
+				if(!slot.item || slot.item->type != IT_BOOK || !IS_SET(slot.item->flags, ITEM_MAGIC_SCROLL))
+				{
+					N.StreamError("Update server: USE_ITEM, invalid item '%s' at index %d from %s.",
+						slot.item ? slot.item->id.c_str() : "null", index, info.name.c_str());
+					break;
+				}
+				unit.action = A_USE_ITEM;
+				unit.used_item = slot.item;
+				unit.mesh_inst->frame_end_info2 = false;
+				unit.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::USE_ITEM;
+				c.unit = &unit;
 			}
 			break;
 		// invalid change
@@ -3042,6 +3093,7 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 		case NetChange::USABLE_SOUND:
 		case NetChange::BREAK_ACTION:
 		case NetChange::PLAYER_ACTION:
+		case NetChange::USE_ITEM:
 			f << c.unit->netid;
 			break;
 		case NetChange::TELL_NAME:
@@ -3442,11 +3494,6 @@ void Game::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 				f.WriteCasted<byte>(c.id);
 				f << c.count;
 				break;
-			case NetChangePlayer::GAIN_STAT:
-				f << (c.id != 0);
-				f.WriteCasted<byte>(c.a);
-				f.WriteCasted<byte>(c.count);
-				break;
 			case NetChangePlayer::ADD_ITEMS_TRADER:
 				f << c.id;
 				f << c.count;
@@ -3498,8 +3545,9 @@ void Game::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 				f << c.count;
 				break;
 			case NetChangePlayer::ADD_PERK:
-				f.WriteCasted<byte>(c.id);
-				f << c.count;
+			case NetChangePlayer::REMOVE_PERK:
+				f.WriteCasted<char>(c.id);
+				f.WriteCasted<char>(c.count);
 				break;
 			case NetChangePlayer::GAME_MESSAGE:
 				f << c.id;
@@ -3512,6 +3560,30 @@ void Game::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 				}
 				else
 					f << 0u;
+				break;
+			case NetChangePlayer::GENERIC_CMD_RESPONSE:
+				f.WriteString4(*c.str);
+				StringPool.Free(c.str);
+				break;
+			case NetChangePlayer::ADD_EFFECT:
+				f.WriteCasted<char>(c.id);
+				f.WriteCasted<char>(c.count);
+				f.WriteCasted<char>(c.a);
+				f << c.pos.x;
+				f << c.pos.y;
+				break;
+			case NetChangePlayer::REMOVE_EFFECT:
+				f.WriteCasted<char>(c.id);
+				f.WriteCasted<char>(c.count);
+				f.WriteCasted<char>(c.a);
+				break;
+			case NetChangePlayer::ON_REST:
+				f.WriteCasted<byte>(c.count);
+				break;
+			case NetChangePlayer::GAME_MESSAGE_FORMATTED:
+				f << c.id;
+				f << c.a;
+				f << c.count;
 				break;
 			default:
 				Error("Update server: Unknown player %s change %d.", info.name.c_str(), c.type);
@@ -3526,10 +3598,10 @@ void Game::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 		f << info.u->gold;
 	if(IS_SET(info.update_flags, PlayerInfo::UF_ALCOHOL))
 		f << info.u->alcohol;
-	if(IS_SET(info.update_flags, PlayerInfo::UF_BUFFS))
-		f.WriteCasted<byte>(info.buffs);
 	if(IS_SET(info.update_flags, PlayerInfo::UF_STAMINA))
 		f << info.u->stamina;
+	if(IS_SET(info.update_flags, PlayerInfo::UF_LEARNING_POINTS))
+		f << info.pc->learning_points;
 }
 
 //=================================================================================================
@@ -6067,6 +6139,27 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				}
 			}
 			break;
+		// player used item
+		case NetChange::USE_ITEM:
+			{
+				int netid;
+				f >> netid;
+				if(!f)
+					N.StreamError("Update client: Broken USE_ITEM.");
+				else
+				{
+					Unit* unit = L.FindUnit(netid);
+					if(!unit)
+						N.StreamError("Update client: USE_ITEM, missing unit %d.", netid);
+					else
+					{
+						unit->action = A_USE_ITEM;
+						unit->mesh_inst->frame_end_info2 = false;
+						unit->mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+					}
+				}
+			}
+			break;
 		// invalid change
 		default:
 			Warn("Update client: Unknown change type %d.", type);
@@ -6665,20 +6758,6 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 					}
 				}
 				break;
-			// message about gaining attribute/skill
-			case NetChangePlayer::GAIN_STAT:
-				{
-					bool is_skill;
-					byte what, value;
-					f >> is_skill;
-					f >> what;
-					f >> value;
-					if(!f)
-						N.StreamError("Update single client: Broken GAIN_STAT.");
-					else
-						gui->messages->ShowStatGain(is_skill, what, value);
-				}
-				break;
 			// update trader gold
 			case NetChangePlayer::UPDATE_TRADER_GOLD:
 				{
@@ -6809,18 +6888,6 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 							else if(pc)
 								pc->unit->Set((SkillId)what, value);
 							break;
-						case ChangedStatType::BASE_ATTRIBUTE:
-							if(what >= (byte)AttributeId::MAX)
-								N.StreamError("Update single client: STAT_CHANGED, invalid base attribute %u.", what);
-							else if(pc)
-								pc->SetBase((AttributeId)what, value);
-							break;
-						case ChangedStatType::BASE_SKILL:
-							if(what >= (byte)SkillId::MAX)
-								N.StreamError("Update single client: STAT_CHANGED, invalid base skill %u.", what);
-							else if(pc)
-								pc->SetBase((SkillId)what, value);
-							break;
 						default:
 							N.StreamError("Update single client: STAT_CHANGED, invalid change type %u.", type);
 							break;
@@ -6831,14 +6898,27 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 			// add perk to player
 			case NetChangePlayer::ADD_PERK:
 				{
-					byte id;
+					Perk perk;
 					int value;
-					f >> id;
-					f >> value;
+					f.ReadCasted<char>(perk);
+					f.ReadCasted<char>(value);
 					if(!f)
 						N.StreamError("Update single client: Broken ADD_PERK.");
-					else
-						pc->perks.push_back(TakenPerk((Perk)id, value));
+					else if(pc)
+						pc->AddPerk(perk, value);
+				}
+				break;
+			// remove perk from player
+			case NetChangePlayer::REMOVE_PERK:
+				{
+					Perk perk;
+					int value;
+					f.ReadCasted<char>(perk);
+					f.ReadCasted<char>(value);
+					if(!f)
+						N.StreamError("Update single client: Broken REMOVE_PERK.");
+					else if(pc)
+						pc->RemovePerk(perk, value);
 				}
 				break;
 			// show game message
@@ -6848,7 +6928,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 					f >> gm_id;
 					if(!f)
 						N.StreamError("Update single client: Broken GAME_MESSAGE.");
-					else
+					else if(pc)
 						gui->messages->AddGameMsg3((GMS)gm_id);
 				}
 				break;
@@ -6859,9 +6939,76 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 					f.ReadString4(*output);
 					if(!f)
 						N.StreamError("Update single client: Broken RUN_SCRIPT_RESULT.");
-					else
+					else if(pc)
 						gui->console->AddMsg(output->c_str());
 					StringPool.Free(output);
+				}
+				break;
+			// generic command result
+			case NetChangePlayer::GENERIC_CMD_RESPONSE:
+				{
+					string* output = StringPool.Get();
+					f.ReadString4(*output);
+					if(!f)
+						N.StreamError("Update single client: Broken GENERIC_CMD_RESPONSE.");
+					else if(pc)
+						g_print_func(output->c_str());
+					StringPool.Free(output);
+				}
+				break;
+			// add effect to player
+			case NetChangePlayer::ADD_EFFECT:
+				{
+					Effect e;
+					f.ReadCasted<char>(e.effect);
+					f.ReadCasted<char>(e.source);
+					f.ReadCasted<char>(e.source_id);
+					f >> e.power;
+					f >> e.time;
+					if(!f)
+						N.StreamError("Update single client: Broken ADD_EFFECT.");
+					else if(pc)
+						pc->unit->AddEffect(e);
+				}
+				break;
+			// remove effect from player
+			case NetChangePlayer::REMOVE_EFFECT:
+				{
+					EffectId effect;
+					EffectSource source;
+					int source_id;
+					f.ReadCasted<char>(effect);
+					f.ReadCasted<char>(source);
+					f.ReadCasted<char>(source_id);
+					if(!f)
+						N.StreamError("Update single client: Broken REMOVE_EFFECT.");
+					else if(pc)
+						pc->unit->RemoveEffects(effect, source, source_id);
+				}
+				break;
+			// player is resting
+			case NetChangePlayer::ON_REST:
+				{
+					int days;
+					f.ReadCasted<byte>(days);
+					if(!f)
+						N.StreamError("Update single client: Broken ON_REST.");
+					else if(pc)
+						pc->Rest(days, false, false);
+				}
+				break;
+			// add formatted message
+			case NetChangePlayer::GAME_MESSAGE_FORMATTED:
+				{
+					GMS id;
+					int subtype, value;
+					f >> id;
+					f >> subtype;
+					f >> value;
+					if(!f)
+						N.StreamError("Update single client: Broken GAME_MESSAGE_FORMATTED.");
+					else if(pc)
+						gui->messages->AddFormattedMessage(pc, id, subtype, value);
 				}
 				break;
 			default:
@@ -6912,17 +7059,6 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 		}
 	}
 
-	// buffs
-	if(IS_SET(flags, PlayerInfo::UF_BUFFS))
-	{
-		f.ReadCasted<byte>(N.GetMe().buffs);
-		if(!f)
-		{
-			N.StreamError("Update single client: Broken ID_PLAYER_CHANGES at UF_BUFFS.");
-			return true;
-		}
-	}
-
 	// stamina
 	if(IS_SET(flags, PlayerInfo::UF_STAMINA))
 	{
@@ -6934,6 +7070,22 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 			if(!f)
 			{
 				N.StreamError("Update single client: Broken ID_PLAYER_CHANGES at UF_STAMINA.");
+				return true;
+			}
+		}
+	}
+
+	// learning points
+	if(IS_SET(flags, PlayerInfo::UF_LEARNING_POINTS))
+	{
+		if(!pc)
+			f.Skip(sizeof(pc->learning_points));
+		else
+		{
+			f.Read(pc->learning_points);
+			if(!f)
+			{
+				N.StreamError("Update single client: Broken ID_PLAYER_CHANGES at UF_LEARNING_POINTS.");
 				return true;
 			}
 		}
@@ -6960,6 +7112,7 @@ void Game::WriteClientChanges(BitStreamWriter& f)
 		case NetChange::CHANGE_EQUIPMENT:
 		case NetChange::IS_BETTER_ITEM:
 		case NetChange::CONSUME_ITEM:
+		case NetChange::USE_ITEM:
 			f << c.id;
 			break;
 		case NetChange::TAKE_WEAPON:
@@ -7124,6 +7277,14 @@ void Game::WriteClientChanges(BitStreamWriter& f)
 			default:
 				assert(0);
 				break;
+			}
+			break;
+		case NetChange::GENERIC_CMD:
+			{
+				byte* content = ((byte*)&c) + sizeof(NetChange::TYPE);
+				byte size = *content++;
+				f << size;
+				f.Write(content, size);
 			}
 			break;
 		default:

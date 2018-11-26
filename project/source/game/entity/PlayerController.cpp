@@ -101,8 +101,6 @@ void PlayerController::Init(Unit& _unit, bool partial)
 	split_gold = 0.f;
 	always_run = true;
 
-	ResetStatState();
-
 	if(!partial)
 	{
 		kills = 0;
@@ -112,22 +110,22 @@ void PlayerController::Init(Unit& _unit, bool partial)
 		arena_fights = 0;
 
 		for(int i = 0; i < (int)SkillId::MAX; ++i)
-			sp[i] = 0;
+		{
+			skill[i].points = 0;
+			skill[i].train = 0;
+		}
 		for(int i = 0; i < (int)AttributeId::MAX; ++i)
-			ap[i] = 0;
+		{
+			attrib[i].points = 0;
+			attrib[i].train = 0;
+		}
 
 		action_charges = GetAction().charges;
+		learning_points = 0;
+		exp = 0;
+		exp_level = 0;
+		exp_need = GetExpNeed();
 	}
-}
-
-//=================================================================================================
-void PlayerController::ResetStatState()
-{
-	// currently it isn't working
-	for(int i = 0; i < (int)AttributeId::MAX; ++i)
-		attrib_state[i] = StatState::NORMAL;
-	for(int i = 0; i < (int)SkillId::MAX; ++i)
-		skill_state[i] = StatState::NORMAL;
 }
 
 //=================================================================================================
@@ -179,25 +177,25 @@ void PlayerController::Update(float dt, bool is_local)
 void PlayerController::Train(SkillId skill, int points)
 {
 	int s = (int)skill;
+	StatData& stat = this->skill[s];
 
-	sp[s] += points;
+	stat.points += points;
 
 	int gained = 0,
-		value = unit->GetUnmod(skill);
-	//base = base_stats.skill[s];
+		value = unit->GetBase(skill);
 
-	while(sp[s] >= sn[s])
+	while(stat.points >= stat.next)
 	{
-		sp[s] -= sn[s];
+		stat.points -= stat.next;
 		if(value != Skill::MAX)
 		{
 			++gained;
 			++value;
-			sn[s] = GetRequiredSkillPoints(value);
+			stat.next = GetRequiredSkillPoints(value);
 		}
 		else
 		{
-			sp[s] = sn[s];
+			stat.points = stat.next;
 			break;
 		}
 	}
@@ -206,16 +204,9 @@ void PlayerController::Train(SkillId skill, int points)
 	{
 		recalculate_level = true;
 		unit->Set(skill, value);
-		if(is_local)
-			Game::Get().gui->messages->ShowStatGain(true, s, gained);
-		else
+		Game::Get().gui->messages->AddFormattedMessage(this, GMS_GAIN_SKILL, s, gained);
+		if(!is_local)
 		{
-			NetChangePlayer& c = Add1(player_info->changes);
-			c.type = NetChangePlayer::GAIN_STAT;
-			c.id = 1;
-			c.a = s;
-			c.count = gained;
-
 			NetChangePlayer& c2 = Add1(player_info->changes);
 			c2.type = NetChangePlayer::STAT_CHANGED;
 			c2.id = (int)ChangedStatType::SKILL;
@@ -229,25 +220,25 @@ void PlayerController::Train(SkillId skill, int points)
 void PlayerController::Train(AttributeId attrib, int points)
 {
 	int a = (int)attrib;
+	StatData& stat = this->attrib[a];
 
-	ap[a] += points;
+	stat.points += points;
 
 	int gained = 0,
-		value = unit->GetUnmod(attrib);
-	//base = base_stats.attrib[a];
+		value = unit->GetBase(attrib);
 
-	while(ap[a] >= an[a])
+	while(stat.points >= stat.next)
 	{
-		ap[a] -= an[a];
+		stat.points -= stat.next;
 		if(unit->stats.attrib[a] != Attribute::MAX)
 		{
 			++gained;
 			++value;
-			an[a] = GetRequiredAttributePoints(value);
+			stat.next = GetRequiredAttributePoints(value);
 		}
 		else
 		{
-			ap[a] = an[a];
+			stat.points = stat.next;
 			break;
 		}
 	}
@@ -256,16 +247,9 @@ void PlayerController::Train(AttributeId attrib, int points)
 	{
 		recalculate_level = true;
 		unit->Set(attrib, value);
-		if(is_local)
-			Game::Get().gui->messages->ShowStatGain(false, a, gained);
-		else
+		Game::Get().gui->messages->AddFormattedMessage(this, GMS_GAIN_ATTRIBUTE, a, gained);
+		if(!is_local)
 		{
-			NetChangePlayer& c = Add1(player_info->changes);
-			c.type = NetChangePlayer::GAIN_STAT;
-			c.id = 0;
-			c.a = a;
-			c.count = gained;
-
 			NetChangePlayer& c2 = Add1(player_info->changes);
 			c2.type = NetChangePlayer::STAT_CHANGED;
 			c2.id = (int)ChangedStatType::ATTRIBUTE;
@@ -297,27 +281,18 @@ void PlayerController::TravelTick()
 void PlayerController::Rest(int days, bool resting, bool travel)
 {
 	// update effects that work for days, end other
-	int best_nat;
+	float natural_mod;
 	float prev_hp = unit->hp,
 		prev_stamina = unit->stamina;
-	unit->EndEffects(days, &best_nat);
+	unit->EndEffects(days, &natural_mod);
 
 	// regenerate hp
-	if(unit->hp != unit->hpmax)
+	if(Net::IsLocal() && unit->hp != unit->hpmax)
 	{
 		float heal = 0.5f * unit->Get(AttributeId::END);
 		if(resting)
 			heal *= 2;
-		if(best_nat)
-		{
-			if(best_nat != days)
-				heal = heal*best_nat * 2 + heal*(days - best_nat);
-			else
-				heal *= 2 * days;
-		}
-		else
-			heal *= days;
-
+		heal *= natural_mod * days;
 		heal = min(heal, unit->hpmax - unit->hp);
 		unit->hp += heal;
 
@@ -325,7 +300,7 @@ void PlayerController::Rest(int days, bool resting, bool travel)
 	}
 
 	// send update
-	if(Net::IsOnline() && !travel)
+	if(Net::IsServer() && !travel)
 	{
 		if(unit->hp != prev_hp)
 		{
@@ -334,8 +309,14 @@ void PlayerController::Rest(int days, bool resting, bool travel)
 			c.unit = unit;
 		}
 
-		if(unit->stamina != prev_stamina && !is_local)
-			player_info->update_flags |= PlayerInfo::UF_STAMINA;
+		if(!is_local)
+		{
+			if(unit->stamina != prev_stamina)
+				player_info->update_flags |= PlayerInfo::UF_STAMINA;
+			NetChangePlayer& c = Add1(player_info->changes);
+			c.type = NetChangePlayer::ON_REST;
+			c.count = days;
+		}
 	}
 
 	// reset last damage
@@ -366,8 +347,19 @@ void PlayerController::Save(FileWriter& f)
 	f << dmgc;
 	f << poison_dmgc;
 	f << idle_timer;
-	f << ap;
-	f << sp;
+	for(StatData& stat : attrib)
+	{
+		f << stat.points;
+		f << stat.train;
+		f << stat.apt;
+		f << stat.blocked;
+	}
+	for(StatData& stat : skill)
+	{
+		f << stat.points;
+		f << stat.train;
+		f << stat.apt;
+	}
 	f << action_key;
 	NextAction saved_next_action = next_action;
 	if(Any(saved_next_action, NA_SELL, NA_PUT, NA_GIVE))
@@ -404,9 +396,7 @@ void PlayerController::Save(FileWriter& f)
 	f << dmg_done;
 	f << dmg_taken;
 	f << arena_fights;
-	base_stats.Save(f);
-	f << attrib_state;
-	f << skill_state;
+	f << learning_points;
 	f << (byte)perks.size();
 	for(TakenPerk& tp : perks)
 	{
@@ -424,6 +414,8 @@ void PlayerController::Save(FileWriter& f)
 	}
 	f << split_gold;
 	f << always_run;
+	f << exp;
+	f << exp_level;
 }
 
 //=================================================================================================
@@ -438,34 +430,71 @@ void PlayerController::Load(FileReader& f)
 	f >> dmgc;
 	f >> poison_dmgc;
 	f >> idle_timer;
-	if(LOAD_VERSION >= V_0_4)
+	if(LOAD_VERSION >= V_DEV)
 	{
-		// attribute points
-		f >> ap;
-		// skill points
-		f >> sp;
-
+		for(StatData& stat : attrib)
+		{
+			f >> stat.points;
+			f >> stat.train;
+			f >> stat.apt;
+			f >> stat.blocked;
+		}
+		for(StatData& stat : skill)
+		{
+			f >> stat.points;
+			f >> stat.train;
+			f >> stat.apt;
+			stat.blocked = false;
+		}
+		SetRequiredPoints();
+	}
+	else if(LOAD_VERSION >= V_0_4)
+	{
+		for(StatData& stat : attrib)
+		{
+			f >> stat.points;
+			stat.train = 0;
+			stat.apt = 0;
+			stat.blocked = false;
+		}
+		for(StatData& stat : skill)
+		{
+			f >> stat.points;
+			stat.train = 0;
+			stat.apt = 0;
+			stat.blocked = false;
+		}
 		SetRequiredPoints();
 	}
 	else
 	{
+		for(StatData& stat : attrib)
+		{
+			stat.points = 0;
+			stat.train = 0;
+			stat.apt = 0;
+			stat.blocked = false;
+		}
+		for(StatData& stat : skill)
+		{
+			stat.points = 0;
+			stat.train = 0;
+			stat.apt = 0;
+			stat.blocked = false;
+		}
 		// skill points
-		int old_sp[(int)OldSkill::MAX];
+		int old_sp[(int)old::SkillId::MAX];
 		f >> old_sp;
-		for(int i = 0; i < (int)SkillId::MAX; ++i)
-			sp[i] = 0;
-		sp[(int)SkillId::ONE_HANDED_WEAPON] = old_sp[(int)OldSkill::WEAPON];
-		sp[(int)SkillId::BOW] = old_sp[(int)OldSkill::BOW];
-		sp[(int)SkillId::SHIELD] = old_sp[(int)OldSkill::SHIELD];
-		sp[(int)SkillId::LIGHT_ARMOR] = old_sp[(int)OldSkill::LIGHT_ARMOR];
-		sp[(int)SkillId::HEAVY_ARMOR] = old_sp[(int)OldSkill::HEAVY_ARMOR];
+		skill[(int)SkillId::ONE_HANDED_WEAPON].points = old_sp[(int)old::SkillId::WEAPON];
+		skill[(int)SkillId::BOW].points = old_sp[(int)old::SkillId::BOW];
+		skill[(int)SkillId::SHIELD].points = old_sp[(int)old::SkillId::SHIELD];
+		skill[(int)SkillId::LIGHT_ARMOR].points = old_sp[(int)old::SkillId::LIGHT_ARMOR];
+		skill[(int)SkillId::HEAVY_ARMOR].points = old_sp[(int)old::SkillId::HEAVY_ARMOR];
 		// skip skill need
 		f.Skip(5 * sizeof(int));
 		// attribute points (str, end, dex)
 		for(int i = 0; i < 3; ++i)
-			f >> ap[i];
-		for(int i = 3; i < 6; ++i)
-			ap[i] = 0;
+			f >> attrib[i].points;
 		// skip attribute need
 		f.Skip(3 * sizeof(int));
 
@@ -529,9 +558,21 @@ void PlayerController::Load(FileReader& f)
 	f >> arena_fights;
 	if(LOAD_VERSION >= V_0_4)
 	{
-		base_stats.Load(f);
-		f >> attrib_state;
-		f >> skill_state;
+		if(LOAD_VERSION < V_DEV)
+		{
+			UnitStats old_stats;
+			f.Read(old_stats);
+			for(int i = 0; i < (int)AttributeId::MAX; ++i)
+				attrib[i].apt = (old_stats.attrib[i] - 50) / 5;
+			for(int i = 0; i < (int)SkillId::MAX; ++i)
+				skill[i].apt = old_stats.skill[i] / 5;
+			f.Skip(sizeof(StatState) * ((int)AttributeId::MAX + (int)SkillId::MAX)); // old stat state
+		}
+		// perk points
+		if(LOAD_VERSION >= V_DEV)
+			f >> learning_points;
+		else
+			learning_points = 0;
 		// perks
 		byte count;
 		f >> count;
@@ -541,7 +582,74 @@ void PlayerController::Load(FileReader& f)
 			tp.perk = (Perk)f.Read<byte>();
 			f >> tp.value;
 		}
+		// translate perks
+		if(LOAD_VERSION < V_DEV)
+		{
+			LoopAndRemove(perks, [this](TakenPerk& tp)
+			{
+				switch((old::Perk)tp.perk)
+				{
+				case old::Perk::Weakness:
+					{
+						switch((AttributeId)tp.value)
+						{
+						case AttributeId::STR:
+							tp.perk = Perk::BadBack;
+							break;
+						case AttributeId::DEX:
+							tp.perk = Perk::Sluggish;
+							break;
+						case AttributeId::END:
+							tp.perk = Perk::ChronicDisease;
+							break;
+						case AttributeId::INT:
+							tp.perk = Perk::SlowLearner;
+							break;
+						case AttributeId::WIS:
+							return true;
+						case AttributeId::CHA:
+							tp.perk = Perk::Asocial;
+							break;
+						}
+						PerkContext ctx(this, false);
+						ctx.upgrade = true;
+						tp.Apply(ctx);
+						tp.value = 0;
+					}
+					break;
+				case old::Perk::Strength:
+					tp.perk = Perk::Talent;
+					break;
+				case old::Perk::Skilled:
+					tp.perk = Perk::Skilled;
+					break;
+				case old::Perk::SkillFocus:
+					return true;
+				case old::Perk::Talent:
+					tp.perk = Perk::SkillFocus;
+					break;
+				case old::Perk::AlchemistApprentice:
+					tp.perk = Perk::AlchemistApprentice;
+					break;
+				case old::Perk::Wealthy:
+					tp.perk = Perk::Wealthy;
+					break;
+				case old::Perk::VeryWealthy:
+					tp.perk = Perk::VeryWealthy;
+					break;
+				case old::Perk::FamilyHeirloom:
+					tp.perk = Perk::FamilyHeirloom;
+					break;
+				case old::Perk::Leader:
+					tp.perk = Perk::Leader;
+					break;
+				}
+				return false;
+			});
+		}
 	}
+	else
+		learning_points = 0;
 	if(LOAD_VERSION >= V_0_5)
 	{
 		f >> action_cooldown;
@@ -566,16 +674,23 @@ void PlayerController::Load(FileReader& f)
 		action_recharge = 0.f;
 		action_charges = GetAction().charges;
 	}
-	if(LOAD_VERSION < V_0_5_1)
-		ResetStatState();
 	if(LOAD_VERSION >= V_0_7)
 		f >> split_gold;
 	else
 		split_gold = 0.f;
 	if(LOAD_VERSION >= V_DEV)
+	{
 		f >> always_run;
+		f >> exp;
+		f >> exp_level;
+	}
 	else
+	{
 		always_run = true;
+		exp = 0;
+		exp_level = 0;
+	}
+	exp_need = GetExpNeed();
 
 	action = Action_None;
 }
@@ -584,9 +699,9 @@ void PlayerController::Load(FileReader& f)
 void PlayerController::SetRequiredPoints()
 {
 	for(int i = 0; i < (int)AttributeId::MAX; ++i)
-		an[i] = GetRequiredAttributePoints(unit->unmod_stats.attrib[i]);
+		attrib[i].next = GetRequiredAttributePoints(unit->base_stat.attrib[i]);
 	for(int i = 0; i < (int)SkillId::MAX; ++i)
-		sn[i] = GetRequiredSkillPoints(unit->unmod_stats.skill[i]);
+		skill[i].next = GetRequiredSkillPoints(unit->base_stat.skill[i]);
 }
 
 const float level_mod[21] = {
@@ -645,7 +760,7 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 		break;
 	case TrainWhat::AttackNoDamage:
 		{
-			const float c_points = 150.f;
+			const float c_points = 150.f * GetLevelMod(unit->level, level);
 			const Weapon& weapon = unit->GetWeapon();
 			const WeaponTypeInfo& info = weapon.GetInfo();
 			TrainMod(SkillId::ONE_HANDED_WEAPON, c_points);
@@ -656,7 +771,7 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 		break;
 	case TrainWhat::AttackHit:
 		{
-			const float c_points = 2450.f * value;
+			const float c_points = 2450.f * value * GetLevelMod(unit->level, level);
 			const Weapon& weapon = unit->GetWeapon();
 			const WeaponTypeInfo& info = weapon.GetInfo();
 			TrainMod(SkillId::ONE_HANDED_WEAPON, c_points);
@@ -736,7 +851,7 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 		TrainMod(AttributeId::CHA, 10.f);
 		break;
 	case TrainWhat::Trade:
-		TrainMod(AttributeId::CHA, 100.f);
+		TrainMod(SkillId::HAGGLE, value);
 		break;
 	case TrainWhat::Stamina:
 		TrainMod(AttributeId::END, value * 0.75f);
@@ -748,16 +863,44 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 	}
 }
 
+float GetAptitudeMod(int apt)
+{
+	switch(apt)
+	{
+	case -3:
+		return 0.7f;
+	case -2:
+		return 0.8f;
+	case -1:
+		return 0.9f;
+	case 0:
+		return 1.f;
+	case 1:
+		return 1.1f;
+	case 2:
+		return 1.2f;
+	case 3:
+		return 1.3f;
+	default:
+		if(apt < -3)
+			return 0.6f;
+		else
+			return 1.4f;
+	}
+}
+
 //=================================================================================================
 void PlayerController::TrainMod(AttributeId a, float points)
 {
-	Train(a, int(points * GetBaseAttributeMod(GetBase(a))));
+	float mod = GetAptitudeMod(attrib[(int)a].apt);
+	Train(a, int(mod * points));
 }
 
 //=================================================================================================
 void PlayerController::TrainMod2(SkillId s, float points)
 {
-	Train(s, int(points * GetBaseSkillMod(GetBase(s))));
+	float mod = GetAptitudeMod(skill[(int)s].apt);
+	Train(s, int(mod * points));
 }
 
 //=================================================================================================
@@ -782,7 +925,7 @@ void PlayerController::Write(BitStreamWriter& f) const
 	f << dmg_taken;
 	f << knocks;
 	f << arena_fights;
-	base_stats.Write(f);
+	f << learning_points;
 	f.WriteCasted<byte>(perks.size());
 	for(const TakenPerk& perk : perks)
 	{
@@ -825,7 +968,7 @@ bool PlayerController::Read(BitStreamReader& f)
 	f >> dmg_taken;
 	f >> knocks;
 	f >> arena_fights;
-	base_stats.Read(f);
+	f >> learning_points;
 	f >> count;
 	if(!f || !f.Ensure(5 * count))
 		return false;
@@ -1012,4 +1155,91 @@ void PlayerController::StartDialog(Unit* talker, GameDialog* dialog)
 	}
 
 	ctx.StartDialog(talker, dialog);
+}
+
+//=================================================================================================
+bool PlayerController::HavePerk(Perk perk, int value)
+{
+	for(TakenPerk& tp : perks)
+	{
+		if(tp.perk == perk && tp.value == value)
+			return true;
+	}
+	return false;
+}
+
+//=================================================================================================
+bool PlayerController::AddPerk(Perk perk, int value)
+{
+	if(HavePerk(perk, value))
+		return false;
+	TakenPerk tp(perk, value);
+	perks.push_back(tp);
+	PerkContext ctx(this, false);
+	tp.Apply(ctx);
+	if(Net::IsServer() && !IsLocal())
+	{
+		NetChangePlayer& c = Add1(player_info->changes);
+		c.type = NetChangePlayer::ADD_PERK;
+		c.id = (int)perk;
+		c.count = value;
+	}
+	return true;
+}
+
+//=================================================================================================
+bool PlayerController::RemovePerk(Perk perk, int value)
+{
+	for(auto it = perks.begin(), end = perks.end(); it != end; ++it)
+	{
+		TakenPerk& tp = *it;
+		if(tp.perk == perk && tp.value == value)
+		{
+			TakenPerk tp_copy = tp;
+			perks.erase(it);
+			PerkContext ctx(this, false);
+			tp_copy.Remove(ctx);
+			if(Net::IsServer() && !IsLocal())
+			{
+				NetChangePlayer& c = Add1(player_info->changes);
+				c.type = NetChangePlayer::REMOVE_PERK;
+				c.id = (int)perk;
+				c.count = value;
+			}
+			return true;
+		}
+	}
+	return false;
+}
+
+//=================================================================================================
+void PlayerController::AddLearningPoint(int count)
+{
+	learning_points += count;
+	Game::Get().gui->messages->AddFormattedMessage(this, GMS_GAIN_LEARNING_POINTS, -1, count);
+	if(!is_local)
+		player_info->update_flags |= PlayerInfo::UF_LEARNING_POINTS;
+}
+
+//=================================================================================================
+void PlayerController::AddExp(int xp)
+{
+	exp += xp;
+	int points = 0;
+	while(exp >= exp_need)
+	{
+		++points;
+		++exp_level;
+		exp -= exp_need;
+		exp_need = GetExpNeed();
+	}
+	if(points > 0)
+		AddLearningPoint(points);
+}
+
+//=================================================================================================
+int PlayerController::GetExpNeed() const
+{
+	int exp_per_level = 1000 - (unit->GetBase(AttributeId::INT) - 50);
+	return exp_per_level * (exp_level + 1);
 }

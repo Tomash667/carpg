@@ -47,12 +47,13 @@ public:
 	void StartArenaCombat(int level);
 	void HandlePvpResponse(PlayerInfo& info, bool accepted);
 	void StartPvp(PlayerController* player, Unit* unit);
-	void AddGoldReward(int count);
+	void AddReward(int gold, int exp);
 	void Update(float dt);
 	Unit* GetRandomArenaHero();
 	void PvpEvent(int id);
 	void ClosePvpDialog();
 	void ShowPvpRequest(Unit* unit);
+	void RewardExp(Unit* dead_unit);
 
 	Mode mode;
 	State state;

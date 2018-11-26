@@ -567,7 +567,7 @@ void Arena::StartPvp(PlayerController* player, Unit* unit)
 }
 
 //=================================================================================================
-void Arena::AddGoldReward(int count)
+void Arena::AddReward(int gold, int exp)
 {
 	vector<Unit*> v;
 	for(vector<Unit*>::iterator it = units.begin(), end = units.end(); it != end; ++it)
@@ -576,7 +576,8 @@ void Arena::AddGoldReward(int count)
 			v.push_back(*it);
 	}
 
-	Game::Get().AddGold(count * (85 + v.size() * 15) / 100, &v, true);
+	Game::Get().AddGold(gold * (85 + v.size() * 15) / 100, &v, true);
+	Team.AddExp(exp, &v);
 }
 
 //=================================================================================================
@@ -758,21 +759,24 @@ void Arena::Update(float dt)
 			{
 				if(result == 0)
 				{
-					int count;
+					int gold, exp;
 					switch(difficulty)
 					{
 					case 1:
-						count = 150;
+						gold = 250;
+						exp = 500;
 						break;
 					case 2:
-						count = 350;
+						gold = 500;
+						exp = 1000;
 						break;
 					case 3:
-						count = 750;
+						gold = 1000;
+						exp = 2500;
 						break;
 					}
 
-					AddGoldReward(count);
+					AddReward(gold, exp);
 				}
 
 				for(Unit* unit : units)
@@ -951,4 +955,30 @@ void Arena::ShowPvpRequest(Unit* unit)
 	pvp_response.ok = true;
 	pvp_response.timer = 0.f;
 	pvp_response.to = Game::Get().pc->unit;
+}
+
+//=================================================================================================
+void Arena::RewardExp(Unit* dead_unit)
+{
+	if(mode == PVP)
+	{
+		Unit* winner = units[dead_unit->in_arena == 0 ? 1 : 0];
+		if(winner->IsPlayer())
+		{
+			int exp = 50 * dead_unit->level;
+			if(dead_unit->IsPlayer())
+				exp /= 2;
+			winner->player->AddExp(exp);
+		}
+	}
+	else if(!dead_unit->IsTeamMember())
+	{
+		LocalVector<Unit*> to_reward;
+		for(Unit* unit : units)
+		{
+			if(unit->in_arena != dead_unit->in_arena)
+				to_reward->push_back(unit);
+		}
+		Team.AddExp(50 * dead_unit->level, to_reward);
+	}
 }

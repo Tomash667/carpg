@@ -67,7 +67,7 @@ Skill Skill::skills[(int)SkillId::MAX] = {
 	Skill(SkillId::STEAL, "steal", SkillGroupId::OTHER, AttributeId::DEX, AttributeId::CHA, SkillPack::THIEF),
 	Skill(SkillId::ANIMAL_EMPATHY, "animal_empathy", SkillGroupId::OTHER, AttributeId::CHA, AttributeId::WIS, SkillPack::NONE),
 	Skill(SkillId::SURVIVAL, "survival", SkillGroupId::OTHER, AttributeId::END, AttributeId::WIS, SkillPack::NONE),
-	Skill(SkillId::PERSUASION, "persuasion", SkillGroupId::OTHER, AttributeId::CHA, AttributeId::NONE, SkillPack::NONE),
+	Skill(SkillId::HAGGLE, "haggle", SkillGroupId::OTHER, AttributeId::CHA, AttributeId::NONE, SkillPack::NONE),
 	Skill(SkillId::ALCHEMY, "alchemy", SkillGroupId::OTHER, AttributeId::INT, AttributeId::NONE, SkillPack::NONE),
 	Skill(SkillId::CRAFTING, "crafting", SkillGroupId::OTHER, AttributeId::INT, AttributeId::DEX, SkillPack::NONE),
 	Skill(SkillId::HEALING, "healing", SkillGroupId::OTHER, AttributeId::WIS, AttributeId::NONE, SkillPack::NONE),

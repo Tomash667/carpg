@@ -4,6 +4,23 @@
 #include "GameDialog.h"
 
 //-----------------------------------------------------------------------------
+struct DialogChoice
+{
+	enum Type
+	{
+		Normal,
+		Perk
+	};
+
+	int pos, lvl;
+	cstring msg, talk_msg;
+	string* pooled; // used for dialog choices when message is formatted
+	Type type;
+
+	DialogChoice(int pos, cstring msg, int lvl, string* pooled = nullptr) : pos(pos), msg(msg), lvl(lvl), pooled(pooled), type(Normal), talk_msg(nullptr) {}
+};
+
+//-----------------------------------------------------------------------------
 struct DialogContext
 {
 	struct Entry
@@ -40,17 +57,21 @@ struct DialogContext
 	const Item* team_share_item;
 	bool not_active, can_skip, force_end, negate_if;
 	vector<Entry> prev;
+	cstring talk_msg;
 
 	static DialogContext* current;
 
+	~DialogContext() { ClearChoices(); }
 	void StartDialog(Unit* talker, GameDialog* dialog = nullptr);
 	void StartNextDialog(GameDialog* dialog, int& if_level, Quest* quest = nullptr);
 	void Update(float dt);
 	void EndDialog();
+	void ClearChoices();
 	cstring GetText(int index);
 	GameDialog::Text& GetTextInner(int index);
 	bool ExecuteSpecial(cstring msg, int& if_level);
 	bool ExecuteSpecialIf(cstring msg);
 	cstring FormatString(const string& str_part);
 	void DialogTalk(cstring msg);
+	bool LearnPerk(int perk);
 };

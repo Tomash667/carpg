@@ -42,6 +42,7 @@ enum ITEM_FLAGS
 	ITEM_MAGICAL = 1 << 23, // magic quality item icon
 	ITEM_UNIQUE = 1 << 24, // unique quality item icon
 	ITEM_ALPHA = 1 << 25, // item require alpha test
+	ITEM_MAGIC_SCROLL = 1 << 26,
 };
 
 //-----------------------------------------------------------------------------
@@ -334,7 +335,7 @@ enum ConsumeEffect
 	E_NONE, // no effects
 	E_HEAL, // heals instantly X hp
 	E_REGENERATE, // heals X hp/sec for Y sec (don't stack)
-	E_NATURAL, // speed up natural regeneration for Y days (EndEffects/UpdateEffects is hardcoded to use first value when there is multiple effects)
+	E_NATURAL, // speed up natural regeneration for Y days
 	E_ANTIDOTE, // remove poison and alcohol
 	E_POISON, // deal X dmg/sec for Y sec
 	E_ALCOHOL, // deals X alcohol points in Y sec

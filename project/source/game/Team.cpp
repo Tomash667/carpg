@@ -461,7 +461,7 @@ void TeamSingleton::SaveOnWorldmap(GameWriter& f)
 
 void TeamSingleton::Update(int days, bool travel)
 {
-	if(travel)
+	if(!travel)
 	{
 		for(Unit* unit : members)
 		{
@@ -1277,4 +1277,55 @@ Unit* TeamSingleton::FindPlayerTradingWithUnit(Unit& u)
 	}
 
 	return nullptr;
+}
+
+//=================================================================================================
+void TeamSingleton::AddLearningPoint(int count)
+{
+	assert(count >= 1);
+	for(Unit* unit : active_members)
+	{
+		if(unit->IsPlayer())
+			unit->player->AddLearningPoint(count);
+	}
+}
+
+//=================================================================================================
+void TeamSingleton::AddExp(int exp, vector<Unit*>* units)
+{
+	if(!units)
+		units = &active_members;
+
+	switch(units->size())
+	{
+	case 1:
+		exp *= 2;
+		break;
+	case 2:
+		exp = exp * 3 / 2;
+		break;
+	case 3:
+		exp = exp * 5 / 4;
+	case 4: // no change
+		break;
+	case 5:
+		exp = int(0.75f * exp);
+		break;
+	case 6:
+		exp = int(0.6f * exp);
+		break;
+	case 7:
+		exp = exp / 2;
+		break;
+	case 8:
+	default:
+		exp = int(0.4f * exp);
+		break;
+	}
+
+	for(Unit* unit : *units)
+	{
+		if(unit->IsPlayer())
+			unit->player->AddExp(exp);
+	}
 }

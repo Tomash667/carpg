@@ -1240,6 +1240,9 @@ void Game::SetGameText()
 	LoadArray(txNoNews, "noNews");
 	LoadArray(txAllNews, "allNews");
 	txAllNearLoc = Str("allNearLoc");
+	txLearningPoint = Str("learningPoint");
+	txLearningPoints = Str("learningPoints");
+	txNeedLearningPoints = Str("needLearningPoints");
 
 	// dystans / si³a
 	txNear = Str("near");

@@ -32,6 +32,7 @@ void CreatedCharacter::Clear(Class c)
 	{
 		a[i].value = profile.attrib[i];
 		a[i].mod = false;
+		a[i].required = 0;
 	}
 
 	for(int i = 0; i < (int)SkillId::MAX; ++i)
@@ -66,7 +67,7 @@ void CreatedCharacter::Random(Class c)
 	}
 
 	SkillId sk1, sk2, sk3;
-	AttributeId strength;
+	AttributeId talent;
 
 	switch(profile)
 	{
@@ -78,7 +79,7 @@ void CreatedCharacter::Random(Class c)
 			else
 				sk2 = RandomItem({ SkillId::LONG_BLADE, SkillId::AXE, SkillId::BLUNT });
 			sk3 = SkillId::BOW;
-			strength = AttributeId::DEX;
+			talent = AttributeId::DEX;
 		}
 		break;
 	case 1: // medium
@@ -86,7 +87,7 @@ void CreatedCharacter::Random(Class c)
 			sk1 = SkillId::MEDIUM_ARMOR;
 			sk2 = RandomItem({ SkillId::SHORT_BLADE, SkillId::LONG_BLADE, SkillId::AXE, SkillId::BLUNT });
 			sk3 = RandomItem({ SkillId::BOW, SkillId::SHIELD });
-			strength = RandomItem({ AttributeId::DEX, AttributeId::END });
+			talent = RandomItem({ AttributeId::DEX, AttributeId::END });
 		}
 		break;
 	case 2: // heavy
@@ -94,7 +95,7 @@ void CreatedCharacter::Random(Class c)
 			sk1 = SkillId::HEAVY_ARMOR;
 			sk2 = RandomItem({ SkillId::LONG_BLADE, SkillId::AXE, SkillId::BLUNT });
 			sk3 = SkillId::SHIELD;
-			strength = RandomItem({ AttributeId::STR, AttributeId::END });
+			talent = RandomItem({ AttributeId::STR, AttributeId::END });
 		}
 		break;
 	}
@@ -102,11 +103,11 @@ void CreatedCharacter::Random(Class c)
 	s[(int)sk1].Add(5, true);
 	s[(int)sk2].Add(5, true);
 	s[(int)sk3].Add(5, true);
-	taken_perks.push_back(TakenPerk(Perk::Strength, (int)strength));
-	a[(int)strength].Mod(5, true);
-	SkillId talent = RandomItem({ sk1, sk2, sk3 });
 	taken_perks.push_back(TakenPerk(Perk::Talent, (int)talent));
-	s[(int)talent].Mod(5, true);
+	a[(int)talent].Mod(5, true);
+	SkillId focus = RandomItem({ sk1, sk2, sk3 });
+	taken_perks.push_back(TakenPerk(Perk::SkillFocus, (int)focus));
+	s[(int)focus].Mod(5, true);
 
 	sp = 0;
 	perks = 0;
@@ -149,13 +150,20 @@ int CreatedCharacter::Read(BitStreamReader& f)
 	{
 		if(IS_SET(sk, 1 << i))
 		{
+			if(s[i].value < 0)
+			{
+				Error("Skill increase for disabled skill '%s'.", Skill::skills[i].id);
+				return 3;
+			}
 			s[i].Add(5, true);
 			--sp;
 		}
 	}
 
 	// perks
-	taken_perks.resize(count);
+	PerkContext ctx(this);
+	ctx.validate = true;
+	taken_perks.resize(count, TakenPerk(Perk::None));
 	for(TakenPerk& tp : taken_perks)
 	{
 		f.ReadCasted<byte>(tp.perk);
@@ -167,22 +175,35 @@ int CreatedCharacter::Read(BitStreamReader& f)
 			Error("Invalid perk id '%d'.", tp.perk);
 			return 2;
 		}
-		tp.Apply(*this, true);
+		if(!tp.CanTake(ctx))
+		{
+			Error("Can't take perk '%s'.", PerkInfo::perks[(int)tp.perk].id);
+			return 3;
+		}
+		tp.Apply(ctx);
+	}
+	for(uint i = 0, count = taken_perks.size(); i < count; ++i)
+	{
+		for(uint j = i + 1; j < count; ++j)
+		{
+			if(taken_perks[i].perk == taken_perks[j].perk)
+			{
+				Error("Duplicated perk '%s'.", PerkInfo::perks[(int)taken_perks[i].perk].id);
+				return 3;
+			}
+		}
 	}
 
 	// search for duplicates
 	for(vector<TakenPerk>::iterator it = taken_perks.begin(), end = taken_perks.end(); it != end; ++it)
 	{
 		const PerkInfo& info = PerkInfo::perks[(int)it->perk];
-		if(!IS_SET(info.flags, PerkInfo::Multiple))
+		for(vector<TakenPerk>::iterator it2 = it + 1; it2 != end; ++it2)
 		{
-			for(vector<TakenPerk>::iterator it2 = it + 1; it2 != end; ++it2)
+			if(it->perk == it2->perk)
 			{
-				if(it->perk == it2->perk)
-				{
-					Error("Multiple same perks '%s'.", info.id);
-					return 3;
-				}
+				Error("Multiple same perks '%s'.", info.id);
+				return 3;
 			}
 		}
 	}
@@ -200,25 +221,35 @@ int CreatedCharacter::Read(BitStreamReader& f)
 //=================================================================================================
 void CreatedCharacter::Apply(PlayerController& pc)
 {
-	pc.unit->data->GetStatProfile().Set(0, pc.base_stats);
+	pc.unit->data->GetStatProfile().Set(0, pc.unit->base_stat);
+
+	// reset blocked stats
+	for(int i = 0; i < (int)AttributeId::MAX; ++i)
+	{
+		pc.attrib[i].blocked = false;
+		pc.attrib[i].apt = (pc.unit->base_stat.attrib[i] - 50) / 5;
+	}
+	for(int i = 0; i < (int)SkillId::MAX; ++i)
+	{
+		pc.skill[i].blocked = false;
+		pc.skill[i].apt = pc.unit->base_stat.skill[i] / 5;
+	}
 
 	// apply skills
 	for(int i = 0; i < (int)SkillId::MAX; ++i)
 	{
 		if(s[i].add)
-			pc.base_stats.skill[i] += 5;
+		{
+			pc.unit->base_stat.skill[i] += 5;
+			pc.skill[i].apt++;
+		}
 	}
 
 	// apply perks
+	PerkContext ctx(&pc, true);
 	pc.perks = taken_perks;
 	for(TakenPerk& tp : pc.perks)
-		tp.Apply(pc);
-
-	// set stats
-	for(int i = 0; i < (int)AttributeId::MAX; ++i)
-		pc.unit->unmod_stats.attrib[i] = pc.base_stats.attrib[i];
-	for(int i = 0; i < (int)SkillId::MAX; ++i)
-		pc.unit->unmod_stats.skill[i] = pc.base_stats.skill[i];
+		tp.Apply(ctx);
 
 	pc.unit->CalculateStats();
 	pc.unit->CalculateLoad();
@@ -237,6 +268,8 @@ void CreatedCharacter::Apply(PlayerController& pc)
 		Stock::Get("alchemist_apprentice")->Parse(pc.unit->items);
 	pc.unit->MakeItemsTeam(false);
 	pc.unit->RecalculateWeight();
+	if(!pc.HavePerk(Perk::Poor))
+		pc.unit->gold += pc.unit->GetBase(SkillId::HAGGLE);
 }
 
 //=================================================================================================
@@ -310,6 +343,8 @@ void CreatedCharacter::GetStartingItems(const Item* (&items)[SLOT_MAX])
 		items[ItemTypeToSlot(heirloom->type)] = heirloom;
 	}
 
+	int mod = HavePerk(Perk::Poor) ? -10 : 0;
+
 	// weapon
 	if(!items[SLOT_WEAPON])
 	{
@@ -339,21 +374,21 @@ void CreatedCharacter::GetStartingItems(const Item* (&items)[SLOT_MAX])
 			}
 		}
 
-		items[SLOT_WEAPON] = StartItem::GetStartItem(best, val);
+		items[SLOT_WEAPON] = StartItem::GetStartItem(best, max(0, val + mod));
 	}
 
 	// bow
 	if(!items[SLOT_BOW])
 	{
 		int val = s[(int)SkillId::BOW].value;
-		items[SLOT_BOW] = StartItem::GetStartItem(SkillId::BOW, val);
+		items[SLOT_BOW] = StartItem::GetStartItem(SkillId::BOW, max(0, val + mod));
 	}
 
 	// shield
 	if(!items[SLOT_SHIELD])
 	{
 		int val = s[(int)SkillId::SHIELD].value;
-		items[SLOT_SHIELD] = StartItem::GetStartItem(SkillId::SHIELD, val);
+		items[SLOT_SHIELD] = StartItem::GetStartItem(SkillId::SHIELD, max(0, val + mod));
 	}
 
 	// armor
@@ -393,7 +428,7 @@ void CreatedCharacter::GetStartingItems(const Item* (&items)[SLOT_MAX])
 			++index;
 		}
 
-		items[SLOT_ARMOR] = StartItem::GetStartItem(best, val);
+		items[SLOT_ARMOR] = StartItem::GetStartItem(best, max(0, val + mod));
 	}
 }
 

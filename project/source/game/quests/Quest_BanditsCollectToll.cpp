@@ -9,6 +9,7 @@
 #include "SoundManager.h"
 #include "GameFile.h"
 #include "World.h"
+#include "Team.h"
 
 //=================================================================================================
 void Quest_BanditsCollectToll::Start()
@@ -88,6 +89,7 @@ void Quest_BanditsCollectToll::SetProgress(int prog2)
 			state = Quest::Completed;
 			OnUpdate(game->txQuest[56]);
 			game->AddReward(400);
+			Team.AddExp(6000);
 			((City&)GetStartLocation()).quest_captain = CityQuestState::None;
 			W.AddNews(game->txQuest[278]);
 		}

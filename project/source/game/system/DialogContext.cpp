@@ -60,7 +60,7 @@ void DialogContext::StartDialog(Unit* talker, GameDialog* dialog)
 	pc->action = PlayerController::Action_Talk;
 	pc->action_unit = talker;
 	not_active = false;
-	choices.clear();
+	ClearChoices();
 	can_skip = true;
 	this->dialog = dialog ? dialog : talker->data->dialog;
 	force_end = false;
@@ -122,7 +122,8 @@ void DialogContext::Update(float dt)
 
 		if(ok)
 		{
-			cstring msg = choices[choice_selected].msg;
+			DialogChoice& choice = choices[choice_selected];
+			cstring msg = choice.talk_msg ? choice.talk_msg : choice.msg;
 			game.gui->game_gui->AddSpeechBubble(pc->unit, msg);
 
 			if(Net::IsOnline())
@@ -138,11 +139,23 @@ void DialogContext::Update(float dt)
 			}
 
 			show_choices = false;
-			dialog_pos = choices[choice_selected].pos;
-			dialog_level = choices[choice_selected].lvl;
-			choices.clear();
-			choice_selected = -1;
-			dialog_esc = -1;
+			if(choice.type == DialogChoice::Normal)
+			{
+				dialog_pos = choice.pos;
+				dialog_level = choice.lvl;
+				ClearChoices();
+				choice_selected = -1;
+				dialog_esc = -1;
+			}
+			else
+			{
+				bool ok = LearnPerk(choice.pos);
+				ClearChoices();
+				choice_selected = -1;
+				dialog_esc = -1;
+				if(ok)
+					return;
+			}
 		}
 		else
 			return;
@@ -211,8 +224,18 @@ void DialogContext::Update(float dt)
 		case DTF_CHOICE:
 			if(if_level == dialog_level)
 			{
+				talk_msg = nullptr;
 				cstring text = GetText(de.value);
-				choices.push_back(DialogChoice(dialog_pos + 1, text, dialog_level + 1));
+				if(text == dialog_s_text.c_str())
+				{
+					string* str = StringPool.Get();
+					*str = text;
+					choices.push_back(DialogChoice(dialog_pos + 1, str->c_str(), dialog_level + 1, str));
+				}
+				else
+					choices.push_back(DialogChoice(dialog_pos + 1, text, dialog_level + 1));
+				if(talk_msg)
+					choices.back().talk_msg = talk_msg;
 			}
 			++if_level;
 			break;
@@ -297,9 +320,6 @@ void DialogContext::Update(float dt)
 					c.type = NetChangePlayer::START_TRADE;
 					c.id = talker->netid;
 				}
-
-				pc->Train(TrainWhat::Trade, 0.f, 0);
-
 				return;
 			}
 			break;
@@ -658,7 +678,7 @@ void DialogContext::Update(float dt)
 //=================================================================================================
 void DialogContext::EndDialog()
 {
-	choices.clear();
+	ClearChoices();
 	prev.clear();
 	dialog_mode = false;
 
@@ -682,6 +702,17 @@ void DialogContext::EndDialog()
 		NetChangePlayer& c = Add1(pc->player_info->changes);
 		c.type = NetChangePlayer::END_DIALOG;
 	}
+}
+
+//=================================================================================================
+void DialogContext::ClearChoices()
+{
+	for(DialogChoice& choice : choices)
+	{
+		if(choice.pooled)
+			StringPool.Free(choice.pooled);
+	}
+	choices.clear();
 }
 
 //=================================================================================================
@@ -1002,7 +1033,8 @@ bool DialogContext::ExecuteSpecial(cstring msg, int& if_level)
 							if(id2 == locations.size())
 								id2 = 0;
 						}
-					} while(id != id2);
+					}
+					while(id != id2);
 					if(ok)
 					{
 						Location& loc = *locations[id2];
@@ -1175,7 +1207,8 @@ bool DialogContext::ExecuteSpecial(cstring msg, int& if_level)
 					rumor = game.txRumor[what];
 				else
 					rumor = game.txRumorD[what - countof(game.txRumor)];
-			} while(last_rumor == rumor);
+			}
+			while(last_rumor == rumor);
 			last_rumor = rumor;
 
 			static string str, str_part;
@@ -1202,33 +1235,43 @@ bool DialogContext::ExecuteSpecial(cstring msg, int& if_level)
 			return true;
 		}
 	}
-	else if(strncmp(msg, "train_", 6) == 0)
+	else if(strncmp(msg, "train/", 6) == 0)
 	{
 		const int cost = 200;
 		cstring s = msg + 6;
 		bool is_skill;
 		int what;
+		int* train;
 
-		auto attrib = Attribute::Find(s);
+		Attribute* attrib = Attribute::Find(s);
 		if(attrib)
 		{
 			is_skill = false;
 			what = (int)attrib->attrib_id;
+			train = &pc->attrib[what].train;
 		}
 		else
 		{
-			auto skill = Skill::Find(s);
+			Skill* skill = Skill::Find(s);
 			if(skill)
 			{
 				is_skill = true;
 				what = (int)skill->skill_id;
+				train = &pc->skill[what].train;
 			}
 			else
 			{
 				assert(0);
-				is_skill = false;
-				what = (int)AttributeId::STR;
+				return false;
 			}
+		}
+
+		// check learning points
+		if(pc->learning_points < *train + 1)
+		{
+			DialogTalk(game.txNeedLearningPoints);
+			force_end = true;
+			return true;
 		}
 
 		// does player have enough gold?
@@ -1241,6 +1284,8 @@ bool DialogContext::ExecuteSpecial(cstring msg, int& if_level)
 		}
 
 		// give gold and freeze
+		*train += 1;
+		pc->learning_points -= *train;
 		pc->unit->ModGold(-cost);
 		pc->unit->frozen = FROZEN::YES;
 		if(is_local)
@@ -1256,6 +1301,8 @@ bool DialogContext::ExecuteSpecial(cstring msg, int& if_level)
 			c.type = NetChangePlayer::TRAIN;
 			c.id = (is_skill ? 1 : 0);
 			c.count = what;
+
+			pc->player_info->update_flags |= PlayerInfo::UF_LEARNING_POINTS;
 		}
 	}
 	else if(strcmp(msg, "near_loc") == 0)
@@ -1508,7 +1555,8 @@ bool DialogContext::ExecuteSpecial(cstring msg, int& if_level)
 			do
 			{
 				pc->unit->human_data->hair_color = g_hair_colors[Rand() % n_hair_colors];
-			} while(kolor.Equal(pc->unit->human_data->hair_color));
+			}
+			while(kolor.Equal(pc->unit->human_data->hair_color));
 		}
 		else
 		{
@@ -1516,7 +1564,8 @@ bool DialogContext::ExecuteSpecial(cstring msg, int& if_level)
 			do
 			{
 				pc->unit->human_data->hair_color = Vec4(Random(0.f, 1.f), Random(0.f, 1.f), Random(0.f, 1.f), 1.f);
-			} while(kolor.Equal(pc->unit->human_data->hair_color));
+			}
+			while(kolor.Equal(pc->unit->human_data->hair_color));
 		}
 		if(Net::IsServer())
 		{
@@ -1575,6 +1624,35 @@ bool DialogContext::ExecuteSpecial(cstring msg, int& if_level)
 	{
 		assert(talker->IsHero());
 		talker->hero->melee = false;
+	}
+	else if(strcmp(msg, "show_perks") == 0)
+	{
+		LocalVector<PerkInfo*> to_pick;
+		PerkContext ctx(pc, false);
+		for(PerkInfo& info : PerkInfo::perks)
+		{
+			if(IS_SET(info.flags, PerkInfo::History))
+				continue;
+			if(pc->HavePerk(info.perk_id))
+				continue;
+			TakenPerk tp(info.perk_id);
+			if(tp.CanTake(ctx))
+				to_pick->push_back(&info);
+		}
+		std::sort(to_pick->begin(), to_pick->end(), [](const PerkInfo* info1, const PerkInfo* info2)
+		{
+			return info1->name < info2->name;
+		});
+		for(PerkInfo* info : to_pick)
+		{
+			string* str = StringPool.Get();
+			*str = Format("%s (%s %d %s)", info->name.c_str(), info->desc.c_str(), info->cost,
+				info->cost == 1 ? game.txLearningPoint : game.txLearningPoints);
+			DialogChoice choice((int)info->perk_id, str->c_str(), -1, str);
+			choice.type = DialogChoice::Perk;
+			choice.talk_msg = info->name.c_str();
+			choices.push_back(choice);
+		}
 	}
 	else
 	{
@@ -1699,8 +1777,8 @@ bool DialogContext::ExecuteSpecialIf(cstring msg)
 		if(((QM.quest_orcs2->orcs_state == Quest_Orcs2::State::Accepted || QM.quest_orcs2->orcs_state == Quest_Orcs2::State::OrcJoined)
 			&& QM.quest_orcs->start_loc == L.location_index)
 			|| (QM.quest_mages2->mages_state >= Quest_Mages2::State::TalkedWithCaptain
-				&& QM.quest_mages2->mages_state < Quest_Mages2::State::Completed
-				&& QM.quest_mages2->start_loc == L.location_index))
+			&& QM.quest_mages2->mages_state < Quest_Mages2::State::Completed
+			&& QM.quest_mages2->start_loc == L.location_index))
 			return true;
 	}
 	else if(strcmp(msg, "is_not_mage") == 0)
@@ -1762,10 +1840,42 @@ cstring DialogContext::FormatString(const string& str_part)
 		int id = int(str_part[7] - '1');
 		return Game::Get().arena->near_players_str[id].c_str();
 	}
+	else if(strncmp(str_part.c_str(), "train_lab/", 10) == 0)
+	{
+		cstring s = str_part.c_str() + 10;
+		cstring name;
+		int train;
+
+		Attribute* attrib = Attribute::Find(s);
+		if(attrib)
+		{
+			name = attrib->name.c_str();
+			train = pc->attrib[(int)attrib->attrib_id].train;
+		}
+		else
+		{
+			Skill* skill = Skill::Find(s);
+			if(skill)
+			{
+				name = skill->name.c_str();
+				train = pc->skill[(int)skill->skill_id].train;
+			}
+			else
+			{
+				assert(0);
+				return "INVALID_TRAIN_STAT";
+			}
+		}
+
+		talk_msg = name;
+
+		Game& game = Game::Get();
+		return Format("%s (%d %s)", name, train + 1, train == 0 ? game.txLearningPoint : game.txLearningPoints);
+	}
 	else
 	{
 		assert(0);
-		return "";
+		return "INVALID_FORMAT_STRING";
 	}
 }
 
@@ -1807,4 +1917,53 @@ void DialogContext::DialogTalk(cstring msg)
 		skip_id = c.count;
 		N.net_strs.push_back(c.str);
 	}
+}
+
+//=================================================================================================
+bool DialogContext::LearnPerk(int perk)
+{
+	const int cost = 200;
+	PerkInfo& info = PerkInfo::perks[perk];
+	Game& game = Game::Get();
+
+	// check learning points
+	if(pc->learning_points < info.cost)
+	{
+		DialogTalk(game.txNeedLearningPoints);
+		force_end = true;
+		return false;
+	}
+
+	// does player have enough gold?
+	if(pc->unit->gold < cost)
+	{
+		dialog_s_text = Format(game.txNeedMoreGold, cost - pc->unit->gold);
+		DialogTalk(dialog_s_text.c_str());
+		force_end = true;
+		return false;
+	}
+
+	// give gold and freeze
+	pc->learning_points -= info.cost;
+	pc->unit->ModGold(-cost);
+	pc->unit->frozen = FROZEN::YES;
+	pc->AddPerk((Perk)perk, -1);
+	if(is_local)
+	{
+		game.fallback_type = FALLBACK::TRAIN;
+		game.fallback_t = -1.f;
+		game.fallback_1 = 3;
+	}
+	else
+	{
+		NetChangePlayer& c = Add1(pc->player_info->changes);
+		c.type = NetChangePlayer::TRAIN;
+		c.id = 3;
+		c.count = 0;
+
+		pc->player_info->update_flags |= PlayerInfo::UF_LEARNING_POINTS;
+	}
+
+	force_end = true;
+	return true;
 }

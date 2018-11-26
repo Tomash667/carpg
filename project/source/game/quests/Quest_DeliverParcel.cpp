@@ -110,6 +110,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 
 			DialogContext::current->pc->unit->RemoveQuestItem(refid);
 			game->AddReward(250);
+			Team.AddExp(4000);
 
 			RemoveEncounter();
 

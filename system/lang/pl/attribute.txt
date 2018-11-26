@@ -19,7 +19,7 @@ attribute dex {
 attribute int {
 	name "Inteligencja"
 	//desc "\tZwiêksza si³ê czarów maga i efektywnoœæ treningu.\n\tCzytanie ksi¹¿ek trenuje inteligencjê.\n\tWp³ywa na umiejêtnoœci: mistyczna magia, czaroznastwo, identyfikacja, otwieranie zamków, pu³apki, alchemia, rzemios³o."
-	desc "\tZwiêksza si³ê czarów maga."
+	desc "\tZwiêksza si³ê czarów maga i szybkoœæ nauki."
 }
 attribute wis {
 	name "M¹droœæ"
@@ -29,5 +29,5 @@ attribute wis {
 attribute cha {
 	name "Charyzma"
 	//desc "\tZwiêksza szansê na przekonanie innych.\n\tRozmawianie trenuje charyzmê.\n\tWp³ywa na umiejêtnoœci: zwierzêca empatia, kradzie¿, perswazja."
-	desc "\tZwiêksza szansê na przekonanie innych.\n\tRozmawianie i handel trenuje charyzmê."
+	desc "\tZwiêksza szansê na przekonanie innych.\n\tRozmawianie i handel trenuje charyzmê.\n\tWp³ywa na umiejêtnoœci: targowanie."
 }

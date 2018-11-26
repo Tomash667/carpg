@@ -7,6 +7,7 @@
 #include "QuestManager.h"
 #include "World.h"
 #include "LevelArea.h"
+#include "Team.h"
 
 //=================================================================================================
 void Quest_StolenArtifact::Start()
@@ -120,6 +121,7 @@ void Quest_StolenArtifact::SetProgress(int prog2)
 			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
 			OnUpdate(game->txQuest[94]);
 			game->AddReward(1200);
+			Team.AddExp(6000);
 			DialogContext::current->talker->temporary = true;
 			DialogContext::current->talker->AddItem(&quest_item, 1, true);
 			DialogContext::current->pc->unit->RemoveQuestItem(refid);

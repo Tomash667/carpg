@@ -168,7 +168,7 @@ public:
 private:
 	void GetTooltip(TooltipController* tooltip, int group, int id);
 	void UpdateGrid(bool mine);
-	void ReadBook(const Item* item);
+	void ReadBook(const Item* item, int index);
 	void FormatBox(int group, string& text, string& small_text, TEX& img);
 	bool AllowForUnit() { return Any(mode, GIVE_MY, GIVE_OTHER, SHARE_MY, SHARE_OTHER); }
 	int GetLockIndexAndRelease();

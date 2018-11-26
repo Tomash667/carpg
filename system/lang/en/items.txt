@@ -506,7 +506,7 @@ item p_nreg {
 }
 item p_nreg2 {
 	name "Big healing brew"
-	desc "It speeds up the natural regeneration. Dose for 20 days of treatment. Drink it before the rest."
+	desc "It speeds up the natural regeneration. Dose for 30 days of treatment. Drink it before the rest."
 }
 item p_hp {
 	name "Small healing potion"
@@ -812,6 +812,11 @@ item q_zlo_ksiega {
 	name "Summoning book"
 	desc "The book contains spells for summoning and creating portals."
 	text "Introduction to summoning and creating portals by Magnus Voolo.\n\n1. Summoning\nTo summon a creature from another plane, you need to know it name and have piece of the element from which it originated. For example, for a fire elemental something related to fire, lit piece of coal. Summoning standard elementals does not pose a problem because they all have the same names:\nfire - agni\nwater - pos\nair - mir\nearth - ar\nSummoning beings from other planes is not described in this volume. Prior to summoning you should also prepare a protective circle - otherwise the elemental will not have friendly intentions. After summoning use one of binding spells.\n\n2. Opening portals\nTo open the portal you need a specially prepared gate. For this purpose you can use, for example, an adamentium that is resistant to sorcery. Using too weak gate can cause damage and collapse of the portal, which is extremely dangerous. You need to cast gate spell on portal. The portal remains open for an unlimited amount of time."
+}
+item magic_scroll {
+	name "Magic scroll"
+	desc "Written with some weird runes..."
+	text "xxx"
 }
 
 //------------------------------------------------------------------------------

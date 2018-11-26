@@ -180,9 +180,11 @@ See changelog_eng.txt file.
 To open console press ~ [to the left from 1]. Some commands are only available
 in multiplayer on lobby. Devmode must be activated (devmode 1).
 Available commands:
+	add_effect - add effect to selected unit (add_effect effect power [source [perk/time]]).
 	add_gold - give gold to player (add_gold count).
 	add_team_gold - give gold to team (add_team_gold count).
 	add_item - add item to player inventory (add_item id [count]).
+	add_learning_points - add learning pint to selected unit [count - default 1].
 	add_team_item - add team item to player inventory (add_team_item id [count]).
 	break_action - break unit current action ('break 1' targets self)
 	citizen - citizens/crazies don't attack player or his team.
@@ -215,6 +217,9 @@ Available commands:
 	leader - change team leader (leader nick).
 	lighting - use lighting (lighting 0/1).
 	list - display list of types, don't enter type to list possible choices (list type [filter]).
+	list_effects - display selected unit effects.
+	list_perks - display selected unit perks.
+	list_stats - display selected unit stats.
 	load - load game (load 1-10 or name).
 	map2console - draw dungeon map in console.
 	mod_stat - modify player statistics (modstat stat value), use modstat ? to get list of stats.
@@ -236,6 +241,8 @@ Available commands:
 	ready - set player as ready/unready.
 	refresh_cooldown - refresh action cooldown/charges.
 	reload_shaders - reload shaders.
+	remove_effect - remove effect from selected unit (remove_effect effect/source [perk]).
+	remove_perk - remove perk from selected unit (remove_perk perk).
 	resolution - show or change display resolution (resolution [w h hz]).
 	reveal - reveal all locations on world map.
 	refresh_cooldown - refresh action cooldown/charges.
@@ -244,6 +251,7 @@ Available commands:
 	say - send message to all players (say msg).
 	scare - enemies escape.
 	screenshot - save screenshot.
+	select - select and display currently selected target (select [me/show/target] - use target or show by default).
 	server - send message from server to all players (server msg).
 	set_stat - set player statistics (setstat stat value), use setstat ? to get list of stats.
 	set_seed - set randomness seed (set_seed uint).

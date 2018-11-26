@@ -17,6 +17,7 @@
 #include "GameMessages.h"
 #include "Arena.h"
 #include "PlayerInfo.h"
+#include "ScriptManager.h"
 
 //=================================================================================================
 void Quest_Tournament::InitOnce()
@@ -819,6 +820,15 @@ void Quest_Tournament::Train(Unit& u)
 		game.Train(u, true, (int)SkillId::SHIELD);
 	if(u.HaveArmor())
 		game.Train(u, true, (int)u.GetArmor().skill);
+	if(u.IsPlayer())
+	{
+		Var* var = SM.GetVars(&u)->Get("ironfist_won");
+		if(!var->IsBool(true))
+		{
+			u.player->AddLearningPoint();
+			var->SetBool(true);
+		}
+	}
 }
 
 //=================================================================================================

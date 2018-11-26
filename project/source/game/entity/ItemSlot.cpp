@@ -185,7 +185,7 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 				armor_type = Format("%s (%s)", skill, txInvalidArmor);
 
 			int old_mob = (int)unit->CalculateMobility();
-			int new_mob = (int)unit->CalculateMobility(armor);
+			int new_mob = (int)unit->CalculateMobility(&armor);
 			if(old_mob == new_mob)
 				mob_str = Format("%d", new_mob);
 			else

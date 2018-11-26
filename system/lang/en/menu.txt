@@ -142,7 +142,7 @@ traitsStart = "Health: %d/%dStamina: %d/%d"
 attack = "Attack"
 meleeAttack = "Melee attack"
 rangedAttack = "Ranged attack"
-traitsEnd = "Defense: %d\nBlock: %s\nMobility: %d\nCarry capacity: %g/%g kg\nGold: %d gp"
+traitsEnd = "Defense: %d\nBlock: %s\nMobility: %d\nLearning points: %d\nCarry capacity: %g/%g kg\nGold: %d gp"
 statsText = "Game time: %02d:%02d:%02d\nDefeated enemies: %d\nKnocked: %d\nDamage given: %d\nDamage taken: %d\nArena combats: %d"
 yearMonthDay = "Year: %d\nMonth: %d\nDay: %d"
 base = "Base"
@@ -208,6 +208,7 @@ encOrcs = "You encounter pack of orcs looking for easy loot!"
 encGoblins = "Out of surprise band of goblins attacked you!"
 
 // create character panel
+[CreateCharacterPanel]
 next = "Next"
 goBack = "Go back"
 create = "Create"
@@ -226,6 +227,12 @@ createCharText = "Pick your starting skills and feats. You can increase skill on
 createCharTooMany = "You spend too many skill points/feats."
 randomSet = "Random"
 flawExtraPerk = "Allows to pick extra feat."
+pickAttribIncrease = "Pick attribute to increase."
+pickSkillIncrease = "Pick skill to increase."
+availablePerks = "Available"
+takenPerks = "Taken"
+perksRemoved = "Following perks removed due to not meeting the requirements:"
+[]
 
 // net panel
 join = "Join"
@@ -244,6 +251,7 @@ serverPlayers = "Players:"
 serverPswd = "Password:"
 enterServerName = "Enter server name."
 invalidPlayersCount = "Players count need to be in range 1-%d."
+create = "Create"
 
 // multiplayer
 players = "Players"
@@ -695,6 +703,9 @@ gmsAddedItem = "Received item"
 gmsAddedItems = "Received %d items"
 gmsGettingOutOfRange = "Leaving event range"
 gmsLeftEvent = "You have left event"
+gainLearningPoints = "Learning points %+d"
+learnedPerk = "You learned a new feat"
+tooComplicated = "It is too complicated..."
 
 // plotki
 rumor_0 = "Apparently in $rcitynhere$ people seen elves."
@@ -790,6 +801,9 @@ arenaTextU2 = "%s!"
 arenaTextU3 = "I put 10 pieces of gold on the %s!"
 arenaTextU4 = "Hit him %s!"
 allNearLoc = "That's all near locations."
+learningPoint = "Learning point"
+learningPoints = "Learning points"
+needLearningPoints = "You do not have enough experience to teach you that." 
 
 // dystans / si³a
 near = "near "

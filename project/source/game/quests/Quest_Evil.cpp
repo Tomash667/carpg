@@ -118,6 +118,7 @@ void Quest_Evil::SetProgress(int prog2)
 			Location& mage = *W.GetLocation(mage_loc);
 			OnUpdate(Format(game->txQuest[238], mage.name.c_str(), GetLocationDirName(GetStartLocation().pos, mage.pos)));
 			evil_state = State::GenerateMage;
+			Team.AddExp(7500);
 		}
 		break;
 	case Progress::MageToldAboutStolenBook:
@@ -205,6 +206,7 @@ void Quest_Evil::SetProgress(int prog2)
 		// u¿ywane tylko do czyszczenia flagi changed
 		apply = false;
 		changed = false;
+		Team.AddExp(10000);
 		break;
 	case Progress::AllPortalsClosed:
 		// zamkniêto wszystkie portale
@@ -265,8 +267,10 @@ void Quest_Evil::SetProgress(int prog2)
 				unit->StartAutoTalk();
 
 			quest_manager.EndUniqueQuest();
+			Team.AddExp(20000);
 			evil_state = State::ClericWantTalk;
 			W.AddNews(game->txQuest[250]);
+			Team.AddLearningPoint();
 
 			if(Net::IsOnline())
 				Net::PushChange(NetChange::CLEAN_ALTAR);

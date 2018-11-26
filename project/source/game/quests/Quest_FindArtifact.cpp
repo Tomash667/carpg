@@ -8,6 +8,7 @@
 #include "InsideLocation.h"
 #include "MultiInsideLocation.h"
 #include "World.h"
+#include "Team.h"
 
 //=================================================================================================
 void Quest_FindArtifact::Start()
@@ -95,6 +96,7 @@ void Quest_FindArtifact::SetProgress(int prog2)
 			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
 			OnUpdate(game->txQuest[84]);
 			game->AddReward(1000);
+			Team.AddExp(5000);
 			DialogContext::current->talker->temporary = true;
 			DialogContext::current->talker->AddItem(&quest_item, 1, true);
 			DialogContext::current->pc->unit->RemoveQuestItem(refid);

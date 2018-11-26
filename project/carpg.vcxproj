@@ -205,6 +205,7 @@
     <ClInclude Include="source\engine\VertexData.h" />
     <ClInclude Include="source\engine\VertexDeclaration.h" />
     <ClInclude Include="source\ErrorHandler.h" />
+    <ClInclude Include="source\game\CommandParser.h" />
     <ClInclude Include="source\game\ConsoleCommands.h" />
     <ClInclude Include="source\game\Debug.h" />
     <ClInclude Include="source\game\entity\BloodType.h" />
@@ -462,6 +463,7 @@
     <ClCompile Include="source\engine\VertexData.cpp" />
     <ClCompile Include="source\ErrorHandler.cpp" />
     <ClCompile Include="source\game\Ai.cpp" />
+    <ClCompile Include="source\game\CommandParser.cpp" />
     <ClCompile Include="source\game\ConsoleCommands.cpp" />
     <ClCompile Include="source\game\entity\Camera.cpp" />
     <ClCompile Include="source\game\entity\ItemContainer.cpp" />
@@ -493,6 +495,7 @@
     <ClCompile Include="source\game\net\BitStreamFunc.cpp" />
     <ClCompile Include="source\game\net\EntityInterpolator.cpp" />
     <ClCompile Include="source\game\net\Net2.cpp" />
+    <ClCompile Include="source\game\net\NetChange.cpp" />
     <ClCompile Include="source\game\net\PlayerInfo.cpp" />
     <ClCompile Include="source\game\panels\ActionPanel.cpp" />
     <ClCompile Include="source\game\panels\BookPanel.cpp" />

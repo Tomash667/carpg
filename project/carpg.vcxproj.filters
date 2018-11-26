@@ -781,6 +781,12 @@
     <ClCompile Include="source\game\generator\NameHelper.cpp">
       <Filter>3. game\helpers</Filter>
     </ClCompile>
+    <ClCompile Include="source\game\net\NetChange.cpp">
+      <Filter>3. game\net</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\CommandParser.cpp">
+      <Filter>3. game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\resource\resource1.h">
@@ -1587,6 +1593,9 @@
     </ClInclude>
     <ClInclude Include="source\game\generator\NameHelper.h">
       <Filter>3. game\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\CommandParser.h">
+      <Filter>3. game</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

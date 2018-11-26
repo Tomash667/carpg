@@ -26,6 +26,7 @@
 #include "GlobalGui.h"
 #include "PlayerInfo.h"
 #include "Stock.h"
+#include "Arena.h"
 
 const float Unit::AUTO_TALK_WAIT = 0.333f;
 const float Unit::STAMINA_BOW_ATTACK = 100.f;
@@ -61,10 +62,11 @@ void Unit::Release()
 float Unit::CalculateMaxHp() const
 {
 	float v = 0.8f*Get(AttributeId::END) + 0.2f*Get(AttributeId::STR);
+	float bonus = GetEffectSum(EffectId::Health);
 	if(v >= 50.f)
-		return data->hp_bonus * (1.f + (v - 50) / 50);
+		return data->hp_bonus * (1.f + (v - 50) / 50) + bonus;
 	else
-		return data->hp_bonus * (1.f - (50 - v) / 100);
+		return data->hp_bonus * (1.f - (50 - v) / 100) + bonus;
 }
 
 //=================================================================================================
@@ -79,37 +81,53 @@ float Unit::CalculateAttack() const
 	if(HaveWeapon())
 		return CalculateAttack(&GetWeapon());
 	else
-		return (1.f + 1.f / 200 * (Get(SkillId::ONE_HANDED_WEAPON) + Get(SkillId::UNARMED))) * (Get(AttributeId::STR) + Get(AttributeId::DEX) / 2);
+	{
+		float bonus = GetEffectSum(EffectId::MeleeAttack);
+		return (1.f + 1.f / 100 * Get(SkillId::UNARMED)) * (Get(AttributeId::STR) + Get(AttributeId::DEX) / 2) + bonus;
+	}
 }
 
 //=================================================================================================
-float Unit::CalculateAttack(const Item* _weapon) const
+float Unit::CalculateAttack(const Item* weapon) const
 {
-	assert(_weapon && OR2_EQ(_weapon->type, IT_WEAPON, IT_BOW));
+	assert(weapon);
 
 	int str = Get(AttributeId::STR),
 		dex = Get(AttributeId::DEX);
 
-	if(_weapon->type == IT_WEAPON)
+	if(weapon->type == IT_WEAPON)
 	{
-		const Weapon& w = _weapon->ToWeapon();
+		const Weapon& w = weapon->ToWeapon();
 		const WeaponTypeInfo& wi = WeaponTypeInfo::info[w.weapon_type];
 		float p;
 		if(str >= w.req_str)
 			p = 1.f;
 		else
 			p = float(str) / w.req_str;
-		return wi.str2dmg * str + wi.dex2dmg * dex + (w.dmg * p * (1.f + 1.f / 200 * (Get(SkillId::ONE_HANDED_WEAPON) + Get(wi.skill))));
+		float bonus = GetEffectSum(EffectId::MeleeAttack);
+		return bonus + wi.str2dmg * str + wi.dex2dmg * dex + (w.dmg * p * (1.f + 1.f / 200 * (Get(SkillId::ONE_HANDED_WEAPON) + Get(wi.skill))));
 	}
-	else
+	else if(weapon->type == IT_BOW)
 	{
-		const Bow& b = _weapon->ToBow();
+		const Bow& b = weapon->ToBow();
 		float p;
 		if(str >= b.req_str)
 			p = 1.f;
 		else
 			p = float(str) / b.req_str;
-		return ((float)dex + b.dmg * (1.f + 1.f / 100 * Get(SkillId::BOW))) * p;
+		float bonus = GetEffectSum(EffectId::RangedAttack);
+		return bonus + ((float)dex + b.dmg * (1.f + 1.f / 100 * Get(SkillId::BOW))) * p;
+	}
+	else
+	{
+		const Shield& s = weapon->ToShield();
+		float p;
+		if(str >= s.req_str)
+			p = 1.f;
+		else
+			p = float(str) / s.req_str;
+		float bonus = GetEffectSum(EffectId::MeleeAttack);
+		return bonus + s.block / 3 * (1.f + Get(SkillId::SHIELD) / 200) + str * 0.5f;
 	}
 }
 
@@ -135,8 +153,7 @@ float Unit::CalculateBlock(const Item* shield) const
 float Unit::CalculateDefense(const Item* armor) const
 {
 	// base
-	float def = CalculateBaseDefense();
-	float load = GetLoad();
+	float def = (Get(AttributeId::END) - 50.f) / 5 + data->def_bonus;
 
 	// armor defense
 	if(!armor)
@@ -144,33 +161,49 @@ float Unit::CalculateDefense(const Item* armor) const
 	if(armor)
 	{
 		const Armor& a = armor->ToArmor();
-
-		switch(a.skill)
-		{
-		case SkillId::HEAVY_ARMOR:
-			load = max(load * 2.f, 0.5f);
-			break;
-		case SkillId::MEDIUM_ARMOR:
-			load = max(load * 1.5f, 0.25f);
-			break;
-		}
-
 		float skill_val = (float)Get(a.skill);
 		int str = Get(AttributeId::STR);
 		if(str < a.req_str)
 			skill_val *= str / a.req_str;
-		def += (skill_val / 100 + 1)*a.def;
+		def += a.def * (skill_val / 100 + 1);
 	}
 
 	// dexterity bonus
-	if(load < 1.f)
+	LoadState load_state = GetArmorLoadState(armor);
+	if(load_state < LS_HEAVY)
 	{
-		int dex = Get(AttributeId::DEX);
-		if(dex > 50)
-			def += (float(dex - 50) / 3) * (1.f - load);
+		float dex = (float)Get(AttributeId::DEX);
+		float bonus = max(0.f, (dex - 50.f) / 10);
+		if(load_state == LS_MEDIUM)
+			bonus /= 2;
+		def += bonus;
 	}
 
+	float bonus = GetEffectSum(EffectId::Defense);
+	def += bonus;
+
 	return def;
+}
+
+//=================================================================================================
+Unit::LoadState Unit::GetArmorLoadState(const Item* armor) const
+{
+	auto state = GetLoadState();
+	if(armor)
+	{
+		auto skill = armor->ToArmor().skill;
+		if(skill == SkillId::HEAVY_ARMOR)
+		{
+			if(state < LS_HEAVY)
+				state = LS_HEAVY;
+		}
+		else if(skill == SkillId::MEDIUM_ARMOR)
+		{
+			if(state < LS_MEDIUM)
+				state = LS_MEDIUM;
+		}
+	}
+	return state;
 }
 
 //=================================================================================================
@@ -452,7 +485,6 @@ int Unit::ConsumeItem(int index)
 		return 2;
 	}
 
-
 	const Consumable& cons = slot.item->ToConsumable();
 
 	// usuñ przedmiot
@@ -545,6 +577,46 @@ void Unit::ConsumeItemAnim(const Consumable& cons)
 	}
 	mesh_inst->Play(anim_name, PLAY_ONCE | PLAY_PRIO1, 1);
 	used_item = &cons;
+}
+
+//=================================================================================================
+void Unit::UseItem(int index)
+{
+	assert(index >= 0 && index < int(items.size()));
+	ItemSlot& slot = items[index];
+	assert(slot.item);
+	switch(slot.item->type)
+	{
+	case IT_CONSUMABLE:
+		ConsumeItem(index);
+		break;
+	case IT_BOOK:
+		assert(IS_SET(slot.item->flags, ITEM_MAGIC_SCROLL));
+		if(Net::IsLocal())
+		{
+			action = A_USE_ITEM;
+			used_item = slot.item;
+			mesh_inst->frame_end_info2 = false;
+			mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+			if(Net::IsServer())
+			{
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::USE_ITEM;
+				c.unit = this;
+			}
+		}
+		else
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::USE_ITEM;
+			c.id = index;
+			action = A_PREPARE;
+		}
+		break;
+	default:
+		assert(0);
+		break;
+	}
 }
 
 //=================================================================================================
@@ -692,6 +764,33 @@ void Unit::AddItem2(const Item* item, uint count, uint team_count, bool show_msg
 }
 
 //=================================================================================================
+void Unit::AddEffect(Effect& e, bool send)
+{
+	effects.push_back(e);
+
+	switch(e.effect)
+	{
+	case EffectId::Health:
+		RecalculateHp(true);
+		break;
+	case EffectId::Carry:
+		CalculateLoad();
+		break;
+	}
+
+	if(send && player && !player->IsLocal() && Net::IsServer())
+	{
+		NetChangePlayer& c = Add1(player->player_info->changes);
+		c.type = NetChangePlayer::ADD_EFFECT;
+		c.id = (int)e.effect;
+		c.count = (int)e.source;
+		c.a = e.source_id;
+		c.pos.x = e.power;
+		c.pos.y = e.time;
+	}
+}
+
+//=================================================================================================
 void Unit::ApplyConsumableEffect(const Consumable& item)
 {
 	Game& game = Game::Get();
@@ -711,12 +810,18 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 		break;
 	case E_POISON:
 	case E_ALCOHOL:
-		if(!IS_SET(data->flags, F_POISON_RES))
 		{
-			Effect& e = Add1(effects);
-			e.effect = item.ToEffect();
-			e.time = item.time;
-			e.power = item.power / item.time;
+			float poison_res = GetPoisonResistance();
+			if(poison_res > 0.f)
+			{
+				Effect e;
+				e.effect = item.ToEffect();
+				e.source = EffectSource::Temporary;
+				e.source_id = -1;
+				e.time = item.time;
+				e.power = item.power / item.time * poison_res;
+				AddEffect(e);
+			}
 		}
 		break;
 	case E_REGENERATE:
@@ -724,10 +829,13 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 	case E_ANTIMAGIC:
 	case E_STAMINA:
 		{
-			Effect& e = Add1(effects);
+			Effect e;
 			e.effect = item.ToEffect();
+			e.source = EffectSource::Temporary;
+			e.source_id = -1;
 			e.time = item.time;
 			e.power = item.power;
+			AddEffect(e);
 		}
 		break;
 	case E_ANTIDOTE:
@@ -762,10 +870,13 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 		break;
 	case E_FOOD:
 		{
-			Effect& e = Add1(effects);
+			Effect e;
 			e.effect = item.ToEffect();
+			e.source = EffectSource::Temporary;
+			e.source_id = -1;
 			e.time = item.power;
 			e.power = 1.f;
+			AddEffect(e);
 		}
 		break;
 	case E_GREEN_HAIR:
@@ -790,10 +901,28 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 }
 
 //=================================================================================================
+uint Unit::RemoveEffects(EffectId effect, EffectSource source, int source_id)
+{
+	uint index = 0;
+	for(Effect& e : effects)
+	{
+		// same effect or same source & source id
+		if(e.effect == effect || (source != EffectSource::None && e.source == source && (source_id == -1 || e.source_id == source_id)))
+			_to_remove.push_back(index);
+		++index;
+	}
+
+	uint count = _to_remove.size();
+	RemoveEffects();
+	return count;
+}
+
+//=================================================================================================
 void Unit::UpdateEffects(float dt)
 {
 	Game& game = Game::Get();
-	float best_reg = 0.f, food_heal = 0.f, poison_dmg = 0.f, alco_sum = 0.f, best_stamina = 0.f;
+	float regen = 0.f, temp_regen = 0.f, poison_dmg = 0.f, alco_sum = 0.f, best_stamina = 0.f;
+	int food_heal = 0;
 
 	// update effects timer
 	uint index = 0;
@@ -804,8 +933,13 @@ void Unit::UpdateEffects(float dt)
 		switch(it->effect)
 		{
 		case EffectId::Regeneration:
-			if(it->power > best_reg)
-				best_reg = it->power;
+			if(it->source == EffectSource::Temporary && it->power > 0.f)
+			{
+				if(it->power > temp_regen)
+					temp_regen = it->power;
+			}
+			else
+				regen += it->power;
 			break;
 		case EffectId::Poison:
 			poison_dmg += it->power;
@@ -814,29 +948,31 @@ void Unit::UpdateEffects(float dt)
 			alco_sum += it->power;
 			break;
 		case EffectId::FoodRegeneration:
-			food_heal += dt;
+			++food_heal;
 			break;
 		case EffectId::StaminaRegeneration:
 			if(it->power > best_stamina)
 				best_stamina = it->power;
 			break;
 		}
-		if((it->time -= dt) <= 0.f)
-			_to_remove.push_back(index);
+		if(it->source == EffectSource::Temporary)
+		{
+			if((it->time -= dt) <= 0.f)
+				_to_remove.push_back(index);
+		}
 	}
 
 	// remove expired effects
-	RemoveEffects();
+	RemoveEffects(false);
 
 	if(Net::IsClient())
 		return;
 
-	// healing from food
-	if((best_reg > 0.f || food_heal > 0.f) && hp != hpmax)
+	// healing from food / regeneration
+	if(hp != hpmax && (regen > 0 || temp_regen > 0 || food_heal > 0))
 	{
-		float natural = 1.f;
-		FindEffect(EffectId::NaturalHealingMod, &natural);
-		hp += (best_reg * dt + food_heal) * natural;
+		float natural = GetEffectMul(EffectId::NaturalHealingMod);
+		hp += (regen + temp_regen) * dt + natural * food_heal;
 		if(hp > hpmax)
 			hp = hpmax;
 		if(Net::IsOnline())
@@ -924,68 +1060,122 @@ void Unit::UpdateEffects(float dt)
 }
 
 //=================================================================================================
-void Unit::EndEffects(int days, int* best_nat)
+void Unit::EndEffects(int days, float* o_natural_mod)
 {
-	if(best_nat)
-		*best_nat = 0;
-
 	alcohol = 0.f;
 	stamina = stamina_max;
 	stamina_timer = 0;
 
 	if(effects.empty())
+	{
+		if(o_natural_mod)
+			*o_natural_mod = 1.f;
 		return;
+	}
 
 	uint index = 0;
-	float best_reg = 0.f, best_natural = 1.f, food = 0.f;
+	float best_reg = 0.f, food = 0.f, natural_mod = 1.f, natural_tmp_mod = 1.f;
 	for(vector<Effect>::iterator it = effects.begin(), end = effects.end(); it != end; ++it, ++index)
 	{
+		bool remove = true;
+		if(it->source != EffectSource::Temporary)
+			remove = false;
 		switch(it->effect)
 		{
 		case EffectId::Regeneration:
+			if(it->source == EffectSource::Permanent)
+				best_reg = -1.f;
+			else if(best_reg >= 0.f)
 			{
-				float reg = it->power * it->time;
-				if(reg > best_reg)
-					best_reg = reg;
-				_to_remove.push_back(index);
+				float regen = it->power * it->time;
+				if(regen > best_reg)
+					best_reg = regen;
 			}
 			break;
 		case EffectId::Poison:
 			hp -= it->power * it->time;
-			_to_remove.push_back(index);
 			break;
 		case EffectId::FoodRegeneration:
 			food += it->time;
-			_to_remove.push_back(index);
-			break;
-		case EffectId::Alcohol:
-		case EffectId::MagicResistance:
-		case EffectId::StaminaRegeneration:
-		case EffectId::Stun:
-			_to_remove.push_back(index);
 			break;
 		case EffectId::NaturalHealingMod:
-			best_natural = 2.f;
-			if(best_nat)
+			if(it->source == EffectSource::Temporary)
 			{
-				int t = Roundi(it->time);
-				if(t > *best_nat)
-					*best_nat = t;
+				float val = it->power * min((float)days, it->time) / days;
+				if(val > natural_tmp_mod)
+					natural_tmp_mod = val;
 			}
+			else
+				natural_mod *= it->power;
 			it->time -= days;
-			if(it->time <= 0.f)
-				_to_remove.push_back(index);
+			if(it->time > 0.f)
+				remove = false;
 			break;
 		}
+		if(remove)
+			_to_remove.push_back(index);
 	}
 
-	hp += (best_reg + food) * best_natural;
-	if(hp < 1.f)
-		hp = 1.f;
-	else if(hp > hpmax)
-		hp = hpmax;
+	natural_mod *= natural_tmp_mod;
+	if(o_natural_mod)
+		*o_natural_mod = natural_mod;
 
-	RemoveEffects();
+	if(best_reg < 0.f)
+		hp = hpmax; // hp regen from perk - full heal
+	else
+	{
+		hp += best_reg + food * natural_mod;
+		if(hp < 1.f)
+			hp = 1.f;
+		else if(hp > hpmax)
+			hp = hpmax;
+	}
+
+	RemoveEffects(false);
+}
+
+//=================================================================================================
+// Sum all permanent effects, for temporary sum negatives and use max positive
+// So player can't drink 10 boost potions
+float Unit::GetEffectSum(EffectId effect) const
+{
+	float value = 0.f,
+		tmp_value = 0.f;
+	for(const Effect& e : effects)
+	{
+		if(e.effect == effect)
+		{
+			if(e.source == EffectSource::Temporary && e.power > 0.f)
+			{
+				if(e.power > tmp_value)
+					tmp_value = e.power;
+			}
+			else
+				value += e.power;
+		}
+	}
+	return value + tmp_value;
+}
+
+//=================================================================================================
+float Unit::GetEffectMul(EffectId effect) const
+{
+	float value = 1.f,
+		tmp_value = 1.f;
+	for(const Effect& e : effects)
+	{
+		if(e.effect == effect)
+		{
+			if(e.source == EffectSource::Temporary)
+			{
+				if(e.power > tmp_value)
+					tmp_value = e.power;
+			}
+			else
+				value *= e.power;
+		}
+	}
+	return value * tmp_value;
 }
 
 //=================================================================================================
@@ -1036,6 +1226,13 @@ void Unit::AddItemAndEquipIfNone(const Item* item, uint count)
 		if(count)
 			AddItem(item, count, count);
 	}
+}
+
+//=================================================================================================
+void Unit::CalculateLoad()
+{
+	float mod = GetEffectMul(EffectId::Carry);
+	weight_max = (int)(mod * (Get(AttributeId::STR) * 15));
 }
 
 //=================================================================================================
@@ -1122,7 +1319,7 @@ bool Unit::IsBetterArmor(const Armor& armor, int* value) const
 }
 
 //=================================================================================================
-void Unit::RecalculateHp()
+void Unit::RecalculateHp(bool send)
 {
 	float hpp = hp / hpmax;
 	hpmax = CalculateMaxHp();
@@ -1131,6 +1328,13 @@ void Unit::RecalculateHp()
 		hp = 1;
 	else if(hp > hpmax)
 		hp = hpmax;
+
+	if(send && player && !player->IsLocal() && Net::IsServer())
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::UPDATE_HP;
+		c.unit = this;
+	}
 }
 
 //=================================================================================================
@@ -1139,23 +1343,6 @@ void Unit::RecalculateStamina()
 	float p = stamina / stamina_max;
 	stamina_max = CalculateMaxStamina();
 	stamina = stamina_max * p;
-}
-
-//=================================================================================================
-float Unit::CalculateShieldAttack() const
-{
-	assert(HaveShield());
-
-	const Shield& s = GetShield();
-	float p;
-
-	int str = Get(AttributeId::STR);
-	if(str >= s.req_str)
-		p = 1.f;
-	else
-		p = float(str) / s.req_str;
-
-	return 0.5f * str / 2 + 0.25f * Get(AttributeId::DEX) + (s.block / 3 * p * (1.f + float(Get(SkillId::SHIELD)) / 200));
 }
 
 //=================================================================================================
@@ -1287,7 +1474,7 @@ void Unit::Save(GameWriter& f, bool local)
 	f << stamina_timer;
 	f << level;
 	stats.Save(f);
-	unmod_stats.Save(f);
+	base_stat.Save(f);
 	f << gold;
 	f << invisible;
 	f << in_building;
@@ -1476,23 +1663,23 @@ void Unit::Load(GameReader& f, bool local)
 	if(LOAD_VERSION >= V_0_4)
 	{
 		stats.Load(f);
-		unmod_stats.Load(f);
+		base_stat.Load(f);
 	}
 	else
 	{
 		for(int i = 0; i < 3; ++i)
-			f >> unmod_stats.attrib[i];
+			f >> base_stat.attrib[i];
 		for(int i = 3; i < 6; ++i)
-			unmod_stats.attrib[i] = -1;
+			base_stat.attrib[i] = -1;
 		for(int i = 0; i < (int)SkillId::MAX; ++i)
-			unmod_stats.skill[i] = -1;
-		int old_skill[(int)OldSkill::MAX];
+			base_stat.skill[i] = -1;
+		int old_skill[(int)old::SkillId::MAX];
 		f >> old_skill;
-		unmod_stats.skill[(int)SkillId::ONE_HANDED_WEAPON] = old_skill[(int)OldSkill::WEAPON];
-		unmod_stats.skill[(int)SkillId::BOW] = old_skill[(int)OldSkill::BOW];
-		unmod_stats.skill[(int)SkillId::SHIELD] = old_skill[(int)OldSkill::SHIELD];
-		unmod_stats.skill[(int)SkillId::LIGHT_ARMOR] = old_skill[(int)OldSkill::LIGHT_ARMOR];
-		unmod_stats.skill[(int)SkillId::HEAVY_ARMOR] = old_skill[(int)OldSkill::HEAVY_ARMOR];
+		base_stat.skill[(int)SkillId::ONE_HANDED_WEAPON] = old_skill[(int)old::SkillId::WEAPON];
+		base_stat.skill[(int)SkillId::BOW] = old_skill[(int)old::SkillId::BOW];
+		base_stat.skill[(int)SkillId::SHIELD] = old_skill[(int)old::SkillId::SHIELD];
+		base_stat.skill[(int)SkillId::LIGHT_ARMOR] = old_skill[(int)old::SkillId::LIGHT_ARMOR];
+		base_stat.skill[(int)SkillId::HEAVY_ARMOR] = old_skill[(int)old::SkillId::HEAVY_ARMOR];
 	}
 	f >> gold;
 	f >> invisible;
@@ -1679,7 +1866,20 @@ void Unit::Load(GameReader& f, bool local)
 		moved = false;
 	}
 
-	f.ReadVector4(effects);
+	if(LOAD_VERSION >= V_DEV)
+		f.ReadVector4(effects);
+	else
+	{
+		effects.resize(f.Read<uint>());
+		for(Effect& e : effects)
+		{
+			e.effect = (EffectId)(f.Read<int>() - 1); // changed None effect from 0 to -1
+			e.time = f.Read<float>();
+			e.power = f.Read<float>();
+			e.source = EffectSource::Temporary;
+			e.source_id = -1;
+		}
+	}
 
 	if(f.Read1())
 	{
@@ -1732,12 +1932,17 @@ void Unit::Load(GameReader& f, bool local)
 			level = CalculateLevel();
 
 		StatProfile& profile = ud->GetStatProfile();
-		profile.SetForNew(level, unmod_stats);
+		profile.SetForNew(level, base_stat);
 		CalculateStats();
 
 		if(IsPlayer())
 		{
-			profile.Set(0, player->base_stats);
+			UnitStats old_stats;
+			profile.Set(0, old_stats);
+			for(int i = 0; i < (int)AttributeId::MAX; ++i)
+				player->attrib[i].apt = (player->unit->base_stat.attrib[i] - 50) / 5;
+			for(int i = 0; i < (int)SkillId::MAX; ++i)
+				player->skill[i].apt = player->unit->base_stat.skill[i] / 5;
 			player->SetRequiredPoints();
 		}
 	}
@@ -2350,6 +2555,9 @@ bool Unit::HaveItem(const Item* item)
 //=================================================================================================
 float Unit::GetAttackSpeed(const Weapon* used_weapon) const
 {
+	if(IS_SET(data->flags2, F2_FIXED_STATS))
+		return 1.f;
+
 	const Weapon* wep;
 
 	if(used_weapon)
@@ -2365,32 +2573,54 @@ float Unit::GetAttackSpeed(const Weapon* used_weapon) const
 	+ umiejêtnoœci
 	+ brakuj¹ca si³a
 	+ udŸwig */
+	float mod = 1.f;
+	float base_speed;
 	if(wep)
 	{
 		const WeaponTypeInfo& info = wep->GetInfo();
 
-		float mod = 1.f + float(Get(SkillId::ONE_HANDED_WEAPON) + Get(info.skill)) / 400 + info.dex_speed*Get(AttributeId::DEX) - GetAttackSpeedModFromStrength(*wep);
-
-		if(IsPlayer())
-			mod -= GetAttackSpeedModFromLoad();
-
-		if(mod < 0.1f)
-			mod = 0.1f;
-
-		return GetWeapon().GetInfo().base_speed * mod;
+		float dex_mod = min(0.25f, info.dex_speed * Get(AttributeId::DEX));
+		mod += float(Get(info.skill)) / 200 + dex_mod - GetAttackSpeedModFromStrength(*wep);
+		base_speed = info.base_speed;
 	}
 	else
-		return 1.f + float(Get(SkillId::ONE_HANDED_WEAPON) + Get(SkillId::UNARMED)) / 400 + 0.001f*Get(AttributeId::DEX);
+	{
+		float dex_mod = min(0.25f, 0.02f * Get(AttributeId::DEX));
+		mod += float(Get(SkillId::UNARMED)) / 200 + dex_mod;
+		base_speed = 1.f;
+	}
+
+	float mobility = CalculateMobility();
+	if(mobility < 100)
+		mod -= Lerp(0.1f, 0.f, mobility / 100);
+	else if(mobility > 100)
+		mod += Lerp(0.f, 0.1f, (mobility - 100) / 100);
+
+	if(mod < 0.5f)
+		mod = 0.5f;
+
+	float speed = mod * base_speed;
+	return speed;
 }
 
 //=================================================================================================
 float Unit::GetBowAttackSpeed() const
 {
+	// values range
+	//	1 dex, 0 skill = 0.8
+	// 50 dex, 10 skill = 1.1
+	// 100 dex, 100 skill = 1.7
 	float mod = 0.8f + float(Get(SkillId::BOW)) / 200 + 0.004f*Get(AttributeId::DEX) - GetAttackSpeedModFromStrength(GetBow());
-	if(IsPlayer())
-		mod -= GetAttackSpeedModFromLoad();
-	if(mod < 0.25f)
-		mod = 0.25f;
+
+	float mobility = CalculateMobility();
+	if(mobility < 100)
+		mod -= Lerp(0.1f, 0.f, mobility / 100);
+	else if(mobility > 100)
+		mod += Lerp(0.f, 0.1f, (mobility - 100) / 100);
+
+	if(mod < 0.5f)
+		mod = 0.5f;
+
 	return mod;
 }
 
@@ -2789,59 +3019,6 @@ float Unit::GetBlockSpeed() const
 }
 
 //=================================================================================================
-float Unit::CalculateArmorDefense(const Armor* in_armor)
-{
-	if(!in_armor && !HaveArmor())
-		return 0.f;
-
-	// pancerz daje tyle ile bazowo * skill
-	const Armor& armor = (in_armor ? *in_armor : GetArmor());
-	float skill_val = (float)Get(armor.skill);
-	int str = Get(AttributeId::STR);
-	if(str < armor.req_str)
-		skill_val *= str / armor.req_str;
-
-	return (skill_val / 100 + 1)*armor.def;
-}
-
-//=================================================================================================
-float Unit::CalculateDexterityDefense(const Armor* in_armor)
-{
-	float load = GetLoad();
-	float mod;
-
-	// pancerz
-	if(in_armor || HaveArmor())
-	{
-		const Armor& armor = (in_armor ? *in_armor : GetArmor());
-		if(armor.skill == SkillId::HEAVY_ARMOR)
-			mod = 0.2f;
-		else if(armor.skill == SkillId::MEDIUM_ARMOR)
-			mod = 0.5f;
-		else
-			mod = 1.f;
-	}
-	else
-		mod = 2.f;
-
-	// zrêcznoœæ
-	if(load < 1.f)
-	{
-		int dex = Get(AttributeId::DEX);
-		if(dex > 50)
-			return (float(dex - 50) / 3) * (1.f - load) * mod;
-	}
-
-	return 0.f;
-}
-
-//=================================================================================================
-float Unit::CalculateBaseDefense() const
-{
-	return 0.1f * Get(AttributeId::END) + data->def_bonus;
-}
-
-//=================================================================================================
 bool Unit::IsBetterItem(const Item* item, int* value) const
 {
 	assert(item);
@@ -3020,13 +3197,16 @@ float Unit::CalculateMagicResistance() const
 		else if(IS_SET(s.flags, ITEM_MAGIC_RESISTANCE_25))
 			mres *= 0.75f;
 	}
-	float effect_mres = 1.f;
-	for(const Effect& e : effects)
-	{
-		if(e.effect == EffectId::MagicResistance)
-			effect_mres *= (1.f - e.power);
-	}
+	float effect_mres = GetEffectMul(EffectId::MagicResistance);
 	return mres * effect_mres;
+}
+
+//=================================================================================================
+float Unit::GetPoisonResistance() const
+{
+	if(IS_SET(data->flags, F_POISON_RES))
+		return 0.f;
+	return GetEffectMul(EffectId::PoisonResistance);
 }
 
 //=================================================================================================
@@ -3057,11 +3237,32 @@ bool Unit::HaveEffect(EffectId e) const
 }
 
 //=================================================================================================
-void Unit::RemoveEffects()
+void Unit::RemoveEffects(bool send)
 {
+	if(_to_remove.empty())
+		return;
+
+	bool recalc_hp = false,
+		recalc_load = false;
+
+	send = (send && player && !player->IsLocal() && Net::IsServer());
+
 	while(!_to_remove.empty())
 	{
 		uint index = _to_remove.back();
+		Effect& e = effects[index];
+		if(send)
+		{
+			NetChangePlayer& c = Add1(player->player_info->changes);
+			c.type = NetChangePlayer::REMOVE_EFFECT;
+			c.id = (int)e.effect;
+			c.count = (int)e.source;
+			c.a = e.source_id;
+		}
+		if(e.effect == EffectId::Health)
+			recalc_hp = true;
+		else if(e.effect == EffectId::Carry)
+			recalc_load = true;
 		_to_remove.pop_back();
 		if(index == effects.size() - 1)
 			effects.pop_back();
@@ -3071,6 +3272,11 @@ void Unit::RemoveEffects()
 			effects.pop_back();
 		}
 	}
+
+	if(recalc_hp)
+		RecalculateHp(true);
+	if(recalc_load)
+		CalculateLoad();
 }
 
 //=================================================================================================
@@ -3080,6 +3286,9 @@ int Unit::GetBuffs() const
 
 	for(vector<Effect>::const_iterator it = effects.begin(), end = effects.end(); it != end; ++it)
 	{
+		if(it->source != EffectSource::Temporary)
+			continue;
+
 		switch(it->effect)
 		{
 		case EffectId::Poison:
@@ -3150,9 +3359,9 @@ int Unit::CalculateLevel(Class clas)
 	for(int i = 0; i < (int)AttributeId::MAX; ++i)
 	{
 		int base = profile.attrib[i] - 50;
-		if(base > 0 && unmod_stats.attrib[i] > 0)
+		if(base > 0 && base_stat.attrib[i] > 0)
 		{
-			int dif = unmod_stats.attrib[i] - profile.attrib[i], weight;
+			int dif = base_stat.attrib[i] - profile.attrib[i], weight;
 			float mod = Attribute::GetModifier(base, weight);
 			tlevel += (float(dif) / mod) * weight * 5;
 			weight_sum += weight;
@@ -3162,9 +3371,9 @@ int Unit::CalculateLevel(Class clas)
 	for(int i = 0; i < (int)SkillId::MAX; ++i)
 	{
 		int base = profile.skill[i];
-		if(base > 0 && unmod_stats.skill[i] > 0)
+		if(base > 0 && base_stat.skill[i] > 0)
 		{
-			int dif = unmod_stats.skill[i] - base, weight;
+			int dif = base_stat.skill[i] - base, weight;
 			float mod = Skill::GetModifier(base, weight);
 			tlevel += (float(dif) / mod) * weight * 5;
 			weight_sum += weight;
@@ -3182,7 +3391,7 @@ void Unit::RecalculateStat(AttributeId a, bool apply)
 	//StatState state;
 
 	// calculate value = base + effect modifiers
-	int value = unmod_stats.attrib[id]; // +GetEffectModifier(EffectType::AttributeId, id, (IsPlayer() ? &state : nullptr));
+	int value = base_stat.attrib[id]; // +GetEffectModifier(EffectType::AttributeId, id, (IsPlayer() ? &state : nullptr));
 
 	if(value == old)
 		return;
@@ -3285,14 +3494,14 @@ void Unit::RecalculateStat(SkillId s, bool apply)
 	int old = stats.skill[id];
 
 	// calculate value
-	int value = unmod_stats.skill[id];
+	int value = base_stat.skill[id];
 
 	// apply attributes bonus
 	Skill& info = Skill::skills[id];
 	if(info.attrib2 == AttributeId::NONE)
-		value += Get(info.attrib) / 10;
+		value += (Get(info.attrib) - 50) / 5;
 	else
-		value += Get(info.attrib) / 20 + Get(info.attrib2) / 20;
+		value += (Get(info.attrib) + Get(info.attrib2) - 100) / 10;
 
 	if(!apply)
 	{
@@ -3301,7 +3510,6 @@ void Unit::RecalculateStat(SkillId s, bool apply)
 	}
 
 	// apply skill synergy
-	//int type = 0;
 	switch(s)
 	{
 	case SkillId::LIGHT_ARMOR:
@@ -3310,7 +3518,6 @@ void Unit::RecalculateStat(SkillId s, bool apply)
 			int other_val = Get(SkillId::MEDIUM_ARMOR);
 			if(other_val > value)
 				value += (other_val - value) / 2;
-			//type = 1;
 		}
 		break;
 	case SkillId::MEDIUM_ARMOR:
@@ -3318,7 +3525,6 @@ void Unit::RecalculateStat(SkillId s, bool apply)
 			int other_val = max(Get(SkillId::LIGHT_ARMOR), Get(SkillId::HEAVY_ARMOR));
 			if(other_val > value)
 				value += (other_val - value) / 2;
-			//type = 1;
 		}
 		break;
 	case SkillId::SHORT_BLADE:
@@ -3326,7 +3532,6 @@ void Unit::RecalculateStat(SkillId s, bool apply)
 			int other_val = max(max(Get(SkillId::LONG_BLADE), Get(SkillId::BLUNT)), Get(SkillId::AXE));
 			if(other_val > value)
 				value += (other_val - value) / 2;
-			//type = 2;
 		}
 		break;
 	case SkillId::LONG_BLADE:
@@ -3334,7 +3539,6 @@ void Unit::RecalculateStat(SkillId s, bool apply)
 			int other_val = max(max(Get(SkillId::SHORT_BLADE), Get(SkillId::BLUNT)), Get(SkillId::AXE));
 			if(other_val > value)
 				value += (other_val - value) / 2;
-			//type = 2;
 		}
 		break;
 	case SkillId::BLUNT:
@@ -3342,7 +3546,6 @@ void Unit::RecalculateStat(SkillId s, bool apply)
 			int other_val = max(max(Get(SkillId::LONG_BLADE), Get(SkillId::SHORT_BLADE)), Get(SkillId::AXE));
 			if(other_val > value)
 				value += (other_val - value) / 2;
-			//type = 2;
 		}
 		break;
 	case SkillId::AXE:
@@ -3350,7 +3553,6 @@ void Unit::RecalculateStat(SkillId s, bool apply)
 			int other_val = max(max(Get(SkillId::LONG_BLADE), Get(SkillId::BLUNT)), Get(SkillId::SHORT_BLADE));
 			if(other_val > value)
 				value += (other_val - value) / 2;
-			//type = 2;
 		}
 		break;
 	}
@@ -3359,8 +3561,6 @@ void Unit::RecalculateStat(SkillId s, bool apply)
 		return;
 
 	stats.skill[id] = value;
-	if(IsPlayer())
-		player->skill_state[id] = StatState::NORMAL;
 }
 
 //=================================================================================================
@@ -3378,52 +3578,70 @@ void Unit::CalculateStats()
 }
 
 //=================================================================================================
-/*int Unit::GetEffectModifier(EffectType type, int id, StatState* state) const
+float Unit::CalculateMobility(const Armor* armor) const
 {
-	ValueBuffer buf;
-	if(state)
-		return buf.Get(*state);
-	else
-		return buf.Get();
-}*/
+	if(IS_SET(data->flags2, F2_FIXED_STATS))
+		return 100;
 
-//=================================================================================================
-int Unit::CalculateMobility() const
-{
-	if(HaveArmor())
-		return CalculateMobility(GetArmor());
-	else
-		return Get(AttributeId::DEX);
-}
+	if(!armor)
+		armor = (const Armor*)slots[SLOT_ARMOR];
 
-//=================================================================================================
-int Unit::CalculateMobility(const Armor& armor) const
-{
-	int dex = Get(AttributeId::DEX);
-	int str = Get(AttributeId::STR);
-	float dexf = (float)dex;
-	if(armor.req_str > str)
-		dexf *= float(str) / armor.req_str;
+	// calculate base mobility (75-125)
+	float mobility = 75.f + 0.5f * Get(AttributeId::DEX);
 
-	int max_dex;
-	switch(armor.skill)
+	// add bonus
+	float mobility_bonus = GetEffectSum(EffectId::Mobility);
+	mobility += mobility_bonus;
+
+	if(armor)
 	{
-	case SkillId::LIGHT_ARMOR:
-	default:
-		max_dex = int((1.f + float(Get(SkillId::LIGHT_ARMOR)) / 100)*armor.mobility);
+		// calculate armor mobility (0-100)
+		int armor_mobility = armor->mobility;
+		int skill = min(Get(armor->skill), 100);
+		armor_mobility += skill / 4;
+		if(armor_mobility > 100)
+			armor_mobility = 100;
+		int str = Get(AttributeId::STR);
+		if(str < armor->req_str)
+		{
+			armor_mobility -= armor->req_str - str;
+			if(armor_mobility < 0)
+				armor_mobility = 0;
+		}
+
+		// multiply mobility by armor mobility
+		mobility = (float(armor_mobility) / 100 * mobility);
+	}
+
+	auto load_state = GetLoadState();
+	switch(load_state)
+	{
+	case LS_MEDIUM:
+		mobility *= 0.95f;
 		break;
-	case SkillId::MEDIUM_ARMOR:
-		max_dex = int((1.f + float(Get(SkillId::MEDIUM_ARMOR)) / 150)*armor.mobility);
+	case LS_HEAVY:
+		mobility *= 0.85f;
 		break;
-	case SkillId::HEAVY_ARMOR:
-		max_dex = int((1.f + float(Get(SkillId::HEAVY_ARMOR)) / 200)*armor.mobility);
+	case LS_OVERLOADED:
+		mobility *= 0.5f;
+		break;
+	case LS_MAX_OVERLOADED:
+		mobility = 0;
 		break;
 	}
 
-	if(dexf > (float)max_dex)
-		return max_dex + int((dexf - max_dex) * ((float)max_dex / dexf));
+	mobility = Clamp(mobility, 1.f, 200.f);
+	return mobility;
+}
 
-	return (int)dexf;
+//=================================================================================================
+float Unit::GetMobilityMod(bool run) const
+{
+	float mob = CalculateMobility();
+	float m = 0.5f + mob / 200.f;
+	if(!run && m < 1.f)
+		m = 1.f - (1.f - m) / 2;
+	return m;
 }
 
 struct TMod
@@ -3747,15 +3965,18 @@ void Unit::ApplyStun(float length)
 	if(Net::IsLocal() && IS_SET(data->flags2, F2_STUN_RESISTANCE))
 		length /= 2;
 
-	auto effect = FindEffect(EffectId::Stun);
+	Effect* effect = FindEffect(EffectId::Stun);
 	if(effect)
 		effect->time = max(effect->time, length);
 	else
 	{
-		auto& effect = Add1(effects);
-		effect.effect = EffectId::Stun;
-		effect.power = 0.f;
-		effect.time = length;
+		Effect e;
+		e.effect = EffectId::Stun;
+		e.source = EffectSource::Temporary;
+		e.source_id = -1;
+		e.power = 0.f;
+		e.time = length;
+		AddEffect(e);
 		animation = ANI_STAND;
 	}
 
@@ -4204,26 +4425,24 @@ void Unit::Die(LevelContext* ctx, Unit* killer)
 
 	if(live_state == FALL)
 	{
-		// postaæ ju¿ le¿y na ziemi, dodaj krew
+		// unit already on ground, add blood
 		L.CreateBlood(*ctx, *this);
 		live_state = DEAD;
 	}
 	else
 		live_state = DYING;
+	BreakAction(BREAK_ACTION_MODE::FALL);
 
 	if(Net::IsLocal())
 	{
-		// przerwij akcjê
-		BreakAction(BREAK_ACTION_MODE::FALL);
-
-		// dodaj z³oto do ekwipunku
+		// add gold to inventory
 		if(gold && !(IsPlayer() || IsFollower()))
 		{
 			AddItem(Item::gold, (uint)gold);
 			gold = 0;
 		}
 
-		// og³oœ œmieræ
+		// notify about death
 		for(vector<Unit*>::iterator it = ctx->units->begin(), end = ctx->units->end(); it != end; ++it)
 		{
 			if((*it)->IsPlayer() || !(*it)->IsStanding() || !IsFriend(**it))
@@ -4233,7 +4452,7 @@ void Unit::Die(LevelContext* ctx, Unit* killer)
 				(*it)->ai->morale -= 2.f;
 		}
 
-		// o¿ywianie / sprawdŸ czy lokacja oczyszczona
+		// rising team members / check is location cleared
 		if(IsTeamMember())
 			raise_timer = Random(5.f, 7.f);
 		else
@@ -4243,7 +4462,7 @@ void Unit::Die(LevelContext* ctx, Unit* killer)
 		if(event_handler)
 			event_handler->HandleUnitEvent(UnitEventHandler::DIE, this);
 
-		// komunikat
+		// message
 		if(Net::IsOnline())
 		{
 			NetChange& c2 = Add1(Net::changes);
@@ -4251,7 +4470,7 @@ void Unit::Die(LevelContext* ctx, Unit* killer)
 			c2.unit = this;
 		}
 
-		// statystyki
+		// stats
 		++GameStats::Get().total_kills;
 		if(killer && killer->IsPlayer())
 		{
@@ -4265,15 +4484,29 @@ void Unit::Die(LevelContext* ctx, Unit* killer)
 			if(player->is_local)
 				game.pc_data.before_player = BP_NONE;
 		}
+
+		// give experience
+		if(killer)
+		{
+			if(killer->in_arena == -1)
+			{
+				if(killer->IsTeamMember() || killer->assist)
+				{
+					int exp = level * 50;
+					if(killer->assist)
+						exp /= 2;
+					Team.AddExp(exp);
+				}
+			}
+			else
+				Game::Get().arena->RewardExp(this);
+		}
 	}
 	else
 	{
 		hp = 0.f;
 
-		// przerwij akcjê
-		BreakAction(BREAK_ACTION_MODE::FALL);
-
-		// o¿ywianie
+		// player rising
 		if(player && player->is_local)
 		{
 			raise_timer = Random(5.f, 7.f);
@@ -4294,7 +4527,7 @@ void Unit::Die(LevelContext* ctx, Unit* killer)
 	talking = false;
 	mesh_inst->need_update = true;
 
-	// dŸwiêk
+	// sound
 	SOUND snd = nullptr;
 	if(data->sounds->Have(SOUND_DEATH))
 		snd = data->sounds->Random(SOUND_DEATH)->sound;
@@ -4303,7 +4536,7 @@ void Unit::Die(LevelContext* ctx, Unit* killer)
 	if(snd)
 		PlaySound(snd, 2.f);
 
-	// przenieœ fizyke
+	// move physics
 	UpdatePhysics(pos);
 }
 
@@ -4381,8 +4614,6 @@ void Unit::CreatePhysics(bool position)
 
 	if(position)
 	{
-		Vec3 pos = pos;
-		pos.y += GetUnitHeight();
 		btVector3 bpos(ToVector3(IsAlive() ? pos : Vec3(1000, 1000, 1000)));
 		bpos.setY(pos.y + max(MIN_H, GetUnitHeight()) / 2);
 		cobj->getWorldTransform().setOrigin(bpos);

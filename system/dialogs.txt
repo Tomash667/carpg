@@ -36,6 +36,23 @@ dialog merchant
 		talk 0
 	choice 1
 		trade
+	choice 11
+	{
+		talk 12
+		choice 13
+		{
+			special "train/haggle"
+			end
+		}
+		choice 14
+		{
+			special "train/cha"
+			end
+		}
+		escape choice 15
+			restart
+		show_choices
+	}
 	choice 2
 	{
 		talk 3
@@ -68,6 +85,12 @@ dialog merchant
 //==============================================================================
 dialog alchemist
 {
+	if rand 2
+	if script "pc.HavePerk(\"alchemist\")"
+	{
+		talk 10
+		do_once
+	}
 	if once
 		talk 0
 	if special "q_magowie_kup_miksture"
@@ -246,17 +269,17 @@ dialog trainer
 		{
 			choice 5
 			{
-				special "train_str"
+				special "train/str"
 				end
 			}
 			choice 6
 			{
-				special "train_end"
+				special "train/end"
 				end
 			}
 			choice 7
 			{
-				special "train_dex"
+				special "train/dex"
 				end
 			}
 			escape choice 8
@@ -267,59 +290,71 @@ dialog trainer
 		{
 			choice 10
 			{
-				special "train_one_handed_weapon"
+				special "train/one_handed_weapon"
 				end
 			}
 			choice 11
 			{
-				special "train_short_blade"
+				special "train/short_blade"
 				end
 			}
 			choice 12
 			{
-				special "train_long_blade"
+				special "train/long_blade"
 				end
 			}
 			choice 13
 			{
-				special "train_axe"
+				special "train/blunt"
 				end
 			}
 			choice 14
 			{
-				special "train_blunt"
+				special "train/axe"
 				end
 			}
 			choice 15
 			{
-				special "train_bow"
+				special "train/bow"
 				end
 			}
 			choice 16
 			{
-				special "train_shield"
+				special "train/shield"
 				end
 			}
 			choice 17
 			{
-				special "train_light_armor"
+				special "train/light_armor"
 				end
 			}
 			choice 18
 			{
-				special "train_medium_armor"
+				special "train/medium_armor"
 				end
 			}
 			choice 19
 			{
-				special "train_heavy_armor"
+				special "train/heavy_armor"
 				end
 			}
-			escape choice 20
+			escape choice 8
 				restart
 			show_choices
 		}
-		escape choice 21
+		choice 20
+		{
+			special "show_perks"
+			if choices 0
+			{
+				talk 21
+				restart
+			}
+			escape choice 8
+				restart
+			show_choices
+		}
+		escape choice 8
 			restart
 		show_choices
 	}

@@ -604,7 +604,6 @@ void ServerPanel::UpdateLobbyServer(float dt)
 					info.state = PlayerInfo::WAITING_FOR_HELLO;
 					info.timer = T_WAIT_FOR_HELLO;
 					info.devmode = game->default_player_devmode;
-					info.buffs = 0;
 					if(N.active_players > 1)
 						AddLobbyUpdate(Int2(Lobby_ChangeCount, 0));
 					++N.active_players;

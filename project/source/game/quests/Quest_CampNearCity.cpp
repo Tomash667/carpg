@@ -7,6 +7,7 @@
 #include "QuestManager.h"
 #include "GameFile.h"
 #include "World.h"
+#include "Team.h"
 
 //=================================================================================================
 void Quest_CampNearCity::Start()
@@ -107,6 +108,7 @@ void Quest_CampNearCity::SetProgress(int prog2)
 			state = Quest::Completed;
 			((City&)GetStartLocation()).quest_captain = CityQuestState::None;
 			game->AddReward(2500);
+			Team.AddExp(10000);
 			OnUpdate(game->txQuest[66]);
 		}
 		break;

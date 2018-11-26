@@ -116,6 +116,7 @@ void Quest_Orcs::SetProgress(int prog2)
 			state = Quest::Completed;
 
 			game->AddReward(2500);
+			Team.AddExp(10000);
 			OnUpdate(game->txQuest[195]);
 			W.AddNews(Format(game->txQuest[196], GetTargetLocationName(), GetStartLocationName()));
 
@@ -345,6 +346,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 		{
 			orc->StartAutoTalk();
 			W.AddNews(game->txQuest[200]);
+			Team.AddExp(14000);
 		}
 		break;
 	case Progress::TalkedAfterClearingCamp:
@@ -442,6 +444,8 @@ void Quest_Orcs2::SetProgress(int prog2)
 			orc->StartAutoTalk();
 			OnUpdate(game->txQuest[204]);
 			W.AddNews(game->txQuest[205]);
+			Team.AddLearningPoint();
+			Team.AddExp(18000);
 		}
 		break;
 	case Progress::Finished:
@@ -702,7 +706,7 @@ void Quest_Orcs2::ChangeClass(OrcClass new_orc_class)
 	UnitData* ud = UnitData::Get(udi);
 	orc->data = ud;
 	orc->level = ud->level.x;
-	orc->data->GetStatProfile().Set(orc->level, orc->unmod_stats.attrib, orc->unmod_stats.skill);
+	orc->data->GetStatProfile().Set(orc->level, orc->base_stat.attrib, orc->base_stat.skill);
 	orc->CalculateStats();
 	orc->RecalculateHp();
 	game->ParseItemScript(*orc, ud->item_script);

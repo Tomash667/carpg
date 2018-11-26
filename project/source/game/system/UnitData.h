@@ -69,8 +69,8 @@ enum UNIT_FLAGS
 	F_PIERCE_WEAK25 = 1 << 9, // podatnoœæ na k³ute 25%
 	F_SLASH_WEAK25 = 1 << 10, // podatnoœæ na ciête 25%
 	F_BLUNT_WEAK25 = 1 << 11, // podatnoœæ na obuchowe 25%
-	F_UNDEAD = 1 << 12, // mo¿na o¿ywiæ
-	F_SLOW = 1 << 13, // nie biega
+	F_UNDEAD = 1 << 12, // can cast raise undead
+	F_SLOW = 1 << 13, // don't run
 	F_POISON_ATTACK = 1 << 14, // atak zatruwa
 	F_IMMORTAL = 1 << 15, // nie mo¿na zabiæ tej postaci
 	F_TOMASHU = 1 << 16, // przy generowaniu postaci jest œciœle okreœlony kolor i w³osy
@@ -97,7 +97,7 @@ enum UNIT_FLAGS2
 {
 	F2_AI_TRAIN = 1 << 0, // trenuje walkê na manekinie/celu strzelniczym
 	F2_SPECIFIC_NAME = 1 << 1, // nie generuje imienia
-	// unused (1 << 2)
+	F2_FIXED_STATS = 1 << 2, // don't calculate unit stats from skills/attributes, use fixed value
 	F2_CONTEST = 1 << 3, // do³¹cza do zawodów w piciu
 	F2_CONTEST_50 = 1 << 4, // 50% ¿e do³¹czy do zawodów w piciu
 	// unused (1 << 5)

@@ -506,7 +506,7 @@ item p_nreg {
 }
 item p_nreg2 {
 	name "Napar zdrowia"
-	desc "Przyœpiesza naturaln¹ regeneracje. Dawka wystarcza na 20 dni kuracji. Wypij j¹ przed odpoczynkiem."
+	desc "Przyœpiesza naturaln¹ regeneracje. Dawka wystarcza na 30 dni kuracji. Wypij j¹ przed odpoczynkiem."
 }
 item p_hp {
 	name "Mikstura lecznicza"
@@ -812,6 +812,11 @@ item q_zlo_ksiega {
 	name "Ksiêga przywo³ywania"
 	desc "Ksiêga zawieraj¹ca zaklêcia przywo³ywania i tworzenia portali."
 	text "Wstep do przywolywania i tworzenia portali autorstwa Magnusa Voolo.\n\n1. Przywolywanie\nAby przywolac istote z innego planu potrzebujesz znac jej imie oraz fragment zywiolu z ktorego ona pochodzi. Na przyklad dla zywiolu ognia cos zwiazanego z ogniem, zapalony kawalek wegla. Przywolanie standardowych zywiolakow nie stanowi wiekszego problemu poniewaz wszystkie maja takie same imiona:\nogien - agni\nwoda - pos\npowietrze - mir\nziemia - ar\nPrzywolanie istot z innych planow nie zostalo opisane w tym tomie. Przed przywolaniem nalezy tez przygotowac krag ochronny - w innym przypadku zywiolak nie bedzie mial przyjaznych zamiarow. Po przywolaniu nalezy go spetac jednym z zaklec.\n\n2. Otwieranie portali\nAby otworzyc portal potrzebna jest specjalnie przygotowana brama. Do tego celu mozna wykorzystac na przyklad adamentium ktore jest odporne na czary. Uzycie zbyt slabej bramy moze spowodowac jej zniszczenie i zapadniecie sie portalu co jest ekstremalnie niebezpieczne. Na portalu trzeba uzyc zaklecia brama. Portal pozostaje otwarty przez nieograniczony czas."
+}
+item magic_scroll {
+	name "Magiczny zwój"
+	desc "Jest zapisany jakimiœ dziwnymi runami..."
+	text "xxx"
 }
 
 //------------------------------------------------------------------------------

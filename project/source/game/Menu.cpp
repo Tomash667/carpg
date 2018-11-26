@@ -601,7 +601,6 @@ void Game::UpdateClientConnectingIp(float dt)
 					info.update_flags = 0;
 					info.left = PlayerInfo::LEFT_NO;
 					info.loaded = false;
-					info.buffs = 0;
 
 					// read other players
 					for(int i = 0; i < count; ++i)

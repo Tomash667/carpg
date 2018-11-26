@@ -7,6 +7,7 @@
 #include "QuestManager.h"
 #include "GameFile.h"
 #include "World.h"
+#include "Team.h"
 
 //-----------------------------------------------------------------------------
 bool SortEntries(const Quest_SpreadNews::Entry& e1, const Quest_SpreadNews::Entry& e2)
@@ -143,6 +144,7 @@ void Quest_SpreadNews::SetProgress(int prog2)
 			state = Quest::Completed;
 			((City&)GetStartLocation()).quest_mayor = CityQuestState::None;
 			game->AddReward(200);
+			Team.AddExp(3000);
 
 			OnUpdate(game->txQuest[21]);
 		}

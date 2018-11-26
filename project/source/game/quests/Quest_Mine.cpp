@@ -13,6 +13,7 @@
 #include "CaveGenerator.h"
 #include "Portal.h"
 #include "AIController.h"
+#include "Team.h"
 
 //=================================================================================================
 void Quest_Mine::Start()
@@ -104,6 +105,7 @@ void Quest_Mine::SetProgress(int prog2)
 	case Progress::ClearedLocation:
 		{
 			OnUpdate(game->txQuest[134]);
+			Team.AddExp(3000);
 		}
 		break;
 	case Progress::SelectedShares:
@@ -205,6 +207,7 @@ void Quest_Mine::SetProgress(int prog2)
 			OnUpdate(game->txQuest[148]);
 			quest_manager.EndUniqueQuest();
 			W.AddNews(game->txQuest[149]);
+			Team.AddExp(10000);
 		}
 		break;
 	}

@@ -338,6 +338,7 @@ class UnitLoader : public ContentLoader
 		t.AddKeywords(G_FLAGS2, {
 			{ "ai_train", F2_AI_TRAIN },
 			{ "specific_name", F2_SPECIFIC_NAME },
+			{ "fixed_stats", F2_FIXED_STATS },
 			{ "contest", F2_CONTEST },
 			{ "contest_50", F2_CONTEST_50 },
 			{ "old", F2_OLD },

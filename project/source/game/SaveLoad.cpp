@@ -851,8 +851,8 @@ void Game::LoadGame(GameReader& f)
 	fallback_t = -0.5f;
 	gui->inventory->mode = I_NONE;
 	pc_data.before_player = BP_NONE;
-	pc_data.selected_unit = nullptr;
-	pc_data.selected_target = nullptr;
+	pc_data.selected_unit = pc->unit;
+	pc_data.target_unit = nullptr;
 	dialog_context.pc = pc;
 	dialog_context.dialog_mode = false;
 	gui->game_gui->Setup();

@@ -473,7 +473,7 @@ void InventoryPanel::Draw(ControlDrawData*)
 		else
 			icon = nullptr;
 		if(icon)
-			GUI.DrawSprite(icon, Int2(shift_x + x * 63, shift_y + (y + 1) * 63 - 24));
+			GUI.DrawSprite(icon, Int2(shift_x + (x + 1) * 63 - 24, shift_y + (y + 1) * 63 - 24));
 
 		// team item icon
 		if(have_team && team != 0)
@@ -745,7 +745,7 @@ void InventoryPanel::Update(float dt)
 					else if(item->type == IT_CONSUMABLE)
 						ConsumeItem(i_index);
 					else if(item->type == IT_BOOK)
-						ReadBook(item);
+						ReadBook(item, i_index);
 					else if(item->IsWearable())
 					{
 						ITEM_SLOT type = ItemTypeToSlot(item->type);
@@ -1536,13 +1536,7 @@ void InventoryPanel::FormatBox(int group, string& text, string& small_text, TEX&
 			team_count = slot.team_count;
 		}
 
-		Unit* target;
-		if(for_unit)
-			target = game.pc->action_unit;
-		else
-			target = game.pc->unit;
-
-		GetItemString(text, item, target, (uint)count);
+		GetItemString(text, item, game.pc->unit, (uint)count);
 		if(mode != TRADE_OTHER && team_count && Team.GetActiveTeamSize() > 1)
 		{
 			text += '\n';
@@ -1717,6 +1711,8 @@ void InventoryPanel::BuyItem(int index, uint count)
 		game.sound_mgr->PlaySound2d(game.sCoins);
 		// usuñ z³oto
 		game.pc->unit->gold -= price;
+		if(Net::IsLocal())
+			game.pc->Train(TrainWhat::Trade, (float)price, 0);
 		// dodaj przedmiot graczowi
 		if(!game.pc->unit->AddItem(slot.item, count, 0u))
 			UpdateGrid(true);
@@ -1757,6 +1753,7 @@ void InventoryPanel::SellItem(int index, uint count)
 	if(Net::IsLocal())
 	{
 		int price = ItemHelper::GetItemPrice(slot.item, *game.pc->unit, false);
+		game.pc->Train(TrainWhat::Trade, (float)price, 0);
 		if(team_count)
 			game.AddGold(price * team_count);
 		if(normal_count)
@@ -1800,7 +1797,10 @@ void InventoryPanel::SellSlotItem(ITEM_SLOT slot)
 	game.sound_mgr->PlaySound2d(game.GetItemSound(item));
 	game.sound_mgr->PlaySound2d(game.sCoins);
 	// dodaj z³oto
-	unit->gold += ItemHelper::GetItemPrice(item, *game.pc->unit, false);
+	int price = ItemHelper::GetItemPrice(item, *game.pc->unit, false);
+	unit->gold += price;
+	if(Net::IsLocal())
+		game.pc->Train(TrainWhat::Trade, (float)price, 0);
 	// dodaj przedmiot kupcowi
 	InsertItem(*unit->player->chest_trade, item, 1, 0);
 	UpdateGrid(false);
@@ -2193,6 +2193,8 @@ void InventoryPanel::OnGiveItem(int id)
 			return;
 		t->gold -= price;
 		unit->gold += price;
+		if(Net::IsLocal())
+			game.pc->Train(TrainWhat::Trade, (float)price, 0);
 		game.sound_mgr->PlaySound2d(game.sCoins);
 		break;
 	case 2: // darmo
@@ -2428,11 +2430,22 @@ void InventoryPanel::UpdateGrid(bool mine)
 }
 
 //=================================================================================================
-void InventoryPanel::ReadBook(const Item* item)
+void InventoryPanel::ReadBook(const Item* item, int index)
 {
 	assert(item && item->type == IT_BOOK);
-	game.gui->book->Show((const Book*)item);
-	base.tooltip.Clear();
+	if(IS_SET(item->flags, ITEM_MAGIC_SCROLL))
+	{
+		if(!game.pc->unit->usable) // can't use when sitting
+		{
+			game.pc->unit->UseItem(index);
+			Hide();
+		}
+	}
+	else
+	{
+		game.gui->book->Show((const Book*)item);
+		base.tooltip.Clear();
+	}
 }
 
 //=================================================================================================

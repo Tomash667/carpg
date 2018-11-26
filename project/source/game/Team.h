@@ -69,6 +69,8 @@ public:
 	void CheckCredit(bool require_update = false, bool ignore = false);
 	bool RemoveQuestItem(const Item* item, int refid = -1);
 	Unit* FindPlayerTradingWithUnit(Unit& u);
+	void AddLearningPoint(int count = 1);
+	void AddExp(int exp, vector<Unit*>* units = nullptr);
 
 	vector<Unit*> members; // all team members
 	vector<Unit*> active_members; // team members that get gold (without quest units)

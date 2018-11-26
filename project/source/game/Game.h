@@ -60,15 +60,15 @@ static_assert(sizeof(time_t) == sizeof(__int64), "time_t needs to be 64 bit");
 enum class FALLBACK
 {
 	NO = -1,
-	TRAIN,
-	REST,
+	TRAIN, // fallback_1 (train what: 0-attribute, 1-skill, 2-tournament, 3-perk), fallback_2 (skill/attrib id)
+	REST, // fallback_1 (days)
 	ARENA,
-	ENTER,
+	ENTER, // fallback_1 (inside building index)
 	EXIT,
-	CHANGE_LEVEL,
+	CHANGE_LEVEL, // fallback_1 (direction +1/-1)
 	NONE,
 	ARENA_EXIT,
-	USE_PORTAL,
+	USE_PORTAL, // fallback_1 (portal index)
 	WAIT_FOR_WARP,
 	ARENA2,
 	CLIENT,
@@ -246,7 +246,7 @@ public:
 		hTerrainFogParam, hGuiSize, hGuiTex, hPostTex, hPostPower, hPostSkill, hGlowCombined, hGlowBones, hGlowColor, hGlowTex, hGrassViewProj, hGrassTex,
 		hGrassFogColor, hGrassFogParams, hGrassAmbientColor;
 	SOUND sGulp, sCoins, sBow[2], sDoor[3], sDoorClosed[2], sDoorClose, sItem[8], sChestOpen, sChestClose, sDoorBudge, sRock, sWood, sCrystal,
-		sMetal, sBody[5], sBone, sSkin, sArenaFight, sArenaWin, sArenaLost, sUnlock, sEvil, sEat, sSummon;
+		sMetal, sBody[5], sBone, sSkin, sArenaFight, sArenaWin, sArenaLost, sUnlock, sEvil, sEat, sSummon, sZap;
 	VB vbParticle;
 	SURFACE sChar, sSave, sItemRegion, sItemRegionRot;
 	static cstring txGoldPlus, txQuestCompletedGold;
@@ -272,7 +272,7 @@ public:
 	cstring txRumor[28], txRumorD[7];
 	cstring txMayorQFailed[3], txQuestAlreadyGiven[2], txMayorNoQ[2], txCaptainQFailed[2], txCaptainNoQ[2], txLocationDiscovered[2], txAllDiscovered[2], txCampDiscovered[2],
 		txAllCampDiscovered[2], txNoQRumors[2], txRumorQ[9], txNeedMoreGold, txNoNearLoc, txNearLoc, txNearLocEmpty[2], txNearLocCleared, txNearLocEnemy[2], txNoNews[2], txAllNews[2],
-		txAllNearLoc;
+		txAllNearLoc, txLearningPoint, txLearningPoints, txNeedLearningPoints;
 	cstring txNear, txFar, txVeryFar, txELvlVeryWeak[2], txELvlWeak[2], txELvlAverage[2], txELvlQuiteStrong[2], txELvlStrong[2];
 	cstring txSGOOrcs, txSGOGoblins, txSGOBandits, txSGOEnemies, txSGOUndead, txSGOMages, txSGOGolems, txSGOMagesAndGolems, txSGOUnk, txSGOPowerfull;
 	cstring txArthur, txMineBuilt, txAncientArmory, txPortalClosed, txPortalClosedNews, txHiddenPlace, txOrcCamp, txPortalClose, txPortalCloseLevel, txXarDanger, txGorushDanger, txGorushCombat,
@@ -722,6 +722,7 @@ public:
 	SuperShader* super_shader;
 	Arena* arena;
 	GlobalGui* gui;
+	CommandParser* cmdp;
 
 private:
 	vector<GameComponent*> components;

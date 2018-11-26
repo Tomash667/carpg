@@ -7,6 +7,7 @@
 #include "QuestManager.h"
 #include "GameFile.h"
 #include "World.h"
+#include "Team.h"
 
 //=================================================================================================
 void Quest_DeliverLetter::Start()
@@ -87,6 +88,7 @@ void Quest_DeliverLetter::SetProgress(int prog2)
 		{
 			state = Quest::Completed;
 			game->AddReward(100);
+			Team.AddExp(1000);
 
 			((City&)GetStartLocation()).quest_mayor = CityQuestState::None;
 			DialogContext::current->pc->unit->RemoveQuestItem(refid);

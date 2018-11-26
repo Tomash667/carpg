@@ -19,7 +19,7 @@ attribute dex {
 attribute int {
 	name "Intelligence"
 	//desc "\tIncrease power of mage spells and training efficiency.\nReading books trains intelligence.\n\tAffects skills: mystic magic, spellcraft, identification, lockpick, traps, alchemy, crafting."
-	desc "\tIncrease power of mage spells."
+	desc "\tIncrease power of mage spells and learning speed."
 }
 attribute wis {
 	name "Wisdom"
@@ -29,5 +29,5 @@ attribute wis {
 attribute cha {
 	name "Charisma"
 	//desc "\tIncrease chance to affect others.\n\tTalking trains charisma.\n\tAffects skills: animal empathy, steal, persuasion."
-	desc "\tIncrease chance to affect others.\n\tTalking and trading trains charisma."
+	desc "\tIncrease chance to affect others.\n\tTalking and trading trains charisma.\n\tAffects skills: haggle."
 }

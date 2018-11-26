@@ -421,10 +421,11 @@ bool Net::FilterOut(NetChangePlayer& c)
 	case NetChangePlayer::GOLD_MSG:
 	case NetChangePlayer::DEVMODE:
 	case NetChangePlayer::GOLD_RECEIVED:
-	case NetChangePlayer::GAIN_STAT:
 	case NetChangePlayer::ADDED_ITEMS_MSG:
 	case NetChangePlayer::GAME_MESSAGE:
 	case NetChangePlayer::RUN_SCRIPT_RESULT:
+	case NetChangePlayer::GENERIC_CMD_RESPONSE:
+	case NetChangePlayer::GAME_MESSAGE_FORMATTED:
 		return false;
 	default:
 		return true;

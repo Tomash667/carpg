@@ -1197,7 +1197,17 @@ void Game::UpdateFallback(float dt)
 			switch(fallback_type)
 			{
 			case FALLBACK::TRAIN:
-				if(Net::IsLocal())
+				if(fallback_1 == 3)
+				{
+					// learning perk
+					gui->messages->AddGameMsg3(GMS_LEARNED_PERK);
+					if(Net::IsClient())
+					{
+						fallback_type = FALLBACK::CLIENT2;
+						fallback_t = 0.f;
+					}
+				}
+				else if(Net::IsLocal())
 				{
 					if(fallback_1 == 2)
 						QM.quest_tournament->Train(*pc->unit);
@@ -2028,8 +2038,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 	// sprawdŸ co jest przed graczem oraz stwórz listê pobliskich wrogów
 	pc_data.before_player = BP_NONE;
-	float dist, best_dist = 3.0f, best_dist_target = 3.0f;
-	pc_data.selected_target = nullptr;
+	float dist, best_dist = 3.0f;
 
 	for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
 	{
@@ -2076,9 +2085,6 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 		if(!(*it)->user)
 			PlayerCheckObjectDistance(u, (*it)->pos, *it, best_dist, BP_USABLE);
 	}
-
-	if(best_dist < best_dist_target && pc_data.before_player == BP_UNIT && pc_data.before_player_ptr.unit->IsStanding())
-		pc_data.selected_target = pc_data.before_player_ptr.unit;
 
 	// u¿yj czegoœ przed graczem
 	if(u.frozen == FROZEN::NO && pc_data.before_player != BP_NONE && !pc_data.action_ready
@@ -2354,9 +2360,9 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 	}
 
 	if(pc_data.before_player == BP_UNIT)
-		pc_data.selected_unit = pc_data.before_player_ptr.unit;
+		pc_data.target_unit = pc_data.before_player_ptr.unit;
 	else
-		pc_data.selected_unit = nullptr;
+		pc_data.target_unit = nullptr;
 
 	// atak
 	if(u.weapon_state == WS_TAKEN && !pc_data.action_ready)
@@ -3665,7 +3671,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	u->moved = false;
 
 	u->fake_unit = true; // to prevent sending hp changed message set temporary as fake unit
-	u->data->GetStatProfile().Set(u->level, u->unmod_stats.attrib, u->unmod_stats.skill);
+	u->data->GetStatProfile().Set(u->level, u->base_stat.attrib, u->base_stat.skill);
 	u->CalculateStats();
 	u->hp = u->hpmax = u->CalculateMaxHp();
 	u->stamina = u->stamina_max = u->CalculateMaxStamina();
@@ -5456,6 +5462,24 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 				u.current_animation = (Animation)-1;
 			}
 			break;
+		case A_USE_ITEM:
+			if(u.mesh_inst->frame_end_info2)
+			{
+				if(Net::IsLocal() && u.IsPlayer())
+				{
+					// magic scroll effect
+					gui->messages->AddGameMsg3(u.player, GMS_TOO_COMPLICATED);
+					u.ApplyStun(2.5f);
+					u.RemoveItem(u.used_item, 1u);
+					u.used_item = nullptr;
+					//sound_mgr->PlaySound3d(s)
+				}
+				sound_mgr->PlaySound3d(sZap, u.GetCenter(), 3.f);
+				u.action = A_NONE;
+				u.animation = ANI_STAND;
+				u.current_animation = (Animation)-1;
+			}
+			break;
 		default:
 			assert(0);
 			break;
@@ -5512,7 +5536,7 @@ bool Game::DoShieldSmash(LevelContext& ctx, Unit& attacker)
 		}
 	}
 
-	DoGenericAttack(ctx, attacker, *hitted, hitpoint, attacker.CalculateShieldAttack(), DMG_BLUNT, true);
+	DoGenericAttack(ctx, attacker, *hitted, hitpoint, attacker.CalculateAttack(&attacker.GetShield()), DMG_BLUNT, true);
 
 	return true;
 }
@@ -5797,12 +5821,19 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 				GiveDmg(ctx, it->owner, dmg, *hitted, &hitpoint, 0);
 
 				// apply poison
-				if(it->poison_attack > 0.f && !IS_SET(hitted->data->flags, F_POISON_RES))
+				if(it->poison_attack > 0.f)
 				{
-					Effect& e = Add1(hitted->effects);
-					e.power = it->poison_attack / 5;
-					e.time = 5.f;
-					e.effect = EffectId::Poison;
+					float poison_res = hitted->GetPoisonResistance();
+					if(poison_res > 0.f)
+					{
+						Effect e;
+						e.effect = EffectId::Poison;
+						e.source = EffectSource::Temporary;
+						e.source_id = -1;
+						e.power = it->poison_attack / 5 * poison_res;
+						e.time = 5.f;
+						hitted->AddEffect(e);
+					}
 				}
 			}
 			else
@@ -5865,12 +5896,19 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 				GiveDmg(ctx, it->owner, dmg, *hitted, &hitpoint, !IS_SET(it->spell->flags, Spell::Poison) ? DMG_MAGICAL : 0);
 
 				// apply poison
-				if(IS_SET(it->spell->flags, Spell::Poison) && !IS_SET(hitted->data->flags, F_POISON_RES))
+				if(IS_SET(it->spell->flags, Spell::Poison))
 				{
-					Effect& e = Add1(hitted->effects);
-					e.power = dmg / 5;
-					e.time = 5.f;
-					e.effect = EffectId::Poison;
+					float poison_res = hitted->GetPoisonResistance();
+					if(poison_res > 0.f)
+					{
+						Effect e;
+						e.effect = EffectId::Poison;
+						e.source = EffectSource::Temporary;
+						e.source_id = -1;
+						e.power = dmg / 5 * poison_res;
+						e.time = 5.f;
+						hitted->AddEffect(e);
+					}
 				}
 
 				// apply spell effect
@@ -6290,9 +6328,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 	float base_dmg = dmg;
 
 	// calculate defense
-	float armor_def = hitted.CalculateArmorDefense(),
-		dex_def = hitted.CalculateDexterityDefense(),
-		base_def = hitted.CalculateBaseDefense();
+	float def = hitted.CalculateDefense();
 
 	// blocking
 	if(hitted.action == A_BLOCK && angle_dif < PI / 2)
@@ -6364,38 +6400,17 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 			return ATTACK_BLOCKED;
 		}
 	}
-	else if(hitted.HaveShield() && hitted.action != A_PAIN)
-	{
-		// defense bonus from shield
-		base_def += hitted.CalculateBlock() / 20;
-	}
 
 	// decrease defense when stunned
 	bool clean_hit = false;
 	if(hitted.action == A_PAIN)
 	{
-		dex_def = 0.f;
-		if(hitted.HaveArmor())
-		{
-			const Armor& a = hitted.GetArmor();
-			switch(a.skill)
-			{
-			case SkillId::LIGHT_ARMOR:
-				armor_def *= 0.25f;
-				break;
-			case SkillId::MEDIUM_ARMOR:
-				armor_def *= 0.5f;
-				break;
-			case SkillId::HEAVY_ARMOR:
-				armor_def *= 0.75f;
-				break;
-			}
-		}
+		def *= 0.75f;
 		clean_hit = true;
 	}
 
 	// armor defense
-	dmg -= (armor_def + dex_def + base_def);
+	dmg -= def;
 
 	// hit sound
 	PlayHitSound(!bash ? attacker.GetWeaponMaterial() : attacker.GetShield().material, hitted.GetBodyMaterial(), hitpoint, 2.f, dmg > 0.f);
@@ -6423,21 +6438,28 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 		float dmgf = (float)dmg;
 		float ratio;
 		if(hitted.hp - dmgf <= 0.f && !hitted.IsImmortal())
-			ratio = max(TRAIN_KILL_RATIO, dmgf / hitted.hpmax);
+			ratio = Clamp(dmgf / hitted.hpmax, TRAIN_KILL_RATIO, 1.f);
 		else
-			ratio = dmgf / hitted.hpmax;
+			ratio = min(1.f, dmgf / hitted.hpmax);
 		attacker.player->Train(bash ? TrainWhat::BashHit : TrainWhat::AttackHit, ratio, hitted.level);
 	}
 
 	GiveDmg(ctx, &attacker, dmg, hitted, &hitpoint);
 
 	// apply poison
-	if(IS_SET(attacker.data->flags, F_POISON_ATTACK) && !IS_SET(hitted.data->flags, F_POISON_RES))
+	if(IS_SET(attacker.data->flags, F_POISON_ATTACK))
 	{
-		Effect& e = Add1(hitted.effects);
-		e.power = dmg / 10;
-		e.time = 5.f;
-		e.effect = EffectId::Poison;
+		float poison_res = hitted.GetPoisonResistance();
+		if(poison_res > 0.f)
+		{
+			Effect e;
+			e.effect = EffectId::Poison;
+			e.source = EffectSource::Temporary;
+			e.source_id = -1;
+			e.power = dmg / 10 * poison_res;
+			e.time = 5.f;
+			hitted.AddEffect(e);
+		}
 	}
 
 	return clean_hit ? ATTACK_CLEAN_HIT : ATTACK_HIT;
@@ -8191,7 +8213,7 @@ void Game::LeaveLevel(bool clear)
 
 	cam.Reset();
 	pc_data.rot_buf = 0.f;
-	pc_data.selected_unit = nullptr;
+	pc_data.target_unit = nullptr;
 	dialog_context.dialog_mode = false;
 	gui->inventory->mode = I_NONE;
 	pc_data.before_player = BP_NONE;
@@ -8924,8 +8946,8 @@ void Game::DeleteUnit(Unit* unit)
 		gui->game_gui->RemoveUnit(unit);
 		if(pc_data.before_player == BP_UNIT && pc_data.before_player_ptr.unit == unit)
 			pc_data.before_player = BP_NONE;
-		if(unit == pc_data.selected_target)
-			pc_data.selected_target = nullptr;
+		if(unit == pc_data.target_unit)
+			pc_data.target_unit = pc->unit;
 		if(unit == pc_data.selected_unit)
 			pc_data.selected_unit = nullptr;
 		if(pc->action == PlayerController::Action_LootUnit && pc->action_unit == unit)
@@ -10035,64 +10057,57 @@ DialogContext* Game::FindDialogContext(Unit* talker)
 2 - more points (potion) */
 void Game::Train(Unit& unit, bool is_skill, int id, int mode)
 {
-	int value, *train_points, *train_next;
+	PlayerController::StatData* stat;
+	int value;
 	if(is_skill)
 	{
-		if(unit.unmod_stats.skill[id] == Skill::MAX)
+		stat = &unit.player->skill[id];
+		if(unit.base_stat.skill[id] == Skill::MAX)
 		{
-			unit.player->sp[id] = unit.player->sn[id];
+			stat->points = stat->next;
 			return;
 		}
-		value = unit.unmod_stats.skill[id];
-		train_points = &unit.player->sp[id];
-		train_next = &unit.player->sn[id];
+		value = unit.base_stat.skill[id];
 	}
 	else
 	{
-		if(unit.unmod_stats.attrib[id] == Attribute::MAX)
+		stat = &unit.player->attrib[id];
+		if(unit.base_stat.attrib[id] == Attribute::MAX)
 		{
-			unit.player->ap[id] = unit.player->an[id];
+			stat->points = stat->next;
 			return;
 		}
-		value = unit.unmod_stats.attrib[id];
-		train_points = &unit.player->ap[id];
-		train_next = &unit.player->an[id];
+		value = unit.base_stat.attrib[id];
 	}
 
 	int count;
 	if(mode == 0)
-		count = 10 - value / 10;
+		count = (9 + stat->apt) / 2 - value / 20;
 	else if(mode == 1)
 		count = 1;
 	else
-		count = 12 - value / 12;
+		count = (12 + stat->apt) / 2 - value / 24;
 
 	if(count >= 1)
 	{
 		value += count;
-		*train_points /= 2;
+		stat->points /= 2;
 
 		if(is_skill)
 		{
-			*train_next = GetRequiredSkillPoints(value);
+			stat->next = GetRequiredSkillPoints(value);
 			unit.Set((SkillId)id, value);
 		}
 		else
 		{
-			*train_next = GetRequiredAttributePoints(value);
+			stat->next = GetRequiredAttributePoints(value);
 			unit.Set((AttributeId)id, value);
 		}
 
-		if(unit.player->IsLocal())
-			gui->messages->ShowStatGain(is_skill, id, count);
-		else
-		{
-			NetChangePlayer& c = Add1(unit.player->player_info->changes);
-			c.type = NetChangePlayer::GAIN_STAT;
-			c.id = (is_skill ? 1 : 0);
-			c.a = id;
-			c.count = count;
+		gui->messages->AddFormattedMessage(unit.player, is_skill ? GMS_GAIN_SKILL : GMS_GAIN_ATTRIBUTE, id, count);
 
+		if(!unit.player->IsLocal())
+		{
 			NetChangePlayer& c2 = Add1(unit.player->player_info->changes);
 			c2.type = NetChangePlayer::STAT_CHANGED;
 			c2.id = int(is_skill ? ChangedStatType::SKILL : ChangedStatType::ATTRIBUTE);
@@ -10109,7 +10124,7 @@ void Game::Train(Unit& unit, bool is_skill, int id, int mode)
 			m = 0.25f;
 		else
 			m = 0.125f;
-		float pts = m * *train_next;
+		float pts = m * stat->next;
 		if(is_skill)
 			unit.player->TrainMod2((SkillId)id, pts);
 		else
@@ -10748,6 +10763,7 @@ void Game::OnEnterLevelOrLocation()
 	gui->Clear(false);
 	lights_dt = 1.f;
 	pc_data.autowalk = false;
+	pc_data.selected_unit = pc->unit;
 	fallback_t = -0.5f;
 	fallback_type = FALLBACK::NONE;
 	if(Net::IsLocal())

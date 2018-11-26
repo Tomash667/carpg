@@ -95,8 +95,8 @@ skill survival {
 	name "Survival"
 	desc "Allows to take animal skin and avoid ambushes. Increase travel speed and chance to find something useful."
 }
-skill persuasion {
-	name "Persuasion"
+skill haggle {
+	name "Haggle"
 	desc "Affects shop prices and allows to affects others."
 }
 skill alchemy {

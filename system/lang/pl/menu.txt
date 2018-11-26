@@ -142,7 +142,7 @@ traitsStart = "Zdrowie: %d/%d\nWytrzyma³oœæ: %d/%d"
 attack = "Atak"
 meleeAttack = "Atak wrêcz"
 rangedAttack = "Atak dystansowy"
-traitsEnd = "Obrona: %d\nBlok: %s\nMobilnoœæ: %d\nUdŸwig: %g/%g kg\nZ³oto: %d sz"
+traitsEnd = "Obrona: %d\nBlok: %s\nMobilnoœæ: %d\nPunkty nauki: %d\nUdŸwig: %g/%g kg\nZ³oto: %d sz"
 statsText = "Czas gry: %02d:%02d:%02d\nPokonani wrogowie: %d\nPobicia: %d\nZadane obra¿enia: %d\nOtrzymane obra¿enia: %d\nWalki na arenie: %d"
 yearMonthDay = "Rok: %d\nMiesi¹c: %d\nDzieñ: %d"
 base = "Bazowo"
@@ -208,6 +208,7 @@ encOrcs = "Natrafi³eœ na oddzia³ orków szukaj¹cy ³atwego ³upu!"
 encGoblins = "Z zaskoczenia zaatakowa³a ciê grupa goblinów!"
 
 // create character panel
+[CreateCharacterPanel]
 next = "Dalej"
 goBack = "Cofnij"
 create = "Stwórz"
@@ -226,6 +227,12 @@ createCharText = "Wybierz pocz¹tkowe umiejêtnoœci i atuty. Mo¿esz zwiêkszyæ ka¿d
 createCharTooMany = "Wyda³eœ zbyt du¿o punktów umiejêtnoœci/atutów."
 randomSet = "Losowo"
 flawExtraPerk = "Pozwala wybraæ dodatkowy atut."
+pickAttribIncrease = "Wybierz atrybut do zwiêkszenia."
+pickSkillIncrease = "Wybierz umiejêtnoœæ do zwiêkszenia."
+availablePerks = "Dostêpne"
+takenPerks = "Wybrane"
+perksRemoved = "Usuniêto poni¿sze atuty z powodu niespe³niania wymagañ:"
+[]
 
 // net panel
 join = "Do³¹cz"
@@ -236,6 +243,7 @@ multiplayerGame = "GRA WIELOOSOBOWA"
 nick = "Nick:"
 needEnterNick = "Musisz podaæ nick."
 enterValidNick = "Musisz podaæ prawid³owy nick, tylko litery, cyfry lub znak podkreœlenia."
+create = "Stwórz"
 
 // zak³adanie serwera
 createServer = "ZA£Ó¯ SERWER"
@@ -695,6 +703,9 @@ gmsAddedItem = "Otrzyma³eœ przedmiot"
 gmsAddedItems = "Otrzyma³eœ %d przedmioty"
 gmsGettingOutOfRange = "Opuszczasz obszar wydarzenia"
 gmsLeftEvent = "Opuœci³eœ wydarzenie"
+gainLearningPoints = "Punkty nauki %+d"
+learnedPerk = "Pozna³eœ nowy atut"
+tooComplicated = "To jest zbyt skomplikowane..."
 
 // plotki
 rumor_0 = "Ponoæ w $rcitynhere$ widziano elfy."
@@ -790,6 +801,9 @@ arenaTextU2 = "%s!"
 arenaTextU3 = "Stawiam 10 sztuk z³ota na %s!"
 arenaTextU4 = "Uderz go %s!"
 allNearLoc = "To wszystkie pobliskie miejsca."
+learningPoint = "punkt nauki"
+learningPoints = "punkty nauki"
+needLearningPoints = "Nie masz doœæ doœwiadczenia ¿ebym móg³ ciê tego nauczyæ."
 
 // dystans / si³a
 near = "niedaleko "

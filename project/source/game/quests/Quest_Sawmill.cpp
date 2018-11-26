@@ -10,6 +10,7 @@
 #include "Level.h"
 #include "OutsideLocation.h"
 #include "Terrain.h"
+#include "Team.h"
 
 //=================================================================================================
 void Quest_Sawmill::Start()
@@ -72,6 +73,7 @@ void Quest_Sawmill::SetProgress(int prog2)
 		// oczyszczono
 		{
 			OnUpdate(Format(game->txQuest[127], GetTargetLocationName()));
+			Team.AddExp(3000);
 		}
 		break;
 	case Progress::Talked:

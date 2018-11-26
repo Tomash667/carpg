@@ -110,8 +110,8 @@ void HeroData::PassTime(int days, bool travel)
 	}
 
 	// koñczenie efektów
-	int best_nat;
-	unit->EndEffects(days, &best_nat);
+	float natural_mod;
+	unit->EndEffects(days, &natural_mod);
 
 	// regeneracja hp
 	if(unit->hp != unit->hpmax)
@@ -119,16 +119,7 @@ void HeroData::PassTime(int days, bool travel)
 		float heal = 0.5f * unit->Get(AttributeId::END);
 		if(resting)
 			heal *= 2;
-		if(best_nat)
-		{
-			if(best_nat != days)
-				heal = heal*best_nat * 2 + heal*(days - best_nat);
-			else
-				heal *= 2 * days;
-		}
-		else
-			heal *= days;
-
+		heal *= natural_mod * days;
 		heal = min(heal, unit->hpmax - unit->hp);
 		unit->hp += heal;
 	}

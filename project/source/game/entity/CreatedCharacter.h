@@ -14,7 +14,7 @@ struct CreatedCharacter
 {
 	struct AttributeData
 	{
-		int value;
+		int value, required;
 		bool mod;
 
 		void Mod(int v, bool _mod)

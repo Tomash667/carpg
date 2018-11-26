@@ -5,15 +5,18 @@
 #include "Attribute.h"
 
 //-----------------------------------------------------------------------------
-enum class OldSkill
+namespace old
 {
-	WEAPON,
-	BOW,
-	LIGHT_ARMOR,
-	HEAVY_ARMOR,
-	SHIELD,
-	MAX
-};
+	enum class SkillId
+	{
+		WEAPON,
+		BOW,
+		LIGHT_ARMOR,
+		HEAVY_ARMOR,
+		SHIELD,
+		MAX
+	};
+}
 
 //-----------------------------------------------------------------------------
 enum class SkillId
@@ -45,7 +48,7 @@ enum class SkillId
 	STEAL,
 	ANIMAL_EMPATHY,
 	SURVIVAL,
-	PERSUASION,
+	HAGGLE,
 	ALCHEMY,
 	CRAFTING,
 	HEALING,

@@ -170,6 +170,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			enc = -1;
 			GetTargetLocation().active_quest = nullptr;
 			W.AddNews(game->txQuest[221]);
+			Team.AddExp(1000);
 		}
 		break;
 	case Progress::TalkedAboutStolenBow:
@@ -209,6 +210,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			DialogContext::current->pc->unit->RemoveItem(item, 1);
 			DialogContext::current->talker->AddItem(item, 1, true);
 			game->AddReward(500);
+			Team.AddExp(2500);
 			OnUpdate(game->txQuest[224]);
 			goblins_state = State::GivenBow;
 			GetTargetLocation().active_quest = nullptr;
@@ -271,6 +273,8 @@ void Quest_Goblins::SetProgress(int prog2)
 			GetTargetLocation().active_quest = nullptr;
 			quest_manager.EndUniqueQuest();
 			W.AddNews(game->txQuest[231]);
+			Team.AddLearningPoint();
+			Team.AddExp(14000);
 		}
 		break;
 	}

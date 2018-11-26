@@ -3,8 +3,16 @@ Changelog
 --------------------------------------------------------------------------------
 Version 0.8 (???):
 ! cannot load saves from version 0.2.10 or older
++ learning points used to training skills/attributes/feats
++ new feats (bad back, chronic disease, sluggish, slow learner, asocial, poor, strong back, aggressive, mobility, finesse, tought, hard skin, adaptation, perfect health)
++ new skill haggle, trained by merchant
++ effects system (feats gives effects)
 + key to toggle run/walk
 + loading traders stock from file, refreshing stock every 10 days, not when entering location
++ new commands (add_effect, remove_effect, list_effects, add_perk, remove_perk, list_perks, select, list_stats, add_learning_points)
++ magic scroll item
++ new mobility calculations
+- fixed fast melee weapon training on low level enemies
 - fixed talking with unit that is standing up
 - fixed units rotating when talking for clients
 - wanted quest could select already used location where target will fail to spawn

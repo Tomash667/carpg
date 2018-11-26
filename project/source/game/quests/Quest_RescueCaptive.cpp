@@ -100,6 +100,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 		// found captive
 		{
 			OnUpdate(game->txQuest[35]);
+			Team.AddExp(2000);
 		}
 		break;
 	case Progress::CaptiveDie:
@@ -141,6 +142,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 		{
 			state = Quest::Completed;
 			game->AddReward(1000);
+			Team.AddExp(7000);
 
 			((City&)GetStartLocation()).quest_captain = CityQuestState::None;
 			if(target_loc != -1)
@@ -198,6 +200,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 		{
 			state = Quest::Completed;
 			game->AddReward(250);
+			Team.AddExp(7000);
 			if(captive)
 			{
 				captive->event_handler = nullptr;

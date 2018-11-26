@@ -1257,7 +1257,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 		break;
 	}
 
-	if(u.used_item)
+	if(u.used_item && u.action != A_USE_ITEM)
 	{
 		right_hand_item = u.used_item->mesh;
 		if(IS_SET(u.used_item->flags, ITEM_ALPHA))

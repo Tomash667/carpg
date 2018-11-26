@@ -30,6 +30,7 @@
 #include "DebugDrawer.h"
 #include "Item.h"
 #include "NameHelper.h"
+#include "CommandParser.h"
 
 extern void HumanPredraw(void* ptr, Matrix* mat, int n);
 extern const int ITEM_IMAGE_SIZE;
@@ -85,6 +86,7 @@ void Game::PreconfigureGame()
 	arena = new Arena;
 	loc_gen_factory = new LocationGeneratorFactory;
 	gui = new GlobalGui;
+	cmdp = new CommandParser;
 	components.push_back(&W);
 	components.push_back(pathfinding);
 	components.push_back(&QM);
@@ -93,6 +95,7 @@ void Game::PreconfigureGame()
 	components.push_back(gui);
 	components.push_back(&L);
 	components.push_back(&SM);
+	components.push_back(cmdp);
 	for(GameComponent* component : components)
 		component->Prepare();
 
@@ -779,6 +782,7 @@ void Game::AddLoadTasks()
 		sound_mgr.AddLoadTask("TouchofDeath.ogg", sEvil);
 		sound_mgr.AddLoadTask("eat.mp3", sEat);
 		sound_mgr.AddLoadTask("whooshy-puff.wav", sSummon);
+		sound_mgr.AddLoadTask("zap.mp3", sZap);
 	}
 
 	// musics
