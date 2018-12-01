@@ -50,6 +50,14 @@ public:
 	// GetInstance() and DestroyInstance(instance*)
 	STATIC_FACTORY_DECLARATIONS(HTTPConnection)
 
+	enum HttpMethod
+	{
+		HTTP_GET,
+		HTTP_POST,
+		HTTP_PUT,
+		HTTP_DELETE
+	};
+
     /// Returns a HTTP object associated with this tcp connection
     HTTPConnection();
     virtual ~HTTPConnection();
@@ -69,6 +77,9 @@ public:
 	/// Get a file from a webserver
 	/// \param path the path on the remote server you want to GET from. For example "index.html"
 	void Get(const char *path);
+
+	/// Send HTTP request
+	void Request(HttpMethod method, const char* path, const char* data = 0, const char* content_type = 0);
     
 	/// Is there a Read result ready?
 	bool HasRead(void) const;
@@ -128,7 +139,7 @@ public:
 		SLNet::RakString remotePath;
 		SLNet::RakString data;
 		SLNet::RakString contentType;
-		bool isPost;
+		HttpMethod method;
 	};
 
 	 DataStructures::Queue<OutgoingCommand> outgoingCommand;

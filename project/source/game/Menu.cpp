@@ -58,18 +58,18 @@ void Game::SaveOptions()
 	cfg.Add("cl_glow", cl_glow);
 	cfg.Add("cl_normalmap", cl_normalmap);
 	cfg.Add("cl_specularmap", cl_specularmap);
-	cfg.Add("sound_volume", Format("%d", sound_mgr->GetSoundVolume()));
-	cfg.Add("music_volume", Format("%d", sound_mgr->GetMusicVolume()));
-	cfg.Add("mouse_sensitivity", Format("%d", settings.mouse_sensitivity));
-	cfg.Add("grass_range", Format("%g", settings.grass_range));
+	cfg.Add("sound_volume", sound_mgr->GetSoundVolume());
+	cfg.Add("music_volume", sound_mgr->GetMusicVolume());
+	cfg.Add("mouse_sensitivity", settings.mouse_sensitivity);
+	cfg.Add("grass_range", settings.grass_range);
 	cfg.Add("resolution", Format("%dx%d", GetWindowSize().x, GetWindowSize().y));
-	cfg.Add("refresh", Format("%d", wnd_hz));
+	cfg.Add("refresh", wnd_hz);
 	cfg.Add("skip_tutorial", skip_tutorial);
-	cfg.Add("language", Language::prefix.c_str());
+	cfg.Add("language", Language::prefix);
 	int ms, msq;
 	GetMultisampling(ms, msq);
-	cfg.Add("multisampling", Format("%d", ms));
-	cfg.Add("multisampling_quality", Format("%d", msq));
+	cfg.Add("multisampling", ms);
+	cfg.Add("multisampling_quality", msq);
 	cfg.Add("vsync", GetVsync());
 	SaveCfg();
 }
@@ -195,7 +195,7 @@ void Game::MultiplayerPanelEvent(int id)
 	}
 
 	// zapisz nick
-	cfg.Add("nick", player_name.c_str());
+	cfg.Add("nick", player_name);
 	SaveCfg();
 
 	switch(id)
@@ -243,12 +243,12 @@ void Game::CreateServerEvent(int id)
 	}
 	else
 	{
-		// kopiuj
+		// copy settings
 		N.server_name = gui->create_server->textbox[0].GetText();
 		N.max_players = atoi(gui->create_server->textbox[1].GetText().c_str());
 		N.password = gui->create_server->textbox[2].GetText();
 
-		// sprawdü dane
+		// check settings
 		cstring error_text = nullptr;
 		Control* give_focus = nullptr;
 		if(N.server_name.empty())
@@ -269,10 +269,11 @@ void Game::CreateServerEvent(int id)
 			return;
 		}
 
-		// zapisz
-		cfg.Add("server_name", N.server_name.c_str());
-		cfg.Add("server_pswd", N.password.c_str());
-		cfg.Add("server_players", Format("%d", N.max_players));
+		// save settings
+		cfg.Add("server_name", N.server_name);
+		cfg.Add("server_pswd", N.password);
+		cfg.Add("server_players", N.max_players);
+		cfg.Add("server_hidden", N.server_hidden);
 		SaveCfg();
 
 		// zamknij okna

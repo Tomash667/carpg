@@ -7547,7 +7547,6 @@ void Game::Net_OnNewGameServer()
 		StringPool.Free(N.net_strs);
 	gui->server->max_players = N.max_players;
 	gui->server->server_name = N.server_name;
-	gui->server->password = !N.password.empty();
 	gui->server->UpdateServerInfo();
 	gui->server->Show();
 	gui->mp_box->Reset();

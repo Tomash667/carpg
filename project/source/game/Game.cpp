@@ -1062,7 +1062,7 @@ void Game::SaveGameKeys()
 	{
 		GameKey& k = GKey[i];
 		for(int j = 0; j < 2; ++j)
-			cfg.Add(Format("%s%d", k.id, j), Format("%d", k[j]));
+			cfg.Add(Format("%s%d", k.id, j), k[j]);
 	}
 
 	SaveCfg();
@@ -1082,7 +1082,7 @@ void Game::LoadGameKeys()
 			{
 				Warn("Config: Invalid value for %s: %d.", s, w);
 				w = -1;
-				cfg.Add(s, Format("%d", k[j]));
+				cfg.Add(s, k[j]);
 			}
 			if(w != -1)
 				k[j] = (byte)w;

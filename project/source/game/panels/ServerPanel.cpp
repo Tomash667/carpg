@@ -202,7 +202,7 @@ void ServerPanel::Draw(ControlDrawData*)
 
 	// tekst
 	Rect r = { 340 + global_pos.x, 355 + global_pos.y, 340 + 185 + global_pos.x, 355 + 160 + global_pos.y };
-	GUI.DrawText(GUI.default_font, Format(txServerText, server_name.c_str(), N.active_players, max_players, password ? GUI.txNo : GUI.txYes),
+	GUI.DrawText(GUI.default_font, Format(txServerText, server_name.c_str(), N.active_players, max_players, N.password.empty() ? GUI.txNo : GUI.txYes),
 		0, Color::Black, r, &r);
 }
 
@@ -1101,12 +1101,7 @@ void ServerPanel::UpdateServerInfo()
 	f << VERSION;
 	f.WriteCasted<byte>(N.active_players);
 	f.WriteCasted<byte>(max_players);
-	byte flags = 0;
-	if(password)
-		flags |= SERVER_PASSWORD;
-	if(N.mp_load)
-		flags |= SERVER_SAVED;
-	f.WriteCasted<byte>(flags);
+	f.WriteCasted<byte>(N.GetServerFlags());
 	f << server_name;
 
 	N.peer->SetOfflinePingResponse(f.GetData(), f.GetSize());
@@ -1115,8 +1110,10 @@ void ServerPanel::UpdateServerInfo()
 //=================================================================================================
 void ServerPanel::Event(GuiEvent e)
 {
-	if(e == GuiEvent_Show || e == GuiEvent_WindowResize)
+	switch(e)
 	{
+	case GuiEvent_Show:
+	case GuiEvent_WindowResize:
 		if(e == GuiEvent_Show)
 		{
 			visible = true;
@@ -1128,129 +1125,121 @@ void ServerPanel::Event(GuiEvent e)
 			bts[i].global_pos = global_pos + bts[i].pos;
 		itb.Event(GuiEvent_Moved);
 		grid.Move(global_pos);
-	}
-	else if(e == GuiEvent_GainFocus)
-	{
+		break;
+	case GuiEvent_GainFocus:
 		itb.focus = true;
 		itb.Event(GuiEvent_GainFocus);
-	}
-	else if(e == GuiEvent_LostFocus)
-	{
+		break;
+	case GuiEvent_LostFocus:
 		grid.LostFocus();
 		itb.focus = false;
 		itb.Event(GuiEvent_LostFocus);
-	}
-	else if(e == GuiEvent_Close)
-	{
+		break;
+	case GuiEvent_Close:
 		visible = false;
 		grid.LostFocus();
 		itb.focus = false;
 		itb.Event(GuiEvent_LostFocus);
-	}
-	else if(e >= GuiEvent_Custom)
-	{
-		switch(e)
+	break;
+	case IdPickCharacter: // pick character / change character
 		{
-		case IdPickCharacter: // pick character / change character
+			PlayerInfo& info = N.GetMe();
+			if(info.clas != Class::INVALID)
 			{
-				PlayerInfo& info = N.GetMe();
-				if(info.clas != Class::INVALID)
+				// already have character, redo
+				if(info.ready)
 				{
-					// already have character, redo
-					if(info.ready)
-					{
-						// uncheck ready
-						info.ready = false;
-						ChangeReady();
-					}
-					game->gui->ShowCreateCharacterPanel(false, true);
+					// uncheck ready
+					info.ready = false;
+					ChangeReady();
 				}
-				else
-					game->gui->ShowCreateCharacterPanel(false);
-			}
-			break;
-		case IdReady: // ready / unready
-			{
-				PlayerInfo& info = N.GetMe();
-				info.ready = !info.ready;
-				ChangeReady();
-			}
-			break;
-		case IdKick: // kick / cancel
-			if(Net::IsServer())
-			{
-				if(grid.selected == -1)
-					AddMsg(txNeedSelectedPlayer);
-				else if(grid.selected == 0)
-					AddMsg(txCantKickMyself);
-				else
-				{
-					PlayerInfo& info = *N.players[grid.selected];
-					if(info.state != PlayerInfo::IN_LOBBY)
-						AddMsg(txCantKickUnconnected);
-					else
-					{
-						// na pewno?
-						kick_id = info.id;
-						DialogInfo di;
-						di.event = DialogEvent(this, &ServerPanel::OnKick);
-						di.name = "kick";
-						di.order = ORDER_TOP;
-						di.parent = this;
-						di.pause = false;
-						di.text = Format(txReallyKick, info.name.c_str());
-						di.type = DIALOG_YESNO;
-						GUI.ShowDialog(di);
-					}
-					return;
-				}
+				game->gui->ShowCreateCharacterPanel(false, true);
 			}
 			else
-				ExitLobby();
-			break;
-		case IdLeader: // change leader
+				game->gui->ShowCreateCharacterPanel(false);
+		}
+		break;
+	case IdReady: // ready / unready
+		{
+			PlayerInfo& info = N.GetMe();
+			info.ready = !info.ready;
+			ChangeReady();
+		}
+		break;
+	case IdKick: // kick / cancel
+		if(Net::IsServer())
+		{
 			if(grid.selected == -1)
 				AddMsg(txNeedSelectedPlayer);
+			else if(grid.selected == 0)
+				AddMsg(txCantKickMyself);
 			else
 			{
 				PlayerInfo& info = *N.players[grid.selected];
-				if(info.id == Team.leader_id)
-					AddMsg(txAlreadyLeader);
-				else if(info.state == PlayerInfo::IN_LOBBY)
-				{
-					Team.leader_id = info.id;
-					AddLobbyUpdate(Int2(Lobby_ChangeLeader, 0));
-					AddMsg(Format(txLeaderChanged, info.name.c_str()));
-				}
+				if(info.state != PlayerInfo::IN_LOBBY)
+					AddMsg(txCantKickUnconnected);
 				else
-					AddMsg(txNotJoinedYet);
-			}
-			break;
-		case IdStart: // start game / stop
-			if(!starting)
-			{
-				cstring error_text = nullptr;
-
-				for(auto player : N.players)
 				{
-					if(!player->ready)
-					{
-						error_text = txNotAllReady;
-						AddMsg(error_text);
-						break;
-					}
+					// na pewno?
+					kick_id = info.id;
+					DialogInfo di;
+					di.event = DialogEvent(this, &ServerPanel::OnKick);
+					di.name = "kick";
+					di.order = ORDER_TOP;
+					di.parent = this;
+					di.pause = false;
+					di.text = Format(txReallyKick, info.name.c_str());
+					di.type = DIALOG_YESNO;
+					GUI.ShowDialog(di);
 				}
-
-				if(!error_text)
-					Start();
+				return;
+			}
+		}
+		else
+			ExitLobby();
+		break;
+	case IdLeader: // change leader
+		if(grid.selected == -1)
+			AddMsg(txNeedSelectedPlayer);
+		else
+		{
+			PlayerInfo& info = *N.players[grid.selected];
+			if(info.id == Team.leader_id)
+				AddMsg(txAlreadyLeader);
+			else if(info.state == PlayerInfo::IN_LOBBY)
+			{
+				Team.leader_id = info.id;
+				AddLobbyUpdate(Int2(Lobby_ChangeLeader, 0));
+				AddMsg(Format(txLeaderChanged, info.name.c_str()));
 			}
 			else
-				StopStartup();
-			break;
-		case IdCancel: // cancel
-			ExitLobby();
-			break;
+				AddMsg(txNotJoinedYet);
 		}
+		break;
+	case IdStart: // start game / stop
+		if(!starting)
+		{
+			cstring error_text = nullptr;
+
+			for(auto player : N.players)
+			{
+				if(!player->ready)
+				{
+					error_text = txNotAllReady;
+					AddMsg(error_text);
+					break;
+				}
+			}
+
+			if(!error_text)
+				Start();
+		}
+		else
+			StopStartup();
+		break;
+	case IdCancel: // cancel
+		ExitLobby();
+		break;
 	}
 }
 

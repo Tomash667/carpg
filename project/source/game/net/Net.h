@@ -156,6 +156,7 @@ public:
 	PlayerInfo* TryGetPlayer(int id);
 	void ClosePeer(bool wait = false);
 
+	LobbyApi* api;
 	RakPeerInterface* peer;
 	vector<PlayerInfo*> players; // contains players that left too
 	vector<string*> net_strs;
@@ -183,12 +184,13 @@ public:
 	void WriteWorldData(BitStreamWriter& f);
 	void WritePlayerStartData(BitStreamWriter& f, PlayerInfo& info);
 	void WriteLevelData(BitStream& stream, bool loaded_resources);
+	int GetServerFlags();
 
 	vector<PlayerInfo*> old_players;
 	uint active_players, max_players;
 	string server_name, password;
 	int last_id;
-	bool players_left;
+	bool players_left, server_hidden;
 
 	//****************************************************************************
 	// Client

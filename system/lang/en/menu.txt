@@ -236,7 +236,6 @@ perksRemoved = "Following perks removed due to not meeting the requirements:"
 
 // net panel
 join = "Join"
-joinLAN = "Join LAN"
 joinIP = "Join IP"
 host = "Create"
 multiplayerGame = "MULTIPLAYER GAME"
@@ -252,6 +251,7 @@ serverPswd = "Password:"
 enterServerName = "Enter server name."
 invalidPlayersCount = "Players count need to be in range 1-%d."
 create = "Create"
+hidden = "Hidden"
 
 // multiplayer
 players = "Players"

@@ -17,6 +17,12 @@
 #undef NULL
 
 //-----------------------------------------------------------------------------
+// slnet types
+namespace SLNet
+{
+	class HTTPConnection;
+	class TCPInterface;
+}
 using namespace SLNet;
 
 //-----------------------------------------------------------------------------
@@ -51,6 +57,7 @@ class Journal;
 class Level;
 class LevelAreaContext;
 class LoadScreen;
+class LobbyApi;
 class MainMenu;
 class Minimap;
 class MpBox;

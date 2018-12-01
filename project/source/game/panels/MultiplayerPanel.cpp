@@ -55,7 +55,7 @@ void MultiplayerPanel::LoadLanguage()
 	txNeedEnterNick = Str("needEnterNick");
 	txEnterValidNick = Str("enterValidNick");
 
-	bts[0].text = Str("joinLAN");
+	bts[0].text = Str("join");
 	bts[1].text = Str("joinIP");
 	bts[2].text = Str("host");
 	bts[3].text = Str("load");

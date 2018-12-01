@@ -23,6 +23,7 @@
 #include "GameStats.h"
 #include "SoundManager.h"
 #include "Team.h"
+#include "LobbyApi.h"
 
 Net N;
 const float CHANGE_LEVEL_TIMER = 5.f;
@@ -31,6 +32,7 @@ const int CLOSE_PEER_TIMER = 1000; // ms
 //=================================================================================================
 Net::Net() : peer(nullptr), current_packet(nullptr), mp_load(false), mp_use_interp(true), mp_interp(0.05f), was_client(false)
 {
+	api = new LobbyApi;
 }
 
 //=================================================================================================
@@ -47,6 +49,7 @@ void Net::Cleanup()
 	DeleteElements(old_players);
 	if(peer)
 		RakPeerInterface::DestroyInstance(peer);
+	delete api;
 }
 
 //=================================================================================================
@@ -161,6 +164,9 @@ void Net::InitServer()
 
 	peer->SetMaximumIncomingConnections((word)max_players + 4);
 	DEBUG_DO(peer->SetTimeoutTime(60 * 60 * 1000, UNASSIGNED_SYSTEM_ADDRESS));
+
+	if(!server_hidden)
+		api->RegisterServer(server_name, max_players, GetServerFlags(), port);
 
 	Info("Server created. Waiting for connection.");
 
@@ -513,6 +519,17 @@ void Net::WriteLevelData(BitStream& stream, bool loaded_resources)
 	}
 
 	f.WriteCasted<byte>(0xFF);
+}
+
+//=================================================================================================
+int Net::GetServerFlags()
+{
+	int flags = 0;
+	if(!password.empty())
+		flags |= SERVER_PASSWORD;
+	if(mp_load)
+		flags |= SERVER_SAVED;
+	return flags;
 }
 
 //=================================================================================================

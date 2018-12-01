@@ -236,7 +236,6 @@ perksRemoved = "Usuniêto poni¿sze atuty z powodu niespe³niania wymagañ:"
 
 // net panel
 join = "Do³¹cz"
-joinLAN = "Do³¹cz LAN"
 joinIP = "Do³¹cz IP"
 host = "Za³ó¿"
 multiplayerGame = "GRA WIELOOSOBOWA"
@@ -245,13 +244,14 @@ needEnterNick = "Musisz podaæ nick."
 enterValidNick = "Musisz podaæ prawid³owy nick, tylko litery, cyfry lub znak podkreœlenia."
 create = "Stwórz"
 
-// zak³adanie serwera
+// creating server
 createServer = "ZA£Ó¯ SERWER"
 serverName = "Nazwa serwera:"
 serverPlayers = "Gracze:"
 serverPswd = "Has³o:"
 enterServerName = "Podaj nazwê serwera."
 invalidPlayersCount = "Liczba graczy musi byæ w przedziale 1-%d."
+hidden = "Ukryty"
 
 // multiplayer
 players = "Gracze"

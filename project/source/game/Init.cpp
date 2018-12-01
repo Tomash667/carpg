@@ -398,9 +398,9 @@ void Game::PostconfigureGame()
 	}
 
 	// save config
-	cfg.Add("adapter", Format("%d", used_adapter));
+	cfg.Add("adapter", used_adapter);
 	cfg.Add("resolution", Format("%dx%d", GetWindowSize().x, GetWindowSize().y));
-	cfg.Add("refresh", Format("%d", wnd_hz));
+	cfg.Add("refresh", wnd_hz);
 	SaveCfg();
 
 	// end load screen, show menu
