@@ -1,4 +1,3 @@
-// character creation screen
 #pragma once
 
 //-----------------------------------------------------------------------------
@@ -64,17 +63,17 @@ public:
 private:
 	enum DOLL_ANIM
 	{
-		DA_STOI,
-		DA_IDZIE,
-		DA_ROZGLADA,
-		DA_WYJMIJ_BRON,
-		DA_SCHOWAJ_BRON,
-		DA_WYJMIJ_LUK,
-		DA_SCHOWAJ_LUK,
-		DA_ATAK,
-		DA_STRZAL,
-		DA_BLOK,
-		DA_BOJOWY
+		DA_STAND,
+		DA_WALK,
+		DA_LOOKS_AROUND,
+		DA_SHOW_WEAPON,
+		DA_HIDE_WEAPON,
+		DA_SHOW_BOW,
+		DA_HIDE_BOW,
+		DA_ATTACK,
+		DA_SHOOT,
+		DA_BLOCK,
+		DA_BATTLE_MODE
 	};
 
 	void SetControls();
@@ -94,7 +93,6 @@ private:
 	void PickSkill(cstring text, Perk picked_perk);
 	void OnPickAttributeForPerk(int id);
 	void OnPickSkillForPerk(int id);
-	void UpdateSkill(SkillId s, int value, bool mod);
 	void UpdateSkillButtons();
 	void AddPerk(Perk perk, int value = -1);
 	bool ValidatePerk(Perk perk);

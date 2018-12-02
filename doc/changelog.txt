@@ -18,6 +18,7 @@ Wersja 0.8 (???):
 - zadanie z listem goñczym wybiera³o losow¹ lokalizacje która by³a ju¿ u¿ywana, cel nie generowa³ siê
 - naprawiony wyciek pamiêci przy generowaniu kopalni
 - poprawki do dialogów burmistrza
+- naprawione b³êdne obliczanie ceny gdy sprzedaje siê przedmiot towarzyszowi
 
 --------------------------------------------------------------------------------
 Wersja 0.7.1 (2018-04-15):

@@ -494,7 +494,8 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				return true;
 			}
 
-			if(Vec3::Distance(unit.pos, new_pos) >= 10.f)
+			float dist = Vec3::Distance(unit.pos, new_pos);
+			if(dist >= 10.f)
 			{
 				// too big change in distance, warp unit to old position
 				Warn("UpdateServer: Invalid unit movement from %s ((%g,%g,%g) -> (%g,%g,%g)).", info.name.c_str(), unit.pos.x, unit.pos.y, unit.pos.z,
@@ -504,6 +505,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 			}
 			else
 			{
+				unit.player->TrainMove(dist);
 				if(player.noclip || unit.usable || CheckMoveNet(unit, new_pos))
 				{
 					// update position
@@ -1260,12 +1262,17 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						else if(player.action == PlayerController::Action_GiveItems)
 						{
 							add_as_team = 0;
-							int price = ItemHelper::GetItemPrice(slot.item, unit, false);
-							if(t->gold >= price)
+							int price = slot.item->value / 2;
+							if(slot.team_count > 0)
+							{
+								t->hero->credit += price;
+								if(Net::IsLocal())
+									Team.CheckCredit(true);
+							}
+							else if(t->gold >= price)
 							{
 								t->gold -= price;
 								unit.gold += price;
-								player.Train(TrainWhat::Trade, (float)price, 0);
 							}
 							if(slot.item->type == IT_CONSUMABLE && slot.item->ToConsumable().effect == E_HEAL)
 								t->ai->have_potion = 2;
@@ -1321,12 +1328,12 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						AddItem(*player.action_unit, slot, 1u, 0u, false);
 						if(player.action == PlayerController::Action_GiveItems)
 						{
+							price = slot->value / 2;
 							if(player.action_unit->gold >= price)
 							{
 								// sold for gold
 								player.action_unit->gold -= price;
 								unit.gold += price;
-								player.Train(TrainWhat::Trade, (float)price, 0);
 							}
 							player.action_unit->UpdateInventory();
 							NetChangePlayer& c = Add1(info.changes);
@@ -2366,10 +2373,6 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 			else
 				N.StreamError("Update server: ENTER_LOCATION from %s, not leader or not on map.", info.name.c_str());
 			break;
-		// player is training dexterity by moving
-		case NetChange::TRAIN_MOVE:
-			player.Train(TrainWhat::Move, 0.f, 0);
-			break;
 		// close encounter message box
 		case NetChange::CLOSE_ENCOUNTER:
 			if(gui->world_map->dialog_enc)
@@ -2479,7 +2482,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				else
 				{
 					if(type == 2)
-						QM.quest_tournament->Train(unit);
+						QM.quest_tournament->Train(player);
 					else
 					{
 						cstring error = nullptr;
@@ -2498,7 +2501,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							N.StreamError("Update server: TRAIN from %s, invalid %d %u.", info.name.c_str(), error, stat_type);
 							break;
 						}
-						Train(unit, type == 1, stat_type);
+						player.Train(type == 1, stat_type);
 					}
 					player.Rest(10, false);
 					player.UseDays(10);
@@ -7182,7 +7185,6 @@ void Game::WriteClientChanges(BitStreamWriter& f)
 		case NetChange::CHEAT_GOTO_MAP:
 		case NetChange::CHEAT_REVEAL_MINIMAP:
 		case NetChange::ENTER_LOCATION:
-		case NetChange::TRAIN_MOVE:
 		case NetChange::CLOSE_ENCOUNTER:
 		case NetChange::YELL:
 		case NetChange::CHEAT_REFRESH_COOLDOWN:
@@ -7514,26 +7516,6 @@ void Game::Net_OnNewGameServer()
 		Trap::netid_counter = 0;
 		Door::netid_counter = 0;
 		Electro::netid_counter = 0;
-
-		gui->server->CheckAutopick();
-	}
-	else
-	{
-		// search for saved character
-		PlayerInfo* old = N.FindOldPlayer(player_name.c_str());
-		if(old)
-		{
-			sp.devmode = old->devmode;
-			sp.clas = old->clas;
-			sp.hd.CopyFrom(old->hd);
-			sp.loaded = true;
-			gui->server->UseLoadedCharacter(true);
-		}
-		else
-		{
-			gui->server->UseLoadedCharacter(false);
-			gui->server->CheckAutopick();
-		}
 	}
 
 	skip_id_counter = 0;
@@ -7552,6 +7534,27 @@ void Game::Net_OnNewGameServer()
 	gui->server->Show();
 	gui->mp_box->Reset();
 	gui->mp_box->visible = true;
+
+	if(!N.mp_load)
+		gui->server->CheckAutopick();
+	else
+	{
+		// search for saved character
+		PlayerInfo* old = N.FindOldPlayer(player_name.c_str());
+		if(old)
+		{
+			sp.devmode = old->devmode;
+			sp.clas = old->clas;
+			sp.hd.CopyFrom(old->hd);
+			sp.loaded = true;
+			gui->server->UseLoadedCharacter(true);
+		}
+		else
+		{
+			gui->server->UseLoadedCharacter(false);
+			gui->server->CheckAutopick();
+		}
+	}
 
 	if(change_title_a)
 		ChangeTitle();

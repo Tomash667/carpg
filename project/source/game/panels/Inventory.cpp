@@ -1082,22 +1082,23 @@ void InventoryPanel::Update(float dt)
 							else if(t->CanTake(item))
 							{
 								DialogInfo info;
+								int price = item->value / 2;
 								if(slot->team_count > 0)
 								{
-									// daj dru¿ynowy przedmiot
-									info.text = Format(base.txSellTeamItem, item->value / 2);
+									// give team item for credit
+									info.text = Format(base.txSellTeamItem, price);
 									give_item_mode = 0;
 								}
-								else if(t->gold >= item->value / 2)
+								else if(t->gold >= price)
 								{
-									// odkup przedmiot
-									info.text = Format(base.txSellItem, item->value / 2);
+									// sell item
+									info.text = Format(base.txSellItem, price);
 									give_item_mode = 1;
 								}
 								else
 								{
-									// zaproponuj inn¹ cenê
-									info.text = Format(base.txSellFreeItem, item->value / 2);
+									// give item for free
+									info.text = Format(base.txSellFreeItem, price);
 									give_item_mode = 2;
 								}
 								base.lock.Lock(i_index, *slot);
@@ -1476,13 +1477,13 @@ void InventoryPanel::EquipSlotItem(int index)
 }
 
 //=================================================================================================
-void InventoryPanel::FormatBox()
+void InventoryPanel::FormatBox(bool refresh)
 {
-	FormatBox(last_index, box_text, box_text_small, box_img);
+	FormatBox(last_index, box_text, box_text_small, box_img, refresh);
 }
 
 //=================================================================================================
-void InventoryPanel::FormatBox(int group, string& text, string& small_text, TEX& img)
+void InventoryPanel::FormatBox(int group, string& text, string& small_text, TEX& img, bool refresh)
 {
 	if(group == INDEX_GOLD)
 	{
@@ -1536,7 +1537,13 @@ void InventoryPanel::FormatBox(int group, string& text, string& small_text, TEX&
 			team_count = slot.team_count;
 		}
 
-		GetItemString(text, item, game.pc->unit, (uint)count);
+		Unit* target;
+		if(for_unit)
+			target = game.pc->action_unit;
+		else
+			target = game.pc->unit;
+
+		GetItemString(text, item, target, (uint)count);
 		if(mode != TRADE_OTHER && team_count && Team.GetActiveTeamSize() > 1)
 		{
 			text += '\n';
@@ -1560,7 +1567,7 @@ void InventoryPanel::FormatBox(int group, string& text, string& small_text, TEX&
 			text += Format(base.txPrice, price);
 		}
 		small_text = item->desc;
-		if(AllowForUnit())
+		if(AllowForUnit() && item->IsWearableByHuman())
 		{
 			if(!small_text.empty())
 				small_text += '\n';
@@ -1573,7 +1580,8 @@ void InventoryPanel::FormatBox(int group, string& text, string& small_text, TEX&
 		if(item->mesh)
 		{
 			img = game.tItemRegionRot;
-			rot = 0.f;
+			if(!refresh)
+				rot = 0.f;
 			item_visible = item;
 		}
 		else
@@ -1597,7 +1605,7 @@ void InventoryPanel::GetTooltip(TooltipController*, int group, int)
 	base.tooltip.anything = true;
 	base.tooltip.big_text.clear();
 
-	FormatBox(group, base.tooltip.text, base.tooltip.small_text, base.tooltip.img);
+	FormatBox(group, base.tooltip.text, base.tooltip.small_text, base.tooltip.img, false);
 }
 
 //=================================================================================================
@@ -2180,24 +2188,22 @@ void InventoryPanel::OnGiveItem(int id)
 
 	// dodaj
 	Unit* t = unit->player->action_unit;
-	int price = ItemHelper::GetItemPrice(item, *game.pc->unit, false);
+	int price = item->value / 2;
 	switch(give_item_mode)
 	{
-	case 0: // kredyt
+	case 0: // give team item for credit
 		t->hero->credit += price;
 		if(Net::IsLocal())
 			Team.CheckCredit(true);
 		break;
-	case 1: // z³oto
+	case 1: // sell item
 		if(t->gold < price)
 			return;
 		t->gold -= price;
 		unit->gold += price;
-		if(Net::IsLocal())
-			game.pc->Train(TrainWhat::Trade, (float)price, 0);
 		game.sound_mgr->PlaySound2d(game.sCoins);
 		break;
-	case 2: // darmo
+	case 2: // give item for free
 		break;
 	}
 	t->AddItem(item, 1u, 0u);

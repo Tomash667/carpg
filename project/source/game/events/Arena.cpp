@@ -553,9 +553,6 @@ void Arena::StartPvp(PlayerController* player, Unit* unit)
 	fighter = unit;
 
 	// stwórz obserwatorów na arenie na podstawie poziomu postaci
-	player->unit->level = player->unit->CalculateLevel();
-	if(unit->IsPlayer())
-		unit->level = unit->CalculateLevel();
 	int level = max(player->unit->level, unit->level);
 
 	if(level < 7)

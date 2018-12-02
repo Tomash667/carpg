@@ -38,7 +38,7 @@ World W;
 
 
 //-----------------------------------------------------------------------------
-// z powodu zmian (po³¹czenie Location i Location2) musze tymczasowo u¿ywaæ tego w add_locations a potem w generate_world ustawiaæ odpowiedni obiekt
+// used temporary before deciding how many levels location should have (and use Single or MultiInsideLocation)
 struct TmpLocation : public Location
 {
 	TmpLocation() : Location(false) {}
@@ -510,6 +510,7 @@ int World::AddLocation(Location* loc)
 			if(!*rit)
 			{
 				*rit = loc;
+				loc->index = index;
 				if(Net::IsOnline())
 				{
 					NetChange& c = Add1(Net::changes);
@@ -748,18 +749,19 @@ void World::GenerateWorld(int start_location_type, int start_location_target)
 			}
 
 			BaseLocation& base = g_base_locations[target];
-			int poziomy = base.levels.Random();
+			int levels = base.levels.Random();
 
-			if(poziomy == 1)
+			if(levels == 1)
 				inside = new SingleInsideLocation;
 			else
-				inside = new MultiInsideLocation(poziomy);
+				inside = new MultiInsideLocation(levels);
 
 			inside->type = loc.type;
 			inside->image = loc.image;
 			inside->state = loc.state;
 			inside->pos = loc.pos;
 			inside->name = loc.name;
+			inside->index = loc.index;
 			delete &loc;
 			*it = inside;
 
@@ -1070,7 +1072,7 @@ void World::LoadOld(GameReader& f, LoadingHandler& loading, int part, bool insid
 		LoadLocations(f, loading);
 		if(state == State::INSIDE_ENCOUNTER)
 		{
-			// random encounter - should guards give team reward
+			// random encounter - should guards give team reward?
 			bool guards_enc_reward;
 			f >> guards_enc_reward;
 			if(guards_enc_reward)
@@ -1691,6 +1693,8 @@ void World::UpdateTravel(float dt)
 	if(travel_timer * 3 >= dist / TRAVEL_SPEED)
 	{
 		// end of travel
+		if(Net::IsLocal())
+			Team.OnTravel(Vec2::Distance(world_pos, end_pt));
 		if(Team.IsLeader())
 			EndTravel();
 		else
@@ -1699,7 +1703,10 @@ void World::UpdateTravel(float dt)
 	else
 	{
 		Vec2 dir = end_pt - travel_start_pos;
-		world_pos = travel_start_pos + dir * (travel_timer / dist * TRAVEL_SPEED * 3);
+		float travel_dist = travel_timer / dist * TRAVEL_SPEED * 3;
+		world_pos = travel_start_pos + dir * travel_dist;
+		if(Net::IsLocal())
+			Team.OnTravel(travel_dist);
 
 		// reveal nearby locations, check encounters
 		reveal_timer += dt;

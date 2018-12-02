@@ -27,7 +27,7 @@ public:
 	Unit* GetMaster() const { return master; }
 	State GetState() const { return state; }
 	int GetCity() const { return city; }
-	void Train(Unit& u);
+	void Train(PlayerController& player);
 	void GenerateUnits();
 	void Clean();
 	void FinishCombat() { state3 = 5; }

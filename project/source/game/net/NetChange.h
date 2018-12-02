@@ -124,7 +124,6 @@ struct NetChange
 		CREATE_EXPLOSION, // create explosion effect [string1(spell->id), Vec3(pos)]
 		REMOVE_TRAP, // remove trap [int(id)-trap netid]
 		TRIGGER_TRAP, // trigger trap [int(id)-trap netid]
-		TRAIN_MOVE, // player is training dexterity by moving []
 		EVIL_SOUND, // play evil sound []
 		ENCOUNTER, // start encounter on world map [string1(str)-encounter text]
 		CLOSE_ENCOUNTER, // close encounter message box []

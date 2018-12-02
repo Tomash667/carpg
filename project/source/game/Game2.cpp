@@ -1210,9 +1210,9 @@ void Game::UpdateFallback(float dt)
 				else if(Net::IsLocal())
 				{
 					if(fallback_1 == 2)
-						QM.quest_tournament->Train(*pc->unit);
+						QM.quest_tournament->Train(*pc);
 					else
-						Train(*pc->unit, fallback_1 == 1, fallback_2);
+						pc->Train(fallback_1 == 1, fallback_2);
 					pc->Rest(10, false);
 					if(Net::IsOnline())
 						pc->UseDays(10);
@@ -1543,16 +1543,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 					// train by moving
 					if(Net::IsLocal())
-						u.player->TrainMove(dt, run);
-					else
-					{
-						train_move += (run ? dt : dt / 10);
-						if(train_move >= 1.f)
-						{
-							--train_move;
-							Net::PushChange(NetChange::TRAIN_MOVE);
-						}
-					}
+						u.player->TrainMove(speed);
 
 					// revealing minimap
 					if(!L.location->outside)
@@ -7941,7 +7932,8 @@ void Game::ClearGame()
 
 	LeaveLocation(true, false);
 
-	if((game_state == GS_WORLDMAP || prev_game_state == GS_WORLDMAP) && !L.is_open && Net::IsLocal() && !N.was_client)
+	// delete units on world map
+	if((game_state == GS_WORLDMAP || prev_game_state == GS_WORLDMAP || (N.mp_load && prev_game_state == GS_LOAD)) && !L.is_open && Net::IsLocal() && !N.was_client)
 	{
 		for(Unit* unit : Team.members)
 		{
@@ -7953,21 +7945,17 @@ void Game::ClearGame()
 			delete unit->ai;
 			delete unit;
 		}
-
+		Team.members.clear();
 		prev_game_state = GS_LOAD;
 	}
 
 	if(!N.net_strs.empty())
 		StringPool.Free(N.net_strs);
 
-	// usuñ lokalizacje
 	L.is_open = false;
 	L.city_ctx = nullptr;
-
 	QM.Clear();
-
 	W.Reset();
-
 	gui->Clear(true);
 }
 
@@ -10050,86 +10038,6 @@ DialogContext* Game::FindDialogContext(Unit* talker)
 		}
 	}
 	return nullptr;
-}
-
-/* mode: 0 - normal training
-1 - gain 1 point (tutorial)
-2 - more points (potion) */
-void Game::Train(Unit& unit, bool is_skill, int id, int mode)
-{
-	PlayerController::StatData* stat;
-	int value;
-	if(is_skill)
-	{
-		stat = &unit.player->skill[id];
-		if(unit.base_stat.skill[id] == Skill::MAX)
-		{
-			stat->points = stat->next;
-			return;
-		}
-		value = unit.base_stat.skill[id];
-	}
-	else
-	{
-		stat = &unit.player->attrib[id];
-		if(unit.base_stat.attrib[id] == Attribute::MAX)
-		{
-			stat->points = stat->next;
-			return;
-		}
-		value = unit.base_stat.attrib[id];
-	}
-
-	int count;
-	if(mode == 0)
-		count = (9 + stat->apt) / 2 - value / 20;
-	else if(mode == 1)
-		count = 1;
-	else
-		count = (12 + stat->apt) / 2 - value / 24;
-
-	if(count >= 1)
-	{
-		value += count;
-		stat->points /= 2;
-
-		if(is_skill)
-		{
-			stat->next = GetRequiredSkillPoints(value);
-			unit.Set((SkillId)id, value);
-		}
-		else
-		{
-			stat->next = GetRequiredAttributePoints(value);
-			unit.Set((AttributeId)id, value);
-		}
-
-		gui->messages->AddFormattedMessage(unit.player, is_skill ? GMS_GAIN_SKILL : GMS_GAIN_ATTRIBUTE, id, count);
-
-		if(!unit.player->IsLocal())
-		{
-			NetChangePlayer& c2 = Add1(unit.player->player_info->changes);
-			c2.type = NetChangePlayer::STAT_CHANGED;
-			c2.id = int(is_skill ? ChangedStatType::SKILL : ChangedStatType::ATTRIBUTE);
-			c2.a = id;
-			c2.count = value;
-		}
-	}
-	else
-	{
-		float m;
-		if(count == 0)
-			m = 0.5f;
-		else if(count == -1)
-			m = 0.25f;
-		else
-			m = 0.125f;
-		float pts = m * stat->next;
-		if(is_skill)
-			unit.player->TrainMod2((SkillId)id, pts);
-		else
-			unit.player->TrainMod((AttributeId)id, pts);
-	}
 }
 
 void Game::CreateSaveImage(cstring filename)

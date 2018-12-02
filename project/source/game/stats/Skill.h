@@ -58,6 +58,7 @@ enum class SkillId
 	MAX,
 	NONE
 };
+static_assert((int)SkillId::MAX < 32, "Max 32 skills, send as bit flags!");
 
 //-----------------------------------------------------------------------------
 enum class SkillGroupId
@@ -72,16 +73,6 @@ enum class SkillGroupId
 };
 
 //-----------------------------------------------------------------------------
-enum class SkillPack
-{
-	THIEF,
-	WEAPON,
-
-	MAX,
-	NONE
-};
-
-//-----------------------------------------------------------------------------
 struct Skill
 {
 	SkillId skill_id;
@@ -89,13 +80,12 @@ struct Skill
 	string name, desc;
 	SkillGroupId group;
 	AttributeId attrib, attrib2;
-	SkillPack pack;
 
 	static const int MIN = 0;
 	static const int MAX = 255;
 
-	Skill(SkillId skill_id, cstring id, SkillGroupId group, AttributeId attrib, AttributeId attrib2, SkillPack pack) : skill_id(skill_id), id(id), group(group), attrib(attrib),
-		attrib2(attrib2), pack(pack)
+	Skill(SkillId skill_id, cstring id, SkillGroupId group, AttributeId attrib, AttributeId attrib2) : skill_id(skill_id), id(id), group(group),
+		attrib(attrib), attrib2(attrib2)
 	{
 	}
 

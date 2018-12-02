@@ -240,6 +240,7 @@ void ServerPanel::UpdateLobby(float dt)
 		if(!info.ready && info.clas != Class::INVALID)
 		{
 			info.ready = true;
+			bts[1].state = Button::NONE;
 			ChangeReady();
 		}
 		autoready = false;
@@ -1256,7 +1257,7 @@ void ServerPanel::Event(GuiEvent e)
 
 //=================================================================================================
 void ServerPanel::Show()
-{
+{ 
 	starting = false;
 	update_timer = 0.f;
 
@@ -1415,6 +1416,7 @@ void ServerPanel::UseLoadedCharacter(bool have)
 		Info("ServerPanel: Joined loaded game with existing character.");
 		autopick_class = Class::INVALID;
 		bts[0].state = Button::DISABLED;
+		bts[0].text = txChangeChar;
 		bts[1].state = Button::NONE;
 		AddMsg(txLoadedCharInfo);
 	}

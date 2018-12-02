@@ -479,7 +479,7 @@ void TeamSingleton::Update(int days, bool travel)
 			if(autoheal)
 				unit->hp = unit->hpmax;
 			if(unit->IsPlayer())
-				unit->player->TravelTick();
+				unit->player->Rest(1, false, true);
 			else
 				unit->hero->PassTime(1, true);
 		}
@@ -727,7 +727,7 @@ void TeamSingleton::UpdateTeamItemShares()
 		if(state == 1)
 		{
 			// start dialog
-			auto player_to_ask = (tsi.from->IsPlayer() ? tsi.from : leader)->player;
+			PlayerController* player_to_ask = (tsi.from->IsPlayer() ? tsi.from : leader)->player;
 			DialogContext& ctx = *player_to_ask->dialog_ctx;
 			ctx.team_share_id = team_share_id;
 			ctx.team_share_item = tsi.from->items[tsi.index].item;
@@ -1327,5 +1327,15 @@ void TeamSingleton::AddExp(int exp, vector<Unit*>* units)
 	{
 		if(unit->IsPlayer())
 			unit->player->AddExp(exp);
+	}
+}
+
+//=================================================================================================
+void TeamSingleton::OnTravel(float dist)
+{
+	for(Unit* unit : active_members)
+	{
+		if(unit->IsPlayer())
+			unit->player->TrainMove(dist);
 	}
 }

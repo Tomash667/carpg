@@ -31,6 +31,7 @@
 #include "Item.h"
 #include "NameHelper.h"
 #include "CommandParser.h"
+#include "CreateServerPanel.h"
 
 extern void HumanPredraw(void* ptr, Matrix* mat, int n);
 extern const int ITEM_IMAGE_SIZE;
@@ -446,7 +447,10 @@ void Game::StartGameMode()
 		{
 			N.mp_load = true;
 			if(gui->saveload->TryLoad(quickstart_slot))
+			{
+				gui->create_server->CloseDialog();
 				gui->server->autoready = true;
+			}
 			else
 			{
 				Error("Multiplayer quickload failed.");

@@ -71,6 +71,7 @@ public:
 	Unit* FindPlayerTradingWithUnit(Unit& u);
 	void AddLearningPoint(int count = 1);
 	void AddExp(int exp, vector<Unit*>* units = nullptr);
+	void OnTravel(float dist);
 
 	vector<Unit*> members; // all team members
 	vector<Unit*> active_members; // team members that get gold (without quest units)
