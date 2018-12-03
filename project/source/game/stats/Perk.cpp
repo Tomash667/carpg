@@ -37,7 +37,7 @@ PerkInfo PerkInfo::perks[] = {
 	PerkInfo(Perk::Aggressive, "aggressive", 0, 2),
 	PerkInfo(Perk::Mobility, "mobility", 0, 2),
 	PerkInfo(Perk::Finesse, "finesse", 0, 2),
-	PerkInfo(Perk::Tought, "tought", 0, 2),
+	PerkInfo(Perk::Tough, "tough", 0, 2),
 	PerkInfo(Perk::HardSkin, "hard_skin", 0, 2),
 	PerkInfo(Perk::Adaptation, "adaptation", 0, 3),
 	PerkInfo(Perk::PerfectHealth, "perfect_health", 0, 5)
@@ -321,7 +321,7 @@ bool TakenPerk::CanTake(PerkContext& ctx)
 		return ctx.Have(AttributeId::DEX, 60) && !ctx.HavePerk(Perk::Sluggish);
 	case Perk::Finesse:
 		return ctx.Have(AttributeId::DEX, 60) && !ctx.HavePerk(Perk::Sluggish);
-	case Perk::Tought:
+	case Perk::Tough:
 		return ctx.Have(AttributeId::END, 60) && !ctx.HavePerk(Perk::ChronicDisease);
 	case Perk::HardSkin:
 		return ctx.Have(AttributeId::END, 60) && !ctx.HavePerk(Perk::ChronicDisease);
@@ -413,7 +413,7 @@ void TakenPerk::Apply(PerkContext& ctx)
 		ctx.AddEffect(perk, EffectId::RangedAttack, 10.f);
 		ctx.AddRequired(AttributeId::DEX);
 		break;
-	case Perk::Tought:
+	case Perk::Tough:
 		ctx.AddEffect(perk, EffectId::Health, 100.f);
 		ctx.AddRequired(AttributeId::END);
 		break;
@@ -494,7 +494,7 @@ void TakenPerk::Remove(PerkContext& ctx)
 	case Perk::Finesse:
 		ctx.RemoveRequired(AttributeId::DEX);
 		break;
-	case Perk::Tought:
+	case Perk::Tough:
 		ctx.RemoveRequired(AttributeId::END);
 		break;
 	case Perk::HardSkin:

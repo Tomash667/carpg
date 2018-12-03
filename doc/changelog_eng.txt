@@ -4,7 +4,7 @@ Changelog
 Version 0.8 (???):
 ! cannot load saves from version 0.2.10 or older
 + learning points used to training skills/attributes/feats
-+ new feats (bad back, chronic disease, sluggish, slow learner, asocial, poor, strong back, aggressive, mobility, finesse, tought, hard skin, adaptation, perfect health)
++ new feats (bad back, chronic disease, sluggish, slow learner, asocial, poor, strong back, aggressive, mobility, finesse, tough, hard skin, adaptation, perfect health)
 + new skill haggle, trained by merchant
 + effects system (feats gives effects)
 + key to toggle run/walk

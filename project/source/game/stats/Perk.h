@@ -49,7 +49,7 @@ enum class Perk
 	Aggressive, // (60 str) +10 melee attack
 	Mobility, // (60 dex) +20 mobility
 	Finesse, // (60 dex) +10 ranged attack
-	Tought, // (60 end) +hp
+	Tough, // (60 end) +hp
 	HardSkin, // (60 end) +10 def
 	Adaptation, // (75 end) poison resistance
 	PerfectHealth, // (100 end) +5 hp reg
