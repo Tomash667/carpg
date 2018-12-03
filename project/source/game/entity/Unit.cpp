@@ -61,18 +61,27 @@ void Unit::Release()
 //=================================================================================================
 float Unit::CalculateMaxHp() const
 {
-	float v = 0.8f*Get(AttributeId::END) + 0.2f*Get(AttributeId::STR);
-	float bonus = GetEffectSum(EffectId::Health);
-	if(v >= 50.f)
-		return data->hp_bonus * (1.f + (v - 50) / 50) + bonus;
+	float maxhp;
+	if(IS_SET(data->flags2, F2_FIXED_STATS))
+		maxhp = (float)data->hp;
 	else
-		return data->hp_bonus * (1.f - (50 - v) / 100) + bonus;
+	{
+		float v = 0.8f*Get(AttributeId::END) + 0.2f*Get(AttributeId::STR);
+		if(v >= 50.f)
+			maxhp = data->hp * (1.f + (v - 50) / 50);
+		else
+			maxhp = data->hp * (1.f - (50 - v) / 100);
+	}
+	float bonus = GetEffectSum(EffectId::Health);
+	return maxhp + bonus;
 }
 
 //=================================================================================================
 float Unit::CalculateMaxStamina() const
 {
-	return 50.f + (float)data->stamina_bonus + 2.5f * Get(AttributeId::END) + 2.f * Get(AttributeId::DEX);
+	if(IS_SET(data->flags2, F2_FIXED_STATS))
+		return (float)data->stamina;
+	return 50.f + (float)data->stamina + 2.5f * Get(AttributeId::END) + 2.f * Get(AttributeId::DEX);
 }
 
 //=================================================================================================
@@ -153,7 +162,11 @@ float Unit::CalculateBlock(const Item* shield) const
 float Unit::CalculateDefense(const Item* armor) const
 {
 	// base
-	float def = (Get(AttributeId::END) - 50.f) / 5 + data->def_bonus;
+	float def;
+	if(IS_SET(data->flags2, F2_FIXED_STATS))
+		def = data->def;
+	else
+		def = (Get(AttributeId::END) - 50.f) / 5 + data->def_bonus;
 
 	// armor defense
 	if(!armor)

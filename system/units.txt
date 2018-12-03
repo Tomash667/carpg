@@ -1139,11 +1139,6 @@ sounds spider {
 	attack "spider_bite_and_suck.mp3"
 }
 
-sounds rat {
-	see_enemy "rat.wav"
-	death "ratdeath.mp3"
-}
-
 sounds zombie {
 	see_enemy "zombie groan 1.wav"
 	pain "zombie.mp3"
@@ -1250,12 +1245,6 @@ frames wolf {
 	}
 }
 
-frames rat {
-	simple_attacks {
-		{0.46 0.66}
-	}
-}
-
 frames golem {
 	simple_attacks {
 		{0.5 0.75}
@@ -1308,11 +1297,6 @@ idles orc {
 idles wolf {
 	"rozglada"
 	"wygina"
-}
-
-idles rat {
-	"idle"
-	"idle2"
 }
 
 idles golem {
@@ -2657,19 +2641,30 @@ unit spider_big : base_spider {
 unit rat {
 	mesh "szczur.qmsh"
 	mat body
-	level {1 3}
-	profile animal
-	flags {coward dont_open slight no_power_attack ignore_block dont_eat}
-	hp 50
+	level 1
+	flags {fixed_stats coward dont_open slight no_power_attack ignore_block dont_eat}
+	hp 100
+	attack 20
+	def 20
 	group animals
 	dmg_type pierce
 	walk_speed 1
 	run_speed 5
 	rot_speed 3.5
 	blood red
-	sounds rat
-	frames rat
-	idles rat
+	sounds {
+		see_enemy "rat.wav"
+		death "ratdeath.mp3"
+	}
+	frames {
+		simple_attacks {
+			{0.46 0.66}
+		}
+	}
+	idles {
+		"idle"
+		"idle2"
+	}
 	width 0.2
 	attack_range 0.75
 }
