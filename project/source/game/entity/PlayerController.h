@@ -88,6 +88,7 @@ struct PlayerController : public HeroPlayerCommon
 		int next;
 		int train;
 		int apt;
+		float train_part;
 		bool blocked;
 	};
 
@@ -147,13 +148,15 @@ struct PlayerController : public HeroPlayerCommon
 
 	void Init(Unit& _unit, bool partial = false);
 	void Update(float dt, bool is_local = true);
-	void Train(SkillId s, int points);
-	void Train(AttributeId a, int points);
-	void TrainMove(float dist);
-	void Train(TrainWhat what, float value, int level);
+private:
+	void Train(SkillId s, float points);
+	void Train(AttributeId a, float points);
 	void TrainMod(AttributeId a, float points);
 	void TrainMod2(SkillId s, float points);
 	void TrainMod(SkillId s, float points);
+public:
+	void TrainMove(float dist);
+	void Train(TrainWhat what, float value, int level);
 	void Train(bool is_skill, int id, TrainMode mode = TrainMode::Normal);
 	void SetRequiredPoints();
 

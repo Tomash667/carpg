@@ -66,6 +66,7 @@
 #include "GlobalGui.h"
 #include "FOV.h"
 #include "PlayerInfo.h"
+#include "CombatHelper.h"
 
 const Vec2 ALERT_RANGE(20.f, 30.f);
 const float PICKUP_RANGE = 2.f;
@@ -4179,55 +4180,6 @@ void Game::UpdateParticles(LevelContext& ctx, float dt)
 		RemoveNullElements(ctx.tpes);
 }
 
-int ObliczModyfikator(int type, int flags)
-{
-	// -2 invalid (weapon don't have any dmg type)
-	// -1 susceptibility
-	// 0 normal
-	// 1 resistance
-
-	int mod = -2;
-
-	if(IS_SET(type, DMG_SLASH))
-	{
-		if(IS_SET(flags, F_SLASH_RES25))
-			mod = 1;
-		else if(IS_SET(flags, F_SLASH_WEAK25))
-			mod = -1;
-		else
-			mod = 0;
-	}
-
-	if(IS_SET(type, DMG_PIERCE))
-	{
-		if(IS_SET(flags, F_PIERCE_RES25))
-		{
-			if(mod == -2)
-				mod = 1;
-		}
-		else if(IS_SET(flags, F_PIERCE_WEAK25))
-			mod = -1;
-		else if(mod != -1)
-			mod = 0;
-	}
-
-	if(IS_SET(type, DMG_BLUNT))
-	{
-		if(IS_SET(flags, F_BLUNT_RES25))
-		{
-			if(mod == -2)
-				mod = 1;
-		}
-		else if(IS_SET(flags, F_BLUNT_WEAK25))
-			mod = -1;
-		else if(mod != -1)
-			mod = 0;
-	}
-
-	assert(mod != -2);
-	return mod;
-}
-
 Game::ATTACK_RESULT Game::DoAttack(LevelContext& ctx, Unit& unit)
 {
 	Vec3 hitpoint;
@@ -5712,7 +5664,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 				float dmg = it->attack,
 					def = hitted->CalculateDefense();
 
-				int mod = ObliczModyfikator(DMG_PIERCE, hitted->data->flags);
+				int mod = CombatHelper::CalculateModifier(DMG_PIERCE, hitted->data->flags);
 				float m = 1.f;
 				if(mod == -1)
 					m += 0.25f;
@@ -6290,7 +6242,7 @@ void Game::StopAllSounds()
 
 Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Unit& hitted, const Vec3& hitpoint, float start_dmg, int dmg_type, bool bash)
 {
-	int mod = ObliczModyfikator(dmg_type, hitted.data->flags);
+	int mod = CombatHelper::CalculateModifier(dmg_type, hitted.data->flags);
 	float m = 1.f;
 	if(mod == -1)
 		m += 0.25f;
@@ -7052,7 +7004,7 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 								float dmg = float(trap.base->dmg),
 									def = unit->CalculateDefense();
 
-								int mod = ObliczModyfikator(DMG_PIERCE, unit->data->flags);
+								int mod = CombatHelper::CalculateModifier(DMG_PIERCE, unit->data->flags);
 								float m = 1.f;
 								if(mod == -1)
 									m += 0.25f;

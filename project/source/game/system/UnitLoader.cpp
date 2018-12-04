@@ -65,6 +65,7 @@ class UnitLoader : public ContentLoader
 		P_FLAGS,
 		P_HP,
 		P_STAMINA,
+		P_ATTACK,
 		P_DEF,
 		P_ITEMS,
 		P_SPELLS,
@@ -267,6 +268,7 @@ class UnitLoader : public ContentLoader
 			{ "flags", P_FLAGS },
 			{ "hp", P_HP },
 			{ "stamina", P_STAMINA },
+			{ "attack", P_ATTACK },
 			{ "def", P_DEF },
 			{ "items", P_ITEMS },
 			{ "spells", P_SPELLS },
@@ -592,20 +594,20 @@ class UnitLoader : public ContentLoader
 				}
 				break;
 			case P_HP:
-				unit->hp_bonus = t.MustGetInt();
-				if(unit->hp_bonus < 0)
-					t.Throw("Invalid hp bonus %d.", unit->hp_bonus);
-				crc.Update(unit->hp_bonus);
+				unit->hp = t.MustGetInt();
+				crc.Update(unit->hp);
 				break;
 			case P_STAMINA:
-				unit->stamina_bonus = t.MustGetInt();
-				crc.Update(unit->stamina_bonus);
+				unit->stamina = t.MustGetInt();
+				crc.Update(unit->stamina);
+				break;
+			case P_ATTACK:
+				unit->attack = t.MustGetInt();
+				crc.Update(unit->attack);
 				break;
 			case P_DEF:
-				unit->def_bonus = t.MustGetInt();
-				if(unit->def_bonus < 0)
-					t.Throw("Invalid def bonus %d.", unit->def_bonus);
-				crc.Update(unit->def_bonus);
+				unit->def = t.MustGetInt();
+				crc.Update(unit->def);
 				break;
 			case P_ITEMS:
 				if(t.IsSymbol('{'))

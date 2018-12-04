@@ -18,8 +18,10 @@ void UnitData::CopyFrom(UnitData& ud)
 	mat = ud.mat;
 	level = ud.level;
 	stat_profile = ud.stat_profile;
-	hp_bonus = ud.hp_bonus;
-	def_bonus = ud.def_bonus;
+	hp = ud.hp;
+	stamina = ud.stamina;
+	attack = ud.attack;
+	def = ud.def;
 	dmg_type = ud.dmg_type;
 	flags = ud.flags;
 	flags2 = ud.flags2;

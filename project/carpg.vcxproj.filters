@@ -787,6 +787,9 @@
     <ClCompile Include="source\game\CommandParser.cpp">
       <Filter>3. game</Filter>
     </ClCompile>
+    <ClCompile Include="source\game\helpers\CombatHelper.cpp">
+      <Filter>3. game\helpers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\resource\resource1.h">
@@ -1596,6 +1599,9 @@
     </ClInclude>
     <ClInclude Include="source\game\CommandParser.h">
       <Filter>3. game</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\helpers\CombatHelper.h">
+      <Filter>3. game\helpers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

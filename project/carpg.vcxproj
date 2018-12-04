@@ -240,6 +240,7 @@
     <ClInclude Include="source\game\generator\OutsideLocationGenerator.h" />
     <ClInclude Include="source\game\generator\SecretLocationGenerator.h" />
     <ClInclude Include="source\game\generator\TutorialLocationGenerator.h" />
+    <ClInclude Include="source\game\helpers\CombatHelper.h" />
     <ClInclude Include="source\game\helpers\ItemHelper.h" />
     <ClInclude Include="source\game\helpers\LoadingHandler.h" />
     <ClInclude Include="source\game\Level.h" />
@@ -488,6 +489,7 @@
     <ClCompile Include="source\game\generator\OutsideLocationGenerator.cpp" />
     <ClCompile Include="source\game\generator\SecretLocationGenerator.cpp" />
     <ClCompile Include="source\game\generator\TutorialLocationGenerator.cpp" />
+    <ClCompile Include="source\game\helpers\CombatHelper.cpp" />
     <ClCompile Include="source\game\helpers\ItemHelper.cpp" />
     <ClCompile Include="source\game\helpers\LoadingHandler.cpp" />
     <ClCompile Include="source\game\Level.cpp" />

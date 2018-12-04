@@ -113,11 +113,13 @@ void PlayerController::Init(Unit& _unit, bool partial)
 		{
 			skill[i].points = 0;
 			skill[i].train = 0;
+			skill[i].train_part = 0;
 		}
 		for(int i = 0; i < (int)AttributeId::MAX; ++i)
 		{
 			attrib[i].points = 0;
 			attrib[i].train = 0;
+			attrib[i].train_part = 0;
 		}
 
 		action_charges = GetAction().charges;
@@ -174,12 +176,14 @@ void PlayerController::Update(float dt, bool is_local)
 }
 
 //=================================================================================================
-void PlayerController::Train(SkillId skill, int points)
+void PlayerController::Train(SkillId skill, float points)
 {
 	int s = (int)skill;
 	StatData& stat = this->skill[s];
-
-	stat.points += points;
+	points += stat.train_part;
+	int int_points = (int)points;
+	stat.train_part = points - int_points;
+	stat.points += int_points;
 
 	int gained = 0,
 		value = unit->GetBase(skill);
@@ -217,12 +221,14 @@ void PlayerController::Train(SkillId skill, int points)
 }
 
 //=================================================================================================
-void PlayerController::Train(AttributeId attrib, int points)
+void PlayerController::Train(AttributeId attrib, float points)
 {
 	int a = (int)attrib;
 	StatData& stat = this->attrib[a];
-
-	stat.points += points;
+	points += stat.train_part;
+	int int_points = (int)points;
+	stat.train_part = points - int_points;
+	stat.points += int_points;
 
 	int gained = 0,
 		value = unit->GetBase(attrib);
@@ -291,7 +297,7 @@ void PlayerController::Rest(int days, bool resting, bool travel)
 		heal = min(heal, unit->hpmax - unit->hp);
 		unit->hp += heal;
 
-		Train(AttributeId::END, int(heal));
+		Train(TrainWhat::NaturalHealing, heal / unit->hpmax, 0);
 	}
 
 	// send update
@@ -347,6 +353,7 @@ void PlayerController::Save(FileWriter& f)
 		f << stat.points;
 		f << stat.train;
 		f << stat.apt;
+		f << stat.train_part;
 		f << stat.blocked;
 	}
 	for(StatData& stat : skill)
@@ -354,6 +361,7 @@ void PlayerController::Save(FileWriter& f)
 		f << stat.points;
 		f << stat.train;
 		f << stat.apt;
+		f << stat.train_part;
 	}
 	f << action_key;
 	NextAction saved_next_action = next_action;
@@ -432,6 +440,7 @@ void PlayerController::Load(FileReader& f)
 			f >> stat.points;
 			f >> stat.train;
 			f >> stat.apt;
+			f >> stat.train_part;
 			f >> stat.blocked;
 		}
 		for(StatData& stat : skill)
@@ -439,6 +448,7 @@ void PlayerController::Load(FileReader& f)
 			f >> stat.points;
 			f >> stat.train;
 			f >> stat.apt;
+			f >> stat.train_part;
 			stat.blocked = false;
 		}
 		SetRequiredPoints();
@@ -450,6 +460,7 @@ void PlayerController::Load(FileReader& f)
 			f >> stat.points;
 			stat.train = 0;
 			stat.apt = 0;
+			stat.train_part = 0;
 			stat.blocked = false;
 		}
 		for(StatData& stat : skill)
@@ -457,6 +468,7 @@ void PlayerController::Load(FileReader& f)
 			f >> stat.points;
 			stat.train = 0;
 			stat.apt = 0;
+			stat.train_part = 0;
 			stat.blocked = false;
 		}
 		SetRequiredPoints();
@@ -468,6 +480,7 @@ void PlayerController::Load(FileReader& f)
 			stat.points = 0;
 			stat.train = 0;
 			stat.apt = 0;
+			stat.train_part = 0;
 			stat.blocked = false;
 		}
 		for(StatData& stat : skill)
@@ -475,6 +488,7 @@ void PlayerController::Load(FileReader& f)
 			stat.points = 0;
 			stat.train = 0;
 			stat.apt = 0;
+			stat.train_part = 0;
 			stat.blocked = false;
 		}
 		// skill points
@@ -736,6 +750,9 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 	case TrainWhat::TakeDamage:
 		TrainMod(AttributeId::END, value * 2500 * GetLevelMod(unit->level, level));
 		break;
+	case TrainWhat::NaturalHealing:
+		TrainMod(AttributeId::END, value * 1000);
+		break;
 	case TrainWhat::TakeDamageArmor:
 		if(unit->HaveArmor())
 			TrainMod(unit->GetArmor().skill, value * 2000 * GetLevelMod(unit->level, level));
@@ -926,14 +943,14 @@ float GetAptitudeMod(int apt)
 void PlayerController::TrainMod(AttributeId a, float points)
 {
 	float mod = GetAptitudeMod(attrib[(int)a].apt);
-	Train(a, int(mod * points));
+	Train(a, mod * points);
 }
 
 //=================================================================================================
 void PlayerController::TrainMod2(SkillId s, float points)
 {
 	float mod = GetAptitudeMod(skill[(int)s].apt);
-	Train(s, int(mod * points));
+	Train(s, mod * points);
 }
 
 //=================================================================================================
