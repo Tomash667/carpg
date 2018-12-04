@@ -856,7 +856,7 @@ void City::GenerateCityBuildings(vector<Building*>& buildings, bool required)
 				{
 					BuildingGroup* bg = (BuildingGroup*)*code++;
 					for(int i = 0; i < building_count; ++i)
-						buildings.push_back(random_item(bg->buildings));
+						buildings.push_back(RandomItem(bg->buildings));
 				}
 			}
 			else
@@ -883,7 +883,7 @@ void City::GenerateCityBuildings(vector<Building*>& buildings, bool required)
 					else
 					{
 						BuildingGroup* bg = (BuildingGroup*)*(code + index * 2 + 1);
-						buildings.push_back(random_item(bg->buildings));
+						buildings.push_back(RandomItem(bg->buildings));
 					}
 				}
 

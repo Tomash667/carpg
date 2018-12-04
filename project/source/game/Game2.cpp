@@ -7564,7 +7564,7 @@ void Game::UpdateElectros(LevelContext& ctx, float dt)
 
 				if(e.dmg >= 10.f)
 				{
-					static vector<std::pair<Unit*, float> > targets;
+					static vector<std::pair<Unit*, float>> targets;
 
 					// traf w kolejny cel
 					for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
@@ -7590,7 +7590,7 @@ void Game::UpdateElectros(LevelContext& ctx, float dt)
 						Unit* target = nullptr;
 						float dist;
 
-						for(vector<std::pair<Unit*, float> >::iterator it2 = targets.begin(), end2 = targets.end(); it2 != end2; ++it2)
+						for(vector<std::pair<Unit*, float>>::iterator it2 = targets.begin(), end2 = targets.end(); it2 != end2; ++it2)
 						{
 							Vec3 hitpoint;
 							Unit* hitted;
@@ -10784,10 +10784,10 @@ void Game::HandleQuestEvent(Quest_Event* event)
 				}
 
 				if(!chests.empty())
-					chest = chests.random_item();
+					chest = chests.RandomItem();
 			}
 			else
-				chest = random_item(lvl->chests);
+				chest = RandomItem(lvl->chests);
 
 			assert(chest);
 			if(chest)

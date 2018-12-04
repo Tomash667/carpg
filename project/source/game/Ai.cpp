@@ -22,7 +22,6 @@ const float JUMP_BACK_MIN_RANGE = 4.f;
 const float JUMP_BACK_TIMER = 0.2f;
 const float JUMP_BACK_IGNORE_TIMER = 0.3f;
 const float BLOCK_TIMER = 0.75f;
-// jeœli zablokuje to jaki jest czas zanim znowu spróbuje zablokowaæ/odskoczyæ
 const float BLOCK_AFTER_BLOCK_TIMER = 0.2f;
 
 cstring str_ai_state[AIController::State_Max] = {
