@@ -1,6 +1,5 @@
 // https://github.com/tkislan/base64
-#ifndef BASE64_H
-#define BASE64_H
+#pragma once
 
 #include <string>
 
@@ -251,7 +250,3 @@ private:
 		return 255;
 	}
 };
-
-
-
-#endif // BASE64_H

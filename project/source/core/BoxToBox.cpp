@@ -170,77 +170,8 @@ done:
 // array iret (of size m). 'i0' is always the first entry in the array.
 // n must be in the range [1..8]. m must be in the range [1..n]. i0 must be
 // in the range [0..n-1].
-
+// !!! already implemented in bullet internals
 void cullPoints2(int n, float p[], int m, int i0, int iret[]);
-
-// jest ju¿ w btBoxBoxDetector
-/*void cullPoints2 (int n, float p[], int m, int i0, int iret[])
-{
-  // compute the centroid of the polygon in cx,cy
-  int i,j;
-  float a,cx,cy,q;
-  if (n==1) {
-	cx = p[0];
-	cy = p[1];
-  }
-  else if (n==2) {
-	cx = float(0.5)*(p[0] + p[2]);
-	cy = float(0.5)*(p[1] + p[3]);
-  }
-  else {
-	a = 0;
-	cx = 0;
-	cy = 0;
-	for (i=0; i<(n-1); i++) {
-	  q = p[i*2]*p[i*2+3] - p[i*2+2]*p[i*2+1];
-	  a += q;
-	  cx += q*(p[i*2]+p[i*2+2]);
-	  cy += q*(p[i*2+1]+p[i*2+3]);
-	}
-	q = p[n*2-2]*p[1] - p[0]*p[n*2-1];
-	if (abs(a+q) > FLT_EPSILON)
-	{
-		a = 1.f/(float(3.0)*(a+q));
-	} else
-	{
-		a=BT_LARGE_FLOAT;
-	}
-	cx = a*(cx + q*(p[n*2-2]+p[0]));
-	cy = a*(cy + q*(p[n*2-1]+p[1]));
-  }
-
-  // compute the angle of each point w.r.t. the centroid
-  float A[8];
-  for (i=0; i<n; i++) A[i] = atan2(p[i*2+1]-cy,p[i*2]-cx);
-
-  // search for points that have angles closest to A[i0] + i*(2*pi/m).
-  int avail[8];
-  for (i=0; i<n; i++) avail[i] = 1;
-  avail[i0] = 0;
-  iret[0] = i0;
-  iret++;
-  for (j=1; j<m; j++) {
-	a = float(j)*(2*M__PI/m) + A[i0];
-	if (a > M__PI) a -= 2*M__PI;
-	float maxdiff=1e9,diff;
-
-	*iret = i0; // iret is not allowed to keep this value, but it sometimes does, when diff=#QNAN0
-
-	for (i=0; i<n; i++) {
-	  if (avail[i]) {
-	diff = abs (A[i]-a);
-	if (diff > M__PI) diff = 2*M__PI - diff;
-	if (diff < maxdiff) {
-	  maxdiff = diff;
-	  *iret = i;
-	}
-	  }
-	}
-	assert(*iret != i0); // ensure iret got set
-	avail[*iret] = 0;
-	iret++;
-  }
-}*/
 
 struct Result
 {

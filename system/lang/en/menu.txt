@@ -379,7 +379,7 @@ k220 = "\\|"
 k221 = "]}"
 k222 = "'\""
 
-// klawisze gry
+// game keys
 keyMoveForward = "Move forward"
 keyMoveBack = "Move back"
 keyMoveLeft = "Move left"
@@ -414,7 +414,7 @@ keyRotateCamera = "Rotate camera"
 keyAutowalk = "Autowalk"
 keyToggleWalk = "Toggle walk"
 
-// sterowanie
+// controls
 resetKeys = "Reset"
 action = "Action"
 key_1 = "Key 1"
@@ -449,11 +449,7 @@ playerLeft = "Player %s left game."
 needSelectedPlayer = "You need to select a player first."
 serverText = "Server: %s\nPlayers: %d/%d\nPassword: %s"
 
-// gra
-goldPlus = "Gold %+d"
-questCompletedGold = "Quest completed\nGold %+d"
-
-// gadanie ai
+// ai talking
 aiNoHpPot0 = "Shit! No more healing potions."
 aiNoHpPot1 = "I used all my healing potions."
 aiJoinTour0 = "I will take part in the tournament, maybe I can win."
@@ -557,7 +553,7 @@ aiDrunkContestText1 = "What the hell are we waiting for?!"
 aiDrunkContestText2 = "Contest! Contest! Contest!"
 aiDrunkContestText3 = "Beer! Gimme beer!"
 
-// nazwy lokacji
+// location names
 randomEncounter = "Random encounter"
 camp = "Camp"
 cave = "Cave"
@@ -569,7 +565,7 @@ village = "Village"
 moonwell = "Moonwell"
 otherness = "Otherness"
 
-// mapa
+// level loading
 enteringLocation = "Entering location"
 generatingMap = "Generating map"
 generatingBuildings = "Generating buildings"
@@ -583,7 +579,7 @@ loadingComplete = "Loading completed"
 waitingForPlayers = "Waiting for players."
 loadingResources = "Loading resources"
 
-// zawody w piciu
+// drinking contest
 contestNoWinner = "This year nobody won the drinking contest."
 contestStart = "We are starting the contest! People! Join!"
 contestTalk0 = "Hello everyone who gathered for the next drinking contest!"
@@ -606,7 +602,7 @@ contestDraw = "Draw! This year, nobody won!"
 contestPrize = "Come over and get your prize!"
 contestNoPeople = "What the hell?! No one came!"
 
-// samouczek
+// tutorial
 tut0 = "Welcome to the CaRpg tutorial! You can move your character using arrows/[WSAD].\nRotate using mouse/[QE]. You can change camera distance with the mouse wheel.\nGo to door around the corner."
 tut1 = "To use something click the left mouse button or press [Z]/[R]. You can also use [R]\nwhen you wield weapon. By using [Shift] you can walk slowly. Open the door and\ngo ahead."
 tut2 = "Use the chest to loot it. At the top you can see contents of the\nchest, at the bottom is your equipment. Clicking on an item moves it to\nyour inventory or the chest. At the bottom you have a load counter, hold\nyour mouse over it to get detailed information. Next to it you can see\n some information about your gold - click to drop some gold. The [I] key opens the\ninventory. [ESC] closes it.\nTake the items from the chest and move forward."
@@ -622,7 +618,7 @@ tutLoc = "Tutorial"
 tutPlay = "Do you want to play the tutorial?"
 tutTick = "Don't show this again"
 
-// zawody
+// tournament
 tour0 = "The tournament will start in a few moments! Whoever wants to take part, I invite you to talk to me."
 tour1 = "About 30 seconds until the start of the tournament."
 tour2 = "I welcome everyone to this year's tournament!"
@@ -647,7 +643,7 @@ tour20 = "%s won the fight!"
 tour21 = "Come here %s, let's talk about your prize."
 tour22 = "Unfortunately this year the tournament will not take place due to lack of interest..."
 
-// zapisywanie/wczytywanie
+// save/load messages
 cantSaveGame = "You can't save now: there is a combat in the arena or a contest at the inn."
 saveFailed = "Failed to save game."
 savedGameN = "Saved game %d"
@@ -670,7 +666,9 @@ loadError = "Failed to load game: "
 loadErrorGeneric = "Failed to load game: file is corrupted or invalid, more information in the log file."
 loadOpenError = "Failed to open file '%s' (%d)."
 
-// gra
+// game
+goldPlus = "Gold %+d"
+questCompletedGold = "Quest completed\nGold %+d"
 pvpRefuse = "%s refused to fight you."
 win = "Congratulations!\nYou completed all unique quests that exist in this version.\nSee you in the next version, expect a change for the better! :3You killed %d creatures, others killed %d."
 winMp = "Congratulations!\nYou completed all unique quests that exist in this version.\nSee you in the next version, expect a change for the better! :3You killed %d creatures, others killed %d."
@@ -707,7 +705,7 @@ gainLearningPoints = "Learning points %+d"
 learnedPerk = "You learned a new feat"
 tooComplicated = "It is too complicated..."
 
-// plotki
+// rumors
 rumor_0 = "Apparently, people saw elves in $rcitynhere$."
 rumor_1 = "They say that ogres make bread from bones."
 rumor_2 = "That damn troll charges a fee for crossing the bridge and he doesn't fix anything!"
@@ -744,7 +742,7 @@ rumor_d_4 = "This spirit is weak, I would like to have something stronger..."
 rumor_d_5 = "I ain't (hic) fucking drunk!"
 rumor_d_6 = "There are no ugly women, only a lack of wine sometimes..."
 
-// dialogi 1
+// npc texts
 mayorQFailed0 = "I can't rely on you..."
 mayorQFailed1 = "I won't give you any important task! Go collect carrots instead!"
 mayorQFailed2 = "I needs someone I can rely on, not you."
@@ -805,7 +803,7 @@ learningPoint = "Learning point"
 learningPoints = "Learning points"
 needLearningPoints = "You don't have enough experience to teach you that." 
 
-// dystans / si³a
+// distance/group difficulty
 near = "near "
 far = "far "
 veryFar = "very far "
@@ -820,7 +818,7 @@ eLvlQuiteStrong1 = "Quite strong"
 eLvlStrong0 = "Strong"
 eLvlStrong1 = "Strong"
 
-// obóz wrogów
+// enemy group names
 sgo_orcs = "orcs"
 sgo_bandits = "bandits"
 sgo_goblins = "goblins"
@@ -1136,7 +1134,7 @@ quest276 = "%s joined my team. I don't know if I want to finish this quest."
 quest277 = "The time that I had to complete this quest passed."
 quest278 = "Adventurers took care of the bandits who collected a fee on the road."
 
-// kierunek
+// direction
 dirN = "north"
 dirS = "south"
 dirE = "east"
@@ -1228,7 +1226,7 @@ playerDisconnected = "%s lost connection with server."
 playerQuit = "%s quit game."
 playerKicked = "%s was kicked from server."
 
-// yell
+// yelling
 yell0 = "Out of the way!"
 yell1 = "Move!"
 yell2 = "Move over, finally!"

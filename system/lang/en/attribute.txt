@@ -3,31 +3,25 @@ relatedAttributes = "Related attributes"
 
 attribute str {
 	name "Strength"
-	//desc "\tIncreases the damage dealt in melee combat, the maximum carry capacity and health slightly. Required for the efficient use of heavy items.\n\tUsing heavy weapons and armor or carrying heavy items trains strength.\n\tAffected skills: one-handed weapons, long blades, blunt weapons, axes, unarmed, shields, heavy armor, athletics."
 	desc "\tIncreases the damage dealt in melee combat, the maximum carry capacity and health slightly. Required for the efficient use of heavy items.\n\tUsing heavy weapons and armor or carrying heavy items trains strength.\n\tAffected skills: one-handed weapons, long blades, blunt weapons, axes, shields, heavy armor."
 }
 attribute end {
 	name "Endurance"
-	//desc "\tIncreases health, stamina and resistance.\n\tTaking damage and natural healing trains endurance.\n\tAffected skills: medium armor, heavy armor, concentration, survival, rage."
 	desc "\tIncreases health, stamina and resistance.\n\tTaking damage and natural healing trains endurance.\n\tAffected skills: medium armor, heavy armor."
 }
 attribute dex {
 	name "Dexterity"
-	desc "\tIncreases stamina, attack speed, movement and rotation speed, and the damage of light and ranged weapons.\n\tRunning and fighting trains dexterity.\n\tAffected skills: one-handed weapons, short blade, long blade, bows, unarmed, shields, light armor, medium armor, sneaking, traps, stealing, crafting."
-	//desc "\tIncreases stamina, attack speed, movement and rotation speed, and the damage of light and ranged weapons.\n\tRunning and fighting trains dexterity.\n\tAffected skills: one-handed weapons, short blade, long blade, bows, shields, light armor, medium armor."
+	desc "\tIncreases stamina, attack speed, movement and rotation speed, and the damage of light and ranged weapons.\n\tRunning and fighting trains dexterity.\n\tAffected skills: one-handed weapons, short blade, long blade, bows, shields, light armor, medium armor."
 }
 attribute int {
 	name "Intelligence"
-	//desc "\tIncreases the power of mage spells and training efficiency.\nReading books trains intelligence.\n\tAffected skills: mystic magic, spellcraft, identification, lockpick, traps, alchemy, crafting."
 	desc "\tIncreases power of mage spells and learning speed."
 }
 attribute wis {
 	name "Wisdom"
-	//desc "\tIncreases the power of nature and god spells. Increases the chance to avoid effects which affect the mind.\n\tPraying and meditation trains wisdom.\n\tAffected skills: nature magic, god magic, spellcraft, concentration, animal empathy, survival, healing."
 	desc "\tIncreases the power of cleric and druid spells."
 }
 attribute cha {
 	name "Charisma"
-	//desc "\tIncreases the chance to affect others.\n\tTalking trains charisma.\n\tAffected skills: animal empathy, steal, persuasion."
 	desc "\tIncreases the chance to affect others.\n\tTalking and trading trains charisma.\n\tAffected skills: haggle."
 }

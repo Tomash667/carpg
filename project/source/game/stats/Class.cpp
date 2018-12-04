@@ -160,7 +160,7 @@ Class ClassInfo::GetRandomPlayer()
 				classes.push_back(ci.class_id);
 		}
 	}
-	return random_item(classes);
+	return RandomItem(classes);
 }
 
 //=================================================================================================

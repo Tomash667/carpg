@@ -1389,21 +1389,13 @@ namespace POD
 //-----------------------------------------------------------------------------
 // Collisions and functions
 //-----------------------------------------------------------------------------
-// promieñ - AABOX
 bool RayToBox(const Vec3& ray_pos, const Vec3& ray_dir, const Box& box, float* out_t);
-// promieñ - p³aszczyzna
 bool RayToPlane(const Vec3& ray_pos, const Vec3& ray_dir, const Plane& plane, float* out_t);
-// promieñ - sfera
 bool RayToSphere(const Vec3& ray_pos, const Vec3& ray_dir, const Vec3& center, float radius, float& dist);
-// promieñ - trójk¹t
 bool RayToTriangle(const Vec3& ray_pos, const Vec3& ray_dir, const Vec3& v1, const Vec3& v2, const Vec3& v3, float& dist);
-// prostok¹t - prostok¹t
 bool RectangleToRectangle(float x1, float y1, float x2, float y2, float a1, float b1, float a2, float b2);
-// okr¹g - prostok¹t
 bool CircleToRectangle(float circlex, float circley, float radius, float rectx, float recty, float w, float h);
-// odcinek - odcinek (2d)
 bool LineToLine(const Vec2& start1, const Vec2& end1, const Vec2& start2, const Vec2& end2, float* t = nullptr);
-// odcinek - prostok¹t
 bool LineToRectangle(const Vec2& start, const Vec2& end, const Vec2& rect_pos, const Vec2& rect_pos2, float* t = nullptr);
 inline bool LineToRectangle(const Vec3& start, const Vec3& end, const Vec2& rect_pos, const Vec2& rect_pos2, float* t = nullptr)
 {
@@ -1413,14 +1405,9 @@ inline bool LineToRectangleSize(const Vec2& start, const Vec2& end, const Vec2& 
 {
 	return LineToRectangle(start, end, rect_pos - rect_size, rect_pos + rect_size, t);
 }
-// szeœcian - szeœcian
 bool BoxToBox(const Box& box1, const Box& box2);
-// obrócony szeœcian - obrócony szeœcian
-// punkt kontaktu jest opcjonalny (jest to uœredniony wynik z maksymalnie 4 kontaktów)
 bool OrientedBoxToOrientedBox(const Obbox& obox1, const Obbox& obox2, Vec3* contact);
-// kolizja ko³o - obrócony prostok¹t
 bool CircleToRotatedRectangle(float cx, float cy, float radius, float rx, float ry, float w, float h, float rot);
-// kolizja dwóch obróconych prostok¹tów (mo¿na by zrobiæ optymalizacje ¿e jeden tylko jest obrócony ale nie wiem jak :3)
 struct RotRect
 {
 	Vec2 center, size;
@@ -1433,16 +1420,11 @@ inline bool CircleToCircle(float cx1, float cy1, float r1, float cx2, float cy2,
 	return DistanceSqrt(cx1, cy1, cx2, cy2) < r * r;
 }
 bool SphereToBox(const Vec3& pos, float radius, const Box& box);
-// kolizja promienia (A->B) z cylindrem (P->Q, promieñ R)
 int RayToCylinder(const Vec3& ray_A, const Vec3& ray_B, const Vec3& cylinder_P, const Vec3& cylinder_Q, float radius, float& t);
-// kolizja Oob z Oob
 bool OOBToOOB(const Oob& a, const Oob& b);
-// odleg³oœæ punktu od prostok¹ta
 float DistanceRectangleToPoint(const Vec2& pos, const Vec2& size, const Vec2& pt);
-// x0,y0 - point
 float PointLineDistance(float x0, float y0, float x1, float y1, float x2, float y2);
 float GetClosestPointOnLineSegment(const Vec2& A, const Vec2& B, const Vec2& P, Vec2& result);
-void SphericalToCartesian(Vec3& out, float yaw, float pitch, float r);
 
 //-----------------------------------------------------------------------------
 #include "CoreMath.inl"

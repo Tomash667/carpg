@@ -30,15 +30,15 @@ void NameHelper::GenerateHeroName(Class clas, bool crazy, string& hero_name)
 {
 	if(crazy)
 	{
-		hero_name = random_item(crazy_name);
+		hero_name = RandomItem(crazy_name);
 		return;
 	}
 
 	ClassInfo& ci = ClassInfo::classes[(int)clas];
 	if(Rand() % 2 == 0 && !ci.names.empty())
-		hero_name = random_item(ci.names);
+		hero_name = RandomItem(ci.names);
 	else
-		hero_name = random_item(name_random);
+		hero_name = RandomItem(name_random);
 
 	hero_name += " ";
 
@@ -46,7 +46,7 @@ void NameHelper::GenerateHeroName(Class clas, bool crazy, string& hero_name)
 	if(type < 4 && !ci.nicknames.empty())
 	{
 		hero_name += txNamePrefix;
-		hero_name += random_item(ci.nicknames);
+		hero_name += RandomItem(ci.nicknames);
 	}
 	else if((type == 0 || type == 4) && !W.GetLocations().empty())
 	{
@@ -56,7 +56,7 @@ void NameHelper::GenerateHeroName(Class clas, bool crazy, string& hero_name)
 	else if(type == 0 || type == 1 || type == 4 || type == 5)
 	{
 		hero_name += txNamePrefix;
-		hero_name += random_item(nickname_random);
+		hero_name += RandomItem(nickname_random);
 	}
 	else
 	{
@@ -65,11 +65,11 @@ void NameHelper::GenerateHeroName(Class clas, bool crazy, string& hero_name)
 		{
 			do
 			{
-				who = random_item(name_random).c_str();
+				who = RandomItem(name_random).c_str();
 			} while(who[strlen(who) - 1] == txNameSonOfInvalid[0]);
 		}
 		else
-			who = random_item(name_random).c_str();
+			who = RandomItem(name_random).c_str();
 		hero_name += txNameSonOf;
 		hero_name += who;
 		hero_name += txNameSonOfPost;

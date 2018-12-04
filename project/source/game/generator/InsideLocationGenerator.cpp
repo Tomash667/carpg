@@ -1127,7 +1127,7 @@ void InsideLocationGenerator::SpawnHeroesInsideDungeon()
 	int chance = 23;
 	bool first = true;
 
-	vector<std::pair<Room*, int> > sprawdzone;
+	vector<std::pair<Room*, int>> sprawdzone;
 	vector<int> ok_room;
 	sprawdzone.push_back(std::make_pair(p, room_id));
 
@@ -1138,7 +1138,7 @@ void InsideLocationGenerator::SpawnHeroesInsideDungeon()
 		{
 			room_id = *it;
 			bool ok = true;
-			for(vector<std::pair<Room*, int> >::iterator it2 = sprawdzone.begin(), end2 = sprawdzone.end(); it2 != end2; ++it2)
+			for(vector<std::pair<Room*, int>>::iterator it2 = sprawdzone.begin(), end2 = sprawdzone.end(); it2 != end2; ++it2)
 			{
 				if(room_id == it2->second)
 				{
@@ -1173,7 +1173,7 @@ void InsideLocationGenerator::SpawnHeroesInsideDungeon()
 
 	// pozabijaj jednostki w pokojach, ograb skrzynie
 	// trochê to nieefektywne :/
-	vector<std::pair<Room*, int> >::iterator end = sprawdzone.end();
+	vector<std::pair<Room*, int>>::iterator end = sprawdzone.end();
 	if(Rand() % 2 == 0)
 		--end;
 	for(vector<Unit*>::iterator it2 = L.local_ctx.units->begin(), end2 = L.local_ctx.units->end(); it2 != end2; ++it2)
@@ -1181,7 +1181,7 @@ void InsideLocationGenerator::SpawnHeroesInsideDungeon()
 		Unit& u = **it2;
 		if(u.IsAlive() && game.pc->unit->IsEnemy(u))
 		{
-			for(vector<std::pair<Room*, int> >::iterator it = sprawdzone.begin(); it != end; ++it)
+			for(vector<std::pair<Room*, int>>::iterator it = sprawdzone.begin(); it != end; ++it)
 			{
 				if(it->first->IsInside(u.pos))
 				{
@@ -1231,7 +1231,7 @@ void InsideLocationGenerator::SpawnHeroesInsideDungeon()
 	}
 	for(vector<Chest*>::iterator it2 = L.local_ctx.chests->begin(), end2 = L.local_ctx.chests->end(); it2 != end2; ++it2)
 	{
-		for(vector<std::pair<Room*, int> >::iterator it = sprawdzone.begin(); it != end; ++it)
+		for(vector<std::pair<Room*, int>>::iterator it = sprawdzone.begin(); it != end; ++it)
 		{
 			if(it->first->IsInside((*it2)->pos))
 			{
@@ -1259,7 +1259,7 @@ void InsideLocationGenerator::SpawnHeroesInsideDungeon()
 	}
 
 	// otwórz drzwi pomiêdzy obszarami
-	for(vector<std::pair<Room*, int> >::iterator it2 = sprawdzone.begin(), end2 = sprawdzone.end(); it2 != end2; ++it2)
+	for(vector<std::pair<Room*, int>>::iterator it2 = sprawdzone.begin(), end2 = sprawdzone.end(); it2 != end2; ++it2)
 	{
 		Room& a = *it2->first,
 			&b = lvl.rooms[it2->second];

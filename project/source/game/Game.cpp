@@ -51,20 +51,7 @@
 #include "SaveSlot.h"
 #include "PlayerInfo.h"
 
-// limit fps
-#define LIMIT_DT 0.3f
-
-// symulacja lagów
-#define TESTUJ_LAG
-#ifndef _DEBUG
-#undef TESTUJ_LAG
-#endif
-#ifdef TESTUJ_LAG
-#define MY_PRIORITY HIGH_PRIORITY
-#else
-#define MY_PRIORITY IMMEDIATE_PRIORITY
-#endif
-
+const float LIMIT_DT = 0.3f;
 const float bazowa_wysokosc = 1.74f;
 Game* Game::game;
 cstring Game::txGoldPlus, Game::txQuestCompletedGold;
@@ -111,8 +98,6 @@ Game::~Game()
 	delete super_shader;
 }
 
-//=================================================================================================
-// Rysowanie gry
 //=================================================================================================
 void Game::OnDraw()
 {
@@ -163,7 +148,7 @@ void Game::OnDraw(bool normal)
 	}
 	else
 	{
-		// renderuj scenê do tekstury
+		// render scene to texture
 		SURFACE sPost;
 		if(!IsMultisamplingEnabled())
 			V(tPostEffect[2]->GetSurfaceLevel(0, &sPost));
@@ -217,7 +202,7 @@ void Game::OnDraw(bool normal)
 			SURFACE surf;
 			if(it + 1 == end)
 			{
-				// ostatni pass
+				// last pass
 				if(sCustom)
 					surf = sCustom;
 				else
@@ -225,7 +210,7 @@ void Game::OnDraw(bool normal)
 			}
 			else
 			{
-				// jest nastêpny
+				// using next pass
 				if(!IsMultisamplingEnabled())
 					V(tPostEffect[index_surf]->GetSurfaceLevel(0, &surf));
 				else
@@ -305,14 +290,11 @@ void HumanPredraw(void* ptr, Matrix* mat, int n)
 }
 
 //=================================================================================================
-// Aktualizacja gry, g³ównie multiplayer
-//=================================================================================================
 void Game::OnTick(float dt)
 {
-	// sprawdzanie pamiêci
+	// check for memory corruption
 	assert(_CrtCheckMemory());
 
-	// limit czasu ramki
 	if(dt > LIMIT_DT)
 		dt = LIMIT_DT;
 
@@ -325,14 +307,14 @@ void Game::OnTick(float dt)
 
 	if(Net::IsSingleplayer() || !paused)
 	{
-		// aktualizacja czasu spêdzonego w grze
+		// update time spent in game
 		if(game_state != GS_MAIN_MENU && game_state != GS_LOAD)
 			GameStats::Get().Update(dt);
 	}
 
 	GKey.allow_input = GameKeys::ALLOW_INPUT;
 
-	// utracono urz¹dzenie directx lub okno nie aktywne
+	// lost directx device or window don't have focus
 	if(IsLostDevice() || !IsActive() || !IsCursorLocked())
 	{
 		Key.SetFocus(false);
@@ -350,7 +332,7 @@ void Game::OnTick(float dt)
 	if(Key.PressedRelease(VK_F2))
 		debug_info2 = !debug_info2;
 
-	// szybkie wyjœcie z gry (alt+f4)
+	// fast quit (alt+f4)
 	if(Key.Focus() && Key.Down(VK_MENU) && Key.Down(VK_F4) && !GUI.HaveTopDialog("dialog_alt_f4"))
 		gui->ShowQuitDialog();
 
@@ -365,18 +347,18 @@ void Game::OnTick(float dt)
 		GKey.allow_input = GameKeys::ALLOW_NONE;
 	}
 
-	// globalna obs³uga klawiszy
+	// global keys handling
 	if(GKey.allow_input == GameKeys::ALLOW_INPUT)
 	{
-		// konsola
+		// handle open/close of console
 		if(!GUI.HaveTopDialog("dialog_alt_f4") && !GUI.HaveDialog("console") && GKey.KeyDownUpAllowed(GK_CONSOLE))
 			GUI.ShowDialog(gui->console);
 
-		// uwolnienie myszki
+		// unlock cursor
 		if(!IsFullscreen() && IsActive() && IsCursorLocked() && Key.Shortcut(KEY_CONTROL, 'U'))
 			UnlockCursor();
 
-		// zmiana trybu okna
+		// switch window mode
 		if(Key.Shortcut(KEY_ALT, VK_RETURN))
 			ChangeMode(!IsFullscreen());
 
@@ -384,12 +366,12 @@ void Game::OnTick(float dt)
 		if(Key.PressedRelease(VK_SNAPSHOT))
 			TakeScreenshot(Key.Down(VK_SHIFT));
 
-		// zatrzymywanie/wznawianie gry
+		// pause/resume game
 		if(GKey.KeyPressedReleaseAllowed(GK_PAUSE) && !Net::IsClient())
 			PauseGame();
 	}
 
-	// obs³uga paneli
+	// handle panels
 	if(GUI.HaveDialog() || (gui->mp_box->visible && gui->mp_box->itb.focus))
 		GKey.allow_input = GameKeys::ALLOW_NONE;
 	else if(GKey.AllowKeyboard() && game_state == GS_LEVEL && death_screen == 0 && !dialog_context.dialog_mode)
@@ -486,13 +468,13 @@ void Game::OnTick(float dt)
 	else
 		GKey.allow_input = GameKeys::ALLOW_INPUT;
 
-	// otwórz menu
+	// open game menu
 	if(GKey.AllowKeyboard() && CanShowMenu() && Key.PressedRelease(VK_ESCAPE))
 		gui->ShowMenu();
 
 	arena->UpdatePvpRequest(dt);
 
-	// aktualizacja gry
+	// update game
 	if(!koniec_gry)
 	{
 		if(game_state == GS_LEVEL)
@@ -543,7 +525,7 @@ void Game::OnTick(float dt)
 	else if(Net::IsOnline())
 		UpdateGameNet(dt);
 
-	// aktywacja mp_box
+	// open.close mp box
 	if(GKey.AllowKeyboard() && game_state == GS_LEVEL && gui->mp_box->visible && !gui->mp_box->itb.focus && Key.PressedRelease(VK_RETURN))
 	{
 		gui->mp_box->itb.focus = true;

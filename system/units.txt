@@ -1,4 +1,4 @@
-// this file contains list of units and other lists used by them
+// This file contains list of units and other lists used by them
 //------------------------------------------------------------------------------
 // ITEMS 
 //------------------------------------------------------------------------------

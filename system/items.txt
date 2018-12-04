@@ -1,4 +1,4 @@
-// this file contains list of items
+// This file contains list of items
 
 //------------------------------------------------------------------------------
 // WEAPONS

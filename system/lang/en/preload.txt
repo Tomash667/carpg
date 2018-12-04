@@ -1,4 +1,4 @@
-// texts used in first loader stage
+// texts used before loading all other files
 creatingListOfFiles = "Creating list of files"
 configuringGame = "Configuring game"
 loadingItems = "Loading items"
