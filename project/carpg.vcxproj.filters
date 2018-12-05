@@ -201,9 +201,6 @@
     <ClCompile Include="source\game\stats\Class.cpp">
       <Filter>3. game\stats</Filter>
     </ClCompile>
-    <ClCompile Include="source\game\stats\Material.cpp">
-      <Filter>3. game\stats</Filter>
-    </ClCompile>
     <ClCompile Include="source\game\stats\RoomType.cpp">
       <Filter>3. game\stats</Filter>
     </ClCompile>

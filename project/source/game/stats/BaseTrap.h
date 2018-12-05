@@ -1,11 +1,10 @@
-// bazowa pu³apka
 #pragma once
 
 //-----------------------------------------------------------------------------
 #include "Mesh.h"
 
 //-----------------------------------------------------------------------------
-// Typ pu³apki
+// Trap types
 enum TRAP_TYPE
 {
 	TRAP_SPEAR,
@@ -15,7 +14,7 @@ enum TRAP_TYPE
 };
 
 //-----------------------------------------------------------------------------
-// Bazowa pu³apka
+// Base trap
 struct BaseTrap
 {
 	cstring id;

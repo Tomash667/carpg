@@ -4,6 +4,7 @@
 #include "Resource.h"
 
 //-----------------------------------------------------------------------------
+// Player special action
 struct Action
 {
 	enum Area

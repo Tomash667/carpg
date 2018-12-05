@@ -1,6 +1,7 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+// Visible buffs (on bottom left of screen)
 enum BUFF_FLAGS
 {
 	BUFF_REGENERATION = 1 << 0,
@@ -14,9 +15,9 @@ enum BUFF_FLAGS
 
 	BUFF_COUNT = 8
 };
-static_assert(BUFF_COUNT <= 8, "MP currently allows max 8 buffs.");
 
 //-----------------------------------------------------------------------------
+// Buff info - name & image
 struct BuffInfo
 {
 	cstring id;

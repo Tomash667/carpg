@@ -612,7 +612,6 @@
     <ClCompile Include="source\game\stats\BaseTrap.cpp" />
     <ClCompile Include="source\game\stats\Class.cpp" />
     <ClCompile Include="source\game\stats\Effect.cpp" />
-    <ClCompile Include="source\game\stats\Material.cpp" />
     <ClCompile Include="source\game\stats\Music.cpp" />
     <ClCompile Include="source\game\stats\Perk.cpp" />
     <ClCompile Include="source\game\stats\Required.cpp" />

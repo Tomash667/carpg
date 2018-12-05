@@ -130,7 +130,6 @@ public:
 	void ClearPointers();
 	void CreateTextures();
 	void PreloadData();
-	void SetMeshSpecular();
 
 	// initialization
 	bool InitGame() override;

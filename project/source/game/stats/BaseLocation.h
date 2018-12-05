@@ -129,7 +129,7 @@ struct LocationTexturePack
 };
 
 //-----------------------------------------------------------------------------
-// Bazowa lokalizacja, rodzaj podziemi/krypty
+// Base location types
 struct BaseLocation
 {
 	cstring name;

@@ -14,6 +14,7 @@ enum class AttributeId
 };
 
 //-----------------------------------------------------------------------------
+// Unit attribute
 struct Attribute
 {
 	AttributeId attrib_id;

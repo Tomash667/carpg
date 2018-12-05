@@ -1478,66 +1478,6 @@ void Game::ReleaseShaders()
 }
 
 //=================================================================================================
-void Game::SetMeshSpecular()
-{
-	for(Weapon* weapon : Weapon::weapons)
-	{
-		Weapon& w = *weapon;
-		if(w.mesh && w.mesh->head.version < 18)
-		{
-			const MaterialInfo& mat = g_materials[w.material];
-			for(int i = 0; i < w.mesh->head.n_subs; ++i)
-			{
-				w.mesh->subs[i].specular_intensity = mat.intensity;
-				w.mesh->subs[i].specular_hardness = mat.hardness;
-			}
-		}
-	}
-
-	for(Shield* shield : Shield::shields)
-	{
-		Shield& s = *shield;
-		if(s.mesh && s.mesh->head.version < 18)
-		{
-			const MaterialInfo& mat = g_materials[s.material];
-			for(int i = 0; i < s.mesh->head.n_subs; ++i)
-			{
-				s.mesh->subs[i].specular_intensity = mat.intensity;
-				s.mesh->subs[i].specular_hardness = mat.hardness;
-			}
-		}
-	}
-
-	for(Armor* armor : Armor::armors)
-	{
-		Armor& a = *armor;
-		if(a.mesh && a.mesh->head.version < 18)
-		{
-			const MaterialInfo& mat = g_materials[a.material];
-			for(int i = 0; i < a.mesh->head.n_subs; ++i)
-			{
-				a.mesh->subs[i].specular_intensity = mat.intensity;
-				a.mesh->subs[i].specular_hardness = mat.hardness;
-			}
-		}
-	}
-
-	for(UnitData* ud_ptr : UnitData::units)
-	{
-		UnitData& ud = *ud_ptr;
-		if(ud.mesh && ud.mesh->head.version < 18)
-		{
-			const MaterialInfo& mat = g_materials[ud.mat];
-			for(int i = 0; i < ud.mesh->head.n_subs; ++i)
-			{
-				ud.mesh->subs[i].specular_intensity = mat.intensity;
-				ud.mesh->subs[i].specular_hardness = mat.hardness;
-			}
-		}
-	}
-}
-
-//=================================================================================================
 uint Game::ValidateGameData(bool major)
 {
 	Info("Test: Validating game data...");

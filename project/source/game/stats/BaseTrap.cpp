@@ -1,4 +1,3 @@
-// bazowa pu³apka
 #include "Pch.h"
 #include "GameCore.h"
 #include "Trap.h"

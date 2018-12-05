@@ -302,7 +302,6 @@ void Game::ConfigureGame()
 	AddCommands();
 	ResetGameKeys();
 	LoadGameKeys();
-	SetMeshSpecular();
 	BaseLocation::SetRoomPointers();
 
 	for(int i = 0; i < SG_MAX; ++i)
