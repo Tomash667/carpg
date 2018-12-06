@@ -147,9 +147,13 @@ void Net::InitServer()
 	if(!peer)
 		peer = RakPeerInterface::GetInstance();
 
-	SocketDescriptor sd(port, 0);
+	uint max_connections = max_players;
+	if(!server_hidden)
+		++max_connections;
+
+	SocketDescriptor sd(port, nullptr);
 	sd.socketFamily = AF_INET;
-	StartupResult r = peer->Startup(max_players + 4, &sd, 1);
+	StartupResult r = peer->Startup(max_connections, &sd, 1);
 	if(r != RAKNET_STARTED)
 	{
 		Error("Failed to create server: RakNet error %d.", r);
@@ -162,11 +166,20 @@ void Net::InitServer()
 		peer->SetIncomingPassword(password.c_str(), password.length());
 	}
 
-	peer->SetMaximumIncomingConnections((word)max_players + 4);
+	peer->SetMaximumIncomingConnections((word)max_players);
 	DEBUG_DO(peer->SetTimeoutTime(60 * 60 * 1000, UNASSIGNED_SYSTEM_ADDRESS));
 
 	if(!server_hidden)
-		api->RegisterServer(server_name, max_players, GetServerFlags(), port);
+	{
+		ConnectionAttemptResult result = peer->Connect(/*"carpglobby.westeurope.cloudapp.azure.com"*/ "localhost", 60481, nullptr, 0);
+		if(result == CONNECTION_ATTEMPT_STARTED)
+			master_server_state = MasterServerState::Connecting;
+		else
+		{
+			master_server_state = MasterServerState::NotConnected;
+			Error("Failed to connect to master server: RakNet error %d.", result);
+		}
+	}
 
 	Info("Server created. Waiting for connection.");
 

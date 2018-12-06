@@ -32,13 +32,6 @@
 
 using namespace SLNet;
 
-static const char* methods[] = {
-	"GET",
-	"POST",
-	"PUT",
-	"DELETE"
-};
-
 STATIC_FACTORY_DEFINITIONS(HTTPConnection,HTTPConnection);
 
 HTTPConnection::HTTPConnection() : connectionState(CS_NONE)
@@ -59,7 +52,7 @@ void HTTPConnection::Post(const char *remote_path, const char *data, const char 
 	op.contentType=_contentType;
 	op.data=data;
 	op.remotePath=remote_path;
-	op.method = HTTP_POST;
+	op.isPost=true;
 	outgoingCommand.Push(op, _FILE_AND_LINE_ );
 	//printf("Adding outgoing post\n");
 }
@@ -68,21 +61,8 @@ void HTTPConnection::Get(const char *path)
 {
 	OutgoingCommand op;
 	op.remotePath=path;
-	op.method = HTTP_GET;
+	op.isPost=false;
 	outgoingCommand.Push(op, _FILE_AND_LINE_ );
-}
-
-void HTTPConnection::Request(HttpMethod method, const char* path, const char* data, const char* contentType)
-{
-	OutgoingCommand op;
-	op.remotePath = path;
-	op.method = method;
-	if(data)
-	{
-		op.data = data;
-		op.contentType = contentType;
-	}
-	outgoingCommand.Push(op, _FILE_AND_LINE_);
 }
 
 bool HTTPConnection::HasBadResponse(int *code, SLNet::RakString *data)
@@ -176,31 +156,31 @@ void HTTPConnection::Update(void)
 			//printf("Sending request\n");
 			currentProcessingCommand = outgoingCommand.Pop();
 			RakString request;
-			if(currentProcessingCommand.data.IsEmpty())
+			if (currentProcessingCommand.isPost)
 			{
-				request.Set("%s %s HTTP/1.0\r\n"
-					"Host: %s:%i\r\n"
-					"\r\n",
-					methods[currentProcessingCommand.method],
-					currentProcessingCommand.remotePath.C_String(),
-					host.C_String(),
-					port);
-			}
-			else
-			{
-				request.Set("%s %s HTTP/1.0\r\n"
+				request.Set("POST %s HTTP/1.0\r\n"
 					"Host: %s:%i\r\n"
 					"Content-Type: %s\r\n"
 					"Content-Length: %u\r\n"
 					"\r\n"
 					"%s",
-					methods[currentProcessingCommand.method],
 					currentProcessingCommand.remotePath.C_String(),
 					host.C_String(),
 					port,
 					currentProcessingCommand.contentType.C_String(),
-					(unsigned)currentProcessingCommand.data.GetLength(),
+					(unsigned) currentProcessingCommand.data.GetLength(),
 					currentProcessingCommand.data.C_String());
+			}
+			else
+			{
+				// request.Set("GET %s\r\n", host.C_String());
+				// http://www.jenkinssoftware.com/forum/index.php?topic=4601.0;topicseen
+				request.Set("GET %s HTTP/1.0\r\n"
+					"Host: %s:%i\r\n"
+					"\r\n",
+					currentProcessingCommand.remotePath.C_String(),
+					host.C_String(),
+					port);
 			}
 			
 		//	printf(request.C_String());

@@ -30,6 +30,7 @@ public:
 	void UpdateLobbyClient(float dt);
 	bool DoLobbyUpdate(BitStreamReader& f);
 	void UpdateLobbyServer(float dt);
+	void OnChangePlayersCount();
 	void UpdateServerInfo();
 	void Event(GuiEvent e) override;
 	void Show();

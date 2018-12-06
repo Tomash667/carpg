@@ -80,6 +80,14 @@ enum StreamLogType
 };
 
 //-----------------------------------------------------------------------------
+enum class MasterServerState
+{
+	NotConnected,
+	Connecting,
+	Connected
+};
+
+//-----------------------------------------------------------------------------
 class Net
 {
 	enum StartFlags
@@ -190,6 +198,8 @@ public:
 	uint active_players, max_players;
 	string server_name, password;
 	int last_id;
+	MasterServerState master_server_state;
+	SystemAddress master_server_adr;
 	bool players_left, server_hidden;
 
 	//****************************************************************************
