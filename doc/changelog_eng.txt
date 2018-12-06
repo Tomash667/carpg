@@ -2,6 +2,7 @@ Changelog
 
 --------------------------------------------------------------------------------
 Version 0.8 (???):
+! this is last version working on windows xp
 ! cannot load saves from version 0.2.10 or older
 + learning points used to training skills/attributes/feats
 + new feats (bad back, chronic disease, sluggish, slow learner, asocial, poor, strong back, aggressive, mobility, finesse, tough, hard skin, adaptation, perfect health)

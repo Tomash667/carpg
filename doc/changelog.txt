@@ -2,6 +2,7 @@ Historia zmian
 
 --------------------------------------------------------------------------------
 Wersja 0.8 (???):
+! to jest ostatnia wersja obs³uguj¹ca windowsa xp
 ! nie mo¿na wczytywaæ ju¿ zapisów z wersji 0.2.10 lub starszej
 + punkty nauki u¿ywane do szkolenia umiejêtnoœci/atrbutów/atutów
 + nowe atuty (s³abe plecy, przewlek³a choroba, ospa³y, powolny uczeñ, aspo³eczny, biedak, silne plecy, agresywny, mobilnoœæ, finezja, twardy, twarda skóra, przystosowane, perfekcyjne zdrowie)
