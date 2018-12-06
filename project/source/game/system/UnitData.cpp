@@ -42,6 +42,7 @@ void UnitData::CopyFrom(UnitData& ud)
 	armor_type = ud.armor_type;
 	item_script = ud.item_script;
 	clas = ud.clas;
+	trader = ud.trader;
 }
 
 

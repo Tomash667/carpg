@@ -221,14 +221,14 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id)
 			Attribute& ai = Attribute::attributes[id];
 			AttributeId a = (AttributeId)id;
 			tooltip.big_text = Format("%s: %d", ai.name.c_str(), pc->unit->Get(a));
-			if(!Game::Get().devmode)
-				tooltip.text = Format("%s: %d\n%s", txBase, pc->unit->GetBase(a), ai.desc.c_str());
-			else
+			if(Game::Get().devmode && Net::IsLocal())
 			{
 				PlayerController::StatData& stat = pc->attrib[id];
 				tooltip.text = Format("%s: %d\n%s\n\nExp: %d/%d (%g%%)\nTrain: %d\nAptitude: %d", txBase, pc->unit->GetBase(a),
 					ai.desc.c_str(), stat.points, stat.next, float(stat.points) * 100 / stat.next, stat.train, stat.apt);
 			}
+			else
+				tooltip.text = Format("%s: %d\n%s", txBase, pc->unit->GetBase(a), ai.desc.c_str());
 			tooltip.small_text.clear();
 		}
 		break;
@@ -273,14 +273,14 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id)
 			Skill& si = Skill::skills[id];
 			SkillId s = (SkillId)id;
 			tooltip.big_text = Format("%s: %d", si.name.c_str(), pc->unit->Get(s));
-			if(!Game::Get().devmode)
-				tooltip.text = Format("%s: %d\n%s", txBase, pc->unit->GetBase(s), si.desc.c_str());
-			else
+			if(Game::Get().devmode && Net::IsLocal())
 			{
 				PlayerController::StatData& stat = pc->skill[id];
 				tooltip.text = Format("%s: %d\n%s\n\nExp: %d/%d (%g%%)\nTrain: %d\nAptitude: %d", txBase, pc->unit->GetBase(s),
 					si.desc.c_str(), stat.points, stat.next, float(stat.points) * 100 / stat.next, stat.train, stat.apt);
 			}
+			else
+				tooltip.text = Format("%s: %d\n%s", txBase, pc->unit->GetBase(s), si.desc.c_str());
 			if(si.attrib2 != AttributeId::NONE)
 				tooltip.small_text = Format("%s: %s, %s", txRelatedAttributes, Attribute::attributes[(int)si.attrib].name.c_str(), Attribute::attributes[(int)si.attrib2].name.c_str());
 			else

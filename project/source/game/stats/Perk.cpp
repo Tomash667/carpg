@@ -163,7 +163,10 @@ void PerkContext::Mod(AttributeId a, int value, bool mod)
 void PerkContext::Mod(SkillId s, int value, bool mod)
 {
 	if(cc)
+	{
 		cc->s[(int)s].Mod(value, mod);
+		cc->to_update.push_back(s);
+	}
 	else
 	{
 		if(startup)

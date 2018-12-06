@@ -27,7 +27,7 @@ struct CreatedCharacter
 
 	struct SkillData
 	{
-		int value;
+		int value, base;
 		bool add;
 		bool mod;
 
@@ -61,6 +61,7 @@ struct CreatedCharacter
 	void Apply(PlayerController& pc);
 	bool HavePerk(Perk perk) const;
 	void GetStartingItems(const Item* (&items)[SLOT_MAX]);
+	int GetBonus(SkillId s);
 
 	int Get(AttributeId attrib) const
 	{

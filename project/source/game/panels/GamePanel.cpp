@@ -273,7 +273,7 @@ void GamePanel::UpdateBoxIndex(float dt, int index, int index2, bool refresh)
 
 		if(refresh)
 		{
-			FormatBox();
+			FormatBox(refresh);
 			if(box_img)
 				box_img_size = gui::GetSize(box_img);
 		}

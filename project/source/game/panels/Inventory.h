@@ -119,7 +119,7 @@ public:
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
 
-	void FormatBox();
+	void FormatBox(bool refresh = false);
 	void InitTooltip();
 	bool SlotRequireHideWeapon(ITEM_SLOT slot);
 	void RemoveSlotItem(ITEM_SLOT slot);
@@ -169,7 +169,7 @@ private:
 	void GetTooltip(TooltipController* tooltip, int group, int id);
 	void UpdateGrid(bool mine);
 	void ReadBook(const Item* item, int index);
-	void FormatBox(int group, string& text, string& small_text, TEX& img);
+	void FormatBox(int group, string& text, string& small_text, TEX& img, bool refresh);
 	bool AllowForUnit() { return Any(mode, GIVE_MY, GIVE_OTHER, SHARE_MY, SHARE_OTHER); }
 	int GetLockIndexAndRelease();
 	int GetLockIndexOrSlotAndRelease();

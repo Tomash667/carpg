@@ -35,12 +35,9 @@ enum Animation
 enum ACTION
 {
 	A_NONE,
-	// etapy: 0, 1
-	A_TAKE_WEAPON,
-	// etapy: 0 - naci¹ga, 1 - naci¹ga ale mo¿e strzelaæ, 2 - po strzale, 3 - wyj¹³ now¹ strza³ê
-	A_SHOOT,
-	// etapy: 0 - przygotowanie, 1 - mo¿e atakowaæ, 2 - po trafieniu
-	A_ATTACK,
+	A_TAKE_WEAPON, // etapy: 0, 1
+	A_SHOOT, // etapy: 0 - naci¹ga, 1 - naci¹ga ale mo¿e strzelaæ, 2 - po strzale, 3 - wyj¹³ now¹ strza³ê
+	A_ATTACK, // etapy: 0 - przygotowanie, 1 - mo¿e atakowaæ, 2 - po trafieniu
 	A_BLOCK,
 	A_BASH,
 	A_DRINK, // picie napoju (0 - zaczyna piæ, 1-efekt wypicia, 2-schowa³ przedmiot)

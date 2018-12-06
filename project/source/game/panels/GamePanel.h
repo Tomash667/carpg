@@ -28,7 +28,7 @@ public:
 
 	void DrawBox();
 	void UpdateBoxIndex(float dt, int index, int index2 = -1, bool refresh = false);
-	virtual void FormatBox() {}
+	virtual void FormatBox(bool refresh) {}
 
 	static TEX tBackground;
 	//Int2 min_size;

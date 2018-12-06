@@ -802,32 +802,29 @@ void Quest_Tournament::Talk(cstring text)
 }
 
 //=================================================================================================
-void Quest_Tournament::Train(Unit& u)
+void Quest_Tournament::Train(PlayerController& player)
 {
-	Game& game = Game::Get();
+	Unit& u = *player.unit;
 	master = nullptr;
-	game.Train(u, false, (int)AttributeId::STR);
-	game.Train(u, false, (int)AttributeId::END);
-	game.Train(u, false, (int)AttributeId::DEX);
+	player.Train(false, (int)AttributeId::STR);
+	player.Train(false, (int)AttributeId::END);
+	player.Train(false, (int)AttributeId::DEX);
 	if(u.HaveWeapon())
 	{
-		game.Train(u, true, (int)SkillId::ONE_HANDED_WEAPON);
-		game.Train(u, true, (int)u.GetWeapon().GetInfo().skill);
+		player.Train(true, (int)SkillId::ONE_HANDED_WEAPON);
+		player.Train(true, (int)u.GetWeapon().GetInfo().skill);
 	}
 	if(u.HaveBow())
-		game.Train(u, true, (int)SkillId::BOW);
+		player.Train(true, (int)SkillId::BOW);
 	if(u.HaveShield())
-		game.Train(u, true, (int)SkillId::SHIELD);
+		player.Train(true, (int)SkillId::SHIELD);
 	if(u.HaveArmor())
-		game.Train(u, true, (int)u.GetArmor().skill);
-	if(u.IsPlayer())
+		player.Train(true, (int)u.GetArmor().skill);
+	Var* var = SM.GetVars(&u)->Get("ironfist_won");
+	if(!var->IsBool(true))
 	{
-		Var* var = SM.GetVars(&u)->Get("ironfist_won");
-		if(!var->IsBool(true))
-		{
-			u.player->AddLearningPoint();
-			var->SetBool(true);
-		}
+		u.player->AddLearningPoint();
+		var->SetBool(true);
 	}
 }
 

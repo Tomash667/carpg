@@ -1250,6 +1250,7 @@ void Game::UpdateServerTransfer(float dt)
 			prev_team = Team.members;
 		Team.members.clear();
 		Team.active_members.clear();
+		L.entering = true;
 		const bool in_level = L.is_open;
 		int leader_perk = 0;
 		for(auto pinfo : N.players)
@@ -1363,6 +1364,7 @@ void Game::UpdateServerTransfer(float dt)
 			Team.AddTeamMember(npc, false);
 			npc->hero->SetupMelee();
 		}
+		L.entering = false;
 
 		// recalculate credit if someone left
 		if(anyone_left)

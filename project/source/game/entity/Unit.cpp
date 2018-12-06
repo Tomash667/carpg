@@ -793,8 +793,6 @@ void Unit::AddEffect(Effect& e, bool send)
 //=================================================================================================
 void Unit::ApplyConsumableEffect(const Consumable& item)
 {
-	Game& game = Game::Get();
-
 	switch(item.effect)
 	{
 	case E_HEAL:
@@ -860,13 +858,16 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 	case E_NONE:
 		break;
 	case E_STR:
-		game.Train(*this, false, (int)AttributeId::STR, 2);
+		if(IsPlayer())
+			player->Train(false, (int)AttributeId::STR, TrainMode::Potion);
 		break;
 	case E_END:
-		game.Train(*this, false, (int)AttributeId::END, 2);
+		if(IsPlayer())
+			player->Train(false, (int)AttributeId::END, TrainMode::Potion);
 		break;
 	case E_DEX:
-		game.Train(*this, false, (int)AttributeId::DEX, 2);
+		if(IsPlayer())
+			player->Train(false, (int)AttributeId::DEX, TrainMode::Potion);
 		break;
 	case E_FOOD:
 		{

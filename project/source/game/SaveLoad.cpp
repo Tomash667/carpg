@@ -38,6 +38,7 @@
 #include "Console.h"
 #include "Pathfinding.h"
 #include "ItemHelper.h"
+#include "CreateServerPanel.h"
 
 enum SaveFlags
 {
@@ -263,9 +264,9 @@ void Game::LoadGameCommon(cstring filename, int slot)
 	}
 	else
 	{
-		gui->saveload->visible = true;
 		gui->multiplayer->visible = true;
 		gui->main_menu->visible = true;
+		gui->create_server->Show();
 	}
 }
 

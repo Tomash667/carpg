@@ -61,11 +61,19 @@ enum class TrainWhat
 	Stamina, // player uses stamina [value]
 };
 
+//-----------------------------------------------------------------------------
+enum class TrainMode
+{
+	Normal,
+	Tutorial,
+	Potion
+};
+
+//-----------------------------------------------------------------------------
 inline int GetRequiredAttributePoints(int level)
 {
 	return 4 * (level + 20)*(level + 25);
 }
-
 inline int GetRequiredSkillPoints(int level)
 {
 	return 3 * (level + 20)*(level + 25);
@@ -135,18 +143,18 @@ struct PlayerController : public HeroPlayerCommon
 	~PlayerController();
 
 	float CalculateAttack() const;
-	void TravelTick();
 	void Rest(int days, bool resting, bool travel = false);
 
 	void Init(Unit& _unit, bool partial = false);
 	void Update(float dt, bool is_local = true);
 	void Train(SkillId s, int points);
 	void Train(AttributeId a, int points);
-	void TrainMove(float dt, bool run);
+	void TrainMove(float dist);
 	void Train(TrainWhat what, float value, int level);
 	void TrainMod(AttributeId a, float points);
 	void TrainMod2(SkillId s, float points);
 	void TrainMod(SkillId s, float points);
+	void Train(bool is_skill, int id, TrainMode mode = TrainMode::Normal);
 	void SetRequiredPoints();
 
 	void Save(FileWriter& f);

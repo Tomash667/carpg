@@ -649,7 +649,6 @@ bool Net::FilterOut(NetChange& c)
 	case NetChange::GAME_OVER:
 	case NetChange::CHEAT_CITIZEN:
 	case NetChange::WORLD_TIME:
-	case NetChange::TRAIN_MOVE:
 	case NetChange::ADD_LOCATION:
 	case NetChange::REMOVE_CAMP:
 	case NetChange::CHEAT_NOAI:

@@ -260,21 +260,16 @@ void PlayerController::Train(AttributeId attrib, int points)
 }
 
 //=================================================================================================
-void PlayerController::TrainMove(float dt, bool run)
+void PlayerController::TrainMove(float dist)
 {
-	move_tick += (run ? dt : dt / 10);
-	if(move_tick >= 1.f)
+	move_tick += dist;
+	if(move_tick >= 100.f)
 	{
-		move_tick -= 1.f;
-		Train(TrainWhat::Move, 0.f, 0);
+		Info("Train move %s", name.c_str());
+		float r = floor(move_tick / 100);
+		move_tick -= r * 100;
+		Train(TrainWhat::Move, r, 0);
 	}
-}
-
-//=================================================================================================
-void PlayerController::TravelTick()
-{
-	Rest(1, false, true);
-	Train(TrainWhat::Move, 0.f, 0);
 }
 
 //=================================================================================================
@@ -750,32 +745,47 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 			const float c_points = 50.f;
 			const Weapon& weapon = unit->GetWeapon();
 			const WeaponTypeInfo& info = weapon.GetInfo();
-			if(weapon.req_str > unit->Get(AttributeId::STR))
+
+			int skill = unit->GetBase(info.skill);
+			if(skill < 25)
+				TrainMod2(info.skill, c_points);
+			else if(skill < 50)
+				TrainMod2(info.skill, c_points / 2);
+
+			skill = unit->GetBase(SkillId::ONE_HANDED_WEAPON);
+			if(skill < 25)
+				TrainMod2(SkillId::ONE_HANDED_WEAPON, c_points);
+			else if(skill < 50)
+				TrainMod2(SkillId::ONE_HANDED_WEAPON, c_points / 2);
+
+			int str = unit->Get(AttributeId::STR);
+			if(weapon.req_str > str)
 				TrainMod(AttributeId::STR, c_points);
-			TrainMod(SkillId::ONE_HANDED_WEAPON, c_points);
-			TrainMod2(weapon.GetInfo().skill, c_points);
+			else if(weapon.req_str + 10 > str)
+				TrainMod(AttributeId::STR, c_points / 2);
+
 			TrainMod(AttributeId::STR, c_points * info.str2dmg);
 			TrainMod(AttributeId::DEX, c_points * info.dex2dmg);
 		}
 		break;
 	case TrainWhat::AttackNoDamage:
 		{
-			const float c_points = 150.f * GetLevelMod(unit->level, level);
+			const float c_points = 200.f * GetLevelMod(unit->level, level);
 			const Weapon& weapon = unit->GetWeapon();
 			const WeaponTypeInfo& info = weapon.GetInfo();
-			TrainMod(SkillId::ONE_HANDED_WEAPON, c_points);
-			TrainMod2(weapon.GetInfo().skill, c_points);
+			TrainMod2(SkillId::ONE_HANDED_WEAPON, c_points);
+			TrainMod2(info.skill, c_points);
 			TrainMod(AttributeId::STR, c_points * info.str2dmg);
 			TrainMod(AttributeId::DEX, c_points * info.dex2dmg);
 		}
 		break;
 	case TrainWhat::AttackHit:
 		{
-			const float c_points = 2450.f * value * GetLevelMod(unit->level, level);
+			const float c_points = (200.f + 2300.f * value) * GetLevelMod(unit->level, level);
 			const Weapon& weapon = unit->GetWeapon();
 			const WeaponTypeInfo& info = weapon.GetInfo();
-			TrainMod(SkillId::ONE_HANDED_WEAPON, c_points);
-			TrainMod2(weapon.GetInfo().skill, c_points);
+			TrainMod2(SkillId::ONE_HANDED_WEAPON, c_points);
+			TrainMod2(info.skill, c_points);
 			TrainMod(AttributeId::STR, c_points * info.str2dmg);
 			TrainMod(AttributeId::DEX, c_points * info.dex2dmg);
 		}
@@ -785,73 +795,96 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 		TrainMod(SkillId::SHIELD, value * 2000 * GetLevelMod(unit->level, level));
 		break;
 	case TrainWhat::BashStart:
-		if(unit->GetShield().req_str > unit->Get(AttributeId::STR))
-			TrainMod(AttributeId::STR, 50.f);
-		TrainMod(SkillId::SHIELD, 50.f);
+		{
+			int str = unit->Get(AttributeId::STR);
+			if(unit->GetShield().req_str > str)
+				TrainMod(AttributeId::STR, 50.f);
+			else if(unit->GetShield().req_str + 10 > str)
+				TrainMod(AttributeId::STR, 25.f);
+			int skill = unit->GetBase(SkillId::SHIELD);
+			if(skill < 25)
+				TrainMod(SkillId::SHIELD, 50.f);
+			else if(skill < 50)
+				TrainMod(SkillId::SHIELD, 25.f);
+		}
 		break;
 	case TrainWhat::BashNoDamage:
-		TrainMod(SkillId::SHIELD, 150.f * GetLevelMod(unit->level, level));
+		TrainMod(SkillId::SHIELD, 200.f * GetLevelMod(unit->level, level));
 		break;
 	case TrainWhat::BashHit:
-		TrainMod(SkillId::SHIELD, value * 1950 * GetLevelMod(unit->level, level));
+		TrainMod(SkillId::SHIELD, (200.f + value * 1800.f) * GetLevelMod(unit->level, level));
 		break;
 	case TrainWhat::BowStart:
-		if(unit->GetBow().req_str > unit->Get(AttributeId::STR))
-			TrainMod(AttributeId::STR, 50.f);
-		TrainMod(SkillId::BOW, 50.f);
+		{
+			int str = unit->Get(AttributeId::STR);
+			if(unit->GetBow().req_str > str)
+				TrainMod(AttributeId::STR, 50.f);
+			else if(unit->GetBow().req_str + 10 > str)
+				TrainMod(AttributeId::STR, 25.f);
+			int skill = unit->GetBase(SkillId::BOW);
+			if(skill < 25)
+				TrainMod(SkillId::BOW, 50.f);
+			else if(skill < 50)
+				TrainMod(SkillId::BOW, 25.f);
+		}
 		break;
 	case TrainWhat::BowNoDamage:
-		TrainMod(SkillId::BOW, 150.f * GetLevelMod(unit->level, level));
+		TrainMod(SkillId::BOW, 200.f * GetLevelMod(unit->level, level));
 		break;
 	case TrainWhat::BowAttack:
-		TrainMod(SkillId::BOW, 2450.f * value * GetLevelMod(unit->level, level));
+		TrainMod(SkillId::BOW, (200.f + 2300.f * value) * GetLevelMod(unit->level, level));
 		break;
 	case TrainWhat::Move:
 		{
 			int dex, str;
-
 			switch(unit->GetLoadState())
 			{
-			case 0: // brak
-				dex = 49;
-				str = 1;
+			case Unit::LS_NONE:
+				dex = 100;
+				str = 0;
 				break;
-			case 1: // lekkie
-				dex = 40;
-				str = 10;
+			case Unit::LS_LIGHT:
+				dex = 50;
+				str = 50;
 				break;
-			case 2: // œrednie
+			case Unit::LS_MEDIUM:
 				dex = 25;
-				str = 25;
+				str = 100;
 				break;
-			case 3: // ciê¿kie
+			case Unit::LS_HEAVY:
 				dex = 10;
-				str = 40;
+				str = 200;
 				break;
-			case 4: // maksymalne
+			case Unit::LS_OVERLOADED:
 			default:
-				dex = 1;
-				str = 49;
+				dex = 0;
+				str = 250;
 				break;
 			}
+			TrainMod(AttributeId::STR, (float)str);
+			TrainMod(AttributeId::DEX, (float)dex);
 
 			if(unit->HaveArmor())
 			{
 				const Armor& armor = unit->GetArmor();
-				if(armor.req_str > unit->Get(AttributeId::STR))
-					str += 50;
-				TrainMod(armor.skill, 50.f);
+				int str = unit->Get(AttributeId::STR);
+				if(armor.req_str > str)
+					TrainMod(AttributeId::STR, 250.f);
+				else if(armor.req_str + 10 > str)
+					TrainMod(AttributeId::STR, 125.f);
+				int skill = unit->GetBase(armor.skill);
+				if(skill < 25)
+					TrainMod(armor.skill, 250.f);
+				else if(skill < 50)
+					TrainMod(armor.skill, 125.f);
 			}
-
-			TrainMod(AttributeId::STR, (float)str);
-			TrainMod(AttributeId::DEX, (float)dex);
 		}
 		break;
 	case TrainWhat::Talk:
 		TrainMod(AttributeId::CHA, 10.f);
 		break;
 	case TrainWhat::Trade:
-		TrainMod(SkillId::HAGGLE, value);
+		TrainMod(SkillId::HAGGLE, value / 2);
 		break;
 	case TrainWhat::Stamina:
 		TrainMod(AttributeId::END, value * 0.75f);
@@ -914,6 +947,84 @@ void PlayerController::TrainMod(SkillId s, float points)
 		TrainMod(info.attrib2, points);
 	}
 	TrainMod(info.attrib, points);
+}
+
+//=================================================================================================
+void PlayerController::Train(bool is_skill, int id, TrainMode mode)
+{
+	StatData* stat;
+	int value;
+	if(is_skill)
+	{
+		stat = &skill[id];
+		if(unit->base_stat.skill[id] == Skill::MAX)
+		{
+			stat->points = stat->next;
+			return;
+		}
+		value = unit->base_stat.skill[id];
+	}
+	else
+	{
+		stat = &attrib[id];
+		if(unit->base_stat.attrib[id] == Attribute::MAX)
+		{
+			stat->points = stat->next;
+			return;
+		}
+		value = unit->base_stat.attrib[id];
+	}
+
+	int count;
+	if(mode == TrainMode::Normal)
+		count = (9 + stat->apt) / 2 - value / 20;
+	else if(mode == TrainMode::Potion)
+		count = 1;
+	else
+		count = (12 + stat->apt) / 2 - value / 24;
+
+	if(count >= 1)
+	{
+		value += count;
+		stat->points /= 2;
+
+		if(is_skill)
+		{
+			stat->next = GetRequiredSkillPoints(value);
+			unit->Set((SkillId)id, value);
+		}
+		else
+		{
+			stat->next = GetRequiredAttributePoints(value);
+			unit->Set((AttributeId)id, value);
+		}
+
+		Game::Get().gui->messages->AddFormattedMessage(this, is_skill ? GMS_GAIN_SKILL : GMS_GAIN_ATTRIBUTE, id, count);
+
+		if(!IsLocal())
+		{
+			NetChangePlayer& c2 = Add1(player_info->changes);
+			c2.type = NetChangePlayer::STAT_CHANGED;
+			c2.id = int(is_skill ? ChangedStatType::SKILL : ChangedStatType::ATTRIBUTE);
+			c2.a = id;
+			c2.count = value;
+		}
+	}
+	else
+	{
+		float m;
+		if(count == 0)
+			m = 0.5f;
+		else if(count == -1)
+			m = 0.25f;
+		else
+			m = 0.125f;
+		float pts = m * stat->next;
+		if(is_skill)
+			TrainMod2((SkillId)id, pts);
+		else
+			TrainMod((AttributeId)id, pts);
+	}
 }
 
 //=================================================================================================

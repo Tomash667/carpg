@@ -38,6 +38,7 @@ void CreatedCharacter::Clear(Class c)
 	for(int i = 0; i < (int)SkillId::MAX; ++i)
 	{
 		s[i].value = profile.skill[i];
+		s[i].base = s[i].value;
 		s[i].add = false;
 		s[i].mod = false;
 	}
@@ -100,14 +101,17 @@ void CreatedCharacter::Random(Class c)
 		break;
 	}
 
-	s[(int)sk1].Add(5, true);
-	s[(int)sk2].Add(5, true);
-	s[(int)sk3].Add(5, true);
-	taken_perks.push_back(TakenPerk(Perk::Talent, (int)talent));
-	a[(int)talent].Mod(5, true);
+	s[(int)sk1].Add(GetBonus(sk1), true);
+	s[(int)sk2].Add(GetBonus(sk2), true);
+	s[(int)sk3].Add(GetBonus(sk3), true);
+	TakenPerk tp(Perk::Talent, (int)talent);
+	PerkContext ctx(this);
+	tp.Apply(ctx);
+	taken_perks.push_back(tp);
 	SkillId focus = RandomItem({ sk1, sk2, sk3 });
-	taken_perks.push_back(TakenPerk(Perk::SkillFocus, (int)focus));
-	s[(int)focus].Mod(5, true);
+	tp = TakenPerk(Perk::SkillFocus, (int)focus);
+	tp.Apply(ctx);
+	taken_perks.push_back(tp);
 
 	sp = 0;
 	perks = 0;
@@ -155,7 +159,7 @@ int CreatedCharacter::Read(BitStreamReader& f)
 				Error("Skill increase for disabled skill '%s'.", Skill::skills[i].id);
 				return 3;
 			}
-			s[i].Add(5, true);
+			s[i].Add(GetBonus((SkillId)i), true);
 			--sp;
 		}
 	}
@@ -223,7 +227,7 @@ void CreatedCharacter::Apply(PlayerController& pc)
 {
 	pc.unit->data->GetStatProfile().Set(0, pc.unit->base_stat);
 
-	// reset blocked stats
+	// reset blocked stats, apply skill bonus
 	for(int i = 0; i < (int)AttributeId::MAX; ++i)
 	{
 		pc.attrib[i].blocked = false;
@@ -232,17 +236,9 @@ void CreatedCharacter::Apply(PlayerController& pc)
 	for(int i = 0; i < (int)SkillId::MAX; ++i)
 	{
 		pc.skill[i].blocked = false;
-		pc.skill[i].apt = pc.unit->base_stat.skill[i] / 5;
-	}
-
-	// apply skills
-	for(int i = 0; i < (int)SkillId::MAX; ++i)
-	{
 		if(s[i].add)
-		{
-			pc.unit->base_stat.skill[i] += 5;
-			pc.skill[i].apt++;
-		}
+			pc.unit->base_stat.skill[i] += GetBonus((SkillId)i);
+		pc.skill[i].apt = pc.unit->base_stat.skill[i] / 5;
 	}
 
 	// apply perks
@@ -430,6 +426,18 @@ void CreatedCharacter::GetStartingItems(const Item* (&items)[SLOT_MAX])
 
 		items[SLOT_ARMOR] = StartItem::GetStartItem(best, max(0, val + mod));
 	}
+}
+
+//=================================================================================================
+int CreatedCharacter::GetBonus(SkillId skill)
+{
+	int base = s[(int)skill].base;
+	if(base == 0)
+		return 15;
+	else if(base == 5)
+		return 10;
+	else
+		return 5;
 }
 
 //=================================================================================================

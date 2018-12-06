@@ -571,7 +571,6 @@ public:
 	bool CanShowEndScreen();
 	void UpdateGameDialogClient();
 	void UpdateGameNet(float dt);
-	void Train(Unit& unit, bool is_skill, int co, int mode = 0);
 	void CreateSaveImage(cstring filename);
 	void PlayerUseUsable(Usable* u, bool after_action);
 	void UnitTalk(Unit& u, cstring text);

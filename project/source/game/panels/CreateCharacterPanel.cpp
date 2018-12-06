@@ -1,4 +1,3 @@
-// character creation screen
 #include "Pch.h"
 #include "GameCore.h"
 #include "CreateCharacterPanel.h"
@@ -323,11 +322,11 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 
 			tbInfo.Draw();
 
-			// left text "SkillId points: X/Y"
+			// left text "Skill points: X/Y"
 			Rect r = { global_pos.x + 16, global_pos.y + 310, global_pos.x + 216, global_pos.y + 360 };
 			GUI.DrawText(GUI.default_font, Format(txSkillPoints, cc.sp, cc.sp_max), 0, Color::Black, r);
 
-			// right text "Perks: X/Y"
+			// right text "Feats: X/Y"
 			Rect r2 = { global_pos.x + size.x - 216, global_pos.y + 310, global_pos.x + size.x - 16, global_pos.y + 360 };
 			GUI.DrawText(GUI.default_font, Format(txPerkPoints, cc.perks, cc.perks_max), DTF_RIGHT, Color::Black, r2);
 
@@ -637,7 +636,6 @@ void CreateCharacterPanel::Event(GuiEvent e)
 //=================================================================================================
 void CreateCharacterPanel::RenderUnit()
 {
-	// rysuj obrazek
 	HRESULT hr = game->device->TestCooperativeLevel();
 	if(hr != D3D_OK)
 		return;
@@ -647,7 +645,7 @@ void CreateCharacterPanel::RenderUnit()
 	game->SetNoCulling(false);
 	game->SetNoZWrite(false);
 
-	// ustaw render target
+	// set render target
 	SURFACE surf = nullptr;
 	if(game->sChar)
 		V(game->device->SetRenderTarget(0, game->sChar));
@@ -657,7 +655,7 @@ void CreateCharacterPanel::RenderUnit()
 		V(game->device->SetRenderTarget(0, surf));
 	}
 
-	// pocz¹tek renderowania
+	// start rendering
 	V(game->device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET, 0, 1.f, 0));
 	V(game->device->BeginScene());
 
@@ -678,10 +676,10 @@ void CreateCharacterPanel::RenderUnit()
 	game->DrawSceneNodes(game->draw_batch.nodes, lights, true);
 	game->draw_batch.Clear();
 
-	// koniec renderowania
+	// end rendering
 	V(game->device->EndScene());
 
-	// kopiuj jeœli jest mipmaping
+	// copy to surface if using multisampling
 	if(game->sChar)
 	{
 		V(game->tChar->GetSurfaceLevel(0, &surf));
@@ -689,7 +687,7 @@ void CreateCharacterPanel::RenderUnit()
 	}
 	surf->Release();
 
-	// przywróc poprzedni render target
+	// restore old render target
 	V(game->device->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &surf));
 	V(game->device->SetRenderTarget(0, surf));
 	surf->Release();
@@ -698,60 +696,60 @@ void CreateCharacterPanel::RenderUnit()
 //=================================================================================================
 void CreateCharacterPanel::UpdateUnit(float dt)
 {
-	// aktualizacja postaci
+	// update character
 	t -= dt;
 	if(t <= 0.f)
 	{
 		switch(anim)
 		{
-		case DA_ATAK:
-		case DA_SCHOWAJ_BRON:
-		case DA_SCHOWAJ_LUK:
-		case DA_STRZAL:
-		case DA_WYJMIJ_BRON:
-		case DA_WYJMIJ_LUK:
-		case DA_ROZGLADA:
+		case DA_ATTACK:
+		case DA_HIDE_WEAPON:
+		case DA_HIDE_BOW:
+		case DA_SHOOT:
+		case DA_SHOW_WEAPON:
+		case DA_SHOW_BOW:
+		case DA_LOOKS_AROUND:
 			assert(0);
 			break;
-		case DA_BLOK:
+		case DA_BLOCK:
 			if(Rand() % 2 == 0)
-				anim = DA_ATAK;
+				anim = DA_ATTACK;
 			else
-				anim = DA_BOJOWY;
+				anim = DA_BATTLE_MODE;
 			break;
-		case DA_BOJOWY:
+		case DA_BATTLE_MODE:
 			if(unit->weapon_taken == W_ONE_HANDED)
 			{
-				int co = Rand() % (unit->HaveShield() ? 3 : 2);
-				if(co == 0)
-					anim = DA_ATAK;
-				else if(co == 1)
-					anim = DA_SCHOWAJ_BRON;
+				int what = Rand() % (unit->HaveShield() ? 3 : 2);
+				if(what == 0)
+					anim = DA_ATTACK;
+				else if(what == 1)
+					anim = DA_HIDE_WEAPON;
 				else
-					anim = DA_BLOK;
+					anim = DA_BLOCK;
 			}
 			else
 			{
 				if(Rand() % 2 == 0)
-					anim = DA_STRZAL;
+					anim = DA_SHOOT;
 				else
-					anim = DA_SCHOWAJ_LUK;
+					anim = DA_HIDE_BOW;
 			}
 			break;
-		case DA_STOI:
-		case DA_IDZIE:
+		case DA_STAND:
+		case DA_WALK:
 			{
-				int co = Rand() % (unit->HaveBow() ? 5 : 4);
-				if(co == 0)
-					anim = DA_ROZGLADA;
-				else if(co == 1)
-					anim = DA_STOI;
-				else if(co == 2)
-					anim = DA_IDZIE;
-				else if(co == 3)
-					anim = DA_WYJMIJ_BRON;
+				int what = Rand() % (unit->HaveBow() ? 5 : 4);
+				if(what == 0)
+					anim = DA_LOOKS_AROUND;
+				else if(what == 1)
+					anim = DA_STAND;
+				else if(what == 2)
+					anim = DA_WALK;
+				else if(what == 3)
+					anim = DA_SHOW_WEAPON;
 				else
-					anim = DA_WYJMIJ_LUK;
+					anim = DA_SHOW_BOW;
 			}
 			break;
 		default:
@@ -765,7 +763,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 		anim2 = anim;
 		switch(anim)
 		{
-		case DA_ATAK:
+		case DA_ATTACK:
 			unit->attack_id = unit->GetRandomAttack();
 			unit->mesh_inst->Play(NAMES::ani_attacks[unit->attack_id], PLAY_PRIO2 | PLAY_ONCE, 0);
 			unit->mesh_inst->groups[0].speed = unit->GetAttackSpeed();
@@ -773,28 +771,28 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 			t = 100.f;
 			unit->mesh_inst->frame_end_info = false;
 			break;
-		case DA_BLOK:
+		case DA_BLOCK:
 			unit->mesh_inst->Play(NAMES::ani_block, PLAY_PRIO2, 0);
 			unit->mesh_inst->groups[0].speed = 1.f;
 			t = 1.f;
 			break;
-		case DA_BOJOWY:
+		case DA_BATTLE_MODE:
 			unit->mesh_inst->Play(NAMES::ani_battle, PLAY_PRIO2, 0);
 			unit->mesh_inst->groups[0].speed = 1.f;
 			t = 1.f;
 			break;
-		case DA_IDZIE:
+		case DA_WALK:
 			unit->mesh_inst->Play(NAMES::ani_move, PLAY_PRIO2, 0);
 			unit->mesh_inst->groups[0].speed = 1.f;
 			t = 2.f;
 			break;
-		case DA_ROZGLADA:
+		case DA_LOOKS_AROUND:
 			unit->mesh_inst->Play("rozglada", PLAY_PRIO2 | PLAY_ONCE, 0);
 			unit->mesh_inst->groups[0].speed = 1.f;
 			t = 100.f;
 			unit->mesh_inst->frame_end_info = false;
 			break;
-		case DA_SCHOWAJ_BRON:
+		case DA_HIDE_WEAPON:
 			unit->mesh_inst->Play(unit->GetTakeWeaponAnimation(true), PLAY_PRIO2 | PLAY_ONCE | PLAY_BACK, 0);
 			unit->mesh_inst->groups[1].speed = 1.f;
 			unit->mesh_inst->groups[0].speed = 1.f;
@@ -805,7 +803,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 			unit->weapon_hiding = W_ONE_HANDED;
 			unit->mesh_inst->frame_end_info = false;
 			break;
-		case DA_SCHOWAJ_LUK:
+		case DA_HIDE_BOW:
 			unit->mesh_inst->Play(NAMES::ani_take_bow, PLAY_PRIO2 | PLAY_ONCE | PLAY_BACK, 0);
 			unit->mesh_inst->groups[1].speed = 1.f;
 			unit->mesh_inst->groups[0].speed = 1.f;
@@ -816,12 +814,12 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 			unit->weapon_hiding = W_BOW;
 			unit->mesh_inst->frame_end_info = false;
 			break;
-		case DA_STOI:
+		case DA_STAND:
 			unit->mesh_inst->Play(NAMES::ani_stand, PLAY_PRIO2, 0);
 			unit->mesh_inst->groups[0].speed = 1.f;
 			t = 2.f;
 			break;
-		case DA_STRZAL:
+		case DA_SHOOT:
 			unit->mesh_inst->Play(NAMES::ani_shoot, PLAY_PRIO2 | PLAY_ONCE, 0);
 			unit->mesh_inst->groups[0].speed = unit->GetBowAttackSpeed();
 			unit->animation_state = 0;
@@ -832,7 +830,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 			unit->mesh_inst->frame_end_info = false;
 			unit->action = A_SHOOT;
 			break;
-		case DA_WYJMIJ_BRON:
+		case DA_SHOW_WEAPON:
 			unit->mesh_inst->Play(unit->GetTakeWeaponAnimation(true), PLAY_PRIO2 | PLAY_ONCE, 0);
 			unit->mesh_inst->groups[1].speed = 1.f;
 			unit->mesh_inst->groups[0].speed = 1.f;
@@ -843,7 +841,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 			unit->weapon_hiding = W_NONE;
 			unit->mesh_inst->frame_end_info = false;
 			break;
-		case DA_WYJMIJ_LUK:
+		case DA_SHOW_BOW:
 			unit->mesh_inst->Play(NAMES::ani_take_bow, PLAY_PRIO2 | PLAY_ONCE, 0);
 			unit->mesh_inst->groups[1].speed = 1.f;
 			unit->mesh_inst->groups[0].speed = 1.f;
@@ -862,32 +860,32 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 
 	switch(anim)
 	{
-	case DA_ATAK:
+	case DA_ATTACK:
 		if(unit->mesh_inst->frame_end_info)
 		{
 			unit->mesh_inst->groups[0].speed = 1.f;
 			if(Rand() % 2 == 0)
 			{
-				anim = DA_ATAK;
-				anim2 = DA_STOI;
+				anim = DA_ATTACK;
+				anim2 = DA_STAND;
 			}
 			else
-				anim = DA_BOJOWY;
+				anim = DA_BATTLE_MODE;
 		}
 		break;
-	case DA_SCHOWAJ_BRON:
-	case DA_SCHOWAJ_LUK:
+	case DA_HIDE_WEAPON:
+	case DA_HIDE_BOW:
 		if(unit->animation_state == 0 && (unit->mesh_inst->GetProgress() <= unit->data->frames->t[F_TAKE_WEAPON] || unit->mesh_inst->frame_end_info))
 			unit->animation_state = 1;
 		if(unit->mesh_inst->frame_end_info)
 		{
 			unit->weapon_state = WS_HIDDEN;
 			unit->weapon_hiding = W_NONE;
-			anim = DA_STOI;
+			anim = DA_STAND;
 			t = 1.f;
 		}
 		break;
-	case DA_STRZAL:
+	case DA_SHOOT:
 		if(unit->mesh_inst->GetProgress() > 20.f / 40 && unit->animation_state < 2)
 			unit->animation_state = 2;
 		else if(unit->mesh_inst->GetProgress() > 35.f / 40)
@@ -902,43 +900,43 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 				unit->action = A_NONE;
 				if(Rand() % 2 == 0)
 				{
-					anim = DA_STRZAL;
-					anim2 = DA_STOI;
+					anim = DA_SHOOT;
+					anim2 = DA_STAND;
 				}
 				else
-					anim = DA_BOJOWY;
+					anim = DA_BATTLE_MODE;
 				break;
 			}
 		}
 		unit->bow_instance->groups[0].time = min(unit->mesh_inst->groups[0].time, unit->bow_instance->groups[0].anim->length);
 		unit->bow_instance->need_update = true;
 		break;
-	case DA_WYJMIJ_BRON:
+	case DA_SHOW_WEAPON:
 		if(unit->animation_state == 0 && (unit->mesh_inst->GetProgress() >= unit->data->frames->t[F_TAKE_WEAPON] || unit->mesh_inst->frame_end_info))
 			unit->animation_state = 1;
 		if(unit->mesh_inst->frame_end_info)
 		{
 			unit->weapon_state = WS_TAKEN;
-			anim = DA_ATAK;
+			anim = DA_ATTACK;
 		}
 		break;
-	case DA_WYJMIJ_LUK:
+	case DA_SHOW_BOW:
 		if(unit->animation_state == 0 && (unit->mesh_inst->GetProgress() >= unit->data->frames->t[F_TAKE_WEAPON] || unit->mesh_inst->frame_end_info))
 			unit->animation_state = 1;
 		if(unit->mesh_inst->frame_end_info)
 		{
 			unit->weapon_state = WS_TAKEN;
-			anim = DA_STRZAL;
+			anim = DA_SHOOT;
 		}
 		break;
-	case DA_ROZGLADA:
+	case DA_LOOKS_AROUND:
 		if(unit->mesh_inst->frame_end_info)
-			anim = DA_STOI;
+			anim = DA_STAND;
 		break;
-	case DA_BLOK:
-	case DA_BOJOWY:
-	case DA_STOI:
-	case DA_IDZIE:
+	case DA_BLOCK:
+	case DA_BATTLE_MODE:
+	case DA_STAND:
+	case DA_WALK:
 		break;
 	default:
 		assert(0);
@@ -1035,7 +1033,7 @@ void CreateCharacterPanel::SetControls()
 //=================================================================================================
 void CreateCharacterPanel::SetCharacter()
 {
-	anim = anim2 = DA_STOI;
+	anim = anim2 = DA_STAND;
 	unit->mesh_inst->Play(NAMES::ani_stand, PLAY_PRIO2 | PLAY_NO_BLEND, 0);
 	unit->mesh_inst->groups[0].speed = 1.f;
 }
@@ -1150,7 +1148,7 @@ void CreateCharacterPanel::ClassChanged()
 {
 	ClassInfo& ci = ClassInfo::classes[(int)clas];
 	unit->data = ci.unit_data;
-	anim = DA_STOI;
+	anim = DA_STAND;
 	t = 1.f;
 	tbClassDesc.Reset();
 	tbClassDesc.SetText(ci.desc.c_str());
@@ -1205,17 +1203,18 @@ void CreateCharacterPanel::OnPickSkill(int group, int id)
 {
 	assert(group == (int)Group::PickSkill_Button);
 
+	int bonus = cc.GetBonus((SkillId)id);
 	if(!cc.s[id].add)
 	{
 		// add
 		--cc.sp;
-		cc.s[id].Add(5, true);
+		cc.s[id].Add(bonus, true);
 	}
 	else
 	{
 		// remove
 		++cc.sp;
-		cc.s[id].Add(-5, false);
+		cc.s[id].Add(-bonus, false);
 	}
 
 	// update buttons image / text
@@ -1475,15 +1474,6 @@ void CreateCharacterPanel::OnPickSkillForPerk(int id)
 }
 
 //=================================================================================================
-void CreateCharacterPanel::UpdateSkill(SkillId s, int value, bool mod)
-{
-	int id = (int)s;
-	cc.s[id].value += value;
-	cc.s[id].mod = mod;
-	flowSkills.UpdateText((int)Group::Skill, id, Format("%s: %d", Skill::skills[id].name.c_str(), cc.s[id].value));
-}
-
-//=================================================================================================
 void CreateCharacterPanel::UpdateSkillButtons()
 {
 	for(FlowItem* item : flowSkills.items)
@@ -1588,14 +1578,14 @@ void CreateCharacterPanel::UpdateInventory()
 
 	bool reset = false;
 
-	if((anim == DA_WYJMIJ_LUK || anim == DA_SCHOWAJ_LUK || anim == DA_STRZAL) && !items[SLOT_BOW])
+	if((anim == DA_SHOW_BOW || anim == DA_HIDE_BOW || anim == DA_SHOOT) && !items[SLOT_BOW])
 		reset = true;
-	if(anim == DA_BLOK && !items[SLOT_SHIELD])
+	if(anim == DA_BLOCK && !items[SLOT_SHIELD])
 		reset = true;
 
 	if(reset)
 	{
-		anim = DA_STOI;
+		anim = DA_STAND;
 		unit->weapon_state = WS_HIDDEN;
 		unit->weapon_taken = W_NONE;
 		unit->weapon_hiding = W_NONE;
@@ -1606,7 +1596,7 @@ void CreateCharacterPanel::UpdateInventory()
 //=================================================================================================
 void CreateCharacterPanel::ResetDoll(bool instant)
 {
-	anim = DA_STOI;
+	anim = DA_STAND;
 	unit->weapon_state = WS_HIDDEN;
 	unit->weapon_taken = W_NONE;
 	unit->weapon_hiding = W_NONE;
