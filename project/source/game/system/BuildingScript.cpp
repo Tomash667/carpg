@@ -139,13 +139,13 @@ bool BuildingScript::HaveBuilding(BuildingGroup* group, Variant* variant) const
 				if_status.pop_back();
 				if(if_status.empty())
 				{
-					if(s == IFS_IF_OK || IFS_ELSE_OK2)
+					if(s == IFS_IF_OK || s == IFS_ELSE_OK2)
 						return true;
 				}
 				else
 				{
 					IfStatus& s2 = if_status.back();
-					if(s == IFS_IF_OK || IFS_ELSE_OK2)
+					if(s == IFS_IF_OK || s == IFS_ELSE_OK2)
 					{
 						if(s2 == IFS_IF)
 							s2 = IFS_IF_OK;
