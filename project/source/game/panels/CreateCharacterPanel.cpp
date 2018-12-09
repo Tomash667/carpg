@@ -45,6 +45,8 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : GameDialogBox(inf
 	unit->rot = 0.f;
 	unit->fake_unit = true;
 	unit->action = A_NONE;
+	unit->stats = new UnitStats;
+	unit->stats->fixed = false;
 
 	btCancel.id = IdCancel;
 	btCancel.custom = &custom_x;
@@ -1159,8 +1161,7 @@ void CreateCharacterPanel::ClassChanged()
 	int y = 0;
 
 	StatProfile& profile = ci.unit_data->GetStatProfile();
-	profile.Set(0, unit->stats);
-	profile.Set(0, unit->base_stat);
+	profile.Set(0, *unit->stats);
 	unit->CalculateStats();
 
 	// attributes

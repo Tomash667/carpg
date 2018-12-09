@@ -132,9 +132,8 @@ void HeroData::LevelUp()
 		return;
 
 	++unit->level;
-	unit->data->GetStatProfile().Set(unit->level, unit->stats.attrib, unit->stats.skill);
+	unit->stats = unit->data->GetStats(unit->level);
 	unit->CalculateStats();
-	unit->RecalculateHp();
 }
 
 //=================================================================================================

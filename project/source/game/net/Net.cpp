@@ -155,8 +155,7 @@ void Game::SendPlayerData(PlayerInfo& info)
 	WriteItemListTeam(f, unit.items);
 
 	// data
-	unit.stats.Write(f);
-	unit.base_stat.Write(f);
+	unit.stats->Write(f);
 	f << unit.gold;
 	f << unit.stamina;
 	f << unit.effects;
@@ -242,8 +241,7 @@ bool Game::ReadPlayerData(BitStreamReader& f)
 
 	unit->player->Init(*unit, true);
 
-	unit->stats.Read(f);
-	unit->base_stat.Read(f);
+	unit->stats->Read(f);
 	f >> unit->gold;
 	f >> unit->stamina;
 	f >> unit->effects;
@@ -2142,9 +2140,9 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					{
 						int num = +value;
 						if(type == NetChange::CHEAT_MOD_STAT)
-							num += info.u->base_stat.skill[what];
+							num += info.u->stats->skill[what];
 						int v = Clamp(num, Skill::MIN, Skill::MAX);
-						if(v != info.u->base_stat.skill[what])
+						if(v != info.u->stats->skill[what])
 						{
 							info.u->Set((SkillId)what, v);
 							NetChangePlayer& c = Add1(player.player_info->changes);
@@ -2163,9 +2161,9 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					{
 						int num = +value;
 						if(type == NetChange::CHEAT_MOD_STAT)
-							num += info.u->base_stat.attrib[what];
+							num += info.u->stats->attrib[what];
 						int v = Clamp(num, Attribute::MIN, Attribute::MAX);
-						if(v != info.u->base_stat.attrib[what])
+						if(v != info.u->stats->attrib[what])
 						{
 							info.u->Set((AttributeId)what, v);
 							NetChangePlayer& c = Add1(player.player_info->changes);
@@ -3430,7 +3428,6 @@ void Game::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 					f << u.weight;
 					f << u.weight_max;
 					f << u.gold;
-					u.stats.Write(f);
 					WriteItemListTeam(f, u.items);
 				}
 				break;
@@ -6563,7 +6560,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 						f >> unit.weight;
 						f >> unit.weight_max;
 						f >> unit.gold;
-						unit.stats.Read(f);
+						unit.stats = unit.data->GetStats(unit.level);
 						if(!ReadItemListTeam(f, unit.items))
 							N.StreamError("Update single client: Broken %s.", name);
 						else

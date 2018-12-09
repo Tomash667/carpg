@@ -3663,7 +3663,14 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	u->moved = false;
 
 	u->fake_unit = true; // to prevent sending hp changed message set temporary as fake unit
-	u->data->GetStatProfile().Set(u->level, u->base_stat.attrib, u->base_stat.skill);
+	if(base.group == G_PLAYER)
+	{
+		u->stats = new UnitStats;
+		u->stats->fixed = false;
+		base.GetStatProfile().Set(u->level, u->stats->attrib, u->stats->skill);
+	}
+	else
+		u->stats = base.GetStats(u->level);
 	u->CalculateStats();
 	u->hp = u->hpmax = u->CalculateMaxHp();
 	u->stamina = u->stamina_max = u->CalculateMaxStamina();

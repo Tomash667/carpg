@@ -540,18 +540,16 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								if(skill)
 								{
 									if(it->cmd == CMD_MOD_STAT)
-										num += pc->unit->base_stat.skill[co];
+										num += pc->unit->stats->skill[co];
 									int v = Clamp(num, Skill::MIN, Skill::MAX);
-									if(v != pc->unit->base_stat.skill[co])
-										pc->unit->Set((SkillId)co, v);
+									pc->unit->Set((SkillId)co, v);
 								}
 								else
 								{
 									if(it->cmd == CMD_MOD_STAT)
-										num += pc->unit->base_stat.attrib[co];
+										num += pc->unit->stats->attrib[co];
 									int v = Clamp(num, Attribute::MIN, Attribute::MAX);
-									if(v != pc->unit->base_stat.attrib[co])
-										pc->unit->Set((AttributeId)co, v);
+									pc->unit->Set((AttributeId)co, v);
 								}
 							}
 							else
@@ -666,6 +664,8 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						UnitData* data = UnitData::TryGet(id);
 						if(!data || IS_SET(data->flags, F_SECRET))
 							Msg("Missing base unit '%s'!", id.c_str());
+						else if(data->group == G_PLAYER)
+							Msg("Can't spawn player unit.");
 						else
 						{
 							int level = -1, count = 1, in_arena = -1;

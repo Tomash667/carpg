@@ -250,16 +250,8 @@ struct UnitData
 		delete trader;
 	}
 
-	float GetRadius() const
-	{
-		return width;
-	}
-
-	StatProfile& GetStatProfile() const
-	{
-		return *stat_profile;
-	}
-
+	float GetRadius() const { return width; }
+	StatProfile& GetStatProfile() const { return *stat_profile; }
 	const TexId* GetTextureOverride() const
 	{
 		if(!tex)
@@ -267,7 +259,7 @@ struct UnitData
 		else
 			return tex->textures.data();
 	}
-
+	UnitStats* GetStats(int level);
 	void CopyFrom(UnitData& ud);
 
 	static SetContainer<UnitData> units;

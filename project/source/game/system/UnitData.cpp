@@ -12,6 +12,33 @@ vector<TexPack*> TexPack::packs;
 SetContainer<UnitData> UnitData::units;
 std::map<string, UnitData*> UnitData::aliases;
 
+UnitStats* UnitData::GetStats(int level)
+{
+	assert(group != G_PLAYER);
+	if(!stat_profile || stat_profile->fixed)
+		level = -1;
+	typedef std::map<std::pair<StatProfile*, int>, UnitStats*> M;
+	std::pair<M::iterator, bool> const& result = UnitStats::shared_stats.insert(M::value_type(std::make_pair(stat_profile, level), nullptr));
+	if(result.second)
+	{
+		UnitStats*& stats = result.first->second;
+		stats = new UnitStats;
+		stats->fixed = true;
+		if(stat_profile)
+			stat_profile->Set(level, *stats);
+		else
+		{
+			for(int i = 0; i < (int)AttributeId::MAX; ++i)
+				stat_profile->attrib[i] = 0;
+			for(int i = 0; i < (int)SkillId::MAX; ++i)
+				stat_profile->skill[i] = 0;
+		}
+		return stats;
+	}
+	else
+		return result.first->second;
+}
+
 void UnitData::CopyFrom(UnitData& ud)
 {
 	mesh_id = ud.mesh_id;

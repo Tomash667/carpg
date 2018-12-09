@@ -225,20 +225,20 @@ int CreatedCharacter::Read(BitStreamReader& f)
 //=================================================================================================
 void CreatedCharacter::Apply(PlayerController& pc)
 {
-	pc.unit->data->GetStatProfile().Set(0, pc.unit->base_stat);
+	pc.unit->data->GetStatProfile().Set(0, *pc.unit->stats);
 
 	// reset blocked stats, apply skill bonus
 	for(int i = 0; i < (int)AttributeId::MAX; ++i)
 	{
 		pc.attrib[i].blocked = false;
-		pc.attrib[i].apt = (pc.unit->base_stat.attrib[i] - 50) / 5;
+		pc.attrib[i].apt = (pc.unit->stats->attrib[i] - 50) / 5;
 	}
 	for(int i = 0; i < (int)SkillId::MAX; ++i)
 	{
 		pc.skill[i].blocked = false;
 		if(s[i].add)
-			pc.unit->base_stat.skill[i] += GetBonus((SkillId)i);
-		pc.skill[i].apt = pc.unit->base_stat.skill[i] / 5;
+			pc.unit->stats->skill[i] += GetBonus((SkillId)i);
+		pc.skill[i].apt = pc.unit->stats->skill[i] / 5;
 	}
 
 	// apply perks

@@ -706,9 +706,8 @@ void Quest_Orcs2::ChangeClass(OrcClass new_orc_class)
 	UnitData* ud = UnitData::Get(udi);
 	orc->data = ud;
 	orc->level = ud->level.x;
-	orc->data->GetStatProfile().Set(orc->level, orc->base_stat.attrib, orc->base_stat.skill);
+	orc->stats = orc->data->GetStats(orc->level);
 	orc->CalculateStats();
-	orc->RecalculateHp();
 	game->ParseItemScript(*orc, ud->item_script);
 	for(auto item : orc->slots)
 	{

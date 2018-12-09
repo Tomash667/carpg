@@ -1780,4 +1780,5 @@ void content::CleanupUnits()
 	DeleteElements(UnitData::units);
 	DeleteElements(UnitGroup::groups);
 	DeleteElements(UnitGroupList::lists);
+	DeleteElements(UnitStats::shared_stats);
 }

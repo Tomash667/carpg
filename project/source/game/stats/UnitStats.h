@@ -37,6 +37,7 @@ struct UnitStats
 {
 	int attrib[(int)AttributeId::MAX];
 	int skill[(int)SkillId::MAX];
+	bool fixed;
 
 	void Save(FileWriter& f) const
 	{
@@ -48,7 +49,10 @@ struct UnitStats
 		f >> attrib;
 		f >> skill;
 	}
+	static void Skip(FileReader& f) { f.Skip(sizeof(attrib) + sizeof(skill)); }
 
 	void Write(BitStreamWriter& f) const;
 	void Read(BitStreamReader& f);
+
+	static std::map<std::pair<StatProfile*, int>, UnitStats*> shared_stats;
 };

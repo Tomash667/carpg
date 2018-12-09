@@ -2644,6 +2644,7 @@ unit rat {
 	level 1
 	flags {fixed_stats coward dont_open slight no_power_attack ignore_block dont_eat}
 	hp 100
+	stamina 250
 	attack 20
 	def 20
 	group animals

@@ -236,7 +236,7 @@ void PlayerController::Train(AttributeId attrib, float points)
 	while(stat.points >= stat.next)
 	{
 		stat.points -= stat.next;
-		if(unit->stats.attrib[a] != Attribute::MAX)
+		if(unit->stats->attrib[a] != Attribute::MAX)
 		{
 			++gained;
 			++value;
@@ -271,7 +271,6 @@ void PlayerController::TrainMove(float dist)
 	move_tick += dist;
 	if(move_tick >= 100.f)
 	{
-		Info("Train move %s", name.c_str());
 		float r = floor(move_tick / 100);
 		move_tick -= r * 100;
 		Train(TrainWhat::Move, r, 0);
@@ -708,9 +707,9 @@ void PlayerController::Load(FileReader& f)
 void PlayerController::SetRequiredPoints()
 {
 	for(int i = 0; i < (int)AttributeId::MAX; ++i)
-		attrib[i].next = GetRequiredAttributePoints(unit->base_stat.attrib[i]);
+		attrib[i].next = GetRequiredAttributePoints(unit->stats->attrib[i]);
 	for(int i = 0; i < (int)SkillId::MAX; ++i)
-		skill[i].next = GetRequiredSkillPoints(unit->base_stat.skill[i]);
+		skill[i].next = GetRequiredSkillPoints(unit->stats->skill[i]);
 }
 
 const float level_mod[21] = {
@@ -974,22 +973,22 @@ void PlayerController::Train(bool is_skill, int id, TrainMode mode)
 	if(is_skill)
 	{
 		stat = &skill[id];
-		if(unit->base_stat.skill[id] == Skill::MAX)
+		if(unit->stats->skill[id] == Skill::MAX)
 		{
 			stat->points = stat->next;
 			return;
 		}
-		value = unit->base_stat.skill[id];
+		value = unit->stats->skill[id];
 	}
 	else
 	{
 		stat = &attrib[id];
-		if(unit->base_stat.attrib[id] == Attribute::MAX)
+		if(unit->stats->attrib[id] == Attribute::MAX)
 		{
 			stat->points = stat->next;
 			return;
 		}
-		value = unit->base_stat.attrib[id];
+		value = unit->stats->attrib[id];
 	}
 
 	int count;

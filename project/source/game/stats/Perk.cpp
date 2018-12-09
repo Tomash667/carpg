@@ -99,7 +99,7 @@ bool PerkContext::Have(AttributeId a, int value)
 	if(cc)
 		return cc->a[(int)a].value >= value;
 	else
-		return pc->unit->base_stat.attrib[(int)a] >= value;
+		return pc->unit->stats->attrib[(int)a] >= value;
 }
 
 //=================================================================================================
@@ -148,10 +148,10 @@ void PerkContext::Mod(AttributeId a, int value, bool mod)
 	else
 	{
 		if(startup)
-			pc->unit->base_stat.attrib[(int)a] += value;
+			pc->unit->stats->attrib[(int)a] += value;
 		else
 			pc->unit->Set(a, pc->unit->GetBase(a) + value);
-		pc->attrib[(int)a].apt = (pc->unit->base_stat.attrib[(int)a] - 50) / 5;
+		pc->attrib[(int)a].apt = (pc->unit->stats->attrib[(int)a] - 50) / 5;
 		if(mod && value < 0)
 			pc->attrib[(int)a].blocked = true;
 		else if(!mod && value > 0)
@@ -170,10 +170,10 @@ void PerkContext::Mod(SkillId s, int value, bool mod)
 	else
 	{
 		if(startup)
-			pc->unit->base_stat.skill[(int)s] += value;
+			pc->unit->stats->skill[(int)s] += value;
 		else
 			pc->unit->Set(s, pc->unit->GetBase(s) + value);
-		pc->skill[(int)s].apt = pc->unit->base_stat.skill[(int)s] / 5;
+		pc->skill[(int)s].apt = pc->unit->stats->skill[(int)s] / 5;
 	}
 }
 

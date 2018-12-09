@@ -203,7 +203,7 @@ struct Unit
 		Busy_Tournament
 	} busy; // nie zapisywane, powinno byæ Busy_No
 	EntityInterpolator* interp;
-	UnitStats stats, base_stat;
+	UnitStats* stats;
 	AutoTalkMode auto_talk;
 	float auto_talk_timer;
 	GameDialog* auto_talk_dialog;
@@ -213,7 +213,7 @@ struct Unit
 
 	//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	Unit() : mesh_inst(nullptr), hero(nullptr), ai(nullptr), player(nullptr), cobj(nullptr), interp(nullptr), bow_instance(nullptr), fake_unit(false),
-		human_data(nullptr), stamina_action(SA_RESTORE_MORE), summoner(nullptr), moved(false), refs(1), stock(nullptr) {}
+		human_data(nullptr), stamina_action(SA_RESTORE_MORE), summoner(nullptr), moved(false), refs(1), stock(nullptr), stats(nullptr) {}
 	~Unit();
 
 	void AddRef() { ++refs; }
@@ -694,33 +694,19 @@ public:
 
 	int CalculateLevel();
 	int CalculateLevel(Class clas);
-
-	int Get(AttributeId a) const { return stats.attrib[(int)a]; }
-	int Get(SkillId s) const { return stats.skill[(int)s]; }
-	int GetBase(AttributeId a) const { return base_stat.attrib[(int)a]; }
-	int GetBase(SkillId s) const { return base_stat.skill[(int)s]; }
-
-	void Set(AttributeId a, int value)
-	{
-		base_stat.attrib[(int)a] = value;
-		RecalculateStat(a, true);
-	}
-	void Set(SkillId s, int value)
-	{
-		base_stat.skill[(int)s] = value;
-		RecalculateStat(s, true);
-	}
-
+	int Get(AttributeId a) const { return stats->attrib[(int)a]; }
+	int Get(SkillId s) const;
+	int GetBase(AttributeId a) const { return stats->attrib[(int)a]; }
+	int GetBase(SkillId s) const { return stats->skill[(int)s]; }
+	void Set(AttributeId a, int value);
+	void Set(SkillId s, int value);
+	void ApplyStat(AttributeId a);
 	void CalculateStats();
 	float CalculateMobility(const Armor* armor = nullptr) const;
 	float GetMobilityMod(bool run) const;
 
 	SkillId GetBestWeaponSkill() const;
 	SkillId GetBestArmorSkill() const;
-
-	void RecalculateStat(AttributeId a, bool apply);
-	void RecalculateStat(SkillId s, bool apply);
-	void ApplyStat(AttributeId a, int old, bool calculate_skill);
 
 	void ApplyHumanData(HumanData& hd)
 	{
