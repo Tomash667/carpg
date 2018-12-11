@@ -69,10 +69,8 @@ float Unit::CalculateMaxHp() const
 	else
 	{
 		float v = 0.8f*Get(AttributeId::END) + 0.2f*Get(AttributeId::STR);
-		if(v >= 50.f)
-			maxhp = data->hp * (1.f + (v - 50) / 50);
-		else
-			maxhp = data->hp * (1.f - (50 - v) / 100);
+		float level = IsPlayer() ? player->level : (float)level;
+		maxhp = data->hp * (1.f + (v - 50) / 50) + level * (v - 25.f) * data->hp / 500;
 	}
 	float bonus = GetEffectSum(EffectId::Health);
 	return maxhp + bonus;
@@ -96,7 +94,7 @@ float Unit::CalculateAttack() const
 	else
 	{
 		float bonus = GetEffectSum(EffectId::MeleeAttack);
-		return (1.f + 1.f / 100 * Get(SkillId::UNARMED)) * (Get(AttributeId::STR) + Get(AttributeId::DEX) / 2) + bonus;
+		return (1.f + 1.f / 100 * Get(SkillId::UNARMED)) * (Get(AttributeId::STR) + Get(AttributeId::DEX) / 2) + bonus + level;
 	}
 }
 
@@ -118,7 +116,7 @@ float Unit::CalculateAttack(const Item* weapon) const
 		else
 			p = float(str) / w.req_str;
 		float bonus = GetEffectSum(EffectId::MeleeAttack);
-		return bonus + wi.str2dmg * str + wi.dex2dmg * dex + (w.dmg * p * (1.f + 1.f / 200 * (Get(SkillId::ONE_HANDED_WEAPON) + Get(wi.skill))));
+		return bonus + level + wi.str2dmg * str + wi.dex2dmg * dex + (w.dmg * p * (1.f + 1.f / 200 * (Get(SkillId::ONE_HANDED_WEAPON) + Get(wi.skill))));
 	}
 	else if(weapon->type == IT_BOW)
 	{
@@ -129,7 +127,7 @@ float Unit::CalculateAttack(const Item* weapon) const
 		else
 			p = float(str) / b.req_str;
 		float bonus = GetEffectSum(EffectId::RangedAttack);
-		return bonus + ((float)dex + b.dmg * (1.f + 1.f / 100 * Get(SkillId::BOW))) * p;
+		return bonus + level + ((float)dex + b.dmg * (1.f + 1.f / 100 * Get(SkillId::BOW))) * p;
 	}
 	else
 	{
@@ -140,7 +138,7 @@ float Unit::CalculateAttack(const Item* weapon) const
 		else
 			p = float(str) / s.req_str;
 		float bonus = GetEffectSum(EffectId::MeleeAttack);
-		return bonus + s.block / 3 * (1.f + Get(SkillId::SHIELD) / 200) + str * 0.5f;
+		return bonus + level + s.block / 3 * (1.f + Get(SkillId::SHIELD) / 200) + str * 0.5f;
 	}
 }
 
@@ -170,7 +168,7 @@ float Unit::CalculateDefense(const Item* armor) const
 	if(IS_SET(data->flags2, F2_FIXED_STATS))
 		def = (float)data->def;
 	else
-		def = (Get(AttributeId::END) - 50.f) / 5 + data->def;
+		def = (Get(AttributeId::END) - 50.f) / 5 + data->def + level;
 
 	// armor defense
 	if(!armor)
@@ -186,14 +184,17 @@ float Unit::CalculateDefense(const Item* armor) const
 	}
 
 	// dexterity bonus
-	LoadState load_state = GetArmorLoadState(armor);
-	if(load_state < LS_HEAVY)
+	if(!IS_SET(data->flags2, F2_FIXED_STATS))
 	{
-		float dex = (float)Get(AttributeId::DEX);
-		float bonus = max(0.f, (dex - 50.f) / 10);
-		if(load_state == LS_MEDIUM)
-			bonus /= 2;
-		def += bonus;
+		LoadState load_state = GetArmorLoadState(armor);
+		if(load_state < LS_HEAVY)
+		{
+			float dex = (float)Get(AttributeId::DEX);
+			float bonus = max(0.f, (dex - 50.f) / 10);
+			if(load_state == LS_MEDIUM)
+				bonus /= 2;
+			def += bonus;
+		}
 	}
 
 	float bonus = GetEffectSum(EffectId::Defense);
@@ -1991,12 +1992,13 @@ void Unit::Load(GameReader& f, bool local)
 				}
 			}
 		}
+		player->RecalculateLevel(false);
 		CalculateStats();
 	}
 	else if(LOAD_VERSION < V_0_4)
 	{
 		if(IsPlayer())
-			level = CalculateLevel();
+			player->RecalculateLevel(false);
 
 		StatProfile& profile = data->GetStatProfile();
 		profile.SetForNew(level, *stats);
@@ -3408,18 +3410,9 @@ bool Unit::CanAct()
 }
 
 //=================================================================================================
-int Unit::CalculateLevel()
+float Unit::CalculateLevel()
 {
-	if(player)
-		return CalculateLevel(GetClass());
-	else
-		return level;
-}
-
-//=================================================================================================
-int Unit::CalculateLevel(Class clas)
-{
-	UnitData* ud = ClassInfo::classes[(int)clas].unit_data;
+	UnitData* ud = ClassInfo::classes[(int)GetClass()].unit_data;
 
 	float tlevel = 0.f;
 	float weight_sum = 0.f;
@@ -3450,7 +3443,8 @@ int Unit::CalculateLevel(Class clas)
 		}
 	}
 
-	return (int)floor(tlevel / weight_sum);
+	// round down to 0.1
+	return floor(tlevel * 10 / weight_sum) / 10;
 }
 
 //=================================================================================================

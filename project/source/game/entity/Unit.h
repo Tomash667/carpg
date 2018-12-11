@@ -692,8 +692,7 @@ public:
 	}
 	bool CanAct();
 
-	int CalculateLevel();
-	int CalculateLevel(Class clas);
+	float CalculateLevel();
 	int Get(AttributeId a) const { return stats->attrib[(int)a]; }
 	int Get(SkillId s) const;
 	int GetBase(AttributeId a) const { return stats->attrib[(int)a]; }

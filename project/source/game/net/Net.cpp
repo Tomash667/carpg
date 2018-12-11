@@ -3602,6 +3602,8 @@ void Game::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 		f << info.u->stamina;
 	if(IS_SET(info.update_flags, PlayerInfo::UF_LEARNING_POINTS))
 		f << info.pc->learning_points;
+	if(IS_SET(info.update_flags, PlayerInfo::UF_LEVEL))
+		f << info.pc->level;
 }
 
 //=================================================================================================
@@ -7086,6 +7088,23 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 			if(!f)
 			{
 				N.StreamError("Update single client: Broken ID_PLAYER_CHANGES at UF_LEARNING_POINTS.");
+				return true;
+			}
+		}
+	}
+
+	// level
+	if(IS_SET(flags, PlayerInfo::UF_LEVEL))
+	{
+		if(!pc)
+			f.Skip<float>();
+		else
+		{
+			f.Read(pc->level);
+			pc->unit->level = (int)pc->level;
+			if(!f)
+			{
+				N.StreamError("Update single client: Broken ID_PLAYER_CHANGES at UF_LEVEL.");
 				return true;
 			}
 		}

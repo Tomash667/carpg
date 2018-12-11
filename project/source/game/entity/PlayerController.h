@@ -93,7 +93,7 @@ struct PlayerController : public HeroPlayerCommon
 	};
 
 	PlayerInfo* player_info;
-	float move_tick, last_dmg, last_dmg_poison, dmgc, poison_dmgc, idle_timer, action_recharge, action_cooldown;
+	float level, move_tick, last_dmg, last_dmg_poison, dmgc, poison_dmgc, idle_timer, action_recharge, action_cooldown;
 	StatData skill[(int)SkillId::MAX], attrib[(int)AttributeId::MAX];
 	byte action_key;
 	NextAction next_action;
@@ -159,6 +159,7 @@ public:
 	void Train(TrainWhat what, float value, int level);
 	void Train(bool is_skill, int id, TrainMode mode = TrainMode::Normal);
 	void SetRequiredPoints();
+	void RecalculateLevel(bool apply);
 
 	void Save(FileWriter& f);
 	void Load(FileReader& f);

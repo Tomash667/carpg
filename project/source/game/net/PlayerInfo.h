@@ -16,7 +16,8 @@ struct PlayerInfo
 		UF_GOLD = 1 << 2,
 		UF_ALCOHOL = 1 << 3,
 		UF_STAMINA = 1 << 4,
-		UF_LEARNING_POINTS = 1 << 5
+		UF_LEARNING_POINTS = 1 << 5,
+		UF_LEVEL = 1 << 6
 	};
 
 	enum STATE

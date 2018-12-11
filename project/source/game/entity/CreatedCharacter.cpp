@@ -249,8 +249,8 @@ void CreatedCharacter::Apply(PlayerController& pc)
 
 	pc.unit->CalculateStats();
 	pc.unit->CalculateLoad();
+	pc.RecalculateLevel(false);
 	pc.unit->hp = pc.unit->hpmax = pc.unit->CalculateMaxHp();
-	pc.unit->level = pc.unit->CalculateLevel();
 
 	pc.SetRequiredPoints();
 

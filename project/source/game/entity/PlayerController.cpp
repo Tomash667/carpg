@@ -124,6 +124,7 @@ void PlayerController::Init(Unit& _unit, bool partial)
 
 		action_charges = GetAction().charges;
 		learning_points = 0;
+		level = 0;
 		exp = 0;
 		exp_level = 0;
 		exp_need = GetExpNeed();
@@ -149,7 +150,7 @@ void PlayerController::Update(float dt, bool is_local)
 		if(recalculate_level)
 		{
 			recalculate_level = false;
-			unit->level = unit->CalculateLevel();
+			RecalculateLevel(true);
 		}
 	}
 
@@ -336,7 +337,7 @@ void PlayerController::Save(FileWriter& f)
 {
 	if(recalculate_level)
 	{
-		unit->level = unit->CalculateLevel();
+		RecalculateLevel(true);
 		recalculate_level = false;
 	}
 
@@ -398,6 +399,7 @@ void PlayerController::Save(FileWriter& f)
 	f << dmg_done;
 	f << dmg_taken;
 	f << arena_fights;
+	f << level;
 	f << learning_points;
 	f << (byte)perks.size();
 	for(TakenPerk& tp : perks)
@@ -564,6 +566,8 @@ void PlayerController::Load(FileReader& f)
 	f >> dmg_done;
 	f >> dmg_taken;
 	f >> arena_fights;
+	if(LOAD_VERSION >= V_DEV)
+		f >> level;
 	if(LOAD_VERSION >= V_0_4)
 	{
 		if(LOAD_VERSION < V_DEV)
@@ -712,28 +716,43 @@ void PlayerController::SetRequiredPoints()
 		skill[i].next = GetRequiredSkillPoints(unit->stats->skill[i]);
 }
 
+//=================================================================================================
+void PlayerController::RecalculateLevel(bool apply)
+{
+	float new_level = unit->CalculateLevel();
+	if(new_level != level)
+	{
+		level = new_level;
+		unit->level = (int)level;
+		if(apply)
+			unit->RecalculateHp(true);
+		if(!IsLocal())
+			player_info->update_flags |= PlayerInfo::UF_LEVEL;
+	}
+}
+
 const float level_mod[21] = {
-	0.5f, // -10
-	0.55f, // -9
-	0.64f, // -8
-	0.72f, // -7
-	0.79f, // -6
-	0.85f, // -5
-	0.9f, // -4
-	0.94f, // -3
-	0.97f, // -2
-	0.99f, // -1
+	0.0f, // -10
+	0.1f, // -9
+	0.2f, // -8
+	0.3f, // -7
+	0.4f, // -6
+	0.5f, // -5
+	0.6f, // -4
+	0.7f, // -3
+	0.8f, // -2
+	0.9f, // -1
 	1.f, // 0
-	1.01f, // 1
-	1.03f, // 2
-	1.06f, //3
-	1.1f, // 4
-	1.15f, // 5
-	1.21f, // 6
-	1.28f, // 7
-	1.36f, // 8
-	1.45f, // 9
-	1.5f, // 10
+	1.1f, // 1
+	1.2f, // 2
+	1.3f, //3
+	1.4f, // 4
+	1.5f, // 5
+	1.6f, // 6
+	1.7f, // 7
+	1.8f, // 8
+	1.9f, // 9
+	2.0f, // 10
 };
 
 inline float GetLevelMod(int my_level, int target_level)
