@@ -5664,13 +5664,11 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 					continue;
 				}
 
+				// hit enemy unit
 				if(it->owner && hitted->IsAI())
 					AI_HitReaction(*hitted, it->start_pos);
 
-				// trafienie w postaæ
-				float dmg = it->attack,
-					def = hitted->CalculateDefense();
-
+				// calculate modifiers
 				int mod = CombatHelper::CalculateModifier(DMG_PIERCE, hitted->data->flags);
 				float m = 1.f;
 				if(mod == -1)
@@ -5678,7 +5676,9 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 				else if(mod == 1)
 					m -= 0.25f;
 				if(hitted->IsNotFighting())
-					m += 0.1f; // 10% do dmg jeœli ma schowan¹ broñ
+					m += 0.1f;
+				if(hitted->action == A_PAIN)
+					m += 0.1f;
 
 				// backstab bonus damage
 				float angle_dif = AngleDiff(it->rot.y, hitted->rot);
@@ -5693,17 +5693,12 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 					backstab_mod /= 2;
 				m += angle_dif / PI * backstab_mod;
 
-				// modyfikator obra¿eñ
-				dmg *= m;
-				float base_dmg = dmg;
+				// apply modifiers
+				float attack = it->attack * m;
 
 				if(hitted->action == A_BLOCK && angle_dif < PI * 2 / 5)
 				{
-					float block = hitted->CalculateBlock() * hitted->mesh_inst->groups[1].GetBlendT() * (1.f - angle_dif / (PI * 2 / 5));
-					float stamina = min(block, dmg);
-					dmg -= block;
-					hitted->RemoveStaminaBlock(stamina);
-
+					// play sound
 					MATERIAL_TYPE mat = hitted->GetShield().material;
 					sound_mgr->PlaySound3d(GetMaterialSound(MAT_IRON, mat), hitpoint, 2.f, 10.f);
 					if(Net::IsOnline())
@@ -5715,13 +5710,44 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 						c.pos = hitpoint;
 					}
 
+					// train blocking
 					if(hitted->IsPlayer())
+						hitted->player->Train(TrainWhat::BlockBullet, attack / hitted->hpmax, it->level);
+
+					// reduce damage
+					float block = hitted->CalculateBlock() * hitted->mesh_inst->groups[1].GetBlendT() * (1.f - angle_dif / (PI * 2 / 5));
+					float stamina = min(block, attack);
+					attack -= block;
+					hitted->RemoveStaminaBlock(stamina);
+
+					// pain animation & break blocking
+					if(hitted->stamina < 0)
 					{
-						// player blocked bullet, train shield
-						hitted->player->Train(TrainWhat::BlockBullet, base_dmg / hitted->hpmax, it->level);
+						hitted->BreakAction();
+
+						if(!IS_SET(hitted->data->flags, F_DONT_SUFFER))
+						{
+							if(hitted->action != A_POSITION)
+								hitted->action = A_PAIN;
+							else
+								hitted->animation_state = 1;
+
+							if(hitted->mesh_inst->mesh->head.n_groups == 2)
+							{
+								hitted->mesh_inst->frame_end_info2 = false;
+								hitted->mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO1 | PLAY_ONCE, 1);
+							}
+							else
+							{
+								hitted->mesh_inst->frame_end_info = false;
+								hitted->mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO3 | PLAY_ONCE, 0);
+								hitted->mesh_inst->groups[0].speed = 1.f;
+								hitted->animation = ANI_PLAY;
+							}
+						}
 					}
 
-					if(dmg < 0)
+					if(attack < 0)
 					{
 						// shot blocked by shield
 						if(it->owner && it->owner->IsPlayer())
@@ -5735,15 +5761,19 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 					}
 				}
 
-				// odpornoœæ/pancerz
-				dmg -= def;
+				// calculate defense
+				bool clean_hit = (hitted->action == A_PAIN);
+				float def = hitted->CalculateDefense(nullptr, !clean_hit);
 
-				// szkol gracza w pancerzu/hp
-				if(hitted->IsPlayer())
-					hitted->player->Train(TrainWhat::TakeDamageArmor, base_dmg / hitted->hpmax, it->level);
+				// calculate damage
+				float dmg = CombatHelper::CalculateDamage(attack, def);
 
 				// hit sound
 				PlayHitSound(MAT_IRON, hitted->GetBodyMaterial(), hitpoint, 2.f, dmg > 0.f);
+
+				// train player armor skill
+				if(hitted->IsPlayer())
+					hitted->player->Train(TrainWhat::TakeDamageArmor, attack / hitted->hpmax, it->level);
 
 				if(dmg < 0)
 				{
@@ -5757,7 +5787,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 					continue;
 				}
 
-				// szkol gracza w ³uku
+				// train player in bow
 				if(it->owner && it->owner->IsPlayer())
 				{
 					float v = dmg / hitted->hpmax;
@@ -6247,8 +6277,9 @@ void Game::StopAllSounds()
 	attached_sounds.clear();
 }
 
-Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Unit& hitted, const Vec3& hitpoint, float start_dmg, int dmg_type, bool bash)
+Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Unit& hitted, const Vec3& hitpoint, float attack, int dmg_type, bool bash)
 {
+	// calculate modifiers
 	int mod = CombatHelper::CalculateModifier(dmg_type, hitted.data->flags);
 	float m = 1.f;
 	if(mod == -1)
@@ -6274,25 +6305,11 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 	m += angle_dif / PI * backstab_mod;
 
 	// apply modifiers
-	float dmg = start_dmg * m;
-	float base_dmg = dmg;
-
-	// calculate defense
-	float def = hitted.CalculateDefense();
+	attack *= m;
 
 	// blocking
 	if(hitted.action == A_BLOCK && angle_dif < PI / 2)
 	{
-		// reduce damage
-		float block = hitted.CalculateBlock() * hitted.mesh_inst->groups[1].GetBlendT();
-		float stamina = min(dmg, block);
-		if(IS_SET(attacker.data->flags2, F2_IGNORE_BLOCK))
-			block *= 2.f / 3;
-		if(attacker.attack_power >= 1.9f)
-			stamina *= 4.f / 3;
-		dmg -= block;
-		hitted.RemoveStaminaBlock(stamina);
-
 		// play sound
 		MATERIAL_TYPE hitted_mat = hitted.GetShield().material;
 		MATERIAL_TYPE weapon_mat = (!bash ? attacker.GetWeaponMaterial() : attacker.GetShield().material);
@@ -6308,7 +6325,17 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 
 		// train blocking
 		if(hitted.IsPlayer())
-			hitted.player->Train(TrainWhat::BlockAttack, base_dmg / hitted.hpmax, attacker.level);
+			hitted.player->Train(TrainWhat::BlockAttack, attack / hitted.hpmax, attacker.level);
+
+		// reduce damage
+		float block = hitted.CalculateBlock() * hitted.mesh_inst->groups[1].GetBlendT();
+		float stamina = min(attack, block);
+		if(IS_SET(attacker.data->flags2, F2_IGNORE_BLOCK))
+			block *= 2.f / 3;
+		if(attacker.attack_power >= 1.9f)
+			stamina *= 4.f / 3;
+		attack -= block;
+		hitted.RemoveStaminaBlock(stamina);
 
 		// pain animation & break blocking
 		if(hitted.stamina < 0)
@@ -6338,7 +6365,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 		}
 
 		// attack fully blocked
-		if(dmg < 0)
+		if(attack < 0)
 		{
 			if(attacker.IsPlayer())
 			{
@@ -6351,23 +6378,19 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 		}
 	}
 
-	// decrease defense when stunned
-	bool clean_hit = false;
-	if(hitted.action == A_PAIN)
-	{
-		def *= 0.75f;
-		clean_hit = true;
-	}
+	// calculate defense
+	bool clean_hit = (hitted.action == A_PAIN);
+	float def = hitted.CalculateDefense(nullptr, !clean_hit);
 
-	// armor defense
-	dmg -= def;
+	// calculate damage
+	float dmg = CombatHelper::CalculateDamage(attack, def);
 
 	// hit sound
 	PlayHitSound(!bash ? attacker.GetWeaponMaterial() : attacker.GetShield().material, hitted.GetBodyMaterial(), hitpoint, 2.f, dmg > 0.f);
 
 	// train player armor skill
 	if(hitted.IsPlayer())
-		hitted.player->Train(TrainWhat::TakeDamageArmor, base_dmg / hitted.hpmax, attacker.level);
+		hitted.player->Train(TrainWhat::TakeDamageArmor, attack / hitted.hpmax, attacker.level);
 
 	// fully blocked by armor
 	if(dmg < 0)
@@ -7008,29 +7031,29 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 							if(!found)
 							{
 								// hit unit with spears
-								float dmg = float(trap.base->dmg),
-									def = unit->CalculateDefense();
-
 								int mod = CombatHelper::CalculateModifier(DMG_PIERCE, unit->data->flags);
 								float m = 1.f;
 								if(mod == -1)
 									m += 0.25f;
 								else if(mod == 1)
 									m -= 0.25f;
+								if(unit->action == A_PAIN)
+									m += 0.1f;
 
-								// modyfikator obra¿eñ
-								dmg *= m;
-								float base_dmg = dmg;
-								dmg -= def;
+								// calculate attack & defense
+								float attack = float(trap.base->attack) * m;
+								bool clean_hit = (unit->action == A_PAIN);
+								float def = unit->CalculateDefense(nullptr, !clean_hit);
+								float dmg = CombatHelper::CalculateDamage(attack, def);
 
 								// dŸwiêk trafienia
 								sound_mgr->PlaySound3d(GetMaterialSound(MAT_IRON, unit->GetBodyMaterial()), unit->pos + Vec3(0, 1.f, 0), 2.f, 8.f);
 
 								// train player armor skill
 								if(unit->IsPlayer())
-									unit->player->Train(TrainWhat::TakeDamageArmor, base_dmg / unit->hpmax, 4);
+									unit->player->Train(TrainWhat::TakeDamageArmor, attack / unit->hpmax, 4);
 
-								// obra¿enia
+								// damage
 								if(dmg > 0)
 									GiveDmg(ctx, nullptr, dmg, *unit);
 
@@ -7147,7 +7170,7 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 						Bullet& b = Add1(ctx.bullets);
 						b.level = 4;
 						b.backstab = 0;
-						b.attack = float(trap.base->dmg);
+						b.attack = float(trap.base->attack);
 						b.mesh = aArrow;
 						b.pos = Vec3(2.f*trap.tile.x + trap.pos.x - float(int(trap.pos.x / 2) * 2) + Random(-trap.base->rw, trap.base->rw) - 1.2f*DirToPos(trap.dir).x,
 							Random(0.5f, 1.5f),
@@ -7163,7 +7186,7 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 						b.tex_size = 0.f;
 						b.timer = ARROW_TIMER;
 						b.yspeed = 0.f;
-						b.poison_attack = (trap.base->type == TRAP_POISON ? float(trap.base->dmg) : 0.f);
+						b.poison_attack = (trap.base->type == TRAP_POISON ? float(trap.base->attack) : 0.f);
 
 						TrailParticleEmitter* tpe = new TrailParticleEmitter;
 						tpe->fade = 0.3f;
@@ -7274,7 +7297,7 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 					explo->pos.y += 0.2f;
 					explo->size = 0.f;
 					explo->sizemax = 2.f;
-					explo->dmg = float(trap.base->dmg);
+					explo->dmg = float(trap.base->attack);
 					explo->tex = fireball->tex_explode;
 					explo->owner = nullptr;
 

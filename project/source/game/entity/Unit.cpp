@@ -69,7 +69,7 @@ float Unit::CalculateMaxHp() const
 	else
 	{
 		float v = 0.8f*Get(AttributeId::END) + 0.2f*Get(AttributeId::STR);
-		float level = IsPlayer() ? player->level : (float)level;
+		float level = IsPlayer() ? player->level : (float)this->level;
 		maxhp = data->hp * (1.f + (v - 50) / 50) + level * (v - 25.f) * data->hp / 500;
 	}
 	float bonus = GetEffectSum(EffectId::Health);
@@ -161,7 +161,7 @@ float Unit::CalculateBlock(const Item* shield) const
 }
 
 //=================================================================================================
-float Unit::CalculateDefense(const Item* armor) const
+float Unit::CalculateDefense(const Item* armor, bool apply_dex) const
 {
 	// base
 	float def;
@@ -184,7 +184,7 @@ float Unit::CalculateDefense(const Item* armor) const
 	}
 
 	// dexterity bonus
-	if(!IS_SET(data->flags2, F2_FIXED_STATS))
+	if(!IS_SET(data->flags2, F2_FIXED_STATS) && apply_dex)
 	{
 		LoadState load_state = GetArmorLoadState(armor);
 		if(load_state < LS_HEAVY)

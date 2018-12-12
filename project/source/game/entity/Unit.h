@@ -222,7 +222,7 @@ struct Unit
 	float CalculateAttack() const;
 	float CalculateAttack(const Item* weapon) const;
 	float CalculateBlock(const Item* shield = nullptr) const;
-	float CalculateDefense(const Item* armor = nullptr) const;
+	float CalculateDefense(const Item* armor = nullptr, bool apply_dex = true) const;
 	// czy ¿yje i nie le¿y na ziemi
 	bool IsStanding() const { return live_state == ALIVE; }
 	// czy ¿yje

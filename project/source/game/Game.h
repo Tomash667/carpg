@@ -480,7 +480,7 @@ public:
 	SOUND GetMaterialSound(MATERIAL_TYPE m1, MATERIAL_TYPE m2);
 	void PlayAttachedSound(Unit& unit, SOUND sound, float smin, float smax = 0.f);
 	void StopAllSounds();
-	ATTACK_RESULT DoGenericAttack(LevelContext& ctx, Unit& attacker, Unit& hitted, const Vec3& hitpoint, float dmg, int dmg_type, bool bash);
+	ATTACK_RESULT DoGenericAttack(LevelContext& ctx, Unit& attacker, Unit& hitted, const Vec3& hitpoint, float attack, int dmg_type, bool bash);
 	void SaveGame(GameWriter& f);
 	void LoadGame(GameReader& f);
 	void RemoveUnusedAiAndCheck();

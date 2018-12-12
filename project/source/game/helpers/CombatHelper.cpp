@@ -51,3 +51,10 @@ int CombatHelper::CalculateModifier(int type, int flags)
 	assert(mod != -2);
 	return mod;
 }
+
+float CombatHelper::CalculateDamage(float attack, float def)
+{
+	if(def <= 0.f)
+		return attack;
+	return (attack * attack) / (attack + def);
+}
