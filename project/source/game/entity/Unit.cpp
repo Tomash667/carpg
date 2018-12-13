@@ -3249,25 +3249,25 @@ Mesh::Animation* Unit::GetTakeWeaponAnimation(bool melee) const
 float Unit::CalculateMagicResistance() const
 {
 	float mres = 1.f;
-	if(IS_SET(data->flags2, F2_MAGIC_RES25))
-		mres = 0.75f;
-	else if(IS_SET(data->flags2, F2_MAGIC_RES50))
+	if(IS_SET(data->flags2, F2_MAGIC_RES50))
 		mres = 0.5f;
+	else if(IS_SET(data->flags2, F2_MAGIC_RES25))
+		mres = 0.75f;
 	if(HaveArmor())
 	{
 		const Armor& a = GetArmor();
-		if(IS_SET(a.flags, ITEM_MAGIC_RESISTANCE_10))
-			mres *= 0.9f;
-		else if(IS_SET(a.flags, ITEM_MAGIC_RESISTANCE_25))
+		if(IS_SET(a.flags, ITEM_MAGIC_RESISTANCE_25))
 			mres *= 0.75f;
+		else if(IS_SET(a.flags, ITEM_MAGIC_RESISTANCE_10))
+			mres *= 0.9f;
 	}
 	if(HaveShield())
 	{
 		const Shield& s = GetShield();
-		if(IS_SET(s.flags, ITEM_MAGIC_RESISTANCE_10))
-			mres *= 0.9f;
-		else if(IS_SET(s.flags, ITEM_MAGIC_RESISTANCE_25))
+		if(IS_SET(s.flags, ITEM_MAGIC_RESISTANCE_25))
 			mres *= 0.75f;
+		else if(IS_SET(s.flags, ITEM_MAGIC_RESISTANCE_10))
+			mres *= 0.9f;
 	}
 	float effect_mres = GetEffectMul(EffectId::MagicResistance);
 	return mres * effect_mres;

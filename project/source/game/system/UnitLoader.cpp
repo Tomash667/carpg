@@ -580,14 +580,11 @@ class UnitLoader : public ContentLoader
 				break;
 			case P_FLAGS:
 				{
-					bool clear = !t.IsSymbol('|');
-					if(!clear)
-						t.Next();
-					ReadFlags(t, {
+					t.ParseFlags({
 						{ &unit->flags, G_FLAGS },
 						{ &unit->flags2, G_FLAGS2 },
 						{ &unit->flags3, G_FLAGS3 }
-					}, clear);
+					});
 					crc.Update(unit->flags);
 					crc.Update(unit->flags2);
 					crc.Update(unit->flags3);
@@ -708,7 +705,7 @@ class UnitLoader : public ContentLoader
 				crc.Update(unit->group);
 				break;
 			case P_DMG_TYPE:
-				unit->dmg_type = ReadFlags(t, G_DMG_TYPE);
+				t.ParseFlags(G_DMG_TYPE, unit->dmg_type);
 				crc.Update(unit->dmg_type);
 				break;
 			case P_WALK_SPEED:
@@ -1502,7 +1499,8 @@ class UnitLoader : public ContentLoader
 					t.Next();
 					float end = t.MustGetNumberFloat();
 					t.Next();
-					int flags = ReadFlags(t, G_WEAPON_FLAG);
+					int flags = 0;
+					t.ParseFlags(G_WEAPON_FLAG, flags);
 					t.Next();
 					t.AssertSymbol('}');
 					crc.Update(start);

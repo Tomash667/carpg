@@ -952,7 +952,7 @@ armor am_gladiator {
 	defense 170
 	req_str 45
 	mobility 75
-	flags {not_shop not_chest not_random unique}
+	flags {not_shop not_chest not_random unique magic_resistance10}
 }
 
 armor ah_splint {

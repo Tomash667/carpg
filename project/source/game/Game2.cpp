@@ -5311,7 +5311,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 							{
 								if(!u.player->IsHit(unit))
 								{
-									GiveDmg(ctx, &u, 100.f + u.Get(AttributeId::STR) * 2, *unit);
+									GiveDmg(ctx, &u, 100.f + u.Get(AttributeId::STR) * (2.f + float(u.level) / 3), *unit);
 									if(!unit->IsAlive())
 										continue;
 									else

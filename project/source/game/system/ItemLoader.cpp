@@ -452,13 +452,11 @@ public:
 				}
 				break;
 			case P_DMG_TYPE:
-				item->ToWeapon().dmg_type = ReadFlags(t, G_DMG_TYPE);
+				t.ParseFlags(G_DMG_TYPE, item->ToWeapon().dmg_type);
 				break;
 			case P_FLAGS:
-				{
-					int old_flags = (item->flags & ITEM_TEX_ONLY);
-					item->flags |= ReadFlags(t, G_FLAGS) | old_flags;
-				}
+				CLEAR_BIT(item->flags, ITEM_TEX_ONLY);
+				t.ParseFlags(G_FLAGS, item->flags);
 				break;
 			case P_DEFENSE:
 				{

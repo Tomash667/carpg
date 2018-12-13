@@ -2,70 +2,10 @@
 //------------------------------------------------------------------------------
 // ITEMS 
 //------------------------------------------------------------------------------
-items blacksmith {
-	al_blacksmith
-	blacksmith_hammer
-	random 1 3 !normal_food
-}
-
 items merchant {
 	random {al_clothes2 al_clothes2b}
 	dagger_sword
 	random 1 3 !normal_food
-}
-
-items alchemist {
-	random {al_clothes2 al_clothes2b}
-	dagger_short
-	p_hp
-	ladle
-	random 1 3 !normal_food
-}
-
-items goblin {
-	chance 20 bow_short
-	chance 20 shield_wood
-	chance 5 p_hp
-	if chance 2
-		frying_pan
-	else
-		random {dagger_short axe_small blunt_club}
-	chance 25 al_goblin
-	random 0 2 !orc_food
-}
-
-items goblin_hunter {
-	if level 5
-		bow_long
-	else
-		bow_short
-	chance 10 p_hp
-	random {dagger_short axe_small blunt_club}
-	chance 50 al_goblin
-	chance 25 shield_wood
-	random 0 2 !orc_food
-}
-
-items goblin_fighter {
-	if level 5 {
-		chance 25 {shield_iron shield_wood}
-		random {dagger_sword axe_small blunt_club sword_long}
-	}
-	else {
-		chance 75 shield_wood
-		random {dagger_short axe_small blunt_club}
-	}
-	chance 15 p_hp
-	al_goblin
-	random 0 2 !orc_food
-}
-
-items goblin_chief {
-	chance 25 p_hp
-	al_goblin
-	chance 75 {shield_iron shield_wood}
-	random {dagger_sword axe_small blunt_mace sword_long sword_scimitar}
-	random 1 3 !orc_food
 }
 
 items orc {
@@ -159,10 +99,6 @@ items skeleton_fighter {
 		random {dagger_rapier sword_scimitar axe_battle blunt_mace}
 	else
 		random {dagger_short dagger_sword sword_long axe_small blunt_club}
-}
-
-items skeleton_mage {
-	wand_1
 }
 
 items bandit {
@@ -409,10 +345,6 @@ items miner {
 	random 1 3 !normal_food
 }
 
-items wolf {
-	random 2 3 raw_meat
-}
-
 //------------------------------------------------------------------------------
 // SPELLS
 //------------------------------------------------------------------------------
@@ -421,31 +353,10 @@ spells orc_shaman {
 	{fireball 9}
 }
 
-spells skeleton_mage {
-	non_combat 1
-	{magic_bolt 0}
-	{fireball 8}
-	{raise 10}
-}
-
 spells mage {
 	{magic_bolt 0}
 	{fireball 8}
 	{thunder_bolt 12}
-}
-
-spells necromancer {
-	non_combat 1
-	{magic_bolt 0}
-	{raise 5}
-	{exploding_skull 10}
-}
-
-spells evil_cleric {
-	non_combat 1
-	null
-	{drain 5}
-	{raise 10}
 }
 
 //------------------------------------------------------------------------------
@@ -1118,193 +1029,12 @@ profile animal {
 }
 
 //------------------------------------------------------------------------------
-// SOUND
-//------------------------------------------------------------------------------
-sounds human {
-	see_enemy "hey.mp3"
-	pain "aahhzz.mp3"
-	death "ahhh.mp3"
-	talk {"hello-3.mp3" "hello-4.mp3" "hmph.wav" "huh-2.mp3"}
-}
-
-sounds wolf {
-	see_enemy "wolf_x.mp3"
-	pain "dog_whine.mp3"
-	death "dog_whine.mp3"
-	attack "wolf_attack.mp3"
-}
-
-sounds spider {
-	see_enemy "spider_tarantula_hiss.mp3"
-	attack "spider_bite_and_suck.mp3"
-}
-
-sounds zombie {
-	see_enemy "zombie groan 1.wav"
-	pain "zombie.mp3"
-	death "zombie2.mp3"
-	attack "zombie attack.wav"
-}
-
-sounds skeleton {
-	see_enemy "skeleton_alert.mp3"
-	pain "bone_break.mp3"
-	death "falling-bones.mp3"
-}
-
-sounds golem {
-	see_enemy "golem_alert.mp3"
-	death "earthquake.wav"
-	talk "golem_alert.mp3"
-}
-
-sounds golem_iron {
-	see_enemy "golem_alert.mp3"
-	death "irongolem_break.mp3"
-	talk "golem_alert.mp3"
-}
-
-sounds goblin {
-	see_enemy "goblin-3.wav"
-	pain "goblin-11.wav"
-	death "goblin-15.wav"
-	talk "goblin-7.wav"
-}
-
-sounds orc {
-	see_enemy "ogre2.wav"
-	pain "ogre5.wav"
-	death "ogre3.wav"
-	talk "ogre1.wav"
-}
-
-sounds undead {
-	see_enemy "shade8.wav"
-	pain "shade5.wav"
-	death "shade12.wav"
-}
-
-//------------------------------------------------------------------------------
-// FRAMES
-//------------------------------------------------------------------------------
-frames human {
-	attacks {
-		{0.33 0.7 {short_blade long_blade axe blunt}}
-		{0.3 0.73 {long_blade axe blunt}}
-		{0.23 0.7 {short_blade long_blade blunt}}
-		{0.36 0.7 {long_blade axe blunt}}
-		{0.36 0.72 {short_blade long_blade}}
-	}
-	cast 0.85
-	take_weapon 0.4
-	bash 0.8
-}
-
-frames skeleton {
-	simple_attacks {
-		{0.4 1}
-		{0.47 1}
-		{0.47 1}
-	}
-	cast 1
-	take_weapon 0.5
-	bash 0.66
-}
-
-frames zombie {
-	simple_attacks {
-		{0.75 1}
-		{0.6 1}
-	}
-	cast 0.66
-}
-
-frames goblin {
-	simple_attacks {
-		{0.33 0.66}
-		{0.33 0.66}
-	}
-	take_weapon 0.5
-	bash 0.66
-}
-
-frames orc {
-	simple_attacks {
-		{0.35 0.65}
-		{0.35 0.65}
-	}
-	cast 1
-	take_weapon 0.5
-	bash 0.71
-}
-
-frames wolf {
-	simple_attacks {
-		{0.7 1}
-		{0.65 0.75}
-	}
-}
-
-frames golem {
-	simple_attacks {
-		{0.5 0.75}
-		{0.5 0.75}
-	}
-}
-
-frames spider {
-	simple_attacks {
-		{0.25 0.5}
-	}
-}
-
-//------------------------------------------------------------------------------
 // TEXTURES
 //------------------------------------------------------------------------------
 tex orc_shaman {
 	"ork_szaman.jpg"
 	null
 	null
-}
-
-//------------------------------------------------------------------------------
-// IDLES
-//------------------------------------------------------------------------------
-idles human {
-	"wygina"
-	"rozglada"
-	"drapie"
-}
-
-idles zombie {
-	"wygina"
-}
-
-idles skeleton {
-	"rozglada"
-	"przysiad"
-	"wygina"
-}
-
-idles goblin {
-	"rozglada"
-}
-
-idles orc {
-	"rozglada"
-}
-
-idles wolf {
-	"rozglada"
-	"wygina"
-}
-
-idles golem {
-	"idle"
-}
-
-idles spider {
-	"idle"
 }
 
 //------------------------------------------------------------------------------
@@ -1319,9 +1049,29 @@ unit base_human {
 	run_speed 5
 	rot_speed 3
 	blood red
-	sounds human
-	frames human
-	idles human
+	sounds {
+		see_enemy "hey.mp3"
+		pain "aahhzz.mp3"
+		death "ahhh.mp3"
+		talk {"hello-3.mp3" "hello-4.mp3" "hmph.wav" "huh-2.mp3"}
+	}
+	frames {
+		attacks {
+			{0.33 0.7 {short_blade long_blade axe blunt}}
+			{0.3 0.73 {long_blade axe blunt}}
+			{0.23 0.7 {short_blade long_blade blunt}}
+			{0.36 0.7 {long_blade axe blunt}}
+			{0.36 0.72 {short_blade long_blade}}
+		}
+		cast 0.85
+		take_weapon 0.4
+		bash 0.8
+	}
+	idles {
+		"wygina"
+		"rozglada"
+		"drapie"
+	}
 	width 0.3
 	attack_range 1
 	armor_type human
@@ -1368,7 +1118,11 @@ unit blacksmith : base_human {
 	level 5
 	profile blacksmith
 	flags | {ai_stay dont_eat}
-	items blacksmith
+	items {
+		al_blacksmith
+		blacksmith_hammer
+		random 1 3 !normal_food
+	}
 	trader {
 		stock blacksmith
 		groups {weapon bow shield armor}
@@ -1410,7 +1164,13 @@ unit alchemist : base_human {
 	profile alchemist
 	flags | {ai_stay dont_eat}
 	hp 500
-	items alchemist
+	items {
+		random {al_clothes2 al_clothes2b}
+		dagger_short
+		p_hp
+		ladle
+		random 1 3 !normal_food
+	}
 	trader {
 		stock alchemist
 		groups {potion}
@@ -1736,9 +1496,24 @@ unit base_orc {
 	run_speed 5
 	rot_speed 3
 	blood red
-	sounds orc
-	frames orc
-	idles orc
+	sounds {
+		see_enemy "ogre2.wav"
+		pain "ogre5.wav"
+		death "ogre3.wav"
+		talk "ogre1.wav"
+	}
+	frames {
+		simple_attacks {
+			{0.35 0.65}
+			{0.35 0.65}
+		}
+		cast 1
+		take_weapon 0.5
+		bash 0.71
+	}
+	idles {
+		"rozglada"
+	}
 	width 0.41
 	attack_range 1
 	armor_type orc
@@ -2009,9 +1784,23 @@ unit base_goblin {
 	run_speed 6
 	rot_speed 3.5
 	blood red
-	sounds goblin
-	frames goblin
-	idles goblin
+	sounds {
+		see_enemy "goblin-3.wav"
+		pain "goblin-11.wav"
+		death "goblin-15.wav"
+		talk "goblin-7.wav"
+	}
+	frames {
+		simple_attacks {
+			{0.33 0.66}
+			{0.33 0.66}
+		}
+		take_weapon 0.5
+		bash 0.66
+	}
+	idles {
+		"rozglada"
+	}
 	width 0.3
 	attack_range 0.8
 	armor_type goblin
@@ -2020,28 +1809,66 @@ unit base_goblin {
 unit goblin : base_goblin {
 	level {1 3}
 	flags | ai_train
-	items goblin
+	items {
+		chance 20 bow_short
+		chance 20 shield_wood
+		chance 5 p_hp
+		if chance 2
+			frying_pan
+		else
+			random {dagger_short axe_small blunt_club}
+		chance 25 al_goblin
+		random 0 2 !orc_food
+	}
 	gold {{1 10}{3 14}}
 }
 
 unit goblin_hunter : base_goblin {
 	level {4 6}
 	flags | {archer ai_train}
-	items goblin_hunter
+	items {
+		if level 5
+			bow_long
+		else
+			bow_short
+		chance 10 p_hp
+		random {dagger_short axe_small blunt_club}
+		chance 50 al_goblin
+		chance 25 shield_wood
+		random 0 2 !orc_food
+	}
 	gold {{4 16}{6 20}}
 }
 
 unit goblin_fighter : base_goblin {
 	level {4 6}
 	flags | ai_train
-	items goblin_fighter
+	items {
+		if level 5 {
+			chance 25 {shield_iron shield_wood}
+			random {dagger_sword axe_small blunt_club sword_long}
+		}
+		else {
+			chance 75 shield_wood
+			random {dagger_short axe_small blunt_club}
+		}
+		chance 15 p_hp
+		al_goblin
+		random 0 2 !orc_food
+	}
 	gold {{4 16}{6 20}}
 }
 
 unit goblin_chief : base_goblin {
 	level {7 10}
 	flags | leader
-	items goblin_chief
+	items {
+		chance 25 p_hp
+		al_goblin
+		chance 75 {shield_iron shield_wood}
+		random {dagger_sword axe_small blunt_mace sword_long sword_scimitar}
+		random 1 3 !orc_food
+	}
 	gold {{20 50}{50 100}}
 }
 
@@ -2177,9 +2004,22 @@ unit base_zombie {
 	run_speed 0
 	rot_speed 2.5
 	blood green
-	sounds zombie
-	frames zombie
-	idles zombie
+	sounds {
+		see_enemy "zombie groan 1.wav"
+		pain "zombie.mp3"
+		death "zombie2.mp3"
+		attack "zombie attack.wav"
+	}
+	frames {
+		simple_attacks {
+			{0.75 1}
+			{0.6 1}
+		}
+		cast 0.66
+	}
+	idles {
+		"wygina"
+	}
 	width 0.3
 	attack_range 1
 }
@@ -2229,9 +2069,26 @@ unit base_skeleton {
 	run_speed 5
 	rot_speed 3
 	blood bone
-	sounds skeleton
-	frames skeleton
-	idles skeleton
+	sounds {
+		see_enemy "skeleton_alert.mp3"
+		pain "bone_break.mp3"
+		death "falling-bones.mp3"
+	}
+	frames {
+		simple_attacks {
+			{0.4 1}
+			{0.47 1}
+			{0.47 1}
+		}
+		cast 1
+		take_weapon 0.5
+		bash 0.66
+	}
+	idles {
+		"rozglada"
+		"przysiad"
+		"wygina"
+	}
 	width 0.3
 	attack_range 1
 }
@@ -2258,8 +2115,15 @@ unit skeleton_mage : base_skeleton {
 	level {4 12}
 	profile skeleton_mage
 	flags | mage
-	items skeleton_mage
-	spells skeleton_mage
+	items {
+		wand_1
+	}
+	spells {
+		non_combat 1
+		{magic_bolt 0}
+		{fireball 8}
+		{raise 10}
+	}
 }
 
 unit necromancer : base_human {
@@ -2268,7 +2132,12 @@ unit necromancer : base_human {
 	flags | {mage leader gray_hair}
 	items necromancer
 	gold {{15 30}{120 240}}
-	spells necromancer
+	spells {
+		non_combat 1
+		{magic_bolt 0}
+		{raise 5}
+		{exploding_skull 10}
+	}
 	group undead
 	blood black
 	tex {
@@ -2286,7 +2155,11 @@ unit base_undead : base_human {
 	gold {{10 20}{40 80}}
 	group undead
 	blood black
-	sounds undead
+	sounds {
+		see_enemy "shade8.wav"
+		pain "shade5.wav"
+		death "shade12.wav"
+	}
 	tex {
 		null
 		"undead.jpg"
@@ -2313,7 +2186,12 @@ unit evil_cleric : base_human {
 	hp 525
 	items evil_cleric
 	gold {{25 50}{160 320}}
-	spells evil_cleric
+	spells {
+		non_combat 1
+		null
+		{drain 5}
+		{raise 10}
+	}
 	group undead
 	blood black
 	tex {
@@ -2480,9 +2358,20 @@ unit base_golem {
 	walk_speed 1.5
 	run_speed 3
 	rot_speed 2
-	sounds golem
-	frames golem
-	idles golem
+	sounds {
+		see_enemy "golem_alert.mp3"
+		death "earthquake.wav"
+		talk "golem_alert.mp3"
+	}
+	frames {
+		simple_attacks {
+			{0.5 0.75}
+			{0.5 0.75}
+		}
+	}
+	idles {
+		"idle"
+	}
 	width 0.5
 	attack_range 1.2
 }
@@ -2503,7 +2392,11 @@ unit golem_iron : base_golem {
 	hp 900
 	def 100
 	blood iron
-	sounds golem_iron
+	sounds {
+		see_enemy "golem_alert.mp3"
+		death "irongolem_break.mp3"
+		talk "golem_alert.mp3"
+	}
 	tex {
 		"golem2.jpg"
 		null
@@ -2511,14 +2404,11 @@ unit golem_iron : base_golem {
 	}
 }
 
-unit golem_adamantine : base_golem {
+unit golem_adamantine : golem_iron {
 	level 20
-	mat metal
-	flags | {blunt_res25 magic_res50}
+	flags | {blunt_res25 magic_res50 ~magic_res25}
 	hp 1000
 	def 150
-	blood iron
-	sounds golem_iron
 	tex {
 		"golem3.jpg"
 		null
@@ -2567,16 +2457,31 @@ unit wolf {
 	flags {dont_open no_power_attack ignore_block dont_eat}
 	hp 300
 	def 5
-	items wolf
+	items {
+		random 2 3 raw_meat
+	}
 	group animals
 	dmg_type slash
 	walk_speed 1.5
 	run_speed 6
 	rot_speed 3.5
 	blood red
-	sounds wolf
-	frames wolf
-	idles wolf
+	sounds {
+		see_enemy "wolf_x.mp3"
+		pain "dog_whine.mp3"
+		death "dog_whine.mp3"
+		attack "wolf_attack.mp3"
+	}
+	frames {
+		simple_attacks {
+			{0.7 1}
+			{0.65 0.75}
+		}
+	}
+	idles {
+		"rozglada"
+		"wygina"
+	}
 	width 0.4
 	attack_range 1
 }
@@ -2616,9 +2521,18 @@ unit base_spider {
 	run_speed 4
 	rot_speed 3.5
 	blood green
-	sounds spider
-	frames spider
-	idles spider
+	sounds {
+		see_enemy "spider_tarantula_hiss.mp3"
+		attack "spider_bite_and_suck.mp3"
+	}
+	frames {
+		simple_attacks {
+			{0.25 0.5}
+		}
+	}
+	idles {
+		"idle"
+	}
 	attack_range 1
 }
 
