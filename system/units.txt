@@ -1,6 +1,6 @@
 // This file contains list of units and other lists used by them
 //------------------------------------------------------------------------------
-// ITEMS 
+// COMMON ITEMS 
 //------------------------------------------------------------------------------
 items merchant {
 	random {al_clothes2 al_clothes2b}
@@ -81,60 +81,6 @@ items orc_shaman {
 	random 1 3 !orc_food
 }
 
-items skeleton {
-	chance 50 {bow_short shield_wood}
-	random {dagger_short dagger_sword sword_long axe_small blunt_club}
-}
-
-items skeleton_archer {
-	chance 50 {bow_long bow_short}
-	random {dagger_short dagger_sword sword_long axe_small blunt_club}
-	chance 50 shield_wood
-}
-
-items skeleton_fighter {
-	chance 50 {shield_iron shield_wood}
-	chance 50 bow_short
-	if chance 50
-		random {dagger_rapier sword_scimitar axe_battle blunt_mace}
-	else
-		random {dagger_short dagger_sword sword_long axe_small blunt_club}
-}
-
-items bandit {
-	if chance 50 {
-		!medium_armor
-		!shield
-		random {!long_blade !axe !blunt}
-		chance 50 !-2bow
-	}
-	else {
-		!light_armor
-		!-2shield
-		random {!long_blade !axe !blunt !short_blade}
-		chance 50 !bow
-	}
-	chance 10 p_hp
-	random 1 3 !normal_food
-}
-
-items bandit_archer {
-	!light_armor
-	!bow
-	random {!-2long_blade !-2axe !-2blunt !-2short_blade}
-	chance 10 p_hp
-	random 1 3 !normal_food
-}
-
-items bandit_hegemon {
-	random {!medium_armor !heavy_armor}
-	random {!long_blade !axe !blunt !short_blade}
-	!shield
-	chance 50 !-2bow
-	p_hp2
-	random 2 4 !normal_food
-}
-
 items mage {
 	!wand
 	!mage_armor
@@ -198,23 +144,6 @@ items q_guard {
 	else
 		chance 50 p_hp
 	random 1 3 !normal_food
-}
-
-items necromancer {
-	al_necromancer
-	!wand
-	random 1 3 raw_meat
-}
-
-items evil_cleric {
-	!blunt
-	!shield
-	if level 10
-		!heavy_armor
-	else
-		!medium_armor
-	p_hp2
-	random 1 3 raw_meat
 }
 
 items warrior {
@@ -316,37 +245,8 @@ items mayor {
 	random 1 3 !normal_food
 }
 
-items innkeeper {
-	al_innkeeper
-	random {blunt_mace axe_small sword_long}
-	5 beer
-	5 water
-	3 vodka
-	random 1 3 !normal_food
-}
-
-items traveler {
-	random {al_clothes al_leather al_padded}
-	random {blunt_mace axe_small sword_long}
-	chance 50 shield_wood
-	chance 50 bow_short
-	random 1 3 !normal_food
-}
-
-items woodcutter {
-	random {al_leather al_padded al_clothes}
-	random {axe_small axe_battle}
-	random 1 3 !normal_food
-}
-
-items miner {
-	pickaxe
-	random {al_leather al_padded al_clothes}
-	random 1 3 !normal_food
-}
-
 //------------------------------------------------------------------------------
-// SPELLS
+// COMMON SPELLS
 //------------------------------------------------------------------------------
 spells orc_shaman {
 	{magic_bolt 0}
@@ -360,7 +260,7 @@ spells mage {
 }
 
 //------------------------------------------------------------------------------
-// STAT PROFILES
+// COMMON STAT PROFILES
 //------------------------------------------------------------------------------
 profile barbarian {
 	strength 70
@@ -1297,7 +1197,14 @@ unit innkeeper : base_human {
 	level 4
 	profile merchant
 	flags | {ai_guard ai_stay limited_rot dont_eat talk_at_competition}
-	items innkeeper
+	items {
+		al_innkeeper
+		random {blunt_mace axe_small sword_long}
+		5 beer
+		5 water
+		3 vodka
+		random 1 3 !normal_food
+	}
 	trader {
 		stock innkeeper
 		groups {food drink}
@@ -1344,7 +1251,13 @@ unit traveler : base_human {
 	level {2 6}
 	profile commoner
 	flags | {ai_wanders contest_25}
-	items traveler
+	items {
+		random {al_clothes al_leather al_padded}
+		random {blunt_mace axe_small sword_long}
+		chance 50 shield_wood
+		chance 50 bow_short
+		random 1 3 !normal_food
+	}
 	gold {{50 100}{100 200}}
 	dialog traveler
 }
@@ -1374,7 +1287,11 @@ unit poslaniec_tartak : base_human {
 unit drwal : base_human {
 	level {1 5}
 	profile worker
-	items woodcutter
+	items {
+		random {al_leather al_padded al_clothes}
+		random {axe_small axe_battle}
+		random 1 3 !normal_food
+	}
 	gold {{20 50}{30 60}}
 	dialog woodcutter
 }
@@ -1405,16 +1322,18 @@ unit gornik : base_human {
 	level {1 5}
 	profile worker
 	flags | miner
-	items miner
+	items {
+		pickaxe
+		random {al_leather al_padded al_clothes}
+		random 1 3 !normal_food
+	}
 	gold {{20 50}{30 60}}
 	dialog miner
 }
 
-unit gornik_szef : base_human {
+unit gornik_szef : gornik {
 	level 5
-	profile worker
-	flags | ai_stay
-	items miner
+	flags | {ai_stay ~miner}
 	gold {50 100}
 	dialog q_mine
 }
@@ -1906,16 +1825,14 @@ unit q_gobliny_ochroniarz : base_human {
 	group goblins
 }
 
-unit tut_goblin : base_goblin {
-	level {1 3}
-	flags | {ai_stay ai_guard mark}
+unit tut_goblin : goblin {
+	flags | {ai_stay ai_guard mark ~ai_train}
 	items {
 		chance 20 shield_wood
 		random {dagger_short axe_small blunt_club}
 		chance 25 al_goblin
 		random 0 2 !orc_food
 	}
-	gold {{1 10}{3 14}}
 }
 
 //------------------------------------------------------------------------------
@@ -2095,20 +2012,34 @@ unit base_skeleton {
 
 unit skeleton : base_skeleton {
 	level {2 4}
-	items skeleton
+	items {
+		chance 50 {bow_short shield_wood}
+		random {dagger_short dagger_sword sword_long axe_small blunt_club}
+	}
 }
 
 unit skeleton_archer : base_skeleton {
 	level {3 6}
 	flags | archer
-	items skeleton_archer
+	items {
+		chance 50 {bow_long bow_short}
+		random {dagger_short dagger_sword sword_long axe_small blunt_club}
+		chance 50 shield_wood
+	}
 }
 
 unit skeleton_fighter : base_skeleton {
 	level {3 6}
 	flags | melee
 	def 25
-	items skeleton_fighter
+	items {
+		chance 50 {shield_iron shield_wood}
+		chance 50 bow_short
+		if chance 50
+			random {dagger_rapier sword_scimitar axe_battle blunt_mace}
+		else
+			random {dagger_short dagger_sword sword_long axe_small blunt_club}
+	}
 }
 
 unit skeleton_mage : base_skeleton {
@@ -2130,7 +2061,11 @@ unit necromancer : base_human {
 	level {3 15}
 	profile mage
 	flags | {mage leader gray_hair}
-	items necromancer
+	items {
+		al_necromancer
+		!wand
+		random 1 3 raw_meat
+	}
 	gold {{15 30}{120 240}}
 	spells {
 		non_combat 1
@@ -2184,7 +2119,16 @@ unit evil_cleric : base_human {
 	profile cleric
 	flags | {leader gray_hair ai_train}
 	hp 525
-	items evil_cleric
+	items {
+		!blunt
+		!shield
+		if level 10
+			!heavy_armor
+		else
+			!medium_armor
+		p_hp2
+		random 1 3 raw_meat
+	}
 	gold {{25 50}{160 320}}
 	spells {
 		non_combat 1
@@ -2279,21 +2223,49 @@ unit base_bandit : base_human {
 unit bandit : base_bandit {
 	level {2 6}
 	flags | ai_train
-	items bandit
+	items {
+		if chance 50 {
+			!medium_armor
+			!shield
+			random {!long_blade !axe !blunt}
+			chance 50 !-2bow
+		}
+		else {
+			!light_armor
+			!-2shield
+			random {!long_blade !axe !blunt !short_blade}
+			chance 50 !bow
+		}
+		chance 10 p_hp
+		random 1 3 !normal_food
+	}
 	gold {{15 30}{20 40}}
 }
 
 unit bandit_archer : base_bandit {
 	level {3 7}
 	flags | {archer ai_train}
-	items bandit_archer
+	items {
+		!light_armor
+		!bow
+		random {!-2long_blade !-2axe !-2blunt !-2short_blade}
+		chance 10 p_hp
+		random 1 3 !normal_food
+	}
 	gold {{25 50}{30 60}}
 }
 
 unit bandit_hegemon : base_bandit {
 	level {8 12}
 	flags | {leader backstab}
-	items bandit_hegemon
+	items {
+		random {!medium_armor !heavy_armor}
+		random {!long_blade !axe !blunt !short_blade}
+		!shield
+		chance 50 !-2bow
+		p_hp2
+		random 2 4 !normal_food
+	}
 	gold {{75 150}{100 200}}
 }
 

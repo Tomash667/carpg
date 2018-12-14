@@ -455,8 +455,11 @@ public:
 				t.ParseFlags(G_DMG_TYPE, item->ToWeapon().dmg_type);
 				break;
 			case P_FLAGS:
-				CLEAR_BIT(item->flags, ITEM_TEX_ONLY);
-				t.ParseFlags(G_FLAGS, item->flags);
+				{
+					int prev = item->flags & ITEM_TEX_ONLY;
+					t.ParseFlags(G_FLAGS, item->flags);
+					item->flags |= prev;
+				}
 				break;
 			case P_DEFENSE:
 				{
