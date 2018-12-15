@@ -577,20 +577,40 @@ void ServerPanel::UpdateLobbyServer(float dt)
 			{
 				assert(N.master_server_state == MasterServerState::Connecting);
 				Info("ServerPanel: Connected to master server.");
-				N.master_server_state = MasterServerState::Connected;
+				N.master_server_state = MasterServerState::Registering;
 				N.master_server_adr = packet->systemAddress;
 				BitStreamWriter f;
 				f << ID_MASTER_HOST;
 				f << server_name;
+				f << VERSION_STR;
 				f << max_players;
 				f << N.GetServerFlags();
 				N.peer->Send(&f.GetBitStream(), IMMEDIATE_PRIORITY, RELIABLE_ORDERED, 1, packet->systemAddress, false);
-				if(N.active_players != 1)
+				
+			}
+			break;
+		case ID_MASTER_HOST:
+			{
+				byte result = 0xFF;
+				reader >> result;
+				if(result != 0)
 				{
-					f.Reset();
-					f << ID_MASTER_UPDATE;
-					f << N.active_players;
-					N.peer->Send(&f.GetBitStream(), IMMEDIATE_PRIORITY, RELIABLE_ORDERED, 1, packet->systemAddress, false);
+					Info("ServerPanel: Failed to register server (%u).", result);
+					N.peer->CloseConnection(N.master_server_adr, true, 1, IMMEDIATE_PRIORITY);
+					N.master_server_state = MasterServerState::NotConnected;
+					N.master_server_adr = UNASSIGNED_SYSTEM_ADDRESS;
+				}
+				else
+				{
+					Info("ServerPanel: Registered server.");
+					N.master_server_state = MasterServerState::Connected;
+					if(N.active_players != 1)
+					{
+						BitStreamWriter f;
+						f << ID_MASTER_UPDATE;
+						f << N.active_players;
+						N.peer->Send(&f.GetBitStream(), IMMEDIATE_PRIORITY, RELIABLE_ORDERED, 1, packet->systemAddress, false);
+					}
 				}
 			}
 			break;
@@ -609,25 +629,12 @@ void ServerPanel::UpdateLobbyServer(float dt)
 				info.id = N.GetNewPlayerId();
 				grid.AddItem();
 
-				if(N.active_players == N.max_players)
-				{
-					// server is full, send message and wait to disconnect
-					byte b[] = { ID_CANT_JOIN, 0 };
-					N.peer->Send((cstring)b, 2, MEDIUM_PRIORITY, RELIABLE, 0, packet->systemAddress, false);
-					N.StreamWrite(b, 2, Stream_UpdateLobbyServer, packet->systemAddress);
-					info.state = PlayerInfo::REMOVING;
-					info.timer = T_WAIT_FOR_DISCONNECT;
-					info.left = PlayerInfo::LEFT_SERVER_FULL;
-				}
-				else
-				{
-					// wait to receive info about version, nick
-					info.state = PlayerInfo::WAITING_FOR_HELLO;
-					info.timer = T_WAIT_FOR_HELLO;
-					info.devmode = game->default_player_devmode;
-					++N.active_players;
-					OnChangePlayersCount();
-				}
+				// wait to receive info about version, nick
+				info.state = PlayerInfo::WAITING_FOR_HELLO;
+				info.timer = T_WAIT_FOR_HELLO;
+				info.devmode = game->default_player_devmode;
+				++N.active_players;
+				OnChangePlayersCount();
 			}
 			break;
 		case ID_DISCONNECTION_NOTIFICATION:
@@ -637,8 +644,8 @@ void ServerPanel::UpdateLobbyServer(float dt)
 				bool dis = (msg_id == ID_CONNECTION_LOST);
 				if(!info)
 				{
-					Warn(dis ? "ServerPanel: Disconnect notification from unconnected address %s." :
-						"ServerPanel: Lost connection with unconnected address %s.", packet->systemAddress.ToString());
+					Info(dis ? "ServerPanel: Disconnect notification from %s." :
+						"ServerPanel: Lost connection with %s.", packet->systemAddress.ToString());
 				}
 				else
 				{
@@ -854,7 +861,6 @@ void ServerPanel::UpdateLobbyServer(float dt)
 				Warn("ServerPanel: Packet ID_LEAVE from unconnected client %.", packet->systemAddress.ToString());
 			else
 			{
-				// czekano na dane a on zquitowa³ mimo braku takiej mo¿liwoœci :S
 				cstring name = info->state == PlayerInfo::WAITING_FOR_HELLO ? info->adr.ToString() : info->name.c_str();
 				AddMsg(Format(txPlayerLeft, name));
 				Info("ServerPanel: Player %s left lobby.", name);
@@ -1093,8 +1099,10 @@ void ServerPanel::UpdateLobbyServer(float dt)
 				b[0] = ID_TIMER;
 				b[1] = (byte)d;
 			}
-			N.peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+			N.peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, N.master_server_adr, true);
 			N.StreamWrite(b, 2, Stream_UpdateLobbyServer, UNASSIGNED_SYSTEM_ADDRESS);
+			if(d == 0)
+				N.master_server_adr = UNASSIGNED_SYSTEM_ADDRESS;
 		}
 	}
 }
@@ -1102,7 +1110,7 @@ void ServerPanel::UpdateLobbyServer(float dt)
 //=================================================================================================
 void ServerPanel::OnChangePlayersCount()
 {
-	if(N.master_server_state == MasterServerState::Connected)
+	if(N.master_server_state == MasterServerState::Connected && game->net_mode != Game::NM_QUITTING_SERVER)
 	{
 		BitStreamWriter f;
 		f << ID_MASTER_UPDATE;
@@ -1337,7 +1345,7 @@ void ServerPanel::ExitLobby(VoidF callback)
 			// roz³¹cz graczy
 			Info("ServerPanel: Disconnecting clients.");
 			const byte b[] = { ID_SERVER_CLOSE, ServerClose_Closing };
-			N.peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+			N.peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, N.master_server_adr, true);
 			N.StreamWrite(b, 2, Stream_UpdateLobbyServer, UNASSIGNED_SYSTEM_ADDRESS);
 			game->net_mode = Game::NM_QUITTING_SERVER;
 			--N.active_players;
@@ -1348,7 +1356,7 @@ void ServerPanel::ExitLobby(VoidF callback)
 		else
 		{
 			// nie ma graczy, mo¿na zamkn¹æ
-			N.ClosePeer();
+			N.ClosePeer(N.master_server_state >= MasterServerState::Connecting);
 			CloseDialog();
 			if(callback)
 				callback();
@@ -1420,7 +1428,7 @@ void ServerPanel::StopStartup()
 	if(N.active_players > 1)
 	{
 		byte c = ID_END_TIMER;
-		N.peer->Send((cstring)&c, 1, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+		N.peer->Send((cstring)&c, 1, IMMEDIATE_PRIORITY, RELIABLE, 0, N.master_server_adr, true);
 		N.StreamWrite(&c, 1, Stream_UpdateLobbyServer, UNASSIGNED_SYSTEM_ADDRESS);
 	}
 }

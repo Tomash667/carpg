@@ -36,7 +36,7 @@ void LobbyApi::Update(float dt)
 		timer += dt;
 		if(timer >= PING_TIMER && requests.empty())
 		{
-			http->Request(HTTPConnection::HTTP_PUT, Format("api/servers/ping/%d?key=%s", server_id, key.c_str()));
+			//http->Request(HTTPConnection::HTTP_PUT, Format("api/servers/ping/%d?key=%s", server_id, key.c_str()));
 			requests.push(PING_SERVER);
 		}
 	}
@@ -116,13 +116,13 @@ void LobbyApi::UpdateServer(int players)
 {
 	if(server_id != -1)
 	{
-		http->Request(HTTPConnection::HTTP_PUT, Format("api/servers/%d?key=%s&players=%d", server_id, key.c_str(), players));
+		//http->Request(HTTPConnection::HTTP_PUT, Format("api/servers/%d?key=%s&players=%d", server_id, key.c_str(), players));
 		requests.push(UPDATE_SERVER);
 	}
 }
 
 void LobbyApi::UnregisterServer()
 {
-	http->Request(HTTPConnection::HTTP_DELETE, Format("api/servers/%d&key=%s", server_id, key.c_str()));
+	//http->Request(HTTPConnection::HTTP_DELETE, Format("api/servers/%d&key=%s", server_id, key.c_str()));
 	requests.push(REMOVE_SERVER);
 }

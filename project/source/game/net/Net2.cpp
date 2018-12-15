@@ -32,6 +32,11 @@ const int CLOSE_PEER_TIMER = 1000; // ms
 //=================================================================================================
 Net::Net() : peer(nullptr), current_packet(nullptr), mp_load(false), mp_use_interp(true), mp_interp(0.05f), was_client(false)
 {
+}
+
+//=================================================================================================
+void Net::InitOnce()
+{
 	api = new LobbyApi;
 }
 
@@ -147,7 +152,7 @@ void Net::InitServer()
 	if(!peer)
 		peer = RakPeerInterface::GetInstance();
 
-	uint max_connections = max_players;
+	uint max_connections = max_players - 1;
 	if(!server_hidden)
 		++max_connections;
 
@@ -166,7 +171,7 @@ void Net::InitServer()
 		peer->SetIncomingPassword(password.c_str(), password.length());
 	}
 
-	peer->SetMaximumIncomingConnections((word)max_players);
+	peer->SetMaximumIncomingConnections((word)max_players - 1);
 	DEBUG_DO(peer->SetTimeoutTime(60 * 60 * 1000, UNASSIGNED_SYSTEM_ADDRESS));
 
 	if(!server_hidden)
@@ -180,6 +185,7 @@ void Net::InitServer()
 			Error("Failed to connect to master server: RakNet error %d.", result);
 		}
 	}
+	master_server_adr = UNASSIGNED_SYSTEM_ADDRESS;
 
 	Info("Server created. Waiting for connection.");
 
@@ -223,7 +229,7 @@ uint Net::SendAll(BitStreamWriter& f, PacketPriority priority, PacketReliability
 	assert(IsServer());
 	if(active_players <= 1)
 		return 0;
-	uint ack = peer->Send(&f.GetBitStream(), priority, reliability, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+	uint ack = peer->Send(&f.GetBitStream(), priority, reliability, 0, master_server_adr, true);
 	StreamWrite(f.GetBitStream(), type, UNASSIGNED_SYSTEM_ADDRESS);
 	return ack;
 }

@@ -99,7 +99,7 @@ void PickServerPanel::Update(float dt)
 	if(ping_timer < 0.f)
 	{
 		ping_timer = 1.f;
-		N.peer->Ping("255.255.255.255", (word)N.port, true);
+		N.peer->Ping("255.255.255.255", (word)N.port, false);
 	}
 
 	// listen for packets
@@ -280,7 +280,7 @@ void PickServerPanel::Show(bool pick_autojoin)
 	}
 
 	Info("Pinging servers.");
-	N.peer->Ping("255.255.255.255", (word)N.port, true);
+	N.peer->Ping("255.255.255.255", (word)N.port, false);
 
 	ping_timer = 1.f;
 	servers.clear();

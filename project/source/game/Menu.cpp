@@ -682,13 +682,18 @@ void Game::UpdateClientConnectingIp(float dt)
 				}
 				break;
 			case ID_CANT_JOIN:
-				// server refused to join
+			case ID_NO_FREE_INCOMING_CONNECTIONS:
+				// can't join server (full or other reason)
 				{
 					cstring reason, reason_eng;
 
-					const JoinResult type = (packet->length >= 2 ? (JoinResult)packet->data[1] : JoinResult::OtherError);
+					JoinResult result;
+					if(msg_id == ID_NO_FREE_INCOMING_CONNECTIONS)
+						result = JoinResult::FullServer;
+					else
+						result = (packet->length >= 2 ? (JoinResult)packet->data[1] : JoinResult::OtherError);
 
-					switch(type)
+					switch(result)
 					{
 					case JoinResult::FullServer:
 						reason = txServerFull;
@@ -751,7 +756,7 @@ void Game::UpdateClientConnectingIp(float dt)
 					if(reason_eng)
 						Warn("NM_CONNECT_IP(2): Can't connect to server: %s.", reason_eng);
 					else
-						Warn("NM_CONNECT_IP(2): Can't connect to server (%d).", type);
+						Warn("NM_CONNECT_IP(2): Can't connect to server (%d).", result);
 					if(reason)
 						EndConnecting(Format("%s:\n%s", txCantJoin2, reason), true);
 					else
@@ -1790,7 +1795,7 @@ void Game::UpdateServerQuiting(float dt)
 	if(net_timer <= 0.f)
 	{
 		Warn("NM_QUITTING_SERVER: Not all players disconnected on time. Closing server...");
-		N.ClosePeer();
+		N.ClosePeer(N.master_server_state >= MasterServerState::Connecting);
 		gui->info_box->CloseDialog();
 		if(gui->server->visible)
 			gui->server->CloseDialog();
