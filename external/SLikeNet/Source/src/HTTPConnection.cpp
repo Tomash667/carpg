@@ -207,11 +207,10 @@ RakString HTTPConnection::Read(void)
 		return RakString();
 
 	SLNet::RakString resultStr = results.Pop();
-    // const char *start_of_body = strstr(resultStr.C_String(), "\r\n\r\n");
-	const char *start_of_body = strpbrk(resultStr.C_String(), "\001\002\003%");
+    const char *start_of_body = strstr(resultStr.C_String(), "\r\n\r\n");
     
     if(start_of_body)
-		return SLNet::RakString::NonVariadic(start_of_body);
+		return SLNet::RakString::NonVariadic(start_of_body + 4);
 	else
 		return resultStr;
 }

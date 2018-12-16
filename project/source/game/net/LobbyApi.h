@@ -2,31 +2,39 @@
 
 #include "Timer.h"
 
+#undef IGNORE
+
 class LobbyApi
 {
-	enum Method
+	enum Operation
 	{
 		NONE,
-		CREATE_SERVER,
-		UPDATE_SERVER,
-		PING_SERVER,
-		REMOVE_SERVER
+		GET_SERVERS,
+		GET_CHANGES,
+		GET_VERSION,
+		IGNORE
 	};
 public:
 	LobbyApi();
 	~LobbyApi();
 	void Update(float dt);
-	void RegisterServer(const string& name, int max_players, int flags, int port);
-	void UpdateServer(int players);
-	void UnregisterServer();
+	void Reset();
+	void GetServers() { AddOperation(GET_SERVERS); }
+	void GetChanges() { AddOperation(GET_CHANGES); }
+	bool IsBusy() const { return current_op != NONE; }
+	int GetVersion();
+
+	static cstring API_URL;
+	static const int API_PORT;
 
 private:
+	void AddOperation(Operation op);
+	void DoOperation(Operation op);
 	void ParseResponse();
 
 	TCPInterface* tcp;
 	HTTPConnection* http;
-	std::queue<Method> requests;
-	int server_id;
-	string key;
-	float timer;
+	std::queue<Operation> requests;
+	Operation current_op;
+	int timestamp;
 };

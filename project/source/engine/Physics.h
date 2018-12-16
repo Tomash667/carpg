@@ -1,10 +1,8 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#define NULL nullptr
 #include <btBulletCollisionCommon.h>
 #include <BulletCollision\CollisionShapes\btHeightfieldTerrainShape.h>
-#undef NULL
 
 //-----------------------------------------------------------------------------
 class CustomCollisionWorld : public btCollisionWorld

@@ -2059,7 +2059,7 @@ void Game::OnPlayTutorial(int id)
 
 void Game::OnPickServer(int id)
 {
-	if(id == BUTTON_CANCEL)
+	if(id == PickServerPanel::IdCancel)
 	{
 		N.ClosePeer();
 		N.peer->Shutdown(0);

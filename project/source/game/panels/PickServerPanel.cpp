@@ -9,6 +9,8 @@
 #include "BitStreamFunc.h"
 #include "ResourceManager.h"
 #include "GlobalGui.h"
+#include "LobbyApi.h"
+#include <json.hpp>
 
 //=================================================================================================
 PickServerPanel::PickServerPanel(const DialogInfo& info) : GameDialogBox(info), pick_autojoin(false)
@@ -18,13 +20,29 @@ PickServerPanel::PickServerPanel(const DialogInfo& info) : GameDialogBox(info), 
 
 	bts[0].size = Int2(180, 44);
 	bts[0].pos = Int2(336, 30);
-	bts[0].id = GuiEvent_Custom + BUTTON_OK;
+	bts[0].id = IdOk;
 	bts[0].parent = this;
 
 	bts[1].size = Int2(180, 44);
 	bts[1].pos = Int2(336, 80);
-	bts[1].id = GuiEvent_Custom + BUTTON_CANCEL;
+	bts[1].id = IdCancel;
 	bts[1].parent = this;
+
+	cb_internet.id = IdInternet;
+	cb_internet.radiobox = true;
+	cb_internet.text = "Internet"; FIXME;
+	cb_internet.bt_size = Int2(32, 32);
+	cb_internet.parent = this;
+	cb_internet.pos = Int2(336, 130);
+	cb_internet.size = Int2(200, 32);
+
+	cb_lan.id = IdLan;
+	cb_lan.radiobox = true;
+	cb_lan.text = "LAN"; FIXME;
+	cb_lan.bt_size = Int2(32, 32);
+	cb_lan.parent = this;
+	cb_lan.pos = Int2(336, 170);
+	cb_lan.size = Int2(200, 32);
 
 	grid.pos = Int2(8, 8);
 	grid.size = Int2(320, 300);
@@ -34,6 +52,7 @@ PickServerPanel::PickServerPanel(const DialogInfo& info) : GameDialogBox(info), 
 //=================================================================================================
 void PickServerPanel::LoadLanguage()
 {
+	FIXME; // unused
 	txUnknownResponse = Str("unknownResponse");
 	txUnknownResponse2 = Str("unknownResponse2");
 	txBrokenResponse = Str("brokenResponse");
@@ -51,24 +70,24 @@ void PickServerPanel::LoadLanguage()
 void PickServerPanel::LoadData()
 {
 	auto& tex_mgr = ResourceManager::Get<Texture>();
-	tex_mgr.AddLoadTask("save-16.png", tIcoZapis);
-	tex_mgr.AddLoadTask("padlock-16.png", tIcoHaslo);
+	tex_mgr.AddLoadTask("save-16.png", tIcoSave);
+	tex_mgr.AddLoadTask("padlock-16.png", tIcoPassword);
 }
 
 //=================================================================================================
 void PickServerPanel::Draw(ControlDrawData*)
 {
-	// t³o
+	// background
 	GUI.DrawSpriteFull(tBackground, Color::Alpha(128));
 
 	// panel
 	GUI.DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
 
-	// przyciski
+	// controls
 	for(int i = 0; i < 2; ++i)
 		bts[i].Draw();
-
-	// grid
+	cb_internet.Draw();
+	cb_lan.Draw();
 	grid.Draw();
 }
 
@@ -81,16 +100,22 @@ void PickServerPanel::Update(float dt)
 		bts[i].mouse_focus = focus;
 		bts[i].Update(dt);
 	}
-
+	cb_internet.mouse_focus = focus;
+	cb_internet.Update(dt);
+	cb_lan.mouse_focus = focus;
+	cb_lan.Update(dt);
 	grid.focus = focus;
 	grid.Update(dt);
+
+	// update lobby api
+	N.api->Update(dt);
 
 	if(!focus)
 		return;
 
 	if(Key.Focus() && Key.PressedRelease(VK_ESCAPE))
 	{
-		Event((GuiEvent)(GuiEvent_Custom + BUTTON_CANCEL));
+		Event((GuiEvent)(IdCancel));
 		return;
 	}
 
@@ -98,8 +123,16 @@ void PickServerPanel::Update(float dt)
 	ping_timer -= dt;
 	if(ping_timer < 0.f)
 	{
-		ping_timer = 1.f;
-		N.peer->Ping("255.255.255.255", (word)N.port, false);
+		if(lan_mode)
+		{
+			N.peer->Ping("255.255.255.255", (word)N.port, false);
+			ping_timer = 1.f;
+		}
+		else if(!N.api->IsBusy() && !bad_request)
+		{
+			N.api->GetChanges();
+			ping_timer = 1.f;
+		}
 	}
 
 	// listen for packets
@@ -114,6 +147,7 @@ void PickServerPanel::Update(float dt)
 		switch(msg_id)
 		{
 		case ID_UNCONNECTED_PONG:
+			if(lan_mode)
 			{
 				// header
 				TimeMS time_ms;
@@ -150,7 +184,7 @@ void PickServerPanel::Update(float dt)
 
 				bool valid_version = (version == VERSION);
 
-				// serach for server in list
+				// search for server in list
 				bool found = false;
 				int index = 0;
 				for(vector<ServerData>::iterator it = servers.begin(), end = servers.end(); it != end; ++it, ++index)
@@ -159,7 +193,7 @@ void PickServerPanel::Update(float dt)
 					{
 						// update
 						found = true;
-						Info("PickServer: Updated server info %s.", it->adr.ToString());
+						Info("PickServer: Updated server %s (%s).", it->name.c_str(), it->adr.ToString());
 						it->name = server_name;
 						it->active_players = active_players;
 						it->max_players = players_max;
@@ -167,15 +201,7 @@ void PickServerPanel::Update(float dt)
 						it->timer = 0.f;
 						it->valid_version = valid_version;
 
-						if(pick_autojoin && it->active_players != it->max_players && it->valid_version)
-						{
-							// autojoin server
-							bts[0].state = Button::NONE;
-							pick_autojoin = false;
-							grid.selected = index;
-							Event(GuiEvent(GuiEvent_Custom + BUTTON_OK));
-						}
-
+						CheckAutojoin();
 						break;
 					}
 				}
@@ -183,8 +209,9 @@ void PickServerPanel::Update(float dt)
 				if(!found)
 				{
 					// add to servers list
-					Info("PickServer: Added server info %s.", packet->systemAddress.ToString());
+					Info("PickServer: Added server %s (%s).", server_name.c_str(), packet->systemAddress.ToString());
 					ServerData& sd = Add1(servers);
+					sd.id = -1;
 					sd.name = server_name;
 					sd.active_players = active_players;
 					sd.max_players = players_max;
@@ -194,14 +221,7 @@ void PickServerPanel::Update(float dt)
 					sd.valid_version = valid_version;
 					grid.AddItem();
 
-					if(pick_autojoin && sd.active_players != sd.max_players && sd.valid_version)
-					{
-						// autojoin server
-						bts[0].state = Button::NONE;
-						pick_autojoin = false;
-						grid.selected = servers.size() - 1;
-						Event(GuiEvent(GuiEvent_Custom + BUTTON_OK));
-					}
+					CheckAutojoin();
 				}
 			}
 			break;
@@ -215,20 +235,24 @@ void PickServerPanel::Update(float dt)
 	}
 
 	// update servers
-	int index = 0;
-	for(vector<ServerData>::iterator it = servers.begin(), end = servers.end(); it != end;)
+	if(lan_mode)
 	{
-		it->timer += dt;
-		if(it->timer >= 2.f)
+		int index = 0;
+		for(vector<ServerData>::iterator it = servers.begin(), end = servers.end(); it != end;)
 		{
-			grid.RemoveItem(index);
-			it = servers.erase(it);
-			end = servers.end();
-		}
-		else
-		{
-			++it;
-			++index;
+			it->timer += dt;
+			if(it->timer >= 2.f)
+			{
+				Info("PickServer: Removed server %s (%s).", it->name.c_str(), it->adr.ToString());
+				grid.RemoveItem(index);
+				it = servers.erase(it);
+				end = servers.end();
+			}
+			else
+			{
+				++it;
+				++index;
+			}
 		}
 	}
 
@@ -242,26 +266,39 @@ void PickServerPanel::Update(float dt)
 //=================================================================================================
 void PickServerPanel::Event(GuiEvent e)
 {
-	if(e == GuiEvent_Show || e == GuiEvent_WindowResize)
+	switch(e)
 	{
+	case GuiEvent_Show:
+	case GuiEvent_WindowResize:
 		if(e == GuiEvent_Show)
 			visible = true;
 		pos = global_pos = (GUI.wnd_size - size) / 2;
 		for(int i = 0; i < 2; ++i)
 			bts[i].global_pos = global_pos + bts[i].pos;
+		cb_internet.global_pos = global_pos + cb_internet.pos;
+		cb_lan.global_pos = global_pos + cb_lan.pos;
 		grid.Move(global_pos);
-	}
-	else if(e == GuiEvent_Close)
-	{
+		break;
+	case GuiEvent_Close:
 		visible = false;
 		grid.LostFocus();
-	}
-	else if(e == GuiEvent_LostFocus)
+		break;
+	case GuiEvent_LostFocus:
 		grid.LostFocus();
-	else if(e == GuiEvent_Custom + BUTTON_OK)
-		event(BUTTON_OK);
-	else if(e == GuiEvent_Custom + BUTTON_CANCEL)
-		event(BUTTON_CANCEL);
+		break;
+	case IdOk:
+	case IdCancel:
+		event(e);
+		break;
+	case IdInternet:
+		cb_lan.checked = false;
+		OnChangeMode(false);
+		break;
+	case IdLan:
+		cb_internet.checked = false;
+		OnChangeMode(true);
+		break;
+	}
 }
 
 //=================================================================================================
@@ -279,9 +316,13 @@ void PickServerPanel::Show(bool pick_autojoin)
 		return;
 	}
 
-	Info("Pinging servers.");
-	N.peer->Ping("255.255.255.255", (word)N.port, false);
-
+	Info("Getting servers from master server.");
+	lan_mode = false;
+	bad_request = false;
+	cb_internet.checked = true;
+	cb_lan.checked = false;
+	N.api->Reset();
+	N.api->GetServers();
 	ping_timer = 1.f;
 	servers.clear();
 	grid.Reset();
@@ -298,9 +339,9 @@ void PickServerPanel::GetCell(int item, int column, Cell& cell)
 	{
 		vector<TEX>& imgs = *cell.imgset;
 		if(IS_SET(server.flags, SERVER_PASSWORD))
-			imgs.push_back(tIcoHaslo);
+			imgs.push_back(tIcoPassword);
 		if(IS_SET(server.flags, SERVER_SAVED))
-			imgs.push_back(tIcoZapis);
+			imgs.push_back(tIcoSave);
 	}
 	else
 	{
@@ -310,4 +351,142 @@ void PickServerPanel::GetCell(int item, int column, Cell& cell)
 		else
 			cell.text_color->text = server.name.c_str();
 	}
+}
+
+//=================================================================================================
+void PickServerPanel::OnChangeMode(bool lan_mode)
+{
+	this->lan_mode = lan_mode;
+	if(lan_mode)
+	{
+		N.api->Reset();
+		N.peer->Ping("255.255.255.255", (word)N.port, false);
+	}
+	else
+	{
+		N.api->GetServers();
+		bad_request = false;
+	}
+	servers.clear();
+	grid.Reset();
+	ping_timer = 1.f;
+}
+
+//=================================================================================================
+void PickServerPanel::HandleGetServers(nlohmann::json& j)
+{
+	if(!visible || lan_mode)
+		return;
+
+	auto& servers = j["servers"];
+	for(auto it = servers.begin(), end = servers.end(); it != end; ++it)
+		AddServer(*it);
+
+	CheckAutojoin();
+}
+
+//=================================================================================================
+void PickServerPanel::AddServer(nlohmann::json& server)
+{
+	ServerData& sd = Add1(servers);
+	sd.id = server["id"].get<int>();
+	sd.guid = server["guid"].get_ref<string&>();
+	sd.name = server["name"].get_ref<string&>();
+	sd.active_players = server["players"].get<int>();
+	sd.max_players = server["maxPlayers"].get<int>();
+	sd.flags = server["flags"].get<int>();
+	sd.timer = 0.f;
+	sd.valid_version = true;
+	grid.AddItem();
+	Info("PickServer: Added server %s (%d).", sd.name.c_str(), sd.id);
+}
+
+//=================================================================================================
+void PickServerPanel::HandleGetChanges(nlohmann::json& j)
+{
+	if(!visible || lan_mode)
+		return;
+
+	auto& changes = j["changes"];
+	for(auto it = changes.begin(), end = changes.end(); it != end; ++it)
+	{
+		auto& change = *it;
+		int type = change["type"].get<int>();
+		switch(type)
+		{
+		case 0: // add server
+			AddServer(change["server"]);
+			break;
+		case 1: // update server
+			{
+				auto& server = change["server"];
+				int id = server["id"].get<int>();
+				int players = server["players"].get<int>();
+				bool found = false;
+				for(ServerData& sd : servers)
+				{
+					if(sd.id == id)
+					{
+						sd.active_players = players;
+						found = true;
+						Info("PickServer: Updated server %s (%d).", sd.name.c_str(), id);
+						break;
+					}
+				}
+				if(!found)
+					Error("PickServer: Missing server %d to update.", id);
+			}
+			break;
+		case 2: // remove server
+			{
+				int id = change["serverID"].get<int>();
+				int index = 0;
+				bool found = false;
+				for(auto it2 = servers.begin(), end2 = servers.end(); it2 != end2; ++it2)
+				{
+					if(it2->id == id)
+					{
+						Info("PickServer: Removed server %s (%d).", it2->name.c_str(), it2->id);
+						found = true;
+						grid.RemoveItem(index);
+						servers.erase(it2);
+						break;
+					}
+					++index;
+				}
+				if(!found)
+					Error("PickServer: Missing server %d to remove.", id);
+			}
+			break;
+		}
+	}
+
+	CheckAutojoin();
+}
+
+//=================================================================================================
+void PickServerPanel::CheckAutojoin()
+{
+	if(!pick_autojoin)
+		return;
+	int index = 0;
+	for(ServerData& sd : servers)
+	{
+		if(sd.active_players != sd.max_players && sd.valid_version)
+		{
+			// autojoin server
+			bts[0].state = Button::NONE;
+			pick_autojoin = false;
+			grid.selected = index;
+			Event(GuiEvent(IdOk));
+		}
+		++index;
+	}
+}
+
+//=================================================================================================
+void PickServerPanel::HandleBadRequest()
+{
+	bad_request = true;
+	GUI.SimpleDialog("B³¹d pobierania listy serwerów.", this); FIXME;
 }

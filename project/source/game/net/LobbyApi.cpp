@@ -4,22 +4,28 @@
 #include "LobbyApi.h"
 #include <slikenet\TCPInterface.h>
 #include <slikenet\HTTPConnection.h>
+#include "Game.h"
+#include "GlobalGui.h"
+#include "PickServerPanel.h"
 
-using json = nlohmann::json;
+cstring LobbyApi::API_URL = "localhost"; // "http://carpglobby.westeurope.cloudapp.azure.com:8080/";
+const int LobbyApi::API_PORT = 8080;
 
-cstring API_URL = "http://carpglobby.westeurope.cloudapp.azure.com:8080/";
-const float PING_TIMER = 10.f;
-const float PACKET_TIMER = 2.f;
+cstring op_names[] = {
+	"NONE",
+	"GET_SERVERS",
+	"GET_CHANGES",
+	"GET_VERSION",
+	"IGNORE"
+};
 
 LobbyApi::LobbyApi()
 {
-	server_id = -1;
-
 	tcp = TCPInterface::GetInstance();
 	tcp->Start(0, 1);
 
 	http = HTTPConnection::GetInstance();
-	http->Init(tcp, API_URL);
+	http->Init(tcp, API_URL, API_PORT);
 }
 
 LobbyApi::~LobbyApi()
@@ -30,99 +36,101 @@ LobbyApi::~LobbyApi()
 
 void LobbyApi::Update(float dt)
 {
-	// ping server to keep it alive
-	if(server_id != -1)
+	if(current_op == NONE)
+		return;
+
+	Packet* packet = tcp->Receive();
+	if(packet)
 	{
-		timer += dt;
-		if(timer >= PING_TIMER && requests.empty())
+		http->ProcessTCPPacket(packet);
+		tcp->DeallocatePacket(packet);
+		http->Update();
+
+		if(current_op != IGNORE)
 		{
-			//http->Request(HTTPConnection::HTTP_PUT, Format("api/servers/ping/%d?key=%s", server_id, key.c_str()));
-			requests.push(PING_SERVER);
-		}
-	}
-
-	http->Update();
-
-	if(!requests.empty())
-	{
-		Packet* packet = tcp->Receive();
-		if(packet)
-		{
-			http->ProcessTCPPacket(packet);
-			tcp->DeallocatePacket(packet);
-
 			int code;
 			if(http->HasBadResponse(&code, nullptr))
 			{
-				Error("LobbyApi: Bad server response %d for %d.", code, requests.front());
-				requests.pop();
+				Error("LobbyApi: Bad server response %d for %s.", code, op_names[current_op]);
+				if(current_op == GET_SERVERS || current_op == GET_CHANGES)
+					Game::Get().gui->pick_server->HandleBadRequest();
 			}
 			else
 				ParseResponse();
 		}
+
+		if(!requests.empty())
+		{
+			DoOperation(requests.back());
+			requests.pop();
+		}
+		else
+			current_op = NONE;
 	}
+	
+	http->Update();
 }
 
 void LobbyApi::ParseResponse()
 {
 	RakString str = http->Read();
-	json j = json::parse(str.C_String());
-	if(j["Ok"] == false)
+	auto j = nlohmann::json::parse(str.C_String());
+	if(j["ok"] == false)
 	{
-		string& error = j["Error"].get_ref<string&>();
-		Error("LobbyApi: Server returned error for method %d: %s", requests.front(), error.c_str());
+		string& error = j["error"].get_ref<string&>();
+		Error("LobbyApi: Server returned error for method %s: %s", op_names[current_op], error.c_str());
 		requests.pop();
 		return;
 	}
 
-	Method method = requests.front();
-	requests.pop();
-	switch(method)
+	switch(current_op)
 	{
-	case CREATE_SERVER:
-		server_id = j["ServerID"].get<int>();
-		key = j["Key"].get<string>();
-		timer = 0;
-		Info("LobbyApi: Server %d created.", server_id);
+	case GET_SERVERS:
+		{
+			timestamp = j["timestamp"].get<int>();
+			Game::Get().gui->pick_server->HandleGetServers(j);
+			
+		}
 		break;
-	case UPDATE_SERVER:
-	case PING_SERVER:
-		timer = 0;
+	case GET_CHANGES:
+		{
+			timestamp = j["timestamp"].get<int>();
+			Game::Get().gui->pick_server->HandleGetChanges(j);
+		}
 		break;
-	case REMOVE_SERVER:
-		Info("LobbyApi: Server removed.");
-		server_id = -1;
-		break;
-	}
-
-	return;
-}
-
-void LobbyApi::RegisterServer(const string& name, int max_players, int flags, int port)
-{
-	json j = {
-		{"Name", name},
-		{"Players", max_players},
-		{"Flags", flags},
-		{"Port", port}
-	};
-	string str = j.dump();
-
-	http->Post("api/servers", str.c_str(), "application/json");
-	requests.push(CREATE_SERVER);
-}
-
-void LobbyApi::UpdateServer(int players)
-{
-	if(server_id != -1)
-	{
-		//http->Request(HTTPConnection::HTTP_PUT, Format("api/servers/%d?key=%s&players=%d", server_id, key.c_str(), players));
-		requests.push(UPDATE_SERVER);
 	}
 }
 
-void LobbyApi::UnregisterServer()
+void LobbyApi::Reset()
 {
-	//http->Request(HTTPConnection::HTTP_DELETE, Format("api/servers/%d&key=%s", server_id, key.c_str()));
-	requests.push(REMOVE_SERVER);
+	while(!requests.empty())
+		requests.pop();
+	if(current_op != NONE)
+		current_op = IGNORE;
+}
+
+void LobbyApi::AddOperation(Operation op)
+{
+	if(current_op == NONE)
+		DoOperation(op);
+	else
+		requests.push(op);
+}
+
+void LobbyApi::DoOperation(Operation op)
+{
+	current_op = op;
+	cstring path;
+	switch(op)
+	{
+	default:
+		assert(0);
+	case GET_SERVERS:
+		path = "/api/servers";
+		break;
+	case GET_CHANGES:
+		path = Format("/api/servers/%d", timestamp);
+		break;
+	}
+	http->Get(path);
 }

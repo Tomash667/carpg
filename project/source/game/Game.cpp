@@ -54,17 +54,6 @@
 // limit fps
 #define LIMIT_DT 0.3f
 
-// symulacja lagów
-#define TESTUJ_LAG
-#ifndef _DEBUG
-#undef TESTUJ_LAG
-#endif
-#ifdef TESTUJ_LAG
-#define MY_PRIORITY HIGH_PRIORITY
-#else
-#define MY_PRIORITY IMMEDIATE_PRIORITY
-#endif
-
 const float bazowa_wysokosc = 1.74f;
 Game* Game::game;
 cstring Game::txGoldPlus, Game::txQuestCompletedGold;
@@ -911,7 +900,6 @@ void Game::OnCleanup()
 	content::CleanupContent();
 
 	draw_batch.Clear();
-	N.Cleanup();
 	super_shader->Cleanup();
 }
 

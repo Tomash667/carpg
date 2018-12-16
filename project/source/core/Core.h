@@ -2,7 +2,6 @@
 
 //-----------------------------------------------------------------------------
 // Macros
-#undef NULL
 #define BIT(bit) (1<<(bit))
 #define IS_SET(flaga,bit) (((flaga) & (bit)) != 0)
 #define IS_CLEAR(flaga,bit) (((flaga) & (bit)) == 0)

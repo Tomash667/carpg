@@ -46,6 +46,7 @@
 #include <queue>
 #include <random>
 #include <DirectXMath.h>
+#include <json_fwd.hpp>
 
 //-----------------------------------------------------------------------------
 using std::string;
