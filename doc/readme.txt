@@ -174,6 +174,7 @@ osoby. Oczekuj zmian na lepsze!
 * Jeœli wczytywanie u klienta trwa za d³ugo mo¿e zmieniæ/dodaæ w pliku
 	konfiguracyjnym wartoœæ "timeout = X" gdzie X = 1-3600 w sekundach po jakim
 	czasie gracz zostanie wyrzucony.
+* G³ówny serwer wykorzystuje porty 8080 i 60481 do komunikacji.
 
 ===============================================================================
 6) Zmiany

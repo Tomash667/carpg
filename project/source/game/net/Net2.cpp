@@ -170,6 +170,8 @@ void Net::InitServer()
 		Info("Set server password.");
 		peer->SetIncomingPassword(password.c_str(), password.length());
 	}
+	else
+		peer->SetIncomingPassword(nullptr, 0);
 
 	peer->SetMaximumIncomingConnections((word)max_players - 1);
 	DEBUG_DO(peer->SetTimeoutTime(60 * 60 * 1000, UNASSIGNED_SYSTEM_ADDRESS));

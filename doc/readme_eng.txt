@@ -170,6 +170,7 @@ people. Expect changes for the better!
 * If the load on the client takes too long you can change / add file
 	configuration value of "timeout = X" where X = 1-3600 in seconds after which
 	the player is kicked for timeout.
+* Master server uses ports 8080 and 60481 for communication.
 
 ===============================================================================
 6) Changes
