@@ -1269,6 +1269,7 @@ void Game::SetGameText()
 	txWaitingForPswd = Str("waitingForPswd");
 	txEnterPswd = Str("enterPswd");
 	txConnectingTo = Str("connectingTo");
+	txConnectingProxy = Str("connectingProxy");
 	txConnectTimeout = Str("connectTimeout");
 	txConnectInvalid = Str("connectInvalid");
 	txConnectVersion = Str("connectVersion");

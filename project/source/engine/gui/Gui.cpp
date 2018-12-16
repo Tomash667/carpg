@@ -2010,7 +2010,7 @@ bool IGUI::HaveDialog(cstring name)
 //=================================================================================================
 bool IGUI::HaveDialog(DialogBox* dialog)
 {
-	assert(dialog);;
+	assert(dialog);
 	vector<DialogBox*>& dialogs = (vector<DialogBox*>&)dialog_layer->GetControls();
 	for(auto d : dialogs)
 	{

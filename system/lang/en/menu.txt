@@ -254,12 +254,12 @@ create = "Create"
 hidden = "Hidden"
 
 // multiplayer
+[PickServerPanel]
 players = "Players"
-name2 = "Name"
-pingingServers = "Pinging servers."
-unknownResponse = "Unknown response from %s: %s."
-unknownResponse2 = "Unknown response from %s, it's not CaRpg server: %s."
-brokenResponse = "Broken response from %s: %s."
+name = "Name"
+internet = "Internet"
+lan = "LAN"
+[]
 
 // keys
 k1 = "Left mouse button"
@@ -1171,6 +1171,7 @@ invalidIp = "This is not a valid ip address!"
 waitingForPswd = "Waiting for password..."
 enterPswd = "Enter server password %s:"
 connectingTo = "Connecting to server %s..."
+connectingProxy = "Connecting proxy..."
 connectTimeout = "Can't connect to server: timeout."
 connectInvalid = "Can't connect to server: this is not CaRpg server."
 connectVersion = "Can't connect to server: invalid version.\nYour version: %s\nServer version: %s"

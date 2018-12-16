@@ -561,7 +561,8 @@ void Net::InitClient()
 
 	SocketDescriptor sd;
 	sd.socketFamily = AF_INET;
-	StartupResult r = peer->Startup(1, &sd, 1);
+	// maxConnections is 2 - one for server, one for punchthrough proxy (Connect can fail if this is 1)
+	StartupResult r = peer->Startup(2, &sd, 1);
 	if(r != RAKNET_STARTED)
 	{
 		Error("Failed to create client: RakNet error %d.", r);

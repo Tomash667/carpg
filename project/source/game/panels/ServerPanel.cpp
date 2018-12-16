@@ -14,6 +14,7 @@
 #include "Level.h"
 #include "PlayerInfo.h"
 #include "Team.h"
+#include "LobbyApi.h"
 
 //-----------------------------------------------------------------------------
 #ifdef _DEBUG
@@ -586,7 +587,7 @@ void ServerPanel::UpdateLobbyServer(float dt)
 				f << max_players;
 				f << N.GetServerFlags();
 				N.peer->Send(&f.GetBitStream(), IMMEDIATE_PRIORITY, RELIABLE_ORDERED, 1, packet->systemAddress, false);
-				
+				N.api->StartPunchthrough(nullptr);
 			}
 			break;
 		case ID_MASTER_HOST:
@@ -599,6 +600,7 @@ void ServerPanel::UpdateLobbyServer(float dt)
 					N.peer->CloseConnection(N.master_server_adr, true, 1, IMMEDIATE_PRIORITY);
 					N.master_server_state = MasterServerState::NotConnected;
 					N.master_server_adr = UNASSIGNED_SYSTEM_ADDRESS;
+					N.api->EndPunchthrough();
 				}
 				else
 				{
@@ -613,6 +615,9 @@ void ServerPanel::UpdateLobbyServer(float dt)
 					}
 				}
 			}
+			break;
+		case ID_NAT_PUNCHTHROUGH_SUCCEEDED:
+			Info("ServerPanel: Client punchthrough succeeded.");
 			break;
 		case ID_NEW_INCOMING_CONNECTION:
 			if(info)
@@ -1052,6 +1057,7 @@ void ServerPanel::UpdateLobbyServer(float dt)
 			if(N.master_server_state == MasterServerState::Connected)
 				N.peer->CloseConnection(N.master_server_adr, true, 1, IMMEDIATE_PRIORITY);
 			N.master_server_state = MasterServerState::NotConnected;
+			N.api->EndPunchthrough();
 			// change server status
 			Info("ServerPanel: Starting game.");
 			starting = false;
@@ -1335,6 +1341,7 @@ void ServerPanel::ExitLobby(VoidF callback)
 
 		Info("ServerPanel: Closing server.");
 
+		N.api->EndPunchthrough();
 		// zablokuj do³¹czanie
 		N.peer->SetMaximumIncomingConnections(0);
 		// wy³¹cz info o serwerze

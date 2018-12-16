@@ -4,12 +4,14 @@
 #include "LobbyApi.h"
 #include <slikenet\TCPInterface.h>
 #include <slikenet\HTTPConnection.h>
+#include <slikenet\NatPunchthroughClient.h>
 #include "Game.h"
 #include "GlobalGui.h"
 #include "PickServerPanel.h"
 
 cstring LobbyApi::API_URL = "localhost"; // "http://carpglobby.westeurope.cloudapp.azure.com:8080/";
 const int LobbyApi::API_PORT = 8080;
+const int LobbyApi::PROXY_PORT = 60481;
 
 cstring op_names[] = {
 	"NONE",
@@ -19,7 +21,7 @@ cstring op_names[] = {
 	"IGNORE"
 };
 
-LobbyApi::LobbyApi()
+LobbyApi::LobbyApi() : np_client(nullptr), np_attached(false)
 {
 	tcp = TCPInterface::GetInstance();
 	tcp->Start(0, 1);
@@ -30,6 +32,7 @@ LobbyApi::LobbyApi()
 
 LobbyApi::~LobbyApi()
 {
+	delete np_client;
 	HTTPConnection::DestroyInstance(http);
 	TCPInterface::DestroyInstance(tcp);
 }
@@ -133,4 +136,42 @@ void LobbyApi::DoOperation(Operation op)
 		break;
 	}
 	http->Get(path);
+}
+
+class NatPunchthroughDebugInterface_InfoLogger : public NatPunchthroughDebugInterface
+{
+public:
+	void OnClientMessage(const char *msg) override
+	{
+		Info("NAT: %s", msg);
+	}
+};
+
+void LobbyApi::StartPunchthrough(RakNetGUID* target)
+{
+	assert(!np_attached);
+
+	if(!np_client)
+	{
+		static NatPunchthroughDebugInterface_InfoLogger logger;
+		np_client = new NatPunchthroughClient;
+		np_client->SetDebugInterface(&logger);
+	}
+
+	N.peer->AttachPlugin(np_client);
+	np_attached = true;
+
+	if(target)
+		np_client->OpenNAT(*target, N.master_server_adr);
+	else
+		np_client->FindRouterPortStride(N.master_server_adr);
+}
+
+void LobbyApi::EndPunchthrough()
+{
+	if(np_attached)
+	{
+		N.peer->DetachPlugin(np_client);
+		np_attached = false;
+	}
 }

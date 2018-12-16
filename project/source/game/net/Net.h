@@ -45,6 +45,8 @@ enum class NetState
 	Client_PingIp,
 	Client_WaitingForPassword,
 	Client_Connecting,
+	Client_ConnectingProxy,
+	Client_Punchthrough,
 	Client_BeforeTransfer,
 	Client_ReceivedWorldData,
 	Client_ReceivedPlayerStartData,

@@ -36,6 +36,7 @@
 #include "Quest_Tutorial.h"
 #include "GlobalGui.h"
 #include "PlayerInfo.h"
+#include "LobbyApi.h"
 
 extern string g_ctime;
 
@@ -247,6 +248,7 @@ void Game::CreateServerEvent(int id)
 		N.server_name = gui->create_server->textbox[0].GetText();
 		N.max_players = atoi(gui->create_server->textbox[1].GetText().c_str());
 		N.password = gui->create_server->textbox[2].GetText();
+		N.server_hidden = gui->create_server->checkbox.checked;
 
 		// check settings
 		cstring error_text = nullptr;
@@ -344,7 +346,7 @@ void Game::OnEnterIp(int id)
 
 			Info("Pinging %s...", server_ip.c_str());
 			gui->info_box->Show(txConnecting);
-			net_mode = NM_CONNECT_IP;
+			net_mode = NM_CONNECTING;
 			net_state = NetState::Client_PingIp;
 			net_timer = T_CONNECT_PING;
 			net_tries = I_CONNECT_TRIES;
@@ -364,7 +366,8 @@ void Game::EndConnecting(cstring msg, bool wait)
 		GUI.SimpleDialog(msg, gui->pick_server->visible ? (DialogBox*)gui->pick_server : (DialogBox*)gui->multiplayer);
 	if(wait)
 		ForceRedraw();
-	N.ClosePeer(wait);
+	if(!gui->pick_server->visible)
+		N.ClosePeer(wait);
 }
 
 //=================================================================================================
@@ -372,7 +375,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 {
 	switch(net_mode)
 	{
-	case NM_CONNECT_IP:
+	case NM_CONNECTING:
 		UpdateClientConnectingIp(dt);
 		break;
 	case NM_TRANSFER:
@@ -403,7 +406,7 @@ void Game::UpdateClientConnectingIp(float dt)
 			if(net_tries == 0)
 			{
 				// connection timeout
-				Warn("NM_CONNECT_IP(0): Connection timeout.");
+				Warn("NM_CONNECTING(0): Connection timeout.");
 				EndConnecting(txConnectTimeout);
 				return;
 			}
@@ -429,14 +432,14 @@ void Game::UpdateClientConnectingIp(float dt)
 			if(msg_id != ID_UNCONNECTED_PONG)
 			{
 				// unknown packet from server
-				Warn("NM_CONNECT_IP(0): Unknown server response: %u.", msg_id);
+				Warn("NM_CONNECTING(0): Unknown server response: %u.", msg_id);
 				N.StreamError();
 				continue;
 			}
 
 			if(packet->length == sizeof(TimeMS) + 1)
 			{
-				Warn("NM_CONNECT_IP(0): Server not set SetOfflinePingResponse yet.");
+				Warn("NM_CONNECTING(0): Server not set SetOfflinePingResponse yet.");
 				N.StreamError();
 				continue;
 			}
@@ -457,14 +460,14 @@ void Game::UpdateClientConnectingIp(float dt)
 			f >> sign_ca;
 			if(!f)
 			{
-				Warn("NM_CONNECT_IP(0): Broken server response.");
+				Warn("NM_CONNECTING(0): Broken server response.");
 				N.StreamError();
 				continue;
 			}
 			if(sign_ca[0] != 'C' || sign_ca[1] != 'A')
 			{
 				// invalid signature, this is not carpg server
-				Warn("NM_CONNECT_IP(0): Invalid server signature 0x%x%x.", byte(sign_ca[0]), byte(sign_ca[1]));
+				Warn("NM_CONNECTING(0): Invalid server signature 0x%x%x.", byte(sign_ca[0]), byte(sign_ca[1]));
 				N.StreamError();
 				N.peer->DeallocatePacket(packet);
 				EndConnecting(txConnectInvalid);
@@ -481,7 +484,7 @@ void Game::UpdateClientConnectingIp(float dt)
 			const string& server_name_r = f.ReadString1();
 			if(!f)
 			{
-				N.StreamError("NM_CONNECT_IP(0): Broken server message.");
+				N.StreamError("NM_CONNECTING(0): Broken server message.");
 				N.peer->DeallocatePacket(packet);
 				EndConnecting(txConnectInvalid);
 				return;
@@ -495,7 +498,7 @@ void Game::UpdateClientConnectingIp(float dt)
 			{
 				// version mismatch
 				cstring s = VersionToString(version);
-				Error("NM_CONNECT_IP(0): Invalid client version '%s' vs server '%s'.", VERSION_STR, s);
+				Error("NM_CONNECTING(0): Invalid client version '%s' vs server '%s'.", VERSION_STR, s);
 				N.peer->DeallocatePacket(packet);
 				EndConnecting(Format(txConnectVersion, VERSION_STR, s));
 				return;
@@ -504,9 +507,9 @@ void Game::UpdateClientConnectingIp(float dt)
 			// set server status
 			gui->server->max_players = max_players;
 			gui->server->server_name = server_name_r;
-			Info("NM_CONNECT_IP(0): Server information. Name:%s; players:%d/%d; flags:%d.", server_name_r.c_str(), players, max_players, flags);
+			Info("NM_CONNECTING(0): Server information. Name:%s; players:%d/%d; flags:%d.", server_name_r.c_str(), players, max_players, flags);
 			if(IS_SET(flags, 0xFC))
-				Warn("NM_CONNECT_IP(0): Unknown server flags.");
+				Warn("NM_CONNECTING(0): Unknown server flags.");
 			N.server = packet->systemAddress;
 			enter_pswd.clear();
 
@@ -520,7 +523,7 @@ void Game::UpdateClientConnectingIp(float dt)
 				params.limit = 16;
 				params.parent = gui->info_box;
 				GetTextDialog::Show(params);
-				Info("NM_CONNECT_IP(0): Waiting for password...");
+				Info("NM_CONNECTING(0): Waiting for password...");
 			}
 			else
 			{
@@ -532,12 +535,12 @@ void Game::UpdateClientConnectingIp(float dt)
 					net_timer = T_CONNECT;
 					net_state = NetState::Client_Connecting;
 					gui->info_box->Show(Format(txConnectingTo, server_name_r.c_str()));
-					Info("NM_CONNECT_IP(0): Connecting to server %s...", server_name_r.c_str());
+					Info("NM_CONNECTING(0): Connecting to server %s...", server_name_r.c_str());
 				}
 				else
 				{
 					// something went wrong
-					Error("NM_CONNECT_IP(0): Can't connect to server: raknet error %d.", result);
+					Error("NM_CONNECTING(0): Can't connect to server: raknet error %d.", result);
 					EndConnecting(txConnectRaknet);
 				}
 			}
@@ -550,6 +553,10 @@ void Game::UpdateClientConnectingIp(float dt)
 		Packet* packet;
 		for(packet = N.peer->Receive(); packet; N.peer->DeallocatePacket(packet), packet = N.peer->Receive())
 		{
+			// ignore messages from proxy (disconnect notification)
+			if(packet->systemAddress != N.server)
+				continue;
+
 			BitStream& stream = N.StreamStart(packet, Stream_Connect);
 			BitStreamReader reader(stream);
 			byte msg_id;
@@ -564,7 +571,7 @@ void Game::UpdateClientConnectingIp(float dt)
 					// int - version
 					// crc
 					// string1 - nick
-					Info("NM_CONNECT_IP(2): Connected with server.");
+					Info("NM_CONNECTING(2): Connected with server.");
 					BitStreamWriter f;
 					f << ID_HELLO;
 					f << VERSION;
@@ -583,7 +590,7 @@ void Game::UpdateClientConnectingIp(float dt)
 					reader.ReadCasted<byte>(count);
 					if(!reader)
 					{
-						N.StreamError("NM_CONNECT_IP(2): Broken packet ID_JOIN.");
+						N.StreamError("NM_CONNECTING(2): Broken packet ID_JOIN.");
 						N.peer->DeallocatePacket(packet);
 						EndConnecting(txCantJoin, true);
 						return;
@@ -619,7 +626,7 @@ void Game::UpdateClientConnectingIp(float dt)
 						reader >> info2.name;
 						if(!reader)
 						{
-							N.StreamError("NM_CONNECT_IP(2): Broken packet ID_JOIN(2).");
+							N.StreamError("NM_CONNECTING(2): Broken packet ID_JOIN(2).");
 							N.peer->DeallocatePacket(packet);
 							EndConnecting(txCantJoin, true);
 							return;
@@ -628,7 +635,7 @@ void Game::UpdateClientConnectingIp(float dt)
 						// verify player class
 						if(!ClassInfo::IsPickable(info2.clas) && info2.clas != Class::INVALID)
 						{
-							N.StreamError("NM_CONNECT_IP(2): Broken packet ID_JOIN, player %s has class %d.", info2.name.c_str(), info2.clas);
+							N.StreamError("NM_CONNECTING(2): Broken packet ID_JOIN, player %s has class %d.", info2.name.c_str(), info2.clas);
 							N.peer->DeallocatePacket(packet);
 							EndConnecting(txCantJoin, true);
 							return;
@@ -639,7 +646,7 @@ void Game::UpdateClientConnectingIp(float dt)
 					reader.ReadCasted<byte>(load_char);
 					if(!reader)
 					{
-						N.StreamError("NM_CONNECT_IP(2): Broken packet ID_JOIN(4).");
+						N.StreamError("NM_CONNECTING(2): Broken packet ID_JOIN(4).");
 						N.peer->DeallocatePacket(packet);
 						EndConnecting(txCantJoin, true);
 						return;
@@ -649,7 +656,7 @@ void Game::UpdateClientConnectingIp(float dt)
 						reader.ReadCasted<byte>(info.clas);
 						if(!reader)
 						{
-							N.StreamError("NM_CONNECT_IP(2): Broken packet ID_JOIN(3).");
+							N.StreamError("NM_CONNECTING(2): Broken packet ID_JOIN(3).");
 							N.peer->DeallocatePacket(packet);
 							EndConnecting(txCantJoin, true);
 							return;
@@ -662,12 +669,14 @@ void Game::UpdateClientConnectingIp(float dt)
 					// read leader
 					if(!N.TryGetPlayer(Team.leader_id))
 					{
-						Error("NM_CONNECT_IP(2): Broken packet ID_JOIN, no player with leader id %d.", Team.leader_id);
+						Error("NM_CONNECTING(2): Broken packet ID_JOIN, no player with leader id %d.", Team.leader_id);
 						EndConnecting(txCantJoin, true);
 						return;
 					}
 
 					// go to lobby
+					if(gui->pick_server->visible)
+						gui->pick_server->CloseDialog();
 					if(gui->multiplayer->visible)
 						gui->multiplayer->CloseDialog();
 					gui->server->Show();
@@ -754,9 +763,9 @@ void Game::UpdateClientConnectingIp(float dt)
 					N.StreamEnd();
 					N.peer->DeallocatePacket(packet);
 					if(reason_eng)
-						Warn("NM_CONNECT_IP(2): Can't connect to server: %s.", reason_eng);
+						Warn("NM_CONNECTING(2): Can't connect to server: %s.", reason_eng);
 					else
-						Warn("NM_CONNECT_IP(2): Can't connect to server (%d).", result);
+						Warn("NM_CONNECTING(2): Can't connect to server (%d).", result);
 					if(reason)
 						EndConnecting(Format("%s:\n%s", txCantJoin2, reason), true);
 					else
@@ -766,21 +775,30 @@ void Game::UpdateClientConnectingIp(float dt)
 			case ID_CONNECTION_LOST:
 			case ID_DISCONNECTION_NOTIFICATION:
 				// lost connecting with server or was kicked out
-				Warn(msg_id == ID_CONNECTION_LOST ? "NM_CONNECT_IP(2): Lost connection with server." : "NM_CONNECT_IP(2): Disconnected from server.");
+				Warn(msg_id == ID_CONNECTION_LOST ? "NM_CONNECTING(2): Lost connection with server." : "NM_CONNECTING(2): Disconnected from server.");
 				N.StreamEnd();
 				N.peer->DeallocatePacket(packet);
 				EndConnecting(txLostConnection);
 				return;
+			case ID_CONNECTION_ATTEMPT_FAILED:
+				Warn("NM_CONNECTING(2): Connection attempt failed.");
+				N.StreamEnd();
+				N.peer->DeallocatePacket(packet);
+				EndConnecting("Nie uda³o siê po³¹czyæ z serwerem."); FIXME;
+				return;
 			case ID_INVALID_PASSWORD:
 				// password is invalid
-				Warn("NM_CONNECT_IP(2): Invalid password.");
+				Warn("NM_CONNECTING(2): Invalid password.");
 				N.StreamEnd();
 				N.peer->DeallocatePacket(packet);
 				EndConnecting(txInvalidPswd);
 				return;
+			case ID_OUT_OF_BAND_INTERNAL:
+				// used by punchthrough, ignore
+				break;
 			default:
 				N.StreamError();
-				Warn("NM_CONNECT_IP(2): Unknown packet from server %u.", msg_id);
+				Warn("NM_CONNECTING(2): Unknown packet from server %u.", msg_id);
 				break;
 			}
 
@@ -790,7 +808,85 @@ void Game::UpdateClientConnectingIp(float dt)
 		net_timer -= dt;
 		if(net_timer <= 0.f)
 		{
-			Warn("NM_CONNECT_IP(2): Connection timeout.");
+			Warn("NM_CONNECTING(2): Connection timeout.");
+			EndConnecting(txConnectTimeout);
+		}
+	}
+	else if(net_state == NetState::Client_ConnectingProxy || net_state == NetState::Client_Punchthrough)
+	{
+		Packet* packet;
+		for(packet = N.peer->Receive(); packet; N.peer->DeallocatePacket(packet), packet = N.peer->Receive())
+		{
+			BitStream& stream = N.StreamStart(packet, Stream_Connect);
+			BitStreamReader reader(stream);
+			byte msg_id;
+			reader >> msg_id;
+
+			switch(msg_id)
+			{
+			case ID_CONNECTION_REQUEST_ACCEPTED:
+				{
+					Info("NM_CONNECTING(3): Connected with proxy, starting nat punchthrough.");
+					net_timer = 10.f;
+					net_state = NetState::Client_Punchthrough;
+					PickServerPanel::ServerData& info = gui->pick_server->servers[gui->pick_server->grid.selected];
+					RakNetGUID guid;
+					guid.FromString(info.guid.c_str());
+					N.master_server_adr = packet->systemAddress;
+					N.api->StartPunchthrough(&guid);
+				}
+				break;
+			case ID_NAT_TARGET_NOT_CONNECTED:
+			case ID_NAT_TARGET_UNRESPONSIVE:
+			case ID_NAT_CONNECTION_TO_TARGET_LOST:
+			case ID_NAT_PUNCHTHROUGH_FAILED:
+				Warn("NM_CONNECTING(3): Punchthrough failed (%d).", msg_id);
+				N.api->EndPunchthrough();
+				EndConnecting("Nie uda³o siê po³¹czyæ z serwerem."); FIXME;
+				break;
+			case ID_NAT_PUNCHTHROUGH_SUCCEEDED:
+				{
+					Info("NM_CONNECTING(3): Punchthrough succeeded, connecting to server %s.", packet->systemAddress.ToString());
+					N.api->EndPunchthrough();
+					N.peer->CloseConnection(N.master_server_adr, true, 1, IMMEDIATE_PRIORITY);
+					PickServerPanel::ServerData& info = gui->pick_server->servers[gui->pick_server->grid.selected];
+					N.server = packet->systemAddress;
+					gui->server->server_name = info.name;
+					gui->server->max_players = info.max_players;
+					N.active_players = info.active_players;
+					ConnectionAttemptResult result = N.peer->Connect(N.server.ToString(false), N.server.GetPort(), nullptr, 0);
+					if(result == CONNECTION_ATTEMPT_STARTED)
+					{
+						net_mode = NM_CONNECTING;
+						net_timer = T_CONNECT;
+						net_tries = 1;
+						net_state = NetState::Client_Connecting;
+						gui->info_box->Show(Format(txConnectingTo, info.name.c_str()));
+						N.StreamEnd();
+						N.peer->DeallocatePacket(packet);
+						return;
+					}
+					else
+					{
+						Error("OnPickServer: Can't connect to server: raknet error %d.", result);
+						EndConnecting(txConnectRaknet);
+					}
+				}
+				break;
+			default:
+				N.StreamError();
+				Warn("NM_CONNECTING(3): Unknown packet from proxy %u.", msg_id);
+				break;
+			}
+
+			N.StreamEnd();
+		}
+
+		net_timer -= dt;
+		if(net_timer <= 0.f)
+		{
+			Warn("NM_CONNECTING(3): Connection to proxy timeout.");
+			N.api->EndPunchthrough();
 			EndConnecting(txConnectTimeout);
 		}
 	}
@@ -1819,14 +1915,14 @@ void Game::OnEnterPassword(int id)
 		ConnectionAttemptResult result = N.peer->Connect(N.server.ToString(false), (word)N.port, enter_pswd.c_str(), enter_pswd.length());
 		if(result == CONNECTION_ATTEMPT_STARTED)
 		{
-			net_state = NetState::Client_Connecting;;
+			net_state = NetState::Client_Connecting;
 			net_timer = T_CONNECT;
 			gui->info_box->Show(Format(txConnectingTo, gui->server->server_name.c_str()));
-			Info("NM_CONNECT_IP(1): Connecting to server %s...", gui->server->server_name.c_str());
+			Info("NM_CONNECTING(1): Connecting to server %s...", gui->server->server_name.c_str());
 		}
 		else
 		{
-			Info("NM_CONNECT_IP(1): Can't connect to server: raknet error %d.", result);
+			Info("NM_CONNECTING(1): Can't connect to server: raknet error %d.", result);
 			EndConnecting(txConnectRaknet);
 		}
 	}
@@ -1855,7 +1951,7 @@ void Game::QuickJoinIp()
 		Info("Pinging %s...", server_ip.c_str());
 		Net::SetMode(Net::Mode::Client);
 		gui->info_box->Show(txConnecting);
-		net_mode = NM_CONNECT_IP;
+		net_mode = NM_CONNECTING;
 		net_state = NetState::Client_PingIp;
 		net_timer = T_CONNECT_PING;
 		net_tries = I_CONNECT_TRIES;
@@ -1904,7 +2000,7 @@ void Game::CloseConnection(VoidF f)
 			if(!net_callback)
 				net_callback = f;
 			break;
-		case NM_CONNECT_IP:
+		case NM_CONNECTING:
 		case NM_TRANSFER:
 			gui->info_box->Show(txDisconnecting);
 			ForceRedraw();
@@ -2065,6 +2161,24 @@ void Game::OnPickServer(int id)
 		N.peer->Shutdown(0);
 		gui->pick_server->CloseDialog();
 	}
+	else if(!gui->pick_server->IsLAN())
+	{
+		// connect to proxy server for nat punchthrough
+		ConnectionAttemptResult result = N.peer->Connect(LobbyApi::API_URL, (word)LobbyApi::PROXY_PORT, nullptr, 0);
+		if(result == CONNECTION_ATTEMPT_STARTED)
+		{
+			net_mode = NM_CONNECTING;
+			net_state = NetState::Client_ConnectingProxy;
+			net_timer = T_CONNECT;
+			gui->info_box->Show(txConnectingProxy);
+			Info("OnPickServer: Connecting to proxy server...");
+		}
+		else
+		{
+			Error("OnPickServer: Can't connect to proxy: raknet error %d.", result);
+			EndConnecting(txConnectRaknet);
+		}
+	}
 	else
 	{
 		PickServerPanel::ServerData& info = gui->pick_server->servers[gui->pick_server->grid.selected];
@@ -2074,8 +2188,8 @@ void Game::OnPickServer(int id)
 		N.active_players = info.active_players;
 		if(IS_SET(info.flags, SERVER_PASSWORD))
 		{
-			// podaj has³o
-			net_mode = NM_CONNECT_IP;
+			// enter password
+			net_mode = NM_CONNECTING;
 			net_state = NetState::Client_WaitingForPassword;
 			net_tries = 1;
 			gui->info_box->Show(txWaitingForPswd);
@@ -2085,27 +2199,25 @@ void Game::OnPickServer(int id)
 			params.parent = gui->info_box;
 			GetTextDialog::Show(params);
 			Info("OnPickServer: Waiting for password...");
-			gui->pick_server->CloseDialog();
 		}
 		else
 		{
-			// po³¹cz
+			// connect
 			ConnectionAttemptResult result = N.peer->Connect(info.adr.ToString(false), (word)N.port, nullptr, 0);
 			if(result == CONNECTION_ATTEMPT_STARTED)
 			{
-				// trwa ³¹czenie z serwerem
-				net_mode = NM_CONNECT_IP;
+				// connecting in progress
+				net_mode = NM_CONNECTING;
 				net_timer = T_CONNECT;
 				net_tries = 1;
 				net_state = NetState::Client_Connecting;
 				gui->info_box->Show(Format(txConnectingTo, info.name.c_str()));
 				Info("OnPickServer: Connecting to server %s...", info.name.c_str());
-				gui->pick_server->CloseDialog();
 			}
 			else
 			{
-				// b³¹d ³¹czenie z serwerem
-				Error("NM_CONNECT_IP(0): Can't connect to server: raknet error %d.", result);
+				// failed to startup connecting
+				Error("OnPickServer: Can't connect to server: raknet error %d.", result);
 				EndConnecting(txConnectRaknet);
 			}
 		}

@@ -30,7 +30,6 @@ PickServerPanel::PickServerPanel(const DialogInfo& info) : GameDialogBox(info), 
 
 	cb_internet.id = IdInternet;
 	cb_internet.radiobox = true;
-	cb_internet.text = "Internet"; FIXME;
 	cb_internet.bt_size = Int2(32, 32);
 	cb_internet.parent = this;
 	cb_internet.pos = Int2(336, 130);
@@ -38,7 +37,6 @@ PickServerPanel::PickServerPanel(const DialogInfo& info) : GameDialogBox(info), 
 
 	cb_lan.id = IdLan;
 	cb_lan.radiobox = true;
-	cb_lan.text = "LAN"; FIXME;
 	cb_lan.bt_size = Int2(32, 32);
 	cb_lan.parent = this;
 	cb_lan.pos = Int2(336, 170);
@@ -52,17 +50,17 @@ PickServerPanel::PickServerPanel(const DialogInfo& info) : GameDialogBox(info), 
 //=================================================================================================
 void PickServerPanel::LoadLanguage()
 {
-	FIXME; // unused
-	txUnknownResponse = Str("unknownResponse");
-	txUnknownResponse2 = Str("unknownResponse2");
-	txBrokenResponse = Str("brokenResponse");
+	auto s = Language::GetSection("PickServerPanel");
 
 	bts[0].text = Str("join");
 	bts[1].text = GUI.txCancel;
 
+	cb_internet.text = s.Get("internet");
+	cb_lan.text = s.Get("lan");
+
 	grid.AddColumn(Grid::IMGSET, 50);
-	grid.AddColumn(Grid::TEXT_COLOR, 100, Str("players"));
-	grid.AddColumn(Grid::TEXT_COLOR, 150, Str("name2"));
+	grid.AddColumn(Grid::TEXT_COLOR, 100, s.Get("players"));
+	grid.AddColumn(Grid::TEXT_COLOR, 150, s.Get("name"));
 	grid.Init();
 }
 
@@ -120,18 +118,21 @@ void PickServerPanel::Update(float dt)
 	}
 
 	// ping servers
-	ping_timer -= dt;
-	if(ping_timer < 0.f)
+	timer += dt;
+	if(timer >= 1.f)
 	{
 		if(lan_mode)
 		{
 			N.peer->Ping("255.255.255.255", (word)N.port, false);
-			ping_timer = 1.f;
+			timer = 0;
 		}
 		else if(!N.api->IsBusy() && !bad_request)
 		{
-			N.api->GetChanges();
-			ping_timer = 1.f;
+			if(timer > 30.f)
+				N.api->GetServers();
+			else
+				N.api->GetChanges();
+			timer = 0;
 		}
 	}
 
@@ -323,7 +324,7 @@ void PickServerPanel::Show(bool pick_autojoin)
 	cb_lan.checked = false;
 	N.api->Reset();
 	N.api->GetServers();
-	ping_timer = 1.f;
+	timer = 0;
 	servers.clear();
 	grid.Reset();
 
@@ -369,7 +370,7 @@ void PickServerPanel::OnChangeMode(bool lan_mode)
 	}
 	servers.clear();
 	grid.Reset();
-	ping_timer = 1.f;
+	timer = 0;
 }
 
 //=================================================================================================

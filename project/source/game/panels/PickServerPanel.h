@@ -39,11 +39,10 @@ public:
 	void HandleGetServers(nlohmann::json&);
 	void HandleGetChanges(nlohmann::json&);
 	void HandleBadRequest();
+	bool IsLAN() const { return lan_mode; }
 
 	Grid grid;
 	vector<ServerData> servers;
-	float ping_timer;
-	cstring txUnknownResponse, txUnknownResponse2, txBrokenResponse;
 
 private:
 	void OnChangeMode(bool lan_mode);
@@ -52,5 +51,6 @@ private:
 
 	TEX tIcoPassword, tIcoSave;
 	CheckBox cb_internet, cb_lan;
+	float timer;
 	bool pick_autojoin, lan_mode, bad_request;
 };

@@ -4,6 +4,13 @@
 
 #undef IGNORE
 
+namespace SLNet
+{
+	class HTTPConnection;
+	class NatPunchthroughClient;
+	class TCPInterface;
+}
+
 class LobbyApi
 {
 	enum Operation
@@ -23,9 +30,12 @@ public:
 	void GetChanges() { AddOperation(GET_CHANGES); }
 	bool IsBusy() const { return current_op != NONE; }
 	int GetVersion();
+	void StartPunchthrough(RakNetGUID* target);
+	void EndPunchthrough();
 
 	static cstring API_URL;
 	static const int API_PORT;
+	static const int PROXY_PORT;
 
 private:
 	void AddOperation(Operation op);
@@ -34,7 +44,9 @@ private:
 
 	TCPInterface* tcp;
 	HTTPConnection* http;
+	NatPunchthroughClient* np_client;
 	std::queue<Operation> requests;
 	Operation current_op;
 	int timestamp;
+	bool np_attached;
 };

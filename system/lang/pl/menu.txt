@@ -254,12 +254,12 @@ invalidPlayersCount = "Liczba graczy musi byæ w przedziale 1-%d."
 hidden = "Ukryty"
 
 // multiplayer
+[PickServerPanel]
 players = "Gracze"
-name2 = "Nazwa"
-pingingServers = "Pingowanie serwerów."
-unknownResponse = "Nieznana odpowiedŸ od %s: %s."
-unknownResponse2 = "Nieznana odpowiedŸ od %s, to nie jest serwer CaRpg: %s."
-brokenResponse = "Uszkodzona odpowiedŸ od %s: %s."
+name = "Nazwa"
+internet = "Internet"
+lan = "LAN"
+[]
 
 // klawisze
 k1 = "Lewy przycisk myszki"
@@ -1168,6 +1168,7 @@ invalidIp = "To nie jest prawid³owy adres ip!"
 waitingForPswd = "Oczekiwanie na has³o..."
 enterPswd = "Podaj has³o do serwera %s:"
 connectingTo = "£¹czenie z serwerem %s..."
+connectingProxy = "£¹czenie z proxy..."
 connectTimeout = "Nie mo¿na po³¹czyæ z serwerem: przekroczono czas po³¹czenia."
 connectInvalid = "Nie mo¿na po³¹czyæ z serwerem: to nie jest serwer CaRpg."
 connectVersion = "Nie mo¿na po³¹czyæ z serwerem: brak zgodnoœci wersji.\nTwoja wersja: %s\nWersja serwera: %s"
