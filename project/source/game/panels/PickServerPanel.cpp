@@ -226,6 +226,10 @@ void PickServerPanel::Update(float dt)
 				}
 			}
 			break;
+		case ID_DISCONNECTION_NOTIFICATION:
+			// when client was connecting to server using master server and have invalid password
+			// disconnecting from server will be received here, ignore message
+			break;
 		default:
 			Warn("PickServer: Unknown packet %d from %s.", msg_id, packet->systemAddress.ToString());
 			N.StreamError();

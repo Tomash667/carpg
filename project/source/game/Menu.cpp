@@ -1904,14 +1904,29 @@ void Game::OnEnterPassword(int id)
 {
 	if(id == BUTTON_CANCEL)
 	{
-		// nie podano has³a
 		EndConnecting(nullptr);
+		return;
+	}
+
+	Info("Password entered.");
+	if(net_state == NetState::Client_WaitingForPasswordProxy)
+	{
+		ConnectionAttemptResult result = N.peer->Connect(LobbyApi::API_URL, (word)LobbyApi::PROXY_PORT, nullptr, 0);
+		if(result == CONNECTION_ATTEMPT_STARTED)
+		{
+			net_state = NetState::Client_ConnectingProxy;
+			net_timer = T_CONNECT;
+			gui->info_box->Show(txConnectingProxy);
+			Info("NM_CONNECTING(1): Connecting to proxy server...");
+		}
+		else
+		{
+			Error("NM_CONNECTING(1): Can't connect to proxy: raknet error %d.", result);
+			EndConnecting(txConnectRaknet);
+		}
 	}
 	else
 	{
-		// podano has³o do serwera
-		Info("Password entered.");
-		// po³¹cz
 		ConnectionAttemptResult result = N.peer->Connect(N.server.ToString(false), (word)N.port, enter_pswd.c_str(), enter_pswd.length());
 		if(result == CONNECTION_ATTEMPT_STARTED)
 		{
@@ -2164,19 +2179,36 @@ void Game::OnPickServer(int id)
 	else if(!gui->pick_server->IsLAN())
 	{
 		// connect to proxy server for nat punchthrough
-		ConnectionAttemptResult result = N.peer->Connect(LobbyApi::API_URL, (word)LobbyApi::PROXY_PORT, nullptr, 0);
-		if(result == CONNECTION_ATTEMPT_STARTED)
+		PickServerPanel::ServerData& info = gui->pick_server->servers[gui->pick_server->grid.selected];
+		if(IS_SET(info.flags, SERVER_PASSWORD))
 		{
 			net_mode = NM_CONNECTING;
-			net_state = NetState::Client_ConnectingProxy;
-			net_timer = T_CONNECT;
-			gui->info_box->Show(txConnectingProxy);
-			Info("OnPickServer: Connecting to proxy server...");
+			net_state = NetState::Client_WaitingForPasswordProxy;
+			net_tries = 1;
+			gui->info_box->Show(txWaitingForPswd);
+			GetTextDialogParams params(Format(txEnterPswd, gui->server->server_name.c_str()), enter_pswd);
+			params.event = DialogEvent(this, &Game::OnEnterPassword);
+			params.limit = 16;
+			params.parent = gui->info_box;
+			GetTextDialog::Show(params);
+			Info("OnPickServer: Waiting for password...");
 		}
 		else
 		{
-			Error("OnPickServer: Can't connect to proxy: raknet error %d.", result);
-			EndConnecting(txConnectRaknet);
+			ConnectionAttemptResult result = N.peer->Connect(LobbyApi::API_URL, (word)LobbyApi::PROXY_PORT, nullptr, 0);
+			if(result == CONNECTION_ATTEMPT_STARTED)
+			{
+				net_mode = NM_CONNECTING;
+				net_state = NetState::Client_ConnectingProxy;
+				net_timer = T_CONNECT;
+				gui->info_box->Show(txConnectingProxy);
+				Info("OnPickServer: Connecting to proxy server...");
+			}
+			else
+			{
+				Error("OnPickServer: Can't connect to proxy: raknet error %d.", result);
+				EndConnecting(txConnectRaknet);
+			}
 		}
 	}
 	else
