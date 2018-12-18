@@ -200,8 +200,7 @@ void ServerPanel::Draw(ControlDrawData*)
 
 	// text
 	Rect r = { 340 + global_pos.x, 355 + global_pos.y, 340 + 185 + global_pos.x, 355 + 160 + global_pos.y };
-	GUI.DrawText(GUI.default_font,
-		Format(txServerText, server_name.c_str(), N.active_players, max_players, N.password.empty() ? GUI.txNo : GUI.txYes, N.peer->GetLocalIP(0), N.port),
+	GUI.DrawText(GUI.default_font, Format(txServerText, server_name.c_str(), N.active_players, max_players, N.password.empty() ? GUI.txNo : GUI.txYes),
 		0, Color::Black, r, &r);
 }
 
@@ -581,8 +580,12 @@ void ServerPanel::UpdateLobbyServer(float dt)
 				f << max_players;
 				f << N.GetServerFlags();
 				N.peer->Send(&f.GetBitStream(), IMMEDIATE_PRIORITY, RELIABLE_ORDERED, 1, packet->systemAddress, false);
-				N.api->StartPunchthrough(nullptr);
 			}
+			break;
+		case ID_CONNECTION_ATTEMPT_FAILED:
+			Info("ServerPanel: Failed to connect to master server.");
+			N.master_server_state = MasterServerState::NotConnected;
+			AddMsg(txRegisterFailed);
 			break;
 		case ID_MASTER_HOST:
 			{
@@ -594,13 +597,13 @@ void ServerPanel::UpdateLobbyServer(float dt)
 					N.peer->CloseConnection(N.master_server_adr, true, 1, IMMEDIATE_PRIORITY);
 					N.master_server_state = MasterServerState::NotConnected;
 					N.master_server_adr = UNASSIGNED_SYSTEM_ADDRESS;
-					N.api->EndPunchthrough();
 					AddMsg(txRegisterFailed);
 				}
 				else
 				{
 					Info("ServerPanel: Registered server.");
 					N.master_server_state = MasterServerState::Connected;
+					N.api->StartPunchthrough(nullptr);
 					if(N.active_players != 1)
 					{
 						BitStreamWriter f;

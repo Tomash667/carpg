@@ -448,7 +448,7 @@ youAreLeader2 = "You are the leader now."
 joined = "Player %s joined."
 playerLeft = "Player %s left game."
 needSelectedPlayer = "You need to select a player first."
-serverText = "Server: %s\nPlayers: %d/%d\nPassword: %s\nIp: %s:%d"
+serverText = "Server: %s\nPlayers: %d/%d\nPassword: %s"
 
 // gra
 goldPlus = "Gold %+d"

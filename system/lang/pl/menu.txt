@@ -448,7 +448,7 @@ youAreLeader2 = "Zosta³eœ przywódc¹."
 joined = "Gracz %s do³¹czy³."
 playerLeft = "Gracz %s opuœci³ grê."
 needSelectedPlayer = "Musisz najpierw zaznaczyæ gracza."
-serverText = "Serwer: %s\nGracze: %d/%d\nHas³o: %s\nIp: %s:%d"
+serverText = "Serwer: %s\nGracze: %d/%d\nHas³o: %s"
 
 // gra
 goldPlus = "Z³oto %+d"

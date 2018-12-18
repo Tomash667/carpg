@@ -178,7 +178,7 @@ void Net::InitServer()
 
 	if(!server_hidden)
 	{
-		ConnectionAttemptResult result = peer->Connect(/*"carpglobby.westeurope.cloudapp.azure.com"*/ "localhost", 60481, nullptr, 0);
+		ConnectionAttemptResult result = peer->Connect(LobbyApi::API_URL, LobbyApi::PROXY_PORT, nullptr, 0, nullptr, 0, 6);
 		if(result == CONNECTION_ATTEMPT_STARTED)
 			master_server_state = MasterServerState::Connecting;
 		else

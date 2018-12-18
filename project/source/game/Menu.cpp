@@ -841,7 +841,7 @@ void Game::UpdateClientConnectingIp(float dt)
 					gui->server->server_name = info.name;
 					gui->server->max_players = info.max_players;
 					N.active_players = info.active_players;
-					ConnectionAttemptResult result = N.peer->Connect(N.server.ToString(false), N.server.GetPort(), nullptr, 0);
+					ConnectionAttemptResult result = N.peer->Connect(N.server.ToString(false), N.server.GetPort(), enter_pswd.c_str(), enter_pswd.length());
 					if(result == CONNECTION_ATTEMPT_STARTED)
 					{
 						net_mode = NM_CONNECTING;
@@ -2183,6 +2183,7 @@ void Game::OnPickServer(int id)
 			ConnectionAttemptResult result = N.peer->Connect(LobbyApi::API_URL, (word)LobbyApi::PROXY_PORT, nullptr, 0);
 			if(result == CONNECTION_ATTEMPT_STARTED)
 			{
+				enter_pswd.clear();
 				net_mode = NM_CONNECTING;
 				net_state = NetState::Client_ConnectingProxy;
 				net_timer = T_CONNECT;
