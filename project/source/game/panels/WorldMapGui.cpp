@@ -155,7 +155,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 		GUI.LineEnd();
 	}
 
-	if(game.koniec_gry)
+	if(game.end_of_game)
 	{
 		// czarne t³o
 		int color;
@@ -202,7 +202,7 @@ void WorldMapGui::Update(float dt)
 			mp_box->have_focus = true;
 	}
 
-	if(game.koniec_gry)
+	if(game.end_of_game)
 		return;
 
 	if(game.gui->journal->visible)

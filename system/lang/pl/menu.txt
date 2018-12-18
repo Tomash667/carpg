@@ -259,6 +259,7 @@ players = "Gracze"
 name = "Nazwa"
 internet = "Internet"
 lan = "LAN"
+failedToGetServers = "B³¹d pobierania listy serwerów."
 []
 
 // klawisze
@@ -447,7 +448,7 @@ youAreLeader2 = "Zosta³eœ przywódc¹."
 joined = "Gracz %s do³¹czy³."
 playerLeft = "Gracz %s opuœci³ grê."
 needSelectedPlayer = "Musisz najpierw zaznaczyæ gracza."
-serverText = "Serwer: %s\nGracze: %d/%d\nHas³o: %s"
+serverText = "Serwer: %s\nGracze: %d/%d\nHas³o: %s\nIp: %s:%d"
 
 // gra
 goldPlus = "Z³oto %+d"
@@ -1208,6 +1209,8 @@ waitingForServer = "Oczekiwanie na serwer"
 startingGame = "Uruchamianie gry"
 preparingWorld = "Przygotowywanie œwiata"
 invalidCrc = "Z³a suma kontrolna danych"
+connectionFailed = "Nie uda³o siê po³¹czyæ z serwerem."
+registerFailed = "B³¹d rejestracji serwera."
 
 // net
 createServerFailed = "B³¹d tworzenia serwera (%d)!"

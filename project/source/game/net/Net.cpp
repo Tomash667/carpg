@@ -5927,7 +5927,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 		case NetChange::END_OF_GAME:
 			Info("Update client: Game over - time run out.");
 			CloseAllPanels(true);
-			koniec_gry = true;
+			end_of_game = true;
 			death_fade = 0.f;
 			exit_from_server = true;
 			break;

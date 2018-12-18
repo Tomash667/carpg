@@ -259,6 +259,7 @@ players = "Players"
 name = "Name"
 internet = "Internet"
 lan = "LAN"
+failedToGetServers = "Failed to get list of servers."
 []
 
 // keys
@@ -447,7 +448,7 @@ youAreLeader2 = "You are the leader now."
 joined = "Player %s joined."
 playerLeft = "Player %s left game."
 needSelectedPlayer = "You need to select a player first."
-serverText = "Server: %s\nPlayers: %d/%d\nPassword: %s"
+serverText = "Server: %s\nPlayers: %d/%d\nPassword: %s\nIp: %s:%d"
 
 // gra
 goldPlus = "Gold %+d"
@@ -1211,6 +1212,8 @@ waitingForServer = "Waiting for server"
 startingGame = "Starting game"
 preparingWorld = "Preparing world"
 invalidCrc = "Invalid data checksum"
+connectionFailed = "Failed to connect to server."
+registerFailed = "Failed to register server."
 
 // net
 createServerFailed = "Failed to create server (%d)!"

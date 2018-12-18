@@ -137,7 +137,7 @@ void GameGui::DrawFront()
 	}
 
 	// end of game screen
-	if(game.koniec_gry)
+	if(game.end_of_game)
 	{
 		DrawEndOfGameScreen();
 		return;

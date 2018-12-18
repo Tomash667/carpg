@@ -51,6 +51,7 @@ PickServerPanel::PickServerPanel(const DialogInfo& info) : GameDialogBox(info), 
 void PickServerPanel::LoadLanguage()
 {
 	auto s = Language::GetSection("PickServerPanel");
+	txFailedToGetServers = s.Get("failedToGetServers");
 
 	bts[0].text = Str("join");
 	bts[1].text = GUI.txCancel;
@@ -493,5 +494,5 @@ void PickServerPanel::CheckAutojoin()
 void PickServerPanel::HandleBadRequest()
 {
 	bad_request = true;
-	GUI.SimpleDialog("B³¹d pobierania listy serwerów.", this); FIXME;
+	GUI.SimpleDialog(txFailedToGetServers, this);
 }

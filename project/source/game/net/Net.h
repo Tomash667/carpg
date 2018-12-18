@@ -221,8 +221,7 @@ public:
 	bool ReadPlayerStartData(BitStreamReader& f);
 	bool ReadLevelData(BitStreamReader& f);
 
-	SystemAddress server;
-	string net_adr;
+	SystemAddress server, ping_adr;
 	bool was_client;
 
 	//****************************************************************************

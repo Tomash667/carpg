@@ -159,6 +159,7 @@ void ServerPanel::LoadLanguage()
 	txLeft = Str("left");
 	txStartingGame = Str("startingGame");
 	txWaitingForServer = Str("waitingForServer");
+	txRegisterFailed = Str("registerFailed");
 
 	bts[0].text = txPickChar; // change char
 	bts[1].text = txReady; // not ready
@@ -184,45 +185,38 @@ void ServerPanel::LoadData()
 //=================================================================================================
 void ServerPanel::Draw(ControlDrawData*)
 {
-	// t³o
+	// background
 	GUI.DrawSpriteFull(tBackground, Color::Alpha(128));
 
 	// panel
 	GUI.DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
 
-	// przyciski
+	// controls
 	int count = (Net::IsServer() ? 6 : 3);
 	for(int i = 0; i < count; ++i)
 		bts[i].Draw();
-
-	// input
 	itb.Draw();
-
-	// grid
 	grid.Draw();
 
-	// tekst
+	// text
 	Rect r = { 340 + global_pos.x, 355 + global_pos.y, 340 + 185 + global_pos.x, 355 + 160 + global_pos.y };
-	GUI.DrawText(GUI.default_font, Format(txServerText, server_name.c_str(), N.active_players, max_players, N.password.empty() ? GUI.txNo : GUI.txYes),
+	GUI.DrawText(GUI.default_font,
+		Format(txServerText, server_name.c_str(), N.active_players, max_players, N.password.empty() ? GUI.txNo : GUI.txYes, N.peer->GetLocalIP(0), N.port),
 		0, Color::Black, r, &r);
 }
 
 //=================================================================================================
 void ServerPanel::Update(float dt)
 {
-	// przyciski
+	// update controls
 	int count = (Net::IsServer() ? 6 : 3);
 	for(int i = 0; i < count; ++i)
 	{
 		bts[i].mouse_focus = focus;
 		bts[i].Update(dt);
 	}
-
-	// textbox
 	itb.mouse_focus = focus;
 	itb.Update(dt);
-
-	// grid
 	grid.focus = focus;
 	grid.Update(dt);
 
@@ -601,6 +595,7 @@ void ServerPanel::UpdateLobbyServer(float dt)
 					N.master_server_state = MasterServerState::NotConnected;
 					N.master_server_adr = UNASSIGNED_SYSTEM_ADDRESS;
 					N.api->EndPunchthrough();
+					AddMsg(txRegisterFailed);
 				}
 				else
 				{
@@ -1288,7 +1283,7 @@ void ServerPanel::Event(GuiEvent e)
 
 //=================================================================================================
 void ServerPanel::Show()
-{ 
+{
 	starting = false;
 	update_timer = 0.f;
 

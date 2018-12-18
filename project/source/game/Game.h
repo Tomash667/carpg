@@ -258,30 +258,31 @@ public:
 	//-----------------------------------------------------------------
 	cstring txCreatingListOfFiles, txConfiguringGame, txLoadingItems, txLoadingObjects, txLoadingSpells, txLoadingUnits, txLoadingMusics, txLoadingBuildings,
 		txLoadingRequires, txLoadingShaders, txLoadingDialogs, txLoadingLanguageFiles, txPreloadAssets;
-	cstring txAiNoHpPot[2], txAiCity[2], txAiVillage[2], txAiMoonwell, txAiForest, txAiCampEmpty, txAiCampFull, txAiFort, txAiDwarfFort, txAiTower, txAiArmory, txAiHideout,
-		txAiVault, txAiCrypt, txAiTemple, txAiNecromancerBase, txAiLabirynth, txAiNoEnemies, txAiNearEnemies, txAiCave, txAiInsaneText[11], txAiDefaultText[9], txAiOutsideText[3],
-		txAiInsideText[2], txAiHumanText[2], txAiOrcText[7], txAiGoblinText[5], txAiMageText[4], txAiSecretText[3], txAiHeroDungeonText[4], txAiHeroCityText[5], txAiBanditText[6],
-		txAiHeroOutsideText[2], txAiDrunkMageText[3], txAiDrunkText[5], txAiDrunkContestText[4];
-	cstring txEnteringLocation, txGeneratingMap, txGeneratingBuildings, txGeneratingObjects, txGeneratingUnits, txGeneratingItems, txGeneratingPhysics, txRecreatingObjects, txGeneratingMinimap,
-		txLoadingComplete, txWaitingForPlayers, txLoadingResources;
+	cstring txAiNoHpPot[2], txAiCity[2], txAiVillage[2], txAiMoonwell, txAiForest, txAiCampEmpty, txAiCampFull, txAiFort, txAiDwarfFort, txAiTower, txAiArmory,
+		txAiHideout, txAiVault, txAiCrypt, txAiTemple, txAiNecromancerBase, txAiLabirynth, txAiNoEnemies, txAiNearEnemies, txAiCave, txAiInsaneText[11],
+		txAiDefaultText[9], txAiOutsideText[3], txAiInsideText[2], txAiHumanText[2], txAiOrcText[7], txAiGoblinText[5], txAiMageText[4], txAiSecretText[3],
+		txAiHeroDungeonText[4], txAiHeroCityText[5], txAiBanditText[6], txAiHeroOutsideText[2], txAiDrunkMageText[3], txAiDrunkText[5],
+		txAiDrunkContestText[4];
+	cstring txEnteringLocation, txGeneratingMap, txGeneratingBuildings, txGeneratingObjects, txGeneratingUnits, txGeneratingItems, txGeneratingPhysics,
+		txRecreatingObjects, txGeneratingMinimap, txLoadingComplete, txWaitingForPlayers, txLoadingResources;
 	cstring txTutPlay, txTutTick;
 	cstring txCantSaveGame, txSaveFailed, txLoadFailed, txQuickSave, txGameSaved, txLoadingLocations, txLoadingData, txLoadingQuests, txEndOfLoading,
 		txCantSaveNow, txOnlyServerCanSave, txCantLoadGame, txOnlyServerCanLoad, txLoadSignature, txLoadVersion, txLoadSaveVersionOld, txLoadMP, txLoadSP,
 		txLoadOpenError;
 	cstring txPvpRefuse, txWin, txWinMp, txLevelUp, txLevelDown, txRegeneratingLevel, txNeedItem, txGmsAddedItems;
 	cstring txRumor[28], txRumorD[7];
-	cstring txMayorQFailed[3], txQuestAlreadyGiven[2], txMayorNoQ[2], txCaptainQFailed[2], txCaptainNoQ[2], txLocationDiscovered[2], txAllDiscovered[2], txCampDiscovered[2],
-		txAllCampDiscovered[2], txNoQRumors[2], txRumorQ[9], txNeedMoreGold, txNoNearLoc, txNearLoc, txNearLocEmpty[2], txNearLocCleared, txNearLocEnemy[2], txNoNews[2], txAllNews[2],
-		txAllNearLoc, txLearningPoint, txLearningPoints, txNeedLearningPoints;
+	cstring txMayorQFailed[3], txQuestAlreadyGiven[2], txMayorNoQ[2], txCaptainQFailed[2], txCaptainNoQ[2], txLocationDiscovered[2], txAllDiscovered[2],
+		txCampDiscovered[2], txAllCampDiscovered[2], txNoQRumors[2], txRumorQ[9], txNeedMoreGold, txNoNearLoc, txNearLoc, txNearLocEmpty[2], txNearLocCleared,
+		txNearLocEnemy[2], txNoNews[2], txAllNews[2], txAllNearLoc, txLearningPoint, txLearningPoints, txNeedLearningPoints;
 	cstring txNear, txFar, txVeryFar, txELvlVeryWeak[2], txELvlWeak[2], txELvlAverage[2], txELvlQuiteStrong[2], txELvlStrong[2];
 	cstring txSGOOrcs, txSGOGoblins, txSGOBandits, txSGOEnemies, txSGOUndead, txSGOMages, txSGOGolems, txSGOMagesAndGolems, txSGOUnk, txSGOPowerfull;
-	cstring txArthur, txMineBuilt, txAncientArmory, txPortalClosed, txPortalClosedNews, txHiddenPlace, txOrcCamp, txPortalClose, txPortalCloseLevel, txXarDanger, txGorushDanger, txGorushCombat,
-		txMageHere, txMageEnter, txMageFinal, txQuest[279], txForMayor, txForSoltys;
+	cstring txArthur, txMineBuilt, txAncientArmory, txPortalClosed, txPortalClosedNews, txHiddenPlace, txOrcCamp, txPortalClose, txPortalCloseLevel,
+		txXarDanger, txGorushDanger, txGorushCombat, txMageHere, txMageEnter, txMageFinal, txQuest[279], txForMayor, txForSoltys;
 	cstring txEnterIp, txConnecting, txInvalidIp, txWaitingForPswd, txEnterPswd, txConnectingTo, txConnectingProxy, txConnectTimeout, txConnectInvalid,
 		txConnectVersion, txConnectRaknet, txCantJoin, txLostConnection, txInvalidPswd, txCantJoin2, txServerFull, txInvalidData, txNickUsed, txInvalidVersion,
 		txInvalidVersion2, txInvalidNick, txGeneratingWorld, txLoadedWorld, txWorldDataError, txLoadedPlayer, txPlayerDataError, txGeneratingLocation,
 		txLoadingLocation, txLoadingLocationError, txLoadingChars, txLoadingCharsError, txSendingWorld, txMpNPCLeft, txLoadingLevel, txDisconnecting,
-		txPreparingWorld, txInvalidCrc;
+		txPreparingWorld, txInvalidCrc, txConnectionFailed;
 	cstring txServer, txYouAreLeader, txRolledNumber, txPcIsLeader, txReceivedGold, txYouDisconnected, txYouKicked,
 		txGamePaused, txGameResumed, txDevmodeOn, txDevmodeOff, txPlayerLeft, txPlayerDisconnected, txPlayerQuit, txPlayerKicked, txServerClosed;
 	cstring txYell[3];
@@ -307,7 +308,7 @@ public:
 	std::set<const Item*> items_load;
 
 	//---------------------------------
-	// RYSOWANIE
+	// DRAWING
 	Matrix mat;
 	int particle_count;
 	VB vbDungeon;
@@ -326,7 +327,7 @@ public:
 	SURFACE sCustom;
 
 	//---------------------------------
-	// KONSOLA I KOMENDY
+	// CONSOLE & COMMANDS
 	Settings settings;
 	bool have_console, inactive_update, noai, devmode, default_devmode, default_player_devmode, debug_info, debug_info2, dont_wander;
 	string cfg_file;
@@ -335,11 +336,11 @@ public:
 	void SetupConfigVars();
 
 	//---------------------------------
-	// GRA
+	// GAME
 	GAME_STATE game_state, prev_game_state;
 	LocalPlayerData pc_data;
 	PlayerController* pc;
-	bool testing, force_seed_all, koniec_gry, target_loc_is_camp, death_solo;
+	bool testing, force_seed_all, end_of_game, target_loc_is_camp, death_solo;
 	int death_screen;
 	float death_fade, game_speed;
 	vector<MeshInstance*> bow_instances;
@@ -356,7 +357,7 @@ public:
 	ImageFormat screenshot_format;
 
 	//---------------------------------
-	// DIALOGI
+	// DIALOGS
 	DialogContext dialog_context;
 	vector<string> dialog_choices; // u¿ywane w MP u klienta
 	string predialog;
@@ -364,11 +365,16 @@ public:
 	DialogContext* FindDialogContext(Unit* talker);
 
 	//---------------------------------
-	// WCZYTYWANIE
+	// LOADING
 	float loading_dt, loading_cap;
 	Timer loading_t;
 	int loading_steps, loading_index;
 	Color clear_color2;
+	// used temporary at loading
+	vector<AIController*> ai_bow_targets, ai_cast_targets;
+	vector<Location*> load_location_quest;
+	vector<Unit*> load_unit_handler;
+	vector<Chest*> load_chest_handler;
 
 	//---------------------------------
 	// FALLBACK
@@ -378,7 +384,7 @@ public:
 
 	int draw_flags;
 
-	// muzyka
+	// music
 	MusicType music_type;
 	Music* last_music;
 	vector<Music*> tracks;
@@ -389,17 +395,11 @@ public:
 	void SetupTracks();
 	void UpdateMusic();
 
-	// u¿ywane przy wczytywaniu gry
-	vector<AIController*> ai_bow_targets, ai_cast_targets;
-	vector<Location*> load_location_quest;
-	vector<Unit*> load_unit_handler;
-	vector<Chest*> load_chest_handler;
-
 	bool hardcore_mode, hardcore_option;
 	float grayout;
 	bool cl_postfx;
 
-	// klawisze
+	// keys
 	void InitGameKeys();
 	void ResetGameKeys();
 	void SaveGameKeys();

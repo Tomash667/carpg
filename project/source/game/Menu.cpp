@@ -48,7 +48,7 @@ const float T_WAIT_FOR_DATA = 5.f;
 //=================================================================================================
 bool Game::CanShowMenu()
 {
-	return !GUI.HaveDialog() && !gui->game_gui->HavePanelOpen() && !gui->main_menu->visible && game_state != GS_MAIN_MENU && death_screen != 3 && !koniec_gry
+	return !GUI.HaveDialog() && !gui->game_gui->HavePanelOpen() && !gui->main_menu->visible && game_state != GS_MAIN_MENU && death_screen != 3 && !end_of_game
 		&& !dialog_context.dialog_mode;
 }
 
@@ -173,41 +173,31 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 //=================================================================================================
 void Game::MultiplayerPanelEvent(int id)
 {
-	player_name = gui->multiplayer->textbox.GetText();
+	player_name = Trimmed(gui->multiplayer->textbox.GetText());
 
-	if(id == MultiplayerPanel::IdCancel)
-	{
-		gui->multiplayer->CloseDialog();
-		return;
-	}
-
-	// sprawdŸ czy podano nick
+	// check nick
 	if(player_name.empty())
 	{
 		GUI.SimpleDialog(gui->multiplayer->txNeedEnterNick, gui->multiplayer);
 		return;
 	}
-
-	// sprawdŸ czy nick jest poprawny
 	if(!N.ValidateNick(player_name.c_str()))
 	{
 		GUI.SimpleDialog(gui->multiplayer->txEnterValidNick, gui->multiplayer);
 		return;
 	}
 
-	// zapisz nick
+	// save nick
 	cfg.Add("nick", player_name);
 	SaveCfg();
 
 	switch(id)
 	{
 	case MultiplayerPanel::IdJoinLan:
-		// do³¹cz lan
 		gui->pick_server->Show();
 		break;
 	case MultiplayerPanel::IdJoinIp:
 		{
-			// wyœwietl okno na podawanie adresu ip
 			GetTextDialogParams params(txEnterIp, server_ip);
 			params.event = DialogEvent(this, &Game::OnEnterIp);
 			params.limit = 100;
@@ -216,11 +206,9 @@ void Game::MultiplayerPanelEvent(int id)
 		}
 		break;
 	case MultiplayerPanel::IdCreate:
-		// za³ó¿ serwer
 		gui->create_server->Show();
 		break;
 	case MultiplayerPanel::IdLoad:
-		// wczytaj grê
 		N.mp_load = true;
 		Net::changes.clear();
 		if(!N.net_strs.empty())
@@ -245,7 +233,7 @@ void Game::CreateServerEvent(int id)
 	else
 	{
 		// copy settings
-		N.server_name = gui->create_server->textbox[0].GetText();
+		N.server_name = Trimmed(gui->create_server->textbox[0].GetText());
 		N.max_players = atoi(gui->create_server->textbox[1].GetText().c_str());
 		N.password = gui->create_server->textbox[2].GetText();
 		N.server_hidden = gui->create_server->checkbox.checked;
@@ -266,7 +254,6 @@ void Game::CreateServerEvent(int id)
 		if(error_text)
 		{
 			GUI.SimpleDialog(error_text, gui->create_server);
-			// daj focus textboxowi w którym by³ b³¹d
 			gui->create_server->cont.give_focus = give_focus;
 			return;
 		}
@@ -278,11 +265,10 @@ void Game::CreateServerEvent(int id)
 		cfg.Add("server_hidden", N.server_hidden);
 		SaveCfg();
 
-		// zamknij okna
+		// close dialog windows
 		gui->create_server->CloseDialog();
 		gui->multiplayer->CloseDialog();
 
-		// jeœli ok to uruchom serwer
 		try
 		{
 			N.InitServer();
@@ -328,9 +314,10 @@ void Game::OnEnterIp(int id)
 	if(id == BUTTON_OK)
 	{
 		SystemAddress adr = UNASSIGNED_SYSTEM_ADDRESS;
-		if(adr.FromString(server_ip.c_str()) && adr != UNASSIGNED_SYSTEM_ADDRESS)
+		Trim(server_ip);
+		if(adr.FromString(server_ip.c_str(), ':') && adr != UNASSIGNED_SYSTEM_ADDRESS)
 		{
-			// zapisz ip
+			// save ip
 			cfg.Add("server_ip", server_ip.c_str());
 			SaveCfg();
 
@@ -344,14 +331,14 @@ void Game::OnEnterIp(int id)
 				return;
 			}
 
-			Info("Pinging %s...", server_ip.c_str());
+			Info("Pinging %s...", adr.ToString());
 			gui->info_box->Show(txConnecting);
 			net_mode = NM_CONNECTING;
 			net_state = NetState::Client_PingIp;
 			net_timer = T_CONNECT_PING;
 			net_tries = I_CONNECT_TRIES;
-			N.net_adr = adr.ToString(false);
-			N.peer->Ping(N.net_adr.c_str(), (word)N.port, false);
+			N.ping_adr = adr;
+			N.peer->Ping(N.ping_adr.ToString(false), N.ping_adr.GetPort(), false);
 		}
 		else
 			GUI.SimpleDialog(txInvalidIp, gui->multiplayer);
@@ -413,8 +400,8 @@ void Game::UpdateClientConnectingIp(float dt)
 			else
 			{
 				// ping another time...
-				Info("Pinging %s...", N.net_adr.c_str());
-				N.peer->Ping(N.net_adr.c_str(), (word)N.port, false);
+				Info("Pinging %s...", N.ping_adr.ToString());
+				N.peer->Ping(N.ping_adr.ToString(false), N.ping_adr.GetPort(), false);
 				--net_tries;
 				net_timer = T_CONNECT_PING;
 			}
@@ -784,7 +771,7 @@ void Game::UpdateClientConnectingIp(float dt)
 				Warn("NM_CONNECTING(2): Connection attempt failed.");
 				N.StreamEnd();
 				N.peer->DeallocatePacket(packet);
-				EndConnecting("Nie uda³o siê po³¹czyæ z serwerem."); FIXME;
+				EndConnecting(txConnectionFailed);
 				return;
 			case ID_INVALID_PASSWORD:
 				// password is invalid
@@ -842,7 +829,7 @@ void Game::UpdateClientConnectingIp(float dt)
 			case ID_NAT_PUNCHTHROUGH_FAILED:
 				Warn("NM_CONNECTING(3): Punchthrough failed (%d).", msg_id);
 				N.api->EndPunchthrough();
-				EndConnecting("Nie uda³o siê po³¹czyæ z serwerem."); FIXME;
+				EndConnecting(txConnectionFailed);
 				break;
 			case ID_NAT_PUNCHTHROUGH_SUCCEEDED:
 				{
@@ -952,7 +939,7 @@ void Game::UpdateClientTransfer(float dt)
 
 				if(N.ReadWorldData(reader))
 				{
-					// odeœlij informacje o gotowoœci
+					// send ready message
 					BitStreamWriter f;
 					f << ID_READY;
 					f << (byte)0;
@@ -979,7 +966,7 @@ void Game::UpdateClientTransfer(float dt)
 				LoadingStep("");
 				if(N.ReadPlayerStartData(reader))
 				{
-					// odeœlij informacje o gotowoœci
+					// send ready message
 					if(N.mp_load_worldmap)
 						LoadResources("", true);
 					else
@@ -1746,7 +1733,7 @@ void Game::UpdateServerSend(float dt)
 				}
 				else
 				{
-					// wyœlij dane poziomu
+					// send level data
 					N.peer->Send(&prepared_stream, HIGH_PRIORITY, RELIABLE, 0, packet->systemAddress, false);
 					N.StreamWrite(prepared_stream, Stream_TransferServer, packet->systemAddress);
 					info.timer = mp_timeout;
@@ -1973,8 +1960,8 @@ void Game::QuickJoinIp()
 #ifdef _DEBUG
 		net_tries *= 2;
 #endif
-		N.net_adr = adr.ToString(false);
-		N.peer->Ping(N.net_adr.c_str(), (word)N.port, false);
+		N.ping_adr = adr;
+		N.peer->Ping(N.ping_adr.ToString(false), N.ping_adr.GetPort(), false);
 	}
 	else
 		Warn("Can't quick connect to server, invalid ip.");
@@ -2026,14 +2013,13 @@ void Game::CloseConnection(VoidF f)
 		case NM_SERVER_SEND:
 			Info("ServerPanel: Closing server.");
 
-			// zablokuj do³¹czanie
+			// disallow new connections
 			N.peer->SetMaximumIncomingConnections(0);
-			// wy³¹cz info o serwerze
 			N.peer->SetOfflinePingResponse(nullptr, 0);
 
 			if(N.active_players > 1)
 			{
-				// roz³¹cz graczy
+				// disconnect players
 				Info("ServerPanel: Disconnecting clients.");
 				const byte b[] = { ID_SERVER_CLOSE, ServerClose_Closing };
 				N.peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
@@ -2046,7 +2032,7 @@ void Game::CloseConnection(VoidF f)
 			}
 			else
 			{
-				// nie ma graczy, mo¿na zamkn¹æ
+				// no players, close instantly
 				gui->info_box->CloseDialog();
 				N.ClosePeer();
 				f();
@@ -2062,14 +2048,13 @@ void Game::CloseConnection(VoidF f)
 		{
 			Info("ServerPanel: Closing server.");
 
-			// zablokuj do³¹czanie
+			// disallow new connections
 			N.peer->SetMaximumIncomingConnections(0);
-			// wy³¹cz info o serwerze
 			N.peer->SetOfflinePingResponse(nullptr, 0);
 
 			if(N.active_players > 1)
 			{
-				// roz³¹cz graczy
+				// disconnect players
 				Info("ServerPanel: Disconnecting clients.");
 				const byte b[] = { ID_SERVER_CLOSE, ServerClose_Closing };
 				N.peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
@@ -2082,7 +2067,7 @@ void Game::CloseConnection(VoidF f)
 			}
 			else
 			{
-				// nie ma graczy, mo¿na zamkn¹æ
+				// no players, close instantly
 				N.ClosePeer();
 				if(f)
 					f();

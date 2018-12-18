@@ -62,6 +62,6 @@ public:
 	cstring txReady, txNotReady, txStart, txStop, txPickChar, txKick, txNone, txSetLeader, txNick, txChar, txLoadedCharInfo, txNotLoadedCharInfo, txChangeChar,
 		txCantKickMyself, txCantKickUnconnected, txReallyKick, txAlreadyLeader, txLeaderChanged, txNotJoinedYet, txNotAllReady, txStartingIn, txStartingStop,
 		txDisconnecting, txYouAreLeader, txJoined, txPlayerLeft, txNeedSelectedPlayer, txServerText, txDisconnected, txClosing, txKicked, txUnknown,
-		txUnconnected, txIpLostConnection, txPlayerLostConnection, txLeft, txStartingGame, txWaitingForServer;
+		txUnconnected, txIpLostConnection, txPlayerLostConnection, txLeft, txStartingGame, txWaitingForServer, txRegisterFailed;
 	TEX tReady, tNotReady;
 };

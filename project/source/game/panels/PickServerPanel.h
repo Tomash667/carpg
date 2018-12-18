@@ -52,5 +52,6 @@ private:
 	TEX tIcoPassword, tIcoSave;
 	CheckBox cb_internet, cb_lan;
 	float timer;
+	cstring txFailedToGetServers;
 	bool pick_autojoin, lan_mode, bad_request;
 };
