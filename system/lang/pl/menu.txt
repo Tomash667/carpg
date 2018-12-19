@@ -260,6 +260,7 @@ name = "Nazwa"
 internet = "Internet"
 lan = "LAN"
 failedToGetServers = "B³¹d pobierania listy serwerów."
+invalidServerVersion = "Wybrany serwer wymaga innej wersji gry.\nWersja serwera: %s\nTwoja wersja: %s"
 []
 
 // klawisze

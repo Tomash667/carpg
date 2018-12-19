@@ -1755,6 +1755,7 @@ DialogBox* IGUI::ShowDialog(const DialogInfo& info)
 //=================================================================================================
 void IGUI::ShowDialog(DialogBox* d)
 {
+	d->visible = true;
 	d->Event(GuiEvent_Show);
 
 	if(dialog_layer->Empty())
@@ -1835,6 +1836,7 @@ void IGUI::CloseDialogInternal(DialogBox* d)
 	assert(d);
 
 	d->Event(GuiEvent_Close);
+	d->visible = false;
 	dialog_layer->Remove(d);
 
 	if(!dialog_layer->Empty())

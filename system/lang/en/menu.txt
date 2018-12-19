@@ -260,6 +260,7 @@ name = "Name"
 internet = "Internet"
 lan = "LAN"
 failedToGetServers = "Failed to get list of servers."
+invalidServerVersion = "Selected server requires different game version.\nServer version: %s\nYour version: %s"
 []
 
 // keys

@@ -45,6 +45,8 @@ PickServerPanel::PickServerPanel(const DialogInfo& info) : GameDialogBox(info), 
 	grid.pos = Int2(8, 8);
 	grid.size = Int2(320, 300);
 	grid.event = GridEvent(this, &PickServerPanel::GetCell);
+	grid.selection_type = Grid::BACKGROUND;
+	grid.selection_color = Color(0, 255, 0, 128);
 }
 
 //=================================================================================================
@@ -52,6 +54,7 @@ void PickServerPanel::LoadLanguage()
 {
 	auto s = Language::GetSection("PickServerPanel");
 	txFailedToGetServers = s.Get("failedToGetServers");
+	txInvalidServerVersion = s.Get("invalidServerVersion");
 
 	bts[0].text = Str("join");
 	bts[1].text = GUI.txCancel;
@@ -183,9 +186,7 @@ void PickServerPanel::Update(float dt)
 					N.StreamError();
 					break;
 				}
-
-				bool valid_version = (version == VERSION);
-
+				
 				// search for server in list
 				bool found = false;
 				int index = 0;
@@ -201,7 +202,7 @@ void PickServerPanel::Update(float dt)
 						it->max_players = players_max;
 						it->flags = flags;
 						it->timer = 0.f;
-						it->valid_version = valid_version;
+						it->version = version;
 
 						CheckAutojoin();
 						break;
@@ -220,7 +221,7 @@ void PickServerPanel::Update(float dt)
 					sd.adr = packet->systemAddress;
 					sd.flags = flags;
 					sd.timer = 0.f;
-					sd.valid_version = valid_version;
+					sd.version = version;
 					grid.AddItem();
 
 					CheckAutojoin();
@@ -263,7 +264,7 @@ void PickServerPanel::Update(float dt)
 	}
 
 	// enable/disable join button
-	if(grid.selected == -1 || !servers[grid.selected].valid_version)
+	if(grid.selected == -1)
 		bts[0].state = Button::DISABLED;
 	else if(bts[0].state == Button::DISABLED)
 		bts[0].state = Button::NONE;
@@ -293,7 +294,10 @@ void PickServerPanel::Event(GuiEvent e)
 		grid.LostFocus();
 		break;
 	case IdOk:
-		event(e);
+		if(servers[grid.selected].IsValidVersion())
+			event(e);
+		else
+			GUI.SimpleDialog(Format(txInvalidServerVersion, VersionToString(servers[grid.selected].version), VERSION_STR), this);
 		break;
 	case IdCancel:
 		N.ClosePeer();
@@ -355,7 +359,7 @@ void PickServerPanel::GetCell(int item, int column, Cell& cell)
 	}
 	else
 	{
-		cell.text_color->color = (server.valid_version ? Color::Black : Color::Red);
+		cell.text_color->color = (server.IsValidVersion() ? Color::Black : Color::Red);
 		if(column == 1)
 			cell.text_color->text = Format("%d/%d", server.active_players, server.max_players);
 		else
@@ -406,9 +410,8 @@ void PickServerPanel::AddServer(nlohmann::json& server)
 	sd.active_players = server["players"].get<int>();
 	sd.max_players = server["maxPlayers"].get<int>();
 	sd.flags = server["flags"].get<int>();
-	int version = server["version"].get<int>();
+	sd.version = server["version"].get<int>();
 	sd.timer = 0.f;
-	sd.valid_version = (version == VERSION);
 	grid.AddItem();
 	Info("PickServer: Added server %s (%d).", sd.name.c_str(), sd.id);
 }
@@ -485,7 +488,7 @@ void PickServerPanel::CheckAutojoin()
 	int index = 0;
 	for(ServerData& sd : servers)
 	{
-		if(sd.active_players != sd.max_players && sd.valid_version)
+		if(sd.active_players != sd.max_players && sd.IsValidVersion())
 		{
 			// autojoin server
 			bts[0].state = Button::NONE;

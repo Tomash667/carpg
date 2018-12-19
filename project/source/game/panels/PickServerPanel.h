@@ -4,6 +4,7 @@
 #include "GameDialogBox.h"
 #include "Grid.h"
 #include "CheckBox.h"
+#include "Version.h"
 
 //-----------------------------------------------------------------------------
 class PickServerPanel : public GameDialogBox
@@ -23,9 +24,10 @@ public:
 		string name, guid;
 		SystemAddress adr;
 		uint active_players, max_players;
-		int flags;
+		int flags, version;
 		float timer;
-		bool valid_version;
+
+		bool IsValidVersion() const { return version == VERSION; }
 	};
 
 	explicit PickServerPanel(const DialogInfo& info);
@@ -52,6 +54,6 @@ private:
 	TEX tIcoPassword, tIcoSave;
 	CheckBox cb_internet, cb_lan;
 	float timer;
-	cstring txFailedToGetServers;
+	cstring txFailedToGetServers, txInvalidServerVersion;
 	bool pick_autojoin, lan_mode, bad_request;
 };

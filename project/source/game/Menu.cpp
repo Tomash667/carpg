@@ -515,7 +515,7 @@ void Game::UpdateClientConnectingIp(float dt)
 			else
 			{
 				// try to connect
-				ConnectionAttemptResult result = N.peer->Connect(N.server.ToString(false), (word)N.port, nullptr, 0);
+				ConnectionAttemptResult result = N.peer->Connect(N.ping_adr.ToString(false), N.ping_adr.GetPort(), nullptr, 0);
 				if(result == CONNECTION_ATTEMPT_STARTED)
 				{
 					// connecting...
@@ -1914,7 +1914,7 @@ void Game::OnEnterPassword(int id)
 	}
 	else
 	{
-		ConnectionAttemptResult result = N.peer->Connect(N.server.ToString(false), (word)N.port, enter_pswd.c_str(), enter_pswd.length());
+		ConnectionAttemptResult result = N.peer->Connect(N.ping_adr.ToString(false), N.ping_adr.GetPort(), enter_pswd.c_str(), enter_pswd.length());
 		if(result == CONNECTION_ATTEMPT_STARTED)
 		{
 			net_state = NetState::Client_Connecting;
