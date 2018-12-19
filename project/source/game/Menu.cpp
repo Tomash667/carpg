@@ -2155,13 +2155,7 @@ void Game::OnPlayTutorial(int id)
 
 void Game::OnPickServer(int id)
 {
-	if(id == PickServerPanel::IdCancel)
-	{
-		N.ClosePeer();
-		N.peer->Shutdown(0);
-		gui->pick_server->CloseDialog();
-	}
-	else if(!gui->pick_server->IsLAN())
+	if(!gui->pick_server->IsLAN())
 	{
 		// connect to proxy server for nat punchthrough
 		PickServerPanel::ServerData& info = gui->pick_server->servers[gui->pick_server->grid.selected];

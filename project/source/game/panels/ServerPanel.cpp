@@ -576,9 +576,9 @@ void ServerPanel::UpdateLobbyServer(float dt)
 				BitStreamWriter f;
 				f << ID_MASTER_HOST;
 				f << server_name;
-				f << VERSION_STR;
 				f << max_players;
 				f << N.GetServerFlags();
+				f << VERSION;
 				N.peer->Send(&f.GetBitStream(), IMMEDIATE_PRIORITY, RELIABLE_ORDERED, 1, packet->systemAddress, false);
 			}
 			break;

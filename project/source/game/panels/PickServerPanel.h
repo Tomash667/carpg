@@ -36,8 +36,8 @@ public:
 	void Event(GuiEvent e) override;
 	void Show(bool pick_autojoin = false);
 	void GetCell(int item, int column, Cell& cell);
-	void HandleGetServers(nlohmann::json&);
-	void HandleGetChanges(nlohmann::json&);
+	bool HandleGetServers(nlohmann::json&);
+	bool HandleGetChanges(nlohmann::json&);
 	void HandleBadRequest();
 	bool IsLAN() const { return lan_mode; }
 

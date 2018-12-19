@@ -70,7 +70,7 @@ void LobbyApi::Update(float dt)
 		else
 			current_op = NONE;
 	}
-	
+
 	http->Update();
 }
 
@@ -89,17 +89,12 @@ void LobbyApi::ParseResponse()
 	switch(current_op)
 	{
 	case GET_SERVERS:
-		{
+		if(Game::Get().gui->pick_server->HandleGetServers(j))
 			timestamp = j["timestamp"].get<int>();
-			Game::Get().gui->pick_server->HandleGetServers(j);
-			
-		}
 		break;
 	case GET_CHANGES:
-		{
+		if(Game::Get().gui->pick_server->HandleGetChanges(j))
 			timestamp = j["timestamp"].get<int>();
-			Game::Get().gui->pick_server->HandleGetChanges(j);
-		}
 		break;
 	}
 }
@@ -114,6 +109,8 @@ void LobbyApi::Reset()
 
 void LobbyApi::AddOperation(Operation op)
 {
+	if(op == GET_CHANGES && timestamp == 0)
+		op = GET_SERVERS;
 	if(current_op == NONE)
 		DoOperation(op);
 	else

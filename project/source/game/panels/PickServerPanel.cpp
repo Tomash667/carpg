@@ -293,8 +293,12 @@ void PickServerPanel::Event(GuiEvent e)
 		grid.LostFocus();
 		break;
 	case IdOk:
-	case IdCancel:
 		event(e);
+		break;
+	case IdCancel:
+		N.ClosePeer();
+		N.peer->Shutdown(0);
+		CloseDialog();
 		break;
 	case IdInternet:
 		cb_lan.checked = false;
@@ -379,16 +383,17 @@ void PickServerPanel::OnChangeMode(bool lan_mode)
 }
 
 //=================================================================================================
-void PickServerPanel::HandleGetServers(nlohmann::json& j)
+bool PickServerPanel::HandleGetServers(nlohmann::json& j)
 {
-	if(!visible || lan_mode)
-		return;
+	if(!visible || lan_mode || GUI.HaveDialog("GetTextDialog"))
+		return false;
 
 	auto& servers = j["servers"];
 	for(auto it = servers.begin(), end = servers.end(); it != end; ++it)
 		AddServer(*it);
 
 	CheckAutojoin();
+	return true;
 }
 
 //=================================================================================================
@@ -401,17 +406,18 @@ void PickServerPanel::AddServer(nlohmann::json& server)
 	sd.active_players = server["players"].get<int>();
 	sd.max_players = server["maxPlayers"].get<int>();
 	sd.flags = server["flags"].get<int>();
+	int version = server["version"].get<int>();
 	sd.timer = 0.f;
-	sd.valid_version = true;
+	sd.valid_version = (version == VERSION);
 	grid.AddItem();
 	Info("PickServer: Added server %s (%d).", sd.name.c_str(), sd.id);
 }
 
 //=================================================================================================
-void PickServerPanel::HandleGetChanges(nlohmann::json& j)
+bool PickServerPanel::HandleGetChanges(nlohmann::json& j)
 {
-	if(!visible || lan_mode)
-		return;
+	if(!visible || lan_mode || GUI.HaveDialog("GetTextDialog"))
+		return false;
 
 	auto& changes = j["changes"];
 	for(auto it = changes.begin(), end = changes.end(); it != end; ++it)
@@ -468,6 +474,7 @@ void PickServerPanel::HandleGetChanges(nlohmann::json& j)
 	}
 
 	CheckAutojoin();
+	return true;
 }
 
 //=================================================================================================
