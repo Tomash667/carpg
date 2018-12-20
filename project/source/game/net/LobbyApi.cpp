@@ -3,7 +3,7 @@
 #include "GameCore.h"
 #include "LobbyApi.h"
 #include <slikenet\TCPInterface.h>
-#include <slikenet\HTTPConnection.h>
+#include <slikenet\HTTPConnection2.h>
 #include <slikenet\NatPunchthroughClient.h>
 #include "Game.h"
 #include "GlobalGui.h"
@@ -24,16 +24,16 @@ cstring op_names[] = {
 LobbyApi::LobbyApi() : np_client(nullptr), np_attached(false)
 {
 	tcp = TCPInterface::GetInstance();
-	tcp->Start(0, 1);
-
-	http = HTTPConnection::GetInstance();
-	http->Init(tcp, API_URL, API_PORT);
+	http = HTTPConnection2::GetInstance();
+	tcp->AttachPlugin(http);
+	tcp->Start(0, 2);
 }
 
 LobbyApi::~LobbyApi()
 {
-	delete np_client;
-	HTTPConnection::DestroyInstance(http);
+	if(np_client)
+		NatPunchthroughClient::DestroyInstance(np_client);
+	HTTPConnection2::DestroyInstance(http);
 	TCPInterface::DestroyInstance(tcp);
 }
 
@@ -42,42 +42,47 @@ void LobbyApi::Update(float dt)
 	if(current_op == NONE)
 		return;
 
-	Packet* packet = tcp->Receive();
-	if(packet)
-	{
-		http->ProcessTCPPacket(packet);
-		tcp->DeallocatePacket(packet);
-		http->Update();
+	SystemAddress sa;
+	Packet* packet;
+	sa = tcp->HasCompletedConnectionAttempt();
+	for(packet = tcp->Receive(); packet; tcp->DeallocatePacket(packet), packet = tcp->Receive())
+		;
+	sa = tcp->HasFailedConnectionAttempt();
+	sa = tcp->HasLostConnection();
 
-		if(current_op != IGNORE)
+	if(http->HasResponse())
+	{
+		HTTPConnection2::Request* request;
+		http->GetRawResponse(request);
+		Operation received_op = (Operation)(int)request->userData;
+		if(received_op == current_op)
 		{
-			int code;
-			if(http->HasBadResponse(&code, nullptr))
+			int code = request->GetStatusCode();
+			if(code >= 400)
 			{
 				Error("LobbyApi: Bad server response %d for %s.", code, op_names[current_op]);
 				if(current_op == GET_SERVERS || current_op == GET_CHANGES)
 					Game::Get().gui->pick_server->HandleBadRequest();
 			}
+			else if(request->binaryData)
+			{
+				if(current_op != GET_VERSION || request->contentLength != 8)
+					Error("LobbyApi: Binary response for %s.", code, op_names[current_op]);
+				else
+				{
+					int a = 3;
+				}
+			}
 			else
-				ParseResponse();
+				ParseResponse(request->stringReceived.C_String());
 		}
-
-		if(!requests.empty())
-		{
-			DoOperation(requests.back());
-			requests.pop();
-		}
-		else
-			current_op = NONE;
+		OP_DELETE(request, _FILE_AND_LINE_);
 	}
-
-	http->Update();
 }
 
-void LobbyApi::ParseResponse()
+void LobbyApi::ParseResponse(const char* response)
 {
-	RakString str = http->Read();
-	auto j = nlohmann::json::parse(str.C_String());
+	auto j = nlohmann::json::parse(response);
 	if(j["ok"] == false)
 	{
 		string& error = j["error"].get_ref<string&>();
@@ -131,8 +136,11 @@ void LobbyApi::DoOperation(Operation op)
 	case GET_CHANGES:
 		path = Format("/api/servers/%d", timestamp);
 		break;
+	case GET_VERSION:
+		path = "/api/version";
+		break;
 	}
-	http->Get(path);
+	http->TransmitRequest(RakString::FormatForGET(Format("%s%s", API_URL, path)), API_URL, API_PORT, false, 4, UNASSIGNED_SYSTEM_ADDRESS, (void*)op);
 }
 
 class NatPunchthroughDebugInterface_InfoLogger : public NatPunchthroughDebugInterface
@@ -151,7 +159,7 @@ void LobbyApi::StartPunchthrough(RakNetGUID* target)
 	if(!np_client)
 	{
 		static NatPunchthroughDebugInterface_InfoLogger logger;
-		np_client = new NatPunchthroughClient;
+		np_client = NatPunchthroughClient::GetInstance();
 		np_client->SetDebugInterface(&logger);
 	}
 
@@ -170,5 +178,20 @@ void LobbyApi::EndPunchthrough()
 	{
 		N.peer->DetachPlugin(np_client);
 		np_attached = false;
+	}
+}
+
+#include <slikenet\sleep.h>
+
+int LobbyApi::GetVersion()
+{
+	assert(!IsBusy());
+	DoOperation(GET_VERSION);
+	http->TransmitRequest(RakString::FormatForGET(Format("%s%s", API_URL, path)), API_URL, API_PORT, false, 4, UNASSIGNED_SYSTEM_ADDRESS, (void*)op);
+
+	while(true)
+	{
+		Update(0.f);
+		RakSleep(30);
 	}
 }

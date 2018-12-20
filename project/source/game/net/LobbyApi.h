@@ -6,7 +6,7 @@
 
 namespace SLNet
 {
-	class HTTPConnection;
+	class HTTPConnection2;
 	class NatPunchthroughClient;
 	class TCPInterface;
 }
@@ -40,10 +40,10 @@ public:
 private:
 	void AddOperation(Operation op);
 	void DoOperation(Operation op);
-	void ParseResponse();
+	void ParseResponse(const char* response);
 
 	TCPInterface* tcp;
-	HTTPConnection* http;
+	HTTPConnection2* http;
 	NatPunchthroughClient* np_client;
 	std::queue<Operation> requests;
 	Operation current_op;

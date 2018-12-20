@@ -8,6 +8,8 @@
 #include "Utility.h"
 #include "StartupOptions.h"
 #include "SaveSlot.h"
+FIXME;
+#include "LobbyApi.h"
 
 //-----------------------------------------------------------------------------
 cstring RESTART_MUTEX_NAME = "CARPG-RESTART-MUTEX";
@@ -885,6 +887,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	// zapisz konfiguracjê
 	game.SaveCfg();
+
+	LobbyApi* api = new LobbyApi;
+	api->GetVersion();
 
 	//-------------------------------------------------------------------------
 	// rozpocznij grê

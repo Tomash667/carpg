@@ -3,7 +3,7 @@
  *  All rights reserved.
  *
  *  This source code is licensed under the BSD-style license found in the
- *  RakNet License.txt file in the licenses directory of this source tree. An additional grant 
+ *  RakNet License.txt file in the licenses directory of this source tree. An additional grant
  *  of patent rights can be found in the RakNet Patents.txt file in the same directory.
  *
  *
@@ -60,6 +60,7 @@ bool HTTPConnection2::TransmitRequest(const char* stringToTransmit, const char* 
 	request->useSSL=useSSL;
 	request->ipVersion=ipVersion;
 	request->userData=userData;
+	request->binaryData = nullptr;
 
 	if (IsConnected(request->hostEstimatedAddress))
 	{
@@ -134,6 +135,22 @@ bool HTTPConnection2::GetResponse( RakString &stringTransmitted, RakString &host
 	}
 	return false;
 }
+bool HTTPConnection2::GetRawResponse(Request*& request)
+{
+	completedRequestsMutex.Lock();
+	if(completedRequests.Size() > 0)
+	{
+		request = completedRequests[0];
+		completedRequests.RemoveAtIndexFast(0);
+		completedRequestsMutex.Unlock();
+		return true;
+	}
+	else
+	{
+		completedRequestsMutex.Unlock();
+	}
+	return false;
+}
 bool HTTPConnection2::IsBusy(void) const
 {
 	return pendingRequests.Size()>0 || sentRequests.Size()>0;
@@ -142,7 +159,7 @@ bool HTTPConnection2::HasResponse(void) const
 {
 	return completedRequests.Size()>0;
 }
-int ReadChunkSize( char *txtStart, char **txtEnd ) 
+int ReadChunkSize( char *txtStart, char **txtEnd )
 {
 // 	char lengthStr[32];
 // 	memset(lengthStr, 0, 32);
@@ -154,8 +171,8 @@ void ReadChunkBlock( size_t &currentChunkSize, size_t &bytesReadSoFar, char *txt
 {
 	size_t bytesToRead;
 	size_t sLen;
-	
-	do 
+
+	do
 	{
 		bytesToRead = currentChunkSize - bytesReadSoFar;
 		sLen = strlen(txtIn);
@@ -231,11 +248,6 @@ PluginReceiveResult HTTPConnection2::OnReceive(Packet *packet)
 			const char *isFirstChunk = strstr((char*) packet->data, "Transfer-Encoding: chunked");
 			if (isFirstChunk)
 			{
-				//printf((char*) packet->data);
-
-				locked=false;
-				sentRequestsMutex.Unlock();
-
 				sentRequest->chunked = true;
 				char *chunkStrStart = strstr((char*) packet->data, "\r\n\r\n");
 				RakAssert(chunkStrStart);
@@ -308,6 +320,7 @@ PluginReceiveResult HTTPConnection2::OnReceive(Packet *packet)
 			}
 			else
 			{
+				bool isBinary = strstr((char*)packet->data, "Content-Type: application/octet-stream") != NULL;
 				sentRequest->stringReceived+=packet->data;
 
 				if (sentRequest->contentLength==-1)
@@ -336,11 +349,11 @@ PluginReceiveResult HTTPConnection2::OnReceive(Packet *packet)
 						if (body_header)
 						{
 							body_header += 4; // strlen("\r\n\r\n");
-							size_t slen = strlen(body_header);
-							//RakAssert(slen <= (size_t) sentRequest->contentLength);
-							if (slen >= (size_t) sentRequest->contentLength)
+							if(isBinary)
 							{
-								sentRequest->contentOffset = body_header - sentRequest->stringReceived.C_String();
+								int offset = body_header - sentRequest->stringReceived.C_String();
+								sentRequest->binaryData = OP_NEW_ARRAY<byte>(sentRequest->contentLength, _FILE_AND_LINE_);
+								memcpy(sentRequest->binaryData, packet->data + offset, sentRequest->contentLength);
 								completedRequestsMutex.Lock();
 								completedRequests.Push(sentRequest, _FILE_AND_LINE_);
 								completedRequestsMutex.Unlock();
@@ -350,9 +363,24 @@ PluginReceiveResult HTTPConnection2::OnReceive(Packet *packet)
 							}
 							else
 							{
-								sentRequestsMutex.Lock();
-								sentRequests.Push(sentRequest, _FILE_AND_LINE_);
-								sentRequestsMutex.Unlock();
+								size_t slen = strlen(body_header);
+								//RakAssert(slen <= (size_t) sentRequest->contentLength);
+								if(slen >= (size_t)sentRequest->contentLength)
+								{
+									sentRequest->contentOffset = body_header - sentRequest->stringReceived.C_String();
+									completedRequestsMutex.Lock();
+									completedRequests.Push(sentRequest, _FILE_AND_LINE_);
+									completedRequestsMutex.Unlock();
+
+									// If there is another command waiting for this server, send it
+									SendPendingRequestToConnectedSystem(packet->systemAddress);
+								}
+								else
+								{
+									sentRequestsMutex.Lock();
+									sentRequests.Push(sentRequest, _FILE_AND_LINE_);
+									sentRequestsMutex.Unlock();
+								}
 							}
 						}
 
@@ -400,7 +428,7 @@ PluginReceiveResult HTTPConnection2::OnReceive(Packet *packet)
 				}
 			}
 
-			
+
 			break;
 		}
 	}
@@ -587,7 +615,7 @@ void HTTPConnection2::OnClosedConnection(const SystemAddress &systemAddress, Rak
 					sentRequest->contentOffset = 0;
 				}
 			}
-			
+
 
 			completedRequestsMutex.Lock();
 			completedRequests.Push(sentRequests[i], _FILE_AND_LINE_);
@@ -621,6 +649,11 @@ bool HTTPConnection2::IsConnected(SystemAddress sa)
 void HTTPConnection2::SendRequest(Request *request)
 {
 	tcpInterface->Send(request->stringToTransmit.C_String(), (unsigned int) request->stringToTransmit.GetLength(), request->hostCompletedAddress, false);
+}
+
+int HTTPConnection2::Request::GetStatusCode() const
+{
+	return atoi((char *)stringReceived.C_String() + strlen("HTTP/1.0 "));
 }
 
 #endif // #if _RAKNET_SUPPORT_HTTPConnection2==1 && _RAKNET_SUPPORT_TCPInterface==1
