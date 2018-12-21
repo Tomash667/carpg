@@ -64,6 +64,7 @@ public:
 		size_t thisChunkSize;
 		size_t bytesReadForThisChunk;
 		byte* binaryData;
+		int binaryLength;
 
 		~Request()
 		{

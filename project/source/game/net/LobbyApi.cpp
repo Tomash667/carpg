@@ -37,11 +37,15 @@ LobbyApi::~LobbyApi()
 	TCPInterface::DestroyInstance(tcp);
 }
 
-void LobbyApi::Update(float dt)
+void LobbyApi::Update()
 {
 	if(current_op == NONE)
 		return;
+	UpdateInternal();
+}
 
+void LobbyApi::UpdateInternal()
+{
 	SystemAddress sa;
 	Packet* packet;
 	sa = tcp->HasCompletedConnectionAttempt();
@@ -50,7 +54,7 @@ void LobbyApi::Update(float dt)
 	sa = tcp->HasFailedConnectionAttempt();
 	sa = tcp->HasLostConnection();
 
-	if(http->HasResponse())
+	while(http->HasResponse())
 	{
 		HTTPConnection2::Request* request;
 		http->GetRawResponse(request);
@@ -70,13 +74,41 @@ void LobbyApi::Update(float dt)
 					Error("LobbyApi: Binary response for %s.", code, op_names[current_op]);
 				else
 				{
-					int a = 3;
+					int* data = (int*)request->binaryData;
+					if(data[0] != 0x475052CA)
+					{
+						Error("LobbyApi: Invalid binary version sign 0x%p.", data[0]);
+						Error(request->stringReceived.C_String());
+						version2 = -1;
+					}
+					else
+						version2 = (data[1] & 0xFFFFFF);
 				}
 			}
 			else
-				ParseResponse(request->stringReceived.C_String());
+			{
+				try
+				{
+					ParseResponse(request->stringReceived.C_String() + request->contentOffset);
+				}
+				catch(const nlohmann::json::parse_error& ex)
+				{
+					Error("LobbyApi: Failed to parse response for %s: %s", op_names[current_op], ex.what());
+				}
+			}
 		}
 		OP_DELETE(request, _FILE_AND_LINE_);
+
+		if(current_op != GET_VERSION)
+		{
+			if(!requests.empty())
+			{
+				DoOperation(requests.back());
+				requests.pop();
+			}
+			else
+				current_op = NONE;
+		}
 	}
 }
 
@@ -87,7 +119,6 @@ void LobbyApi::ParseResponse(const char* response)
 	{
 		string& error = j["error"].get_ref<string&>();
 		Error("LobbyApi: Server returned error for method %s: %s", op_names[current_op], error.c_str());
-		requests.pop();
 		return;
 	}
 
@@ -100,6 +131,9 @@ void LobbyApi::ParseResponse(const char* response)
 	case GET_CHANGES:
 		if(Game::Get().gui->pick_server->HandleGetChanges(j))
 			timestamp = j["timestamp"].get<int>();
+		break;
+	case GET_VERSION:
+		version = j["version"].get<int>();
 		break;
 	}
 }
@@ -181,17 +215,46 @@ void LobbyApi::EndPunchthrough()
 	}
 }
 
-#include <slikenet\sleep.h>
-
-int LobbyApi::GetVersion()
+int LobbyApi::GetVersion(delegate<bool()> cancel_clbk)
 {
 	assert(!IsBusy());
+	Timer t;
+	float time = 0;
+	version = -1;
+	version2 = -1;
 	DoOperation(GET_VERSION);
-	http->TransmitRequest(RakString::FormatForGET(Format("%s%s", API_URL, path)), API_URL, API_PORT, false, 4, UNASSIGNED_SYSTEM_ADDRESS, (void*)op);
+	http->TransmitRequest(RakString::FormatForGET("carpg.pl/carpgdata/wersja"), "carpg.pl", 80, false, 4, UNASSIGNED_SYSTEM_ADDRESS, (void*)current_op);
 
 	while(true)
 	{
-		Update(0.f);
-		RakSleep(30);
+		if(cancel_clbk())
+			return -2;
+
+		UpdateInternal();
+		if(version >= 0)
+			break;
+
+		Sleep(30);
+		time += t.Tick();
+		if(time >= 2.f)
+			break;
+	}
+
+	Reset();
+	if(version >= 0)
+	{
+		if(version2 != -1 && version != version2)
+			Error("LobbyApi: Get version mismatch %s and %s.", VersionToString(version), VersionToString(version2));
+		return version;
+	}
+	else if(version2 >= 0)
+	{
+		Warn("LobbyApi: Failed to get version from primary server. Secondary returned %s.", VersionToString(version2));
+		return version2;
+	}
+	else
+	{
+		Error("LobbyApi: Failed to get version.");
+		return -1;
 	}
 }

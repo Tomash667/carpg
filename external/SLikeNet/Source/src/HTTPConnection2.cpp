@@ -61,6 +61,7 @@ bool HTTPConnection2::TransmitRequest(const char* stringToTransmit, const char* 
 	request->ipVersion=ipVersion;
 	request->userData=userData;
 	request->binaryData = nullptr;
+	request->binaryLength = 0;
 
 	if (IsConnected(request->hostEstimatedAddress))
 	{
@@ -320,7 +321,7 @@ PluginReceiveResult HTTPConnection2::OnReceive(Packet *packet)
 			}
 			else
 			{
-				bool isBinary = strstr((char*)packet->data, "Content-Type: application/octet-stream") != NULL;
+				bool isBinary = (sentRequest->binaryData || strstr((char*)packet->data, "Content-Type: application/octet-stream") != NULL);
 				sentRequest->stringReceived+=packet->data;
 
 				if (sentRequest->contentLength==-1)
@@ -351,15 +352,45 @@ PluginReceiveResult HTTPConnection2::OnReceive(Packet *packet)
 							body_header += 4; // strlen("\r\n\r\n");
 							if(isBinary)
 							{
-								int offset = body_header - sentRequest->stringReceived.C_String();
-								sentRequest->binaryData = OP_NEW_ARRAY<byte>(sentRequest->contentLength, _FILE_AND_LINE_);
-								memcpy(sentRequest->binaryData, packet->data + offset, sentRequest->contentLength);
-								completedRequestsMutex.Lock();
-								completedRequests.Push(sentRequest, _FILE_AND_LINE_);
-								completedRequestsMutex.Unlock();
+								if(sentRequest->binaryData)
+								{
+									int newLength = sentRequest->binaryLength + packet->length;
+									if(newLength > sentRequest->contentLength)
+									{
+										byte* oldData = sentRequest->binaryData;
+										sentRequest->binaryData = OP_NEW_ARRAY<byte>(newLength, _FILE_AND_LINE_);
+										memcpy(sentRequest->binaryData, oldData, sentRequest->binaryLength);
+										memcpy(sentRequest->binaryData + sentRequest->binaryLength, oldData, packet->length);
+										OP_DELETE_ARRAY(oldData, _FILE_AND_LINE_);
+									}
+									else
+										memcpy(sentRequest->binaryData + sentRequest->binaryLength, packet->data, packet->length);
+									sentRequest->binaryLength = newLength;
+								}
+								else
+								{
+									int offset = body_header - sentRequest->stringReceived.C_String();
+									int realLength = packet->length - offset;
+									sentRequest->binaryData = OP_NEW_ARRAY<byte>(sentRequest->contentLength, _FILE_AND_LINE_);
+									sentRequest->binaryLength = realLength;
+									memcpy(sentRequest->binaryData, packet->data + offset, realLength);
+								}
 
-								// If there is another command waiting for this server, send it
-								SendPendingRequestToConnectedSystem(packet->systemAddress);
+								if(sentRequest->binaryLength >= sentRequest->contentLength)
+								{
+									completedRequestsMutex.Lock();
+									completedRequests.Push(sentRequest, _FILE_AND_LINE_);
+									completedRequestsMutex.Unlock();
+
+									// If there is another command waiting for this server, send it
+									SendPendingRequestToConnectedSystem(packet->systemAddress);
+								}
+								else
+								{
+									sentRequestsMutex.Lock();
+									sentRequests.Push(sentRequest, _FILE_AND_LINE_);
+									sentRequestsMutex.Unlock();
+								}
 							}
 							else
 							{
@@ -383,7 +414,6 @@ PluginReceiveResult HTTPConnection2::OnReceive(Packet *packet)
 								}
 							}
 						}
-
 						else
 						{
 							sentRequestsMutex.Lock();

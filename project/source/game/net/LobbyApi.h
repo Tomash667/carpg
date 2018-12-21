@@ -24,12 +24,12 @@ class LobbyApi
 public:
 	LobbyApi();
 	~LobbyApi();
-	void Update(float dt);
+	void Update();
 	void Reset();
 	void GetServers() { AddOperation(GET_SERVERS); }
 	void GetChanges() { AddOperation(GET_CHANGES); }
 	bool IsBusy() const { return current_op != NONE; }
-	int GetVersion();
+	int GetVersion(delegate<bool()> cancel_clbk);
 	void StartPunchthrough(RakNetGUID* target);
 	void EndPunchthrough();
 
@@ -38,6 +38,7 @@ public:
 	static const int PROXY_PORT;
 
 private:
+	void UpdateInternal();
 	void AddOperation(Operation op);
 	void DoOperation(Operation op);
 	void ParseResponse(const char* response);
@@ -47,6 +48,6 @@ private:
 	NatPunchthroughClient* np_client;
 	std::queue<Operation> requests;
 	Operation current_op;
-	int timestamp;
+	int timestamp, version, version2;
 	bool np_attached;
 };
