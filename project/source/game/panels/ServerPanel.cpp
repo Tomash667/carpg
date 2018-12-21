@@ -160,6 +160,7 @@ void ServerPanel::LoadLanguage()
 	txStartingGame = Str("startingGame");
 	txWaitingForServer = Str("waitingForServer");
 	txRegisterFailed = Str("registerFailed");
+	txPlayerDisconnected = Str("playerDisconnected");
 
 	bts[0].text = txPickChar; // change char
 	bts[1].text = txReady; // not ready
@@ -252,6 +253,10 @@ void ServerPanel::UpdateLobbyClient(float dt)
 	// obs³uga komunikatów otrzymywanych przez klienta
 	for(Packet* packet = N.peer->Receive(); packet; N.peer->DeallocatePacket(packet), packet = N.peer->Receive())
 	{
+		// ignore messages from master server (disconnect notification)
+		if(packet->systemAddress == N.master_server_adr)
+			continue;
+
 		BitStream& stream = N.StreamStart(packet, Stream_UpdateLobbyClient);
 		BitStreamReader reader(stream);
 		byte msg_id;
@@ -279,7 +284,7 @@ void ServerPanel::UpdateLobbyClient(float dt)
 				cstring reason, reason_eng;
 				if(msg_id == ID_DISCONNECTION_NOTIFICATION)
 				{
-					reason = txDisconnected;
+					reason = txPlayerDisconnected;
 					reason_eng = "disconnected";
 				}
 				else if(msg_id == ID_CONNECTION_LOST)

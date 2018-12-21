@@ -9,7 +9,7 @@
 #include "GlobalGui.h"
 #include "PickServerPanel.h"
 
-cstring LobbyApi::API_URL = "localhost"; // "http://carpglobby.westeurope.cloudapp.azure.com:8080/";
+cstring LobbyApi::API_URL = "carpglobby.westeurope.cloudapp.azure.com";
 const int LobbyApi::API_PORT = 8080;
 const int LobbyApi::PROXY_PORT = 60481;
 
@@ -33,8 +33,8 @@ LobbyApi::~LobbyApi()
 {
 	if(np_client)
 		NatPunchthroughClient::DestroyInstance(np_client);
-	HTTPConnection2::DestroyInstance(http);
 	TCPInterface::DestroyInstance(tcp);
+	HTTPConnection2::DestroyInstance(http);
 }
 
 void LobbyApi::Update()
@@ -244,7 +244,7 @@ int LobbyApi::GetVersion(delegate<bool()> cancel_clbk)
 	if(version >= 0)
 	{
 		if(version2 != -1 && version != version2)
-			Error("LobbyApi: Get version mismatch %s and %s.", VersionToString(version), VersionToString(version2));
+			Warn("LobbyApi: Get version mismatch %s and %s.", VersionToString(version), VersionToString(version2));
 		return version;
 	}
 	else if(version2 >= 0)

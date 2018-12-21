@@ -28,7 +28,12 @@ HTTPConnection2::HTTPConnection2()
 }
 HTTPConnection2::~HTTPConnection2()
 {
-
+	for(unsigned int i = 0, count = pendingRequests.Size(); i < count; ++i)
+		OP_DELETE(pendingRequests[i], _FILE_AND_LINE_);
+	for(unsigned int i = 0, count = sentRequests.Size(); i < count; ++i)
+		OP_DELETE(sentRequests[i], _FILE_AND_LINE_);
+	for(unsigned int i = 0, count = completedRequests.Size(); i < count; ++i)
+		OP_DELETE(completedRequests[i], _FILE_AND_LINE_);
 }
 bool HTTPConnection2::TransmitRequest(const char* stringToTransmit, const char* host, unsigned short port, bool useSSL, int ipVersion, SystemAddress useAddress, void *userData)
 {

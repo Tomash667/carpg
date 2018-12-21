@@ -157,12 +157,14 @@ void MainMenu::UpdateCheckVersion()
 			Info("No new version available.");
 		}
 		check_status = CheckVersionStatus::Finished;
+		check_version_thread.join();
 	}
 	else if(check_status == CheckVersionStatus::Error)
 	{
 		version_text = Str("checkVersionError");
 		Error("Failed to check version.");
 		check_status = CheckVersionStatus::Finished;
+		check_version_thread.join();
 	}
 }
 
@@ -239,5 +241,6 @@ void MainMenu::ShutdownThread()
 	{
 		check_status = CheckVersionStatus::Cancel;
 		check_version_thread.join();
+		check_status = CheckVersionStatus::Cancel;
 	}
 }
