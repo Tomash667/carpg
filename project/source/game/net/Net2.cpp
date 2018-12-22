@@ -153,7 +153,7 @@ void Net::InitServer()
 		peer = RakPeerInterface::GetInstance();
 
 	uint max_connections = max_players - 1;
-	if(!server_hidden)
+	if(!server_lan)
 		++max_connections;
 
 	SocketDescriptor sd(port, nullptr);
@@ -176,7 +176,7 @@ void Net::InitServer()
 	peer->SetMaximumIncomingConnections((word)max_players - 1);
 	DEBUG_DO(peer->SetTimeoutTime(60 * 60 * 1000, UNASSIGNED_SYSTEM_ADDRESS));
 
-	if(!server_hidden)
+	if(!server_lan)
 	{
 		ConnectionAttemptResult result = peer->Connect(LobbyApi::API_URL, LobbyApi::PROXY_PORT, nullptr, 0, nullptr, 0, 6);
 		if(result == CONNECTION_ATTEMPT_STARTED)

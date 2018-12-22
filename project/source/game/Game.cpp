@@ -1304,7 +1304,6 @@ void Game::SetGameText()
 
 	// net
 	txServer = Str("server");
-	txPlayerKicked = Str("playerKicked");
 	txYouAreLeader = Str("youAreLeader");
 	txRolledNumber = Str("rolledNumber");
 	txPcIsLeader = Str("pcIsLeader");

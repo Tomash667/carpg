@@ -236,7 +236,7 @@ void Game::CreateServerEvent(int id)
 		N.server_name = Trimmed(gui->create_server->textbox[0].GetText());
 		N.max_players = atoi(gui->create_server->textbox[1].GetText().c_str());
 		N.password = gui->create_server->textbox[2].GetText();
-		N.server_hidden = gui->create_server->checkbox.checked;
+		N.server_lan = gui->create_server->checkbox.checked;
 
 		// check settings
 		cstring error_text = nullptr;
@@ -262,7 +262,7 @@ void Game::CreateServerEvent(int id)
 		cfg.Add("server_name", N.server_name);
 		cfg.Add("server_pswd", N.password);
 		cfg.Add("server_players", N.max_players);
-		cfg.Add("server_hidden", N.server_hidden);
+		cfg.Add("server_lan", N.server_lan);
 		SaveCfg();
 
 		// close dialog windows

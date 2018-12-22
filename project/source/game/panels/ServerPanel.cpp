@@ -160,7 +160,7 @@ void ServerPanel::LoadLanguage()
 	txStartingGame = Str("startingGame");
 	txWaitingForServer = Str("waitingForServer");
 	txRegisterFailed = Str("registerFailed");
-	txPlayerDisconnected = Str("playerDisconnected");
+	txPlayerDisconnected2 = Str("playerDisconnected2");
 
 	bts[0].text = txPickChar; // change char
 	bts[1].text = txReady; // not ready
@@ -223,7 +223,8 @@ void ServerPanel::Update(float dt)
 	if(focus && Key.Focus() && Key.PressedRelease(VK_ESCAPE))
 		Event(GuiEvent(Net::IsServer() ? IdCancel : IdKick));
 
-	UpdateLobby(dt);
+	if(visible)
+		UpdateLobby(dt);
 }
 
 //=================================================================================================
@@ -284,7 +285,7 @@ void ServerPanel::UpdateLobbyClient(float dt)
 				cstring reason, reason_eng;
 				if(msg_id == ID_DISCONNECTION_NOTIFICATION)
 				{
-					reason = txPlayerDisconnected;
+					reason = txPlayerDisconnected2;
 					reason_eng = "disconnected";
 				}
 				else if(msg_id == ID_CONNECTION_LOST)
@@ -1186,7 +1187,7 @@ void ServerPanel::Event(GuiEvent e)
 		grid.LostFocus();
 		itb.focus = false;
 		itb.Event(GuiEvent_LostFocus);
-	break;
+		break;
 	case IdPickCharacter: // pick character / change character
 		{
 			PlayerInfo& info = N.GetMe();

@@ -148,33 +148,31 @@ osoby. Oczekuj zmian na lepsze!
 ===============================================================================
 5) Tryb wieloosobowy
 * Ogólne informacje - Tryb multiplayer zosta³ przetestowany tylko na LANie.
-	Nie wiadomo czy dzia³a wystarczaj¹co dobrze przez internet. Serwer musi
-	mieæ publiczny adres ip lub coœ tam kombinowaæ w ustawieniach routera,
-	nie znam siê na tym :( Jeœli ruch postaci laguje niech serwer pozmienia
+	Nie wiadomo czy dzia³a wystarczaj¹co dobrze przez internet. Dziêki g³ównemu
+	serwerowi mo¿na siê po³¹czyæ pomiêdzy dwoma komputerami za routerem. Jeœli
+	jednak siê to nie powiedzie trzeba odpowiednio skonfigurowaæ router
+	(ustawienia NAT). Jeœli ruch postaci laguje niech serwer pozmienia
 	opcje w konsoli 'mp_interp'. Domyœlnie wynosi 0.05, podwy¿szaj j¹ a¿
 	uznasz ¿e ruch postaci jest odpowiedni. Nie zapomnij siê pochwaliæ na forum
 	jak posz³o! :)
 * Przywódca - Bohater który ustala gdzie iœæ na mapie œwiata. Tylko on mo¿e
 	zwalniaæ bohaterów i wydawaæ im rozkazy. Bohater niezale¿ny nie mo¿e zostaæ
-	przywódc¹. Mo¿esz przekazaæ dowodzenie innej postaci w panelu dru¿yny TAB.
-	Serwer te¿ mo¿e zmieniæ dowódcê.
+	przywódc¹. Mo¿esz przekazaæ dowodzenie innej postaci w panelu dru¿yny
+	(domyœlny skrót T). Serwer te¿ mo¿e zmieniæ dowódcê.
 * Up³yw czasu - W trybie singleplayer czas p³ynie normalnie, gdy gracz odpoczywa
 	lub trenuje. W trybie multiplayer gdy jedna osoba odpoczywa/trenuje
 	pozostali gracze otrzymuj¹ tyle samo wolnych dni do wykorzystania. Ile jest
-	dni mo¿na zobaczyæ w panelu dru¿yny TAB. Gdy ktoœ przekroczy t¹ liczbê to
-	automatycznie zwiêkszy j¹ u wszystkich. Dzieñ siê zmienia siê u wszystkich
-	tylko przy przekroczeniu tej liczby. Wolnych dni ubywa w czasie podró¿y aby
-	gracze nie trzymali ich w nieskoñczonoœæ.
+	dni mo¿na zobaczyæ w panelu dru¿yny (domyœlny skrót T). Gdy ktoœ przekroczy
+	t¹ liczbê to automatycznie zwiêkszy j¹ u wszystkich. Dzieñ siê zmienia siê u
+	wszystkich tylko przy przekroczeniu tej liczby. Wolnych dni ubywa w czasie
+	podró¿y aby gracze nie trzymali ich w nieskoñczonoœæ.
 * Zapisywanie - Nie zapisuj w trakcie walki albo w czasie jakiejœ wa¿nej
 	rozmowy bo jeszcze siê coœ zepsuje. Mo¿na wczytywaæ grê tylko z menu.
-* Port - Gra wykorzystuje port 37557. Jeœli jest zablokowany lub coœ ju¿ go
-	u¿ywa mo¿esz go zmieniæ w pliku konfiguracyjnym.
-* Aktualnie dla serwera nie ma ró¿nicy czy jest to LAN czy Internet. Klient
-	mo¿e do³¹czyæ do serwera na LANie podaj¹c ip.
 * Jeœli wczytywanie u klienta trwa za d³ugo mo¿e zmieniæ/dodaæ w pliku
 	konfiguracyjnym wartoœæ "timeout = X" gdzie X = 1-3600 w sekundach po jakim
 	czasie gracz zostanie wyrzucony.
-* G³ówny serwer wykorzystuje porty 8080 i 60481 do komunikacji.
+* Porty - gra wykorzystuje port udp 37557, mo¿na go zmieniæ w pliku konfiguracyjnym.
+	G³ówny serwer wykorzystuje porty tcp 8080 i udp 60481 do komunikacji.
 
 ===============================================================================
 6) Zmiany
@@ -244,6 +242,7 @@ W pliku konfiguracyjnym (domyœlnie carpg.cfg) mo¿na u¿ywaæ takich opcji:
 	* screenshot_format - ustawia rozszerzenie screenshotów (jpg, bmp, tga, png)
 	* seed - ziarno losowoœci
 	* server_ip - zapamiêtane ip serwera
+	* server_lan - jeœli jest 1 to serwer nie bêdzie rejestrowany w g³ównym serwerze
 	* server_name - zapamiêtana nazwa serwera
 	* server_players - zapamiêtana liczba graczy
 	* server_pswd - zapamiêtane has³o serwera

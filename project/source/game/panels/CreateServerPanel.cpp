@@ -60,18 +60,20 @@ CreateServerPanel::CreateServerPanel(const DialogInfo& info) : GameDialogBox(inf
 //=================================================================================================
 void CreateServerPanel::LoadLanguage()
 {
-	txCreateServer = Str("createServer");
-	txEnterServerName = Str("enterServerName");
-	txInvalidPlayersCount = Str("invalidPlayersCount");
+	auto s = Language::GetSection("CreateServerPanel");
 
-	bts[0].text = Str("create");
+	txCreateServer = s.Get("createServer");
+	txEnterServerName = s.Get("enterServerName");
+	txInvalidPlayersCount = s.Get("invalidPlayersCount");
+
+	bts[0].text = s.Get("create");
 	bts[1].text = GUI.txCancel;
 
-	textbox[0].label = Str("serverName");
-	textbox[1].label = Str("serverPlayers");
-	textbox[2].label = Str("serverPswd");
+	textbox[0].label = s.Get("serverName");
+	textbox[1].label = s.Get("serverPlayers");
+	textbox[2].label = s.Get("serverPswd");
 
-	checkbox.text = Str("hidden");
+	checkbox.text = s.Get("lan");
 }
 
 //=================================================================================================
@@ -140,6 +142,6 @@ void CreateServerPanel::Show()
 	textbox[0].SetText(N.server_name.c_str());
 	textbox[1].SetText(Format("%d", N.max_players));
 	textbox[2].SetText(N.password.c_str());
-	checkbox.checked = N.server_hidden;
+	checkbox.checked = N.server_lan;
 	GUI.ShowDialog(this);
 }

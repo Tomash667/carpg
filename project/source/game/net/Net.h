@@ -206,7 +206,7 @@ public:
 	int last_id;
 	MasterServerState master_server_state;
 	SystemAddress master_server_adr;
-	bool players_left, server_hidden;
+	bool players_left, server_lan;
 
 	//****************************************************************************
 	// Client

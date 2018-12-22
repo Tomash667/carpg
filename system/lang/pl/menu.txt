@@ -241,16 +241,17 @@ multiplayerGame = "GRA WIELOOSOBOWA"
 nick = "Nick:"
 needEnterNick = "Musisz podaæ nick."
 enterValidNick = "Musisz podaæ prawid³owy nick, tylko litery, cyfry lub znak podkreœlenia."
-create = "Stwórz"
 
 // creating server
+[CreateServerPanel]
 createServer = "ZA£Ó¯ SERWER"
 serverName = "Nazwa serwera:"
 serverPlayers = "Gracze:"
 serverPswd = "Has³o:"
+lan = "LAN"
+create = "Stwórz"
 enterServerName = "Podaj nazwê serwera."
 invalidPlayersCount = "Liczba graczy musi byæ w przedziale 1-%d."
-hidden = "Ukryty"
 
 // multiplayer
 [PickServerPanel]
@@ -1176,7 +1177,7 @@ connectVersion = "Nie mo¿na po³¹czyæ z serwerem: brak zgodnoœci wersji.\nTwoja w
 connectRaknet = "Nie mo¿na po³¹czyæ z serwerem: b³¹d systemu raknet."
 cantJoin = "Nie mo¿na po³¹czyæ z serwerem: uszkodzona odpowiedŸ serwera."
 lostConnection = "Utracono po³¹czenie z serwerem."
-playerDisconnected = "Zosta³eœ od³¹czony."
+playerDisconnected2 = "Zosta³eœ od³¹czony."
 invalidPswd = "Nie mo¿na po³¹czyæ z serwerem: B³êdne has³o."
 cantJoin2 = "Nie mo¿na do³¹czyæ do serwera"
 serverFull = "Server jest pe³ny"

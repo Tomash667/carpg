@@ -680,7 +680,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	N.max_players = Clamp(cfg.GetUint("server_players", DEFAULT_PLAYERS), MIN_PLAYERS, MAX_PLAYERS);
 	game.server_ip = cfg.GetString("server_ip", "");
 	game.mp_timeout = Clamp(cfg.GetFloat("timeout", 10.f), 1.f, 3600.f);
-	N.server_hidden = cfg.GetBool("server_hidden");
+	N.server_lan = cfg.GetBool("server_lan");
 
 	// szybki start
 	if(game.quickstart == QUICKSTART_NONE)

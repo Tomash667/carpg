@@ -243,14 +243,15 @@ needEnterNick = "You need to enter a nickname."
 enterValidNick = "You need to enter a valid nickname, only letters, numbers or underscore."
 
 // creating server
+[CreateServerPanel]
 createServer = "CREATE SERVER"
 serverName = "Server name:"
 serverPlayers = "Players:"
 serverPswd = "Password:"
+lan = "LAN"
+create = "Create"
 enterServerName = "Enter server name."
 invalidPlayersCount = "The number of players needs to be in range 1-%d."
-create = "Create"
-hidden = "Hidden"
 
 // multiplayer
 [PickServerPanel]
@@ -1179,7 +1180,7 @@ connectVersion = "Can't connect to server: invalid version.\nYour version: %s\nS
 connectRaknet = "Can't connect to server: raknet error."
 cantJoin = "Can't connect to server: broken server response."
 lostConnection = "Lost connection to server."
-playerDisconnected = "You were disconnected."
+playerDisconnected2 = "You were disconnected."
 invalidPswd = "Can't connect to server: invalid password."
 cantJoin2 = "Can't join server"
 serverFull = "Server is full"
