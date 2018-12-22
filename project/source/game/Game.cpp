@@ -54,17 +54,6 @@
 // limit fps
 #define LIMIT_DT 0.3f
 
-// symulacja lagów
-#define TESTUJ_LAG
-#ifndef _DEBUG
-#undef TESTUJ_LAG
-#endif
-#ifdef TESTUJ_LAG
-#define MY_PRIORITY HIGH_PRIORITY
-#else
-#define MY_PRIORITY IMMEDIATE_PRIORITY
-#endif
-
 const float bazowa_wysokosc = 1.74f;
 Game* Game::game;
 cstring Game::txGoldPlus, Game::txQuestCompletedGold;
@@ -76,7 +65,7 @@ extern cstring RESTART_MUTEX_NAME;
 Game::Game() : have_console(false), vbParticle(nullptr), quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0), cl_fog(true),
 cl_lighting(true), draw_particle_sphere(false), draw_unit_radius(false), draw_hitbox(false), noai(false), testing(false), game_speed(1.f), devmode(false),
 force_seed(0), next_seed(0), force_seed_all(false), debug_info(false), dont_wander(false),
-check_updates(true), skip_tutorial(false), portal_anim(0), debug_info2(false), music_type(MusicType::None), koniec_gry(false), prepared_stream(64 * 1024),
+check_updates(true), skip_tutorial(false), portal_anim(0), debug_info2(false), music_type(MusicType::None), end_of_game(false), prepared_stream(64 * 1024),
 paused(false), draw_flags(0xFFFFFFFF), tMiniSave(nullptr), prev_game_state(GS_LOAD), tSave(nullptr), sItemRegion(nullptr),
 sItemRegionRot(nullptr), sChar(nullptr), sSave(nullptr), sCustom(nullptr), cl_postfx(true), mp_timeout(10.f),
 cl_normalmap(true), cl_specularmap(true), dungeon_tex_wrap(true), profiler_mode(0), vbInstancing(nullptr), vb_instancing_max(0),
@@ -354,13 +343,13 @@ void Game::OnTick(float dt)
 	if(Key.Focus() && Key.Down(VK_MENU) && Key.Down(VK_F4) && !GUI.HaveTopDialog("dialog_alt_f4"))
 		gui->ShowQuitDialog();
 
-	if(koniec_gry)
+	if(end_of_game)
 	{
 		death_fade += dt;
 		if(death_fade >= 1.f && GKey.AllowKeyboard() && Key.PressedRelease(VK_ESCAPE))
 		{
 			ExitToMenu();
-			koniec_gry = false;
+			end_of_game = false;
 		}
 		GKey.allow_input = GameKeys::ALLOW_NONE;
 	}
@@ -493,7 +482,7 @@ void Game::OnTick(float dt)
 	arena->UpdatePvpRequest(dt);
 
 	// aktualizacja gry
-	if(!koniec_gry)
+	if(!end_of_game)
 	{
 		if(game_state == GS_LEVEL)
 		{
@@ -798,7 +787,7 @@ void Game::DoExitToMenu()
 	N.was_client = false;
 
 	SetMusic(MusicType::Title);
-	koniec_gry = false;
+	end_of_game = false;
 
 	CloseAllPanels();
 	GUI.CloseDialogs();
@@ -911,7 +900,6 @@ void Game::OnCleanup()
 	content::CleanupContent();
 
 	draw_batch.Clear();
-	N.Cleanup();
 	super_shader->Cleanup();
 }
 
@@ -1062,7 +1050,7 @@ void Game::SaveGameKeys()
 	{
 		GameKey& k = GKey[i];
 		for(int j = 0; j < 2; ++j)
-			cfg.Add(Format("%s%d", k.id, j), Format("%d", k[j]));
+			cfg.Add(Format("%s%d", k.id, j), k[j]);
 	}
 
 	SaveCfg();
@@ -1082,7 +1070,7 @@ void Game::LoadGameKeys()
 			{
 				Warn("Config: Invalid value for %s: %d.", s, w);
 				w = -1;
-				cfg.Add(s, Format("%d", k[j]));
+				cfg.Add(s, k[j]);
 			}
 			if(w != -1)
 				k[j] = (byte)w;
@@ -1281,6 +1269,7 @@ void Game::SetGameText()
 	txWaitingForPswd = Str("waitingForPswd");
 	txEnterPswd = Str("enterPswd");
 	txConnectingTo = Str("connectingTo");
+	txConnectingProxy = Str("connectingProxy");
 	txConnectTimeout = Str("connectTimeout");
 	txConnectInvalid = Str("connectInvalid");
 	txConnectVersion = Str("connectVersion");
@@ -1311,10 +1300,10 @@ void Game::SetGameText()
 	txDisconnecting = Str("disconnecting");
 	txPreparingWorld = Str("preparingWorld");
 	txInvalidCrc = Str("invalidCrc");
+	txConnectionFailed = Str("connectionFailed");
 
 	// net
 	txServer = Str("server");
-	txPlayerKicked = Str("playerKicked");
 	txYouAreLeader = Str("youAreLeader");
 	txRolledNumber = Str("rolledNumber");
 	txPcIsLeader = Str("pcIsLeader");

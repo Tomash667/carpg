@@ -23,6 +23,7 @@
 #include "GameStats.h"
 #include "SoundManager.h"
 #include "Team.h"
+#include "LobbyApi.h"
 
 Net N;
 const float CHANGE_LEVEL_TIMER = 5.f;
@@ -31,6 +32,12 @@ const int CLOSE_PEER_TIMER = 1000; // ms
 //=================================================================================================
 Net::Net() : peer(nullptr), current_packet(nullptr), mp_load(false), mp_use_interp(true), mp_interp(0.05f), was_client(false)
 {
+}
+
+//=================================================================================================
+void Net::InitOnce()
+{
+	api = new LobbyApi;
 }
 
 //=================================================================================================
@@ -47,6 +54,7 @@ void Net::Cleanup()
 	DeleteElements(old_players);
 	if(peer)
 		RakPeerInterface::DestroyInstance(peer);
+	delete api;
 }
 
 //=================================================================================================
@@ -144,9 +152,13 @@ void Net::InitServer()
 	if(!peer)
 		peer = RakPeerInterface::GetInstance();
 
-	SocketDescriptor sd(port, 0);
+	uint max_connections = max_players - 1;
+	if(!server_lan)
+		++max_connections;
+
+	SocketDescriptor sd(port, nullptr);
 	sd.socketFamily = AF_INET;
-	StartupResult r = peer->Startup(max_players + 4, &sd, 1);
+	StartupResult r = peer->Startup(max_connections, &sd, 1);
 	if(r != RAKNET_STARTED)
 	{
 		Error("Failed to create server: RakNet error %d.", r);
@@ -158,9 +170,24 @@ void Net::InitServer()
 		Info("Set server password.");
 		peer->SetIncomingPassword(password.c_str(), password.length());
 	}
+	else
+		peer->SetIncomingPassword(nullptr, 0);
 
-	peer->SetMaximumIncomingConnections((word)max_players + 4);
+	peer->SetMaximumIncomingConnections((word)max_players - 1);
 	DEBUG_DO(peer->SetTimeoutTime(60 * 60 * 1000, UNASSIGNED_SYSTEM_ADDRESS));
+
+	if(!server_lan)
+	{
+		ConnectionAttemptResult result = peer->Connect(LobbyApi::API_URL, LobbyApi::PROXY_PORT, nullptr, 0, nullptr, 0, 6);
+		if(result == CONNECTION_ATTEMPT_STARTED)
+			master_server_state = MasterServerState::Connecting;
+		else
+		{
+			master_server_state = MasterServerState::NotConnected;
+			Error("Failed to connect to master server: RakNet error %d.", result);
+		}
+	}
+	master_server_adr = UNASSIGNED_SYSTEM_ADDRESS;
 
 	Info("Server created. Waiting for connection.");
 
@@ -204,7 +231,7 @@ uint Net::SendAll(BitStreamWriter& f, PacketPriority priority, PacketReliability
 	assert(IsServer());
 	if(active_players <= 1)
 		return 0;
-	uint ack = peer->Send(&f.GetBitStream(), priority, reliability, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+	uint ack = peer->Send(&f.GetBitStream(), priority, reliability, 0, master_server_adr, true);
 	StreamWrite(f.GetBitStream(), type, UNASSIGNED_SYSTEM_ADDRESS);
 	return ack;
 }
@@ -516,6 +543,17 @@ void Net::WriteLevelData(BitStream& stream, bool loaded_resources)
 }
 
 //=================================================================================================
+int Net::GetServerFlags()
+{
+	int flags = 0;
+	if(!password.empty())
+		flags |= SERVER_PASSWORD;
+	if(mp_load)
+		flags |= SERVER_SAVED;
+	return flags;
+}
+
+//=================================================================================================
 void Net::InitClient()
 {
 	Info("Initlializing client...");
@@ -525,7 +563,8 @@ void Net::InitClient()
 
 	SocketDescriptor sd;
 	sd.socketFamily = AF_INET;
-	StartupResult r = peer->Startup(1, &sd, 1);
+	// maxConnections is 2 - one for server, one for punchthrough proxy (Connect can fail if this is 1)
+	StartupResult r = peer->Startup(2, &sd, 1);
 	if(r != RAKNET_STARTED)
 	{
 		Error("Failed to create client: RakNet error %d.", r);

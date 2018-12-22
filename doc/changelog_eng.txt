@@ -3,6 +3,7 @@ Changelog
 --------------------------------------------------------------------------------
 Version 0.8 (???):
 ! cannot load saves from version 0.2.10 or older
++ master server, get list of existing servers and connect with nat punchthrough
 + learning points used to training skills/attributes/feats
 + new feats (bad back, chronic disease, sluggish, slow learner, asocial, poor, strong back, aggressive, mobility, finesse, tought, hard skin, adaptation, perfect health)
 + new skill haggle, trained by merchant
@@ -19,6 +20,8 @@ Version 0.8 (???):
 - fixed memory leak when generating mine
 - mayor dialog fixes
 - fixed wrong price calculations when selling items to fallower
+- fixed connecting to full server
+- fixed removing password from server but it was still required
 
 --------------------------------------------------------------------------------
 Version 0.7.1 (2018-04-15):

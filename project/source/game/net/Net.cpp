@@ -5927,7 +5927,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 		case NetChange::END_OF_GAME:
 			Info("Update client: Game over - time run out.");
 			CloseAllPanels(true);
-			koniec_gry = true;
+			end_of_game = true;
 			death_fade = 0.f;
 			exit_from_server = true;
 			break;
@@ -7529,7 +7529,6 @@ void Game::Net_OnNewGameServer()
 		StringPool.Free(N.net_strs);
 	gui->server->max_players = N.max_players;
 	gui->server->server_name = N.server_name;
-	gui->server->password = !N.password.empty();
 	gui->server->UpdateServerInfo();
 	gui->server->Show();
 	gui->mp_box->Reset();

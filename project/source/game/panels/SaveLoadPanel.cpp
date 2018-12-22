@@ -315,20 +315,20 @@ void SaveLoad::UpdateSaveInfo(int slot)
 	ss.hardcore = game->hardcore_mode;
 
 	Config cfg;
-	cfg.Add("game_day", Format("%d", ss.game_day));
-	cfg.Add("game_month", Format("%d", ss.game_month));
-	cfg.Add("game_year", Format("%d", ss.game_year));
-	cfg.Add("location", ss.location.c_str());
-	cfg.Add("player_name", ss.player_name.c_str());
+	cfg.Add("game_day", ss.game_day);
+	cfg.Add("game_month", ss.game_month);
+	cfg.Add("game_year", ss.game_year);
+	cfg.Add("location", ss.location);
+	cfg.Add("player_name", ss.player_name);
 	cfg.Add("player_class", ClassInfo::classes[(int)ss.player_class].id);
 	cfg.Add("save_date", Format("%I64d", ss.save_date));
-	cfg.Add("text", ss.text.c_str());
+	cfg.Add("text", ss.text);
 	cfg.Add("hardcore", ss.hardcore);
 
 	if(Net::IsOnline())
 	{
 		ss.multiplayers = N.active_players;
-		cfg.Add("multiplayers", Format("%d", ss.multiplayers));
+		cfg.Add("multiplayers", ss.multiplayers);
 	}
 
 	cfg.Save(Format("saves/%s/%d.txt", Net::IsOnline() ? "multi" : "single", slot));

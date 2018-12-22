@@ -3,19 +3,31 @@
 //-----------------------------------------------------------------------------
 #include "GameDialogBox.h"
 #include "Grid.h"
+#include "CheckBox.h"
+#include "Version.h"
 
 //-----------------------------------------------------------------------------
 class PickServerPanel : public GameDialogBox
 {
 public:
+	enum Id
+	{
+		IdOk = GuiEvent_Custom,
+		IdCancel,
+		IdInternet,
+		IdLan
+	};
+
 	struct ServerData
 	{
-		string name;
+		int id;
+		string name, guid;
 		SystemAddress adr;
 		uint active_players, max_players;
-		int flags;
+		int flags, version;
 		float timer;
-		bool valid_version;
+
+		bool IsValidVersion() const { return version == VERSION; }
 	};
 
 	explicit PickServerPanel(const DialogInfo& info);
@@ -26,13 +38,22 @@ public:
 	void Event(GuiEvent e) override;
 	void Show(bool pick_autojoin = false);
 	void GetCell(int item, int column, Cell& cell);
+	bool HandleGetServers(nlohmann::json&);
+	bool HandleGetChanges(nlohmann::json&);
+	void HandleBadRequest();
+	bool IsLAN() const { return lan_mode; }
 
 	Grid grid;
 	vector<ServerData> servers;
-	float ping_timer;
-	cstring txUnknownResponse, txUnknownResponse2, txBrokenResponse;
 
 private:
-	TEX tIcoHaslo, tIcoZapis;
-	bool pick_autojoin;
+	void OnChangeMode(bool lan_mode);
+	void AddServer(nlohmann::json&);
+	void CheckAutojoin();
+
+	TEX tIcoPassword, tIcoSave;
+	CheckBox cb_internet, cb_lan;
+	float timer;
+	cstring txFailedToGetServers, txInvalidServerVersion;
+	bool pick_autojoin, lan_mode, bad_request;
 };

@@ -55,7 +55,7 @@ void MultiplayerPanel::LoadLanguage()
 	txNeedEnterNick = Str("needEnterNick");
 	txEnterValidNick = Str("enterValidNick");
 
-	bts[0].text = Str("joinLAN");
+	bts[0].text = Str("join");
 	bts[1].text = Str("joinIP");
 	bts[2].text = Str("host");
 	bts[3].text = Str("load");
@@ -106,8 +106,10 @@ void MultiplayerPanel::Update(float dt)
 //=================================================================================================
 void MultiplayerPanel::Event(GuiEvent e)
 {
-	if(e == GuiEvent_Show || e == GuiEvent_WindowResize)
+	switch(e)
 	{
+	case GuiEvent_Show:
+	case GuiEvent_WindowResize:
 		if(e == GuiEvent_Show)
 		{
 			visible = true;
@@ -118,25 +120,28 @@ void MultiplayerPanel::Event(GuiEvent e)
 		for(int i = 0; i < 5; ++i)
 			bts[i].global_pos = global_pos + bts[i].pos;
 		textbox.global_pos = global_pos + textbox.pos;
-	}
-	else if(e == GuiEvent_GainFocus)
-	{
+		break;
+	case GuiEvent_GainFocus:
 		textbox.focus = true;
 		textbox.Event(GuiEvent_GainFocus);
-	}
-	else if(e == GuiEvent_LostFocus)
-	{
+		break;
+	case GuiEvent_LostFocus:
 		textbox.focus = false;
 		textbox.Event(GuiEvent_LostFocus);
-	}
-	else if(e == GuiEvent_Close)
-	{
+		break;
+	case GuiEvent_Close:
 		textbox.focus = false;
 		textbox.Event(GuiEvent_LostFocus);
 		visible = false;
+		break;
+	case IdCancel:
+		CloseDialog();
+		break;
+	default:
+		if(e >= GuiEvent_Custom)
+			event(e);
+		break;
 	}
-	else if(e >= GuiEvent_Custom)
-		event(e);
 }
 
 //=================================================================================================

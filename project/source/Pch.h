@@ -45,7 +45,9 @@
 #include <functional>
 #include <queue>
 #include <random>
+#include <thread>
 #include <DirectXMath.h>
+#include <json_fwd.hpp>
 
 //-----------------------------------------------------------------------------
 using std::string;
@@ -53,3 +55,4 @@ using std::vector;
 using std::list;
 using std::min;
 using std::max;
+using std::thread;
