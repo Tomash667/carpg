@@ -4,6 +4,7 @@ Historia zmian
 Wersja 0.8 (???):
 ! to jest ostatnia wersja obs³uguj¹ca windowsa xp
 ! nie mo¿na wczytywaæ ju¿ zapisów z wersji 0.2.10 lub starszej
++ g³ówny serwer gry, pozwala na pobieranie listy serwerów i ³¹czenie z pominiêciem blokady routera (nat punchthrough)
 + punkty nauki u¿ywane do szkolenia umiejêtnoœci/atrbutów/atutów
 + nowe atuty (s³abe plecy, przewlek³a choroba, ospa³y, powolny uczeñ, aspo³eczny, biedak, silne plecy, agresywny, mobilnoœæ, finezja, twardy, twarda skóra, przystosowane, perfekcyjne zdrowie)
 + nowa umiejêtnoœæ - targowanie, szkolona przez kupca
@@ -20,6 +21,8 @@ Wersja 0.8 (???):
 - naprawiony wyciek pamiêci przy generowaniu kopalni
 - poprawki do dialogów burmistrza
 - naprawione b³êdne obliczanie ceny gdy sprzedaje siê przedmiot towarzyszowi
+- naprawione do³¹czanie do pe³nego serwera
+- naprawiony brak efektu po zmianie has³a serwera na puste, wci¹¿ by³o wymagane
 
 --------------------------------------------------------------------------------
 Wersja 0.7.1 (2018-04-15):

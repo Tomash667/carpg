@@ -14,9 +14,9 @@
 #undef far
 #undef IN
 #undef OUT
-#undef NULL
 
 //-----------------------------------------------------------------------------
+// slnet types
 using namespace SLNet;
 
 //-----------------------------------------------------------------------------
@@ -51,6 +51,7 @@ class Journal;
 class Level;
 class LevelAreaContext;
 class LoadScreen;
+class LobbyApi;
 class MainMenu;
 class Minimap;
 class MpBox;

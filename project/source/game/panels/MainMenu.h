@@ -29,17 +29,30 @@ public:
 	void ShutdownThread();
 
 private:
+	enum class CheckVersionStatus
+	{
+		None,
+		Checking,
+		Done,
+		Finished,
+		Error,
+		Cancel
+	};
+
 	static const uint BUTTONS = 7u;
 
 	void PlaceButtons();
 	void OnNewVersion(int id);
+	void CheckVersion();
+	void UpdateCheckVersion();
 
 	Game* game;
-	HANDLE check_version_thread;
 	Button bt[BUTTONS];
 	TEX tBackground, tLogo;
-	int check_version; // 0 - nie sprawdzono, 1 - trwa sprawdzanie, 2 - b³¹d, 3 - brak nowej wersji, 4 - jest nowa wersja
+	CheckVersionStatus check_status;
+	int version_new;
 	string version_text;
 	cstring txInfoText, txVersion;
+	thread check_version_thread;
 	bool check_updates;
 };

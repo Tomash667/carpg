@@ -3,12 +3,8 @@
 //-----------------------------------------------------------------------------
 #include "WindowsIncludes.h"
 #define far
-#ifndef NULL
-#	define NULL nullptr
-#endif
 #include <d3dx9.h>
 #undef DrawText
-#undef NULL
 
 //-----------------------------------------------------------------------------
 #ifdef _DEBUG

@@ -97,6 +97,7 @@ void Game::PreconfigureGame()
 	components.push_back(&L);
 	components.push_back(&SM);
 	components.push_back(cmdp);
+	components.push_back(&N);
 	for(GameComponent* component : components)
 		component->Prepare();
 
@@ -398,9 +399,9 @@ void Game::PostconfigureGame()
 	}
 
 	// save config
-	cfg.Add("adapter", Format("%d", used_adapter));
+	cfg.Add("adapter", used_adapter);
 	cfg.Add("resolution", Format("%dx%d", GetWindowSize().x, GetWindowSize().y));
-	cfg.Add("refresh", Format("%d", wnd_hz));
+	cfg.Add("refresh", wnd_hz);
 	SaveCfg();
 
 	// end load screen, show menu

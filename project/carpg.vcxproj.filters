@@ -784,6 +784,9 @@
     <ClCompile Include="source\game\CommandParser.cpp">
       <Filter>3. game</Filter>
     </ClCompile>
+    <ClCompile Include="source\game\net\LobbyApi.cpp">
+      <Filter>3. game\net</Filter>
+    </ClCompile>
     <ClCompile Include="source\game\helpers\CombatHelper.cpp">
       <Filter>3. game\helpers</Filter>
     </ClCompile>
@@ -1593,6 +1596,9 @@
     </ClInclude>
     <ClInclude Include="source\game\CommandParser.h">
       <Filter>3. game</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\net\LobbyApi.h">
+      <Filter>3. game\net</Filter>
     </ClInclude>
     <ClInclude Include="source\game\helpers\CombatHelper.h">
       <Filter>3. game\helpers</Filter>

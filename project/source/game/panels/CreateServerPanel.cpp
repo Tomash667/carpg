@@ -9,20 +9,20 @@
 //=================================================================================================
 CreateServerPanel::CreateServerPanel(const DialogInfo& info) : GameDialogBox(info)
 {
-	size = Int2(344, 320);
+	size = Int2(344, 360);
 	bts.resize(2);
 
 	const Int2 bt_size(180, 44);
 	const int x = (size.x - bt_size.x) / 2;
 
-	bts[0].id = GuiEvent_Custom + BUTTON_OK;
+	bts[0].id = IdOk;
 	bts[0].parent = this;
-	bts[0].pos = Int2(x, 220);
+	bts[0].pos = Int2(x, 260);
 	bts[0].size = bt_size;
 
-	bts[1].id = GuiEvent_Custom + BUTTON_CANCEL;
+	bts[1].id = IdCancel;
 	bts[1].parent = this;
-	bts[1].pos = Int2(x, 270);
+	bts[1].pos = Int2(x, 310);
 	bts[1].size = bt_size;
 
 	textbox[0].limit = 16;
@@ -43,26 +43,37 @@ CreateServerPanel::CreateServerPanel(const DialogInfo& info) : GameDialogBox(inf
 	textbox[2].pos = Int2(60, 170);
 	textbox[2].size = Int2(200, 32);
 
+	checkbox.bt_size = Int2(32, 32);
+	checkbox.checked = false;
+	checkbox.id = IdHidden;
+	checkbox.parent = this;
+	checkbox.pos = Int2(60, 215);
+	checkbox.size = Int2(200, 32);
+
 	for(int i = 0; i < 2; ++i)
 		cont.Add(bts[i]);
-
 	for(int i = 0; i < 3; ++i)
 		cont.Add(textbox[i]);
+	cont.Add(checkbox);
 }
 
 //=================================================================================================
 void CreateServerPanel::LoadLanguage()
 {
-	txCreateServer = Str("createServer");
-	txEnterServerName = Str("enterServerName");
-	txInvalidPlayersCount = Str("invalidPlayersCount");
+	auto s = Language::GetSection("CreateServerPanel");
 
-	bts[0].text = Str("create");
+	txCreateServer = s.Get("createServer");
+	txEnterServerName = s.Get("enterServerName");
+	txInvalidPlayersCount = s.Get("invalidPlayersCount");
+
+	bts[0].text = s.Get("create");
 	bts[1].text = GUI.txCancel;
 
-	textbox[0].label = Str("serverName");
-	textbox[1].label = Str("serverPlayers");
-	textbox[2].label = Str("serverPswd");
+	textbox[0].label = s.Get("serverName");
+	textbox[1].label = s.Get("serverPlayers");
+	textbox[2].label = s.Get("serverPswd");
+
+	checkbox.text = s.Get("lan");
 }
 
 //=================================================================================================
@@ -94,8 +105,10 @@ void CreateServerPanel::Update(float dt)
 //=================================================================================================
 void CreateServerPanel::Event(GuiEvent e)
 {
-	if(e == GuiEvent_Show || e == GuiEvent_WindowResize)
+	switch(e)
 	{
+	case GuiEvent_Show:
+	case GuiEvent_WindowResize:
 		if(e == GuiEvent_Show)
 		{
 			cont.GainFocus();
@@ -103,20 +116,24 @@ void CreateServerPanel::Event(GuiEvent e)
 		}
 		global_pos = pos = (GUI.wnd_size - size) / 2;
 		cont.Move(global_pos);
-	}
-	else if(e == GuiEvent_GainFocus)
+		break;
+	case GuiEvent_GainFocus:
 		cont.GainFocus();
-	else if(e == GuiEvent_Close)
-	{
+		break;
+	case GuiEvent_Close:
 		visible = false;
 		cont.LostFocus();
-	}
-	else if(e == GuiEvent_LostFocus)
+		break;
+	case GuiEvent_LostFocus:
 		cont.LostFocus();
-	if(e == GuiEvent_Custom + BUTTON_OK)
+		break;
+	case IdOk:
 		event(BUTTON_OK);
-	else if(e == GuiEvent_Custom + BUTTON_CANCEL)
+		break;
+	case IdCancel:
 		event(BUTTON_CANCEL);
+		break;
+	}
 }
 
 //=================================================================================================
@@ -125,5 +142,6 @@ void CreateServerPanel::Show()
 	textbox[0].SetText(N.server_name.c_str());
 	textbox[1].SetText(Format("%d", N.max_players));
 	textbox[2].SetText(N.password.c_str());
+	checkbox.checked = N.server_lan;
 	GUI.ShowDialog(this);
 }

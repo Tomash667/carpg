@@ -6,11 +6,11 @@
 
 static const uint FORMAT_STRINGS = 8;
 static const uint FORMAT_LENGTH = 2048;
-static char format_buf[FORMAT_STRINGS][FORMAT_LENGTH];
-static int format_marker;
+static thread_local char format_buf[FORMAT_STRINGS][FORMAT_LENGTH];
+static thread_local int format_marker;
 static string g_escp;
 string g_tmp_string;
-static char escape_from[] = { '\n', '\t', '\r', ' ' };
+static const char escape_from[] = { '\n', '\t', '\r', ' ' };
 static cstring escape_to[] = { "\\n", "\\t", "\\r", " " };
 
 //=================================================================================================

@@ -12,6 +12,7 @@ need_delete(false)
 {
 	parent = info.parent;
 	focusable = true;
+	visible = false;
 }
 
 //=================================================================================================

@@ -7841,7 +7841,7 @@ void Game::ClearGameVars(bool new_game)
 	dialog_context.dialog_mode = false;
 	dialog_context.is_local = true;
 	death_screen = 0;
-	koniec_gry = false;
+	end_of_game = false;
 	gui->minimap->city = nullptr;
 	Team.ClearOnNewGameOrLoad();
 	draw_flags = 0xFFFFFFFF;

@@ -8,93 +8,13 @@
 #include "Game.h"
 #include "GlobalGui.h"
 #include "SaveLoadPanel.h"
-#define far
-#include <wininet.h>
-#include <process.h>
+#include <thread>
+#include "LobbyApi.h"
 
-//-----------------------------------------------------------------------------
-#pragma comment(lib, "wininet.lib")
-
-//-----------------------------------------------------------------------------
-enum CheckVersionResult
-{
-	CVR_None,
-	CVR_InternetOpenFailed,
-	CVR_InternetOpenUrlFailed,
-	CVR_ReadFailed,
-	CVR_InvalidSignature,
-	CVR_Ok
-};
-CriticalSection csCheckVersion;
-CheckVersionResult version_check_result;
-uint version_check_error, version_new;
 extern string g_ctime;
 
 //=================================================================================================
-CheckVersionResult CheckVersion(HINTERNET internet, cstring url, uint& error, uint& version)
-{
-	HINTERNET file = InternetOpenUrl(internet, url, nullptr, 0, 0, 0);
-	if(!file)
-	{
-		// Nie mo¿na pobraæ pliku z serwera
-		error = GetLastError();
-		return CVR_InternetOpenUrlFailed;
-	}
-
-	int data[2];
-	DWORD read;
-
-	InternetReadFile(file, &data, sizeof(data), &read);
-	if(read != 8)
-	{
-		// Nie mo¿na odczytaæ pliku z serwera
-		error = GetLastError();
-		InternetCloseHandle(file);
-		return CVR_ReadFailed;
-	}
-
-	InternetCloseHandle(file);
-
-	if(data[0] != 0x475052CA) // magic number [najpierw 0xCA a póŸniej w ascii RPG]
-	{
-		error = data[0];
-		return CVR_InvalidSignature;
-	}
-
-	version = (data[1] & 0xFFFFFF);
-	return CVR_Ok;
-}
-
-//=================================================================================================
-uint __stdcall CheckVersion(void*)
-{
-	HINTERNET internet = InternetOpen("carpg", INTERNET_OPEN_TYPE_DIRECT, nullptr, nullptr, 0);
-
-	if(!internet)
-	{
-		// Nie mo¿na nawi¹zaæ po³¹czenia z serwerem
-		csCheckVersion.Enter();
-		version_check_error = GetLastError();
-		version_check_result = CVR_InternetOpenFailed;
-		csCheckVersion.Leave();
-		return 1;
-	}
-
-	uint error = 0, version = 0;
-	CheckVersionResult result = CheckVersion(internet, "http://carpg.pl/carpgdata/wersja", error, version);
-
-	InternetCloseHandle(internet);
-	csCheckVersion.Enter();
-	version_check_result = result;
-	version_check_error = error;
-	version_new = version;
-	csCheckVersion.Leave();
-
-	return result == CVR_Ok ? 0 : 1;
-}
-
-//=================================================================================================
-MainMenu::MainMenu(Game* game) : game(game), check_version(0), check_version_thread(nullptr), check_updates(game->check_updates)
+MainMenu::MainMenu(Game* game) : game(game), check_status(CheckVersionStatus::None), check_updates(game->check_updates)
 {
 	focusable = true;
 	visible = false;
@@ -183,7 +103,13 @@ void MainMenu::Update(float dt)
 		bt[i].Update(dt);
 	}
 
-	if(check_version == 0)
+	UpdateCheckVersion();
+}
+
+//=================================================================================================
+void MainMenu::UpdateCheckVersion()
+{
+	if(check_status == CheckVersionStatus::None)
 	{
 #ifdef _DEBUG
 		check_updates = false;
@@ -192,80 +118,64 @@ void MainMenu::Update(float dt)
 		{
 			version_text = Str("checkingVersion");
 			Info("Checking CaRpg version.");
-			check_version = 1;
-			csCheckVersion.Create();
-			check_version_thread = (HANDLE)_beginthreadex(nullptr, 1024, CheckVersion, nullptr, 0, nullptr);
-			if(!check_version_thread)
-			{
-				int error = errno;
-				csCheckVersion.Free();
-				check_version = 2;
-				version_text = Str("checkingError");
-				Error("Failed to create version checking thread (%d).", error);
-			}
+			check_status = CheckVersionStatus::Checking;
+			check_version_thread = thread(&MainMenu::CheckVersion, this);
 		}
 		else
-			check_version = 3;
+			check_status = CheckVersionStatus::Finished;
 	}
-	else if(check_version == 1)
+	else if(check_status == CheckVersionStatus::Done)
 	{
-		bool cleanup = false;
-		csCheckVersion.Enter();
-		if(version_check_result != CVR_None)
+		if(version_new > VERSION)
 		{
-			cleanup = true;
-			if(version_check_result == CVR_Ok)
-			{
-				if(version_new > VERSION)
-				{
-					check_version = 4;
-					cstring str = VersionToString(version_new);
-					version_text = Format(Str("newVersion"), str);
-					Info("New version %s is available.", str);
+			cstring str = VersionToString(version_new);
+			version_text = Format(Str("newVersion"), str);
+			Info("New version %s is available.", str);
 
-					// wyœwietl pytanie o pobranie nowej wersji
-					DialogInfo info;
-					info.event = delegate<void(int)>(this, &MainMenu::OnNewVersion);
-					info.name = "new_version";
-					info.order = ORDER_TOP;
-					info.parent = nullptr;
-					info.pause = false;
-					info.text = Format(Str("newVersionDialog"), VERSION_STR, VersionToString(version_new));
-					info.type = DIALOG_YESNO;
-					cstring names[] = { Str("download"), Str("skip") };
-					info.custom_names = names;
+			// show dialog box with question about updating
+			DialogInfo info;
+			info.event = delegate<void(int)>(this, &MainMenu::OnNewVersion);
+			info.name = "new_version";
+			info.order = ORDER_TOP;
+			info.parent = nullptr;
+			info.pause = false;
+			info.text = Format(Str("newVersionDialog"), VERSION_STR, VersionToString(version_new));
+			info.type = DIALOG_YESNO;
+			cstring names[] = { Str("download"), Str("skip") };
+			info.custom_names = names;
 
-					GUI.ShowDialog(info);
-				}
-				else if(version_new < VERSION)
-				{
-					check_version = 3;
-					version_text = Str("newerVersion");
-					Info("You have newer version then available.");
-				}
-				else
-				{
-					check_version = 3;
-					version_text = Str("noNewVersion");
-					Info("No new version available.");
-				}
-			}
-			else
-			{
-				check_version = 2;
-				version_text = Format(Str("checkVersionError"), version_check_result, version_check_error);
-				Error("Failed to check version (%d, %d).", version_check_result, version_check_error);
-			}
+			GUI.ShowDialog(info);
 		}
-		csCheckVersion.Leave();
-
-		if(cleanup)
+		else if(version_new < VERSION)
 		{
-			csCheckVersion.Free();
-			CloseHandle(check_version_thread);
-			check_version_thread = nullptr;
+			version_text = Str("newerVersion");
+			Info("You have newer version then available.");
 		}
+		else
+		{
+			version_text = Str("noNewVersion");
+			Info("No new version available.");
+		}
+		check_status = CheckVersionStatus::Finished;
+		check_version_thread.join();
 	}
+	else if(check_status == CheckVersionStatus::Error)
+	{
+		version_text = Str("checkVersionError");
+		Error("Failed to check version.");
+		check_status = CheckVersionStatus::Finished;
+		check_version_thread.join();
+	}
+}
+
+//=================================================================================================
+void MainMenu::CheckVersion()
+{
+	version_new = N.api->GetVersion([&]() {return check_status == CheckVersionStatus::Cancel; });
+	if(version_new < 0)
+		check_status = CheckVersionStatus::Error;
+	else
+		check_status = CheckVersionStatus::Done;
 }
 
 //=================================================================================================
@@ -327,10 +237,10 @@ void MainMenu::OnNewVersion(int id)
 //=================================================================================================
 void MainMenu::ShutdownThread()
 {
-	if(check_version_thread)
+	if(check_status != CheckVersionStatus::Finished)
 	{
-		TerminateThread(check_version_thread, 0);
-		CloseHandle(check_version_thread);
-		check_version_thread = nullptr;
+		check_status = CheckVersionStatus::Cancel;
+		check_version_thread.join();
+		check_status = CheckVersionStatus::Cancel;
 	}
 }

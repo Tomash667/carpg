@@ -144,32 +144,30 @@ people. Expect changes for the better!
 
 ===============================================================================
 5) Multiplayer mode
-* General information - The multiplayer mode has been tested only on a LAN. I
-	do not know if it works well enough on the internet. The server must have a
-	public IP address or something combined in the router, I don't know this :(
-	If the character's movement lags let the server change option in console
+* General information - The multiplayer mode has been tested only on a LAN. Thanks
+	to master server it is now possible to connect two computers behind router.
+	But if it fails you need to manualy change router settings (NAT). If the
+	character's movement lags let the server change option in console
 	'mp_interp'. Default is 0.05, raising it until you find the character movement
 	is adequate. Not forget to boast on the forum how it went! :)
 * The leader - Man that determines where to go on a world map. Only he can kick
 	out heroes and give them orders. NPC cannot be an leader. You can pass
-	command to another form panel TAB team. The server also can change the
-	commander.
+	command to another from team panel (default T key). The server also can change
+	the commander.
 * The time - in singleplayer mode time passes normally when the player is
 	resting or training. In multiplayer mode where one person is resting /
 	training other players receive the same amount of days to use. How many days
-	you can see in the panel TAB team. When someone exceeds this number it wil
-	automatically increase it for all. The day changes only when the number is
-	exceeded. Free days are decreasing during travel that players do not keep them
-	indefinitely.
+	you can see in the team panel (default T key). When someone exceeds this number
+	it wil automatically increase it for all. The day changes only when the number
+	is exceeded. Free days are decreasing during travel that players do not keep
+	them indefinitely.
 * Saving - Don't save game while in combat or during important dialogue
 	because something might went wrong. You can only load game from menu.
-* Port - Game uses port 37557. If it's blocked or used you can change it in
-	configuration file.
-* At the moment there is no difference between LAN / Internet server. Client
-	can join any of them, just entering ip address.
 * If the load on the client takes too long you can change / add file
 	configuration value of "timeout = X" where X = 1-3600 in seconds after which
 	the player is kicked for timeout.
+* Ports - game uses port udp 37557, can be changed in configuration file. Master
+	servers uses ports tcp 8080 and udp 60481 for communication.
 
 ===============================================================================
 6) Changes
@@ -306,6 +304,7 @@ In configuration file (by default carpg.cfg) you can use such options:
 	* screenshot_format - ustawia rozszerzenie screenshotów (jpg, bmp, tga, png)
 	* seed - randomness seed
 	* server_ip - last server ip address
+	* server_lan - if true server won't be registered on master server
 	* server_name - last server name
 	* server_players - last server max players
 	* server_pswd - last server password

@@ -176,7 +176,13 @@ enum GamePacket : byte
 	/* Game changes specific to single player
 	...
 	*/
-	ID_PLAYER_CHANGES
+	ID_PLAYER_CHANGES,
+
+	// Connected to master server, send info about this server
+	ID_MASTER_HOST,
+
+	// Update info about this server on master server
+	ID_MASTER_UPDATE
 };
 
 //-----------------------------------------------------------------------------

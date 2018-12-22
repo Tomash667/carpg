@@ -73,7 +73,11 @@ public:
 	};
 
 	void Add(cstring name, cstring value);
+	void Add(cstring name, const string& value) { Add(name, value.c_str()); }
 	void Add(cstring name, bool value) { Add(name, value ? "1" : "0"); }
+	void Add(cstring name, int value) { Add(name, Format("%d", value)); }
+	void Add(cstring name, uint value) { Add(name, Format("%u", value)); }
+	void Add(cstring name, float value) { Add(name, Format("%g", value)); }
 	void AddVar(ConfigVar& var) { config_vars.push_back(var); }
 	Result Load(cstring filename);
 	Result Save(cstring filename);

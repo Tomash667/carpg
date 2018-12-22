@@ -62,6 +62,11 @@ void BitStreamWriter::operator << (const Item& item)
 		operator << (item.refid);
 }
 
+void BitStreamWriter::Reset()
+{
+	bitstream.Reset();
+}
+
 //-----------------------------------------------------------------------------
 BitStreamReader::BitStreamReader(BitStream& bitstream) : bitstream(bitstream)
 {

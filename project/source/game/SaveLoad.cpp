@@ -379,7 +379,7 @@ void Game::SaveGame(GameWriter& f)
 			tpe->Save(f);
 
 		// explosions
-		f << L.local_ctx.explos->size();;
+		f << L.local_ctx.explos->size();
 		for(Explo* explo : *L.local_ctx.explos)
 			explo->Save(f);
 

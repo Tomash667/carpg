@@ -33,8 +33,11 @@ typedef Texture* TexturePtr;
 typedef VertexData* VertexDataPtr;
 
 // Gui types
+class Button;
+class CheckBox;
 class DialogBox;
 class PickItemDialog;
+class TextBox;
 
 // Windows types
 struct HWND__;
