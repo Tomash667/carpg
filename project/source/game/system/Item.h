@@ -24,7 +24,7 @@ enum ITEM_FLAGS
 	ITEM_NOT_BLACKSMITH = 1 << 4,
 	ITEM_MAGE = 1 << 5,
 	ITEM_DONT_DROP = 1 << 6, // can't drop when in dialog
-	ITEM_SECRET = 1 << 7,
+	//ITEM_SECRET = 1 << 7, - removed
 	ITEM_BACKSTAB = 1 << 8,
 	ITEM_POWER_1 = 1 << 9,
 	ITEM_POWER_2 = 1 << 10,

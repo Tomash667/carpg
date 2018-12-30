@@ -214,7 +214,7 @@ SURFACE Game::DrawItemImage(const Item& item, TEX tex, SURFACE surface, float ro
 	V(device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET, 0, 1.f, 0));
 	V(device->BeginScene());
 
-	const Mesh& mesh = *item.mesh;
+	Mesh& mesh = *item.mesh;
 	const TexId* tex_override = nullptr;
 	if(item.type == IT_ARMOR)
 	{
@@ -225,8 +225,13 @@ SURFACE Game::DrawItemImage(const Item& item, TEX tex, SURFACE surface, float ro
 		}
 	}
 
-	Matrix matWorld = Matrix::RotationY(rot),
-		matView = Matrix::CreateLookAt(mesh.head.cam_pos, mesh.head.cam_target, mesh.head.cam_up),
+	Matrix matWorld;
+	Mesh::Point* point = mesh.FindPoint("cam_rot");
+	if(point)
+		matWorld = Matrix::CreateFromAxisAngle(point->rot, rot);
+	else
+		matWorld = Matrix::RotationY(rot);
+	Matrix matView = Matrix::CreateLookAt(mesh.head.cam_pos, mesh.head.cam_target, mesh.head.cam_up),
 		matProj = Matrix::CreatePerspectiveFieldOfView(PI / 4, 1.f, 0.1f, 25.f);
 
 	LightData ld;
@@ -3802,7 +3807,7 @@ void GiveItem(Unit& unit, const int*& ps, int count)
 	else if(type == PS_LEVELED_LIST)
 	{
 		const LeveledItemList& lis = *(const LeveledItemList*)(*ps);
-		int level = max(0, unit.level - 4);
+		int level = max(1, unit.level - 4);
 		for(int i = 0; i < count; ++i)
 			unit.AddItemAndEquipIfNone(lis.Get(Random(level, unit.level)));
 	}
@@ -3812,9 +3817,9 @@ void GiveItem(Unit& unit, const int*& ps, int count)
 		++ps;
 		const LeveledItemList& lis = *(const LeveledItemList*)(*ps);
 		int level = unit.level + mod;
-		if(level >= 0)
+		if(level >= 1)
 		{
-			int l = max(0, level - 4);
+			int l = max(1, level - 4);
 			for(int i = 0; i < count; ++i)
 				unit.AddItemAndEquipIfNone(lis.Get(Random(l, level)));
 		}

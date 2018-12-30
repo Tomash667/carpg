@@ -3,11 +3,22 @@
 //------------------------------------------------------------------------------
 // WEAPONS
 //------------------------------------------------------------------------------
+weapon dagger_knife {
+	weight 0.2
+	value 2
+	mesh "knife.qmsh"
+	attack 5
+	req_str 15
+	type short_blade
+	material metal
+	dmg_type pierce
+}
+
 weapon dagger_short {
 	weight 0.6
 	value 2
 	mesh "sztylet.qmsh"
-	attack 20
+	attack 15
 	req_str 20
 	type short_blade
 	material metal
@@ -18,7 +29,7 @@ weapon dagger_sword {
 	weight 0.9
 	value 10
 	mesh "kmiecz.qmsh"
-	attack 30
+	attack 45
 	req_str 25
 	type short_blade
 	material metal
@@ -29,7 +40,7 @@ weapon dagger_rapier {
 	weight 0.9
 	value 20
 	mesh "rapier.qmsh"
-	attack 50
+	attack 65
 	req_str 22
 	type short_blade
 	material metal
@@ -40,7 +51,7 @@ weapon dagger_assassin {
 	weight 0.6
 	value 1000
 	mesh "sztylet_zabojcy.qmsh"
-	attack 75
+	attack 90
 	req_str 20
 	type short_blade
 	material metal
@@ -52,7 +63,7 @@ weapon dagger_sword_a {
 	weight 1
 	value 5000
 	mesh "adam_kmiecz.qmsh"
-	attack 115
+	attack 140
 	req_str 26
 	type short_blade
 	material metal
@@ -64,7 +75,7 @@ weapon dagger_spinesheath {
 	weight 0.5
 	value 25000
 	mesh "grzbietokluj.qmsh"
-	attack 150
+	attack 180
 	req_str 20
 	type short_blade
 	material metal
@@ -72,11 +83,22 @@ weapon dagger_spinesheath {
 	flags {not_chest not_shop not_random backstab unique}
 }
 
+weapon sword_wooden {
+	weight 1
+	value 4
+	mesh "sword_wood.qmsh"
+	attack 10
+	req_str 30
+	type long_blade
+	material wood
+	dmg_type blunt
+}
+
 weapon sword_long {
 	weight 1.8
 	value 15
 	mesh "miecz.qmsh"
-	attack 25
+	attack 20
 	req_str 40
 	type long_blade
 	material metal
@@ -88,7 +110,7 @@ weapon sword_scimitar {
 	value 15
 	mesh "sejmitar.qmsh"
 	attack 35
-	req_str 45
+	req_str 50
 	type long_blade
 	material metal
 	dmg_type slash
@@ -98,7 +120,7 @@ weapon sword_orcish {
 	weight 2.2
 	value 25
 	mesh "orkowy_miecz.qmsh"
-	attack 55
+	attack 70
 	req_str 55
 	type long_blade
 	material metal
@@ -109,7 +131,7 @@ weapon sword_serrated {
 	weight 2
 	value 1200
 	mesh "zabkowany_miecz.qmsh"
-	attack 85
+	attack 100
 	req_str 45
 	type long_blade
 	material metal
@@ -121,7 +143,7 @@ weapon sword_adamantine {
 	weight 2
 	value 10000
 	mesh "adam_miecz.qmsh"
-	attack 125
+	attack 150
 	req_str 50
 	type long_blade
 	material metal
@@ -129,16 +151,39 @@ weapon sword_adamantine {
 	flags magical
 }
 
-weapon sword_unique {
+weapon sword_semur {
 	weight 1.8
 	value 30000
 	mesh "semur.qmsh"
-	attack 165
+	attack 200
 	req_str 45
 	type long_blade
 	material metal
 	dmg_type slash
 	flags {not_chest not_shop not_random mage power4 unique}
+}
+
+weapon sword_forbidden {
+	weight 2
+	value 500000
+	mesh "sny.qmsh"
+	attack 250
+	req_str 45
+	type long_blade
+	material crystal
+	dmg_type {slash pierce blunt}
+	flags {not_shop not_chest not_random power2 unique}
+}
+
+weapon axe_rusted {
+	weight 1.2
+	value 2
+	mesh "axe_rusted.qmsh"
+	attack 15
+	req_str 40
+	type axe
+	material metal
+	dmg_type slash
 }
 
 weapon axe_small {
@@ -156,7 +201,7 @@ weapon axe_battle {
 	weight 2.7
 	value 10
 	mesh "topor_bojowy.qmsh"
-	attack 37
+	attack 55
 	req_str 55
 	type axe
 	material metal
@@ -167,7 +212,7 @@ weapon axe_orcish {
 	weight 3
 	value 25
 	mesh "topor_orkowy.qmsh"
-	attack 55
+	attack 75
 	req_str 75
 	type axe
 	material metal
@@ -178,7 +223,7 @@ weapon axe_crystal {
 	weight 3.5
 	value 2000
 	mesh "topor_krysztalowy.qmsh"
-	attack 90
+	attack 105
 	req_str 70
 	type axe
 	material crystal
@@ -190,7 +235,7 @@ weapon axe_giant {
 	weight 3.5
 	value 8000
 	mesh "topor_giganta.qmsh"
-	attack 130
+	attack 155
 	req_str 85
 	type axe
 	material metal
@@ -202,7 +247,7 @@ weapon axe_ripper {
 	weight 3.5
 	value 40000
 	mesh "rozpruwacz.qmsh"
-	attack 170
+	attack 210
 	req_str 80
 	type axe
 	material metal
@@ -214,7 +259,7 @@ weapon blunt_club {
 	weight 1.3
 	value 1
 	mesh "maczuga.qmsh"
-	attack 30
+	attack 15
 	req_str 45
 	type blunt
 	material wood
@@ -225,7 +270,7 @@ weapon blunt_mace {
 	weight 3.6
 	value 12
 	mesh "buzdygan.qmsh"
-	attack 40
+	attack 25
 	req_str 65
 	type blunt
 	material metal
@@ -259,7 +304,7 @@ weapon blunt_morningstar {
 	weight 2.7
 	value 8
 	mesh "morgensztern.qmsh"
-	attack 75
+	attack 80
 	req_str 70
 	type blunt
 	material metal
@@ -270,7 +315,7 @@ weapon blunt_dwarven {
 	weight 4.4
 	value 500
 	mesh "krasnoludzki_mlot.qmsh"
-	attack 95
+	attack 110
 	req_str 85
 	type blunt
 	material metal
@@ -282,7 +327,7 @@ weapon blunt_adamantine {
 	weight 4
 	value 5000
 	mesh "adam_buzdygan.qmsh"
-	attack 135
+	attack 160
 	req_str 100
 	type blunt
 	material metal
@@ -294,7 +339,7 @@ weapon blunt_skullsmasher {
 	weight 5
 	value 25000
 	mesh "rozlupywacz.qmsh"
-	attack 175
+	attack 220
 	req_str 100
 	type blunt
 	material metal
@@ -306,7 +351,7 @@ weapon blacksmith_hammer {
 	weight 3
 	value 15
 	mesh "mlot_kowala.qmsh"
-	attack 45
+	attack 50
 	req_str 50
 	type blunt
 	material metal
@@ -317,7 +362,7 @@ weapon pickaxe {
 	weight 2.5
 	value 10
 	mesh "kilof.qmsh"
-	attack 45
+	attack 50
 	req_str 55
 	type blunt
 	material metal
@@ -328,7 +373,7 @@ weapon frying_pan {
 	weight 1.5
 	value 10
 	mesh "frying_pan.qmsh"
-	attack 25
+	attack 35
 	req_str 25
 	type blunt
 	material metal
@@ -371,18 +416,6 @@ weapon wand_3 {
 	flags {not_shop not_chest mage power3 magical}
 }
 
-weapon sword_forbidden {
-	weight 2
-	value 500000
-	mesh "sny.qmsh"
-	attack 200
-	req_str 45
-	type long_blade
-	material crystal
-	dmg_type {slash pierce blunt}
-	flags {not_shop not_chest not_random secret power2 unique}
-}
-
 //------------------------------------------------------------------------------
 // BOWS
 //------------------------------------------------------------------------------
@@ -390,7 +423,7 @@ bow bow_short {
 	weight 0.9
 	value 30
 	mesh "luk_krotki.qmsh"
-	attack 40
+	attack 15
 	speed 40
 	req_str 25
 }
@@ -399,7 +432,7 @@ bow bow_long {
 	weight 1.3
 	value 75
 	mesh "luk_dlugi.qmsh"
-	attack 60
+	attack 45
 	speed 45
 	req_str 35
 }
@@ -408,7 +441,7 @@ bow bow_composite {
 	weight 1.3
 	value 250
 	mesh "luk_kompozytowy.qmsh"
-	attack 80
+	attack 85
 	speed 45
 	req_str 40
 }
@@ -417,7 +450,7 @@ bow bow_elven {
 	weight 1.1
 	value 3000
 	mesh "luk_elfi.qmsh"
-	attack 120
+	attack 125
 	req_str 35
 	speed 50
 	flags hq
@@ -427,17 +460,17 @@ bow bow_dragonbone {
 	weight 1.5
 	value 10000
 	mesh "luk_smoczy.qmsh"
-	attack 150
+	attack 170
 	req_str 50
 	speed 50
 	flags magical
 }
 
-bow bow_unique {
+bow bow_angel {
 	weight 0.9
 	value 30000
 	mesh "luk_anielski.qmsh"
-	attack 200
+	attack 220
 	req_str 25
 	speed 60
 	flags {not_shop not_chest not_random power1 unique}
@@ -456,11 +489,20 @@ bow q_gobliny_luk {
 //------------------------------------------------------------------------------
 // SHIELDS
 //------------------------------------------------------------------------------
+shield shield_plank {
+	weight 3
+	value 2
+	mesh "shield_plank.qmsh"
+	block 10
+	req_str 30
+	material wood
+}
+
 shield shield_wood {
 	weight 2.2
 	value 5
 	mesh "drewniana_tarcza.qmsh"
-	block 80
+	block 30
 	req_str 25
 	material wood
 }
@@ -469,7 +511,7 @@ shield shield_iron {
 	weight 2.7
 	value 20
 	mesh "zelazna_tarcza.qmsh"
-	block 90
+	block 50
 	req_str 35
 	material metal
 }
@@ -478,7 +520,7 @@ shield shield_steel {
 	weight 2.7
 	value 200
 	mesh "stalowa_tarcza.qmsh"
-	block 110
+	block 80
 	req_str 40
 	material metal
 }
@@ -487,7 +529,7 @@ shield shield_mithril {
 	weight 1.3
 	value 3000
 	mesh "tarcza_mit.qmsh"
-	block 150
+	block 120
 	req_str 20
 	material metal
 	flags hq
@@ -497,17 +539,17 @@ shield shield_adamantine {
 	weight 3
 	value 10000
 	mesh "tarcza_adam.qmsh"
-	block 190
+	block 160
 	req_str 45
 	material metal
 	flags {magic_resistance10 magical}
 }
 
-shield shield_unique {
+shield shield_wall {
 	weight 3.5
 	value 30000
 	mesh "tarcza_mur.qmsh"
-	block 225
+	block 200
 	req_str 60
 	material rock
 	flags {not_shop not_chest not_random magic_resistance25 unique}
@@ -523,7 +565,7 @@ armor al_padded {
 	skill light_armor
 	type human
 	material skin
-	defense 20
+	defense 5
 	req_str 25
 	mobility 90
 }
@@ -535,7 +577,7 @@ armor al_padded_hq {
 	skill light_armor
 	type human
 	material skin
-	defense 25
+	defense 15
 	req_str 25
 	mobility 95
 	flags hq
@@ -561,7 +603,7 @@ armor al_leather {
 	skill light_armor
 	type human
 	material skin
-	defense 30
+	defense 15
 	req_str 30
 	mobility 85
 }
@@ -573,7 +615,7 @@ armor al_leather_hq {
 	skill light_armor
 	type human
 	material skin
-	defense 35
+	defense 25
 	req_str 30
 	mobility 90
 	flags hq
@@ -599,7 +641,7 @@ armor al_dragonskin {
 	skill light_armor
 	type human
 	material skin
-	defense 110
+	defense 165
 	req_str 35
 	mobility 80
 	flags {magic_resistance10 magical}
@@ -637,7 +679,7 @@ armor al_studded_m {
 	skill light_armor
 	type human
 	material skin
-	defense 60
+	defense 70
 	req_str 35
 	mobility 85
 	flags magical
@@ -650,7 +692,7 @@ armor al_shadow {
 	skill light_armor
 	type human
 	material skin
-	defense 60
+	defense 100
 	req_str 30
 	mobility 85
 	flags {not_shop not_chest not_random unique}
@@ -663,7 +705,7 @@ armor al_chain_shirt {
 	skill light_armor
 	type human
 	material metal
-	defense 60
+	defense 90
 	req_str 40
 	mobility 75
 }
@@ -675,7 +717,7 @@ armor al_chain_shirt_hq {
 	skill light_armor
 	type human
 	material metal
-	defense 70
+	defense 100
 	req_str 40
 	mobility 80
 	flags hq
@@ -688,7 +730,7 @@ armor al_chain_shirt_m {
 	skill light_armor
 	type human
 	material metal
-	defense 80
+	defense 120
 	req_str 40
 	mobility 80
 	flags magical
@@ -702,7 +744,7 @@ armor al_chain_shirt_mith {
 	skill light_armor
 	type human
 	material metal
-	defense 90
+	defense 135
 	req_str 30
 	mobility 90
 	flags magical
@@ -715,7 +757,7 @@ armor al_angelskin {
 	skill light_armor
 	type human
 	material metal
-	defense 140
+	defense 180
 	req_str 20
 	mobility 100
 	flags {not_shop not_chest not_random power1 magic_resistance25 unique}
@@ -728,7 +770,7 @@ armor am_hide {
 	skill medium_armor
 	type human
 	material skin
-	defense 25
+	defense 10
 	req_str 40
 	mobility 75
 }
@@ -740,7 +782,7 @@ armor am_hide_hq {
 	skill medium_armor
 	type human
 	material skin
-	defense 30
+	defense 20
 	req_str 40
 	mobility 80
 	flags hq
@@ -766,7 +808,7 @@ armor am_troll_hide {
 	skill medium_armor
 	type human
 	material skin
-	defense 40
+	defense 60
 	req_str 45
 	mobility 75
 	flags {not_shop not_chest not_random magical}
@@ -779,7 +821,7 @@ armor am_chainmail {
 	skill medium_armor
 	type human
 	material metal
-	defense 35
+	defense 20
 	req_str 50
 	mobility 60
 }
@@ -791,7 +833,7 @@ armor am_chainmail_hq {
 	skill medium_armor
 	type human
 	material metal
-	defense 40
+	defense 30
 	req_str 50
 	mobility 65
 	flags hq
@@ -804,7 +846,7 @@ armor am_chainmail_m {
 	skill medium_armor
 	type human
 	material metal
-	defense 55
+	defense 50
 	req_str 50
 	mobility 65
 	flags magical
@@ -818,7 +860,7 @@ armor am_chainmail_mith {
 	skill medium_armor
 	type human
 	material metal
-	defense 65
+	defense 70
 	req_str 35
 	mobility 75
 	flags magical
@@ -831,7 +873,7 @@ armor am_scale {
 	skill medium_armor
 	type human
 	material metal
-	defense 55
+	defense 50
 	req_str 50
 	mobility 60
 }
@@ -856,7 +898,7 @@ armor am_scale_m {
 	skill medium_armor
 	type human
 	material metal
-	defense 75
+	defense 80
 	req_str 45
 	mobility 65
 	flags magical
@@ -870,7 +912,7 @@ armor am_dragonscale {
 	skill medium_armor
 	type human
 	material metal
-	defense 130
+	defense 180
 	req_str 50
 	mobility 55
 	flags {magic_resistance10 magical}
@@ -883,7 +925,7 @@ armor am_breastplate {
 	skill medium_armor
 	type human
 	material metal
-	defense 90
+	defense 100
 	req_str 45
 	mobility 70
 }
@@ -895,7 +937,7 @@ armor am_breastplate_hq {
 	skill medium_armor
 	type human
 	material metal
-	defense 95
+	defense 110
 	req_str 45
 	mobility 75
 	flags hq
@@ -908,7 +950,7 @@ armor am_breastplate_m {
 	skill medium_armor
 	type human
 	material metal
-	defense 115
+	defense 130
 	req_str 40
 	mobility 75
 	flags magical
@@ -922,7 +964,7 @@ armor am_breastplate_mith {
 	skill medium_armor
 	type human
 	material metal
-	defense 125
+	defense 150
 	req_str 30
 	mobility 85
 	flags magical
@@ -936,7 +978,7 @@ armor am_breastplate_adam {
 	skill medium_armor
 	type human
 	material metal
-	defense 150
+	defense 170
 	req_str 50
 	mobility 70
 	flags {magic_resistance10 magical}
@@ -945,14 +987,27 @@ armor am_breastplate_adam {
 armor am_gladiator {
 	weight 13.5
 	value 22000
-	mesh "breastplate.qmsh"
+	mesh "gladiator_armor.qmsh"
 	skill medium_armor
 	type human
 	material metal
-	defense 170
+	defense 200
 	req_str 45
 	mobility 75
 	flags {not_shop not_chest not_random unique magic_resistance10}
+}
+
+armor ah_splint_rusted {
+	weight 18
+	value 50
+	mesh "splint_armor.qmsh"
+	tex_override "splint_armor_rusted.jpg"
+	skill heavy_armor
+	type human
+	material metal
+	defense 25
+	req_str 50
+	mobility 50
 }
 
 armor ah_splint {
@@ -962,7 +1017,7 @@ armor ah_splint {
 	skill heavy_armor
 	type human
 	material metal
-	defense 60
+	defense 55
 	req_str 50
 	mobility 50
 }
@@ -1001,7 +1056,7 @@ armor ah_splint_mith {
 	skill heavy_armor
 	type human
 	material metal
-	defense 90
+	defense 110
 	req_str 35
 	mobility 65
 	flags magical
@@ -1014,7 +1069,7 @@ armor ah_antimage {
 	skill heavy_armor
 	type human
 	material metal
-	defense 100
+	defense 130
 	req_str 55
 	mobility 55
 	flags {not_shop not_chest not_random unique magic_resistance25}
@@ -1027,7 +1082,7 @@ armor ah_plate {
 	skill heavy_armor
 	type human
 	material metal
-	defense 100
+	defense 110
 	req_str 70
 	mobility 40
 }
@@ -1039,7 +1094,7 @@ armor ah_plate_hq {
 	skill heavy_armor
 	type human
 	material metal
-	defense 110
+	defense 120
 	req_str 70
 	mobility 45
 	flags hq
@@ -1052,7 +1107,7 @@ armor ah_plate_m {
 	skill heavy_armor
 	type human
 	material metal
-	defense 125
+	defense 140
 	req_str 65
 	mobility 45
 	flags magical
@@ -1066,7 +1121,7 @@ armor ah_plate_mith {
 	skill heavy_armor
 	type human
 	material metal
-	defense 135
+	defense 165
 	req_str 70
 	mobility 55
 	flags magical
@@ -1080,7 +1135,7 @@ armor ah_plate_adam {
 	skill heavy_armor
 	type human
 	material metal
-	defense 165
+	defense 185
 	req_str 40
 	mobility 40
 	flags {magic_resistance10 magical}
@@ -1093,7 +1148,7 @@ armor ah_black_armor {
 	skill heavy_armor
 	type human
 	material metal
-	defense 200
+	defense 220
 	req_str 75
 	mobility 40
 	flags {not_shop not_chest not_random magic_resistance25 unique}
@@ -1106,7 +1161,7 @@ armor ah_crystal {
 	skill heavy_armor
 	type human
 	material crystal
-	defense 150
+	defense 165
 	req_str 80
 	mobility 25
 	flags hq
@@ -1119,7 +1174,7 @@ armor ah_crystal_m {
 	skill heavy_armor
 	type human
 	material crystal
-	defense 175
+	defense 195
 	req_str 80
 	mobility 25
 	flags {magic_resistance10 magical}
@@ -1132,7 +1187,7 @@ armor ah_blood_crystal {
 	skill heavy_armor
 	type human
 	material crystal
-	defense 190
+	defense 210
 	req_str 80
 	mobility 25
 	flags {not_shop not_chest not_random magic_resistance10 magical}
@@ -1145,7 +1200,7 @@ armor al_blacksmith {
 	skill light_armor
 	type human
 	material skin
-	defense 30
+	defense 35
 	req_str 30
 	mobility 85
 	flags not_blacksmith
@@ -1158,7 +1213,7 @@ armor al_innkeeper {
 	skill light_armor
 	type human
 	material skin
-	defense 20
+	defense 15
 	req_str 20
 	mobility 85
 	flags not_blacksmith
@@ -1210,7 +1265,7 @@ armor am_orc {
 	skill medium_armor
 	type orc
 	material metal
-	defense 35
+	defense 40
 	req_str 60
 	mobility 60
 	flags {not_shop not_chest}
@@ -1237,7 +1292,7 @@ armor al_mage2 {
 	skill light_armor
 	type human
 	material cloth
-	defense 25
+	defense 30
 	req_str 20
 	mobility 90
 	flags {not_shop not_chest mage power2 magic_resistance10 magical}
@@ -1251,7 +1306,7 @@ armor al_mage3 {
 	skill light_armor
 	type human
 	material cloth
-	defense 30
+	defense 40
 	req_str 20
 	mobility 90
 	flags {not_shop not_chest mage power3 magic_resistance10 magical}
@@ -1265,7 +1320,7 @@ armor al_mage4 {
 	skill light_armor
 	type human
 	material cloth
-	defense 40
+	defense 50
 	req_str 20
 	mobility 90
 	flags {not_shop not_chest mage power4 magic_resistance25 unique}
@@ -1278,7 +1333,7 @@ armor al_necromancer {
 	skill light_armor
 	type human
 	material cloth
-	defense 40
+	defense 50
 	req_str 25
 	mobility 80
 	flags {not_shop not_chest power2 magic_resistance10 magical}
@@ -1291,7 +1346,7 @@ armor al_clothes {
 	skill light_armor
 	type human
 	material cloth
-	defense 10
+	defense 5
 	req_str 20
 	mobility 100
 	flags {not_chest not_blacksmith}
@@ -1304,7 +1359,7 @@ armor al_clothes2 {
 	skill light_armor
 	type human
 	material cloth
-	defense 10
+	defense 5
 	req_str 20
 	mobility 100
 	flags {not_chest not_blacksmith}
@@ -1318,7 +1373,7 @@ armor al_clothes2b {
 	skill light_armor
 	type human
 	material cloth
-	defense 10
+	defense 5
 	req_str 20
 	mobility 100
 	flags {not_chest not_blacksmith}
@@ -1331,7 +1386,7 @@ armor al_clothes3 {
 	skill light_armor
 	type human
 	material cloth
-	defense 10
+	defense 5
 	req_str 20
 	mobility 100
 	flags {not_chest not_blacksmith hq}
@@ -1345,7 +1400,7 @@ armor al_clothes3b {
 	skill light_armor
 	type human
 	material cloth
-	defense 10
+	defense 5
 	req_str 20
 	mobility 100
 	flags {not_chest not_blacksmith hq}
@@ -1382,7 +1437,7 @@ consumable p_hp {
 	mesh "mikstura_hp.qmsh"
 	type potion
 	effect heal
-	power 200
+	power 250
 	flags ground_mesh
 }
 
@@ -1392,7 +1447,7 @@ consumable p_hp2 {
 	mesh "mikstura_hp2.qmsh"
 	type potion
 	effect heal
-	power 400
+	power 500
 	flags ground_mesh
 }
 
@@ -1402,7 +1457,7 @@ consumable p_hp3 {
 	mesh "mikstura_hp3.qmsh"
 	type potion
 	effect heal
-	power 600
+	power 1000
 	flags ground_mesh
 }
 
@@ -2109,17 +2164,17 @@ gold gold {
 // should contain single item of each type(weapon, mage weapon, bow, shield,
 // armor, mage armor)
 list base_items {
-	dagger_short
-	axe_small
+	dagger_knife
+	sword_wooden
+	axe_rusted
 	blunt_club
-	sword_long
 	wand_1
 	bow_short
-	shield_wood
+	shield_plank
 	al_mage
 	al_padded
 	am_hide
-	ah_splint
+	ah_splint_rusted
 }
 
 list normal_food {
@@ -2202,31 +2257,34 @@ list rare_books {
 }
 
 leveled_list short_blade {
-	dagger_short 0
-	dagger_sword 2
-	dagger_rapier 5
+	dagger_knife 1
+	dagger_short 2
+	dagger_sword 5
+	dagger_rapier 7
 	dagger_assassin 10
 	dagger_sword_a 15
 }
 
 leveled_list long_blade {
-	sword_long 0
-	sword_scimitar 2
-	sword_orcish 5
+	sword_wooden 1
+	sword_long 2
+	sword_scimitar 5
+	sword_orcish 7
 	sword_serrated 10
 	sword_adamantine 15
 }
 
 leveled_list axe {
-	axe_small 0
-	axe_battle 2
-	axe_orcish 5
+	axe_rusted 1
+	axe_small 2
+	axe_battle 5
+	axe_orcish 7
 	axe_crystal 10
 	axe_giant 15
 }
 
 leveled_list blunt {
-	blunt_club 0
+	blunt_club 1
 	blunt_mace 2
 	blunt_orcish 5
 	blunt_morningstar 7
@@ -2235,13 +2293,13 @@ leveled_list blunt {
 }
 
 leveled_list wand {
-	wand_1 0
+	wand_1 1
 	wand_2 5
 	wand_3 10
 }
 
 leveled_list bow {
-	bow_short 0
+	bow_short 1
 	bow_long 4
 	bow_composite 8
 	bow_elven 12
@@ -2249,34 +2307,35 @@ leveled_list bow {
 }
 
 leveled_list shield {
-	shield_wood 0
-	shield_iron 2
-	shield_steel 5
-	shield_mithril 10
-	shield_adamantine 15
+	shield_plank 1
+	shield_wood 3
+	shield_iron 5
+	shield_steel 8
+	shield_mithril 12
+	shield_adamantine 16
 }
 
 leveled_list light_armor {
-	al_padded 0
-	al_padded_hq 1
-	al_padded_m 3
+	al_padded 1
+	al_padded_hq 2
+	al_padded_m 4
 	al_leather 2
 	al_leather_hq 3
 	al_leather_m 5
-	al_studded 4
-	al_studded_hq 5
-	al_studded_m 7
-	al_chain_shirt 7
-	al_chain_shirt_hq 8
-	al_chain_shirt_m 10
-	al_chain_shirt_mith 12
-	al_dragonskin 15
+	al_studded 5
+	al_studded_hq 6
+	al_studded_m 8
+	al_chain_shirt 10
+	al_chain_shirt_hq 11
+	al_chain_shirt_m 13
+	al_chain_shirt_mith 15
+	al_dragonskin 18
 }
 
 leveled_list medium_armor {
-	am_hide 0
-	am_hide_hq 1
-	am_hide_m 3
+	am_hide 1
+	am_hide_hq 2
+	am_hide_m 4
 	am_chainmail 2
 	am_chainmail_hq 3
 	am_chainmail_m 5
@@ -2284,7 +2343,7 @@ leveled_list medium_armor {
 	am_scale 5
 	am_scale_hq 6
 	am_scale_m 8
-	am_dragonscale 15
+	am_dragonscale 18
 	am_breastplate 10
 	am_breastplate_hq 11
 	am_breastplate_m 13
@@ -2293,6 +2352,7 @@ leveled_list medium_armor {
 }
 
 leveled_list heavy_armor {
+	ah_splint_rusted 2
 	ah_splint 5
 	ah_splint_hq 6
 	ah_splint_m 8
@@ -2301,13 +2361,13 @@ leveled_list heavy_armor {
 	ah_plate_hq 11
 	ah_plate_m 13
 	ah_plate_mith 15
-	ah_plate_adam 18
+	ah_plate_adam 17
 	ah_crystal 15
-	ah_crystal_m 19
+	ah_crystal_m 18
 }
 
 leveled_list mage_armor {
-	al_mage 0
+	al_mage 1
 	al_mage2 5
 	al_mage3 10
 }
@@ -2547,19 +2607,22 @@ stock alchemist_apprentice {
 //------------------------------------------------------------------------------
 start_items {
 	short_blade {
-		0 dagger_short
+		0 dagger_knife
+		15 dagger_short
 		20 dagger_sword
 		25 dagger_rapier
 		* dagger_assassin
 	}
 	long_blade {
-		0 sword_long
+		0 sword_wooden
+		15 sword_long
 		20 sword_scimitar
 		25 sword_orcish
 		* sword_serrated
 	}
 	axe {
-		0 axe_small
+		0 axe_rusted
+		15 axe_small
 		20 axe_battle
 		25 axe_orcish
 		* axe_crystal
@@ -2578,7 +2641,8 @@ start_items {
 		* bow_elven
 	}
 	shield {
-		10 shield_wood
+		5 shield_plank
+		15 shield_wood
 		20 shield_iron
 		30 shield_steel
 		* shield_mithril
@@ -2589,20 +2653,21 @@ start_items {
 		15 al_leather
 		20 al_studded
 		25 al_studded_hq
-		30 al_chain_shirt
-		* al_chain_shirt_m
+		30 al_studded_m
+		* al_chain_shirt_hq
 	}
 	medium_armor {
 		0 am_hide
-		10 am_hide_hq
-		20 am_chainmail
-		25 am_scale
-		30 am_scale_hq
-		* am_breastplate_m
+		10 am_chainmail
+		15 am_chainmail_hq
+		20 am_scale
+		25 am_scale_hq
+		30 am_scale_m
+		* am_breastplate_hq
 	}
 	heavy_armor {
-		0 am_chainmail
-		10 ah_splint
+		0 ah_splint_rusted
+		15 ah_splint
 		25 ah_splint_hq
 		30 ah_splint_m
 		* ah_plate_hq
@@ -2614,14 +2679,17 @@ start_items {
 // This is for ai buying better items for gold, shouldn't contain unique items
 //------------------------------------------------------------------------------
 better_items {
+	dagger_knife dagger_short
 	dagger_short dagger_sword
 	dagger_sword dagger_rapier
 	dagger_rapier dagger_assassin
 	dagger_assassin dagger_sword_a
+	sword_wooden sword_long
 	sword_long sword_scimitar
 	sword_scimitar sword_orcish
 	sword_orcish sword_serrated
 	sword_serrated sword_adamantine
+	axe_rusted axe_small
 	axe_small axe_battle
 	axe_battle axe_orcish
 	axe_orcish axe_crystal
@@ -2642,6 +2710,7 @@ better_items {
 	bow_composite bow_elven
 	bow_elven bow_dragonbone
 	
+	shield_plank shield_wood
 	shield_wood shield_iron
 	shield_iron shield_steel
 	shield_steel shield_mithril
@@ -2677,6 +2746,7 @@ better_items {
 	am_breastplate_mith am_breastplate_adam
 	am_breastplate_adam am_dragonscale
 	
+	ah_splint_rusted ah_splint
 	ah_splint ah_splint_hq
 	ah_splint_hq ah_splint_m
 	ah_splint_m ah_plate
@@ -2766,3 +2836,7 @@ alias emerald vs_emerald
 alias ruby vs_ruby
 alias diamond vs_diamond
 alias krystal vs_krystal
+// renamed in 0.8
+alias sword_semur sword_unique
+alias bow_angel bow_unique
+alias shield_wall shield_unique

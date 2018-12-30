@@ -196,7 +196,6 @@ public:
 			{ "not_blacksmith", ITEM_NOT_BLACKSMITH },
 			{ "mage", ITEM_MAGE },
 			{ "dont_drop", ITEM_DONT_DROP },
-			{ "secret", ITEM_SECRET },
 			{ "backstab", ITEM_BACKSTAB },
 			{ "power1", ITEM_POWER_1 },
 			{ "power2", ITEM_POWER_2 },

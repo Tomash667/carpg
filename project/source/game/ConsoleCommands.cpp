@@ -406,7 +406,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						bool is_team = (it->cmd == CMD_ADD_TEAM_ITEM);
 						const string& item_name = t.MustGetItem();
 						const Item* item = Item::TryGet(item_name);
-						if(!item || IS_SET(item->flags, ITEM_SECRET))
+						if(!item)
 							Msg("Can't find item with id '%s'!", item_name.c_str());
 						else
 						{
@@ -2017,7 +2017,7 @@ void Game::CmdList(Tokenizer& t)
 			for(auto it : Item::items)
 			{
 				auto item = it.second;
-				if(!IS_SET(item->flags, ITEM_SECRET) && (match.empty() || _strnicmp(match.c_str(), item->id.c_str(), match.length()) == 0))
+				if(match.empty() || _strnicmp(match.c_str(), item->id.c_str(), match.length()) == 0)
 					items.push_back(item);
 			}
 
@@ -2052,7 +2052,7 @@ void Game::CmdList(Tokenizer& t)
 			for(auto it : Item::items)
 			{
 				auto item = it.second;
-				if(!IS_SET(item->flags, ITEM_SECRET) && (match.empty() || _strnicmp(match.c_str(), item->name.c_str(), match.length()) == 0))
+				if(match.empty() || _strnicmp(match.c_str(), item->name.c_str(), match.length()) == 0)
 					items.push_back(item);
 			}
 
