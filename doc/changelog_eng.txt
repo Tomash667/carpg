@@ -14,6 +14,8 @@ Version 0.8 (???):
 + new commands (add_effect, remove_effect, list_effects, add_perk, remove_perk, list_perks, select, list_stats, add_learning_points)
 + magic scroll item
 + new mobility calculations
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! NOT ADDED FROM HERE
++ new items (low level and one artifact): knife, wooden sword, rusted hatchet, plank shield, rusted splint armor, Gladiator armor
 - fixed fast melee weapon training on low level enemies
 - fixed talking with unit that is standing up
 - fixed units rotating when talking for clients

@@ -467,9 +467,10 @@ void Quest_Orcs2::SetProgress(int prog2)
 			}
 			orc = nullptr;
 			// orki
-			UnitData* ud[10] = {
+			UnitData* ud[12] = {
 				UnitData::Get("orc"), UnitData::Get("q_orkowie_orc"),
 				UnitData::Get("orc_fighter"), UnitData::Get("q_orkowie_orc_fighter"),
+				UnitData::Get("orc_warius"), UnitData::Get("q_orkowie_orc_warius"),
 				UnitData::Get("orc_hunter"), UnitData::Get("q_orkowie_orc_hunter"),
 				UnitData::Get("orc_shaman"), UnitData::Get("q_orkowie_orc_shaman"),
 				UnitData::Get("orc_chief"), UnitData::Get("q_orkowie_orc_chief")
@@ -489,7 +490,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 					}
 					else
 					{
-						for(int i = 0; i < 5; ++i)
+						for(int i = 0; i < 6; ++i)
 						{
 							if(u.data == ud[i * 2])
 							{

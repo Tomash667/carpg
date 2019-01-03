@@ -69,7 +69,7 @@ enum UNIT_FLAGS
 	F_PIERCE_WEAK25 = 1 << 9, // podatnoœæ na k³ute 25%
 	F_SLASH_WEAK25 = 1 << 10, // podatnoœæ na ciête 25%
 	F_BLUNT_WEAK25 = 1 << 11, // podatnoœæ na obuchowe 25%
-	F_UNDEAD = 1 << 12, // can cast raise undead
+	F_UNDEAD = 1 << 12, // can cast raise undead, can't use potions
 	F_SLOW = 1 << 13, // don't run
 	F_POISON_ATTACK = 1 << 14, // atak zatruwa
 	F_IMMORTAL = 1 << 15, // nie mo¿na zabiæ tej postaci

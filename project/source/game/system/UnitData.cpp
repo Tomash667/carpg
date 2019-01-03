@@ -29,9 +29,9 @@ UnitStats* UnitData::GetStats(int level)
 		else
 		{
 			for(int i = 0; i < (int)AttributeId::MAX; ++i)
-				stat_profile->attrib[i] = 0;
+				stats->attrib[i] = 0;
 			for(int i = 0; i < (int)SkillId::MAX; ++i)
-				stat_profile->skill[i] = 0;
+				stats->skill[i] = 0;
 		}
 		return stats;
 	}
@@ -71,7 +71,7 @@ void UnitData::CopyFrom(UnitData& ud)
 	armor_type = ud.armor_type;
 	item_script = ud.item_script;
 	clas = ud.clas;
-	trader = ud.trader;
+	trader = nullptr; // not copied
 }
 
 

@@ -145,6 +145,8 @@ void ItemList::Get(int count, const Item** result) const
 //=================================================================================================
 const Item* LeveledItemList::Get(int level) const
 {
+	if(level < 1)
+		level = 1;
 	int best_lvl = -1;
 
 	for(const LeveledItemList::Entry& ie : items)
@@ -166,7 +168,7 @@ const Item* LeveledItemList::Get(int level) const
 		items_to_add.clear();
 		return best;
 	}
-
+	
 	return nullptr;
 }
 

@@ -434,7 +434,7 @@ int CreatedCharacter::GetBonus(SkillId skill)
 	int base = s[(int)skill].base;
 	if(base == 0)
 		return 15;
-	else if(base == 5)
+	else if(base < 20)
 		return 10;
 	else
 		return 5;

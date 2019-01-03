@@ -69,8 +69,10 @@ float Unit::CalculateMaxHp() const
 	else
 	{
 		float v = 0.8f*Get(AttributeId::END) + 0.2f*Get(AttributeId::STR);
-		float level = IsPlayer() ? player->level : (float)this->level;
-		maxhp = data->hp * (1.f + (v - 50) / 50) + level * (v - 25.f) * data->hp / 500;
+		if(v >= 60.f)
+			maxhp = 250.f + (v - 50.f) * 25.f;
+		else
+			maxhp = 500.f - (60.f - v) * 10.f;
 	}
 	float bonus = GetEffectSum(EffectId::Health);
 	return maxhp + bonus;
@@ -102,6 +104,12 @@ float Unit::CalculateAttack() const
 float Unit::CalculateAttack(const Item* weapon) const
 {
 	assert(weapon);
+
+	if(IS_SET(data->flags2, F2_FIXED_STATS))
+	{
+		if(weapon->type == IT_WEAPON)
+
+	}
 
 	int str = Get(AttributeId::STR),
 		dex = Get(AttributeId::DEX);

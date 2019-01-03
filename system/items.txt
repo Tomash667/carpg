@@ -1265,7 +1265,7 @@ armor am_orc {
 	skill medium_armor
 	type orc
 	material metal
-	defense 40
+	defense 50
 	req_str 60
 	mobility 60
 	flags {not_shop not_chest}
@@ -2286,6 +2286,9 @@ leveled_list axe {
 leveled_list blunt {
 	blunt_club 1
 	blunt_mace 2
+	frying_pan 3
+	pickaxe 4
+	blacksmith_hammer 4
 	blunt_orcish 5
 	blunt_morningstar 7
 	blunt_dwarven 10
@@ -2352,7 +2355,7 @@ leveled_list medium_armor {
 }
 
 leveled_list heavy_armor {
-	ah_splint_rusted 2
+	ah_splint_rusted 1 // this is level 2 but there is nothing worse, people needs to get something
 	ah_splint 5
 	ah_splint_hq 6
 	ah_splint_m 8

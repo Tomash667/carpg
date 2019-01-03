@@ -143,6 +143,7 @@ unit q_orkowie_straznik
 unit q_orkowie_boss
 unit q_orkowie_orc
 unit q_orkowie_orc_fighter
+unit q_orkowie_orc_warius
 unit q_orkowie_orc_hunter
 unit q_orkowie_orc_shaman
 unit q_orkowie_orc_chief

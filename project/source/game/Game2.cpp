@@ -3807,22 +3807,16 @@ void GiveItem(Unit& unit, const int*& ps, int count)
 	else if(type == PS_LEVELED_LIST)
 	{
 		const LeveledItemList& lis = *(const LeveledItemList*)(*ps);
-		int level = max(1, unit.level - 4);
 		for(int i = 0; i < count; ++i)
-			unit.AddItemAndEquipIfNone(lis.Get(Random(level, unit.level)));
+			unit.AddItemAndEquipIfNone(lis.Get(unit.level + Random(-2, 1)));
 	}
 	else if(type == PS_LEVELED_LIST_MOD)
 	{
 		int mod = *ps;
 		++ps;
 		const LeveledItemList& lis = *(const LeveledItemList*)(*ps);
-		int level = unit.level + mod;
-		if(level >= 1)
-		{
-			int l = max(1, level - 4);
-			for(int i = 0; i < count; ++i)
-				unit.AddItemAndEquipIfNone(lis.Get(Random(l, level)));
-		}
+		for(int i = 0; i < count; ++i)
+			unit.AddItemAndEquipIfNone(lis.Get(unit.level + Random(-2, 1) + mod));
 	}
 
 	++ps;
