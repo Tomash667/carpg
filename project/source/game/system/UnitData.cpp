@@ -74,6 +74,11 @@ void UnitData::CopyFrom(UnitData& ud)
 	trader = nullptr; // not copied
 }
 
+int UnitData::GetLevelDif(int level) const
+{
+	return min(abs(level - this->level.x), abs(level - this->level.y));
+}
+
 
 
 SpellList* SpellList::TryGet(Cstring id)

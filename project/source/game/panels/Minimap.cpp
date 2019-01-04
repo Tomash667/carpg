@@ -98,7 +98,7 @@ void Minimap::Draw(ControlDrawData* /*cdd*/)
 	for(vector<Unit*>::iterator it = L.local_ctx.units->begin(), end = L.local_ctx.units->end(); it != end; ++it)
 	{
 		Unit& u = **it;
-		if((u.IsAlive() || IS_SET(u.data->flags2, F2_MARK)) && !u.IsTeamMember() && (!lvl || lvl->IsTileVisible(u.pos)))
+		if((u.IsAlive() || u.mark) && !u.IsTeamMember() && (!lvl || lvl->IsTileVisible(u.pos)))
 		{
 			m1 = Matrix::Transform2D(&Vec2(16, 16), 0.f, &Vec2(0.25f, 0.25f), &Vec2(16, 16), (*it)->rot, &(PosToPoint(GetMapPosition(u)) - Vec2(16, 16)));
 			GUI.DrawSpriteTransform(tMiniunit[u.IsAlive() ? (u.IsEnemy(*game.pc->unit) ? 2 : 3) : 4], m1, Color::Alpha(140));

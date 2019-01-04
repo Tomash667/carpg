@@ -44,7 +44,7 @@ struct SpawnGroup
 	{
 	}
 
-	UnitData* GetSpawnLeader() const;
+	UnitData* GetSpawnLeader(int level) const;
 };
 
 //-----------------------------------------------------------------------------

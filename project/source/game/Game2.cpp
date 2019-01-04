@@ -5761,8 +5761,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 				}
 
 				// calculate defense
-				bool clean_hit = (hitted->action == A_PAIN);
-				float def = hitted->CalculateDefense(nullptr, !clean_hit);
+				float def = hitted->CalculateDefense();
 
 				// calculate damage
 				float dmg = CombatHelper::CalculateDamage(attack, def);
@@ -6378,8 +6377,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 	}
 
 	// calculate defense
-	bool clean_hit = (hitted.action == A_PAIN);
-	float def = hitted.CalculateDefense(nullptr, !clean_hit);
+	float def = hitted.CalculateDefense();
 
 	// calculate damage
 	float dmg = CombatHelper::CalculateDamage(attack, def);
@@ -6434,7 +6432,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 		}
 	}
 
-	return clean_hit ? ATTACK_CLEAN_HIT : ATTACK_HIT;
+	return hitted.action == A_PAIN ? ATTACK_CLEAN_HIT : ATTACK_HIT;
 }
 
 void Game::CastSpell(LevelContext& ctx, Unit& u)
@@ -7041,8 +7039,7 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 
 								// calculate attack & defense
 								float attack = float(trap.base->attack) * m;
-								bool clean_hit = (unit->action == A_PAIN);
-								float def = unit->CalculateDefense(nullptr, !clean_hit);
+								float def = unit->CalculateDefense();
 								float dmg = CombatHelper::CalculateDamage(attack, def);
 
 								// dŸwiêk trafienia

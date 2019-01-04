@@ -263,7 +263,7 @@ bool Game::LoadRequiredStats(uint& errors)
 							Error("Missing required unit group '%s'.", group_id.c_str());
 							++errors;
 						}
-						else if(!group->leader && need_leader)
+						else if(need_leader && !group->HaveLeader())
 						{
 							Error("Required unit group '%s' is missing leader.", group_id.c_str());
 							++errors;

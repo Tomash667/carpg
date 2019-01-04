@@ -63,19 +63,18 @@ void Unit::Release()
 //=================================================================================================
 float Unit::CalculateMaxHp() const
 {
-	float maxhp;
+	float maxhp = (float)data->hp + GetEffectSum(EffectId::Health);
 	if(IS_SET(data->flags2, F2_FIXED_STATS))
 		maxhp = (float)data->hp;
 	else
 	{
 		float v = 0.8f*Get(AttributeId::END) + 0.2f*Get(AttributeId::STR);
-		if(v >= 60.f)
-			maxhp = 250.f + (v - 50.f) * 25.f;
+		if(v >= 50.f)
+			maxhp += (v - 25) * 20.f;
 		else
-			maxhp = 500.f - (60.f - v) * 10.f;
+			maxhp += 500.f - (50.f - v) * 10.f;
 	}
-	float bonus = GetEffectSum(EffectId::Health);
-	return maxhp + bonus;
+	return maxhp;
 }
 
 //=================================================================================================
@@ -83,36 +82,37 @@ float Unit::CalculateMaxStamina() const
 {
 	if(IS_SET(data->flags2, F2_FIXED_STATS))
 		return (float)data->stamina;
-	return 50.f + (float)data->stamina + 2.5f * Get(AttributeId::END) + 2.f * Get(AttributeId::DEX);
+	float stamina = (float)data->stamina;
+	float v = 0.6f*Get(AttributeId::END) + 0.4f*Get(AttributeId::DEX);
+	if(v >= 90.f)
+		stamina += (v - 90.f) + 250.f;
+	else
+		stamina += 120.f + (v - 25.f) * 2;
+	return stamina;
 }
 
 //=================================================================================================
 float Unit::CalculateAttack() const
 {
-	if(HaveWeapon())
-		return CalculateAttack(&GetWeapon());
-	else if(IS_SET(data->flags2, F2_FIXED_STATS))
+	if(IS_SET(data->flags2, F2_FIXED_STATS))
 		return (float)data->attack;
+	else if(HaveWeapon())
+		return CalculateAttack(&GetWeapon());
 	else
 	{
 		float bonus = GetEffectSum(EffectId::MeleeAttack);
-		return (1.f + 1.f / 100 * Get(SkillId::UNARMED)) * (Get(AttributeId::STR) + Get(AttributeId::DEX) / 2) + bonus + level;
+		return Get(SkillId::UNARMED) + (Get(AttributeId::STR) + Get(AttributeId::DEX)) / 2 - 25.f + bonus;
 	}
 }
 
 //=================================================================================================
 float Unit::CalculateAttack(const Item* weapon) const
 {
-	assert(weapon);
-
-	if(IS_SET(data->flags2, F2_FIXED_STATS))
-	{
-		if(weapon->type == IT_WEAPON)
-
-	}
+	assert(weapon && !IS_SET(data->flags2, F2_FIXED_STATS));
 
 	int str = Get(AttributeId::STR),
 		dex = Get(AttributeId::DEX);
+	float attack = (float)data->attack;
 
 	if(weapon->type == IT_WEAPON)
 	{
@@ -123,8 +123,11 @@ float Unit::CalculateAttack(const Item* weapon) const
 			p = 1.f;
 		else
 			p = float(str) / w.req_str;
-		float bonus = GetEffectSum(EffectId::MeleeAttack);
-		return bonus + level + wi.str2dmg * str + wi.dex2dmg * dex + (w.dmg * p * (1.f + 1.f / 200 * (Get(SkillId::ONE_HANDED_WEAPON) + Get(wi.skill))));
+		attack += GetEffectSum(EffectId::MeleeAttack)
+			+ wi.str2dmg * float(str - 25)
+			+ wi.dex2dmg * float(dex - 25)
+			+ w.dmg * p
+			+ (Get(SkillId::ONE_HANDED_WEAPON) + Get(wi.skill)) / 2;
 	}
 	else if(weapon->type == IT_BOW)
 	{
@@ -134,8 +137,10 @@ float Unit::CalculateAttack(const Item* weapon) const
 			p = 1.f;
 		else
 			p = float(str) / b.req_str;
-		float bonus = GetEffectSum(EffectId::RangedAttack);
-		return bonus + level + ((float)dex + b.dmg * (1.f + 1.f / 100 * Get(SkillId::BOW))) * p;
+		attack += GetEffectSum(EffectId::RangedAttack)
+			+ float(dex - 25)
+			+ b.dmg * p
+			+ Get(SkillId::BOW);
 	}
 	else
 	{
@@ -145,9 +150,13 @@ float Unit::CalculateAttack(const Item* weapon) const
 			p = 1.f;
 		else
 			p = float(str) / s.req_str;
-		float bonus = GetEffectSum(EffectId::MeleeAttack);
-		return bonus + level + s.block / 3 * (1.f + Get(SkillId::SHIELD) / 200) + str * 0.5f;
+		attack += GetEffectSum(EffectId::MeleeAttack)
+			+ (s.block * p
+			+ Get(SkillId::SHIELD) / 200)
+			+ float(str) * 0.5f;
 	}
+
+	return attack;
 }
 
 //=================================================================================================
@@ -165,49 +174,31 @@ float Unit::CalculateBlock(const Item* shield) const
 	else
 		p = float(str) / s.req_str;
 
-	return float(s.block) * (1.f + 1.f / 100 * Get(SkillId::SHIELD)) * p;
+	return float(s.block) * p
+		+ float(str - 25)
+		+ Get(SkillId::SHIELD);
 }
 
 //=================================================================================================
-float Unit::CalculateDefense(const Item* armor, bool apply_dex) const
+float Unit::CalculateDefense(const Item* armor) const
 {
-	// base
-	float def;
-	if(IS_SET(data->flags2, F2_FIXED_STATS))
-		def = (float)data->def;
-	else
-		def = (Get(AttributeId::END) - 50.f) / 5 + data->def + level;
-
-	// armor defense
-	if(!armor)
-		armor = slots[SLOT_ARMOR];
-	if(armor)
+	float def = (float)data->def + GetEffectSum(EffectId::Defense);
+	if(!IS_SET(data->flags2, F2_FIXED_STATS))
 	{
-		const Armor& a = armor->ToArmor();
-		float skill_val = (float)Get(a.skill);
-		int str = Get(AttributeId::STR);
-		if(str < a.req_str)
-			skill_val *= float(str) / a.req_str;
-		def += a.def * (skill_val / 100 + 1);
-	}
+		def += float(Get(AttributeId::END) - 25);
 
-	// dexterity bonus
-	if(!IS_SET(data->flags2, F2_FIXED_STATS) && apply_dex)
-	{
-		LoadState load_state = GetArmorLoadState(armor);
-		if(load_state < LS_HEAVY)
+		if(!armor)
+			armor = slots[SLOT_ARMOR];
+		if(armor)
 		{
-			float dex = (float)Get(AttributeId::DEX);
-			float bonus = max(0.f, (dex - 50.f) / 10);
-			if(load_state == LS_MEDIUM)
-				bonus /= 2;
-			def += bonus;
+			const Armor& a = armor->ToArmor();
+			float skill_val = (float)Get(a.skill);
+			int str = Get(AttributeId::STR);
+			if(str < a.req_str)
+				skill_val *= float(str) / a.req_str;
+			def += a.def + skill_val;
 		}
 	}
-
-	float bonus = GetEffectSum(EffectId::Defense);
-	def += bonus;
-
 	return def;
 }
 
@@ -1522,6 +1513,8 @@ void Unit::Save(GameWriter& f, bool local)
 	f << weight;
 	f << (guard_target ? guard_target->refid : -1);
 	f << (summoner ? summoner->refid : -1);
+	if(live_state >= DYING)
+		f << mark;
 
 	assert((human_data != nullptr) == (data->type == UNIT_TYPE::HUMAN));
 	if(human_data)
@@ -1687,6 +1680,25 @@ void Unit::Load(GameReader& f, bool local)
 	if(LOAD_VERSION < V_0_5)
 		f.Skip<int>(); // old type
 	f >> level;
+	if(content::require_update && data->group != G_PLAYER)
+	{
+		if(data->upgrade)
+		{
+			// upgrade unit - previously there was 'mage' unit, now it is split into 'mage novice', 'mage' and 'master mage'
+			// calculate which one to use
+			int best_dif = data->GetLevelDif(level);
+			for(UnitData* u : *data->upgrade)
+			{
+				int dif = u->GetLevelDif(level);
+				if(dif < best_dif)
+				{
+					best_dif = dif;
+					data = u;
+				}
+			}
+		}
+		level = data->level.Clamp(level);
+	}
 	if(LOAD_VERSION >= V_DEV)
 	{
 		if(data->group == G_PLAYER)
@@ -1818,6 +1830,23 @@ void Unit::Load(GameReader& f, bool local)
 	}
 	else
 		summoner = nullptr;
+
+	if(live_state >= DYING)
+	{
+		if(LOAD_VERSION >= V_DEV)
+			f >> mark;
+		else
+		{
+			for(ItemSlot& item : items)
+			{
+				if(item.item && IS_SET(item.item->flags, ITEM_IMPORTANT))
+				{
+					mark = true;
+					break;
+				}
+			}
+		}
+	}
 
 	bubble = nullptr; // ustawianie przy wczytaniu SpeechBubble
 	changed = false;
@@ -1984,7 +2013,12 @@ void Unit::Load(GameReader& f, bool local)
 	}
 
 	// calculate new skills/attributes
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION >= V_DEV)
+	{
+		if(content::require_update)
+			CalculateStats();
+	}
+	else if(LOAD_VERSION >= V_0_4)
 	{
 		if(IsPlayer())
 		{
@@ -1999,14 +2033,14 @@ void Unit::Load(GameReader& f, bool local)
 					player->skill[i].apt = stats->skill[i] / 5;
 				}
 			}
+			player->RecalculateLevel();
 		}
-		player->RecalculateLevel(false);
 		CalculateStats();
 	}
-	else if(LOAD_VERSION < V_0_4)
+	else
 	{
 		if(IsPlayer())
-			player->RecalculateLevel(false);
+			player->RecalculateLevel();
 
 		StatProfile& profile = data->GetStatProfile();
 		profile.SetForNew(level, *stats);
@@ -2109,6 +2143,7 @@ void Unit::Write(BitStreamWriter& f)
 	f << netid;
 	f.WriteCasted<char>(in_arena);
 	f << (summoner != nullptr);
+	f << mark;
 
 	// hero/player data
 	byte b;
@@ -2264,6 +2299,7 @@ bool Unit::Read(BitStreamReader& f)
 		return false;
 	}
 	summoner = (summoner ? SUMMONER_PLACEHOLDER : nullptr);
+	f >> mark;
 
 	// hero/player data
 	byte type;
@@ -4474,6 +4510,23 @@ void Unit::Die(LevelContext* ctx, Unit* killer)
 		{
 			AddItem(Item::gold, (uint)gold);
 			gold = 0;
+		}
+
+		// mark if unit have important item in inventory
+		for(ItemSlot& item : items)
+		{
+			if(item.item && IS_SET(item.item->flags, ITEM_IMPORTANT))
+			{
+				mark = true;
+				if(Net::IsServer())
+				{
+					NetChange& c = Add1(Net::changes);
+					c.type = NetChange::MARK_UNIT;
+					c.unit = this;
+					c.id = 1;
+				}
+				break;
+			}
 		}
 
 		// notify about death

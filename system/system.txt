@@ -2,5 +2,7 @@
 // currently it is used for:
 //	+ recalculate item weights in inventory
 //	+ sort items in inventory when value changed
+//	+ recalculate units stats
+//	+ upgrade units
 
-version 1
+version 2

@@ -85,7 +85,8 @@ class UnitLoader : public ContentLoader
 		P_ATTACK_RANGE,
 		P_ARMOR_TYPE,
 		P_CLASS,
-		P_TRADER
+		P_TRADER,
+		P_UPGRADE
 	};
 
 	enum ProfileKeyword
@@ -288,7 +289,8 @@ class UnitLoader : public ContentLoader
 			{ "attack_range", P_ATTACK_RANGE },
 			{ "armor_type", P_ARMOR_TYPE },
 			{ "class", P_CLASS },
-			{ "trader", P_TRADER }
+			{ "trader", P_TRADER },
+			{ "upgrade", P_UPGRADE }
 		});
 
 		t.AddKeywords(G_MATERIAL, {
@@ -362,7 +364,6 @@ class UnitLoader : public ContentLoader
 			{ "backstab_res", F2_BACKSTAB_RES },
 			{ "magic_res50", F2_MAGIC_RES50 },
 			{ "magic_res25", F2_MAGIC_RES25 },
-			{ "mark", F2_MARK },
 			{ "guarded", F2_GUARDED },
 			{ "not_goblin", F2_NOT_GOBLIN }
 		});
@@ -877,6 +878,17 @@ class UnitLoader : public ContentLoader
 				}
 				if(!unit->trader->stock)
 					LoadError("Unit trader stock not set.");
+				break;
+			case P_UPGRADE:
+				{
+					const string& id = t.MustGetText();
+					UnitData* u = UnitData::TryGet(id);
+					if(!u)
+						t.Throw("Missing unit '%s'.", id.c_str());
+					if(!u->upgrade)
+						u->upgrade = new vector<UnitData*>;
+					u->upgrade->push_back(unit.Get());
+				}
 				break;
 			default:
 				t.Unexpected();
@@ -1691,20 +1703,20 @@ class UnitLoader : public ContentLoader
 				crc.Update(id);
 				t.Next();
 
+				bool is_leader = false;
 				if(t.IsKeyword(GK_LEADER, G_GROUP_KEYWORD))
 				{
-					group->leader = ud;
-					crc.Update(0);
+					is_leader = true;
+					t.Next();
 				}
-				else
-				{
-					int count = t.MustGetInt();
-					if(count < 1)
-						t.Throw("Invalid unit count %d.", count);
-					group->entries.push_back(UnitGroup::Entry(ud, count));
-					group->total += count;
-					crc.Update(count);
-				}
+
+				int count = t.MustGetInt();
+				if(count < 1)
+					t.Throw("Invalid unit count %d.", count);
+				group->entries.push_back(UnitGroup::Entry(ud, count, is_leader));
+				group->total += count;
+				crc.Update(count);
+				crc.Update(is_leader);
 			}
 			t.Next();
 		}

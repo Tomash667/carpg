@@ -150,7 +150,7 @@ void PlayerController::Update(float dt, bool is_local)
 		if(recalculate_level)
 		{
 			recalculate_level = false;
-			RecalculateLevel(true);
+			RecalculateLevel();
 		}
 	}
 
@@ -337,7 +337,7 @@ void PlayerController::Save(FileWriter& f)
 {
 	if(recalculate_level)
 	{
-		RecalculateLevel(true);
+		RecalculateLevel();
 		recalculate_level = false;
 	}
 
@@ -573,7 +573,7 @@ void PlayerController::Load(FileReader& f)
 		if(LOAD_VERSION < V_DEV)
 		{
 			UnitStats old_stats;
-			f.Read(old_stats);
+			old_stats.Load(f);
 			for(int i = 0; i < (int)AttributeId::MAX; ++i)
 				attrib[i].apt = (old_stats.attrib[i] - 50) / 5;
 			for(int i = 0; i < (int)SkillId::MAX; ++i)
@@ -717,16 +717,14 @@ void PlayerController::SetRequiredPoints()
 }
 
 //=================================================================================================
-void PlayerController::RecalculateLevel(bool apply)
+void PlayerController::RecalculateLevel()
 {
 	float new_level = unit->CalculateLevel();
 	if(new_level != level)
 	{
 		level = new_level;
 		unit->level = (int)level;
-		if(apply)
-			unit->RecalculateHp(true);
-		if(!IsLocal())
+		if(player_info && !IsLocal())
 			player_info->update_flags |= PlayerInfo::UF_LEVEL;
 	}
 }

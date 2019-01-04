@@ -181,6 +181,7 @@ struct NetChange
 		ADD_VISIBLE_EFFECT,
 		REMOVE_VISIBLE_EFFECT,
 		USE_ITEM, // player used item SERVER[int(id)-unit] CLIENT[int(id)-item index]
+		MARK_UNIT, // mark unit [int(netid)-unit, bool(id)-is marked]
 
 		MAX
 	} type;

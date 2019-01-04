@@ -159,7 +159,7 @@ public:
 	void Train(TrainWhat what, float value, int level);
 	void Train(bool is_skill, int id, TrainMode mode = TrainMode::Normal);
 	void SetRequiredPoints();
-	void RecalculateLevel(bool apply);
+	void RecalculateLevel();
 
 	void Save(FileWriter& f);
 	void Load(FileReader& f);

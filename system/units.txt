@@ -8,7 +8,7 @@ items mage {
 	if level 15
 	{
 		chance 10 p_hp3
-		chance 10 magic_scroll // !!!!!!!!!!!!!!!!!!!!! hero_mage też to ma?
+		chance 10 magic_scroll
 	}
 	else if level 10
 	{
@@ -281,14 +281,134 @@ profile shaman {
 	medium_armor 10
 }
 
+profile ai_fighter {
+	strength 60
+	endurance 60
+	dexterity 60
+	inteligence 50
+	wisdom 50
+	charisma 50
+	
+	one_handed_weapon 25
+	short_blade 25
+	long_blade 25
+	axe 25
+	blunt 25
+	bow 15
+	shield 25
+	light_armor 25
+	medium_armor 25
+	heavy_armor 25
+}
+
+profile ai_archer {
+	strength 60
+	endurance 60
+	dexterity 60
+	inteligence 50
+	wisdom 50
+	charisma 50
+	
+	one_handed_weapon 15
+	short_blade 15
+	long_blade 15
+	axe 15
+	blunt 15
+	bow 25
+	shield 25
+	light_armor 25
+	medium_armor 25
+	heavy_armor 25
+}
+
+profile ai_assassin {
+	strength 60
+	endurance 60
+	dexterity 60
+	inteligence 50
+	wisdom 50
+	charisma 50
+	
+	one_handed_weapon 35
+	short_blade 35
+	long_blade 35
+	axe 35
+	blunt 35
+	bow 30
+	shield 15
+	light_armor 15
+	medium_armor 15
+	heavy_armor 15
+}
+
+profile ai_tank {
+	strength 60
+	endurance 65
+	dexterity 60
+	inteligence 50
+	wisdom 50
+	charisma 50
+	
+	one_handed_weapon 15
+	short_blade 15
+	long_blade 15
+	axe 15
+	blunt 15
+	bow 15
+	shield 35
+	light_armor 35
+	medium_armor 35
+	heavy_armor 35
+}
+
+profile ai_shaman {
+	strength 55
+	endurance 55
+	dexterity 60
+	inteligence 60
+	wisdom 50
+	charisma 50
+	
+	one_handed_weapon 20
+	short_blade 20
+	long_blade 20
+	axe 20
+	blunt 20
+	bow 20
+	shield 20
+	light_armor 25
+	medium_armor 25
+	heavy_armor 25
+}
+
+profile ai_mage {
+	strength 40
+	endurance 50
+	dexterity 50
+	inteligence 60
+	wisdom 50
+	charisma 50
+	
+	one_handed_weapon 10
+	short_blade 10
+	long_blade 10
+	axe 10
+	blunt 10
+	bow 10
+	shield 10
+	light_armor 10
+	medium_armor 10
+	heavy_armor 10
+}
+
 //------------------------------------------------------------------------------
 // BASE PLAYER UNITS
 //------------------------------------------------------------------------------
 unit base_human {
 	mat body
-	flags {fixed_stats human}
-	stamina 200
+	flags human
 	group citizens
+	profile ai_fighter
 	walk_speed 1.5
 	run_speed 5
 	rot_speed 3
@@ -331,7 +451,6 @@ unit base_human {
 
 unit base_player : base_human {
 	group player
-	flags | ~fixed_stats
 }
 
 unit base_warrior : base_player {
@@ -370,9 +489,6 @@ unit base_rogue : base_player {
 //------------------------------------------------------------------------------
 unit blacksmith : base_human {
 	level 5
-	hp 500
-	attack 50
-	def 50
 	flags | {ai_stay dont_eat}
 	items {
 		al_blacksmith
@@ -389,9 +505,6 @@ unit blacksmith : base_human {
 
 unit merchant : base_human {
 	level 4
-	hp 400
-	attack 40
-	def 40
 	flags | {ai_stay ai_guard dont_eat}
 	items {
 		random {al_clothes2 al_clothes2b}
@@ -434,9 +547,6 @@ unit alchemist : merchant {
 
 unit citizen : base_human {
 	level 3
-	hp 300
-	attack 30
-	def 30
 	flags | {ai_wanders ai_drunkman contest_25}
 	gold {10 50}
 	dialog citizen
@@ -456,9 +566,6 @@ unit villager : citizen {
 
 unit mayor : base_human {
 	level 4
-	hp 400
-	attack 40
-	def 40
 	flags | {ai_clerk ai_stay dont_eat}
 	items {
 		random {al_clothes3 al_clothes3b}
@@ -473,13 +580,10 @@ unit soltys : mayor {
 }
 
 unit base_guard : base_human {
-	level 5
+	level {5 6}
 	flags | dont_eat
-	hp 500
-	attack 50 // 100
-	def 50 // 100
 	items guard
-	gold {20 100}
+	gold {{20 100} {25 110}}
 	dialog guard
 }
 
@@ -501,9 +605,6 @@ unit guard_move : base_guard {
 unit guard_captain : base_human {
 	level 10
 	flags | {ai_guard ai_stay dont_eat}
-	hp 1000
-	attack 100 // 200
-	def 100 // 200
 	items guard
 	gold {80 160}
 	dialog guard_captain
@@ -512,9 +613,6 @@ unit guard_captain : base_human {
 unit trainer : base_human {
 	level 10
 	flags | {ai_guard ai_stay dont_eat}
-	hp 1000
-	attack 100 // 200
-	def 100 // 200
 	items guard
 	gold {100 300}
 	dialog trainer
@@ -547,9 +645,6 @@ unit innkeeper : merchant {
 unit arena_master : base_human {
 	level 15
 	flags | {ai_guard ai_stay limited_rot dont_eat talk_at_competition}
-	hp 1500
-	attack 150 // 300
-	def 150 // 300
 	items guard
 	gold {100 300}
 	dialog arena_master
@@ -563,9 +658,6 @@ unit viewer : citizen {
 unit captive : base_human {
 	level 4
 	flags | {ai_wanders hero specific_name}
-	hp 400
-	attack 40 // 80
-	def 75 // 80
 	items {
 		if chance 40
 			random {al_clothes3 al_clothes3b}
@@ -579,11 +671,8 @@ unit captive : base_human {
 }
 
 unit traveler : base_human {
-	level 5
+	level {4 8}
 	flags | {ai_wanders contest_25}
-	hp 500
-	attack 50 // 100
-	def 50 // 100
 	items {
 		!light_armor
 		random {!long_blade !blunt !axe}
@@ -599,9 +688,6 @@ unit traveler : base_human {
 unit artur_drwal : base_human {
 	level 6
 	flags | {ai_stay hero specific_name contest_50}
-	hp 600
-	attack 60 // 120
-	def 60 // 120
 	items {
 		!light_armor
 		axe_battle
@@ -614,9 +700,6 @@ unit artur_drwal : base_human {
 unit messenger : base_human {
 	level 4
 	flags | ai_wanders
-	hp 400
-	attack 40 // 80
-	def 55 // 60
 	items {
 		al_clothes
 		random {!-1short_blade !-1axe !-1blunt !-1long_blade}
@@ -630,9 +713,6 @@ unit poslaniec_tartak : messenger {
 
 unit drwal : base_human {
 	level 5
-	hp 500
-	attack 50 // 100
-	def 50 // 100
 	items {
 		!light_armor
 		random {axe_small axe_battle}
@@ -645,9 +725,6 @@ unit drwal : base_human {
 unit inwestor : base_human {
 	level 10
 	flags | {ai_stay hero specific_name}
-	hp 750
-	attack 50
-	def 50
 	items {
 		random {al_clothes3 al_clothes3b}
 		dagger_rapier
@@ -664,9 +741,6 @@ unit poslaniec_kopalnia : messenger {
 unit gornik : base_human {
 	level 5
 	flags | miner
-	hp 500
-	attack 50
-	def 50
 	items {
 		pickaxe
 		random {al_leather al_padded al_clothes}
@@ -680,16 +754,14 @@ unit gornik_szef : gornik {
 	level 6
 	flags | {ai_stay ~miner}
 	hp 600
-	attack 60
-	def 60
 	gold {50 100}
 	dialog q_mine
 }
 
 unit pijak : base_human {
-	level {5 15}
+	level {3 20}
 	profile warrior
-	flags | {~fixed_stats contest drunkman_after_contest}
+	flags | {contest drunkman_after_contest}
 	items {
 		al_clothes
 		random {!-1short_blade !-1axe !-1blunt !-1long_blade}
@@ -702,9 +774,6 @@ unit pijak : base_human {
 unit mistrz_agentow : base_human {
 	level 12
 	flags | {ai_stay hero specific_name backstab dont_eat}
-	hp 1200
-	attack 120
-	def 120
 	items rogue
 	gold {100 300}
 	dialog q_bandits
@@ -719,9 +788,6 @@ unit guard_q_bandyci : base_guard {
 unit agent : base_human {
 	level 8
 	flags | {ai_stay dont_eat hero specific_name}
-	hp 800
-	attack 80
-	def 80
 	items rogue
 	gold {20 60}
 	dialog q_bandits
@@ -734,10 +800,8 @@ unit q_magowie_uczony : mayor {
 
 unit q_magowie_stary : base_human {
 	level 15
+	profile ai_mage
 	flags | {mage hero old drunk_mage}
-	hp 1200
-	attack 130 // 150
-	def 185 // 225
 	items mage
 	gold {150 300}
 	spells mage
@@ -751,11 +815,10 @@ unit q_orkowie_straznik : base_guard {
 }
 
 unit q_gobliny_szlachcic : mayor {
-	level 18
+	level 14
 	flags | {hero specific_name}
-	hp 2800
-	attack 60
-	def 125
+	hp 1400
+	attack -60
 	gold {250 500}
 	dialog q_goblins
 }
@@ -766,10 +829,8 @@ unit q_gobliny_poslaniec : messenger {
 
 unit q_gobliny_mag : base_human {
 	level 10
+	profile ai_mage
 	flags | mage
-	hp 800
-	attack 85 // 100
-	def 120 // 150
 	items mage
 	gold {150 300}
 	spells mage
@@ -779,7 +840,7 @@ unit q_gobliny_mag : base_human {
 unit q_zlo_kaplan : base_human {
 	level {5 20}
 	profile cleric
-	flags | {~fixed_stats hero ai_stay ai_train specific_name}
+	flags | {hero ai_stay ai_train specific_name}
 	items {
 		blunt_morningstar
 		shield_iron
@@ -798,10 +859,8 @@ unit q_zlo_kaplan : base_human {
 
 unit q_zlo_mag : base_human {
 	level 10
+	profile ai_mage
 	flags | mage
-	hp 800
-	attack 85 // 100
-	def 120 // 150
 	items mage
 	gold {150 300}
 	spells mage
@@ -814,7 +873,8 @@ unit q_zlo_mag : base_human {
 unit base_goblin {
 	mesh "goblin.qmsh"
 	mat body
-	flags {fixed_stats humanoid coward goblin_sounds orc_food}
+	flags {humanoid coward goblin_sounds orc_food}
+	profile ai_fighter
 	group goblins
 	stamina 200
 	walk_speed 1.75
@@ -844,10 +904,8 @@ unit base_goblin {
 }
 
 unit goblin : base_goblin {
-	level 3
-	hp 300
-	attack 30
-	def 55
+	level {3 4}
+	def 25
 	flags | ai_train
 	items {
 		chance 25 !shield
@@ -856,14 +914,13 @@ unit goblin : base_goblin {
 		chance 25 al_goblin
 		random 0 2 !orc_food
 	}
-	gold {5 15}
+	gold {{5 15} {6 18}}
 }
 
 unit goblin_hunter : base_goblin {
-	level 4
-	hp 400
-	attack 40
-	def 70
+	level {4 5}
+	profile ai_archer
+	def 30
 	flags | {archer ai_train}
 	items {
 		!bow
@@ -872,14 +929,12 @@ unit goblin_hunter : base_goblin {
 		chance 50 al_goblin
 		random 0 2 !orc_food
 	}
-	gold {10 20}
+	gold {{10 20} {12 24}}
 }
 
 unit goblin_fighter : base_goblin {
-	level 5
-	hp 500
-	attack 50
-	def 80
+	level {4 5}
+	def 30
 	flags | ai_train
 	items {
 		random {!long_blade !axe !blunt !short_blade}
@@ -888,14 +943,12 @@ unit goblin_fighter : base_goblin {
 		al_goblin
 		random 0 2 !orc_food
 	}
-	gold {10 20}
+	gold {{10 20} {12 24}}
 }
 
 unit goblin_chief : base_goblin {
-	level 6
-	hp 600
-	attack 60
-	def 100
+	level {6 7}
+	def 40
 	flags | leader
 	items {
 		chance 25 p_hp
@@ -904,19 +957,18 @@ unit goblin_chief : base_goblin {
 		random {!long_blade !axe !blunt !short_blade}
 		random 1 3 !orc_food
 	}
-	gold {50 100}
+	gold {{50 100} {60 120}}
 }
 
 unit q_gobliny_szlachcic2 : base_human {
 	level 14
-	flags | {archer hero ai_wanders leader specific_name boss sit_on_throne mark not_goblin}
-	hp 2800
-	attack 60 // 280
-	def 125 // 280
+	flags | {archer hero ai_wanders leader specific_name boss sit_on_throne not_goblin}
+	hp 1400
+	attack -60 // too good weapon
 	items {
 		dagger_assassin
 		bow_angel
-		al_chain_shirt_mith
+		!light_armor
 		p_hp3
 		2 p_hp2
 		p_dex
@@ -930,9 +982,6 @@ unit q_gobliny_szlachcic2 : base_human {
 unit q_gobliny_ochroniarz : base_human {
 	level 8
 	flags | {ai_train not_goblin}
-	hp 800
-	attack 80 // 160
-	def 80 // 160
 	items guard
 	gold {50 100}
 	dialog bodyguard
@@ -940,7 +989,7 @@ unit q_gobliny_ochroniarz : base_human {
 }
 
 unit tut_goblin : goblin {
-	flags | {ai_stay ai_guard mark ~ai_train}
+	flags | {ai_stay ai_guard ~ai_train}
 }
 
 //------------------------------------------------------------------------------
@@ -949,9 +998,9 @@ unit tut_goblin : goblin {
 unit base_orc {
 	mesh "ork.qmsh"
 	mat body
-	flags {fixed_stats humanoid orc_sounds orc_food}
+	flags {humanoid orc_sounds orc_food}
 	group orcs
-	stamina 200
+	profile ai_fighter
 	walk_speed 1.5
 	run_speed 5
 	rot_speed 3
@@ -987,9 +1036,7 @@ unit base_gorush : base_orc {
 unit q_orkowie_gorush : base_gorush {
 	level 10
 	flags | contest_50
-	hp 1000
-	attack 145 // 200
-	def 175 // 200
+	def 50
 	items {
 		p_hp
 		al_orc
@@ -1005,10 +1052,8 @@ unit q_orkowie_gorush : base_gorush {
 
 unit q_orkowie_gorush_woj : base_gorush {
 	level 15
-	hp 1500
-	attack 195 // 300
-	def 250 // 300
 	flags | {melee contest sit_on_throne}
+	def 100
 	items {
 		p_hp2
 		am_orc
@@ -1022,10 +1067,8 @@ unit q_orkowie_gorush_woj : base_gorush {
 
 unit q_orkowie_gorush_lowca : base_gorush {
 	level 15
-	hp 1400
-	attack 185 // 310
-	def 250 // 275
 	flags | {archer contest_50 sit_on_throne}
+	def 75
 	items {
 		p_hp2
 		bow_elven
@@ -1039,10 +1082,8 @@ unit q_orkowie_gorush_lowca : base_gorush {
 
 unit q_orkowie_gorush_szaman : base_gorush {
 	level 15
-	hp 1300
-	attack 140
-	def 225 // 250
 	flags | {mage sit_on_throne}
+	def 60
 	items {
 		p_hp
 		al_orc_shaman
@@ -1060,10 +1101,8 @@ unit q_orkowie_gorush_szaman : base_gorush {
 }
 
 unit orc : base_orc {
-	level 6
-	hp 600
-	attack 60 // 120
-	def 112 // 120
+	level {5 7}
+	def 51
 	flags | ai_train
 	items {
 		chance 5 p_hp
@@ -1072,7 +1111,7 @@ unit orc : base_orc {
 		random {!long_blade !axe !blunt}
 		random 1 3 !orc_food
 	}
-	gold {10 30}
+	gold {{10 30} {15 40}}
 }
 
 unit q_orkowie_orc : orc {
@@ -1081,10 +1120,8 @@ unit q_orkowie_orc : orc {
 }
 
 unit q_orkowie_slaby : base_orc {
-	level 5
-	hp 500
-	attack 50 // 100
-	def 100 // 100
+	level 4
+	def 40
 	flags | coward
 	items {
 		random {!-2long_blade !-2axe !-2blunt}
@@ -1096,11 +1133,10 @@ unit q_orkowie_slaby : base_orc {
 }
 
 unit orc_hunter : base_orc {
-	level 7
+	level {8 10}
+	profile ai_archer
 	flags | {archer ai_train}
-	hp 700
-	attack 70 // 140
-	def 124 // 140
+	def 73
 	items {
 		!bow
 		chance 75 !-2shield
@@ -1109,7 +1145,7 @@ unit orc_hunter : base_orc {
 		chance 66 al_orc
 		random 1 3 !orc_food
 	}
-	gold {25 50}
+	gold {{25 50} {35 70}}
 }
 
 unit q_orkowie_orc_hunter : orc_hunter {
@@ -1118,11 +1154,9 @@ unit q_orkowie_orc_hunter : orc_hunter {
 }
 
 unit orc_fighter : base_orc {
-	level 8
+	level {8 10}
 	flags | {ai_train melee}
-	hp 800
-	attack 80 // 160
-	def 140 // 160
+	def 52
 	items {
 		random {!long_blade !axe !blunt}
 		random {am_orc al_orc}
@@ -1130,7 +1164,7 @@ unit orc_fighter : base_orc {
 		chance 10 p_hp2
 		random 1 3 !orc_food
 	}
-	gold {25 50}
+	gold {{25 50} {35 70}}
 }
 
 unit q_orkowie_orc_fighter : orc_fighter {
@@ -1144,14 +1178,13 @@ unit q_orkowie_kowal : q_orkowie_orc_fighter {
 		stock orc_blacksmith
 		groups {weapon bow shield armor}
 	}
-	gold {100 200}
+	gold {250 500}
 }
 
 unit orc_warius : base_orc {
-	level 9
-	hp 1050
-	attack 80 // 160
-	def 150 // 200
+	level {9 12}
+	profile ai_tank
+	def 55
 	flags | {ai_train melee}
 	items {
 		random {!axe !blunt}
@@ -1160,6 +1193,7 @@ unit orc_warius : base_orc {
 		chance 15 p_hp2
 		random 1 3 !orc_food
 	}
+	gold {{40 80}{50 100}}
 }
 
 unit q_orkowie_orc_warius : orc_warius {
@@ -1168,11 +1202,9 @@ unit q_orkowie_orc_warius : orc_warius {
 }
 
 unit orc_chief : base_orc {
-	level 10
+	level {10 14}
 	flags | {leader melee}
-	hp 1000
-	attack 100 // 200
-	def 150 // 200
+	def 65
 	items {
 		random {!long_blade !axe !blunt}
 		am_orc
@@ -1180,7 +1212,7 @@ unit orc_chief : base_orc {
 		chance 20 p_hp2
 		random 2 4 !orc_food
 	}
-	gold {100 200}
+	gold {{100 200} {125 250}}
 }
 
 unit q_orkowie_orc_chief : orc_chief {
@@ -1189,10 +1221,9 @@ unit q_orkowie_orc_chief : orc_chief {
 }
 
 unit orc_shaman : base_orc {
-	level 8
-	hp 720
-	attack 90 // 120
-	def 100 // 120
+	level {8 10}
+	profile ai_shaman
+	def 60
 	flags | mage
 	items {
 		al_orc_shaman
@@ -1200,7 +1231,7 @@ unit orc_shaman : base_orc {
 		chance 5 p_hp
 		random 1 3 !orc_food
 	}
-	gold {30 60}
+	gold {{25 50} {35 70}}
 	spells orc_shaman
 	tex {
 		"ork_szaman.jpg"
@@ -1216,10 +1247,10 @@ unit q_orkowie_orc_shaman : orc_shaman {
 
 unit q_orkowie_boss : base_orc {
 	level 16
-	flags | {leader melee boss sit_on_throne yell mark guarded}
-	hp 3200
-	attack 160 // 320
-	def 270 // 320
+	flags | {leader melee boss sit_on_throne yell guarded}
+	hp 1600
+	attack -40
+	def 110
 	items {
 		am_orc
 		axe_ripper
@@ -1396,22 +1427,20 @@ unit skeleton_mage : base_skeleton {
 }
 
 unit necromancer : base_human {
-	level 5
+	level {5 8}
+	profile ai_mage
 	flags | {mage leader gray_hair}
-	hp 500
-	attack 40 // 50
-	def 25 // 75
 	items {
 		al_necromancer
 		!wand
 		random 1 3 raw_meat
 	}
-	gold {15 30}
+	gold {{15 30} {30 60}}
 	spells {
 		non_combat 1
 		{magic_bolt 0}
-		{raise 10}
-		{exploding_skull 15}
+		{raise 9}
+		{exploding_skull 13}
 	}
 	group undead
 	blood black
@@ -1423,28 +1452,21 @@ unit necromancer : base_human {
 }
 
 unit necromancer2 : necromancer {
-	level 10
-	hp 1000
-	attack 80 // 100
-	def 100 // 150
-	gold {75 150}
+	level {9 12}
+	gold {{65 130}{90 180}}
+	upgrade necromancer // ver 0.8
 }
 
 unit necromancer3 : necromancer {
 	level 15
-	hp 1500
-	attack 120 // 150
-	def 150 // 200
-	gold {120 240}
+	gold {{100 200}{120 240}}
+	upgrade necromancer // ver 0.8
 }
 
 unit base_undead : base_human {
-	level 8
+	level {8 12}
 	flags | {undead dont_escape blunt_res25 poison_res gray_hair dont_eat}
-	hp 800
-	attack 80 // 160
-	def 80 // 160
-	gold {40 80}
+	gold {{40 80} {50 100}}
 	group undead
 	blood black
 	sounds {
@@ -1470,11 +1492,8 @@ unit undead_archer : base_undead {
 }
 
 unit evil_cleric : base_human {
-	level 8
+	level {8 12}
 	flags | {leader gray_hair ai_train}
-	hp 800
-	attack 80 // 160
-	def 80 // 160
 	items {
 		!blunt
 		!shield
@@ -1482,12 +1501,12 @@ unit evil_cleric : base_human {
 		chance 10 p_hp2
 		random 1 3 raw_meat
 	}
-	gold {50 100}
+	gold {{50 100}{75 150}}
 	spells {
 		non_combat 1
 		null
 		{drain 5}
-		{raise 10}
+		{raise 12}
 	}
 	group undead
 	blood black
@@ -1499,10 +1518,7 @@ unit evil_cleric : base_human {
 }
 
 unit evil_cleric2 : evil_cleric {
-	level 16
-	hp 1600
-	attack 160 // 320
-	def 160 // 320
+	level {13 16}
 	items {
 		!blunt
 		!shield
@@ -1510,16 +1526,14 @@ unit evil_cleric2 : evil_cleric {
 		chance 10 p_hp3
 		random 1 3 raw_meat
 	}
-	gold {200 300}
+	gold {{80 160}{200 300}}
+	upgrade evil_cleric // ver 0.8
 }
 
 unit q_zlo_boss : base_human {
 	level 20
-	flags | {leader dont_escape poison_res gray_hair melee boss xar magic_res25 backstab_res mark dont_eat stun_res}
-	hp 4000
-	stamina 300
-	attack 180 // 400
-	def 180 // 400
+	flags | {leader dont_escape poison_res gray_hair melee boss xar magic_res25 backstab_res dont_eat stun_res}
+	hp 2000
 	items {
 		blunt_skullsmasher
 		ah_black_armor
@@ -1559,28 +1573,23 @@ unit base_bandit : base_human {
 }
 
 unit thief : base_bandit {
-	level 4
+	level {3 5}
+	profile ai_assassin
 	flags | ai_train
-	hp 400
-	
-	attack 40 // 80
-	def 40 // 80
 	items {
 		!short_blade
 		!light_armor
 		chance 5 p_hp
 		chance 5 golden_cup
 		random 0 2 !normal_food
+		parcel // FIXME
 	}
-	gold {15 30}
+	gold {{15 30} {20 40}}
 }
 
 unit bandit : base_bandit {
-	level 6
+	level {6 8}
 	flags | ai_train
-	hp 600
-	attack 60 // 120
-	def 60 // 120
 	items {
 		if chance 50 {
 			!medium_armor
@@ -1594,15 +1603,13 @@ unit bandit : base_bandit {
 		chance 10 p_hp
 		random 1 3 !normal_food
 	}
-	gold {20 40}
+	gold {{20 40} {25 50}}
 }
 
 unit bandit_archer : base_bandit {
-	level 6
+	level {6 8}
+	profile ai_archer
 	flags | {archer ai_train}
-	hp 600
-	attack 60 // 120
-	def 60 // 120
 	items {
 		random {!-2long_blade !-2axe !-2blunt !-2short_blade}
 		!light_armor
@@ -1610,15 +1617,12 @@ unit bandit_archer : base_bandit {
 		chance 5 p_hp
 		random 1 3 !normal_food
 	}
-	gold {20 40}
+	gold {{20 40} {25 50}}
 }
 
 unit bandit_chief : base_bandit {
-	level 7
+	level {7 10}
 	flags | leader
-	hp 700
-	attack 70 // 140
-	def 70 // 140
 	items {
 		!medium_armor
 		random {!long_blade !axe !blunt}
@@ -1627,15 +1631,13 @@ unit bandit_chief : base_bandit {
 		chance 15 p_hp2
 		random 2 4 !normal_food
 	}
-	gold {100 200}
+	gold {{100 200} {120 240}}
 }
 
 unit ruffian : base_bandit {
-	level 8
+	level {8 10}
+	profile ai_tank
 	flags | ai_train
-	hp 850
-	attack 60 // 140
-	def 90 // 170
 	items {
 		random {!axe !blunt}
 		!heavy_armor
@@ -1643,16 +1645,13 @@ unit ruffian : base_bandit {
 		chance 10 p_hp2
 		random 1 3 !normal_food
 	}
-	gold {30 60}
+	gold {{30 60} {40 80}}
 }
 
 unit assassin : base_bandit {
-	level 9
+	level {9 11}
+	profile ai_assassin
 	flags | {ai_train backstab}
-	hp 900
-	stamina 225
-	attack 110 // 200
-	def 70 // 160
 	items {
 		if chance 75 {
 			!short_blade
@@ -1666,24 +1665,21 @@ unit assassin : base_bandit {
 		chance 10 p_hp2
 		random 1 3 !normal_food
 	}
-	gold {125 250}
+	gold {{30 60} {40 80}}
 }
 
 unit ruffian_hegemon : ruffian {
-	level 10
+	level {10 12}
+	profile ai_tank
 	flags | {~ai_train leader}
-	hp 1050
-	attack 70 // 170
-	def 120 // 220
-	gold {100 200}
+	gold {{120 240} {180 360}}
 }
 
 unit q_bandyci_szef : base_bandit {
 	level 15
-	flags | {ai_wanders melee boss backstab mark guarded}
-	hp 2250
-	attack 120 // 300
-	def 150 // 300
+	hp 750
+	attack -30 // too good weapon
+	flags | {ai_wanders melee boss backstab guarded}
 	items {
 		dagger_spinesheath
 		!light_armor
@@ -1701,40 +1697,31 @@ unit q_bandyci_szef : base_bandit {
 // MAGES & GOLEMS
 //------------------------------------------------------------------------------
 unit mage : base_human {
-	level 5
+	level {5 8}
+	profile ai_mage
 	flags | mage
-	hp 400
-	attack 40 // 50
-	def 55 // 75
 	items mage
-	gold {15 30}
+	gold {{15 30}{45 90}}
 	spells mage
 	dialog mage_bodyguard
 	group mages
 }
 
 unit mage2 : mage {
-	level 10
-	hp 800
-	attack 85 // 100
-	def 120 // 150
-	gold {50 100}
+	level {9 12}
+	gold {{50 100}{75 150}}
+	upgrade mage // ver 0.8
 }
 
 unit mage3 : mage {
-	level 15
-	hp 1200
-	attack 130 // 150
-	def 185 // 225
-	gold {100 300}
+	level {13 15}
+	gold {{80 160}{100 300}}
+	upgrade mage // ver 0.8
 }
 
 unit mage_guard : base_human {
-	level 5
+	level {5 8}
 	flags | ai_train
-	hp 500
-	attack 50 // 100
-	def 50 // 100
 	items {
 		if chance 33 {
 			!light_armor
@@ -1754,7 +1741,7 @@ unit mage_guard : base_human {
 		chance 5 p_hp
 		random 1 3 !normal_food
 	}
-	gold {25 50}
+	gold {{25 50}{40 80}}
 	dialog mage_bodyguard
 	group mages
 }
@@ -1835,11 +1822,11 @@ unit q_magowie_golem : golem_stone {
 }
 
 unit q_magowie_boss : base_human {
-	level 20
-	flags | {mage old boss mark guarded}
-	hp 2880
-	attack 70 // 270
-	def 220 // 270
+	level 18
+	profile ai_mage
+	flags | {mage old boss guarded}
+	hp 1440
+	def 150
 	items {
 		sword_semur
 		al_mage4
@@ -2001,14 +1988,10 @@ unit rat {
 }
 
 unit wild_hunter : base_human {
-	level 6
-	flags {fixed_stats human archer leader}
-	hp 600
-	stamina 225
-	attack 60 // 120
-	def 60 // 120
+	level {6 10}
+	flags {human archer leader}
 	items hunter
-	gold {40 80}
+	gold {{40 80} {50 100}}
 	group animals
 	tex {
 		null
@@ -2017,20 +2000,8 @@ unit wild_hunter : base_human {
 	}
 }
 
-unit wild_hunter2 : wild_hunter {
-	level 10
-	hp 1000
-	attack 100 // 200
-	def 100 // 200
-	gold {50 100}
-}
-
 unit q_szaleni_szaleniec : wild_hunter {
 	level 15
-	hp 1500
-	attack 150 // 300
-	def 150 // 300
-	flags | mark
 	items {
 		p_hp2
 		random {!-2long_blade !-2axe !-2blunt !-2short_blade}
@@ -2040,6 +2011,7 @@ unit q_szaleni_szaleniec : wild_hunter {
 		q_szaleni_kamien
 		random 1 3 !normal_food
 	}
+	gold {75 150}
 	dialog q_crazies
 }
 
@@ -2048,7 +2020,7 @@ unit q_szaleni_szaleniec : wild_hunter {
 //------------------------------------------------------------------------------
 unit base_crazy : base_human {
 	level {5 20}
-	flags | {~fixed_stats crazy hero tournament ai_wanders}
+	flags | {crazy hero tournament ai_wanders}
 	dialog crazy
 	group crazies
 }
@@ -2088,10 +2060,8 @@ unit crazy_rogue : base_crazy {
 
 unit crazy_cook : base_crazy {
 	level 8
-	flags {fixed_stats crazy human}
-	hp 800
-	attack 125 // 160
-	def 80 // 160
+	flags {crazy human}
+	profile ai_fighter
 	items {
 		frying_pan
 		!light_armor
@@ -2108,7 +2078,7 @@ unit crazy_cook : base_crazy {
 //------------------------------------------------------------------------------
 unit base_hero : base_human {
 	level {5 20}
-	flags | {~fixed_stats hero ai_wanders tournament}
+	flags | {hero ai_wanders tournament}
 	dialog hero
 }
 
@@ -2150,11 +2120,9 @@ unit hero_rogue : base_hero {
 //------------------------------------------------------------------------------
 unit tomashu : base_human {
 	level 25
-	flags | {fixed_stats dont_escape tomashu leader secret immortal sit_on_throne melee magic_res50 backstab_res poison_res dont_eat stun_res}
-	hp 5000
-	stamina 400
-	attack 250 // 500
-	def 280 // 500
+	flags | {dont_escape tomashu leader secret immortal sit_on_throne melee magic_res50 backstab_res poison_res dont_eat stun_res}
+	profile ai_fighter
+	hp 2500
 	items {
 		sword_forbidden
 		ah_black_armor
@@ -2210,7 +2178,7 @@ group goblins {
 	goblin 10
 	goblin_hunter 7
 	goblin_fighter 7
-	goblin_chief 2
+	goblin_chief leader 2
 }
 
 group orcs {
@@ -2218,7 +2186,7 @@ group orcs {
 	orc_hunter 6
 	orc_fighter 6
 	orc_warius 4
-	orc_chief 2
+	orc_chief leader 2
 	orc_shaman 3
 }
 
@@ -2226,10 +2194,10 @@ group bandits {
 	thief 3
 	bandit 4
 	bandit_archer 3
-	bandit_chief 1
+	bandit_chief leader 1
 	ruffian 2
 	assassin 2
-	ruffian_hegemon 1
+	ruffian_hegemon leader 1
 }
 
 group crazies {
@@ -2250,26 +2218,29 @@ group undead {
 }
 
 group necros {
-	necromancer 3
+	necromancer leader 3
+	necromancer2 leader 3
+	necromancer3 leader 3
 	undead_guard 6
 	undead_archer 6
 	group undead
 }
 
 group evils {
-	evil_cleric 3
+	evil_cleric leader 3
+	evil_cleric2 leader 3
 	group undead
 }
 
 group mages {
-	mage 1
-	mage2 1
-	mage3 1
+	mage leader 1
+	mage2 leader  1
+	mage3 leader 1
 	mage_guard 2
 }
 
 group golems {
-	golem_stone 2
+	golem_stone 1
 	golem_iron 1
 }
 
@@ -2367,3 +2338,9 @@ alias citizen citzen
 alias bandit_chief bandit_hegemon 
 alias guard_wagon guard2
 alias guard_merchant guard3
+// removed quest units in 0.8 (map to normal units)
+alias mage mage_q
+alias evil_cleric evil_cleric_q
+alias bandit_chief bandit_hegemon_q
+alias orc_chief orc_chief_q
+alias goblin_chief goblin_chief_q

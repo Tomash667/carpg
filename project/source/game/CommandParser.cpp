@@ -389,13 +389,18 @@ void CommandParser::ListPerks(PlayerController* pc)
 
 void CommandParser::ListStats(Unit* u)
 {
-	Msg("Health bonus: %+g", u->GetEffectSum(EffectId::Health));
-	Msg("Regeneration bonus: %+g/sec", u->GetEffectSum(EffectId::Regeneration));
-	Msg("Natural healing mod: x%g", u->GetEffectMul(EffectId::NaturalHealingMod));
-	Msg("Attack bonus, melee: %+g,  ranged: %+g", u->GetEffectSum(EffectId::MeleeAttack), u->GetEffectSum(EffectId::RangedAttack));
-	Msg("Defense bonus: %+g", u->GetEffectSum(EffectId::Defense));
+	int hp = int(u->hp);
+	if(hp == 0 && u->hp > 0)
+		hp = 1;
+	Msg("Health: %d/%d (bonus: %+g, regeneration: %+g/sec, natural: x%g)", hp, (int)u->hpmax, u->GetEffectSum(EffectId::Health),
+		u->GetEffectSum(EffectId::Regeneration), u->GetEffectMul(EffectId::NaturalHealingMod));
+	Msg("Stamina: %d/%d", (int)u->stamina, (int)u->stamina_max);
+	Msg("Melee attack: %s (bonus: %+g), ranged: %s (bonus: %+g)", u->HaveWeapon() ? Format("%d", (int)u->CalculateAttack()) : "-",
+		u->GetEffectSum(EffectId::MeleeAttack), u->HaveBow() ? Format("%d", (int)u->CalculateAttack(&u->GetBow())) : "-", u->GetEffectSum(EffectId::RangedAttack));
+	Msg("Defense %d (bonus: %+g), block: %s", (int)u->CalculateDefense(), u->GetEffectSum(EffectId::Defense),
+		u->HaveShield() ? Format("%d", (int)u->CalculateBlock()) : "");
 	Msg("Mobility: %d (bonus %+g)", (int)u->CalculateMobility(), u->GetEffectSum(EffectId::Mobility));
-	Msg("Carry mod: x%g", u->GetEffectMul(EffectId::Carry));
+	Msg("Carry: %g/%g (mod: x%g)", float(u->weight) / 10, float(u->weight_max) / 10, u->GetEffectMul(EffectId::Carry));
 	Msg("Magic resistance: %d%%", (int)((1.f - u->CalculateMagicResistance()) * 100));
 	Msg("Poison resistance: %d%%", (int)((1.f - u->GetEffectMul(EffectId::PoisonResistance)) * 100));
 }

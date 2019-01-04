@@ -34,7 +34,7 @@ enum ITEM_FLAGS
 	ITEM_MAGIC_RESISTANCE_25 = 1 << 14,
 	ITEM_GROUND_MESH = 1 << 15, // when on ground is displayed as mesh not as bag
 	ITEM_CRYSTAL_SOUND = 1 << 16,
-	ITEM_IMPORTANT = 1 << 17, // drawn on map as gold bag in minimap
+	ITEM_IMPORTANT = 1 << 17, // drawn on map as gold bag in minimap, mark dead units with this item
 	ITEM_TEX_ONLY = 1 << 18,
 	ITEM_NOT_MERCHANT = 1 << 19,
 	ITEM_NOT_RANDOM = 1 << 20,

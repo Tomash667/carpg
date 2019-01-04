@@ -1893,6 +1893,17 @@ void InventoryPanel::LootItem(int index, uint count)
 				c.unit = unit;
 			}
 		}
+		if(IS_SET(slot.item->flags, ITEM_IMPORTANT))
+		{
+			unit->mark = false;
+			if(Net::IsServer())
+			{
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::MARK_UNIT;
+				c.unit = unit;
+				c.id = 0;
+			}
+		}
 	}
 	slot.count -= count;
 	if(slot.count == 0)

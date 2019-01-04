@@ -124,7 +124,7 @@ enum UNIT_FLAGS2
 	F2_BACKSTAB_RES = 1 << 26, // 50% odpornoœci na ataki w plecy
 	F2_MAGIC_RES50 = 1 << 27, // 50% odpornoœci na magiê
 	F2_MAGIC_RES25 = 1 << 28, // 25% odpornoœci na magiê
-	F2_MARK = 1 << 29, // rysuje trupa na minimapie
+	// unused (1 << 29)
 	F2_GUARDED = 1 << 30, // jednostki wygenerowane w tym samym pokoju chroni¹ go (dzia³a tylko w podziemiach na Event::unit_to_spawn)
 	F2_NOT_GOBLIN = 1 << 31, // nie ma tekstów goblina
 };
@@ -238,16 +238,18 @@ struct UnitData
 	ResourceState state;
 	Class clas;
 	TraderInfo* trader;
+	vector<UnitData*>* upgrade;
 
-	UnitData() : mesh(nullptr), mat(MAT_BODY), level(0), stat_profile(nullptr), hp(100), stamina(0), attack(0), def(0), dmg_type(DMG_BLUNT), flags(0),
+	UnitData() : mesh(nullptr), mat(MAT_BODY), level(0), stat_profile(nullptr), hp(0), stamina(0), attack(0), def(0), dmg_type(DMG_BLUNT), flags(0),
 		flags2(0), flags3(0), spells(nullptr), gold(0), gold2(0), dialog(nullptr), group(G_CITIZENS), walk_speed(1.5f), run_speed(5.f), rot_speed(3.f),
 		width(0.3f), attack_range(1.f), blood(BLOOD_RED), sounds(nullptr), frames(nullptr), tex(nullptr), armor_type(ArmorUnitType::NONE),
-		item_script(nullptr), idles(nullptr), type(UNIT_TYPE::HUMAN), state(ResourceState::NotLoaded), clas(Class::INVALID), trader(nullptr)
+		item_script(nullptr), idles(nullptr), type(UNIT_TYPE::HUMAN), state(ResourceState::NotLoaded), clas(Class::INVALID), trader(nullptr), upgrade(nullptr)
 	{
 	}
 	~UnitData()
 	{
 		delete trader;
+		delete upgrade;
 	}
 
 	float GetRadius() const { return width; }
@@ -261,6 +263,7 @@ struct UnitData
 	}
 	UnitStats* GetStats(int level);
 	void CopyFrom(UnitData& ud);
+	int GetLevelDif(int level) const;
 
 	static SetContainer<UnitData> units;
 	static std::map<string, UnitData*> aliases;

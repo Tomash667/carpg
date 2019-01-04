@@ -3,7 +3,7 @@ relatedAttributes = "Related attributes"
 
 attribute str {
 	name "Strength"
-	desc "\tIncreases the damage dealt in melee combat, the maximum carry capacity and health slightly. Required for the efficient use of heavy items.\n\tUsing heavy weapons and armor or carrying heavy items trains strength.\n\tAffected skills: one-handed weapons, long blades, blunt weapons, axes, shields, heavy armor."
+	desc "\tIncreases the damage dealt in melee combat, block power, the maximum carry capacity and health slightly. Required for the efficient use of heavy items.\n\tUsing heavy weapons and armor or carrying heavy items trains strength.\n\tAffected skills: one-handed weapons, long blades, blunt weapons, axes, shields, heavy armor."
 }
 attribute end {
 	name "Endurance"

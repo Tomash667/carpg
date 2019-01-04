@@ -1991,7 +1991,7 @@ other q_magowie_kula2 {
 	value 5000
 	tex "magic_sphere.png"
 	type other
-	flags {not_shop not_chest not_random important}
+	flags {not_shop not_chest not_random}
 }
 
 other q_orkowie_klucz {
@@ -2023,7 +2023,7 @@ other sekret_kartka {
 	value 0
 	tex "piece_of_paper.png"
 	type other
-	flags {not_shop not_chest not_random important}
+	flags {not_shop not_chest not_random}
 }
 
 other sekret_kartka2 {
@@ -2031,7 +2031,7 @@ other sekret_kartka2 {
 	value 0
 	tex "piece_of_paper.png"
 	type other
-	flags {not_shop not_chest not_random important}
+	flags {not_shop not_chest not_random}
 }
 
 other q_main_letter {
@@ -2039,7 +2039,7 @@ other q_main_letter {
 	value 0
 	tex "list.png"
 	type other
-	flags {not_shop not_chest not_random important}
+	flags {not_shop not_chest not_random}
 }
 
 other letter {
@@ -2047,7 +2047,7 @@ other letter {
 	value 0
 	tex "list.png"
 	type other
-	flags {quest not_shop not_chest not_random important dont_drop}
+	flags {quest not_shop not_chest not_random dont_drop}
 }
 
 other parcel {
@@ -2063,7 +2063,7 @@ other wanted_letter {
 	value 0
 	tex "wanted.png"
 	type other
-	flags {quest not_shop not_chest not_random important}
+	flags {quest not_shop not_chest not_random}
 }
 
 //------------------------------------------------------------------------------
@@ -2135,7 +2135,7 @@ book q_zlo_ksiega {
 	value 100
 	tex "summoning.png"
 	scheme book
-	flags {alpha not_shop not_chest not_random important}
+	flags {alpha not_shop not_chest not_random}
 	runic 1
 }
 

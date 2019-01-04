@@ -1134,15 +1134,26 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						if(player.action != PlayerController::Action_LootChest && player.action != PlayerController::Action_LootContainer)
 						{
 							player.action_unit->weight -= slot.item->weight*count;
-							if(player.action == PlayerController::Action_LootUnit && slot.item == player.action_unit->used_item)
+							if(player.action == PlayerController::Action_LootUnit)
 							{
-								player.action_unit->used_item = nullptr;
-								// removed item from hand, send info to other players
-								if(N.active_players > 2)
+								if(slot.item == player.action_unit->used_item)
 								{
+									player.action_unit->used_item = nullptr;
+									// removed item from hand, send info to other players
+									if(N.active_players > 2)
+									{
+										NetChange& c = Add1(Net::changes);
+										c.type = NetChange::REMOVE_USED_ITEM;
+										c.unit = player.action_unit;
+									}
+								}
+								if(IS_SET(slot.item->flags, ITEM_IMPORTANT))
+								{
+									player.action_unit->mark = false;
 									NetChange& c = Add1(Net::changes);
-									c.type = NetChange::REMOVE_USED_ITEM;
+									c.type = NetChange::MARK_UNIT;
 									c.unit = player.action_unit;
+									c.id = 0;
 								}
 							}
 						}
@@ -3377,6 +3388,10 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 		case NetChange::STUN:
 			f << c.unit->netid;
 			f << c.f[0];
+			break;
+		case NetChange::MARK_UNIT:
+			f << c.unit->netid;
+			f << (c.id != 0);
 			break;
 		default:
 			Error("Update server: Unknown change %d.", c.type);
@@ -6159,6 +6174,25 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 						unit->mesh_inst->frame_end_info2 = false;
 						unit->mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
 					}
+				}
+			}
+			break;
+		// mark unit
+		case NetChange::MARK_UNIT:
+			{
+				int netid;
+				bool mark;
+				f >> netid;
+				f >> mark;
+				if(!f)
+					N.StreamError("Update client: Broken MARK_UNIT.");
+				else
+				{
+					Unit* unit = L.FindUnit(netid);
+					if(!unit)
+						N.StreamError("Update client: MARK_UNIT, missing unit %d.", netid);
+					else
+						unit->mark = mark;
 				}
 			}
 			break;
