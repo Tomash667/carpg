@@ -241,6 +241,8 @@ bool Game::ReadPlayerData(BitStreamReader& f)
 
 	unit->player->Init(*unit, true);
 
+	unit->stats = new UnitStats;
+	unit->stats->fixed = false;
 	unit->stats->Read(f);
 	f >> unit->gold;
 	f >> unit->stamina;

@@ -195,7 +195,7 @@ profile hunter {
 	short_blade 15
 	long_blade 15
 	axe 15
-	blunt 15
+	blunt 10
 	bow 20
 	shield 10
 	light_armor 20
@@ -229,7 +229,7 @@ profile rogue {
 	wisdom 50
 	charisma 55
 	
-	one_handed_weapon 15
+	one_handed_weapon 20
 	short_blade 20
 	long_blade 15
 	axe 10
@@ -249,14 +249,14 @@ profile warrior {
 	wisdom 50
 	charisma 50
 	
-	one_handed_weapon 20
-	short_blade 20
-	long_blade 20
-	axe 20
-	blunt 20
+	one_handed_weapon 15
+	short_blade 10
+	long_blade 15
+	axe 15
+	blunt 15
 	bow 15
 	shield 15
-	light_armor 15
+	light_armor 10
 	medium_armor 15
 	heavy_armor 15
 	haggle 0
@@ -1582,7 +1582,6 @@ unit thief : base_bandit {
 		chance 5 p_hp
 		chance 5 golden_cup
 		random 0 2 !normal_food
-		parcel // FIXME
 	}
 	gold {{15 30} {20 40}}
 }
@@ -1901,9 +1900,9 @@ unit worg : wolf {
 
 unit white_wolf_sum : wolf {
 	level {5 15}
-	hp 500
-	attack 100
-	def 100
+	hp 500+100
+	attack 100+20
+	def 100+20
 	tex {
 		"white_wolf.jpg"
 		null

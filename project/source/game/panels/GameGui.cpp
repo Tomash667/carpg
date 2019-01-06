@@ -448,7 +448,7 @@ void GameGui::DrawFront()
 	if(sidebar > 0.f)
 	{
 		int max = (int)SideButtonId::Max;
-		if(Net::IsOnline())
+		if(!Net::IsOnline())
 			--max;
 		int total = offset * max;
 		spos.y = GUI.wnd_size.y - (GUI.wnd_size.y - total) / 2 - offset;

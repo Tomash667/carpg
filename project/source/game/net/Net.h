@@ -222,7 +222,7 @@ public:
 	bool ReadLevelData(BitStreamReader& f);
 
 	SystemAddress server, ping_adr;
-	bool was_client;
+	bool was_client, join_lan;
 
 	//****************************************************************************
 	BitStream& StreamStart(Packet* packet, StreamLogType type);

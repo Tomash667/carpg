@@ -681,6 +681,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	game.server_ip = cfg.GetString("server_ip", "");
 	game.mp_timeout = Clamp(cfg.GetFloat("timeout", 10.f), 1.f, 3600.f);
 	N.server_lan = cfg.GetBool("server_lan");
+	N.join_lan = cfg.GetBool("join_lan");
 
 	// szybki start
 	if(game.quickstart == QUICKSTART_NONE)

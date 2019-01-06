@@ -587,6 +587,14 @@ class UnitLoader : public ContentLoader
 			case P_HP:
 				unit->hp = t.MustGetInt();
 				crc.Update(unit->hp);
+				if(t.QuerySymbol('+'))
+				{
+					t.Next();
+					t.AssertSymbol('+');
+					t.Next();
+					unit->hp_lvl = t.MustGetInt();
+					crc.Update(unit->hp_lvl);
+				}
 				break;
 			case P_STAMINA:
 				unit->stamina = t.MustGetInt();
@@ -595,10 +603,26 @@ class UnitLoader : public ContentLoader
 			case P_ATTACK:
 				unit->attack = t.MustGetInt();
 				crc.Update(unit->attack);
+				if(t.QuerySymbol('+'))
+				{
+					t.Next();
+					t.AssertSymbol('+');
+					t.Next();
+					unit->attack_lvl = t.MustGetInt();
+					crc.Update(unit->attack_lvl);
+				}
 				break;
 			case P_DEF:
 				unit->def = t.MustGetInt();
 				crc.Update(unit->def);
+				if(t.QuerySymbol('+'))
+				{
+					t.Next();
+					t.AssertSymbol('+');
+					t.Next();
+					unit->def_lvl = t.MustGetInt();
+					crc.Update(unit->def_lvl);
+				}
 				break;
 			case P_ITEMS:
 				if(t.IsSymbol('{'))

@@ -1395,3 +1395,15 @@ cstring Tokenizer::GetTextRest()
 		return "";
 	return str->c_str() + normal_seek.pos;
 }
+
+//=================================================================================================
+SeekData& Tokenizer::Query()
+{
+	static SeekData tmp;
+	tmp.token = normal_seek.token;
+	tmp.pos = normal_seek.pos;
+	tmp.line = normal_seek.line;
+	tmp.charpos = normal_seek.charpos;
+	DoNext(tmp, false);
+	return tmp;
+}

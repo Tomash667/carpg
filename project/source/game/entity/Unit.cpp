@@ -65,7 +65,7 @@ float Unit::CalculateMaxHp() const
 {
 	float maxhp = (float)data->hp + GetEffectSum(EffectId::Health);
 	if(IS_SET(data->flags2, F2_FIXED_STATS))
-		maxhp = (float)data->hp;
+		maxhp = (float)(data->hp + data->hp_lvl * (level - data->level.x));
 	else
 	{
 		float v = 0.8f*Get(AttributeId::END) + 0.2f*Get(AttributeId::STR);
@@ -95,7 +95,7 @@ float Unit::CalculateMaxStamina() const
 float Unit::CalculateAttack() const
 {
 	if(IS_SET(data->flags2, F2_FIXED_STATS))
-		return (float)data->attack;
+		return (float)(data->attack + data->attack_lvl * (level - data->level.x));
 	else if(HaveWeapon())
 		return CalculateAttack(&GetWeapon());
 	else
@@ -199,6 +199,8 @@ float Unit::CalculateDefense(const Item* armor) const
 			def += a.def + skill_val;
 		}
 	}
+	else
+		def += data->def_lvl * (level - data->level.x);
 	return def;
 }
 
