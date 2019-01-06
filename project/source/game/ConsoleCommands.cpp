@@ -129,7 +129,9 @@ void Game::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_LIST_PERKS, "list_perks", "display selected unit perks", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_SELECT, "select", "select and display currently selected target (select [me/show/target] - use target or show by default)", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_LIST_STATS, "list_stats", "display selected unit stats", F_GAME | F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_ADD_LEARNING_POINTS, "add_learning_points", "add learning pint to selected unit [count - default 1]", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_ADD_LEARNING_POINTS, "add_learning_points", "add learning point to selected unit [count - default 1]", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_CLEAN_LEVEL, "clean_level", "remove all corpses and blood from level (clean_level [building_id])", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_ARENA, "arena", "spawns enemies on arena (example arena 3 rat vs 2 wolf)", F_GAME | F_CHEAT));
 
 	// verify all commands are added
 #ifdef _DEBUG
@@ -1934,6 +1936,38 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							c << (byte)CMD_ADD_LEARNING_POINTS
 								<< pc_data.selected_unit->netid
 								<< count;
+						}
+					}
+					break;
+				case CMD_CLEAN_LEVEL:
+					{
+						int building_id = -2;
+						if(t.Next())
+							building_id = t.MustGetInt();
+						if(Net::IsLocal())
+							L.CleanLevel(building_id);
+						else
+						{
+							NetChange& c = Add1(Net::changes);
+							c.type = NetChange::CLEAN_LEVEL;
+							c.id = building_id;
+						}
+					}
+					break;
+				case CMD_ARENA:
+					if(!L.HaveArena())
+						Msg("Arena required inside location.");
+					else
+					{
+						cstring s = t.GetTextRest();
+						if(Net::IsLocal())
+							cmdp->ArenaCombat(s);
+						else
+						{
+							NetChange& c = Add1(Net::changes);
+							c.type = NetChange::CHEAT_ARENA;
+							c.str = StringPool.Get();
+							*c.str = s;
 						}
 					}
 					break;

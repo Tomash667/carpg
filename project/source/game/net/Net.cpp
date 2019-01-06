@@ -3004,6 +3004,31 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				c.unit = &unit;
 			}
 			break;
+		// player used cheat 'arena'
+		case NetChange::CHEAT_ARENA:
+			{
+				const string& str = f.ReadString1();
+				if(!f)
+					N.StreamError("Update server: Broken CHEAT_ARENA from %s.", info.name.c_str());
+				else if(!info.devmode)
+					N.StreamError("Update server: Player %s used CHEAT_ARENA without devmode.", info.name.c_str());
+				else
+					cmdp->ParseStringCommand(CMD_ARENA, str, info);
+			}
+			break;
+		// clean level from blood and corpses
+		case NetChange::CLEAN_LEVEL:
+			{
+				int building_id;
+				f >> building_id;
+				if(!f)
+					N.StreamError("Update server: Broken CLEAN_LEVEL from %s.", info.name.c_str());
+				else if(!info.devmode)
+					N.StreamError("Update server: Player %s used CLEAN_LEVEL without devmode.", info.name.c_str());
+				else
+					L.CleanLevel(building_id);
+			}
+			break;
 		// invalid change
 		default:
 			N.StreamError("Update server: Invalid change type %u from %s.", type, info.name.c_str());
@@ -3198,6 +3223,7 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 		case NetChange::REMOVE_UNIT:
 		case NetChange::REMOVE_TRAP:
 		case NetChange::TRIGGER_TRAP:
+		case NetChange::CLEAN_LEVEL:
 			f << c.id;
 			break;
 		case NetChange::TALK:
@@ -3618,7 +3644,7 @@ void Game::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 	if(IS_SET(info.update_flags, PlayerInfo::UF_LEARNING_POINTS))
 		f << info.pc->learning_points;
 	if(IS_SET(info.update_flags, PlayerInfo::UF_LEVEL))
-		f << info.pc->level;
+		f << info.u->level;
 }
 
 //=================================================================================================
@@ -6196,6 +6222,17 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				}
 			}
 			break;
+		// someone used cheat 'clean_level'
+		case NetChange::CLEAN_LEVEL:
+			{
+				int building_id;
+				f >> building_id;
+				if(!f)
+					N.StreamError("Update client: Broken CLEAN_LEVEL.");
+				else
+					L.CleanLevel(building_id);
+			}
+			break;
 		// invalid change
 		default:
 			Warn("Update client: Unknown change type %d.", type);
@@ -7134,8 +7171,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 			f.Skip<float>();
 		else
 		{
-			f.Read(pc->level);
-			pc->unit->level = (int)pc->level;
+			f.Read(pc->unit->level);
 			if(!f)
 			{
 				N.StreamError("Update single client: Broken ID_PLAYER_CHANGES at UF_LEVEL.");
@@ -7338,6 +7374,10 @@ void Game::WriteClientChanges(BitStreamWriter& f)
 				f << size;
 				f.Write(content, size);
 			}
+			break;
+		case NetChange::CHEAT_ARENA:
+			f << *c.str;
+			StringPool.Free(c.str);
 			break;
 		default:
 			Error("UpdateClient: Unknown change %d.", c.type);

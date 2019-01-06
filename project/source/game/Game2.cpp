@@ -1582,7 +1582,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				u.HideWeapon();
 			else
 			{
-				WeaponType bron = pc->ostatnia;
+				WeaponType bron = pc->last_weapon;
 
 				// ustal któr¹ broñ wyj¹œæ
 				if(bron == W_NONE)
@@ -1615,7 +1615,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 				if(bron != W_NONE)
 				{
-					pc->ostatnia = bron;
+					pc->last_weapon = bron;
 					if(pc->next_action != NA_NONE)
 					{
 						pc->next_action = NA_NONE;
@@ -1641,7 +1641,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 							u.action = A_NONE;
 							u.weapon_taken = u.weapon_hiding;
 							u.weapon_hiding = W_NONE;
-							pc->ostatnia = u.weapon_taken;
+							pc->last_weapon = u.weapon_taken;
 							u.weapon_state = WS_TAKEN;
 							u.mesh_inst->Deactivate(1);
 						}
@@ -1650,7 +1650,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 							// schowa³ broñ za pas, zacznij wyci¹gaæ
 							u.weapon_taken = u.weapon_hiding;
 							u.weapon_hiding = W_NONE;
-							pc->ostatnia = u.weapon_taken;
+							pc->last_weapon = u.weapon_taken;
 							u.weapon_state = WS_TAKING;
 							u.animation_state = 0;
 							CLEAR_BIT(u.mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
@@ -1709,7 +1709,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			{
 				// broñ schowana, zacznij wyjmowaæ
 				u.mesh_inst->Play(u.GetTakeWeaponAnimation(true), PLAY_ONCE | PLAY_PRIO1, 1);
-				u.weapon_taken = pc->ostatnia = W_ONE_HANDED;
+				u.weapon_taken = pc->last_weapon = W_ONE_HANDED;
 				u.weapon_state = WS_TAKING;
 				u.action = A_TAKE_WEAPON;
 				u.animation_state = 0;
@@ -1739,7 +1739,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						u.action = A_NONE;
 						u.weapon_taken = u.weapon_hiding;
 						u.weapon_hiding = W_NONE;
-						pc->ostatnia = u.weapon_taken;
+						pc->last_weapon = u.weapon_taken;
 						u.weapon_state = WS_TAKEN;
 						u.mesh_inst->Deactivate(1);
 					}
@@ -1748,7 +1748,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						// schowa³ broñ za pas, zacznij wyci¹gaæ
 						u.weapon_taken = u.weapon_hiding;
 						u.weapon_hiding = W_NONE;
-						pc->ostatnia = u.weapon_taken;
+						pc->last_weapon = u.weapon_taken;
 						u.weapon_state = WS_TAKING;
 						u.animation_state = 0;
 						CLEAR_BIT(u.mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
@@ -1785,12 +1785,12 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					{
 						// tak na prawdê to jeszcze nic nie zrobi³ wiêc mo¿na anuluowaæ
 						u.mesh_inst->Play(u.GetTakeWeaponAnimation(true), PLAY_ONCE | PLAY_PRIO1, 1);
-						pc->ostatnia = u.weapon_taken = W_ONE_HANDED;
+						pc->last_weapon = u.weapon_taken = W_ONE_HANDED;
 					}
 					else
 					{
 						// ju¿ wyj¹³ wiêc trzeba schowaæ i dodaæ info
-						pc->ostatnia = u.weapon_taken = W_ONE_HANDED;
+						pc->last_weapon = u.weapon_taken = W_ONE_HANDED;
 						u.weapon_hiding = W_BOW;
 						u.weapon_state = WS_HIDING;
 						u.animation_state = 0;
@@ -1818,7 +1818,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				// broñ wyjêta
 				if(u.weapon_taken == W_BOW)
 				{
-					pc->ostatnia = u.weapon_taken = W_ONE_HANDED;
+					pc->last_weapon = u.weapon_taken = W_ONE_HANDED;
 					u.weapon_hiding = W_BOW;
 					u.weapon_state = WS_HIDING;
 					u.animation_state = 0;
@@ -1848,7 +1848,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			if(u.weapon_state == WS_HIDDEN)
 			{
 				// broñ schowana, zacznij wyjmowaæ
-				u.weapon_taken = pc->ostatnia = W_BOW;
+				u.weapon_taken = pc->last_weapon = W_BOW;
 				u.weapon_state = WS_TAKING;
 				u.action = A_TAKE_WEAPON;
 				u.animation_state = 0;
@@ -1880,7 +1880,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						u.action = A_NONE;
 						u.weapon_taken = u.weapon_hiding;
 						u.weapon_hiding = W_NONE;
-						pc->ostatnia = u.weapon_taken;
+						pc->last_weapon = u.weapon_taken;
 						u.weapon_state = WS_TAKEN;
 						u.mesh_inst->Deactivate(1);
 					}
@@ -1889,7 +1889,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						// schowa³ ³uk, zacznij wyci¹gaæ
 						u.weapon_taken = u.weapon_hiding;
 						u.weapon_hiding = W_NONE;
-						pc->ostatnia = u.weapon_taken;
+						pc->last_weapon = u.weapon_taken;
 						u.weapon_state = WS_TAKING;
 						u.animation_state = 0;
 						CLEAR_BIT(u.mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
@@ -1925,13 +1925,13 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					if(u.animation_state == 0)
 					{
 						// tak na prawdê to jeszcze nic nie zrobi³ wiêc mo¿na anuluowaæ
-						pc->ostatnia = u.weapon_taken = W_BOW;
+						pc->last_weapon = u.weapon_taken = W_BOW;
 						u.mesh_inst->Play(NAMES::ani_take_bow, PLAY_ONCE | PLAY_PRIO1, 1);
 					}
 					else
 					{
 						// ju¿ wyj¹³ wiêc trzeba schowaæ i dodaæ info
-						pc->ostatnia = u.weapon_taken = W_BOW;
+						pc->last_weapon = u.weapon_taken = W_BOW;
 						u.weapon_hiding = W_ONE_HANDED;
 						u.weapon_state = WS_HIDING;
 						u.animation_state = 0;
@@ -1960,7 +1960,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				if(u.weapon_taken == W_ONE_HANDED)
 				{
 					u.mesh_inst->Play(u.GetTakeWeaponAnimation(true), PLAY_BACK | PLAY_ONCE | PLAY_PRIO1, 1);
-					pc->ostatnia = u.weapon_taken = W_BOW;
+					pc->last_weapon = u.weapon_taken = W_BOW;
 					u.weapon_hiding = W_ONE_HANDED;
 					u.weapon_state = WS_HIDING;
 					u.animation_state = 0;
@@ -3672,7 +3672,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	{
 		u->stats = new UnitStats;
 		u->stats->fixed = false;
-		base.GetStatProfile().Set(u->level, u->stats->attrib, u->stats->skill);
+		base.GetStatProfile().Set(-1, u->stats->attrib, u->stats->skill);
 	}
 	else
 		u->stats = base.GetStats(u->level);

@@ -15,7 +15,7 @@ std::map<string, UnitData*> UnitData::aliases;
 UnitStats* UnitData::GetStats(int level)
 {
 	assert(group != G_PLAYER);
-	if(!stat_profile || stat_profile->fixed)
+	if(!stat_profile)
 		level = -1;
 	typedef std::map<std::pair<StatProfile*, int>, UnitStats*> M;
 	std::pair<M::iterator, bool> const& result = UnitStats::shared_stats.insert(M::value_type(std::make_pair(stat_profile, level), nullptr));
@@ -156,6 +156,11 @@ void UnitData::Validate(uint& err)
 		{
 			++err;
 			Error("Test: Missing unit '%s' name.", unit->id.c_str());
+		}
+		if(!IS_SET(unit->flags2, F2_FIXED_STATS) && !unit->stat_profile)
+		{
+			++err;
+			Error("Test: Unit '%s' have no fixed stats nor profile.", unit->id.c_str());
 		}
 	}
 }

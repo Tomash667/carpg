@@ -92,7 +92,7 @@ struct Skill
 	static Skill skills[(int)SkillId::MAX];
 	static Skill* Find(const string& id);
 	static void Validate(uint& err);
-	static float GetModifier(int base, int& weight);
+	static float GetModifier(int base);
 };
 
 //-----------------------------------------------------------------------------

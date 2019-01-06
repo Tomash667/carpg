@@ -1984,7 +1984,7 @@ unit rat {
 		"idle2"
 	}
 	width 0.2
-	attack_range 0.75
+	attack_range 0.4
 }
 
 unit wild_hunter : base_human {

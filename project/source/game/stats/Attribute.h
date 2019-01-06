@@ -31,5 +31,5 @@ struct Attribute
 	static Attribute attributes[(int)AttributeId::MAX];
 	static Attribute* Find(Cstring id);
 	static void Validate(uint& err);
-	static float GetModifier(int base, int& mod);
+	static float GetModifier(int base);
 };

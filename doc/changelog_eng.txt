@@ -11,7 +11,7 @@ Version 0.8 (???):
 + effects system (feats gives effects)
 + key to toggle run/walk
 + loading traders stock from file, refreshing stock every 10 days, not when entering location
-+ new commands (add_effect, remove_effect, list_effects, add_perk, remove_perk, list_perks, select, list_stats, add_learning_points)
++ new commands (add_effect, remove_effect, list_effects, add_perk, remove_perk, list_perks, select, list_stats, add_learning_points, arena, clean_level) !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 + magic scroll item
 + new mobility calculations
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! NOT ADDED FROM HERE

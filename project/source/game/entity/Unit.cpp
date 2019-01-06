@@ -1249,8 +1249,13 @@ void Unit::AddItemAndEquipIfNone(const Item* item, uint count)
 //=================================================================================================
 void Unit::CalculateLoad()
 {
-	float mod = GetEffectMul(EffectId::Carry);
-	weight_max = (int)(mod * (Get(AttributeId::STR) * 15));
+	if(IS_SET(data->flags2, F2_FIXED_STATS))
+		weight_max = 999;
+	else
+	{
+		float mod = GetEffectMul(EffectId::Carry);
+		weight_max = (int)(mod * (Get(AttributeId::STR) * 15));
+	}
 }
 
 //=================================================================================================
@@ -2024,7 +2029,7 @@ void Unit::Load(GameReader& f, bool local)
 		{
 			StatProfile& profile = data->GetStatProfile();
 			UnitStats old_stats;
-			profile.Set(0, old_stats);
+			profile.Set(-1, old_stats);
 			for(int i = 0; i < (int)SkillId::MAX; ++i)
 			{
 				if(stats->skill[i] == -2)
@@ -2049,7 +2054,7 @@ void Unit::Load(GameReader& f, bool local)
 		if(IsPlayer())
 		{
 			UnitStats old_stats;
-			profile.Set(0, old_stats);
+			profile.Set(-1, old_stats);
 			for(int i = 0; i < (int)AttributeId::MAX; ++i)
 				player->attrib[i].apt = (stats->attrib[i] - 50) / 5;
 			for(int i = 0; i < (int)SkillId::MAX; ++i)
@@ -3051,7 +3056,7 @@ void Unit::ClearInventory()
 	weapon_hiding = W_NONE;
 	weapon_state = WS_HIDDEN;
 	if(player)
-		player->ostatnia = W_NONE;
+		player->last_weapon = W_NONE;
 }
 
 //=================================================================================================
@@ -3454,55 +3459,10 @@ bool Unit::CanAct()
 }
 
 //=================================================================================================
-float Unit::CalculateLevel()
-{
-	UnitData* ud = ClassInfo::classes[(int)GetClass()].unit_data;
-
-	float tlevel = 0.f;
-	float weight_sum = 0.f;
-	StatProfile& profile = ud->GetStatProfile();
-
-	// calculate player level based on attributes and skills that are important for that class
-	for(int i = 0; i < (int)AttributeId::MAX; ++i)
-	{
-		int base = profile.attrib[i] - 50;
-		if(base > 0 && stats->attrib[i] > 0)
-		{
-			int dif = stats->attrib[i] - profile.attrib[i], weight;
-			float mod = Attribute::GetModifier(base, weight);
-			tlevel += (float(dif) / mod) * weight * 5;
-			weight_sum += weight;
-		}
-	}
-
-	for(int i = 0; i < (int)SkillId::MAX; ++i)
-	{
-		int base = profile.skill[i];
-		if(base > 0 && stats->skill[i] > 0)
-		{
-			int dif = stats->skill[i] - base, weight;
-			float mod = Skill::GetModifier(base, weight);
-			tlevel += (float(dif) / mod) * weight * 5;
-			weight_sum += weight;
-		}
-	}
-
-	// round down to 0.1
-	return floor(tlevel * 10 / weight_sum) / 10;
-}
-
-//=================================================================================================
 int Unit::Get(SkillId s) const
 {
 	int index = (int)s;
 	int value = stats->skill[index];
-
-	// apply attributes bonus
-	Skill& info = Skill::skills[index];
-	if(info.attrib2 == AttributeId::NONE)
-		value += (Get(info.attrib) - 50) / 5;
-	else
-		value += (Get(info.attrib) + Get(info.attrib2) - 100) / 10;
 
 	// apply skill synergy
 	switch(s)

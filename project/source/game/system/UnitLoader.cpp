@@ -89,11 +89,6 @@ class UnitLoader : public ContentLoader
 		P_UPGRADE
 	};
 
-	enum ProfileKeyword
-	{
-		PK_FIXED
-	};
-
 	enum FrameKeyword
 	{
 		FK_ATTACKS,
@@ -424,8 +419,6 @@ class UnitLoader : public ContentLoader
 
 		for(uint i = 0; i < (uint)SkillId::MAX; ++i)
 			t.AddKeyword(Skill::skills[i].id, i, G_SKILL);
-
-		t.AddKeyword("fixed", PK_FIXED, G_PROFILE_KEYWORD);
 
 		t.AddKeywords(G_SOUND_TYPE, {
 			{ "see_enemy", SOUND_SEE_ENEMY },
@@ -923,7 +916,6 @@ class UnitLoader : public ContentLoader
 	//=================================================================================================
 	void ParseProfile(Ptr<StatProfile>& profile)
 	{
-		profile->fixed = false;
 		for(int i = 0; i < (int)AttributeId::MAX; ++i)
 			profile->attrib[i] = 10;
 		for(int i = 0; i < (int)SkillId::MAX; ++i)
@@ -935,20 +927,15 @@ class UnitLoader : public ContentLoader
 
 		while(!t.IsSymbol('}'))
 		{
-			if(t.IsKeyword(PK_FIXED, G_PROFILE_KEYWORD))
-			{
-				t.Next();
-				profile->fixed = t.MustGetBool();
-				crc.Update(0);
-				crc.Update(profile->fixed);
-			}
-			else if(t.IsKeywordGroup(G_ATTRIBUTE))
+			if(t.IsKeywordGroup(G_ATTRIBUTE))
 			{
 				int a = t.MustGetKeywordId(G_ATTRIBUTE);
 				t.Next();
 				int val = t.MustGetInt();
 				if(val < 1)
 					t.Throw("Invalid attribute '%s' value %d.", Attribute::attributes[a].id, val);
+				else if(val % 5 != 0)
+					t.Throw("Attribute '%s' value %d must be divisible by 5.", Attribute::attributes[a].id, val);
 				profile->attrib[a] = val;
 				crc.Update(1);
 				crc.Update(a);
@@ -961,6 +948,8 @@ class UnitLoader : public ContentLoader
 				int val = t.MustGetInt();
 				if(val < -1)
 					t.Throw("Invalid skill '%s' value %d.", Skill::skills[s].id, val);
+				else if(val % 5 != 0)
+					t.Throw("Skill '%s' value %d must be divisible by 5.", Skill::skills[s].id, val);
 				profile->skill[s] = val;
 				crc.Update(2);
 				crc.Update(s);
@@ -968,8 +957,12 @@ class UnitLoader : public ContentLoader
 			}
 			else
 			{
-				int a = PK_FIXED, b = G_PROFILE_KEYWORD, c = G_ATTRIBUTE, d = G_SKILL;
-				t.StartUnexpected().Add(tokenizer::T_KEYWORD, &a, &b).Add(tokenizer::T_KEYWORD_GROUP, &c).Add(tokenizer::T_KEYWORD_GROUP, &d).Throw();
+				int a = G_PROFILE_KEYWORD, b = G_ATTRIBUTE, c = G_SKILL;
+				t.StartUnexpected()
+					.Add(tokenizer::T_KEYWORD, &a)
+					.Add(tokenizer::T_KEYWORD_GROUP, &b)
+					.Add(tokenizer::T_KEYWORD_GROUP, &c)
+					.Throw();
 			}
 
 			t.Next();

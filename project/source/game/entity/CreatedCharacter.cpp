@@ -225,7 +225,7 @@ int CreatedCharacter::Read(BitStreamReader& f)
 //=================================================================================================
 void CreatedCharacter::Apply(PlayerController& pc)
 {
-	pc.unit->data->GetStatProfile().Set(0, *pc.unit->stats);
+	pc.unit->data->GetStatProfile().Set(-1, *pc.unit->stats);
 
 	// reset blocked stats, apply skill bonus
 	for(int i = 0; i < (int)AttributeId::MAX; ++i)

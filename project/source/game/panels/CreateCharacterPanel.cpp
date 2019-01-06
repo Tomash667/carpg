@@ -1161,7 +1161,7 @@ void CreateCharacterPanel::ClassChanged()
 	int y = 0;
 
 	StatProfile& profile = ci.unit_data->GetStatProfile();
-	profile.Set(0, *unit->stats);
+	profile.Set(-1, *unit->stats);
 	unit->CalculateStats();
 
 	// attributes

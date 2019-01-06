@@ -979,3 +979,30 @@ void Arena::RewardExp(Unit* dead_unit)
 		Team.AddExp(50 * dead_unit->level, to_reward);
 	}
 }
+
+//=================================================================================================
+void Arena::SpawnUnit(const vector<Enemy>& units)
+{
+	InsideBuilding* arena = L.GetArena();
+
+	L.CleanLevel(arena->ctx.building_id);
+
+	for(const Enemy& unit : units)
+	{
+		for(uint i = 0; i < unit.count; ++i)
+		{
+			if(unit.side)
+			{
+				Unit* u = L.SpawnUnitInsideArea(arena->ctx, arena->arena2, *unit.unit, unit.level);
+				u->rot = 0.f;
+				u->in_arena = 1;
+			}
+			else
+			{
+				Unit* u = L.SpawnUnitInsideArea(arena->ctx, arena->arena1, *unit.unit, unit.level);
+				u->rot = PI;
+				u->in_arena = 0;
+			}
+		}
+	}
+}

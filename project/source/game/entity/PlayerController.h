@@ -93,7 +93,7 @@ struct PlayerController : public HeroPlayerCommon
 	};
 
 	PlayerInfo* player_info;
-	float level, move_tick, last_dmg, last_dmg_poison, dmgc, poison_dmgc, idle_timer, action_recharge, action_cooldown;
+	float move_tick, last_dmg, last_dmg_poison, dmgc, poison_dmgc, idle_timer, action_recharge, action_cooldown;
 	StatData skill[(int)SkillId::MAX], attrib[(int)AttributeId::MAX];
 	byte action_key;
 	NextAction next_action;
@@ -107,7 +107,7 @@ struct PlayerController : public HeroPlayerCommon
 			int index;
 		};
 	} next_action_data;
-	WeaponType ostatnia;
+	WeaponType last_weapon;
 	bool godmode, noclip, is_local, recalculate_level, leaving_event, always_run;
 	int id, free_days, action_charges, learning_points, exp, exp_need, exp_level;
 	//----------------------
@@ -143,7 +143,6 @@ struct PlayerController : public HeroPlayerCommon
 	}
 	~PlayerController();
 
-	float CalculateAttack() const;
 	void Rest(int days, bool resting, bool travel = false);
 
 	void Init(Unit& _unit, bool partial = false);
@@ -159,6 +158,7 @@ public:
 	void Train(TrainWhat what, float value, int level);
 	void Train(bool is_skill, int id, TrainMode mode = TrainMode::Normal);
 	void SetRequiredPoints();
+	int CalculateLevel();
 	void RecalculateLevel();
 
 	void Save(FileWriter& f);
@@ -168,7 +168,7 @@ public:
 
 	bool IsTradingWith(Unit* t) const
 	{
-		if(action == Action_LootUnit || action == Action_Trade || action == Action_GiveItems || action == Action_ShareItems)
+		if(Any(action, Action_LootUnit, Action_Trade, Action_GiveItems, Action_ShareItems))
 			return action_unit == t;
 		else
 			return false;
@@ -176,29 +176,10 @@ public:
 
 	static bool IsTrade(Action a)
 	{
-		return a == Action_LootChest || a == Action_LootUnit || a == Action_Trade || a == Action_ShareItems || a == Action_GiveItems
-			|| a == Action_LootContainer;
+		return Any(a, Action_LootChest, Action_LootUnit, Action_Trade, Action_ShareItems, Action_GiveItems, Action_LootContainer);
 	}
-
-	bool IsTrading() const
-	{
-		return IsTrade(action);
-	}
-
-	//int GetBase(AttributeId a) const
-	//{
-	//	return base_stats.attrib[(int)a];
-	//}
-	//int GetBase(SkillId s) const
-	//{
-	//	return base_stats.skill[(int)s];
-	//}
-
-	bool IsLocal() const
-	{
-		return is_local;
-	}
-
+	bool IsTrading() const { return IsTrade(action); }
+	bool IsLocal() const { return is_local; }
 	::Action& GetAction();
 	bool CanUseAction() const
 	{

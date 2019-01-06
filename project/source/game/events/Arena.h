@@ -32,6 +32,14 @@ public:
 		bool ok;
 	};
 
+	struct Enemy
+	{
+		UnitData* unit;
+		uint count;
+		int level;
+		bool side;
+	};
+
 	void InitOnce() override;
 	void LoadLanguage() override;
 	void Cleanup() override { delete this; }
@@ -54,6 +62,7 @@ public:
 	void ClosePvpDialog();
 	void ShowPvpRequest(Unit* unit);
 	void RewardExp(Unit* dead_unit);
+	void SpawnUnit(const vector<Enemy>& units);
 
 	Mode mode;
 	State state;

@@ -22,72 +22,11 @@ PlayerController::~PlayerController()
 }
 
 //=================================================================================================
-float PlayerController::CalculateAttack() const
-{
-	WeaponType b;
-
-	switch(unit->weapon_state)
-	{
-	case WS_HIDING:
-		b = unit->weapon_hiding;
-		break;
-	case WS_HIDDEN:
-		if(ostatnia == W_NONE)
-		{
-			if(unit->HaveWeapon())
-				b = W_ONE_HANDED;
-			else if(unit->HaveBow())
-				b = W_BOW;
-			else
-				b = W_NONE;
-		}
-		else
-			b = ostatnia;
-		break;
-	case WS_TAKING:
-	case WS_TAKEN:
-		b = unit->weapon_taken;
-		break;
-	default:
-		assert(0);
-		break;
-	}
-
-	if(b == W_ONE_HANDED)
-	{
-		if(!unit->HaveWeapon())
-		{
-			if(!unit->HaveBow())
-				b = W_NONE;
-			else
-				b = W_BOW;
-		}
-	}
-	else if(b == W_BOW)
-	{
-		if(!unit->HaveBow())
-		{
-			if(!unit->HaveWeapon())
-				b = W_NONE;
-			else
-				b = W_ONE_HANDED;
-		}
-	}
-
-	if(b == W_ONE_HANDED)
-		return unit->CalculateAttack(&unit->GetWeapon());
-	else if(b == W_BOW)
-		return unit->CalculateAttack(&unit->GetBow());
-	else
-		return 0.5f * unit->Get(AttributeId::STR) + 0.5f * unit->Get(AttributeId::DEX);
-}
-
-//=================================================================================================
 void PlayerController::Init(Unit& _unit, bool partial)
 {
 	unit = &_unit;
 	move_tick = 0.f;
-	ostatnia = W_NONE;
+	last_weapon = W_NONE;
 	next_action = NA_NONE;
 	last_dmg_poison = last_dmg = dmgc = poison_dmgc = 0.f;
 	idle_timer = Random(1.f, 2.f);
@@ -124,7 +63,6 @@ void PlayerController::Init(Unit& _unit, bool partial)
 
 		action_charges = GetAction().charges;
 		learning_points = 0;
-		level = 0;
 		exp = 0;
 		exp_level = 0;
 		exp_need = GetExpNeed();
@@ -388,7 +326,7 @@ void PlayerController::Save(FileWriter& f)
 		assert(0);
 		break;
 	}
-	f << ostatnia;
+	f << last_weapon;
 	f << credit;
 	f << godmode;
 	f << noclip;
@@ -399,7 +337,6 @@ void PlayerController::Save(FileWriter& f)
 	f << dmg_done;
 	f << dmg_taken;
 	f << arena_fights;
-	f << level;
 	f << learning_points;
 	f << (byte)perks.size();
 	for(TakenPerk& tp : perks)
@@ -553,7 +490,7 @@ void PlayerController::Load(FileReader& f)
 			break;
 		}
 	}
-	f >> ostatnia;
+	f >> last_weapon;
 	if(LOAD_VERSION < V_0_2_20)
 		f.Skip<float>(); // old rise_timer
 	f >> credit;
@@ -566,8 +503,6 @@ void PlayerController::Load(FileReader& f)
 	f >> dmg_done;
 	f >> dmg_taken;
 	f >> arena_fights;
-	if(LOAD_VERSION >= V_DEV)
-		f >> level;
 	if(LOAD_VERSION >= V_0_4)
 	{
 		if(LOAD_VERSION < V_DEV)
@@ -717,13 +652,40 @@ void PlayerController::SetRequiredPoints()
 }
 
 //=================================================================================================
+int PlayerController::CalculateLevel()
+{
+	float level = 0.f;
+	int weight_sum = 0;
+	UnitStats& stats = *unit->stats;
+
+	// calculate player level based on attributes and skills that are important for that class
+	for(int i = 0; i < (int)AttributeId::MAX; ++i)
+	{
+		if(attrib[i].apt > 0)
+		{
+			level += float(stats.attrib[i] - 25) * attrib[i].apt / 5;
+			weight_sum += attrib[i].apt;
+		}
+	}
+	for(int i = 0; i < (int)SkillId::MAX; ++i)
+	{
+		if(skill[i].apt > 0)
+		{
+			level += float(stats.skill[i]) * skill[i].apt / 5;
+			weight_sum += skill[i].apt;
+		}
+	}
+
+	return int(level / weight_sum);
+}
+
+//=================================================================================================
 void PlayerController::RecalculateLevel()
 {
-	float new_level = unit->CalculateLevel();
-	if(new_level != level)
+	int level = CalculateLevel();
+	if(level != unit->level)
 	{
-		level = new_level;
-		unit->level = (int)level;
+		unit->level = level;
 		if(player_info && !IsLocal())
 			player_info->update_flags |= PlayerInfo::UF_LEVEL;
 	}

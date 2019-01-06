@@ -250,9 +250,9 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id)
 				if(Game::Get().devmode)
 				{
 					if(Net::IsLocal())
-						tooltip.small_text = Format("Level: %g\nTrain level: %d\nExp: %d/%d", pc->level, pc->exp_level, pc->exp, pc->exp_need);
+						tooltip.small_text = Format("Level: %d\nTrain level: %d\nExp: %d/%d", pc->unit->level, pc->exp_level, pc->exp, pc->exp_need);
 					else
-						tooltip.small_text = Format("Level: %g", pc->level);
+						tooltip.small_text = Format("Level: %d", pc->unit->level);
 				}
 				else
 					tooltip.small_text.clear();

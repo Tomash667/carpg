@@ -8,7 +8,6 @@
 struct StatProfile
 {
 	string id;
-	bool fixed;
 	int attrib[(int)AttributeId::MAX];
 	int skill[(int)SkillId::MAX];
 

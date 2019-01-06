@@ -696,6 +696,7 @@ bool Net::FilterOut(NetChange& c)
 		}
 		return true;
 	case NetChange::RUN_SCRIPT:
+	case NetChange::CHEAT_ARENA:
 		StringPool.Free(c.str);
 		return true;
 	default:

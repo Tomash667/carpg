@@ -1391,5 +1391,7 @@ void Tokenizer::ForceMoveToClosingSymbol(char start, char end)
 //=================================================================================================
 cstring Tokenizer::GetTextRest()
 {
+	if(normal_seek.pos == string::npos)
+		return "";
 	return str->c_str() + normal_seek.pos;
 }
