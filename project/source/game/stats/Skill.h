@@ -73,6 +73,14 @@ enum class SkillGroupId
 };
 
 //-----------------------------------------------------------------------------
+enum class SkillType
+{
+	NONE,
+	WEAPON,
+	ARMOR
+};
+
+//-----------------------------------------------------------------------------
 struct Skill
 {
 	SkillId skill_id;
@@ -80,12 +88,13 @@ struct Skill
 	string name, desc;
 	SkillGroupId group;
 	AttributeId attrib, attrib2;
+	SkillType type;
 
 	static const int MIN = 0;
 	static const int MAX = 255;
 
-	Skill(SkillId skill_id, cstring id, SkillGroupId group, AttributeId attrib, AttributeId attrib2) : skill_id(skill_id), id(id), group(group),
-		attrib(attrib), attrib2(attrib2)
+	Skill(SkillId skill_id, cstring id, SkillGroupId group, AttributeId attrib, AttributeId attrib2, SkillType type = SkillType::NONE) :
+		skill_id(skill_id), id(id), group(group), attrib(attrib), attrib2(attrib2), type(type)
 	{
 	}
 

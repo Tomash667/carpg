@@ -562,8 +562,8 @@ armor al_padded {
 	weight 4.5
 	value 5
 	mesh "padded_armor.qmsh"
-	skill light_armor
-	type human
+	type light
+	unit_type human
 	material skin
 	defense 5
 	req_str 25
@@ -574,8 +574,8 @@ armor al_padded_hq {
 	weight 4.5
 	value 55
 	mesh "padded_armor.qmsh"
-	skill light_armor
-	type human
+	type light
+	unit_type human
 	material skin
 	defense 15
 	req_str 25
@@ -587,8 +587,8 @@ armor al_padded_m {
 	weight 4
 	value 505
 	mesh "padded_armor.qmsh"
-	skill light_armor
-	type human
+	type light
+	unit_type human
 	material skin
 	defense 35
 	req_str 25
@@ -600,8 +600,8 @@ armor al_leather {
 	weight 7
 	value 15
 	mesh "leather_armor.qmsh"
-	skill light_armor
-	type human
+	type light
+	unit_type human
 	material skin
 	defense 15
 	req_str 30
@@ -612,8 +612,8 @@ armor al_leather_hq {
 	weight 7
 	value 65
 	mesh "leather_armor.qmsh"
-	skill light_armor
-	type human
+	type light
+	unit_type human
 	material skin
 	defense 25
 	req_str 30
@@ -625,8 +625,8 @@ armor al_leather_m {
 	weight 6
 	value 515
 	mesh "leather_armor.qmsh"
-	skill light_armor
-	type human
+	type light
+	unit_type human
 	material skin
 	defense 45
 	req_str 30
@@ -638,8 +638,8 @@ armor al_dragonskin {
 	weight 8
 	value 7015
 	mesh "dragonskin.qmsh"
-	skill light_armor
-	type human
+	type light
+	unit_type human
 	material skin
 	defense 165
 	req_str 35
@@ -651,8 +651,8 @@ armor al_studded {
 	weight 9
 	value 30
 	mesh "studded_armor.qmsh"
-	skill light_armor
-	type human
+	type light
+	unit_type human
 	material skin
 	defense 40
 	req_str 35
@@ -663,8 +663,8 @@ armor al_studded_hq {
 	weight 9
 	value 80
 	mesh "studded_armor.qmsh"
-	skill light_armor
-	type human
+	type light
+	unit_type human
 	material skin
 	defense 50
 	req_str 35
@@ -676,8 +676,8 @@ armor al_studded_m {
 	weight 8
 	value 530
 	mesh "studded_armor.qmsh"
-	skill light_armor
-	type human
+	type light
+	unit_type human
 	material skin
 	defense 70
 	req_str 35
@@ -689,8 +689,8 @@ armor al_shadow {
 	weight 7
 	value 12000
 	mesh "studded_armor.qmsh"
-	skill light_armor
-	type human
+	type light
+	unit_type human
 	material skin
 	defense 100
 	req_str 30
@@ -702,8 +702,8 @@ armor al_chain_shirt {
 	weight 11.5
 	value 100
 	mesh "chain_shirt.qmsh"
-	skill light_armor
-	type human
+	type light
+	unit_type human
 	material metal
 	defense 90
 	req_str 40
@@ -714,8 +714,8 @@ armor al_chain_shirt_hq {
 	weight 11.5
 	value 200
 	mesh "chain_shirt.qmsh"
-	skill light_armor
-	type human
+	type light
+	unit_type human
 	material metal
 	defense 100
 	req_str 40
@@ -727,8 +727,8 @@ armor al_chain_shirt_m {
 	weight 10
 	value 1100
 	mesh "chain_shirt.qmsh"
-	skill light_armor
-	type human
+	type light
+	unit_type human
 	material metal
 	defense 120
 	req_str 40
@@ -741,8 +741,8 @@ armor al_chain_shirt_mith {
 	value 2600
 	mesh "chain_shirt.qmsh"
 	tex_override "chain_shirt_mith.jpg"
-	skill light_armor
-	type human
+	type light
+	unit_type human
 	material metal
 	defense 135
 	req_str 30
@@ -754,8 +754,8 @@ armor al_angelskin {
 	weight 3
 	value 15000
 	mesh "angelskin.qmsh"
-	skill light_armor
-	type human
+	type light
+	unit_type human
 	material metal
 	defense 180
 	req_str 20
@@ -767,8 +767,8 @@ armor am_hide {
 	weight 11.5
 	value 15
 	mesh "hide_armor.qmsh"
-	skill medium_armor
-	type human
+	type medium
+	unit_type human
 	material skin
 	defense 10
 	req_str 40
@@ -779,8 +779,8 @@ armor am_hide_hq {
 	weight 11.5
 	value 65
 	mesh "hide_armor.qmsh"
-	skill medium_armor
-	type human
+	type medium
+	unit_type human
 	material skin
 	defense 20
 	req_str 40
@@ -792,8 +792,8 @@ armor am_hide_m {
 	weight 10
 	value 1100
 	mesh "hide_armor.qmsh"
-	skill medium_armor
-	type human
+	type medium
+	unit_type human
 	material skin
 	defense 40
 	req_str 40
@@ -805,8 +805,8 @@ armor am_troll_hide {
 	weight 12.5
 	value 6000
 	mesh "hide_armor.qmsh"
-	skill medium_armor
-	type human
+	type medium
+	unit_type human
 	material skin
 	defense 60
 	req_str 45
@@ -818,8 +818,8 @@ armor am_chainmail {
 	weight 18
 	value 60
 	mesh "chainmail.qmsh"
-	skill medium_armor
-	type human
+	type medium
+	unit_type human
 	material metal
 	defense 20
 	req_str 50
@@ -830,8 +830,8 @@ armor am_chainmail_hq {
 	weight 18
 	value 160
 	mesh "chainmail.qmsh"
-	skill medium_armor
-	type human
+	type medium
+	unit_type human
 	material metal
 	defense 30
 	req_str 50
@@ -843,8 +843,8 @@ armor am_chainmail_m {
 	weight 16
 	value 1060
 	mesh "chainmail.qmsh"
-	skill medium_armor
-	type human
+	type medium
+	unit_type human
 	material metal
 	defense 50
 	req_str 50
@@ -857,8 +857,8 @@ armor am_chainmail_mith {
 	value 2660
 	mesh "chainmail.qmsh"
 	tex_override "chainmail_mith.jpg"
-	skill medium_armor
-	type human
+	type medium
+	unit_type human
 	material metal
 	defense 70
 	req_str 35
@@ -870,8 +870,8 @@ armor am_scale {
 	weight 15
 	value 150
 	mesh "scale_armor.qmsh"
-	skill medium_armor
-	type human
+	type medium
+	unit_type human
 	material metal
 	defense 50
 	req_str 50
@@ -882,8 +882,8 @@ armor am_scale_hq {
 	weight 15
 	value 250
 	mesh "scale_armor.qmsh"
-	skill medium_armor
-	type human
+	type medium
+	unit_type human
 	material metal
 	defense 60
 	req_str 50
@@ -895,8 +895,8 @@ armor am_scale_m {
 	weight 13.5
 	value 1150
 	mesh "scale_armor.qmsh"
-	skill medium_armor
-	type human
+	type medium
+	unit_type human
 	material metal
 	defense 80
 	req_str 45
@@ -909,8 +909,8 @@ armor am_dragonscale {
 	value 8150
 	mesh "scale_armor.qmsh"
 	tex_override "dragonscale.jpg"
-	skill medium_armor
-	type human
+	type medium
+	unit_type human
 	material metal
 	defense 180
 	req_str 50
@@ -922,8 +922,8 @@ armor am_breastplate {
 	weight 13.5
 	value 270
 	mesh "breastplate.qmsh"
-	skill medium_armor
-	type human
+	type medium
+	unit_type human
 	material metal
 	defense 100
 	req_str 45
@@ -934,8 +934,8 @@ armor am_breastplate_hq {
 	weight 13.5
 	value 420
 	mesh "breastplate.qmsh"
-	skill medium_armor
-	type human
+	type medium
+	unit_type human
 	material metal
 	defense 110
 	req_str 45
@@ -947,8 +947,8 @@ armor am_breastplate_m {
 	weight 12
 	value 1270
 	mesh "breastplate.qmsh"
-	skill medium_armor
-	type human
+	type medium
+	unit_type human
 	material metal
 	defense 130
 	req_str 40
@@ -961,8 +961,8 @@ armor am_breastplate_mith {
 	value 3270
 	mesh "breastplate.qmsh"
 	tex_override "breastplate_mith.jpg"
-	skill medium_armor
-	type human
+	type medium
+	unit_type human
 	material metal
 	defense 150
 	req_str 30
@@ -975,8 +975,8 @@ armor am_breastplate_adam {
 	value 6270
 	mesh "breastplate.qmsh"
 	tex_override "breastplate_adam.jpg"
-	skill medium_armor
-	type human
+	type medium
+	unit_type human
 	material metal
 	defense 170
 	req_str 50
@@ -988,8 +988,8 @@ armor am_gladiator {
 	weight 13.5
 	value 22000
 	mesh "gladiator_armor.qmsh"
-	skill medium_armor
-	type human
+	type medium
+	unit_type human
 	material metal
 	defense 200
 	req_str 45
@@ -1002,8 +1002,8 @@ armor ah_splint_rusted {
 	value 50
 	mesh "splint_armor.qmsh"
 	tex_override "splint_armor_rusted.jpg"
-	skill heavy_armor
-	type human
+	type heavy
+	unit_type human
 	material metal
 	defense 25
 	req_str 50
@@ -1014,8 +1014,8 @@ armor ah_splint {
 	weight 18
 	value 200
 	mesh "splint_armor.qmsh"
-	skill heavy_armor
-	type human
+	type heavy
+	unit_type human
 	material metal
 	defense 55
 	req_str 50
@@ -1026,8 +1026,8 @@ armor ah_splint_hq {
 	weight 18
 	value 400
 	mesh "splint_armor.qmsh"
-	skill heavy_armor
-	type human
+	type heavy
+	unit_type human
 	material metal
 	defense 65
 	req_str 50
@@ -1039,8 +1039,8 @@ armor ah_splint_m {
 	weight 16
 	value 1200
 	mesh "splint_armor.qmsh"
-	skill heavy_armor
-	type human
+	type heavy
+	unit_type human
 	material metal
 	defense 85
 	req_str 50
@@ -1053,8 +1053,8 @@ armor ah_splint_mith {
 	value 3200
 	mesh "splint_armor.qmsh"
 	tex_override "splint_armor_mith.jpg"
-	skill heavy_armor
-	type human
+	type heavy
+	unit_type human
 	material metal
 	defense 110
 	req_str 35
@@ -1066,8 +1066,8 @@ armor ah_antimage {
 	weight 20
 	value 18000
 	mesh "splint_armor.qmsh"
-	skill heavy_armor
-	type human
+	type heavy
+	unit_type human
 	material metal
 	defense 130
 	req_str 55
@@ -1079,8 +1079,8 @@ armor ah_plate {
 	weight 25
 	value 1500
 	mesh "plate_armor.qmsh"
-	skill heavy_armor
-	type human
+	type heavy
+	unit_type human
 	material metal
 	defense 110
 	req_str 70
@@ -1091,8 +1091,8 @@ armor ah_plate_hq {
 	weight 25
 	value 1700
 	mesh "plate_armor.qmsh"
-	skill heavy_armor
-	type human
+	type heavy
+	unit_type human
 	material metal
 	defense 120
 	req_str 70
@@ -1104,8 +1104,8 @@ armor ah_plate_m {
 	weight 25
 	value 3500
 	mesh "plate_armor.qmsh"
-	skill heavy_armor
-	type human
+	type heavy
+	unit_type human
 	material metal
 	defense 140
 	req_str 65
@@ -1118,8 +1118,8 @@ armor ah_plate_mith {
 	value 6500
 	mesh "plate_armor.qmsh"
 	tex_override "plate_armor_mith.jpg"
-	skill heavy_armor
-	type human
+	type heavy
+	unit_type human
 	material metal
 	defense 165
 	req_str 70
@@ -1132,8 +1132,8 @@ armor ah_plate_adam {
 	value 10500
 	mesh "plate_armor.qmsh"
 	tex_override "plate_armor_adam.jpg"
-	skill heavy_armor
-	type human
+	type heavy
+	unit_type human
 	material metal
 	defense 185
 	req_str 40
@@ -1145,8 +1145,8 @@ armor ah_black_armor {
 	weight 30
 	value 30000
 	mesh "plate_armor.qmsh"
-	skill heavy_armor
-	type human
+	type heavy
+	unit_type human
 	material metal
 	defense 220
 	req_str 75
@@ -1158,8 +1158,8 @@ armor ah_crystal {
 	weight 35
 	value 6000
 	mesh "crystal_armor.qmsh"
-	skill heavy_armor
-	type human
+	type heavy
+	unit_type human
 	material crystal
 	defense 165
 	req_str 80
@@ -1171,8 +1171,8 @@ armor ah_crystal_m {
 	weight 35
 	value 10000
 	mesh "crystal_armor.qmsh"
-	skill heavy_armor
-	type human
+	type heavy
+	unit_type human
 	material crystal
 	defense 195
 	req_str 80
@@ -1184,8 +1184,8 @@ armor ah_blood_crystal {
 	weight 35
 	value 24000
 	mesh "crystal_armor.qmsh"
-	skill heavy_armor
-	type human
+	type heavy
+	unit_type human
 	material crystal
 	defense 210
 	req_str 80
@@ -1197,8 +1197,8 @@ armor al_blacksmith {
 	weight 2
 	value 50
 	mesh "blacksmith_clothes.qmsh"
-	skill light_armor
-	type human
+	type light
+	unit_type human
 	material skin
 	defense 35
 	req_str 30
@@ -1210,8 +1210,8 @@ armor al_innkeeper {
 	weight 1.5
 	value 50
 	mesh "innkeeper_clothes.qmsh"
-	skill light_armor
-	type human
+	type light
+	unit_type human
 	material skin
 	defense 15
 	req_str 20
@@ -1223,8 +1223,8 @@ armor al_goblin {
 	weight 4
 	value 5
 	mesh "goblin_armor.qmsh"
-	skill light_armor
-	type goblin
+	type light
+	unit_type goblin
 	material skin
 	defense 20
 	req_str 20
@@ -1236,8 +1236,8 @@ armor al_orc {
 	weight 9
 	value 5
 	mesh "orc_armor.qmsh"
-	skill light_armor
-	type orc
+	type light
+	unit_type orc
 	material skin
 	defense 25
 	req_str 40
@@ -1249,8 +1249,8 @@ armor al_orc_shaman {
 	weight 9
 	value 100
 	mesh "orc_shaman_armor.qmsh"
-	skill light_armor
-	type orc
+	type light
+	unit_type orc
 	material skin
 	defense 20
 	req_str 50
@@ -1262,8 +1262,8 @@ armor am_orc {
 	weight 22
 	value 30
 	mesh "orc_chainmail.qmsh"
-	skill medium_armor
-	type orc
+	type medium
+	unit_type orc
 	material metal
 	defense 50
 	req_str 60
@@ -1275,8 +1275,8 @@ armor al_mage {
 	weight 1.5
 	value 30
 	mesh "robe.qmsh"
-	skill light_armor
-	type human
+	type light
+	unit_type human
 	material cloth
 	defense 20
 	req_str 20
@@ -1289,8 +1289,8 @@ armor al_mage2 {
 	value 100
 	mesh "robe.qmsh"
 	tex_override "robe2.jpg"
-	skill light_armor
-	type human
+	type light
+	unit_type human
 	material cloth
 	defense 30
 	req_str 20
@@ -1303,8 +1303,8 @@ armor al_mage3 {
 	value 350
 	mesh "robe.qmsh"
 	tex_override "robe3.jpg"
-	skill light_armor
-	type human
+	type light
+	unit_type human
 	material cloth
 	defense 40
 	req_str 20
@@ -1317,8 +1317,8 @@ armor al_mage4 {
 	value 500
 	mesh "robe.qmsh"
 	tex_override "robe4.jpg"
-	skill light_armor
-	type human
+	type light
+	unit_type human
 	material cloth
 	defense 50
 	req_str 20
@@ -1330,8 +1330,8 @@ armor al_necromancer {
 	weight 2
 	value 80
 	mesh "necromancer_robe.qmsh"
-	skill light_armor
-	type human
+	type light
+	unit_type human
 	material cloth
 	defense 50
 	req_str 25
@@ -1343,8 +1343,8 @@ armor al_clothes {
 	weight 1
 	value 5
 	mesh "clothes.qmsh"
-	skill light_armor
-	type human
+	type light
+	unit_type human
 	material cloth
 	defense 5
 	req_str 20
@@ -1356,8 +1356,8 @@ armor al_clothes2 {
 	weight 1
 	value 15
 	mesh "clothes2.qmsh"
-	skill light_armor
-	type human
+	type light
+	unit_type human
 	material cloth
 	defense 5
 	req_str 20
@@ -1370,8 +1370,8 @@ armor al_clothes2b {
 	value 15
 	mesh "clothes2.qmsh"
 	tex_override "clothes2b.jpg"
-	skill light_armor
-	type human
+	type light
+	unit_type human
 	material cloth
 	defense 5
 	req_str 20
@@ -1383,8 +1383,8 @@ armor al_clothes3 {
 	weight 1
 	value 100
 	mesh "clothes3.qmsh"
-	skill light_armor
-	type human
+	type light
+	unit_type human
 	material cloth
 	defense 5
 	req_str 20
@@ -1397,8 +1397,8 @@ armor al_clothes3b {
 	value 100
 	mesh "clothes3.qmsh"
 	tex_override "clothes3b.jpg"
-	skill light_armor
-	type human
+	type light
+	unit_type human
 	material cloth
 	defense 5
 	req_str 20

@@ -171,9 +171,9 @@ profile cleric {
 	charisma 55
 	
 	one_handed_weapon 15
-	short_blade 15
-	long_blade 15
-	axe 15
+	short_blade 10
+	long_blade 10
+	axe 10
 	blunt 15
 	bow 10
 	shield 10
@@ -181,6 +181,18 @@ profile cleric {
 	medium_armor 15
 	heavy_armor 10
 	haggle 15
+	
+	subprofile cleric {
+		weapon blunt
+		armor {
+			medium_armor 3
+			heavy_armor 2
+		}
+		tag weapon
+		tag armor
+		tag shield
+		priority {weapon armor shield bow}
+	}
 }
 
 profile hunter {
@@ -200,6 +212,41 @@ profile hunter {
 	shield 10
 	light_armor 20
 	medium_armor 10
+	
+	subprofile bow {
+		weapon {
+			short_blade 3
+			long_blade 2
+		}
+		armor light_armor
+		tag bow
+		tag light_armor
+		tag weapon
+		priority {bow armor weapon shield}
+	}
+	subprofile weapon {
+		weapon {
+			short_blade 3
+			long_blade 2
+		}
+		armor light_armor
+		tag weapon
+		tag armor
+		tag bow
+		priority {weapon armor bow shield}
+	}
+	subprofile weapon_medium {
+		weapon {
+			axe 3
+			long_blade 2
+			blunt 1
+		}
+		armor medium_armor
+		tag weapon
+		tag armor
+		tag shield
+		priority {weapon armor shield bow}
+	}
 }
 
 profile mage {
@@ -239,6 +286,29 @@ profile rogue {
 	light_armor 15
 	medium_armor 0
 	haggle 10
+	
+	subprofile weapon {
+		weapon {
+			short_blade 2
+			long_blade 1
+		}
+		armor light_armor
+		tag weapon
+		tag armor
+		tag shield
+		priority {weapon armor shield bow}
+	}
+	subprofile bow {
+		weapon {
+			short_blade 2
+			long_blade 1
+		}
+		armor light_armor
+		tag bow
+		tag armor
+		tag weapon
+		priority {bow armor weapon shield}
+	}
 }
 
 profile warrior {
@@ -260,25 +330,44 @@ profile warrior {
 	medium_armor 15
 	heavy_armor 15
 	haggle 0
-}
-
-profile shaman {
-	strength 60
-	endurance 55
-	dexterity 55
-	inteligence 60
-	wisdom 45
-	charisma 40
 	
-	one_handed_weapon 15
-	short_blade 10
-	long_blade 10
-	axe 15
-	blunt 15
-	bow 10
-	shield 10
-	light_armor 10
-	medium_armor 10
+	subprofile tank {
+		weapon {
+			axe 3
+			blunt 3
+			long_blade 1
+		}
+		armor heavy_armor
+		tag armor
+		tag shield
+		tag weapon
+		priority {armor shield weapon bow}
+	}
+	subprofile heavy {
+		weapon {
+			axe 3
+			blunt 3
+			long_blade 1
+		}
+		armor heavy_armor
+		tag weapon
+		tag armor
+		tag shield
+		priority {weapon armor shield bow}
+	}
+	subprofile medium {
+		weapon {
+			short_blade 1
+			long_blade 3
+			axe 2
+			blunt 2
+		}
+		armor medium_armor
+		tag weapon
+		tag armor
+		tag bow
+		priority {weapon armor bow shield}
+	}
 }
 
 profile ai_fighter {

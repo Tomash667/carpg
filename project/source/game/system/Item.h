@@ -223,7 +223,8 @@ enum WEAPON_TYPE
 	WT_SHORT_BLADE,
 	WT_LONG_BLADE,
 	WT_BLUNT,
-	WT_AXE
+	WT_AXE,
+	WT_MAX
 };
 
 //-----------------------------------------------------------------------------
@@ -296,10 +297,19 @@ struct Shield : public Item
 };
 
 //-----------------------------------------------------------------------------
+enum ArmorType
+{
+	AT_LIGHT,
+	AT_MEDIUM,
+	AT_HEAVY,
+	AT_MAX
+};
+
+//-----------------------------------------------------------------------------
 // Armor
 struct Armor : public Item
 {
-	Armor() : Item(IT_ARMOR), def(10), req_str(10), mobility(100), material(MAT_SKIN), skill(SkillId::LIGHT_ARMOR), armor_type(ArmorUnitType::HUMAN) {}
+	Armor() : Item(IT_ARMOR), def(10), req_str(10), mobility(100), material(MAT_SKIN), _armor_type(AT_LIGHT), armor_unit_type(ArmorUnitType::HUMAN) {}
 
 	const TexId* GetTextureOverride() const
 	{
@@ -311,8 +321,8 @@ struct Armor : public Item
 
 	int def, req_str, mobility;
 	MATERIAL_TYPE material;
-	SkillId skill;
-	ArmorUnitType armor_type;
+	ArmorType _armor_type; FIXME; // rename
+	ArmorUnitType armor_unit_type;
 	vector<TexId> tex_override;
 
 	static vector<Armor*> armors;

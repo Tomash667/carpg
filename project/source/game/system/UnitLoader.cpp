@@ -27,7 +27,6 @@ class UnitLoader : public ContentLoader
 		G_ARMOR_TYPE,
 		G_ATTRIBUTE,
 		G_SKILL,
-		G_PROFILE_KEYWORD,
 		G_SOUND_TYPE,
 		G_FRAME_KEYWORD,
 		G_WEAPON_FLAG,
@@ -38,7 +37,8 @@ class UnitLoader : public ContentLoader
 		G_CLASS,
 		G_TRADER_KEYWORD,
 		G_ITEM_GROUP,
-		G_CONSUMABLE_GROUP
+		G_CONSUMABLE_GROUP,
+		G_SUBPROFILE_GROUP
 	};
 
 	enum UnitDataType
@@ -132,6 +132,14 @@ class UnitLoader : public ContentLoader
 		IFS_START_INLINE,
 		IFS_ELSE,
 		IFS_ELSE_INLINE
+	};
+
+	enum SubprofileKeyword
+	{
+		SPK_WEAPON,
+		SPK_ARMOR,
+		SPK_TAG,
+		SPK_PRIORITY
 	};
 
 	//=================================================================================================
@@ -951,7 +959,15 @@ class UnitLoader : public ContentLoader
 
 		while(!t.IsSymbol('}'))
 		{
-			if(t.IsKeywordGroup(G_ATTRIBUTE))
+			if(t.IsItem("subprofile"))
+			{
+				Ptr<StatProfile::Subprofile> subprofile;
+				ParseSubprofile(subprofile);
+				if(profile->GetSubprofile(subprofile->id))
+					t.Throw("Subprofile '%s.%s' already exists.", profile->id.c_str(), subprofile->id.c_str());
+				profile->subprofiles.push_back(subprofile.Pin());
+			}
+			else if(t.IsKeywordGroup(G_ATTRIBUTE))
 			{
 				int a = t.MustGetKeywordId(G_ATTRIBUTE);
 				t.Next();
@@ -981,9 +997,10 @@ class UnitLoader : public ContentLoader
 			}
 			else
 			{
-				int a = G_PROFILE_KEYWORD, b = G_ATTRIBUTE, c = G_SKILL;
+				cstring a = "subprofile";
+				int b = G_ATTRIBUTE, c = G_SKILL;
 				t.StartUnexpected()
-					.Add(tokenizer::T_KEYWORD, &a)
+					.Add(tokenizer::T_ITEM, &a)
 					.Add(tokenizer::T_KEYWORD_GROUP, &b)
 					.Add(tokenizer::T_KEYWORD_GROUP, &c)
 					.Throw();
@@ -994,6 +1011,41 @@ class UnitLoader : public ContentLoader
 
 		StatProfile::profiles.push_back(profile.Pin());
 	}
+
+	//=================================================================================================
+	void ParseSubprofile(Ptr<StatProfile::Subprofile>& subprofile)
+	{
+		subprofile->id = t.GetText();
+		t.Next();
+		t.AssertSymbol('{');
+		t.Next();
+		while(!t.IsSymbol('}'))
+		{
+			SubprofileKeyword key = (SubprofileKeyword)t.MustGetKeywordId(G_SUBPROFILE_GROUP);
+			t.Next();
+			switch(key)
+			{
+			case SPK_WEAPON:
+				if(t.IsSymbol('{'))
+				{
+
+				}
+				else
+				{
+					SkillId skill = (SkillId)t.MustGetKeywordId(G_SKILL);
+					Skill& info = Skill::skills[(int)skill];
+					if(info.type != SkillType::WEAPON)
+						t.Throw("Skill '%s' is not valid weapon skill.", info.id);
+				}
+			case SPK_ARMOR:
+			case SPK_TAG:
+			case SPK_PRIORITY:
+			}
+		}
+	}
+
+	//=================================================================================================
+	da
 
 	//=================================================================================================
 	void ParseItems(Ptr<ItemScript>& script)

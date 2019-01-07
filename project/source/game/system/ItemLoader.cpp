@@ -41,7 +41,7 @@ class ItemLoader : public ContentLoader
 		P_FLAGS,
 		P_DEFENSE,
 		P_MOBILITY,
-		P_SKILL,
+		P_UNIT_TYPE,
 		P_TEX_OVERRIDE,
 		P_EFFECT,
 		P_POWER,
@@ -152,7 +152,7 @@ public:
 			{ "flags", P_FLAGS },
 			{ "defense", P_DEFENSE },
 			{ "mobility", P_MOBILITY },
-			{ "skill", P_SKILL },
+			{ "unit_type", P_UNIT_TYPE },
 			{ "tex_override", P_TEX_OVERRIDE },
 			{ "effect", P_EFFECT },
 			{ "power", P_POWER },
@@ -433,6 +433,7 @@ public:
 					break;
 				}
 				break;
+				case P_
 			case P_MATERIAL:
 				{
 					MATERIAL_TYPE mat = (MATERIAL_TYPE)t.MustGetKeywordId(G_MATERIAL);
