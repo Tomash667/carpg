@@ -126,15 +126,15 @@ void CheckBaseItems(uint& errors)
 				++have_mage_armor;
 			else
 			{
-				switch(item->ToArmor().skill)
+				switch(item->ToArmor().armor_type)
 				{
-				case SkillId::LIGHT_ARMOR:
+				case AT_LIGHT:
 					++have_light_armor;
 					break;
-				case SkillId::MEDIUM_ARMOR:
+				case AT_MEDIUM:
 					++have_medium_armor;
 					break;
-				case SkillId::HEAVY_ARMOR:
+				case AT_HEAVY:
 					++have_heavy_armor;
 					break;
 				}

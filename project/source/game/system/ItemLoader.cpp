@@ -17,7 +17,7 @@ class ItemLoader : public ContentLoader
 		G_MATERIAL,
 		G_DMG_TYPE,
 		G_FLAGS,
-		G_ARMOR_SKILL,
+		G_ARMOR_TYPE,
 		G_ARMOR_UNIT_TYPE,
 		G_CONSUMABLE_TYPE,
 		G_EFFECT,
@@ -215,10 +215,10 @@ public:
 			{ "magic_scroll", ITEM_MAGIC_SCROLL }
 		});
 
-		t.AddKeywords(G_ARMOR_SKILL, {
-			{ "light_armor", (int)SkillId::LIGHT_ARMOR },
-			{ "medium_armor", (int)SkillId::MEDIUM_ARMOR },
-			{ "heavy_armor", (int)SkillId::HEAVY_ARMOR }
+		t.AddKeywords(G_ARMOR_TYPE, {
+			{ "light", AT_LIGHT },
+			{ "medium", AT_MEDIUM },
+			{ "heavy", AT_HEAVY }
 		});
 
 		t.AddKeywords(G_ARMOR_UNIT_TYPE, {
@@ -305,7 +305,7 @@ public:
 			break;
 		case IT_ARMOR:
 			item = new Armor;
-			req |= BIT(P_DEFENSE) | BIT(P_MOBILITY) | BIT(P_REQ_STR) | BIT(P_MATERIAL) | BIT(P_SKILL) | BIT(P_TYPE) | BIT(P_TEX_OVERRIDE);
+			req |= BIT(P_DEFENSE) | BIT(P_MOBILITY) | BIT(P_REQ_STR) | BIT(P_MATERIAL) | BIT(P_UNIT_TYPE) | BIT(P_TYPE) | BIT(P_TEX_OVERRIDE);
 			break;
 		case IT_CONSUMABLE:
 			item = new Consumable;
@@ -423,7 +423,7 @@ public:
 					item->ToWeapon().weapon_type = (WEAPON_TYPE)t.MustGetKeywordId(G_WEAPON_TYPE);
 					break;
 				case IT_ARMOR:
-					item->ToArmor().armor_type = (ArmorUnitType)t.MustGetKeywordId(G_ARMOR_UNIT_TYPE);
+					item->ToArmor().armor_type = (ARMOR_TYPE)t.MustGetKeywordId(G_ARMOR_TYPE);
 					break;
 				case IT_CONSUMABLE:
 					item->ToConsumable().cons_type = (ConsumableType)t.MustGetKeywordId(G_CONSUMABLE_TYPE);
@@ -433,7 +433,9 @@ public:
 					break;
 				}
 				break;
-				case P_
+			case P_UNIT_TYPE:
+				item->ToArmor().armor_unit_type = (ArmorUnitType)t.MustGetKeywordId(G_ARMOR_UNIT_TYPE);
+				break;
 			case P_MATERIAL:
 				{
 					MATERIAL_TYPE mat = (MATERIAL_TYPE)t.MustGetKeywordId(G_MATERIAL);
@@ -484,9 +486,6 @@ public:
 						t.Throw("Can't have negative mobility %d.", mob);
 					item->ToArmor().mobility = mob;
 				}
-				break;
-			case P_SKILL:
-				item->ToArmor().skill = (SkillId)t.MustGetKeywordId(G_ARMOR_SKILL);
 				break;
 			case P_TEX_OVERRIDE:
 				{
@@ -1166,8 +1165,8 @@ public:
 					crc.Update(a.req_str);
 					crc.Update(a.mobility);
 					crc.Update(a.material);
-					crc.Update(a.skill);
 					crc.Update(a.armor_type);
+					crc.Update(a.armor_unit_type);
 					crc.Update(a.tex_override.size());
 					for(TexId t : a.tex_override)
 						crc.Update(t.id);

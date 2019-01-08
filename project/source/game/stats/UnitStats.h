@@ -3,6 +3,7 @@
 //-----------------------------------------------------------------------------
 #include "Attribute.h"
 #include "Skill.h"
+#include "StatProfile.h"
 
 //-----------------------------------------------------------------------------
 // Typ broni
@@ -33,10 +34,13 @@ struct StatInfo
 };
 
 //-----------------------------------------------------------------------------
+// Units stats
+// This is shared between units of same profile/subprofile.
 struct UnitStats
 {
 	int attrib[(int)AttributeId::MAX];
 	int skill[(int)SkillId::MAX];
+	SubprofileInfo subprofile;
 	bool fixed;
 
 	void Save(FileWriter& f) const
@@ -51,8 +55,10 @@ struct UnitStats
 	}
 	static void Skip(FileReader& f) { f.Skip(sizeof(attrib) + sizeof(skill)); }
 
+	void Set(StatProfile& stat);
+	void SetForNew(StatProfile& stat);
 	void Write(BitStreamWriter& f) const;
 	void Read(BitStreamReader& f);
 
-	static std::map<std::pair<StatProfile*, int>, UnitStats*> shared_stats;
+	static std::map<std::pair<StatProfile*, SubprofileInfo>, UnitStats*> shared_stats;
 };

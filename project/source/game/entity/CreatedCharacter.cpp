@@ -101,9 +101,9 @@ void CreatedCharacter::Random(Class c)
 		break;
 	}
 
-	s[(int)sk1].Add(GetBonus(sk1), true);
-	s[(int)sk2].Add(GetBonus(sk2), true);
-	s[(int)sk3].Add(GetBonus(sk3), true);
+	s[(int)sk1].Add(Skill::TAG_BONUS, true);
+	s[(int)sk2].Add(Skill::TAG_BONUS, true);
+	s[(int)sk3].Add(Skill::TAG_BONUS, true);
 	TakenPerk tp(Perk::Talent, (int)talent);
 	PerkContext ctx(this);
 	tp.Apply(ctx);
@@ -159,7 +159,7 @@ int CreatedCharacter::Read(BitStreamReader& f)
 				Error("Skill increase for disabled skill '%s'.", Skill::skills[i].id);
 				return 3;
 			}
-			s[i].Add(GetBonus((SkillId)i), true);
+			s[i].Add(Skill::TAG_BONUS, true);
 			--sp;
 		}
 	}
@@ -225,7 +225,7 @@ int CreatedCharacter::Read(BitStreamReader& f)
 //=================================================================================================
 void CreatedCharacter::Apply(PlayerController& pc)
 {
-	pc.unit->data->GetStatProfile().Set(-1, *pc.unit->stats);
+	pc.unit->stats->Set(pc.unit->data->GetStatProfile());
 
 	// reset blocked stats, apply skill bonus
 	for(int i = 0; i < (int)AttributeId::MAX; ++i)
@@ -237,7 +237,7 @@ void CreatedCharacter::Apply(PlayerController& pc)
 	{
 		pc.skill[i].blocked = false;
 		if(s[i].add)
-			pc.unit->stats->skill[i] += GetBonus((SkillId)i);
+			pc.unit->stats->skill[i] += Skill::TAG_BONUS;
 		pc.skill[i].apt = pc.unit->stats->skill[i] / 5;
 	}
 

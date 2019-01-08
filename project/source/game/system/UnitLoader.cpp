@@ -138,6 +138,8 @@ class UnitLoader : public ContentLoader
 	{
 		SPK_WEAPON,
 		SPK_ARMOR,
+		SPK_BOW,
+		SPK_SHIELD,
 		SPK_TAG,
 		SPK_PRIORITY
 	};
@@ -494,6 +496,15 @@ class UnitLoader : public ContentLoader
 			{ "food", Food },
 			{ "drink", Drink },
 			{ "potion", Potion }
+		});
+
+		t.AddKeywords(G_SUBPROFILE_GROUP, {
+			{ "weapon", SPK_WEAPON },
+			{ "armor", SPK_ARMOR },
+			{ "bow", SPK_BOW },
+			{ "shield", SPK_SHIELD },
+			{ "tag", SPK_TAG },
+			{ "priority", SPK_PRIORITY }
 		});
 	}
 
@@ -1000,7 +1011,7 @@ class UnitLoader : public ContentLoader
 				cstring a = "subprofile";
 				int b = G_ATTRIBUTE, c = G_SKILL;
 				t.StartUnexpected()
-					.Add(tokenizer::T_ITEM, &a)
+					.Add(tokenizer::T_ITEM, (int*)&a)
 					.Add(tokenizer::T_KEYWORD_GROUP, &b)
 					.Add(tokenizer::T_KEYWORD_GROUP, &c)
 					.Throw();
@@ -1015,6 +1026,7 @@ class UnitLoader : public ContentLoader
 	//=================================================================================================
 	void ParseSubprofile(Ptr<StatProfile::Subprofile>& subprofile)
 	{
+		t.Next();
 		subprofile->id = t.GetText();
 		t.Next();
 		t.AssertSymbol('{');
@@ -1026,26 +1038,141 @@ class UnitLoader : public ContentLoader
 			switch(key)
 			{
 			case SPK_WEAPON:
+				if(subprofile->weapon_total > 0)
+					t.Throw("Weapon subprofile already set.");
 				if(t.IsSymbol('{'))
 				{
-
+					t.Next();
+					while(!t.IsSymbol('}'))
+					{
+						WEAPON_TYPE type = GetWeaponType();
+						if(subprofile->weapon_chance[type] != 0)
+							t.Throw("Weapon subprofile chance already set.");
+						t.Next();
+						int chance = t.MustGetInt();
+						subprofile->weapon_chance[type] = chance;
+						subprofile->weapon_total += chance;
+						t.Next();
+					}
 				}
 				else
 				{
-					SkillId skill = (SkillId)t.MustGetKeywordId(G_SKILL);
-					Skill& info = Skill::skills[(int)skill];
-					if(info.type != SkillType::WEAPON)
-						t.Throw("Skill '%s' is not valid weapon skill.", info.id);
+					WEAPON_TYPE type = GetWeaponType();
+					subprofile->weapon_chance[type] = 1;
+					subprofile->weapon_total = 1;
 				}
+				break;
 			case SPK_ARMOR:
+				if(subprofile->armor_total > 0)
+					t.Throw("Armor subprofile already set.");
+				if(t.IsSymbol('{'))
+				{
+					t.Next();
+					while(!t.IsSymbol('}'))
+					{
+						ARMOR_TYPE type = GetArmorType();
+						if(subprofile->armor_chance[type] != 0)
+							t.Throw("Armor subprofile chance already set.");
+						t.Next();
+						int chance = t.MustGetInt();
+						subprofile->armor_chance[type] = chance;
+						subprofile->armor_total += chance;
+						t.Next();
+					}
+				}
+				else
+				{
+					ARMOR_TYPE type = GetArmorType();
+					subprofile->armor_chance[type] = 1;
+					subprofile->armor_total = 1;
+				}
+				break;
 			case SPK_TAG:
+				{
+					int index = 0;
+					for(; index < StatProfile::Subprofile::MAX_TAGS; ++index)
+					{
+						if(subprofile->tag_skills[index] == SkillId::NONE)
+							break;
+					}
+					if(index == MAX_TAGS)
+						t.Throw("Max %u tag skills.", MAX_TAGS);
+					SkillId skill;
+					if(t.IsKeyword(SPK_WEAPON, G_SUBPROFILE_GROUP))
+						skill = SkillId::SPECIAL_WEAPON;
+					else if(t.IsKeyword(SPK_ARMOR, G_SUBPROFILE_GROUP))
+						skill = SkillId::SPECIAL_ARMOR;
+					else
+						skill = (SkillId)t.MustGetKeywordId(G_SKILL);
+					subprofile->tag_skills[index] = skill;
+				}
+				break;
 			case SPK_PRIORITY:
+				{
+					int set = 0;
+					t.AssertSymbol('{');
+					t.Next();
+					for(int i = 0; i < SLOT_MAX; ++i)
+					{
+						SubprofileKeyword k = (SubprofileKeyword)t.MustGetKeywordId(G_SUBPROFILE_GROUP);
+						ITEM_TYPE type;
+						switch(k)
+						{
+						case SPK_WEAPON:
+							type = IT_WEAPON;
+							break;
+						case SPK_ARMOR:
+							type = IT_ARMOR;
+							break;
+						case SPK_SHIELD:
+							type = IT_SHIELD;
+							break;
+						case SPK_BOW:
+							type = IT_BOW;
+							break;
+						default:
+							t.Unexpected();
+							break;
+						}
+						if(IS_SET(set, 1 << type))
+							t.Throw("Subprofile priority already set.");
+						set |= (1 << type);
+						subprofile->priorities[i] = type;
+						t.Next();
+					}
+				}
+				break;
+			default:
+				t.Unexpected();
+				break;
 			}
+			t.Next();
 		}
+		if(subprofile->weapon_total == 0)
+			t.Throw("Weapon subprofile not set.");
+		if(subprofile->armor_total == 0)
+			t.Throw("Armor subprofile not set.");
 	}
 
 	//=================================================================================================
-	da
+	WEAPON_TYPE GetWeaponType()
+	{
+		SkillId skill = (SkillId)t.MustGetKeywordId(G_SKILL);
+		Skill& info = Skill::skills[(int)skill];
+		if(info.type != SkillType::WEAPON)
+			t.Throw("Skill '%s' is not valid weapon skill.", info.id);
+		return ::GetWeaponType(skill);
+	}
+
+	//=================================================================================================
+	ARMOR_TYPE GetArmorType()
+	{
+		SkillId skill = (SkillId)t.MustGetKeywordId(G_SKILL);
+		Skill& info = Skill::skills[(int)skill];
+		if(info.type != SkillType::ARMOR)
+			t.Throw("Skill '%s' is not valid armor skill.", info.id);
+		return ::GetArmorType(skill);
+	}
 
 	//=================================================================================================
 	void ParseItems(Ptr<ItemScript>& script)

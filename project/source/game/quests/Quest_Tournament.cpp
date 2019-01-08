@@ -813,14 +813,14 @@ void Quest_Tournament::Train(PlayerController& player)
 	if(u.HaveWeapon())
 	{
 		player.Train(true, (int)SkillId::ONE_HANDED_WEAPON);
-		player.Train(true, (int)u.GetWeapon().GetInfo().skill);
+		player.Train(true, (int)u.GetWeapon().GetSkill());
 	}
 	if(u.HaveBow())
 		player.Train(true, (int)SkillId::BOW);
 	if(u.HaveShield())
 		player.Train(true, (int)SkillId::SHIELD);
 	if(u.HaveArmor())
-		player.Train(true, (int)u.GetArmor().skill);
+		player.Train(true, (int)u.GetArmor().GetSkill());
 	Var* var = SM.GetVars(&u)->Get("ironfist_won");
 	if(!var->IsBool(true))
 	{

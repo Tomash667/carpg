@@ -14,18 +14,30 @@ std::map<string, UnitData*> UnitData::aliases;
 
 UnitStats* UnitData::GetStats(int level)
 {
-	assert(group != G_PLAYER);
+	SubprofileInfo sub;
 	if(!stat_profile)
-		level = -1;
-	typedef std::map<std::pair<StatProfile*, int>, UnitStats*> M;
-	std::pair<M::iterator, bool> const& result = UnitStats::shared_stats.insert(M::value_type(std::make_pair(stat_profile, level), nullptr));
+		sub.value = 0;
+	else
+	{
+		sub = stat_profile->GetRandomSubprofile();
+		sub.level = level;
+	}
+	return GetStats(sub);
+}
+
+UnitStats* UnitData::GetStats(SubprofileInfo sub)
+{
+	assert(group != G_PLAYER);
+	typedef std::map<std::pair<StatProfile*, SubprofileInfo>, UnitStats*> M;
+	std::pair<M::iterator, bool> const& result = UnitStats::shared_stats.insert(M::value_type(std::make_pair(stat_profile, sub), nullptr));
 	if(result.second)
 	{
 		UnitStats*& stats = result.first->second;
 		stats = new UnitStats;
 		stats->fixed = true;
+		stats->subprofile = sub.value;
 		if(stat_profile)
-			stat_profile->Set(level, *stats);
+			stats->Set(*stat_profile);
 		else
 		{
 			for(int i = 0; i < (int)AttributeId::MAX; ++i)

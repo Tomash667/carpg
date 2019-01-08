@@ -1161,7 +1161,7 @@ void CreateCharacterPanel::ClassChanged()
 	int y = 0;
 
 	StatProfile& profile = ci.unit_data->GetStatProfile();
-	profile.Set(-1, *unit->stats);
+	unit->stats->Set(profile);
 	unit->CalculateStats();
 
 	// attributes
@@ -1204,18 +1204,17 @@ void CreateCharacterPanel::OnPickSkill(int group, int id)
 {
 	assert(group == (int)Group::PickSkill_Button);
 
-	int bonus = cc.GetBonus((SkillId)id);
 	if(!cc.s[id].add)
 	{
 		// add
 		--cc.sp;
-		cc.s[id].Add(bonus, true);
+		cc.s[id].Add(Skill::TAG_BONUS, true);
 	}
 	else
 	{
 		// remove
 		++cc.sp;
-		cc.s[id].Add(-bonus, false);
+		cc.s[id].Add(-Skill::TAG_BONUS, false);
 	}
 
 	// update buttons image / text

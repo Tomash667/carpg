@@ -61,7 +61,6 @@ struct CreatedCharacter
 	void Apply(PlayerController& pc);
 	bool HavePerk(Perk perk) const;
 	void GetStartingItems(const Item* (&items)[SLOT_MAX]);
-	constexpr int GetBonus(SkillId s) { return 10; }
 
 	int Get(AttributeId attrib) const
 	{

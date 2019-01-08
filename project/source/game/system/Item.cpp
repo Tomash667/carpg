@@ -82,8 +82,8 @@ Item& Item::operator = (const Item& i)
 			a.req_str = a2.req_str;
 			a.mobility = a2.mobility;
 			a.material = a2.material;
-			a.skill = a2.skill;
 			a.armor_type = a2.armor_type;
+			a.armor_unit_type = a2.armor_unit_type;
 			a.tex_override = a2.tex_override;
 		}
 		break;
@@ -187,14 +187,14 @@ bool ItemCmp(const Item* a, const Item* b)
 		}
 		else if(a->type == IT_ARMOR)
 		{
-			ArmorUnitType a1 = a->ToArmor().armor_type,
-				a2 = b->ToArmor().armor_type;
-			if(a1 != a2)
-				return a1 < a2;
-			SkillId s1 = a->ToArmor().skill,
-				s2 = b->ToArmor().skill;
-			if(s1 != s2)
-				return s1 < s2;
+			ArmorUnitType aut1 = a->ToArmor().armor_unit_type,
+				aut2 = b->ToArmor().armor_unit_type;
+			if(aut1 != aut2)
+				return aut1 < aut2;
+			ARMOR_TYPE at1 = a->ToArmor().armor_type,
+				at2 = b->ToArmor().armor_type;
+			if(at1 != at2)
+				return at1 < at2;
 		}
 		else if(a->type == IT_CONSUMABLE)
 		{

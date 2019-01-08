@@ -30,43 +30,14 @@ bool StatProfile::operator != (const StatProfile& p) const
 }
 
 //=================================================================================================
-void StatProfile::Set(int level, int* attribs, int* skills) const
+StatProfile::Subprofile* StatProfile::GetSubprofile(const string& id)
 {
-	assert(skills && attribs);
-	assert(level == -1 || level >= 1);
-
-	if(level == -1)
+	for(Subprofile* subprofile : subprofiles)
 	{
-		for(int i = 0; i < (int)AttributeId::MAX; ++i)
-			attribs[i] = attrib[i];
-		for(int i = 0; i < (int)SkillId::MAX; ++i)
-			skills[i] = skill[i];
+		if(subprofile->id == id)
+			return subprofile;
 	}
-	else
-	{
-		for(int i = 0; i < (int)AttributeId::MAX; ++i)
-			attribs[i] = 25 + int(Attribute::GetModifier(attrib[i]) * level);
-		for(int i = 0; i < (int)SkillId::MAX; ++i)
-			skills[i] = int(Skill::GetModifier(skill[i]) * level);
-	}
-}
-
-//=================================================================================================
-void StatProfile::SetForNew(int level, int* attribs, int* skills) const
-{
-	assert(skills && attribs);
-	assert(level >= 1);
-
-	for(int i = 0; i < (int)AttributeId::MAX; ++i)
-	{
-		if(attribs[i] == -2)
-			attribs[i] = 25 + int(Attribute::GetModifier(attrib[i]) * level);
-	}
-	for(int i = 0; i < (int)SkillId::MAX; ++i)
-	{
-		if(skills[i] == -2)
-			skills[i] = int(Skill::GetModifier(skill[i]) * level);
-	}
+	return nullptr;
 }
 
 //=================================================================================================
@@ -79,4 +50,39 @@ StatProfile* StatProfile::TryGet(Cstring id)
 	}
 
 	return nullptr;
+}
+
+//=================================================================================================
+SubprofileInfo StatProfile::GetRandomSubprofile()
+{
+	SubprofileInfo s;
+	if(subprofiles.empty())
+	{
+		s.value = 0;
+		return s;
+	}
+	s.index = byte(Rand() % subprofiles.size());
+	Subprofile& sub = *subprofiles[s.index];
+	uint j = 0, k = Rand() % sub.weapon_total;
+	for(int i = 0; i < WT_MAX; ++i)
+	{
+		if(k < j)
+		{
+			s.weapon = i;
+			break;
+		}
+		j += sub.weapon_chance[i];
+	}
+	j = 0;
+	k = Rand() % sub.armor_total;
+	for(int i = 0; i < AT_MAX; ++i)
+	{
+		if(k < j)
+		{
+			s.armor = i;
+			break;
+		}
+		j += sub.armor_chance[i];
+	}
+	return s;
 }

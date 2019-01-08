@@ -409,7 +409,6 @@ void PlayerController::Load(FileReader& f)
 			stat.train_part = 0;
 			stat.blocked = false;
 		}
-		SetRequiredPoints();
 	}
 	else
 	{
@@ -658,6 +657,9 @@ int PlayerController::CalculateLevel()
 	int weight_sum = 0;
 	UnitStats& stats = *unit->stats;
 
+
+	FIXME; // jak skill/attrib jest -2 to ignoruj
+
 	// calculate player level based on attributes and skills that are important for that class
 	for(int i = 0; i < (int)AttributeId::MAX; ++i)
 	{
@@ -733,7 +735,7 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 		break;
 	case TrainWhat::TakeDamageArmor:
 		if(unit->HaveArmor())
-			TrainMod(unit->GetArmor().skill, value * 2000 * GetLevelMod(unit->level, level));
+			TrainMod(unit->GetArmor().GetSkill(), value * 2000 * GetLevelMod(unit->level, level));
 		break;
 	case TrainWhat::AttackStart:
 		{
@@ -867,11 +869,12 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 					TrainMod(AttributeId::STR, 250.f);
 				else if(armor.req_str + 10 > str)
 					TrainMod(AttributeId::STR, 125.f);
-				int skill = unit->GetBase(armor.skill);
+				SkillId s = armor.GetSkill();
+				int skill = unit->GetBase(s);
 				if(skill < 25)
-					TrainMod(armor.skill, 250.f);
+					TrainMod(s, 250.f);
 				else if(skill < 50)
-					TrainMod(armor.skill, 125.f);
+					TrainMod(s, 125.f);
 			}
 		}
 		break;

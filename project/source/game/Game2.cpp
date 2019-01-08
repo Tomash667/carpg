@@ -3672,7 +3672,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	{
 		u->stats = new UnitStats;
 		u->stats->fixed = false;
-		base.GetStatProfile().Set(-1, u->stats->attrib, u->stats->skill);
+		u->stats->Set(base.GetStatProfile());
 	}
 	else
 		u->stats = base.GetStats(u->level);
@@ -7946,7 +7946,7 @@ SOUND Game::GetItemSound(const Item* item)
 	case IT_WEAPON:
 		return sItem[6];
 	case IT_ARMOR:
-		if(item->ToArmor().skill != SkillId::LIGHT_ARMOR)
+		if(item->ToArmor().armor_type != AT_LIGHT)
 			return sItem[2];
 		else
 			return sItem[1];

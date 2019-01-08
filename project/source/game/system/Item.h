@@ -2,13 +2,13 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "UnitStats.h"
 #include "Material.h"
 #include "DamageTypes.h"
 #include "ItemType.h"
 #include "ArmorUnitType.h"
 #include "Resource.h"
 #include "Effect.h"
+#include "Skill.h"
 
 //-----------------------------------------------------------------------------
 static const int HEIRLOOM = -1;
@@ -239,6 +239,22 @@ struct WeaponTypeInfo
 	static WeaponTypeInfo info[];
 };
 
+inline WEAPON_TYPE GetWeaponType(SkillId s)
+{
+	switch(s)
+	{
+	default:
+	case SkillId::SHORT_BLADE:
+		return WT_SHORT_BLADE;
+	case SkillId::LONG_BLADE:
+		return WT_LONG_BLADE;
+	case SkillId::AXE:
+		return WT_AXE;
+	case SkillId::BLUNT:
+		return WT_BLUNT;
+	}
+}
+
 inline const WeaponTypeInfo& GetWeaponTypeInfo(SkillId s)
 {
 	switch(s)
@@ -264,6 +280,10 @@ struct Weapon : public Item
 	const WeaponTypeInfo& GetInfo() const
 	{
 		return WeaponTypeInfo::info[weapon_type];
+	}
+	SkillId GetSkill() const
+	{
+		return GetInfo().skill;
 	}
 
 	int dmg, dmg_type, req_str;
@@ -297,7 +317,7 @@ struct Shield : public Item
 };
 
 //-----------------------------------------------------------------------------
-enum ArmorType
+enum ARMOR_TYPE
 {
 	AT_LIGHT,
 	AT_MEDIUM,
@@ -305,11 +325,27 @@ enum ArmorType
 	AT_MAX
 };
 
+inline ARMOR_TYPE GetArmorType(SkillId skill)
+{
+	switch(skill)
+	{
+	case SkillId::LIGHT_ARMOR:
+		return AT_LIGHT;
+	case SkillId::MEDIUM_ARMOR:
+		return AT_MEDIUM;
+	case SkillId::HEAVY_ARMOR:
+		return AT_HEAVY;
+	default:
+		assert(0);
+		return AT_MAX;
+	}
+}
+
 //-----------------------------------------------------------------------------
 // Armor
 struct Armor : public Item
 {
-	Armor() : Item(IT_ARMOR), def(10), req_str(10), mobility(100), material(MAT_SKIN), _armor_type(AT_LIGHT), armor_unit_type(ArmorUnitType::HUMAN) {}
+	Armor() : Item(IT_ARMOR), def(10), req_str(10), mobility(100), material(MAT_SKIN), armor_type(AT_LIGHT), armor_unit_type(ArmorUnitType::HUMAN) {}
 
 	const TexId* GetTextureOverride() const
 	{
@@ -318,10 +354,24 @@ struct Armor : public Item
 		else
 			return &tex_override[0];
 	}
+	SkillId GetSkill() const
+	{
+		switch(armor_type)
+		{
+		default:
+			assert(0);
+		case AT_LIGHT:
+			return SkillId::LIGHT_ARMOR;
+		case AT_MEDIUM:
+			return SkillId::MEDIUM_ARMOR;
+		case AT_HEAVY:
+			return SkillId::HEAVY_ARMOR;
+		}
+	}
 
 	int def, req_str, mobility;
 	MATERIAL_TYPE material;
-	ArmorType _armor_type; FIXME; // rename
+	ARMOR_TYPE armor_type;
 	ArmorUnitType armor_unit_type;
 	vector<TexId> tex_override;
 
@@ -333,7 +383,7 @@ struct Armor : public Item
 inline bool Item::IsWearableByHuman() const
 {
 	if(type == IT_ARMOR)
-		return ToArmor().armor_type == ArmorUnitType::HUMAN;
+		return ToArmor().armor_unit_type == ArmorUnitType::HUMAN;
 	else
 		return type == IT_WEAPON || type == IT_BOW || type == IT_SHIELD;
 }

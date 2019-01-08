@@ -192,7 +192,7 @@ float Unit::CalculateDefense(const Item* armor) const
 		if(armor)
 		{
 			const Armor& a = armor->ToArmor();
-			float skill_val = (float)Get(a.skill);
+			float skill_val = (float)Get(a.GetSkill());
 			int str = Get(AttributeId::STR);
 			if(str < a.req_str)
 				skill_val *= float(str) / a.req_str;
@@ -210,7 +210,7 @@ Unit::LoadState Unit::GetArmorLoadState(const Item* armor) const
 	auto state = GetLoadState();
 	if(armor)
 	{
-		auto skill = armor->ToArmor().skill;
+		SkillId skill = armor->ToArmor().GetSkill();
 		if(skill == SkillId::HEAVY_ARMOR)
 		{
 			if(state < LS_HEAVY)
@@ -1500,6 +1500,8 @@ void Unit::Save(GameWriter& f, bool local)
 	f << level;
 	if(IsPlayer())
 		stats->Save(f);
+	else
+		f << stats->subprofile;
 	f << gold;
 	f << invisible;
 	f << in_building;
@@ -1712,10 +1714,15 @@ void Unit::Load(GameReader& f, bool local)
 		{
 			stats = new UnitStats;
 			stats->fixed = false;
+			stats->subprofile.value = 0;
 			stats->Load(f);
 		}
 		else
-			stats = data->GetStats(level);
+		{
+			SubprofileInfo sub;
+			f >> sub;
+			stats = data->GetStats(sub);
+		}
 	}
 	else if(LOAD_VERSION >= V_0_4)
 	{
@@ -1724,6 +1731,7 @@ void Unit::Load(GameReader& f, bool local)
 		{
 			stats = new UnitStats;
 			stats->fixed = false;
+			stats->subprofile.value = 0;
 			stats->Load(f);
 			stats->skill[(int)SkillId::HAGGLE] = -2;
 		}
@@ -2029,9 +2037,12 @@ void Unit::Load(GameReader& f, bool local)
 	{
 		if(IsPlayer())
 		{
-			StatProfile& profile = data->GetStatProfile();
+			player->RecalculateLevel();
+			// set new skills initial value & aptitude
 			UnitStats old_stats;
-			profile.Set(-1, old_stats);
+			old_stats.subprofile.value = 0;
+			old_stats.subprofile.level = level;
+			old_stats.Set(data->GetStatProfile());
 			for(int i = 0; i < (int)SkillId::MAX; ++i)
 			{
 				if(stats->skill[i] == -2)
@@ -2040,6 +2051,7 @@ void Unit::Load(GameReader& f, bool local)
 					player->skill[i].apt = stats->skill[i] / 5;
 				}
 			}
+			player->SetRequiredPoints();
 			player->RecalculateLevel();
 		}
 		CalculateStats();
@@ -2047,22 +2059,26 @@ void Unit::Load(GameReader& f, bool local)
 	else
 	{
 		if(IsPlayer())
+		{
 			player->RecalculateLevel();
 
-		StatProfile& profile = data->GetStatProfile();
-		profile.SetForNew(level, *stats);
-		CalculateStats();
+			// set new attributes & skills
+			StatProfile& profile = data->GetStatProfile();
+			stats->subprofile.value = 0;
+			stats->subprofile.level = level;
+			stats->SetForNew(profile);
 
-		if(IsPlayer())
-		{
-			UnitStats old_stats;
-			profile.Set(-1, old_stats);
+			// set apptitude
+			UnitStats base_stats;
+			base_stats.subprofile.value = 0;
+			base_stats.Set(profile);
 			for(int i = 0; i < (int)AttributeId::MAX; ++i)
-				player->attrib[i].apt = (stats->attrib[i] - 50) / 5;
+				player->attrib[i].apt = (base_stats.attrib[i] - 50) / 5;
 			for(int i = 0; i < (int)SkillId::MAX; ++i)
-				player->skill[i].apt = stats->skill[i] / 5;
+				player->skill[i].apt = base_stats.skill[i] / 5;
 			player->SetRequiredPoints();
 		}
+		CalculateStats();
 	}
 }
 
@@ -3629,7 +3645,7 @@ float Unit::CalculateMobility(const Armor* armor) const
 	{
 		// calculate armor mobility (0-100)
 		int armor_mobility = armor->mobility;
-		int skill = min(Get(armor->skill), 100);
+		int skill = min(Get(armor->GetSkill()), 100);
 		armor_mobility += skill / 4;
 		if(armor_mobility > 100)
 			armor_mobility = 100;

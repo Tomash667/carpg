@@ -263,6 +263,7 @@ struct UnitData
 			return tex->textures.data();
 	}
 	UnitStats* GetStats(int level);
+	UnitStats* GetStats(SubprofileInfo sub);
 	void CopyFrom(UnitData& ud);
 	int GetLevelDif(int level) const;
 

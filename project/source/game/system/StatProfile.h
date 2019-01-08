@@ -2,18 +2,39 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "UnitStats.h"
 #include "ItemSlot.h"
+#include "Item.h"
+
+//-----------------------------------------------------------------------------
+union SubprofileInfo
+{
+	struct
+	{
+		byte level;
+		byte index;
+		byte weapon;
+		byte armor;
+	};
+	uint value;
+};
 
 //-----------------------------------------------------------------------------
 struct StatProfile
 {
 	struct Subprofile
 	{
+		static const uint MAX_TAGS = 3;
+
 		string id;
-		int weapon_chance[WT_MAX], weapon_total, armor_chance[3], armor_total;
-		SkillId tag_skills;
+		int weapon_chance[WT_MAX], weapon_total, armor_chance[AT_MAX], armor_total;
+		SkillId tag_skills[MAX_TAGS];
 		ITEM_TYPE priorities[SLOT_MAX];
+
+		Subprofile() : weapon_chance(), weapon_total(0), armor_chance(), armor_total(0), priorities()
+		{
+			for(int i = 0; i < MAX_TAGS; ++i)
+				tag_skills[i] = SkillId::NONE;
+		}
 	};
 
 	string id;
@@ -23,11 +44,8 @@ struct StatProfile
 
 	~StatProfile() { DeleteElements(subprofiles); }
 	bool operator != (const StatProfile& p) const;
-
-	void Set(int level, int* attribs, int* skills) const;
-	void Set(int level, UnitStats& stats) const { Set(level, stats.attrib, stats.skill); }
-	void SetForNew(int level, int* attribs, int* skills) const;
-	void SetForNew(int level, UnitStats& stats) const { SetForNew(level, stats.attrib, stats.skill); }
+	Subprofile* GetSubprofile(const string& id);
+	SubprofileInfo GetRandomSubprofile();
 
 	static vector<StatProfile*> profiles;
 	static StatProfile* TryGet(Cstring id);
