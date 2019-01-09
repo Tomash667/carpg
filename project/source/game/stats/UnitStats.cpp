@@ -43,7 +43,7 @@ void UnitStats::Set(StatProfile& profile)
 			{
 				if(sub.tag_skills[i] == SkillId::NONE)
 					break;
-				SkillId sk = sub.tag_skills[i];
+				SkillId sk = subprofile.GetSkill(sub.tag_skills[i]);
 				if(Skill::skills[(int)sk].type == SkillType::WEAPON && !single_weapon)
 				{
 					single_weapon = true;

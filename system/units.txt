@@ -223,6 +223,8 @@ profile hunter {
 		tag light_armor
 		tag weapon
 		priority {bow armor weapon shield}
+		perk talent dexterity
+		perk skill_focus bow
 	}
 	subprofile weapon {
 		weapon {
@@ -234,6 +236,8 @@ profile hunter {
 		tag armor
 		tag bow
 		priority {weapon armor bow shield}
+		perk talent dexterity
+		perk skill_focus weapon
 	}
 	subprofile weapon_medium {
 		weapon {
@@ -246,6 +250,8 @@ profile hunter {
 		tag armor
 		tag shield
 		priority {weapon armor shield bow}
+		perk talent endurance
+		perk skill_focus weapon
 	}
 }
 
@@ -297,6 +303,8 @@ profile rogue {
 		tag armor
 		tag shield
 		priority {weapon armor shield bow}
+		perk talent dexterity
+		perk skill_focus weapon
 	}
 	subprofile bow {
 		weapon {
@@ -308,6 +316,8 @@ profile rogue {
 		tag armor
 		tag weapon
 		priority {bow armor weapon shield}
+		perk talent dexterity
+		perk skill_focus bow
 	}
 }
 
@@ -342,6 +352,8 @@ profile warrior {
 		tag shield
 		tag weapon
 		priority {armor shield weapon bow}
+		perk talent endurance
+		perk skill_focus armor
 	}
 	subprofile heavy {
 		weapon {
@@ -354,6 +366,8 @@ profile warrior {
 		tag armor
 		tag shield
 		priority {weapon armor shield bow}
+		perk talent strength
+		perk skill_focus weapon
 	}
 	subprofile medium {
 		weapon {
@@ -367,6 +381,8 @@ profile warrior {
 		tag armor
 		tag bow
 		priority {weapon armor bow shield}
+		perk talent strength
+		perk skill_focus weapon
 	}
 }
 

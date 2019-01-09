@@ -35,15 +35,22 @@ UnitStats* UnitData::GetStats(SubprofileInfo sub)
 		UnitStats*& stats = result.first->second;
 		stats = new UnitStats;
 		stats->fixed = true;
-		stats->subprofile = sub.value;
+		stats->subprofile = sub;
 		if(stat_profile)
+		{
 			stats->Set(*stat_profile);
+			if(!stat_profile->subprofiles.empty())
+				stats->priorities = stat_profile->subprofiles[sub.index]->priorities;
+			else
+				stats->priorities = StatProfile::Subprofile::default_priorities;
+		}
 		else
 		{
 			for(int i = 0; i < (int)AttributeId::MAX; ++i)
 				stats->attrib[i] = 0;
 			for(int i = 0; i < (int)SkillId::MAX; ++i)
 				stats->skill[i] = 0;
+			stats->priorities = StatProfile::Subprofile::default_priorities;
 		}
 		return stats;
 	}

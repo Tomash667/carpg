@@ -26,14 +26,6 @@ TeamSingleton Team;
 // NPCs first asks about best to worst weapons, then bows, then armor then shields
 // if there are two same items it will check priority below
 //-----------------------------------------------------------------------------
-// items sort order:
-// best to worst weapon, best to worst bow, best to worst armor, best to worst shield
-const int item_type_prio[4] = {
-	0, // IT_WEAPON
-	1, // IT_BOW
-	3, // IT_SHIELD
-	2  // IT_ARMOR
-};
 
 //-----------------------------------------------------------------------------
 // lower priority is better
@@ -50,18 +42,23 @@ enum TeamItemPriority
 //-----------------------------------------------------------------------------
 struct SortTeamShares
 {
-	Unit* unit;
+	int priorities[IT_MAX_WEARABLE];
 
-	explicit SortTeamShares(Unit* unit) : unit(unit)
+	explicit SortTeamShares(Unit* unit)
 	{
+		// convert of list of item priority to rank of item priority
+		static_assert(IT_MAX_WEARABLE == SLOT_MAX, "Array size mismatch!");
+		const ITEM_TYPE* p = unit->stats->priorities;
+		for(int i = 0; i < IT_MAX_WEARABLE; ++i)
+			priorities[p[i]] = i;
 	}
 
 	bool operator () (const TeamSingleton::TeamShareItem& t1, const TeamSingleton::TeamShareItem& t2) const
 	{
 		if(t1.item->type != t2.item->type)
 		{
-			int p1 = item_type_prio[t1.item->type];
-			int p2 = item_type_prio[t2.item->type];
+			int p1 = priorities[t1.item->type];
+			int p2 = priorities[t2.item->type];
 			return p1 < p2;
 		}
 		else if(t1.value != t2.value)
@@ -851,19 +848,19 @@ void TeamSingleton::BuyTeamItems()
 		if(u.IsPlayer())
 			continue;
 
-		// sprzedaj stare przedmioty, policz miksturki
-		int ile_hp = 0, ile_hp2 = 0, ile_hp3 = 0;
+		// sell old items, count potions
+		int hp1count = 0, hp2count = 0, hp3count = 0;
 		for(vector<ItemSlot>::iterator it2 = u.items.begin(), end2 = u.items.end(); it2 != end2;)
 		{
 			assert(it2->item);
 			if(it2->item->type == IT_CONSUMABLE)
 			{
 				if(it2->item == hp1)
-					ile_hp += it2->count;
+					hp1count += it2->count;
 				else if(it2->item == hp2)
-					ile_hp2 += it2->count;
+					hp2count += it2->count;
 				else if(it2->item == hp3)
-					ile_hp3 += it2->count;
+					hp3count += it2->count;
 				++it2;
 			}
 			else if(it2->item->IsWearable() && it2->team_count == 0)
@@ -885,7 +882,7 @@ void TeamSingleton::BuyTeamItems()
 				++it2;
 		}
 
-		// kup miksturki
+		// buy potions
 		int p1, p2, p3;
 		if(u.level < 4)
 		{
@@ -918,102 +915,110 @@ void TeamSingleton::BuyTeamItems()
 			p3 = 4;
 		}
 
-		while(ile_hp3 < p3 && u.gold >= hp3->value / 2)
+		while(hp3count < p3 && u.gold >= hp3->value / 2)
 		{
 			u.AddItem(hp3, 1, false);
 			u.gold -= hp3->value / 2;
-			++ile_hp3;
+			++hp3count;
 		}
-		while(ile_hp2 < p2 && u.gold >= hp2->value / 2)
+		while(hp2count < p2 && u.gold >= hp2->value / 2)
 		{
 			u.AddItem(hp2, 1, false);
 			u.gold -= hp2->value / 2;
-			++ile_hp2;
+			++hp2count;
 		}
-		while(ile_hp < p1 && u.gold >= hp1->value / 2)
+		while(hp1count < p1 && u.gold >= hp1->value / 2)
 		{
 			u.AddItem(hp1, 1, false);
 			u.gold -= hp1->value / 2;
-			++ile_hp;
+			++hp1count;
 		}
 
-		// darmowe miksturki dla biedaków
-		int count = p1 / 2 - ile_hp;
+		// free potions for poor heroes
+		int count = p1 / 2 - hp1count;
 		if(count > 0)
 			u.AddItem(hp1, (uint)count, false);
-		count = p2 / 2 - ile_hp2;
+		count = p2 / 2 - hp2count;
 		if(count > 0)
 			u.AddItem(hp2, (uint)count, false);
-		count = p3 / 2 - ile_hp3;
+		count = p3 / 2 - hp3count;
 		if(count > 0)
 			u.AddItem(hp3, (uint)count, false);
 
-		// kup przedmioty
+		// buy items
 		const ItemList* lis = ItemList::Get("base_items").lis;
-		// kup broñ
-		if(!u.HaveWeapon())
-			u.AddItem(UnitHelper::GetBaseWeapon(u, lis));
-		else
+		const ITEM_TYPE* priorities = unit->stats->priorities;
+		const Item* item;
+		for(int i = 0; i < SLOT_MAX; ++i)
 		{
-			const Item* weapon = u.slots[SLOT_WEAPON];
-			while(true)
+			switch(priorities[i])
 			{
-				const Item* item = ItemHelper::GetBetterItem(weapon);
+			case IT_WEAPON:
+				if(!u.HaveWeapon())
+					u.AddItem(UnitHelper::GetBaseWeapon(u, lis));
+				else
+				{
+					const Item* weapon = u.slots[SLOT_WEAPON];
+					while(true)
+					{
+						item = ItemHelper::GetBetterItem(weapon);
+						if(item && u.gold >= item->value)
+						{
+							if(u.IsBetterWeapon(item->ToWeapon()))
+							{
+								u.AddItem(item, 1, false);
+								u.gold -= item->value;
+								break;
+							}
+							else
+								weapon = item;
+						}
+						else
+							break;
+					}
+				}
+				break;
+			case IT_BOW:
+				if(!u.HaveBow())
+					item = UnitHelper::GetBaseBow(lis);
+				else
+					item = ItemHelper::GetBetterItem(&u.GetBow());
 				if(item && u.gold >= item->value)
 				{
-					if(u.IsBetterWeapon(item->ToWeapon()))
-					{
-						u.AddItem(item, 1, false);
-						u.gold -= item->value;
-						break;
-					}
-					else
-						weapon = item;
+					u.AddItem(item, 1, false);
+					u.gold -= item->value;
 				}
+				break;
+			case IT_SHIELD:
+				if(!u.HaveShield())
+					item = UnitHelper::GetBaseShield(lis);
 				else
-					break;
+					item = ItemHelper::GetBetterItem(&u.GetShield());
+				if(item && u.gold >= item->value)
+				{
+					u.AddItem(item, 1, false);
+					u.gold -= item->value;
+				}
+				break;
+			case IT_ARMOR:
+				if(!u.HaveArmor())
+					item = UnitHelper::GetBaseArmor(u, lis);
+				else
+					item = ItemHelper::GetBetterItem(&u.GetArmor());
+				if(item && u.gold >= item->value && u.IsBetterArmor(item->ToArmor()))
+				{
+					u.AddItem(item, 1, false);
+					u.gold -= item->value;
+				}
+				break;
 			}
 		}
 
-		// kup ³uk
-		const Item* item;
-		if(!u.HaveBow())
-			item = UnitHelper::GetBaseBow(lis);
-		else
-			item = ItemHelper::GetBetterItem(&u.GetBow());
-		if(item && u.gold >= item->value)
-		{
-			u.AddItem(item, 1, false);
-			u.gold -= item->value;
-		}
-
-		// kup pancerz
-		if(!u.HaveArmor())
-			item = UnitHelper::GetBaseArmor(u, lis);
-		else
-			item = ItemHelper::GetBetterItem(&u.GetArmor());
-		if(item && u.gold >= item->value && u.IsBetterArmor(item->ToArmor()))
-		{
-			u.AddItem(item, 1, false);
-			u.gold -= item->value;
-		}
-
-		// kup tarcze
-		if(!u.HaveShield())
-			item = UnitHelper::GetBaseShield(lis);
-		else
-			item = ItemHelper::GetBetterItem(&u.GetShield());
-		if(item && u.gold >= item->value)
-		{
-			u.AddItem(item, 1, false);
-			u.gold -= item->value;
-		}
-
-		// za³ó¿ nowe przedmioty
+		// equip new items
 		u.UpdateInventory(false);
 		u.ai->have_potion = 2;
 
-		// sprzedaj stare przedmioty
+		// sell old items
 		for(vector<ItemSlot>::iterator it2 = u.items.begin(), end2 = u.items.end(); it2 != end2;)
 		{
 			if(it2->item && it2->item->type != IT_CONSUMABLE && it2->item->IsWearable() && it2->team_count == 0)

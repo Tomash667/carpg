@@ -141,7 +141,8 @@ class UnitLoader : public ContentLoader
 		SPK_BOW,
 		SPK_SHIELD,
 		SPK_TAG,
-		SPK_PRIORITY
+		SPK_PRIORITY,
+		SPK_PERK
 	};
 
 	//=================================================================================================
@@ -504,7 +505,8 @@ class UnitLoader : public ContentLoader
 			{ "bow", SPK_BOW },
 			{ "shield", SPK_SHIELD },
 			{ "tag", SPK_TAG },
-			{ "priority", SPK_PRIORITY }
+			{ "priority", SPK_PRIORITY },
+			{ "perk", SPK_PERK }
 		});
 	}
 
@@ -1095,8 +1097,8 @@ class UnitLoader : public ContentLoader
 						if(subprofile->tag_skills[index] == SkillId::NONE)
 							break;
 					}
-					if(index == MAX_TAGS)
-						t.Throw("Max %u tag skills.", MAX_TAGS);
+					if(index == StatProfile::Subprofile::MAX_TAGS)
+						t.Throw("Max %u tag skills.", StatProfile::Subprofile::MAX_TAGS);
 					SkillId skill;
 					if(t.IsKeyword(SPK_WEAPON, G_SUBPROFILE_GROUP))
 						skill = SkillId::SPECIAL_WEAPON;
@@ -1140,6 +1142,40 @@ class UnitLoader : public ContentLoader
 						subprofile->priorities[i] = type;
 						t.Next();
 					}
+				}
+				break;
+			case SPK_PERK:
+				{
+					int index = 0;
+					for(; index < StatProfile::Subprofile::MAX_PERKS; ++index)
+					{
+						if(subprofile->perks[index].perk == Perk::None)
+							break;
+					}
+					if(index == StatProfile::Subprofile::MAX_PERKS)
+						t.Throw("Max %u perks.", StatProfile::Subprofile::MAX_PERKS);
+					const string& id = t.MustGetText();
+					PerkInfo* info = PerkInfo::Find(id);
+					if(!info)
+						t.Throw("Missing perk '%s'.", id.c_str());
+					subprofile->perks[index].perk = info->perk_id;
+					int value = -1;
+					if(info->value_type != PerkInfo::None)
+					{
+						t.Next();
+						if(info->value_type == PerkInfo::Attribute)
+							value = t.MustGetKeywordId(G_ATTRIBUTE);
+						else if(info->value_type == PerkInfo::Skill)
+						{
+							if(t.IsKeyword(SPK_WEAPON, G_SUBPROFILE_GROUP))
+								value = (int)SkillId::SPECIAL_WEAPON;
+							else if(t.IsKeyword(SPK_ARMOR, G_SUBPROFILE_GROUP))
+								value = (int)SkillId::SPECIAL_ARMOR;
+							else
+								value = t.MustGetKeywordId(G_SKILL);
+						}
+					}
+					subprofile->perks[index].value = value;
 				}
 				break;
 			default:

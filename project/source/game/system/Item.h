@@ -341,6 +341,21 @@ inline ARMOR_TYPE GetArmorType(SkillId skill)
 	}
 }
 
+inline SkillId GetArmorTypeSkill(ARMOR_TYPE armor_type)
+{
+	switch(armor_type)
+	{
+	default:
+		assert(0);
+	case AT_LIGHT:
+		return SkillId::LIGHT_ARMOR;
+	case AT_MEDIUM:
+		return SkillId::MEDIUM_ARMOR;
+	case AT_HEAVY:
+		return SkillId::HEAVY_ARMOR;
+	}
+}
+
 //-----------------------------------------------------------------------------
 // Armor
 struct Armor : public Item
@@ -354,20 +369,7 @@ struct Armor : public Item
 		else
 			return &tex_override[0];
 	}
-	SkillId GetSkill() const
-	{
-		switch(armor_type)
-		{
-		default:
-			assert(0);
-		case AT_LIGHT:
-			return SkillId::LIGHT_ARMOR;
-		case AT_MEDIUM:
-			return SkillId::MEDIUM_ARMOR;
-		case AT_HEAVY:
-			return SkillId::HEAVY_ARMOR;
-		}
-	}
+	SkillId GetSkill() const { return GetArmorTypeSkill(armor_type); }
 
 	int def, req_str, mobility;
 	MATERIAL_TYPE material;

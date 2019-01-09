@@ -5,6 +5,18 @@
 
 //-----------------------------------------------------------------------------
 vector<StatProfile*> StatProfile::profiles;
+const ITEM_TYPE StatProfile::Subprofile::default_priorities[SLOT_MAX] = { IT_WEAPON, IT_BOW, IT_ARMOR, IT_SHIELD };
+
+//=================================================================================================
+StatProfile::Subprofile::Subprofile() : weapon_chance(), weapon_total(0), armor_chance(), armor_total(0)
+{
+	for(int i = 0; i < SLOT_MAX; ++i)
+		priorities[i] = default_priorities[i];
+	for(int i = 0; i < MAX_TAGS; ++i)
+		tag_skills[i] = SkillId::NONE;
+	for(int i = 0; i < MAX_PERKS; ++i)
+		perks[i].perk = Perk::None;
+}
 
 //=================================================================================================
 bool StatProfile::operator != (const StatProfile& p) const
@@ -85,4 +97,16 @@ SubprofileInfo StatProfile::GetRandomSubprofile()
 		j += sub.armor_chance[i];
 	}
 	return s;
+}
+
+
+//=================================================================================================
+SkillId SubprofileInfo::GetSkill(SkillId skill) const
+{
+	if(skill == SkillId::SPECIAL_WEAPON)
+		return WeaponTypeInfo::info[weapon].skill;
+	else if(skill == SkillId::SPECIAL_ARMOR)
+		return GetArmorTypeSkill((ARMOR_TYPE)armor);
+	else
+		return skill;
 }

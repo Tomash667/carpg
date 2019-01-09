@@ -53,65 +53,34 @@ void CreatedCharacter::Random(Class c)
 {
 	Clear(c);
 
-	int profile;
-	switch(c)
+	StatProfile& profile = ClassInfo::classes[(int)c].unit_data->GetStatProfile();
+	SubprofileInfo sub = profile.GetRandomSubprofile();
+	StatProfile::Subprofile& subprofile = *profile.subprofiles[sub.index];
+
+	// apply tag skills
+	for(int i = 0; i < StatProfile::Subprofile::MAX_TAGS; ++i)
 	{
-	case Class::WARRIOR:
-		profile = Rand() % 2 + 1;
-		break;
-	default:
-		assert(0);
-	case Class::HUNTER:
-	case Class::ROGUE:
-		profile = Rand() % 2;
-		break;
+		SkillId sk = subprofile.tag_skills[i];
+		if(sk == SkillId::NONE)
+			break;
+		sk = sub.GetSkill(sk);
+		s[(int)sk].Add(Skill::TAG_BONUS, true);
 	}
 
-	SkillId sk1, sk2, sk3;
-	AttributeId talent;
-
-	switch(profile)
-	{
-	case 0: // light
-		{
-			sk1 = SkillId::LIGHT_ARMOR;
-			if(Rand() % 2 == 0)
-				sk2 = SkillId::SHORT_BLADE;
-			else
-				sk2 = RandomItem({ SkillId::LONG_BLADE, SkillId::AXE, SkillId::BLUNT });
-			sk3 = SkillId::BOW;
-			talent = AttributeId::DEX;
-		}
-		break;
-	case 1: // medium
-		{
-			sk1 = SkillId::MEDIUM_ARMOR;
-			sk2 = RandomItem({ SkillId::SHORT_BLADE, SkillId::LONG_BLADE, SkillId::AXE, SkillId::BLUNT });
-			sk3 = RandomItem({ SkillId::BOW, SkillId::SHIELD });
-			talent = RandomItem({ AttributeId::DEX, AttributeId::END });
-		}
-		break;
-	case 2: // heavy
-		{
-			sk1 = SkillId::HEAVY_ARMOR;
-			sk2 = RandomItem({ SkillId::LONG_BLADE, SkillId::AXE, SkillId::BLUNT });
-			sk3 = SkillId::SHIELD;
-			talent = RandomItem({ AttributeId::STR, AttributeId::END });
-		}
-		break;
-	}
-
-	s[(int)sk1].Add(Skill::TAG_BONUS, true);
-	s[(int)sk2].Add(Skill::TAG_BONUS, true);
-	s[(int)sk3].Add(Skill::TAG_BONUS, true);
-	TakenPerk tp(Perk::Talent, (int)talent);
+	// apply perks
 	PerkContext ctx(this);
-	tp.Apply(ctx);
-	taken_perks.push_back(tp);
-	SkillId focus = RandomItem({ sk1, sk2, sk3 });
-	tp = TakenPerk(Perk::SkillFocus, (int)focus);
-	tp.Apply(ctx);
-	taken_perks.push_back(tp);
+	for(int i = 0; i < StatProfile::Subprofile::MAX_PERKS; ++i)
+	{
+		TakenPerk& tp = subprofile.perks[i];
+		if(tp.perk == Perk::None)
+			break;
+		PerkInfo& info = PerkInfo::perks[(int)tp.perk];
+		int value = tp.value;
+		if(info.value_type == PerkInfo::Skill)
+			value = (int)sub.GetSkill((SkillId)value);
+		TakenPerk perk(tp.perk, value);
+		perk.Apply(ctx);
+	}
 
 	sp = 0;
 	perks = 0;

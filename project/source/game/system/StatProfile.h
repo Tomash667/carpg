@@ -4,6 +4,7 @@
 //-----------------------------------------------------------------------------
 #include "ItemSlot.h"
 #include "Item.h"
+#include "Perk.h"
 
 //-----------------------------------------------------------------------------
 union SubprofileInfo
@@ -16,6 +17,12 @@ union SubprofileInfo
 		byte armor;
 	};
 	uint value;
+
+	bool operator < (const SubprofileInfo& s) const
+	{
+		return value < s.value;
+	}
+	SkillId GetSkill(SkillId skill) const;
 };
 
 //-----------------------------------------------------------------------------
@@ -24,17 +31,16 @@ struct StatProfile
 	struct Subprofile
 	{
 		static const uint MAX_TAGS = 3;
+		static const uint MAX_PERKS = 2;
+		static const ITEM_TYPE default_priorities[SLOT_MAX];
 
 		string id;
 		int weapon_chance[WT_MAX], weapon_total, armor_chance[AT_MAX], armor_total;
 		SkillId tag_skills[MAX_TAGS];
 		ITEM_TYPE priorities[SLOT_MAX];
+		TakenPerk perks[MAX_PERKS];
 
-		Subprofile() : weapon_chance(), weapon_total(0), armor_chance(), armor_total(0), priorities()
-		{
-			for(int i = 0; i < MAX_TAGS; ++i)
-				tag_skills[i] = SkillId::NONE;
-		}
+		Subprofile();
 	};
 
 	string id;

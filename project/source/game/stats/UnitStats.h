@@ -40,6 +40,7 @@ struct UnitStats
 {
 	int attrib[(int)AttributeId::MAX];
 	int skill[(int)SkillId::MAX];
+	const ITEM_TYPE* priorities;
 	SubprofileInfo subprofile;
 	bool fixed;
 
