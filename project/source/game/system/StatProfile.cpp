@@ -78,23 +78,23 @@ SubprofileInfo StatProfile::GetRandomSubprofile()
 	uint j = 0, k = Rand() % sub.weapon_total;
 	for(int i = 0; i < WT_MAX; ++i)
 	{
+		j += sub.weapon_chance[i];
 		if(k < j)
 		{
 			s.weapon = i;
 			break;
 		}
-		j += sub.weapon_chance[i];
 	}
 	j = 0;
 	k = Rand() % sub.armor_total;
 	for(int i = 0; i < AT_MAX; ++i)
 	{
+		j += sub.armor_chance[i];
 		if(k < j)
 		{
 			s.armor = i;
 			break;
 		}
-		j += sub.armor_chance[i];
 	}
 	return s;
 }

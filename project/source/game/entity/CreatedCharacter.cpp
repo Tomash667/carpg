@@ -80,6 +80,7 @@ void CreatedCharacter::Random(Class c)
 			value = (int)sub.GetSkill((SkillId)value);
 		TakenPerk perk(tp.perk, value);
 		perk.Apply(ctx);
+		taken_perks.push_back(perk);
 	}
 
 	sp = 0;

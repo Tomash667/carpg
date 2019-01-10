@@ -47,6 +47,7 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : GameDialogBox(inf
 	unit->action = A_NONE;
 	unit->stats = new UnitStats;
 	unit->stats->fixed = false;
+	unit->stats->subprofile.value = 0;
 
 	btCancel.id = IdCancel;
 	btCancel.custom = &custom_x;
