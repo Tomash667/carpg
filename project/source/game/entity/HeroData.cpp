@@ -77,9 +77,9 @@ void HeroData::Load(FileReader& f)
 int HeroData::JoinCost() const
 {
 	if(IS_SET(unit->data->flags, F_CRAZY))
-		return (unit->level - 1) * 100 + Random(50, 150);
+		return (unit->level - 4) * 100 + Random(50, 150);
 	else
-		return unit->level * 100;
+		return (unit->level - 3) * 100;
 }
 
 //=================================================================================================

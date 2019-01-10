@@ -1092,13 +1092,13 @@ class UnitLoader : public ContentLoader
 			case SPK_TAG:
 				{
 					int index = 0;
-					for(; index < StatProfile::Subprofile::MAX_TAGS; ++index)
+					for(; index < StatProfile::MAX_TAGS; ++index)
 					{
 						if(subprofile->tag_skills[index] == SkillId::NONE)
 							break;
 					}
-					if(index == StatProfile::Subprofile::MAX_TAGS)
-						t.Throw("Max %u tag skills.", StatProfile::Subprofile::MAX_TAGS);
+					if(index == StatProfile::MAX_TAGS)
+						t.Throw("Max %u tag skills.", StatProfile::MAX_TAGS);
 					SkillId skill;
 					if(t.IsKeyword(SPK_WEAPON, G_SUBPROFILE_GROUP))
 						skill = SkillId::SPECIAL_WEAPON;
@@ -1147,13 +1147,13 @@ class UnitLoader : public ContentLoader
 			case SPK_PERK:
 				{
 					int index = 0;
-					for(; index < StatProfile::Subprofile::MAX_PERKS; ++index)
+					for(; index < StatProfile::MAX_PERKS; ++index)
 					{
 						if(subprofile->perks[index].perk == Perk::None)
 							break;
 					}
-					if(index == StatProfile::Subprofile::MAX_PERKS)
-						t.Throw("Max %u perks.", StatProfile::Subprofile::MAX_PERKS);
+					if(index == StatProfile::MAX_PERKS)
+						t.Throw("Max %u perks.", StatProfile::MAX_PERKS);
 					const string& id = t.MustGetText();
 					PerkInfo* info = PerkInfo::Find(id);
 					if(!info)

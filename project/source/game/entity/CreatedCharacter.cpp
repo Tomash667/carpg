@@ -20,11 +20,12 @@ void CreatedCharacter::Clear(Class c)
 {
 	ClassInfo& info = ClassInfo::classes[(int)c];
 
-	sp_max = 3;
-	perks_max = 2;
+	sp_max = StatProfile::MAX_TAGS;
+	perks_max = StatProfile::MAX_PERKS;
 
 	sp = sp_max;
 	perks = perks_max;
+	last_sub.value = 0;
 
 	StatProfile& profile = info.unit_data->GetStatProfile();
 
@@ -54,11 +55,12 @@ void CreatedCharacter::Random(Class c)
 	Clear(c);
 
 	StatProfile& profile = ClassInfo::classes[(int)c].unit_data->GetStatProfile();
-	SubprofileInfo sub = profile.GetRandomSubprofile();
+	SubprofileInfo sub = profile.GetRandomSubprofile(&last_sub);
 	StatProfile::Subprofile& subprofile = *profile.subprofiles[sub.index];
+	last_sub = sub;
 
 	// apply tag skills
-	for(int i = 0; i < StatProfile::Subprofile::MAX_TAGS; ++i)
+	for(int i = 0; i < StatProfile::MAX_TAGS; ++i)
 	{
 		SkillId sk = subprofile.tag_skills[i];
 		if(sk == SkillId::NONE)
@@ -69,7 +71,7 @@ void CreatedCharacter::Random(Class c)
 
 	// apply perks
 	PerkContext ctx(this);
-	for(int i = 0; i < StatProfile::Subprofile::MAX_PERKS; ++i)
+	for(int i = 0; i < StatProfile::MAX_PERKS; ++i)
 	{
 		TakenPerk& tp = subprofile.perks[i];
 		if(tp.perk == Perk::None)

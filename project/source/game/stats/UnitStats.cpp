@@ -37,18 +37,12 @@ void UnitStats::Set(StatProfile& profile)
 		// apply tag skills
 		if(!profile.subprofiles.empty())
 		{
-			bool single_weapon = false;
 			StatProfile::Subprofile& sub = *profile.subprofiles[subprofile.index];
-			for(int i = 0; i < StatProfile::Subprofile::MAX_TAGS; ++i)
+			for(int i = 0; i < StatProfile::MAX_TAGS; ++i)
 			{
 				if(sub.tag_skills[i] == SkillId::NONE)
 					break;
 				SkillId sk = subprofile.GetSkill(sub.tag_skills[i]);
-				if(Skill::skills[(int)sk].type == SkillType::WEAPON && !single_weapon)
-				{
-					single_weapon = true;
-					skill[(int)SkillId::ONE_HANDED_WEAPON] += Skill::TAG_BONUS;
-				}
 				skill[(int)sk] += Skill::TAG_BONUS;
 			}
 		}

@@ -2,12 +2,12 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+#include "StatProfile.h"
 #include "Perk.h"
 #include "Attribute.h"
 #include "Skill.h"
 #include "Class.h"
 #include "HumanData.h"
-#include "ItemSlot.h"
 
 //-----------------------------------------------------------------------------
 struct CreatedCharacter
@@ -52,6 +52,7 @@ struct CreatedCharacter
 	int sp, sp_max, perks, perks_max;
 	bool update_skills;
 	vector<SkillId> to_update;
+	SubprofileInfo last_sub;
 
 	void Clear(Class c);
 	void Random(Class c);

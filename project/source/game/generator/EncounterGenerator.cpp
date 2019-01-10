@@ -183,7 +183,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 	EncounterData encounter = W.GetCurrentEncounter();
 	UnitData* essential = nullptr;
 	cstring group_name = nullptr, group_name2 = nullptr;
-	bool dont_attack = false, od_tylu = false, kamien = false;
+	bool dont_attack = false, back_attack = false, cursed_stone = false;
 	int count, level, count2, level2;
 	dialog = nullptr;
 	quest = nullptr;
@@ -310,12 +310,12 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 			dialog = GameDialog::TryGet("q_crazies");
 			count = 1;
 			QM.quest_crazies->check_stone = true;
-			kamien = true;
+			cursed_stone = true;
 			break;
 		case SE_UNK:
 			group_name = "unk";
 			level = 13;
-			od_tylu = true;
+			back_attack = true;
 			if(QM.quest_crazies->crazies_state == Quest_Crazies::State::PickedStone)
 			{
 				QM.quest_crazies->crazies_state = Quest_Crazies::State::FirstAttack;
@@ -367,7 +367,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 	float dist, best_dist;
 
 	Vec3 spawn_pos(128.f, 0, 128.f);
-	if(od_tylu)
+	if(back_attack)
 	{
 		switch(enter_dir)
 		{
@@ -393,7 +393,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 		best_dist = Vec3::Distance(talker->pos, look_pt);
 		--count;
 
-		if(kamien)
+		if(cursed_stone)
 		{
 			int slot = talker->FindItem(Item::Get("q_szaleni_kamien"));
 			if(slot != -1)

@@ -28,10 +28,11 @@ union SubprofileInfo
 //-----------------------------------------------------------------------------
 struct StatProfile
 {
+	static const uint MAX_TAGS = 4;
+	static const uint MAX_PERKS = 2;
+
 	struct Subprofile
 	{
-		static const uint MAX_TAGS = 3;
-		static const uint MAX_PERKS = 2;
 		static const ITEM_TYPE default_priorities[SLOT_MAX];
 
 		string id;
@@ -51,7 +52,7 @@ struct StatProfile
 	~StatProfile() { DeleteElements(subprofiles); }
 	bool operator != (const StatProfile& p) const;
 	Subprofile* GetSubprofile(const string& id);
-	SubprofileInfo GetRandomSubprofile();
+	SubprofileInfo GetRandomSubprofile(SubprofileInfo* prev = nullptr);
 
 	static vector<StatProfile*> profiles;
 	static StatProfile* TryGet(Cstring id);

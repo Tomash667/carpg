@@ -593,5 +593,5 @@ void Quest_Contest::SpawnDrunkmans()
 	UnitData& pijak = *UnitData::Get("pijak");
 	int count = Random(4, 6);
 	for(int i = 0; i < count; ++i)
-		L.SpawnUnitInsideInn(pijak, Random(2, 15), inn, Level::SU_TEMPORARY | Level::SU_MAIN_ROOM);
+		L.SpawnUnitInsideInn(pijak, -2, inn, Level::SU_TEMPORARY | Level::SU_MAIN_ROOM);
 }

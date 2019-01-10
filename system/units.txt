@@ -1,6 +1,6 @@
 // This file contains list of units and other lists used by them
 //------------------------------------------------------------------------------
-// COMMON ITEMS 
+// COMMON ITEMS
 //------------------------------------------------------------------------------
 items mage {
 	!wand
@@ -169,7 +169,7 @@ profile cleric {
 	inteligence 50
 	wisdom 70
 	charisma 55
-	
+
 	one_handed_weapon 15
 	short_blade 10
 	long_blade 10
@@ -181,7 +181,7 @@ profile cleric {
 	medium_armor 15
 	heavy_armor 10
 	haggle 15
-	
+
 	subprofile cleric {
 		weapon blunt
 		armor {
@@ -189,6 +189,7 @@ profile cleric {
 			heavy_armor 2
 		}
 		tag weapon
+		tag one_handed_weapon
 		tag armor
 		tag shield
 		priority {weapon armor shield bow}
@@ -202,7 +203,7 @@ profile hunter {
 	inteligence 50
 	wisdom 60
 	charisma 45
-	
+
 	one_handed_weapon 15
 	short_blade 15
 	long_blade 15
@@ -212,7 +213,7 @@ profile hunter {
 	shield 10
 	light_armor 20
 	medium_armor 10
-	
+
 	subprofile bow {
 		weapon {
 			short_blade 3
@@ -222,6 +223,7 @@ profile hunter {
 		tag bow
 		tag light_armor
 		tag weapon
+		tag one_handed_weapon
 		priority {bow armor weapon shield}
 		perk talent dexterity
 		perk skill_focus bow
@@ -233,6 +235,7 @@ profile hunter {
 		}
 		armor light_armor
 		tag weapon
+		tag one_handed_weapon
 		tag armor
 		tag bow
 		priority {weapon armor bow shield}
@@ -247,6 +250,7 @@ profile hunter {
 		}
 		armor medium_armor
 		tag weapon
+		tag one_handed_weapon
 		tag armor
 		tag shield
 		priority {weapon armor shield bow}
@@ -262,7 +266,7 @@ profile mage {
 	inteligence 70
 	wisdom 50
 	charisma 50
-	
+
 	one_handed_weapon 5
 	short_blade 5
 	long_blade 5
@@ -281,7 +285,7 @@ profile rogue {
 	inteligence 60
 	wisdom 50
 	charisma 55
-	
+
 	one_handed_weapon 20
 	short_blade 20
 	long_blade 15
@@ -292,7 +296,7 @@ profile rogue {
 	light_armor 15
 	medium_armor 0
 	haggle 10
-	
+
 	subprofile weapon {
 		weapon {
 			short_blade 2
@@ -300,6 +304,7 @@ profile rogue {
 		}
 		armor light_armor
 		tag weapon
+		tag one_handed_weapon
 		tag armor
 		tag shield
 		priority {weapon armor shield bow}
@@ -315,6 +320,7 @@ profile rogue {
 		tag bow
 		tag armor
 		tag weapon
+		tag one_handed_weapon
 		priority {bow armor weapon shield}
 		perk talent dexterity
 		perk skill_focus bow
@@ -328,7 +334,7 @@ profile warrior {
 	inteligence 50
 	wisdom 50
 	charisma 50
-	
+
 	one_handed_weapon 15
 	short_blade 10
 	long_blade 15
@@ -340,7 +346,7 @@ profile warrior {
 	medium_armor 15
 	heavy_armor 15
 	haggle 0
-	
+
 	subprofile tank {
 		weapon {
 			axe 3
@@ -351,6 +357,7 @@ profile warrior {
 		tag armor
 		tag shield
 		tag weapon
+		tag one_handed_weapon
 		priority {armor shield weapon bow}
 		perk talent endurance
 		perk skill_focus armor
@@ -363,6 +370,7 @@ profile warrior {
 		}
 		armor heavy_armor
 		tag weapon
+		tag one_handed_weapon
 		tag armor
 		tag shield
 		priority {weapon armor shield bow}
@@ -378,6 +386,7 @@ profile warrior {
 		}
 		armor medium_armor
 		tag weapon
+		tag one_handed_weapon
 		tag armor
 		tag bow
 		priority {weapon armor bow shield}
@@ -393,7 +402,7 @@ profile ai_fighter {
 	inteligence 50
 	wisdom 50
 	charisma 50
-	
+
 	one_handed_weapon 25
 	short_blade 25
 	long_blade 25
@@ -413,7 +422,7 @@ profile ai_archer {
 	inteligence 50
 	wisdom 50
 	charisma 50
-	
+
 	one_handed_weapon 15
 	short_blade 15
 	long_blade 15
@@ -433,7 +442,7 @@ profile ai_assassin {
 	inteligence 50
 	wisdom 50
 	charisma 50
-	
+
 	one_handed_weapon 35
 	short_blade 35
 	long_blade 35
@@ -453,7 +462,7 @@ profile ai_tank {
 	inteligence 50
 	wisdom 50
 	charisma 50
-	
+
 	one_handed_weapon 15
 	short_blade 15
 	long_blade 15
@@ -473,7 +482,7 @@ profile ai_shaman {
 	inteligence 60
 	wisdom 50
 	charisma 50
-	
+
 	one_handed_weapon 20
 	short_blade 20
 	long_blade 20
@@ -493,7 +502,7 @@ profile ai_mage {
 	inteligence 60
 	wisdom 50
 	charisma 50
-	
+
 	one_handed_weapon 10
 	short_blade 10
 	long_blade 10
@@ -1277,7 +1286,7 @@ unit q_orkowie_orc_fighter : orc_fighter {
 	dialog q_orcs2
 }
 
-unit q_orkowie_kowal : q_orkowie_orc_fighter { 
+unit q_orkowie_kowal : q_orkowie_orc_fighter {
 	flags | ai_stay
 	trader {
 		stock orc_blacksmith
@@ -2439,7 +2448,7 @@ group_list arena_hard {
 // fixed in 0.4
 alias citizen citzen
 // renamed in 0.8
-alias bandit_chief bandit_hegemon 
+alias bandit_chief bandit_hegemon
 alias guard_wagon guard2
 alias guard_merchant guard3
 // removed quest units in 0.8 (map to normal units)
