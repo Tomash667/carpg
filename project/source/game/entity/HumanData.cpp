@@ -16,21 +16,20 @@ bool g_beard_and_mustache[MAX_BEARD - 1] = {
 };
 
 //-----------------------------------------------------------------------------
-#define HEX(h) Vec4(1.f/256*(((h)&0xFF0000)>>16), 1.f/256*(((h)&0xFF00)>>8), 1.f/256*((h)&0xFF), 1.f)
 // ze strony http://www.dandwiki.com/wiki/Random_Hair_and_Eye_Color_(DnD_Other)
 const Vec4 g_hair_colors[] = {
-	HEX(0x000000), // Black
-	HEX(0x808080), // Gray
-	HEX(0xD3D3D3), // Platinum
-	HEX(0xFFFFFF), // White
-	HEX(0xB8860B), // Dark Blonde
-	HEX(0xDAA520), // Blonde
-	HEX(0xF0E68C), // Bleach blonde
-	HEX(0x800000), // Dark Redhead
-	HEX(0xFF8C00), // Redhead
-	HEX(0xF4A460), // Light Redhead
-	HEX(0x8B4513), // Brunette
-	HEX(0xA0522D)  // Auburn
+	Color::Hex(0x000000), // Black
+	Color::Hex(0x808080), // Gray
+	Color::Hex(0xD3D3D3), // Platinum
+	Color::Hex(0xFFFFFF), // White
+	Color::Hex(0xB8860B), // Dark Blonde
+	Color::Hex(0xDAA520), // Blonde
+	Color::Hex(0xF0E68C), // Bleach blonde
+	Color::Hex(0x800000), // Dark Redhead
+	Color::Hex(0xFF8C00), // Redhead
+	Color::Hex(0xF4A460), // Light Redhead
+	Color::Hex(0x8B4513), // Brunette
+	Color::Hex(0xA0522D)  // Auburn
 };
 const uint n_hair_colors = countof(g_hair_colors);
 // siwy 0xDED5D0

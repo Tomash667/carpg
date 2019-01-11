@@ -1733,7 +1733,7 @@ void Unit::Load(GameReader& f, bool local)
 			stats->fixed = false;
 			stats->subprofile.value = 0;
 			stats->Load(f);
-			stats->skill[(int)SkillId::HAGGLE] = -2;
+			stats->skill[(int)SkillId::HAGGLE] = UnitStats::NEW_STAT;
 		}
 		else
 		{
@@ -1750,9 +1750,9 @@ void Unit::Load(GameReader& f, bool local)
 			for(int i = 0; i < 3; ++i)
 				f >> stats->attrib[i];
 			for(int i = 3; i < (int)AttributeId::MAX; ++i)
-				stats->attrib[i] = -2;
+				stats->attrib[i] = UnitStats::NEW_STAT;
 			for(int i = 0; i < (int)SkillId::MAX; ++i)
-				stats->skill[i] = -2;
+				stats->skill[i] = UnitStats::NEW_STAT;
 			int old_skill[(int)old::SkillId::MAX];
 			f >> old_skill;
 			stats->skill[(int)SkillId::ONE_HANDED_WEAPON] = old_skill[(int)old::SkillId::WEAPON];
@@ -2045,7 +2045,7 @@ void Unit::Load(GameReader& f, bool local)
 			old_stats.Set(data->GetStatProfile());
 			for(int i = 0; i < (int)SkillId::MAX; ++i)
 			{
-				if(stats->skill[i] == -2)
+				if(stats->skill[i] == UnitStats::NEW_STAT)
 				{
 					stats->skill[i] = old_stats.skill[i];
 					player->skill[i].apt = stats->skill[i] / 5;

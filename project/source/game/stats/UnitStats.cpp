@@ -60,12 +60,12 @@ void UnitStats::SetForNew(StatProfile& profile)
 	assert(!fixed && level >= 1);
 	for(int i = 0; i < (int)AttributeId::MAX; ++i)
 	{
-		if(attrib[i] == -2)
+		if(attrib[i] == NEW_STAT)
 			attrib[i] = 25 + int(Attribute::GetModifier(profile.attrib[i]) * level);
 	}
 	for(int i = 0; i < (int)SkillId::MAX; ++i)
 	{
-		if(skill[i] == -2)
+		if(skill[i] == NEW_STAT)
 			skill[i] = int(Skill::GetModifier(profile.skill[i]) * level);
 	}
 }

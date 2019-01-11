@@ -50,9 +50,7 @@ enum SaveFlags
 	SF_HARDCORE = 1 << 4
 };
 
-const int SAVE_VERSION = V_CURRENT;
 int LOAD_VERSION;
-const int MIN_SUPPORT_LOAD_VERSION = V_0_2_12;
 
 //=================================================================================================
 bool Game::CanSaveGame() const
@@ -95,7 +93,7 @@ bool Game::CanLoadGame() const
 //=================================================================================================
 bool Game::SaveGameSlot(int slot, cstring text)
 {
-	assert(InRange(slot, 1, MAX_SAVE_SLOTS));
+	assert(InRange(slot, 1, SaveSlot::MAX_SLOTS));
 
 	if(!CanSaveGame())
 	{
@@ -171,7 +169,7 @@ bool Game::SaveGameCommon(cstring filename, int slot, cstring text)
 //=================================================================================================
 void Game::LoadGameSlot(int slot)
 {
-	assert(InRange(slot, 1, MAX_SAVE_SLOTS));
+	assert(InRange(slot, 1, SaveSlot::MAX_SLOTS));
 
 	cstring filename = Format(N.mp_load ? "saves/multi/%d.sav" : "saves/single/%d.sav", slot);
 	LoadGameCommon(filename, slot);
@@ -291,7 +289,7 @@ void Game::SaveGame(GameWriter& f)
 
 	// version
 	f << VERSION;
-	f << SAVE_VERSION;
+	f << V_CURRENT;
 	f << start_version;
 	f << content::version;
 
@@ -923,7 +921,7 @@ void Game::Quicksave(bool from_console)
 		return;
 	}
 
-	if(SaveGameSlot(MAX_SAVE_SLOTS, txQuickSave))
+	if(SaveGameSlot(SaveSlot::MAX_SLOTS, txQuickSave))
 	{
 		if(!from_console)
 			gui->messages->AddGameMsg3(GMS_GAME_SAVED);
@@ -943,7 +941,7 @@ bool Game::Quickload(bool from_console)
 	}
 
 	Net::SetMode(Net::Mode::Singleplayer);
-	return gui->saveload->TryLoad(MAX_SAVE_SLOTS, true);
+	return gui->saveload->TryLoad(SaveSlot::MAX_SLOTS, true);
 }
 
 //=================================================================================================

@@ -1,5 +1,6 @@
 #pragma once
 
+//-----------------------------------------------------------------------------
 namespace NameHelper
 {
 	void SetHeroNames();

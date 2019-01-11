@@ -38,6 +38,8 @@ struct StatInfo
 // This is shared between units of same profile/subprofile.
 struct UnitStats
 {
+	static const int NEW_STAT = -2;
+
 	int attrib[(int)AttributeId::MAX];
 	int skill[(int)SkillId::MAX];
 	const ITEM_TYPE* priorities;

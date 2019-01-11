@@ -68,7 +68,7 @@ paused(false), draw_flags(0xFFFFFFFF), tMiniSave(nullptr), prev_game_state(GS_LO
 sItemRegionRot(nullptr), sChar(nullptr), sSave(nullptr), sCustom(nullptr), cl_postfx(true), mp_timeout(10.f),
 cl_normalmap(true), cl_specularmap(true), dungeon_tex_wrap(true), profiler_mode(0), vbInstancing(nullptr), vb_instancing_max(0),
 screenshot_format(ImageFormat::JPG), quickstart_class(Class::RANDOM), game_state(GS_LOAD), default_devmode(false),
-default_player_devmode(false), quickstart_slot(MAX_SAVE_SLOTS), super_shader(new SuperShader)
+default_player_devmode(false), quickstart_slot(SaveSlot::MAX_SLOTS), super_shader(new SuperShader)
 {
 #ifdef _DEBUG
 	default_devmode = true;

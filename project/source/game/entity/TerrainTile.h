@@ -1,5 +1,6 @@
 #pragma once
 
+//-----------------------------------------------------------------------------
 // u¿ywane w FindPath
 enum TERRAIN_TILE : byte
 {
@@ -12,6 +13,7 @@ enum TERRAIN_TILE : byte
 	TT_MAX
 };
 
+//-----------------------------------------------------------------------------
 enum TILE_MODE : byte
 {
 	TM_NORMAL,
@@ -24,15 +26,18 @@ enum TILE_MODE : byte
 	TM_MAX
 };
 
+//-----------------------------------------------------------------------------
 struct TerrainTileInfo
 {
 	DWORD mask, shift;
 	cstring name;
 };
 
+//-----------------------------------------------------------------------------
 extern const TerrainTileInfo terrain_tile_info[];
 extern cstring tile_mode_name[];
 
+//-----------------------------------------------------------------------------
 struct TerrainTile
 {
 	TERRAIN_TILE t, t2; // jeœli jest trawa to musi byæ pod t

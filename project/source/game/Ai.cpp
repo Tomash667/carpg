@@ -83,6 +83,19 @@ enum LOOK_AT
 	LookAtAngle // patrz na k¹t (look_pos.x)
 };
 
+enum AI_ACTION
+{
+	AI_NOT_SET = -2,
+	AI_NONE = -1,
+	AI_ANIMATION = 0,
+	AI_ROTATE,
+	AI_LOOK,
+	AI_MOVE,
+	AI_TALK,
+	AI_USE,
+	AI_EAT
+};
+
 inline float random_rot(float base_rot, float random_angle)
 {
 	if(Rand() % 2 == 0)
@@ -661,22 +674,22 @@ void Game::UpdateAi(float dt)
 							{
 								if(u.usable->base == stool && u.in_building != -1)
 								{
-									int co;
+									int what;
 									if(u.IsDrunkman())
-										co = Rand() % 3;
+										what = Rand() % 3;
 									else
-										co = Rand() % 2 + 1;
-									switch(co)
+										what = Rand() % 2 + 1;
+									switch(what)
 									{
-									case 0:
+									case 0: // drink
 										u.ConsumeItem(Item::Get(Rand() % 3 == 0 ? "vodka" : "beer")->ToConsumable());
 										ai.timer = Random(10.f, 15.f);
 										break;
-									case 1:
+									case 1: // eat
 										u.ConsumeItem(ItemList::GetItem("normal_food")->ToConsumable());
 										ai.timer = Random(10.f, 15.f);
 										break;
-									case 2:
+									case 2: // stop sitting
 										Unit_StopUsingUsable(ctx, u);
 										ai.idle_action = AIController::Idle_None;
 										ai.timer = Random(2.5f, 5.f);
@@ -696,18 +709,18 @@ void Game::UpdateAi(float dt)
 								{
 									if(u.animation_state != 0)
 									{
-										int co;
+										int what;
 										if(u.IsDrunkman())
-											co = Rand() % 2;
+											what = Rand() % 2;
 										else
-											co = 1;
-										switch(co)
+											what = 1;
+										switch(what)
 										{
-										case 0:
+										case 0: // drink
 											u.ConsumeItem(Item::Get(Rand() % 3 == 0 ? "vodka" : "beer")->ToConsumable());
 											ai.timer = Random(10.f, 15.f);
 											break;
-										case 1:
+										case 1: // eat
 											u.ConsumeItem(ItemList::GetItem("normal_food")->ToConsumable());
 											ai.timer = Random(10.f, 15.f);
 											break;
@@ -727,26 +740,26 @@ void Game::UpdateAi(float dt)
 								{
 									if(u.in_building == -1)
 									{
-										// jest na zewn¹trz
-										int co = Rand() % (IS_SET(L.city_ctx->flags, City::HaveTrainingGrounds) ? 3 : 2);
-										if(co == 0)
+										// unit is outside
+										int where = Rand() % (IS_SET(L.city_ctx->flags, City::HaveTrainingGrounds) ? 3 : 2);
+										if(where == 0)
 										{
-											// idŸ losowo
+											// go to random position
 											ai.loc_timer = ai.timer = Random(30.f, 120.f);
 											ai.idle_action = AIController::Idle_Move;
 											ai.idle_data.pos = L.city_ctx->buildings[Rand() % L.city_ctx->buildings.size()].walk_pt
 												+ Vec3::Random(Vec3(-1.f, 0, -1), Vec3(1, 0, 1));
 										}
-										else if(co == 1)
+										else if(where == 1)
 										{
-											// idŸ do karczmy
+											// go to inn
 											ai.loc_timer = ai.timer = Random(75.f, 150.f);
 											ai.idle_action = AIController::Idle_MoveRegion;
 											ai.idle_data.area.pos = L.city_ctx->FindInn(ai.idle_data.area.id)->enter_area.Midpoint().XZ();
 										}
-										else if(co == 2)
+										else if(where == 2)
 										{
-											// idŸ na pole treningowe
+											// go to training grounds
 											ai.loc_timer = ai.timer = Random(75.f, 150.f);
 											ai.idle_action = AIController::Idle_Move;
 											ai.idle_data.pos = L.city_ctx->FindBuilding(BuildingGroup::BG_TRAINING_GROUNDS)->walk_pt
@@ -755,7 +768,7 @@ void Game::UpdateAi(float dt)
 									}
 									else
 									{
-										// opuœæ budynek
+										// leave building
 										ai.loc_timer = ai.timer = Random(15.f, 30.f);
 										ai.idle_action = AIController::Idle_MoveRegion;
 										ai.idle_data.area.pos = L.city_ctx->inside_buildings[u.in_building]->exit_area.Midpoint().XZ();
@@ -765,7 +778,7 @@ void Game::UpdateAi(float dt)
 								}
 								else
 								{
-									// idŸ do losowego budynku
+									// go near random building
 									ai.loc_timer = ai.timer = Random(30.f, 120.f);
 									ai.idle_action = AIController::Idle_Move;
 									ai.idle_data.pos = L.city_ctx->buildings[Rand() % L.city_ctx->buildings.size()].walk_pt + Vec3::Random(Vec3(-1.f, 0, -1), Vec3(1, 0, 1));
@@ -824,25 +837,15 @@ void Game::UpdateAi(float dt)
 							else
 							{
 							normal_idle_action:
-#define I_ANIMACJA 0
-#define I_OBROT 1
-#define I_PATRZ 2
-#define I_IDZ 3
-#define I_GADAJ 4
-#define I_UZYJ 5
-#define I_CWICZ 6
-#define I_CWICZ_LUK 7
-#define I_JEDZ 8
-
-								// losowa czynnoœæ
-								int co;
+								// random ai action
+								int what = AI_NOT_SET;
 								if(u.busy != Unit::Busy_No && u.busy != Unit::Busy_Tournament)
-									co = Rand() % 3;
+									what = Rand() % 3; // animation, rotate, look
 								else if((u.busy == Unit::Busy_Tournament || (u.IsHero() && !u.IsFollowingTeamMember() && tournament->IsGenerated()))
 									&& tournament->GetMaster()
 									&& ((dist = Vec3::Distance2d(u.pos, tournament->GetMaster()->pos)) > 16.f || dist < 4.f))
 								{
-									co = -1;
+									what = AI_NONE;
 									if(dist > 16.f)
 									{
 										ai.timer = Random(5.f, 10.f);
@@ -857,7 +860,7 @@ void Game::UpdateAi(float dt)
 									}
 								}
 								else if(IS_SET(u.data->flags2, F2_SIT_ON_THRONE) && !u.IsFollower())
-									co = I_UZYJ;
+									what = AI_USE;
 								else if(u.data->type == UNIT_TYPE::HUMAN)
 								{
 									if(!IS_SET(u.data->flags, F_AI_GUARD))
@@ -891,75 +894,52 @@ void Game::UpdateAi(float dt)
 													ai.idle_data.obj.ptr = &o;
 												}
 												do_cw.clear();
-												co = -1;
-											}
-											else
-											{
-												if(IS_SET(u.data->flags3, F3_DONT_EAT))
-													co = Rand() % 6;
-												else
-												{
-													co = Rand() % 7;
-													if(co == 6)
-														co = I_JEDZ;
-												}
+												what = AI_NONE;
 											}
 										}
-										else
+										if(what != AI_NONE)
 										{
 											if(IS_SET(u.data->flags3, F3_DONT_EAT))
-												co = Rand() % 6;
+												what = Rand() % 6;
 											else
-											{
-												co = Rand() % 7;
-												if(co == 6)
-													co = I_JEDZ;
-											}
+												what = Rand() % 7;
 										}
 									}
-									else
+									else // guard (don't move/use objects)
 									{
 										if(IS_SET(u.data->flags3, F3_DONT_EAT))
-											co = Rand() % 5;
+											what = Rand() % 5;
 										else
-										{
-											co = Rand() % 6;
-											if(co == 5)
-												co = I_JEDZ;
-										}
+											what = Rand() % 7;
+										if(what == AI_MOVE)
+											what = Rand() % 3;
 									}
 								}
-								else
+								else // not human
 								{
 									if(IS_SET(u.data->flags3, F3_DONT_EAT))
-										co = Rand() % 4;
+										what = Rand() % 5;
 									else
 									{
-										co = Rand() % 5;
-										if(co == 4)
-											co = I_JEDZ;
+										what = Rand() % 7;
+										if(what == AI_USE)
+											what = Rand() % 3;
 									}
 								}
 
 								// nie glêdzenie przez karczmarza/mistrza w czasie zawodów
-								if(co == I_GADAJ && IS_SET(u.data->flags3, F3_TALK_AT_COMPETITION)
+								if(what == AI_TALK && IS_SET(u.data->flags3, F3_TALK_AT_COMPETITION)
 									&& (QM.quest_contest->state >= Quest_Contest::CONTEST_STARTING || tournament->GetState() >= Quest_Tournament::TOURNAMENT_STARTING))
 								{
-									co = I_PATRZ;
+									what = AI_LOOK;
 								}
 
-								//								NORMAL STOI STRA¯
-								// 0 - animacja idle			 X      X    X
-								// 1 - patrz na poblisk¹ postaæ  X      X    X
-								// 2 - losowy obrót              X      X    X
-								// 3 - gadaj z postaci¹          X      X    X
-								// 4 - losowy ruch               X      X
-								// 5 - u¿yj obiektu              X      X
-								switch(co)
+								assert(what != AI_NOT_SET);
+								switch(what)
 								{
-								case -1:
+								case AI_NONE:
 									break;
-								case I_UZYJ:
+								case AI_USE:
 									// u¿yj pobliskiego obiektu
 									if(ctx.usables)
 									{
@@ -988,7 +968,7 @@ void Game::UpdateAi(float dt)
 										}
 									}
 									// brak pobliskich obiektów, odtwórz jak¹œ animacjê
-								case I_ANIMACJA:
+								case AI_ANIMATION:
 									// animacja idle
 									{
 										int id = Rand() % u.data->idles->anims.size();
@@ -1007,7 +987,7 @@ void Game::UpdateAi(float dt)
 										}
 									}
 									break;
-								case I_PATRZ:
+								case AI_LOOK:
 									//patrz na poblisk¹ postaæ
 									if(u.busy == Unit::Busy_Tournament && Rand() % 2 == 0 && tournament->GetMaster())
 									{
@@ -1036,7 +1016,7 @@ void Game::UpdateAi(float dt)
 										}
 									}
 									// brak pobliskich jednostek, patrz siê losowo
-								case I_OBROT:
+								case AI_ROTATE:
 									// losowy obrót
 									ai.timer = Random(2.f, 5.f);
 									ai.idle_action = AIController::Idle_Rot;
@@ -1047,7 +1027,7 @@ void Game::UpdateAi(float dt)
 									else
 										ai.idle_data.rot = Random(MAX_ANGLE);
 									break;
-								case I_GADAJ:
+								case AI_TALK:
 									// podejdŸ do postaci i gadaj
 									if(u.data->type == UNIT_TYPE::HUMAN)
 									{
@@ -1073,7 +1053,7 @@ void Game::UpdateAi(float dt)
 									// brak pobliskich jednostek, idŸ losowo
 									if(IS_SET(u.data->flags, F_AI_GUARD))
 										break;
-								case I_IDZ:
+								case AI_MOVE:
 									if(IS_SET(u.data->flags, F_AI_GUARD))
 										break;
 									// ruch w losowe miejsce
@@ -1104,7 +1084,7 @@ void Game::UpdateAi(float dt)
 										}
 									}
 									break;
-								case I_JEDZ:
+								case AI_EAT:
 									// jedzenie lub picie
 									ai.timer = Random(3.f, 5.f);
 									ai.idle_action = AIController::Idle_None;

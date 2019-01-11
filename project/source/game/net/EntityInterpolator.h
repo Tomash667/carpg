@@ -1,5 +1,6 @@
 #pragma once
 
+//-----------------------------------------------------------------------------
 // used in MP to smooth units movement
 struct EntityInterpolator
 {

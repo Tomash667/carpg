@@ -1,5 +1,6 @@
 #pragma once
 
+//-----------------------------------------------------------------------------
 struct GameStats : public Singleton<GameStats>
 {
 	int total_kills;

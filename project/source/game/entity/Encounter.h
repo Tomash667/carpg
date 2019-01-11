@@ -1,7 +1,9 @@
 #pragma once
 
+//-----------------------------------------------------------------------------
 typedef bool(*BoolFunc)();
 
+//-----------------------------------------------------------------------------
 enum EncounterMode
 {
 	ENCOUNTER_COMBAT,
@@ -9,6 +11,7 @@ enum EncounterMode
 	ENCOUNTER_QUEST
 };
 
+//-----------------------------------------------------------------------------
 enum SpecialEncounter
 {
 	SE_CRAZY_MAGE,
@@ -23,6 +26,7 @@ enum SpecialEncounter
 	SE_CRAZY_COOK
 };
 
+//-----------------------------------------------------------------------------
 struct Encounter
 {
 	Vec2 pos;

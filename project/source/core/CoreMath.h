@@ -805,7 +805,7 @@ struct Vec3 : XMFLOAT3
 struct Vec4 : XMFLOAT4
 {
 	Vec4();
-	Vec4(float x, float y, float z, float w);
+	constexpr Vec4(float x, float y, float z, float w);
 	Vec4(const Vec4& v);
 	Vec4(const Vec3& v, float w);
 	Vec4(FXMVECTOR v);

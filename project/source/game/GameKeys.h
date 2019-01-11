@@ -235,6 +235,4 @@ public:
 private:
 	GameKey keys[GK_MAX];
 };
-
-//-----------------------------------------------------------------------------
 extern GameKeys GKey;

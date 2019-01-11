@@ -8,6 +8,7 @@ enum SAVE_VERSION
 	V_0_2_5 = 1, // 0.2.5
 	V_0_2_10 = 2, // 0.2.10
 
+	MIN_SUPPORT_LOAD_VERSION = 3,
 	V_0_2_12 = 3, // 0.2.12
 	V_0_2_20 = 4, // 0.2.20/21/22/23
 	V_0_3 = 5, // 0.3
@@ -40,6 +41,4 @@ struct SaveException
 };
 
 //-----------------------------------------------------------------------------
-extern const int SAVE_VERSION;
 extern int LOAD_VERSION;
-extern const int MIN_SUPPORT_LOAD_VERSION;

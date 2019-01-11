@@ -1,5 +1,9 @@
 #pragma once
 
+//-----------------------------------------------------------------------------
+class NamespaceBuilder;
+
+//-----------------------------------------------------------------------------
 namespace internal
 {
 	template<typename E>
@@ -26,8 +30,7 @@ namespace internal
 	}
 }
 
-class NamespaceBuilder;
-
+//-----------------------------------------------------------------------------
 class TypeBuilder
 {
 public:
@@ -89,6 +92,7 @@ private:
 	asIScriptEngine* engine;
 };
 
+//-----------------------------------------------------------------------------
 template<typename T>
 class SpecificTypeBuilder : public TypeBuilder
 {
@@ -130,6 +134,7 @@ public:
 	}
 };
 
+//-----------------------------------------------------------------------------
 class GlobalFunctionBuilder
 {
 public:
@@ -165,6 +170,7 @@ protected:
 	asIScriptEngine* engine;
 };
 
+//-----------------------------------------------------------------------------
 class NamespaceBuilder : public GlobalFunctionBuilder
 {
 public:
@@ -181,6 +187,7 @@ private:
 	void* auxiliary;
 };
 
+//-----------------------------------------------------------------------------
 class ScriptBuilder : public GlobalFunctionBuilder
 {
 public:
@@ -216,6 +223,7 @@ public:
 	}
 };
 
+//-----------------------------------------------------------------------------
 inline NamespaceBuilder TypeBuilder::WithNamespace()
 {
 	return NamespaceBuilder(engine, name, nullptr);

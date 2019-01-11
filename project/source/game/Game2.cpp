@@ -3729,14 +3729,13 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 				u->human_data = human_data;
 			else
 			{
-#define HEX(h) Vec4(1.f/256*(((h)&0xFF0000)>>16), 1.f/256*(((h)&0xFF00)>>8), 1.f/256*((h)&0xFF), 1.f)
 				u->human_data = new Human;
 				u->human_data->beard = Rand() % MAX_BEARD - 1;
 				u->human_data->hair = Rand() % MAX_HAIR - 1;
 				u->human_data->mustache = Rand() % MAX_MUSTACHE - 1;
 				u->human_data->height = Random(0.9f, 1.1f);
 				if(IS_SET(base.flags2, F2_OLD))
-					u->human_data->hair_color = HEX(0xDED5D0);
+					u->human_data->hair_color = Color::Hex(0xDED5D0);
 				else if(IS_SET(base.flags, F_CRAZY))
 					u->human_data->hair_color = Vec4(RandomPart(8), RandomPart(8), RandomPart(8), 1.f);
 				else if(IS_SET(base.flags, F_GRAY_HAIR))
