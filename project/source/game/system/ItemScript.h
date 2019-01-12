@@ -1,6 +1,9 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+#include "Item.h"
+
+//-----------------------------------------------------------------------------
 enum ParseScript
 {
 	PS_END,
@@ -17,7 +20,16 @@ enum ParseScript
 	PS_ITEM,
 	PS_LIST,
 	PS_LEVELED_LIST,
-	PS_LEVELED_LIST_MOD
+	PS_LEVELED_LIST_MOD,
+	PS_SPECIAL_ITEM,
+	PS_SPECIAL_ITEM_MOD
+};
+
+//-----------------------------------------------------------------------------
+enum SpecialItem
+{
+	SPECIAL_WEAPON,
+	SPECIAL_ARMOR
 };
 
 //-----------------------------------------------------------------------------
@@ -25,10 +37,14 @@ struct ItemScript
 {
 	string id;
 	vector<int> code;
+	bool is_subprofile;
 
 	void Test(string& errors, uint& count);
 	void CheckItem(const int*& ps, string& errors, uint& count);
 
 	static vector<ItemScript*> scripts;
+	static const LeveledItemList* weapon_list[WT_MAX], *armor_list[AT_MAX];
 	static ItemScript* TryGet(Cstring id);
+	static void Init();
+	static const LeveledItemList& GetSpecial(int special, int sub);
 };

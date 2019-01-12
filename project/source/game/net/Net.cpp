@@ -243,6 +243,7 @@ bool Game::ReadPlayerData(BitStreamReader& f)
 
 	unit->stats = new UnitStats;
 	unit->stats->fixed = false;
+	unit->stats->subprofile.value = 0;
 	unit->stats->Read(f);
 	f >> unit->gold;
 	f >> unit->stamina;

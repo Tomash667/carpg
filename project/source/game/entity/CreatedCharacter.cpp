@@ -25,7 +25,6 @@ void CreatedCharacter::Clear(Class c)
 
 	sp = sp_max;
 	perks = perks_max;
-	last_sub.value = 0;
 
 	StatProfile& profile = info.unit_data->GetStatProfile();
 

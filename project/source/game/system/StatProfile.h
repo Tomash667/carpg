@@ -40,6 +40,7 @@ struct StatProfile
 		SkillId tag_skills[MAX_TAGS];
 		ITEM_TYPE priorities[SLOT_MAX];
 		TakenPerk perks[MAX_PERKS];
+		ItemScript* item_script;
 
 		Subprofile();
 	};

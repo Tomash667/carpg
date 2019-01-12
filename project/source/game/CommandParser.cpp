@@ -424,6 +424,14 @@ void CommandParser::ListStats(Unit* u)
 	if(hp == 0 && u->hp > 0)
 		hp = 1;
 	Msg("--- %s (%s) level %d ---", u->GetName(), u->data->id.c_str(), u->level);
+	if(u->data->stat_profile && !u->data->stat_profile->subprofiles.empty() && !u->IsPlayer())
+	{
+		Msg("Profile %s.%s (weapon:%s armor:%s)",
+			u->data->stat_profile->id.c_str(),
+			u->data->stat_profile->subprofiles[u->stats->subprofile.index]->id.c_str(),
+			Skill::skills[(int)WeaponTypeInfo::info[u->stats->subprofile.weapon].skill].id,
+			Skill::skills[(int)GetArmorTypeSkill((ARMOR_TYPE)u->stats->subprofile.armor)].id);
+	}
 	Msg("Health: %d/%d (bonus: %+g, regeneration: %+g/sec, natural: x%g)", hp, (int)u->hpmax, u->GetEffectSum(EffectId::Health),
 		u->GetEffectSum(EffectId::Regeneration), u->GetEffectMul(EffectId::NaturalHealingMod));
 	Msg("Stamina: %d/%d", (int)u->stamina, (int)u->stamina_max);
@@ -478,7 +486,7 @@ void CommandParser::ArenaCombat(cstring str)
 			}
 			const string& id = t.MustGetItem();
 			UnitData* ud = UnitData::TryGet(id);
-			if(!ud)
+			if(!ud || IS_SET(ud->flags, F_SECRET))
 				t.Throw("Missing unit '%s'.", id.c_str());
 			else if(ud->group == G_PLAYER)
 				t.Throw("Unit '%s' can't be spawned.", id.c_str());

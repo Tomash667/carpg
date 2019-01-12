@@ -54,6 +54,7 @@ struct CreatedCharacter
 	vector<SkillId> to_update;
 	SubprofileInfo last_sub;
 
+	CreatedCharacter() { last_sub.value = 0; }
 	void Clear(Class c);
 	void Random(Class c);
 	void Write(BitStreamWriter& f) const;

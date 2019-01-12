@@ -1747,6 +1747,7 @@ void Unit::Load(GameReader& f, bool local)
 		{
 			stats = new UnitStats;
 			stats->fixed = false;
+			stats->subprofile.value = 0;
 			for(int i = 0; i < 3; ++i)
 				f >> stats->attrib[i];
 			for(int i = 3; i < (int)AttributeId::MAX; ++i)

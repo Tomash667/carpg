@@ -25,6 +25,8 @@ Version 0.8 (???):
 - fixed wrong price calculations when selling items to fallower
 - fixed connecting to full server
 - fixed removing password from server but it was still required
+!!!!!!!!!!!!!!!!
+- fixed goblins/orcs missing idle dialogs
 
 --------------------------------------------------------------------------------
 Version 0.7.1 (2018-04-15):

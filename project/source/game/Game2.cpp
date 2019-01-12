@@ -3672,6 +3672,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	{
 		u->stats = new UnitStats;
 		u->stats->fixed = false;
+		u->stats->subprofile.value = 0;
 		u->stats->Set(base.GetStatProfile());
 	}
 	else
@@ -3686,7 +3687,10 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	u->CalculateLoad();
 	if(!custom && base.item_script)
 	{
-		ParseItemScript(*u, base.item_script);
+		ItemScript* script = base.item_script;
+		if(base.stat_profile && !base.stat_profile->subprofiles.empty() && base.stat_profile->subprofiles[u->stats->subprofile.index]->item_script)
+			script = base.stat_profile->subprofiles[u->stats->subprofile.index]->item_script;
+		ParseItemScript(*u, script);
 		SortItems(u->items);
 		u->RecalculateWeight();
 		if(!ResourceManager::Get().IsLoadScreen())
@@ -3795,27 +3799,49 @@ void GiveItem(Unit& unit, const int*& ps, int count)
 {
 	int type = *ps;
 	++ps;
-	if(type == PS_ITEM)
+	switch(type)
+	{
+	case PS_ITEM:
 		unit.AddItemAndEquipIfNone((const Item*)(*ps), count);
-	else if(type == PS_LIST)
-	{
-		const ItemList& lis = *(const ItemList*)(*ps);
-		for(int i = 0; i < count; ++i)
-			unit.AddItemAndEquipIfNone(lis.Get());
-	}
-	else if(type == PS_LEVELED_LIST)
-	{
-		const LeveledItemList& lis = *(const LeveledItemList*)(*ps);
-		for(int i = 0; i < count; ++i)
-			unit.AddItemAndEquipIfNone(lis.Get(unit.level + Random(-2, 1)));
-	}
-	else if(type == PS_LEVELED_LIST_MOD)
-	{
-		int mod = *ps;
-		++ps;
-		const LeveledItemList& lis = *(const LeveledItemList*)(*ps);
-		for(int i = 0; i < count; ++i)
-			unit.AddItemAndEquipIfNone(lis.Get(unit.level + Random(-2, 1) + mod));
+		break;
+	case  PS_LIST:
+		{
+			const ItemList& lis = *(const ItemList*)(*ps);
+			for(int i = 0; i < count; ++i)
+				unit.AddItemAndEquipIfNone(lis.Get());
+		}
+		break;
+	case PS_LEVELED_LIST:
+		{
+			const LeveledItemList& lis = *(const LeveledItemList*)(*ps);
+			for(int i = 0; i < count; ++i)
+				unit.AddItemAndEquipIfNone(lis.Get(unit.level + Random(-2, 1)));
+		}
+		break;
+	case PS_LEVELED_LIST_MOD:
+		{
+			int mod = *ps++;
+			const LeveledItemList& lis = *(const LeveledItemList*)(*ps);
+			for(int i = 0; i < count; ++i)
+				unit.AddItemAndEquipIfNone(lis.Get(unit.level + Random(-2, 1) + mod));
+		}
+		break;
+	case PS_SPECIAL_ITEM:
+		{
+			int special = *ps;
+			const LeveledItemList& lis = ItemScript::GetSpecial(special, unit.stats->subprofile.value);
+			for(int i = 0; i < count; ++i)
+				unit.AddItemAndEquipIfNone(lis.Get(unit.level + Random(-2, 1)));
+		}
+		break;
+	case PS_SPECIAL_ITEM_MOD:
+		{
+			int mod = *ps++;
+			int special = *ps;
+			const LeveledItemList& lis = ItemScript::GetSpecial(special, unit.stats->subprofile.value);
+			for(int i = 0; i < count; ++i)
+				unit.AddItemAndEquipIfNone(lis.Get(unit.level + Random(-2, 1) + mod));
+		}
 	}
 
 	++ps;
@@ -3828,7 +3854,7 @@ void SkipItem(const int*& ps, int count)
 	{
 		int type = *ps;
 		++ps;
-		if(type == PS_LEVELED_LIST_MOD)
+		if(type == PS_LEVELED_LIST_MOD || type == PS_SPECIAL_ITEM_MOD)
 			++ps;
 		++ps;
 	}
@@ -10472,7 +10498,7 @@ cstring Game::GetRandomIdleText(Unit& u)
 	if(n == 0)
 		return RandomString(txAiSecretText);
 
-	int type = 1; // 0 - tekst hero, 1 - normalny tekst
+	bool hero_text;
 
 	switch(u.data->group)
 	{
@@ -10482,16 +10508,16 @@ cstring Game::GetRandomIdleText(Unit& u)
 			if(n < 33)
 				return RandomString(txAiInsaneText);
 			else if(n < 66)
-				type = 0;
+				hero_text = true;
 			else
-				type = 1;
+				hero_text = false;
 		}
 		else
 		{
 			if(n < 50)
 				return RandomString(txAiInsaneText);
 			else
-				type = 1;
+				hero_text = false;
 		}
 		break;
 	case G_CITIZENS:
@@ -10514,45 +10540,40 @@ cstring Game::GetRandomIdleText(Unit& u)
 			if(n < 50)
 				return RandomString(txAiHumanText);
 			else
-				type = 1;
+				hero_text = false;
 		}
 		else
 		{
 			if(n < 10)
 				return RandomString(txAiHumanText);
 			else if(n < 55)
-				type = 0;
+				hero_text = true;
 			else
-				type = 1;
+				hero_text = false;
 		}
 		break;
 	case G_BANDITS:
 		if(n < 50)
 			return RandomString(txAiBanditText);
 		else
-			type = 1;
+			hero_text = false;
 		break;
 	case G_MAGES:
 		if(IS_SET(u.data->flags, F_MAGE) && n < 50)
 			return RandomString(txAiMageText);
 		else
-			type = 1;
+			hero_text = false;
 		break;
 	case G_GOBLINS:
-		if(n < 50 && !IS_SET(u.data->flags2, F2_NOT_GOBLIN))
+		if(!IS_SET(u.data->flags2, F2_NOT_GOBLIN))
 			return RandomString(txAiGoblinText);
-		else
-			type = 1;
+		hero_text = false;
 		break;
 	case G_ORCS:
-		if(n < 50)
-			return RandomString(txAiOrcText);
-		else
-			type = 1;
-		break;
+		return RandomString(txAiOrcText);
 	}
 
-	if(type == 0)
+	if(hero_text)
 	{
 		if(L.location->type == L_CITY)
 			return RandomString(txAiHeroCityText);

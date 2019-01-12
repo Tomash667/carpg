@@ -927,11 +927,18 @@ void Game::UpdateAi(float dt)
 									}
 								}
 
-								// nie glêdzenie przez karczmarza/mistrza w czasie zawodów
-								if(what == AI_TALK && IS_SET(u.data->flags3, F3_TALK_AT_COMPETITION)
-									&& (QM.quest_contest->state >= Quest_Contest::CONTEST_STARTING || tournament->GetState() >= Quest_Tournament::TOURNAMENT_STARTING))
+								// don't talk when have flag F2_DONT_TALK
+								// or have flag F3_TALK_AT_COMPETITION and there is competition started
+								if(what == AI_TALK)
 								{
-									what = AI_LOOK;
+									if(IS_SET(u.data->flags2, F2_DONT_TALK))
+										what = Rand() % 3;
+									else if(IS_SET(u.data->flags3, F3_TALK_AT_COMPETITION)
+										&& (QM.quest_contest->state >= Quest_Contest::CONTEST_STARTING
+										|| tournament->GetState() >= Quest_Tournament::TOURNAMENT_STARTING))
+									{
+										what = AI_LOOK;
+									}
 								}
 
 								assert(what != AI_NOT_SET);
@@ -940,7 +947,6 @@ void Game::UpdateAi(float dt)
 								case AI_NONE:
 									break;
 								case AI_USE:
-									// u¿yj pobliskiego obiektu
 									if(ctx.usables)
 									{
 										static vector<Usable*> uses;
@@ -967,9 +973,8 @@ void Game::UpdateAi(float dt)
 											break;
 										}
 									}
-									// brak pobliskich obiektów, odtwórz jak¹œ animacjê
+									// nothing to use, play animation
 								case AI_ANIMATION:
-									// animacja idle
 									{
 										int id = Rand() % u.data->idles->anims.size();
 										ai.timer = Random(2.f, 5.f);
@@ -988,7 +993,6 @@ void Game::UpdateAi(float dt)
 									}
 									break;
 								case AI_LOOK:
-									//patrz na poblisk¹ postaæ
 									if(u.busy == Unit::Busy_Tournament && Rand() % 2 == 0 && tournament->GetMaster())
 									{
 										ai.timer = Random(1.5f, 2.5f);
@@ -1015,9 +1019,8 @@ void Game::UpdateAi(float dt)
 											break;
 										}
 									}
-									// brak pobliskich jednostek, patrz siê losowo
+									// no close units, rotate
 								case AI_ROTATE:
-									// losowy obrót
 									ai.timer = Random(2.f, 5.f);
 									ai.idle_action = AIController::Idle_Rot;
 									if(IS_SET(u.data->flags, F_AI_GUARD) && AngleDiff(u.rot, ai.start_rot) > PI / 4)
@@ -1028,8 +1031,6 @@ void Game::UpdateAi(float dt)
 										ai.idle_data.rot = Random(MAX_ANGLE);
 									break;
 								case AI_TALK:
-									// podejdŸ do postaci i gadaj
-									if(u.data->type == UNIT_TYPE::HUMAN)
 									{
 										const float d = ((IS_SET(u.data->flags, F_AI_GUARD) || IS_SET(u.data->flags, F_AI_STAY)) ? 1.5f : 10.f);
 										close_enemies.clear();
@@ -1056,7 +1057,6 @@ void Game::UpdateAi(float dt)
 								case AI_MOVE:
 									if(IS_SET(u.data->flags, F_AI_GUARD))
 										break;
-									// ruch w losowe miejsce
 									ai.timer = Random(3.f, 6.f);
 									ai.idle_action = AIController::Idle_Move;
 									ai.city_wander = false;
@@ -1085,7 +1085,6 @@ void Game::UpdateAi(float dt)
 									}
 									break;
 								case AI_EAT:
-									// jedzenie lub picie
 									ai.timer = Random(3.f, 5.f);
 									ai.idle_action = AIController::Idle_None;
 									u.ConsumeItem(ItemList::GetItem(IS_SET(u.data->flags3, F3_ORC_FOOD) ? "orc_food" : "normal_food")->ToConsumable());
@@ -1164,7 +1163,7 @@ void Game::UpdateAi(float dt)
 
 											int ani = 0;
 											gui->game_gui->AddSpeechBubble(&u, msg);
-											if(Rand() % 3 != 0)
+											if(u.data->type == UNIT_TYPE::HUMAN && Rand() % 3 != 0)
 											{
 												ani = Rand() % 2 + 1;
 												u.mesh_inst->Play(ani == 1 ? "i_co" : "pokazuje", PLAY_ONCE | PLAY_PRIO2, 0);

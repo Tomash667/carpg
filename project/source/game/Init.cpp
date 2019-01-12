@@ -359,6 +359,8 @@ void Game::PostconfigureGame()
 	tCeil[1] = tCeilBase;
 	tWall[1] = tWallBase;
 
+	ItemScript::Init();
+
 	// test & validate game data (in debug always check some things)
 	if(testing)
 		ValidateGameData(true);

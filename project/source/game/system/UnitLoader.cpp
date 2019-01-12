@@ -142,7 +142,8 @@ class UnitLoader : public ContentLoader
 		SPK_SHIELD,
 		SPK_TAG,
 		SPK_PRIORITY,
-		SPK_PERK
+		SPK_PERK,
+		SPK_ITEMS
 	};
 
 	//=================================================================================================
@@ -316,7 +317,6 @@ class UnitLoader : public ContentLoader
 			{ "coward", F_COWARD },
 			{ "dont_escape", F_DONT_ESCAPE },
 			{ "archer", F_ARCHER },
-			{ "leader", F_LEADER },
 			{ "pierce_res25", F_PIERCE_RES25 },
 			{ "slash_res25", F_SLASH_RES25 },
 			{ "blunt_res25", F_BLUNT_RES25 },
@@ -351,6 +351,7 @@ class UnitLoader : public ContentLoader
 			{ "fixed_stats", F2_FIXED_STATS },
 			{ "contest", F2_CONTEST },
 			{ "contest_50", F2_CONTEST_50 },
+			{ "dont_talk", F2_DONT_TALK },
 			{ "old", F2_OLD },
 			{ "melee", F2_MELEE },
 			{ "melee_50", F2_MELEE_50 },
@@ -359,10 +360,7 @@ class UnitLoader : public ContentLoader
 			{ "limited_rot", F2_LIMITED_ROT },
 			{ "stun_res", F2_STUN_RESISTANCE },
 			{ "sit_on_throne", F2_SIT_ON_THRONE },
-			{ "orc_sounds", F2_ORC_SOUNDS },
-			{ "goblin_sounds", F2_GOBLIN_SOUNDS },
 			{ "xar", F2_XAR },
-			{ "golem_sounds", F2_GOLEM_SOUNDS },
 			{ "tournament", F2_TOURNAMENT },
 			{ "yell", F2_YELL },
 			{ "backstab", F2_BACKSTAB },
@@ -506,7 +504,8 @@ class UnitLoader : public ContentLoader
 			{ "shield", SPK_SHIELD },
 			{ "tag", SPK_TAG },
 			{ "priority", SPK_PRIORITY },
-			{ "perk", SPK_PERK }
+			{ "perk", SPK_PERK },
+			{ "items", SPK_ITEMS }
 		});
 	}
 
@@ -1178,6 +1177,14 @@ class UnitLoader : public ContentLoader
 					subprofile->perks[index].value = value;
 				}
 				break;
+			case SPK_ITEMS:
+				{
+					t.AssertSymbol('{');
+					Ptr<ItemScript> script;
+					subprofile->item_script = script.Get();
+					ParseItems(script);
+				}
+				break;
 			default:
 				t.Unexpected();
 				break;
@@ -1472,7 +1479,7 @@ class UnitLoader : public ContentLoader
 					t.Unexpected();
 				}
 			}
-			else if(t.IsKeyword() || t.IsItem() || t.IsSymbol('!'))
+			else if(t.IsKeyword() || t.IsItem() || t.IsSymbol('!') || t.IsSymbol('$'))
 			{
 				// single item
 				script->code.push_back(PS_ONE);
@@ -1544,7 +1551,7 @@ class UnitLoader : public ContentLoader
 	//=================================================================================================
 	void AddItem(ItemScript* script)
 	{
-		if(!t.IsSymbol('!'))
+		if(!t.IsSymbol("!$"))
 		{
 			const string& s = t.MustGetItemKeyword();
 			const Item* item = Item::TryGet(s.c_str());
@@ -1560,42 +1567,88 @@ class UnitLoader : public ContentLoader
 		}
 		else
 		{
-			t.Next();
-			if(t.IsSymbol('+') || t.IsSymbol('-'))
+			if(t.IsSymbol('$'))
 			{
-				bool minus = t.IsSymbol('-');
-				char c = t.PeekChar();
-				if(c < '1' || c > '9')
-					t.Throw("Invalid leveled list mod '%c'.", c);
-				int mod = c - '0';
-				if(minus)
-					mod = -mod;
-				t.NextChar();
+				if(!script->is_subprofile)
+					t.Throw("Special item list can only be used in subprofiles.");
 				t.Next();
-				const string& s = t.MustGetItemKeyword();
-				ItemListResult lis = ItemList::TryGet(s);
-				if(!lis.lis)
-					t.Throw("Missing item list '%s'.", s.c_str());
-				if(!lis.is_leveled)
-					t.Throw("Can't use mod on non leveled list '%s'.", s.c_str());
-				script->code.push_back(PS_LEVELED_LIST_MOD);
-				script->code.push_back(mod);
-				script->code.push_back((int)lis.llis);
-				crc.Update(PS_LEVELED_LIST_MOD);
-				crc.Update(mod);
-				crc.Update(lis.llis->id);
+				int mod = 0;
+				if(t.IsSymbol('+') || t.IsSymbol('-'))
+				{
+					bool minus = t.IsSymbol('-');
+					char c = t.PeekChar();
+					if(c < '1' || c > '9')
+						t.Throw("Invalid special list mod '%c'.", c);
+					mod = c - '0';
+					if(minus)
+						mod = -mod;
+					t.NextChar();
+					t.Next();
+				}
+				int special;
+				const string& text = t.MustGetItemKeyword();
+				if(text == "weapon")
+					special = SPECIAL_WEAPON;
+				else if(text == "armor")
+					special = SPECIAL_ARMOR;
+				else
+					t.Throw("Invalid special item list '%s'.", text.c_str());
+				if(mod == 0)
+				{
+					script->code.push_back(PS_SPECIAL_ITEM);
+					script->code.push_back(special);
+					crc.Update(PS_SPECIAL_ITEM);
+					crc.Update(special);
+				}
+				else
+				{
+					script->code.push_back(PS_SPECIAL_ITEM_MOD);
+					script->code.push_back(mod);
+					script->code.push_back(special);
+					crc.Update(PS_SPECIAL_ITEM_MOD);
+					crc.Update(mod);
+					crc.Update(special);
+				}
 			}
 			else
 			{
-				const string& s = t.MustGetItemKeyword();
-				ItemListResult lis = ItemList::TryGet(s);
-				if(!lis.lis)
-					t.Throw("Missing item list '%s'.", s.c_str());
-				ParseScript type = (lis.is_leveled ? PS_LEVELED_LIST : PS_LIST);
-				script->code.push_back(type);
-				script->code.push_back((int)lis.lis);
-				crc.Update(type);
-				crc.Update(lis.GetIdString());
+				t.Next();
+				if(t.IsSymbol('+') || t.IsSymbol('-'))
+				{
+					bool minus = t.IsSymbol('-');
+					char c = t.PeekChar();
+					if(c < '1' || c > '9')
+						t.Throw("Invalid leveled list mod '%c'.", c);
+					int mod = c - '0';
+					if(minus)
+						mod = -mod;
+					t.NextChar();
+					t.Next();
+					const string& s = t.MustGetItemKeyword();
+					ItemListResult lis = ItemList::TryGet(s);
+					if(!lis.lis)
+						t.Throw("Missing item list '%s'.", s.c_str());
+					if(!lis.is_leveled)
+						t.Throw("Can't use mod on non leveled list '%s'.", s.c_str());
+					script->code.push_back(PS_LEVELED_LIST_MOD);
+					script->code.push_back(mod);
+					script->code.push_back((int)lis.llis);
+					crc.Update(PS_LEVELED_LIST_MOD);
+					crc.Update(mod);
+					crc.Update(lis.llis->id);
+				}
+				else
+				{
+					const string& s = t.MustGetItemKeyword();
+					ItemListResult lis = ItemList::TryGet(s);
+					if(!lis.lis)
+						t.Throw("Missing item list '%s'.", s.c_str());
+					ParseScript type = (lis.is_leveled ? PS_LEVELED_LIST : PS_LIST);
+					script->code.push_back(type);
+					script->code.push_back((int)lis.lis);
+					crc.Update(type);
+					crc.Update(lis.GetIdString());
+				}
 			}
 		}
 	}

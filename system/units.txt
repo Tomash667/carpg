@@ -5,18 +5,28 @@
 items mage {
 	!wand
 	!mage_armor
-	if level 15
-	{
-		chance 10 p_hp3
+	if chance 50 {
+		random {!-4bow !-4shield}
+	}
+	if level 20 {
+		p_hp2
+		random 0 1 p_hp
+		chance 25 magic_scroll
+	}
+	else if level 16 {
+		p_hp2
 		chance 10 magic_scroll
 	}
-	else if level 10
-	{
-		chance 10 p_hp2
-		chance 3 magic_scroll
+	else if level 12 {
+		random 1 2 p_hp
+		chance 5 magic_scroll
 	}
-	else
-		chance 10 p_hp
+	else if level 8 {
+		p_hp
+	}
+	else {
+		chance 75 p_hp
+	}
 	random 1 3 !normal_food
 }
 
@@ -67,81 +77,11 @@ items q_guard {
 	random 1 3 !normal_food
 }
 
-items warrior {
-	if chance 50 {
-		!heavy_armor
-		random {!long_blade !axe !blunt}
-		!shield
-		!-4bow
-	}
-	else {
-		!medium_armor
-		random {!long_blade !axe !blunt !short_blade}
-		!-2shield
-		!-2bow
-	}
-	if level 15 {
-		p_hp3
-		3 p_hp2
-	}
-	else if level 12 {
-		2 p_hp2
-		p_hp
-	}
-	else if level 9 {
-		p_hp2
-		2 p_hp
-	}
-	else {
-		p_hp
-		if level 6
-			p_hp
-	}
-	random 1 3 !normal_food
-}
-
-items hunter {
-	random {!-1light_armor !-1medium_armor}
-	!bow
-	!-2shield
-	random {!-2long_blade !-2axe !-2blunt !-2short_blade}
-	if level 15 {
-		p_hp3
-		p_hp2
-	}
-	else if level 12
-		2 p_hp2
-	else if level 9 {
-		p_hp2
-		p_hp
-	}
-	else {
-		p_hp
-		if level 6
-			p_hp
-	}
-	random 1 3 !normal_food
-}
-
 items rogue {
 	random {!short_blade !long_blade}
 	!light_armor
 	random {!-2bow !-2shield}
-	if level 15 {
-		p_hp3
-		p_hp2
-	}
-	else if level 12
-		2 p_hp2
-	else if level 9 {
-		p_hp2
-		p_hp
-	}
-	else {
-		p_hp
-		if level 6
-			p_hp
-	}
+	chance 10 p_hp2
 	random 1 3 !normal_food
 }
 
@@ -227,6 +167,30 @@ profile hunter {
 		priority {bow armor weapon shield}
 		perk talent dexterity
 		perk skill_focus bow
+		items {
+			$-2weapon
+			!light_armor
+			!bow
+			chance 50 !-4shield
+			if level 20 {
+				p_hp3
+				p_hp
+			}
+			else if level 16 {
+				p_hp3
+			}
+			else if level 12 {
+				p_hp2
+				p_hp
+			}
+			else if level 8 {
+				p_hp2
+			}
+			else {
+				random 1 2 p_hp
+			}
+			random 1 3 !normal_food
+		}
 	}
 	subprofile weapon {
 		weapon {
@@ -241,6 +205,30 @@ profile hunter {
 		priority {weapon armor bow shield}
 		perk talent dexterity
 		perk skill_focus weapon
+		items {
+			$weapon
+			!light_armor
+			!-2bow
+			chance 50 !-4shield
+			if level 20 {
+				p_hp3
+				p_hp
+			}
+			else if level 16 {
+				p_hp3
+			}
+			else if level 12 {
+				p_hp2
+				p_hp
+			}
+			else if level 8 {
+				p_hp2
+			}
+			else {
+				random 1 2 p_hp
+			}
+			random 1 3 !normal_food
+		}
 	}
 	subprofile weapon_medium {
 		weapon {
@@ -256,6 +244,31 @@ profile hunter {
 		priority {weapon armor shield bow}
 		perk talent endurance
 		perk skill_focus weapon
+		items {
+			$weapon
+			!medium_armor
+			!-4bow
+			!-2shield
+			if level 20 {
+				p_hp3
+				p_hp2
+			}
+			else if level 16 {
+				p_hp3
+				p_hp
+			}
+			else if level 12 {
+				2 p_hp2
+			}
+			else if level 8 {
+				p_hp2
+				random 0 1 p_hp
+			}
+			else {
+				random 1 2 p_hp
+			}
+			random 1 3 !normal_food
+		}
 	}
 }
 
@@ -310,6 +323,29 @@ profile rogue {
 		priority {weapon armor shield bow}
 		perk talent dexterity
 		perk skill_focus weapon
+		items {
+			$weapon
+			!light_armor
+			!-2shield
+			chance 50 !-4bow
+			if level 20 {
+				p_hp3
+			}
+			else if level 16 {
+				p_hp2
+				p_hp
+			}
+			else if level 12 {
+				p_hp2
+			}
+			else if level 8 {
+				random 1 2 p_hp
+			}
+			else {
+				p_hp
+			}
+			random 1 3 !normal_food
+		}
 	}
 	subprofile bow {
 		weapon {
@@ -324,6 +360,29 @@ profile rogue {
 		priority {bow armor weapon shield}
 		perk talent dexterity
 		perk skill_focus bow
+		items {
+			$-2weapon
+			!light_armor
+			!bow
+			chance 50 !-4shield
+			if level 20 {
+				p_hp3
+			}
+			else if level 16 {
+				p_hp2
+				p_hp
+			}
+			else if level 12 {
+				p_hp2
+			}
+			else if level 8 {
+				random 1 2 p_hp
+			}
+			else {
+				p_hp
+			}
+			random 1 3 !normal_food
+		}
 	}
 }
 
@@ -361,6 +420,30 @@ profile warrior {
 		priority {armor shield weapon bow}
 		perk talent endurance
 		perk skill_focus armor
+		items {
+			$weapon
+			!shield
+			!heavy_armor
+			if level 20 {
+				2 p_hp3
+			}
+			else if level 16 {
+				p_hp3
+				p_hp2
+			}
+			else if level 12 {
+				p_hp3
+				p_hp
+			}
+			else if level 8 {
+				p_hp2
+				p_hp
+			}
+			else {
+				p_hp2
+			}
+			random 1 3 !normal_food
+		}
 	}
 	subprofile heavy {
 		weapon {
@@ -376,6 +459,31 @@ profile warrior {
 		priority {weapon armor shield bow}
 		perk talent strength
 		perk skill_focus weapon
+		items {
+			$weapon
+			!shield
+			!heavy_armor
+			chance 50 !-4bow
+			if level 20 {
+				p_hp3
+				p_hp2
+			}
+			else if level 16 {
+				p_hp3
+				p_hp
+			}
+			else if level 12 {
+				2 p_hp2
+			}
+			else if level 8 {
+				p_hp2
+				random 0 1 p_hp
+			}
+			else {
+				random 1 2 p_hp
+			}
+			random 1 3 !normal_food
+		}
 	}
 	subprofile medium {
 		weapon {
@@ -392,6 +500,31 @@ profile warrior {
 		priority {weapon armor bow shield}
 		perk talent strength
 		perk skill_focus weapon
+		items {
+			$weapon
+			!medium_armor
+			!-2bow
+			!-2shield
+			if level 20 {
+				p_hp3
+				p_hp2
+			}
+			else if level 16 {
+				p_hp3
+				p_hp
+			}
+			else if level 12 {
+				2 p_hp2
+			}
+			else if level 8 {
+				p_hp2
+				random 0 1 p_hp
+			}
+			else {
+				random 1 2 p_hp
+			}
+			random 1 3 !normal_food
+		}
 	}
 }
 
@@ -987,7 +1120,7 @@ unit q_zlo_mag : base_human {
 unit base_goblin {
 	mesh "goblin.qmsh"
 	mat body
-	flags {humanoid coward goblin_sounds orc_food}
+	flags {humanoid coward orc_food}
 	profile ai_fighter
 	group goblins
 	stamina 200
@@ -1063,7 +1196,6 @@ unit goblin_fighter : base_goblin {
 unit goblin_chief : base_goblin {
 	level {6 7}
 	def 40
-	flags | leader
 	items {
 		chance 25 p_hp
 		al_goblin
@@ -1076,7 +1208,7 @@ unit goblin_chief : base_goblin {
 
 unit q_gobliny_szlachcic2 : base_human {
 	level 14
-	flags | {archer hero ai_wanders leader specific_name boss sit_on_throne not_goblin}
+	flags | {archer hero ai_wanders specific_name boss sit_on_throne not_goblin}
 	hp 1400
 	attack -60 // too good weapon
 	items {
@@ -1112,7 +1244,7 @@ unit tut_goblin : goblin {
 unit base_orc {
 	mesh "ork.qmsh"
 	mat body
-	flags {humanoid orc_sounds orc_food}
+	flags {humanoid orc_food}
 	group orcs
 	profile ai_fighter
 	walk_speed 1.5
@@ -1317,7 +1449,7 @@ unit q_orkowie_orc_warius : orc_warius {
 
 unit orc_chief : base_orc {
 	level {10 14}
-	flags | {leader melee}
+	flags | melee
 	def 65
 	items {
 		random {!long_blade !axe !blunt}
@@ -1361,7 +1493,7 @@ unit q_orkowie_orc_shaman : orc_shaman {
 
 unit q_orkowie_boss : base_orc {
 	level 16
-	flags | {leader melee boss sit_on_throne yell guarded}
+	flags | {melee boss sit_on_throne yell guarded}
 	hp 1600
 	attack -40
 	def 110
@@ -1387,7 +1519,7 @@ unit q_orkowie_boss : base_orc {
 unit base_zombie {
 	mesh "zombie.qmsh"
 	mat body
-	flags {fixed_stats undead dont_escape slow pierce_res25 blunt_res25 dont_open poison_res no_power_attack ignore_block backstab_res dont_eat stun_res}
+	flags {fixed_stats undead dont_escape slow pierce_res25 blunt_res25 dont_open poison_res no_power_attack ignore_block backstab_res dont_eat stun_res dont_talk}
 	stamina 100
 	group undead
 	dmg_type blunt
@@ -1456,7 +1588,7 @@ unit zombie_ancient : base_zombie {
 unit base_skeleton {
 	mesh "skeleton.qmsh"
 	mat bone
-	flags {fixed_stats humanoid undead dont_escape pierce_res25 blunt_weak25 poison_res bloodless backstab_res dont_eat}
+	flags {fixed_stats humanoid undead dont_escape pierce_res25 blunt_weak25 poison_res bloodless backstab_res dont_eat dont_talk}
 	stamina 200
 	group undead
 	dmg_type slash
@@ -1543,7 +1675,7 @@ unit skeleton_mage : base_skeleton {
 unit necromancer : base_human {
 	level {5 8}
 	profile ai_mage
-	flags | {mage leader gray_hair}
+	flags | {mage gray_hair}
 	items {
 		al_necromancer
 		!wand
@@ -1579,7 +1711,7 @@ unit necromancer3 : necromancer {
 
 unit base_undead : base_human {
 	level {8 12}
-	flags | {undead dont_escape blunt_res25 poison_res gray_hair dont_eat}
+	flags | {undead dont_escape blunt_res25 poison_res gray_hair dont_eat dont_talk}
 	gold {{40 80} {50 100}}
 	group undead
 	blood black
@@ -1597,17 +1729,25 @@ unit base_undead : base_human {
 
 unit undead_guard : base_undead {
 	flags | melee
-	items warrior
+	items {
+		!shield
+		random {!long_blade !axe !blunt}
+		random {!medium_armor !heavy_armor}
+	}
 }
 
 unit undead_archer : base_undead {
 	flags | archer
-	items hunter
+	items {
+		!bow
+		random {!-3short_blade !-3long_blade !-3axe !-3blunt}
+		random {!light_armor !medium_armor}
+	}
 }
 
 unit evil_cleric : base_human {
 	level {8 12}
-	flags | {leader gray_hair ai_train}
+	flags | {gray_hair ai_train}
 	items {
 		!blunt
 		!shield
@@ -1646,7 +1786,7 @@ unit evil_cleric2 : evil_cleric {
 
 unit q_zlo_boss : base_human {
 	level 20
-	flags | {leader dont_escape poison_res gray_hair melee boss xar magic_res25 backstab_res dont_eat stun_res}
+	flags | {dont_escape poison_res gray_hair melee boss xar magic_res25 backstab_res dont_eat stun_res}
 	hp 2000
 	items {
 		blunt_skullsmasher
@@ -1735,12 +1875,11 @@ unit bandit_archer : base_bandit {
 
 unit bandit_chief : base_bandit {
 	level {7 10}
-	flags | leader
 	items {
 		!medium_armor
 		random {!long_blade !axe !blunt}
 		!shield
-		chance 50 !-2bow
+		chance 50 !-4bow
 		chance 15 p_hp2
 		random 2 4 !normal_food
 	}
@@ -1784,7 +1923,7 @@ unit assassin : base_bandit {
 unit ruffian_hegemon : ruffian {
 	level {10 12}
 	profile ai_tank
-	flags | {~ai_train leader}
+	flags | ~ai_train
 	gold {{120 240} {180 360}}
 }
 
@@ -1813,7 +1952,22 @@ unit mage : base_human {
 	level {5 8}
 	profile ai_mage
 	flags | mage
-	items mage
+	items {
+		!wand
+		!mage_armor
+		if level 13 {
+			chance 10 p_hp2
+			chance 9 magic_scroll
+		}
+		else if level 9 {
+			chance 10 p_hp
+			chance 3 magic_scroll
+		}
+		else {
+			chance 5 p_hp
+		}
+		random 1 3 !normal_food
+	}
 	gold {{15 30}{45 90}}
 	spells mage
 	dialog mage_bodyguard
@@ -1861,7 +2015,7 @@ unit mage_guard : base_human {
 
 unit base_golem {
 	mesh "golem.qmsh"
-	flags {fixed_stats dont_escape pierce_res25 slash_res25 dont_suffer poison_res bloodless ignore_block dont_eat backstab_res stun_res}
+	flags {fixed_stats dont_escape pierce_res25 slash_res25 dont_suffer poison_res bloodless ignore_block dont_eat backstab_res stun_res dont_talk}
 	stamina 100
 	group mages
 	dmg_type blunt
@@ -1930,7 +2084,6 @@ unit golem_adamantine : golem_iron {
 }
 
 unit q_magowie_golem : golem_stone {
-	flags | golem_sounds
 	dialog q_mages
 }
 
@@ -1966,7 +2119,7 @@ unit wolf {
 	mesh "wilk.qmsh"
 	mat skin
 	level 3
-	flags {fixed_stats dont_open no_power_attack ignore_block dont_eat}
+	flags {fixed_stats dont_open no_power_attack ignore_block dont_eat dont_talk}
 	hp 250
 	stamina 200
 	attack 50
@@ -2030,7 +2183,7 @@ unit white_wolf_sum : wolf {
 unit spider {
 	mesh "pajak.qmsh"
 	mat body
-	flags {fixed_stats poison_attack dont_open poison_res no_power_attack ignore_block dont_eat slight}
+	flags {fixed_stats poison_attack dont_open poison_res no_power_attack ignore_block dont_eat slight dont_talk}
 	group animals
 	dmg_type pierce
 	walk_speed 1
@@ -2072,7 +2225,7 @@ unit rat {
 	mesh "szczur.qmsh"
 	mat body
 	level 1
-	flags {fixed_stats coward dont_open slight no_power_attack ignore_block dont_eat}
+	flags {fixed_stats coward dont_open slight no_power_attack ignore_block dont_eat dont_talk}
 	hp 100
 	stamina 200
 	attack 20
@@ -2102,8 +2255,16 @@ unit rat {
 
 unit wild_hunter : base_human {
 	level {6 10}
-	flags {human archer leader}
-	items hunter
+	flags {human archer}
+	items {
+		random {!-1light_armor !-1medium_armor}
+		!bow
+		!-2shield
+		random {!-2long_blade !-2axe !-2blunt !-2short_blade}
+		chance 10 p_hp2
+		chance 10 p_hp
+		random 1 3 !normal_food
+	}
 	gold {{40 80} {50 100}}
 	group animals
 	tex {
@@ -2150,7 +2311,6 @@ unit crazy_mage : base_crazy {
 unit crazy_warrior : base_crazy {
 	profile warrior
 	flags | {ai_train contest melee}
-	items warrior
 	gold {{8 22}{80 220}}
 	class warrior
 }
@@ -2158,7 +2318,6 @@ unit crazy_warrior : base_crazy {
 unit crazy_hunter : base_crazy {
 	profile hunter
 	flags | {archer ai_train contest_50}
-	items hunter
 	gold {{6 18}{60 180}}
 	class hunter
 }
@@ -2166,7 +2325,6 @@ unit crazy_hunter : base_crazy {
 unit crazy_rogue : base_crazy {
 	profile rogue
 	flags | {ai_train contest_50 melee_50 backstab}
-	items rogue
 	gold {{7 20}{70 200}}
 	class rogue
 }
@@ -2207,7 +2365,6 @@ unit hero_mage : base_hero {
 unit hero_warrior : base_hero {
 	profile warrior
 	flags | {ai_train contest melee}
-	items warrior
 	gold {{8 22}{80 220}}
 	class warrior
 }
@@ -2215,7 +2372,6 @@ unit hero_warrior : base_hero {
 unit hero_hunter : base_hero {
 	profile hunter
 	flags | {archer ai_train contest_50}
-	items hunter
 	gold {{6 18}{60 180}}
 	class hunter
 }
@@ -2223,7 +2379,6 @@ unit hero_hunter : base_hero {
 unit hero_rogue : base_hero {
 	profile rogue
 	flags | {ai_train contest_50 melee_50 backstab}
-	items rogue
 	gold {{7 20}{70 200}}
 	class rogue
 }
@@ -2233,7 +2388,7 @@ unit hero_rogue : base_hero {
 //------------------------------------------------------------------------------
 unit tomashu : base_human {
 	level 25
-	flags | {dont_escape tomashu leader secret immortal sit_on_throne melee magic_res50 backstab_res poison_res dont_eat stun_res}
+	flags | {dont_escape tomashu secret immortal sit_on_throne melee magic_res50 backstab_res poison_res dont_eat stun_res dont_talk}
 	profile ai_fighter
 	hp 2500
 	items {
@@ -2255,7 +2410,7 @@ unit unk {
 	mesh "unk.qmsh"
 	mat rock
 	level 13
-	flags {fixed_stats dont_escape no_power_attack dont_suffer poison_res pierce_res25 bloodless ignore_block magic_res25 backstab dont_eat}
+	flags {fixed_stats dont_escape no_power_attack dont_suffer poison_res pierce_res25 bloodless ignore_block magic_res25 backstab dont_eat dont_talk}
 	hp 1300
 	stamina 250
 	attack 280
