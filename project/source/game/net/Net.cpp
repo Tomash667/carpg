@@ -7255,6 +7255,7 @@ void Game::WriteClientChanges(BitStreamWriter& f)
 		case NetChange::PAY_CREDIT:
 		case NetChange::DROP_GOLD:
 		case NetChange::TAKE_ITEM_CREDIT:
+		case NetChange::CLEAN_LEVEL:
 			f << c.id;
 			break;
 		case NetChange::CHEAT_ADD_GOLD:

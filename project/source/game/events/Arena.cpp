@@ -555,9 +555,9 @@ void Arena::StartPvp(PlayerController* player, Unit* unit)
 	// stwórz obserwatorów na arenie na podstawie poziomu postaci
 	int level = max(player->unit->level, unit->level);
 
-	if(level < 7)
+	if(level < 10)
 		SpawnArenaViewers(1);
-	else if(level < 14)
+	else if(level < 15)
 		SpawnArenaViewers(2);
 	else
 		SpawnArenaViewers(3);

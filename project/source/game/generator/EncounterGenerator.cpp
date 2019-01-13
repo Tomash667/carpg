@@ -227,22 +227,22 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 			break;
 		case SE_CRAZY_HEROES:
 			group_name = "crazies";
-			count = Random(2, 4);
-			level = Random(2, 15);
+			count = Random(3, 4);
+			level = Random(5, 15);
 			dialog = GameDialog::TryGet("crazies_encounter");
 			break;
 		case SE_MERCHANT:
 			{
 				essential = UnitData::Get("merchant");
 				group_name = "merchant_guards";
-				count = Random(2, 4);
-				level = Random(3, 8);
+				count = Random(3, 4);
+				level = Random(5, 6);
 			}
 			break;
 		case SE_HEROES:
 			group_name = "heroes";
-			count = Random(2, 4);
-			level = Random(2, 15);
+			count = Random(3, 4);
+			level = Random(5, 15);
 			break;
 		case SE_BANDITS_VS_TRAVELERS:
 			{
@@ -252,7 +252,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 				level = Random(5, 10);
 				group_name2 = "wagon_guards";
 				count2 = Random(2, 3);
-				level2 = Random(3, 8);
+				level2 = Random(5, 6);
 				L.SpawnObjectNearLocation(L.local_ctx, BaseObject::Get("wagon"), Vec2(128, 128), Random(MAX_ANGLE));
 				Chest* chest = L.SpawnObjectNearLocation(L.local_ctx, BaseObject::Get("chest"), Vec2(128, 128), Random(MAX_ANGLE), 6.f);
 				if(chest)
@@ -268,8 +268,8 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 		case SE_HEROES_VS_ENEMIES:
 			far_encounter = true;
 			group_name = "heroes";
-			count = Random(2, 4);
-			level = Random(2, 15);
+			count = Random(3, 4);
+			level = Random(5, 15);
 			switch(Rand() % 4)
 			{
 			case 0:
@@ -289,8 +289,8 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 				break;
 			case 3:
 				group_name2 = "crazies";
-				count2 = Random(2, 4);
-				level2 = Random(2, 15);
+				count2 = Random(3, 4);
+				level2 = Random(5, 15);
 				break;
 			}
 			break;

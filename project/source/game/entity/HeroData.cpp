@@ -99,7 +99,7 @@ void HeroData::PassTime(int days, bool travel)
 	}
 
 	// zdobywanie doœwiadczenia
-	if(unit->level != 20 && unit->IsHero() && unit->level != unit->data->level.y)
+	if(unit->level != MAX_LEVEL && unit->IsHero() && unit->level != unit->data->level.y)
 	{
 		int req = (unit->level*(unit->level + 1) + 10) * 5;
 		if(expe >= req)

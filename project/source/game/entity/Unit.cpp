@@ -3693,86 +3693,37 @@ float Unit::GetMobilityMod(bool run) const
 	return m;
 }
 
-struct TMod
-{
-	float str, end, dex;
-};
-
 //=================================================================================================
-SkillId Unit::GetBestWeaponSkill() const
+WEAPON_TYPE Unit::GetBestWeaponType() const
 {
-	const SkillId weapon_skills[] = {
-		SkillId::SHORT_BLADE,
-		SkillId::LONG_BLADE,
-		SkillId::AXE,
-		SkillId::BLUNT
-	};
-
-	const TMod weapon_mod[] = {
-		0.5f, 0, 0.5f,
-		0.75f, 0, 0.25f,
-		0.85f, 0, 0.15f,
-		0.8f, 0, 0.2f
-	};
-
-	SkillId best = SkillId::NONE;
-	int val = 0, val2 = 0, index = 0;
-
-	for(SkillId s : weapon_skills)
+	WEAPON_TYPE best = (WEAPON_TYPE)0;
+	int best_value = Get(WeaponTypeInfo::info[0].skill);
+	for(int i = 1; i < WT_MAX; ++i)
 	{
-		int s_val = Get(s);
-		if(s_val >= val)
+		int value = Get(WeaponTypeInfo::info[i].skill);
+		if(value > best_value)
 		{
-			int s_val2 = int(weapon_mod[index].str * Get(AttributeId::STR) + weapon_mod[index].dex * Get(AttributeId::DEX));
-			if(s_val2 > val2)
-			{
-				val = s_val;
-				val2 = s_val2;
-				best = s;
-			}
+			best = (WEAPON_TYPE)i;
+			best_value = value;
 		}
-		++index;
 	}
-
 	return best;
 }
 
 //=================================================================================================
-SkillId Unit::GetBestArmorSkill() const
+ARMOR_TYPE Unit::GetBestArmorType() const
 {
-	const SkillId armor_skills[] = {
-		SkillId::LIGHT_ARMOR,
-		SkillId::MEDIUM_ARMOR,
-		SkillId::HEAVY_ARMOR
-	};
-
-	const TMod armor_mod[] = {
-		0, 0, 1,
-		0, 0.5f, 0.5f,
-		0.5f, 0.5f, 0
-	};
-
-	SkillId best = SkillId::NONE;
-	int val = 0, val2 = 0, index = 0;
-
-	for(SkillId s : armor_skills)
+	ARMOR_TYPE best = (ARMOR_TYPE)0;
+	int best_value = Get(GetArmorTypeSkill(best));
+	for(int i = 1; i < AT_MAX; ++i)
 	{
-		int s_val = Get(s);
-		if(s_val >= val)
+		int value = Get(GetArmorTypeSkill((ARMOR_TYPE)i));
+		if(value > best_value)
 		{
-			int s_val2 = int(armor_mod[index].str * Get(AttributeId::STR)
-				+ armor_mod[index].end * Get(AttributeId::END)
-				+ armor_mod[index].dex * Get(AttributeId::DEX));
-			if(s_val2 > val2)
-			{
-				val = s_val;
-				val2 = s_val2;
-				best = s;
-			}
+			best = (ARMOR_TYPE)i;
+			best_value = value;
 		}
-		++index;
 	}
-
 	return best;
 }
 

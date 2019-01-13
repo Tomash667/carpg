@@ -703,8 +703,8 @@ public:
 	float CalculateMobility(const Armor* armor = nullptr) const;
 	float GetMobilityMod(bool run) const;
 
-	SkillId GetBestWeaponSkill() const;
-	SkillId GetBestArmorSkill() const;
+	WEAPON_TYPE GetBestWeaponType() const;
+	ARMOR_TYPE GetBestArmorType() const;
 
 	void ApplyHumanData(HumanData& hd)
 	{

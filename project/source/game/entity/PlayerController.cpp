@@ -654,31 +654,28 @@ void PlayerController::SetRequiredPoints()
 int PlayerController::CalculateLevel()
 {
 	float level = 0.f;
-	int weight_sum = 0;
 	UnitStats& stats = *unit->stats;
 
+	// only str, end & dex is currently important for players
+	for(int i = 0; i < 3; ++i)
+		level += float(stats.attrib[i] - 25) / 5;
 
-	FIXME; // jak skill/attrib jest -2 to ignoruj
+	// tag 4 most important player skill from currently 5 (weapon, one handed, armor, bow, shield)
+	SkillId skills[5] = {
+		WeaponTypeInfo::info[unit->GetBestWeaponType()].skill,
+		GetArmorTypeSkill(unit->GetBestArmorType()),
+		SkillId::ONE_HANDED_WEAPON,
+		SkillId::BOW,
+		SkillId::SHIELD
+	};
+	int values[5];
+	for(int i = 0; i < 5; ++i)
+		values[i] = stats.skill[(int)skills[i]];
+	std::sort(values, values + 5, std::greater<int>());
+	for(int i = 0; i < 4; ++i)
+		level += float(stats.skill[i]) / 5;
 
-	// calculate player level based on attributes and skills that are important for that class
-	for(int i = 0; i < (int)AttributeId::MAX; ++i)
-	{
-		if(attrib[i].apt > 0)
-		{
-			level += float(stats.attrib[i] - 25) * attrib[i].apt / 5;
-			weight_sum += attrib[i].apt;
-		}
-	}
-	for(int i = 0; i < (int)SkillId::MAX; ++i)
-	{
-		if(skill[i].apt > 0)
-		{
-			level += float(stats.skill[i]) * skill[i].apt / 5;
-			weight_sum += skill[i].apt;
-		}
-	}
-
-	return int(level / weight_sum);
+	return int(level / 7);
 }
 
 //=================================================================================================

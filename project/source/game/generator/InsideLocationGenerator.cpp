@@ -1292,13 +1292,12 @@ void InsideLocationGenerator::SpawnHeroesInsideDungeon()
 	}
 
 	// stwórz bohaterów
-	int count = Random(2, 4);
+	int count = Random(3, 4);
 	LocalVector<Unit*> heroes;
 	p = sprawdzone.back().first;
-	int team_level = Random(4, 13);
 	for(int i = 0; i < count; ++i)
 	{
-		int level = team_level + Random(-2, 2);
+		int level = loc->st + Random(-2, 2);
 		Unit* u = L.SpawnUnitInsideRoom(*p, ClassInfo::GetRandomData(), level);
 		if(u)
 			heroes->push_back(u);
