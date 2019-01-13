@@ -1771,7 +1771,7 @@ bool DialogContext::ExecuteSpecialIf(cstring msg)
 			return true;
 	}
 	else if(strcmp(msg, "is_free_recruit") == 0)
-		return talker->level < 6 && Team.free_recruit;
+		return talker->level <= 8 && Team.free_recruit;
 	else if(strcmp(msg, "have_unique_quest") == 0)
 	{
 		if(((QM.quest_orcs2->orcs_state == Quest_Orcs2::State::Accepted || QM.quest_orcs2->orcs_state == Quest_Orcs2::State::OrcJoined)

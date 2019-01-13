@@ -6,6 +6,9 @@
 #include "Level.h"
 #include "PlayerInfo.h"
 #include "NetChangePlayer.h"
+#include "Arena.h"
+#include "Tokenizer.h"
+#include "Game.h"
 
 bool CommandParser::ParseStream(BitStreamReader& f, PlayerInfo& info)
 {
@@ -30,6 +33,34 @@ bool CommandParser::ParseStream(BitStreamReader& f, PlayerInfo& info)
 	}
 
 	return result;
+}
+
+void CommandParser::ParseStringCommand(int cmd, const string& s, PlayerInfo& info)
+{
+	LocalString str;
+	PrintMsgFunc prev_func = g_print_func;
+	g_print_func = [&str](cstring s)
+	{
+		if(!str.empty())
+			str += "\n";
+		str += s;
+	};
+
+	switch((CMD)cmd)
+	{
+	case CMD_ARENA:
+		ArenaCombat(s.c_str());
+		break;
+	}
+
+	g_print_func = prev_func;
+
+	if(!str.empty())
+	{
+		NetChangePlayer& c = Add1(info.changes);
+		c.type = NetChangePlayer::GENERIC_CMD_RESPONSE;
+		c.str = str.Pin();
+	}
 }
 
 bool CommandParser::ParseStreamInner(BitStreamReader& f)
@@ -389,13 +420,98 @@ void CommandParser::ListPerks(PlayerController* pc)
 
 void CommandParser::ListStats(Unit* u)
 {
-	Msg("Health bonus: %+g", u->GetEffectSum(EffectId::Health));
-	Msg("Regeneration bonus: %+g/sec", u->GetEffectSum(EffectId::Regeneration));
-	Msg("Natural healing mod: x%g", u->GetEffectMul(EffectId::NaturalHealingMod));
-	Msg("Attack bonus, melee: %+g,  ranged: %+g", u->GetEffectSum(EffectId::MeleeAttack), u->GetEffectSum(EffectId::RangedAttack));
-	Msg("Defense bonus: %+g", u->GetEffectSum(EffectId::Defense));
+	int hp = int(u->hp);
+	if(hp == 0 && u->hp > 0)
+		hp = 1;
+	Msg("--- %s (%s) level %d ---", u->GetName(), u->data->id.c_str(), u->level);
+	if(u->data->stat_profile && !u->data->stat_profile->subprofiles.empty() && !u->IsPlayer())
+	{
+		Msg("Profile %s.%s (weapon:%s armor:%s)",
+			u->data->stat_profile->id.c_str(),
+			u->data->stat_profile->subprofiles[u->stats->subprofile.index]->id.c_str(),
+			Skill::skills[(int)WeaponTypeInfo::info[u->stats->subprofile.weapon].skill].id,
+			Skill::skills[(int)GetArmorTypeSkill((ARMOR_TYPE)u->stats->subprofile.armor)].id);
+	}
+	Msg("Health: %d/%d (bonus: %+g, regeneration: %+g/sec, natural: x%g)", hp, (int)u->hpmax, u->GetEffectSum(EffectId::Health),
+		u->GetEffectSum(EffectId::Regeneration), u->GetEffectMul(EffectId::NaturalHealingMod));
+	Msg("Stamina: %d/%d", (int)u->stamina, (int)u->stamina_max);
+	Msg("Melee attack: %s (bonus: %+g), ranged: %s (bonus: %+g)",
+		(u->HaveWeapon() || u->data->type == UNIT_TYPE::ANIMAL) ? Format("%d", (int)u->CalculateAttack()) : "-",
+		u->GetEffectSum(EffectId::MeleeAttack),
+		u->HaveBow() ? Format("%d", (int)u->CalculateAttack(&u->GetBow())) : "-",
+		u->GetEffectSum(EffectId::RangedAttack));
+	Msg("Defense %d (bonus: %+g), block: %s", (int)u->CalculateDefense(), u->GetEffectSum(EffectId::Defense),
+		u->HaveShield() ? Format("%d", (int)u->CalculateBlock()) : "");
 	Msg("Mobility: %d (bonus %+g)", (int)u->CalculateMobility(), u->GetEffectSum(EffectId::Mobility));
-	Msg("Carry mod: x%g", u->GetEffectMul(EffectId::Carry));
+	Msg("Carry: %g/%g (mod: x%g)", float(u->weight) / 10, float(u->weight_max) / 10, u->GetEffectMul(EffectId::Carry));
 	Msg("Magic resistance: %d%%", (int)((1.f - u->CalculateMagicResistance()) * 100));
 	Msg("Poison resistance: %d%%", (int)((1.f - u->GetEffectMul(EffectId::PoisonResistance)) * 100));
+	LocalString s = "Attributes: ";
+	for(int i = 0; i < (int)AttributeId::MAX; ++i)
+		s += Format("%s:%d ", Attribute::attributes[i].id, u->stats->attrib[i]);
+	Msg(s.c_str());
+	s = "Skills: ";
+	for(int i = 0; i < (int)SkillId::MAX; ++i)
+	{
+		if(u->stats->skill[i] > 0)
+			s += Format("%s:%d ", Skill::skills[i].id, u->stats->skill[i]);
+	}
+	Msg(s.c_str());
+}
+
+void CommandParser::ArenaCombat(cstring str)
+{
+	vector<Arena::Enemy> units;
+	Tokenizer t;
+	t.FromString(str);
+	bool side = false;
+	bool any[2] = { false,false };
+	try
+	{
+		t.Next();
+		while(!t.IsEof())
+		{
+			if(t.IsItem("vs"))
+			{
+				side = true;
+				t.Next();
+			}
+			uint count = 1;
+			if(t.IsInt())
+			{
+				count = t.GetInt();
+				if(count < 1)
+					t.Throw("Invalid count %d.", count);
+				t.Next();
+			}
+			const string& id = t.MustGetItem();
+			UnitData* ud = UnitData::TryGet(id);
+			if(!ud || IS_SET(ud->flags, F_SECRET))
+				t.Throw("Missing unit '%s'.", id.c_str());
+			else if(ud->group == G_PLAYER)
+				t.Throw("Unit '%s' can't be spawned.", id.c_str());
+			t.Next();
+			int level = -2;
+			if(t.IsItem("lvl"))
+			{
+				t.Next();
+				level = t.MustGetInt();
+				t.Next();
+			}
+			units.push_back({ ud, count, level, side });
+			any[side ? 1 : 0] = true;
+		}
+	}
+	catch(const Tokenizer::Exception& e)
+	{
+		Msg("Broken units list: %s", e.ToString());
+		return;
+	}
+
+	if(units.size() == 0)
+		Msg("Empty units list.");
+	else if(!any[0] || !any[1])
+		Msg("Missing other units.");
+	else
+		Game::Get().arena->SpawnUnit(units);
 }

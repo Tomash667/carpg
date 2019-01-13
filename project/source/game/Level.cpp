@@ -3141,6 +3141,14 @@ void Level::OnReenterLevel()
 }
 
 //=================================================================================================
+bool Level::HaveArena()
+{
+	if(city_ctx)
+		return IS_SET(city_ctx->flags, City::HaveArena);
+	return false;
+}
+
+//=================================================================================================
 InsideBuilding* Level::GetArena()
 {
 	assert(city_ctx);
@@ -4228,5 +4236,32 @@ MusicType Level::GetLocationMusic()
 	default:
 		assert(0);
 		return MusicType::Dungeon;
+	}
+}
+
+//=================================================================================================
+// -1 - outside
+// -2 - all
+void Level::CleanLevel(int building_id)
+{
+	for(LevelContext& ctx : ForEachContext())
+	{
+		if((ctx.type != LevelContext::Building && (building_id == -2 || building_id == -1))
+			|| (ctx.type == LevelContext::Building && (building_id == -2 || building_id == ctx.building_id)))
+		{
+			ctx.bloods->clear();
+			for(Unit* unit : *ctx.units)
+			{
+				if(!unit->IsAlive())
+					RemoveUnit(unit, false);
+			}
+		}
+	}
+
+	if(Net::IsServer())
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::CLEAN_LEVEL;
+		c.id = building_id;
 	}
 }

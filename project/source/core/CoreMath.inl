@@ -1756,7 +1756,7 @@ inline Vec4::Vec4()
 {
 }
 
-inline Vec4::Vec4(float x, float y, float z, float w) : XMFLOAT4(x, y, z, w)
+inline constexpr Vec4::Vec4(float x, float y, float z, float w) : XMFLOAT4(x, y, z, w)
 {
 }
 

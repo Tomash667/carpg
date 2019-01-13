@@ -155,8 +155,7 @@ void Game::SendPlayerData(PlayerInfo& info)
 	WriteItemListTeam(f, unit.items);
 
 	// data
-	unit.stats.Write(f);
-	unit.base_stat.Write(f);
+	unit.stats->Write(f);
 	f << unit.gold;
 	f << unit.stamina;
 	f << unit.effects;
@@ -242,8 +241,10 @@ bool Game::ReadPlayerData(BitStreamReader& f)
 
 	unit->player->Init(*unit, true);
 
-	unit->stats.Read(f);
-	unit->base_stat.Read(f);
+	unit->stats = new UnitStats;
+	unit->stats->fixed = false;
+	unit->stats->subprofile.value = 0;
+	unit->stats->Read(f);
 	f >> unit->gold;
 	f >> unit->stamina;
 	f >> unit->effects;
@@ -1136,15 +1137,26 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						if(player.action != PlayerController::Action_LootChest && player.action != PlayerController::Action_LootContainer)
 						{
 							player.action_unit->weight -= slot.item->weight*count;
-							if(player.action == PlayerController::Action_LootUnit && slot.item == player.action_unit->used_item)
+							if(player.action == PlayerController::Action_LootUnit)
 							{
-								player.action_unit->used_item = nullptr;
-								// removed item from hand, send info to other players
-								if(N.active_players > 2)
+								if(slot.item == player.action_unit->used_item)
 								{
+									player.action_unit->used_item = nullptr;
+									// removed item from hand, send info to other players
+									if(N.active_players > 2)
+									{
+										NetChange& c = Add1(Net::changes);
+										c.type = NetChange::REMOVE_USED_ITEM;
+										c.unit = player.action_unit;
+									}
+								}
+								if(IS_SET(slot.item->flags, ITEM_IMPORTANT))
+								{
+									player.action_unit->mark = false;
 									NetChange& c = Add1(Net::changes);
-									c.type = NetChange::REMOVE_USED_ITEM;
+									c.type = NetChange::MARK_UNIT;
 									c.unit = player.action_unit;
+									c.id = 0;
 								}
 							}
 						}
@@ -2142,9 +2154,9 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					{
 						int num = +value;
 						if(type == NetChange::CHEAT_MOD_STAT)
-							num += info.u->base_stat.skill[what];
+							num += info.u->stats->skill[what];
 						int v = Clamp(num, Skill::MIN, Skill::MAX);
-						if(v != info.u->base_stat.skill[what])
+						if(v != info.u->stats->skill[what])
 						{
 							info.u->Set((SkillId)what, v);
 							NetChangePlayer& c = Add1(player.player_info->changes);
@@ -2163,9 +2175,9 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					{
 						int num = +value;
 						if(type == NetChange::CHEAT_MOD_STAT)
-							num += info.u->base_stat.attrib[what];
+							num += info.u->stats->attrib[what];
 						int v = Clamp(num, Attribute::MIN, Attribute::MAX);
-						if(v != info.u->base_stat.attrib[what])
+						if(v != info.u->stats->attrib[what])
 						{
 							info.u->Set((AttributeId)what, v);
 							NetChangePlayer& c = Add1(player.player_info->changes);
@@ -2995,6 +3007,31 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				c.unit = &unit;
 			}
 			break;
+		// player used cheat 'arena'
+		case NetChange::CHEAT_ARENA:
+			{
+				const string& str = f.ReadString1();
+				if(!f)
+					N.StreamError("Update server: Broken CHEAT_ARENA from %s.", info.name.c_str());
+				else if(!info.devmode)
+					N.StreamError("Update server: Player %s used CHEAT_ARENA without devmode.", info.name.c_str());
+				else
+					cmdp->ParseStringCommand(CMD_ARENA, str, info);
+			}
+			break;
+		// clean level from blood and corpses
+		case NetChange::CLEAN_LEVEL:
+			{
+				int building_id;
+				f >> building_id;
+				if(!f)
+					N.StreamError("Update server: Broken CLEAN_LEVEL from %s.", info.name.c_str());
+				else if(!info.devmode)
+					N.StreamError("Update server: Player %s used CLEAN_LEVEL without devmode.", info.name.c_str());
+				else
+					L.CleanLevel(building_id);
+			}
+			break;
 		// invalid change
 		default:
 			N.StreamError("Update server: Invalid change type %u from %s.", type, info.name.c_str());
@@ -3189,6 +3226,7 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 		case NetChange::REMOVE_UNIT:
 		case NetChange::REMOVE_TRAP:
 		case NetChange::TRIGGER_TRAP:
+		case NetChange::CLEAN_LEVEL:
 			f << c.id;
 			break;
 		case NetChange::TALK:
@@ -3380,6 +3418,10 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 			f << c.unit->netid;
 			f << c.f[0];
 			break;
+		case NetChange::MARK_UNIT:
+			f << c.unit->netid;
+			f << (c.id != 0);
+			break;
 		default:
 			Error("Update server: Unknown change %d.", c.type);
 			assert(0);
@@ -3430,7 +3472,6 @@ void Game::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 					f << u.weight;
 					f << u.weight_max;
 					f << u.gold;
-					u.stats.Write(f);
 					WriteItemListTeam(f, u.items);
 				}
 				break;
@@ -3605,6 +3646,8 @@ void Game::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 		f << info.u->stamina;
 	if(IS_SET(info.update_flags, PlayerInfo::UF_LEARNING_POINTS))
 		f << info.pc->learning_points;
+	if(IS_SET(info.update_flags, PlayerInfo::UF_LEVEL))
+		f << info.u->level;
 }
 
 //=================================================================================================
@@ -6163,6 +6206,36 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				}
 			}
 			break;
+		// mark unit
+		case NetChange::MARK_UNIT:
+			{
+				int netid;
+				bool mark;
+				f >> netid;
+				f >> mark;
+				if(!f)
+					N.StreamError("Update client: Broken MARK_UNIT.");
+				else
+				{
+					Unit* unit = L.FindUnit(netid);
+					if(!unit)
+						N.StreamError("Update client: MARK_UNIT, missing unit %d.", netid);
+					else
+						unit->mark = mark;
+				}
+			}
+			break;
+		// someone used cheat 'clean_level'
+		case NetChange::CLEAN_LEVEL:
+			{
+				int building_id;
+				f >> building_id;
+				if(!f)
+					N.StreamError("Update client: Broken CLEAN_LEVEL.");
+				else
+					L.CleanLevel(building_id);
+			}
+			break;
 		// invalid change
 		default:
 			Warn("Update client: Unknown change type %d.", type);
@@ -6563,7 +6636,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 						f >> unit.weight;
 						f >> unit.weight_max;
 						f >> unit.gold;
-						unit.stats.Read(f);
+						unit.stats = unit.data->GetStats(unit.level);
 						if(!ReadItemListTeam(f, unit.items))
 							N.StreamError("Update single client: Broken %s.", name);
 						else
@@ -7094,6 +7167,22 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 		}
 	}
 
+	// level
+	if(IS_SET(flags, PlayerInfo::UF_LEVEL))
+	{
+		if(!pc)
+			f.Skip<float>();
+		else
+		{
+			f.Read(pc->unit->level);
+			if(!f)
+			{
+				N.StreamError("Update single client: Broken ID_PLAYER_CHANGES at UF_LEVEL.");
+				return true;
+			}
+		}
+	}
+
 	return true;
 }
 
@@ -7166,6 +7255,7 @@ void Game::WriteClientChanges(BitStreamWriter& f)
 		case NetChange::PAY_CREDIT:
 		case NetChange::DROP_GOLD:
 		case NetChange::TAKE_ITEM_CREDIT:
+		case NetChange::CLEAN_LEVEL:
 			f << c.id;
 			break;
 		case NetChange::CHEAT_ADD_GOLD:
@@ -7288,6 +7378,10 @@ void Game::WriteClientChanges(BitStreamWriter& f)
 				f << size;
 				f.Write(content, size);
 			}
+			break;
+		case NetChange::CHEAT_ARENA:
+			f << *c.str;
+			StringPool.Free(c.str);
 			break;
 		default:
 			Error("UpdateClient: Unknown change %d.", c.type);

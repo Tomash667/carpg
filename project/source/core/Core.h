@@ -3,13 +3,13 @@
 //-----------------------------------------------------------------------------
 // Macros
 #define BIT(bit) (1<<(bit))
-#define IS_SET(flaga,bit) (((flaga) & (bit)) != 0)
-#define IS_CLEAR(flaga,bit) (((flaga) & (bit)) == 0)
-#define IS_ALL_SET(flaga,bity) (((flaga) & (bity)) == (bity))
-#define SET_BIT(flaga,bit) ((flaga) |= (bit))
-#define CLEAR_BIT(flaga,bit) ((flaga) &= ~(bit))
-#define SET_BIT_VALUE(flaga,bit,wartos) { if(wartos) SET_BIT(flaga,bit); else CLEAR_BIT(flaga,bit); }
-#define COPY_BIT(flaga,flaga2,bit) { if(((flaga2) & (bit)) != 0) SET_BIT(flaga,bit); else CLEAR_BIT(flaga,bit); }
+#define IS_SET(flags,bit) (((flags) & (bit)) != 0)
+#define IS_CLEAR(flags,bit) (((flags) & (bit)) == 0)
+#define IS_ALL_SET(flags,bity) (((flags) & (bity)) == (bity))
+#define SET_BIT(flags,bit) ((flags) |= (bit))
+#define CLEAR_BIT(flags,bit) ((flags) &= ~(bit))
+#define SET_BIT_VALUE(flags,bit,wartos) { if(wartos) SET_BIT(flags,bit); else CLEAR_BIT(flags,bit); }
+#define COPY_BIT(flags,flags2,bit) { if(((flags2) & (bit)) != 0) SET_BIT(flags,bit); else CLEAR_BIT(flags,bit); }
 #define FLT10(x) (float(int((x)*10))/10)
 #define FLT100(x) (float(int((x)*100))/100)
 #define OR2_EQ(var,val1,val2) (((var) == (val1)) || ((var) == (val2)))
@@ -343,7 +343,8 @@ inline To union_cast(const From& f)
 	return a.to;
 }
 
-// Uniwersalny, brakuj¹cy w C++ operator dos³ownego rzutowania (reintepretacji)
+//-----------------------------------------------------------------------------
+// Absolute cast
 template <typename destT, typename srcT>
 destT &absolute_cast(srcT &v)
 {

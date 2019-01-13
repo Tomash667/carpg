@@ -1,7 +1,6 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-// Rodzaj obra¿eñ broni
 enum PhysicalDamageType
 {
 	DMG_SLASH = 0x01,

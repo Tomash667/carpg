@@ -9,12 +9,14 @@
 #	define CHECKED(x) x
 #endif
 
+//-----------------------------------------------------------------------------
 class asIScriptEngine;
 class asIScriptModule;
 class TypeBuilder;
 class NamespaceBuilder;
 struct asSFuncPtr;
 
+//-----------------------------------------------------------------------------
 struct ScriptException
 {
 	ScriptException(cstring msg);
@@ -23,6 +25,7 @@ struct ScriptException
 	ScriptException(cstring msg, const Args&... args) : ScriptException(Format(msg, args...)) {}
 };
 
+//-----------------------------------------------------------------------------
 struct ScriptContext
 {
 	ScriptContext() : pc(nullptr), target(nullptr), stock(nullptr) {}
@@ -32,6 +35,7 @@ struct ScriptContext
 	vector<ItemSlot>* stock;
 };
 
+//-----------------------------------------------------------------------------
 class ScriptManager : public GameComponent
 {
 public:
@@ -89,5 +93,4 @@ private:
 	std::unordered_map<Unit*, VarsContainer*> unit_vars;
 	ScriptContext ctx;
 };
-
 extern ScriptManager SM;

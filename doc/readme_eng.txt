@@ -182,10 +182,12 @@ Available commands:
 	add_gold - give gold to player (add_gold count).
 	add_team_gold - give gold to team (add_team_gold count).
 	add_item - add item to player inventory (add_item id [count]).
-	add_learning_points - add learning pint to selected unit [count - default 1].
+	add_learning_points - add learning point to selected unit [count - default 1].
 	add_team_item - add team item to player inventory (add_team_item id [count]).
+	arena - spawns enemies on arena (example arena 3 rat vs 2 wolf).
 	break_action - break unit current action ('break 1' targets self)
 	citizen - citizens/crazies don't attack player or his team.
+	clean_level - remove all corpses and blood from level (clean_level [building_id]).
 	clear - clear text.
 	cmds - show commands and write them to file commands.txt, with all show unavailable commands too (cmds [all]).
 	crash - crash game to death!

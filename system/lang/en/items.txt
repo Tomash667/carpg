@@ -1,5 +1,9 @@
 //------------------------------------------------------------------------------
 // SHORT BLADE
+item dagger_knife {
+	name "Knife"
+	desc "More suitable for peeling potatoes than for fighting."
+}
 item dagger_short {
 	name "Dagger"   
 	desc "Standard dagger for backstabbing or cutting throats. You rather won't use it."
@@ -27,6 +31,10 @@ item dagger_spinesheath {
 
 //------------------------------------------------------------------------------
 // LONG BLADE
+item sword_wooden {
+	name "Wooden sword"
+	desc "Weapon used during training."
+}
 item sword_long {
 	name "Long sword"
 	desc "Iron sword. The standard weapon for many armed forces. It is universal in terms of attack, defense and speed."
@@ -47,13 +55,21 @@ item sword_adamantine {
 	name "Adamantine sword"
 	desc "Adamantine swords are the best swords you can get at the store. Cuts through adamantine armor as if it were made of ordinary steel."
 }
-item sword_unique {
+item sword_semur {
 	name "Semur Scimitar"
 	desc "A scimitar artifact carved from gold by an unknown blacksmith. Due to its enchantments, it is never dull and it is sharp like the tusk of dragonchewer. Amplifies magic skills."
+}
+item sword_forbidden {
+	name "Sword \"Forbidden dreams\""
+	desc "An artifact of unknown origin, created from an alloy of crystal gold."
 }
 
 //------------------------------------------------------------------------------
 // AXE
+item axe_rusted {
+	name "Rusted hatchet"
+	desc "This axe has not been used for a long time, I hope that you also do not intend to."
+}
 item axe_small {
 	name "Hatchet"
 	desc "Light and handy axe. For those who like to chop wood once and wolf another time."
@@ -145,13 +161,6 @@ item wand_3 {
 }
 
 //------------------------------------------------------------------------------
-// SECRET WEAPON
-item sword_forbidden {
-	name "Sword \"Forbidden dreams\""
-	desc "An artifact of unknown origin, created from an alloy of crystal gold."
-}
-
-//------------------------------------------------------------------------------
 // BOW
 item bow_short {
 	name "Short bow"
@@ -173,7 +182,7 @@ item bow_dragonbone {
 	name "Dragon bow"
 	desc "The best item in its class. A bow made from bones of a dragon is what you need to kill flying dragons!"
 }
-item bow_unique {
+item bow_angel {
 	name "Angel bow"
 	desc "A bow artifact forged by angels from another plane. Very light, however arrows fired from this are deadly."
 }
@@ -184,6 +193,10 @@ item q_gobliny_luk {
 
 //------------------------------------------------------------------------------
 // SHIELD
+item shield_plank {
+	name "Plank shield"
+	desc "The makeshift shield made of pieces of a fence. You will not find anything cheaper."
+}
 item shield_wood {
 	name "Wooden shield"
 	desc "The basic shield. Bit lighter and less expensive than metal. Use at your own risk."
@@ -204,7 +217,7 @@ item shield_adamantine {
 	name "Adamantine shield"
 	desc "The best item in its class. Shield of adamantine protect you from everything, even acid rain. It gives a small magic resistance."
 }
-item shield_unique {
+item shield_wall {
 	name "The Wall"
 	desc "This shield artifact is made of magical stone. It is indestructible. It also gives magic resistance."
 }
@@ -360,11 +373,16 @@ item am_breastplate_adam {
 }
 item am_gladiator {
 	name "Gladiator armor"
-	desc "The magical breastplate that the gladiator Cord the Swindler used for many years. He won dozens of fights in the arena before someone realized that it is magical. They took him and threw him into the arena without it, pitting him against some goblins who defeated him. Increases attributes and skills that are useful in combat."
+	desc "The magical breastplate that the gladiator Cord the Swindler used for many years. He won dozens of fights in the arena before someone realized that it is magical. They took him and threw him into the arena without it, pitting him against some goblins who defeated him."
+//	Increases attributes and skills that are useful in combat."
 }
 
 //------------------------------------------------------------------------------
 // HEAVY ARMOR
+item ah_splint_rusted {
+	name "Rusted splint armor"
+	desc "Armor made of multiple metal strips tightly clinging to the leather pad. It provides good protection at the cost of mobility. This one is rusted."
+}
 item ah_splint {
 	name "Splint armor"
 	desc "Armor made of multiple metal strips tightly clinging to the leather pad. It provides good protection at the cost of mobility."

@@ -1,8 +1,8 @@
-// this file contains list of spells
+// This file contains list of spells
 //------------------------------------------------------------------------------
 spell magic_bolt {
 	type point
-	dmg 25 + 2
+	dmg 30 + 4
 	range 50
 	speed 15
 	tex "mp.png" 0.05
@@ -14,7 +14,7 @@ spell magic_bolt {
 spell xmagic_bolt {
 	type point
 	flags triple
-	dmg 20 + 1
+	dmg 20 + 3
 	range 50
 	speed 15
 	tex "xmp.png" 0.05
@@ -26,7 +26,7 @@ spell xmagic_bolt {
 spell fireball {
 	type point
 	flags explode
-	dmg 100 + 5
+	dmg 130 + 12
 	cooldown {2.5 5}
 	range 50
 	speed 8
@@ -41,7 +41,7 @@ spell fireball {
 spell spit_poison {
 	type ball
 	flags poison
-	dmg 50
+	dmg 75
 	cooldown {5 10}
 	range 20
 	speed 12
@@ -63,7 +63,7 @@ spell raise {
 spell thunder_bolt {
 	type ray
 	flags jump
-	dmg 150 + 3
+	dmg 150 + 15
 	cooldown {7.5 12.5}
 	range 50
 	tex_particle "iskra.png" 0.03
@@ -74,7 +74,7 @@ spell thunder_bolt {
 spell drain {
 	type ray
 	flags {drain hold}
-	dmg 50 + 1
+	dmg 50 + 5
 	cooldown {2.5 5}
 	range 5
 	sound_cast "suck.mp3" {2 5}
@@ -83,7 +83,7 @@ spell drain {
 spell drain2 {
 	type ray
 	flags {drain hold}
-	dmg 80 + 1
+	dmg 80 + 8
 	cooldown {3.5 6}
 	range 6
 	sound_cast "suck.mp3" {2 5}
@@ -92,7 +92,7 @@ spell drain2 {
 spell exploding_skull {
 	type point
 	flags explode
-	dmg 120 + 2
+	dmg 140 + 13
 	cooldown {5 10}
 	range 40
 	speed 7.5
@@ -107,7 +107,7 @@ spell exploding_skull {
 spell heal {
 	type target
 	flags {heal non_combat}
-	dmg 100 + 10
+	dmg 150 + 20
 	cooldown {10 15}
 	range 15
 	tex_particle "heal.png" 0.03
@@ -117,7 +117,7 @@ spell heal {
 spell mystic_ball {
 	type point
 	flags explode
-	dmg 200
+	dmg 400
 	cooldown 10
 	range 50
 	speed 18

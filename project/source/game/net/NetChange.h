@@ -181,6 +181,9 @@ struct NetChange
 		ADD_VISIBLE_EFFECT,
 		REMOVE_VISIBLE_EFFECT,
 		USE_ITEM, // player used item SERVER[int(id)-unit] CLIENT[int(id)-item index]
+		MARK_UNIT, // mark unit [int(netid)-unit, bool(id)-is marked]
+		CHEAT_ARENA, // player used cheat 'arena' [string(str)-list of enemies]
+		CLEAN_LEVEL, // clean level from blood and corpses [int(id)-building id (-1 outside, -2 all)]
 
 		MAX
 	} type;

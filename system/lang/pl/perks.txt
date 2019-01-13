@@ -75,7 +75,7 @@ perk finesse {
 	name "Finezja"
 	desc "+10 do ataku dystansowego."
 }
-perk tought {
+perk tough {
 	name "Twardy"
 	desc "+100 do maksymalnego zdrowia."
 }

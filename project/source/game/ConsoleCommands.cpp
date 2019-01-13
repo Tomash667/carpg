@@ -129,7 +129,9 @@ void Game::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_LIST_PERKS, "list_perks", "display selected unit perks", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_SELECT, "select", "select and display currently selected target (select [me/show/target] - use target or show by default)", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_LIST_STATS, "list_stats", "display selected unit stats", F_GAME | F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_ADD_LEARNING_POINTS, "add_learning_points", "add learning pint to selected unit [count - default 1]", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_ADD_LEARNING_POINTS, "add_learning_points", "add learning point to selected unit [count - default 1]", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_CLEAN_LEVEL, "clean_level", "remove all corpses and blood from level (clean_level [building_id])", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_ARENA, "arena", "spawns enemies on arena (example arena 3 rat vs 2 wolf)", F_GAME | F_CHEAT));
 
 	// verify all commands are added
 #ifdef _DEBUG
@@ -406,7 +408,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						bool is_team = (it->cmd == CMD_ADD_TEAM_ITEM);
 						const string& item_name = t.MustGetItem();
 						const Item* item = Item::TryGet(item_name);
-						if(!item || IS_SET(item->flags, ITEM_SECRET))
+						if(!item)
 							Msg("Can't find item with id '%s'!", item_name.c_str());
 						else
 						{
@@ -540,18 +542,16 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								if(skill)
 								{
 									if(it->cmd == CMD_MOD_STAT)
-										num += pc->unit->base_stat.skill[co];
+										num += pc->unit->stats->skill[co];
 									int v = Clamp(num, Skill::MIN, Skill::MAX);
-									if(v != pc->unit->base_stat.skill[co])
-										pc->unit->Set((SkillId)co, v);
+									pc->unit->Set((SkillId)co, v);
 								}
 								else
 								{
 									if(it->cmd == CMD_MOD_STAT)
-										num += pc->unit->base_stat.attrib[co];
+										num += pc->unit->stats->attrib[co];
 									int v = Clamp(num, Attribute::MIN, Attribute::MAX);
-									if(v != pc->unit->base_stat.attrib[co])
-										pc->unit->Set((AttributeId)co, v);
+									pc->unit->Set((AttributeId)co, v);
 								}
 							}
 							else
@@ -666,6 +666,8 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						UnitData* data = UnitData::TryGet(id);
 						if(!data || IS_SET(data->flags, F_SECRET))
 							Msg("Missing base unit '%s'!", id.c_str());
+						else if(data->group == G_PLAYER)
+							Msg("Can't spawn player unit.");
 						else
 						{
 							int level = -1, count = 1, in_arena = -1;
@@ -1937,6 +1939,38 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						}
 					}
 					break;
+				case CMD_CLEAN_LEVEL:
+					{
+						int building_id = -2;
+						if(t.Next())
+							building_id = t.MustGetInt();
+						if(Net::IsLocal())
+							L.CleanLevel(building_id);
+						else
+						{
+							NetChange& c = Add1(Net::changes);
+							c.type = NetChange::CLEAN_LEVEL;
+							c.id = building_id;
+						}
+					}
+					break;
+				case CMD_ARENA:
+					if(!L.HaveArena())
+						Msg("Arena required inside location.");
+					else
+					{
+						cstring s = t.GetTextRest();
+						if(Net::IsLocal())
+							cmdp->ArenaCombat(s);
+						else
+						{
+							NetChange& c = Add1(Net::changes);
+							c.type = NetChange::CHEAT_ARENA;
+							c.str = StringPool.Get();
+							*c.str = s;
+						}
+					}
+					break;
 				default:
 					assert(0);
 					break;
@@ -2017,7 +2051,7 @@ void Game::CmdList(Tokenizer& t)
 			for(auto it : Item::items)
 			{
 				auto item = it.second;
-				if(!IS_SET(item->flags, ITEM_SECRET) && (match.empty() || _strnicmp(match.c_str(), item->id.c_str(), match.length()) == 0))
+				if(match.empty() || _strnicmp(match.c_str(), item->id.c_str(), match.length()) == 0)
 					items.push_back(item);
 			}
 
@@ -2052,7 +2086,7 @@ void Game::CmdList(Tokenizer& t)
 			for(auto it : Item::items)
 			{
 				auto item = it.second;
-				if(!IS_SET(item->flags, ITEM_SECRET) && (match.empty() || _strnicmp(match.c_str(), item->name.c_str(), match.length()) == 0))
+				if(match.empty() || _strnicmp(match.c_str(), item->name.c_str(), match.length()) == 0)
 					items.push_back(item);
 			}
 

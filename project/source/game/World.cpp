@@ -285,7 +285,7 @@ int World::CreateCamp(const Vec2& pos, SPAWN_GROUP group, float range, bool allo
 	loc->type = L_CAMP;
 	loc->image = LI_CAMP;
 	loc->last_visit = -1;
-	loc->st = Random(3, 15);
+	loc->st = Random(5, 15);
 	loc->reset = false;
 	loc->spawn = group;
 	loc->pos = pos;

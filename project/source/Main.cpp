@@ -512,7 +512,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				{
 					++i;
 					int slot;
-					if(!TextHelper::ToInt(argv[i], slot) || slot < 1 || slot > MAX_SAVE_SLOTS)
+					if(!TextHelper::ToInt(argv[i], slot) || slot < 1 || slot > SaveSlot::MAX_SLOTS)
 						Warn("Invalid loadslot value '%s'.", argv[i]);
 					else
 						game.quickstart_slot;
@@ -681,6 +681,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	game.server_ip = cfg.GetString("server_ip", "");
 	game.mp_timeout = Clamp(cfg.GetFloat("timeout", 10.f), 1.f, 3600.f);
 	N.server_lan = cfg.GetBool("server_lan");
+	N.join_lan = cfg.GetBool("join_lan");
 
 	// szybki start
 	if(game.quickstart == QUICKSTART_NONE)
@@ -700,7 +701,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			game.quickstart = QUICKSTART_LOAD_MP;
 	}
 	int slot = cfg.GetInt("loadslot");
-	if(slot != -1 && slot >= 1 && slot <= MAX_SAVE_SLOTS)
+	if(slot != -1 && slot >= 1 && slot <= SaveSlot::MAX_SLOTS)
 		game.quickstart_slot = slot;
 
 	N.port = Clamp(cfg.GetInt("port", PORT), 0, 0xFFFF);

@@ -1,4 +1,4 @@
-// teksty u¿ywane w pierwszej fazie wczytywania
+// texts used before loading all other files
 creatingListOfFiles = "Tworzenie listy zasobów"
 configuringGame = "Konfigurowanie gry"
 loadingItems = "Wczytywanie przedmiotów"

@@ -1,8 +1,6 @@
 #pragma once
 
-struct Item;
-struct Unit;
-
+//-----------------------------------------------------------------------------
 struct TeamInfo
 {
 	int players;
@@ -14,6 +12,7 @@ struct TeamInfo
 	int summons;
 };
 
+//-----------------------------------------------------------------------------
 class TeamSingleton
 {
 public:
@@ -89,5 +88,4 @@ private:
 	vector<TeamShareItem> team_shares;
 	int team_share_id;
 };
-
 extern TeamSingleton Team;

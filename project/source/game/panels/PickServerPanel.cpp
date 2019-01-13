@@ -330,13 +330,25 @@ void PickServerPanel::Show(bool pick_autojoin)
 		return;
 	}
 
-	Info("Getting servers from master server.");
-	lan_mode = false;
+	if(N.join_lan)
+	{
+		Info("Pinging LAN servers...");
+		lan_mode = true;
+		cb_internet.checked = false;
+		cb_lan.checked = true;
+		N.peer->Ping("255.255.255.255", (word)N.port, false);
+	}
+	else
+	{
+		Info("Getting servers from master server.");
+		lan_mode = false;
+		cb_internet.checked = true;
+		cb_lan.checked = false;
+		N.api->Reset();
+		N.api->GetServers();
+	}
+
 	bad_request = false;
-	cb_internet.checked = true;
-	cb_lan.checked = false;
-	N.api->Reset();
-	N.api->GetServers();
 	timer = 0;
 	servers.clear();
 	grid.Reset();
@@ -381,6 +393,10 @@ void PickServerPanel::OnChangeMode(bool lan_mode)
 		N.api->GetServers();
 		bad_request = false;
 	}
+	N.join_lan = lan_mode;
+	Game& game = Game::Get();
+	game.cfg.Add("join_lan", lan_mode);
+	game.SaveCfg();
 	servers.clear();
 	grid.Reset();
 	timer = 0;

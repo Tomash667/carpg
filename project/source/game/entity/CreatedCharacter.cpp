@@ -20,8 +20,8 @@ void CreatedCharacter::Clear(Class c)
 {
 	ClassInfo& info = ClassInfo::classes[(int)c];
 
-	sp_max = 3;
-	perks_max = 2;
+	sp_max = StatProfile::MAX_TAGS;
+	perks_max = StatProfile::MAX_PERKS;
 
 	sp = sp_max;
 	perks = perks_max;
@@ -53,65 +53,36 @@ void CreatedCharacter::Random(Class c)
 {
 	Clear(c);
 
-	int profile;
-	switch(c)
+	StatProfile& profile = ClassInfo::classes[(int)c].unit_data->GetStatProfile();
+	SubprofileInfo sub = profile.GetRandomSubprofile(&last_sub);
+	StatProfile::Subprofile& subprofile = *profile.subprofiles[sub.index];
+	last_sub = sub;
+
+	// apply tag skills
+	for(int i = 0; i < StatProfile::MAX_TAGS; ++i)
 	{
-	case Class::WARRIOR:
-		profile = Rand() % 2 + 1;
-		break;
-	default:
-		assert(0);
-	case Class::HUNTER:
-	case Class::ROGUE:
-		profile = Rand() % 2;
-		break;
+		SkillId sk = subprofile.tag_skills[i];
+		if(sk == SkillId::NONE)
+			break;
+		sk = sub.GetSkill(sk);
+		s[(int)sk].Add(Skill::TAG_BONUS, true);
 	}
 
-	SkillId sk1, sk2, sk3;
-	AttributeId talent;
-
-	switch(profile)
-	{
-	case 0: // light
-		{
-			sk1 = SkillId::LIGHT_ARMOR;
-			if(Rand() % 2 == 0)
-				sk2 = SkillId::SHORT_BLADE;
-			else
-				sk2 = RandomItem({ SkillId::LONG_BLADE, SkillId::AXE, SkillId::BLUNT });
-			sk3 = SkillId::BOW;
-			talent = AttributeId::DEX;
-		}
-		break;
-	case 1: // medium
-		{
-			sk1 = SkillId::MEDIUM_ARMOR;
-			sk2 = RandomItem({ SkillId::SHORT_BLADE, SkillId::LONG_BLADE, SkillId::AXE, SkillId::BLUNT });
-			sk3 = RandomItem({ SkillId::BOW, SkillId::SHIELD });
-			talent = RandomItem({ AttributeId::DEX, AttributeId::END });
-		}
-		break;
-	case 2: // heavy
-		{
-			sk1 = SkillId::HEAVY_ARMOR;
-			sk2 = RandomItem({ SkillId::LONG_BLADE, SkillId::AXE, SkillId::BLUNT });
-			sk3 = SkillId::SHIELD;
-			talent = RandomItem({ AttributeId::STR, AttributeId::END });
-		}
-		break;
-	}
-
-	s[(int)sk1].Add(GetBonus(sk1), true);
-	s[(int)sk2].Add(GetBonus(sk2), true);
-	s[(int)sk3].Add(GetBonus(sk3), true);
-	TakenPerk tp(Perk::Talent, (int)talent);
+	// apply perks
 	PerkContext ctx(this);
-	tp.Apply(ctx);
-	taken_perks.push_back(tp);
-	SkillId focus = RandomItem({ sk1, sk2, sk3 });
-	tp = TakenPerk(Perk::SkillFocus, (int)focus);
-	tp.Apply(ctx);
-	taken_perks.push_back(tp);
+	for(int i = 0; i < StatProfile::MAX_PERKS; ++i)
+	{
+		TakenPerk& tp = subprofile.perks[i];
+		if(tp.perk == Perk::None)
+			break;
+		PerkInfo& info = PerkInfo::perks[(int)tp.perk];
+		int value = tp.value;
+		if(info.value_type == PerkInfo::Skill)
+			value = (int)sub.GetSkill((SkillId)value);
+		TakenPerk perk(tp.perk, value);
+		perk.Apply(ctx);
+		taken_perks.push_back(perk);
+	}
 
 	sp = 0;
 	perks = 0;
@@ -159,7 +130,7 @@ int CreatedCharacter::Read(BitStreamReader& f)
 				Error("Skill increase for disabled skill '%s'.", Skill::skills[i].id);
 				return 3;
 			}
-			s[i].Add(GetBonus((SkillId)i), true);
+			s[i].Add(Skill::TAG_BONUS, true);
 			--sp;
 		}
 	}
@@ -225,20 +196,20 @@ int CreatedCharacter::Read(BitStreamReader& f)
 //=================================================================================================
 void CreatedCharacter::Apply(PlayerController& pc)
 {
-	pc.unit->data->GetStatProfile().Set(0, pc.unit->base_stat);
+	pc.unit->stats->Set(pc.unit->data->GetStatProfile());
 
 	// reset blocked stats, apply skill bonus
 	for(int i = 0; i < (int)AttributeId::MAX; ++i)
 	{
 		pc.attrib[i].blocked = false;
-		pc.attrib[i].apt = (pc.unit->base_stat.attrib[i] - 50) / 5;
+		pc.attrib[i].apt = (pc.unit->stats->attrib[i] - 50) / 5;
 	}
 	for(int i = 0; i < (int)SkillId::MAX; ++i)
 	{
 		pc.skill[i].blocked = false;
 		if(s[i].add)
-			pc.unit->base_stat.skill[i] += GetBonus((SkillId)i);
-		pc.skill[i].apt = pc.unit->base_stat.skill[i] / 5;
+			pc.unit->stats->skill[i] += Skill::TAG_BONUS;
+		pc.skill[i].apt = pc.unit->stats->skill[i] / 5;
 	}
 
 	// apply perks
@@ -249,8 +220,8 @@ void CreatedCharacter::Apply(PlayerController& pc)
 
 	pc.unit->CalculateStats();
 	pc.unit->CalculateLoad();
+	pc.RecalculateLevel();
 	pc.unit->hp = pc.unit->hpmax = pc.unit->CalculateMaxHp();
-	pc.unit->level = pc.unit->CalculateLevel();
 
 	pc.SetRequiredPoints();
 
@@ -426,18 +397,6 @@ void CreatedCharacter::GetStartingItems(const Item* (&items)[SLOT_MAX])
 
 		items[SLOT_ARMOR] = StartItem::GetStartItem(best, max(0, val + mod));
 	}
-}
-
-//=================================================================================================
-int CreatedCharacter::GetBonus(SkillId skill)
-{
-	int base = s[(int)skill].base;
-	if(base == 0)
-		return 15;
-	else if(base == 5)
-		return 10;
-	else
-		return 5;
 }
 
 //=================================================================================================

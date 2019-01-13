@@ -1,5 +1,6 @@
 #pragma once
 
+//-----------------------------------------------------------------------------
 namespace ItemHelper
 {
 	void GenerateTreasure(int level, int count, vector<ItemSlot>& items, int& gold, bool extra);

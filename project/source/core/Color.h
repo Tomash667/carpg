@@ -34,6 +34,10 @@ struct Color
 	{
 		return Color(255, 255, 255, a);
 	}
+	static constexpr Vec4 Hex(uint h)
+	{
+		return Vec4(1.f / 256 * (((h) & 0xFF0000) >> 16), 1.f / 256 * (((h) & 0xFF00) >> 8), 1.f / 256 * ((h) & 0xFF), 1.f);
+	}
 
 	static Color None;
 	static Color Black;

@@ -6,19 +6,20 @@
 #include "MenuList.h"
 
 //-----------------------------------------------------------------------------
-#define BOX_NOT_VISIBLE 0
-#define BOX_COUNTING 1
-#define BOX_VISIBLE 2
-
-//-----------------------------------------------------------------------------
-#define INDEX_INVALID -1
-
-//-----------------------------------------------------------------------------
 class GamePanel : public Control
 {
 	friend class GamePanelContainer;
 
 public:
+	enum BOX_STATE
+	{
+		BOX_NOT_VISIBLE,
+		BOX_COUNTING,
+		BOX_VISIBLE
+	};
+
+	static const int INDEX_INVALID = -1;
+
 	GamePanel();
 
 	void Draw(ControlDrawData* cdd = nullptr) override;
@@ -42,7 +43,7 @@ private:
 	Int2 move_offset;*/
 
 protected:
-	int box_state;
+	BOX_STATE box_state;
 	float show_timer, box_alpha;
 	int last_index, last_index2;
 	string box_text, box_text_small;

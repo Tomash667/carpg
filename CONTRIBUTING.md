@@ -14,7 +14,7 @@
 1. Fork the desired repo, develop and test your code changes.
 	* Use master branch for bug fixes.
 	* Use devel branch for new features.
-1. Ensure that your code adheres to the existing style in the sample to which you are contributing. Refer to the
+1. Ensure that your code adheres to the existing style in the sample to which you are contributing.
 1. Ensure that your code is well tested :)
 1. Submit a pull request.
 1. Wait until it's merged.

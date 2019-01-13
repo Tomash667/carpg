@@ -240,6 +240,7 @@
     <ClInclude Include="source\game\generator\OutsideLocationGenerator.h" />
     <ClInclude Include="source\game\generator\SecretLocationGenerator.h" />
     <ClInclude Include="source\game\generator\TutorialLocationGenerator.h" />
+    <ClInclude Include="source\game\helpers\CombatHelper.h" />
     <ClInclude Include="source\game\helpers\ItemHelper.h" />
     <ClInclude Include="source\game\helpers\LoadingHandler.h" />
     <ClInclude Include="source\game\Level.h" />
@@ -372,7 +373,6 @@
     <ClInclude Include="source\game\stats\Const.h" />
     <ClInclude Include="source\game\stats\DamageTypes.h" />
     <ClInclude Include="source\game\stats\Effect.h" />
-    <ClInclude Include="source\game\stats\MagicEffect.h" />
     <ClInclude Include="source\game\stats\Material.h" />
     <ClInclude Include="source\game\stats\Music.h" />
     <ClInclude Include="source\game\stats\Perk.h" />
@@ -489,6 +489,7 @@
     <ClCompile Include="source\game\generator\OutsideLocationGenerator.cpp" />
     <ClCompile Include="source\game\generator\SecretLocationGenerator.cpp" />
     <ClCompile Include="source\game\generator\TutorialLocationGenerator.cpp" />
+    <ClCompile Include="source\game\helpers\CombatHelper.cpp" />
     <ClCompile Include="source\game\helpers\ItemHelper.cpp" />
     <ClCompile Include="source\game\helpers\LoadingHandler.cpp" />
     <ClCompile Include="source\game\Level.cpp" />
@@ -612,7 +613,6 @@
     <ClCompile Include="source\game\stats\BaseTrap.cpp" />
     <ClCompile Include="source\game\stats\Class.cpp" />
     <ClCompile Include="source\game\stats\Effect.cpp" />
-    <ClCompile Include="source\game\stats\Material.cpp" />
     <ClCompile Include="source\game\stats\Music.cpp" />
     <ClCompile Include="source\game\stats\Perk.cpp" />
     <ClCompile Include="source\game\stats\Required.cpp" />

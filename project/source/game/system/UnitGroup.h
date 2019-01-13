@@ -7,15 +7,18 @@ struct UnitGroup
 	{
 		UnitData* ud;
 		int count;
+		bool is_leader;
 
 		Entry() {}
-		Entry(UnitData* ud, int count) : ud(ud), count(count) {}
+		Entry(UnitData* ud, int count, bool is_leader) : ud(ud), count(count), is_leader(is_leader) {}
 	};
 
 	string id;
 	vector<Entry> entries;
-	UnitData* leader;
 	int total;
+
+	bool HaveLeader() const;
+	UnitData* GetLeader(int level) const;
 
 	static vector<UnitGroup*> groups;
 	static UnitGroup* TryGet(Cstring id);

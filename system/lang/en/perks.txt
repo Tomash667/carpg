@@ -75,7 +75,7 @@ perk finesse {
 	name "Finesse"
 	desc "+10 to attack with ranged weapons."
 }
-perk tought {
+perk tough {
 	name "Tough"
 	desc "+100 to maximum health."
 }

@@ -2,7 +2,9 @@ Historia zmian
 
 --------------------------------------------------------------------------------
 Wersja 0.8 (???):
+! to jest ostatnia wersja obs³uguj¹ca windowsa xp
 ! nie mo¿na wczytywaæ ju¿ zapisów z wersji 0.2.10 lub starszej
++ nowy system walki, obliczenia mobilnoœci
 + g³ówny serwer gry, pozwala na pobieranie listy serwerów i ³¹czenie z pominiêciem blokady routera (nat punchthrough)
 + punkty nauki u¿ywane do szkolenia umiejêtnoœci/atrbutów/atutów
 + nowe atuty (s³abe plecy, przewlek³a choroba, ospa³y, powolny uczeñ, aspo³eczny, biedak, silne plecy, agresywny, mobilnoœæ, finezja, twardy, twarda skóra, przystosowane, perfekcyjne zdrowie)
@@ -11,8 +13,8 @@ Wersja 0.8 (???):
 + klawisz prze³¹cz bieg/chodzenie
 + wczytywanie ekwipunku handlarzy z pliku, odœwie¿anie ekwipunku handlarzy co 10 dni a nie tylko po wejœciu do lokalizacji
 + nowe komendy (add_effect, remove_effect, list_effects, add_perk, remove_perk, list_perks, select, list_stats, add_learning_points)
-+ przedmiot magiczny zwój
-+ nowe obliczanie mobilnoœci
++ nowe przedmioty: magiczny zwój, nó¿, drewniany miecz, zardzewia³y toporek, tarcza z desek, Pancerz gladiatora
++ profile bohaterów ai - preferowane umiejêtnoœci/przedmioty
 - naprawione bardzo szybkie szkolenie walki broni¹ atakuj¹c s³abych, niskopoziomowych wrogów
 - naprawione rozmawianie z jednostkami które wstaj¹
 - naprawione obracanie jednostek podczas dialogu u klienta
@@ -22,6 +24,7 @@ Wersja 0.8 (???):
 - naprawione b³êdne obliczanie ceny gdy sprzedaje siê przedmiot towarzyszowi
 - naprawione do³¹czanie do pe³nego serwera
 - naprawiony brak efektu po zmianie has³a serwera na puste, wci¹¿ by³o wymagane
+- naprawiony brak dialogów pomiêdzy goblinami/orkami
 
 --------------------------------------------------------------------------------
 Wersja 0.7.1 (2018-04-15):

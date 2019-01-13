@@ -74,7 +74,7 @@ void SaveLoad::Draw(ControlDrawData* /*cdd*/)
 
 	// nazwy slotów
 	r = Rect::Create(global_pos + Int2(12, 76), Int2(256, 20));
-	for(int i = 0; i < MAX_SAVE_SLOTS; ++i)
+	for(int i = 0; i < SaveSlot::MAX_SLOTS; ++i)
 	{
 		cstring text;
 		if(slots[i].valid)
@@ -86,7 +86,7 @@ void SaveLoad::Draw(ControlDrawData* /*cdd*/)
 		}
 		else
 		{
-			if(i == MAX_SAVE_SLOTS - 1)
+			if(i == SaveSlot::MAX_SLOTS - 1)
 				text = txQuickSave;
 			else
 				text = Format(txEmptySlot, i + 1);
@@ -116,7 +116,7 @@ void SaveLoad::Update(float dt)
 	{
 		Rect rect = Rect::Create(Int2(global_pos.x + 12, global_pos.y + 76), Int2(256, 20));
 
-		for(int i = 0; i < MAX_SAVE_SLOTS; ++i)
+		for(int i = 0; i < SaveSlot::MAX_SLOTS; ++i)
 		{
 			if(rect.IsInside(GUI.cursor_pos))
 			{
@@ -178,7 +178,7 @@ void SaveLoad::Event(GuiEvent e)
 		{
 			// saving
 			SaveSlot& slot = slots[choice];
-			if(choice == MAX_SAVE_SLOTS - 1)
+			if(choice == SaveSlot::MAX_SLOTS - 1)
 			{
 				// quicksave
 				GUI.CloseDialog(this);
@@ -347,7 +347,7 @@ void SaveLoad::LoadSaveSlots()
 {
 	for(int multi = 0; multi < 2; ++multi)
 	{
-		for(int i = 1; i <= MAX_SAVE_SLOTS; ++i)
+		for(int i = 1; i <= SaveSlot::MAX_SLOTS; ++i)
 		{
 			SaveSlot& slot = (multi == 0 ? single_saves : multi_saves)[i - 1];
 			cstring filename = Format("saves/%s/%d.sav", multi == 0 ? "single" : "multi", i);
@@ -404,7 +404,7 @@ void SaveLoad::LoadSaveSlots()
 			else
 				slot.valid = false;
 
-			if(i == MAX_SAVE_SLOTS)
+			if(i == SaveSlot::MAX_SLOTS)
 				slot.text = txQuickSave;
 		}
 	}

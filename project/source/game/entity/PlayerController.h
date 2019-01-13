@@ -88,6 +88,7 @@ struct PlayerController : public HeroPlayerCommon
 		int next;
 		int train;
 		int apt;
+		float train_part;
 		bool blocked;
 	};
 
@@ -106,7 +107,7 @@ struct PlayerController : public HeroPlayerCommon
 			int index;
 		};
 	} next_action_data;
-	WeaponType ostatnia;
+	WeaponType last_weapon;
 	bool godmode, noclip, is_local, recalculate_level, leaving_event, always_run;
 	int id, free_days, action_charges, learning_points, exp, exp_need, exp_level;
 	//----------------------
@@ -142,20 +143,23 @@ struct PlayerController : public HeroPlayerCommon
 	}
 	~PlayerController();
 
-	float CalculateAttack() const;
 	void Rest(int days, bool resting, bool travel = false);
 
 	void Init(Unit& _unit, bool partial = false);
 	void Update(float dt, bool is_local = true);
-	void Train(SkillId s, int points);
-	void Train(AttributeId a, int points);
-	void TrainMove(float dist);
-	void Train(TrainWhat what, float value, int level);
+private:
+	void Train(SkillId s, float points);
+	void Train(AttributeId a, float points);
 	void TrainMod(AttributeId a, float points);
 	void TrainMod2(SkillId s, float points);
 	void TrainMod(SkillId s, float points);
+public:
+	void TrainMove(float dist);
+	void Train(TrainWhat what, float value, int level);
 	void Train(bool is_skill, int id, TrainMode mode = TrainMode::Normal);
 	void SetRequiredPoints();
+	int CalculateLevel();
+	void RecalculateLevel();
 
 	void Save(FileWriter& f);
 	void Load(FileReader& f);
@@ -164,7 +168,7 @@ struct PlayerController : public HeroPlayerCommon
 
 	bool IsTradingWith(Unit* t) const
 	{
-		if(action == Action_LootUnit || action == Action_Trade || action == Action_GiveItems || action == Action_ShareItems)
+		if(Any(action, Action_LootUnit, Action_Trade, Action_GiveItems, Action_ShareItems))
 			return action_unit == t;
 		else
 			return false;
@@ -172,29 +176,10 @@ struct PlayerController : public HeroPlayerCommon
 
 	static bool IsTrade(Action a)
 	{
-		return a == Action_LootChest || a == Action_LootUnit || a == Action_Trade || a == Action_ShareItems || a == Action_GiveItems
-			|| a == Action_LootContainer;
+		return Any(a, Action_LootChest, Action_LootUnit, Action_Trade, Action_ShareItems, Action_GiveItems, Action_LootContainer);
 	}
-
-	bool IsTrading() const
-	{
-		return IsTrade(action);
-	}
-
-	//int GetBase(AttributeId a) const
-	//{
-	//	return base_stats.attrib[(int)a];
-	//}
-	//int GetBase(SkillId s) const
-	//{
-	//	return base_stats.skill[(int)s];
-	//}
-
-	bool IsLocal() const
-	{
-		return is_local;
-	}
-
+	bool IsTrading() const { return IsTrade(action); }
+	bool IsLocal() const { return is_local; }
 	::Action& GetAction();
 	bool CanUseAction() const
 	{

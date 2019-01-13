@@ -77,11 +77,11 @@ void Location::GenerateName()
 	}
 
 	name += " ";
-	cstring s1 = random_item(txLocationStart).c_str();
+	cstring s1 = RandomItem(txLocationStart).c_str();
 	cstring s2;
 	do
 	{
-		s2 = random_item(txLocationEnd).c_str();
+		s2 = RandomItem(txLocationEnd).c_str();
 	} while(_stricmp(s1, s2) == 0);
 	name += s1;
 	if(name[name.length() - 1] == s2[0])

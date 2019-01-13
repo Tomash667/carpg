@@ -2,12 +2,12 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+#include "StatProfile.h"
 #include "Perk.h"
 #include "Attribute.h"
 #include "Skill.h"
 #include "Class.h"
 #include "HumanData.h"
-#include "ItemSlot.h"
 
 //-----------------------------------------------------------------------------
 struct CreatedCharacter
@@ -52,7 +52,9 @@ struct CreatedCharacter
 	int sp, sp_max, perks, perks_max;
 	bool update_skills;
 	vector<SkillId> to_update;
+	SubprofileInfo last_sub;
 
+	CreatedCharacter() { last_sub.value = 0; }
 	void Clear(Class c);
 	void Random(Class c);
 	void Write(BitStreamWriter& f) const;
@@ -61,7 +63,6 @@ struct CreatedCharacter
 	void Apply(PlayerController& pc);
 	bool HavePerk(Perk perk) const;
 	void GetStartingItems(const Item* (&items)[SLOT_MAX]);
-	int GetBonus(SkillId s);
 
 	int Get(AttributeId attrib) const
 	{

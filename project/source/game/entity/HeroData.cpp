@@ -77,9 +77,9 @@ void HeroData::Load(FileReader& f)
 int HeroData::JoinCost() const
 {
 	if(IS_SET(unit->data->flags, F_CRAZY))
-		return (unit->level - 1) * 100 + Random(50, 150);
+		return (unit->level - 4) * 100 + Random(50, 150);
 	else
-		return unit->level * 100;
+		return (unit->level - 3) * 100;
 }
 
 //=================================================================================================
@@ -99,7 +99,7 @@ void HeroData::PassTime(int days, bool travel)
 	}
 
 	// zdobywanie doœwiadczenia
-	if(unit->level != 20 && unit->IsHero() && unit->level != unit->data->level.y)
+	if(unit->level != MAX_LEVEL && unit->IsHero() && unit->level != unit->data->level.y)
 	{
 		int req = (unit->level*(unit->level + 1) + 10) * 5;
 		if(expe >= req)
@@ -132,9 +132,8 @@ void HeroData::LevelUp()
 		return;
 
 	++unit->level;
-	unit->data->GetStatProfile().Set(unit->level, unit->stats.attrib, unit->stats.skill);
+	unit->stats = unit->data->GetStats(unit->level);
 	unit->CalculateStats();
-	unit->RecalculateHp();
 }
 
 //=================================================================================================

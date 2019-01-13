@@ -236,6 +236,28 @@ Unit* LevelAreaContext::FindUnit(UnitData* data, LevelAreaContext::Entry** entry
 }
 
 //=================================================================================================
+Unit* LevelAreaContext::FindUnit(delegate<bool(Unit*)> clbk, LevelAreaContext::Entry** entry, int* unit_index)
+{
+	for(LevelAreaContext::Entry& e : entries)
+	{
+		for(int i = 0, len = (int)e.area->units.size(); i < len; ++i)
+		{
+			Unit* unit2 = e.area->units[i];
+			if(clbk(unit2))
+			{
+				if(entry)
+					*entry = &e;
+				if(unit_index)
+					*unit_index = i;
+				return unit2;
+			}
+		}
+	}
+
+	return nullptr;
+}
+
+//=================================================================================================
 bool LevelAreaContext::RemoveQuestGroundItem(int quest_refid)
 {
 	LevelAreaContext::Entry* entry;

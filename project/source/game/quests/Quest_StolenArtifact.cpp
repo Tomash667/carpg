@@ -65,20 +65,20 @@ void Quest_StolenArtifact::SetProgress(int prog2)
 			OnStart(game->txQuest[86]);
 			quest_manager.quests_timeout.push_back(this);
 
-			item->CreateCopy(quest_item);
-			quest_item.id = Format("$%s", item->id.c_str());
-			quest_item.refid = refid;
-			spawn_item = Quest_Dungeon::Item_GiveSpawned;
-			item_to_give[0] = &quest_item;
-			unit_to_spawn = g_spawn_groups[group].GetSpawnLeader();
-			unit_spawn_level = -3;
-
 			Location& sl = GetStartLocation();
 			target_loc = W.GetRandomSpawnLocation(sl.pos, group);
 			Location& tl = GetTargetLocation();
 			at_level = tl.GetRandomLevel();
 			tl.active_quest = this;
 			tl.SetKnown();
+
+			item->CreateCopy(quest_item);
+			quest_item.id = Format("$%s", item->id.c_str());
+			quest_item.refid = refid;
+			spawn_item = Quest_Dungeon::Item_GiveSpawned;
+			item_to_give[0] = &quest_item;
+			unit_to_spawn = g_spawn_groups[group].GetSpawnLeader(tl.st);
+			unit_spawn_level = -3;
 
 			cstring kto;
 			switch(group)
@@ -250,7 +250,7 @@ bool Quest_StolenArtifact::Load(GameReader& f)
 	quest_item.refid = refid;
 	spawn_item = Quest_Dungeon::Item_GiveSpawned;
 	item_to_give[0] = &quest_item;
-	unit_to_spawn = g_spawn_groups[group].GetSpawnLeader();
+	unit_to_spawn = g_spawn_groups[group].GetSpawnLeader(GetTargetLocation().st);
 	unit_spawn_level = -3;
 
 	return true;

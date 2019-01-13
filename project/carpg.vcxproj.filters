@@ -201,9 +201,6 @@
     <ClCompile Include="source\game\stats\Class.cpp">
       <Filter>3. game\stats</Filter>
     </ClCompile>
-    <ClCompile Include="source\game\stats\Material.cpp">
-      <Filter>3. game\stats</Filter>
-    </ClCompile>
     <ClCompile Include="source\game\stats\RoomType.cpp">
       <Filter>3. game\stats</Filter>
     </ClCompile>
@@ -790,6 +787,9 @@
     <ClCompile Include="source\game\net\LobbyApi.cpp">
       <Filter>3. game\net</Filter>
     </ClCompile>
+    <ClCompile Include="source\game\helpers\CombatHelper.cpp">
+      <Filter>3. game\helpers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\resource\resource1.h">
@@ -1124,9 +1124,6 @@
     </ClInclude>
     <ClInclude Include="source\game\system\Content.h">
       <Filter>3. game\system</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\stats\MagicEffect.h">
-      <Filter>3. game\stats</Filter>
     </ClInclude>
     <ClInclude Include="source\game\GameStats.h">
       <Filter>3. game</Filter>
@@ -1602,6 +1599,9 @@
     </ClInclude>
     <ClInclude Include="source\game\net\LobbyApi.h">
       <Filter>3. game\net</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\helpers\CombatHelper.h">
+      <Filter>3. game\helpers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

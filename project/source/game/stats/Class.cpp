@@ -77,6 +77,32 @@ void ClassInfo::Validate(uint& err)
 				++err;
 				Warn("Test: Class %s: invalid unit data '%s'.", ci.id, ci.unit_data_id);
 			}
+			else if(!ci.unit_data->stat_profile)
+			{
+				++err;
+				Warn("Test: Class %s: missing profile.", ci.id);
+			}
+			else if(ci.unit_data->stat_profile->subprofiles.empty())
+			{
+				++err;
+				Warn("Test: Class %s: missing subprofiles.", ci.id);
+			}
+			else
+			{
+				for(StatProfile::Subprofile* sub : ci.unit_data->stat_profile->subprofiles)
+				{
+					if(sub->perks[StatProfile::MAX_PERKS - 1].perk == Perk::None)
+					{
+						++err;
+						Warn("Test: Subprofile %s.%s: Missing perks.", ci.unit_data->stat_profile->id.c_str(), sub->id.c_str());
+					}
+					else if(sub->tag_skills[StatProfile::MAX_TAGS - 1] == SkillId::NONE)
+					{
+						++err;
+						Warn("Test: Subprofile %s.%s: Missing tag skills.", ci.unit_data->stat_profile->id.c_str(), sub->id.c_str());
+					}
+				}
+			}
 		}
 	}
 }
@@ -160,7 +186,7 @@ Class ClassInfo::GetRandomPlayer()
 				classes.push_back(ci.class_id);
 		}
 	}
-	return random_item(classes);
+	return RandomItem(classes);
 }
 
 //=================================================================================================

@@ -778,7 +778,7 @@ void Pathfinding::Draw(DebugDrawer* dd)
 
 	dd->BeginBatch();
 
-	for(vector<std::pair<Vec2, int> >::iterator it = test_pf.begin(), end = test_pf.end(); it != end; ++it)
+	for(vector<std::pair<Vec2, int>>::iterator it = test_pf.begin(), end = test_pf.end(); it != end; ++it)
 	{
 		Vec3 v[4] = {
 			Vec3(it->first.x, 0.1f, it->first.y + SS),

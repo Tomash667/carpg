@@ -1,7 +1,6 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "SpawnGroup.h"
-#include "UnitData.h"
 #include "UnitGroup.h"
 
 //-----------------------------------------------------------------------------
@@ -22,8 +21,8 @@ SpawnGroup g_spawn_groups[] = {
 };
 
 //=================================================================================================
-UnitData* SpawnGroup::GetSpawnLeader() const
+UnitData* SpawnGroup::GetSpawnLeader(int level) const
 {
-	assert(unit_group->leader);
-	return unit_group->leader;
+	assert(unit_group->HaveLeader());
+	return unit_group->GetLeader(level);
 }

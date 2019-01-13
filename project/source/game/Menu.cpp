@@ -338,6 +338,8 @@ void Game::OnEnterIp(int id)
 			net_timer = T_CONNECT_PING;
 			net_tries = I_CONNECT_TRIES;
 			N.ping_adr = adr;
+			if(N.ping_adr.GetPort() == 0)
+				N.ping_adr.SetPortHostOrder(N.port);
 			N.peer->Ping(N.ping_adr.ToString(false), N.ping_adr.GetPort(), false);
 		}
 		else

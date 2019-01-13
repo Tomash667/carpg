@@ -280,7 +280,7 @@ void AIController::Load(GameReader& f)
 //=================================================================================================
 bool AIController::CheckPotion(bool in_combat)
 {
-	if(unit->action == A_NONE && have_potion > 0)
+	if(unit->action == A_NONE && have_potion > 0 && !IS_SET(unit->data->flags, F_UNDEAD))
 	{
 		float hpp = unit->GetHpp();
 		if(hpp < 0.5f || (hpp < 0.75f && !in_combat) || (!Equal(hpp, 1.f) && unit->busy == Unit::Busy_Tournament))

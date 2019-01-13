@@ -303,7 +303,6 @@ void Game::ConfigureGame()
 	AddCommands();
 	ResetGameKeys();
 	LoadGameKeys();
-	SetMeshSpecular();
 	BaseLocation::SetRoomPointers();
 
 	for(int i = 0; i < SG_MAX; ++i)
@@ -359,6 +358,8 @@ void Game::PostconfigureGame()
 	tFloor[1] = tFloorBase;
 	tCeil[1] = tCeilBase;
 	tWall[1] = tWallBase;
+
+	ItemScript::Init();
 
 	// test & validate game data (in debug always check some things)
 	if(testing)

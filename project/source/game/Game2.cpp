@@ -66,6 +66,7 @@
 #include "GlobalGui.h"
 #include "FOV.h"
 #include "PlayerInfo.h"
+#include "CombatHelper.h"
 
 const Vec2 ALERT_RANGE(20.f, 30.f);
 const float PICKUP_RANGE = 2.f;
@@ -213,7 +214,7 @@ SURFACE Game::DrawItemImage(const Item& item, TEX tex, SURFACE surface, float ro
 	V(device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET, 0, 1.f, 0));
 	V(device->BeginScene());
 
-	const Mesh& mesh = *item.mesh;
+	Mesh& mesh = *item.mesh;
 	const TexId* tex_override = nullptr;
 	if(item.type == IT_ARMOR)
 	{
@@ -224,8 +225,13 @@ SURFACE Game::DrawItemImage(const Item& item, TEX tex, SURFACE surface, float ro
 		}
 	}
 
-	Matrix matWorld = Matrix::RotationY(rot),
-		matView = Matrix::CreateLookAt(mesh.head.cam_pos, mesh.head.cam_target, mesh.head.cam_up),
+	Matrix matWorld;
+	Mesh::Point* point = mesh.FindPoint("cam_rot");
+	if(point)
+		matWorld = Matrix::CreateFromAxisAngle(point->rot, rot);
+	else
+		matWorld = Matrix::RotationY(rot);
+	Matrix matView = Matrix::CreateLookAt(mesh.head.cam_pos, mesh.head.cam_target, mesh.head.cam_up),
 		matProj = Matrix::CreatePerspectiveFieldOfView(PI / 4, 1.f, 0.1f, 25.f);
 
 	LightData ld;
@@ -1576,7 +1582,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				u.HideWeapon();
 			else
 			{
-				WeaponType bron = pc->ostatnia;
+				WeaponType bron = pc->last_weapon;
 
 				// ustal któr¹ broñ wyj¹œæ
 				if(bron == W_NONE)
@@ -1609,7 +1615,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 				if(bron != W_NONE)
 				{
-					pc->ostatnia = bron;
+					pc->last_weapon = bron;
 					if(pc->next_action != NA_NONE)
 					{
 						pc->next_action = NA_NONE;
@@ -1635,7 +1641,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 							u.action = A_NONE;
 							u.weapon_taken = u.weapon_hiding;
 							u.weapon_hiding = W_NONE;
-							pc->ostatnia = u.weapon_taken;
+							pc->last_weapon = u.weapon_taken;
 							u.weapon_state = WS_TAKEN;
 							u.mesh_inst->Deactivate(1);
 						}
@@ -1644,7 +1650,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 							// schowa³ broñ za pas, zacznij wyci¹gaæ
 							u.weapon_taken = u.weapon_hiding;
 							u.weapon_hiding = W_NONE;
-							pc->ostatnia = u.weapon_taken;
+							pc->last_weapon = u.weapon_taken;
 							u.weapon_state = WS_TAKING;
 							u.animation_state = 0;
 							CLEAR_BIT(u.mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
@@ -1703,7 +1709,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			{
 				// broñ schowana, zacznij wyjmowaæ
 				u.mesh_inst->Play(u.GetTakeWeaponAnimation(true), PLAY_ONCE | PLAY_PRIO1, 1);
-				u.weapon_taken = pc->ostatnia = W_ONE_HANDED;
+				u.weapon_taken = pc->last_weapon = W_ONE_HANDED;
 				u.weapon_state = WS_TAKING;
 				u.action = A_TAKE_WEAPON;
 				u.animation_state = 0;
@@ -1733,7 +1739,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						u.action = A_NONE;
 						u.weapon_taken = u.weapon_hiding;
 						u.weapon_hiding = W_NONE;
-						pc->ostatnia = u.weapon_taken;
+						pc->last_weapon = u.weapon_taken;
 						u.weapon_state = WS_TAKEN;
 						u.mesh_inst->Deactivate(1);
 					}
@@ -1742,7 +1748,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						// schowa³ broñ za pas, zacznij wyci¹gaæ
 						u.weapon_taken = u.weapon_hiding;
 						u.weapon_hiding = W_NONE;
-						pc->ostatnia = u.weapon_taken;
+						pc->last_weapon = u.weapon_taken;
 						u.weapon_state = WS_TAKING;
 						u.animation_state = 0;
 						CLEAR_BIT(u.mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
@@ -1779,12 +1785,12 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					{
 						// tak na prawdê to jeszcze nic nie zrobi³ wiêc mo¿na anuluowaæ
 						u.mesh_inst->Play(u.GetTakeWeaponAnimation(true), PLAY_ONCE | PLAY_PRIO1, 1);
-						pc->ostatnia = u.weapon_taken = W_ONE_HANDED;
+						pc->last_weapon = u.weapon_taken = W_ONE_HANDED;
 					}
 					else
 					{
 						// ju¿ wyj¹³ wiêc trzeba schowaæ i dodaæ info
-						pc->ostatnia = u.weapon_taken = W_ONE_HANDED;
+						pc->last_weapon = u.weapon_taken = W_ONE_HANDED;
 						u.weapon_hiding = W_BOW;
 						u.weapon_state = WS_HIDING;
 						u.animation_state = 0;
@@ -1812,7 +1818,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				// broñ wyjêta
 				if(u.weapon_taken == W_BOW)
 				{
-					pc->ostatnia = u.weapon_taken = W_ONE_HANDED;
+					pc->last_weapon = u.weapon_taken = W_ONE_HANDED;
 					u.weapon_hiding = W_BOW;
 					u.weapon_state = WS_HIDING;
 					u.animation_state = 0;
@@ -1842,7 +1848,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			if(u.weapon_state == WS_HIDDEN)
 			{
 				// broñ schowana, zacznij wyjmowaæ
-				u.weapon_taken = pc->ostatnia = W_BOW;
+				u.weapon_taken = pc->last_weapon = W_BOW;
 				u.weapon_state = WS_TAKING;
 				u.action = A_TAKE_WEAPON;
 				u.animation_state = 0;
@@ -1874,7 +1880,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						u.action = A_NONE;
 						u.weapon_taken = u.weapon_hiding;
 						u.weapon_hiding = W_NONE;
-						pc->ostatnia = u.weapon_taken;
+						pc->last_weapon = u.weapon_taken;
 						u.weapon_state = WS_TAKEN;
 						u.mesh_inst->Deactivate(1);
 					}
@@ -1883,7 +1889,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						// schowa³ ³uk, zacznij wyci¹gaæ
 						u.weapon_taken = u.weapon_hiding;
 						u.weapon_hiding = W_NONE;
-						pc->ostatnia = u.weapon_taken;
+						pc->last_weapon = u.weapon_taken;
 						u.weapon_state = WS_TAKING;
 						u.animation_state = 0;
 						CLEAR_BIT(u.mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
@@ -1919,13 +1925,13 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					if(u.animation_state == 0)
 					{
 						// tak na prawdê to jeszcze nic nie zrobi³ wiêc mo¿na anuluowaæ
-						pc->ostatnia = u.weapon_taken = W_BOW;
+						pc->last_weapon = u.weapon_taken = W_BOW;
 						u.mesh_inst->Play(NAMES::ani_take_bow, PLAY_ONCE | PLAY_PRIO1, 1);
 					}
 					else
 					{
 						// ju¿ wyj¹³ wiêc trzeba schowaæ i dodaæ info
-						pc->ostatnia = u.weapon_taken = W_BOW;
+						pc->last_weapon = u.weapon_taken = W_BOW;
 						u.weapon_hiding = W_ONE_HANDED;
 						u.weapon_state = WS_HIDING;
 						u.animation_state = 0;
@@ -1954,7 +1960,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				if(u.weapon_taken == W_ONE_HANDED)
 				{
 					u.mesh_inst->Play(u.GetTakeWeaponAnimation(true), PLAY_BACK | PLAY_ONCE | PLAY_PRIO1, 1);
-					pc->ostatnia = u.weapon_taken = W_BOW;
+					pc->last_weapon = u.weapon_taken = W_BOW;
 					u.weapon_hiding = W_ONE_HANDED;
 					u.weapon_state = WS_HIDING;
 					u.animation_state = 0;
@@ -2778,7 +2784,7 @@ void Game::UseAction(PlayerController* p, bool from_server, const Vec3* pos)
 				assert(pos);
 				spawn_pos = *pos;
 			}
-			auto unit = L.SpawnUnitNearLocation(L.GetContext(*p->unit), spawn_pos, *UnitData::Get("white_wolf_sum"), nullptr, p->unit->level);
+			Unit* unit = L.SpawnUnitNearLocation(L.GetContext(*p->unit), spawn_pos, *UnitData::Get("white_wolf_sum"), nullptr, p->unit->level);
 			if(unit)
 			{
 				unit->summoner = p->unit;
@@ -3662,7 +3668,15 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	u->moved = false;
 
 	u->fake_unit = true; // to prevent sending hp changed message set temporary as fake unit
-	u->data->GetStatProfile().Set(u->level, u->base_stat.attrib, u->base_stat.skill);
+	if(base.group == G_PLAYER)
+	{
+		u->stats = new UnitStats;
+		u->stats->fixed = false;
+		u->stats->subprofile.value = 0;
+		u->stats->Set(base.GetStatProfile());
+	}
+	else
+		u->stats = base.GetStats(u->level);
 	u->CalculateStats();
 	u->hp = u->hpmax = u->CalculateMaxHp();
 	u->stamina = u->stamina_max = u->CalculateMaxStamina();
@@ -3673,7 +3687,10 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	u->CalculateLoad();
 	if(!custom && base.item_script)
 	{
-		ParseItemScript(*u, base.item_script);
+		ItemScript* script = base.item_script;
+		if(base.stat_profile && !base.stat_profile->subprofiles.empty() && base.stat_profile->subprofiles[u->stats->subprofile.index]->item_script)
+			script = base.stat_profile->subprofiles[u->stats->subprofile.index]->item_script;
+		ParseItemScript(*u, script);
 		SortItems(u->items);
 		u->RecalculateWeight();
 		if(!ResourceManager::Get().IsLoadScreen())
@@ -3716,14 +3733,13 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 				u->human_data = human_data;
 			else
 			{
-#define HEX(h) Vec4(1.f/256*(((h)&0xFF0000)>>16), 1.f/256*(((h)&0xFF00)>>8), 1.f/256*((h)&0xFF), 1.f)
 				u->human_data = new Human;
 				u->human_data->beard = Rand() % MAX_BEARD - 1;
 				u->human_data->hair = Rand() % MAX_HAIR - 1;
 				u->human_data->mustache = Rand() % MAX_MUSTACHE - 1;
 				u->human_data->height = Random(0.9f, 1.1f);
 				if(IS_SET(base.flags2, F2_OLD))
-					u->human_data->hair_color = HEX(0xDED5D0);
+					u->human_data->hair_color = Color::Hex(0xDED5D0);
 				else if(IS_SET(base.flags, F_CRAZY))
 					u->human_data->hair_color = Vec4(RandomPart(8), RandomPart(8), RandomPart(8), 1.f);
 				else if(IS_SET(base.flags, F_GRAY_HAIR))
@@ -3783,32 +3799,48 @@ void GiveItem(Unit& unit, const int*& ps, int count)
 {
 	int type = *ps;
 	++ps;
-	if(type == PS_ITEM)
+	switch(type)
+	{
+	case PS_ITEM:
 		unit.AddItemAndEquipIfNone((const Item*)(*ps), count);
-	else if(type == PS_LIST)
-	{
-		const ItemList& lis = *(const ItemList*)(*ps);
-		for(int i = 0; i < count; ++i)
-			unit.AddItemAndEquipIfNone(lis.Get());
-	}
-	else if(type == PS_LEVELED_LIST)
-	{
-		const LeveledItemList& lis = *(const LeveledItemList*)(*ps);
-		int level = max(0, unit.level - 4);
-		for(int i = 0; i < count; ++i)
-			unit.AddItemAndEquipIfNone(lis.Get(Random(level, unit.level)));
-	}
-	else if(type == PS_LEVELED_LIST_MOD)
-	{
-		int mod = *ps;
-		++ps;
-		const LeveledItemList& lis = *(const LeveledItemList*)(*ps);
-		int level = unit.level + mod;
-		if(level >= 0)
+		break;
+	case  PS_LIST:
 		{
-			int l = max(0, level - 4);
+			const ItemList& lis = *(const ItemList*)(*ps);
 			for(int i = 0; i < count; ++i)
-				unit.AddItemAndEquipIfNone(lis.Get(Random(l, level)));
+				unit.AddItemAndEquipIfNone(lis.Get());
+		}
+		break;
+	case PS_LEVELED_LIST:
+		{
+			const LeveledItemList& lis = *(const LeveledItemList*)(*ps);
+			for(int i = 0; i < count; ++i)
+				unit.AddItemAndEquipIfNone(lis.Get(unit.level + Random(-2, 1)));
+		}
+		break;
+	case PS_LEVELED_LIST_MOD:
+		{
+			int mod = *ps++;
+			const LeveledItemList& lis = *(const LeveledItemList*)(*ps);
+			for(int i = 0; i < count; ++i)
+				unit.AddItemAndEquipIfNone(lis.Get(unit.level + Random(-2, 1) + mod));
+		}
+		break;
+	case PS_SPECIAL_ITEM:
+		{
+			int special = *ps;
+			const LeveledItemList& lis = ItemScript::GetSpecial(special, unit.stats->subprofile.value);
+			for(int i = 0; i < count; ++i)
+				unit.AddItemAndEquipIfNone(lis.Get(unit.level + Random(-2, 1)));
+		}
+		break;
+	case PS_SPECIAL_ITEM_MOD:
+		{
+			int mod = *ps++;
+			int special = *ps;
+			const LeveledItemList& lis = ItemScript::GetSpecial(special, unit.stats->subprofile.value);
+			for(int i = 0; i < count; ++i)
+				unit.AddItemAndEquipIfNone(lis.Get(unit.level + Random(-2, 1) + mod));
 		}
 	}
 
@@ -3822,7 +3854,7 @@ void SkipItem(const int*& ps, int count)
 	{
 		int type = *ps;
 		++ps;
-		if(type == PS_LEVELED_LIST_MOD)
+		if(type == PS_LEVELED_LIST_MOD || type == PS_SPECIAL_ITEM_MOD)
 			++ps;
 		++ps;
 	}
@@ -4177,55 +4209,6 @@ void Game::UpdateParticles(LevelContext& ctx, float dt)
 
 	if(deletions)
 		RemoveNullElements(ctx.tpes);
-}
-
-int ObliczModyfikator(int type, int flags)
-{
-	// -2 invalid (weapon don't have any dmg type)
-	// -1 susceptibility
-	// 0 normal
-	// 1 resistance
-
-	int mod = -2;
-
-	if(IS_SET(type, DMG_SLASH))
-	{
-		if(IS_SET(flags, F_SLASH_RES25))
-			mod = 1;
-		else if(IS_SET(flags, F_SLASH_WEAK25))
-			mod = -1;
-		else
-			mod = 0;
-	}
-
-	if(IS_SET(type, DMG_PIERCE))
-	{
-		if(IS_SET(flags, F_PIERCE_RES25))
-		{
-			if(mod == -2)
-				mod = 1;
-		}
-		else if(IS_SET(flags, F_PIERCE_WEAK25))
-			mod = -1;
-		else if(mod != -1)
-			mod = 0;
-	}
-
-	if(IS_SET(type, DMG_BLUNT))
-	{
-		if(IS_SET(flags, F_BLUNT_RES25))
-		{
-			if(mod == -2)
-				mod = 1;
-		}
-		else if(IS_SET(flags, F_BLUNT_WEAK25))
-			mod = -1;
-		else if(mod != -1)
-			mod = 0;
-	}
-
-	assert(mod != -2);
-	return mod;
 }
 
 Game::ATTACK_RESULT Game::DoAttack(LevelContext& ctx, Unit& unit)
@@ -5352,7 +5335,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 							{
 								if(!u.player->IsHit(unit))
 								{
-									GiveDmg(ctx, &u, 100.f + u.Get(AttributeId::STR) * 2, *unit);
+									GiveDmg(ctx, &u, 100.f + u.Get(AttributeId::STR) * (2.f + float(u.level) / 3), *unit);
 									if(!unit->IsAlive())
 										continue;
 									else
@@ -5705,21 +5688,21 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 					continue;
 				}
 
+				// hit enemy unit
 				if(it->owner && hitted->IsAI())
 					AI_HitReaction(*hitted, it->start_pos);
 
-				// trafienie w postaæ
-				float dmg = it->attack,
-					def = hitted->CalculateDefense();
-
-				int mod = ObliczModyfikator(DMG_PIERCE, hitted->data->flags);
+				// calculate modifiers
+				int mod = CombatHelper::CalculateModifier(DMG_PIERCE, hitted->data->flags);
 				float m = 1.f;
 				if(mod == -1)
 					m += 0.25f;
 				else if(mod == 1)
 					m -= 0.25f;
 				if(hitted->IsNotFighting())
-					m += 0.1f; // 10% do dmg jeœli ma schowan¹ broñ
+					m += 0.1f;
+				if(hitted->action == A_PAIN)
+					m += 0.1f;
 
 				// backstab bonus damage
 				float angle_dif = AngleDiff(it->rot.y, hitted->rot);
@@ -5734,17 +5717,12 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 					backstab_mod /= 2;
 				m += angle_dif / PI * backstab_mod;
 
-				// modyfikator obra¿eñ
-				dmg *= m;
-				float base_dmg = dmg;
+				// apply modifiers
+				float attack = it->attack * m;
 
 				if(hitted->action == A_BLOCK && angle_dif < PI * 2 / 5)
 				{
-					float block = hitted->CalculateBlock() * hitted->mesh_inst->groups[1].GetBlendT() * (1.f - angle_dif / (PI * 2 / 5));
-					float stamina = min(block, dmg);
-					dmg -= block;
-					hitted->RemoveStaminaBlock(stamina);
-
+					// play sound
 					MATERIAL_TYPE mat = hitted->GetShield().material;
 					sound_mgr->PlaySound3d(GetMaterialSound(MAT_IRON, mat), hitpoint, 2.f, 10.f);
 					if(Net::IsOnline())
@@ -5756,13 +5734,44 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 						c.pos = hitpoint;
 					}
 
+					// train blocking
 					if(hitted->IsPlayer())
+						hitted->player->Train(TrainWhat::BlockBullet, attack / hitted->hpmax, it->level);
+
+					// reduce damage
+					float block = hitted->CalculateBlock() * hitted->mesh_inst->groups[1].GetBlendT() * (1.f - angle_dif / (PI * 2 / 5));
+					float stamina = min(block, attack);
+					attack -= block;
+					hitted->RemoveStaminaBlock(stamina);
+
+					// pain animation & break blocking
+					if(hitted->stamina < 0)
 					{
-						// player blocked bullet, train shield
-						hitted->player->Train(TrainWhat::BlockBullet, base_dmg / hitted->hpmax, it->level);
+						hitted->BreakAction();
+
+						if(!IS_SET(hitted->data->flags, F_DONT_SUFFER))
+						{
+							if(hitted->action != A_POSITION)
+								hitted->action = A_PAIN;
+							else
+								hitted->animation_state = 1;
+
+							if(hitted->mesh_inst->mesh->head.n_groups == 2)
+							{
+								hitted->mesh_inst->frame_end_info2 = false;
+								hitted->mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO1 | PLAY_ONCE, 1);
+							}
+							else
+							{
+								hitted->mesh_inst->frame_end_info = false;
+								hitted->mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO3 | PLAY_ONCE, 0);
+								hitted->mesh_inst->groups[0].speed = 1.f;
+								hitted->animation = ANI_PLAY;
+							}
+						}
 					}
 
-					if(dmg < 0)
+					if(attack < 0)
 					{
 						// shot blocked by shield
 						if(it->owner && it->owner->IsPlayer())
@@ -5776,15 +5785,18 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 					}
 				}
 
-				// odpornoœæ/pancerz
-				dmg -= def;
+				// calculate defense
+				float def = hitted->CalculateDefense();
 
-				// szkol gracza w pancerzu/hp
-				if(hitted->IsPlayer())
-					hitted->player->Train(TrainWhat::TakeDamageArmor, base_dmg / hitted->hpmax, it->level);
+				// calculate damage
+				float dmg = CombatHelper::CalculateDamage(attack, def);
 
 				// hit sound
 				PlayHitSound(MAT_IRON, hitted->GetBodyMaterial(), hitpoint, 2.f, dmg > 0.f);
+
+				// train player armor skill
+				if(hitted->IsPlayer())
+					hitted->player->Train(TrainWhat::TakeDamageArmor, attack / hitted->hpmax, it->level);
 
 				if(dmg < 0)
 				{
@@ -5798,7 +5810,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 					continue;
 				}
 
-				// szkol gracza w ³uku
+				// train player in bow
 				if(it->owner && it->owner->IsPlayer())
 				{
 					float v = dmg / hitted->hpmax;
@@ -6288,9 +6300,10 @@ void Game::StopAllSounds()
 	attached_sounds.clear();
 }
 
-Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Unit& hitted, const Vec3& hitpoint, float start_dmg, int dmg_type, bool bash)
+Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Unit& hitted, const Vec3& hitpoint, float attack, int dmg_type, bool bash)
 {
-	int mod = ObliczModyfikator(dmg_type, hitted.data->flags);
+	// calculate modifiers
+	int mod = CombatHelper::CalculateModifier(dmg_type, hitted.data->flags);
 	float m = 1.f;
 	if(mod == -1)
 		m += 0.25f;
@@ -6315,25 +6328,11 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 	m += angle_dif / PI * backstab_mod;
 
 	// apply modifiers
-	float dmg = start_dmg * m;
-	float base_dmg = dmg;
-
-	// calculate defense
-	float def = hitted.CalculateDefense();
+	attack *= m;
 
 	// blocking
 	if(hitted.action == A_BLOCK && angle_dif < PI / 2)
 	{
-		// reduce damage
-		float block = hitted.CalculateBlock() * hitted.mesh_inst->groups[1].GetBlendT();
-		float stamina = min(dmg, block);
-		if(IS_SET(attacker.data->flags2, F2_IGNORE_BLOCK))
-			block *= 2.f / 3;
-		if(attacker.attack_power >= 1.9f)
-			stamina *= 4.f / 3;
-		dmg -= block;
-		hitted.RemoveStaminaBlock(stamina);
-
 		// play sound
 		MATERIAL_TYPE hitted_mat = hitted.GetShield().material;
 		MATERIAL_TYPE weapon_mat = (!bash ? attacker.GetWeaponMaterial() : attacker.GetShield().material);
@@ -6349,7 +6348,17 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 
 		// train blocking
 		if(hitted.IsPlayer())
-			hitted.player->Train(TrainWhat::BlockAttack, base_dmg / hitted.hpmax, attacker.level);
+			hitted.player->Train(TrainWhat::BlockAttack, attack / hitted.hpmax, attacker.level);
+
+		// reduce damage
+		float block = hitted.CalculateBlock() * hitted.mesh_inst->groups[1].GetBlendT();
+		float stamina = min(attack, block);
+		if(IS_SET(attacker.data->flags2, F2_IGNORE_BLOCK))
+			block *= 2.f / 3;
+		if(attacker.attack_power >= 1.9f)
+			stamina *= 4.f / 3;
+		attack -= block;
+		hitted.RemoveStaminaBlock(stamina);
 
 		// pain animation & break blocking
 		if(hitted.stamina < 0)
@@ -6379,7 +6388,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 		}
 
 		// attack fully blocked
-		if(dmg < 0)
+		if(attack < 0)
 		{
 			if(attacker.IsPlayer())
 			{
@@ -6392,23 +6401,18 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 		}
 	}
 
-	// decrease defense when stunned
-	bool clean_hit = false;
-	if(hitted.action == A_PAIN)
-	{
-		def *= 0.75f;
-		clean_hit = true;
-	}
+	// calculate defense
+	float def = hitted.CalculateDefense();
 
-	// armor defense
-	dmg -= def;
+	// calculate damage
+	float dmg = CombatHelper::CalculateDamage(attack, def);
 
 	// hit sound
 	PlayHitSound(!bash ? attacker.GetWeaponMaterial() : attacker.GetShield().material, hitted.GetBodyMaterial(), hitpoint, 2.f, dmg > 0.f);
 
 	// train player armor skill
 	if(hitted.IsPlayer())
-		hitted.player->Train(TrainWhat::TakeDamageArmor, base_dmg / hitted.hpmax, attacker.level);
+		hitted.player->Train(TrainWhat::TakeDamageArmor, attack / hitted.hpmax, attacker.level);
 
 	// fully blocked by armor
 	if(dmg < 0)
@@ -6453,7 +6457,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 		}
 	}
 
-	return clean_hit ? ATTACK_CLEAN_HIT : ATTACK_HIT;
+	return hitted.action == A_PAIN ? ATTACK_CLEAN_HIT : ATTACK_HIT;
 }
 
 void Game::CastSpell(LevelContext& ctx, Unit& u)
@@ -7049,29 +7053,28 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 							if(!found)
 							{
 								// hit unit with spears
-								float dmg = float(trap.base->dmg),
-									def = unit->CalculateDefense();
-
-								int mod = ObliczModyfikator(DMG_PIERCE, unit->data->flags);
+								int mod = CombatHelper::CalculateModifier(DMG_PIERCE, unit->data->flags);
 								float m = 1.f;
 								if(mod == -1)
 									m += 0.25f;
 								else if(mod == 1)
 									m -= 0.25f;
+								if(unit->action == A_PAIN)
+									m += 0.1f;
 
-								// modyfikator obra¿eñ
-								dmg *= m;
-								float base_dmg = dmg;
-								dmg -= def;
+								// calculate attack & defense
+								float attack = float(trap.base->attack) * m;
+								float def = unit->CalculateDefense();
+								float dmg = CombatHelper::CalculateDamage(attack, def);
 
 								// dŸwiêk trafienia
 								sound_mgr->PlaySound3d(GetMaterialSound(MAT_IRON, unit->GetBodyMaterial()), unit->pos + Vec3(0, 1.f, 0), 2.f, 8.f);
 
 								// train player armor skill
 								if(unit->IsPlayer())
-									unit->player->Train(TrainWhat::TakeDamageArmor, base_dmg / unit->hpmax, 4);
+									unit->player->Train(TrainWhat::TakeDamageArmor, attack / unit->hpmax, 4);
 
-								// obra¿enia
+								// damage
 								if(dmg > 0)
 									GiveDmg(ctx, nullptr, dmg, *unit);
 
@@ -7188,7 +7191,7 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 						Bullet& b = Add1(ctx.bullets);
 						b.level = 4;
 						b.backstab = 0;
-						b.attack = float(trap.base->dmg);
+						b.attack = float(trap.base->attack);
 						b.mesh = aArrow;
 						b.pos = Vec3(2.f*trap.tile.x + trap.pos.x - float(int(trap.pos.x / 2) * 2) + Random(-trap.base->rw, trap.base->rw) - 1.2f*DirToPos(trap.dir).x,
 							Random(0.5f, 1.5f),
@@ -7204,7 +7207,7 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 						b.tex_size = 0.f;
 						b.timer = ARROW_TIMER;
 						b.yspeed = 0.f;
-						b.poison_attack = (trap.base->type == TRAP_POISON ? float(trap.base->dmg) : 0.f);
+						b.poison_attack = (trap.base->type == TRAP_POISON ? float(trap.base->attack) : 0.f);
 
 						TrailParticleEmitter* tpe = new TrailParticleEmitter;
 						tpe->fade = 0.3f;
@@ -7315,7 +7318,7 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 					explo->pos.y += 0.2f;
 					explo->size = 0.f;
 					explo->sizemax = 2.f;
-					explo->dmg = float(trap.base->dmg);
+					explo->dmg = float(trap.base->attack);
 					explo->tex = fireball->tex_explode;
 					explo->owner = nullptr;
 
@@ -7612,7 +7615,7 @@ void Game::UpdateElectros(LevelContext& ctx, float dt)
 
 				if(e.dmg >= 10.f)
 				{
-					static vector<std::pair<Unit*, float> > targets;
+					static vector<std::pair<Unit*, float>> targets;
 
 					// traf w kolejny cel
 					for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
@@ -7638,7 +7641,7 @@ void Game::UpdateElectros(LevelContext& ctx, float dt)
 						Unit* target = nullptr;
 						float dist;
 
-						for(vector<std::pair<Unit*, float> >::iterator it2 = targets.begin(), end2 = targets.end(); it2 != end2; ++it2)
+						for(vector<std::pair<Unit*, float>>::iterator it2 = targets.begin(), end2 = targets.end(); it2 != end2; ++it2)
 						{
 							Vec3 hitpoint;
 							Unit* hitted;
@@ -7968,7 +7971,7 @@ SOUND Game::GetItemSound(const Item* item)
 	case IT_WEAPON:
 		return sItem[6];
 	case IT_ARMOR:
-		if(item->ToArmor().skill != SkillId::LIGHT_ARMOR)
+		if(item->ToArmor().armor_type != AT_LIGHT)
 			return sItem[2];
 		else
 			return sItem[1];
@@ -10495,7 +10498,7 @@ cstring Game::GetRandomIdleText(Unit& u)
 	if(n == 0)
 		return RandomString(txAiSecretText);
 
-	int type = 1; // 0 - tekst hero, 1 - normalny tekst
+	bool hero_text;
 
 	switch(u.data->group)
 	{
@@ -10505,16 +10508,16 @@ cstring Game::GetRandomIdleText(Unit& u)
 			if(n < 33)
 				return RandomString(txAiInsaneText);
 			else if(n < 66)
-				type = 0;
+				hero_text = true;
 			else
-				type = 1;
+				hero_text = false;
 		}
 		else
 		{
 			if(n < 50)
 				return RandomString(txAiInsaneText);
 			else
-				type = 1;
+				hero_text = false;
 		}
 		break;
 	case G_CITIZENS:
@@ -10537,45 +10540,40 @@ cstring Game::GetRandomIdleText(Unit& u)
 			if(n < 50)
 				return RandomString(txAiHumanText);
 			else
-				type = 1;
+				hero_text = false;
 		}
 		else
 		{
 			if(n < 10)
 				return RandomString(txAiHumanText);
 			else if(n < 55)
-				type = 0;
+				hero_text = true;
 			else
-				type = 1;
+				hero_text = false;
 		}
 		break;
 	case G_BANDITS:
 		if(n < 50)
 			return RandomString(txAiBanditText);
 		else
-			type = 1;
+			hero_text = false;
 		break;
 	case G_MAGES:
 		if(IS_SET(u.data->flags, F_MAGE) && n < 50)
 			return RandomString(txAiMageText);
 		else
-			type = 1;
+			hero_text = false;
 		break;
 	case G_GOBLINS:
-		if(n < 50 && !IS_SET(u.data->flags2, F2_NOT_GOBLIN))
+		if(!IS_SET(u.data->flags2, F2_NOT_GOBLIN))
 			return RandomString(txAiGoblinText);
-		else
-			type = 1;
+		hero_text = false;
 		break;
 	case G_ORCS:
-		if(n < 50)
-			return RandomString(txAiOrcText);
-		else
-			type = 1;
-		break;
+		return RandomString(txAiOrcText);
 	}
 
-	if(type == 0)
+	if(hero_text)
 	{
 		if(L.location->type == L_CITY)
 			return RandomString(txAiHeroCityText);
@@ -10832,10 +10830,10 @@ void Game::HandleQuestEvent(Quest_Event* event)
 				}
 
 				if(!chests.empty())
-					chest = chests.random_item();
+					chest = chests.RandomItem();
 			}
 			else
-				chest = random_item(lvl->chests);
+				chest = RandomItem(lvl->chests);
 
 			assert(chest);
 			if(chest)

@@ -765,7 +765,7 @@ void InventoryPanel::Update(float dt)
 							bool ok = true;
 							if(type == SLOT_ARMOR)
 							{
-								if(item->ToArmor().armor_type != ArmorUnitType::HUMAN)
+								if(item->ToArmor().armor_unit_type != ArmorUnitType::HUMAN)
 								{
 									ok = false;
 									GUI.SimpleDialog(base.txCantWear, this);
@@ -1891,6 +1891,17 @@ void InventoryPanel::LootItem(int index, uint count)
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::REMOVE_USED_ITEM;
 				c.unit = unit;
+			}
+		}
+		if(IS_SET(slot.item->flags, ITEM_IMPORTANT))
+		{
+			unit->mark = false;
+			if(Net::IsServer())
+			{
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::MARK_UNIT;
+				c.unit = unit;
+				c.id = 0;
 			}
 		}
 	}
