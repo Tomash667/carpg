@@ -15,6 +15,8 @@ Wersja 0.8 (???):
 + nowe komendy (add_effect, remove_effect, list_effects, add_perk, remove_perk, list_perks, select, list_stats, add_learning_points)
 + nowe przedmioty: magiczny zwój, nó¿, drewniany miecz, zardzewia³y toporek, tarcza z desek, Pancerz gladiatora
 + profile bohaterów ai - preferowane umiejêtnoœci/przedmioty
++ obs³uga zg³aszanie b³êdów dziêki CrashRpt
++ application crash reporting using CrashRpt
 - naprawione bardzo szybkie szkolenie walki broni¹ atakuj¹c s³abych, niskopoziomowych wrogów
 - naprawione rozmawianie z jednostkami które wstaj¹
 - naprawione obracanie jednostek podczas dialogu u klienta

@@ -2,6 +2,7 @@ EXTERNAL VERSION LIST
 --------------------------------------------------------------------------------
 Angelscript - 2.31.2
 Bullet - 2.81-rev2613
+CrashRpt - 1.4.3 r1645
 DirectX - Microsoft DirectX SDK (June 2010)
 DirectXMath - version from 2017-07-08 (removed directx include checking)
 FMod - 4.44.61

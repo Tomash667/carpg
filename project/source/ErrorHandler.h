@@ -65,8 +65,8 @@ public:
 		return handler;
 	}
 
-	void RegisterHandler();
-	void ReadConfiguration(Config& cfg);
+	void RegisterHandler(Config& cfg, const string& log_path);
+	void UnregisterHandler();
 	void StreamStart(Packet* packet, int type);
 	void StreamEnd(bool ok);
 	void StreamWrite(const void* data, uint size, int type, const SystemAddress& adr);
@@ -92,4 +92,5 @@ private:
 	Packet* current_packet;
 	int current_stream_type;
 	vector<WritePacket*> write_packets;
+	bool registered;
 };

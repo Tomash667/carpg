@@ -415,9 +415,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	}
 #endif
 
-	ErrorHandler& error_handler = ErrorHandler::Get();
-	error_handler.RegisterHandler();
-
 	GetCompileTime();
 
 	// logger (w tym przypadku prelogger bo jeszcze nie wiemy gdzie to zapisywaæ)
@@ -574,8 +571,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		Info("Config file not found '%s'.", game.cfg_file.c_str());
 	else if(result == Config::PARSE_ERROR)
 		Error("Config file parse error '%s' : %s", game.cfg_file.c_str(), cfg.GetError().c_str());
-
-	error_handler.ReadConfiguration(cfg);
 
 	//-------------------------------------------------------------------------
 	// startup delay to synchronize mp game on localhost
@@ -833,6 +828,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	}
 
 	//-------------------------------------------------------------------------
+	// error handler
+	ErrorHandler& error_handler = ErrorHandler::Get();
+	error_handler.RegisterHandler(cfg, log_filename);
+
+	//-------------------------------------------------------------------------
 	// skrypty instalacyjne
 	if(!RunInstallScripts())
 	{
@@ -898,6 +898,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	delete[] cmd_line;
 	delete[] argv;
 	delete Logger::global;
+	error_handler.UnregisterHandler();
 
 	return (b ? 0 : 1);
 }

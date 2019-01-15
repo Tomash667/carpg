@@ -3,26 +3,18 @@
 #include "GameCore.h"
 #include "ErrorHandler.h"
 #include "Engine.h"
+#include "Version.h"
 #pragma warning(push)
 #pragma warning(disable : 4091)
 #define IN
 #define OUT
-#include <dbghelp.h>
-#pragma warning(pop)
-#include <signal.h>
-#include <new.h>
+#include <CrashRpt.h>
 
 //-----------------------------------------------------------------------------
 ErrorHandler ErrorHandler::handler;
 
 //=================================================================================================
-LONG WINAPI Crash(EXCEPTION_POINTERS* exc)
-{
-	return ErrorHandler::Get().HandleCrash(exc);
-}
-
-//=================================================================================================
-inline void DoCrash()
+void DoCrash()
 {
 	int* z = nullptr;
 #pragma warning(push)
@@ -32,53 +24,39 @@ inline void DoCrash()
 }
 
 //=================================================================================================
-void TerminateHandler()
+cstring ExceptionTypeToString(int exctype)
 {
-	Error("Terminate called. Crashing...");
-	DoCrash();
-}
-
-//=================================================================================================
-void UnexpectedHandler()
-{
-	Error("Unexpected called. Crashing...");
-	DoCrash();
-}
-
-//=================================================================================================
-void PurecallHandler()
-{
-	Error("Called pure virtual function. Crashing...");
-	DoCrash();
-}
-
-//=================================================================================================
-int NewHandler(size_t size)
-{
-	Error("Out of memory, requested size %u. Crashing...", size);
-	DoCrash();
-	return 0;
-}
-
-//=================================================================================================
-void InvalidParameterHandler(const wchar_t* expression, const wchar_t* function, const wchar_t* file, unsigned int line, uintptr_t pReserved)
-{
-	string* expr = ToString(expression);
-	string* func = ToString(function);
-	string* fil = ToString(file);
-	Error("Invalid parameter passed to function '%s' (File %s, Line %u, Expression: %s). Crashing...",
-		func->c_str(), fil->c_str(), expr->c_str(), line);
-	StringPool.Free(expr);
-	StringPool.Free(func);
-	StringPool.Free(fil);
-	DoCrash();
-}
-
-//=================================================================================================
-void SignalHandler(int)
-{
-	Error("Received SIGABRT. Crashing...");
-	DoCrash();
+	switch(exctype)
+	{
+	case CR_SEH_EXCEPTION:
+		return "SEH exception";
+	case CR_CPP_TERMINATE_CALL:
+		return "C++ terminate() call";
+	case CR_CPP_UNEXPECTED_CALL:
+		return "C++ unexpected() call";
+	case CR_CPP_PURE_CALL:
+		return "C++ pure virtual function call";
+	case CR_CPP_NEW_OPERATOR_ERROR:
+		return "C++ new operator fault";
+	case CR_CPP_SECURITY_ERROR:
+		return "Buffer overrun error";
+	case CR_CPP_INVALID_PARAMETER:
+		return "Invalid parameter exception";
+	case CR_CPP_SIGABRT:
+		return "C++ SIGABRT signal";
+	case CR_CPP_SIGFPE:
+		return "C++ SIGFPE signal";
+	case CR_CPP_SIGILL:
+		return "C++ SIGILL signal";
+	case CR_CPP_SIGINT:
+		return "C++ SIGINT signal";
+	case CR_CPP_SIGSEGV:
+		return "C++ SIGSEGV signal";
+	case CR_CPP_SIGTERM:
+		return "C++ SIGTERM signal";
+	default:
+		return Format("unknown(%d)", exctype);
+	}
 }
 
 //=================================================================================================
@@ -130,25 +108,27 @@ TextLogger* GetTextLogger()
 }
 
 //=================================================================================================
-ErrorHandler::ErrorHandler() : crash_mode(CrashMode::Normal), stream_log_mode(StreamLogMode::Errors), stream_log_file("log.stream"), current_packet(nullptr)
+int WINAPI OnCrash(CR_CRASH_CALLBACK_INFO* crash_info)
 {
+	cstring type = ExceptionTypeToString(crash_info->pExceptionInfo->exctype);
+	if(crash_info->pExceptionInfo->pexcptrs && crash_info->pExceptionInfo->pexcptrs->ExceptionRecord)
+	{
+		PEXCEPTION_RECORD ptr = crash_info->pExceptionInfo->pexcptrs->ExceptionRecord;
+		Error("Engine: Unhandled exception caught!\nType: %s\nCode: 0x%x (%s)\nFlags: %d\nAddress: 0x%p\n\nPlease report this error.",
+			type, ptr->ExceptionCode, CodeToString(ptr->ExceptionCode), ptr->ExceptionFlags, ptr->ExceptionAddress);
+	}
+	else
+		Error("Engine: Unhandled exception caught!\nType: %s", type);
+	TextLogger* text_logger = GetTextLogger();
+	if(text_logger)
+		text_logger->Flush();
+	return CR_CB_DODEFAULT;
 }
 
 //=================================================================================================
-void ErrorHandler::RegisterHandler()
+ErrorHandler::ErrorHandler() : crash_mode(CrashMode::Normal), stream_log_mode(StreamLogMode::Errors), stream_log_file("log.stream"), current_packet(nullptr),
+registered(false)
 {
-	if(!IsDebuggerPresent())
-	{
-		SetUnhandledExceptionFilter(Crash);
-
-		set_terminate(TerminateHandler);
-		set_unexpected(UnexpectedHandler);
-		_set_purecall_handler(PurecallHandler);
-		_set_new_handler(NewHandler);
-		_set_invalid_parameter_handler(InvalidParameterHandler);
-		_set_abort_behavior(0, _WRITE_ABORT_MSG | _CALL_REPORTFAULT);
-		signal(SIGABRT, SignalHandler);
-	}
 }
 
 //=================================================================================================
@@ -244,7 +224,7 @@ long ErrorHandler::HandleCrash(EXCEPTION_POINTERS* exc)
 }
 
 //=================================================================================================
-void ErrorHandler::ReadConfiguration(Config& cfg)
+void ErrorHandler::RegisterHandler(Config& cfg, const string& log_path)
 {
 	int version = cfg.GetVersion();
 
@@ -328,6 +308,63 @@ void ErrorHandler::ReadConfiguration(Config& cfg)
 	cfg.Add("crash_mode", ToString(crash_mode));
 	cfg.Add("stream_log_mode", ToString(stream_log_mode));
 	cfg.Add("stream_log_file", stream_log_file.c_str());
+
+	// crash handler
+	if(!IsDebuggerPresent())
+	{
+		MINIDUMP_TYPE minidump_type;
+		switch(crash_mode)
+		{
+		default:
+		case CrashMode::Normal:
+			minidump_type = MiniDumpNormal;
+			break;
+		case CrashMode::DataSeg:
+			minidump_type = MiniDumpWithDataSegs;
+			break;
+		case CrashMode::Full:
+			minidump_type = (MINIDUMP_TYPE)(MiniDumpWithDataSegs | MiniDumpWithFullMemory);
+			break;
+		}
+
+		CR_INSTALL_INFO info = { 0 };
+		info.cb = sizeof(CR_INSTALL_INFO);
+		info.pszAppName = "CaRpg";
+		info.pszAppVersion = VERSION_STR;
+		info.pszUrl = "http://carpg.pl/crashrpt.php";
+		info.uPriorities[CR_HTTP] = 1;
+		info.uPriorities[CR_SMTP] = CR_NEGATIVE_PRIORITY;
+		info.uPriorities[CR_SMAPI] = CR_NEGATIVE_PRIORITY;
+		info.uMiniDumpType = minidump_type;
+
+		int r = crInstall(&info);
+		assert(r == 0);
+
+		r = crSetCrashCallback(OnCrash, nullptr);
+		assert(r == 0);
+
+		if(!log_path.empty())
+		{
+			r = crAddFile2(log_path.c_str(), nullptr, "Log file", CR_AF_MAKE_FILE_COPY | CR_AF_MISSING_FILE_OK | CR_AF_ALLOW_DELETE);
+			assert(r == 0);
+		}
+		if(stream_log_mode != StreamLogMode::None)
+		{
+			r = crAddFile2(stream_log_file.c_str(), nullptr, "Multiplayer log", CR_AF_MAKE_FILE_COPY | CR_AF_MISSING_FILE_OK | CR_AF_ALLOW_DELETE);
+			assert(r == 0);
+		}
+		r = crAddScreenshot2(CR_AS_MAIN_WINDOW | CR_AS_PROCESS_WINDOWS | CR_AS_USE_JPEG_FORMAT | CR_AS_ALLOW_DELETE, 50);
+		assert(r == 0);
+
+		registered = true;
+	}
+}
+
+//=================================================================================================
+void ErrorHandler::UnregisterHandler()
+{
+	if(registered)
+		crUninstall();
 }
 
 //=================================================================================================
