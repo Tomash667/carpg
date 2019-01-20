@@ -245,6 +245,7 @@ Available commands:
 	remove_perk - remove perk from selected unit (remove_perk perk).
 	resolution - show or change display resolution (resolution [w h hz]).
 	reveal - reveal all locations on world map.
+	reveal_minimap - reveal dungeon minimap.
 	refresh_cooldown - refresh action cooldown/charges.
 	s - send message to all players, short from say (say msg).
 	save - save game (save 1-10 [text] or name).
@@ -256,7 +257,6 @@ Available commands:
 	set_stat - set player statistics (setstat stat value), use setstat ? to get list of stats.
 	set_seed - set randomness seed (set_seed uint).
 	shader_version - force shader version (shader_version 2/3).
-	reveal_minimap - reveal dungeon minimap.
 	skip_days - skip days [skip_days [count]).
 	spawn_unit - create unit in front of player (spawn_unit id [level count arena]).
 	speed - game speed (speed 0-10).

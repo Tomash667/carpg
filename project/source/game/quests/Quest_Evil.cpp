@@ -267,7 +267,7 @@ void Quest_Evil::SetProgress(int prog2)
 				unit->StartAutoTalk();
 
 			quest_manager.EndUniqueQuest();
-			Team.AddExp(20000);
+			Team.AddExp(30000);
 			evil_state = State::ClericWantTalk;
 			W.AddNews(game->txQuest[250]);
 			Team.AddLearningPoint();

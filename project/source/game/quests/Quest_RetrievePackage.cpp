@@ -8,6 +8,8 @@
 #include "GameFile.h"
 #include "World.h"
 #include "Team.h"
+#include "ItemHelper.h"
+#include "SaveState.h"
 
 //=================================================================================================
 void Quest_RetrievePackage::Start()
@@ -78,6 +80,7 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 				game->target_loc_is_camp = false;
 				msgs.push_back(Format(game->txQuest[23], who, loc.name.c_str(), loc2.name.c_str(), GetLocationDirName(loc.pos, loc2.pos)));
 			}
+			st = loc2.st;
 		}
 		break;
 	case Progress::Timeout:
@@ -101,8 +104,9 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 		// player returned package to mayor, end of quest
 		{
 			state = Quest::Completed;
-			game->AddReward(500);
-			Team.AddExp(5000);
+			int reward = GetReward();
+			game->AddReward(reward);
+			Team.AddExp(reward * 3);
 
 			((City&)GetStartLocation()).quest_mayor = CityQuestState::None;
 			DialogContext::current->pc->unit->RemoveQuestItem(refid);
@@ -131,6 +135,8 @@ cstring Quest_RetrievePackage::FormatString(const string& str)
 		return GetTargetLocationName();
 	else if(str == "target_dir")
 		return GetLocationDirName(GetStartLocation().pos, GetTargetLocation().pos);
+	else if(str == "reward")
+		return Format("%d", GetReward());
 	else
 	{
 		assert(0);
@@ -180,7 +186,10 @@ void Quest_RetrievePackage::Save(GameWriter& f)
 	Quest_Dungeon::Save(f);
 
 	if(prog != Progress::Finished)
+	{
 		f << from_loc;
+		f << st;
+	}
 }
 
 //=================================================================================================
@@ -191,6 +200,12 @@ bool Quest_RetrievePackage::Load(GameReader& f)
 	if(prog != Progress::Finished)
 	{
 		f >> from_loc;
+		if(LOAD_VERSION >= V_DEV)
+			f >> st;
+		else if(target_loc != -1)
+			st = GetTargetLocation().st;
+		else
+			st = 10;
 
 		Location& loc = GetStartLocation();
 		Item::Get("parcel")->CreateCopy(parcel);
@@ -203,6 +218,12 @@ bool Quest_RetrievePackage::Load(GameReader& f)
 		unit_spawn_level = -3;
 		spawn_item = Quest_Dungeon::Item_GiveSpawned;
 	}
-	
+
 	return true;
+}
+
+//=================================================================================================
+int Quest_RetrievePackage::GetReward() const
+{
+	return ItemHelper::CalculateReward(st, Int2(5, 15), Int2(2500, 5000));
 }

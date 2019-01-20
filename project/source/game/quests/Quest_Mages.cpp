@@ -70,8 +70,8 @@ void Quest_Mages::SetProgress(int prog2)
 
 			GetTargetLocation().active_quest = nullptr;
 
-			game->AddReward(1500);
-			Team.AddExp(6000);
+			game->AddReward(4000);
+			Team.AddExp(12000);
 			OnUpdate(game->txQuest[168]);
 			quest_manager.RemoveQuestRumor(R_MAGES);
 		}
@@ -364,7 +364,6 @@ void Quest_Mages2::SetProgress(int prog2)
 			OnUpdate(game->txQuest[185]);
 			W.AddNews(game->txQuest[186]);
 			Team.AddLearningPoint();
-			Team.AddExp(19000);
 		}
 		break;
 	case Progress::TalkedWithMage:
@@ -388,7 +387,8 @@ void Quest_Mages2::SetProgress(int prog2)
 				scholar->temporary = true;
 				scholar = nullptr;
 			}
-			game->AddReward(5000);
+			game->AddReward(10000);
+			Team.AddExp(25000);
 			OnUpdate(game->txQuest[188]);
 			quest_manager.EndUniqueQuest();
 			quest_manager.RemoveQuestRumor(R_MAGES2);

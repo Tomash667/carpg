@@ -6,6 +6,11 @@
 #include "Unit.h"
 #include "NameHelper.h"
 #include "Const.h"
+#include "Team.h"
+// to remove
+#include "Game.h"
+#include "GlobalGui.h"
+#include "GameMessages.h"
 
 //=================================================================================================
 void HeroData::Init(Unit& _unit)
@@ -85,30 +90,6 @@ int HeroData::JoinCost() const
 //=================================================================================================
 void HeroData::PassTime(int days, bool travel)
 {
-	// czy bohater odpoczywa?
-	bool resting;
-	if(L.city_ctx && !travel)
-	{
-		resting = true;
-		expe += days;
-	}
-	else
-	{
-		resting = false;
-		expe += days * 2;
-	}
-
-	// zdobywanie doœwiadczenia
-	if(unit->level != MAX_LEVEL && unit->IsHero() && unit->level != unit->data->level.y)
-	{
-		int req = (unit->level*(unit->level + 1) + 10) * 5;
-		if(expe >= req)
-		{
-			expe -= req;
-			LevelUp();
-		}
-	}
-
 	// koñczenie efektów
 	float natural_mod;
 	unit->EndEffects(days, &natural_mod);
@@ -117,7 +98,7 @@ void HeroData::PassTime(int days, bool travel)
 	if(unit->hp != unit->hpmax)
 	{
 		float heal = 0.5f * unit->Get(AttributeId::END);
-		if(resting)
+		if(L.city_ctx && !travel)
 			heal *= 2;
 		heal *= natural_mod * days;
 		heal = min(heal, unit->hpmax - unit->hp);
@@ -128,12 +109,11 @@ void HeroData::PassTime(int days, bool travel)
 //=================================================================================================
 void HeroData::LevelUp()
 {
-	if(unit->level >= MAX_LEVEL)
-		return;
-
 	++unit->level;
 	unit->stats = unit->data->GetStats(unit->level);
 	unit->CalculateStats();
+	Game::Get().gui->messages->AddGameMsg(Format("Hero %s gained level %d.", name.c_str(), unit->level), 5.f);
+	// !!! remove includes
 }
 
 //=================================================================================================
@@ -143,4 +123,46 @@ void HeroData::SetupMelee()
 		melee = true;
 	else if(IS_SET(unit->data->flags2, F2_MELEE_50) && Rand() % 2 == 0)
 		melee = true;
+}
+
+//=================================================================================================
+void HeroData::AddExp(int exp)
+{
+	if(unit->level == MAX_LEVEL)
+		return;
+	expe += int(GetExpMod() * exp);
+	int exp_need = 10000 * unit->level;
+	if(expe >= exp_need)
+	{
+		expe -= exp_need;
+		LevelUp();
+	}
+}
+
+//=================================================================================================
+float HeroData::GetExpMod() const
+{
+	int dif = unit->level - Team.players_level;
+	switch(dif)
+	{
+	case 3:
+		return 0.125f;
+	case 2:
+		return 0.25f;
+	case 1:
+		return 0.5f;
+	case 0:
+		return 1.f;
+	case -1:
+		return 2.f;
+	case -2:
+		return 3.f;
+	case -3:
+		return 4.f;
+	default:
+		if(dif > 0)
+			return 0.f;
+		else
+			return 5.f;
+	}
 }

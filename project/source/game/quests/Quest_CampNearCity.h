@@ -29,5 +29,8 @@ public:
 	int GetLocationEventHandlerQuestRefid() override { return refid; }
 
 private:
+	int GetReward() const;
+
 	SPAWN_GROUP group;
+	int st;
 };

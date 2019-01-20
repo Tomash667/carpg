@@ -282,7 +282,7 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id)
 			{
 				PlayerController::StatData& stat = pc->skill[id];
 				tooltip.text = Format("%s: %d\n%s\n\nExp: %d/%d (%g%%)\nTrain: %d\nAptitude: %d", txBase, pc->unit->GetBase(s),
-					si.desc.c_str(), stat.points, stat.next, float(stat.points) * 100 / stat.next, stat.train, stat.apt);
+					si.desc.c_str(), stat.points, stat.next, float(stat.points) * 100 / stat.next, stat.train, pc->GetAptitude(s));
 			}
 			else
 				tooltip.text = Format("%s: %d\n%s", txBase, pc->unit->GetBase(s), si.desc.c_str());

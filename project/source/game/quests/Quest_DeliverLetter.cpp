@@ -87,7 +87,7 @@ void Quest_DeliverLetter::SetProgress(int prog2)
 		// given response, end of quest
 		{
 			state = Quest::Completed;
-			game->AddReward(100);
+			game->AddReward(250);
 			Team.AddExp(1000);
 
 			((City&)GetStartLocation()).quest_mayor = CityQuestState::None;

@@ -248,6 +248,7 @@ void Quest_Tournament::StartTournament(Unit* arena_master)
 	L.city_ctx->FindInsideBuilding(BuildingGroup::BG_ARENA, arena);
 }
 
+//=================================================================================================
 bool Quest_Tournament::ShouldJoin(Unit& u)
 {
 	if(u.summoner)
@@ -711,7 +712,7 @@ void Quest_Tournament::Update(float dt)
 					if(winner->IsHero())
 					{
 						winner->look_target = master;
-						winner->hero->LevelUp();
+						winner->hero->AddExp(15000);
 					}
 					else
 						winner->busy = Unit::Busy_No;

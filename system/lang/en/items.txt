@@ -636,6 +636,10 @@ item stew {
 	name "Stew"
 	desc "Heals 30 hit points after eating."
 }
+item muffin {
+	name "Muffin"
+	desc "Heals 50 hit points after eating."
+}
 item mushroom {
 	name "Mushroom"
 	desc "Heals 10 hit points after eating."

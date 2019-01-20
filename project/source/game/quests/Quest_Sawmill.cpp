@@ -95,7 +95,7 @@ void Quest_Sawmill::SetProgress(int prog2)
 			days = 0;
 
 			OnUpdate(game->txQuest[129]);
-			game->AddReward(400);
+			game->AddReward(PAYMENT);
 			quest_manager.EndUniqueQuest();
 			W.AddNews(Format(game->txQuest[130], GetTargetLocationName()));
 		}
@@ -110,6 +110,8 @@ cstring Quest_Sawmill::FormatString(const string& str)
 		return GetTargetLocationName();
 	else if(str == "target_dir")
 		return GetTargetLocationDir();
+	else if(str == "payment")
+		return Format("%d", PAYMENT);
 	else
 	{
 		assert(0);

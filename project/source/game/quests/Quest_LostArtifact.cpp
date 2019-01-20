@@ -8,6 +8,8 @@
 #include "World.h"
 #include "LevelArea.h"
 #include "Team.h"
+#include "ItemHelper.h"
+#include "SaveState.h"
 
 //=================================================================================================
 void Quest_LostArtifact::Start()
@@ -64,6 +66,7 @@ void Quest_LostArtifact::SetProgress(int prog2)
 
 			tl.active_quest = this;
 			tl.SetKnown();
+			st = tl.st;
 
 			cstring poziom;
 			switch(at_level)
@@ -108,8 +111,9 @@ void Quest_LostArtifact::SetProgress(int prog2)
 			}
 			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
 			OnUpdate(game->txQuest[115]);
-			game->AddReward(800);
-			Team.AddExp(4000);
+			int reward = GetReward();
+			game->AddReward(reward);
+			Team.AddExp(reward * 3);
 			DialogContext::current->talker->temporary = true;
 			DialogContext::current->talker->AddItem(&quest_item, 1, true);
 			DialogContext::current->pc->unit->RemoveQuestItem(refid);
@@ -163,6 +167,8 @@ cstring Quest_LostArtifact::FormatString(const string& str)
 			return game->txQuest[123];
 		}
 	}
+	else if(str == "reward")
+		return Format("%d", GetReward());
 	else
 	{
 		assert(0);
@@ -204,6 +210,7 @@ void Quest_LostArtifact::Save(GameWriter& f)
 	Quest_Dungeon::Save(f);
 
 	f << item;
+	f << st;
 }
 
 //=================================================================================================
@@ -212,6 +219,12 @@ bool Quest_LostArtifact::Load(GameReader& f)
 	Quest_Dungeon::Load(f);
 
 	f.LoadArtifact(item);
+	if(LOAD_VERSION >= V_DEV)
+		f >> st;
+	else if(target_loc != -1)
+		st = GetTargetLocation().st;
+	else
+		st = 10;
 
 	item->CreateCopy(quest_item);
 	quest_item.id = Format("$%s", item->id.c_str());
@@ -220,4 +233,10 @@ bool Quest_LostArtifact::Load(GameReader& f)
 	item_to_give[0] = &quest_item;
 
 	return true;
+}
+
+//=================================================================================================
+int Quest_LostArtifact::GetReward() const
+{
+	return ItemHelper::CalculateReward(st, Int2(5, 15), Int2(2000, 6000));
 }

@@ -147,10 +147,10 @@ void Minimap::Update(float dt)
 
 				Vec2 pt1 = Convert(it->pos),
 					pt2 = Convert(it2->pos);
-				float w1 = float(it->size.x) / 2,
-					h1 = float(it->size.y) / 2,
-					w2 = float(it2->size.x) / 2,
-					h2 = float(it2->size.y) / 2;
+				float w1 = float(it->size.x + 2) / 2,
+					h1 = float(it->size.y + 2) / 2,
+					w2 = float(it2->size.x + 2) / 2,
+					h2 = float(it2->size.y + 2) / 2;
 
 				if(RectangleToRectangle(pt1.x - w1, pt1.y - h1, pt1.x + w1, pt1.y + h1,
 					pt2.x - w2, pt2.y - h2, pt2.x + w2, pt2.y + h2))

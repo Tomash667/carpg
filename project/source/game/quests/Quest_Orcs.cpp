@@ -115,8 +115,8 @@ void Quest_Orcs::SetProgress(int prog2)
 		{
 			state = Quest::Completed;
 
-			game->AddReward(2500);
-			Team.AddExp(10000);
+			game->AddReward(4000);
+			Team.AddExp(12000);
 			OnUpdate(game->txQuest[195]);
 			W.AddNews(Format(game->txQuest[196], GetTargetLocationName(), GetStartLocationName()));
 
@@ -445,14 +445,14 @@ void Quest_Orcs2::SetProgress(int prog2)
 			OnUpdate(game->txQuest[204]);
 			W.AddNews(game->txQuest[205]);
 			Team.AddLearningPoint();
-			Team.AddExp(18000);
 		}
 		break;
 	case Progress::Finished:
 		// pogadano z gorushem
 		{
 			state = Quest::Completed;
-			game->AddReward(Random(4000, 5000));
+			game->AddReward(Random(9000, 11000));
+			Team.AddExp(25000);
 			OnUpdate(game->txQuest[206]);
 			quest_manager.EndUniqueQuest();
 			// gorush

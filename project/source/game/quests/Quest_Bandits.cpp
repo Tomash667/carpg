@@ -237,8 +237,8 @@ void Quest_Bandits::SetProgress(int prog2)
 			OnUpdate(game->txQuest[164]);
 			// ustaw arto na temporary ¿eby sobie poszed³
 			DialogContext::current->talker->temporary = true;
-			game->AddReward(5000);
-			Team.AddExp(15000);
+			game->AddReward(10000);
+			Team.AddExp(25000);
 			quest_manager.EndUniqueQuest();
 		}
 		break;

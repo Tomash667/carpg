@@ -54,6 +54,9 @@ public:
 		GeneratedPortal
 	};
 
+	static const int PAYMENT = 750;
+	static const int PAYMENT2 = 1500;
+
 	void Start() override;
 	GameDialog* GetDialog(int type2) override;
 	void SetProgress(int prog2) override;

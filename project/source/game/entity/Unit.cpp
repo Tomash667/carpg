@@ -82,23 +82,19 @@ float Unit::CalculateMaxStamina() const
 {
 	if(IS_SET(data->flags2, F2_FIXED_STATS))
 		return (float)data->stamina;
-	float stamina = (float)data->stamina;
 	float v = 0.6f*Get(AttributeId::END) + 0.4f*Get(AttributeId::DEX);
-	if(v >= 90.f)
-		stamina += (v - 90.f) + 250.f;
-	else
-		stamina += 120.f + (v - 25.f) * 2;
-	return stamina;
+	return (float)data->stamina
+		+ 250.f
+		+ v * 2.f;
 }
 
 //=================================================================================================
 float Unit::CalculateAttack() const
 {
-	if(IS_SET(data->flags2, F2_FIXED_STATS))
-		return (float)(data->attack + data->attack_lvl * (level - data->level.x));
-	else if(HaveWeapon())
+	if(HaveWeapon())
 		return CalculateAttack(&GetWeapon());
-	else
+	else if(IS_SET(data->flags2, F2_FIXED_STATS))
+		return (float)(data->attack + data->attack_lvl * (level - data->level.x));
 	{
 		float bonus = GetEffectSum(EffectId::MeleeAttack);
 		return Get(SkillId::UNARMED) + (Get(AttributeId::STR) + Get(AttributeId::DEX)) / 2 - 25.f + bonus;
@@ -108,11 +104,23 @@ float Unit::CalculateAttack() const
 //=================================================================================================
 float Unit::CalculateAttack(const Item* weapon) const
 {
-	assert(weapon && !IS_SET(data->flags2, F2_FIXED_STATS));
+	assert(weapon);
+
+	float attack = (float)data->attack;
+
+	if(IS_SET(data->flags2, F2_FIXED_STATS))
+	{
+		if(weapon->type == IT_WEAPON)
+			attack += weapon->ToWeapon().dmg;
+		else if(weapon->type == IT_BOW)
+			attack += weapon->ToBow().dmg;
+		else
+			attack += 0.5f * weapon->ToShield().block;
+		return attack + data->attack_lvl * (level - data->level.x);
+	}
 
 	int str = Get(AttributeId::STR),
 		dex = Get(AttributeId::DEX);
-	float attack = (float)data->attack;
 
 	if(weapon->type == IT_WEAPON)
 	{
@@ -3542,6 +3550,8 @@ void Unit::Set(AttributeId a, int value)
 	{
 		stats->attrib[(int)a] = value;
 		ApplyStat(a);
+		if(player)
+			player->recalculate_level = true;
 	}
 }
 
@@ -3550,6 +3560,8 @@ void Unit::Set(SkillId s, int value)
 {
 	assert(!stats->fixed);
 	stats->skill[(int)s] = value;
+	if(player)
+		player->recalculate_level = true;
 }
 
 //=================================================================================================
@@ -3697,10 +3709,10 @@ float Unit::GetMobilityMod(bool run) const
 WEAPON_TYPE Unit::GetBestWeaponType() const
 {
 	WEAPON_TYPE best = (WEAPON_TYPE)0;
-	int best_value = Get(WeaponTypeInfo::info[0].skill);
+	int best_value = GetBase(WeaponTypeInfo::info[0].skill);
 	for(int i = 1; i < WT_MAX; ++i)
 	{
-		int value = Get(WeaponTypeInfo::info[i].skill);
+		int value = GetBase(WeaponTypeInfo::info[i].skill);
 		if(value > best_value)
 		{
 			best = (WEAPON_TYPE)i;
@@ -3714,10 +3726,10 @@ WEAPON_TYPE Unit::GetBestWeaponType() const
 ARMOR_TYPE Unit::GetBestArmorType() const
 {
 	ARMOR_TYPE best = (ARMOR_TYPE)0;
-	int best_value = Get(GetArmorTypeSkill(best));
+	int best_value = GetBase(GetArmorTypeSkill(best));
 	for(int i = 1; i < AT_MAX; ++i)
 	{
-		int value = Get(GetArmorTypeSkill((ARMOR_TYPE)i));
+		int value = GetBase(GetArmorTypeSkill((ARMOR_TYPE)i));
 		if(value > best_value)
 		{
 			best = (ARMOR_TYPE)i;

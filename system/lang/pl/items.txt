@@ -636,6 +636,10 @@ item stew {
 	name "Gulasz"
 	desc "Leczy 30 punktów zdrowia po zjedzeniu."
 }
+item muffin {
+	name "Muffin"
+	desc "Leczy 50 punktów zdrowia po zjedzeniu."
+}
 item mushroom {
 	name "Grzyb"
 	desc "Leczy 10 punktów zdrowia po zjedzeniu."

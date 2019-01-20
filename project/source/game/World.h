@@ -172,7 +172,7 @@ private:
 		worldtime; // number of passed game days, starts at 0
 	vector<News*> news;
 	cstring txDate, txRandomEncounter, txEncCrazyMage, txEncCrazyHeroes, txEncCrazyCook, txEncMerchant, txEncHeroes, txEncBanditsAttackTravelers,
-		txEncHeroesAttack, txEncGolem, txEncCrazy, txEncUnk, txEncBandits, txEncAnimals, txEncOrcs, txEncGoblins;
+		txEncHeroesAttack, txEncGolem, txEncCrazy, txEncUnk, txEncBandits, txEncAnimals, txEncOrcs, txEncGoblins, txEncEnemiesCombat;
 	bool first_city, // spawn more low level heroes in first city
 		boss_level_mp; // used by clients instead boss_levels
 

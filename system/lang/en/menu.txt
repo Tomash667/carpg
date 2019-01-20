@@ -205,6 +205,7 @@ encBandits = "While traveling you encountered a group of bandits!"
 encAnimals = "Suddenly, wild animals jump out of the bushes!"
 encOrcs = "You encounter a pack of orcs looking for easy loot!"
 encGoblins = "Out of surprise, a band of goblins attacked you!"
+encEnemiesCombat = "In the distance you noticed two groups of enemies fighting with each other."
 
 // create character panel
 [CreateCharacterPanel]

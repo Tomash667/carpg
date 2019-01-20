@@ -20,10 +20,12 @@ enum SpecialEncounter
 	SE_HEROES,
 	SE_BANDITS_VS_TRAVELERS,
 	SE_HEROES_VS_ENEMIES,
-	SE_GOLEM,
+	SE_ENEMIES_COMBAT,
+	SE_MAX_NORMAL,
+	SE_GOLEM = SE_MAX_NORMAL,
 	SE_CRAZY,
 	SE_UNK,
-	SE_CRAZY_COOK
+	SE_CRAZY_COOK,
 };
 
 //-----------------------------------------------------------------------------

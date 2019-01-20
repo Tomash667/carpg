@@ -160,6 +160,7 @@ public:
 	void SetRequiredPoints();
 	int CalculateLevel();
 	void RecalculateLevel();
+	int GetAptitude(SkillId skill);
 
 	void Save(FileWriter& f);
 	void Load(FileReader& f);

@@ -205,6 +205,7 @@ encBandits = "Podczas podró¿y natrafi³eœ na bandytów!"
 encAnimals = "Nagle z zaroœli wyskoczy³y zwierzêta!"
 encOrcs = "Natrafi³eœ na oddzia³ orków szukaj¹cy ³atwego ³upu!"
 encGoblins = "Z zaskoczenia zaatakowa³a ciê grupa goblinów!"
+encEnemiesCombat = "W oddali zauwa¿y³eœ dwie grupy wrogów walcz¹ce pomiêdzy sob¹."
 
 // create character panel
 [CreateCharacterPanel]

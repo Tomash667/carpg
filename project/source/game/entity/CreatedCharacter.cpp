@@ -310,7 +310,7 @@ void CreatedCharacter::GetStartingItems(const Item* (&items)[SLOT_MAX])
 		items[ItemTypeToSlot(heirloom->type)] = heirloom;
 	}
 
-	int mod = HavePerk(Perk::Poor) ? -10 : 0;
+	bool poor = HavePerk(Perk::Poor);
 
 	// weapon
 	if(!items[SLOT_WEAPON])
@@ -341,21 +341,21 @@ void CreatedCharacter::GetStartingItems(const Item* (&items)[SLOT_MAX])
 			}
 		}
 
-		items[SLOT_WEAPON] = StartItem::GetStartItem(best, max(0, val + mod));
+		items[SLOT_WEAPON] = StartItem::GetStartItem(best, GetItemLevel(val, poor));
 	}
 
 	// bow
 	if(!items[SLOT_BOW])
 	{
 		int val = s[(int)SkillId::BOW].value;
-		items[SLOT_BOW] = StartItem::GetStartItem(SkillId::BOW, max(0, val + mod));
+		items[SLOT_BOW] = StartItem::GetStartItem(SkillId::BOW, GetItemLevel(val, poor));
 	}
 
 	// shield
 	if(!items[SLOT_SHIELD])
 	{
 		int val = s[(int)SkillId::SHIELD].value;
-		items[SLOT_SHIELD] = StartItem::GetStartItem(SkillId::SHIELD, max(0, val + mod));
+		items[SLOT_SHIELD] = StartItem::GetStartItem(SkillId::SHIELD, GetItemLevel(val, poor));
 	}
 
 	// armor
@@ -395,8 +395,21 @@ void CreatedCharacter::GetStartingItems(const Item* (&items)[SLOT_MAX])
 			++index;
 		}
 
-		items[SLOT_ARMOR] = StartItem::GetStartItem(best, max(0, val + mod));
+		items[SLOT_ARMOR] = StartItem::GetStartItem(best, GetItemLevel(val, poor));
 	}
+}
+
+//=================================================================================================
+int CreatedCharacter::GetItemLevel(int level, bool poor)
+{
+	if(level > 5)
+	{
+		if(poor)
+			level = max(level - 10, 5);
+	}
+	else if(level < 1)
+		level = 1;
+	return level;
 }
 
 //=================================================================================================

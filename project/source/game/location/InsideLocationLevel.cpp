@@ -89,6 +89,40 @@ Room* InsideLocationLevel::GetRoom(const Int2& pt)
 }
 
 //=================================================================================================
+Room* InsideLocationLevel::GetRandomRoom(RoomTarget target, delegate<bool(Room&)> clbk, int* out_index, int* out_group)
+{
+	int index = Rand() % groups.size(),
+		start = index;
+	while(true)
+	{
+		RoomGroup& group = groups[index];
+		if(group.target == target)
+		{
+			int index2 = Rand() % group.rooms.size(),
+				start2 = index2;
+			while(true)
+			{
+				Room& room = rooms[index2];
+				if(clbk(room))
+				{
+					if(out_index)
+						*out_index = index2;
+					if(out_group)
+						*out_group = index;
+					return &room;
+				}
+				index2 = (index2 + 1) % group.rooms.size();
+				if(index2 == start2)
+					break;
+			}
+		}
+		index = (index + 1) % groups.size();
+		if(index == start)
+			return nullptr;
+	}
+}
+
+//=================================================================================================
 bool InsideLocationLevel::GetRandomNearWallTile(const Room& room, Int2& tile, GameDirection& rot, bool nocol)
 {
 	rot = (GameDirection)(Rand() % 4);
@@ -214,6 +248,14 @@ void InsideLocationLevel::SaveLevel(GameWriter& f, bool local)
 	for(Room& room : rooms)
 		room.Save(f);
 
+	// room groups
+	f << groups.size();
+	for(RoomGroup& group : groups)
+	{
+		f << group.rooms;
+		f << group.target;
+	}
+
 	// traps
 	f << traps.size();
 	for(Trap* trap : traps)
@@ -298,6 +340,26 @@ void InsideLocationLevel::LoadLevel(GameReader& f, bool local)
 	rooms.resize(f.Read<uint>());
 	for(Room& room : rooms)
 		room.Load(f);
+
+	// room groups
+	if(LOAD_VERSION >= V_DEV)
+	{
+		groups.resize(f.Read<uint>());
+		for(RoomGroup& group : groups)
+		{
+			f >> group.rooms;
+			f >> group.target;
+		}
+	}
+	else
+	{
+		groups.resize(rooms.size());
+		for(int i = 0; i < (int)rooms.size(); ++i)
+		{
+			groups[i].rooms.push_back(i);
+			groups[i].target = rooms[i].target;
+		}
+	}
 
 	// traps
 	traps.resize(f.Read<uint>());

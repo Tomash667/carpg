@@ -44,7 +44,8 @@ enum GAME_STATE
 	GS_LOAD_MENU
 };
 
-extern const Vec2 ALERT_RANGE;
+extern const float ALERT_RANGE;
+extern const float ALERT_SPAWN_RANGE;
 extern const float PICKUP_RANGE;
 extern const float ARROW_TIMER;
 extern const float MIN_H;
@@ -518,8 +519,7 @@ public:
 	bool Quickload(bool from_console);
 	void ClearGameVars(bool new_game);
 	void ClearGame();
-	int CalculateQuestReward(int gold);
-	void AddReward(int gold) { AddGold(CalculateQuestReward(gold), nullptr, true, txQuestCompletedGold, 4.f, false); }
+	void AddReward(int gold) { AddGold(gold, nullptr, true, txQuestCompletedGold, 4.f, false); }
 	SOUND GetItemSound(const Item* item);
 	void Unit_StopUsingUsable(LevelContext& ctx, Unit& unit, bool send = true);
 	void EnterLevel(LocationGenerator* loc_gen);

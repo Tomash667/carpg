@@ -274,7 +274,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			quest_manager.EndUniqueQuest();
 			W.AddNews(game->txQuest[231]);
 			Team.AddLearningPoint();
-			Team.AddExp(14000);
+			Team.AddExp(15000);
 		}
 		break;
 	}

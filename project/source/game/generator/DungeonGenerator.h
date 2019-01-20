@@ -14,5 +14,6 @@ public:
 	bool HandleUpdate(int days) override;
 
 private:
+	void CreatePortal(InsideLocationLevel& lvl);
 	void GenerateDungeonItems();
 };

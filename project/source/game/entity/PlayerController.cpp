@@ -685,8 +685,14 @@ void PlayerController::RecalculateLevel()
 	if(level != unit->level)
 	{
 		unit->level = level;
-		if(player_info && !IsLocal())
-			player_info->update_flags |= PlayerInfo::UF_LEVEL;
+		if(Net::IsLocal())
+		{
+			Team.CalculatePlayersLevel();
+			// !!! to remove
+			Game::Get().gui->messages->AddGameMsg(Format("DEBUG Player %s gained level %d.", name.c_str(), level), 5.f);
+			if(player_info && !IsLocal())
+				player_info->update_flags |= PlayerInfo::UF_LEVEL;
+		}
 	}
 }
 
@@ -893,28 +899,12 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 
 float GetAptitudeMod(int apt)
 {
-	switch(apt)
-	{
-	case -3:
-		return 0.7f;
-	case -2:
-		return 0.8f;
-	case -1:
-		return 0.9f;
-	case 0:
+	if(apt < 0)
+		return 1.f - 0.1f * apt;
+	else if(apt == 0)
 		return 1.f;
-	case 1:
-		return 1.1f;
-	case 2:
-		return 1.2f;
-	case 3:
-		return 1.3f;
-	default:
-		if(apt < -3)
-			return 0.6f;
-		else
-			return 1.4f;
-	}
+	else
+		return 1.f + 0.2f * apt;
 }
 
 //=================================================================================================
@@ -927,7 +917,7 @@ void PlayerController::TrainMod(AttributeId a, float points)
 //=================================================================================================
 void PlayerController::TrainMod2(SkillId s, float points)
 {
-	float mod = GetAptitudeMod(skill[(int)s].apt);
+	float mod = GetAptitudeMod(GetAptitude(s));
 	Train(s, mod * points);
 }
 
@@ -1348,4 +1338,29 @@ int PlayerController::GetExpNeed() const
 {
 	int exp_per_level = 1000 - (unit->GetBase(AttributeId::INT) - 50);
 	return exp_per_level * (exp_level + 1);
+}
+
+//=================================================================================================
+int PlayerController::GetAptitude(SkillId s)
+{
+	int apt = skill[(int)s].apt;
+	SkillType skill_type = Skill::skills[(int)s].type;
+	if(skill_type != SkillType::NONE)
+	{
+		int value = unit->GetBase(s);
+		// cross training bonus
+		if(skill_type == SkillType::WEAPON)
+		{
+			SkillId best = WeaponTypeInfo::info[unit->GetBestWeaponType()].skill;
+			if(best != s && value - 1 > unit->GetBase(best))
+				apt += 5;
+		}
+		else if(skill_type == SkillType::ARMOR)
+		{
+			SkillId best = GetArmorTypeSkill(unit->GetBestArmorType());
+			if(best != s && value - 1 > unit->GetBase(best))
+				apt += 5;
+		}
+	}
+	return apt;
 }

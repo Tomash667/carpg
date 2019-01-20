@@ -36,7 +36,9 @@ public:
 
 private:
 	SPAWN_GROUP GetRandomGroup() const;
+	int GetReward() const;
 
 	SPAWN_GROUP group;
 	Unit* captive;
+	int st;
 };

@@ -50,6 +50,7 @@ namespace Mapa
 	Tile* mapa;
 	OpcjeMapy* opcje;
 	vector<int> wolne;
+	vector<Int2> joined;
 
 	//-----------------------------------------------------------------------------
 	// Opcje dodawania pokoju
@@ -73,6 +74,10 @@ namespace Mapa
 	void ustaw_sciane(TILE_TYPE& pole);
 	void ustaw_wzor();
 	DIR wolna_droga(int id);
+	void CreateRoomGroups();
+	void SetRoomGroupTargets();
+	void DrawRoomGroups();
+	void Finalize();
 
 #define H(_x,_y) mapa[(_x)+(_y)*opcje->w].type
 #define HR(_x,_y) mapa[(_x)+(_y)*opcje->w].room
@@ -180,6 +185,8 @@ namespace Mapa
 	//=================================================================================================
 	void generuj()
 	{
+		joined.clear();
+
 		// ustaw wzór obszaru (np wype³nij obszar nieu¿ytkiem, na oko³o blokada)
 		ustaw_wzor();
 
@@ -243,9 +250,6 @@ namespace Mapa
 					dodaj_pokoj(pt.x, pt.y, w, h, DODAJ_POKOJ);
 				}
 			}
-
-			//rysuj();
-			//_getch();
 		}
 
 		// szukaj po³¹czeñ pomiêdzy pokojami/korytarzami
@@ -301,16 +305,7 @@ namespace Mapa
 		if(opcje->stop)
 			return;
 
-		// po³¹cz pokoje
-		if(opcje->polacz_pokoj > 0)
-			polacz_pokoje();
-
-		// generowanie schodów
-		if(opcje->schody_dol != OpcjeMapy::BRAK || opcje->schody_gora != OpcjeMapy::BRAK)
-			generuj_schody(*opcje);
-
-		// generuj flagi pól
-		Tile::SetupFlags(opcje->mapa, Int2(opcje->w, opcje->h));
+		Finalize();
 	}
 
 	//=================================================================================================
@@ -448,6 +443,8 @@ namespace Mapa
 
 				if(!r2.CanJoinRoom() || Rand() % 100 >= opcje->polacz_pokoj)
 					continue;
+
+				joined.push_back(Int2(index, *it2));
 
 				// znajdŸ wspólny obszar
 				int x1 = max(r.pos.x, r2.pos.x),
@@ -675,81 +672,6 @@ namespace Mapa
 		}
 	}
 
-	void ustaw_flagi()
-	{
-		for(int y = 0; y < opcje->h; ++y)
-		{
-			for(int x = 0; x < opcje->w; ++x)
-			{
-				Tile& p = mapa[x + y*opcje->w];
-				if(p.type != EMPTY && p.type != DOORS && p.type != BARS && p.type != BARS_FLOOR && p.type != BARS_CEILING && p.type != STAIRS_DOWN)
-					continue;
-
-				// pod³oga
-				if(p.type == BARS || p.type == BARS_FLOOR)
-				{
-					p.flags |= Tile::F_BARS_FLOOR;
-
-					if(!OR2_EQ(mapa[x - 1 + y*opcje->w].type, BARS, BARS_FLOOR))
-						p.flags |= Tile::F_HOLE_RIGHT;
-					if(!OR2_EQ(mapa[x + 1 + y*opcje->w].type, BARS, BARS_FLOOR))
-						p.flags |= Tile::F_HOLE_LEFT;
-					if(!OR2_EQ(mapa[x + (y - 1)*opcje->w].type, BARS, BARS_FLOOR))
-						p.flags |= Tile::F_HOLE_BACK;
-					if(!OR2_EQ(mapa[x + (y + 1)*opcje->w].type, BARS, BARS_FLOOR))
-						p.flags |= Tile::F_HOLE_FRONT;
-				}
-				else if(p.type != STAIRS_DOWN)
-					p.flags |= Tile::F_FLOOR;
-
-				if(p.type == BARS || p.type == BARS_CEILING)
-					assert(!IS_SET(p.flags, Tile::F_LOW_CEILING));
-
-				if(!IS_SET(p.flags, Tile::F_LOW_CEILING))
-				{
-					if(IS_SET(mapa[x - 1 + y*opcje->w].flags, Tile::F_LOW_CEILING))
-						p.flags |= Tile::F_CEIL_RIGHT;
-					if(IS_SET(mapa[x + 1 + y*opcje->w].flags, Tile::F_LOW_CEILING))
-						p.flags |= Tile::F_CEIL_LEFT;
-					if(IS_SET(mapa[x + (y - 1)*opcje->w].flags, Tile::F_LOW_CEILING))
-						p.flags |= Tile::F_CEIL_BACK;
-					if(IS_SET(mapa[x + (y + 1)*opcje->w].flags, Tile::F_LOW_CEILING))
-						p.flags |= Tile::F_CEIL_FRONT;
-
-					// dziura w suficie
-					if(p.type == BARS || p.type == BARS_CEILING)
-					{
-						p.flags |= Tile::F_BARS_CEILING;
-
-						if(!OR2_EQ(mapa[x - 1 + y*opcje->w].type, BARS, BARS_CEILING))
-							p.flags |= Tile::F_UP_RIGHT;
-						if(!OR2_EQ(mapa[x + 1 + y*opcje->w].type, BARS, BARS_CEILING))
-							p.flags |= Tile::F_UP_LEFT;
-						if(!OR2_EQ(mapa[x + (y - 1)*opcje->w].type, BARS, BARS_CEILING))
-							p.flags |= Tile::F_UP_BACK;
-						if(!OR2_EQ(mapa[x + (y + 1)*opcje->w].type, BARS, BARS_CEILING))
-							p.flags |= Tile::F_UP_FRONT;
-					}
-					else
-					{
-						// normalny sufit w tym miejscu
-						p.flags |= Tile::F_CEILING;
-					}
-				}
-
-				// œciany
-				if(OR2_EQ(mapa[x - 1 + y*opcje->w].type, WALL, BLOCKADE_WALL))
-					p.flags |= Tile::F_WALL_RIGHT;
-				if(OR2_EQ(mapa[x + 1 + y*opcje->w].type, WALL, BLOCKADE_WALL))
-					p.flags |= Tile::F_WALL_LEFT;
-				if(OR2_EQ(mapa[x + (y - 1)*opcje->w].type, WALL, BLOCKADE_WALL))
-					p.flags |= Tile::F_WALL_BACK;
-				if(OR2_EQ(mapa[x + (y + 1)*opcje->w].type, WALL, BLOCKADE_WALL))
-					p.flags |= Tile::F_WALL_FRONT;
-			}
-		}
-	}
-
 	//=================================================================================================
 	// Ustawia œcianê na danym polu
 	//=================================================================================================
@@ -848,6 +770,124 @@ namespace Mapa
 		return odwrotnosc[jest];
 	}
 
+	//=================================================================================================
+	void CreateRoomGroups()
+	{
+		if(!opcje->groups)
+			return;
+
+		if(joined.empty())
+		{
+			opcje->groups->resize(opcje->rooms->size());
+			for(int i = 0; i < (int)opcje->rooms->size(); ++i)
+				opcje->groups->at(i).rooms.push_back(i);
+			return;
+		}
+
+		// DFS
+		vector<bool> visited(opcje->rooms->size(), false);
+		std::function<void(RoomGroup&,int)> c = [&](RoomGroup& group, int index)
+		{
+			visited[index] = true;
+			group.rooms.push_back(index);
+			Room& room = opcje->rooms->at(index);
+			for(int i = 0; i < (int)room.connected.size(); ++i)
+			{
+				int index2 = room.connected[i];
+				if(!visited[index2])
+				{
+					for(Int2& j : joined)
+					{
+						if((j.x == index && j.y == index2) || (j.x == index2 && j.y == index))
+						{
+							c(group, index2);
+							break;
+						}
+					}
+				}
+			}
+		};
+		for(int i = 0; i < (int)opcje->rooms->size(); ++i)
+		{
+			if(!visited[i])
+				c(Add1(opcje->groups), i);
+		}
+
+		if(opcje->devmode)
+			DrawRoomGroups();
+	}
+
+	//=================================================================================================
+	void SetRoomGroupTargets()
+	{
+		if(!opcje->groups)
+			return;
+
+		for(RoomGroup& group : *opcje->groups)
+		{
+			group.target = RoomTarget::None;
+			for(int j : group.rooms)
+			{
+				RoomTarget target = opcje->rooms->at(j).target;
+				if(target != RoomTarget::None)
+					group.target = target;
+			}
+		}
+	}
+
+	//=================================================================================================
+	void DrawRoomGroups()
+	{
+		char* ce = new char[opcje->w*opcje->h];
+		memset(ce, ' ', sizeof(char)*opcje->w*opcje->h);
+		for(int i = 0; i < (int)opcje->groups->size(); i++)
+		{
+			int tmp = i % 36;
+			char s;
+			if(tmp < 10)
+				s = '0' + tmp;
+			else
+				s = 'A' + (tmp - 10);
+			RoomGroup& group = opcje->groups->at(i);
+			for(int j : group.rooms)
+			{
+				Room& r = opcje->rooms->at(j);
+				for(int x = 0; x < r.size.x; ++x)
+				{
+					for(int y = 0; y < r.size.y; ++y)
+						ce[x + r.pos.x + (y + r.pos.y)*opcje->w] = s;
+				}
+			}
+		}
+		for(int y = opcje->h - 1; y >= 0; --y)
+		{
+			for(int x = 0; x < opcje->w; ++x)
+				putchar(ce[x + y * opcje->w]);
+			putchar('\n');
+		}
+		delete[] ce;
+	}
+
+	//=================================================================================================
+	void Finalize()
+	{
+		// join rooms
+		if(opcje->polacz_pokoj > 0)
+			polacz_pokoje();
+
+		CreateRoomGroups();
+
+		// generate stairs
+		if(opcje->schody_dol != OpcjeMapy::BRAK || opcje->schody_gora != OpcjeMapy::BRAK)
+			generuj_schody(*opcje);
+
+		SetRoomGroupTargets();
+		Tile::SetupFlags(opcje->mapa, Int2(opcje->w, opcje->h));
+
+		if(opcje->devmode)
+			Tile::DebugDraw(opcje->mapa, Int2(opcje->w, opcje->h));
+	}
+
 #undef H
 #undef HR
 };
@@ -872,31 +912,12 @@ bool generuj_mape2(OpcjeMapy& _opcje, bool recreate)
 
 	Mapa::generuj();
 
-	if(_opcje.stop)
-		return (_opcje.blad == 0);
-
-	if(_opcje.devmode)
-		Tile::DebugDraw(_opcje.mapa, Int2(_opcje.w, _opcje.h));
-
 	return (_opcje.blad == 0);
 }
 
 bool kontynuuj_generowanie_mapy(OpcjeMapy& _opcje)
 {
-	// po³¹cz pokoje
-	if(_opcje.polacz_pokoj > 0)
-		Mapa::polacz_pokoje();
-
-	// generowanie schodów
-	if(_opcje.schody_dol != OpcjeMapy::BRAK || _opcje.schody_gora != OpcjeMapy::BRAK)
-		generuj_schody(_opcje);
-
-	// generuj flagi pól
-	Mapa::ustaw_flagi();
-
-	if(_opcje.devmode)
-		Tile::DebugDraw(_opcje.mapa, Int2(_opcje.w, _opcje.h));
-
+	Mapa::Finalize();
 	return (_opcje.blad == 0);
 }
 

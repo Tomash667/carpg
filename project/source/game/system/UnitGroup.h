@@ -47,11 +47,42 @@ struct UnitGroupList
 };
 
 //-----------------------------------------------------------------------------
-struct TmpUnitGroup
+struct TmpUnitGroup : ObjectPoolProxy<TmpUnitGroup>
 {
-	UnitGroup* group;
-	vector<UnitGroup::Entry> entries;
-	int total, max_level;
+	typedef std::pair<UnitData*, int> Spawn;
 
-	void Fill(int level);
+	vector<UnitGroup::Entry> entries;
+	vector<Spawn> spawn;
+	int total, min_level, max_level;
+
+	void Fill(UnitGroup* group, int min_level, int max_level);
+	void Fill(UnitGroup* group, int level) { Fill(group, Max(level - 5, level / 2), level); }
+	Spawn Get();
+	vector<Spawn>& Roll(int points);
+};
+
+//-----------------------------------------------------------------------------
+template<int N>
+struct TmpUnitGroupList
+{
+	void Fill(UnitGroup*(&groups)[N], int level)
+	{
+		for(int i = 0; i < N; ++i)
+			e[i]->Fill(groups[i], level);
+	}
+	vector<TmpUnitGroup::Spawn>& Roll(int points)
+	{
+		int index = Rand() % N,
+			start = index;
+		while(true)
+		{
+			TmpUnitGroup& group = e[index];
+			if(group.total != 0)
+				return group.Roll(points);
+			index = (index + 1) % N;
+			if(index == start)
+				return group.spawn;
+		}
+	}
+	Pooled<TmpUnitGroup> e[N];
 };

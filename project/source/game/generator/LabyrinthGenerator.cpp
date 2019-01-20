@@ -444,9 +444,8 @@ void LabyrinthGenerator::GenerateUnits()
 		tries = 100;
 	}
 	int level = L.GetDifficultyLevel();
-	static TmpUnitGroup t;
-	t.group = UnitGroup::TryGet(group_id);
-	t.Fill(level);
+	Pooled<TmpUnitGroup> t;
+	t->Fill(UnitGroup::TryGet(group_id), level);
 
 	// generuj jednostki
 	InsideLocationLevel& lvl = ((InsideLocation*)L.location)->GetLevelData();
@@ -458,28 +457,18 @@ void LabyrinthGenerator::GenerateUnits()
 		if(Int2::Distance(pt, lvl.staircase_up) < 5)
 			continue;
 
-		// co wygenerowaæ
-		int x = Rand() % t.total,
-			y = 0;
-
-		for(int i = 0; i<int(t.entries.size()); ++i)
-		{
-			y += t.entries[i].count;
-
-			if(x < y)
-			{
-				// dodaj
-				if(L.SpawnUnitNearLocation(L.local_ctx, Vec3(2.f*pt.x + 1.f, 0, 2.f*pt.y + 1.f), *t.entries[i].ud, nullptr, Random(level / 2, level)))
-					++added;
-				break;
-			}
-		}
+		TmpUnitGroup::Spawn spawn = t->Get();
+		if(L.SpawnUnitNearLocation(L.local_ctx, Vec3(2.f*pt.x + 1.f, 0, 2.f*pt.y + 1.f), *spawn.first, nullptr, spawn.second))
+			++added;
 	}
 
 	// wrogowie w skarbcu
 	if(L.location->spawn == SG_UNKNOWN)
 	{
 		for(int i = 0; i < 3; ++i)
-			L.SpawnUnitInsideRoom(lvl.rooms[0], *t.entries[0].ud, Random(level / 2, level));
+		{
+			TmpUnitGroup::Spawn spawn = t->Get();
+			L.SpawnUnitInsideRoom(lvl.rooms[0], *spawn.first, spawn.second);
+		}
 	}
 }

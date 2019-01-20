@@ -465,6 +465,18 @@ private:
 	static ObjectPool<T>& GetPool() { static ObjectPool<T> pool; return pool; }
 };
 
+template<typename T>
+class Pooled
+{
+public:
+	Pooled() { ptr = ObjectPoolProxy<T>::Get(); }
+	~Pooled() { ptr->Free(); }
+	T* operator -> () { return ptr; }
+	operator T& () { return *ptr; }
+
+	T* ptr;
+};
+
 namespace internal
 {
 	template<typename T>

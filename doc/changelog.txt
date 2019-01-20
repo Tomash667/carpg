@@ -13,10 +13,12 @@ Wersja 0.8 (???):
 + klawisz prze³¹cz bieg/chodzenie
 + wczytywanie ekwipunku handlarzy z pliku, odœwie¿anie ekwipunku handlarzy co 10 dni a nie tylko po wejœciu do lokalizacji
 + nowe komendy (add_effect, remove_effect, list_effects, add_perk, remove_perk, list_perks, select, list_stats, add_learning_points)
-+ nowe przedmioty: magiczny zwój, nó¿, drewniany miecz, zardzewia³y toporek, tarcza z desek, Pancerz gladiatora
++ nowe przedmioty: magiczny zwój, nó¿, drewniany miecz, zardzewia³y toporek, tarcza z desek, Pancerz gladiatora, muffin
 + profile bohaterów ai - preferowane umiejêtnoœci/przedmioty
 + obs³uga zg³aszanie b³êdów dziêki CrashRpt
-+ application crash reporting using CrashRpt
++ dostosowanie cen przedmiotów, z³ota jednostek, nagród za zadania
++ nie generowanie wrogów za blisko schodów, mniej wrogów w du¿ych po³¹czonych pokojach
++ dostosowanie szybkoœci zdobywania atrybutów/umiejêtnoœci przez gracza i bohaterów
 - naprawione bardzo szybkie szkolenie walki broni¹ atakuj¹c s³abych, niskopoziomowych wrogów
 - naprawione rozmawianie z jednostkami które wstaj¹
 - naprawione obracanie jednostek podczas dialogu u klienta
@@ -27,6 +29,7 @@ Wersja 0.8 (???):
 - naprawione do³¹czanie do pe³nego serwera
 - naprawiony brak efektu po zmianie has³a serwera na puste, wci¹¿ by³o wymagane
 - naprawiony brak dialogów pomiêdzy goblinami/orkami
+- naprawiony poziom trudnoœci wrogów na arenie
 
 --------------------------------------------------------------------------------
 Wersja 0.7.1 (2018-04-15):

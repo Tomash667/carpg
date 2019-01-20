@@ -1296,42 +1296,50 @@ void TeamSingleton::AddLearningPoint(int count)
 }
 
 //=================================================================================================
+// when exp is negative it doesn't depend of units count
 void TeamSingleton::AddExp(int exp, vector<Unit*>* units)
 {
 	if(!units)
 		units = &active_members;
 
-	switch(units->size())
+	if(exp > 0)
 	{
-	case 1:
-		exp *= 2;
-		break;
-	case 2:
-		exp = exp * 3 / 2;
-		break;
-	case 3:
-		exp = exp * 5 / 4;
-	case 4: // no change
-		break;
-	case 5:
-		exp = int(0.75f * exp);
-		break;
-	case 6:
-		exp = int(0.6f * exp);
-		break;
-	case 7:
-		exp = exp / 2;
-		break;
-	case 8:
-	default:
-		exp = int(0.4f * exp);
-		break;
+		switch(units->size())
+		{
+		case 1:
+			exp *= 2;
+			break;
+		case 2:
+			exp = exp * 3 / 2;
+			break;
+		case 3:
+			exp = exp * 5 / 4;
+		case 4: // no change
+			break;
+		case 5:
+			exp = int(0.75f * exp);
+			break;
+		case 6:
+			exp = int(0.6f * exp);
+			break;
+		case 7:
+			exp = exp / 2;
+			break;
+		case 8:
+		default:
+			exp = int(0.4f * exp);
+			break;
+		}
 	}
+	else
+		exp = -exp;
 
 	for(Unit* unit : *units)
 	{
 		if(unit->IsPlayer())
 			unit->player->AddExp(exp);
+		else
+			unit->hero->AddExp(exp);
 	}
 }
 
@@ -1342,5 +1350,16 @@ void TeamSingleton::OnTravel(float dist)
 	{
 		if(unit->IsPlayer())
 			unit->player->TrainMove(dist);
+	}
+}
+
+//=================================================================================================
+void TeamSingleton::CalculatePlayersLevel()
+{
+	players_level = -1;
+	for(Unit* unit : active_members)
+	{
+		if(unit->IsPlayer() && unit->level > players_level)
+			players_level = unit->level;
 	}
 }

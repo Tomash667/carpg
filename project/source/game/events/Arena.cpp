@@ -290,31 +290,6 @@ void Arena::StartArenaCombat(int level)
 
 	Game& game = Game::Get();
 	DialogContext& ctx = *DialogContext::current;
-	int count, lvl;
-
-	switch(Rand() % 5)
-	{
-	case 0:
-		count = 1;
-		lvl = level * 5 + 1;
-		break;
-	case 1:
-		count = 1;
-		lvl = level * 5;
-		break;
-	case 2:
-		count = 2;
-		lvl = level * 5 - 1;
-		break;
-	case 3:
-		count = 2;
-		lvl = level * 5 - 2;
-		break;
-	case 4:
-		count = 3;
-		lvl = level * 5 - 3;
-		break;
-	}
 
 	free = false;
 	mode = FIGHT;
@@ -397,16 +372,7 @@ void Arena::StartArenaCombat(int level)
 		}
 	}
 
-	if(units.size() > 3)
-	{
-		lvl += (units.size() - 3) / 2 + 1;
-		while(lvl > level * 5 + 2)
-		{
-			lvl -= 2;
-			++count;
-		}
-	}
-
+	// select enemy list
 	cstring list_id;
 	switch(level)
 	{
@@ -424,44 +390,25 @@ void Arena::StartArenaCombat(int level)
 		SpawnArenaViewers(5);
 		break;
 	}
+	UnitGroupList* list = UnitGroupList::Get(list_id);
+	UnitGroup* group = list->groups[Rand() % list->groups.size()];
 
-	auto list = UnitGroupList::Get(list_id);
-	auto group = list->groups[Rand() % list->groups.size()];
+	// prepare list of units that can be spawned
+	int lvl = level * 5 + Random(-1, +1);
+	int min_level = Max(lvl - 5, lvl / 2);
+	int max_level = lvl + 1;
+	Pooled<TmpUnitGroup> part;
+	part->Fill(group, min_level, max_level);
 
-	TmpUnitGroup part;
-	part.group = group;
-	part.total = 0;
-	for(auto& entry : part.group->entries)
-	{
-		if(lvl >= entry.ud->level.x)
-		{
-			auto& new_entry = Add1(part.entries);
-			new_entry.ud = entry.ud;
-			new_entry.count = entry.count;
-			if(lvl < entry.ud->level.y)
-				new_entry.count = max(1, new_entry.count / 2);
-			part.total += new_entry.count;
-		}
-	}
-
+	// spawn enemies
 	InsideBuilding* arena = L.GetArena();
-
-	for(int i = 0; i < count; ++i)
+	for(TmpUnitGroup::Spawn& spawn : part->Roll(lvl * units.size()))
 	{
-		int x = Rand() % part.total, y = 0;
-		for(auto& entry : part.entries)
-		{
-			y += entry.count;
-			if(x < y)
-			{
-				Unit* u = L.SpawnUnitInsideArea(arena->ctx, arena->arena2, *entry.ud, lvl);
-				u->rot = 0.f;
-				u->in_arena = 1;
-				u->frozen = FROZEN::YES;
-				units.push_back(u);
-				break;
-			}
-		}
+		Unit* u = L.SpawnUnitInsideArea(arena->ctx, arena->arena2, *spawn.first, spawn.second);
+		u->rot = 0.f;
+		u->in_arena = 1;
+		u->frozen = FROZEN::YES;
+		units.push_back(u);
 	}
 }
 
@@ -573,8 +520,8 @@ void Arena::AddReward(int gold, int exp)
 			v.push_back(*it);
 	}
 
-	Game::Get().AddGold(gold * (85 + v.size() * 15) / 100, &v, true);
-	Team.AddExp(exp, &v);
+	Game::Get().AddGold(gold * v.size(), &v, true);
+	Team.AddExp(-exp, &v);
 }
 
 //=================================================================================================
@@ -760,16 +707,16 @@ void Arena::Update(float dt)
 					switch(difficulty)
 					{
 					case 1:
-						gold = 250;
-						exp = 500;
-						break;
-					case 2:
 						gold = 500;
 						exp = 1000;
 						break;
-					case 3:
+					case 2:
 						gold = 1000;
-						exp = 2500;
+						exp = 2000;
+						break;
+					case 3:
+						gold = 2500;
+						exp = 5000;
 						break;
 					}
 

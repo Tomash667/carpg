@@ -332,6 +332,61 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 			dialog = essential->dialog;
 			count = 1;
 			break;
+		case SE_ENEMIES_COMBAT:
+			{
+				far_encounter = true;
+				int group_index = Rand() % 4;
+				int group_index2 = Rand() % 4;
+				if(group_index == group_index2)
+					group_index2 = (group_index2 + 1) % 4;
+				switch(group_index)
+				{
+				case 0:
+					group_name = "bandits";
+					count = Random(3, 5);
+					level = Random(6, 12);
+					break;
+				case 1:
+					group_name = "orcs";
+					count = Random(3, 5);
+					level = Random(6, 12);
+					break;
+				case 2:
+					group_name = "goblins";
+					count = Random(3, 5);
+					level = Random(6, 12);
+					break;
+				case 3:
+					group_name = "crazies";
+					count = Random(3, 4);
+					level = Random(5, 15);
+					break;
+				}
+				switch(group_index2)
+				{
+				case 0:
+					group_name2 = "bandits";
+					count2 = Random(3, 5);
+					level2 = Random(6, 12);
+					break;
+				case 1:
+					group_name2 = "orcs";
+					count2 = Random(3, 5);
+					level2 = Random(6, 12);
+					break;
+				case 2:
+					group_name2 = "goblins";
+					count2 = Random(3, 5);
+					level2 = Random(6, 12);
+					break;
+				case 3:
+					group_name2 = "crazies";
+					count2 = Random(3, 4);
+					level2 = Random(5, 15);
+					break;
+				}
+			}
+			break;
 		}
 	}
 	else

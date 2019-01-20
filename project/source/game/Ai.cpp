@@ -197,7 +197,7 @@ void Game::UpdateAi(float dt)
 
 		// szukaj wrogów
 		Unit* enemy = nullptr;
-		float best_dist = ALERT_RANGE.x + 0.1f, dist;
+		float best_dist = ALERT_RANGE + 0.1f, dist;
 		for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
 		{
 			if((*it2)->to_remove || !(*it2)->IsAlive() || (*it2)->invisible || !u.IsEnemy(**it2))
@@ -2025,7 +2025,7 @@ void Game::UpdateAi(float dt)
 									if((*it2)->to_remove || !(*it2)->IsStanding() || (*it2)->invisible || !u.IsEnemy(**it2))
 										continue;
 
-									if(Vec3::Distance(u.pos, (*it2)->pos) < ALERT_RANGE.x + 0.1f)
+									if(Vec3::Distance(u.pos, (*it2)->pos) < ALERT_RANGE + 0.1f)
 										close_enemies.push_back(*it2);
 								}
 
@@ -3065,7 +3065,7 @@ void Game::CheckAutoTalk(Unit& unit, float dt)
 					continue;
 
 				if(check_unit.IsAlive() && talk_target.IsEnemy(check_unit) && check_unit.IsAI() && !check_unit.dont_attack
-					&& Vec3::Distance2d(talk_target.pos, check_unit.pos) < ALERT_RANGE.x && L.CanSee(check_unit, talk_target))
+					&& Vec3::Distance2d(talk_target.pos, check_unit.pos) < ALERT_RANGE && L.CanSee(check_unit, talk_target))
 				{
 					ok = false;
 					break;

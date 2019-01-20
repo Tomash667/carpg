@@ -71,11 +71,12 @@ public:
 	void AddLearningPoint(int count = 1);
 	void AddExp(int exp, vector<Unit*>* units = nullptr);
 	void OnTravel(float dist);
+	void CalculatePlayersLevel();
 
 	vector<Unit*> members; // all team members
 	vector<Unit*> active_members; // team members that get gold (without quest units)
 	Unit* leader;
-	int my_id, leader_id;
+	int my_id, leader_id, players_level;
 	bool crazies_attack, // team attacked by crazies on current level
 		free_recruit, // first hero joins for free if playing alone
 		is_bandit; // attacked npc, now npc's are aggresive

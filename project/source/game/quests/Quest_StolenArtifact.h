@@ -27,7 +27,10 @@ public:
 	bool Load(GameReader& f) override;
 
 private:
+	int GetReward() const;
+
 	const Item* item;
 	OtherItem quest_item;
 	SPAWN_GROUP group;
+	int st;
 };

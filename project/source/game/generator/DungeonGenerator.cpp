@@ -37,6 +37,7 @@ void DungeonGenerator::Generate()
 	opcje.rozmiar_korytarz = base.corridor_size;
 	opcje.rozmiar_pokoj = base.room_size;
 	opcje.rooms = &lvl.rooms;
+	opcje.groups = &lvl.groups;
 	opcje.polacz_korytarz = base.join_corridor;
 	opcje.polacz_pokoj = base.join_room;
 	opcje.ksztalt = (IS_SET(base.options, BLO_ROUND) ? OpcjeMapy::OKRAG : OpcjeMapy::PROSTOKAT);
@@ -161,22 +162,19 @@ void DungeonGenerator::Generate()
 		}
 	}
 
-	// portal
 	if(inside->from_portal)
-	{
-	powtorz:
-		int id = Rand() % lvl.rooms.size();
-		while(true)
-		{
-			Room& room = lvl.rooms[id];
-			if(room.target != RoomTarget::None || room.size.x <= 4 || room.size.y <= 4)
-				id = (id + 1) % lvl.rooms.size();
-			else
-				break;
-		}
+		CreatePortal(lvl);
+}
 
-		Room& r = lvl.rooms[id];
-		vector<std::pair<Int2, GameDirection>> good_pts;
+//=================================================================================================
+void DungeonGenerator::CreatePortal(InsideLocationLevel& lvl)
+{
+	vector<std::pair<Int2, GameDirection>> good_pts;
+
+	for(int tries = 0; tries < 100; ++tries)
+	{
+		int group;
+		Room& r = *lvl.GetRandomRoom(RoomTarget::None, [](Room& room) {return room.size.x >= 5 && room.size.y >= 5; }, nullptr, &group);
 
 		for(int y = 1; y < r.size.y - 1; ++y)
 		{
@@ -231,7 +229,7 @@ void DungeonGenerator::Generate()
 		}
 
 		if(good_pts.empty())
-			goto powtorz;
+			continue;
 
 		std::pair<Int2, GameDirection>& pt = good_pts[Rand() % good_pts.size()];
 
@@ -240,8 +238,8 @@ void DungeonGenerator::Generate()
 
 		inside->portal->pos = pos;
 		inside->portal->rot = rot;
-
-		lvl.GetRoom(pt.first)->target = RoomTarget::Portal;
+		r.target = RoomTarget::Portal;
+		lvl.groups[group].target = RoomTarget::Portal;
 	}
 }
 
@@ -277,52 +275,38 @@ void DungeonGenerator::GenerateUnits()
 	SpawnGroup& spawn = g_spawn_groups[spawn_group];
 	if(!spawn.unit_group)
 		return;
-	UnitGroup& group = *spawn.unit_group;
-	static vector<TmpUnitGroup> groups;
+	Pooled<TmpUnitGroup> tmp;
+	tmp->Fill(spawn.unit_group, base_level);
 
-	int level = base_level;
+	// chance for spawning units
+	const int chance_for_none = 10,
+		chance_for_1 = 20,
+		chance_for_2 = 30,
+		chance_for_3 = 40,
+		chance_in_corridor = 25;
 
-	// poziomy 1..3
-	for(int i = 0; i < 3; ++i)
-	{
-		TmpUnitGroup& part = Add1(groups);
-		part.group = &group;
-		part.Fill(level);
-		level = min(base_level - i - 1, base_level * 4 / (i + 5));
-	}
+	assert(InRange(chance_for_none, 0, 100) && InRange(chance_for_1, 0, 100) && InRange(chance_for_2, 0, 100) && InRange(chance_for_3, 0, 100)
+		&& InRange(chance_in_corridor, 0, 100) && chance_for_none + chance_for_1 + chance_for_2 + chance_for_3 == 100);
 
-	// opcje wejœciowe (póki co tu)
-	// musi byæ w sumie 100%
-	const int szansa_na_brak = 10,
-		szansa_na_1 = 20,
-		szansa_na_2 = 30,
-		szansa_na_3 = 40,
-		szansa_na_wrog_w_korytarz = 25;
+	const int chance[3] = { chance_for_none, chance_for_none + chance_for_1, chance_for_none + chance_for_1 + chance_for_2 };
 
-	assert(InRange(szansa_na_brak, 0, 100) && InRange(szansa_na_1, 0, 100) && InRange(szansa_na_2, 0, 100) && InRange(szansa_na_3, 0, 100)
-		&& InRange(szansa_na_wrog_w_korytarz, 0, 100) && szansa_na_brak + szansa_na_1 + szansa_na_2 + szansa_na_3 == 100);
-
-	int szansa[3] = { szansa_na_brak, szansa_na_brak + szansa_na_1, szansa_na_brak + szansa_na_1 + szansa_na_2 };
-
-	// dodaj jednostki
+	// spawn units
 	InsideLocation* inside = (InsideLocation*)L.location;
 	InsideLocationLevel& lvl = inside->GetLevelData();
-	Int2 pt = lvl.staircase_up, pt2 = lvl.staircase_down;
+	Int2 down_stairs_pt = lvl.staircase_down;
 	if(!inside->HaveDownStairs())
-		pt2 = Int2(-1000, -1000);
-	if(inside->from_portal)
-		pt = PosToPt(inside->portal->pos);
+		down_stairs_pt = Int2(-1000, -1000);
 
-	for(vector<Room>::iterator it = lvl.rooms.begin(), end = lvl.rooms.end(); it != end; ++it)
+	for(RoomGroup& group : lvl.groups)
 	{
-		int count;
-
-		if(it->target == RoomTarget::Treasury || it->target == RoomTarget::Prison)
+		if(Any(group.target, RoomTarget::Treasury, RoomTarget::Prison))
 			continue;
 
-		if(it->IsCorridor())
+		int count;
+		if(group.target == RoomTarget::Corridor)
 		{
-			if(Rand() % 100 < szansa_na_wrog_w_korytarz)
+			assert(group.rooms.size() == 1u);
+			if(Rand() % 100 < chance_in_corridor)
 				count = 1;
 			else
 				continue;
@@ -330,41 +314,33 @@ void DungeonGenerator::GenerateUnits()
 		else
 		{
 			int x = Rand() % 100;
-			if(x < szansa[0])
-				continue;
-			else if(x < szansa[1])
+			if(x < chance[0])
+				count = 0;
+			else if(x < chance[1])
 				count = 1;
-			else if(x < szansa[2])
+			else if(x < chance[2])
 				count = 2;
 			else
 				count = 3;
+			count += group.rooms.size() - 1;
+			if(count == 0)
+				continue;
 		}
 
-		TmpUnitGroup& part = groups[count - 1];
-		if(part.total == 0)
-			continue;
+		Int2 excluded_pt;
+		if(group.target == RoomTarget::StairsUp)
+			excluded_pt = lvl.staircase_up;
+		else if(inside->from_portal && group.target == RoomTarget::Portal)
+			excluded_pt = PosToPt(inside->portal->pos);
+		else
+			excluded_pt = Int2(-1000, -1000);
 
-		for(int i = 0; i < count; ++i)
+		for(TmpUnitGroup::Spawn& spawn : tmp->Roll(count * base_level))
 		{
-			int x = Rand() % part.total,
-				y = 0;
-
-			for(auto& entry : part.entries)
-			{
-				y += entry.count;
-
-				if(x < y)
-				{
-					// dodaj
-					L.SpawnUnitInsideRoom(*it, *entry.ud, Random(part.max_level / 2, part.max_level), pt, pt2);
-					break;
-				}
-			}
+			Room& room = lvl.rooms[RandomItem(group.rooms)];
+			L.SpawnUnitInsideRoom(room, *spawn.first, spawn.second, excluded_pt, down_stairs_pt);
 		}
 	}
-
-	// posprz¹taj
-	groups.clear();
 }
 
 //=================================================================================================

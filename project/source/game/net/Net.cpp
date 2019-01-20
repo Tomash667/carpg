@@ -1806,7 +1806,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 			{
 				for(AIController* ai : ais)
 				{
-					if(ai->unit->IsEnemy(unit) && Vec3::Distance(ai->unit->pos, unit.pos) < ALERT_RANGE.x && L.CanSee(*ai->unit, unit))
+					if(ai->unit->IsEnemy(unit) && Vec3::Distance(ai->unit->pos, unit.pos) < ALERT_RANGE && L.CanSee(*ai->unit, unit))
 					{
 						ai->morale = -10;
 						ai->target_last_pos = unit.pos;

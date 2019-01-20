@@ -68,7 +68,8 @@
 #include "PlayerInfo.h"
 #include "CombatHelper.h"
 
-const Vec2 ALERT_RANGE(20.f, 30.f);
+const float ALERT_RANGE = 20.f;
+const float ALERT_SPAWN_RANGE = 25.f;
 const float PICKUP_RANGE = 2.f;
 const float TRAP_ARROW_SPEED = 45.f;
 const float ARROW_TIMER = 5.f;
@@ -9175,11 +9176,6 @@ void Game::AddGold(int count, vector<Unit*>* units, bool show, cstring msg, floa
 		gui->messages->AddGameMsg(Format(msg, pc->gold_get), time);
 }
 
-int Game::CalculateQuestReward(int gold)
-{
-	return gold * (90 + Team.GetActiveTeamSize() * 10) / 100;
-}
-
 bool Game::CanWander(Unit& u)
 {
 	if(L.city_ctx && u.ai->loc_timer <= 0.f && !dont_wander && IS_SET(u.data->flags, F_AI_WANDERS))
@@ -9272,7 +9268,7 @@ Game::CanLeaveLocationResult Game::CanLeaveLocation(Unit& unit)
 			{
 				Unit& u2 = **it2;
 				if(&u != &u2 && u2.IsStanding() && u.IsEnemy(u2) && u2.IsAI() && u2.ai->in_combat
-					&& Vec3::Distance2d(u.pos, u2.pos) < ALERT_RANGE.x && L.CanSee(u, u2))
+					&& Vec3::Distance2d(u.pos, u2.pos) < ALERT_RANGE && L.CanSee(u, u2))
 					return CanLeaveLocationResult::InCombat;
 			}
 		}
@@ -9292,7 +9288,7 @@ Game::CanLeaveLocationResult Game::CanLeaveLocation(Unit& unit)
 			{
 				Unit& u2 = **it2;
 				if(&u != &u2 && u2.IsStanding() && u.IsEnemy(u2) && u2.IsAI() && u2.ai->in_combat
-					&& Vec3::Distance2d(u.pos, u2.pos) < ALERT_RANGE.x && L.CanSee(u, u2))
+					&& Vec3::Distance2d(u.pos, u2.pos) < ALERT_RANGE && L.CanSee(u, u2))
 					return CanLeaveLocationResult::InCombat;
 			}
 		}
@@ -9455,7 +9451,7 @@ void Game::GenerateQuestUnits()
 		if(count)
 		{
 			QM.quest_sawmill->days -= count * 30;
-			AddGold(count * 400, nullptr, true);
+			AddGold(count * Quest_Sawmill::PAYMENT, nullptr, true);
 		}
 	}
 
@@ -9551,7 +9547,7 @@ void Game::UpdateQuests(int days)
 		if(count)
 		{
 			QM.quest_sawmill->days -= count * 30;
-			income += count * 400;
+			income += count * Quest_Sawmill::PAYMENT;
 		}
 	}
 

@@ -974,7 +974,7 @@ void GameGui::AddSpeechBubble(Unit* unit, cstring text)
 	// setup
 	unit->bubble->text = text;
 	unit->bubble->unit = unit;
-	unit->bubble->size = Int2(total / lines + 20, s.y*lines + 20);
+	unit->bubble->size = Int2(Max(32, total / lines + 20), s.y*lines + 20);
 	unit->bubble->time = 0.f;
 	unit->bubble->length = 1.5f + float(strlen(text)) / 20;
 	unit->bubble->visible = false;
@@ -1461,7 +1461,7 @@ void GameGui::UpdatePlayerView(float dt)
 		{
 			float dist = Vec3::Distance(u.visual_pos, u2.visual_pos);
 
-			if(dist < ALERT_RANGE.x && game.cam.frustum.SphereToFrustum(u2.visual_pos, u2.GetSphereRadius()) && L.CanSee(u, u2))
+			if(dist < ALERT_RANGE && game.cam.frustum.SphereToFrustum(u2.visual_pos, u2.GetSphereRadius()) && L.CanSee(u, u2))
 			{
 				// dodaj do pobliskich jednostek
 				bool jest = false;

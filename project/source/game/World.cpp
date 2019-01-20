@@ -71,6 +71,7 @@ void World::LoadLanguage()
 	txEncAnimals = Str("encAnimals");
 	txEncOrcs = Str("encOrcs");
 	txEncGoblins = Str("encGoblins");
+	txEncEnemiesCombat = Str("encEnemiesCombat");
 }
 
 //=================================================================================================
@@ -1818,7 +1819,7 @@ void World::StartEncounter(int enc, int what)
 		{
 			// special encounter
 			encounter.mode = ENCOUNTER_SPECIAL;
-			encounter.special = (SpecialEncounter)(Rand() % 6);
+			encounter.special = (SpecialEncounter)(Rand() % SE_MAX_NORMAL);
 			if(unk)
 				encounter.special = SE_UNK;
 			else if(crazy)
@@ -1874,6 +1875,9 @@ void World::StartEncounter(int enc, int what)
 				break;
 			case SE_CRAZY_COOK:
 				text = txEncCrazyCook;
+				break;
+			case SE_ENEMIES_COMBAT:
+				text = txEncEnemiesCombat;
 				break;
 			}
 		}
