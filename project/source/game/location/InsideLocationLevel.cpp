@@ -91,33 +91,34 @@ Room* InsideLocationLevel::GetRoom(const Int2& pt)
 //=================================================================================================
 Room* InsideLocationLevel::GetRandomRoom(RoomTarget target, delegate<bool(Room&)> clbk, int* out_index, int* out_group)
 {
-	int index = Rand() % groups.size(),
-		start = index;
+	int group_index = Rand() % groups.size(),
+		group_start = group_index;
 	while(true)
 	{
-		RoomGroup& group = groups[index];
+		RoomGroup& group = groups[group_index];
 		if(group.target == target)
 		{
-			int index2 = Rand() % group.rooms.size(),
-				start2 = index2;
+			int index = Rand() % group.rooms.size(),
+				start = index;
 			while(true)
 			{
-				Room& room = rooms[index2];
+				int room_index = group.rooms[index];
+				Room& room = rooms[room_index];
 				if(clbk(room))
 				{
 					if(out_index)
-						*out_index = index2;
+						*out_index = room_index;
 					if(out_group)
-						*out_group = index;
+						*out_group = group_index;
 					return &room;
 				}
-				index2 = (index2 + 1) % group.rooms.size();
-				if(index2 == start2)
+				index = (index + 1) % group.rooms.size();
+				if(index == start)
 					break;
 			}
 		}
-		index = (index + 1) % groups.size();
-		if(index == start)
+		group_index = (group_index + 1) % groups.size();
+		if(group_index == group_start)
 			return nullptr;
 	}
 }

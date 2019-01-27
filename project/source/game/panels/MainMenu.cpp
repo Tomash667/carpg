@@ -237,7 +237,7 @@ void MainMenu::OnNewVersion(int id)
 //=================================================================================================
 void MainMenu::ShutdownThread()
 {
-	if(check_status != CheckVersionStatus::Finished)
+	if(check_status != CheckVersionStatus::Finished && check_status != CheckVersionStatus::None)
 	{
 		check_status = CheckVersionStatus::Cancel;
 		check_version_thread.join();

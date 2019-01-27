@@ -821,6 +821,7 @@ bool Quest_Mine::GenerateMine(CaveGenerator* cave_gen)
 			loc->st = 14;
 			loc->type = L_DUNGEON;
 			loc->image = LI_DUNGEON;
+			loc->state = LS_HIDDEN;
 			int loc_id = W.AddLocation(loc);
 			sub.target_loc = dungeon_loc = loc_id;
 

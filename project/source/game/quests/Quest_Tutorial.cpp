@@ -73,7 +73,7 @@ void Quest_Tutorial::Start()
 	game.gui->load_screen->visible = false;
 	game.gui->main_menu->visible = false;
 	game.gui->game_gui->visible = true;
-	game.gui->world_map->visible = false;
+	game.gui->world_map->Hide();
 	game.clear_color = game.clear_color2;
 	game.cam.Reset();
 }

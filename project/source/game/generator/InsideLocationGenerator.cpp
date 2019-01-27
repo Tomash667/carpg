@@ -199,6 +199,7 @@ void InsideLocationGenerator::OnEnter()
 			loc->name = game.txHiddenPlace;
 			loc->type = L_FOREST;
 			loc->image = LI_FOREST;
+			loc->state = LS_HIDDEN;
 			int loc_id = W.AddLocation(loc);
 
 			Portal* portal = new Portal;

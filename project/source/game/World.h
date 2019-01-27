@@ -144,6 +144,9 @@ public:
 	void VerifyObjects();
 	void VerifyObjects(vector<Object*>& objects, int& errors);
 
+	int world_size;
+	Vec2 world_bounds;
+
 private:
 	WorldMapGui* gui;
 	State state;

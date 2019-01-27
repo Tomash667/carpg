@@ -1089,7 +1089,7 @@ void Game::UpdateClientTransfer(float dt)
 					gui->load_screen->visible = false;
 					gui->main_menu->visible = false;
 					gui->game_gui->visible = false;
-					gui->world_map->visible = true;
+					gui->world_map->Show();
 					W.SetState(World::State::ON_MAP);
 					gui->info_box->CloseDialog();
 					N.update_timer = 0.f;
@@ -1120,7 +1120,7 @@ void Game::UpdateClientTransfer(float dt)
 					gui->load_screen->visible = false;
 					gui->main_menu->visible = false;
 					gui->game_gui->visible = true;
-					gui->world_map->visible = false;
+					gui->world_map->Hide();
 					gui->info_box->CloseDialog();
 					N.update_timer = 0.f;
 					fallback_type = FALLBACK::NONE;
@@ -1547,7 +1547,7 @@ void Game::UpdateServerTransfer(float dt)
 				clear_color = clear_color2;
 				game_state = GS_WORLDMAP;
 				gui->load_screen->visible = false;
-				gui->world_map->visible = true;
+				gui->world_map->Show();
 				gui->game_gui->visible = false;
 				gui->main_menu->visible = false;
 				N.mp_load = false;
@@ -1821,7 +1821,7 @@ void Game::UpdateServerSend(float dt)
 		gui->load_screen->visible = false;
 		gui->main_menu->visible = false;
 		gui->game_gui->visible = true;
-		gui->world_map->visible = false;
+		gui->world_map->Hide();
 		N.mp_load = false;
 		SetMusic();
 		gui->Setup(pc);

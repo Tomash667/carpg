@@ -425,7 +425,7 @@ void Game::OnTick(float dt)
 		Quickload(console_open);
 
 	// mp box
-	if((game_state == GS_LEVEL || game_state == GS_WORLDMAP) && GKey.KeyPressedReleaseAllowed(GK_TALK_BOX))
+	if(game_state == GS_LEVEL && GKey.KeyPressedReleaseAllowed(GK_TALK_BOX))
 		gui->mp_box->visible = !gui->mp_box->visible;
 
 	// update gui
@@ -786,7 +786,7 @@ void Game::DoExitToMenu()
 	GUI.CloseDialogs();
 	gui->game_menu->visible = false;
 	gui->game_gui->visible = false;
-	gui->world_map->visible = false;
+	gui->world_map->Hide();
 	gui->main_menu->visible = true;
 	units_mesh_load.clear();
 
@@ -1576,7 +1576,7 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 	Location& l = *L.location;
 	L.entering = true;
 
-	gui->world_map->visible = false;
+	gui->world_map->Hide();
 	gui->game_gui->Reset();
 	gui->game_gui->visible = true;
 
@@ -1664,7 +1664,8 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 		}
 
 		// nie odwiedzono, trzeba wygenerowaæ
-		l.state = LS_ENTERED;
+		if(l.state != LS_HIDDEN)
+			l.state = LS_ENTERED;
 
 		LoadingStep(txGeneratingMap);
 

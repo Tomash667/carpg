@@ -790,6 +790,9 @@
     <ClCompile Include="source\game\helpers\CombatHelper.cpp">
       <Filter>3. game\helpers</Filter>
     </ClCompile>
+    <ClCompile Include="source\engine\gui\ComboBox.cpp">
+      <Filter>2. engine\gui\controls</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\resource\resource1.h">
@@ -1602,6 +1605,9 @@
     </ClInclude>
     <ClInclude Include="source\game\helpers\CombatHelper.h">
       <Filter>3. game\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\gui\ComboBox.h">
+      <Filter>2. engine\gui\controls</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

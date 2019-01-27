@@ -18,6 +18,8 @@ public:
 	void Cleanup() override;
 	void Draw(ControlDrawData*) override;
 	void UpdateGui(float dt);
+	void Save(FileWriter& f);
+	void Load(FileReader& f);
 	void LoadOldGui(FileReader& f);
 	void Clear(bool reset_mpbox);
 	void Setup(PlayerController* pc);

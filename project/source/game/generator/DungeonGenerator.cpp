@@ -240,6 +240,7 @@ void DungeonGenerator::CreatePortal(InsideLocationLevel& lvl)
 		inside->portal->rot = rot;
 		r.target = RoomTarget::Portal;
 		lvl.groups[group].target = RoomTarget::Portal;
+		break;
 	}
 }
 

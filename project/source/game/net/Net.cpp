@@ -3753,7 +3753,7 @@ void Game::UpdateClient(float dt)
 					clear_color = Color::Black;
 					gui->load_screen->visible = true;
 					gui->game_gui->visible = false;
-					gui->world_map->visible = false;
+					gui->world_map->Hide();
 					arena->ClosePvpDialog();
 					if(gui->world_map->dialog_enc)
 					{

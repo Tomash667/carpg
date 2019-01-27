@@ -19,6 +19,8 @@ public:
 	void Event(GuiEvent e) override;
 	// from OnCharHandler
 	void OnChar(char c) override;
+	// new
+	virtual void OnTextChanged() {}
 
 	void AddScrollbar();
 	void Move(const Int2& global_pos);

@@ -31,9 +31,7 @@
 //-----------------------------------------------------------------------------
 const float World::TRAVEL_SPEED = 28.f;
 const int start_year = 100;
-const float world_size = 600.f;
 const float world_border = 16.f;
-const Vec2 world_bounds = Vec2(world_border, world_size - 16.f);
 World W;
 
 
@@ -446,7 +444,7 @@ void World::AddLocations(uint count, AddLocationsCallback clbk, float valid_dist
 	{
 		for(uint j = 0; j < 100; ++j)
 		{
-			Vec2 pt = Vec2::Random(world_border, world_size - world_border);
+			Vec2 pt = Vec2::Random(world_border, float(world_size) - world_border);
 			bool ok = true;
 
 			// disallow when near other location
@@ -565,6 +563,9 @@ void World::RemoveLocation(int index)
 //=================================================================================================
 void World::GenerateWorld(int start_location_type, int start_location_target)
 {
+	world_size = 1000;
+	world_bounds = Vec2(world_border, world_size - 16.f);
+
 	// generate cities
 	uint count = Random(3, 5);
 	AddLocations(count, [](uint index) { return std::make_pair(L_CITY, false); }, 200.f, true);
@@ -608,7 +609,7 @@ void World::GenerateWorld(int start_location_type, int start_location_target)
 		loc->index = locations.size();
 		loc->pos = Vec2(-1000, -1000);
 		loc->name = txRandomEncounter;
-		loc->state = LS_VISITED;
+		loc->state = LS_HIDDEN;
 		loc->image = LI_FOREST;
 		loc->type = L_ENCOUNTER;
 		encounter_loc = loc->index;
@@ -814,6 +815,7 @@ void World::Save(GameWriter& f)
 	f << month;
 	f << day;
 	f << worldtime;
+	f << world_size;
 	f << current_location_index;
 
 	f << locations.size();
@@ -882,6 +884,8 @@ void World::Load(GameReader& f, LoadingHandler& loading)
 	f >> month;
 	f >> day;
 	f >> worldtime;
+	f >> world_size;
+	world_bounds = Vec2(world_border, world_size - 16.f);
 	f >> current_location_index;
 	LoadLocations(f, loading);
 	LoadNews(f);
@@ -1044,6 +1048,8 @@ void World::LoadOld(GameReader& f, LoadingHandler& loading, int part, bool insid
 		f >> month;
 		f >> day;
 		f >> worldtime;
+		world_size = 600;
+		world_bounds = Vec2(world_border, world_size - 16.f);
 	}
 	else if(part == 1)
 	{
@@ -1097,13 +1103,14 @@ void World::LoadOld(GameReader& f, LoadingHandler& loading, int part, bool insid
 	{
 		f >> first_city;
 		f >> boss_levels;
+		locations[encounter_loc]->state = LS_HIDDEN;
 	}
 }
 
 //=================================================================================================
 void World::Write(BitStreamWriter& f)
 {
-	// time
+	f << world_size;
 	WriteTime(f);
 
 	// locations
@@ -1160,7 +1167,7 @@ void World::WriteTime(BitStreamWriter& f)
 //=================================================================================================
 bool World::Read(BitStreamReader& f)
 {
-	// time
+	f >> world_size;
 	ReadTime(f);
 	if(!f)
 	{
@@ -1779,7 +1786,6 @@ void World::UpdateTravel(float dt)
 void World::StartEncounter(int enc, int what)
 {
 	state = State::ENCOUNTER;
-	locations[encounter_loc]->state = LS_UNKNOWN;
 	if(Net::IsOnline())
 		Net::PushChange(NetChange::UPDATE_MAP_POS);
 

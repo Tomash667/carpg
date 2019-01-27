@@ -154,6 +154,7 @@
     <ClInclude Include="source\engine\gui\Button.h" />
     <ClInclude Include="source\engine\gui\CheckBox.h" />
     <ClInclude Include="source\engine\gui\CheckBoxGroup.h" />
+    <ClInclude Include="source\engine\gui\ComboBox.h" />
     <ClInclude Include="source\engine\gui\Container.h" />
     <ClInclude Include="source\engine\gui\Control.h" />
     <ClInclude Include="source\engine\gui\DialogBox.h" />
@@ -420,6 +421,7 @@
     <ClCompile Include="source\engine\gui\Button.cpp" />
     <ClCompile Include="source\engine\gui\CheckBox.cpp" />
     <ClCompile Include="source\engine\gui\CheckBoxGroup.cpp" />
+    <ClCompile Include="source\engine\gui\ComboBox.cpp" />
     <ClCompile Include="source\engine\gui\Container.cpp" />
     <ClCompile Include="source\engine\gui\Control.cpp" />
     <ClCompile Include="source\engine\gui\DialogBox.cpp" />

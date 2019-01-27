@@ -207,7 +207,7 @@ void Game::LoadGameCommon(cstring filename, int slot)
 	{
 		gui->main_menu->visible = false;
 		gui->game_gui->visible = false;
-		gui->world_map->visible = false;
+		gui->world_map->Hide();
 	}
 	LoadingStart(9);
 
@@ -251,12 +251,12 @@ void Game::LoadGameCommon(cstring filename, int slot)
 		if(game_state == GS_LEVEL)
 		{
 			gui->game_gui->visible = true;
-			gui->world_map->visible = false;
+			gui->world_map->Hide();
 		}
 		else
 		{
 			gui->game_gui->visible = false;
-			gui->world_map->visible = true;
+			gui->world_map->Show();
 		}
 		gui->Setup(pc);
 	}
@@ -344,12 +344,7 @@ void Game::SaveGame(GameWriter& f)
 	for(AIController* ai : ais)
 		ai->Save(f);
 
-	// game messages & speech bubbles
-	gui->messages->Save(f);
-	gui->game_gui->Save(f);
-
-	// rumors/notes
-	gui->journal->Save(f);
+	gui->Save(f);
 
 	check_id = (byte)W.GetLocations().size();
 	f << check_id;
@@ -686,12 +681,7 @@ void Game::LoadGame(GameReader& f)
 		ai->Load(f);
 	}
 
-	// game messages & speech bubbles
-	gui->messages->Load(f);
-	gui->game_gui->Load(f);
-
-	// rumors/notes
-	gui->journal->Load(f);
+	gui->Load(f);
 
 	check_id = (byte)W.GetLocations().size();
 	f >> read_id;

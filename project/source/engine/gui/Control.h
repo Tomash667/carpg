@@ -102,13 +102,20 @@ public:
 
 	void Show()
 	{
-		visible = true;
-		Event(GuiEvent_Show);
+		if(!visible)
+		{
+			visible = true;
+			Event(GuiEvent_Show);
+		}
 	}
 
 	void Hide()
 	{
-		visible = false;
+		if(visible)
+		{
+			visible = false;
+			Event(GuiEvent_Hide);
+		}
 	}
 
 	void Disable() { SetDisabled(true); }

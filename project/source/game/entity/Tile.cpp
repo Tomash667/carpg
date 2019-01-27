@@ -28,6 +28,8 @@ void Tile::SetupFlags(Tile* tiles, const Int2& size)
 			if(p.type != EMPTY && p.type != DOORS && p.type != BARS && p.type != BARS_FLOOR && p.type != BARS_CEILING && p.type != STAIRS_DOWN)
 				continue;
 
+			p.flags &= (Tile::F_CEILING | Tile::F_LOW_CEILING | Tile::F_BARS_FLOOR | Tile::F_BARS_CEILING | Tile::F_SPECIAL | Tile::F_SECOND_TEXTURE | Tile::F_REVEALED);
+
 			// pod³oga
 			if(p.type == BARS || p.type == BARS_FLOOR)
 			{

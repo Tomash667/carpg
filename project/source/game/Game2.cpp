@@ -6252,7 +6252,7 @@ void Game::ExitToMap()
 	if(Net::IsServer())
 		Net::PushChange(NetChange::EXIT_TO_MAP);
 
-	gui->world_map->visible = true;
+	gui->world_map->Show();
 	gui->game_gui->visible = false;
 }
 
@@ -7857,6 +7857,7 @@ void Game::BuildRefidTables()
 	}
 }
 
+// clear game vars on new game or load
 void Game::ClearGameVars(bool new_game)
 {
 	gui->inventory->mode = I_NONE;
@@ -7884,6 +7885,7 @@ void Game::ClearGameVars(bool new_game)
 	SM.Reset();
 	L.Reset();
 	pathfinding->SetTarget(nullptr);
+	gui->world_map->Clear();
 
 	// odciemnianie na pocz¹tku
 	fallback_type = FALLBACK::NONE;

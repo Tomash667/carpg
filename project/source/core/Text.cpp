@@ -399,6 +399,34 @@ bool StringInString(cstring s1, cstring s2)
 }
 
 //=================================================================================================
+bool StringContainsStringI(cstring s1, cstring s2)
+{
+	while(true)
+	{
+		if(tolower(*s1) == tolower(*s2))
+		{
+			cstring sp1 = s1 + 1,
+				sp2 = s2 + 1;
+			while(true)
+			{
+				if(tolower(*sp1) == tolower(*sp2))
+				{
+					++sp1;
+					++sp2;
+					if(*sp2 == 0)
+						return true;
+				}
+				else
+					break;
+			}
+		}
+		++s1;
+		if(*s1 == 0)
+			return false;
+	}
+}
+
+//=================================================================================================
 string* ToString(const wchar_t* str)
 {
 	string* s = StringPool.Get();
