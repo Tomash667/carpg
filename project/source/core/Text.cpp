@@ -6,11 +6,11 @@
 
 static const uint FORMAT_STRINGS = 8;
 static const uint FORMAT_LENGTH = 2048;
-static char format_buf[FORMAT_STRINGS][FORMAT_LENGTH];
-static int format_marker;
+static thread_local char format_buf[FORMAT_STRINGS][FORMAT_LENGTH];
+static thread_local int format_marker;
 static string g_escp;
 string g_tmp_string;
-static char escape_from[] = { '\n', '\t', '\r', ' ' };
+static const char escape_from[] = { '\n', '\t', '\r', ' ' };
 static cstring escape_to[] = { "\\n", "\\t", "\\r", " " };
 
 //=================================================================================================
@@ -394,6 +394,34 @@ bool StringInString(cstring s1, cstring s2)
 				return true;
 		}
 		else
+			return false;
+	}
+}
+
+//=================================================================================================
+bool StringContainsStringI(cstring s1, cstring s2)
+{
+	while(true)
+	{
+		if(tolower(*s1) == tolower(*s2))
+		{
+			cstring sp1 = s1 + 1,
+				sp2 = s2 + 1;
+			while(true)
+			{
+				if(tolower(*sp1) == tolower(*sp2))
+				{
+					++sp1;
+					++sp2;
+					if(*sp2 == 0)
+						return true;
+				}
+				else
+					break;
+			}
+		}
+		++s1;
+		if(*s1 == 0)
 			return false;
 	}
 }

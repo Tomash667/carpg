@@ -5,7 +5,7 @@
 #define IN
 #define OUT
 #pragma warning(push)
-#pragma warning(disable:4091) 
+#pragma warning(disable:4091)
 #include <Dbghelp.h>
 #pragma warning(pop)
 #endif

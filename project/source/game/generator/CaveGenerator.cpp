@@ -539,22 +539,18 @@ void CaveGenerator::GenerateObjects()
 void CaveGenerator::GenerateUnits()
 {
 	// zbierz grupy
-	static TmpUnitGroup e[3] = {
-		{ UnitGroup::TryGet("wolfs") },
-		{ UnitGroup::TryGet("spiders") },
-		{ UnitGroup::TryGet("rats") }
+	static UnitGroup* groups[3] = {
+		UnitGroup::TryGet("wolfs"),
+		UnitGroup::TryGet("spiders"),
+		UnitGroup::TryGet("rats")
 	};
-
+	int level = L.GetDifficultyLevel();
+	TmpUnitGroupList<3> e;
+	e.Fill(groups, level);
 	static vector<Int2> tiles;
 	Cave* cave = (Cave*)loc;
 	InsideLocationLevel& lvl = cave->GetLevelData();
-	int level = L.GetDifficultyLevel();
 	tiles.clear();
-	tiles.push_back(lvl.staircase_up);
-
-	// ustal wrogów
-	for(int i = 0; i < 3; ++i)
-		e[i].Fill(level);
 
 	for(int added = 0, tries = 50; added < 8 && tries>0; --tries)
 	{
@@ -562,6 +558,8 @@ void CaveGenerator::GenerateUnits()
 		if(lvl.map[pt.x + pt.y*lvl.w].type != EMPTY)
 			continue;
 
+		if(Int2::Distance(pt, lvl.staircase_up) < (int)ALERT_SPAWN_RANGE)
+			continue;
 		bool ok = true;
 		for(vector<Int2>::iterator it = tiles.begin(), end = tiles.end(); it != end; ++it)
 		{
@@ -574,40 +572,12 @@ void CaveGenerator::GenerateUnits()
 
 		if(ok)
 		{
-			// losuj grupe
-			TmpUnitGroup& group = e[Rand() % 3];
-			if(group.total == 0)
-				continue;
-
 			tiles.push_back(pt);
 			++added;
-
-			// postaw jednostki
-			int levels = level * 2;
-			while(levels > 0)
+			for(TmpUnitGroup::Spawn& spawn : e.Roll(level * 2))
 			{
-				int k = Rand() % group.total, l = 0;
-				UnitData* ud = nullptr;
-
-				for(auto& entry : group.entries)
-				{
-					l += entry.count;
-					if(k < l)
-					{
-						ud = entry.ud;
-						break;
-					}
-				}
-
-				assert(ud);
-
-				if(!ud || ud->level.x > levels)
+				if(!L.SpawnUnitNearLocation(L.local_ctx, Vec3(2.f*pt.x + 1.f, 0, 2.f*pt.y + 1.f), *spawn.first, nullptr, spawn.second, 3.f))
 					break;
-
-				int enemy_level = Random(ud->level.x, Min(ud->level.y, levels, level));
-				if(!L.SpawnUnitNearLocation(L.local_ctx, Vec3(2.f*pt.x + 1.f, 0, 2.f*pt.y + 1.f), *ud, nullptr, enemy_level, 3.f))
-					break;
-				levels -= enemy_level;
 			}
 		}
 	}

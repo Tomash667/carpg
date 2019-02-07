@@ -1,11 +1,10 @@
-// bazowa pu³apka
 #pragma once
 
 //-----------------------------------------------------------------------------
 #include "Mesh.h"
 
 //-----------------------------------------------------------------------------
-// Typ pu³apki
+// Trap types
 enum TRAP_TYPE
 {
 	TRAP_SPEAR,
@@ -15,11 +14,11 @@ enum TRAP_TYPE
 };
 
 //-----------------------------------------------------------------------------
-// Bazowa pu³apka
+// Base trap
 struct BaseTrap
 {
 	cstring id;
-	int dmg;
+	int attack;
 	TRAP_TYPE type;
 	cstring mesh_id, mesh_id2;
 	MeshPtr mesh, mesh2;
@@ -29,9 +28,9 @@ struct BaseTrap
 	SoundPtr sound, sound2, sound3;
 	ResourceState state;
 
-	BaseTrap(cstring id, int dmg, TRAP_TYPE type, cstring mesh_id, cstring mesh_id2, bool alpha, cstring sound_id, cstring sound_id2, cstring sound_id3) : id(id), dmg(dmg),
-		type(type), mesh_id(mesh_id), mesh_id2(mesh_id2), mesh(nullptr), mesh2(nullptr), alpha(alpha), rw(0), h(0), sound_id(sound_id), sound_id2(sound_id2),
-		sound_id3(sound_id3), sound(sound), sound2(sound2), sound3(sound3), state(ResourceState::NotLoaded)
+	BaseTrap(cstring id, int attack, TRAP_TYPE type, cstring mesh_id, cstring mesh_id2, bool alpha, cstring sound_id, cstring sound_id2, cstring sound_id3) :
+		id(id), attack(attack), type(type), mesh_id(mesh_id), mesh_id2(mesh_id2), mesh(nullptr), mesh2(nullptr), alpha(alpha), rw(0), h(0), sound_id(sound_id),
+		sound_id2(sound_id2), sound_id3(sound_id3), sound(sound), sound2(sound2), sound3(sound3), state(ResourceState::NotLoaded)
 	{
 	}
 

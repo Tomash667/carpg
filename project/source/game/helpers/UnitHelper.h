@@ -1,7 +1,9 @@
 #pragma once
 
+//-----------------------------------------------------------------------------
 #include "Unit.h"
 
+//-----------------------------------------------------------------------------
 namespace UnitHelper
 {
 	const Item* GetBaseWeapon(const Unit& unit, const ItemList* lis = nullptr);

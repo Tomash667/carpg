@@ -931,137 +931,46 @@ bool Tokenizer::CheckMultiKeywords()
 }
 
 //=================================================================================================
-int ReadFlags(Tokenizer& t, int group)
+void Tokenizer::ParseFlags(int group, int& flags)
 {
-	int flags = 0;
-
-	if(t.IsSymbol('{'))
-	{
-		t.Next();
-
-		do
-		{
-			flags |= t.MustGetKeywordId(group);
-			t.Next();
-		} while(!t.IsSymbol('}'));
-	}
-	else
-		flags = t.MustGetKeywordId(group);
-
-	return flags;
-}
-
-//=================================================================================================
-void ReadFlags(Tokenizer& t, std::initializer_list<FlagGroup> const & flags, bool clear)
-{
-	if(clear)
-	{
-		for(FlagGroup const & f : flags)
-			*f.flags = 0;
-	}
-
-	bool unexpected = false;
-
-	if(t.IsSymbol('{'))
-	{
-		t.Next();
-
-		do
-		{
-			bool found = false;
-
-			for(FlagGroup const & f : flags)
-			{
-				if(t.IsKeywordGroup(f.group))
-				{
-					*f.flags |= t.GetKeywordId(f.group);
-					found = true;
-					break;
-				}
-			}
-
-			if(!found)
-			{
-				unexpected = true;
-				break;
-			}
-
-			t.Next();
-		} while(!t.IsSymbol('}'));
-	}
-	else
-	{
-		bool found = false;
-
-		for(FlagGroup const & f : flags)
-		{
-			if(t.IsKeywordGroup(f.group))
-			{
-				*f.flags |= t.GetKeywordId(f.group);
-				found = true;
-				break;
-			}
-		}
-
-		if(!found)
-			unexpected = true;
-	}
-
-	if(unexpected)
-	{
-		auto& formatter = t.StartUnexpected();
-
-		for(FlagGroup const & f : flags)
-		{
-			int g = f.group;
-			formatter.Add(T_KEYWORD_GROUP, &g);
-		}
-
-		formatter.Throw();
-	}
-}
-
-//=================================================================================================
-void ReadFlags2(Tokenizer& t, int group, int& flags)
-{
-	if(t.IsSymbol('|'))
-		t.Next();
+	if(IsSymbol('|'))
+		Next();
 	else
 		flags = 0;
 
-	if(t.IsSymbol('{'))
+	if(IsSymbol('{'))
 	{
-		t.Next();
+		Next();
 
 		do
 		{
-			if(t.IsSymbol('~'))
+			if(IsSymbol('~'))
 			{
-				t.Next();
-				CLEAR_BIT(flags, t.MustGetKeywordId(group));
+				Next();
+				CLEAR_BIT(flags, MustGetKeywordId(group));
 			}
 			else
-				flags |= t.MustGetKeywordId(group);
-			t.Next();
-		} while(!t.IsSymbol('}'));
+				flags |= MustGetKeywordId(group);
+			Next();
+		} while(!IsSymbol('}'));
 	}
 	else
 	{
-		if(t.IsSymbol('~'))
+		if(IsSymbol('~'))
 		{
-			t.Next();
-			CLEAR_BIT(flags, t.MustGetKeywordId(group));
+			Next();
+			CLEAR_BIT(flags, MustGetKeywordId(group));
 		}
 		else
-			flags |= t.MustGetKeywordId(group);
+			flags |= MustGetKeywordId(group);
 	}
 }
 
 //=================================================================================================
-void ReadFlags2(Tokenizer& t, std::initializer_list<FlagGroup> const & flags)
+void Tokenizer::ParseFlags(std::initializer_list<FlagGroup> const & flags)
 {
-	if(t.IsSymbol('|'))
-		t.Next();
+	if(IsSymbol('|'))
+		Next();
 	else
 	{
 		for(FlagGroup const & f : flags)
@@ -1070,25 +979,25 @@ void ReadFlags2(Tokenizer& t, std::initializer_list<FlagGroup> const & flags)
 
 	bool unexpected = false;
 
-	if(t.IsSymbol('{'))
+	if(IsSymbol('{'))
 	{
-		t.Next();
+		Next();
 
 		do
 		{
 			bool found = false;
-			bool neg = t.IsSymbol('~');
+			bool neg = IsSymbol('~');
 			if(neg)
-				t.Next();
+				Next();
 
 			for(FlagGroup const & f : flags)
 			{
-				if(t.IsKeywordGroup(f.group))
+				if(IsKeywordGroup(f.group))
 				{
 					if(neg)
-						CLEAR_BIT(*f.flags, t.GetKeywordId(f.group));
+						CLEAR_BIT(*f.flags, GetKeywordId(f.group));
 					else
-						*f.flags |= t.GetKeywordId(f.group);
+						*f.flags |= GetKeywordId(f.group);
 					found = true;
 					break;
 				}
@@ -1100,24 +1009,24 @@ void ReadFlags2(Tokenizer& t, std::initializer_list<FlagGroup> const & flags)
 				break;
 			}
 
-			t.Next();
-		} while(!t.IsSymbol('}'));
+			Next();
+		} while(!IsSymbol('}'));
 	}
 	else
 	{
 		bool found = false;
-		bool neg = t.IsSymbol('~');
+		bool neg = IsSymbol('~');
 		if(neg)
-			t.Next();
+			Next();
 
 		for(FlagGroup const & f : flags)
 		{
-			if(t.IsKeywordGroup(f.group))
+			if(IsKeywordGroup(f.group))
 			{
 				if(neg)
-					CLEAR_BIT(*f.flags, t.GetKeywordId(f.group));
+					CLEAR_BIT(*f.flags, GetKeywordId(f.group));
 				else
-					*f.flags |= t.GetKeywordId(f.group);
+					*f.flags |= GetKeywordId(f.group);
 				found = true;
 				break;
 			}
@@ -1129,7 +1038,7 @@ void ReadFlags2(Tokenizer& t, std::initializer_list<FlagGroup> const & flags)
 
 	if(unexpected)
 	{
-		auto& formatter = t.StartUnexpected();
+		auto& formatter = StartUnexpected();
 
 		for(FlagGroup const & f : flags)
 		{
@@ -1482,5 +1391,19 @@ void Tokenizer::ForceMoveToClosingSymbol(char start, char end)
 //=================================================================================================
 cstring Tokenizer::GetTextRest()
 {
+	if(normal_seek.pos == string::npos)
+		return "";
 	return str->c_str() + normal_seek.pos;
+}
+
+//=================================================================================================
+SeekData& Tokenizer::Query()
+{
+	static SeekData tmp;
+	tmp.token = normal_seek.token;
+	tmp.pos = normal_seek.pos;
+	tmp.line = normal_seek.line;
+	tmp.charpos = normal_seek.charpos;
+	DoNext(tmp, false);
+	return tmp;
 }

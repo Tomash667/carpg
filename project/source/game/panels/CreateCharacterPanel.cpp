@@ -1,4 +1,3 @@
-// character creation screen
 #include "Pch.h"
 #include "GameCore.h"
 #include "CreateCharacterPanel.h"
@@ -46,6 +45,9 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : GameDialogBox(inf
 	unit->rot = 0.f;
 	unit->fake_unit = true;
 	unit->action = A_NONE;
+	unit->stats = new UnitStats;
+	unit->stats->fixed = false;
+	unit->stats->subprofile.value = 0;
 
 	btCancel.id = IdCancel;
 	btCancel.custom = &custom_x;
@@ -185,33 +187,32 @@ CreateCharacterPanel::~CreateCharacterPanel()
 //=================================================================================================
 void CreateCharacterPanel::LoadLanguage()
 {
-	txHardcoreMode = Str("hardcoreMode");
-	txHair = Str("hair");
-	txMustache = Str("mustache");
-	txBeard = Str("beard");
-	txHairColor = Str("hairColor");
-	txSize = Str("size");
-	txCharacterCreation = Str("characterCreation");
-	txName = Str("name");
 	txAttributes = Str("attributes");
 	txRelatedAttributes = Str("relatedAttributes");
-	txCreateCharWarn = Str("createCharWarn");
-	txSkillPoints = Str("skillPoints");
-	txPerkPoints = Str("perkPoints");
-	txPickAttribIncrease = Str("pickAttribIncrease");
-	txPickAttribDecrease = Str("pickAttribDecrease");
-	txPickTwoSkillsDecrease = Str("pickTwoSkillsDecrease");
-	txPickSkillIncrease = Str("pickSkillIncrease");
-	txAvailablePerks = Str("availablePerks");
-	txUnavailablePerks = Str("unavailablePerks");
-	txTakenPerks = Str("takenPerks");
-	txCreateCharTooMany = Str("createCharTooMany");
-	txFlawExtraPerk = Str("flawExtraPerk");
 
-	btBack.text = Str("goBack");
-	btNext.text = Str("next");
-	btCreate.text = Str("create");
-	btRandomSet.text = Str("randomSet");
+	Language::LanguageSection section = Language::GetSection("CreateCharacterPanel");
+	txHardcoreMode = section.Get("hardcoreMode");
+	txHair = section.Get("hair");
+	txMustache = section.Get("mustache");
+	txBeard = section.Get("beard");
+	txHairColor = section.Get("hairColor");
+	txSize = section.Get("size");
+	txCharacterCreation = section.Get("characterCreation");
+	txName = section.Get("name");
+	txCreateCharWarn = section.Get("createCharWarn");
+	txSkillPoints = section.Get("skillPoints");
+	txPerkPoints = section.Get("perkPoints");
+	txPickAttribIncrease = section.Get("pickAttribIncrease");
+	txPickSkillIncrease = section.Get("pickSkillIncrease");
+	txAvailablePerks = section.Get("availablePerks");
+	txTakenPerks = section.Get("takenPerks");
+	txCreateCharTooMany = section.Get("createCharTooMany");
+	txFlawExtraPerk = section.Get("flawExtraPerk");
+	txPerksRemoved = section.Get("perksRemoved");
+	btBack.text = section.Get("goBack");
+	btNext.text = section.Get("next");
+	btCreate.text = section.Get("create");
+	btRandomSet.text = section.Get("randomSet");
 
 	checkbox.text = txHardcoreMode;
 
@@ -221,7 +222,7 @@ void CreateCharacterPanel::LoadLanguage()
 	slider[3].text = txHairColor;
 	slider[4].text = txSize;
 
-	tbInfo.SetText(Str("createCharText"));
+	tbInfo.SetText(section.Get("createCharText"));
 }
 
 //=================================================================================================
@@ -324,11 +325,11 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 
 			tbInfo.Draw();
 
-			// left text "SkillId points: X/Y"
+			// left text "Skill points: X/Y"
 			Rect r = { global_pos.x + 16, global_pos.y + 310, global_pos.x + 216, global_pos.y + 360 };
 			GUI.DrawText(GUI.default_font, Format(txSkillPoints, cc.sp, cc.sp_max), 0, Color::Black, r);
 
-			// right text "Perks: X/Y"
+			// right text "Feats: X/Y"
 			Rect r2 = { global_pos.x + size.x - 216, global_pos.y + 310, global_pos.x + size.x - 16, global_pos.y + 360 };
 			GUI.DrawText(GUI.default_font, Format(txPerkPoints, cc.perks, cc.perks_max), DTF_RIGHT, Color::Black, r2);
 
@@ -638,7 +639,6 @@ void CreateCharacterPanel::Event(GuiEvent e)
 //=================================================================================================
 void CreateCharacterPanel::RenderUnit()
 {
-	// rysuj obrazek
 	HRESULT hr = game->device->TestCooperativeLevel();
 	if(hr != D3D_OK)
 		return;
@@ -648,7 +648,7 @@ void CreateCharacterPanel::RenderUnit()
 	game->SetNoCulling(false);
 	game->SetNoZWrite(false);
 
-	// ustaw render target
+	// set render target
 	SURFACE surf = nullptr;
 	if(game->sChar)
 		V(game->device->SetRenderTarget(0, game->sChar));
@@ -658,7 +658,7 @@ void CreateCharacterPanel::RenderUnit()
 		V(game->device->SetRenderTarget(0, surf));
 	}
 
-	// pocz¹tek renderowania
+	// start rendering
 	V(game->device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET, 0, 1.f, 0));
 	V(game->device->BeginScene());
 
@@ -679,10 +679,10 @@ void CreateCharacterPanel::RenderUnit()
 	game->DrawSceneNodes(game->draw_batch.nodes, lights, true);
 	game->draw_batch.Clear();
 
-	// koniec renderowania
+	// end rendering
 	V(game->device->EndScene());
 
-	// kopiuj jeœli jest mipmaping
+	// copy to surface if using multisampling
 	if(game->sChar)
 	{
 		V(game->tChar->GetSurfaceLevel(0, &surf));
@@ -690,7 +690,7 @@ void CreateCharacterPanel::RenderUnit()
 	}
 	surf->Release();
 
-	// przywróc poprzedni render target
+	// restore old render target
 	V(game->device->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &surf));
 	V(game->device->SetRenderTarget(0, surf));
 	surf->Release();
@@ -699,60 +699,60 @@ void CreateCharacterPanel::RenderUnit()
 //=================================================================================================
 void CreateCharacterPanel::UpdateUnit(float dt)
 {
-	// aktualizacja postaci
+	// update character
 	t -= dt;
 	if(t <= 0.f)
 	{
 		switch(anim)
 		{
-		case DA_ATAK:
-		case DA_SCHOWAJ_BRON:
-		case DA_SCHOWAJ_LUK:
-		case DA_STRZAL:
-		case DA_WYJMIJ_BRON:
-		case DA_WYJMIJ_LUK:
-		case DA_ROZGLADA:
+		case DA_ATTACK:
+		case DA_HIDE_WEAPON:
+		case DA_HIDE_BOW:
+		case DA_SHOOT:
+		case DA_SHOW_WEAPON:
+		case DA_SHOW_BOW:
+		case DA_LOOKS_AROUND:
 			assert(0);
 			break;
-		case DA_BLOK:
+		case DA_BLOCK:
 			if(Rand() % 2 == 0)
-				anim = DA_ATAK;
+				anim = DA_ATTACK;
 			else
-				anim = DA_BOJOWY;
+				anim = DA_BATTLE_MODE;
 			break;
-		case DA_BOJOWY:
+		case DA_BATTLE_MODE:
 			if(unit->weapon_taken == W_ONE_HANDED)
 			{
-				int co = Rand() % (unit->HaveShield() ? 3 : 2);
-				if(co == 0)
-					anim = DA_ATAK;
-				else if(co == 1)
-					anim = DA_SCHOWAJ_BRON;
+				int what = Rand() % (unit->HaveShield() ? 3 : 2);
+				if(what == 0)
+					anim = DA_ATTACK;
+				else if(what == 1)
+					anim = DA_HIDE_WEAPON;
 				else
-					anim = DA_BLOK;
+					anim = DA_BLOCK;
 			}
 			else
 			{
 				if(Rand() % 2 == 0)
-					anim = DA_STRZAL;
+					anim = DA_SHOOT;
 				else
-					anim = DA_SCHOWAJ_LUK;
+					anim = DA_HIDE_BOW;
 			}
 			break;
-		case DA_STOI:
-		case DA_IDZIE:
+		case DA_STAND:
+		case DA_WALK:
 			{
-				int co = Rand() % (unit->HaveBow() ? 5 : 4);
-				if(co == 0)
-					anim = DA_ROZGLADA;
-				else if(co == 1)
-					anim = DA_STOI;
-				else if(co == 2)
-					anim = DA_IDZIE;
-				else if(co == 3)
-					anim = DA_WYJMIJ_BRON;
+				int what = Rand() % (unit->HaveBow() ? 5 : 4);
+				if(what == 0)
+					anim = DA_LOOKS_AROUND;
+				else if(what == 1)
+					anim = DA_STAND;
+				else if(what == 2)
+					anim = DA_WALK;
+				else if(what == 3)
+					anim = DA_SHOW_WEAPON;
 				else
-					anim = DA_WYJMIJ_LUK;
+					anim = DA_SHOW_BOW;
 			}
 			break;
 		default:
@@ -766,7 +766,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 		anim2 = anim;
 		switch(anim)
 		{
-		case DA_ATAK:
+		case DA_ATTACK:
 			unit->attack_id = unit->GetRandomAttack();
 			unit->mesh_inst->Play(NAMES::ani_attacks[unit->attack_id], PLAY_PRIO2 | PLAY_ONCE, 0);
 			unit->mesh_inst->groups[0].speed = unit->GetAttackSpeed();
@@ -774,28 +774,28 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 			t = 100.f;
 			unit->mesh_inst->frame_end_info = false;
 			break;
-		case DA_BLOK:
+		case DA_BLOCK:
 			unit->mesh_inst->Play(NAMES::ani_block, PLAY_PRIO2, 0);
 			unit->mesh_inst->groups[0].speed = 1.f;
 			t = 1.f;
 			break;
-		case DA_BOJOWY:
+		case DA_BATTLE_MODE:
 			unit->mesh_inst->Play(NAMES::ani_battle, PLAY_PRIO2, 0);
 			unit->mesh_inst->groups[0].speed = 1.f;
 			t = 1.f;
 			break;
-		case DA_IDZIE:
+		case DA_WALK:
 			unit->mesh_inst->Play(NAMES::ani_move, PLAY_PRIO2, 0);
 			unit->mesh_inst->groups[0].speed = 1.f;
 			t = 2.f;
 			break;
-		case DA_ROZGLADA:
+		case DA_LOOKS_AROUND:
 			unit->mesh_inst->Play("rozglada", PLAY_PRIO2 | PLAY_ONCE, 0);
 			unit->mesh_inst->groups[0].speed = 1.f;
 			t = 100.f;
 			unit->mesh_inst->frame_end_info = false;
 			break;
-		case DA_SCHOWAJ_BRON:
+		case DA_HIDE_WEAPON:
 			unit->mesh_inst->Play(unit->GetTakeWeaponAnimation(true), PLAY_PRIO2 | PLAY_ONCE | PLAY_BACK, 0);
 			unit->mesh_inst->groups[1].speed = 1.f;
 			unit->mesh_inst->groups[0].speed = 1.f;
@@ -806,7 +806,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 			unit->weapon_hiding = W_ONE_HANDED;
 			unit->mesh_inst->frame_end_info = false;
 			break;
-		case DA_SCHOWAJ_LUK:
+		case DA_HIDE_BOW:
 			unit->mesh_inst->Play(NAMES::ani_take_bow, PLAY_PRIO2 | PLAY_ONCE | PLAY_BACK, 0);
 			unit->mesh_inst->groups[1].speed = 1.f;
 			unit->mesh_inst->groups[0].speed = 1.f;
@@ -817,12 +817,12 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 			unit->weapon_hiding = W_BOW;
 			unit->mesh_inst->frame_end_info = false;
 			break;
-		case DA_STOI:
+		case DA_STAND:
 			unit->mesh_inst->Play(NAMES::ani_stand, PLAY_PRIO2, 0);
 			unit->mesh_inst->groups[0].speed = 1.f;
 			t = 2.f;
 			break;
-		case DA_STRZAL:
+		case DA_SHOOT:
 			unit->mesh_inst->Play(NAMES::ani_shoot, PLAY_PRIO2 | PLAY_ONCE, 0);
 			unit->mesh_inst->groups[0].speed = unit->GetBowAttackSpeed();
 			unit->animation_state = 0;
@@ -833,7 +833,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 			unit->mesh_inst->frame_end_info = false;
 			unit->action = A_SHOOT;
 			break;
-		case DA_WYJMIJ_BRON:
+		case DA_SHOW_WEAPON:
 			unit->mesh_inst->Play(unit->GetTakeWeaponAnimation(true), PLAY_PRIO2 | PLAY_ONCE, 0);
 			unit->mesh_inst->groups[1].speed = 1.f;
 			unit->mesh_inst->groups[0].speed = 1.f;
@@ -844,7 +844,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 			unit->weapon_hiding = W_NONE;
 			unit->mesh_inst->frame_end_info = false;
 			break;
-		case DA_WYJMIJ_LUK:
+		case DA_SHOW_BOW:
 			unit->mesh_inst->Play(NAMES::ani_take_bow, PLAY_PRIO2 | PLAY_ONCE, 0);
 			unit->mesh_inst->groups[1].speed = 1.f;
 			unit->mesh_inst->groups[0].speed = 1.f;
@@ -863,32 +863,32 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 
 	switch(anim)
 	{
-	case DA_ATAK:
+	case DA_ATTACK:
 		if(unit->mesh_inst->frame_end_info)
 		{
 			unit->mesh_inst->groups[0].speed = 1.f;
 			if(Rand() % 2 == 0)
 			{
-				anim = DA_ATAK;
-				anim2 = DA_STOI;
+				anim = DA_ATTACK;
+				anim2 = DA_STAND;
 			}
 			else
-				anim = DA_BOJOWY;
+				anim = DA_BATTLE_MODE;
 		}
 		break;
-	case DA_SCHOWAJ_BRON:
-	case DA_SCHOWAJ_LUK:
+	case DA_HIDE_WEAPON:
+	case DA_HIDE_BOW:
 		if(unit->animation_state == 0 && (unit->mesh_inst->GetProgress() <= unit->data->frames->t[F_TAKE_WEAPON] || unit->mesh_inst->frame_end_info))
 			unit->animation_state = 1;
 		if(unit->mesh_inst->frame_end_info)
 		{
 			unit->weapon_state = WS_HIDDEN;
 			unit->weapon_hiding = W_NONE;
-			anim = DA_STOI;
+			anim = DA_STAND;
 			t = 1.f;
 		}
 		break;
-	case DA_STRZAL:
+	case DA_SHOOT:
 		if(unit->mesh_inst->GetProgress() > 20.f / 40 && unit->animation_state < 2)
 			unit->animation_state = 2;
 		else if(unit->mesh_inst->GetProgress() > 35.f / 40)
@@ -903,43 +903,43 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 				unit->action = A_NONE;
 				if(Rand() % 2 == 0)
 				{
-					anim = DA_STRZAL;
-					anim2 = DA_STOI;
+					anim = DA_SHOOT;
+					anim2 = DA_STAND;
 				}
 				else
-					anim = DA_BOJOWY;
+					anim = DA_BATTLE_MODE;
 				break;
 			}
 		}
 		unit->bow_instance->groups[0].time = min(unit->mesh_inst->groups[0].time, unit->bow_instance->groups[0].anim->length);
 		unit->bow_instance->need_update = true;
 		break;
-	case DA_WYJMIJ_BRON:
+	case DA_SHOW_WEAPON:
 		if(unit->animation_state == 0 && (unit->mesh_inst->GetProgress() >= unit->data->frames->t[F_TAKE_WEAPON] || unit->mesh_inst->frame_end_info))
 			unit->animation_state = 1;
 		if(unit->mesh_inst->frame_end_info)
 		{
 			unit->weapon_state = WS_TAKEN;
-			anim = DA_ATAK;
+			anim = DA_ATTACK;
 		}
 		break;
-	case DA_WYJMIJ_LUK:
+	case DA_SHOW_BOW:
 		if(unit->animation_state == 0 && (unit->mesh_inst->GetProgress() >= unit->data->frames->t[F_TAKE_WEAPON] || unit->mesh_inst->frame_end_info))
 			unit->animation_state = 1;
 		if(unit->mesh_inst->frame_end_info)
 		{
 			unit->weapon_state = WS_TAKEN;
-			anim = DA_STRZAL;
+			anim = DA_SHOOT;
 		}
 		break;
-	case DA_ROZGLADA:
+	case DA_LOOKS_AROUND:
 		if(unit->mesh_inst->frame_end_info)
-			anim = DA_STOI;
+			anim = DA_STAND;
 		break;
-	case DA_BLOK:
-	case DA_BOJOWY:
-	case DA_STOI:
-	case DA_IDZIE:
+	case DA_BLOCK:
+	case DA_BATTLE_MODE:
+	case DA_STAND:
+	case DA_WALK:
 		break;
 	default:
 		assert(0);
@@ -1036,7 +1036,7 @@ void CreateCharacterPanel::SetControls()
 //=================================================================================================
 void CreateCharacterPanel::SetCharacter()
 {
-	anim = anim2 = DA_STOI;
+	anim = anim2 = DA_STAND;
 	unit->mesh_inst->Play(NAMES::ani_stand, PLAY_PRIO2 | PLAY_NO_BLEND, 0);
 	unit->mesh_inst->groups[0].speed = 1.f;
 }
@@ -1151,7 +1151,7 @@ void CreateCharacterPanel::ClassChanged()
 {
 	ClassInfo& ci = ClassInfo::classes[(int)clas];
 	unit->data = ci.unit_data;
-	anim = DA_STOI;
+	anim = DA_STAND;
 	t = 1.f;
 	tbClassDesc.Reset();
 	tbClassDesc.SetText(ci.desc.c_str());
@@ -1162,8 +1162,7 @@ void CreateCharacterPanel::ClassChanged()
 	int y = 0;
 
 	StatProfile& profile = ci.unit_data->GetStatProfile();
-	profile.Set(0, unit->stats);
-	profile.Set(0, unit->unmod_stats);
+	unit->stats->Set(profile);
 	unit->CalculateStats();
 
 	// attributes
@@ -1210,13 +1209,13 @@ void CreateCharacterPanel::OnPickSkill(int group, int id)
 	{
 		// add
 		--cc.sp;
-		cc.s[id].Add(5, true);
+		cc.s[id].Add(Skill::TAG_BONUS, true);
 	}
 	else
 	{
 		// remove
 		++cc.sp;
-		cc.s[id].Add(-5, false);
+		cc.s[id].Add(-Skill::TAG_BONUS, false);
 	}
 
 	// update buttons image / text
@@ -1253,39 +1252,55 @@ void CreateCharacterPanel::OnPickPerk(int group, int id)
 	if(group == (int)Group::PickPerk_AddButton)
 	{
 		// add perk
-		switch((Perk)id)
+		PerkInfo& info = PerkInfo::perks[id];
+		switch(info.value_type)
 		{
-		case Perk::Strength:
-			PickAttribute(txPickAttribIncrease, Perk::Strength);
+		case PerkInfo::Attribute:
+			PickAttribute(txPickAttribIncrease, (Perk)id);
 			break;
-		case Perk::Weakness:
-			PickAttribute(txPickAttribDecrease, Perk::Weakness);
-			break;
-		case Perk::Skilled:
-		case Perk::Wealthy:
-		case Perk::AlchemistApprentice:
-		case Perk::FamilyHeirloom:
-		case Perk::Leader:
-		case Perk::VeryWealthy:
-			AddPerk((Perk)id);
-			break;
-		case Perk::SkillFocus:
-			step = 0;
-			PickSkill(txPickTwoSkillsDecrease, Perk::SkillFocus, true, 2);
-			break;
-		case Perk::Talent:
-			PickSkill(txPickSkillIncrease, Perk::Talent, false);
+		case PerkInfo::Skill:
+			PickSkill(txPickSkillIncrease, (Perk)id);
 			break;
 		default:
-			assert(0);
+			AddPerk((Perk)id);
 			break;
 		}
 	}
 	else
 	{
 		// remove perk
+		PerkContext ctx(&cc);
 		TakenPerk& taken = cc.taken_perks[id];
-		taken.Remove(cc, id);
+		taken.Remove(ctx);
+		cc.taken_perks.erase(cc.taken_perks.begin() + id);
+		vector<Perk> removed;
+		ctx.check_remove = true;
+		LoopAndRemove(cc.taken_perks, [&](TakenPerk& perk)
+		{
+			if(perk.CanTake(ctx))
+				return false;
+			removed.push_back(perk.perk);
+			perk.Remove(ctx);
+			return true;
+		});
+		if(!removed.empty())
+		{
+			string s = txPerksRemoved;
+			bool first = true;
+			for(Perk p : removed)
+			{
+				if(first)
+				{
+					s += " ";
+					first = false;
+				}
+				else
+					s += ", ";
+				s += PerkInfo::perks[(int)p].name;
+			}
+			s += ".";
+			GUI.SimpleDialog(s.c_str(), this);
+		}
 		CheckSkillsUpdate();
 		RebuildPerksFlow();
 	}
@@ -1319,30 +1334,18 @@ void CreateCharacterPanel::RebuildSkillsFlow()
 //=================================================================================================
 void CreateCharacterPanel::RebuildPerksFlow()
 {
+	PerkContext ctx(&cc);
+
 	// group perks by availability
 	available_perks.clear();
-	unavailable_perks.clear();
 	for(PerkInfo& perk : PerkInfo::perks)
 	{
-		bool taken = false;
-		if(!IS_SET(perk.flags, PerkInfo::Multiple))
-		{
-			for(TakenPerk& tp : cc.taken_perks)
-			{
-				if(tp.perk == perk.perk_id)
-				{
-					taken = true;
-					break;
-				}
-			}
-		}
-		if(!taken)
-		{
-			if(!IS_SET(perk.flags, PerkInfo::Check) || ValidatePerk(perk.perk_id))
-				available_perks.push_back(perk.perk_id);
-			else
-				unavailable_perks.push_back(perk.perk_id);
-		}
+		if(ctx.HavePerk(perk.perk_id))
+			continue;
+		TakenPerk tp;
+		tp.perk = perk.perk_id;
+		if(tp.CanTake(ctx))
+			available_perks.push_back(perk.perk_id);
 	}
 	taken_perks.clear();
 	LocalVector2<string*> strs;
@@ -1362,7 +1365,6 @@ void CreateCharacterPanel::RebuildPerksFlow()
 
 	// sort perks
 	std::sort(available_perks.begin(), available_perks.end(), SortPerks);
-	std::sort(unavailable_perks.begin(), unavailable_perks.end(), SortPerks);
 	std::sort(taken_perks.begin(), taken_perks.end(), SortTakenPerks);
 
 	// fill flow
@@ -1373,18 +1375,9 @@ void CreateCharacterPanel::RebuildPerksFlow()
 		for(Perk perk : available_perks)
 		{
 			PerkInfo& info = PerkInfo::perks[(int)perk];
-			bool can_pick = (cc.perks == 0 && !IS_SET(info.flags, PerkInfo::Free));
+			bool can_pick = (cc.perks == 0 && !IS_SET(info.flags, PerkInfo::Flaw));
 			flowPerks.Add()->Set((int)Group::PickPerk_AddButton, (int)perk, 0, can_pick);
 			flowPerks.Add()->Set(info.name.c_str(), (int)Group::Perk, (int)perk);
-		}
-	}
-	if(!unavailable_perks.empty())
-	{
-		flowPerks.Add()->Set(txUnavailablePerks);
-		for(Perk p : unavailable_perks)
-		{
-			flowPerks.Add()->Set((int)Group::PickPerk_DisabledButton, (int)p, 0, true);
-			flowPerks.Add()->Set(PerkInfo::perks[(int)p].name.c_str(), (int)Group::Perk, (int)p);
 		}
 	}
 	if(!cc.taken_perks.empty())
@@ -1429,7 +1422,7 @@ void CreateCharacterPanel::PickAttribute(cstring text, Perk perk)
 }
 
 //=================================================================================================
-void CreateCharacterPanel::PickSkill(cstring text, Perk perk, bool positive, int multiple)
+void CreateCharacterPanel::PickSkill(cstring text, Perk perk)
 {
 	picked_perk = perk;
 
@@ -1438,13 +1431,12 @@ void CreateCharacterPanel::PickSkill(cstring text, Perk perk, bool positive, int
 	params.get_tooltip = TooltipGetText(this, &CreateCharacterPanel::GetTooltip);
 	params.parent = this;
 	params.text = text;
-	params.multiple = multiple;
 
 	SkillGroupId last_group = SkillGroupId::NONE;
 	for(Skill& info : Skill::skills)
 	{
 		int i = (int)info.skill_id;
-		if(cc.s[i].value > 0 || (!positive && cc.s[i].value == 0))
+		if(cc.s[i].value > 0)
 		{
 			if(info.group != last_group)
 			{
@@ -1474,56 +1466,12 @@ void CreateCharacterPanel::OnPickAttributeForPerk(int id)
 void CreateCharacterPanel::OnPickSkillForPerk(int id)
 {
 	if(id == BUTTON_CANCEL)
-	{
-		if(picked_perk == Perk::SkillFocus && step == 1)
-		{
-			cc.s[step_var].Mod(5, false);
-			cc.s[step_var2].Mod(5, false);
-		}
 		return;
-	}
 
-	if(picked_perk == Perk::SkillFocus)
-	{
-		if(step == 0)
-		{
-			auto& items = pickItemDialog->GetSelected();
-			step_var = items[0]->id;
-			step_var2 = items[1]->id;
-			step = 1;
-			cc.s[step_var].Mod(-5, true);
-			cc.s[step_var2].Mod(-5, true);
-			PickSkill(txPickSkillIncrease, Perk::SkillFocus, false);
-		}
-		else
-		{
-			int group, selected;
-			pickItemDialog->GetSelected(group, selected);
-			cc.s[selected].Mod(10, true);
-			flowSkills.UpdateText((int)Group::Skill, step_var, Format("%s: %d", Skill::skills[step_var].name.c_str(), cc.s[step_var].value), true);
-			flowSkills.UpdateText((int)Group::Skill, step_var2, Format("%s: %d", Skill::skills[step_var2].name.c_str(), cc.s[step_var2].value), true);
-			flowSkills.UpdateText((int)Group::Skill, selected, Format("%s: %d", Skill::skills[selected].name.c_str(), cc.s[selected].value), true);
-			flowSkills.UpdateText();
-			AddPerk(Perk::SkillFocus, Join3(selected, step_var, step_var2), false);
-			UpdateInventory();
-		}
-	}
-	else
-	{
-		int group, selected;
-		pickItemDialog->GetSelected(group, selected);
-		AddPerk(Perk::Talent, selected);
-		UpdateInventory();
-	}
-}
-
-//=================================================================================================
-void CreateCharacterPanel::UpdateSkill(SkillId s, int value, bool mod)
-{
-	int id = (int)s;
-	cc.s[id].value += value;
-	cc.s[id].mod = mod;
-	flowSkills.UpdateText((int)Group::Skill, id, Format("%s: %d", Skill::skills[id].name.c_str(), cc.s[id].value));
+	int group, selected;
+	pickItemDialog->GetSelected(group, selected);
+	AddPerk(picked_perk, selected);
+	UpdateInventory();
 }
 
 //=================================================================================================
@@ -1548,26 +1496,13 @@ void CreateCharacterPanel::UpdateSkillButtons()
 }
 
 //=================================================================================================
-void CreateCharacterPanel::AddPerk(Perk perk, int value, bool apply)
+void CreateCharacterPanel::AddPerk(Perk perk, int value)
 {
 	TakenPerk taken(perk, value);
 	cc.taken_perks.push_back(taken);
-	if(apply)
-	{
-		taken.Apply(cc);
-		CheckSkillsUpdate();
-	}
-	else
-	{
-		PerkInfo& info = PerkInfo::perks[(int)perk];
-		if(!IS_SET(info.flags, PerkInfo::Free))
-			--cc.perks;
-		if(IS_SET(info.flags, PerkInfo::Flaw))
-		{
-			++cc.perks;
-			++cc.perks_max;
-		}
-	}
+	PerkContext ctx(&cc);
+	taken.Apply(ctx);
+	CheckSkillsUpdate();
 	RebuildPerksFlow();
 }
 
@@ -1644,14 +1579,14 @@ void CreateCharacterPanel::UpdateInventory()
 
 	bool reset = false;
 
-	if((anim == DA_WYJMIJ_LUK || anim == DA_SCHOWAJ_LUK || anim == DA_STRZAL) && !items[SLOT_BOW])
+	if((anim == DA_SHOW_BOW || anim == DA_HIDE_BOW || anim == DA_SHOOT) && !items[SLOT_BOW])
 		reset = true;
-	if(anim == DA_BLOK && !items[SLOT_SHIELD])
+	if(anim == DA_BLOCK && !items[SLOT_SHIELD])
 		reset = true;
 
 	if(reset)
 	{
-		anim = DA_STOI;
+		anim = DA_STAND;
 		unit->weapon_state = WS_HIDDEN;
 		unit->weapon_taken = W_NONE;
 		unit->weapon_hiding = W_NONE;
@@ -1662,7 +1597,7 @@ void CreateCharacterPanel::UpdateInventory()
 //=================================================================================================
 void CreateCharacterPanel::ResetDoll(bool instant)
 {
-	anim = DA_STOI;
+	anim = DA_STAND;
 	unit->weapon_state = WS_HIDDEN;
 	unit->weapon_taken = W_NONE;
 	unit->weapon_hiding = W_NONE;

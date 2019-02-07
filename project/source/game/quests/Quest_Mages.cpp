@@ -70,7 +70,8 @@ void Quest_Mages::SetProgress(int prog2)
 
 			GetTargetLocation().active_quest = nullptr;
 
-			game->AddReward(1500);
+			game->AddReward(4000);
+			Team.AddExp(12000);
 			OnUpdate(game->txQuest[168]);
 			quest_manager.RemoveQuestRumor(R_MAGES);
 		}
@@ -198,6 +199,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			OnUpdate(Format(game->txQuest[173], sl.name.c_str(), ml.name.c_str(), GetLocationDirName(sl.pos, ml.pos)));
 
 			mages_state = State::TalkedWithCaptain;
+			Team.AddExp(2500);
 		}
 		break;
 	case Progress::MageWantsBeer:
@@ -251,6 +253,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			DialogContext::current->talker->auto_talk = AutoTalkMode::No;
 			mages_state = State::OldMageRemembers;
 			OnUpdate(Format(game->txQuest[178], DialogContext::current->talker->hero->name.c_str(), GetStartLocationName()));
+			Team.AddExp(1000);
 		}
 		break;
 	case Progress::TalkedWithCaptain:
@@ -360,6 +363,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			mages_state = State::Completed;
 			OnUpdate(game->txQuest[185]);
 			W.AddNews(game->txQuest[186]);
+			Team.AddLearningPoint();
 		}
 		break;
 	case Progress::TalkedWithMage:
@@ -383,7 +387,8 @@ void Quest_Mages2::SetProgress(int prog2)
 				scholar->temporary = true;
 				scholar = nullptr;
 			}
-			game->AddReward(5000);
+			game->AddReward(10000);
+			Team.AddExp(25000);
 			OnUpdate(game->txQuest[188]);
 			quest_manager.EndUniqueQuest();
 			quest_manager.RemoveQuestRumor(R_MAGES2);

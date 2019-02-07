@@ -27,7 +27,6 @@ class UnitLoader : public ContentLoader
 		G_ARMOR_TYPE,
 		G_ATTRIBUTE,
 		G_SKILL,
-		G_PROFILE_KEYWORD,
 		G_SOUND_TYPE,
 		G_FRAME_KEYWORD,
 		G_WEAPON_FLAG,
@@ -38,7 +37,8 @@ class UnitLoader : public ContentLoader
 		G_CLASS,
 		G_TRADER_KEYWORD,
 		G_ITEM_GROUP,
-		G_CONSUMABLE_GROUP
+		G_CONSUMABLE_GROUP,
+		G_SUBPROFILE_GROUP
 	};
 
 	enum UnitDataType
@@ -65,6 +65,7 @@ class UnitLoader : public ContentLoader
 		P_FLAGS,
 		P_HP,
 		P_STAMINA,
+		P_ATTACK,
 		P_DEF,
 		P_ITEMS,
 		P_SPELLS,
@@ -84,12 +85,8 @@ class UnitLoader : public ContentLoader
 		P_ATTACK_RANGE,
 		P_ARMOR_TYPE,
 		P_CLASS,
-		P_TRADER
-	};
-
-	enum ProfileKeyword
-	{
-		PK_FIXED
+		P_TRADER,
+		P_UPGRADE
 	};
 
 	enum FrameKeyword
@@ -135,6 +132,18 @@ class UnitLoader : public ContentLoader
 		IFS_START_INLINE,
 		IFS_ELSE,
 		IFS_ELSE_INLINE
+	};
+
+	enum SubprofileKeyword
+	{
+		SPK_WEAPON,
+		SPK_ARMOR,
+		SPK_BOW,
+		SPK_SHIELD,
+		SPK_TAG,
+		SPK_PRIORITY,
+		SPK_PERK,
+		SPK_ITEMS
 	};
 
 	//=================================================================================================
@@ -267,6 +276,7 @@ class UnitLoader : public ContentLoader
 			{ "flags", P_FLAGS },
 			{ "hp", P_HP },
 			{ "stamina", P_STAMINA },
+			{ "attack", P_ATTACK },
 			{ "def", P_DEF },
 			{ "items", P_ITEMS },
 			{ "spells", P_SPELLS },
@@ -286,7 +296,8 @@ class UnitLoader : public ContentLoader
 			{ "attack_range", P_ATTACK_RANGE },
 			{ "armor_type", P_ARMOR_TYPE },
 			{ "class", P_CLASS },
-			{ "trader", P_TRADER }
+			{ "trader", P_TRADER },
+			{ "upgrade", P_UPGRADE }
 		});
 
 		t.AddKeywords(G_MATERIAL, {
@@ -306,7 +317,6 @@ class UnitLoader : public ContentLoader
 			{ "coward", F_COWARD },
 			{ "dont_escape", F_DONT_ESCAPE },
 			{ "archer", F_ARCHER },
-			{ "leader", F_LEADER },
 			{ "pierce_res25", F_PIERCE_RES25 },
 			{ "slash_res25", F_SLASH_RES25 },
 			{ "blunt_res25", F_BLUNT_RES25 },
@@ -338,8 +348,10 @@ class UnitLoader : public ContentLoader
 		t.AddKeywords(G_FLAGS2, {
 			{ "ai_train", F2_AI_TRAIN },
 			{ "specific_name", F2_SPECIFIC_NAME },
+			{ "fixed_stats", F2_FIXED_STATS },
 			{ "contest", F2_CONTEST },
 			{ "contest_50", F2_CONTEST_50 },
+			{ "dont_talk", F2_DONT_TALK },
 			{ "old", F2_OLD },
 			{ "melee", F2_MELEE },
 			{ "melee_50", F2_MELEE_50 },
@@ -348,10 +360,7 @@ class UnitLoader : public ContentLoader
 			{ "limited_rot", F2_LIMITED_ROT },
 			{ "stun_res", F2_STUN_RESISTANCE },
 			{ "sit_on_throne", F2_SIT_ON_THRONE },
-			{ "orc_sounds", F2_ORC_SOUNDS },
-			{ "goblin_sounds", F2_GOBLIN_SOUNDS },
 			{ "xar", F2_XAR },
-			{ "golem_sounds", F2_GOLEM_SOUNDS },
 			{ "tournament", F2_TOURNAMENT },
 			{ "yell", F2_YELL },
 			{ "backstab", F2_BACKSTAB },
@@ -359,7 +368,6 @@ class UnitLoader : public ContentLoader
 			{ "backstab_res", F2_BACKSTAB_RES },
 			{ "magic_res50", F2_MAGIC_RES50 },
 			{ "magic_res25", F2_MAGIC_RES25 },
-			{ "mark", F2_MARK },
 			{ "guarded", F2_GUARDED },
 			{ "not_goblin", F2_NOT_GOBLIN }
 		});
@@ -420,8 +428,6 @@ class UnitLoader : public ContentLoader
 
 		for(uint i = 0; i < (uint)SkillId::MAX; ++i)
 			t.AddKeyword(Skill::skills[i].id, i, G_SKILL);
-
-		t.AddKeyword("fixed", PK_FIXED, G_PROFILE_KEYWORD);
 
 		t.AddKeywords(G_SOUND_TYPE, {
 			{ "see_enemy", SOUND_SEE_ENEMY },
@@ -489,6 +495,17 @@ class UnitLoader : public ContentLoader
 			{ "food", Food },
 			{ "drink", Drink },
 			{ "potion", Potion }
+		});
+
+		t.AddKeywords(G_SUBPROFILE_GROUP, {
+			{ "weapon", SPK_WEAPON },
+			{ "armor", SPK_ARMOR },
+			{ "bow", SPK_BOW },
+			{ "shield", SPK_SHIELD },
+			{ "tag", SPK_TAG },
+			{ "priority", SPK_PRIORITY },
+			{ "perk", SPK_PERK },
+			{ "items", SPK_ITEMS }
 		});
 	}
 
@@ -577,34 +594,55 @@ class UnitLoader : public ContentLoader
 				break;
 			case P_FLAGS:
 				{
-					bool clear = !t.IsSymbol('|');
-					if(!clear)
-						t.Next();
-					ReadFlags(t, {
+					t.ParseFlags({
 						{ &unit->flags, G_FLAGS },
 						{ &unit->flags2, G_FLAGS2 },
 						{ &unit->flags3, G_FLAGS3 }
-					}, clear);
+					});
 					crc.Update(unit->flags);
 					crc.Update(unit->flags2);
 					crc.Update(unit->flags3);
 				}
 				break;
 			case P_HP:
-				unit->hp_bonus = t.MustGetInt();
-				if(unit->hp_bonus < 0)
-					t.Throw("Invalid hp bonus %d.", unit->hp_bonus);
-				crc.Update(unit->hp_bonus);
+				unit->hp = t.MustGetInt();
+				crc.Update(unit->hp);
+				if(t.QuerySymbol('+'))
+				{
+					t.Next();
+					t.AssertSymbol('+');
+					t.Next();
+					unit->hp_lvl = t.MustGetInt();
+					crc.Update(unit->hp_lvl);
+				}
 				break;
 			case P_STAMINA:
-				unit->stamina_bonus = t.MustGetInt();
-				crc.Update(unit->stamina_bonus);
+				unit->stamina = t.MustGetInt();
+				crc.Update(unit->stamina);
+				break;
+			case P_ATTACK:
+				unit->attack = t.MustGetInt();
+				crc.Update(unit->attack);
+				if(t.QuerySymbol('+'))
+				{
+					t.Next();
+					t.AssertSymbol('+');
+					t.Next();
+					unit->attack_lvl = t.MustGetInt();
+					crc.Update(unit->attack_lvl);
+				}
 				break;
 			case P_DEF:
-				unit->def_bonus = t.MustGetInt();
-				if(unit->def_bonus < 0)
-					t.Throw("Invalid def bonus %d.", unit->def_bonus);
-				crc.Update(unit->def_bonus);
+				unit->def = t.MustGetInt();
+				crc.Update(unit->def);
+				if(t.QuerySymbol('+'))
+				{
+					t.Next();
+					t.AssertSymbol('+');
+					t.Next();
+					unit->def_lvl = t.MustGetInt();
+					crc.Update(unit->def_lvl);
+				}
 				break;
 			case P_ITEMS:
 				if(t.IsSymbol('{'))
@@ -705,7 +743,7 @@ class UnitLoader : public ContentLoader
 				crc.Update(unit->group);
 				break;
 			case P_DMG_TYPE:
-				unit->dmg_type = ReadFlags(t, G_DMG_TYPE);
+				t.ParseFlags(G_DMG_TYPE, unit->dmg_type);
 				crc.Update(unit->dmg_type);
 				break;
 			case P_WALK_SPEED:
@@ -878,6 +916,17 @@ class UnitLoader : public ContentLoader
 				if(!unit->trader->stock)
 					LoadError("Unit trader stock not set.");
 				break;
+			case P_UPGRADE:
+				{
+					const string& id = t.MustGetText();
+					UnitData* u = UnitData::TryGet(id);
+					if(!u)
+						t.Throw("Missing unit '%s'.", id.c_str());
+					if(!u->upgrade)
+						u->upgrade = new vector<UnitData*>;
+					u->upgrade->push_back(unit.Get());
+				}
+				break;
 			default:
 				t.Unexpected();
 				break;
@@ -911,7 +960,6 @@ class UnitLoader : public ContentLoader
 	//=================================================================================================
 	void ParseProfile(Ptr<StatProfile>& profile)
 	{
-		profile->fixed = false;
 		for(int i = 0; i < (int)AttributeId::MAX; ++i)
 			profile->attrib[i] = 10;
 		for(int i = 0; i < (int)SkillId::MAX; ++i)
@@ -923,12 +971,13 @@ class UnitLoader : public ContentLoader
 
 		while(!t.IsSymbol('}'))
 		{
-			if(t.IsKeyword(PK_FIXED, G_PROFILE_KEYWORD))
+			if(t.IsItem("subprofile"))
 			{
-				t.Next();
-				profile->fixed = t.MustGetBool();
-				crc.Update(0);
-				crc.Update(profile->fixed);
+				Ptr<StatProfile::Subprofile> subprofile;
+				ParseSubprofile(subprofile);
+				if(profile->GetSubprofile(subprofile->id))
+					t.Throw("Subprofile '%s.%s' already exists.", profile->id.c_str(), subprofile->id.c_str());
+				profile->subprofiles.push_back(subprofile.Pin());
 			}
 			else if(t.IsKeywordGroup(G_ATTRIBUTE))
 			{
@@ -937,6 +986,8 @@ class UnitLoader : public ContentLoader
 				int val = t.MustGetInt();
 				if(val < 1)
 					t.Throw("Invalid attribute '%s' value %d.", Attribute::attributes[a].id, val);
+				else if(val % 5 != 0)
+					t.Throw("Attribute '%s' value %d must be divisible by 5.", Attribute::attributes[a].id, val);
 				profile->attrib[a] = val;
 				crc.Update(1);
 				crc.Update(a);
@@ -949,6 +1000,8 @@ class UnitLoader : public ContentLoader
 				int val = t.MustGetInt();
 				if(val < -1)
 					t.Throw("Invalid skill '%s' value %d.", Skill::skills[s].id, val);
+				else if(val % 5 != 0)
+					t.Throw("Skill '%s' value %d must be divisible by 5.", Skill::skills[s].id, val);
 				profile->skill[s] = val;
 				crc.Update(2);
 				crc.Update(s);
@@ -956,14 +1009,212 @@ class UnitLoader : public ContentLoader
 			}
 			else
 			{
-				int a = PK_FIXED, b = G_PROFILE_KEYWORD, c = G_ATTRIBUTE, d = G_SKILL;
-				t.StartUnexpected().Add(tokenizer::T_KEYWORD, &a, &b).Add(tokenizer::T_KEYWORD_GROUP, &c).Add(tokenizer::T_KEYWORD_GROUP, &d).Throw();
+				cstring a = "subprofile";
+				int b = G_ATTRIBUTE, c = G_SKILL;
+				t.StartUnexpected()
+					.Add(tokenizer::T_ITEM, (int*)&a)
+					.Add(tokenizer::T_KEYWORD_GROUP, &b)
+					.Add(tokenizer::T_KEYWORD_GROUP, &c)
+					.Throw();
 			}
 
 			t.Next();
 		}
 
 		StatProfile::profiles.push_back(profile.Pin());
+	}
+
+	//=================================================================================================
+	void ParseSubprofile(Ptr<StatProfile::Subprofile>& subprofile)
+	{
+		t.Next();
+		subprofile->id = t.GetText();
+		t.Next();
+		t.AssertSymbol('{');
+		t.Next();
+		while(!t.IsSymbol('}'))
+		{
+			SubprofileKeyword key = (SubprofileKeyword)t.MustGetKeywordId(G_SUBPROFILE_GROUP);
+			t.Next();
+			switch(key)
+			{
+			case SPK_WEAPON:
+				if(subprofile->weapon_total > 0)
+					t.Throw("Weapon subprofile already set.");
+				if(t.IsSymbol('{'))
+				{
+					t.Next();
+					while(!t.IsSymbol('}'))
+					{
+						WEAPON_TYPE type = GetWeaponType();
+						if(subprofile->weapon_chance[type] != 0)
+							t.Throw("Weapon subprofile chance already set.");
+						t.Next();
+						int chance = t.MustGetInt();
+						subprofile->weapon_chance[type] = chance;
+						subprofile->weapon_total += chance;
+						t.Next();
+					}
+				}
+				else
+				{
+					WEAPON_TYPE type = GetWeaponType();
+					subprofile->weapon_chance[type] = 1;
+					subprofile->weapon_total = 1;
+				}
+				break;
+			case SPK_ARMOR:
+				if(subprofile->armor_total > 0)
+					t.Throw("Armor subprofile already set.");
+				if(t.IsSymbol('{'))
+				{
+					t.Next();
+					while(!t.IsSymbol('}'))
+					{
+						ARMOR_TYPE type = GetArmorType();
+						if(subprofile->armor_chance[type] != 0)
+							t.Throw("Armor subprofile chance already set.");
+						t.Next();
+						int chance = t.MustGetInt();
+						subprofile->armor_chance[type] = chance;
+						subprofile->armor_total += chance;
+						t.Next();
+					}
+				}
+				else
+				{
+					ARMOR_TYPE type = GetArmorType();
+					subprofile->armor_chance[type] = 1;
+					subprofile->armor_total = 1;
+				}
+				break;
+			case SPK_TAG:
+				{
+					int index = 0;
+					for(; index < StatProfile::MAX_TAGS; ++index)
+					{
+						if(subprofile->tag_skills[index] == SkillId::NONE)
+							break;
+					}
+					if(index == StatProfile::MAX_TAGS)
+						t.Throw("Max %u tag skills.", StatProfile::MAX_TAGS);
+					SkillId skill;
+					if(t.IsKeyword(SPK_WEAPON, G_SUBPROFILE_GROUP))
+						skill = SkillId::SPECIAL_WEAPON;
+					else if(t.IsKeyword(SPK_ARMOR, G_SUBPROFILE_GROUP))
+						skill = SkillId::SPECIAL_ARMOR;
+					else
+						skill = (SkillId)t.MustGetKeywordId(G_SKILL);
+					subprofile->tag_skills[index] = skill;
+				}
+				break;
+			case SPK_PRIORITY:
+				{
+					int set = 0;
+					t.AssertSymbol('{');
+					t.Next();
+					for(int i = 0; i < SLOT_MAX; ++i)
+					{
+						SubprofileKeyword k = (SubprofileKeyword)t.MustGetKeywordId(G_SUBPROFILE_GROUP);
+						ITEM_TYPE type;
+						switch(k)
+						{
+						case SPK_WEAPON:
+							type = IT_WEAPON;
+							break;
+						case SPK_ARMOR:
+							type = IT_ARMOR;
+							break;
+						case SPK_SHIELD:
+							type = IT_SHIELD;
+							break;
+						case SPK_BOW:
+							type = IT_BOW;
+							break;
+						default:
+							t.Unexpected();
+							break;
+						}
+						if(IS_SET(set, 1 << type))
+							t.Throw("Subprofile priority already set.");
+						set |= (1 << type);
+						subprofile->priorities[i] = type;
+						t.Next();
+					}
+				}
+				break;
+			case SPK_PERK:
+				{
+					int index = 0;
+					for(; index < StatProfile::MAX_PERKS; ++index)
+					{
+						if(subprofile->perks[index].perk == Perk::None)
+							break;
+					}
+					if(index == StatProfile::MAX_PERKS)
+						t.Throw("Max %u perks.", StatProfile::MAX_PERKS);
+					const string& id = t.MustGetText();
+					PerkInfo* info = PerkInfo::Find(id);
+					if(!info)
+						t.Throw("Missing perk '%s'.", id.c_str());
+					subprofile->perks[index].perk = info->perk_id;
+					int value = -1;
+					if(info->value_type != PerkInfo::None)
+					{
+						t.Next();
+						if(info->value_type == PerkInfo::Attribute)
+							value = t.MustGetKeywordId(G_ATTRIBUTE);
+						else if(info->value_type == PerkInfo::Skill)
+						{
+							if(t.IsKeyword(SPK_WEAPON, G_SUBPROFILE_GROUP))
+								value = (int)SkillId::SPECIAL_WEAPON;
+							else if(t.IsKeyword(SPK_ARMOR, G_SUBPROFILE_GROUP))
+								value = (int)SkillId::SPECIAL_ARMOR;
+							else
+								value = t.MustGetKeywordId(G_SKILL);
+						}
+					}
+					subprofile->perks[index].value = value;
+				}
+				break;
+			case SPK_ITEMS:
+				{
+					t.AssertSymbol('{');
+					Ptr<ItemScript> script;
+					subprofile->item_script = script.Get();
+					ParseItems(script);
+				}
+				break;
+			default:
+				t.Unexpected();
+				break;
+			}
+			t.Next();
+		}
+		if(subprofile->weapon_total == 0)
+			t.Throw("Weapon subprofile not set.");
+		if(subprofile->armor_total == 0)
+			t.Throw("Armor subprofile not set.");
+	}
+
+	//=================================================================================================
+	WEAPON_TYPE GetWeaponType()
+	{
+		SkillId skill = (SkillId)t.MustGetKeywordId(G_SKILL);
+		Skill& info = Skill::skills[(int)skill];
+		if(info.type != SkillType::WEAPON)
+			t.Throw("Skill '%s' is not valid weapon skill.", info.id);
+		return ::GetWeaponType(skill);
+	}
+
+	//=================================================================================================
+	ARMOR_TYPE GetArmorType()
+	{
+		SkillId skill = (SkillId)t.MustGetKeywordId(G_SKILL);
+		Skill& info = Skill::skills[(int)skill];
+		if(info.type != SkillType::ARMOR)
+			t.Throw("Skill '%s' is not valid armor skill.", info.id);
+		return ::GetArmorType(skill);
 	}
 
 	//=================================================================================================
@@ -1228,7 +1479,7 @@ class UnitLoader : public ContentLoader
 					t.Unexpected();
 				}
 			}
-			else if(t.IsKeyword() || t.IsItem() || t.IsSymbol('!'))
+			else if(t.IsKeyword() || t.IsItem() || t.IsSymbol('!') || t.IsSymbol('$'))
 			{
 				// single item
 				script->code.push_back(PS_ONE);
@@ -1300,7 +1551,7 @@ class UnitLoader : public ContentLoader
 	//=================================================================================================
 	void AddItem(ItemScript* script)
 	{
-		if(!t.IsSymbol('!'))
+		if(!t.IsSymbol("!$"))
 		{
 			const string& s = t.MustGetItemKeyword();
 			const Item* item = Item::TryGet(s.c_str());
@@ -1316,42 +1567,88 @@ class UnitLoader : public ContentLoader
 		}
 		else
 		{
-			t.Next();
-			if(t.IsSymbol('+') || t.IsSymbol('-'))
+			if(t.IsSymbol('$'))
 			{
-				bool minus = t.IsSymbol('-');
-				char c = t.PeekChar();
-				if(c < '1' || c > '9')
-					t.Throw("Invalid leveled list mod '%c'.", c);
-				int mod = c - '0';
-				if(minus)
-					mod = -mod;
-				t.NextChar();
+				if(!script->is_subprofile)
+					t.Throw("Special item list can only be used in subprofiles.");
 				t.Next();
-				const string& s = t.MustGetItemKeyword();
-				ItemListResult lis = ItemList::TryGet(s);
-				if(!lis.lis)
-					t.Throw("Missing item list '%s'.", s.c_str());
-				if(!lis.is_leveled)
-					t.Throw("Can't use mod on non leveled list '%s'.", s.c_str());
-				script->code.push_back(PS_LEVELED_LIST_MOD);
-				script->code.push_back(mod);
-				script->code.push_back((int)lis.llis);
-				crc.Update(PS_LEVELED_LIST_MOD);
-				crc.Update(mod);
-				crc.Update(lis.llis->id);
+				int mod = 0;
+				if(t.IsSymbol('+') || t.IsSymbol('-'))
+				{
+					bool minus = t.IsSymbol('-');
+					char c = t.PeekChar();
+					if(c < '1' || c > '9')
+						t.Throw("Invalid special list mod '%c'.", c);
+					mod = c - '0';
+					if(minus)
+						mod = -mod;
+					t.NextChar();
+					t.Next();
+				}
+				int special;
+				const string& text = t.MustGetItemKeyword();
+				if(text == "weapon")
+					special = SPECIAL_WEAPON;
+				else if(text == "armor")
+					special = SPECIAL_ARMOR;
+				else
+					t.Throw("Invalid special item list '%s'.", text.c_str());
+				if(mod == 0)
+				{
+					script->code.push_back(PS_SPECIAL_ITEM);
+					script->code.push_back(special);
+					crc.Update(PS_SPECIAL_ITEM);
+					crc.Update(special);
+				}
+				else
+				{
+					script->code.push_back(PS_SPECIAL_ITEM_MOD);
+					script->code.push_back(mod);
+					script->code.push_back(special);
+					crc.Update(PS_SPECIAL_ITEM_MOD);
+					crc.Update(mod);
+					crc.Update(special);
+				}
 			}
 			else
 			{
-				const string& s = t.MustGetItemKeyword();
-				ItemListResult lis = ItemList::TryGet(s);
-				if(!lis.lis)
-					t.Throw("Missing item list '%s'.", s.c_str());
-				ParseScript type = (lis.is_leveled ? PS_LEVELED_LIST : PS_LIST);
-				script->code.push_back(type);
-				script->code.push_back((int)lis.lis);
-				crc.Update(type);
-				crc.Update(lis.GetIdString());
+				t.Next();
+				if(t.IsSymbol('+') || t.IsSymbol('-'))
+				{
+					bool minus = t.IsSymbol('-');
+					char c = t.PeekChar();
+					if(c < '1' || c > '9')
+						t.Throw("Invalid leveled list mod '%c'.", c);
+					int mod = c - '0';
+					if(minus)
+						mod = -mod;
+					t.NextChar();
+					t.Next();
+					const string& s = t.MustGetItemKeyword();
+					ItemListResult lis = ItemList::TryGet(s);
+					if(!lis.lis)
+						t.Throw("Missing item list '%s'.", s.c_str());
+					if(!lis.is_leveled)
+						t.Throw("Can't use mod on non leveled list '%s'.", s.c_str());
+					script->code.push_back(PS_LEVELED_LIST_MOD);
+					script->code.push_back(mod);
+					script->code.push_back((int)lis.llis);
+					crc.Update(PS_LEVELED_LIST_MOD);
+					crc.Update(mod);
+					crc.Update(lis.llis->id);
+				}
+				else
+				{
+					const string& s = t.MustGetItemKeyword();
+					ItemListResult lis = ItemList::TryGet(s);
+					if(!lis.lis)
+						t.Throw("Missing item list '%s'.", s.c_str());
+					ParseScript type = (lis.is_leveled ? PS_LEVELED_LIST : PS_LIST);
+					script->code.push_back(type);
+					script->code.push_back((int)lis.lis);
+					crc.Update(type);
+					crc.Update(lis.GetIdString());
+				}
 			}
 		}
 	}
@@ -1499,7 +1796,8 @@ class UnitLoader : public ContentLoader
 					t.Next();
 					float end = t.MustGetNumberFloat();
 					t.Next();
-					int flags = ReadFlags(t, G_WEAPON_FLAG);
+					int flags = 0;
+					t.ParseFlags(G_WEAPON_FLAG, flags);
 					t.Next();
 					t.AssertSymbol('}');
 					crc.Update(start);
@@ -1690,20 +1988,20 @@ class UnitLoader : public ContentLoader
 				crc.Update(id);
 				t.Next();
 
+				bool is_leader = false;
 				if(t.IsKeyword(GK_LEADER, G_GROUP_KEYWORD))
 				{
-					group->leader = ud;
-					crc.Update(0);
+					is_leader = true;
+					t.Next();
 				}
-				else
-				{
-					int count = t.MustGetInt();
-					if(count < 1)
-						t.Throw("Invalid unit count %d.", count);
-					group->entries.push_back(UnitGroup::Entry(ud, count));
-					group->total += count;
-					crc.Update(count);
-				}
+
+				int count = t.MustGetInt();
+				if(count < 1)
+					t.Throw("Invalid unit count %d.", count);
+				group->entries.push_back(UnitGroup::Entry(ud, count, is_leader));
+				group->total += count;
+				crc.Update(count);
+				crc.Update(is_leader);
 			}
 			t.Next();
 		}
@@ -1777,4 +2075,5 @@ void content::CleanupUnits()
 	DeleteElements(UnitData::units);
 	DeleteElements(UnitGroup::groups);
 	DeleteElements(UnitGroupList::lists);
+	DeleteElements(UnitStats::shared_stats);
 }

@@ -27,6 +27,10 @@ struct HeroData : public HeroPlayerCommon
 	void Save(FileWriter& f);
 	void Load(FileReader& f);
 	void PassTime(int days = 1, bool travel = false);
-	void LevelUp();
 	void SetupMelee();
+	void AddExp(int exp);
+	float GetExpMod() const;
+
+private:
+	void LevelUp();
 };

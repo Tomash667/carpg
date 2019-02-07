@@ -127,6 +127,7 @@ public:
 	int GetDifficultyLevel() const;
 	int GetChestDifficultyLevel() const;
 	void OnReenterLevel();
+	bool HaveArena();
 	InsideBuilding* GetArena();
 	cstring GetCurrentLocationText();
 	void CheckIfLocationCleared();
@@ -148,6 +149,7 @@ public:
 	void Write(BitStreamWriter& f);
 	bool Read(BitStreamReader& f, bool loaded_resources);
 	MusicType GetLocationMusic();
+	void CleanLevel(int building_id = -2);
 
 	Location* location; // same as W.current_location
 	int location_index; // same as W.current_location_index

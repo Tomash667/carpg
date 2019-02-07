@@ -31,14 +31,12 @@
 //-----------------------------------------------------------------------------
 const float World::TRAVEL_SPEED = 28.f;
 const int start_year = 100;
-const float world_size = 600.f;
 const float world_border = 16.f;
-const Vec2 world_bounds = Vec2(world_border, world_size - 16.f);
 World W;
 
 
 //-----------------------------------------------------------------------------
-// z powodu zmian (po³¹czenie Location i Location2) musze tymczasowo u¿ywaæ tego w add_locations a potem w generate_world ustawiaæ odpowiedni obiekt
+// used temporary before deciding how many levels location should have (and use Single or MultiInsideLocation)
 struct TmpLocation : public Location
 {
 	TmpLocation() : Location(false) {}
@@ -71,6 +69,7 @@ void World::LoadLanguage()
 	txEncAnimals = Str("encAnimals");
 	txEncOrcs = Str("encOrcs");
 	txEncGoblins = Str("encGoblins");
+	txEncEnemiesCombat = Str("encEnemiesCombat");
 }
 
 //=================================================================================================
@@ -138,7 +137,7 @@ void World::Update(int days, UpdateMode mode)
 		Info("Game over: you are too old.");
 		Game& game = Game::Get();
 		game.CloseAllPanels(true);
-		game.koniec_gry = true;
+		game.end_of_game = true;
 		game.death_fade = 0.f;
 		if(Net::IsOnline())
 		{
@@ -285,7 +284,7 @@ int World::CreateCamp(const Vec2& pos, SPAWN_GROUP group, float range, bool allo
 	loc->type = L_CAMP;
 	loc->image = LI_CAMP;
 	loc->last_visit = -1;
-	loc->st = Random(3, 15);
+	loc->st = Random(5, 15);
 	loc->reset = false;
 	loc->spawn = group;
 	loc->pos = pos;
@@ -445,7 +444,7 @@ void World::AddLocations(uint count, AddLocationsCallback clbk, float valid_dist
 	{
 		for(uint j = 0; j < 100; ++j)
 		{
-			Vec2 pt = Vec2::Random(world_border, world_size - world_border);
+			Vec2 pt = Vec2::Random(world_border, float(world_size) - world_border);
 			bool ok = true;
 
 			// disallow when near other location
@@ -510,6 +509,7 @@ int World::AddLocation(Location* loc)
 			if(!*rit)
 			{
 				*rit = loc;
+				loc->index = index;
 				if(Net::IsOnline())
 				{
 					NetChange& c = Add1(Net::changes);
@@ -563,6 +563,9 @@ void World::RemoveLocation(int index)
 //=================================================================================================
 void World::GenerateWorld(int start_location_type, int start_location_target)
 {
+	world_size = 1000;
+	world_bounds = Vec2(world_border, world_size - 16.f);
+
 	// generate cities
 	uint count = Random(3, 5);
 	AddLocations(count, [](uint index) { return std::make_pair(L_CITY, false); }, 200.f, true);
@@ -606,7 +609,7 @@ void World::GenerateWorld(int start_location_type, int start_location_target)
 		loc->index = locations.size();
 		loc->pos = Vec2(-1000, -1000);
 		loc->name = txRandomEncounter;
-		loc->state = LS_VISITED;
+		loc->state = LS_HIDDEN;
 		loc->image = LI_FOREST;
 		loc->type = L_ENCOUNTER;
 		encounter_loc = loc->index;
@@ -748,18 +751,19 @@ void World::GenerateWorld(int start_location_type, int start_location_target)
 			}
 
 			BaseLocation& base = g_base_locations[target];
-			int poziomy = base.levels.Random();
+			int levels = base.levels.Random();
 
-			if(poziomy == 1)
+			if(levels == 1)
 				inside = new SingleInsideLocation;
 			else
-				inside = new MultiInsideLocation(poziomy);
+				inside = new MultiInsideLocation(levels);
 
 			inside->type = loc.type;
 			inside->image = loc.image;
 			inside->state = loc.state;
 			inside->pos = loc.pos;
 			inside->name = loc.name;
+			inside->index = loc.index;
 			delete &loc;
 			*it = inside;
 
@@ -811,6 +815,7 @@ void World::Save(GameWriter& f)
 	f << month;
 	f << day;
 	f << worldtime;
+	f << world_size;
 	f << current_location_index;
 
 	f << locations.size();
@@ -879,6 +884,8 @@ void World::Load(GameReader& f, LoadingHandler& loading)
 	f >> month;
 	f >> day;
 	f >> worldtime;
+	f >> world_size;
+	world_bounds = Vec2(world_border, world_size - 16.f);
 	f >> current_location_index;
 	LoadLocations(f, loading);
 	LoadNews(f);
@@ -1041,6 +1048,8 @@ void World::LoadOld(GameReader& f, LoadingHandler& loading, int part, bool insid
 		f >> month;
 		f >> day;
 		f >> worldtime;
+		world_size = 600;
+		world_bounds = Vec2(world_border, world_size - 16.f);
 	}
 	else if(part == 1)
 	{
@@ -1070,7 +1079,7 @@ void World::LoadOld(GameReader& f, LoadingHandler& loading, int part, bool insid
 		LoadLocations(f, loading);
 		if(state == State::INSIDE_ENCOUNTER)
 		{
-			// random encounter - should guards give team reward
+			// random encounter - should guards give team reward?
 			bool guards_enc_reward;
 			f >> guards_enc_reward;
 			if(guards_enc_reward)
@@ -1094,13 +1103,14 @@ void World::LoadOld(GameReader& f, LoadingHandler& loading, int part, bool insid
 	{
 		f >> first_city;
 		f >> boss_levels;
+		locations[encounter_loc]->state = LS_HIDDEN;
 	}
 }
 
 //=================================================================================================
 void World::Write(BitStreamWriter& f)
 {
-	// time
+	f << world_size;
 	WriteTime(f);
 
 	// locations
@@ -1157,7 +1167,7 @@ void World::WriteTime(BitStreamWriter& f)
 //=================================================================================================
 bool World::Read(BitStreamReader& f)
 {
-	// time
+	f >> world_size;
 	ReadTime(f);
 	if(!f)
 	{
@@ -1691,6 +1701,8 @@ void World::UpdateTravel(float dt)
 	if(travel_timer * 3 >= dist / TRAVEL_SPEED)
 	{
 		// end of travel
+		if(Net::IsLocal())
+			Team.OnTravel(Vec2::Distance(world_pos, end_pt));
 		if(Team.IsLeader())
 			EndTravel();
 		else
@@ -1699,7 +1711,10 @@ void World::UpdateTravel(float dt)
 	else
 	{
 		Vec2 dir = end_pt - travel_start_pos;
-		world_pos = travel_start_pos + dir * (travel_timer / dist * TRAVEL_SPEED * 3);
+		float travel_dist = travel_timer / dist * TRAVEL_SPEED * 3;
+		world_pos = travel_start_pos + dir * travel_dist;
+		if(Net::IsLocal())
+			Team.OnTravel(travel_dist);
 
 		// reveal nearby locations, check encounters
 		reveal_timer += dt;
@@ -1771,7 +1786,6 @@ void World::UpdateTravel(float dt)
 void World::StartEncounter(int enc, int what)
 {
 	state = State::ENCOUNTER;
-	locations[encounter_loc]->state = LS_UNKNOWN;
 	if(Net::IsOnline())
 		Net::PushChange(NetChange::UPDATE_MAP_POS);
 
@@ -1811,7 +1825,7 @@ void World::StartEncounter(int enc, int what)
 		{
 			// special encounter
 			encounter.mode = ENCOUNTER_SPECIAL;
-			encounter.special = (SpecialEncounter)(Rand() % 6);
+			encounter.special = (SpecialEncounter)(Rand() % SE_MAX_NORMAL);
 			if(unk)
 				encounter.special = SE_UNK;
 			else if(crazy)
@@ -1867,6 +1881,9 @@ void World::StartEncounter(int enc, int what)
 				break;
 			case SE_CRAZY_COOK:
 				text = txEncCrazyCook;
+				break;
+			case SE_ENEMIES_COMBAT:
+				text = txEncEnemiesCombat;
 				break;
 			}
 		}

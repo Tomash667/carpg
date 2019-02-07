@@ -183,7 +183,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 	EncounterData encounter = W.GetCurrentEncounter();
 	UnitData* essential = nullptr;
 	cstring group_name = nullptr, group_name2 = nullptr;
-	bool dont_attack = false, od_tylu = false, kamien = false;
+	bool dont_attack = false, back_attack = false, cursed_stone = false;
 	int count, level, count2, level2;
 	dialog = nullptr;
 	quest = nullptr;
@@ -227,22 +227,22 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 			break;
 		case SE_CRAZY_HEROES:
 			group_name = "crazies";
-			count = Random(2, 4);
-			level = Random(2, 15);
+			count = Random(3, 4);
+			level = Random(5, 15);
 			dialog = GameDialog::TryGet("crazies_encounter");
 			break;
 		case SE_MERCHANT:
 			{
 				essential = UnitData::Get("merchant");
 				group_name = "merchant_guards";
-				count = Random(2, 4);
-				level = Random(3, 8);
+				count = Random(3, 4);
+				level = Random(5, 6);
 			}
 			break;
 		case SE_HEROES:
 			group_name = "heroes";
-			count = Random(2, 4);
-			level = Random(2, 15);
+			count = Random(3, 4);
+			level = Random(5, 15);
 			break;
 		case SE_BANDITS_VS_TRAVELERS:
 			{
@@ -252,7 +252,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 				level = Random(5, 10);
 				group_name2 = "wagon_guards";
 				count2 = Random(2, 3);
-				level2 = Random(3, 8);
+				level2 = Random(5, 6);
 				L.SpawnObjectNearLocation(L.local_ctx, BaseObject::Get("wagon"), Vec2(128, 128), Random(MAX_ANGLE));
 				Chest* chest = L.SpawnObjectNearLocation(L.local_ctx, BaseObject::Get("chest"), Vec2(128, 128), Random(MAX_ANGLE), 6.f);
 				if(chest)
@@ -268,8 +268,8 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 		case SE_HEROES_VS_ENEMIES:
 			far_encounter = true;
 			group_name = "heroes";
-			count = Random(2, 4);
-			level = Random(2, 15);
+			count = Random(3, 4);
+			level = Random(5, 15);
 			switch(Rand() % 4)
 			{
 			case 0:
@@ -289,8 +289,8 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 				break;
 			case 3:
 				group_name2 = "crazies";
-				count2 = Random(2, 4);
-				level2 = Random(2, 15);
+				count2 = Random(3, 4);
+				level2 = Random(5, 15);
 				break;
 			}
 			break;
@@ -310,12 +310,12 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 			dialog = GameDialog::TryGet("q_crazies");
 			count = 1;
 			QM.quest_crazies->check_stone = true;
-			kamien = true;
+			cursed_stone = true;
 			break;
 		case SE_UNK:
 			group_name = "unk";
 			level = 13;
-			od_tylu = true;
+			back_attack = true;
 			if(QM.quest_crazies->crazies_state == Quest_Crazies::State::PickedStone)
 			{
 				QM.quest_crazies->crazies_state = Quest_Crazies::State::FirstAttack;
@@ -331,6 +331,61 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 			level = -2;
 			dialog = essential->dialog;
 			count = 1;
+			break;
+		case SE_ENEMIES_COMBAT:
+			{
+				far_encounter = true;
+				int group_index = Rand() % 4;
+				int group_index2 = Rand() % 4;
+				if(group_index == group_index2)
+					group_index2 = (group_index2 + 1) % 4;
+				switch(group_index)
+				{
+				case 0:
+					group_name = "bandits";
+					count = Random(3, 5);
+					level = Random(6, 12);
+					break;
+				case 1:
+					group_name = "orcs";
+					count = Random(3, 5);
+					level = Random(6, 12);
+					break;
+				case 2:
+					group_name = "goblins";
+					count = Random(3, 5);
+					level = Random(6, 12);
+					break;
+				case 3:
+					group_name = "crazies";
+					count = Random(3, 4);
+					level = Random(5, 15);
+					break;
+				}
+				switch(group_index2)
+				{
+				case 0:
+					group_name2 = "bandits";
+					count2 = Random(3, 5);
+					level2 = Random(6, 12);
+					break;
+				case 1:
+					group_name2 = "orcs";
+					count2 = Random(3, 5);
+					level2 = Random(6, 12);
+					break;
+				case 2:
+					group_name2 = "goblins";
+					count2 = Random(3, 5);
+					level2 = Random(6, 12);
+					break;
+				case 3:
+					group_name2 = "crazies";
+					count2 = Random(3, 4);
+					level2 = Random(5, 15);
+					break;
+				}
+			}
 			break;
 		}
 	}
@@ -367,7 +422,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 	float dist, best_dist;
 
 	Vec3 spawn_pos(128.f, 0, 128.f);
-	if(od_tylu)
+	if(back_attack)
 	{
 		switch(enter_dir)
 		{
@@ -393,7 +448,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 		best_dist = Vec3::Distance(talker->pos, look_pt);
 		--count;
 
-		if(kamien)
+		if(cursed_stone)
 		{
 			int slot = talker->FindItem(Item::Get("q_szaleni_kamien"));
 			if(slot != -1)

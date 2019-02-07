@@ -17,7 +17,7 @@ class ItemLoader : public ContentLoader
 		G_MATERIAL,
 		G_DMG_TYPE,
 		G_FLAGS,
-		G_ARMOR_SKILL,
+		G_ARMOR_TYPE,
 		G_ARMOR_UNIT_TYPE,
 		G_CONSUMABLE_TYPE,
 		G_EFFECT,
@@ -41,7 +41,7 @@ class ItemLoader : public ContentLoader
 		P_FLAGS,
 		P_DEFENSE,
 		P_MOBILITY,
-		P_SKILL,
+		P_UNIT_TYPE,
 		P_TEX_OVERRIDE,
 		P_EFFECT,
 		P_POWER,
@@ -152,7 +152,7 @@ public:
 			{ "flags", P_FLAGS },
 			{ "defense", P_DEFENSE },
 			{ "mobility", P_MOBILITY },
-			{ "skill", P_SKILL },
+			{ "unit_type", P_UNIT_TYPE },
 			{ "tex_override", P_TEX_OVERRIDE },
 			{ "effect", P_EFFECT },
 			{ "power", P_POWER },
@@ -196,7 +196,6 @@ public:
 			{ "not_blacksmith", ITEM_NOT_BLACKSMITH },
 			{ "mage", ITEM_MAGE },
 			{ "dont_drop", ITEM_DONT_DROP },
-			{ "secret", ITEM_SECRET },
 			{ "backstab", ITEM_BACKSTAB },
 			{ "power1", ITEM_POWER_1 },
 			{ "power2", ITEM_POWER_2 },
@@ -212,13 +211,14 @@ public:
 			{ "hq", ITEM_HQ },
 			{ "magical", ITEM_MAGICAL },
 			{ "unique", ITEM_UNIQUE },
-			{ "alpha", ITEM_ALPHA }
+			{ "alpha", ITEM_ALPHA },
+			{ "magic_scroll", ITEM_MAGIC_SCROLL }
 		});
 
-		t.AddKeywords(G_ARMOR_SKILL, {
-			{ "light_armor", (int)SkillId::LIGHT_ARMOR },
-			{ "medium_armor", (int)SkillId::MEDIUM_ARMOR },
-			{ "heavy_armor", (int)SkillId::HEAVY_ARMOR }
+		t.AddKeywords(G_ARMOR_TYPE, {
+			{ "light", AT_LIGHT },
+			{ "medium", AT_MEDIUM },
+			{ "heavy", AT_HEAVY }
 		});
 
 		t.AddKeywords(G_ARMOR_UNIT_TYPE, {
@@ -305,7 +305,7 @@ public:
 			break;
 		case IT_ARMOR:
 			item = new Armor;
-			req |= BIT(P_DEFENSE) | BIT(P_MOBILITY) | BIT(P_REQ_STR) | BIT(P_MATERIAL) | BIT(P_SKILL) | BIT(P_TYPE) | BIT(P_TEX_OVERRIDE);
+			req |= BIT(P_DEFENSE) | BIT(P_MOBILITY) | BIT(P_REQ_STR) | BIT(P_MATERIAL) | BIT(P_UNIT_TYPE) | BIT(P_TYPE) | BIT(P_TEX_OVERRIDE);
 			break;
 		case IT_CONSUMABLE:
 			item = new Consumable;
@@ -423,7 +423,7 @@ public:
 					item->ToWeapon().weapon_type = (WEAPON_TYPE)t.MustGetKeywordId(G_WEAPON_TYPE);
 					break;
 				case IT_ARMOR:
-					item->ToArmor().armor_type = (ArmorUnitType)t.MustGetKeywordId(G_ARMOR_UNIT_TYPE);
+					item->ToArmor().armor_type = (ARMOR_TYPE)t.MustGetKeywordId(G_ARMOR_TYPE);
 					break;
 				case IT_CONSUMABLE:
 					item->ToConsumable().cons_type = (ConsumableType)t.MustGetKeywordId(G_CONSUMABLE_TYPE);
@@ -432,6 +432,9 @@ public:
 					item->ToOther().other_type = (OtherType)t.MustGetKeywordId(G_OTHER_TYPE);
 					break;
 				}
+				break;
+			case P_UNIT_TYPE:
+				item->ToArmor().armor_unit_type = (ArmorUnitType)t.MustGetKeywordId(G_ARMOR_UNIT_TYPE);
 				break;
 			case P_MATERIAL:
 				{
@@ -451,12 +454,13 @@ public:
 				}
 				break;
 			case P_DMG_TYPE:
-				item->ToWeapon().dmg_type = ReadFlags(t, G_DMG_TYPE);
+				t.ParseFlags(G_DMG_TYPE, item->ToWeapon().dmg_type);
 				break;
 			case P_FLAGS:
 				{
-					int old_flags = (item->flags & ITEM_TEX_ONLY);
-					item->flags |= ReadFlags(t, G_FLAGS) | old_flags;
+					int prev = item->flags & ITEM_TEX_ONLY;
+					t.ParseFlags(G_FLAGS, item->flags);
+					item->flags |= prev;
 				}
 				break;
 			case P_DEFENSE:
@@ -482,9 +486,6 @@ public:
 						t.Throw("Can't have negative mobility %d.", mob);
 					item->ToArmor().mobility = mob;
 				}
-				break;
-			case P_SKILL:
-				item->ToArmor().skill = (SkillId)t.MustGetKeywordId(G_ARMOR_SKILL);
 				break;
 			case P_TEX_OVERRIDE:
 				{
@@ -1164,8 +1165,8 @@ public:
 					crc.Update(a.req_str);
 					crc.Update(a.mobility);
 					crc.Update(a.material);
-					crc.Update(a.skill);
 					crc.Update(a.armor_type);
+					crc.Update(a.armor_unit_type);
 					crc.Update(a.tex_override.size());
 					for(TexId t : a.tex_override)
 						crc.Update(t.id);
@@ -1189,7 +1190,8 @@ public:
 			case IT_BOOK:
 				{
 					Book& b = item->ToBook();
-					crc.Update(b.scheme->id);
+					if(b.scheme)
+						crc.Update(b.scheme->id);
 				}
 				break;
 			case IT_GOLD:

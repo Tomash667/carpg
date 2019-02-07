@@ -192,7 +192,7 @@ class ObjectLoader : public ContentLoader
 			t.Next();
 			break;
 		case OP_FLAGS:
-			ReadFlags2(t, G_OBJECT_FLAGS, obj->flags);
+			t.ParseFlags(G_OBJECT_FLAGS, obj->flags);
 			t.Next();
 			break;
 		case OP_ALPHA:
@@ -264,7 +264,7 @@ class ObjectLoader : public ContentLoader
 
 				if(prop == OP_FLAGS)
 				{
-					ReadFlags2(t, {
+					t.ParseFlags({
 						{ &use->flags, G_OBJECT_FLAGS },
 						{ &use->use_flags, G_USABLE_FLAGS }
 					});

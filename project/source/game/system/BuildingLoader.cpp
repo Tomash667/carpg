@@ -189,7 +189,7 @@ class BuildingLoader : public ContentLoader
 				t.Next();
 				break;
 			case BK_FLAGS:
-				building->flags = ReadFlags(t, G_BUILDING_FLAGS);
+				t.ParseFlags(G_BUILDING_FLAGS, building->flags);
 				t.Next();
 				break;
 			case BK_SCHEME:

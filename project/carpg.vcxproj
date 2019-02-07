@@ -55,7 +55,7 @@
       <SDLCheck>true</SDLCheck>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>source;source\core;source\engine;source\engine\gui;source\game;source\game\entity;source\game\events;source\game\generator;source\game\helpers;source\game\location;source\game\net;source\game\panels;source\game\quests;source\game\script;source\game\stats;source\game\system;source\resource;..\external\angelscript_sdk\angelscript\include;..\external\angelscript_sdk\add_on;..\external\Bullet\src;..\external\DirectX\Include;..\external\DirectXMath\Inc;..\external\FMod\inc;..\external\SLikeNet\Source\include;..\external\Visual Leak Detector\include;..\external\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>source;source\core;source\engine;source\engine\gui;source\game;source\game\entity;source\game\events;source\game\generator;source\game\helpers;source\game\location;source\game\net;source\game\panels;source\game\quests;source\game\script;source\game\stats;source\game\system;source\resource;..\external\angelscript_sdk\angelscript\include;..\external\angelscript_sdk\add_on;..\external\Bullet\src;..\external\CrashRpt\include;..\external\DirectX\Include;..\external\DirectXMath\Inc;..\external\FMod\inc;..\external\json;..\external\SLikeNet\Source\include;..\external\Visual Leak Detector\include;..\external\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>false</MultiProcessorCompilation>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <AdditionalOptions>/w34706 /w34702 /w34189 /w34265 /w34266 /w34928 %(AdditionalOptions)</AdditionalOptions>
@@ -65,8 +65,8 @@
     <Link>
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
-      <AdditionalLibraryDirectories>../external/DirectX/Lib/x86;../external/FMod/lib;../external/Visual Leak Detector/lib/Win32;lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>angelscript_addon_debug.lib;angelscript_debug.lib;d3d9.lib;d3dx9d.lib;SLikeNet_debug.lib;ws2_32.lib;fmodex_vc.lib;dbghelp.lib;LinearMath_debug.lib;BulletCollision_debug.lib;zlib_debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../external/CrashRpt/lib;../external/DirectX/Lib/x86;../external/FMod/lib;../external/Visual Leak Detector/lib/Win32;lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>angelscript_addon_debug.lib;angelscript_debug.lib;CrashRpt1403.lib;d3d9.lib;d3dx9d.lib;SLikeNet_debug.lib;ws2_32.lib;fmodex_vc.lib;dbghelp.lib;LinearMath_debug.lib;BulletCollision_debug.lib;zlib_debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/ignore:4098 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <Manifest>
@@ -93,7 +93,7 @@
       <SDLCheck>true</SDLCheck>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>source;source\core;source\engine;source\engine\gui;source\game;source\game\entity;source\game\events;source\game\generator;source\game\helpers;source\game\location;source\game\net;source\game\panels;source\game\quests;source\game\script;source\game\stats;source\game\system;source\resource;..\external\angelscript_sdk\angelscript\include;..\external\angelscript_sdk\add_on;..\external\Bullet\src;..\external\DirectX\Include;..\external\DirectXMath\Inc;..\external\FMod\inc;..\external\SLikeNet\Source\include;..\external\Visual Leak Detector\include;..\external\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>source;source\core;source\engine;source\engine\gui;source\game;source\game\entity;source\game\events;source\game\generator;source\game\helpers;source\game\location;source\game\net;source\game\panels;source\game\quests;source\game\script;source\game\stats;source\game\system;source\resource;..\external\angelscript_sdk\angelscript\include;..\external\angelscript_sdk\add_on;..\external\Bullet\src;..\external\CrashRpt\include;..\external\DirectX\Include;..\external\DirectXMath\Inc;..\external\FMod\inc;..\external\json;..\external\SLikeNet\Source\include;..\external\Visual Leak Detector\include;..\external\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -105,8 +105,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <SubSystem>Windows</SubSystem>
-      <AdditionalLibraryDirectories>../external/DirectX/Lib/x86;../external/FMod/lib;../external/Visual Leak Detector/lib/Win32;lib;F:\SLikeNet\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>angelscript_addon.lib;angelscript.lib;d3d9.lib;d3dx9.lib;SLikeNet.lib;ws2_32.lib;fmodex_vc.lib;dbghelp.lib;LinearMath.lib;BulletCollision.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../external/CrashRpt/lib;../external/DirectX/Lib/x86;../external/FMod/lib;../external/Visual Leak Detector/lib/Win32;lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>angelscript_addon.lib;angelscript.lib;CrashRpt1403.lib;d3d9.lib;d3dx9.lib;SLikeNet.lib;ws2_32.lib;fmodex_vc.lib;dbghelp.lib;LinearMath.lib;BulletCollision.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/ignore:4098 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <Manifest>
@@ -154,6 +154,7 @@
     <ClInclude Include="source\engine\gui\Button.h" />
     <ClInclude Include="source\engine\gui\CheckBox.h" />
     <ClInclude Include="source\engine\gui\CheckBoxGroup.h" />
+    <ClInclude Include="source\engine\gui\ComboBox.h" />
     <ClInclude Include="source\engine\gui\Container.h" />
     <ClInclude Include="source\engine\gui\Control.h" />
     <ClInclude Include="source\engine\gui\DialogBox.h" />
@@ -205,6 +206,7 @@
     <ClInclude Include="source\engine\VertexData.h" />
     <ClInclude Include="source\engine\VertexDeclaration.h" />
     <ClInclude Include="source\ErrorHandler.h" />
+    <ClInclude Include="source\game\CommandParser.h" />
     <ClInclude Include="source\game\ConsoleCommands.h" />
     <ClInclude Include="source\game\Debug.h" />
     <ClInclude Include="source\game\entity\BloodType.h" />
@@ -239,12 +241,14 @@
     <ClInclude Include="source\game\generator\OutsideLocationGenerator.h" />
     <ClInclude Include="source\game\generator\SecretLocationGenerator.h" />
     <ClInclude Include="source\game\generator\TutorialLocationGenerator.h" />
+    <ClInclude Include="source\game\helpers\CombatHelper.h" />
     <ClInclude Include="source\game\helpers\ItemHelper.h" />
     <ClInclude Include="source\game\helpers\LoadingHandler.h" />
     <ClInclude Include="source\game\Level.h" />
     <ClInclude Include="source\game\net\BitStreamFunc.h" />
     <ClInclude Include="source\game\net\EntityInterpolator.h" />
     <ClInclude Include="source\game\net\GamePacket.h" />
+    <ClInclude Include="source\game\net\LobbyApi.h" />
     <ClInclude Include="source\game\net\NetChange.h" />
     <ClInclude Include="source\game\net\NetChangePlayer.h" />
     <ClInclude Include="source\game\net\PlayerInfo.h" />
@@ -370,7 +374,6 @@
     <ClInclude Include="source\game\stats\Const.h" />
     <ClInclude Include="source\game\stats\DamageTypes.h" />
     <ClInclude Include="source\game\stats\Effect.h" />
-    <ClInclude Include="source\game\stats\MagicEffect.h" />
     <ClInclude Include="source\game\stats\Material.h" />
     <ClInclude Include="source\game\stats\Music.h" />
     <ClInclude Include="source\game\stats\Perk.h" />
@@ -418,6 +421,7 @@
     <ClCompile Include="source\engine\gui\Button.cpp" />
     <ClCompile Include="source\engine\gui\CheckBox.cpp" />
     <ClCompile Include="source\engine\gui\CheckBoxGroup.cpp" />
+    <ClCompile Include="source\engine\gui\ComboBox.cpp" />
     <ClCompile Include="source\engine\gui\Container.cpp" />
     <ClCompile Include="source\engine\gui\Control.cpp" />
     <ClCompile Include="source\engine\gui\DialogBox.cpp" />
@@ -462,6 +466,7 @@
     <ClCompile Include="source\engine\VertexData.cpp" />
     <ClCompile Include="source\ErrorHandler.cpp" />
     <ClCompile Include="source\game\Ai.cpp" />
+    <ClCompile Include="source\game\CommandParser.cpp" />
     <ClCompile Include="source\game\ConsoleCommands.cpp" />
     <ClCompile Include="source\game\entity\Camera.cpp" />
     <ClCompile Include="source\game\entity\ItemContainer.cpp" />
@@ -486,13 +491,16 @@
     <ClCompile Include="source\game\generator\OutsideLocationGenerator.cpp" />
     <ClCompile Include="source\game\generator\SecretLocationGenerator.cpp" />
     <ClCompile Include="source\game\generator\TutorialLocationGenerator.cpp" />
+    <ClCompile Include="source\game\helpers\CombatHelper.cpp" />
     <ClCompile Include="source\game\helpers\ItemHelper.cpp" />
     <ClCompile Include="source\game\helpers\LoadingHandler.cpp" />
     <ClCompile Include="source\game\Level.cpp" />
     <ClCompile Include="source\game\location\LevelArea.cpp" />
     <ClCompile Include="source\game\net\BitStreamFunc.cpp" />
     <ClCompile Include="source\game\net\EntityInterpolator.cpp" />
+    <ClCompile Include="source\game\net\LobbyApi.cpp" />
     <ClCompile Include="source\game\net\Net2.cpp" />
+    <ClCompile Include="source\game\net\NetChange.cpp" />
     <ClCompile Include="source\game\net\PlayerInfo.cpp" />
     <ClCompile Include="source\game\panels\ActionPanel.cpp" />
     <ClCompile Include="source\game\panels\BookPanel.cpp" />
@@ -607,7 +615,6 @@
     <ClCompile Include="source\game\stats\BaseTrap.cpp" />
     <ClCompile Include="source\game\stats\Class.cpp" />
     <ClCompile Include="source\game\stats\Effect.cpp" />
-    <ClCompile Include="source\game\stats\Material.cpp" />
     <ClCompile Include="source\game\stats\Music.cpp" />
     <ClCompile Include="source\game\stats\Perk.cpp" />
     <ClCompile Include="source\game\stats\Required.cpp" />

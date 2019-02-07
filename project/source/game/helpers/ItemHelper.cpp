@@ -16,23 +16,23 @@ int treasure_value[] = {
 	900, //7
 	1200, //8
 	1500, //9
-	1900, //10
-	2400, //11
-	2900, //12
-	3400, //13
+	2000, //10
+	2500, //11
+	3000, //12
+	3500, //13
 	4000, //14
-	4600, //15
-	5300, //16
-	6000, //17
-	6800, //18
-	7600, //19
-	8500 //20
+	5000, //15
+	6000, //16
+	7000, //17
+	8000, //18
+	9000, //19
+	10000 //20
 };
 
-const float price_mod_buy[] = { 1.25f, 1.0f, 0.75f };
-const float price_mod_sell[] = { 0.25f, 0.5f, 0.75f };
-const float price_mod_buy_v[] = { 1.25f, 1.0f, 0.9f };
-const float price_mod_sell_v[] = { 0.5f, 0.75f, 0.9f };
+const float price_mod_buy[] = { 1.75f, 1.25f, 1.f, 0.9f, 0.775f };
+const float price_mod_buy_v[] = { 1.75f, 1.25f, 1.f, 0.95f, 0.925f };
+const float price_mod_sell[] = { 0.25f, 0.5f, 0.6f, 0.7f, 0.75f };
+const float price_mod_sell_v[] = { 0.5f, 0.65f, 0.75f, 0.85f, 0.9f };
 
 template<typename T>
 void InsertRandomItem(vector<ItemSlot>& container, vector<T*>& items, int price_limit, int exclude_flags, uint count)
@@ -108,7 +108,7 @@ void ItemHelper::GenerateTreasure(int level, int _count, vector<ItemSlot>& items
 	if(extra)
 		InsertItemBare(items, ItemList::GetItem("treasure"));
 
-	gold = value + level * 5;
+	gold = value + Random(5 * level, 10 * level);
 }
 
 //=================================================================================================
@@ -145,7 +145,16 @@ int ItemHelper::GetItemPrice(const Item* item, Unit& unit, bool buy)
 {
 	assert(item);
 
-	int cha = unit.Get(AttributeId::CHA);
+	int haggle = unit.Get(SkillId::HAGGLE) + unit.Get(AttributeId::CHA) - 50;
+	if(unit.IsPlayer())
+	{
+		if(unit.player->HavePerk(Perk::Asocial))
+			haggle -= 20;
+		if(unit.player->action == PlayerController::Action_Trade
+			&& unit.player->action_unit->data->id == "alchemist" && unit.player->HavePerk(Perk::AlchemistApprentice))
+			haggle += 20;
+	}
+
 	const float* mod_table;
 
 	if(item->type == IT_OTHER && item->ToOther().other_type == Valuable)
@@ -164,16 +173,18 @@ int ItemHelper::GetItemPrice(const Item* item, Unit& unit, bool buy)
 	}
 
 	float mod;
-	if(cha <= 1)
+	if(haggle <= -25)
 		mod = mod_table[0];
-	else if(cha < 50)
-		mod = Lerp(mod_table[0], mod_table[1], float(cha) / 50);
-	else if(cha == 50)
-		mod = mod_table[1];
-	else if(cha < 100)
-		mod = Lerp(mod_table[1], mod_table[2], float(cha - 50) / 50);
+	else if(haggle <= 0)
+		mod = Lerp(mod_table[0], mod_table[1], float(haggle + 25) / 25);
+	else if(haggle <= 15)
+		mod = Lerp(mod_table[1], mod_table[2], float(haggle) / 15);
+	else if(haggle <= 50)
+		mod = Lerp(mod_table[2], mod_table[3], float(haggle - 15) / 30);
+	else if(haggle <= 150)
+		mod = Lerp(mod_table[3], mod_table[4], float(haggle - 50) / 100);
 	else
-		mod = mod_table[2];
+		mod = mod_table[4];
 
 	int price = int(mod * item->value);
 	if(price == 0 && buy)
@@ -296,4 +307,12 @@ void ItemHelper::AddRandomItem(vector<ItemSlot>& items, ITEM_TYPE type, int pric
 		InsertRandomItem(items, Book::books, price_limit, flags, count);
 		break;
 	}
+}
+
+//=================================================================================================
+int ItemHelper::CalculateReward(int level, const Int2& level_range, const Int2& price_range)
+{
+	level = level_range.Clamp(level);
+	float t = float(level - level_range.x) / float(level_range.y - level_range.x);
+	return price_range.Lerp(t);
 }

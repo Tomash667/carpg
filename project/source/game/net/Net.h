@@ -1,6 +1,7 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+#include "GameComponent.h"
 #include "GamePacket.h"
 #include "NetChange.h"
 #include "NetChangePlayer.h"
@@ -22,9 +23,7 @@ enum AttackId
 enum class ChangedStatType
 {
 	ATTRIBUTE,
-	SKILL,
-	BASE_ATTRIBUTE,
-	BASE_SKILL
+	SKILL
 };
 
 //-----------------------------------------------------------------------------
@@ -45,7 +44,10 @@ enum class NetState
 {
 	Client_PingIp,
 	Client_WaitingForPassword,
+	Client_WaitingForPasswordProxy,
 	Client_Connecting,
+	Client_ConnectingProxy,
+	Client_Punchthrough,
 	Client_BeforeTransfer,
 	Client_ReceivedWorldData,
 	Client_ReceivedPlayerStartData,
@@ -82,7 +84,16 @@ enum StreamLogType
 };
 
 //-----------------------------------------------------------------------------
-class Net
+enum class MasterServerState
+{
+	NotConnected,
+	Connecting,
+	Registering,
+	Connected
+};
+
+//-----------------------------------------------------------------------------
+class Net : public GameComponent
 {
 	enum StartFlags
 	{
@@ -142,8 +153,9 @@ public:
 	static vector<NetChange> changes;
 
 	Net();
-	void LoadLanguage();
-	void Cleanup();
+	void InitOnce() override;
+	void LoadLanguage() override;
+	void Cleanup() override;
 	void WriteNetVars(BitStreamWriter& f);
 	void ReadNetVars(BitStreamReader& f);
 	bool ValidateNick(cstring nick);
@@ -158,6 +170,7 @@ public:
 	PlayerInfo* TryGetPlayer(int id);
 	void ClosePeer(bool wait = false);
 
+	LobbyApi* api;
 	RakPeerInterface* peer;
 	vector<PlayerInfo*> players; // contains players that left too
 	vector<string*> net_strs;
@@ -185,12 +198,15 @@ public:
 	void WriteWorldData(BitStreamWriter& f);
 	void WritePlayerStartData(BitStreamWriter& f, PlayerInfo& info);
 	void WriteLevelData(BitStream& stream, bool loaded_resources);
+	int GetServerFlags();
 
 	vector<PlayerInfo*> old_players;
 	uint active_players, max_players;
 	string server_name, password;
 	int last_id;
-	bool players_left;
+	MasterServerState master_server_state;
+	SystemAddress master_server_adr;
+	bool players_left, server_lan;
 
 	//****************************************************************************
 	// Client
@@ -205,9 +221,8 @@ public:
 	bool ReadPlayerStartData(BitStreamReader& f);
 	bool ReadLevelData(BitStreamReader& f);
 
-	SystemAddress server;
-	string net_adr;
-	bool was_client;
+	SystemAddress server, ping_adr;
+	bool was_client, join_lan;
 
 	//****************************************************************************
 	BitStream& StreamStart(Packet* packet, StreamLogType type);

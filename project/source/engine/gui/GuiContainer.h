@@ -4,10 +4,6 @@
 #include "Control.h"
 
 //-----------------------------------------------------------------------------
-class TextBox;
-class Button;
-
-//-----------------------------------------------------------------------------
 class GuiContainer
 {
 public:
@@ -34,6 +30,8 @@ public:
 	void Add(TextBox& textbox) { Add(&textbox); }
 	void Add(Button* button) { Add((Control*)button, F_MOUSE_FOCUS); }
 	void Add(Button& button) { Add(&button); }
+	void Add(CheckBox* checkbox) { Add((Control*)checkbox, F_MOUSE_FOCUS); }
+	void Add(CheckBox& checkbox) { Add(&checkbox); }
 	void GainFocus();
 	void LostFocus();
 	void Move(const Int2& global_pos);

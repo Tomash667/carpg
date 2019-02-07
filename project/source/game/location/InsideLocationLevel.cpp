@@ -89,6 +89,41 @@ Room* InsideLocationLevel::GetRoom(const Int2& pt)
 }
 
 //=================================================================================================
+Room* InsideLocationLevel::GetRandomRoom(RoomTarget target, delegate<bool(Room&)> clbk, int* out_index, int* out_group)
+{
+	int group_index = Rand() % groups.size(),
+		group_start = group_index;
+	while(true)
+	{
+		RoomGroup& group = groups[group_index];
+		if(group.target == target)
+		{
+			int index = Rand() % group.rooms.size(),
+				start = index;
+			while(true)
+			{
+				int room_index = group.rooms[index];
+				Room& room = rooms[room_index];
+				if(clbk(room))
+				{
+					if(out_index)
+						*out_index = room_index;
+					if(out_group)
+						*out_group = group_index;
+					return &room;
+				}
+				index = (index + 1) % group.rooms.size();
+				if(index == start)
+					break;
+			}
+		}
+		group_index = (group_index + 1) % groups.size();
+		if(group_index == group_start)
+			return nullptr;
+	}
+}
+
+//=================================================================================================
 bool InsideLocationLevel::GetRandomNearWallTile(const Room& room, Int2& tile, GameDirection& rot, bool nocol)
 {
 	rot = (GameDirection)(Rand() % 4);
@@ -214,6 +249,14 @@ void InsideLocationLevel::SaveLevel(GameWriter& f, bool local)
 	for(Room& room : rooms)
 		room.Save(f);
 
+	// room groups
+	f << groups.size();
+	for(RoomGroup& group : groups)
+	{
+		f << group.rooms;
+		f << group.target;
+	}
+
 	// traps
 	f << traps.size();
 	for(Trap* trap : traps)
@@ -298,6 +341,26 @@ void InsideLocationLevel::LoadLevel(GameReader& f, bool local)
 	rooms.resize(f.Read<uint>());
 	for(Room& room : rooms)
 		room.Load(f);
+
+	// room groups
+	if(LOAD_VERSION >= V_DEV)
+	{
+		groups.resize(f.Read<uint>());
+		for(RoomGroup& group : groups)
+		{
+			f >> group.rooms;
+			f >> group.target;
+		}
+	}
+	else
+	{
+		groups.resize(rooms.size());
+		for(int i = 0; i < (int)rooms.size(); ++i)
+		{
+			groups[i].rooms.push_back(i);
+			groups[i].target = rooms[i].target;
+		}
+	}
 
 	// traps
 	traps.resize(f.Read<uint>());

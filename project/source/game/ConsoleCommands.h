@@ -64,6 +64,17 @@ enum CMD
 	CMD_REFRESH_COOLDOWN,
 	CMD_DRAW_PATH,
 	CMD_VERIFY,
+	CMD_ADD_EFFECT,
+	CMD_REMOVE_EFFECT,
+	CMD_LIST_EFFECTS,
+	CMD_ADD_PERK,
+	CMD_REMOVE_PERK,
+	CMD_LIST_PERKS,
+	CMD_SELECT,
+	CMD_LIST_STATS,
+	CMD_ADD_LEARNING_POINTS,
+	CMD_CLEAN_LEVEL,
+	CMD_ARENA,
 
 	CMD_MAX
 };
@@ -160,3 +171,16 @@ struct ConsoleCommand
 		return *(T*)var;
 	}
 };
+
+//-----------------------------------------------------------------------------
+extern PrintMsgFunc g_print_func;
+
+inline void Msg(cstring msg)
+{
+	g_print_func(msg);
+}
+template<typename... Args>
+inline void Msg(cstring msg, const Args&... args)
+{
+	g_print_func(Format(msg, args...));
+}

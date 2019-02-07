@@ -17,6 +17,7 @@
 #include "GameMessages.h"
 #include "Arena.h"
 #include "PlayerInfo.h"
+#include "ScriptManager.h"
 
 //=================================================================================================
 void Quest_Tournament::InitOnce()
@@ -247,6 +248,7 @@ void Quest_Tournament::StartTournament(Unit* arena_master)
 	L.city_ctx->FindInsideBuilding(BuildingGroup::BG_ARENA, arena);
 }
 
+//=================================================================================================
 bool Quest_Tournament::ShouldJoin(Unit& u)
 {
 	if(u.summoner)
@@ -650,9 +652,9 @@ void Quest_Tournament::Update(float dt)
 				if(master->CanAct() && master->busy == Unit::Busy_No)
 				{
 					// give healing potions
-					static const Item* p1 = Item::Get("p_hp");
-					static const Item* p2 = Item::Get("p_hp2");
-					static const Item* p3 = Item::Get("p_hp3");
+					static const Consumable* p1 = (Consumable*)Item::Get("p_hp");
+					static const Consumable* p2 = (Consumable*)Item::Get("p_hp2");
+					static const Consumable* p3 = (Consumable*)Item::Get("p_hp3");
 					for(vector<Unit*>::iterator it = game.arena->units.begin(), end = game.arena->units.end(); it != end; ++it)
 					{
 						Unit& u = **it;
@@ -660,24 +662,25 @@ void Quest_Tournament::Update(float dt)
 						uint given_items = 0;
 						if(mhp > 0.f && u.IsAI())
 							u.ai->have_potion = 2;
-						if(mhp >= 600.f)
+						if(mhp >= p3->power)
 						{
-							int count = (int)floor(mhp / 600.f);
+							int count = (int)floor(mhp / p3->power);
 							game.AddItem(u, p3, count, false, true);
-							mhp -= 600.f * count;
+							mhp -= p3->power * count;
 							given_items += count;
 						}
-						if(mhp >= 400.f)
+						if(mhp >= p2->power)
 						{
-							game.AddItem(u, p2, 1, false, true);
-							mhp -= 400.f;
-							++given_items;
+							int count = (int)floor(mhp / p2->power);
+							game.AddItem(u, p2, count, false, true);
+							mhp -= p2->power * count;
+							given_items += count;
 						}
 						if(mhp > 0.f)
 						{
-							int count = (int)ceil(mhp / 200.f);
+							int count = (int)ceil(mhp / p1->power);
 							game.AddItem(u, p1, count, false, true);
-							mhp -= 200.f * count;
+							mhp -= p1->power * count;
 							given_items += count;
 						}
 						if(u.IsPlayer() && given_items)
@@ -709,7 +712,7 @@ void Quest_Tournament::Update(float dt)
 					if(winner->IsHero())
 					{
 						winner->look_target = master;
-						winner->hero->LevelUp();
+						winner->hero->AddExp(15000);
 					}
 					else
 						winner->busy = Unit::Busy_No;
@@ -801,24 +804,30 @@ void Quest_Tournament::Talk(cstring text)
 }
 
 //=================================================================================================
-void Quest_Tournament::Train(Unit& u)
+void Quest_Tournament::Train(PlayerController& player)
 {
-	Game& game = Game::Get();
+	Unit& u = *player.unit;
 	master = nullptr;
-	game.Train(u, false, (int)AttributeId::STR);
-	game.Train(u, false, (int)AttributeId::END);
-	game.Train(u, false, (int)AttributeId::DEX);
+	player.Train(false, (int)AttributeId::STR);
+	player.Train(false, (int)AttributeId::END);
+	player.Train(false, (int)AttributeId::DEX);
 	if(u.HaveWeapon())
 	{
-		game.Train(u, true, (int)SkillId::ONE_HANDED_WEAPON);
-		game.Train(u, true, (int)u.GetWeapon().GetInfo().skill);
+		player.Train(true, (int)SkillId::ONE_HANDED_WEAPON);
+		player.Train(true, (int)u.GetWeapon().GetSkill());
 	}
 	if(u.HaveBow())
-		game.Train(u, true, (int)SkillId::BOW);
+		player.Train(true, (int)SkillId::BOW);
 	if(u.HaveShield())
-		game.Train(u, true, (int)SkillId::SHIELD);
+		player.Train(true, (int)SkillId::SHIELD);
 	if(u.HaveArmor())
-		game.Train(u, true, (int)u.GetArmor().skill);
+		player.Train(true, (int)u.GetArmor().GetSkill());
+	Var* var = SM.GetVars(&u)->Get("ironfist_won");
+	if(!var->IsBool(true))
+	{
+		u.player->AddLearningPoint();
+		var->SetBool(true);
+	}
 }
 
 //=================================================================================================

@@ -1865,7 +1865,7 @@ Unit* Level::SpawnUnitInsideRoom(Room &p, UnitData &unit, int level, const Int2&
 	{
 		Vec3 pt = p.GetRandomPos(radius);
 
-		if(Vec3::Distance(stairs_pos, pt) < 10.f)
+		if(Vec3::Distance(stairs_pos, pt) < ALERT_SPAWN_RANGE)
 			continue;
 
 		Int2 my_pt = Int2(int(pt.x / 2), int(pt.y / 2));
@@ -1981,25 +1981,15 @@ Unit* Level::SpawnUnitInsideInn(UnitData& ud, int level, InsideBuilding* inn, in
 //=================================================================================================
 void Level::SpawnUnitsGroup(LevelContext& ctx, const Vec3& pos, const Vec3* look_at, uint count, UnitGroup* group, int level, delegate<void(Unit*)> callback)
 {
-	static TmpUnitGroup tgroup;
-	tgroup.group = group;
-	tgroup.Fill(level);
+	Pooled<TmpUnitGroup> tgroup;
+	tgroup->Fill(group, level);
 
 	for(uint i = 0; i < count; ++i)
 	{
-		int x = Rand() % tgroup.total,
-			y = 0;
-		for(auto& entry : tgroup.entries)
-		{
-			y += entry.count;
-			if(x < y)
-			{
-				Unit* u = SpawnUnitNearLocation(ctx, pos, *entry.ud, look_at, Clamp(entry.ud->level.Random(), level / 2, level), 4.f);
-				if(u && callback)
-					callback(u);
-				break;
-			}
-		}
+		TmpUnitGroup::Spawn spawn = tgroup->Get();
+		Unit* u = SpawnUnitNearLocation(ctx, pos, *spawn.first, look_at, spawn.second, 4.f);
+		if(u && callback)
+			callback(u);
 	}
 }
 
@@ -3141,6 +3131,14 @@ void Level::OnReenterLevel()
 }
 
 //=================================================================================================
+bool Level::HaveArena()
+{
+	if(city_ctx)
+		return IS_SET(city_ctx->flags, City::HaveArena);
+	return false;
+}
+
+//=================================================================================================
 InsideBuilding* Level::GetArena()
 {
 	assert(city_ctx);
@@ -4228,5 +4226,32 @@ MusicType Level::GetLocationMusic()
 	default:
 		assert(0);
 		return MusicType::Dungeon;
+	}
+}
+
+//=================================================================================================
+// -1 - outside
+// -2 - all
+void Level::CleanLevel(int building_id)
+{
+	for(LevelContext& ctx : ForEachContext())
+	{
+		if((ctx.type != LevelContext::Building && (building_id == -2 || building_id == -1))
+			|| (ctx.type == LevelContext::Building && (building_id == -2 || building_id == ctx.building_id)))
+		{
+			ctx.bloods->clear();
+			for(Unit* unit : *ctx.units)
+			{
+				if(!unit->IsAlive())
+					RemoveUnit(unit, false);
+			}
+		}
+	}
+
+	if(Net::IsServer())
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::CLEAN_LEVEL;
+		c.id = building_id;
 	}
 }

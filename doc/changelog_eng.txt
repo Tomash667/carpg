@@ -2,14 +2,36 @@ Changelog
 
 --------------------------------------------------------------------------------
 Version 0.8 (???):
+! this is last version working on windows xp
 ! cannot load saves from version 0.2.10 or older
++ new combat system, mobility calculations
++ master server, get list of existing servers and connect with nat punchthrough
++ learning points used to training skills/attributes/feats
++ new feats (bad back, chronic disease, sluggish, slow learner, asocial, poor, strong back, aggressive, mobility, finesse, tough, hard skin, adaptation, perfect health)
++ new skill haggle, trained by merchant
++ effects system (feats gives effects)
 + key to toggle run/walk
 + loading traders stock from file, refreshing stock every 10 days, not when entering location
++ new commands (add_effect, remove_effect, list_effects, add_perk, remove_perk, list_perks, select, list_stats, add_learning_points, arena, clean_level) 
++ new items: magic scroll, knife, wooden sword, rusted hatchet, plank shield, rusted splint armor, Gladiator armor, muffin
++ hero ai profiles - prefered skills/items
++ application crash reporting using CrashRpt
++ adjusted item prices, units golds, quest rewards
++ not spawning enemies close to stairs, less enemies in big connected rooms
++ adjusted speed of gaining attributes/skills by player and heroes
++ bigger world map, map zoom and scrolling
++ location search box on world map
+- fixed fast melee weapon training on low level enemies
 - fixed talking with unit that is standing up
 - fixed units rotating when talking for clients
 - wanted quest could select already used location where target will fail to spawn
 - fixed memory leak when generating mine
 - mayor dialog fixes
+- fixed wrong price calculations when selling items to fallower
+- fixed connecting to full server
+- fixed removing password from server but it was still required
+- fixed goblins/orcs missing idle dialogs
+- fixed arena encounter levels
 
 --------------------------------------------------------------------------------
 Version 0.7.1 (2018-04-15):

@@ -293,6 +293,14 @@ void Unit_AddItem(Unit* unit, const Item* item)
 	unit->AddItem2(item, 1u, 0u);
 }
 
+bool Player_HavePerk(PlayerController* pc, const string& perk_id)
+{
+	PerkInfo* perk = PerkInfo::Find(perk_id);
+	if(!perk)
+		throw ScriptException("Invalid perk '%s'.", perk_id.c_str());
+	return pc->HavePerk(perk->perk_id);
+}
+
 void Team_AddGold(uint gold)
 {
 	Game::Get().AddGold(gold, nullptr, true);
@@ -407,6 +415,7 @@ void ScriptManager::RegisterGame()
 
 	AddType("Player")
 		.Member("Unit@ unit", offsetof(PlayerController, unit))
+		.Method("bool HavePerk(const string& in)", asFUNCTION(Player_HavePerk))
 		.WithInstance("Player@ pc", &ctx.pc);
 
 	WithNamespace("Team")

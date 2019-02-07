@@ -64,6 +64,7 @@ struct OpcjeMapy
 	Room* schody_gora_pokoj, *schody_dol_pokoj;
 	GameDirection schody_gora_kierunek, schody_dol_kierunek;
 	Int2 schody_gora_pozycja, schody_dol_pozycja;
+	vector<RoomGroup>* groups;
 
 	// output
 	int blad;

@@ -1,7 +1,7 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-// Kahn's algorithm
+// Kahn's algorithm, check if graph have loops
 class Graph
 {
 public:

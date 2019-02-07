@@ -14,9 +14,9 @@
 #undef far
 #undef IN
 #undef OUT
-#undef NULL
 
 //-----------------------------------------------------------------------------
+// slnet types
 using namespace SLNet;
 
 //-----------------------------------------------------------------------------
@@ -29,6 +29,7 @@ class Arena;
 class BitStreamReader;
 class BitStreamWriter;
 class BookPanel;
+class CommandParser;
 class Console;
 class Controls;
 class CreateCharacterPanel;
@@ -50,6 +51,7 @@ class Journal;
 class Level;
 class LevelAreaContext;
 class LoadScreen;
+class LobbyApi;
 class MainMenu;
 class Minimap;
 class MpBox;
@@ -107,6 +109,7 @@ struct Light;
 struct LoadingHandler;
 struct LocationEventHandler;
 struct LocationTexturePack;
+struct NetChange;
 struct NetChangePlayer;
 struct News;
 struct Object;
@@ -125,6 +128,7 @@ struct Shield;
 struct SpeechBubble;
 struct Spell;
 struct SpellList;
+struct StatProfile;
 struct Stock;
 struct TerrainTile;
 struct Tile;
@@ -133,6 +137,7 @@ struct Unit;
 struct UnitData;
 struct UnitEventHandler;
 struct UnitGroup;
+struct UnitStats;
 struct Usable;
 struct Var;
 struct VarsContainer;
@@ -167,6 +172,7 @@ class SecretLocationGenerator;
 class TutorialLocationGenerator;
 
 //-----------------------------------------------------------------------------
+enum CMD;
 enum Direction;
 enum EncounterMode;
 enum GameDirection;
@@ -175,6 +181,11 @@ enum MATERIAL_TYPE;
 enum TRAP_TYPE;
 enum SPAWN_GROUP;
 enum SpecialEncounter;
+enum class AttributeId;
 enum class Class;
+enum class EffectId;
+enum class EffectSource;
 enum class OLD_BUILDING;
 enum class MusicType;
+enum class Perk;
+enum class SkillId;

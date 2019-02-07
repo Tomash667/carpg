@@ -3,9 +3,9 @@
 #include "CriticalSection.h"
 
 //-----------------------------------------------------------------------------
-// Funkcje obs³uguj¹ce vector
+// Containers helper functions
 //-----------------------------------------------------------------------------
-// Usuwanie elementów wektora
+// Delete elemnt(s) from container
 template<typename T>
 inline void DeleteElements(vector<T>& v)
 {
@@ -55,7 +55,6 @@ inline void DeleteElementsChecked(vector<T>& v)
 	v.clear();
 }
 
-// usuñ pojedyñczy element z wektora, kolejnoœæ nie jest wa¿na
 template<typename T>
 inline void DeleteElement(vector<T>& v, T& e)
 {
@@ -69,8 +68,7 @@ inline void DeleteElement(vector<T>& v, T& e)
 			return;
 		}
 	}
-
-	assert(0 && "Nie znaleziono elementu do usuniecia!");
+	assert(0 && "Missing element to delete.");
 }
 
 template<typename T>
@@ -108,8 +106,7 @@ inline void RemoveElement(vector<T>& v, const T& e)
 			return;
 		}
 	}
-
-	assert(0 && "Nie znaleziono elementu do wyrzucenia!");
+	assert(0 && "Missing element to remove.");
 }
 
 template<typename T>
@@ -129,8 +126,7 @@ inline void RemoveElementOrder(vector<T>& v, const T& e)
 			return;
 		}
 	}
-
-	assert(0 && "Nie znaleziono elementu do wyrzucenia!");
+	assert(0 && "Missing element to remove.");
 }
 
 template<typename T>
@@ -151,7 +147,6 @@ inline bool RemoveElementTry(vector<T>& v, const T& e)
 			return true;
 		}
 	}
-
 	return false;
 }
 
@@ -233,15 +228,15 @@ inline T& Add1(list<T>& v)
 	return v.back();
 }
 
-// zwraca losowy element tablicy
+// Returns random item from vector
 template<typename T>
-T& random_item(vector<T>& v)
+T& RandomItem(vector<T>& v)
 {
 	return v[Rand() % v.size()];
 }
 
 template<typename T>
-T random_item_pop(vector<T>& v)
+T RandomItemPop(vector<T>& v)
 {
 	uint index = Rand() % v.size();
 	T item = v[index];
@@ -266,7 +261,6 @@ inline bool IsInside(const vector<T>& v, const T& elem)
 		if(*it == elem)
 			return true;
 	}
-
 	return false;
 }
 
@@ -277,7 +271,7 @@ inline bool IsInside(const vector<T>* v, const T& elem)
 }
 
 //-----------------------------------------------------------------------------
-// kontener u¿ywany na tymczasowe obiekty które s¹ potrzebne od czasu do czasu
+// Object pool pattern
 //-----------------------------------------------------------------------------
 #ifdef _DEBUG
 struct ObjectPoolLeakManager
@@ -299,7 +293,6 @@ struct ObjectPool
 	ObjectPool() : destroyed(false)
 	{
 	}
-
 	~ObjectPool()
 	{
 		Cleanup();
@@ -355,7 +348,6 @@ struct ObjectPool
 		{
 			e->OnFree();
 		}
-
 		pool.push_back(e);
 	}
 
@@ -473,6 +465,18 @@ private:
 	static ObjectPool<T>& GetPool() { static ObjectPool<T> pool; return pool; }
 };
 
+template<typename T>
+class Pooled
+{
+public:
+	Pooled() { ptr = ObjectPoolProxy<T>::Get(); }
+	~Pooled() { ptr->Free(); }
+	T* operator -> () { return ptr; }
+	operator T& () { return *ptr; }
+
+	T* ptr;
+};
+
 namespace internal
 {
 	template<typename T>
@@ -509,12 +513,12 @@ using ObjectPoolRef = Ptr<T, internal::ObjectPoolAllocator<T>>;
 template<typename T>
 using ObjectPoolVectorRef = VectorPtr<T, internal::ObjectPoolVectorAllocator<T>>;
 
-// tymczasowe stringi
+// global pools
 extern ObjectPool<string> StringPool;
-extern ObjectPool<vector<void*> > VectorPool;
+extern ObjectPool<vector<void*>> VectorPool;
 
 //-----------------------------------------------------------------------------
-// Lokalny string który wykorzystuje StringPool
+// Local string using string pool
 //-----------------------------------------------------------------------------
 struct LocalString
 {
@@ -680,7 +684,7 @@ private:
 };
 
 //-----------------------------------------------------------------------------
-// Lokalny wektor przechowuj¹cy wskaŸniki
+// Local vector using pool, can only store pointers
 //-----------------------------------------------------------------------------
 template<typename T>
 struct LocalVector
@@ -755,7 +759,6 @@ struct LocalVector
 		return v->end();
 	}
 
-
 private:
 	vector<T>* v;
 };
@@ -811,7 +814,7 @@ struct LocalVector2
 		return v->size();
 	}
 
-	T& random_item()
+	T& RandomItem()
 	{
 		return v->at(Rand() % v->size());
 	}
@@ -841,9 +844,9 @@ private:
 };
 
 template<typename T>
-inline T& random_item(LocalVector2<T>& v)
+inline T& RandomItem(LocalVector2<T>& v)
 {
-	return v.random_item();
+	return v.RandomItem();
 }
 
 //-----------------------------------------------------------------------------
@@ -868,6 +871,8 @@ inline void LoopAndRemove(std::map<Key, Value>& items, Action action)
 	}
 }
 
+//-----------------------------------------------------------------------------
+// Return random weighted item
 template<typename T>
 struct WeightPair
 {
@@ -888,9 +893,11 @@ inline T& RandomItemWeight(vector<WeightPair<T>>& items, int max_weight)
 			return item.item;
 	}
 	// if it gets here max_count is wrong, return random item
-	return random_item(items).item;
+	return RandomItem(items).item;
 }
 
+//-----------------------------------------------------------------------------
+// Like LocalVector but can store any data
 extern ObjectPool<vector<byte>> BufPool;
 
 template<typename T>
@@ -1028,6 +1035,8 @@ private:
 	vector<byte>* buf;
 };
 
+//-----------------------------------------------------------------------------
+// Find index of item
 template<typename T>
 inline int GetIndex(const vector<T>& items, const T& item)
 {
@@ -1055,6 +1064,7 @@ inline int GetIndex(const vector<T>& items, Pred pred)
 }
 
 //-----------------------------------------------------------------------------
+// Vector using critical section protection
 template<typename T>
 class SafeVector
 {
@@ -1173,7 +1183,6 @@ namespace internal
 
 template<typename T>
 using SetContainer = std::unordered_set<T*, internal::Hash<T>, internal::Equals<T>>;
-
 
 //-----------------------------------------------------------------------------
 template<typename T>

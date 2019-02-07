@@ -1,19 +1,30 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-struct GroundItem;
-struct Item;
-struct Spell;
-struct Unit;
-struct UnitData;
-
-//-----------------------------------------------------------------------------
 enum USE_USABLE_STATE
 {
 	USE_USABLE_STOP,
 	USE_USABLE_END,
 	USE_USABLE_START,
 	USE_USABLE_START_SPECIAL
+};
+
+//-----------------------------------------------------------------------------
+class NetChangeWriter
+{
+public:
+	NetChangeWriter(NetChange& c);
+	void Write(const void* ptr, uint size);
+	template<typename T>
+	NetChangeWriter& operator << (const T& e)
+	{
+		Write(&e, sizeof(T));
+		return *this;
+	}
+
+private:
+	byte* data;
+	byte& len;
 };
 
 //-----------------------------------------------------------------------------
@@ -113,7 +124,6 @@ struct NetChange
 		CREATE_EXPLOSION, // create explosion effect [string1(spell->id), Vec3(pos)]
 		REMOVE_TRAP, // remove trap [int(id)-trap netid]
 		TRIGGER_TRAP, // trigger trap [int(id)-trap netid]
-		TRAIN_MOVE, // player is training dexterity by moving []
 		EVIL_SOUND, // play evil sound []
 		ENCOUNTER, // start encounter on world map [string1(str)-encounter text]
 		CLOSE_ENCOUNTER, // close encounter message box []
@@ -167,6 +177,13 @@ struct NetChange
 		RUN_SCRIPT, // run script [string(str)-code, int(id)-target netid]
 		SET_NEXT_ACTION, // player set next action [auto: byte-next_action, ...]
 		CHANGE_ALWAYS_RUN, // player toggle always run - notify to save it [bool(id)]
+		GENERIC_CMD, // player used generic cheat [byte(size), byte[size]-content (first byte is CMD)]
+		ADD_VISIBLE_EFFECT,
+		REMOVE_VISIBLE_EFFECT,
+		USE_ITEM, // player used item SERVER[int(id)-unit] CLIENT[int(id)-item index]
+		MARK_UNIT, // mark unit [int(netid)-unit, bool(id)-is marked]
+		CHEAT_ARENA, // player used cheat 'arena' [string(str)-list of enemies]
+		CLEAN_LEVEL, // clean level from blood and corpses [int(id)-building id (-1 outside, -2 all)]
 
 		MAX
 	} type;
@@ -178,6 +195,7 @@ struct NetChange
 		UnitData* base_unit;
 		int e_id;
 		Spell* spell;
+		CMD cmd;
 	};
 	union
 	{
@@ -200,5 +218,13 @@ struct NetChange
 		float extra_f;
 		int extra_netid;
 	};
+
+	template<typename T>
+	NetChangeWriter operator << (const T& e)
+	{
+		NetChangeWriter w(*this);
+		w.Write(&e, sizeof(T));
+		return w;
+	}
 };
 static_assert((int)NetChange::MAX <= 256, "too many NetChanges");

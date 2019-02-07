@@ -854,7 +854,7 @@ void CityGenerator::GenerateBuildings(vector<ToBuild>& tobuild)
 			}
 		}
 
-		std::pair<Int2, GameDirection> pt = random_item(valid_pts);
+		std::pair<Int2, GameDirection> pt = RandomItem(valid_pts);
 		GameDirection best_dir = pt.second;
 		valid_pts.clear();
 
@@ -1690,7 +1690,7 @@ void CityGenerator::GenerateRoads(TERRAIN_TILE _road_tile, int tries)
 		if(to_check.empty())
 			break;
 
-		int index = random_item_pop(to_check);
+		int index = RandomItemPop(to_check);
 		Road2& r = roads[index];
 
 		choices = 0;
@@ -2616,12 +2616,12 @@ void CityGenerator::SpawnTemporaryUnits()
 	if(W.CheckFirstCity())
 	{
 		count = 4;
-		level = Int2(2, 5);
+		level = Int2(5, 8);
 	}
 	else
 	{
 		count = Random(1u, 4u);
-		level = Int2(2, 15);
+		level = Int2(5, 15);
 	}
 
 	for(uint i = 0; i < count; ++i)

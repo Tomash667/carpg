@@ -13,6 +13,7 @@
 #include "CaveGenerator.h"
 #include "Portal.h"
 #include "AIController.h"
+#include "Team.h"
 
 //=================================================================================================
 void Quest_Mine::Start()
@@ -104,6 +105,7 @@ void Quest_Mine::SetProgress(int prog2)
 	case Progress::ClearedLocation:
 		{
 			OnUpdate(game->txQuest[134]);
+			Team.AddExp(3000);
 		}
 		break;
 	case Progress::SelectedShares:
@@ -120,7 +122,7 @@ void Quest_Mine::SetProgress(int prog2)
 		{
 			state = Quest::Completed;
 			OnUpdate(game->txQuest[136]);
-			game->AddReward(500);
+			game->AddReward(PAYMENT);
 			mine_state2 = State2::Built;
 			days -= days_required;
 			days_required = Random(60, 90);
@@ -173,7 +175,7 @@ void Quest_Mine::SetProgress(int prog2)
 		{
 			state = Quest::Completed;
 			OnUpdate(game->txQuest[143]);
-			game->AddReward(1000);
+			game->AddReward(PAYMENT2);
 			mine_state = State::BigShares;
 			mine_state2 = State2::Expanded;
 			days -= days_required;
@@ -205,6 +207,7 @@ void Quest_Mine::SetProgress(int prog2)
 			OnUpdate(game->txQuest[148]);
 			quest_manager.EndUniqueQuest();
 			W.AddNews(game->txQuest[149]);
+			Team.AddExp(10000);
 		}
 		break;
 	}
@@ -217,8 +220,12 @@ cstring Quest_Mine::FormatString(const string& str)
 		return GetTargetLocationName();
 	else if(str == "target_dir")
 		return GetTargetLocationDir();
-	else if(str == "zloto")
+	else if(str == "invest_price")
 		return Format("%d", mine_state == State::Shares ? 10000 : 12000);
+	else if(str == "payment")
+		return Format("%d", PAYMENT);
+	else if(str == "payment2")
+		return Format("%d", PAYMENT2);
 	else
 	{
 		assert(0);
@@ -340,7 +347,7 @@ int Quest_Mine::GetIncome(int days_passed)
 		if(count)
 		{
 			days_gold -= count * 30;
-			return count * 500;
+			return count * PAYMENT;
 		}
 	}
 	else if(mine_state == State::BigShares && mine_state2 >= State2::Expanded)
@@ -350,7 +357,7 @@ int Quest_Mine::GetIncome(int days_passed)
 		if(count)
 		{
 			days_gold -= count * 30;
-			return count * 1000;
+			return count * PAYMENT2;
 		}
 	}
 	return 0;
@@ -814,6 +821,7 @@ bool Quest_Mine::GenerateMine(CaveGenerator* cave_gen)
 			loc->st = 14;
 			loc->type = L_DUNGEON;
 			loc->image = LI_DUNGEON;
+			loc->state = LS_HIDDEN;
 			int loc_id = W.AddLocation(loc);
 			sub.target_loc = dungeon_loc = loc_id;
 

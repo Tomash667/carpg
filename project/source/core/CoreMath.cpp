@@ -70,7 +70,7 @@ void Srand()
 }
 
 //=================================================================================================
-// Zwraca k¹t pomiêdzy dwoma punktami
+// Return angle between two points
 //=================================================================================================
 float Angle(float x1, float y1, float x2, float y2)
 {
@@ -105,69 +105,59 @@ float Angle(float x1, float y1, float x2, float y2)
 }
 
 //=================================================================================================
-// Kolizja promienia z prostopad³oœcianem
-// Jeœli promieñ nie przecina prostopad³oœcianu, zwraca false.
-// Jeœli promieñ przecina prostopad³oœcian, zwraca true i przez out_t zwraca odleg³oœæ w wielokrotnoœciach d³ugoœci ray_dir.
-// Jeœli promieñ przecina prostopad³oœcian od ty³u, funkcja te¿ zwraca true i zwraca out_t ujemne.
-// Jeœli ray_pos jest wewn¹trz prostopad³oœcianu, funkcja zwraca true i out_t = 0.
-// funkcja z TFQE
+// Ray and box test
+// If there is no collision returns false.
+// If there is collision returns true and out_t is multiple of ray_dir.
+// If there is collision with back of ray returns true and out_t is negative.
+// If ray_pos is inside box it returns true and out_t is 0.
 //=================================================================================================
 bool RayToBox(const Vec3& ray_pos, const Vec3& ray_dir, const Box &box, float* out_t)
 {
-	// removed xn, yn, zn
 	bool inside = true;
-	float xt;//, xn;
 
+	float xt;
 	if(ray_pos.x < box.v1.x)
 	{
 		xt = box.v1.x - ray_pos.x;
 		xt /= ray_dir.x;
-		//xn = -1.0f;
 		inside = false;
 	}
 	else if(ray_pos.x > box.v2.x)
 	{
 		xt = box.v2.x - ray_pos.x;
 		xt /= ray_dir.x;
-		//xn = 1.0f;
 		inside = false;
 	}
 	else
 		xt = -1.0f;
 
-	float yt;//, yn;
-
+	float yt;
 	if(ray_pos.y < box.v1.y)
 	{
 		yt = box.v1.y - ray_pos.y;
 		yt /= ray_dir.y;
-		//yn = -1.0f;
 		inside = false;
 	}
 	else if(ray_pos.y > box.v2.y)
 	{
 		yt = box.v2.y - ray_pos.y;
 		yt /= ray_dir.y;
-		//yn = 1.0f;
 		inside = false;
 	}
 	else
 		yt = -1.0f;
 
-	float zt;//, zn;
-
+	float zt;
 	if(ray_pos.z < box.v1.z)
 	{
 		zt = box.v1.z - ray_pos.z;
 		zt /= ray_dir.z;
-		//zn = -1.0f;
 		inside = false;
 	}
 	else if(ray_pos.z > box.v2.z)
 	{
 		zt = box.v2.z - ray_pos.z;
 		zt /= ray_dir.z;
-		//zn = 1.0f;
 		inside = false;
 	}
 	else
@@ -181,7 +171,6 @@ bool RayToBox(const Vec3& ray_pos, const Vec3& ray_dir, const Box &box, float* o
 
 	// Select the farthest plane - this is the plane of intersection
 	int plane = 0;
-
 	float t = xt;
 	if(yt > t)
 	{
@@ -196,32 +185,37 @@ bool RayToBox(const Vec3& ray_pos, const Vec3& ray_dir, const Box &box, float* o
 	}
 
 	// Check if the point of intersection lays within the box face
-
 	switch(plane)
 	{
 	case 0: // ray intersects with yz plane
 		{
 			float y = ray_pos.y + ray_dir.y * t;
-			if(y < box.v1.y || y > box.v2.y) return false;
+			if(y < box.v1.y || y > box.v2.y)
+				return false;
 			float z = ray_pos.z + ray_dir.z * t;
-			if(z < box.v1.z || z > box.v2.z) return false;
+			if(z < box.v1.z || z > box.v2.z)
+				return false;
 		}
 		break;
 	case 1: // ray intersects with xz plane
 		{
 			float x = ray_pos.x + ray_dir.x * t;
-			if(x < box.v1.x || x > box.v2.x) return false;
+			if(x < box.v1.x || x > box.v2.x)
+				return false;
 			float z = ray_pos.z + ray_dir.z * t;
-			if(z < box.v1.z || z > box.v2.z) return false;
+			if(z < box.v1.z || z > box.v2.z)
+				return false;
 		}
 		break;
 	default:
 	case 2: // ray intersects with xy plane
 		{
 			float x = ray_pos.x + ray_dir.x * t;
-			if(x < box.v1.x || x > box.v2.x) return false;
+			if(x < box.v1.x || x > box.v2.x)
+				return false;
 			float y = ray_pos.y + ray_dir.y * t;
-			if(y < box.v1.y || y > box.v2.y) return false;
+			if(y < box.v1.y || y > box.v2.y)
+				return false;
 		}
 		break;
 	}
@@ -231,7 +225,7 @@ bool RayToBox(const Vec3& ray_pos, const Vec3& ray_dir, const Box &box, float* o
 }
 
 //=================================================================================================
-// W któr¹ stronê trzeba siê obróciæ ¿eby by³o najszybciej
+// Returns shortest direction to rotate with two angles
 //=================================================================================================
 float ShortestArc(float a, float b)
 {
@@ -243,7 +237,7 @@ float ShortestArc(float a, float b)
 }
 
 //=================================================================================================
-// Interpolacja k¹tów
+// Lerp interpolation of angles
 //=================================================================================================
 void LerpAngle(float& angle, float from, float to, float t)
 {
@@ -285,7 +279,6 @@ bool CircleToRectangle(float circlex, float circley, float radius, float rectx, 
 
 	return (dx*dx + dy*dy) <= (radius*radius);
 }
-
 
 bool Box2d::IsFullyInside(const Vec2& v, float r) const
 {
@@ -518,19 +511,8 @@ bool FrustumPlanes::SphereInFrustum(const Vec3& sphere_center, float sphere_radi
 	return true;
 }
 
-// funkcja z TFQE
 bool RayToPlane(const Vec3& ray_pos, const Vec3& ray_dir, const Plane& plane, float* out_t)
 {
-	// Napisane na podstawie:
-	// http://www.siggraph.org/education/materials/HyperGraph/raytrace/rayplane_intersection.htm
-
-	//       A xo + B yo + C zo + D
-	// t = - ----------------------
-	//         A xd + B yd + C zd
-
-	// Ten sam wzór jest w ksi¹¿ce "3D Math Primer for Graphics and Game Development", str. 284.
-	// Inna wersja dostêpna jest w ksi¹¿ce: "3D Game Engine Programming", Stefan Zerbst with Oliver Duvel, str. 136.
-
 	float VD = plane.x * ray_dir.x + plane.y * ray_dir.y + plane.z * ray_dir.z;
 	if(VD == 0.0f)
 		return false;
@@ -540,18 +522,12 @@ bool RayToPlane(const Vec3& ray_pos, const Vec3& ray_dir, const Plane& plane, fl
 	return true;
 }
 
-// funkcja z TFQE
-bool RayToSphere(const Vec3& _ray_pos, const Vec3& _ray_dir, const Vec3& _center, float _radius, float& _dist)
+bool RayToSphere(const Vec3& ray_pos, const Vec3& ray_dir, const Vec3& center, float radius, float& dist)
 {
-	// Równanie kwadratowe.
-	// Napisane samodzielnie z ma³¹ pomoc¹:
-	// http://www.siggraph.org/education/materials/HyperGraph/raytrace/rtinter1.htm
-	// link znaleziony na:
-	// http://www.realtimerendering.com/int/
-	Vec3 RayOrig_minus_SphereCenter = _ray_pos - _center;
-	float a = _ray_dir.Dot(_ray_dir); // ?
-	float b = 2.f * _ray_dir.Dot(RayOrig_minus_SphereCenter);
-	float c = RayOrig_minus_SphereCenter.Dot(RayOrig_minus_SphereCenter) - (_radius * _radius);
+	Vec3 RayOrig_minus_SphereCenter = ray_pos - center;
+	float a = ray_dir.Dot(ray_dir);
+	float b = 2.f * ray_dir.Dot(RayOrig_minus_SphereCenter);
+	float c = RayOrig_minus_SphereCenter.Dot(RayOrig_minus_SphereCenter) - (radius * radius);
 	float Delta = b * b - 4.f * a * c;
 
 	if(Delta < 0.f)
@@ -561,47 +537,38 @@ bool RayToSphere(const Vec3& _ray_pos, const Vec3& _ray_dir, const Vec3& _center
 	float minus_b = -b;
 	float sqrt_Delta = sqrtf(Delta);
 
-	// Pierwszy pierwiastek - ten mniejszy
-	_dist = (minus_b - sqrt_Delta) / a_2;
-	// Przypadek ¿e ca³a sfera jest przed ray_pos - pierwiastek mniejszy to wynik
-	if(_dist >= 0.f)
+	dist = (minus_b - sqrt_Delta) / a_2;
+	if(dist >= 0.f)
 		return true;
-	// Drugi pierwiastek - ten wiêkszy
-	_dist = (minus_b + sqrt_Delta) / a_2;
-	// Przypadek ¿e poczatek promienia jest wewn¹trz sfery
-	if(_dist >= 0.f)
+	dist = (minus_b + sqrt_Delta) / a_2;
+	if(dist >= 0.f)
 	{
-		_dist = 0.f;
+		dist = 0.f;
 		return true;
 	}
-	// Przypadek ¿e sfera jest z ty³u za promieniem
 	return false;
 }
 
-// funkcja z TFQE
-// kod do backface cullingu zakomentowany, lepiej daæ to jako osonn¹ funkcjê
-// zwraca ujemn¹ wartoœæ jeœli przecina promieñ od ty³u
-bool RayToTriangle(const Vec3& _ray_pos, const Vec3& _ray_dir, const Vec3& _v1, const Vec3& _v2, const Vec3& _v3, float& _dist)
+// Doesn't do backface culling
+bool RayToTriangle(const Vec3& ray_pos, const Vec3& ray_dir, const Vec3& v1, const Vec3& v2, const Vec3& v3, float& dist)
 {
 	Vec3 tvec, pvec, qvec;
 
 	// find vectors for two edges sharing vert0
-	Vec3 edge1 = _v2 - _v1;
-	Vec3 edge2 = _v3 - _v1;
+	Vec3 edge1 = v2 - v1;
+	Vec3 edge2 = v3 - v1;
 
 	// begin calculating determinant - also used to calculate U parameter
-	pvec = _ray_dir.Cross(edge2);
+	pvec = ray_dir.Cross(edge2);
 
 	// if determinant is near zero, ray lies in plane of triangle
 	float det = edge1.Dot(pvec);
-	//if (BackfaceCulling && det < 0.0f)
-	//	return false;
 	if(AlmostZero(det))
 		return false;
 	float inv_det = 1.0f / det;
 
 	// calculate distance from vert0 to ray origin
-	tvec = _ray_pos - _v1;
+	tvec = ray_pos - v1;
 
 	// calculate U parameter and test bounds
 	float u = tvec.Dot(pvec) * inv_det;
@@ -612,12 +579,12 @@ bool RayToTriangle(const Vec3& _ray_pos, const Vec3& _ray_dir, const Vec3& _v1, 
 	qvec = tvec.Cross(edge1);
 
 	// calculate V parameter and test bounds
-	float v = _ray_dir.Dot(qvec) * inv_det;
+	float v = ray_dir.Dot(qvec) * inv_det;
 	if(v < 0.0f || u + v > 1.0f)
 		return false;
 
 	// calculate t, ray intersects triangle
-	_dist = edge2.Dot(qvec) * inv_det;
+	dist = edge2.Dot(qvec) * inv_det;
 	return true;
 }
 
@@ -633,42 +600,34 @@ bool LineToLine(const Vec2& start1, const Vec2& end1, const Vec2& start2, const 
 		float ub = ub_t / u_b;
 		if(0 <= ua&&ua <= 1 && 0 <= ub&&ub <= 1)
 		{
-			// przeciêcie
 			if(t)
 				*t = ua;
 			return true;
 		}
 		else
-		{
-			// brak przeciêcia
 			return false;
-		}
 	}
 	else
 	{
 		if(ua_t == 0 || ub_t == 0)
 		{
-			// zbierzne
 			if(t)
 				*t = 0;
 			return true;
 		}
 		else
-		{
-			// równoleg³e
 			return false;
-		}
 	}
 }
 
-bool LineToRectangle(const Vec2& start, const Vec2& end, const Vec2& rect_pos, const Vec2& rect_pos2, float* _t)
+bool LineToRectangle(const Vec2& start, const Vec2& end, const Vec2& rect_pos, const Vec2& rect_pos2, float* t_result)
 {
 	assert(rect_pos.x <= rect_pos2.x && rect_pos.y <= rect_pos2.y);
 
 	const Vec2 topRight(rect_pos2.x, rect_pos.y),
 		bottomLeft(rect_pos.x, rect_pos2.y);
 
-	if(_t)
+	if(t_result)
 	{
 		float tt, t = 1.001f;
 
@@ -677,7 +636,7 @@ bool LineToRectangle(const Vec2& start, const Vec2& end, const Vec2& rect_pos, c
 		if(LineToLine(start, end, rect_pos2, bottomLeft, &tt) && tt < t) t = tt;
 		if(LineToLine(start, end, bottomLeft, rect_pos, &tt) && tt < t) t = tt;
 
-		*_t = t;
+		*t_result = t;
 
 		return (t <= 1.f);
 	}
@@ -692,12 +651,12 @@ bool LineToRectangle(const Vec2& start, const Vec2& end, const Vec2& rect_pos, c
 	}
 }
 
-void CreateAABBOX(Box& _out, const Matrix& _mat)
+void CreateAABBOX(Box& out, const Matrix& matrix)
 {
-	Vec3 v1 = Vec3::Transform(Vec3(-2, -2, -2), _mat),
-		v2 = Vec3::Transform(Vec3(2, 2, 2), _mat);
-	_out.v1 = v1;
-	_out.v2 = v2;
+	Vec3 v1 = Vec3::Transform(Vec3(-2, -2, -2), matrix),
+		v2 = Vec3::Transform(Vec3(2, 2, 2), matrix);
+	out.v1 = v1;
+	out.v2 = v2;
 }
 
 bool BoxToBox(const Box& box1, const Box& box2)
@@ -713,7 +672,6 @@ bool RectangleToRectangle(float x1, float y1, float x2, float y2, float a1, floa
 	return (x1 <= a2) && (x2 >= a1) && (y1 <= b2) && (y2 >= b1);
 }
 
-// podpierdolone z CommonLib Regedita
 void ClosestPointInBox(Vec3 *Out, const Box &Box, const Vec3 &p)
 {
 	Out->x = Clamp(p.x, Box.v1.x, Box.v2.x);
@@ -728,47 +686,15 @@ bool SphereToBox(const Vec3 &SphereCenter, float SphereRadius, const Box &Box)
 	return Vec3::DistanceSquared(SphereCenter, PointInBox) < SphereRadius*SphereRadius;
 }
 
-// http://www.migapro.com/circle-and-rotated-rectangle-collision-detection/
 bool CircleToRotatedRectangle(float cx, float cy, float radius, float rx, float ry, float w, float h, float rot)
 {
-	// Rotate circle's center point back
-	/*float unrotatedCircleX = cos(rot) * (cx - rx) - sin(rot) * (cy - ry) + rx;
-	float unrotatedCircleY = sin(rot) * (cx - rx) + cos(rot) * (cy - ry) + ry;
-
-	// Closest point in the rectangle to the center of circle rotated backwards(unrotated)
-	float closestX, closestY;
-
-	// Find the unrotated closest x point from center of unrotated circle
-	if (unrotatedCircleX  < rx)
-		closestX = rx;
-	else if (unrotatedCircleX  > rx + w)
-		closestX = rx + w;
-	else
-		closestX = unrotatedCircleX;
-
-	// Find the unrotated closest y point from center of unrotated circle
-	if (unrotatedCircleY < ry)
-		closestY = ry;
-	else if (unrotatedCircleY > ry + h)
-		closestY = ry + h;
-	else
-		closestY = unrotatedCircleY;
-
-	// Determine collision
-	return (distance_sqrt(unrotatedCircleX , unrotatedCircleY, closestX, closestY) < radius*radius);*/
-
-	// doprowadzi³em ten algorytm do u¿ywalnoœci
-	const float //rot = _rot,
-		sina = sin(rot),
+	// transform circle so rectangle don't need rotation
+	float sina = sin(rot),
 		cosa = cos(rot),
 		difx = cx - rx,
 		dify = cy - ry,
 		x = cosa * difx - sina * dify + rx,
 		y = sina * difx + cosa * dify + ry;
-
-	// ??? wczeœniej dzia³a³o jak zanegowa³em rot, teraz bez tego ???
-	// mo¿e coœ jest jeszcze Ÿle
-
 	return CircleToRectangle(x, y, radius, rx, ry, w, h);
 }
 
@@ -930,7 +856,6 @@ struct MATRIX33
 	}
 };
 
-// kolizja Oob z Oob
 bool OOBToOOB(const Oob& a, const Oob& b)
 {
 	const float EPSILON = std::numeric_limits<float>::epsilon();

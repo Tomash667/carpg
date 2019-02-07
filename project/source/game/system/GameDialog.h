@@ -49,15 +49,6 @@ struct DialogEntry
 };
 
 //-----------------------------------------------------------------------------
-struct DialogChoice
-{
-	int pos, lvl;
-	cstring msg;
-
-	DialogChoice(int _pos, cstring _msg, int _lvl) : pos(_pos), msg(_msg), lvl(_lvl) {}
-};
-
-//-----------------------------------------------------------------------------
 struct GameDialog
 {
 	typedef std::map<cstring, GameDialog*, CstringComparer> Map;

@@ -88,7 +88,7 @@ bool LoadSpell(Tokenizer& t, Crc& crc)
 				t.Next();
 				break;
 			case K_FLAGS:
-				spell->flags = ReadFlags(t, G_FLAG);
+				t.ParseFlags(G_FLAG, spell->flags);
 				crc.Update(spell->flags);
 				t.Next();
 				break;

@@ -37,6 +37,11 @@ dialog merchant {
 	8 "Nie sprzedawaj"
 	9 "Nie to nie."
 	10 "Koniec rozmowy"
+	11 "Szkolenie"
+	12 "Mogê ciê nauczyæ targowania albo zwiêkszyæ twoj¹ charyzmê. Trening trwa 10 dni i kosztuje 200 sztuk z³ota. Czego potrzebujesz?"
+	13 "$train_lab/haggle$"
+	14 "$train_lab/cha$"
+	15 "Anuluj"
 }
 
 //==============================================================================
@@ -59,6 +64,7 @@ dialog alchemist {
 		"Kamieñ z jakimiœ runami? Nic o tym nie wiem."
 	}
 	9 "Koniec rozmowy"
+	10 "Widzê ¿e wiesz co nieco o alchemii. Mam dla ciebie promocyjne ceny."
 }
 
 //==============================================================================
@@ -134,23 +140,23 @@ dialog trainer {
 	2 "Trening trwa 10 dni i kosztuje 200 sztuk z³ota."
 	3 "Co chcesz trenowaæ?"
 	4 "Atrybut"
-	5 "Si³a"
-	6 "Kondycja"
-	7 "Zrêcznoœæ"
+	5 "$train_lab/str$"
+	6 "$train_lab/end$"
+	7 "$train_lab/dex$"
 	8 "Anuluj"
 	9 "Umiejêtnoœæ"
-	10 "Walka broni¹"
-	11 "Krótkie ostrze"
-	12 "D³ugie ostrze"
-	13 "Topór"
-	14 "Broñ obuchowa"
-	15 "Strzelanie z ³uku"
-	16 "Blokowanie tarcz¹"
-	17 "U¿ywanie lekkiego pancerza"
-	18 "U¿ywanie œredniego pancerza"
-	19 "U¿ywanie ciê¿kiego pancerza"
-	20 "Anuluj"
-	21 "Anuluj"
+	10 "$train_lab/one_handed_weapon$"
+	11 "$train_lab/short_blade$"
+	12 "$train_lab/long_blade$"
+	13 "$train_lab/blunt$"
+	14 "$train_lab/axe$"
+	15 "$train_lab/bow$"
+	16 "$train_lab/shield$"
+	17 "$train_lab/light_armor$"
+	18 "$train_lab/medium_armor$"
+	19 "$train_lab/heavy_armor$"
+	20 "Atut"
+	21 "Hmm... Aktualnie nie mogê ciê nauczyæ ¿adnych nowych atutów."
 	22 "Czym siê zajmujesz?"
 	23 "Jestem trenerem, szkolê wojowników, ³owców i ³otrzyków walki i obrony."
 	24 "Zapytaj o dziwny kamieñ"
@@ -995,7 +1001,7 @@ dialog q_bandits_master {
 	50 "Powodzenia!"
 	51 "Witaj ponownie!"
 	52 "Dosz³y mnie ju¿ s³uchy o twoim zwyciêstwie!"
-	53 "Proszê weŸ to 5000 sztuk z³ota."
+	53 "Proszê weŸ to 10000 sztuk z³ota."
 	54 "Mo¿e w przysz³oœci bêdê mia³ dla ciebie jakieœ zadanie."
 	55 "Powodzenia w przygodach!"
 	56 "Witaj ponownie!"
@@ -1073,7 +1079,7 @@ dialog q_bandits_collect_toll_timeout {
 //==============================================================================
 dialog q_bandits_collect_toll_end {
 	0 "Wreszcie ktoœ na kim mo¿na polegaæ. Dobra robota z tymi bandytami, to ich nauczy na jakiœ czas."
-	1 "WeŸ to 400 sztuk z³ota w nagrodê."
+	1 "WeŸ to 1500 sztuk z³ota w nagrodê."
 }
 
 //==============================================================================
@@ -1108,7 +1114,7 @@ dialog q_camp_near_city_timeout {
 //==============================================================================
 dialog q_camp_near_city_end {
 	0 "Gdyby nie ty to nie wiem czy byœmy odparli ten atak."
-	1 "WeŸ proszê te 2500 sztuk z³ota nagrody."
+	1 "WeŸ proszê te $reward$ sztuk z³ota nagrody."
 }
 
 //==============================================================================
@@ -1153,7 +1159,7 @@ dialog q_deliver_letter_give {
 //==============================================================================
 dialog q_deliver_letter_end {
 	0 "Dobrze. Poka¿ ten list z odpowiedzi¹."
-	1 "Widzê, ¿e jesteœ odpowiedzialny, oto twoje 100 sztuk z³ota."
+	1 "Widzê, ¿e jesteœ odpowiedzialny, oto twoje 250 sztuk z³ota."
 	2 "Przyda³oby mi siê wiêcej ludzi takich jak ty."
 }
 
@@ -1171,9 +1177,9 @@ dialog q_deliver_parcel_start {
 dialog q_deliver_parcel_give {
 	0 "Co masz dla mnie?"
 	1 "Mia³eœ dostarczyæ tê paczkê wczeœniej, ale lepiej póŸno ni¿ wcale."
-	2 "Masz tu 125 sztuk z³ota."
+	2 "Masz tu 300 sztuk z³ota."
 	3 "Mia³eœ dostarczyæ tê paczkê wczeœniej. Teraz jej zawartoœæ na nic mi siê nie przyda!"
-	4 "Dobra robota. Oto twoje 250 sztuk z³ota."
+	4 "Dobra robota. Oto twoje 750 sztuk z³ota."
 }
 
 //==============================================================================
@@ -1281,7 +1287,7 @@ dialog q_find_artifact_start {
 
 //==============================================================================
 dialog q_find_artifact_end {
-	0 "Dziêkuje za ten artefakt, weŸ to 1000 sztuk z³ota w podziêce."
+	0 "Dziêkuje za ten artefakt, weŸ to $reward$ sztuk z³ota w podziêce."
 }
 
 //==============================================================================
@@ -1402,7 +1408,7 @@ dialog q_kill_animals_timeout {
 //==============================================================================
 dialog q_kill_animals_end {
 	0 "Doskona³a robota, te stwory czêsto niepokoi³y podró¿nych."
-	1 "Masz tu 1200 sztuk z³ota nagrody."
+	1 "Masz tu 2500 sztuk z³ota nagrody."
 }
 
 //==============================================================================
@@ -1417,7 +1423,7 @@ dialog q_lost_artifact_start {
 
 //==============================================================================
 dialog q_lost_artifact_end {
-	0 "Dziêkuje za ten artefakt, weŸ to 800 sztuk z³ota w podziêce."
+	0 "Dziêkuje za ten artefakt, weŸ to $reward$ sztuk z³ota w podziêce."
 }
 
 //==============================================================================
@@ -1432,7 +1438,7 @@ dialog q_mages_scholar {
 	0 "Witaj podró¿niku!"
 	1 "Mam dla ciebie zadanie jeœli jesteœ zainteresowany."
 	2 "Szukam pewnego artefaktu, nic specjalnie cennego."
-	3 "Wygl¹da jak kula, jestem gotów zap³aciæ ci za ni¹ 1500 sztuk z³ota."
+	3 "Wygl¹da jak kula, jestem gotów zap³aciæ ci za ni¹ 4000 sztuk z³ota."
 	4 "Zgadzasz siê?"
 	5 "Tak"
 	6 "Przedmiot którego potrzebujê znajduje siê w $target_loc$ na $target_dir$ st¹d."
@@ -1478,7 +1484,7 @@ dialog q_mages2_captain {
 	14 "Wróæ do mnie po nagrodê gdy siê z nim uporasz."
 	15 "$enemy$ nie ¿yje? To doskona³a wiadomoœæ!"
 	16 "Jego golemy pewnie jeszcze przez jakiœ czas bêd¹ niepokoiæ podró¿nych ale bez swojego mistrza w koñcu zniszczymy je wszystkie."
-	17 "WeŸ to 5000 sztuk z³ota w nagrodê."
+	17 "WeŸ to 10000 sztuk z³ota w nagrodê."
 	18 "Kilka golemów jeszcze ¿yje, jeœli je spotkasz to mo¿esz je zniszczyæ."
 }
 
@@ -1579,7 +1585,7 @@ dialog q_mine_investor {
 	21 "Witaj ponownie. Dosta³eœ moj¹ wiadomoœæ?"
 	22 "W kopalni odkryto z³o¿a z³ota."
 	23 "Jako ¿e mi pomog³eœ postanowi³em z³o¿yæ ci pewn¹ ofertê."
-	24 "Mo¿esz zainwestowaæ $zloto$ sztuk z³ota w rozbudowê kopalni."
+	24 "Mo¿esz zainwestowaæ $invest_price$ sztuk z³ota w rozbudowê kopalni."
 	25 "To tylko czêœæ kosztów, s¹ te¿ inni chêtni na t¹ inwestycjê."
 	26 "Przemyœl to dobrze."
 	27 "Witaj ponownie."
@@ -1615,7 +1621,7 @@ dialog q_mine_messenger {
 	0 "Witaj!"
 	1 "Mam dla ciebie wiadomoœæ i z³oto od Marco Bartoli."
 	2 "Kopalnia zosta³a wybudowana i ju¿ przynios³a pierwsze zyski."
-	3 "Oto 500 sztuk z³ota."
+	3 "Oto $payment$ sztuk z³ota."
 	4 "To wszystko, ruszam w drogê."
 }
 
@@ -1633,7 +1639,7 @@ dialog q_mine_messenger3 {
 	0 "Witaj!"
 	1 "Mam dla ciebie wiadomoœæ i z³oto od Marco Bartoli."
 	2 "Kopalnia zosta³a rozbudowana, z³oto jest ju¿ wydobywane."
-	3 "Oto 1000 sztuk z³ota."
+	3 "Oto $payment2$ sztuk z³ota."
 	4 "To wszystko, ruszam w drogê."
 }
 
@@ -1688,7 +1694,7 @@ dialog q_orcs_captain {
 	6 "Wróæ gdy zmienisz zdanie."
 	7 "Wróæ gdy zabijesz tych orków w $target_loc$."
 	8 "Dobra robota, teraz skoñcz¹ siê te ataki."
-	9 "WeŸ to 2500 sztuk z³ota nagrody."
+	9 "WeŸ to 4000 sztuk z³ota nagrody."
 	10 "Miej na oku tego orka!"
 	11 "Orkowie teraz trzymaj¹ siê od $naszego_miasta$ z daleka."
 }
@@ -1814,10 +1820,10 @@ dialog q_rescue_captive_timeout {
 
 //==============================================================================
 dialog q_rescue_captive_end {
-	0 "Rodzina jest bardzo zadowolona z twojej misji ratunkowej. WeŸ to 1000 sztuk z³ota nagrody."
+	0 "Rodzina jest bardzo zadowolona z twojej misji ratunkowej. WeŸ to $reward$ sztuk z³ota nagrody."
 	1 "Co ty odpierdalasz?! Nie po to ciê wys³a³em ¿ebyœ zabi³ porwan¹ osobê tylko j¹ uratowa³!"
 	2 "Nie pokazuj siê tu wiêcej!"
-	3 "Porwany wróci³ do domu. Ponoæ mia³eœ w tym jakiœ udzia³ wiêc weŸ to 250 sztuk z³ota."
+	3 "Porwany wróci³ do domu. Ponoæ mia³eœ w tym jakiœ udzia³ wiêc weŸ to $reward2$ sztuk z³ota."
 	4 "Ale nastêpnym razem postaraj siê przyprowadziæ go do mnie."
 }
 
@@ -1850,7 +1856,7 @@ dialog q_retrieve_package_timeout {
 //==============================================================================
 dialog q_retrieve_package_end {
 	0 "Doskona³a robota! Zawartoœæ tej paczki jest dla mnie bardzo wa¿na."
-	1 "WeŸ to 500 sztuk z³ota i moje podziêkowania."
+	1 "WeŸ to $reward$ sztuk z³ota i moje podziêkowania."
 }
 
 //==============================================================================
@@ -1859,7 +1865,7 @@ dialog q_sawmill_talk {
 	1 "Zajmujê siê okolicznymi lasami i ostatnio chcia³em za³o¿yæ w pobliskim lesie tartak."
 	2 "Jest tylko jeden problem - potwory."
 	3 "Mam dla ciebie ofertê."
-	4 "Ty zabijesz potwory a ja zbudujê tartak i bêdê ci p³aci³ 400 sztuk z³ota miesiêcznie."
+	4 "Ty zabijesz potwory a ja zbudujê tartak i bêdê ci p³aci³ $payment$ sztuk z³ota miesiêcznie."
 	5 "Co ty na to?"
 	6 "Tak"
 	7 "Dobrze. Musisz oczyœciæ $target_loc$ na $target_dir$ st¹d."
@@ -1893,7 +1899,7 @@ dialog q_sawmill_messenger {
 	1 "Witaj!"
 	2 "Mam dla ciebie wiadomoœæ od Artura Drwala i z³oto."
 	3 "Wszystko idzie zgodnie z planem i ju¿ s¹ pierwsze zyski."
-	4 "A tu 400 sztuk z³ota."
+	4 "A tu $payment$ sztuk z³ota."
 	5 "To wszystko, ruszam w drogê."
 }
 
@@ -1927,7 +1933,7 @@ dialog q_spread_news_timeout {
 //==============================================================================
 dialog q_spread_news_end {
 	0 "Dobrze, w³aœnie takich ludzi jak ty mi potrzeba, sumiennych i odpowiedzialnych."
-	1 "WeŸ to 200 sztuk z³ota."
+	1 "WeŸ to 500 sztuk z³ota."
 }
 
 //==============================================================================
@@ -1942,7 +1948,7 @@ dialog q_stolen_artifact_start {
 
 //==============================================================================
 dialog q_stolen_artifact_end {
-	0 "Dziêkuje za ten artefakt, weŸ to 1200 sztuk z³ota w podziêce."
+	0 "Dziêkuje za ten artefakt, weŸ to $reward$ sztuk z³ota w podziêce."
 }
 
 //==============================================================================

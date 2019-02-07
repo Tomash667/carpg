@@ -73,7 +73,7 @@ void Quest_Tutorial::Start()
 	game.gui->load_screen->visible = false;
 	game.gui->main_menu->visible = false;
 	game.gui->game_gui->visible = true;
-	game.gui->world_map->visible = false;
+	game.gui->world_map->Hide();
 	game.clear_color = game.clear_color2;
 	game.cam.Reset();
 }
@@ -160,7 +160,7 @@ void Quest_Tutorial::Update()
 			game.sound_mgr->PlaySound3d(game.GetMaterialSound(MAT_IRON, MAT_ROCK), hitpoint, 2.f, 10.f);
 			if(state == 5)
 			{
-				game.Train(*pc->unit, true, (int)SkillId::ONE_HANDED_WEAPON, 1);
+				pc->Train(true, (int)SkillId::ONE_HANDED_WEAPON, TrainMode::Tutorial);
 				state = 6;
 				int activate = 4;
 				for(vector<Text>::iterator it = texts.begin(), end = texts.end(); it != end; ++it)
@@ -372,8 +372,7 @@ void Quest_Tutorial::HandleBulletCollision(void* ptr)
 {
 	if((ptr == shield || ptr == shield2) && state == 12)
 	{
-		Game& game = Game::Get();
-		game.Train(*game.pc->unit, true, (int)SkillId::BOW, 1);
+		Game::Get().pc->Train(true, (int)SkillId::BOW, TrainMode::Tutorial);
 		state = 13;
 		int unlock = 6;
 		int activate = 8;

@@ -171,7 +171,7 @@ void TextBox::Update(float dt)
 
 	if(mouse_focus)
 	{
-		if(PointInRect(GUI.cursor_pos, global_pos, real_size))
+		if(PointInRect(GUI.cursor_pos, global_pos, is_new ? real_size : size))
 		{
 			GUI.cursor_mode = CURSOR_TEXT;
 			if(is_new && (Key.PressedRelease(VK_LBUTTON) || Key.PressedRelease(VK_RBUTTON)))
@@ -622,7 +622,10 @@ void TextBox::OnChar(char c)
 		if(!is_new)
 		{
 			if(!text.empty())
+			{
 				text.pop_back();
+				OnTextChanged();
+			}
 		}
 		else
 		{
@@ -641,6 +644,7 @@ void TextBox::OnChar(char c)
 					text.erase(caret_index.x, 1);
 					UpdateFontLines();
 					CalculateOffset(true);
+					OnTextChanged();
 				}
 			}
 			else
@@ -655,6 +659,7 @@ void TextBox::OnChar(char c)
 					caret_index = GUI.default_font->FromRawIndex(font_lines, index);
 					caret_pos = IndexToPos(caret_index);
 					CalculateOffset(true);
+					OnTextChanged();
 				}
 			}
 		}
@@ -724,6 +729,7 @@ void TextBox::OnChar(char c)
 					caret_blink = 0.f;
 					CalculateOffset(true);
 				}
+				OnTextChanged();
 			}
 		}
 	}
@@ -924,6 +930,7 @@ void TextBox::DeleteSelection()
 	caret_blink = 0.f;
 	select_start_index = NOT_SELECTED;
 	UpdateFontLines();
+	OnTextChanged();
 }
 
 //=================================================================================================

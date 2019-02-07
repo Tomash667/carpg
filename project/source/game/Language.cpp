@@ -594,6 +594,6 @@ cstring Language::LanguageSection::Get(cstring str)
 	else
 	{
 		Error("Missing text string for '%s.%s'.", name, str);
-		return nullptr;
+		return "";
 	}
 }

@@ -12,14 +12,62 @@ vector<TexPack*> TexPack::packs;
 SetContainer<UnitData> UnitData::units;
 std::map<string, UnitData*> UnitData::aliases;
 
+UnitStats* UnitData::GetStats(int level)
+{
+	SubprofileInfo sub;
+	if(!stat_profile)
+		sub.value = 0;
+	else
+	{
+		sub = stat_profile->GetRandomSubprofile();
+		sub.level = level;
+	}
+	return GetStats(sub);
+}
+
+UnitStats* UnitData::GetStats(SubprofileInfo sub)
+{
+	assert(group != G_PLAYER);
+	typedef std::map<std::pair<StatProfile*, SubprofileInfo>, UnitStats*> M;
+	std::pair<M::iterator, bool> const& result = UnitStats::shared_stats.insert(M::value_type(std::make_pair(stat_profile, sub), nullptr));
+	if(result.second)
+	{
+		UnitStats*& stats = result.first->second;
+		stats = new UnitStats;
+		stats->fixed = true;
+		stats->subprofile = sub;
+		if(stat_profile)
+		{
+			stats->Set(*stat_profile);
+			if(!stat_profile->subprofiles.empty())
+				stats->priorities = stat_profile->subprofiles[sub.index]->priorities;
+			else
+				stats->priorities = StatProfile::Subprofile::default_priorities;
+		}
+		else
+		{
+			for(int i = 0; i < (int)AttributeId::MAX; ++i)
+				stats->attrib[i] = 0;
+			for(int i = 0; i < (int)SkillId::MAX; ++i)
+				stats->skill[i] = 0;
+			stats->priorities = StatProfile::Subprofile::default_priorities;
+		}
+		return stats;
+	}
+	else
+		return result.first->second;
+}
+
 void UnitData::CopyFrom(UnitData& ud)
 {
 	mesh_id = ud.mesh_id;
 	mat = ud.mat;
 	level = ud.level;
 	stat_profile = ud.stat_profile;
-	hp_bonus = ud.hp_bonus;
-	def_bonus = ud.def_bonus;
+	hp = ud.hp;
+	stamina = ud.stamina;
+	attack = ud.attack;
+	def = ud.def;
 	dmg_type = ud.dmg_type;
 	flags = ud.flags;
 	flags2 = ud.flags2;
@@ -42,6 +90,12 @@ void UnitData::CopyFrom(UnitData& ud)
 	armor_type = ud.armor_type;
 	item_script = ud.item_script;
 	clas = ud.clas;
+	trader = nullptr; // not copied
+}
+
+int UnitData::GetLevelDif(int level) const
+{
+	return min(abs(level - this->level.x), abs(level - this->level.y));
 }
 
 
@@ -121,6 +175,11 @@ void UnitData::Validate(uint& err)
 		{
 			++err;
 			Error("Test: Missing unit '%s' name.", unit->id.c_str());
+		}
+		if(!IS_SET(unit->flags2, F2_FIXED_STATS) && !unit->stat_profile)
+		{
+			++err;
+			Error("Test: Unit '%s' have no fixed stats nor profile.", unit->id.c_str());
 		}
 	}
 }

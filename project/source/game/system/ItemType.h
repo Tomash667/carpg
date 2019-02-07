@@ -23,7 +23,8 @@ enum ITEM_TYPE
 	IT_BOW,
 	IT_SHIELD,
 	IT_ARMOR,
-	IT_OTHER,
+	IT_MAX_WEARABLE, // used in Team.cpp priorities
+	IT_OTHER = IT_MAX_WEARABLE,
 	IT_CONSUMABLE,
 	IT_BOOK,
 	IT_MAX_GEN = IT_BOOK, // items generated in treasure

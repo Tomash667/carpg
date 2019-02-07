@@ -86,3 +86,10 @@ struct Room
 	void Write(BitStreamWriter& f) const;
 	void Read(BitStreamReader& f);
 };
+
+//-----------------------------------------------------------------------------
+struct RoomGroup
+{
+	vector<int> rooms;
+	RoomTarget target;
+};

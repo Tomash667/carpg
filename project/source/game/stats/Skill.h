@@ -5,15 +5,18 @@
 #include "Attribute.h"
 
 //-----------------------------------------------------------------------------
-enum class OldSkill
+namespace old
 {
-	WEAPON,
-	BOW,
-	LIGHT_ARMOR,
-	HEAVY_ARMOR,
-	SHIELD,
-	MAX
-};
+	enum class SkillId
+	{
+		WEAPON,
+		BOW,
+		LIGHT_ARMOR,
+		HEAVY_ARMOR,
+		SHIELD,
+		MAX
+	};
+}
 
 //-----------------------------------------------------------------------------
 enum class SkillId
@@ -45,7 +48,7 @@ enum class SkillId
 	STEAL,
 	ANIMAL_EMPATHY,
 	SURVIVAL,
-	PERSUASION,
+	HAGGLE,
 	ALCHEMY,
 	CRAFTING,
 	HEALING,
@@ -53,8 +56,11 @@ enum class SkillId
 	RAGE,
 
 	MAX,
-	NONE
+	NONE,
+	SPECIAL_WEAPON,
+	SPECIAL_ARMOR
 };
+static_assert((int)SkillId::MAX < 32, "Max 32 skills, send as bit flags!");
 
 //-----------------------------------------------------------------------------
 enum class SkillGroupId
@@ -69,13 +75,11 @@ enum class SkillGroupId
 };
 
 //-----------------------------------------------------------------------------
-enum class SkillPack
+enum class SkillType
 {
-	THIEF,
+	NONE,
 	WEAPON,
-
-	MAX,
-	NONE
+	ARMOR
 };
 
 //-----------------------------------------------------------------------------
@@ -86,20 +90,21 @@ struct Skill
 	string name, desc;
 	SkillGroupId group;
 	AttributeId attrib, attrib2;
-	SkillPack pack;
+	SkillType type;
 
 	static const int MIN = 0;
 	static const int MAX = 255;
+	static const int TAG_BONUS = 10;
 
-	Skill(SkillId skill_id, cstring id, SkillGroupId group, AttributeId attrib, AttributeId attrib2, SkillPack pack) : skill_id(skill_id), id(id), group(group), attrib(attrib),
-		attrib2(attrib2), pack(pack)
+	Skill(SkillId skill_id, cstring id, SkillGroupId group, AttributeId attrib, AttributeId attrib2, SkillType type = SkillType::NONE) :
+		skill_id(skill_id), id(id), group(group), attrib(attrib), attrib2(attrib2), type(type)
 	{
 	}
 
 	static Skill skills[(int)SkillId::MAX];
 	static Skill* Find(const string& id);
 	static void Validate(uint& err);
-	static float GetModifier(int base, int& weight);
+	static float GetModifier(int base);
 };
 
 //-----------------------------------------------------------------------------

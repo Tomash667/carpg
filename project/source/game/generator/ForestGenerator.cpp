@@ -83,22 +83,20 @@ void ForestGenerator::GenerateObjects()
 void ForestGenerator::GenerateUnits()
 {
 	// zbierz grupy
-	static TmpUnitGroup groups[4] = {
-		{ UnitGroup::TryGet("wolfs") },
-		{ UnitGroup::TryGet("spiders") },
-		{ UnitGroup::TryGet("rats") },
-		{ UnitGroup::TryGet("animals") }
+	static UnitGroup* groups[4] = {
+		UnitGroup::TryGet("wolfs"),
+		UnitGroup::TryGet("spiders"),
+		UnitGroup::TryGet("rats"),
+		UnitGroup::TryGet("animals")
 	};
 	UnitData* ud_hunter = UnitData::Get("wild_hunter");
 	const int level = L.GetDifficultyLevel();
+	TmpUnitGroupList<4> tmp;
 	static vector<Vec2> poss;
+	tmp.Fill(groups, level);
 	poss.clear();
 	OutsideLocation* outside = (OutsideLocation*)L.location;
 	poss.push_back(Vec2(team_pos.x, team_pos.z));
-
-	// ustal wrogów
-	for(int i = 0; i < 4; ++i)
-		groups[i].Fill(level);
 
 	for(int added = 0, tries = 50; added < 8 && tries>0; --tries)
 	{
@@ -116,48 +114,23 @@ void ForestGenerator::GenerateUnits()
 
 		if(ok)
 		{
-			// losuj grupe
-			TmpUnitGroup& group = groups[Rand() % 4];
-			if(group.entries.empty())
-				continue;
-
 			poss.push_back(pos);
 			++added;
 
 			Vec3 pos3(pos.x, 0, pos.y);
 
 			// postaw jednostki
-			int levels = level * 2;
+			int points = level * 2;
 			if(Rand() % 5 == 0 && ud_hunter->level.x <= level)
 			{
-				int enemy_level = Random(ud_hunter->level.x, Min(ud_hunter->level.y, levels, level));
+				int enemy_level = Random(ud_hunter->level.x, Min(ud_hunter->level.y, points, level));
 				if(L.SpawnUnitNearLocation(L.local_ctx, pos3, *ud_hunter, nullptr, enemy_level, 6.f))
-					levels -= enemy_level;
+					points -= enemy_level;
 			}
-			while(levels > 0)
+			for(TmpUnitGroup::Spawn& spawn : tmp.Roll(points))
 			{
-				int k = Rand() % group.total, l = 0;
-				UnitData* ud = nullptr;
-
-				for(auto& entry : group.entries)
-				{
-					l += entry.count;
-					if(k < l)
-					{
-						ud = entry.ud;
-						break;
-					}
-				}
-
-				assert(ud);
-
-				if(!ud || ud->level.x > levels)
+				if(!L.SpawnUnitNearLocation(L.local_ctx, pos3, *spawn.first, nullptr, spawn.second, 6.f))
 					break;
-
-				int enemy_level = Random(ud->level.x, Min(ud->level.y, levels, level));
-				if(!L.SpawnUnitNearLocation(L.local_ctx, pos3, *ud, nullptr, enemy_level, 6.f))
-					break;
-				levels -= enemy_level;
 			}
 		}
 	}

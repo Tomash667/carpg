@@ -38,6 +38,7 @@
 #include "Console.h"
 #include "Pathfinding.h"
 #include "ItemHelper.h"
+#include "CreateServerPanel.h"
 
 enum SaveFlags
 {
@@ -49,9 +50,7 @@ enum SaveFlags
 	SF_HARDCORE = 1 << 4
 };
 
-const int SAVE_VERSION = V_CURRENT;
 int LOAD_VERSION;
-const int MIN_SUPPORT_LOAD_VERSION = V_0_2_12;
 
 //=================================================================================================
 bool Game::CanSaveGame() const
@@ -94,7 +93,7 @@ bool Game::CanLoadGame() const
 //=================================================================================================
 bool Game::SaveGameSlot(int slot, cstring text)
 {
-	assert(InRange(slot, 1, MAX_SAVE_SLOTS));
+	assert(InRange(slot, 1, SaveSlot::MAX_SLOTS));
 
 	if(!CanSaveGame())
 	{
@@ -170,7 +169,7 @@ bool Game::SaveGameCommon(cstring filename, int slot, cstring text)
 //=================================================================================================
 void Game::LoadGameSlot(int slot)
 {
-	assert(InRange(slot, 1, MAX_SAVE_SLOTS));
+	assert(InRange(slot, 1, SaveSlot::MAX_SLOTS));
 
 	cstring filename = Format(N.mp_load ? "saves/multi/%d.sav" : "saves/single/%d.sav", slot);
 	LoadGameCommon(filename, slot);
@@ -208,7 +207,7 @@ void Game::LoadGameCommon(cstring filename, int slot)
 	{
 		gui->main_menu->visible = false;
 		gui->game_gui->visible = false;
-		gui->world_map->visible = false;
+		gui->world_map->Hide();
 	}
 	LoadingStart(9);
 
@@ -252,20 +251,20 @@ void Game::LoadGameCommon(cstring filename, int slot)
 		if(game_state == GS_LEVEL)
 		{
 			gui->game_gui->visible = true;
-			gui->world_map->visible = false;
+			gui->world_map->Hide();
 		}
 		else
 		{
 			gui->game_gui->visible = false;
-			gui->world_map->visible = true;
+			gui->world_map->Show();
 		}
 		gui->Setup(pc);
 	}
 	else
 	{
-		gui->saveload->visible = true;
 		gui->multiplayer->visible = true;
 		gui->main_menu->visible = true;
+		gui->create_server->Show();
 	}
 }
 
@@ -290,7 +289,7 @@ void Game::SaveGame(GameWriter& f)
 
 	// version
 	f << VERSION;
-	f << SAVE_VERSION;
+	f << V_CURRENT;
 	f << start_version;
 	f << content::version;
 
@@ -345,12 +344,7 @@ void Game::SaveGame(GameWriter& f)
 	for(AIController* ai : ais)
 		ai->Save(f);
 
-	// game messages & speech bubbles
-	gui->messages->Save(f);
-	gui->game_gui->Save(f);
-
-	// rumors/notes
-	gui->journal->Save(f);
+	gui->Save(f);
 
 	check_id = (byte)W.GetLocations().size();
 	f << check_id;
@@ -378,7 +372,7 @@ void Game::SaveGame(GameWriter& f)
 			tpe->Save(f);
 
 		// explosions
-		f << L.local_ctx.explos->size();;
+		f << L.local_ctx.explos->size();
 		for(Explo* explo : *L.local_ctx.explos)
 			explo->Save(f);
 
@@ -576,7 +570,7 @@ void Game::LoadGame(GameReader& f)
 
 	// set entities pointers
 	LoadingStep(txLoadingData);
-	for(vector<std::pair<Unit**, int> >::iterator it = Unit::refid_request.begin(), end = Unit::refid_request.end(); it != end; ++it)
+	for(vector<std::pair<Unit**, int>>::iterator it = Unit::refid_request.begin(), end = Unit::refid_request.end(); it != end; ++it)
 		*(it->first) = Unit::refid_table[it->second];
 	Unit::refid_request.clear();
 	for(vector<UsableRequest>::iterator it = Usable::refid_request.begin(), end = Usable::refid_request.end(); it != end; ++it)
@@ -687,12 +681,7 @@ void Game::LoadGame(GameReader& f)
 		ai->Load(f);
 	}
 
-	// game messages & speech bubbles
-	gui->messages->Load(f);
-	gui->game_gui->Load(f);
-
-	// rumors/notes
-	gui->journal->Load(f);
+	gui->Load(f);
 
 	check_id = (byte)W.GetLocations().size();
 	f >> read_id;
@@ -851,8 +840,8 @@ void Game::LoadGame(GameReader& f)
 	fallback_t = -0.5f;
 	gui->inventory->mode = I_NONE;
 	pc_data.before_player = BP_NONE;
-	pc_data.selected_unit = nullptr;
-	pc_data.selected_target = nullptr;
+	pc_data.selected_unit = pc->unit;
+	pc_data.target_unit = nullptr;
 	dialog_context.pc = pc;
 	dialog_context.dialog_mode = false;
 	gui->game_gui->Setup();
@@ -922,7 +911,7 @@ void Game::Quicksave(bool from_console)
 		return;
 	}
 
-	if(SaveGameSlot(MAX_SAVE_SLOTS, txQuickSave))
+	if(SaveGameSlot(SaveSlot::MAX_SLOTS, txQuickSave))
 	{
 		if(!from_console)
 			gui->messages->AddGameMsg3(GMS_GAME_SAVED);
@@ -942,7 +931,7 @@ bool Game::Quickload(bool from_console)
 	}
 
 	Net::SetMode(Net::Mode::Singleplayer);
-	return gui->saveload->TryLoad(MAX_SAVE_SLOTS, true);
+	return gui->saveload->TryLoad(SaveSlot::MAX_SLOTS, true);
 }
 
 //=================================================================================================

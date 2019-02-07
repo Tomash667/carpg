@@ -27,6 +27,9 @@ public:
 	bool Load(GameReader& f) override;
 
 private:
+	int GetReward() const;
+
 	int from_loc;
 	OtherItem parcel;
+	int st;
 };

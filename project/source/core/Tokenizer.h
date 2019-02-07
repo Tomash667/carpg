@@ -79,6 +79,12 @@ namespace tokenizer
 		uint pos, line, charpos;
 	};
 
+	struct FlagGroup
+	{
+		int* flags;
+		int group;
+	};
+
 	//-----------------------------------------------------------------------------
 	// Tokenizer
 	//-----------------------------------------------------------------------------
@@ -789,9 +795,15 @@ namespace tokenizer
 		}
 
 		//===========================================================================================================================
+		SeekData& Query();
+		bool QuerySymbol(char c) { SeekData& sd = Query(); return sd.token == T_SYMBOL && sd._char == c; }
+
+		//===========================================================================================================================
 		void Parse(Int2& i);
 		void Parse(Rect& b);
 		void Parse(Vec2& v);
+		void ParseFlags(int group, int& flags);
+		void ParseFlags(std::initializer_list<FlagGroup> const& flags);
 
 		template<typename Top, typename Action>
 		int ParseTop(int group, Action action)
@@ -879,17 +891,3 @@ namespace tokenizer
 		mutable Formatter formatter;
 	};
 }
-
-//-----------------------------------------------------------------------------
-struct FlagGroup
-{
-	int* flags;
-	int group;
-};
-
-//-----------------------------------------------------------------------------
-int ReadFlags(Tokenizer& t, int group);
-void ReadFlags(Tokenizer& t, std::initializer_list<FlagGroup> const& flags, bool clear);
-void ReadFlags2(Tokenizer& t, int group, int& flags);
-// Read flags in format (flag pointer, tokenizer group), allow negate/clear
-void ReadFlags2(Tokenizer& t, std::initializer_list<FlagGroup> const& flags);

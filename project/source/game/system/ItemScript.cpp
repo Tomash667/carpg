@@ -1,9 +1,37 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "ItemScript.h"
+#include "StatProfile.h"
 
 //-----------------------------------------------------------------------------
 vector<ItemScript*> ItemScript::scripts;
+const LeveledItemList* ItemScript::weapon_list[WT_MAX], *ItemScript::armor_list[AT_MAX];
+
+//=================================================================================================
+void ItemScript::Init()
+{
+	weapon_list[WT_SHORT_BLADE] = ItemList::Get("short_blade").llis;
+	weapon_list[WT_LONG_BLADE] = ItemList::Get("long_blade").llis;
+	weapon_list[WT_AXE] = ItemList::Get("axe").llis;
+	weapon_list[WT_BLUNT] = ItemList::Get("blunt").llis;
+	armor_list[AT_LIGHT] = ItemList::Get("light_armor").llis;
+	armor_list[AT_MEDIUM] = ItemList::Get("medium_armor").llis;
+	armor_list[AT_HEAVY] = ItemList::Get("heavy_armor").llis;
+}
+
+//=================================================================================================
+const LeveledItemList& ItemScript::GetSpecial(int special, int sub)
+{
+	SubprofileInfo s;
+	s.value = sub;
+	if(special == SPECIAL_WEAPON)
+		return *weapon_list[s.weapon];
+	else
+	{
+		assert(special == SPECIAL_ARMOR);
+		return *armor_list[s.armor];
+	}
+}
 
 //=================================================================================================
 void ItemScript::CheckItem(const int*& ps, string& errors, uint& count)

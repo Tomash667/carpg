@@ -30,6 +30,7 @@ public:
 	void UpdateLobbyClient(float dt);
 	bool DoLobbyUpdate(BitStreamReader& f);
 	void UpdateLobbyServer(float dt);
+	void OnChangePlayersCount();
 	void UpdateServerInfo();
 	void Event(GuiEvent e) override;
 	void Show();
@@ -57,10 +58,10 @@ public:
 	uint max_players, autostart_count;
 	int last_startup_sec, kick_id;
 	Class autopick_class;
-	bool starting, autoready, password;
+	bool starting, autoready;
 	cstring txReady, txNotReady, txStart, txStop, txPickChar, txKick, txNone, txSetLeader, txNick, txChar, txLoadedCharInfo, txNotLoadedCharInfo, txChangeChar,
 		txCantKickMyself, txCantKickUnconnected, txReallyKick, txAlreadyLeader, txLeaderChanged, txNotJoinedYet, txNotAllReady, txStartingIn, txStartingStop,
 		txDisconnecting, txYouAreLeader, txJoined, txPlayerLeft, txNeedSelectedPlayer, txServerText, txDisconnected, txClosing, txKicked, txUnknown,
-		txUnconnected, txIpLostConnection, txPlayerLostConnection, txLeft, txStartingGame, txWaitingForServer;
+		txUnconnected, txIpLostConnection, txPlayerLostConnection, txLeft, txStartingGame, txWaitingForServer, txRegisterFailed, txPlayerDisconnected2;
 	TEX tReady, tNotReady;
 };

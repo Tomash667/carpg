@@ -1,6 +1,6 @@
 class barbarian {
 	name "Barbarian"
-	desc "Wild warrior who despises heavy armor. He gets into a frenzy to gain an advantage in battle."
+	desc "A wild warrior who despises heavy armor. He gets into a frenzy to gain an advantage in battle."
 	about "?"
 }
 class bard {
@@ -10,38 +10,38 @@ class bard {
 }
 class cleric {
 	name "Cleric"
-	desc "Follower of the god who through devotion had received power to cast a spells."
+	desc "A firm follower of god, recompensated for his devotion with the power to cast spells."
 	about "?"
 }
 class druid {
 	name "Druid"
-	desc "Follower of nature magic, uses it to protect nature and destroy those who threaten it."
+	desc "A follower of nature magic, who uses it to protect nature and destroy those who threaten it."
 	about "?"
 }
 class hunter {
 	name "Hunter"
-	desc "Hunter take care about nature and forest. He is specialized in using bow and tracking creatures. With time gains knowledge about nature magic.\n\nSpecial action: Animal ally"
-	about "I'm a hunter. Spend my entire life on journeys, exploring the forests and caves. I shoot perfectly with a bow but not afraid of hand combat."
+	desc "Hunters take care about nature and forest. They are specialized in using bow and tracking creatures. Given enough time, they gain knowledge about nature magic.\n\nSpecial action: Animal ally"
+	about "I'm a hunter. I spent my entire life on journeys, exploring the forests and caves. I shoot perfectly with a bow but that doesn't mean that I'm afraid of hand combat."
 }
 class mage {
 	name "Mage"
-	desc "Adept of mystical arts. By the power of his mind can create magic bullets and fireballs."
-	about "I'm a mage. Through the power of mind mastered the mysteries of magic and calculated the indefinite integral. Now travels the world check my skills in practice."
+	desc "Adept of mystical arts. Simply by using the power of his mind, he can create magic bullets and fireballs."
+	about "I'm a mage. Through the power of mind, I have mastered the mysteries of magic and calculated the indefinite integral. Now I travel the world to put my skills into practice."
 }
 class monk {
 	name "Monk"
-	desc "Fights using simple weapons, including his own body. Do not use armor but through strives for excellence."
+	desc "Fights using simple weapons, including his own body. He may not use armor but through sheer resolve withstands hits and strives for excellence."
 	about "?"
 }
 class paladin {
 	name "Paladin"
-	desc "Holy warrior who is guided by the code of their god. He knows the magic of the gods, but not as well as the cleric."
+	desc "He is a holy warrior who is guided by the moral code of their god. He knows the magic of the gods, though doesn't handle it as proficiently as the cleric."
 	about "?"
 }
 class rogue {
 	name "Rogue"
-	desc "Rogue use light armor and short blade. He attacks enemies from surprise to gain advantage in combat. Knows lockpicking, traps, sneaking and stealing.\n\nSpecial action: Dash"
-	about "I'm a rogue. Travels here and there. Sometimes rob someone or stab in back. Nothing interesting."
+	desc "Rogues use light armor and short blade. They are known to attack enemies by surprise to gain advantage in combat. Knows lockpicking, traps, sneaking and stealing.\n\nSpecial action: Dash"
+	about "I'm a rogue. I travel here and there, as I wish. Sometimes I rob someone or stab them in the back. Nothing interesting, as usual."
 }
 class warrior {
 	name "Warrior"

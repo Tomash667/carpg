@@ -4,6 +4,8 @@
 #include "GameFile.h"
 #include "BitStreamFunc.h"
 #include "Level.h"
+#include "SaveState.h"
+#include "BaseLocation.h"
 
 //=================================================================================================
 void InsideLocation::Save(GameWriter& f, bool local)
@@ -23,6 +25,12 @@ void InsideLocation::Load(GameReader& f, bool local, LOCATION_TOKEN token)
 	f >> target;
 	f >> special_room;
 	f >> from_portal;
+
+	if(LOAD_VERSION < V_DEV)
+	{
+		if(target == KOPALNIA_POZIOM)
+			state = LS_HIDDEN;
+	}
 }
 
 //=================================================================================================

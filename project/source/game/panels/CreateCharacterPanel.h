@@ -1,4 +1,3 @@
-// character creation screen
 #pragma once
 
 //-----------------------------------------------------------------------------
@@ -64,17 +63,17 @@ public:
 private:
 	enum DOLL_ANIM
 	{
-		DA_STOI,
-		DA_IDZIE,
-		DA_ROZGLADA,
-		DA_WYJMIJ_BRON,
-		DA_SCHOWAJ_BRON,
-		DA_WYJMIJ_LUK,
-		DA_SCHOWAJ_LUK,
-		DA_ATAK,
-		DA_STRZAL,
-		DA_BLOK,
-		DA_BOJOWY
+		DA_STAND,
+		DA_WALK,
+		DA_LOOKS_AROUND,
+		DA_SHOW_WEAPON,
+		DA_HIDE_WEAPON,
+		DA_SHOW_BOW,
+		DA_HIDE_BOW,
+		DA_ATTACK,
+		DA_SHOOT,
+		DA_BLOCK,
+		DA_BATTLE_MODE
 	};
 
 	void SetControls();
@@ -91,12 +90,11 @@ private:
 	void RebuildPerksFlow();
 	void ResetSkillsPerks();
 	void PickAttribute(cstring text, Perk picked_perk);
-	void PickSkill(cstring text, Perk picked_perk, bool positive = true, int multiple = 0);
+	void PickSkill(cstring text, Perk picked_perk);
 	void OnPickAttributeForPerk(int id);
 	void OnPickSkillForPerk(int id);
-	void UpdateSkill(SkillId s, int value, bool mod);
 	void UpdateSkillButtons();
-	void AddPerk(Perk perk, int value = 0, bool apply = true);
+	void AddPerk(Perk perk, int value = -1);
 	bool ValidatePerk(Perk perk);
 	void CheckSkillsUpdate();
 	void UpdateInventory();
@@ -123,12 +121,11 @@ private:
 	// data
 	bool reset_skills_perks, rotating;
 	cstring txHardcoreMode, txHair, txMustache, txBeard, txHairColor, txSize, txCharacterCreation, txName, txAttributes, txRelatedAttributes, txCreateCharWarn,
-		txSkillPoints, txPerkPoints, txPickAttribIncrease, txPickAttribDecrease, txPickTwoSkillsDecrease, txPickSkillIncrease, txAvailablePerks,
-		txUnavailablePerks, txTakenPerks, txCreateCharTooMany, txFlawExtraPerk;
+		txSkillPoints, txPerkPoints, txPickAttribIncrease, txPickSkillIncrease, txAvailablePerks, txTakenPerks, txCreateCharTooMany, txFlawExtraPerk,
+		txPerksRemoved;
 	Perk picked_perk;
 	PickItemDialog* pickItemDialog;
-	int step, step_var, step_var2;
-	vector<Perk> available_perks, unavailable_perks;
+	vector<Perk> available_perks;
 	vector<std::pair<cstring, int>> taken_perks;
 	const Item* items[SLOT_MAX];
 	TEX tKlasaCecha;

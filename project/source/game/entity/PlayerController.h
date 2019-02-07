@@ -56,39 +56,45 @@ enum class TrainWhat
 	Move, // player moved [0]
 
 	Talk, // player talked [0]
-	Trade, // player traded items [0]
+	Trade, // player traded items [value]
 
 	Stamina, // player uses stamina [value]
 };
 
+//-----------------------------------------------------------------------------
+enum class TrainMode
+{
+	Normal,
+	Tutorial,
+	Potion
+};
+
+//-----------------------------------------------------------------------------
 inline int GetRequiredAttributePoints(int level)
 {
 	return 4 * (level + 20)*(level + 25);
 }
-
 inline int GetRequiredSkillPoints(int level)
 {
 	return 3 * (level + 20)*(level + 25);
 }
 
-inline float GetBaseSkillMod(int v)
-{
-	return float(v) / 60;
-}
-
-inline float GetBaseAttributeMod(int v)
-{
-	return float(max(0, v - 50)) / 40;
-}
-
 //-----------------------------------------------------------------------------
 struct PlayerController : public HeroPlayerCommon
 {
+	struct StatData
+	{
+		int points;
+		int next;
+		int train;
+		int apt;
+		float train_part;
+		bool blocked;
+	};
+
 	PlayerInfo* player_info;
 	float move_tick, last_dmg, last_dmg_poison, dmgc, poison_dmgc, idle_timer, action_recharge, action_cooldown;
-	// a - attribute, s - skill
-	// *p - x points, *n - x next
-	int sp[(int)SkillId::MAX], sn[(int)SkillId::MAX], ap[(int)AttributeId::MAX], an[(int)AttributeId::MAX];
+	StatData skill[(int)SkillId::MAX], attrib[(int)AttributeId::MAX];
 	byte action_key;
 	NextAction next_action;
 	union
@@ -101,9 +107,9 @@ struct PlayerController : public HeroPlayerCommon
 			int index;
 		};
 	} next_action_data;
-	WeaponType ostatnia;
+	WeaponType last_weapon;
 	bool godmode, noclip, is_local, recalculate_level, leaving_event, always_run;
-	int id, free_days, action_charges;
+	int id, free_days, action_charges, learning_points, exp, exp_need, exp_level;
 	//----------------------
 	enum Action
 	{
@@ -128,31 +134,33 @@ struct PlayerController : public HeroPlayerCommon
 	DialogContext* dialog_ctx;
 	vector<ItemSlot>* chest_trade; // zale¿ne od action (dla LootUnit,ShareItems,GiveItems ekw jednostki, dla LootChest zawartoœæ skrzyni, dla Trade skrzynia kupca)
 	int kills, dmg_done, dmg_taken, knocks, arena_fights, stat_flags;
-	UnitStats base_stats;
-	StatState attrib_state[(int)AttributeId::MAX], skill_state[(int)SkillId::MAX];
 	vector<TakenPerk> perks;
 	vector<Unit*> action_targets;
 
-	PlayerController() : dialog_ctx(nullptr), stat_flags(0), player_info(nullptr), is_local(false), action_recharge(0.f), action_cooldown(0.f), action_charges(0)
+	PlayerController() : dialog_ctx(nullptr), stat_flags(0), player_info(nullptr), is_local(false), action_recharge(0.f),
+		action_cooldown(0.f), action_charges(0)
 	{
 	}
 	~PlayerController();
 
-	float CalculateAttack() const;
-	void TravelTick();
 	void Rest(int days, bool resting, bool travel = false);
 
 	void Init(Unit& _unit, bool partial = false);
-	void ResetStatState();
 	void Update(float dt, bool is_local = true);
-	void Train(SkillId s, int points);
-	void Train(AttributeId a, int points);
-	void TrainMove(float dt, bool run);
-	void Train(TrainWhat what, float value, int level);
+private:
+	void Train(SkillId s, float points);
+	void Train(AttributeId a, float points);
 	void TrainMod(AttributeId a, float points);
 	void TrainMod2(SkillId s, float points);
 	void TrainMod(SkillId s, float points);
+public:
+	void TrainMove(float dist);
+	void Train(TrainWhat what, float value, int level);
+	void Train(bool is_skill, int id, TrainMode mode = TrainMode::Normal);
 	void SetRequiredPoints();
+	int CalculateLevel();
+	void RecalculateLevel();
+	int GetAptitude(SkillId skill);
 
 	void Save(FileWriter& f);
 	void Load(FileReader& f);
@@ -161,7 +169,7 @@ struct PlayerController : public HeroPlayerCommon
 
 	bool IsTradingWith(Unit* t) const
 	{
-		if(action == Action_LootUnit || action == Action_Trade || action == Action_GiveItems || action == Action_ShareItems)
+		if(Any(action, Action_LootUnit, Action_Trade, Action_GiveItems, Action_ShareItems))
 			return action_unit == t;
 		else
 			return false;
@@ -169,38 +177,10 @@ struct PlayerController : public HeroPlayerCommon
 
 	static bool IsTrade(Action a)
 	{
-		return a == Action_LootChest || a == Action_LootUnit || a == Action_Trade || a == Action_ShareItems || a == Action_GiveItems
-			|| a == Action_LootContainer;
+		return Any(a, Action_LootChest, Action_LootUnit, Action_Trade, Action_ShareItems, Action_GiveItems, Action_LootContainer);
 	}
-
-	bool IsTrading() const
-	{
-		return IsTrade(action);
-	}
-
-	int GetBase(AttributeId a) const
-	{
-		return base_stats.attrib[(int)a];
-	}
-	int GetBase(SkillId s) const
-	{
-		return base_stats.skill[(int)s];
-	}
-
-	// change base stats, don't modify Unit stats
-	void SetBase(AttributeId a, int value)
-	{
-		base_stats.attrib[(int)a] = value;
-	}
-	void SetBase(SkillId s, int value)
-	{
-		base_stats.skill[(int)s] = value;
-	}
-	bool IsLocal() const
-	{
-		return is_local;
-	}
-
+	bool IsTrading() const { return IsTrade(action); }
+	bool IsLocal() const { return is_local; }
 	::Action& GetAction();
 	bool CanUseAction() const
 	{
@@ -214,6 +194,15 @@ struct PlayerController : public HeroPlayerCommon
 	void PayCredit(int count);
 	void UseDays(int count);
 	void StartDialog(Unit* talker, GameDialog* dialog = nullptr);
+
+	// perks
+	bool HavePerk(Perk perk, int value = -1);
+	bool AddPerk(Perk perk, int value);
+	bool RemovePerk(Perk perk, int value);
+
+	void AddLearningPoint(int count = 1);
+	void AddExp(int exp);
+	int GetExpNeed() const;
 };
 
 //-----------------------------------------------------------------------------
@@ -243,7 +232,8 @@ struct LocalPlayerData
 {
 	BeforePlayer before_player;
 	BeforePlayerPtr before_player_ptr;
-	Unit* selected_unit, *selected_target;
+	Unit* selected_unit, // unit marked with 'select' command
+		*target_unit; // unit in front of player
 	GroundItem* picking_item;
 	Vec3 action_point;
 	int picking_item_state;
@@ -256,7 +246,7 @@ struct LocalPlayerData
 		before_player = BP_NONE;
 		before_player_ptr.any = nullptr;
 		selected_unit = nullptr;
-		selected_target = nullptr;
+		target_unit = nullptr;
 		picking_item = nullptr;
 		picking_item_state = 0;
 		rot_buf = 0.f;

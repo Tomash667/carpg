@@ -95,7 +95,7 @@ void Quest_Orcs::SetProgress(int prog2)
 			item_to_give[0] = Item::Get("q_orkowie_klucz");
 			spawn_item = Quest_Event::Item_GiveSpawned2;
 			unit_to_spawn = UnitData::Get("q_orkowie_gorush");
-			unit_to_spawn2 = g_spawn_groups[SG_ORCS].GetSpawnLeader();
+			unit_to_spawn2 = g_spawn_groups[SG_ORCS].GetSpawnLeader(10);
 			unit_spawn_level2 = -3;
 			spawn_unit_room = RoomTarget::Prison;
 			QM.quest_orcs2->orcs_state = Quest_Orcs2::State::Accepted;
@@ -115,7 +115,8 @@ void Quest_Orcs::SetProgress(int prog2)
 		{
 			state = Quest::Completed;
 
-			game->AddReward(2500);
+			game->AddReward(4000);
+			Team.AddExp(12000);
 			OnUpdate(game->txQuest[195]);
 			W.AddNews(Format(game->txQuest[196], GetTargetLocationName(), GetStartLocationName()));
 
@@ -205,7 +206,7 @@ bool Quest_Orcs::Load(GameReader& f)
 		item_to_give[0] = Item::Get("q_orkowie_klucz");
 		spawn_item = Quest_Event::Item_GiveSpawned2;
 		unit_to_spawn = UnitData::Get("q_orkowie_gorush");
-		unit_to_spawn2 = g_spawn_groups[SG_ORCS].GetSpawnLeader();
+		unit_to_spawn2 = g_spawn_groups[SG_ORCS].GetSpawnLeader(10);
 		unit_spawn_level2 = -3;
 		spawn_unit_room = RoomTarget::Prison;
 	}
@@ -345,6 +346,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 		{
 			orc->StartAutoTalk();
 			W.AddNews(game->txQuest[200]);
+			Team.AddExp(14000);
 		}
 		break;
 	case Progress::TalkedAfterClearingCamp:
@@ -442,13 +444,15 @@ void Quest_Orcs2::SetProgress(int prog2)
 			orc->StartAutoTalk();
 			OnUpdate(game->txQuest[204]);
 			W.AddNews(game->txQuest[205]);
+			Team.AddLearningPoint();
 		}
 		break;
 	case Progress::Finished:
 		// pogadano z gorushem
 		{
 			state = Quest::Completed;
-			game->AddReward(Random(4000, 5000));
+			game->AddReward(Random(9000, 11000));
+			Team.AddExp(25000);
 			OnUpdate(game->txQuest[206]);
 			quest_manager.EndUniqueQuest();
 			// gorush
@@ -463,9 +467,10 @@ void Quest_Orcs2::SetProgress(int prog2)
 			}
 			orc = nullptr;
 			// orki
-			UnitData* ud[10] = {
+			UnitData* ud[12] = {
 				UnitData::Get("orc"), UnitData::Get("q_orkowie_orc"),
 				UnitData::Get("orc_fighter"), UnitData::Get("q_orkowie_orc_fighter"),
+				UnitData::Get("orc_warius"), UnitData::Get("q_orkowie_orc_warius"),
 				UnitData::Get("orc_hunter"), UnitData::Get("q_orkowie_orc_hunter"),
 				UnitData::Get("orc_shaman"), UnitData::Get("q_orkowie_orc_shaman"),
 				UnitData::Get("orc_chief"), UnitData::Get("q_orkowie_orc_chief")
@@ -485,7 +490,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 					}
 					else
 					{
-						for(int i = 0; i < 5; ++i)
+						for(int i = 0; i < 6; ++i)
 						{
 							if(u.data == ud[i * 2])
 							{
@@ -702,9 +707,8 @@ void Quest_Orcs2::ChangeClass(OrcClass new_orc_class)
 	UnitData* ud = UnitData::Get(udi);
 	orc->data = ud;
 	orc->level = ud->level.x;
-	orc->data->GetStatProfile().Set(orc->level, orc->unmod_stats.attrib, orc->unmod_stats.skill);
+	orc->stats = orc->data->GetStats(orc->level);
 	orc->CalculateStats();
-	orc->RecalculateHp();
 	game->ParseItemScript(*orc, ud->item_script);
 	for(auto item : orc->slots)
 	{

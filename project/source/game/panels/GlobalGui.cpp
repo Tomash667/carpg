@@ -291,6 +291,24 @@ void GlobalGui::UpdateGui(float dt)
 }
 
 //=================================================================================================
+void GlobalGui::Save(FileWriter& f)
+{
+	messages->Save(f);
+	game_gui->Save(f);
+	journal->Save(f);
+	world_map->Save(f);
+}
+
+//=================================================================================================
+void GlobalGui::Load(FileReader& f)
+{
+	messages->Load(f);
+	game_gui->Load(f);
+	journal->Load(f);
+	world_map->Load(f);
+}
+
+//=================================================================================================
 void GlobalGui::LoadOldGui(FileReader& f)
 {
 	// old gui settings, now removed

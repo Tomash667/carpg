@@ -290,31 +290,6 @@ void Arena::StartArenaCombat(int level)
 
 	Game& game = Game::Get();
 	DialogContext& ctx = *DialogContext::current;
-	int count, lvl;
-
-	switch(Rand() % 5)
-	{
-	case 0:
-		count = 1;
-		lvl = level * 5 + 1;
-		break;
-	case 1:
-		count = 1;
-		lvl = level * 5;
-		break;
-	case 2:
-		count = 2;
-		lvl = level * 5 - 1;
-		break;
-	case 3:
-		count = 2;
-		lvl = level * 5 - 2;
-		break;
-	case 4:
-		count = 3;
-		lvl = level * 5 - 3;
-		break;
-	}
 
 	free = false;
 	mode = FIGHT;
@@ -397,16 +372,7 @@ void Arena::StartArenaCombat(int level)
 		}
 	}
 
-	if(units.size() > 3)
-	{
-		lvl += (units.size() - 3) / 2 + 1;
-		while(lvl > level * 5 + 2)
-		{
-			lvl -= 2;
-			++count;
-		}
-	}
-
+	// select enemy list
 	cstring list_id;
 	switch(level)
 	{
@@ -424,44 +390,25 @@ void Arena::StartArenaCombat(int level)
 		SpawnArenaViewers(5);
 		break;
 	}
+	UnitGroupList* list = UnitGroupList::Get(list_id);
+	UnitGroup* group = list->groups[Rand() % list->groups.size()];
 
-	auto list = UnitGroupList::Get(list_id);
-	auto group = list->groups[Rand() % list->groups.size()];
+	// prepare list of units that can be spawned
+	int lvl = level * 5 + Random(-1, +1);
+	int min_level = Max(lvl - 5, lvl / 2);
+	int max_level = lvl + 1;
+	Pooled<TmpUnitGroup> part;
+	part->Fill(group, min_level, max_level);
 
-	TmpUnitGroup part;
-	part.group = group;
-	part.total = 0;
-	for(auto& entry : part.group->entries)
-	{
-		if(lvl >= entry.ud->level.x)
-		{
-			auto& new_entry = Add1(part.entries);
-			new_entry.ud = entry.ud;
-			new_entry.count = entry.count;
-			if(lvl < entry.ud->level.y)
-				new_entry.count = max(1, new_entry.count / 2);
-			part.total += new_entry.count;
-		}
-	}
-
+	// spawn enemies
 	InsideBuilding* arena = L.GetArena();
-
-	for(int i = 0; i < count; ++i)
+	for(TmpUnitGroup::Spawn& spawn : part->Roll(lvl * units.size()))
 	{
-		int x = Rand() % part.total, y = 0;
-		for(auto& entry : part.entries)
-		{
-			y += entry.count;
-			if(x < y)
-			{
-				Unit* u = L.SpawnUnitInsideArea(arena->ctx, arena->arena2, *entry.ud, lvl);
-				u->rot = 0.f;
-				u->in_arena = 1;
-				u->frozen = FROZEN::YES;
-				units.push_back(u);
-				break;
-			}
-		}
+		Unit* u = L.SpawnUnitInsideArea(arena->ctx, arena->arena2, *spawn.first, spawn.second);
+		u->rot = 0.f;
+		u->in_arena = 1;
+		u->frozen = FROZEN::YES;
+		units.push_back(u);
 	}
 }
 
@@ -553,21 +500,18 @@ void Arena::StartPvp(PlayerController* player, Unit* unit)
 	fighter = unit;
 
 	// stwórz obserwatorów na arenie na podstawie poziomu postaci
-	player->unit->level = player->unit->CalculateLevel();
-	if(unit->IsPlayer())
-		unit->level = unit->CalculateLevel();
 	int level = max(player->unit->level, unit->level);
 
-	if(level < 7)
+	if(level < 10)
 		SpawnArenaViewers(1);
-	else if(level < 14)
+	else if(level < 15)
 		SpawnArenaViewers(2);
 	else
 		SpawnArenaViewers(3);
 }
 
 //=================================================================================================
-void Arena::AddGoldReward(int count)
+void Arena::AddReward(int gold, int exp)
 {
 	vector<Unit*> v;
 	for(vector<Unit*>::iterator it = units.begin(), end = units.end(); it != end; ++it)
@@ -576,7 +520,8 @@ void Arena::AddGoldReward(int count)
 			v.push_back(*it);
 	}
 
-	Game::Get().AddGold(count * (85 + v.size() * 15) / 100, &v, true);
+	Game::Get().AddGold(gold * v.size(), &v, true);
+	Team.AddExp(-exp, &v);
 }
 
 //=================================================================================================
@@ -758,21 +703,24 @@ void Arena::Update(float dt)
 			{
 				if(result == 0)
 				{
-					int count;
+					int gold, exp;
 					switch(difficulty)
 					{
 					case 1:
-						count = 150;
+						gold = 500;
+						exp = 1000;
 						break;
 					case 2:
-						count = 350;
+						gold = 1000;
+						exp = 2000;
 						break;
 					case 3:
-						count = 750;
+						gold = 2500;
+						exp = 5000;
 						break;
 					}
 
-					AddGoldReward(count);
+					AddReward(gold, exp);
 				}
 
 				for(Unit* unit : units)
@@ -951,4 +899,57 @@ void Arena::ShowPvpRequest(Unit* unit)
 	pvp_response.ok = true;
 	pvp_response.timer = 0.f;
 	pvp_response.to = Game::Get().pc->unit;
+}
+
+//=================================================================================================
+void Arena::RewardExp(Unit* dead_unit)
+{
+	if(mode == PVP)
+	{
+		Unit* winner = units[dead_unit->in_arena == 0 ? 1 : 0];
+		if(winner->IsPlayer())
+		{
+			int exp = 50 * dead_unit->level;
+			if(dead_unit->IsPlayer())
+				exp /= 2;
+			winner->player->AddExp(exp);
+		}
+	}
+	else if(!dead_unit->IsTeamMember())
+	{
+		LocalVector<Unit*> to_reward;
+		for(Unit* unit : units)
+		{
+			if(unit->in_arena != dead_unit->in_arena)
+				to_reward->push_back(unit);
+		}
+		Team.AddExp(50 * dead_unit->level, to_reward);
+	}
+}
+
+//=================================================================================================
+void Arena::SpawnUnit(const vector<Enemy>& units)
+{
+	InsideBuilding* arena = L.GetArena();
+
+	L.CleanLevel(arena->ctx.building_id);
+
+	for(const Enemy& unit : units)
+	{
+		for(uint i = 0; i < unit.count; ++i)
+		{
+			if(unit.side)
+			{
+				Unit* u = L.SpawnUnitInsideArea(arena->ctx, arena->arena2, *unit.unit, unit.level);
+				u->rot = 0.f;
+				u->in_arena = 1;
+			}
+			else
+			{
+				Unit* u = L.SpawnUnitInsideArea(arena->ctx, arena->arena1, *unit.unit, unit.level);
+				u->rot = PI;
+				u->in_arena = 0;
+			}
+		}
+	}
 }

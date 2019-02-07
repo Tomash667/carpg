@@ -12,8 +12,6 @@
 
 #ifdef _MSC_VER
 
-#define noexcept //_NOEXCEPT
-
 namespace ssvu
 {
 	namespace Internal

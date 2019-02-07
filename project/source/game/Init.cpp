@@ -30,6 +30,8 @@
 #include "DebugDrawer.h"
 #include "Item.h"
 #include "NameHelper.h"
+#include "CommandParser.h"
+#include "CreateServerPanel.h"
 
 extern void HumanPredraw(void* ptr, Matrix* mat, int n);
 extern const int ITEM_IMAGE_SIZE;
@@ -85,6 +87,7 @@ void Game::PreconfigureGame()
 	arena = new Arena;
 	loc_gen_factory = new LocationGeneratorFactory;
 	gui = new GlobalGui;
+	cmdp = new CommandParser;
 	components.push_back(&W);
 	components.push_back(pathfinding);
 	components.push_back(&QM);
@@ -93,6 +96,8 @@ void Game::PreconfigureGame()
 	components.push_back(gui);
 	components.push_back(&L);
 	components.push_back(&SM);
+	components.push_back(cmdp);
+	components.push_back(&N);
 	for(GameComponent* component : components)
 		component->Prepare();
 
@@ -298,7 +303,6 @@ void Game::ConfigureGame()
 	AddCommands();
 	ResetGameKeys();
 	LoadGameKeys();
-	SetMeshSpecular();
 	BaseLocation::SetRoomPointers();
 
 	for(int i = 0; i < SG_MAX; ++i)
@@ -355,6 +359,8 @@ void Game::PostconfigureGame()
 	tCeil[1] = tCeilBase;
 	tWall[1] = tWallBase;
 
+	ItemScript::Init();
+
 	// test & validate game data (in debug always check some things)
 	if(testing)
 		ValidateGameData(true);
@@ -395,9 +401,9 @@ void Game::PostconfigureGame()
 	}
 
 	// save config
-	cfg.Add("adapter", Format("%d", used_adapter));
+	cfg.Add("adapter", used_adapter);
 	cfg.Add("resolution", Format("%dx%d", GetWindowSize().x, GetWindowSize().y));
-	cfg.Add("refresh", Format("%d", wnd_hz));
+	cfg.Add("refresh", wnd_hz);
 	SaveCfg();
 
 	// end load screen, show menu
@@ -443,7 +449,10 @@ void Game::StartGameMode()
 		{
 			N.mp_load = true;
 			if(gui->saveload->TryLoad(quickstart_slot))
+			{
+				gui->create_server->CloseDialog();
 				gui->server->autoready = true;
+			}
 			else
 			{
 				Error("Multiplayer quickload failed.");
@@ -779,6 +788,7 @@ void Game::AddLoadTasks()
 		sound_mgr.AddLoadTask("TouchofDeath.ogg", sEvil);
 		sound_mgr.AddLoadTask("eat.mp3", sEat);
 		sound_mgr.AddLoadTask("whooshy-puff.wav", sSummon);
+		sound_mgr.AddLoadTask("zap.mp3", sZap);
 	}
 
 	// musics

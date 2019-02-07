@@ -176,16 +176,16 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 			Mobility: 50 (40 -> 50)
 			*/
 			const Armor& armor = item->ToArmor();
-			cstring mob_str, armor_type;
+			cstring mob_str, armor_type_text;
 
-			cstring skill = Skill::skills[(int)armor.skill].name.c_str();
-			if(unit->data->armor_type == armor.armor_type)
-				armor_type = skill;
+			cstring skill = Skill::skills[(int)armor.GetSkill()].name.c_str();
+			if(unit->data->armor_type == armor.armor_unit_type)
+				armor_type_text = skill;
 			else
-				armor_type = Format("%s (%s)", skill, txInvalidArmor);
+				armor_type_text = Format("%s (%s)", skill, txInvalidArmor);
 
 			int old_mob = (int)unit->CalculateMobility();
-			int new_mob = (int)unit->CalculateMobility(armor);
+			int new_mob = (int)unit->CalculateMobility(&armor);
 			if(old_mob == new_mob)
 				mob_str = Format("%d", new_mob);
 			else
@@ -200,7 +200,7 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 				def_desc = Format("$c%c%d -> %d$c-", IsBetterColor(old_def, new_def), old_def, new_def);
 
 			str += Format(" - %s\n%s: %d (%s)\n%s: $c%c%d$c-\n%s: %d (%s)\n",
-				armor_type,
+				armor_type_text,
 				txDefense,
 				armor.def,
 				def_desc,

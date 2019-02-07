@@ -7,6 +7,9 @@
 #include "QuestManager.h"
 #include "World.h"
 #include "LevelArea.h"
+#include "Team.h"
+#include "ItemHelper.h"
+#include "SaveState.h"
 
 //=================================================================================================
 void Quest_StolenArtifact::Start()
@@ -64,20 +67,21 @@ void Quest_StolenArtifact::SetProgress(int prog2)
 			OnStart(game->txQuest[86]);
 			quest_manager.quests_timeout.push_back(this);
 
-			item->CreateCopy(quest_item);
-			quest_item.id = Format("$%s", item->id.c_str());
-			quest_item.refid = refid;
-			spawn_item = Quest_Dungeon::Item_GiveSpawned;
-			item_to_give[0] = &quest_item;
-			unit_to_spawn = g_spawn_groups[group].GetSpawnLeader();
-			unit_spawn_level = -3;
-
 			Location& sl = GetStartLocation();
 			target_loc = W.GetRandomSpawnLocation(sl.pos, group);
 			Location& tl = GetTargetLocation();
 			at_level = tl.GetRandomLevel();
 			tl.active_quest = this;
 			tl.SetKnown();
+			st = tl.st;
+
+			item->CreateCopy(quest_item);
+			quest_item.id = Format("$%s", item->id.c_str());
+			quest_item.refid = refid;
+			spawn_item = Quest_Dungeon::Item_GiveSpawned;
+			item_to_give[0] = &quest_item;
+			unit_to_spawn = g_spawn_groups[group].GetSpawnLeader(tl.st);
+			unit_spawn_level = -3;
 
 			cstring kto;
 			switch(group)
@@ -119,7 +123,9 @@ void Quest_StolenArtifact::SetProgress(int prog2)
 			}
 			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
 			OnUpdate(game->txQuest[94]);
-			game->AddReward(1200);
+			int reward = GetReward();
+			game->AddReward(reward);
+			Team.AddExp(reward * 3);
 			DialogContext::current->talker->temporary = true;
 			DialogContext::current->talker->AddItem(&quest_item, 1, true);
 			DialogContext::current->pc->unit->RemoveQuestItem(refid);
@@ -191,6 +197,8 @@ cstring Quest_StolenArtifact::FormatString(const string& str)
 			return nullptr;
 		}
 	}
+	else if(str == "reward")
+		return Format("%d", GetReward());
 	else
 	{
 		assert(0);
@@ -233,6 +241,7 @@ void Quest_StolenArtifact::Save(GameWriter& f)
 
 	f << item;
 	f << group;
+	f << st;
 }
 
 //=================================================================================================
@@ -242,14 +251,26 @@ bool Quest_StolenArtifact::Load(GameReader& f)
 
 	f.LoadArtifact(item);
 	f >> group;
+	if(LOAD_VERSION >= V_DEV)
+		f >> st;
+	else if(target_loc != -1)
+		st = GetTargetLocation().st;
+	else
+		st = 10;
 
 	item->CreateCopy(quest_item);
 	quest_item.id = Format("$%s", item->id.c_str());
 	quest_item.refid = refid;
 	spawn_item = Quest_Dungeon::Item_GiveSpawned;
 	item_to_give[0] = &quest_item;
-	unit_to_spawn = g_spawn_groups[group].GetSpawnLeader();
+	unit_to_spawn = g_spawn_groups[group].GetSpawnLeader(GetTargetLocation().st);
 	unit_spawn_level = -3;
 
 	return true;
+}
+
+//=================================================================================================
+int Quest_StolenArtifact::GetReward() const
+{
+	return ItemHelper::CalculateReward(st, Int2(5, 15), Int2(2000, 6000));
 }

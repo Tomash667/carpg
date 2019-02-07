@@ -31,7 +31,7 @@ public:
 	bool TryLoad(int slot, bool quickload = false);
 
 private:
-	SaveSlot single_saves[MAX_SAVE_SLOTS], multi_saves[MAX_SAVE_SLOTS];
+	SaveSlot single_saves[SaveSlot::MAX_SLOTS], multi_saves[SaveSlot::MAX_SLOTS];
 	SaveSlot* slots;
 	TextBox textbox;
 	Button bt[2];

@@ -2,13 +2,13 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "UnitStats.h"
 #include "Material.h"
 #include "DamageTypes.h"
 #include "ItemType.h"
 #include "ArmorUnitType.h"
 #include "Resource.h"
 #include "Effect.h"
+#include "Skill.h"
 
 //-----------------------------------------------------------------------------
 static const int HEIRLOOM = -1;
@@ -24,7 +24,7 @@ enum ITEM_FLAGS
 	ITEM_NOT_BLACKSMITH = 1 << 4,
 	ITEM_MAGE = 1 << 5,
 	ITEM_DONT_DROP = 1 << 6, // can't drop when in dialog
-	ITEM_SECRET = 1 << 7,
+	//ITEM_SECRET = 1 << 7, - removed
 	ITEM_BACKSTAB = 1 << 8,
 	ITEM_POWER_1 = 1 << 9,
 	ITEM_POWER_2 = 1 << 10,
@@ -34,7 +34,7 @@ enum ITEM_FLAGS
 	ITEM_MAGIC_RESISTANCE_25 = 1 << 14,
 	ITEM_GROUND_MESH = 1 << 15, // when on ground is displayed as mesh not as bag
 	ITEM_CRYSTAL_SOUND = 1 << 16,
-	ITEM_IMPORTANT = 1 << 17, // drawn on map as gold bag in minimap
+	ITEM_IMPORTANT = 1 << 17, // drawn on map as gold bag in minimap, mark dead units with this item
 	ITEM_TEX_ONLY = 1 << 18,
 	ITEM_NOT_MERCHANT = 1 << 19,
 	ITEM_NOT_RANDOM = 1 << 20,
@@ -42,6 +42,7 @@ enum ITEM_FLAGS
 	ITEM_MAGICAL = 1 << 23, // magic quality item icon
 	ITEM_UNIQUE = 1 << 24, // unique quality item icon
 	ITEM_ALPHA = 1 << 25, // item require alpha test
+	ITEM_MAGIC_SCROLL = 1 << 26,
 };
 
 //-----------------------------------------------------------------------------
@@ -222,7 +223,8 @@ enum WEAPON_TYPE
 	WT_SHORT_BLADE,
 	WT_LONG_BLADE,
 	WT_BLUNT,
-	WT_AXE
+	WT_AXE,
+	WT_MAX
 };
 
 //-----------------------------------------------------------------------------
@@ -236,6 +238,22 @@ struct WeaponTypeInfo
 
 	static WeaponTypeInfo info[];
 };
+
+inline WEAPON_TYPE GetWeaponType(SkillId s)
+{
+	switch(s)
+	{
+	default:
+	case SkillId::SHORT_BLADE:
+		return WT_SHORT_BLADE;
+	case SkillId::LONG_BLADE:
+		return WT_LONG_BLADE;
+	case SkillId::AXE:
+		return WT_AXE;
+	case SkillId::BLUNT:
+		return WT_BLUNT;
+	}
+}
 
 inline const WeaponTypeInfo& GetWeaponTypeInfo(SkillId s)
 {
@@ -262,6 +280,10 @@ struct Weapon : public Item
 	const WeaponTypeInfo& GetInfo() const
 	{
 		return WeaponTypeInfo::info[weapon_type];
+	}
+	SkillId GetSkill() const
+	{
+		return GetInfo().skill;
 	}
 
 	int dmg, dmg_type, req_str;
@@ -295,10 +317,50 @@ struct Shield : public Item
 };
 
 //-----------------------------------------------------------------------------
+enum ARMOR_TYPE
+{
+	AT_LIGHT,
+	AT_MEDIUM,
+	AT_HEAVY,
+	AT_MAX
+};
+
+inline ARMOR_TYPE GetArmorType(SkillId skill)
+{
+	switch(skill)
+	{
+	case SkillId::LIGHT_ARMOR:
+		return AT_LIGHT;
+	case SkillId::MEDIUM_ARMOR:
+		return AT_MEDIUM;
+	case SkillId::HEAVY_ARMOR:
+		return AT_HEAVY;
+	default:
+		assert(0);
+		return AT_MAX;
+	}
+}
+
+inline SkillId GetArmorTypeSkill(ARMOR_TYPE armor_type)
+{
+	switch(armor_type)
+	{
+	default:
+		assert(0);
+	case AT_LIGHT:
+		return SkillId::LIGHT_ARMOR;
+	case AT_MEDIUM:
+		return SkillId::MEDIUM_ARMOR;
+	case AT_HEAVY:
+		return SkillId::HEAVY_ARMOR;
+	}
+}
+
+//-----------------------------------------------------------------------------
 // Armor
 struct Armor : public Item
 {
-	Armor() : Item(IT_ARMOR), def(10), req_str(10), mobility(100), material(MAT_SKIN), skill(SkillId::LIGHT_ARMOR), armor_type(ArmorUnitType::HUMAN) {}
+	Armor() : Item(IT_ARMOR), def(10), req_str(10), mobility(100), material(MAT_SKIN), armor_type(AT_LIGHT), armor_unit_type(ArmorUnitType::HUMAN) {}
 
 	const TexId* GetTextureOverride() const
 	{
@@ -307,11 +369,12 @@ struct Armor : public Item
 		else
 			return &tex_override[0];
 	}
+	SkillId GetSkill() const { return GetArmorTypeSkill(armor_type); }
 
 	int def, req_str, mobility;
 	MATERIAL_TYPE material;
-	SkillId skill;
-	ArmorUnitType armor_type;
+	ARMOR_TYPE armor_type;
+	ArmorUnitType armor_unit_type;
 	vector<TexId> tex_override;
 
 	static vector<Armor*> armors;
@@ -322,7 +385,7 @@ struct Armor : public Item
 inline bool Item::IsWearableByHuman() const
 {
 	if(type == IT_ARMOR)
-		return ToArmor().armor_type == ArmorUnitType::HUMAN;
+		return ToArmor().armor_unit_type == ArmorUnitType::HUMAN;
 	else
 		return type == IT_WEAPON || type == IT_BOW || type == IT_SHIELD;
 }
@@ -334,7 +397,7 @@ enum ConsumeEffect
 	E_NONE, // no effects
 	E_HEAL, // heals instantly X hp
 	E_REGENERATE, // heals X hp/sec for Y sec (don't stack)
-	E_NATURAL, // speed up natural regeneration for Y days (EndEffects/UpdateEffects is hardcoded to use first value when there is multiple effects)
+	E_NATURAL, // speed up natural regeneration for Y days
 	E_ANTIDOTE, // remove poison and alcohol
 	E_POISON, // deal X dmg/sec for Y sec
 	E_ALCOHOL, // deals X alcohol points in Y sec

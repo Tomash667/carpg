@@ -4,10 +4,17 @@
 #include "GameDialogBox.h"
 #include "TextBox.h"
 #include "GuiContainer.h"
+#include "CheckBox.h"
 
 //-----------------------------------------------------------------------------
 class CreateServerPanel : public GameDialogBox
 {
+	enum Id
+	{
+		IdOk = GuiEvent_Custom,
+		IdCancel,
+		IdHidden
+	};
 public:
 	explicit CreateServerPanel(const DialogInfo& info);
 	void LoadLanguage();
@@ -17,6 +24,7 @@ public:
 	void Show();
 
 	TextBox textbox[3];
+	CheckBox checkbox;
 	cstring txCreateServer, textbox_text[3], txEnterServerName, txInvalidPlayersCount;
 	GuiContainer cont;
 };

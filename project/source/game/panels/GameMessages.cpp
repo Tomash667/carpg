@@ -4,6 +4,7 @@
 #include "Game.h"
 #include "Language.h"
 #include "PlayerInfo.h"
+#include "SaveState.h"
 
 //=================================================================================================
 void GameMessages::LoadLanguage()
@@ -30,6 +31,9 @@ void GameMessages::LoadLanguage()
 	txGameSaved = Str("gameSaved");
 	txGainTextAttrib = Str("gainTextAttrib");
 	txGainTextSkill = Str("gainTextSkill");
+	txGainLearningPoints = Str("gainLearningPoints");
+	txLearnedPerk = Str("learnedPerk");
+	txTooComplicated = Str("tooComplicated");
 }
 
 //=================================================================================================
@@ -102,7 +106,7 @@ void GameMessages::Update(float dt)
 void GameMessages::Save(FileWriter& f) const
 {
 	f << msgs.size();
-	for(auto& msg : msgs)
+	for(const GameMsg& msg : msgs)
 	{
 		f.WriteString2(msg.msg);
 		f << msg.time;
@@ -110,6 +114,8 @@ void GameMessages::Save(FileWriter& f) const
 		f << msg.pos;
 		f << msg.size;
 		f << msg.type;
+		f << msg.subtype;
+		f << msg.value;
 	}
 	f << msgs_h;
 }
@@ -118,7 +124,7 @@ void GameMessages::Save(FileWriter& f) const
 void GameMessages::Load(FileReader& f)
 {
 	msgs.resize(f.Read<uint>());
-	for(auto& msg : msgs)
+	for(GameMsg& msg : msgs)
 	{
 		f.ReadString2(msg.msg);
 		f >> msg.time;
@@ -126,22 +132,34 @@ void GameMessages::Load(FileReader& f)
 		f >> msg.pos;
 		f >> msg.size;
 		f >> msg.type;
+		if(LOAD_VERSION >= V_DEV)
+		{
+			f >> msg.subtype;
+			f >> msg.value;
+		}
+		else
+		{
+			msg.subtype = -1;
+			msg.value = 0;
+		}
 	}
 	f >> msgs_h;
 }
 
 //=================================================================================================
-void GameMessages::AddMessage(cstring text, float time, int type)
+void GameMessages::AddMessage(cstring text, float time, int type, int subtype, int value)
 {
 	assert(text && time > 0.f);
 
 	GameMsg& m = Add1(msgs);
 	m.msg = text;
 	m.type = type;
+	m.subtype = subtype;
 	m.time = time;
 	m.fade = -0.1f;
 	m.size = GUI.default_font->CalculateSize(text, GUI.wnd_size.x - 64);
 	m.size.y += 6;
+	m.value = value;
 
 	if(msgs.size() == 1u)
 		m.pos = Vec2(float(GUI.wnd_size.x) / 2, float(GUI.wnd_size.y) / 2);
@@ -258,6 +276,13 @@ void GameMessages::AddGameMsg3(GMS id)
 	case GMS_NEED_KEY:
 		text = txNeedKey;
 		break;
+	case GMS_LEARNED_PERK:
+		text = txLearnedPerk;
+		break;
+	case GMS_TOO_COMPLICATED:
+		text = txTooComplicated;
+		time = 2.5f;
+		break;
 	default:
 		assert(0);
 		return;
@@ -284,19 +309,58 @@ void GameMessages::AddGameMsg3(PlayerController* player, GMS id)
 }
 
 //=================================================================================================
-void GameMessages::ShowStatGain(bool is_skill, int what, int value)
+void GameMessages::AddFormattedMessage(PlayerController* player, GMS id, int subtype, int value)
 {
-	cstring text, name;
-	if(is_skill)
+	assert(player);
+	if(player->is_local)
 	{
-		text = txGainTextSkill;
-		name = Skill::skills[what].name.c_str();
+		GameMsg* existing = nullptr;
+		for(GameMsg& msg : msgs)
+		{
+			if(msg.type == id && msg.subtype == subtype)
+			{
+				existing = &msg;
+				value += msg.value;
+				break;
+			}
+		}
+
+		cstring text;
+		float time = 3.f;
+		switch(id)
+		{
+		case GMS_GAIN_LEARNING_POINTS:
+			text = Format(txGainLearningPoints, value);
+			break;
+		case GMS_GAIN_ATTRIBUTE:
+			text = Format(txGainTextAttrib, Attribute::attributes[subtype].name.c_str(), value);
+			break;
+		case GMS_GAIN_SKILL:
+			text = Format(txGainTextSkill, Skill::skills[subtype].name.c_str(), value);
+			break;
+		default:
+			assert(0);
+			return;
+		}
+
+		if(existing)
+		{
+			GameMsg& msg = *existing;
+			msg.msg = text;
+			msg.time = time;
+			msg.size = GUI.default_font->CalculateSize(text, GUI.wnd_size.x - 64);
+			msg.size.y += 6;
+			msg.value = value;
+		}
+		else
+			AddMessage(text, time, id, subtype, value);
 	}
 	else
 	{
-		text = txGainTextAttrib;
-		name = Attribute::attributes[what].name.c_str();
+		NetChangePlayer& c = Add1(player->player_info->changes);
+		c.type = NetChangePlayer::GAME_MESSAGE_FORMATTED;
+		c.id = id;
+		c.count = value;
+		c.a = subtype;
 	}
-
-	AddGameMsg(Format(text, name, value), 3.f);
 }

@@ -11,6 +11,7 @@
 #include "Team.h"
 #include "World.h"
 #include "Level.h"
+#include "ItemHelper.h"
 
 //=================================================================================================
 void Quest_RescueCaptive::Start()
@@ -60,6 +61,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 			loc2.SetKnown();
 
 			loc2.active_quest = this;
+			st = loc2.st;
 			unit_to_spawn = UnitData::Get("captive");
 			unit_dont_attack = true;
 			at_level = loc2.GetRandomLevel();
@@ -100,6 +102,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 		// found captive
 		{
 			OnUpdate(game->txQuest[35]);
+			Team.AddExp(2000);
 		}
 		break;
 	case Progress::CaptiveDie:
@@ -140,7 +143,9 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 		// captive returned to captain, end of quest
 		{
 			state = Quest::Completed;
-			game->AddReward(1000);
+			int reward = GetReward();
+			game->AddReward(reward);
+			Team.AddExp(reward * 3);
 
 			((City&)GetStartLocation()).quest_captain = CityQuestState::None;
 			if(target_loc != -1)
@@ -197,7 +202,9 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 		// inform captain about escape of captive, end of quest
 		{
 			state = Quest::Completed;
-			game->AddReward(250);
+			int reward = GetReward();
+			game->AddReward(reward / 4);
+			Team.AddExp(reward * 3 / 2);
 			if(captive)
 			{
 				captive->event_handler = nullptr;
@@ -273,6 +280,10 @@ cstring Quest_RescueCaptive::FormatString(const string& str)
 		return GetLocationDirName(GetStartLocation().pos, GetTargetLocation().pos);
 	else if(str == "start_loc")
 		return GetStartLocationName();
+	else if(str == "reward")
+		return Format("%d", GetReward());
+	else if(str == "reward2")
+		return Format("%d", GetReward() / 4);
 	else
 	{
 		assert(0);
@@ -350,6 +361,7 @@ void Quest_RescueCaptive::Save(GameWriter& f)
 
 	f << group;
 	f << captive;
+	f << st;
 }
 
 //=================================================================================================
@@ -367,6 +379,12 @@ bool Quest_RescueCaptive::Load(GameReader& f)
 			group = GetRandomGroup();
 	}
 	f >> captive;
+	if(LOAD_VERSION >= V_DEV)
+		f >> st;
+	else if(target_loc != -1)
+		st = GetTargetLocation().st;
+	else
+		st = 10;
 
 	unit_event_handler = this;
 
@@ -394,4 +412,10 @@ SPAWN_GROUP Quest_RescueCaptive::GetRandomGroup() const
 	case 3:
 		return SG_GOBLINS;
 	}
+}
+
+//=================================================================================================
+int Quest_RescueCaptive::GetReward() const
+{
+	return ItemHelper::CalculateReward(st, Int2(5, 15), Int2(2000, 6000));
 }

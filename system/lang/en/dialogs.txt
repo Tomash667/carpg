@@ -34,6 +34,11 @@ dialog merchant {
 	8 "Don't sell it"
 	9 "Too bad."
 	10 "End dialog"
+	11 "Training"
+	12 "I offer training in haggle or increasing your charisma. Training takes 10 days and costs 100 gold pieces. What do you require?"
+	13 "$train_lab/haggle$"
+	14 "$train_lab/cha$"
+	15 "Cancel"
 }
 
 //==============================================================================
@@ -56,6 +61,7 @@ dialog alchemist {
 		"Stone with some runes? I know nothing about this."
 	}
 	9 "End dialog"
+	10 "I see that you know a thing or two about alchemy. I have special prices for you."
 }
 
 //==============================================================================
@@ -131,23 +137,23 @@ dialog trainer {
 	2 "Training lasts 10 days and costs 200 gold pieces."
 	3 "What do you want to train?"
 	4 "Attribute"
-	5 "Strength"
-	6 "Endurance"
-	7 "Dexterity"
+	5 "$train_lab/str$"
+	6 "$train_lab/end$"
+	7 "$train_lab/dex$"
 	8 "Cancel"
 	9 "Skill"
-	10 "Melee weapon combat"
-	11 "Short blade"
-	12 "Long blade"
-	13 "Axe"
-	14 "Blunt"
-	15 "Shooting bow"
-	16 "Shield blocking"
-	17 "Light armor usage"
-	18 "Medium armor usage"
-	19 "Heavy armor usage"
-	20 "Cancel"
-	21 "Cancel"
+	10 "$train_lab/one_handed_weapon$"
+	11 "$train_lab/short_blade$"
+	12 "$train_lab/long_blade$"
+	13 "$train_lab/blunt$"
+	14 "$train_lab/axe$"
+	15 "$train_lab/bow$"
+	16 "$train_lab/shield$"
+	17 "$train_lab/light_armor$"
+	18 "$train_lab/medium_armor$"
+	19 "$train_lab/heavy_armor$"
+	20 "Feat"
+	21 "Hmm... Currently, I can't teach you any new feats."
 	22 "What do you do here?"
 	23 "I'm a trainer, I train warriors, hunters and rogues fighting and defense."
 	24 "Ask about strange stone"
@@ -992,7 +998,7 @@ dialog q_bandits_master {
 	50 "Good luck!"
 	51 "Welcome back!"
 	52 "I already heard about your victory!"
-	53 "Please take this 5000 gold coins as reward."
+	53 "Please take this 10000 gold coins as reward."
 	54 "Maybe in the future I'll have for you some work."
 	55 "Good luck in your adventures!"
 	56 "Welcome back!"
@@ -1070,7 +1076,7 @@ dialog q_bandits_collect_toll_timeout {
 //==============================================================================
 dialog q_bandits_collect_toll_end {
 	0 "Finally, someone on whom you can rely on. Well done with these bandits, that will teach them for some time."
-	1 "Take this 400 gold pieces as reward."
+	1 "Take this 1500 gold pieces as reward."
 }
 
 //==============================================================================
@@ -1105,7 +1111,7 @@ dialog q_camp_near_city_timeout {
 //==============================================================================
 dialog q_camp_near_city_end {
 	0 "If not for you I do not know whether we repelled this attack."
-	1 "Please, take this 2500 gold pieces."
+	1 "Please, take this $reward$ gold pieces."
 }
 
 //==============================================================================
@@ -1150,7 +1156,7 @@ dialog q_deliver_letter_give {
 //==============================================================================
 dialog q_deliver_letter_end {
 	0 "Good. Show me that letter with answer."
-	1 "I see that you are responsible, here's your 100 gold pieces."
+	1 "I see that you are responsible, here's your 250 gold pieces."
 	2 "I could use more people like you."
 }
 
@@ -1168,9 +1174,9 @@ dialog q_deliver_parcel_start {
 dialog q_deliver_parcel_give {
 	0 "What have you got for me?"
 	1 "You were supposed to deliver the parcel sooner, but better late than never."
-	2 "Take this 125 gold pieces."
+	2 "Take this 300 gold pieces."
 	3 "You were supposed to deliver the parcel before. Now its contents is good for nothing!"
-	4 "Good job. Here's your 250 gold pieces."
+	4 "Good job. Here's your 750 gold pieces."
 }
 
 //==============================================================================
@@ -1278,7 +1284,7 @@ dialog q_find_artifact_start {
 
 //==============================================================================
 dialog q_find_artifact_end {
-	0 "Thank you for this artifact, take this 1000 gold pieces in thanks."
+	0 "Thank you for this artifact, take this $reward$ gold pieces in thanks."
 }
 
 //==============================================================================
@@ -1399,7 +1405,7 @@ dialog q_kill_animals_timeout {
 //==============================================================================
 dialog q_kill_animals_end {
 	0 "Excellent work, these creatures often troubled travelers."
-	1 "Here you got 1200 gold pieces as reward."
+	1 "Here you got 2500 gold pieces as reward."
 }
 
 //==============================================================================
@@ -1414,7 +1420,7 @@ dialog q_lost_artifact_start {
 
 //==============================================================================
 dialog q_lost_artifact_end {
-	0 "Thank you for this artifact, take this 800 gold pieces in thanks."
+	0 "Thank you for this artifact, take this $reward$ gold pieces in thanks."
 }
 
 //==============================================================================
@@ -1429,7 +1435,7 @@ dialog q_mages_scholar {
 	0 "Welcome traveler!"
 	1 "I have a job for you if you're interested."
 	2 "I'm looking for some artifact, nothing especially valuable."
-	3 "It looks like a ball, I'm willing to pay you for it 1500 pieces of gold."
+	3 "It looks like a ball, I'm willing to pay you for it 4000 pieces of gold."
 	4 "Do you agree?"
 	5 "Yes"
 	6 "Item I need is in the $target_loc$ to the $target_dir$ from here."
@@ -1475,7 +1481,7 @@ dialog q_mages2_captain {
 	14 "Come back to me for a reward when you deal with him."
 	15 "$enemy$ is dead? That's great news!"
 	16 "His golems probably for some time will be disturbing travelers but without his master in the end we destroy them all."
-	17 "Take this 5000 gold pieces as a reward."
+	17 "Take this 10000 gold pieces as a reward."
 	18 "Several golems are still alive, if you meet them you can destroy them."
 }
 
@@ -1576,7 +1582,7 @@ dialog q_mine_investor {
 	21 "Welcome back. Did you get my message?"
 	22 "In the mine was discovered deposits of gold."
 	23 "As you helped me I decided to make you a deal."
-	24 "You can invest $zloto$ gold pieces in the expansion of the mine."
+	24 "You can invest $invest_price$ gold pieces in the expansion of the mine."
 	25 "It's just part of the cost, there are others keen on this investment."
 	26 "Think it over well."
 	27 "Welcome back."
@@ -1612,7 +1618,7 @@ dialog q_mine_messenger {
 	0 "Hello!"
 	1 "I have a message for you, and gold from Marco Bartoli."
 	2 "Mine was built and has already produced the first profits."
-	3 "Here are 500 pieces of gold."
+	3 "Here are $payment$ pieces of gold."
 	4 "That's all, I'm on my way."
 }
 
@@ -1630,7 +1636,7 @@ dialog q_mine_messenger3 {
 	0 "Hello!"
 	1 "I have a message for you, and gold from Marco Bartoli."
 	2 "Mine has been expanded, gold is already mined."
-	3 "Here are 1000 pieces of gold."
+	3 "Here are $payment2$ pieces of gold."
 	4 "That's all, I'm on my way."
 }
 
@@ -1685,7 +1691,7 @@ dialog q_orcs_captain {
 	6 "Come back when you change your mind."
 	7 "Come back when you kill orcs in $target_loc$."
 	8 "Good job, now these attacks will stop."
-	9 "Take this 2500 gold reward."
+	9 "Take this 4000 gold reward."
 	10 "Keep an eye on the orc!"
 	11 "Orcs now hold far from our $naszego_miasta$."
 }
@@ -1811,10 +1817,10 @@ dialog q_rescue_captive_timeout {
 
 //==============================================================================
 dialog q_rescue_captive_end {
-	0 "The family is very happy with your rescue mission. Take this 1000 gold pieces award."
+	0 "The family is very happy with your rescue mission. Take this $reward$ gold pieces award."
 	1 "What the fuck are you doing?! You were sent you save the kidnapped person not to kill him!"
 	2 "Don't show here again!"
-	3 "Kidnapped returned home. Apparently you had some part in this so take this 250 gold pieces."
+	3 "Kidnapped returned home. Apparently you had some part in this so take this $reward2$ gold pieces."
 	4 "But next time, try to bring him to me."
 }
 
@@ -1847,7 +1853,7 @@ dialog q_retrieve_package_timeout {
 //==============================================================================
 dialog q_retrieve_package_end {
 	0 "Excellent work! The contents of this package are very important to me."
-	1 "You have my thanks. Take these 500 gold pieces."
+	1 "You have my thanks. Take these $reward$ gold pieces."
 }
 
 //==============================================================================
@@ -1856,7 +1862,7 @@ dialog q_sawmill_talk {
 	1 "I deal with the surrounding forests and recently wanted to set up sawmill in a nearby forest."
 	2 "There is only one problem - the monsters."
 	3 "I have an offer for you."
-	4 "You kill the monsters and I will build a sawmill and I'll pay you 400 gold pieces a month."
+	4 "You kill the monsters and I will build a sawmill and I'll pay you $payment$ gold pieces a month."
 	5 "What do you say?"
 	6 "Yes"
 	7 "Good. You have to clear $target_loc$ on $target_dir$ from here."
@@ -1890,7 +1896,7 @@ dialog q_sawmill_messenger {
 	1 "Hello!"
 	2 "I have a message for you from Arthur the Lumberjack and gold."
 	3 "Everything is going according to plan and here are the first profits."
-	4 "And here are 400 pieces of gold."
+	4 "And here are $payment$ pieces of gold."
 	5 "That's all, I'm on my way."
 }
 
@@ -1924,7 +1930,7 @@ dialog q_spread_news_timeout {
 //==============================================================================
 dialog q_spread_news_end {
 	0 "Good, just people like you I need, conscientious and responsible."
-	1 "Take this 200 gold pieces."
+	1 "Take this 500 gold pieces."
 }
 
 //==============================================================================
@@ -1939,7 +1945,7 @@ dialog q_stolen_artifact_start {
 
 //==============================================================================
 dialog q_stolen_artifact_end {
-	0 "Thank you for this artifact, take this 1200 gold pieces in thanks."
+	0 "Thank you for this artifact, take this $reward$ gold pieces in thanks."
 }
 
 //==============================================================================

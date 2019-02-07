@@ -35,12 +35,9 @@ enum Animation
 enum ACTION
 {
 	A_NONE,
-	// etapy: 0, 1
-	A_TAKE_WEAPON,
-	// etapy: 0 - naci¹ga, 1 - naci¹ga ale mo¿e strzelaæ, 2 - po strzale, 3 - wyj¹³ now¹ strza³ê
-	A_SHOOT,
-	// etapy: 0 - przygotowanie, 1 - mo¿e atakowaæ, 2 - po trafieniu
-	A_ATTACK,
+	A_TAKE_WEAPON, // etapy: 0, 1
+	A_SHOOT, // etapy: 0 - naci¹ga, 1 - naci¹ga ale mo¿e strzelaæ, 2 - po strzale, 3 - wyj¹³ now¹ strza³ê
+	A_ATTACK, // etapy: 0 - przygotowanie, 1 - mo¿e atakowaæ, 2 - po trafieniu
 	A_BLOCK,
 	A_BASH,
 	A_DRINK, // picie napoju (0 - zaczyna piæ, 1-efekt wypicia, 2-schowa³ przedmiot)
@@ -54,7 +51,8 @@ enum ACTION
 	A_DASH,
 	A_DESPAWN,
 	A_PREPARE, // mp client want to use object, waiting for response
-	A_STAND_UP
+	A_STAND_UP,
+	A_USE_ITEM
 };
 
 //-----------------------------------------------------------------------------
@@ -176,9 +174,7 @@ struct Unit
 	MeshInstance* mesh_inst;
 	Animation animation, current_animation;
 	LiveState live_state;
-	Vec3 pos; // pozycja postaci
-	Vec3 visual_pos; // graficzna pozycja postaci, u¿ywana w MP
-	Vec3 prev_pos, target_pos, target_pos2;
+	Vec3 pos, visual_pos, prev_pos, target_pos, target_pos2;
 	float rot, prev_speed, hp, hpmax, stamina, stamina_max, speed, hurt_timer, talk_timer, timer, use_rot, attack_power, last_bash, alcohol, raise_timer;
 	int refs, animation_state, level, gold, attack_id, refid, in_building, in_arena, quest_refid;
 	FROZEN frozen;
@@ -189,7 +185,7 @@ struct Unit
 	const Item* used_item;
 	bool used_item_is_team;
 	vector<Effect> effects;
-	bool hitted, invisible, talking, run_attack, to_remove, temporary, changed, dont_attack, assist, attack_team, fake_unit, moved;
+	bool hitted, invisible, talking, run_attack, to_remove, temporary, changed, dont_attack, assist, attack_team, fake_unit, moved, mark;
 	btCollisionObject* cobj;
 	Usable* usable;
 	UnitEventHandler* event_handler;
@@ -207,7 +203,7 @@ struct Unit
 		Busy_Tournament
 	} busy; // nie zapisywane, powinno byæ Busy_No
 	EntityInterpolator* interp;
-	UnitStats stats, unmod_stats;
+	UnitStats* stats;
 	AutoTalkMode auto_talk;
 	float auto_talk_timer;
 	GameDialog* auto_talk_dialog;
@@ -217,16 +213,11 @@ struct Unit
 
 	//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	Unit() : mesh_inst(nullptr), hero(nullptr), ai(nullptr), player(nullptr), cobj(nullptr), interp(nullptr), bow_instance(nullptr), fake_unit(false),
-		human_data(nullptr), stamina_action(SA_RESTORE_MORE), summoner(nullptr), moved(false), refs(1), stock(nullptr) {}
+		human_data(nullptr), stamina_action(SA_RESTORE_MORE), summoner(nullptr), moved(false), refs(1), stock(nullptr), stats(nullptr), mark(false) {}
 	~Unit();
 
 	void AddRef() { ++refs; }
 	void Release();
-
-	float CalculateArmorDefense(const Armor* armor = nullptr);
-	float CalculateDexterityDefense(const Armor* armor = nullptr);
-	float CalculateBaseDefense() const;
-	// 	float CalculateArmor(float& def_natural, float& def_dex, float& def_armor);
 
 	float CalculateAttack() const;
 	float CalculateAttack(const Item* weapon) const;
@@ -247,14 +238,9 @@ struct Unit
 	// u¿ywa przedmiotu, nie mo¿e nic robiæ w tej chwili i musi mieæ schowan¹ broñ
 	void ConsumeItem(const Consumable& item, bool force = false, bool send = true);
 	void ConsumeItemAnim(const Consumable& cons);
+	void UseItem(int index);
 	void HideWeapon();
 	void TakeWeapon(WeaponType type);
-	// dodaj efekt zjadanego przedmiotu
-	void ApplyConsumableEffect(const Consumable& item);
-	// aktualizuj efekty
-	void UpdateEffects(float dt);
-	// zakoñcz tymczasowe efekty po opuszczeniu lokacji
-	void EndEffects(int days = 0, int* best_nat = nullptr);
 	float GetSphereRadius() const
 	{
 		float radius = data->mesh->head.radius;
@@ -344,30 +330,29 @@ struct Unit
 	bool IsAI() const { return !IsPlayer(); }
 	float GetRotationSpeed() const
 	{
-		return data->rot_speed * (0.6f + 1.f / 150 * CalculateMobility()) * GetWalkLoad() * GetArmorMovement();
+		return data->rot_speed * GetMobilityMod(false);
 	}
 	float GetWalkSpeed() const
 	{
-		return data->walk_speed * (0.6f + 1.f / 150 * CalculateMobility()) * GetWalkLoad() * GetArmorMovement();
+		return data->walk_speed * GetMobilityMod(false);
 	}
 	float GetRunSpeed() const
 	{
-		return data->run_speed * (0.6f + 1.f / 150 * CalculateMobility()) * GetRunLoad() * GetArmorMovement();
+		return data->run_speed * GetMobilityMod(true);
 	}
 	bool CanRun() const
 	{
-		if(IS_SET(data->flags, F_SLOW) || action == A_BLOCK || action == A_BASH || (action == A_ATTACK && !run_attack) || action == A_SHOOT)
+		if(IS_SET(data->flags, F_SLOW) || Any(action, A_BLOCK, A_BASH, A_SHOOT, A_USE_ITEM) || (action == A_ATTACK && !run_attack))
 			return false;
 		else
 			return !IsOverloaded();
 	}
-	void RecalculateHp();
+	void RecalculateHp(bool send = false);
 	void RecalculateStamina();
 	bool CanBlock() const
 	{
 		return weapon_state == WS_TAKEN && weapon_taken == W_ONE_HANDED && HaveShield();
 	}
-	float CalculateShieldAttack() const;
 
 	WeaponType GetHoldWeapon() const
 	{
@@ -392,24 +377,6 @@ struct Unit
 	bool IsHoldingBow() const
 	{
 		return GetHoldWeapon() == W_BOW;
-	}
-	float GetArmorMovement() const
-	{
-		if(!HaveArmor())
-			return 1.f;
-		else
-		{
-			switch(GetArmor().skill)
-			{
-			case SkillId::LIGHT_ARMOR:
-			default:
-				return 1.f + 1.f / 300 * Get(SkillId::LIGHT_ARMOR);
-			case SkillId::MEDIUM_ARMOR:
-				return 1.f + 1.f / 450 * Get(SkillId::MEDIUM_ARMOR);
-			case SkillId::HEAVY_ARMOR:
-				return 1.f + 1.f / 600 * Get(SkillId::HEAVY_ARMOR);
-			}
-		}
 	}
 	Vec3 GetFrontPos() const
 	{
@@ -440,8 +407,6 @@ struct Unit
 	void LoadStock(GameReader& f);
 	void Write(BitStreamWriter& f);
 	bool Read(BitStreamReader& f);
-	Effect* FindEffect(EffectId effect);
-	bool FindEffect(EffectId effect, float* value);
 	Vec3 GetCenter() const
 	{
 		Vec3 pt = pos;
@@ -474,9 +439,9 @@ public:
 		if(str >= wep.req_str)
 			return 0.f;
 		else if(str * 2 <= wep.req_str)
-			return 0.75f;
+			return 0.5f;
 		else
-			return 0.75f * float(wep.req_str - str) / (wep.req_str / 2);
+			return 0.5f * float(wep.req_str - str) / (wep.req_str / 2);
 	}
 	float GetPowerAttackSpeed() const
 	{
@@ -537,11 +502,6 @@ public:
 		Heal(0.15f * Get(AttributeId::END) * days);
 	}
 	void HealPoison();
-	void RemoveEffect(EffectId effect);
-	void RemovePoison()
-	{
-		RemoveEffect(EffectId::Poison);
-	}
 	// szuka przedmiotu w ekwipunku, zwraca i_index (INVALID_IINDEX jeœli nie ma takiego przedmiotu)
 	static const int INVALID_IINDEX = (-SLOT_INVALID - 1);
 	int FindItem(const Item* item, int quest_refid = -1) const;
@@ -593,12 +553,34 @@ public:
 	float GetBlockSpeed() const;
 
 	float CalculateMagicResistance() const;
+	float GetPoisonResistance() const;
 	int CalculateMagicPower() const;
-	bool HaveEffect(EffectId effect) const;
-	void RemoveEffects();
 
 	//-----------------------------------------------------------------------------
-	// EKWIPUNEK
+	// EFFECTS
+	//-----------------------------------------------------------------------------
+	void AddEffect(Effect& e, bool send = true);
+	// dodaj efekt zjadanego przedmiotu
+	void ApplyConsumableEffect(const Consumable& item);
+	// aktualizuj efekty
+	void UpdateEffects(float dt);
+	// zakoñcz tymczasowe efekty po opuszczeniu lokacji
+	void EndEffects(int days = 0, float* o_natural_mod = nullptr);
+	Effect* FindEffect(EffectId effect);
+	bool FindEffect(EffectId effect, float* value);
+	void RemoveEffect(EffectId effect);
+	void RemovePoison()
+	{
+		RemoveEffect(EffectId::Poison);
+	}
+	void RemoveEffects(bool send = true);
+	uint RemoveEffects(EffectId effect, EffectSource source, int source_id);
+	float GetEffectSum(EffectId effect) const;
+	float GetEffectMul(EffectId effect) const;
+	bool HaveEffect(EffectId effect) const;
+
+	//-----------------------------------------------------------------------------
+	// EQUIPMENT
 	//-----------------------------------------------------------------------------
 	const Item* slots[SLOT_MAX];
 	vector<ItemSlot> items;
@@ -649,7 +631,7 @@ public:
 	void AddItemAndEquipIfNone(const Item* item, uint count = 1);
 	// zwraca udŸwig postaci (0-brak obci¹¿enia, 1-maksymalne, >1 przeci¹¿ony)
 	float GetLoad() const { return float(weight) / weight_max; }
-	void CalculateLoad() { weight_max = Get(AttributeId::STR) * 15; }
+	void CalculateLoad();
 	bool IsOverloaded() const
 	{
 		return weight >= weight_max;
@@ -673,62 +655,7 @@ public:
 		else
 			return LS_MAX_OVERLOADED;
 	}
-	float GetRunLoad() const
-	{
-		switch(GetLoadState())
-		{
-		case LS_NONE:
-		case LS_LIGHT:
-			return 1.f;
-		case LS_MEDIUM:
-			return Lerp(1.f, 0.9f, float(weight - weight_max / 2) / (weight_max / 4));
-		case LS_HEAVY:
-			return Lerp(0.9f, 0.7f, float(weight - weight_max * 3 / 4) / (weight_max / 4));
-		case LS_MAX_OVERLOADED:
-			return 0.f;
-		default:
-			assert(0);
-			return 0.f;
-		}
-	}
-	float GetWalkLoad() const
-	{
-		switch(GetLoadState())
-		{
-		case LS_NONE:
-		case LS_LIGHT:
-		case LS_MEDIUM:
-			return 1.f;
-		case LS_HEAVY:
-			return Lerp(1.f, 0.9f, float(weight - weight_max * 3 / 4) / (weight_max / 4));
-		case LS_OVERLOADED:
-			return Lerp(0.9f, 0.5f, float(weight - weight_max) / weight_max);
-		case LS_MAX_OVERLOADED:
-			return 0.5f;
-		default:
-			assert(0);
-			return 0.f;
-		}
-	}
-	float GetAttackSpeedModFromLoad() const
-	{
-		switch(GetLoadState())
-		{
-		case LS_NONE:
-		case LS_LIGHT:
-		case LS_MEDIUM:
-			return 0.f;
-		case LS_HEAVY:
-			return Lerp(0.f, 0.1f, float(weight - weight_max * 3 / 4) / (weight_max / 4));
-		case LS_OVERLOADED:
-			return Lerp(0.1f, 0.25f, float(weight - weight_max) / weight_max);
-		case LS_MAX_OVERLOADED:
-			return 0.25f;
-		default:
-			assert(0);
-			return 0.25f;
-		}
-	}
+	LoadState GetArmorLoadState(const Item* armor) const;
 	// zwraca wagê ekwipunku w kg
 	float GetWeight() const
 	{
@@ -765,55 +692,19 @@ public:
 	}
 	bool CanAct();
 
-	int CalculateLevel();
-	int CalculateLevel(Class clas);
-
-	int Get(AttributeId a) const
-	{
-		return stats.attrib[(int)a];
-	}
-
-	int Get(SkillId s) const
-	{
-		return stats.skill[(int)s];
-	}
-
-	// change unmod stat
-	void Set(AttributeId a, int value)
-	{
-		//int dif = value - unmod_stats.attrib[(int)a];
-		unmod_stats.attrib[(int)a] = value;
-		RecalculateStat(a, true);
-	}
-	void Set(SkillId s, int value)
-	{
-		//int dif = value - unmod_stats.skill[(int)s];
-		unmod_stats.skill[(int)s] = value;
-		RecalculateStat(s, true);
-	}
-
-	int GetUnmod(AttributeId a) const
-	{
-		return unmod_stats.attrib[(int)a];
-	}
-	int GetUnmod(SkillId s) const
-	{
-		return unmod_stats.skill[(int)s];
-	}
-
+	int Get(AttributeId a) const { return stats->attrib[(int)a]; }
+	int Get(SkillId s) const;
+	int GetBase(AttributeId a) const { return stats->attrib[(int)a]; }
+	int GetBase(SkillId s) const { return stats->skill[(int)s]; }
+	void Set(AttributeId a, int value);
+	void Set(SkillId s, int value);
+	void ApplyStat(AttributeId a);
 	void CalculateStats();
+	float CalculateMobility(const Armor* armor = nullptr) const;
+	float GetMobilityMod(bool run) const;
 
-	//int GetEffectModifier(EffectType type, int id, StatState* state) const;
-
-	int CalculateMobility() const;
-	int CalculateMobility(const Armor& armor) const;
-
-	SkillId GetBestWeaponSkill() const;
-	SkillId GetBestArmorSkill() const;
-
-	void RecalculateStat(AttributeId a, bool apply);
-	void RecalculateStat(SkillId s, bool apply);
-	void ApplyStat(AttributeId a, int old, bool calculate_skill);
+	WEAPON_TYPE GetBestWeaponType() const;
+	ARMOR_TYPE GetBestArmorType() const;
 
 	void ApplyHumanData(HumanData& hd)
 	{

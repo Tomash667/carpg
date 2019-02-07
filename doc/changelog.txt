@@ -2,14 +2,36 @@ Historia zmian
 
 --------------------------------------------------------------------------------
 Wersja 0.8 (???):
+! to jest ostatnia wersja obs³uguj¹ca windowsa xp
 ! nie mo¿na wczytywaæ ju¿ zapisów z wersji 0.2.10 lub starszej
++ nowy system walki, obliczenia mobilnoœci
++ g³ówny serwer gry, pozwala na pobieranie listy serwerów i ³¹czenie z pominiêciem blokady routera (nat punchthrough)
++ punkty nauki u¿ywane do szkolenia umiejêtnoœci/atrbutów/atutów
++ nowe atuty (s³abe plecy, przewlek³a choroba, ospa³y, powolny uczeñ, aspo³eczny, biedak, silne plecy, agresywny, mobilnoœæ, finezja, twardy, twarda skóra, przystosowane, perfekcyjne zdrowie)
++ nowa umiejêtnoœæ - targowanie, szkolona przez kupca
++ system efektów (atuty daj¹ efekty)
 + klawisz prze³¹cz bieg/chodzenie
 + wczytywanie ekwipunku handlarzy z pliku, odœwie¿anie ekwipunku handlarzy co 10 dni a nie tylko po wejœciu do lokalizacji
++ nowe komendy (add_effect, remove_effect, list_effects, add_perk, remove_perk, list_perks, select, list_stats, add_learning_points)
++ nowe przedmioty: magiczny zwój, nó¿, drewniany miecz, zardzewia³y toporek, tarcza z desek, Pancerz gladiatora, muffin
++ profile bohaterów ai - preferowane umiejêtnoœci/przedmioty
++ obs³uga zg³aszanie b³êdów dziêki CrashRpt
++ dostosowanie cen przedmiotów, z³ota jednostek, nagród za zadania
++ nie generowanie wrogów za blisko schodów, mniej wrogów w du¿ych po³¹czonych pokojach
++ dostosowanie szybkoœci zdobywania atrybutów/umiejêtnoœci przez gracza i bohaterów
++ wiêksza mapa œwiata, przesuwanie i skalowanie mapy
++ szukajka lokalizacji na mapie œwiata
+- naprawione bardzo szybkie szkolenie walki broni¹ atakuj¹c s³abych, niskopoziomowych wrogów
 - naprawione rozmawianie z jednostkami które wstaj¹
 - naprawione obracanie jednostek podczas dialogu u klienta
 - zadanie z listem goñczym wybiera³o losow¹ lokalizacje która by³a ju¿ u¿ywana, cel nie generowa³ siê
 - naprawiony wyciek pamiêci przy generowaniu kopalni
 - poprawki do dialogów burmistrza
+- naprawione b³êdne obliczanie ceny gdy sprzedaje siê przedmiot towarzyszowi
+- naprawione do³¹czanie do pe³nego serwera
+- naprawiony brak efektu po zmianie has³a serwera na puste, wci¹¿ by³o wymagane
+- naprawiony brak dialogów pomiêdzy goblinami/orkami
+- naprawiony poziom trudnoœci wrogów na arenie
 
 --------------------------------------------------------------------------------
 Wersja 0.7.1 (2018-04-15):

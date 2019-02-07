@@ -80,6 +80,7 @@ inline bool EndsWith(std::string const& value, std::string const& ending)
 	return std::equal(ending.rbegin(), ending.rend(), value.rbegin());
 }
 void MakeDoubleZeroTerminated(char* dest, Cstring src);
+bool StringContainsStringI(cstring s1, cstring s2);
 
 // return index of character in cstring
 inline int StrCharIndex(cstring chrs, char c)
@@ -121,14 +122,14 @@ struct Trimmer
 // trim from start
 inline string& Ltrim(string& str)
 {
-	str.erase(str.begin(), find_if(str.begin(), str.end(), [](char& ch)->bool { return !isspace(ch); }));
+	str.erase(str.begin(), find_if(str.begin(), str.end(), [](char& ch)->bool { return !isspace((byte)ch); }));
 	return str;
 }
 
 // trim from end
 inline string& Rtrim(string& str)
 {
-	str.erase(find_if(str.rbegin(), str.rend(), [](char& ch)->bool { return !isspace(ch); }).base(), str.end());
+	str.erase(find_if(str.rbegin(), str.rend(), [](char& ch)->bool { return !isspace((byte)ch); }).base(), str.end());
 	return str;
 }
 

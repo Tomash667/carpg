@@ -27,7 +27,12 @@ enum GMS
 	GMS_PICK_CHARACTER,
 	GMS_ADDED_ITEM,
 	GMS_GETTING_OUT_OF_RANGE,
-	GMS_LEFT_EVENT
+	GMS_LEFT_EVENT,
+	GMS_GAIN_LEARNING_POINTS,
+	GMS_LEARNED_PERK,
+	GMS_TOO_COMPLICATED,
+	GMS_GAIN_ATTRIBUTE,
+	GMS_GAIN_SKILL
 };
 
 //-----------------------------------------------------------------------------
@@ -37,7 +42,7 @@ struct GameMsg
 	float time, fade;
 	Vec2 pos;
 	Int2 size;
-	int type;
+	int type, subtype, value;
 };
 
 //-----------------------------------------------------------------------------
@@ -50,18 +55,18 @@ public:
 	void Reset();
 	void Save(FileWriter& f) const;
 	void Load(FileReader& f);
-	void AddMessage(cstring text, float time, int type);
+	void AddMessage(cstring text, float time, int type, int subtype = -1, int value = 0);
 	void AddMessageIfNotExists(cstring text, float time, int type);
 	void AddGameMsg(cstring msg, float time) { AddMessage(msg, time, 0); }
 	void AddGameMsg2(cstring msg, float time, int id = -1) { AddMessageIfNotExists(msg, time, id); }
 	void AddGameMsg3(GMS id);
 	void AddGameMsg3(PlayerController* player, GMS id);
-	void ShowStatGain(bool is_skill, int what, int value);
+	void AddFormattedMessage(PlayerController* player, GMS id, int subtype, int value);
 
 private:
 	list<GameMsg> msgs;
 	int msgs_h;
 	cstring txGamePausedBig, txINeedWeapon, txNoHpp, txCantDo, txDontLootFollower, txDontLootArena, txUnlockedDoor, txNeedKey, txGmsLooted, txGmsRumor,
 		txGmsJournalUpdated, txGmsUsed, txGmsUnitBusy, txGmsGatherTeam, txGmsNotLeader, txGmsNotInCombat, txGmsAddedItem, txGmsGettingOutOfRange,
-		txGmsLeftEvent, txGameSaved, txGainTextAttrib, txGainTextSkill;
+		txGmsLeftEvent, txGameSaved, txGainTextAttrib, txGainTextSkill, txGainLearningPoints, txLearnedPerk, txTooComplicated;
 };

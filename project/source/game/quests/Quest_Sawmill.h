@@ -33,6 +33,8 @@ public:
 		Finished
 	};
 
+	static const int PAYMENT = 500;
+
 	void Start() override;
 	GameDialog* GetDialog(int type2) override;
 	void SetProgress(int prog2) override;

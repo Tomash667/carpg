@@ -7,6 +7,9 @@
 #include "QuestManager.h"
 #include "GameFile.h"
 #include "World.h"
+#include "Team.h"
+#include "ItemHelper.h"
+#include "SaveState.h"
 
 //=================================================================================================
 void Quest_RetrievePackage::Start()
@@ -60,7 +63,7 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 			parcel.id = "$stolen_parcel";
 			parcel.name = Format(game->txQuest[8], who, loc.name.c_str());
 			parcel.refid = refid;
-			unit_to_spawn = g_spawn_groups[SG_BANDITS].GetSpawnLeader();
+			unit_to_spawn = g_spawn_groups[SG_BANDITS].GetSpawnLeader(8);
 			unit_spawn_level = -3;
 			spawn_item = Quest_Dungeon::Item_GiveSpawned;
 			item_to_give[0] = &parcel;
@@ -77,6 +80,7 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 				game->target_loc_is_camp = false;
 				msgs.push_back(Format(game->txQuest[23], who, loc.name.c_str(), loc2.name.c_str(), GetLocationDirName(loc.pos, loc2.pos)));
 			}
+			st = loc2.st;
 		}
 		break;
 	case Progress::Timeout:
@@ -100,7 +104,9 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 		// player returned package to mayor, end of quest
 		{
 			state = Quest::Completed;
-			game->AddReward(500);
+			int reward = GetReward();
+			game->AddReward(reward);
+			Team.AddExp(reward * 3);
 
 			((City&)GetStartLocation()).quest_mayor = CityQuestState::None;
 			DialogContext::current->pc->unit->RemoveQuestItem(refid);
@@ -129,6 +135,8 @@ cstring Quest_RetrievePackage::FormatString(const string& str)
 		return GetTargetLocationName();
 	else if(str == "target_dir")
 		return GetLocationDirName(GetStartLocation().pos, GetTargetLocation().pos);
+	else if(str == "reward")
+		return Format("%d", GetReward());
 	else
 	{
 		assert(0);
@@ -147,10 +155,13 @@ bool Quest_RetrievePackage::OnTimeout(TimeoutType ttype)
 {
 	if(done)
 	{
-		int at_lvl = at_level;
-		Unit* u = GetTargetLocation().FindUnit(g_spawn_groups[SG_BANDITS].GetSpawnLeader(), at_lvl);
-		if(u && u->IsAlive())
-			u->RemoveQuestItem(refid);
+		Unit* u = ForLocation(target_loc, at_level)->FindUnit([](Unit* u) {return u->mark; });
+		if(u)
+		{
+			u->mark = false;
+			if(u->IsAlive())
+				u->RemoveQuestItem(refid);
+		}
 	}
 
 	OnUpdate(game->txQuest[277]);
@@ -175,7 +186,10 @@ void Quest_RetrievePackage::Save(GameWriter& f)
 	Quest_Dungeon::Save(f);
 
 	if(prog != Progress::Finished)
+	{
 		f << from_loc;
+		f << st;
+	}
 }
 
 //=================================================================================================
@@ -186,6 +200,12 @@ bool Quest_RetrievePackage::Load(GameReader& f)
 	if(prog != Progress::Finished)
 	{
 		f >> from_loc;
+		if(LOAD_VERSION >= V_DEV)
+			f >> st;
+		else if(target_loc != -1)
+			st = GetTargetLocation().st;
+		else
+			st = 10;
 
 		Location& loc = GetStartLocation();
 		Item::Get("parcel")->CreateCopy(parcel);
@@ -194,10 +214,16 @@ bool Quest_RetrievePackage::Load(GameReader& f)
 		parcel.refid = refid;
 
 		item_to_give[0] = &parcel;
-		unit_to_spawn = g_spawn_groups[SG_BANDITS].GetSpawnLeader();
+		unit_to_spawn = g_spawn_groups[SG_BANDITS].GetSpawnLeader(8);
 		unit_spawn_level = -3;
 		spawn_item = Quest_Dungeon::Item_GiveSpawned;
 	}
-	
+
 	return true;
+}
+
+//=================================================================================================
+int Quest_RetrievePackage::GetReward() const
+{
+	return ItemHelper::CalculateReward(st, Int2(5, 15), Int2(2500, 5000));
 }

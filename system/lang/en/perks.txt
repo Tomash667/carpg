@@ -1,57 +1,93 @@
-pickAttribIncrease = "Pick attribute to increase."
-pickAttribDecrease = "Pick attribute to decrease."
-pickTwoSkillsDecrease = "Pick two skills to decrease."
-pickSkillIncrease = "Pick skill to increase."
-availablePerks = "Available"
-unavailablePerks = "Unavailable"
-takenPerks = "Taken"
 increasedAttrib = "Increased attribute"
 increasedSkill = "Increased skill"
 decreasedAttrib = "Decreased attribute"
 decreasedSkill = "Decreased skill"
-decreasedSkills = "Decreased skills"
 
-perk weakness {
-	name "Weakness"
-	desc "Flaw - Decrease chosen attribute by 5 points."
+perk bad_back {
+	name "Bad back"
+	desc "Your back is not suitable for carrying heavy loads. Reduced strength by 5 points and decreased carrying capacity."
 }
-perk strength {
-	name "Strength"
-	desc "Increase chosen attribute by 5 points."
+perk chronic_disease {
+	name "Chronic disease"
+	desc "Since you were a child you got sick faster than all the others. Reduced endurance by 5 points and decreased wounds healing speed."
 }
-perk skilled {
-	name "Skilled"
-	desc "Gives two extra skill points."
+perk sluggish {
+	name "Sluggish"
+	desc "You are sluggish. Reduced dexterity by 5 points and slower running speed."
 }
-perk skill_focus {
-	name "Skill focus"
-	desc "Free - Decrease two skills by 5 points, increase one skill by 10 points."
+perk slow_learner {
+	name "Slow learner"
+	desc "Learning new skills comes with great difficulty for you. Reduces intelligence by 5 points and slows down skill growth."
+}
+perk asocial {
+	name "Asocial"
+	desc "You don't get along well with other people. Reduces charisma by 5 points and increases the prices in stores."
+}
+perk poor {
+	name "Poor"
+	desc "You start your adventure with an empty purse. Your equipment is also of lower quality."
 }
 perk talent {
 	name "Talent"
-	desc "Increase chosen skill by 5 points."
+	desc "Increases chosen attribute by 5 points. Faster training for a selected attribute."
 }
-/*perk crafting_tradition {
-	name "Crafting tradition"
-	desc "Increase Crafting skill by 10 points."
-}*/
+perk skilled {
+	name "Skilled"
+	desc "Gives three extra skill points."
+}
+perk skill_focus {
+	name "Skill focus"
+	desc "Increases chosen skill by 5 points and increases the speed with which you gain experience in it."
+}
 perk alchemist {
 	name "Alchemist apprentice"
-	desc "You worked as an alchemist apprentice. You have not learned to brew potions, but earned a large number of potions."
+	desc "You worked as an alchemist apprentice. You haven't learned to brew potions, but earned a large number of potions."
 }
 perk wealthy {
 	name "Wealthy"
-	desc "You come from a wealthy family. You receive 1000 gold to buy better equipment."
+	desc "You come from a wealthy family. You receive 2500 gold so you can buy better equipment."
 }
 perk very_wealthy {
 	name "Very wealthy"
-	desc "You come from a very wealthy. You received a small sum of 2500 gold to help you start the adventure as a hero."
+	desc "You come from a very wealthy. You received a small sum of 50000 gold to help you start the adventure as a hero."
 }
 perk heirloom {
 	name "Family heirloom"
-	desc "In your family for generations certain item passed from father to son. Now is the time for you."
+	desc "In your family certain items were passed from father to son for generations. Now is your turn."
 }
 perk leader {
 	name "Leader"
 	desc "You have a predisposition to become a great leader. You have even recruited one hero to come with you."
+}
+perk strong_back {
+	name "Strong back"
+	desc "+25% to maximum carrying capacity."
+}
+perk aggressive {
+	name "Aggressive"
+	desc "+10 to attack with melee weapons."
+}
+perk mobility {
+	name "Mobility"
+	desc "+20 to base mobility."
+}
+perk finesse {
+	name "Finesse"
+	desc "+10 to attack with ranged weapons."
+}
+perk tough {
+	name "Tough"
+	desc "+100 to maximum health."
+}
+perk hard_skin {
+	name "Hard skin"
+	desc "+10 to defense."
+}
+perk adaptation {
+	name "Adaptation"
+	desc "Gives resistance to poisons."
+}
+perk perfect_health {
+	name "Perfect health"
+	desc "Gives a health regeneration that restores 5 points per second."
 }

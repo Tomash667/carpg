@@ -51,20 +51,7 @@
 #include "SaveSlot.h"
 #include "PlayerInfo.h"
 
-// limit fps
-#define LIMIT_DT 0.3f
-
-// symulacja lagów
-#define TESTUJ_LAG
-#ifndef _DEBUG
-#undef TESTUJ_LAG
-#endif
-#ifdef TESTUJ_LAG
-#define MY_PRIORITY HIGH_PRIORITY
-#else
-#define MY_PRIORITY IMMEDIATE_PRIORITY
-#endif
-
+const float LIMIT_DT = 0.3f;
 const float bazowa_wysokosc = 1.74f;
 Game* Game::game;
 cstring Game::txGoldPlus, Game::txQuestCompletedGold;
@@ -76,12 +63,12 @@ extern cstring RESTART_MUTEX_NAME;
 Game::Game() : have_console(false), vbParticle(nullptr), quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0), cl_fog(true),
 cl_lighting(true), draw_particle_sphere(false), draw_unit_radius(false), draw_hitbox(false), noai(false), testing(false), game_speed(1.f), devmode(false),
 force_seed(0), next_seed(0), force_seed_all(false), debug_info(false), dont_wander(false),
-check_updates(true), skip_tutorial(false), portal_anim(0), debug_info2(false), music_type(MusicType::None), koniec_gry(false), prepared_stream(64 * 1024),
+check_updates(true), skip_tutorial(false), portal_anim(0), debug_info2(false), music_type(MusicType::None), end_of_game(false), prepared_stream(64 * 1024),
 paused(false), draw_flags(0xFFFFFFFF), tMiniSave(nullptr), prev_game_state(GS_LOAD), tSave(nullptr), sItemRegion(nullptr),
 sItemRegionRot(nullptr), sChar(nullptr), sSave(nullptr), sCustom(nullptr), cl_postfx(true), mp_timeout(10.f),
 cl_normalmap(true), cl_specularmap(true), dungeon_tex_wrap(true), profiler_mode(0), vbInstancing(nullptr), vb_instancing_max(0),
 screenshot_format(ImageFormat::JPG), quickstart_class(Class::RANDOM), game_state(GS_LOAD), default_devmode(false),
-default_player_devmode(false), quickstart_slot(MAX_SAVE_SLOTS), super_shader(new SuperShader)
+default_player_devmode(false), quickstart_slot(SaveSlot::MAX_SLOTS), super_shader(new SuperShader)
 {
 #ifdef _DEBUG
 	default_devmode = true;
@@ -111,8 +98,6 @@ Game::~Game()
 	delete super_shader;
 }
 
-//=================================================================================================
-// Rysowanie gry
 //=================================================================================================
 void Game::OnDraw()
 {
@@ -163,7 +148,7 @@ void Game::OnDraw(bool normal)
 	}
 	else
 	{
-		// renderuj scenê do tekstury
+		// render scene to texture
 		SURFACE sPost;
 		if(!IsMultisamplingEnabled())
 			V(tPostEffect[2]->GetSurfaceLevel(0, &sPost));
@@ -217,7 +202,7 @@ void Game::OnDraw(bool normal)
 			SURFACE surf;
 			if(it + 1 == end)
 			{
-				// ostatni pass
+				// last pass
 				if(sCustom)
 					surf = sCustom;
 				else
@@ -225,7 +210,7 @@ void Game::OnDraw(bool normal)
 			}
 			else
 			{
-				// jest nastêpny
+				// using next pass
 				if(!IsMultisamplingEnabled())
 					V(tPostEffect[index_surf]->GetSurfaceLevel(0, &surf));
 				else
@@ -305,14 +290,11 @@ void HumanPredraw(void* ptr, Matrix* mat, int n)
 }
 
 //=================================================================================================
-// Aktualizacja gry, g³ównie multiplayer
-//=================================================================================================
 void Game::OnTick(float dt)
 {
-	// sprawdzanie pamiêci
+	// check for memory corruption
 	assert(_CrtCheckMemory());
 
-	// limit czasu ramki
 	if(dt > LIMIT_DT)
 		dt = LIMIT_DT;
 
@@ -325,14 +307,14 @@ void Game::OnTick(float dt)
 
 	if(Net::IsSingleplayer() || !paused)
 	{
-		// aktualizacja czasu spêdzonego w grze
+		// update time spent in game
 		if(game_state != GS_MAIN_MENU && game_state != GS_LOAD)
 			GameStats::Get().Update(dt);
 	}
 
 	GKey.allow_input = GameKeys::ALLOW_INPUT;
 
-	// utracono urz¹dzenie directx lub okno nie aktywne
+	// lost directx device or window don't have focus
 	if(IsLostDevice() || !IsActive() || !IsCursorLocked())
 	{
 		Key.SetFocus(false);
@@ -350,33 +332,33 @@ void Game::OnTick(float dt)
 	if(Key.PressedRelease(VK_F2))
 		debug_info2 = !debug_info2;
 
-	// szybkie wyjœcie z gry (alt+f4)
+	// fast quit (alt+f4)
 	if(Key.Focus() && Key.Down(VK_MENU) && Key.Down(VK_F4) && !GUI.HaveTopDialog("dialog_alt_f4"))
 		gui->ShowQuitDialog();
 
-	if(koniec_gry)
+	if(end_of_game)
 	{
 		death_fade += dt;
 		if(death_fade >= 1.f && GKey.AllowKeyboard() && Key.PressedRelease(VK_ESCAPE))
 		{
 			ExitToMenu();
-			koniec_gry = false;
+			end_of_game = false;
 		}
 		GKey.allow_input = GameKeys::ALLOW_NONE;
 	}
 
-	// globalna obs³uga klawiszy
+	// global keys handling
 	if(GKey.allow_input == GameKeys::ALLOW_INPUT)
 	{
-		// konsola
+		// handle open/close of console
 		if(!GUI.HaveTopDialog("dialog_alt_f4") && !GUI.HaveDialog("console") && GKey.KeyDownUpAllowed(GK_CONSOLE))
 			GUI.ShowDialog(gui->console);
 
-		// uwolnienie myszki
+		// unlock cursor
 		if(!IsFullscreen() && IsActive() && IsCursorLocked() && Key.Shortcut(KEY_CONTROL, 'U'))
 			UnlockCursor();
 
-		// zmiana trybu okna
+		// switch window mode
 		if(Key.Shortcut(KEY_ALT, VK_RETURN))
 			ChangeMode(!IsFullscreen());
 
@@ -384,12 +366,12 @@ void Game::OnTick(float dt)
 		if(Key.PressedRelease(VK_SNAPSHOT))
 			TakeScreenshot(Key.Down(VK_SHIFT));
 
-		// zatrzymywanie/wznawianie gry
+		// pause/resume game
 		if(GKey.KeyPressedReleaseAllowed(GK_PAUSE) && !Net::IsClient())
 			PauseGame();
 	}
 
-	// obs³uga paneli
+	// handle panels
 	if(GUI.HaveDialog() || (gui->mp_box->visible && gui->mp_box->itb.focus))
 		GKey.allow_input = GameKeys::ALLOW_NONE;
 	else if(GKey.AllowKeyboard() && game_state == GS_LEVEL && death_screen == 0 && !dialog_context.dialog_mode)
@@ -443,7 +425,7 @@ void Game::OnTick(float dt)
 		Quickload(console_open);
 
 	// mp box
-	if((game_state == GS_LEVEL || game_state == GS_WORLDMAP) && GKey.KeyPressedReleaseAllowed(GK_TALK_BOX))
+	if(game_state == GS_LEVEL && GKey.KeyPressedReleaseAllowed(GK_TALK_BOX))
 		gui->mp_box->visible = !gui->mp_box->visible;
 
 	// update gui
@@ -486,14 +468,14 @@ void Game::OnTick(float dt)
 	else
 		GKey.allow_input = GameKeys::ALLOW_INPUT;
 
-	// otwórz menu
+	// open game menu
 	if(GKey.AllowKeyboard() && CanShowMenu() && Key.PressedRelease(VK_ESCAPE))
 		gui->ShowMenu();
 
 	arena->UpdatePvpRequest(dt);
 
-	// aktualizacja gry
-	if(!koniec_gry)
+	// update game
+	if(!end_of_game)
 	{
 		if(game_state == GS_LEVEL)
 		{
@@ -543,7 +525,7 @@ void Game::OnTick(float dt)
 	else if(Net::IsOnline())
 		UpdateGameNet(dt);
 
-	// aktywacja mp_box
+	// open.close mp box
 	if(GKey.AllowKeyboard() && game_state == GS_LEVEL && gui->mp_box->visible && !gui->mp_box->itb.focus && Key.PressedRelease(VK_RETURN))
 	{
 		gui->mp_box->itb.focus = true;
@@ -798,13 +780,13 @@ void Game::DoExitToMenu()
 	N.was_client = false;
 
 	SetMusic(MusicType::Title);
-	koniec_gry = false;
+	end_of_game = false;
 
 	CloseAllPanels();
 	GUI.CloseDialogs();
 	gui->game_menu->visible = false;
 	gui->game_gui->visible = false;
-	gui->world_map->visible = false;
+	gui->world_map->Hide();
 	gui->main_menu->visible = true;
 	units_mesh_load.clear();
 
@@ -911,7 +893,6 @@ void Game::OnCleanup()
 	content::CleanupContent();
 
 	draw_batch.Clear();
-	N.Cleanup();
 	super_shader->Cleanup();
 }
 
@@ -1062,7 +1043,7 @@ void Game::SaveGameKeys()
 	{
 		GameKey& k = GKey[i];
 		for(int j = 0; j < 2; ++j)
-			cfg.Add(Format("%s%d", k.id, j), Format("%d", k[j]));
+			cfg.Add(Format("%s%d", k.id, j), k[j]);
 	}
 
 	SaveCfg();
@@ -1082,7 +1063,7 @@ void Game::LoadGameKeys()
 			{
 				Warn("Config: Invalid value for %s: %d.", s, w);
 				w = -1;
-				cfg.Add(s, Format("%d", k[j]));
+				cfg.Add(s, k[j]);
 			}
 			if(w != -1)
 				k[j] = (byte)w;
@@ -1240,6 +1221,9 @@ void Game::SetGameText()
 	LoadArray(txNoNews, "noNews");
 	LoadArray(txAllNews, "allNews");
 	txAllNearLoc = Str("allNearLoc");
+	txLearningPoint = Str("learningPoint");
+	txLearningPoints = Str("learningPoints");
+	txNeedLearningPoints = Str("needLearningPoints");
 
 	// dystans / si³a
 	txNear = Str("near");
@@ -1278,6 +1262,7 @@ void Game::SetGameText()
 	txWaitingForPswd = Str("waitingForPswd");
 	txEnterPswd = Str("enterPswd");
 	txConnectingTo = Str("connectingTo");
+	txConnectingProxy = Str("connectingProxy");
 	txConnectTimeout = Str("connectTimeout");
 	txConnectInvalid = Str("connectInvalid");
 	txConnectVersion = Str("connectVersion");
@@ -1308,10 +1293,10 @@ void Game::SetGameText()
 	txDisconnecting = Str("disconnecting");
 	txPreparingWorld = Str("preparingWorld");
 	txInvalidCrc = Str("invalidCrc");
+	txConnectionFailed = Str("connectionFailed");
 
 	// net
 	txServer = Str("server");
-	txPlayerKicked = Str("playerKicked");
 	txYouAreLeader = Str("youAreLeader");
 	txRolledNumber = Str("rolledNumber");
 	txPcIsLeader = Str("pcIsLeader");
@@ -1493,66 +1478,6 @@ void Game::ReleaseShaders()
 }
 
 //=================================================================================================
-void Game::SetMeshSpecular()
-{
-	for(Weapon* weapon : Weapon::weapons)
-	{
-		Weapon& w = *weapon;
-		if(w.mesh && w.mesh->head.version < 18)
-		{
-			const MaterialInfo& mat = g_materials[w.material];
-			for(int i = 0; i < w.mesh->head.n_subs; ++i)
-			{
-				w.mesh->subs[i].specular_intensity = mat.intensity;
-				w.mesh->subs[i].specular_hardness = mat.hardness;
-			}
-		}
-	}
-
-	for(Shield* shield : Shield::shields)
-	{
-		Shield& s = *shield;
-		if(s.mesh && s.mesh->head.version < 18)
-		{
-			const MaterialInfo& mat = g_materials[s.material];
-			for(int i = 0; i < s.mesh->head.n_subs; ++i)
-			{
-				s.mesh->subs[i].specular_intensity = mat.intensity;
-				s.mesh->subs[i].specular_hardness = mat.hardness;
-			}
-		}
-	}
-
-	for(Armor* armor : Armor::armors)
-	{
-		Armor& a = *armor;
-		if(a.mesh && a.mesh->head.version < 18)
-		{
-			const MaterialInfo& mat = g_materials[a.material];
-			for(int i = 0; i < a.mesh->head.n_subs; ++i)
-			{
-				a.mesh->subs[i].specular_intensity = mat.intensity;
-				a.mesh->subs[i].specular_hardness = mat.hardness;
-			}
-		}
-	}
-
-	for(UnitData* ud_ptr : UnitData::units)
-	{
-		UnitData& ud = *ud_ptr;
-		if(ud.mesh && ud.mesh->head.version < 18)
-		{
-			const MaterialInfo& mat = g_materials[ud.mat];
-			for(int i = 0; i < ud.mesh->head.n_subs; ++i)
-			{
-				ud.mesh->subs[i].specular_intensity = mat.intensity;
-				ud.mesh->subs[i].specular_hardness = mat.hardness;
-			}
-		}
-	}
-}
-
-//=================================================================================================
 uint Game::ValidateGameData(bool major)
 {
 	Info("Test: Validating game data...");
@@ -1651,7 +1576,7 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 	Location& l = *L.location;
 	L.entering = true;
 
-	gui->world_map->visible = false;
+	gui->world_map->Hide();
 	gui->game_gui->Reset();
 	gui->game_gui->visible = true;
 
@@ -1739,7 +1664,8 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 		}
 
 		// nie odwiedzono, trzeba wygenerowaæ
-		l.state = LS_ENTERED;
+		if(l.state != LS_HIDDEN)
+			l.state = LS_ENTERED;
 
 		LoadingStep(txGeneratingMap);
 

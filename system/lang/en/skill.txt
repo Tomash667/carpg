@@ -4,7 +4,7 @@ skill_group magic = "Magic"
 skill_group other = "Other"
 
 skill one_handed_weapon {
-	name "One-handed weapon"
+	name "One-handed weapons"
 	desc "Affects damage and attack speed of all one-handed weapons."
 }
 skill short_blade {
@@ -32,7 +32,7 @@ skill unarmed {
 	desc "Affects damage and attack speed for unarmed attacks."
 }
 skill shield {
-	name "Shield"
+	name "Shields"
 	desc "Affects block speed, blocked damage and gives small defense bonus."
 }
 skill light_armor {
@@ -60,7 +60,7 @@ skill mystic_magic {
 	desc "Affects power of mystic spells and allows cast better spells."
 }
 skill spellcraft {
-	name "Spellcraft"
+	name "Spellcrafting"
 	desc "Allows creating new and better spells."	
 }
 skill concentration {
@@ -84,7 +84,7 @@ skill traps {
 	desc "Affects chance to find hidden traps, disarming traps and power of traps you set."
 }
 skill steal {
-	name "Steal"
+	name "Theft"
 	desc "Affects chance to steal from others."
 }
 skill animal_empathy {
@@ -95,8 +95,8 @@ skill survival {
 	name "Survival"
 	desc "Allows to take animal skin and avoid ambushes. Increase travel speed and chance to find something useful."
 }
-skill persuasion {
-	name "Persuasion"
+skill haggle {
+	name "Haggle"
 	desc "Affects shop prices and allows to affects others."
 }
 skill alchemy {

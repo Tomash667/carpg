@@ -126,15 +126,15 @@ void CheckBaseItems(uint& errors)
 				++have_mage_armor;
 			else
 			{
-				switch(item->ToArmor().skill)
+				switch(item->ToArmor().armor_type)
 				{
-				case SkillId::LIGHT_ARMOR:
+				case AT_LIGHT:
 					++have_light_armor;
 					break;
-				case SkillId::MEDIUM_ARMOR:
+				case AT_MEDIUM:
 					++have_medium_armor;
 					break;
-				case SkillId::HEAVY_ARMOR:
+				case AT_HEAVY:
 					++have_heavy_armor;
 					break;
 				}
@@ -263,7 +263,7 @@ bool Game::LoadRequiredStats(uint& errors)
 							Error("Missing required unit group '%s'.", group_id.c_str());
 							++errors;
 						}
-						else if(!group->leader && need_leader)
+						else if(need_leader && !group->HaveLeader())
 						{
 							Error("Required unit group '%s' is missing leader.", group_id.c_str());
 							++errors;

@@ -1,9 +1,9 @@
 #pragma once
 
-//=================================================================================================
+//-----------------------------------------------------------------------------
 #include "File.h"
 
-//=================================================================================================
+//-----------------------------------------------------------------------------
 class BitStreamWriter : public StreamWriter
 {
 public:
@@ -19,6 +19,7 @@ public:
 	cstring GetData() const;
 	uint GetSize() const;
 	BitStream& GetBitStream() const { return bitstream; }
+	void Reset();
 
 	void operator << (const Item& item);
 	void operator << (const Item* item)

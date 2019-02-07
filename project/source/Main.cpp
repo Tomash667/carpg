@@ -415,9 +415,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	}
 #endif
 
-	ErrorHandler& error_handler = ErrorHandler::Get();
-	error_handler.HandleRegister();
-
 	GetCompileTime();
 
 	// logger (w tym przypadku prelogger bo jeszcze nie wiemy gdzie to zapisywaæ)
@@ -512,7 +509,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				{
 					++i;
 					int slot;
-					if(!TextHelper::ToInt(argv[i], slot) || slot < 1 || slot > MAX_SAVE_SLOTS)
+					if(!TextHelper::ToInt(argv[i], slot) || slot < 1 || slot > SaveSlot::MAX_SLOTS)
 						Warn("Invalid loadslot value '%s'.", argv[i]);
 					else
 						game.quickstart_slot;
@@ -574,8 +571,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		Info("Config file not found '%s'.", game.cfg_file.c_str());
 	else if(result == Config::PARSE_ERROR)
 		Error("Config file parse error '%s' : %s", game.cfg_file.c_str(), cfg.GetError().c_str());
-
-	error_handler.ReadConfiguration(cfg);
 
 	//-------------------------------------------------------------------------
 	// startup delay to synchronize mp game on localhost
@@ -680,6 +675,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	N.max_players = Clamp(cfg.GetUint("server_players", DEFAULT_PLAYERS), MIN_PLAYERS, MAX_PLAYERS);
 	game.server_ip = cfg.GetString("server_ip", "");
 	game.mp_timeout = Clamp(cfg.GetFloat("timeout", 10.f), 1.f, 3600.f);
+	N.server_lan = cfg.GetBool("server_lan");
+	N.join_lan = cfg.GetBool("join_lan");
 
 	// szybki start
 	if(game.quickstart == QUICKSTART_NONE)
@@ -699,7 +696,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			game.quickstart = QUICKSTART_LOAD_MP;
 	}
 	int slot = cfg.GetInt("loadslot");
-	if(slot != -1 && slot >= 1 && slot <= MAX_SAVE_SLOTS)
+	if(slot != -1 && slot >= 1 && slot <= SaveSlot::MAX_SLOTS)
 		game.quickstart_slot = slot;
 
 	N.port = Clamp(cfg.GetInt("port", PORT), 0, 0xFFFF);
@@ -831,6 +828,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	}
 
 	//-------------------------------------------------------------------------
+	// error handler
+	ErrorHandler& error_handler = ErrorHandler::Get();
+	error_handler.RegisterHandler(cfg, log_filename);
+
+	//-------------------------------------------------------------------------
 	// skrypty instalacyjne
 	if(!RunInstallScripts())
 	{
@@ -896,6 +898,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	delete[] cmd_line;
 	delete[] argv;
 	delete Logger::global;
+	error_handler.UnregisterHandler();
 
 	return (b ? 0 : 1);
 }

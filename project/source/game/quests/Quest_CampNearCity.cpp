@@ -7,6 +7,9 @@
 #include "QuestManager.h"
 #include "GameFile.h"
 #include "World.h"
+#include "Team.h"
+#include "ItemHelper.h"
+#include "SaveState.h"
 
 //=================================================================================================
 void Quest_CampNearCity::Start()
@@ -67,6 +70,7 @@ void Quest_CampNearCity::SetProgress(int prog2)
 			Location& tl = GetTargetLocation();
 			tl.active_quest = this;
 			tl.SetKnown();
+			st = tl.st;
 
 			cstring gn;
 			switch(group)
@@ -106,7 +110,9 @@ void Quest_CampNearCity::SetProgress(int prog2)
 		{
 			state = Quest::Completed;
 			((City&)GetStartLocation()).quest_captain = CityQuestState::None;
-			game->AddReward(2500);
+			int reward = GetReward();
+			game->AddReward(reward);
+			Team.AddExp(reward * 3);
 			OnUpdate(game->txQuest[66]);
 		}
 		break;
@@ -178,6 +184,8 @@ cstring Quest_CampNearCity::FormatString(const string& str)
 			return nullptr;
 		}
 	}
+	else if(str == "reward")
+		return Format("%d", GetReward());
 	else
 	{
 		assert(0);
@@ -224,6 +232,7 @@ void Quest_CampNearCity::Save(GameWriter& f)
 	Quest_Dungeon::Save(f);
 
 	f << group;
+	f << st;
 }
 
 //=================================================================================================
@@ -232,8 +241,20 @@ bool Quest_CampNearCity::Load(GameReader& f)
 	Quest_Dungeon::Load(f);
 
 	f >> group;
+	if(LOAD_VERSION >= V_DEV)
+		f >> st;
+	else if(target_loc != -1)
+		st = GetTargetLocation().st;
+	else
+		st = 10;
 
 	location_event_handler = this;
 
 	return true;
+}
+
+//=================================================================================================
+int Quest_CampNearCity::GetReward() const
+{
+	return ItemHelper::CalculateReward(st, Int2(5, 15), Int2(2500, 5000));
 }

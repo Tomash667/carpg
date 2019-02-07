@@ -51,11 +51,43 @@ void Console::Update(float dt)
 			Event(GuiEvent_LostFocus);
 			GUI.CloseDialog(this);
 		}
-		else if(focus && Key.Shortcut(KEY_CONTROL, 'V'))
+		else if(focus)
 		{
-			cstring text = GUI.GetClipboard();
-			if(text)
-				itb.input += text;
+			if(Key.Shortcut(KEY_CONTROL, 'V'))
+			{
+				cstring text = GUI.GetClipboard();
+				if(text)
+					itb.input += text;
+			}
+			else if(Key.PressedRelease(VK_TAB))
+			{
+				// autocomplete on tab key
+				string s = Trimmed(itb.input);
+				if(!s.empty() && s.find_first_of(' ') == string::npos)
+				{
+					cstring best_cmd_name = nullptr;
+					int best_index = -1, index = 0;
+
+					for(ConsoleCommand& cmd : Game::Get().cmds)
+					{
+						if(strncmp(cmd.name, s.c_str(), s.length()) == 0)
+						{
+							if(best_index == -1 || strcmp(cmd.name, best_cmd_name) < 0)
+							{
+								best_index = index;
+								best_cmd_name = cmd.name;
+							}
+						}
+						++index;
+					}
+
+					if(best_index != -1)
+					{
+						itb.input = best_cmd_name;
+						itb.input += ' ';
+					}
+				}
+			}
 		}
 	}
 }

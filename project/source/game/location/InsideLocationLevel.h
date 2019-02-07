@@ -1,5 +1,6 @@
 #pragma once
 
+//-----------------------------------------------------------------------------
 #include "Tile.h"
 #include "Room.h"
 #include "Light.h"
@@ -22,6 +23,7 @@ struct InsideLocationLevel : public LevelArea
 	vector<Object*> objects;
 	vector<Light> lights;
 	vector<Room> rooms;
+	vector<RoomGroup> groups;
 	vector<Trap*> traps;
 	vector<Door*> doors;
 	vector<Usable*> usables;
@@ -66,6 +68,7 @@ struct InsideLocationLevel : public LevelArea
 	{
 		return GetRoom(staircase_down);
 	}
+	Room* GetRandomRoom(RoomTarget target, delegate<bool(Room&)> clbk, int* index, int* group);
 
 	void SaveLevel(GameWriter& f, bool local);
 	void LoadLevel(GameReader& f, bool local);

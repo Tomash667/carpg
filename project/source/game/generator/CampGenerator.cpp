@@ -155,7 +155,6 @@ void CampGenerator::GenerateObjects()
 //=================================================================================================
 void CampGenerator::GenerateUnits()
 {
-	static TmpUnitGroup group;
 	static vector<Vec2> poss;
 	poss.clear();
 	int level = outside->st;
@@ -186,8 +185,8 @@ void CampGenerator::GenerateUnits()
 	}
 
 	// ustal wrogów
-	group.group = UnitGroup::TryGet(group_name);
-	group.Fill(level);
+	Pooled<TmpUnitGroup> group;
+	group->Fill(UnitGroup::TryGet(group_name), level);
 
 	for(int added = 0, tries = 50; added < 5 && tries>0; --tries)
 	{
@@ -205,38 +204,13 @@ void CampGenerator::GenerateUnits()
 
 		if(ok)
 		{
-			// losuj grupe
 			poss.push_back(pos);
 			++added;
-
 			Vec3 pos3(pos.x, 0, pos.y);
-
-			// postaw jednostki
-			int levels = level * 2;
-			while(levels > 0)
+			for(TmpUnitGroup::Spawn& spawn : group->Roll(level * 2))
 			{
-				int k = Rand() % group.total, l = 0;
-				UnitData* ud = nullptr;
-
-				for(auto& entry : group.entries)
-				{
-					l += entry.count;
-					if(k < l)
-					{
-						ud = entry.ud;
-						break;
-					}
-				}
-
-				assert(ud);
-
-				if(!ud || ud->level.x > levels)
+				if(!L.SpawnUnitNearLocation(L.local_ctx, pos3, *spawn.first, nullptr, spawn.second, 6.f))
 					break;
-
-				int enemy_level = Random(ud->level.x, Min(ud->level.y, levels, level));
-				if(!L.SpawnUnitNearLocation(L.local_ctx, pos3, *ud, nullptr, enemy_level, 6.f))
-					break;
-				levels -= enemy_level;
 			}
 		}
 	}

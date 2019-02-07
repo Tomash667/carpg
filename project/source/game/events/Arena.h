@@ -32,6 +32,14 @@ public:
 		bool ok;
 	};
 
+	struct Enemy
+	{
+		UnitData* unit;
+		uint count;
+		int level;
+		bool side;
+	};
+
 	void InitOnce() override;
 	void LoadLanguage() override;
 	void Cleanup() override { delete this; }
@@ -47,12 +55,14 @@ public:
 	void StartArenaCombat(int level);
 	void HandlePvpResponse(PlayerInfo& info, bool accepted);
 	void StartPvp(PlayerController* player, Unit* unit);
-	void AddGoldReward(int count);
+	void AddReward(int gold, int exp);
 	void Update(float dt);
 	Unit* GetRandomArenaHero();
 	void PvpEvent(int id);
 	void ClosePvpDialog();
 	void ShowPvpRequest(Unit* unit);
+	void RewardExp(Unit* dead_unit);
+	void SpawnUnit(const vector<Enemy>& units);
 
 	Mode mode;
 	State state;

@@ -1,8 +1,12 @@
 //------------------------------------------------------------------------------
 // SHORT BLADE
+item dagger_knife {
+	name "Knife"
+	desc "More suitable for peeling potatoes than for fighting."
+}
 item dagger_short {
 	name "Dagger"   
-	desc "Standard dagger for piercing back or cutting throats. You rather won't use it."
+	desc "Standard dagger for backstabbing or cutting throats. You rather won't use it."
 }   
 item dagger_sword {
 	name "Short sword"
@@ -10,50 +14,62 @@ item dagger_sword {
 }
 item dagger_rapier {
 	name "Rapier"
-	desc "Rapier requires a lot of precision to hit in less exposed places but damage is greater."
+	desc "A rapier requires a lot of precision to hit in less exposed places but the resulting damage is greater."
 }
 item dagger_assassin {
 	name "Assassin dagger"
-	desc "Assassin dagger was magically sharpened, and it directs to the weak point of the victim. Backstab for everyone!"
+	desc "The assassin dagger was magically sharpened. It also directs to the weak point of the victim. Backstab for everyone!"
 }
 item dagger_sword_a {
 	name "Short adamantine sword"
-	desc "Short sword made of adamantine. Best short blade you will find in the store."
+	desc "A short sword made of adamantine. Best short blade you will find in the store."
 }
 item dagger_spinesheath {
 	name "Spinesheath"
-	desc "They say this weapon is cursed. But does it discourage you? Worth knowing it enter into mithril like butter! Increase damage on backstab."
+	desc "They say this weapon is cursed, but does that discourage you? A thing worth noting is that it cuts through mithril like butter! Also has increased damage on backstab."
 }
 
 //------------------------------------------------------------------------------
 // LONG BLADE
+item sword_wooden {
+	name "Wooden sword"
+	desc "Weapon used during training."
+}
 item sword_long {
 	name "Long sword"
-	desc "Iron sword. Standard weapon for many armed forces. It is universal in terms of attack, defense and speed."
+	desc "Iron sword. The standard weapon for many armed forces. It is universal in terms of attack, defense and speed."
 }
 item sword_scimitar {
 	name "Scimitar"
-	desc "Scimitar is a curved sword. Harder to learn how to fight it but it's easier to surprise enemy attack due to lack of familiarity with the weapon."
+	desc "A scimitar is a curved sword. Harder to learn how to fight with but it's easier to surprise enemy attack due to lack of familiarity with the weapon."
 }
 item sword_orcish {
 	name "Orc sword"
-	desc "The orc sword, primitive heavy weapon. Requires a lot of strength."
+	desc "The orc sword, a primitive heavy weapon. Requires a lot of strength."
 }
 item sword_serrated {
 	name "Serrated sword"
-	desc "Serrated blade made of some strange metal alloy. Sharp as a razor."
+	desc "It has a serrated blade made of some strange metal alloy. Sharp as a razor."
 }
 item sword_adamantine {
 	name "Adamantine sword"
-	desc "Adamantine sword is the best sword which you can get at the store. Cut through adamantine armor as if it were an ordinary steel."
+	desc "Adamantine swords are the best swords you can get at the store. Cuts through adamantine armor as if it were made of ordinary steel."
 }
-item sword_unique {
+item sword_semur {
 	name "Semur Scimitar"
-	desc "Scimitar artifact carved from gold by an unknown blacksmith. Due enchantment it is never dull and it is sharp like tusk of dragonchewer. Amplifies magic skills."
+	desc "A scimitar artifact carved from gold by an unknown blacksmith. Due to its enchantments, it is never dull and it is sharp like the tusk of dragonchewer. Amplifies magic skills."
+}
+item sword_forbidden {
+	name "Sword \"Forbidden dreams\""
+	desc "An artifact of unknown origin, created from an alloy of crystal gold."
 }
 
 //------------------------------------------------------------------------------
 // AXE
+item axe_rusted {
+	name "Rusted hatchet"
+	desc "This axe has not been used for a long time, I hope that you also do not intend to."
+}
 item axe_small {
 	name "Hatchet"
 	desc "Light and handy axe. For those who like to chop wood once and wolf another time."
@@ -83,114 +99,111 @@ item axe_ripper {
 // BLUNT
 item blunt_club {
 	name "Club"
-	desc "Club - an ordinary piece of wood. What'd you expect for this price?"
+	desc "Club - an ordinary piece of wood. What did you expect for this price?"
 }
 item blunt_mace {
 	name "Mace"
-	desc "Mace is a heavy steel club. Requires a lot of strength to operate it efficiently."
+	desc "A mace is a heavy steel club. A lot of strength is required to operate it efficiently."
 }
 item blunt_orcish {
 	name "Orc hammer"
-	desc "Heavy orcish hammer. Primitive but does its destructive role."
+	desc "A heavy orcish hammer. Primitive, but does its destructive role rather well."
 }
 item blunt_orcish_shaman {
 	name "Decorated orc hammer"
-	desc "Heavy orcish hammer. Primitive but does its destructive role. This version is made with decorative elements."
+	desc "A heavy orcish hammer. Primitive, but does its destructive role rather well. This version is made with decorative elements."
 }
 item blunt_morningstar {
 	name "Morningstar"
-	desc "The steel ball with spikes on the end of a stick. Inflicts piercing-crushing damage."
+	desc "It's a steel ball with spikes on the end of a stick. Inflicts piercing-crushing damage."
 }
 item blunt_dwarven {
 	name "Dwarf hammer"
-	desc "High quality hammer made by a dwarven master. For professional smashing skulls."
+	desc "High quality hammer made by a dwarven master. For professional smashing of skulls."
 }
 item blunt_adamantine {
 	name "Adamantine mace"
-	desc "Mace made of adamantine. Best item in its class."
+	desc "A mace made of adamantine. The best item in its class."
 }
 item blunt_skullsmasher {
 	name "Skullsmasher"
-	desc "With this artifact is easily to split the head of giants. Like it would be nuts. And it's not just coconut but peanuts!"
+	desc "It's easily to split the head of giants with this artifact, nearly like cracking nuts. And with nuts I don't mean coconuts, rather peanuts!"
 }
 
 //------------------------------------------------------------------------------
 // TOOLS
 item blacksmith_hammer {
 	name "Blacksmith hammer"
-	desc "The hammer used by a blacksmith. Want to forge a sword?"
+	desc "The hammer used by a blacksmith. Do you feel like smithing a sword?"
 }
 item pickaxe {
 	name "Pickaxe"
-	desc "The basic tool for the miner."
+	desc "The miner's most basic tool."
 }
 item frying_pan {
 	name "Frying pan"
-	desc "Weapon for women."
+	desc "Pretty well known as a woman's weapon of choice (and in prehistoric times, babies too. Gotta love them). Not to be underestimated."
 }
 
 //------------------------------------------------------------------------------
 // WANDS
 item wand_1 {
 	name "Novice wand"
-	desc "Magic wand, increases damage from magic."
+	desc "A magic wand that increases damage from magic."
 }
 item wand_2 {
 	name "Adept wand"
-	desc "Magic wand, increases magic damage and accelerates regeneration of mana."
+	desc "A magic wand that increases magic damage and accelerates regeneration of mana."
 }
 item wand_3 {
 	name "Expert wand"
-	desc "Magic wand, significantly increases magic damage and mana regeneration rate."
-}
-
-//------------------------------------------------------------------------------
-// SECRET WEAPON
-item sword_forbidden {
-	name "Sword \"Forbidden dreams\""
-	desc "The artifact of unknown origin, created from alloy of crystal gold."
+	desc "A magic wand that significantly increases magic damage and mana regeneration rate."
 }
 
 //------------------------------------------------------------------------------
 // BOW
 item bow_short {
 	name "Short bow"
-	desc "Regular shortbow. Easier to hide and it weighs less, but is it enough pros for you to use it?"
+	desc "Regular shortbow. Easier to hide and it weighs less, but are its perks enough to be useful?"
 }
 item bow_long {
 	name "Long bow"
-	desc "Standard longbow used by many archers, not just beginners."
+	desc "The standard longbow used by many archers, not just beginners."
 }
 item bow_composite {
 	name "Composite bow"
-	desc "Composite bow made of several pieces of wood. High quality work, giving a lot more damage."
+	desc "A composite bow is made of several pieces of wood. High quality work, giving a lot more damage."
 }
 item bow_elven {
 	name "Elven bow"
-	desc "Bow made by elves, a true piece of art. Deadly piece of art."
+	desc "A bow made by elves, a true piece of art. A deadly piece of art, that is."
 }
 item bow_dragonbone {
 	name "Dragon bow"
-	desc "The best item in its class. Bow made from bones of the dragon is what you need to kill flying dragons!"
+	desc "The best item in its class. A bow made from bones of a dragon is what you need to kill flying dragons!"
 }
-item bow_unique {
+item bow_angel {
 	name "Angel bow"
-	desc "Bow artifact forged by angels from another plane. Very light but arrows fired from this are deadly."
+	desc "A bow artifact forged by angels from another plane. Very light, however arrows fired from this are deadly."
 }
 item q_gobliny_luk {
 	name "Ancient bow"
-	desc "Very old bow, the passage of time has not been kind to it. Does not look like magical."
+	desc "A very old bow, the passage of time has not been kind to it. It doesn't look like magical."
 }
 
 //------------------------------------------------------------------------------
 // SHIELD
+item shield_plank {
+	name "Plank shield"
+	desc "The makeshift shield made of pieces of a fence. You will not find anything cheaper."
+}
 item shield_wood {
 	name "Wooden shield"
 	desc "The basic shield. Bit lighter and less expensive than metal. Use at your own risk."
 }
 item shield_iron {
 	name "Iron shield"
-	desc "The standard shield for a decent price. I think you can afford it?"
+	desc "The standard shield for a decent price. Pretty affordable and good quality-price ratio."
 }
 item shield_steel {
 	name "Steel shield"
@@ -198,26 +211,26 @@ item shield_steel {
 }
 item shield_mithril {
 	name "Mithril shield"
-	desc "Shield of mithril, by half lighter than steel. Its main advantage is the weight but also endurance is not bad either."
+	desc "A shield made of mithril, half as light as steel. Its main advantage is the weight, but the endurance isn't bad either."
 }
 item shield_adamantine {
 	name "Adamantine shield"
-	desc "The best item in its class. Shield of adamantine protect you from everything, even acid rains. Gives small magic resistance."
+	desc "The best item in its class. Shield of adamantine protect you from everything, even acid rain. It gives a small magic resistance."
 }
-item shield_unique {
+item shield_wall {
 	name "The Wall"
-	desc "This shield artifact is made of magical stone. It is indestructible. Gives magic resistance."
+	desc "This shield artifact is made of magical stone. It is indestructible. It also gives magic resistance."
 }
 
 //------------------------------------------------------------------------------
 // LIGHT ARMOR
 item al_padded {
 	name "Padded armor"
-	desc "The simplest armor made of sewn together layers of cloth."
+	desc "The simplest kind of armor made of layers of cloth that were sewn together."
 }
 item al_padded_hq {
 	name "High quality padded armor"
-	desc "The simplest armor made of sewn together layers of cloth. This one is of high quality."
+	desc "The simplest kind of armor made of layers of cloth that were sewn together. This one is of high quality."
 }
 item al_padded_m {
 	//name "Padded armor"
@@ -226,21 +239,21 @@ item al_padded_m {
 }
 item al_leather {
 	name "Leather armor"
-	desc "Armor from tanned cowhide, hardened by cooking in oil."
+	desc "Armor from tanned cowhide, hardened by cooking it in oil."
 }
 item al_leather_hq {
 	name "High quality leather armor"
-	desc "Armor from tanned cowhide, hardened by cooking in oil. This one is of high quality."
+	desc "Armor from tanned cowhide, hardened by cooking it in oil. This one is of high quality."
 }
 item al_leather_m {
 	//name "Leather armor"
 	name "Magical leather armor"
-	desc "Armor from tanned cowhide, hardened by cooking in oil. This one is magical."
+	desc "Armor from tanned cowhide, hardened by cooking it in oil. This one is magical."
 }
 item al_dragonskin {
 	name "Dragonskin armor"
-	//desc "Leather armor made of red dragon skin, it's heavier but give very good protection. Provides protection against fire."
-	desc "Leather armor made of red dragon skin, it's heavier but give very good protection."
+	//desc "Leather armor made of red dragon skin, it's heavier but gives very good protection. Provides protection against fire."
+	desc "Leather armor made of red dragon skin, it's heavier but gives very good protection."
 }
 item al_studded {
 	name "Studded armor"
@@ -261,76 +274,76 @@ item al_shadow {
 }
 item al_chain_shirt {
 	name "Chain shirt"
-	desc "Light armor made from small interwoven circles to protect the torso. Other parts of the body protects the leather."
+	desc "Light armor made from small interwoven circles to protect the torso. Other parts of the body are protected by leather."
 }
 item al_chain_shirt_hq {
 	name "High quality chain shirt"
-	desc "Light armor made from small interwoven circles to protect the torso. Other parts of the body protects the leather. This one is of high quality."
+	desc "Light armor made from small interwoven circles to protect the torso. Other parts of the body are protected by leather. This one is of high quality."
 }
 item al_chain_shirt_m {
 	//name "Chain shirt"
 	name "Magical chain shirt"
-	desc "Light armor made from small interwoven circles to protect the torso. Other parts of the body protects the leather. This one is magical."
+	desc "Light armor made from small interwoven circles to protect the torso. Other parts of the body are protected by leather. This one is magical."
 }
 item al_chain_shirt_mith {
 	name "Mithril chain shirt"
-	desc "Light armor made from small interwoven circles to protect the torso. Other parts of the body protects the leather. This one is magical and created from mithril making it lighter."
+	desc "Light armor made from small interwoven circles to protect the torso. Other parts of the body are protected by leather. This one is magical and created made of mithril, making it lighter."
 }
 item al_angelskin {
 	name "Angelskin armor"
-	//desc "Artifact chain shirt created by angels from another plane. Wearing it feels like naked. Improves regeneration of the allies and gives resistance to negative energy."
-	desc "Artifact chain shirt created by angels from another plane. Wearing it feels like naked."
+	//desc "Artifact chain shirt created by angels from another plane. Wearing it feels like being naked. Improves regeneration of allies and gives resistance to negative energy."
+	desc "Artifact chain shirt created by angels from another plane. Wearing it feels like being naked."
 }
 
 //------------------------------------------------------------------------------
 // MEDIUM ARMOR
 item am_hide {
 	name "Hide armor"
-	desc "Created from multiple layers of wild animals hide. It's limit movement and is not too durable but it's cheap to produce."
+	desc "Created from multiple layers of wild animal hide. It limits movement and is not too durable, but cheap to produce."
 }
 item am_hide_hq {
 	name "High quality hide armor"
-	desc "Created from multiple layers of wild animals hide. It's limit movement and is not too durable but it's cheap to produce. This one is of high quality."
+	desc "Created from multiple layers of wild animal hide. It limits movement and is not too durable, but cheap to produce. This one is of high quality."
 }
 item am_hide_m {
 	//name "Hide armor"
 	name "Magical hide armor"
-	desc "Created from multiple layers of wild animals hide. It's limit movement and is not too durable but it's cheap to produce. This one is magical."
+	desc "Created from multiple layers of wild animal hide. It limits movement and is not too durable but, cheap to produce. This one is magical."
 }
 item am_troll_hide {
 	name "Troll hide armor"
-	//desc "The armor made from troll hide. Its owner, like a troll, has an increased strength and endurance and rapid natural regeneration."
-	desc "The armor made from troll hide. It's very durable."
+	//desc "An armor made of troll hide. Its owner, like a troll, gains increased strength and endurance and rapid natural regeneration."
+	desc "An armor made of troll hide. It's very durable."
 }
 item am_chainmail {
 	name "Chainmail"
-	desc "Armor made of many metal rings and underneath leather insole."
+	desc "Armor made of many metal rings and a leather insole."
 }
 item am_chainmail_hq {
 	name "High quality chainmail"
-	desc "Armor made of many metal rings and underneath leather insole. This one is of high quality."
+	desc "Armor made of many metal rings and a leather insole. This one is of high quality."
 }
 item am_chainmail_m {
 	//name "Chainmail"
 	name "Magical chainmail"
-	desc "Armor made of many metal rings and underneath leather insole. This one is magical."
+	desc "Armor made of many metal rings and a leather insole. This one is magical."
 }
 item am_chainmail_mith {
 	name "Mithril chainmail"
-	desc "Armor made of many metal rings and underneath leather insole. This one is magical and created from mithril making it lighter."
+	desc "Armor made of many metal rings and a leather insole. This one is magical and made of mithril making it lighter."
 }
 item am_scale {
 	name "Scale armor"
-	desc "Leather armor covered with metal pieces looking like fish scales."
+	desc "Leather armor covered with metal pieces whick look like fish scales."
 }
 item am_scale_hq {
 	name "High quality scale armor"
-	desc "Leather armor covered with metal pieces looking like fish scales. This one is of high quality."
+	desc "Leather armor covered with metal pieces whick look like fish scales. This one is of high quality."
 }
 item am_scale_m {
 	//name "Scale armor"
 	name "Magical scale armor"
-	desc "Leather armor covered with metal pieces looking like fish scales. This one is magical."
+	desc "Leather armor covered with metal pieces whick look like fish scales. This one is magical."
 }
 item am_dragonscale {
 	name "Dragonscale armor"
@@ -339,91 +352,96 @@ item am_dragonscale {
 }
 item am_breastplate {
 	name "Breastplate"
-	desc "Breastplate made of two large pieces of metal well protects the stomach and chest. The limbs are exposed to blows."
+	desc "Breastplate made of two large pieces of metal which protect the stomach and chest. The limbs are exposed to blows."
 }
 item am_breastplate_hq {
 	name "High quality breastplate"
-	desc "Breastplate made of two large pieces of metal well protects the stomach and chest. The limbs are exposed to blows. This one is of high quality."
+	desc "Breastplate made of two large pieces of metal which protect the stomach and chest. The limbs are exposed to blows. This one is of high quality."
 }
 item am_breastplate_m {
 	//name "Breastplate"
 	name "Magical breastplate"
-	desc "Breastplate made of two large pieces of metal well protects the stomach and chest. The limbs are exposed to blows. This one is magical."
+	desc "Breastplate made of two large pieces of metal which protect the stomach and chest. The limbs are exposed to blows. This one is magical."
 }
 item am_breastplate_mith {
 	name "Mithril breastplate"
-	desc "Breastplate made of two large pieces of metal well protects the stomach and chest. The limbs are exposed to blows. This one is magical and created from mithril making it lighter."
+	desc "Breastplate made of two large pieces of metal which protect the stomach and chest. The limbs are exposed to blows. This one is magical and created from mithril making it lighter."
 }
 item am_breastplate_adam {
 	name "Adamantine breastplate"
-	desc "Breastplate made of two large pieces of metal well protects the stomach and chest. The limbs are exposed to blows. This one is magical and created from adamantine making it more durable but also heavier."
+	desc "Breastplate made of two large pieces of metal which protect the stomach and chest. The limbs are exposed to blows. This one is magical and created from adamantine making it more durable but also heavier."
 }
 item am_gladiator {
 	name "Gladiator armor"
-	desc "The magical breastplate used for many years by gladiator Cord the Swindler. He won dozens of fights in the arena before someone realized that it is magical. They took him and thrown him into the arena against some goblins who defeated him. Increases attributes and skills useful in combat."
+	desc "The magical breastplate that the gladiator Cord the Swindler used for many years. He won dozens of fights in the arena before someone realized that it is magical. They took him and threw him into the arena without it, pitting him against some goblins who defeated him."
+//	Increases attributes and skills that are useful in combat."
 }
 
 //------------------------------------------------------------------------------
 // HEAVY ARMOR
+item ah_splint_rusted {
+	name "Rusted splint armor"
+	desc "Armor made of multiple metal strips tightly clinging to the leather pad. It provides good protection at the cost of mobility. This one is rusted."
+}
 item ah_splint {
 	name "Splint armor"
-	desc "Armor made of multiple metal strips tightly clinging to the leather pad. It provides good protection at cost of mobility."
+	desc "Armor made of multiple metal strips tightly clinging to the leather pad. It provides good protection at the cost of mobility."
 }
 item ah_splint_hq {
 	name "High quality splint armor"
-	desc "Armor made of multiple metal strips tightly clinging to the leather pad. It provides good protection at cost of mobility. This one is of high quality."
+	desc "Armor made of multiple metal strips tightly clinging to the leather pad. It provides good protection at the cost of mobility. This one is of high quality."
 }
 item ah_splint_m {
 	//name "Splint armor"
 	name "Magical splint armor"
-	desc "Armor made of multiple metal strips tightly clinging to the leather pad. It provides good protection at cost of mobility. This one is magical."
+	desc "Armor made of multiple metal strips tightly clinging to the leather pad. It provides good protection at the cost of mobility. This one is magical."
 }
 item ah_splint_mith {
 	name "Mithril splint armor"
-	desc "Armor made of multiple metal strips tightly clinging to the leather pad. It provides good protection at cost of mobility. This one is magical and created from mithril making it lighter."
+	desc "Armor made of multiple metal strips tightly clinging to the leather pad. It provides good protection at the cost of mobility. This one is magical and created from mithril, making it lighter."
 }
 item ah_antimage {
 	name "Antimage armor"
-	desc "Splint armor created by hunters of sorcerers in the first war of magic. It provides significant resistance to magic and allow burn mana with attacks."
+	desc "Splint armor created by hunters of sorcerers in the first war of magic. It provides significant resistance to magic and allows to burn mana with attacks."
 }
 item ah_plate {
 	name "Plate armor"
-	desc "Armor made of metal plates overlapping each other giving a very good protection. The only downsides is the weight and cost."
+	desc "Armor made of metal plates overlapping each other, providing a very good protection. The only downsides are the weight and cost."
 }
 item ah_plate_hq {
 	name "High quality plate armor"
-	desc "Armor made of metal plates overlapping each other giving a very good protection. The only downsides is the weight and cost. This one is of high quality."
+	desc "Armor made of metal plates overlapping each other, providing a very good protection. The only downsides are the weight and cost. This one is of high quality."
 }
 item ah_plate_m {
 	//name "Plate armor"
 	name "Magical plate armor"
-	desc "Armor made of metal plates overlapping each other giving a very good protection. The only downsides is the weight and cost. This one is magical."
+	desc "Armor made of metal plates overlapping each other, providing a very good protection. The only downsides are the weight and cost. This one is magical."
 }
 item ah_plate_mith {
 	name "Mithril plate armor"
-	desc "Armor made of metal plates overlapping each other giving a very good protection. The only downsides is the weight and cost. This one is magical and created from mithril making it lighter."
+	desc "Armor made of metal plates overlapping each other, providing a very good protection. The only downsides are the weight and cost. This one is magical and created from mithril, making it lighter."
 }
 item ah_plate_adam {
 	name "Adamantine plate armor"
-	desc "Armor made of metal plates overlapping each other giving a very good protection. The only downsides is the weight and cost. This one is magical and created from adamantine making it more durable but also heavier."
+	desc "Armor made of metal plates overlapping each other, providing a very good protection. The only downsides are the weight and cost. This one is magical and created from adamantine, making it more durable but also heavier."
 }
 item ah_black_armor {
 	name "Black armor"
-	//desc "Black plate armor - an artifact used by the first Dark Knight. This armor radiates an aura of evil and causes area damage whenever it feels blood."
+	//desc "Black plate armor - an artifact used by the first Dark Knight. This armor radiates an aura of evil and causes area damage whenever it senses blood."
 	desc "Black plate armor - an artifact used by the first Dark Knight. This armor radiates an aura of evil."
 }
 item ah_crystal {
 	name "Crystal armor"
-	desc "Deep in the cave you can find a strange crystals. Dwarves quickly got them in their hands and began to create armors. They are extremely heavy and durable."
+	desc "Deep in the, strange crystals can be found. Dwarves quickly got  their hands on them and began to create armors. The resulting armors are extremely heavy and durable."
 }
 item ah_crystal_m {
 	//name "Crystal armor"
 	name "Magical crystal armor"
-	desc "Deep in the cave you can find a strange crystals. Dwarves quickly got them in their hands and began to create armors. They are extremely heavy and durable. This one is magical."
+	desc "Deep in the, strange crystals can be found. Dwarves quickly got  their hands on them and began to create armors. The resulting armors are extremely heavy and durable. This one is magical."
 }
 item ah_blood_crystal {
 	name "Bloody crystal armor"
-	desc "Crystal from the underground, stained with the blood of demons. It is more durable and has a strange magical properties."
+	desc "Crystal from the underground, stained with the blood of demons. It is more durable and has some strange magical properties."
 }
 
 //------------------------------------------------------------------------------
@@ -449,18 +467,18 @@ item al_clothes2b {
 }
 item al_clothes3 {
 	name "Expensive clothes"
-	desc "Expensive clothes created for bespoke."
+	desc "Expensive clothes created by a bespoke tailor."
 }
 item al_clothes3b {
 	name "Expensive clothes"
-	desc "Expensive clothes created for bespoke."
+	desc "Expensive clothes created by a bespoke tailor."
 }
 
 //------------------------------------------------------------------------------
 // MONSTER ARMOR
 item al_goblin {
 	name "Goblin armor"
-	desc "Goblin armor made of pieces of fur, leather and other found junk."
+	desc "Goblin armor made of fur pieces, leather and found junk that could be found."
 }
 item al_orc {
 	name "Orc leather armor"
@@ -479,15 +497,15 @@ item am_orc {
 // MAGE CLOTHES
 item al_mage {
 	name "Novice robe"
-	desc "Clothes of novice mage. Not enchanted."
+	desc "Clothes of a novice mage. Not enchanted."
 }
 item al_mage2 {
 	name "Mage robe"
-	desc "Clothes of advanced mage. Through the magic is more durable than would suggest the material from which it was made."
+	desc "Clothes of an advanced mage. The magic makes it more durable than what its material would suggest."
 }
 item al_mage3 {
 	name "Battle mage robe"
-	desc "Robe of battle mage. Almost don't limits movement and probably a good protection thanks to the magic."
+	desc "Robe of a battle mage. Almost doesn't limits movement and provides a good protection thanks to the magic that it is imbued in."
 }
 item al_mage4 {
 	name "Archmage robe"
@@ -502,27 +520,27 @@ item al_necromancer {
 // POTIONS
 item p_nreg {
 	name "Healing brew"
-	desc "It speeds up the natural regeneration. Dose for 10 days of treatment. Drink it before the rest."
+	desc "It speeds up the natural regeneration. Dose for 10 days of treatment. Drink it before you rest."
 }
 item p_nreg2 {
 	name "Big healing brew"
-	desc "It speeds up the natural regeneration. Dose for 20 days of treatment. Drink it before the rest."
+	desc "It speeds up the natural regeneration. Dose for 30 days of treatment. Drink it before you rest."
 }
 item p_hp {
 	name "Small healing potion"
-	desc "Magic potion instantly heals 200 hit points."
+	desc "Magic potion, which instantly heals 200 hit points."
 }
 item p_hp2 {
 	name "Healing potion"
-	desc "Magic potion instantly heals 400 hit points."
+	desc "Magic potion, which instantly heals 400 hit points."
 }
 item p_hp3 {
 	name "Big healing potion"
-	desc "Magic potion instantly heals 600 hit points."
+	desc "Magic potion, which instantly heals 600 hit points."
 }
 item p_reg {
 	name "Regeneration potion"
-	desc "Magic potion, immediately regenerates wounds. Heals 5 points of health for 6 minutes."
+	desc "Magic potion, which immediately regenerates wounds. Heals 5 points of health for 6 minutes."
 }
 item p_antidote {
 	name "Antidote"
@@ -530,38 +548,38 @@ item p_antidote {
 }
 item p_str {
 	name "Elixir of strength"
-	desc "Magic potion permanently increasing strength."
+	desc "Magic potion that permanently increasing strength."
 }
 item p_end {
 	name "Elixir of endurance"
-	desc "Magic potion permanently increasing endurance."
+	desc "Magic potion that permanently increasing endurance."
 }
 item p_dex {
 	name "Elixir of dexterity"
-	desc "Magic potion permanently increasing dexterity."
+	desc "Magic potion that permanently increasing dexterity."
 }
 item q_magowie_potion {
 	name "Potion of clear mind"
-	desc "Potion which can bring back the memory."
+	desc "Potion which can bring back memories."
 }
 item p_antimagic {
 	name "Elixir of antimagic"
-	desc "For 5 minutes give resistance to magic."
+	desc "A potion that provides resistance to magic for 5 minutes."
 }
 
 //------------------------------------------------------------------------------
 // DRINK
 item potion_beer {
 	name "Beer"
-	desc "Small dose of poison served to mouth."
+	desc "A small dose of poison for oral administration. Bottoms up."
 }
 item potion_vodka {
 	name "Vodka"
-	desc "Big dose of poison served to mouth."
+	desc "A big dose of poison for oral administration."
 }
 item potion_spirit {
 	name "Spirit"
-	desc "Very big dose of poison served to mouth."
+	desc "A very big dose of poison for oral administration. Are you sure you don't want something lighter?"
 }
 item potion_water {
 	name "Water"
@@ -617,6 +635,10 @@ item soup {
 item stew {
 	name "Stew"
 	desc "Heals 30 hit points after eating."
+}
+item muffin {
+	name "Muffin"
+	desc "Heals 50 hit points after eating."
 }
 item mushroom {
 	name "Mushroom"
@@ -737,7 +759,7 @@ item q_bandyci_paczka {
 }
 item q_bandyci_list {
 	name "Encrypted letter"
-	desc "Encrypted letter found on bandit body."
+	desc "Encrypted letter found on a bandit's corpse."
 }
 item q_magowie_kula {
 	name "Magic ball"
@@ -754,18 +776,18 @@ item key_lunar {
 }
 item q_szaleni_kamien {
 	name "Strange stone"
-	desc "The stone covered with some runes."
+	desc "A stone covered in odd runes."
 }
 item sekret_kartka {
 	name "Piece of paper"
 }
 item sekret_kartka2 {
 	name "Piece of paper"
-	desc "Only with real courage you can go through this portal. Loading game will not help you."
+	desc "You can only go through this portal with real courage. Loading game will not help you."
 }
 item q_main_letter {
 	name "Documents"
-	desc "Documents with which you are admitted to the Academy."
+	desc "Documents that prove that you are admitted to the Academy."
 }
 item letter {
 	name "Letter"
@@ -781,37 +803,42 @@ item wanted_letter {
 item book_orcs {
 	name "Orc horde"
 	desc "Book about orcs."
-	text "*** Orc horde ***\n\nOrcs were first encountered in the year 713 of the first era. Not much was known about them, they were perceived as mere humanoid beasts murdering villagers and burning villages. They came from the northern mountains when the winter came. Horde of orcs poured out of the mountains like a wave.\n\nOrcs live mainly underground in caves, or outside in the woods. Rarely break temporary camps under the open sky, they fear that the sky will collapse on their heads. They use a primitive language which, once written, looks like a scribble. Rarely happens that the orc is not a half-wit, then he becomes a shaman. Some shamans know the language of people.\n\nThe strongest orc becomes the warlord or leader. The only thing holding up his army of orcs is fear of its leader. Often, there is a fierce battle between them to find out who are stronger."
+	text "*** Orc horde ***\n\nOrcs were first encountered in the year 713 of the first era. Not much was known about them, they were perceived as mere humanoid beasts murdering villagers and burning villages. They came from the northern mountains when winter arrived. Hordes of orcs poured out of the mountains like a wave.\n\nOrcs live mainly underground in caves, or outside, in the woods. They rarely break temporary camps under the open sky, since they fear that the sky will collapse on their heads. They use a primitive language which, once written, looks like scribbles. It rarely happens that an orc is not a half-wit. When this is the case and he's neither a dimwit, he becomes a shaman. Some shamans know the language of our people.\n\nThe strongest orc becomes the warlord or leader. The only thing holding up his army of orcs is fear of its leader. Often, there is a fierce battle between them to find out who is the strongest."
 }
 item book_undead {
 	name "Plague of undead"
-	desc "Book about undead."
-	text "*** Plague of undead ***\n\nn this short treatise I will try to describe how to identify and kill different types of undead - the priest Jared.\n\nSkeleton - bone undead. Single does not pose a greater threat but usually occurs in groups. Armed with weapons, shields or bow. Skeletons are resistant to pierce damage but susceptible to blunt weapons. It is good to carry a morningstar, for example.\n\nSkeleton mage - bones undead, thanks to the vile power can cast spells. It has the same features as a regular skeleton. It should be eliminated in the first place, which is not always easy when he is surrounded by allies. Stronger skeletons can rise up other skeletons and throw an exploding skull.\n\nZombie - animated with corrupted magic corpse. Extremely durable and resistant to the pierce and blunt weapon. It's best to use that zombie is slow - shoot from the distance with the bow and when it finish it off with a sword.\n\nUndead guard - an animated man who has not yet become a zombie. Strong as a man but more durable, resistant to bruises and poisons.\n\nNecromancer - He is not undead, but he must be described here. It is he who performs wicked witchcraft animates skeletons and zombies. He should be killed in the first place!"
+	desc "Book about the undead."
+	text "*** Plague of undead ***\n\nn this short treatise I will try to describe how to identify and kill different types of undead - Jared, the priest.\n\nSkeleton - an undead being made solely of bones. Alone, it does not pose a greater threat, but they usually come in groups and are armed with weapons, shields or bow. Skeletons are resistant to pierce damage, but susceptible to blunt weapons. It is good to carry a morningstar, for example.\n\nSkeleton mage - bones undead, thanks to the vile power can cast spells. It has the same features as a regular skeleton. It should be eliminated in the first place, which is not always easy to do when he is surrounded by allies. Stronger skeletons can rise other skeletons up and throw exploding skulls.\n\nZombie - a corpse animated with corrupted magic. Extremely durable and resistant to piercing and blunt weaponry. It's best to use their slowness to one's advantage - shoot from the distance with the bow and when it is damaged enough, finish it off with a sword.\n\nUndead guard - an animated man who has not yet become a zombie. Strong as a man but more durable, resistant to bruises and poisons.\n\nNecromancer - He is not undead, but he must be described here. It is he who performs wicked witchcraft and animates skeletons and zombies. He should be killed in the first place!"
 }
 item book_behind_the_wall {
 	name "Behind the wall"
 	desc "Book about invisible danger that is right next to you."
-	text "[The content of an unknown author translated into the language of the people by Danart the Mad]\n\n*** Behind the wall ***\n\nNightmares are behind the cover of reality right next to us. Only a fragile wall separates us from the monstrosities that sometimes enter our world. Unnamed beings attacking the mind and body. Many after such a meeting lost their mind and began wandering around the world aimlessly attacking travelers.\n\nYyoijy"
+	text "[The content is of an unknown author and was translated into the language of the people by Danart the Mad]\n\n*** Behind the wall ***\n\nNightmares are behind the cover of reality right next to us. Only a fragile wall separates us from the monstrosities that sometimes enter our world. Unnamed beings attacking the mind and body. Many have lost their mind after such a meeting and began wandering around the world aimlessly, attacking travelers.\n\nYyoijy"
 }
 item book_adventurer {
 	name "Adventurer's Guide"
 	desc "Book about how not to get killed and get treasures."
-	text "How to live to retirement or in other words Tomashu Adventurer's Guide\n\n1. City dwellers can look at you hostile but collect all items that are not nailed to the wall. In particular, potions to alchemist, food from the seller of the food and alcohol from the inn. What you do not need, sell.\n2. Do not travel alone, the more characters in the team, the easier it will be to fight. Try to have at least 3-4 people in your team. At first you will find some hero who will join you for free.\n3. Get as many items as you can and then sell them in the city. Your allies can also come in handy and carry items for you.\n4. Outside the fight, you should use food to heal. Drinking a mixture of natural healing increases the amount of healing for food / rest. It is worth leaving healing potions for fight.\n5. Find unique allies who will help you. You can recruit them early, have unique abilities and do not require share of gold.\n6. If you can afford to buy better armor, do it right now. At the beginning every point of defense counts.\n7. If you want to clean a location ask the locals for nearby places. For starters, you should visit places where enemies are very weak or weak.\n8. Do not attack the city residents! Unless you want to never buy or train anymore.\n9. Do not be afraid to run away when chances for victory are tiny.\n10. Save game often and don't die."
+	text "How to live to retirement or in other words Tomashu Adventurer's Guide\n\n1. City dwellers can look at you with hostility, but you should collect all items that are not nailed to the wall. In particular potions of an alchemist, food from the grocer and alcohol from the inn. What you do not need, sell.\n2. Do not travel alone, the more characters in the team, the easier it will be to fight. Try to have at least 3-4 people in your team. At first you will find some hero who will join you for free.\n3. Get as many items as you can and sell them in the city. Your allies can also come in handy and carry items for you.\n4. Outside the fight, you should use food to heal. Drinking a mixture of natural healing increases the amount of healing from food / rest. It is worth leaving healing potions for fights.\n5. Find unique allies who will help you. You can recruit them early on, they have unique abilities and do not require share of gold.\n6. If you can afford to buy better armor, do it right now. At the beginning every point of defense counts.\n7. If you want to clean a location, ask the locals for nearby places. For starters, you should visit places where enemies are very weak or weak.\n8. Do not attack the city residents! Unless you want to never buy or train anymore.\n9. Do not be afraid to run away when chances for victory are tiny.\n10. Save the game often and don't die."
 }
 item book_ld {
-	name "Lucid dream"
-	desc "Book about lucid dream"
-	text "*** Lucid dream ***\n\nAbout traveling in the depths of one's own mind - unknown author.\n\nA lucid dream is a dream in which the dreamer realizes that it is a dream. It usually occurs when a person realizes that this is dream in middle of sleep. It is also possible to fall asleep and remain conscious. The dreamer has control over himself and what happens in a dream. As far as this is his dream...\n\nOne of the methods is to test the reality and to save daily dream experiences. After some time we will begin to test the reality in dreams as well, and we will recognize it as a dream.\n\nThe second method is direct entry into the world of dreams. You can make a special magical amulet that will allow it."
+	name "Lucid dreams"
+	desc "Book about lucid dreams"
+	text "*** Lucid dreams ***\n\nAbout traveling in the depths of one's own mind - unknown author.\n\nA lucid dream is a dream in which the dreamer realizes that he's dreaming. It usually occurs when a person realizes that this is dream in middle of sleep, obviously. It is also possible to fall asleep and remain conscious. The dreamer has control over himself and what happens in a dream. As far as this is his dream...\n\nOne of the methods is to test the reality and to save daily dream experiences. After some time we will begin to test the reality in dreams as well, and we will recognize it as a dream.\n\nThe second method is direct entry into the world of dreams. You can make a special magical amulet that will allow it."
 }
 item book_runic {
 	name "Runic book"
-	desc "An unfamiliar book written with an unfamiliar language."
-	text "*** Mystery *** \n\nSecret book, do not read! Nothing interesting here, realy. I recommend Bloodborne, a very interesting game. Like the whole series of Dark Souls and Uncharted."
+	desc "An unfamiliar book written in an unfamiliar language."
+	text "*** Mystery *** \n\nSecret book, do not read! Nothing interesting here, really. I recommend Bloodborne, a very interesting game. Like the whole series of Dark Souls and Uncharted."
 }
 item q_zlo_ksiega {
 	name "Summoning book"
 	desc "The book contains spells for summoning and creating portals."
-	text "Introduction to summoning and creating portals by Magnus Voolo.\n\n1. Summoning\nTo summon a creature from another plane, you need to know it name and have piece of the element from which it originated. For example, for a fire elemental something related to fire, lit piece of coal. Summoning standard elementals does not pose a problem because they all have the same names:\nfire - agni\nwater - pos\nair - mir\nearth - ar\nSummoning beings from other planes is not described in this volume. Prior to summoning you should also prepare a protective circle - otherwise the elemental will not have friendly intentions. After summoning use one of binding spells.\n\n2. Opening portals\nTo open the portal you need a specially prepared gate. For this purpose you can use, for example, an adamentium that is resistant to sorcery. Using too weak gate can cause damage and collapse of the portal, which is extremely dangerous. You need to cast gate spell on portal. The portal remains open for an unlimited amount of time."
+	text "Introduction to summoning and creating portals by Magnus Voolo.\n\n1. Summoning\nTo summon a creature from another plane, you need to know its name and have piece of the element from which it originated. For example, for a fire elemental something related to fire, like a lit piece of coal. Summoning standard elementals does not pose a problem because they all have the same names:\nfire - agni\nwater - pos\nair - mir\nearth - ar\nSummoning beings from other planes is not described in this volume. Prior to summoning you should also prepare a protective circle - otherwise the elemental will not have friendly intentions. After summoning, use one of the binding spells.\n\n2. Opening portals\nTo open the portal you need a specially prepared gate. For this purpose you can use, for example, an adamentium that is resistant to sorcery. Using a gate that isn't sufficiently strong can cause damage and collapse of the portal, which is extremely dangerous. You need to cast the gate spell on the portal. The portal remains open for an unlimited amount of time."
+}
+item magic_scroll {
+	name "Magic scroll"
+	desc "Written with some weird runes..."
+	text "xxx"
 }
 
 //------------------------------------------------------------------------------

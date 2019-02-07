@@ -1,4 +1,4 @@
-// podstawy gui
+// gui basics
 ok = "Ok"
 cancel = "Anuluj"
 yes = "Tak"
@@ -17,9 +17,8 @@ quit = "Wyjœcie"
 infoText = "CARPG\nWersja: %s\nData: %s\nAutorzy: Tomashu, Leinnan i inni\nWiêcej informacji w pliku readme.txt."
 newerVersion = "Masz nowsz¹ wersjê ni¿ dostêpna."
 noNewVersion = "Brak nowej wersji CaRpg."
-checkVersionError = "B³¹d sprawdzania wersji CaRpg (%d:%u)."
+checkVersionError = "B³¹d sprawdzania wersji CaRpg."
 checkingVersion = "Sprawdzanie wersji CaRpg."
-checkingError = "B³¹d sprawdzania wersji CaRpg."
 newVersion = "Dostêpna nowa wersja CaRpg %s."
 newVersionDialog = "Dostêpna jest nowa wersja CaRpg.\nAktualna: %s\nDostêpna: %s"
 download = "Pobierz"
@@ -35,7 +34,7 @@ saveAndExit = "Zapis i wyjœcie"
 exitToMenu = "Wróæ do menu"
 exitToMenuDialog = "Na pewno chcesz wróciæ do g³ównego menu?"
 
-// opcje
+// options
 fullscreenMode = "Tryb pe³noekranowy"
 glow = "Poœwiata"
 normalMap = "Normal map"
@@ -55,7 +54,7 @@ needRestart = "Zmiana jêzyka wymaga restartu gry. Na pewno chcesz to zrobiæ?"
 grassRange = "Zasiêg trawy"
 vsync = "Vsync"
 
-// zapisywanie wczytywanie
+// save/load
 SAVINGGAME = "ZAPISYWANIE GRY"
 LOADINGGAME = "WCZYTYWANIE GRY"
 save = "Zapisz"
@@ -68,7 +67,7 @@ saveTime = "Rok %d, Miesi¹c %d, Dzieñ %d\n"
 savePlayers = "\nGracze %d\n"
 saveName = "Nazwa zapisu:"
 
-// dziennik
+// journal
 add = "Dodaj"
 noteText = "Tekst notatki:"
 noQuests = "Brak zadañ"
@@ -77,7 +76,7 @@ noNotes = "Brak notatek"
 addNote = "Dodaj notatkê"
 addTime = "Dodano %s:\n%s"
 
-// gui gry
+// game gui
 death = "Twoja dru¿yna zosta³a wybita! Powodzenia w przysz³ych przygodach...\nZabi³eœ %d istot, pozostali zabili %d."
 deathAlone = "Nie ¿yjesz! Mo¿e trzeba by³o nie podró¿owaæ samotnie?\nZabi³eœ %d istot, pozostali zabili %d."
 gameTimeout = "Jesteœ ju¿ za stary aby uganiaæ siê za potworami po podziemiach.\nCzas przejœæ na zas³u¿on¹ emeryturê i cieszyæ siê zgromadzonym bogactwem.\nZabi³eœ %d istot, inni zabili %d."
@@ -142,7 +141,7 @@ traitsStart = "Zdrowie: %d/%d\nWytrzyma³oœæ: %d/%d"
 attack = "Atak"
 meleeAttack = "Atak wrêcz"
 rangedAttack = "Atak dystansowy"
-traitsEnd = "Obrona: %d\nBlok: %s\nMobilnoœæ: %d\nUdŸwig: %g/%g kg\nZ³oto: %d sz"
+traitsEnd = "Obrona: %d\nBlok: %s\nMobilnoœæ: %d\nPunkty nauki: %d\nUdŸwig: %g/%g kg\nZ³oto: %d sz"
 statsText = "Czas gry: %02d:%02d:%02d\nPokonani wrogowie: %d\nPobicia: %d\nZadane obra¿enia: %d\nOtrzymane obra¿enia: %d\nWalki na arenie: %d"
 yearMonthDay = "Rok: %d\nMiesi¹c: %d\nDzieñ: %d"
 base = "Bazowo"
@@ -151,7 +150,7 @@ attributes = "Atrybuty"
 relatedAttributes = "Powi¹zane atrybuty"
 []
 
-// ekran dru¿yny
+// team panel
 giveGold = "Daj z³oto"
 payCredit = "Sp³aæ kredyt"
 changeLeader = "Przywódca"
@@ -180,7 +179,7 @@ reallyKick = "Na pewno chcesz wyrzuciæ %s?"
 alreadyLeft = "Postaæ opuœci³a dru¿ynê."
 cAlreadyLeft = "%s nie jest ju¿ cz³onkiem dru¿yny."
 
-// mapa œwiata
+// world map
 worldDate = "Data: %s"
 currentLoc = "Aktualna lokacja"
 citizens = "Mieszkañcy"
@@ -206,8 +205,10 @@ encBandits = "Podczas podró¿y natrafi³eœ na bandytów!"
 encAnimals = "Nagle z zaroœli wyskoczy³y zwierzêta!"
 encOrcs = "Natrafi³eœ na oddzia³ orków szukaj¹cy ³atwego ³upu!"
 encGoblins = "Z zaskoczenia zaatakowa³a ciê grupa goblinów!"
+encEnemiesCombat = "W oddali zauwa¿y³eœ dwie grupy wrogów walcz¹ce pomiêdzy sob¹."
 
 // create character panel
+[CreateCharacterPanel]
 next = "Dalej"
 goBack = "Cofnij"
 create = "Stwórz"
@@ -226,10 +227,15 @@ createCharText = "Wybierz pocz¹tkowe umiejêtnoœci i atuty. Mo¿esz zwiêkszyæ ka¿d
 createCharTooMany = "Wyda³eœ zbyt du¿o punktów umiejêtnoœci/atutów."
 randomSet = "Losowo"
 flawExtraPerk = "Pozwala wybraæ dodatkowy atut."
+pickAttribIncrease = "Wybierz atrybut do zwiêkszenia."
+pickSkillIncrease = "Wybierz umiejêtnoœæ do zwiêkszenia."
+availablePerks = "Dostêpne"
+takenPerks = "Wybrane"
+perksRemoved = "Usuniêto poni¿sze atuty z powodu niespe³niania wymagañ:"
+[]
 
 // net panel
 join = "Do³¹cz"
-joinLAN = "Do³¹cz LAN"
 joinIP = "Do³¹cz IP"
 host = "Za³ó¿"
 multiplayerGame = "GRA WIELOOSOBOWA"
@@ -237,23 +243,28 @@ nick = "Nick:"
 needEnterNick = "Musisz podaæ nick."
 enterValidNick = "Musisz podaæ prawid³owy nick, tylko litery, cyfry lub znak podkreœlenia."
 
-// zak³adanie serwera
+// creating server
+[CreateServerPanel]
 createServer = "ZA£Ó¯ SERWER"
 serverName = "Nazwa serwera:"
 serverPlayers = "Gracze:"
 serverPswd = "Has³o:"
+lan = "LAN"
+create = "Stwórz"
 enterServerName = "Podaj nazwê serwera."
 invalidPlayersCount = "Liczba graczy musi byæ w przedziale 1-%d."
 
 // multiplayer
+[PickServerPanel]
 players = "Gracze"
-name2 = "Nazwa"
-pingingServers = "Pingowanie serwerów."
-unknownResponse = "Nieznana odpowiedŸ od %s: %s."
-unknownResponse2 = "Nieznana odpowiedŸ od %s, to nie jest serwer CaRpg: %s."
-brokenResponse = "Uszkodzona odpowiedŸ od %s: %s."
+name = "Nazwa"
+internet = "Internet"
+lan = "LAN"
+failedToGetServers = "B³¹d pobierania listy serwerów."
+invalidServerVersion = "Wybrany serwer wymaga innej wersji gry.\nWersja serwera: %s\nTwoja wersja: %s"
+[]
 
-// klawisze
+// keys
 k1 = "Lewy przycisk myszki"
 k2 = "Prawy przycisk myszki"
 k3 = "Anuluj"
@@ -371,7 +382,7 @@ k220 = "\\|"
 k221 = "]}"
 k222 = "'\""
 
-// klawisze gry
+// game keys
 keyMoveForward = "Do przodu"
 keyMoveBack = "Do ty³u"
 keyMoveLeft = "IdŸ w lewo"
@@ -406,7 +417,7 @@ keyRotateCamera = "Obrót kamery"
 keyAutowalk = "Automatyczne chodzenie"
 keyToggleWalk = "Prze³¹cz chodzenie"
 
-// sterowanie
+// controls
 resetKeys = "Resetuj"
 action = "Akcja"
 key_1 = "Klawisz 1"
@@ -441,11 +452,7 @@ playerLeft = "Gracz %s opuœci³ grê."
 needSelectedPlayer = "Musisz najpierw zaznaczyæ gracza."
 serverText = "Serwer: %s\nGracze: %d/%d\nHas³o: %s"
 
-// gra
-goldPlus = "Z³oto %+d"
-questCompletedGold = "Zadanie wykonane\nZ³oto %+d"
-
-// gadanie ai
+// ai talking
 aiNoHpPot0 = "Cholera! Nie mam ju¿ miksturek leczniczych."
 aiNoHpPot1 = "Nie mam ju¿ miksturek leczniczych."
 aiJoinTour0 = "Wezmê udzia³ w zawodach, mo¿e uda mi siê wygraæ."
@@ -549,7 +556,7 @@ aiDrunkContestText1 = "Na co jeszcze czekamy?!"
 aiDrunkContestText2 = "Zawody! Zawody! Zawody!"
 aiDrunkContestText3 = "Piwa! Piwa dajcie!"
 
-// nazwy lokacji
+// location names
 randomEncounter = "Losowe spotkanie"
 camp = "Obóz"
 cave = "Jaskinia"
@@ -561,7 +568,7 @@ village = "Wioska"
 moonwell = "Ksiê¿ycowa studnia"
 otherness = "Innoœæ"
 
-// mapa
+// level loading
 enteringLocation = "Wchodzenie do lokacji"
 generatingMap = "Generowanie mapy"
 generatingBuildings = "Generowanie budynków"
@@ -575,7 +582,7 @@ loadingComplete = "Wczytywanie zakoñczone"
 waitingForPlayers = "Oczekiwanie na graczy"
 loadingResources = "Wczytywanie zasobów"
 
-// zawody w piciu
+// drinking contest
 contestNoWinner = "W tym roku nikt nie wygra³ zawodów w piciu."
 contestStart = "Zaraz zaczynamy zawody! Ludzie! Zapisywaæ siê!"
 contestTalk0 = "Witam wszystkich zebranych na kolejnych zawodach!"
@@ -598,7 +605,7 @@ contestDraw = "Remis! W tym roku nikt nie wygra³!"
 contestPrize = "PodejdŸ no tu po nagrodê!"
 contestNoPeople = "Co jest do cholery?! Nikt nie przyszed³!"
 
-// samouczek
+// tutorial
 tut0 = "Witaj w samouczku CaRpg! Poruszasz postaci¹ u¿ywaj¹c strza³ek/[WSAD].\nObracasz siê myszk¹/[QE]. Kó³kiem myszy ustawiasz odleg³oœæ kamery.\nPodejdŸ do drzwi za rogiem."
 tut1 = "Aby czegoœ u¿yæ kliknij lewym przyciskiem myszki lub [Z]/[R]. [R] mo¿esz\nu¿ywaæ gdy masz wyci¹gniêt¹ broñ. U¿ywaj¹c [Shift] mo¿esz powoli chodziæ.\nOtwórz drzwi i idŸ dalej."
 tut2 = "U¿yj skrzyni aby j¹ przeszukaæ. U góry widoczna jest zawartoœæ skrzyni\na na dole twój ekwipunek. Klikniêcie na przedmiot przenosi go do twojego\nekwipunku lub do skrzyni. Na dole masz wskaŸnik obci¹¿enia, przytrzymaj\nnad nim myszkê aby uzyskaæ szczegó³owe informacje. Obok znajduje siê\ninformacja o posiadanym z³ocie, klikniêcie powoduje schowanie z³ota.\nKlawisz [I] otwiera ekwipunek. [ESC] zamyka.\nZabierz przedmioty ze skrzyni i idŸ dalej."
@@ -614,7 +621,7 @@ tutLoc = "Samouczek"
 tutPlay = "Czy chcesz przejœæ samouczek?"
 tutTick = "Nie pokazuj tego wiêcej"
 
-// zawody
+// tournament
 tour0 = "Za chwilê rozpoczynamy zawody! Kto chce wzi¹æ udzia³, zapraszam do mnie."
 tour1 = "Za oko³o 30 sekund zaczynamy zawody."
 tour2 = "Witam wszystkich na kolejnych zawodach!"
@@ -639,7 +646,7 @@ tour20 = "%s wygra³ walkê!"
 tour21 = "PodejdŸ tu %s, porozmawiamy o twojej nagrodzie."
 tour22 = "Niestety w tym roku zawody siê nie odbêd¹ z powodu braku chêtnych..."
 
-// zapisywanie/wczytywanie
+// save/load messages
 cantSaveGame = "Nie mo¿esz w tej chwili zapisaæ gry: trwa walka na arenie lub zawody w karczmie."
 saveFailed = "B³¹d zapisywania gry."
 savedGameN = "Zapisana gra %d"
@@ -662,7 +669,9 @@ loadError = "B³¹d wczytywania gry: "
 loadErrorGeneric = "B³¹d wczytywania gry: plik jest uszkodzony lub nieprawid³owy, wiêcej informacji w pliku log."
 loadOpenError = "Nie mo¿na otworzyæ pliku '%s' (%d)."
 
-// gra
+// game
+goldPlus = "Z³oto %+d"
+questCompletedGold = "Zadanie wykonane\nZ³oto %+d"
 pvpRefuse = "%s odmówi³ walki z tob¹."
 win = "Gratulacje!\nUkoñczyliœcie wszystkie unikalne zadania które istniej¹ w tej wersji.\nDo zobaczenia w kolejnej wersji, oczekujcie zmian na lepsze! :3\nZabi³eœ %d istot, pozostali zabili %d."
 winMp = "Gratulacje!\nUkoñczy³eœ wszystkie unikalne zadania które istniej¹ w tej wersji.\nDo zobaczenia w kolejnej wersji, oczekuj zmian na lepsze! :3\nZabi³eœ %d istot, pozostali zabili %d."
@@ -695,8 +704,11 @@ gmsAddedItem = "Otrzyma³eœ przedmiot"
 gmsAddedItems = "Otrzyma³eœ %d przedmioty"
 gmsGettingOutOfRange = "Opuszczasz obszar wydarzenia"
 gmsLeftEvent = "Opuœci³eœ wydarzenie"
+gainLearningPoints = "Punkty nauki %+d"
+learnedPerk = "Pozna³eœ nowy atut"
+tooComplicated = "To jest zbyt skomplikowane..."
 
-// plotki
+// rumors
 rumor_0 = "Ponoæ w $rcitynhere$ widziano elfy."
 rumor_1 = "Mówi¹ ¿e ogry robi¹ z koœci chleb."
 rumor_2 = "Ten cholerny troll pobiera op³atê za przejœcie przez most a nic go nie naprawia!"
@@ -733,7 +745,7 @@ rumor_d_4 = "S³aby ten spirytus, przyda³o by siê coœ silniejszego..."
 rumor_d_5 = "Nie jestem (hic) najebany!"
 rumor_d_6 = "Nie ma brzydkich kobiet, czasem tylko wina brak..."
 
-// dialogi 1
+// npc texts
 mayorQFailed0 = "Nie mo¿na na tobie polegaæ..."
 mayorQFailed1 = "Nie dam ci ¿adnego wa¿nego zadania! IdŸ zbieraæ marchewkê!"
 mayorQFailed2 = "Potrzebuje kogoœ na kim mo¿na polegaæ, na tobie nie mogê."
@@ -790,8 +802,11 @@ arenaTextU2 = "%s!"
 arenaTextU3 = "Stawiam 10 sztuk z³ota na %s!"
 arenaTextU4 = "Uderz go %s!"
 allNearLoc = "To wszystkie pobliskie miejsca."
+learningPoint = "punkt nauki"
+learningPoints = "punkty nauki"
+needLearningPoints = "Nie masz doœæ doœwiadczenia ¿ebym móg³ ciê tego nauczyæ."
 
-// dystans / si³a
+// distance/group difficulty
 near = "niedaleko "
 far = "daleko "
 veryFar = "bardzo daleko"
@@ -806,7 +821,7 @@ eLvlQuiteStrong1 = "ca³kiem silne"
 eLvlStrong0 = "silni"
 eLvlStrong1 = "silne"
 
-// obóz wrogów
+// enemy group names
 sgo_orcs = "orków"
 sgo_bandits = "bandytów"
 sgo_goblins = "goblinów"
@@ -1119,7 +1134,7 @@ quest276 = "%s do³¹czy³ do mojej dru¿yny. Nie wiem czy chcê wykonaæ to zadanie."
 quest277 = "Czas jaki mia³em na wykonanie tego zadania min¹³."
 quest278 = "Poszukiwacze przygód zajêli siê bandytami którzy pobierali op³aty na drodze."
 
-// kierunek
+// direction
 dirN = "pó³noc"
 dirS = "po³udnie"
 dirE = "wschód"
@@ -1154,12 +1169,14 @@ invalidIp = "To nie jest prawid³owy adres ip!"
 waitingForPswd = "Oczekiwanie na has³o..."
 enterPswd = "Podaj has³o do serwera %s:"
 connectingTo = "£¹czenie z serwerem %s..."
+connectingProxy = "£¹czenie z proxy..."
 connectTimeout = "Nie mo¿na po³¹czyæ z serwerem: przekroczono czas po³¹czenia."
 connectInvalid = "Nie mo¿na po³¹czyæ z serwerem: to nie jest serwer CaRpg."
 connectVersion = "Nie mo¿na po³¹czyæ z serwerem: brak zgodnoœci wersji.\nTwoja wersja: %s\nWersja serwera: %s"
 connectRaknet = "Nie mo¿na po³¹czyæ z serwerem: b³¹d systemu raknet."
 cantJoin = "Nie mo¿na po³¹czyæ z serwerem: uszkodzona odpowiedŸ serwera."
 lostConnection = "Utracono po³¹czenie z serwerem."
+playerDisconnected2 = "Zosta³eœ od³¹czony."
 invalidPswd = "Nie mo¿na po³¹czyæ z serwerem: B³êdne has³o."
 cantJoin2 = "Nie mo¿na do³¹czyæ do serwera"
 serverFull = "Server jest pe³ny"
@@ -1185,14 +1202,16 @@ disconnected = "%s od³¹czy³ siê od serwera."
 ipLostConnection = "%s utraci³ po³¹czenie z serwerem."
 playerLostConnection = "Gracz %s straci³ po³¹czenie z serwerem."
 left = "Gracz %s opuœci³ lobby."
-unconnected = "Przerwano po³¹czenie z serwerem.\nPowód: %s."
-closing = "Zamykanie serwera"
-kicked = "Zosta³eœ wyrzucony"
-unknown = "Nieznany"
+unconnected = "Przerwano po³¹czenie z serwerem.\nPowód: %s"
+closing = "Zamykanie serwera."
+kicked = "Zosta³eœ wyrzucony."
+unknown = "Nieznany."
 waitingForServer = "Oczekiwanie na serwer"
 startingGame = "Uruchamianie gry"
 preparingWorld = "Przygotowywanie œwiata"
 invalidCrc = "Z³a suma kontrolna danych"
+connectionFailed = "Nie uda³o siê po³¹czyæ z serwerem."
+registerFailed = "B³¹d rejestracji serwera."
 
 // net
 createServerFailed = "B³¹d tworzenia serwera (%d)!"
@@ -1211,7 +1230,7 @@ playerDisconnected = "%s utraci³ po³¹czenie z serwerem."
 playerQuit = "%s opuœci³ grê."
 playerKicked = "%s zosta³ wyrzucony z serwera."
 
-// okrzyk
+// yelling
 yell0 = "Z drogi!"
 yell1 = "Rusz ¿e siê!"
 yell2 = "Przesuñ siê wreszcie!"

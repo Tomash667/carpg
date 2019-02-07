@@ -13,7 +13,7 @@ skill short_blade {
 }
 skill long_blade {
 	name "D³ugie ostrze"
-	desc "Ma wp³yw na obra¿enia i szybkoœæ ataku dla d³ugi mieczy i sejmitarów."
+	desc "Ma wp³yw na obra¿enia i szybkoœæ ataku dla d³ugich mieczy i sejmitarów."
 }
 skill axe {
 	name "Topór"
@@ -95,8 +95,8 @@ skill survival {
 	name "Sztuka przetrwania"
 	desc "Pozwala zdobywaæ trofea ze zwierz¹t, unikaæ zasadzek. Zwiêksza szybkoœæ podró¿ny i szansê na znalezienie czegoœ przydatnego."
 }
-skill persuasion {
-	name "Perswazja"
+skill haggle {
+	name "Targowanie"
 	desc "Pozwala lepiej targowaæ siê i przekonywaæ innych do swojej racji."
 }
 skill alchemy {

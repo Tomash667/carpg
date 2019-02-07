@@ -137,7 +137,7 @@ void GameGui::DrawFront()
 	}
 
 	// end of game screen
-	if(game.koniec_gry)
+	if(game.end_of_game)
 	{
 		DrawEndOfGameScreen();
 		return;
@@ -353,11 +353,7 @@ void GameGui::DrawFront()
 	}
 
 	// get buffs
-	int buffs;
-	if(Net::IsLocal())
-		buffs = game.pc->unit->GetBuffs();
-	else
-		buffs = game.pc->player_info->buffs;
+	int buffs = game.pc->unit->GetBuffs();
 
 	// healthbar
 	float wnd_scale = float(GUI.wnd_size.x) / 800;
@@ -452,7 +448,7 @@ void GameGui::DrawFront()
 	if(sidebar > 0.f)
 	{
 		int max = (int)SideButtonId::Max;
-		if(Net::IsOnline())
+		if(!Net::IsOnline())
 			--max;
 		int total = offset * max;
 		spos.y = GUI.wnd_size.y - (GUI.wnd_size.y - total) / 2 - offset;
@@ -732,11 +728,7 @@ void GameGui::Update(float dt)
 	float hp_scale = float(GUI.wnd_size.x) / 800;
 
 	// buffs
-	int buffs;
-	if(Net::IsLocal())
-		buffs = game.pc->unit->GetBuffs();
-	else
-		buffs = game.pc->player_info->buffs;
+	int buffs = game.pc->unit->GetBuffs();
 
 	buff_scale = GUI.wnd_size.x / 1024.f;
 	float off = buff_scale * 33;
@@ -982,7 +974,7 @@ void GameGui::AddSpeechBubble(Unit* unit, cstring text)
 	// setup
 	unit->bubble->text = text;
 	unit->bubble->unit = unit;
-	unit->bubble->size = Int2(total / lines + 20, s.y*lines + 20);
+	unit->bubble->size = Int2(Max(32, total / lines + 20), s.y*lines + 20);
 	unit->bubble->time = 0.f;
 	unit->bubble->length = 1.5f + float(strlen(text)) / 20;
 	unit->bubble->visible = false;
@@ -1469,7 +1461,7 @@ void GameGui::UpdatePlayerView(float dt)
 		{
 			float dist = Vec3::Distance(u.visual_pos, u2.visual_pos);
 
-			if(dist < ALERT_RANGE.x && game.cam.frustum.SphereToFrustum(u2.visual_pos, u2.GetSphereRadius()) && L.CanSee(u, u2))
+			if(dist < ALERT_RANGE && game.cam.frustum.SphereToFrustum(u2.visual_pos, u2.GetSphereRadius()) && L.CanSee(u, u2))
 			{
 				// dodaj do pobliskich jednostek
 				bool jest = false;

@@ -26,21 +26,11 @@
 #include "Pathfinding.h"
 #include "Quest_Tournament.h"
 #include "PlayerInfo.h"
+#include "CommandParser.h"
 
 //-----------------------------------------------------------------------------
 extern string g_ctime;
-static PrintMsgFunc g_print_func;
-
-//-----------------------------------------------------------------------------
-void Msg(cstring msg)
-{
-	g_print_func(msg);
-}
-template<typename... Args>
-void Msg(cstring msg, const Args&... args)
-{
-	g_print_func(Format(msg, args...));
-}
+PrintMsgFunc g_print_func;
 
 //=================================================================================================
 void Game::AddCommands()
@@ -125,12 +115,23 @@ void Game::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_RELOAD_SHADERS, "reload_shaders", "reload shaders", F_ANYWHERE | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(CMD_TILE_INFO, "tile_info", "display info about map tile", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_SET_SEED, "set_seed", "set randomness seed", F_ANYWHERE | F_WORLD_MAP | F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_CRASH, "crash", "crash game to death!", F_ANYWHERE | F_WORLD_MAP | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_CRASH, "crash", "crash game to death!", F_SINGLEPLAYER | F_LOBBY | F_MENU | F_WORLD_MAP | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_FORCE_QUEST, "force_quest", "force next random quest to select (use list quest or none/reset)", F_SERVER | F_GAME | F_WORLD_MAP | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_STUN, "stun", "stun unit for time (stun [length=1] [1 = self])", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_REFRESH_COOLDOWN, "refresh_cooldown", "refresh action cooldown/charges", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_DRAW_PATH, "draw_path", "draw debug pathfinding, look at target", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_VERIFY, "verify", "verify game state integrity", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_ADD_EFFECT, "add_effect", "add effect to selected unit (add_effect effect power [source [perk/time]])", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_REMOVE_EFFECT, "remove_effect", "remove effect from selected unit (remove_effect effect/source [perk])", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_LIST_EFFECTS, "list_effects", "display selected unit effects", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_ADD_PERK, "add_perk", "add perk to selected unit (add_perk perk)", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_REMOVE_PERK, "remove_perk", "remove perk from selected unit (remove_perk perk)", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_LIST_PERKS, "list_perks", "display selected unit perks", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_SELECT, "select", "select and display currently selected target (select [me/show/target] - use target or show by default)", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_LIST_STATS, "list_stats", "display selected unit stats", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_ADD_LEARNING_POINTS, "add_learning_points", "add learning point to selected unit [count - default 1]", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_CLEAN_LEVEL, "clean_level", "remove all corpses and blood from level (clean_level [building_id])", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_ARENA, "arena", "spawns enemies on arena (example arena 3 rat vs 2 wolf)", F_GAME | F_CHEAT));
 
 	// verify all commands are added
 #ifdef _DEBUG
@@ -182,7 +183,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 			if(Net::IsLocal())
 			{
 				string& output = SM.OpenOutput();
-				SM.SetContext(pc, pc_data.selected_target);
+				SM.SetContext(pc, pc_data.target_unit);
 				SM.RunScript(code);
 				if(!output.empty())
 					Msg(output.c_str());
@@ -194,7 +195,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 				c.type = NetChange::RUN_SCRIPT;
 				c.str = StringPool.Get();
 				*c.str = code;
-				c.id = (pc_data.selected_target ? pc_data.selected_target->netid : -1);
+				c.id = (pc_data.target_unit ? pc_data.target_unit->netid : -1);
 			}
 
 			return;
@@ -407,7 +408,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						bool is_team = (it->cmd == CMD_ADD_TEAM_ITEM);
 						const string& item_name = t.MustGetItem();
 						const Item* item = Item::TryGet(item_name);
-						if(!item || IS_SET(item->flags, ITEM_SECRET))
+						if(!item)
 							Msg("Can't find item with id '%s'!", item_name.c_str());
 						else
 						{
@@ -541,18 +542,16 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								if(skill)
 								{
 									if(it->cmd == CMD_MOD_STAT)
-										num += pc->unit->unmod_stats.skill[co];
+										num += pc->unit->stats->skill[co];
 									int v = Clamp(num, Skill::MIN, Skill::MAX);
-									if(v != pc->unit->unmod_stats.skill[co])
-										pc->unit->Set((SkillId)co, v);
+									pc->unit->Set((SkillId)co, v);
 								}
 								else
 								{
 									if(it->cmd == CMD_MOD_STAT)
-										num += pc->unit->unmod_stats.attrib[co];
+										num += pc->unit->stats->attrib[co];
 									int v = Clamp(num, Attribute::MIN, Attribute::MAX);
-									if(v != pc->unit->unmod_stats.attrib[co])
-										pc->unit->Set((AttributeId)co, v);
+									pc->unit->Set((AttributeId)co, v);
 								}
 							}
 							else
@@ -667,6 +666,8 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						UnitData* data = UnitData::TryGet(id);
 						if(!data || IS_SET(data->flags, F_SECRET))
 							Msg("Missing base unit '%s'!", id.c_str());
+						else if(data->group == G_PLAYER)
+							Msg("Can't spawn player unit.");
 						else
 						{
 							int level = -1, count = 1, in_arena = -1;
@@ -732,50 +733,50 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						Net::PushChange(NetChange::CHEAT_HEAL);
 					break;
 				case CMD_KILL:
-					if(pc_data.selected_target)
+					if(pc_data.target_unit)
 					{
 						if(Net::IsLocal())
-							GiveDmg(L.GetContext(*pc->unit), nullptr, pc_data.selected_target->hpmax, *pc_data.selected_target);
+							GiveDmg(L.GetContext(*pc->unit), nullptr, pc_data.target_unit->hpmax, *pc_data.target_unit);
 						else
 						{
 							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::CHEAT_KILL;
-							c.unit = pc_data.selected_target;
+							c.unit = pc_data.target_unit;
 						}
 					}
 					else
-						Msg("No unit selected.");
+						Msg("No unit in front of player.");
 					break;
 				case CMD_LIST:
 					CmdList(t);
 					break;
 				case CMD_HEAL_UNIT:
-					if(pc_data.selected_target)
+					if(pc_data.target_unit)
 					{
 						if(Net::IsLocal())
 						{
-							pc_data.selected_target->hp = pc_data.selected_target->hpmax;
-							pc_data.selected_target->stamina = pc_data.selected_target->stamina_max;
-							pc_data.selected_target->RemovePoison();
-							pc_data.selected_target->RemoveEffect(EffectId::Stun);
+							pc_data.target_unit->hp = pc_data.target_unit->hpmax;
+							pc_data.target_unit->stamina = pc_data.target_unit->stamina_max;
+							pc_data.target_unit->RemovePoison();
+							pc_data.target_unit->RemoveEffect(EffectId::Stun);
 							if(Net::IsOnline())
 							{
 								NetChange& c = Add1(Net::changes);
 								c.type = NetChange::UPDATE_HP;
-								c.unit = pc_data.selected_target;
-								if(pc_data.selected_target->player && !pc_data.selected_target->player->is_local)
-									pc_data.selected_target->player->player_info->update_flags |= PlayerInfo::UF_STAMINA;
+								c.unit = pc_data.target_unit;
+								if(pc_data.target_unit->player && !pc_data.target_unit->player->is_local)
+									pc_data.target_unit->player->player_info->update_flags |= PlayerInfo::UF_STAMINA;
 							}
 						}
 						else
 						{
 							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::CHEAT_HEAL_UNIT;
-							c.unit = pc_data.selected_target;
+							c.unit = pc_data.target_unit;
 						}
 					}
 					else
-						Msg("No unit selected.");
+						Msg("No unit in front of player.");
 					break;
 				case CMD_SUICIDE:
 					if(Net::IsLocal())
@@ -805,7 +806,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					{
 						for(AIController* ai : ais)
 						{
-							if(ai->unit->IsEnemy(*pc->unit) && Vec3::Distance(ai->unit->pos, pc->unit->pos) < ALERT_RANGE.x && L.CanSee(*ai->unit, *pc->unit))
+							if(ai->unit->IsEnemy(*pc->unit) && Vec3::Distance(ai->unit->pos, pc->unit->pos) < ALERT_RANGE && L.CanSee(*ai->unit, *pc->unit))
 							{
 								ai->morale = -10;
 								ai->target_last_pos = pc->unit->pos;
@@ -1460,11 +1461,11 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						Unit* u;
 						if(t.Next() && t.GetInt() == 1)
 							u = pc->unit;
-						else if(pc_data.selected_unit)
-							u = pc_data.selected_unit;
+						else if(pc_data.target_unit)
+							u = pc_data.target_unit;
 						else
 						{
-							Msg("No unit selected.");
+							Msg("No unit in front of player.");
 							break;
 						}
 						if(Net::IsLocal())
@@ -1543,11 +1544,11 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						Unit* u;
 						if(t.Next() && t.GetInt() == 1)
 							u = pc->unit;
-						else if(pc_data.selected_unit)
-							u = pc_data.selected_unit;
+						else if(pc_data.target_unit)
+							u = pc_data.target_unit;
 						else
 						{
-							Msg("No unit selected.");
+							Msg("No unit in front of player.");
 							break;
 						}
 						if(Net::IsLocal())
@@ -1581,6 +1582,395 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 				case CMD_VERIFY:
 					W.VerifyObjects();
 					break;
+				case CMD_ADD_EFFECT:
+					if(!t.Next())
+					{
+						Msg("Use 'list effect' to get list of existing effects. Some examples:");
+						Msg("add_effect regeneration 5 - add permanent regeneration 5 hp/sec");
+						Msg("add_effect melee_attack 30 perk strong_back - add 30 melee attack assigned to perk");
+						Msg("add_effect magic_resistance 0.5 temporary 30 - add 50% magic resistance for 30 seconds");
+					}
+					else
+					{
+						Effect e;
+
+						const string& effect_id = t.MustGetItem();
+						e.effect = EffectInfo::TryGet(effect_id);
+						if(e.effect == EffectId::None)
+							t.Throw("Invalid effect '%s'.", effect_id.c_str());
+						t.Next();
+
+						e.power = t.MustGetNumberFloat();
+						if(t.Next())
+						{
+							const string& source_name = t.MustGetItem();
+							if(source_name == "permanent")
+							{
+								e.source = EffectSource::Permanent;
+								e.source_id = -1;
+								e.time = 0;
+							}
+							else if(source_name == "perk")
+							{
+								e.source = EffectSource::Perk;
+								t.Next();
+								const string& perk_id = t.MustGetItem();
+								PerkInfo* perk = PerkInfo::Find(perk_id);
+								if(perk == nullptr)
+									t.Throw("Invalid perk source '%s'.", perk_id.c_str());
+								e.source_id = (int)perk->perk_id;
+								e.time = 0;
+							}
+							else if(source_name == "temporary")
+							{
+								e.source = EffectSource::Temporary;
+								e.source_id = -1;
+								t.Next();
+								e.time = t.MustGetNumberFloat();
+							}
+							else
+								t.Throw("Invalid effect source '%s'.", source_name.c_str());
+						}
+						else
+						{
+							e.source = EffectSource::Permanent;
+							e.source_id = -1;
+							e.time = 0;
+						}
+
+						if(Net::IsLocal())
+							pc_data.selected_unit->AddEffect(e);
+						else
+						{
+							NetChange& c = Add1(Net::changes);
+							c.type = NetChange::GENERIC_CMD;
+							c << (byte)CMD_ADD_EFFECT
+								<< pc_data.selected_unit->netid
+								<< (char)e.effect
+								<< (char)e.source
+								<< (char)e.source_id
+								<< e.power
+								<< e.time;
+						}
+					}
+					break;
+				case CMD_REMOVE_EFFECT:
+					if(!t.Next())
+						Msg("Enter source or effect name.");
+					else
+					{
+						EffectSource source = EffectSource::None;
+						EffectId effect = EffectId::None;
+						int source_id = -1;
+
+						const string& str = t.MustGetItem();
+						if(str == "permanent")
+						{
+							source = EffectSource::Permanent;
+							t.Next();
+						}
+						else if(str == "temporary")
+						{
+							source = EffectSource::Temporary;
+							t.Next();
+						}
+						else if(str == "perk")
+						{
+							source = EffectSource::Perk;
+							if(t.Next())
+							{
+								const string& perk_name = t.MustGetItem();
+								PerkInfo* info = PerkInfo::Find(perk_name);
+								if(info != nullptr)
+								{
+									source_id = (int)info->perk_id;
+									t.Next();
+								}
+							}
+						}
+
+						if(t.IsItem())
+						{
+							const string& effect_name = t.MustGetItem();
+							effect = EffectInfo::TryGet(effect_name);
+							if(effect == EffectId::None)
+							{
+								Msg("Invalid effect or source '%s'.", effect_name.c_str());
+								break;
+							}
+						}
+
+						if(Net::IsLocal())
+							cmdp->RemoveEffect(pc_data.selected_unit, effect, source, source_id);
+						else
+						{
+							NetChange& c = Add1(Net::changes);
+							c.type = NetChange::GENERIC_CMD;
+							c << (byte)CMD_REMOVE_EFFECT
+								<< pc_data.selected_unit->netid
+								<< (char)effect
+								<< (char)source
+								<< (char)source_id;
+						}
+					}
+					break;
+				case CMD_LIST_EFFECTS:
+					if(Net::IsLocal() || pc_data.selected_unit->IsLocal())
+						cmdp->ListEffects(pc_data.selected_unit);
+					else
+					{
+						NetChange& c = Add1(Net::changes);
+						c.type = NetChange::GENERIC_CMD;
+						c << (byte)CMD_LIST_EFFECTS
+							<< pc_data.selected_unit->netid;
+					}
+					break;
+				case CMD_ADD_PERK:
+					if(!pc_data.selected_unit->player)
+						Msg("Only players have perks.");
+					else if(!t.Next())
+						Msg("Perk name required. Use 'list perks' to display list.");
+					else
+					{
+						const string& name = t.MustGetItem();
+						PerkInfo* info = PerkInfo::Find(name);
+						if(!info)
+						{
+							Msg("Invalid perk '%s'.", name.c_str());
+							break;
+						}
+
+						int value = -1;
+						if(info->value_type == PerkInfo::Attribute)
+						{
+							if(!t.Next())
+							{
+								Msg("Perk '%s' require 'attribute' value.", info->id);
+								break;
+							}
+							const string& attrib_name = t.MustGetItem();
+							Attribute* attrib = Attribute::Find(attrib_name);
+							if(!attrib)
+							{
+								Msg("Invalid attribute '%s' for perk '%s'.", attrib_name.c_str(), info->id);
+								break;
+							}
+							value = (int)attrib->attrib_id;
+						}
+						else if(info->value_type == PerkInfo::Skill)
+						{
+							if(!t.Next())
+							{
+								Msg("Perk '%s' require 'skill' value.", info->id);
+								break;
+							}
+							const string& skill_name = t.MustGetItem();
+							Skill* skill = Skill::Find(skill_name);
+							if(!skill)
+							{
+								Msg("Invalid skill '%s' for perk '%s'.", skill_name.c_str(), info->id);
+								break;
+							}
+							value = (int)skill->skill_id;
+						}
+
+						if(Net::IsLocal())
+							cmdp->AddPerk(pc_data.selected_unit->player, info->perk_id, value);
+						else
+						{
+							NetChange& c = Add1(Net::changes);
+							c.type = NetChange::GENERIC_CMD;
+							c << (byte)CMD_ADD_PERK
+								<< pc_data.selected_unit->netid
+								<< (char)info->perk_id
+								<< (char)value;
+						}
+					}
+					break;
+				case CMD_REMOVE_PERK:
+					if(!pc_data.selected_unit->player)
+						Msg("Only players have perks.");
+					else if(!t.Next())
+						Msg("Perk name required. Use 'list perks' to display list.");
+					else
+					{
+						const string& name = t.MustGetItem();
+						PerkInfo* info = PerkInfo::Find(name);
+						if(!info)
+						{
+							Msg("Invalid perk '%s'.", name.c_str());
+							break;
+						}
+
+						int value = -1;
+						if(info->value_type == PerkInfo::Attribute)
+						{
+							if(!t.Next())
+							{
+								Msg("Perk '%s' require 'attribute' value.", info->id);
+								break;
+							}
+							const string& attrib_name = t.MustGetItem();
+							Attribute* attrib = Attribute::Find(attrib_name);
+							if(!attrib)
+							{
+								Msg("Invalid attribute '%s' for perk '%s'.", attrib_name.c_str(), info->id);
+								break;
+							}
+							value = (int)attrib->attrib_id;
+						}
+						else if(info->value_type == PerkInfo::Skill)
+						{
+							if(!t.Next())
+							{
+								Msg("Perk '%s' require 'skill' value.", info->id);
+								break;
+							}
+							const string& skill_name = t.MustGetItem();
+							Skill* skill = Skill::Find(skill_name);
+							if(!skill)
+							{
+								Msg("Invalid skill '%s' for perk '%s'.", skill_name.c_str(), info->id);
+								break;
+							}
+							value = (int)skill->skill_id;
+						}
+
+						if(Net::IsLocal())
+							cmdp->RemovePerk(pc_data.selected_unit->player, info->perk_id, value);
+						else
+						{
+							NetChange& c = Add1(Net::changes);
+							c.type = NetChange::GENERIC_CMD;
+							c << (byte)CMD_REMOVE_PERK
+								<< pc_data.selected_unit->netid
+								<< (char)info->perk_id
+								<< (char)value;
+						}
+					}
+					break;
+				case CMD_LIST_PERKS:
+					if(!pc_data.selected_unit->player)
+						Msg("Only players have perks.");
+					else if(Net::IsLocal() || pc_data.selected_unit->IsLocal())
+						cmdp->ListPerks(pc_data.selected_unit->player);
+					else
+					{
+						NetChange& c = Add1(Net::changes);
+						c.type = NetChange::GENERIC_CMD;
+						c << (byte)CMD_LIST_PERKS
+							<< pc_data.selected_unit->netid;
+					}
+					break;
+				case CMD_SELECT:
+					{
+						enum SelectType
+						{
+							SELECT_ME,
+							SELECT_SHOW,
+							SELECT_TARGET
+						} select;
+
+						if(t.Next())
+						{
+							const string& type = t.MustGetItem();
+							if(type == "me")
+								select = SELECT_ME;
+							else if(type == "show")
+								select = SELECT_SHOW;
+							else if(type == "target")
+								select = SELECT_TARGET;
+							else
+							{
+								Msg("Invalid select type '%s'.", type.c_str());
+								break;
+							}
+						}
+						else if(pc_data.before_player == BP_UNIT)
+							select = SELECT_TARGET;
+						else
+							select = SELECT_SHOW;
+
+						if(select == SELECT_ME)
+							pc_data.selected_unit = pc->unit;
+						else if(select == SELECT_TARGET)
+						{
+							if(!pc_data.target_unit)
+							{
+								Msg("No unit in front of player.");
+								break;
+							}
+							pc_data.selected_unit = pc_data.target_unit;
+						}
+						Msg("Currently selected: %s %p [%d]", pc_data.selected_unit->data->id.c_str(), pc_data.selected_unit,
+							Net::IsOnline() ? pc_data.selected_unit->netid : -1);
+					}
+					break;
+				case CMD_LIST_STATS:
+					if(Net::IsLocal() || pc_data.selected_unit->IsLocal())
+						cmdp->ListStats(pc_data.selected_unit);
+					else
+					{
+						NetChange& c = Add1(Net::changes);
+						c.type = NetChange::GENERIC_CMD;
+						c << (byte)CMD_LIST_STATS
+							<< pc_data.selected_unit->netid;
+					}
+					break;
+				case CMD_ADD_LEARNING_POINTS:
+					if(!pc_data.selected_unit->IsPlayer())
+						Msg("Only players have learning points.");
+					else
+					{
+						int count = 1;
+						if(t.Next())
+							count = t.MustGetInt();
+						if(count < 1)
+							break;
+						if(Net::IsLocal())
+							pc_data.selected_unit->player->AddLearningPoint(count);
+						else
+						{
+							NetChange& c = Add1(Net::changes);
+							c.type = NetChange::GENERIC_CMD;
+							c << (byte)CMD_ADD_LEARNING_POINTS
+								<< pc_data.selected_unit->netid
+								<< count;
+						}
+					}
+					break;
+				case CMD_CLEAN_LEVEL:
+					{
+						int building_id = -2;
+						if(t.Next())
+							building_id = t.MustGetInt();
+						if(Net::IsLocal())
+							L.CleanLevel(building_id);
+						else
+						{
+							NetChange& c = Add1(Net::changes);
+							c.type = NetChange::CLEAN_LEVEL;
+							c.id = building_id;
+						}
+					}
+					break;
+				case CMD_ARENA:
+					if(!L.HaveArena())
+						Msg("Arena required inside location.");
+					else
+					{
+						cstring s = t.GetTextRest();
+						if(Net::IsLocal())
+							cmdp->ArenaCombat(s);
+						else
+						{
+							NetChange& c = Add1(Net::changes);
+							c.type = NetChange::CHEAT_ARENA;
+							c.str = StringPool.Get();
+							*c.str = s;
+						}
+					}
+					break;
 				default:
 					assert(0);
 					break;
@@ -1609,7 +1999,7 @@ void Game::CmdList(Tokenizer& t)
 {
 	if(!t.Next())
 	{
-		Msg("Display list of items/units/quests (item/items, itemn/item_names, unit/units, unitn/unit_names, quest/quests). Examples:");
+		Msg("Display list of items/units/quests (item/items, itemn/item_names, unit/units, unitn/unit_names, quest(s), effect(s), perk(s)). Examples:");
 		Msg("'list item' - list of items ordered by id");
 		Msg("'list itemn' - list of items ordered by name");
 		Msg("'list unit t' - list of units ordered by id starting from t");
@@ -1622,7 +2012,9 @@ void Game::CmdList(Tokenizer& t)
 		LIST_ITEM_NAME,
 		LIST_UNIT,
 		LIST_UNIT_NAME,
-		LIST_QUEST
+		LIST_QUEST,
+		LIST_EFFECT,
+		LIST_PERK
 	};
 
 	LIST_TYPE list_type;
@@ -1637,6 +2029,10 @@ void Game::CmdList(Tokenizer& t)
 		list_type = LIST_UNIT_NAME;
 	else if(lis == "quest" || lis == "quests")
 		list_type = LIST_QUEST;
+	else if(lis == "effect" || lis == "effects")
+		list_type = LIST_EFFECT;
+	else if(lis == "perk" || lis == "perks")
+		list_type = LIST_PERK;
 	else
 	{
 		Msg("Unknown list type '%s'!", lis.c_str());
@@ -1655,7 +2051,7 @@ void Game::CmdList(Tokenizer& t)
 			for(auto it : Item::items)
 			{
 				auto item = it.second;
-				if(!IS_SET(item->flags, ITEM_SECRET) && (match.empty() || _strnicmp(match.c_str(), item->id.c_str(), match.length()) == 0))
+				if(match.empty() || _strnicmp(match.c_str(), item->id.c_str(), match.length()) == 0)
 					items.push_back(item);
 			}
 
@@ -1690,7 +2086,7 @@ void Game::CmdList(Tokenizer& t)
 			for(auto it : Item::items)
 			{
 				auto item = it.second;
-				if(!IS_SET(item->flags, ITEM_SECRET) && (match.empty() || _strnicmp(match.c_str(), item->name.c_str(), match.length()) == 0))
+				if(match.empty() || _strnicmp(match.c_str(), item->name.c_str(), match.length()) == 0)
 					items.push_back(item);
 			}
 
@@ -1820,6 +2216,74 @@ void Game::CmdList(Tokenizer& t)
 			for(auto quest : quests)
 			{
 				cstring s2 = Format("%s (%s)", quest->name, quest_type[(int)quest->type]);
+				Msg(s2);
+				s += s2;
+				s += "\n";
+			}
+
+			Info(s.c_str());
+		}
+		break;
+	case LIST_EFFECT:
+		{
+			LocalVector2<const EffectInfo*> effects;
+			for(EffectInfo& info : EffectInfo::effects)
+			{
+				if(match.empty() || _strnicmp(match.c_str(), info.id, match.length()) == 0)
+					effects.push_back(&info);
+			}
+
+			if(effects.empty())
+			{
+				Msg("No effects found starting with '%s'.", match.c_str());
+				return;
+			}
+
+			std::sort(effects.begin(), effects.end(), [](const EffectInfo* effect1, const EffectInfo* effect2)
+			{
+				return strcoll(effect1->id, effect2->id) < 0;
+			});
+
+			LocalString s = Format("Effects list (%d):\n", effects.size());
+			Msg("Effects list (%d):", effects.size());
+
+			for(const EffectInfo* effect : effects)
+			{
+				cstring s2 = Format("%s (%s)", effect->id, effect->desc);
+				Msg(s2);
+				s += s2;
+				s += "\n";
+			}
+
+			Info(s.c_str());
+		}
+		break;
+	case LIST_PERK:
+		{
+			LocalVector2<const PerkInfo*> perks;
+			for(PerkInfo& info : PerkInfo::perks)
+			{
+				if(match.empty() || _strnicmp(match.c_str(), info.id, match.length()) == 0)
+					perks.push_back(&info);
+			}
+
+			if(perks.empty())
+			{
+				Msg("No perks found starting with '%s'.", match.c_str());
+				return;
+			}
+
+			std::sort(perks.begin(), perks.end(), [](const PerkInfo* perk1, const PerkInfo* perk2)
+			{
+				return strcoll(perk1->id, perk2->id) < 0;
+			});
+
+			LocalString s = Format("Perks list (%d):\n", perks.size());
+			Msg("Perks list (%d):", perks.size());
+
+			for(const PerkInfo* perk : perks)
+			{
+				cstring s2 = Format("%s (%s, %s)", perk->id, perk->name.c_str(), perk->desc.c_str());
 				Msg(s2);
 				s += s2;
 				s += "\n";
