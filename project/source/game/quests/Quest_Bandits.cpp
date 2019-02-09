@@ -131,6 +131,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			e->text = game->txQuest[11];
 			e->timed = false;
 			e->range = 72;
+			e->st = 8;
 			msgs.push_back(Format(game->txQuest[154], sl.name.c_str(), W.GetDate()));
 			msgs.push_back(Format(game->txQuest[155], sl.name.c_str(), other.name.c_str(), GetLocationDirName(sl.pos, other.pos)));
 			W.AddNews(Format(game->txQuest[156], GetStartLocationName()));
@@ -205,7 +206,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			Location& target = *W.CreateLocation(L_DUNGEON, GetStartLocation().pos, 64.f, THRONE_VAULT, SG_BANDITS, false);
 			target.active_quest = this;
 			target.SetKnown();
-			target.st = 10;
+			target.st = 12;
 			target_loc = target.index;
 			W.GetLocation(camp_loc)->active_quest = nullptr;
 			OnUpdate(Format(game->txQuest[161], target.name.c_str(), GetLocationDirName(GetStartLocation().pos, target.pos)));
@@ -378,6 +379,7 @@ bool Quest_Bandits::Load(GameReader& f)
 		e->text = game->txQuest[11];
 		e->timed = false;
 		e->range = 72;
+		e->st = 8;
 	}
 
 	if(prog == Progress::NeedTalkWithCaptain || prog == Progress::NeedClearCamp)

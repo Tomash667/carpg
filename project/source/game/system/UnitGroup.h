@@ -56,9 +56,10 @@ struct TmpUnitGroup : ObjectPoolProxy<TmpUnitGroup>
 	int total, min_level, max_level;
 
 	void Fill(UnitGroup* group, int min_level, int max_level);
-	void Fill(UnitGroup* group, int level) { Fill(group, Max(level - 5, level / 2), level); }
+	void Fill(UnitGroup* group, int level) { Fill(group, Max(level - 5, level / 2), level + 1); }
+	void FillInternal(UnitGroup* group);
 	Spawn Get();
-	vector<Spawn>& Roll(int points);
+	vector<Spawn>& Roll(int level, int count);
 };
 
 //-----------------------------------------------------------------------------
@@ -70,7 +71,7 @@ struct TmpUnitGroupList
 		for(int i = 0; i < N; ++i)
 			e[i]->Fill(groups[i], level);
 	}
-	vector<TmpUnitGroup::Spawn>& Roll(int points)
+	vector<TmpUnitGroup::Spawn>& Roll(int level, int count)
 	{
 		int index = Rand() % N,
 			start = index;
@@ -78,7 +79,7 @@ struct TmpUnitGroupList
 		{
 			TmpUnitGroup& group = e[index];
 			if(group.total != 0)
-				return group.Roll(points);
+				return group.Roll(level, count);
 			index = (index + 1) % N;
 			if(index == start)
 				return group.spawn;

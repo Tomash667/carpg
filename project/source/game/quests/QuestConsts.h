@@ -38,7 +38,8 @@ enum QUEST
 	Q_FIND_ARTIFACT,
 	Q_CRAZIES,
 	Q_WANTED,
-	Q_MAIN
+	Q_MAIN,
+	Q_ARTIFACTS
 };
 
 //-----------------------------------------------------------------------------

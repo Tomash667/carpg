@@ -176,7 +176,7 @@ public:
 	vector<string*> net_strs;
 	float update_timer, mp_interp;
 	int port;
-	bool mp_load, mp_load_worldmap, mp_use_interp;
+	bool mp_load, mp_load_worldmap, mp_use_interp, prepare_world;
 
 	//****************************************************************************
 	// Server

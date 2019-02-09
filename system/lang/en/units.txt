@@ -115,6 +115,9 @@ unit hero_mage = "Mage"
 unit hero_warrior = "Warrior"
 unit hero_hunter = "Hunter"
 unit hero_rogue = "Rogue"
+unit hero_tomir {
+	real_name "Tomir"
+}
 unit tomashu = "Tomashu"
 unit unk = "Unknown"
 unit crazy_cook = "Crazy cook"

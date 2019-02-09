@@ -14,6 +14,7 @@ struct EncounterData
 		SPAWN_GROUP enemy;
 		SpecialEncounter special;
 	};
+	int st;
 };
 
 //-----------------------------------------------------------------------------
@@ -42,6 +43,7 @@ public:
 	};
 
 	static const float TRAVEL_SPEED;
+	static const int TILE_SIZE = 30;
 
 	// general
 	void LoadLanguage() override;
@@ -54,6 +56,7 @@ public:
 	void ChangeLevel(int index, bool encounter);
 	void StartInLocation(Location* loc);
 	void Warp(int index);
+	void WarpPos(const Vec2& pos);
 	void Reveal();
 
 	// save/load
@@ -67,6 +70,10 @@ public:
 
 	// world generation
 	void GenerateWorld(int start_location_type = -1, int start_location_target = -1);
+	void CalculateTiles();
+	void SmoothTiles();
+	void CreateCity(const Vec2& pos, bool village);
+	void GenerateUniqueName(Location* l);
 	int CreateCamp(const Vec2& pos, SPAWN_GROUP group, float range = 64.f, bool allow_exact = true);
 	Location* CreateLocation(LOCATION type, int levels = -1, bool is_village = false);
 	Location* CreateLocation(LOCATION type, const Vec2& pos, float range = 64.f, int target = -1, SPAWN_GROUP spawn = SG_RANDOM, bool allow_exact = true,
@@ -96,6 +103,7 @@ public:
 	const vector<Location*>& GetLocations() const { return locations; }
 	Location* GetLocation(int index) const { assert(index >= 0 && index < (int)locations.size()); return locations[index]; }
 	const Vec2& GetWorldPos() const { return world_pos; }
+	const Vec2& GetTargetPos() const { return travel_target_pos; }
 	void SetWorldPos(const Vec2& world_pos) { this->world_pos = world_pos; }
 	int GetRandomSettlementIndex(int excluded = -1) const;
 	int GetRandomSettlementIndex(const vector<int>& used, int type = 0) const;
@@ -108,10 +116,13 @@ public:
 	int GetRandomSpawnLocation(const Vec2& pos, SPAWN_GROUP group, float range = 160.f);
 	int GetNearestLocation(const Vec2& pos, int flags, bool not_quest, int target_flags = -1);
 	int GetNearestSettlement(const Vec2& pos) { return GetNearestLocation(pos, (1 << L_CITY), false); }
+	const Vec2& GetWorldBounds() const { return world_bounds; }
 
 	// travel
-	void Travel(int index);
+	void Travel(int index, bool send);
+	void TravelPos(const Vec2& pos, bool send);
 	void UpdateTravel(float dt);
+	void StopTravel(const Vec2& pos, bool send);
 	void EndTravel();
 	int GetTravelLocationIndex() const { return travel_location_index; }
 	float GetTravelDir() const { return travel_dir; }
@@ -143,9 +154,8 @@ public:
 	int FindWorldUnit(Unit* unit, int hint_loc = -1, int hint_loc2 = -1, int* level = nullptr);
 	void VerifyObjects();
 	void VerifyObjects(vector<Object*>& objects, int& errors);
-
-	int world_size;
-	Vec2 world_bounds;
+	const vector<int>& GetTiles() const { return tiles; }
+	int& GetTileSt(const Vec2& pos);
 
 private:
 	WorldMapGui* gui;
@@ -156,15 +166,19 @@ private:
 	vector<Location*> locations; // can be nullptr
 	vector<Encounter*> encounters;
 	EncounterData encounter;
+	vector<int> tiles;
 	vector<Int2> boss_levels; // levels with boss music (x-location index, y-dungeon level)
 	uint settlements, // count and index below this value is city/village
 		empty_locations, // counter
 		encounter_loc, // encounter location index
-		create_camp, // counter to create new random camps
-		travel_day;
-	Vec2 world_pos,
-		travel_start_pos;
+		create_camp; // counter to create new random camps
+	Vec2 world_bounds,
+		world_pos,
+		travel_start_pos,
+		travel_target_pos;
+	int world_size;
 	float travel_timer,
+		day_timer,
 		reveal_timer, // increase chance for encounter every 0.25 sec
 		encounter_chance,
 		travel_dir; // from which direction team will enter level after travel
@@ -174,10 +188,12 @@ private:
 		day, // in game day, 0 to 29
 		worldtime; // number of passed game days, starts at 0
 	vector<News*> news;
-	cstring txDate, txRandomEncounter, txEncCrazyMage, txEncCrazyHeroes, txEncCrazyCook, txEncMerchant, txEncHeroes, txEncBanditsAttackTravelers,
-		txEncHeroesAttack, txEncGolem, txEncCrazy, txEncUnk, txEncBandits, txEncAnimals, txEncOrcs, txEncGoblins, txEncEnemiesCombat;
+	cstring txDate, txRandomEncounter, txEncCrazyMage, txEncCrazyHeroes, txEncCrazyCook, txEncMerchant, txEncHeroes, txEncSingleHero,
+		txEncBanditsAttackTravelers, txEncHeroesAttack, txEncGolem, txEncCrazy, txEncUnk, txEncBandits, txEncAnimals, txEncOrcs, txEncGoblins,
+		txEncEnemiesCombat;
 	bool first_city, // spawn more low level heroes in first city
-		boss_level_mp; // used by clients instead boss_levels
+		boss_level_mp, // used by clients instead boss_levels
+		tomir_spawned;
 
 	void UpdateDate(int days);
 	void SpawnCamps(int days);

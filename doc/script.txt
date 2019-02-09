@@ -40,16 +40,19 @@ Unit type:
 	VarsContainer@ vars - readonly
 	void AddItem(Item@ item) - add item, will show message.
 	void RemoveItem(const string& in item_id) - remove 1 item by id, will show message.
+	void OrderLeave() - orders unit to leave current location and disappear (only works for heroes now).
 Globals:
 	Unit@ target
 
 Player type:
 	Unit@ unit - unit player.
+	const string name
 	bool HavePerk(const string& in perk) - return true if player have this perk.
 Globals:
 	Player@ pc
 
 Team namespace:
+	const uint size - active members count.
 	void AddGold(uint gold) - add gold divided between team members, shows message.
 
 Level namespace:

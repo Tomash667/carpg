@@ -146,7 +146,7 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 		npc->ai->Init(npc);
 		npc->hero->know_name = true;
 		Team.AddTeamMember(npc, false);
-		Team.free_recruit = false;
+		--Team.free_recruits;
 		npc->hero->SetupMelee();
 	}
 	gui->game_gui->Setup();
@@ -1284,14 +1284,18 @@ void Game::UpdateServerTransfer(float dt)
 
 			// do it
 			ClearGameVars(true);
-			Team.free_recruit = false;
+			Team.free_recruits = 3 - N.active_players;
+			if(Team.free_recruits < 0)
+				Team.free_recruits = 0;
 			fallback_type = FALLBACK::NONE;
 			fallback_t = -0.5f;
 			gui->main_menu->visible = false;
 			gui->load_screen->visible = true;
 			clear_color = Color::Black;
+			N.prepare_world = true;
 			GenerateWorld();
 			QM.InitQuests(devmode);
+			N.prepare_world = false;
 			if(!sound_mgr->IsMusicDisabled())
 			{
 				LoadMusic(MusicType::Boss, false);

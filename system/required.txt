@@ -89,6 +89,8 @@ item plate
 item cup
 // 0.6 given after tutorial
 item book_adventurer
+// 0.8 artifacts armor
+item am_gladiator
 
 //------------------------------------------------------------------------------
 // Required item lists
@@ -191,6 +193,7 @@ unit tut_goblin
 unit tut_czlowiek
 // encounters
 unit crazy_cook
+unit hero_tomir
 
 //------------------------------------------------------------------------------
 // Required unit groups

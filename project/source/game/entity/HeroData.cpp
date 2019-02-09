@@ -30,7 +30,9 @@ void HeroData::Init(Unit& _unit)
 	phase_timer = 0.f;
 	split_gold = 0.f;
 
-	if(!IS_SET(unit->data->flags2, F2_SPECIFIC_NAME))
+	if(!unit->data->real_name.empty())
+		name = unit->data->real_name;
+	else if(!IS_SET(unit->data->flags2, F2_SPECIFIC_NAME))
 		NameHelper::GenerateHeroName(*this);
 }
 
@@ -82,9 +84,9 @@ void HeroData::Load(FileReader& f)
 int HeroData::JoinCost() const
 {
 	if(IS_SET(unit->data->flags, F_CRAZY))
-		return (unit->level - 4) * 100 + Random(50, 150);
+		return (unit->level - 1) * 100 + Random(50, 150);
 	else
-		return (unit->level - 3) * 100;
+		return unit->level * 100;
 }
 
 //=================================================================================================

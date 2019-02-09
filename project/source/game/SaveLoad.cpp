@@ -813,26 +813,26 @@ void Game::LoadGame(GameReader& f)
 	// questy zwi¹zane z lokacjami
 	for(vector<Location*>::iterator it = load_location_quest.begin(), end = load_location_quest.end(); it != end; ++it)
 	{
-		(*it)->active_quest = (Quest_Dungeon*)quest_manager.FindQuest((int)(*it)->active_quest, false);
+		(*it)->active_quest = (Quest_Dungeon*)quest_manager.FindAnyQuest((int)(*it)->active_quest);
 		assert((*it)->active_quest);
 	}
 	// unit event handler
 	for(vector<Unit*>::iterator it = load_unit_handler.begin(), end = load_unit_handler.end(); it != end; ++it)
 	{
 		// pierwszy raz musia³em u¿yæ tego rzutowania ¿eby dzia³a³o :o
-		(*it)->event_handler = dynamic_cast<UnitEventHandler*>(quest_manager.FindQuest((int)(*it)->event_handler, false));
+		(*it)->event_handler = dynamic_cast<UnitEventHandler*>(quest_manager.FindAnyQuest((int)(*it)->event_handler));
 		assert((*it)->event_handler);
 	}
 	// chest event handler
 	for(vector<Chest*>::iterator it = load_chest_handler.begin(), end = load_chest_handler.end(); it != end; ++it)
 	{
-		(*it)->handler = dynamic_cast<ChestEventHandler*>(quest_manager.FindQuest((int)(*it)->handler, false));
+		(*it)->handler = dynamic_cast<ChestEventHandler*>(quest_manager.FindAnyQuest((int)(*it)->handler));
 		assert((*it)->handler);
 	}
 
 	dialog_context.dialog_mode = false;
 	if(location_event_handler_quest_refid != -1)
-		L.event_handler = dynamic_cast<LocationEventHandler*>(quest_manager.FindQuest(location_event_handler_quest_refid));
+		L.event_handler = dynamic_cast<LocationEventHandler*>(quest_manager.FindAnyQuest(location_event_handler_quest_refid));
 	else
 		L.event_handler = nullptr;
 	Team.ClearOnNewGameOrLoad();

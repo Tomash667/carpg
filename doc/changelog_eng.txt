@@ -19,8 +19,9 @@ Version 0.8 (???):
 + adjusted item prices, units golds, quest rewards
 + not spawning enemies close to stairs, less enemies in big connected rooms
 + adjusted speed of gaining attributes/skills by player and heroes
-+ bigger world map, map zoom and scrolling
++ bigger world map, map zoom and scrolling, can travel anywhere
 + location search box on world map
++ unique hero to recruit
 - fixed fast melee weapon training on low level enemies
 - fixed talking with unit that is standing up
 - fixed units rotating when talking for clients

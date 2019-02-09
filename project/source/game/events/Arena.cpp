@@ -402,7 +402,7 @@ void Arena::StartArenaCombat(int level)
 
 	// spawn enemies
 	InsideBuilding* arena = L.GetArena();
-	for(TmpUnitGroup::Spawn& spawn : part->Roll(lvl * units.size()))
+	for(TmpUnitGroup::Spawn& spawn : part->Roll(lvl, units.size()))
 	{
 		Unit* u = L.SpawnUnitInsideArea(arena->ctx, arena->arena2, *spawn.first, spawn.second);
 		u->rot = 0.f;

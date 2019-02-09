@@ -118,6 +118,8 @@ struct NetChange
 		EXIT_TO_MAP, // exit to map []
 		ENTER_LOCATION, // enter current location []
 		TRAVEL, // leader wants to travel to location [byte(id)-location index]
+		TRAVEL_POS, // leader wants to travel to pos [Vec2(xy)-pos]
+		STOP_TRAVEL, // leader stopped travel [Vec2(xy)-pos]
 		END_TRAVEL, // leader finished travel []
 		WORLD_TIME, // change world time [auto: int-worldtime, byte-day, byte-month, int-year]
 		USE_DOOR, // someone open/close door [int(id)-door netid, bool(count)-is closing]
@@ -161,6 +163,7 @@ struct NetChange
 		PUT_GOLD, // player puts gold into container [int(count)-count]
 		UPDATE_MAP_POS, // update position on world map [auto:Vec2-pos]
 		CHEAT_TRAVEL, // player used cheat for fast travel on map [byte(id)-location index]
+		CHEAT_TRAVEL_POS, // player used cheat for fast travel to pos on map [Vec2(xy)-pos]
 		CHEAT_HURT, // player used cheat 'hurt' [int(netid) - unit]
 		CHEAT_BREAK_ACTION, // player used cheat 'break_action' [int(netid)-unit]
 		CHEAT_FALL, // player used cheat 'fall' [int(netid)-unit]
@@ -178,8 +181,8 @@ struct NetChange
 		SET_NEXT_ACTION, // player set next action [auto: byte-next_action, ...]
 		CHANGE_ALWAYS_RUN, // player toggle always run - notify to save it [bool(id)]
 		GENERIC_CMD, // player used generic cheat [byte(size), byte[size]-content (first byte is CMD)]
-		ADD_VISIBLE_EFFECT,
-		REMOVE_VISIBLE_EFFECT,
+		//ADD_VISIBLE_EFFECT,
+		//REMOVE_VISIBLE_EFFECT,
 		USE_ITEM, // player used item SERVER[int(id)-unit] CLIENT[int(id)-item index]
 		MARK_UNIT, // mark unit [int(netid)-unit, bool(id)-is marked]
 		CHEAT_ARENA, // player used cheat 'arena' [string(str)-list of enemies]

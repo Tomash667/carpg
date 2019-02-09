@@ -793,6 +793,9 @@
     <ClCompile Include="source\engine\gui\ComboBox.cpp">
       <Filter>2. engine\gui\controls</Filter>
     </ClCompile>
+    <ClCompile Include="source\game\quests\Quest_Artifacts.cpp">
+      <Filter>3. game\quests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\resource\resource1.h">
@@ -1608,6 +1611,9 @@
     </ClInclude>
     <ClInclude Include="source\engine\gui\ComboBox.h">
       <Filter>2. engine\gui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\quests\Quest_Artifacts.h">
+      <Filter>3. game\quests</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

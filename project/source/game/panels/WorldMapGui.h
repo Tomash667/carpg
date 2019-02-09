@@ -20,6 +20,11 @@ public:
 	void Clear();
 	Vec2 WorldPosToScreen(const Vec2& pt) const;
 	void ShowEncounterMessage(cstring text);
+	void StartTravel()
+	{
+		fallow = true;
+		tracking = -1;
+	}
 
 	cstring txGameTimeout, txWorldDate, txCurrentLoc, txCitizens, txAvailable, txTarget, txDistance, txTravelTime, txDay, txDays, txOnlyLeaderCanTravel;
 	int picked_location;
@@ -35,8 +40,8 @@ private:
 	TEX tMapBg, tWorldMap, tMapIcon[LI_MAX], tEnc, tSelected[2], tMover, tSide, tMagnifyingGlass, tTrackingArrow;
 	cstring txBuildings;
 	ComboBox combo_box;
-	Vec2 offset;
+	Vec2 offset, c_pos;
 	float zoom;
 	int tracking;
-	bool clicked, fallow;
+	bool clicked, fallow, c_pos_valid;
 };

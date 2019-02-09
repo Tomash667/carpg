@@ -202,6 +202,6 @@ private:
 	vector<Box> pickable_spawns;
 	vector<PickableItem> pickable_items;
 
-	cstring txLocationText, txLocationTextMap, txNewsCampCleared, txNewsLocCleared;
+	cstring txLocationText, txLocationTextMap, txWorldMap, txNewsCampCleared, txNewsLocCleared;
 };
 extern Level L;

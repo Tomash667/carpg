@@ -259,6 +259,7 @@
     <ClInclude Include="source\game\Pathfinding.h" />
     <ClInclude Include="source\game\quests\QuestHandler.h" />
     <ClInclude Include="source\game\quests\QuestConsts.h" />
+    <ClInclude Include="source\game\quests\Quest_Artifacts.h" />
     <ClInclude Include="source\game\quests\Quest_Contest.h" />
     <ClInclude Include="source\game\quests\Quest_Secret.h" />
     <ClInclude Include="source\game\quests\Quest_Tournament.h" />
@@ -506,6 +507,7 @@
     <ClCompile Include="source\game\panels\BookPanel.cpp" />
     <ClCompile Include="source\game\panels\GlobalGui.cpp" />
     <ClCompile Include="source\game\Pathfinding.cpp" />
+    <ClCompile Include="source\game\quests\Quest_Artifacts.cpp" />
     <ClCompile Include="source\game\quests\Quest_Contest.cpp" />
     <ClCompile Include="source\game\quests\Quest_Secret.cpp" />
     <ClCompile Include="source\game\quests\Quest_Tournament.cpp" />

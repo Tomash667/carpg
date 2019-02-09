@@ -164,6 +164,7 @@ void Language::LoadLanguages()
 enum KEYWORD
 {
 	K_NAME,
+	K_REAL_NAME,
 	K_DESC,
 	K_ABOUT,
 	K_ATTRIBUTE,
@@ -189,6 +190,7 @@ void Language::PrepareTokenizer(Tokenizer& t)
 {
 	t.AddKeywords(0, {
 		{ "name", K_NAME },
+		{ "real_name", K_REAL_NAME },
 		{ "desc", K_DESC },
 		{ "about", K_ABOUT },
 		{ "attribute", K_ATTRIBUTE },
@@ -441,6 +443,11 @@ void Language::LoadObjectFile(Tokenizer& t, cstring filename)
 					break;
 				case K_UNIT:
 					// unit id = "text"
+					// or
+					// unit id {
+					//      [name "text"]
+					//      [real_name "text"]
+					// }
 					{
 						t.Next();
 						const string& id = t.MustGetText();
@@ -448,9 +455,36 @@ void Language::LoadObjectFile(Tokenizer& t, cstring filename)
 						if(!ud)
 							t.Throw("Invalid unit '%s'.", id.c_str());
 						t.Next();
-						t.AssertSymbol('=');
-						t.Next();
-						ud->name = t.MustGetString();
+						if(t.IsSymbol('{'))
+						{
+							t.Next();
+							while(!t.IsSymbol('}'))
+							{
+								KEYWORD key = (KEYWORD)t.MustGetKeywordId(0);
+								if(key != K_NAME && key != K_REAL_NAME)
+									t.Unexpected();
+								t.Next();
+								switch(key)
+								{
+								case K_NAME:
+									ud->name = t.MustGetString();
+									break;
+								case K_REAL_NAME:
+									ud->real_name = t.MustGetString();
+									break;
+								}
+								t.Next();
+							}
+						}
+						else if(t.IsSymbol('='))
+						{
+							t.Next();
+							ud->name = t.MustGetString();
+						}
+						else
+							t.ThrowExpecting("symbol { or =");
+						if(ud->parent && ud->name.empty())
+							ud->name = ud->parent->name;
 					}
 					break;
 				case K_BUILDING:

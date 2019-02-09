@@ -13,6 +13,7 @@
 #include "City.h"
 #include "InsideLocation.h"
 #include "BaseLocation.h"
+#include "Team.h"
 
 
 #ifdef _DEBUG
@@ -264,6 +265,12 @@ VarsContainer* Unit_GetVars(Unit* unit)
 	return SM.GetVars(unit);
 }
 
+void Unit_OrderLeave(Unit* unit)
+{
+	if(unit->hero)
+		unit->hero->mode = HeroData::Leave;
+}
+
 const string& Item_GetName(const Item* item)
 {
 	return item->name;
@@ -304,6 +311,11 @@ bool Player_HavePerk(PlayerController* pc, const string& perk_id)
 void Team_AddGold(uint gold)
 {
 	Game::Get().AddGold(gold, nullptr, true);
+}
+
+uint Team_GetSize()
+{
+	return Team.active_members.size();
 }
 
 bool Level_IsCity()
@@ -411,15 +423,18 @@ void ScriptManager::RegisterGame()
 		.Method("VarsContainer@ get_vars()", asFUNCTION(Unit_GetVars))
 		.Method("void AddItem(Item@)", asFUNCTION(Unit_AddItem))
 		.Method("void RemoveItem(const string& in)", asFUNCTION(Unit_RemoveItem))
+		.Method("void OrderLeave()", asFUNCTION(Unit_OrderLeave))
 		.WithInstance("Unit@ target", &ctx.target);
 
 	AddType("Player")
 		.Member("Unit@ unit", offsetof(PlayerController, unit))
+		.Member("const string name", offsetof(PlayerController, name))
 		.Method("bool HavePerk(const string& in)", asFUNCTION(Player_HavePerk))
 		.WithInstance("Player@ pc", &ctx.pc);
 
 	WithNamespace("Team")
-		.AddFunction("void AddGold(uint)", asFUNCTION(Team_AddGold));
+		.AddFunction("void AddGold(uint)", asFUNCTION(Team_AddGold))
+		.AddFunction("uint get_size()", asFUNCTION(Team_GetSize));
 
 	WithNamespace("Level")
 		.AddFunction("bool IsCity()", asFUNCTION(Level_IsCity))

@@ -574,7 +574,7 @@ void CaveGenerator::GenerateUnits()
 		{
 			tiles.push_back(pt);
 			++added;
-			for(TmpUnitGroup::Spawn& spawn : e.Roll(level * 2))
+			for(TmpUnitGroup::Spawn& spawn : e.Roll(level, 2))
 			{
 				if(!L.SpawnUnitNearLocation(L.local_ctx, Vec3(2.f*pt.x + 1.f, 0, 2.f*pt.y + 1.f), *spawn.first, nullptr, spawn.second, 3.f))
 					break;

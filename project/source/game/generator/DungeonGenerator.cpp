@@ -336,7 +336,7 @@ void DungeonGenerator::GenerateUnits()
 		else
 			excluded_pt = Int2(-1000, -1000);
 
-		for(TmpUnitGroup::Spawn& spawn : tmp->Roll(count * base_level))
+		for(TmpUnitGroup::Spawn& spawn : tmp->Roll(base_level, count))
 		{
 			Room& room = lvl.rooms[RandomItem(group.rooms)];
 			L.SpawnUnitInsideRoom(room, *spawn.first, spawn.second, excluded_pt, down_stairs_pt);

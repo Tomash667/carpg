@@ -8587,12 +8587,16 @@ void Game::LoadResources(cstring text, bool worldmap)
 		res_mgr.CancelLoadScreen();
 	}
 
-	// spawn blood for units that are dead and their mesh just loaded
-	L.SpawnBlood();
+	if(L.location)
+	{
+		// spawn blood for units that are dead and their mesh just loaded
+		L.SpawnBlood();
 
-	// finished
-	if((Net::IsLocal() || !N.mp_load_worldmap) && !L.location->outside)
-		SetDungeonParamsToMeshes();
+		// finished
+		if((Net::IsLocal() || !N.mp_load_worldmap) && !L.location->outside)
+			SetDungeonParamsToMeshes();
+	}
+
 	LoadingStep(text, 2);
 }
 

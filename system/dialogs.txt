@@ -4324,3 +4324,40 @@ dialog crazy_cook
 	special "attack"
 	end
 }
+
+//==============================================================================
+dialog tomir
+{
+	talk 0
+	talk 1
+	special "tell_name"
+	if script "pc.name == \"Tomir\""
+		talk 2
+	if script "Team::size >= 4"
+	{
+		talk 3
+		talk 11
+		script "target.OrderLeave()"
+		end
+	}
+	else
+	{
+		talk 4
+		talk 5
+		talk 6
+		choice 7
+		{
+			special "recruit_free"
+			talk 8
+			end
+		}
+		choice 9
+		{
+			talk 10
+			talk 11
+			script "target.OrderLeave()"
+			end
+		}
+		show_choices
+	}
+}

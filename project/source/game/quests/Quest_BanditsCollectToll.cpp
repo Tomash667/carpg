@@ -62,6 +62,7 @@ void Quest_BanditsCollectToll::SetProgress(int prog2)
 			e->timed = true;
 			e->range = 64;
 			e->location_event_handler = this;
+			e->st = 6;
 
 			msgs.push_back(Format(game->txQuest[29], sl.name.c_str(), W.GetDate()));
 			msgs.push_back(Format(game->txQuest[53], sl.name.c_str(), ol.name.c_str(), GetLocationDirName(sl.pos, ol.pos)));
@@ -184,6 +185,7 @@ bool Quest_BanditsCollectToll::Load(GameReader& f)
 		e->timed = true;
 		e->range = 64;
 		e->location_event_handler = this;
+		e->st = 6;
 	}
 
 	return true;

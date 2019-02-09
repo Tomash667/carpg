@@ -23,8 +23,10 @@
 #include "DirectX.h"
 #include "Team.h"
 #include "SaveState.h"
+#include "Debug.h"
 
-const float map_img_size = 512.f;
+const float MAP_IMG_SIZE = 512.f;
+const float MAP_KM_RATIO = 1.f / 3; // 1200 pixels = 400 km
 
 struct LocationElement : public GuiElement, public ObjectPoolProxy<LocationElement>
 {
@@ -93,8 +95,30 @@ void WorldMapGui::Draw(ControlDrawData*)
 	game.device->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP);
 
 	// map
-	Matrix mat = Matrix::Transform2D(&offset, 0.f, &Vec2(float(W.world_size) / map_img_size * zoom), nullptr, 0.f, &(GetCameraCenter() - offset));
+	Matrix mat = Matrix::Transform2D(&offset, 0.f, &Vec2(float(W.world_size) / MAP_IMG_SIZE * zoom), nullptr, 0.f, &(GetCameraCenter() - offset));
 	GUI.DrawSpriteTransform(tWorldMap, mat);
+
+	// debug tiles
+	if(!combo_box.focus && DebugKey('S') && !Net::IsClient())
+	{
+		const vector<int>& tiles = W.GetTiles();
+		int ts = W.world_size / World::TILE_SIZE;
+		for(int y = 0; y < ts; ++y)
+		{
+			for(int x = 0; x < ts; ++x)
+			{
+				int st = tiles[x + y * ts];
+				Color c;
+				if(st <= 8)
+					c = Color::Lerp(Color::Green, Color::Yellow, float(st - 2) / 6);
+				else
+					c = Color::Lerp(Color::Yellow, Color::Red, float(st - 9) / 7);
+				Rect rect(Int2(WorldPosToScreen(Vec2((float)x*World::TILE_SIZE, (float)y*World::TILE_SIZE))),
+					Int2(WorldPosToScreen(Vec2((float)(x + 1)*World::TILE_SIZE, (float)(y + 1)*World::TILE_SIZE))));
+				GUI.DrawSpriteRect(GUI.tPix, rect, c);
+			}
+		}
+	}
 
 	// location images
 	for(vector<Location*>::iterator it = W.locations.begin(), end = W.locations.end(); it != end; ++it)
@@ -138,32 +162,66 @@ void WorldMapGui::Draw(ControlDrawData*)
 	if(picked_location != -1)
 	{
 		Location& picked = *W.locations[picked_location];
-
 		if(picked_location != W.GetCurrentLocationIndex())
 		{
-			float distance = Vec2::Distance(world_pos, picked.pos) / W.world_size * 200;
-			int days_cost = int(ceil(distance / World::TRAVEL_SPEED));
+			float distance = Vec2::Distance(world_pos, picked.pos) * MAP_KM_RATIO;
+			int days_cost = int(floor(distance / World::TRAVEL_SPEED));
 			s += Format("\n\n%s: %s", txTarget, picked.name.c_str());
 			AppendLocationText(picked, s.get_ref());
-			s += Format("\n%s: %g km\n%s: %d %s", txDistance, ceil(distance * 10) / 10, txTravelTime, days_cost, days_cost == 1 ? txDay : txDays);
+			cstring cost;
+			if(days_cost == 0)
+				cost = Format("<1 %s", txDay);
+			else if(days_cost == 1)
+				cost = Format("1 %s", txDay);
+			else
+				cost = Format("%d %s", days_cost, txDays);
+			s += Format("\n%s: %g km\n%s: %s", txDistance, ceil(distance * 10) / 10, txTravelTime, cost);
 		}
 		mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(zoom, zoom), nullptr, 0.f, &WorldPosToScreen(Vec2(picked.pos.x - 32.f, picked.pos.y + 32.f)));
 		GUI.DrawSpriteTransform(tSelected[0], mat, 0xAAFFFFFF);
 	}
+	else if(c_pos_valid)
+	{
+		float distance = Vec2::Distance(world_pos, c_pos) * MAP_KM_RATIO;
+		int days_cost = int(floor(distance / World::TRAVEL_SPEED));
+		cstring cost;
+		if(days_cost == 0)
+			cost = Format("<1 %s", txDay);
+		else if(days_cost == 1)
+			cost = Format("1 %s", txDay);
+		else
+			cost = Format("%d %s", days_cost, txDays);
+		s += Format("\n\n%s:\n%s: %g km\n%s: %s", txTarget, txDistance, ceil(distance * 10) / 10, txTravelTime, cost);
+	}
 
 	// team position
-	if(Any(W.GetState(), World::State::TRAVEL, World::State::ENCOUNTER))
+	if(W.GetCurrentLocationIndex() == -1)
 	{
 		mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(zoom, zoom), nullptr, 0.f, &WorldPosToScreen(Vec2(world_pos.x - 8, world_pos.y + 8)));
 		GUI.DrawSpriteTransform(tMover, mat, 0xBBFFFFFF);
 	}
 
 	// line from team to target position
+	Vec2 target_pos;
+	bool ok = false;
 	if(picked_location != -1 && picked_location != W.GetCurrentLocationIndex())
 	{
-		Location& picked = *W.locations[picked_location];
-		Vec2 pts[2] = { WorldPosToScreen(world_pos), WorldPosToScreen(picked.pos) };
-
+		target_pos = W.locations[picked_location]->pos;
+		ok = true;
+	}
+	else if(W.GetState() != World::State::ON_MAP)
+	{
+		target_pos = W.GetTargetPos();
+		ok = true;
+	}
+	else if(c_pos_valid)
+	{
+		target_pos = c_pos;
+		ok = true;
+	}
+	if(ok)
+	{
+		Vec2 pts[2] = { WorldPosToScreen(world_pos), WorldPosToScreen(target_pos) };
 		GUI.LineBegin();
 		GUI.DrawLine(pts, 1, 0xAA000000);
 		GUI.LineEnd();
@@ -233,6 +291,8 @@ void WorldMapGui::Draw(ControlDrawData*)
 //=================================================================================================
 void WorldMapGui::Update(float dt)
 {
+	c_pos_valid = false;
+
 	MpBox* mp_box = game.gui->mp_box;
 	if(mp_box->visible)
 	{
@@ -279,15 +339,15 @@ void WorldMapGui::Update(float dt)
 		zoom = Clamp(zoom + 0.1f * Key.GetMouseWheel(), 0.5f, 2.f);
 		if(clicked)
 		{
-			offset -= Vec2(Key.GetMouseDif()) / (float(W.world_size) / map_img_size * zoom);
+			offset -= Vec2(Key.GetMouseDif()) / (float(W.world_size) / MAP_IMG_SIZE * zoom);
 			if(offset.x < 0)
 				offset.x = 0;
 			if(offset.y < 0)
 				offset.y = 0;
-			if(offset.x > map_img_size)
-				offset.x = map_img_size;
-			if(offset.y > map_img_size)
-				offset.y = map_img_size;
+			if(offset.x > MAP_IMG_SIZE)
+				offset.x = MAP_IMG_SIZE;
+			if(offset.y > MAP_IMG_SIZE)
+				offset.y = MAP_IMG_SIZE;
 			if(Key.Up(VK_RBUTTON))
 				clicked = false;
 		}
@@ -319,7 +379,19 @@ void WorldMapGui::Update(float dt)
 		if(game.paused || (!Net::IsOnline() && GUI.HavePauseDialog()))
 			return;
 
-		W.UpdateTravel(dt);
+		bool stop = false;
+		if(focus && Key.Focus() && GUI.cursor_pos.x < GUI.wnd_size.x * 2 / 3 && Key.PressedRelease(VK_LBUTTON))
+		{
+			if(Team.IsLeader())
+			{
+				W.StopTravel(W.GetWorldPos(), true);
+				stop = true;
+			}
+			else
+				game.gui->messages->AddGameMsg2(txOnlyLeaderCanTravel, 3.f, GMS_ONLY_LEADER_CAN_TRAVEL);
+		}
+		if(!stop)
+			W.UpdateTravel(dt);
 	}
 	else if(W.GetState() != World::State::ENCOUNTER && !game.gui->journal->visible)
 	{
@@ -328,19 +400,25 @@ void WorldMapGui::Update(float dt)
 		float dist = 17.f, dist2;
 		int i = 0, index;
 
-		if(focus && GUI.cursor_pos.x < GUI.wnd_size.x * 2 / 3)
+		c_pos = (Vec2(GUI.cursor_pos) - GetCameraCenter()) / zoom+offset * float(W.world_size) / MAP_IMG_SIZE;
+		c_pos.y = float(W.world_size) - c_pos.y;
+		if(focus && c_pos.x > 0 && c_pos.y > 0 && c_pos.x < W.world_size && c_pos.y < W.world_size && GUI.cursor_pos.x < GUI.wnd_size.x * 2 / 3)
 		{
-			for(vector<Location*>::iterator it = W.locations.begin(), end = W.locations.end(); it != end; ++it, ++i)
+			c_pos_valid = true;
+			if(!Key.Down(VK_SHIFT))
 			{
-				if(!*it || (*it)->state == LS_UNKNOWN || (*it)->state == LS_HIDDEN)
-					continue;
-				Vec2 pt = WorldPosToScreen((*it)->pos);
-				dist2 = Vec2::Distance(pt, cursor_pos) / zoom;
-				if(dist2 < dist)
+				for(vector<Location*>::iterator it = W.locations.begin(), end = W.locations.end(); it != end; ++it, ++i)
 				{
-					loc = *it;
-					dist = dist2;
-					index = i;
+					if(!*it || (*it)->state == LS_UNKNOWN || (*it)->state == LS_HIDDEN)
+						continue;
+					Vec2 pt = WorldPosToScreen((*it)->pos);
+					dist2 = Vec2::Distance(pt, cursor_pos) / zoom;
+					if(dist2 < dist)
+					{
+						loc = *it;
+						dist = dist2;
+						index = i;
+					}
 				}
 			}
 		}
@@ -357,14 +435,7 @@ void WorldMapGui::Update(float dt)
 					{
 						if(picked_location != W.GetCurrentLocationIndex())
 						{
-							// opuœæ aktualn¹ lokalizacje
-							if(L.is_open)
-							{
-								game.LeaveLocation();
-								L.is_open = false;
-							}
-
-							W.Travel(picked_location);
+							W.Travel(picked_location, true);
 							fallow = true;
 							tracking = -1;
 						}
@@ -383,14 +454,9 @@ void WorldMapGui::Update(float dt)
 				{
 					if(Team.IsLeader())
 					{
-						if(L.is_open)
-						{
-							game.LeaveLocation(false, false);
-							L.is_open = false;
-						}
-
 						W.Warp(picked_location);
-
+						fallow = true;
+						tracking = -1;
 						if(Net::IsOnline())
 						{
 							NetChange& c = Add1(Net::changes);
@@ -404,7 +470,42 @@ void WorldMapGui::Update(float dt)
 			}
 		}
 		else
+		{
 			picked_location = -1;
+			if(c_pos_valid && W.GetState() == World::State::ON_MAP && Key.Focus())
+			{
+				if(Key.PressedRelease(VK_LBUTTON))
+				{
+					combo_box.focus = false;
+					if(Team.IsLeader())
+					{
+						W.TravelPos(c_pos, true);
+						fallow = true;
+						tracking = -1;
+					}
+					else
+						game.gui->messages->AddGameMsg2(txOnlyLeaderCanTravel, 3.f, GMS_ONLY_LEADER_CAN_TRAVEL);
+				}
+				else if(game.devmode && !combo_box.focus && Key.PressedRelease('T'))
+				{
+					if(Team.IsLeader())
+					{
+						W.WarpPos(c_pos);
+						fallow = true;
+						tracking = -1;
+						if(Net::IsOnline())
+						{
+							NetChange& c = Add1(Net::changes);
+							c.type = NetChange::CHEAT_TRAVEL_POS;
+							c.pos.x = c_pos.x;
+							c.pos.y = c_pos.y;
+						}
+					}
+					else
+						game.gui->messages->AddGameMsg2(txOnlyLeaderCanTravel, 3.f, GMS_ONLY_LEADER_CAN_TRAVEL);
+				}
+			}
+		}
 	}
 
 	if(focus && Key.PressedRelease(VK_LBUTTON))
@@ -439,6 +540,7 @@ void WorldMapGui::Event(GuiEvent e)
 				CenterView(-1.f);
 				fallow = (W.GetState() == World::State::TRAVEL);
 				combo_box.Reset();
+				c_pos_valid = false;
 			}
 		}
 		break;
@@ -609,14 +711,14 @@ Vec2 WorldMapGui::WorldPosToScreen(const Vec2& pt) const
 {
 	return Vec2(pt.x, float(W.world_size) - pt.y) * zoom
 		+ GetCameraCenter()
-		- offset * zoom * float(W.world_size) / map_img_size;
+		- offset * zoom * float(W.world_size) / MAP_IMG_SIZE;
 }
 
 //=================================================================================================
 void WorldMapGui::CenterView(float dt, const Vec2* target)
 {
 	Vec2 p = (target ? *target : W.world_pos);
-	Vec2 pos = Vec2(p.x, float(W.world_size) - p.y) / (float(W.world_size) / map_img_size);
+	Vec2 pos = Vec2(p.x, float(W.world_size) - p.y) / (float(W.world_size) / MAP_IMG_SIZE);
 	if(dt >= 0.f)
 		offset += (pos - offset) * dt * 2.f;
 	else

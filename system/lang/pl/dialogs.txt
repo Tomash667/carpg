@@ -748,21 +748,14 @@ dialog traveler {
 }
 
 //==============================================================================
-dialog q_sawmill {
-}
-
-//==============================================================================
 dialog woodcutter {
 	0 {
 		"Pewnie siê zastanawiasz czemu stojê i nic nie robiê? Niestety nie ma jeszcze animacji dla mnie. :("
 		"Ale dzisiaj œci¹³em drzew, mówiê ci!"
 		"Masz jak¹œ maœæ na odciski?"
 		"Bycie drwalem nie jest zbyt zyskowne ale i tak to lubiê."
+		"Ludzi do pracy coraz wiêcej a r¹k do pracy coraz mniej..."
 	}
-}
-
-//==============================================================================
-dialog q_mine {
 }
 
 //==============================================================================
@@ -783,34 +776,6 @@ dialog drunkman {
 		"Ahhhh, kolejne zawody. A¿ siê ³ezka w oku krêci..."
 		"Na co jeszcze czekamy?!"
 	}
-}
-
-//==============================================================================
-dialog q_bandits {
-}
-
-//==============================================================================
-dialog q_mages {
-}
-
-//==============================================================================
-dialog q_mages2 {
-}
-
-//==============================================================================
-dialog q_orcs {
-}
-
-//==============================================================================
-dialog q_orcs2 {
-}
-
-//==============================================================================
-dialog q_goblins {
-}
-
-//==============================================================================
-dialog q_evil {
 }
 
 //==============================================================================
@@ -1985,4 +1950,20 @@ dialog q_wanted_end {
 //==============================================================================
 dialog crazy_cook {
 	0 "Dobrze ¿e siê spotykamy bo akurat skoñczy³o mi siê œwie¿e miêso! Hahaha!"
+}
+
+//==============================================================================
+dialog tomir {
+	0 "Witaj..."
+	1 "Jestem poszukiwaczem przygód, nazywam siê $name$..."
+	2 "Dziwne... Rzadko spotyka siê kogoœ kto ma takie samo imiê..."
+	3 "Widzê ¿e twoja dru¿yna jest ca³kiem spora..."
+	4 "Widzê ¿e twoja dru¿yna nie jest specjalnie du¿a..."
+	5 "Mo¿e znajdzie siê w niej dla mnie miejsce. Z chêci¹ przy³¹czê siê do niej."
+	6 "Co ty na to?"
+	7 "Tak"
+	8 "Zobaczymy gdzie zaprowadzi nas wspólna podró¿..."
+	9 "Nie"
+	10 "Widaæ tak mia³o byæ..."
+	11 "Nic tu po mnie, mo¿e jeszcze kiedyœ siê spotkamy. Do zobaczenia..."
 }

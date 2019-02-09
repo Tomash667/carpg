@@ -74,6 +74,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 				e->quest = this;
 				e->timed = true;
 				e->location_event_handler = nullptr;
+				e->st = 6;
 			}
 		}
 		break;
@@ -244,6 +245,7 @@ bool Quest_DeliverParcel::Load(GameReader& f)
 		e->quest = this;
 		e->timed = true;
 		e->location_event_handler = nullptr;
+		e->st = 6;
 	}
 
 	return true;

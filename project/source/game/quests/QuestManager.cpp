@@ -8,6 +8,7 @@
 #include "Content.h"
 #include "Net.h"
 
+#include "Quest_Artifacts.h"
 #include "Quest_Bandits.h"
 #include "Quest_BanditsCollectToll.h"
 #include "Quest_CampNearCity.h"
@@ -65,6 +66,7 @@ void QuestManager::InitOnce()
 	infos.push_back({ Q_CRAZIES, QuestType::Unique, "crazies" });
 	infos.push_back({ Q_WANTED, QuestType::Captain, "wanted" });
 	infos.push_back({ Q_MAIN, QuestType::Unique, "main" });
+	infos.push_back({ Q_ARTIFACTS, QuestType::Unique, "artifacts" });
 
 	// create pseudo quests
 	quest_contest = new Quest_Contest;
@@ -193,6 +195,12 @@ void QuestManager::InitQuests(bool devmode)
 	quest_crazies->Start();
 	unaccepted_quests.push_back(quest_crazies);
 
+	// artifacts
+	quest_artifacts = new Quest_Artifacts;
+	quest_artifacts->refid = quest_counter++;
+	quest_artifacts->Start();
+	unaccepted_quests.push_back(quest_artifacts);
+
 	// pseudo quests
 	quest_contest->Init();
 	quest_secret->Init();
@@ -209,6 +217,7 @@ void QuestManager::InitQuests(bool devmode)
 		Info("Quest 'Evil' - %s.", W.GetLocation(quest_evil->start_loc)->name.c_str());
 		Info("Tournament - %s.", W.GetLocation(quest_tournament->GetCity())->name.c_str());
 		Info("Contest - %s.", W.GetLocation(quest_contest->where)->name.c_str());
+		Info("Gladiator armor - %s.", W.GetLocation(quest_artifacts->target_loc)->name.c_str());
 	}
 }
 
@@ -263,6 +272,8 @@ Quest* QuestManager::CreateQuest(QUEST quest_id)
 		return new Quest_Wanted;
 	case Q_MAIN:
 		return new Quest_Main;
+	case Q_ARTIFACTS:
+		return new Quest_Artifacts;
 	case Q_FORCE_NONE:
 		return nullptr;
 	default:
@@ -662,6 +673,7 @@ void QuestManager::Load(GameReader& f)
 	quest_evil->Init();
 	quest_crazies = (Quest_Crazies*)FindQuestById(Q_CRAZIES);
 	quest_crazies->Init();
+	quest_artifacts = (Quest_Artifacts*)FindQuestById(Q_ARTIFACTS);
 
 	if(LOAD_VERSION < V_DEV && !quest_mages2)
 	{
@@ -765,6 +777,24 @@ Quest* QuestManager::FindQuest(int loc, QuestType type)
 	for(Quest* quest : quests)
 	{
 		if(quest->start_loc == loc && quest->type == type)
+			return quest;
+	}
+
+	return nullptr;
+}
+
+//=================================================================================================
+Quest* QuestManager::FindAnyQuest(int refid)
+{
+	for(Quest* quest : quests)
+	{
+		if(quest->refid == refid)
+			return quest;
+	}
+
+	for(Quest* quest : unaccepted_quests)
+	{
+		if(quest->refid == refid)
 			return quest;
 	}
 

@@ -2356,18 +2356,41 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				if(!f)
 					N.StreamError("Update server: Broken TRAVEL from %s.", info.name.c_str());
 				else if(!Team.IsLeader(unit))
-					N.StreamError("Update server: LEAVE_LOCATION from %s, player is not leader.", info.name.c_str());
+					N.StreamError("Update server: TRAVEL from %s, player is not leader.", info.name.c_str());
 				else
 				{
-					// leave current location
-					if(L.is_open)
-					{
-						LeaveLocation();
-						L.is_open = false;
-					}
-
-					W.Travel(loc);
+					W.Travel(loc, true);
+					gui->world_map->StartTravel();
 				}
+			}
+			break;
+		// leader wants to travel to pos
+		case NetChange::TRAVEL_POS:
+			{
+				Vec2 pos;
+				f >> pos;
+				if(!f)
+					N.StreamError("Update server: Broken TRAVEL_POS from %s.", info.name.c_str());
+				else if(!Team.IsLeader(unit))
+					N.StreamError("Update server: TRAVEL_POS from %s, player is not leader.", info.name.c_str());
+				else
+				{
+					W.TravelPos(pos, true);
+					gui->world_map->StartTravel();
+				}
+			}
+			break;
+		// leader stopped travel
+		case NetChange::STOP_TRAVEL:
+			{
+				Vec2 pos;
+				f >> pos;
+				if(!f)
+					N.StreamError("Update server: Broken STOP_TRAVEL from %s.", info.name.c_str());
+				else if(!Team.IsLeader(unit))
+					N.StreamError("Update server: STOP_TRAVEL from %s, player is not leader.", info.name.c_str());
+				else
+					W.StopTravel(pos, true);
 			}
 			break;
 		// leader finished travel
@@ -2702,13 +2725,8 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					N.StreamError("Update server: CHEAT_TRAVEL from %s, invalid location index %u.", info.name.c_str(), location_index);
 				else
 				{
-					if(L.is_open)
-					{
-						LeaveLocation(false, false);
-						L.is_open = false;
-					}
-
 					W.Warp(location_index);
+					gui->world_map->StartTravel();
 
 					// inform other players
 					if(N.active_players > 2)
@@ -2718,6 +2736,34 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						c.id = location_index;
 					}
 				}
+			}
+			break;
+		//  player used cheat for fast travel to pos on map
+		case NetChange::CHEAT_TRAVEL_POS:
+			{
+				Vec2 pos;
+				f >> pos;
+				if(!f)
+					N.StreamError("Update server: Broken CHEAT_TRAVEL_POS from %s.", info.name.c_str());
+				else if(!info.devmode)
+					N.StreamError("Update server: Player %s used CHEAT_TRAVEL_POS without devmode.", info.name.c_str());
+				else if(!Team.IsLeader(unit))
+					N.StreamError("Update server: CHEAT_TRAVEL_POS from %s, player is not leader.", info.name.c_str());
+				else
+				{
+					W.WarpPos(pos);
+					gui->world_map->StartTravel();
+
+					// inform other players
+					if(N.active_players > 2)
+					{
+						NetChange& c = Add1(Net::changes);
+						c.type = NetChange::CHEAT_TRAVEL_POS;
+						c.pos.x = pos.x;
+						c.pos.y = pos.y;
+					}
+				}
+
 			}
 			break;
 		// player used cheat 'hurt'
@@ -3421,6 +3467,12 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 		case NetChange::MARK_UNIT:
 			f << c.unit->netid;
 			f << (c.id != 0);
+			break;
+		case NetChange::TRAVEL_POS:
+		case NetChange::STOP_TRAVEL:
+		case NetChange::CHEAT_TRAVEL_POS:
+			f << c.pos.x;
+			f << c.pos.y;
 			break;
 		default:
 			Error("Update server: Unknown change %d.", c.type);
@@ -5208,15 +5260,34 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					N.StreamError("Update client: Broken TRAVEL.");
 				else
 				{
-					// leave current location
-					if(L.is_open)
-					{
-						LeaveLocation();
-						L.is_open = false;
-					}
-
-					W.Travel(loc);
+					W.Travel(loc, false);
+					gui->world_map->StartTravel();
 				}
+			}
+			break;
+		// leader wants to travel to pos
+		case NetChange::TRAVEL_POS:
+			{
+				Vec2 pos;
+				f >> pos;
+				if(!f)
+					N.StreamError("Update client: Broken TRAVEL_POS.");
+				else
+				{
+					W.TravelPos(pos, false);
+					gui->world_map->StartTravel();
+				}
+			}
+			break;
+		// leader stopped travel
+		case NetChange::STOP_TRAVEL:
+			{
+				Vec2 pos;
+				f >> pos;
+				if(!f)
+					N.StreamError("Update client: Broken STOP_TRAVEL.");
+				else
+					W.StopTravel(pos, false);
 			}
 			break;
 		// leader finished travel
@@ -6068,17 +6139,26 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				f >> location_index;
 				if(!f)
 					N.StreamError("Update client: Broken CHEAT_TRAVEL.");
-				else if(W.VerifyLocation(location_index))
+				else if(!W.VerifyLocation(location_index))
 					N.StreamError("Update client: CHEAT_TRAVEL, invalid location index %u.", location_index);
 				else
 				{
-					if(L.is_open)
-					{
-						LeaveLocation(false, false);
-						L.is_open = false;
-					}
-
 					W.Warp(location_index);
+					gui->world_map->StartTravel();
+				}
+			}
+			break;
+		// player used cheat for fast travel to pos on map
+		case NetChange::CHEAT_TRAVEL_POS:
+			{
+				Vec2 pos;
+				f >> pos;
+				if(!f)
+					N.StreamError("Update client: Broken CHEAT_TRAVEL_POS.");
+				else
+				{
+					W.WarpPos(pos);
+					gui->world_map->StartTravel();
 				}
 			}
 			break;
@@ -7382,6 +7462,12 @@ void Game::WriteClientChanges(BitStreamWriter& f)
 		case NetChange::CHEAT_ARENA:
 			f << *c.str;
 			StringPool.Free(c.str);
+			break;
+		case NetChange::TRAVEL_POS:
+		case NetChange::STOP_TRAVEL:
+		case NetChange::CHEAT_TRAVEL_POS:
+			f << c.pos.x;
+			f << c.pos.y;
 			break;
 		default:
 			Error("UpdateClient: Unknown change %d.", c.type);

@@ -158,14 +158,12 @@ void MoonwellGenerator::GenerateUnits()
 			Vec3 pos3(pos.x, 0, pos.y);
 
 			// postaw jednostki
-			int points = level * 2;
 			if(Rand() % 5 == 0 && ud_hunter->level.x <= level)
 			{
-				int enemy_level = Random(ud_hunter->level.x, Min(ud_hunter->level.y, points, level));
-				if(L.SpawnUnitNearLocation(L.local_ctx, pos3, *ud_hunter, nullptr, enemy_level, 6.f))
-					points -= enemy_level;
+				int enemy_level = Random(ud_hunter->level.x, min(ud_hunter->level.y, level));
+				L.SpawnUnitNearLocation(L.local_ctx, pos3, *ud_hunter, nullptr, enemy_level, 6.f);
 			}
-			for(TmpUnitGroup::Spawn& spawn : tmp.Roll(points))
+			for(TmpUnitGroup::Spawn& spawn : tmp.Roll(level, 2))
 			{
 				if(!L.SpawnUnitNearLocation(L.local_ctx, pos3, *spawn.first, nullptr, spawn.second, 6.f))
 					break;

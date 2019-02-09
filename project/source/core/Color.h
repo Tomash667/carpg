@@ -41,8 +41,9 @@ struct Color
 
 	static Color None;
 	static Color Black;
+	static Color White;
 	static Color Red;
 	static Color Green;
 	static Color Blue;
-	static Color White;
+	static Color Yellow;
 };

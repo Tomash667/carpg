@@ -77,10 +77,10 @@ void CampGenerator::GenerateObjects()
 	SpawnForestObjects();
 
 	vector<Vec2> pts;
-	BaseObject* ognisko = BaseObject::Get("campfire"),
-		*ognisko_zgaszone = BaseObject::Get("campfire_off"),
-		*namiot = BaseObject::Get("tent"),
-		*poslanie = BaseObject::Get("bedding");
+	BaseObject* campfire = BaseObject::Get("campfire"),
+		*campfire_off = BaseObject::Get("campfire_off"),
+		*tent = BaseObject::Get("tent"),
+		*bedding = BaseObject::Get("bedding");
 
 	if(!camp_objs_ptrs[0])
 	{
@@ -92,33 +92,31 @@ void CampGenerator::GenerateObjects()
 	{
 		Vec2 pt = Vec2::Random(Vec2(96, 96), Vec2(256 - 96, 256 - 96));
 
-		// sprawdü czy nie ma w pobliøu ogniska
-		bool jest = false;
+		// check if not too close to other bonfire
+		bool ok = true;
 		for(vector<Vec2>::iterator it = pts.begin(), end = pts.end(); it != end; ++it)
 		{
 			if(Vec2::Distance(pt, *it) < 16.f)
 			{
-				jest = true;
+				ok = false;
 				break;
 			}
 		}
-		if(jest)
+		if(!ok)
 			continue;
 
 		pts.push_back(pt);
 
-		// ognisko
-		if(L.SpawnObjectNearLocation(L.local_ctx, Rand() % 5 == 0 ? ognisko_zgaszone : ognisko, pt, Random(MAX_ANGLE)))
+		// campfire
+		if(L.SpawnObjectNearLocation(L.local_ctx, Rand() % 5 == 0 ? campfire_off : campfire, pt, Random(MAX_ANGLE)))
 		{
-			// namioty / pos≥ania
 			for(int j = 0, count = Random(4, 7); j < count; ++j)
 			{
-				float kat = Random(MAX_ANGLE);
-				bool czy_namiot = (Rand() % 2 == 0);
-				if(czy_namiot)
-					L.SpawnObjectNearLocation(L.local_ctx, namiot, pt + Vec2(sin(kat), cos(kat))*Random(4.f, 5.5f), pt);
+				float angle = Random(MAX_ANGLE);
+				if(Rand() % 2 == 0)
+					L.SpawnObjectNearLocation(L.local_ctx, tent, pt + Vec2(sin(angle), cos(angle))*Random(4.f, 5.5f), pt);
 				else
-					L.SpawnObjectNearLocation(L.local_ctx, poslanie, pt + Vec2(sin(kat), cos(kat))*Random(3.f, 4.f), pt);
+					L.SpawnObjectNearLocation(L.local_ctx, bedding, pt + Vec2(sin(angle), cos(angle))*Random(3.f, 4.f), pt);
 			}
 		}
 	}
@@ -207,7 +205,7 @@ void CampGenerator::GenerateUnits()
 			poss.push_back(pos);
 			++added;
 			Vec3 pos3(pos.x, 0, pos.y);
-			for(TmpUnitGroup::Spawn& spawn : group->Roll(level * 2))
+			for(TmpUnitGroup::Spawn& spawn : group->Roll(level, 2))
 			{
 				if(!L.SpawnUnitNearLocation(L.local_ctx, pos3, *spawn.first, nullptr, spawn.second, 6.f))
 					break;

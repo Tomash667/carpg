@@ -1420,7 +1420,8 @@ bool DialogContext::ExecuteSpecial(cstring msg, int& if_level)
 		talker->gold += cost;
 		Team.AddTeamMember(talker, false);
 		talker->temporary = false;
-		Team.free_recruit = false;
+		if(Team.free_recruits > 0)
+			--Team.free_recruits;
 		talker->hero->SetupMelee();
 		if(Net::IsOnline() && !is_local)
 			pc->player_info->UpdateGold();
@@ -1428,7 +1429,7 @@ bool DialogContext::ExecuteSpecial(cstring msg, int& if_level)
 	else if(strcmp(msg, "recruit_free") == 0)
 	{
 		Team.AddTeamMember(talker, false);
-		Team.free_recruit = false;
+		--Team.free_recruits;
 		talker->temporary = false;
 		talker->hero->SetupMelee();
 	}
@@ -1771,7 +1772,7 @@ bool DialogContext::ExecuteSpecialIf(cstring msg)
 			return true;
 	}
 	else if(strcmp(msg, "is_free_recruit") == 0)
-		return talker->level <= 8 && Team.free_recruit;
+		return talker->level <= 8 && Team.free_recruits > 0;
 	else if(strcmp(msg, "have_unique_quest") == 0)
 	{
 		if(((QM.quest_orcs2->orcs_state == Quest_Orcs2::State::Accepted || QM.quest_orcs2->orcs_state == Quest_Orcs2::State::OrcJoined)

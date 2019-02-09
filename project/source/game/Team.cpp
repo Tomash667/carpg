@@ -411,7 +411,17 @@ void TeamSingleton::Load(GameReader& f)
 	}
 	f >> crazies_attack;
 	f >> is_bandit;
-	f >> free_recruit;
+	if(LOAD_VERSION >= V_DEV)
+		f >> free_recruits;
+	else
+	{
+		bool free_recruit;
+		f >> free_recruit;
+		if(free_recruit)
+			free_recruits = 3 - Team.GetActiveTeamSize();
+		else
+			free_recruits = 0;
+	}
 
 	CheckCredit(false, true);
 }
@@ -420,7 +430,7 @@ void TeamSingleton::Reset()
 {
 	crazies_attack = false;
 	is_bandit = false;
-	free_recruit = true;
+	free_recruits = 2;
 }
 
 void TeamSingleton::ClearOnNewGameOrLoad()
@@ -442,7 +452,7 @@ void TeamSingleton::Save(GameWriter& f)
 	f << leader->refid;
 	f << crazies_attack;
 	f << is_bandit;
-	f << free_recruit;
+	f << free_recruits;
 }
 
 void TeamSingleton::SaveOnWorldmap(GameWriter& f)

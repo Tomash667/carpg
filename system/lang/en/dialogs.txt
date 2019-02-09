@@ -745,21 +745,14 @@ dialog traveler {
 }
 
 //==============================================================================
-dialog q_sawmill {
-}
-
-//==============================================================================
 dialog woodcutter {
 	0 {
 		"You're probably wondering why I'm standing and doing nothing? There is no animation for me yet. :("
 		"Today I cut many trees, I tell you!"
 		"Do you have any corn salve?"
 		"Being a lumberjack is not very profitable, but I like it."
+		"More and more people to work but less hands..."
 	}
-}
-
-//==============================================================================
-dialog q_mine {
 }
 
 //==============================================================================
@@ -780,34 +773,6 @@ dialog drunkman {
 		"Ahhhh, another contest. These memories..."
 		"What the hell we are waiting for?!"
 	}
-}
-
-//==============================================================================
-dialog q_bandits {
-}
-
-//==============================================================================
-dialog q_mages {
-}
-
-//==============================================================================
-dialog q_mages2 {
-}
-
-//==============================================================================
-dialog q_orcs {
-}
-
-//==============================================================================
-dialog q_orcs2 {
-}
-
-//==============================================================================
-dialog q_goblins {
-}
-
-//==============================================================================
-dialog q_evil {
 }
 
 //==============================================================================
@@ -1982,4 +1947,20 @@ dialog q_wanted_end {
 //==============================================================================
 dialog crazy_cook {
 	0 "Well we meet because I just run out of fresh meat! Hahaha!"
+}
+
+//==============================================================================
+dialog tomir {
+	0 "Hello..."
+	1 "I am an adventurer, my name is $name$..."
+	2 "Strange... One rarely meets someone who has the same name..."
+	3 "I see that your team is quite big..."
+	4 "I see that your team is not very big..."
+	5 "Maybe there will be a place for me in it. I will gladly join it."
+	6 "What do you think?"
+	7 "Yes"
+	8 "We'll see where the journey will lead us..."
+	9 "No"
+	10 "I guess it was supposed to be this way..."
+	11 "Nothing here for me, maybe we will meet again someday. See you later..."
 }

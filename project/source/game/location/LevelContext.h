@@ -109,7 +109,7 @@ struct LevelContextEnumerator
 	};
 
 	LevelContextEnumerator(Location* loc) : loc(loc) {}
-	Iterator begin() { return Iterator(loc, -1); }
+	Iterator begin() { return Iterator(loc, loc ? -1 : -2); }
 	Iterator end() { return Iterator(loc, -2); }
 
 private:

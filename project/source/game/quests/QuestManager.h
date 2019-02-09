@@ -5,6 +5,7 @@
 #include "QuestConsts.h"
 
 //-----------------------------------------------------------------------------
+class Quest_Artifacts;
 class Quest_Bandits;
 class Quest_Contest;
 class Quest_Crazies;
@@ -60,6 +61,7 @@ public:
 	void Load(GameReader& f);
 	Quest* FindQuest(int location, QuestType type);
 	Quest* FindQuest(int refid, bool active = true);
+	Quest* FindAnyQuest(int refid);
 	Quest* FindQuestById(QUEST quest_id);
 	Quest* FindUnacceptedQuest(int location, QuestType type);
 	Quest* FindUnacceptedQuest(int refid);
@@ -97,6 +99,7 @@ public:
 	Quest_Secret* quest_secret;
 	Quest_Tournament* quest_tournament;
 	Quest_Tutorial* quest_tutorial;
+	Quest_Artifacts* quest_artifacts;
 	int quest_counter;
 	int unique_quests_completed;
 	bool unique_completed_show;

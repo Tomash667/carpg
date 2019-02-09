@@ -184,7 +184,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 	UnitData* essential = nullptr;
 	cstring group_name = nullptr, group_name2 = nullptr;
 	bool dont_attack = false, back_attack = false, cursed_stone = false;
-	int count, level, count2, level2;
+	int count = 0, level = encounter.st, count2 = 0, level2 = encounter.st;
 	dialog = nullptr;
 	quest = nullptr;
 	far_encounter = false;
@@ -210,9 +210,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 			group_name = "orcs";
 			break;
 		}
-
 		count = Random(3, 5);
-		level = Random(6, 12);
 	}
 	else if(encounter.mode == ENCOUNTER_SPECIAL)
 	{
@@ -222,37 +220,36 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 			essential = UnitData::Get("crazy_mage");
 			group_name = nullptr;
 			count = 1;
-			level = Random(10, 16);
+			level = Clamp(encounter.st * 2, 10, 16);
 			dialog = GameDialog::TryGet("crazy_mage_encounter");
 			break;
 		case SE_CRAZY_HEROES:
 			group_name = "crazies";
 			count = Random(3, 4);
-			level = Random(5, 15);
+			if(level < 5)
+				level = 5;
 			dialog = GameDialog::TryGet("crazies_encounter");
 			break;
 		case SE_MERCHANT:
-			{
-				essential = UnitData::Get("merchant");
-				group_name = "merchant_guards";
-				count = Random(3, 4);
-				level = Random(5, 6);
-			}
+			essential = UnitData::Get("merchant");
+			group_name = "merchant_guards";
+			count = Random(3, 4);
+			level = Clamp(encounter.st, 5, 6);
 			break;
 		case SE_HEROES:
 			group_name = "heroes";
 			count = Random(3, 4);
-			level = Random(5, 15);
+			if(level < 5)
+				level = 5;
 			break;
 		case SE_BANDITS_VS_TRAVELERS:
 			{
 				far_encounter = true;
 				group_name = "bandits";
 				count = Random(4, 6);
-				level = Random(5, 10);
 				group_name2 = "wagon_guards";
 				count2 = Random(2, 3);
-				level2 = Random(5, 6);
+				level2 = Clamp(encounter.st, 5, 6);
 				L.SpawnObjectNearLocation(L.local_ctx, BaseObject::Get("wagon"), Vec2(128, 128), Random(MAX_ANGLE));
 				Chest* chest = L.SpawnObjectNearLocation(L.local_ctx, BaseObject::Get("chest"), Vec2(128, 128), Random(MAX_ANGLE), 6.f);
 				if(chest)
@@ -269,38 +266,40 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 			far_encounter = true;
 			group_name = "heroes";
 			count = Random(3, 4);
-			level = Random(5, 15);
+			if(level < 5)
+				level = 5;
 			switch(Rand() % 4)
 			{
 			case 0:
 				group_name2 = "bandits";
 				count2 = Random(3, 5);
-				level2 = Random(6, 12);
 				break;
 			case 1:
 				group_name2 = "orcs";
 				count2 = Random(3, 5);
-				level2 = Random(6, 12);
 				break;
 			case 2:
 				group_name2 = "goblins";
 				count2 = Random(3, 5);
-				level2 = Random(6, 12);
 				break;
 			case 3:
 				group_name2 = "crazies";
 				count2 = Random(3, 4);
-				level2 = Random(5, 15);
+				if(level2 < 5)
+					level2 = 5;
 				break;
 			}
 			break;
 		case SE_GOLEM:
-			group_name = nullptr;
-			essential = UnitData::Get("q_magowie_golem");
-			level = 8;
-			dont_attack = true;
-			dialog = GameDialog::TryGet("q_mages");
-			count = 1;
+			{
+				group_name = nullptr;
+				essential = UnitData::Get("q_magowie_golem");
+				int pts = encounter.st * Random(1, 2);
+				count = max(1, pts / 8);
+				dont_attack = true;
+				dialog = GameDialog::TryGet("q_mages");
+				count = 1;
+			}
 			break;
 		case SE_CRAZY:
 			group_name = nullptr;
@@ -323,7 +322,10 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 				QM.quest_crazies->SetProgress(Quest_Crazies::Progress::Started);
 			}
 			else
-				count = Random(1, 3);
+			{
+				int pts = encounter.st * Random(1, 3);
+				count = max(1, pts / 13);
+			}
 			break;
 		case SE_CRAZY_COOK:
 			group_name = nullptr;
@@ -339,53 +341,56 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 				int group_index2 = Rand() % 4;
 				if(group_index == group_index2)
 					group_index2 = (group_index2 + 1) % 4;
+				level = Max(3, level + Random(-1, +1));
 				switch(group_index)
 				{
 				case 0:
 					group_name = "bandits";
 					count = Random(3, 5);
-					level = Random(6, 12);
 					break;
 				case 1:
 					group_name = "orcs";
 					count = Random(3, 5);
-					level = Random(6, 12);
 					break;
 				case 2:
 					group_name = "goblins";
 					count = Random(3, 5);
-					level = Random(6, 12);
 					break;
 				case 3:
 					group_name = "crazies";
 					count = Random(3, 4);
-					level = Random(5, 15);
+					if(level < 5)
+						level = 5;
 					break;
 				}
+				level2 = Max(3, level2 + Random(-1, +1));
 				switch(group_index2)
 				{
 				case 0:
 					group_name2 = "bandits";
 					count2 = Random(3, 5);
-					level2 = Random(6, 12);
 					break;
 				case 1:
 					group_name2 = "orcs";
 					count2 = Random(3, 5);
-					level2 = Random(6, 12);
 					break;
 				case 2:
 					group_name2 = "goblins";
 					count2 = Random(3, 5);
-					level2 = Random(6, 12);
 					break;
 				case 3:
 					group_name2 = "crazies";
 					count2 = Random(3, 4);
-					level2 = Random(5, 15);
+					if(level2 < 5)
+						level2 = 5;
 					break;
 				}
 			}
+			break;
+		case SE_TOMIR:
+			essential = UnitData::Get("hero_tomir");
+			dialog = GameDialog::TryGet("tomir");
+			level = -10;
 			break;
 		}
 	}
@@ -411,7 +416,10 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 		}
 
 		count = Random(3, 5);
-		level = Random(6, 12);
+		if(enc->st == -1)
+			level = encounter.st;
+		else
+			level = enc->st;
 		dialog = enc->dialog;
 		dont_attack = enc->dont_attack;
 		quest = enc->quest;
@@ -443,7 +451,12 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 
 	if(essential)
 	{
-		talker = L.SpawnUnitNearLocation(L.local_ctx, spawn_pos, *essential, &look_pt, Clamp(essential->level.Random(), level / 2, level), 4.f);
+		int unit_level;
+		if(level < 0)
+			unit_level = -level;
+		else
+			unit_level = Clamp(essential->level.Random(), level / 2, level);
+		talker = L.SpawnUnitNearLocation(L.local_ctx, spawn_pos, *essential, &look_pt, unit_level, 4.f);
 		talker->dont_attack = dont_attack;
 		best_dist = Vec3::Distance(talker->pos, look_pt);
 		--count;

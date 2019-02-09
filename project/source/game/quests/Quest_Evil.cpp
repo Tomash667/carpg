@@ -160,8 +160,8 @@ void Quest_Evil::SetProgress(int prog2)
 				SPAWN_GROUP spawn;
 				int st;
 			} l_info[3] = {
-				L_DUNGEON, OLD_TEMPLE, SG_EVIL, 15,
-				L_DUNGEON, NECROMANCER_BASE, SG_NECROMANCERS, 14,
+				L_DUNGEON, OLD_TEMPLE, SG_EVIL, 16,
+				L_DUNGEON, NECROMANCER_BASE, SG_NECROMANCERS, 15,
 				L_CRYPT, MONSTER_CRYPT, SG_UNDEAD, 13
 			};
 

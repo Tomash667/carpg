@@ -26,6 +26,7 @@ enum SpecialEncounter
 	SE_CRAZY,
 	SE_UNK,
 	SE_CRAZY_COOK,
+	SE_TOMIR
 };
 
 //-----------------------------------------------------------------------------
@@ -42,9 +43,10 @@ struct Encounter
 	LocationEventHandler* location_event_handler;
 	// nowe pola
 	BoolFunc check_func;
+	int st; // when -1 use world st
 
 	// dla kompatybilnoœci ze starym kodem, ustawia tylko nowe pola
-	Encounter() : check_func(nullptr)
+	Encounter() : check_func(nullptr), st(-1)
 	{
 	}
 };

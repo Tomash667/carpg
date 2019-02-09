@@ -44,6 +44,7 @@ void Level::LoadLanguage()
 {
 	txLocationText = Str("locationText");
 	txLocationTextMap = Str("locationTextMap");
+	txWorldMap = Str("worldMap");
 	txNewsCampCleared = Str("newsCampCleared");
 	txNewsLocCleared = Str("newsLocCleared");
 }
@@ -1984,9 +1985,8 @@ void Level::SpawnUnitsGroup(LevelContext& ctx, const Vec3& pos, const Vec3* look
 	Pooled<TmpUnitGroup> tgroup;
 	tgroup->Fill(group, level);
 
-	for(uint i = 0; i < count; ++i)
+	for(TmpUnitGroup::Spawn& spawn : tgroup->Roll(level, count))
 	{
-		TmpUnitGroup::Spawn spawn = tgroup->Get();
 		Unit* u = SpawnUnitNearLocation(ctx, pos, *spawn.first, look_at, spawn.second, 4.f);
 		if(u && callback)
 			callback(u);
@@ -3055,7 +3055,12 @@ int Level::GetDifficultyLevel() const
 	{
 		InsideLocation* inside = (InsideLocation*)location;
 		if(inside->IsMultilevel())
-			return (int)Lerp(max(3.f, float(inside->st) / 2), float(inside->st), float(dungeon_level) / (((MultiInsideLocation*)inside)->levels.size() - 1));
+		{
+			float max_st = (float)inside->st;
+			float min_st = max(3.f, max_st * 2 / 3);
+			uint levels = ((MultiInsideLocation*)inside)->levels.size() - 1;
+			return (int)Lerp(min_st, max_st, float(dungeon_level) / levels);
+		}
 		else
 			return inside->st;
 	}
@@ -3167,8 +3172,10 @@ cstring Level::GetCurrentLocationText()
 				return location->name.c_str();
 		}
 	}
-	else
+	else if(location)
 		return Format(txLocationTextMap, location->name.c_str());
+	else
+		return txWorldMap;
 }
 
 //=================================================================================================

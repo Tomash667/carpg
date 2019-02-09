@@ -159,6 +159,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			e->range = 32.f;
 			e->text = game->txQuest[219];
 			e->timed = false;
+			e->st = 6;
 		}
 		break;
 	case Progress::BowStolen:
@@ -189,7 +190,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			target_loc = W.GetRandomSpawnLocation(GetStartLocation().pos, SG_GOBLINS);
 			Location& target = GetTargetLocation();
 			target.state = LS_KNOWN;
-			target.st = 11;
+			target.st = 10;
 			target.reset = true;
 			target.active_quest = this;
 			done = false;
@@ -248,7 +249,7 @@ void Quest_Goblins::SetProgress(int prog2)
 		{
 			goblins_state = State::KnownLocation;
 			Location& target = *W.CreateLocation(L_DUNGEON, W.GetWorldPos(), 128.f, THRONE_FORT, SG_GOBLINS, false);
-			target.st = 13;
+			target.st = 12;
 			target.SetKnown();
 			target.active_quest = this;
 			target_loc = target.index;
@@ -383,6 +384,7 @@ bool Quest_Goblins::Load(GameReader& f)
 		e->range = 32.f;
 		e->text = game->txQuest[219];
 		e->timed = false;
+		e->st = 6;
 	}
 
 	return true;

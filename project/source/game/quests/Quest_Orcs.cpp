@@ -84,7 +84,7 @@ void Quest_Orcs::SetProgress(int prog2)
 			// generate location
 			Location& tl = *W.CreateLocation(L_DUNGEON, GetStartLocation().pos, 64.f, HUMAN_FORT, SG_ORCS, false);
 			tl.SetKnown();
-			tl.st = 10;
+			tl.st = 8;
 			tl.active_quest = this;
 			target_loc = tl.index;
 			location_event_handler = this;
@@ -312,7 +312,8 @@ void Quest_Orcs2::SetProgress(int prog2)
 			}
 			// do³¹cz do dru¿yny
 			Team.AddTeamMember(DialogContext::current->talker, true);
-			Team.free_recruit = false;
+			if(Team.free_recruits > 0)
+				--Team.free_recruits;
 		}
 		break;
 	case Progress::TalkedAboutCamp:
@@ -321,7 +322,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 			target_loc = W.CreateCamp(W.GetWorldPos(), SG_ORCS, 256.f, false);
 			Location& target = GetTargetLocation();
 			target.state = LS_HIDDEN;
-			target.st = 13;
+			target.st = 11;
 			target.active_quest = this;
 			near_loc = W.GetNearestSettlement(target.pos);
 			OnUpdate(game->txQuest[198]);
