@@ -37,7 +37,7 @@ void Quest_Tutorial::Start()
 
 	HumanData hd;
 	hd.Get(*game.gui->create_character->unit->human_data);
-	game.NewGameCommon(game.gui->create_character->clas, game.gui->create_character->name.c_str(), hd, game.gui->create_character->cc, true);
+	game.NewGameCommon(game.gui->create_character->clas, game.gui->create_character->player_name.c_str(), hd, game.gui->create_character->cc, true);
 	in_tutorial = true;
 	state = 0;
 	texts.clear();

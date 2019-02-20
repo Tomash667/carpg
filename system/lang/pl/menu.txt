@@ -557,6 +557,9 @@ aiDrunkContestText0 = "Ahhhh, kolejne zawody. A¿ siê ³ezka w oku krêci..."
 aiDrunkContestText1 = "Na co jeszcze czekamy?!"
 aiDrunkContestText2 = "Zawody! Zawody! Zawody!"
 aiDrunkContestText3 = "Piwa! Piwa dajcie!"
+aiWildHunterText0 = "Przeklêci drwale! Wykarczowali by ca³y las gdyby im na to pozwoliæ!"
+aiWildHunterText1 = "Gdzie ja zostawi³em mój kostium wilka?"
+aiWildHunterText2 = "Nie spocznê dopóki gniew natury nie zniszczy tego miasta!"
 
 // location names
 randomEncounter = "Losowe spotkanie"
@@ -710,6 +713,7 @@ gmsLeftEvent = "Opuœci³eœ wydarzenie"
 gainLearningPoints = "Punkty nauki %+d"
 learnedPerk = "Pozna³eœ nowy atut"
 tooComplicated = "To jest zbyt skomplikowane..."
+addedCursedStone = "W twoim ekwipunku pojawi³o siê coœ ciê¿kiego!"
 
 // rumors
 rumor_0 = "Ponoæ w $rcitynhere$ widziano elfy."

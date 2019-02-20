@@ -21,7 +21,7 @@ public:
 	void Save(FileWriter& f);
 	void Load(FileReader& f);
 	void LoadOldGui(FileReader& f);
-	void Clear(bool reset_mpbox);
+	void Clear(bool reset_mpbox, bool on_enter);
 	void Setup(PlayerController* pc);
 	void OnResize();
 	void OnFocus(bool focus, const Int2& activation_point);

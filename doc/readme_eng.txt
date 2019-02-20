@@ -353,6 +353,7 @@ reported it in the appropriate topic.
 Tomashu - Programming, models, textures, ideas, story.
 Leinnan - Models, textures, ideas, testing.
 MarkK - Models and textures of food and other objects.
+Shdorsh - English translation fixes.
 Zielu - Reluctant testing.
 
 Thanks for bug founding:

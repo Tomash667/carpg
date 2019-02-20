@@ -132,21 +132,48 @@ void Inventory::LoadData()
 //=================================================================================================
 void Inventory::OnReset()
 {
-	if(tooltip.img == Game::Get().tItemRegionRot)
+	TEX tex = Game::Get().tItemRegionRot;
+	if(inv_mine->visible)
 	{
-		tooltip.img = nullptr;
-		tex_replaced = true;
+		if(tooltip.img == tex)
+		{
+			tooltip.img = nullptr;
+			inv_mine->tex_replaced = true;
+		}
+	}
+	else if(inv_trade_mine->visible)
+	{
+		if(inv_trade_mine->box_img == tex)
+		{
+			inv_trade_mine->box_img = nullptr;
+			inv_trade_mine->tex_replaced = true;
+		}
+		if(inv_trade_other->box_img == tex)
+		{
+			inv_trade_other->box_img = nullptr;
+			inv_trade_other->tex_replaced = true;
+		}
 	}
 }
 
 //=================================================================================================
 void Inventory::OnReload()
 {
-	if(tex_replaced)
+	TEX tex = Game::Get().tItemRegionRot;
+	if(inv_mine->tex_replaced)
 	{
-		if(!tooltip.img)
-			tooltip.img = Game::Get().tItemRegionRot;
-		tex_replaced = false;
+		tooltip.img = tex;
+		inv_mine->tex_replaced = false;
+	}
+	if(inv_trade_mine->tex_replaced)
+	{
+		inv_trade_mine->box_img = tex;
+		inv_trade_mine->tex_replaced = false;
+	}
+	if(inv_trade_other->tex_replaced)
+	{
+		inv_trade_other->box_img = tex;
+		inv_trade_other->tex_replaced = false;
 	}
 }
 
@@ -349,7 +376,7 @@ void Inventory::BuildTmpInventory(int index)
 
 
 //=================================================================================================
-InventoryPanel::InventoryPanel(Inventory& base) : base(base), last_item(nullptr), i_items(nullptr), game(Game::Get()), for_unit(false)
+InventoryPanel::InventoryPanel(Inventory& base) : base(base), last_item(nullptr), i_items(nullptr), game(Game::Get()), for_unit(false), tex_replaced(false)
 {
 	scrollbar.total = 100;
 	scrollbar.offset = 0;
@@ -437,7 +464,7 @@ void InventoryPanel::Draw(ControlDrawData*)
 		{
 			item = slots[-i_item - 1];
 			count = 1;
-			team = (mode == LOOT_OTHER ? 1 : 0);
+			team = (mode == LOOT_OTHER ? 2 : 0);
 		}
 		else
 		{
@@ -500,6 +527,12 @@ void InventoryPanel::Update(float dt)
 
 	if(game.gui->book->visible)
 		return;
+
+	if(mode == INVENTORY && Key.Focus() && Key.PressedRelease(VK_ESCAPE))
+	{
+		Hide();
+		return;
+	}
 
 	if(base.lock && base.lock.is_give)
 	{
@@ -1215,9 +1248,6 @@ void InventoryPanel::Update(float dt)
 				GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnGiveGold), base.txGiveGoldCount, 0, unit->gold, &counter);
 		}
 	}
-
-	if(mode == INVENTORY && Key.Focus() && Key.PressedRelease(VK_ESCAPE))
-		Hide();
 }
 
 //=================================================================================================

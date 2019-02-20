@@ -325,12 +325,13 @@ void GlobalGui::LoadOldGui(FileReader& f)
 
 //=================================================================================================
 // Clear gui state after new game/loading/entering new location
-void GlobalGui::Clear(bool reset_mpbox)
+void GlobalGui::Clear(bool reset_mpbox, bool on_enter)
 {
 	if(game_gui)
 	{
 		game_gui->Reset();
-		messages->Reset();
+		if(!on_enter)
+			messages->Reset();
 		if(mp_box && reset_mpbox)
 			mp_box->visible = false;
 	}

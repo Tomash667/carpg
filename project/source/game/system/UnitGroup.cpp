@@ -144,7 +144,8 @@ vector<TmpUnitGroup::Spawn>& TmpUnitGroup::Roll(int level, int count)
 	spawn.clear();
 	if(entries.empty())
 		return spawn;
-	int points = level * (count - 1) + Random(count / 2, count);
+
+	int points = level * count + Random(-level / 2, level / 2);
 	while(points > 0 && spawn.size() < (uint)count *2)
 	{
 		int x = Rand() % total, y = 0;
@@ -197,5 +198,23 @@ vector<TmpUnitGroup::Spawn>& TmpUnitGroup::Roll(int level, int count)
 			}
 		}
 	}
+
+	if(spawn.empty())
+	{
+		// add anything with lowest level
+		int min_level = 99, min_index = -1, index = 0;
+		for(UnitGroup::Entry& entry : entries)
+		{
+			if(entry.ud->level.x < min_level)
+			{
+				min_level = entry.ud->level.x;
+				min_index = index;
+			}
+			++index;
+		}
+		UnitGroup::Entry& entry = entries[min_index];
+		spawn.push_back(std::make_pair(entry.ud, Max(level, entry.ud->level.x)));
+	}
+
 	return spawn;
 }

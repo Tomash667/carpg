@@ -308,7 +308,7 @@ dialog arena_master {
 	34 "Zawody"
 	35 "Co chcesz wiedzieæ o zawodach?"
 	36 "Zapisz siê"
-	37 "Wpisowe wynosi 100 sztuk z³ota. Nie bêdziesz móg³ opuœciæ miasta dopóki trwaj¹ zawody. Gdy tylko siê zapiszesz pozostali bêd¹ mieli minutê na zapisanie siê."
+	37 "Wpisowe wynosi 100 sztuk z³ota. Jeœli odejdziesz za daleko zostaniesz wypisany z zawodów. Gdy tylko siê zapiszesz pozostali bêd¹ mieli minutê na zapisanie siê."
 	38 "Na pewno chcesz siê zapisaæ?"
 	39 "Tak"
 	40 "Dobrze. Zaraz zobaczymy ile osób jest gotowych do walki!"

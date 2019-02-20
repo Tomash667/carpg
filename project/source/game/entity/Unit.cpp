@@ -1000,7 +1000,7 @@ void Unit::UpdateEffects(float dt)
 	if(hp != hpmax && (regen > 0 || temp_regen > 0 || food_heal > 0))
 	{
 		float natural = GetEffectMul(EffectId::NaturalHealingMod);
-		hp += (regen + temp_regen) * dt + natural * food_heal;
+		hp += ((regen + temp_regen) + natural * food_heal) * dt;
 		if(hp > hpmax)
 			hp = hpmax;
 		if(Net::IsOnline())
@@ -1189,21 +1189,24 @@ float Unit::GetEffectSum(EffectId effect) const
 float Unit::GetEffectMul(EffectId effect) const
 {
 	float value = 1.f,
-		tmp_value = 1.f;
+		tmp_value_low = 1.f,
+		tmp_value_high = 1.f;
 	for(const Effect& e : effects)
 	{
 		if(e.effect == effect)
 		{
 			if(e.source == EffectSource::Temporary)
 			{
-				if(e.power > tmp_value)
-					tmp_value = e.power;
+				if(e.power > tmp_value_high)
+					tmp_value_high = e.power;
+				else if(e.power < tmp_value_low)
+					tmp_value_low = e.power;
 			}
 			else
 				value *= e.power;
 		}
 	}
-	return value * tmp_value;
+	return value * tmp_value_low * tmp_value_high;
 }
 
 //=================================================================================================
@@ -1661,7 +1664,7 @@ void Unit::Load(GameReader& f, bool local)
 			can_sort = false;
 		}
 	}
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_8)
 	{
 		if(f.Read0())
 			stock = nullptr;
@@ -1716,7 +1719,7 @@ void Unit::Load(GameReader& f, bool local)
 		}
 		level = data->level.Clamp(level);
 	}
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_8)
 	{
 		if(data->group == G_PLAYER)
 		{
@@ -1857,7 +1860,7 @@ void Unit::Load(GameReader& f, bool local)
 
 	if(live_state >= DYING)
 	{
-		if(LOAD_VERSION >= V_DEV)
+		if(LOAD_VERSION >= V_0_8)
 			f >> mark;
 		else
 		{
@@ -1978,7 +1981,7 @@ void Unit::Load(GameReader& f, bool local)
 		moved = false;
 	}
 
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_8)
 		f.ReadVector4(effects);
 	else
 	{
@@ -2037,7 +2040,7 @@ void Unit::Load(GameReader& f, bool local)
 	}
 
 	// calculate new skills/attributes
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_8)
 	{
 		if(content::require_update)
 			CalculateStats();

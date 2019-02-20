@@ -1344,15 +1344,15 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						int level = -1;
 						if(t.Next())
 							level = t.MustGetInt();
-						int wynik = ChangeMultisampling(type, level);
-						if(wynik == 2)
+						int result = ChangeMultisampling(type, level);
+						if(result == 2)
 						{
 							int ms, msq;
 							GetMultisampling(ms, msq);
 							Msg("Changed multisampling to %d, %d.", ms, msq);
 						}
 						else
-							Msg(wynik == 1 ? "This mode is already set." : "This mode is unavailable.");
+							Msg(result == 1 ? "This mode is already set." : "This mode is unavailable.");
 					}
 					else
 					{

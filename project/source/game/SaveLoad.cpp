@@ -39,6 +39,7 @@
 #include "Pathfinding.h"
 #include "ItemHelper.h"
 #include "CreateServerPanel.h"
+#include "GameMenu.h"
 
 enum SaveFlags
 {
@@ -150,7 +151,7 @@ bool Game::SaveGameCommon(cstring filename, int slot, cstring text)
 
 	if(slot != -1)
 	{
-		gui->saveload->UpdateSaveInfo(slot);
+		gui->saveload->UpdateSaveInfo(slot, text);
 
 		string path = Format("saves/%s/%d.jpg", Net::IsOnline() ? "multi" : "single", slot);
 		CreateSaveImage(path.c_str());
@@ -207,6 +208,7 @@ void Game::LoadGameCommon(cstring filename, int slot)
 	{
 		gui->main_menu->visible = false;
 		gui->game_gui->visible = false;
+		gui->game_menu->CloseDialog();
 		gui->world_map->Hide();
 	}
 	LoadingStart(9);
@@ -502,7 +504,7 @@ void Game::LoadGame(GameReader& f)
 
 	LoadingHandler loading;
 	GAME_STATE game_state2;
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_8)
 	{
 		hardcore_mode = IS_SET(flags, SF_HARDCORE);
 
@@ -560,7 +562,7 @@ void Game::LoadGame(GameReader& f)
 			}
 		}
 	}
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_8)
 		W.LoadOld(f, loading, 3, false);
 	f >> L.enter_from;
 	if(LOAD_VERSION >= V_0_3)
@@ -593,7 +595,7 @@ void Game::LoadGame(GameReader& f)
 	pc_data.rot_buf = 0.f;
 
 	// traders stock
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_8)
 	{
 		ItemHelper::SkipStock(f); // merchant
 		ItemHelper::SkipStock(f); // blacksmith
@@ -699,7 +701,7 @@ void Game::LoadGame(GameReader& f)
 
 	SM.Load(f);
 
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_8)
 		W.LoadOld(f, loading, 2, false);
 
 	f >> read_id;
@@ -726,7 +728,7 @@ void Game::LoadGame(GameReader& f)
 		}
 
 		L.local_ctx.tpes->resize(f.Read<uint>());
-		for(TrailParticleEmitter* tpe : *L.local_ctx.tpes)
+		for(TrailParticleEmitter*& tpe : *L.local_ctx.tpes)
 		{
 			tpe = new TrailParticleEmitter;
 			TrailParticleEmitter::AddRefid(tpe);

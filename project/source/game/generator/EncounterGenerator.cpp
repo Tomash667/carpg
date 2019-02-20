@@ -429,22 +429,24 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 	talker = nullptr;
 	float dist, best_dist;
 
-	Vec3 spawn_pos(128.f, 0, 128.f);
+	const float center = (float)OutsideLocation::size;
+	Vec3 spawn_pos(center, 0, center);
 	if(back_attack)
 	{
+		const float dist = 12.f;
 		switch(enter_dir)
 		{
 		case GDIR_RIGHT:
-			spawn_pos = Vec3(140.f, 0, 128.f);
+			spawn_pos = Vec3(center + dist, 0, center);
 			break;
 		case GDIR_UP:
-			spawn_pos = Vec3(128.f, 0.f, 140.f);
+			spawn_pos = Vec3(center, 0.f, center + dist);
 			break;
 		case GDIR_LEFT:
-			spawn_pos = Vec3(116.f, 0.f, 128.f);
+			spawn_pos = Vec3(center - dist, 0.f, center);
 			break;
 		case GDIR_DOWN:
-			spawn_pos = Vec3(128.f, 0.f, 116.f);
+			spawn_pos = Vec3(center, 0.f, center - dist);
 			break;
 		}
 	}
@@ -500,35 +502,26 @@ void EncounterGenerator::SpawnEncounterTeam()
 	Vec3 pos;
 	float dir;
 
+	const float center = (float)OutsideLocation::size;
+	float dist = (far_encounter ? 12.f : 7.f);
+
 	Vec3 look_pt;
 	switch(enter_dir)
 	{
 	case GDIR_RIGHT:
-		if(far_encounter)
-			pos = Vec3(140.f, 0.f, 128.f);
-		else
-			pos = Vec3(135.f, 0.f, 128.f);
+		pos = Vec3(center + dist, 0.f, center);
 		dir = PI / 2;
 		break;
 	case GDIR_UP:
-		if(far_encounter)
-			pos = Vec3(128.f, 0.f, 140.f);
-		else
-			pos = Vec3(128.f, 0.f, 135.f);
+		pos = Vec3(center, 0.f, center + dist);
 		dir = 0;
 		break;
 	case GDIR_LEFT:
-		if(far_encounter)
-			pos = Vec3(116.f, 0.f, 128.f);
-		else
-			pos = Vec3(121.f, 0.f, 128.f);
+		pos = Vec3(center - dist, 0.f, center);
 		dir = 3.f / 2 * PI;
 		break;
 	case GDIR_DOWN:
-		if(far_encounter)
-			pos = Vec3(128.f, 0.f, 116.f);
-		else
-			pos = Vec3(128.f, 0.f, 121.f);
+		pos = Vec3(center, 0.f, center - dist);
 		dir = PI;
 		break;
 	}

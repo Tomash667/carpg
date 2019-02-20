@@ -34,6 +34,7 @@ void GameMessages::LoadLanguage()
 	txGainLearningPoints = Str("gainLearningPoints");
 	txLearnedPerk = Str("learnedPerk");
 	txTooComplicated = Str("tooComplicated");
+	txAddedCursedStone = Str("addedCursedStone");
 }
 
 //=================================================================================================
@@ -132,7 +133,7 @@ void GameMessages::Load(FileReader& f)
 		f >> msg.pos;
 		f >> msg.size;
 		f >> msg.type;
-		if(LOAD_VERSION >= V_DEV)
+		if(LOAD_VERSION >= V_0_8)
 		{
 			f >> msg.subtype;
 			f >> msg.value;
@@ -282,6 +283,9 @@ void GameMessages::AddGameMsg3(GMS id)
 	case GMS_TOO_COMPLICATED:
 		text = txTooComplicated;
 		time = 2.5f;
+		break;
+	case GMS_ADDED_CURSED_STONE:
+		text = txAddedCursedStone;
 		break;
 	default:
 		assert(0);

@@ -1544,7 +1544,7 @@ consumable beer {
 	mesh "piwo.qmsh"
 	type drink
 	effect alcohol
-	power 50
+	power 75
 	time 1
 	flags {not_alchemist ground_mesh}
 }
@@ -1555,7 +1555,7 @@ consumable vodka {
 	mesh "wodka.qmsh"
 	type drink
 	effect alcohol
-	power 100
+	power 150
 	time 2
 	flags {not_alchemist ground_mesh}
 }
@@ -1566,7 +1566,7 @@ consumable spirit {
 	mesh "wodka.qmsh"
 	type drink
 	effect alcohol
-	power 200
+	power 300
 	time 4
 	flags {not_alchemist ground_mesh}
 }
@@ -2298,7 +2298,6 @@ leveled_list axe {
 leveled_list blunt {
 	blunt_club 1
 	blunt_mace 2
-	frying_pan 3
 	pickaxe 4
 	blacksmith_hammer 4
 	blunt_orcish 5

@@ -171,6 +171,7 @@ class UnitLoader : public ContentLoader
 				if(ItemScript::TryGet(id))
 					t.Throw("Id must be unique.");
 				Ptr<ItemScript> script;
+				script->is_subprofile = false;
 				script->id = id;
 				t.Next();
 				ParseItems(script);
@@ -317,6 +318,7 @@ class UnitLoader : public ContentLoader
 			{ "coward", F_COWARD },
 			{ "dont_escape", F_DONT_ESCAPE },
 			{ "archer", F_ARCHER },
+			{ "peaceful", F_PEACEFUL },
 			{ "pierce_res25", F_PIERCE_RES25 },
 			{ "slash_res25", F_SLASH_RES25 },
 			{ "blunt_res25", F_BLUNT_RES25 },
@@ -648,6 +650,7 @@ class UnitLoader : public ContentLoader
 				if(t.IsSymbol('{'))
 				{
 					Ptr<ItemScript> script;
+					script->is_subprofile = false;
 					unit->item_script = script.Get();
 					ParseItems(script);
 				}
@@ -1181,6 +1184,7 @@ class UnitLoader : public ContentLoader
 				{
 					t.AssertSymbol('{');
 					Ptr<ItemScript> script;
+					script->is_subprofile = true;
 					subprofile->item_script = script.Get();
 					ParseItems(script);
 				}

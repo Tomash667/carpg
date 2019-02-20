@@ -240,7 +240,6 @@ void Quest_Tournament::StartTournament(Unit* arena_master)
 	state2 = 0;
 	master = arena_master;
 	units.clear();
-	generated = false;
 	winner = nullptr;
 	pairs.clear();
 	skipped_unit = nullptr;
@@ -853,7 +852,6 @@ void Quest_Tournament::Clean()
 	}
 	master->busy = Unit::Busy_No;
 	master = nullptr;
-	winner = nullptr;
 
 	state = TOURNAMENT_NOT_DONE;
 	generated = false;

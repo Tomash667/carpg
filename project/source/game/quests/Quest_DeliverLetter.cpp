@@ -162,14 +162,15 @@ bool Quest_DeliverLetter::Load(GameReader& f)
 	if(prog < Progress::Finished)
 	{
 		f >> end_loc;
-
-		Location& loc = *W.GetLocation(end_loc);
-
-		Item::Get("letter")->CreateCopy(letter);
-		letter.id = "$letter";
-		letter.name = Format(game->txQuest[prog == Progress::GotResponse ? 1 : 0], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys,
-			loc.name.c_str());
-		letter.refid = refid;
+		if(prog >= Progress::Started)
+		{
+			Location& loc = *W.GetLocation(end_loc);
+			Item::Get("letter")->CreateCopy(letter);
+			letter.id = "$letter";
+			letter.name = Format(game->txQuest[prog == Progress::GotResponse ? 1 : 0], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys,
+				loc.name.c_str());
+			letter.refid = refid;
+		}
 	}
 
 	return true;

@@ -35,8 +35,8 @@
 #define SORT_GEORGIAN_TRADITIONAL       0x0
 #define _USE_DECLSPECS_FOR_SAL          0
 #define _USE_ATTRIBUTES_FOR_SAL         0
-#define VERSION_MAJOR                    0
-#define VERSION_PATCH                    0
+#define VERSION_MAJOR                   0
+#define VERSION_PATCH                   0
 #define BETA_VALUE                      0
 #define RELEASE_TYPE                    0
 #define CREATEPROCESS_MANIFEST_RESOURCE_ID 1
@@ -321,7 +321,7 @@
 #define SUBLANG_SERBIAN_CYRILLIC        0x03
 #define SUBLANG_SPANISH_MODERN          0x03
 #define SORT_CHINESE_BOPOMOFO           0x3
-#define VERSION_MINOR                    3
+#define VERSION_MINOR                   3
 #define SW_SHOWNOACTIVATE               4
 #define SHOW_OPENNOACTIVATE             4
 #define SW_OTHERUNZOOM                  4
@@ -756,7 +756,6 @@
 #define IDD_DIALOG1                     101
 #define IDD_LANGUAGE                    101
 #define VK_NUMPAD6                      0x66
-#define IDD_CRASH                       102
 #define VK_NUMPAD7                      0x67
 #define VK_NUMPAD8                      0x68
 #define LANG_HAUSA                      0x68
@@ -1148,10 +1147,6 @@
 #define WM_DDE_FIRST                    0x03E0
 #define IDC_STATIC1                     1001
 #define IDC_LIST2                       1002
-#define IDC_EDIT2                       1002
-#define IDC_STATIC2                     1003
-#define IDC_STATIC3                     1004
-#define IDC_STATIC4                     1005
 #define CF_GDIOBJLAST                   0x03FF
 #define _WIN32_WINNT_NT4                0x0400
 #define _WIN32_IE_IE40                  0x0400
@@ -1491,7 +1486,7 @@
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
-//
+// 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        104

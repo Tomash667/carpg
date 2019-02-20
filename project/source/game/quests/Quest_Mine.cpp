@@ -818,7 +818,7 @@ bool Quest_Mine::GenerateMine(CaveGenerator* cave_gen)
 			loc->name = game->txAncientArmory;
 			loc->pos = Vec2(-999, -999);
 			loc->spawn = SG_GOLEMS;
-			loc->st = 14;
+			loc->st = 12;
 			loc->type = L_DUNGEON;
 			loc->image = LI_DUNGEON;
 			loc->state = LS_HIDDEN;

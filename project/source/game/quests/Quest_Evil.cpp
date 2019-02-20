@@ -690,6 +690,16 @@ void Quest_Evil::WarpEvilBossToAltar()
 		warp_pos -= Vec3(sin(o->rot.y)*1.5f, 0, cos(o->rot.y)*1.5f);
 		L.WarpUnit(*u, warp_pos);
 		u->ai->start_pos = u->pos;
+
+		for(int i = 0; i < 2; ++i)
+		{
+			Unit* u2 = L.SpawnUnitNearLocation(L.local_ctx, u->pos, *UnitData::Get("zombie_ancient"));
+			if(u2)
+			{
+				u2->dont_attack = true;
+				u2->guard_target = u;
+			}
+		}
 	}
 }
 

@@ -160,7 +160,7 @@ void QuestManager::InitQuests(bool devmode)
 	quest_mages2->refid = quest_counter++;
 	quest_mages2->Start();
 	unaccepted_quests.push_back(quest_mages2);
-	quest_rumor[R_MAGES] = true;
+	quest_rumor[R_MAGES2] = true;
 	--quest_rumor_counter;
 
 	// orcs
@@ -675,7 +675,7 @@ void QuestManager::Load(GameReader& f)
 	quest_crazies->Init();
 	quest_artifacts = (Quest_Artifacts*)FindQuestById(Q_ARTIFACTS);
 
-	if(LOAD_VERSION < V_DEV && !quest_mages2)
+	if(LOAD_VERSION < V_0_8 && !quest_mages2)
 	{
 		quest_mages2 = new Quest_Mages2;
 		quest_mages2->refid = quest_counter++;

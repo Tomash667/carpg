@@ -63,14 +63,6 @@ void CityGenerator::SetRoadSize(int _road_size, int _road_part)
 }
 
 //=================================================================================================
-void CityGenerator::SetTerrainNoise(int octaves, float frequency, float _hmin, float _hmax)
-{
-	perlin.Change(max(w, h), octaves, frequency, 1.f);
-	hmin = _hmin;
-	hmax = _hmax;
-}
-
-//=================================================================================================
 void CityGenerator::GenerateMainRoad(RoadType type, GameDirection dir, int rocky_roads, bool plaza, int swap, vector<EntryPoint>& entry_points, int& gates, bool fill_roads)
 {
 	memset(tiles, 0, sizeof(TerrainTile)*w*h);
@@ -663,7 +655,7 @@ void CityGenerator::GenerateBuildings(vector<ToBuild>& tobuild)
 							side = 1;
 					}
 				}
-
+				
 				if(side != -1)
 				{
 					BuildPt& bpt = Add1(points);
@@ -888,7 +880,7 @@ void CityGenerator::GenerateBuildings(vector<ToBuild>& tobuild)
 		build_it->rot = best_dir;
 
 		Int2 ext2 = build_it->type->size;
-		if(best_dir == 1 || best_dir == 3)
+		if(best_dir == GDIR_LEFT || best_dir == GDIR_RIGHT)
 			std::swap(ext2.x, ext2.y);
 
 		const int x1 = (ext2.x - 1) / 2;
@@ -907,17 +899,17 @@ void CityGenerator::GenerateBuildings(vector<ToBuild>& tobuild)
 				Building::TileScheme co;
 				switch(best_dir)
 				{
-				case 0:
+				case GDIR_DOWN:
 					co = build_it->type->scheme[xr + (ext2.y - yr - 1)*ext2.x];
 					break;
-				case 1:
-					co = build_it->type->scheme[yr + xr*ext2.y];
+				case GDIR_LEFT:
+					co = build_it->type->scheme[ext2.y - yr - 1 + (ext2.x - xr - 1)*ext2.y];
 					break;
-				case 2:
+				case GDIR_UP:
 					co = build_it->type->scheme[ext2.x - xr - 1 + yr*ext2.x];
 					break;
-				case 3:
-					co = build_it->type->scheme[ext2.y - yr - 1 + (ext2.x - xr - 1)*ext2.y];
+				case GDIR_RIGHT:
+					co = build_it->type->scheme[yr + xr * ext2.y];
 					break;
 				default:
 					assert(0);
@@ -1121,31 +1113,6 @@ superbreak:
 			}
 		}
 		pt2 = apt.prev;
-	}
-}
-
-//=================================================================================================
-void CityGenerator::RandomizeHeight()
-{
-	float hdif = hmax - hmin;
-	const float hm = sqrt(2.f) / 2;
-
-	for(int y = 0; y <= h; ++y)
-	{
-		for(int x = 0; x <= w; ++x)
-		{
-			float a = perlin.Get(1.f / (w + 1)*x, 1.f / (h + 1)*y);
-			height[x + y*(w + 1)] = (a + hm) / (hm * 2)*hdif + hmin;
-		}
-	}
-
-	for(int y = 0; y < h; ++y)
-	{
-		for(int x = 0; x < w; ++x)
-		{
-			if(x < 15 || x > w - 15 || y < 15 || y > h - 15)
-				height[x + y*(w + 1)] += Random(5.f, 10.f);
-		}
 	}
 }
 
@@ -1571,26 +1538,38 @@ void CityGenerator::ApplyWallTiles(int gates)
 		tiles[i + mur1*w].Set(TT_SAND, TM_BUILDING);
 		if(tiles[i + (mur1 + 1)*w].t == TT_GRASS)
 			tiles[i + (mur1 + 1)*w].Set(TT_SAND, TT_GRASS, 128, TM_BUILDING);
+		height[i + (mur1 - 2) * w1] = 1.f;
+		height[i + (mur1 - 1) * w1] = 1.f;
 		height[i + mur1*w1] = 1.f;
 		height[i + (mur1 + 1)*w1] = 1.f;
+		height[i + (mur1 + 2)*w1] = 1.f;
 		// south
 		tiles[i + mur2*w].Set(TT_SAND, TM_BUILDING);
 		if(tiles[i + (mur2 - 1)*w].t == TT_GRASS)
 			tiles[i + (mur2 - 1)*w].Set(TT_SAND, TT_GRASS, 128, TM_BUILDING);
+		height[i + (mur2 + 2)*w1] = 1.f;
+		height[i + (mur2 + 1)*w1] = 1.f;
 		height[i + mur2*w1] = 1.f;
 		height[i + (mur2 - 1)*w1] = 1.f;
+		height[i + (mur2 - 2)*w1] = 1.f;
 		// west
 		tiles[mur1 + i*w].Set(TT_SAND, TM_BUILDING);
 		if(tiles[mur1 + 1 + i*w].t == TT_GRASS)
 			tiles[mur1 + 1 + i*w].Set(TT_SAND, TT_GRASS, 128, TM_BUILDING);
+		height[mur1 - 2 + i * w1] = 1.f;
+		height[mur1 - 1 + i * w1] = 1.f;
 		height[mur1 + i*w1] = 1.f;
 		height[mur1 + 1 + i*w1] = 1.f;
+		height[mur1 + 2 + i * w1] = 1.f;
 		// east
 		tiles[mur2 + i*w].Set(TT_SAND, TM_BUILDING);
 		if(tiles[mur2 - 1 + i*w].t == TT_GRASS)
 			tiles[mur2 - 1 + i*w].Set(TT_SAND, TT_GRASS, 128, TM_BUILDING);
+		height[mur2 + 2 + i * w1] = 1.f;
+		height[mur2 + 1 + i * w1] = 1.f;
 		height[mur2 + i*w1] = 1.f;
 		height[mur2 - 1 + i*w1] = 1.f;
+		height[mur2 - 2 + i * w1] = 1.f;
 	}
 
 	// tiles under gates
@@ -2086,8 +2065,10 @@ void CityGenerator::Generate()
 	CreateMap();
 	Init(city->tiles, city->h, OutsideLocation::size, OutsideLocation::size);
 	SetRoadSize(3, 32);
-	SetTerrainNoise(Random(3, 5), Random(3.f, 8.f), 1.f, village ? Random(2.f, 10.f) : Random(1.f, 2.f));
-	RandomizeHeight();
+	float hmax = village ? Random(5.f, 12.f) : Random(2.5f, 5.f);
+	int octaves = Random(2, 8);
+	float frequency = Random(3.f, 16.f);
+	RandomizeHeight(octaves, frequency, 0.f, hmax);
 
 	vector<ToBuild> tobuild;
 	if(village)
@@ -2361,17 +2342,17 @@ void CityGenerator::SpawnBuildings()
 
 		switch(it->rot)
 		{
-		case 0:
+		case GDIR_DOWN:
 			o->rot.y = 0.f;
 			break;
-		case 1:
-			o->rot.y = PI * 3 / 2;
+		case GDIR_LEFT:
+			o->rot.y = PI / 2;
 			break;
-		case 2:
+		case GDIR_UP:
 			o->rot.y = PI;
 			break;
-		case 3:
-			o->rot.y = PI / 2;
+		case GDIR_RIGHT:
+			o->rot.y = PI * 3 / 2;
 			break;
 		}
 
@@ -2453,14 +2434,7 @@ void CityGenerator::SpawnBuildings()
 	for(vector<CityBuilding>::iterator it = city->buildings.begin(), end = city->buildings.end(); it != end; ++it)
 	{
 		Building* b = it->type;
-
-		GameDirection r = it->rot;
-		if(r == GDIR_LEFT)
-			r = GDIR_RIGHT;
-		else if(r == GDIR_RIGHT)
-			r = GDIR_LEFT;
-
-		L.ProcessBuildingObjects(L.local_ctx, city, nullptr, b->mesh, b->inside_mesh, DirToRot(r), r,
+		L.ProcessBuildingObjects(L.local_ctx, city, nullptr, b->mesh, b->inside_mesh, DirToRot(it->rot), it->rot,
 			Vec3(float(it->pt.x + b->shift[it->rot].x) * 2, 0.f, float(it->pt.y + b->shift[it->rot].y) * 2), it->type, &*it);
 	}
 }
@@ -2533,17 +2507,17 @@ void CityGenerator::SpawnUnits()
 
 		switch(b.rot)
 		{
-		case 0:
+		case GDIR_DOWN:
 			u->rot = 0.f;
 			break;
-		case 1:
-			u->rot = PI * 3 / 2;
+		case GDIR_LEFT:
+			u->rot = PI / 2;
 			break;
-		case 2:
+		case GDIR_UP:
 			u->rot = PI;
 			break;
-		case 3:
-			u->rot = PI / 2;
+		case GDIR_RIGHT:
+			u->rot = PI * 3 / 2;
 			break;
 		}
 
@@ -2904,13 +2878,8 @@ void CityGenerator::CreateMinimap()
 void CityGenerator::OnLoad()
 {
 	Game& game = Game::Get();
-	OutsideLocation* outside = (OutsideLocation*)loc;
-
 	game.SetOutsideParams();
 	game.SetTerrainTextures();
-
-	L.ApplyContext(outside, L.local_ctx);
-	L.city_ctx = (City*)loc;
 	ApplyTiles();
 
 	L.RecreateObjects(false);
@@ -2951,14 +2920,7 @@ void CityGenerator::RespawnBuildingPhysics()
 	for(vector<CityBuilding>::iterator it = city->buildings.begin(), end = city->buildings.end(); it != end; ++it)
 	{
 		Building* b = it->type;
-
-		GameDirection r = it->rot;
-		if(r == GDIR_LEFT)
-			r = GDIR_RIGHT;
-		else if(r == GDIR_RIGHT)
-			r = GDIR_LEFT;
-
-		L.ProcessBuildingObjects(L.local_ctx, city, nullptr, b->mesh, nullptr, DirToRot(r), r,
+		L.ProcessBuildingObjects(L.local_ctx, city, nullptr, b->mesh, nullptr, DirToRot(it->rot), it->rot,
 			Vec3(float(it->pt.x + b->shift[it->rot].x) * 2, 1.f, float(it->pt.y + b->shift[it->rot].y) * 2), nullptr, &*it, true);
 	}
 

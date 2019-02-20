@@ -16,13 +16,11 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Polish resources
+// Polish (Poland) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_PLK)
-#ifdef _WIN32
 LANGUAGE LANG_POLISH, SUBLANG_DEFAULT
 #pragma code_page(1250)
-#endif //_WIN32
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -65,22 +63,8 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,7,128,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,91,128,50,14
-    LISTBOX         IDC_LIST2,7,29,134,93,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP | LBS_NOTIFY
+    LISTBOX         IDC_LIST2,7,29,134,93,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Select language (can be changed in options later):",IDC_STATIC1,7,7,134,21
-END
-
-IDD_CRASH DIALOGEX 0, 0, 284, 135
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "CaRpg"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
-BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,112,114,50,14
-    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,28,284,1
-    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,108,284,1
-    LTEXT           "Something went wrong and CaRpg crashed. Please report this error on forum.\nPlease upload this files and post link:",IDC_STATIC2,14,31,257,17
-    EDITTEXT        IDC_EDIT2,14,50,149,43,ES_AUTOHSCROLL
-    LTEXT           "Remember to write some info too. Thank you!",IDC_STATIC3,14,97,148,8
-    LTEXT           "carpg.pl",IDC_STATIC4,14,120,27,8
 END
 
 
@@ -90,7 +74,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+GUIDELINES DESIGNINFO
 BEGIN
     IDD_LANGUAGE, DIALOG
     BEGIN
@@ -99,18 +83,10 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 142
     END
-
-    IDD_CRASH, DIALOG
-    BEGIN
-        RIGHTMARGIN, 280
-        VERTGUIDE, 14
-        VERTGUIDE, 271
-        BOTTOMMARGIN, 128
-    END
 END
 #endif    // APSTUDIO_INVOKED
 
-#endif    // Polish resources
+#endif    // Polish (Poland) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
@@ -120,8 +96,7 @@ END
 //
 // Generated from the TEXTINCLUDE 3 resource.
 //
-
-
+
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 

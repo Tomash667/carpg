@@ -22,6 +22,7 @@ Version 0.8 (???):
 + bigger world map, map zoom and scrolling, can travel anywhere
 + location search box on world map
 + unique hero to recruit
++ attacking peaceful orcs don't cause attack by citizens
 - fixed fast melee weapon training on low level enemies
 - fixed talking with unit that is standing up
 - fixed units rotating when talking for clients
@@ -33,6 +34,12 @@ Version 0.8 (???):
 - fixed removing password from server but it was still required
 - fixed goblins/orcs missing idle dialogs
 - fixed arena encounter levels
+- fixed handling of quest clear location when location is cave
+- fixed crash when loading game with some quest items
+- fixed crash when left cursed stone in level with corpses
+- fixed special actions drawing
+- fixed healing by Jozan units fighting on arena when he is outside
+- fixed crash when alt tabbing trade is open and item popup is visible
 
 --------------------------------------------------------------------------------
 Version 0.7.1 (2018-04-15):

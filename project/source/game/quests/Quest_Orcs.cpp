@@ -95,9 +95,10 @@ void Quest_Orcs::SetProgress(int prog2)
 			item_to_give[0] = Item::Get("q_orkowie_klucz");
 			spawn_item = Quest_Event::Item_GiveSpawned2;
 			unit_to_spawn = UnitData::Get("q_orkowie_gorush");
+			spawn_unit_room = RoomTarget::Prison;
+			unit_dont_attack = true;
 			unit_to_spawn2 = g_spawn_groups[SG_ORCS].GetSpawnLeader(10);
 			unit_spawn_level2 = -3;
-			spawn_unit_room = RoomTarget::Prison;
 			QM.quest_orcs2->orcs_state = Quest_Orcs2::State::Accepted;
 			// questowe rzeczy
 			msgs.push_back(Format(game->txQuest[192], GetStartLocationName(), W.GetDate()));
@@ -311,6 +312,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 				QM.quest_orcs->target_loc = -1;
 			}
 			// do³¹cz do dru¿yny
+			DialogContext::current->talker->dont_attack = false;
 			Team.AddTeamMember(DialogContext::current->talker, true);
 			if(Team.free_recruits > 0)
 				--Team.free_recruits;
@@ -643,7 +645,7 @@ bool Quest_Orcs2::Load(GameReader& f)
 		f >> guard;
 		f >> orc;
 		f >> orc_class;
-		if(LOAD_VERSION < V_DEV)
+		if(LOAD_VERSION < V_0_8)
 			ItemHelper::SkipStock(f);
 	}
 

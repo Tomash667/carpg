@@ -62,7 +62,7 @@ enum UNIT_FLAGS
 	F_COWARD = 1 << 2, // escapes when allies die or have small hp amount
 	F_DONT_ESCAPE = 1 << 3, // never escapes
 	F_ARCHER = 1 << 4, // prefer ranged combat
-	// unused (1 << 5)
+	F_PEACEFUL = 1 << 5, // if have dont_attack flag ignore actions that cancel it
 	F_PIERCE_RES25 = 1 << 6, // pierce damage resistance 25%
 	F_SLASH_RES25 = 1 << 7, // slash damage resistance 25%
 	F_BLUNT_RES25 = 1 << 8, // blunt damage resistance 25%

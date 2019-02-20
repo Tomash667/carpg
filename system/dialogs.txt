@@ -739,7 +739,7 @@ dialog arena_master
 				end
 			}
 		}
-		else
+		if not special "ironfist_winner"
 			talk 13
 	}
 	choice 14
@@ -900,12 +900,14 @@ dialog arena_master
 			if special "ironfist_here"
 			{
 				if special "ironfist_can_start"
+				{
 					talk 51
-				else
-					talk 52
+					restart
+				}
+				talk 52
+				restart
 			}
-			else
-				talk 53
+			talk 53
 			restart
 		}
 		choice 54
@@ -1562,9 +1564,9 @@ dialog bandit
 		talk 0
 		talk 1
 		talk 2
+		end
 	}
-	else
-		talk 3
+	talk 3
 	end
 }
 
@@ -3252,9 +3254,11 @@ dialog q_mages2_mage
 	if quest_progress 11
 	{
 		if quest_special "q_magowie_u_bossa"
+		{
 			talk 4
-		else
-			talk 5
+			end
+		}
+		talk 5
 		end
 	}
 	if quest_progress 10
@@ -3346,8 +3350,9 @@ dialog q_mages2_mage
 		{
 			special "tell_name"
 			talk 34
+			do_once
 		}
-		else
+		if once
 			talk 35
 	}
 	if quest_progress 2

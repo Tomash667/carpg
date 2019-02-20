@@ -96,7 +96,7 @@ enum AI_ACTION
 	AI_EAT
 };
 
-inline float random_rot(float base_rot, float random_angle)
+inline float RandomRot(float base_rot, float random_angle)
 {
 	if(Rand() % 2 == 0)
 		base_rot += Random(random_angle);
@@ -142,12 +142,7 @@ void Game::UpdateAi(float dt)
 		ai.next_attack -= dt;
 		ai.ignore -= dt;
 		ai.pf_timer -= dt;
-		{
-			const float maxm = (IS_SET(u.data->flags, F_COWARD) ? 5.f : 10.f);
-			ai.morale += dt;
-			if(ai.morale > maxm)
-				ai.morale = maxm;
-		}
+		ai.morale = Min(ai.morale + dt, u.GetMaxMorale());
 		if(u.data->spells)
 		{
 			ai.cooldown[0] -= dt;
@@ -233,9 +228,11 @@ void Game::UpdateAi(float dt)
 			}
 			ai.state = AIController::Escape;
 			ai.timer = Random(2.5f, 5.f);
+			ai.target = nullptr;
 			ai.escape_room = nullptr;
 			ai.ignore = 0.f;
 			ai.target_last_pos = enemy->pos;
+			ai.in_combat = true;
 		}
 
 		MOVE_TYPE move_type = DontMove;
@@ -247,7 +244,7 @@ void Game::UpdateAi(float dt)
 		const Unit* path_unit_ignore = nullptr;
 		bool try_phase = false;
 
-		// rzucanie czarów nie do walki
+		// casting of non combat spells
 		if(u.data->spells && u.data->spells->have_non_combat && u.action == A_NONE && ai.state != AIController::Escape && ai.state != AIController::Cast
 			&& u.busy == Unit::Busy_No)
 		{
@@ -260,22 +257,23 @@ void Game::UpdateAi(float dt)
 						best_prio = -999.f, dist;
 					Unit* spell_target = nullptr;
 
-					// jeœli wrogowie s¹ w pobli¿u to rzucaj tylko gdy nie trzeba chodziæ
+					// if near enemies, cast only on near targets
 					if(best_dist < 3.f)
 						spell_range = 2.5f;
 
 					if(IS_SET(u.data->spells->spell[i]->flags, Spell::Raise))
 					{
-						// o¿ywianie trupów
+						// raise undead spell
 						for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
 						{
-							if(!(*it2)->to_remove && (*it2)->live_state == Unit::DEAD && !u.IsEnemy(**it2) && IS_SET((*it2)->data->flags, F_UNDEAD)
-								&& (dist = Vec3::Distance(u.pos, (*it2)->pos)) < spell_range && L.CanSee(u, **it2))
+							Unit& target = **it2;
+							if(!target.to_remove && target.live_state == Unit::DEAD && !u.IsEnemy(target) && IS_SET(target.data->flags, F_UNDEAD)
+								&& (dist = Vec3::Distance(u.pos, target.pos)) < spell_range && target.in_arena == u.in_arena && L.CanSee(u, target))
 							{
-								float prio = (*it2)->hpmax - dist * 10;
+								float prio = target.hpmax - dist * 10;
 								if(prio > best_prio)
 								{
-									spell_target = *it2;
+									spell_target = &target;
 									best_prio = prio;
 								}
 							}
@@ -283,19 +281,21 @@ void Game::UpdateAi(float dt)
 					}
 					else
 					{
-						// leczenie
+						// healing spell
 						for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
 						{
-							if(!(*it2)->to_remove && !u.IsEnemy(**it2) && !IS_SET((*it2)->data->flags, F_UNDEAD) && (*it2)->hpmax - (*it2)->hp > 100.f
-								&& (dist = Vec3::Distance(u.pos, (*it2)->pos)) < spell_range && L.CanSee(u, **it2))
+							Unit& target = **it2;
+							if(!target.to_remove && !u.IsEnemy(target) && !IS_SET(target.data->flags, F_UNDEAD) && target.hpmax - target.hp > 100.f
+								&& (dist = Vec3::Distance(u.pos, target.pos)) < spell_range && target.in_arena == u.in_arena
+								&& (target.IsAlive() || target.IsTeamMember()) && L.CanSee(u, target))
 							{
-								float prio = (*it2)->hpmax - (*it2)->hp;
-								if(*it2 == &u)
+								float prio = target.hpmax - target.hp;
+								if(&target == &u)
 									prio *= 1.5f;
 								prio -= dist * 10;
 								if(prio > best_prio)
 								{
-									spell_target = *it2;
+									spell_target = &target;
 									best_prio = prio;
 								}
 							}
@@ -528,7 +528,8 @@ void Game::UpdateAi(float dt)
 								}
 							}
 						}
-						else if(((u.IsFollower() && u.hero->mode == HeroData::Follow) || u.assist) && Team.leader->in_arena == -1 && u.busy != Unit::Busy_Tournament)
+						else if(((u.IsFollower() && u.hero->mode == HeroData::Follow) || u.assist) && Team.leader->in_arena == -1
+							&& u.busy != Unit::Busy_Tournament)
 						{
 							Unit* leader = Team.GetLeader();
 							dist = Vec3::Distance(u.pos, leader->pos);
@@ -624,8 +625,8 @@ void Game::UpdateAi(float dt)
 							}
 						}
 					}
-					if(wander && (u.action == A_NONE || u.action == A_ANIMATION2 || (u.action == A_SHOOT && ai.idle_action == AIController::Idle_TrainBow) ||
-						(u.action == A_ATTACK && ai.idle_action == AIController::Idle_TrainCombat)))
+					if(wander && (u.action == A_NONE || u.action == A_ANIMATION2 || (u.action == A_SHOOT && ai.idle_action == AIController::Idle_TrainBow)
+						|| (u.action == A_ATTACK && ai.idle_action == AIController::Idle_TrainCombat)))
 					{
 						ai.loc_timer -= dt;
 						if(ai.timer <= 0.f)
@@ -659,7 +660,7 @@ void Game::UpdateAi(float dt)
 								if(IS_SET(u.data->flags, F_AI_GUARD) && AngleDiff(u.rot, ai.start_rot) > PI / 4)
 									ai.idle_data.rot = ai.start_rot;
 								else if(IS_SET(u.data->flags2, F2_LIMITED_ROT))
-									ai.idle_data.rot = random_rot(ai.start_rot, PI / 4);
+									ai.idle_data.rot = RandomRot(ai.start_rot, PI / 4);
 								else
 									ai.idle_data.rot = Clip(Vec3::LookAtAngle(u.pos, ai.idle_data.pos) + Random(-PI / 2, PI / 2));
 								ai.timer = Random(2.f, 5.f);
@@ -781,7 +782,8 @@ void Game::UpdateAi(float dt)
 									// go near random building
 									ai.loc_timer = ai.timer = Random(30.f, 120.f);
 									ai.idle_action = AIController::Idle_Move;
-									ai.idle_data.pos = L.city_ctx->buildings[Rand() % L.city_ctx->buildings.size()].walk_pt + Vec3::Random(Vec3(-1.f, 0, -1), Vec3(1, 0, 1));
+									ai.idle_data.pos = L.city_ctx->buildings[Rand() % L.city_ctx->buildings.size()].walk_pt
+										+ Vec3::Random(Vec3(-1.f, 0, -1), Vec3(1, 0, 1));
 									ai.city_wander = true;
 								}
 							}
@@ -1026,7 +1028,7 @@ void Game::UpdateAi(float dt)
 									if(IS_SET(u.data->flags, F_AI_GUARD) && AngleDiff(u.rot, ai.start_rot) > PI / 4)
 										ai.idle_data.rot = ai.start_rot;
 									else if(IS_SET(u.data->flags2, F2_LIMITED_ROT))
-										ai.idle_data.rot = random_rot(ai.start_rot, PI / 4);
+										ai.idle_data.rot = RandomRot(ai.start_rot, PI / 4);
 									else
 										ai.idle_data.rot = Random(MAX_ANGLE);
 									break;
@@ -1137,7 +1139,7 @@ void Game::UpdateAi(float dt)
 									if(IS_SET(u.data->flags, F_AI_GUARD) && AngleDiff(u.rot, ai.start_rot) > PI / 4)
 										ai.idle_data.rot = ai.start_rot;
 									else if(IS_SET(u.data->flags2, F2_LIMITED_ROT))
-										ai.idle_data.rot = random_rot(ai.start_rot, PI / 4);
+										ai.idle_data.rot = RandomRot(ai.start_rot, PI / 4);
 									else
 										ai.idle_data.rot = Random(MAX_ANGLE);
 									ai.timer = Random(2.f, 5.f);
@@ -1975,7 +1977,17 @@ void Game::UpdateAi(float dt)
 					ai.timer -= dt;
 					if(ai.timer <= 0.f)
 					{
-						if(ai.GetMorale() > 0.f)
+						if(!ai.in_combat)
+						{
+							ai.state = AIController::Idle;
+							ai.idle_action = AIController::Idle_None;
+							ai.in_combat = false;
+							ai.change_ai_mode = true;
+							ai.loc_timer = Random(5.f, 10.f);
+							ai.timer = Random(1.f, 2.f);
+							break;
+						}
+						else if(ai.GetMorale() > 0.f)
 						{
 							ai.state = AIController::Fighting;
 							ai.timer = 0.f;
@@ -2093,8 +2105,16 @@ void Game::UpdateAi(float dt)
 								target_pos = ai.escape_room->Center();
 							}
 						}
+						else if(ai.target && !ai.target->to_remove)
+						{
+							ai.target_last_pos = ai.target->pos;
+							move_type = MoveAway;
+							look_at = LookAtTarget;
+							target_pos = ai.target_last_pos;
+						}
 						else
 						{
+							ai.target = nullptr;
 							move_type = MoveAway;
 							look_at = LookAtWalk;
 							target_pos = ai.target_last_pos;
@@ -2949,6 +2969,9 @@ void Game::AI_DoAttack(AIController& ai, Unit* target, bool w_biegu)
 //=================================================================================================
 void Game::AI_HitReaction(Unit& unit, const Vec3& pos)
 {
+	if(unit.dont_attack)
+		return;
+
 	AIController& ai = *unit.ai;
 	switch(ai.state)
 	{

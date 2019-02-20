@@ -595,6 +595,8 @@ bool CaveGenerator::HandleUpdate(int days)
 	bool respawn_units;
 	if(L.location_index == QM.quest_mine->target_loc)
 		respawn_units = QM.quest_mine->GenerateMine(this);
+	else
+		respawn_units = true;
 	if(days > 0)
 		GenerateMushrooms(min(days, 10));
 	return respawn_units;

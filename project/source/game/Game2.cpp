@@ -725,25 +725,6 @@ void Game::UpdateGame(float dt)
 	}
 #endif
 
-	/*Object* o = nullptr;
-	float dist = 999.f;
-	for(vector<Object>::iterator it = local_ctx.objects->begin(), end = local_ctx.objects->end(); it != end; ++it)
-	{
-		float d = distance(it->pos, pc->unit->pos);
-		if(d < dist)
-		{
-			dist = d;
-			o = &*it;
-		}
-	}
-	if(o)
-	{
-		if(Key.Down('9'))
-			o->rot.y = clip(o->rot.y+dt);
-		if(Key.Down('0'))
-			o->rot.y = 0;
-	}*/
-
 	L.minimap_opened_doors = false;
 
 	if(QM.quest_tutorial->in_tutorial && !Net::IsOnline())
@@ -760,6 +741,8 @@ void Game::UpdateGame(float dt)
 	LevelContext& player_ctx = (pc->unit->in_building == -1 ? L.local_ctx : L.city_ctx->inside_buildings[pc->unit->in_building]->ctx);
 
 	UpdateFallback(dt);
+	if(!L.location)
+		return;
 
 	if(Net::IsLocal() && !QM.quest_tutorial->in_tutorial)
 	{
@@ -2614,7 +2597,8 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 	// action
 	if(!pc_data.action_ready)
 	{
-		if(u.frozen == FROZEN::NO && u.action == A_NONE && GKey.KeyPressedReleaseAllowed(GK_ACTION) && pc->CanUseAction() && !QM.quest_tutorial->in_tutorial)
+		if(u.frozen == FROZEN::NO && Any(u.action, A_NONE, A_ATTACK, A_BLOCK, A_BASH) && GKey.KeyPressedReleaseAllowed(GK_ACTION) && pc->CanUseAction()
+			&& !QM.quest_tutorial->in_tutorial)
 		{
 			pc_data.action_ready = true;
 			pc_data.action_ok = false;
@@ -2725,7 +2709,10 @@ void Game::UseAction(PlayerController* p, bool from_server, const Vec3* pos)
 	if(strcmp(action.id, "dash") == 0 || strcmp(action.id, "bull_charge") == 0)
 	{
 		bool dash = (strcmp(action.id, "dash") == 0);
+		if(dash)
+			p->Train(TrainWhat::Dash, 0.f, 0);
 		p->unit->action = A_DASH;
+		p->unit->run_attack = false;
 		if(Net::IsLocal() || !from_server)
 		{
 			p->unit->use_rot = Clip(pc_data.action_rot + p->unit->rot + PI);
@@ -5336,7 +5323,15 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 							{
 								if(!u.player->IsHit(unit))
 								{
-									GiveDmg(ctx, &u, 100.f + u.Get(AttributeId::STR) * (2.f + float(u.level) / 3), *unit);
+									float attack = 100.f + 5.f * u.Get(AttributeId::STR);
+									float def = unit->CalculateDefense();
+									float dmg = CombatHelper::CalculateDamage(attack, def);
+									PlayHitSound(MAT_IRON, unit->GetBodyMaterial(), unit->GetCenter(), 2.f, true);
+									if(unit->IsPlayer())
+										unit->player->Train(TrainWhat::TakeDamageArmor, attack / unit->hpmax, u.level);
+									GiveDmg(ctx, &u, dmg, *unit);
+									if(u.IsPlayer())
+										u.player->Train(TrainWhat::BullsCharge, 0.f, unit->level);
 									if(!unit->IsAlive())
 										continue;
 									else
@@ -7914,7 +7909,7 @@ void Game::ClearGameVars(bool new_game)
 		pc_data.picking_item_state = 0;
 		L.is_open = false;
 		gui->game_gui->PositionPanels();
-		gui->Clear(true);
+		gui->Clear(true, false);
 		gui->mp_box->visible = Net::IsOnline();
 		drunk_anim = 0.f;
 		L.light_angle = Random(PI * 2);
@@ -7962,7 +7957,7 @@ void Game::ClearGame()
 	L.city_ctx = nullptr;
 	QM.Clear();
 	W.Reset();
-	gui->Clear(true);
+	gui->Clear(true, false);
 }
 
 SOUND Game::GetItemSound(const Item* item)
@@ -9220,9 +9215,25 @@ void Game::AttackReaction(Unit& attacked, Unit& attacker)
 		{
 			if(!Team.is_bandit)
 			{
-				Team.is_bandit = true;
-				if(Net::IsOnline())
-					Net::PushChange(NetChange::CHANGE_FLAGS);
+				if(attacked.dont_attack && IS_SET(attacked.data->flags, F_PEACEFUL))
+				{
+					if(attacked.ai->state == AIController::Idle)
+					{
+						attacked.ai->state = AIController::Escape;
+						attacked.ai->timer = Random(2.f, 4.f);
+						attacked.ai->target = &attacker;
+						attacked.ai->target_last_pos = attacker.pos;
+						attacked.ai->escape_room = nullptr;
+						attacked.ai->ignore = 0.f;
+						attacked.ai->in_combat = false;
+					}
+				}
+				else
+				{
+					Team.is_bandit = true;
+					if(Net::IsOnline())
+						Net::PushChange(NetChange::CHANGE_FLAGS);
+				}
 			}
 		}
 		else if(attacked.data->group == G_CRAZIES)
@@ -9234,11 +9245,11 @@ void Game::AttackReaction(Unit& attacked, Unit& attacker)
 					Net::PushChange(NetChange::CHANGE_FLAGS);
 			}
 		}
-		if(attacked.dont_attack)
+		if(attacked.dont_attack && !IS_SET(attacked.data->flags, F_PEACEFUL))
 		{
 			for(vector<Unit*>::iterator it = L.local_ctx.units->begin(), end = L.local_ctx.units->end(); it != end; ++it)
 			{
-				if((*it)->dont_attack)
+				if((*it)->dont_attack && !IS_SET((*it)->data->flags, F_PEACEFUL))
 				{
 					(*it)->dont_attack = false;
 					(*it)->ai->change_ai_mode = true;
@@ -10561,6 +10572,7 @@ cstring Game::GetRandomIdleText(Unit& u)
 			hero_text = false;
 		break;
 	case G_MAGES:
+	case G_UNDEAD:
 		if(IS_SET(u.data->flags, F_MAGE) && n < 50)
 			return RandomString(txAiMageText);
 		else
@@ -10573,6 +10585,8 @@ cstring Game::GetRandomIdleText(Unit& u)
 		break;
 	case G_ORCS:
 		return RandomString(txAiOrcText);
+	case G_ANIMALS:
+		return RandomString(txAiWildHunterText);
 	}
 
 	if(hero_text)
@@ -10668,7 +10682,7 @@ void Game::SetOutsideParams()
 
 void Game::OnEnterLevelOrLocation()
 {
-	gui->Clear(false);
+	gui->Clear(false, true);
 	lights_dt = 1.f;
 	pc_data.autowalk = false;
 	pc_data.selected_unit = pc->unit;

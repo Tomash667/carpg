@@ -1237,7 +1237,7 @@ bool DialogContext::ExecuteSpecial(cstring msg, int& if_level)
 	}
 	else if(strncmp(msg, "train/", 6) == 0)
 	{
-		const int cost = 200;
+		const int gold_cost = 200;
 		cstring s = msg + 6;
 		bool is_skill;
 		int what;
@@ -1267,7 +1267,8 @@ bool DialogContext::ExecuteSpecial(cstring msg, int& if_level)
 		}
 
 		// check learning points
-		if(pc->learning_points < *train + 1)
+		int cost = pc->GetTrainCost(*train);
+		if(pc->learning_points < cost)
 		{
 			DialogTalk(game.txNeedLearningPoints);
 			force_end = true;
@@ -1275,9 +1276,9 @@ bool DialogContext::ExecuteSpecial(cstring msg, int& if_level)
 		}
 
 		// does player have enough gold?
-		if(pc->unit->gold < cost)
+		if(pc->unit->gold < gold_cost)
 		{
-			dialog_s_text = Format(game.txNeedMoreGold, cost - pc->unit->gold);
+			dialog_s_text = Format(game.txNeedMoreGold, gold_cost - pc->unit->gold);
 			DialogTalk(dialog_s_text.c_str());
 			force_end = true;
 			return true;
@@ -1285,8 +1286,8 @@ bool DialogContext::ExecuteSpecial(cstring msg, int& if_level)
 
 		// give gold and freeze
 		*train += 1;
-		pc->learning_points -= *train;
-		pc->unit->ModGold(-cost);
+		pc->learning_points -= cost;
+		pc->unit->ModGold(-gold_cost);
 		pc->unit->frozen = FROZEN::YES;
 		if(is_local)
 		{
@@ -1524,7 +1525,7 @@ bool DialogContext::ExecuteSpecial(cstring msg, int& if_level)
 		{
 			for(vector<Unit*>::iterator it = L.local_ctx.units->begin(), end = L.local_ctx.units->end(); it != end; ++it)
 			{
-				if((*it)->dont_attack && (*it)->IsEnemy(*Team.leader, true))
+				if((*it)->dont_attack && (*it)->IsEnemy(*Team.leader, true) && !IS_SET((*it)->data->flags, F_PEACEFUL))
 				{
 					(*it)->dont_attack = false;
 					(*it)->ai->change_ai_mode = true;
@@ -1845,13 +1846,13 @@ cstring DialogContext::FormatString(const string& str_part)
 	{
 		cstring s = str_part.c_str() + 10;
 		cstring name;
-		int train;
+		int cost;
 
 		Attribute* attrib = Attribute::Find(s);
 		if(attrib)
 		{
 			name = attrib->name.c_str();
-			train = pc->attrib[(int)attrib->attrib_id].train;
+			cost = pc->GetTrainCost(pc->attrib[(int)attrib->attrib_id].train);
 		}
 		else
 		{
@@ -1859,7 +1860,7 @@ cstring DialogContext::FormatString(const string& str_part)
 			if(skill)
 			{
 				name = skill->name.c_str();
-				train = pc->skill[(int)skill->skill_id].train;
+				cost = pc->GetTrainCost(pc->skill[(int)skill->skill_id].train);
 			}
 			else
 			{
@@ -1871,7 +1872,7 @@ cstring DialogContext::FormatString(const string& str_part)
 		talk_msg = name;
 
 		Game& game = Game::Get();
-		return Format("%s (%d %s)", name, train + 1, train == 0 ? game.txLearningPoint : game.txLearningPoints);
+		return Format("%s (%d %s)", name, cost, cost == 1 ? game.txLearningPoint : game.txLearningPoints);
 	}
 	else
 	{

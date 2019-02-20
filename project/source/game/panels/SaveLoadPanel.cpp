@@ -300,7 +300,7 @@ void SaveLoad::SetText()
 }
 
 //=================================================================================================
-void SaveLoad::UpdateSaveInfo(int slot)
+void SaveLoad::UpdateSaveInfo(int slot, cstring text)
 {
 	SaveSlot& ss = (Net::IsOnline() ? multi_saves[slot - 1] : single_saves[slot - 1]);
 	ss.valid = true;
@@ -311,7 +311,7 @@ void SaveLoad::UpdateSaveInfo(int slot)
 	ss.player_name = game->pc->name;
 	ss.player_class = game->pc->unit->GetClass();
 	ss.save_date = time(nullptr);
-	ss.text = (text[0] != 0 ? text : Format(txSavedGameN, slot));
+	ss.text = (text ? text : Format(txSavedGameN, slot));
 	ss.hardcore = game->hardcore_mode;
 
 	Config cfg;

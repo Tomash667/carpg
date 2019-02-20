@@ -21,7 +21,7 @@ void AIController::Init(Unit* _unit)
 	state = Idle;
 	next_attack = 0.f;
 	ignore = 0.f;
-	morale = (IS_SET(_unit->data->flags, F_COWARD) ? 5.f : 10.f);
+	morale = unit->GetMaxMorale();
 	cooldown[0] = 0.f;
 	cooldown[1] = 0.f;
 	cooldown[2] = 0.f;
@@ -320,7 +320,7 @@ void AIController::Reset()
 	next_attack = 0.f;
 	timer = 0.f;
 	ignore = 0.f;
-	morale = (IS_SET(unit->data->flags, F_COWARD) ? 5.f : 10.f);
+	morale = unit->GetMaxMorale();
 	cooldown[0] = 0.f;
 	cooldown[1] = 0.f;
 	cooldown[2] = 0.f;

@@ -110,9 +110,7 @@ bool Quest_Contest::Special(DialogContext& ctx, cstring msg)
 	else if(strcmp(msg, "contest_reward") == 0)
 	{
 		winner = nullptr;
-		Game& game = Game::Get();
-		game.AddItem(*ctx.pc->unit, ItemList::GetItem("contest_reward"), 1, false);
-		ctx.pc->AddItemMessage(1u);
+		ctx.pc->unit->AddItem2(ItemList::GetItem("contest_reward"), 1u, 0u);
 	}
 	else
 		assert(0);
@@ -191,7 +189,6 @@ void Quest_Contest::Progress()
 		state = CONTEST_TODAY;
 		if(!generated && Game::Get().game_state == GS_LEVEL && L.location_index == where)
 			SpawnDrunkmans();
-		SpawnDrunkmans();
 		break;
 	case 2:
 		state = CONTEST_DONE;

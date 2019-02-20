@@ -245,6 +245,7 @@ void Item::CreateCopy(Item& item) const
 			o.weight = o2.weight;
 			o.state = o2.state;
 			o.icon = o2.icon;
+			o.state = ResourceState::NotLoaded;
 		}
 		break;
 	default:

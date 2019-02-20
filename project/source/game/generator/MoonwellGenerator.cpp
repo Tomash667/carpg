@@ -14,30 +14,12 @@ void MoonwellGenerator::Generate()
 {
 	CreateMap();
 	RandomizeTerrainTexture();
-
-	// randomize height
 	terrain->SetHeightMap(outside->h);
-	terrain->RandomizeHeight(0.f, 5.f);
 	float* h = terrain->GetHeightMap();
-	Perlin perlin(4, 4, 1);
-
-	for(uint y = 0; y < s; ++y)
-	{
-		for(uint x = 0; x < s; ++x)
-		{
-			if(x < 15 || x > s - 15 || y < 15 || y > s - 15)
-				h[x + y * (s + 1)] += Random(10.f, 15.f);
-		}
-	}
-
-	terrain->RoundHeight();
-	terrain->RoundHeight();
-
-	for(uint y = 0; y < s; ++y)
-	{
-		for(uint x = 0; x < s; ++x)
-			h[x + y * (s + 1)] += (perlin.Get(1.f / 256 * x, 1.f / 256 * y) + 1.f) * 5;
-	}
+	float hmax = 5.f;
+	int octaves = 3;
+	float frequency = 4.f;
+	RandomizeHeight(octaves, frequency, 0.f, hmax);
 
 	// set green hill in middle
 	for(uint y = 40; y < s - 40; ++y)

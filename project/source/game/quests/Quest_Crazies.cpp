@@ -10,6 +10,8 @@
 #include "Level.h"
 #include "AIController.h"
 #include "Team.h"
+#include "GlobalGui.h"
+#include "GameMessages.h"
 
 //=================================================================================================
 void Quest_Crazies::Init()
@@ -29,6 +31,7 @@ void Quest_Crazies::Start()
 	crazies_state = State::None;
 	days = 0;
 	check_stone = false;
+	stone = Item::Get("q_szaleni_kamien");
 }
 
 //=================================================================================================
@@ -113,6 +116,8 @@ bool Quest_Crazies::Load(GameReader& f)
 {
 	Quest_Dungeon::Load(f);
 
+	stone = Item::Get("q_szaleni_kamien");
+
 	if(LOAD_VERSION >= V_0_4)
 	{
 		f >> crazies_state;
@@ -126,6 +131,8 @@ bool Quest_Crazies::Load(GameReader& f)
 //=================================================================================================
 void Quest_Crazies::LoadOld(GameReader& f)
 {
+	stone = Item::Get("q_szaleni_kamien");
+
 	int old_refid;
 	f >> crazies_state;
 	f >> old_refid;
@@ -196,6 +203,7 @@ void Quest_Crazies::CheckStone()
 
 		// dodaj kamieñ przywódcy
 		Team.leader->AddItem(stone, 1, false);
+		game->gui->messages->AddGameMsg3(Team.leader->player, GMS_ADDED_CURSED_STONE);
 	}
 
 	if(crazies_state == State::TalkedWithCrazy)

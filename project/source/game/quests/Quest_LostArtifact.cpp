@@ -219,18 +219,21 @@ bool Quest_LostArtifact::Load(GameReader& f)
 	Quest_Dungeon::Load(f);
 
 	f.LoadArtifact(item);
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_8)
 		f >> st;
 	else if(target_loc != -1)
 		st = GetTargetLocation().st;
 	else
 		st = 10;
 
-	item->CreateCopy(quest_item);
-	quest_item.id = Format("$%s", item->id.c_str());
-	quest_item.refid = refid;
-	spawn_item = Quest_Dungeon::Item_OnGround;
-	item_to_give[0] = &quest_item;
+	if(prog >= Progress::Started)
+	{
+		item->CreateCopy(quest_item);
+		quest_item.id = Format("$%s", item->id.c_str());
+		quest_item.refid = refid;
+		spawn_item = Quest_Dungeon::Item_OnGround;
+		item_to_give[0] = &quest_item;
+	}
 
 	return true;
 }

@@ -333,7 +333,7 @@ bool Location::ReadPortals(BitStreamReader& f, int at_level)
 //=================================================================================================
 void Location::SetKnown()
 {
-	if(state == LS_UNKNOWN)
+	if(state == LS_UNKNOWN || state == LS_HIDDEN)
 	{
 		state = LS_KNOWN;
 		if(Net::IsServer())

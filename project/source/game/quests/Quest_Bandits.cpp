@@ -108,6 +108,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			e->text = game->txQuest[11];
 			e->timed = false;
 			e->range = 72;
+			e->st = 8;
 			OnUpdate(game->txQuest[152]);
 		}
 		else

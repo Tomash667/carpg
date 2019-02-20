@@ -58,7 +58,9 @@ enum class TrainWhat
 	Talk, // player talked [0]
 	Trade, // player traded items [value]
 
-	Stamina, // player uses stamina [value]
+	Stamina, // player uses stamina [value],
+	BullsCharge, // trains str
+	Dash
 };
 
 //-----------------------------------------------------------------------------
@@ -203,6 +205,7 @@ public:
 	void AddLearningPoint(int count = 1);
 	void AddExp(int exp);
 	int GetExpNeed() const;
+	int GetTrainCost(int train) const;
 };
 
 //-----------------------------------------------------------------------------

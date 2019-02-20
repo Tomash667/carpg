@@ -5,9 +5,9 @@ item dagger_knife {
 	desc "More suitable for peeling potatoes than for fighting."
 }
 item dagger_short {
-	name "Dagger"   
+	name "Dagger"
 	desc "Standard dagger for backstabbing or cutting throats. You rather won't use it."
-}   
+}
 item dagger_sword {
 	name "Short sword"
 	desc "Short sword with a length of 55 cm. If you need a lightweight, simple-to-use weapon this is something for you."
@@ -432,12 +432,12 @@ item ah_black_armor {
 }
 item ah_crystal {
 	name "Crystal armor"
-	desc "Deep in the, strange crystals can be found. Dwarves quickly got  their hands on them and began to create armors. The resulting armors are extremely heavy and durable."
+	desc "Deep in the caves, strange crystals can be found. Dwarves quickly got their hands on them and began to create armors. The resulting armors are extremely heavy and durable."
 }
 item ah_crystal_m {
 	//name "Crystal armor"
 	name "Magical crystal armor"
-	desc "Deep in the, strange crystals can be found. Dwarves quickly got  their hands on them and began to create armors. The resulting armors are extremely heavy and durable. This one is magical."
+	desc "Deep in the caves, strange crystals can be found. Dwarves quickly got their hands on them and began to create armors. The resulting armors are extremely heavy and durable. This one is magical."
 }
 item ah_blood_crystal {
 	name "Bloody crystal armor"

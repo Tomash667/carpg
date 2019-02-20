@@ -49,10 +49,13 @@ void Quest_KillAnimals::SetProgress(int prog2)
 			Location& sl = GetStartLocation();
 			target_loc = W.GetClosestLocation(Rand() % 2 == 0 ? L_FOREST : L_CAVE, sl.pos);
 			location_event_handler = this;
+			at_level = 0;
 
 			Location& tl = GetTargetLocation();
 			tl.active_quest = this;
 			tl.SetKnown();
+			if(tl.st < 5)
+				tl.st = 5;
 
 			msgs.push_back(Format(game->txQuest[29], sl.name.c_str(), W.GetDate()));
 			msgs.push_back(Format(game->txQuest[77], sl.name.c_str(), tl.name.c_str(), GetLocationDirName(sl.pos, tl.pos)));
@@ -151,6 +154,7 @@ bool Quest_KillAnimals::Load(GameReader& f)
 	Quest_Dungeon::Load(f);
 
 	location_event_handler = this;
+	at_level = 0;
 
 	return true;
 }

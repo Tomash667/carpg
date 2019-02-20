@@ -371,7 +371,7 @@ void PlayerController::Load(FileReader& f)
 	f >> dmgc;
 	f >> poison_dmgc;
 	f >> idle_timer;
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_8)
 	{
 		for(StatData& stat : attrib)
 		{
@@ -504,7 +504,7 @@ void PlayerController::Load(FileReader& f)
 	f >> arena_fights;
 	if(LOAD_VERSION >= V_0_4)
 	{
-		if(LOAD_VERSION < V_DEV)
+		if(LOAD_VERSION < V_0_8)
 		{
 			UnitStats old_stats;
 			old_stats.Load(f);
@@ -515,7 +515,7 @@ void PlayerController::Load(FileReader& f)
 			f.Skip(sizeof(StatState) * ((int)AttributeId::MAX + (int)SkillId::MAX)); // old stat state
 		}
 		// perk points
-		if(LOAD_VERSION >= V_DEV)
+		if(LOAD_VERSION >= V_0_8)
 			f >> learning_points;
 		else
 			learning_points = 0;
@@ -529,7 +529,7 @@ void PlayerController::Load(FileReader& f)
 			f >> tp.value;
 		}
 		// translate perks
-		if(LOAD_VERSION < V_DEV)
+		if(LOAD_VERSION < V_0_8)
 		{
 			LoopAndRemove(perks, [this](TakenPerk& tp)
 			{
@@ -624,7 +624,7 @@ void PlayerController::Load(FileReader& f)
 		f >> split_gold;
 	else
 		split_gold = 0.f;
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_8)
 	{
 		f >> always_run;
 		f >> exp;
@@ -722,7 +722,7 @@ const float level_mod[21] = {
 
 inline float GetLevelMod(int my_level, int target_level)
 {
-	return level_mod[Clamp(my_level - target_level + 10, 0, 20)];
+	return level_mod[Clamp(target_level - my_level + 10, 0, 20)];
 }
 
 //=================================================================================================
@@ -731,14 +731,14 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 	switch(what)
 	{
 	case TrainWhat::TakeDamage:
-		TrainMod(AttributeId::END, value * 2500 * GetLevelMod(unit->level, level));
+		TrainMod(AttributeId::END, value * 3500 * GetLevelMod(unit->level, level));
 		break;
 	case TrainWhat::NaturalHealing:
 		TrainMod(AttributeId::END, value * 1000);
 		break;
 	case TrainWhat::TakeDamageArmor:
 		if(unit->HaveArmor())
-			TrainMod(unit->GetArmor().GetSkill(), value * 2000 * GetLevelMod(unit->level, level));
+			TrainMod(unit->GetArmor().GetSkill(), value * 3000 * GetLevelMod(unit->level, level));
 		break;
 	case TrainWhat::AttackStart:
 		{
@@ -792,7 +792,7 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 		break;
 	case TrainWhat::BlockBullet:
 	case TrainWhat::BlockAttack:
-		TrainMod(SkillId::SHIELD, value * 2000 * GetLevelMod(unit->level, level));
+		TrainMod(SkillId::SHIELD, value * 3000 * GetLevelMod(unit->level, level));
 		break;
 	case TrainWhat::BashStart:
 		{
@@ -812,7 +812,7 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 		TrainMod(SkillId::SHIELD, 200.f * GetLevelMod(unit->level, level));
 		break;
 	case TrainWhat::BashHit:
-		TrainMod(SkillId::SHIELD, (200.f + value * 1800.f) * GetLevelMod(unit->level, level));
+		TrainMod(SkillId::SHIELD, (200.f + value * 2300.f) * GetLevelMod(unit->level, level));
 		break;
 	case TrainWhat::BowStart:
 		{
@@ -885,11 +885,17 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 		TrainMod(AttributeId::CHA, 10.f);
 		break;
 	case TrainWhat::Trade:
-		TrainMod(SkillId::HAGGLE, value / 2);
+		TrainMod(SkillId::HAGGLE, value);
 		break;
 	case TrainWhat::Stamina:
 		TrainMod(AttributeId::END, value * 0.75f);
 		TrainMod(AttributeId::DEX, value * 0.5f);
+		break;
+	case TrainWhat::BullsCharge:
+		TrainMod(AttributeId::STR, 200.f * GetLevelMod(unit->level, level));
+		break;
+	case TrainWhat::Dash:
+		TrainMod(AttributeId::DEX, 50.f);
 		break;
 	default:
 		assert(0);
@@ -1363,4 +1369,32 @@ int PlayerController::GetAptitude(SkillId s)
 		}
 	}
 	return apt;
+}
+
+//=================================================================================================
+int PlayerController::GetTrainCost(int train) const
+{
+	switch(train)
+	{
+	case 0:
+	case 1:
+		return 1;
+	case 2:
+	case 3:
+	case 4:
+		return 2;
+	case 5:
+	case 6:
+	case 7:
+	case 8:
+		return 3;
+	case 9:
+	case 10:
+	case 11:
+	case 12:
+	case 13:
+		return 4;
+	default:
+		return 5;
+	}
 }

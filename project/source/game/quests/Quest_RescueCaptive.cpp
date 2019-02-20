@@ -379,7 +379,7 @@ bool Quest_RescueCaptive::Load(GameReader& f)
 			group = GetRandomGroup();
 	}
 	f >> captive;
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_8)
 		f >> st;
 	else if(target_loc != -1)
 		st = GetTargetLocation().st;

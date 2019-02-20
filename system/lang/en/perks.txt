@@ -57,7 +57,7 @@ perk heirloom {
 }
 perk leader {
 	name "Leader"
-	desc "You have a predisposition to become a great leader. You have even recruited one hero to come with you."
+	desc "You have a predisposition to become a great leader. You have even recruited one hero to come with you. Heroes gain experience faster when you are in charge."
 }
 perk strong_back {
 	name "Strong back"

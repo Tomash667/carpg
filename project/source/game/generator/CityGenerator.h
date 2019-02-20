@@ -5,7 +5,6 @@
 #include "GameCommon.h"
 #include "TerrainTile.h"
 #include "Building.h"
-#include "Perlin.h"
 #include "EntryPoint.h"
 #include "LevelContext.h"
 
@@ -99,10 +98,8 @@ public:
 	void Init() override;
 	void Init(TerrainTile* tiles, float* height, int w, int h);
 	void SetRoadSize(int road_size, int road_part);
-	void SetTerrainNoise(int octaves, float frequency, float hmin, float hmax);
 	void GenerateMainRoad(RoadType type, GameDirection dir, int roads, bool plaza, int swap, vector<EntryPoint>& entry_points, int& gates, bool fill_roads);
 	void GenerateBuildings(vector<ToBuild>& tobuild);
-	void RandomizeHeight();
 	void FlattenRoad();
 	void SmoothTerrain();
 	void CleanBorders();
@@ -156,14 +153,13 @@ private:
 	City* city;
 	TerrainTile* tiles;
 	int w, h, road_part, road_size;
-	float* height, hmin, hmax;
+	float* height;
 	vector<Pixel> pixels;
 	int rs1, rs2;
 	vector<APoint2> grid;
 	APoint2Sorter2 sorter;
 	vector<int> to_check;
 	vector<Int2> tmp_pts;
-	Perlin perlin;
 	vector<Road2> roads;
 	vector<int> road_ids;
 	TERRAIN_TILE road_tile;

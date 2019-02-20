@@ -87,7 +87,9 @@ void TeamPanel::Draw(ControlDrawData*)
 	Int2 offset = global_pos + Int2(8, 40 - scrollbar.offset);
 	rect = Rect::Create(Int2(global_pos.x + 8, global_pos.y + 40), Int2(size.x - 52, size.y - 96));
 
-	int pc_share = (int)round(Team.GetShare().x * 100);
+	Vec2 share = Team.GetShare();
+	int pc_share = (int)round(share.x * 100);
+	int npc_share = (int)round(share.y * 100);
 	LocalString s;
 
 	if(!picking)
@@ -120,7 +122,7 @@ void TeamPanel::Draw(ControlDrawData*)
 			offset.y + 32
 		};
 		s = "$h+";
-		s += Format(txCharInTeam, u->GetName(), u->IsPlayer() ? pc_share : (u->hero->free ? 0 : 10), u->GetCredit());
+		s += Format(txCharInTeam, u->GetName(), u->IsPlayer() ? pc_share : (u->hero->free ? 0 : npc_share), u->GetCredit());
 		if(u->IsPlayer() && Net::IsOnline())
 		{
 			if(Net::IsServer())

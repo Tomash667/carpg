@@ -1897,7 +1897,7 @@ void Game::PrepareAreaPath()
 			int flags = obj->getCollisionFlags();
 			if(IS_SET(flags, CG_TERRAIN))
 				return LT_IGNORE;
-			if(IS_SET(flags, CG_UNIT) && obj->getUserPointer() == pc->unit || ignore_units)
+			if(IS_SET(flags, CG_UNIT) && (obj->getUserPointer() == pc->unit || ignore_units))
 				return LT_IGNORE;
 			return LT_COLLIDE;
 		}, t);
@@ -2934,7 +2934,7 @@ void Game::DrawScene(bool outside)
 		DrawPortals(draw_batch.portals);
 
 	// obszary
-	if(!draw_batch.areas.empty())
+	if(!draw_batch.areas.empty() || !draw_batch.areas2.empty())
 		DrawAreas(draw_batch.areas, draw_batch.area_range, draw_batch.areas2);
 }
 

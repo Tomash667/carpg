@@ -305,7 +305,7 @@ dialog arena_master {
 	34 "Tournament"
 	35 "What do you want to know about tournament?"
 	36 "Join"
-	37 "The entrance fee is 100 gold pieces. You won't be able to leave the city until end of tournament. As soon as you join the others will have a minute to sign-up."
+	37 "The entrance fee is 100 gold pieces. If you go too far you will be discharged from the competition. As soon as you join the others will have a minute to sign-up."
 	38 "Do you really want to join?"
 	39 "Yes"
 	40 "All right. Let's see how many people are ready to fight!"

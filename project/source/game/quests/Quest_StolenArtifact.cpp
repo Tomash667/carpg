@@ -251,20 +251,23 @@ bool Quest_StolenArtifact::Load(GameReader& f)
 
 	f.LoadArtifact(item);
 	f >> group;
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_8)
 		f >> st;
 	else if(target_loc != -1)
 		st = GetTargetLocation().st;
 	else
 		st = 10;
 
-	item->CreateCopy(quest_item);
-	quest_item.id = Format("$%s", item->id.c_str());
-	quest_item.refid = refid;
-	spawn_item = Quest_Dungeon::Item_GiveSpawned;
-	item_to_give[0] = &quest_item;
-	unit_to_spawn = g_spawn_groups[group].GetSpawnLeader(GetTargetLocation().st);
-	unit_spawn_level = -3;
+	if(prog >= Progress::Started)
+	{
+		item->CreateCopy(quest_item);
+		quest_item.id = Format("$%s", item->id.c_str());
+		quest_item.refid = refid;
+		spawn_item = Quest_Dungeon::Item_GiveSpawned;
+		item_to_give[0] = &quest_item;
+		unit_to_spawn = g_spawn_groups[group].GetSpawnLeader(st);
+		unit_spawn_level = -3;
+	}
 
 	return true;
 }

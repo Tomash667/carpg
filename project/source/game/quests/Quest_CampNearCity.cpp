@@ -70,6 +70,7 @@ void Quest_CampNearCity::SetProgress(int prog2)
 			Location& tl = GetTargetLocation();
 			tl.active_quest = this;
 			tl.SetKnown();
+			tl.st += Random(3, 5);
 			st = tl.st;
 
 			cstring gn;
@@ -241,7 +242,7 @@ bool Quest_CampNearCity::Load(GameReader& f)
 	Quest_Dungeon::Load(f);
 
 	f >> group;
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_8)
 		f >> st;
 	else if(target_loc != -1)
 		st = GetTargetLocation().st;

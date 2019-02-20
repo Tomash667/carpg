@@ -26,7 +26,7 @@ void InsideLocation::Load(GameReader& f, bool local, LOCATION_TOKEN token)
 	f >> special_room;
 	f >> from_portal;
 
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_8)
 	{
 		if(target == KOPALNIA_POZIOM)
 			state = LS_HIDDEN;

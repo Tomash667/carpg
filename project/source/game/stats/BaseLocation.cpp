@@ -17,7 +17,6 @@ RoomStrChance fort_ludzi_pokoje[] = {
 	RoomStrChance("pokoj_treningowy", 5),
 	RoomStrChance("pokoj_wyrobu", 5),
 	RoomStrChance("kuchnia", 5)
-	//RoomStrChance("obrazy", 1)
 };
 
 //-----------------------------------------------------------------------------
@@ -90,11 +89,11 @@ BaseLocation g_base_locations[] = {
 		Vec3(0,0,0), Vec3(0,0,0), Vec3(0.3f,0.3f,0.3f), Vec3(-0.025f,-0.025f,-0.025f), Vec2(10,20), Vec2(-0.5f,-1.f), 20.f, -1.f,
 		fort_ludzi_pokoje, countof(fort_ludzi_pokoje), 0, 50, 25, 2, SG_RANDOM, SG_RANDOM, SG_RANDOM, 0, 0, 0, 0, -1,
 		LocationTexturePack(),
-	"Fort krasnoludów", /*"Dwarf fort"*/			Int2(3, 5),		40, 3,		50, 5,		25,			Int2(5,12),	Int2(4,8),	0, RoomStr("schody"), RoomStr(nullptr),
+	"Fort krasnoludów", /*"Dwarf fort"*/			Int2(2, 4),		40, 3,		50, 5,		25,			Int2(5,12),	Int2(4,8),	0, RoomStr("schody"), RoomStr(nullptr),
 		Vec3(0,0,0), Vec3(0,0,0), Vec3(0.3f,0.3f,0.3f), Vec3(-0.025f,-0.025f,-0.025f), Vec2(10,20), Vec2(-0.5f,-1.f), 20.f, -1.f,
 		fort_ludzi_pokoje, countof(fort_ludzi_pokoje), 0, 60, 20, 6, SG_RANDOM, SG_RANDOM, SG_RANDOM, 0, 0, 0, TRAPS_NORMAL, -1,
 		LocationTexturePack("floor_tile.jpg", "mur078.jpg", "sufit3.jpg"),
-	"Wie¿a magów", /*"Mage tower"*/					Int2(4, 6),		30, 0,		0,	33,		0,			Int2(0,0),	Int2(4,7),	BLO_MAGIC_LIGHT | BLO_ROUND, RoomStr("schody"), RoomStr(nullptr),
+	"Wie¿a magów", /*"Mage tower"*/					Int2(4, 5),		30, 0,		0,	33,		0,			Int2(0,0),	Int2(4,7),	BLO_MAGIC_LIGHT | BLO_ROUND, RoomStr("schody"), RoomStr(nullptr),
 		Vec3(100.f / 255,0,0), Vec3(-1.f / 255,0,0), Vec3(0.4f,0.3f,0.3f), Vec3(-0.03f,-0.025f,-0.025f), Vec2(10,20), Vec2(-0.5f,-1.f), 20.f, -1.f,
 		wieza_magow_pokoje, countof(wieza_magow_pokoje), 0, 100, 0, 3, SG_MAGES, SG_MAGES_AND_GOLEMS, SG_RANDOM, 50, 25, 0, TRAPS_MAGIC, -1,
 		LocationTexturePack("floor_pavingStone_ceramic.jpg", "stone01d.jpg", "block02b.jpg"),
@@ -142,7 +141,7 @@ BaseLocation g_base_locations[] = {
 		Vec3(0,0,0), Vec3(0,0,0), Vec3(0.3f,0.3f,0.3f), Vec3(-0.025f,-0.025f,-0.025f), Vec2(10,20), Vec2(-0.5f,-1.f), 20.f, -1.f,
 		fort_ludzi_pokoje, countof(fort_ludzi_pokoje), 0, 50, 25, 2, SG_RANDOM, SG_RANDOM, SG_RANDOM, 0, 0, 0, 0, -1,
 		LocationTexturePack(),
-	"Skrytka z tronem",								Int2(1, 1),		35, 0,		50,	5,		35,			Int2(5,12),	Int2(4,7),	0, RoomStr("schody"), RoomStr(nullptr),
+	"Skrytka z tronem",								Int2(2, 2),		35, 2,		50,	5,		35,			Int2(5,12),	Int2(4,7),	0, RoomStr("schody"), RoomStr(nullptr),
 		Vec3(0,0,0), Vec3(0,0,0), Vec3(0.3f,0.3f,0.3f), Vec3(-0.025f,-0.025f,-0.025f), Vec2(10,20), Vec2(-0.5f,-1.f), 20.f, -1.f,
 		skrytka_pokoje, countof(skrytka_pokoje), 0, 100, 0, 3, SG_BANDITS, SG_NONE, SG_RANDOM, 25, 25, 0, TRAPS_NORMAL, -1,
 		LocationTexturePack("mad015.jpg", "mad063.jpg", "mad013.jpg"),

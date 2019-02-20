@@ -3181,7 +3181,7 @@ cstring Level::GetCurrentLocationText()
 //=================================================================================================
 void Level::CheckIfLocationCleared()
 {
-	if(city_ctx)
+	if(city_ctx || location->state == LS_HIDDEN)
 		return;
 
 	Game& game = Game::Get();
@@ -4249,7 +4249,7 @@ void Level::CleanLevel(int building_id)
 			ctx.bloods->clear();
 			for(Unit* unit : *ctx.units)
 			{
-				if(!unit->IsAlive())
+				if(!unit->IsAlive() && !unit->IsTeamMember())
 					RemoveUnit(unit, false);
 			}
 		}

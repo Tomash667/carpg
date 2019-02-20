@@ -52,7 +52,6 @@
 #include "PlayerInfo.h"
 
 const float LIMIT_DT = 0.3f;
-const float bazowa_wysokosc = 1.74f;
 Game* Game::game;
 cstring Game::txGoldPlus, Game::txQuestCompletedGold;
 GameKeys GKey;
@@ -525,7 +524,7 @@ void Game::OnTick(float dt)
 	else if(Net::IsOnline())
 		UpdateGameNet(dt);
 
-	// open.close mp box
+	// open/close mp box
 	if(GKey.AllowKeyboard() && game_state == GS_LEVEL && gui->mp_box->visible && !gui->mp_box->itb.focus && Key.PressedRelease(VK_RETURN))
 	{
 		gui->mp_box->itb.focus = true;
@@ -1149,6 +1148,7 @@ void Game::SetGameText()
 	LoadArray(txAiDrunkMageText, "aiDrunkMageText");
 	LoadArray(txAiDrunkText, "aiDrunkText");
 	LoadArray(txAiDrunkContestText, "aiDrunkContestText");
+	LoadArray(txAiWildHunterText, "aiWildHunterText");
 
 	// mapa
 	txEnteringLocation = Str("enteringLocation");
@@ -1671,7 +1671,7 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 
 		loc_gen->Generate();
 	}
-	else if(l.type != L_DUNGEON && l.type != L_CRYPT)
+	else if(!Any(l.type, L_DUNGEON, L_CRYPT, L_CAVE))
 		Info("Entering location '%s'.", l.name.c_str());
 
 	L.city_ctx = nullptr;

@@ -430,7 +430,7 @@ void WorldMapGui::Update(float dt)
 			{
 				if(Key.PressedRelease(VK_LBUTTON))
 				{
-					combo_box.focus = false;
+					combo_box.LostFocus();
 					if(Team.IsLeader())
 					{
 						if(picked_location != W.GetCurrentLocationIndex())
@@ -476,7 +476,7 @@ void WorldMapGui::Update(float dt)
 			{
 				if(Key.PressedRelease(VK_LBUTTON))
 				{
-					combo_box.focus = false;
+					combo_box.LostFocus();
 					if(Team.IsLeader())
 					{
 						W.TravelPos(c_pos, true);
@@ -554,7 +554,7 @@ void WorldMapGui::Event(GuiEvent e)
 			int count = 0;
 			for(Location* loc : W.GetLocations())
 			{
-				if(loc->state == LS_HIDDEN || loc->state == LS_UNKNOWN)
+				if(!loc || loc->state == LS_HIDDEN || loc->state == LS_UNKNOWN)
 					continue;
 				if(StringContainsStringI(loc->name.c_str(), str.c_str()))
 				{
@@ -587,7 +587,7 @@ void WorldMapGui::Save(FileWriter& f)
 //=================================================================================================
 void WorldMapGui::Load(FileReader& f)
 {
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_8)
 		f >> zoom;
 }
 

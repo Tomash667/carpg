@@ -343,7 +343,7 @@ void InsideLocationLevel::LoadLevel(GameReader& f, bool local)
 		room.Load(f);
 
 	// room groups
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_8)
 	{
 		groups.resize(f.Read<uint>());
 		for(RoomGroup& group : groups)

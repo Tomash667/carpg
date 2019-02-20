@@ -57,7 +57,7 @@ perk heirloom {
 }
 perk leader {
 	name "Przywódca"
-	desc "Masz predyspozycje aby zostaæ wielkim przywódc¹. Ju¿ nawet zrekrutowa³eœ jednego bohatera aby z tob¹ podró¿owa³."
+	desc "Masz predyspozycje aby zostaæ wielkim przywódc¹. Ju¿ nawet zrekrutowa³eœ jednego bohatera aby z tob¹ podró¿owa³. Bohaterowie szybciej zdobywaj¹ doœwiadczenie gdy ty dowodzisz dru¿yn¹."
 }
 perk strong_back {
 	name "Silne plecy"

@@ -1209,7 +1209,7 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 			loc->Load(f, current_index == index, loc_token);
 
 			const int OLD_ACADEMY = 9;
-			if(LOAD_VERSION < V_DEV && loc->type == OLD_ACADEMY)
+			if(LOAD_VERSION < V_0_8 && loc->type == OLD_ACADEMY)
 				academy = loc;
 		}
 		else
@@ -1247,7 +1247,7 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 	}
 	f >> empty_locations;
 	f >> create_camp;
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_8)
 		create_camp = 10 - create_camp;
 	f >> world_pos;
 	f >> reveal_timer;
@@ -1259,7 +1259,7 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 	{
 		f >> travel_location_index;
 		f >> travel_start_pos;
-		if(LOAD_VERSION >= V_DEV)
+		if(LOAD_VERSION >= V_0_8)
 			f >> travel_target_pos;
 		else
 			travel_target_pos = locations[travel_location_index]->pos;
@@ -1290,6 +1290,11 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 		current_location = nullptr;
 	L.location_index = current_location_index;
 	L.location = current_location;
+	if(L.location && Any(state, State::INSIDE_LOCATION, State::INSIDE_ENCOUNTER))
+	{
+		L.ApplyContext(L.location, L.local_ctx);
+		L.city_ctx = (L.location->type == L_CITY ? (City*)L.location : nullptr);
+	}
 }
 
 //=================================================================================================
@@ -1307,7 +1312,7 @@ void World::LoadNews(GameReader& f)
 }
 
 //=================================================================================================
-// pre V_DEV
+// pre V_0_8
 void World::LoadOld(GameReader& f, LoadingHandler& loading, int part, bool inside)
 {
 	if(part == 0)
@@ -2080,7 +2085,8 @@ void World::UpdateTravel(float dt)
 						encounter_chance += chance;
 					}
 
-					loc.SetKnown();
+					if(loc.state != LS_HIDDEN)
+						loc.SetKnown();
 				}
 			}
 
@@ -2102,7 +2108,7 @@ void World::UpdateTravel(float dt)
 
 			encounter_chance += 1;
 
-			if(Rand() % 500 < ((int)encounter_chance) - 25 || DebugKey('E'))
+			if(Rand() % 500 < ((int)encounter_chance) - 25 || (gui->HaveFocus() && DebugKey('E')))
 			{
 				encounter_chance = 0.f;
 				StartEncounter(enc, what);

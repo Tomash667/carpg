@@ -766,6 +766,7 @@ public:
 	bool IsEnemy(Unit& u, bool ignore_dont_attack = false) const;
 	bool IsFriend(Unit& u) const;
 	void RefreshStock();
+	float GetMaxMorale() const { return IS_SET(data->flags, F_COWARD) ? 5.f : 10.f; }
 
 	//-----------------------------------------------------------------------------
 	static vector<Unit*> refid_table;

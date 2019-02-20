@@ -200,23 +200,26 @@ bool Quest_RetrievePackage::Load(GameReader& f)
 	if(prog != Progress::Finished)
 	{
 		f >> from_loc;
-		if(LOAD_VERSION >= V_DEV)
+		if(LOAD_VERSION >= V_0_8)
 			f >> st;
 		else if(target_loc != -1)
 			st = GetTargetLocation().st;
 		else
 			st = 10;
 
-		Location& loc = GetStartLocation();
-		Item::Get("parcel")->CreateCopy(parcel);
-		parcel.id = "$stolen_parcel";
-		parcel.name = Format(game->txQuest[8], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str());
-		parcel.refid = refid;
+		if(prog >= Progress::Started)
+		{
+			Location& loc = GetStartLocation();
+			Item::Get("parcel")->CreateCopy(parcel);
+			parcel.id = "$stolen_parcel";
+			parcel.name = Format(game->txQuest[8], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str());
+			parcel.refid = refid;
 
-		item_to_give[0] = &parcel;
-		unit_to_spawn = g_spawn_groups[SG_BANDITS].GetSpawnLeader(8);
-		unit_spawn_level = -3;
-		spawn_item = Quest_Dungeon::Item_GiveSpawned;
+			item_to_give[0] = &parcel;
+			unit_to_spawn = g_spawn_groups[SG_BANDITS].GetSpawnLeader(8);
+			unit_spawn_level = -3;
+			spawn_item = Quest_Dungeon::Item_GiveSpawned;
+		}
 	}
 
 	return true;

@@ -61,19 +61,19 @@ namespace Mapa
 		DODAJ_KORYTARZ
 	};
 
-	bool czy_sciana_laczaca(int x, int y, int id1, int id2);
-	void dodaj_pokoj(int x, int y, int w, int h, DODAJ dodaj, int id = -1);
-	void dodaj_pokoj(const Room& pokoj, int id = -1) { dodaj_pokoj(pokoj.pos.x, pokoj.pos.y, pokoj.size.x, pokoj.size.y, NIE_DODAWAJ, id); }
-	void generuj();
-	void oznacz_korytarze();
-	void polacz_korytarze();
-	void polacz_pokoje();
-	bool sprawdz_pokoj(int x, int y, int w, int h);
-	void stworz_korytarz(Int2& pt, DIR dir);
-	void szukaj_polaczenia(int x, int y, int id);
-	void ustaw_sciane(TILE_TYPE& pole);
-	void ustaw_wzor();
-	DIR wolna_droga(int id);
+	bool IsConnectingWall(int x, int y, int id1, int id2);
+	void AddRoom(int x, int y, int w, int h, DODAJ dodaj, int id = -1);
+	void AddRoom(const Room& pokoj, int id = -1) { AddRoom(pokoj.pos.x, pokoj.pos.y, pokoj.size.x, pokoj.size.y, NIE_DODAWAJ, id); }
+	void Generate();
+	void MarkCorridors();
+	void JoinCorridors();
+	void JoinRooms();
+	bool CheckRoom(int x, int y, int w, int h);
+	void AddCorridor(Int2& pt, DIR dir);
+	void SearchForConnection(int x, int y, int id);
+	void SetWall(TILE_TYPE& pole);
+	void SetLayout();
+	DIR CheckFreePath(int id);
 	void CreateRoomGroups();
 	void SetRoomGroupTargets();
 	void DrawRoomGroups();
@@ -90,7 +90,7 @@ namespace Mapa
 	//=================================================================================================
 	// Sprawdza czy dana œciana ³¹czy dwa pokoje (NS)
 	//=================================================================================================
-	bool czy_sciana_laczaca(int x, int y, int id1, int id2)
+	bool IsConnectingWall(int x, int y, int id1, int id2)
 	{
 		if(mapa[x - 1 + y*opcje->w].room == id1 && wolne_pole(mapa[x - 1 + y*opcje->w].type))
 		{
@@ -118,7 +118,7 @@ namespace Mapa
 	//=================================================================================================
 	// Dodaje pokój/korytarz (NS)
 	//=================================================================================================
-	void dodaj_pokoj(int x, int y, int w, int h, DODAJ dodaj, int _id)
+	void AddRoom(int x, int y, int w, int h, DODAJ dodaj, int _id)
 	{
 		assert(x >= 0 && y >= 0 && w >= 3 && h >= 3 && x + w < int(opcje->w) && y + h < int(opcje->h));
 
@@ -140,32 +140,32 @@ namespace Mapa
 
 		for(int i = 0; i < w; ++i)
 		{
-			ustaw_sciane(H(x + i, y));
+			SetWall(H(x + i, y));
 			HR(x + i, y) = (word)id;
-			ustaw_sciane(H(x + i, y + h - 1));
+			SetWall(H(x + i, y + h - 1));
 			HR(x + i, y + h - 1) = (word)id;
 		}
 
 		for(int i = 0; i < h; ++i)
 		{
-			ustaw_sciane(H(x, y + i));
+			SetWall(H(x, y + i));
 			HR(x, y + i) = (word)id;
-			ustaw_sciane(H(x + w - 1, y + i));
+			SetWall(H(x + w - 1, y + i));
 			HR(x + w - 1, y + i) = (word)id;
 		}
 
 		for(int i = 1; i < w - 1; ++i)
 		{
-			if(wolna_droga(x + i + y*opcje->w) != BRAK)
+			if(CheckFreePath(x + i + y*opcje->w) != BRAK)
 				wolne.push_back(x + i + y*opcje->w);
-			if(wolna_droga(x + i + (y + h - 1)*opcje->w) != BRAK)
+			if(CheckFreePath(x + i + (y + h - 1)*opcje->w) != BRAK)
 				wolne.push_back(x + i + (y + h - 1)*opcje->w);
 		}
 		for(int i = 1; i < h - 1; ++i)
 		{
-			if(wolna_droga(x + (y + i)*opcje->w) != BRAK)
+			if(CheckFreePath(x + (y + i)*opcje->w) != BRAK)
 				wolne.push_back(x + (y + i)*opcje->w);
-			if(wolna_droga(x + w - 1 + (y + i)*opcje->w) != BRAK)
+			if(CheckFreePath(x + w - 1 + (y + i)*opcje->w) != BRAK)
 				wolne.push_back(x + w - 1 + (y + i)*opcje->w);
 		}
 
@@ -183,26 +183,26 @@ namespace Mapa
 	//=================================================================================================
 	// Generuje podziemia
 	//=================================================================================================
-	void generuj()
+	void Generate()
 	{
 		joined.clear();
 
 		// ustaw wzór obszaru (np wype³nij obszar nieu¿ytkiem, na oko³o blokada)
-		ustaw_wzor();
+		SetLayout();
 
 		// jeœli s¹ jakieœ pocz¹tkowe pokoje to je dodaj
 		if(!opcje->rooms->empty())
 		{
 			int index = 0;
 			for(vector<Room>::iterator it = opcje->rooms->begin(), end = opcje->rooms->end(); it != end; ++it, ++index)
-				dodaj_pokoj(*it, index);
+				AddRoom(*it, index);
 		}
 		else
 		{
 			// stwórz pocz¹tkowy pokój
 			int w = opcje->rozmiar_pokoj.Random(),
 				h = opcje->rozmiar_pokoj.Random();
-			dodaj_pokoj((opcje->w - w) / 2, (opcje->h - h) / 2, w, h, DODAJ_POKOJ);
+			AddRoom((opcje->w - w) / 2, (opcje->h - h) / 2, w, h, DODAJ_POKOJ);
 		}
 
 		// generuj
@@ -215,7 +215,7 @@ namespace Mapa
 			wolne.pop_back();
 
 			// sprawdŸ czy to miejsce jest dobre
-			DIR dir = wolna_droga(id);
+			DIR dir = CheckFreePath(id);
 			if(dir == BRAK)
 				continue;
 
@@ -223,7 +223,7 @@ namespace Mapa
 
 			// pokój czy korytarz
 			if(Rand() % 100 < opcje->korytarz_szansa)
-				stworz_korytarz(pt, dir);
+				AddCorridor(pt, dir);
 			else
 			{
 				int w = opcje->rozmiar_pokoj.Random(),
@@ -244,10 +244,10 @@ namespace Mapa
 					pt.y -= h - 1;
 				}
 
-				if(sprawdz_pokoj(pt.x, pt.y, w, h))
+				if(CheckRoom(pt.x, pt.y, w, h))
 				{
 					mapa[id].type = DOORS;
-					dodaj_pokoj(pt.x, pt.y, w, h, DODAJ_POKOJ);
+					AddRoom(pt.x, pt.y, w, h, DODAJ_POKOJ);
 				}
 			}
 		}
@@ -258,22 +258,22 @@ namespace Mapa
 		{
 			for(int x = 1; x < room.size.x - 1; ++x)
 			{
-				szukaj_polaczenia(room.pos.x + x, room.pos.y, index);
-				szukaj_polaczenia(room.pos.x + x, room.pos.y + room.size.y - 1, index);
+				SearchForConnection(room.pos.x + x, room.pos.y, index);
+				SearchForConnection(room.pos.x + x, room.pos.y + room.size.y - 1, index);
 			}
 			for(int y = 1; y < room.size.y - 1; ++y)
 			{
-				szukaj_polaczenia(room.pos.x, room.pos.y + y, index);
-				szukaj_polaczenia(room.pos.x + room.size.x - 1, room.pos.y + y, index);
+				SearchForConnection(room.pos.x, room.pos.y + y, index);
+				SearchForConnection(room.pos.x + room.size.x - 1, room.pos.y + y, index);
 			}
 			++index;
 		}
 
 		// po³¹cz korytarze
 		if(opcje->polacz_korytarz > 0)
-			polacz_korytarze();
+			JoinCorridors();
 		else
-			oznacz_korytarze();
+			MarkCorridors();
 
 		// losowe dziury
 		if(opcje->kraty_szansa > 0)
@@ -311,7 +311,7 @@ namespace Mapa
 	//=================================================================================================
 	// Oznacza pola na mapie niskim sufitem tam gdzie jest korytarz
 	//=================================================================================================
-	void oznacz_korytarze()
+	void MarkCorridors()
 	{
 		for(vector<Room>::iterator it = opcje->rooms->begin(), end = opcje->rooms->end(); it != end; ++it)
 		{
@@ -333,7 +333,7 @@ namespace Mapa
 	//=================================================================================================
 	// £¹czy korytarze ze sob¹
 	//=================================================================================================
-	void polacz_korytarze()
+	void JoinCorridors()
 	{
 		int index = 0;
 		for(vector<Room>::iterator it = opcje->rooms->begin(), end = opcje->rooms->end(); it != end; ++it, ++index)
@@ -427,7 +427,7 @@ namespace Mapa
 	//=================================================================================================
 	// £¹czy pokoje ze sob¹
 	//=================================================================================================
-	void polacz_pokoje()
+	void JoinRooms()
 	{
 		int index = 0;
 		for(vector<Room>::iterator it = opcje->rooms->begin(), end = opcje->rooms->end(); it != end; ++it, ++index)
@@ -460,24 +460,13 @@ namespace Mapa
 					--x2;
 				if(y2 == opcje->h - 1)
 					--y2;
-
-				// usuñ rogi
-				/*usun_rog(x1, x2, y1, y2, p.pos.x, p.pos.y);
-				usun_rog(x1, x2, y1, y2, p.pos.x+p.size.x, p.pos.y);
-				usun_rog(x1, x2, y1, y2, p.pos.x, p.pos.y+p.size.y);
-				usun_rog(x1, x2, y1, y2, p.pos.x+p.size.x, p.pos.y+p.size.y);
-				usun_rog(x1, x2, y1, y2, p2.pos.x, p2.pos.y);
-				usun_rog(x1, x2, y1, y2, p2.pos.x+p2.size.x, p2.pos.y);
-				usun_rog(x1, x2, y1, y2, p2.pos.x, p2.pos.y+p2.size.y);
-				usun_rog(x1, x2, y1, y2, p2.pos.x+p2.size.x, p2.pos.y+p2.size.y);*/
-
 				assert(x1 < x2 && y1 < y2);
 
 				for(int y = y1; y < y2; ++y)
 				{
 					for(int x = x1; x < x2; ++x)
 					{
-						if(czy_sciana_laczaca(x, y, index, *it2))
+						if(IsConnectingWall(x, y, index, *it2))
 						{
 							Tile& po = mapa[x + y*opcje->w];
 							if(po.type == WALL || po.type == DOORS)
@@ -492,7 +481,7 @@ namespace Mapa
 	//=================================================================================================
 	// Sprawdza czy w tym miejscu mo¿na dodaæ korytarz
 	//=================================================================================================
-	bool sprawdz_pokoj(int x, int y, int w, int h)
+	bool CheckRoom(int x, int y, int w, int h)
 	{
 		if(!(x >= 0 && y >= 0 && w >= 3 && h >= 3 && x + w < int(opcje->w) && y + h < int(opcje->h)))
 			return false;
@@ -532,7 +521,7 @@ namespace Mapa
 	//=================================================================================================
 	// Tworzy korytarz
 	//=================================================================================================
-	void stworz_korytarz(Int2& _pt, DIR dir)
+	void AddCorridor(Int2& _pt, DIR dir)
 	{
 		int dl = opcje->rozmiar_korytarz.Random();
 		int w, h;
@@ -566,17 +555,17 @@ namespace Mapa
 			h = dl;
 		}
 
-		if(sprawdz_pokoj(pt.x, pt.y, w, h))
+		if(CheckRoom(pt.x, pt.y, w, h))
 		{
 			H(_pt.x, _pt.y) = DOORS;
-			dodaj_pokoj(pt.x, pt.y, w, h, DODAJ_KORYTARZ);
+			AddRoom(pt.x, pt.y, w, h, DODAJ_KORYTARZ);
 		}
 	}
 
 	//=================================================================================================
 	// Szuka po³¹czañ pomiêdzy pomieszczeniami
 	//=================================================================================================
-	void szukaj_polaczenia(int x, int y, int id)
+	void SearchForConnection(int x, int y, int id)
 	{
 		Room& r = opcje->rooms->at(id);
 
@@ -675,7 +664,7 @@ namespace Mapa
 	//=================================================================================================
 	// Ustawia œcianê na danym polu
 	//=================================================================================================
-	void ustaw_sciane(TILE_TYPE& pole)
+	void SetWall(TILE_TYPE& pole)
 	{
 		assert(pole == UNUSED || pole == WALL || pole == BLOCKADE || pole == BLOCKADE_WALL || pole == DOORS);
 
@@ -688,7 +677,7 @@ namespace Mapa
 	//=================================================================================================
 	// Ustawia wzór podziemi
 	//=================================================================================================
-	void ustaw_wzor()
+	void SetLayout()
 	{
 		memset(mapa, 0, sizeof(Tile)*opcje->w*opcje->h);
 
@@ -729,7 +718,7 @@ namespace Mapa
 	//=================================================================================================
 	// Sprawdza czy w danym punkcie mo¿na dodaæ wejœcie do korytarza/pokoju
 	//=================================================================================================
-	DIR wolna_droga(int id)
+	DIR CheckFreePath(int id)
 	{
 		int x = id%opcje->w,
 			y = id / opcje->w;
@@ -873,7 +862,7 @@ namespace Mapa
 	{
 		// join rooms
 		if(opcje->polacz_pokoj > 0)
-			polacz_pokoje();
+			JoinRooms();
 
 		CreateRoomGroups();
 
@@ -910,7 +899,7 @@ bool generuj_mape2(OpcjeMapy& _opcje, bool recreate)
 	_opcje.blad = 0;
 	_opcje.mapa = Mapa::mapa;
 
-	Mapa::generuj();
+	Mapa::Generate();
 
 	return (_opcje.blad == 0);
 }

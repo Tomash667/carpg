@@ -167,6 +167,7 @@ unit crazy_mage
 unit q_szaleni_szaleniec
 unit tomashu
 unit golem_adamantine
+unit zombie_ancient
 // citizens
 unit innkeeper
 unit pijak

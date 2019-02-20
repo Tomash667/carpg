@@ -394,7 +394,7 @@ void Arena::StartArenaCombat(int level)
 	UnitGroup* group = list->groups[Rand() % list->groups.size()];
 
 	// prepare list of units that can be spawned
-	int lvl = level * 5 + Random(-1, +1);
+	int lvl = level * 5 + Random(-1, +1) + 3;
 	int min_level = Max(lvl - 5, lvl / 2);
 	int max_level = lvl + 1;
 	Pooled<TmpUnitGroup> part;

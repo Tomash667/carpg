@@ -222,12 +222,14 @@ bool Quest_DeliverParcel::Load(GameReader& f)
 	if(prog != Progress::DeliverAfterTime && prog != Progress::Finished)
 	{
 		f >> end_loc;
-
-		Location& loc = *W.GetLocation(end_loc);
-		Item::Get("parcel")->CreateCopy(parcel);
-		parcel.id = "$parcel";
-		parcel.name = Format(game->txQuest[8], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str());
-		parcel.refid = refid;
+		if(prog >= Progress::Started)
+		{
+			Location& loc = *W.GetLocation(end_loc);
+			Item::Get("parcel")->CreateCopy(parcel);
+			parcel.id = "$parcel";
+			parcel.name = Format(game->txQuest[8], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str());
+			parcel.refid = refid;
+		}
 	}
 
 	if(enc != -1)

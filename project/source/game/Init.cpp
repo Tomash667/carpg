@@ -391,7 +391,7 @@ void Game::PostconfigureGame()
 		info.type = DIALOG_OK;
 		info.img = img;
 		info.event = [this](int result) { StartGameMode(); };
-		info.parent = main_menu;
+		info.parent = gui->main_menu;
 		info.order = ORDER_TOPMOST;
 		info.pause = false;
 		info.auto_wrap = true;

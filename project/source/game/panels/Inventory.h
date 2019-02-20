@@ -87,7 +87,6 @@ public:
 	int tmp_inventory_shift[2];
 	ItemLock lock;
 	TooltipController tooltip;
-	bool tex_replaced;
 	TEX tItemBar, tEquipped, tGold, tStarHq, tStarM, tStarU, tTeamItem;
 	cstring txGoldAndCredit, txGoldDropInfo, txCarryShort, txCarry, txCarryInfo, txTeamItem, txCantWear, txCantDoNow, txBuyTeamDialog, txDropGoldCount,
 		txDropNoGold, txDropNotNow, txDropItemCount, txWontBuy, txPrice, txNeedMoreGoldItem, txBuyItemCount, txSellItemCount, txLooting, txLootingChest,
@@ -99,6 +98,7 @@ public:
 //-----------------------------------------------------------------------------
 class InventoryPanel : public GamePanel
 {
+	friend class Inventory;
 public:
 	enum Mode
 	{
@@ -178,5 +178,5 @@ private:
 	Game& game;
 	float rot;
 	const Item* item_visible;
-	bool for_unit;
+	bool for_unit, tex_replaced;
 };

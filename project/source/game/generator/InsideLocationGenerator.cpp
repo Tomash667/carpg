@@ -1088,13 +1088,9 @@ void InsideLocationGenerator::OnLoad()
 	inside->SetActiveLevel(L.dungeon_level);
 	BaseLocation& base = g_base_locations[inside->target];
 
-	L.city_ctx = nullptr;
-	L.ApplyContext(inside, L.local_ctx);
 	game.SetDungeonParamsAndTextures(base);
-
 	L.RecreateObjects(false);
 	L.SpawnDungeonColliders();
-
 	CreateMinimap();
 }
 

@@ -106,7 +106,7 @@ bool LevelContext::FindItemInCorpse(const Item* item, Unit** unit, int* slot)
 		if(!(*it)->IsAlive())
 		{
 			int item_slot = (*it)->FindItem(item);
-			if(item_slot != -1)
+			if(item_slot != Unit::INVALID_IINDEX)
 			{
 				if(unit)
 					*unit = *it;

@@ -55,5 +55,7 @@ void Quest_Artifacts::SetupEvent()
 	at_level = 1;
 	item_to_give[0] = Item::Get("am_gladiator");
 	unit_to_spawn = UnitData::Get("golem_adamantine");
+	unit_to_spawn2 = UnitData::Get("golem_iron");
 	spawn_unit_room = RoomTarget::Treasury;
+	spawn_unit_room2 = RoomTarget::Treasury;
 }

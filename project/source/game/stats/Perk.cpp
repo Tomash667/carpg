@@ -328,7 +328,7 @@ bool TakenPerk::CanTake(PerkContext& ctx)
 	case Perk::Adaptation:
 		return ctx.Have(AttributeId::END, 75) && !ctx.HavePerk(Perk::ChronicDisease);
 	case Perk::PerfectHealth:
-		return ctx.Have(AttributeId::END, 100) && !ctx.HavePerk(Perk::ChronicDisease);
+		return ctx.Have(AttributeId::END, 90) && !ctx.HavePerk(Perk::ChronicDisease);
 	default:
 		assert(0);
 		return true;

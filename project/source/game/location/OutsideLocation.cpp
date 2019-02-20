@@ -249,7 +249,7 @@ void OutsideLocation::Load(GameReader& f, bool local, LOCATION_TOKEN token)
 		}
 	}
 
-	if(LOAD_VERSION < V_DEV && st == 20 && type == L_FOREST)
+	if(LOAD_VERSION < V_0_8 && st == 20 && type == L_FOREST)
 		state = LS_HIDDEN;
 }
 

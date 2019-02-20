@@ -823,7 +823,7 @@ item book_adventurer {
 item book_ld {
 	name "Œwiadomy sen"
 	desc "Ksiêga o œwiadomym œnie"
-	text "*** Œwiadomy sen ***\n\nO podró¿y w g³¹b w³asnego umys³u - autor nieznany.\n\nŒwiadomy sen to sen w którym œni¹cy zdaje sobie ¿e jest to sen. Zazwyczaj wystêpuje gdy w trakcie snu osoba zda sobie sprawê ¿e to sen. Mo¿liwe jest te¿ bezpoœrednie zaœniêcie i pozostanie œwiadomym. Œni¹cy posiada kontrolê nad sob¹ i tym co dzieje siê w œnie. O ile jest to jego sen...\n\nJedn¹ z metod s¹ testy rzeczywistoœci oraz zapisywanie codziennie prze¿ytych snów. Po jakimœ czasie zaczniemy wykonywaæ test rzeczywistoœci te¿ w snach i  dziêki temu rozpoznamy ¿e jest to sen.\n\nDrug¹ metod¹ jest bezpoœrednie wejœcie do œwiata snów. Mo¿na wykonaæ specjalny magiczny amulet który na to pozwoli."
+	text "*** Œwiadomy sen ***\n\nO podró¿y w g³¹b w³asnego umys³u - autor nieznany.\n\nŒwiadomy sen to sen w którym œni¹cy zdaje sobie ¿e jest to sen. Zazwyczaj wystêpuje gdy w trakcie snu osoba zda sobie sprawê ¿e to sen. Mo¿liwe jest te¿ bezpoœrednie zaœniêcie i pozostanie œwiadomym. Œni¹cy posiada kontrolê nad sob¹ i tym co dzieje siê w œnie. O ile jest to jego sen...\n\nJedn¹ z metod s¹ testy rzeczywistoœci oraz zapisywanie codziennie prze¿ytych snów. Po jakimœ czasie zaczniemy wykonywaæ test rzeczywistoœci te¿ w snach i dziêki temu rozpoznamy ¿e jest to sen.\n\nDrug¹ metod¹ jest bezpoœrednie wejœcie do œwiata snów. Mo¿na wykonaæ specjalny magiczny amulet który na to pozwoli."
 }
 item book_runic {
 	name "Runiczna ksiêga"

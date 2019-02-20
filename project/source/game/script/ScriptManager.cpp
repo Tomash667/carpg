@@ -783,7 +783,7 @@ void ScriptManager::Load(FileReader& f)
 		return;
 
 	// global vars
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_8)
 		globals.Load(f);
 
 	// unit vars
@@ -791,7 +791,8 @@ void ScriptManager::Load(FileReader& f)
 	f >> count;
 	for(uint i = 0; i < count; ++i)
 	{
-		Unit* unit = Unit::refid_table[f.Read<int>()];
+		int refid = f.Read<int>();
+		Unit* unit = Unit::refid_table[refid];
 		VarsContainer* vars = new VarsContainer;
 		vars->Load(f);
 		unit_vars[unit] = vars;

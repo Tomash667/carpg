@@ -108,6 +108,36 @@ void OutsideLocationGenerator::RandomizeTerrainTexture()
 }
 
 //=================================================================================================
+void OutsideLocationGenerator::RandomizeHeight(int octaves, float frequency, float hmin, float hmax)
+{
+	static Perlin perlin;
+	const int w = OutsideLocation::size; // allows non-square terrain (but there isn't any yet)
+	const int h = OutsideLocation::size;
+	float* height = outside->h;
+	perlin.Change(max(w, h), octaves, frequency, 1.f);
+	float hdif = hmax - hmin;
+	const float hm = sqrt(2.f) / 2;
+
+	for(int y = 0; y <= h; ++y)
+	{
+		for(int x = 0; x <= w; ++x)
+		{
+			float a = perlin.Get(1.f / (w + 1)*x, 1.f / (h + 1)*y);
+			height[x + y * (w + 1)] = (a + hm) / (hm * 2)*hdif + hmin;
+		}
+	}
+
+	for(int y = 0; y < h; ++y)
+	{
+		for(int x = 0; x < w; ++x)
+		{
+			if(x < 15 || x > w - 15 || y < 15 || y > h - 15)
+				height[x + y * (w + 1)] += Random(5.f, 10.f);
+		}
+	}
+}
+
+//=================================================================================================
 void OutsideLocationGenerator::OnEnter()
 {
 	Game& game = Game::Get();
@@ -407,13 +437,8 @@ void OutsideLocationGenerator::CreateMinimap()
 void OutsideLocationGenerator::OnLoad()
 {
 	Game& game = Game::Get();
-	OutsideLocation* outside = (OutsideLocation*)loc;
-
 	game.SetOutsideParams();
 	game.SetTerrainTextures();
-
-	L.ApplyContext(outside, L.local_ctx);
-	L.city_ctx = nullptr;
 	ApplyTiles();
 
 	L.RecreateObjects(false);

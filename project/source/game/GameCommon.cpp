@@ -90,11 +90,11 @@ uint StringToVersion(cstring version)
 {
 	string s(version);
 	uint major, minor, patch;
-	int wynik = sscanf_s(version, "%u.%u.%u", &major, &minor, &patch);
-	if(wynik != 3 || !InRange(major, 0u, 255u) || !InRange(minor, 0u, 255u) || !InRange(patch, 0u, 255u))
+	int result = sscanf_s(version, "%u.%u.%u", &major, &minor, &patch);
+	if(result != 3 || !InRange(major, 0u, 255u) || !InRange(minor, 0u, 255u) || !InRange(patch, 0u, 255u))
 	{
-		wynik = sscanf_s(version, "%u.%u", &major, &minor);
-		if(wynik != 2 || !InRange(major, 0u, 255u) || !InRange(minor, 0u, 255u))
+		result = sscanf_s(version, "%u.%u", &major, &minor);
+		if(result != 2 || !InRange(major, 0u, 255u) || !InRange(minor, 0u, 255u))
 			return -1;
 		else
 			return (major << 16) | (minor << 8);

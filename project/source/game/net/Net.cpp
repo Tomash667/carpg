@@ -7837,6 +7837,7 @@ void Game::ProcessLeftPlayers()
 		}
 
 		Team.CheckCredit();
+		Team.CalculatePlayersLevel();
 		delete pinfo;
 
 		return true;

@@ -23,7 +23,7 @@ public:
 	void Event(GuiEvent e) override;
 	void SetSaveMode(bool save_mode, bool online, SaveSlot* slots);
 	void SetText();
-	void UpdateSaveInfo(int slot);
+	void UpdateSaveInfo(int slot, cstring text);
 	void RemoveHardcoreSave(int slot);
 	void LoadSaveSlots();
 	void ShowSavePanel();

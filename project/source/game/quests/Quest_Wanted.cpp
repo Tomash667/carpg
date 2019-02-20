@@ -259,12 +259,14 @@ bool Quest_Wanted::Load(GameReader& f)
 		unit_spawn_level = level;
 	}
 
-	// list
-	Item::Get("wanted_letter")->CreateCopy(letter);
-	letter.id = "$wanted_letter";
-	letter.name = game->txQuest[258];
-	letter.refid = refid;
-	letter.desc = Format(game->txQuest[259], level * 100, unit_name.c_str());
+	if(prog >= Progress::Started)
+	{
+		Item::Get("wanted_letter")->CreateCopy(letter);
+		letter.id = "$wanted_letter";
+		letter.name = game->txQuest[258];
+		letter.refid = refid;
+		letter.desc = Format(game->txQuest[259], level * 100, unit_name.c_str());
+	}
 
 	return true;
 }

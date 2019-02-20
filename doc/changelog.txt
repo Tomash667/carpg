@@ -22,6 +22,7 @@ Wersja 0.8 (???):
 + wiêksza mapa œwiata, przesuwanie i skalowanie mapy, mo¿na podró¿owaæ do dowolnego miejsca
 + szukajka lokalizacji na mapie œwiata
 + unikalny bohater do zrekrutowania
++ atakowanie przyjaznych orków nie powoduje agresji ze strony mieszkañców miasta
 - naprawione bardzo szybkie szkolenie walki broni¹ atakuj¹c s³abych, niskopoziomowych wrogów
 - naprawione rozmawianie z jednostkami które wstaj¹
 - naprawione obracanie jednostek podczas dialogu u klienta
@@ -33,6 +34,12 @@ Wersja 0.8 (???):
 - naprawiony brak efektu po zmianie has³a serwera na puste, wci¹¿ by³o wymagane
 - naprawiony brak dialogów pomiêdzy goblinami/orkami
 - naprawiony poziom trudnoœci wrogów na arenie
+- naprawione zadanie oczyœæ lokalizacjê gdy trzeba oczyœciæ jaskiniê
+- naprawiony crash przy wczytywaniu gry z niektórymi questowymi przedmiotami
+- naprawiony crash po zostawieniu przeklêtego kamienia na poziomie ze zw³okami
+- naprawione rysowanie specjalnych akcji
+- naprawione leczenie przez Jozana osób walcz¹cych na arenie gdy on jest poza
+- naprawiony crash przy alt tabowaniu gdy jest otwarty handel i jest otwarty popup z przedmiotem
 
 --------------------------------------------------------------------------------
 Wersja 0.7.1 (2018-04-15):

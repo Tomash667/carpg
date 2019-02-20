@@ -231,7 +231,7 @@ void FileWriter::SetTime(FileTime file_time)
 
 bool FileWriter::SetPos(uint pos)
 {
-	if(pos >= GetFileSize(file, nullptr))
+	if(pos > GetFileSize(file, nullptr))
 		return false;
 	SetFilePointer(file, pos, nullptr, FILE_BEGIN);
 	return true;

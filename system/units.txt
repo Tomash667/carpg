@@ -906,7 +906,7 @@ unit viewer : citizen {
 
 unit captive : base_human {
 	level 4
-	flags | {ai_wanders hero specific_name}
+	flags | {ai_wanders hero specific_name peaceful}
 	items {
 		if chance 40
 			random {al_clothes3 al_clothes3b}
@@ -1010,11 +1010,11 @@ unit gornik_szef : gornik {
 
 unit pijak : base_human {
 	level {3 20}
-	profile warrior
+	profile ai_fighter
 	flags | {contest drunkman_after_contest}
 	items {
 		al_clothes
-		random {!-1short_blade !-1axe !-1blunt !-1long_blade}
+		random {dagger_short sword_long axe_small blunt_mace}
 		random 1 3 !normal_food
 	}
 	gold {{15 30}{100 200}}
@@ -1158,7 +1158,12 @@ unit goblin : base_goblin {
 	items {
 		chance 25 !shield
 		chance 5 p_hp
-		random {!long_blade !axe !blunt !short_blade}
+		if chance 5 {
+			frying_pan
+		}
+		else {
+			random {!long_blade !axe !blunt !short_blade}
+		}
 		chance 25 al_goblin
 		random 0 2 !orc_food
 	}
@@ -1276,8 +1281,10 @@ unit base_orc {
 }
 
 unit base_gorush : base_orc {
-	flags | {hero ai_train specific_name tournament}
+	flags | {hero ai_train specific_name tournament peaceful}
+	dialog q_orcs2
 	gold {10 30}
+	group citizens
 }
 
 unit q_orkowie_gorush : base_gorush {
@@ -1292,8 +1299,6 @@ unit q_orkowie_gorush : base_gorush {
 		bow_short
 		random 0 2 !orc_food
 	}
-	group citizens
-	dialog q_orcs2
 	class warrior
 }
 
@@ -1369,7 +1374,7 @@ unit q_orkowie_orc : orc {
 unit q_orkowie_slaby : base_orc {
 	level 4
 	def 40
-	flags | coward
+	flags | {coward peaceful}
 	items {
 		random {!-2long_blade !-2axe !-2blunt}
 		random 0 2 !orc_food
@@ -2434,7 +2439,7 @@ unit unk {
 		"idle"
 	}
 	width 0.4
-	attack_range 1.5
+	attack_range 1.2
 }
 
 //------------------------------------------------------------------------------

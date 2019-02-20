@@ -240,8 +240,9 @@ Vec2 TeamSingleton::GetShare(int pc, int npc)
 	}
 	else
 	{
-		float r = 1.f - npc * 0.1f;
-		return Vec2(r / pc, 0.1f);
+		int total = pc * 2 + npc;
+		float r = 1.f / total;
+		return Vec2(r * 2, r);
 	}
 }
 
@@ -411,7 +412,7 @@ void TeamSingleton::Load(GameReader& f)
 	}
 	f >> crazies_attack;
 	f >> is_bandit;
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_8)
 		f >> free_recruits;
 	else
 	{
@@ -424,6 +425,7 @@ void TeamSingleton::Load(GameReader& f)
 	}
 
 	CheckCredit(false, true);
+	CalculatePlayersLevel();
 }
 
 void TeamSingleton::Reset()
@@ -1366,10 +1368,18 @@ void TeamSingleton::OnTravel(float dist)
 //=================================================================================================
 void TeamSingleton::CalculatePlayersLevel()
 {
+	bool have_leader_perk = false;
 	players_level = -1;
 	for(Unit* unit : active_members)
 	{
-		if(unit->IsPlayer() && unit->level > players_level)
-			players_level = unit->level;
+		if(unit->IsPlayer())
+		{
+			if(unit->level > players_level)
+				players_level = unit->level;
+			if(unit->player->HavePerk(Perk::Leader))
+				have_leader_perk = true;
+		}
 	}
+	if(have_leader_perk)
+		--players_level;
 }

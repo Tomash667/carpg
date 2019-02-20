@@ -3,7 +3,7 @@
 dir = "en"
 englishName = "English"
 localName = "English"
-locale = " 1033;2057;3081;4105;5129;6153;7177;8201;9225;10249;11273"                
+locale = "1033;2057;3081;4105;5129;6153;7177;8201;9225;10249;11273"
 title = "Select language"
 text = "Select language (can be changed later in options):"
 bOk = "OK"

@@ -109,7 +109,7 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 
 	UnitData& ud = *ClassInfo::classes[(int)clas].unit_data;
 
-	Unit* u = CreateUnit(ud, -1, nullptr, nullptr, false);
+	Unit* u = CreateUnit(ud, -1, nullptr, nullptr, false, true);
 	u->ApplyHumanData(hd);
 	Team.members.clear();
 	Team.active_members.clear();
@@ -136,12 +136,13 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 	}
 	dialog_context.pc = pc;
 
+	Team.CalculatePlayersLevel();
 	ClearGameVars(true);
 	gui->Setup(pc);
 
 	if(!tutorial && cc.HavePerk(Perk::Leader))
 	{
-		Unit* npc = CreateUnit(ClassInfo::GetRandomData(), 2, nullptr, nullptr, false);
+		Unit* npc = CreateUnit(ClassInfo::GetRandomData(), -1, nullptr, nullptr, false);
 		npc->ai = new AIController;
 		npc->ai->Init(npc);
 		npc->hero->know_name = true;
@@ -1408,6 +1409,7 @@ void Game::UpdateServerTransfer(float dt)
 			u->interp = EntityInterpolator::Pool.Get();
 			u->interp->Reset(u->pos, u->rot);
 		}
+		Team.CalculatePlayersLevel();
 
 		// add ai
 		bool anyone_left = false;
@@ -1451,7 +1453,9 @@ void Game::UpdateServerTransfer(float dt)
 
 		if(!N.mp_load && leader_perk > 0 && Team.GetActiveTeamSize() < Team.GetMaxSize())
 		{
-			Unit* npc = CreateUnit(ClassInfo::GetRandomData(), 2 * leader_perk, nullptr, nullptr, false);
+			UnitData& ud = ClassInfo::GetRandomData();
+			int level = ud.level.x + 2 * (leader_perk - 1);
+			Unit* npc = CreateUnit(ud, level, nullptr, nullptr, false);
 			npc->ai = new AIController;
 			npc->ai->Init(npc);
 			npc->hero->know_name = true;
