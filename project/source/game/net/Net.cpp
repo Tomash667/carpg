@@ -4343,7 +4343,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				bool force;
 				const Item* item;
 				f >> netid;
-				bool ok = (ReadItemAndFind(f, item) <= 0);
+				bool ok = (ReadItemAndFind(f, item) > 0);
 				f >> force;
 				if(!f || !ok)
 					N.StreamError("Update client: Broken CONSUME_ITEM.");
@@ -6431,7 +6431,10 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 					else if(pc->action == PlayerController::Action_LootContainer)
 						gui->inventory->StartTrade(I_LOOT_CONTAINER, pc->action_container->container->items);
 					else
+					{
+						pc->action_chest->user = pc->unit;
 						gui->inventory->StartTrade(I_LOOT_CHEST, pc->action_chest->items);
+					}
 				}
 				break;
 			// message about gained gold

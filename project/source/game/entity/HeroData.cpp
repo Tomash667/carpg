@@ -7,10 +7,6 @@
 #include "NameHelper.h"
 #include "Const.h"
 #include "Team.h"
-// to remove
-#include "Game.h"
-#include "GlobalGui.h"
-#include "GameMessages.h"
 
 //=================================================================================================
 void HeroData::Init(Unit& _unit)
@@ -114,8 +110,6 @@ void HeroData::LevelUp()
 	++unit->level;
 	unit->stats = unit->data->GetStats(unit->level);
 	unit->CalculateStats();
-	Game::Get().gui->messages->AddGameMsg(Format("Hero %s gained level %d.", name.c_str(), unit->level), 5.f);
-	// !!! remove includes
 }
 
 //=================================================================================================

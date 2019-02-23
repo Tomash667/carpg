@@ -2709,7 +2709,7 @@ void Game::UseAction(PlayerController* p, bool from_server, const Vec3* pos)
 	if(strcmp(action.id, "dash") == 0 || strcmp(action.id, "bull_charge") == 0)
 	{
 		bool dash = (strcmp(action.id, "dash") == 0);
-		if(dash)
+		if(dash && Net::IsLocal())
 			p->Train(TrainWhat::Dash, 0.f, 0);
 		p->unit->action = A_DASH;
 		p->unit->run_attack = false;
@@ -5412,7 +5412,8 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 						u.mesh_inst->groups[1].blend_max = 0.33f;
 					}
 					u.action = A_NONE;
-					u.mesh_inst->groups[0].speed = u.GetRunSpeed() / u.data->run_speed;
+					if(Net::IsLocal() || u.IsLocal())
+						u.mesh_inst->groups[0].speed = u.GetRunSpeed() / u.data->run_speed;
 				}
 			}
 			break;

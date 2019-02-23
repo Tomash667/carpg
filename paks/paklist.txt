@@ -15,6 +15,12 @@ file "../bin/D3DCompiler_43.dll" "D3DCompiler_43.dll"
 file "../bin/D3DX9_43.dll" "D3DX9_43.dll"
 file "../bin/fmodex.dll" "fmodex.dll"
 
+// crash reporter
+file "../bin/CrashRpt1403.dll" "CrashRpt1403.dll"
+file "../bin/dbghelp.dll" "dbghelp.dll"
+file "../bin/crashrpt_lang.ini" "crashrpt_lang.ini"
+file "../bin/CrashSender1403.exe" "CrashSender1403.exe"
+
 // copy assets
 dir "../bin/data" "data"
 

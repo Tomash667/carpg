@@ -100,7 +100,7 @@ void Console::Event(GuiEvent e)
 		itb.focus = true;
 		itb.Event(GuiEvent_GainFocus);
 	}
-	else if(e == GuiEvent_LostFocus)
+	else if(e == GuiEvent_LostFocus || e == GuiEvent_Close)
 	{
 		itb.focus = false;
 		itb.Event(GuiEvent_LostFocus);

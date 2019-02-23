@@ -1690,13 +1690,6 @@ void Unit::Load(GameReader& f, bool local)
 		else
 			stamina_timer = 0;
 	}
-	else
-	{
-		stamina_max = CalculateMaxStamina();
-		stamina = stamina_max;
-		stamina_action = SA_RESTORE_MORE;
-		stamina_timer = 0;
-	}
 	if(LOAD_VERSION < V_0_5)
 		f.Skip<int>(); // old type
 	f >> level;
@@ -1775,7 +1768,7 @@ void Unit::Load(GameReader& f, bool local)
 		}
 		else
 		{
-			data->GetStats(level);
+			stats = data->GetStats(level);
 			f.Skip(sizeof(int) * (3 + (int)old::SkillId::MAX));
 		}
 	}
@@ -2083,6 +2076,7 @@ void Unit::Load(GameReader& f, bool local)
 			// set apptitude
 			UnitStats base_stats;
 			base_stats.subprofile.value = 0;
+			base_stats.fixed = false;
 			base_stats.Set(profile);
 			for(int i = 0; i < (int)AttributeId::MAX; ++i)
 				player->attrib[i].apt = (base_stats.attrib[i] - 50) / 5;
@@ -2091,6 +2085,15 @@ void Unit::Load(GameReader& f, bool local)
 			player->SetRequiredPoints();
 		}
 		CalculateStats();
+	}
+
+	// compability
+	if(LOAD_VERSION < V_0_5)
+	{
+		stamina_max = CalculateMaxStamina();
+		stamina = stamina_max;
+		stamina_action = SA_RESTORE_MORE;
+		stamina_timer = 0;
 	}
 }
 
@@ -3844,7 +3847,7 @@ void Unit::RemoveStamina(float value)
 {
 	stamina -= value;
 	stamina_timer = STAMINA_RESTORE_TIMER;
-	if(player)
+	if(player && Net::IsLocal())
 	{
 		player->Train(TrainWhat::Stamina, value, 0);
 		if(!player->is_local)

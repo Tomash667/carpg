@@ -4018,7 +4018,8 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 		Error("Read level: Failed to read location.");
 		return false;
 	}
-
+	ApplyContext(location, local_ctx);
+	city_ctx = (location->type == L_CITY ? (City*)location : nullptr);
 	is_open = true;
 	game.loc_gen_factory->Get(location)->OnLoad();
 	location->RequireLoadingResources(&loaded_resources);

@@ -1,7 +1,7 @@
 Historia zmian
 
 --------------------------------------------------------------------------------
-Wersja 0.8 (???):
+Wersja 0.8 (2019-02-23):
 ! to jest ostatnia wersja obs³uguj¹ca windowsa xp
 ! nie mo¿na wczytywaæ ju¿ zapisów z wersji 0.2.10 lub starszej
 + nowy system walki, obliczenia mobilnoœci
@@ -40,6 +40,7 @@ Wersja 0.8 (???):
 - naprawione rysowanie specjalnych akcji
 - naprawione leczenie przez Jozana osób walcz¹cych na arenie gdy on jest poza
 - naprawiony crash przy alt tabowaniu gdy jest otwarty handel i jest otwarty popup z przedmiotem
+- naprawiony crash przy wczytywaniu gry gdzie ktoœ strzela z ³uku
 
 --------------------------------------------------------------------------------
 Wersja 0.7.1 (2018-04-15):

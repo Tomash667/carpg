@@ -1815,7 +1815,7 @@ bool IGUI::CloseDialog(DialogBox* d)
 {
 	assert(d);
 
-	if(dialog_layer->Empty())
+	if(dialog_layer->Empty() || !HaveDialog(d))
 		return false;
 
 	Control* prev_top = dialog_layer->Top();

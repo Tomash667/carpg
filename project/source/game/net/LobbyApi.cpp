@@ -21,7 +21,7 @@ cstring op_names[] = {
 	"IGNORE"
 };
 
-LobbyApi::LobbyApi() : np_client(nullptr), np_attached(false)
+LobbyApi::LobbyApi() : np_client(nullptr), np_attached(false), current_op(NONE)
 {
 	tcp = TCPInterface::GetInstance();
 	http = HTTPConnection2::GetInstance();
@@ -240,6 +240,7 @@ int LobbyApi::GetVersion(delegate<bool()> cancel_clbk)
 			break;
 	}
 
+	current_op = NONE;
 	Reset();
 	if(version >= 0)
 	{

@@ -464,7 +464,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	Info("Parsing command line.");
 	int argc = ParseCmdLine(cmd_line, &argv);
 	bool restarted = false;
-	int delay = 0;
+	int delay = -1;
 
 	for(int i = 0; i < argc; ++i)
 	{
@@ -532,6 +532,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				game.testing = true;
 				console = True;
 			}
+			else if(strcmp(arg, "delay-0") == 0)
+				delay = 0;
 			else if(strcmp(arg, "delay-1") == 0)
 				delay = 1;
 			else if(strcmp(arg, "delay-2") == 0)
@@ -574,7 +576,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	//-------------------------------------------------------------------------
 	// startup delay to synchronize mp game on localhost
-	delay = cfg.GetInt("delay", delay);
+	if(delay == -1)
+		delay = cfg.GetInt("delay", delay);
 	if(delay > 0)
 	{
 		if(delay == 1)

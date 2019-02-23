@@ -1,7 +1,7 @@
 Changelog
 
 --------------------------------------------------------------------------------
-Version 0.8 (???):
+Version 0.8 (2019-02-23):
 ! this is last version working on windows xp
 ! cannot load saves from version 0.2.10 or older
 + new combat system, mobility calculations
@@ -40,6 +40,7 @@ Version 0.8 (???):
 - fixed special actions drawing
 - fixed healing by Jozan units fighting on arena when he is outside
 - fixed crash when alt tabbing trade is open and item popup is visible
+- fixed crash when loading game with someone shooting bow
 
 --------------------------------------------------------------------------------
 Version 0.7.1 (2018-04-15):

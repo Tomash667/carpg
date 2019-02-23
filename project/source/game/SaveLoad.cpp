@@ -430,6 +430,7 @@ void Game::LoadGame(GameReader& f)
 	Usable::refid_table.clear();
 	ParticleEmitter::refid_table.clear();
 	TrailParticleEmitter::refid_table.clear();
+	L.entering = true;
 
 	byte check_id = 0, read_id;
 
@@ -886,6 +887,7 @@ void Game::LoadGame(GameReader& f)
 #endif
 
 	Info("Game loaded.");
+	L.entering = false;
 
 	if(N.mp_load)
 	{

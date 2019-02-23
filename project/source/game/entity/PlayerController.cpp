@@ -117,6 +117,7 @@ void PlayerController::Update(float dt, bool is_local)
 //=================================================================================================
 void PlayerController::Train(SkillId skill, float points)
 {
+	assert(Net::IsLocal());
 	int s = (int)skill;
 	StatData& stat = this->skill[s];
 	points += stat.train_part;
@@ -162,6 +163,7 @@ void PlayerController::Train(SkillId skill, float points)
 //=================================================================================================
 void PlayerController::Train(AttributeId attrib, float points)
 {
+	assert(Net::IsLocal());
 	int a = (int)attrib;
 	StatData& stat = this->attrib[a];
 	points += stat.train_part;
@@ -685,11 +687,9 @@ void PlayerController::RecalculateLevel()
 	if(level != unit->level)
 	{
 		unit->level = level;
-		if(Net::IsLocal())
+		if(Net::IsLocal() && !L.entering)
 		{
 			Team.CalculatePlayersLevel();
-			// !!! to remove
-			Game::Get().gui->messages->AddGameMsg(Format("DEBUG Player %s gained level %d.", name.c_str(), level), 5.f);
 			if(player_info && !IsLocal())
 				player_info->update_flags |= PlayerInfo::UF_LEVEL;
 		}

@@ -1505,7 +1505,11 @@ uint Game::ValidateGameData(bool major)
 MeshInstance* Game::GetBowInstance(Mesh* mesh)
 {
 	if(bow_instances.empty())
+	{
+		if(!mesh->IsLoaded())
+			ResourceManager::Get<Mesh>().Load(mesh);
 		return new MeshInstance(mesh);
+	}
 	else
 	{
 		MeshInstance* instance = bow_instances.back();
