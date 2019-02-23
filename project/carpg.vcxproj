@@ -384,7 +384,6 @@
     <ClInclude Include="source\game\stats\RoomType.h" />
     <ClInclude Include="source\game\stats\Skill.h" />
     <ClInclude Include="source\game\stats\SpawnGroup.h" />
-    <ClInclude Include="source\game\stats\Spell.h" />
     <ClInclude Include="source\game\stats\UnitStats.h" />
     <ClInclude Include="source\game\system\DialogContext.h" />
     <ClInclude Include="source\game\system\DialogLoader.h" />
@@ -393,6 +392,7 @@
     <ClInclude Include="source\game\system\Item.h" />
     <ClInclude Include="source\game\system\ItemScript.h" />
     <ClInclude Include="source\game\system\ItemType.h" />
+    <ClInclude Include="source\game\system\Spell.h" />
     <ClInclude Include="source\game\system\StatProfile.h" />
     <ClInclude Include="source\game\system\Stock.h" />
     <ClInclude Include="source\game\system\UnitData.h" />
@@ -626,7 +626,6 @@
     <ClCompile Include="source\game\stats\RoomType.cpp" />
     <ClCompile Include="source\game\stats\Skill.cpp" />
     <ClCompile Include="source\game\stats\SpawnGroup.cpp" />
-    <ClCompile Include="source\game\stats\Spell.cpp" />
     <ClCompile Include="source\game\stats\UnitStats.cpp" />
     <ClCompile Include="source\game\system\ContentLoader.cpp" />
     <ClCompile Include="source\game\system\DialogContext.cpp" />
@@ -637,6 +636,8 @@
     <ClCompile Include="source\game\system\ItemLoader.cpp" />
     <ClCompile Include="source\game\system\ItemScript.cpp" />
     <ClCompile Include="source\game\system\ObjectLoader.cpp" />
+    <ClCompile Include="source\game\system\Spell.cpp" />
+    <ClCompile Include="source\game\system\SpellLoader.cpp" />
     <ClCompile Include="source\game\system\StatProfile.cpp" />
     <ClCompile Include="source\game\system\Stock.cpp" />
     <ClCompile Include="source\game\system\UnitData.cpp" />

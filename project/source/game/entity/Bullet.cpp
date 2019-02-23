@@ -62,7 +62,7 @@ void Bullet::Load(FileReader& f)
 	const string& spell_id = f.ReadString1();
 	if(!spell_id.empty())
 	{
-		spell = FindSpell(spell_id.c_str());
+		spell = Spell::TryGet(spell_id);
 		if(!spell)
 			throw Format("Missing spell '%s' for bullet.", spell_id.c_str());
 	}

@@ -657,7 +657,7 @@ void Game::AddLoadTasks()
 
 	// spells
 	res_mgr.AddTaskCategory(txLoadSpells);
-	for(Spell* spell_ptr : spells)
+	for(Spell* spell_ptr : Spell::spells)
 	{
 		Spell& spell = *spell_ptr;
 

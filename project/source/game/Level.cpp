@@ -4092,7 +4092,7 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 		}
 		else
 		{
-			Spell* spell_ptr = FindSpell(spell_id.c_str());
+			Spell* spell_ptr = Spell::TryGet(spell_id);
 			if(!spell_ptr)
 			{
 				Error("Read level: Missing spell '%s'.", spell_id.c_str());
@@ -4180,7 +4180,7 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 		return false;
 	}
 	L.local_ctx.electros->resize(count);
-	Spell* electro_spell = FindSpell("thunder_bolt");
+	Spell* electro_spell = Spell::TryGet("thunder_bolt");
 	for(Electro*& electro : *L.local_ctx.electros)
 	{
 		electro = new Electro;

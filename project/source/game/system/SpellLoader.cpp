@@ -1,74 +1,108 @@
 #include "Pch.h"
 #include "GameCore.h"
-#include "Tokenizer.h"
+#include "ContentLoader.h"
 #include "Spell.h"
-#include "Crc.h"
-#include "Content.h"
-
-extern string g_system_dir;
-vector<Spell*> spells;
-vector<std::pair<string, Spell*>> spell_alias;
-
-enum Group
-{
-	G_TOP,
-	G_KEYWORD,
-	G_TYPE,
-	G_FLAG
-};
-
-enum TopKeyword
-{
-	TK_SPELL,
-	TK_ALIAS
-};
-
-enum Keyword
-{
-	K_TYPE,
-	K_FLAGS,
-	K_DMG,
-	K_COOLDOWN,
-	K_RANGE,
-	K_SPEED,
-	K_EXPLODE_RANGE,
-	K_MESH,
-	K_TEX,
-	K_TEX_PARTICLE,
-	K_TEX_EXPLODE,
-	K_SOUND_CAST,
-	K_SOUND_HIT
-};
 
 //=================================================================================================
-Spell* FindSpell(cstring id)
+class SpellLoader : public ContentLoader
 {
-	assert(id);
-
-	for(Spell* s : spells)
+	enum Group
 	{
-		if(s->id == id)
-			return s;
+		G_TOP,
+		G_KEYWORD,
+		G_TYPE,
+		G_FLAG
+	};
+
+	enum TopKeyword
+	{
+		TK_SPELL,
+		TK_ALIAS
+	};
+
+	enum Keyword
+	{
+		K_TYPE,
+		K_FLAGS,
+		K_DMG,
+		K_COOLDOWN,
+		K_RANGE,
+		K_SPEED,
+		K_EXPLODE_RANGE,
+		K_MESH,
+		K_TEX,
+		K_TEX_PARTICLE,
+		K_TEX_EXPLODE,
+		K_SOUND_CAST,
+		K_SOUND_HIT
+	};
+
+	//=================================================================================================
+	void InitTokenizer() override
+	{
+		t.AddKeywords(G_TOP, {
+			{ "spell", TK_SPELL },
+			{ "alias", TK_ALIAS }
+			});
+
+		t.AddKeywords(G_KEYWORD, {
+			{ "type", K_TYPE },
+			{ "flags", K_FLAGS },
+			{ "dmg", K_DMG },
+			{ "cooldown", K_COOLDOWN },
+			{ "range", K_RANGE },
+			{ "speed", K_SPEED },
+			{ "explode_range", K_EXPLODE_RANGE },
+			{ "mesh", K_MESH },
+			{ "tex", K_TEX },
+			{ "tex_particle", K_TEX_PARTICLE },
+			{ "tex_explode", K_TEX_EXPLODE },
+			{ "sound_cast", K_SOUND_CAST },
+			{ "sound_hit", K_SOUND_HIT }
+			});
+
+		t.AddKeywords(G_TYPE, {
+			{ "point", Spell::Point },
+			{ "ray", Spell::Ray },
+			{ "target", Spell::Target },
+			{ "ball", Spell::Ball }
+			});
+
+		t.AddKeywords(G_FLAG, {
+			{ "explode", Spell::Explode },
+			{ "poison", Spell::Poison },
+			{ "raise", Spell::Raise },
+			{ "jump", Spell::Jump },
+			{ "drain", Spell::Drain },
+			{ "hold", Spell::Hold },
+			{ "triple", Spell::Triple },
+			{ "heal", Spell::Heal },
+			{ "non_combat", Spell::NonCombat }
+			});
 	}
 
-	for(auto& alias : spell_alias)
+	//=================================================================================================
+	void LoadEntity(int top, const string& id)
 	{
-		if(alias.first == id)
-			return alias.second;
+		switch(top)
+		{
+		case TK_SPELL:
+			ParseSpell(id);
+			break;
+		case TK_ALIAS:
+			ParseAlias(id);
+			break;
+		}
 	}
 
-	return nullptr;
-}
-
-//=================================================================================================
-bool LoadSpell(Tokenizer& t, Crc& crc)
-{
-	Spell* spell = new Spell;
-
-	try
+	//=================================================================================================
+	void ParseSpell(const string& id)
 	{
-		t.Next();
-		spell->id = t.MustGetItemKeyword();
+		if(Spell::TryGet(id))
+			t.Throw("Id must be unique.");
+
+		Ptr<Spell> spell;
+		spell->id = id;
 		crc.Update(spell->id);
 		t.Next();
 
@@ -203,144 +237,55 @@ bool LoadSpell(Tokenizer& t, Crc& crc)
 			}
 		}
 
-		for(Spell* s : spells)
-		{
-			if(s->id == spell->id)
-				t.Throw("Spell with this id already exists.");
-		}
-
-		spells.push_back(spell);
-		return true;
+		Spell::spells.push_back(spell.Pin());
 	}
-	catch(const Tokenizer::Exception& e)
+
+	//=================================================================================================
+	void ParseAlias(const string& id)
 	{
-		Error("Failed to load spell '%s': %s", spell->id.c_str(), e.ToString());
-		delete spell;
-		return false;
-	}
-}
-
-//=================================================================================================
-uint LoadSpells(uint& out_crc, uint& errors)
-{
-	Tokenizer t;
-	if(!t.FromFile(Format("%s/spells.txt", g_system_dir.c_str())))
-		throw "Failed to open spells.txt.";
-
-	t.AddKeywords(G_TOP, {
-		{ "spell", TK_SPELL },
-		{ "alias", TK_ALIAS }
-	});
-
-	t.AddKeywords(G_KEYWORD, {
-		{ "type", K_TYPE },
-		{ "flags", K_FLAGS },
-		{ "dmg", K_DMG },
-		{ "cooldown", K_COOLDOWN },
-		{ "range", K_RANGE },
-		{ "speed", K_SPEED },
-		{ "explode_range", K_EXPLODE_RANGE },
-		{ "mesh", K_MESH },
-		{ "tex", K_TEX },
-		{ "tex_particle", K_TEX_PARTICLE },
-		{ "tex_explode", K_TEX_EXPLODE },
-		{ "sound_cast", K_SOUND_CAST },
-		{ "sound_hit", K_SOUND_HIT }
-	});
-
-	t.AddKeywords(G_TYPE, {
-		{ "point", Spell::Point },
-		{ "ray", Spell::Ray },
-		{ "target", Spell::Target },
-		{ "ball", Spell::Ball }
-	});
-
-	t.AddKeywords(G_FLAG, {
-		{ "explode", Spell::Explode },
-		{ "poison", Spell::Poison },
-		{ "raise", Spell::Raise },
-		{ "jump", Spell::Jump },
-		{ "drain", Spell::Drain },
-		{ "hold", Spell::Hold },
-		{ "triple", Spell::Triple },
-		{ "heal", Spell::Heal },
-		{ "non_combat", Spell::NonCombat }
-	});
-
-	Crc crc;
-
-	try
-	{
+		Spell* spell = Spell::TryGet(id);
+		if(!spell)
+			t.Throw("Missing spell '%s'.", id.c_str());
 		t.Next();
 
-		while(!t.IsEof())
-		{
-			bool skip = false;
+		const string& alias_id = t.MustGetItemKeyword();
+		Spell* alias = Spell::TryGet(alias_id);
+		if(alias)
+			t.Throw("Alias or spell already exists.");
 
-			if(t.IsKeywordGroup(G_TOP))
-			{
-				TopKeyword top = (TopKeyword)t.GetKeywordId(G_TOP);
-				if(top == TK_SPELL)
-				{
-					if(!LoadSpell(t, crc))
-					{
-						++errors;
-						skip = true;
-					}
-				}
-				else
-				{
-					try
-					{
-						t.Next();
-
-						const string& spell_id = t.MustGetItemKeyword();
-						Spell* spell = FindSpell(spell_id.c_str());
-						if(!spell)
-							t.Throw("Missing spell '%s'.", spell_id.c_str());
-						t.Next();
-
-						const string& alias_id = t.MustGetItemKeyword();
-						Spell* alias = FindSpell(alias_id.c_str());
-						if(alias)
-							t.Throw("Alias or spell already exists.");
-
-						spell_alias.push_back(std::pair<string, Spell*>(alias_id, spell));
-					}
-					catch(const Tokenizer::Exception& e)
-					{
-						Error("Failed to load spell alias: %s", e.ToString());
-						++errors;
-						skip = true;
-					}
-				}
-			}
-			else
-			{
-				int g = G_TOP;
-				Error(t.FormatUnexpected(tokenizer::T_KEYWORD_GROUP, &g));
-				++errors;
-				skip = true;
-			}
-
-			if(skip)
-				t.SkipToKeywordGroup(G_TOP);
-			else
-				t.Next();
-		}
+		Spell::aliases.push_back(std::pair<string, Spell*>(alias_id, spell));
 	}
-	catch(const Tokenizer::Exception& e)
+
+	//=================================================================================================
+	void Finalize() override
 	{
-		Error("Failed to load spells: %s", e.ToString());
-		++errors;
+		content::crc[(int)content::Id::Spells] = crc.Get();
+
+		Info("Loaded spells (%u) - crc %p.", Spell::spells.size(), content::crc[(int)content::Id::Spells]);
 	}
 
-	out_crc = crc.Get();
-	return spells.size();
+public:
+	//=================================================================================================
+	SpellLoader()
+	{
+	}
+
+	//=================================================================================================
+	void DoLoading()
+	{
+		Load("spells.txt", G_TOP);
+	}
+};
+
+//=================================================================================================
+void content::LoadSpells()
+{
+	SpellLoader loader;
+	loader.DoLoading();
 }
 
 //=================================================================================================
 void content::CleanupSpells()
 {
-	DeleteElements(spells);
+	DeleteElements(Spell::spells);
 }

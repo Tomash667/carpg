@@ -46,10 +46,8 @@ struct Spell
 	{
 		delete shape;
 	}
-};
-extern vector<Spell*> spells;
-extern vector<std::pair<string, Spell*>> spell_alias;
 
-//-----------------------------------------------------------------------------
-Spell* FindSpell(cstring id);
-uint LoadSpells(uint& crc, uint& errors);
+	static vector<Spell*> spells;
+	static vector<std::pair<string, Spell*>> aliases;
+	static Spell* TryGet(Cstring id);
+};

@@ -42,8 +42,7 @@ void content::LoadContent(delegate<void(Id)> callback)
 	callback(Id::Objects);
 
 	Info("Game: Loading spells.");
-	loaded = LoadSpells(crc[(int)Id::Spells], errors);
-	Info("Game: Loaded spells: %u (crc %p).", loaded, crc[(int)Id::Spells]);
+	LoadSpells();
 	callback(Id::Spells);
 
 	Info("Game: Loading dialogs.");

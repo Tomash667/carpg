@@ -98,7 +98,7 @@ void Electro::Load(FileReader& f)
 	f >> dmg;
 	owner = Unit::GetByRefid(f.Read<int>());
 	const string& spell_id = f.ReadString1();
-	spell = FindSpell(spell_id.c_str());
+	spell = Spell::TryGet(spell_id);
 	if(!spell)
 		throw Format("Missing spell '%s' for electro.", spell_id.c_str());
 	f >> valid;

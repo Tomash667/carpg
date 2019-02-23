@@ -1694,7 +1694,7 @@ class UnitLoader : public ContentLoader
 				t.AssertSymbol('{');
 				t.Next();
 				const string& spell_id = t.MustGetItemKeyword();
-				Spell* spell = FindSpell(spell_id.c_str());
+				Spell* spell = Spell::TryGet(spell_id);
 				if(!spell)
 					t.Throw("Missing spell '%s'.", spell_id.c_str());
 				t.Next();

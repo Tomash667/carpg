@@ -73,6 +73,9 @@
     <Filter Include="3. game\system\dialogs">
       <UniqueIdentifier>{d2673175-c92d-4cb8-9d60-1e84843fb94b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="3. game\system\spells">
+      <UniqueIdentifier>{f6296568-67e0-4b62-a5f9-05cd186cb0ee}</UniqueIdentifier>
+    </Filter>
     <Filter Include="2. engine\resources">
       <UniqueIdentifier>{20e4856c-a4ec-49d1-bea8-1656b3df0327}</UniqueIdentifier>
     </Filter>
@@ -208,9 +211,6 @@
       <Filter>3. game\stats</Filter>
     </ClCompile>
     <ClCompile Include="source\game\stats\SpawnGroup.cpp">
-      <Filter>3. game\stats</Filter>
-    </ClCompile>
-    <ClCompile Include="source\game\stats\Spell.cpp">
       <Filter>3. game\stats</Filter>
     </ClCompile>
     <ClCompile Include="source\game\stats\UnitStats.cpp">
@@ -787,6 +787,12 @@
     <ClCompile Include="source\game\quests\Quest_Artifacts.cpp">
       <Filter>3. game\quests</Filter>
     </ClCompile>
+    <ClCompile Include="source\game\system\Spell.cpp">
+      <Filter>3. game\system\spells</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\system\SpellLoader.cpp">
+      <Filter>3. game\system\spells</Filter>
+    </ClCompile>
     <ClCompile Include="source\engine\Font.cpp">
       <Filter>2. engine\resources</Filter>
     </ClCompile>
@@ -934,9 +940,6 @@
       <Filter>3. game\stats</Filter>
     </ClInclude>
     <ClInclude Include="source\game\stats\SpawnGroup.h">
-      <Filter>3. game\stats</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\stats\Spell.h">
       <Filter>3. game\stats</Filter>
     </ClInclude>
     <ClInclude Include="source\game\stats\UnitStats.h">
@@ -1602,6 +1605,9 @@
     </ClInclude>
     <ClInclude Include="source\game\quests\Quest_Artifacts.h">
       <Filter>3. game\quests</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\system\Spell.h">
+      <Filter>3. game\system\spells</Filter>
     </ClInclude>
     <ClInclude Include="source\engine\Font.h">
       <Filter>2. engine\resources</Filter>

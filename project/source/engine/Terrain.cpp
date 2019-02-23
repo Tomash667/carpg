@@ -1,7 +1,7 @@
 #include "Pch.h"
 #include "EngineCore.h"
 #include "Terrain.h"
-#include "Resource.h"
+#include "Texture.h"
 #include "DirectX.h"
 
 //-----------------------------------------------------------------------------

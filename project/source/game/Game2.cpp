@@ -3590,7 +3590,7 @@ void Game::TestUnitSpells(const SpellList& _spells, string& _errors, uint& _coun
 	{
 		if(_spells.name[i])
 		{
-			Spell* spell = FindSpell(_spells.name[i]);
+			Spell* spell = Spell::TryGet(_spells.name[i]);
 			if(!spell)
 			{
 				_errors += Format("\tMissing spell '%s'.\n", _spells.name[i]);
@@ -7308,7 +7308,7 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 				{
 					_to_remove.push_back(index);
 
-					Spell* fireball = FindSpell("fireball");
+					Spell* fireball = Spell::TryGet("fireball");
 
 					Explo* explo = new Explo;
 					explo->pos = trap.pos;

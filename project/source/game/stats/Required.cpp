@@ -282,7 +282,7 @@ bool Game::LoadRequiredStats(uint& errors)
 					break;
 				case R_SPELL:
 					{
-						Spell* spell = FindSpell(str.c_str());
+						Spell* spell = Spell::TryGet(str);
 						if(!spell)
 						{
 							Error("Missing required spell '%s'.", str.c_str());

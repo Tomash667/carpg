@@ -28,6 +28,7 @@ namespace content
 	void LoadItems();
 	void LoadObjects();
 	void LoadDialogs();
+	void LoadSpells();
 	void LoadUnits();
 	void LoadBuildings();
 	void CleanupContent();

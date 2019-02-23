@@ -5434,7 +5434,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					break;
 				}
 
-				Spell* spell_ptr = FindSpell(spell_id.c_str());
+				Spell* spell_ptr = Spell::TryGet(spell_id);
 				if(!spell_ptr)
 				{
 					N.StreamError("Update client: CREATE_EXPLOSION, missing spell '%s'.", spell_id.c_str());
@@ -5725,7 +5725,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					break;
 				}
 
-				Spell* spell_ptr = FindSpell(spell_id.c_str());
+				Spell* spell_ptr = Spell::TryGet(spell_id);
 				if(!spell_ptr)
 				{
 					N.StreamError("Update client: CREATE_SPELL_BALL, missing spell '%s'.", spell_id.c_str());
@@ -5800,7 +5800,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					break;
 				}
 
-				Spell* spell_ptr = FindSpell(spell_id.c_str());
+				Spell* spell_ptr = Spell::TryGet(spell_id);
 				if(!spell_ptr)
 				{
 					N.StreamError("Update client: SPELL_SOUND, missing spell '%s'.", spell_id.c_str());
@@ -5856,7 +5856,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				else
 				{
 					Electro* e = new Electro;
-					e->spell = FindSpell("thunder_bolt");
+					e->spell = Spell::TryGet("thunder_bolt");
 					e->start_pos = p1;
 					e->netid = netid;
 					e->AddLine(p1, p2);
@@ -5896,7 +5896,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					N.StreamError("Update client: Broken ELECTRO_HIT.");
 				else
 				{
-					Spell* spell = FindSpell("thunder_bolt");
+					Spell* spell = Spell::TryGet("thunder_bolt");
 
 					// sound
 					if(spell->sound_hit)
@@ -5940,7 +5940,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					N.StreamError("Update client: Broken RAISE_EFFECT.");
 				else
 				{
-					Spell& spell = *FindSpell("raise");
+					Spell& spell = *Spell::TryGet("raise");
 
 					ParticleEmitter* pe = new ParticleEmitter;
 					pe->tex = spell.tex_particle;
@@ -5976,7 +5976,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					N.StreamError("Update client: Broken HEAL_EFFECT.");
 				else
 				{
-					Spell& spell = *FindSpell("heal");
+					Spell& spell = *Spell::TryGet("heal");
 
 					ParticleEmitter* pe = new ParticleEmitter;
 					pe->tex = spell.tex_particle;
