@@ -460,7 +460,7 @@ void Game::LoadGame(GameReader& f)
 		cstring ver_str = VersionToString(version);
 		throw SaveException(Format(txLoadSaveVersionOld, ver_str), Format("Unsupported version '%s'.", ver_str));
 	}
-	if(LOAD_VERSION >= V_0_2_20 && LOAD_VERSION < V_0_4)
+	if(LOAD_VERSION < V_0_4)
 	{
 		// build - unused
 		uint build;
@@ -602,8 +602,7 @@ void Game::LoadGame(GameReader& f)
 		ItemHelper::SkipStock(f); // blacksmith
 		ItemHelper::SkipStock(f); // alchemist
 		ItemHelper::SkipStock(f); // innkeeper
-		if(LOAD_VERSION >= V_0_2_20)
-			ItemHelper::SkipStock(f); // food_seller
+		ItemHelper::SkipStock(f); // food_seller
 	}
 
 	// vars
@@ -667,16 +666,8 @@ void Game::LoadGame(GameReader& f)
 	dialog_context.dialog_mode = false;
 	dialog_context.is_local = true;
 	f >> L.dungeon_level;
-	if(LOAD_VERSION >= V_0_2_20)
-	{
-		f >> portal_anim;
-		f >> drunk_anim;
-	}
-	else
-	{
-		portal_anim = 0.f;
-		drunk_anim = 0.f;
-	}
+	f >> portal_anim;
+	f >> drunk_anim;
 	ais.resize(f.Read<uint>());
 	for(AIController*& ai : ais)
 	{

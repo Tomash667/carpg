@@ -375,22 +375,6 @@ void InsideLocationLevel::LoadLevel(GameReader& f, bool local)
 	f >> staircase_up_dir;
 	f >> staircase_down_dir;
 	f >> staircase_down_in_wall;
-
-	// konwersja ³awy w obrócon¹ ³awê i ustawienie wariantu
-	if(LOAD_VERSION < V_0_2_20)
-	{
-		auto bench = BaseUsable::Get("bench"),
-			bench_dir = BaseUsable::Get("bench_dir");
-		for(vector<Usable*>::iterator it = usables.begin(), end = usables.end(); it != end; ++it)
-		{
-			Usable& u = **it;
-			if(u.base == bench)
-			{
-				u.base = bench_dir;
-				u.variant = Rand() % 2;
-			}
-		}
-	}
 }
 
 //=================================================================================================

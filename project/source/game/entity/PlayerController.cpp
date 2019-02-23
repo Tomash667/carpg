@@ -492,8 +492,6 @@ void PlayerController::Load(FileReader& f)
 		}
 	}
 	f >> last_weapon;
-	if(LOAD_VERSION < V_0_2_20)
-		f.Skip<float>(); // old rise_timer
 	f >> credit;
 	f >> godmode;
 	f >> noclip;

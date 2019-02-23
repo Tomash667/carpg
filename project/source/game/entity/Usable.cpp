@@ -101,10 +101,7 @@ void Usable::Load(FileReader& f, bool local)
 	f >> pos;
 	f >> rot;
 	f >> netid;
-	if(LOAD_VERSION >= V_0_2_20 && base->variants)
-		f >> variant;
-	else
-		variant = -1;
+	f >> variant;
 	if(LOAD_VERSION >= V_0_6 && IS_SET(base->use_flags, BaseUsable::CONTAINER))
 	{
 		container = new ItemContainer;

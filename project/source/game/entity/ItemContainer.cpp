@@ -49,7 +49,7 @@ void ItemContainer::Load(FileReader& f)
 		}
 	}
 
-	if(can_sort && !items.empty() && (LOAD_VERSION < V_0_2_20 || content::require_update))
+	if(can_sort && !items.empty() && content::require_update)
 		SortItems(items);
 }
 

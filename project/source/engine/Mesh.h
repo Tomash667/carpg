@@ -3,7 +3,7 @@
 //-----------------------------------------------------------------------------
 #include "VertexData.h"
 #include "VertexDeclaration.h"
-#include "Resource.h"
+#include "Texture.h"
 
 /*---------------------------
 NASTÊPNA WERSJA:

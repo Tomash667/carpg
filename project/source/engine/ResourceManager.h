@@ -1,7 +1,8 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Resource.h"
+#include "Texture.h"
+#include "Sound.h"
 #include "Timer.h"
 #include "File.h"
 
@@ -20,80 +21,6 @@ struct ResourceComparer
 //-----------------------------------------------------------------------------
 typedef std::set<Resource*, ResourceComparer> ResourceContainer;
 typedef ResourceContainer::iterator ResourceIterator;
-
-//-----------------------------------------------------------------------------
-// Check tools/pak/pak.txt for specification
-class Pak
-{
-public:
-	struct Header
-	{
-		char sign[3];
-		byte version;
-		uint flags;
-	};
-
-	enum Flags
-	{
-		Encrypted = 0x01,
-		FullEncrypted = 0x02
-	};
-
-	int version;
-	string path;
-	FileReader file;
-};
-
-//-----------------------------------------------------------------------------
-// Pak 0 version
-class PakV0 : public Pak
-{
-public:
-	struct ExtraHeader
-	{
-		uint files_size;
-		uint files;
-	};
-
-	struct File
-	{
-		string name;
-		int size, offset;
-
-		static const uint MIN_SIZE = 9;
-	};
-
-	vector<File> files;
-};
-
-//-----------------------------------------------------------------------------
-// Pak 1 version
-class PakV1 : public Pak
-{
-public:
-	struct ExtraHeader
-	{
-		uint files_count;
-		uint file_entry_table_size;
-	};
-
-	struct File
-	{
-		union
-		{
-			cstring filename;
-			uint filename_offset;
-		};
-		uint size;
-		uint compressed_size;
-		uint offset;
-	};
-
-	File* files;
-	Buffer* filename_buf;
-	string key;
-	bool encrypted;
-};
 
 //-----------------------------------------------------------------------------
 // Task data
@@ -287,7 +214,7 @@ public:
 			res_mgr.LoadMeshMetadata(mesh);
 		}
 	};
-	
+
 	//-----------------------------------------------------------------------------
 	// Texture type manager
 	template<>
@@ -430,7 +357,7 @@ public:
 	bool HaveTasks() const { return !tasks.empty(); }
 	int GetLoadTasksCount() const { return to_load; }
 	bool IsLoadScreen() const { return mode != Mode::Instant; }
-	
+
 	template<typename T>
 	TypeManager<T> For()
 	{
@@ -458,7 +385,7 @@ private:
 	void UpdateLoadScreen();
 	void TickLoadScreen();
 	void ReleaseMutex();
-	
+
 	Resource* AddResource(cstring filename, cstring path);
 	Resource* CreateResource(ResourceType type);
 	Resource* TryGetResource(Cstring filename, ResourceType type);

@@ -159,7 +159,7 @@ void Init()
 		{ "list", K_LIST },
 		{ "select", K_SELECT },
 		{ "save", K_SAVE }
-	});	
+		});
 }
 
 enum GamePacket : byte
@@ -193,7 +193,7 @@ enum GamePacket : byte
 
 cstring GetMsg(byte type)
 {
-	switch (type)
+	switch(type)
 	{
 	case ID_HELLO:
 		return "ID_HELLO";
@@ -246,7 +246,7 @@ cstring GetMsg(byte type)
 	case ID_PLAYER_UPDATE:
 		return "ID_PLAYER_UPDATE";
 	default:
-		if (type < 135)
+		if(type < 135)
 			return Format("SYSTEM(%u)", type);
 		else
 			return Format("INVALID(%u)", type);
@@ -256,13 +256,13 @@ cstring GetMsg(byte type)
 void LogStream(Node& node, int index)
 {
 	string m = "(";
-	for (int i = 0; i < min(4, (int)node.length) - 1; ++i)
+	for(int i = 0; i < min(4, (int)node.length) - 1; ++i)
 	{
-		if (i != 0)
+		if(i != 0)
 			m += ";";
 		m += Format("%u", node.data[i + 1]);
 	}
-	if (m.length() == 1)
+	if(m.length() == 1)
 		m.clear();
 	else
 		m += ")";
@@ -341,10 +341,10 @@ bool MainLoop()
 		case K_SELECT:
 			{
 				t.Next();
-				if (t.IsItem("all"))
+				if(t.IsItem("all"))
 				{
 					int index = 0;
-					for (Node& node : nodes)
+					for(Node& node : nodes)
 					{
 						LogStream(node, index);
 						++index;
@@ -353,7 +353,7 @@ bool MainLoop()
 				else
 				{
 					int index = t.MustGetInt();
-					if (index >= (int)nodes.size())
+					if(index >= (int)nodes.size())
 						t.Throw("Invalid index %d.\n", index);
 					LogStream(nodes[index], index);
 				}
@@ -375,6 +375,7 @@ bool MainLoop()
 				if(file == INVALID_HANDLE_VALUE)
 					t.Throw("Failed to open file '%s' (%d).\n", out.c_str(), GetLastError());
 				Node& node = nodes[index];
+				DWORD tmp;
 				WriteFile(file, node.data, node.length, &tmp, nullptr);
 				CloseHandle(file);
 			}

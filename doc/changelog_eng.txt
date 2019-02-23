@@ -1,6 +1,11 @@
 Changelog
 
 --------------------------------------------------------------------------------
+Version 0.9 (???):
+! removed support for windows xp
+! cannot load saves from version 0.2.12 or older
+
+--------------------------------------------------------------------------------
 Version 0.8 (2019-02-23):
 ! this is last version working on windows xp
 ! cannot load saves from version 0.2.10 or older

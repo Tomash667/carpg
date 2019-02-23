@@ -9231,11 +9231,11 @@ void Game::AttackReaction(Unit& attacked, Unit& attacker)
 				}
 				else
 				{
-					Team.is_bandit = true;
-					if(Net::IsOnline())
-						Net::PushChange(NetChange::CHANGE_FLAGS);
-				}
+				Team.is_bandit = true;
+				if(Net::IsOnline())
+					Net::PushChange(NetChange::CHANGE_FLAGS);
 			}
+		}
 		}
 		else if(attacked.data->group == G_CRAZIES)
 		{
@@ -10588,6 +10588,10 @@ cstring Game::GetRandomIdleText(Unit& u)
 		return RandomString(txAiOrcText);
 	case G_ANIMALS:
 		return RandomString(txAiWildHunterText);
+	default:
+		assert(0);
+		hero_text = false;
+		break;
 	}
 
 	if(hero_text)

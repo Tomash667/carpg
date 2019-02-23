@@ -13,19 +13,19 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{AE943349-930C-4F29-BC46-AAD479B34562}</ProjectGuid>
     <RootNamespace>carpg</RootNamespace>
-    <WindowsTargetPlatformVersion>7.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141_xp</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141_xp</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -99,6 +99,7 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <AdditionalOptions>/w34706 /w34702 /w34189 /w34265 /w34266 /w34928 %(AdditionalOptions)</AdditionalOptions>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
@@ -193,11 +194,13 @@
     <ClInclude Include="source\engine\Engine.h" />
     <ClInclude Include="source\engine\KeyStates.h" />
     <ClInclude Include="source\engine\MeshInstance.h" />
+    <ClInclude Include="source\engine\Pak.h" />
     <ClInclude Include="source\engine\ParticleSystem.h" />
     <ClInclude Include="source\engine\Physics.h" />
     <ClInclude Include="source\engine\Resource.h" />
     <ClInclude Include="source\engine\ResourceManager.h" />
     <ClInclude Include="source\engine\ShaderHandler.h" />
+    <ClInclude Include="source\engine\Sound.h" />
     <ClInclude Include="source\engine\SoundManager.h" />
     <ClInclude Include="source\engine\StartupOptions.h" />
     <ClInclude Include="source\engine\SuperShader.h" />

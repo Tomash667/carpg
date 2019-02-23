@@ -31,15 +31,7 @@ void Object::Load(FileReader& f)
 	const string& base_id = f.ReadString1();
 	if(!base_id.empty())
 	{
-		if(LOAD_VERSION >= V_0_2_20)
-			base = BaseObject::Get(base_id);
-		else
-		{
-			if(base_id == "tombstone")
-				base = BaseObject::Get("tombstone_1");
-			else
-				base = BaseObject::Get(base_id);
-		}
+		base = BaseObject::Get(base_id);
 		mesh = base->mesh;
 	}
 	else

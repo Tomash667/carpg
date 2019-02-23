@@ -1,6 +1,11 @@
 Historia zmian
 
 --------------------------------------------------------------------------------
+Version 0.9 (???):
+! usuniête wsparcie dla windowsa xp
+! nie mo¿na wczytywaæ ju¿ zapisów z wersji 0.2.12 lub starszej
+
+--------------------------------------------------------------------------------
 Wersja 0.8 (2019-02-23):
 ! to jest ostatnia wersja obs³uguj¹ca windowsa xp
 ! nie mo¿na wczytywaæ ju¿ zapisów z wersji 0.2.10 lub starszej

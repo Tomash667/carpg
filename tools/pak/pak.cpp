@@ -104,7 +104,7 @@ struct Paker
 		uint size, compressed_size, offset, name_offset;
 	};
 
-	map<string, Cmd> cmds = 
+	map<string, Cmd> cmds =
 	{
 		{"?", Help}, {"h", Help}, {"help", Help},
 		{"e", Encrypt}, {"encrypt", Encrypt},
@@ -331,7 +331,7 @@ struct Paker
 			dsize = floor(dsize * 10) / 10;
 		else
 			dsize = floor(dsize * 100) / 100;
-		switch(mag )
+		switch(mag)
 		{
 		case 1:
 			return Format("%g KB", dsize);
@@ -364,7 +364,7 @@ struct Paker
 
 		return last;
 	}
-	
+
 	Pak* OpenPak(cstring path)
 	{
 		// open file
@@ -407,7 +407,7 @@ struct Paker
 			delete pak;
 			return nullptr;
 		}
-		
+
 		// decrypt
 		if(header.flags & Pak::F_ENCRYPTION)
 		{

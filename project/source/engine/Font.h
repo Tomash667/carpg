@@ -1,5 +1,6 @@
 #pragma once
 
+//-----------------------------------------------------------------------------
 #undef CreateFont
 #undef GetCharWidth
 

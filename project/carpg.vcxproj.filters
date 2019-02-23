@@ -73,6 +73,9 @@
     <Filter Include="3. game\system\dialogs">
       <UniqueIdentifier>{d2673175-c92d-4cb8-9d60-1e84843fb94b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="2. engine\resources">
+      <UniqueIdentifier>{20e4856c-a4ec-49d1-bea8-1656b3df0327}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\resource\PickLanguage.cpp">
@@ -453,13 +456,7 @@
     <ClCompile Include="source\game\stats\Buff.cpp">
       <Filter>3. game\stats</Filter>
     </ClCompile>
-    <ClCompile Include="source\engine\Mesh.cpp">
-      <Filter>2. engine</Filter>
-    </ClCompile>
     <ClCompile Include="source\engine\MeshInstance.cpp">
-      <Filter>2. engine</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\VertexData.cpp">
       <Filter>2. engine</Filter>
     </ClCompile>
     <ClCompile Include="source\game\entity\Usable.cpp">
@@ -472,9 +469,6 @@
       <Filter>3. game\panels</Filter>
     </ClCompile>
     <ClCompile Include="source\Utility.cpp" />
-    <ClCompile Include="source\engine\Font.cpp">
-      <Filter>2. engine</Filter>
-    </ClCompile>
     <ClCompile Include="source\engine\gui\GuiContainer.cpp">
       <Filter>2. engine\gui</Filter>
     </ClCompile>
@@ -733,9 +727,6 @@
     <ClCompile Include="source\game\location\Cave.cpp">
       <Filter>3. game\location</Filter>
     </ClCompile>
-    <ClCompile Include="source\engine\Texture.cpp">
-      <Filter>2. engine</Filter>
-    </ClCompile>
     <ClCompile Include="source\game\Pathfinding.cpp">
       <Filter>3. game</Filter>
     </ClCompile>
@@ -795,6 +786,18 @@
     </ClCompile>
     <ClCompile Include="source\game\quests\Quest_Artifacts.cpp">
       <Filter>3. game\quests</Filter>
+    </ClCompile>
+    <ClCompile Include="source\engine\Font.cpp">
+      <Filter>2. engine\resources</Filter>
+    </ClCompile>
+    <ClCompile Include="source\engine\Mesh.cpp">
+      <Filter>2. engine\resources</Filter>
+    </ClCompile>
+    <ClCompile Include="source\engine\VertexData.cpp">
+      <Filter>2. engine\resources</Filter>
+    </ClCompile>
+    <ClCompile Include="source\engine\Texture.cpp">
+      <Filter>2. engine\resources</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1179,9 +1182,6 @@
     <ClInclude Include="source\engine\Physics.h">
       <Filter>2. engine</Filter>
     </ClInclude>
-    <ClInclude Include="source\engine\Resource.h">
-      <Filter>2. engine</Filter>
-    </ClInclude>
     <ClInclude Include="source\engine\ResourceManager.h">
       <Filter>2. engine</Filter>
     </ClInclude>
@@ -1203,13 +1203,7 @@
     <ClInclude Include="source\game\stats\Buff.h">
       <Filter>3. game\stats</Filter>
     </ClInclude>
-    <ClInclude Include="source\engine\Mesh.h">
-      <Filter>2. engine</Filter>
-    </ClInclude>
     <ClInclude Include="source\engine\MeshInstance.h">
-      <Filter>2. engine</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\VertexData.h">
       <Filter>2. engine</Filter>
     </ClInclude>
     <ClInclude Include="source\game\entity\Usable.h">
@@ -1230,9 +1224,6 @@
     </ClInclude>
     <ClInclude Include="source\game\net\NetChangePlayer.h">
       <Filter>3. game\net</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\Font.h">
-      <Filter>2. engine</Filter>
     </ClInclude>
     <ClInclude Include="source\engine\gui\AreaLayout.h">
       <Filter>2. engine\gui</Filter>
@@ -1537,9 +1528,6 @@
     <ClInclude Include="source\game\location\Cave.h">
       <Filter>3. game\location</Filter>
     </ClInclude>
-    <ClInclude Include="source\engine\Texture.h">
-      <Filter>2. engine</Filter>
-    </ClInclude>
     <ClInclude Include="source\game\Pathfinding.h">
       <Filter>3. game</Filter>
     </ClInclude>
@@ -1614,6 +1602,27 @@
     </ClInclude>
     <ClInclude Include="source\game\quests\Quest_Artifacts.h">
       <Filter>3. game\quests</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\Font.h">
+      <Filter>2. engine\resources</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\Mesh.h">
+      <Filter>2. engine\resources</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\VertexData.h">
+      <Filter>2. engine\resources</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\Texture.h">
+      <Filter>2. engine\resources</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\Resource.h">
+      <Filter>2. engine\resources</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\Pak.h">
+      <Filter>2. engine\resources</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\Sound.h">
+      <Filter>2. engine\resources</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

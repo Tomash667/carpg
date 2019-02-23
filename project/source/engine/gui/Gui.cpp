@@ -2817,9 +2817,9 @@ bool IGUI::DrawText2(DrawTextOptions& options)
 				// pocz¹tkowa pozycja x w tej linijce
 				int x;
 				if(IS_SET(options.flags, DTF_CENTER))
-					x = options.rect.Left() + (width - line_width) / 2;
+					x = options.rect.Left() + (width - line.width) / 2;
 				else if(IS_SET(options.flags, DTF_RIGHT))
-					x = options.rect.Right() - line_width;
+					x = options.rect.Right() - line.width;
 				else
 					x = options.rect.Left();
 

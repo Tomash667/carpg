@@ -4,6 +4,8 @@
 #include "EngineCore.h"
 #include "File.h"
 #include "Physics.h"
+#include "Sound.h"
+#include "Texture.h"
 #include "WindowsIncludes.h"
 #define far
 #define IN

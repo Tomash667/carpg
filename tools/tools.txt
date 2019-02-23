@@ -1,0 +1,5 @@
+converter - convert from qmsh.tmp to qmsh.
+extractor - extract info from mutliplayer stream log.
+pak - tool for creating/viewing/extracting packed archives.
+paker - used for creating game package or patch.
+text_comparer - used to compare text files for translation errors.

@@ -858,7 +858,7 @@ struct MATRIX33
 
 bool OOBToOOB(const Oob& a, const Oob& b)
 {
-	const float EPSILON = std::numeric_limits<float>::epsilon();
+	constexpr float EPSILON = std::numeric_limits<float>::epsilon();
 
 	float ra, rb;
 	MATRIX33 R, AbsR;

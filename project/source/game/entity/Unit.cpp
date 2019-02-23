@@ -1674,8 +1674,6 @@ void Unit::Load(GameReader& f, bool local)
 
 	// stats
 	f >> live_state;
-	if(LOAD_VERSION < V_0_2_20 && live_state != ALIVE)
-		live_state = LiveState(live_state + 2); // order changed
 	f >> pos;
 	f >> rot;
 	f >> hp;
@@ -1778,11 +1776,6 @@ void Unit::Load(GameReader& f, bool local)
 	f >> to_remove;
 	f >> temporary;
 	f >> quest_refid;
-	if(LOAD_VERSION < V_0_2_20)
-	{
-		// old alcohol death flag - now works in other way
-		f.Skip<bool>();
-	}
 	f >> assist;
 
 	// auto talking
@@ -1828,7 +1821,7 @@ void Unit::Load(GameReader& f, bool local)
 		Game::Get().load_unit_handler.push_back(this);
 	}
 	CalculateLoad();
-	if(can_sort && (LOAD_VERSION < V_0_2_20 || content::require_update))
+	if(can_sort && content::require_update)
 		SortItems(items);
 	f >> weight;
 	if(can_sort && content::require_update)
@@ -1897,8 +1890,6 @@ void Unit::Load(GameReader& f, bool local)
 		f >> animation_state;
 		f >> attack_id;
 		f >> action;
-		if(LOAD_VERSION < V_0_2_20 && action >= A_EAT)
-			action = ACTION(action + 1);
 		f >> weapon_taken;
 		f >> weapon_hiding;
 		f >> weapon_state;
@@ -1911,18 +1902,8 @@ void Unit::Load(GameReader& f, bool local)
 		f >> attack_power;
 		f >> run_attack;
 		f >> timer;
-		if(LOAD_VERSION >= V_0_2_20)
-		{
-			f >> alcohol;
-			f >> raise_timer;
-		}
-		else
-		{
-			alcohol = 0.f;
-			if(action == A_ANIMATION2 && animation_state > AS_ANIMATION2_MOVE_TO_OBJECT)
-				++animation_state;
-			raise_timer = timer;
-		}
+		f >> alcohol;
+		f >> raise_timer;
 
 		if(action == A_DASH)
 			f >> use_rot;
@@ -2132,7 +2113,7 @@ void Unit::LoadStock(GameReader& f)
 		}
 	}
 
-	if(can_sort && (LOAD_VERSION < V_0_2_20 || content::require_update))
+	if(can_sort && content::require_update)
 		SortItems(cnt);
 }
 

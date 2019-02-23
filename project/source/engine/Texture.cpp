@@ -3,6 +3,7 @@
 #include "Texture.h"
 #include "DirectX.h"
 
+//=================================================================================================
 TextureLock::TextureLock(TEX tex) : tex(tex)
 {
 	assert(tex);
@@ -12,12 +13,14 @@ TextureLock::TextureLock(TEX tex) : tex(tex)
 	pitch = lock.Pitch;
 }
 
+//=================================================================================================
 TextureLock::~TextureLock()
 {
 	if(tex)
 		V(tex->UnlockRect(0));
 }
 
+//=================================================================================================
 void TextureLock::GenerateMipSubLevels()
 {
 	assert(tex);
