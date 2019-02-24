@@ -2883,7 +2883,7 @@ void Game::PlayerCheckObjectDistance(Unit& u, const Vec3& pos, void* ptr, float&
 				}
 			}
 			dist += angle;
-			if(dist < best_dist)
+			if(dist < best_dist && L.CanSee(L.GetContext(u), u.pos, pos, type == BP_DOOR))
 			{
 				best_dist = dist;
 				pc_data.before_player_ptr.any = ptr;
@@ -9475,9 +9475,9 @@ void Game::GenerateQuestUnits()
 
 	if(QM.quest_mine->days >= QM.quest_mine->days_required &&
 		((QM.quest_mine->mine_state2 == Quest_Mine::State2::InBuild && QM.quest_mine->mine_state == Quest_Mine::State::Shares) || // inform player about building mine & give gold
-			QM.quest_mine->mine_state2 == Quest_Mine::State2::Built || // inform player about possible investment
-			QM.quest_mine->mine_state2 == Quest_Mine::State2::InExpand || // inform player about finished mine expanding
-			QM.quest_mine->mine_state2 == Quest_Mine::State2::Expanded)) // inform player about finding portal
+		QM.quest_mine->mine_state2 == Quest_Mine::State2::Built || // inform player about possible investment
+		QM.quest_mine->mine_state2 == Quest_Mine::State2::InExpand || // inform player about finished mine expanding
+		QM.quest_mine->mine_state2 == Quest_Mine::State2::Expanded)) // inform player about finding portal
 	{
 		Unit* u = L.SpawnUnitNearLocation(L.GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("poslaniec_kopalnia"), &Team.leader->pos, -2, 2.f);
 		if(u)
@@ -9836,7 +9836,7 @@ void Game::UpdateGame2(float dt)
 		for(Unit* unit : Team.members)
 		{
 			Unit& u = *unit;
-			if(u.IsStanding() && u.IsPlayer() && Vec3::Distance(u.pos, QM.quest_evil->pos) < 5.f && L.CanSee(u.pos, QM.quest_evil->pos))
+			if(u.IsStanding() && u.IsPlayer() && Vec3::Distance(u.pos, QM.quest_evil->pos) < 5.f && L.CanSee(L.local_ctx, u.pos, QM.quest_evil->pos))
 			{
 				QM.quest_evil->evil_state = Quest_Evil::State::Summoning;
 				sound_mgr->PlaySound2d(sEvil);
