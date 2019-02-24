@@ -1266,7 +1266,7 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 		f >> travel_timer;
 	}
 	encounters.resize(f.Read<uint>(), nullptr);
-	if(LOAD_VERSION >= V_CURRENT)
+	if(LOAD_VERSION >= V_0_8)
 		f >> tiles;
 	else
 		CalculateTiles();

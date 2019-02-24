@@ -1932,7 +1932,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					Unit* target = L.FindUnit(netid);
 					if(!target)
 						N.StreamError("Update server: CHEAT_KILL from %s, missing unit %d.", info.name.c_str(), netid);
-					else
+					else if(target->IsAlive())
 						GiveDmg(L.GetContext(*target), nullptr, target->hpmax, *target);
 				}
 			}

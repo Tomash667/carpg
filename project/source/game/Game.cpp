@@ -459,8 +459,10 @@ void Game::OnTick(float dt)
 		case OpenPanel::Team:
 		case OpenPanel::Trade:
 		case OpenPanel::Action:
-		case OpenPanel::Journal:
 			GKey.allow_input = GameKeys::ALLOW_KEYBOARD;
+			break;
+		case OpenPanel::Journal:
+			GKey.allow_input = GameKeys::ALLOW_NONE;
 			break;
 		}
 	}

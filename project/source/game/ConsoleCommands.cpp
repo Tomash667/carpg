@@ -733,7 +733,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						Net::PushChange(NetChange::CHEAT_HEAL);
 					break;
 				case CMD_KILL:
-					if(pc_data.target_unit)
+					if(pc_data.target_unit && pc_data.target_unit->IsAlive())
 					{
 						if(Net::IsLocal())
 							GiveDmg(L.GetContext(*pc->unit), nullptr, pc_data.target_unit->hpmax, *pc_data.target_unit);
