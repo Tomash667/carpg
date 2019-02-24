@@ -166,7 +166,7 @@ void InsideLocationGenerator::OnEnter()
 		}
 	}
 
-	if((first || need_reset) && (Rand() % 50 == 0 || DebugKey('C')) && L.location->type != L_CAVE && inside->target != LABIRYNTH
+	if((first || need_reset) && (Rand() % 50 == 0 || DebugKey('C')) && L.location->type != L_CAVE && inside->target != LABYRINTH
 		&& !L.location->active_quest && dungeon_level == 0)
 		SpawnHeroesInsideDungeon();
 

@@ -336,7 +336,7 @@ void LabyrinthGenerator::CreateStairs(Tile* tiles, const Int2& size, Int2& stair
 		}
 	}
 	if(!ok)
-		throw "Failed to generate labirynth.";
+		throw "Failed to generate labyrinth.";
 	tiles[stairs.x + stairs.y*size.x].type = STAIRS_UP;
 
 	// ustal kierunek schodów
@@ -439,7 +439,7 @@ void LabyrinthGenerator::GenerateUnits()
 	}
 	else
 	{
-		group_id = "labirynth";
+		group_id = "labyrinth";
 		count = 20;
 		tries = 100;
 	}

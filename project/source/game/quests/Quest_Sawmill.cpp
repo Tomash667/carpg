@@ -97,7 +97,10 @@ void Quest_Sawmill::SetProgress(int prog2)
 			OnUpdate(game->txQuest[129]);
 			game->AddReward(PAYMENT);
 			quest_manager.EndUniqueQuest();
-			W.AddNews(Format(game->txQuest[130], GetTargetLocationName()));
+			Location& target = GetTargetLocation();
+			W.AddNews(Format(game->txQuest[130], target.name.c_str()));
+			target.SetImage(LI_SAWMILL);
+			target.SetNamePrefix(game->txQuest[124]);
 		}
 		break;
 	}

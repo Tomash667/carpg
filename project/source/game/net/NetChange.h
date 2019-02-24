@@ -181,12 +181,12 @@ struct NetChange
 		SET_NEXT_ACTION, // player set next action [auto: byte-next_action, ...]
 		CHANGE_ALWAYS_RUN, // player toggle always run - notify to save it [bool(id)]
 		GENERIC_CMD, // player used generic cheat [byte(size), byte[size]-content (first byte is CMD)]
-		//ADD_VISIBLE_EFFECT,
-		//REMOVE_VISIBLE_EFFECT,
 		USE_ITEM, // player used item SERVER[int(id)-unit] CLIENT[int(id)-item index]
 		MARK_UNIT, // mark unit [int(netid)-unit, bool(id)-is marked]
 		CHEAT_ARENA, // player used cheat 'arena' [string(str)-list of enemies]
 		CLEAN_LEVEL, // clean level from blood and corpses [int(id)-building id (-1 outside, -2 all)]
+		CHANGE_LOCATION_IMAGE, // change location image [byte(id)-index, auto:byte-image]
+		CHANGE_LOCATION_NAME, // change location name [byte(id)-index, auto:string1-name]
 
 		MAX
 	} type;

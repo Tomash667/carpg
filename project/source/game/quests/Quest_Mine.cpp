@@ -129,6 +129,9 @@ void Quest_Mine::SetProgress(int prog2)
 			if(days >= days_required)
 				days = days_required - 1;
 			days_gold = 0;
+			Location& target = GetTargetLocation();
+			target.SetImage(LI_MINE);
+			target.SetNamePrefix(game->txQuest[131]);
 		}
 		break;
 	case Progress::SelectedGold:

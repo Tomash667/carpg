@@ -10438,8 +10438,8 @@ void Game::OnEnterLevel()
 					case NECROMANCER_BASE:
 						s = txAiNecromancerBase;
 						break;
-					case LABIRYNTH:
-						s = txAiLabirynth;
+					case LABYRINTH:
+						s = txAiLabyrinth;
 						break;
 					}
 
@@ -10836,7 +10836,7 @@ void Game::HandleQuestEvent(Quest_Event* event)
 		}
 		break;
 	case Quest_Dungeon::Item_InTreasure:
-		if(inside && (inside->type == L_CRYPT || inside->target == LABIRYNTH))
+		if(inside && (inside->type == L_CRYPT || inside->target == LABYRINTH))
 		{
 			Chest* chest = nullptr;
 

@@ -1,31 +1,12 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "Game.h"
-#include "Language.h"
 #include "SaveState.h"
 #include "City.h"
 #include "Quest.h"
 #include "BitStreamFunc.h"
 #include "Portal.h"
 #include "GameFile.h"
-
-//-----------------------------------------------------------------------------
-cstring txCamp, txCave, txCity, txCrypt, txDungeon, txForest, txVillage, txMoonwell, txOtherness;
-vector<string> txLocationStart, txLocationEnd;
-
-//=================================================================================================
-void SetLocationNames()
-{
-	txCamp = Str("camp");
-	txCave = Str("cave");
-	txCity = Str("city");
-	txCrypt = Str("crypt");
-	txDungeon = Str("dungeon");
-	txForest = Str("forest");
-	txVillage = Str("village");
-	txMoonwell = Str("moonwell");
-	txOtherness = Str("otherness");
-}
 
 //=================================================================================================
 Location::~Location()
@@ -37,57 +18,6 @@ Location::~Location()
 		delete p;
 		p = next_portal;
 	}
-}
-
-//=================================================================================================
-void Location::GenerateName()
-{
-	name.clear();
-
-	switch(type)
-	{
-	case L_CAMP:
-		name = txCamp;
-		return;
-	case L_CAVE:
-		name = txCave;
-		break;
-	case L_CITY:
-		if(((City*)this)->IsVillage())
-			name = txVillage;
-		else
-			name = txCity;
-		break;
-	case L_CRYPT:
-		name = txCrypt;
-		break;
-	case L_DUNGEON:
-		name = txDungeon;
-		break;
-	case L_FOREST:
-		name = txForest;
-		break;
-	case L_MOONWELL:
-		name = txMoonwell;
-		return;
-	default:
-		assert(0);
-		name = txOtherness;
-		break;
-	}
-
-	name += " ";
-	cstring s1 = RandomItem(txLocationStart).c_str();
-	cstring s2;
-	do
-	{
-		s2 = RandomItem(txLocationEnd).c_str();
-	} while(_stricmp(s1, s2) == 0);
-	name += s1;
-	if(name[name.length() - 1] == s2[0])
-		name += (s2 + 1);
-	else
-		name += s2;
 }
 
 //=================================================================================================
@@ -357,4 +287,49 @@ bool Location::RequireLoadingResources(bool* to_set)
 	}
 	else
 		return loaded_resources;
+}
+
+//=================================================================================================
+void Location::SetImage(LOCATION_IMAGE image)
+{
+	if(this->image != image)
+	{
+		this->image = image;
+		if(Net::IsServer())
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::CHANGE_LOCATION_IMAGE;
+			c.id = index;
+		}
+	}
+}
+
+//=================================================================================================
+void Location::SetName(cstring name)
+{
+	if(this->name != name)
+	{
+		this->name = name;
+		if(Net::IsServer())
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::CHANGE_LOCATION_NAME;
+			c.id = index;
+		}
+	}
+}
+
+//=================================================================================================
+void Location::SetNamePrefix(cstring prefix)
+{
+	vector<string> strs = Split(name.c_str());
+	if(strs[0] == prefix)
+		return;
+	name = Format("%s %s", prefix, strs[1].c_str());
+	if(Net::IsServer())
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::CHANGE_LOCATION_NAME;
+		c.id = index;
+	}
 }

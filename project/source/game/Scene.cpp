@@ -2147,7 +2147,7 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 	Light* light[3];
 	float range[3], dist;
 
-	if(!IS_SET(base.options, BLO_LABIRYNTH))
+	if(!IS_SET(base.options, BLO_LABYRINTH))
 	{
 		int index = 0;
 		for(vector<Room>::iterator it = lvl.rooms.begin(), end = lvl.rooms.end(); it != end; ++it, ++index)

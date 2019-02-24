@@ -88,7 +88,7 @@ LocationGenerator* LocationGeneratorFactory::Get(Location* loc, bool first, bool
 			BaseLocation& base = g_base_locations[inside->target];
 			if(inside->target == TUTORIAL_FORT)
 				loc_gen = tutorial;
-			else if(IS_SET(base.options, BLO_LABIRYNTH))
+			else if(IS_SET(base.options, BLO_LABYRINTH))
 				loc_gen = labyrinth;
 			else
 				loc_gen = dungeon;

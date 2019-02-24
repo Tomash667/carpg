@@ -269,7 +269,6 @@ void Game::LoadLanguageFiles()
 
 	SetGameCommonText();
 	SetItemStatsText();
-	SetLocationNames();
 	NameHelper::SetHeroNames();
 	SetGameText();
 	SetStatsText();

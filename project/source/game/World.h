@@ -73,13 +73,13 @@ public:
 	void CalculateTiles();
 	void SmoothTiles();
 	void CreateCity(const Vec2& pos, bool village);
-	void GenerateUniqueName(Location* l);
+	void SetLocationImageAndName(Location* l);
 	int CreateCamp(const Vec2& pos, SPAWN_GROUP group, float range = 64.f, bool allow_exact = true);
 	Location* CreateLocation(LOCATION type, int levels = -1, bool is_village = false);
 	Location* CreateLocation(LOCATION type, const Vec2& pos, float range = 64.f, int target = -1, SPAWN_GROUP spawn = SG_RANDOM, bool allow_exact = true,
 		int dungeon_levels = -1);
 	typedef std::pair<LOCATION, bool>(*AddLocationsCallback)(uint index);
-	void AddLocations(uint count, AddLocationsCallback clbk, float valid_dist, bool unique_name);
+	void AddLocations(uint count, AddLocationsCallback clbk, float valid_dist);
 	int AddLocation(Location* loc);
 	void AddLocationAtIndex(Location* loc);
 	void RemoveLocation(int index);
@@ -188,9 +188,9 @@ private:
 		day, // in game day, 0 to 29
 		worldtime; // number of passed game days, starts at 0
 	vector<News*> news;
-	cstring txDate, txRandomEncounter, txEncCrazyMage, txEncCrazyHeroes, txEncCrazyCook, txEncMerchant, txEncHeroes, txEncSingleHero,
-		txEncBanditsAttackTravelers, txEncHeroesAttack, txEncGolem, txEncCrazy, txEncUnk, txEncBandits, txEncAnimals, txEncOrcs, txEncGoblins,
-		txEncEnemiesCombat;
+	cstring txDate, txEncCrazyMage, txEncCrazyHeroes, txEncCrazyCook, txEncMerchant, txEncHeroes, txEncSingleHero, txEncBanditsAttackTravelers,
+		txEncHeroesAttack, txEncGolem, txEncCrazy, txEncUnk, txEncBandits, txEncAnimals, txEncOrcs, txEncGoblins, txEncEnemiesCombat;
+	cstring txCamp, txCave, txCity, txCrypt, txDungeon, txForest, txVillage, txMoonwell, txOtherness, txRandomEncounter, txTower, txLabyrinth;
 	bool first_city, // spawn more low level heroes in first city
 		boss_level_mp, // used by clients instead boss_levels
 		tomir_spawned;

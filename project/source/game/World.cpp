@@ -34,6 +34,7 @@ const int start_year = 100;
 const float world_border = 50.f;
 const int def_world_size = 1200;
 World W;
+vector<string> txLocationStart, txLocationEnd;
 
 namespace old
 {
@@ -60,7 +61,6 @@ struct TmpLocation : public Location
 void World::LoadLanguage()
 {
 	txDate = Str("dateFormat");
-	txRandomEncounter = Str("randomEncounter");
 	txEncCrazyMage = Str("encCrazyMage");
 	txEncCrazyHeroes = Str("encCrazyHeroes");
 	txEncCrazyCook = Str("encCrazyCook");
@@ -77,6 +77,20 @@ void World::LoadLanguage()
 	txEncOrcs = Str("encOrcs");
 	txEncGoblins = Str("encGoblins");
 	txEncEnemiesCombat = Str("encEnemiesCombat");
+
+	// location names
+	txCamp = Str("camp");
+	txCave = Str("cave");
+	txCity = Str("city");
+	txCrypt = Str("crypt");
+	txDungeon = Str("dungeon");
+	txForest = Str("forest");
+	txVillage = Str("village");
+	txMoonwell = Str("moonwell");
+	txOtherness = Str("otherness");
+	txRandomEncounter = Str("randomEncounter");
+	txTower = Str("tower");
+	txLabyrinth = Str("labyrinth");
 }
 
 //=================================================================================================
@@ -264,7 +278,7 @@ void World::UpdateLocations()
 			if(loc->type == L_DUNGEON || loc->type == L_CRYPT)
 			{
 				InsideLocation* inside = (InsideLocation*)loc;
-				if(inside->target != LABIRYNTH)
+				if(inside->target != LABYRINTH)
 					inside->spawn = g_base_locations[inside->target].GetRandomSpawnGroup();
 				if(inside->IsMultilevel())
 					((MultiInsideLocation*)inside)->Reset();
@@ -294,13 +308,12 @@ int World::CreateCamp(const Vec2& pos, SPAWN_GROUP group, float range, bool allo
 	loc->state = LS_UNKNOWN;
 	loc->active_quest = nullptr;
 	loc->type = L_CAMP;
-	loc->image = LI_CAMP;
 	loc->last_visit = -1;
 	loc->reset = false;
 	loc->spawn = group;
 	loc->pos = pos;
 	loc->create_time = worldtime;
-	loc->GenerateName();
+	SetLocationImageAndName(loc);
 
 	FindPlaceForLocation(loc->pos, range, allow_exact);
 	loc->st = GetTileSt(loc->pos);
@@ -319,45 +332,17 @@ Location* World::CreateLocation(LOCATION type, int levels, bool is_village)
 		{
 			City* city = new City;
 			if(is_village)
-			{
 				city->settlement_type = City::SettlementType::Village;
-				city->image = LI_VILLAGE;
-			}
-			else
-				city->image = LI_CITY;
 			return city;
 		}
 	case L_CAVE:
-		{
-			Cave* cave = new Cave;
-			cave->image = LI_CAVE;
-			return cave;
-		}
+		return new Cave;
 	case L_CAMP:
-		{
-			Camp* camp = new Camp;
-			camp->image = LI_CAMP;
-			return camp;
-		}
+		return new Camp;
 	case L_FOREST:
 	case L_ENCOUNTER:
 	case L_MOONWELL:
-		{
-			LOCATION_IMAGE image;
-			switch(type)
-			{
-			case L_FOREST:
-			case L_ENCOUNTER:
-				image = LI_FOREST;
-				break;
-			case L_MOONWELL:
-				image = LI_MOONWELL;
-				break;
-			}
-			OutsideLocation* loc = new OutsideLocation;
-			loc->image = image;
-			return loc;
-		}
+		return new OutsideLocation;
 	case L_DUNGEON:
 	case L_CRYPT:
 		{
@@ -372,7 +357,6 @@ Location* World::CreateLocation(LOCATION type, int levels, bool is_village)
 				else
 					loc = new MultiInsideLocation(levels);
 			}
-			loc->image = (type == L_DUNGEON ? LI_DUNGEON : LI_CRYPT);
 			return loc;
 		}
 	default:
@@ -423,7 +407,7 @@ Location* World::CreateLocation(LOCATION type, const Vec2& pos, float range, int
 	{
 		InsideLocation* inside = (InsideLocation*)loc;
 		inside->target = target;
-		if(target == LABIRYNTH)
+		if(target == LABYRINTH)
 		{
 			if(spawn == SG_RANDOM)
 				inside->spawn = SG_UNDEAD;
@@ -455,13 +439,13 @@ Location* World::CreateLocation(LOCATION type, const Vec2& pos, float range, int
 			loc->spawn = spawn;
 	}
 
-	loc->GenerateName();
+	SetLocationImageAndName(loc);
 	AddLocation(loc);
 	return loc;
 }
 
 //=================================================================================================
-void World::AddLocations(uint count, AddLocationsCallback clbk, float valid_dist, bool unique_name)
+void World::AddLocations(uint count, AddLocationsCallback clbk, float valid_dist)
 {
 	for(uint i = 0; i < count; ++i)
 	{
@@ -488,10 +472,6 @@ void World::AddLocations(uint count, AddLocationsCallback clbk, float valid_dist
 			l->type = type.first;
 			l->pos = pt;
 			l->state = LS_UNKNOWN;
-			if(unique_name)
-				GenerateUniqueName(l);
-			else
-				l->GenerateName();
 			l->index = locations.size();
 			locations.push_back(l);
 			break;
@@ -673,7 +653,7 @@ void World::GenerateWorld(int start_location_type, int start_location_target)
 		L_CRYPT, L_CRYPT,
 		L_DUNGEON, L_DUNGEON, L_DUNGEON, L_DUNGEON, L_DUNGEON, L_DUNGEON, L_DUNGEON, L_DUNGEON
 	};
-	AddLocations(countof(guaranteed), [](uint index) { return std::make_pair(guaranteed[index], false); }, 40.f, false);
+	AddLocations(countof(guaranteed), [](uint index) { return std::make_pair(guaranteed[index], false); }, 40.f);
 
 	// generate other locations
 	static const LOCATION locs[] = {
@@ -684,17 +664,16 @@ void World::GenerateWorld(int start_location_type, int start_location_target)
 		L_CRYPT,
 		L_FOREST
 	};
-	AddLocations(120 - locations.size(), [](uint index) { return std::make_pair(locs[Rand() % countof(locs)], false); }, 40.f, false);
+	AddLocations(120 - locations.size(), [](uint index) { return std::make_pair(locs[Rand() % countof(locs)], false); }, 40.f);
 
 	// create location for random encounter
 	{
 		Location* loc = new OutsideLocation;
 		loc->index = locations.size();
 		loc->pos = Vec2(-1000, -1000);
-		loc->name = txRandomEncounter;
 		loc->state = LS_HIDDEN;
-		loc->image = LI_FOREST;
 		loc->type = L_ENCOUNTER;
+		SetLocationImageAndName(loc);
 		encounter_loc = loc->index;
 		locations.push_back(loc);
 	}
@@ -795,7 +774,7 @@ void World::GenerateWorld(int start_location_type, int start_location_target)
 						target = NECROMANCER_BASE;
 						break;
 					case 13:
-						target = LABIRYNTH;
+						target = LABYRINTH;
 						break;
 					}
 				}
@@ -826,7 +805,7 @@ void World::GenerateWorld(int start_location_type, int start_location_target)
 						target = NECROMANCER_BASE;
 						break;
 					case 7:
-						target = LABIRYNTH;
+						target = LABYRINTH;
 						break;
 					}
 
@@ -845,17 +824,15 @@ void World::GenerateWorld(int start_location_type, int start_location_target)
 				inside = new MultiInsideLocation(levels);
 
 			inside->type = loc.type;
-			inside->image = loc.image;
 			inside->state = loc.state;
 			inside->pos = loc.pos;
-			inside->name = loc.name;
 			inside->index = loc.index;
 			delete &loc;
 			*it = inside;
 
 			inside->target = target;
 			int& st = GetTileSt(inside->pos);
-			if(target == LABIRYNTH)
+			if(target == LABYRINTH)
 			{
 				if(st < 6)
 					st = 6;
@@ -902,6 +879,8 @@ void World::GenerateWorld(int start_location_type, int start_location_target)
 				st = 10;
 			loc.st = st;
 		}
+
+		SetLocationImageAndName(*it);
 	}
 
 	SmoothTiles();
@@ -1031,32 +1010,106 @@ void World::CreateCity(const Vec2& pos, bool village)
 	l->type = L_CITY;
 	l->pos = pos;
 	l->state = LS_UNKNOWN;
-	GenerateUniqueName(l);
 	l->index = locations.size();
 	locations.push_back(l);
 }
 
 //=================================================================================================
-void World::GenerateUniqueName(Location* l)
+void World::SetLocationImageAndName(Location* l)
 {
-	l->GenerateName();
-	if(!locations.empty())
+	// set image & prefix
+	switch(l->type)
 	{
-		bool exists;
+	case L_CITY:
+		if(((City*)l)->settlement_type == City::SettlementType::Village)
+		{
+			l->image = LI_VILLAGE;
+			l->name = txVillage;
+		}
+		else
+		{
+			l->image = LI_CITY;
+			l->name = txCity;
+		}
+		break;
+	case L_CAVE:
+		l->image = LI_CAVE;
+		l->name = txCave;
+		break;
+	case L_CAMP:
+		l->image = LI_CAMP;
+		l->name = txCamp;
+		return;
+	case L_FOREST:
+		l->image = LI_FOREST;
+		l->name = txForest;
+		break;
+	case L_ENCOUNTER:
+		l->image = LI_FOREST;
+		l->name = txRandomEncounter;
+		return;
+	case L_MOONWELL:
+		l->image = LI_MOONWELL;
+		l->name = txMoonwell;
+		break;
+	case L_DUNGEON:
+		switch(((InsideLocation*)l)->target)
+		{
+		case LABYRINTH:
+			l->image = LI_LABYRINTH;
+			l->name = txLabyrinth;
+			break;
+		case MAGE_TOWER:
+			l->image = LI_TOWER;
+			l->name = txTower;
+			break;
+		default:
+			l->image = (Rand() % 2 == 0 ? LI_DUNGEON : LI_DUNGEON2);
+			l->name = txDungeon;
+			break;
+		}
+		break;
+	case L_CRYPT:
+		l->image = LI_CRYPT;
+		l->name = txCrypt;
+		break;
+	default:
+		assert(0);
+		l->image = LI_FOREST;
+		l->name = txOtherness;
+		return;
+	}
+
+	// set name
+	l->name += ' ';
+	uint len = l->name.size();
+	while(true)
+	{
+		cstring s1 = RandomItem(txLocationStart).c_str();
+		cstring s2;
 		do
 		{
-			exists = false;
-			for(Location* l2 : locations)
+			s2 = RandomItem(txLocationEnd).c_str();
+		}
+		while(_stricmp(s1, s2) == 0);
+		l->name += s1;
+		if(l->name[l->name.length() - 1] == s2[0])
+			l->name += (s2 + 1);
+		else
+			l->name += s2;
+
+		bool exists = false;
+		for(Location* l2 : locations)
+		{
+			if(l != l2 && l2->name == l->name)
 			{
-				if(l2->name == l->name)
-				{
-					exists = true;
-					l->GenerateName();
-					break;
-				}
+				exists = true;
+				break;
 			}
 		}
-		while(exists);
+		if(!exists)
+			break;
+		l->name.resize(len);
 	}
 }
 

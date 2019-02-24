@@ -39,6 +39,11 @@ enum LOCATION_IMAGE
 	LI_CRYPT,
 	LI_FOREST,
 	LI_MOONWELL,
+	LI_TOWER,
+	LI_LABYRINTH,
+	LI_MINE,
+	LI_SAWMILL,
+	LI_DUNGEON2,
 	LI_MAX
 };
 
@@ -113,7 +118,6 @@ struct Location : public ILevel
 	virtual int GetLastLevel() const { return 0; }
 	virtual bool RequireLoadingResources(bool* to_set);
 
-	void GenerateName();
 	Portal* GetPortal(int index);
 	Portal* TryGetPortal(int index) const;
 	void WritePortals(BitStreamWriter& f) const;
@@ -124,6 +128,9 @@ struct Location : public ILevel
 			state = LS_VISITED;
 	}
 	void SetKnown();
+	void SetImage(LOCATION_IMAGE image);
+	void SetName(cstring name);
+	void SetNamePrefix(cstring prefix);
 };
 
 //-----------------------------------------------------------------------------
@@ -138,6 +145,3 @@ struct LocationEventHandler
 	virtual bool HandleLocationEvent(Event event) = 0;
 	virtual int GetLocationEventHandlerQuestRefid() = 0;
 };
-
-//-----------------------------------------------------------------------------
-void SetLocationNames();

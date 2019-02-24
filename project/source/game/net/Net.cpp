@@ -3474,6 +3474,14 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 			f << c.pos.x;
 			f << c.pos.y;
 			break;
+		case NetChange::CHANGE_LOCATION_IMAGE:
+			f.WriteCasted<byte>(c.id);
+			f.WriteCasted<byte>(W.GetLocation(c.id)->image);
+			break;
+		case NetChange::CHANGE_LOCATION_NAME:
+			f.WriteCasted<byte>(c.id);
+			f << W.GetLocation(c.id)->name;
+			break;
 		default:
 			Error("Update server: Unknown change %d.", c.type);
 			assert(0);
@@ -6314,6 +6322,35 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					N.StreamError("Update client: Broken CLEAN_LEVEL.");
 				else
 					L.CleanLevel(building_id);
+			}
+			break;
+		// change location image
+		case NetChange::CHANGE_LOCATION_IMAGE:
+			{
+				int index;
+				LOCATION_IMAGE image;
+				f.ReadCasted<byte>(index);
+				f.ReadCasted<byte>(image);
+				if(!f)
+					N.StreamError("Update client: Broken CHANGE_LOCATION_IMAGE.");
+				else if(!W.VerifyLocation(index))
+					N.StreamError("Update client: CHANGE_LOCATION_IMAGE, invalid location %d.", index);
+				else
+					W.GetLocation(index)->SetImage(image);
+			}
+			break;
+		// change location name
+		case NetChange::CHANGE_LOCATION_NAME:
+			{
+				int index;
+				f.ReadCasted<byte>(index);
+				const string& name = f.ReadString1();
+				if(!f)
+					N.StreamError("Update client: Broken CHANGE_LOCATION_NAME.");
+				else if(!W.VerifyLocation(index))
+					N.StreamError("Update client: CHANGE_LOCATION_NAME, invalid location %d.", index);
+				else
+					W.GetLocation(index)->SetName(name.c_str());
 			}
 			break;
 		// invalid change

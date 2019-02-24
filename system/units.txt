@@ -2545,7 +2545,7 @@ group hunters {
 	wild_hunter 2
 }
 
-group labirynth {
+group labyrinth {
 	group undead
 }
 

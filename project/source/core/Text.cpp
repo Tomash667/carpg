@@ -219,6 +219,33 @@ bool TextHelper::ToBool(cstring s, bool& result)
 }
 
 //=================================================================================================
+vector<string> Split(cstring str, char c)
+{
+	vector<string> v;
+	string s;
+	while(true)
+	{
+		char c2 = *str;
+		if(c2 == 0)
+			break;
+		if(c == c2)
+		{
+			if(!s.empty())
+			{
+				v.push_back(s);
+				s.clear();
+			}
+		}
+		else
+			s.push_back(c2);
+		++str;
+	}
+	if(!s.empty())
+		v.push_back(s);
+	return v;
+}
+
+//=================================================================================================
 void SplitText(char* buf, vector<cstring>& lines)
 {
 	cstring start = buf;

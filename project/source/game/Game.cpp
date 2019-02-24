@@ -1128,7 +1128,7 @@ void Game::SetGameText()
 	txAiCrypt = Str("aiCrypt");
 	txAiTemple = Str("aiTemple");
 	txAiNecromancerBase = Str("aiNecromancerBase");
-	txAiLabirynth = Str("aiLabirynth");
+	txAiLabyrinth = Str("aiLabyrinth");
 	txAiNoEnemies = Str("aiNoEnemies");
 	txAiNearEnemies = Str("aiNearEnemies");
 	txAiCave = Str("aiCave");

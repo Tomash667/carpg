@@ -214,7 +214,7 @@ group spiders
 group rats
 group animals
 group hunters
-group labirynth
+group labyrinth
 group heroes
 group merchant_guards
 group wagon_guards

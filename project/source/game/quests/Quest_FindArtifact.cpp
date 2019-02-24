@@ -60,7 +60,7 @@ void Quest_FindArtifact::SetProgress(int prog2)
 			item_to_give[0] = &quest_item;
 			if(Rand() % 4 == 0)
 			{
-				target_loc = W.GetClosestLocation(L_DUNGEON, sl.pos, LABIRYNTH);
+				target_loc = W.GetClosestLocation(L_DUNGEON, sl.pos, LABYRINTH);
 				at_level = 0;
 			}
 			else

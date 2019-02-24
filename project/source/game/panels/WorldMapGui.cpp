@@ -72,6 +72,11 @@ void WorldMapGui::LoadData()
 	tex_mgr.AddLoadTask("cave.png", tMapIcon[LI_CAVE]);
 	tex_mgr.AddLoadTask("forest.png", tMapIcon[LI_FOREST]);
 	tex_mgr.AddLoadTask("moonwell.png", tMapIcon[LI_MOONWELL]);
+	tex_mgr.AddLoadTask("tower.png", tMapIcon[LI_TOWER]);
+	tex_mgr.AddLoadTask("labyrinth.png", tMapIcon[LI_LABYRINTH]);
+	tex_mgr.AddLoadTask("mine.png", tMapIcon[LI_MINE]);
+	tex_mgr.AddLoadTask("sawmill.png", tMapIcon[LI_SAWMILL]);
+	tex_mgr.AddLoadTask("dungeon2.png", tMapIcon[LI_DUNGEON2]);
 	tex_mgr.AddLoadTask("worldmap.jpg", tWorldMap);
 	tex_mgr.AddLoadTask("selected.png", tSelected[0]);
 	tex_mgr.AddLoadTask("selected2.png", tSelected[1]);

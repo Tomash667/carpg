@@ -4,6 +4,7 @@ Changelog
 Version 0.9 (???):
 ! removed support for windows xp
 ! cannot load saves from version 0.2.12 or older
++ more location icons and names
 
 --------------------------------------------------------------------------------
 Version 0.8 (2019-02-23):

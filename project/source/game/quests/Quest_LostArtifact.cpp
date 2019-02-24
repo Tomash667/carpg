@@ -60,7 +60,7 @@ void Quest_LostArtifact::SetProgress(int prog2)
 			if(Rand() % 2 == 0)
 				target_loc = W.GetClosestLocation(L_CRYPT, sl.pos);
 			else
-				target_loc = W.GetClosestLocationNotTarget(L_DUNGEON, sl.pos, LABIRYNTH);
+				target_loc = W.GetClosestLocationNotTarget(L_DUNGEON, sl.pos, LABYRINTH);
 			Location& tl = GetTargetLocation();
 			at_level = tl.GetRandomLevel();
 

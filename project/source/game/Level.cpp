@@ -3323,7 +3323,7 @@ void Level::SpawnDungeonColliders()
 	dungeon_shape_index.clear();
 	int index = 0;
 
-	if((inside->type == L_DUNGEON && inside->target == LABIRYNTH) || inside->type == L_CAVE)
+	if((inside->type == L_DUNGEON && inside->target == LABYRINTH) || inside->type == L_CAVE)
 	{
 		const float h = Room::HEIGHT;
 		for(int x = 0; x < 16; ++x)
