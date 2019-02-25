@@ -2,6 +2,7 @@ Historia zmian
 
 --------------------------------------------------------------------------------
 Wersja 0.8.1 (???):
+- naprawiony rzadki crash gdy gobliny/orkowie jedz¹ jedzenie (czêsto zdarza³ siê w samouczku)
 - naprawiona komenda kill po u¿yciu na zw³okach blokowa³a zabieranie przedmiotów
 - naprawiony dziennik nie blokowa³ sterowania graczem
 - naprawione rozmawianie/podnoszenie przedmiotów przez drzwi

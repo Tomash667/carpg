@@ -3683,9 +3683,10 @@ bool Level::CanSee(LevelContext& ctx, const Vec3& v1, const Vec3& v2, bool is_do
 					return false;
 				if(lvl.map[x + y * lvl.w].type == DOORS)
 				{
-					Door* door = FindDoor(ctx, Int2(x, y));
+					Int2 pt(x, y);
+					Door* door = FindDoor(ctx, pt);
 					if(door && door->IsBlocking()
-						&& (!is_door || tile1 != tile2)) // ignore target door
+						&& (!is_door || tile2 != pt)) // ignore target door
 					{
 						// 0.842f, 1.319f, 0.181f
 						Box2d box(door->pos.x, door->pos.z);
