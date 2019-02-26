@@ -11,9 +11,10 @@ public:
 	void Init() override;
 	int GetNumberOfSteps() override;
 	void OnEnter() override;
-	virtual bool HandleUpdate(int days) { return true; }
 	void CreateMinimap() override;
 	void OnLoad() override;
+
+	ObjectEntity GenerateDungeonObject(InsideLocationLevel& lvl, const Int2& tile, BaseObject* base);
 
 protected:
 	InsideLocationLevel& GetLevelData();

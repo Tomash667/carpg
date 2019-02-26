@@ -17,6 +17,9 @@
 #include "ItemHelper.h"
 #include "Game.h"
 
+// don't spawn objects near other objects to not block path
+const float EXTRA_RADIUS = 0.8f;
+
 //=================================================================================================
 void InsideLocationGenerator::Init()
 {
@@ -66,7 +69,9 @@ void InsideLocationGenerator::OnEnter()
 		if(days > 0)
 			L.UpdateLocation(days, base.door_open, need_reset);
 
-		bool respawn_units = HandleUpdate(days);
+		int update_flags = HandleUpdate(days);
+		if(IS_SET(update_flags, PREVENT_RESET))
+			need_reset = false;
 
 		if(need_reset)
 		{
@@ -114,12 +119,13 @@ void InsideLocationGenerator::OnEnter()
 		L.OnReenterLevel();
 
 		// odtwórz jednostki
-		if(respawn_units)
+		if(!IS_SET(update_flags, PREVENT_RESPAWN_UNITS))
 			RespawnUnits();
 		RespawnTraps();
 
 		// odtwórz fizykê
-		L.RecreateObjects();
+		if(!IS_SET(update_flags, PREVENT_RECREATE_OBJECTS))
+			L.RecreateObjects();
 
 		if(need_reset)
 			GenerateUnits();
@@ -753,7 +759,7 @@ ObjectEntity InsideLocationGenerator::GenerateDungeonObject(InsideLocationLevel&
 		ignore.ignore_blocks = true;
 		L.global_col.clear();
 		L.GatherCollisionObjects(L.local_ctx, L.global_col, pos, max(shift.x, shift.y) * SQRT_2, &ignore);
-		if(!L.global_col.empty() && L.Collide(L.global_col, Box2d(pos.x - shift.x, pos.z - shift.y, pos.x + shift.x, pos.z + shift.y), 0.8f, rot))
+		if(!L.global_col.empty() && L.Collide(L.global_col, Box2d(pos.x - shift.x, pos.z - shift.y, pos.x + shift.x, pos.z + shift.y), EXTRA_RADIUS, rot))
 			return nullptr;
 	}
 	else
@@ -773,7 +779,7 @@ ObjectEntity InsideLocationGenerator::GenerateDungeonObject(InsideLocationLevel&
 		ignore.ignore_blocks = true;
 		L.global_col.clear();
 		L.GatherCollisionObjects(L.local_ctx, L.global_col, pos, base->r, &ignore);
-		if(!L.global_col.empty() && L.Collide(L.global_col, pos, base->r + 0.8f))
+		if(!L.global_col.empty() && L.Collide(L.global_col, pos, base->r + EXTRA_RADIUS))
 			return nullptr;
 	}
 
@@ -781,6 +787,39 @@ ObjectEntity InsideLocationGenerator::GenerateDungeonObject(InsideLocationLevel&
 		on_wall.push_back(pos);
 
 	return L.SpawnObjectEntity(L.local_ctx, base, pos, rot, 1.f, flags);
+}
+
+//=================================================================================================
+ObjectEntity InsideLocationGenerator::GenerateDungeonObject(InsideLocationLevel& lvl, const Int2& tile, BaseObject* base)
+{
+	assert(base);
+	assert(base->type == OBJ_CYLINDER); // not implemented
+
+	Box2d allowed_region(2.f * tile.x, 2.f * tile.y, 2.f * (tile.x + 1), 2.f * (tile.y + 1));
+	int dir_flags = lvl.GetTileDirFlags(tile);
+	if(IS_SET(dir_flags, GDIRF_LEFT_ROW))
+		allowed_region.v1.x += base->r;
+	if(IS_SET(dir_flags, GDIRF_RIGHT_ROW))
+		allowed_region.v2.x -= base->r;
+	if(IS_SET(dir_flags, GDIRF_DOWN_ROW))
+		allowed_region.v1.y += base->r;
+	if(IS_SET(dir_flags, GDIRF_UP_ROW))
+		allowed_region.v2.y -= base->r;
+
+	if(allowed_region.SizeX() < base->r + EXTRA_RADIUS
+		|| allowed_region.SizeY() < base->r + EXTRA_RADIUS)
+		return nullptr;
+
+	float rot = Random(MAX_ANGLE);
+	Vec3 pos = allowed_region.GetRandomPos3();
+	Level::IgnoreObjects ignore = { 0 };
+	ignore.ignore_blocks = true;
+	L.global_col.clear();
+	L.GatherCollisionObjects(L.local_ctx, L.global_col, pos, base->r + EXTRA_RADIUS, &ignore);
+	if(!L.global_col.empty() && L.Collide(L.global_col, pos, base->r + EXTRA_RADIUS))
+		return nullptr;
+
+	return L.SpawnObjectEntity(L.local_ctx, base, pos, rot, 1.f, 0);
 }
 
 //=================================================================================================

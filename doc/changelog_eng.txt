@@ -2,11 +2,12 @@ Changelog
 
 --------------------------------------------------------------------------------
 Version 0.8.1 (???):
-- fixed rare crash when goblins/orcs eat food (often happen in tutorial)
+- fixed rare crash when goblins/orcs eat food (often happen in tutorial) [Harorri]
 - fixed using kill command on corpse prevent from looting
 - fixed journal not blocking player controlls
 - fixed talking/picking items thru doors at right angle
 - fixed talking/picking items inside building thru walls
+- fixed generating rocks in cave/mine that could block path
 
 --------------------------------------------------------------------------------
 Version 0.8 (2019-02-23):

@@ -71,7 +71,7 @@ public:
 	bool Load(GameReader& f) override;
 	void LoadOld(GameReader& f);
 	int GetIncome(int days_passed);
-	bool GenerateMine(CaveGenerator* cave_gen);
+	int GenerateMine(CaveGenerator* cave_gen, bool first);
 
 	Quest_Event sub;
 	int dungeon_loc;

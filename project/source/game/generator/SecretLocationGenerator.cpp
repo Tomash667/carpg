@@ -197,8 +197,7 @@ void SecretLocationGenerator::SpawnTeam()
 }
 
 //=================================================================================================
-int SecretLocationGenerator::HandleUpdate()
+int SecretLocationGenerator::HandleUpdate(int days)
 {
-	// don't reset location
-	return 0;
+	return PREVENT_RESET;
 }

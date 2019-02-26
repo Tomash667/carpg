@@ -27,10 +27,10 @@ void ForestGenerator::Generate()
 }
 
 //=================================================================================================
-int ForestGenerator::HandleUpdate()
+int ForestGenerator::HandleUpdate(int days)
 {
 	if(L.location_index != QM.quest_sawmill->target_loc)
-		return 1;
+		return 0;
 
 	// sawmill quest
 	if(QM.quest_sawmill->sawmill_state == Quest_Sawmill::State::InBuild
@@ -39,7 +39,7 @@ int ForestGenerator::HandleUpdate()
 		QM.quest_sawmill->GenerateSawmill(true);
 		have_sawmill = true;
 		L.location->loaded_resources = false;
-		return -1;
+		return PREVENT_RESET | PREVENT_RESPAWN_UNITS;
 	}
 	else if(QM.quest_sawmill->sawmill_state == Quest_Sawmill::State::Working
 		&& QM.quest_sawmill->build_state != Quest_Sawmill::BuildState::Finished)
@@ -47,10 +47,10 @@ int ForestGenerator::HandleUpdate()
 		QM.quest_sawmill->GenerateSawmill(false);
 		have_sawmill = true;
 		L.location->loaded_resources = false;
-		return -1;
+		return PREVENT_RESET | PREVENT_RESPAWN_UNITS;
 	}
 	else
-		return 1;
+		return 0;
 }
 
 //=================================================================================================

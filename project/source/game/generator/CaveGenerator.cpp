@@ -377,7 +377,7 @@ void CaveGenerator::GenerateObjects()
 	o->base = nullptr;
 	L.local_ctx.objects->push_back(o);
 
-	// œwiat³a
+	// lights
 	for(vector<Int2>::iterator it = cave->holes.begin(), end = cave->holes.end(); it != end; ++it)
 	{
 		Light& s = Add1(lvl.lights);
@@ -386,9 +386,9 @@ void CaveGenerator::GenerateObjects()
 		s.color = Vec3(1.f, 1.0f, 1.0f);
 	}
 
-	// stalaktyty
+	// stalactites
 	BaseObject* base_obj = BaseObject::Get("stalactite");
-	static vector<Int2> sta;
+	sta.clear();
 	for(int count = 0, tries = 200; count < 50 && tries>0; --tries)
 	{
 		Int2 pt = cave->GetRandomTile();
@@ -420,7 +420,7 @@ void CaveGenerator::GenerateObjects()
 		}
 	}
 
-	// krzaki
+	// plants
 	base_obj = BaseObject::Get("plant2");
 	for(int i = 0; i < 150; ++i)
 	{
@@ -438,7 +438,7 @@ void CaveGenerator::GenerateObjects()
 		}
 	}
 
-	// grzyby
+	// mushrooms
 	base_obj = BaseObject::Get("mushrooms");
 	for(int i = 0; i < 100; ++i)
 	{
@@ -456,83 +456,17 @@ void CaveGenerator::GenerateObjects()
 		}
 	}
 
-	// kamienie
+	// rocks
 	base_obj = BaseObject::Get("rock");
-	sta.clear();
 	for(int i = 0; i < 80; ++i)
 	{
 		Int2 pt = cave->GetRandomTile();
-
 		if(lvl.map[pt.x + pt.y*lvl.w].type == EMPTY)
-		{
-			bool ok = true;
-
-			for(vector<Int2>::iterator it = sta.begin(), end = sta.end(); it != end; ++it)
-			{
-				if(*it == pt)
-				{
-					ok = false;
-					break;
-				}
-			}
-
-			if(ok)
-			{
-				Object* o = new Object;
-				o->base = base_obj;
-				o->mesh = base_obj->mesh;
-				o->scale = 1.f;
-				o->rot = Vec3(0, Random(MAX_ANGLE), 0);
-				o->pos = Vec3(2.f*pt.x + Random(0.1f, 1.9f), 0.f, 2.f*pt.y + Random(0.1f, 1.9f));
-				L.local_ctx.objects->push_back(o);
-
-				if(base_obj->shape)
-				{
-					CollisionObject& c = Add1(L.local_ctx.colliders);
-
-					btCollisionObject* cobj = new btCollisionObject;
-					cobj->setCollisionShape(base_obj->shape);
-					cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_OBJECT);
-
-					if(base_obj->type == OBJ_CYLINDER)
-					{
-						cobj->getWorldTransform().setOrigin(btVector3(o->pos.x, o->pos.y + base_obj->h / 2, o->pos.z));
-						c.type = CollisionObject::SPHERE;
-						c.pt = Vec2(o->pos.x, o->pos.z);
-						c.radius = base_obj->r;
-					}
-					else
-					{
-						btTransform& tr = cobj->getWorldTransform();
-						Vec3 pos2 = Vec3::TransformZero(*base_obj->matrix);
-						pos2 += o->pos;
-						tr.setOrigin(ToVector3(pos2));
-						tr.setRotation(btQuaternion(o->rot.y, 0, 0));
-
-						c.pt = Vec2(pos2.x, pos2.z);
-						c.w = base_obj->size.x;
-						c.h = base_obj->size.y;
-						if(NotZero(o->rot.y))
-						{
-							c.type = CollisionObject::RECTANGLE_ROT;
-							c.rot = o->rot.y;
-							c.radius = max(c.w, c.h) * SQRT_2;
-						}
-						else
-							c.type = CollisionObject::RECTANGLE;
-					}
-
-					L.phy_world->addCollisionObject(cobj, CG_OBJECT);
-				}
-
-				sta.push_back(pt);
-			}
-		}
+			GenerateDungeonObject(lvl, pt, base_obj);
 	}
-	sta.clear();
 
 	if(L.location_index == QM.quest_mine->target_loc)
-		QM.quest_mine->GenerateMine(this);
+		QM.quest_mine->GenerateMine(this, true);
 }
 
 //=================================================================================================
@@ -590,16 +524,14 @@ void CaveGenerator::GenerateItems()
 }
 
 //=================================================================================================
-bool CaveGenerator::HandleUpdate(int days)
+int CaveGenerator::HandleUpdate(int days)
 {
-	bool respawn_units;
+	int update_flags = 0;
 	if(L.location_index == QM.quest_mine->target_loc)
-		respawn_units = QM.quest_mine->GenerateMine(this);
-	else
-		respawn_units = true;
+		update_flags = QM.quest_mine->GenerateMine(this, false);
 	if(days > 0)
 		GenerateMushrooms(min(days, 10));
-	return respawn_units;
+	return update_flags;
 }
 
 //=================================================================================================

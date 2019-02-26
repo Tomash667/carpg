@@ -150,8 +150,8 @@ void OutsideLocationGenerator::OnEnter()
 
 	int days;
 	bool need_reset = outside->CheckUpdate(days, W.GetWorldtime());
-	int update = HandleUpdate();
-	if(update != 1)
+	int update_flags = HandleUpdate(days);
+	if(IS_SET(update_flags, PREVENT_RESET))
 		need_reset = false;
 
 	game.SetOutsideParams();
@@ -193,11 +193,12 @@ void OutsideLocationGenerator::OnEnter()
 
 		// recreate colliders
 		game.LoadingStep(game.txGeneratingPhysics);
-		L.RecreateObjects();
+		if(!IS_SET(update_flags, PREVENT_RECREATE_OBJECTS))
+			L.RecreateObjects();
 
 		// respawn units
 		game.LoadingStep(game.txGeneratingUnits);
-		if(update >= 0)
+		if(!IS_SET(update_flags, PREVENT_RESPAWN_UNITS))
 			RespawnUnits();
 		if(need_reset)
 			GenerateUnits();
@@ -381,9 +382,9 @@ void OutsideLocationGenerator::SpawnForestItems(int count_mod)
 }
 
 //=================================================================================================
-int OutsideLocationGenerator::HandleUpdate()
+int OutsideLocationGenerator::HandleUpdate(int days)
 {
-	return 1;
+	return 0;
 }
 
 //=================================================================================================

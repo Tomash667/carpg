@@ -13,7 +13,7 @@ public:
 	void OnEnter() override;
 	void SpawnForestObjects(int road_dir = -1); //-1 none, 0 horizontal, 1 vertical
 	void SpawnForestItems(int count_mod);
-	virtual int HandleUpdate(); // -1 don't call RespawnUnits/reset, 0 don't reset, 1 can reset
+	int HandleUpdate(int days);
 	virtual void SpawnTeam();
 	void CreateMinimap() override;
 	void OnLoad() override;

@@ -605,3 +605,26 @@ Room& InsideLocationLevel::GetRoom(RoomTarget target, bool down_stairs)
 		return rooms[id];
 	}
 }
+
+//=================================================================================================
+int InsideLocationLevel::GetTileDirFlags(const Int2& pt)
+{
+	int flags = 0;
+	if(pt.x == 0 || IsBlocking(map[pt.x - 1 + pt.y * w]))
+		flags |= GDIRF_LEFT;
+	if(pt.x == w - 1 || IsBlocking(map[pt.x + 1 + pt.y * w]))
+		flags |= GDIRF_RIGHT;
+	if(pt.y == 0 || IsBlocking(map[pt.x + (pt.y - 1) * w]))
+		flags |= GDIRF_DOWN;
+	if(pt.y == h - 1 || IsBlocking(map[pt.x + (pt.y + 1) * w]))
+		flags |= GDIRF_UP;
+	if(pt.x == 0 || pt.y == 0 || IsBlocking(map[pt.x - 1 + (pt.y - 1) * w]))
+		flags |= GDIRF_LEFT_DOWN;
+	if(pt.x == 0 || pt.y == h - 1 || IsBlocking(map[pt.x - 1 + (pt.y + 1) * w]))
+		flags |= GDIRF_LEFT_UP;
+	if(pt.x == w - 1 || pt.y == 0 || IsBlocking(map[pt.x + 1 + (pt.y - 1) * w]))
+		flags |= GDIRF_RIGHT_DOWN;
+	if(pt.x == w - 1 || pt.y == h - 1 || IsBlocking(map[pt.x + 1 + (pt.y + 1) * w]))
+		flags |= GDIRF_RIGHT_UP;
+	return flags;
+}

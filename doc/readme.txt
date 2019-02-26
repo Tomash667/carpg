@@ -296,6 +296,7 @@ Podziêkowania za znalezione b³êdy:
 	darktorq
 	Docucat
 	fire
+	Harorri
 	Medarc
 	MikelkCZ
 	Minister of Death

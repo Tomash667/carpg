@@ -5,6 +5,13 @@ class LocationGenerator
 {
 	friend class LocationGeneratorFactory;
 public:
+	enum UpdateFlags
+	{
+		PREVENT_RESET = 1 << 0,
+		PREVENT_RESPAWN_UNITS = 1 << 1,
+		PREVENT_RECREATE_OBJECTS = 1 << 2
+	};
+
 	virtual ~LocationGenerator() {}
 	virtual void Init() {}
 	virtual int GetNumberOfSteps();
@@ -15,6 +22,7 @@ public:
 	virtual void GenerateItems() {}
 	virtual void CreateMinimap() = 0;
 	virtual void OnLoad() = 0;
+	virtual int HandleUpdate(int days) { return 0; }
 	void RespawnUnits();
 
 	Location* loc;
