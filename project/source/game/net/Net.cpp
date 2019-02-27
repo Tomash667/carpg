@@ -1541,6 +1541,11 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					// can't talk to unit
 					c.id = -1;
 				}
+				else if(talk_to->in_building != unit.in_building)
+				{
+					// unit left/entered building
+					c.id = -2;
+				}
 				else
 				{
 					// start dialog
@@ -6469,7 +6474,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 						pc->action = PlayerController::Action_None;
 						gui->messages->AddGameMsg3(GMS_UNIT_BUSY);
 					}
-					else
+					else if(netid != -2) // not entered/left building
 					{
 						// start dialog
 						Unit* unit = L.FindUnit(netid);

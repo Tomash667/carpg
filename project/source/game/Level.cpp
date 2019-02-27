@@ -137,7 +137,7 @@ void Level::ProcessUnitWarps()
 	Game& game = Game::Get();
 	bool warped_to_arena = false;
 
-	for(auto& warp : unit_warp_data)
+	for(UnitWarpData& warp : unit_warp_data)
 	{
 		if(warp.where == WARP_OUTSIDE)
 		{
