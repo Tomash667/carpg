@@ -9,4 +9,4 @@ FMod - 4.44.61
 JSON for Modern C++ - 3.4.0
 SLikeNet - https://github.com/SLikeSoft/SLikeNet 11.09.2017
 Visual Leak Detector - 2.5.1 (<https://kinddragon.github.io/vld/>)
-zlib - 1.2.8
+zlib - 1.2.11 (<https://github.com/madler/zlib>)
