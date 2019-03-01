@@ -45,9 +45,6 @@
     <ClInclude Include="..\..\src\BulletCollision\BroadphaseCollision\btDispatcher.h">
       <Filter>src\BulletCollision\BroadphaseCollision</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\BulletCollision\BroadphaseCollision\btMultiSapBroadphase.h">
-      <Filter>src\BulletCollision\BroadphaseCollision</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\BulletCollision\BroadphaseCollision\btOverlappingPairCache.h">
       <Filter>src\BulletCollision\BroadphaseCollision</Filter>
     </ClInclude>
@@ -390,6 +387,51 @@
     <ClInclude Include="..\..\src\BulletCollision\NarrowPhaseCollision\btVoronoiSimplexSolver.h">
       <Filter>src\BulletCollision\NarrowPhaseCollision</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\BulletCollision\BroadphaseCollision\btAxisSweep3Internal.h">
+      <Filter>src\BulletCollision\BroadphaseCollision</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\BulletCollision\CollisionDispatch\btCollisionDispatcherMt.h">
+      <Filter>src\BulletCollision\CollisionDispatch</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\BulletCollision\CollisionDispatch\btCollisionWorldImporter.h">
+      <Filter>src\BulletCollision\CollisionDispatch</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\BulletCollision\CollisionDispatch\btCompoundCompoundCollisionAlgorithm.h">
+      <Filter>src\BulletCollision\CollisionDispatch</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\BulletCollision\CollisionDispatch\btHashedSimplePairCache.h">
+      <Filter>src\BulletCollision\CollisionDispatch</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\BulletCollision\CollisionShapes\btMiniSDF.h">
+      <Filter>src\BulletCollision\CollisionShapes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\BulletCollision\CollisionShapes\btSdfCollisionShape.h">
+      <Filter>src\BulletCollision\CollisionShapes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\BulletCollision\Gimpact\btCompoundFromGimpact.h">
+      <Filter>src\BulletCollision\Gimpact</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\BulletCollision\Gimpact\btContactProcessingStructs.h">
+      <Filter>src\BulletCollision\Gimpact</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\BulletCollision\Gimpact\btGImpactBvhStructs.h">
+      <Filter>src\BulletCollision\Gimpact</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\BulletCollision\Gimpact\btGImpactQuantizedBvhStructs.h">
+      <Filter>src\BulletCollision\Gimpact</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\BulletCollision\NarrowPhaseCollision\btComputeGjkEpaPenetration.h">
+      <Filter>src\BulletCollision\NarrowPhaseCollision</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\BulletCollision\NarrowPhaseCollision\btGjkCollisionDescription.h">
+      <Filter>src\BulletCollision\NarrowPhaseCollision</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\BulletCollision\NarrowPhaseCollision\btGjkEpa3.h">
+      <Filter>src\BulletCollision\NarrowPhaseCollision</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\BulletCollision\NarrowPhaseCollision\btMprPenetration.h">
+      <Filter>src\BulletCollision\NarrowPhaseCollision</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\BulletCollision\BroadphaseCollision\btAxisSweep3.cpp">
@@ -408,9 +450,6 @@
       <Filter>src\BulletCollision\BroadphaseCollision</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\BulletCollision\BroadphaseCollision\btDispatcher.cpp">
-      <Filter>src\BulletCollision\BroadphaseCollision</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\BulletCollision\BroadphaseCollision\btMultiSapBroadphase.cpp">
       <Filter>src\BulletCollision\BroadphaseCollision</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\BulletCollision\BroadphaseCollision\btOverlappingPairCache.cpp">
@@ -667,6 +706,24 @@
     </ClCompile>
     <ClCompile Include="..\..\src\BulletCollision\NarrowPhaseCollision\btVoronoiSimplexSolver.cpp">
       <Filter>src\BulletCollision\NarrowPhaseCollision</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\BulletCollision\CollisionDispatch\btCollisionDispatcherMt.cpp">
+      <Filter>src\BulletCollision\CollisionDispatch</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\BulletCollision\CollisionDispatch\btCollisionWorldImporter.cpp">
+      <Filter>src\BulletCollision\CollisionDispatch</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\BulletCollision\CollisionDispatch\btCompoundCompoundCollisionAlgorithm.cpp">
+      <Filter>src\BulletCollision\CollisionDispatch</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\BulletCollision\CollisionDispatch\btHashedSimplePairCache.cpp">
+      <Filter>src\BulletCollision\CollisionDispatch</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\BulletCollision\CollisionShapes\btMiniSDF.cpp">
+      <Filter>src\BulletCollision\CollisionShapes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\BulletCollision\CollisionShapes\btSdfCollisionShape.cpp">
+      <Filter>src\BulletCollision\CollisionShapes</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

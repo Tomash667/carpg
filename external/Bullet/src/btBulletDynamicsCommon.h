@@ -33,17 +33,11 @@ subject to the following restrictions:
 #include "BulletDynamics/ConstraintSolver/btUniversalConstraint.h"
 #include "BulletDynamics/ConstraintSolver/btHinge2Constraint.h"
 #include "BulletDynamics/ConstraintSolver/btGearConstraint.h"
+#include "BulletDynamics/ConstraintSolver/btFixedConstraint.h"
 
 #include "BulletDynamics/ConstraintSolver/btSequentialImpulseConstraintSolver.h"
-
 
 ///Vehicle simulation, with wheel contact simulated by raycasts
 #include "BulletDynamics/Vehicle/btRaycastVehicle.h"
 
-
-
-
-
-
-#endif //BULLET_DYNAMICS_COMMON_H
-
+#endif  //BULLET_DYNAMICS_COMMON_H

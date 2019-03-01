@@ -7,6 +7,9 @@
     <Filter Include="src\LinearMath">
       <UniqueIdentifier>{8A46439E-6112-9142-8A3C-2FFA51B8309F}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\LinearMath\TaskScheduler">
+      <UniqueIdentifier>{7da7b954-750c-41c2-b2ba-b006bbd33cbb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\LinearMath\btAabbUtil2.h">
@@ -22,6 +25,9 @@
       <Filter>src\LinearMath</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\LinearMath\btConvexHullComputer.h">
+      <Filter>src\LinearMath</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\LinearMath\btCpuFeatureUtility.h">
       <Filter>src\LinearMath</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\LinearMath\btDefaultMotionState.h">
@@ -43,6 +49,9 @@
       <Filter>src\LinearMath</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\LinearMath\btMatrix3x3.h">
+      <Filter>src\LinearMath</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\LinearMath\btMatrixX.h">
       <Filter>src\LinearMath</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\LinearMath\btMinMax.h">
@@ -75,7 +84,13 @@
     <ClInclude Include="..\..\src\LinearMath\btSerializer.h">
       <Filter>src\LinearMath</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\LinearMath\btSpatialAlgebra.h">
+      <Filter>src\LinearMath</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\LinearMath\btStackAlloc.h">
+      <Filter>src\LinearMath</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\LinearMath\btThreads.h">
       <Filter>src\LinearMath</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\LinearMath\btTransform.h">
@@ -86,6 +101,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\LinearMath\btVector3.h">
       <Filter>src\LinearMath</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\LinearMath\TaskScheduler\btThreadSupportInterface.h">
+      <Filter>src\LinearMath\TaskScheduler</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -110,8 +128,23 @@
     <ClCompile Include="..\..\src\LinearMath\btSerializer.cpp">
       <Filter>src\LinearMath</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\LinearMath\btSerializer64.cpp">
+      <Filter>src\LinearMath</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\LinearMath\btThreads.cpp">
+      <Filter>src\LinearMath</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\LinearMath\btVector3.cpp">
       <Filter>src\LinearMath</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\LinearMath\TaskScheduler\btTaskScheduler.cpp">
+      <Filter>src\LinearMath\TaskScheduler</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\LinearMath\TaskScheduler\btThreadSupportPosix.cpp">
+      <Filter>src\LinearMath\TaskScheduler</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\LinearMath\TaskScheduler\btThreadSupportWin32.cpp">
+      <Filter>src\LinearMath\TaskScheduler</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
