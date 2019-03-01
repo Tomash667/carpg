@@ -2559,7 +2559,7 @@ stock innkeeper {
 			count -= Random(1, 3);
 		ItemList@ list = ItemList::Get("normal_food");
 		for(int i=0; i<count; ++i)
-			StockScript::AddItem(list.Get());
+			StockScript::AddItem(list.GetItem());
 	}
 	// drinks
 	city {
@@ -2586,7 +2586,7 @@ stock food_seller {
 			int value = Random(50, 100);
 			if(is_village)
 				value /= 2;
-			Item@ item = list.Get(i);
+			Item@ item = list.GetItem(i);
 			int add = value / item.value;
 			if(add > 0)
 				StockScript::AddItem(item, add);

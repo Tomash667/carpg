@@ -411,8 +411,8 @@ void ScriptManager::RegisterGame()
 		.AddFunction("Item@ GetRandom(int)", asFUNCTION(ItemHelper::GetRandomItem));
 
 	AddType("ItemList")
-		.Method("Item@ Get()", asMETHODPR(ItemList, Get, () const, const Item*))
-		.Method("Item@ Get(int)", asFUNCTION(ItemList_GetByIndex))
+		.Method("Item@ GetItem()", asMETHODPR(ItemList, Get, () const, const Item*))
+		.Method("Item@ GetItem(int)", asFUNCTION(ItemList_GetByIndex))
 		.Method("int Size()", asFUNCTION(ItemList_Size))
 		.WithNamespace()
 		.AddFunction("ItemList@ Get(const string& in)", asFUNCTION(ItemList::GetS));

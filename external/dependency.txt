@@ -1,6 +1,6 @@
 EXTERNAL VERSION LIST
 --------------------------------------------------------------------------------
-Angelscript - 2.31.2
+Angelscript - 2.33 (<http://www.angelcode.com/angelscript/>)
 Bullet - 2.81-rev2613
 CrashRpt - 1.4.3 r1645
 DirectX - Microsoft DirectX SDK (June 2010)
