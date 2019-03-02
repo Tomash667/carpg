@@ -28,6 +28,7 @@
 Net N;
 const float CHANGE_LEVEL_TIMER = 5.f;
 const int CLOSE_PEER_TIMER = 1000; // ms
+//#define TEST_LAG 50
 
 //=================================================================================================
 Net::Net() : peer(nullptr), current_packet(nullptr), mp_load(false), mp_use_interp(true), mp_interp(0.05f), was_client(false)
@@ -150,7 +151,12 @@ void Net::InitServer()
 	Info("Creating server (port %d)...", port);
 
 	if(!peer)
+	{
 		peer = RakPeerInterface::GetInstance();
+#ifdef TEST_LAG
+		peer->ApplyNetworkSimulator(0.f, TEST_LAG, 0);
+#endif
+	}
 
 	uint max_connections = max_players - 1;
 	if(!server_lan)
@@ -559,7 +565,12 @@ void Net::InitClient()
 	Info("Initlializing client...");
 
 	if(!peer)
+	{
 		peer = RakPeerInterface::GetInstance();
+#ifdef TEST_LAG
+		peer->ApplyNetworkSimulator(0.f, TEST_LAG, 0);
+#endif
+	}
 
 	SocketDescriptor sd;
 	sd.socketFamily = AF_INET;

@@ -954,7 +954,10 @@ void Game::LoadItemsData()
 	PreloadItem(Item::Get("p_hp2"));
 	PreloadItem(Item::Get("p_hp3"));
 	PreloadItem(Item::Get("gold"));
-	auto list = ItemList::Get("normal_food");
-	for(auto item : list.lis->items)
+	ItemListResult list = ItemList::Get("normal_food");
+	for(const Item* item : list.lis->items)
+		PreloadItem(item);
+	list = ItemList::Get("orc_food");
+	for(const Item* item : list.lis->items)
 		PreloadItem(item);
 }

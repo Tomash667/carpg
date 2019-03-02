@@ -15,7 +15,7 @@ public:
 	void GenerateObjects() override;
 	void GenerateUnits() override;
 	void GenerateItems() override;
-	bool HandleUpdate(int days) override;
+	int HandleUpdate(int days) override;
 
 private:
 	void FillMap(bool* m);
@@ -35,4 +35,5 @@ private:
 	int minx, miny, maxx, maxy;
 	const int fill = 50;
 	const int iter = 3;
+	vector<Int2> sta;
 };

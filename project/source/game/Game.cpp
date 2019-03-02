@@ -378,17 +378,17 @@ void Game::OnTick(float dt)
 		OpenPanel open = gui->game_gui->GetOpenPanel(),
 			to_open = OpenPanel::None;
 
-		if (GKey.PressedRelease(GK_STATS))
+		if(GKey.PressedRelease(GK_STATS))
 			to_open = OpenPanel::Stats;
-		else if (GKey.PressedRelease(GK_INVENTORY))
+		else if(GKey.PressedRelease(GK_INVENTORY))
 			to_open = OpenPanel::InventoryPanel;
-		else if (GKey.PressedRelease(GK_TEAM_PANEL))
+		else if(GKey.PressedRelease(GK_TEAM_PANEL))
 			to_open = OpenPanel::Team;
-		else if (GKey.PressedRelease(GK_JOURNAL))
+		else if(GKey.PressedRelease(GK_JOURNAL))
 			to_open = OpenPanel::Journal;
-		else if (GKey.PressedRelease(GK_MINIMAP))
+		else if(GKey.PressedRelease(GK_MINIMAP))
 			to_open = OpenPanel::Minimap;
-		else if (GKey.PressedRelease(GK_ACTION_PANEL))
+		else if(GKey.PressedRelease(GK_ACTION_PANEL))
 			to_open = OpenPanel::Action;
 		else if(open == OpenPanel::Trade && Key.PressedRelease(VK_ESCAPE))
 			to_open = OpenPanel::Trade; // ShowPanel hide when already opened
@@ -459,8 +459,10 @@ void Game::OnTick(float dt)
 		case OpenPanel::Team:
 		case OpenPanel::Trade:
 		case OpenPanel::Action:
-		case OpenPanel::Journal:
 			GKey.allow_input = GameKeys::ALLOW_KEYBOARD;
+			break;
+		case OpenPanel::Journal:
+			GKey.allow_input = GameKeys::ALLOW_NONE;
 			break;
 		}
 	}
@@ -481,9 +483,9 @@ void Game::OnTick(float dt)
 			if(paused)
 			{
 				UpdateFallback(dt);
-				if (Net::IsLocal())
+				if(Net::IsLocal())
 				{
-					if (Net::IsOnline())
+					if(Net::IsOnline())
 						UpdateWarpData(dt);
 					L.ProcessUnitWarps();
 				}
@@ -493,14 +495,14 @@ void Game::OnTick(float dt)
 			}
 			else if(GUI.HavePauseDialog())
 			{
-				if (Net::IsOnline())
+				if(Net::IsOnline())
 					UpdateGame(dt);
 				else
 				{
 					UpdateFallback(dt);
-					if (Net::IsLocal())
+					if(Net::IsLocal())
 					{
-						if (Net::IsOnline())
+						if(Net::IsOnline())
 							UpdateWarpData(dt);
 						L.ProcessUnitWarps();
 					}
@@ -1602,7 +1604,7 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 
 	bool first = false;
 
-	if(l.state != LS_ENTERED && l.state != LS_CLEARED)
+	if(l.last_visit == -1)
 		first = true;
 
 	if(!reenter)
@@ -1637,7 +1639,7 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 	LoadingStep(txEnteringLocation);
 
 	// generate map on first visit
-	if(l.state != LS_ENTERED && l.state != LS_CLEARED)
+	if(first)
 	{
 		if(next_seed != 0)
 		{

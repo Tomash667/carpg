@@ -12,5 +12,5 @@ public:
 	void GenerateUnits() override;
 	void GenerateItems() override;
 	void SpawnTeam() override;
-	int HandleUpdate() override;
+	int HandleUpdate(int days) override;
 };

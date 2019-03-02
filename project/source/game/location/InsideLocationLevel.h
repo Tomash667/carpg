@@ -103,4 +103,5 @@ struct InsideLocationLevel : public LevelArea
 	Chest* FindChestWithItem(const Item* item, int* index);
 	Chest* FindChestWithQuestItem(int quest_refid, int* index);
 	Room& GetRoom(RoomTarget target, bool down_stairs);
+	int GetTileDirFlags(const Int2& pt);
 };

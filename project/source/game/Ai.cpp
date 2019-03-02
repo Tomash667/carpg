@@ -957,7 +957,7 @@ void Game::UpdateAi(float dt)
 											Usable& use = **it2;
 											if(!use.user && (use.base != throne || IS_SET(u.data->flags2, F2_SIT_ON_THRONE))
 												&& Vec3::Distance(use.pos, u.pos) < 10.f && !use.base->IsContainer()
-												/*CanSee - niestety nie ma takiej funkcji wiêc trudno :p*/)
+												&& L.CanSee(ctx, use.pos, u.pos))
 											{
 												const Item* needed_item = use.base->item;
 												if(!needed_item || u.HaveItem(needed_item) || u.slots[SLOT_WEAPON] == needed_item)
@@ -2520,7 +2520,7 @@ void Game::UpdateAi(float dt)
 					if(ai.pf_state == AIController::PFS_NOT_USING
 						|| Int2::Distance(ai.pf_target_tile, target_tile) > 1
 						|| ((ai.pf_state == AIController::PFS_WALKING || ai.pf_state == AIController::PFS_MANUAL_WALK)
-							&& target_tile != ai.pf_target_tile && ai.pf_timer <= 0.f))
+						&& target_tile != ai.pf_target_tile && ai.pf_timer <= 0.f))
 					{
 						ai.pf_timer = Random(0.2f, 0.4f);
 						if(pathfinding->FindPath(ctx, my_tile, target_tile, ai.pf_path, !IS_SET(u.data->flags, F_DONT_OPEN), ai.city_wander && L.city_ctx != nullptr))
@@ -2969,49 +2969,45 @@ void Game::AI_DoAttack(AIController& ai, Unit* target, bool w_biegu)
 //=================================================================================================
 void Game::AI_HitReaction(Unit& unit, const Vec3& pos)
 {
-	if(unit.dont_attack)
+	AIController& ai = *unit.ai;
+
+	if(unit.dont_attack || !Any(ai.state, AIController::Idle, AIController::SearchEnemy))
 		return;
 
-	AIController& ai = *unit.ai;
-	switch(ai.state)
+	ai.target = nullptr;
+	ai.target_last_pos = pos;
+	ai.state = AIController::SeenEnemy;
+	if(ai.state == AIController::Idle)
+		ai.change_ai_mode = true;
+	ai.timer = Random(10.f, 15.f);
+	ai.city_wander = false;
+	if(!unit.data->sounds->Have(SOUND_SEE_ENEMY))
+		return;
+
+	PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_SEE_ENEMY)->sound, 3.f, 20.f);
+
+	if(Net::IsOnline())
 	{
-	case AIController::Idle:
-	case AIController::SearchEnemy:
-		ai.target = nullptr;
-		ai.target_last_pos = pos;
-		ai.state = AIController::SeenEnemy;
-		if(ai.state == AIController::Idle)
-			ai.change_ai_mode = true;
-		ai.timer = Random(10.f, 15.f);
-		ai.city_wander = false;
-		if(!unit.data->sounds->Have(SOUND_SEE_ENEMY))
-			return;
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::SHOUT;
+		c.unit = &unit;
+	}
 
-		PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_SEE_ENEMY)->sound, 3.f, 20.f);
+	// alarm near allies
+	LevelContext& ctx = L.GetContext(unit);
+	for(Unit* u : *ctx.units)
+	{
+		if(u->to_remove || &unit == u || !u->IsStanding() || u->IsPlayer() || !unit.IsFriend(*u) || u->dont_attack)
+			continue;
 
-		if(Net::IsOnline())
+		if((u->ai->state == AIController::Idle || u->ai->state == AIController::SearchEnemy)
+			&& Vec3::Distance(unit.pos, u->pos) <= 20.f && L.CanSee(unit, *u))
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::SHOUT;
-			c.unit = &unit;
+			AIController* ai2 = u->ai;
+			ai2->target_last_pos = pos;
+			ai2->state = AIController::SeenEnemy;
+			ai2->timer = Random(5.f, 10.f);
 		}
-
-		// alarm near allies
-		for(Unit* u : *L.local_ctx.units)
-		{
-			if(u->to_remove || &unit == u || !u->IsStanding() || u->IsPlayer() || !unit.IsFriend(*u) || u->dont_attack)
-				continue;
-
-			if((u->ai->state == AIController::Idle || u->ai->state == AIController::SearchEnemy)
-				&& Vec3::Distance(unit.pos, u->pos) <= 20.f && L.CanSee(unit, *u))
-			{
-				AIController* ai2 = u->ai;
-				ai2->target_last_pos = pos;
-				ai2->state = AIController::SeenEnemy;
-				ai2->timer = Random(5.f, 10.f);
-			}
-		}
-		break;
 	}
 }
 
@@ -3051,7 +3047,7 @@ void Game::CheckAutoTalk(Unit& unit, float dt)
 			// if not leader (in leader mode) or busy - don't check this unit
 			if((leader_mode && u != Team.leader)
 				|| (u->player->dialog_ctx->dialog_mode || u->busy != Unit::Busy_No
-					|| !u->IsStanding() || u->player->action != PlayerController::Action_None))
+				|| !u->IsStanding() || u->player->action != PlayerController::Action_None))
 				continue;
 			float dist = Vec3::Distance(unit.pos, u->pos);
 			if(dist <= 8.f || leader_mode)

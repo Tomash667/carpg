@@ -122,8 +122,7 @@ void Journal::Update(float dt)
 		// zmiana wybranego zadania
 		if(mode == Quests && !QM.quests.empty())
 		{
-			byte key;
-			if((key = GKey.PressedR(GK_ROTATE_LEFT)) != VK_NONE)
+			if(GKey.PressedR(GK_ROTATE_LEFT))
 			{
 				if(!details)
 				{
@@ -143,7 +142,7 @@ void Journal::Update(float dt)
 					Build();
 				}
 			}
-			if((key = GKey.PressedR(GK_ROTATE_RIGHT)) != VK_NONE)
+			if(GKey.PressedR(GK_ROTATE_RIGHT))
 			{
 				if(!details)
 				{

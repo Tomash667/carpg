@@ -736,7 +736,7 @@ unit base_rogue : base_player {
 //------------------------------------------------------------------------------
 unit blacksmith : base_human {
 	level 5
-	flags | {ai_stay dont_eat}
+	flags | {ai_stay dont_eat limited_rot}
 	items {
 		al_blacksmith
 		blacksmith_hammer
@@ -752,7 +752,7 @@ unit blacksmith : base_human {
 
 unit merchant : base_human {
 	level 4
-	flags | {ai_stay ai_guard dont_eat}
+	flags | {ai_stay ai_guard dont_eat limited_rot}
 	items {
 		random {al_clothes2 al_clothes2b}
 		!short_blade
@@ -800,7 +800,7 @@ unit citizen : base_human {
 }
 
 unit tut_czlowiek : citizen {
-	flags | {ai_stay ~ai_wanders}
+	flags | {ai_stay ~ai_wanders limited_rot}
 	trader {
 		stock merchant
 		groups {weapon bow shield armor consumable other book}
@@ -814,7 +814,7 @@ unit villager : citizen {
 
 unit mayor : base_human {
 	level 4
-	flags | {ai_clerk ai_stay dont_eat}
+	flags | {ai_clerk ai_stay dont_eat limited_rot}
 	items {
 		random {al_clothes3 al_clothes3b}
 		random {!short_blade !long_blade}
@@ -853,7 +853,7 @@ unit guard_move : base_guard {
 
 unit guard_captain : base_human {
 	level 10
-	flags | {ai_guard ai_stay dont_eat}
+	flags | {ai_guard ai_stay dont_eat limited_rot}
 	items guard
 	gold {100 200}
 	dialog guard_captain
@@ -861,14 +861,14 @@ unit guard_captain : base_human {
 
 unit trainer : base_human {
 	level 10
-	flags | {ai_guard ai_stay dont_eat}
+	flags | {ai_guard ai_stay dont_eat limited_rot}
 	items guard
 	gold {250 500}
 	dialog trainer
 }
 
 unit clerk : citizen {
-	flags | {~ai_wanders ai_clerk ai_stay dont_eat}
+	flags | {~ai_wanders ai_clerk ai_stay dont_eat limited_rot}
 	gold {150 250}
 	dialog clerk
 }
@@ -1002,7 +1002,7 @@ unit gornik : base_human {
 
 unit gornik_szef : gornik {
 	level 6
-	flags | {ai_stay ~miner}
+	flags | {ai_stay ~miner limited_rot}
 	hp 600
 	gold {60 120}
 	dialog q_mine

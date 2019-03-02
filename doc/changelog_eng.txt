@@ -8,6 +8,19 @@ Version 0.9 (???):
 + more location icons and names
 
 --------------------------------------------------------------------------------
+Version 0.8.1 (???):
+- fixed rare crash when goblins/orcs eat food (often happen in tutorial) [Harorri]
+- fixed using kill command on corpse prevent from looting
+- fixed journal not blocking player controlls
+- fixed talking/picking items thru doors at right angle
+- fixed talking/picking items inside building thru walls
+- fixed generating rocks in cave/mine that could block path
+- fixed talking with unit exiting/entering building
+- fixed clients portal memory leak
+- fixed crash when revisiting locations by portal
+- fixed clients invalid position on world map when loading game in locations by portal
+
+--------------------------------------------------------------------------------
 Version 0.8 (2019-02-23):
 ! this is last version working on windows xp
 ! cannot load saves from version 0.2.10 or older

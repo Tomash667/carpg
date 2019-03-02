@@ -11,7 +11,7 @@ public:
 	void GenerateObjects() override;
 	void GenerateUnits() override;
 	void GenerateItems() override;
-	bool HandleUpdate(int days) override;
+	int HandleUpdate(int days) override;
 
 private:
 	void CreatePortal(InsideLocationLevel& lvl);

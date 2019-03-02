@@ -14,6 +14,23 @@ enum GameDirection
 };
 
 //-----------------------------------------------------------------------------
+enum GameDirectionFlag
+{
+	GDIRF_DOWN = 1 << 0,
+	GDIRF_LEFT = 1 << 1,
+	GDIRF_UP = 1 << 2,
+	GDIRF_RIGHT = 1 << 3,
+	GDIRF_LEFT_DOWN = 1 << 4,
+	GDIRF_LEFT_UP = 1 << 5,
+	GDIRF_RIGHT_DOWN = 1 << 6,
+	GDIRF_RIGHT_UP = 1 << 7,
+	GDIRF_DOWN_ROW = GDIRF_DOWN | GDIRF_LEFT_DOWN | GDIRF_RIGHT_DOWN,
+	GDIRF_UP_ROW = GDIRF_UP | GDIRF_LEFT_UP | GDIRF_RIGHT_UP,
+	GDIRF_LEFT_ROW = GDIRF_LEFT | GDIRF_LEFT_DOWN | GDIRF_LEFT_UP,
+	GDIRF_RIGHT_ROW = GDIRF_RIGHT | GDIRF_RIGHT_DOWN | GDIRF_RIGHT_UP
+};
+
+//-----------------------------------------------------------------------------
 inline float DirToRot(GameDirection dir)
 {
 	switch(dir)

@@ -588,6 +588,7 @@ void GameGui::DrawEndOfGameScreen()
 void GameGui::DrawSpeechBubbles()
 {
 	// get list to sort
+	LevelContext& ctx = L.GetContext(*game.pc->unit);
 	sorted_speech_bbs.clear();
 	for(vector<SpeechBubble*>::iterator it = speech_bbs.begin(), end = speech_bbs.end(); it != end; ++it)
 	{
@@ -599,7 +600,7 @@ void GameGui::DrawSpeechBubbles()
 		else
 			pos = sb.last_pos;
 
-		if(Vec3::Distance(game.pc->unit->visual_pos, pos) > 20.f || !L.CanSee(game.pc->unit->pos, sb.last_pos))
+		if(Vec3::Distance(game.pc->unit->visual_pos, pos) > 20.f || !L.CanSee(ctx, game.pc->unit->pos, sb.last_pos))
 		{
 			sb.visible = false;
 			continue;

@@ -24,7 +24,7 @@ ForLocation::ForLocation(int loc, int level)
 
 	bool active = (W.GetCurrentLocationIndex() == loc);
 	Location* l = W.GetLocation(loc);
-	assert(l->state >= LS_ENTERED);
+	assert(l->last_visit != -1);
 
 	switch(l->type)
 	{

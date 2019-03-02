@@ -66,9 +66,9 @@ void CampGenerator::Generate()
 }
 
 //=================================================================================================
-int CampGenerator::HandleUpdate()
+int CampGenerator::HandleUpdate(int days)
 {
-	return 0;
+	return PREVENT_RESET;
 }
 
 //=================================================================================================

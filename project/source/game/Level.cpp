@@ -137,7 +137,7 @@ void Level::ProcessUnitWarps()
 	Game& game = Game::Get();
 	bool warped_to_arena = false;
 
-	for(auto& warp : unit_warp_data)
+	for(UnitWarpData& warp : unit_warp_data)
 	{
 		if(warp.where == WARP_OUTSIDE)
 		{
@@ -3551,13 +3551,9 @@ bool Level::CanSee(Unit& u1, Unit& u2)
 	if(u1.in_building != u2.in_building)
 		return false;
 
+	LevelContext& ctx = GetContext(u1);
 	Int2 tile1(int(u1.pos.x / 2), int(u1.pos.z / 2)),
 		tile2(int(u2.pos.x / 2), int(u2.pos.z / 2));
-
-	if(tile1 == tile2)
-		return true;
-
-	LevelContext& ctx = GetContext(u1);
 
 	if(ctx.type == LevelContext::Outside)
 	{
@@ -3625,7 +3621,6 @@ bool Level::CanSee(Unit& u1, Unit& u2)
 	}
 	else
 	{
-		// kolizje z obiektami
 		for(vector<CollisionObject>::iterator it = ctx.colliders->begin(), end = ctx.colliders->end(); it != end; ++it)
 		{
 			if(it->ptr != CAM_COLLIDER || it->type != CollisionObject::RECTANGLE)
@@ -3636,7 +3631,6 @@ bool Level::CanSee(Unit& u1, Unit& u2)
 				return false;
 		}
 
-		// kolizje z drzwiami
 		for(vector<Door*>::iterator it = ctx.doors->begin(), end = ctx.doors->end(); it != end; ++it)
 		{
 			Door& door = **it;
@@ -3668,16 +3662,10 @@ bool Level::CanSee(Unit& u1, Unit& u2)
 }
 
 //=================================================================================================
-// don't work inside buildings
-bool Level::CanSee(const Vec3& v1, const Vec3& v2)
+bool Level::CanSee(LevelContext& ctx, const Vec3& v1, const Vec3& v2, bool is_door)
 {
 	Int2 tile1(int(v1.x / 2), int(v1.z / 2)),
 		tile2(int(v2.x / 2), int(v2.z / 2));
-
-	if(tile1 == tile2)
-		return true;
-
-	LevelContext& ctx = local_ctx;
 
 	if(ctx.type == LevelContext::Outside)
 	{
@@ -3715,8 +3703,10 @@ bool Level::CanSee(const Vec3& v1, const Vec3& v2)
 					return false;
 				if(lvl.map[x + y * lvl.w].type == DOORS)
 				{
-					Door* door = FindDoor(ctx, Int2(x, y));
-					if(door && door->IsBlocking())
+					Int2 pt(x, y);
+					Door* door = FindDoor(ctx, pt);
+					if(door && door->IsBlocking()
+						&& (!is_door || tile2 != pt)) // ignore target door
 					{
 						// 0.842f, 1.319f, 0.181f
 						Box2d box(door->pos.x, door->pos.z);
@@ -3744,22 +3734,21 @@ bool Level::CanSee(const Vec3& v1, const Vec3& v2)
 	}
 	else
 	{
-		// kolizje z obiektami
-		/*for(vector<CollisionObject>::iterator it = ctx.colliders->begin(), end = ctx.colliders->end(); it != end; ++it)
+		for(vector<CollisionObject>::iterator it = ctx.colliders->begin(), end = ctx.colliders->end(); it != end; ++it)
 		{
-			if(it->ptr != (void*)1 || it->type != CollisionObject::RECTANGLE)
+			if(it->ptr != CAM_COLLIDER || it->type != CollisionObject::RECTANGLE)
 				continue;
 
-			Box2d box(it->pt.x-it->w, it->pt.y-it->h, it->pt.x+it->w, it->pt.y+it->h);
-			if(LineToRectangle(u1.pos, u2.pos, box.v1, box.v2))
+			Box2d box(it->pt.x - it->w, it->pt.y - it->h, it->pt.x + it->w, it->pt.y + it->h);
+			if(LineToRectangle(v1, v2, box.v1, box.v2))
 				return false;
 		}
 
-		// kolizje z drzwiami
 		for(vector<Door*>::iterator it = ctx.doors->begin(), end = ctx.doors->end(); it != end; ++it)
 		{
 			Door& door = **it;
-			if(door.IsBlocking())
+			if(door.IsBlocking()
+				&& (!is_door || !v2.Equal(door.pos))) // ignore target door
 			{
 				Box2d box(door.pos.x, door.pos.z);
 				if(door.rot == 0.f || door.rot == PI)
@@ -3777,10 +3766,10 @@ bool Level::CanSee(const Vec3& v1, const Vec3& v2)
 					box.v2.x += 0.181f;
 				}
 
-				if(LineToRectangle(u1.pos, u2.pos, box.v1, box.v2))
+				if(LineToRectangle(v1, v2, box.v1, box.v2))
 					return false;
 			}
-		}*/
+		}
 	}
 
 	return true;

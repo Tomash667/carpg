@@ -351,11 +351,11 @@ void DungeonGenerator::GenerateItems()
 }
 
 //=================================================================================================
-bool DungeonGenerator::HandleUpdate(int days)
+int DungeonGenerator::HandleUpdate(int days)
 {
 	if(days >= 10)
 		GenerateDungeonItems();
-	return true;
+	return 0;
 }
 
 //=================================================================================================

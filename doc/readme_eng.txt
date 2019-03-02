@@ -360,6 +360,7 @@ Thanks for bug founding:
 	darktorq
 	Docucat
 	fire
+	Harorri
 	Medarc
 	MikelkCZ
 	Minister of Death
