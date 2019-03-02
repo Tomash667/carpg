@@ -70,12 +70,12 @@ struct NetChange
 		CHANGE_LOCATION_STATE, // change location state to known [byte(id)-location index]
 		ADD_RUMOR, // add rumor to journal [string1(rumors[id])-text]
 		TELL_NAME, // hero tells his name [int(netid)-unit, bool(id)-set_name, string1-name if set]
-		HAIR_COLOR, // change unit hair color [int(netid)-unit, auto:Vec4-color]
+		HAIR_COLOR, // change unit hair color [int(netid)-unit, auto: Vec4-color]
 		ENTER_BUILDING, // player wants to enter building [byte(id)-building index]
 		EXIT_BUILDING, // player wants to exit building []
-		WARP, // warp unit or notify server about warping SERVER[int(netid)-unit, auto:char-in building, Vec3-pos, float-rot] / CLIENT[]
+		WARP, // warp unit or notify server about warping SERVER[int(netid)-unit, auto: char-in building, Vec3-pos, float-rot] / CLIENT[]
 		ADD_NOTE, // player added note to journal [string1-text (automaticaly set)]
-		REGISTER_ITEM, // register new item [auto:string1(base_item.id)-item id, string1(item2.id)-id, string1(item2.name)-name, string1(item2.desc)-description, int(item2.refid)-item refid]
+		REGISTER_ITEM, // register new item [auto: string1(base_item.id)-item id, string1(item2.id)-id, string1(item2.name)-name, string1(item2.desc)-description, int(item2.refid)-item refid]
 		ADD_QUEST, // added quest [int(id)-index, auto: string1-quest.name, string2-quest.msgs[0], string2-quest.msgs[1])
 		UPDATE_QUEST, // update quest [int(id)-index, auto: byte-quest.state, vector1<string2>-msgs (byte(count)-msgs count)]
 		RENAME_ITEM, // item rename [auto: int(base_item.refid), string1(base_item.id), string1(base_item.name)]
@@ -199,6 +199,7 @@ struct NetChange
 		int e_id;
 		Spell* spell;
 		CMD cmd;
+		Usable* usable;
 	};
 	union
 	{

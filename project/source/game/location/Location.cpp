@@ -7,6 +7,8 @@
 #include "BitStreamFunc.h"
 #include "Portal.h"
 #include "GameFile.h"
+#include "Quest_Scripted.h"
+#include "QuestManager.h"
 
 //=================================================================================================
 Location::~Location()
@@ -71,6 +73,14 @@ void Location::Save(GameWriter& f, bool)
 		p = p->next_portal;
 	}
 	f.Write0();
+
+	// events
+	f << events.size();
+	for(Event& e : events)
+	{
+		f << e.type;
+		f << e.quest->refid;
+	}
 }
 
 //=================================================================================================
@@ -156,6 +166,25 @@ void Location::Load(GameReader& f, bool, LOCATION_TOKEN token)
 	}
 	else
 		portal = nullptr;
+
+	// events
+	if(LOAD_VERSION >= V_DEV)
+	{
+		events.resize(f.Read<uint>());
+		for(Event& e : events)
+		{
+			int refid;
+			f >> e.type;
+			f >> refid;
+			QM.AddQuestRequest(refid, (Quest**)&e.quest, [&]()
+			{
+				EventPtr event;
+				event.source = EventPtr::LOCATION;
+				event.location = this;
+				e.quest->AddEventPtr(event);
+			});
+		}
+	}
 }
 
 //=================================================================================================
@@ -272,6 +301,37 @@ void Location::SetKnown()
 			c.type = NetChange::CHANGE_LOCATION_STATE;
 			c.id = index;
 		}
+	}
+}
+
+//=================================================================================================
+void Location::AddEventHandler(Quest_Scripted* quest, EventType type)
+{
+	Event e;
+	e.quest = quest;
+	e.type = type;
+	events.push_back(e);
+
+	EventPtr event;
+	event.source = EventPtr::LOCATION;
+	event.location = this;
+	quest->AddEventPtr(event);
+}
+
+//=================================================================================================
+void Location::RemoveEventHandler(Quest_Scripted* quest, bool cleanup)
+{
+	LoopAndRemove(events, [quest](Event& e)
+	{
+		return e.quest == quest;
+	});
+
+	if(!cleanup)
+	{
+		EventPtr event;
+		event.source = EventPtr::LOCATION;
+		event.location = this;
+		quest->RemoveEventPtr(event);
 	}
 }
 

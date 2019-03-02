@@ -3,7 +3,8 @@
 //-----------------------------------------------------------------------------
 enum class QuestType
 {
-	Mayor,
+	NotSet = -1,
+	Mayor = 0,
 	Captain,
 	Random,
 	Unique
@@ -39,7 +40,8 @@ enum QUEST
 	Q_CRAZIES,
 	Q_WANTED,
 	Q_MAIN,
-	Q_ARTIFACTS
+	Q_ARTIFACTS,
+	Q_SCRIPTED
 };
 
 //-----------------------------------------------------------------------------

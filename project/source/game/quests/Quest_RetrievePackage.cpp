@@ -47,7 +47,7 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 		// received quest from mayor
 		{
 			OnStart(game->txQuest[265]);
-			quest_manager.quests_timeout.push_back(this);
+			QM.quests_timeout.push_back(this);
 
 			target_loc = W.GetRandomSpawnLocation((GetStartLocation().pos + W.GetLocation(from_loc)->pos) / 2, SG_BANDITS);
 
@@ -97,7 +97,7 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 			}
 
 			OnUpdate(game->txQuest[24]);
-			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
+			RemoveElementTry<Quest_Dungeon*>(QM.quests_timeout, this);
 		}
 		break;
 	case Progress::Finished:
@@ -105,8 +105,7 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 		{
 			state = Quest::Completed;
 			int reward = GetReward();
-			game->AddReward(reward);
-			Team.AddExp(reward * 3);
+			Team.AddReward(reward, reward * 3);
 
 			((City&)GetStartLocation()).quest_mayor = CityQuestState::None;
 			DialogContext::current->pc->unit->RemoveQuestItem(refid);
@@ -118,7 +117,7 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 			}
 
 			OnUpdate(game->txQuest[25]);
-			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
+			RemoveElementTry<Quest_Dungeon*>(QM.quests_timeout, this);
 		}
 		break;
 	}

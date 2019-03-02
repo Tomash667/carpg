@@ -12,12 +12,13 @@ struct DialogChoice
 		Perk
 	};
 
-	int pos, lvl;
+	int pos, lvl, quest_dialog_index;
 	cstring msg, talk_msg;
 	string* pooled; // used for dialog choices when message is formatted
 	Type type;
 
-	DialogChoice(int pos, cstring msg, int lvl, string* pooled = nullptr) : pos(pos), msg(msg), lvl(lvl), pooled(pooled), type(Normal), talk_msg(nullptr) {}
+	DialogChoice(int pos, cstring msg, int lvl, int quest_dialog_index, string* pooled = nullptr) : pos(pos), msg(msg), lvl(lvl),
+		quest_dialog_index(quest_dialog_index), pooled(pooled), type(Normal), talk_msg(nullptr) {}
 };
 
 //-----------------------------------------------------------------------------
@@ -55,9 +56,11 @@ struct DialogContext
 	vector<std::pair<int, bool>> active_locations;
 	int team_share_id;
 	const Item* team_share_item;
-	bool not_active, can_skip, force_end, negate_if;
+	bool not_active, can_skip, force_end;
 	vector<Entry> prev;
 	cstring talk_msg;
+	vector<QuestDialog> quest_dialogs;
+	int quest_dialog_index;
 
 	static DialogContext* current;
 
@@ -74,4 +77,7 @@ struct DialogContext
 	cstring FormatString(const string& str_part);
 	void DialogTalk(cstring msg);
 	bool LearnPerk(int perk);
+private:
+	void UpdateLoop();
+	bool DoIfOp(int value1, int value2, DialogOp op);
 };

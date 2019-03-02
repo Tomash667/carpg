@@ -1,6 +1,16 @@
 CHANGELOG
 Minor updates have changes only in exporter/converer, don't affect qmsh file.
 ---------------------------
+v21.1:
+IMPORTER (v21):
++ importer tries to fix duplicated faces
++ joining similar submesh materials
+CONVERTER:
+- fixed crash when using info on static mesh with n_groups set
+- fixed points rotation
++ added command details (groups/points/point)
++ handling of points negative size
+
 v21:
 + script importer (from .qmsh file)
 EXPORT SCRIPT (v21):

@@ -1,7 +1,6 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "Game.h"
-#include "Content.h"
 #include "SoundManager.h"
 #include "Level.h"
 #include "World.h"
@@ -101,7 +100,7 @@ void Game::SetMusic()
 }
 
 //=================================================================================================
-uint LoadMusics(uint& errors)
+uint Music::Load(uint& errors)
 {
 	Tokenizer t(Tokenizer::F_UNESCAPE);
 	if(!t.FromFile(Format("%s/music.txt", g_system_dir.c_str())))
@@ -236,7 +235,7 @@ void Game::LoadMusic(MusicType type, bool new_load_screen, bool task)
 }
 
 //=================================================================================================
-void content::CleanupMusics()
+void Music::Cleanup()
 {
 	DeleteElements(Music::musics);
 }

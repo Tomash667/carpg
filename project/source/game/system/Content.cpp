@@ -5,8 +5,16 @@
 #include "Spell.h"
 #include "Music.h"
 #include "BitStreamFunc.h"
+#include "BuildingLoader.h"
+#include "DialogLoader.h"
+#include "ItemLoader.h"
+#include "ObjectLoader.h"
+#include "QuestLoader.h"
+#include "SpellLoader.h"
+#include "UnitLoader.h"
 
 //-----------------------------------------------------------------------------
+Content content;
 static cstring content_id[] = {
 	"items",
 	"objects",
@@ -14,57 +22,71 @@ static cstring content_id[] = {
 	"dialogs",
 	"units",
 	"buildings",
-	"musics"
+	"musics",
+	"quests"
 };
-static_assert(countof(content_id) == (int)content::Id::Max, "Missing content_id.");
-
-//-----------------------------------------------------------------------------
-string content::system_dir;
-uint content::errors, content::warnings;
-uint content::crc[(int)content::Id::Max];
-uint content::version;
-bool content::require_update;
-static uint client_crc[(int)content::Id::Max];
+static_assert(countof(content_id) == (int)Content::Id::Max, "Missing content_id.");
 
 //=================================================================================================
-void content::LoadContent(delegate<void(Id)> callback)
+Content::Content() : building_loader(new BuildingLoader), dialog_loader(new DialogLoader), item_loader(new ItemLoader), object_loader(new ObjectLoader),
+quest_loader(new QuestLoader), spell_loader(new SpellLoader), unit_loader(new UnitLoader)
+{
+	quest_loader->dialog_loader = dialog_loader;
+}
+
+//=================================================================================================
+void Content::LoadContent(delegate<void(Id)> callback)
 {
 	uint loaded;
 
 	LoadVersion();
 
 	Info("Game: Loading items.");
-	LoadItems();
 	callback(Id::Items);
-
-	Info("Game: Loading objects.");
-	LoadObjects();
-	callback(Id::Objects);
-
-	Info("Game: Loading spells.");
-	LoadSpells();
-	callback(Id::Spells);
+	item_loader->DoLoading();
 
 	Info("Game: Loading dialogs.");
-	LoadDialogs();
 	callback(Id::Dialogs);
+	dialog_loader->DoLoading();
+
+	Info("Game: Loading objects.");
+	callback(Id::Objects);
+	object_loader->DoLoading();
+
+	Info("Game: Loading spells.");
+	callback(Id::Spells);
+	spell_loader->DoLoading();
 
 	Info("Game: Loading units.");
-	LoadUnits();
 	callback(Id::Units);
+	unit_loader->DoLoading();
 
 	Info("Game: Loading buildings.");
-	LoadBuildings();
 	callback(Id::Buildings);
+	building_loader->DoLoading();
 
 	Info("Game: Loading music.");
-	loaded = LoadMusics(errors);
-	Info("Game: Loaded music: %u.", loaded);
 	callback(Id::Musics);
+	loaded = Music::Load(errors);
+	Info("Game: Loaded music: %u.", loaded);
+
+	Info("Game: Loading quests.");
+	callback(Id::Quests);
+	quest_loader->DoLoading();
+
+	unit_loader->ProcessDialogRequests();
+
+	delete building_loader;
+	delete dialog_loader;
+	delete item_loader;
+	delete object_loader;
+	delete quest_loader;
+	delete spell_loader;
+	delete unit_loader;
 }
 
 //=================================================================================================
-void content::LoadVersion()
+void Content::LoadVersion()
 {
 	cstring path = Format("%s/system.txt", system_dir.c_str());
 	Tokenizer t;
@@ -89,31 +111,32 @@ void content::LoadVersion()
 }
 
 //=================================================================================================
-void content::CleanupContent()
+void Content::CleanupContent()
 {
-	CleanupItems();
-	CleanupObjects();
-	CleanupSpells();
-	CleanupDialogs();
-	CleanupUnits();
-	CleanupBuildings();
-	CleanupMusics();
+	ItemLoader::Cleanup();
+	ObjectLoader::Cleanup();
+	SpellLoader::Cleanup();
+	DialogLoader::Cleanup();
+	UnitLoader::Cleanup();
+	BuildingLoader::Cleanup();
+	Music::Cleanup();
+	QuestLoader::Cleanup();
 }
 
 //=================================================================================================
-void content::WriteCrc(BitStreamWriter& f)
+void Content::WriteCrc(BitStreamWriter& f)
 {
 	f << crc;
 }
 
 //=================================================================================================
-void content::ReadCrc(BitStreamReader& f)
+void Content::ReadCrc(BitStreamReader& f)
 {
 	f >> client_crc;
 }
 
 //=================================================================================================
-bool content::GetCrc(Id type, uint& my_crc, cstring& type_crc)
+bool Content::GetCrc(Id type, uint& my_crc, cstring& type_crc)
 {
 	if(type < (Id)0 || type >= Id::Max)
 		return false;
@@ -124,7 +147,7 @@ bool content::GetCrc(Id type, uint& my_crc, cstring& type_crc)
 }
 
 //=================================================================================================
-bool content::ValidateCrc(Id& type, uint& my_crc, uint& player_crc, cstring& type_str)
+bool Content::ValidateCrc(Id& type, uint& my_crc, uint& player_crc, cstring& type_str)
 {
 	for(uint i = 0; i < (uint)Id::Max; ++i)
 	{

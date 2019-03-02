@@ -1,6 +1,9 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+#include "SpawnGroup.h"
+
+//-----------------------------------------------------------------------------
 typedef bool(*BoolFunc)();
 
 //-----------------------------------------------------------------------------
@@ -33,20 +36,23 @@ enum SpecialEncounter
 struct Encounter
 {
 	Vec2 pos;
-	int chance;
+	int index, chance;
 	float range;
-	bool dont_attack, timed;
+	Quest* quest;
 	GameDialog* dialog;
 	SPAWN_GROUP group;
 	cstring text;
-	Quest_Encounter* quest; // tak naprawdê nie musi to byæ Quest_Encounter, mo¿e byæ zwyk³y Quest, chyba ¿e jest to czasowy encounter!
+	string* pooled_string;
 	LocationEventHandler* location_event_handler;
-	// nowe pola
 	BoolFunc check_func;
 	int st; // when -1 use world st
+	bool dont_attack, timed, scripted;
 
 	// dla kompatybilnoœci ze starym kodem, ustawia tylko nowe pola
-	Encounter() : check_func(nullptr), st(-1)
-	{
-	}
+	Encounter() : check_func(nullptr), st(-1), pooled_string(nullptr), scripted(false) {}
+	Encounter(Quest* quest) : pos(Vec2::Zero), chance(100), range(64.f), dont_attack(false), timed(false), dialog(nullptr), group(SG_NONE), text(nullptr),
+		pooled_string(nullptr), quest(quest), location_event_handler(nullptr), check_func(nullptr), st(-1), scripted(true) {}
+	~Encounter();
+	const string& GetTextS();
+	void SetTextS(const string& str);
 };

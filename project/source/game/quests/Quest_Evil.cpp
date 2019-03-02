@@ -77,7 +77,7 @@ void Quest_Evil::SetProgress(int prog2)
 	case Progress::NotAccepted:
 		// nie zaakceptowano
 		{
-			if(!quest_manager.RemoveQuestRumor(R_EVIL))
+			if(!QM.RemoveQuestRumor(R_EVIL))
 				game->gui->journal->AddRumor(Format(game->txQuest[232], GetStartLocationName()));
 		}
 		break;
@@ -89,7 +89,7 @@ void Quest_Evil::SetProgress(int prog2)
 		{
 			OnStart(game->txQuest[233]);
 			// usuñ plotkê
-			quest_manager.RemoveQuestRumor(R_EVIL);
+			QM.RemoveQuestRumor(R_EVIL);
 			// lokacja
 			Location& target = *W.CreateLocation(L_DUNGEON, W.GetWorldPos(), 128.f, OLD_TEMPLE, SG_NONE, false, 1);
 			target.SetKnown();
@@ -266,7 +266,7 @@ void Quest_Evil::SetProgress(int prog2)
 			if(unit)
 				unit->StartAutoTalk();
 
-			quest_manager.EndUniqueQuest();
+			QM.EndUniqueQuest();
 			Team.AddExp(30000);
 			evil_state = State::ClericWantTalk;
 			W.AddNews(game->txQuest[250]);

@@ -2,8 +2,9 @@
 #include "MeshTask.hpp"
 #include "QmshTmpLoader.h"
 #include "Qmsh.h"
+#include <conio.h>
 
-const char* CONVERTER_VERSION = "21";
+const char* CONVERTER_VERSION = "21.1";
 
 string group_file, output_file;
 GROUP_OPTION gopt;
@@ -160,6 +161,7 @@ int main(int argc, char **argv)
 					"-phy - export only physic mesh (default extension .phy)\n"
 					"-normal - export normal mesh\n"
 					"-info FILE - show information about mesh (version etc)\n"
+					"-details OPTIONS FILE - like info but more details\n"
 					"-compare FILE FILE2 - compare two meshes and show differences\n"
 					"-upgrade FILE - upgrade mesh to newest version\n"
 					"-upgradedir DIR - upgrade all meshes in directory and subdirectories\n"
@@ -228,6 +230,19 @@ int main(int argc, char **argv)
 				else
 					printf("Missing FILE for '-info'!\n");
 			}
+			else if(str == "-details")
+			{
+				if(i + 2 < argc)
+				{
+					Info(argv[i + 2], argv[i + 1]);
+					i += 2;
+				}
+				else
+				{
+					printf("Missing OPTIONS or FILE for '-details'!\n");
+					++i;
+				}
+			}
 			else if(str == "-compare")
 			{
 				if(i + 2 < argc)
@@ -281,6 +296,12 @@ int main(int argc, char **argv)
 			output_file.clear();
 			gopt = GO_ONE;
 		}
+	}
+
+	if(IsDebuggerPresent())
+	{
+		printf("Press any key to exit...");
+		_getch();
 	}
 
 	return result;

@@ -5,6 +5,9 @@
 #include "ResourceManager.h"
 #include "Net.h"
 #include "Game.h"
+#include "ScriptException.h"
+#include "Quest.h"
+#include "QuestManager.h"
 
 extern string g_system_dir;
 const Item* Item::gold;
@@ -143,6 +146,14 @@ void ItemList::Get(int count, const Item** result) const
 }
 
 //=================================================================================================
+const Item* ItemList::GetByIndex(int index) const
+{
+	if(index < 0 || index >= (int)items.size())
+		throw ScriptException("Invalid index.");
+	return items[index];
+}
+
+//=================================================================================================
 const Item* LeveledItemList::Get(int level) const
 {
 	if(level < 1)
@@ -168,7 +179,7 @@ const Item* LeveledItemList::Get(int level) const
 		items_to_add.clear();
 		return best;
 	}
-	
+
 	return nullptr;
 }
 
@@ -286,6 +297,17 @@ Item* Item::CreateCopy() const
 		assert(0);
 		return nullptr;
 	}
+}
+
+//=================================================================================================
+Item* Item::QuestCopy(Quest* quest, const string& name)
+{
+	Item* item = CreateCopy();
+	item->id = Format("$%s", id.c_str());
+	item->name = name;
+	item->refid = quest->refid;
+	QM.AddQuestItem(item);
+	return item;
 }
 
 //=================================================================================================

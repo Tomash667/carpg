@@ -272,5 +272,6 @@ struct UnitData
 	static std::map<string, UnitData*> aliases;
 	static UnitData* TryGet(Cstring id);
 	static UnitData* Get(Cstring id);
+	static UnitData* GetS(const string& id) { return Get(id); }
 	static void Validate(uint& err);
 };

@@ -271,6 +271,7 @@ struct Mesh
 	void Load(cstring path);
 	void LoadBoneGroups(common::FileStream& f);
 	void Save(cstring path);
+	Point* GetPoint(const string& id);
 
 	Header head;
 	uint vertex_size;

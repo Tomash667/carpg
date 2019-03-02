@@ -4,7 +4,7 @@
 #include "Quest.h"
 
 //-----------------------------------------------------------------------------
-class Quest_Sawmill : public Quest_Dungeon, public LocationEventHandler
+class Quest_Sawmill final : public Quest_Dungeon, public LocationEventHandler
 {
 public:
 	enum Progress

@@ -709,12 +709,12 @@ void ServerPanel::UpdateLobbyServer(float dt)
 				cstring reason_text = nullptr;
 				int include_extra = 0;
 				uint my_crc, player_crc;
-				content::Id type;
+				Content::Id type;
 				cstring type_str;
 				JoinResult reason = JoinResult::Ok;
 
 				reader >> version;
-				content::ReadCrc(reader);
+				content.ReadCrc(reader);
 				reader >> info->name;
 				if(!reader)
 				{
@@ -729,7 +729,7 @@ void ServerPanel::UpdateLobbyServer(float dt)
 					reason_text = Format("UpdateLobbbyNet: Invalid version from %s. Our (%s) vs (%s).", packet->systemAddress.ToString(),
 						VersionToString(version), VERSION_STR);
 				}
-				else if(!content::ValidateCrc(type, my_crc, player_crc, type_str))
+				else if(!content.ValidateCrc(type, my_crc, player_crc, type_str))
 				{
 					// invalid game type manager crc
 					reason = JoinResult::InvalidCrc;

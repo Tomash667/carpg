@@ -3,6 +3,7 @@
 //-----------------------------------------------------------------------------
 #include "SpawnGroup.h"
 #include "LevelContext.h"
+#include "Event.h"
 
 //-----------------------------------------------------------------------------
 // Location types
@@ -92,6 +93,7 @@ struct Location : public ILevel
 	SPAWN_GROUP spawn; // rodzaj wrogów w tej lokacji
 	Portal* portal;
 	LOCATION_IMAGE image;
+	vector<Event> events;
 	bool reset; // resetowanie lokacji po wejœciu
 	bool outside; // czy poziom jest otwarty
 	bool dont_clean;
@@ -131,6 +133,9 @@ struct Location : public ILevel
 	void SetImage(LOCATION_IMAGE image);
 	void SetName(cstring name);
 	void SetNamePrefix(cstring prefix);
+	void AddEventHandler(Quest_Scripted* quest, EventType type);
+	void RemoveEventHandler(Quest_Scripted* quest, bool cleanup);
+	void RemoveEventHandlerS(Quest_Scripted* quest) { RemoveEventHandler(quest, false); }
 };
 
 //-----------------------------------------------------------------------------

@@ -65,7 +65,7 @@ void Quest_StolenArtifact::SetProgress(int prog2)
 	case Progress::Started:
 		{
 			OnStart(game->txQuest[86]);
-			quest_manager.quests_timeout.push_back(this);
+			QM.quests_timeout.push_back(this);
 
 			Location& sl = GetStartLocation();
 			target_loc = W.GetRandomSpawnLocation(sl.pos, group);
@@ -121,11 +121,10 @@ void Quest_StolenArtifact::SetProgress(int prog2)
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
-			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
+			RemoveElementTry<Quest_Dungeon*>(QM.quests_timeout, this);
 			OnUpdate(game->txQuest[94]);
 			int reward = GetReward();
-			game->AddReward(reward);
-			Team.AddExp(reward * 3);
+			Team.AddReward(reward, reward * 3);
 			DialogContext::current->talker->temporary = true;
 			DialogContext::current->talker->AddItem(&quest_item, 1, true);
 			DialogContext::current->pc->unit->RemoveQuestItem(refid);
@@ -140,7 +139,7 @@ void Quest_StolenArtifact::SetProgress(int prog2)
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
-			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
+			RemoveElementTry<Quest_Dungeon*>(QM.quests_timeout, this);
 			OnUpdate(game->txQuest[95]);
 			DialogContext::current->talker->temporary = true;
 		}

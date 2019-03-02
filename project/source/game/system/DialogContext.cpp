@@ -22,20 +22,23 @@
 #include "Quest_Orcs.h"
 #include "Quest_Goblins.h"
 #include "Quest_Evil.h"
+#include "Quest_Scripted.h"
 #include "Team.h"
 #include "AIController.h"
 #include "News.h"
 #include "MultiInsideLocation.h"
+#include "QuestScheme.h"
+#include <angelscript.h>
 
 DialogContext* DialogContext::current;
 
 //=================================================================================================
 void DialogContext::StartDialog(Unit* talker, GameDialog* dialog)
 {
-	assert(talker && !dialog_mode);
+	assert(!dialog_mode);
 
 	// use up auto talk
-	if((talker->auto_talk == AutoTalkMode::Yes || talker->auto_talk == AutoTalkMode::Wait) && talker->auto_talk_dialog == nullptr)
+	if(talker && (talker->auto_talk == AutoTalkMode::Yes || talker->auto_talk == AutoTalkMode::Wait) && talker->auto_talk_dialog == nullptr)
 		talker->auto_talk = AutoTalkMode::No;
 
 	dialog_mode = true;
@@ -49,6 +52,7 @@ void DialogContext::StartDialog(Unit* talker, GameDialog* dialog)
 	dialog_skip = -1;
 	dialog_esc = -1;
 	this->talker = talker;
+	this->dialog = dialog ? dialog : talker->data->dialog;
 	if(Net::IsLocal())
 	{
 		// this vars are useless for clients, don't increase ref counter
@@ -62,13 +66,29 @@ void DialogContext::StartDialog(Unit* talker, GameDialog* dialog)
 	not_active = false;
 	ClearChoices();
 	can_skip = true;
-	this->dialog = dialog ? dialog : talker->data->dialog;
 	force_end = false;
-	negate_if = false;
+	if(!dialog)
+	{
+		quest_dialogs = talker->dialogs;
+		if(quest_dialogs.empty())
+			quest_dialog_index = -1;
+		else
+		{
+			quest_dialog_index = 0;
+			prev.push_back({ this->dialog, dialog_quest, -1, 0 });
+			this->dialog = quest_dialogs[0].dialog;
+			dialog_quest = (Quest*)quest_dialogs[0].quest;
+		}
+	}
+	else
+	{
+		quest_dialogs.clear();
+		quest_dialog_index = -1;
+	}
 
 	if(Net::IsLocal())
 	{
-		// dŸwiêk powitania
+		// talk sound
 		SOUND snd = talker->GetTalkSound();
 		if(snd)
 		{
@@ -83,10 +103,7 @@ void DialogContext::StartDialog(Unit* talker, GameDialog* dialog)
 	}
 
 	if(is_local)
-	{
-		// zamknij gui
 		Game::Get().CloseAllPanels();
-	}
 }
 
 //=================================================================================================
@@ -141,6 +158,11 @@ void DialogContext::Update(float dt)
 			show_choices = false;
 			if(choice.type == DialogChoice::Normal)
 			{
+				if(choice.quest_dialog_index != -1)
+				{
+					dialog_quest = quest_dialogs[choice.quest_dialog_index].quest;
+					dialog = quest_dialogs[choice.quest_dialog_index].dialog;
+				}
 				dialog_pos = choice.pos;
 				dialog_level = choice.lvl;
 				ClearChoices();
@@ -213,6 +235,16 @@ void DialogContext::Update(float dt)
 		return;
 	}
 
+	ScriptContext& ctx = SM.GetContext();
+	ctx.pc = pc;
+	ctx.target = talker;
+	UpdateLoop();
+	ctx.pc = nullptr;
+	ctx.target = nullptr;
+}
+
+void DialogContext::UpdateLoop()
+{
 	int if_level = dialog_level;
 
 	while(true)
@@ -224,16 +256,18 @@ void DialogContext::Update(float dt)
 		case DTF_CHOICE:
 			if(if_level == dialog_level)
 			{
+				if(de.op == OP_ESCAPE)
+					dialog_esc = (int)choices.size();
 				talk_msg = nullptr;
 				cstring text = GetText(de.value);
 				if(text == dialog_s_text.c_str())
 				{
 					string* str = StringPool.Get();
 					*str = text;
-					choices.push_back(DialogChoice(dialog_pos + 1, str->c_str(), dialog_level + 1, str));
+					choices.push_back(DialogChoice(dialog_pos + 1, str->c_str(), dialog_level + 1, quest_dialog_index, str));
 				}
 				else
-					choices.push_back(DialogChoice(dialog_pos + 1, text, dialog_level + 1));
+					choices.push_back(DialogChoice(dialog_pos + 1, text, dialog_level + 1, quest_dialog_index));
 				if(talk_msg)
 					choices.back().talk_msg = talk_msg;
 			}
@@ -253,7 +287,7 @@ void DialogContext::Update(float dt)
 					EndDialog();
 					return;
 				}
-				else
+				else if(quest_dialog_index == -1 || quest_dialog_index + 1 == (int)quest_dialogs.size())
 				{
 					Entry& p = prev.back();
 					dialog = p.dialog;
@@ -262,6 +296,16 @@ void DialogContext::Update(float dt)
 					dialog_quest = p.quest;
 					prev.pop_back();
 					if_level = dialog_level;
+					quest_dialog_index = -1;
+				}
+				else
+				{
+					++quest_dialog_index;
+					dialog = quest_dialogs[quest_dialog_index].dialog;
+					dialog_quest = (Quest*)quest_dialogs[quest_dialog_index].quest;
+					dialog_pos = -1;
+					dialog_level = 0;
+					if_level = 0;
 				}
 			}
 			break;
@@ -279,8 +323,9 @@ void DialogContext::Update(float dt)
 				if(is_local)
 				{
 					choice_selected = 0;
-					game.gui->game_gui->dialog_cursor_pos = Int2(-1, -1);
-					game.gui->game_gui->UpdateScrollbar(choices.size());
+					GameGui* gui = Game::Get().gui->game_gui;
+					gui->dialog_cursor_pos = Int2(-1, -1);
+					gui->UpdateScrollbar(choices.size());
 				}
 				else
 				{
@@ -293,12 +338,33 @@ void DialogContext::Update(float dt)
 			break;
 		case DTF_RESTART:
 			if(if_level == dialog_level)
+			{
+				quest_dialogs = talker->dialogs;
+				if(!prev.empty())
+				{
+					prev.clear();
+					if(quest_dialogs.empty())
+					{
+						dialog = talker->data->dialog;
+						dialog_quest = nullptr;
+						quest_dialog_index = -1;
+					}
+					else
+					{
+						dialog = quest_dialogs[0].dialog;
+						dialog_quest = (Quest*)quest_dialogs[0].quest;
+						quest_dialog_index = 0;
+					}
+				}
 				dialog_pos = -1;
+				dialog_level = 0;
+				if_level = 0;
+			}
 			break;
 		case DTF_TRADE:
 			if(if_level == dialog_level)
 			{
-				if(!talker->data->trader)
+				if(!talker || !talker->data->trader)
 				{
 					assert(0);
 					Error("DTF_TRADE, unit '%s' is not trader.", talker->data->id.c_str());
@@ -313,7 +379,7 @@ void DialogContext::Update(float dt)
 				pc->chest_trade = &talker->stock->items;
 
 				if(is_local)
-					game.gui->inventory->StartTrade(I_TRADE, *pc->chest_trade, talker);
+					Game::Get().gui->inventory->StartTrade(I_TRADE, *pc->chest_trade, talker);
 				else
 				{
 					NetChangePlayer& c = Add1(pc->player_info->changes);
@@ -357,11 +423,8 @@ void DialogContext::Update(float dt)
 			{
 				assert(dialog_quest);
 				bool ok = (dialog_quest->IsActive() && dialog_quest->IsTimedout());
-				if(negate_if)
-				{
-					negate_if = false;
+				if(de.op == OP_NOT_EQUAL)
 					ok = !ok;
-				}
 				if(ok)
 					++dialog_level;
 			}
@@ -371,11 +434,8 @@ void DialogContext::Update(float dt)
 			if(if_level == dialog_level)
 			{
 				bool ok = (Rand() % de.value == 0);
-				if(negate_if)
-				{
-					negate_if = false;
+				if(de.op == OP_NOT_EQUAL)
 					ok = !ok;
-				}
 				if(ok)
 					++dialog_level;
 			}
@@ -385,11 +445,8 @@ void DialogContext::Update(float dt)
 			if(if_level == dialog_level)
 			{
 				bool ok = dialog_once;
-				if(negate_if)
-				{
-					negate_if = false;
+				if(de.op == OP_NOT_EQUAL)
 					ok = !ok;
-				}
 				if(ok)
 				{
 					dialog_once = false;
@@ -424,14 +481,22 @@ void DialogContext::Update(float dt)
 			{
 				cstring msg = dialog->strs[de.value].c_str();
 				bool ok = pc->unit->FindQuestItem(msg, nullptr, nullptr, not_active);
-				if(negate_if)
-				{
-					negate_if = false;
+				if(de.op == OP_NOT_EQUAL)
 					ok = !ok;
-				}
 				if(ok)
 					++dialog_level;
 				not_active = false;
+			}
+			++if_level;
+			break;
+		case DTF_IF_HAVE_QUEST_ITEM_CURRENT:
+			if(if_level == dialog_level && dialog_quest)
+			{
+				bool ok = pc->unit->HaveQuestItem(dialog_quest->refid);
+				if(de.op == OP_NOT_EQUAL)
+					ok = !ok;
+				if(ok)
+					++dialog_level;
 			}
 			++if_level;
 			break;
@@ -449,13 +514,7 @@ void DialogContext::Update(float dt)
 			if(if_level == dialog_level)
 			{
 				assert(dialog_quest);
-				bool ok = (dialog_quest->prog == de.value);
-				if(negate_if)
-				{
-					negate_if = false;
-					ok = !ok;
-				}
-				if(ok)
+				if(DoIfOp(dialog_quest->prog, de.value, de.op))
 					++dialog_level;
 			}
 			++if_level;
@@ -468,11 +527,8 @@ void DialogContext::Update(float dt)
 				int y = (de.value & 0xFFFF0000) >> 16;
 				assert(y > x);
 				bool ok = InRange(dialog_quest->prog, x, y);
-				if(negate_if)
-				{
-					negate_if = false;
+				if(de.op == OP_NOT_EQUAL)
 					ok = !ok;
-				}
 				if(ok)
 					++dialog_level;
 			}
@@ -482,12 +538,7 @@ void DialogContext::Update(float dt)
 			if(if_level == dialog_level)
 			{
 				cstring msg = dialog->strs[de.value].c_str();
-				bool negate = false;
-				if(negate_if)
-				{
-					negate_if = false;
-					negate = true;
-				}
+				bool negate = (de.op == OP_NOT_EQUAL);
 
 				for(Quest* quest : QM.quests)
 				{
@@ -518,20 +569,13 @@ void DialogContext::Update(float dt)
 				}
 			}
 			break;
-		case DTF_ESCAPE_CHOICE:
-			if(if_level == dialog_level)
-				dialog_esc = (int)choices.size() - 1;
-			break;
 		case DTF_IF_SPECIAL:
 			if(if_level == dialog_level)
 			{
 				cstring msg = dialog->strs[de.value].c_str();
 				bool ok = ExecuteSpecialIf(msg);
-				if(negate_if)
-				{
-					negate_if = false;
+				if(de.op == OP_NOT_EQUAL)
 					ok = !ok;
-				}
 				if(ok)
 					++dialog_level;
 			}
@@ -540,13 +584,7 @@ void DialogContext::Update(float dt)
 		case DTF_IF_CHOICES:
 			if(if_level == dialog_level)
 			{
-				bool ok = (choices.size() == de.value);
-				if(negate_if)
-				{
-					negate_if = false;
-					ok = !ok;
-				}
-				if(ok)
+				if(DoIfOp(choices.size(), de.value, de.op))
 					++dialog_level;
 			}
 			++if_level;
@@ -564,18 +602,6 @@ void DialogContext::Update(float dt)
 						break;
 					}
 				}
-
-				if(dialog_pos != -1)
-				{
-					for(Quest* quest : QM.unaccepted_quests)
-					{
-						if(quest->IfNeedTalk(msg))
-						{
-							StartNextDialog(quest->GetDialog(QUEST_DIALOG_NEXT), if_level, quest);
-							break;
-						}
-					}
-				}
 			}
 			break;
 		case DTF_IF_HAVE_ITEM:
@@ -583,11 +609,8 @@ void DialogContext::Update(float dt)
 			{
 				const Item* item = (const Item*)de.value;
 				bool ok = pc->unit->HaveItem(item);
-				if(negate_if)
-				{
-					negate_if = false;
+				if(de.op == OP_NOT_EQUAL)
 					ok = !ok;
-				}
 				if(ok)
 					++dialog_level;
 			}
@@ -598,11 +621,8 @@ void DialogContext::Update(float dt)
 			{
 				assert(dialog_quest);
 				bool ok = dialog_quest->IfQuestEvent();
-				if(negate_if)
-				{
-					negate_if = false;
+				if(de.op == OP_NOT_EQUAL)
 					ok = !ok;
-				}
 				if(ok)
 					++dialog_level;
 			}
@@ -620,11 +640,8 @@ void DialogContext::Update(float dt)
 				assert(dialog_quest);
 				cstring msg = dialog->strs[de.value].c_str();
 				bool ok = dialog_quest->SpecialIf(*this, msg);
-				if(negate_if)
-				{
-					negate_if = false;
+				if(de.op == OP_NOT_EQUAL)
 					ok = !ok;
-				}
 				if(ok)
 					++dialog_level;
 			}
@@ -638,29 +655,77 @@ void DialogContext::Update(float dt)
 				dialog_quest->Special(*this, msg);
 			}
 			break;
-		case DTF_NOT:
-			if(if_level == dialog_level)
-				negate_if = true;
-			break;
 		case DTF_SCRIPT:
 			if(if_level == dialog_level)
 			{
-				cstring msg = dialog->strs[de.value].c_str();
-				SM.SetContext(pc, talker);
-				SM.RunScript(msg);
+				ScriptContext& ctx = SM.GetContext();
+				ctx.pc = pc;
+				ctx.target = talker;
+				DialogScripts* scripts;
+				void* instance;
+				if(dialog_quest && dialog_quest->quest_id == Q_SCRIPTED)
+				{
+					Quest_Scripted* quest = (Quest_Scripted*)dialog_quest;
+					scripts = &quest->GetScheme()->scripts;
+					instance = quest->GetInstance();
+					ctx.quest = quest;
+				}
+				else
+				{
+					scripts = &DialogScripts::global;
+					instance = nullptr;
+				}
+				int index = de.value;
+				SM.RunScript(scripts->Get(DialogScripts::F_SCRIPT), instance, [index](asIScriptContext* ctx, int stage)
+				{
+					if(stage == 0)
+					{
+						CHECKED(ctx->SetArgDWord(0, index));
+					}
+				});
+				ctx.quest = nullptr;
+				ctx.target = nullptr;
+				ctx.pc = nullptr;
 			}
 			break;
 		case DTF_IF_SCRIPT:
 			if(if_level == dialog_level)
 			{
-				cstring msg = dialog->strs[de.value].c_str();
-				SM.SetContext(pc, talker);
-				bool ok = SM.RunIfScript(msg);
-				if(negate_if)
+				ScriptContext& ctx = SM.GetContext();
+				DialogScripts* scripts;
+				void* instance;
+				ctx.pc = pc;
+				ctx.target = talker;
+				if(dialog_quest && dialog_quest->quest_id == Q_SCRIPTED)
 				{
-					negate_if = false;
-					ok = !ok;
+					Quest_Scripted* quest = (Quest_Scripted*)dialog_quest;
+					scripts = &quest->GetScheme()->scripts;
+					instance = quest->GetInstance();
+					ctx.quest = quest;
 				}
+				else
+				{
+					scripts = &DialogScripts::global;
+					instance = nullptr;
+				}
+				int index = de.value;
+				bool ok;
+				SM.RunScript(scripts->Get(DialogScripts::F_IF_SCRIPT), instance, [index, &ok](asIScriptContext* ctx, int stage)
+				{
+					if(stage == 0)
+					{
+						CHECKED(ctx->SetArgDWord(0, index));
+					}
+					else if(stage == 1)
+					{
+						ok = (ctx->GetReturnByte() != 0);
+					}
+				});
+				ctx.quest = nullptr;
+				ctx.pc = nullptr;
+				ctx.target = nullptr;
+				if(de.op == OP_NOT_EQUAL)
+					ok = !ok;
 				if(ok)
 					++dialog_level;
 			}
@@ -691,7 +756,6 @@ void DialogContext::EndDialog()
 		}
 		return;
 	}
-
 	talker->busy = Unit::Busy_No;
 	talker->look_target = nullptr;
 	talker = nullptr;
@@ -736,9 +800,39 @@ cstring DialogContext::GetText(int index)
 			if(str[i] == '(')
 			{
 				uint pos = FindClosingPos(str, i);
-				str_part = str.substr(i + 1, pos - i - 1);
-				SM.RunStringScript(str_part.c_str(), str_part);
-				dialog_s_text += str_part;
+				int index = atoi(str.substr(i + 1, pos - i - 1).c_str());
+				ScriptContext& ctx = SM.GetContext();
+				DialogScripts* scripts;
+				void* instance;
+				ctx.pc = pc;
+				ctx.target = talker;
+				if(dialog_quest && dialog_quest->quest_id == Q_SCRIPTED)
+				{
+					Quest_Scripted* quest = (Quest_Scripted*)dialog_quest;
+					scripts = &quest->GetScheme()->scripts;
+					instance = quest->GetInstance();
+					ctx.quest = quest;
+				}
+				else
+				{
+					scripts = &DialogScripts::global;
+					instance = nullptr;
+				}
+				SM.RunScript(scripts->Get(DialogScripts::F_FORMAT), instance, [&](asIScriptContext* ctx, int stage)
+				{
+					if(stage == 0)
+					{
+						CHECKED(ctx->SetArgDWord(0, index));
+					}
+					else if(stage == 1)
+					{
+						string* result = (string*)ctx->GetAddressOfReturnValue();
+						dialog_s_text += *result;
+					}
+				});
+				ctx.quest = nullptr;
+				ctx.pc = nullptr;
+				ctx.target = nullptr;
 				i = pos;
 			}
 			else
@@ -1506,33 +1600,6 @@ bool DialogContext::ExecuteSpecial(cstring msg, int& if_level)
 		Team.TeamShareSellItem(*this);
 	else if(strcmp(msg, "share_decline") == 0)
 		Team.TeamShareDecline(*this);
-	else if(strcmp(msg, "attack") == 0)
-	{
-		// ta komenda jest zbyt ogólna, jeœli bêdzie kilka takich grup to wystarczy ¿e jedna tego u¿yje to wszyscy zaatakuj¹, nie obs³uguje te¿ budynków
-		if(talker->data->group == G_CRAZIES)
-		{
-			if(!Team.crazies_attack)
-			{
-				Team.crazies_attack = true;
-				if(Net::IsOnline())
-				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::CHANGE_FLAGS;
-				}
-			}
-		}
-		else
-		{
-			for(vector<Unit*>::iterator it = L.local_ctx.units->begin(), end = L.local_ctx.units->end(); it != end; ++it)
-			{
-				if((*it)->dont_attack && (*it)->IsEnemy(*Team.leader, true) && !IS_SET((*it)->data->flags, F_PEACEFUL))
-				{
-					(*it)->dont_attack = false;
-					(*it)->ai->change_ai_mode = true;
-				}
-			}
-		}
-	}
 	else if(strcmp(msg, "force_attack") == 0)
 	{
 		talker->dont_attack = false;
@@ -1650,7 +1717,7 @@ bool DialogContext::ExecuteSpecial(cstring msg, int& if_level)
 			string* str = StringPool.Get();
 			*str = Format("%s (%s %d %s)", info->name.c_str(), info->desc.c_str(), info->cost,
 				info->cost == 1 ? game.txLearningPoint : game.txLearningPoints);
-			DialogChoice choice((int)info->perk_id, str->c_str(), -1, str);
+			DialogChoice choice((int)info->perk_id, str->c_str(), -1, quest_dialog_index, str);
 			choice.type = DialogChoice::Perk;
 			choice.talk_msg = info->name.c_str();
 			choices.push_back(choice);
@@ -1680,8 +1747,6 @@ bool DialogContext::ExecuteSpecialIf(cstring msg)
 		return Team.HaveActiveNpc();
 	else if(strcmp(msg, "is_drunk") == 0)
 		return IS_SET(talker->data->flags, F_AI_DRUNKMAN) && talker->in_building != -1;
-	else if(strcmp(msg, "is_team_member") == 0)
-		return Team.IsTeamMember(*talker);
 	else if(strcmp(msg, "is_not_known") == 0)
 	{
 		assert(talker->IsHero());
@@ -1715,36 +1780,6 @@ bool DialogContext::ExecuteSpecialIf(cstring msg)
 		assert(talker->IsHero());
 		return talker->hero->mode != HeroData::Wait;
 	}
-	else if(strcmp(msg, "is_safe_location") == 0)
-	{
-		if(L.city_ctx)
-			return true;
-		else if(L.location->outside)
-		{
-			if(L.location->state == LS_CLEARED)
-				return true;
-		}
-		else
-		{
-			InsideLocation* inside = (InsideLocation*)L.location;
-			if(inside->IsMultilevel())
-			{
-				MultiInsideLocation* multi = (MultiInsideLocation*)inside;
-				if(multi->IsLevelClear())
-				{
-					if(L.dungeon_level == 0)
-					{
-						if(!multi->from_portal)
-							return true;
-					}
-					else
-						return true;
-				}
-			}
-			else if(L.location->state == LS_CLEARED)
-				return true;
-		}
-	}
 	else if(strcmp(msg, "is_near_arena") == 0)
 		return L.city_ctx && IS_SET(L.city_ctx->flags, City::HaveArena) && Vec3::Distance2d(talker->pos, L.city_ctx->arena_pos) < 5.f;
 	else if(strcmp(msg, "is_lost_pvp") == 0)
@@ -1768,7 +1803,7 @@ bool DialogContext::ExecuteSpecialIf(cstring msg)
 		return QM.FindUnacceptedQuest(talker->quest_refid);
 	else if(strcmp(msg, "have_completed_quest") == 0)
 	{
-		Quest* q = QM.FindQuest(talker->quest_refid, false);
+		Quest* q = QM.FindQuest(talker->quest_refid);
 		if(q && !q->IsActive())
 			return true;
 	}
@@ -1787,10 +1822,6 @@ bool DialogContext::ExecuteSpecialIf(cstring msg)
 		return talker->GetClass() != Class::MAGE;
 	else if(strcmp(msg, "prefer_melee") == 0)
 		return talker->hero->melee;
-	else if(strcmp(msg, "is_leader") == 0)
-		return pc->unit == Team.leader;
-	else if(strcmp(msg, "in_city") == 0)
-		return L.city_ctx != nullptr;
 	else
 	{
 		Warn("DTF_IF_SPECIAL: %s", msg);
@@ -1874,6 +1905,8 @@ cstring DialogContext::FormatString(const string& str_part)
 		Game& game = Game::Get();
 		return Format("%s (%d %s)", name, cost, cost == 1 ? game.txLearningPoint : game.txLearningPoints);
 	}
+	else if(str_part == "date")
+		return W.GetDate();
 	else
 	{
 		assert(0);
@@ -1918,6 +1951,27 @@ void DialogContext::DialogTalk(cstring msg)
 		c.count = game.skip_id_counter++;
 		skip_id = c.count;
 		N.net_strs.push_back(c.str);
+	}
+}
+
+//=================================================================================================
+bool DialogContext::DoIfOp(int value1, int value2, DialogOp op)
+{
+	switch(op)
+	{
+	case OP_EQUAL:
+	default:
+		return value1 == value2;
+	case OP_NOT_EQUAL:
+		return value1 != value2;
+	case OP_GREATER:
+		return value1 > value2;
+	case OP_GREATER_EQUAL:
+		return value1 >= value2;
+	case OP_LESS:
+		return value1 < value2;
+	case OP_LESS_EQUAL:
+		return value1 <= value2;
 	}
 }
 

@@ -363,6 +363,15 @@ Unit* Level::FindUnit(delegate<bool(Unit*)> pred)
 }
 
 //=================================================================================================
+Unit* Level::FindUnit(UnitData* ud)
+{
+	return FindUnit([ud](Unit* unit)
+	{
+		return unit->data == ud;
+	});
+}
+
+//=================================================================================================
 Usable* Level::FindUsable(int netid)
 {
 	for(LevelContext& ctx : ForEachContext())
@@ -961,10 +970,7 @@ void Level::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding
 		{
 			uint poss = pt.name.find_first_of('_', 4);
 			if(poss == string::npos)
-			{
-				assert(0);
-				continue;
-			}
+				poss = pt.name.length();
 			token = pt.name.substr(4, poss - 4);
 			for(uint k = 0, len = token.length(); k < len; ++k)
 			{
@@ -1991,6 +1997,20 @@ void Level::SpawnUnitsGroup(LevelContext& ctx, const Vec3& pos, const Vec3* look
 		if(u && callback)
 			callback(u);
 	}
+}
+
+//=================================================================================================
+Unit* Level::SpawnUnit(LevelContext& ctx, TmpSpawn spawn)
+{
+	assert(ctx.type == LevelContext::Building); // not implemented
+
+	InsideBuilding* building = city_ctx->inside_buildings[ctx.building_id];
+	Vec3 pos;
+	if(!WarpToArea(ctx, building->arena1, spawn.first->GetRadius(), pos))
+		return nullptr;
+
+	float rot = Random(MAX_ANGLE);
+	return Game::Get().CreateUnitWithAI(ctx, *spawn.first, spawn.second, nullptr, &pos, &rot);
 }
 
 //=================================================================================================
@@ -3946,6 +3966,18 @@ bool Level::IsCity()
 }
 
 //=================================================================================================
+bool Level::IsVillage()
+{
+	return location->type == L_CITY && ((City*)location)->settlement_type == City::SettlementType::Village;
+}
+
+//=================================================================================================
+bool Level::IsTutorial()
+{
+	return location->type == L_DUNGEON && ((InsideLocation*)location)->target == TUTORIAL_FORT;
+}
+
+//=================================================================================================
 void Level::Update()
 {
 	for(LevelContext& ctx : ForEachContext())
@@ -4008,6 +4040,7 @@ void Level::Write(BitStreamWriter& f)
 	}
 }
 
+//=================================================================================================
 bool Level::Read(BitStreamReader& f, bool loaded_resources)
 {
 	Game& game = Game::Get();
@@ -4050,8 +4083,8 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 		Error("Read level: Broken bullet count.");
 		return false;
 	}
-	L.local_ctx.bullets->resize(count);
-	for(Bullet& bullet : *L.local_ctx.bullets)
+	local_ctx.bullets->resize(count);
+	for(Bullet& bullet : *local_ctx.bullets)
 	{
 		f >> bullet.pos;
 		f >> bullet.rot;
@@ -4079,7 +4112,7 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 			tpe->color1 = Vec4(1, 1, 1, 0.5f);
 			tpe->color2 = Vec4(1, 1, 1, 0);
 			tpe->Init(50);
-			L.local_ctx.tpes->push_back(tpe);
+			local_ctx.tpes->push_back(tpe);
 			bullet.trail = tpe;
 
 			TrailParticleEmitter* tpe2 = new TrailParticleEmitter;
@@ -4087,7 +4120,7 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 			tpe2->color1 = Vec4(1, 1, 1, 0.5f);
 			tpe2->color2 = Vec4(1, 1, 1, 0);
 			tpe2->Init(50);
-			L.local_ctx.tpes->push_back(tpe2);
+			local_ctx.tpes->push_back(tpe2);
 			bullet.trail2 = tpe2;
 		}
 		else
@@ -4131,14 +4164,14 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 				pe->op_alpha = POP_LINEAR_SHRINK;
 				pe->mode = 1;
 				pe->Init();
-				L.local_ctx.pes->push_back(pe);
+				local_ctx.pes->push_back(pe);
 				bullet.pe = pe;
 			}
 		}
 
 		if(netid != -1)
 		{
-			bullet.owner = L.FindUnit(netid);
+			bullet.owner = FindUnit(netid);
 			if(!bullet.owner)
 			{
 				Error("Read level: Missing bullet owner %d.", netid);
@@ -4156,8 +4189,8 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 		Error("Read level: Broken explosion count.");
 		return false;
 	}
-	L.local_ctx.explos->resize(count);
-	for(Explo*& explo : *L.local_ctx.explos)
+	local_ctx.explos->resize(count);
+	for(Explo*& explo : *local_ctx.explos)
 	{
 		explo = new Explo;
 		const string& tex_id = f.ReadString1();
@@ -4179,9 +4212,9 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 		Error("Read level: Broken electro count.");
 		return false;
 	}
-	L.local_ctx.electros->resize(count);
+	local_ctx.electros->resize(count);
 	Spell* electro_spell = Spell::TryGet("thunder_bolt");
-	for(Electro*& electro : *L.local_ctx.electros)
+	for(Electro*& electro : *local_ctx.electros)
 	{
 		electro = new Electro;
 		electro->spell = electro_spell;
@@ -4212,7 +4245,7 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 //=================================================================================================
 MusicType Level::GetLocationMusic()
 {
-	switch(L.location->type)
+	switch(location->type)
 	{
 	case L_CITY:
 		return MusicType::City;
@@ -4223,7 +4256,7 @@ MusicType Level::GetLocationMusic()
 		return MusicType::Dungeon;
 	case L_FOREST:
 	case L_CAMP:
-		if(L.location_index == QM.quest_secret->where2)
+		if(location_index == QM.quest_secret->where2)
 			return MusicType::Moonwell;
 		else
 			return MusicType::Forest;
@@ -4261,5 +4294,103 @@ void Level::CleanLevel(int building_id)
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::CLEAN_LEVEL;
 		c.id = building_id;
+	}
+}
+
+//=================================================================================================
+void Level::SpawnItemRandomly(const Item* item, uint count)
+{
+	// TODO
+}
+
+//=================================================================================================
+Unit* Level::GetNearestEnemy(Unit* unit)
+{
+	// TODO
+	return nullptr;
+}
+
+//=================================================================================================
+Unit* Level::SpawnUnitNearLocationS(UnitData* ud, const Vec3& pos, float range)
+{
+	// TODO
+	return nullptr;
+}
+
+//=================================================================================================
+GroundItem* Level::FindNearestItem(const Item* item, const Vec3& pos)
+{
+	LevelContext& ctx = GetContext(pos);
+	float best_dist = 999.f;
+	GroundItem* best_item = nullptr;
+	for(GroundItem* ground_item : *ctx.items)
+	{
+		if(ground_item->item == item)
+		{
+			float dist = Vec3::Distance(pos, ground_item->pos);
+			if(dist < best_dist || !best_item)
+			{
+				best_dist = dist;
+				best_item = ground_item;
+			}
+		}
+	}
+	return best_item;
+}
+
+//=================================================================================================
+GroundItem* Level::FindItem(const Item* item)
+{
+	for(LevelContext& ctx : ForEachContext())
+	{
+		for(GroundItem* ground_item : *ctx.items)
+		{
+			if(ground_item->item == item)
+				return ground_item;
+		}
+	}
+	return nullptr;
+}
+
+//=================================================================================================
+Unit* Level::GetMayor()
+{
+	if(!city_ctx)
+		return nullptr;
+	cstring id;
+	if(city_ctx->settlement_type == City::SettlementType::Village)
+		id = "soltys";
+	else
+		id = "mayor";
+	return FindUnit(UnitData::Get(id));
+}
+
+//=================================================================================================
+bool Level::IsSafe()
+{
+	if(city_ctx)
+		return true;
+	else if(location->outside)
+		return (location->state == LS_CLEARED);
+	else
+	{
+		InsideLocation* inside = (InsideLocation*)location;
+		if(inside->IsMultilevel())
+		{
+			MultiInsideLocation* multi = (MultiInsideLocation*)inside;
+			if(multi->IsLevelClear())
+			{
+				if(dungeon_level == 0)
+				{
+					if(!multi->from_portal)
+						return true;
+				}
+				else
+					return true;
+			}
+			return false;
+		}
+		else
+			return (location->state == LS_CLEARED);
 	}
 }

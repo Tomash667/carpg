@@ -70,6 +70,29 @@ public:
 		return *this;
 	}
 
+	TypeBuilder& Behaviour(asEBehaviours behaviour, cstring decl, const asSFuncPtr& funcPointer)
+	{
+		assert(decl);
+		int flag = (funcPointer.flag == 3 ? asCALL_THISCALL : asCALL_CDECL_OBJFIRST);
+		CHECKED(engine->RegisterObjectBehaviour(name, behaviour, decl, funcPointer, flag));
+		return *this;
+	}
+
+	TypeBuilder& Factory(const asSFuncPtr& func)
+	{
+		CHECKED(engine->RegisterObjectBehaviour(name, asBEHAVE_FACTORY, Format("%s@ f()", name), func, asCALL_CDECL));
+		return *this;
+	}
+
+	TypeBuilder& ReferenceCounting(const asSFuncPtr& addRef, const asSFuncPtr& release)
+	{
+		int flag = (addRef.flag == 3 ? asCALL_THISCALL : asCALL_CDECL_OBJFIRST);
+		CHECKED(engine->RegisterObjectBehaviour(name, asBEHAVE_ADDREF, "void f()", addRef, flag));
+		flag = (release.flag == 3 ? asCALL_THISCALL : asCALL_CDECL_OBJFIRST);
+		CHECKED(engine->RegisterObjectBehaviour(name, asBEHAVE_RELEASE, "void f()", release, flag));
+		return *this;
+	}
+
 	TypeBuilder& WithInstance(cstring decl, void* ptr)
 	{
 		assert(decl && ptr);
@@ -140,9 +163,9 @@ class GlobalFunctionBuilder
 public:
 	GlobalFunctionBuilder(asIScriptEngine* engine) : engine(engine) {}
 
-	void AddFunction(cstring decl, const asSFuncPtr& funcPointer, void* auxiliary)
+	void AddFunction(cstring decl, const asSFuncPtr& funcPointer, void* auxiliary = nullptr)
 	{
-		if(auxiliary)
+		if(auxiliary && funcPointer.flag == 3)
 		{
 			CHECKED(engine->RegisterGlobalFunction(decl, funcPointer, asCALL_THISCALL_ASGLOBAL, auxiliary));
 		}

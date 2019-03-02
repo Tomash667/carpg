@@ -52,7 +52,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 		// received quest
 		{
 			OnStart(game->txQuest[28]);
-			quest_manager.quests_timeout.push_back(this);
+			QM.quests_timeout.push_back(this);
 
 			target_loc = W.GetRandomSpawnLocation(W.GetLocation(start_loc)->pos, group);
 
@@ -129,7 +129,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
-			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
+			RemoveElementTry<Quest_Dungeon*>(QM.quests_timeout, this);
 
 			OnUpdate(game->txQuest[37]);
 			if(captive)
@@ -144,8 +144,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 		{
 			state = Quest::Completed;
 			int reward = GetReward();
-			game->AddReward(reward);
-			Team.AddExp(reward * 3);
+			Team.AddReward(reward, reward * 3);
 
 			((City&)GetStartLocation()).quest_captain = CityQuestState::None;
 			if(target_loc != -1)
@@ -154,7 +153,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
-			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
+			RemoveElementTry<Quest_Dungeon*>(QM.quests_timeout, this);
 			Team.RemoveTeamMember(captive);
 
 			L.RemoveUnit(captive);
@@ -193,7 +192,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
-			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
+			RemoveElementTry<Quest_Dungeon*>(QM.quests_timeout, this);
 
 			OnUpdate(game->txQuest[40]);
 		}
@@ -203,8 +202,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 		{
 			state = Quest::Completed;
 			int reward = GetReward();
-			game->AddReward(reward / 4);
-			Team.AddExp(reward * 3 / 2);
+			Team.AddReward(reward / 4, reward * 3 / 2);
 			if(captive)
 			{
 				captive->event_handler = nullptr;
@@ -220,7 +218,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 			}
 
 			OnUpdate(Format(game->txQuest[41], GetStartLocationName()));
-			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
+			RemoveElementTry<Quest_Dungeon*>(QM.quests_timeout, this);
 		}
 		break;
 	case Progress::CaptiveLeftInCity:

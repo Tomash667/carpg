@@ -4,6 +4,7 @@ Changelog
 Version 0.9 (???):
 ! removed support for windows xp
 ! cannot load saves from version 0.2.12 or older
++ first scripted quest - deliver resources
 + more location icons and names
 
 --------------------------------------------------------------------------------

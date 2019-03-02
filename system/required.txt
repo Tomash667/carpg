@@ -91,6 +91,8 @@ item cup
 item book_adventurer
 // 0.8 artifacts armor
 item am_gladiator
+// V_DEV quest deliver resources
+item q_resources
 
 //------------------------------------------------------------------------------
 // Required item lists
@@ -531,3 +533,10 @@ object painting_x4
 object wheel
 object rope
 object woodpile
+
+//------------------------------------------------------------------------------
+// Quest lists
+//------------------------------------------------------------------------------
+quest_list mayor
+quest_list captain
+quest_list not_none random

@@ -22,6 +22,7 @@
 #include "QuestManager.h"
 #include "Quest_Crazies.h"
 #include "Quest_Mages.h"
+#include "Quest_Scripted.h"
 #include "Game.h"
 #include "Debug.h"
 #include "GlobalGui.h"
@@ -30,6 +31,7 @@
 
 //-----------------------------------------------------------------------------
 const float World::TRAVEL_SPEED = 28.f;
+const float World::MAP_KM_RATIO = 1.f / 3; // 1200 pixels = 400 km
 const int start_year = 100;
 const float world_border = 50.f;
 const int def_world_size = 1200;
@@ -228,7 +230,7 @@ void World::UpdateEncounters()
 		if(e && e->timed && e->quest->IsTimedout())
 		{
 			e->quest->OnTimeout(TIMEOUT_ENCOUNTER);
-			e->quest->enc = -1;
+			((Quest_Encounter*)e->quest)->enc = -1;
 			delete *it;
 			if(it + 1 == end)
 			{
@@ -1171,6 +1173,31 @@ void World::Save(GameWriter& f)
 		f << travel_timer;
 	}
 	f << encounters.size();
+	for(Encounter* enc : encounters)
+	{
+		if(!enc || !enc->scripted)
+			f << false;
+		else
+		{
+			f << true;
+			f << enc->pos;
+			f << enc->chance;
+			f << enc->range;
+			f << enc->quest->refid;
+			if(enc->dialog)
+				f << enc->dialog->id;
+			else
+				f.Write0();
+			f << enc->group;
+			if(enc->pooled_string)
+				f << *enc->pooled_string;
+			else
+				f.Write0();
+			f << enc->st;
+			f << enc->dont_attack;
+			f << enc->timed;
+		}
+	}
 	f << tiles;
 
 	f << news.size();
@@ -1319,6 +1346,55 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 		f >> travel_timer;
 	}
 	encounters.resize(f.Read<uint>(), nullptr);
+	if(LOAD_VERSION >= V_DEV)
+	{
+		int index = 0;
+		for(Encounter*& enc : encounters)
+		{
+			bool scripted;
+			f >> scripted;
+			if(scripted)
+			{
+				enc = new Encounter(nullptr);
+				enc->index = index;
+				f >> enc->pos;
+				f >> enc->chance;
+				f >> enc->range;
+				int quest_refid;
+				f >> quest_refid;
+				const string& dialog_id = f.ReadString1();
+				if(!dialog_id.empty())
+				{
+					string* str = StringPool.Get();
+					*str = dialog_id;
+					QM.AddQuestRequest(quest_refid, &enc->quest, [enc, str]
+					{
+						enc->dialog = ((Quest_Scripted*)enc->quest)->GetDialog(*str);
+						StringPool.Free(str);
+					});
+				}
+				else
+					QM.AddQuestRequest(quest_refid, &enc->quest);
+				f >> enc->group;
+				const string& text = f.ReadString1();
+				if(text.empty())
+				{
+					enc->text = nullptr;
+					enc->pooled_string = nullptr;
+				}
+				else
+				{
+					enc->pooled_string = StringPool.Get();
+					*enc->pooled_string = text;
+					enc->text = enc->pooled_string->c_str();
+				}
+				f >> enc->st;
+				f >> enc->dont_attack;
+				f >> enc->timed;
+			}
+			++index;
+		}
+	}
 	if(LOAD_VERSION >= V_0_8)
 		f >> tiles;
 	else
@@ -1953,6 +2029,48 @@ int World::GetNearestLocation(const Vec2& pos, int flags, bool not_quest, int ta
 }
 
 //=================================================================================================
+City* World::GetRandomSettlement(delegate<bool(City*)> pred)
+{
+	int start_index = Rand() % settlements;
+	int index = start_index;
+	do
+	{
+		City* loc = (City*)locations[index];
+		if(pred(loc))
+			return loc;
+		index = (index + 1) % settlements;
+	} while(index != start_index);
+	return nullptr;
+}
+
+//=================================================================================================
+Location* World::GetRandomSettlement(Location* loc)
+{
+	return GetRandomSettlement(loc->index);
+}
+
+//=================================================================================================
+Location* World::GetRandomSettlementWeighted(delegate<float(Location*)> func)
+{
+	float best_value = -1.f;
+	int best_index = -1;
+	int start_index = Rand() % settlements;
+	int index = start_index;
+	do
+	{
+		Location* loc = locations[index];
+		float result = func(loc);
+		if(result >= 0.f && result > best_value)
+		{
+			best_value = result;
+			best_index = index;
+		}
+		index = (index + 1) % settlements;
+	} while(index != start_index);
+	return (best_index != -1 ? locations[best_index] : nullptr);
+}
+
+//=================================================================================================
 void World::ExitToMap()
 {
 	if(state == State::INSIDE_ENCOUNTER)
@@ -2386,22 +2504,36 @@ void World::WarpPos(const Vec2& pos)
 }
 
 //=================================================================================================
-Encounter* World::AddEncounter(int& index)
+Encounter* World::AddEncounter(int& index, Quest* quest)
 {
+	Encounter* enc;
+	if(quest && quest->quest_id == Q_SCRIPTED)
+		enc = new Encounter(quest);
+	else
+		enc = new Encounter;
+
 	for(int i = 0, size = (int)encounters.size(); i < size; ++i)
 	{
 		if(!encounters[i])
 		{
 			index = i;
-			encounters[i] = new Encounter;
-			return encounters[i];
+			enc->index = index;
+			encounters[i] = enc;
+			return enc;
 		}
 	}
 
-	Encounter* enc = new Encounter;
 	index = encounters.size();
+	enc->index = index;
 	encounters.push_back(enc);
 	return enc;
+}
+
+//=================================================================================================
+Encounter* World::AddEncounterS(Quest* quest)
+{
+	int index;
+	return AddEncounter(index, quest);
 }
 
 //=================================================================================================
@@ -2410,6 +2542,21 @@ void World::RemoveEncounter(int index)
 	assert(InRange(index, 0, (int)encounters.size() - 1) && encounters[index]);
 	delete encounters[index];
 	encounters[index] = nullptr;
+}
+
+//=================================================================================================
+void World::RemoveEncounter(Quest* quest)
+{
+	assert(quest);
+	for(uint i = 0; i < encounters.size(); ++i)
+	{
+		Encounter* enc = encounters[i];
+		if(enc && enc->quest == quest)
+		{
+			delete enc;
+			encounters[i] = nullptr;
+		}
+	}
 }
 
 //=================================================================================================
@@ -2462,6 +2609,12 @@ void World::GetOutsideSpawnPoint(Vec3& pos, float& dir) const
 		dir = PI;
 		pos = Vec3(Lerp(dist, map_size - dist, (travel_dir - (5.f / 4 * PI)) / (PI / 2)), 0, dist);
 	}
+}
+
+//=================================================================================================
+float World::GetTravelDays(float dist)
+{
+	return dist * World::MAP_KM_RATIO / World::TRAVEL_SPEED;
 }
 
 //=================================================================================================

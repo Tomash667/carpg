@@ -67,6 +67,7 @@
 #include "FOV.h"
 #include "PlayerInfo.h"
 #include "CombatHelper.h"
+#include "Quest_Scripted.h"
 
 const float ALERT_RANGE = 20.f;
 const float ALERT_SPAWN_RANGE = 25.f;
@@ -1015,7 +1016,7 @@ void Game::UpdateGame(float dt)
 		{
 			// TODO: animacja
 			assert(pc->action == PlayerController::Action_LootContainer);
-			pos = pc->action_container->pos;
+			pos = pc->action_usable->pos;
 			pc->unit->animation = ANI_STAND;
 		}
 		else if(dialog_context.dialog_mode)
@@ -1177,6 +1178,8 @@ void Game::UpdateFallback(float dt)
 {
 	if(fallback_type == FALLBACK::NO)
 		return;
+
+	dt /= game_speed;
 
 	if(fallback_t <= 0.f)
 	{
@@ -2017,10 +2020,11 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 	if(u.usable)
 		return;
 
-	// sprawdŸ co jest przed graczem oraz stwórz listê pobliskich wrogów
+	// check what is in front of player
 	pc_data.before_player = BP_NONE;
 	float dist, best_dist = 3.0f;
 
+	// units in front of player
 	for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
 	{
 		Unit& u2 = **it;
@@ -2029,24 +2033,20 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 		dist = Vec3::Distance2d(u.visual_pos, u2.visual_pos);
 
-		// wybieranie postaci
 		if(u2.IsStanding())
 			PlayerCheckObjectDistance(u, u2.visual_pos, &u2, best_dist, BP_UNIT);
 		else if(u2.live_state == Unit::FALL || u2.live_state == Unit::DEAD)
 			PlayerCheckObjectDistance(u, u2.GetLootCenter(), &u2, best_dist, BP_UNIT);
 	}
 
-	// skrzynie przed graczem
+	// chests in front of player
 	if(ctx.chests && !ctx.chests->empty())
 	{
 		for(vector<Chest*>::iterator it = ctx.chests->begin(), end = ctx.chests->end(); it != end; ++it)
-		{
-			//if(!(*it)->looted)
 			PlayerCheckObjectDistance(u, (*it)->pos, *it, best_dist, BP_CHEST);
-		}
 	}
 
-	// drzwi przed graczem
+	// doors in front of player
 	if(ctx.doors && !ctx.doors->empty())
 	{
 		for(vector<Door*>::iterator it = ctx.doors->begin(), end = ctx.doors->end(); it != end; ++it)
@@ -2056,18 +2056,18 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 		}
 	}
 
-	// przedmioty przed graczem
+	// ground items in front of player
 	for(vector<GroundItem*>::iterator it = ctx.items->begin(), end = ctx.items->end(); it != end; ++it)
 		PlayerCheckObjectDistance(u, (*it)->pos, *it, best_dist, BP_ITEM);
 
-	// u¿ywalne przed graczem
+	// usable objects in front of player
 	for(vector<Usable*>::iterator it = ctx.usables->begin(), end = ctx.usables->end(); it != end; ++it)
 	{
 		if(!(*it)->user)
 			PlayerCheckObjectDistance(u, (*it)->pos, *it, best_dist, BP_USABLE);
 	}
 
-	// u¿yj czegoœ przed graczem
+	// use something in front of player
 	if(u.frozen == FROZEN::NO && pc_data.before_player != BP_NONE && !pc_data.action_ready
 		&& (GKey.KeyPressedReleaseAllowed(GK_USE) || (u.IsNotFighting() && GKey.KeyPressedReleaseAllowed(GK_ATTACK_USE))))
 	{
@@ -8285,7 +8285,7 @@ void Game::LeaveLevel(LevelContext& ctx, bool clear)
 			}
 		}
 
-		// usuñ jednostki które przenios³y siê na inny poziom
+		// remove units that left this level
 		RemoveNullElements(ctx.units);
 	}
 	else
@@ -8752,6 +8752,8 @@ void Game::PreloadUnit(Unit* unit)
 				tex_mgr.AddLoadTask(ti.tex);
 		}
 	}
+
+	data.state = ResourceState::Loaded;
 }
 
 void Game::PreloadItems(vector<ItemSlot>& items)
@@ -9018,164 +9020,6 @@ void Game::DeleteUnit(Unit* unit)
 
 	if(--unit->refs == 0)
 		delete unit;
-}
-
-//=============================================================================
-// Rozdziela z³oto pomiêdzy cz³onków dru¿yny
-//=============================================================================
-void Game::AddGold(int count, vector<Unit*>* units, bool show, cstring msg, float time, bool defmsg)
-{
-	if(!units)
-		units = &Team.active_members;
-
-	if(units->size() == 1)
-	{
-		Unit& u = *(*units)[0];
-		u.gold += count;
-		if(show && u.IsPlayer())
-		{
-			if(&u == pc->unit)
-				gui->messages->AddGameMsg(Format(msg, count), time);
-			else
-			{
-				NetChangePlayer& c = Add1(u.player->player_info->changes);
-				c.type = NetChangePlayer::GOLD_MSG;
-				c.id = (defmsg ? 1 : 0);
-				c.count = count;
-				u.player->player_info->UpdateGold();
-			}
-		}
-		else if(!u.IsPlayer() && u.busy == Unit::Busy_Trading)
-		{
-			Unit* trader = Team.FindPlayerTradingWithUnit(u);
-			if(trader != pc->unit)
-			{
-				NetChangePlayer& c = Add1(trader->player->player_info->changes);
-				c.type = NetChangePlayer::UPDATE_TRADER_GOLD;
-				c.id = u.netid;
-				c.count = u.gold;
-			}
-		}
-		return;
-	}
-
-	int pc_count = 0, npc_count = 0;
-	bool credit_info = false;
-
-	for(vector<Unit*>::iterator it = units->begin(), end = units->end(); it != end; ++it)
-	{
-		Unit& u = **it;
-		if(u.IsPlayer())
-		{
-			++pc_count;
-			u.player->on_credit = false;
-			u.player->gold_get = 0;
-		}
-		else
-		{
-			++npc_count;
-			u.hero->on_credit = false;
-			u.hero->gained_gold = false;
-		}
-	}
-
-	for(int i = 0; i < 2 && count > 0; ++i)
-	{
-		Vec2 share = Team.GetShare(pc_count, npc_count);
-		int gold_left = 0;
-
-		for(vector<Unit*>::iterator it = units->begin(), end = units->end(); it != end; ++it)
-		{
-			Unit& u = **it;
-			HeroPlayerCommon& hpc = *(u.IsPlayer() ? (HeroPlayerCommon*)u.player : u.hero);
-			if(hpc.on_credit)
-				continue;
-
-			float gain = (u.IsPlayer() ? share.x : share.y) * count + hpc.split_gold;
-			float gained_f;
-			hpc.split_gold = modf(gain, &gained_f);
-			int gained = (int)gained_f;
-			if(hpc.credit > gained)
-			{
-				credit_info = true;
-				hpc.credit -= gained;
-				gold_left += gained;
-				hpc.on_credit = true;
-				if(u.IsPlayer())
-					--pc_count;
-				else
-					--npc_count;
-			}
-			else if(hpc.credit)
-			{
-				credit_info = true;
-				gained -= hpc.credit;
-				gold_left += hpc.credit;
-				hpc.credit = 0;
-				u.gold += gained;
-				if(u.IsPlayer())
-					u.player->gold_get += gained;
-				else
-					u.hero->gained_gold = true;
-			}
-			else
-			{
-				u.gold += gained;
-				if(u.IsPlayer())
-					u.player->gold_get += gained;
-				else
-					u.hero->gained_gold = true;
-			}
-		}
-
-		count = gold_left;
-	}
-
-	if(Net::IsOnline())
-	{
-		for(vector<Unit*>::iterator it = units->begin(), end = units->end(); it != end; ++it)
-		{
-			Unit& u = **it;
-			if(u.IsPlayer())
-			{
-				if(u.player != pc)
-				{
-					if(u.player->gold_get)
-					{
-						u.player->player_info->update_flags |= PlayerInfo::UF_GOLD;
-						if(show)
-						{
-							NetChangePlayer& c = Add1(u.player->player_info->changes);
-							c.type = NetChangePlayer::GOLD_MSG;
-							c.id = (defmsg ? 1 : 0);
-							c.count = u.player->gold_get;
-						}
-					}
-				}
-				else
-				{
-					if(show)
-						gui->messages->AddGameMsg(Format(msg, pc->gold_get), time);
-				}
-			}
-			else if(u.hero->gained_gold && u.busy == Unit::Busy_Trading)
-			{
-				Unit* trader = Team.FindPlayerTradingWithUnit(u);
-				if(trader != pc->unit)
-				{
-					NetChangePlayer& c = Add1(trader->player->player_info->changes);
-					c.type = NetChangePlayer::UPDATE_TRADER_GOLD;
-					c.id = u.netid;
-					c.count = u.gold;
-				}
-			}
-		}
-
-		if(credit_info)
-			Net::PushChange(NetChange::UPDATE_CREDIT);
-	}
-	else if(show)
-		gui->messages->AddGameMsg(Format(msg, pc->gold_get), time);
 }
 
 bool Game::CanWander(Unit& u)
@@ -9469,7 +9313,7 @@ void Game::GenerateQuestUnits()
 		if(count)
 		{
 			QM.quest_sawmill->days -= count * 30;
-			AddGold(count * Quest_Sawmill::PAYMENT, nullptr, true);
+			Team.AddGold(count * Quest_Sawmill::PAYMENT, nullptr, true);
 		}
 	}
 
@@ -9623,7 +9467,7 @@ void Game::UpdateQuests(int days)
 	income += QM.quest_mine->GetIncome(days);
 
 	if(income != 0)
-		AddGold(income, nullptr, true);
+		Team.AddGold(income, nullptr, true);
 
 	QM.quest_contest->Progress();
 
@@ -10173,8 +10017,8 @@ void Game::PlayerUseUsable(Usable* usable, bool after_action)
 		if(IS_SET(bu.use_flags, BaseUsable::CONTAINER))
 		{
 			pc->action = PlayerController::Action_LootContainer;
-			pc->action_container = pc_data.before_player_ptr.usable;
-			pc->chest_trade = &pc->action_container->container->items;
+			pc->action_usable = pc_data.before_player_ptr.usable;
+			pc->chest_trade = &pc->action_usable->container->items;
 		}
 
 		pc->unit->action = A_PREPARE;
@@ -10697,6 +10541,17 @@ void Game::OnEnterLevelOrLocation()
 	{
 		for(auto unit : Team.members)
 			unit->frozen = FROZEN::NO;
+	}
+
+	// events v2
+	for(Event& e : L.location->events)
+	{
+		if(e.type == EVENT_ENTER)
+		{
+			ScriptEvent event(EVENT_ENTER);
+			event.location = L.location;
+			e.quest->FireEvent(event);
+		}
 	}
 }
 

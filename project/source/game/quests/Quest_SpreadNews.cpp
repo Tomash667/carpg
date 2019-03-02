@@ -88,7 +88,7 @@ void Quest_SpreadNews::SetProgress(int prog2)
 		// told info to spread by player
 		{
 			OnStart(game->txQuest[213]);
-			quest_manager.quests_timeout2.push_back(this);
+			QM.quests_timeout2.push_back(this);
 
 			prog = Progress::Started;
 
@@ -124,7 +124,7 @@ void Quest_SpreadNews::SetProgress(int prog2)
 			else
 				OnUpdate(msg);
 
-			RemoveElementTry(quest_manager.quests_timeout2, (Quest*)this);
+			RemoveElementTry(QM.quests_timeout2, (Quest*)this);
 		}
 		break;
 	case Progress::Timeout:
@@ -143,8 +143,7 @@ void Quest_SpreadNews::SetProgress(int prog2)
 			prog = Progress::Finished;
 			state = Quest::Completed;
 			((City&)GetStartLocation()).quest_mayor = CityQuestState::None;
-			game->AddReward(500);
-			Team.AddExp(2000);
+			Team.AddReward(500, 2000);
 
 			OnUpdate(game->txQuest[21]);
 		}

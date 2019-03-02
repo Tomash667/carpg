@@ -26,7 +26,6 @@
 #include "Debug.h"
 
 const float MAP_IMG_SIZE = 512.f;
-const float MAP_KM_RATIO = 1.f / 3; // 1200 pixels = 400 km
 
 struct LocationElement : public GuiElement, public ObjectPoolProxy<LocationElement>
 {
@@ -169,7 +168,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 		Location& picked = *W.locations[picked_location];
 		if(picked_location != W.GetCurrentLocationIndex())
 		{
-			float distance = Vec2::Distance(world_pos, picked.pos) * MAP_KM_RATIO;
+			float distance = Vec2::Distance(world_pos, picked.pos) * World::MAP_KM_RATIO;
 			int days_cost = int(floor(distance / World::TRAVEL_SPEED));
 			s += Format("\n\n%s: %s", txTarget, picked.name.c_str());
 			AppendLocationText(picked, s.get_ref());
@@ -187,7 +186,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 	}
 	else if(c_pos_valid)
 	{
-		float distance = Vec2::Distance(world_pos, c_pos) * MAP_KM_RATIO;
+		float distance = Vec2::Distance(world_pos, c_pos) * World::MAP_KM_RATIO;
 		int days_cost = int(floor(distance / World::TRAVEL_SPEED));
 		cstring cost;
 		if(days_cost == 0)

@@ -50,7 +50,7 @@ void Quest_Wanted::SetProgress(int prog2)
 	case Progress::Started: // zaakceptowano
 		{
 			OnStart(game->txQuest[257]);
-			quest_manager.quests_timeout.push_back(this);
+			QM.quests_timeout.push_back(this);
 
 			NameHelper::GenerateHeroName(clas, crazy, unit_name);
 			target_loc = W.GetRandomFreeSettlementIndex(start_loc);
@@ -99,7 +99,7 @@ void Quest_Wanted::SetProgress(int prog2)
 		{
 			state = Quest::Started; // if recruited that will change it to in progress
 			OnUpdate(Format(game->txQuest[262], unit_name.c_str()));
-			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
+			RemoveElementTry<Quest_Dungeon*>(QM.quests_timeout, this);
 		}
 		break;
 	case Progress::Finished: // wykonano
@@ -107,9 +107,8 @@ void Quest_Wanted::SetProgress(int prog2)
 			state = Quest::Completed;
 			((City&)GetStartLocation()).quest_captain = CityQuestState::None;
 
-			game->AddReward(level * 100);
-			Team.AddExp(level * 250);
-
+			Team.AddReward(level * 100, level * 250);
+			
 			OnUpdate(Format(game->txQuest[263], unit_name.c_str()));
 		}
 		break;

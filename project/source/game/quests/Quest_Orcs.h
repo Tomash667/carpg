@@ -12,7 +12,7 @@
 // po zniszczeniu awansuje na szamana/³owce/wojownika
 // po jakimœ czasie mówi o swoim klanie który zosta³ podbity przez silnego orka
 // trzeba iœæ i ich pobiæ a wtedy ork zostaje nowym wodzem, mo¿na tam spotkaæ orkowego kowala który sprzedaje orkowe przedmioty
-class Quest_Orcs : public Quest_Dungeon, public LocationEventHandler
+class Quest_Orcs final : public Quest_Dungeon, public LocationEventHandler
 {
 public:
 	enum Progress

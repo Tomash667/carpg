@@ -18,7 +18,7 @@
 // informuje nas o tym ¿e jakiœ poszukiwacz przygód pomóg³ jednemu z magów znaleŸæ kule wiêzi potrzebn¹ do budowy golemów
 // mówi nam gdzie trzeba iœæ zabiæ maga
 // wracamy do kapitana, daje nagrodê
-class Quest_Mages : public Quest_Dungeon
+class Quest_Mages final : public Quest_Dungeon
 {
 public:
 	enum Progress
@@ -43,7 +43,7 @@ public:
 // start_loc = location with guard captain
 // mage_loc = location with drunk mage
 // target_loc = drunk mage tower, evil mage tower
-class Quest_Mages2 : public Quest_Dungeon, public UnitEventHandler
+class Quest_Mages2 final : public Quest_Dungeon, public UnitEventHandler
 {
 public:
 	enum Progress

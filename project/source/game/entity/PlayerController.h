@@ -122,13 +122,14 @@ struct PlayerController : public HeroPlayerCommon
 		Action_Trade,
 		Action_ShareItems,
 		Action_GiveItems,
-		Action_LootContainer
+		Action_LootContainer,
+		Action_TalkUsable
 	} action;
 	union
 	{
 		Unit* action_unit;
 		Chest* action_chest;
-		Usable* action_container;
+		Usable* action_usable;
 	};
 	// tymczasowa zmienna u¿ywane w AddGold, nie trzeba zapisywaæ
 	int gold_get;
@@ -183,6 +184,7 @@ public:
 	}
 	bool IsTrading() const { return IsTrade(action); }
 	bool IsLocal() const { return is_local; }
+	bool IsLeader() const;
 	::Action& GetAction();
 	bool CanUseAction() const
 	{
@@ -199,6 +201,7 @@ public:
 
 	// perks
 	bool HavePerk(Perk perk, int value = -1);
+	bool HavePerkS(const string& perk_id);
 	bool AddPerk(Perk perk, int value);
 	bool RemovePerk(Perk perk, int value);
 

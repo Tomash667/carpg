@@ -5,7 +5,7 @@
 #include "UnitEventHandler.h"
 
 //-----------------------------------------------------------------------------
-class Quest_RescueCaptive : public Quest_Dungeon, public UnitEventHandler
+class Quest_RescueCaptive final : public Quest_Dungeon, public UnitEventHandler
 {
 public:
 	enum Progress

@@ -41,9 +41,10 @@ void Stock::Parse(vector<ItemSlot>& items)
 {
 	if(script)
 	{
-		SM.GetContext().stock = &items;
+		ScriptContext& ctx = SM.GetContext();
+		ctx.stock = &items;
 		SM.RunScript(script);
-		SM.GetContext().stock = nullptr;
+		ctx.stock = nullptr;
 	}
 
 	ParseInternal(items);

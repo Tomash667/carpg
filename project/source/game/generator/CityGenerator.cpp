@@ -2300,7 +2300,8 @@ void CityGenerator::OnEnter()
 	}
 
 	// spawn quest units
-	if(L.location->active_quest && L.location->active_quest != (Quest_Dungeon*)ACTIVE_QUEST_HOLDER && !L.location->active_quest->done)
+	if(L.location->active_quest && L.location->active_quest != (Quest_Dungeon*)ACTIVE_QUEST_HOLDER && !L.location->active_quest->done
+		&& L.location->active_quest->quest_id != Q_SCRIPTED)
 		game.HandleQuestEvent(L.location->active_quest);
 
 	// generate minimap

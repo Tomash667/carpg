@@ -265,7 +265,7 @@ void Inventory::StartTrade(InventoryMode mode, vector<ItemSlot>& items, Unit* un
 		inv_trade_mine->mode = InventoryPanel::LOOT_MY;
 		inv_trade_other->mode = InventoryPanel::LOOT_OTHER;
 		inv_trade_other->unit = nullptr;
-		inv_trade_other->title = Format("%s - %s", txLooting, pc->action_container->base->name.c_str());
+		inv_trade_other->title = Format("%s - %s", txLooting, pc->action_usable->base->name.c_str());
 		break;
 	default:
 		assert(0);
@@ -306,11 +306,11 @@ void Inventory::StartTrade2(InventoryMode mode, void* ptr)
 		{
 			Usable* usable = (Usable*)ptr;
 			pc->action = PlayerController::Action_LootContainer;
-			pc->action_container = usable;
-			pc->chest_trade = &pc->action_container->container->items;
+			pc->action_usable = usable;
+			pc->chest_trade = &pc->action_usable->container->items;
 			inv_trade_mine->mode = InventoryPanel::LOOT_MY;
 			inv_trade_other->unit = nullptr;
-			inv_trade_other->items = &pc->action_container->container->items;
+			inv_trade_other->items = &pc->action_usable->container->items;
 			inv_trade_other->slots = nullptr;
 			inv_trade_other->title = Format("%s - %s", txLooting, usable->base->name.c_str());
 			inv_trade_other->mode = InventoryPanel::LOOT_OTHER;
@@ -1793,7 +1793,7 @@ void InventoryPanel::SellItem(int index, uint count)
 		int price = ItemHelper::GetItemPrice(slot.item, *game.pc->unit, false);
 		game.pc->Train(TrainWhat::Trade, (float)price, 0);
 		if(team_count)
-			game.AddGold(price * team_count);
+			Team.AddGold(price * team_count);
 		if(normal_count)
 			unit->gold += price * normal_count;
 	}
@@ -1984,7 +1984,7 @@ void InventoryPanel::PutItem(int index, uint count)
 	}
 	else if(base.mode == I_LOOT_CONTAINER)
 	{
-		if(!unit->player->action_container->container->AddItem(slot.item, count, team_count))
+		if(!unit->player->action_usable->container->AddItem(slot.item, count, team_count))
 			UpdateGrid(false);
 	}
 	else
@@ -2035,7 +2035,7 @@ void InventoryPanel::PutSlotItem(ITEM_SLOT slot)
 	if(base.mode == I_LOOT_BODY)
 		unit->player->action_unit->AddItem(item, 1u, 0u);
 	else if(base.mode == I_LOOT_CONTAINER)
-		unit->player->action_container->container->AddItem(item, 1u, 0u);
+		unit->player->action_usable->container->AddItem(item, 1u, 0u);
 	else
 		unit->player->action_chest->AddItem(item, 1u, 0u);
 	UpdateGrid(false);

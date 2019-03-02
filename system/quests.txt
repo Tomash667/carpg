@@ -1,0 +1,213 @@
+quest deliver_resources
+{
+	type mayor
+	progress {
+		P_DELIVER_NONE
+		P_DELIVER_STARTED
+		P_DELIVER_ENCOUNTER
+		P_DELIVER_TALKED
+		P_DELIVER_TIMEOUT
+		P_DELIVER_FINISHED
+	}
+	
+	dialog start {
+		talk 0
+		talk 1
+		choice 2
+		{
+			set_quest_progress P_DELIVER_STARTED
+			talk 4
+			end
+		}
+		escape choice 3
+			end
+		show_choices
+	}
+	
+	dialog end {
+		if quest_progress == P_DELIVER_STARTED
+		{
+			do_once
+			talk 2
+			if not have_quest_item
+				talk 3
+			set_quest_progress P_DELIVER_TALKED
+		}
+		if have_quest_item
+			choice 0
+			{
+				set_quest_progress P_DELIVER_FINISHED
+				talk 1
+				end
+			}
+		end
+	}
+	
+	dialog bandits_enc {
+		talk 0
+		script "target.OrderAttack()"
+		end
+	}
+	
+	dialog bandits {
+		talk 0
+		script "target.OrderAttack()"
+		end2
+	}
+	
+	code {
+		Location@ start_loc;
+		Location@ target_loc;
+		
+		void Startup()
+		{
+			@start_loc = Level::location;
+			@target_loc = GetTargetLocation();
+			@target_loc.active_quest = quest;
+		}
+		
+		// get random village that is between 8 or 14 days of travel
+		// or farest if not available
+		Location@ GetTargetLocation()
+		{
+			uint count = World::GetSettlements();
+			uint index = Rand() % count;
+			uint start_index = index;
+			int best_index = -1;
+			float best_dist = 0;
+			while(true)
+			{
+				Location@ loc = World::GetLocation(index);
+				if(loc.IsVillage() && loc !is start_loc && loc.active_quest is null)
+				{
+					float dist = Vec2::Distance(start_loc.pos, loc.pos);
+					float days = World::GetTravelDays(dist);
+					if(days >= 8 && days < 14)
+						return loc;
+					if(days < 10 && (best_index == -1 || best_dist < dist))
+					{
+						best_index = index;
+						best_dist = dist;
+					}
+				}
+				index = (index + 1) % count;
+				if(index == start_index)
+					break;
+			}
+			return World::GetLocation(best_index);
+		}
+		
+		void SetProgress()
+		{
+			switch(progress)
+			{
+			case P_DELIVER_STARTED:
+				{
+					Item@ item = Item::Get("q_resources");
+					@item = item.QuestCopy(quest, TEXT(0));
+					pc.unit.AddTeamItem(item);
+					target_loc.AddEventHandler(quest, EVENT_ENTER);
+					quest.SetStarted(TEXT(1));
+					quest.AddEntry(TEXT(2));
+					quest.AddEntry(TEXT(3));
+					quest.SetTimeout(15);
+					if(Rand() % 4 != 0)
+					{
+						Encounter@ enc = World::AddEncounter(quest);
+						enc.pos = (start_loc.pos + target_loc.pos) / 2;
+						enc.dont_attack = true;
+						enc.text = TEXT(6);
+						enc.group = SG_BANDITS;
+						@enc.dialog = quest.GetDialog("bandits_enc");
+						@enc.quest = quest;
+						enc.st = 8;
+					}
+				}
+				break;
+			case P_DELIVER_TALKED:
+				target.dont_attack = false;
+				break;
+			case P_DELIVER_FINISHED:
+				quest.AddEntry(TEXT(4));
+				quest.SetCompleted();
+				Team::AddReward(1500, 3000);
+				pc.unit.RemoveQuestItem(quest);
+				@target_loc.active_quest = null;
+				break;
+			}
+		}
+		
+		void OnEvent(Event@ e)
+		{
+			if(e.event == EVENT_ENTER)
+			{
+				e.location.RemoveEventHandler(quest);
+				Unit@ mayor = Level::GetMayor();
+				mayor.AddDialog(quest, "end");
+				if(progress != P_DELIVER_ENCOUNTER)
+				{
+					World::RemoveEncounter(quest);
+					mayor.dont_attack = true;
+					LevelContext@ ctx = Level::GetContext(mayor);
+					SpawnGroup group;
+					group.Fill(SG_BANDITS, 2, 8);
+					bool first = true;
+					for(uint i=0; i<group.count; ++i)
+					{
+						Unit@ unit = Level::SpawnUnit(ctx, group.Get(i));
+						if(unit !is null)
+						{
+							unit.dont_attack = true;
+							if(first)
+							{
+								first = false;
+								unit.auto_talk = true;
+								unit.AddDialog(quest, "bandits");
+							}
+						}
+					}
+				}
+			}
+			else if(e.event == EVENT_TIMEOUT)
+			{
+				quest.AddEntry(TEXT(5));
+				quest.SetFailed();
+				progress = P_DELIVER_TIMEOUT;
+				@target_loc.active_quest = null;
+			}
+			else if(e.event == EVENT_ENCOUNTER)
+			{
+				quest.AddEntry(TEXT(7));
+				progress = P_DELIVER_ENCOUNTER;
+			}
+		}
+	}
+}
+
+//------------------------------------------------------------------------------
+// QUEST LISTS
+//------------------------------------------------------------------------------
+
+quest_list mayor {
+	deliver_letter 3
+	deliver_parcel 3
+	deliver_resources 3
+	spread_news 2
+	retrieve_package 2
+	none 2
+}
+
+quest_list captain {
+	rescue_captive 2
+	bandits_collect_toll 2
+	camp_near_city 2
+	kill_animals 2
+	wanted 2
+	none 1
+}
+
+quest_list random {
+	find_artifact 1
+	lost_artifact 1
+	stolen_artifact 1
+}

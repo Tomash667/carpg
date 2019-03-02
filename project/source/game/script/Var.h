@@ -9,7 +9,9 @@ struct Var
 		Bool,
 		Int,
 		Float,
-		Item
+		Item,
+		Location,
+		Encounter
 	};
 	Type type;
 	union
@@ -18,6 +20,8 @@ struct Var
 		int _int;
 		float _float;
 		const Item* item;
+		Location* location;
+		Encounter* encounter;
 		void* ptr;
 	};
 	bool registered;

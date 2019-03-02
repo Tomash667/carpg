@@ -68,6 +68,12 @@ bool Tokenizer::FromFile(cstring path)
 //=================================================================================================
 void Tokenizer::FromTokenizer(const Tokenizer& t)
 {
+	if(own_string)
+	{
+		StringPool.Free(const_cast<string*>(str));
+		own_string = false;
+	}
+
 	str = t.str;
 	normal_seek.pos = t.normal_seek.pos;
 	normal_seek.line = t.normal_seek.line;

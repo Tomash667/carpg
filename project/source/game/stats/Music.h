@@ -26,7 +26,6 @@ struct Music
 	MusicType type;
 
 	static vector<Music*> musics;
+	static uint Load(uint& errors);
+	static void Cleanup();
 };
-
-//-----------------------------------------------------------------------------
-uint LoadMusics(uint& errors);

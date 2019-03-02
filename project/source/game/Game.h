@@ -519,14 +519,12 @@ public:
 	bool Quickload(bool from_console);
 	void ClearGameVars(bool new_game);
 	void ClearGame();
-	void AddReward(int gold) { AddGold(gold, nullptr, true, txQuestCompletedGold, 4.f, false); }
 	SOUND GetItemSound(const Item* item);
 	void Unit_StopUsingUsable(LevelContext& ctx, Unit& unit, bool send = true);
 	void EnterLevel(LocationGenerator* loc_gen);
 	void LeaveLevel(bool clear = false);
 	void LeaveLevel(LevelContext& ctx, bool clear);
 	void UpdateContext(LevelContext& ctx, float dt);
-	void AddGold(int count, vector<Unit*>* to = nullptr, bool show = false, cstring msg = txGoldPlus, float time = 3.f, bool defmsg = true);
 	bool IsAnyoneTalking() const;
 	// to by mog³o byæ globalna funkcj¹
 	void PlayHitSound(MATERIAL_TYPE mat_bron, MATERIAL_TYPE mat_cialo, const Vec3& hitpoint, float range, bool dmg);

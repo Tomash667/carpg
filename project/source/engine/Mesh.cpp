@@ -328,6 +328,15 @@ void Mesh::LoadPoints(StreamReader& stream)
 		stream.Read(p.rot);
 		if(head.version < 21)
 			p.rot.y = Clip(-p.rot.y);
+		if(head.version < 22)
+		{
+			if(p.size.x < 0)
+				p.size.x = -p.size.x;
+			if(p.size.y < 0)
+				p.size.y = -p.size.y;
+			if(p.size.z < 0)
+				p.size.z = -p.size.z;
+		}
 	}
 }
 

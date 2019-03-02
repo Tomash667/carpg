@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Qmsh",
     "author": "Tomashu",
-    "version": (0, 20, 0),
+    "version": (0, 21, 0),
     "blender": (2, 7, 8),
     "location": "File > Import > Qmsh",
     "description": "Import from Qmsh",
@@ -374,7 +374,7 @@ class Qmsh:
 		for i in range(self.head.n_tris):
 			tri = [f.ReadWord(), f.ReadWord(), f.ReadWord()]
 			tri = (tri[0], tri[2], tri[1]) # convert to blender order
-			if tri[0] == tri[1] or tri[0] == tri[2] or tri[1] == tri[2]:
+			if tri[0] == tri[1] or tri[0] == tri[2] or tri[1] == tri[2] or self.CheckTriangleDuplicate(tri):
 				self.broken_tris.append(i)
 			self.tris.append(tri)
 		# try to fix broken faces, will be removed later
@@ -384,6 +384,12 @@ class Qmsh:
 				face = self.GetFreeFace(index)
 				index = face[2] + 1
 				self.tris[i] = face
+	def CheckTriangleDuplicate(self, tri):
+		tri = sorted(tri)
+		for tri2 in self.tris:
+			if sorted(tri2) == tri:
+				return True
+		return False
 	def ReadSubmeshes(self, f):
 		self.subs = []
 		for i in range(self.head.n_subs):
@@ -484,6 +490,9 @@ class Importer:
 		self.last_cam = None
 		self.skeleton = None
 		self.fps = bpy.context.scene.render.fps
+	def Warn(self, msg):
+		print('WARN: ' + msg)
+		self.warnings += 1
 	def Run(self, filepath, config):
 		self.config = config
 		self.LoadMesh(filepath)
@@ -529,27 +538,50 @@ class Importer:
 		for f in mesh.tris:
 			bm.faces.new((new_verts[f[0]], new_verts[f[1]], new_verts[f[2]]))
 		bm.faces.ensure_lookup_table()
+		# create list of materials
+		materials = []
+		sub_to_mat = []
 		index = 0
 		for sub in mesh.subs:
-			# add material
-			mat = bpy.data.materials.new(sub.name)
-			mat.use_shadeless = True
-			mat.diffuse_color = (random(), random(), random())
-			mat.specular_color = sub.specular_color
-			mat.specular_hardness = sub.specular_hardness
-			mat.specular_intensity = sub.specular_intensity
-			mesh_data.materials.append(mat)
-			# add texture
-			tex = bpy.data.textures.new('', 'IMAGE')
-			tex_slot = mat.texture_slots.add()
-			tex_slot.texture = tex
-			# add image
-			img = self.LoadImage(sub.tex)
-			tex.image = img
-			sub.image = img
-			# set material index
+			existing_index = -1
+			# search for already added material
+			for i in range(len(materials)):
+				mat = materials[i][0]
+				tex = materials[i][1]
+				if tex == sub.tex:
+					existing_index = i
+					break
+			# add new
+			if existing_index == -1:
+				# add material
+				mat = bpy.data.materials.new(sub.name)
+				mat.use_shadeless = True
+				mat.diffuse_color = (random(), random(), random())
+				mat.specular_color = sub.specular_color
+				mat.specular_hardness = sub.specular_hardness
+				mat.specular_intensity = sub.specular_intensity
+				mesh_data.materials.append(mat)
+				# add texture
+				tex = bpy.data.textures.new('', 'IMAGE')
+				tex_slot = mat.texture_slots.add()
+				tex_slot.texture = tex
+				# add image
+				img = self.LoadImage(sub.tex)
+				tex.image = img
+				sub.image = img
+				# setup
+				materials.append((mat, sub.tex, img))
+				existing_index = index
+				index += 1
+			else:
+				sub.image = materials[existing_index][2]
+			sub_to_mat.append(existing_index)
+		# set material index
+		index = 0
+		for sub in mesh.subs:
+			mat_index = sub_to_mat[index]
 			for i in range(sub.first, sub.first+sub.tris):
-				bm.faces[i].material_index = index
+				bm.faces[i].material_index = mat_index
 			index += 1
 		bm.to_mesh(mesh_data)
 		obj = bpy.data.objects.new(name='Obj', object_data=mesh_data)
@@ -586,7 +618,7 @@ class Importer:
 			bmesh.ops.delete(bm, geom=to_delete, context=5)  
 			bm.to_mesh(mesh_data)
 			mesh_data.update()
-			Warn("Removed %d broken tris." % len(mesh.broken_tris))
+			self.Warn("Removed %d broken tris." % len(mesh.broken_tris))
 		# armature
 		if mesh.head.IsAnimated() and not mesh.head.IsStatic():
 			# create skeleton
@@ -816,7 +848,7 @@ class Importer:
 	def MergeCamera(self):
 		cam = FindObject('CAMERA')
 		if cam is None:
-			Warn('Missing camera to merge.')
+			self.Warn('Missing camera to merge.')
 		else:
 			self.SetCameraParams(cam)
 			self.last_cam = cam
@@ -845,10 +877,7 @@ class Importer:
 			for area in bpy.context.screen.areas:
 				if area.type == 'VIEW_3D':
 					area.spaces[0].region_3d.view_perspective = 'CAMERA'
-	def Warn(self, msg):
-		print('WARN:' + msg)
-		self.warnings += 1
-
+		
 ################################################################################
 # Klasa importera
 class QmshImporterOperator(bpy.types.Operator, ImportHelper):
@@ -865,7 +894,12 @@ class QmshImporterOperator(bpy.types.Operator, ImportHelper):
 	setResolution = BoolProperty(name='Set resolution', default=config.setResolution)
 	useMerge = BoolProperty(name="Use merge", default=False)
 	mergeScript = StringProperty(name="Merge script")
-
+	
+	def ShowMessageBox(self, message, title, icon = 'INFO'):
+		def draw(self, context):
+			self.layout.label(message)
+		bpy.context.window_manager.popup_menu(draw, title = title, icon = icon)
+	
 	def execute(self, context):
 		self.config.loadImages = self.loadImages
 		self.config.imagesPath = self.imagesPath
@@ -879,11 +913,11 @@ class QmshImporterOperator(bpy.types.Operator, ImportHelper):
 			if importer.warnings != 0:
 				msg = 'Finished with %d warnings.' % importer.warnings
 				print('WARN: ' + msg)
-				bpy.ops.error.message('INVOKE_DEFAULT', message = msg)
+				self.ShowMessageBox(msg, 'Warning')
 		except ImporterException as error:
 			msg = 'Exporter error: ' +str(error)
 			print("ERROR: " + msg)
-			bpy.ops.error.message('INVOKE_DEFAULT', message = msg)
+			self.ShowMessageBox(msg, 'Error', 'ERROR')
 		return {"FINISHED"}
 
 ################################################################################

@@ -53,13 +53,19 @@ struct TmpUnitGroup : ObjectPoolProxy<TmpUnitGroup>
 
 	vector<UnitGroup::Entry> entries;
 	vector<Spawn> spawn;
-	int total, min_level, max_level;
+	int total, min_level, max_level, refs;
 
+	void AddRefS() { ++refs; }
+	void ReleaseS();
 	void Fill(UnitGroup* group, int min_level, int max_level);
 	void Fill(UnitGroup* group, int level) { Fill(group, Max(level - 5, level / 2), level + 1); }
+	void FillS(SPAWN_GROUP spawn, int count, int level);
 	void FillInternal(UnitGroup* group);
 	Spawn Get();
+	Spawn GetS(uint index) { return spawn[index]; }
 	vector<Spawn>& Roll(int level, int count);
+	inline uint GetCount() { return spawn.size(); }
+	static TmpUnitGroup* GetInstanceS();
 };
 
 //-----------------------------------------------------------------------------

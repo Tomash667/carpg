@@ -97,7 +97,6 @@ void Journal::Update(float dt)
 		return;
 
 	Mode new_mode = Invalid;
-	QuestManager& quest_manager = QM;
 
 	if(Key.Focus())
 	{
@@ -121,7 +120,7 @@ void Journal::Update(float dt)
 			Build();
 		}
 		// zmiana wybranego zadania
-		if(mode == Quests && !quest_manager.quests.empty())
+		if(mode == Quests && !QM.quests.empty())
 		{
 			byte key;
 			if((key = GKey.PressedR(GK_ROTATE_LEFT)) != VK_NONE)
@@ -129,7 +128,7 @@ void Journal::Update(float dt)
 				if(!details)
 				{
 					// otwórz ostatni quest na tej stronie
-					open_quest = max((page + 1)*rect_lines * 2 - 1, int(quest_manager.quests.size()) - 1);
+					open_quest = max((page + 1)*rect_lines * 2 - 1, int(QM.quests.size()) - 1);
 					prev_page = page;
 					page = 0;
 					Build();
@@ -139,7 +138,7 @@ void Journal::Update(float dt)
 					// poprzedni quest
 					--open_quest;
 					if(open_quest == -1)
-						open_quest = quest_manager.quests.size() - 1;
+						open_quest = QM.quests.size() - 1;
 					page = 0;
 					Build();
 				}
@@ -149,7 +148,7 @@ void Journal::Update(float dt)
 				if(!details)
 				{
 					// pierwszy quest na stronie
-					open_quest = page*rect_lines * 2;
+					open_quest = page * rect_lines * 2;
 					prev_page = page;
 					page = 0;
 					Build();
@@ -158,7 +157,7 @@ void Journal::Update(float dt)
 				{
 					// nastêpny
 					++open_quest;
-					if(open_quest == (int)quest_manager.quests.size())
+					if(open_quest == (int)QM.quests.size())
 						open_quest = 0;
 					page = 0;
 					Build();
@@ -234,19 +233,19 @@ void Journal::Update(float dt)
 	}
 	else if(mode == Quests)
 	{
-		if(!quest_manager.quests.empty() && !details)
+		if(!QM.quests.empty() && !details)
 		{
 			// wybór questa
-			int co = -1;
+			int what = -1;
 			if(rect.IsInside(GUI.cursor_pos))
-				co = (GUI.cursor_pos.y - rect.Top()) / font_height;
+				what = (GUI.cursor_pos.y - rect.Top()) / font_height;
 			else if(rect2.IsInside(GUI.cursor_pos))
-				co = (GUI.cursor_pos.y - rect.Top()) / font_height + rect_lines;
+				what = (GUI.cursor_pos.y - rect.Top()) / font_height + rect_lines;
 
-			if(co != -1)
+			if(what != -1)
 			{
-				co += page*rect_lines * 2;
-				if(co < int(quest_manager.quests.size()))
+				what += page * rect_lines * 2;
+				if(what < int(QM.quests.size()))
 				{
 					GUI.cursor_mode = CURSOR_HAND;
 					if(Key.Focus() && Key.PressedRelease(VK_LBUTTON))
@@ -254,7 +253,7 @@ void Journal::Update(float dt)
 						details = true;
 						prev_page = page;
 						page = 0;
-						open_quest = co;
+						open_quest = what;
 						Build();
 					}
 				}
@@ -380,15 +379,14 @@ void Journal::Build()
 	if(mode == Quests)
 	{
 		// quests
-		QuestManager& quest_manager = QM;
 		if(!details)
 		{
 			// list of quests
-			if(quest_manager.quests.empty())
+			if(QM.quests.empty())
 				AddEntry(txNoQuests, 0, true);
 			else
 			{
-				for(vector<Quest*>::iterator it = quest_manager.quests.begin(), end = quest_manager.quests.end(); it != end; ++it)
+				for(vector<Quest*>::iterator it = QM.quests.begin(), end = QM.quests.end(); it != end; ++it)
 				{
 					int color = 0;
 					if((*it)->state == Quest::Failed)
@@ -402,7 +400,7 @@ void Journal::Build()
 		else
 		{
 			// details of single quest
-			Quest* quest = quest_manager.quests[open_quest];
+			Quest* quest = QM.quests[open_quest];
 			for(vector<string>::iterator it = quest->msgs.begin(), end = quest->msgs.end(); it != end; ++it)
 				AddEntry(it->c_str(), 0, false);
 		}

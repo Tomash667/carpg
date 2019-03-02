@@ -43,7 +43,7 @@ void Quest_KillAnimals::SetProgress(int prog2)
 		// player accepted quest
 		{
 			OnStart(game->txQuest[76]);
-			quest_manager.quests_timeout.push_back(this);
+			QM.quests_timeout.push_back(this);
 
 			// event
 			Location& sl = GetStartLocation();
@@ -70,7 +70,7 @@ void Quest_KillAnimals::SetProgress(int prog2)
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
-			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
+			RemoveElementTry<Quest_Dungeon*>(QM.quests_timeout, this);
 			OnUpdate(Format(game->txQuest[78], GetTargetLocationName()));
 		}
 		break;
@@ -79,8 +79,7 @@ void Quest_KillAnimals::SetProgress(int prog2)
 		{
 			state = Quest::Completed;
 			((City&)GetStartLocation()).quest_captain = CityQuestState::None;
-			game->AddReward(2500);
-			Team.AddExp(7500);
+			Team.AddReward(2500, 7500);
 			OnUpdate(game->txQuest[79]);
 		}
 		break;
@@ -96,7 +95,7 @@ void Quest_KillAnimals::SetProgress(int prog2)
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
-			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
+			RemoveElementTry<Quest_Dungeon*>(QM.quests_timeout, this);
 		}
 		break;
 	}

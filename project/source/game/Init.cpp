@@ -220,31 +220,35 @@ void Game::LoadDatafiles()
 	load_warnings = 0;
 
 	// content
-	content::system_dir = g_system_dir;
-	content::LoadContent([this, &res_mgr](content::Id id)
+	content.system_dir = g_system_dir;
+	content.LoadContent([this, &res_mgr](Content::Id id)
 	{
 		switch(id)
 		{
-		case content::Id::Items:
+		case Content::Id::Items:
 			gui->load_screen->Tick(txLoadingItems);
 			break;
-		case content::Id::Objects:
+		case Content::Id::Objects:
 			gui->load_screen->Tick(txLoadingObjects);
 			break;
-		case content::Id::Spells:
+		case Content::Id::Spells:
 			gui->load_screen->Tick(txLoadingSpells);
 			break;
-		case content::Id::Dialogs:
+		case Content::Id::Dialogs:
 			gui->load_screen->Tick(txLoadingDialogs);
 			break;
-		case content::Id::Units:
+		case Content::Id::Units:
 			gui->load_screen->Tick(txLoadingUnits);
 			break;
-		case content::Id::Buildings:
+		case Content::Id::Buildings:
 			gui->load_screen->Tick(txLoadingBuildings);
 			break;
-		case content::Id::Musics:
+		case Content::Id::Musics:
 			gui->load_screen->Tick(txLoadingMusics);
+			break;
+		default:
+			FIXME;
+			gui->load_screen->Tick("Loading quests...");
 			break;
 		}
 	});
@@ -265,7 +269,6 @@ void Game::LoadLanguageFiles()
 	Language::LoadFile("menu.txt");
 	Language::LoadFile("stats.txt");
 	Language::LoadLanguageFiles();
-	LoadDialogTexts();
 
 	SetGameCommonText();
 	SetItemStatsText();
@@ -370,8 +373,8 @@ void Game::PostconfigureGame()
 
 	// show errors notification
 	bool start_game_mode = true;
-	load_errors += content::errors;
-	load_warnings += content::warnings;
+	load_errors += content.errors;
+	load_warnings += content.warnings;
 	if(load_errors > 0 || load_warnings > 0)
 	{
 		// show message in release, notification in debug

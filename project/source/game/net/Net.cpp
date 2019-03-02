@@ -1106,7 +1106,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						}
 						else
 						{
-							AddGold(team_count);
+							Team.AddGold(team_count);
 							uint count = slot.count - team_count;
 							if(count)
 							{
@@ -1247,14 +1247,14 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					if(player.action == PlayerController::Action_LootChest)
 						player.action_chest->AddItem(slot.item, count, team_count, false);
 					else if(player.action == PlayerController::Action_LootContainer)
-						player.action_container->container->AddItem(slot.item, count, team_count);
+						player.action_usable->container->AddItem(slot.item, count, team_count);
 					else if(player.action == PlayerController::Action_Trade)
 					{
 						InsertItem(*player.chest_trade, slot.item, count, team_count);
 						int price = ItemHelper::GetItemPrice(slot.item, unit, false);
 						player.Train(TrainWhat::Trade, (float)price * count, 0);
 						if(team_count)
-							AddGold(price * team_count);
+							Team.AddGold(price * team_count);
 						uint normal_count = count - team_count;
 						if(normal_count)
 						{
@@ -1328,7 +1328,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					if(player.action == PlayerController::Action_LootChest)
 						player.action_chest->AddItem(slot, 1u, 0u, false);
 					else if(player.action == PlayerController::Action_LootContainer)
-						player.action_container->container->AddItem(slot, 1u, 0u);
+						player.action_usable->container->AddItem(slot, 1u, 0u);
 					else if(player.action == PlayerController::Action_Trade)
 					{
 						InsertItem(*player.chest_trade, slot, 1u, 0u);
@@ -1449,7 +1449,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::USE_USABLE;
 				c.unit = info.u;
-				c.id = player.action_container->netid;
+				c.id = player.action_usable->netid;
 				c.count = USE_USABLE_END;
 			}
 			else
@@ -1707,7 +1707,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							c.id = 1;
 
 							player.action = PlayerController::Action_LootContainer;
-							player.action_container = usable;
+							player.action_usable = usable;
 							player.chest_trade = &usable->container->items;
 						}
 
@@ -2015,7 +2015,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						if(count <= 0)
 							N.StreamError("Update server: CHEAT_ADD_GOLD from %s, invalid count %d.", info.name.c_str(), count);
 						else
-							AddGold(count);
+							Team.AddGold(count);
 					}
 					else
 					{
@@ -2897,7 +2897,9 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				}
 
 				string& output = SM.OpenOutput();
-				SM.SetContext(info.pc, target);
+				ScriptContext& ctx = SM.GetContext();
+				ctx.pc = info.pc;
+				ctx.target = target;
 				SM.RunScript(code->c_str());
 
 				NetChangePlayer& c = Add1(info.changes);
@@ -2910,6 +2912,8 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					*c.str = output;
 				}
 
+				ctx.pc = nullptr;
+				ctx.target = nullptr;
 				SM.CloseOutput();
 			}
 			break;
@@ -6466,7 +6470,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 					if(pc->action == PlayerController::Action_LootUnit)
 						gui->inventory->StartTrade(I_LOOT_BODY, *pc->action_unit);
 					else if(pc->action == PlayerController::Action_LootContainer)
-						gui->inventory->StartTrade(I_LOOT_CONTAINER, pc->action_container->container->items);
+						gui->inventory->StartTrade(I_LOOT_CONTAINER, pc->action_usable->container->items);
 					else
 					{
 						pc->action_chest->user = pc->unit;

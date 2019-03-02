@@ -123,6 +123,8 @@ void Mesh::Load(cstring path)
 		head.points_offset = f.Read<uint>();
 	else
 		head.points_offset = 0;
+	if(!IS_SET(head.flags, F_ANIMATED))
+		head.n_groups = 0; // fix for old models
 
 	// camera
 	if(head.version >= 13)
@@ -559,4 +561,14 @@ void Mesh::Save(cstring path)
 	{
 		f.Write(splits.data(), sizeof(Split) * head.n_subs);
 	}
+}
+
+Mesh::Point* Mesh::GetPoint(const string& id)
+{
+	for(Point& point : attach_points)
+	{
+		if(point.name == id)
+			return &point;
+	}
+	return nullptr;
 }

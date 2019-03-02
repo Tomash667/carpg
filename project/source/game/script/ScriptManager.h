@@ -1,8 +1,12 @@
 #pragma once
 
+//-----------------------------------------------------------------------------
 #include "GameComponent.h"
 #include "Var.h"
+#include "ScriptException.h"
+#include "Event.h"
 
+//-----------------------------------------------------------------------------
 #ifdef _DEBUG
 #	define CHECKED(x) { int _r = (x); assert(_r >= 0); }
 #else
@@ -10,29 +14,43 @@
 #endif
 
 //-----------------------------------------------------------------------------
-class asIScriptEngine;
-class asIScriptModule;
 class TypeBuilder;
 class NamespaceBuilder;
 struct asSFuncPtr;
 
 //-----------------------------------------------------------------------------
-struct ScriptException
+struct ScriptEvent
 {
-	ScriptException(cstring msg);
+	EventType type;
+	Location* location;
+	Unit* unit;
 
-	template<typename... Args>
-	ScriptException(cstring msg, const Args&... args) : ScriptException(Format(msg, args...)) {}
+	ScriptEvent(EventType type) : type(type), location(nullptr), unit(nullptr) {}
 };
 
 //-----------------------------------------------------------------------------
 struct ScriptContext
 {
-	ScriptContext() : pc(nullptr), target(nullptr), stock(nullptr) {}
+	ScriptContext() : pc(nullptr), target(nullptr), stock(nullptr), quest(nullptr) {}
 
 	PlayerController* pc;
 	Unit* target;
 	vector<ItemSlot>* stock;
+	Quest_Scripted* quest;
+
+	void Clear()
+	{
+		pc = nullptr;
+		target = nullptr;
+		stock = nullptr;
+		quest = nullptr;
+	}
+	Quest_Scripted* GetQuest()
+	{
+		if(!quest)
+			throw ScriptException("Method must be called from quest.");
+		return quest;
+	}
 };
 
 //-----------------------------------------------------------------------------
@@ -44,20 +62,18 @@ public:
 	void Cleanup() override;
 	void RegisterCommon();
 	void RegisterGame();
-	void SetContext(PlayerController* pc, Unit* target);
 	void SetException(cstring ex) { last_exception = ex; }
 	bool RunScript(cstring code, bool validate = false);
 	bool RunIfScript(cstring code, bool validate = false);
-	bool RunStringScript(cstring code, string& str, bool validate = false);
 	asIScriptFunction* PrepareScript(cstring name, cstring code);
-	bool RunScript(asIScriptFunction* func);
+	bool RunScript(asIScriptFunction* func, void* instance = nullptr, delegate<void(asIScriptContext*, int)> clbk = nullptr);
 	string& OpenOutput();
 	void CloseOutput();
 	void Log(Logger::Level level, cstring msg, cstring code = nullptr);
 	void AddFunction(cstring decl, const asSFuncPtr& funcPointer);
 	// add enum with values {name, value}
 	void AddEnum(cstring name, std::initializer_list<std::pair<cstring, int>> const& values);
-	TypeBuilder AddType(cstring name);
+	TypeBuilder AddType(cstring name, bool refcount = false);
 	TypeBuilder ForType(cstring name);
 	VarsContainer* GetVars(Unit* unit);
 	NamespaceBuilder WithNamespace(cstring name, void* auxiliary = nullptr);
@@ -73,6 +89,10 @@ public:
 	};
 	RegisterResult RegisterGlobalVar(const string& type, bool is_ref, const string& name);
 	ScriptContext& GetContext() { return ctx; }
+	asIScriptEngine* GetEngine() { return engine; }
+	void AddVarType(Var::Type type, cstring name, bool is_ref);
+	Var::Type GetVarType(int type_id);
+	bool CheckVarType(int type_id, bool is_ref);
 
 private:
 	struct ScriptTypeInfo
@@ -89,7 +109,8 @@ private:
 	string output;
 	cstring last_exception;
 	bool gather_output;
-	std::map<string, ScriptTypeInfo> script_type_infos;
+	std::map<int, ScriptTypeInfo> script_type_infos;
+	std::map<string, int> var_type_map;
 	std::unordered_map<Unit*, VarsContainer*> unit_vars;
 	ScriptContext ctx;
 };

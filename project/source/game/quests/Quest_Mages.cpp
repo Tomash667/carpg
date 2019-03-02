@@ -70,10 +70,9 @@ void Quest_Mages::SetProgress(int prog2)
 
 			GetTargetLocation().active_quest = nullptr;
 
-			game->AddReward(4000);
-			Team.AddExp(12000);
+			Team.AddReward(4000, 12000);
 			OnUpdate(game->txQuest[168]);
-			quest_manager.RemoveQuestRumor(R_MAGES);
+			QM.RemoveQuestRumor(R_MAGES);
 		}
 		break;
 	case Progress::EncounteredGolem:
@@ -81,8 +80,8 @@ void Quest_Mages::SetProgress(int prog2)
 			QM.quest_mages2->OnStart(game->txQuest[169]);
 			Quest_Mages2* q = QM.quest_mages2;
 			q->mages_state = Quest_Mages2::State::EncounteredGolem;
-			quest_manager.quest_rumor[R_MAGES2] = false;
-			++quest_manager.quest_rumor_counter;
+			QM.quest_rumor[R_MAGES2] = false;
+			++QM.quest_rumor_counter;
 			q->msgs.push_back(Format(game->txQuest[170], W.GetDate()));
 			q->msgs.push_back(game->txQuest[171]);
 			W.AddNews(game->txQuest[172]);
@@ -265,7 +264,7 @@ void Quest_Mages2::SetProgress(int prog2)
 		break;
 	case Progress::BoughtPotion:
 		// kupno miksturki
-		// wywo³ywane z DTF_IF_SPECAL q_magowie_kup
+		// wywo³ywane z DOP_IF_SPECAL q_magowie_kup
 		{
 			if(prog != Progress::BoughtPotion)
 				OnUpdate(game->txQuest[180]);
@@ -387,11 +386,10 @@ void Quest_Mages2::SetProgress(int prog2)
 				scholar->temporary = true;
 				scholar = nullptr;
 			}
-			game->AddReward(10000);
-			Team.AddExp(25000);
+			Team.AddReward(10000, 25000);
 			OnUpdate(game->txQuest[188]);
-			quest_manager.EndUniqueQuest();
-			quest_manager.RemoveQuestRumor(R_MAGES2);
+			QM.EndUniqueQuest();
+			QM.RemoveQuestRumor(R_MAGES2);
 		}
 		break;
 	}

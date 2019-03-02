@@ -48,14 +48,14 @@ void Quest_Orcs::SetProgress(int prog2)
 		{
 			if(prog != Progress::None)
 				return;
-			if(quest_manager.RemoveQuestRumor(R_ORCS))
+			if(QM.RemoveQuestRumor(R_ORCS))
 				game->gui->journal->AddRumor(Format(game->txQuest[189], GetStartLocationName()));
 			QM.quest_orcs2->orcs_state = Quest_Orcs2::State::GuardTalked;
 		}
 		break;
 	case Progress::NotAccepted:
 		{
-			if(quest_manager.RemoveQuestRumor(R_ORCS))
+			if(QM.RemoveQuestRumor(R_ORCS))
 				game->gui->journal->AddRumor(Format(game->txQuest[190], GetStartLocationName()));
 			// mark guard to remove
 			Unit*& u = QM.quest_orcs2->guard;
@@ -72,7 +72,7 @@ void Quest_Orcs::SetProgress(int prog2)
 		{
 			OnStart(game->txQuest[191]);
 			// remove rumor from pool
-			quest_manager.RemoveQuestRumor(R_ORCS);
+			QM.RemoveQuestRumor(R_ORCS);
 			// mark guard to remove
 			Unit*& u = QM.quest_orcs2->guard;
 			if(u)
@@ -116,8 +116,7 @@ void Quest_Orcs::SetProgress(int prog2)
 		{
 			state = Quest::Completed;
 
-			game->AddReward(4000);
-			Team.AddExp(12000);
+			Team.AddReward(4000, 12000);
 			OnUpdate(game->txQuest[195]);
 			W.AddNews(Format(game->txQuest[196], GetTargetLocationName(), GetStartLocationName()));
 
@@ -454,10 +453,9 @@ void Quest_Orcs2::SetProgress(int prog2)
 		// pogadano z gorushem
 		{
 			state = Quest::Completed;
-			game->AddReward(Random(9000, 11000));
-			Team.AddExp(25000);
+			Team.AddReward(Random(9000, 11000), 25000);
 			OnUpdate(game->txQuest[206]);
-			quest_manager.EndUniqueQuest();
+			QM.EndUniqueQuest();
 			// gorush
 			Team.RemoveTeamMember(orc);
 			Usable* tron = L.local_ctx.FindUsable("throne");

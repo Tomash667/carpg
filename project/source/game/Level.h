@@ -37,6 +37,7 @@ public:
 	void PostInit() override;
 	void Cleanup() override;
 	void Reset();
+	Location* GetLocation() { return location; }
 	void WarpUnit(Unit* unit, int where)
 	{
 		UnitWarpData& uwd = Add1(unit_warp_data);
@@ -52,6 +53,7 @@ public:
 	LevelContext& GetContextFromInBuilding(int in_building);
 	Unit* FindUnit(int netid);
 	Unit* FindUnit(delegate<bool(Unit*)> pred);
+	Unit* FindUnit(UnitData* ud);
 	Usable* FindUsable(int netid);
 	Door* FindDoor(int netid);
 	Door* FindDoor(LevelContext& ctx, const Int2& pt);
@@ -97,6 +99,7 @@ public:
 	};
 	Unit* SpawnUnitInsideInn(UnitData& unit, int level = -1, InsideBuilding* inn = nullptr, int flags = 0);
 	void SpawnUnitsGroup(LevelContext& ctx, const Vec3& pos, const Vec3* look_at, uint count, UnitGroup* group, int level, delegate<void(Unit*)> callback);
+	Unit* SpawnUnit(LevelContext& ctx, TmpSpawn spawn);
 	struct IgnoreObjects
 	{
 		// nullptr lub tablica jednostek zakoñczona nullptr
@@ -144,12 +147,22 @@ public:
 	void AddPlayerTeam(const Vec3& pos, float rot, bool reenter, bool hide_weapon);
 	void UpdateDungeonMinimap(bool in_level);
 	void RevealMinimap();
+	bool IsSettlement() { return city_ctx != nullptr; }
 	bool IsCity();
+	bool IsVillage();
+	bool IsTutorial();
 	void Update();
 	void Write(BitStreamWriter& f);
 	bool Read(BitStreamReader& f, bool loaded_resources);
 	MusicType GetLocationMusic();
 	void CleanLevel(int building_id = -2);
+	void SpawnItemRandomly(const Item* item, uint count);
+	Unit* GetNearestEnemy(Unit* unit);
+	Unit* SpawnUnitNearLocationS(UnitData* ud, const Vec3& pos, float range);
+	GroundItem* FindNearestItem(const Item* item, const Vec3& pos);
+	GroundItem* FindItem(const Item* item);
+	Unit* GetMayor();
+	bool IsSafe();
 
 	Location* location; // same as W.current_location
 	int location_index; // same as W.current_location_index

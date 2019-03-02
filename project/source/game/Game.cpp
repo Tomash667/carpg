@@ -851,6 +851,8 @@ void Game::OnCleanup()
 	if(game_state != GS_QUIT && game_state != GS_LOAD_MENU)
 		ClearGame();
 
+	content.CleanupContent();
+
 	for(GameComponent* component : components)
 		component->Cleanup();
 
@@ -888,8 +890,6 @@ void Game::OnCleanup()
 	// item textures
 	for(auto& it : item_texture_map)
 		SafeRelease(it.second);
-
-	content::CleanupContent();
 
 	draw_batch.Clear();
 	super_shader->Cleanup();
@@ -1491,7 +1491,6 @@ uint Game::ValidateGameData(bool major)
 	Item::Validate(err);
 	PerkInfo::Validate(err);
 	RoomType::Validate(err);
-	GameDialog::Verify(err);
 
 	if(err == 0)
 		Info("Test: Validation succeeded.");
@@ -1704,6 +1703,12 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 		L.location->portal = nullptr;
 	}
 
+	if(L.location->outside)
+	{
+		OnEnterLevelOrLocation();
+		OnEnterLocation();
+	}
+
 	if(Net::IsOnline())
 	{
 		net_mode = NM_SERVER_SEND;
@@ -1726,12 +1731,6 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 		gui->load_screen->visible = false;
 		gui->main_menu->visible = false;
 		gui->game_gui->visible = true;
-	}
-
-	if(L.location->outside)
-	{
-		OnEnterLevelOrLocation();
-		OnEnterLocation();
 	}
 
 	Info("Randomness integrity: %d", RandVal());

@@ -6,6 +6,17 @@ Core functions:
 	int Random(int a, int b) - returns random number in range <a,b>.
 	int Rand() - returns random int number.
 
+Core types:
+	Int2 - 2d int point x, y.
+	Vec2 - 2d vector x, y; static methods:
+		float Distance(const Vec2& in v1, const Vec2& in v2);
+	Vec3 - 3d vector x, y, z; static methods:
+		float Distance(const Vec3& in v1, const Vec3& in v2);
+	Vec4 - 4d vector x, y, z, w.
+	
+Funcdefs:
+	float GetLocationCallback(Location@)
+
 Enum ITEM_TYPE, values:
 	IT_WEAPON
 	IT_BOW
@@ -14,20 +25,22 @@ Enum ITEM_TYPE, values:
 	IT_OTHER
 	IT_CONSUMABLE
 	IT_BOOK
-	
+
 Enum ITEM_FLAGS:
 	ITEM_NOT_SHOP - not generated in shop.
 	ITEM_NOT_MERCHANT - not generated for merchant.
 	ITEM_NOT_BLACKSMITH - not generated for blacksmith.
 	ITEM_NOT_ALCHEMIST - not generated for alchemist.
 	
+Dialog type.
+
 Item type:
 	string name - readonly
 	int value - readonly
 Static methods:
 	Item@ Get(const string& in id) - return item with id.
 	Item@ GetRandom(int max_value) - returns random item with value <= max_value, can return quest item.
-	
+
 ItemList type:
 	Item@ Get() - return random item from list.
 	Item@ Get(int index) - return item from list by index.
@@ -35,18 +48,45 @@ ItemList type:
 Static methods:
 	ItemList@ Get(const string& in id) - return item list with id.
 
+GroundItem type:
+	Vec3 pos - readonly
+
+UnitData type:
+Static methods:
+	UnitData@ Get(const string& in id) - return unit data with id.
+
+Quest type:
+	void AddEntry(const string& in str) - add journal message.
+	void SetStarted(const string& in title) - mark quest as started, add journal entry with quest title, can only be called once.
+	void SetCompleted() - mark quest as completed, can only be called when quest is started.
+	void SetFailed() - mark quest as failed, can only be called when quest is started.
+	void SetTimeout(int days) - register quest timeout, can only be called once (removed when quest is completed or failed).
+	Dialog@ GetDialog(const string& in id) - return quest dialog with this id.
+
 Unit type:
+	const Vec3 pos
 	int gold - modifying will show message.
 	VarsContainer@ vars - readonly
-	void AddItem(Item@ item) - add item, will show message.
+	string name - can only be set for heroes (UnitData have hero flag) at startup.
+	bool auto_talk - ai auto talk mode.
+	bool dont_attack - enemy ai don't attack.
+	bool IsTeamMember() - true if unit is team member.
+	void AddItem(Item@ item, uint count = 1) - add item, will show message.
+	void AddTeamItem(Item@ item, uint count = 1) - add team item, will show message.
 	void RemoveItem(const string& in item_id) - remove 1 item by id, will show message.
+	void RemoveQuestItem(Quest@) - remove 1 quest item from unit inventory.
+	void AddDialog(Quest@, const string& in dialog_id) - add quest dialog to unit.
+	void RemoveDialog(Quest@) - remove quest dialog from unit.
+	void OrderEscapeToUnit(Unit@) - orders ai to escape towards unit.
 	void OrderLeave() - orders unit to leave current location and disappear (only works for heroes now).
+	void OrderAttack() - orders unit to attack (crazies in this level will attack team, remove dont_attack).
 Globals:
 	Unit@ target
 
 Player type:
 	Unit@ unit - unit player.
 	const string name
+	bool IsLeader() - return true if player is leader.
 	bool HavePerk(const string& in perk) - return true if player have this perk.
 Globals:
 	Player@ pc
@@ -54,11 +94,108 @@ Globals:
 Team namespace:
 	const uint size - active members count.
 	void AddGold(uint gold) - add gold divided between team members, shows message.
+	void AddReward(uint gold, uint exp = 0) - add gold and experience divided between team members.
+	Unit@ leader - readonly
+
+EventType enum:
+	EVENT_ENTER - for locations, send when player enter location (set field location).
+	EVENT_PICKUP - for locations, send when someone pickups ground item (set field unit, item).
+	EVENT_UPDATE - for unit, send every frame (set field unit).
+	EVENT_TIMEOUT - for quests, send when quest timeout expired.
+
+LOCATION enum:
+	L_CITY
+	L_CAVE
+	L_CAMP
+	L_DUNGEON
+	L_CRYPT
+	L_FOREST
+	L_MOONWELL
+	L_ENCOUNTER
+	
+SPAWN_GROUP enum:
+	SG_GOBLINS
+	SG_ORCS
+	SG_BANDITS
+	SG_UNDEAD
+	SG_NECROMANCERS
+	SG_MAGES
+	SG_GOLEMS
+	SG_MAGES_AND_GOLEMS
+	SG_EVIL
+	
+Spawn struct - unit & level.
+
+SpawnGroup type:
+	const uint count - rolled units count.
+	void Fill(SPAWN_GROUP group, uint count, uint level) - roll units from random list.
+	Spawn Get(uint index) - get rolled unit by index.
+Static methods:
+	SpawnGroup@ Get() - return new instance.
+	
+LevelContext type - part of level (dungeon, outside, building).
+
+Location type:
+	const Vec2 pos
+	const string name
+	const LOCATION type
+	Quest@ active_quest - quest assigned to location, prevent other quests from using this location.
+	bool IsCity() - true if location is city.
+	bool IsVillage() - true if location is village.
+	void AddEventHandler(Quest@, EventType) - add event to location.
+	void RemoveEventHandler(Quest@) - remove event handler from location.
+	
+Encounter type:
+	Vec2 pos
+	bool dont_attack - spawned units have dont_attack set.
+	Quest@ quest
+	Dialog@ dialog
+	int st
+	SPAWN_GROUP group
+	string text
+
+World namespace:
+	uint GetSettlements() - return count of settlements.
+	Location@ GetLocation(uint index) - return location by index.
+	string GetDirName(const Vec2& in pos1, const Vec2& in pos2) - get direction name string from pos1 to pos2.
+	float GetTravelDays(float distance) - convert world distance to days of travel required.
+	Location@ GetRandomCity() - returns random city (not village).
+	Location@ GetRandomSettlementWithBuilding(const string& in building_id) - returns random settlement that have this building.
+	Location@ GetRandomSettlement(Location@) - returns random settlement that is not passed to function.
+	Location@ GetRandomSettlement(GetLocationCallback@) - returns random settlement using callback that returns weight.
+	Encounter@ AddEncounter(Quest@) - add new encounter attached to this quest.
+	void RemoveEncounter(Quest@) - remove encounters attached to this quest.
 
 Level namespace:
+	Location@ location - readonly
+	bool IsSettlement() - true when inside city/village.
 	bool IsCity() - true when inside city.
 	bool IsVillage() - true when inside village.
 	bool IsTutorial() - true when inside tutorial.
+	bool IsSafe() - true when current location is safe.
+	Unit@ FindUnit(UnitData@) - finds unit with this unit data.
+	Unit@ GetNearestEnemy(Unit@) - finds nearest unit that is enemy of this unit.
+	GroundItem@ FindItem(Item@) - finds first item.
+	GroundItem@ FindNearestItem(Item@, const Vec3& in pos) - finds nearest item.
+	void SpawnItemRandomly(Item@, uint count = 1) - spawns item inside level in random locations.
+	Unit@ SpawnUnitNearLocation(UnitData@, const Vec3& in pos, float range) - spawns unit near position.
+	Unit@ SpawnUnit(LevelContext@, Spawn) - spawns unit inside context.
+	Unit@ GetMayor() - returns city mayor or village soltys or null.
+	LevelContext@ GetContext(Unit@) - get context with unit.
 
 StockScript namespace - can only be called from stock script:
+	void AddItem(Item@, uint count = 1) - add item to stock.
 	void AddRandomItem(ITEM_TYPE type, int price_limit, int flags, int count = 1) - add random items to stock.
+
+NoticeBoard namespace:
+	void AddQuest(Quest@, const string& in dialog_id) - add dialog to notice board.
+	void RemoveQuest(Quest@) - remove current quest dialog from notice board.
+
+Event type:
+	EventType event
+	Location@ location
+	Unit@ unit
+
+ScriptContext type, global instance C:
+	Quest@ quest
+	Player@ pc

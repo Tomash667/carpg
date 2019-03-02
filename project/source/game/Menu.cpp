@@ -565,7 +565,7 @@ void Game::UpdateClientConnectingIp(float dt)
 					BitStreamWriter f;
 					f << ID_HELLO;
 					f << VERSION;
-					content::WriteCrc(f);
+					content.WriteCrc(f);
 					f << player_name;
 					N.SendClient(f, IMMEDIATE_PRIORITY, RELIABLE, Stream_Connect);
 				}
@@ -738,7 +738,7 @@ void Game::UpdateClientConnectingIp(float dt)
 								memcpy(&type, packet->data + 6, 1);
 								uint my_crc;
 								cstring type_str;
-								if(content::GetCrc((content::Id)type, my_crc, type_str))
+								if(content.GetCrc((Content::Id)type, my_crc, type_str))
 									reason_eng = Format("invalid %s crc (%p) vs server (%p)", type_str, my_crc, server_crc);
 							}
 						}

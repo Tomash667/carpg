@@ -270,6 +270,10 @@ namespace tokenizer
 		{
 			return SkipTo([group](Tokenizer& t) { return t.IsKeywordGroup(group); });
 		}
+		bool SkipToKeyword(int keyword, int group = EMPTY_GROUP)
+		{
+			return SkipTo([keyword, group](Tokenizer& t) { return t.IsKeyword(keyword, group); });
+		}
 		bool PeekSymbol(char symbol);
 		char PeekChar()
 		{

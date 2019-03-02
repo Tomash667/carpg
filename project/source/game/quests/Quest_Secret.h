@@ -1,8 +1,10 @@
 #pragma once
 
+//-----------------------------------------------------------------------------
 #include "QuestHandler.h"
 #include "Item.h"
 
+//-----------------------------------------------------------------------------
 class Quest_Secret : public QuestHandler
 {
 public:

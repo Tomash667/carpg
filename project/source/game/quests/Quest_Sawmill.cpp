@@ -82,7 +82,7 @@ void Quest_Sawmill::SetProgress(int prog2)
 			days = 0;
 			sawmill_state = State::InBuild;
 
-			quest_manager.RemoveQuestRumor(R_SAWMILL);
+			QM.RemoveQuestRumor(R_SAWMILL);
 
 			OnUpdate(game->txQuest[128]);
 		}
@@ -95,7 +95,7 @@ void Quest_Sawmill::SetProgress(int prog2)
 			days = 0;
 
 			OnUpdate(game->txQuest[129]);
-			game->AddReward(PAYMENT);
+			Team.AddReward(PAYMENT);
 			quest_manager.EndUniqueQuest();
 			Location& target = GetTargetLocation();
 			W.AddNews(Format(game->txQuest[130], target.name.c_str()));

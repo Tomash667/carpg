@@ -1,8 +1,10 @@
 #pragma once
 
+//-----------------------------------------------------------------------------
 #include "Chest.h"
 #include "UnitEventHandler.h"
 
+//-----------------------------------------------------------------------------
 class Quest_Tutorial final : public ChestEventHandler, public UnitEventHandler
 {
 	friend class TutorialLocationGenerator;

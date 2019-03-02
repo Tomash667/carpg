@@ -190,6 +190,7 @@ struct Item
 
 	void CreateCopy(Item& item) const;
 	Item* CreateCopy() const;
+	Item* QuestCopy(Quest* quest, const string& name);
 	void Rename(cstring name);
 
 	string id, mesh_id, name, desc;
@@ -497,6 +498,8 @@ struct ItemList
 		return items[Rand() % items.size()];
 	}
 	void Get(int count, const Item** result) const;
+	const Item* GetByIndex(int index) const;
+	inline uint GetSize() const { return items.size(); }
 
 	static vector<ItemList*> lists;
 	static ItemListResult TryGet(Cstring id);

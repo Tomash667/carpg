@@ -4,7 +4,7 @@
 #include "Quest.h"
 
 //-----------------------------------------------------------------------------
-class Quest_StolenArtifact : public Quest_Dungeon
+class Quest_StolenArtifact final : public Quest_Dungeon
 {
 public:
 	enum Progress

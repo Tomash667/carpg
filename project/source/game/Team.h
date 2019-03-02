@@ -70,6 +70,9 @@ public:
 	Unit* FindPlayerTradingWithUnit(Unit& u);
 	void AddLearningPoint(int count = 1);
 	void AddExp(int exp, vector<Unit*>* units = nullptr);
+	void AddGold(int count, vector<Unit*>* to = nullptr, bool show = false, cstring msg = nullptr, float time = 3.f, bool defmsg = true);
+	void AddGoldS(int count) { AddGold(count, nullptr, true); }
+	void AddReward(int gold, int exp = 0);
 	void OnTravel(float dist);
 	void CalculatePlayersLevel();
 

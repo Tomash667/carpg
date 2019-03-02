@@ -2,6 +2,7 @@
 #include "GameCore.h"
 #include "UnitGroup.h"
 #include "UnitData.h"
+#include "SpawnGroup.h"
 
 //-----------------------------------------------------------------------------
 vector<UnitGroup*> UnitGroup::groups;
@@ -49,6 +50,7 @@ UnitGroup* UnitGroup::TryGet(Cstring id)
 	return nullptr;
 }
 
+
 //=================================================================================================
 UnitGroupList* UnitGroupList::TryGet(Cstring id)
 {
@@ -58,6 +60,14 @@ UnitGroupList* UnitGroupList::TryGet(Cstring id)
 			return list;
 	}
 	return nullptr;
+}
+
+
+//=================================================================================================
+void TmpUnitGroup::ReleaseS()
+{
+	if(--refs == 0)
+		Free();
 }
 
 //=================================================================================================
@@ -100,6 +110,14 @@ void TmpUnitGroup::Fill(UnitGroup* group, int min_level, int max_level)
 		FillInternal(group);
 		assert(!entries.empty());
 	}
+}
+
+//=================================================================================================
+void TmpUnitGroup::FillS(SPAWN_GROUP spawn, int count, int level)
+{
+	UnitGroup* group = g_spawn_groups[spawn].unit_group;
+	Fill(group, level);
+	Roll(level, count);
 }
 
 //=================================================================================================
@@ -217,4 +235,12 @@ vector<TmpUnitGroup::Spawn>& TmpUnitGroup::Roll(int level, int count)
 	}
 
 	return spawn;
+}
+
+//=================================================================================================
+TmpUnitGroup* TmpUnitGroup::GetInstanceS()
+{
+	TmpUnitGroup* group = ObjectPoolProxy<TmpUnitGroup>::Get();
+	group->refs = 1;
+	return group;
 }

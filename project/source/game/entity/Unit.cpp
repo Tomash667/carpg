@@ -27,6 +27,8 @@
 #include "PlayerInfo.h"
 #include "Stock.h"
 #include "Arena.h"
+#include "Quest_Scripted.h"
+#include "ScriptException.h"
 
 const float Unit::AUTO_TALK_WAIT = 0.333f;
 const float Unit::STAMINA_BOW_ATTACK = 100.f;
@@ -745,7 +747,7 @@ bool Unit::AddItem(const Item* item, uint count, uint team_count)
 		{
 			if(team_count && IsTeamMember())
 			{
-				Game::Get().AddGold(team_count);
+				Team.AddGold(team_count);
 				uint normal_gold = count - team_count;
 				if(normal_gold)
 				{
@@ -1603,6 +1605,14 @@ void Unit::Save(GameWriter& f, bool local)
 
 	f.WriteVector4(effects);
 
+	// dialogs
+	f.Write(dialogs.size());
+	for(QuestDialog& dialog : dialogs)
+	{
+		f << dialog.quest->refid;
+		f << dialog.dialog->id;
+	}
+
 	if(player)
 	{
 		f.Write1();
@@ -1691,7 +1701,7 @@ void Unit::Load(GameReader& f, bool local)
 	if(LOAD_VERSION < V_0_5)
 		f.Skip<int>(); // old type
 	f >> level;
-	if(content::require_update && data->group != G_PLAYER)
+	if(content.require_update && data->group != G_PLAYER)
 	{
 		if(data->upgrade)
 		{
@@ -1821,10 +1831,10 @@ void Unit::Load(GameReader& f, bool local)
 		Game::Get().load_unit_handler.push_back(this);
 	}
 	CalculateLoad();
-	if(can_sort && content::require_update)
+	if(can_sort && content.require_update)
 		SortItems(items);
 	f >> weight;
-	if(can_sort && content::require_update)
+	if(can_sort && content.require_update)
 		RecalculateWeight();
 
 	int guard_refid = f.Read<int>();
@@ -1955,6 +1965,7 @@ void Unit::Load(GameReader& f, bool local)
 		moved = false;
 	}
 
+	// effects
 	if(LOAD_VERSION >= V_0_8)
 		f.ReadVector4(effects);
 	else
@@ -1967,6 +1978,24 @@ void Unit::Load(GameReader& f, bool local)
 			e.power = f.Read<float>();
 			e.source = EffectSource::Temporary;
 			e.source_id = -1;
+		}
+	}
+
+	// dialogs
+	if(LOAD_VERSION >= V_DEV)
+	{
+		dialogs.resize(f.Read<uint>());
+		for(QuestDialog& dialog : dialogs)
+		{
+			int refid = f.Read<int>();
+			string* str = StringPool.Get();
+			f >> *str;
+			QM.AddQuestRequest(refid, (Quest**)&dialog.quest, [this, &dialog, str]()
+			{
+				dialog.dialog = dialog.quest->GetDialog(*str);
+				StringPool.Free(str);
+				dialog.quest->AddDialogPtr(this);
+			});
 		}
 	}
 
@@ -2016,7 +2045,7 @@ void Unit::Load(GameReader& f, bool local)
 	// calculate new skills/attributes
 	if(LOAD_VERSION >= V_0_8)
 	{
-		if(content::require_update)
+		if(content.require_update)
 			CalculateStats();
 	}
 	else if(LOAD_VERSION >= V_0_4)
@@ -2113,7 +2142,7 @@ void Unit::LoadStock(GameReader& f)
 		}
 	}
 
-	if(can_sort && content::require_update)
+	if(can_sort && content.require_update)
 		SortItems(cnt);
 }
 
@@ -2652,6 +2681,17 @@ void Unit::ReequipItemsInternal()
 }
 
 //=================================================================================================
+bool Unit::HaveQuestItem(int quest_refid)
+{
+	for(vector<ItemSlot>::iterator it = items.begin(), end = items.end(); it != end; ++it)
+	{
+		if(it->item && it->item->IsQuest(quest_refid))
+			return true;
+	}
+	return false;
+}
+
+//=================================================================================================
 void Unit::RemoveQuestItem(int quest_refid)
 {
 	for(vector<ItemSlot>::iterator it = items.begin(), end = items.end(); it != end; ++it)
@@ -2671,6 +2711,12 @@ void Unit::RemoveQuestItem(int quest_refid)
 	}
 
 	assert(0 && "Nie znalaziono questowego przedmiotu do usuniêcia!");
+}
+
+//=================================================================================================
+void Unit::RemoveQuestItemS(Quest* quest)
+{
+	RemoveQuestItem(quest->refid);
 }
 
 //=================================================================================================
@@ -3057,6 +3103,13 @@ bool Unit::RemoveItem(const Item* item, uint count)
 		return false;
 	RemoveItem(i_index, count);
 	return true;
+}
+
+//=================================================================================================
+void Unit::SetName(const string& name)
+{
+	if(hero)
+		hero->name = name;
 }
 
 //=================================================================================================
@@ -3762,6 +3815,27 @@ void Unit::StartAutoTalk(bool leader, GameDialog* dialog)
 		auto_talk_timer = 0.f;
 	}
 	auto_talk_dialog = dialog;
+}
+
+//=================================================================================================
+void Unit::SetAutoTalk(bool new_auto_talk)
+{
+	if(new_auto_talk == GetAutoTalk())
+		return;
+	if(new_auto_talk)
+		StartAutoTalk();
+	else
+		auto_talk = AutoTalkMode::No;
+}
+
+//=================================================================================================
+void Unit::SetDontAttack(bool new_dont_attack)
+{
+	if(new_dont_attack == dont_attack)
+		return;
+	dont_attack = new_dont_attack;
+	if(ai)
+		ai->change_ai_mode = true;
 }
 
 //=================================================================================================
@@ -5033,6 +5107,79 @@ void Unit::RefreshStock()
 			Game& game = Game::Get();
 			for(ItemSlot& slot : stock->items)
 				game.PreloadItem(slot.item);
+		}
+	}
+}
+
+//=================================================================================================
+void Unit::AddDialog(Quest_Scripted* quest, GameDialog* dialog)
+{
+	assert(quest && dialog);
+	dialogs.push_back({ dialog, quest });
+	quest->AddDialogPtr(this);
+}
+
+//=================================================================================================
+void Unit::AddDialogS(Quest_Scripted* quest, const string& dialog_id)
+{
+	GameDialog* dialog = quest->GetDialog(dialog_id);
+	if(!dialog)
+		throw ScriptException("Missing quest dialog '%s'.", dialog_id.c_str());
+	AddDialog(quest, dialog);
+}
+
+//=================================================================================================
+void Unit::RemoveDialog(Quest_Scripted* quest, bool cleanup)
+{
+	assert(quest);
+	LoopAndRemove(dialogs, [quest](QuestDialog& dialog)
+	{
+		if(dialog.quest == quest)
+			return true;
+		return false;
+	});
+	if(!cleanup)
+		quest->RemoveDialogPtr(this);
+}
+
+//=================================================================================================
+void Unit::OrderEscapeToUnit(Unit* unit)
+{
+	// TODO
+}
+
+//=================================================================================================
+void Unit::OrderLeave()
+{
+	if(hero)
+		hero->mode = HeroData::Leave;
+}
+
+//=================================================================================================
+void Unit::OrderAttack()
+{
+	if(data->group == G_CRAZIES)
+	{
+		if(!Team.crazies_attack)
+		{
+			Team.crazies_attack = true;
+			if(Net::IsOnline())
+			{
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::CHANGE_FLAGS;
+			}
+		}
+	}
+	else
+	{
+		LevelContext& ctx = L.GetContext(*this);
+		for(Unit* unit : *ctx.units)
+		{
+			if(unit->dont_attack && unit->IsEnemy(*Team.leader, true) && !IS_SET(unit->data->flags, F_PEACEFUL))
+			{
+				unit->dont_attack = false;
+				unit->ai->change_ai_mode = true;
+			}
 		}
 	}
 }

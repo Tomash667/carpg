@@ -1,0 +1,35 @@
+quest deliver_resources {
+	dialog start {
+		0 "Mam do dostarczenia skrzynkê z zasobami do $(target_loc.name). Normalnie wys³a³ bym jednego z moich ludzi ale skoro ju¿ tu jesteœ..."
+		1 "Jest to doœæ pilne. $(target_loc.name) potrzebuje tych zasobów w ci¹gu 15 dni. Jesteœ zainteresowany?"
+		2 "Tak"
+		3 "Nie"
+		4 "WeŸ t¹ skrzynkê i powodzenia. Postaraj siê unikaæ bandytów na drogach."
+	}
+	
+	dialog end {
+		0 "Oddaj zasoby"
+		1 "Dziêkujê, weŸ to z³oto w nagrodê."
+		2 "Dziêki niech bêd¹ bogom za ratunek!"
+		3 "Ale zaraz... Gdzie masz te zasoby?"
+	}
+	
+	dialog bandits_enc {
+		0 "Wreszcie kurwa jesteœ! Zabiæ go!"
+	}
+	
+	dialog bandits {
+		0 "No wreszcie jesteœ! Ile mo¿na czekaæ na te cholerne zasoby!"
+	}
+	
+	texts {
+		0 "Zasoby dla $(target_loc.name)"
+		1 "Dostarcz zasoby"
+		2 "Otrzymano od $(start_loc.IsVillage() ? \"so\\xB3tysa\" : \"burmistrza\") z $(start_loc.name) dnia $date$."
+		3 "Dosta³em zasoby którê muszê dostarczyæ w ci¹gu 15 dni do $(target_loc.name) na $(World::GetDirName(start_loc.pos, target_loc.pos)) st¹d."
+		4 "Dostarczy³em zasoby na czas. Zadanie wykonane!"
+		5 "Nie zd¹¿y³em dostarczyæ na czas zasobów."
+		6 "Przemierzaj¹c drogê natrafi³eœ na kilku bandytów. Wygl¹da na to ¿e na ciebie czekali..."
+		7 "Natrafi³em na bandytów którzy chcieli zabraæ mi zasoby."
+	}
+}

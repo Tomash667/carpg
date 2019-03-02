@@ -23,7 +23,12 @@ using namespace SLNet;
 
 //-----------------------------------------------------------------------------
 // angel script
+class asIScriptContext;
+class asIScriptEngine;
 class asIScriptFunction;
+class asIScriptObject;
+class asIScriptModule;
+class asITypeInfo;
 
 //-----------------------------------------------------------------------------
 class ActionPanel;
@@ -62,6 +67,7 @@ class Options;
 class Pathfinding;
 class PickServerPanel;
 class QuestManager;
+class Quest_Scripted;
 class SaveLoad;
 class ScriptManager;
 class ServerPanel;
@@ -90,16 +96,19 @@ struct Consumable;
 struct CreatedCharacter;
 struct DialogContext;
 struct DialogEntry;
+struct DialogScripts;
 struct Door;
 struct Electro;
 struct Encounter;
 struct EntityInterpolator;
 struct Explo;
+struct FrameInfo;
 struct GameDialog;
 struct GroundItem;
 struct HeroData;
 struct Human;
 struct HumanData;
+struct IdlePack;
 struct Item;
 struct ItemList;
 struct ItemListResult;
@@ -124,15 +133,22 @@ struct Quest;
 struct Quest_Dungeon;
 struct Quest_Encounter;
 struct Quest_Event;
+struct QuestDialog;
 struct QuestHandler;
+struct QuestInfo;
+struct QuestList;
+struct QuestScheme;
 struct Room;
+struct ScriptEvent;
 struct Shield;
+struct SoundPack;
 struct SpeechBubble;
 struct Spell;
 struct SpellList;
 struct StatProfile;
 struct Stock;
 struct TerrainTile;
+struct TexPack;
 struct Tile;
 struct Trap;
 struct Unit;
@@ -175,6 +191,7 @@ class TutorialLocationGenerator;
 
 //-----------------------------------------------------------------------------
 enum CMD;
+enum DialogOp : short;
 enum Direction;
 enum EncounterMode;
 enum GameDirection;
@@ -190,4 +207,8 @@ enum class EffectSource;
 enum class OLD_BUILDING;
 enum class MusicType;
 enum class Perk;
+enum class QuestType;
 enum class SkillId;
+
+//-----------------------------------------------------------------------------
+typedef std::pair<UnitData*, int> TmpSpawn;

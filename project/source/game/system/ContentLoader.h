@@ -12,6 +12,8 @@ protected:
 	ContentLoader() {}
 	ContentLoader(int flags) : t(flags) {}
 	virtual ~ContentLoader() {}
+	virtual void DoLoading() = 0;
+	virtual void LoadTexts() {}
 	void Load(cstring filename, int top_group, bool* require_id = nullptr);
 	virtual void InitTokenizer() = 0;
 	virtual void LoadEntity(int top, const string& id) = 0;
@@ -22,6 +24,7 @@ protected:
 	{
 		LoadError(Format(msg, args...));
 	}
+	cstring FormatLanguagePath(cstring filename);
 
 	Tokenizer t;
 	Crc crc;

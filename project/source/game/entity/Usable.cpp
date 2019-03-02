@@ -6,21 +6,25 @@
 #include "SaveState.h"
 #include "BitStreamFunc.h"
 #include "ItemContainer.h"
+#include "Net.h"
 
-enum OLD_USABLE_ID
+namespace old
 {
-	U_CHAIR,
-	U_BENCH,
-	U_ANVIL,
-	U_CAULDRON,
-	U_IRON_VEIN,
-	U_GOLD_VEIN,
-	U_THRONE,
-	U_STOOL,
-	U_BENCH_DIR,
-	U_BOOKSHELF,
-	U_MAX
-};
+	enum USABLE_ID
+	{
+		U_CHAIR,
+		U_BENCH,
+		U_ANVIL,
+		U_CAULDRON,
+		U_IRON_VEIN,
+		U_GOLD_VEIN,
+		U_THRONE,
+		U_STOOL,
+		U_BENCH_DIR,
+		U_BOOKSHELF,
+		U_MAX
+	};
+}
 
 vector<Usable*> Usable::refid_table;
 vector<UsableRequest> Usable::refid_request;
@@ -63,34 +67,34 @@ void Usable::Load(FileReader& f, bool local)
 		switch(type)
 		{
 		default:
-		case U_CHAIR:
+		case old::U_CHAIR:
 			id = "chair";
 			break;
-		case U_BENCH:
+		case old::U_BENCH:
 			id = "bench";
 			break;
-		case U_ANVIL:
+		case old::U_ANVIL:
 			id = "anvil";
 			break;
-		case U_CAULDRON:
+		case old::U_CAULDRON:
 			id = "cauldron";
 			break;
-		case U_IRON_VEIN:
+		case old::U_IRON_VEIN:
 			id = "iron_vein";
 			break;
-		case U_GOLD_VEIN:
+		case old::U_GOLD_VEIN:
 			id = "gold_vein";
 			break;
-		case U_THRONE:
+		case old::U_THRONE:
 			id = "throne";
 			break;
-		case U_STOOL:
+		case old::U_STOOL:
 			id = "stool";
 			break;
-		case U_BENCH_DIR:
+		case old::U_BENCH_DIR:
 			id = "bench_dir";
 			break;
-		case U_BOOKSHELF:
+		case old::U_BOOKSHELF:
 			id = "bookshelf";
 			break;
 		}

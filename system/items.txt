@@ -2076,6 +2076,14 @@ other wanted_letter {
 	flags {quest not_shop not_chest not_random}
 }
 
+other q_resources {
+	weight 10
+	value 0
+	mesh "resources_box.qmsh"
+	type other
+	flags {quest not_shop not_chest not_random important dont_drop ground_mesh}
+}
+
 //------------------------------------------------------------------------------
 // BOOKS
 //------------------------------------------------------------------------------

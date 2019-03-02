@@ -14,6 +14,11 @@
 #include "InsideLocation.h"
 #include "BaseLocation.h"
 #include "Team.h"
+#include "Quest_Scripted.h"
+#include "Team.h"
+#include "LocationHelper.h"
+#include "Encounter.h"
+#include "UnitGroup.h"
 
 
 #ifdef _DEBUG
@@ -24,6 +29,8 @@
 
 
 ScriptManager SM;
+static std::map<int, asIScriptFunction*> tostring_map;
+static string tmp_str_result;
 
 
 ScriptException::ScriptException(cstring msg)
@@ -76,6 +83,72 @@ void ScriptManager::Cleanup()
 	if(engine)
 		engine->ShutDownAndRelease();
 	DeleteElements(unit_vars);
+}
+
+asIScriptFunction* FindToString(asIScriptEngine* engine, int type_id)
+{
+	// find mapped type
+	auto it = tostring_map.find(type_id);
+	if(it != tostring_map.end())
+		return it->second;
+
+	// get type
+	asITypeInfo* type = engine->GetTypeInfoById(type_id);
+	assert(type);
+
+	// special case - cast to string
+	cstring name = type->GetName();
+	if(strcmp(name, "string") == 0)
+	{
+		tostring_map[type_id] = nullptr;
+		return nullptr;
+	}
+
+	// find function
+	asIScriptFunction* func = type->GetMethodByDecl("string ToString() const");
+	if(!func)
+		func = type->GetMethodByDecl("string ToString()");
+	if(!func)
+		throw ScriptException("Missing ToString method for object '%s'.", name);
+
+	// add mapping
+	tostring_map[type_id] = func;
+	return func;
+}
+
+string& ToString(asIScriptGeneric* gen, void* adr, int type_id)
+{
+	asIScriptEngine* engine = gen->GetEngine();
+	asIScriptFunction* func = FindToString(engine, type_id);
+
+	if(!func)
+	{
+		// cast to string
+		string& value = **(string**)adr;
+		return value;
+	}
+
+	// call function
+	asIScriptObject* obj = *(asIScriptObject**)adr;
+	asIScriptContext* ctx = engine->RequestContext();
+	int r = ctx->Prepare(func);
+	if(r >= 0)
+	{
+		r = ctx->SetObject(obj);
+		if(r >= 0)
+			r = ctx->Execute();
+	}
+	if(r < 0)
+	{
+		asITypeInfo* type = engine->GetTypeInfoById(type_id);
+		cstring name = type->GetName();
+		throw ScriptException("Failed to call ToString on object '%s' (%d).", name, r);
+	}
+
+	void* ret_adr = ctx->GetReturnAddress();
+	tmp_str_result = *(string*)ret_adr;
+	engine->ReturnContext(ctx);
+	return tmp_str_result;
 }
 
 static void FormatStrGeneric(asIScriptGeneric* gen)
@@ -182,12 +255,9 @@ static void FormatStrGeneric(asIScriptGeneric* gen)
 				s = Format("%g", value);
 			}
 			break;
-		/*default:
-			{
-				part = ToString(gen, adr, type_id);
-				s = part.c_str();
-			}
-			break;*/
+		default:
+			s = ToString(gen, adr, type_id).c_str();
+			break;
 		}
 
 		result += s;
@@ -210,8 +280,15 @@ static void ScriptError(const string& str)
 	SM.Log(Logger::L_ERROR, str.c_str());
 }
 
+string Vec2_ToString(const Vec2& v)
+{
+	return Format("%g; %g", v.x, v.y);
+}
+
 void ScriptManager::RegisterCommon()
 {
+	ScriptBuilder sb(engine);
+
 	AddFunction("void Info(const string& in)", asFUNCTION(ScriptInfo));
 	AddFunction("void Warn(const string& in)", asFUNCTION(ScriptWarn));
 	AddFunction("void Error(const string& in)", asFUNCTION(ScriptError));
@@ -227,35 +304,86 @@ void ScriptManager::RegisterCommon()
 	AddFunction("int Random(int, int)", asFUNCTIONPR(Random, (int, int), int));
 	AddFunction("int Rand()", asFUNCTIONPR(Rand, (), int));
 
-	/*sm.AddStruct<Int2>("Int2")
+	sb.AddStruct<Int2>("Int2")
+		.Constructor<>("void f()")
 		.Constructor<int, int>("void f(int, int)")
 		.Constructor<const Int2&>("void f(const Int2& in)")
 		.Member("int x", offsetof(Int2, x))
-		.Member("int y", offsetof(Int2, y));
+		.Member("int y", offsetof(Int2, y))
+		.Method("bool opEquals(const Int2& in) const", asMETHOD(Int2, operator ==))
+		.Method("Int2& opAssign(const Int2& in)", asMETHODPR(Int2, operator =, (const Int2&), Int2&))
+		.Method("Int2& opAddAssign(const Int2& in)", asMETHOD(Int2, operator +=))
+		.Method("Int2& opSubAssign(const Int2& in)", asMETHOD(Int2, operator -=))
+		.Method("Int2& opMulAssign(int)", asMETHOD(Int2, operator *=))
+		.Method("Int2& opDivAssign(int)", asMETHOD(Int2, operator /=))
+		.Method("Int2 opAdd(const Int2& in) const", asMETHODPR(Int2, operator +, (const Int2&) const, Int2))
+		.Method("Int2 opSub(const Int2& in) const", asMETHODPR(Int2, operator -, (const Int2&) const, Int2))
+		.Method("Int2 opMul(int) const", asMETHODPR(Int2, operator *, (int) const, Int2))
+		.Method("Int2 opDiv(int) const", asMETHODPR(Int2, operator /, (int) const, Int2));
 
-	sm.AddStruct<Vec2>("Vec2")
+	sb.AddStruct<Vec2>("Vec2")
+		.Constructor<>("void f()")
 		.Constructor<float, float>("void f(float, float)")
 		.Constructor<const Vec2&>("void f(const Vec2& in)")
 		.Member("float x", offsetof(Vec2, x))
-		.Member("float y", offsetof(Vec2, y));
+		.Member("float y", offsetof(Vec2, y))
+		.Method("bool opEquals(const Vec2& in) const", asMETHOD(Vec2, operator ==))
+		.Method("Vec2& opAssign(const Vec2& in)", asMETHODPR(Vec2, operator =, (const Vec2&), Vec2&))
+		.Method("Vec2& opAddAssign(const Vec2& in)", asMETHOD(Vec2, operator +=))
+		.Method("Vec2& opSubAssign(const Vec2& in)", asMETHOD(Vec2, operator -=))
+		.Method("Vec2& opMulAssign(float)", asMETHOD(Vec2, operator *=))
+		.Method("Vec2& opDivAssign(float)", asMETHOD(Vec2, operator /=))
+		.Method("Vec2 opAdd(const Vec2& in) const", asMETHODPR(Vec2, operator +, (const Vec2&) const, Vec2))
+		.Method("Vec2 opSub(const Vec2& in) const", asMETHODPR(Vec2, operator -, (const Vec2&) const, Vec2))
+		.Method("Vec2 opMul(float) const", asMETHODPR(Vec2, operator *, (float) const, Vec2))
+		.Method("Vec2 opDiv(float) const", asMETHODPR(Vec2, operator /, (float) const, Vec2))
+		.Method("string ToString() const", asFUNCTION(Vec2_ToString))
+		.WithNamespace()
+		.AddFunction("float Distance(const Vec2& in, const Vec2& in)", asFUNCTION(Vec2::Distance));
 
-	sm.AddStruct<Vec3>("Vec3")
+	sb.AddStruct<Vec3>("Vec3")
+		.Constructor<>("void f()")
 		.Constructor<float, float, float>("void f(float, float, float)")
 		.Constructor<const Vec3&>("void f(const Vec3& in)")
 		.Member("float x", offsetof(Vec3, x))
 		.Member("float y", offsetof(Vec3, y))
-		.Member("float z", offsetof(Vec3, z));
+		.Member("float z", offsetof(Vec3, z))
+		.Method("bool opEquals(const Vec3& in) const", asMETHOD(Vec3, operator ==))
+		.Method("Vec3& opAssign(const Vec3& in)", asMETHODPR(Vec3, operator =, (const Vec3&), Vec3&))
+		.Method("Vec3& opAddAssign(const Vec3& in)", asMETHOD(Vec3, operator +=))
+		.Method("Vec3& opSubAssign(const Vec3& in)", asMETHOD(Vec3, operator -=))
+		.Method("Vec3& opMulAssign(float)", asMETHOD(Vec3, operator *=))
+		.Method("Vec3& opDivAssign(float)", asMETHOD(Vec3, operator /=))
+		.Method("Vec3 opAdd(const Vec3& in) const", asMETHODPR(Vec3, operator +, (const Vec3&) const, Vec3))
+		.Method("Vec3 opSub(const Vec3& in) const", asMETHODPR(Vec3, operator -, (const Vec3&) const, Vec3))
+		.Method("Vec3 opMul(float) const", asMETHODPR(Vec3, operator *, (float) const, Vec3))
+		.Method("Vec3 opDiv(float) const", asMETHODPR(Vec3, operator /, (float) const, Vec3))
+		.WithNamespace()
+		.AddFunction("float Distance(const Vec3& in, const Vec3& in)", asFUNCTION(Vec3::Distance));
 
-	sm.AddStruct<Vec4>("Vec4")
+	sb.AddStruct<Vec4>("Vec4")
+		.Constructor<>("void f()")
 		.Constructor<float, float, float, float>("void f(float, float, float, float)")
 		.Constructor<const Vec4&>("void f(const Vec4& in)")
 		.Member("float x", offsetof(Vec4, x))
 		.Member("float y", offsetof(Vec4, y))
 		.Member("float z", offsetof(Vec4, z))
-		.Member("float w", offsetof(Vec4, w));*/
+		.Member("float w", offsetof(Vec4, w))
+		.Method("bool opEquals(const Vec4& in) const", asMETHOD(Vec4, operator ==))
+		.Method("Vec4& opAssign(const Vec4& in)", asMETHODPR(Vec4, operator =, (const Vec4&), Vec4&))
+		.Method("Vec4& opAddAssign(const Vec4& in)", asMETHOD(Vec4, operator +=))
+		.Method("Vec4& opSubAssign(const Vec4& in)", asMETHOD(Vec4, operator -=))
+		.Method("Vec4& opMulAssign(float)", asMETHOD(Vec4, operator *=))
+		.Method("Vec4& opDivAssign(float)", asMETHOD(Vec4, operator /=))
+		.Method("Vec4 opAdd(const Vec4& in) const", asMETHODPR(Vec4, operator +, (const Vec4&) const, Vec4))
+		.Method("Vec4 opSub(const Vec4& in) const", asMETHODPR(Vec4, operator -, (const Vec4&) const, Vec4))
+		.Method("Vec4 opMul(float) const", asMETHODPR(Vec4, operator *, (float) const, Vec4))
+		.Method("Vec4 opDiv(float) const", asMETHODPR(Vec4, operator /, (float) const, Vec4));
 }
 
 #include "PlayerInfo.h"
+#include "Level.h"
+#include "World.h"
 
 VarsContainer globals;
 VarsContainer* p_globals = &globals;
@@ -265,28 +393,6 @@ VarsContainer* Unit_GetVars(Unit* unit)
 	return SM.GetVars(unit);
 }
 
-void Unit_OrderLeave(Unit* unit)
-{
-	if(unit->hero)
-		unit->hero->mode = HeroData::Leave;
-}
-
-const string& Item_GetName(const Item* item)
-{
-	return item->name;
-}
-
-const Item* ItemList_GetByIndex(ItemList* lis, int index)
-{
-	if(index < 0 || index >= (int)lis->items.size())
-		throw ScriptException("Invalid index.");
-	return lis->items[index];
-}
-
-int ItemList_Size(ItemList* lis)
-{
-	return lis->items.size();
-}
 
 void Unit_RemoveItem(Unit* unit, const string& id)
 {
@@ -295,22 +401,14 @@ void Unit_RemoveItem(Unit* unit, const string& id)
 		unit->RemoveItem(item, 1u);
 }
 
-void Unit_AddItem(Unit* unit, const Item* item)
+string World_GetDirName(const Vec2& pos1, const Vec2& pos2)
 {
-	unit->AddItem2(item, 1u, 0u);
+	return GetLocationDirName(pos1, pos2);
 }
 
-bool Player_HavePerk(PlayerController* pc, const string& perk_id)
+Location* World_GetRandomCity()
 {
-	PerkInfo* perk = PerkInfo::Find(perk_id);
-	if(!perk)
-		throw ScriptException("Invalid perk '%s'.", perk_id.c_str());
-	return pc->HavePerk(perk->perk_id);
-}
-
-void Team_AddGold(uint gold)
-{
-	Game::Get().AddGold(gold, nullptr, true);
+	return W.GetLocation(W.GetRandomCityIndex());
 }
 
 uint Team_GetSize()
@@ -318,19 +416,31 @@ uint Team_GetSize()
 	return Team.active_members.size();
 }
 
-bool Level_IsCity()
+Location* World_GetRandomSettlementWithBuilding(const string& building_id)
 {
-	return L.location->type == L_CITY && ((City*)L.location)->settlement_type == City::SettlementType::City;
+	Building* b = Building::TryGet(building_id);
+	if(!b)
+		throw ScriptException("Missing building '%s'.", building_id.c_str());
+	return W.GetRandomSettlement([b](City* city)
+	{
+		return city->FindBuilding(b) != nullptr;
+	});
 }
 
-bool Level_IsVillage()
+Location* World_GetRandomSettlement(asIScriptFunction* func)
 {
-	return L.location->type == L_CITY && ((City*)L.location)->settlement_type == City::SettlementType::Village;
-}
-
-bool Level_IsTutorial()
-{
-	return L.location->type == L_DUNGEON && ((InsideLocation*)L.location)->target == TUTORIAL_FORT;
+	asIScriptEngine* engine = func->GetEngine();
+	asIScriptContext* ctx = engine->RequestContext();
+	Location* target = W.GetRandomSettlementWeighted([=](Location* loc)
+	{
+		CHECKED(ctx->Prepare(func));
+		CHECKED(ctx->SetArgObject(0, loc));
+		CHECKED(ctx->Execute());
+		return ctx->GetReturnFloat();
+	});
+	engine->ReturnContext(ctx);
+	func->Release();
+	return target;
 }
 
 void StockScript_AddItem(const Item* item, uint count)
@@ -351,12 +461,7 @@ void StockScript_AddRandomItem(ITEM_TYPE type, int price_limit, int flags, uint 
 
 void ScriptManager::RegisterGame()
 {
-	// use generic type ??? for get is set
-
-	script_type_infos["bool"] = ScriptTypeInfo(Var::Type::Bool, false);
-	script_type_infos["int"] = ScriptTypeInfo(Var::Type::Int, false);
-	script_type_infos["float"] = ScriptTypeInfo(Var::Type::Float, false);
-	script_type_infos["Item"] = ScriptTypeInfo(Var::Type::Item, true);
+	ScriptBuilder sb(engine);
 
 	AddType("Var")
 		.Method("bool IsNone() const", asMETHOD(Var, IsNone))
@@ -386,6 +491,20 @@ void ScriptManager::RegisterGame()
 		.Method("Var@ opIndex(const string& in)", asMETHOD(VarsContainer, Get))
 		.WithInstance("VarsContainer@ globals", &p_globals);
 
+	AddType("Dialog");
+
+	AddType("Quest")
+		.Method("void AddEntry(const string& in)", asMETHOD(Quest_Scripted, AddEntry))
+		.Method("void SetStarted(const string& in)", asMETHOD(Quest_Scripted, SetStarted))
+		.Method("void SetFailed()", asMETHOD(Quest_Scripted, SetFailed))
+		.Method("void SetCompleted()", asMETHOD(Quest_Scripted, SetCompleted))
+		.Method("void SetTimeout(int)", asMETHOD(Quest_Scripted, SetTimeout))
+		.Method("void SetProgress(int)", asMETHOD(Quest_Scripted, SetProgress))
+		.Method("int get_progress()", asMETHOD(Quest_Scripted, GetProgress))
+		.Method("string GetString(int)", asMETHOD(Quest_Scripted, GetString))
+		.Method("Dialog@ GetDialog(const string& in)", asMETHODPR(Quest_Scripted, GetDialog, (const string&), GameDialog*))
+		.WithInstance("Quest@ quest", &ctx.quest);
+
 	AddEnum("ITEM_TYPE", {
 		{ "IT_WEAPON", IT_WEAPON },
 		{ "IT_BOW", IT_BOW },
@@ -401,55 +520,173 @@ void ScriptManager::RegisterGame()
 		{ "ITEM_NOT_MERCHANT", ITEM_NOT_MERCHANT },
 		{ "ITEM_NOT_BLACKSMITH", ITEM_NOT_BLACKSMITH },
 		{ "ITEM_NOT_ALCHEMIST", ITEM_NOT_ALCHEMIST }
-	});
+		});
 
 	AddType("Item")
 		.Member("const int value", offsetof(Item, value))
-		.Method("const string& get_name() const", asFUNCTION(Item_GetName))
+		.Member("const string name", offsetof(Item, name))
+		.Method("Item@ QuestCopy(Quest@, const string& in)", asMETHOD(Item, QuestCopy))
 		.WithNamespace()
 		.AddFunction("Item@ Get(const string& in)", asFUNCTION(Item::GetS))
 		.AddFunction("Item@ GetRandom(int)", asFUNCTION(ItemHelper::GetRandomItem));
 
 	AddType("ItemList")
 		.Method("Item@ GetItem()", asMETHODPR(ItemList, Get, () const, const Item*))
-		.Method("Item@ GetItem(int)", asFUNCTION(ItemList_GetByIndex))
-		.Method("int Size()", asFUNCTION(ItemList_Size))
+		.Method("Item@ GetItem(int)", asMETHOD(ItemList, GetByIndex))
+		.Method("int Size()", asMETHOD(ItemList, GetSize))
 		.WithNamespace()
 		.AddFunction("ItemList@ Get(const string& in)", asFUNCTION(ItemList::GetS));
 
+	AddType("GroundItem")
+		.Member("const Vec3 pos", offsetof(GroundItem, pos));
+
+	AddType("UnitData")
+		.WithNamespace()
+		.AddFunction("UnitData@ Get(const string& in)", asFUNCTION(UnitData::GetS));
+
 	AddType("Unit")
+		.Member("const Vec3 pos", offsetof(Unit, pos))
 		.Method("int get_gold() const", asMETHOD(Unit, GetGold))
 		.Method("void set_gold(int)", asMETHOD(Unit, SetGold))
-		.Method("VarsContainer@ get_vars()", asFUNCTION(Unit_GetVars))
-		.Method("void AddItem(Item@)", asFUNCTION(Unit_AddItem))
-		.Method("void RemoveItem(const string& in)", asFUNCTION(Unit_RemoveItem))
-		.Method("void OrderLeave()", asFUNCTION(Unit_OrderLeave))
+		.Method("VarsContainer@ get_vars()", asFUNCTION(Unit_GetVars)) // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+		.Method("const string& get_name()", asMETHOD(Unit, GetNameS))
+		.Method("void set_name(const string& in)", asMETHOD(Unit, SetName))
+		.Method("bool get_auto_talk() const", asMETHOD(Unit, GetAutoTalk))
+		.Method("void set_auto_talk(bool)", asMETHOD(Unit, SetAutoTalk))
+		.Method("bool get_dont_attack() const", asMETHOD(Unit, GetDontAttack))
+		.Method("void set_dont_attack(bool)", asMETHOD(Unit, SetDontAttack))
+		.Method("bool IsTeamMember()", asMETHOD(Unit, IsTeamMember))
+		.Method("void AddItem(Item@, uint = 1)", asMETHOD(Unit, AddItemS))
+		.Method("void AddTeamItem(Item@, uint = 1)", asMETHOD(Unit, AddTeamItemS))
+		.Method("void RemoveItem(const string& in)", asFUNCTION(Unit_RemoveItem)) // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+		.Method("void RemoveQuestItem(Quest@)", asMETHOD(Unit, RemoveQuestItemS))
+		.Method("void AddDialog(Quest@, const string& in)", asMETHOD(Unit, AddDialogS))
+		.Method("void RemoveDialog(Quest@)", asMETHOD(Unit, RemoveDialog))
+		.Method("void OrderEscapeToUnit(Unit@)", asMETHOD(Unit, OrderEscapeToUnit))
+		.Method("void OrderLeave()", asMETHOD(Unit, OrderLeave))
+		.Method("void OrderAttack()", asMETHOD(Unit, OrderAttack))
 		.WithInstance("Unit@ target", &ctx.target);
 
 	AddType("Player")
 		.Member("Unit@ unit", offsetof(PlayerController, unit))
 		.Member("const string name", offsetof(PlayerController, name))
-		.Method("bool HavePerk(const string& in)", asFUNCTION(Player_HavePerk))
+		.Method("bool HavePerk(const string& in)", asMETHOD(PlayerController, HavePerkS))
+		.Method("bool IsLeader()", asMETHOD(PlayerController, IsLeader))
 		.WithInstance("Player@ pc", &ctx.pc);
 
-	WithNamespace("Team")
-		.AddFunction("void AddGold(uint)", asFUNCTION(Team_AddGold))
+	WithNamespace("Team", &Team)
+		.AddFunction("void AddGold(uint)", asMETHOD(TeamSingleton, AddGoldS))
+		.AddFunction("void AddReward(uint, uint = 0)", asMETHOD(TeamSingleton, AddReward))
+		.AddFunction("Unit@ get_leader()", asMETHOD(TeamSingleton, GetLeader))
 		.AddFunction("uint get_size()", asFUNCTION(Team_GetSize));
 
-	WithNamespace("Level")
-		.AddFunction("bool IsCity()", asFUNCTION(Level_IsCity))
-		.AddFunction("bool IsVillage()", asFUNCTION(Level_IsVillage))
-		.AddFunction("bool IsTutorial()", asFUNCTION(Level_IsTutorial));
+	AddEnum("EventType", {
+		{ "EVENT_ENTER", EVENT_ENTER },
+		//{ "EVENT_PICKUP", EVENT_PICKUP },
+		//{ "EVENT_UPDATE", EVENT_UPDATE },
+		{ "EVENT_TIMEOUT", EVENT_TIMEOUT },
+		{ "EVENT_ENCOUNTER", EVENT_ENCOUNTER }
+		});
+
+	AddEnum("LOCATION", {
+		{ "L_CITY", L_CITY },
+		{ "L_CAVE", L_CAVE },
+		{ "L_CAMP", L_CAMP },
+		{ "L_DUNGEON", L_DUNGEON },
+		{ "L_CRYPT", L_CRYPT },
+		{ "L_FOREST", L_FOREST },
+		{ "L_MOONWELL", L_MOONWELL },
+		{ "L_ENCOUNTER", L_ENCOUNTER }
+		});
+
+	AddEnum("SPAWN_GROUP", {
+		{ "SG_GOBLINS", SG_GOBLINS },
+		{ "SG_ORCS", SG_ORCS },
+		{ "SG_BANDITS", SG_BANDITS },
+		{ "SG_UNDEAD", SG_UNDEAD },
+		{ "SG_NECROMANCERS", SG_NECROMANCERS },
+		{ "SG_MAGES", SG_MAGES },
+		{ "SG_GOLEMS", SG_GOLEMS },
+		{ "SG_MAGES_AND_GOLEMS", SG_MAGES_AND_GOLEMS },
+		{ "SG_EVIL", SG_EVIL },
+		});
+
+	sb.AddStruct<TmpUnitGroup::Spawn>("Spawn");
+
+	AddType("SpawnGroup", true)
+		.Factory(asFUNCTION(TmpUnitGroup::GetInstanceS))
+		.ReferenceCounting(asMETHOD(TmpUnitGroup, AddRefS), asMETHOD(TmpUnitGroup, ReleaseS))
+		.Method("uint get_count()", asMETHOD(TmpUnitGroup, GetCount))
+		.Method("void Fill(SPAWN_GROUP, int, int)", asMETHOD(TmpUnitGroup, FillS))
+		.Method("Spawn Get(uint)", asMETHOD(TmpUnitGroup, GetS));
+
+	AddType("LevelContext");
+
+	AddType("Location")
+		.Member("const Vec2 pos", offsetof(Location, pos))
+		.Member("const string name", offsetof(Location, name))
+		.Member("const LOCATION type", offsetof(Location, type))
+		.Member("Quest@ active_quest", offsetof(Location, active_quest))
+		.Method("void AddEventHandler(Quest@, EventType)", asMETHOD(Location, AddEventHandler))
+		.Method("void RemoveEventHandler(Quest@)", asMETHOD(Location, RemoveEventHandlerS))
+		.Method("bool IsCity()", asFUNCTIONPR(LocationHelper::IsCity, (Location*), bool))
+		.Method("bool IsVillage()", asFUNCTIONPR(LocationHelper::IsVillage, (Location*), bool));
+
+	AddType("Encounter")
+		.Member("Vec2 pos", offsetof(Encounter, pos))
+		.Member("bool dont_attack", offsetof(Encounter, dont_attack))
+		.Member("Quest@ quest", offsetof(Encounter, quest))
+		.Member("Dialog@ dialog", offsetof(Encounter, dialog))
+		.Member("int st", offsetof(Encounter, st))
+		.Member("SPAWN_GROUP group", offsetof(Encounter, group))
+		.Method("const string& get_text()", asMETHOD(Encounter, GetTextS))
+		.Method("void set_text(const string& in)", asMETHOD(Encounter, SetTextS));
+
+	CHECKED(engine->RegisterFuncdef("float GetLocationCallback(Location@)"));
+
+	WithNamespace("World", &W)
+		.AddFunction("uint GetSettlements()", asMETHOD(World, GetSettlements))
+		.AddFunction("Location@ GetLocation(uint)", asMETHOD(World, GetLocation))
+		.AddFunction("string GetDirName(const Vec2& in, const Vec2& in)", asFUNCTION(World_GetDirName)) // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+		.AddFunction("float GetTravelDays(float)", asMETHOD(World, GetTravelDays))
+		.AddFunction("Location@ GetRandomCity()", asFUNCTION(World_GetRandomCity)) // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+		.AddFunction("Location@ GetRandomSettlementWithBuilding(const string& in)", asFUNCTION(World_GetRandomSettlementWithBuilding)) // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+		.AddFunction("Location@ GetRandomSettlement(Location@)", asMETHODPR(World, GetRandomSettlement, (Location*), Location*))
+		.AddFunction("Location@ GetRandomSettlement(GetLocationCallback@)", asFUNCTION(World_GetRandomSettlement))
+		.AddFunction("Encounter@ AddEncounter(Quest@)", asMETHOD(World, AddEncounterS))
+		.AddFunction("void RemoveEncounter(Quest@)", asMETHODPR(World, RemoveEncounter, (Quest*), void));
+
+	WithNamespace("Level", &L)
+		.AddFunction("Location@ get_location()", asMETHOD(Level, GetLocation))
+		.AddFunction("bool IsSettlement()", asMETHOD(Level, IsSettlement))
+		.AddFunction("bool IsCity()", asMETHOD(Level, IsCity))
+		.AddFunction("bool IsVillage()", asMETHOD(Level, IsVillage))
+		.AddFunction("bool IsTutorial()", asMETHOD(Level, IsTutorial))
+		.AddFunction("bool IsSafe()", asMETHOD(Level, IsSafe))
+		.AddFunction("Unit@ FindUnit(UnitData@)", asMETHODPR(Level, FindUnit, (UnitData*), Unit*))
+		.AddFunction("Unit@ GetNearestEnemy(Unit@)", asMETHOD(Level, GetNearestEnemy))
+		.AddFunction("GroundItem@ FindItem(Item@)", asMETHOD(Level, FindItem))
+		.AddFunction("GroundItem@ FindNearestItem(Item@, const Vec3& in)", asMETHOD(Level, FindNearestItem))
+		.AddFunction("void SpawnItemRandomly(Item@, uint = 1)", asMETHOD(Level, SpawnItemRandomly))
+		.AddFunction("Unit@ SpawnUnitNearLocation(UnitData@, const Vec3& in, float)", asMETHOD(Level, SpawnUnitNearLocationS))
+		.AddFunction("Unit@ SpawnUnit(LevelContext@, Spawn)", asMETHOD(Level, SpawnUnit))
+		.AddFunction("Unit@ GetMayor()", asMETHOD(Level, GetMayor))
+		.AddFunction("LevelContext@ GetContext(Unit@)", asMETHODPR(Level, GetContext, (Unit&), LevelContext&));
 
 	WithNamespace("StockScript")
-		.AddFunction("void AddItem(Item@, uint = 1)", asFUNCTION(StockScript_AddItem))
-		.AddFunction("void AddRandomItem(ITEM_TYPE, int, int, uint = 1)", asFUNCTION(StockScript_AddRandomItem));
-}
+		.AddFunction("void AddItem(Item@, uint = 1)", asFUNCTION(StockScript_AddItem)) // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+		.AddFunction("void AddRandomItem(ITEM_TYPE, int, int, uint = 1)", asFUNCTION(StockScript_AddRandomItem)); // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-void ScriptManager::SetContext(PlayerController* pc, Unit* target)
-{
-	ctx.pc = pc;
-	ctx.target = target;
+	AddType("Event")
+		.Member("EventType event", offsetof(ScriptEvent, type))
+		.Member("Location@ location", offsetof(ScriptEvent, location))
+		.Member("Unit@ unit", offsetof(ScriptEvent, unit));
+
+	AddVarType(Var::Type::Bool, "bool", false);
+	AddVarType(Var::Type::Int, "int", false);
+	AddVarType(Var::Type::Float, "float", false);
+	AddVarType(Var::Type::Item, "Item", true);
+	AddVarType(Var::Type::Location, "Location", true);
 }
 
 bool ScriptManager::RunScript(cstring code, bool validate)
@@ -554,63 +791,6 @@ bool ScriptManager::RunIfScript(cstring code, bool validate)
 	return ok;
 }
 
-bool ScriptManager::RunStringScript(cstring code, string& str, bool validate)
-{
-	assert(code);
-
-	// compile
-	asIScriptModule* tmp_module = engine->GetModule("RunScriptModule", asGM_ALWAYS_CREATE);
-	cstring packed_code = Format("string f() { return (%s); }", code);
-	asIScriptFunction* func;
-	int r = tmp_module->CompileFunction("RunScript", packed_code, -1, 0, &func);
-	if(r < 0)
-	{
-		Log(Logger::L_ERROR, Format("Failed to parse string script (%d).", r), code);
-		return false;
-	}
-
-	if(validate)
-	{
-		func->Release();
-		return true;
-	}
-
-	// run
-	asIScriptContext* tmp_context = engine->RequestContext();
-	r = tmp_context->Prepare(func);
-	if(r >= 0)
-	{
-		last_exception = nullptr;
-		r = tmp_context->Execute();
-	}
-
-	bool ok;
-	bool finished = (r == asEXECUTION_FINISHED);
-	if(!finished)
-	{
-		ok = false;
-		if(r == asEXECUTION_EXCEPTION)
-		{
-			cstring msg = last_exception ? last_exception : tmp_context->GetExceptionString();
-			Log(Logger::L_ERROR, Format("Script exception thrown \"%s\" in %s(%d).", msg, tmp_context->GetExceptionFunction()->GetName(),
-				tmp_context->GetExceptionFunction()), code);
-		}
-		else
-			Log(Logger::L_ERROR, Format("Script execution failed (%d).", r), code);
-	}
-	else
-	{
-		void* ptr = tmp_context->GetAddressOfReturnValue();
-		str = *(string*)ptr;
-		ok = true;
-	}
-
-	func->Release();
-	engine->ReturnContext(tmp_context);
-
-	return ok;
-}
-
 asIScriptFunction* ScriptManager::PrepareScript(cstring name, cstring code)
 {
 	assert(code);
@@ -631,15 +811,22 @@ asIScriptFunction* ScriptManager::PrepareScript(cstring name, cstring code)
 	return func;
 }
 
-bool ScriptManager::RunScript(asIScriptFunction* func)
+bool ScriptManager::RunScript(asIScriptFunction* func, void* instance, delegate<void(asIScriptContext*, int)> clbk)
 {
 	// run
 	asIScriptContext* tmp_context = engine->RequestContext();
 	int r = tmp_context->Prepare(func);
 	if(r >= 0)
 	{
-		last_exception = nullptr;
-		r = tmp_context->Execute();
+		if(instance)
+			r = tmp_context->SetObject(instance);
+		if(r >= 0)
+		{
+			if(clbk)
+				clbk(tmp_context, 0);
+			last_exception = nullptr;
+			r = tmp_context->Execute();
+		}
 	}
 
 	bool finished = (r == asEXECUTION_FINISHED);
@@ -654,6 +841,8 @@ bool ScriptManager::RunScript(asIScriptFunction* func)
 		else
 			Log(Logger::L_ERROR, Format("Script execution failed (%d).", r));
 	}
+	else if(clbk)
+		clbk(tmp_context, 1);
 
 	engine->ReturnContext(tmp_context);
 
@@ -712,10 +901,11 @@ void ScriptManager::AddEnum(cstring name, std::initializer_list<std::pair<cstrin
 		CHECKED(engine->RegisterEnumValue(name, value.first, value.second));
 }
 
-TypeBuilder ScriptManager::AddType(cstring name)
+TypeBuilder ScriptManager::AddType(cstring name, bool refcount)
 {
 	assert(name);
-	CHECKED(engine->RegisterObjectType(name, 0, asOBJ_REF | asOBJ_NOCOUNT));
+	int flags = asOBJ_REF | (refcount ? 0 : asOBJ_NOCOUNT);
+	CHECKED(engine->RegisterObjectType(name, 0, flags));
 	return ForType(name);
 }
 
@@ -755,6 +945,7 @@ void ScriptManager::Reset()
 {
 	globals.Clear();
 	DeleteElements(unit_vars);
+	ctx.Clear();
 }
 
 void ScriptManager::Save(FileWriter& f)
@@ -801,15 +992,48 @@ void ScriptManager::Load(FileReader& f)
 
 ScriptManager::RegisterResult ScriptManager::RegisterGlobalVar(const string& type, bool is_ref, const string& name)
 {
-	auto it = script_type_infos.find(type);
-	if(it == script_type_infos.end() || it->second.require_ref != is_ref)
+	auto it = var_type_map.find(type);
+	if(it == var_type_map.end())
+		return InvalidType;
+	ScriptTypeInfo info = script_type_infos[it->second];
+	if(info.require_ref != is_ref)
 		return InvalidType;
 	Var* var = globals.TryGet(name);
 	if(var)
 		return AlreadyExists;
-	var = globals.Add(it->second.type, name, true);
+	var = globals.Add(info.type, name, true);
 	var->_int = 0;
 	cstring decl = Format("%s%s %s", type.c_str(), is_ref ? "@" : "", name.c_str());
 	CHECKED(engine->RegisterGlobalProperty(decl, &var->ptr));
 	return Ok;
+}
+
+void ScriptManager::AddVarType(Var::Type type, cstring name, bool is_ref)
+{
+	int type_id = engine->GetTypeIdByDecl(name);
+	var_type_map[name] = type_id;
+	script_type_infos[type_id] = ScriptTypeInfo(type, is_ref);
+}
+
+Var::Type ScriptManager::GetVarType(int type_id)
+{
+	if(IS_SET(type_id, asTYPEID_OBJHANDLE))
+		CLEAR_BIT(type_id, asTYPEID_OBJHANDLE);
+	auto it = script_type_infos.find(type_id);
+	assert(it != script_type_infos.end());
+	return it->second.type;
+}
+
+bool ScriptManager::CheckVarType(int type_id, bool is_ref)
+{
+	if(IS_SET(type_id, asTYPEID_OBJHANDLE))
+	{
+		is_ref = true;
+		CLEAR_BIT(type_id, asTYPEID_OBJHANDLE);
+	}
+
+	auto it = script_type_infos.find(type_id);
+	if(it == script_type_infos.end() || it->second.require_ref != is_ref)
+		return false;
+	return true;
 }

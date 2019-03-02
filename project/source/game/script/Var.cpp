@@ -2,14 +2,20 @@
 #include "GameCore.h"
 #include "Var.h"
 #include "Item.h"
+#include "Location.h"
+#include "World.h"
+#include "Encounter.h"
+#pragma warning(error: 4062)
 
 string VarsContainer::tmp_str;
 
+//=================================================================================================
 VarsContainer::~VarsContainer()
 {
 	DeleteElements(vars);
 }
 
+//=================================================================================================
 Var* VarsContainer::Add(Var::Type type, const string& name, bool registered)
 {
 	Var* var = new Var;
@@ -19,6 +25,7 @@ Var* VarsContainer::Add(Var::Type type, const string& name, bool registered)
 	return var;
 }
 
+//=================================================================================================
 Var* VarsContainer::Get(const string& name)
 {
 	auto it = vars.lower_bound(name);
@@ -33,6 +40,7 @@ Var* VarsContainer::Get(const string& name)
 	}
 }
 
+//=================================================================================================
 Var* VarsContainer::TryGet(const string& name)
 {
 	auto it = vars.lower_bound(name);
@@ -41,6 +49,7 @@ Var* VarsContainer::TryGet(const string& name)
 	return nullptr;
 }
 
+//=================================================================================================
 void VarsContainer::Save(FileWriter& f)
 {
 	f << vars.size();
@@ -67,10 +76,17 @@ void VarsContainer::Save(FileWriter& f)
 			else
 				f.Write0();
 			break;
+		case Var::Type::Location:
+			f << (e.second->location ? e.second->location->index : -1);
+			break;
+		case Var::Type::Encounter:
+			f << (e.second->encounter ? e.second->encounter->index : -1);
+			break;
 		}
 	}
 }
 
+//=================================================================================================
 void VarsContainer::Load(FileReader& f)
 {
 	uint count;
@@ -115,10 +131,31 @@ void VarsContainer::Load(FileReader& f)
 					v->item = Item::Get(id);
 			}
 			break;
+		case Var::Type::Location:
+			{
+				int index;
+				f >> index;
+				if(index == -1)
+					v->location = nullptr;
+				else
+					v->location = W.GetLocation(index);
+			}
+			break;
+		case Var::Type::Encounter:
+			{
+				int index;
+				f >> index;
+				if(index == -1)
+					v->encounter = nullptr;
+				else
+					v->encounter = W.GetEncounter(index);
+			}
+			break;
 		}
 	}
 }
 
+//=================================================================================================
 void VarsContainer::Clear()
 {
 	LoopAndRemove(vars, [](Var* var)

@@ -461,7 +461,7 @@ void GameGui::DrawFront()
 				t = tShortcutHover;
 			else
 				t = tShortcutDown;
-			mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(scale, scale), nullptr, 0.f, &Vec2(float(GUI.wnd_size.x) - sidebar * offset, float(spos.y - i*offset)));
+			mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(scale, scale), nullptr, 0.f, &Vec2(float(GUI.wnd_size.x) - sidebar * offset, float(spos.y - i * offset)));
 			GUI.DrawSprite2(t, mat, nullptr, nullptr, Color::White);
 			GUI.DrawSprite2(tSideButton[i], mat, nullptr, nullptr, Color::White);
 		}
@@ -989,7 +989,21 @@ void GameGui::AddSpeechBubble(const Vec3& pos, cstring text)
 {
 	assert(text);
 
-	SpeechBubble* sb = SpeechBubblePool.Get();
+	// try to reuse previous bubble
+	SpeechBubble* sb = nullptr;
+	for(SpeechBubble* bubble : speech_bbs)
+	{
+		if(!bubble->unit && Vec3::DistanceSquared(pos, bubble->last_pos) < 0.1f)
+		{
+			sb = bubble;
+			break;
+		}
+	}
+	if(!sb)
+	{
+		sb = SpeechBubblePool.Get();
+		speech_bbs.push_back(sb);
+	}
 
 	Int2 size = GUI.fSmall->CalculateSize(text);
 	int total = size.x;

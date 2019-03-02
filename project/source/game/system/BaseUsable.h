@@ -10,7 +10,7 @@ struct BaseUsable : public BaseObject
 {
 	enum Flags
 	{
-		ALLOW_USE = 1 << 0,
+		ALLOW_USE_ITEM = 1 << 0,
 		SLOW_STAMINA_RESTORE = 1 << 1,
 		CONTAINER = 1 << 2,
 		IS_BENCH = 1 << 3, // hardcoded to use variant in city

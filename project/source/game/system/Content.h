@@ -1,8 +1,18 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-namespace content
+class BuildingLoader;
+class DialogLoader;
+class ItemLoader;
+class ObjectLoader;
+class QuestLoader;
+class SpellLoader;
+class UnitLoader;
+
+//-----------------------------------------------------------------------------
+class Content
 {
+public:
 	enum class Id
 	{
 		Items,
@@ -12,35 +22,36 @@ namespace content
 		Units,
 		Buildings,
 		Musics,
+		Quests,
 
 		Max
 	};
 
-	extern string system_dir;
-	extern uint errors;
-	extern uint warnings;
-	extern uint crc[(int)Id::Max];
-	extern uint version;
-	extern bool require_update;
-
+	Content();
 	void LoadContent(delegate<void(Id)> callback);
 	void LoadVersion();
-	void LoadItems();
-	void LoadObjects();
-	void LoadDialogs();
-	void LoadSpells();
-	void LoadUnits();
-	void LoadBuildings();
 	void CleanupContent();
-	void CleanupItems();
-	void CleanupObjects();
-	void CleanupSpells();
-	void CleanupDialogs();
-	void CleanupUnits();
-	void CleanupBuildings();
-	void CleanupMusics();
 	void WriteCrc(BitStreamWriter& f);
 	void ReadCrc(BitStreamReader& f);
 	bool GetCrc(Id type, uint& my_crc, cstring& type_crc);
 	bool ValidateCrc(Id& type, uint& my_crc, uint& player_crc, cstring& type_str);
-}
+
+	string system_dir;
+	uint errors;
+	uint warnings;
+	uint crc[(int)Id::Max];
+	uint client_crc[(int)Id::Max];
+	uint version;
+	bool require_update;
+
+private:
+	BuildingLoader* building_loader;
+	DialogLoader* dialog_loader;
+	ItemLoader* item_loader;
+	ObjectLoader* object_loader;
+	QuestLoader* quest_loader;
+	SpellLoader* spell_loader;
+	UnitLoader* unit_loader;
+};
+
+extern Content content;

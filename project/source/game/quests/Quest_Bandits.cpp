@@ -114,7 +114,7 @@ void Quest_Bandits::SetProgress(int prog2)
 		else
 		{
 			OnStart(game->txQuest[153]);
-			quest_manager.RemoveQuestRumor(R_BANDITS);
+			QM.RemoveQuestRumor(R_BANDITS);
 
 			const Item* item = Item::Get("q_bandyci_paczka");
 			DialogContext::current->pc->unit->AddItem2(item, 1u, 1u);
@@ -239,9 +239,8 @@ void Quest_Bandits::SetProgress(int prog2)
 			OnUpdate(game->txQuest[164]);
 			// ustaw arto na temporary ¿eby sobie poszed³
 			DialogContext::current->talker->temporary = true;
-			game->AddReward(10000);
-			Team.AddExp(25000);
-			quest_manager.EndUniqueQuest();
+			Team.AddReward(10000, 25000);
+			QM.EndUniqueQuest();
 		}
 		break;
 	}

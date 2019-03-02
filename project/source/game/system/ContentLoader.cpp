@@ -1,31 +1,35 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "ContentLoader.h"
+#include "Language.h"
 
 //=================================================================================================
 void ContentLoader::Load(cstring filename, int top_group, bool* require_id)
 {
 	InitTokenizer();
 	if(DoLoad(filename, top_group, require_id))
+	{
+		LoadTexts();
 		Finalize();
+	}
 }
 
 //=================================================================================================
 bool ContentLoader::DoLoad(cstring filename, int top_group, bool* require_id)
 {
-	LocalString path = Format("%s/%s", content::system_dir.c_str(), filename);
+	LocalString path = Format("%s/%s", content.system_dir.c_str(), filename);
 	this->top_group = top_group;
 
 	if(!t.FromFile(path))
 	{
 		Error("Failed to open file '%s'.", path.c_str());
-		++content::errors;
+		++content.errors;
 		return false;
 	}
 
 	try
 	{
-		content::errors += t.ParseTop<int>(top_group, [&](int top)
+		content.errors += t.ParseTop<int>(top_group, [&](int top)
 		{
 			current_entity = top;
 			if(require_id && !require_id[top])
@@ -67,7 +71,7 @@ bool ContentLoader::DoLoad(cstring filename, int top_group, bool* require_id)
 	catch(Tokenizer::Exception& e)
 	{
 		Error("Failed to parse file '%s': %s", path.c_str(), e.ToString());
-		++content::errors;
+		++content.errors;
 	}
 
 	return true;
@@ -82,5 +86,11 @@ void ContentLoader::LoadError(cstring msg)
 		Error("Error loading %s: %s", type_name, msg);
 	else
 		Error("Error loading %s '%s': %s", type_name, local_id.c_str(), msg);
-	++content::errors;
+	++content.errors;
+}
+
+//=================================================================================================
+cstring ContentLoader::FormatLanguagePath(cstring filename)
+{
+	return Format("%s/lang/%s/%s", content.system_dir.c_str(), Language::prefix.c_str(), filename);
 }

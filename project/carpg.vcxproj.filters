@@ -67,11 +67,14 @@
     <Filter Include="3. game\events">
       <UniqueIdentifier>{611f9aef-8d8e-4ffd-bd54-a5732babb50e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="3. game\system\quests">
+      <UniqueIdentifier>{6f3e0ca2-fca9-4927-8fa3-93ec840b5c55}</UniqueIdentifier>
+    </Filter>
     <Filter Include="3. game\system\units">
       <UniqueIdentifier>{2110a0ec-a4bb-43a5-bcc7-ad64a4a78f1a}</UniqueIdentifier>
     </Filter>
     <Filter Include="3. game\system\dialogs">
-      <UniqueIdentifier>{d2673175-c92d-4cb8-9d60-1e84843fb94b}</UniqueIdentifier>
+      <UniqueIdentifier>{4fa50a58-faa4-4845-82e7-383202a0bd2b}</UniqueIdentifier>
     </Filter>
     <Filter Include="3. game\system\spells">
       <UniqueIdentifier>{f6296568-67e0-4b62-a5f9-05cd186cb0ee}</UniqueIdentifier>
@@ -374,9 +377,6 @@
     <ClCompile Include="source\core\Crc.cpp">
       <Filter>1. core</Filter>
     </ClCompile>
-    <ClCompile Include="source\game\Dialogs.cpp">
-      <Filter>3. game</Filter>
-    </ClCompile>
     <ClCompile Include="source\ErrorHandler.cpp" />
     <ClCompile Include="source\core\Config.cpp">
       <Filter>1. core</Filter>
@@ -449,9 +449,6 @@
     </ClCompile>
     <ClCompile Include="source\engine\Terrain.cpp">
       <Filter>2. engine</Filter>
-    </ClCompile>
-    <ClCompile Include="source\game\system\Content.cpp">
-      <Filter>3. game\system</Filter>
     </ClCompile>
     <ClCompile Include="source\game\stats\Buff.cpp">
       <Filter>3. game\stats</Filter>
@@ -805,6 +802,24 @@
     <ClCompile Include="source\engine\Texture.cpp">
       <Filter>2. engine\resources</Filter>
     </ClCompile>
+    <ClCompile Include="source\game\quests\Quest_Scripted.cpp">
+      <Filter>3. game\quests</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\system\QuestScheme.cpp">
+      <Filter>3. game\system\quests</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\system\QuestLoader.cpp">
+      <Filter>3. game\system\quests</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\system\Content.cpp">
+      <Filter>3. game\system</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\system\QuestList.cpp">
+      <Filter>3. game\system\quests</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\entity\Encounter.cpp">
+      <Filter>3. game\entity</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\resource\resource1.h">
@@ -1133,9 +1148,6 @@
     </ClInclude>
     <ClInclude Include="source\core\FastFunc.h">
       <Filter>1. core</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\system\Content.h">
-      <Filter>3. game\system</Filter>
     </ClInclude>
     <ClInclude Include="source\game\GameStats.h">
       <Filter>3. game</Filter>
@@ -1630,6 +1642,45 @@
     <ClInclude Include="source\engine\Sound.h">
       <Filter>2. engine\resources</Filter>
     </ClInclude>
+    <ClInclude Include="source\game\quests\Quest_Scripted.h">
+      <Filter>3. game\quests</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\system\DialogLoader.h">
+      <Filter>3. game\system\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\system\QuestScheme.h">
+      <Filter>3. game\system\quests</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\system\ItemLoader.h">
+      <Filter>3. game\system\items</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\system\UnitLoader.h">
+      <Filter>3. game\system\units</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\system\ObjectLoader.h">
+      <Filter>3. game\system\objects</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\system\BuildingLoader.h">
+      <Filter>3. game\system\buildings</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\system\QuestLoader.h">
+      <Filter>3. game\system\quests</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\system\Content.h">
+      <Filter>3. game\system</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\stats\Event.h">
+      <Filter>3. game\stats</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\script\ScriptException.h">
+      <Filter>3. game\script</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\system\QuestList.h">
+      <Filter>3. game\system\quests</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\system\SpellLoader.h">
+      <Filter>3. game\system\spells</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="source\resource\resource.rc">
@@ -1656,6 +1707,9 @@
       <Filter>0. doc</Filter>
     </Text>
     <Text Include="..\doc\todo.txt">
+      <Filter>0. doc</Filter>
+    </Text>
+    <Text Include="..\doc\script.txt">
       <Filter>0. doc</Filter>
     </Text>
   </ItemGroup>

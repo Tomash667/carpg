@@ -9,7 +9,7 @@
 #include "QuestConsts.h"
 
 //-----------------------------------------------------------------------------
-enum QuestDialog
+enum QuestDialogType
 {
 	QUEST_DIALOG_START,
 	QUEST_DIALOG_FAIL,

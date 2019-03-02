@@ -4,7 +4,7 @@
 #include "Quest.h"
 
 //-----------------------------------------------------------------------------
-class Quest_KillAnimals : public Quest_Dungeon, public LocationEventHandler
+class Quest_KillAnimals final : public Quest_Dungeon, public LocationEventHandler
 {
 public:
 	enum Progress

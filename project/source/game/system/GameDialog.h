@@ -1,7 +1,7 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-enum DialogType
+enum DialogType : short
 {
 	DTF_CHOICE,
 	DTF_TRADE,
@@ -23,7 +23,6 @@ enum DialogType
 	DTF_DO_QUEST_ITEM,
 	DTF_IF_QUEST_PROGRESS,
 	DTF_IF_NEED_TALK,
-	DTF_ESCAPE_CHOICE,
 	DTF_IF_SPECIAL,
 	DTF_IF_ONCE,
 	DTF_IF_CHOICES,
@@ -36,16 +35,59 @@ enum DialogType
 	DTF_NOT_ACTIVE,
 	DTF_IF_QUEST_SPECIAL,
 	DTF_QUEST_SPECIAL,
-	DTF_NOT,
 	DTF_SCRIPT,
-	DTF_IF_SCRIPT
+	DTF_IF_SCRIPT,
+	DTF_IF_HAVE_QUEST_ITEM_CURRENT
+};
+
+//-----------------------------------------------------------------------------
+enum DialogOp : short
+{
+	OP_EQUAL,
+	OP_NOT_EQUAL,
+	OP_GREATER,
+	OP_GREATER_EQUAL,
+	OP_LESS,
+	OP_LESS_EQUAL,
+	OP_ESCAPE
 };
 
 //-----------------------------------------------------------------------------
 struct DialogEntry
 {
 	DialogType type;
+	DialogOp op;
 	int value;
+
+	DialogEntry(DialogType type, int value = 0) : type(type), op(OP_EQUAL), value(value) {}
+};
+
+//-----------------------------------------------------------------------------
+struct DialogScripts
+{
+	enum FUNC
+	{
+		F_SCRIPT,
+		F_IF_SCRIPT,
+		F_FORMAT,
+		F_MAX
+	};
+
+	DialogScripts() : func(), built(false) {}
+	~DialogScripts();
+	int AddCode(FUNC f, const string& code);
+	void GetFormattedCode(FUNC f, string& code);
+	void Build();
+	asIScriptFunction* Get(FUNC f) { return func[f]; }
+	void Set(asITypeInfo* type);
+
+private:
+	vector<string> scripts[F_MAX];
+	asIScriptFunction* func[F_MAX];
+	bool built;
+
+public:
+	static DialogScripts global;
 };
 
 //-----------------------------------------------------------------------------
@@ -62,33 +104,20 @@ struct GameDialog
 		Text(int index) : index(index), next(-1), script(-1), exists(true), formatted(false) {}
 	};
 
-	struct Script
-	{
-		enum Type
-		{
-			NORMAL,
-			IF,
-			STRING
-		};
-		int index, next;
-		Type type;
-
-		Script(int index, Type type) : index(index), next(-1), type(type) {}
-	};
-
 	string id;
 	vector<DialogEntry> code;
 	vector<string> strs;
 	vector<Text> texts;
-	vector<Script> scripts;
 	int max_index;
 
 	static GameDialog* TryGet(cstring id);
 	static void Cleanup();
-	static void Verify(uint& errors);
 	static Map dialogs;
 };
 
 //-----------------------------------------------------------------------------
-uint LoadDialogs(uint& crc, uint& errors);
-void LoadDialogTexts();
+struct QuestDialog
+{
+	GameDialog* dialog;
+	Quest_Scripted* quest;
+};

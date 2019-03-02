@@ -4,6 +4,7 @@ Historia zmian
 Version 0.9 (???):
 ! usuniête wsparcie dla windowsa xp
 ! nie mo¿na wczytywaæ ju¿ zapisów z wersji 0.2.12 lub starszej
++ pierwsze skryptowe zadanie - dostarcz zasoby
 + wiêcej ikon lokalizacji i nazw
 
 --------------------------------------------------------------------------------

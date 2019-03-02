@@ -941,7 +941,7 @@ dialog arena_master
 //==============================================================================
 dialog hero
 {
-	if special "is_team_member"
+	if script "target.IsTeamMember()"
 	{
 		if once
 			talk 0
@@ -976,7 +976,7 @@ dialog hero
 				}
 			}
 		}
-		if special "is_leader"
+		if script "pc.IsLeader()"
 		{
 			if special "is_inside_town"
 			{
@@ -1021,7 +1021,7 @@ dialog hero
 			special "share_items"
 			end
 		}
-		if special "is_leader"
+		if script "pc.IsLeader()"
 		{
 			if special "is_not_mage"
 			{
@@ -1046,7 +1046,7 @@ dialog hero
 			}
 			choice 20
 			{
-				if special "is_safe_location"
+				if script "Level::IsSafe()"
 				{
 					talk 21
 					choice 22
@@ -1201,7 +1201,7 @@ dialog hero_pvp
 //==============================================================================
 dialog crazy
 {
-	if special "is_team_member"
+	if script "target.IsTeamMember()"
 	{
 		if once
 			talk 0
@@ -1236,7 +1236,7 @@ dialog crazy
 				}
 			}
 		}
-		if special "is_leader"
+		if script "pc.IsLeader()"
 		{
 			if special "is_inside_town"
 			{
@@ -1281,7 +1281,7 @@ dialog crazy
 			special "share_items"
 			end
 		}
-		if special "is_leader"
+		if script "pc.IsLeader()"
 		{
 			if special "is_not_mage"
 			{
@@ -1306,7 +1306,7 @@ dialog crazy
 			}
 			choice 20
 			{
-				if special "is_safe_location"
+				if script "Level::IsSafe()"
 				{
 					talk 21
 					choice 22
@@ -1315,7 +1315,7 @@ dialog crazy
 						if rand 3
 						{
 							talk 23
-							special "attack"
+							script "target.OrderAttack()"
 							end
 						}
 						talk 24
@@ -1366,7 +1366,7 @@ dialog crazy
 				{
 					talk 34
 					talk 35
-					special "attack"
+					script "target.OrderAttack()"
 					end
 				}
 				talk 36
@@ -1409,7 +1409,7 @@ dialog crazy
 				talk 45
 				talk 46
 				special "crazies_talked"
-				special "attack"
+				script "target.OrderAttack()"
 				end
 			}
 		}
@@ -1502,7 +1502,7 @@ dialog bandits
 	if rand 3
 	{
 		talk 0
-		special "attack"
+		script "target.OrderAttack()"
 		end
 	}
 	if special "is_bandit"
@@ -1510,7 +1510,7 @@ dialog bandits
 		if rand 3
 		{
 			talk 1
-			special "attack"
+			script "target.OrderAttack()"
 			end
 		}
 		if rand 2
@@ -1542,7 +1542,7 @@ dialog bandits
 			{
 				talk 9
 				talk 10
-				special "attack"
+				script "target.OrderAttack()"
 				end
 			}
 		}
@@ -1550,7 +1550,7 @@ dialog bandits
 	choice 11
 	{
 		talk 12
-		special "attack"
+		script "target.OrderAttack()"
 		end
 	}
 	show_choices
@@ -1607,7 +1607,7 @@ dialog crazy_mage_encounter
 	{
 		talk 9
 		talk 10
-		special "attack"
+		script "target.OrderAttack()"
 		end
 	}
 	show_choices
@@ -1616,7 +1616,7 @@ dialog crazy_mage_encounter
 //==============================================================================
 dialog captive
 {
-	if special "is_team_member"
+	if script "target.IsTeamMember()"
 	{
 		talk 0
 		if special "is_not_follow"
@@ -1642,7 +1642,7 @@ dialog captive
 			talk 6
 			choice 7
 			{
-				if special "in_city"
+				if script "Level::IsSettlement()"
 				{
 					do_quest "captive"
 					talk 8
@@ -1671,7 +1671,7 @@ dialog captive
 		}
 		else
 		{
-			if special "in_city"
+			if script "Level::IsSettlement()"
 			{
 				talk 13
 				end
@@ -1875,7 +1875,7 @@ dialog q_crazies
 	talk 0
 	talk 1
 	talk 2
-	special "attack"
+	script "target.OrderAttack()"
 	end
 }
 
@@ -1887,7 +1887,7 @@ dialog crazies_encounter
 		if rand 2
 		{
 			talk 0
-			special "attack"
+			script "target.OrderAttack()"
 			end
 		}
 		else
@@ -2262,7 +2262,7 @@ dialog q_bandits_encounter
 			quest_special "bandyci_daj_paczke"
 			talk 3
 			talk 4
-			special "attack"
+			script "target.OrderAttack()"
 			end
 		}
 	}
@@ -2272,7 +2272,7 @@ dialog q_bandits_encounter
 		{
 			talk 6
 			talk 7
-			special "attack"
+			script "target.OrderAttack()"
 			end
 		}
 	}
@@ -2280,7 +2280,7 @@ dialog q_bandits_encounter
 	{
 		talk 9
 		talk 10
-		special "attack"
+		script "target.OrderAttack()"
 		end
 	}
 	show_choices
@@ -2329,7 +2329,7 @@ dialog q_bandits_boss
 	talk 0
 	talk 1
 	talk 2
-	special "attack"
+	script "target.OrderAttack()"
 	end
 }
 
@@ -2385,14 +2385,14 @@ dialog q_bandits_collect_toll_talk
 		{
 			talk 4
 			talk 5
-			special "attack"
+			script "target.OrderAttack()"
 			end2
 		}
 	}
 	choice 6
 	{
 		talk 7
-		special "attack"
+		script "target.OrderAttack()"
 		end2
 	}
 	show_choices
@@ -2564,7 +2564,7 @@ dialog q_deliver_parcel_bandits
 			}
 			choice 4
 			{
-				special "attack"
+				script "target.OrderAttack()"
 				set_quest_progress 5
 				end
 			}
@@ -2573,7 +2573,7 @@ dialog q_deliver_parcel_bandits
 		else
 		{
 			set_quest_progress 7
-			special "attack"
+			script "target.OrderAttack()"
 			end
 		}
 	}
@@ -2780,7 +2780,7 @@ dialog q_evil_boss
 {
 	talk 0
 	talk 1
-	special "attack"
+	script "target.OrderAttack()"
 	end
 }
 
@@ -2929,7 +2929,7 @@ dialog q_goblins_encounter
 	set_quest_progress 3
 	talk 0
 	talk 1
-	special "attack"
+	script "target.OrderAttack()"
 	end
 }
 
@@ -3020,7 +3020,7 @@ dialog q_goblins_boss
 	talk 0
 	talk 1
 	talk 2
-	special "attack"
+	script "target.OrderAttack()"
 	end
 }
 
@@ -3166,7 +3166,7 @@ dialog q_mages_golem
 	choice 4
 	{
 		talk 5
-		special "attack"
+		script "target.OrderAttack()"
 		end
 	}
 	show_choices
@@ -3437,7 +3437,7 @@ dialog q_mages2_boss
 	if quest_progress 11
 		talk 1
 	talk 2
-	special "attack"
+	script "target.OrderAttack()"
 	end
 }
 
@@ -4326,7 +4326,7 @@ dialog q_wanted_end
 dialog crazy_cook
 {
 	talk 0
-	special "attack"
+	script "target.OrderAttack()"
 	end
 }
 

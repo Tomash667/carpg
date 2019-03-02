@@ -1218,7 +1218,6 @@ void TeamSingleton::CheckUnitOverload(Unit& unit)
 	std::sort(items_to_sell.begin(), items_to_sell.end());
 
 	int team_gold = 0;
-	Game& game = Game::Get();
 
 	while(!items_to_sell.empty() && unit.weight > unit.weight_max)
 	{
@@ -1236,7 +1235,7 @@ void TeamSingleton::CheckUnitOverload(Unit& unit)
 	}
 
 	if(team_gold > 0)
-		game.AddGold(team_gold);
+		AddGold(team_gold);
 
 	assert(unit.weight <= unit.weight_max);
 }
@@ -1353,6 +1352,176 @@ void TeamSingleton::AddExp(int exp, vector<Unit*>* units)
 		else
 			unit->hero->AddExp(exp);
 	}
+}
+
+//=================================================================================================
+void TeamSingleton::AddGold(int count, vector<Unit*>* units, bool show, cstring msg, float time, bool defmsg)
+{
+	Game& game = Game::Get();
+
+	if(!msg)
+		msg = game.txGoldPlus;
+
+	if(!units)
+		units = &active_members;
+
+	if(units->size() == 1)
+	{
+		Unit& u = *(*units)[0];
+		u.gold += count;
+		if(show && u.IsPlayer())
+		{
+			if(&u == game.pc->unit)
+				game.gui->messages->AddGameMsg(Format(msg, count), time);
+			else
+			{
+				NetChangePlayer& c = Add1(u.player->player_info->changes);
+				c.type = NetChangePlayer::GOLD_MSG;
+				c.id = (defmsg ? 1 : 0);
+				c.count = count;
+				u.player->player_info->UpdateGold();
+			}
+		}
+		else if(!u.IsPlayer() && u.busy == Unit::Busy_Trading)
+		{
+			Unit* trader = FindPlayerTradingWithUnit(u);
+			if(trader != game.pc->unit)
+			{
+				NetChangePlayer& c = Add1(trader->player->player_info->changes);
+				c.type = NetChangePlayer::UPDATE_TRADER_GOLD;
+				c.id = u.netid;
+				c.count = u.gold;
+			}
+		}
+		return;
+	}
+
+	int pc_count = 0, npc_count = 0;
+	bool credit_info = false;
+
+	for(vector<Unit*>::iterator it = units->begin(), end = units->end(); it != end; ++it)
+	{
+		Unit& u = **it;
+		if(u.IsPlayer())
+		{
+			++pc_count;
+			u.player->on_credit = false;
+			u.player->gold_get = 0;
+		}
+		else
+		{
+			++npc_count;
+			u.hero->on_credit = false;
+			u.hero->gained_gold = false;
+		}
+	}
+
+	for(int i = 0; i < 2 && count > 0; ++i)
+	{
+		Vec2 share = GetShare(pc_count, npc_count);
+		int gold_left = 0;
+
+		for(vector<Unit*>::iterator it = units->begin(), end = units->end(); it != end; ++it)
+		{
+			Unit& u = **it;
+			HeroPlayerCommon& hpc = *(u.IsPlayer() ? (HeroPlayerCommon*)u.player : u.hero);
+			if(hpc.on_credit)
+				continue;
+
+			float gain = (u.IsPlayer() ? share.x : share.y) * count + hpc.split_gold;
+			float gained_f;
+			hpc.split_gold = modf(gain, &gained_f);
+			int gained = (int)gained_f;
+			if(hpc.credit > gained)
+			{
+				credit_info = true;
+				hpc.credit -= gained;
+				gold_left += gained;
+				hpc.on_credit = true;
+				if(u.IsPlayer())
+					--pc_count;
+				else
+					--npc_count;
+			}
+			else if(hpc.credit)
+			{
+				credit_info = true;
+				gained -= hpc.credit;
+				gold_left += hpc.credit;
+				hpc.credit = 0;
+				u.gold += gained;
+				if(u.IsPlayer())
+					u.player->gold_get += gained;
+				else
+					u.hero->gained_gold = true;
+			}
+			else
+			{
+				u.gold += gained;
+				if(u.IsPlayer())
+					u.player->gold_get += gained;
+				else
+					u.hero->gained_gold = true;
+			}
+		}
+
+		count = gold_left;
+	}
+
+	if(Net::IsOnline())
+	{
+		for(vector<Unit*>::iterator it = units->begin(), end = units->end(); it != end; ++it)
+		{
+			Unit& u = **it;
+			if(u.IsPlayer())
+			{
+				if(u.player != game.pc)
+				{
+					if(u.player->gold_get)
+					{
+						u.player->player_info->update_flags |= PlayerInfo::UF_GOLD;
+						if(show)
+						{
+							NetChangePlayer& c = Add1(u.player->player_info->changes);
+							c.type = NetChangePlayer::GOLD_MSG;
+							c.id = (defmsg ? 1 : 0);
+							c.count = u.player->gold_get;
+						}
+					}
+				}
+				else
+				{
+					if(show)
+						game.gui->messages->AddGameMsg(Format(msg, game.pc->gold_get), time);
+				}
+			}
+			else if(u.hero->gained_gold && u.busy == Unit::Busy_Trading)
+			{
+				Unit* trader = FindPlayerTradingWithUnit(u);
+				if(trader != game.pc->unit)
+				{
+					NetChangePlayer& c = Add1(trader->player->player_info->changes);
+					c.type = NetChangePlayer::UPDATE_TRADER_GOLD;
+					c.id = u.netid;
+					c.count = u.gold;
+				}
+			}
+		}
+
+		if(credit_info)
+			Net::PushChange(NetChange::UPDATE_CREDIT);
+	}
+	else if(show)
+		game.gui->messages->AddGameMsg(Format(msg, game.pc->gold_get), time);
+}
+
+//=================================================================================================
+void TeamSingleton::AddReward(int gold, int exp)
+{
+	Game& game = Game::Get();
+	AddGold(gold, nullptr, true, game.txQuestCompletedGold, 4.f, false);
+	if(exp > 0)
+		AddExp(exp);
 }
 
 //=================================================================================================

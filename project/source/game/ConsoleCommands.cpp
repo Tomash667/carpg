@@ -183,10 +183,14 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 			if(Net::IsLocal())
 			{
 				string& output = SM.OpenOutput();
-				SM.SetContext(pc, pc_data.target_unit);
+				ScriptContext& ctx = SM.GetContext();
+				ctx.pc = pc;
+				ctx.target = pc_data.target_unit;
 				SM.RunScript(code);
 				if(!output.empty())
 					Msg(output.c_str());
+				ctx.pc = nullptr;
+				ctx.target = nullptr;
 				SM.CloseOutput();
 			}
 			else
@@ -451,7 +455,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						if(Net::IsLocal())
 						{
 							if(is_team)
-								AddGold(count);
+								Team.AddGold(count);
 							else
 								pc->unit->gold = max(pc->unit->gold + count, 0);
 						}
@@ -1087,7 +1091,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							N.SendAll(f, MEDIUM_PRIORITY, RELIABLE, Stream_Chat);
 						}
 						AddServerMsg(text.c_str());
-						Info("SERWER: %s", text.c_str());
+						Info("SERVER: %s", text.c_str());
 						if(game_state == GS_LEVEL)
 							gui->game_gui->AddSpeechBubble(pc->unit, text.c_str());
 					}
@@ -1521,7 +1525,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							if(!QM.SetForcedQuest(id))
 								Msg("Invalid quest id '%s'.", id.c_str());
 						}
-						auto force = QM.GetForcedQuest();
+						int force = QM.GetForcedQuest();
 						cstring name;
 						if(force == Q_FORCE_DISABLED)
 							name = "disabled";

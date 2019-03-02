@@ -124,7 +124,7 @@ void Quest_Goblins::SetProgress(int prog2)
 	case Progress::NotAccepted:
 		// nie zaakceptowano
 		{
-			if(quest_manager.RemoveQuestRumor(R_GOBLINS))
+			if(QM.RemoveQuestRumor(R_GOBLINS))
 				game->gui->journal->AddRumor(Format(game->txQuest[211], GetStartLocationName()));
 		}
 		break;
@@ -133,7 +133,7 @@ void Quest_Goblins::SetProgress(int prog2)
 		{
 			OnStart(game->txQuest[212]);
 			// usuñ plotkê
-			quest_manager.RemoveQuestRumor(R_GOBLINS);
+			QM.RemoveQuestRumor(R_GOBLINS);
 			// dodaj lokalizacje
 			target_loc = W.GetNearestLocation(GetStartLocation().pos, 1 << L_FOREST, true);
 			Location& target = GetTargetLocation();
@@ -210,8 +210,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			const Item* item = Item::Get("q_gobliny_luk");
 			DialogContext::current->pc->unit->RemoveItem(item, 1);
 			DialogContext::current->talker->AddItem(item, 1, true);
-			game->AddReward(500);
-			Team.AddExp(2500);
+			Team.AddReward(500, 2500);
 			OnUpdate(game->txQuest[224]);
 			goblins_state = State::GivenBow;
 			GetTargetLocation().active_quest = nullptr;
@@ -272,7 +271,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			state = Quest::Completed;
 			OnUpdate(game->txQuest[230]);
 			GetTargetLocation().active_quest = nullptr;
-			quest_manager.EndUniqueQuest();
+			QM.EndUniqueQuest();
 			W.AddNews(game->txQuest[231]);
 			Team.AddLearningPoint();
 			Team.AddExp(15000);

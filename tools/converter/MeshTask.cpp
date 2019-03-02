@@ -79,9 +79,10 @@ void WriteMeshFlags(byte flags)
 		printf("F_PHYSICS ");
 	if(flags & Mesh::F_SPLIT)
 		printf("F_SPLIT ");
+	printf("(%u)", flags);
 }
 
-void Info(const char* path)
+void Info(const char* path, const char* options)
 {
 	Mesh* mesh = new Mesh;
 
@@ -96,6 +97,38 @@ void Info(const char* path)
 		return;
 	}
 
+	bool points_details = false, groups_details = false;
+	vector<Mesh::Point*> points;
+
+	if(options)
+	{
+		Tokenizer t(options, strlen(options), 0);
+		t.Next();
+		while(!t.QueryEOF())
+		{
+			t.AssertToken(Tokenizer::TOKEN_IDENTIFIER);
+			const string& str = t.GetString();
+			if(str == "groups")
+				groups_details = true;
+			else if(str == "points")
+				points_details = true;
+			else if(str == "point")
+			{
+				t.Next();
+				t.AssertToken(Tokenizer::TOKEN_IDENTIFIER, Tokenizer::TOKEN_STRING);
+				const string& id = t.GetString();
+				Mesh::Point* pt = mesh->GetPoint(id);
+				if(!pt)
+					printf("Error - invalid point '%s'.\n", id.c_str());
+				else
+					points.push_back(pt);
+			}
+			else
+				t.CreateError("Unknown option.");
+			t.Next();
+		}
+	}
+
 	auto& head = mesh->head;
 	printf("File: %s\n", path);
 	printf("Version: %u\n", head.version);
@@ -107,15 +140,32 @@ void Info(const char* path)
 	printf("Bones: %u\n", head.n_bones);
 	printf("Animations: %u\n", head.n_anims);
 	printf("Points: %u\n", head.n_points);
-	printf("Groups: %u\n", head.n_groups);
-	for(uint i = 0; i < head.n_groups; ++i)
+	if(points_details)
 	{
-		Mesh::BoneGroup& group = mesh->groups[i];
-		printf("\t[%u] %s (parent %s) - (%u) ", i, group.name.c_str(),
-			group.parent == i ? "none" : mesh->groups[group.parent].name.c_str(), group.bones.size());
-		for(byte b : group.bones)
-			printf("%s ", mesh->bones[b - 1].name.c_str());
-		printf("\n");
+		uint index = 0;
+		for(Mesh::Point& pt : mesh->attach_points)
+		{
+			printf("\t[%u] %s\n", index, pt.name.c_str());
+			++index;
+		}
+	}
+	for(Mesh::Point* pt : points)
+	{
+		printf("\tPoint %s\n\t\tType: %d\n\t\tBone: %u\n\t\tRot: %g;%g;%g\n\t\tSize: %g;%g;%g\n", pt->name.c_str(), pt->type, pt->bone,
+			pt->rot.x, pt->rot.y, pt->rot.z, pt->size.x, pt->size.y, pt->size.z);
+	}
+	printf("Groups: %u\n", head.n_groups);
+	if(groups_details)
+	{
+		for(uint i = 0; i < head.n_groups; ++i)
+		{
+			Mesh::BoneGroup& group = mesh->groups[i];
+			printf("\t[%u] %s (parent %s) - (%u) ", i, group.name.c_str(),
+				group.parent == i ? "none" : mesh->groups[group.parent].name.c_str(), group.bones.size());
+			for(byte b : group.bones)
+				printf("%s ", mesh->bones[b - 1].name.c_str());
+			printf("\n");
+		}
 	}
 
 	delete mesh;

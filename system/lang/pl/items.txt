@@ -798,6 +798,9 @@ item parcel {
 item wanted_letter {
 	name "List goñczy"
 }
+item q_resources {
+	name "Zasoby"
+}
 
 //------------------------------------------------------------------------------
 item book_orcs {

@@ -115,14 +115,14 @@ void Quest_Mine::SetProgress(int prog2)
 			mine_state2 = State2::InBuild;
 			days = 0;
 			days_required = Random(30, 45);
-			quest_manager.RemoveQuestRumor(R_MINE);
+			QM.RemoveQuestRumor(R_MINE);
 		}
 		break;
 	case Progress::GotFirstGold:
 		{
 			state = Quest::Completed;
 			OnUpdate(game->txQuest[136]);
-			game->AddReward(PAYMENT);
+			Team.AddReward(PAYMENT);
 			mine_state2 = State2::Built;
 			days -= days_required;
 			days_required = Random(60, 90);
@@ -138,11 +138,11 @@ void Quest_Mine::SetProgress(int prog2)
 		{
 			state = Quest::Completed;
 			OnUpdate(game->txQuest[137]);
-			game->AddReward(3000);
+			Team.AddReward(3000);
 			mine_state2 = State2::InBuild;
 			days = 0;
 			days_required = Random(30, 45);
-			quest_manager.RemoveQuestRumor(R_MINE);
+			QM.RemoveQuestRumor(R_MINE);
 		}
 		break;
 	case Progress::NeedTalk:
@@ -162,7 +162,7 @@ void Quest_Mine::SetProgress(int prog2)
 		{
 			state = Quest::Completed;
 			OnUpdate(game->txQuest[141]);
-			quest_manager.EndUniqueQuest();
+			QM.EndUniqueQuest();
 		}
 		break;
 	case Progress::Invested:
@@ -178,7 +178,7 @@ void Quest_Mine::SetProgress(int prog2)
 		{
 			state = Quest::Completed;
 			OnUpdate(game->txQuest[143]);
-			game->AddReward(PAYMENT2);
+			Team.AddReward(PAYMENT2);
 			mine_state = State::BigShares;
 			mine_state2 = State2::Expanded;
 			days -= days_required;
@@ -208,7 +208,7 @@ void Quest_Mine::SetProgress(int prog2)
 		{
 			state = Quest::Completed;
 			OnUpdate(game->txQuest[148]);
-			quest_manager.EndUniqueQuest();
+			QM.EndUniqueQuest();
 			W.AddNews(game->txQuest[149]);
 			Team.AddExp(10000);
 		}

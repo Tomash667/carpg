@@ -47,7 +47,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 		// give parcel to player
 		{
 			OnStart(game->txQuest[9]);
-			quest_manager.quests_timeout2.push_back(this);
+			QM.quests_timeout2.push_back(this);
 
 			Location& loc = *W.GetLocation(end_loc);
 			Item::Get("parcel")->CreateCopy(parcel);
@@ -85,11 +85,10 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			((City&)GetStartLocation()).quest_mayor = CityQuestState::Failed;
 
 			DialogContext::current->pc->unit->RemoveQuestItem(refid);
-			game->AddReward(300);
-			Team.AddExp(2000);
+			Team.AddReward(300, 2000);
 
 			OnUpdate(game->txQuest[12]);
-			RemoveElementTry(quest_manager.quests_timeout2, (Quest*)this);
+			RemoveElementTry(QM.quests_timeout2, (Quest*)this);
 			RemoveEncounter();
 		}
 		break;
@@ -100,7 +99,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			((City&)GetStartLocation()).quest_mayor = CityQuestState::Failed;
 
 			OnUpdate(game->txQuest[13]);
-			RemoveElementTry(quest_manager.quests_timeout2, (Quest*)this);
+			RemoveElementTry(QM.quests_timeout2, (Quest*)this);
 			RemoveEncounter();
 		}
 		break;
@@ -111,13 +110,12 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			((City&)GetStartLocation()).quest_mayor = CityQuestState::None;
 
 			DialogContext::current->pc->unit->RemoveQuestItem(refid);
-			game->AddReward(750);
-			Team.AddExp(3000);
+			Team.AddReward(750, 3000);
 
 			RemoveEncounter();
 
 			OnUpdate(game->txQuest[14]);
-			RemoveElementTry(quest_manager.quests_timeout2, (Quest*)this);
+			RemoveElementTry(QM.quests_timeout2, (Quest*)this);
 		}
 		break;
 	case Progress::AttackedBandits:

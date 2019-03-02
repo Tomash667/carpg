@@ -520,7 +520,7 @@ group random {
 usable chair {
 	mesh "krzeslo.qmsh"
 	animation "siedzi_krzeslo"
-	flags allow_use
+	flags allow_use_item
 	limit_rot 2
 }
 
@@ -532,7 +532,7 @@ usable bench {
 		"lawa4.qmsh"
 	}
 	animation "siedzi_lawa"
-	flags {near_wall allow_use is_bench}
+	flags {near_wall allow_use_item is_bench}
 	limit_rot 3
 }
 
@@ -578,7 +578,7 @@ usable gold_vein {
 usable throne {
 	mesh "tron.qmsh"
 	animation "siedzi_tron"
-	flags { allow_use important required near_wall }
+	flags { allow_use_item important required near_wall }
 	limit_rot 2
 }
 
@@ -586,7 +586,7 @@ usable stool {
 	mesh "stolek.qmsh"
 	cylinder { 0.27 0.44 }
 	animation "siedzi_krzeslo"
-	flags allow_use
+	flags allow_use_item
 	limit_rot 2
 }
 

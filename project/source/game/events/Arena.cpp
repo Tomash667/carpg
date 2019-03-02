@@ -520,7 +520,7 @@ void Arena::AddReward(int gold, int exp)
 			v.push_back(*it);
 	}
 
-	Game::Get().AddGold(gold * v.size(), &v, true);
+	Team.AddGold(gold * v.size(), &v, true);
 	Team.AddExp(-exp, &v);
 }
 

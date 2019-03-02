@@ -48,7 +48,7 @@ void Quest_DeliverLetter::SetProgress(int prog2)
 		// give letter to player
 		{
 			OnStart(game->txQuest[2]);
-			quest_manager.quests_timeout2.push_back(this);
+			QM.quests_timeout2.push_back(this);
 
 			Location& loc = *W.GetLocation(end_loc);
 			Item::Get("letter")->CreateCopy(letter);
@@ -87,14 +87,13 @@ void Quest_DeliverLetter::SetProgress(int prog2)
 		// given response, end of quest
 		{
 			state = Quest::Completed;
-			game->AddReward(250);
-			Team.AddExp(1000);
+			Team.AddReward(250, 1000);
 
 			((City&)GetStartLocation()).quest_mayor = CityQuestState::None;
 			DialogContext::current->pc->unit->RemoveQuestItem(refid);
 
 			OnUpdate(game->txQuest[7]);
-			RemoveElementTry(quest_manager.quests_timeout2, (Quest*)this);
+			RemoveElementTry(QM.quests_timeout2, (Quest*)this);
 		}
 		break;
 	}

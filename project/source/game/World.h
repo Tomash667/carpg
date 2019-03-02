@@ -43,6 +43,7 @@ public:
 	};
 
 	static const float TRAVEL_SPEED;
+	static const float MAP_KM_RATIO;
 	static const int TILE_SIZE = 30;
 
 	// general
@@ -105,6 +106,7 @@ public:
 	const Vec2& GetWorldPos() const { return world_pos; }
 	const Vec2& GetTargetPos() const { return travel_target_pos; }
 	void SetWorldPos(const Vec2& world_pos) { this->world_pos = world_pos; }
+	uint GetSettlements() { return settlements; }
 	int GetRandomSettlementIndex(int excluded = -1) const;
 	int GetRandomSettlementIndex(const vector<int>& used, int type = 0) const;
 	Location* GetRandomSettlement(int excluded = -1) const { return locations[GetRandomSettlementIndex(excluded)]; }
@@ -117,6 +119,9 @@ public:
 	int GetNearestLocation(const Vec2& pos, int flags, bool not_quest, int target_flags = -1);
 	int GetNearestSettlement(const Vec2& pos) { return GetNearestLocation(pos, (1 << L_CITY), false); }
 	const Vec2& GetWorldBounds() const { return world_bounds; }
+	City* GetRandomSettlement(delegate<bool(City*)> pred);
+	Location* GetRandomSettlement(Location* loc);
+	Location* GetRandomSettlementWeighted(delegate<float(Location*)> func);
 
 	// travel
 	void Travel(int index, bool send);
@@ -128,11 +133,14 @@ public:
 	float GetTravelDir() const { return travel_dir; }
 	void SetTravelDir(const Vec3& pos);
 	void GetOutsideSpawnPoint(Vec3& pos, float& dir) const;
+	float GetTravelDays(float dist);
 
 	// encounters
 	void StartEncounter();
-	Encounter* AddEncounter(int& index);
+	Encounter* AddEncounter(int& index, Quest* quest = nullptr);
+	Encounter* AddEncounterS(Quest* quest);
 	void RemoveEncounter(int index);
+	void RemoveEncounter(Quest* quest);
 	Encounter* GetEncounter(int index);
 	Encounter* RecreateEncounter(int index);
 	const vector<Encounter*>& GetEncounters() const { return encounters; }

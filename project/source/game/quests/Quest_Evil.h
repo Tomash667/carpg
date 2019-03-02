@@ -9,7 +9,7 @@
 // trzeba iœæ do podziemi zabiæ nekromantê ale go tam nie ma, jest zakrwawiony o³tarz, gdy siê podejdzie pojawiaj¹ siê nieumarli;
 // potem trzeba zameldowaæ o postêpach, wysy³a nas do jakiegoœ maga po ksiêgê, mag mówi ¿e stra¿nicy j¹ zarewirowali, kapitan odsy³a do burmistrza
 // potem do kapitana i j¹ daje, wracamy do kap³ana, wysy³a nas do podziemi na koñcu których jest portal do innych podziemi, na koñcu jest boss
-class Quest_Evil : public Quest_Dungeon, public UnitEventHandler
+class Quest_Evil final : public Quest_Dungeon, public UnitEventHandler
 {
 public:
 	struct Loc : public Quest_Event

@@ -1,8 +1,10 @@
 #pragma once
 
+//-----------------------------------------------------------------------------
 #include "UnitEventHandler.h"
 #include "QuestHandler.h"
 
+//-----------------------------------------------------------------------------
 class Quest_Contest : public QuestHandler, public UnitEventHandler
 {
 public:

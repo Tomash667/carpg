@@ -13,6 +13,7 @@
 #include "GameMessages.h"
 #include "Team.h"
 #include "World.h"
+#include "ScriptException.h"
 
 //=================================================================================================
 PlayerController::~PlayerController()
@@ -1123,6 +1124,12 @@ bool PlayerController::Read(BitStreamReader& f)
 }
 
 //=================================================================================================
+bool PlayerController::IsLeader() const
+{
+	return Team.IsLeader(unit);
+}
+
+//=================================================================================================
 Action& PlayerController::GetAction()
 {
 	auto action = ClassInfo::classes[(int)unit->GetClass()].action;
@@ -1202,7 +1209,7 @@ void PlayerController::PayCredit(int count)
 			units->push_back(u);
 	}
 
-	Game::Get().AddGold(count, units, false);
+	Team.AddGold(count, units);
 
 	credit -= count;
 	if(credit < 0)
@@ -1266,6 +1273,15 @@ bool PlayerController::HavePerk(Perk perk, int value)
 			return true;
 	}
 	return false;
+}
+
+//=================================================================================================
+bool PlayerController::HavePerkS(const string& perk_id)
+{
+	PerkInfo* perk = PerkInfo::Find(perk_id);
+	if(!perk)
+		throw ScriptException("Invalid perk '%s'.", perk_id.c_str());
+	return HavePerk(perk->perk_id);
 }
 
 //=================================================================================================

@@ -13,6 +13,7 @@
 #include "Var.h"
 #include "QuestManager.h"
 #include "Quest_Crazies.h"
+#include "Quest_Scripted.h"
 #include "UnitGroup.h"
 #include "ItemHelper.h"
 #include "Game.h"
@@ -424,6 +425,14 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 		dont_attack = enc->dont_attack;
 		quest = enc->quest;
 		L.event_handler = enc->location_event_handler;
+
+		if(enc->scripted)
+		{
+			Quest_Scripted* q = (Quest_Scripted*)quest;
+			ScriptEvent event(EVENT_ENCOUNTER);
+			q->FireEvent(event);
+			W.RemoveEncounter(enc->index);
+		}
 	}
 
 	talker = nullptr;

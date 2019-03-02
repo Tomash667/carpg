@@ -1,0 +1,35 @@
+quest deliver_resources {
+	dialog start {
+		0 "I have to deliver a box of resource to $(target_loc.name). Normally, I would send one of my people, but since you're already here..."
+		1 "This is quite urgent. $(target_loc.name) needs these resources within 15 days. Are you interested in?"
+		2 "Yes"
+		3 "No"
+		4 "Take this box and good luck. Try to avoid bandits on the roads."
+	}
+	
+	dialog end {
+		0 "Give resources"
+		1 "Thank you, take this gold as a reward."
+		2 "Thanks be to the gods for help!"
+		3 "But wait... Where do you have these resources?"
+	}
+	
+	dialog bandits_enc {
+		0 "Finally you are fucking here! Kill him!"
+	}
+	
+	dialog bandits {
+		0 "Well, you are finally here! How much can you wait for these goddamned resources!"
+	}
+	
+	texts {
+		0 "Resources for $(target_loc.name)"
+		1 "Deliver resources"
+		2 "Received from $(start_loc.IsVillage() ? \"soltys" : \"mayor\") of $(start_loc.name) at $date$."
+		3 "I got the resources I need to deliver within 15 days to $(target_loc.name) which is $(World::GetDirName(start_loc.pos, target_loc.pos)) from here."
+		4 "I provided resources on time. Quest done!"
+		5 "I did not have time to deliver resources."
+		6 "Traveling along the road you came across a few bandits. It looks like they've been waiting for you..."
+		7 "I came across bandits who wanted to take away my resources."
+	}
+}

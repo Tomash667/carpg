@@ -210,6 +210,7 @@ struct Unit
 	StaminaAction stamina_action;
 	float stamina_timer;
 	TraderStock* stock;
+	vector<QuestDialog> dialogs;
 
 	//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	Unit() : mesh_inst(nullptr), hero(nullptr), ai(nullptr), player(nullptr), cobj(nullptr), interp(nullptr), bow_instance(nullptr), fake_unit(false),
@@ -430,7 +431,9 @@ public:
 	{
 		return data->type == UNIT_TYPE::HUMAN;
 	}
+	bool HaveQuestItem(int quest_refid);
 	void RemoveQuestItem(int quest_refid);
+	void RemoveQuestItemS(Quest* quest);
 	bool HaveItem(const Item* item);
 	float GetAttackSpeed(const Weapon* weapon = nullptr) const;
 	float GetAttackSpeedModFromStrength(const Weapon& wep) const
@@ -511,16 +514,17 @@ public:
 	void RemoveItem(int i_index, uint count);
 	bool RemoveItem(const Item* item, uint count);
 	int CountItem(const Item* item);
-	//float CalculateBowAttackSpeed();
-	cstring GetName() const
+	const string& GetNameS() const
 	{
 		if(IsPlayer())
-			return player->name.c_str();
+			return player->name;
 		else if(IsHero() && hero->know_name)
-			return hero->name.c_str();
+			return hero->name;
 		else
-			return data->name.c_str();
+			return data->name;
 	}
+	cstring GetName() const { return GetNameS().c_str(); }
+	void SetName(const string& name);
 	void ClearInventory();
 	bool PreferMelee()
 	{
@@ -627,6 +631,8 @@ public:
 	}
 	// add item and show game message, send net notification, calls preload
 	void AddItem2(const Item* item, uint count, uint team_count, bool show_msg = true);
+	void AddItemS(const Item* item, uint count) { AddItem2(item, count, 0); }
+	void AddTeamItemS(const Item* item, uint count) { AddItem2(item, count, count); }
 	// dodaje przedmiot i zak³ada jeœli nie ma takiego typu, przedmiot jest dru¿ynowy
 	void AddItemAndEquipIfNone(const Item* item, uint count = 1);
 	// zwraca udŸwig postaci (0-brak obci¹¿enia, 1-maksymalne, >1 przeci¹¿ony)
@@ -677,7 +683,7 @@ public:
 
 	bool CanDoWhileUsing() const
 	{
-		return action == A_ANIMATION2 && animation_state == AS_ANIMATION2_USING && IS_SET(usable->base->use_flags, BaseUsable::ALLOW_USE);
+		return action == A_ANIMATION2 && animation_state == AS_ANIMATION2_USING && IS_SET(usable->base->use_flags, BaseUsable::ALLOW_USE_ITEM);
 	}
 
 	int GetBuffs() const;
@@ -724,6 +730,10 @@ public:
 	}
 
 	void StartAutoTalk(bool leader = false, GameDialog* dialog = nullptr);
+	void SetAutoTalk(bool auto_talk);
+	bool GetAutoTalk() const { return auto_talk != AutoTalkMode::No; }
+	void SetDontAttack(bool dont_attack);
+	bool GetDontAttack() const { return dont_attack; }
 
 	int& GetCredit()
 	{
@@ -767,6 +777,13 @@ public:
 	bool IsFriend(Unit& u) const;
 	void RefreshStock();
 	float GetMaxMorale() const { return IS_SET(data->flags, F_COWARD) ? 5.f : 10.f; }
+	void AddDialog(Quest_Scripted* quest, GameDialog* dialog);
+	void AddDialogS(Quest_Scripted* quest, const string& dialog_id);
+	void RemoveDialog(Quest_Scripted* quest, bool cleanup);
+	void RemoveDialogS(Quest_Scripted* quest) { RemoveDialog(quest, false); }
+	void OrderEscapeToUnit(Unit* unit);
+	void OrderLeave();
+	void OrderAttack();
 
 	//-----------------------------------------------------------------------------
 	static vector<Unit*> refid_table;

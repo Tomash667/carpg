@@ -798,6 +798,9 @@ item parcel {
 item wanted_letter {
 	name "Wanted poster"
 }
+item q_resources {
+	name "Resources"
+}
 
 //------------------------------------------------------------------------------
 item book_orcs {

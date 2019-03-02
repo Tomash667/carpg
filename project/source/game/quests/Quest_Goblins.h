@@ -16,7 +16,7 @@
 // mówi ¿e poszed³ œmiej¹c siê z naiwnego gracza, do swojego fortu
 // w forcie s¹ gobliny i na koñcu szlachcic i dwóch stra¿ników
 // zabija siê go i koniec
-class Quest_Goblins : public Quest_Dungeon, public UnitEventHandler
+class Quest_Goblins final : public Quest_Dungeon, public UnitEventHandler
 {
 public:
 	enum Progress

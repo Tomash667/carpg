@@ -61,7 +61,7 @@ void Quest_CampNearCity::SetProgress(int prog2)
 			bool is_city = LocationHelper::IsCity(sl);
 
 			OnStart(game->txQuest[is_city ? 57 : 58]);
-			quest_manager.quests_timeout.push_back(this);
+			QM.quests_timeout.push_back(this);
 
 			// event
 			target_loc = W.CreateCamp(sl.pos, group);
@@ -102,7 +102,7 @@ void Quest_CampNearCity::SetProgress(int prog2)
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
-			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
+			RemoveElementTry<Quest_Dungeon*>(QM.quests_timeout, this);
 			OnUpdate(game->txQuest[65]);
 		}
 		break;
@@ -112,8 +112,7 @@ void Quest_CampNearCity::SetProgress(int prog2)
 			state = Quest::Completed;
 			((City&)GetStartLocation()).quest_captain = CityQuestState::None;
 			int reward = GetReward();
-			game->AddReward(reward);
-			Team.AddExp(reward * 3);
+			Team.AddReward(reward, reward * 3);
 			OnUpdate(game->txQuest[66]);
 		}
 		break;
@@ -130,7 +129,7 @@ void Quest_CampNearCity::SetProgress(int prog2)
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
-			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
+			RemoveElementTry<Quest_Dungeon*>(QM.quests_timeout, this);
 		}
 		break;
 	}

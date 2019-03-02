@@ -46,7 +46,7 @@ void Quest_LostArtifact::SetProgress(int prog2)
 	case Progress::Started:
 		{
 			OnStart(game->txQuest[106]);
-			quest_manager.quests_timeout.push_back(this);
+			QM.quests_timeout.push_back(this);
 
 			item->CreateCopy(quest_item);
 			quest_item.id = Format("$%s", item->id.c_str());
@@ -109,11 +109,10 @@ void Quest_LostArtifact::SetProgress(int prog2)
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
-			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
+			RemoveElementTry<Quest_Dungeon*>(QM.quests_timeout, this);
 			OnUpdate(game->txQuest[115]);
 			int reward = GetReward();
-			game->AddReward(reward);
-			Team.AddExp(reward * 3);
+			Team.AddReward(reward, reward * 3);
 			DialogContext::current->talker->temporary = true;
 			DialogContext::current->talker->AddItem(&quest_item, 1, true);
 			DialogContext::current->pc->unit->RemoveQuestItem(refid);
@@ -128,7 +127,7 @@ void Quest_LostArtifact::SetProgress(int prog2)
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
-			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
+			RemoveElementTry<Quest_Dungeon*>(QM.quests_timeout, this);
 			OnUpdate(game->txQuest[116]);
 			DialogContext::current->talker->temporary = true;
 		}

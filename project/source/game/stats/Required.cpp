@@ -10,6 +10,7 @@
 #include "UnitGroup.h"
 #include "Item.h"
 #include "UnitData.h"
+#include "QuestList.h"
 
 extern string g_system_dir;
 
@@ -27,7 +28,8 @@ enum RequiredType
 	R_BUILDING,
 	R_BUILDING_SCRIPT,
 	R_OBJECT,
-	R_USABLE
+	R_USABLE,
+	R_QUEST_LIST
 };
 
 //=================================================================================================
@@ -179,7 +181,8 @@ bool Game::LoadRequiredStats(uint& errors)
 		{ "building", R_BUILDING },
 		{ "building_script", R_BUILDING_SCRIPT },
 		{ "object", R_OBJECT },
-		{ "usable", R_USABLE }
+		{ "usable", R_USABLE },
+		{ "quest_list", R_QUEST_LIST }
 	});
 
 	try
@@ -364,6 +367,35 @@ bool Game::LoadRequiredStats(uint& errors)
 						{
 							Error("Missing required usable object '%s'.", str.c_str());
 							++errors;
+						}
+					}
+					break;
+				case R_QUEST_LIST:
+					{
+						bool not_none = false;
+						if(t.IsItem("not_none"))
+						{
+							not_none = true;
+							t.Next();
+						}
+
+						QuestList* list = QuestList::TryGet(str);
+						if(!list)
+						{
+							Error("Missing required quest list '%s'.", str.c_str());
+							++errors;
+						}
+						else if(not_none)
+						{
+							for(QuestList::Entry& e : list->entries)
+							{
+								if(!e.info)
+								{
+									Error("Required quest list '%s' can't contain 'none'.", list->id.c_str());
+									++errors;
+									break;
+								}
+							}
 						}
 					}
 					break;

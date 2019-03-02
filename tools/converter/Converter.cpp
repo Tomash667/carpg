@@ -307,7 +307,8 @@ void Converter::ConvertQmshTmpToQmsh(QMSH *Out, tmp::QMSH &QmshTmp, ConversionDa
 		tmp::POINT& pt = *((*it).get());
 
 		point->name = pt.name;
-		point->size = pt.size;
+		point->size = Vec3(abs(pt.size.x), abs(pt.size.y), abs(pt.size.z));
+		BlenderToDirectxTransform(&point->size);
 		point->type = (uint2)-1;
 		for(int i = 0; i < Mesh::Point::MAX; ++i)
 		{
@@ -321,6 +322,7 @@ void Converter::ConvertQmshTmpToQmsh(QMSH *Out, tmp::QMSH &QmshTmp, ConversionDa
 			throw Error(format("Invalid point type '%s'.", pt.type.c_str()));
 		BlenderToDirectxTransform(&point->matrix, pt.matrix);
 		BlenderToDirectxTransform(&point->rot, pt.rot);
+		point->rot.y = Clip(-point->rot.y);
 
 		uint i = 0;
 		for(std::vector< shared_ptr<QMSH_BONE> >::const_iterator it = Out->Bones.begin(), end = Out->Bones.end(); it != end; ++i, ++it)
@@ -763,13 +765,6 @@ void Converter::TransformQmshTmpCoords(tmp::QMSH *InOut)
 
 			BlenderToDirectxTransform(&f.Normal);
 		}
-	}
-
-	for(uint i = 0, count = InOut->points.size(); i < count; ++i)
-	{
-		tmp::POINT* point = InOut->points[i].get();
-		BlenderToDirectxTransform(&point->size);
-		point->rot.y = Clip(-point->rot.y);
 	}
 }
 

@@ -76,7 +76,7 @@ void Quest_Crazies::SetProgress(int prog2)
 			Team.AddExp(12000);
 
 			OnUpdate(game->txQuest[256]);
-			quest_manager.EndUniqueQuest();
+			QM.EndUniqueQuest();
 		}
 	}
 }
