@@ -961,10 +961,7 @@ void Level::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding
 		{
 			uint poss = pt.name.find_first_of('_', 4);
 			if(poss == string::npos)
-			{
-				assert(0);
-				continue;
-			}
+				poss = pt.name.length();
 			token = pt.name.substr(4, poss - 4);
 			for(uint k = 0, len = token.length(); k < len; ++k)
 			{

@@ -300,6 +300,18 @@ bool Location::ReadPortals(BitStreamReader& f, int at_level)
 	if(!f.Ensure(count * Portal::MIN_SIZE))
 		return false;
 
+	if(portal)
+	{
+		Portal* p = portal;
+		while(p)
+		{
+			Portal* next = p->next_portal;
+			delete p;
+			p = next;
+		}
+		portal = nullptr;
+	}
+
 	Portal* cportal = nullptr;
 	for(byte i = 0; i < count; ++i)
 	{

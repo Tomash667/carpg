@@ -8,6 +8,10 @@ Wersja 0.8.1 (???):
 - naprawione rozmawianie/podnoszenie przedmiotów przez drzwi
 - naprawione rozmawianie/podnoszenie przedmiotów w budynkach przez œcianê
 - naprawione generowanie kamieni w jaskini/kopalni które mog³o zablokowaæ przejœcie
+- naprawione rozmawianie z postaci¹ która opuszcza/wchodzi do budynku
+- naprawiony wyciek pamiêci zwi¹zany z portalami u klienta
+- naprawiony crash przy ponownych odwiedzinach lokacji za portalem
+- naprawiona nieprawid³owa pozycja na mapie œwiata u klienta po wczytaniu gry w lokacji za portalem
 
 --------------------------------------------------------------------------------
 Wersja 0.8 (2019-02-23):

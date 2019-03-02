@@ -1414,8 +1414,7 @@ void World::Write(BitStreamWriter& f)
 		f.WriteCasted<byte>(loc.image);
 	}
 	f.WriteCasted<byte>(current_location_index);
-	if(current_location_index == -1)
-		f << world_pos;
+	f << world_pos;
 
 	// position on world map when inside encounter location
 	if(state == State::INSIDE_ENCOUNTER)
@@ -1425,7 +1424,6 @@ void World::Write(BitStreamWriter& f)
 		f << travel_start_pos;
 		f << travel_target_pos;
 		f << travel_timer;
-		f << world_pos;
 	}
 	else
 		f << false;
@@ -1562,6 +1560,7 @@ bool World::Read(BitStreamReader& f)
 
 	// current location
 	f.ReadCasted<byte>(current_location_index);
+	f >> world_pos;
 	if(!f)
 	{
 		Error("Read world: Broken packet for current location.");
@@ -1569,7 +1568,6 @@ bool World::Read(BitStreamReader& f)
 	}
 	if(current_location_index == 255)
 	{
-		f >> world_pos;
 		current_location_index = -1;
 		current_location = nullptr;
 		L.location_index = -1;
@@ -1583,10 +1581,8 @@ bool World::Read(BitStreamReader& f)
 			return false;
 		}
 		current_location = locations[current_location_index];
-		world_pos = current_location->pos;
 		L.location_index = current_location_index;
 		L.location = current_location;
-		L.location->state = LS_VISITED;
 	}
 
 	// position on world map when inside encounter locations
@@ -2650,7 +2646,7 @@ int World::FindWorldUnit(Unit* unit, int hint_loc, int hint_loc2, int* out_level
 	for(uint i = 0; i < locations.size(); ++i)
 	{
 		Location* loc = locations[i];
-		if(loc && i != hint_loc && i != hint_loc2 && loc->state >= LS_ENTERED && loc->FindUnit(unit, &level))
+		if(loc && i != hint_loc && i != hint_loc2 && loc->last_visit != -1 && loc->FindUnit(unit, &level))
 		{
 			if(out_level)
 				*out_level = level;

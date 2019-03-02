@@ -1605,7 +1605,7 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 
 	bool first = false;
 
-	if(l.state != LS_ENTERED && l.state != LS_CLEARED)
+	if(l.last_visit == -1)
 		first = true;
 
 	if(!reenter)
@@ -1640,7 +1640,7 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 	LoadingStep(txEnteringLocation);
 
 	// generate map on first visit
-	if(l.state != LS_ENTERED && l.state != LS_CLEARED)
+	if(first)
 	{
 		if(next_seed != 0)
 		{
