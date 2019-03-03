@@ -6,6 +6,7 @@ Version 0.9 (???):
 ! cannot load saves from version 0.2.12 or older
 + first scripted quest - deliver resources
 + more location icons and names
++ dialog script improvements
 
 --------------------------------------------------------------------------------
 Version 0.8.1 (???):

@@ -5,7 +5,6 @@ enum DialogType : short
 {
 	DTF_CHOICE,
 	DTF_TRADE,
-	DTF_END_CHOICE,
 	DTF_TALK,
 	DTF_RESTART,
 	DTF_END,
@@ -14,11 +13,11 @@ enum DialogType : short
 	DTF_SPECIAL,
 	DTF_SET_QUEST_PROGRESS,
 	DTF_IF_QUEST_TIMEOUT,
-	DTF_END_IF,
 	DTF_IF_RAND,
-	DTF_ELSE,
 	DTF_CHECK_QUEST_TIMEOUT,
 	DTF_IF_HAVE_QUEST_ITEM,
+	DTF_IF_HAVE_QUEST_ITEM_CURRENT,
+	DTF_IF_HAVE_QUEST_ITEM_NOT_ACTIVE,
 	DTF_DO_QUEST,
 	DTF_DO_QUEST_ITEM,
 	DTF_IF_QUEST_PROGRESS,
@@ -28,28 +27,30 @@ enum DialogType : short
 	DTF_IF_CHOICES,
 	DTF_DO_QUEST2,
 	DTF_IF_HAVE_ITEM,
-	DTF_IF_QUEST_PROGRESS_RANGE,
 	DTF_IF_QUEST_EVENT,
 	DTF_END_OF_DIALOG,
 	DTF_DO_ONCE,
-	DTF_NOT_ACTIVE,
 	DTF_IF_QUEST_SPECIAL,
 	DTF_QUEST_SPECIAL,
 	DTF_SCRIPT,
 	DTF_IF_SCRIPT,
-	DTF_IF_HAVE_QUEST_ITEM_CURRENT
+	DTF_JMP,
+	DTF_CJMP
 };
 
 //-----------------------------------------------------------------------------
 enum DialogOp : short
 {
+	OP_NONE,
 	OP_EQUAL,
 	OP_NOT_EQUAL,
 	OP_GREATER,
 	OP_GREATER_EQUAL,
 	OP_LESS,
 	OP_LESS_EQUAL,
-	OP_ESCAPE
+	OP_ESCAPE,
+	OP_BETWEEN,
+	OP_NOT_BETWEEN
 };
 
 //-----------------------------------------------------------------------------
@@ -60,6 +61,7 @@ struct DialogEntry
 	int value;
 
 	DialogEntry(DialogType type, int value = 0) : type(type), op(OP_EQUAL), value(value) {}
+	DialogEntry(DialogType type, DialogOp op, int value) : type(type), op(op), value(value) {}
 };
 
 //-----------------------------------------------------------------------------

@@ -50,7 +50,9 @@ enum Keyword
 	K_NOT_ACTIVE,
 	K_QUEST_SPECIAL,
 	K_NOT,
-	K_SCRIPT
+	K_SCRIPT,
+	K_BETWEEN,
+	K_AND
 };
 
 //=================================================================================================
@@ -107,7 +109,9 @@ void DialogLoader::InitTokenizer()
 		{ "not_active", K_NOT_ACTIVE },
 		{ "quest_special", K_QUEST_SPECIAL },
 		{ "not", K_NOT },
-		{ "script", K_SCRIPT }
+		{ "script", K_SCRIPT },
+		{ "between", K_BETWEEN },
+		{ "and", K_AND }
 	});
 }
 
@@ -132,490 +136,420 @@ void DialogLoader::LoadEntity(int top, const string& id)
 GameDialog* DialogLoader::LoadDialog(const string& id)
 {
 	Ptr<GameDialog> dialog;
-	bool line_block = false;
+	current_dialog = dialog.Get();
 	dialog->max_index = -1;
-
-	dialog->id = t.MustGetItemKeyword();
-	crc.Update(dialog->id);
+	dialog->id = id;
 	t.Next();
 
 	t.AssertSymbol('{');
 	t.Next();
 
+	Pooled<Node> root(GetNode());
+	root->node_op = NodeOp::Block;
+
 	while(true)
 	{
 		if(t.IsSymbol('}'))
-		{
-			if(if_state.empty())
-				break;
-			t.Next();
-			switch(if_state.back())
-			{
-			case IFS_INLINE_CHOICE:
-			case IFS_INLINE_IF:
-			case IFS_INLINE_ELSE:
-				t.Unexpected();
-				break;
-			case IFS_IF:
-				if(t.IsKeyword(K_ELSE, G_KEYWORD))
-				{
-					// if { ... } else
-					t.Next();
-					dialog->code.push_back(DTF_ELSE);
-					crc.Update(DTF_ELSE);
-					if(t.IsSymbol('{'))
-					{
-						if_state.back() = IFS_ELSE;
-						t.Next();
-					}
-					else
-						if_state.back() = IFS_INLINE_ELSE;
-				}
-				else
-				{
-					dialog->code.push_back(DTF_END_IF);
-					if_state.pop_back();
-					crc.Update(DTF_END_IF);
-				}
-				break;
-			case IFS_ELSE:
-				dialog->code.push_back(DTF_END_IF);
-				if_state.pop_back();
-				crc.Update(DTF_END_IF);
-				break;
-			case IFS_CHOICE:
-				dialog->code.push_back(DTF_END_CHOICE);
-				if_state.pop_back();
-				crc.Update(DTF_END_CHOICE);
-				break;
-			}
-		}
-		else if(t.IsKeywordGroup(G_KEYWORD))
-		{
-			Keyword k = (Keyword)t.GetKeywordId(G_KEYWORD);
-			t.Next();
+			break;
+		root->childs.push_back(ParseStatement());
+	}
 
+	if(!BuildDialog(root.Get()))
+		LoadWarning("Missing dialog end.");
+	dialog->code.push_back(DialogEntry(DTF_END_OF_DIALOG));
+
+	return dialog.Pin();
+}
+
+//=================================================================================================
+DialogLoader::Node* DialogLoader::ParseStatement()
+{
+	Keyword k = (Keyword)t.MustGetKeywordId(G_KEYWORD);
+	switch(k)
+	{
+	case K_IF:
+		return ParseIf();
+	case K_CHOICE:
+	case K_ESCAPE:
+		return ParseChoice();
+	case K_DO_ONCE:
+	case K_END:
+	case K_END2:
+	case K_RESTART:
+	case K_SHOW_CHOICES:
+	case K_TRADE:
+		{
+			t.Next();
+			DialogType type;
 			switch(k)
 			{
-			case K_CHOICE:
-			case K_ESCAPE:
-				{
-					bool escape = false;
-					if(k == K_ESCAPE)
-					{
-						escape = true;
-						t.AssertKeyword(K_CHOICE, G_KEYWORD);
-						t.Next();
-					}
-
-					int index = t.MustGetInt();
-					if(index < 0)
-						t.Throw("Invalid text index %d.", index);
-					t.Next();
-					DialogEntry entry(DTF_CHOICE, index);
-					if(escape)
-						entry.op = OP_ESCAPE;
-					dialog->code.push_back(entry);
-					if(t.IsSymbol('{'))
-					{
-						if_state.push_back(IFS_CHOICE);
-						t.Next();
-					}
-					else
-						if_state.push_back(IFS_INLINE_CHOICE);
-					++index;
-					if(index > dialog->max_index)
-					{
-						dialog->texts.resize(index, GameDialog::Text());
-						dialog->max_index = index;
-					}
-					dialog->texts[index - 1].exists = true;
-					line_block = true;
-					crc.Update(DTF_CHOICE);
-					crc.Update(entry.op);
-					crc.Update(index);
-				}
-				break;
-			case K_TRADE:
-				dialog->code.push_back(DTF_TRADE);
-				crc.Update(DTF_TRADE);
-				break;
-			case K_TALK:
-				{
-					int index = t.MustGetInt();
-					if(index < 0)
-						t.Throw("Invalid text index %d.", index);
-					t.Next();
-					dialog->code.push_back(DialogEntry(DTF_TALK, index));
-					++index;
-					if(index > dialog->max_index)
-					{
-						dialog->texts.resize(index, GameDialog::Text());
-						dialog->max_index = index;
-					}
-					dialog->texts[index - 1].exists = true;
-					crc.Update(DTF_TALK);
-					crc.Update(index);
-				}
-				break;
-			case K_RESTART:
-				dialog->code.push_back(DTF_RESTART);
-				crc.Update(DTF_RESTART);
+			default:
+			case K_DO_ONCE:
+				type = DTF_DO_ONCE;
 				break;
 			case K_END:
-				dialog->code.push_back(DTF_END);
-				crc.Update(DTF_END);
+				type = DTF_END;
 				break;
 			case K_END2:
-				dialog->code.push_back(DTF_END2);
-				crc.Update(DTF_END2);
+				type = DTF_END2;
+				break;
+			case K_RESTART:
+				type = DTF_RESTART;
 				break;
 			case K_SHOW_CHOICES:
-				dialog->code.push_back(DTF_SHOW_CHOICES);
-				crc.Update(DTF_SHOW_CHOICES);
+				type = DTF_SHOW_CHOICES;
+				break;
+			case K_TRADE:
+				type = DTF_TRADE;
+				break;
+			}
+			Node* node = GetNode();
+			node->node_op = NodeOp::Statement;
+			node->type = type;
+			node->op = OP_NONE;
+			node->value = 0;
+			return node;
+		}
+	case K_CHECK_QUEST_TIMEOUT:
+		{
+			t.Next();
+			int type = t.MustGetInt();
+			if(type < 0 || type > 2)
+				t.Throw("Invalid quest type %d.", type);
+			t.Next();
+			Node* node = GetNode();
+			node->node_op = NodeOp::Statement;
+			node->type = DTF_CHECK_QUEST_TIMEOUT;
+			node->op = OP_NONE;
+			node->value = type;
+			return node;
+		}
+	case K_SET_QUEST_PROGRESS:
+		{
+			t.Next();
+			int value = ParseProgress();
+			Node* node = GetNode();
+			node->node_op = NodeOp::Statement;
+			node->type = DTF_SET_QUEST_PROGRESS;
+			node->op = OP_NONE;
+			node->value = value;
+			return node;
+		}
+	case K_TALK:
+		{
+			t.Next();
+			int index = t.MustGetInt();
+			if(index < 0)
+				t.Throw("Invalid text index %d.", index);
+			t.Next();
+			Node* node = GetNode();
+			node->node_op = NodeOp::Statement;
+			node->type = DTF_TALK;
+			node->op = OP_NONE;
+			node->value = index;
+			++index;
+			if(index > current_dialog->max_index)
+			{
+				current_dialog->texts.resize(index, GameDialog::Text());
+				current_dialog->max_index = index;
+			}
+			current_dialog->texts[index - 1].exists = true;
+			return node;
+		}
+	case K_DO_QUEST:
+	case K_DO_QUEST2:
+	case K_DO_QUEST_ITEM:
+	case K_QUEST_SPECIAL:
+	case K_SPECIAL:
+		{
+			t.Next();
+			DialogType type;
+			switch(k)
+			{
+			default:
+			case K_DO_QUEST:
+				type = DTF_DO_QUEST;
+				break;
+			case K_DO_QUEST2:
+				type = DTF_DO_QUEST2;
+				break;
+			case K_DO_QUEST_ITEM:
+				type = DTF_DO_QUEST_ITEM;
+				break;
+			case K_QUEST_SPECIAL:
+				type = DTF_QUEST_SPECIAL;
 				break;
 			case K_SPECIAL:
+				type = DTF_SPECIAL;
+				break;
+			}
+			int index = current_dialog->strs.size();
+			current_dialog->strs.push_back(t.MustGetString());
+			t.Next();
+			Node* node = GetNode();
+			node->node_op = NodeOp::Statement;
+			node->type = type;
+			node->op = OP_NONE;
+			node->value = index;
+			return node;
+		}
+	case K_SCRIPT:
+		{
+			t.Next();
+			int index = scripts->AddCode(DialogScripts::F_SCRIPT, t.MustGetString());
+			t.Next();
+			Node* node = GetNode();
+			node->node_op = NodeOp::Statement;
+			node->type = DTF_SCRIPT;
+			node->op = OP_NONE;
+			node->value = index;
+			return node;
+		}
+	default:
+		t.Unexpected();
+		break;
+	}
+}
+
+//=================================================================================================
+DialogLoader::Node* DialogLoader::ParseBlock()
+{
+	if(t.IsSymbol('{'))
+	{
+		t.Next();
+		Pooled<Node> block(GetNode());
+		while(!t.IsSymbol('}'))
+			block->childs.push_back(ParseStatement());
+		t.Next();
+		if(block->childs.size() == 1u)
+		{
+			Node* node = block->childs[0];
+			block->childs.clear();
+			return node;
+		}
+		else
+		{
+			block->node_op = NodeOp::Block;
+			return block.Pin();
+		}
+	}
+	else
+		return ParseStatement();
+}
+
+//=================================================================================================
+DialogLoader::Node* DialogLoader::ParseIf()
+{
+	Pooled<Node> node(GetNode());
+	node->node_op = NodeOp::If;
+	t.Next();
+
+	bool not = false;
+	if(t.IsKeyword(K_NOT, G_KEYWORD))
+	{
+		t.Next();
+		not = true;
+	}
+
+	Keyword k = (Keyword)t.MustGetKeywordId(G_KEYWORD);
+	switch(k)
+	{
+	case K_HAVE_ITEM:
+	case K_HAVE_QUEST_ITEM:
+	case K_NEED_TALK:
+	case K_ONCE:
+	case K_QUEST_EVENT:
+	case K_QUEST_SPECIAL:
+	case K_QUEST_TIMEOUT:
+	case K_RAND:
+	case K_SCRIPT:
+	case K_SPECIAL:
+		{
+			t.Next();
+			node->op = OP_EQUAL;
+			node->value = 0;
+			switch(k)
+			{
+			case K_HAVE_ITEM:
 				{
-					int index = dialog->strs.size();
-					dialog->strs.push_back(t.MustGetString());
+					node->type = DTF_IF_HAVE_ITEM;
+					const string& id = t.MustGetItemKeyword();
+					const Item* item = Item::TryGet(id);
+					if(!item)
+						t.Throw("Invalid item '%s'.", id.c_str());
+					node->value = (int)item;
 					t.Next();
-					dialog->code.push_back(DialogEntry(DTF_SPECIAL, index));
-					crc.Update(DTF_SPECIAL);
-					crc.Update(dialog->strs.back());
 				}
 				break;
-			case K_SET_QUEST_PROGRESS:
+			case K_HAVE_QUEST_ITEM:
+				if(quest)
+					node->type = DTF_IF_HAVE_QUEST_ITEM_CURRENT;
+				else
 				{
-					int p = ParseProgress();
-					dialog->code.push_back(DialogEntry(DTF_SET_QUEST_PROGRESS, p));
-					crc.Update(DTF_SET_QUEST_PROGRESS);
-					crc.Update(p);
-				}
-				break;
-			case K_IF:
-				{
-					k = (Keyword)t.MustGetKeywordId(G_KEYWORD);
-					t.Next();
-
-					bool not = false;
-					if(k == K_NOT)
+					if(t.IsKeyword(K_NOT_ACTIVE, G_KEYWORD))
 					{
-						not = true;
-						k = (Keyword)t.MustGetKeywordId(G_KEYWORD);
-						t.Next();
-					}
-
-					switch(k)
-					{
-					case K_QUEST_TIMEOUT:
-						dialog->code.push_back(DTF_IF_QUEST_TIMEOUT);
-						crc.Update(DTF_IF_QUEST_TIMEOUT);
-						break;
-					case K_RAND:
-						{
-							int chance = t.MustGetInt();
-							if(chance <= 0 || chance >= 100)
-								t.Throw("Invalid chance %d.", chance);
-							t.Next();
-							dialog->code.push_back(DialogEntry(DTF_IF_RAND, chance));
-							crc.Update(DTF_IF_RAND);
-							crc.Update(chance);
-						}
-						break;
-					case K_HAVE_QUEST_ITEM:
-						if(quest)
-						{
-							dialog->code.push_back(DTF_IF_HAVE_QUEST_ITEM_CURRENT);
-							crc.Update(DTF_IF_HAVE_QUEST_ITEM_CURRENT);
-						}
-						else
-						{
-							if(t.IsKeyword(K_NOT_ACTIVE, G_KEYWORD))
-							{
-								t.Next();
-								dialog->code.push_back(DTF_NOT_ACTIVE);
-								crc.Update(DTF_NOT_ACTIVE);
-							}
-							int index = dialog->strs.size();
-							dialog->strs.push_back(t.MustGetString());
-							t.Next();
-							dialog->code.push_back(DialogEntry(DTF_IF_HAVE_QUEST_ITEM, index));
-							crc.Update(DTF_IF_HAVE_QUEST_ITEM);
-							crc.Update(dialog->strs.back());
-						}
-						break;
-					case K_QUEST_PROGRESS:
-						{
-							DialogOp op = ParseOp();
-							int p = ParseProgress();
-							DialogEntry entry(DTF_IF_QUEST_PROGRESS, p);
-							entry.op = op;
-							dialog->code.push_back(entry);
-							crc.Update(DTF_IF_QUEST_PROGRESS);
-							crc.Update(p);
-						}
-						break;
-					case K_NEED_TALK:
-						{
-							int index = dialog->strs.size();
-							dialog->strs.push_back(t.MustGetString());
-							t.Next();
-							dialog->code.push_back(DialogEntry(DTF_IF_NEED_TALK, index));
-							crc.Update(DTF_IF_NEED_TALK);
-							crc.Update(dialog->strs.back());
-						}
-						break;
-					case K_SPECIAL:
-						{
-							int index = dialog->strs.size();
-							dialog->strs.push_back(t.MustGetString());
-							t.Next();
-							dialog->code.push_back(DialogEntry(DTF_IF_SPECIAL, index));
-							crc.Update(DTF_IF_SPECIAL);
-							crc.Update(dialog->strs.back());
-						}
-						break;
-					case K_ONCE:
-						dialog->code.push_back(DTF_IF_ONCE);
-						crc.Update(DTF_IF_ONCE);
-						break;
-					case K_HAVE_ITEM:
-						{
-							const string& id = t.MustGetItemKeyword();
-							const Item* item = Item::TryGet(id);
-							if(item)
-							{
-								t.Next();
-								dialog->code.push_back(DialogEntry(DTF_IF_HAVE_ITEM, (int)item));
-							}
-							else
-								t.Throw("Invalid item '%s'.", id.c_str());
-							crc.Update(DTF_SPECIAL);
-							crc.Update(item->id);
-						}
-						break;
-					case K_QUEST_EVENT:
-						dialog->code.push_back(DTF_IF_QUEST_EVENT);
-						crc.Update(DTF_IF_QUEST_EVENT);
-						break;
-					case K_QUEST_PROGRESS_RANGE:
-						{
-							int a = ParseProgress();
-							int b = ParseProgress();
-							if(a < 0 || a >= b)
-								t.Throw("Invalid quest progress range {%d %d}.", a, b);
-							int p = ((a & 0xFFFF) | ((b & 0xFFFF) << 16));
-							dialog->code.push_back(DialogEntry(DTF_IF_QUEST_PROGRESS_RANGE, p));
-							crc.Update(DTF_IF_QUEST_PROGRESS_RANGE);
-							crc.Update(p);
-						}
-						break;
-					case K_CHOICES:
-						{
-							DialogOp op = ParseOp();
-							int count = t.MustGetInt();
-							if(count < 0)
-								t.Throw("Invalid choices count %d.", count);
-							t.Next();
-							DialogEntry entry(DTF_IF_CHOICES, count);
-							entry.op = op;
-							dialog->code.push_back(entry);
-							crc.Update(DTF_IF_CHOICES);
-							crc.Update(count);
-						}
-						break;
-					case K_QUEST_SPECIAL:
-						{
-							int index = dialog->strs.size();
-							dialog->strs.push_back(t.MustGetString());
-							t.Next();
-							dialog->code.push_back(DialogEntry(DTF_IF_QUEST_SPECIAL, index));
-							crc.Update(DTF_IF_QUEST_SPECIAL);
-							crc.Update(dialog->strs.back());
-						}
-						break;
-					case K_SCRIPT:
-						{
-							int index = scripts->AddCode(DialogScripts::F_IF_SCRIPT, t.MustGetString());
-							t.Next();
-							dialog->code.push_back(DialogEntry(DTF_IF_SCRIPT, index));
-							crc.Update(DTF_IF_SCRIPT);
-							crc.Update(index);
-						}
-						break;
-					default:
-						t.Unexpected();
-						break;
-					}
-
-					DialogEntry& entry = dialog->code.back();
-					if(not)
-					{
-						if(entry.type == DTF_IF_QUEST_PROGRESS || entry.type == DTF_IF_CHOICES)
-						{
-							switch(entry.op)
-							{
-							case OP_EQUAL:
-								entry.op = OP_NOT_EQUAL;
-								break;
-							case OP_NOT_EQUAL:
-								entry.op = OP_EQUAL;
-								break;
-							case OP_GREATER:
-								entry.op = OP_LESS_EQUAL;
-								break;
-							case OP_GREATER_EQUAL:
-								entry.op = OP_LESS;
-								break;
-							case OP_LESS:
-								entry.op = OP_GREATER_EQUAL;
-								break;
-							case OP_LESS_EQUAL:
-								entry.op = OP_LESS;
-								break;
-							}
-						}
-						else
-							entry.op = OP_NOT_EQUAL;
-					}
-					crc.Update(entry.op);
-
-					if(t.IsSymbol('{'))
-					{
-						if_state.push_back(IFS_IF);
+						node->type = DTF_IF_HAVE_QUEST_ITEM_NOT_ACTIVE;
 						t.Next();
 					}
 					else
-						if_state.push_back(IFS_INLINE_IF);
-					line_block = true;
-				}
-				break;
-			case K_CHECK_QUEST_TIMEOUT:
-				{
-					int type = t.MustGetInt();
-					if(type < 0 || type > 2)
-						t.Throw("Invalid quest type %d.", type);
+						node->type = DTF_IF_HAVE_QUEST_ITEM;
+					node->value = current_dialog->strs.size();
+					current_dialog->strs.push_back(t.MustGetString());
 					t.Next();
-					dialog->code.push_back(DialogEntry(DTF_CHECK_QUEST_TIMEOUT, type));
-					crc.Update(DTF_CHECK_QUEST_TIMEOUT);
-					crc.Update(type);
 				}
 				break;
-			case K_DO_QUEST:
-				{
-					int index = dialog->strs.size();
-					dialog->strs.push_back(t.MustGetString());
-					t.Next();
-					dialog->code.push_back(DialogEntry(DTF_DO_QUEST, index));
-					crc.Update(DTF_DO_QUEST);
-					crc.Update(dialog->strs.back());
-				}
+			case K_NEED_TALK:
+				node->type = DTF_IF_NEED_TALK;
+				node->value = current_dialog->strs.size();
+				current_dialog->strs.push_back(t.MustGetString());
+				t.Next();
 				break;
-			case K_DO_QUEST_ITEM:
-				{
-					int index = dialog->strs.size();
-					dialog->strs.push_back(t.MustGetString());
-					t.Next();
-					dialog->code.push_back(DialogEntry(DTF_DO_QUEST_ITEM, index));
-					crc.Update(DTF_DO_QUEST_ITEM);
-					crc.Update(dialog->strs.back());
-				}
+			case K_ONCE:
+				node->type = DTF_IF_ONCE;
 				break;
-			case K_DO_QUEST2:
-				{
-					int index = dialog->strs.size();
-					dialog->strs.push_back(t.MustGetString());
-					t.Next();
-					dialog->code.push_back(DialogEntry(DTF_DO_QUEST2, index));
-					crc.Update(DTF_DO_QUEST2);
-					crc.Update(dialog->strs.back());
-				}
-				break;
-			case K_DO_ONCE:
-				dialog->code.push_back(DTF_DO_ONCE);
-				crc.Update(DTF_DO_ONCE);
+			case K_QUEST_EVENT:
+				node->type = DTF_IF_QUEST_EVENT;
 				break;
 			case K_QUEST_SPECIAL:
 				{
-					int index = dialog->strs.size();
-					dialog->strs.push_back(t.MustGetString());
+					int index = current_dialog->strs.size();
+					current_dialog->strs.push_back(t.MustGetString());
+					node->type = DTF_IF_QUEST_SPECIAL;
+					node->value = index;
 					t.Next();
-					dialog->code.push_back(DialogEntry(DTF_QUEST_SPECIAL, index));
-					crc.Update(DTF_QUEST_SPECIAL);
-					crc.Update(dialog->strs.back());
+				}
+				break;
+			case K_QUEST_TIMEOUT:
+				node->type = DTF_IF_QUEST_TIMEOUT;
+				break;
+			case K_RAND:
+				{
+					node->type = DTF_IF_RAND;
+					int chance = t.MustGetInt();
+					if(chance <= 0 || chance >= 100)
+						t.Throw("Invalid chance %d.", chance);
+					node->value = chance;
+					t.Next();
 				}
 				break;
 			case K_SCRIPT:
+				node->type = DTF_IF_SCRIPT;
+				node->value = scripts->AddCode(DialogScripts::F_IF_SCRIPT, t.MustGetString());
+				t.Next();
+				break;
+			case K_SPECIAL:
 				{
-					int index = scripts->AddCode(DialogScripts::F_SCRIPT, t.MustGetString());
+					int index = current_dialog->strs.size();
+					current_dialog->strs.push_back(t.MustGetString());
+					node->type = DTF_IF_SPECIAL;
+					node->value = index;
 					t.Next();
-					dialog->code.push_back(DialogEntry(DTF_SCRIPT, index));
-					crc.Update(DTF_SCRIPT);
-					crc.Update(index);
 				}
-				break;
-			default:
-				t.Unexpected();
 				break;
 			}
 		}
-		else
-			t.Unexpected();
-
-		if(line_block)
-			line_block = false;
-		else
+		break;
+	case K_CHOICES:
+	case K_QUEST_PROGRESS:
 		{
-			while(!if_state.empty())
+			t.Next();
+			node->type = (k == K_CHOICES ? DTF_IF_CHOICES : DTF_IF_QUEST_PROGRESS);
+			if(t.IsKeyword(K_BETWEEN, G_KEYWORD))
 			{
-				bool b = false;
-				switch(if_state.back())
-				{
-				case IFS_IF:
-				case IFS_ELSE:
-				case IFS_CHOICE:
-					b = true;
-					break;
-				case IFS_INLINE_IF:
-					if(t.IsKeyword(K_ELSE, G_KEYWORD))
-					{
-						dialog->code.push_back(DTF_ELSE);
-						crc.Update(DTF_ELSE);
-						t.Next();
-						if(t.IsSymbol('{'))
-						{
-							if_state.back() = IFS_ELSE;
-							t.Next();
-						}
-						else
-							if_state.back() = IFS_INLINE_ELSE;
-						b = true;
-					}
-					else
-					{
-						dialog->code.push_back(DTF_END_IF);
-						if_state.pop_back();
-					}
-					break;
-				case IFS_INLINE_ELSE:
-					dialog->code.push_back(DTF_END_IF);
-					if_state.pop_back();
-					crc.Update(DTF_END_IF);
-					break;
-				case IFS_INLINE_CHOICE:
-					dialog->code.push_back(DTF_END_CHOICE);
-					crc.Update(DTF_END_CHOICE);
-					if_state.pop_back();
-					break;
-				}
-
-				if(b)
-					break;
+				node->op = OP_BETWEEN;
+				t.Next();
+				int a = ParseProgressOrInt(k);
+				t.AssertKeyword(K_AND, G_KEYWORD);
+				t.Next();
+				int b = ParseProgressOrInt(k);
+				if(a >= b || a >= std::numeric_limits<word>::max() || b >= std::numeric_limits<word>::max())
+					t.Throw("Invalid range values %d and %d.", a, b);
+				node->value = (a | (b << 16));
+			}
+			else
+			{
+				node->op = ParseOp();
+				node->value = ParseProgressOrInt(k);
 			}
 		}
+		break;
+	default:
+		t.Unexpected();
+		break;
 	}
 
-	return dialog.Pin();
+	if(not)
+		node->op = GetNegatedOp(node->op);
+
+	node->childs.push_back(ParseBlock());
+	if(t.IsKeyword(K_ELSE, G_KEYWORD))
+	{
+		t.Next();
+		node->childs.push_back(ParseBlock());
+	}
+	return node.Pin();
+}
+
+//=================================================================================================
+DialogLoader::Node* DialogLoader::ParseChoice()
+{
+	bool escape = false;
+	if(t.IsKeyword(K_ESCAPE, G_KEYWORD))
+	{
+		escape = true;
+		t.Next();
+	}
+
+	t.AssertKeyword(K_CHOICE, G_KEYWORD);
+	t.Next();
+
+	int index = t.MustGetInt();
+	if(index < 0)
+		t.Throw("Invalid text index %d.", index);
+	Pooled<Node> node(GetNode());
+	node->node_op = NodeOp::Choice;
+	node->type = DTF_CHOICE;
+	node->op = (escape ? OP_ESCAPE : OP_NONE);
+	node->value = index;
+	t.Next();
+	
+	++index;
+	if(index > current_dialog->max_index)
+	{
+		current_dialog->texts.resize(index, GameDialog::Text());
+		current_dialog->max_index = index;
+	}
+	current_dialog->texts[index - 1].exists = true;
+
+	node->childs.push_back(ParseBlock());
+	return node.Pin();
+}
+
+//=================================================================================================
+DialogOp DialogLoader::GetNegatedOp(DialogOp op)
+{
+	switch(op)
+	{
+	case OP_EQUAL:
+		return OP_NOT_EQUAL;
+	case OP_NOT_EQUAL:
+		return OP_EQUAL;
+	case OP_GREATER:
+		return OP_LESS_EQUAL;
+	case OP_GREATER_EQUAL:
+		return OP_LESS;
+	case OP_LESS:
+		return OP_GREATER_EQUAL;
+	case OP_LESS_EQUAL:
+		return OP_GREATER;
+	case OP_BETWEEN:
+		return OP_NOT_BETWEEN;
+	case OP_NOT_BETWEEN:
+		return OP_BETWEEN;
+	default:
+		assert(0);
+		return OP_EQUAL;
+	}
 }
 
 //=================================================================================================
@@ -678,6 +612,19 @@ DialogOp DialogLoader::ParseOp()
 }
 
 //=================================================================================================
+int DialogLoader::ParseProgressOrInt(int keyword)
+{
+	if(keyword == K_CHOICES)
+	{
+		uint val = t.MustGetUint();
+		t.Next();
+		return val;
+	}
+	else
+		return ParseProgress();
+}
+
+//=================================================================================================
 int DialogLoader::ParseProgress()
 {
 	if(t.IsItem())
@@ -704,6 +651,90 @@ int DialogLoader::ParseProgress()
 	}
 	else
 		t.ThrowExpecting("quest progress value");
+}
+
+//=================================================================================================
+bool DialogLoader::BuildDialog(Node* node)
+{
+	vector<DialogEntry>& code = current_dialog->code;
+	switch(node->node_op)
+	{
+	case NodeOp::Statement:
+		code.push_back(DialogEntry(node->type, node->op, node->value));
+		return Any(node->type, DTF_END, DTF_END2, DTF_RESTART, DTF_TRADE, DTF_SHOW_CHOICES);
+	case NodeOp::Block:
+		return BuildDialogBlock(node);
+	case NodeOp::If:
+		if(node->childs.size() == 1u)
+		{
+			// if
+			code.push_back(DialogEntry(node->type, node->op, node->value));
+			uint jmp_pos = code.size();
+			code.push_back(DialogEntry(DTF_CJMP));
+			BuildDialog(node->childs[0]);
+			uint pos = code.size();
+			code[jmp_pos].value = pos;
+			return false;
+		}
+		else
+		{
+			// if else
+			code.push_back(DialogEntry(node->type, node->op, node->value));
+			uint jmp_pos = code.size();
+			code.push_back(DialogEntry(DTF_CJMP));
+			bool result = BuildDialog(node->childs[0]);
+			uint jmp_end_pos = code.size();
+			code.push_back(DialogEntry(DTF_JMP));
+			uint pos = code.size();
+			code[jmp_pos].value = pos;
+			result = BuildDialog(node->childs[1]) && result;
+			pos = code.size();
+			code[jmp_end_pos].value = pos;
+			return result;
+		}
+	case NodeOp::Choice:
+		{
+			code.push_back(DialogEntry(node->type, node->op, node->value));
+			uint jmp_pos = code.size();
+			code.push_back(DialogEntry(DTF_JMP));
+			if(!BuildDialogBlock(node))
+			{
+#ifdef _DEBUG
+				LoadWarning("Missing choice end at line %d.", node->line);
+#else
+				LoadWarning("Missing choice end.");
+#endif
+			}
+			uint pos = code.size();
+			code[jmp_pos].value = pos;
+			return false;
+		}
+	default:
+		assert(0);
+		return false;
+	}
+}
+
+//=================================================================================================
+bool DialogLoader::BuildDialogBlock(Node* node)
+{
+	int have_exit = 0;
+	for(Node* child : node->childs)
+	{
+		if(have_exit == 1)
+		{
+			have_exit = 2;
+#ifdef _DEBUG
+			LoadWarning("Unreachable code found at line %d.", child->line);
+#else
+			LoadWarning("Unreachable code found.");
+#endif
+		}
+		bool result = BuildDialog(child);
+		if(result && have_exit == 0)
+			have_exit = 1;
+	}
+	return (have_exit >= 1);
 }
 
 //=================================================================================================

@@ -12,12 +12,12 @@ struct DialogChoice
 		Perk
 	};
 
-	int pos, lvl, quest_dialog_index;
+	int pos, quest_dialog_index;
 	cstring msg, talk_msg;
 	string* pooled; // used for dialog choices when message is formatted
 	Type type;
 
-	DialogChoice(int pos, cstring msg, int lvl, int quest_dialog_index, string* pooled = nullptr) : pos(pos), msg(msg), lvl(lvl),
+	DialogChoice(int pos, cstring msg, int quest_dialog_index, string* pooled = nullptr) : pos(pos), msg(msg),
 		quest_dialog_index(quest_dialog_index), pooled(pooled), type(Normal), talk_msg(nullptr) {}
 };
 
@@ -28,7 +28,7 @@ struct DialogContext
 	{
 		GameDialog* dialog;
 		Quest* quest;
-		int pos, level;
+		int pos;
 	};
 
 	bool dialog_mode; // czy jest tryb dialogowy
@@ -36,7 +36,6 @@ struct DialogContext
 	vector<DialogChoice> choices; // opcje dialogowe do wyboru
 	int dialog_pos; // pozycja w dialogu
 	int choice_selected; // zaznaczona opcja dialogowa
-	int dialog_level; // poziom zagnie¿d¿enia w dialogu
 	int dialog_esc; // opcja dialogowa wybierana po wciœniêciu ESC
 	int dialog_skip; // pomijanie opcji dialogowych u¿ywane przez DTF_RANDOM_TEXT
 	cstring dialog_text; // tekst dialogu
@@ -56,7 +55,7 @@ struct DialogContext
 	vector<std::pair<int, bool>> active_locations;
 	int team_share_id;
 	const Item* team_share_item;
-	bool not_active, can_skip, force_end;
+	bool can_skip, force_end;
 	vector<Entry> prev;
 	cstring talk_msg;
 	vector<QuestDialog> quest_dialogs;
@@ -66,13 +65,13 @@ struct DialogContext
 
 	~DialogContext() { ClearChoices(); }
 	void StartDialog(Unit* talker, GameDialog* dialog = nullptr);
-	void StartNextDialog(GameDialog* dialog, int& if_level, Quest* quest = nullptr);
+	void StartNextDialog(GameDialog* dialog, Quest* quest = nullptr);
 	void Update(float dt);
 	void EndDialog();
 	void ClearChoices();
 	cstring GetText(int index);
 	GameDialog::Text& GetTextInner(int index);
-	bool ExecuteSpecial(cstring msg, int& if_level);
+	bool ExecuteSpecial(cstring msg);
 	bool ExecuteSpecialIf(cstring msg);
 	cstring FormatString(const string& str_part);
 	void DialogTalk(cstring msg);

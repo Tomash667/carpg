@@ -1,0 +1,60 @@
+dialog:
+	dialog id { <statement ...> }
+	
+statement:
+	<choice>
+	<if>
+	check_quest_timeout int
+	do_once
+	do_quest string
+	do_quest2 string
+	do_quest_item string
+	end
+	end2
+	quest_special string
+	restart
+	set_quest_progress int
+	script string
+	show_choices
+	special string
+	talk int
+	trade
+	
+block:
+	{ <statement ...> }
+	<statement>
+	
+if:
+	if [not] <expr> <block> [else <block>]
+		
+choice:
+	[escape] choice int <block>
+		
+expr:
+	<bool_var>
+	<int_var> between int and int
+	<int_var> [op] int
+	
+bool_var:
+	have_item item
+	have_quest_item [not_active] [string]
+	need_talk string
+	once
+	quest_event
+	quest_special
+	quest_timeout
+	rand int
+	script string
+	special string
+	
+int_var:
+	choices
+	quest_progress
+	
+op:
+	==
+	!=
+	>
+	>=
+	<
+	<=

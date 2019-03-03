@@ -6,6 +6,7 @@ Version 0.9 (???):
 ! nie mo¿na wczytywaæ ju¿ zapisów z wersji 0.2.12 lub starszej
 + pierwsze skryptowe zadanie - dostarcz zasoby
 + wiêcej ikon lokalizacji i nazw
++ usprawnienia skryptów dialogowych
 
 --------------------------------------------------------------------------------
 Wersja 0.8.1 (???):

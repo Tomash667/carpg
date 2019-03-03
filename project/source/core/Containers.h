@@ -470,10 +470,19 @@ class Pooled
 {
 public:
 	Pooled() { ptr = ObjectPoolProxy<T>::Get(); }
-	~Pooled() { ptr->Free(); }
+	Pooled(T* ptr) : ptr(ptr) {}
+	~Pooled() { if(ptr) ptr->Free(); }
 	T* operator -> () { return ptr; }
 	operator T& () { return *ptr; }
+	T* Get() { return ptr; }
+	T* Pin()
+	{
+		T* tmp = ptr;
+		ptr = nullptr;
+		return tmp;
+	}
 
+private:
 	T* ptr;
 };
 

@@ -9,6 +9,7 @@ void ContentLoader::Load(cstring filename, int top_group, bool* require_id)
 	InitTokenizer();
 	if(DoLoad(filename, top_group, require_id))
 	{
+		local_id.clear();
 		LoadTexts();
 		Finalize();
 	}
@@ -75,6 +76,18 @@ bool ContentLoader::DoLoad(cstring filename, int top_group, bool* require_id)
 	}
 
 	return true;
+}
+
+//=================================================================================================
+void ContentLoader::LoadWarning(cstring msg)
+{
+	assert(msg);
+	cstring type_name = t.FindKeyword(current_entity, top_group)->name;
+	if(local_id.empty())
+		Warn("Warning loading %s: %s", type_name, msg);
+	else
+		Warn("Warning loading %s '%s': %s", type_name, local_id.c_str(), msg);
+	++content.warnings;
 }
 
 //=================================================================================================

@@ -18,6 +18,12 @@ protected:
 	virtual void InitTokenizer() = 0;
 	virtual void LoadEntity(int top, const string& id) = 0;
 	virtual void Finalize() = 0;
+	void LoadWarning(cstring msg);
+	template<typename... Args>
+	void LoadWarning(cstring msg, const Args&... args)
+	{
+		LoadWarning(Format(msg, args...));
+	}
 	void LoadError(cstring msg);
 	template<typename... Args>
 	void LoadError(cstring msg, const Args&... args)
