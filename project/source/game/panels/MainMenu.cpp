@@ -61,15 +61,18 @@ void MainMenu::LoadLanguage()
 void MainMenu::LoadData()
 {
 	auto& tex_mgr = ResourceManager::Get<Texture>();
-	tex_mgr.AddLoadTask("menu_bg.jpg", MainMenu::tBackground);
-	tex_mgr.AddLoadTask("logo.png", MainMenu::tLogo);
+	tex_mgr.AddLoadTask("menu_bg.jpg", tBackground);
+	tex_mgr.AddLoadTask("logo.png", tLogo);
+	tex_mgr.AddLoadTask("fmod_logo.png", tFModLogo);
 }
 
 //=================================================================================================
-void MainMenu::Draw(ControlDrawData* /*cdd*/)
+void MainMenu::Draw(ControlDrawData*)
 {
 	GUI.DrawSpriteFull(tBackground, Color::White);
 	GUI.DrawSprite(tLogo, Int2(GUI.wnd_size.x - 512 - 16, 16));
+	GUI.DrawSpriteRect(tFModLogo, Rect(int(GUI.wnd_size.x - 562.f * GUI.wnd_size.x / 1920), int(GUI.wnd_size.y - 185.f * GUI.wnd_size.y / 1080),
+		int(GUI.wnd_size.x - 50.f * GUI.wnd_size.x / 1920), int(GUI.wnd_size.y - 50.f * GUI.wnd_size.y / 1080)), Color::Alpha(250));
 
 	Rect r = { 0, 0, GUI.wnd_size.x, GUI.wnd_size.y };
 	r.Top() = r.Bottom() - 64;

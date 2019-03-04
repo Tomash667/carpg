@@ -13,7 +13,7 @@ file "../bin/carpg.exe" "carpg.exe"
 // copy dlls
 file "../bin/D3DCompiler_43.dll" "D3DCompiler_43.dll"
 file "../bin/D3DX9_43.dll" "D3DX9_43.dll"
-file "../bin/fmodex.dll" "fmodex.dll"
+file "../bin/fmod.dll" "fmod.dll"
 
 // crash reporter
 file "../bin/CrashRpt1403.dll" "CrashRpt1403.dll"

@@ -155,6 +155,7 @@ void Game::PreloadLanguage()
 	txLoadingRequires = Str("loadingRequires");
 	txLoadingShaders = Str("loadingShaders");
 	txLoadingDialogs = Str("loadingDialogs");
+	txLoadingQuests = Str("loadingQuests");
 	txLoadingLanguageFiles = Str("loadingLanguageFiles");
 	txPreloadAssets = Str("preloadAssets");
 }
@@ -246,9 +247,8 @@ void Game::LoadDatafiles()
 		case Content::Id::Musics:
 			gui->load_screen->Tick(txLoadingMusics);
 			break;
-		default:
-			FIXME;
-			gui->load_screen->Tick("Loading quests...");
+		case Content::Id::Quests:
+			gui->load_screen->Tick(txLoadingQuests);
 			break;
 		}
 	});

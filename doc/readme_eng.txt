@@ -371,6 +371,8 @@ Thanks for bug founding:
 	xweert123
 	Zettaton
 	Zinny
+	
+Audio Engine: FMOD Studio by Firelight Technologies.
 
 Models:
 	* kaangvl - fish

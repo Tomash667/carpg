@@ -1176,7 +1176,6 @@ void Game::SetGameText()
 	txGameSaved = Str("gameSaved");
 	txLoadingLocations = Str("loadingLocations");
 	txLoadingData = Str("loadingData");
-	txLoadingQuests = Str("loadingQuests");
 	txEndOfLoading = Str("endOfLoading");
 	txCantSaveNow = Str("cantSaveNow");
 	txOnlyServerCanSave = Str("onlyServerCanSave");

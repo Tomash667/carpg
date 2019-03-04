@@ -307,6 +307,8 @@ Podziêkowania za znalezione b³êdy:
 	xweert123
 	Zettaton
 	Zinny
+	
+Audio Engine: FMOD Studio by Firelight Technologies.
 
 Modele:
 	* kaangvl - fish

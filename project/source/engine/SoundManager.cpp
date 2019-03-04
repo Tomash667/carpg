@@ -56,7 +56,7 @@ void SoundManager::Init(StartupOptions& options)
 	Info("Engine: Sound drivers (%d):", count);
 	for(int i = 0; i < count; ++i)
 	{
-		result = system->getDriverInfo(i, BUF, 256, nullptr);
+		result = system->getDriverInfo(i, BUF, 256, nullptr, nullptr, nullptr, nullptr);
 		if(result == FMOD_OK)
 			Info("Engine: Driver %d - %s", i, BUF);
 		else
@@ -151,7 +151,7 @@ int SoundManager::LoadSound(Sound* sound)
 {
 	assert(sound);
 
-	int flags = FMOD_HARDWARE | FMOD_LOWMEM;
+	int flags = FMOD_LOWMEM;
 	if(sound->is_music)
 		flags |= FMOD_2D;
 	else
@@ -198,10 +198,9 @@ void SoundManager::PlayMusic(FMOD::Sound* music)
 
 	if(music)
 	{
-		system->playSound(FMOD_CHANNEL_FREE, music, true, &current_music);
+		system->playSound(music, group_music, true, &current_music);
 		current_music->setVolume(0.f);
 		current_music->setPaused(false);
-		current_music->setChannelGroup(group_music);
 	}
 	else
 		current_music = nullptr;
@@ -216,8 +215,7 @@ void SoundManager::PlaySound2d(FMOD::Sound* sound)
 		return;
 
 	FMOD::Channel* channel;
-	system->playSound(FMOD_CHANNEL_FREE, sound, false, &channel);
-	channel->setChannelGroup(group_default);
+	system->playSound(sound, group_default, false, &channel);
 	playing_sounds.push_back(channel);
 }
 
@@ -230,11 +228,10 @@ void SoundManager::PlaySound3d(FMOD::Sound* sound, const Vec3& pos, float smin, 
 		return;
 
 	FMOD::Channel* channel;
-	system->playSound(FMOD_CHANNEL_FREE, sound, true, &channel);
+	system->playSound(sound, group_default, true, &channel);
 	channel->set3DAttributes((const FMOD_VECTOR*)&pos, nullptr);
 	channel->set3DMinMaxDistance(smin, 10000.f/*smax*/);
 	channel->setPaused(false);
-	channel->setChannelGroup(group_default);
 	playing_sounds.push_back(channel);
 }
 
@@ -244,10 +241,9 @@ FMOD::Channel* SoundManager::CreateChannel(FMOD::Sound* sound, const Vec3& pos, 
 	assert(play_sound && sound);
 
 	FMOD::Channel* channel;
-	system->playSound(FMOD_CHANNEL_FREE, sound, true, &channel);
+	system->playSound(sound, group_default, true, &channel);
 	channel->set3DAttributes((const FMOD_VECTOR*)&pos, nullptr);
 	channel->set3DMinMaxDistance(smin, 10000.f/*smax*/);
-	channel->setChannelGroup(group_default);
 	channel->setPaused(false);
 	playing_sounds.push_back(channel);
 	return channel;
