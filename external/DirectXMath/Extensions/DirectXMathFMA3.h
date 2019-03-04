@@ -1,12 +1,8 @@
 //-------------------------------------------------------------------------------------
 // DirectXMathFMA3.h -- FMA3 extensions for SIMD C++ Math library
 //
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//  
 // Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkID=615560
 //-------------------------------------------------------------------------------------
@@ -34,11 +30,6 @@
 
 namespace DirectX
 {
-#if (DIRECTXMATH_VERSION < 305) && !defined(XM_CALLCONV)
-#define XM_CALLCONV __fastcall
-typedef const DirectX::XMVECTOR& HXMVECTOR;
-typedef const DirectX::XMMATRIX& FXMMATRIX;
-#endif
 
 namespace FMA3
 {
@@ -400,6 +391,6 @@ inline XMMATRIX XM_CALLCONV XMMatrixMultiplyTranspose
     return mResult;
 }
 
-}; // namespace FMA3
+} // namespace FMA3
 
-}; // namespace DirectX;
+} // namespace DirectX;

@@ -1,12 +1,8 @@
 //-------------------------------------------------------------------------------------
 // DirectXMathAVX2.h -- AVX2 extensions for SIMD C++ Math library
 //
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//  
 // Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkID=615560
 //-------------------------------------------------------------------------------------
@@ -35,11 +31,6 @@
 
 namespace DirectX
 {
-#if (DIRECTXMATH_VERSION < 305) && !defined(XM_CALLCONV)
-#define XM_CALLCONV __fastcall
-typedef const DirectX::XMVECTOR& HXMVECTOR;
-typedef const DirectX::XMMATRIX& FXMMATRIX;
-#endif
 
 namespace AVX2
 {
@@ -967,6 +958,6 @@ inline void XM_CALLCONV XMStoreHalf4( _Out_ PackedVector::XMHALF4* pDestination,
     _mm_storel_epi64( reinterpret_cast<__m128i*>(pDestination), V1 );
 }
 
-}; // namespace AVX2
+} // namespace AVX2
 
-}; // namespace DirectX;
+} // namespace DirectX;

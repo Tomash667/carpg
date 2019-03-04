@@ -1,12 +1,8 @@
 //-------------------------------------------------------------------------------------
 // DirectXCollision.h -- C++ Collision Math library
 //
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//  
 // Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkID=615560
 //-------------------------------------------------------------------------------------
@@ -22,14 +18,14 @@ enum ContainmentType
 {
     DISJOINT = 0,
     INTERSECTS = 1,
-    CONTAINS = 2,
+    CONTAINS = 2
 };
 
 enum PlaneIntersectionType
 {
     FRONT = 0,
     INTERSECTING = 1,
-    BACK = 2,
+    BACK = 2
 };
 
 struct BoundingBox;
@@ -50,15 +46,18 @@ struct BoundingSphere
     float Radius;               // Radius of the sphere.
 
     // Creators
-    BoundingSphere() : Center(0,0,0), Radius( 1.f ) {}
+    BoundingSphere() noexcept : Center(0, 0, 0), Radius(1.f) {}
+
+    BoundingSphere(const BoundingSphere&) = default;
+    BoundingSphere& operator=(const BoundingSphere&) = default;
+
+    BoundingSphere(BoundingSphere&&) = default;
+    BoundingSphere& operator=(BoundingSphere&&) = default;
+
     XM_CONSTEXPR BoundingSphere( _In_ const XMFLOAT3& center, _In_ float radius )
         : Center(center), Radius(radius) {}
-    BoundingSphere( _In_ const BoundingSphere& sp )
-        : Center(sp.Center), Radius(sp.Radius) {}
 
     // Methods
-    BoundingSphere& operator=( _In_ const BoundingSphere& sp ) { Center = sp.Center; Radius = sp.Radius; return *this; }
-
     void    XM_CALLCONV     Transform( _Out_ BoundingSphere& Out, _In_ FXMMATRIX M ) const;
     void    XM_CALLCONV     Transform( _Out_ BoundingSphere& Out, _In_ float Scale, _In_ FXMVECTOR Rotation, _In_ FXMVECTOR Translation ) const;
         // Transform the sphere
@@ -111,14 +110,18 @@ struct BoundingBox
     XMFLOAT3 Extents;           // Distance from the center to each side.
 
     // Creators
-    BoundingBox() : Center(0,0,0), Extents( 1.f, 1.f, 1.f ) {}
+    BoundingBox() noexcept : Center(0, 0, 0), Extents(1.f, 1.f, 1.f) {}
+
+    BoundingBox(const BoundingBox&) = default;
+    BoundingBox& operator=(const BoundingBox&) = default;
+
+    BoundingBox(BoundingBox&&) = default;
+    BoundingBox& operator=(BoundingBox&&) = default;
+
     XM_CONSTEXPR BoundingBox( _In_ const XMFLOAT3& center, _In_ const XMFLOAT3& extents )
         : Center(center), Extents(extents) {}
-    BoundingBox( _In_ const BoundingBox& box ) : Center(box.Center), Extents(box.Extents) {}
     
     // Methods
-    BoundingBox& operator=( _In_ const BoundingBox& box) { Center = box.Center; Extents = box.Extents; return *this; }
-
     void    XM_CALLCONV     Transform( _Out_ BoundingBox& Out, _In_ FXMMATRIX M ) const;
     void    XM_CALLCONV     Transform( _Out_ BoundingBox& Out, _In_ float Scale, _In_ FXMVECTOR Rotation, _In_ FXMVECTOR Translation ) const;
 
@@ -172,15 +175,18 @@ struct BoundingOrientedBox
     XMFLOAT4 Orientation;       // Unit quaternion representing rotation (box -> world).
 
     // Creators
-    BoundingOrientedBox() : Center(0,0,0), Extents( 1.f, 1.f, 1.f ), Orientation(0,0,0, 1.f ) {}
+    BoundingOrientedBox() noexcept : Center(0, 0, 0), Extents(1.f, 1.f, 1.f), Orientation(0, 0, 0, 1.f) {}
+
+    BoundingOrientedBox(const BoundingOrientedBox&) = default;
+    BoundingOrientedBox& operator=(const BoundingOrientedBox&) = default;
+
+    BoundingOrientedBox(BoundingOrientedBox&&) = default;
+    BoundingOrientedBox& operator=(BoundingOrientedBox&&) = default;
+
     XM_CONSTEXPR BoundingOrientedBox( _In_ const XMFLOAT3& _Center, _In_ const XMFLOAT3& _Extents, _In_ const XMFLOAT4& _Orientation )
         : Center(_Center), Extents(_Extents), Orientation(_Orientation) {}
-    BoundingOrientedBox( _In_ const BoundingOrientedBox& box )
-        : Center(box.Center), Extents(box.Extents), Orientation(box.Orientation) {}
 
     // Methods
-    BoundingOrientedBox& operator=( _In_ const BoundingOrientedBox& box ) { Center = box.Center; Extents = box.Extents; Orientation = box.Orientation; return *this; }
-
     void    XM_CALLCONV     Transform( _Out_ BoundingOrientedBox& Out, _In_ FXMMATRIX M ) const;
     void    XM_CALLCONV     Transform( _Out_ BoundingOrientedBox& Out, _In_ float Scale, _In_ FXMVECTOR Rotation, _In_ FXMVECTOR Translation ) const;
 
@@ -229,32 +235,32 @@ struct BoundingFrustum
     XMFLOAT3 Origin;            // Origin of the frustum (and projection).
     XMFLOAT4 Orientation;       // Quaternion representing rotation.
 
-    float RightSlope;           // Positive X slope (X/Z).
-    float LeftSlope;            // Negative X slope.
-    float TopSlope;             // Positive Y slope (Y/Z).
-    float BottomSlope;          // Negative Y slope.
+    float RightSlope;           // Positive X (X/Z)
+    float LeftSlope;            // Negative X
+    float TopSlope;             // Positive Y (Y/Z)
+    float BottomSlope;          // Negative Y
     float Near, Far;            // Z of the near plane and far plane.
 
     // Creators
-    BoundingFrustum() : Origin(0,0,0), Orientation(0,0,0, 1.f), RightSlope( 1.f ), LeftSlope( -1.f ),
-                        TopSlope( 1.f ), BottomSlope( -1.f ), Near(0), Far( 1.f ) {}
+    BoundingFrustum() noexcept :
+        Origin(0, 0, 0), Orientation(0, 0, 0, 1.f), RightSlope(1.f), LeftSlope(-1.f),
+        TopSlope(1.f), BottomSlope(-1.f), Near(0), Far(1.f) {}
+
+    BoundingFrustum(const BoundingFrustum&) = default;
+    BoundingFrustum& operator=(const BoundingFrustum&) = default;
+
+    BoundingFrustum(BoundingFrustum&&) = default;
+    BoundingFrustum& operator=(BoundingFrustum&&) = default;
+
     XM_CONSTEXPR BoundingFrustum( _In_ const XMFLOAT3& _Origin, _In_ const XMFLOAT4& _Orientation,
                      _In_ float _RightSlope, _In_ float _LeftSlope, _In_ float _TopSlope, _In_ float _BottomSlope,
                      _In_ float _Near, _In_ float _Far )
         : Origin(_Origin), Orientation(_Orientation),
           RightSlope(_RightSlope), LeftSlope(_LeftSlope), TopSlope(_TopSlope), BottomSlope(_BottomSlope),
           Near(_Near), Far(_Far) {}
-    BoundingFrustum( _In_ const BoundingFrustum& fr )
-        : Origin(fr.Origin), Orientation(fr.Orientation), RightSlope(fr.RightSlope), LeftSlope(fr.LeftSlope),
-          TopSlope(fr.TopSlope), BottomSlope(fr.BottomSlope), Near(fr.Near), Far(fr.Far) {}
-    BoundingFrustum( _In_ CXMMATRIX Projection ) { CreateFromMatrix( *this, Projection ); }
+    BoundingFrustum( _In_ CXMMATRIX Projection );
 
     // Methods
-    BoundingFrustum& operator=( _In_ const BoundingFrustum& fr ) { Origin=fr.Origin; Orientation=fr.Orientation;
-                                                                   RightSlope=fr.RightSlope; LeftSlope=fr.LeftSlope;
-                                                                   TopSlope=fr.TopSlope; BottomSlope=fr.BottomSlope;
-                                                                   Near=fr.Near; Far=fr.Far; return *this; }
-
     void    XM_CALLCONV     Transform( _Out_ BoundingFrustum& Out, _In_ FXMMATRIX M ) const;
     void    XM_CALLCONV     Transform( _Out_ BoundingFrustum& Out, _In_ float Scale, _In_ FXMVECTOR Rotation, _In_ FXMVECTOR Translation ) const;
 
@@ -313,7 +319,7 @@ namespace TriangleTests
                                                          _In_ GXMVECTOR Plane0, _In_ HXMVECTOR Plane1, _In_ HXMVECTOR Plane2,
                                                          _In_ CXMVECTOR Plane3, _In_ CXMVECTOR Plane4, _In_ CXMVECTOR Plane5 );
         // Test a triangle against six planes at once (see BoundingFrustum::GetPlanes)
-};
+}
 
 #pragma warning(pop)
 
@@ -332,6 +338,7 @@ namespace TriangleTests
 #ifdef _PREFAST_
 #pragma prefast(push)
 #pragma prefast(disable : 25000, "FXMVECTOR is 16 bytes")
+#pragma prefast(disable : 26495, "Union initialization confuses /analyze")
 #endif
 
 #include "DirectXCollision.inl"
@@ -342,5 +349,5 @@ namespace TriangleTests
 
 #pragma warning(pop)
 
-}; // namespace DirectX
+} // namespace DirectX
 

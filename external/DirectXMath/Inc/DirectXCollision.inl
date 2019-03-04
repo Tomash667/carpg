@@ -1,12 +1,8 @@
 //-------------------------------------------------------------------------------------
 // DirectXCollision.inl -- C++ Collision Math library
 //
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//  
 // Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkID=615560
 //-------------------------------------------------------------------------------------
@@ -160,13 +156,13 @@ inline bool SolveCubic( _In_ float e, _In_ float f, _In_ float g, _Out_ float* t
     q = g - e * f / 3.0f + e * e * e * 2.0f / 27.0f;
     h = q * q / 4.0f + p * p * p / 27.0f;
 
-    if( h > 0.0 )
+    if( h > 0 )
     {
         *t = *u = *v = 0.f;
         return false; // only one real root
     }
 
-    if( ( h == 0.0 ) && ( q == 0.0 ) ) // all the same root
+    if( ( h == 0 ) && ( q == 0 ) ) // all the same root
     {
         *t = - e / 3;
         *u = - e / 3;
@@ -196,9 +192,9 @@ inline XMVECTOR CalculateEigenVector( _In_ float m11, _In_ float m12, _In_ float
                                       _In_ float m22, _In_ float m23, _In_ float m33, _In_ float e )
 {
     float fTmp[3];
-    fTmp[0] = ( float )( m12 * m23 - m13 * ( m22 - e ) );
-    fTmp[1] = ( float )( m13 * m12 - m23 * ( m11 - e ) );
-    fTmp[2] = ( float )( ( m11 - e ) * ( m22 - e ) - m12 * m12 );
+    fTmp[0] = m12 * m23 - m13 * ( m22 - e );
+    fTmp[1] = m13 * m12 - m23 * ( m11 - e );
+    fTmp[2] = ( m11 - e ) * ( m22 - e ) - m12 * m12;
 
     XMVECTOR vTmp = XMLoadFloat3( reinterpret_cast<const XMFLOAT3*>(fTmp) );
 
@@ -207,44 +203,44 @@ inline XMVECTOR CalculateEigenVector( _In_ float m11, _In_ float m12, _In_ float
         float f1, f2, f3;
 
         // we only have one equation - find a valid one
-        if( ( m11 - e != 0.0 ) || ( m12 != 0.0 ) || ( m13 != 0.0 ) )
+        if( ( m11 - e != 0 ) || ( m12 != 0 ) || ( m13 != 0 ) )
         {
             f1 = m11 - e; f2 = m12; f3 = m13;
         }
-        else if( ( m12 != 0.0 ) || ( m22 - e != 0.0 ) || ( m23 != 0.0 ) )
+        else if( ( m12 != 0 ) || ( m22 - e != 0 ) || ( m23 != 0 ) )
         {
             f1 = m12; f2 = m22 - e; f3 = m23;
         }
-        else if( ( m13 != 0.0 ) || ( m23 != 0.0 ) || ( m33 - e != 0.0 ) )
+        else if( ( m13 != 0 ) || ( m23 != 0 ) || ( m33 - e != 0 ) )
         {
             f1 = m13; f2 = m23; f3 = m33 - e;
         }
         else
         {
             // error, we'll just make something up - we have NO context
-            f1 = 1.0; f2 = 0.0; f3 = 0.0;
+            f1 = 1.0f; f2 = 0.0f; f3 = 0.0f;
         }
 
-        if( f1 == 0.0 )
+        if( f1 == 0 )
             vTmp = XMVectorSetX( vTmp, 0.0f );
         else
             vTmp = XMVectorSetX( vTmp, 1.0f );
 
-        if( f2 == 0.0 )
+        if( f2 == 0 )
             vTmp = XMVectorSetY( vTmp, 0.0f );
         else
             vTmp = XMVectorSetY( vTmp, 1.0f );
 
-        if( f3 == 0.0 )
+        if( f3 == 0 )
         {
             vTmp = XMVectorSetZ( vTmp, 0.0f );
             // recalculate y to make equation work
-            if( m12 != 0.0 )
-                vTmp = XMVectorSetY( vTmp, ( float )( -f1 / f2 ) );
+            if( m12 != 0 )
+                vTmp = XMVectorSetY( vTmp, -f1 / f2 );
         }
         else
         {
-            vTmp = XMVectorSetZ( vTmp, ( float )( ( f2 - f1 ) / f3 ) );
+            vTmp = XMVectorSetZ( vTmp, ( f2 - f1 ) / f3 );
         }
     }
 
@@ -507,7 +503,7 @@ inline void XM_CALLCONV FastIntersectFrustumPlane( _In_ FXMVECTOR Point0, _In_ F
     Inside = XMVectorLess( Max, PlaneDist );
 }
 
-}; // namespace Internal
+} // namespace Internal
 
 
 /****************************************************************************
@@ -2010,7 +2006,7 @@ inline void XM_CALLCONV BoundingOrientedBox::Transform( BoundingOrientedBox& Out
 _Use_decl_annotations_
 inline void BoundingOrientedBox::GetCorners( XMFLOAT3* Corners ) const
 {
-    assert( Corners != 0 );
+    assert( Corners != nullptr );
 
     // Load the box
     XMVECTOR vCenter = XMLoadFloat3( &Center );
@@ -2702,7 +2698,7 @@ _Use_decl_annotations_
 inline void BoundingOrientedBox::CreateFromPoints( BoundingOrientedBox& Out, size_t Count, const XMFLOAT3* pPoints, size_t Stride )
 {
     assert( Count > 0 );
-    assert( pPoints != 0 );
+    assert( pPoints != nullptr );
 
     XMVECTOR CenterOfMass = XMVectorZero();
 
@@ -2807,6 +2803,13 @@ inline void BoundingOrientedBox::CreateFromPoints( BoundingOrientedBox& Out, siz
  *
  ****************************************************************************/
 
+_Use_decl_annotations_
+inline BoundingFrustum::BoundingFrustum( CXMMATRIX Projection )
+{
+    CreateFromMatrix(*this, Projection);
+}
+
+
 //-----------------------------------------------------------------------------
 // Transform a frustum by an angle preserving transform.
 //-----------------------------------------------------------------------------
@@ -2892,7 +2895,7 @@ inline void XM_CALLCONV BoundingFrustum::Transform( BoundingFrustum& Out, float 
 _Use_decl_annotations_
 inline void BoundingFrustum::GetCorners( XMFLOAT3* Corners ) const
 {
-    assert( Corners != 0 );
+    assert( Corners != nullptr );
 
     // Load origin and orientation of the frustum.
     XMVECTOR vOrigin = XMLoadFloat3( &Origin );
@@ -4780,5 +4783,5 @@ inline ContainmentType XM_CALLCONV ContainedBy( FXMVECTOR V0, FXMVECTOR V1, FXMV
     return INTERSECTS;
 }
 
-}; // namespace TriangleTests
+} // namespace TriangleTests
 

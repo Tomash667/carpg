@@ -1,12 +1,8 @@
 //-------------------------------------------------------------------------------------
 // DirectXPackedVector.h -- SIMD C++ Math library
 //
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//  
 // Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkID=615560
 //-------------------------------------------------------------------------------------
@@ -49,14 +45,20 @@ struct XMCOLOR
         uint32_t c;
     };
 
-    XMCOLOR() XM_CTOR_DEFAULT
+    XMCOLOR() = default;
+
+    XMCOLOR(const XMCOLOR&) = default;
+    XMCOLOR& operator=(const XMCOLOR&) = default;
+
+    XMCOLOR(XMCOLOR&&) = default;
+    XMCOLOR& operator=(XMCOLOR&&) = default;
+
     XM_CONSTEXPR XMCOLOR(uint32_t Color) : c(Color) {}
     XMCOLOR(float _r, float _g, float _b, float _a);
     explicit XMCOLOR(_In_reads_(4) const float *pArray);
 
     operator uint32_t () const { return c; }
 
-    XMCOLOR& operator= (const XMCOLOR& Color) { c = Color.c; return *this; }
     XMCOLOR& operator= (const uint32_t Color) { c = Color; return *this; }
 };
 
@@ -79,14 +81,20 @@ struct XMHALF2
         uint32_t v;
     };
 
-    XMHALF2() XM_CTOR_DEFAULT
+    XMHALF2() = default;
+
+    XMHALF2(const XMHALF2&) = default;
+    XMHALF2& operator=(const XMHALF2&) = default;
+
+    XMHALF2(XMHALF2&&) = default;
+    XMHALF2& operator=(XMHALF2&&) = default;
+
     explicit XM_CONSTEXPR XMHALF2(uint32_t Packed) : v(Packed) {}
     XM_CONSTEXPR XMHALF2(HALF _x, HALF _y) : x(_x), y(_y) {}
     explicit XMHALF2(_In_reads_(2) const HALF *pArray) : x(pArray[0]), y(pArray[1]) {}
     XMHALF2(float _x, float _y);
     explicit XMHALF2(_In_reads_(2) const float *pArray);
 
-    XMHALF2& operator= (const XMHALF2& Half2) { x = Half2.x; y = Half2.y; return *this; }
     XMHALF2& operator= (uint32_t Packed) { v = Packed; return *this; }
 };
 
@@ -104,14 +112,20 @@ struct XMSHORTN2
         uint32_t v;
     };
 
-    XMSHORTN2() XM_CTOR_DEFAULT
+    XMSHORTN2() = default;
+
+    XMSHORTN2(const XMSHORTN2&) = default;
+    XMSHORTN2& operator=(const XMSHORTN2&) = default;
+
+    XMSHORTN2(XMSHORTN2&&) = default;
+    XMSHORTN2& operator=(XMSHORTN2&&) = default;
+
     explicit XM_CONSTEXPR XMSHORTN2(uint32_t Packed) : v(Packed) {}
     XM_CONSTEXPR XMSHORTN2(int16_t _x, int16_t _y) : x(_x), y(_y) {}
     explicit XMSHORTN2(_In_reads_(2) const int16_t *pArray) : x(pArray[0]), y(pArray[1]) {}
     XMSHORTN2(float _x, float _y);
     explicit XMSHORTN2(_In_reads_(2) const float *pArray);
 
-    XMSHORTN2& operator= (const XMSHORTN2& ShortN2) { x = ShortN2.x; y = ShortN2.y; return *this; }
     XMSHORTN2& operator= (uint32_t Packed) { v = Packed; return *this; }
 };
 
@@ -128,14 +142,20 @@ struct XMSHORT2
         uint32_t v;
     };
 
-    XMSHORT2() XM_CTOR_DEFAULT
+    XMSHORT2() = default;
+
+    XMSHORT2(const XMSHORT2&) = default;
+    XMSHORT2& operator=(const XMSHORT2&) = default;
+
+    XMSHORT2(XMSHORT2&&) = default;
+    XMSHORT2& operator=(XMSHORT2&&) = default;
+
     explicit XM_CONSTEXPR XMSHORT2(uint32_t Packed) : v(Packed) {}
     XM_CONSTEXPR XMSHORT2(int16_t _x, int16_t _y) : x(_x), y(_y) {}
     explicit XMSHORT2(_In_reads_(2) const int16_t *pArray) : x(pArray[0]), y(pArray[1]) {}
     XMSHORT2(float _x, float _y);
     explicit XMSHORT2(_In_reads_(2) const float *pArray);
 
-    XMSHORT2& operator= (const XMSHORT2& Short2) { x = Short2.x; y = Short2.y; return *this; }
     XMSHORT2& operator= (uint32_t Packed) { v = Packed; return *this; }
 };
 
@@ -152,14 +172,20 @@ struct XMUSHORTN2
         uint32_t v;
     };
 
-    XMUSHORTN2() XM_CTOR_DEFAULT
+    XMUSHORTN2() = default;
+
+    XMUSHORTN2(const XMUSHORTN2&) = default;
+    XMUSHORTN2& operator=(const XMUSHORTN2&) = default;
+
+    XMUSHORTN2(XMUSHORTN2&&) = default;
+    XMUSHORTN2& operator=(XMUSHORTN2&&) = default;
+
     explicit XM_CONSTEXPR XMUSHORTN2(uint32_t Packed) : v(Packed) {}
     XM_CONSTEXPR XMUSHORTN2(uint16_t _x, uint16_t _y) : x(_x), y(_y) {}
     explicit XMUSHORTN2(_In_reads_(2) const uint16_t *pArray) : x(pArray[0]), y(pArray[1]) {}
     XMUSHORTN2(float _x, float _y);
     explicit XMUSHORTN2(_In_reads_(2) const float *pArray);
 
-    XMUSHORTN2& operator= (const XMUSHORTN2& UShortN2) { x = UShortN2.x; y = UShortN2.y; return *this; }
     XMUSHORTN2& operator= (uint32_t Packed) { v = Packed; return *this; }
 };
 
@@ -176,14 +202,20 @@ struct XMUSHORT2
         uint32_t v;
     };
 
-    XMUSHORT2() XM_CTOR_DEFAULT
+    XMUSHORT2() = default;
+
+    XMUSHORT2(const XMUSHORT2&) = default;
+    XMUSHORT2& operator=(const XMUSHORT2&) = default;
+
+    XMUSHORT2(XMUSHORT2&&) = default;
+    XMUSHORT2& operator=(XMUSHORT2&&) = default;
+
     explicit XM_CONSTEXPR XMUSHORT2(uint32_t Packed) : v(Packed) {}
     XM_CONSTEXPR XMUSHORT2(uint16_t _x, uint16_t _y) : x(_x), y(_y) {}
     explicit XMUSHORT2(_In_reads_(2) const uint16_t *pArray) : x(pArray[0]), y(pArray[1]) {}
     XMUSHORT2(float _x, float _y);
     explicit XMUSHORT2(_In_reads_(2) const float *pArray);
 
-    XMUSHORT2& operator= (const XMUSHORT2& UShort2) { x = UShort2.x; y = UShort2.y; return *this; }
     XMUSHORT2& operator= (uint32_t Packed) { v = Packed; return *this; }
 };
 
@@ -201,14 +233,20 @@ struct XMBYTEN2
         uint16_t v;
     };
 
-    XMBYTEN2() XM_CTOR_DEFAULT
+    XMBYTEN2() = default;
+
+    XMBYTEN2(const XMBYTEN2&) = default;
+    XMBYTEN2& operator=(const XMBYTEN2&) = default;
+
+    XMBYTEN2(XMBYTEN2&&) = default;
+    XMBYTEN2& operator=(XMBYTEN2&&) = default;
+
     explicit XM_CONSTEXPR XMBYTEN2(uint16_t Packed) : v(Packed) {}
     XM_CONSTEXPR XMBYTEN2(int8_t _x, int8_t _y) : x(_x), y(_y) {}
     explicit XMBYTEN2(_In_reads_(2) const int8_t *pArray) : x(pArray[0]), y(pArray[1]) {}
     XMBYTEN2(float _x, float _y);
     explicit XMBYTEN2(_In_reads_(2) const float *pArray);
 
-    XMBYTEN2& operator= (const XMBYTEN2& ByteN2) { x = ByteN2.x; y = ByteN2.y; return *this; }
     XMBYTEN2& operator= (uint16_t Packed) { v = Packed; return *this; }
 };
 
@@ -225,14 +263,20 @@ struct XMBYTE2
         uint16_t v;
     };
 
-    XMBYTE2() XM_CTOR_DEFAULT
+    XMBYTE2() = default;
+
+    XMBYTE2(const XMBYTE2&) = default;
+    XMBYTE2& operator=(const XMBYTE2&) = default;
+
+    XMBYTE2(XMBYTE2&&) = default;
+    XMBYTE2& operator=(XMBYTE2&&) = default;
+
     explicit XM_CONSTEXPR XMBYTE2(uint16_t Packed) : v(Packed) {}
     XM_CONSTEXPR XMBYTE2(int8_t _x, int8_t _y) : x(_x), y(_y) {}
     explicit XMBYTE2(_In_reads_(2) const int8_t *pArray) : x(pArray[0]), y(pArray[1]) {}
     XMBYTE2(float _x, float _y);
     explicit XMBYTE2(_In_reads_(2) const float *pArray);
 
-    XMBYTE2& operator= (const XMBYTE2& Byte2) { x = Byte2.x; y = Byte2.y; return *this; }
     XMBYTE2& operator= (uint16_t Packed) { v = Packed; return *this; }
 };
 
@@ -249,14 +293,20 @@ struct XMUBYTEN2
         uint16_t v;
     };
 
-    XMUBYTEN2() XM_CTOR_DEFAULT
+    XMUBYTEN2() = default;
+
+    XMUBYTEN2(const XMUBYTEN2&) = default;
+    XMUBYTEN2& operator=(const XMUBYTEN2&) = default;
+
+    XMUBYTEN2(XMUBYTEN2&&) = default;
+    XMUBYTEN2& operator=(XMUBYTEN2&&) = default;
+
     explicit XM_CONSTEXPR XMUBYTEN2(uint16_t Packed) : v(Packed) {}
     XM_CONSTEXPR XMUBYTEN2(uint8_t _x, uint8_t _y) : x(_x), y(_y) {}
     explicit XMUBYTEN2(_In_reads_(2) const uint8_t *pArray) : x(pArray[0]), y(pArray[1]) {}
     XMUBYTEN2(float _x, float _y);
     explicit XMUBYTEN2(_In_reads_(2) const float *pArray);
 
-    XMUBYTEN2& operator= (const XMUBYTEN2& UByteN2) { x = UByteN2.x; y = UByteN2.y; return *this; }
     XMUBYTEN2& operator= (uint16_t Packed) { v = Packed; return *this; }
 };
 
@@ -273,14 +323,20 @@ struct XMUBYTE2
         uint16_t v;
     };
 
-    XMUBYTE2() XM_CTOR_DEFAULT
+    XMUBYTE2() = default;
+
+    XMUBYTE2(const XMUBYTE2&) = default;
+    XMUBYTE2& operator=(const XMUBYTE2&) = default;
+
+    XMUBYTE2(XMUBYTE2&&) = default;
+    XMUBYTE2& operator=(XMUBYTE2&&) = default;
+
     explicit XM_CONSTEXPR XMUBYTE2(uint16_t Packed) : v(Packed) {}
     XM_CONSTEXPR XMUBYTE2(uint8_t _x, uint8_t _y) : x(_x), y(_y) {}
     explicit XMUBYTE2(_In_reads_(2) const uint8_t *pArray) : x(pArray[0]), y(pArray[1]) {}
     XMUBYTE2(float _x, float _y);
     explicit XMUBYTE2(_In_reads_(2) const float *pArray);
 
-    XMUBYTE2& operator= (const XMUBYTE2& UByte2) { x = UByte2.x; y = UByte2.y; return *this; }
     XMUBYTE2& operator= (uint16_t Packed) { v = Packed; return *this; }
 };
 
@@ -299,7 +355,14 @@ struct XMU565
         uint16_t v;
     };
 
-    XMU565() XM_CTOR_DEFAULT
+    XMU565() = default;
+
+    XMU565(const XMU565&) = default;
+    XMU565& operator=(const XMU565&) = default;
+
+    XMU565(XMU565&&) = default;
+    XMU565& operator=(XMU565&&) = default;
+
     explicit XM_CONSTEXPR XMU565(uint16_t Packed) : v(Packed) {}
     XM_CONSTEXPR XMU565(uint8_t _x, uint8_t _y, uint8_t _z) : x(_x), y(_y), z(_z) {}
     explicit XMU565(_In_reads_(3) const uint8_t *pArray) : x(pArray[0]), y(pArray[1]), z(pArray[2]) {}
@@ -308,7 +371,6 @@ struct XMU565
 
     operator uint16_t () const { return v; }
 
-    XMU565& operator= (const XMU565& U565) { v = U565.v; return *this; }
     XMU565& operator= (uint16_t Packed) { v = Packed; return *this; }
 };
 
@@ -337,14 +399,20 @@ struct XMFLOAT3PK
         uint32_t v;
     };
 
-    XMFLOAT3PK() XM_CTOR_DEFAULT
+    XMFLOAT3PK() = default;
+
+    XMFLOAT3PK(const XMFLOAT3PK&) = default;
+    XMFLOAT3PK& operator=(const XMFLOAT3PK&) = default;
+
+    XMFLOAT3PK(XMFLOAT3PK&&) = default;
+    XMFLOAT3PK& operator=(XMFLOAT3PK&&) = default;
+
     explicit XM_CONSTEXPR XMFLOAT3PK(uint32_t Packed) : v(Packed) {}
     XMFLOAT3PK(float _x, float _y, float _z);
     explicit XMFLOAT3PK(_In_reads_(3) const float *pArray);
 
     operator uint32_t () const { return v; }
 
-    XMFLOAT3PK& operator= (const XMFLOAT3PK& float3pk) { v = float3pk.v; return *this; }
     XMFLOAT3PK& operator= (uint32_t Packed) { v = Packed; return *this; }
 };
 
@@ -370,14 +438,20 @@ struct XMFLOAT3SE
         uint32_t v;
     };
 
-    XMFLOAT3SE() XM_CTOR_DEFAULT
+    XMFLOAT3SE() = default;
+
+    XMFLOAT3SE(const XMFLOAT3SE&) = default;
+    XMFLOAT3SE& operator=(const XMFLOAT3SE&) = default;
+
+    XMFLOAT3SE(XMFLOAT3SE&&) = default;
+    XMFLOAT3SE& operator=(XMFLOAT3SE&&) = default;
+
     explicit XM_CONSTEXPR XMFLOAT3SE(uint32_t Packed) : v(Packed) {}
     XMFLOAT3SE(float _x, float _y, float _z);
     explicit XMFLOAT3SE(_In_reads_(3) const float *pArray);
 
     operator uint32_t () const { return v; }
 
-    XMFLOAT3SE& operator= (const XMFLOAT3SE& float3se) { v = float3se.v; return *this; }
     XMFLOAT3SE& operator= (uint32_t Packed) { v = Packed; return *this; }
 };
 
@@ -397,14 +471,20 @@ struct XMHALF4
         uint64_t v;
     };
 
-    XMHALF4() XM_CTOR_DEFAULT
+    XMHALF4() = default;
+
+    XMHALF4(const XMHALF4&) = default;
+    XMHALF4& operator=(const XMHALF4&) = default;
+
+    XMHALF4(XMHALF4&&) = default;
+    XMHALF4& operator=(XMHALF4&&) = default;
+
     explicit XM_CONSTEXPR XMHALF4(uint64_t Packed) : v(Packed) {}
     XM_CONSTEXPR XMHALF4(HALF _x, HALF _y, HALF _z, HALF _w) : x(_x), y(_y), z(_z), w(_w) {}
     explicit XMHALF4(_In_reads_(4) const HALF *pArray) : x(pArray[0]), y(pArray[1]), z(pArray[2]), w(pArray[3]) {}
     XMHALF4(float _x, float _y, float _z, float _w);
     explicit XMHALF4(_In_reads_(4) const float *pArray);
 
-    XMHALF4& operator= (const XMHALF4& Half4) { x = Half4.x; y = Half4.y; z = Half4.z; w = Half4.w; return *this; }
     XMHALF4& operator= (uint64_t Packed) { v = Packed; return *this; }
 };
 
@@ -424,14 +504,20 @@ struct XMSHORTN4
         uint64_t v;
     };
 
-    XMSHORTN4() XM_CTOR_DEFAULT
+    XMSHORTN4() = default;
+
+    XMSHORTN4(const XMSHORTN4&) = default;
+    XMSHORTN4& operator=(const XMSHORTN4&) = default;
+
+    XMSHORTN4(XMSHORTN4&&) = default;
+    XMSHORTN4& operator=(XMSHORTN4&&) = default;
+
     explicit XM_CONSTEXPR XMSHORTN4(uint64_t Packed) : v(Packed) {}
     XM_CONSTEXPR XMSHORTN4(int16_t _x, int16_t _y, int16_t _z, int16_t _w) : x(_x), y(_y), z(_z), w(_w) {}
     explicit XMSHORTN4(_In_reads_(4) const int16_t *pArray) : x(pArray[0]), y(pArray[1]), z(pArray[2]), w(pArray[3]) {}
     XMSHORTN4(float _x, float _y, float _z, float _w);
     explicit XMSHORTN4(_In_reads_(4) const float *pArray);
 
-    XMSHORTN4& operator= (const XMSHORTN4& ShortN4) { x = ShortN4.x; y = ShortN4.y; z = ShortN4.z; w = ShortN4.w; return *this; }
     XMSHORTN4& operator= (uint64_t Packed) { v = Packed; return *this; }
 };
 
@@ -450,14 +536,20 @@ struct XMSHORT4
         uint64_t v;
     };
 
-    XMSHORT4() XM_CTOR_DEFAULT
+    XMSHORT4() = default;
+
+    XMSHORT4(const XMSHORT4&) = default;
+    XMSHORT4& operator=(const XMSHORT4&) = default;
+
+    XMSHORT4(XMSHORT4&&) = default;
+    XMSHORT4& operator=(XMSHORT4&&) = default;
+
     explicit XM_CONSTEXPR XMSHORT4(uint64_t Packed) : v(Packed) {}
     XM_CONSTEXPR XMSHORT4(int16_t _x, int16_t _y, int16_t _z, int16_t _w) : x(_x), y(_y), z(_z), w(_w) {}
     explicit XMSHORT4(_In_reads_(4) const int16_t *pArray) : x(pArray[0]), y(pArray[1]), z(pArray[2]), w(pArray[3]) {}
     XMSHORT4(float _x, float _y, float _z, float _w);
     explicit XMSHORT4(_In_reads_(4) const float *pArray);
 
-    XMSHORT4& operator= (const XMSHORT4& Short4) { x = Short4.x; y = Short4.y; z = Short4.z; w = Short4.w; return *this; }
     XMSHORT4& operator= (uint64_t Packed) { v = Packed; return *this; }
 };
 
@@ -476,14 +568,20 @@ struct XMUSHORTN4
         uint64_t v;
     };
 
-    XMUSHORTN4() XM_CTOR_DEFAULT
+    XMUSHORTN4() = default;
+
+    XMUSHORTN4(const XMUSHORTN4&) = default;
+    XMUSHORTN4& operator=(const XMUSHORTN4&) = default;
+
+    XMUSHORTN4(XMUSHORTN4&&) = default;
+    XMUSHORTN4& operator=(XMUSHORTN4&&) = default;
+
     explicit XM_CONSTEXPR XMUSHORTN4(uint64_t Packed) : v(Packed) {}
     XM_CONSTEXPR XMUSHORTN4(uint16_t _x, uint16_t _y, uint16_t _z, uint16_t _w) : x(_x), y(_y), z(_z), w(_w) {}
     explicit XMUSHORTN4(_In_reads_(4) const uint16_t *pArray) : x(pArray[0]), y(pArray[1]), z(pArray[2]), w(pArray[3]) {}
     XMUSHORTN4(float _x, float _y, float _z, float _w);
     explicit XMUSHORTN4(_In_reads_(4) const float *pArray);
 
-    XMUSHORTN4& operator= (const XMUSHORTN4& UShortN4) { x = UShortN4.x; y = UShortN4.y; z = UShortN4.z; w = UShortN4.w; return *this; }
     XMUSHORTN4& operator= (uint64_t Packed) { v = Packed; return *this; }
 };
 
@@ -502,14 +600,20 @@ struct XMUSHORT4
         uint64_t v;
     };
 
-    XMUSHORT4() XM_CTOR_DEFAULT
+    XMUSHORT4() = default;
+
+    XMUSHORT4(const XMUSHORT4&) = default;
+    XMUSHORT4& operator=(const XMUSHORT4&) = default;
+
+    XMUSHORT4(XMUSHORT4&&) = default;
+    XMUSHORT4& operator=(XMUSHORT4&&) = default;
+
     explicit XM_CONSTEXPR XMUSHORT4(uint64_t Packed) : v(Packed) {}
     XM_CONSTEXPR XMUSHORT4(uint16_t _x, uint16_t _y, uint16_t _z, uint16_t _w) : x(_x), y(_y), z(_z), w(_w) {}
     explicit XMUSHORT4(_In_reads_(4) const uint16_t *pArray) : x(pArray[0]), y(pArray[1]), z(pArray[2]), w(pArray[3]) {}
     XMUSHORT4(float _x, float _y, float _z, float _w);
     explicit XMUSHORT4(_In_reads_(4) const float *pArray);
 
-    XMUSHORT4& operator= (const XMUSHORT4& UShort4) { x = UShort4.x; y = UShort4.y; z = UShort4.z; w = UShort4.w; return *this; }
     XMUSHORT4& operator= (uint32_t Packed) { v = Packed; return *this; }
 };
 
@@ -534,14 +638,20 @@ struct XMXDECN4
         uint32_t v;
     };
 
-    XMXDECN4() XM_CTOR_DEFAULT
+    XMXDECN4() = default;
+
+    XMXDECN4(const XMXDECN4&) = default;
+    XMXDECN4& operator=(const XMXDECN4&) = default;
+
+    XMXDECN4(XMXDECN4&&) = default;
+    XMXDECN4& operator=(XMXDECN4&&) = default;
+
     explicit XM_CONSTEXPR XMXDECN4(uint32_t Packed) : v(Packed) {}
     XMXDECN4(float _x, float _y, float _z, float _w);
     explicit XMXDECN4(_In_reads_(4) const float *pArray);
 
     operator uint32_t () const { return v; }
 
-    XMXDECN4& operator= (const XMXDECN4& XDecN4) { v = XDecN4.v; return *this; }
     XMXDECN4& operator= (uint32_t Packed) { v = Packed; return *this; }
 };
 
@@ -565,14 +675,20 @@ struct XM_DEPRECATED XMXDEC4
         uint32_t v;
     };
 
-    XMXDEC4() XM_CTOR_DEFAULT
+    XMXDEC4() = default;
+
+    XMXDEC4(const XMXDEC4&) = default;
+    XMXDEC4& operator=(const XMXDEC4&) = default;
+
+    XMXDEC4(XMXDEC4&&) = default;
+    XMXDEC4& operator=(XMXDEC4&&) = default;
+
     explicit XM_CONSTEXPR XMXDEC4(uint32_t Packed) : v(Packed) {}
     XMXDEC4(float _x, float _y, float _z, float _w);
     explicit XMXDEC4(_In_reads_(4) const float *pArray);
 
     operator uint32_t () const { return v; }
 
-    XMXDEC4& operator= (const XMXDEC4& XDec4) { v = XDec4.v; return *this; }
     XMXDEC4& operator= (uint32_t Packed) { v = Packed; return *this; }
 };
 
@@ -596,14 +712,20 @@ struct XM_DEPRECATED XMDECN4
         uint32_t v;
     };
 
-    XMDECN4() XM_CTOR_DEFAULT
+    XMDECN4() = default;
+
+    XMDECN4(const XMDECN4&) = default;
+    XMDECN4& operator=(const XMDECN4&) = default;
+
+    XMDECN4(XMDECN4&&) = default;
+    XMDECN4& operator=(XMDECN4&&) = default;
+
     explicit XM_CONSTEXPR XMDECN4(uint32_t Packed) : v(Packed) {}
     XMDECN4(float _x, float _y, float _z, float _w);
     explicit XMDECN4(_In_reads_(4) const float *pArray);
 
     operator uint32_t () const { return v; }
 
-    XMDECN4& operator= (const XMDECN4& DecN4) { v = DecN4.v; return *this; }
     XMDECN4& operator= (uint32_t Packed) { v = Packed; return *this; }
 };
 
@@ -627,14 +749,20 @@ struct XM_DEPRECATED XMDEC4
         uint32_t v;
     };
 
-    XMDEC4() XM_CTOR_DEFAULT
+    XMDEC4() = default;
+
+    XMDEC4(const XMDEC4&) = default;
+    XMDEC4& operator=(const XMDEC4&) = default;
+
+    XMDEC4(XMDEC4&&) = default;
+    XMDEC4& operator=(XMDEC4&&) = default;
+
     explicit XM_CONSTEXPR XMDEC4(uint32_t Packed) : v(Packed) {}
     XMDEC4(float _x, float _y, float _z, float _w);
     explicit XMDEC4(_In_reads_(4) const float *pArray);
 
     operator uint32_t () const { return v; }
 
-    XMDEC4& operator= (const XMDEC4& Dec4) { v = Dec4.v; return *this; }
     XMDEC4& operator= (uint32_t Packed) { v = Packed; return *this; }
 };
 
@@ -658,14 +786,20 @@ struct XMUDECN4
         uint32_t v;
     };
 
-    XMUDECN4() XM_CTOR_DEFAULT
+    XMUDECN4() = default;
+
+    XMUDECN4(const XMUDECN4&) = default;
+    XMUDECN4& operator=(const XMUDECN4&) = default;
+
+    XMUDECN4(XMUDECN4&&) = default;
+    XMUDECN4& operator=(XMUDECN4&&) = default;
+
     explicit XM_CONSTEXPR XMUDECN4(uint32_t Packed) : v(Packed) {}
     XMUDECN4(float _x, float _y, float _z, float _w);
     explicit XMUDECN4(_In_reads_(4) const float *pArray);
 
     operator uint32_t () const { return v; }
 
-    XMUDECN4& operator= (const XMUDECN4& UDecN4) { v = UDecN4.v; return *this; }
     XMUDECN4& operator= (uint32_t Packed) { v = Packed; return *this; }
 };
 
@@ -689,14 +823,20 @@ struct XMUDEC4
         uint32_t v;
     };
 
-    XMUDEC4() XM_CTOR_DEFAULT
+    XMUDEC4() = default;
+
+    XMUDEC4(const XMUDEC4&) = default;
+    XMUDEC4& operator=(const XMUDEC4&) = default;
+
+    XMUDEC4(XMUDEC4&&) = default;
+    XMUDEC4& operator=(XMUDEC4&&) = default;
+
     explicit XM_CONSTEXPR XMUDEC4(uint32_t Packed) : v(Packed) {}
     XMUDEC4(float _x, float _y, float _z, float _w);
     explicit XMUDEC4(_In_reads_(4) const float *pArray);
 
     operator uint32_t () const { return v; }
 
-    XMUDEC4& operator= (const XMUDEC4& UDec4) { v = UDec4.v; return *this; }
     XMUDEC4& operator= (uint32_t Packed) { v = Packed; return *this; }
 };
 
@@ -716,14 +856,20 @@ struct XMBYTEN4
         uint32_t v;
     };
 
-    XMBYTEN4() XM_CTOR_DEFAULT
+    XMBYTEN4() = default;
+
+    XMBYTEN4(const XMBYTEN4&) = default;
+    XMBYTEN4& operator=(const XMBYTEN4&) = default;
+
+    XMBYTEN4(XMBYTEN4&&) = default;
+    XMBYTEN4& operator=(XMBYTEN4&&) = default;
+
     XM_CONSTEXPR XMBYTEN4(int8_t _x, int8_t _y, int8_t _z, int8_t _w) : x(_x), y(_y), z(_z), w(_w) {}
     explicit XM_CONSTEXPR XMBYTEN4(uint32_t Packed) : v(Packed) {}
     explicit XMBYTEN4(_In_reads_(4) const int8_t *pArray) : x(pArray[0]), y(pArray[1]), z(pArray[2]), w(pArray[3]) {}
     XMBYTEN4(float _x, float _y, float _z, float _w);
     explicit XMBYTEN4(_In_reads_(4) const float *pArray);
 
-    XMBYTEN4& operator= (const XMBYTEN4& ByteN4) { x = ByteN4.x; y = ByteN4.y; z = ByteN4.z; w = ByteN4.w; return *this; }
     XMBYTEN4& operator= (uint32_t Packed) { v = Packed; return *this; }
 };
 
@@ -742,14 +888,20 @@ struct XMBYTE4
         uint32_t v;
     };
 
-    XMBYTE4() XM_CTOR_DEFAULT
+    XMBYTE4() = default;
+
+    XMBYTE4(const XMBYTE4&) = default;
+    XMBYTE4& operator=(const XMBYTE4&) = default;
+
+    XMBYTE4(XMBYTE4&&) = default;
+    XMBYTE4& operator=(XMBYTE4&&) = default;
+
     XM_CONSTEXPR XMBYTE4(int8_t _x, int8_t _y, int8_t _z, int8_t _w) : x(_x), y(_y), z(_z), w(_w) {}
     explicit XM_CONSTEXPR XMBYTE4(uint32_t Packed) : v(Packed) {}
     explicit XMBYTE4(_In_reads_(4) const int8_t *pArray) : x(pArray[0]), y(pArray[1]), z(pArray[2]), w(pArray[3]) {}
     XMBYTE4(float _x, float _y, float _z, float _w);
     explicit XMBYTE4(_In_reads_(4) const float *pArray);
 
-    XMBYTE4& operator= (const XMBYTE4& Byte4) { x = Byte4.x; y = Byte4.y; z = Byte4.z; w = Byte4.w; return *this; }
     XMBYTE4& operator= (uint32_t Packed) { v = Packed; return *this; }
 };
 
@@ -768,14 +920,20 @@ struct XMUBYTEN4
         uint32_t v;
     };
 
-    XMUBYTEN4() XM_CTOR_DEFAULT
+    XMUBYTEN4() = default;
+
+    XMUBYTEN4(const XMUBYTEN4&) = default;
+    XMUBYTEN4& operator=(const XMUBYTEN4&) = default;
+
+    XMUBYTEN4(XMUBYTEN4&&) = default;
+    XMUBYTEN4& operator=(XMUBYTEN4&&) = default;
+
     XM_CONSTEXPR XMUBYTEN4(uint8_t _x, uint8_t _y, uint8_t _z, uint8_t _w) : x(_x), y(_y), z(_z), w(_w) {}
     explicit XM_CONSTEXPR XMUBYTEN4(uint32_t Packed) : v(Packed) {}
     explicit XMUBYTEN4(_In_reads_(4) const uint8_t *pArray) : x(pArray[0]), y(pArray[1]), z(pArray[2]), w(pArray[3]) {}
     XMUBYTEN4(float _x, float _y, float _z, float _w);
     explicit XMUBYTEN4(_In_reads_(4) const float *pArray);
 
-    XMUBYTEN4& operator= (const XMUBYTEN4& UByteN4) { x = UByteN4.x; y = UByteN4.y; z = UByteN4.z; w = UByteN4.w; return *this; }
     XMUBYTEN4& operator= (uint32_t Packed) { v = Packed; return *this; }
 };
 
@@ -794,14 +952,20 @@ struct XMUBYTE4
         uint32_t v;
     };
 
-    XMUBYTE4() XM_CTOR_DEFAULT
+    XMUBYTE4() = default;
+
+    XMUBYTE4(const XMUBYTE4&) = default;
+    XMUBYTE4& operator=(const XMUBYTE4&) = default;
+
+    XMUBYTE4(XMUBYTE4&&) = default;
+    XMUBYTE4& operator=(XMUBYTE4&&) = default;
+
     XM_CONSTEXPR XMUBYTE4(uint8_t _x, uint8_t _y, uint8_t _z, uint8_t _w) : x(_x), y(_y), z(_z), w(_w) {}
     explicit XM_CONSTEXPR XMUBYTE4(uint32_t Packed) : v(Packed) {}
     explicit XMUBYTE4(_In_reads_(4) const uint8_t *pArray) : x(pArray[0]), y(pArray[1]), z(pArray[2]), w(pArray[3]) {}
     XMUBYTE4(float _x, float _y, float _z, float _w);
     explicit XMUBYTE4(_In_reads_(4) const float *pArray);
 
-    XMUBYTE4& operator= (const XMUBYTE4& UByte4) { x = UByte4.x; y = UByte4.y; z = UByte4.z; w = UByte4.w; return *this; }
     XMUBYTE4& operator= (uint32_t Packed) { v = Packed; return *this; }
 };
 
@@ -821,7 +985,14 @@ struct XMUNIBBLE4
         uint16_t v;
     };
 
-    XMUNIBBLE4() XM_CTOR_DEFAULT
+    XMUNIBBLE4() = default;
+
+    XMUNIBBLE4(const XMUNIBBLE4&) = default;
+    XMUNIBBLE4& operator=(const XMUNIBBLE4&) = default;
+
+    XMUNIBBLE4(XMUNIBBLE4&&) = default;
+    XMUNIBBLE4& operator=(XMUNIBBLE4&&) = default;
+
     explicit XM_CONSTEXPR XMUNIBBLE4(uint16_t Packed) : v(Packed) {}
     XM_CONSTEXPR XMUNIBBLE4(uint8_t _x, uint8_t _y, uint8_t _z, uint8_t _w) : x(_x), y(_y), z(_z), w(_w) {}
     explicit XMUNIBBLE4(_In_reads_(4) const uint8_t *pArray) : x(pArray[0]), y(pArray[1]), z(pArray[2]), w(pArray[3]) {}
@@ -830,7 +1001,6 @@ struct XMUNIBBLE4
 
     operator uint16_t () const { return v; }
 
-    XMUNIBBLE4& operator= (const XMUNIBBLE4& UNibble4) { v = UNibble4.v; return *this; }
     XMUNIBBLE4& operator= (uint16_t Packed) { v = Packed; return *this; }
 };
 
@@ -850,7 +1020,14 @@ struct XMU555
         uint16_t v;
     };
 
-    XMU555() XM_CTOR_DEFAULT
+    XMU555() = default;
+
+    XMU555(const XMU555&) = default;
+    XMU555& operator=(const XMU555&) = default;
+
+    XMU555(XMU555&&) = default;
+    XMU555& operator=(XMU555&&) = default;
+
     explicit XM_CONSTEXPR XMU555(uint16_t Packed) : v(Packed) {}
     XM_CONSTEXPR XMU555(uint8_t _x, uint8_t _y, uint8_t _z, bool _w) : x(_x), y(_y), z(_z), w(_w ? 0x1 : 0) {}
     XMU555(_In_reads_(3) const uint8_t *pArray, _In_ bool _w) : x(pArray[0]), y(pArray[1]), z(pArray[2]), w(_w ? 0x1 : 0) {}
@@ -859,7 +1036,6 @@ struct XMU555
 
     operator uint16_t () const { return v; }
 
-    XMU555& operator= (const XMU555& U555) { v = U555.v; return *this; }
     XMU555& operator= (uint16_t Packed) { v = Packed; return *this; }
 };
 
@@ -993,6 +1169,7 @@ void    XM_DEPRECATED XM_CALLCONV XMStoreXDec4(_Out_ XMXDEC4* pDestination, _In_
 #ifdef _PREFAST_
 #pragma prefast(push)
 #pragma prefast(disable : 25000, "FXMVECTOR is 16 bytes")
+#pragma prefast(disable : 26495, "Union initialization confuses /analyze")
 #endif
 
 #include "DirectXPackedVector.inl"
@@ -1003,7 +1180,7 @@ void    XM_DEPRECATED XM_CALLCONV XMStoreXDec4(_Out_ XMXDEC4* pDestination, _In_
 
 #pragma warning(pop)
 
-}; // namespace PackedVector
+} // namespace PackedVector
 
-}; // namespace DirectX
+} // namespace DirectX
 

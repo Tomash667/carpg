@@ -8,12 +8,8 @@
 //
 // All FFT functions support only single-precision floating-point audio
 //
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//
 // Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkID=615557
 //--------------------------------------------------------------------------------------
@@ -33,12 +29,6 @@
 
 namespace XDSP
 {
-    #if (DIRECTXMATH_VERSION < 305) && !defined(XM_CALLCONV)
-    #define XM_CALLCONV __fastcall
-    typedef const DirectX::XMVECTOR& HXMVECTOR;
-    typedef const DirectX::XMMATRIX& FXMMATRIX;
-    #endif
-
     typedef DirectX::XMVECTOR XMVECTOR;
     typedef DirectX::FXMVECTOR FXMVECTOR;
     typedef DirectX::GXMVECTOR GXMVECTOR;
@@ -103,9 +93,9 @@ namespace XDSP
         using namespace DirectX;
 
         // sign constants for radix-4 butterflies
-        const static XMVECTORF32 vDFT4SignBits1 = { 1.0f, -1.0f,  1.0f, -1.0f };
-        const static XMVECTORF32 vDFT4SignBits2 = { 1.0f,  1.0f, -1.0f, -1.0f };
-        const static XMVECTORF32 vDFT4SignBits3 = { 1.0f, -1.0f, -1.0f,  1.0f };
+        static const XMVECTORF32 vDFT4SignBits1 = { 1.0f, -1.0f,  1.0f, -1.0f };
+        static const XMVECTORF32 vDFT4SignBits2 = { 1.0f,  1.0f, -1.0f, -1.0f };
+        static const XMVECTORF32 vDFT4SignBits3 = { 1.0f, -1.0f, -1.0f,  1.0f };
 
         // calculating Temp
         // [r1X| r1X|r1Y| r1Y] + [r1Z|-r1Z|r1W|-r1W]
@@ -745,8 +735,8 @@ namespace XDSP
         assert(uLog2Length >= 2 && uLog2Length <= 9);
         _Analysis_assume_(uLog2Length >= 2 && uLog2Length <= 9);
 
-        XMVECTOR vRealTemp[768] = { 0 };
-        XMVECTOR vImaginaryTemp[768] = { 0 };
+        XMVECTOR vRealTemp[768] = {};
+        XMVECTOR vImaginaryTemp[768] = {};
 
         const size_t uLength = size_t(1) << uLog2Length;
 
@@ -802,6 +792,6 @@ namespace XDSP
         }
     }
 
-}; // namespace XDSP
+} // namespace XDSP
 
 #pragma warning(pop)

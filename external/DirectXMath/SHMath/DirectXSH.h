@@ -1,37 +1,22 @@
 //-------------------------------------------------------------------------------------
 // DirectXSH.h -- C++ Spherical Harmonics Math Library
 //
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//  
 // Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/p/?LinkId=262885
 //-------------------------------------------------------------------------------------
 
-#ifdef _MSC_VER
 #pragma once
-#endif
 
-#define DIRECTX_SHMATH_VERSION 102
+#define DIRECTX_SHMATH_VERSION 104
 
 #include <DirectXMath.h>
 
 #include <winerror.h>
 
-struct ID3D11DeviceContext;
-struct ID3D11Texture2D;
-
 namespace DirectX
 {
-#if (DIRECTXMATH_VERSION < 305) && !defined(XM_CALLCONV)
-#define XM_CALLCONV __fastcall
-typedef const DirectX::XMVECTOR& HXMVECTOR;
-typedef const DirectX::XMMATRIX& FXMMATRIX;
-#endif
-
 const size_t XM_SH_MINORDER = 2;
 const size_t XM_SH_MAXORDER = 6;
 
@@ -71,7 +56,14 @@ bool XM_CALLCONV XMSHEvalConeLight( _In_ size_t order, _In_ FXMVECTOR dir, _In_ 
 bool XM_CALLCONV XMSHEvalHemisphereLight( _In_ size_t order, _In_ FXMVECTOR dir, _In_ FXMVECTOR topColor, _In_ FXMVECTOR bottomColor,
                                           _Out_writes_(order*order) float *resultR, _Out_writes_opt_(order*order) float *resultG, _Out_writes_opt_(order*order) float *resultB );
 
+#if defined(__d3d11_h__) || defined(__d3d11_x_h__)
 HRESULT SHProjectCubeMap( _In_ ID3D11DeviceContext *context, _In_ size_t order, _In_ ID3D11Texture2D *cubeMap,
                           _Out_writes_opt_(order*order) float *resultR, _Out_writes_opt_(order*order) float *resultG, _Out_writes_opt_(order*order) float *resultB );
+#endif
 
-}; // namespace DirectX
+#if defined(__d3d12_h__) || defined(__d3d12_x_h__)
+HRESULT SHProjectCubeMap(_In_ size_t order, _In_ const D3D12_RESOURCE_DESC& desc, _In_ const D3D12_SUBRESOURCE_DATA cubeMap[6],
+                         _Out_writes_opt_(order*order) float *resultR, _Out_writes_opt_(order*order) float *resultG, _Out_writes_opt_(order*order) float *resultB);
+#endif
+
+} // namespace DirectX

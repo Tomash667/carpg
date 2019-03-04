@@ -1,12 +1,8 @@
 //-------------------------------------------------------------------------------------
 // DirectXColors.h -- C++ Color Math library
 //
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//  
 // Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkID=615560
 //-------------------------------------------------------------------------------------
@@ -163,7 +159,7 @@ namespace Colors
     XMGLOBALCONST XMVECTORF32 Yellow               = { { { 1.000000000f, 1.000000000f, 0.000000000f, 1.000000000f } } };
     XMGLOBALCONST XMVECTORF32 YellowGreen          = { { { 0.603921592f, 0.803921640f, 0.196078449f, 1.000000000f } } };
 
-}; // namespace Colors
+} // namespace Colors
 
-}; // namespace DirectX
+} // namespace DirectX
 
