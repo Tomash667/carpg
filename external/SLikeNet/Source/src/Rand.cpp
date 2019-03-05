@@ -35,10 +35,12 @@
 *   an appropriate reference to your work.
 *
 * It would be nice to CC: <Cokus@math.washington.edu> when you write.
+*
+* Note from SLikeSoft: The mail addresses here seem to be dead ends and we could not determine any current ways to contact the authors.
 */
 
 /*
- *  Modified work: Copyright (c) 2016-2017, SLikeSoft UG (haftungsbeschr‰nkt)
+ *  Modified work: Copyright (c) 2016-2017, SLikeSoft UG (haftungsbeschr√§nkt)
  *
  *  This source code was modified by SLikeSoft. Modifications are licensed under the MIT-style
  *  license found in the license.txt file in the root directory of this source tree.

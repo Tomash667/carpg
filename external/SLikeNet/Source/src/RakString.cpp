@@ -7,7 +7,7 @@
  *  of patent rights can be found in the RakNet Patents.txt file in the same directory.
  *
  *
- *  Modified work: Copyright (c) 2016-2017, SLikeSoft UG (haftungsbeschränkt)
+ *  Modified work: Copyright (c) 2016-2018, SLikeSoft UG (haftungsbeschrÃ¤nkt)
  *
  *  This source code was modified by SLikeSoft. Modifications are licensed under the MIT-style
  *  license found in the license.txt file in the root directory of this source tree.
@@ -469,7 +469,9 @@ WCHAR * RakString::ToWideChar(void)
 	if ( (sharedString->c_str == NULL) || (*sharedString->c_str == '\0') )
 	{
 		// Return empty string
-		return L"";
+		WCHAR* buf = SLNet::OP_NEW_ARRAY<WCHAR>(1, __FILE__, __LINE__);
+		buf[0] = L'\0';
+		return buf;
 	}
 
 	//

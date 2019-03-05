@@ -7,6 +7,6 @@ DirectX - Microsoft DirectX SDK (June 2010)
 DirectXMath - 3.13 (<https://github.com/Microsoft/DirectXMath>)
 FMod - 1.10.11 (Low level API <https://www.fmod.com/resources/documentation-api?page=content/generated/common/revision.html>)
 JSON for Modern C++ - 3.4.0
-SLikeNet - https://github.com/SLikeSoft/SLikeNet 11.09.2017
+SLikeNet -  0.1.2 (<https://github.com/SLikeSoft/SLikeNet>)
 Visual Leak Detector - 2.5.1 (<https://kinddragon.github.io/vld/>)
 zlib - 1.2.11 (<https://github.com/madler/zlib>)

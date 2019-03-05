@@ -7,7 +7,7 @@
  *  of patent rights can be found in the RakNet Patents.txt file in the same directory.
  *
  *
- *  Modified work: Copyright (c) 2016-2017, SLikeSoft UG (haftungsbeschr‰nkt)
+ *  Modified work: Copyright (c) 2016-2017, SLikeSoft UG (haftungsbeschr√§nkt)
  *
  *  This source code was modified by SLikeSoft. Modifications are licensed under the MIT-style
  *  license found in the license.txt file in the root directory of this source tree.
@@ -38,7 +38,8 @@ void DomainNameToIP_Berkley_IPV4And6( const char *domainName, char ip[65] )
 	hints.ai_socktype = SOCK_DGRAM;
 
 	if ((status = getaddrinfo(domainName, NULL, &hints, &res)) != 0) {
-		memset(ip, 0, 65); // sizeof(ip) returns pointer size, not array size
+		// #high - review/update callers - some unnecessarily initialize ip unnecessarily
+		ip[0] = '\0';
 		return;
 	}
 
@@ -82,7 +83,8 @@ void DomainNameToIP_Berkley_IPV4( const char *domainName, char ip[65] )
 	if ( error != 0 || addressinfo == 0 )
 	{
 		//cerr << "Yow! Bad host lookup." << endl;
-		memset(ip,0,65*sizeof(char));
+		// #high - review/update callers - some unnecessarily initialize ip unnecessarily
+		ip[0] = '\0';
 		return;
 	}
 

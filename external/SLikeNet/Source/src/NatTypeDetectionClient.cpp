@@ -7,7 +7,7 @@
  *  of patent rights can be found in the RakNet Patents.txt file in the same directory.
  *
  *
- *  Modified work: Copyright (c) 2016-2017, SLikeSoft UG (haftungsbeschränkt)
+ *  Modified work: Copyright (c) 2016-2018, SLikeSoft UG (haftungsbeschrÃ¤nkt)
  *
  *  This source code was modified by SLikeSoft. Modifications are licensed under the MIT-style
  *  license found in the license.txt file in the root directory of this source tree.
@@ -54,7 +54,7 @@ void NatTypeDetectionClient::DetectNATType(SystemAddress _serverAddress)
 		//SocketLayer::GetSystemAddress(sockets[0], &sockAddr);
 		char str[64];
 		//sockAddr.ToString(false,str);
-		sockets[0]->GetBoundAddress().ToString(false,str,64);
+		sockets[0]->GetBoundAddress().ToString(false,str,static_cast<size_t>(64));
 		c2=CreateNonblockingBoundSocket(str
 #ifdef __native_client__
 			, sockets[0]->chromeInstance

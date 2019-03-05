@@ -167,7 +167,7 @@ void Net::InitServer()
 	StartupResult r = peer->Startup(max_connections, &sd, 1);
 	if(r != RAKNET_STARTED)
 	{
-		Error("Failed to create server: RakNet error %d.", r);
+		Error("Failed to create server: SLikeNet error %d.", r);
 		throw Format(txCreateServerFailed, r);
 	}
 
@@ -190,7 +190,7 @@ void Net::InitServer()
 		else
 		{
 			master_server_state = MasterServerState::NotConnected;
-			Error("Failed to connect to master server: RakNet error %d.", result);
+			Error("Failed to connect to master server: SLikeNet error %d.", result);
 		}
 	}
 	master_server_adr = UNASSIGNED_SYSTEM_ADDRESS;
@@ -578,7 +578,7 @@ void Net::InitClient()
 	StartupResult r = peer->Startup(2, &sd, 1);
 	if(r != RAKNET_STARTED)
 	{
-		Error("Failed to create client: RakNet error %d.", r);
+		Error("Failed to create client: SLikeNet error %d.", r);
 		throw Format(txInitConnectionFailed, r);
 	}
 	peer->SetMaximumIncomingConnections(0);

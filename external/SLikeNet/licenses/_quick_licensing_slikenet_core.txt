@@ -68,8 +68,3 @@ not legally required to do so:
     "This product includes the Open Source/Free Software network library
      SLikeNet™ - Copyright (c) 2016-2017 SLikeSoft™ UG (haftungbeschänkt) -
      https://www.slikenet.com/"
-3.  Send a mail to Makoto Matsumoto and Takuji Nishimaru
-    (matumoto@math.keio.ac.jp) as well as CC Shawn Cokus
-    (Cokus@math.washington.edu) letting them know that you are using SLikeNet
-    in your product which uses their Mersenne Twister random number generator
-    MT19937.

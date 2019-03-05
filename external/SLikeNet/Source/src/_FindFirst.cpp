@@ -2,14 +2,14 @@
  * This file was taken from RakNet 4.082.
  * Please see licenses/RakNet license.txt for the underlying license and related copyright.
  *
- * Modified work: Copyright (c) 2016-2017, SLikeSoft UG (haftungsbeschränkt)
+ * Modified work: Copyright (c) 2016-2017, SLikeSoft UG (haftungsbeschrÃ¤nkt)
  *
  * This source code was modified by SLikeSoft. Modifications are licensed under the MIT-style
  * license found in the license.txt file in the root directory of this source tree.
  */
 
 /**
-* Original file by the_viking, fixed by Rv¥mulo Fernandes, fixed by Emmanuel Nars
+* Original file by the_viking, fixed by RvÂ¥mulo Fernandes, fixed by Emmanuel Nars
 * Should emulate windows finddata structure
 */
 #if (defined(__GNUC__)  || defined(__GCCXML__)) && !defined(_WIN32)

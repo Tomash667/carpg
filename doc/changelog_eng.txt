@@ -7,6 +7,8 @@ Version 0.9 (???):
 + first scripted quest - deliver resources
 + more location icons and names
 + dialog script improvements
++ update libraries: Angelscript 2.33, Bullet 2.88, DirectXMath 3.13, FMod 1.10.11, SLikeNet 0.1.2, Visual Leak Detector 2.5.1, zlib 1.2.11
+- fixed failed connection when using LAN with password
 
 --------------------------------------------------------------------------------
 Version 0.8.1 (???):

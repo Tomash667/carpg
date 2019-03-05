@@ -7,7 +7,7 @@
  *  of patent rights can be found in the RakNet Patents.txt file in the same directory.
  *
  *
- *  Modified work: Copyright (c) 2016-2017, SLikeSoft UG (haftungsbeschr‰nkt)
+ *  Modified work: Copyright (c) 2016-2018, SLikeSoft UG (haftungsbeschr√§nkt)
  *
  *  This source code was modified by SLikeSoft. Modifications are licensed under the MIT-style
  *  license found in the license.txt file in the root directory of this source tree.
@@ -132,6 +132,7 @@ struct RAK_DLL_EXPORT RakNetStatistics
 /// 1 medium 
 /// 2 high 
 /// 3 debugging congestion control
+void RAK_DLL_EXPORT StatisticsToString(RakNetStatistics *s, char *buffer, int verbosityLevel);
 void RAK_DLL_EXPORT StatisticsToString( RakNetStatistics *s, char *buffer, size_t bufferLength, int verbosityLevel );
 
 } // namespace SLNet

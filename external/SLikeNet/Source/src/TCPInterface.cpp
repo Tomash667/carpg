@@ -7,7 +7,7 @@
  *  of patent rights can be found in the RakNet Patents.txt file in the same directory.
  *
  *
- *  Modified work: Copyright (c) 2016-2017, SLikeSoft UG (haftungsbeschr‰nkt)
+ *  Modified work: Copyright (c) 2016-2018, SLikeSoft UG (haftungsbeschr√§nkt)
  *
  *  This source code was modified by SLikeSoft. Modifications are licensed under the MIT-style
  *  license found in the license.txt file in the root directory of this source tree.
@@ -314,8 +314,13 @@ void TCPInterface::Stop(void)
 	SLNet::OP_DELETE_ARRAY(remoteClients,_FILE_AND_LINE_);
 	remoteClients=0;
 
-	for(i = 0; i < incomingMessages.Size(); ++i)
-		rakFree_Ex(incomingMessages[i]->data, _FILE_AND_LINE_);
+	// #low review whether we'd rather use PopInaccurate() here (i.e. check whether related threads accessing the queue terminated already)
+	// consider even adding a dtor to Packet which would then clear its data (at this point drop this explicit packet deallocation here)
+	SLNet::Packet* packet = incomingMessages.Pop();
+	while (packet != nullptr) {
+		DeallocatePacket(packet);
+		packet = incomingMessages.Pop();
+	}
 	incomingMessages.Clear(_FILE_AND_LINE_);
 	newIncomingConnections.Clear(_FILE_AND_LINE_);
 	newRemoteClients.Clear(_FILE_AND_LINE_);
@@ -370,7 +375,7 @@ SystemAddress TCPInterface::Connect(const char* host, unsigned short remotePort,
 		systemAddress.SetPortHostOrder(remotePort);
 		systemAddress.systemIndex=(SystemIndex) newRemoteClientIndex;
 		char buffout[128];
-		systemAddress.ToString(false,buffout,128);
+		systemAddress.ToString(false,buffout, static_cast<size_t>(128));
 
 		__TCPSOCKET__ sockfd = SocketConnect(buffout, remotePort, socketFamily, bindAddress);
 		// Windows RT TODO
@@ -924,7 +929,7 @@ RAK_THREAD_DECLARATION(SLNet::ConnectionAttemptLoop)
 	SLNet::OP_DELETE(s, _FILE_AND_LINE_);
 
 	char str1[64];
-	systemAddress.ToString(false, str1, 64);
+	systemAddress.ToString(false, str1, static_cast<size_t>(64));
 	__TCPSOCKET__ sockfd = tcpInterface->SocketConnect(str1, systemAddress.GetPort(), socketFamily, s->bindAddress);
 	if (sockfd==0)
 	{
@@ -1053,7 +1058,7 @@ RAK_THREAD_DECLARATION(SLNet::UpdateTCPInterfaceLoop)
 				sts->remoteClients[i].isActiveMutex.Lock();
 				if (sts->remoteClients[i].isActive)
 				{
-					// calling FD_ISSET with -1 as socket (thatís what 0 is set to) produces a bus error under Linux 64-Bit
+					// calling FD_ISSET with -1 as socket (that‚Äôs what 0 is set to) produces a bus error under Linux 64-Bit
 					__TCPSOCKET__ socketCopy = sts->remoteClients[i].socket;
 					if (socketCopy != 0)
 					{
@@ -1155,7 +1160,7 @@ RAK_THREAD_DECLARATION(SLNet::UpdateTCPInterfaceLoop)
 						i++;
 						continue;
 					}
-					// calling FD_ISSET with -1 as socket (thatís what 0 is set to) produces a bus error under Linux 64-Bit
+					// calling FD_ISSET with -1 as socket (that‚Äôs what 0 is set to) produces a bus error under Linux 64-Bit
 					__TCPSOCKET__ socketCopy = sts->remoteClients[i].socket;
 					if (socketCopy == 0)
 					{

@@ -7,7 +7,7 @@
  *  of patent rights can be found in the RakNet Patents.txt file in the same directory.
  *
  *
- *  Modified work: Copyright (c) 2016-2017, SLikeSoft UG (haftungsbeschränkt)
+ *  Modified work: Copyright (c) 2016-2018, SLikeSoft UG (haftungsbeschrÃ¤nkt)
  *
  *  This source code was modified by SLikeSoft. Modifications are licensed under the MIT-style
  *  license found in the license.txt file in the root directory of this source tree.
@@ -153,6 +153,14 @@ void Table::Cell::Get(double *output)
 {
 	RakAssert(isEmpty==false);
 	*output=i;
+}
+void Table::Cell::Get(char *output)
+{
+	RakAssert(isEmpty == false);
+#pragma warning(push)
+#pragma warning(disable:4996)
+	strcpy(output, c);
+#pragma warning(pop)
 }
 void Table::Cell::Get(char *output, size_t outputLength)
 {
@@ -528,6 +536,16 @@ void Table::GetCellValueByIndex(unsigned rowIndex, unsigned columnIndex, int *ou
 	RakAssert(columns[columnIndex].columnType==NUMERIC);
 
 	Row *row = GetRowByIndex(rowIndex,0);
+	if (row)
+	{
+		row->cells[columnIndex]->Get(output);
+	}
+}
+void Table::GetCellValueByIndex(unsigned rowIndex, unsigned columnIndex, char *output)
+{
+	RakAssert(columns[columnIndex].columnType == STRING);
+
+	Row *row = GetRowByIndex(rowIndex, 0);
 	if (row)
 	{
 		row->cells[columnIndex]->Get(output);

@@ -7,7 +7,7 @@
  *  of patent rights can be found in the RakNet Patents.txt file in the same directory.
  *
  *
- *  Modified work: Copyright (c) 2016-2017, SLikeSoft UG (haftungsbeschr‰nkt)
+ *  Modified work: Copyright (c) 2016-2018, SLikeSoft UG (haftungsbeschr√§nkt)
  *
  *  This source code was modified by SLikeSoft. Modifications are licensed under the MIT-style
  *  license found in the license.txt file in the root directory of this source tree.
@@ -153,7 +153,7 @@ bool RakNetCommandParser::OnCommand(const char *command, unsigned numParameters,
 				for (i=0; i < count; i++)
 				{
 					char str1[64];
-					remoteSystems[i].ToString(true, str1, 64);
+					remoteSystems[i].ToString(true, str1, static_cast<size_t>(64));
 					transport->Send(systemAddress, "%i %s\r\n", i, str1);
 				}
 			}

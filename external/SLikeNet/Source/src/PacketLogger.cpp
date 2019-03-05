@@ -7,7 +7,7 @@
  *  of patent rights can be found in the RakNet Patents.txt file in the same directory.
  *
  *
- *  Modified work: Copyright (c) 2016-2017, SLikeSoft UG (haftungsbeschränkt)
+ *  Modified work: Copyright (c) 2016-2018, SLikeSoft UG (haftungsbeschrÃ¤nkt)
  *
  *  This source code was modified by SLikeSoft. Modifications are licensed under the MIT-style
  *  license found in the license.txt file in the root directory of this source tree.
@@ -49,6 +49,30 @@ PacketLogger::PacketLogger()
 PacketLogger::~PacketLogger()
 {
 }
+void PacketLogger::FormatLine(char* into, const char* dir, const char* type, unsigned int reliableMessageNumber, unsigned int frame
+	, unsigned char id, const BitSize_t bitLen, unsigned long long time, const SystemAddress& local, const SystemAddress& remote,
+	unsigned int splitPacketId, unsigned int splitPacketIndex, unsigned int splitPacketCount, unsigned int orderingIndex)
+{
+	char numericID[16];
+	const char* idToPrint = NULL;
+	if (printId)
+	{
+		if (splitPacketCount > 0 && splitPacketCount != (unsigned int)-1)
+			idToPrint = "(SPLIT PACKET)";
+		else
+			idToPrint = IDTOString(id);
+	}
+	// If printId is false, idToPrint will be NULL, as it will
+	// in the case of an unrecognized id. Testing printId for false
+	// would just be redundant.
+	if (idToPrint == NULL)
+	{
+		sprintf_s(numericID, "%5u", id);
+		idToPrint = numericID;
+	}
+
+	FormatLine(into, dir, type, reliableMessageNumber, frame, idToPrint, bitLen, time, local, remote, splitPacketId, splitPacketIndex, splitPacketCount, orderingIndex);
+}
 void PacketLogger::FormatLine(
 char* into, size_t intoLength, const char* dir, const char* type, unsigned int reliableMessageNumber, unsigned int frame, unsigned char id
 , const BitSize_t bitLen, unsigned long long time, const SystemAddress& local, const SystemAddress& remote,
@@ -81,8 +105,8 @@ char* into, size_t intoLength, const char* dir, const char* type, unsigned int r
 unsigned int splitPacketId, unsigned int splitPacketIndex, unsigned int splitPacketCount, unsigned int orderingIndex)
 {
 	char str1[64], str2[62];
-	local.ToString(true, str1, 64);
-	remote.ToString(true, str2, 62);
+	local.ToString(true, str1, static_cast<size_t>(64));
+	remote.ToString(true, str2, static_cast<size_t>(62));
 	char localtime[128];
 	GetLocalTime(localtime);
 	char str3[64];
@@ -116,6 +140,50 @@ unsigned int splitPacketId, unsigned int splitPacketIndex, unsigned int splitPac
 					, orderingIndex
 					, suffix
 					);
+}
+void PacketLogger::FormatLine(char* into, const char* dir, const char* type, unsigned int reliableMessageNumber, unsigned int frame
+	, const char* idToPrint, const BitSize_t bitLen, unsigned long long time, const SystemAddress& local, const SystemAddress& remote,
+	unsigned int splitPacketId, unsigned int splitPacketIndex, unsigned int splitPacketCount, unsigned int orderingIndex)
+{
+	char str1[64], str2[62];
+	local.ToString(true, str1, static_cast<size_t>(64));
+	remote.ToString(true, str2, static_cast<size_t>(62));
+	char localtime[128];
+	GetLocalTime(localtime);
+	char str3[64];
+	if (reliableMessageNumber == (unsigned int)-1)
+	{
+		str3[0] = 'N';
+		str3[1] = '/';
+		str3[2] = 'A';
+		str3[3] = 0;
+	}
+	else
+	{
+		sprintf_s(str3, "%5u", reliableMessageNumber);
+	}
+
+#pragma warning(push)
+#pragma warning(disable:4996)
+	sprintf(into, "%s,%s%s,%s,%s,%5u,%s,%u,%" PRINTF_64_BIT_MODIFIER "u,%s,%s,%i,%i,%i,%i,%s,"
+		, localtime
+		, prefix
+		, dir
+		, type
+		, str3
+		, frame
+		, idToPrint
+		, bitLen
+		, time
+		, str1
+		, str2
+		, splitPacketId
+		, splitPacketIndex
+		, splitPacketCount
+		, orderingIndex
+		, suffix
+	);
+#pragma warning(pop)
 }
 void PacketLogger::OnDirectSocketSend(const char *data, const BitSize_t bitsUsed, SystemAddress remoteSystemAddress)
 {
@@ -158,8 +226,8 @@ void PacketLogger::OnAck(unsigned int messageNumber, SystemAddress remoteSystemA
 	char str[256];
 	char str1[64], str2[62];
 	SystemAddress localSystemAddress = rakPeerInterface->GetExternalID(remoteSystemAddress);
-	localSystemAddress.ToString(true, str1, 64);
-	remoteSystemAddress.ToString(true, str2, 62);
+	localSystemAddress.ToString(true, str1, static_cast<size_t>(64));
+	remoteSystemAddress.ToString(true, str2, static_cast<size_t>(62));
 	char localtime[128];
 	GetLocalTime(localtime);
 
@@ -177,8 +245,8 @@ void PacketLogger::OnPushBackPacket(const char *data, const BitSize_t bitsUsed, 
 	char str[256];
 	char str1[64], str2[62];
 	SystemAddress localSystemAddress = rakPeerInterface->GetExternalID(remoteSystemAddress);
-	localSystemAddress.ToString(true, str1, 64);
-	remoteSystemAddress.ToString(true, str2, 62);
+	localSystemAddress.ToString(true, str1, static_cast<size_t>(64));
+	remoteSystemAddress.ToString(true, str2, static_cast<size_t>(62));
 	SLNet::TimeMS time = SLNet::GetTimeMS();
 	char localtime[128];
 	GetLocalTime(localtime);
@@ -240,7 +308,7 @@ void PacketLogger::WriteMiscellaneous(const char *type, const char *msg)
 	char str[1024];
 	char str1[64];
 	SystemAddress localSystemAddress = rakPeerInterface->GetInternalID();
-	localSystemAddress.ToString(true, str1, 64);
+	localSystemAddress.ToString(true, str1, static_cast<size_t>(64));
 	SLNet::TimeMS time = SLNet::GetTimeMS();
 	char localtime[128];
 	GetLocalTime(localtime);

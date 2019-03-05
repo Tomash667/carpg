@@ -7,7 +7,7 @@
  *  of patent rights can be found in the RakNet Patents.txt file in the same directory.
  *
  *
- *  Modified work: Copyright (c) 2016-2017, SLikeSoft UG (haftungsbeschr‰nkt)
+ *  Modified work: Copyright (c) 2016-2018, SLikeSoft UG (haftungsbeschr√§nkt)
  *
  *  This source code was modified by SLikeSoft. Modifications are licensed under the MIT-style
  *  license found in the license.txt file in the root directory of this source tree.
@@ -112,6 +112,7 @@ namespace SLNet
 		bool Deserialize(BitStream *bs);
 
 		/// Static version of the Deserialize() function
+		static bool Deserialize(wchar_t *str, BitStream *bs);
 		static bool Deserialize(wchar_t *str, size_t strLength, BitStream *bs);
 
 

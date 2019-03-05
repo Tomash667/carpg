@@ -7,7 +7,7 @@
  *  of patent rights can be found in the RakNet Patents.txt file in the same directory.
  *
  *
- *  Modified work: Copyright (c) 2016-2017, SLikeSoft UG (haftungsbeschr‰nkt)
+ *  Modified work: Copyright (c) 2016-2018, SLikeSoft UG (haftungsbeschr√§nkt)
  *
  *  This source code was modified by SLikeSoft. Modifications are licensed under the MIT-style
  *  license found in the license.txt file in the root directory of this source tree.
@@ -248,6 +248,7 @@ SLNet::RakString SocketLayer::GetSubNetForSocketAndIp(__UDPSOCKET__ inSock, SLNe
 	ifc.ifc_buf = buf;
 	if(ioctl(fd2, SIOCGIFCONF, &ifc) < 0)
 	{
+		close(fd2);
 		return "";
 	}
 
@@ -543,7 +544,7 @@ void SocketLayer::GetSystemAddress ( __UDPSOCKET__ s, SystemAddress *systemAddre
 			NULL, dwIOError, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ),  // Default language
 			( LPTSTR ) & messageBuffer, 0, NULL );
 		// something has gone wrong here...
-		RAKNET_DEBUG_PRINTF( "getsockname failed:Error code - %d\n%s", dwIOError, static_cast<LPTSTR>(messageBuffer));
+		RAKNET_DEBUG_TPRINTF( _T("getsockname failed:Error code - %d\n%s"), dwIOError, static_cast<LPTSTR>(messageBuffer));
 
 		//Free the buffer.
 		LocalFree( messageBuffer );
@@ -597,7 +598,7 @@ bool SocketLayer::GetFirstBindableIP(char firstBindable[128], int ipProto)
 	if (ipProto==AF_UNSPEC)
 
 	{
-		ipList[0].ToString(false,firstBindable,128);
+		ipList[0].ToString(false,firstBindable,static_cast<size_t>(128));
 		return true;
 	}		
 
@@ -613,7 +614,7 @@ bool SocketLayer::GetFirstBindableIP(char firstBindable[128], int ipProto)
 			break;
 	}
 
-	if (ipList[l]==UNASSIGNED_SYSTEM_ADDRESS || l==MAXIMUM_NUMBER_OF_INTERNAL_IDS)
+	if (l==MAXIMUM_NUMBER_OF_INTERNAL_IDS || ipList[l]==UNASSIGNED_SYSTEM_ADDRESS)
 		return false;
 // 	RAKNET_DEBUG_PRINTF("%i %i %i %i\n",
 // 		((char*)(&ipList[l].address.addr4.sin_addr.s_addr))[0],
@@ -621,7 +622,7 @@ bool SocketLayer::GetFirstBindableIP(char firstBindable[128], int ipProto)
 // 		((char*)(&ipList[l].address.addr4.sin_addr.s_addr))[2],
 // 		((char*)(&ipList[l].address.addr4.sin_addr.s_addr))[3]
 // 	);
-	ipList[l].ToString(false,firstBindable,128);
+	ipList[l].ToString(false,firstBindable,static_cast<size_t>(128));
 	return true;
 
 }

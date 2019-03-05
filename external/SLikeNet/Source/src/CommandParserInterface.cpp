@@ -7,7 +7,7 @@
  *  of patent rights can be found in the RakNet Patents.txt file in the same directory.
  *
  *
- *  Modified work: Copyright (c) 2016-2017, SLikeSoft UG (haftungsbeschr‰nkt)
+ *  Modified work: Copyright (c) 2016-2018, SLikeSoft UG (haftungsbeschr√§nkt)
  *
  *  This source code was modified by SLikeSoft. Modifications are licensed under the MIT-style
  *  license found in the license.txt file in the root directory of this source tree.
@@ -161,8 +161,8 @@ void CommandParserInterface::ReturnResult(char *res, const char *command, Transp
 void CommandParserInterface::ReturnResult(SystemAddress res, const char *command, TransportInterface *transport, const SystemAddress &systemAddress)
 {
 	char addr[128];
-	systemAddress.ToString(false,addr,128);
+	systemAddress.ToString(false,addr,static_cast<size_t>(128));
 	char addr2[128];
-	res.ToString(false,addr2,128);
+	res.ToString(false,addr2,static_cast<size_t>(128));
 	transport->Send(systemAddress, "%s returned %s %s:%i\r\n", command,addr,addr2,res.GetPort());
 }

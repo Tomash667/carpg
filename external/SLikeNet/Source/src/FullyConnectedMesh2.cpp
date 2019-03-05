@@ -7,7 +7,7 @@
  *  of patent rights can be found in the RakNet Patents.txt file in the same directory.
  *
  *
- *  Modified work: Copyright (c) 2016-2017, SLikeSoft UG (haftungsbeschr‰nkt)
+ *  Modified work: Copyright (c) 2016-2018, SLikeSoft UG (haftungsbeschr√§nkt)
  *
  *  This source code was modified by SLikeSoft. Modifications are licensed under the MIT-style
  *  license found in the license.txt file in the root directory of this source tree.
@@ -772,7 +772,7 @@ void FullyConnectedMesh2::ConnectToRemoteNewIncomingConnections(Packet *packet)
 	{
 		bsIn.Read(remoteAddress);
 		bsIn.Read(remoteGuid);
-		remoteAddress.ToString(false,str,64);
+		remoteAddress.ToString(false,str,static_cast<size_t>(64));
 		rakPeerInterface->Connect(str,remoteAddress.GetPort(),connectionPassword.C_String(),(int) connectionPassword.GetLength());
 	}
 }

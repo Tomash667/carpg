@@ -3,11 +3,11 @@
  *  All rights reserved.
  *
  *  This source code is licensed under the BSD-style license found in the
- *  RakNet License.txt file in the licenses directory of this source tree. An additional grant 
+ *  RakNet License.txt file in the licenses directory of this source tree. An additional grant
  *  of patent rights can be found in the RakNet Patents.txt file in the same directory.
  *
  *
- *  Modified work: Copyright (c) 2016-2017, SLikeSoft UG (haftungsbeschr‰nkt)
+ *  Modified work: Copyright (c) 2016-2018, SLikeSoft UG (haftungsbeschr√§nkt)
  *
  *  This source code was modified by SLikeSoft. Modifications are licensed under the MIT-style
  *  license found in the license.txt file in the root directory of this source tree.
@@ -52,7 +52,7 @@
 /// Define __BITSTREAM_NATIVE_END to NOT support endian swapping in the BitStream class.  This is faster and is what you should use
 /// unless you actually plan to have different endianness systems connect to each other
 /// Enabled by default.
-#define __BITSTREAM_NATIVE_END
+// #define __BITSTREAM_NATIVE_END
 
 /// Maximum (stack) size to use with _alloca before using new and delete instead.
 #ifndef MAX_ALLOCA_STACK_ALLOCATION
@@ -67,7 +67,7 @@
 #endif
 
 /// Uncomment to use RakMemoryOverride for custom memory tracking
-/// See memoryoverride.h. 
+/// See memoryoverride.h.
 #ifndef _USE_RAK_MEMORY_OVERRIDE
 #define _USE_RAK_MEMORY_OVERRIDE 0
 #endif
@@ -111,7 +111,7 @@
 #if defined(_DEBUG)
 #define RakAssert(x) assert(x);
 #else
-#define RakAssert(x) 
+#define RakAssert(x)
 #endif
 #endif
 #endif
@@ -217,10 +217,23 @@
 
 //#define USE_THREADED_SEND
 
+// @since 0.1.1: added
+// Controls the maximum retrievable filesize for incoming files using FileListTransfer.
+// The configured limit only applies for files which are transferred incrementally (which basically applies to any larger file).
+// Note that this also impacts the upper limit for memory allocations. It's suggested to redefine the value to a reasonable smaller size in the defineoverrides.h header file.
+// For backwards compatibility with RakNet, the default is set to 4 GiB-1.
+// #low - consider introducing GiB/MiB/KiB-functions and then define as GiB(4)?
+#ifndef SLNET_MAX_RETRIEVABLE_FILESIZE
+#define SLNET_MAX_RETRIEVABLE_FILESIZE (0xFFFFFFFF)
+#endif
+
+// #blocker_2_0 - remove RAKNET_COMPATIBILITY
 #ifdef RAKNET_COMPATIBILITY
-// set the namespace RakNet as alias to the SLikeNet namespace
-namespace SLNet { }
-namespace RakNet = SLNet;
+// note: we cannot use namespace aliases here since we need to ensure ABI compatibility with shared libraries/DLLs
+// if we'd use a namespace alias, the names in the DLLs would still point to the actual namespace (SLNet) rather
+// than the alias namespace and old apps would not be able to use the DLL as an in-place replacement
+// hence, go with a simple preprocessor macro which will replace the SLNet namespace names with RakNet
+#define SLNet RakNet
 #endif
 
 #endif // __RAKNET_DEFINES_H

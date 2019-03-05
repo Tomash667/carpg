@@ -7,7 +7,7 @@
  *  of patent rights can be found in the RakNet Patents.txt file in the same directory.
  *
  *
- *  Modified work: Copyright (c) 2017, SLikeSoft UG (haftungsbeschr‰nkt)
+ *  Modified work: Copyright (c) 2017, SLikeSoft UG (haftungsbeschr√§nkt)
  *
  *  This source code was modified by SLikeSoft. Modifications are licensed under the MIT-style
  *  license found in the license.txt file in the root directory of this source tree.
@@ -207,10 +207,11 @@ RakString HTTPConnection::Read(void)
 		return RakString();
 
 	SLNet::RakString resultStr = results.Pop();
-    const char *start_of_body = strstr(resultStr.C_String(), "\r\n\r\n");
+    // const char *start_of_body = strstr(resultStr.C_String(), "\r\n\r\n");
+	const char *start_of_body = strpbrk(resultStr.C_String(), "\001\002\003%");
     
     if(start_of_body)
-		return SLNet::RakString::NonVariadic(start_of_body + 4);
+		return SLNet::RakString::NonVariadic(start_of_body);
 	else
 		return resultStr;
 }

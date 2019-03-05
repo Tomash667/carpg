@@ -7,7 +7,7 @@
  *  of patent rights can be found in the RakNet Patents.txt file in the same directory.
  *
  *
- *  Modified work: Copyright (c) 2016-2017, SLikeSoft UG (haftungsbeschr‰nkt)
+ *  Modified work: Copyright (c) 2016-2018, SLikeSoft UG (haftungsbeschr√§nkt)
  *
  *  This source code was modified by SLikeSoft. Modifications are licensed under the MIT-style
  *  license found in the license.txt file in the root directory of this source tree.
@@ -88,6 +88,7 @@ namespace DataStructures
 			void Get(double *output);
 
 			/// String
+			void Get(char *output);
 			void Get(char *output, size_t outputLength);
 
 			/// Binary
@@ -262,6 +263,7 @@ namespace DataStructures
 		/// \brief Note this is much less efficient to call than GetRow, then working with the cells directly.
 		/// Numeric, string, binary
 		void GetCellValueByIndex(unsigned rowIndex, unsigned columnIndex, int *output);
+		void GetCellValueByIndex(unsigned rowIndex, unsigned columnIndex, char *output);
 		void GetCellValueByIndex(unsigned rowIndex, unsigned columnIndex, char *output, size_t outputLength);
 		void GetCellValueByIndex(unsigned rowIndex, unsigned columnIndex, char *output, int *outputLength);
 

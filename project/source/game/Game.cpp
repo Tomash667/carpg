@@ -1267,7 +1267,7 @@ void Game::SetGameText()
 	txConnectTimeout = Str("connectTimeout");
 	txConnectInvalid = Str("connectInvalid");
 	txConnectVersion = Str("connectVersion");
-	txConnectRaknet = Str("connectRaknet");
+	txConnectSLikeNet = Str("connectSLikeNet");
 	txCantJoin = Str("cantJoin");
 	txLostConnection = Str("lostConnection");
 	txInvalidPswd = Str("invalidPswd");

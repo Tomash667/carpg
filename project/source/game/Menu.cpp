@@ -530,8 +530,8 @@ void Game::UpdateClientConnectingIp(float dt)
 				else
 				{
 					// something went wrong
-					Error("NM_CONNECTING(0): Can't connect to server: raknet error %d.", result);
-					EndConnecting(txConnectRaknet);
+					Error("NM_CONNECTING(0): Can't connect to server: SLikeNet error %d.", result);
+					EndConnecting(txConnectSLikeNet);
 				}
 			}
 
@@ -858,8 +858,8 @@ void Game::UpdateClientConnectingIp(float dt)
 					}
 					else
 					{
-						Error("OnPickServer: Can't connect to server: raknet error %d.", result);
-						EndConnecting(txConnectRaknet);
+						Error("OnPickServer: Can't connect to server: SLikeNet error %d.", result);
+						EndConnecting(txConnectSLikeNet);
 					}
 				}
 				break;
@@ -1918,8 +1918,8 @@ void Game::OnEnterPassword(int id)
 		}
 		else
 		{
-			Error("NM_CONNECTING(1): Can't connect to proxy: raknet error %d.", result);
-			EndConnecting(txConnectRaknet);
+			Error("NM_CONNECTING(1): Can't connect to proxy: SLikeNet error %d.", result);
+			EndConnecting(txConnectSLikeNet);
 		}
 	}
 	else
@@ -1934,8 +1934,8 @@ void Game::OnEnterPassword(int id)
 		}
 		else
 		{
-			Info("NM_CONNECTING(1): Can't connect to server: raknet error %d.", result);
-			EndConnecting(txConnectRaknet);
+			Info("NM_CONNECTING(1): Can't connect to server: SLikeNet error %d.", result);
+			EndConnecting(txConnectSLikeNet);
 		}
 	}
 }
@@ -2165,6 +2165,8 @@ void Game::OnPlayTutorial(int id)
 
 void Game::OnPickServer(int id)
 {
+	enter_pswd.clear();
+
 	if(!gui->pick_server->IsLAN())
 	{
 		// connect to proxy server for nat punchthrough
@@ -2187,7 +2189,6 @@ void Game::OnPickServer(int id)
 			ConnectionAttemptResult result = N.peer->Connect(LobbyApi::API_URL, (word)LobbyApi::PROXY_PORT, nullptr, 0);
 			if(result == CONNECTION_ATTEMPT_STARTED)
 			{
-				enter_pswd.clear();
 				net_mode = NM_CONNECTING;
 				net_state = NetState::Client_ConnectingProxy;
 				net_timer = T_CONNECT;
@@ -2196,8 +2197,8 @@ void Game::OnPickServer(int id)
 			}
 			else
 			{
-				Error("OnPickServer: Can't connect to proxy: raknet error %d.", result);
-				EndConnecting(txConnectRaknet);
+				Error("OnPickServer: Can't connect to proxy: SLikeNet error %d.", result);
+				EndConnecting(txConnectSLikeNet);
 			}
 		}
 	}
@@ -2214,6 +2215,7 @@ void Game::OnPickServer(int id)
 			net_mode = NM_CONNECTING;
 			net_state = NetState::Client_WaitingForPassword;
 			net_tries = 1;
+			N.ping_adr = info.adr;
 			gui->info_box->Show(txWaitingForPswd);
 			GetTextDialogParams params(Format(txEnterPswd, gui->server->server_name.c_str()), enter_pswd);
 			params.event = DialogEvent(this, &Game::OnEnterPassword);
@@ -2239,8 +2241,8 @@ void Game::OnPickServer(int id)
 			else
 			{
 				// failed to startup connecting
-				Error("OnPickServer: Can't connect to server: raknet error %d.", result);
-				EndConnecting(txConnectRaknet);
+				Error("OnPickServer: Can't connect to server: SLikeNet error %d.", result);
+				EndConnecting(txConnectSLikeNet);
 			}
 		}
 	}

@@ -7,7 +7,7 @@
  *  of patent rights can be found in the RakNet Patents.txt file in the same directory.
  *
  *
- *  Modified work: Copyright (c) 2016-2017, SLikeSoft UG (haftungsbeschränkt)
+ *  Modified work: Copyright (c) 2016-2018, SLikeSoft UG (haftungsbeschrÃ¤nkt)
  *
  *  This source code was modified by SLikeSoft. Modifications are licensed under the MIT-style
  *  license found in the license.txt file in the root directory of this source tree.
@@ -276,7 +276,7 @@ void UDPProxyClient::OnPingServers(Packet *packet)
 		incomingBs.Read(swp.serverAddress);
 		swp.ping=DEFAULT_UNRESPONSIVE_PING_TIME_COORDINATOR;
 		psg->serversToPing.Push(swp, _FILE_AND_LINE_ );
-		swp.serverAddress.ToString(false,ipStr,64);
+		swp.serverAddress.ToString(false,ipStr,static_cast<size_t>(64));
 		rakPeerInterface->Ping(ipStr,swp.serverAddress.GetPort(),false,0);
 	}
 	pingServerGroups.Push(psg,_FILE_AND_LINE_);

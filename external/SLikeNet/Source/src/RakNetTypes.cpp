@@ -7,7 +7,7 @@
  *  of patent rights can be found in the RakNet Patents.txt file in the same directory.
  *
  *
- *  Modified work: Copyright (c) 2016-2017, SLikeSoft UG (haftungsbeschr‰nkt)
+ *  Modified work: Copyright (c) 2016-2018, SLikeSoft UG (haftungsbeschr√§nkt)
  *
  *  This source code was modified by SLikeSoft. Modifications are licensed under the MIT-style
  *  license found in the license.txt file in the root directory of this source tree.
@@ -69,6 +69,12 @@ const char *AddressOrGUID::ToString(bool writePort) const
 	if (rakNetGuid!=UNASSIGNED_RAKNET_GUID)
 		return rakNetGuid.ToString();
 	return systemAddress.ToString(writePort);
+}
+void AddressOrGUID::ToString(bool writePort, char *dest) const
+{
+	if (rakNetGuid != UNASSIGNED_RAKNET_GUID)
+		return rakNetGuid.ToString(dest);
+	return systemAddress.ToString(writePort, dest);
 }
 void AddressOrGUID::ToString(bool writePort, char *dest, size_t destLength) const
 {
@@ -266,6 +272,39 @@ bool SystemAddress::IsLoopback(void) const
 #endif
 	return false;
 }
+void SystemAddress::ToString_Old(bool writePort, char *dest, char portDelineator) const
+{
+	if (*this == UNASSIGNED_SYSTEM_ADDRESS)
+	{
+#pragma warning(push)
+#pragma warning(disable:4996)
+		strcpy(dest, "UNASSIGNED_SYSTEM_ADDRESS");
+#pragma warning(pop)
+		return;
+	}
+
+	char portStr[2];
+	portStr[0] = portDelineator;
+	portStr[1] = 0;
+
+	in_addr in;
+	in.s_addr = address.addr4.sin_addr.s_addr;
+	char buf[1024];
+	inet_ntop(AF_INET, &in, buf, 1024);
+#pragma warning(push)
+#pragma warning(disable:4996)
+	strcpy(dest, buf);
+#pragma warning(pop)
+	if (writePort)
+	{
+#pragma warning(push)
+#pragma warning(disable:4996)
+		strcat(dest, portStr);
+#pragma warning(pop)
+		Itoa(GetPort(), dest + strlen(dest), 10);
+	}
+}
+
 void SystemAddress::ToString_Old(bool writePort, char *dest, size_t destLength, char portDelineator) const
 {
 	if (*this==UNASSIGNED_SYSTEM_ADDRESS)
@@ -277,25 +316,6 @@ void SystemAddress::ToString_Old(bool writePort, char *dest, size_t destLength, 
 	char portStr[2];
 	portStr[0]=portDelineator;
 	portStr[1]=0;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 	in_addr in;
 	in.s_addr = address.addr4.sin_addr.s_addr;
@@ -323,6 +343,45 @@ const char *SystemAddress::ToString(bool writePort, char portDelineator) const
 	return (char*) str[lastStrIndex&7];
 }
 #if RAKNET_SUPPORT_IPV6==1
+void SystemAddress::ToString_New(bool writePort, char *dest, char portDelineator) const
+{
+	int ret;
+	(void)ret;
+
+	if (*this == UNASSIGNED_SYSTEM_ADDRESS)
+	{
+#pragma warning(push)
+#pragma warning(disable:4996)
+		strcpy(dest, "UNASSIGNED_SYSTEM_ADDRESS");
+#pragma warning(pop)
+		return;
+	}
+
+	if (address.addr4.sin_family == AF_INET)
+	{
+		ret = getnameinfo((struct sockaddr *) &address.addr4, sizeof(struct sockaddr_in), dest, 22, NULL, 0, NI_NUMERICHOST);
+	}
+	else
+	{
+		ret = getnameinfo((struct sockaddr *) &address.addr6, sizeof(struct sockaddr_in6), dest, INET6_ADDRSTRLEN, NULL, 0, NI_NUMERICHOST);
+	}
+	if (ret != 0)
+	{
+		dest[0] = 0;
+	}
+
+	if (writePort)
+	{
+		unsigned char ch[2];
+		ch[0] = portDelineator;
+		ch[1] = 0;
+#pragma warning(push)
+#pragma warning(disable:4996)
+		strcat(dest, (const char*)ch);
+#pragma warning(pop)
+		Itoa(ntohs(address.addr4.sin_port), dest + strlen(dest), 10);
+	}
+}
 void SystemAddress::ToString_New(bool writePort, char *dest, size_t destLength, char portDelineator) const
 {
 	int ret;
@@ -333,22 +392,7 @@ void SystemAddress::ToString_New(bool writePort, char *dest, size_t destLength, 
 		strcpy_s(dest, destLength, "UNASSIGNED_SYSTEM_ADDRESS");
 		return;
 	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	
 	if (address.addr4.sin_family==AF_INET)
 	{
 		ret=getnameinfo((struct sockaddr *) &address.addr4, sizeof(struct sockaddr_in), dest, 22, NULL, 0, NI_NUMERICHOST);
@@ -370,9 +414,16 @@ void SystemAddress::ToString_New(bool writePort, char *dest, size_t destLength, 
 		strcat_s(dest, destLength, (const char*) ch);
 		Itoa(ntohs(address.addr4.sin_port), dest+strlen(dest), 10);
 	}
-
 }
 #endif // #if RAKNET_SUPPORT_IPV6!=1
+void SystemAddress::ToString(bool writePort, char *dest, char portDelineator) const
+{
+#if RAKNET_SUPPORT_IPV6!=1
+	ToString_Old(writePort, dest, portDelineator);
+#else
+	ToString_New(writePort, dest, portDelineator);
+#endif // #if RAKNET_SUPPORT_IPV6!=1
+}
 void SystemAddress::ToString(bool writePort, char *dest, size_t destLength, char portDelineator) const
 {
 
@@ -444,7 +495,7 @@ SystemAddress::SystemAddress(const char *str, unsigned short port)
 void SystemAddress::FixForIPVersion(const SystemAddress &boundAddressToSocket)
 {
 	char str[128];
-	ToString(false,str,128);
+	ToString(false,str,static_cast<size_t>(128));
 	// TODO - what about 255.255.255.255?
 	if (strcmp(str, IPV6_LOOPBACK)==0)
 	{
@@ -496,9 +547,9 @@ bool SystemAddress::SetBinaryAddress(const char *str, char portDelineator)
 
 			inet_pton(AF_INET, "127.0.0.1", &address.addr4.sin_addr.s_addr);
 
-			if (str[9])
+			if (str[9] == portDelineator)
 			{
-				SetPortHostOrder((unsigned short) atoi(str+9));
+				SetPortHostOrder((unsigned short) atoi(str+10));
 			}
 			return true;
 		}
@@ -779,6 +830,21 @@ const char *RakNetGUID::ToString(void) const
 	strIndex++;
 	ToString(str[lastStrIndex&7], 64);
 	return (char*) str[lastStrIndex&7];
+}
+void RakNetGUID::ToString(char *dest) const
+{
+	if (*this == UNASSIGNED_RAKNET_GUID)
+#pragma warning(push)
+#pragma warning(disable:4996)
+		strcpy(dest, "UNASSIGNED_RAKNET_GUID");
+#pragma warning(pop)
+	else
+		//sprintf_s(dest, destLength, "%u.%u.%u.%u.%u.%u", g[0], g[1], g[2], g[3], g[4], g[5]);
+#pragma warning(push)
+#pragma warning(disable:4996)
+		sprintf(dest, "%" PRINTF_64_BIT_MODIFIER "u", (long long unsigned int) g);
+#pragma warning(pop)
+		// sprintf_s(dest, destLength, "%u.%u.%u.%u.%u.%u", g[0], g[1], g[2], g[3], g[4], g[5]);
 }
 void RakNetGUID::ToString(char *dest, size_t destLength) const
 {

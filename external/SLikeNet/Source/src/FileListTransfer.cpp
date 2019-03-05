@@ -7,7 +7,7 @@
  *  of patent rights can be found in the RakNet Patents.txt file in the same directory.
  *
  *
- *  Modified work: Copyright (c) 2016-2017, SLikeSoft UG (haftungsbeschränkt)
+ *  Modified work: Copyright (c) 2016-2018, SLikeSoft UG (haftungsbeschrÃ¤nkt)
  *
  *  This source code was modified by SLikeSoft. Modifications are licensed under the MIT-style
  *  license found in the license.txt file in the root directory of this source tree.
@@ -760,7 +760,10 @@ void FileListTransfer::OnReferencePush(Packet *packet, bool isTheFullFile)
 	FLR_MemoryBlock mb;
 	if (fileListReceiver->pushedFiles.Has(onFileStruct.fileIndex)==false)
 	{
-		mb.flrMemoryBlock=(char*) rakMalloc_Ex(onFileStruct.byteLengthOfThisFile, _FILE_AND_LINE_);
+		if (onFileStruct.byteLengthOfThisFile <= SLNET_MAX_RETRIEVABLE_FILESIZE)
+			mb.flrMemoryBlock = (char*)rakMalloc_Ex(onFileStruct.byteLengthOfThisFile, _FILE_AND_LINE_);
+		else
+			mb.flrMemoryBlock = nullptr;
 		fileListReceiver->pushedFiles.SetNew(onFileStruct.fileIndex, mb);
 	}
 	else

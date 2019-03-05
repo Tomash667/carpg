@@ -7,7 +7,7 @@
  *  of patent rights can be found in the RakNet Patents.txt file in the same directory.
  *
  *
- *  Modified work: Copyright (c) 2016-2017, SLikeSoft UG (haftungsbeschr‰nkt)
+ *  Modified work: Copyright (c) 2016-2018, SLikeSoft UG (haftungsbeschr√§nkt)
  *
  *  This source code was modified by SLikeSoft. Modifications are licensed under the MIT-style
  *  license found in the license.txt file in the root directory of this source tree.
@@ -835,6 +835,47 @@ void BitStream::AssertStreamEmpty( void )
 {
 	RakAssert( readOffset == numberOfBitsUsed );
 }
+
+void BitStream::PrintBits( char *out ) const
+{
+	if (numberOfBitsUsed <= 0)
+	{
+#pragma warning(push)
+#pragma warning(disable:4996)
+		strcpy(out, "No bits\n");
+#pragma warning(pop)
+		return;
+	}
+
+	unsigned int strIndex = 0;
+	for (BitSize_t counter = 0; counter < BITS_TO_BYTES(numberOfBitsUsed) && strIndex < 2000; counter++)
+	{
+		BitSize_t stop;
+
+		if (counter == (numberOfBitsUsed - 1) >> 3)
+			stop = 8 - (((numberOfBitsUsed - 1) & 7) + 1);
+		else
+			stop = 0;
+
+		for (BitSize_t counter2 = 7; counter2 >= stop; counter2--)
+		{
+			if ((data[counter] >> counter2) & 1)
+				out[strIndex++] = '1';
+			else
+				out[strIndex++] = '0';
+
+			if (counter2 == 0)
+				break;
+		}
+
+		out[strIndex++] = ' ';
+	}
+
+	out[strIndex++] = '\n';
+
+	out[strIndex++] = 0;
+}
+
 void BitStream::PrintBits( char *out, size_t outLength ) const
 {
 	if ( numberOfBitsUsed <= 0 )
@@ -877,6 +918,7 @@ void BitStream::PrintBits( void ) const
 	PrintBits(out, 2048);
 	RAKNET_DEBUG_PRINTF("%s", out);
 }
+
 void BitStream::PrintHex( char *out, size_t outLength ) const
 {
 	BitSize_t i;
@@ -885,6 +927,19 @@ void BitStream::PrintHex( char *out, size_t outLength ) const
 		sprintf_s(out+i*3, outLength-i*3, "%02x ", data[i]);
 	}
 }
+
+void BitStream::PrintHex( char *out ) const
+{
+	BitSize_t i;
+	for (i = 0; i < GetNumberOfBytesUsed(); i++)
+	{
+#pragma warning(push)
+#pragma warning(disable:4996)
+		sprintf(out + i * 3, "%02x ", data[i]);
+#pragma warning(pop)
+	}
+}
+
 void BitStream::PrintHex( void ) const
 {
 	char out[2048];

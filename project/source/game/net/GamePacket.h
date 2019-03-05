@@ -1,7 +1,7 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-// Game packet identifiers sent by raknet
+// Game packet identifiers sent by SLikeNet
 enum GamePacket : byte
 {
 	/* Welcome message

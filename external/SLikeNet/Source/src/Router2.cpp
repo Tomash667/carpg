@@ -7,7 +7,7 @@
  *  of patent rights can be found in the RakNet Patents.txt file in the same directory.
  *
  *
- *  Modified work: Copyright (c) 2016-2017, SLikeSoft UG (haftungsbeschränkt)
+ *  Modified work: Copyright (c) 2016-2018, SLikeSoft UG (haftungsbeschrÃ¤nkt)
  *
  *  This source code was modified by SLikeSoft. Modifications are licensed under the MIT-style
  *  license found in the license.txt file in the root directory of this source tree.
@@ -268,7 +268,7 @@ PluginReceiveResult Router2::OnReceive(Packet *packet)
                 {
                     char buff[512];
                     char buff2[32];
-                    packet->systemAddress.ToString(true,buff2,32);
+                    packet->systemAddress.ToString(true,buff2,static_cast<size_t>(32));
                     debugInterface->ShowDiagnostic(FormatStringTS(buff,"Got ID_ROUTER_2_REQUEST_FORWARDING on ip %s from %I64d, ",
                         buff2,packet->guid.g));
                 }
@@ -298,7 +298,7 @@ PluginReceiveResult Router2::OnReceive(Packet *packet)
 					{
 						char buff[512];
 						char buff2[32];
-						sa.ToString(false,buff2,32);
+						sa.ToString(false,buff2,static_cast<size_t>(32));
 						debugInterface->ShowDiagnostic(FormatStringTS(buff,"Got ID_ROUTER_2_REPLY_TO_SENDER_PORT %i on address %s, replying with ID_ROUTER_2_MINI_PUNCH_REPLY at %s:%i\n", sa.GetPort(), buff2, _FILE_AND_LINE_));
 
 //						packet->systemAddress.ToString(true,buff2);
@@ -324,7 +324,7 @@ PluginReceiveResult Router2::OnReceive(Packet *packet)
 					{
 						char buff[512];
 						char buff2[32];
-						sa.ToString(false,buff2,32);
+						sa.ToString(false,buff2,static_cast<size_t>(32));
 						debugInterface->ShowDiagnostic(FormatStringTS(buff,"Got ID_ROUTER_2_REPLY_TO_SPECIFIED_PORT %i on address %s, "
                                         "replying with ID_ROUTER_2_MINI_PUNCH_REPLY at %s:%i\n", sa.GetPort(), buff2, __FILE__, __LINE__));
 					}
@@ -868,7 +868,7 @@ void Router2::OnQueryForwardingReply(Packet *packet)
 	{
 		char buff[512];
         char buff2[512];
-        packet->systemAddress.ToString(true,buff2,512);
+        packet->systemAddress.ToString(true,buff2,static_cast<size_t>(512));
 		debugInterface->ShowDiagnostic(FormatStringTS(buff,"Got ID_ROUTER_2_REPLY_FORWARDING on address %s(%I64d -> %I64d) canForward=%i at %s:%i\n",
             buff2, packet->guid.g, endpointGuid.g, canForward, __FILE__, __LINE__));
 	}
@@ -921,7 +921,7 @@ void Router2::SendOOBFromRakNetPort(OutOfBandIdentifiers oob, BitStream *extraDa
 		oobBs.Write(*extraData);
 	}
 	char ipAddressString[32];
-	sa.ToString(false, ipAddressString,32);
+	sa.ToString(false, ipAddressString,static_cast<size_t>(32));
 	rakPeerInterface->SendOutOfBand((const char*) ipAddressString,sa.GetPort(),(const char*) oobBs.GetData(),oobBs.GetNumberOfBytesUsed());
 }
 void Router2::SendOOBFromSpecifiedSocket(OutOfBandIdentifiers oob, SystemAddress sa, __UDPSOCKET__ socket)
@@ -970,11 +970,11 @@ void Router2::SendOOBMessages(Router2::MiniPunchRequest *mpr)
 
         char buff2[128];
 
-        mpr->sourceAddress   .ToString(true,buff2,128);
+        mpr->sourceAddress   .ToString(true,buff2,static_cast<size_t>(128));
 
         debugInterface->ShowDiagnostic(FormatStringTS(buff,"call SendOOBFromSpecifiedSocket(...,%s,...)", buff2));
 
-        mpr->endpointAddress .ToString(true,buff2,128);
+        mpr->endpointAddress .ToString(true,buff2,static_cast<size_t>(128));
 
         debugInterface->ShowDiagnostic(FormatStringTS(buff,"call SendOOBFromSpecifiedSocket(...,%s,...)", buff2));
     }                                              
@@ -1031,8 +1031,8 @@ void Router2::OnRequestForwarding(Packet *packet)
 		char buff[512];
 		char buff2[64];
 		char buff3[64];
-		packet->systemAddress.ToString(true,buff2,64);
-		endpointSystemAddress.ToString(true,buff3,64);
+		packet->systemAddress.ToString(true,buff2,static_cast<size_t>(64));
+		endpointSystemAddress.ToString(true,buff3,static_cast<size_t>(64));
 		if (debugInterface)
 			debugInterface->ShowFailure(FormatStringTS(buff,"Router2 failed at %s:%i with UDPFORWARDER_NO_SOCKETS, packet->systemAddress=%s, endpointSystemAddress=%s, forwardingPort=%i, forwardingSocket=%i\n",
 			__FILE__, __LINE__, buff2, buff3, forwardingPort, forwardingSocket));
@@ -1043,8 +1043,8 @@ void Router2::OnRequestForwarding(Packet *packet)
 		char buff[512];
 		char buff2[64];
 		char buff3[64];
-		packet->systemAddress.ToString(true,buff2,64);
-		endpointSystemAddress.ToString(true,buff3,64);
+		packet->systemAddress.ToString(true,buff2,static_cast<size_t>(64));
+		endpointSystemAddress.ToString(true,buff3,static_cast<size_t>(64));
 		if (debugInterface)
 			debugInterface->ShowFailure(FormatStringTS(buff,"Router2 failed at %s:%i with UDPFORWARDER_INVALID_PARAMETERS, packet->systemAddress=%s, endpointSystemAddress=%s, forwardingPort=%i, forwardingSocket=%i\n",
 			__FILE__, __LINE__, buff2, buff3, forwardingPort, forwardingSocket));
@@ -1055,8 +1055,8 @@ void Router2::OnRequestForwarding(Packet *packet)
 		char buff[512];
 		char buff2[64];
 		char buff3[64];
-		packet->systemAddress.ToString(true,buff2,64);
-		endpointSystemAddress.ToString(true,buff3,64);
+		packet->systemAddress.ToString(true,buff2,static_cast<size_t>(64));
+		endpointSystemAddress.ToString(true,buff3,static_cast<size_t>(64));
 		if (debugInterface)
 			debugInterface->ShowFailure(FormatStringTS(buff,"Router2 failed at %s:%i with UDPFORWARDER_BIND_FAILED, packet->systemAddress=%s, endpointSystemAddress=%s, forwardingPort=%i, forwardingSocket=%i\n",
 			__FILE__, __LINE__, buff2, buff3, forwardingPort, forwardingSocket));
@@ -1068,8 +1068,8 @@ void Router2::OnRequestForwarding(Packet *packet)
 		{
 			char buff2[32];
 			char buff3[32];
-			endpointSystemAddress.ToString(true,buff2,32);
-			packet->systemAddress.ToString(true,buff3,32);
+			endpointSystemAddress.ToString(true,buff2,static_cast<size_t>(32));
+			packet->systemAddress.ToString(true,buff3,static_cast<size_t>(32));
 			char buff[512];
 			debugInterface->ShowDiagnostic(FormatStringTS(buff,"Got ID_ROUTER_2_REQUEST_FORWARDING.\n"
 				"endpointAddress=%s\nsourceAddress=%s\nforwardingPort=%i\n "				
@@ -1158,7 +1158,7 @@ void Router2::OnMiniPunchReply(Packet *packet)
 
         char buff2[512];
 
-        rakPeerInterface->GetSystemAddressFromGuid(routerGuid).ToString(true,buff2,512);
+        rakPeerInterface->GetSystemAddressFromGuid(routerGuid).ToString(true,buff2,static_cast<size_t>(512));
 
 		debugInterface->ShowDiagnostic(FormatStringTS(buff,"Sending ID_ROUTER_2_MINI_PUNCH_REPLY_BOUNCE (%s) at %s:%i\n", buff2, __FILE__, __LINE__));
 	}

@@ -7,7 +7,7 @@
  *  of patent rights can be found in the RakNet Patents.txt file in the same directory.
  *
  *
- *  Modified work: Copyright (c) 2016-2017, SLikeSoft UG (haftungsbeschränkt)
+ *  Modified work: Copyright (c) 2016-2018, SLikeSoft UG (haftungsbeschrÃ¤nkt)
  *
  *  This source code was modified by SLikeSoft. Modifications are licensed under the MIT-style
  *  license found in the license.txt file in the root directory of this source tree.
@@ -1092,8 +1092,6 @@ void RakPeer::Shutdown( unsigned int blockDuration, unsigned char orderingChanne
 		pluginListNTS[i]->OnRakPeerShutdown();
 	}
 
-	activeSystemListSize=0;
-
 	quitAndDataEvents.SetEvent();
 
 	endThreads = true;
@@ -1125,6 +1123,8 @@ void RakPeer::Shutdown( unsigned int blockDuration, unsigned char orderingChanne
 		endThreads = true;
 		RakSleep(15);
 	}
+
+	activeSystemListSize = 0;
 
 	/*
 	timeout = SLNet::GetTimeMS()+1000;
@@ -2609,7 +2609,7 @@ const char* RakPeer::GetLocalIP( unsigned int index )
 
 
 	static char str[128];
-	ipList[index].ToString(false,str,128);
+	ipList[index].ToString(false,str,static_cast<size_t>(128));
 	return str;
 
 
@@ -3643,7 +3643,7 @@ RakPeer::RemoteSystemStruct * RakPeer::AssignSystemAddressToRemoteSystemList( co
 			else
 			{
 				char str[256];
-				bindingAddress.ToString(true,str,256);
+				bindingAddress.ToString(true,str,static_cast<size_t>(256));
 				// See if this is an internal IP address.
 				// If so, force binding on it so we reply on the same IP address as they sent to.
 				unsigned int ipListIndex, foundIndex=(unsigned int)-1;
@@ -4535,7 +4535,7 @@ bool ProcessOfflineNetworkPacket( SystemAddress systemAddress, const char *data,
 
 
 	char str1[64];
-	systemAddress.ToString(false, str1,64);
+	systemAddress.ToString(false, str1,static_cast<size_t>(64));
 	if (rakPeer->IsBanned( str1 ))
 	{
 		for (i=0; i < rakPeer->pluginListNTS.Size(); i++)
@@ -5191,7 +5191,7 @@ bool ProcessOfflineNetworkPacket( SystemAddress systemAddress, const char *data,
 
 			if (rakPeer->_using_security)
 			{
-				systemAddress.ToString(false, str1, 64);
+				systemAddress.ToString(false, str1, static_cast<size_t>(64));
 				requiresSecurityOfThisClient=rakPeer->IsInSecurityExceptionList(str1)==false;
 
 				uint32_t cookie;
@@ -5739,7 +5739,7 @@ bool RakPeer::RunUpdateCycle(BitStream &updateBitStream )
 					bitStream.PadWithZeroToByteLength(mtuSizes[MTUSizeIndex]-UDP_HEADER_SIZE);
 
 					char str[256];
-					rcs->systemAddress.ToString(true,str,256);
+					rcs->systemAddress.ToString(true,str,static_cast<size_t>(256));
 
 					//RAKNET_DEBUG_PRINTF("%i:IOCR, ", __LINE__);
 
@@ -5945,7 +5945,7 @@ bool RakPeer::RunUpdateCycle(BitStream &updateBitStream )
 #endif
 
 						char str1[64];
-						systemAddress.ToString(false, str1, 64);
+						systemAddress.ToString(false, str1, static_cast<size_t>(64));
 						AddToBanList(str1, remoteSystem->reliabilityLayer.GetTimeoutTime());
 
 
@@ -6319,8 +6319,14 @@ RAK_THREAD_DECLARATION(SLNet::UpdateNetworkLoop)
 // 
 	rakPeer->isMainLoopThreadActive = true;
 
-	while ( rakPeer->endThreads == false )
+	bool running = true;
+	while ( running )
 	{
+		if (rakPeer->endThreads) {
+			// allow just one more final update-run prior to shutting down this thread to make sure that outstanding acks are still sent and the peers don't unnecessary wait for already retrieved packets
+			// note: this fixes part of SLNET-123
+			running = false;
+		}
 // #ifdef _DEBUG
 // 		// Sanity check, make sure RunUpdateCycle does not block or not otherwise get called for a long time
 // 		RakNetTime thisCall=SLNet::GetTime();

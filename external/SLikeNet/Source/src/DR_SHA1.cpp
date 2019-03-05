@@ -7,7 +7,7 @@
 */
 
 /*
- * Modified work : Copyright(c) 2016-2017, SLikeSoft UG(haftungsbeschr‰nkt)
+ * Modified work : Copyright(c) 2016-2017, SLikeSoft UG(haftungsbeschr√§nkt)
  *
  * This source code was modified by SLikeSoft. Modifications in this file are put under the public domain.
  * Alternatively you are permitted to license the modifications under the MIT license, if you so desire. The

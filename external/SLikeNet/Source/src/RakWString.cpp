@@ -7,7 +7,7 @@
  *  of patent rights can be found in the RakNet Patents.txt file in the same directory.
  *
  *
- *  Modified work: Copyright (c) 2016-2017, SLikeSoft UG (haftungsbeschränkt)
+ *  Modified work: Copyright (c) 2016-2018, SLikeSoft UG (haftungsbeschrÃ¤nkt)
  *
  *  This source code was modified by SLikeSoft. Modifications are licensed under the MIT-style
  *  license found in the license.txt file in the root directory of this source tree.
@@ -355,6 +355,47 @@ bool RakWString::Deserialize(BitStream *bs)
 	{
 		return true;
 	}
+}
+bool RakWString::Deserialize(wchar_t *str, BitStream *bs)
+{
+	size_t mbByteLength;
+	bs->ReadCasted<unsigned short>(mbByteLength);
+	if (mbByteLength > 0)
+	{
+#if 0
+		char *multiByteBuffer;
+		multiByteBuffer = (char*)rakMalloc_Ex(mbByteLength + 1, _FILE_AND_LINE_);
+		bool result = bs->ReadAlignedBytes((unsigned char*)multiByteBuffer, (const unsigned int)mbByteLength);
+		if (result == false)
+		{
+			rakFree_Ex(multiByteBuffer, _FILE_AND_LINE_);
+			return false;
+		}
+		multiByteBuffer[mbByteLength] = 0;
+		size_t c_strCharLength;
+		mbstowcs(&c_strCharLength, str, multiByteBuffer, mbByteLength);
+		rakFree_Ex(multiByteBuffer, _FILE_AND_LINE_);
+		str[c_strCharLength] = 0;
+#else
+		for (unsigned int i = 0; i < mbByteLength; i++)
+		{
+			uint16_t t;
+			// Force endian swapping, and read 16 bits
+			bs->Read(t);
+			str[i] = t;
+		}
+		str[mbByteLength] = 0;
+#endif
+		return true;
+	}
+	else
+	{
+#pragma warning(push)
+#pragma warning(disable:4996)
+		wcscpy(str, L"");
+#pragma warning(pop)
+	}
+	return true;
 }
 bool RakWString::Deserialize(wchar_t *str, size_t strLength, BitStream *bs)
 {

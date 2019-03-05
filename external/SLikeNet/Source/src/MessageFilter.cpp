@@ -7,7 +7,7 @@
  *  of patent rights can be found in the RakNet Patents.txt file in the same directory.
  *
  *
- *  Modified work: Copyright (c) 2016-2017, SLikeSoft UG (haftungsbeschränkt)
+ *  Modified work: Copyright (c) 2016-2018, SLikeSoft UG (haftungsbeschrÃ¤nkt)
  *
  *  This source code was modified by SLikeSoft. Modifications are licensed under the MIT-style
  *  license found in the license.txt file in the root directory of this source tree.
@@ -271,7 +271,7 @@ void MessageFilter::OnInvalidMessage(FilterSet *filterSet, AddressOrGUID systemA
 	if (filterSet->banOnDisallowedMessage && rakPeerInterface)
 	{
 		char str1[64];
-		systemAddress.systemAddress.ToString(false, str1,64);
+		systemAddress.systemAddress.ToString(false, str1, static_cast<size_t>(64));
 		rakPeerInterface->AddToBanList(str1, filterSet->disallowedMessageBanTimeMS);
 	}
 	if (filterSet->kickOnDisallowedMessage)

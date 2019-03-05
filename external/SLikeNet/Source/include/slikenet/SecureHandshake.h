@@ -27,7 +27,14 @@
 #endif
 
 // Include DependentExtensions in your path to include this
+#ifdef _M_X64
+#pragma warning(push)
+#pragma warning(disable:4838)
+#endif
 #include "cat/AllTunnel.hpp"
+#ifdef _M_X64
+#pragma warning(pop)
+#endif
 
 #endif // LIBCAT_SECURITY
 

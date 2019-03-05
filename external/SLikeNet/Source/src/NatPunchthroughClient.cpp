@@ -7,7 +7,7 @@
  *  of patent rights can be found in the RakNet Patents.txt file in the same directory.
  *
  *
- *  Modified work: Copyright (c) 2016-2017, SLikeSoft UG (haftungsbeschr‰nkt)
+ *  Modified work: Copyright (c) 2016-2018, SLikeSoft UG (haftungsbeschr√§nkt)
  *
  *  This source code was modified by SLikeSoft. Modifications are licensed under the MIT-style
  *  license found in the license.txt file in the root directory of this source tree.
@@ -280,7 +280,7 @@ void NatPunchthroughClient::Update(void)
 				if (natPunchthroughDebugInterface)
 				{
 					char ipAddressString[32];
-					sp.targetAddress.ToString(true, ipAddressString, 32);
+					sp.targetAddress.ToString(true, ipAddressString, static_cast<size_t>(32));
 					char guidString[128];
 					sp.targetGuid.ToString(guidString, 128);
 					natPunchthroughDebugInterface->OnClientMessage(SLNet::RakString("Likely bidirectional punchthrough failure to guid %s, system address %s.", guidString, ipAddressString));
@@ -305,7 +305,7 @@ void NatPunchthroughClient::Update(void)
 				if (natPunchthroughDebugInterface)
 				{
 					char ipAddressString[32];
-					sp.targetAddress.ToString(true, ipAddressString, 32);
+					sp.targetAddress.ToString(true, ipAddressString, static_cast<size_t>(32));
 					char guidString[128];
 					sp.targetGuid.ToString(guidString, 128);
 					natPunchthroughDebugInterface->OnClientMessage(SLNet::RakString("Likely unidirectional punchthrough failure to guid %s, system address %s.", guidString, ipAddressString));
@@ -358,7 +358,7 @@ void NatPunchthroughClient::OnPunchthroughFailure(void)
 		if (natPunchthroughDebugInterface)
 		{
 			char ipAddressString[32];
-			sp.targetAddress.ToString(true, ipAddressString, 32);
+			sp.targetAddress.ToString(true, ipAddressString, static_cast<size_t>(32));
 			char guidString[128];
 			sp.targetGuid.ToString(guidString, 128);
 			natPunchthroughDebugInterface->OnClientMessage(SLNet::RakString("Failed punchthrough once. Returning failure to guid %s, system address %s to user.", guidString, ipAddressString));
@@ -377,7 +377,7 @@ void NatPunchthroughClient::OnPunchthroughFailure(void)
 			if (natPunchthroughDebugInterface)
 			{
 				char ipAddressString[32];
-				sp.targetAddress.ToString(true, ipAddressString, 32);
+				sp.targetAddress.ToString(true, ipAddressString, static_cast<size_t>(32));
 				char guidString[128];
 				sp.targetGuid.ToString(guidString, 128);
 				natPunchthroughDebugInterface->OnClientMessage(SLNet::RakString("Failed punchthrough twice. Returning failure to guid %s, system address %s to user.", guidString, ipAddressString));
@@ -398,7 +398,7 @@ void NatPunchthroughClient::OnPunchthroughFailure(void)
 		if (natPunchthroughDebugInterface)
 		{
 			char ipAddressString[32];
-			sp.targetAddress.ToString(true, ipAddressString, 32);
+			sp.targetAddress.ToString(true, ipAddressString, static_cast<size_t>(32));
 			char guidString[128];
 			sp.targetGuid.ToString(guidString, 128);
 			natPunchthroughDebugInterface->OnClientMessage(SLNet::RakString("Not connected to facilitator, so cannot retry punchthrough after first failure. Returning failure onj guid %s, system address %s to user.", guidString, ipAddressString));
@@ -412,7 +412,7 @@ void NatPunchthroughClient::OnPunchthroughFailure(void)
 	if (natPunchthroughDebugInterface)
 	{
 		char ipAddressString[32];
-		sp.targetAddress.ToString(true, ipAddressString, 32);
+		sp.targetAddress.ToString(true, ipAddressString, static_cast<size_t>(32));
 		char guidString[128];
 		sp.targetGuid.ToString(guidString, 128);
 		natPunchthroughDebugInterface->OnClientMessage(SLNet::RakString("First punchthrough failure on guid %s, system address %s. Reattempting.", guidString, ipAddressString));
@@ -507,7 +507,7 @@ PluginReceiveResult NatPunchthroughClient::OnReceive(Packet *packet)
 				break;
 
 			char ipAddressString[32];
-			packet->systemAddress.ToString(true,ipAddressString,32);
+			packet->systemAddress.ToString(true,ipAddressString,static_cast<size_t>(32));
 			// sp.targetGuid==packet->guid is because the internal IP addresses reported may include loopbacks not reported by RakPeer::IsLocalIP()
 			if (packet->data[1]==ID_NAT_ESTABLISH_UNIDIRECTIONAL && sp.targetGuid==packet->guid)
 			{
@@ -792,7 +792,7 @@ void NatPunchthroughClient::SendTTL(const SystemAddress &sa)
 		return;
 
 	char ipAddressString[32];
-	sa.ToString(false, ipAddressString,32);
+	sa.ToString(false, ipAddressString,static_cast<size_t>(32));
 	// TTL of 1 doesn't get past the router, 2 might hit the other system on a LAN
 	rakPeerInterface->SendTTL(ipAddressString,sa.GetPort(), 2);
 }
@@ -845,12 +845,12 @@ void NatPunchthroughClient::SendOutOfBand(SystemAddress sa, MessageID oobId)
 	if (oobId==ID_NAT_ESTABLISH_BIDIRECTIONAL)
 		oob.Write(sa.GetPort());
 	char ipAddressString[32];
-	sa.ToString(false, ipAddressString,32);
+	sa.ToString(false, ipAddressString, static_cast<size_t>(32));
 	rakPeerInterface->SendOutOfBand((const char*) ipAddressString,sa.GetPort(),(const char*) oob.GetData(),oob.GetNumberOfBytesUsed());
 
 	if (natPunchthroughDebugInterface)
 	{
-		sa.ToString(true,ipAddressString,32);
+		sa.ToString(true,ipAddressString,static_cast<size_t>(32));
 		char guidString[128];
 		sp.targetGuid.ToString(guidString, 128);
 

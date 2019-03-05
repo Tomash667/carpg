@@ -7,7 +7,7 @@
  *  of patent rights can be found in the RakNet Patents.txt file in the same directory.
  *
  *
- *  Modified work: Copyright (c) 2016-2017, SLikeSoft UG (haftungsbeschränkt)
+ *  Modified work: Copyright (c) 2016-2018, SLikeSoft UG (haftungsbeschrÃ¤nkt)
  *
  *  This source code was modified by SLikeSoft. Modifications are licensed under the MIT-style
  *  license found in the license.txt file in the root directory of this source tree.
@@ -372,7 +372,7 @@ void UDPProxyCoordinator::OnForwardingReplyFromServerToCoordinator(Packet *packe
 	if (serverPublicIp.IsEmpty())
 	{
 		char serverIP[64];
-		packet->systemAddress.ToString(false,serverIP,64);
+		packet->systemAddress.ToString(false,serverIP,static_cast<size_t>(64));
 		serverPublicIp=serverIP;
 	}
 

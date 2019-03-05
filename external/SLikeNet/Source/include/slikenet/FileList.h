@@ -7,7 +7,7 @@
  *  of patent rights can be found in the RakNet Patents.txt file in the same directory.
  *
  *
- *  Modified work: Copyright (c) 2016-2017, SLikeSoft UG (haftungsbeschr‰nkt)
+ *  Modified work: Copyright (c) 2016-2018, SLikeSoft UG (haftungsbeschr√§nkt)
  *
  *  This source code was modified by SLikeSoft. Modifications are licensed under the MIT-style
  *  license found in the license.txt file in the root directory of this source tree.
@@ -251,6 +251,7 @@ public:
 	// Here so you can read it, but don't modify it
 	DataStructures::List<FileListNode> fileList;
 
+	static bool FixEndingSlash(char *str);
 	static bool FixEndingSlash(char *str, size_t strLength);
 protected:
 	DataStructures::List<FileListProgress*> fileListProgressCallbacks;

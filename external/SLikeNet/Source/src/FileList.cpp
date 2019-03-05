@@ -7,7 +7,7 @@
  *  of patent rights can be found in the RakNet Patents.txt file in the same directory.
  *
  *
- *  Modified work: Copyright (c) 2016-2017, SLikeSoft UG (haftungsbeschr‰nkt)
+ *  Modified work: Copyright (c) 2016-2018, SLikeSoft UG (haftungsbeschr√§nkt)
  *
  *  This source code was modified by SLikeSoft. Modifications are licensed under the MIT-style
  *  license found in the license.txt file in the root directory of this source tree.
@@ -98,13 +98,13 @@ void FLP_Printf::OnFilePushesComplete( SystemAddress systemAddress, unsigned sho
 	(void) setID;
 
 	char str[32];
-	systemAddress.ToString(true, (char*) str, 32);
+	systemAddress.ToString(true, (char*) str, static_cast<size_t>(32));
 	RAKNET_DEBUG_PRINTF("File pushes complete to %s\n", str);	
 }
 void FLP_Printf::OnSendAborted( SystemAddress systemAddress )
 {
 	char str[32];
-	systemAddress.ToString(true, (char*) str, 32);
+	systemAddress.ToString(true, (char*) str, static_cast<size_t>(32));
 	RAKNET_DEBUG_PRINTF("Send aborted to %s\n", str);
 }
 FileList::FileList()
@@ -788,6 +788,27 @@ void FileList::GetCallbacks(DataStructures::List<FileListProgress*> &callbacks)
 	callbacks = fileListProgressCallbacks;
 }
 
+bool FileList::FixEndingSlash(char *str)
+{
+#ifdef _WIN32
+	if (str[strlen(str) - 1] != '/' && str[strlen(str) - 1] != '\\')
+	{
+#pragma warning(push)
+#pragma warning(disable:4996)
+		strcat(str, "\\"); // Only \ works with system commands, used by AutopatcherClient
+#pragma warning(pop)
+		return true;
+	}
+#else
+	if (str[strlen(str) - 1] != '\\' && str[strlen(str) - 1] != '/')
+	{
+		strcat(str, "/"); // Only / works with Linux
+		return true;
+	}
+#endif
+
+	return false;
+}
 
 bool FileList::FixEndingSlash(char *str, size_t strLength)
 {

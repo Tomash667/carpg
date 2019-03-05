@@ -7,7 +7,7 @@
  *  of patent rights can be found in the RakNet Patents.txt file in the same directory.
  *
  *
- *  Modified work: Copyright (c) 2017, SLikeSoft UG (haftungsbeschr‰nkt)
+ *  Modified work: Copyright (c) 2017, SLikeSoft UG (haftungsbeschr√§nkt)
  *
  *  This source code was modified by SLikeSoft. Modifications are licensed under the MIT-style
  *  license found in the license.txt file in the root directory of this source tree.
@@ -54,7 +54,14 @@
 #include "cat/src/crypt/rand/EntropyLinux.cpp"
 #include "cat/src/crypt/rand/EntropyWindowsCE.cpp"
 #include "cat/src/crypt/rand/EntropyGeneric.cpp"
+#ifdef _M_X64
+#pragma warning(push)
+#pragma warning(disable:4838)
+#endif
 #include "cat/src/crypt/rand/Fortuna.cpp"
+#ifdef _M_X64
+#pragma warning(pop)
+#endif
 
 #include "cat/src/crypt/tunnel/KeyAgreement.cpp"
 #include "cat/src/crypt/tunnel/AuthenticatedEncryption.cpp"

@@ -7,7 +7,7 @@
  *  of patent rights can be found in the RakNet Patents.txt file in the same directory.
  *
  *
- *  Modified work: Copyright (c) 2016-2017, SLikeSoft UG (haftungsbeschr‰nkt)
+ *  Modified work: Copyright (c) 2016-2018, SLikeSoft UG (haftungsbeschr√§nkt)
  *
  *  This source code was modified by SLikeSoft. Modifications are licensed under the MIT-style
  *  license found in the license.txt file in the root directory of this source tree.
@@ -729,42 +729,49 @@ bool ReliabilityLayer::HandleSocketReceiveFromConnectedPlayer(
 
 			return false;
 		}
-		for (i=0; i<incomingAcks.ranges.Size();i++)
-		{
-            if (incomingAcks.ranges[i].minIndex>incomingAcks.ranges[i].maxIndex || (incomingAcks.ranges[i].maxIndex == (uint24_t)(0xFFFFFFFF)))
-			{
-				RakAssert(incomingAcks.ranges[i].minIndex<=incomingAcks.ranges[i].maxIndex);
 
+		unsigned int k = 0;
+		while (k < unreliableWithAckReceiptHistory.Size()) {
+			if (incomingAcks.IsWithinRange(unreliableWithAckReceiptHistory[k].datagramNumber)) {
+				InternalPacket *ackReceipt = AllocateFromInternalPacketPool();
+				AllocInternalPacketData(ackReceipt, 5, false, _FILE_AND_LINE_);
+				ackReceipt->dataBitLength = BYTES_TO_BITS(5);
+				ackReceipt->data[0] = (MessageID)ID_SND_RECEIPT_ACKED;
+				memcpy(ackReceipt->data + sizeof(MessageID), &unreliableWithAckReceiptHistory[k].sendReceiptSerial, sizeof(uint32_t));
+				outputQueue.Push(ackReceipt, _FILE_AND_LINE_);
+
+				// Remove, swap with last
+				unreliableWithAckReceiptHistory.RemoveAtIndex(k);
+			} else {
+				k++;
+			}
+		}
+
+		// early out, if we've got no outstanding datagramHistory entries
+		if (datagramHistory.IsEmpty()) {
+			receivePacketCount++;
+			return true;
+		}
+
+		for (i = 0; i < incomingAcks.ranges.Size(); i++) {
+			// note: minIndex is ensured to be always <= maxIndex - otherwise Deserialize() would have failed
+			RakAssert(incomingAcks.ranges[i].minIndex <= incomingAcks.ranges[i].maxIndex);
+
+			if (incomingAcks.ranges[i].maxIndex == (uint24_t)(0xFFFFFFFF)) {
 				for (unsigned int messageHandlerIndex=0; messageHandlerIndex < messageHandlerList.Size(); messageHandlerIndex++)
-					messageHandlerList[messageHandlerIndex]->OnReliabilityLayerNotification("incomingAcks minIndex > maxIndex or maxIndex is max value", BYTES_TO_BITS(length), systemAddress, true);
+					messageHandlerList[messageHandlerIndex]->OnReliabilityLayerNotification("incomingAcks maxIndex is max value", BYTES_TO_BITS(length), systemAddress, true);
 				return false;
 			}
-			for (datagramNumber=incomingAcks.ranges[i].minIndex; datagramNumber >= incomingAcks.ranges[i].minIndex && datagramNumber <= incomingAcks.ranges[i].maxIndex; datagramNumber++)
-			{
-				CCTimeType whenSent;
-				
-				if (unreliableWithAckReceiptHistory.Size()>0)
-				{
-					unsigned int k=0;
-					while (k < unreliableWithAckReceiptHistory.Size())
-					{
-						if (unreliableWithAckReceiptHistory[k].datagramNumber == datagramNumber)
-						{
-							InternalPacket *ackReceipt = AllocateFromInternalPacketPool();
-							AllocInternalPacketData(ackReceipt, 5,  false, _FILE_AND_LINE_ );
-							ackReceipt->dataBitLength=BYTES_TO_BITS(5);
-							ackReceipt->data[0]=(MessageID)ID_SND_RECEIPT_ACKED;
-							memcpy(ackReceipt->data+sizeof(MessageID), &unreliableWithAckReceiptHistory[k].sendReceiptSerial, sizeof(uint32_t));
-							outputQueue.Push(ackReceipt, _FILE_AND_LINE_ );
 
-							// Remove, swap with last
-							unreliableWithAckReceiptHistory.RemoveAtIndex(k);
-						}
-						else
-							k++;
-					}
+			for (datagramNumber = incomingAcks.ranges[i].minIndex; datagramNumber <= incomingAcks.ranges[i].maxIndex; datagramNumber++) {
+				const DatagramSequenceNumberType offsetIntoList = datagramNumber - datagramHistoryPopCount;
+				if (offsetIntoList >= datagramHistory.Size()) {
+					// reached the end of the datagramHistory list - hence, we are done
+					receivePacketCount++;
+					return true;
 				}
 
+				CCTimeType whenSent;
 				MessageNumberNode *messageNumberNode = GetMessageNumberNodeByDatagramIndex(datagramNumber, &whenSent);
 				if (messageNumberNode)
 				{
@@ -802,6 +809,12 @@ bool ReliabilityLayer::HandleSocketReceiveFromConnectedPlayer(
 	}
 	else if (dhf.isNAK)
 	{
+		// early out, if we've got no outstanding datagramHistory entries
+		if (datagramHistory.IsEmpty()) {
+			receivePacketCount++;
+			return true;
+		}
+
 		DatagramSequenceNumberType messageNumber;
 		DataStructures::RangeList<DatagramSequenceNumberType> incomingNAKs;
 		if (incomingNAKs.Deserialize(&socketData)==false)
@@ -813,24 +826,31 @@ bool ReliabilityLayer::HandleSocketReceiveFromConnectedPlayer(
 		}
 		for (i=0; i<incomingNAKs.ranges.Size();i++)
 		{
-			if (incomingNAKs.ranges[i].minIndex>incomingNAKs.ranges[i].maxIndex)
-			{
-				RakAssert(incomingNAKs.ranges[i].minIndex<=incomingNAKs.ranges[i].maxIndex);
+			// note: minIndex is ensured to be always <= maxIndex - otherwise Deserialize() would have failed
+			RakAssert(incomingNAKs.ranges[i].minIndex <= incomingNAKs.ranges[i].maxIndex);
 
+			if (incomingNAKs.ranges[i].maxIndex == (uint24_t)(0xFFFFFFFF)) {
 				for (unsigned int messageHandlerIndex=0; messageHandlerIndex < messageHandlerList.Size(); messageHandlerIndex++)
-					messageHandlerList[messageHandlerIndex]->OnReliabilityLayerNotification("incomingNAKs minIndex>maxIndex", BYTES_TO_BITS(length), systemAddress, true);			
+					messageHandlerList[messageHandlerIndex]->OnReliabilityLayerNotification("incomingNAKs maxIndex is max value", BYTES_TO_BITS(length), systemAddress, true);
 
 				return false;
 			}
 			// Sanity check
 			//RakAssert(incomingNAKs.ranges[i].maxIndex.val-incomingNAKs.ranges[i].minIndex.val<1000);
-			for (messageNumber=incomingNAKs.ranges[i].minIndex; messageNumber >= incomingNAKs.ranges[i].minIndex && messageNumber <= incomingNAKs.ranges[i].maxIndex; messageNumber++)
+			for (messageNumber = incomingNAKs.ranges[i].minIndex; messageNumber <= incomingNAKs.ranges[i].maxIndex; messageNumber++)
 			{
 				congestionManager.OnNAK(timeRead, messageNumber);
 
 				// REMOVEME
 				//				printf("%p NAK %i\n", this, dhf.datagramNumber.val);
 
+
+				const DatagramSequenceNumberType offsetIntoList = messageNumber - datagramHistoryPopCount;
+				if (offsetIntoList >= datagramHistory.Size()) {
+					// reached the end of the datagramHistory list - hence, we are done
+					receivePacketCount++;
+					return true;
+				}
 
 				CCTimeType timeSent;
 				MessageNumberNode *messageNumberNode = GetMessageNumberNodeByDatagramIndex(messageNumber, &timeSent);

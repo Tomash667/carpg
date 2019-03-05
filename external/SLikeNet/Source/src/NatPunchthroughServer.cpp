@@ -7,7 +7,7 @@
  *  of patent rights can be found in the RakNet Patents.txt file in the same directory.
  *
  *
- *  Modified work: Copyright (c) 2016-2017, SLikeSoft UG (haftungsbeschr‰nkt)
+ *  Modified work: Copyright (c) 2016-2018, SLikeSoft UG (haftungsbeschr√§nkt)
  *
  *  This source code was modified by SLikeSoft. Modifications are licensed under the MIT-style
  *  license found in the license.txt file in the root directory of this source tree.
@@ -77,7 +77,7 @@ void NatPunchthroughServer::User::LogConnectionAttempts(SLNet::RakString &rs)
 	unsigned int index;
 	char guidStr[128], ipStr[128];
 	guid.ToString(guidStr, 128);
-	systemAddress.ToString(true,ipStr,128);
+	systemAddress.ToString(true,ipStr,static_cast<size_t>(128));
 	rs= SLNet::RakString("User systemAddress=%s guid=%s\n", ipStr, guidStr);
 	rs+= SLNet::RakString("%i attempts in list:\n", connectionAttempts.Size());
 	for (index=0; index < connectionAttempts.Size(); index++)
@@ -98,12 +98,12 @@ void NatPunchthroughServer::User::LogConnectionAttempts(SLNet::RakString &rs)
 		if (connectionAttempts[index]->sender==this)
 		{
 			connectionAttempts[index]->recipient->guid.ToString(guidStr, 128);
-			connectionAttempts[index]->recipient->systemAddress.ToString(true,ipStr,128);
+			connectionAttempts[index]->recipient->systemAddress.ToString(true,ipStr,static_cast<size_t>(128));
 		}
 		else
 		{
 			connectionAttempts[index]->sender->guid.ToString(guidStr, 128);
-			connectionAttempts[index]->sender->systemAddress.ToString(true,ipStr,128);
+			connectionAttempts[index]->sender->systemAddress.ToString(true,ipStr,static_cast<size_t>(128));
 		}
 
 		rs+= SLNet::RakString("Target systemAddress=%s, guid=%s.\n", ipStr, guidStr);
@@ -205,8 +205,8 @@ void NatPunchthroughServer::Update(void)
 							char str[1024];
 							char addr1[128], addr2[128];
 							// 8/01/09 Fixed bug where this was after DeleteConnectionAttempt()
-							connectionAttempt->sender->systemAddress.ToString(true,addr1,128);
-							connectionAttempt->recipient->systemAddress.ToString(true,addr2,128);
+							connectionAttempt->sender->systemAddress.ToString(true,addr1,static_cast<size_t>(128));
+							connectionAttempt->recipient->systemAddress.ToString(true,addr2,static_cast<size_t>(128));
 							sprintf_s(str, "Sending ID_NAT_TARGET_UNRESPONSIVE to sender %s and recipient %s.", addr1, addr2);
 							natPunchthroughServerDebugInterface->OnServerMessage(str);
 							SLNet::RakString log;
@@ -457,7 +457,7 @@ void NatPunchthroughServer::OnGetMostRecentPort(Packet *packet)
 	{
 		SLNet::RakString log;
 		char addr1[128], addr2[128];
-		packet->systemAddress.ToString(true,addr1,128);
+		packet->systemAddress.ToString(true,addr1,static_cast<size_t>(128));
 		packet->guid.ToString(addr2, 128);
 		log= SLNet::RakString("Got ID_NAT_GET_MOST_RECENT_PORT from systemAddress %s guid %s. port=%i. sessionId=%i. userFound=%i.", addr1, addr2, mostRecentPort, curSessionId, objectExists);
 		natPunchthroughServerDebugInterface->OnServerMessage(log.C_String());
@@ -504,7 +504,7 @@ void NatPunchthroughServer::OnGetMostRecentPort(Packet *packet)
 				{
 					SLNet::RakString log;
 					char addr1[128], addr2[128];
-					recipientSystemAddress.ToString(true,addr1,128);
+					recipientSystemAddress.ToString(true,addr1,static_cast<size_t>(128));
 					connectionAttempt->recipient->guid.ToString(addr2, 128);
 					log= SLNet::RakString("Sending ID_NAT_CONNECT_AT_TIME to recipient systemAddress %s guid %s", addr1, addr2);
 					natPunchthroughServerDebugInterface->OnServerMessage(log.C_String());
@@ -528,7 +528,7 @@ void NatPunchthroughServer::OnGetMostRecentPort(Packet *packet)
 				{
 					SLNet::RakString log;
 					char addr1[128], addr2[128];
-					senderSystemAddress.ToString(true,addr1,128);
+					senderSystemAddress.ToString(true,addr1,static_cast<size_t>(128));
 					connectionAttempt->sender->guid.ToString(addr2, 128);
 					log= SLNet::RakString("Sending ID_NAT_CONNECT_AT_TIME to sender systemAddress %s guid %s", addr1, addr2);
 					natPunchthroughServerDebugInterface->OnServerMessage(log.C_String());
@@ -563,7 +563,7 @@ void NatPunchthroughServer::OnGetMostRecentPort(Packet *packet)
 		{
 			SLNet::RakString log;
 			char addr1[128], addr2[128];
-			packet->systemAddress.ToString(true,addr1,128);
+			packet->systemAddress.ToString(true,addr1,static_cast<size_t>(128));
 			packet->guid.ToString(addr2, 128);
 			log= SLNet::RakString("Ignoring ID_NAT_GET_MOST_RECENT_PORT from systemAddress %s guid %s", addr1, addr2);
 			natPunchthroughServerDebugInterface->OnServerMessage(log.C_String());
@@ -601,8 +601,8 @@ void NatPunchthroughServer::StartPunchthroughForUser(User *user)
 			{
 				char str[1024];
 				char addr1[128], addr2[128];
-				sender->systemAddress.ToString(true,addr1,128);
-				recipient->systemAddress.ToString(true,addr2,128);
+				sender->systemAddress.ToString(true,addr1,static_cast<size_t>(128));
+				recipient->systemAddress.ToString(true,addr2,static_cast<size_t>(128));
 				sprintf_s(str, "Sending NAT_ATTEMPT_PHASE_GETTING_RECENT_PORTS to sender %s and recipient %s.", addr1, addr2);
 				natPunchthroughServerDebugInterface->OnServerMessage(str);
 			}
