@@ -1603,8 +1603,6 @@ void Game::UpdateAi(float dt)
 
 					if(u.data->spells && u.action == A_NONE && u.frozen == FROZEN::NO)
 					{
-						bool break_action = false;
-
 						// rzucanie czarów
 						for(int i = 2; i >= 0; --i)
 						{
@@ -1662,9 +1660,6 @@ void Game::UpdateAi(float dt)
 								}
 							}
 						}
-
-						if(break_action)
-							break;
 					}
 
 					if(u.IsHoldingBow() || IS_SET(u.data->flags, F_MAGE))
@@ -1954,7 +1949,7 @@ void Game::UpdateAi(float dt)
 					else if(Vec3::Distance(u.pos, ai.target_last_pos) < 1.f)
 					{
 						// szukaj kolejnego pokoju
-						InsideLocation* inside = (InsideLocation*)L.location;
+						InsideLocation* inside = static_cast<InsideLocation*>(L.location);
 						InsideLocationLevel& lvl = inside->GetLevelData();
 						Room* room = lvl.GetNearestRoom(u.pos);
 						ai.escape_room = room->connected[Rand() % room->connected.size()];
@@ -2045,7 +2040,7 @@ void Game::UpdateAi(float dt)
 								mid /= (float)close_enemies.size();
 
 								// które to pomieszczenie?
-								Room* room = ((InsideLocation*)L.location)->GetLevelData().FindEscapeRoom(u.pos, mid);
+								Room* room = static_cast<InsideLocation*>(L.location)->GetLevelData().FindEscapeRoom(u.pos, mid);
 
 								if(room)
 								{

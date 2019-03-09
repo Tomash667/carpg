@@ -10,6 +10,9 @@ Version 0.9 (???):
 + usuwanie korytarzy prowadz¹cych do nik¹d
 + aktualizacja bibliotek: Angelscript 2.33, Bullet 2.88, DirectXMath 3.13, FMod 1.10.11, SLikeNet 0.1.2, Visual Leak Detector 2.5.1, zlib 1.2.11
 - naprawiony b³¹d po³¹czenia do serwera przy u¿yciu has³a LAN
+- naprawiony brak wp³ywu hp na morale jednostek
+- naprawiony brak magicznego efektu u klienta gdy znika umar³a przywo³ana jednostka
+- naprawiony brak oznaczenia pocz¹tkowej lokalizacji u klienta jako odwiedzona
 
 --------------------------------------------------------------------------------
 Wersja 0.8.1 (???):
@@ -21,8 +24,8 @@ Wersja 0.8.1 (???):
 - naprawione generowanie kamieni w jaskini/kopalni które mog³o zablokowaæ przejœcie
 - naprawione rozmawianie z postaci¹ która opuszcza/wchodzi do budynku
 - naprawiony wyciek pamiêci zwi¹zany z portalami u klienta
-- naprawiony crash przy ponownych odwiedzinach lokacji za portalem
-- naprawiona nieprawid³owa pozycja na mapie œwiata u klienta po wczytaniu gry w lokacji za portalem
+- naprawiony crash przy ponownych odwiedzinach lokalizacji za portalem
+- naprawiona nieprawid³owa pozycja na mapie œwiata u klienta po wczytaniu gry w lokalizacji za portalem
 
 --------------------------------------------------------------------------------
 Wersja 0.8 (2019-02-23):
@@ -178,7 +181,7 @@ Wersja 0.6 (2017-10-01):
 - naprawiony b³¹d wczytywania klientów gdy serwer opuœci grê na mapie œwiata a potem rozpocznie now¹ grê
 - naprawiona komenda warp gdy jednostka u¿ywa obiektu
 - naprawiony b³¹d z losowym wyœwietlaniem kolorów przy atrybutach/umiejêtnoœciach
-- naprawione u¿ywanie komendy goto_map w budynku i powrót do tej samej lokacji
+- naprawione u¿ywanie komendy goto_map w budynku i powrót do tej samej lokalizacji
 - naprawiona nieprawid³owa informacja ¿e zosta³eœ wyrzucony zamiast informacji o wy³¹czaniu serwera
 - naprawiony losowy crash przy wybieraniu ³atwej walki na arenie
 - naprawiony b³¹d z prawid³owym odtwarzaniem dŸwiêków areny w multiplayer
@@ -193,7 +196,7 @@ Wersja 0.6 (2017-10-01):
 - naprawiony brak animacji postaci czasami
 - naprawione zapisywanie i wczytywanie nazwy postaci/zapisu zawieraj¹cej cudzys³ów
 - naprawione nierównomierne generowanie jednostek w karczmie/na arenie
-- naprawiony brak komunikatu o pobliskich wrogach przy próbie opuszczenia lokacji przez klienta
+- naprawiony brak komunikatu o pobliskich wrogach przy próbie opuszczenia lokalizacji przez klienta
 
 --------------------------------------------------------------------------------
 Wersja 0.5 (2017-09-07):
@@ -401,7 +404,7 @@ Wersja 0.2.23 (2015-01-31):
 - naprawiony b³êdny stan tarczy gdy postaæ zostanie pobita blokuj¹c
 - naprawione popsute stan broni u klienta gdy zostanie pobity chowaj¹c/wyjmuj¹c broñ
 - naprawiona mo¿liwoœæ u¿ywania okna rozmów na mapie œwiata
-- naprawiony rzadki crash po wejœciu do lokacji zwi¹zany z generowaniem skrzyni [Minister of Death]
+- naprawiony rzadki crash po wejœciu do lokalizacji zwi¹zany z generowaniem skrzyni [Minister of Death]
 - naprawione crashe po wczytywaniu gry spowodowane przez wykonywane w czasie zapisywania akcje klienta [Minister of Death/Leinnan]
 - naprawione nie przerywanie przez ai u¿ywanie obiektu [Minister of Death]
 - naprawione blokowanie siê ai cz³onków dru¿yny gdy u¿yj¹ obiektu pod¹¿aj¹c z graczem [Minister of Death]
@@ -426,7 +429,7 @@ Wersja 0.2.22 (2015-01-24):
 + mo¿na zmieniæ klawisz konsoli
 + mo¿na opuœciæ miasto w czasie trwania zawodów
 - naprawiony crash przy dostawaniu z³ota jeœli gracz a po nim npc wezm¹ kredyt [Minister of Death]
-- naprawione zawieszanie w mp przy wchodzeniu do lokacji [thebard88]
+- naprawione zawieszanie w mp przy wchodzeniu do lokalizacji [thebard88]
 - naprawiona brakuj¹ca fizyka krzes³a
 - naprawiona z³a tekstura w skrytce bandytów
 - naprawiony z³y wygl¹d klienta u serwera gdy wybra³ zerowe w³osy, w¹sy lub brodê [Leinnan]
@@ -436,7 +439,7 @@ Wersja 0.2.22 (2015-01-24):
 - naprawiono zabijanie mieszkañców jednym strza³em nie agregowa³o [Minister of Death]
 - naprawiony crash po daniu miksturki oczyszczenia umys³u magowi [Minister of Death]
 - naprawione angielskie dialogi
-- naprawione brakuj¹ce dialogi starego maga po wchodzeniu do lokacji
+- naprawione brakuj¹ce dialogi starego maga po wchodzeniu do lokalizacji
 - naprawiony nie przet³umaczony test w ekwipunku gracza [Zinny]
 - przedmioty w mieœcie odnawiaj¹ siê
 - naprawiony b³¹d: gracz maj¹c wyci¹gniêt¹ broñ zleca wypicie miksturki, gdy chowa broñ przerywa akcjê, nie mo¿na wykonywaæ ¿adnych akcji w ekwipunku
@@ -463,7 +466,7 @@ Wersja 0.2.21 (2015-01-04):
 - usuniêty crash przy rozmowie z Jozanem (po przyniesieniu ksiêgi) i agentem w angielskiej wersji [Zinny]
 - usuniêty crash po zawodach [Zinny]
 - naprawiony b³¹d z magami Ÿle okreœlaj¹cymi dystans do wroga
-- usuniêty crash przy opuszczaniu lokacji gdy jednostka wygenerowana po graczu u¿ywa obiektu (postacie które opuœci³y dru¿ynê, pos³añcy itp.) [Zinny]
+- usuniêty crash przy opuszczaniu lokalizacji gdy jednostka wygenerowana po graczu u¿ywa obiektu (postacie które opuœci³y dru¿ynê, pos³añcy itp.) [Zinny]
 - naprawiony b³¹d z wczytywanie zapisów z wersji starszej ni¿ 0.2.20 (psu³o akcjê postaci)
 
 --------------------------------------------------------------------------------
@@ -471,7 +474,7 @@ Wersja 0.2.20 (2014-12-12):
 Informacja o zapisach:
 * Zapisy z ka¿dej wersji powinny dzia³aæ w tej wersji.
 * Nowe budynki i obiekty nie pojawi¹ siê w ju¿ wygenerowanych miastach/wioskach.
-* W wygenerowanych lokacjach nie pojawi¹ siê nowe przedmioty dopóki siê nie zresetuj¹.
+* W wygenerowanych lokalizacjach nie pojawi¹ siê nowe przedmioty dopóki siê nie zresetuj¹.
 * £awy zostaj¹ zamienione na obrócone w dobr¹ stronê.
 * Aktualnie trwaj¹ce efekty alkoholu nie zostan¹ zmienione na nowe.
 Dodane:
@@ -536,7 +539,7 @@ Naprawione:
 - usuniêty b³¹d z wyszukiwaniem œcie¿ek ai, postacie które nie mog¹ otwieraæ drzwi nie mog³y wejœæ na pole z zamkniêtymi drzwiami nawet gdy drzwi by³ przy krawêdzi pola
 - usuniêty rzadki crash gdy ai szuka celu do postaci która jest przy krawêdzi mapy
 - naprawiony rzadki brak animacji podnoszenia przedmiotu z ziemi
-- blokada opuszczenia lokacji jest przypisana do chodzenia a nie do klawisza Shift, dzia³a te¿ w podziemiach
+- blokada opuszczenia lokalizacji jest przypisana do chodzenia a nie do klawisza Shift, dzia³a te¿ w podziemiach
 - ai potrafi³ wydobywaæ rudê tylko z dwóch z czterech kierunków
 - usuniêty b³¹d, gdy rozpoczn¹ siê zawody w piciu a gracz siedzi to wbije siê w sto³ek
 - naprawiony z³y napis po przegranej, gracze opuszczali grê i mog³o pisaæ ¿e podró¿owa³eœ samotnie
@@ -643,13 +646,13 @@ Naprawione b³êdy:
 - usuniêty b³¹d w zaklêciu o¿ywiania, o¿ywali tam gdzie stali blokuj¹c siê w innych wrogach
 - czar wyssania ¿ycia nie dzia³a na sojuszników
 - magowie sprawdzaj¹ czy nie ma kogoœ na lini strza³u
-- usuniêty b³¹d, po przejœciu questa 'Z³o' lokacja nigdy nie jest resetowana (nowi wrogowie siê pojawiaj¹ a starzy nie znikaj¹)
+- usuniêty b³¹d, po przejœciu questa 'Z³o' lokalizacja nigdy nie jest resetowana (nowi wrogowie siê pojawiaj¹ a starzy nie znikaj¹)
 - usuniêty rzadki crash po wchodzeniu do miasta/wioski
 - usuniêty b³¹d w generowaniu obrazów nachodz¹cych na siebie (i inny obiektów wisz¹cych na œcianie)
 - po zawodach jeœli nie weŸmie siê w nich udzia³u poprawnie mówi ¿e ju¿ w tym roku by³y
 - pogadanie z ochroniarzami w queœcie 'Zaginiony ³uk' crashowa³o
 - ochroniarz i boss w queœcie 'Zaginony ³uk' mia³ teksty goblina
-- usuniêty crash w sekretnej lokacji
+- usuniêty crash w sekretnej lokalizacji
 - usuniêty b³¹d z wp³ywem œmierci wroga na morale cz³onków dru¿yny gracza
 - usuniêty b³¹d w queœcie 'Dziwny kamieñ', nie liczy³ siê do ukoñczonych unikalnych zadañ, nie da³o siê przejœæ na 100% gry
 - bohaterowie przed zawodami nie rozchodz¹ siê, wczytywanie po ich wygenerowniu nie crashuje
@@ -666,11 +669,11 @@ Wersja 0.2.5 (2014-06-22):
 + powtarzalny quest "List goñczy"
 + tryb hardcore
 + szybkie zapisywanie i wczytywanie
-+ nowa lokacja, ksiê¿ycowa studnia
++ nowa lokalizacja, ksiê¿ycowa studnia
 + kilof, animacja wydobywania rudy
 + tron, animacja siedzenia
 + magiczne coœ u magów, nowe obrazy
-+ wiêcej nazw lokacji, imion bohaterów, tekstów
++ wiêcej nazw lokalizacji, imion bohaterów, tekstów
 + udŸwig cz³onków dru¿yny
 + screenshot w zapisie
 + lepsza minimapa, wiêkszy zasiêg odkrywania
@@ -730,7 +733,7 @@ Wersja 0.2.1 (2014-06-05):
 + logowanie mo¿liwoœci procesora
 + wykrywanie duplikatów plików
 + szybsze wczytywanie jeœli wy³¹czymy dŸwiêk lub muzykê
-- usuniêty crash przy zapisywaniu siê w questowej lokacji 2 razy
+- usuniêty crash przy zapisywaniu siê w questowej lokalizacji 2 razy
 - usuniêty crash przy otwieraniu dziennika jeœli wczeœniej by³ otwarty na stronie z zadaniem a teraz nie mamy ¿adnego
 - usuniête wycieki pamiêci które po d³u¿szym graniu mog¹ doprowadziæ do braku pamiêci i crashu
 
@@ -741,7 +744,7 @@ Za du¿o ¿eby wszystko wymieniaæ wiêc tylko najwa¿niejsze zmiany od wersji 0.1:
 	* tarcza, ³uk, ró¿ne miksturki, inne przedmioty
 	* potê¿ny cios, strzelanie, blokowanie, bash
 	* lepsze ai, pathfinding
-	* mapa œwiata, ró¿ne lokacje, miasta, wioski
+	* mapa œwiata, ró¿ne lokalizacje, miasta, wioski
 	* zadania, plotki, newsy
 	* zapisywanie i wczytywanie
 	* pu³apki, czary wrogów

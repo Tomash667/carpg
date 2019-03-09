@@ -399,7 +399,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 				case CMD_MAP2CONSOLE:
 					if(game_state == GS_LEVEL && !L.location->outside)
 					{
-						InsideLocationLevel& lvl = ((InsideLocation*)L.location)->GetLevelData();
+						InsideLocationLevel& lvl = static_cast<InsideLocation*>(L.location)->GetLevelData();
 						Tile::DebugDraw(lvl.map, Int2(lvl.w, lvl.h));
 					}
 					else
@@ -1502,7 +1502,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 				case CMD_TILE_INFO:
 					if(L.location->outside && pc->unit->in_building == -1 && L.terrain->IsInside(pc->unit->pos))
 					{
-						OutsideLocation* outside = (OutsideLocation*)L.location;
+						OutsideLocation* outside = static_cast<OutsideLocation*>(L.location);
 						const TerrainTile& t = outside->tiles[PosToPt(pc->unit->pos)(outside->size)];
 						Msg(t.GetInfo());
 					}

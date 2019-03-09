@@ -277,7 +277,7 @@ void HumanPredraw(void* ptr, Matrix* mat, int n)
 	if(n != 0)
 		return;
 
-	Unit* u = (Unit*)ptr;
+	Unit* u = static_cast<Unit*>(ptr);
 
 	if(u->data->type == UNIT_TYPE::HUMAN)
 	{
@@ -1390,7 +1390,7 @@ void Game::UpdatePostEffects(float dt)
 	float drunk = pc->unit->alcohol / pc->unit->hpmax;
 	if(drunk > 0.1f)
 	{
-		PostEffect* e = nullptr, *e2;
+		PostEffect* e, *e2;
 		post_effects.resize(post_effects.size() + 2);
 		e = &*(post_effects.end() - 2);
 		e2 = &*(post_effects.end() - 1);
@@ -1659,10 +1659,10 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 		l.seed = RandVal();
 		if(!l.outside)
 		{
-			InsideLocation* inside = (InsideLocation*)L.location;
+			InsideLocation* inside = static_cast<InsideLocation*>(L.location);
 			if(inside->IsMultilevel())
 			{
-				MultiInsideLocation* multi = (MultiInsideLocation*)inside;
+				MultiInsideLocation* multi = static_cast<MultiInsideLocation*>(inside);
 				multi->infos[L.dungeon_level].seed = l.seed;
 			}
 		}
@@ -1799,7 +1799,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 
 		if(L.location->type == L_ENCOUNTER)
 		{
-			OutsideLocation* outside = (OutsideLocation*)L.location;
+			OutsideLocation* outside = static_cast<OutsideLocation*>(L.location);
 			outside->bloods.clear();
 			DeleteElements(outside->objects);
 			DeleteElements(outside->chests);

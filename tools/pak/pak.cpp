@@ -165,6 +165,7 @@ struct Paker
 					f.path = new_path;
 					f.name = find_data.cFileName;
 					f.size = find_data.nFileSizeLow;
+					f.name_offset = 0;
 					files.push_back(f);
 				}
 			}

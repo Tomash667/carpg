@@ -464,10 +464,10 @@ void CommandParser::ArenaCombat(cstring str)
 	vector<Arena::Enemy> units;
 	Tokenizer t;
 	t.FromString(str);
-	bool side = false;
 	bool any[2] = { false,false };
 	try
 	{
+		bool side = false;
 		t.Next();
 		while(!t.IsEof())
 		{

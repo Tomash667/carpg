@@ -67,7 +67,7 @@ void Chest::Load(FileReader& f, bool local)
 		handler = nullptr;
 	else
 	{
-		handler = (ChestEventHandler*)refid;
+		handler = reinterpret_cast<ChestEventHandler*>(refid);
 		Game::Get().load_chest_handler.push_back(this);
 	}
 }

@@ -36,7 +36,7 @@ void Room::Load(FileReader& f)
 	f >> size;
 	connected.resize(f.Read<uint>());
 	for(Room*& room : connected)
-		room = (Room*)f.Read<int>();
+		room = reinterpret_cast<Room*>(f.Read<int>());
 	if(LOAD_VERSION >= V_0_5)
 		f >> target;
 	else
@@ -71,6 +71,6 @@ void Room::Read(BitStreamReader& f)
 	byte count = f.Read<byte>();
 	connected.resize(count);
 	for(Room*& room : connected)
-		room = (Room*)(int)f.Read<byte>();
+		room = reinterpret_cast<Room*>((int)f.Read<byte>());
 	f.ReadCasted<byte>(target);
 }

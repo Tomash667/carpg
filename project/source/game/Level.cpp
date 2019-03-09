@@ -483,7 +483,7 @@ bool Level::RemoveTrap(int netid)
 void Level::RemoveUnit(Unit* unit, bool notify)
 {
 	assert(unit);
-	if(unit->action == A_DESPAWN)
+	if(unit->action == A_DESPAWN || (Net::IsClient() && unit->summoner))
 		Game::Get().SpawnUnitEffect(*unit);
 	unit->to_remove = true;
 	to_remove.push_back(unit);

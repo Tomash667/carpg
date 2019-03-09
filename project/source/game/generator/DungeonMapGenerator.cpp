@@ -390,7 +390,6 @@ void DungeonMapGenerator::RemoveDeadEndCorridors()
 		if(connected->IsCorridor() && connected->connected.size() == 1u)
 			to_remove->push_back(connected);
 		room->Free();
-		++counter;
 	}
 }
 

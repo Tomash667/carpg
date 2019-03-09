@@ -14,7 +14,7 @@ Pozycja w CaRpg:
    Y - dó³, góra   +
    Z - ty³, przód  +
 
-Mapa (lokacji, œwiata):
+Mapa (lokalizacji, œwiata):
  (0,h)--------(w,h)
    |            |
    |            |

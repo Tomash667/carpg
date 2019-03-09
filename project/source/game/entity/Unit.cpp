@@ -39,6 +39,7 @@ vector<Unit*> Unit::refid_table;
 vector<pair<Unit**, int>> Unit::refid_request;
 int Unit::netid_counter;
 static Unit* SUMMONER_PLACEHOLDER = (Unit*)0xFA4E1111;
+static AIController* AI_PLACEHOLDER = (AIController*)1;
 
 //=================================================================================================
 Unit::~Unit()
@@ -1827,7 +1828,7 @@ void Unit::Load(GameReader& f, bool local)
 		event_handler = nullptr;
 	else
 	{
-		event_handler = (UnitEventHandler*)unit_event_handler_quest_refid;
+		event_handler = reinterpret_cast<UnitEventHandler*>(unit_event_handler_quest_refid);
 		Game::Get().load_unit_handler.push_back(this);
 	}
 	CalculateLoad();
@@ -2346,7 +2347,7 @@ bool Unit::Read(BitStreamReader& f)
 		Error("Invalid live state %d.", live_state);
 		return false;
 	}
-	summoner = (summoner ? SUMMONER_PLACEHOLDER : nullptr);
+	this->summoner = (summoner ? SUMMONER_PLACEHOLDER : nullptr);
 	f >> mark;
 
 	// hero/player data
@@ -2358,7 +2359,7 @@ bool Unit::Read(BitStreamReader& f)
 	{
 		// hero
 		byte flags;
-		ai = (AIController*)1; // (X_X)
+		ai = AI_PLACEHOLDER;
 		player = nullptr;
 		hero = new HeroData;
 		hero->unit = this;
@@ -2404,7 +2405,7 @@ bool Unit::Read(BitStreamReader& f)
 	else
 	{
 		// ai
-		ai = (AIController*)1; // (X_X)
+		ai = AI_PLACEHOLDER;
 		hero = nullptr;
 		player = nullptr;
 	}
@@ -3961,7 +3962,7 @@ void Unit::CreateMesh(CREATE_MESH mode)
 				data->state = ResourceState::Loading;
 				ResourceManager::Get().AddTask(this, TaskCallback([](TaskData& td)
 				{
-					Unit* unit = (Unit*)td.ptr;
+					Unit* unit = static_cast<Unit*>(td.ptr);
 					unit->data->state = ResourceState::Loaded;
 				}));
 			}

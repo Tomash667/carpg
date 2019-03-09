@@ -225,7 +225,7 @@ void AIController::Load(GameReader& f)
 	}
 	else if(state == AIController::Cast)
 	{
-		cast_target = (Unit*)f.Read<int>();
+		cast_target = reinterpret_cast<Unit*>(f.Read<int>());
 		Game::Get().ai_cast_targets.push_back(this);
 	}
 	f >> have_potion;
@@ -346,5 +346,5 @@ float AIController::GetMorale() const
 	else if(hpp < 0.5f)
 		m -= 1.f;
 
-	return morale;
+	return m;
 }

@@ -81,7 +81,7 @@ osoby. Oczekuj zmian na lepsze!
 	klikniêcie + alt - wyœwietla dla ilu przedmiotów to zrobiæ
 	F - zabierz wszystko
 3.4. Mapa œwiata
-	lewy przycisk myszki - podró¿uj do lokacji / wejdŸ
+	lewy przycisk myszki - podró¿uj do lokalizacji / wejdŸ
 	Tab - otwórz / zamknij okno tekstu w multiplayer
 	Enter - wprowadzanie tekstu w multiplayer
 3.5. Dziennik

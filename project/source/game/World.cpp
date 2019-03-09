@@ -890,6 +890,7 @@ void World::GenerateWorld(int start_location_type, int start_location_target)
 	state = State::ON_MAP;
 	current_location_index = start_location;
 	current_location = locations[current_location_index];
+	current_location->state = LS_ENTERED;
 	world_pos = current_location->pos;
 	L.location_index = current_location_index;
 	L.location = current_location;
