@@ -2,10 +2,7 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "ErrorHandler.h"
-#include "Engine.h"
 #include "Version.h"
-#pragma warning(push)
-#pragma warning(disable : 4091)
 #define IN
 #define OUT
 #include <CrashRpt.h>
@@ -132,98 +129,6 @@ registered(false)
 }
 
 //=================================================================================================
-long ErrorHandler::HandleCrash(EXCEPTION_POINTERS* exc)
-{
-	Error("Handling crash. Code: 0x%x\nText: %s\nFlags: %d\nAddress: 0x%p\nMode: %s.", exc->ExceptionRecord->ExceptionCode,
-		CodeToString(exc->ExceptionRecord->ExceptionCode), exc->ExceptionRecord->ExceptionFlags, exc->ExceptionRecord->ExceptionAddress,
-		ToString(crash_mode));
-
-	// if disabled simply return
-	if(crash_mode == CrashMode::None)
-	{
-		Error("Crash mode set to none.");
-		return EXCEPTION_EXECUTE_HANDLER;
-	}
-
-	// create directory for minidumps/logs
-	CreateDirectory("crashes", nullptr);
-
-	// prepare string with datetime
-	time_t t = time(0);
-	tm ct;
-	localtime_s(&ct, &t);
-	cstring str_time = Format("%04d%02d%02d%02d%02d%02d", ct.tm_year + 1900, ct.tm_mon + 1, ct.tm_mday, ct.tm_hour, ct.tm_min, ct.tm_sec);
-
-	if(!IsDebuggerPresent())
-	{
-		// create file for minidump
-		HANDLE hDumpFile = CreateFile(Format("crashes/crash%s.dmp", str_time), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_WRITE | FILE_SHARE_READ, 0,
-			CREATE_ALWAYS, 0, 0);
-		if(hDumpFile == INVALID_HANDLE_VALUE)
-			hDumpFile = CreateFile(Format("crash%s.dmp", str_time), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_WRITE | FILE_SHARE_READ, 0, CREATE_ALWAYS, 0, 0);
-
-		// save minidump
-		if(hDumpFile != INVALID_HANDLE_VALUE)
-		{
-			MINIDUMP_EXCEPTION_INFORMATION ExpParam;
-			ExpParam.ThreadId = GetCurrentThreadId();
-			ExpParam.ExceptionPointers = exc;
-			ExpParam.ClientPointers = TRUE;
-
-			// set type
-			MINIDUMP_TYPE minidump_type;
-			switch(crash_mode)
-			{
-			default:
-			case CrashMode::Normal:
-				minidump_type = MiniDumpNormal;
-				break;
-			case CrashMode::DataSeg:
-				minidump_type = MiniDumpWithDataSegs;
-				break;
-			case CrashMode::Full:
-				minidump_type = (MINIDUMP_TYPE)(MiniDumpWithDataSegs | MiniDumpWithFullMemory);
-				break;
-			}
-
-			// write dump
-			MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), hDumpFile, minidump_type, &ExpParam, nullptr, nullptr);
-			CloseHandle(hDumpFile);
-		}
-		else
-			Error("Failed to save minidump (%d).", GetLastError());
-	}
-	else
-		Warn("Debugger is present, not creating minidump.");
-
-	// copy log
-	TextLogger* tlog = GetTextLogger();
-	if(tlog)
-	{
-		tlog->Flush();
-		CopyFile(tlog->GetPath().c_str(), Format("crashes/crash%s.txt", str_time), FALSE);
-	}
-
-	// copy stream
-	if(stream_log.IsOpen())
-	{
-		if(current_packet)
-			StreamEnd(false);
-		stream_log.Flush();
-		if(stream_log.GetSize() > 0)
-			CopyFile(stream_log_file.c_str(), Format("crashes/crash%s.stream", str_time), FALSE);
-	}
-
-	// show error message
-	cstring msg = Format("Engine: Unhandled exception caught!\nCode: 0x%x\nText: %s\nFlags: %d\nAddress: 0x%p\n\nPlease report this error.",
-		exc->ExceptionRecord->ExceptionCode, CodeToString(exc->ExceptionRecord->ExceptionCode), exc->ExceptionRecord->ExceptionFlags,
-		exc->ExceptionRecord->ExceptionAddress);
-	Engine::Get().ShowError(msg);
-
-	return EXCEPTION_EXECUTE_HANDLER;
-}
-
-//=================================================================================================
 void ErrorHandler::RegisterHandler(Config& cfg, const string& log_path)
 {
 	int version = cfg.GetVersion();
@@ -336,6 +241,7 @@ void ErrorHandler::RegisterHandler(Config& cfg, const string& log_path)
 		info.uPriorities[CR_SMTP] = CR_NEGATIVE_PRIORITY;
 		info.uPriorities[CR_SMAPI] = CR_NEGATIVE_PRIORITY;
 		info.uMiniDumpType = minidump_type;
+		info.dwFlags = CR_INST_ALL_POSSIBLE_HANDLERS | CR_INST_SHOW_ADDITIONAL_INFO_FIELDS | CR_INST_NO_EMAIL_VALIDATION;
 
 		int r = crInstall(&info);
 		assert(r == 0);

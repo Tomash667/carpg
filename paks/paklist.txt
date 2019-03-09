@@ -16,10 +16,10 @@ file "../bin/D3DX9_43.dll" "D3DX9_43.dll"
 file "../bin/fmod.dll" "fmod.dll"
 
 // crash reporter
-file "../bin/CrashRpt1403.dll" "CrashRpt1403.dll"
+file "../bin/CrashRpt1500.dll" "CrashRpt1500.dll"
 file "../bin/dbghelp.dll" "dbghelp.dll"
 file "../bin/crashrpt_lang.ini" "crashrpt_lang.ini"
-file "../bin/CrashSender1403.exe" "CrashSender1403.exe"
+file "../bin/CrashSender1500.exe" "CrashSender1500.exe"
 
 // copy assets
 dir "../bin/data" "data"

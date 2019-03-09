@@ -2,7 +2,7 @@ EXTERNAL VERSION LIST
 --------------------------------------------------------------------------------
 Angelscript - 2.33 (<http://www.angelcode.com/angelscript/>)
 Bullet - 2.88 (<https://github.com/bulletphysics/bullet3>)
-CrashRpt - 1.4.3 r1645
+CrashRpt - 1.5 fork (<https://github.com/Tomash667/crashrpt2>)
 DirectX - Microsoft DirectX SDK (June 2010)
 DirectXMath - 3.13 (<https://github.com/Microsoft/DirectXMath>)
 FMod - 1.10.11 (Low level API <https://www.fmod.com/resources/documentation-api?page=content/generated/common/revision.html>)

@@ -57,8 +57,6 @@ inline cstring ToString(StreamLogMode stream_log_mode)
 //-----------------------------------------------------------------------------
 class ErrorHandler
 {
-	friend LONG WINAPI Crash(EXCEPTION_POINTERS* exc);
-
 public:
 	static ErrorHandler& Get()
 	{
@@ -81,8 +79,6 @@ private:
 	};
 
 	ErrorHandler();
-
-	long HandleCrash(EXCEPTION_POINTERS* exc);
 
 	static ErrorHandler handler;
 	CrashMode crash_mode;
