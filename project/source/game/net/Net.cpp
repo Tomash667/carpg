@@ -1452,7 +1452,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				c.id = player.action_usable->netid;
 				c.count = USE_USABLE_END;
 			}
-			else
+			else if(player.action_unit)
 			{
 				player.action_unit->busy = Unit::Busy_No;
 				player.action_unit->look_target = nullptr;

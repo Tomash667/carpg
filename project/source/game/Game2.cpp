@@ -8952,8 +8952,20 @@ void Game::DeleteUnit(Unit* unit)
 			pc_data.target_unit = pc->unit;
 		if(unit == pc_data.selected_unit)
 			pc_data.selected_unit = nullptr;
-		if(pc->action == PlayerController::Action_LootUnit && pc->action_unit == unit)
-			pc->unit->BreakAction();
+		if(Net::IsClient())
+		{
+			if(pc->action == PlayerController::Action_LootUnit && pc->action_unit == unit)
+				pc->unit->BreakAction();
+		}
+		else
+		{
+			for(PlayerInfo* player : N.players)
+			{
+				PlayerController* pc = player->pc;
+				if(pc->action == PlayerController::Action_LootUnit && pc->action_unit == unit)
+					pc->action_unit = nullptr;
+			}
+		}
 
 		if(unit->player && Net::IsLocal())
 		{

@@ -13,6 +13,7 @@ Version 0.9 (???):
 - fixed enemy hp not affecting morale
 - fixed missing magic effect for clients when despawning dead summoned unit
 - fixed client start location not marked as visited
+- fixed server crash when looted unit is removed
 
 --------------------------------------------------------------------------------
 Version 0.8.1 (???):
