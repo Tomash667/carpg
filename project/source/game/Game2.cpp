@@ -408,9 +408,9 @@ void Game::SetupCamera(float dt)
 					{
 						rot = 0;
 						int mov = 0;
-						if(lvl.rooms[lvl.map[x + (z - 1)*lvl.w].room].IsCorridor())
+						if(lvl.rooms[lvl.map[x + (z - 1)*lvl.w].room]->IsCorridor())
 							++mov;
-						if(lvl.rooms[lvl.map[x + (z + 1)*lvl.w].room].IsCorridor())
+						if(lvl.rooms[lvl.map[x + (z + 1)*lvl.w].room]->IsCorridor())
 							--mov;
 						if(mov == 1)
 							pos.z += 0.8229f;
@@ -421,9 +421,9 @@ void Game::SetupCamera(float dt)
 					{
 						rot = PI / 2;
 						int mov = 0;
-						if(lvl.rooms[lvl.map[x - 1 + z * lvl.w].room].IsCorridor())
+						if(lvl.rooms[lvl.map[x - 1 + z * lvl.w].room]->IsCorridor())
 							++mov;
-						if(lvl.rooms[lvl.map[x + 1 + z * lvl.w].room].IsCorridor())
+						if(lvl.rooms[lvl.map[x + 1 + z * lvl.w].room]->IsCorridor())
 							--mov;
 						if(mov == 1)
 							pos.x += 0.8229f;
@@ -7612,7 +7612,7 @@ void Game::UpdateElectros(LevelContext& ctx, float dt)
 
 				if(e.dmg >= 10.f)
 				{
-					static vector<std::pair<Unit*, float>> targets;
+					static vector<pair<Unit*, float>> targets;
 
 					// traf w kolejny cel
 					for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
@@ -7622,14 +7622,14 @@ void Game::UpdateElectros(LevelContext& ctx, float dt)
 
 						float dist = Vec3::Distance((*it2)->pos, e.hitted.back()->pos);
 						if(dist <= 5.f)
-							targets.push_back(std::pair<Unit*, float>(*it2, dist));
+							targets.push_back(pair<Unit*, float>(*it2, dist));
 					}
 
 					if(!targets.empty())
 					{
 						if(targets.size() > 1)
 						{
-							std::sort(targets.begin(), targets.end(), [](const std::pair<Unit*, float>& target1, const std::pair<Unit*, float>& target2)
+							std::sort(targets.begin(), targets.end(), [](const pair<Unit*, float>& target1, const pair<Unit*, float>& target2)
 							{
 								return target1.second < target2.second;
 							});
@@ -7638,7 +7638,7 @@ void Game::UpdateElectros(LevelContext& ctx, float dt)
 						Unit* target = nullptr;
 						float dist;
 
-						for(vector<std::pair<Unit*, float>>::iterator it2 = targets.begin(), end2 = targets.end(); it2 != end2; ++it2)
+						for(vector<pair<Unit*, float>>::iterator it2 = targets.begin(), end2 = targets.end(); it2 != end2; ++it2)
 						{
 							Vec3 hitpoint;
 							Unit* hitted;
@@ -8191,6 +8191,12 @@ void Game::LeaveLevel(bool clear)
 		}
 		if(L.city_ctx && (!Net::IsLocal() || N.was_client))
 			DeleteElements(L.city_ctx->inside_buildings);
+		if(Net::IsClient() && !L.location->outside)
+		{
+			InsideLocation* inside = (InsideLocation*)L.location;
+			InsideLocationLevel& lvl = inside->GetLevelData();
+			Room::Free(lvl.rooms);
+		}
 	}
 
 	ais.clear();
@@ -10697,7 +10703,7 @@ void Game::HandleQuestEvent(Quest_Event* event)
 
 			if(inside->type == L_CRYPT)
 			{
-				Room& room = lvl->rooms[inside->special_room];
+				Room& room = *lvl->rooms[inside->special_room];
 				LocalVector2<Chest*> chests;
 				for(Chest* chest2 : lvl->chests)
 				{

@@ -250,7 +250,7 @@ Resource* ResourceManager::AddResource(cstring filename, cstring path)
 	res->filename = filename;
 	res->type = type;
 
-	std::pair<ResourceIterator, bool>& result = resources.insert(res);
+	pair<ResourceIterator, bool>& result = resources.insert(res);
 	if(result.second)
 	{
 		// added

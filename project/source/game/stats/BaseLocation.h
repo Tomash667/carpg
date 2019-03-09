@@ -69,7 +69,7 @@ struct RoomStr
 	cstring id;
 	RoomType* room;
 
-	explicit RoomStr(cstring _id) : id(_id), room(nullptr)
+	explicit RoomStr(cstring id) : id(id), room(nullptr)
 	{
 	}
 };
@@ -81,7 +81,7 @@ struct RoomStrChance
 	RoomType* room;
 	int chance;
 
-	RoomStrChance(cstring _id, int _chance) : id(_id), chance(_chance), room(nullptr)
+	RoomStrChance(cstring id, int chance) : id(id), chance(chance), room(nullptr)
 	{
 	}
 };
@@ -137,7 +137,7 @@ struct BaseLocation
 	int size, size_lvl, join_room, join_corridor, corridor_chance;
 	Int2 corridor_size, room_size;
 	int options;
-	RoomStr schody, wymagany;
+	RoomStr stairs, required;
 	Vec3 fog_color, fog_color_lvl, ambient_color, ambient_color_lvl;
 	Vec2 fog_range, fog_range_lvl;
 	float draw_range, draw_range_lvl;

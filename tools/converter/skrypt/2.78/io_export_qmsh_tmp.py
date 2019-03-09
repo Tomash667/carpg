@@ -17,7 +17,6 @@ bl_info = {
 
 import bpy
 from bpy.props import StringProperty, BoolProperty
-from math import pi
 import subprocess
 import mathutils
 import os
@@ -93,7 +92,7 @@ def ProcessMeshObject(data,obj):
 	v = obj.scale
 	data.file.write("\t\tscale %f,%f,%f\n" % (v[0], v[1], v[2]))
 	# Parent Armature i Parent Bone
-	if obj.parent == None:
+	if obj.parent is None:
 		sParent = ""
 	else:
 		if obj.parent.type != "ARMATURE":
@@ -106,7 +105,7 @@ def ProcessMeshObject(data,obj):
 	data.file.write("\t\tmaterials %i {\n" % len(mats))
 	for mat2 in mats:
 		mat = mat2.material
-		if mat == None:
+		if mat is None:
 			data.file.write("\t\t\tmaterial %s { }\n" % QuoteString(""))
 		else:
 			data.file.write("\t\t\tmaterial %s {\n" % QuoteString(mat.name))
@@ -147,7 +146,6 @@ def ProcessMeshObject(data,obj):
 			else:
 				sSmooth = "0"
 			data.file.write("\t\t\t%i %i %s" % (len(f.vertices), f.material_index, sSmooth))
-			ii = 0
 			for v in f.vertices:
 				data.file.write(" %i 0,0" % (v))
 			data.file.write(" %f,%f,%f\n" % (f.normal.x,f.normal.y,f.normal.z))
@@ -225,7 +223,7 @@ def ProcessArmatureObject(data,obj):
 	for bone in armature.bones:
 		data.file.write("\t\tbone %s {\n" % QuoteString(bone.name))
 		# Parent
-		if bone.parent == None:
+		if bone.parent is None:
 			sBoneParent = ""
 		else:
 			sBoneParent = bone.parent.name
@@ -430,15 +428,14 @@ def ExportQmsh(data):
 			try:
 				data.file.close()
 				os.remove(data.path)
-			except:
+			except Exception:
 				pass
 			return False
 	finally:
 		try:
 			data.file.close()
-		except:
+		except Exception:
 			pass
-	print()
 	
 ################################################################################
 def RunExport(filepath, config):

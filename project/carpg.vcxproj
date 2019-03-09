@@ -309,7 +309,7 @@
     <ClInclude Include="source\game\GameFile.h" />
     <ClInclude Include="source\game\GameKeys.h" />
     <ClInclude Include="source\game\generator\CityGenerator.h" />
-    <ClInclude Include="source\game\generator\Mapa2.h" />
+    <ClInclude Include="source\game\generator\DungeonMapGenerator.h" />
     <ClInclude Include="source\game\helpers\LocationHelper.h" />
     <ClInclude Include="source\game\helpers\UnitHelper.h" />
     <ClInclude Include="source\game\Language.h" />
@@ -563,7 +563,7 @@
     <ClCompile Include="source\game\Game2.cpp" />
     <ClCompile Include="source\game\GameCommon.cpp" />
     <ClCompile Include="source\game\generator\CityGenerator.cpp" />
-    <ClCompile Include="source\game\generator\Mapa2.cpp" />
+    <ClCompile Include="source\game\generator\DungeonMapGenerator.cpp" />
     <ClCompile Include="source\game\helpers\UnitHelper.cpp" />
     <ClCompile Include="source\game\Init.cpp" />
     <ClCompile Include="source\game\Language.cpp" />

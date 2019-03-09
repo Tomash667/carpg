@@ -2,6 +2,7 @@
 
 //-----------------------------------------------------------------------------
 #include "InsideLocationGenerator.h"
+#include "DungeonMapGenerator.h"
 
 //-----------------------------------------------------------------------------
 class DungeonGenerator final : public InsideLocationGenerator
@@ -16,4 +17,6 @@ public:
 private:
 	void CreatePortal(InsideLocationLevel& lvl);
 	void GenerateDungeonItems();
+
+	DungeonMapGenerator map_gen;
 };

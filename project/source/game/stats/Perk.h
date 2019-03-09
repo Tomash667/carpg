@@ -144,7 +144,7 @@ inline bool SortPerks(Perk p1, Perk p2)
 {
 	return strcoll(PerkInfo::perks[(int)p1].name.c_str(), PerkInfo::perks[(int)p2].name.c_str()) < 0;
 }
-inline bool SortTakenPerks(const std::pair<cstring, int>& tp1, const std::pair<cstring, int>& tp2)
+inline bool SortTakenPerks(const pair<cstring, int>& tp1, const pair<cstring, int>& tp2)
 {
 	return strcoll(tp1.first, tp2.first) < 0;
 }

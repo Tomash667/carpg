@@ -356,7 +356,7 @@ void Mesh::LoadBoneGroups(StreamReader& stream)
 		assert(gr.parent < head.n_groups);
 		assert(gr.parent != i || i == 0);
 
-		// bone indexes
+		// bone indices
 		byte count;
 		stream.Read(count);
 		gr.bones.resize(count);

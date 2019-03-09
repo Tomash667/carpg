@@ -3,7 +3,7 @@
 #include "DungeonGenerator.h"
 #include "InsideLocation.h"
 #include "MultiInsideLocation.h"
-#include "Mapa2.h"
+#include "DungeonMapGenerator.h"
 #include "BaseLocation.h"
 #include "Level.h"
 #include "QuestManager.h"
@@ -31,130 +31,119 @@ void DungeonGenerator::Generate()
 	InsideLocationLevel& lvl = inside->GetLevelData();
 	assert(!lvl.map);
 
-	OpcjeMapy opcje;
-	opcje.korytarz_szansa = base.corridor_chance;
-	opcje.w = opcje.h = base.size + base.size_lvl * dungeon_level;
-	opcje.rozmiar_korytarz = base.corridor_size;
-	opcje.rozmiar_pokoj = base.room_size;
-	opcje.rooms = &lvl.rooms;
-	opcje.groups = &lvl.groups;
-	opcje.polacz_korytarz = base.join_corridor;
-	opcje.polacz_pokoj = base.join_room;
-	opcje.ksztalt = (IS_SET(base.options, BLO_ROUND) ? OpcjeMapy::OKRAG : OpcjeMapy::PROSTOKAT);
-	opcje.schody_gora = (inside->HaveUpStairs() ? OpcjeMapy::LOSOWO : OpcjeMapy::BRAK);
-	opcje.schody_dol = (inside->HaveDownStairs() ? OpcjeMapy::LOSOWO : OpcjeMapy::BRAK);
-	opcje.kraty_szansa = base.bars_chance;
-	opcje.devmode = Game::Get().devmode;
+	MapSettings settings;
+	settings.corridor_chance = base.corridor_chance;
+	settings.map_w = settings.map_h = base.size + base.size_lvl * dungeon_level;
+	settings.corridor_size = base.corridor_size;
+	settings.room_size = base.room_size;
+	settings.rooms = &lvl.rooms;
+	settings.groups = &lvl.groups;
+	settings.corridor_join_chance = base.join_corridor;
+	settings.room_join_chance = base.join_room;
+	settings.shape = (IS_SET(base.options, BLO_ROUND) ? MapSettings::CIRCLE : MapSettings::SQUARE);
+	settings.stairs_up_loc = (inside->HaveUpStairs() ? MapSettings::RANDOM : MapSettings::NONE);
+	settings.stairs_down_loc = (inside->HaveDownStairs() ? MapSettings::RANDOM : MapSettings::NONE);
+	settings.bars_chance = base.bars_chance;
+	settings.devmode = Game::Get().devmode;
+	settings.remove_dead_end_corridors = true;
 
-	// ostatni poziom krypty
 	if(inside->type == L_CRYPT && !inside->HaveDownStairs())
 	{
-		opcje.schody_gora = OpcjeMapy::NAJDALEJ;
-		Room& r = Add1(lvl.rooms);
-		r.target = RoomTarget::Treasury;
-		r.size = Int2(7, 7);
-		r.pos.x = r.pos.y = (opcje.w - 7) / 2;
+		// last crypt level
+		Room* room = Room::Get();
+		room->target = RoomTarget::Treasury;
+		room->size = Int2(7, 7);
+		room->pos.x = room->pos.y = (settings.map_w - 7) / 2;
+		room->connected.clear();
 		inside->special_room = 0;
+		lvl.rooms.push_back(room);
+		settings.stairs_up_loc = MapSettings::FAR_FROM_ROOM;
 	}
 	else if(inside->type == L_DUNGEON && (inside->target == THRONE_FORT || inside->target == THRONE_VAULT) && !inside->HaveDownStairs())
 	{
-		// sala tronowa
-		opcje.schody_gora = OpcjeMapy::NAJDALEJ;
-		Room& r = Add1(lvl.rooms);
-		r.target = RoomTarget::Throne;
-		r.size = Int2(13, 7);
-		r.pos.x = (opcje.w - 13) / 2;
-		r.pos.y = (opcje.w - 7) / 2;
+		// throne room
+		Room* room = Room::Get();
+		room->target = RoomTarget::Throne;
+		room->size = Int2(13, 7);
+		room->pos.x = (settings.map_w - 13) / 2;
+		room->pos.y = (settings.map_w - 7) / 2;
+		room->connected.clear();
 		inside->special_room = 0;
+		lvl.rooms.push_back(room);
+		settings.stairs_up_loc = MapSettings::FAR_FROM_ROOM;
 	}
 	else if(L.location_index == QM.quest_secret->where && QM.quest_secret->state == Quest_Secret::SECRET_DROPPED_STONE && !inside->HaveDownStairs())
 	{
-		// sekret
-		opcje.schody_gora = OpcjeMapy::NAJDALEJ;
-		Room& r = Add1(lvl.rooms);
-		r.target = RoomTarget::PortalCreate;
-		r.size = Int2(7, 7);
-		r.pos.x = r.pos.y = (opcje.w - 7) / 2;
+		// secret
+		Room* room = Room::Get();
+		room->target = RoomTarget::PortalCreate;
+		room->size = Int2(7, 7);
+		room->pos.x = room->pos.y = (settings.map_w - 7) / 2;
+		room->connected.clear();
 		inside->special_room = 0;
+		lvl.rooms.push_back(room);
+		settings.stairs_up_loc = MapSettings::FAR_FROM_ROOM;
 	}
 	else if(L.location_index == QM.quest_evil->target_loc && QM.quest_evil->evil_state == Quest_Evil::State::GeneratedCleric)
 	{
 		// schody w krypcie 0 jak najdalej od œrodka
-		opcje.schody_gora = OpcjeMapy::NAJDALEJ;
+		settings.stairs_up_loc = MapSettings::FAR_FROM_ROOM;
 	}
 
 	if(QM.quest_orcs2->orcs_state == Quest_Orcs2::State::Accepted && L.location_index == QM.quest_orcs->target_loc && dungeon_level == L.location->GetLastLevel())
 	{
-		opcje.stop = true;
+		// search for room for cell
+		settings.stop = true;
 		bool first = true;
-		int proby = 0;
-		vector<int> mozliwe_pokoje;
+		int tries = 0;
+		vector<Room*> possible_rooms;
 
 		while(true)
 		{
-			if(!generuj_mape2(opcje, !first))
-			{
-				assert(0);
-				throw Format("Failed to generate dungeon map (%d)!", opcje.blad);
-			}
-
+			map_gen.Generate(settings, !first);
 			first = false;
 
-			// szukaj pokoju dla celi
-			int index = 0;
-			for(vector<Room>::iterator it = lvl.rooms.begin(), end = lvl.rooms.end(); it != end; ++it, ++index)
+			for(Room* room : lvl.rooms)
 			{
-				if(it->target == RoomTarget::None && it->connected.size() == 1)
-					mozliwe_pokoje.push_back(index);
+				if(room->target == RoomTarget::None && room->connected.size() == 1)
+					possible_rooms.push_back(room);
 			}
 
-			if(mozliwe_pokoje.empty())
+			if(possible_rooms.empty())
 			{
-				++proby;
-				if(proby == 100)
+				++tries;
+				if(tries == 100)
 					throw "Failed to generate special room in dungeon!";
 				else
 					continue;
 			}
 
-			int id = mozliwe_pokoje[Rand() % mozliwe_pokoje.size()];
-			lvl.rooms[id].target = RoomTarget::Prison;
-			// dodaj drzwi
-			Int2 pt = pole_laczace(id, lvl.rooms[id].connected.front());
-			Tile& p = opcje.mapa[pt.x + pt.y*opcje.w];
+			Room* room = RandomItem(possible_rooms);
+			room->target = RoomTarget::Prison;
+			Int2 pt = map_gen.GetConnectingTile(room, room->connected.front());
+			Tile& p = map_gen.GetMap()[pt.x + pt.y*settings.map_w];
 			p.type = DOORS;
 			p.flags |= Tile::F_SPECIAL;
 
-			if(!kontynuuj_generowanie_mapy(opcje))
-			{
-				assert(0);
-				throw Format("Failed to generate dungeon map 2 (%d)!", opcje.blad);
-			}
-
+			map_gen.ContinueGenerating();
 			break;
 		}
 	}
 	else
-	{
-		if(!generuj_mape2(opcje))
-		{
-			assert(0);
-			throw Format("Failed to generate dungeon map (%d)!", opcje.blad);
-		}
-	}
+		map_gen.Generate(settings);
 
-	lvl.w = lvl.h = opcje.w;
-	lvl.map = opcje.mapa;
-	lvl.staircase_up = opcje.schody_gora_pozycja;
-	lvl.staircase_up_dir = opcje.schody_gora_kierunek;
-	lvl.staircase_down = opcje.schody_dol_pozycja;
-	lvl.staircase_down_dir = opcje.schody_dol_kierunek;
-	lvl.staircase_down_in_wall = opcje.schody_dol_w_scianie;
+	lvl.w = lvl.h = settings.map_w;
+	lvl.map = map_gen.GetMap();
+	lvl.staircase_up = settings.stairs_up_pos;
+	lvl.staircase_up_dir = settings.stairs_up_dir;
+	lvl.staircase_down = settings.stairs_down_pos;
+	lvl.staircase_down_dir = settings.stairs_down_dir;
+	lvl.staircase_down_in_wall = settings.stairs_down_in_wall;
 
 	// inna tekstura pokoju w krypcie
 	if(inside->type == L_CRYPT && !inside->HaveDownStairs())
 	{
-		Room& r = lvl.rooms[0];
+		Room& r = *lvl.rooms[0];
 		for(int y = 0; y < r.size.y; ++y)
 		{
 			for(int x = 0; x < r.size.x; ++x)
@@ -169,7 +158,7 @@ void DungeonGenerator::Generate()
 //=================================================================================================
 void DungeonGenerator::CreatePortal(InsideLocationLevel& lvl)
 {
-	vector<std::pair<Int2, GameDirection>> good_pts;
+	vector<pair<Int2, GameDirection>> good_pts;
 
 	for(int tries = 0; tries < 100; ++tries)
 	{
@@ -231,7 +220,7 @@ void DungeonGenerator::CreatePortal(InsideLocationLevel& lvl)
 		if(good_pts.empty())
 			continue;
 
-		std::pair<Int2, GameDirection>& pt = good_pts[Rand() % good_pts.size()];
+		pair<Int2, GameDirection>& pt = good_pts[Rand() % good_pts.size()];
 
 		const Vec3 pos(2.f*pt.first.x + 1, 0, 2.f*pt.first.y + 1);
 		float rot = Clip(DirToRot(pt.second) + PI);
@@ -338,7 +327,7 @@ void DungeonGenerator::GenerateUnits()
 
 		for(TmpUnitGroup::Spawn& spawn : tmp->Roll(base_level, count))
 		{
-			Room& room = lvl.rooms[RandomItem(group.rooms)];
+			Room& room = *lvl.rooms[RandomItem(group.rooms)];
 			L.SpawnUnitInsideRoom(room, *spawn.first, spawn.second, excluded_pt, down_stairs_pt);
 		}
 	}

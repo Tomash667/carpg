@@ -2007,23 +2007,23 @@ void Game::PrepareAreaPath()
 		LineTest(L.shape_summon, from + dir, -dir, clbk, t, &t_backward);
 
 		// merge t's to find free spots, we only use last one
-		static vector<std::pair<float, bool>> t_merged;
+		static vector<pair<float, bool>> t_merged;
 		const bool OPEN = true;
 		const bool CLOSE = false;
 		t_merged.clear();
 		float unit_t = pc->unit->GetUnitRadius() / range;
 		if(unit_t < end_t)
 		{
-			t_merged.push_back(std::pair<float, bool>(0.f, OPEN));
-			t_merged.push_back(std::pair<float, bool>(unit_t, CLOSE));
+			t_merged.push_back(pair<float, bool>(0.f, OPEN));
+			t_merged.push_back(pair<float, bool>(unit_t, CLOSE));
 		}
 		for(float f : t_forward)
 		{
 			if(f >= end_t)
 				break;
-			t_merged.push_back(std::pair<float, bool>(f, OPEN));
+			t_merged.push_back(pair<float, bool>(f, OPEN));
 		}
-		t_merged.push_back(std::pair<float, bool>(end_t, OPEN));
+		t_merged.push_back(pair<float, bool>(end_t, OPEN));
 		for(float f : t_backward)
 		{
 			if(f == 0.f)
@@ -2032,9 +2032,9 @@ void Game::PrepareAreaPath()
 				f = 1.f - (f + radius / range);
 			if(f >= end_t)
 				continue;
-			t_merged.push_back(std::pair<float, bool>(f, CLOSE));
+			t_merged.push_back(pair<float, bool>(f, CLOSE));
 		}
-		std::sort(t_merged.begin(), t_merged.end(), [](const std::pair<float, bool>& a, const std::pair<float, bool>& b) { return a.first < b.first; });
+		std::sort(t_merged.begin(), t_merged.end(), [](const pair<float, bool>& a, const pair<float, bool>& b) { return a.first < b.first; });
 
 		// get list of free ranges
 		//const float extra_t = range / (range + min_t);
@@ -2149,12 +2149,11 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 
 	if(!IS_SET(base.options, BLO_LABYRINTH))
 	{
-		int index = 0;
-		for(vector<Room>::iterator it = lvl.rooms.begin(), end = lvl.rooms.end(); it != end; ++it, ++index)
+		for(Room* room : lvl.rooms)
 		{
-			box.v1 = Vec3(float(it->pos.x * 2), 0, float(it->pos.y * 2));
+			box.v1 = Vec3(float(room->pos.x * 2), 0, float(room->pos.y * 2));
 			box.v2 = box.v1;
-			box.v2 += Vec3(float(it->size.x * 2), 4, float(it->size.y * 2));
+			box.v2 += Vec3(float(room->size.x * 2), 4, float(room->size.y * 2));
 
 			if(!frustum.BoxToFrustum(box))
 				continue;
@@ -2173,21 +2172,21 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 			}
 
 			// dla ka¿dego pola
-			for(int y = 0; y < it->size.y; ++y)
+			for(int y = 0; y < room->size.y; ++y)
 			{
-				for(int x = 0; x < it->size.x; ++x)
+				for(int x = 0; x < room->size.x; ++x)
 				{
 					// czy coœ jest na tym polu
-					Tile& p = lvl.map[(x + it->pos.x) + (y + it->pos.y)*lvl.w];
-					if(p.room != index || p.flags == 0 || p.flags == Tile::F_REVEALED)
+					Tile& tile = lvl.map[(x + room->pos.x) + (y + room->pos.y)*lvl.w];
+					if(tile.room != room->index || tile.flags == 0 || tile.flags == Tile::F_REVEALED)
 						continue;
 
 					// ustaw œwiat³a
 					range[0] = range[1] = range[2] = cam.draw_range;
 					light[0] = light[1] = light[2] = nullptr;
 
-					float dx = 2.f*(it->pos.x + x) + 1.f;
-					float dz = 2.f*(it->pos.y + y) + 1.f;
+					float dx = 2.f*(room->pos.x + x) + 1.f;
+					float dz = 2.f*(room->pos.y + y) + 1.f;
 
 					for(vector<Light*>::iterator it2 = lights.begin(), end2 = lights.end(); it2 != end2; ++it2)
 					{
@@ -2246,13 +2245,13 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 					// ustaw macierze
 					int matrix_id = draw_batch.matrices.size();
 					NodeMatrix& m = Add1(draw_batch.matrices);
-					m.matWorld = Matrix::Translation(2.f*(it->pos.x + x), 0, 2.f*(it->pos.y + y));
+					m.matWorld = Matrix::Translation(2.f*(room->pos.x + x), 0, 2.f*(room->pos.y + y));
 					m.matCombined = m.matWorld * cam.matViewProj;
 
-					int tex_id = (IS_SET(p.flags, Tile::F_SECOND_TEXTURE) ? 1 : 0);
+					int tex_id = (IS_SET(tile.flags, Tile::F_SECOND_TEXTURE) ? 1 : 0);
 
 					// pod³oga
-					if(IS_SET(p.flags, Tile::F_FLOOR))
+					if(IS_SET(tile.flags, Tile::F_FLOOR))
 					{
 						DungeonPart& dp = Add1(draw_batch.dungeon_parts);
 						dp.tp = &tFloor[tex_id];
@@ -2263,18 +2262,18 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 					}
 
 					// sufit
-					if(IS_SET(p.flags, Tile::F_CEILING | Tile::F_LOW_CEILING))
+					if(IS_SET(tile.flags, Tile::F_CEILING | Tile::F_LOW_CEILING))
 					{
 						DungeonPart& dp = Add1(draw_batch.dungeon_parts);
 						dp.tp = &tCeil[tex_id];
-						dp.start_index = IS_SET(p.flags, Tile::F_LOW_CEILING) ? 12 : 6;
+						dp.start_index = IS_SET(tile.flags, Tile::F_LOW_CEILING) ? 12 : 6;
 						dp.primitive_count = 2;
 						dp.matrix = matrix_id;
 						dp.lights = lights_id;
 					}
 
 					// œciany
-					int d = (p.flags & 0xFFFF00) >> 8;
+					int d = (tile.flags & 0xFFFF00) >> 8;
 					if(d != 0)
 					{
 						// normalne
@@ -2361,8 +2360,8 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 		// dla ka¿dego pola
 		for(vector<Int2>::iterator it = tiles.begin(), end = tiles.end(); it != end; ++it)
 		{
-			Tile& p = lvl.map[it->x + it->y*lvl.w];
-			if(p.flags == 0 || p.flags == Tile::F_REVEALED)
+			Tile& tile = lvl.map[it->x + it->y*lvl.w];
+			if(tile.flags == 0 || tile.flags == Tile::F_REVEALED)
 				continue;
 
 			Box box(2.f*it->x, -4.f, 2.f*it->y, 2.f*(it->x + 1), 8.f, 2.f*(it->y + 1));
@@ -2435,10 +2434,10 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 			m.matWorld = Matrix::Translation(2.f*it->x, 0, 2.f*it->y);
 			m.matCombined = m.matWorld * cam.matViewProj;
 
-			int tex_id = (IS_SET(p.flags, Tile::F_SECOND_TEXTURE) ? 1 : 0);
+			int tex_id = (IS_SET(tile.flags, Tile::F_SECOND_TEXTURE) ? 1 : 0);
 
 			// pod³oga
-			if(IS_SET(p.flags, Tile::F_FLOOR))
+			if(IS_SET(tile.flags, Tile::F_FLOOR))
 			{
 				DungeonPart& dp = Add1(draw_batch.dungeon_parts);
 				dp.tp = &tFloor[tex_id];
@@ -2449,18 +2448,18 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 			}
 
 			// sufit
-			if(IS_SET(p.flags, Tile::F_CEILING | Tile::F_LOW_CEILING))
+			if(IS_SET(tile.flags, Tile::F_CEILING | Tile::F_LOW_CEILING))
 			{
 				DungeonPart& dp = Add1(draw_batch.dungeon_parts);
 				dp.tp = &tCeil[tex_id];
-				dp.start_index = IS_SET(p.flags, Tile::F_LOW_CEILING) ? 12 : 6;
+				dp.start_index = IS_SET(tile.flags, Tile::F_LOW_CEILING) ? 12 : 6;
 				dp.primitive_count = 2;
 				dp.matrix = matrix_id;
 				dp.lights = lights_id;
 			}
 
 			// œciany
-			int d = (p.flags & 0xFFFF00) >> 8;
+			int d = (tile.flags & 0xFFFF00) >> 8;
 			if(d != 0)
 			{
 				// normalne

@@ -48,8 +48,8 @@ void InsideLocation::Write(BitStreamWriter& f)
 		light.Write(f);
 	// rooms
 	f.WriteCasted<byte>(lvl.rooms.size());
-	for(Room& room : lvl.rooms)
-		room.Write(f);
+	for(Room* room : lvl.rooms)
+		room->Write(f);
 	// traps
 	f.WriteCasted<byte>(lvl.traps.size());
 	for(Trap* trap : lvl.traps)
@@ -138,8 +138,18 @@ bool InsideLocation::Read(BitStreamReader& f)
 		return false;
 	}
 	lvl.rooms.resize(count);
-	for(Room& room : lvl.rooms)
-		room.Read(f);
+	int index = 0;
+	for(Room*& room : lvl.rooms)
+	{
+		room = Room::Get();
+		room->Read(f);
+		room->index = index++;
+	}
+	for(Room* room : lvl.rooms)
+	{
+		for(Room*& c : room->connected)
+			c = lvl.rooms[(int)c];
+	}
 	if(!f)
 	{
 		Error("Read level: Broken packet for inside location room.");

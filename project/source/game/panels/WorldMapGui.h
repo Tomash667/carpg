@@ -22,7 +22,7 @@ public:
 	void ShowEncounterMessage(cstring text);
 	void StartTravel()
 	{
-		fallow = true;
+		follow = true;
 		tracking = -1;
 	}
 	bool HaveFocus() const { return !combo_box.focus; }
@@ -44,5 +44,5 @@ private:
 	Vec2 offset, c_pos;
 	float zoom;
 	int tracking;
-	bool clicked, fallow, c_pos_valid;
+	bool clicked, follow, c_pos_valid;
 };

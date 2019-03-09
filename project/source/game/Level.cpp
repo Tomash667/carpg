@@ -1699,9 +1699,9 @@ GroundItem* Level::SpawnGroundItemInsideAnyRoom(InsideLocationLevel& lvl, const 
 	while(true)
 	{
 		int id = Rand() % lvl.rooms.size();
-		if(!lvl.rooms[id].IsCorridor())
+		if(!lvl.rooms[id]->IsCorridor())
 		{
-			GroundItem* item2 = SpawnGroundItemInsideRoom(lvl.rooms[id], item);
+			GroundItem* item2 = SpawnGroundItemInsideRoom(*lvl.rooms[id], item);
 			if(item2)
 				return item2;
 		}
@@ -1899,12 +1899,12 @@ Unit* Level::SpawnUnitInsideRoomOrNear(InsideLocationLevel& lvl, Room& room, Uni
 	if(u)
 		return u;
 
-	LocalVector<int> connected(room.connected);
+	LocalVector<Room*> connected(room.connected);
 	connected.Shuffle();
 
-	for(vector<int>::iterator it = connected->begin(), end = connected->end(); it != end; ++it)
+	for(Room* room : connected)
 	{
-		u = SpawnUnitInsideRoom(lvl.rooms[*it], ud, level, pt, pt2);
+		u = SpawnUnitInsideRoom(*room, ud, level, pt, pt2);
 		if(u)
 			return u;
 	}
@@ -3379,13 +3379,13 @@ void Level::SpawnDungeonColliders()
 		}
 	}
 
-	for(Room& room : lvl.rooms)
+	for(Room* room : lvl.rooms)
 	{
 		// floor
-		dungeon_shape_pos.push_back(Vec3(2.f * room.pos.x, 0, 2.f * room.pos.y));
-		dungeon_shape_pos.push_back(Vec3(2.f * (room.pos.x + room.size.x), 0, 2.f * room.pos.y));
-		dungeon_shape_pos.push_back(Vec3(2.f * room.pos.x, 0, 2.f * (room.pos.y + room.size.y)));
-		dungeon_shape_pos.push_back(Vec3(2.f * (room.pos.x + room.size.x), 0, 2.f * (room.pos.y + room.size.y)));
+		dungeon_shape_pos.push_back(Vec3(2.f * room->pos.x, 0, 2.f * room->pos.y));
+		dungeon_shape_pos.push_back(Vec3(2.f * (room->pos.x + room->size.x), 0, 2.f * room->pos.y));
+		dungeon_shape_pos.push_back(Vec3(2.f * room->pos.x, 0, 2.f * (room->pos.y + room->size.y)));
+		dungeon_shape_pos.push_back(Vec3(2.f * (room->pos.x + room->size.x), 0, 2.f * (room->pos.y + room->size.y)));
 		dungeon_shape_index.push_back(index);
 		dungeon_shape_index.push_back(index + 1);
 		dungeon_shape_index.push_back(index + 2);
@@ -3395,11 +3395,11 @@ void Level::SpawnDungeonColliders()
 		index += 4;
 
 		// ceil
-		const float h = (room.IsCorridor() ? Room::HEIGHT_LOW : Room::HEIGHT);
-		dungeon_shape_pos.push_back(Vec3(2.f * room.pos.x, h, 2.f * room.pos.y));
-		dungeon_shape_pos.push_back(Vec3(2.f * (room.pos.x + room.size.x), h, 2.f * room.pos.y));
-		dungeon_shape_pos.push_back(Vec3(2.f * room.pos.x, h, 2.f * (room.pos.y + room.size.y)));
-		dungeon_shape_pos.push_back(Vec3(2.f * (room.pos.x + room.size.x), h, 2.f * (room.pos.y + room.size.y)));
+		const float h = (room->IsCorridor() ? Room::HEIGHT_LOW : Room::HEIGHT);
+		dungeon_shape_pos.push_back(Vec3(2.f * room->pos.x, h, 2.f * room->pos.y));
+		dungeon_shape_pos.push_back(Vec3(2.f * (room->pos.x + room->size.x), h, 2.f * room->pos.y));
+		dungeon_shape_pos.push_back(Vec3(2.f * room->pos.x, h, 2.f * (room->pos.y + room->size.y)));
+		dungeon_shape_pos.push_back(Vec3(2.f * (room->pos.x + room->size.x), h, 2.f * (room->pos.y + room->size.y)));
 		dungeon_shape_index.push_back(index);
 		dungeon_shape_index.push_back(index + 2);
 		dungeon_shape_index.push_back(index + 1);

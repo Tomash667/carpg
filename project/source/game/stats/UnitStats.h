@@ -63,5 +63,5 @@ struct UnitStats
 	void Write(BitStreamWriter& f) const;
 	void Read(BitStreamReader& f);
 
-	static std::map<std::pair<StatProfile*, SubprofileInfo>, UnitStats*> shared_stats;
+	static std::map<pair<StatProfile*, SubprofileInfo>, UnitStats*> shared_stats;
 };

@@ -1294,7 +1294,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			for(Location* loc : locations)
 			{
 				if(loc && loc->type != L_CITY && Vec2::Distance(loc->pos, world_pos) <= 150.f && loc->state != LS_HIDDEN)
-					active_locations.push_back(std::pair<int, bool>(index, loc->state == LS_UNKNOWN));
+					active_locations.push_back(pair<int, bool>(index, loc->state == LS_UNKNOWN));
 				++index;
 			}
 
@@ -1302,7 +1302,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			{
 				std::random_shuffle(active_locations.begin(), active_locations.end(), MyRand);
 				std::sort(active_locations.begin(), active_locations.end(),
-					[](const std::pair<int, bool>& l1, const std::pair<int, bool>& l2) -> bool { return l1.second < l2.second; });
+					[](const pair<int, bool>& l1, const pair<int, bool>& l2) -> bool { return l1.second < l2.second; });
 				update_locations = 0;
 			}
 			else

@@ -345,9 +345,9 @@ bool Pathfinding::FindPath(LevelContext& ctx, const Int2& _start_tile, const Int
 									// #---#
 									// #   #
 									int mov = 0;
-									if(lvl.rooms[lvl.map[pt1.x + (pt1.y - 1)*lvl.w].room].IsCorridor())
+									if(lvl.rooms[lvl.map[pt1.x + (pt1.y - 1)*lvl.w].room]->IsCorridor())
 										++mov;
-									if(lvl.rooms[lvl.map[pt1.x + (pt1.y + 1)*lvl.w].room].IsCorridor())
+									if(lvl.rooms[lvl.map[pt1.x + (pt1.y + 1)*lvl.w].room]->IsCorridor())
 										--mov;
 									if(mov == 1)
 									{
@@ -375,9 +375,9 @@ bool Pathfinding::FindPath(LevelContext& ctx, const Int2& _start_tile, const Int
 									//  |
 									// ###
 									int mov = 0;
-									if(lvl.rooms[lvl.map[pt1.x - 1 + pt1.y*lvl.w].room].IsCorridor())
+									if(lvl.rooms[lvl.map[pt1.x - 1 + pt1.y*lvl.w].room]->IsCorridor())
 										++mov;
-									if(lvl.rooms[lvl.map[pt1.x + 1 + pt1.y*lvl.w].room].IsCorridor())
+									if(lvl.rooms[lvl.map[pt1.x + 1 + pt1.y*lvl.w].room]->IsCorridor())
 										--mov;
 									if(mov == 1)
 									{
@@ -562,7 +562,7 @@ int Pathfinding::FindLocalPath(LevelContext& ctx, vector<Int2>& _path, const Int
 			{
 				if(!L.Collide(L.global_col, Box2d(0.25f*x, 0.25f*y, 0.25f*(x + 1), 0.25f*(y + 1)), r))
 				{
-					test_pf.push_back(std::pair<Vec2, int>(Vec2(0.25f*x, 0.25f*y), 0));
+					test_pf.push_back(pair<Vec2, int>(Vec2(0.25f*x, 0.25f*y), 0));
 					local_pfmap[x2 + y2 * w] = false;
 				}
 				else
@@ -725,16 +725,16 @@ int Pathfinding::FindLocalPath(LevelContext& ctx, vector<Int2>& _path, const Int
 		{
 			if(marked == _me)
 			{
-				test_pf.push_back(std::pair<Vec2, int>(Vec2(0.25f*my_tile.x, 0.25f*my_tile.y), 1));
-				test_pf.push_back(std::pair<Vec2, int>(Vec2(0.25f*target_tile.x, 0.25f*target_tile.y), 1));
+				test_pf.push_back(pair<Vec2, int>(Vec2(0.25f*my_tile.x, 0.25f*my_tile.y), 1));
+				test_pf.push_back(pair<Vec2, int>(Vec2(0.25f*target_tile.x, 0.25f*target_tile.y), 1));
 			}
 			return 5;
 		}
 
 		if(marked == _me)
 		{
-			test_pf.push_back(std::pair<Vec2, int>(Vec2(0.25f*my_tile.x, 0.25f*my_tile.y), 1));
-			test_pf.push_back(std::pair<Vec2, int>(Vec2(0.25f*target_tile.x, 0.25f*target_tile.y), 1));
+			test_pf.push_back(pair<Vec2, int>(Vec2(0.25f*my_tile.x, 0.25f*my_tile.y), 1));
+			test_pf.push_back(pair<Vec2, int>(Vec2(0.25f*target_tile.x, 0.25f*target_tile.y), 1));
 		}
 
 		// populate path vector (and debug drawing)
@@ -743,7 +743,7 @@ int Pathfinding::FindLocalPath(LevelContext& ctx, vector<Int2>& _path, const Int
 		do
 		{
 			if(marked == _me)
-				test_pf.push_back(std::pair<Vec2, int>(Vec2(0.25f*(p.x + minx), 0.25f*(p.y + miny)), 1));
+				test_pf.push_back(pair<Vec2, int>(Vec2(0.25f*(p.x + minx), 0.25f*(p.y + miny)), 1));
 			_path.push_back(Int2(p.x + minx, p.y + miny));
 			p = a_map[p(w)].prev;
 		} while(p != target_rel);
@@ -778,7 +778,7 @@ void Pathfinding::Draw(DebugDrawer* dd)
 
 	dd->BeginBatch();
 
-	for(vector<std::pair<Vec2, int>>::iterator it = test_pf.begin(), end = test_pf.end(); it != end; ++it)
+	for(vector<pair<Vec2, int>>::iterator it = test_pf.begin(), end = test_pf.end(); it != end; ++it)
 	{
 		Vec3 v[4] = {
 			Vec3(it->first.x, 0.1f, it->first.y + SS),

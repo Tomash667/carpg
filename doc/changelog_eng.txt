@@ -7,6 +7,7 @@ Version 0.9 (???):
 + first scripted quest - deliver resources
 + more location icons and names
 + dialog script improvements
++ removing dead end corridors
 + update libraries: Angelscript 2.33, Bullet 2.88, DirectXMath 3.13, FMod 1.10.11, SLikeNet 0.1.2, Visual Leak Detector 2.5.1, zlib 1.2.11
 - fixed failed connection when using LAN with password
 
@@ -52,7 +53,7 @@ Version 0.8 (2019-02-23):
 - wanted quest could select already used location where target will fail to spawn
 - fixed memory leak when generating mine
 - mayor dialog fixes
-- fixed wrong price calculations when selling items to fallower
+- fixed wrong price calculations when selling items to follower
 - fixed connecting to full server
 - fixed removing password from server but it was still required
 - fixed goblins/orcs missing idle dialogs
@@ -337,7 +338,7 @@ Version 0.4 (2015-10-20):
 - fixed crash when loading with quest generated items [Medarc]
 - fixed crash when quest with camp timed out (retrieve package, camp near city, stolen artifact) [Medarc]
 - fixed client credit and free days showing invalid values after loading
-- fixed duplicating last item in inventory for fallowers
+- fixed duplicating last item in inventory for followers
 - fixed dialog choices not being cleared after loading when talking
 - fixed keeping cheats from other game after loading
 - fixed camp not being removed while traveling on map if it was last visited location
@@ -380,7 +381,7 @@ Version 0.3 (2015-05-16):
 + translated language pick dialog
 + Ctrl + V in console
 + better pathfinding
-+ ai fallowing player don't avoid stepping on grass in city
++ ai following player don't avoid stepping on grass in city
 - fixed dungeon texture uv
 - enemies spawn further from player team [Docucat]
 - opening doors by ai in building don't crash
@@ -476,7 +477,7 @@ About saves:
 * Benches will be updated when loaded.
 * Active alcohol effects won't be changed to new one.
 Added:
-+ using items will work in MP for indexes larger then 255
++ using items will work in MP for index larger then 255
 + food (meat, raw meat, bread, apple, honeycomb, cheese, rice, mushroom), models created by MarkK
 + new commands: hurt, break_action, fall
 + old drunk mage join contest and tournament, drink from time to time, new dialogs

@@ -168,9 +168,6 @@
     <ClCompile Include="source\game\generator\CityGenerator.cpp">
       <Filter>3. game\generator</Filter>
     </ClCompile>
-    <ClCompile Include="source\game\generator\Mapa2.cpp">
-      <Filter>3. game\generator</Filter>
-    </ClCompile>
     <ClCompile Include="source\game\location\Camp.cpp">
       <Filter>3. game\location</Filter>
     </ClCompile>
@@ -820,6 +817,9 @@
     <ClCompile Include="source\game\entity\Encounter.cpp">
       <Filter>3. game\entity</Filter>
     </ClCompile>
+    <ClCompile Include="source\game\generator\DungeonMapGenerator.cpp">
+      <Filter>3. game\generator</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\resource\resource1.h">
@@ -895,9 +895,6 @@
       <Filter>3. game\entity</Filter>
     </ClInclude>
     <ClInclude Include="source\game\generator\CityGenerator.h">
-      <Filter>3. game\generator</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\generator\Mapa2.h">
       <Filter>3. game\generator</Filter>
     </ClInclude>
     <ClInclude Include="source\game\location\Camp.h">
@@ -1680,6 +1677,9 @@
     </ClInclude>
     <ClInclude Include="source\game\system\SpellLoader.h">
       <Filter>3. game\system\spells</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\generator\DungeonMapGenerator.h">
+      <Filter>3. game\generator</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

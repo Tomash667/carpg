@@ -87,7 +87,7 @@ void AIController::Save(GameWriter& f)
 	if(unit->data->spells)
 		f << cooldown;
 	if(state == AIController::Escape)
-		f << GetEscapeRoomId();
+		f << (escape_room ? escape_room->index : -1);
 	else if(state == AIController::Cast)
 		f << cast_target->refid;
 	f << have_potion;
@@ -210,7 +210,7 @@ void AIController::Load(GameReader& f)
 		if(room_id != -1)
 		{
 			if(!L.location->outside)
-				escape_room = &((InsideLocation*)L.location)->GetLevelData().rooms[room_id];
+				escape_room = ((InsideLocation*)L.location)->GetLevelData().rooms[room_id];
 			else
 			{
 				escape_room = nullptr;
@@ -347,13 +347,4 @@ float AIController::GetMorale() const
 		m -= 1.f;
 
 	return morale;
-}
-
-//=================================================================================================
-int AIController::GetEscapeRoomId() const
-{
-	if(escape_room)
-		return ((InsideLocation*)L.location)->GetLevelData().GetRoomId(escape_room);
-	else
-		return -1;
 }

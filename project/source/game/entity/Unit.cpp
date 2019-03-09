@@ -36,7 +36,7 @@ const float Unit::STAMINA_BASH_ATTACK = 50.f;
 const float Unit::STAMINA_UNARMED_ATTACK = 50.f;
 const float Unit::STAMINA_RESTORE_TIMER = 0.5f;
 vector<Unit*> Unit::refid_table;
-vector<std::pair<Unit**, int>> Unit::refid_request;
+vector<pair<Unit**, int>> Unit::refid_request;
 int Unit::netid_counter;
 static Unit* SUMMONER_PLACEHOLDER = (Unit*)0xFA4E1111;
 
@@ -3936,7 +3936,7 @@ void Unit::CreateMesh(CREATE_MESH mode)
 			if(mode == CREATE_MESH::LOAD)
 				ResourceManager::Get<Mesh>().Load(mesh);
 			else if(!mesh->IsLoaded())
-				Game::Get().units_mesh_load.push_back(std::pair<Unit*, bool>(this, mode == CREATE_MESH::ON_WORLDMAP));
+				Game::Get().units_mesh_load.push_back(pair<Unit*, bool>(this, mode == CREATE_MESH::ON_WORLDMAP));
 			if(data->state == ResourceState::NotLoaded)
 			{
 				ResourceManager::Get<Mesh>().AddLoadTask(mesh);

@@ -17,11 +17,12 @@ enum class RoomTarget
 
 //-----------------------------------------------------------------------------
 // Struktura opisuj¹ca pomieszczenie w podziemiach
-struct Room
+struct Room : ObjectPoolProxy<Room>
 {
 	Int2 pos, size;
-	vector<int> connected;
+	vector<Room*> connected;
 	RoomTarget target;
+	int index;
 
 	static const int MIN_SIZE = 19;
 	static const float HEIGHT;
@@ -34,6 +35,10 @@ struct Room
 	Int2 CenterTile() const
 	{
 		return pos + size / 2;
+	}
+	bool IsInside(const Int2& pt) const
+	{
+		return pt.x >= pos.x && pt.y >= pos.y && pt.x < pos.x + size.x && pt.y < pos.y + size.y;
 	}
 	bool IsInside(float x, float z) const
 	{
@@ -79,6 +84,7 @@ struct Room
 	}
 
 	bool IsCorridor() const { return target == RoomTarget::Corridor; }
+	bool IsConnected(Room* room);
 	bool CanJoinRoom() const { return target == RoomTarget::None || target == RoomTarget::StairsUp || target == RoomTarget::StairsDown; }
 
 	void Save(FileWriter& f);

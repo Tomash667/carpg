@@ -1357,10 +1357,10 @@ void CreateCharacterPanel::RebuildPerksFlow()
 			string* s = StringPool.Get();
 			*s = cc.taken_perks[i].FormatName();
 			strs.push_back(s);
-			taken_perks.push_back(std::pair<cstring, int>(s->c_str(), i));
+			taken_perks.push_back(pair<cstring, int>(s->c_str(), i));
 		}
 		else
-			taken_perks.push_back(std::pair<cstring, int>(perk.name.c_str(), i));
+			taken_perks.push_back(pair<cstring, int>(perk.name.c_str(), i));
 	}
 
 	// sort perks

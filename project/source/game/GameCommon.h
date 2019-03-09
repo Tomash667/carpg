@@ -10,7 +10,7 @@ enum GameDirection
 	GDIR_LEFT,
 	GDIR_UP,
 	GDIR_RIGHT,
-	GDIR_INVALID = -1
+	GDIR_INVALID
 };
 
 //-----------------------------------------------------------------------------
@@ -31,7 +31,26 @@ enum GameDirectionFlag
 };
 
 //-----------------------------------------------------------------------------
-inline float DirToRot(GameDirection dir)
+inline constexpr GameDirection Reversed(GameDirection dir)
+{
+	switch(dir)
+	{
+	case GDIR_DOWN:
+		return GDIR_UP;
+	case GDIR_LEFT:
+		return GDIR_RIGHT;
+	case GDIR_UP:
+		return GDIR_DOWN;
+	case GDIR_RIGHT:
+		return GDIR_LEFT;
+	default:
+		assert(0);
+		return GDIR_DOWN;
+	}
+}
+
+//-----------------------------------------------------------------------------
+inline constexpr float DirToRot(GameDirection dir)
 {
 	switch(dir)
 	{
@@ -52,11 +71,12 @@ inline float DirToRot(GameDirection dir)
 //-----------------------------------------------------------------------------
 inline Int2 DirToPos(GameDirection dir)
 {
-	const Int2 k[4] = {
+	const Int2 k[5] = {
 		Int2(0,-1),
 		Int2(-1,0),
 		Int2(0,1),
-		Int2(1,0)
+		Int2(1,0),
+		Int2(0,0)
 	};
 	return k[dir];
 }

@@ -3,7 +3,7 @@
 #include "UnitStats.h"
 #include "BitStreamFunc.h"
 
-std::map<std::pair<StatProfile*, SubprofileInfo>, UnitStats*> UnitStats::shared_stats;
+std::map<pair<StatProfile*, SubprofileInfo>, UnitStats*> UnitStats::shared_stats;
 
 //=================================================================================================
 void UnitStats::Set(StatProfile& profile)

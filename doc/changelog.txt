@@ -7,6 +7,7 @@ Version 0.9 (???):
 + pierwsze skryptowe zadanie - dostarcz zasoby
 + wiêcej ikon lokalizacji i nazw
 + usprawnienia skryptów dialogowych
++ usuwanie korytarzy prowadz¹cych do nik¹d
 + aktualizacja bibliotek: Angelscript 2.33, Bullet 2.88, DirectXMath 3.13, FMod 1.10.11, SLikeNet 0.1.2, Visual Leak Detector 2.5.1, zlib 1.2.11
 - naprawiony b³¹d po³¹czenia do serwera przy u¿yciu has³a LAN
 

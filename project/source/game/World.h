@@ -79,7 +79,7 @@ public:
 	Location* CreateLocation(LOCATION type, int levels = -1, bool is_village = false);
 	Location* CreateLocation(LOCATION type, const Vec2& pos, float range = 64.f, int target = -1, SPAWN_GROUP spawn = SG_RANDOM, bool allow_exact = true,
 		int dungeon_levels = -1);
-	typedef std::pair<LOCATION, bool>(*AddLocationsCallback)(uint index);
+	typedef pair<LOCATION, bool>(*AddLocationsCallback)(uint index);
 	void AddLocations(uint count, AddLocationsCallback clbk, float valid_dist);
 	int AddLocation(Location* loc);
 	void AddLocationAtIndex(Location* loc);

@@ -180,7 +180,7 @@ public:
 		CHECKED(engine->RegisterGlobalFunction(decl, funcPointer, asCALL_GENERIC));
 	}
 
-	void AddEnum(cstring name, std::initializer_list<std::pair<cstring, int>> const& values)
+	void AddEnum(cstring name, std::initializer_list<pair<cstring, int>> const& values)
 	{
 		CHECKED(engine->RegisterEnum(name));
 		for(auto& pair : values)

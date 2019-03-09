@@ -211,4 +211,4 @@ enum class QuestType;
 enum class SkillId;
 
 //-----------------------------------------------------------------------------
-typedef std::pair<UnitData*, int> TmpSpawn;
+typedef pair<UnitData*, int> TmpSpawn;

@@ -97,3 +97,7 @@ inline bool IsBlocking2(const Tile& p)
 {
 	return IsBlocking2(p.type);
 }
+inline bool IsEmpty(TILE_TYPE p)
+{
+	return (p == EMPTY || p == BARS || p == BARS_FLOOR || p == BARS_CEILING);
+}

@@ -79,7 +79,7 @@ void Journal::Draw(ControlDrawData* /*cdd*/)
 //=================================================================================================
 void Journal::Update(float dt)
 {
-	for(std::pair<Mode, int>& change : changes)
+	for(pair<Mode, int>& change : changes)
 	{
 		if(mode == change.first)
 		{

@@ -893,11 +893,11 @@ void ScriptManager::AddFunction(cstring decl, const asSFuncPtr& funcPointer)
 	CHECKED(engine->RegisterGlobalFunction(decl, funcPointer, asCALL_CDECL));
 }
 
-void ScriptManager::AddEnum(cstring name, std::initializer_list<std::pair<cstring, int>> const& values)
+void ScriptManager::AddEnum(cstring name, std::initializer_list<pair<cstring, int>> const& values)
 {
 	assert(name);
 	CHECKED(engine->RegisterEnum(name));
-	for(const std::pair<cstring, int>& value : values)
+	for(const pair<cstring, int>& value : values)
 		CHECKED(engine->RegisterEnumValue(name, value.first, value.second));
 }
 

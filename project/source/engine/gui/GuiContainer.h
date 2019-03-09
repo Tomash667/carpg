@@ -14,7 +14,7 @@ public:
 		F_CLICK_TO_FOCUS = 1 << 2
 	};
 
-	typedef std::pair<Control*, int> GuiItem;
+	typedef pair<Control*, int> GuiItem;
 	typedef vector<GuiItem>::iterator Iter;
 
 	GuiContainer();

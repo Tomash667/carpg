@@ -262,7 +262,7 @@ void SpellLoader::ParseAlias(const string& id)
 	if(alias)
 		t.Throw("Alias or spell already exists.");
 
-	Spell::aliases.push_back(std::pair<string, Spell*>(alias_id, spell));
+	Spell::aliases.push_back(pair<string, Spell*>(alias_id, spell));
 }
 
 //=================================================================================================

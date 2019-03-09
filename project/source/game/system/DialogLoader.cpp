@@ -121,7 +121,7 @@ void DialogLoader::LoadEntity(int top, const string& id)
 	if(top == T_DIALOG)
 	{
 		GameDialog* dialog = LoadDialog(id);
-		std::pair<GameDialog::Map::iterator, bool>& result = GameDialog::dialogs.insert(std::pair<cstring, GameDialog*>(dialog->id.c_str(), dialog));
+		pair<GameDialog::Map::iterator, bool>& result = GameDialog::dialogs.insert(pair<cstring, GameDialog*>(dialog->id.c_str(), dialog));
 		if(!result.second)
 		{
 			delete dialog;

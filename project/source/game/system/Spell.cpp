@@ -3,7 +3,7 @@
 #include "Spell.h"
 
 vector<Spell*> Spell::spells;
-vector<std::pair<string, Spell*>> Spell::aliases;
+vector<pair<string, Spell*>> Spell::aliases;
 
 //=================================================================================================
 Spell* Spell::TryGet(Cstring id)

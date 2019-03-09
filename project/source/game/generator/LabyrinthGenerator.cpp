@@ -392,10 +392,12 @@ void LabyrinthGenerator::Generate()
 	GenerateLabyrinth(lvl.map, Int2(base.size, base.size), base.room_size, lvl.staircase_up, lvl.staircase_up_dir, room_pos, base.bars_chance);
 
 	lvl.w = lvl.h = base.size;
-	Room& r = Add1(lvl.rooms);
-	r.target = RoomTarget::None;
-	r.pos = room_pos;
-	r.size = base.room_size;
+	Room* room = Room::Get();
+	room->target = RoomTarget::None;
+	room->pos = room_pos;
+	room->size = base.room_size;
+	room->connected.clear();
+	lvl.rooms.push_back(room);
 }
 
 //=================================================================================================
@@ -422,7 +424,7 @@ void LabyrinthGenerator::GenerateObjects()
 	L.SpawnObjectEntity(L.local_ctx, torch, pos, Random(MAX_ANGLE));
 
 	// torch inside treasure
-	L.SpawnObjectEntity(L.local_ctx, torch, lvl.rooms[0].Center(), Random(MAX_ANGLE));
+	L.SpawnObjectEntity(L.local_ctx, torch, lvl.rooms[0]->Center(), Random(MAX_ANGLE));
 }
 
 //=================================================================================================
@@ -468,7 +470,7 @@ void LabyrinthGenerator::GenerateUnits()
 		for(int i = 0; i < 3; ++i)
 		{
 			TmpUnitGroup::Spawn spawn = t->Get();
-			L.SpawnUnitInsideRoom(lvl.rooms[0], *spawn.first, spawn.second);
+			L.SpawnUnitInsideRoom(*lvl.rooms[0], *spawn.first, spawn.second);
 		}
 	}
 }

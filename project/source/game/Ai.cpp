@@ -1885,9 +1885,7 @@ void Game::UpdateAi(float dt)
 								// jest w podziemiach, idŸ do losowego pobliskiego pokoju
 								ai.timer = u.IsFollower() ? Random(1.f, 2.f) : Random(15.f, 30.f);
 								ai.state = AIController::SearchEnemy;
-								int gdzie = room->connected[Rand() % room->connected.size()];
-								InsideLocationLevel& lvl = inside->GetLevelData();
-								ai.escape_room = &lvl.rooms[gdzie];
+								ai.escape_room = room->connected[Rand() % room->connected.size()];
 								ai.target_last_pos = ai.escape_room->GetRandomPos(u.GetUnitRadius());
 							}
 							else
@@ -1959,8 +1957,7 @@ void Game::UpdateAi(float dt)
 						InsideLocation* inside = (InsideLocation*)L.location;
 						InsideLocationLevel& lvl = inside->GetLevelData();
 						Room* room = lvl.GetNearestRoom(u.pos);
-						int gdzie = room->connected[Rand() % room->connected.size()];
-						ai.escape_room = &lvl.rooms[gdzie];
+						ai.escape_room = room->connected[Rand() % room->connected.size()];
 						ai.target_last_pos = ai.escape_room->GetRandomPos(u.GetUnitRadius());
 					}
 				}

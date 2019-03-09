@@ -618,44 +618,38 @@ void Quest_Evil::GeneratePortal()
 {
 	InsideLocation* inside = (InsideLocation*)W.GetCurrentLocation();
 	InsideLocationLevel& lvl = inside->GetLevelData();
-	Vec3 srodek(float(lvl.w), 0, float(lvl.h));
+	Vec3 center(float(lvl.w), 0, float(lvl.h));
 
-	// szukaj pokoju
-	static vector<std::pair<int, float>> dobre;
-	int index = 0;
-	for(vector<Room>::iterator it = lvl.rooms.begin(), end = lvl.rooms.end(); it != end; ++it, ++index)
+	static vector<pair<Room*, float>> good_pts;
+	for(Room* room : lvl.rooms)
 	{
-		if(it->target == RoomTarget::None && it->size.x > 2 && it->size.y > 2)
+		if(room->target == RoomTarget::None && room->size.x > 2 && room->size.y > 2)
 		{
-			float dist = Vec3::Distance2d(it->Center(), srodek);
-			dobre.push_back(std::pair<int, float>(index, dist));
+			float dist = Vec3::Distance2d(room->Center(), center);
+			good_pts.push_back({ room, dist });
 		}
 	}
-	std::sort(dobre.begin(), dobre.end(),
-		[](const std::pair<int, float>& p1, const std::pair<int, float>& p2) { return p1.second > p2.second; });
+	std::sort(good_pts.begin(), good_pts.end(),
+		[](const pair<Room*, float>& p1, const pair<Room*, float>& p2) { return p1.second > p2.second; });
 
-	int id;
-
+	Room* room;
 	while(true)
 	{
-		id = dobre.back().first;
-		dobre.pop_back();
-		Room& r = lvl.rooms[id];
+		room = good_pts.back().first;
+		good_pts.pop_back();
 
 		L.global_col.clear();
-		L.GatherCollisionObjects(L.local_ctx, L.global_col, r.Center(), 2.f);
+		L.GatherCollisionObjects(L.local_ctx, L.global_col, room->Center(), 2.f);
 		if(L.global_col.empty())
 			break;
 
-		if(dobre.empty())
+		if(good_pts.empty())
 			throw "No free space to generate portal!";
 	}
+	good_pts.clear();
 
-	dobre.clear();
-
-	Room& r = lvl.rooms[id];
-	Vec3 portal_pos = r.Center();
-	r.target = RoomTarget::PortalCreate;
+	Vec3 portal_pos = room->Center();
+	room->target = RoomTarget::PortalCreate;
 	float rot = PI*Random(0, 3);
 	L.SpawnObjectEntity(L.local_ctx, BaseObject::Get("portal"), portal_pos, rot);
 	inside->portal = new Portal;

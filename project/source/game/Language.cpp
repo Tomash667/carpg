@@ -97,7 +97,7 @@ bool Language::LoadFileInternal(cstring path, LanguageMap* lmap)
 				t.AssertSymbol('=');
 				t.Next();
 				const string& text = t.MustGetString();
-				std::pair<LanguageMap::iterator, bool> const& r = lm->insert(LanguageMap::value_type(tstr, text));
+				pair<LanguageMap::iterator, bool> const& r = lm->insert(LanguageMap::value_type(tstr, text));
 				if(!r.second)
 				{
 					if(current_section->empty())
@@ -546,7 +546,7 @@ void Language::LoadObjectFile(Tokenizer& t, cstring filename)
 				t.AssertSymbol('=');
 				t.Next();
 				const string& text = t.MustGetString();
-				std::pair<LanguageMap::iterator, bool> const& r = strs.insert(LanguageMap::value_type(tstr, text));
+				pair<LanguageMap::iterator, bool> const& r = strs.insert(LanguageMap::value_type(tstr, text));
 				if(!r.second)
 					Warn("LANG: String '%s' already exists: \"%s\"; new text: \"%s\".", tstr.c_str(), r.first->second.c_str(), text.c_str());
 			}

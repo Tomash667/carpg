@@ -48,6 +48,6 @@ struct Spell
 	}
 
 	static vector<Spell*> spells;
-	static vector<std::pair<string, Spell*>> aliases;
+	static vector<pair<string, Spell*>> aliases;
 	static Spell* TryGet(Cstring id);
 };

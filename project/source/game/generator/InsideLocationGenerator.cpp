@@ -148,11 +148,11 @@ void InsideLocationGenerator::OnEnter()
 					{
 						QM.quest_orcs2->orcs_state = Quest_Orcs2::State::GeneratedOrcs;
 						UnitData* ud = UnitData::Get("q_orkowie_slaby");
-						for(vector<Room>::iterator it = lvl.rooms.begin(), end = lvl.rooms.end(); it != end; ++it)
+						for(Room* room : lvl.rooms)
 						{
-							if(!it->IsCorridor() && Rand() % 2 == 0)
+							if(!room->IsCorridor() && Rand() % 2 == 0)
 							{
-								Unit* u = L.SpawnUnitInsideRoom(*it, *ud, -2, Int2(-999, -999), Int2(-999, -999));
+								Unit* u = L.SpawnUnitInsideRoom(*room, *ud, -2, Int2(-999, -999), Int2(-999, -999));
 								if(u)
 									u->dont_attack = true;
 							}
@@ -192,7 +192,7 @@ void InsideLocationGenerator::OnEnter()
 		if(game.devmode)
 			Info("Generated secret room.");
 
-		Room& r = GetLevelData().rooms[0];
+		Room& r = *GetLevelData().rooms[0];
 
 		if(game.hardcore_mode)
 		{
@@ -416,9 +416,9 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 				{
 					o->rot = Vec3(0, 0, 0);
 					int mov = 0;
-					if(lvl.rooms[lvl.map[x + (y - 1)*lvl.w].room].IsCorridor())
+					if(lvl.rooms[lvl.map[x + (y - 1)*lvl.w].room]->IsCorridor())
 						++mov;
-					if(lvl.rooms[lvl.map[x + (y + 1)*lvl.w].room].IsCorridor())
+					if(lvl.rooms[lvl.map[x + (y + 1)*lvl.w].room]->IsCorridor())
 						--mov;
 					if(mov == 1)
 						o->pos.z += 0.8229f;
@@ -429,9 +429,9 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 				{
 					o->rot = Vec3(0, PI / 2, 0);
 					int mov = 0;
-					if(lvl.rooms[lvl.map[x - 1 + y * lvl.w].room].IsCorridor())
+					if(lvl.rooms[lvl.map[x - 1 + y * lvl.w].room]->IsCorridor())
 						++mov;
-					if(lvl.rooms[lvl.map[x + 1 + y * lvl.w].room].IsCorridor())
+					if(lvl.rooms[lvl.map[x + 1 + y * lvl.w].room]->IsCorridor())
 						--mov;
 					if(mov == 1)
 						o->pos.x += 0.8229f;
@@ -482,35 +482,35 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 	if(IS_SET(base.options, BLO_MAGIC_LIGHT))
 		flags = Level::SOE_MAGIC_LIGHT;
 
-	bool wymagany = false;
-	if(base.wymagany.room)
-		wymagany = true;
+	bool required = false;
+	if(base.required.room)
+		required = true;
 
-	for(vector<Room>::iterator it = lvl.rooms.begin(), end = lvl.rooms.end(); it != end; ++it)
+	for(Room* room : lvl.rooms)
 	{
-		if(it->IsCorridor())
+		if(room->IsCorridor())
 			continue;
 
-		AddRoomColliders(lvl, *it, blocks);
+		AddRoomColliders(lvl, *room, blocks);
 
 		// choose room type
 		RoomType* rt;
-		if(it->target != RoomTarget::None)
+		if(room->target != RoomTarget::None)
 		{
-			if(it->target == RoomTarget::Treasury)
+			if(room->target == RoomTarget::Treasury)
 				rt = RoomType::Find("krypta_skarb");
-			else if(it->target == RoomTarget::Throne)
+			else if(room->target == RoomTarget::Throne)
 				rt = RoomType::Find("tron");
-			else if(it->target == RoomTarget::PortalCreate)
+			else if(room->target == RoomTarget::PortalCreate)
 				rt = RoomType::Find("portal");
 			else
 			{
 				Int2 pt;
-				if(it->target == RoomTarget::StairsDown)
+				if(room->target == RoomTarget::StairsDown)
 					pt = lvl.staircase_down;
-				else if(it->target == RoomTarget::StairsUp)
+				else if(room->target == RoomTarget::StairsUp)
 					pt = lvl.staircase_up;
-				else if(it->target == RoomTarget::Portal)
+				else if(room->target == RoomTarget::Portal)
 				{
 					if(inside->portal)
 						pt = PosToPt(inside->portal->pos);
@@ -520,7 +520,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 						if(o)
 							pt = PosToPt(o->pos);
 						else
-							pt = it->CenterTile();
+							pt = room->CenterTile();
 					}
 				}
 
@@ -530,22 +530,22 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 						blocks.push_back(Int2(pt.x + x, pt.y + y));
 				}
 
-				if(base.schody.room)
-					rt = base.schody.room;
+				if(base.stairs.room)
+					rt = base.stairs.room;
 				else
 					rt = base.GetRandomRoomType();
 			}
 		}
 		else
 		{
-			if(wymagany)
-				rt = base.wymagany.room;
+			if(required)
+				rt = base.required.room;
 			else
 				rt = base.GetRandomRoomType();
 		}
 
 		int fail = 10;
-		bool wymagany_obiekt = false;
+		bool required_object = false;
 
 		// try to spawn all objects
 		for(uint i = 0; i < rt->count && fail > 0; ++i)
@@ -556,7 +556,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 
 			for(int j = 0; j < count && fail > 0; ++j)
 			{
-				auto e = GenerateDungeonObject(lvl, *it, base, on_wall, blocks, flags);
+				auto e = GenerateDungeonObject(lvl, *room, base, on_wall, blocks, flags);
 				if(!e)
 				{
 					if(IS_SET(base->flags, OBJ_IMPORTANT))
@@ -569,15 +569,15 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 					room_chests.push_back(e);
 
 				if(IS_SET(base->flags, OBJ_REQUIRED))
-					wymagany_obiekt = true;
+					required_object = true;
 
 				if(is_group)
 					base = BaseObject::Get(rt->objs[i].id);
 			}
 		}
 
-		if(wymagany && wymagany_obiekt && it->target == RoomTarget::None)
-			wymagany = false;
+		if(required && required_object && room->target == RoomTarget::None)
+			required = false;
 
 		if(!room_chests.empty())
 		{
@@ -590,7 +590,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 		blocks.clear();
 	}
 
-	if(wymagany)
+	if(required)
 		throw "Failed to generate required object!";
 
 	if(L.local_ctx.chests->empty())
@@ -601,7 +601,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 		{
 			on_wall.clear();
 			blocks.clear();
-			Room& r = lvl.rooms[Rand() % lvl.rooms.size()];
+			Room& r = *lvl.rooms[Rand() % lvl.rooms.size()];
 			if(r.target == RoomTarget::None)
 			{
 				AddRoomColliders(lvl, r, blocks);
@@ -1158,50 +1158,46 @@ void InsideLocationGenerator::SpawnHeroesInsideDungeon()
 	Game& game = Game::Get();
 	InsideLocationLevel& lvl = GetLevelData();
 
-	Room* p = lvl.GetUpStairsRoom();
-	int room_id = lvl.GetRoomId(p);
+	Room* room = lvl.GetUpStairsRoom();
 	int chance = 23;
 	bool first = true;
 
-	vector<std::pair<Room*, int>> sprawdzone;
-	vector<int> ok_room;
-	sprawdzone.push_back(std::make_pair(p, room_id));
+	vector<Room*> checked, ok_room;
+	checked.push_back(room);
 
 	while(true)
 	{
-		p = sprawdzone.back().first;
-		for(vector<int>::iterator it = p->connected.begin(), end = p->connected.end(); it != end; ++it)
+		room = checked.back();
+		for(Room* room2 : room->connected)
 		{
-			room_id = *it;
 			bool ok = true;
-			for(vector<std::pair<Room*, int>>::iterator it2 = sprawdzone.begin(), end2 = sprawdzone.end(); it2 != end2; ++it2)
+			for(Room* c : checked)
 			{
-				if(room_id == it2->second)
+				if(c == room2)
 				{
 					ok = false;
 					break;
 				}
 			}
 			if(ok && (Rand() % 20 < chance || Rand() % 3 == 0 || first))
-				ok_room.push_back(room_id);
+				ok_room.push_back(room2);
 		}
 
 		first = false;
-
 		if(ok_room.empty())
 			break;
 		else
 		{
-			room_id = ok_room[Rand() % ok_room.size()];
+			room = RandomItem(ok_room);
 			ok_room.clear();
-			sprawdzone.push_back(std::make_pair(&lvl.rooms[room_id], room_id));
+			checked.push_back(room);
 			--chance;
 		}
 	}
 
 	// cofnij ich z korytarza
-	while(sprawdzone.back().first->IsCorridor())
-		sprawdzone.pop_back();
+	while(checked.back()->IsCorridor())
+		checked.pop_back();
 
 	int gold = 0;
 	vector<ItemSlot> items;
@@ -1209,7 +1205,7 @@ void InsideLocationGenerator::SpawnHeroesInsideDungeon()
 
 	// pozabijaj jednostki w pokojach, ograb skrzynie
 	// trochê to nieefektywne :/
-	vector<std::pair<Room*, int>>::iterator end = sprawdzone.end();
+	vector<Room*>::iterator end = checked.end();
 	if(Rand() % 2 == 0)
 		--end;
 	for(vector<Unit*>::iterator it2 = L.local_ctx.units->begin(), end2 = L.local_ctx.units->end(); it2 != end2; ++it2)
@@ -1217,9 +1213,9 @@ void InsideLocationGenerator::SpawnHeroesInsideDungeon()
 		Unit& u = **it2;
 		if(u.IsAlive() && game.pc->unit->IsEnemy(u))
 		{
-			for(vector<std::pair<Room*, int>>::iterator it = sprawdzone.begin(); it != end; ++it)
+			for(vector<Room*>::iterator it = checked.begin(); it != end; ++it)
 			{
-				if(it->first->IsInside(u.pos))
+				if((*it)->IsInside(u.pos))
 				{
 					gold += u.gold;
 					for(int i = 0; i < SLOT_MAX; ++i)
@@ -1267,9 +1263,9 @@ void InsideLocationGenerator::SpawnHeroesInsideDungeon()
 	}
 	for(vector<Chest*>::iterator it2 = L.local_ctx.chests->begin(), end2 = L.local_ctx.chests->end(); it2 != end2; ++it2)
 	{
-		for(vector<std::pair<Room*, int>>::iterator it = sprawdzone.begin(); it != end; ++it)
+		for(vector<Room*>::iterator it = checked.begin(); it != end; ++it)
 		{
-			if(it->first->IsInside((*it2)->pos))
+			if((*it)->IsInside((*it2)->pos))
 			{
 				for(vector<ItemSlot>::iterator it3 = (*it2)->items.begin(), end3 = (*it2)->items.end(); it3 != end3;)
 				{
@@ -1295,10 +1291,10 @@ void InsideLocationGenerator::SpawnHeroesInsideDungeon()
 	}
 
 	// otwórz drzwi pomiêdzy obszarami
-	for(vector<std::pair<Room*, int>>::iterator it2 = sprawdzone.begin(), end2 = sprawdzone.end(); it2 != end2; ++it2)
+	for(vector<Room*>::iterator it2 = checked.begin(), end2 = checked.end() - 1; it2 != end2; ++it2)
 	{
-		Room& a = *it2->first,
-			&b = lvl.rooms[it2->second];
+		Room& a = **it2,
+			&b = **(it2 + 1);
 
 		// wspólny obszar pomiêdzy pokojami
 		int x1 = max(a.pos.x, b.pos.x),
@@ -1330,11 +1326,11 @@ void InsideLocationGenerator::SpawnHeroesInsideDungeon()
 	// stwórz bohaterów
 	int count = Random(3, 4);
 	LocalVector<Unit*> heroes;
-	p = sprawdzone.back().first;
+	room = checked.back();
 	for(int i = 0; i < count; ++i)
 	{
 		int level = loc->st + Random(-2, 2);
-		Unit* u = L.SpawnUnitInsideRoom(*p, ClassInfo::GetRandomData(), level);
+		Unit* u = L.SpawnUnitInsideRoom(*room, ClassInfo::GetRandomData(), level);
 		if(u)
 			heroes->push_back(u);
 		else

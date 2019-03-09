@@ -303,7 +303,7 @@ public:
 	ItemTextureMap item_texture_map;
 	uint load_errors, load_warnings;
 	TEX missing_texture;
-	vector<std::pair<Unit*, bool>> units_mesh_load;
+	vector<pair<Unit*, bool>> units_mesh_load;
 	std::set<const Item*> items_load;
 
 	//---------------------------------

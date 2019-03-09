@@ -34,7 +34,7 @@ struct LocationElement : public GuiElement, public ObjectPoolProxy<LocationEleme
 };
 
 //=================================================================================================
-WorldMapGui::WorldMapGui() : game(Game::Get()), zoom(1.2f), offset(0.f, 0.f), fallow(false)
+WorldMapGui::WorldMapGui() : game(Game::Get()), zoom(1.2f), offset(0.f, 0.f), follow(false)
 {
 	focusable = true;
 	visible = false;
@@ -358,19 +358,19 @@ void WorldMapGui::Update(float dt)
 		if(Key.Pressed(VK_RBUTTON))
 		{
 			clicked = true;
-			fallow = false;
+			follow = false;
 			tracking = -1;
 			combo_box.LostFocus();
 		}
 
 		if(!combo_box.focus && Key.Down(VK_SPACE))
 		{
-			fallow = true;
+			follow = true;
 			tracking = -1;
 		}
 	}
 
-	if(fallow)
+	if(follow)
 		CenterView(dt);
 	else if(tracking != -1)
 		CenterView(dt, &W.GetLocation(tracking)->pos);
@@ -440,7 +440,7 @@ void WorldMapGui::Update(float dt)
 						if(picked_location != W.GetCurrentLocationIndex())
 						{
 							W.Travel(picked_location, true);
-							fallow = true;
+							follow = true;
 							tracking = -1;
 						}
 						else
@@ -459,7 +459,7 @@ void WorldMapGui::Update(float dt)
 					if(Team.IsLeader())
 					{
 						W.Warp(picked_location);
-						fallow = true;
+						follow = true;
 						tracking = -1;
 						if(Net::IsOnline())
 						{
@@ -484,7 +484,7 @@ void WorldMapGui::Update(float dt)
 					if(Team.IsLeader())
 					{
 						W.TravelPos(c_pos, true);
-						fallow = true;
+						follow = true;
 						tracking = -1;
 					}
 					else
@@ -495,7 +495,7 @@ void WorldMapGui::Update(float dt)
 					if(Team.IsLeader())
 					{
 						W.WarpPos(c_pos);
-						fallow = true;
+						follow = true;
 						tracking = -1;
 						if(Net::IsOnline())
 						{
@@ -542,7 +542,7 @@ void WorldMapGui::Event(GuiEvent e)
 				tracking = -1;
 				clicked = false;
 				CenterView(-1.f);
-				fallow = (W.GetState() == World::State::TRAVEL);
+				follow = (W.GetState() == World::State::TRAVEL);
 				combo_box.Reset();
 				c_pos_valid = false;
 			}
@@ -576,7 +576,7 @@ void WorldMapGui::Event(GuiEvent e)
 		{
 			LocationElement* le = (LocationElement*)combo_box.GetSelectedItem();
 			tracking = le->loc->index;
-			fallow = false;
+			follow = false;
 		}
 		break;
 	}
@@ -599,7 +599,7 @@ void WorldMapGui::Load(FileReader& f)
 void WorldMapGui::Clear()
 {
 	zoom = 1.2f;
-	fallow = false;
+	follow = false;
 	tracking = -1;
 	clicked = false;
 }
@@ -631,7 +631,7 @@ void WorldMapGui::GetCityText(City& city, string& s)
 	s += Format("\n%s: %d", txCitizens, city.citizens_world);
 
 	// Buildings
-	LocalVector3<std::pair<string*, uint>> items;
+	LocalVector3<pair<string*, uint>> items;
 
 	// list buildings
 	for(CityBuilding& b : city.buildings)
@@ -652,7 +652,7 @@ void WorldMapGui::GetCityText(City& city, string& s)
 			{
 				string* s = StringPool.Get();
 				*s = b.type->name;
-				items.push_back(std::pair<string*, uint>(s, 1u));
+				items.push_back(pair<string*, uint>(s, 1u));
 			}
 		}
 	}
@@ -660,7 +660,7 @@ void WorldMapGui::GetCityText(City& city, string& s)
 	// sort
 	if(items.empty())
 		return;
-	std::sort(items.begin(), items.end(), [](const std::pair<string*, uint>& a, const std::pair<string*, uint>& b) { return *a.first < *b.first; });
+	std::sort(items.begin(), items.end(), [](const pair<string*, uint>& a, const pair<string*, uint>& b) { return *a.first < *b.first; });
 
 	// create string
 	s += Format("\n%s: ", txBuildings);

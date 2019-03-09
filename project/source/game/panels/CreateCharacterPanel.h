@@ -126,7 +126,7 @@ private:
 	Perk picked_perk;
 	PickItemDialog* pickItemDialog;
 	vector<Perk> available_perks;
-	vector<std::pair<cstring, int>> taken_perks;
+	vector<pair<cstring, int>> taken_perks;
 	const Item* items[SLOT_MAX];
 	TEX tKlasaCecha;
 };

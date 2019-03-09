@@ -353,10 +353,10 @@ void CaveGenerator::RegenerateFlags()
 //=================================================================================================
 void CaveGenerator::DebugDraw()
 {
-	for(int y = 0; y < size; ++y)
+	for(int y = size - 1; y >= 0; --y)
 	{
 		for(int x = 0; x < size; ++x)
-			printf("%c", m1[x + y * size] ? '#' : ' ');
+			printf("%c", m2[x + y * size] ? '#' : ' ');
 		printf("\n");
 	}
 	printf("\n");

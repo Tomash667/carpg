@@ -192,10 +192,10 @@ void StatsPanel::SetText()
 			string* s = StringPool.Get();
 			*s = pc->perks[i].FormatName();
 			strs.push_back(s);
-			perks.push_back(std::pair<cstring, int>(s->c_str(), i));
+			perks.push_back(pair<cstring, int>(s->c_str(), i));
 		}
 		else
-			perks.push_back(std::pair<cstring, int>(perk.name.c_str(), i));
+			perks.push_back(pair<cstring, int>(perk.name.c_str(), i));
 	}
 	std::sort(perks.begin(), perks.end(), SortTakenPerks);
 	flowFeats.Clear();

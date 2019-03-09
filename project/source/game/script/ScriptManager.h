@@ -72,7 +72,7 @@ public:
 	void Log(Logger::Level level, cstring msg, cstring code = nullptr);
 	void AddFunction(cstring decl, const asSFuncPtr& funcPointer);
 	// add enum with values {name, value}
-	void AddEnum(cstring name, std::initializer_list<std::pair<cstring, int>> const& values);
+	void AddEnum(cstring name, std::initializer_list<pair<cstring, int>> const& values);
 	TypeBuilder AddType(cstring name, bool refcount = false);
 	TypeBuilder ForType(cstring name);
 	VarsContainer* GetVars(Unit* unit);

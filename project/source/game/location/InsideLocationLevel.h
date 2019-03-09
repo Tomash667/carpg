@@ -22,7 +22,7 @@ struct InsideLocationLevel : public LevelArea
 	vector<Chest*> chests;
 	vector<Object*> objects;
 	vector<Light> lights;
-	vector<Room> rooms;
+	vector<Room*> rooms;
 	vector<RoomGroup> groups;
 	vector<Trap*> traps;
 	vector<Door*> doors;
@@ -40,34 +40,14 @@ struct InsideLocationLevel : public LevelArea
 	Vec3 GetRandomPos() const { return Vec3(Random(2.f*w), 0, Random(2.f*h)); }
 	Room* GetNearestRoom(const Vec3& pos);
 	Room* FindEscapeRoom(const Vec3& my_pos, const Vec3& enemy_pos);
-	int GetRoomId(Room* room) const
-	{
-		assert(room);
-		return (int)(room - &rooms[0]);
-	}
-	Int2 GetUpStairsFrontTile() const
-	{
-		return staircase_up + DirToPos(staircase_up_dir);
-	}
-	Int2 GetDownStairsFrontTile() const
-	{
-		return staircase_down + DirToPos(staircase_down_dir);
-	}
-	Room* GetRandomRoom()
-	{
-		return &rooms[Rand() % rooms.size()];
-	}
+	Int2 GetUpStairsFrontTile() const { return staircase_up + DirToPos(staircase_up_dir); }
+	Int2 GetDownStairsFrontTile() const { return staircase_down + DirToPos(staircase_down_dir); }
+	Room* GetRandomRoom() { return rooms[Rand() % rooms.size()]; }
 	bool GetRandomNearWallTile(const Room& pokoj, Int2& tile, GameDirection& rot, bool nocol = false);
 	Room& GetFarRoom(bool have_down_stairs, bool no_target = false);
 	Room* GetRoom(const Int2& pt);
-	Room* GetUpStairsRoom()
-	{
-		return GetRoom(staircase_up);
-	}
-	Room* GetDownStairsRoom()
-	{
-		return GetRoom(staircase_down);
-	}
+	Room* GetUpStairsRoom() { return GetRoom(staircase_up); }
+	Room* GetDownStairsRoom() { return GetRoom(staircase_down); }
 	Room* GetRandomRoom(RoomTarget target, delegate<bool(Room&)> clbk, int* index, int* group);
 
 	void SaveLevel(GameWriter& f, bool local);
@@ -80,7 +60,6 @@ struct InsideLocationLevel : public LevelArea
 		assert(IsInside(pt));
 		return map[pt(w)];
 	}
-	int FindRoomId(RoomTarget target);
 	Door* FindDoor(const Int2& pt) const;
 
 	bool IsTileVisible(const Vec3& pos) const

@@ -260,11 +260,11 @@ void BaseLocation::SetRoomPointers()
 	{
 		BaseLocation& base = g_base_locations[i];
 
-		if(base.schody.id)
-			base.schody.room = RoomType::Find(base.schody.id);
+		if(base.stairs.id)
+			base.stairs.room = RoomType::Find(base.stairs.id);
 
-		if(base.wymagany.id)
-			base.wymagany.room = RoomType::Find(base.wymagany.id);
+		if(base.required.id)
+			base.required.room = RoomType::Find(base.required.id);
 
 		if(base.rooms)
 		{

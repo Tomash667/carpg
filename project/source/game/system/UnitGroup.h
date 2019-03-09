@@ -49,7 +49,7 @@ struct UnitGroupList
 //-----------------------------------------------------------------------------
 struct TmpUnitGroup : ObjectPoolProxy<TmpUnitGroup>
 {
-	typedef std::pair<UnitData*, int> Spawn;
+	typedef pair<UnitData*, int> Spawn;
 
 	vector<UnitGroup::Entry> entries;
 	vector<Spawn> spawn;

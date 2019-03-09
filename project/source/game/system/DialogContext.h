@@ -52,7 +52,7 @@ struct DialogContext
 	bool update_news;
 	int update_locations; // 1-update, 0-updated, -1-no locations
 	vector<News*> active_news;
-	vector<std::pair<int, bool>> active_locations;
+	vector<pair<int, bool>> active_locations;
 	int team_share_id;
 	const Item* team_share_item;
 	bool can_skip, force_end;

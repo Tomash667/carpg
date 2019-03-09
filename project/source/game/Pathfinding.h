@@ -30,7 +30,7 @@ public:
 private:
 	vector<APoint> a_map;
 	vector<bool> local_pfmap;
-	vector<std::pair<Vec2, int>> test_pf;
+	vector<pair<Vec2, int>> test_pf;
 	Unit* marked;
 	bool test_pf_outside;
 };

@@ -10,8 +10,7 @@ bl_info = {
 
 import bpy
 from bpy.props import StringProperty, BoolProperty
-from math import pi, sqrt
-import subprocess
+from math import sqrt
 from mathutils import Vector, Quaternion, Matrix
 import os
 import struct
@@ -546,7 +545,7 @@ class Importer:
 			existing_index = -1
 			# search for already added material
 			for i in range(len(materials)):
-				mat = materials[i][0]
+				#mat = materials[i][0]
 				tex = materials[i][1]
 				if tex == sub.tex:
 					existing_index = i
@@ -738,7 +737,6 @@ class Importer:
 			i += 1
 		self.script = script
 		print("INFO: Finished with %d operations." % len(script))
-		pass
 	def FindSkeleton(self):
 		if self.skeleton is not None:
 			return

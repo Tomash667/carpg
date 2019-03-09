@@ -28,8 +28,8 @@ UnitStats* UnitData::GetStats(int level)
 UnitStats* UnitData::GetStats(SubprofileInfo sub)
 {
 	assert(group != G_PLAYER);
-	typedef std::map<std::pair<StatProfile*, SubprofileInfo>, UnitStats*> M;
-	std::pair<M::iterator, bool> const& result = UnitStats::shared_stats.insert(M::value_type(std::make_pair(stat_profile, sub), nullptr));
+	typedef std::map<pair<StatProfile*, SubprofileInfo>, UnitStats*> M;
+	pair<M::iterator, bool> const& result = UnitStats::shared_stats.insert(M::value_type(std::make_pair(stat_profile, sub), nullptr));
 	if(result.second)
 	{
 		UnitStats*& stats = result.first->second;

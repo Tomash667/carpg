@@ -125,7 +125,7 @@ enum UNIT_FLAGS2
 	F2_MAGIC_RES50 = 1 << 27, // 50% magic resistance
 	F2_MAGIC_RES25 = 1 << 28, // 25% magic resistance
 	// unused (1 << 29)
-	F2_GUARDED = 1 << 30, // units spawned in same room protect and fallow their leader (only works in dungeon Event::unit_to_spawn)
+	F2_GUARDED = 1 << 30, // units spawned in same room protect and follow their leader (only works in dungeon Event::unit_to_spawn)
 	F2_NOT_GOBLIN = 1 << 31, // unit is in goblin group but don't use goblin idle texts
 };
 

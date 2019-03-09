@@ -51,7 +51,7 @@ private:
 	vector<Text> texts;
 	vector<string> notes;
 	vector<string> rumors;
-	vector<std::pair<Mode, int>> changes;
+	vector<pair<Mode, int>> changes;
 	string input;
 	bool details;
 };

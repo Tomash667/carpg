@@ -775,7 +775,7 @@ void Quest_Tournament::StartRound()
 			first = unit;
 		else
 		{
-			pairs.push_back(std::pair<SmartPtr<Unit>, SmartPtr<Unit>>(first, unit));
+			pairs.push_back(pair<SmartPtr<Unit>, SmartPtr<Unit>>(first, unit));
 			first = nullptr;
 		}
 	}

@@ -98,14 +98,9 @@ inline void InsertItemBare(vector<ItemSlot>& items, const Item* item, uint count
 
 void SetItemStatsText();
 
-inline bool IsEmpty(const ItemSlot& slot)
-{
-	return slot.item == nullptr;
-}
-
 inline void RemoveNullItems(vector<ItemSlot>& items)
 {
-	RemoveElements(items, IsEmpty);
+	RemoveElements(items, [](ItemSlot& slot) { return slot.item == nullptr; });
 }
 
 int FindItemIndex(const vector<ItemSlot>& items, int index, const Item* item, bool is_team);

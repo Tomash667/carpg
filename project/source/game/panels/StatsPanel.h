@@ -32,5 +32,5 @@ private:
 	float last_update;
 	cstring txAttributes, txTitle, txClass, txTraitsStart, txTraitsEnd, txStatsText, txYearMonthDay, txBase, txRelatedAttributes, txFeats, txTraits, txStats,
 		txDate, txAttack, txMeleeAttack, txRangedAttack;
-	vector<std::pair<cstring, int>> perks;
+	vector<pair<cstring, int>> perks;
 };

@@ -163,7 +163,7 @@ private:
 	vector<Road2> roads;
 	vector<int> road_ids;
 	TERRAIN_TILE road_tile;
-	vector<std::pair<Int2, GameDirection>> valid_pts;
+	vector<pair<Int2, GameDirection>> valid_pts;
 	Int2 well_pt;
 	bool have_well;
 };

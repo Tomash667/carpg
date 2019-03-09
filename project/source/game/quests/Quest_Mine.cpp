@@ -699,10 +699,12 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 		p.flags = 0;
 
 		// set room
-		Room& room = Add1(lvl.rooms);
-		room.target = RoomTarget::Portal;
-		room.pos = pt;
-		room.size = Int2(5, 5);
+		Room* room = Room::Get();
+		room->target = RoomTarget::Portal;
+		room->pos = pt;
+		room->size = Int2(5, 5);
+		room->connected.clear();
+		lvl.rooms.push_back(room);
 
 		// doors
 		{
@@ -714,7 +716,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 			L.local_ctx.objects->push_back(o);
 
 			// hack :3
-			Room& r2 = Add1(lvl.rooms);
+			Room& r2 = *Add1(lvl.rooms);
 			r2.target = RoomTarget::Corridor;
 
 			if(IsBlocking(lvl.map[end_pt.x - 1 + end_pt.y*lvl.w].type))
@@ -907,7 +909,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 						dir = GDIR_UP;
 					}
 
-					if(dir != -1)
+					if(dir != GDIR_INVALID)
 					{
 						Vec3 pos(2.f*x + 1, 0, 2.f*y + 1);
 

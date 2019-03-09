@@ -846,7 +846,7 @@ void CityGenerator::GenerateBuildings(vector<ToBuild>& tobuild)
 			}
 		}
 
-		std::pair<Int2, GameDirection> pt = RandomItem(valid_pts);
+		pair<Int2, GameDirection> pt = RandomItem(valid_pts);
 		GameDirection best_dir = pt.second;
 		valid_pts.clear();
 

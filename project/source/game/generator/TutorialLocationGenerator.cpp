@@ -12,20 +12,20 @@ struct RoomInfo
 {
 	Int2 pos, size;
 	bool corridor;
-	int connected[2];
+	int connected;
 };
 
 RoomInfo t_rooms[] = {
-	Int2(0,19), Int2(6,3), false, {1,-1},
-	Int2(0,14), Int2(8,5), false, {0, 2},
-	Int2(8,14), Int2(5,5), false, {1, 3},
-	Int2(13,13), Int2(7,7), false, {2, 4},
-	Int2(13,4), Int2(7,9), false, {3, 5},
-	Int2(14,0), Int2(5,5), false, {4, 6},
-	Int2(8,0), Int2(6,5), false, {5, 7},
-	Int2(10,4), Int2(3,4), true, {6, 8},
-	Int2(2,8), Int2(11,6), false, {7, 9},
-	Int2(2,1), Int2(7,7), false, {8,-1}
+	Int2(0,19), Int2(6,3), false, -1,
+	Int2(0,14), Int2(8,5), false, 0,
+	Int2(8,14), Int2(5,5), false, 1,
+	Int2(13,13), Int2(7,7), false, 2,
+	Int2(13,4), Int2(7,9), false, 3,
+	Int2(14,0), Int2(5,5), false, 4,
+	Int2(8,0), Int2(6,5), false, 5,
+	Int2(10,4), Int2(3,4), true, 6,
+	Int2(2,8), Int2(11,6), false, 7,
+	Int2(2,1), Int2(7,7), false, 8,
 };
 
 char mapa_t[] = {
@@ -142,14 +142,20 @@ void TutorialLocationGenerator::OnEnter()
 	lvl.rooms.resize(countof(t_rooms));
 	for(uint i = 0; i < countof(t_rooms); ++i)
 	{
+		Room* room = Room::Get();
 		RoomInfo& info = t_rooms[i];
-		Room& r = lvl.rooms[i];
-		r.target = (info.corridor ? RoomTarget::Corridor : RoomTarget::None);
-		r.pos = info.pos;
-		r.size = info.size;
-		r.connected.push_back(info.connected[0]);
-		if(info.connected[1] != -1)
-			r.connected.push_back(info.connected[1]);
+		lvl.rooms[i] = room;
+		room->index = i;
+		room->target = (info.corridor ? RoomTarget::Corridor : RoomTarget::None);
+		room->pos = info.pos;
+		room->size = info.size;
+		room->connected.clear();
+		if(info.connected != -1)
+		{
+			Room* room2 = lvl.rooms[info.connected];
+			room->connected.push_back(room2);
+			room2->connected.push_back(room);
+		}
 	}
 
 	// map

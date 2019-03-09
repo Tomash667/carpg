@@ -787,7 +787,7 @@ public:
 
 	//-----------------------------------------------------------------------------
 	static vector<Unit*> refid_table;
-	static vector<std::pair<Unit**, int>> refid_request;
+	static vector<pair<Unit**, int>> refid_request;
 
 	static Unit* GetByRefid(int _refid)
 	{
@@ -799,7 +799,7 @@ public:
 	static void AddRequest(Unit** unit, int refid)
 	{
 		assert(unit && refid != -1);
-		refid_request.push_back(std::pair<Unit**, int>(unit, refid));
+		refid_request.push_back(pair<Unit**, int>(unit, refid));
 	}
 	static void AddRefid(Unit* unit)
 	{

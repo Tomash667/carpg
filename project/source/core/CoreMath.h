@@ -134,7 +134,7 @@ inline T Chance(int chance_a, int chance_b, int chance_c, T a, T b, T c)
 }
 
 template<typename T>
-T GetRandomWeight(const vector<std::pair<T, uint>>& v, uint total)
+T GetRandomWeight(const vector<pair<T, uint>>& v, uint total)
 {
 	uint sum = 0;
 	uint j = Rand() % total;

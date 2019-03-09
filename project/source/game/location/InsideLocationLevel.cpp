@@ -16,6 +16,7 @@ InsideLocationLevel::~InsideLocationLevel()
 	DeleteElements(usables);
 	DeleteElements(items);
 	DeleteElements(traps);
+	Room::Free(rooms);
 }
 
 //=================================================================================================
@@ -27,15 +28,15 @@ Room* InsideLocationLevel::GetNearestRoom(const Vec3& pos)
 	float dist, best_dist = 1000.f;
 	Room* best_room = nullptr;
 
-	for(vector<Room>::iterator it = rooms.begin(), end = rooms.end(); it != end; ++it)
+	for(Room* room : rooms)
 	{
-		dist = it->Distance(pos);
+		dist = room->Distance(pos);
 		if(dist < best_dist)
 		{
 			if(dist == 0.f)
-				return &*it;
+				return room;
 			best_dist = dist;
-			best_room = &*it;
+			best_room = room;
 		}
 	}
 
@@ -43,36 +44,29 @@ Room* InsideLocationLevel::GetNearestRoom(const Vec3& pos)
 }
 
 //=================================================================================================
-Room* InsideLocationLevel::FindEscapeRoom(const Vec3& _my_pos, const Vec3& _enemy_pos)
+Room* InsideLocationLevel::FindEscapeRoom(const Vec3& my_pos, const Vec3& enemy_pos)
 {
-	Room* my_room = GetNearestRoom(_my_pos),
-		*enemy_room = GetNearestRoom(_enemy_pos);
+	Room* my_room = GetNearestRoom(my_pos),
+		*enemy_room = GetNearestRoom(enemy_pos);
 
 	if(!my_room)
 		return nullptr;
-
-	int id;
-	if(enemy_room)
-		id = GetRoomId(enemy_room);
-	else
-		id = -1;
 
 	Room* best_room = nullptr;
 	float best_dist = 0.f, dist;
 	Vec3 mid;
 
-	for(vector<int>::iterator it = my_room->connected.begin(), end = my_room->connected.end(); it != end; ++it)
+	for(Room* room : my_room->connected)
 	{
-		if(*it == id)
+		if(room == enemy_room)
 			continue;
 
-		mid = rooms[*it].Center();
-
-		dist = Vec3::Distance(_my_pos, mid) - Vec3::Distance(_enemy_pos, mid);
+		Vec3 mid = room->Center();
+		dist = Vec3::Distance(my_pos, mid) - Vec3::Distance(enemy_pos, mid);
 		if(dist < best_dist)
 		{
 			best_dist = dist;
-			best_room = &rooms[*it];
+			best_room = room;
 		}
 	}
 
@@ -82,10 +76,10 @@ Room* InsideLocationLevel::FindEscapeRoom(const Vec3& _my_pos, const Vec3& _enem
 //=================================================================================================
 Room* InsideLocationLevel::GetRoom(const Int2& pt)
 {
-	word room = map[pt(w)].room;
-	if(room == (word)-1)
-		return nullptr;
-	return &rooms[room];
+	Room* room = rooms[map[pt(w)].room];
+	if(room->IsInside(pt))
+		return room;
+	return nullptr;
 }
 
 //=================================================================================================
@@ -103,7 +97,7 @@ Room* InsideLocationLevel::GetRandomRoom(RoomTarget target, delegate<bool(Room&)
 			while(true)
 			{
 				int room_index = group.rooms[index];
-				Room& room = rooms[room_index];
+				Room& room = *rooms[room_index];
 				if(clbk(room))
 				{
 					if(out_index)
@@ -246,8 +240,8 @@ void InsideLocationLevel::SaveLevel(GameWriter& f, bool local)
 
 	// rooms
 	f << rooms.size();
-	for(Room& room : rooms)
-		room.Save(f);
+	for(Room* room : rooms)
+		room->Save(f);
 
 	// room groups
 	f << groups.size();
@@ -339,8 +333,18 @@ void InsideLocationLevel::LoadLevel(GameReader& f, bool local)
 
 	// rooms
 	rooms.resize(f.Read<uint>());
-	for(Room& room : rooms)
-		room.Load(f);
+	int index = 0;
+	for(Room*& room : rooms)
+	{
+		room = Room::Get();
+		room->index = index++;
+		room->Load(f);
+	}
+	for(Room* room : rooms)
+	{
+		for(Room*& c : room->connected)
+			c = rooms[(int)c];
+	}
 
 	// room groups
 	if(LOAD_VERSION >= V_0_8)
@@ -358,7 +362,7 @@ void InsideLocationLevel::LoadLevel(GameReader& f, bool local)
 		for(int i = 0; i < (int)rooms.size(); ++i)
 		{
 			groups[i].rooms.push_back(i);
-			groups[i].target = rooms[i].target;
+			groups[i].target = rooms[i]->target;
 		}
 	}
 
@@ -383,20 +387,20 @@ Room& InsideLocationLevel::GetFarRoom(bool have_down_stairs, bool no_target)
 {
 	if(have_down_stairs)
 	{
-		Room* gora = GetNearestRoom(Vec3(2.f*staircase_up.x + 1, 0, 2.f*staircase_up.y + 1));
-		Room* dol = GetNearestRoom(Vec3(2.f*staircase_down.x + 1, 0, 2.f*staircase_down.y + 1));
+		Room* up_stairs = GetNearestRoom(Vec3(2.f*staircase_up.x + 1, 0, 2.f*staircase_up.y + 1));
+		Room* down_stairs = GetNearestRoom(Vec3(2.f*staircase_down.x + 1, 0, 2.f*staircase_down.y + 1));
 		int best_dist, dist;
 		Room* best = nullptr;
 
-		for(vector<Room>::iterator it = rooms.begin(), end = rooms.end(); it != end; ++it)
+		for(Room* room : rooms)
 		{
-			if(it->IsCorridor() || (no_target && it->target != RoomTarget::None))
+			if(room->IsCorridor() || (no_target && room->target != RoomTarget::None))
 				continue;
-			dist = Int2::Distance(it->pos, gora->pos) + Int2::Distance(it->pos, dol->pos);
+			dist = Int2::Distance(room->pos, up_stairs->pos) + Int2::Distance(room->pos, down_stairs->pos);
 			if(!best || dist > best_dist)
 			{
 				best_dist = dist;
-				best = &*it;
+				best = room;
 			}
 		}
 
@@ -404,19 +408,19 @@ Room& InsideLocationLevel::GetFarRoom(bool have_down_stairs, bool no_target)
 	}
 	else
 	{
-		Room* gora = GetNearestRoom(Vec3(2.f*staircase_up.x + 1, 0, 2.f*staircase_up.y + 1));
+		Room* up_stairs = GetNearestRoom(Vec3(2.f*staircase_up.x + 1, 0, 2.f*staircase_up.y + 1));
 		int best_dist, dist;
 		Room* best = nullptr;
 
-		for(vector<Room>::iterator it = rooms.begin(), end = rooms.end(); it != end; ++it)
+		for(Room* room : rooms)
 		{
-			if(it->IsCorridor() || (no_target && it->target != RoomTarget::None))
+			if(room->IsCorridor() || (no_target && room->target != RoomTarget::None))
 				continue;
-			dist = Int2::Distance(it->pos, gora->pos);
+			dist = Int2::Distance(room->pos, up_stairs->pos);
 			if(!best || dist > best_dist)
 			{
 				best_dist = dist;
-				best = &*it;
+				best = room;
 			}
 		}
 
@@ -438,19 +442,6 @@ void InsideLocationLevel::BuildRefidTables()
 		(*it)->refid = (int)Usable::refid_table.size();
 		Usable::refid_table.push_back(*it);
 	}
-}
-
-//=================================================================================================
-int InsideLocationLevel::FindRoomId(RoomTarget target)
-{
-	int index = 0;
-	for(vector<Room>::iterator it = rooms.begin(), end = rooms.end(); it != end; ++it, ++index)
-	{
-		if(it->target == target)
-			return index;
-	}
-
-	return -1;
 }
 
 //=================================================================================================
@@ -579,14 +570,14 @@ Room& InsideLocationLevel::GetRoom(RoomTarget target, bool down_stairs)
 		return GetFarRoom(down_stairs, true);
 	else
 	{
-		int id = FindRoomId(target);
-		if(id == -1)
+		for(Room* room : rooms)
 		{
-			assert(0);
-			id = 0;
+			if(room->target == target)
+				return *room;
 		}
 
-		return rooms[id];
+		assert(0);
+		return *rooms[0];
 	}
 }
 

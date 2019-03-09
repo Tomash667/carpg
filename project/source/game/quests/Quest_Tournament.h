@@ -48,7 +48,7 @@ private:
 	float timer;
 	Unit* master;
 	SmartPtr<Unit> skipped_unit, other_fighter, winner;
-	vector<std::pair<SmartPtr<Unit>, SmartPtr<Unit>>> pairs;
+	vector<pair<SmartPtr<Unit>, SmartPtr<Unit>>> pairs;
 	bool generated;
 	cstring txTour[23], txAiJoinTour[4];
 };
