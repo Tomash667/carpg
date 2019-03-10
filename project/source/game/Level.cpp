@@ -2028,7 +2028,7 @@ void Level::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _
 	{
 		if(location->outside)
 		{
-			City* city = (City*)location;
+			City* city = static_cast<City*>(location);
 			TerrainTile* tiles = city->tiles;
 			maxx = min(maxx, OutsideLocation::size);
 			maxz = min(maxz, OutsideLocation::size);
@@ -3220,10 +3220,10 @@ void Level::CheckIfLocationCleared()
 		bool cleared = false;
 		if(!location->outside)
 		{
-			InsideLocation* inside = (InsideLocation*)location;
+			InsideLocation* inside = static_cast<InsideLocation*>(location);
 			if(inside->IsMultilevel())
 			{
-				if(((MultiInsideLocation*)inside)->LevelCleared())
+				if(static_cast<MultiInsideLocation*>(inside)->LevelCleared())
 					cleared = true;
 			}
 			else
@@ -3669,7 +3669,7 @@ bool Level::CanSee(LevelContext& ctx, const Vec3& v1, const Vec3& v2, bool is_do
 
 	if(ctx.type == LevelContext::Outside)
 	{
-		OutsideLocation* outside = (OutsideLocation*)location;
+		OutsideLocation* outside = static_cast<OutsideLocation*>(location);
 
 		int xmin = max(0, min(tile1.x, tile2.x)),
 			xmax = min(OutsideLocation::size, max(tile1.x, tile2.x)),
@@ -3687,7 +3687,7 @@ bool Level::CanSee(LevelContext& ctx, const Vec3& v1, const Vec3& v2, bool is_do
 	}
 	else if(ctx.type == LevelContext::Inside)
 	{
-		InsideLocation* inside = (InsideLocation*)location;
+		InsideLocation* inside = static_cast<InsideLocation*>(location);
 		InsideLocationLevel& lvl = inside->GetLevelData();
 
 		int xmin = max(0, min(tile1.x, tile2.x)),
@@ -3934,7 +3934,7 @@ void Level::RevealMinimap()
 	if(location->outside)
 		return;
 
-	InsideLocationLevel& lvl = ((InsideLocation*)location)->GetLevelData();
+	InsideLocationLevel& lvl = static_cast<InsideLocation*>(location)->GetLevelData();
 
 	for(int y = 0; y < lvl.h; ++y)
 	{
@@ -3982,10 +3982,11 @@ void Level::Update()
 //=================================================================================================
 void Level::Write(BitStreamWriter& f)
 {
+	f << reenter;
 	location->Write(f);
 	f.WriteCasted<byte>(GetLocationMusic());
 
-	if(!N.mp_load)
+	if(!N.mp_load && !reenter)
 		return;
 
 	// bullets
@@ -4035,14 +4036,15 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 	Game& game = Game::Get();
 
 	// location
+	f >> reenter;
+	ApplyContext(location, local_ctx);
+	city_ctx = (location->type == L_CITY ? static_cast<City*>(location) : nullptr);
+	is_open = true;
 	if(!location->Read(f))
 	{
 		Error("Read level: Failed to read location.");
 		return false;
 	}
-	ApplyContext(location, local_ctx);
-	city_ctx = (location->type == L_CITY ? (City*)location : nullptr);
-	is_open = true;
 	game.loc_gen_factory->Get(location)->OnLoad();
 	location->RequireLoadingResources(&loaded_resources);
 
@@ -4061,7 +4063,7 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 	else
 		game.SetMusic(music);
 
-	if(!N.mp_load)
+	if(!N.mp_load && !reenter)
 		return true;
 
 	// bullets

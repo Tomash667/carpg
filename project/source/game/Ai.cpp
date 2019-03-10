@@ -1078,7 +1078,7 @@ void Game::UpdateAi(float dt)
 									}
 									else if(!L.location->outside)
 									{
-										InsideLocation* inside = (InsideLocation*)L.location;
+										InsideLocation* inside = static_cast<InsideLocation*>(L.location);
 										if(!inside->GetLevelData().IsValidWalkPos(ai.idle_data.pos, u.GetUnitRadius()))
 										{
 											ai.timer = Random(2.f, 4.f);

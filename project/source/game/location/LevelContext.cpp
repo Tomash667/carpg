@@ -289,7 +289,7 @@ LevelContext& LevelContextEnumerator::Iterator::operator * () const
 	if(index == -1)
 		return L.local_ctx;
 	else
-		return ((City*)loc)->inside_buildings[index]->ctx;
+		return static_cast<City*>(loc)->inside_buildings[index]->ctx;
 }
 
 //=================================================================================================

@@ -1725,7 +1725,6 @@ bool World::Read(BitStreamReader& f)
 		f >> travel_start_pos;
 		f >> travel_target_pos;
 		f >> travel_timer;
-		f >> world_pos;
 		if(!f)
 		{
 			Error("Read world: Broken packet for in travel data (2).");
@@ -1883,7 +1882,7 @@ int World::GetClosestLocationNotTarget(LOCATION type, const Vec2& pos, int not_t
 		Location* loc = *it;
 		if(!loc || loc->active_quest || loc->type != type)
 			continue;
-		if(((InsideLocation*)loc)->target == not_target)
+		if(static_cast<InsideLocation*>(loc)->target == not_target)
 			continue;
 		dist = Vec2::Distance(loc->pos, pos);
 		if(best == -1 || dist < best_dist)

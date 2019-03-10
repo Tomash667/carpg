@@ -1586,6 +1586,7 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 
 	const bool reenter = L.is_open;
 	L.is_open = true;
+	L.reenter = reenter;
 	if(W.GetState() != World::State::INSIDE_ENCOUNTER)
 		W.SetState(World::State::INSIDE_LOCATION);
 	if(from_portal != -1)

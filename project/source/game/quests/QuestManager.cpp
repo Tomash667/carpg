@@ -629,7 +629,7 @@ void QuestManager::Load(GameReader& f)
 
 	quests_timeout.resize(f.Read<uint>());
 	for(Quest_Dungeon*& q : quests_timeout)
-		q = (Quest_Dungeon*)FindQuest(f.Read<uint>(), false);
+		q = static_cast<Quest_Dungeon*>(FindQuest(f.Read<uint>(), false));
 
 	if(LOAD_VERSION >= V_0_4)
 	{

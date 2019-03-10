@@ -435,8 +435,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 	}
 
 	talker = nullptr;
-	float dist, best_dist;
-	FIXME; // best_dist gdzie jest ustawiane
+	float best_dist;
 
 	const float center = (float)OutsideLocation::size;
 	Vec3 spawn_pos(center, 0, center);
@@ -487,7 +486,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 		L.SpawnUnitsGroup(L.local_ctx, spawn_pos, &look_pt, count, group, level, [&](Unit* u)
 		{
 			u->dont_attack = dont_attack;
-			dist = Vec3::Distance(u->pos, look_pt);
+			float dist = Vec3::Distance(u->pos, look_pt);
 			if(!talker || dist < best_dist)
 			{
 				talker = u;

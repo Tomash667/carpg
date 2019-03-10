@@ -2225,7 +2225,7 @@ void Unit::Write(BitStreamWriter& f)
 		f << GetAiMode();
 
 	// loaded data
-	if(N.mp_load)
+	if(N.mp_load || L.reenter)
 	{
 		f << netid;
 		mesh_inst->Write(f);
@@ -2443,7 +2443,7 @@ bool Unit::Read(BitStreamReader& f)
 	visual_pos = pos;
 	animation_state = 0;
 
-	if(N.mp_load)
+	if(N.mp_load || L.reenter)
 	{
 		// get current state in multiplayer
 		f >> netid;

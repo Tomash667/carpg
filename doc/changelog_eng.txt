@@ -14,6 +14,8 @@ Version 0.9 (???):
 - fixed missing magic effect for clients when despawning dead summoned unit
 - fixed client start location not marked as visited
 - fixed server crash when looted unit is removed
+- fixed client crash when loading game where someone is using usable
+- fixed client broken npcs using usables after reentering location
 
 --------------------------------------------------------------------------------
 Version 0.8.1 (???):

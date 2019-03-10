@@ -14,6 +14,8 @@ Version 0.9 (???):
 - naprawiony brak magicznego efektu u klienta gdy znika umar³a przywo³ana jednostka
 - naprawiony brak oznaczenia pocz¹tkowej lokalizacji u klienta jako odwiedzona
 - naprawiony crash serwera gdy ograbiana jednostka jest usuwana
+- naprawiony crash klienta przy wczytywaniu gry gdzie ktoœ u¿ywa obiektu
+- naprawione nieprawid³owe u¿ywanie obiektów u klienta przez npc po ponownych odwiedzinach tej samej lokalizacji
 
 --------------------------------------------------------------------------------
 Wersja 0.8.1 (???):

@@ -1782,7 +1782,7 @@ void Game::ListAreas(LevelContext& ctx)
 	}
 	else if(ctx.type == LevelContext::Inside)
 	{
-		InsideLocation* inside = (InsideLocation*)L.location;
+		InsideLocation* inside = static_cast<InsideLocation*>(L.location);
 		InsideLocationLevel& lvl = inside->GetLevelData();
 
 		if(inside->HaveUpStairs())
