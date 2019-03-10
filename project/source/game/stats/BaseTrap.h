@@ -30,7 +30,7 @@ struct BaseTrap
 
 	BaseTrap(cstring id, int attack, TRAP_TYPE type, cstring mesh_id, cstring mesh_id2, bool alpha, cstring sound_id, cstring sound_id2, cstring sound_id3) :
 		id(id), attack(attack), type(type), mesh_id(mesh_id), mesh_id2(mesh_id2), mesh(nullptr), mesh2(nullptr), alpha(alpha), rw(0), h(0), sound_id(sound_id),
-		sound_id2(sound_id2), sound_id3(sound_id3), sound(sound), sound2(sound2), sound3(sound3), state(ResourceState::NotLoaded)
+		sound_id2(sound_id2), sound_id3(sound_id3), sound(nullptr), sound2(nullptr), sound3(nullptr), state(ResourceState::NotLoaded)
 	{
 	}
 

@@ -721,20 +721,20 @@ void Game::TakeScreenshot(bool no_gui)
 		D3DXIMAGE_FILEFORMAT format;
 		switch(screenshot_format)
 		{
-		case D3DXIFF_BMP:
+		case ImageFormat::BMP:
 			ext = "bmp";
 			format = D3DXIFF_BMP;
 			break;
 		default:
-		case D3DXIFF_JPG:
+		case ImageFormat::JPG:
 			ext = "jpg";
 			format = D3DXIFF_JPG;
 			break;
-		case D3DXIFF_TGA:
+		case ImageFormat::TGA:
 			ext = "tga";
 			format = D3DXIFF_TGA;
 			break;
-		case D3DXIFF_PNG:
+		case ImageFormat::PNG:
 			ext = "png";
 			format = D3DXIFF_PNG;
 			break;

@@ -299,7 +299,6 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 				count = max(1, pts / 8);
 				dont_attack = true;
 				dialog = GameDialog::TryGet("q_mages");
-				count = 1;
 			}
 			break;
 		case SE_CRAZY:
@@ -517,6 +516,7 @@ void EncounterGenerator::SpawnEncounterTeam()
 	Vec3 look_pt;
 	switch(enter_dir)
 	{
+	default:
 	case GDIR_RIGHT:
 		pos = Vec3(center + dist, 0.f, center);
 		dir = PI / 2;

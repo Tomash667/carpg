@@ -110,14 +110,7 @@ void Usable::Load(FileReader& f, bool local)
 	if(LOAD_VERSION >= V_0_6 && IS_SET(base->use_flags, BaseUsable::CONTAINER))
 	{
 		container = new ItemContainer;
-		if(LOAD_VERSION >= V_0_6)
-			container->Load(f);
-		else
-		{
-			const Item* item = Book::GetRandom();
-			if(item)
-				container->items.push_back({ item, 1 ,1 });
-		}
+		container->Load(f);
 	}
 
 	if(local)

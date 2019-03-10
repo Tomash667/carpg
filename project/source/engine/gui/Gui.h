@@ -241,8 +241,9 @@ public:
 		uint lines_end;
 		uint str_length;
 
-		DrawTextOptions(Font* font, StringOrCstring str) : font(font), str(str.c_str()), rect(rect), flags(DTF_LEFT), color(Color::Black), clipping(nullptr),
-			hitboxes(nullptr), hitbox_counter(nullptr), lines(nullptr), scale(Vec2::One), lines_start(0), lines_end(UINT_MAX), str_length(str.length())
+		DrawTextOptions(Font* font, StringOrCstring str) : font(font), str(str.c_str()), rect(Rect::Zero), flags(DTF_LEFT), color(Color::Black),
+			clipping(nullptr), hitboxes(nullptr), hitbox_counter(nullptr), lines(nullptr), scale(Vec2::One), lines_start(0), lines_end(UINT_MAX),
+			str_length(str.length())
 		{
 		}
 	};

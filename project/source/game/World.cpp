@@ -1679,11 +1679,6 @@ bool World::Read(BitStreamReader& f)
 			return false;
 		}
 		loc->type = type;
-		if(loc->state > LS_CLEARED)
-		{
-			Error("Read world: Invalid state %d for location %u.", loc->state, index);
-			return false;
-		}
 
 		++index;
 	}

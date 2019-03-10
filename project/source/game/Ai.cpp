@@ -1736,7 +1736,7 @@ void Game::UpdateAi(float dt)
 						}
 
 						// stay close but not too close
-						if(ai.state == AIController::Fighting && enemy && !(u.IsHoldingBow() || IS_SET(u.data->flags, F_MAGE)))
+						if(ai.state == AIController::Fighting && !(u.IsHoldingBow() || IS_SET(u.data->flags, F_MAGE)))
 						{
 							look_at = LookAtTarget;
 							target_pos = enemy->pos;
@@ -2455,14 +2455,7 @@ void Game::UpdateAi(float dt)
 				else if(run_type == WalkIfNear2 && look_at != LookAtWalk)
 				{
 					if(AngleDiff(u.rot, Vec3::LookAtAngle(u.pos, target_pos)) > PI / 4)
-					{
 						move = 0;
-						if(look_at == LookAtWalk)
-						{
-							look_at = LookAtPoint;
-							look_pos = target_pos;
-						}
-					}
 					else
 						move = 1;
 				}
@@ -2968,9 +2961,9 @@ void Game::AI_HitReaction(Unit& unit, const Vec3& pos)
 
 	ai.target = nullptr;
 	ai.target_last_pos = pos;
-	ai.state = AIController::SeenEnemy;
 	if(ai.state == AIController::Idle)
 		ai.change_ai_mode = true;
+	ai.state = AIController::SeenEnemy;
 	ai.timer = Random(10.f, 15.f);
 	ai.city_wander = false;
 	if(!unit.data->sounds->Have(SOUND_SEE_ENEMY))

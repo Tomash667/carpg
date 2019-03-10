@@ -329,32 +329,29 @@ void Arena::StartArenaCombat(int level)
 			continue;
 		if(unit->IsPlayer())
 		{
-			if(unit->frozen == FROZEN::NO)
+			unit->BreakAction(Unit::BREAK_ACTION_MODE::NORMAL, true, true);
+
+			unit->frozen = FROZEN::YES;
+			unit->in_arena = 0;
+			units.push_back(unit);
+
+			unit->player->arena_fights++;
+			unit->player->stat_flags |= STAT_ARENA_FIGHTS;
+
+			if(unit->player == game.pc)
 			{
-				unit->BreakAction(Unit::BREAK_ACTION_MODE::NORMAL, true, true);
-
-				unit->frozen = FROZEN::YES;
-				unit->in_arena = 0;
-				units.push_back(unit);
-
-				unit->player->arena_fights++;
-				unit->player->stat_flags |= STAT_ARENA_FIGHTS;
-
-				if(unit->player == game.pc)
-				{
-					game.fallback_type = FALLBACK::ARENA;
-					game.fallback_t = -1.f;
-				}
-				else
-				{
-					NetChangePlayer& c = Add1(unit->player->player_info->changes);
-					c.type = NetChangePlayer::ENTER_ARENA;
-				}
-
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::CHANGE_ARENA_STATE;
-				c.unit = unit;
+				game.fallback_type = FALLBACK::ARENA;
+				game.fallback_t = -1.f;
 			}
+			else
+			{
+				NetChangePlayer& c = Add1(unit->player->player_info->changes);
+				c.type = NetChangePlayer::ENTER_ARENA;
+			}
+
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::CHANGE_ARENA_STATE;
+			c.unit = unit;
 		}
 		else if(unit->IsHero() && unit->CanFollow())
 		{
@@ -706,6 +703,7 @@ void Arena::Update(float dt)
 					int gold, exp;
 					switch(difficulty)
 					{
+					default:
 					case 1:
 						gold = 500;
 						exp = 1000;

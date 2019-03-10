@@ -1181,7 +1181,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					// get equipped item from unit
 					const Item*& slot = player.action_unit->slots[type];
 					AddItem(unit, slot, 1u, 1u, false);
-					if(player.action == PlayerController::Action_LootUnit && type == IT_WEAPON && slot == player.action_unit->used_item)
+					if(player.action == PlayerController::Action_LootUnit && type == SLOT_WEAPON && slot == player.action_unit->used_item)
 					{
 						player.action_unit->used_item = nullptr;
 						// removed item from hand, send info to other players
@@ -3414,10 +3414,8 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 			}
 			break;
 		case NetChange::CHANGE_AI_MODE:
-			{
-				f << c.unit->netid;
-				f << c.unit->GetAiMode();
-			}
+			f << c.unit->netid;
+			f << c.unit->GetAiMode();
 			break;
 		case NetChange::CHANGE_UNIT_BASE:
 			f << c.unit->netid;

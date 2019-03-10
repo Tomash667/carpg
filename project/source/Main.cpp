@@ -512,7 +512,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					if(!TextHelper::ToInt(argv[i], slot) || slot < 1 || slot > SaveSlot::MAX_SLOTS)
 						Warn("Invalid loadslot value '%s'.", argv[i]);
 					else
-						game.quickstart_slot;
+						game.quickstart_slot = slot;
 				}
 				else
 					Warn("No argument for parameter '-loadslot'!");

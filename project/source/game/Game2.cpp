@@ -2513,7 +2513,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				int oks = 0;
 				if(u.action == A_ATTACK)
 				{
-					if(u.run_attack || (u.attack_power > 1.5f && u.animation_state == 1))
+					if(u.attack_power > 1.5f && u.animation_state == 1)
 						oks = 1;
 					else
 						oks = 2;
@@ -2717,11 +2717,6 @@ void Game::UseAction(PlayerController* p, bool from_server, const Vec3* pos)
 		{
 			p->unit->use_rot = Clip(pc_data.action_rot + p->unit->rot + PI);
 			action_point = Vec3(pc_data.action_rot, 0, 0);
-		}
-		else if(!from_server)
-		{
-			assert(pos);
-			p->unit->use_rot = Clip(pos->x + p->unit->rot + PI);
 		}
 		p->unit->animation = ANI_RUN;
 		p->unit->current_animation = ANI_RUN;
@@ -3326,15 +3321,12 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 		}
 	}
 
-	if(!warped)
+	if(Net::IsLocal() || &unit != pc->unit || interpolate_timer <= 0.f)
 	{
-		if(Net::IsLocal() || &unit != pc->unit || interpolate_timer <= 0.f)
-		{
-			unit.visual_pos = unit.pos;
-			unit.changed = true;
-		}
-		unit.UpdatePhysics(unit.pos);
+		unit.visual_pos = unit.pos;
+		unit.changed = true;
 	}
+	unit.UpdatePhysics(unit.pos);
 }
 
 //=================================================================================================
@@ -4543,7 +4535,6 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 					u.mesh_inst->Play(u.GetTakeWeaponAnimation(u.weapon_taken == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
 					u.weapon_state = WS_TAKING;
 					u.weapon_hiding = W_NONE;
-					u.animation_state = 1;
 					u.mesh_inst->frame_end_info2 = false;
 					u.animation_state = 0;
 
@@ -4638,6 +4629,16 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 			break;
 		case A_SHOOT:
 			u.stamina_timer = Unit::STAMINA_RESTORE_TIMER;
+			if(!u.mesh_inst)
+			{
+				// fix na skutek, nie na przyczynê ;(
+#ifdef _DEBUG
+				Warn("Unit %s dont have shooting animation, LS:%d A:%D ANI:%d PANI:%d ETA:%d.", u.GetName(), u.live_state, u.action, u.animation,
+					u.current_animation, u.animation_state);
+				gui->messages->AddGameMsg("Unit don't have shooting animation!", 5.f);
+#endif
+				goto koniec_strzelania;
+			}
 			if(u.animation_state == 0)
 			{
 				if(u.mesh_inst->GetProgress2() > 20.f / 40)
@@ -4796,16 +4797,6 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 					}
 					break;
 				}
-			}
-			if(!u.mesh_inst)
-			{
-				// fix na skutek, nie na przyczynê ;(
-#ifdef _DEBUG
-				Warn("Unit %s dont have shooting animation, LS:%d A:%D ANI:%d PANI:%d ETA:%d.", u.GetName(), u.live_state, u.action, u.animation,
-					u.current_animation, u.animation_state);
-				gui->messages->AddGameMsg("Unit don't have shooting animation!", 5.f);
-#endif
-				goto koniec_strzelania;
 			}
 			u.bow_instance->groups[0].time = min(u.mesh_inst->groups[1].time, u.bow_instance->groups[0].anim->length);
 			u.bow_instance->need_update = true;
@@ -10168,18 +10159,18 @@ void Game::OnEnterLevel()
 
 				if(L.dungeon_level == L.location->GetLastLevel())
 				{
-					if(loc.state < Quest_Evil::Loc::State::TalkedAfterEnterLevel)
+					if(loc.state < Quest_Evil::Loc::TalkedAfterEnterLevel)
 					{
 						talker = quest_evil->cleric;
 						text = txPortalCloseLevel;
-						loc.state = Quest_Evil::Loc::State::TalkedAfterEnterLevel;
+						loc.state = Quest_Evil::Loc::TalkedAfterEnterLevel;
 					}
 				}
-				else if(L.dungeon_level == 0 && loc.state == Quest_Evil::Loc::State::None)
+				else if(L.dungeon_level == 0 && loc.state == Quest_Evil::Loc::None)
 				{
 					talker = quest_evil->cleric;
 					text = txPortalClose;
-					loc.state = Quest_Evil::Loc::State::TalkedAfterEnterLocation;
+					loc.state = Quest_Evil::Loc::TalkedAfterEnterLocation;
 				}
 			}
 		}
@@ -10662,6 +10653,8 @@ void Game::HandleQuestEvent(Quest_Event* event)
 	// spawn item
 	switch(event->spawn_item)
 	{
+	case Quest_Dungeon::Item_DontSpawn:
+		break;
 	case Quest_Dungeon::Item_GiveStrongest:
 		{
 			Unit* best = nullptr;

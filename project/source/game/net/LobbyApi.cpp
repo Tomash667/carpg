@@ -46,13 +46,12 @@ void LobbyApi::Update()
 
 void LobbyApi::UpdateInternal()
 {
-	SystemAddress sa;
 	Packet* packet;
-	sa = tcp->HasCompletedConnectionAttempt();
+	tcp->HasCompletedConnectionAttempt();
 	for(packet = tcp->Receive(); packet; tcp->DeallocatePacket(packet), packet = tcp->Receive())
 		;
-	sa = tcp->HasFailedConnectionAttempt();
-	sa = tcp->HasLostConnection();
+	tcp->HasFailedConnectionAttempt();
+	tcp->HasLostConnection();
 
 	while(http->HasResponse())
 	{

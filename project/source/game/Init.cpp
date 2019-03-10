@@ -411,7 +411,6 @@ void Game::PostconfigureGame()
 	// end load screen, show menu
 	clear_color = Color::Black;
 	game_state = GS_MAIN_MENU;
-	game_state = GS_MAIN_MENU;
 	gui->load_screen->visible = false;
 	gui->main_menu->visible = true;
 	if(music_type != MusicType::Intro)

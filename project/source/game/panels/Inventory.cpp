@@ -977,8 +977,6 @@ void InventoryPanel::Update(float dt)
 				{
 					// za³o¿ony przedmiot
 					last_index = INDEX_INVALID;
-					if(mode == INVENTORY)
-						base.tooltip.Clear();
 					// dodaj
 					game.pc->unit->AddItem(item);
 					base.BuildTmpInventory(0);
@@ -1053,8 +1051,6 @@ void InventoryPanel::Update(float dt)
 				else
 				{
 					last_index = INDEX_INVALID;
-					if(mode == INVENTORY)
-						base.tooltip.Clear();
 					GUI.SimpleDialog(base.txCanCarryTeamOnly, this);
 				}
 				break;
@@ -1105,8 +1101,6 @@ void InventoryPanel::Update(float dt)
 					if(item->IsWearableByHuman())
 					{
 						last_index = INDEX_INVALID;
-						if(mode == INVENTORY)
-							base.tooltip.Clear();
 
 						if(Net::IsLocal())
 						{
@@ -1184,8 +1178,6 @@ void InventoryPanel::Update(float dt)
 					else
 					{
 						last_index = INDEX_INVALID;
-						if(mode == INVENTORY)
-							base.tooltip.Clear();
 						GUI.SimpleDialog(base.txWontTakeItem, this);
 					}
 				}

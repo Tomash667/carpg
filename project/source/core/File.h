@@ -309,8 +309,8 @@ protected:
 class FileReader : public StreamReader
 {
 public:
-	FileReader() : file(INVALID_FILE_HANDLE), own_handle(false) {}
-	explicit FileReader(FileHandle file) : file(file), own_handle(false) {}
+	FileReader() : file(INVALID_FILE_HANDLE), size(0), own_handle(false) {}
+	explicit FileReader(FileHandle file);
 	explicit FileReader(Cstring filename) { Open(filename); }
 	~FileReader();
 	void operator = (FileReader& f);
@@ -589,7 +589,7 @@ public:
 	}
 	void operator << (cstring str)
 	{
-		file.Write(str, strlen(str));
+		Write(str);
 	}
 	void operator << (char c)
 	{

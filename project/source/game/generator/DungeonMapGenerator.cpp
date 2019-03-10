@@ -59,7 +59,7 @@ void DungeonMapGenerator::SetLayout()
 			H(map_w - 1, y) = BLOCKADE;
 		}
 	}
-	else if(settings->shape == MapSettings::CIRCLE)
+	else
 	{
 		int w = (map_w - 3) / 2,
 			h = (map_h - 3) / 2;
@@ -73,8 +73,6 @@ void DungeonMapGenerator::SetLayout()
 			}
 		}
 	}
-	else
-		assert(0);
 
 	// add existing/start rooms
 	if(!settings->rooms->empty())

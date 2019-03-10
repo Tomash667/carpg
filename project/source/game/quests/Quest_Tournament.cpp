@@ -687,10 +687,10 @@ void Quest_Tournament::Update(float dt)
 					}
 
 					// winner goes to next round
-					Unit* winner = game.arena->units[game.arena->result];
-					winner->busy = Unit::Busy_Tournament;
-					units.push_back(winner);
-					Talk(Format(txTour[Rand() % 2 == 0 ? 19 : 20], winner->GetRealName()));
+					Unit* round_winner = game.arena->units[game.arena->result];
+					round_winner->busy = Unit::Busy_Tournament;
+					units.push_back(round_winner);
+					Talk(Format(txTour[Rand() % 2 == 0 ? 19 : 20], round_winner->GetRealName()));
 					state3 = 3;
 					game.arena->units.clear();
 				}

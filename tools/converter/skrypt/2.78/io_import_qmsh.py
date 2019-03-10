@@ -544,9 +544,8 @@ class Importer:
 		for sub in mesh.subs:
 			existing_index = -1
 			# search for already added material
-			for i in range(len(materials)):
-				#mat = materials[i][0]
-				tex = materials[i][1]
+			for i, mat in enumerate(materials):
+				tex = mat[1]
 				if tex == sub.tex:
 					existing_index = i
 					break

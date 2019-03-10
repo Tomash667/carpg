@@ -254,7 +254,6 @@ void Item::CreateCopy(Item& item) const
 			o.type = o2.type;
 			o.value = o2.value;
 			o.weight = o2.weight;
-			o.state = o2.state;
 			o.icon = o2.icon;
 			o.state = ResourceState::NotLoaded;
 		}

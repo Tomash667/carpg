@@ -609,6 +609,9 @@ void BuildingLoader::ParseCode(BuildingScript& script)
 					code->push_back((int)group);
 				}
 				break;
+			default:
+				t.Unexpected();
+				break;
 			}
 		}
 		else if(t.IsItem())

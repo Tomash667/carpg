@@ -107,7 +107,7 @@ bool Door::Read(BitStreamReader& f)
 	phy->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_DOOR);
 
 	btTransform& tr = phy->getWorldTransform();
-	Vec3 pos = pos;
+	Vec3 pos = this->pos;
 	pos.y += 1.319f;
 	tr.setOrigin(ToVector3(pos));
 	tr.setRotation(btQuaternion(rot, 0, 0));

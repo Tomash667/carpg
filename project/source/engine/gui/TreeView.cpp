@@ -1053,7 +1053,7 @@ void TreeView::SelectChildNodes(TreeNode* node)
 	{
 		if(!child->selected)
 		{
-			child->selected;
+			child->selected = true;
 			if(!child->childs.empty())
 				SelectChildNodes(child);
 		}

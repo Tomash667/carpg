@@ -1513,7 +1513,6 @@ void CityGenerator::GenerateFields()
 				tiles[x + y*w].Set(TT_FIELD, TM_FIELD);
 				float sum = (height[x + y*(w + 1)] + height[x + y*(w + 1)] + height[x + (y + 1)*(w + 1)] + height[x + 1 + (y - 1)*(w + 1)] + height[x + 1 + (y + 1)*(w + 1)]) / 5;
 				height[x + y*(w + 1)] = sum;
-				height[x + y*(w + 1)] = sum;
 				height[x + (y + 1)*(w + 1)] = sum;
 				height[x + 1 + (y - 1)*(w + 1)] = sum;
 				height[x + 1 + (y + 1)*(w + 1)] = sum;
@@ -1679,6 +1678,8 @@ void CityGenerator::GenerateRoads(TERRAIN_TILE _road_tile, int tries)
 			choice[choices++] = RT_MID;
 		if(!IS_SET(r.flags, ROAD_END_CHECKED))
 			choice[choices++] = RT_END;
+		if(choices == 0)
+			continue;
 
 		const int type = choice[Rand() % choices];
 

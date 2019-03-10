@@ -1988,10 +1988,10 @@ void Unit::Load(GameReader& f, bool local)
 		dialogs.resize(f.Read<uint>());
 		for(QuestDialog& dialog : dialogs)
 		{
-			int refid = f.Read<int>();
+			int quest_refid = f.Read<int>();
 			string* str = StringPool.Get();
 			f >> *str;
-			QM.AddQuestRequest(refid, (Quest**)&dialog.quest, [this, &dialog, str]()
+			QM.AddQuestRequest(quest_refid, (Quest**)&dialog.quest, [this, &dialog, str]()
 			{
 				dialog.dialog = dialog.quest->GetDialog(*str);
 				StringPool.Free(str);
@@ -2339,7 +2339,7 @@ bool Unit::Read(BitStreamReader& f)
 	f >> hpmax;
 	f >> netid;
 	f.ReadCasted<char>(in_arena);
-	bool summoner = f.Read<bool>();
+	bool is_summoned = f.Read<bool>();
 	if(!f)
 		return false;
 	if(live_state >= Unit::LIVESTATE_MAX)
@@ -2347,7 +2347,7 @@ bool Unit::Read(BitStreamReader& f)
 		Error("Invalid live state %d.", live_state);
 		return false;
 	}
-	this->summoner = (summoner ? SUMMONER_PLACEHOLDER : nullptr);
+	summoner = (is_summoned ? SUMMONER_PLACEHOLDER : nullptr);
 	f >> mark;
 
 	// hero/player data
@@ -3718,6 +3718,9 @@ float Unit::CalculateMobility(const Armor* armor) const
 	auto load_state = GetLoadState();
 	switch(load_state)
 	{
+	case LS_NONE:
+	case LS_LIGHT:
+		break;
 	case LS_MEDIUM:
 		mobility *= 0.95f;
 		break;

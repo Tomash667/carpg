@@ -22,6 +22,14 @@ bool FileTime::operator == (const FileTime& file_time) const
 
 
 //-----------------------------------------------------------------------------
+FileReader::FileReader(FileHandle file) : file(file), own_handle(false)
+{
+	if(file != INVALID_HANDLE_VALUE)
+		size = GetFileSize(file, nullptr);
+	else
+		size = 0;
+}
+
 FileReader::~FileReader()
 {
 	if(own_handle && file != INVALID_HANDLE_VALUE)

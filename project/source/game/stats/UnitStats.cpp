@@ -35,16 +35,13 @@ void UnitStats::Set(StatProfile& profile)
 		for(int i = 0; i < (int)SkillId::MAX; ++i)
 			skill[i] = profile.skill[i];
 		// apply tag skills
-		if(!profile.subprofiles.empty())
+		StatProfile::Subprofile& sub = *profile.subprofiles[subprofile.index];
+		for(int i = 0; i < StatProfile::MAX_TAGS; ++i)
 		{
-			StatProfile::Subprofile& sub = *profile.subprofiles[subprofile.index];
-			for(int i = 0; i < StatProfile::MAX_TAGS; ++i)
-			{
-				if(sub.tag_skills[i] == SkillId::NONE)
-					break;
-				SkillId sk = subprofile.GetSkill(sub.tag_skills[i]);
-				skill[(int)sk] += Skill::TAG_BONUS;
-			}
+			if(sub.tag_skills[i] == SkillId::NONE)
+				break;
+			SkillId sk = subprofile.GetSkill(sub.tag_skills[i]);
+			skill[(int)sk] += Skill::TAG_BONUS;
 		}
 		// calculate skill
 		for(int i = 0; i < (int)SkillId::MAX; ++i)

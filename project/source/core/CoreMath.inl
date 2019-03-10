@@ -2388,7 +2388,7 @@ inline Box2d& Box2d::operator += (const Vec2& v)
 
 inline Box2d& Box2d::operator -= (const Vec2& v)
 {
-	v1 == v;
+	v1 -= v;
 	v2 -= v;
 	return *this;
 }
@@ -2592,7 +2592,7 @@ inline Box& Box::operator += (const Vec3& v)
 
 inline Box& Box::operator -= (const Vec3& v)
 {
-	v1 == v;
+	v1 -= v;
 	v2 -= v;
 	return *this;
 }

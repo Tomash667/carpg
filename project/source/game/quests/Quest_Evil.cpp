@@ -327,7 +327,7 @@ cstring Quest_Evil::FormatString(const string& str)
 		int best_index = -1;
 		for(int i = 0; i < 3; ++i)
 		{
-			if(loc[i].state != Loc::State::PortalClosed)
+			if(loc[i].state != Loc::PortalClosed)
 			{
 				float dist = Vec2::Distance(W.GetWorldPos(), W.GetLocation(loc[i].target_loc)->pos);
 				if(dist < best_dist)
@@ -346,7 +346,7 @@ cstring Quest_Evil::FormatString(const string& str)
 		int best_index = -1;
 		for(int i = 0; i < 3; ++i)
 		{
-			if(loc[i].state != Loc::State::PortalClosed)
+			if(loc[i].state != Loc::PortalClosed)
 			{
 				float dist = Vec2::Distance(W.GetWorldPos(), W.GetLocation(loc[i].target_loc)->pos);
 				if(dist < best_dist)

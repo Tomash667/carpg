@@ -175,7 +175,7 @@ Font* IGUI::CreateFont(cstring name, int size, int weight, int tex_size, int out
 	}
 
 	// stwórz czcionkê winapi
-	HFONT font = ::CreateFontA(logic_size, 0, 0, 0, weight, false, false, false, DEFAULT_CHARSET, OUT_TT_PRECIS,
+	HFONT font = ::CreateFontA(logic_size, 0, 0, 0, weight, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_TT_PRECIS,
 		CLIP_DEFAULT_PRECIS, PROOF_QUALITY, DEFAULT_PITCH | FF_DONTCARE, name);
 	if(!font)
 	{
@@ -901,7 +901,7 @@ void IGUI::DrawLine(Font* font, cstring text, uint line_begin, uint line_end, co
 		else
 		{
 			h.index = hc->group_index;
-			h.index = hc->group_index2;
+			h.index2 = hc->group_index2;
 		}
 		hc->region.Left() = INT_MAX;
 	}
@@ -2697,7 +2697,7 @@ cstring IGUI::GetClipboard()
 
 	if(OpenClipboard(Engine::Get().GetWindowHandle()))
 	{
-		if(IsClipboardFormatAvailable(CF_TEXT) == TRUE)
+		if(IsClipboardFormatAvailable(CF_TEXT) != FALSE)
 		{
 			HANDLE mem = GetClipboardData(CF_TEXT);
 			cstring str = (cstring)GlobalLock(mem);
