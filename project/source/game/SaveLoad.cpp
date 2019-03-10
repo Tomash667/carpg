@@ -636,10 +636,12 @@ void Game::LoadGame(GameReader& f)
 		if(LOAD_VERSION < V_0_5)
 		{
 			bool next_seed_extra;
-			int next_seed_val[3];
 			f >> next_seed_extra;
 			if(next_seed_extra)
+			{
+				int next_seed_val[3];
 				f >> next_seed_val;
+			}
 		}
 		f >> draw_flags;
 	}
@@ -806,7 +808,7 @@ void Game::LoadGame(GameReader& f)
 	// questy zwi¹zane z lokacjami
 	for(vector<Location*>::iterator it = load_location_quest.begin(), end = load_location_quest.end(); it != end; ++it)
 	{
-		(*it)->active_quest = (Quest_Dungeon*)QM.FindAnyQuest((int)(*it)->active_quest);
+		(*it)->active_quest = static_cast<Quest_Dungeon*>(QM.FindAnyQuest((int)(*it)->active_quest));
 		assert((*it)->active_quest);
 	}
 	// unit event handler

@@ -1661,7 +1661,6 @@ void CityGenerator::GenerateRoads(TERRAIN_TILE _road_tile, int tries)
 		ROAD_MIN_Y = (int)(CITY_BORDER_MIN*h),
 		ROAD_MAX_Y = (int)(CITY_BORDER_MAX*h);
 	int choice[3];
-	int choices;
 
 	for(int i = 0; i < tries; ++i)
 	{
@@ -1671,7 +1670,7 @@ void CityGenerator::GenerateRoads(TERRAIN_TILE _road_tile, int tries)
 		int index = RandomItemPop(to_check);
 		Road2& r = roads[index];
 
-		choices = 0;
+		int choices = 0;
 		if(!IS_SET(r.flags, ROAD_START_CHECKED))
 			choice[choices++] = RT_START;
 		if(!IS_SET(r.flags, ROAD_MID_CHECKED))

@@ -25,12 +25,12 @@ Room* InsideLocationLevel::GetNearestRoom(const Vec3& pos)
 	if(rooms.empty())
 		return nullptr;
 
-	float dist, best_dist = 1000.f;
+	float best_dist = 1000.f;
 	Room* best_room = nullptr;
 
 	for(Room* room : rooms)
 	{
-		dist = room->Distance(pos);
+		float dist = room->Distance(pos);
 		if(dist < best_dist)
 		{
 			if(dist == 0.f)

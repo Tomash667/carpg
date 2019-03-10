@@ -124,7 +124,7 @@ void Quest_SpreadNews::SetProgress(int prog2)
 			else
 				OnUpdate(msg);
 
-			RemoveElementTry(QM.quests_timeout2, (Quest*)this);
+			RemoveElementTry(QM.quests_timeout2, static_cast<Quest*>(this));
 		}
 		break;
 	case Progress::Timeout:

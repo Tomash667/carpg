@@ -1648,7 +1648,7 @@ void Game::UpdateServerTransfer(float dt)
 					}
 					else if(L.location->type == L_DUNGEON || L.location->type == L_CRYPT)
 					{
-						InsideLocation* inside = (InsideLocation*)L.location;
+						InsideLocation* inside = static_cast<InsideLocation*>(L.location);
 						InsideLocationLevel& lvl = inside->GetLevelData();
 						if(L.enter_from == ENTER_FROM_DOWN_LEVEL)
 						{

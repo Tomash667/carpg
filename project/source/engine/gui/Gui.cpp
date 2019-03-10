@@ -1652,7 +1652,7 @@ DialogBox* IGUI::ShowDialog(const DialogInfo& info)
 		d = new DialogWithCheckbox(info);
 	else if(info.img)
 	{
-		auto dwi = new DialogWithImage(info);
+		DialogWithImage* dwi = new DialogWithImage(info);
 		Int2 size = dwi->GetImageSize();
 		extra_limit = size.x + 8;
 		min_size.y = size.y;
@@ -1719,7 +1719,7 @@ DialogBox* IGUI::ShowDialog(const DialogInfo& info)
 	if(info.have_tick)
 	{
 		d->size.y += 32;
-		DialogWithCheckbox* dwc = (DialogWithCheckbox*)d;
+		DialogWithCheckbox* dwc = static_cast<DialogWithCheckbox*>(d);
 		dwc->checkbox.bt_size = Int2(32, 32);
 		dwc->checkbox.checked = info.ticked;
 		dwc->checkbox.id = GuiEvent_Custom + BUTTON_CHECKED;
@@ -1866,7 +1866,7 @@ bool IGUI::HaveTopDialog(cstring name) const
 	if(dialog_layer->Empty())
 		return false;
 
-	DialogBox* d = (DialogBox*)(dialog_layer->Top());
+	DialogBox* d = static_cast<DialogBox*>(dialog_layer->Top());
 	return d->name == name;
 }
 

@@ -296,7 +296,7 @@ LevelContext& LevelContextEnumerator::Iterator::operator * () const
 LevelContextEnumerator::Iterator& LevelContextEnumerator::Iterator::operator ++ ()
 {
 	++index;
-	if(loc->type != L_CITY || index >= (int)((City*)loc)->inside_buildings.size())
+	if(loc->type != L_CITY || index >= (int)static_cast<City*>(loc)->inside_buildings.size())
 		index = -2;
 	return *this;
 }

@@ -882,7 +882,7 @@ namespace tokenizer
 		uint FindFirstOfStr(SeekData& s, cstring _str, uint _start);
 		uint FindEndOfQuote(SeekData& s, uint _start);
 		void CheckSorting();
-		bool CheckMultiKeywords();
+		bool CheckMultiKeywords() const;
 
 		const string* str;
 		int flags;

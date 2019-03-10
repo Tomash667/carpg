@@ -54,7 +54,7 @@ bool Pathfinding::FindPath(LevelContext& ctx, const Int2& _start_tile, const Int
 	if(ctx.type == LevelContext::Outside)
 	{
 		// zewnêtrze
-		OutsideLocation* outside = (OutsideLocation*)L.location;
+		OutsideLocation* outside = static_cast<OutsideLocation*>(L.location);
 		const TerrainTile* m = outside->tiles;
 		const int w = OutsideLocation::size;
 
@@ -199,7 +199,7 @@ bool Pathfinding::FindPath(LevelContext& ctx, const Int2& _start_tile, const Int
 	else
 	{
 		// wnêtrze
-		InsideLocation* inside = (InsideLocation*)L.location;
+		InsideLocation* inside = static_cast<InsideLocation*>(L.location);
 		InsideLocationLevel& lvl = inside->GetLevelData();
 		const Tile* m = lvl.map;
 		const int w = lvl.w, h = lvl.h;

@@ -591,16 +591,16 @@ void ResourceManager::LoadResourceInternal(Resource* res)
 	switch(res->type)
 	{
 	case ResourceType::Mesh:
-		LoadMesh((Mesh*)res);
+		LoadMesh(static_cast<Mesh*>(res));
 		break;
 	case ResourceType::VertexData:
-		LoadVertexData((VertexData*)res);
+		LoadVertexData(static_cast<VertexData*>(res));
 		break;
 	case ResourceType::SoundOrMusic:
-		LoadSoundOrMusic((Sound*)res);
+		LoadSoundOrMusic(static_cast<Sound*>(res));
 		break;
 	case ResourceType::Texture:
-		LoadTexture((Texture*)res);
+		LoadTexture(static_cast<Texture*>(res));
 		break;
 	default:
 		assert(0);
@@ -711,7 +711,7 @@ void ResourceManager::LoadTexture(Texture* tex)
 void ResourceManager::ApplyRawTextureCallback(TaskData& data)
 {
 	TEX& tex = *(TEX*)data.ptr;
-	Texture* res = (Texture*)data.res;
+	Texture* res = static_cast<Texture*>(data.res);
 	tex = res->tex;
 }
 
@@ -719,6 +719,6 @@ void ResourceManager::ApplyRawTextureCallback(TaskData& data)
 void ResourceManager::ApplyRawSoundCallback(TaskData& data)
 {
 	SOUND& sound = *(SOUND*)data.ptr;
-	Sound* res = (Sound*)data.res;
+	Sound* res = static_cast<Sound*>(data.res);
 	sound = res->sound;
 }

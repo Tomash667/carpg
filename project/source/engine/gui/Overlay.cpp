@@ -16,7 +16,7 @@ Overlay::~Overlay()
 {
 	// prevent deleting twice
 	for(MenuStrip* menu : menus)
-		RemoveElement(ctrls, (Control*)menu);
+		RemoveElement(ctrls, static_cast<Control*>(menu));
 }
 
 void Overlay::Draw(ControlDrawData*)

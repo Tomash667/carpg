@@ -679,23 +679,23 @@ void QuestManager::Load(GameReader& f)
 		force = Q_FORCE_DISABLED;
 
 	// get quest pointers
-	quest_sawmill = (Quest_Sawmill*)FindQuestById(Q_SAWMILL);
-	quest_mine = (Quest_Mine*)FindQuestById(Q_MINE);
-	quest_bandits = (Quest_Bandits*)FindQuestById(Q_BANDITS);
+	quest_sawmill = static_cast<Quest_Sawmill*>(FindQuestById(Q_SAWMILL));
+	quest_mine = static_cast<Quest_Mine*>(FindQuestById(Q_MINE));
+	quest_bandits = static_cast<Quest_Bandits*>(FindQuestById(Q_BANDITS));
 	quest_bandits->Init();
-	quest_goblins = (Quest_Goblins*)FindQuestById(Q_GOBLINS);
+	quest_goblins = static_cast<Quest_Goblins*>(FindQuestById(Q_GOBLINS));
 	quest_goblins->Init();
-	quest_mages = (Quest_Mages*)FindQuestById(Q_MAGES);
-	quest_mages2 = (Quest_Mages2*)FindQuestById(Q_MAGES2);
-	quest_orcs = (Quest_Orcs*)FindQuestById(Q_ORCS);
+	quest_mages = static_cast<Quest_Mages*>(FindQuestById(Q_MAGES));
+	quest_mages2 = static_cast<Quest_Mages2*>(FindQuestById(Q_MAGES2));
+	quest_orcs = static_cast<Quest_Orcs*>(FindQuestById(Q_ORCS));
 	quest_orcs->Init();
-	quest_orcs2 = (Quest_Orcs2*)FindQuestById(Q_ORCS2);
+	quest_orcs2 = static_cast<Quest_Orcs2*>(FindQuestById(Q_ORCS2));
 	quest_orcs2->Init();
-	quest_evil = (Quest_Evil*)FindQuestById(Q_EVIL);
+	quest_evil = static_cast<Quest_Evil*>(FindQuestById(Q_EVIL));
 	quest_evil->Init();
-	quest_crazies = (Quest_Crazies*)FindQuestById(Q_CRAZIES);
+	quest_crazies = static_cast<Quest_Crazies*>(FindQuestById(Q_CRAZIES));
 	quest_crazies->Init();
-	quest_artifacts = (Quest_Artifacts*)FindQuestById(Q_ARTIFACTS);
+	quest_artifacts = static_cast<Quest_Artifacts*>(FindQuestById(Q_ARTIFACTS));
 
 	if(LOAD_VERSION < V_0_8 && !quest_mages2)
 	{

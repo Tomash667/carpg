@@ -599,11 +599,9 @@ uint Tokenizer::FindFirstOf(SeekData& s, cstring _str, uint _start)
 	assert(_start < str->length());
 
 	uint len = strlen(_str);
-	char c;
-
 	for(uint i = _start, end = str->length(); i < end; ++i)
 	{
-		c = str->at(i);
+		char c = str->at(i);
 
 		for(uint j = 0; j < len; ++j)
 		{
@@ -908,11 +906,11 @@ void Tokenizer::CheckSorting()
 }
 
 //=================================================================================================
-bool Tokenizer::CheckMultiKeywords()
+bool Tokenizer::CheckMultiKeywords() const
 {
 	int errors = 0;
 
-	Keyword* prev = &keywords[0];
+	const Keyword* prev = &keywords[0];
 	for(uint i = 1; i < keywords.size(); ++i)
 	{
 		if(strcmp(keywords[i].name, prev->name) == 0)

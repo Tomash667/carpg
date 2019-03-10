@@ -376,13 +376,11 @@ void Terrain::CalculateBox()
 	assert(state > 0);
 
 	float smax = -Inf(),
-		smin = Inf(),
-		pmax, pmin, hc;
-
+		smin = Inf();
 	for(uint i = 0; i < n_parts*n_parts; ++i)
 	{
-		pmax = -Inf();
-		pmin = Inf();
+		float pmax = -Inf();
+		float pmin = Inf();
 
 		const uint z_start = (i / n_parts)*tiles_per_part,
 			z_end = z_start + tiles_per_part,
@@ -393,7 +391,7 @@ void Terrain::CalculateBox()
 		{
 			for(uint x = x_start; x <= x_end; ++x)
 			{
-				hc = h[x + z*hszer];
+				float hc = h[x + z*hszer];
 				if(hc > pmax)
 					pmax = hc;
 				if(hc < pmin)

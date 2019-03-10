@@ -39,7 +39,7 @@ WorldMapGui::WorldMapGui() : game(Game::Get()), zoom(1.2f), offset(0.f, 0.f), fo
 	focusable = true;
 	visible = false;
 	combo_box.parent = this;
-	combo_box.destructor = [](GuiElement* e) { ((LocationElement*)e)->Free(); };
+	combo_box.destructor = [](GuiElement* e) { static_cast<LocationElement*>(e)->Free(); };
 }
 
 //=================================================================================================
@@ -401,8 +401,8 @@ void WorldMapGui::Update(float dt)
 	{
 		Vec2 cursor_pos(float(GUI.cursor_pos.x), float(GUI.cursor_pos.y));
 		Location* loc = nullptr;
-		float dist = 17.f, dist2;
-		int i = 0, index;
+		float dist = 17.f;
+		int index;
 
 		c_pos = (Vec2(GUI.cursor_pos) - GetCameraCenter()) / zoom+offset * float(W.world_size) / MAP_IMG_SIZE;
 		c_pos.y = float(W.world_size) - c_pos.y;
@@ -411,12 +411,13 @@ void WorldMapGui::Update(float dt)
 			c_pos_valid = true;
 			if(!Key.Down(VK_SHIFT))
 			{
+				int i = 0;
 				for(vector<Location*>::iterator it = W.locations.begin(), end = W.locations.end(); it != end; ++it, ++i)
 				{
 					if(!*it || (*it)->state == LS_UNKNOWN || (*it)->state == LS_HIDDEN)
 						continue;
 					Vec2 pt = WorldPosToScreen((*it)->pos);
-					dist2 = Vec2::Distance(pt, cursor_pos) / zoom;
+					float dist2 = Vec2::Distance(pt, cursor_pos) / zoom;
 					if(dist2 < dist)
 					{
 						loc = *it;
@@ -574,7 +575,7 @@ void WorldMapGui::Event(GuiEvent e)
 		break;
 	case ComboBox::Event_Selected:
 		{
-			LocationElement* le = (LocationElement*)combo_box.GetSelectedItem();
+			LocationElement* le = static_cast<LocationElement*>(combo_box.GetSelectedItem());
 			tracking = le->loc->index;
 			follow = false;
 		}

@@ -33,7 +33,7 @@ void Grid::Draw(ControlDrawData*)
 
 	// zawartoœæ
 	Cell cell;
-	int n, clip_state;
+	int clip_state;
 	y += height - int(scroll.offset);
 	const int clip_y[4] = { global_pos.y, global_pos.y + height, global_pos.y + size.y - height, global_pos.y + size.y };
 	Rect clip_r;
@@ -44,7 +44,7 @@ void Grid::Draw(ControlDrawData*)
 
 	for(int i = 0; i < items; ++i)
 	{
-		n = 0;
+		int n = 0;
 		x = global_pos.x;
 
 		// ustal przycinanie komórek

@@ -93,7 +93,7 @@ void Quest_DeliverLetter::SetProgress(int prog2)
 			DialogContext::current->pc->unit->RemoveQuestItem(refid);
 
 			OnUpdate(game->txQuest[7]);
-			RemoveElementTry(QM.quests_timeout2, (Quest*)this);
+			RemoveElementTry(QM.quests_timeout2, static_cast<Quest*>(this));
 		}
 		break;
 	}

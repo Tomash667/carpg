@@ -511,13 +511,11 @@ void Game::FillDungeonPart(Int2* _part, word* faces, int& index, word offset)
 
 	_part[0] = Int2(0, 0);
 
-	int count;
-
 	for(int i = 1; i < 16; ++i)
 	{
 		_part[i].x = index;
 
-		count = 0;
+		int count = 0;
 		if(i & 0x01)
 		{
 			faces[index++] = offset;
@@ -2139,7 +2137,7 @@ void Game::PrepareAreaPathCircle(Area2& area, float radius, float range, float r
 //=================================================================================================
 void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 {
-	InsideLocation* inside = (InsideLocation*)L.location;
+	InsideLocation* inside = static_cast<InsideLocation*>(L.location);
 	InsideLocationLevel& lvl = inside->GetLevelData();
 	BaseLocation& base = g_base_locations[inside->target];
 	Box box;
@@ -3022,7 +3020,7 @@ void Game::DrawGlowingNodes(bool use_postfx)
 		// wybierz kolor
 		if(glow.type == GlowNode::Unit)
 		{
-			Unit& unit = *(Unit*)glow.ptr;
+			Unit& unit = *static_cast<Unit*>(glow.ptr);
 			if(pc->unit->IsEnemy(unit))
 				glow_color = Vec4(1, 0, 0, 1);
 			else if(pc->unit->IsFriend(unit))

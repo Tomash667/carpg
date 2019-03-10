@@ -257,7 +257,7 @@ void Game::ListGrass()
 		return;
 
 	PROFILER_BLOCK("ListGrass");
-	OutsideLocation* outside = (OutsideLocation*)L.location;
+	OutsideLocation* outside = static_cast<OutsideLocation*>(L.location);
 	Vec3 pos, angle;
 	Vec2 from = cam.from.XZ();
 	float in_dist = settings.grass_range * settings.grass_range;

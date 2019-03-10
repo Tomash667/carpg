@@ -436,6 +436,7 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 
 	talker = nullptr;
 	float dist, best_dist;
+	FIXME; // best_dist gdzie jest ustawiane
 
 	const float center = (float)OutsideLocation::size;
 	Vec3 spawn_pos(center, 0, center);

@@ -69,7 +69,7 @@ void PickItemDialog::Create(PickItemDialogParams& params)
 {
 	result = -1;
 	parent = params.parent;
-	order = parent ? ((DialogBox*)parent)->order : ORDER_NORMAL;
+	order = parent ? static_cast<DialogBox*>(parent)->order : ORDER_NORMAL;
 	event = params.event;
 	get_tooltip = params.get_tooltip;
 	if(params.get_tooltip)

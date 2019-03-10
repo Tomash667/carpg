@@ -2235,7 +2235,7 @@ void Level::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _
 	{
 		if(location->outside)
 		{
-			City* city = (City*)location;
+			City* city = static_cast<City*>(location);
 			TerrainTile* tiles = city->tiles;
 			maxx = min(maxx, OutsideLocation::size);
 			maxz = min(maxz, OutsideLocation::size);
@@ -3073,12 +3073,12 @@ int Level::GetDifficultyLevel() const
 		return location->st;
 	else
 	{
-		InsideLocation* inside = (InsideLocation*)location;
+		InsideLocation* inside = static_cast<InsideLocation*>(location);
 		if(inside->IsMultilevel())
 		{
 			float max_st = (float)inside->st;
 			float min_st = max(3.f, max_st * 2 / 3);
-			uint levels = ((MultiInsideLocation*)inside)->levels.size() - 1;
+			uint levels = static_cast<MultiInsideLocation*>(inside)->levels.size() - 1;
 			return (int)Lerp(min_st, max_st, float(dungeon_level) / levels);
 		}
 		else
@@ -3951,19 +3951,19 @@ void Level::RevealMinimap()
 //=================================================================================================
 bool Level::IsCity()
 {
-	return location->type == L_CITY && ((City*)location)->settlement_type == City::SettlementType::City;
+	return location->type == L_CITY && static_cast<City*>(location)->settlement_type == City::SettlementType::City;
 }
 
 //=================================================================================================
 bool Level::IsVillage()
 {
-	return location->type == L_CITY && ((City*)location)->settlement_type == City::SettlementType::Village;
+	return location->type == L_CITY && static_cast<City*>(location)->settlement_type == City::SettlementType::Village;
 }
 
 //=================================================================================================
 bool Level::IsTutorial()
 {
-	return location->type == L_DUNGEON && ((InsideLocation*)location)->target == TUTORIAL_FORT;
+	return location->type == L_DUNGEON && static_cast<InsideLocation*>(location)->target == TUTORIAL_FORT;
 }
 
 //=================================================================================================
@@ -4363,10 +4363,10 @@ bool Level::IsSafe()
 		return (location->state == LS_CLEARED);
 	else
 	{
-		InsideLocation* inside = (InsideLocation*)location;
+		InsideLocation* inside = static_cast<InsideLocation*>(location);
 		if(inside->IsMultilevel())
 		{
-			MultiInsideLocation* multi = (MultiInsideLocation*)inside;
+			MultiInsideLocation* multi = static_cast<MultiInsideLocation*>(inside);
 			if(multi->IsLevelClear())
 			{
 				if(dungeon_level == 0)

@@ -193,7 +193,7 @@ bool TraderInfo::CanBuySell(const Item* item)
 	{
 		if(item->type == IT_CONSUMABLE)
 		{
-			const Consumable* c = (const Consumable*)item;
+			const Consumable* c = static_cast<const Consumable*>(item);
 			if(IS_SET(buy_consumable_flags, (1 << c->cons_type)))
 				return true;
 		}

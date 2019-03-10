@@ -581,19 +581,19 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 	switch(item_ptr->type)
 	{
 	case IT_WEAPON:
-		Weapon::weapons.push_back((Weapon*)item_ptr);
+		Weapon::weapons.push_back(static_cast<Weapon*>(item_ptr));
 		break;
 	case IT_BOW:
-		Bow::bows.push_back((Bow*)item_ptr);
+		Bow::bows.push_back(static_cast<Bow*>(item_ptr));
 		break;
 	case IT_SHIELD:
-		Shield::shields.push_back((Shield*)item_ptr);
+		Shield::shields.push_back(static_cast<Shield*>(item_ptr));
 		break;
 	case IT_ARMOR:
-		Armor::armors.push_back((Armor*)item_ptr);
+		Armor::armors.push_back(static_cast<Armor*>(item_ptr));
 		break;
 	case IT_CONSUMABLE:
-		Consumable::consumables.push_back((Consumable*)item_ptr);
+		Consumable::consumables.push_back(static_cast<Consumable*>(item_ptr));
 		break;
 	case IT_OTHER:
 		{

@@ -154,7 +154,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			e->group = SG_GOBLINS;
 			e->location_event_handler = nullptr;
 			e->pos = GetStartLocation().pos;
-			e->quest = (Quest_Encounter*)this;
+			e->quest = static_cast<Quest*>(this);
 			e->chance = 10000;
 			e->range = 32.f;
 			e->text = game->txQuest[219];
@@ -378,7 +378,7 @@ bool Quest_Goblins::Load(GameReader& f)
 		e->group = SG_GOBLINS;
 		e->location_event_handler = nullptr;
 		e->pos = GetStartLocation().pos;
-		e->quest = (Quest_Encounter*)this;
+		e->quest = reinterpret_cast<Quest_Encounter*>(this);
 		e->chance = 10000;
 		e->range = 32.f;
 		e->text = game->txQuest[219];

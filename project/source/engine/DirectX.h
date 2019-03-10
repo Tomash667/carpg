@@ -8,8 +8,7 @@
 
 //-----------------------------------------------------------------------------
 #ifdef _DEBUG
-extern HRESULT _d_hr;
-#	define V(x) assert(SUCCEEDED(_d_hr = (x)))
+#	define V(x) do { HRESULT _d_hr = (x); assert(SUCCEEDED(_d_hr)); } while(0)
 #else
 #	define V(x) (x)
 #endif

@@ -432,7 +432,7 @@ void ObjectLoader::CalculateCrc()
 
 		if(obj->IsUsable())
 		{
-			BaseUsable* use = (BaseUsable*)obj;
+			BaseUsable* use = static_cast<BaseUsable*>(obj);
 			crc.Update(use->anim);
 			crc.Update(use->item_id);
 			crc.Update(use->sound_id);

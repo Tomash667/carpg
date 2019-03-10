@@ -30,7 +30,7 @@ ForLocation::ForLocation(int loc, int level)
 	{
 	case L_CITY:
 		{
-			City* city = (City*)l;
+			City* city = static_cast<City*>(l);
 			if(level == -1)
 			{
 				ctx->entries.resize(city->inside_buildings.size() + 1);
@@ -71,10 +71,10 @@ ForLocation::ForLocation(int loc, int level)
 	case L_DUNGEON:
 	case L_CRYPT:
 		{
-			InsideLocation* inside = (InsideLocation*)l;
+			InsideLocation* inside = static_cast<InsideLocation*>(l);
 			if(inside->IsMultilevel())
 			{
-				MultiInsideLocation* multi = (MultiInsideLocation*)inside;
+				MultiInsideLocation* multi = static_cast<MultiInsideLocation*>(inside);
 				if(level == -1)
 				{
 					ctx->entries.resize(multi->generated);
@@ -100,7 +100,7 @@ ForLocation::ForLocation(int loc, int level)
 			else
 			{
 				assert(level == -1 || level == 0);
-				SingleInsideLocation* single = (SingleInsideLocation*)inside;
+				SingleInsideLocation* single = static_cast<SingleInsideLocation*>(inside);
 				LevelAreaContext::Entry& e = Add1(ctx->entries);
 				e.active = active;
 				e.area = single;
@@ -115,7 +115,7 @@ ForLocation::ForLocation(int loc, int level)
 	case L_CAMP:
 		{
 			assert(level == -1);
-			OutsideLocation* outside = (OutsideLocation*)l;
+			OutsideLocation* outside = static_cast<OutsideLocation*>(l);
 			LevelAreaContext::Entry& e = Add1(ctx->entries);
 			e.active = active;
 			e.area = outside;

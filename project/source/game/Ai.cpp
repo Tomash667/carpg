@@ -1873,7 +1873,7 @@ void Game::UpdateAi(float dt)
 						}
 						else
 						{
-							InsideLocation* inside = (InsideLocation*)L.location;
+							InsideLocation* inside = static_cast<InsideLocation*>(L.location);
 							Room* room = inside->FindChaseRoom(u.pos);
 							if(room)
 							{

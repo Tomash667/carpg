@@ -230,7 +230,7 @@ void World::UpdateEncounters()
 		if(e && e->timed && e->quest->IsTimedout())
 		{
 			e->quest->OnTimeout(TIMEOUT_ENCOUNTER);
-			((Quest_Encounter*)e->quest)->enc = -1;
+			static_cast<Quest_Encounter*>(e->quest)->enc = -1;
 			delete *it;
 			if(it + 1 == end)
 			{
@@ -253,7 +253,7 @@ void World::UpdateLocations()
 			continue;
 		if(loc->type == L_CAMP)
 		{
-			Camp* camp = (Camp*)loc;
+			Camp* camp = static_cast<Camp*>(loc);
 			if(worldtime - camp->create_time >= 30
 				&& current_location != loc // don't remove when team is inside
 				&& (travel_location_index == -1 || locations[travel_location_index] != loc)) // don't remove when traveling to
@@ -279,11 +279,11 @@ void World::UpdateLocations()
 				loc->state = LS_ENTERED;
 			if(loc->type == L_DUNGEON || loc->type == L_CRYPT)
 			{
-				InsideLocation* inside = (InsideLocation*)loc;
+				InsideLocation* inside = static_cast<InsideLocation*>(loc);
 				if(inside->target != LABYRINTH)
 					inside->spawn = g_base_locations[inside->target].GetRandomSpawnGroup();
 				if(inside->IsMultilevel())
-					((MultiInsideLocation*)inside)->Reset();
+					static_cast<MultiInsideLocation*>(inside)->Reset();
 			}
 		}
 	}
@@ -407,7 +407,7 @@ Location* World::CreateLocation(LOCATION type, const Vec2& pos, float range, int
 
 	if(type == L_DUNGEON || type == L_CRYPT)
 	{
-		InsideLocation* inside = (InsideLocation*)loc;
+		InsideLocation* inside = static_cast<InsideLocation*>(loc);
 		inside->target = target;
 		if(target == LABYRINTH)
 		{
@@ -919,7 +919,7 @@ void World::CalculateTiles()
 				float dist = Vec2::Distance(pos, loc->pos);
 				if(loc->type == L_CITY)
 				{
-					if(((City*)loc)->IsVillage())
+					if(static_cast<City*>(loc)->IsVillage())
 					{
 						if(dist < 100)
 							st -= 10 - int(dist / 10);
@@ -1024,7 +1024,7 @@ void World::SetLocationImageAndName(Location* l)
 	switch(l->type)
 	{
 	case L_CITY:
-		if(((City*)l)->settlement_type == City::SettlementType::Village)
+		if(static_cast<City*>(l)->settlement_type == City::SettlementType::Village)
 		{
 			l->image = LI_VILLAGE;
 			l->name = txVillage;
@@ -1056,7 +1056,7 @@ void World::SetLocationImageAndName(Location* l)
 		l->name = txMoonwell;
 		break;
 	case L_DUNGEON:
-		switch(((InsideLocation*)l)->target)
+		switch(static_cast<InsideLocation*>(l)->target)
 		{
 		case LABYRINTH:
 			l->image = LI_LABYRINTH;
@@ -1148,7 +1148,7 @@ void World::Save(GameWriter& f)
 		{
 			if(loc_token == LT_MULTI_DUNGEON)
 			{
-				int levels = ((MultiInsideLocation*)loc)->levels.size();
+				int levels = static_cast<MultiInsideLocation*>(loc)->levels.size();
 				f << levels;
 			}
 			loc->Save(f, current == loc);
@@ -1370,7 +1370,7 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 					*str = dialog_id;
 					QM.AddQuestRequest(quest_refid, &enc->quest, [enc, str]
 					{
-						enc->dialog = ((Quest_Scripted*)enc->quest)->GetDialog(*str);
+						enc->dialog = static_cast<Quest_Scripted*>(enc->quest)->GetDialog(*str);
 						StringPool.Free(str);
 					});
 				}
@@ -1423,7 +1423,7 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 	if(L.location && Any(state, State::INSIDE_LOCATION, State::INSIDE_ENCOUNTER))
 	{
 		L.ApplyContext(L.location, L.local_ctx);
-		L.city_ctx = (L.location->type == L_CITY ? (City*)L.location : nullptr);
+		L.city_ctx = (L.location->type == L_CITY ? static_cast<City*>(L.location) : nullptr);
 	}
 }
 
@@ -1811,7 +1811,7 @@ int World::GetRandomSettlementIndex(const vector<int>& used, int type) const
 	{
 		if(type != 0)
 		{
-			City* city = (City*)locations[index];
+			City* city = static_cast<City*>(locations[index]);
 			if(type == 1)
 			{
 				if(city->settlement_type == City::SettlementType::Village)
@@ -1859,7 +1859,7 @@ int World::GetClosestLocation(LOCATION type, const Vec2& pos, int target)
 		Location* loc = *it;
 		if(!loc || loc->active_quest || loc->type != type)
 			continue;
-		if(target != -1 && ((InsideLocation*)loc)->target != target)
+		if(target != -1 && static_cast<InsideLocation*>(loc)->target != target)
 			continue;
 		dist = Vec2::Distance(loc->pos, pos);
 		if(best == -1 || dist < best_dist)
@@ -2027,7 +2027,7 @@ City* World::GetRandomSettlement(delegate<bool(City*)> pred)
 	int index = start_index;
 	do
 	{
-		City* loc = (City*)locations[index];
+		City* loc = static_cast<City*>(locations[index]);
 		if(pred(loc))
 			return loc;
 		index = (index + 1) % settlements;
@@ -2773,7 +2773,7 @@ void World::AbadonLocation(Location* loc)
 	assert(loc->outside && loc->type != L_CITY);
 
 	Game& game = Game::Get();
-	OutsideLocation* outside = (OutsideLocation*)loc;
+	OutsideLocation* outside = static_cast<OutsideLocation*>(loc);
 
 	// if location is open
 	if(loc == current_location)
@@ -2870,7 +2870,7 @@ void World::VerifyObjects()
 			continue;
 		if(l->outside)
 		{
-			OutsideLocation* outside = (OutsideLocation*)l;
+			OutsideLocation* outside = static_cast<OutsideLocation*>(l);
 			e = 0;
 			VerifyObjects(outside->objects, e);
 			if(e > 0)
@@ -2880,7 +2880,7 @@ void World::VerifyObjects()
 			}
 			if(l->type == L_CITY)
 			{
-				City* city = (City*)outside;
+				City* city = static_cast<City*>(outside);
 				for(InsideBuilding* ib : city->inside_buildings)
 				{
 					e = 0;
@@ -2895,10 +2895,10 @@ void World::VerifyObjects()
 		}
 		else
 		{
-			InsideLocation* inside = (InsideLocation*)l;
+			InsideLocation* inside = static_cast<InsideLocation*>(l);
 			if(inside->IsMultilevel())
 			{
-				MultiInsideLocation* m = (MultiInsideLocation*)inside;
+				MultiInsideLocation* m = static_cast<MultiInsideLocation*>(inside);
 				int index = 1;
 				for(auto& lvl : m->levels)
 				{
@@ -2914,7 +2914,7 @@ void World::VerifyObjects()
 			}
 			else
 			{
-				SingleInsideLocation* s = (SingleInsideLocation*)inside;
+				SingleInsideLocation* s = static_cast<SingleInsideLocation*>(inside);
 				e = 0;
 				VerifyObjects(s->objects, e);
 				if(e > 0)

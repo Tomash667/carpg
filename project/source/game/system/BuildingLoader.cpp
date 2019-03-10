@@ -860,9 +860,9 @@ void BuildingLoader::CalculateCrc()
 							++data;
 							int ptr = *data;
 							if(type == BuildingScript::BS_BUILDING)
-								crc.Update(((Building*)ptr)->id);
+								crc.Update(reinterpret_cast<Building*>(ptr)->id);
 							else
-								crc.Update(((BuildingGroup*)ptr)->id);
+								crc.Update(reinterpret_cast<BuildingGroup*>(ptr)->id);
 							++data;
 						}
 					}

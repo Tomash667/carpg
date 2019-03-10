@@ -181,11 +181,11 @@ void Stock::AddItems(vector<ItemSlot>& items, StockEntry type, int code, uint co
 	switch(type)
 	{
 	case SE_ITEM:
-		InsertItemBare(items, (const Item*)code, count);
+		InsertItemBare(items, reinterpret_cast<const Item*>(code), count);
 		break;
 	case SE_LIST:
 		{
-			ItemList* lis = (ItemList*)code;
+			ItemList* lis = reinterpret_cast<ItemList*>(code);
 			if(same)
 				InsertItemBare(items, lis->Get(), count);
 			else

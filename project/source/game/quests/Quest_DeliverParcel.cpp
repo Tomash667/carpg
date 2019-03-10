@@ -88,7 +88,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			Team.AddReward(300, 2000);
 
 			OnUpdate(game->txQuest[12]);
-			RemoveElementTry(QM.quests_timeout2, (Quest*)this);
+			RemoveElementTry(QM.quests_timeout2, static_cast<Quest*>(this));
 			RemoveEncounter();
 		}
 		break;
@@ -99,7 +99,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			((City&)GetStartLocation()).quest_mayor = CityQuestState::Failed;
 
 			OnUpdate(game->txQuest[13]);
-			RemoveElementTry(QM.quests_timeout2, (Quest*)this);
+			RemoveElementTry(QM.quests_timeout2, static_cast<Quest*>(this));
 			RemoveEncounter();
 		}
 		break;
@@ -115,7 +115,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			RemoveEncounter();
 
 			OnUpdate(game->txQuest[14]);
-			RemoveElementTry(QM.quests_timeout2, (Quest*)this);
+			RemoveElementTry(QM.quests_timeout2, static_cast<Quest*>(this));
 		}
 		break;
 	case Progress::AttackedBandits:

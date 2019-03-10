@@ -216,7 +216,7 @@ void GamePanel::Event(GuiEvent e)
 void GamePanel::DrawBox()
 {
 	if(box_state == BOX_VISIBLE)
-		((GamePanelContainer*)parent)->draw_box = this;
+		static_cast<GamePanelContainer*>(parent)->draw_box = this;
 }
 
 //=================================================================================================
@@ -308,13 +308,12 @@ void GamePanel::UpdateBoxIndex(float dt, int index, int index2, bool refresh)
 
 		Int2 text_pos2(12, text_pos.y);
 		text_pos2.y += size.y - 12;
-		int size_y = 0;
 
 		if(!box_text_small.empty())
 		{
 			Int2 size_small = GUI.fSmall->CalculateSize(box_text_small, size.x - 24);
 			box_small = Rect::Create(Int2(0, 0), size_small);
-			size_y = size_small.y;
+			int size_y = size_small.y;
 			size.y += size_y + 12;
 		}
 
@@ -356,12 +355,6 @@ void GamePanelContainer::Draw(ControlDrawData* /*cdd*/)
 }
 
 //=================================================================================================
-bool SortGamePanels(const Control* c1, const Control* c2)
-{
-	return ((GamePanel*)c1)->order < ((GamePanel*)c2)->order;
-}
-
-//=================================================================================================
 void GamePanelContainer::Update(float dt)
 {
 	if(focus)
@@ -393,7 +386,10 @@ void GamePanelContainer::Update(float dt)
 				ctrls.back()->focus = false;
 				top->order = order;
 				++order;
-				std::sort(ctrls.begin(), ctrls.end(), SortGamePanels);
+				std::sort(ctrls.begin(), ctrls.end(), [](const Control* c1, const Control* c2)
+				{
+					return static_cast<const GamePanel*>(c1)->order < static_cast<const GamePanel*>(c2)->order;
+				});
 				top->Event(GuiEvent_GainFocus);
 				top->focus = true;
 			}

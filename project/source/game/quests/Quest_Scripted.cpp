@@ -315,7 +315,7 @@ void Quest_Scripted::Cleanup()
 {
 	if(timeout_days != -1)
 	{
-		RemoveElementTry(QM.quests_timeout2, (Quest*)this);
+		RemoveElementTry(QM.quests_timeout2, static_cast<Quest*>(this));
 		timeout_days = -1;
 	}
 
