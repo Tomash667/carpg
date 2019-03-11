@@ -11,3 +11,5 @@ Role Playing Simulator
 
 Check doc/ folder for more information and changelog.
 Also check LICENSE and CONTRIBUTING.md.
+
+Codacy Badge
