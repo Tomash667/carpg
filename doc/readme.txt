@@ -299,6 +299,7 @@ Podziêkowania za znalezione b³êdy:
 	Harorri
 	Medarc
 	MikelkCZ
+	MildlyPhilosophicalHobbit
 	Minister of Death
 	Paradox Edge
 	thebard88

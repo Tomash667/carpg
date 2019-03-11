@@ -16,9 +16,6 @@ const Int2 Engine::DEFAULT_WINDOW_SIZE = Int2(1024, 768);
 Engine* Engine::engine;
 KeyStates Key;
 extern string g_system_dir;
-#ifdef _DEBUG
-HRESULT _d_hr;
-#endif
 
 //=================================================================================================
 Engine::Engine() : engine_shutdown(false), timer(false), hwnd(nullptr), d3d(nullptr), device(nullptr), sprite(nullptr), cursor_visible(true),

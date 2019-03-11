@@ -2378,6 +2378,7 @@ bool Unit::Read(BitStreamReader& f)
 		hero = nullptr;
 		player = new PlayerController;
 		player->unit = this;
+		alcohol = 0.f;
 		f >> player->name;
 		f.ReadCasted<byte>(player->id);
 		f >> player->credit;

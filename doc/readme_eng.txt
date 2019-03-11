@@ -363,6 +363,7 @@ Thanks for bug founding:
 	Harorri
 	Medarc
 	MikelkCZ
+	MildlyPhilosophicalHobbit
 	Minister of Death
 	Paradox Edge
 	thebard88

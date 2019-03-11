@@ -17,6 +17,7 @@ Version 0.9 (???):
 - fixed client crash when loading game where someone is using usable
 - fixed client broken npcs using usables after reentering location
 - fixed crash when left location in single player when player searched for servers first [Anonymous]
+- fixed rare contant alcohol effect for clients after entering location [MildlyPhilosophicalHobbit]
 
 --------------------------------------------------------------------------------
 Version 0.8.1 (???):

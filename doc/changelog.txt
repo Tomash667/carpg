@@ -17,6 +17,7 @@ Version 0.9 (???):
 - naprawiony crash klienta przy wczytywaniu gry gdzie ktoœ u¿ywa obiektu
 - naprawione nieprawid³owe u¿ywanie obiektów u klienta przez npc po ponownych odwiedzinach tej samej lokalizacji
 - naprawiony crash po opuszczeniu lokalizacji w trybie jednego gracza jeœli wczeœniej szukano serwerów [Anonymous]
+- naprawiony rzadki ci¹g³y efekt alkoholu u klienta po wejœciu do lokalizacji [MildlyPhilosophicalHobbit]
 
 --------------------------------------------------------------------------------
 Wersja 0.8.1 (???):

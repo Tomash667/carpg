@@ -8,7 +8,7 @@
 
 //-----------------------------------------------------------------------------
 #ifdef _DEBUG
-#	define V(x) do { HRESULT _d_hr = (x); assert(SUCCEEDED(_d_hr)); } while(0)
+#	define V(x) assert(SUCCEEDED(x))
 #else
 #	define V(x) (x)
 #endif
