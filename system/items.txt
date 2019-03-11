@@ -1519,6 +1519,15 @@ consumable p_dex {
 	flags {not_shop not_chest not_alchemist ground_mesh}
 }
 
+consumable p_hairdye {
+	weight 0.2
+	value 50
+	mesh "antidotum.qmsh"
+	type potion
+	effect hairdye
+	flags ground_mesh
+}
+
 consumable q_magowie_potion {
 	weight 0.1
 	value 150
@@ -1802,6 +1811,13 @@ other plate {
 	mesh "plate.qmsh"
 	type other
 	flags ground_mesh
+}
+
+other flowers {
+	weight 0.5
+	value 50
+	mesh "flowers.qmsh"
+	type other
 }
 
 other a_amulet {

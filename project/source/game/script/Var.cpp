@@ -2,6 +2,7 @@
 #include "GameCore.h"
 #include "Var.h"
 #include "Item.h"
+#include "Unit.h"
 #include "Location.h"
 #include "World.h"
 #include "Encounter.h"
@@ -76,6 +77,12 @@ void VarsContainer::Save(FileWriter& f)
 			else
 				f.Write0();
 			break;
+		case Var::Type::Unit:
+			if(e.second->unit)
+				f << e.second->unit->refid;
+			else
+				f << -1;
+			break;
 		case Var::Type::Location:
 			f << (e.second->location ? e.second->location->index : -1);
 			break;
@@ -129,6 +136,13 @@ void VarsContainer::Load(FileReader& f)
 					v->item = nullptr;
 				else
 					v->item = Item::Get(id);
+			}
+			break;
+		case Var::Type::Unit:
+			{
+				int refid;
+				f >> refid;
+				v->unit = Unit::GetByRefid(refid);
 			}
 			break;
 		case Var::Type::Location:

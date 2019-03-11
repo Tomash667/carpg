@@ -463,6 +463,9 @@ void ScriptManager::RegisterGame()
 {
 	ScriptBuilder sb(engine);
 
+	// forward declarations
+	AddType("Unit");
+
 	AddType("Var")
 		.Method("bool IsNone() const", asMETHOD(Var, IsNone))
 		.Method("bool IsBool() const", asMETHODPR(Var, IsBool, () const, bool))
@@ -476,6 +479,7 @@ void ScriptManager::RegisterGame()
 		.Method("bool opEquals(int) const", asMETHODPR(Var, IsInt, (int) const, bool))
 		.Method("bool opEquals(float) const", asMETHODPR(Var, IsFloat, (float) const, bool))
 		.Method("bool opEquals(Var@) const", asMETHOD(Var, IsVar))
+		.Method("bool opEquals(Unit@) const", asMETHOD(Var, IsUnit))
 		.Method("Var@ SetBool(bool)", asMETHOD(Var, SetBool))
 		.Method("Var@ SetInt(int)", asMETHOD(Var, SetInt))
 		.Method("Var@ SetFloat(float)", asMETHOD(Var, SetFloat))
@@ -544,7 +548,7 @@ void ScriptManager::RegisterGame()
 		.WithNamespace()
 		.AddFunction("UnitData@ Get(const string& in)", asFUNCTION(UnitData::GetS));
 
-	AddType("Unit")
+	ForType("Unit")
 		.Member("const Vec3 pos", offsetof(Unit, pos))
 		.Method("int get_gold() const", asMETHOD(Unit, GetGold))
 		.Method("void set_gold(int)", asMETHOD(Unit, SetGold))
@@ -556,6 +560,8 @@ void ScriptManager::RegisterGame()
 		.Method("bool get_dont_attack() const", asMETHOD(Unit, GetDontAttack))
 		.Method("void set_dont_attack(bool)", asMETHOD(Unit, SetDontAttack))
 		.Method("bool IsTeamMember()", asMETHOD(Unit, IsTeamMember))
+		.Method("bool HaveItem(Item@)", asMETHOD(Unit, HaveItem))
+		.Method("bool HaveItem(const string& in)", asMETHOD(Unit, HaveItemS))
 		.Method("void AddItem(Item@, uint = 1)", asMETHOD(Unit, AddItemS))
 		.Method("void AddTeamItem(Item@, uint = 1)", asMETHOD(Unit, AddTeamItemS))
 		.Method("void RemoveItem(const string& in)", asFUNCTION(Unit_RemoveItem)) // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -686,7 +692,9 @@ void ScriptManager::RegisterGame()
 	AddVarType(Var::Type::Int, "int", false);
 	AddVarType(Var::Type::Float, "float", false);
 	AddVarType(Var::Type::Item, "Item", true);
+	AddVarType(Var::Type::Unit, "Unit", true);
 	AddVarType(Var::Type::Location, "Location", true);
+	AddVarType(Var::Type::Encounter, "Encounter", true);
 }
 
 bool ScriptManager::RunScript(cstring code, bool validate)

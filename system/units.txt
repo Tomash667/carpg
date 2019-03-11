@@ -1116,6 +1116,59 @@ unit q_zlo_mag : base_human {
 	dialog q_evil
 }
 
+unit woman {
+	mesh "woman.qmsh"
+	mat body
+	flags human
+	group citizens
+	profile ai_fighter
+	walk_speed 1.5
+	run_speed 5
+	rot_speed 3
+	blood red
+	sounds {
+		see_enemy "hey.mp3"
+		pain "aahhzz.mp3"
+		death "ahhh.mp3"
+		talk {"hello-3.mp3" "hello-4.mp3" "hmph.wav" "huh-2.mp3"}
+	}
+	frames {
+		attacks {
+			{0.33 0.7 {short_blade long_blade axe blunt}}
+			{0.3 0.73 {long_blade axe blunt}}
+			{0.23 0.7 {short_blade long_blade blunt}}
+			{0.36 0.7 {long_blade axe blunt}}
+			{0.36 0.72 {short_blade long_blade}}
+		}
+		cast 0.85
+		take_weapon 0.4
+		bash 0.8
+	}
+	idles {
+		"wygina"
+		"rozglada"
+		"drapie"
+	}
+	width 0.3
+	attack_range 1
+	armor_type human
+	items {
+		random 1 3 !normal_food
+	}
+	level 3
+	dialog woman
+}
+
+unit dryad : woman {
+	mesh "dryad.qmsh"
+	level 5
+	items {
+		random 1 3 green_herb
+		random 2 5 healing_herb
+	}
+	dialog dryad
+}
+
 //------------------------------------------------------------------------------
 // GOBLINS
 //------------------------------------------------------------------------------

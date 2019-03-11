@@ -435,6 +435,7 @@ public:
 	void RemoveQuestItem(int quest_refid);
 	void RemoveQuestItemS(Quest* quest);
 	bool HaveItem(const Item* item);
+	bool HaveItemS(const string& id) { return HaveItem(Item::TryGet(id)); }
 	float GetAttackSpeed(const Weapon* weapon = nullptr) const;
 	float GetAttackSpeedModFromStrength(const Weapon& wep) const
 	{

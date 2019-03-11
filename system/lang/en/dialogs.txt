@@ -1964,3 +1964,19 @@ dialog tomir {
 	10 "I guess it was supposed to be this way..."
 	11 "Nothing here for me, maybe we will meet again someday. See you later..."
 }
+
+//==============================================================================
+dialog woman {
+	0 {
+		"Hello! Are you an adventurer?"
+		"Hi! How can I help you?"
+	}
+	1 "Give flowers"
+	2 "End dialog"
+	3 {
+		"Ohh. This is for me? Thank you!"
+		"Thank you! I rarely get such gifts ..."
+	}
+	4 "You must tell me about your adventures! Let's go to my house!"
+	5 "It was amazing! Will you visit me again?"
+}

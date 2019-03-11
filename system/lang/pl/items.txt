@@ -566,6 +566,10 @@ item p_antimagic {
 	name "Eliksir antymagii"
 	desc "Na 5 minut zapewnia odpornoœæ na magiê."
 }
+item p_hairdye {
+	name "Farba do w³osów"
+	desc "Po u¿yciu ustawia losowy kolor w³osów."
+}
 
 //------------------------------------------------------------------------------
 // DRINK
@@ -683,6 +687,9 @@ item cup {
 }
 item plate {
 	name "Talerz"
+}
+item flowers {
+	name "Bukiet kwiatów"
 }
 
 //------------------------------------------------------------------------------

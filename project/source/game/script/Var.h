@@ -10,6 +10,7 @@ struct Var
 		Int,
 		Float,
 		Item,
+		Unit,
 		Location,
 		Encounter
 	};
@@ -20,6 +21,7 @@ struct Var
 		int _int;
 		float _float;
 		const Item* item;
+		Unit* unit;
 		Location* location;
 		Encounter* encounter;
 		void* ptr;
@@ -57,6 +59,10 @@ struct Var
 	bool IsVar(Var* var) const
 	{
 		return type == var->type && _int == var->_int;
+	}
+	bool IsUnit(Unit* unit) const
+	{
+		return type == Type::Unit && unit == this->unit;
 	}
 
 	void SetNone()

@@ -226,7 +226,8 @@ void ItemLoader::InitTokenizer()
 		{ "food", E_FOOD },
 		{ "green_hair", E_GREEN_HAIR },
 		{ "stamina", E_STAMINA },
-		{ "stun", E_STUN }
+		{ "stun", E_STUN },
+		{ "hairdye", E_HAIRDYE }
 		});
 
 	t.AddKeywords(G_OTHER_TYPE, {

@@ -1605,6 +1605,24 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			choices.push_back(choice);
 		}
 	}
+	else if(strcmp(msg, "sex_time") == 0)
+	{
+		pc->unit->frozen = FROZEN::YES;
+		talker->frozen = FROZEN::YES;
+		if(is_local)
+		{
+			FIXME;
+			game.fallback_type = FALLBACK::REST;
+			game.fallback_t = -1.f;
+			//game.fallback_1 = days;
+		}
+		else
+		{
+			NetChangePlayer& c = Add1(pc->player_info->changes);
+			c.type = NetChangePlayer::REST;
+			//c.id = days;
+		}
+	}
 	else
 	{
 		Warn("DTF_SPECIAL: %s", msg);

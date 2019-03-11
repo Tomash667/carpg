@@ -87,6 +87,15 @@ void Quest_Scripted::Save(GameWriter& f)
 					f.Write0();
 			}
 			break;
+		case Var::Type::Unit:
+			{
+				Unit* unit = *(Unit**)ptr;
+				if(unit)
+					f << unit->refid;
+				else
+					f << -1;
+			}
+			break;
 		case Var::Type::Location:
 			{
 				Location* loc = *(Location**)ptr;
@@ -149,6 +158,12 @@ bool Quest_Scripted::Load(GameReader& f)
 					*(Item**)ptr = Item::Get(item_id);
 				else
 					*(Item**)ptr = nullptr;
+			}
+			break;
+		case Var::Type::Unit:
+			{
+				int refid = f.Read<int>();
+				*(Unit**)ptr = Unit::GetByRefid(refid);
 			}
 			break;
 		case Var::Type::Location:

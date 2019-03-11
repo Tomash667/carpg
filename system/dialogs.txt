@@ -4301,3 +4301,68 @@ dialog tomir
 		show_choices
 	}
 }
+
+//==============================================================================
+dialog woman
+{
+	if script "target.vars[\"lover\"] == pc.unit"
+	{
+		talk 5
+		end
+	}
+	talk 0
+	if script "pc.unit.HaveItem(\"flowers\")"
+	{
+		choice 1
+		{
+			script "pc.unit.RemoveItem(\"flowers\")"
+			talk 3
+			talk 4
+			special "sex_time"
+			end
+		}
+		escape choice 2
+			end
+		show_choices
+	}
+	end
+}
+
+//==============================================================================
+dialog dryad
+{
+	if script "target.vars[\"lover\"] == pc.unit"
+	{
+		talk 7
+		end
+	}
+	if script "pc.unit.hair_color == Color::GREEN && pc.unit.HaveHair()"
+	{
+		talk 5
+		do_once
+		choice 1
+		{
+			talk 6
+			special "sex_time"
+			end
+		}
+	}
+	if once
+		talk 0
+	if script "pc.unit.HaveItem(\"green_herb\")"
+	{
+		choice 2
+		{
+			script "pc.unit.RemoveItem(\"green_herb\")"
+			talk 4
+			end
+		}
+	}
+	if choices != 0
+	{
+		escape choice 3
+			end
+		show_choices
+	}
+	end
+}

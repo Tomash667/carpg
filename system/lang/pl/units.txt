@@ -121,3 +121,5 @@ unit hero_tomir {
 unit tomashu = "Tomashu"
 unit unk = "Nieznany"
 unit crazy_cook = "Szalony kucharz"
+unit woman = "Kobieta"
+unit dryad = "Driada"

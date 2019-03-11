@@ -925,6 +925,26 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 	case E_STUN:
 		ApplyStun(item.time);
 		break;
+	case E_HAIRDYE:
+		if(human_data)
+		{
+			while(true)
+			{
+				const Vec4& color = g_hair_colors[Rand() % n_hair_colors];
+				if(color != human_data->hair_color)
+				{
+					human_data->hair_color = color;
+					break;
+				}
+			}
+			if(Net::IsOnline())
+			{
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::HAIR_COLOR;
+				c.unit = this;
+			}
+		}
+		break;
 	default:
 		assert(0);
 		break;

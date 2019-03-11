@@ -410,6 +410,7 @@ enum ConsumeEffect
 	E_GREEN_HAIR, // turn hair into green
 	E_STAMINA, // regenerate stamina
 	E_STUN, // unit stunned, can't do anything
+	E_HAIRDYE, // set random hair color
 };
 
 //-----------------------------------------------------------------------------

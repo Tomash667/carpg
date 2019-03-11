@@ -71,6 +71,8 @@ Unit type:
 	bool auto_talk - ai auto talk mode.
 	bool dont_attack - enemy ai don't attack.
 	bool IsTeamMember() - true if unit is team member.
+	bool HaveItem(Item@ item) - true if unit have item.
+	bool HaveItem(const string& in item_id) - true if unit have item.
 	void AddItem(Item@ item, uint count = 1) - add item, will show message.
 	void AddTeamItem(Item@ item, uint count = 1) - add team item, will show message.
 	void RemoveItem(const string& in item_id) - remove 1 item by id, will show message.

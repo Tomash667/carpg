@@ -566,6 +566,10 @@ item p_antimagic {
 	name "Elixir of antimagic"
 	desc "A potion that provides resistance to magic for 5 minutes."
 }
+item p_hairdye {
+	name "Hairdye"
+	desc "After using gives random hair color."
+}
 
 //------------------------------------------------------------------------------
 // DRINK
@@ -683,6 +687,9 @@ item cup {
 }
 item plate {
 	name "Plate"
+}
+item flowers {
+	name "Bouquet of flowers"
 }
 
 //------------------------------------------------------------------------------
