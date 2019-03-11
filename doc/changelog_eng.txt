@@ -16,6 +16,7 @@ Version 0.9 (???):
 - fixed server crash when looted unit is removed
 - fixed client crash when loading game where someone is using usable
 - fixed client broken npcs using usables after reentering location
+- fixed crash when left location in single player when player searched for servers first [Anonymous]
 
 --------------------------------------------------------------------------------
 Version 0.8.1 (???):

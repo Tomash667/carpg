@@ -899,7 +899,7 @@ void Game::UpdateClientTransfer(float dt)
 			Info("NM_TRANSFER: Lost connection with server.");
 			N.StreamEnd();
 			N.peer->DeallocatePacket(packet);
-			N.ClosePeer();
+			N.ClosePeer(false, true);
 			gui->info_box->CloseDialog();
 			ExitToMenu();
 			GUI.SimpleDialog(txLostConnection, nullptr);
@@ -2016,7 +2016,7 @@ void Game::CloseConnection(VoidF f)
 		case NM_TRANSFER:
 			gui->info_box->Show(txDisconnecting);
 			ForceRedraw();
-			N.ClosePeer(true);
+			N.ClosePeer(true, true);
 			f();
 			break;
 		case NM_TRANSFER_SERVER:
@@ -2044,7 +2044,7 @@ void Game::CloseConnection(VoidF f)
 			{
 				// no players, close instantly
 				gui->info_box->CloseDialog();
-				N.ClosePeer();
+				N.ClosePeer(false, true);
 				f();
 			}
 			break;
@@ -2078,7 +2078,7 @@ void Game::CloseConnection(VoidF f)
 			else
 			{
 				// no players, close instantly
-				N.ClosePeer();
+				N.ClosePeer(false, true);
 				if(f)
 					f();
 			}
@@ -2087,7 +2087,7 @@ void Game::CloseConnection(VoidF f)
 		{
 			gui->info_box->Show(txDisconnecting);
 			ForceRedraw();
-			N.ClosePeer(true);
+			N.ClosePeer(true, true);
 			f();
 		}
 	}
@@ -2253,7 +2253,7 @@ void Game::ClearAndExitToMenu(cstring msg)
 	assert(msg);
 	Info("Clear game and exit to menu.");
 	ClearGame();
-	N.ClosePeer();
+	N.ClosePeer(false, true);
 	ExitToMenu();
 	GUI.SimpleDialog(msg, gui->main_menu);
 }

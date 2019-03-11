@@ -168,7 +168,7 @@ public:
 	PlayerInfo* FindPlayer(Cstring nick);
 	PlayerInfo* FindPlayer(const SystemAddress& adr);
 	PlayerInfo* TryGetPlayer(int id);
-	void ClosePeer(bool wait = false);
+	void ClosePeer(bool wait = false, bool check_was_client = false);
 
 	LobbyApi* api;
 	RakPeerInterface* peer;

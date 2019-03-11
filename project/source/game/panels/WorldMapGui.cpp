@@ -103,7 +103,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 	GUI.DrawSpriteTransform(tWorldMap, mat);
 
 	// debug tiles
-	if(!combo_box.focus && DebugKey('S') && !Net::IsClient())
+	if(!combo_box.focus && !GUI.HaveDialog() && DebugKey('S') && !Net::IsClient())
 	{
 		const vector<int>& tiles = W.GetTiles();
 		int ts = W.world_size / World::TILE_SIZE;

@@ -812,6 +812,8 @@ void ServerPanel::UpdateLobbyServer(float dt)
 							info->clas = old->clas;
 							info->loaded = true;
 							info->devmode = old->devmode;
+							if(game->default_player_devmode)
+								info->devmode = true;
 							info->hd.CopyFrom(old->hd);
 							info->notes = old->notes;
 

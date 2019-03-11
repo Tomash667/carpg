@@ -133,13 +133,13 @@ PlayerInfo* Net::TryGetPlayer(int id)
 }
 
 //=================================================================================================
-void Net::ClosePeer(bool wait)
+void Net::ClosePeer(bool wait, bool check_was_client)
 {
 	assert(peer);
 
 	Info("Net peer shutdown.");
 	peer->Shutdown(wait ? CLOSE_PEER_TIMER : 0);
-	if(IsClient())
+	if(IsClient() && check_was_client)
 		was_client = true;
 	changes.clear();
 	SetMode(Mode::Singleplayer);
