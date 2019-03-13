@@ -2483,19 +2483,7 @@ bool Unit::Read(BitStreamReader& f)
 		if(usable_netid == -1)
 			usable = nullptr;
 		else
-		{
-			usable = L.FindUsable(usable_netid);
-			if(usable)
-			{
-				use_rot = Vec3::LookAtAngle(pos, usable->pos);
-				usable->user = this;
-			}
-			else
-			{
-				Error("Missing usable %d.", usable_netid);
-				return false;
-			}
-		}
+			Usable::AddRequest(&usable, usable_netid, this);
 
 		// bow animesh instance
 		if(action == A_SHOOT)

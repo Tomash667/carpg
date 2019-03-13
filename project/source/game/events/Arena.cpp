@@ -173,9 +173,12 @@ void Arena::SpawnArenaViewers(int count)
 		Vec3 pos(pt->mat._41 + arena->offset.x, pt->mat._42, pt->mat._43 + arena->offset.y);
 		Vec3 look_at(arena->offset.x, 0, arena->offset.y);
 		Unit* u = L.SpawnUnitNearLocation(arena->ctx, pos, ud, &look_at, -1, 2.f);
-		u->ai->loc_timer = Random(6.f, 12.f);
-		u->temporary = true;
-		viewers.push_back(u);
+		if(u)
+		{
+			u->ai->loc_timer = Random(6.f, 12.f);
+			u->temporary = true;
+			viewers.push_back(u);
+		}
 		--count;
 	}
 }
@@ -402,10 +405,13 @@ void Arena::StartArenaCombat(int level)
 	for(TmpUnitGroup::Spawn& spawn : part->Roll(lvl, units.size()))
 	{
 		Unit* u = L.SpawnUnitInsideArea(arena->ctx, arena->arena2, *spawn.first, spawn.second);
-		u->rot = 0.f;
-		u->in_arena = 1;
-		u->frozen = FROZEN::YES;
-		units.push_back(u);
+		if(u)
+		{
+			u->rot = 0.f;
+			u->in_arena = 1;
+			u->frozen = FROZEN::YES;
+			units.push_back(u);
+		}
 	}
 }
 
@@ -939,14 +945,20 @@ void Arena::SpawnUnit(const vector<Enemy>& units)
 			if(unit.side)
 			{
 				Unit* u = L.SpawnUnitInsideArea(arena->ctx, arena->arena2, *unit.unit, unit.level);
-				u->rot = 0.f;
-				u->in_arena = 1;
+				if(u)
+				{
+					u->rot = 0.f;
+					u->in_arena = 1;
+				}
 			}
 			else
 			{
 				Unit* u = L.SpawnUnitInsideArea(arena->ctx, arena->arena1, *unit.unit, unit.level);
-				u->rot = PI;
-				u->in_arena = 0;
+				if(u)
+				{
+					u->rot = PI;
+					u->in_arena = 0;
+				}
 			}
 		}
 	}
