@@ -19,6 +19,7 @@ Version 0.9 (???):
 - fixed crash when left location in single player when player searched for servers first [Anonymous]
 - fixed rare contant alcohol effect for clients after entering location [MildlyPhilosophicalHobbit]
 - fixed crash at arena combat where there is no free space to spawn enemies [Anonymous]
+- fixed crash when using take all items on chest with visible item details [Anonymous]
 
 --------------------------------------------------------------------------------
 Version 0.8.1 (???):

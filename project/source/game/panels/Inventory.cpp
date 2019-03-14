@@ -479,7 +479,7 @@ void InventoryPanel::Draw(ControlDrawData*)
 				team = 1;
 		}
 
-		int x = i%cells_w,
+		int x = i % cells_w,
 			y = i / cells_w;
 
 		// obrazek za³o¿onego przedmiotu
@@ -597,7 +597,7 @@ void InventoryPanel::Update(float dt)
 				y = (cursor_pos.y - shift_y) / 63;
 			if(x >= 0 && x < cells_w && y >= 0 && y < cells_h)
 			{
-				int i = x + y*cells_w;
+				int i = x + y * cells_w;
 				if(i < (int)i_items->size() - shift)
 					new_index = i + shift;
 			}
@@ -628,7 +628,10 @@ void InventoryPanel::Update(float dt)
 
 	// klawisz to podnoszenia wszystkich przedmiotów
 	if(mode == LOOT_OTHER && (focus || base.inv_trade_mine->focus) && Key.Focus() && GKey.PressedRelease(GK_TAKE_ALL))
+	{
 		Event(GuiEvent_Custom);
+		return;
+	}
 
 	// aktualizuj box
 	if(mode == INVENTORY)
@@ -1277,13 +1280,13 @@ void InventoryPanel::Event(GuiEvent e)
 		if(game.pc->unit->action != A_NONE)
 			return;
 
-		// przycisk - zabierz wszystko
-		bool zloto = false;
+		// take all event
+		bool gold = false;
 		SOUND snd[3] = { 0 };
 		vector<ItemSlot>& itms = game.pc->unit->items;
 		bool changes = false;
 
-		// sloty
+		// slots
 		if(game.pc->action != PlayerController::Action_LootChest && game.pc->action != PlayerController::Action_LootContainer)
 		{
 			const Item** unit_slots = game.pc->action_unit->slots;
@@ -1293,7 +1296,7 @@ void InventoryPanel::Event(GuiEvent e)
 				{
 					SOUND s = game.GetItemSound(unit_slots[i]);
 					if(s == game.sCoins)
-						zloto = true;
+						gold = true;
 					else
 					{
 						for(int i = 0; i < 3; ++i)
@@ -1324,11 +1327,11 @@ void InventoryPanel::Event(GuiEvent e)
 				}
 			}
 
-			// wyzeruj wagê ekwipunku
+			// zero looted unit inventory weight
 			game.pc->action_unit->weight = 0;
 		}
 
-		// zwyk³e przedmioty
+		// items
 		for(vector<ItemSlot>::iterator it = game.pc->chest_trade->begin(), end = game.pc->chest_trade->end(); it != end; ++it)
 		{
 			if(!it->item)
@@ -1336,7 +1339,7 @@ void InventoryPanel::Event(GuiEvent e)
 
 			if(it->item->type == IT_GOLD)
 			{
-				zloto = true;
+				gold = true;
 				game.pc->unit->AddItem(Item::gold, it->count, it->team_count);
 			}
 			else
@@ -1365,16 +1368,16 @@ void InventoryPanel::Event(GuiEvent e)
 			c.type = NetChange::GET_ALL_ITEMS;
 		}
 
-		// dŸwiêk podnoszenia przedmiotów
+		// pick item sound
 		for(int i = 0; i < 3; ++i)
 		{
 			if(snd[i])
 				game.sound_mgr->PlaySound2d(snd[i]);
 		}
-		if(zloto)
+		if(gold)
 			game.sound_mgr->PlaySound2d(game.sCoins);
 
-		// zamknij ekwipunek
+		// close inventory
 		if(changes)
 			SortItems(itms);
 		base.gp_trade->Hide();

@@ -19,6 +19,7 @@ Version 0.9 (???):
 - naprawiony crash po opuszczeniu lokalizacji w trybie jednego gracza jeœli wczeœniej szukano serwerów [Anonymous]
 - naprawiony rzadki ci¹g³y efekt alkoholu u klienta po wejœciu do lokalizacji [MildlyPhilosophicalHobbit]
 - naprawiony crash na arenie gdy nie ma miejsca na wygenerowanie wrogów [Anonymous]
+- naprawiony crash po u¿yciu skrótu zabierz wszystko na skrzyni z widocznymi szczegó³ami przedmiotu [Anonymous]
 
 --------------------------------------------------------------------------------
 Wersja 0.8.1 (???):
