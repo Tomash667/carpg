@@ -23,7 +23,7 @@ const int DefaultSpecularHardness = 10;
 //=================================================================================================
 // Konstruktor Mesh
 //=================================================================================================
-Mesh::Mesh() : vb(nullptr), ib(nullptr)
+Mesh::Mesh() : vb(nullptr), ib(nullptr), vertex_decl(VDI_DEFAULT)
 {
 }
 

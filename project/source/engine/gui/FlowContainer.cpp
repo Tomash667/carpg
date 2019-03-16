@@ -35,7 +35,7 @@ void FlowItem::Set(int _group, int _id, int _tex_id, bool disabled)
 
 //=================================================================================================
 FlowContainer::FlowContainer() : id(-1), group(-1), on_button(nullptr), button_size(0, 0), word_warp(true), allow_select(false), selected(nullptr),
-batch_changes(false)
+batch_changes(false), button_tex(nullptr)
 {
 	size = Int2(-1, -1);
 }

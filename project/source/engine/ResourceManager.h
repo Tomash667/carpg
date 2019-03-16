@@ -350,7 +350,7 @@ public:
 	void AddTaskCategory(Cstring name);
 	void AddTask(void* ptr, TaskCallback callback);
 	void NextTask(cstring next_category = nullptr);
-	void SetLoadScreen(LoadScreen* _load_screen) { load_screen = _load_screen; }
+	void SetLoadScreen(LoadScreen* load_screen) { this->load_screen = load_screen; }
 	void PrepareLoadScreen(float progress_min = 0.f, float progress_max = 1.f);
 	void StartLoadScreen(cstring category = nullptr);
 	void CancelLoadScreen(bool cleanup = false);

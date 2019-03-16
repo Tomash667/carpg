@@ -294,7 +294,7 @@ class Qmsh:
 			self.bones = []
 			count = f.ReadByte()
 			for i in range(count):
-				self.bones.append(f.ReadByte())	
+				self.bones.append(f.ReadByte())
 	##-------------------------------------------------------------------------
 	class Animation:
 		class Keyframe:
@@ -613,7 +613,7 @@ class Importer:
 			bm.faces.ensure_lookup_table()
 			for i in mesh.broken_tris:
 				to_delete.append(bm.faces[i])
-			bmesh.ops.delete(bm, geom=to_delete, context=5)  
+			bmesh.ops.delete(bm, geom=to_delete, context=5)
 			bm.to_mesh(mesh_data)
 			mesh_data.update()
 			self.Warn("Removed %d broken tris." % len(mesh.broken_tris))
@@ -834,7 +834,7 @@ class Importer:
 	def MergePoint(self, point, empty):
 		bpy.ops.object.select_all(action='DESELECT')
 		empty.select = True
-		bpy.ops.object.delete() 
+		bpy.ops.object.delete()
 		self.AddPoint(point)
 	def AddCamera(self):
 		cam = bpy.data.cameras.new(name='Camera')

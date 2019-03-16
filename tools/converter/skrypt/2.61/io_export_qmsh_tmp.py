@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Qmsh.tmp",
     "author": "Tomash",
-    "version": (0, 15, 0),
+    "version": (0, 15, 1),
     "blender": (2, 6, 1),
     "api": 37702,
     "location": "File > Export > Qmsh.tmp",
@@ -270,8 +270,8 @@ def ProcessArmatureObject(data,obj):
 ################################################################################
 # Zapisuje pusty obiekt (uzywane do oznaczania roznych rzeczy w grze)
 def ProcessEmpty(data,empty):
-	type = empty.empty_draw_type
-	if type == 'Image':
+	empty_type = empty.empty_draw_type
+	if empty_type == 'Image':
 		Warning("Empty of Image type not supported, object "+empty.name+" ignored.")
 	else:
 		data.file.write("\tempty %s {\n" % QuoteString(empty.name))
@@ -283,15 +283,9 @@ def ProcessEmpty(data,empty):
 		else:
 			bone = "NULL"
 		data.file.write("\t\tbone: %s\n" % QuoteString(bone))
-		data.file.write("\t\ttype: %s\n" % QuoteString(type))
+		data.file.write("\t\ttype: %s\n" % QuoteString(empty_type))
 		data.file.write("\t\tsize: %f,%f,%f\n" % (empty.scale[0],empty.scale[1],empty.scale[2]))
 		data.file.write("\t\tscale: %f\n" % empty.empty_draw_size);
-		v = empty.location
-		# mozna wyeksportowac jako pos + rot
-		#data.file.write("\t\tpos: %f,%f,%f\n" % (v[0],v[1],v[2]))
-		#v = empty.rotation_euler
-		#data.file.write("\t\trot: %f,%f,%f\n" % (v[0],v[1],v[2]))
-		# lub jako macierz (wtedy jest tez uwzgledniana tam skala, konwerter obsluguje obie opcje)
 		m = empty.matrix_local
 		data.file.write("\t\tmatrix:\n")
 		for n in m:
@@ -338,34 +332,34 @@ def ProcessObject(data,obj):
 ################################################################################
 # zwraca nazwe krzywej taka jak kiedys PosX,QuatW,ScaleZ
 def ConvertFCurve(channel):
-	str = 0
+	name = 0
 	parts = channel.data_path.split('.')
 	ile = len(parts)
 	str2 = parts[ile-1]
 	if str2 == "location":
-		str = "Loc"
+		name = "Loc"
 	elif str2 == "rotation_quaternion":
-		str = "Quat"
+		name = "Quat"
 	else:
-		str = "Scale"
+		name = "Scale"
 	index = channel.array_index
-	if str == "Quat":
+	if name == "Quat":
 		if index == 0:
-			str += 'W'
+			name += 'W'
 		elif index == 1:
-			str += 'X'
+			name += 'X'
 		elif index == 2:
-			str += 'Y'
+			name += 'Y'
 		else:
-			str += 'Z'
+			name += 'Z'
 	else:
 		if index == 0:
-			str += 'X'
+			name += 'X'
 		elif index == 1:
-			str += 'Y'
+			name += 'Y'
 		else:
-			str += 'Z'
-	return str		
+			name += 'Z'
+	return name
 
 ################################################################################
 # Zapisuje akcje do pliku

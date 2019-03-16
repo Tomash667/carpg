@@ -2887,7 +2887,7 @@ void Game::AI_Shout(LevelContext& ctx, AIController& ai)
 
 //=================================================================================================
 // jeœli target jest nullptr to atak nic nie zadaje (trenuje walkê na manekinie)
-void Game::AI_DoAttack(AIController& ai, Unit* target, bool w_biegu)
+void Game::AI_DoAttack(AIController& ai, Unit* target, bool running)
 {
 	Unit& u = *ai.unit;
 
@@ -2910,14 +2910,14 @@ void Game::AI_DoAttack(AIController& ai, Unit* target, bool w_biegu)
 			do_power_attack = false;
 		u.attack_power = 1.f;
 
-		if(w_biegu)
+		if(running)
 		{
 			u.attack_power = 1.5f;
 			u.run_attack = true;
 			do_power_attack = false;
 		}
 
-		float stamina = (w_biegu || do_power_attack) ? 1.5f : 1.f;
+		float stamina = (running || do_power_attack) ? 1.5f : 1.f;
 		if(u.HaveWeapon())
 			stamina *= u.GetWeapon().GetInfo().stamina;
 		else
@@ -2945,7 +2945,7 @@ void Game::AI_DoAttack(AIController& ai, Unit* target, bool w_biegu)
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::ATTACK;
 			c.unit = &u;
-			c.id = (do_power_attack ? AID_PrepareAttack : (w_biegu ? AID_RunningAttack : AID_Attack));
+			c.id = (do_power_attack ? AID_PrepareAttack : (running ? AID_RunningAttack : AID_Attack));
 			c.f[1] = speed;
 		}
 	}

@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Qmsh.tmp",
     "author": "Tomashu",
-    "version": (0, 19, 0),
+    "version": (0, 19, 1),
     "blender": (2, 7, 2),
     "location": "File > Export > Qmsh.tmp",
     "description": "Export to Qmsh.tmp",
@@ -216,7 +216,7 @@ def ProcessArmatureObject(data,obj):
 		# Head
 		data.file.write("\t\t\thead %f,%f,%f %f,%f,%f %f\n" % (bone.head[0], bone.head[1], bone.head[2], bone.head_local[0], bone.head_local[1], bone.head_local[2], bone.head_radius))
 		# Tail
-		data.file.write("\t\t\ttail %f,%f,%f %f,%f,%f %f\n" % (bone.tail[0], bone.tail[1], bone.tail[2], bone.tail_local[0], bone.tail_local[1], bone.tail_local[2], bone.tail_radius))	
+		data.file.write("\t\t\ttail %f,%f,%f %f,%f,%f %f\n" % (bone.tail[0], bone.tail[1], bone.tail[2], bone.tail_local[0], bone.tail_local[1], bone.tail_local[2], bone.tail_radius))
 		# Length
 		data.file.write("\t\t\t%f\n" % bone.length)
 		# Pusta linia
@@ -234,7 +234,7 @@ def ProcessArmatureObject(data,obj):
 		# Koniec
 		data.file.write("\t\t}\n")
 		# Policz kosci
-		data.bones = data.bones + 1	
+		data.bones = data.bones + 1
 	# Koniec
 	data.file.write("\t}\n")
 	
@@ -475,7 +475,6 @@ class QmshExporter(bpy.types.Operator):
 		default=False)
 	
 	def execute(self, context):
-		FilePath = self.filepath
 		data = ExporterData(self.filepath,self.TextureNames,self.UseExistingArmature,self.ApplyModifiers,self.ForceTangents)
 		ExportQmsh(data)
 		return {"FINISHED"}

@@ -26,7 +26,7 @@ void CalculateNormal(Vec3& out, const Vec3& v1, const Vec3& v2, const Vec3& v3)
 }
 
 //=================================================================================================
-Terrain::Terrain() : parts(nullptr), h(nullptr), mesh(nullptr), texSplat(nullptr), tex(), state(0), uv_mod(DEFAULT_UV_MOD)
+Terrain::Terrain() : device(nullptr), parts(nullptr), h(nullptr), mesh(nullptr), texSplat(nullptr), tex(), state(0), uv_mod(DEFAULT_UV_MOD)
 {
 }
 

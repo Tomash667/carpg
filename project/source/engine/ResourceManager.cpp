@@ -14,7 +14,7 @@ ResourceManager ResourceManager::manager;
 ObjectPool<ResourceManager::TaskDetail> ResourceManager::task_pool;
 
 //=================================================================================================
-ResourceManager::ResourceManager() : mode(Mode::Instant)
+ResourceManager::ResourceManager() : mode(Mode::Instant), load_screen(nullptr)
 {
 }
 

@@ -504,7 +504,7 @@ public:
 	void UpdateElectros(LevelContext& ctx, float dt);
 	void UpdateDrains(LevelContext& ctx, float dt);
 	void AI_Shout(LevelContext& ctx, AIController& ai);
-	void AI_DoAttack(AIController& ai, Unit* target, bool w_biegu = false);
+	void AI_DoAttack(AIController& ai, Unit* target, bool running = false);
 	void AI_HitReaction(Unit& unit, const Vec3& pos);
 	void UpdateAttachedSounds(float dt);
 	void BuildRefidTables();
