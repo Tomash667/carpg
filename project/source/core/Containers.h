@@ -319,6 +319,7 @@ struct ObjectPool
 		return t;
 	}
 
+private:
 	void VerifyElement(T* t)
 	{
 		for(T* e : pool)
@@ -337,9 +338,10 @@ struct ObjectPool
 		}
 	}
 
+public:
 	void Free(T* e)
 	{
-		assert(e);
+		assert(e && !destroyed);
 #ifdef _DEBUG
 		VerifyElement(e);
 		ObjectPoolLeakManager::instance.Unregister(e);
@@ -353,6 +355,7 @@ struct ObjectPool
 
 	void Free(vector<T*>& elems)
 	{
+		assert(!destroyed);
 		if(elems.empty())
 			return;
 
@@ -457,9 +460,11 @@ public:
 	static T* Get() { return GetPool().Get(); }
 	static void Free(T* t) { GetPool().Free(t); }
 	static void Free(vector<T*>& ts) { GetPool().Free(ts); }
-	static void SafeFree(vector <T*>& ts) { GetPool().SafeFree(ts); }
+	static void SafeFree(T* t) { GetPool().SafeFree(t); }
+	static void SafeFree(vector<T*>& ts) { GetPool().SafeFree(ts); }
 	static void Cleanup() { GetPool().Cleanup(); }
 	void Free() { Free((T*)this); }
+	void SafeFree() { SafeFree((T*)this); }
 
 private:
 	static ObjectPool<T>& GetPool() { static ObjectPool<T> pool; return pool; }

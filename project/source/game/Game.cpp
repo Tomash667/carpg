@@ -318,7 +318,10 @@ void Game::OnTick(float dt)
 	{
 		Key.SetFocus(false);
 		if(Net::IsSingleplayer() && !inactive_update)
+		{
+			Profiler::g_profiler.End();
 			return;
+		}
 	}
 	else
 		Key.SetFocus(true);

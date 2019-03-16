@@ -8378,6 +8378,8 @@ void Game::LeaveLevel(LevelContext& ctx, bool clear)
 
 void Game::UpdateContext(LevelContext& ctx, float dt)
 {
+	ProfilerBlock profiler_block([&] { return Format("UpdateContext %s", ctx.GetName()); });
+
 	// aktualizuj postacie
 	UpdateUnits(ctx, dt);
 
