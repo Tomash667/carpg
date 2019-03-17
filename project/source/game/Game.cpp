@@ -106,20 +106,19 @@ Game::~Game()
 //=================================================================================================
 void Game::OnDraw()
 {
+	if(profiler_mode == 2)
+		Profiler::g_profiler.Start();
+	else if(profiler_mode == 0)
+		Profiler::g_profiler.Clear();
+
 	OnDraw(true);
+
+	Profiler::g_profiler.End();
 }
 
 //=================================================================================================
 void Game::OnDraw(bool normal)
 {
-	if(normal)
-	{
-		if(profiler_mode == 2)
-			Profiler::g_profiler.Start();
-		else if(profiler_mode == 0)
-			Profiler::g_profiler.Clear();
-	}
-
 	if(post_effects.empty() || !ePostFx)
 	{
 		if(sCustom)
@@ -266,8 +265,6 @@ void Game::OnDraw(bool normal)
 			index_surf = (index_surf + 1) % 3;
 		}
 	}
-
-	Profiler::g_profiler.End();
 }
 
 //=================================================================================================
@@ -1693,8 +1690,11 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 	if(L.location->outside)
 	{
 		loc_gen->OnEnter();
-		SetTerrainTextures();
-		CalculateQuadtree();
+		if(!reenter)
+		{
+			SetTerrainTextures();
+			CalculateQuadtree();
+		}
 	}
 	else
 		EnterLevel(loc_gen);

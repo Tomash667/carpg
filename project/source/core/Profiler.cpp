@@ -121,7 +121,7 @@ void Profiler::Print(Entry* e, int tab)
 {
 	for(int i = 0; i < tab; ++i)
 		str += '-';
-	str += Format("%s (%g%%)\n", e->name.c_str(), FLT10(e->percent / e->frames));
+	str += Format("%s (%g%% - %lld)\n", e->name.c_str(), FLT10(e->percent / e->frames), e->end - e->tick);
 	for(vector<Entry*>::iterator it = e->e.begin(), end = e->e.end(); it != end; ++it)
 		Print(*it, tab + 1);
 }

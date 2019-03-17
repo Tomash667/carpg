@@ -24,6 +24,7 @@ Version 0.9 (???):
 - fixed crash when loading game with visible profiler
 - fixed sounds max distance
 - fixed units holding food all time in hand after revisiting location
+- fixed decreased performance every time outside location was reentered
 
 --------------------------------------------------------------------------------
 Version 0.8.1 (???):

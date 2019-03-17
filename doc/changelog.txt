@@ -24,6 +24,7 @@ Version 0.9 (???):
 - naprawiony crash przy wczytywaniu gdy widoczny jest profiler
 - naprawiony maksymalny zasiêg dŸwiêków
 - naprawione ci¹g³e trzymanie jedzenia przez jednostki po ponownym wejœciu do lokalizacji
+- naprawiony spadek wydajnoœci za ka¿dym razem gdy lokalizacja zewnêtrzna by³a ponownie odwiedzana
 
 --------------------------------------------------------------------------------
 Wersja 0.8.1 (???):
