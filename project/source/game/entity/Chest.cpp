@@ -7,6 +7,7 @@
 #include "GlobalGui.h"
 #include "PlayerInfo.h"
 
+const float Chest::SOUND_DIST = 1.f;
 int Chest::netid_counter;
 
 //=================================================================================================

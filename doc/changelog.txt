@@ -22,6 +22,7 @@ Version 0.9 (???):
 - naprawiony crash na arenie gdy nie ma miejsca na wygenerowanie wrogów [Anonymous]
 - naprawiony crash po u¿yciu skrótu zabierz wszystko na skrzyni z widocznymi szczegó³ami przedmiotu [Anonymous]
 - naprawiony crash przy wczytywaniu gdy widoczny jest profiler
+- naprawiony maksymalny zasiêg dŸwiêków
 
 --------------------------------------------------------------------------------
 Wersja 0.8.1 (???):

@@ -703,7 +703,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						else
 						{
 							if(unit.data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
-								PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK)->sound, 1.f, 10.f);
+								PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK)->sound, Unit::ATTACK_SOUND_DIST);
 							unit.action = A_ATTACK;
 							unit.attack_id = ((typeflags & 0xF0) >> 4);
 							unit.attack_power = 1.f;
@@ -717,7 +717,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					case AID_PrepareAttack:
 						{
 							if(unit.data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
-								PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK)->sound, 1.f, 10.f);
+								PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK)->sound, Unit::ATTACK_SOUND_DIST);
 							unit.action = A_ATTACK;
 							unit.attack_id = ((typeflags & 0xF0) >> 4);
 							unit.attack_power = 1.f;
@@ -773,7 +773,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					case AID_RunningAttack:
 						{
 							if(unit.data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
-								PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK)->sound, 1.f, 10.f);
+								PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK)->sound, Unit::ATTACK_SOUND_DIST);
 							unit.action = A_ATTACK;
 							unit.attack_id = ((typeflags & 0xF0) >> 4);
 							unit.attack_power = 1.5f;
@@ -1054,7 +1054,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 
 					// animation / sound
 					chest->mesh_inst->Play(&chest->mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END, 0);
-					sound_mgr->PlaySound3d(sChestOpen, chest->GetCenter(), 2.f, 5.f);
+					sound_mgr->PlaySound3d(sChestOpen, chest->GetCenter(), Chest::SOUND_DIST);
 
 					// event handler
 					if(chest->handler)
@@ -1448,7 +1448,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 			{
 				player.action_chest->user = nullptr;
 				player.action_chest->mesh_inst->Play(&player.action_chest->mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
-				sound_mgr->PlaySound3d(sChestClose, player.action_chest->GetCenter(), 2.f, 5.f);
+				sound_mgr->PlaySound3d(sChestClose, player.action_chest->GetCenter(), Chest::SOUND_DIST);
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::CHEST_CLOSE;
 				c.id = player.action_chest->netid;
@@ -2403,7 +2403,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						snd = sDoorClose;
 					else
 						snd = sDoor[Rand() % 3];
-					sound_mgr->PlaySound3d(snd, door->GetCenter(), 2.f, 5.f);
+					sound_mgr->PlaySound3d(snd, door->GetCenter(), Door::SOUND_DIST);
 				}
 
 				// send to other players
@@ -4131,7 +4131,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					else
 					{
 						if(unit.data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
-							PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK)->sound, 1.f, 10.f);
+							PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK)->sound, Unit::ATTACK_SOUND_DIST);
 						unit.action = A_ATTACK;
 						unit.attack_id = ((typeflags & 0xF0) >> 4);
 						unit.attack_power = 1.f;
@@ -4144,7 +4144,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				case AID_PrepareAttack:
 					{
 						if(unit.data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
-							PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK)->sound, 1.f, 10.f);
+							PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK)->sound, Unit::ATTACK_SOUND_DIST);
 						unit.action = A_ATTACK;
 						unit.attack_id = ((typeflags & 0xF0) >> 4);
 						unit.attack_power = 1.f;
@@ -4193,7 +4193,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				case AID_RunningAttack:
 					{
 						if(unit.data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
-							PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK)->sound, 1.f, 10.f);
+							PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK)->sound, Unit::ATTACK_SOUND_DIST);
 						unit.action = A_ATTACK;
 						unit.attack_id = ((typeflags & 0xF0) >> 4);
 						unit.attack_power = 1.5f;
@@ -4315,7 +4315,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					if(!unit)
 						N.StreamError("Update client: HURT_SOUND, missing unit %d.", netid);
 					else if(unit->data->sounds->Have(SOUND_PAIN))
-						PlayAttachedSound(*unit, unit->data->sounds->Random(SOUND_PAIN)->sound, 2.f, 15.f);
+						PlayAttachedSound(*unit, unit->data->sounds->Random(SOUND_PAIN)->sound, Unit::PAIN_SOUND_DIST);
 				}
 			}
 			break;
@@ -4481,7 +4481,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				if(!f)
 					N.StreamError("Update client: Broken HIT_SOUND.");
 				else if(game_state == GS_LEVEL)
-					sound_mgr->PlaySound3d(GetMaterialSound(mat1, mat2), pos, 2.f, 10.f);
+					sound_mgr->PlaySound3d(GetMaterialSound(mat1, mat2), pos, HIT_SOUND_DIST);
 			}
 			break;
 		// unit get stunned
@@ -4584,7 +4584,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					ctx.tpes->push_back(tpe2);
 					b.trail2 = tpe2;
 
-					sound_mgr->PlaySound3d(sBow[Rand() % 2], b.pos, 2.f, 8.f);
+					sound_mgr->PlaySound3d(sBow[Rand() % 2], b.pos, ARROW_HIT_SOUND_DIST);
 				}
 			}
 			break;
@@ -4669,7 +4669,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					{
 						SOUND snd = unit->GetTalkSound();
 						if(snd)
-							PlayAttachedSound(*unit, snd, 2.f, 5.f);
+							PlayAttachedSound(*unit, snd, Unit::TALK_SOUND_DIST);
 					}
 				}
 			}
@@ -5360,7 +5360,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					if(!unit)
 						N.StreamError("Update client: SHOUT, missing unit %d.", netid);
 					else if(unit->data->sounds->Have(SOUND_SEE_ENEMY))
-						PlayAttachedSound(*unit, unit->data->sounds->Random(SOUND_SEE_ENEMY)->sound, 3.f, 20.f);
+						PlayAttachedSound(*unit, unit->data->sounds->Random(SOUND_SEE_ENEMY)->sound, Unit::ALERT_SOUND_DIST);
 				}
 			}
 			break;
@@ -5504,7 +5504,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 								snd = sDoorClose;
 							else
 								snd = sDoor[Rand() % 3];
-							sound_mgr->PlaySound3d(snd, door->GetCenter(), 2.f, 5.f);
+							sound_mgr->PlaySound3d(snd, door->GetCenter(), Door::SOUND_DIST);
 						}
 					}
 				}
@@ -5525,7 +5525,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					else
 					{
 						chest->mesh_inst->Play(&chest->mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END, 0);
-						sound_mgr->PlaySound3d(sChestOpen, chest->GetCenter(), 2.f, 5.f);
+						sound_mgr->PlaySound3d(sChestOpen, chest->GetCenter(), Chest::SOUND_DIST);
 					}
 				}
 			}
@@ -5545,7 +5545,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					else
 					{
 						chest->mesh_inst->Play(&chest->mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
-						sound_mgr->PlaySound3d(sChestClose, chest->GetCenter(), 2.f, 5.f);
+						sound_mgr->PlaySound3d(sChestClose, chest->GetCenter(), Chest::SOUND_DIST);
 					}
 				}
 			}
@@ -5586,7 +5586,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				explo->tex = spell.tex_explode;
 				explo->owner = nullptr;
 
-				sound_mgr->PlaySound3d(spell.sound_hit, explo->pos, spell.sound_hit_dist.x, spell.sound_hit_dist.y);
+				sound_mgr->PlaySound3d(spell.sound_hit, explo->pos, spell.sound_hit_dist);
 
 				L.GetContext(pos).explos->push_back(explo);
 			}
@@ -5952,7 +5952,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				}
 
 				Spell& spell = *spell_ptr;
-				sound_mgr->PlaySound3d(spell.sound_cast, pos, spell.sound_cast_dist.x, spell.sound_cast_dist.y);
+				sound_mgr->PlaySound3d(spell.sound_cast, pos, spell.sound_cast_dist);
 			}
 			break;
 		// drain blood effect
@@ -6044,7 +6044,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 
 					// sound
 					if(spell->sound_hit)
-						sound_mgr->PlaySound3d(spell->sound_hit, pos, spell->sound_hit_dist.x, spell->sound_hit_dist.y);
+						sound_mgr->PlaySound3d(spell->sound_hit, pos, spell->sound_hit_dist);
 
 					// particles
 					if(spell->tex_particle)
@@ -6344,7 +6344,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					else if(!unit->usable)
 						N.StreamError("Update client: USABLE_SOUND, unit %d (%s) don't use usable.", netid, unit->data->id.c_str());
 					else if(unit != pc->unit)
-						sound_mgr->PlaySound3d(unit->usable->base->sound->sound, unit->GetCenter(), 2.f, 5.f);
+						sound_mgr->PlaySound3d(unit->usable->base->sound->sound, unit->GetCenter(), Usable::SOUND_DIST);
 				}
 			}
 			break;

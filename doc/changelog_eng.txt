@@ -22,6 +22,7 @@ Version 0.9 (???):
 - fixed crash at arena combat where there is no free space to spawn enemies [Anonymous]
 - fixed crash when using take all items on chest with visible item details [Anonymous]
 - fixed crash when loading game with visible profiler
+- fixed sounds max distance
 
 --------------------------------------------------------------------------------
 Version 0.8.1 (???):

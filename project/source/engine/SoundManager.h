@@ -11,8 +11,8 @@ public:
 	int LoadSound(Sound* sound);
 	void PlayMusic(FMOD::Sound* music);
 	void PlaySound2d(FMOD::Sound* sound);
-	void PlaySound3d(FMOD::Sound* sound, const Vec3& pos, float smin, float smax = 0.f); // smax jest nieu¿ywane
-	FMOD::Channel* CreateChannel(FMOD::Sound* sound, const Vec3& pos, float smin);
+	void PlaySound3d(FMOD::Sound* sound, const Vec3& pos, float distance);
+	FMOD::Channel* CreateChannel(FMOD::Sound* sound, const Vec3& pos, float distance);
 	void StopSounds();
 	void SetListenerPosition(const Vec3& pos, const Vec3& dir, const Vec3& up = Vec3(0, 1, 0));
 	void SetSoundVolume(int volume);
