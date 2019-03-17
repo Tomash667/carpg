@@ -23,6 +23,7 @@ Version 0.9 (???):
 - naprawiony crash po u¿yciu skrótu zabierz wszystko na skrzyni z widocznymi szczegó³ami przedmiotu [Anonymous]
 - naprawiony crash przy wczytywaniu gdy widoczny jest profiler
 - naprawiony maksymalny zasiêg dŸwiêków
+- naprawione ci¹g³e trzymanie jedzenia przez jednostki po ponownym wejœciu do lokalizacji
 
 --------------------------------------------------------------------------------
 Wersja 0.8.1 (???):

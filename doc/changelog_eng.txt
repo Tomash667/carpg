@@ -23,6 +23,7 @@ Version 0.9 (???):
 - fixed crash when using take all items on chest with visible item details [Anonymous]
 - fixed crash when loading game with visible profiler
 - fixed sounds max distance
+- fixed units holding food all time in hand after revisiting location
 
 --------------------------------------------------------------------------------
 Version 0.8.1 (???):

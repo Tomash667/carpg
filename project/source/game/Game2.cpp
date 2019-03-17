@@ -8230,6 +8230,7 @@ void Game::LeaveLevel(LevelContext& ctx, bool clear)
 				unit.visual_pos = unit.pos = unit.target_pos;
 			}
 
+			unit.used_item = nullptr;
 			if(unit.bow_instance)
 			{
 				bow_instances.push_back(unit.bow_instance);
