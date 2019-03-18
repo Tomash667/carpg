@@ -1619,7 +1619,7 @@ void Game::UpdateAi(float dt)
 
 									if(IS_SET(s.flags, Spell::Drain))
 									{
-										// nie mo¿na rzucaæ wyssania na wrogów bez krwii
+										// can't cast drain blood on bloodless units
 										if(IS_SET(enemy->data->flags2, F2_BLOODLESS))
 											ok = false;
 									}

@@ -25,6 +25,7 @@ Version 0.9 (???):
 - fixed sounds max distance
 - fixed units holding food all time in hand after revisiting location
 - fixed decreased performance every time outside location was reentered
+- fixed memory leaks and missing terrain textures after trying to load corrupted save and then starting a new game
 
 --------------------------------------------------------------------------------
 Version 0.8.1 (???):

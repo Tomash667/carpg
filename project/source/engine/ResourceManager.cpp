@@ -495,7 +495,14 @@ void ResourceManager::CancelLoadScreen(bool cleanup)
 	assert(mode == Mode::LoadScreenPrepare);
 
 	if(cleanup)
-		tasks.clear();
+	{
+		for(TaskDetail* task : tasks)
+		{
+			if((task->type == TaskType::Load || task->type == TaskType::LoadAndCallback) && task->data.res->state == ResourceState::Loading)
+				task->data.res->state = ResourceState::NotLoaded;
+		}
+		task_pool.Free(tasks);
+	}
 	else
 		assert(tasks.empty());
 

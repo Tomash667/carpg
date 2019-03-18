@@ -25,6 +25,7 @@ Version 0.9 (???):
 - naprawiony maksymalny zasiêg dŸwiêków
 - naprawione ci¹g³e trzymanie jedzenia przez jednostki po ponownym wejœciu do lokalizacji
 - naprawiony spadek wydajnoœci za ka¿dym razem gdy lokalizacja zewnêtrzna by³a ponownie odwiedzana
+- naprawione wycieki pamiêci i brakuj¹ce tekstury po próbie wczytania z³ego zapisu i rozpoczêciu nowej gry
 
 --------------------------------------------------------------------------------
 Wersja 0.8.1 (???):
