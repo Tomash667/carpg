@@ -239,6 +239,20 @@ Chest* LevelContext::GetRandomFarChest(const Int2& pt)
 }
 
 //=================================================================================================
+cstring LevelContext::GetName()
+{
+	switch(type)
+	{
+	case Inside:
+		return "Inside";
+	case Outside:
+		return "Outside";
+	default:
+		return Format("Building%d", building_id);
+	}
+}
+
+//=================================================================================================
 void LevelContext::SetTmpCtx(TmpLevelContext* ctx)
 {
 	assert(ctx);

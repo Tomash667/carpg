@@ -581,9 +581,10 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 		ListGrass();
 	}
 
-	// teren
+	// terrain
 	if(ctx.type == LevelContext::Outside && IS_SET(draw_flags, DF_TERRAIN))
 	{
+		PROFILER_BLOCK("Terrain");
 		uint parts = L.terrain->GetPartsCount();
 		for(uint i = 0; i < parts; ++i)
 		{
@@ -592,13 +593,17 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 		}
 	}
 
-	// podziemia
+	// dungeon
 	if(ctx.type == LevelContext::Inside && IS_SET(draw_flags, DF_TERRAIN))
+	{
+		PROFILER_BLOCK("Dungeon");
 		FillDrawBatchDungeonParts(frustum);
+	}
 
-	// postacie
+	// units
 	if(IS_SET(draw_flags, DF_UNITS))
 	{
+		PROFILER_BLOCK("Units");
 		for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
 		{
 			Unit& u = **it;
@@ -606,14 +611,15 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 		}
 	}
 
-	// obiekty
+	// objects
 	if(IS_SET(draw_flags, DF_OBJECTS))
 	{
+		PROFILER_BLOCK("Objects");
 		if(ctx.type == LevelContext::Outside)
 		{
-			for(auto part : level_parts)
+			for(LevelPart* part : level_parts)
 			{
-				for(auto& obj : part->objects)
+				for(QuadObj& obj : part->objects)
 				{
 					const Object& o = *obj.obj;
 					if(frustum.SphereToFrustum(o.pos, o.GetRadius()))
@@ -632,9 +638,10 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 		}
 	}
 
-	// przedmioty
+	// items
 	if(IS_SET(draw_flags, DF_ITEMS))
 	{
+		PROFILER_BLOCK("Ground items");
 		Vec3 pos;
 		for(vector<GroundItem*>::iterator it = ctx.items->begin(), end = ctx.items->end(); it != end; ++it)
 		{
@@ -677,9 +684,10 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 		}
 	}
 
-	// u¿ywalne
+	// usable objects
 	if(IS_SET(draw_flags, DF_USABLES))
 	{
+		PROFILER_BLOCK("Usables");
 		for(vector<Usable*>::iterator it = ctx.usables->begin(), end = ctx.usables->end(); it != end; ++it)
 		{
 			Usable& use = **it;
@@ -713,9 +721,10 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 		}
 	}
 
-	// skrzynie
+	// chests
 	if(ctx.chests && IS_SET(draw_flags, DF_USABLES))
 	{
+		PROFILER_BLOCK("Chests");
 		for(vector<Chest*>::iterator it = ctx.chests->begin(), end = ctx.chests->end(); it != end; ++it)
 		{
 			Chest& chest = **it;
@@ -758,7 +767,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 		}
 	}
 
-	// drzwi
+	// doors
 	if(ctx.doors && IS_SET(draw_flags, DF_USABLES))
 	{
 		for(vector<Door*>::iterator it = ctx.doors->begin(), end = ctx.doors->end(); it != end; ++it)
@@ -803,20 +812,13 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 		}
 	}
 
-	// krew
+	// bloods
 	if(IS_SET(draw_flags, DF_BLOOD))
 	{
 		for(vector<Blood>::iterator it = ctx.bloods->begin(), end = ctx.bloods->end(); it != end; ++it)
 		{
 			if(it->size > 0.f && frustum.SphereToFrustum(it->pos, it->size))
 			{
-				/*SceneNode* node = node_pool.Get();
-				node->blood = &*it;
-				node->flags = SceneNode::F_ALPHA_BLEND | SceneNode::F_CUSTOM | SceneNode::F_NO_ZWRITE;
-				node->custom_type = CT_BLOOD;
-				node->tint = Vec4(1,1,1,1);
-				node->dist = distance_sqrt(it->pos, camera_center);
-				draw_batch.nodes.push_back(node);*/
 				if(!outside)
 					it->lights = GatherDrawBatchLights(ctx, nullptr, it->pos.x, it->pos.z, it->size);
 				draw_batch.bloods.push_back(&*it);
@@ -824,7 +826,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 		}
 	}
 
-	// strza³y
+	// bullets
 	if(IS_SET(draw_flags, DF_BULLETS))
 	{
 		for(vector<Bullet>::iterator it = ctx.bullets->begin(), end = ctx.bullets->end(); it != end; ++it)
@@ -850,13 +852,6 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 			{
 				if(frustum.SphereToFrustum(bullet.pos, bullet.tex_size))
 				{
-					/*SceneNode* node = node_pool.Get();
-					node->tex = bullet.tex.Get();
-					node->flags = SceneNode::F_CUSTOM | SceneNode::F_ALPHA_BLEND | SceneNode::F_NO_LIGHT | SceneNode::F_NO_ZWRITE | SceneNode::F_VERTEX_COLOR;
-					node->tint = Vec4(bullet.obj.pos, bullet.tex_size);
-					node->custom_type = CT_BILLBOARD;
-					node->dist = distance_sqrt(bullet.obj.pos, camera_center);
-					draw_batch.nodes.push_back(node);*/
 					Billboard& bb = Add1(draw_batch.billboards);
 					bb.pos = it->pos;
 					bb.size = it->tex_size;
@@ -866,7 +861,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 		}
 	}
 
-	// pu³pki
+	// traps
 	if(ctx.traps && IS_SET(draw_flags, DF_TRAPS))
 	{
 		for(vector<Trap*>::iterator it = ctx.traps->begin(), end = ctx.traps->end(); it != end; ++it)
@@ -913,32 +908,21 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 		}
 	}
 
-	// eksplozje
+	// explosions
 	if(IS_SET(draw_flags, DF_EXPLOS))
 	{
 		for(vector<Explo*>::iterator it = ctx.explos->begin(), end = ctx.explos->end(); it != end; ++it)
 		{
 			Explo& explo = **it;
 			if(frustum.SphereToFrustum(explo.pos, explo.size))
-			{
-				/*SceneNode* node = node_pool.Get();
-				D3DXMatrixScaling(&m1, explo.size);
-				D3DXMatrixTranslation(&m2, explo.pos);
-				D3DXMatrixMultiply(&node->mat, &m1, &m2);
-				node->explosion = explo;
-				node->flags = SceneNode::F_ALPHA_BLEND | SceneNode::F_NO_LIGHT | SceneNode::F_NO_ZWRITE | SceneNode::F_CUSTOM;
-				node->custom_type = CT_EXPLOSION;
-				node->tint = Vec4(1,1,1,1.f - explo.size / explo.sizemax);
-				node->tex_override = nullptr;
-				draw_batch.nodes->push_back(node);*/
 				draw_batch.explos.push_back(&explo);
-			}
 		}
 	}
 
-	// cz¹steczki
+	// particles
 	if(IS_SET(draw_flags, DF_PARTICLES))
 	{
+		PROFILER_BLOCK("Particles");
 		for(vector<ParticleEmitter*>::iterator it = ctx.pes->begin(), end = ctx.pes->end(); it != end; ++it)
 		{
 			ParticleEmitter& pe = **it;
@@ -1133,10 +1117,10 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 	// add stun effect
 	if(u.IsAlive())
 	{
-		auto effect = u.FindEffect(EffectId::Stun);
+		Effect* effect = u.FindEffect(EffectId::Stun);
 		if(effect)
 		{
-			auto& stun = Add1(draw_batch.stuns);
+			StunEffect& stun = Add1(draw_batch.stuns);
 			stun.pos = u.GetHeadPoint();
 			stun.time = effect->time;
 		}
@@ -1871,7 +1855,7 @@ void Game::ListAreas(LevelContext& ctx)
 //=================================================================================================
 void Game::PrepareAreaPath()
 {
-	auto& action = pc->GetAction();
+	Action& action = pc->GetAction();
 	Area2* area_ptr = area2_pool.Get();
 	Area2& area = *area_ptr;
 	area.ok = 2;

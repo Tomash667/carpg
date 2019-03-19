@@ -35,6 +35,13 @@ const float Unit::STAMINA_BOW_ATTACK = 100.f;
 const float Unit::STAMINA_BASH_ATTACK = 50.f;
 const float Unit::STAMINA_UNARMED_ATTACK = 50.f;
 const float Unit::STAMINA_RESTORE_TIMER = 0.5f;
+const float Unit::EAT_SOUND_DIST = 0.5f;
+const float Unit::DRINK_SOUND_DIST = 0.5f;
+const float Unit::ATTACK_SOUND_DIST = 1.f;
+const float Unit::TALK_SOUND_DIST = 1.f;
+const float Unit::ALERT_SOUND_DIST = 2.f;
+const float Unit::PAIN_SOUND_DIST = 1.f;
+const float Unit::DIE_SOUND_DIST = 1.f;
 vector<Unit*> Unit::refid_table;
 vector<pair<Unit**, int>> Unit::refid_request;
 int Unit::netid_counter;
@@ -4617,7 +4624,7 @@ void Unit::Die(LevelContext* ctx, Unit* killer)
 	else if(data->sounds->Have(SOUND_PAIN))
 		snd = data->sounds->Random(SOUND_PAIN)->sound;
 	if(snd)
-		PlaySound(snd, 2.f);
+		PlaySound(snd, Unit::DIE_SOUND_DIST);
 
 	// move physics
 	UpdatePhysics(pos);

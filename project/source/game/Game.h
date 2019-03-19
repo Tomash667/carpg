@@ -50,6 +50,12 @@ extern const float PICKUP_RANGE;
 extern const float ARROW_TIMER;
 extern const float MIN_H;
 
+extern const float HIT_SOUND_DIST;
+extern const float ARROW_HIT_SOUND_DIST;
+extern const float SHOOT_SOUND_DIST;
+extern const float SPAWN_SOUND_DIST;
+extern const float MAGIC_SCROLL_SOUND_DIST;
+
 struct AttachedSound
 {
 	FMOD::Channel* channel;
@@ -479,7 +485,7 @@ public:
 	void OpenDoorsByTeam(const Int2& pt);
 	void ExitToMap();
 	SOUND GetMaterialSound(MATERIAL_TYPE m1, MATERIAL_TYPE m2);
-	void PlayAttachedSound(Unit& unit, SOUND sound, float smin, float smax = 0.f);
+	void PlayAttachedSound(Unit& unit, SOUND sound, float distance);
 	void StopAllSounds();
 	ATTACK_RESULT DoGenericAttack(LevelContext& ctx, Unit& attacker, Unit& hitted, const Vec3& hitpoint, float attack, int dmg_type, bool bash);
 	void SaveGame(GameWriter& f);
@@ -504,7 +510,7 @@ public:
 	void UpdateElectros(LevelContext& ctx, float dt);
 	void UpdateDrains(LevelContext& ctx, float dt);
 	void AI_Shout(LevelContext& ctx, AIController& ai);
-	void AI_DoAttack(AIController& ai, Unit* target, bool w_biegu = false);
+	void AI_DoAttack(AIController& ai, Unit* target, bool running = false);
 	void AI_HitReaction(Unit& unit, const Vec3& pos);
 	void UpdateAttachedSounds(float dt);
 	void BuildRefidTables();

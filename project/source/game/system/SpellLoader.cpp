@@ -227,10 +227,11 @@ void SpellLoader::ParseSpell(const string& id)
 				t.Throw("Empty cast sound.");
 			crc.Update(spell->sound_cast_id);
 			t.Next();
-			t.Parse(spell->sound_cast_dist);
-			if(spell->sound_cast_dist.x < 0 || spell->sound_cast_dist.x > spell->sound_cast_dist.y)
-				t.Throw("Invalid cast sound distance {%g %g}.", spell->sound_cast_dist.x, spell->sound_cast_dist.y);
+			spell->sound_cast_dist = t.MustGetNumberFloat();
+			if(spell->sound_cast_dist <= 0.f)
+				t.Throw("Invalid cast sound distance %g.", spell->sound_cast_dist);
 			crc.Update(spell->sound_cast_dist);
+			t.Next();
 			break;
 		case K_SOUND_HIT:
 			spell->sound_hit_id = t.MustGetString();
@@ -238,10 +239,11 @@ void SpellLoader::ParseSpell(const string& id)
 				t.Throw("Empty hit sound.");
 			crc.Update(spell->sound_hit_id);
 			t.Next();
-			t.Parse(spell->sound_hit_dist);
-			if(spell->sound_hit_dist.x < 0 || spell->sound_hit_dist.x > spell->sound_hit_dist.y)
-				t.Throw("Invalid hit sound distance {%g %g}.", spell->sound_hit_dist.x, spell->sound_hit_dist.y);
+			spell->sound_hit_dist = t.MustGetNumberFloat();
+			if(spell->sound_hit_dist <= 0.f)
+				t.Throw("Invalid hit sound distance %g}.", spell->sound_hit_dist);
 			crc.Update(spell->sound_hit_dist);
+			t.Next();
 			break;
 		}
 	}

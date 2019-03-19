@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Qmsh.tmp",
     "author": "Tomashu",
-    "version": (0, 21, 0),
+    "version": (0, 21, 1),
     "blender": (2, 7, 8),
     "location": "File > Export > Qmsh.tmp",
     "description": "Export to Qmsh.tmp",
@@ -242,7 +242,7 @@ def ProcessArmatureObject(data,obj):
 		# Head
 		data.file.write("\t\t\thead %f,%f,%f %f\n" % (bone.head_local[0], bone.head_local[1], bone.head_local[2], bone.head_radius))
 		# Tail
-		data.file.write("\t\t\ttail %f,%f,%f %f\n" % (bone.tail_local[0], bone.tail_local[1], bone.tail_local[2], bone.tail_radius))	
+		data.file.write("\t\t\ttail %f,%f,%f %f\n" % (bone.tail_local[0], bone.tail_local[1], bone.tail_local[2], bone.tail_radius))
 		# Is connected
 		data.file.write("\t\t\t%d\n" % int(bone.use_connect))
 		# Pusta linia
@@ -254,16 +254,16 @@ def ProcessArmatureObject(data,obj):
 		# Koniec
 		data.file.write("\t\t}\n")
 		# Policz kosci
-		data.bones = data.bones + 1	
+		data.bones = data.bones + 1
 	# Koniec
 	data.file.write("\t}\n")
 	
 ################################################################################
 # Zapisuje pusty obiekt (uzywane do oznaczania roznych rzeczy w grze)
 def ProcessEmpty(data,empty):
-	type = empty.empty_draw_type
+	empty_type = empty.empty_draw_type
 	print("Exporting %s.\n" % empty.name)
-	if type == 'Image':
+	if empty_type == 'Image':
 		Warning("Empty of Image type not supported, object "+empty.name+" ignored.")
 	else:
 		data.file.write("\tempty %s {\n" % QuoteString(empty.name))
@@ -275,7 +275,7 @@ def ProcessEmpty(data,empty):
 		else:
 			bone = "NULL"
 		data.file.write("\t\tbone %s\n" % QuoteString(bone))
-		data.file.write("\t\ttype %s\n" % QuoteString(type))
+		data.file.write("\t\ttype %s\n" % QuoteString(empty_type))
 		data.file.write("\t\tsize %f,%f,%f\n" % (empty.scale[0],empty.scale[1],empty.scale[2]))
 		data.file.write("\t\tscale %f\n" % empty.empty_draw_size)
 		m = empty.matrix_world.transposed()
@@ -287,7 +287,7 @@ def ProcessEmpty(data,empty):
 		empty.rotation_mode = 'QUATERNION'
 		data.file.write("\t\trot %f,%f,%f\n" % (empty.rotation_euler.x, empty.rotation_euler.y, empty.rotation_euler.z))
 		empty.rotation_mode = mode
-		data.file.write("\t}\n")	
+		data.file.write("\t}\n")
 
 ################################################################################
 # Zapisuje kamere
@@ -311,52 +311,52 @@ def ProcessCamera(data,camera):
 ################################################################################
 # Sprawdza co to za obiekt i wykonuje odpowiednie czynnosci
 def ProcessObject(data,obj):
-	type = obj.type
-	print("Object %s is %s" % (data, type))
-	if type == "MESH":
+	obj_type = obj.type
+	print("Object %s is %s" % (data, obj_type))
+	if obj_type == "MESH":
 		ProcessMeshObject(data,obj)
-	elif type == "ARMATURE":
+	elif obj_type == "ARMATURE":
 		ProcessArmatureObject(data,obj)
-	elif type == "EMPTY":
+	elif obj_type == "EMPTY":
 		ProcessEmpty(data,obj)
-	elif type == "CAMERA":
+	elif obj_type == "CAMERA":
 		ProcessCamera(data,obj)
 	# typy, ktore sa ignorowane i wyswietlaja ostrzezenie
-	elif (type == "Curve") or (type == "Lattice") or (type == "MBall") or (type == "Surf"):
-		data.Warning("Object \"" + obj.name + "\" of type \"" + type + "\" ignored.")
+	elif (obj_type == "Curve") or (obj_type == "Lattice") or (obj_type == "MBall") or (obj_type == "Surf"):
+		data.Warning("Object \"" + obj.name + "\" of type \"" + obj_type + "\" ignored.")
 	# pozostale typy sa ignorowane
 
 ################################################################################
 # zwraca nazwe krzywej taka jak kiedys PosX,QuatW,ScaleZ
 def ConvertFCurve(channel):
-	str = 0
+	name = 0
 	parts = channel.data_path.split('.')
 	ile = len(parts)
 	str2 = parts[ile-1]
 	if str2 == "location":
-		str = "Loc"
+		name = "Loc"
 	elif str2 == "rotation_quaternion":
-		str = "Quat"
+		name = "Quat"
 	else:
-		str = "Scale"
+		name = "Scale"
 	index = channel.array_index
-	if str == "Quat":
+	if name == "Quat":
 		if index == 0:
-			str += 'W'
+			name += 'W'
 		elif index == 1:
-			str += 'X'
+			name += 'X'
 		elif index == 2:
-			str += 'Y'
+			name += 'Y'
 		else:
-			str += 'Z'
+			name += 'Z'
 	else:
 		if index == 0:
-			str += 'X'
+			name += 'X'
 		elif index == 1:
-			str += 'Y'
+			name += 'Y'
 		else:
-			str += 'Z'
-	return str		
+			name += 'Z'
+	return name
 
 ################################################################################
 # Zapisuje akcje do pliku
@@ -473,17 +473,17 @@ class Config:
 		self.runConverter = s.getboolean('runConverter')
 		self.converterPath = s['converterPath']
 	def Init(self):
-		dict = {'textureNames': 'True',
+		sett = {'textureNames': 'True',
 				'useExistingArmature': 'False',
 				'applyModifiers': 'True',
 				'forceTangents': 'False',
 				'runConverter': 'True',
 				'converterPath': 'D:\\carpg\\other\\mesh\\converter.exe'}
 		if not self.config.has_section('settings'):
-			self.config['settings'] = dict
+			self.config['settings'] = sett
 			return
 		s = self.config['settings']
-		for k, v in dict.items():
+		for k, v in sett.items():
 			if not self.config.has_option('settings', k):
 				s[k] = v
 	def Save(self):

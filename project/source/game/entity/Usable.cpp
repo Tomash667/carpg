@@ -29,6 +29,7 @@ namespace old
 vector<Usable*> Usable::refid_table;
 vector<UsableRequest> Usable::refid_request;
 int Usable::netid_counter;
+const float Usable::SOUND_DIST = 1.5f;
 
 //=================================================================================================
 Mesh* Usable::GetMesh() const

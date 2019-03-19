@@ -9,6 +9,7 @@ Version 0.9 (???):
 + dialog script improvements
 + removing dead end corridors
 + update libraries: Angelscript 2.33, Bullet 2.88, DirectXMath 3.13, FMod 1.10.11, SLikeNet 0.1.2, Visual Leak Detector 2.5.1, zlib 1.2.11
++ better handling of multiplayer when leaving location
 - fixed failed connection when using LAN with password
 - fixed enemy hp not affecting morale
 - fixed missing magic effect for clients when despawning dead summoned unit
@@ -20,6 +21,11 @@ Version 0.9 (???):
 - fixed rare contant alcohol effect for clients after entering location [MildlyPhilosophicalHobbit]
 - fixed crash at arena combat where there is no free space to spawn enemies [Anonymous]
 - fixed crash when using take all items on chest with visible item details [Anonymous]
+- fixed crash when loading game with visible profiler
+- fixed sounds max distance
+- fixed units holding food all time in hand after revisiting location
+- fixed decreased performance every time outside location was reentered
+- fixed memory leaks and missing terrain textures after trying to load corrupted save and then starting a new game
 
 --------------------------------------------------------------------------------
 Version 0.8.1 (???):

@@ -175,7 +175,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 			}
 			if(game_state != GS_LEVEL)
 			{
-				Msg("Script commands can only be used ingame.");
+				Msg("Script commands can only be used inside level.");
 				return;
 			}
 

@@ -43,18 +43,6 @@ const Quat Quat::Identity = { 0.f, 0.f, 0.f, 1.f };
 //=================================================================================================
 std::minstd_rand internal::rng;
 
-struct OStreamGetter final : std::ostream
-{
-	OStreamGetter() : std::ostream(std::_Noinit, false) {}
-
-	void operator << (uint a)
-	{
-		this->a = a;
-	}
-
-	uint a;
-};
-
 int RandVal()
 {
 	// ugly hack

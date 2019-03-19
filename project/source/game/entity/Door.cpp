@@ -8,6 +8,9 @@
 #include "Level.h"
 
 int Door::netid_counter;
+const float Door::SOUND_DIST = 1.f;
+const float Door::UNLOCK_SOUND_DIST = 0.5f;
+const float Door::BLOCKED_SOUND_DIST = 1.f;
 
 //=================================================================================================
 void Door::Save(FileWriter& f, bool local)

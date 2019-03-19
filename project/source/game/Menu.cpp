@@ -1768,7 +1768,6 @@ void Game::UpdateServerSend(float dt)
 			}
 			break;
 		case ID_CONTROL:
-			Info("NM_SERVER_SEND: Ignoring packet ID_CONTROL from %s.", info.name.c_str());
 			break;
 		default:
 			Warn("MN_SERVER_SEND: Invalid packet %d from %s.", msg_id, info.name.c_str());

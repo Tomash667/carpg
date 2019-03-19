@@ -58,6 +58,12 @@ GameKeys GKey;
 extern string g_system_dir;
 extern cstring RESTART_MUTEX_NAME;
 
+const float HIT_SOUND_DIST = 1.5f;
+const float ARROW_HIT_SOUND_DIST = 1.5f;
+const float SHOOT_SOUND_DIST = 1.f;
+const float SPAWN_SOUND_DIST = 1.5f;
+const float MAGIC_SCROLL_SOUND_DIST = 1.5f;
+
 //=================================================================================================
 Game::Game() : have_console(false), vbParticle(nullptr), quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0), cl_fog(true),
 cl_lighting(true), draw_particle_sphere(false), draw_unit_radius(false), draw_hitbox(false), noai(false), testing(false), game_speed(1.f), devmode(false),
@@ -100,20 +106,19 @@ Game::~Game()
 //=================================================================================================
 void Game::OnDraw()
 {
+	if(profiler_mode == 2)
+		Profiler::g_profiler.Start();
+	else if(profiler_mode == 0)
+		Profiler::g_profiler.Clear();
+
 	OnDraw(true);
+
+	Profiler::g_profiler.End();
 }
 
 //=================================================================================================
 void Game::OnDraw(bool normal)
 {
-	if(normal)
-	{
-		if(profiler_mode == 2)
-			Profiler::g_profiler.Start();
-		else if(profiler_mode == 0)
-			Profiler::g_profiler.Clear();
-	}
-
 	if(post_effects.empty() || !ePostFx)
 	{
 		if(sCustom)
@@ -260,8 +265,6 @@ void Game::OnDraw(bool normal)
 			index_surf = (index_surf + 1) % 3;
 		}
 	}
-
-	Profiler::g_profiler.End();
 }
 
 //=================================================================================================
@@ -318,7 +321,10 @@ void Game::OnTick(float dt)
 	{
 		Key.SetFocus(false);
 		if(Net::IsSingleplayer() && !inactive_update)
+		{
+			Profiler::g_profiler.End();
 			return;
+		}
 	}
 	else
 		Key.SetFocus(true);
@@ -1684,8 +1690,11 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 	if(L.location->outside)
 	{
 		loc_gen->OnEnter();
-		SetTerrainTextures();
-		CalculateQuadtree();
+		if(!reenter)
+		{
+			SetTerrainTextures();
+			CalculateQuadtree();
+		}
 	}
 	else
 		EnterLevel(loc_gen);

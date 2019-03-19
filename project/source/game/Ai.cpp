@@ -1619,7 +1619,7 @@ void Game::UpdateAi(float dt)
 
 									if(IS_SET(s.flags, Spell::Drain))
 									{
-										// nie mo¿na rzucaæ wyssania na wrogów bez krwii
+										// can't cast drain blood on bloodless units
 										if(IS_SET(enemy->data->flags2, F2_BLOODLESS))
 											ok = false;
 									}
@@ -2544,7 +2544,7 @@ void Game::UpdateAi(float dt)
 
 							// play sound
 							if(Rand() % 2 == 0)
-								sound_mgr->PlaySound3d(sDoor[Rand() % 3], door.GetCenter(), 2.f, 5.f);
+								sound_mgr->PlaySound3d(sDoor[Rand() % 3], door.GetCenter(), Door::SOUND_DIST);
 
 							if(Net::IsOnline())
 							{
@@ -2861,7 +2861,7 @@ void Game::AI_Shout(LevelContext& ctx, AIController& ai)
 	if(!unit.data->sounds->Have(SOUND_SEE_ENEMY))
 		return;
 
-	PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_SEE_ENEMY)->sound, 3.f, 20.f);
+	PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_SEE_ENEMY)->sound, Unit::ALERT_SOUND_DIST);
 
 	if(Net::IsOnline())
 	{
@@ -2887,14 +2887,14 @@ void Game::AI_Shout(LevelContext& ctx, AIController& ai)
 
 //=================================================================================================
 // jeœli target jest nullptr to atak nic nie zadaje (trenuje walkê na manekinie)
-void Game::AI_DoAttack(AIController& ai, Unit* target, bool w_biegu)
+void Game::AI_DoAttack(AIController& ai, Unit* target, bool running)
 {
 	Unit& u = *ai.unit;
 
 	if(u.action == A_NONE && (u.mesh_inst->mesh->head.n_groups == 1 || u.weapon_state == WS_TAKEN) && ai.next_attack <= 0.f && u.stamina > 0)
 	{
 		if(u.data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
-			PlayAttachedSound(u, u.data->sounds->Random(SOUND_ATTACK)->sound, 1.f, 10.f);
+			PlayAttachedSound(u, u.data->sounds->Random(SOUND_ATTACK)->sound, Unit::ATTACK_SOUND_DIST);
 		u.action = A_ATTACK;
 		u.attack_id = u.GetRandomAttack();
 
@@ -2910,14 +2910,14 @@ void Game::AI_DoAttack(AIController& ai, Unit* target, bool w_biegu)
 			do_power_attack = false;
 		u.attack_power = 1.f;
 
-		if(w_biegu)
+		if(running)
 		{
 			u.attack_power = 1.5f;
 			u.run_attack = true;
 			do_power_attack = false;
 		}
 
-		float stamina = (w_biegu || do_power_attack) ? 1.5f : 1.f;
+		float stamina = (running || do_power_attack) ? 1.5f : 1.f;
 		if(u.HaveWeapon())
 			stamina *= u.GetWeapon().GetInfo().stamina;
 		else
@@ -2945,7 +2945,7 @@ void Game::AI_DoAttack(AIController& ai, Unit* target, bool w_biegu)
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::ATTACK;
 			c.unit = &u;
-			c.id = (do_power_attack ? AID_PrepareAttack : (w_biegu ? AID_RunningAttack : AID_Attack));
+			c.id = (do_power_attack ? AID_PrepareAttack : (running ? AID_RunningAttack : AID_Attack));
 			c.f[1] = speed;
 		}
 	}
@@ -2969,7 +2969,7 @@ void Game::AI_HitReaction(Unit& unit, const Vec3& pos)
 	if(!unit.data->sounds->Have(SOUND_SEE_ENEMY))
 		return;
 
-	PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_SEE_ENEMY)->sound, 3.f, 20.f);
+	PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_SEE_ENEMY)->sound, Unit::ALERT_SOUND_DIST);
 
 	if(Net::IsOnline())
 	{

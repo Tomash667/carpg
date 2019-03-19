@@ -6,7 +6,7 @@
 #include "DirectX.h"
 
 //=================================================================================================
-DebugDrawer::DebugDrawer() : effect(nullptr), vertex_decl(nullptr), vb(nullptr)
+DebugDrawer::DebugDrawer() : effect(nullptr), vertex_decl(nullptr), vb(nullptr), batch(false)
 {
 }
 

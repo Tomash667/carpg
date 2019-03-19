@@ -2,22 +2,26 @@
 #include "Core.h"
 #include "Profiler.h"
 
-struct Profiler::Entry
+struct Profiler::Entry : ObjectPoolProxy<Profiler::Entry>
 {
-	cstring name;
+	string name;
 	int64 tick, end;
 	float percent;
 	int frames;
 	vector<Entry*> e;
 
+	void OnFree()
+	{
+		for(Entry* child : e)
+			child->SafeFree();
+		e.clear();
+	}
+
 	void UpdatePercent(int64 total);
 	void Merge(Entry* e2);
-	void Free();
-	void Delete();
 };
 
 Profiler Profiler::g_profiler;
-static ObjectPool<Profiler::Entry> entry_pool;
 
 Profiler::Profiler() : started(false), enabled(false), e(nullptr), prev_e(nullptr)
 {
@@ -26,15 +30,18 @@ Profiler::Profiler() : started(false), enabled(false), e(nullptr), prev_e(nullpt
 Profiler::~Profiler()
 {
 	if(e)
-		e->Delete();
+		e->SafeFree();
 	if(prev_e)
-		prev_e->Delete();
+		prev_e->SafeFree();
 }
 
 void Profiler::Start()
 {
+	if(started)
+		End();
+
 	timer.Start();
-	e = entry_pool.Get();
+	e = Entry::Get();
 	e->name = "Start";
 	timer.GetTime(e->tick);
 	stac.push_back(e);
@@ -83,21 +90,25 @@ void Profiler::End()
 
 void Profiler::Push(cstring name)
 {
-	assert(name && started);
-	Entry* new_e = entry_pool.Get();
-	new_e->name = name;
-	timer.Tick();
-	timer.GetTime(new_e->tick);
-	stac.back()->e.push_back(new_e);
-	stac.push_back(new_e);
+	if(name && started)
+	{
+		Entry* new_e = Entry::Get();
+		new_e->name = name;
+		timer.Tick();
+		timer.GetTime(new_e->tick);
+		stac.back()->e.push_back(new_e);
+		stac.push_back(new_e);
+	}
 }
 
 void Profiler::Pop()
 {
-	assert(started && stac.size() > 1);
-	timer.Tick();
-	timer.GetTime(stac.back()->end);
-	stac.pop_back();
+	if(started && stac.size() > 1)
+	{
+		timer.Tick();
+		timer.GetTime(stac.back()->end);
+		stac.pop_back();
+	}
 }
 
 void Profiler::Clear()
@@ -110,7 +121,7 @@ void Profiler::Print(Entry* e, int tab)
 {
 	for(int i = 0; i < tab; ++i)
 		str += '-';
-	str += Format("%s (%g%%)\n", e->name, FLT10(e->percent / e->frames));
+	str += Format("%s (%g%% - %lld)\n", e->name.c_str(), FLT10(e->percent / e->frames), e->end - e->tick);
 	for(vector<Entry*>::iterator it = e->e.begin(), end = e->e.end(); it != end; ++it)
 		Print(*it, tab + 1);
 }
@@ -145,26 +156,23 @@ void Profiler::Entry::Merge(Entry* e2)
 	}
 }
 
-void Profiler::Entry::Free()
-{
-	for(vector<Entry*>::iterator it = e.begin(), end = e.end(); it != end; ++it)
-		(*it)->Free();
-	e.clear();
-	entry_pool.Free(this);
-}
-
-void Profiler::Entry::Delete()
-{
-	for(Entry* entry : e)
-		entry->Delete();
-	delete this;
-}
-
 ProfilerBlock::ProfilerBlock(cstring name)
 {
 	assert(name);
 	if(Profiler::g_profiler.IsStarted())
 	{
+		Profiler::g_profiler.Push(name);
+		on = true;
+	}
+	else
+		on = false;
+}
+
+ProfilerBlock::ProfilerBlock(delegate<cstring()> action)
+{
+	if(Profiler::g_profiler.IsStarted())
+	{
+		cstring name = action();
 		Profiler::g_profiler.Push(name);
 		on = true;
 	}

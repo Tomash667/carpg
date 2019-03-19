@@ -157,7 +157,7 @@ void Quest_Tutorial::Update()
 			pe->Init();
 			L.local_ctx.pes->push_back(pe);
 			// jest kolizja
-			game.sound_mgr->PlaySound3d(game.GetMaterialSound(MAT_IRON, MAT_ROCK), hitpoint, 2.f, 10.f);
+			game.sound_mgr->PlaySound3d(game.GetMaterialSound(MAT_IRON, MAT_ROCK), hitpoint, HIT_SOUND_DIST);
 			if(state == 5)
 			{
 				pc->Train(true, (int)SkillId::ONE_HANDED_WEAPON, TrainMode::Tutorial);

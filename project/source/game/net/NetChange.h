@@ -81,7 +81,7 @@ struct NetChange
 		RENAME_ITEM, // item rename [auto: int(base_item.refid), string1(base_item.id), string1(base_item.name)]
 		REMOVE_PLAYER, // remove player from game [byte(id)-player id, byte(count)-PlayerInfo.LeftReason]
 		CHANGE_LEADER, // player wants to change leader or notification [byte(id)-player id]
-		RANDOM_NUMBER, // player get Random number SERVER[byte(unit.player.id), byte(id)-number] / CLIENT[byte(id)-number]
+		RANDOM_NUMBER, // player get random number SERVER[byte(unit.player.id), byte(id)-number] / CLIENT[byte(id)-number]
 		CHEAT_WARP, // player used cheat 'warp' [byte(id)-inside building index]
 		CHEAT_SKIP_DAYS, // player used cheat 'skip_days' [int(id)-days]
 		CHEAT_KILLALL, // player used cheat 'killall' [int(netid)-ignored unit, byte(id)-mode]

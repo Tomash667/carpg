@@ -163,6 +163,13 @@ struct Unit
 	static const float STAMINA_BASH_ATTACK;
 	static const float STAMINA_UNARMED_ATTACK;
 	static const float STAMINA_RESTORE_TIMER;
+	static const float EAT_SOUND_DIST;
+	static const float DRINK_SOUND_DIST;
+	static const float ATTACK_SOUND_DIST;
+	static const float TALK_SOUND_DIST;
+	static const float ALERT_SOUND_DIST;
+	static const float PAIN_SOUND_DIST;
+	static const float DIE_SOUND_DIST;
 	static int netid_counter;
 
 	int netid;
@@ -767,7 +774,7 @@ public:
 	void Die(LevelContext* ctx, Unit* killer);
 	void DropGold(int count);
 	bool IsDrunkman() const;
-	void PlaySound(SOUND snd, float range = 1.f);
+	void PlaySound(SOUND snd, float range);
 	void CreatePhysics(bool position = false);
 	void UpdatePhysics(const Vec3& pos);
 	SOUND GetTalkSound() const;

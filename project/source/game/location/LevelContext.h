@@ -60,6 +60,7 @@ struct LevelContext
 	Int2 mine, maxe;
 	bool have_terrain, require_tmp_ctx;
 
+	cstring GetName();
 	void SetTmpCtx(TmpLevelContext* ctx);
 	void BuildRefidTables();
 	void RemoveDeadUnits();

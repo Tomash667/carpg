@@ -9,6 +9,7 @@ Version 0.9 (???):
 + usprawnienia skryptów dialogowych
 + usuwanie korytarzy prowadz¹cych do nik¹d
 + aktualizacja bibliotek: Angelscript 2.33, Bullet 2.88, DirectXMath 3.13, FMod 1.10.11, SLikeNet 0.1.2, Visual Leak Detector 2.5.1, zlib 1.2.11
++ lepsza obs³uga trybu wielu graczy przy opuszczaniu lokalizacji
 - naprawiony b³¹d po³¹czenia do serwera przy u¿yciu has³a LAN
 - naprawiony brak wp³ywu hp na morale jednostek
 - naprawiony brak magicznego efektu u klienta gdy znika umar³a przywo³ana jednostka
@@ -20,6 +21,11 @@ Version 0.9 (???):
 - naprawiony rzadki ci¹g³y efekt alkoholu u klienta po wejœciu do lokalizacji [MildlyPhilosophicalHobbit]
 - naprawiony crash na arenie gdy nie ma miejsca na wygenerowanie wrogów [Anonymous]
 - naprawiony crash po u¿yciu skrótu zabierz wszystko na skrzyni z widocznymi szczegó³ami przedmiotu [Anonymous]
+- naprawiony crash przy wczytywaniu gdy widoczny jest profiler
+- naprawiony maksymalny zasiêg dŸwiêków
+- naprawione ci¹g³e trzymanie jedzenia przez jednostki po ponownym wejœciu do lokalizacji
+- naprawiony spadek wydajnoœci za ka¿dym razem gdy lokalizacja zewnêtrzna by³a ponownie odwiedzana
+- naprawione wycieki pamiêci i brakuj¹ce tekstury po próbie wczytania z³ego zapisu i rozpoczêciu nowej gry
 
 --------------------------------------------------------------------------------
 Wersja 0.8.1 (???):

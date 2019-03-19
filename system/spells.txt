@@ -7,8 +7,8 @@ spell magic_bolt {
 	speed 15
 	tex "mp.png" 0.05
 	tex_particle "mpp.png" 0.02
-	sound_cast "flaunch.wav" {2 8}
-	sound_hit "punch1.wav" {2 8}
+	sound_cast "flaunch.wav" 0.5
+	sound_hit "punch1.wav" 1
 }
 
 spell xmagic_bolt {
@@ -19,8 +19,8 @@ spell xmagic_bolt {
 	speed 15
 	tex "xmp.png" 0.05
 	tex_particle "xmpp.png" 0.02
-	sound_cast "flaunch.wav" {2 8}
-	sound_hit "punch1.wav" {2 8}
+	sound_cast "flaunch.wav" 0.5
+	sound_hit "punch1.wav" 1
 }
 
 spell fireball {
@@ -34,8 +34,8 @@ spell fireball {
 	tex "flare.png" 0.2
 	tex_particle "flare.png" 0.075
 	tex_explode "explosion.jpg"
-	sound_cast "rlaunch.mp3" {2 8}
-	sound_hit "explode.mp3" {4 15}
+	sound_cast "rlaunch.mp3" 1
+	sound_hit "explode.mp3" 3
 }
 
 spell spit_poison {
@@ -47,8 +47,8 @@ spell spit_poison {
 	speed 12
 	tex "spit.png" 0.1
 	tex_particle "spitp.png" 0.03
-	sound_cast "splash1.wav" {2 8}
-	sound_hit "splash2.mp3" {2 8}
+	sound_cast "splash1.wav" 0.5
+	sound_hit "splash2.mp3" 1
 }
 
 spell raise {
@@ -57,7 +57,7 @@ spell raise {
 	cooldown {10 15}
 	range 15
 	tex_particle "czarna_iskra.png" 0.1
-	sound_cast "Darkness3.ogg" {2 5}
+	sound_cast "Darkness3.ogg" 1
 }
 
 spell thunder_bolt {
@@ -67,8 +67,8 @@ spell thunder_bolt {
 	cooldown {7.5 12.5}
 	range 50
 	tex_particle "iskra.png" 0.03
-	sound_cast "lighting_bolt.mp3" {4 12}
-	sound_hit "zap.mp3" {2 8}
+	sound_cast "lighting_bolt.mp3" 3
+	sound_hit "zap.mp3" 1
 }
 
 spell drain {
@@ -77,7 +77,7 @@ spell drain {
 	dmg 50 + 5
 	cooldown {2.5 5}
 	range 5
-	sound_cast "suck.mp3" {2 5}
+	sound_cast "suck.mp3" 1
 }
 
 spell drain2 {
@@ -86,7 +86,7 @@ spell drain2 {
 	dmg 80 + 8
 	cooldown {3.5 6}
 	range 6
-	sound_cast "suck.mp3" {2 5}
+	sound_cast "suck.mp3" 1
 }
 
 spell exploding_skull {
@@ -100,8 +100,8 @@ spell exploding_skull {
 	mesh "czaszka.qmsh" 0.13
 	tex_particle "flare.png" 0.075
 	tex_explode "explosion.jpg"
-	sound_cast "evil_laught.mp3" {3 8}
-	sound_hit "explode.mp3" {4 12}
+	sound_cast "evil_laught.mp3" 1
+	sound_hit "explode.mp3" 3
 }
 
 spell heal {
@@ -111,7 +111,7 @@ spell heal {
 	cooldown {10 15}
 	range 15
 	tex_particle "heal.png" 0.03
-	sound_cast "heal.ogg" {2 5}
+	sound_cast "heal.ogg" 1
 }
 
 spell mystic_ball {
@@ -125,8 +125,8 @@ spell mystic_ball {
 	tex "flare2.png" 0.2
 	tex_particle "flare2.png" 0.075
 	tex_explode "rainbow.jpg"
-	sound_cast "rlaunch.mp3" {2 8}
-	sound_hit "explode.mp3" {4 15}
+	sound_cast "rlaunch.mp3" 1
+	sound_hit "explode.mp3" 3
 }
 
 //------------------------------------------------------------------------------

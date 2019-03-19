@@ -3,7 +3,7 @@
 #include "ComboBox.h"
 
 //=================================================================================================
-ComboBox::ComboBox() : menu_changed(false)
+ComboBox::ComboBox() : menu_changed(false), selected(-1)
 {
 	menu.event_handler = delegate<void(int)>(this, &ComboBox::OnSelect);
 }

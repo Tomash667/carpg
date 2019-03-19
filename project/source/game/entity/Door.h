@@ -28,6 +28,9 @@ struct Door
 		Max
 	};
 
+	static const float SOUND_DIST;
+	static const float UNLOCK_SOUND_DIST;
+	static const float BLOCKED_SOUND_DIST;
 	static const int MIN_SIZE = 31;
 	static int netid_counter;
 
