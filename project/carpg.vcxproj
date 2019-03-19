@@ -145,6 +145,7 @@
     <ClInclude Include="source\core\Timer.h" />
     <ClInclude Include="source\core\Tokenizer.h" />
     <ClInclude Include="source\core\WindowsIncludes.h" />
+    <ClInclude Include="source\engine\Camera2.h" />
     <ClInclude Include="source\engine\CameraBase.h" />
     <ClInclude Include="source\engine\DebugDrawer.h" />
     <ClInclude Include="source\engine\DirectX.h" />
@@ -197,9 +198,15 @@
     <ClInclude Include="source\engine\Pak.h" />
     <ClInclude Include="source\engine\ParticleSystem.h" />
     <ClInclude Include="source\engine\Physics.h" />
+    <ClInclude Include="source\engine\PortalScene.h" />
+    <ClInclude Include="source\engine\QuadtreeScene.h" />
     <ClInclude Include="source\engine\Resource.h" />
     <ClInclude Include="source\engine\ResourceManager.h" />
+    <ClInclude Include="source\engine\Scene2.h" />
+    <ClInclude Include="source\engine\SceneManager.h" />
+    <ClInclude Include="source\engine\SceneNode2.h" />
     <ClInclude Include="source\engine\ShaderHandler.h" />
+    <ClInclude Include="source\engine\SimpleScene.h" />
     <ClInclude Include="source\engine\Sound.h" />
     <ClInclude Include="source\engine\SoundManager.h" />
     <ClInclude Include="source\engine\StartupOptions.h" />
@@ -398,6 +405,7 @@
     <ClInclude Include="source\game\system\ItemScript.h" />
     <ClInclude Include="source\game\system\ItemType.h" />
     <ClInclude Include="source\game\system\Spell.h" />
+    <ClCompile Include="source\engine\SceneManager.cpp" />
     <ClCompile Include="source\game\entity\Encounter.cpp" />
     <ClCompile Include="source\game\system\Content.cpp" />
     <ClCompile Include="source\game\system\QuestList.cpp" />
