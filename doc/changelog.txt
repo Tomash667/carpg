@@ -26,6 +26,7 @@ Version 0.9 (???):
 - naprawione ci¹g³e trzymanie jedzenia przez jednostki po ponownym wejœciu do lokalizacji
 - naprawiony spadek wydajnoœci za ka¿dym razem gdy lokalizacja zewnêtrzna by³a ponownie odwiedzana
 - naprawione wycieki pamiêci i brakuj¹ce tekstury po próbie wczytania z³ego zapisu i rozpoczêciu nowej gry
+- naprawiony crash przy zapisywaniu gry z magicznymi pociskami lub kilkoma innymi czarami
 
 --------------------------------------------------------------------------------
 Wersja 0.8.1 (???):

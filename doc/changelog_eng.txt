@@ -26,6 +26,7 @@ Version 0.9 (???):
 - fixed units holding food all time in hand after revisiting location
 - fixed decreased performance every time outside location was reentered
 - fixed memory leaks and missing terrain textures after trying to load corrupted save and then starting a new game
+- fixed crash when saving game with magic bullets or some others spells
 
 --------------------------------------------------------------------------------
 Version 0.8.1 (???):

@@ -13,7 +13,10 @@ void Bullet::Save(FileWriter& f)
 {
 	f << pos;
 	f << rot;
-	f << mesh->filename;
+	if(mesh)
+		f << mesh->filename;
+	else
+		f.Write0();
 	f << speed;
 	f << timer;
 	f << attack;
@@ -49,7 +52,11 @@ void Bullet::Load(FileReader& f)
 	f >> rot;
 	if(LOAD_VERSION < V_0_3)
 		f.Skip<float>();
-	mesh = ResourceManager::Get<Mesh>().GetLoaded(f.ReadString1());
+	const string& mesh_id = f.ReadString1();
+	if(!mesh_id.empty())
+		mesh = ResourceManager::Get<Mesh>().GetLoaded(mesh_id);
+	else
+		mesh = nullptr;
 	f >> speed;
 	f >> timer;
 	f >> attack;

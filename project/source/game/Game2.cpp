@@ -7824,7 +7824,7 @@ void Game::UpdateAttachedSounds(float dt)
 
 void Game::BuildRefidTables()
 {
-	// jednostki i u¿ywalne
+	// units and unsable objects
 	Unit::refid_table.clear();
 	Usable::refid_table.clear();
 	for(Location* loc : W.GetLocations())
@@ -7833,13 +7833,17 @@ void Game::BuildRefidTables()
 			loc->BuildRefidTables();
 	}
 
-	// cz¹steczki
+	// particles (buildings are build first because they are loaded first)
 	ParticleEmitter::refid_table.clear();
 	TrailParticleEmitter::refid_table.clear();
 	if(L.is_open)
 	{
-		for(LevelContext& ctx : L.ForEachContext())
-			ctx.BuildRefidTables();
+		if(L.city_ctx)
+		{
+			for(InsideBuilding* building : L.city_ctx->inside_buildings)
+				building->ctx.BuildRefidTables();
+		}
+		L.local_ctx.BuildRefidTables();
 	}
 }
 
