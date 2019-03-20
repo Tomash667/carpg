@@ -826,6 +826,9 @@
     <ClCompile Include="source\engine\SceneManager.cpp">
       <Filter>2. engine\scene</Filter>
     </ClCompile>
+    <ClCompile Include="source\engine\Render.cpp">
+      <Filter>2. engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\resource\resource1.h">
@@ -1707,6 +1710,15 @@
     </ClInclude>
     <ClInclude Include="source\engine\SceneManager.h">
       <Filter>2. engine\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\RenderTarget.h">
+      <Filter>2. engine</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\Render.h">
+      <Filter>2. engine</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\EngineSettings.h">
+      <Filter>2. engine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

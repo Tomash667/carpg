@@ -9,6 +9,8 @@
 #include "ResourceManager.h"
 #include "DirectX.h"
 #include "Unit.h"
+#include "Render.h"
+#include "RenderTarget.h"
 
 //-----------------------------------------------------------------------------
 const int SECTION_H = 40;
@@ -242,6 +244,8 @@ void CreateCharacterPanel::LoadData()
 	tex_mgr.AddLoadTask("minus_hover.png", custom_bt[1].tex[Button::HOVER]);
 	tex_mgr.AddLoadTask("minus_down.png", custom_bt[1].tex[Button::DOWN]);
 	tex_mgr.AddLoadTask("minus_disabled.png", custom_bt[1].tex[Button::DISABLED]);
+
+	rt_char = game->GetRender()->CreateRenderTarget(Int2(128, 256));
 }
 
 //=================================================================================================
@@ -258,7 +262,7 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 	GUI.DrawText(GUI.fBig, txCharacterCreation, DTF_CENTER, Color::Black, rect0);
 
 	// character
-	GUI.DrawSprite(game->tChar, Int2(pos.x + 228, pos.y + 64));
+	GUI.DrawSprite(rt_char->GetTexture(), Int2(pos.x + 228, pos.y + 64));
 
 	// close button
 	btCancel.Draw();

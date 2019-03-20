@@ -669,140 +669,7 @@ bool Engine::MsgToKey(uint msg, uint wParam, byte& key, int& result)
 // Initialize Directx 9 rendering
 void Engine::InitRender()
 {
-	HRESULT hr;
-
-	// create direct3d object
-	d3d = Direct3DCreate9(D3D_SDK_VERSION);
-	if(!d3d)
-		throw "Engine: Failed to create direct3d object.";
-
-	// get adapters count
-	uint adapters = d3d->GetAdapterCount();
-	Info("Engine: Adapters count: %u", adapters);
-
-	// get adapters info
-	D3DADAPTER_IDENTIFIER9 adapter;
-	for(uint i = 0; i < adapters; ++i)
-	{
-		hr = d3d->GetAdapterIdentifier(i, 0, &adapter);
-		if(FAILED(hr))
-			Warn("Engine: Can't get info about adapter %d (%d).", i, hr);
-		else
-		{
-			Info("Engine: Adapter %d: %s, version %d.%d.%d.%d", i, adapter.Description, HIWORD(adapter.DriverVersion.HighPart),
-				LOWORD(adapter.DriverVersion.HighPart), HIWORD(adapter.DriverVersion.LowPart), LOWORD(adapter.DriverVersion.LowPart));
-		}
-	}
-	if(used_adapter > (int)adapters)
-	{
-		Warn("Engine: Invalid adapter %d, defaulting to 0.", used_adapter);
-		used_adapter = 0;
-	}
-
-	// check shaders version
-	D3DCAPS9 caps;
-	d3d->GetDeviceCaps(used_adapter, D3DDEVTYPE_HAL, &caps);
-	if(D3DVS_VERSION(2, 0) > caps.VertexShaderVersion || D3DPS_VERSION(2, 0) > caps.PixelShaderVersion)
-	{
-		throw Format("Engine: Too old graphic card! This game require vertex and pixel shader in version 2.0+. "
-			"Your card support:\nVertex shader: %d.%d\nPixel shader: %d.%d",
-			D3DSHADER_VERSION_MAJOR(caps.VertexShaderVersion), D3DSHADER_VERSION_MINOR(caps.VertexShaderVersion),
-			D3DSHADER_VERSION_MAJOR(caps.PixelShaderVersion), D3DSHADER_VERSION_MINOR(caps.PixelShaderVersion));
-	}
-	else
-	{
-		Info("Supported shader version vertex: %d.%d, pixel: %d.%d.",
-			D3DSHADER_VERSION_MAJOR(caps.VertexShaderVersion), D3DSHADER_VERSION_MINOR(caps.VertexShaderVersion),
-			D3DSHADER_VERSION_MAJOR(caps.PixelShaderVersion), D3DSHADER_VERSION_MINOR(caps.PixelShaderVersion));
-
-		int version = min(D3DSHADER_VERSION_MAJOR(caps.VertexShaderVersion), D3DSHADER_VERSION_MAJOR(caps.PixelShaderVersion));
-		if(shader_version == -1 || shader_version > version)
-			shader_version = version;
-
-		Info("Using shader version %d.", shader_version);
-	}
-
-	// check texture types
-	hr = d3d->CheckDeviceType(used_adapter, D3DDEVTYPE_HAL, DISPLAY_FORMAT, BACKBUFFER_FORMAT, fullscreen ? FALSE : TRUE);
-	if(FAILED(hr))
-		throw Format("Engine: Unsupported backbuffer type %s for display %s! (%d)", STRING(BACKBUFFER_FORMAT), STRING(DISPLAY_FORMAT), hr);
-
-	hr = d3d->CheckDeviceFormat(used_adapter, D3DDEVTYPE_HAL, DISPLAY_FORMAT, D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_SURFACE, ZBUFFER_FORMAT);
-	if(FAILED(hr))
-		throw Format("Engine: Unsupported depth buffer type %s for display %s! (%d)", STRING(ZBUFFER_FORMAT), STRING(DISPLAY_FORMAT), hr);
-
-	hr = d3d->CheckDepthStencilMatch(used_adapter, D3DDEVTYPE_HAL, DISPLAY_FORMAT, D3DFMT_A8R8G8B8, ZBUFFER_FORMAT);
-	if(FAILED(hr))
-		throw Format("Engine: Unsupported render target D3DFMT_A8R8G8B8 with display %s and depth buffer %s! (%d)",
-			STRING(DISPLAY_FORMAT), STRING(BACKBUFFER_FORMAT), hr);
-
-	// check multisampling
-	DWORD levels, levels2;
-	if(SUCCEEDED(d3d->CheckDeviceMultiSampleType(used_adapter, D3DDEVTYPE_HAL, D3DFMT_A8R8G8B8, fullscreen ? FALSE : TRUE,
-		(D3DMULTISAMPLE_TYPE)multisampling, &levels))
-		&& SUCCEEDED(d3d->CheckDeviceMultiSampleType(used_adapter, D3DDEVTYPE_HAL, D3DFMT_D24S8, fullscreen ? FALSE : TRUE,
-		(D3DMULTISAMPLE_TYPE)multisampling, &levels2)))
-	{
-		levels = min(levels, levels2);
-		if(multisampling_quality < 0 || multisampling_quality >= (int)levels)
-		{
-			Warn("Engine: Unavailable multisampling quality, changed to 0.");
-			multisampling_quality = 0;
-		}
-	}
-	else
-	{
-		Warn("Engine: Your graphic card don't support multisampling x%d. Maybe it's only available in fullscreen mode. "
-			"Multisampling was turned off.", multisampling);
-		multisampling = 0;
-		multisampling_quality = 0;
-	}
-	LogMultisampling();
-
-	// select resolution
-	SelectResolution();
-
-	// gather params
-	D3DPRESENT_PARAMETERS d3dpp = { 0 };
-	GatherParams(d3dpp);
-
-	// available modes
-	const DWORD mode[] = {
-		D3DCREATE_HARDWARE_VERTEXPROCESSING,
-		D3DCREATE_MIXED_VERTEXPROCESSING,
-		D3DCREATE_SOFTWARE_VERTEXPROCESSING
-	};
-	const cstring mode_str[] = {
-		"hardware",
-		"mixed",
-		"software"
-	};
-
-	// try to create device in one of modes
-	for(uint i = 0; i < 3; ++i)
-	{
-		DWORD sel_mode = mode[i];
-		hr = d3d->CreateDevice(used_adapter, D3DDEVTYPE_HAL, d3dpp.hDeviceWindow, sel_mode, &d3dpp, &device);
-
-		if(SUCCEEDED(hr))
-		{
-			Info("Engine: Created direct3d device in %s mode.", mode_str[i]);
-			break;
-		}
-	}
-
-	// failed to create device
-	if(FAILED(hr))
-		throw Format("Engine: Failed to create direct3d device (%d).", hr);
-
-	// create sprite
-	hr = D3DXCreateSprite(device, &sprite);
-	if(FAILED(hr))
-		throw Format("Engine: Failed to create direct3dx sprite (%d).", hr);
-
-	SetDefaultRenderState();
-
-	Info("Engine: Directx device created.");
+	
 }
 
 //=================================================================================================
@@ -905,7 +772,7 @@ void Engine::PlaceCursor()
 
 //=================================================================================================
 // Rendering
-void Engine::Render(bool dont_call_present)
+void Engine::RenderScene(bool dont_call_present)
 {
 	HRESULT hr = device->TestCooperativeLevel();
 	if(hr != D3D_OK)

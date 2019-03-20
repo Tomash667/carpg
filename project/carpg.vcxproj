@@ -149,6 +149,7 @@
     <ClInclude Include="source\engine\CameraBase.h" />
     <ClInclude Include="source\engine\DebugDrawer.h" />
     <ClInclude Include="source\engine\DirectX.h" />
+    <ClInclude Include="source\engine\EngineSettings.h" />
     <ClInclude Include="source\engine\FileFormat.h" />
     <ClInclude Include="source\engine\Font.h" />
     <ClInclude Include="source\engine\EngineCore.h" />
@@ -200,6 +201,8 @@
     <ClInclude Include="source\engine\Physics.h" />
     <ClInclude Include="source\engine\PortalScene.h" />
     <ClInclude Include="source\engine\QuadtreeScene.h" />
+    <ClInclude Include="source\engine\Render.h" />
+    <ClInclude Include="source\engine\RenderTarget.h" />
     <ClInclude Include="source\engine\Resource.h" />
     <ClInclude Include="source\engine\ResourceManager.h" />
     <ClInclude Include="source\engine\Scene2.h" />
@@ -405,6 +408,7 @@
     <ClInclude Include="source\game\system\ItemScript.h" />
     <ClInclude Include="source\game\system\ItemType.h" />
     <ClInclude Include="source\game\system\Spell.h" />
+    <ClCompile Include="source\engine\Render.cpp" />
     <ClCompile Include="source\engine\SceneManager.cpp" />
     <ClCompile Include="source\game\entity\Encounter.cpp" />
     <ClCompile Include="source\game\system\Content.cpp" />

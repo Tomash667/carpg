@@ -17,6 +17,8 @@ class CustomCollisionWorld;
 class DebugDrawer;
 class Engine;
 class Pak;
+class Render;
+class RenderTarget;
 class ResourceManager;
 class Scene2;
 class SceneManager;

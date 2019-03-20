@@ -45,7 +45,7 @@ public:
 	void DoPseudotick(bool msg_only = false);
 	void EngineShutdown();
 	void FatalError(cstring err);
-	void Render(bool dont_call_present = false);
+	void RenderScene(bool dont_call_present = false);
 	bool Reset(bool force);
 	void WaitReset();
 	void ShowError(cstring msg, Logger::Level level = Logger::L_ERROR);
@@ -71,6 +71,7 @@ public:
 	void GetResolutions(vector<Resolution>& v) const;
 	void GetMultisamplingModes(vector<Int2>& v) const;
 	DebugDrawer* GetDebugDrawer() { return debug_drawer.get(); }
+	Render* GetRender() { return render; }
 
 	void SetAlphaBlend(bool use_alphablend);
 	void SetAlphaTest(bool use_alphatest);
@@ -83,11 +84,8 @@ public:
 
 	// ----- ZMIENNE -----
 	// directx
-	IDirect3D9* d3d;
-	IDirect3DDevice9* device;
-	ID3DXSprite* sprite;
 	Color clear_color;
-	int wnd_hz, used_adapter, shader_version;
+	int wnd_hz;
 
 	CustomCollisionWorld* phy_world;
 	std::unique_ptr<SoundManager> sound_mgr;
@@ -145,6 +143,7 @@ private:
 	bool active, fullscreen;
 
 	// render
+	Render* render;
 	bool vsync;
 
 	std::unique_ptr<DebugDrawer> debug_drawer;

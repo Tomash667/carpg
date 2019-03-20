@@ -129,4 +129,5 @@ private:
 	vector<pair<cstring, int>> taken_perks;
 	const Item* items[SLOT_MAX];
 	TEX tKlasaCecha;
+	RenderTarget* rt_char;
 };
