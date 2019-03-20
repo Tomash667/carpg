@@ -414,8 +414,7 @@ void Game::UpdateClientConnectingIp(float dt)
 		Packet* packet;
 		for(packet = N.peer->Receive(); packet; N.peer->DeallocatePacket(packet), packet = N.peer->Receive())
 		{
-			BitStream& stream = N.StreamStart(packet, Stream_PingIp);
-			BitStreamReader f(stream);
+			BitStreamReader f(packet);
 			byte msg_id;
 			f >> msg_id;
 
@@ -423,14 +422,12 @@ void Game::UpdateClientConnectingIp(float dt)
 			{
 				// unknown packet from server
 				Warn("NM_CONNECTING(0): Unknown server response: %u.", msg_id);
-				N.StreamError();
 				continue;
 			}
 
 			if(packet->length == sizeof(TimeMS) + 1)
 			{
 				Warn("NM_CONNECTING(0): Server not set SetOfflinePingResponse yet.");
-				N.StreamError();
 				continue;
 			}
 
@@ -451,14 +448,12 @@ void Game::UpdateClientConnectingIp(float dt)
 			if(!f)
 			{
 				Warn("NM_CONNECTING(0): Broken server response.");
-				N.StreamError();
 				continue;
 			}
 			if(sign_ca[0] != 'C' || sign_ca[1] != 'A')
 			{
 				// invalid signature, this is not carpg server
 				Warn("NM_CONNECTING(0): Invalid server signature 0x%x%x.", byte(sign_ca[0]), byte(sign_ca[1]));
-				N.StreamError();
 				N.peer->DeallocatePacket(packet);
 				EndConnecting(txConnectInvalid);
 				return;
@@ -474,13 +469,12 @@ void Game::UpdateClientConnectingIp(float dt)
 			const string& server_name_r = f.ReadString1();
 			if(!f)
 			{
-				N.StreamError("NM_CONNECTING(0): Broken server message.");
+				Error("NM_CONNECTING(0): Broken server message.");
 				N.peer->DeallocatePacket(packet);
 				EndConnecting(txConnectInvalid);
 				return;
 			}
 
-			N.StreamEnd();
 			N.peer->DeallocatePacket(packet);
 
 			// check version
@@ -547,8 +541,7 @@ void Game::UpdateClientConnectingIp(float dt)
 			if(packet->systemAddress != N.server)
 				continue;
 
-			BitStream& stream = N.StreamStart(packet, Stream_Connect);
-			BitStreamReader reader(stream);
+			BitStreamReader reader(packet);
 			byte msg_id;
 			reader >> msg_id;
 
@@ -567,7 +560,7 @@ void Game::UpdateClientConnectingIp(float dt)
 					f << VERSION;
 					content.WriteCrc(f);
 					f << player_name;
-					N.SendClient(f, IMMEDIATE_PRIORITY, RELIABLE, Stream_Connect);
+					N.SendClient(f, IMMEDIATE_PRIORITY, RELIABLE);
 				}
 				break;
 			case ID_JOIN:
@@ -580,7 +573,7 @@ void Game::UpdateClientConnectingIp(float dt)
 					reader.ReadCasted<byte>(count);
 					if(!reader)
 					{
-						N.StreamError("NM_CONNECTING(2): Broken packet ID_JOIN.");
+						Error("NM_CONNECTING(2): Broken packet ID_JOIN.");
 						N.peer->DeallocatePacket(packet);
 						EndConnecting(txCantJoin, true);
 						return;
@@ -616,7 +609,7 @@ void Game::UpdateClientConnectingIp(float dt)
 						reader >> info2.name;
 						if(!reader)
 						{
-							N.StreamError("NM_CONNECTING(2): Broken packet ID_JOIN(2).");
+							Error("NM_CONNECTING(2): Broken packet ID_JOIN(2).");
 							N.peer->DeallocatePacket(packet);
 							EndConnecting(txCantJoin, true);
 							return;
@@ -625,7 +618,7 @@ void Game::UpdateClientConnectingIp(float dt)
 						// verify player class
 						if(!ClassInfo::IsPickable(info2.clas) && info2.clas != Class::INVALID)
 						{
-							N.StreamError("NM_CONNECTING(2): Broken packet ID_JOIN, player %s has class %d.", info2.name.c_str(), info2.clas);
+							Error("NM_CONNECTING(2): Broken packet ID_JOIN, player %s has class %d.", info2.name.c_str(), info2.clas);
 							N.peer->DeallocatePacket(packet);
 							EndConnecting(txCantJoin, true);
 							return;
@@ -636,7 +629,7 @@ void Game::UpdateClientConnectingIp(float dt)
 					reader.ReadCasted<byte>(load_char);
 					if(!reader)
 					{
-						N.StreamError("NM_CONNECTING(2): Broken packet ID_JOIN(4).");
+						Error("NM_CONNECTING(2): Broken packet ID_JOIN(4).");
 						N.peer->DeallocatePacket(packet);
 						EndConnecting(txCantJoin, true);
 						return;
@@ -646,14 +639,13 @@ void Game::UpdateClientConnectingIp(float dt)
 						reader.ReadCasted<byte>(info.clas);
 						if(!reader)
 						{
-							N.StreamError("NM_CONNECTING(2): Broken packet ID_JOIN(3).");
+							Error("NM_CONNECTING(2): Broken packet ID_JOIN(3).");
 							N.peer->DeallocatePacket(packet);
 							EndConnecting(txCantJoin, true);
 							return;
 						}
 					}
 
-					N.StreamEnd();
 					N.peer->DeallocatePacket(packet);
 
 					// read leader
@@ -750,7 +742,6 @@ void Game::UpdateClientConnectingIp(float dt)
 						break;
 					}
 
-					N.StreamEnd();
 					N.peer->DeallocatePacket(packet);
 					if(reason_eng)
 						Warn("NM_CONNECTING(2): Can't connect to server: %s.", reason_eng);
@@ -766,20 +757,17 @@ void Game::UpdateClientConnectingIp(float dt)
 			case ID_DISCONNECTION_NOTIFICATION:
 				// lost connecting with server or was kicked out
 				Warn(msg_id == ID_CONNECTION_LOST ? "NM_CONNECTING(2): Lost connection with server." : "NM_CONNECTING(2): Disconnected from server.");
-				N.StreamEnd();
 				N.peer->DeallocatePacket(packet);
 				EndConnecting(txLostConnection);
 				return;
 			case ID_CONNECTION_ATTEMPT_FAILED:
 				Warn("NM_CONNECTING(2): Connection attempt failed.");
-				N.StreamEnd();
 				N.peer->DeallocatePacket(packet);
 				EndConnecting(txConnectionFailed);
 				return;
 			case ID_INVALID_PASSWORD:
 				// password is invalid
 				Warn("NM_CONNECTING(2): Invalid password.");
-				N.StreamEnd();
 				N.peer->DeallocatePacket(packet);
 				EndConnecting(txInvalidPswd);
 				return;
@@ -787,12 +775,9 @@ void Game::UpdateClientConnectingIp(float dt)
 				// used by punchthrough, ignore
 				break;
 			default:
-				N.StreamError();
 				Warn("NM_CONNECTING(2): Unknown packet from server %u.", msg_id);
 				break;
 			}
-
-			N.StreamEnd();
 		}
 
 		net_timer -= dt;
@@ -807,8 +792,7 @@ void Game::UpdateClientConnectingIp(float dt)
 		Packet* packet;
 		for(packet = N.peer->Receive(); packet; N.peer->DeallocatePacket(packet), packet = N.peer->Receive())
 		{
-			BitStream& stream = N.StreamStart(packet, Stream_Connect);
-			BitStreamReader reader(stream);
+			BitStreamReader reader(packet);
 			byte msg_id;
 			reader >> msg_id;
 
@@ -852,7 +836,6 @@ void Game::UpdateClientConnectingIp(float dt)
 						net_tries = 1;
 						net_state = NetState::Client_Connecting;
 						gui->info_box->Show(Format(txConnectingTo, info.name.c_str()));
-						N.StreamEnd();
 						N.peer->DeallocatePacket(packet);
 						return;
 					}
@@ -864,12 +847,9 @@ void Game::UpdateClientConnectingIp(float dt)
 				}
 				break;
 			default:
-				N.StreamError();
 				Warn("NM_CONNECTING(3): Unknown packet from proxy %u.", msg_id);
 				break;
 			}
-
-			N.StreamEnd();
 		}
 
 		net_timer -= dt;
@@ -887,8 +867,7 @@ void Game::UpdateClientTransfer(float dt)
 	Packet* packet;
 	for(packet = N.peer->Receive(); packet; N.peer->DeallocatePacket(packet), packet = N.peer->Receive())
 	{
-		BitStream& stream = N.StreamStart(packet, Stream_Transfer);
-		BitStreamReader reader(stream);
+		BitStreamReader reader(packet);
 		byte msg_id;
 		reader >> msg_id;
 
@@ -897,7 +876,6 @@ void Game::UpdateClientTransfer(float dt)
 		case ID_DISCONNECTION_NOTIFICATION:
 		case ID_CONNECTION_LOST:
 			Info("NM_TRANSFER: Lost connection with server.");
-			N.StreamEnd();
 			N.peer->DeallocatePacket(packet);
 			N.ClosePeer(false, true);
 			gui->info_box->CloseDialog();
@@ -924,7 +902,7 @@ void Game::UpdateClientTransfer(float dt)
 					}
 				}
 				else
-					N.StreamError("NM_TRANSFER: Broken packet ID_STATE.");
+					Error("NM_TRANSFER: Broken packet ID_STATE.");
 			}
 			break;
 		case ID_WORLD_DATA:
@@ -946,21 +924,21 @@ void Game::UpdateClientTransfer(float dt)
 					BitStreamWriter f;
 					f << ID_READY;
 					f << (byte)0;
-					N.SendClient(f, HIGH_PRIORITY, RELIABLE, Stream_Transfer);
+					N.SendClient(f, HIGH_PRIORITY, RELIABLE);
 					gui->info_box->Show(txLoadedWorld);
 					LoadingStep("");
 					Info("NM_TRANSFER: Loaded world data.");
 				}
 				else
 				{
-					N.StreamError("NM_TRANSFER: Failed to read world data.");
+					Error("NM_TRANSFER: Failed to read world data.");
 					N.peer->DeallocatePacket(packet);
 					ClearAndExitToMenu(txWorldDataError);
 					return;
 				}
 			}
 			else
-				N.StreamError("NM_TRANSFER: Received ID_WORLD_DATA with net state %d.", net_state);
+				Error("NM_TRANSFER: Received ID_WORLD_DATA with net state %d.", net_state);
 			break;
 		case ID_PLAYER_START_DATA:
 			if(net_state == NetState::Client_ReceivedWorldData)
@@ -977,20 +955,20 @@ void Game::UpdateClientTransfer(float dt)
 					BitStreamWriter f;
 					f << ID_READY;
 					f << (byte)1;
-					N.SendClient(f, HIGH_PRIORITY, RELIABLE, Stream_Transfer);
+					N.SendClient(f, HIGH_PRIORITY, RELIABLE);
 					gui->info_box->Show(txLoadedPlayer);
 					Info("NM_TRANSFER: Loaded player start data.");
 				}
 				else
 				{
-					N.StreamError("NM_TRANSFER: Failed to read player data.");
+					Error("NM_TRANSFER: Failed to read player data.");
 					N.peer->DeallocatePacket(packet);
 					ClearAndExitToMenu(txPlayerDataError);
 					return;
 				}
 			}
 			else
-				N.StreamError("NM_TRANSFER: Received ID_PLAYER_START_DATA with net state %d.", net_state);
+				Error("NM_TRANSFER: Received ID_PLAYER_START_DATA with net state %d.", net_state);
 			break;
 		case ID_CHANGE_LEVEL:
 			if(net_state == NetState::Client_ReceivedPlayerStartData)
@@ -1015,13 +993,13 @@ void Game::UpdateClientTransfer(float dt)
 						gui->info_box->Show(txGeneratingLocation);
 					}
 					else
-						N.StreamError("NM_TRANSFER: Broken packet ID_CHANGE_LEVEL, invalid location %u.", loc);
+						Error("NM_TRANSFER: Broken packet ID_CHANGE_LEVEL, invalid location %u.", loc);
 				}
 				else
-					N.StreamError("NM_TRANSFER: Broken packet ID_CHANGE_LEVEL.");
+					Error("NM_TRANSFER: Broken packet ID_CHANGE_LEVEL.");
 			}
 			else
-				N.StreamError("NM_TRANSFER: Received ID_CHANGE_LEVEL with net state %d.", net_state);
+				Error("NM_TRANSFER: Received ID_CHANGE_LEVEL with net state %d.", net_state);
 			break;
 		case ID_LEVEL_DATA:
 			if(net_state == NetState::Client_ChangingLevel)
@@ -1031,7 +1009,7 @@ void Game::UpdateClientTransfer(float dt)
 				LoadingStep("");
 				if(!N.ReadLevelData(reader))
 				{
-					N.StreamError("NM_TRANSFER: Failed to read location data.");
+					Error("NM_TRANSFER: Failed to read location data.");
 					N.peer->DeallocatePacket(packet);
 					ClearAndExitToMenu(txLoadingLocationError);
 					return;
@@ -1042,12 +1020,12 @@ void Game::UpdateClientTransfer(float dt)
 					BitStreamWriter f;
 					f << ID_READY;
 					f << (byte)2;
-					N.SendClient(f, HIGH_PRIORITY, RELIABLE, Stream_Transfer);
+					N.SendClient(f, HIGH_PRIORITY, RELIABLE);
 					LoadingStep("");
 				}
 			}
 			else
-				N.StreamError("NM_TRANSFER: Received ID_LEVEL_DATA with net state %d.", net_state);
+				Error("NM_TRANSFER: Received ID_LEVEL_DATA with net state %d.", net_state);
 			break;
 		case ID_PLAYER_DATA:
 			if(net_state == NetState::Client_ReceivedLevelData)
@@ -1057,7 +1035,7 @@ void Game::UpdateClientTransfer(float dt)
 				LoadingStep("");
 				if(!ReadPlayerData(reader))
 				{
-					N.StreamError("NM_TRANSFER: Failed to read player data.");
+					Error("NM_TRANSFER: Failed to read player data.");
 					N.peer->DeallocatePacket(packet);
 					ClearAndExitToMenu(txLoadingCharsError);
 					return;
@@ -1070,11 +1048,11 @@ void Game::UpdateClientTransfer(float dt)
 					BitStreamWriter f;
 					f << ID_READY;
 					f << (byte)3;
-					N.SendClient(f, HIGH_PRIORITY, RELIABLE, Stream_Transfer);
+					N.SendClient(f, HIGH_PRIORITY, RELIABLE);
 				}
 			}
 			else
-				N.StreamError("NM_TRANSFER: Received ID_PLAYER_DATA with net state %d.", net_state);
+				Error("NM_TRANSFER: Received ID_PLAYER_DATA with net state %d.", net_state);
 			break;
 		case ID_START:
 			if(N.mp_load_worldmap)
@@ -1100,12 +1078,11 @@ void Game::UpdateClientTransfer(float dt)
 					SetMusic(MusicType::Travel);
 					if(change_title_a)
 						ChangeTitle();
-					N.StreamEnd();
 					N.peer->DeallocatePacket(packet);
 				}
 				else
 				{
-					N.StreamError("NM_TRANSFER: Received ID_START at worldmap with net state %d.", net_state);
+					Error("NM_TRANSFER: Received ID_START at worldmap with net state %d.", net_state);
 					break;
 				}
 			}
@@ -1130,22 +1107,18 @@ void Game::UpdateClientTransfer(float dt)
 					pc_data.rot_buf = 0.f;
 					if(change_title_a)
 						ChangeTitle();
-					N.StreamEnd();
 					N.peer->DeallocatePacket(packet);
 					gui->Setup(pc);
 					OnEnterLevelOrLocation();
 				}
 				else
-					N.StreamError("NM_TRANSFER: Received ID_START with net state %d.", net_state);
+					Error("NM_TRANSFER: Received ID_START with net state %d.", net_state);
 			}
 			return;
 		default:
 			Warn("NM_TRANSFER: Unknown packet %u.", msg_id);
-			N.StreamError();
 			break;
 		}
-
-		N.StreamEnd();
 	}
 }
 
@@ -1154,10 +1127,9 @@ void Game::UpdateClientQuiting(float dt)
 	Packet* packet;
 	for(packet = N.peer->Receive(); packet; N.peer->DeallocatePacket(packet), packet = N.peer->Receive())
 	{
-		BitStream& stream = N.StreamStart(packet, Stream_Quitting);
+		BitStreamReader f(packet);
 		byte msg_id;
-		stream.Read(msg_id);
-		N.StreamEnd();
+		f >> msg_id;
 
 		if(msg_id == ID_DISCONNECTION_NOTIFICATION || msg_id == ID_CONNECTION_LOST)
 		{
@@ -1194,25 +1166,23 @@ void Game::UpdateServerTransfer(float dt)
 	Packet* packet;
 	for(packet = N.peer->Receive(); packet; N.peer->DeallocatePacket(packet), packet = N.peer->Receive())
 	{
-		BitStream& stream = N.StreamStart(packet, Stream_TransferServer);
+		BitStreamReader f(packet);
 
 		PlayerInfo* ptr_info = N.FindPlayer(packet->systemAddress);
 		if(!ptr_info)
 		{
 			Info("NM_TRANSFER_SERVER: Ignoring packet from %s.", packet->systemAddress.ToString());
-			N.StreamEnd();
 			continue;
 		}
 		if(ptr_info->left != PlayerInfo::LEFT_NO)
 		{
 			Info("NM_TRANSFER_SERVER: Packet from %s who left game.", ptr_info->name.c_str());
-			N.StreamEnd();
 			continue;
 		}
 
 		PlayerInfo& info = *ptr_info;
 		byte msg_id;
-		stream.Read(msg_id);
+		f >> msg_id;
 
 		switch(msg_id)
 		{
@@ -1227,46 +1197,40 @@ void Game::UpdateServerTransfer(float dt)
 			break;
 		case ID_READY:
 			{
-				byte type;
 				if(net_state != NetState::Server_WaitForPlayersToLoadWorld)
 				{
 					Warn("NM_TRANSFER_SERVER: Unexpected packet ID_READY from %s.", info.name.c_str());
-					N.StreamError();
+					break;
 				}
-				else if(stream.Read(type))
-				{
-					if(type == 0)
-					{
-						Info("NM_TRANSFER_SERVER: %s read world data.", info.name.c_str());
-						BitStreamWriter f;
-						N.WritePlayerStartData(f, info);
-						N.SendServer(f, MEDIUM_PRIORITY, RELIABLE, info.adr, Stream_TransferServer);
-					}
-					else if(type == 1)
-					{
-						Info("NM_TRANSFER_SERVER: %s is ready.", info.name.c_str());
-						info.ready = true;
-					}
-					else
-					{
-						Warn("NM_TRANSFER_SERVER: Unknown ID_READY %u from %s.", type, info.name.c_str());
-						N.StreamError();
-					}
-				}
-				else
+
+				byte type;
+				f >> type;
+				if(!f)
 				{
 					Warn("NM_TRANSFER_SERVER: Broken packet ID_READY from %s.", info.name.c_str());
-					N.StreamError();
+					break;
 				}
+
+				if(type == 0)
+				{
+					Info("NM_TRANSFER_SERVER: %s read world data.", info.name.c_str());
+					BitStreamWriter f;
+					N.WritePlayerStartData(f, info);
+					N.SendServer(f, MEDIUM_PRIORITY, RELIABLE, info.adr);
+				}
+				else if(type == 1)
+				{
+					Info("NM_TRANSFER_SERVER: %s is ready.", info.name.c_str());
+					info.ready = true;
+				}
+				else
+					Warn("NM_TRANSFER_SERVER: Unknown ID_READY %u from %s.", type, info.name.c_str());
 			}
 			break;
 		default:
 			Warn("NM_TRANSFER_SERVER: Unknown packet from %s: %u.", info.name.c_str(), msg_id);
-			N.StreamError();
 			break;
 		}
-
-		N.StreamEnd();
 	}
 
 	if(net_state == NetState::Server_Starting)
@@ -1280,7 +1244,6 @@ void Game::UpdateServerTransfer(float dt)
 			{
 				byte b[] = { ID_STATE, 0 };
 				N.peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
-				N.StreamWrite(b, 2, Stream_TransferServer, UNASSIGNED_SYSTEM_ADDRESS);
 			}
 
 			// do it
@@ -1317,12 +1280,11 @@ void Game::UpdateServerTransfer(float dt)
 			// send info about preparing world data
 			byte b[] = { ID_STATE, 1 };
 			N.peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
-			N.StreamWrite(b, 2, Stream_TransferServer, UNASSIGNED_SYSTEM_ADDRESS);
 
 			// prepare & send world data
 			BitStreamWriter f;
 			N.WriteWorldData(f);
-			N.SendAll(f, IMMEDIATE_PRIORITY, RELIABLE, Stream_TransferServer);
+			N.SendAll(f, IMMEDIATE_PRIORITY, RELIABLE);
 			Info("NM_TRANSFER_SERVER: Send world data, size %d.", f.GetSize());
 			net_state = NetState::Server_WaitForPlayersToLoadWorld;
 			net_timer = mp_timeout;
@@ -1483,7 +1445,6 @@ void Game::UpdateServerTransfer(float dt)
 		{
 			byte b[] = { ID_STATE, 2 };
 			N.peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
-			N.StreamWrite(b, 2, Stream_TransferServer, UNASSIGNED_SYSTEM_ADDRESS);
 		}
 	}
 	else if(net_state == NetState::Server_WaitForPlayersToLoadWorld)
@@ -1548,7 +1509,6 @@ void Game::UpdateServerTransfer(float dt)
 				// saved on worldmap
 				byte b = ID_START;
 				N.peer->Send((cstring)&b, 1, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
-				N.StreamWrite(&b, 1, Stream_TransferServer, UNASSIGNED_SYSTEM_ADDRESS);
 
 				N.DeleteOldPlayers();
 
@@ -1575,7 +1535,7 @@ void Game::UpdateServerTransfer(float dt)
 				f << (byte)W.GetCurrentLocationIndex();
 				f << (byte)L.dungeon_level;
 				f << (W.GetState() == World::State::INSIDE_ENCOUNTER);
-				int ack = N.SendAll(f, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT, Stream_TransferServer);
+				int ack = N.SendAll(f, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT);
 				for(auto info : N.players)
 				{
 					if(info->id == Team.my_id)
@@ -1700,25 +1660,22 @@ void Game::UpdateServerSend(float dt)
 	Packet* packet;
 	for(packet = N.peer->Receive(); packet; N.peer->DeallocatePacket(packet), packet = N.peer->Receive())
 	{
-		BitStream& stream = N.StreamStart(packet, Stream_ServerSend);
-
+		BitStreamReader f(packet);
 		PlayerInfo* ptr_info = N.FindPlayer(packet->systemAddress);
 		if(!ptr_info)
 		{
 			Info("NM_SERVER_SEND: Ignoring packet from %s.", packet->systemAddress.ToString());
-			N.StreamEnd();
 			continue;
 		}
 		else if(ptr_info->left != PlayerInfo::LEFT_NO)
 		{
 			Info("NM_SERVER_SEND: Packet from %s who left game.", ptr_info->name.c_str());
-			N.StreamEnd();
 			continue;
 		}
 
 		PlayerInfo& info = *ptr_info;
 		byte msg_id;
-		stream.Read(msg_id);
+		f >> msg_id;
 
 		switch(packet->data[0])
 		{
@@ -1734,18 +1691,15 @@ void Game::UpdateServerSend(float dt)
 		case ID_SND_RECEIPT_ACKED:
 			{
 				int ack;
-				if(!stream.Read(ack))
-					N.StreamError("NM_SERVER_SEND: Broken packet ID_SND_RECEIPT_ACKED from %s.", info.name.c_str());
+				f >> ack;
+				if(!f)
+					Error("NM_SERVER_SEND: Broken packet ID_SND_RECEIPT_ACKED from %s.", info.name.c_str());
 				else if(info.state != PlayerInfo::WAITING_FOR_RESPONSE || ack != info.ack)
-				{
 					Warn("NM_SERVER_SEND: Unexpected packet ID_SND_RECEIPT_ACKED from %s.", info.name.c_str());
-					N.StreamError();
-				}
 				else
 				{
 					// send level data
 					N.peer->Send(&prepared_stream, HIGH_PRIORITY, RELIABLE, 0, packet->systemAddress, false);
-					N.StreamWrite(prepared_stream, Stream_TransferServer, packet->systemAddress);
 					info.timer = mp_timeout;
 					info.state = PlayerInfo::WAITING_FOR_DATA;
 					Info("NM_SERVER_SEND: Send level data to %s.", info.name.c_str());
@@ -1754,7 +1708,7 @@ void Game::UpdateServerSend(float dt)
 			break;
 		case ID_READY:
 			if(info.state == PlayerInfo::IN_GAME || info.state == PlayerInfo::WAITING_FOR_RESPONSE)
-				N.StreamError("NM_SERVER_SEND: Unexpected packet ID_READY from %s.", info.name.c_str());
+				Error("NM_SERVER_SEND: Unexpected packet ID_READY from %s.", info.name.c_str());
 			else if(info.state == PlayerInfo::WAITING_FOR_DATA)
 			{
 				Info("NM_SERVER_SEND: Send player data to %s.", info.name.c_str());
@@ -1771,11 +1725,8 @@ void Game::UpdateServerSend(float dt)
 			break;
 		default:
 			Warn("MN_SERVER_SEND: Invalid packet %d from %s.", msg_id, info.name.c_str());
-			N.StreamError();
 			break;
 		}
-
-		N.StreamEnd();
 	}
 
 	bool ok = true;
@@ -1809,7 +1760,6 @@ void Game::UpdateServerSend(float dt)
 		{
 			byte b = ID_START;
 			N.peer->Send((cstring)&b, 1, HIGH_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
-			N.StreamWrite(&b, 1, Stream_TransferServer, UNASSIGNED_SYSTEM_ADDRESS);
 		}
 		for(vector<Unit*>::iterator it = L.local_ctx.units->begin(), end = L.local_ctx.units->end(); it != end; ++it)
 			(*it)->changed = false;
@@ -1841,18 +1791,15 @@ void Game::UpdateServerQuiting(float dt)
 	Packet* packet;
 	for(packet = N.peer->Receive(); packet; N.peer->DeallocatePacket(packet), packet = N.peer->Receive())
 	{
-		BitStream& stream = N.StreamStart(packet, Stream_QuittingServer);
+		BitStreamReader f(packet);
 		PlayerInfo* ptr_info = N.FindPlayer(packet->systemAddress);
 		if(!ptr_info)
-		{
-			N.StreamError();
 			Warn("NM_QUITTING_SERVER: Ignoring packet from unconnected player %s.", packet->systemAddress.ToString());
-		}
 		else
 		{
 			PlayerInfo& info = *ptr_info;
 			byte msg_id;
-			stream.Read(msg_id);
+			f >> msg_id;
 			if(msg_id == ID_DISCONNECTION_NOTIFICATION || msg_id == ID_CONNECTION_LOST)
 			{
 				if(info.state == PlayerInfo::IN_LOBBY)
@@ -1862,7 +1809,6 @@ void Game::UpdateServerQuiting(float dt)
 				--N.active_players;
 				if(N.active_players == 0)
 				{
-					N.StreamEnd();
 					N.peer->DeallocatePacket(packet);
 					Info("NM_QUITTING_SERVER: All players disconnected from server. Closing...");
 					N.ClosePeer();
@@ -1879,7 +1825,6 @@ void Game::UpdateServerQuiting(float dt)
 				Info("NM_QUITTING_SERVER: Ignoring packet from %s.",
 					info.state == PlayerInfo::IN_LOBBY ? info.name.c_str() : packet->systemAddress.ToString());
 			}
-			N.StreamEnd();
 		}
 	}
 
@@ -2032,7 +1977,6 @@ void Game::CloseConnection(VoidF f)
 				Info("ServerPanel: Disconnecting clients.");
 				const byte b[] = { ID_SERVER_CLOSE, ServerClose_Closing };
 				N.peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
-				N.StreamWrite(b, 2, Stream_TransferServer, UNASSIGNED_SYSTEM_ADDRESS);
 				net_mode = Game::NM_QUITTING_SERVER;
 				--N.active_players;
 				net_timer = T_WAIT_FOR_DISCONNECT;
@@ -2067,7 +2011,6 @@ void Game::CloseConnection(VoidF f)
 				Info("ServerPanel: Disconnecting clients.");
 				const byte b[] = { ID_SERVER_CLOSE, ServerClose_Closing };
 				N.peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
-				N.StreamWrite(b, 2, Stream_TransferServer, UNASSIGNED_SYSTEM_ADDRESS);
 				net_mode = Game::NM_QUITTING_SERVER;
 				--N.active_players;
 				net_timer = T_WAIT_FOR_DISCONNECT;
@@ -2119,7 +2062,7 @@ void Game::OnCreateCharacter(int id)
 			f << ID_PICK_CHARACTER;
 			WriteCharacterData(f, info.clas, info.hd, info.cc);
 			f << false;
-			N.SendClient(f, IMMEDIATE_PRIORITY, RELIABLE, Stream_UpdateLobbyClient);
+			N.SendClient(f, IMMEDIATE_PRIORITY, RELIABLE);
 			Info("Character sent to server.");
 		}
 	}

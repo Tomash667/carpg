@@ -258,8 +258,7 @@ void ServerPanel::UpdateLobbyClient(float dt)
 		if(packet->systemAddress == N.master_server_adr)
 			continue;
 
-		BitStream& stream = N.StreamStart(packet, Stream_UpdateLobbyClient);
-		BitStreamReader reader(stream);
+		BitStreamReader reader(packet);
 		byte msg_id;
 		reader >> msg_id;
 
@@ -275,8 +274,7 @@ void ServerPanel::UpdateLobbyClient(float dt)
 			game->Client_ServerSay(reader);
 			break;
 		case ID_LOBBY_UPDATE:
-			if(!DoLobbyUpdate(reader))
-				N.StreamError();
+			DoLobbyUpdate(reader);
 			break;
 		case ID_DISCONNECTION_NOTIFICATION:
 		case ID_CONNECTION_LOST:
@@ -318,14 +316,13 @@ void ServerPanel::UpdateLobbyClient(float dt)
 				GUI.SimpleDialog(Format(txUnconnected, reason), nullptr);
 
 				CloseDialog();
-				N.StreamEnd();
 				N.peer->DeallocatePacket(packet);
 				N.ClosePeer(true);
 				return;
 			}
 		case ID_TIMER:
 			if(packet->length != 2)
-				N.StreamError("ServerPanel: Broken packet ID_TIMER.");
+				Error("ServerPanel: Broken packet ID_TIMER.");
 			else
 			{
 				Info("ServerPanel: Starting in %d...", packet->data[1]);
@@ -338,7 +335,7 @@ void ServerPanel::UpdateLobbyClient(float dt)
 			break;
 		case ID_PICK_CHARACTER:
 			if(packet->length != 2)
-				N.StreamError("ServerPanel: Broken packet ID_PICK_CHARACTER.");
+				Error("ServerPanel: Broken packet ID_PICK_CHARACTER.");
 			else
 			{
 				bool ok = (packet->data[1] != 0);
@@ -358,7 +355,7 @@ void ServerPanel::UpdateLobbyClient(float dt)
 			break;
 		case ID_STARTUP:
 			if(packet->length != 2)
-				N.StreamError("ServerPanel: Broken packet ID_STARTUP.");
+				Error("ServerPanel: Broken packet ID_STARTUP.");
 			else
 			{
 				Info("ServerPanel: Starting in 0...");
@@ -373,18 +370,14 @@ void ServerPanel::UpdateLobbyClient(float dt)
 				game->gui->info_box->Show(txWaitingForServer);
 				game->net_mode = Game::NM_TRANSFER;
 				game->net_state = NetState::Client_BeforeTransfer;
-				N.StreamEnd();
 				N.peer->DeallocatePacket(packet);
 				return;
 			}
 			break;
 		default:
 			Warn("ServerPanel: Unknown packet: %u.", msg_id);
-			N.StreamError();
 			break;
 		}
-
-		N.StreamEnd();
 	}
 }
 
@@ -532,8 +525,7 @@ void ServerPanel::UpdateLobbyServer(float dt)
 
 	for(Packet* packet = N.peer->Receive(); packet; N.peer->DeallocatePacket(packet), packet = N.peer->Receive())
 	{
-		BitStream& stream = N.StreamStart(packet, Stream_UpdateLobbyServer);
-		BitStreamReader reader(stream);
+		BitStreamReader reader(packet);
 		byte msg_id;
 		reader >> msg_id;
 
@@ -561,7 +553,6 @@ void ServerPanel::UpdateLobbyServer(float dt)
 					!info->name.empty() ? info->name.c_str() : packet->systemAddress.ToString());
 			}
 
-			N.StreamEnd();
 			continue;
 		}
 
@@ -767,14 +758,13 @@ void ServerPanel::UpdateLobbyServer(float dt)
 				if(reason != JoinResult::Ok)
 				{
 					Warn(reason_text);
-					N.StreamError();
 					fw << ID_CANT_JOIN;
 					fw.WriteCasted<byte>(reason);
 					if(include_extra != 0)
 						fw << my_crc;
 					if(include_extra == 2)
 						fw.WriteCasted<byte>(type);
-					N.SendServer(fw, MEDIUM_PRIORITY, RELIABLE, packet->systemAddress, Stream_UpdateLobbyServer);
+					N.SendServer(fw, MEDIUM_PRIORITY, RELIABLE, packet->systemAddress);
 					info->state = PlayerInfo::REMOVING;
 					info->timer = T_WAIT_FOR_DISCONNECT;
 				}
@@ -827,7 +817,7 @@ void ServerPanel::UpdateLobbyServer(float dt)
 					}
 					else
 						fw.Write0();
-					N.SendServer(fw, HIGH_PRIORITY, RELIABLE, packet->systemAddress, Stream_UpdateLobbyServer);
+					N.SendServer(fw, HIGH_PRIORITY, RELIABLE, packet->systemAddress);
 					info->state = PlayerInfo::IN_LOBBY;
 
 					AddMsg(Format(txJoined, info->name.c_str()));
@@ -845,7 +835,7 @@ void ServerPanel::UpdateLobbyServer(float dt)
 				bool ready;
 				reader >> ready;
 				if(!reader)
-					N.StreamError("ServerPanel: Broken packet ID_CHANGE_READY from client %s.", info->name.c_str());
+					Error("ServerPanel: Broken packet ID_CHANGE_READY from client %s.", info->name.c_str());
 				else if(ready != info->ready)
 				{
 					info->ready = ready;
@@ -859,7 +849,7 @@ void ServerPanel::UpdateLobbyServer(float dt)
 			if(!info)
 				Warn("ServerPanel: Packet ID_SAY from unconnected client %s.", packet->systemAddress.ToString());
 			else
-				game->Server_Say(stream, *info, packet);
+				game->Server_Say(reader, *info, packet);
 			break;
 		case ID_WHISPER:
 			if(!info)
@@ -906,7 +896,7 @@ void ServerPanel::UpdateLobbyServer(float dt)
 						Info("Received character from '%s'.", info->name.c_str());
 					}
 					else
-						N.StreamError("ServerPanel: Broken packet ID_PICK_CHARACTER from '%s'.", info->name.c_str());
+						Error("ServerPanel: Broken packet ID_PICK_CHARACTER from '%s'.", info->name.c_str());
 				}
 				else
 				{
@@ -916,7 +906,7 @@ void ServerPanel::UpdateLobbyServer(float dt)
 						"validation error"
 					};
 
-					N.StreamError("ServerPanel: Packet ID_PICK_CHARACTER from '%s' %s.", info->name.c_str(), err[result - 1]);
+					Error("ServerPanel: Packet ID_PICK_CHARACTER from '%s' %s.", info->name.c_str(), err[result - 1]);
 				}
 
 				if(ok == 0)
@@ -933,16 +923,12 @@ void ServerPanel::UpdateLobbyServer(float dt)
 				// send result
 				byte packet[2] = { ID_PICK_CHARACTER, ok };
 				N.peer->Send((cstring)packet, 2, HIGH_PRIORITY, RELIABLE, 0, info->adr, false);
-				N.StreamWrite(packet, 2, Stream_UpdateLobbyServer, info->adr);
 			}
 			break;
 		default:
 			Warn("ServerPanel: Unknown packet from %s: %u.", info ? info->name.c_str() : packet->systemAddress.ToString(), msg_id);
-			N.StreamError();
 			break;
 		}
-
-		N.StreamEnd();
 	}
 
 	int index = 0;
@@ -1045,7 +1031,7 @@ void ServerPanel::UpdateLobbyServer(float dt)
 					}
 				}
 				f.Patch<byte>(1, count);
-				N.SendAll(f, HIGH_PRIORITY, RELIABLE_ORDERED, Stream_UpdateLobbyServer);
+				N.SendAll(f, HIGH_PRIORITY, RELIABLE_ORDERED);
 			}
 			lobby_updates.clear();
 		}
@@ -1112,7 +1098,6 @@ void ServerPanel::UpdateLobbyServer(float dt)
 				b[1] = (byte)d;
 			}
 			N.peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, N.master_server_adr, true);
-			N.StreamWrite(b, 2, Stream_UpdateLobbyServer, UNASSIGNED_SYSTEM_ADDRESS);
 			if(d == 0)
 				N.master_server_adr = UNASSIGNED_SYSTEM_ADDRESS;
 		}
@@ -1359,7 +1344,6 @@ void ServerPanel::ExitLobby(VoidF callback)
 			Info("ServerPanel: Disconnecting clients.");
 			const byte b[] = { ID_SERVER_CLOSE, ServerClose_Closing };
 			N.peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, N.master_server_adr, true);
-			N.StreamWrite(b, 2, Stream_UpdateLobbyServer, UNASSIGNED_SYSTEM_ADDRESS);
 			game->net_mode = Game::NM_QUITTING_SERVER;
 			--N.active_players;
 			game->net_timer = T_WAIT_FOR_DISCONNECT;
@@ -1379,7 +1363,7 @@ void ServerPanel::ExitLobby(VoidF callback)
 	{
 		BitStreamWriter f;
 		f << ID_LEAVE;
-		N.SendClient(f, IMMEDIATE_PRIORITY, RELIABLE, Stream_UpdateLobbyClient);
+		N.SendClient(f, IMMEDIATE_PRIORITY, RELIABLE);
 		game->gui->info_box->Show(txDisconnecting);
 		game->net_mode = Game::NM_QUITTING;
 		game->net_timer = T_WAIT_FOR_DISCONNECT;
@@ -1420,9 +1404,9 @@ void ServerPanel::OnInput(const string& str)
 			f.WriteCasted<byte>(Team.my_id);
 			f << str;
 			if(Net::IsServer())
-				N.SendAll(f, MEDIUM_PRIORITY, RELIABLE, Stream_Chat);
+				N.SendAll(f, MEDIUM_PRIORITY, RELIABLE);
 			else
-				N.SendClient(f, MEDIUM_PRIORITY, RELIABLE, Stream_Chat);
+				N.SendClient(f, MEDIUM_PRIORITY, RELIABLE);
 		}
 		cstring s = Format("%s: %s", game->player_name.c_str(), str.c_str());
 		AddMsg(s);
@@ -1442,7 +1426,6 @@ void ServerPanel::StopStartup()
 	{
 		byte c = ID_END_TIMER;
 		N.peer->Send((cstring)&c, 1, IMMEDIATE_PRIORITY, RELIABLE, 0, N.master_server_adr, true);
-		N.StreamWrite(&c, 1, Stream_UpdateLobbyServer, UNASSIGNED_SYSTEM_ADDRESS);
 	}
 }
 
@@ -1494,7 +1477,7 @@ void ServerPanel::PickClass(Class clas, bool ready)
 		f << ID_PICK_CHARACTER;
 		WriteCharacterData(f, info.clas, info.hd, info.cc);
 		f << ready;
-		N.SendClient(f, IMMEDIATE_PRIORITY, RELIABLE, Stream_UpdateLobbyClient);
+		N.SendClient(f, IMMEDIATE_PRIORITY, RELIABLE);
 	}
 	else
 	{
@@ -1553,7 +1536,7 @@ void ServerPanel::ChangeReady()
 		BitStreamWriter f;
 		f << ID_CHANGE_READY;
 		f << N.GetMe().ready;
-		N.SendClient(f, HIGH_PRIORITY, RELIABLE_ORDERED, Stream_UpdateLobbyClient);
+		N.SendClient(f, HIGH_PRIORITY, RELIABLE_ORDERED);
 	}
 
 	bts[1].text = (N.GetMe().ready ? txNotReady : txReady);
@@ -1630,7 +1613,7 @@ void ServerPanel::Start()
 	BitStreamWriter f;
 	f << ID_TIMER;
 	f << (byte)STARTUP_TIMER;
-	N.SendAll(f, IMMEDIATE_PRIORITY, RELIABLE, Stream_UpdateLobbyServer);
+	N.SendAll(f, IMMEDIATE_PRIORITY, RELIABLE);
 	bts[4].text = txStop;
 	AddMsg(Format(txStartingIn, STARTUP_TIMER));
 	Info("ServerPanel: Starting in %d...", STARTUP_TIMER);
