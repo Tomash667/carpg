@@ -53,6 +53,7 @@ public:
 	int SetMultisampling(int type, int quality);
 	void SetRefreshRateInternal(int refresh_hz) { this->refresh_hz = refresh_hz; }
 	void SetShaderVersion(int shader_version) { this->shader_version = shader_version; }
+	void SetTarget(RenderTarget* target);
 
 private:
 	void GatherParams(D3DPRESENT_PARAMETERS& d3dpp);
@@ -68,6 +69,8 @@ private:
 	ID3DXSprite* sprite;
 	vector<ShaderHandler*> shaders;
 	vector<RenderTarget*> targets;
+	RenderTarget* current_target;
+	SURFACE current_surf;
 	int used_adapter, shader_version, refresh_hz, multisampling, multisampling_quality;
 	bool vsync, lost_device, res_freed, r_alphatest, r_nozwrite, r_nocull, r_alphablend;
 };

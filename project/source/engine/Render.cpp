@@ -1,6 +1,7 @@
 #include "Pch.h"
 #include "EngineCore.h"
 #include "Render.h"
+#include "RenderTarget.h"
 #include "StartupOptions.h"
 #include "Engine.h"
 #include "ShaderHandler.h"
@@ -13,7 +14,8 @@ static const D3DFORMAT ZBUFFER_FORMAT = D3DFMT_D24S8;
 extern string g_system_dir;
 
 //=================================================================================================
-Render::Render() : d3d(nullptr), device(nullptr), sprite(nullptr), vsync(true), lost_device(false), res_freed(false)
+Render::Render() : d3d(nullptr), device(nullptr), sprite(nullptr), current_target(nullptr), current_surf(nullptr), vsync(true), lost_device(false),
+res_freed(false)
 {
 }
 
@@ -845,5 +847,44 @@ void Render::GetMultisamplingModes(vector<Int2>& v) const
 			for(int i = 0; i < level; ++i)
 				v.push_back(Int2(j, i));
 		}
+	}
+}
+
+//=================================================================================================
+void Render::SetTarget(RenderTarget* target)
+{
+	if(target)
+	{
+		assert(!current_target);
+
+		if(target->surf)
+			V(device->SetRenderTarget(0, target->surf));
+		else
+		{
+			V(target->tex->GetSurfaceLevel(0, &current_surf));
+			V(device->SetRenderTarget(0, current_surf));
+		}
+
+		current_target = target;
+	}
+	else
+	{
+		assert(current_target);
+
+		// copy to surface if using multisampling
+		if(target->surf)
+		{
+			V(target->tex->GetSurfaceLevel(0, &current_surf));
+			V(device->StretchRect(target->surf, nullptr, current_surf, nullptr, D3DTEXF_NONE));
+		}
+		current_surf->Release();
+
+		// restore old render target
+		V(device->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &current_surf));
+		V(device->SetRenderTarget(0, current_surf));
+		current_surf->Release();
+
+		current_target = nullptr;
+		current_surf = nullptr;
 	}
 }

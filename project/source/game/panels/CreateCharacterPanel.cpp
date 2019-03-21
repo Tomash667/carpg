@@ -33,7 +33,7 @@ enum ButtonId
 };
 
 //=================================================================================================
-CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : GameDialogBox(info), unit(nullptr)
+CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : GameDialogBox(info), unit(nullptr), rt_char(nullptr)
 {
 	size = Int2(600, 500);
 	unit = new Unit;
@@ -653,16 +653,7 @@ void CreateCharacterPanel::RenderUnit()
 	render->SetAlphaTest(false);
 	render->SetNoCulling(false);
 	render->SetNoZWrite(false);
-
-	// set render target
-	SURFACE surf = nullptr;
-	if(game->sChar)
-		V(device->SetRenderTarget(0, game->sChar));
-	else
-	{
-		V(game->tChar->GetSurfaceLevel(0, &surf));
-		V(device->SetRenderTarget(0, surf));
-	}
+	render->SetTarget(rt_char);
 
 	// start rendering
 	V(device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET, 0, 1.f, 0));
@@ -688,18 +679,7 @@ void CreateCharacterPanel::RenderUnit()
 	// end rendering
 	V(device->EndScene());
 
-	// copy to surface if using multisampling
-	if(game->sChar)
-	{
-		V(game->tChar->GetSurfaceLevel(0, &surf));
-		V(device->StretchRect(game->sChar, nullptr, surf, nullptr, D3DTEXF_NONE));
-	}
-	surf->Release();
-
-	// restore old render target
-	V(device->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &surf));
-	V(device->SetRenderTarget(0, surf));
-	surf->Release();
+	render->SetTarget(rt_char);
 }
 
 //=================================================================================================
