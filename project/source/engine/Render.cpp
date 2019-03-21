@@ -20,6 +20,11 @@ Render::Render() : d3d(nullptr), device(nullptr), sprite(nullptr), vsync(true), 
 //=================================================================================================
 Render::~Render()
 {
+	for(RenderTarget* target : targets)
+	{
+		SafeRelease(target->tex);
+		SafeRelease(target->surf);
+	}
 	if(device)
 	{
 		device->SetStreamSource(0, nullptr, 0, 0);
@@ -469,6 +474,11 @@ void Render::BeforeReset()
 	V(sprite->OnLostDevice());
 	for(ShaderHandler* shader : shaders)
 		shader->OnReset();
+	for(RenderTarget* target : targets)
+	{
+		SafeRelease(target->tex);
+		SafeRelease(target->surf);
+	}
 	Engine::Get().OnReset();
 }
 
@@ -476,8 +486,11 @@ void Render::BeforeReset()
 void Render::AfterReset()
 {
 	SetDefaultRenderState();
+	V(sprite->OnResetDevice());
 	for(ShaderHandler* shader : shaders)
 		shader->OnReload();
+	for(RenderTarget* target : targets)
+		CreateRenderTargetTexture(target);
 	Engine::Get().OnReload();
 	V(sprite->OnResetDevice());
 	lost_device = false;
@@ -702,6 +715,28 @@ ID3DXEffect* Render::CompileShader(CompileShaderParams& params)
 	SafeRelease(compiler);
 
 	return effect;
+}
+
+//=================================================================================================
+RenderTarget* Render::CreateRenderTarget(const Int2& size)
+{
+	assert(size.x > 0 && size.y > 0 && IsPow2(size.x) && IsPow2(size.y));
+	RenderTarget* target = new RenderTarget;
+	target->size = size;
+	CreateRenderTargetTexture(target);
+	targets.push_back(target);
+	return target;
+}
+
+//=================================================================================================
+void Render::CreateRenderTargetTexture(RenderTarget* target)
+{
+	V(device->CreateTexture(target->size.x, target->size.y, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &target->tex, nullptr));
+	D3DMULTISAMPLE_TYPE type = (D3DMULTISAMPLE_TYPE)multisampling;
+	if(type != D3DMULTISAMPLE_NONE)
+		V(device->CreateRenderTarget(target->size.x, target->size.y, D3DFMT_A8R8G8B8, type, multisampling_quality, FALSE, &target->surf, nullptr));
+	else
+		target->surf = nullptr;
 }
 
 //=================================================================================================

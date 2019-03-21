@@ -82,6 +82,9 @@
     <Filter Include="2. engine\resources">
       <UniqueIdentifier>{20e4856c-a4ec-49d1-bea8-1656b3df0327}</UniqueIdentifier>
     </Filter>
+    <Filter Include="2. engine\scene">
+      <UniqueIdentifier>{11b496df-3d1a-4c5b-8e66-0b51742340ce}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\resource\PickLanguage.cpp">
@@ -819,6 +822,9 @@
     </ClCompile>
     <ClCompile Include="source\game\generator\DungeonMapGenerator.cpp">
       <Filter>3. game\generator</Filter>
+    </ClCompile>
+    <ClCompile Include="source\engine\SceneManager.cpp">
+      <Filter>2. engine\scene</Filter>
     </ClCompile>
     <ClCompile Include="source\engine\Render.cpp">
       <Filter>2. engine</Filter>
@@ -1684,7 +1690,34 @@
     <ClInclude Include="source\game\generator\DungeonMapGenerator.h">
       <Filter>3. game\generator</Filter>
     </ClInclude>
+    <ClInclude Include="source\engine\SceneNode2.h">
+      <Filter>2. engine\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\Scene2.h">
+      <Filter>2. engine\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\SimpleScene.h">
+      <Filter>2. engine\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\Camera2.h">
+      <Filter>2. engine\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\QuadtreeScene.h">
+      <Filter>2. engine\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\PortalScene.h">
+      <Filter>2. engine\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\SceneManager.h">
+      <Filter>2. engine\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\RenderTarget.h">
+      <Filter>2. engine</Filter>
+    </ClInclude>
     <ClInclude Include="source\engine\Render.h">
+      <Filter>2. engine</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\EngineSettings.h">
       <Filter>2. engine</Filter>
     </ClInclude>
   </ItemGroup>

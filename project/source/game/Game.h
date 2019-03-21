@@ -237,7 +237,7 @@ public:
 	MeshPtr aBox, aCylinder, aSphere, aCapsule;
 	MeshPtr aArrow, aSkybox, aBag, aChest, aGrating, aDoorWall, aDoorWall2, aStairsDown, aStairsDown2, aStairsUp, aSpellball, aPressurePlate, aDoor, aDoor2, aStun;
 	VertexDataPtr vdSchodyGora, vdSchodyDol, vdNaDrzwi;
-	TEX tItemRegion, tItemRegionRot, tMinimap, tChar, tSave;
+	TEX tItemRegion, tItemRegionRot, tMinimap, tSave;
 	TEX tCzern, tEmerytura, tPortal, tLightingLine, tRip, tEquipped, tMiniSave, tWarning, tError;
 	TexturePtr tKrew[BLOOD_MAX], tKrewSlad[BLOOD_MAX], tIskra, tSpawn;
 	TexturePack tFloor[2], tWall[2], tCeil[2], tFloorBase, tWallBase, tCeilBase;
@@ -253,7 +253,7 @@ public:
 	SOUND sGulp, sCoins, sBow[2], sDoor[3], sDoorClosed[2], sDoorClose, sItem[8], sChestOpen, sChestClose, sDoorBudge, sRock, sWood, sCrystal,
 		sMetal, sBody[5], sBone, sSkin, sArenaFight, sArenaWin, sArenaLost, sUnlock, sEvil, sEat, sSummon, sZap;
 	VB vbParticle;
-	SURFACE sChar, sSave, sItemRegion, sItemRegionRot;
+	SURFACE sSave, sItemRegion, sItemRegionRot;
 	static cstring txGoldPlus, txQuestCompletedGold;
 	cstring txLoadGuiTextures, txLoadParticles, txLoadPhysicMeshes, txLoadModels, txLoadSpells, txLoadSounds, txLoadMusic, txGenerateWorld;
 	TexturePtr tTrawa, tTrawa2, tTrawa3, tDroga, tZiemia, tPole;

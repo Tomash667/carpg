@@ -32,6 +32,7 @@ public:
 	void RegisterShader(ShaderHandler* shader);
 	ID3DXEffect* CompileShader(cstring name);
 	ID3DXEffect* CompileShader(CompileShaderParams& params);
+	RenderTarget* CreateRenderTarget(const Int2& size);
 	bool IsLostDevice() const { return lost_device; }
 	bool IsMultisamplingEnabled() const { return multisampling != 0; }
 	bool IsVsyncEnabled() const { return vsync; }
@@ -58,6 +59,7 @@ private:
 	void LogMultisampling();
 	void LogAndSelectResolution();
 	void SetDefaultRenderState();
+	void CreateRenderTargetTexture(RenderTarget* target);
 	void BeforeReset();
 	void AfterReset();
 
@@ -65,6 +67,7 @@ private:
 	IDirect3DDevice9* device;
 	ID3DXSprite* sprite;
 	vector<ShaderHandler*> shaders;
+	vector<RenderTarget*> targets;
 	int used_adapter, shader_version, refresh_hz, multisampling, multisampling_quality;
 	bool vsync, lost_device, res_freed, r_alphatest, r_nozwrite, r_nocull, r_alphablend;
 };
