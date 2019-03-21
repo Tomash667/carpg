@@ -51,6 +51,7 @@
 #include "SaveSlot.h"
 #include "PlayerInfo.h"
 #include "Render.h"
+#include "RenderTarget.h"
 
 const float LIMIT_DT = 0.3f;
 Game* Game::game;
@@ -68,13 +69,12 @@ const float MAGIC_SCROLL_SOUND_DIST = 1.5f;
 //=================================================================================================
 Game::Game() : have_console(false), vbParticle(nullptr), quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0), cl_fog(true),
 cl_lighting(true), draw_particle_sphere(false), draw_unit_radius(false), draw_hitbox(false), noai(false), testing(false), game_speed(1.f), devmode(false),
-force_seed(0), next_seed(0), force_seed_all(false), debug_info(false), dont_wander(false),
-check_updates(true), skip_tutorial(false), portal_anim(0), debug_info2(false), music_type(MusicType::None), end_of_game(false), prepared_stream(64 * 1024),
-paused(false), draw_flags(0xFFFFFFFF), tMiniSave(nullptr), prev_game_state(GS_LOAD), tSave(nullptr), sItemRegion(nullptr),
-sItemRegionRot(nullptr), sSave(nullptr), sCustom(nullptr), cl_postfx(true), mp_timeout(10.f),
-cl_normalmap(true), cl_specularmap(true), dungeon_tex_wrap(true), profiler_mode(0), vbInstancing(nullptr), vb_instancing_max(0),
-screenshot_format(ImageFormat::JPG), quickstart_class(Class::RANDOM), game_state(GS_LOAD), default_devmode(false),
-default_player_devmode(false), quickstart_slot(SaveSlot::MAX_SLOTS), super_shader(new SuperShader)
+force_seed(0), next_seed(0), force_seed_all(false), debug_info(false), dont_wander(false), check_updates(true), skip_tutorial(false), portal_anim(0),
+debug_info2(false), music_type(MusicType::None), end_of_game(false), prepared_stream(64 * 1024), paused(false), draw_flags(0xFFFFFFFF), tMiniSave(nullptr),
+prev_game_state(GS_LOAD), rt_save(nullptr), sItemRegion(nullptr), sItemRegionRot(nullptr), cl_postfx(true), mp_timeout(10.f), cl_normalmap(true),
+cl_specularmap(true), dungeon_tex_wrap(true), profiler_mode(0), vbInstancing(nullptr), vb_instancing_max(0), screenshot_format(ImageFormat::JPG),
+quickstart_class(Class::RANDOM), game_state(GS_LOAD), default_devmode(false), default_player_devmode(false), quickstart_slot(SaveSlot::MAX_SLOTS),
+super_shader(new SuperShader)
 {
 #ifdef _DEBUG
 	default_devmode = true;
@@ -112,22 +112,19 @@ void Game::OnDraw()
 	else if(profiler_mode == 0)
 		Profiler::g_profiler.Clear();
 
-	OnDraw(true);
+	DrawGame(nullptr);
 
 	Profiler::g_profiler.End();
 }
 
 //=================================================================================================
-void Game::OnDraw(bool normal)
+void Game::DrawGame(RenderTarget* target)
 {
 	Render* render = GetRender();
 	IDirect3DDevice9* device = render->GetDevice();
 
 	if(post_effects.empty() || !ePostFx)
 	{
-		if(sCustom)
-			V(device->SetRenderTarget(0, sCustom));
-
 		V(device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET | D3DCLEAR_STENCIL, clear_color, 1.f, 0));
 		V(device->BeginScene());
 
@@ -211,8 +208,8 @@ void Game::OnDraw(bool normal)
 			if(it + 1 == end)
 			{
 				// last pass
-				if(sCustom)
-					surf = sCustom;
+				if(target)
+					surf = target->GetSurface();
 				else
 					V(device->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &surf));
 			}
@@ -249,7 +246,7 @@ void Game::OnDraw(bool normal)
 
 			if(it + 1 == end)
 			{
-				if(!sCustom)
+				if(!target)
 					surf->Release();
 			}
 			else if(!render->IsMultisamplingEnabled())
@@ -662,10 +659,8 @@ void Game::OnReset()
 	SafeRelease(tItemRegion);
 	SafeRelease(tItemRegionRot);
 	SafeRelease(tMinimap);
-	SafeRelease(tSave);
 	SafeRelease(sItemRegion);
 	SafeRelease(sItemRegionRot);
-	SafeRelease(sSave);
 	for(int i = 0; i < 3; ++i)
 	{
 		SafeRelease(sPostEffect[i]);
@@ -838,7 +833,6 @@ void Game::ClearPointers()
 	tMinimap = nullptr;
 	sItemRegion = nullptr;
 	sItemRegionRot = nullptr;
-	sSave = nullptr;
 	for(int i = 0; i < 3; ++i)
 	{
 		sPostEffect[i] = nullptr;
@@ -885,10 +879,8 @@ void Game::OnCleanup()
 	SafeRelease(tItemRegion);
 	SafeRelease(sItemRegionRot);
 	SafeRelease(tMinimap);
-	SafeRelease(tSave);
 	SafeRelease(sItemRegion);
 	SafeRelease(sItemRegionRot);
-	SafeRelease(sSave);
 	for(int i = 0; i < 3; ++i)
 	{
 		SafeRelease(sPostEffect[i]);
@@ -916,7 +908,6 @@ void Game::CreateTextures()
 	V(device->CreateTexture(64, 64, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tItemRegion, nullptr));
 	V(device->CreateTexture(128, 128, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tItemRegionRot, nullptr));
 	V(device->CreateTexture(128, 128, 0, D3DUSAGE_DYNAMIC, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tMinimap, nullptr));
-	V(device->CreateTexture(256, 256, 0, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &tSave, nullptr));
 
 	int ms, msq;
 	render->GetMultisampling(ms, msq);
@@ -925,7 +916,6 @@ void Game::CreateTextures()
 	{
 		V(device->CreateRenderTarget(64, 64, D3DFMT_A8R8G8B8, type, msq, FALSE, &sItemRegion, nullptr));
 		V(device->CreateRenderTarget(128, 128, D3DFMT_A8R8G8B8, type, msq, FALSE, &sItemRegionRot, nullptr));
-		V(device->CreateRenderTarget(256, 256, D3DFMT_X8R8G8B8, type, msq, FALSE, &sSave, nullptr));
 		for(int i = 0; i < 3; ++i)
 		{
 			V(device->CreateRenderTarget(wnd_size.x, wnd_size.y, D3DFMT_X8R8G8B8, type, msq, FALSE, &sPostEffect[i], nullptr));
@@ -962,6 +952,13 @@ void Game::CreateTextures()
 	v[5] = VTex(-1.f, 1.f, 0.f, u_start, v_start);
 
 	V(vbFullscreen->Unlock());
+}
+
+//=================================================================================================
+void Game::CreateRenderTargets()
+{
+	Render* render = GetRender();
+	rt_save = render->CreateRenderTarget(Int2(256, 256));
 }
 
 //=================================================================================================

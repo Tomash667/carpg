@@ -69,6 +69,7 @@
 #include "CombatHelper.h"
 #include "Quest_Scripted.h"
 #include "Render.h"
+#include "RenderTarget.h"
 
 const float ALERT_RANGE = 20.f;
 const float ALERT_SPAWN_RANGE = 25.f;
@@ -9925,16 +9926,8 @@ void Game::CreateSaveImage(cstring filename)
 {
 	assert(filename);
 
-	IDirect3DDevice9* device = GetRender()->GetDevice();
-
-	SURFACE surf;
-	V(tSave->GetSurfaceLevel(0, &surf));
-
-	// ustaw render target
-	if(sSave)
-		sCustom = sSave;
-	else
-		sCustom = surf;
+	Render* render = GetRender();
+	render->SetTarget(rt_save);
 
 	int old_flags = draw_flags;
 	if(game_state == GS_LEVEL)
@@ -9943,24 +9936,9 @@ void Game::CreateSaveImage(cstring filename)
 		draw_flags = (0xFFFFFFFF & ~DF_MENU);
 	OnDraw(false);
 	draw_flags = old_flags;
-	sCustom = nullptr;
 
-	// kopiuj teksturê
-	if(sSave)
-	{
-		V(tSave->GetSurfaceLevel(0, &surf));
-		V(device->StretchRect(sSave, nullptr, surf, nullptr, D3DTEXF_NONE));
-		surf->Release();
-	}
-
-	// zapisz obrazek
-	V(D3DXSaveSurfaceToFile(filename, D3DXIFF_JPG, surf, nullptr, nullptr));
-	surf->Release();
-
-	// przywróc render target
-	V(device->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &surf));
-	V(device->SetRenderTarget(0, surf));
-	surf->Release();
+	render->SetTarget(nullptr);
+	rt_save->SaveToFile(filename);
 }
 
 void Game::PlayerUseUsable(Usable* usable, bool after_action)

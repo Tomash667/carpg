@@ -122,7 +122,7 @@ public:
 
 	void OnCleanup() override;
 	void OnDraw();
-	void OnDraw(bool normal = true);
+	void DrawGame(RenderTarget* target);
 	void OnDebugDraw(DebugDrawer* dd);
 	void OnTick(float dt);
 	void OnChar(char c);
@@ -136,6 +136,7 @@ public:
 	void ChangeTitle();
 	void ClearPointers();
 	void CreateTextures();
+	void CreateRenderTargets();
 	void PreloadData();
 
 	// initialization
@@ -237,7 +238,8 @@ public:
 	MeshPtr aBox, aCylinder, aSphere, aCapsule;
 	MeshPtr aArrow, aSkybox, aBag, aChest, aGrating, aDoorWall, aDoorWall2, aStairsDown, aStairsDown2, aStairsUp, aSpellball, aPressurePlate, aDoor, aDoor2, aStun;
 	VertexDataPtr vdSchodyGora, vdSchodyDol, vdNaDrzwi;
-	TEX tItemRegion, tItemRegionRot, tMinimap, tSave;
+	RenderTarget* rt_save;
+	TEX tItemRegion, tItemRegionRot, tMinimap;
 	TEX tCzern, tEmerytura, tPortal, tLightingLine, tRip, tEquipped, tMiniSave, tWarning, tError;
 	TexturePtr tKrew[BLOOD_MAX], tKrewSlad[BLOOD_MAX], tIskra, tSpawn;
 	TexturePack tFloor[2], tWall[2], tCeil[2], tFloorBase, tWallBase, tCeilBase;
@@ -253,7 +255,7 @@ public:
 	SOUND sGulp, sCoins, sBow[2], sDoor[3], sDoorClosed[2], sDoorClose, sItem[8], sChestOpen, sChestClose, sDoorBudge, sRock, sWood, sCrystal,
 		sMetal, sBody[5], sBone, sSkin, sArenaFight, sArenaWin, sArenaLost, sUnlock, sEvil, sEat, sSummon, sZap;
 	VB vbParticle;
-	SURFACE sSave, sItemRegion, sItemRegionRot;
+	SURFACE sItemRegion, sItemRegionRot;
 	static cstring txGoldPlus, txQuestCompletedGold;
 	cstring txLoadGuiTextures, txLoadParticles, txLoadPhysicMeshes, txLoadModels, txLoadSpells, txLoadSounds, txLoadMusic, txGenerateWorld;
 	TexturePtr tTrawa, tTrawa2, tTrawa3, tDroga, tZiemia, tPole;
@@ -328,7 +330,6 @@ public:
 	TEX tPostEffect[3];
 	VB vbFullscreen;
 	vector<PostEffect> post_effects;
-	SURFACE sCustom;
 
 	//---------------------------------
 	// CONSOLE & COMMANDS

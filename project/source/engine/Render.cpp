@@ -26,6 +26,7 @@ Render::~Render()
 	{
 		SafeRelease(target->tex);
 		SafeRelease(target->surf);
+		delete target;
 	}
 	if(device)
 	{
@@ -871,13 +872,20 @@ void Render::SetTarget(RenderTarget* target)
 	{
 		assert(current_target);
 
-		// copy to surface if using multisampling
-		if(target->surf)
+		if(current_target->tmp_surf)
 		{
-			V(target->tex->GetSurfaceLevel(0, &current_surf));
-			V(device->StretchRect(target->surf, nullptr, current_surf, nullptr, D3DTEXF_NONE));
+
 		}
-		current_surf->Release();
+		else
+		{
+			// copy to surface if using multisampling
+			if(current_target->surf)
+			{
+				V(current_target->tex->GetSurfaceLevel(0, &current_surf));
+				V(device->StretchRect(current_target->surf, nullptr, current_surf, nullptr, D3DTEXF_NONE));
+			}
+			current_surf->Release();
+		}
 
 		// restore old render target
 		V(device->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &current_surf));
