@@ -2,6 +2,8 @@
 #include "EngineCore.h"
 #include "KeyStates.h"
 
+KeyStates Key;
+
 KeyStates::KeyStates() : mouse_wheel(0), mouse_dif(0, 0), key_callback(nullptr)
 {
 }

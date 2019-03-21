@@ -7,6 +7,7 @@
 #include "GuiRect.h"
 #include "Engine.h"
 #include "Profiler.h"
+#include "Render.h"
 #include "DirectX.h"
 
 using namespace gui;
@@ -81,13 +82,13 @@ void IGUI::Init(IDirect3DDevice9* _device, ID3DXSprite* _sprite)
 	};
 	V(device->CreateVertexDeclaration(v, &vertex_decl));
 
-	Engine::Get().RegisterShader(this);
+	Engine::Get().GetRender()->RegisterShader(this);
 }
 
 //=================================================================================================
 void IGUI::OnInit()
 {
-	effect = Engine::Get().CompileShader("gui.fx");
+	effect = Engine::Get().GetRender()->CompileShader("gui.fx");
 	techGui = effect->GetTechniqueByName("gui");
 	techGui2 = effect->GetTechniqueByName("gui2");
 	techGuiGrayscale = effect->GetTechniqueByName("gui_grayscale");
@@ -411,7 +412,7 @@ int IGUI::TryCreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, in
 		V(device->SetRenderTarget(0, backbuffer));
 		backbuffer->Release();
 		surf->Release();
-		Engine::Get().WaitReset();
+		Engine::Get().GetRender()->WaitReset();
 		return 2;
 	}
 	else if(FAILED(hr))
@@ -1169,11 +1170,11 @@ void IGUI::Draw(bool draw_layers, bool draw_dialogs)
 	if(!draw_layers && !draw_dialogs)
 		return;
 
-	auto& engine = Engine::Get();
-	engine.SetAlphaTest(false);
-	engine.SetAlphaBlend(true);
-	engine.SetNoCulling(true);
-	engine.SetNoZWrite(false);
+	Render* render = Engine::Get().GetRender();
+	render->SetAlphaTest(false);
+	render->SetAlphaBlend(true);
+	render->SetNoCulling(true);
+	render->SetNoZWrite(false);
 
 	V(device->SetVertexDeclaration(vertex_decl));
 
@@ -1361,7 +1362,7 @@ void IGUI::Update(float dt, float mouse_speed)
 {
 	PROFILER_BLOCK("UpdateGui");
 
-	auto& engine = Engine::Get();
+	Engine& engine = Engine::Get();
 
 	// update cursor
 	cursor_mode = CURSOR_NORMAL;

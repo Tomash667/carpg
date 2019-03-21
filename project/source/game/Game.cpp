@@ -50,6 +50,7 @@
 #include "Pathfinding.h"
 #include "SaveSlot.h"
 #include "PlayerInfo.h"
+#include "Render.h"
 
 const float LIMIT_DT = 0.3f;
 Game* Game::game;
@@ -119,6 +120,9 @@ void Game::OnDraw()
 //=================================================================================================
 void Game::OnDraw(bool normal)
 {
+	Render* render = GetRender();
+	IDirect3DDevice9* device = render->GetDevice();
+
 	if(post_effects.empty() || !ePostFx)
 	{
 		if(sCustom)
@@ -154,7 +158,7 @@ void Game::OnDraw(bool normal)
 	{
 		// render scene to texture
 		SURFACE sPost;
-		if(!IsMultisamplingEnabled())
+		if(!render->IsMultisamplingEnabled())
 			V(tPostEffect[2]->GetSurfaceLevel(0, &sPost));
 		else
 			sPost = sPostEffect[2];
@@ -177,7 +181,7 @@ void Game::OnDraw(bool normal)
 		PROFILER_BLOCK("PostEffects");
 
 		TEX t;
-		if(!IsMultisamplingEnabled())
+		if(!render->IsMultisamplingEnabled())
 		{
 			sPost->Release();
 			t = tPostEffect[2];
@@ -194,10 +198,10 @@ void Game::OnDraw(bool normal)
 		// post effects
 		V(device->SetVertexDeclaration(vertex_decl[VDI_TEX]));
 		V(device->SetStreamSource(0, vbFullscreen, 0, sizeof(VTex)));
-		SetAlphaTest(false);
-		SetAlphaBlend(false);
-		SetNoCulling(false);
-		SetNoZWrite(true);
+		render->SetAlphaTest(false);
+		render->SetAlphaBlend(false);
+		render->SetNoCulling(false);
+		render->SetNoZWrite(true);
 
 		uint passes;
 		int index_surf = 1;
@@ -215,7 +219,7 @@ void Game::OnDraw(bool normal)
 			else
 			{
 				// using next pass
-				if(!IsMultisamplingEnabled())
+				if(!render->IsMultisamplingEnabled())
 					V(tPostEffect[index_surf]->GetSurfaceLevel(0, &surf));
 				else
 					surf = sPostEffect[index_surf];
@@ -248,7 +252,7 @@ void Game::OnDraw(bool normal)
 				if(!sCustom)
 					surf->Release();
 			}
-			else if(!IsMultisamplingEnabled())
+			else if(!render->IsMultisamplingEnabled())
 			{
 				surf->Release();
 				t = tPostEffect[index_surf];
@@ -317,7 +321,7 @@ void Game::OnTick(float dt)
 	GKey.allow_input = GameKeys::ALLOW_INPUT;
 
 	// lost directx device or window don't have focus
-	if(IsLostDevice() || !IsActive() || !IsCursorLocked())
+	if(GetRender()->IsLostDevice() || !IsActive() || !IsCursorLocked())
 	{
 		Key.SetFocus(false);
 		if(Net::IsSingleplayer() && !inactive_update)
@@ -689,18 +693,20 @@ void Game::OnChar(char c)
 //=================================================================================================
 void Game::TakeScreenshot(bool no_gui)
 {
+	Render* render = GetRender();
+
 	if(no_gui)
 	{
 		int old_flags = draw_flags;
 		draw_flags = (0xFFFF & ~DF_GUI);
-		Render(true);
+		render->Draw(true);
 		draw_flags = old_flags;
 	}
 	else
-		Render(true);
+		render->Draw(true);
 
 	SURFACE back_buffer;
-	HRESULT hr = device->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &back_buffer);
+	HRESULT hr = render->GetDevice()->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &back_buffer);
 	if(FAILED(hr))
 	{
 		cstring msg = Format("Failed to get front buffer data to save screenshot (%d)!", hr);
@@ -909,7 +915,9 @@ void Game::CreateTextures()
 	if(tItemRegion)
 		return;
 
-	auto& wnd_size = GetWindowSize();
+	Render* render = GetRender();
+	IDirect3DDevice9* device = render->GetDevice();
+	const Int2& wnd_size = GetWindowSize();
 
 	V(device->CreateTexture(64, 64, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tItemRegion, nullptr));
 	V(device->CreateTexture(128, 128, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tItemRegionRot, nullptr));
@@ -918,7 +926,7 @@ void Game::CreateTextures()
 	V(device->CreateTexture(256, 256, 0, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &tSave, nullptr));
 
 	int ms, msq;
-	GetMultisampling(ms, msq);
+	render->GetMultisampling(ms, msq);
 	D3DMULTISAMPLE_TYPE type = (D3DMULTISAMPLE_TYPE)ms;
 	if(ms != D3DMULTISAMPLE_NONE)
 	{
@@ -1447,16 +1455,17 @@ void Game::ReloadShaders()
 
 	try
 	{
-		eMesh = CompileShader("mesh.fx");
-		eParticle = CompileShader("particle.fx");
-		eSkybox = CompileShader("skybox.fx");
-		eTerrain = CompileShader("terrain.fx");
-		eArea = CompileShader("area.fx");
-		ePostFx = CompileShader("post.fx");
-		eGlow = CompileShader("glow.fx");
-		eGrass = CompileShader("grass.fx");
+		Render* render = GetRender();
+		eMesh = render->CompileShader("mesh.fx");
+		eParticle = render->CompileShader("particle.fx");
+		eSkybox = render->CompileShader("skybox.fx");
+		eTerrain = render->CompileShader("terrain.fx");
+		eArea = render->CompileShader("area.fx");
+		ePostFx = render->CompileShader("post.fx");
+		eGlow = render->CompileShader("glow.fx");
+		eGrass = render->CompileShader("grass.fx");
 
-		for(ShaderHandler* shader : shaders)
+		for(ShaderHandler* shader : render->GetShaders())
 			shader->OnInit();
 	}
 	catch(cstring err)
@@ -1480,7 +1489,7 @@ void Game::ReleaseShaders()
 	SafeRelease(eGlow);
 	SafeRelease(eGrass);
 
-	for(ShaderHandler* shader : shaders)
+	for(ShaderHandler* shader : GetRender()->GetShaders())
 		shader->OnRelease();
 }
 

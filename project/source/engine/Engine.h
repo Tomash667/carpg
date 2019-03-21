@@ -5,31 +5,9 @@
 #include "KeyStates.h"
 
 //-----------------------------------------------------------------------------
-#define DISPLAY_FORMAT D3DFMT_X8R8G8B8
-#define BACKBUFFER_FORMAT D3DFMT_A8R8G8B8
-#define ZBUFFER_FORMAT D3DFMT_D24S8
-
-//-----------------------------------------------------------------------------
-struct CompileShaderParams
-{
-	cstring name;
-	cstring cache_name;
-	string* input;
-	FileTime file_time;
-	D3DXMACRO* macros;
-	ID3DXEffectPool* pool;
-};
-
-//-----------------------------------------------------------------------------
-struct Resolution
-{
-	Int2 size;
-	uint hz;
-};
-
-//-----------------------------------------------------------------------------
 class Engine
 {
+	friend class Render;
 public:
 	Engine();
 	virtual ~Engine();
@@ -38,56 +16,33 @@ public:
 
 	bool ChangeMode(bool fullscreen);
 	bool ChangeMode(const Int2& size, bool fullscreen, int hz = 0);
-	int ChangeMultisampling(int type, int level);
-	bool CheckDisplay(const Int2& size, int& hz); // dla zera zwraca najlepszy hz
-	ID3DXEffect* CompileShader(cstring name);
-	ID3DXEffect* CompileShader(CompileShaderParams& params);
 	void DoPseudotick(bool msg_only = false);
 	void EngineShutdown();
 	void FatalError(cstring err);
-	void Render(bool dont_call_present = false);
-	bool Reset(bool force);
-	void WaitReset();
 	void ShowError(cstring msg, Logger::Level level = Logger::L_ERROR);
 	bool Start(StartupOptions& options);
 	void UnlockCursor(bool lock_on_focus = true);
 	void LockCursor();
-	void RegisterShader(ShaderHandler* shader);
 
 	bool IsActive() const { return active; }
 	bool IsCursorLocked() const { return locked_cursor; }
 	bool IsCursorVisible() const { return cursor_visible; }
 	bool IsEngineShutdown() const { return engine_shutdown; }
 	bool IsFullscreen() const { return fullscreen; }
-	bool IsLostDevice() const { return lost_device; }
-	bool IsMultisamplingEnabled() const { return multisampling != 0; }
 
 	float GetFps() const { return fps; }
-	void GetMultisampling(int& ms, int& msq) const { ms = multisampling; msq = multisampling_quality; }
 	float GetWindowAspect() const { return float(wnd_size.x) / wnd_size.y; }
 	HWND GetWindowHandle() const { return hwnd; }
-	bool GetVsync() const { return vsync; }
 	const Int2& GetWindowSize() const { return wnd_size; }
-	void GetResolutions(vector<Resolution>& v) const;
-	void GetMultisamplingModes(vector<Int2>& v) const;
 	DebugDrawer* GetDebugDrawer() { return debug_drawer.get(); }
+	Render* GetRender() { return render.get(); }
 
-	void SetAlphaBlend(bool use_alphablend);
-	void SetAlphaTest(bool use_alphatest);
-	void SetNoCulling(bool use_nocull);
-	void SetNoZWrite(bool use_nozwrite);
-	void SetStartingMultisampling(int multisampling, int multisampling_quality);
 	void SetTitle(cstring title);
 	void SetUnlockPoint(const Int2& pt) { unlock_point = pt; }
-	void SetVsync(bool vsync);
 
 	// ----- ZMIENNE -----
 	// directx
-	IDirect3D9* d3d;
-	IDirect3DDevice9* device;
-	ID3DXSprite* sprite;
 	Color clear_color;
-	int wnd_hz, used_adapter, shader_version;
 
 	CustomCollisionWorld* phy_world;
 	std::unique_ptr<SoundManager> sound_mgr;
@@ -116,27 +71,21 @@ private:
 	void ChangeMode();
 	void Cleanup();
 	void DoTick(bool update_game);
-	void GatherParams(D3DPRESENT_PARAMETERS& d3dpp);
 	long HandleEvent(HWND hwnd, uint msg, uint wParam, long lParam);
 	bool MsgToKey(uint msg, uint wParam, byte& key, int& result);
-	void InitRender();
 	void InitWindow(StartupOptions& options);
-	void LogMultisampling();
 	void PlaceCursor();
-	void SelectResolution();
-	void SetDefaultRenderState();
 	void ShowCursor(bool show);
 	void UpdateActivity(bool is_active);
 	void WindowLoop();
 	bool IsWindowActive();
+	void SetWindowSizeInternal(const Int2& size);
 
 	static Engine* engine;
-	int multisampling, multisampling_quality;
 	uint frames;
 	float frame_time;
 	Timer timer;
-	bool engine_shutdown, lost_device, res_freed, cursor_visible, replace_cursor, locked_cursor, lock_on_focus;
-	bool r_alphatest, r_nozwrite, r_nocull, r_alphablend;
+	bool engine_shutdown, cursor_visible, replace_cursor, locked_cursor, lock_on_focus;
 
 	// window
 	HWND hwnd;
@@ -144,11 +93,6 @@ private:
 	float fps;
 	bool active, fullscreen;
 
-	// render
-	bool vsync;
-
+	std::unique_ptr<Render> render;
 	std::unique_ptr<DebugDrawer> debug_drawer;
-
-protected:
-	vector<ShaderHandler*> shaders;
 };

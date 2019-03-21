@@ -820,6 +820,9 @@
     <ClCompile Include="source\game\generator\DungeonMapGenerator.cpp">
       <Filter>3. game\generator</Filter>
     </ClCompile>
+    <ClCompile Include="source\engine\Render.cpp">
+      <Filter>2. engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\resource\resource1.h">
@@ -1680,6 +1683,9 @@
     </ClInclude>
     <ClInclude Include="source\game\generator\DungeonMapGenerator.h">
       <Filter>3. game\generator</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\Render.h">
+      <Filter>2. engine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

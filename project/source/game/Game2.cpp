@@ -68,6 +68,7 @@
 #include "PlayerInfo.h"
 #include "CombatHelper.h"
 #include "Quest_Scripted.h"
+#include "Render.h"
 
 const float ALERT_RANGE = 20.f;
 const float ALERT_SPAWN_RANGE = 25.f;
@@ -168,7 +169,7 @@ TEX Game::TryGenerateItemImage(const Item& item)
 {
 	TEX t;
 	SURFACE out_surface;
-	V(device->CreateTexture(ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &t, nullptr));
+	V(GetRender()->GetDevice()->CreateTexture(ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &t, nullptr));
 	V(t->GetSurfaceLevel(0, &out_surface));
 
 	while(true)
@@ -177,7 +178,7 @@ TEX Game::TryGenerateItemImage(const Item& item)
 		HRESULT hr = D3DXLoadSurfaceFromSurface(out_surface, nullptr, nullptr, surf, nullptr, nullptr, D3DX_DEFAULT, 0);
 		surf->Release();
 		if(hr == D3DERR_DEVICELOST)
-			WaitReset();
+			GetRender()->WaitReset();
 		else
 			break;
 	}
@@ -189,18 +190,21 @@ TEX Game::TryGenerateItemImage(const Item& item)
 //=================================================================================================
 SURFACE Game::DrawItemImage(const Item& item, TEX tex, SURFACE surface, float rot, bool require_surface)
 {
+	Render* render = GetRender();
+	IDirect3DDevice9* device = render->GetDevice();
+
 	if(IS_SET(ITEM_ALPHA, item.flags))
 	{
-		SetAlphaBlend(true);
-		SetNoZWrite(true);
+		render->SetAlphaBlend(true);
+		render->SetNoZWrite(true);
 	}
 	else
 	{
-		SetAlphaBlend(false);
-		SetNoZWrite(false);
+		render->SetAlphaBlend(false);
+		render->SetNoZWrite(false);
 	}
-	SetAlphaTest(false);
-	SetNoCulling(false);
+	render->SetAlphaTest(false);
+	render->SetNoCulling(false);
 
 	// ustaw render target
 	SURFACE surf = nullptr;
@@ -601,14 +605,15 @@ void Game::LoadShaders()
 {
 	Info("Loading shaders.");
 
-	eMesh = CompileShader("mesh.fx");
-	eParticle = CompileShader("particle.fx");
-	eSkybox = CompileShader("skybox.fx");
-	eTerrain = CompileShader("terrain.fx");
-	eArea = CompileShader("area.fx");
-	ePostFx = CompileShader("post.fx");
-	eGlow = CompileShader("glow.fx");
-	eGrass = CompileShader("grass.fx");
+	Render* render = GetRender();
+	eMesh = render->CompileShader("mesh.fx");
+	eParticle = render->CompileShader("particle.fx");
+	eSkybox = render->CompileShader("skybox.fx");
+	eTerrain = render->CompileShader("terrain.fx");
+	eArea = render->CompileShader("area.fx");
+	ePostFx = render->CompileShader("post.fx");
+	eGlow = render->CompileShader("glow.fx");
+	eGrass = render->CompileShader("grass.fx");
 
 	SetupShaders();
 }
@@ -9919,6 +9924,8 @@ DialogContext* Game::FindDialogContext(Unit* talker)
 void Game::CreateSaveImage(cstring filename)
 {
 	assert(filename);
+
+	IDirect3DDevice9* device = GetRender()->GetDevice();
 
 	SURFACE surf;
 	V(tSave->GetSurfaceLevel(0, &surf));

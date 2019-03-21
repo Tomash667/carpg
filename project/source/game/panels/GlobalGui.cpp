@@ -34,6 +34,7 @@
 #include "Game.h"
 #include "Language.h"
 #include "PlayerInfo.h"
+#include "Render.h"
 
 //=================================================================================================
 GlobalGui::GlobalGui() : load_screen(nullptr), game_gui(nullptr), inventory(nullptr), stats(nullptr), team(nullptr),
@@ -81,7 +82,8 @@ void GlobalGui::Prepare()
 {
 	Game& game = Game::Get();
 
-	GUI.Init(game.device, game.sprite);
+	Render* render = game.GetRender();
+	GUI.Init(render->GetDevice(), render->GetSprite());
 	GUI.AddFont("Florence-Regular.otf");
 	GUI.default_font = GUI.CreateFont("Arial", 12, 800, 512, 2);
 	GUI.fBig = GUI.CreateFont("Florence Regular", 28, 800, 512);

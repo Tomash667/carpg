@@ -9,6 +9,7 @@
 #include "ResourceManager.h"
 #include "DirectX.h"
 #include "Unit.h"
+#include "Render.h"
 
 //-----------------------------------------------------------------------------
 const int SECTION_H = 40;
@@ -639,28 +640,30 @@ void CreateCharacterPanel::Event(GuiEvent e)
 //=================================================================================================
 void CreateCharacterPanel::RenderUnit()
 {
-	HRESULT hr = game->device->TestCooperativeLevel();
+	Render* render = game->GetRender();
+	IDirect3DDevice9* device = render->GetDevice();
+	HRESULT hr = device->TestCooperativeLevel();
 	if(hr != D3D_OK)
 		return;
 
-	game->SetAlphaBlend(false);
-	game->SetAlphaTest(false);
-	game->SetNoCulling(false);
-	game->SetNoZWrite(false);
+	render->SetAlphaBlend(false);
+	render->SetAlphaTest(false);
+	render->SetNoCulling(false);
+	render->SetNoZWrite(false);
 
 	// set render target
 	SURFACE surf = nullptr;
 	if(game->sChar)
-		V(game->device->SetRenderTarget(0, game->sChar));
+		V(device->SetRenderTarget(0, game->sChar));
 	else
 	{
 		V(game->tChar->GetSurfaceLevel(0, &surf));
-		V(game->device->SetRenderTarget(0, surf));
+		V(device->SetRenderTarget(0, surf));
 	}
 
 	// start rendering
-	V(game->device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET, 0, 1.f, 0));
-	V(game->device->BeginScene());
+	V(device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET, 0, 1.f, 0));
+	V(device->BeginScene());
 
 	static vector<Lights> lights;
 
@@ -680,19 +683,19 @@ void CreateCharacterPanel::RenderUnit()
 	game->draw_batch.Clear();
 
 	// end rendering
-	V(game->device->EndScene());
+	V(device->EndScene());
 
 	// copy to surface if using multisampling
 	if(game->sChar)
 	{
 		V(game->tChar->GetSurfaceLevel(0, &surf));
-		V(game->device->StretchRect(game->sChar, nullptr, surf, nullptr, D3DTEXF_NONE));
+		V(device->StretchRect(game->sChar, nullptr, surf, nullptr, D3DTEXF_NONE));
 	}
 	surf->Release();
 
 	// restore old render target
-	V(game->device->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &surf));
-	V(game->device->SetRenderTarget(0, surf));
+	V(device->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &surf));
+	V(device->SetRenderTarget(0, surf));
 	surf->Release();
 }
 

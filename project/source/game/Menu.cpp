@@ -37,6 +37,7 @@
 #include "GlobalGui.h"
 #include "PlayerInfo.h"
 #include "LobbyApi.h"
+#include "Render.h"
 
 extern string g_ctime;
 
@@ -55,6 +56,7 @@ bool Game::CanShowMenu()
 //=================================================================================================
 void Game::SaveOptions()
 {
+	Render* render = GetRender();
 	cfg.Add("fullscreen", IsFullscreen());
 	cfg.Add("cl_glow", cl_glow);
 	cfg.Add("cl_normalmap", cl_normalmap);
@@ -64,14 +66,14 @@ void Game::SaveOptions()
 	cfg.Add("mouse_sensitivity", settings.mouse_sensitivity);
 	cfg.Add("grass_range", settings.grass_range);
 	cfg.Add("resolution", Format("%dx%d", GetWindowSize().x, GetWindowSize().y));
-	cfg.Add("refresh", wnd_hz);
+	cfg.Add("refresh", render->GetRefreshRate());
 	cfg.Add("skip_tutorial", skip_tutorial);
 	cfg.Add("language", Language::prefix);
 	int ms, msq;
-	GetMultisampling(ms, msq);
+	render->GetMultisampling(ms, msq);
 	cfg.Add("multisampling", ms);
 	cfg.Add("multisampling_quality", msq);
-	cfg.Add("vsync", GetVsync());
+	cfg.Add("vsync", render->IsVsyncEnabled());
 	SaveCfg();
 }
 

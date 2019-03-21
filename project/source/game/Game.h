@@ -167,7 +167,6 @@ public:
 
 	void ReloadShaders();
 	void ReleaseShaders();
-	void ShaderVersionChanged();
 
 	// scene
 	bool dungeon_tex_wrap;

@@ -197,6 +197,7 @@
     <ClInclude Include="source\engine\Pak.h" />
     <ClInclude Include="source\engine\ParticleSystem.h" />
     <ClInclude Include="source\engine\Physics.h" />
+    <ClInclude Include="source\engine\Render.h" />
     <ClInclude Include="source\engine\Resource.h" />
     <ClInclude Include="source\engine\ResourceManager.h" />
     <ClInclude Include="source\engine\ShaderHandler.h" />
@@ -398,6 +399,7 @@
     <ClInclude Include="source\game\system\ItemScript.h" />
     <ClInclude Include="source\game\system\ItemType.h" />
     <ClInclude Include="source\game\system\Spell.h" />
+    <ClCompile Include="source\engine\Render.cpp" />
     <ClCompile Include="source\game\entity\Encounter.cpp" />
     <ClCompile Include="source\game\system\Content.cpp" />
     <ClCompile Include="source\game\system\QuestList.cpp" />

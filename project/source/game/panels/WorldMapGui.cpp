@@ -24,6 +24,7 @@
 #include "Team.h"
 #include "SaveState.h"
 #include "Debug.h"
+#include "Render.h"
 
 const float MAP_IMG_SIZE = 512.f;
 
@@ -91,12 +92,13 @@ void WorldMapGui::LoadData()
 void WorldMapGui::Draw(ControlDrawData*)
 {
 	// background
+	IDirect3DDevice9* device = game.GetRender()->GetDevice();
 	Rect rect0(Int2::Zero, game.GetWindowSize());
-	game.device->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP);
-	game.device->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP);
+	device->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP);
+	device->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP);
 	GUI.DrawSpriteRectPart(tMapBg, rect0, rect0);
-	game.device->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP);
-	game.device->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP);
+	device->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP);
+	device->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP);
 
 	// map
 	Matrix mat = Matrix::Transform2D(&offset, 0.f, &Vec2(float(W.world_size) / MAP_IMG_SIZE * zoom), nullptr, 0.f, &(GetCameraCenter() - offset));

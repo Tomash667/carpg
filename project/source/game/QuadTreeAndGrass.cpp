@@ -6,6 +6,7 @@
 #include "Profiler.h"
 #include "Level.h"
 #include "ResourceManager.h"
+#include "Render.h"
 #include "DirectX.h"
 
 enum QuadPartType
@@ -174,10 +175,13 @@ void Game::DrawGrass()
 
 	PROFILER_BLOCK("DrawGrass");
 
-	SetAlphaBlend(false);
-	SetAlphaTest(true);
-	SetNoCulling(true);
-	SetNoZWrite(false);
+	Render* render = GetRender();
+	IDirect3DDevice9* device = render->GetDevice();
+
+	render->SetAlphaBlend(false);
+	render->SetAlphaTest(true);
+	render->SetNoCulling(true);
+	render->SetNoZWrite(false);
 
 	const uint count = max(grass_count[0], grass_count[1]);
 
