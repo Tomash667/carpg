@@ -1632,7 +1632,7 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 		f << (byte)L.location_index;
 		f << (byte)0;
 		f << (W.GetState() == World::State::INSIDE_ENCOUNTER);
-		int ack = N.SendAll(f, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT, Stream_TransferServer);
+		int ack = N.SendAll(f, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT);
 		for(auto info : N.players)
 		{
 			if(info->id == Team.my_id)

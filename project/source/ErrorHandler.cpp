@@ -3,6 +3,7 @@
 #include "GameCore.h"
 #include "ErrorHandler.h"
 #include "Version.h"
+#include "Config.h"
 #define IN
 #define OUT
 #include <CrashRpt.h>
@@ -123,8 +124,7 @@ int WINAPI OnCrash(CR_CRASH_CALLBACK_INFO* crash_info)
 }
 
 //=================================================================================================
-ErrorHandler::ErrorHandler() : crash_mode(CrashMode::Normal), stream_log_mode(StreamLogMode::Errors), stream_log_file("log.stream"), current_packet(nullptr),
-registered(false)
+ErrorHandler::ErrorHandler() : crash_mode(CrashMode::Normal)
 {
 }
 
@@ -175,44 +175,7 @@ void ErrorHandler::RegisterHandler(Config& cfg, const string& log_path)
 		}
 	}
 	Info("Settings: crash_mode = %s", ToString(crash_mode));
-
-	// stream log mode
-	Config::GetResult result = cfg.TryGetEnum<StreamLogMode>("stream_log_mode", stream_log_mode, {
-		{ "none", StreamLogMode::None },
-		{ "errors", StreamLogMode::Errors },
-		{ "full", StreamLogMode::Full }
-	});
-	if(result != Config::GET_OK)
-	{
-		stream_log_mode = StreamLogMode::Errors;
-		if(result == Config::GET_INVALID)
-			Error("Settings: Invalid stream log mode '%s'.", cfg.GetString("stream_log_mode").c_str());
-	}
-	Info("Settings: stream_log_mode = %s", ToString(stream_log_mode));
-
-	// stream log file
-	stream_log_file = cfg.GetString("stream_log_file", "log.stream");
-	if(!stream_log.Open(stream_log_file.c_str()))
-	{
-		DWORD error = GetLastError();
-		if(stream_log_file == "log.stream")
-			Error("Failed to open 'log.stream', error %u.", error);
-		else
-		{
-			Error("Invalid stream log filename '%s'. Using default.", stream_log_file.c_str());
-			stream_log_file = "log.stream";
-			if(!stream_log.Open(stream_log_file.c_str()))
-			{
-				DWORD error = GetLastError();
-				Error("Failed to open 'log.stream', error %u.", error);
-			}
-		}
-	}
-
-	// update settings
 	cfg.Add("crash_mode", ToString(crash_mode));
-	cfg.Add("stream_log_mode", ToString(stream_log_mode));
-	cfg.Add("stream_log_file", stream_log_file.c_str());
 
 	// crash handler
 	if(!IsDebuggerPresent())
@@ -254,96 +217,7 @@ void ErrorHandler::RegisterHandler(Config& cfg, const string& log_path)
 			r = crAddFile2(log_path.c_str(), nullptr, "Log file", CR_AF_MAKE_FILE_COPY | CR_AF_MISSING_FILE_OK | CR_AF_ALLOW_DELETE);
 			assert(r == 0);
 		}
-		if(stream_log_mode != StreamLogMode::None)
-		{
-			r = crAddFile2(stream_log_file.c_str(), nullptr, "Multiplayer log", CR_AF_MAKE_FILE_COPY | CR_AF_MISSING_FILE_OK | CR_AF_ALLOW_DELETE);
-			assert(r == 0);
-		}
 		r = crAddScreenshot2(CR_AS_MAIN_WINDOW | CR_AS_PROCESS_WINDOWS | CR_AS_USE_JPEG_FORMAT | CR_AS_ALLOW_DELETE, 50);
 		assert(r == 0);
-
-		registered = true;
-	}
-}
-
-//=================================================================================================
-void ErrorHandler::UnregisterHandler()
-{
-	if(registered)
-		crUninstall();
-}
-
-//=================================================================================================
-void ErrorHandler::StreamStart(Packet* packet, int type)
-{
-	assert(packet);
-	assert(!current_packet);
-
-	current_packet = packet;
-	current_stream_type = type;
-}
-
-//=================================================================================================
-void ErrorHandler::StreamEnd(bool ok)
-{
-	if(!stream_log.IsOpen() && (stream_log_mode == StreamLogMode::None || (stream_log_mode == StreamLogMode::Errors && ok)))
-	{
-		current_packet = nullptr;
-		return;
-	}
-
-	assert(current_packet);
-
-	stream_log.Write<byte>(0xFF);
-	stream_log.Write<byte>(ok ? 0 : 1);
-	stream_log.Write<byte>(current_stream_type);
-	stream_log.Write(current_packet->systemAddress.address);
-	stream_log.Write(current_packet->length);
-	stream_log.Write(current_packet->data, current_packet->length);
-
-	if(!write_packets.empty())
-	{
-		for(WritePacket* packet : write_packets)
-		{
-			stream_log.Write<byte>(0xFF);
-			stream_log.Write<byte>(2);
-			stream_log.Write<byte>(packet->type);
-			stream_log.Write(packet->adr.address);
-			stream_log.Write(packet->size);
-			stream_log.Write(packet->data.data(), packet->size);
-			packet->Free();
-		}
-		write_packets.clear();
-	}
-
-	current_packet = nullptr;
-}
-
-//=================================================================================================
-void ErrorHandler::StreamWrite(const void* data, uint size, int type, const SystemAddress& adr)
-{
-	assert(data && size > 0);
-
-	if (!stream_log.IsOpen() || stream_log_mode != StreamLogMode::Full)
-		return;
-
-	if(current_packet)
-	{
-		WritePacket* packet = WritePacket::Get();
-		packet->data.resize(size);
-		memcpy(packet->data.data(), data, size);
-		packet->size = size;
-		packet->type = type;
-		packet->adr = adr;
-		write_packets.push_back(packet);
-	}
-	else
-	{
-		stream_log.Write<byte>(0xFF);
-		stream_log.Write<byte>(2);
-		stream_log.Write<byte>(type);
-		stream_log.Write(adr.address);
-		stream_log.Write(size);
-		stream_log.Write(data, size);
 	}
 }

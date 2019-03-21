@@ -1066,9 +1066,9 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								f.WriteCasted<byte>(Net::IsServer() ? Team.my_id : info->id);
 								f << text;
 								if(Net::IsServer())
-									N.SendServer(f, MEDIUM_PRIORITY, RELIABLE, info->adr, Stream_Chat);
+									N.SendServer(f, MEDIUM_PRIORITY, RELIABLE, info->adr);
 								else
-									N.SendClient(f, MEDIUM_PRIORITY, RELIABLE, Stream_Chat);
+									N.SendClient(f, MEDIUM_PRIORITY, RELIABLE);
 								cstring s = Format("@%s: %s", info->name.c_str(), text.c_str());
 								AddMsg(s);
 								Info(s);
@@ -1089,7 +1089,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							BitStreamWriter f;
 							f << ID_SERVER_SAY;
 							f << text;
-							N.SendAll(f, MEDIUM_PRIORITY, RELIABLE, Stream_Chat);
+							N.SendAll(f, MEDIUM_PRIORITY, RELIABLE);
 						}
 						AddServerMsg(text.c_str());
 						Info("SERVER: %s", text.c_str());
@@ -1246,9 +1246,9 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						f.WriteCasted<byte>(Team.my_id);
 						f << text;
 						if(Net::IsServer())
-							N.SendAll(f, MEDIUM_PRIORITY, RELIABLE, Stream_Chat);
+							N.SendAll(f, MEDIUM_PRIORITY, RELIABLE);
 						else
-							N.SendClient(f, MEDIUM_PRIORITY, RELIABLE, Stream_Chat);
+							N.SendClient(f, MEDIUM_PRIORITY, RELIABLE);
 						cstring s = Format("%s: %s", N.GetMe().name.c_str(), text.c_str());
 						AddMsg(s);
 						Info(s);

@@ -55,6 +55,7 @@ typedef const char* cstring;
 //-----------------------------------------------------------------------------
 // Forward declarations
 class Buffer;
+class Config;
 class Crc;
 class FileReader;
 class FileWriter;

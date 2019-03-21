@@ -826,8 +826,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	//-------------------------------------------------------------------------
 	// error handler
-	ErrorHandler& error_handler = ErrorHandler::Get();
-	error_handler.RegisterHandler(cfg, log_filename);
+	ErrorHandler::Get().RegisterHandler(cfg, log_filename);
 
 	//-------------------------------------------------------------------------
 	// skrypty instalacyjne
@@ -895,7 +894,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	delete[] cmd_line;
 	delete[] argv;
 	delete Logger::global;
-	error_handler.UnregisterHandler();
 
 	return (b ? 0 : 1);
 }

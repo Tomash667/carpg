@@ -683,7 +683,7 @@ public:
 	void Client_Say(BitStreamReader& f);
 	void Client_Whisper(BitStreamReader& f);
 	void Client_ServerSay(BitStreamReader& f);
-	void Server_Say(BitStream& stream, PlayerInfo& info, Packet* packet);
+	void Server_Say(BitStreamReader& f, PlayerInfo& info, Packet* packet);
 	void Server_Whisper(BitStreamReader& f, PlayerInfo& info, Packet* packet);
 	void ServerProcessUnits(vector<Unit*>& units);
 	void UpdateWarpData(float dt);

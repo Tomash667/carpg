@@ -144,8 +144,7 @@ void PickServerPanel::Update(float dt)
 	Packet* packet;
 	for(packet = N.peer->Receive(); packet; N.peer->DeallocatePacket(packet), packet = N.peer->Receive())
 	{
-		BitStream& stream = N.StreamStart(packet, Stream_PickServer);
-		BitStreamReader reader(stream);
+		BitStreamReader reader(packet);
 		byte msg_id;
 		reader >> msg_id;
 
@@ -161,14 +160,13 @@ void PickServerPanel::Update(float dt)
 				reader >> sign;
 				if(!reader)
 				{
-					N.StreamError("PickServer: Broken packet from %s.", packet->systemAddress.ToString());
+					Error("PickServer: Broken packet from %s.", packet->systemAddress.ToString());
 					break;
 				}
 				if(sign[0] != 'C' || sign[1] != 'A')
 				{
 					Warn("PickServer: Unknown response from %s, this is not CaRpg server (0x%x%x).",
 						packet->systemAddress.ToString(), byte(sign[0]), byte(sign[1]));
-					N.StreamError();
 					break;
 				}
 
@@ -183,7 +181,6 @@ void PickServerPanel::Update(float dt)
 				if(!reader)
 				{
 					Warn("PickServer: Broken response from %.", packet->systemAddress.ToString());
-					N.StreamError();
 					break;
 				}
 				
@@ -234,11 +231,8 @@ void PickServerPanel::Update(float dt)
 			break;
 		default:
 			Warn("PickServer: Unknown packet %d from %s.", msg_id, packet->systemAddress.ToString());
-			N.StreamError();
 			break;
 		}
-
-		N.StreamEnd();
 	}
 
 	// update servers

@@ -41,6 +41,8 @@ class BitStreamReader : public StreamReader
 {
 public:
 	BitStreamReader(BitStream& bitstream);
+	BitStreamReader(Packet* packet);
+	~BitStreamReader();
 
 	using StreamReader::Read;
 	void Read(void* ptr, uint size) override;
@@ -52,5 +54,8 @@ public:
 	BitStream& GetBitStream() const { return bitstream; }
 
 private:
+	BitStream& CreateBitStream(Packet* packet);
+
 	BitStream& bitstream;
+	bool pooled;
 };

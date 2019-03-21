@@ -5,7 +5,6 @@
 #include "Version.h"
 #include "Level.h"
 #include "Language.h"
-#include "ErrorHandler.h"
 #include "Game.h"
 #include "GameFile.h"
 #include "GroundItem.h"
@@ -31,7 +30,7 @@ const int CLOSE_PEER_TIMER = 1000; // ms
 //#define TEST_LAG 50
 
 //=================================================================================================
-Net::Net() : peer(nullptr), current_packet(nullptr), mp_load(false), mp_use_interp(true), mp_interp(0.05f), was_client(false)
+Net::Net() : peer(nullptr), mp_load(false), mp_use_interp(true), mp_interp(0.05f), was_client(false)
 {
 }
 
@@ -209,7 +208,7 @@ void Net::OnChangeLevel(int level)
 	f << (byte)level;
 	f << false;
 
-	uint ack = SendAll(f, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT, Stream_TransferServer);
+	uint ack = SendAll(f, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT);
 	for(PlayerInfo* info : players)
 	{
 		if(info->id == Team.my_id)
@@ -224,21 +223,19 @@ void Net::OnChangeLevel(int level)
 }
 
 //=================================================================================================
-void Net::SendServer(BitStreamWriter& f, PacketPriority priority, PacketReliability reliability, const SystemAddress& adr, StreamLogType type)
+void Net::SendServer(BitStreamWriter& f, PacketPriority priority, PacketReliability reliability, const SystemAddress& adr)
 {
 	assert(IsServer());
 	peer->Send(&f.GetBitStream(), priority, reliability, 0, adr, false);
-	StreamWrite(f.GetBitStream(), type, adr);
 }
 
 //=================================================================================================
-uint Net::SendAll(BitStreamWriter& f, PacketPriority priority, PacketReliability reliability, StreamLogType type)
+uint Net::SendAll(BitStreamWriter& f, PacketPriority priority, PacketReliability reliability)
 {
 	assert(IsServer());
 	if(active_players <= 1)
 		return 0;
 	uint ack = peer->Send(&f.GetBitStream(), priority, reliability, 0, master_server_adr, true);
-	StreamWrite(f.GetBitStream(), type, UNASSIGNED_SYSTEM_ADDRESS);
 	return ack;
 }
 
@@ -375,7 +372,7 @@ void Net::KickPlayer(PlayerInfo& info)
 	BitStreamWriter f;
 	f << ID_SERVER_CLOSE;
 	f << (byte)ServerClose_Kicked;
-	SendServer(f, MEDIUM_PRIORITY, RELIABLE, info.adr, Stream_None);
+	SendServer(f, MEDIUM_PRIORITY, RELIABLE, info.adr);
 
 	info.state = PlayerInfo::REMOVING;
 
@@ -589,11 +586,10 @@ void Net::InitClient()
 }
 
 //=================================================================================================
-void Net::SendClient(BitStreamWriter& f, PacketPriority priority, PacketReliability reliability, StreamLogType type)
+void Net::SendClient(BitStreamWriter& f, PacketPriority priority, PacketReliability reliability)
 {
 	assert(IsClient());
 	peer->Send(&f.GetBitStream(), priority, reliability, 0, server, false);
-	StreamWrite(f.GetBitStream(), type, server);
 }
 
 //=================================================================================================
@@ -899,46 +895,4 @@ bool Net::ReadLevelData(BitStreamReader& f)
 	}
 
 	return true;
-}
-
-//=================================================================================================
-BitStream& Net::StreamStart(Packet* packet, StreamLogType type)
-{
-	assert(packet);
-	assert(!current_packet);
-	if(current_packet)
-		StreamError("Unclosed stream.");
-
-	current_packet = packet;
-	current_stream.~BitStream();
-	new((void*)&current_stream)BitStream(packet->data, packet->length, false);
-	ErrorHandler::Get().StreamStart(current_packet, (int)type);
-
-	return current_stream;
-}
-
-//=================================================================================================
-void Net::StreamEnd()
-{
-	if(!current_packet)
-		return;
-
-	ErrorHandler::Get().StreamEnd(true);
-	current_packet = nullptr;
-}
-
-//=================================================================================================
-void Net::StreamError()
-{
-	if(!current_packet)
-		return;
-
-	ErrorHandler::Get().StreamEnd(false);
-	current_packet = nullptr;
-}
-
-//=================================================================================================
-void Net::StreamWrite(const void* data, uint size, StreamLogType type, const SystemAddress& adr)
-{
-	ErrorHandler::Get().StreamWrite(data, size, type, adr);
 }

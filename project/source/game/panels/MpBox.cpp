@@ -91,9 +91,9 @@ void MpBox::OnInput(const string& str)
 			f.WriteCasted<byte>(Team.my_id);
 			f << str;
 			if(Net::IsServer())
-				N.SendAll(f, MEDIUM_PRIORITY, RELIABLE, Stream_Chat);
+				N.SendAll(f, MEDIUM_PRIORITY, RELIABLE);
 			else
-				N.SendClient(f, MEDIUM_PRIORITY, RELIABLE, Stream_Chat);
+				N.SendClient(f, MEDIUM_PRIORITY, RELIABLE);
 		}
 		// add text
 		cstring s = Format("%s: %s", game.player_name.c_str(), str.c_str());
