@@ -16,6 +16,7 @@
 #include "ResourceManager.h"
 #include "ItemHelper.h"
 #include "PlayerInfo.h"
+#include "RenderTarget.h"
 
 /* UWAGI CO DO ZMIENNYCH
 index - indeks do items [0, 1, 2, 3...]
@@ -132,7 +133,7 @@ void Inventory::LoadData()
 //=================================================================================================
 void Inventory::OnReset()
 {
-	TEX tex = Game::Get().tItemRegionRot;
+	TEX tex = Game::Get().rt_item_rot->GetTexture();
 	if(inv_mine->visible)
 	{
 		if(tooltip.img == tex)
@@ -159,7 +160,7 @@ void Inventory::OnReset()
 //=================================================================================================
 void Inventory::OnReload()
 {
-	TEX tex = Game::Get().tItemRegionRot;
+	TEX tex = Game::Get().rt_item_rot->GetTexture();
 	if(inv_mine->tex_replaced)
 	{
 		tooltip.img = tex;
@@ -649,7 +650,7 @@ void InventoryPanel::Update(float dt)
 	}
 	if(item_visible)
 	{
-		game.DrawItemImage(*item_visible, game.tItemRegionRot, game.sItemRegionRot, rot, false);
+		game.DrawItemImage(*item_visible, game.rt_item_rot, rot);
 		rot += PI * dt / 2;
 	}
 
@@ -1604,7 +1605,7 @@ void InventoryPanel::FormatBox(int group, string& text, string& small_text, TEX&
 
 		if(item->mesh)
 		{
-			img = game.tItemRegionRot;
+			img = game.rt_item_rot->GetTexture();
 			if(!refresh)
 				rot = 0.f;
 			item_visible = item;

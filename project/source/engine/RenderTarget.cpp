@@ -24,3 +24,13 @@ void RenderTarget::SaveToFile(cstring filename)
 	if(!surf)
 		s->Release();
 }
+
+void RenderTarget::FreeSurface()
+{
+	if(tmp_surf)
+	{
+		surf->Release();
+		surf = nullptr;
+		tmp_surf = false;
+	}
+}

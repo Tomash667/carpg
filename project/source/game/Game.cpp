@@ -59,6 +59,7 @@ cstring Game::txGoldPlus, Game::txQuestCompletedGold;
 GameKeys GKey;
 extern string g_system_dir;
 extern cstring RESTART_MUTEX_NAME;
+extern const int ITEM_IMAGE_SIZE = 64;
 
 const float HIT_SOUND_DIST = 1.5f;
 const float ARROW_HIT_SOUND_DIST = 1.5f;
@@ -70,8 +71,8 @@ const float MAGIC_SCROLL_SOUND_DIST = 1.5f;
 Game::Game() : have_console(false), vbParticle(nullptr), quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0), cl_fog(true),
 cl_lighting(true), draw_particle_sphere(false), draw_unit_radius(false), draw_hitbox(false), noai(false), testing(false), game_speed(1.f), devmode(false),
 force_seed(0), next_seed(0), force_seed_all(false), debug_info(false), dont_wander(false), check_updates(true), skip_tutorial(false), portal_anim(0),
-debug_info2(false), music_type(MusicType::None), end_of_game(false), prepared_stream(64 * 1024), paused(false), draw_flags(0xFFFFFFFF), tMiniSave(nullptr),
-prev_game_state(GS_LOAD), rt_save(nullptr), sItemRegion(nullptr), sItemRegionRot(nullptr), cl_postfx(true), mp_timeout(10.f), cl_normalmap(true),
+debug_info2(false), music_type(MusicType::None), end_of_game(false), prepared_stream(64 * 1024), paused(false), draw_flags(0xFFFFFFFF),
+prev_game_state(GS_LOAD), rt_save(nullptr), rt_item(nullptr), rt_item_rot(nullptr), cl_postfx(true), mp_timeout(10.f), cl_normalmap(true),
 cl_specularmap(true), dungeon_tex_wrap(true), profiler_mode(0), vbInstancing(nullptr), vb_instancing_max(0), screenshot_format(ImageFormat::JPG),
 quickstart_class(Class::RANDOM), game_state(GS_LOAD), default_devmode(false), default_player_devmode(false), quickstart_slot(SaveSlot::MAX_SLOTS),
 super_shader(new SuperShader)
@@ -656,11 +657,7 @@ void Game::OnReset()
 	if(eGrass)
 		V(eGrass->OnLostDevice());
 
-	SafeRelease(tItemRegion);
-	SafeRelease(tItemRegionRot);
 	SafeRelease(tMinimap);
-	SafeRelease(sItemRegion);
-	SafeRelease(sItemRegionRot);
 	for(int i = 0; i < 3; ++i)
 	{
 		SafeRelease(sPostEffect[i]);
@@ -828,11 +825,7 @@ void Game::ClearPointers()
 	vbFullscreen = nullptr;
 
 	// tekstury render target, powierzchnie
-	tItemRegion = nullptr;
-	tItemRegionRot = nullptr;
 	tMinimap = nullptr;
-	sItemRegion = nullptr;
-	sItemRegionRot = nullptr;
 	for(int i = 0; i < 3; ++i)
 	{
 		sPostEffect[i] = nullptr;
@@ -876,11 +869,7 @@ void Game::OnCleanup()
 	SafeRelease(vbInstancing);
 
 	// tekstury render target, powierzchnie
-	SafeRelease(tItemRegion);
-	SafeRelease(sItemRegionRot);
 	SafeRelease(tMinimap);
-	SafeRelease(sItemRegion);
-	SafeRelease(sItemRegionRot);
 	for(int i = 0; i < 3; ++i)
 	{
 		SafeRelease(sPostEffect[i]);
@@ -898,15 +887,13 @@ void Game::OnCleanup()
 //=================================================================================================
 void Game::CreateTextures()
 {
-	if(tItemRegion)
+	if(tMinimap)
 		return;
 
 	Render* render = GetRender();
 	IDirect3DDevice9* device = render->GetDevice();
 	const Int2& wnd_size = GetWindowSize();
 
-	V(device->CreateTexture(64, 64, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tItemRegion, nullptr));
-	V(device->CreateTexture(128, 128, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tItemRegionRot, nullptr));
 	V(device->CreateTexture(128, 128, 0, D3DUSAGE_DYNAMIC, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tMinimap, nullptr));
 
 	int ms, msq;
@@ -914,8 +901,6 @@ void Game::CreateTextures()
 	D3DMULTISAMPLE_TYPE type = (D3DMULTISAMPLE_TYPE)ms;
 	if(ms != D3DMULTISAMPLE_NONE)
 	{
-		V(device->CreateRenderTarget(64, 64, D3DFMT_A8R8G8B8, type, msq, FALSE, &sItemRegion, nullptr));
-		V(device->CreateRenderTarget(128, 128, D3DFMT_A8R8G8B8, type, msq, FALSE, &sItemRegionRot, nullptr));
 		for(int i = 0; i < 3; ++i)
 		{
 			V(device->CreateRenderTarget(wnd_size.x, wnd_size.y, D3DFMT_X8R8G8B8, type, msq, FALSE, &sPostEffect[i], nullptr));
@@ -959,6 +944,8 @@ void Game::CreateRenderTargets()
 {
 	Render* render = GetRender();
 	rt_save = render->CreateRenderTarget(Int2(256, 256));
+	rt_item = render->CreateRenderTarget(Int2(ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE));
+	rt_item_rot = render->CreateRenderTarget(Int2(128, 128));
 }
 
 //=================================================================================================

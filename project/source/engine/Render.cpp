@@ -119,9 +119,9 @@ void Render::Init(StartupOptions& options)
 	hr = d3d->CheckDepthStencilMatch(used_adapter, D3DDEVTYPE_HAL, DISPLAY_FORMAT, D3DFMT_A8R8G8B8, ZBUFFER_FORMAT);
 	if(FAILED(hr))
 		throw Format("Render: Unsupported render target D3DFMT_A8R8G8B8 with display %s and depth buffer %s! (%d)",
-			STRING(DISPLAY_FORMAT), STRING(BACKBUFFER_FORMAT), hr);
+		STRING(DISPLAY_FORMAT), STRING(BACKBUFFER_FORMAT), hr);
 
-	// check multisampling
+// check multisampling
 	DWORD levels, levels2;
 	if(SUCCEEDED(d3d->CheckDeviceMultiSampleType(used_adapter, D3DDEVTYPE_HAL, D3DFMT_A8R8G8B8, fullscreen ? FALSE : TRUE,
 		(D3DMULTISAMPLE_TYPE)multisampling, &levels))
@@ -474,6 +474,7 @@ void Render::BeforeReset()
 	if(res_freed)
 		return;
 	res_freed = true;
+	Engine::Get().OnReset();
 	V(sprite->OnLostDevice());
 	for(ShaderHandler* shader : shaders)
 		shader->OnReset();
@@ -482,7 +483,6 @@ void Render::BeforeReset()
 		SafeRelease(target->tex);
 		SafeRelease(target->surf);
 	}
-	Engine::Get().OnReset();
 }
 
 //=================================================================================================
@@ -494,8 +494,8 @@ void Render::AfterReset()
 		shader->OnReload();
 	for(RenderTarget* target : targets)
 		CreateRenderTargetTexture(target);
-	Engine::Get().OnReload();
 	V(sprite->OnResetDevice());
+	Engine::Get().OnReload();
 	lost_device = false;
 	res_freed = false;
 }
@@ -740,6 +740,29 @@ void Render::CreateRenderTargetTexture(RenderTarget* target)
 		V(device->CreateRenderTarget(target->size.x, target->size.y, D3DFMT_A8R8G8B8, type, multisampling_quality, FALSE, &target->surf, nullptr));
 	else
 		target->surf = nullptr;
+}
+
+//=================================================================================================
+TEX Render::CopyToTexture(RenderTarget* target)
+{
+	assert(target);
+	D3DSURFACE_DESC desc;
+	V(target->tex->GetLevelDesc(0, &desc));
+	TEX tex;
+	V(device->CreateTexture(desc.Width, desc.Height, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &tex, nullptr));
+	SURFACE surf;
+	V(tex->GetSurfaceLevel(0, &surf));
+	HRESULT hr = D3DXLoadSurfaceFromSurface(surf, nullptr, nullptr, target->GetSurface(), nullptr, nullptr, D3DX_DEFAULT, 0);
+	target->FreeSurface();
+	surf->Release();
+	if(SUCCEEDED(hr))
+		return tex;
+	else
+	{
+		tex->Release();
+		WaitReset();
+		return nullptr;
+	}
 }
 
 //=================================================================================================

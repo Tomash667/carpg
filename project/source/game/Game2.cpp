@@ -79,7 +79,6 @@ const float ARROW_TIMER = 5.f;
 const float MIN_H = 1.5f; // hardcoded in GetPhysicsPos
 const float TRAIN_KILL_RATIO = 0.1f;
 const int NN = 64;
-extern const int ITEM_IMAGE_SIZE = 64;
 const float SMALL_DISTANCE = 0.001f;
 
 Matrix m1, m2, m3, m4;
@@ -168,28 +167,17 @@ void Game::GenerateItemImage(TaskData& task_data)
 //=================================================================================================
 TEX Game::TryGenerateItemImage(const Item& item)
 {
-	TEX t;
-	SURFACE out_surface;
-	V(GetRender()->GetDevice()->CreateTexture(ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &t, nullptr));
-	V(t->GetSurfaceLevel(0, &out_surface));
-
 	while(true)
 	{
-		SURFACE surf = DrawItemImage(item, tItemRegion, sItemRegion, 0.f);
-		HRESULT hr = D3DXLoadSurfaceFromSurface(out_surface, nullptr, nullptr, surf, nullptr, nullptr, D3DX_DEFAULT, 0);
-		surf->Release();
-		if(hr == D3DERR_DEVICELOST)
-			GetRender()->WaitReset();
-		else
-			break;
+		DrawItemImage(item, rt_item, 0.f);
+		TEX tex = GetRender()->CopyToTexture(rt_item);
+		if(tex)
+			return tex;
 	}
-
-	out_surface->Release();
-	return t;
 }
 
 //=================================================================================================
-SURFACE Game::DrawItemImage(const Item& item, TEX tex, SURFACE surface, float rot, bool require_surface)
+void Game::DrawItemImage(const Item& item, RenderTarget* target, float rot)
 {
 	Render* render = GetRender();
 	IDirect3DDevice9* device = render->GetDevice();
@@ -206,18 +194,8 @@ SURFACE Game::DrawItemImage(const Item& item, TEX tex, SURFACE surface, float ro
 	}
 	render->SetAlphaTest(false);
 	render->SetNoCulling(false);
+	render->SetTarget(target);
 
-	// ustaw render target
-	SURFACE surf = nullptr;
-	if(surface)
-		V(device->SetRenderTarget(0, surface));
-	else
-	{
-		V(tex->GetSurfaceLevel(0, &surf));
-		V(device->SetRenderTarget(0, surf));
-	}
-
-	// pocz¹tek renderowania
 	V(device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET, 0, 1.f, 0));
 	V(device->BeginScene());
 
@@ -273,27 +251,9 @@ SURFACE Game::DrawItemImage(const Item& item, TEX tex, SURFACE surface, float ro
 
 	V(eMesh->EndPass());
 	V(eMesh->End());
-
-	// koniec renderowania
 	V(device->EndScene());
 
-	// kopiuj do tekstury
-	if(surface)
-	{
-		V(tex->GetSurfaceLevel(0, &surf));
-		V(device->StretchRect(surface, nullptr, surf, nullptr, D3DTEXF_NONE));
-	}
-
-	// przywróæ stary render target
-	SURFACE backbuffer;
-	V(device->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &backbuffer));
-	V(device->SetRenderTarget(0, backbuffer));
-	backbuffer->Release();
-
-	if(require_surface)
-		return surf;
-	surf->Release();
-	return nullptr;
+	render->SetTarget(nullptr);
 }
 
 //=================================================================================================
@@ -6478,7 +6438,7 @@ void Game::CastSpell(LevelContext& ctx, Unit& u)
 		if(IS_SET(spell.flags, Spell::Triple))
 			count = 3;
 
-		float expected_rot = Clip(-Vec3::Angle2d(coord, u.target_pos) + PI/2);
+		float expected_rot = Clip(-Vec3::Angle2d(coord, u.target_pos) + PI / 2);
 		float current_rot = Clip(u.rot + PI);
 		AdjustAngle(current_rot, expected_rot, ToRadians(10.f));
 
@@ -9099,11 +9059,11 @@ void Game::AttackReaction(Unit& attacked, Unit& attacker)
 				}
 				else
 				{
-				Team.is_bandit = true;
-				if(Net::IsOnline())
-					Net::PushChange(NetChange::CHANGE_FLAGS);
+					Team.is_bandit = true;
+					if(Net::IsOnline())
+						Net::PushChange(NetChange::CHANGE_FLAGS);
+				}
 			}
-		}
 		}
 		else if(attacked.data->group == G_CRAZIES)
 		{
