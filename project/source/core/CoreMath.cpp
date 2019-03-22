@@ -243,6 +243,15 @@ void LerpAngle(float& angle, float from, float to, float t)
 	angle = from + t * (to - from);
 }
 
+void AdjustAngle(float& angle, float expected, float max_diff)
+{
+	float diff = AngleDiff(angle, expected);
+	if(diff <= max_diff)
+		angle = expected;
+	else
+		angle += ShortestArc(angle, expected) * max_diff;
+}
+
 bool CircleToRectangle(float circlex, float circley, float radius, float rectx, float recty, float w, float h)
 {
 	//

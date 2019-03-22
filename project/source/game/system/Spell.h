@@ -39,7 +39,7 @@ struct Spell
 	Mesh* mesh;
 
 	Spell() : sound_cast(nullptr), sound_hit(nullptr), tex(nullptr), tex_particle(nullptr), tex_explode(nullptr), shape(nullptr), mesh(nullptr), type(Point),
-		cooldown(0, 0), flags(0), dmg(0), dmg_bonus(0), range(10.f), size(0.f), size_particle(0.f), speed(10.f), explode_range(0.f),
+		cooldown(0, 0), flags(0), dmg(0), dmg_bonus(0), range(10.f), size(0.f), size_particle(0.f), speed(0.f), explode_range(0.f),
 		sound_cast_dist(1.f), sound_hit_dist(2.f) {}
 	~Spell()
 	{

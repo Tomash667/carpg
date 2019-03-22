@@ -6472,6 +6472,10 @@ void Game::CastSpell(LevelContext& ctx, Unit& u)
 		if(IS_SET(spell.flags, Spell::Triple))
 			count = 3;
 
+		float expected_rot = Clip(-Vec3::Angle2d(coord, u.target_pos) + PI/2);
+		float current_rot = Clip(u.rot + PI);
+		AdjustAngle(current_rot, expected_rot, ToRadians(10.f));
+
 		for(int i = 0; i < count; ++i)
 		{
 			Bullet& b = Add1(ctx.bullets);
@@ -6480,7 +6484,7 @@ void Game::CastSpell(LevelContext& ctx, Unit& u)
 			b.backstab = 0;
 			b.pos = coord;
 			b.attack = float(spell.dmg);
-			b.rot = Vec3(0, Clip(u.rot + PI + Random(-0.05f, 0.05f)), 0);
+			b.rot = Vec3(0, current_rot + Random(-0.05f, 0.05f), 0);
 			b.mesh = spell.mesh;
 			b.tex = spell.tex;
 			b.tex_size = spell.size;
@@ -7589,7 +7593,6 @@ void Game::UpdateElectros(LevelContext& ctx, float dt)
 					pe->op_alpha = POP_LINEAR_SHRINK;
 					pe->mode = 1;
 					pe->Init();
-					//pe->gravity = true;
 					ctx.pes->push_back(pe);
 				}
 

@@ -27,6 +27,9 @@ Version 0.9 (???):
 - fixed decreased performance every time outside location was reentered
 - fixed memory leaks and missing terrain textures after trying to load corrupted save and then starting a new game
 - fixed crash when saving game with magic bullets or some others spells
+- fixed ai rushing at enemy while eating/drinking
+- fixed ai spells targeting that was slightly moved to right
+- fixed ai aiming of some ray spells
 
 --------------------------------------------------------------------------------
 Version 0.8.1 (???):
