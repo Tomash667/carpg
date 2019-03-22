@@ -7,6 +7,7 @@
 #include "Game.h"
 #include "MenuList.h"
 #include "SoundManager.h"
+#include "Render.h"
 
 //-----------------------------------------------------------------------------
 cstring txQuality, txMsNone;
@@ -98,7 +99,7 @@ Options::Options(const DialogInfo& info) : GameDialogBox(info)
 		check[i].pos = offset;
 		offset.y += 32 + 10;
 	}
-	
+
 	scroll[0].pos = Int2(290, 290);
 	scroll[0].size = Int2(250, 16);
 	scroll[0].total = 100;
@@ -184,12 +185,14 @@ void Options::LoadLanguage()
 	bts[1].pos = Int2(bts[0].size.x + 40, 410);
 
 	// lista rozdzielczoœci
+	Render* render = game->GetRender();
+	int refresh_hz = render->GetRefreshRate();
 	res.parent = this;
 	res.pos = Int2(20, 80);
 	res.size = Int2(250, 200);
 	res.event_handler = DialogEvent(this, &Options::OnChangeRes);
 	vector<Resolution> resolutions;
-	game->GetResolutions(resolutions);
+	render->GetResolutions(resolutions);
 	LocalVector<Res*> vres;
 	for(Resolution& r : resolutions)
 		vres->push_back(new Res(r.size, r.hz));
@@ -198,7 +201,7 @@ void Options::LoadLanguage()
 	for(auto r : vres)
 	{
 		res.Add(r);
-		if(r->size == game->GetWindowSize() && r->hz == game->wnd_hz)
+		if(r->size == game->GetWindowSize() && r->hz == refresh_hz)
 			res.SetIndex(index);
 		++index;
 	}
@@ -213,11 +216,11 @@ void Options::LoadLanguage()
 	multisampling.event_handler = DialogEvent(this, &Options::OnChangeMultisampling);
 	multisampling.Add(new MultisamplingItem(0, 0));
 	int ms, msq;
-	game->GetMultisampling(ms, msq);
+	render->GetMultisampling(ms, msq);
 	if(ms == 0)
 		multisampling.SetIndex(0);
 	vector<Int2> ms_modes;
-	game->GetMultisamplingModes(ms_modes);
+	render->GetMultisamplingModes(ms_modes);
 	index = 1;
 	for(Int2& mode : ms_modes)
 	{
@@ -410,7 +413,10 @@ void Options::Event(GuiEvent e)
 			game->cl_specularmap = check[3].checked;
 			break;
 		case IdVsync:
-			game->SetVsync(!game->GetVsync());
+			{
+				Render* render = game->GetRender();
+				render->SetVsync(render->IsVsyncEnabled());
+			}
 			break;
 		}
 	}
@@ -419,20 +425,23 @@ void Options::Event(GuiEvent e)
 //=================================================================================================
 void Options::SetOptions()
 {
+	Render* render = game->GetRender();
+
 	check[0].checked = game->IsFullscreen();
 	check[1].checked = game->cl_glow;
 	check[2].checked = game->cl_normalmap;
 	check[3].checked = game->cl_specularmap;
-	check[4].checked = game->GetVsync();
+	check[4].checked = render->IsVsyncEnabled();
 
 	Res& re = *res.GetItemCast<Res>();
-	if(re.size != game->GetWindowSize() || re.hz != game->wnd_hz)
+	int refresh_hz = render->GetRefreshRate();
+	if(re.size != game->GetWindowSize() || re.hz != refresh_hz)
 	{
 		auto& ress = res.GetItemsCast<Res>();
 		int index = 0;
 		for(auto r : ress)
 		{
-			if(r->size == game->GetWindowSize() && r->hz == game->wnd_hz)
+			if(r->size == game->GetWindowSize() && r->hz == refresh_hz)
 			{
 				res.SetIndex(index);
 				break;
@@ -443,7 +452,7 @@ void Options::SetOptions()
 
 	MultisamplingItem& mi = *multisampling.GetItemCast<MultisamplingItem>();
 	int ms, msq;
-	game->GetMultisampling(ms, msq);
+	render->GetMultisampling(ms, msq);
 	if(mi.level != ms || mi.quality != msq)
 	{
 		auto& multis = multisampling.GetItemsCast<MultisamplingItem>();
@@ -493,7 +502,7 @@ void Options::OnChangeRes(int)
 void Options::OnChangeMultisampling(int id)
 {
 	MultisamplingItem& multi = *multisampling.GetItemCast<MultisamplingItem>();
-	if(game->ChangeMultisampling(multi.level, multi.quality) == 0)
+	if(game->GetRender()->SetMultisampling(multi.level, multi.quality) == 0)
 		GUI.SimpleDialog(txMultisamplingError, this);
 }
 

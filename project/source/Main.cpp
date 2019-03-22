@@ -628,13 +628,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	else
 		Info("Settings: Resolution %dx%d.", options.size.x, options.size.y);
 
-	// refresh
-	game.wnd_hz = cfg.GetInt("refresh", 0);
-	Info("Settings: Refresh rate %d Hz.", game.wnd_hz);
+	// screen refresh rate
+	options.refresh_hz = cfg.GetInt("refresh", 0);
+	Info("Settings: Refresh rate %d Hz.", options.refresh_hz);
 
 	// adapter
-	game.used_adapter = cfg.GetInt("adapter", 0);
-	Info("Settings: Adapter %d.", game.used_adapter);
+	options.used_adapter = cfg.GetInt("adapter", 0);
+	Info("Settings: Adapter %d.", options.used_adapter);
 
 	// logowanie
 	log_to_file = (cfg.GetBool3("log", True) == True);
@@ -752,21 +752,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	options.hidden_window = cfg.GetBool("hidden_window");
 
 	// multisampling
-	int multisampling = cfg.GetInt("multisampling", 0),
-		multisampling_quality = cfg.GetInt("multisampling_quality", 0);
-	game.SetStartingMultisampling(multisampling, multisampling_quality);
+	options.multisampling = cfg.GetInt("multisampling", 0);
+	options.multisampling_quality = cfg.GetInt("multisampling_quality", 0);
 
 	// inne
 	game.cl_postfx = cfg.GetBool("cl_postfx", true);
 	game.cl_normalmap = cfg.GetBool("cl_normalmap", true);
 	game.cl_specularmap = cfg.GetBool("cl_specularmap", true);
 	game.cl_glow = cfg.GetBool("cl_glow", true);
-	game.shader_version = cfg.GetInt("cl_shader_version");
-	if(game.shader_version != -1 && game.shader_version != 2 && game.shader_version != 3)
-	{
-		Warn("Settings: Unknown shader version %d.", game.shader_version);
-		game.shader_version = -1;
-	}
+	options.shader_version = cfg.GetInt("cl_shader_version");
 	options.vsync = cfg.GetBool("vsync", true);
 	game.settings.grass_range = cfg.GetFloat("grass_range", 40.f);
 	if(game.settings.grass_range < 0.f)

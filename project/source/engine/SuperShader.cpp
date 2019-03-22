@@ -3,6 +3,7 @@
 #include "SuperShader.h"
 #include "File.h"
 #include "Engine.h"
+#include "Render.h"
 #include "DirectX.h"
 
 extern string g_system_dir;
@@ -16,7 +17,7 @@ SuperShader::SuperShader() : pool(nullptr)
 void SuperShader::InitOnce()
 {
 	V(D3DXCreateEffectPool(&pool));
-	Engine::Get().RegisterShader(this);
+	Engine::Get().GetRender()->RegisterShader(this);
 }
 
 //=================================================================================================
@@ -118,7 +119,8 @@ ID3DXEffect* SuperShader::GetShader(uint id)
 //=================================================================================================
 ID3DXEffect* SuperShader::CompileShader(uint id)
 {
-	Engine& engine = Engine::Get();
+	Render* render = Engine::Get().GetRender();
+	int shader_version = render->GetShaderVersion();
 	D3DXMACRO macros[10] = { 0 };
 	uint i = 0;
 
@@ -159,7 +161,7 @@ ID3DXEffect* SuperShader::CompileShader(uint id)
 		++i;
 
 		macros[i].Name = "LIGHTS";
-		macros[i].Definition = (engine.shader_version == 2 ? "2" : "3");
+		macros[i].Definition = (shader_version == 2 ? "2" : "3");
 		++i;
 	}
 	else if(IS_SET(id, 1 << DIR_LIGHT))
@@ -170,24 +172,24 @@ ID3DXEffect* SuperShader::CompileShader(uint id)
 	}
 
 	macros[i].Name = "VS_VERSION";
-	macros[i].Definition = (engine.shader_version == 3 ? "vs_3_0" : "vs_2_0");
+	macros[i].Definition = (shader_version == 3 ? "vs_3_0" : "vs_2_0");
 	++i;
 
 	macros[i].Name = "PS_VERSION";
-	macros[i].Definition = (engine.shader_version == 3 ? "ps_3_0" : "ps_2_0");
+	macros[i].Definition = (shader_version == 3 ? "ps_3_0" : "ps_2_0");
 	++i;
 
 	Info("Compiling super shader: %u", id);
 
 	CompileShaderParams params = { "super.fx" };
-	params.cache_name = Format("%d_super%u.fcx", engine.shader_version, id);
+	params.cache_name = Format("%d_super%u.fcx", shader_version, id);
 	params.file_time = edit_time;
 	params.input = &code;
 	params.macros = macros;
 	params.pool = pool;
 
 	Shader& s = Add1(shaders);
-	s.e = engine.CompileShader(params);
+	s.e = render->CompileShader(params);
 	s.id = id;
 
 	return s.e;

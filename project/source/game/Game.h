@@ -122,7 +122,7 @@ public:
 
 	void OnCleanup() override;
 	void OnDraw();
-	void OnDraw(bool normal = true);
+	void DrawGame(RenderTarget* target);
 	void OnDebugDraw(DebugDrawer* dd);
 	void OnTick(float dt);
 	void OnChar(char c);
@@ -136,6 +136,7 @@ public:
 	void ChangeTitle();
 	void ClearPointers();
 	void CreateTextures();
+	void CreateRenderTargets();
 	void PreloadData();
 
 	// initialization
@@ -167,7 +168,6 @@ public:
 
 	void ReloadShaders();
 	void ReleaseShaders();
-	void ShaderVersionChanged();
 
 	// scene
 	bool dungeon_tex_wrap;
@@ -238,8 +238,9 @@ public:
 	MeshPtr aBox, aCylinder, aSphere, aCapsule;
 	MeshPtr aArrow, aSkybox, aBag, aChest, aGrating, aDoorWall, aDoorWall2, aStairsDown, aStairsDown2, aStairsUp, aSpellball, aPressurePlate, aDoor, aDoor2, aStun;
 	VertexDataPtr vdSchodyGora, vdSchodyDol, vdNaDrzwi;
-	TEX tItemRegion, tItemRegionRot, tMinimap, tChar, tSave;
-	TEX tCzern, tEmerytura, tPortal, tLightingLine, tRip, tEquipped, tMiniSave, tWarning, tError;
+	RenderTarget* rt_save, *rt_item, *rt_item_rot;
+	TEX tMinimap;
+	TEX tCzern, tEmerytura, tPortal, tLightingLine, tRip, tEquipped, tWarning, tError;
 	TexturePtr tKrew[BLOOD_MAX], tKrewSlad[BLOOD_MAX], tIskra, tSpawn;
 	TexturePack tFloor[2], tWall[2], tCeil[2], tFloorBase, tWallBase, tCeilBase;
 	ID3DXEffect* eMesh, *eParticle, *eSkybox, *eTerrain, *eArea, *ePostFx, *eGlow, *eGrass;
@@ -254,7 +255,6 @@ public:
 	SOUND sGulp, sCoins, sBow[2], sDoor[3], sDoorClosed[2], sDoorClose, sItem[8], sChestOpen, sChestClose, sDoorBudge, sRock, sWood, sCrystal,
 		sMetal, sBody[5], sBone, sSkin, sArenaFight, sArenaWin, sArenaLost, sUnlock, sEvil, sEat, sSummon, sZap;
 	VB vbParticle;
-	SURFACE sChar, sSave, sItemRegion, sItemRegionRot;
 	static cstring txGoldPlus, txQuestCompletedGold;
 	cstring txLoadGuiTextures, txLoadParticles, txLoadPhysicMeshes, txLoadModels, txLoadSpells, txLoadSounds, txLoadMusic, txGenerateWorld;
 	TexturePtr tTrawa, tTrawa2, tTrawa3, tDroga, tZiemia, tPole;
@@ -329,7 +329,6 @@ public:
 	TEX tPostEffect[3];
 	VB vbFullscreen;
 	vector<PostEffect> post_effects;
-	SURFACE sCustom;
 
 	//---------------------------------
 	// CONSOLE & COMMANDS
@@ -415,7 +414,7 @@ public:
 	void DoExitToMenu();
 	void GenerateItemImage(TaskData& task_data);
 	TEX TryGenerateItemImage(const Item& item);
-	SURFACE DrawItemImage(const Item& item, TEX tex, SURFACE surface, float rot, bool require_surface = true);
+	void DrawItemImage(const Item& item, RenderTarget* target, float rot);
 	void SetupObject(BaseObject& obj);
 	void SetupCamera(float dt);
 	void LoadShaders();

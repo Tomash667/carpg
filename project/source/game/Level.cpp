@@ -30,6 +30,7 @@
 #include "Quest_Secret.h"
 #include "LocationGeneratorFactory.h"
 #include "SoundManager.h"
+#include "Render.h"
 
 Level L;
 
@@ -71,7 +72,7 @@ void Level::PostInit()
 	terrain_options.tex_size = 256;
 	terrain_options.tile_size = 2.f;
 	terrain_options.tiles_per_part = 16;
-	terrain->Init(game.device, terrain_options);
+	terrain->Init(game.GetRender()->GetDevice(), terrain_options);
 	terrain->Build();
 	terrain->RemoveHeightMap(true);
 

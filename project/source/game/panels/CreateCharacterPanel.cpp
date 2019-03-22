@@ -9,6 +9,8 @@
 #include "ResourceManager.h"
 #include "DirectX.h"
 #include "Unit.h"
+#include "Render.h"
+#include "RenderTarget.h"
 
 //-----------------------------------------------------------------------------
 const int SECTION_H = 40;
@@ -31,7 +33,7 @@ enum ButtonId
 };
 
 //=================================================================================================
-CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : GameDialogBox(info), unit(nullptr)
+CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : GameDialogBox(info), unit(nullptr), rt_char(nullptr)
 {
 	size = Int2(600, 500);
 	unit = new Unit;
@@ -242,6 +244,8 @@ void CreateCharacterPanel::LoadData()
 	tex_mgr.AddLoadTask("minus_hover.png", custom_bt[1].tex[Button::HOVER]);
 	tex_mgr.AddLoadTask("minus_down.png", custom_bt[1].tex[Button::DOWN]);
 	tex_mgr.AddLoadTask("minus_disabled.png", custom_bt[1].tex[Button::DISABLED]);
+
+	rt_char = game->GetRender()->CreateRenderTarget(Int2(128, 256));
 }
 
 //=================================================================================================
@@ -258,7 +262,7 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 	GUI.DrawText(GUI.fBig, txCharacterCreation, DTF_CENTER, Color::Black, rect0);
 
 	// character
-	GUI.DrawSprite(game->tChar, Int2(pos.x + 228, pos.y + 64));
+	GUI.DrawSprite(rt_char->GetTexture(), Int2(pos.x + 228, pos.y + 64));
 
 	// close button
 	btCancel.Draw();
@@ -639,28 +643,21 @@ void CreateCharacterPanel::Event(GuiEvent e)
 //=================================================================================================
 void CreateCharacterPanel::RenderUnit()
 {
-	HRESULT hr = game->device->TestCooperativeLevel();
+	Render* render = game->GetRender();
+	IDirect3DDevice9* device = render->GetDevice();
+	HRESULT hr = device->TestCooperativeLevel();
 	if(hr != D3D_OK)
 		return;
 
-	game->SetAlphaBlend(false);
-	game->SetAlphaTest(false);
-	game->SetNoCulling(false);
-	game->SetNoZWrite(false);
-
-	// set render target
-	SURFACE surf = nullptr;
-	if(game->sChar)
-		V(game->device->SetRenderTarget(0, game->sChar));
-	else
-	{
-		V(game->tChar->GetSurfaceLevel(0, &surf));
-		V(game->device->SetRenderTarget(0, surf));
-	}
+	render->SetAlphaBlend(false);
+	render->SetAlphaTest(false);
+	render->SetNoCulling(false);
+	render->SetNoZWrite(false);
+	render->SetTarget(rt_char);
 
 	// start rendering
-	V(game->device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET, 0, 1.f, 0));
-	V(game->device->BeginScene());
+	V(device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET, 0, 1.f, 0));
+	V(device->BeginScene());
 
 	static vector<Lights> lights;
 
@@ -680,20 +677,9 @@ void CreateCharacterPanel::RenderUnit()
 	game->draw_batch.Clear();
 
 	// end rendering
-	V(game->device->EndScene());
+	V(device->EndScene());
 
-	// copy to surface if using multisampling
-	if(game->sChar)
-	{
-		V(game->tChar->GetSurfaceLevel(0, &surf));
-		V(game->device->StretchRect(game->sChar, nullptr, surf, nullptr, D3DTEXF_NONE));
-	}
-	surf->Release();
-
-	// restore old render target
-	V(game->device->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &surf));
-	V(game->device->SetRenderTarget(0, surf));
-	surf->Release();
+	render->SetTarget(nullptr);
 }
 
 //=================================================================================================
