@@ -149,7 +149,6 @@
     <ClInclude Include="source\engine\CameraBase.h" />
     <ClInclude Include="source\engine\DebugDrawer.h" />
     <ClInclude Include="source\engine\DirectX.h" />
-    <ClInclude Include="source\engine\EngineSettings.h" />
     <ClInclude Include="source\engine\FileFormat.h" />
     <ClInclude Include="source\engine\Font.h" />
     <ClInclude Include="source\engine\EngineCore.h" />
