@@ -9929,18 +9929,14 @@ void Game::CreateSaveImage(cstring filename)
 {
 	assert(filename);
 
-	Render* render = GetRender();
-	render->SetTarget(rt_save);
-
 	int old_flags = draw_flags;
 	if(game_state == GS_LEVEL)
 		draw_flags = (0xFFFFFFFF & ~DF_GUI & ~DF_MENU);
 	else
 		draw_flags = (0xFFFFFFFF & ~DF_MENU);
-	OnDraw(false);
+	DrawGame(rt_save);
 	draw_flags = old_flags;
 
-	render->SetTarget(nullptr);
 	rt_save->SaveToFile(filename);
 }
 

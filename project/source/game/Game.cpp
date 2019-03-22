@@ -692,11 +692,11 @@ void Game::TakeScreenshot(bool no_gui)
 	{
 		int old_flags = draw_flags;
 		draw_flags = (0xFFFF & ~DF_GUI);
-		render->Draw(true);
+		render->Draw(false);
 		draw_flags = old_flags;
 	}
 	else
-		render->Draw(true);
+		render->Draw(false);
 
 	SURFACE back_buffer;
 	HRESULT hr = render->GetDevice()->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &back_buffer);

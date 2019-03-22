@@ -223,7 +223,7 @@ void Engine::DoTick(bool update_game)
 	}
 	Key.UpdateMouseWheel(0);
 
-	Render();
+	render->Draw();
 	Key.Update();
 	sound_mgr->Update(dt);
 }

@@ -428,7 +428,7 @@ void Render::WaitReset()
 
 
 //=================================================================================================
-void Render::Draw(bool dont_call_present)
+void Render::Draw(bool call_present)
 {
 	HRESULT hr = device->TestCooperativeLevel();
 	if(hr != D3D_OK)
@@ -455,7 +455,7 @@ void Render::Draw(bool dont_call_present)
 
 	Engine::Get().OnDraw();
 
-	if(!dont_call_present)
+	if(call_present)
 	{
 		hr = device->Present(nullptr, nullptr, Engine::Get().GetWindowHandle(), nullptr);
 		if(FAILED(hr))
@@ -874,7 +874,9 @@ void Render::SetTarget(RenderTarget* target)
 
 		if(current_target->tmp_surf)
 		{
-
+			current_target->surf->Release();
+			current_target->surf = nullptr;
+			current_target->tmp_surf = false;
 		}
 		else
 		{

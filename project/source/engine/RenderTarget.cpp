@@ -22,5 +22,5 @@ void RenderTarget::SaveToFile(cstring filename)
 		V(tex->GetSurfaceLevel(0, &s));
 	V(D3DXSaveSurfaceToFile(filename, D3DXIFF_JPG, s, nullptr, nullptr));
 	if(!surf)
-		surf->Release();
+		s->Release();
 }

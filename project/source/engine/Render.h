@@ -27,7 +27,7 @@ public:
 	void Init(StartupOptions& options);
 	bool Reset(bool force);
 	void WaitReset();
-	void Draw(bool dont_call_present);
+	void Draw(bool call_present = true);
 	bool CheckDisplay(const Int2& size, int& hz); // dla zera zwraca najlepszy hz
 	void RegisterShader(ShaderHandler* shader);
 	ID3DXEffect* CompileShader(cstring name);

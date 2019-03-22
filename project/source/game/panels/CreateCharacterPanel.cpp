@@ -679,7 +679,7 @@ void CreateCharacterPanel::RenderUnit()
 	// end rendering
 	V(device->EndScene());
 
-	render->SetTarget(rt_char);
+	render->SetTarget(nullptr);
 }
 
 //=================================================================================================
