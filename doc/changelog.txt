@@ -27,6 +27,9 @@ Version 0.9 (???):
 - naprawiony spadek wydajnoœci za ka¿dym razem gdy lokalizacja zewnêtrzna by³a ponownie odwiedzana
 - naprawione wycieki pamiêci i brakuj¹ce tekstury po próbie wczytania z³ego zapisu i rozpoczêciu nowej gry
 - naprawiony crash przy zapisywaniu gry z magicznymi pociskami lub kilkoma innymi czarami
+- naprawione ai biegn¹ce na wroga podczas jedzenia/picia
+- naprawione celowanie przez ai z czarów bardziej na prawo
+- naprawione celowanie przez ai z czarów promieni
 
 --------------------------------------------------------------------------------
 Wersja 0.8.1 (???):

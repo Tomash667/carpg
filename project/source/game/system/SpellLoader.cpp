@@ -248,6 +248,9 @@ void SpellLoader::ParseSpell(const string& id)
 		}
 	}
 
+	if(Any(spell->type, Spell::Point, Spell::Ball) && spell->speed == 0.f)
+		LoadWarning("Invalid spell speed.");
+
 	Spell::spells.push_back(spell.Pin());
 }
 

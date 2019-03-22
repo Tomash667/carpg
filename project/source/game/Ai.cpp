@@ -1368,7 +1368,6 @@ void Game::UpdateAi(float dt)
 									target_pos = ai.idle_data.pos;
 									look_at = LookAtWalk;
 									run_type = Walk;
-									// path_obj_ignore = ?
 								}
 								break;
 							case AIController::Idle_TrainBow:
@@ -1749,6 +1748,8 @@ void Game::UpdateAi(float dt)
 								else if(best_dist < u.GetAttackRange() / 2)
 									move_type = MoveAway;
 							}
+							else if(Any(u.action, A_EAT, A_DRINK))
+								move_type = DontMove;
 							else
 							{
 								if(best_dist < u.GetAttackRange() + 0.5f)

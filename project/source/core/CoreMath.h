@@ -308,6 +308,8 @@ float ShortestArc(float a, float b);
 // Linear interpolation between two angles
 void LerpAngle(float& angle, float from, float to, float t);
 
+void AdjustAngle(float& angle, float expected, float max_diff);
+
 // Return true if value is in range
 template<typename T>
 inline bool InRange(T v, T left, T right)
