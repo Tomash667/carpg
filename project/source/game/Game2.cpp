@@ -9818,21 +9818,6 @@ DialogContext* Game::FindDialogContext(Unit* talker)
 	return nullptr;
 }
 
-void Game::CreateSaveImage(cstring filename)
-{
-	assert(filename);
-
-	int old_flags = draw_flags;
-	if(game_state == GS_LEVEL)
-		draw_flags = (0xFFFFFFFF & ~DF_GUI & ~DF_MENU);
-	else
-		draw_flags = (0xFFFFFFFF & ~DF_MENU);
-	DrawGame(rt_save);
-	draw_flags = old_flags;
-
-	rt_save->SaveToFile(filename);
-}
-
 void Game::PlayerUseUsable(Usable* usable, bool after_action)
 {
 	Unit& u = *pc->unit;

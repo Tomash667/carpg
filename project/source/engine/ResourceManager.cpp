@@ -79,12 +79,11 @@ void ResourceManager::Cleanup()
 
 	for(Pak* pak : paks)
 	{
-		BufferPool.Free(pak->filename_buf);
+		pak->filename_buf->Free();
 		delete pak;
 	}
 
-	for(Buffer* buf : sound_bufs)
-		BufferPool.Free(buf);
+	Buffer::Free(sound_bufs);
 
 	task_pool.Free(tasks);
 }
@@ -168,7 +167,7 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 		Error("ResourceManager: Failed to read pak '%s' files table (%u).", path, GetLastError());
 		return false;
 	}
-	Buffer* buf = BufferPool.Get();
+	Buffer* buf = Buffer::Get();
 	buf->Resize(header.file_entry_table_size);
 	f.Read(buf->Data(), header.file_entry_table_size);
 	total_size -= header.file_entry_table_size;
@@ -178,7 +177,7 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 	{
 		if(key == nullptr)
 		{
-			BufferPool.Free(buf);
+			buf->Free();
 			Error("ResourceManager: Failed to read pak '%s', file is encrypted.", path);
 			return false;
 		}
@@ -186,7 +185,7 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 	}
 	if(IS_SET(header.flags, Pak::FullEncrypted) && !IS_SET(header.flags, Pak::Encrypted))
 	{
-		BufferPool.Free(buf);
+		buf->Free();
 		Error("ResourceManager: Failed to read pak '%s', invalid flags combination %u.", path, header.flags);
 		return false;
 	}
@@ -206,7 +205,7 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 
 		if(total_size < 0)
 		{
-			BufferPool.Free(buf);
+			buf->Free();
 			Error("ResourceManager: Failed to read pak '%s', broken file size %u at index %u.", path, file.compressed_size, i);
 			delete pak;
 			return false;
@@ -214,7 +213,7 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 
 		if(file.offset + file.compressed_size > pak_size)
 		{
-			BufferPool.Free(buf);
+			buf->Free();
 			Error("ResourceManager: Failed to read pak '%s', file at index %u has invalid offset %u (pak size %u).",
 				path, i, file.offset, pak_size);
 			delete pak;

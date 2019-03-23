@@ -62,9 +62,9 @@ load = "Wczytaj"
 saveN = "Zapis %d"
 quickSave = "Szybki zapis"
 emptySlot = "Puste miejsce %d"
-saveDate = "Data: %04d-%02d-%02d %02d:%02d:%02d\n"
-saveTime = "Rok %d, Miesi¹c %d, Dzieñ %d\n"
-savePlayers = "\nGracze %d\n"
+saveDate = "Zapisano: %04d-%02d-%02d %02d:%02d:%02d\n"
+saveTime = "Date: %s\n"
+savePlayers = "Gracze: "
 saveName = "Nazwa zapisu:"
 
 // journal

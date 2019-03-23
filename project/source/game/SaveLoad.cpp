@@ -40,6 +40,8 @@
 #include "ItemHelper.h"
 #include "CreateServerPanel.h"
 #include "GameMenu.h"
+#include "PlayerInfo.h"
+#include "RenderTarget.h"
 
 enum SaveFlags
 {
@@ -135,6 +137,8 @@ bool Game::SaveGameCommon(cstring filename, int slot, cstring text)
 		MoveFile(filename, bak_filename);
 	}
 
+	CreateSaveImage();
+
 	GameWriter f(filename);
 	if(!f)
 	{
@@ -143,19 +147,18 @@ bool Game::SaveGameCommon(cstring filename, int slot, cstring text)
 		return false;
 	}
 
-	SaveGame(f);
+	SaveSlot* ss = nullptr;
+	if(slot != -1)
+	{
+		ss = &gui->saveload->GetSaveSlot(slot);
+		ss->text = text;
+	}
+
+	SaveGame(f, ss);
 
 	cstring msg = Format("Game saved '%s'.", filename);
 	gui->console->AddMsg(msg);
 	Info(msg);
-
-	if(slot != -1)
-	{
-		gui->saveload->UpdateSaveInfo(slot, text);
-
-		string path = Format("saves/%s/%d.jpg", Net::IsOnline() ? "multi" : "single", slot);
-		CreateSaveImage(path.c_str());
-	}
 
 	if(hardcore_mode)
 	{
@@ -165,6 +168,18 @@ bool Game::SaveGameCommon(cstring filename, int slot, cstring text)
 	}
 
 	return true;
+}
+
+//=================================================================================================
+void Game::CreateSaveImage()
+{
+	int old_flags = draw_flags;
+	if(game_state == GS_LEVEL)
+		draw_flags = (0xFFFFFFFF & ~DF_GUI & ~DF_MENU);
+	else
+		draw_flags = (0xFFFFFFFF & ~DF_MENU);
+	DrawGame(rt_save);
+	draw_flags = old_flags;
 }
 
 //=================================================================================================
@@ -239,10 +254,7 @@ void Game::LoadGameCommon(cstring filename, int slot)
 		if(slot == -1)
 		{
 			gui->saveload->RemoveHardcoreSave(slot);
-
 			DeleteFile(Format(Net::IsOnline() ? "saves/multi/%d.sav" : "saves/single/%d.sav", slot));
-			DeleteFile(Format(Net::IsOnline() ? "saves/multi/%d.txt" : "saves/single/%d.txt", slot));
-			DeleteFile(Format(Net::IsOnline() ? "saves/multi/%d.jpg" : "saves/single/%d.jpg", slot));
 		}
 		else
 			DeleteFile(filename);
@@ -271,7 +283,7 @@ void Game::LoadGameCommon(cstring filename, int slot)
 }
 
 //=================================================================================================
-void Game::SaveGame(GameWriter& f)
+void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 {
 	Info("Saving...");
 
@@ -304,12 +316,54 @@ void Game::SaveGame(GameWriter& f)
 		flags |= SF_HARDCORE;
 	f << flags;
 
+	// info
+	f << (slot ? slot->text : "");
+	f << pc->name;
+	f << ClassInfo::classes[(int)pc->unit->data->clas].id;
+	if(Net::IsOnline())
+	{
+		f.WriteCasted<byte>(N.active_players - 1);
+		for(PlayerInfo* info : N.players)
+		{
+			if(!info->pc->is_local && info->left == PlayerInfo::LEFT_NO)
+				f << info->pc->name;
+		}
+	}
+	f << time(nullptr);
+	f << W.GetYear();
+	f << W.GetMonth();
+	f << W.GetDay();
+	f << L.GetCurrentLocationText();
+	if(slot)
+	{
+		slot->valid = true;
+		slot->player_name = pc->name;
+		slot->player_class = pc->unit->data->clas;
+		slot->mp_players.clear();
+		if(Net::IsOnline())
+		{
+			for(PlayerInfo* info : N.players)
+			{
+				if(!info->pc->is_local && info->left == PlayerInfo::LEFT_NO)
+					slot->mp_players.push_back(info->pc->name);
+			}
+		}
+		slot->save_date = time(nullptr);
+		slot->game_year = W.GetYear();
+		slot->game_month = W.GetMonth();
+		slot->game_day = W.GetDay();
+		slot->location = L.GetCurrentLocationText();
+		slot->img_offset = f.GetPos() + 4;
+	}
+	uint img_size = rt_save->SaveToFile(f);
+	if(slot)
+		slot->img_size = img_size;
+
 	// game stats
 	GameStats::Get().Save(f);
 
 	f << game_state;
 	W.Save(f);
-
 
 	byte check_id = 0;
 
@@ -412,6 +466,77 @@ void Game::SaveGame(GameWriter& f)
 }
 
 //=================================================================================================
+bool Game::LoadGameHeader(GameReader& f, SaveSlot& slot)
+{
+	if(!f)
+		return false;
+
+	// signature
+	byte sign[4] = { 'C','R','S','V' };
+	byte sign2[4];
+	f >> sign2;
+	for(int i = 0; i < 4; ++i)
+	{
+		if(sign2[i] != sign[i])
+			return false;
+	}
+
+	// version
+	int version;
+	f >> version;
+
+	// save version
+	f >> slot.load_version;
+	if(slot.load_version < V_0_4)
+	{
+		// build - unused
+		uint build;
+		f >> build;
+	}
+
+	// start version
+	if(slot.load_version >= V_0_4)
+		f >> start_version;
+	else
+		start_version = version;
+
+	// content version
+	if(slot.load_version >= V_0_7)
+	{
+		uint content_version;
+		f >> content_version;
+	}
+
+	// save flags
+	byte flags;
+	f >> flags;
+
+	// info
+	if(slot.load_version >= V_DEV)
+	{
+		slot.hardcore = IS_SET(flags, SF_HARDCORE);
+		f >> slot.text;
+		f >> slot.player_name;
+		const string& class_id = f.ReadString1();
+		ClassInfo* ci = ClassInfo::Find(class_id);
+		slot.player_class = (ci ? ci->class_id : Class::INVALID);
+		if(IS_SET(flags, SF_ONLINE))
+			f.ReadStringArray<byte, byte>(slot.mp_players);
+		else
+			slot.mp_players.clear();
+		f >> slot.save_date;
+		f >> slot.game_year;
+		f >> slot.game_month;
+		f >> slot.game_day;
+		f >> slot.location;
+		f >> slot.img_size;
+		slot.img_offset = f.GetPos();
+	}
+
+	return true;
+}
+
+//=================================================================================================
 void Game::LoadGame(GameReader& f)
 {
 	ClearGame();
@@ -502,6 +627,22 @@ void Game::LoadGame(GameReader& f)
 
 	Info("Loading save. Version %s, start %s, format %d, mp %d, debug %d.", VersionToString(version), VersionToString(start_version), LOAD_VERSION,
 		online_save ? 1 : 0, IS_SET(flags, SF_DEBUG) ? 1 : 0);
+
+	// info
+	if(LOAD_VERSION >= V_DEV)
+	{
+		f.SkipString1(); // text
+		f.SkipString1(); // player name
+		f.SkipString1(); // player class
+		if(N.mp_load) // mp players
+			f.SkipStringArray<byte, byte>();
+		f.Skip<time_t>(); // save_date
+		f.Skip<int>(); // game_year
+		f.Skip<int>(); // game_month
+		f.Skip<int>(); // game_day
+		f.SkipString1(); // location
+		f.SkipData<uint>(); // image
+	}
 
 	LoadingHandler loading;
 	GAME_STATE game_state2;

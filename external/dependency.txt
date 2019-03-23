@@ -1,12 +1,12 @@
 EXTERNAL VERSION LIST
 --------------------------------------------------------------------------------
 Angelscript - 2.33 (<http://www.angelcode.com/angelscript/>)
-Bullet - 2.88 (<https://github.com/bulletphysics/bullet3>)
+Bullet - 2.88 (<https://github.com/bulletphysics/bullet3/releases>)
 CrashRpt - 1.5 fork (<https://github.com/Tomash667/crashrpt2>)
 DirectX - Microsoft DirectX SDK (June 2010)
-DirectXMath - 3.13 (<https://github.com/Microsoft/DirectXMath>)
+DirectXMath - 3.13 (<https://github.com/Microsoft/DirectXMath/releases>)
 FMod - 1.10.11 (Low level API <https://www.fmod.com/resources/documentation-api?page=content/generated/common/revision.html>)
-JSON for Modern C++ - 3.4.0
-SLikeNet -  0.1.2 (<https://github.com/SLikeSoft/SLikeNet>)
-Visual Leak Detector - 2.5.1 (<https://kinddragon.github.io/vld/>)
+JSON for Modern C++ - 3.4.0 (<https://github.com/nlohmann/json/releases>)
+SLikeNet - 0.1.2 fork (<https://github.com/Tomash667/SLikeNet>)
+Visual Leak Detector - 2.5.1 (<https://github.com/KindDragon/vld/releases>)
 zlib - 1.2.11 (<https://github.com/madler/zlib>)

@@ -139,6 +139,7 @@ struct QuestInfo;
 struct QuestList;
 struct QuestScheme;
 struct Room;
+struct SaveSlot;
 struct ScriptEvent;
 struct Shield;
 struct SoundPack;

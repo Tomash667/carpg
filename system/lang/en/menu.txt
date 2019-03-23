@@ -62,9 +62,9 @@ load = "Load"
 saveN = "Save %d"
 quickSave = "Quick save"
 emptySlot = "Empty slot %d"
-saveDate = "Date: %04d-%02d-%02d %02d:%02d:%02d\n"
-saveTime = "Year %d, Month %d, Day %d\n"
-savePlayers = "\nPlayers %d"
+saveDate = "Saved at: %04d-%02d-%02d %02d:%02d:%02d\n"
+saveTime = "Date: %s\n"
+savePlayers = "Players: "
 saveName = "Save name:"
 
 // journal

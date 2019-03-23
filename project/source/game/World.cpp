@@ -1761,6 +1761,12 @@ cstring World::GetDate() const
 }
 
 //=================================================================================================
+cstring World::GetDate(int year, int month, int day) const
+{
+	return Format(txDate, year, month + 1, day + 1);
+}
+
+//=================================================================================================
 int World::GetRandomSettlementIndex(int excluded) const
 {
 	int index = Rand() % settlements;

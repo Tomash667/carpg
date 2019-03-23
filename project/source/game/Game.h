@@ -485,7 +485,9 @@ public:
 	void PlayAttachedSound(Unit& unit, SOUND sound, float distance);
 	void StopAllSounds();
 	ATTACK_RESULT DoGenericAttack(LevelContext& ctx, Unit& attacker, Unit& hitted, const Vec3& hitpoint, float attack, int dmg_type, bool bash);
-	void SaveGame(GameWriter& f);
+	void SaveGame(GameWriter& f, SaveSlot* slot);
+	void CreateSaveImage();
+	bool LoadGameHeader(GameReader& f, SaveSlot& slot);
 	void LoadGame(GameReader& f);
 	void RemoveUnusedAiAndCheck();
 	void CheckUnitsAi(LevelContext& ctx, int& err_count);
@@ -571,7 +573,6 @@ public:
 	bool CanShowEndScreen();
 	void UpdateGameDialogClient();
 	void UpdateGameNet(float dt);
-	void CreateSaveImage(cstring filename);
 	void PlayerUseUsable(Usable* u, bool after_action);
 	void UnitTalk(Unit& u, cstring text);
 	void OnEnterLocation();

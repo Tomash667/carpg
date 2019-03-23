@@ -91,6 +91,7 @@ public:
 	// datetime
 	bool IsSameWeek(int worldtime2) const;
 	cstring GetDate() const;
+	cstring GetDate(int year, int month, int day) const;
 	int GetDay() const { return day; }
 	int GetMonth() const { return month; }
 	int GetYear() const { return year; }

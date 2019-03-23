@@ -126,6 +126,8 @@ void Game::DrawGame(RenderTarget* target)
 
 	if(post_effects.empty() || !ePostFx)
 	{
+		if(target)
+			render->SetTarget(target);
 		V(device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET | D3DCLEAR_STENCIL, clear_color, 1.f, 0));
 		V(device->BeginScene());
 
@@ -151,6 +153,8 @@ void Game::DrawGame(RenderTarget* target)
 		GUI.Draw(IS_SET(draw_flags, DF_GUI), IS_SET(draw_flags, DF_MENU));
 
 		V(device->EndScene());
+		if(target)
+			render->SetTarget(nullptr);
 	}
 	else
 	{

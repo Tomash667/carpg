@@ -184,12 +184,17 @@ public:
 		Skip(sizeof(T));
 	}
 	template<typename LengthType>
+	void SkipData()
+	{
+		LengthType length = Read<LengthType>();
+		if(!ok || length == 0)
+			return;
+		Skip(length);
+	}
+	template<typename LengthType>
 	void SkipString()
 	{
-		LengthType len = Read<LengthType>();
-		if(!ok || len == 0)
-			return;
-		Skip(len);
+		SkipData<LengthType>();
 	}
 	void SkipString1()
 	{
@@ -285,7 +290,7 @@ public:
 	{
 		if(!Ensure(size))
 			return nullptr;
-		Buffer* buf = BufferPool.Get();
+		Buffer* buf = Buffer::Get();
 		buf->Resize(size);
 		Read(buf->Data(), size);
 		return buf;
@@ -294,7 +299,7 @@ public:
 	{
 		if(!SetPos(offset) || !Ensure(size))
 			return nullptr;
-		Buffer* buf = BufferPool.Get();
+		Buffer* buf = Buffer::Get();
 		buf->Resize(size);
 		Read(buf->Data(), size);
 		return buf;

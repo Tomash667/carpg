@@ -1343,7 +1343,7 @@ struct PointerVector
 
 //-----------------------------------------------------------------------------
 // Buffer - used by MemoryStream
-class Buffer
+class Buffer : public ObjectPoolProxy<Buffer>
 {
 public:
 	void* At(uint offset)
@@ -1368,7 +1368,6 @@ public:
 private:
 	vector<byte> data;
 };
-extern ObjectPool<Buffer> BufferPool;
 
 //-----------------------------------------------------------------------------
 struct BufferHandle
@@ -1377,7 +1376,7 @@ struct BufferHandle
 	~BufferHandle()
 	{
 		if(buf)
-			BufferPool.Free(buf);
+			buf->Free();
 	}
 
 	operator bool() const
