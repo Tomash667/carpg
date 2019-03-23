@@ -426,10 +426,7 @@ public:
 	void UseAction(PlayerController* p, bool from_server, const Vec3* pos_data = nullptr);
 	void SpawnUnitEffect(Unit& unit);
 	void PlayerCheckObjectDistance(Unit& u, const Vec3& pos, void* ptr, float& best_dist, BeforePlayer type);
-
 	int CheckMove(Vec3& pos, const Vec3& dir, float radius, Unit* me, bool* is_small = nullptr);
-	int CheckMovePhase(Vec3& pos, const Vec3& dir, float radius, Unit* me, bool* is_small = nullptr);
-
 	void ParseCommand(const string& str, PrintMsgFunc print_func, PARSE_SOURCE ps = PS_UNKNOWN);
 	void CmdList(Tokenizer& t);
 	void AddCommands();
@@ -531,7 +528,7 @@ public:
 	void UpdateContext(LevelContext& ctx, float dt);
 	bool IsAnyoneTalking() const;
 	// to by mog³o byæ globalna funkcj¹
-	void PlayHitSound(MATERIAL_TYPE mat_bron, MATERIAL_TYPE mat_cialo, const Vec3& hitpoint, float range, bool dmg);
+	void PlayHitSound(MATERIAL_TYPE mat_weapon, MATERIAL_TYPE mat_body, const Vec3& hitpoint, float range, bool dmg);
 	// wczytywanie
 	void LoadingStart(int steps);
 	void LoadingStep(cstring text = nullptr, int end = 0);

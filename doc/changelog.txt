@@ -30,6 +30,11 @@ Version 0.9 (???):
 - naprawione ai biegn¹ce na wroga podczas jedzenia/picia
 - naprawione celowanie przez ai z czarów bardziej na prawo
 - naprawione celowanie przez ai z czarów promieni
+- naprawione zbyt czêst zmienianie przez ³uczników broni pomiêdzy ³ukiem a do walki wrêcz
+- naprawione ai szukaj¹ce ju¿ martwego przeciwnika jeœli zosta³ trafiony wolno poruszaj¹cym siê pociskiem po œmierci osoby która go wystrzeli³a
+- naprawione blokowanie siê ai kleryka gdy próbuje kogoœ uleczyæ
+- naprawione u¿ywanie przez ³uczników/magów ataku wrêcz z kilku metrów jeœli coœ blokuje linie strza³u
+- naprawione ai gdy ktoœ inny poinformuje o wrogu próbuje siê tam dostaæ nawet je¿eli ten wróg ju¿ dawno nie ¿yje
 
 --------------------------------------------------------------------------------
 Wersja 0.8.1 (???):
