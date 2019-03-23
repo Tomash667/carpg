@@ -8415,6 +8415,7 @@ void Game::LoadingStart(int steps)
 	loading_cap = 0.66f;
 	loading_steps = steps;
 	loading_index = 0;
+	loading_first_step = true;
 	clear_color = Color::Black;
 	game_state = GS_LOAD;
 	gui->load_screen->visible = true;
@@ -8443,11 +8444,12 @@ void Game::LoadingStep(cstring text, int end)
 	if(end != 1)
 	{
 		loading_dt += loading_t.Tick();
-		if(loading_dt >= 1.f / 30 || end == 2)
+		if(loading_dt >= 1.f / 30 || end == 2 || loading_first_step)
 		{
 			loading_dt = 0.f;
 			DoPseudotick();
 			loading_t.Tick();
+			loading_first_step = false;
 		}
 	}
 }

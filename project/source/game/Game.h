@@ -373,6 +373,7 @@ public:
 	float loading_dt, loading_cap;
 	Timer loading_t;
 	int loading_steps, loading_index;
+	bool loading_first_step;
 	Color clear_color2;
 	// used temporary at loading
 	vector<AIController*> ai_bow_targets, ai_cast_targets;

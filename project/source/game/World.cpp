@@ -2030,7 +2030,8 @@ City* World::GetRandomSettlement(delegate<bool(City*)> pred)
 		if(pred(loc))
 			return loc;
 		index = (index + 1) % settlements;
-	} while(index != start_index);
+	}
+	while(index != start_index);
 	return nullptr;
 }
 
@@ -2057,7 +2058,8 @@ Location* World::GetRandomSettlementWeighted(delegate<float(Location*)> func)
 			best_index = index;
 		}
 		index = (index + 1) % settlements;
-	} while(index != start_index);
+	}
+	while(index != start_index);
 	return (best_index != -1 ? locations[best_index] : nullptr);
 }
 
@@ -2133,6 +2135,8 @@ void World::Travel(int index, bool send)
 	travel_target_pos = locations[travel_location_index]->pos;
 	travel_dir = Angle(world_pos.x, -world_pos.y, travel_target_pos.x, -travel_target_pos.y);
 	reveal_timer = 0.f;
+	if(Net::IsLocal())
+		travel_first_frame = true;
 
 	if(Net::IsOnline() && send)
 	{
@@ -2166,6 +2170,8 @@ void World::TravelPos(const Vec2& pos, bool send)
 	travel_target_pos = pos;
 	travel_dir = Angle(world_pos.x, -world_pos.y, travel_target_pos.x, -travel_target_pos.y);
 	reveal_timer = 0.f;
+	if(Net::IsLocal())
+		travel_first_frame = true;
 
 	if(Net::IsOnline() && send)
 	{
@@ -2179,6 +2185,12 @@ void World::TravelPos(const Vec2& pos, bool send)
 //=================================================================================================
 void World::UpdateTravel(float dt)
 {
+	if(travel_first_frame)
+	{
+		travel_first_frame = false;
+		return;
+	}
+
 	day_timer += dt;
 	if(day_timer >= 1.f)
 	{

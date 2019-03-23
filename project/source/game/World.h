@@ -201,7 +201,8 @@ private:
 	cstring txCamp, txCave, txCity, txCrypt, txDungeon, txForest, txVillage, txMoonwell, txOtherness, txRandomEncounter, txTower, txLabyrinth;
 	bool first_city, // spawn more low level heroes in first city
 		boss_level_mp, // used by clients instead boss_levels
-		tomir_spawned;
+		tomir_spawned,
+		travel_first_frame;
 
 	void UpdateDate(int days);
 	void SpawnCamps(int days);
