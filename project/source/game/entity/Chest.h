@@ -29,6 +29,7 @@ struct Chest : public ItemContainer
 	Unit* user;
 
 	static const int MIN_SIZE = 20;
+	static const float SOUND_DIST;
 	static int netid_counter;
 
 	Chest() : mesh_inst(nullptr) {}

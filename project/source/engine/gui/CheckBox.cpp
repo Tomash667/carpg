@@ -8,7 +8,7 @@
 TEX CheckBox::tTick;
 
 //=================================================================================================
-CheckBox::CheckBox(StringOrCstring text, bool checked) : text(text.c_str()), checked(checked), state(NONE), bt_size(32, 32), radiobox(false)
+CheckBox::CheckBox(StringOrCstring text, bool checked) : text(text.c_str()), checked(checked), state(NONE), bt_size(32, 32), radiobox(false), id(-1)
 {
 }
 

@@ -27,6 +27,7 @@
 #include "Quest_Tournament.h"
 #include "PlayerInfo.h"
 #include "CommandParser.h"
+#include "Render.h"
 
 //-----------------------------------------------------------------------------
 extern string g_ctime;
@@ -53,7 +54,6 @@ void Game::AddCommands()
 	cmds.push_back(ConsoleCommand(&cl_specularmap, "cl_specularmap", "use specular mapping (cl_specularmap 0/1)", F_ANYWHERE | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&cl_glow, "cl_glow", "use glow (cl_glow 0/1)", F_ANYWHERE | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&uv_mod, "uv_mod", "terrain uv mod (uv_mod 1-256)", F_ANYWHERE, 1, 256, VoidF(this, &Game::UvModChanged)));
-	cmds.push_back(ConsoleCommand(&shader_version, "shader_version", "force shader version (shader_version 2/3)", F_ANYWHERE | F_WORLD_MAP, 2, 3, VoidF(this, &Game::ShaderVersionChanged)));
 	cmds.push_back(ConsoleCommand(&profiler_mode, "profiler", "profiler execution: 0-disabled, 1-update, 2-rendering", F_ANYWHERE | F_WORLD_MAP, 0, 2));
 	cmds.push_back(ConsoleCommand(&settings.grass_range, "grass_range", "grass draw range", F_ANYWHERE | F_WORLD_MAP, 0.f));
 	cmds.push_back(ConsoleCommand(&devmode, "devmode", "developer mode (devmode 0/1)", F_GAME | F_SERVER | F_WORLD_MAP | F_MENU));
@@ -105,7 +105,7 @@ void Game::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_PAUSE, "pause", "pause/unpause", F_GAME | F_SERVER));
 	cmds.push_back(ConsoleCommand(CMD_MULTISAMPLING, "multisampling", "sets multisampling (multisampling type [quality])", F_ANYWHERE | F_WORLD_MAP | F_NO_ECHO));
 	cmds.push_back(ConsoleCommand(CMD_QUICKSAVE, "quicksave", "save game on last slot", F_GAME | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(CMD_QUICKLOAD, "quickload", "load game from last slot", F_SINGLEPLAYER | F_WORLD_MAP | F_MENU));
+	cmds.push_back(ConsoleCommand(CMD_QUICKLOAD, "quickload", "load game from last slot", F_GAME | F_WORLD_MAP | F_MENU | F_SERVER));
 	cmds.push_back(ConsoleCommand(CMD_RESOLUTION, "resolution", "show or change display resolution (resolution [w h hz])", F_ANYWHERE | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(CMD_QS, "qs", "pick Random character, get ready and start game", F_LOBBY));
 	cmds.push_back(ConsoleCommand(CMD_CLEAR, "clear", "clear text", F_ANYWHERE | F_WORLD_MAP));
@@ -132,6 +132,7 @@ void Game::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_ADD_LEARNING_POINTS, "add_learning_points", "add learning point to selected unit [count - default 1]", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_CLEAN_LEVEL, "clean_level", "remove all corpses and blood from level (clean_level [building_id])", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_ARENA, "arena", "spawns enemies on arena (example arena 3 rat vs 2 wolf)", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_SHADER_VERSION, "shader_version", "force shader version (shader_version 2/3)", F_ANYWHERE | F_WORLD_MAP | F_NO_ECHO));
 
 	// verify all commands are added
 #ifdef _DEBUG
@@ -175,7 +176,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 			}
 			if(game_state != GS_LEVEL)
 			{
-				Msg("Script commands can only be used ingame.");
+				Msg("Script commands can only be used inside level.");
 				return;
 			}
 
@@ -946,7 +947,6 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 				case CMD_LOAD:
 					if(CanLoadGame())
 					{
-						Net::SetMode(Net::Mode::Singleplayer);
 						LocalString name;
 						int slot = 1;
 						if(t.Next())
@@ -1065,9 +1065,9 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								f.WriteCasted<byte>(Net::IsServer() ? Team.my_id : info->id);
 								f << text;
 								if(Net::IsServer())
-									N.SendServer(f, MEDIUM_PRIORITY, RELIABLE, info->adr, Stream_Chat);
+									N.SendServer(f, MEDIUM_PRIORITY, RELIABLE, info->adr);
 								else
-									N.SendClient(f, MEDIUM_PRIORITY, RELIABLE, Stream_Chat);
+									N.SendClient(f, MEDIUM_PRIORITY, RELIABLE);
 								cstring s = Format("@%s: %s", info->name.c_str(), text.c_str());
 								AddMsg(s);
 								Info(s);
@@ -1088,7 +1088,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							BitStreamWriter f;
 							f << ID_SERVER_SAY;
 							f << text;
-							N.SendAll(f, MEDIUM_PRIORITY, RELIABLE, Stream_Chat);
+							N.SendAll(f, MEDIUM_PRIORITY, RELIABLE);
 						}
 						AddServerMsg(text.c_str());
 						Info("SERVER: %s", text.c_str());
@@ -1245,9 +1245,9 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						f.WriteCasted<byte>(Team.my_id);
 						f << text;
 						if(Net::IsServer())
-							N.SendAll(f, MEDIUM_PRIORITY, RELIABLE, Stream_Chat);
+							N.SendAll(f, MEDIUM_PRIORITY, RELIABLE);
 						else
-							N.SendClient(f, MEDIUM_PRIORITY, RELIABLE, Stream_Chat);
+							N.SendClient(f, MEDIUM_PRIORITY, RELIABLE);
 						cstring s = Format("%s: %s", N.GetMe().name.c_str(), text.c_str());
 						AddMsg(s);
 						Info(s);
@@ -1348,11 +1348,11 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						int level = -1;
 						if(t.Next())
 							level = t.MustGetInt();
-						int result = ChangeMultisampling(type, level);
+						int result = GetRender()->SetMultisampling(type, level);
 						if(result == 2)
 						{
 							int ms, msq;
-							GetMultisampling(ms, msq);
+							GetRender()->GetMultisampling(ms, msq);
 							Msg("Changed multisampling to %d, %d.", ms, msq);
 						}
 						else
@@ -1361,7 +1361,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					else
 					{
 						int ms, msq;
-						GetMultisampling(ms, msq);
+						GetRender()->GetMultisampling(ms, msq);
 						Msg("multisampling = %d, %d", ms, msq);
 					}
 					break;
@@ -1369,8 +1369,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					Quicksave(true);
 					break;
 				case CMD_QUICKLOAD:
-					if(!Quickload(true))
-						Msg("Missing quicksave.");
+					Quickload(true);
 					break;
 				case CMD_RESOLUTION:
 					if(t.Next())
@@ -1388,7 +1387,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							}
 						}
 						vector<Resolution> resolutions;
-						GetResolutions(resolutions);
+						GetRender()->GetResolutions(resolutions);
 						for(const Resolution& res : resolutions)
 						{
 							if(w == res.size.x)
@@ -1426,10 +1425,10 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					}
 					else
 					{
-						// wypisz aktualn¹ rozdzielczoœæ i dostêpne
-						LocalString s = Format("Current resolution %dx%d (%d Hz). Available: ", GetWindowSize().x, GetWindowSize().y, wnd_hz);
+						LocalString s = Format("Current resolution %dx%d (%d Hz). Available: ",
+							GetWindowSize().x, GetWindowSize().y, GetRender()->GetRefreshRate());
 						vector<Resolution> resolutions;
-						GetResolutions(resolutions);
+						GetRender()->GetResolutions(resolutions);
 						for(const Resolution& res : resolutions)
 							s += Format("%dx%d(%d), ", res.size.x, res.size.y, res.hz);
 						s.pop(2u);
@@ -1975,6 +1974,22 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						}
 					}
 					break;
+				case CMD_SHADER_VERSION:
+					if(!t.Next() || !t.IsInt())
+						Msg("shader_version: %d", GetRender()->GetShaderVersion());
+					else
+					{
+						int value = t.GetInt();
+						if(value != 2 && value != 3)
+							Msg("Invalid shader version, must be 2 or 3.");
+						else
+						{
+							GetRender()->SetShaderVersion(value);
+							Msg("shader_version: %d", value);
+							ReloadShaders();
+						}
+					}
+					break;
 				default:
 					assert(0);
 					break;
@@ -1990,12 +2005,6 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 	{
 		Msg("Failed to parse command: %s", e.str->c_str());
 	}
-}
-
-//=================================================================================================
-void Game::ShaderVersionChanged()
-{
-	ReloadShaders();
 }
 
 //=================================================================================================

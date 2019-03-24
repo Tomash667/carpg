@@ -17,7 +17,7 @@ enum Animation
 {
 	ANI_NONE = -1,
 	ANI_WALK,
-	ANI_WALK_TYL,
+	ANI_WALK_BACK,
 	ANI_RUN,
 	ANI_LEFT,
 	ANI_RIGHT,
@@ -163,6 +163,13 @@ struct Unit
 	static const float STAMINA_BASH_ATTACK;
 	static const float STAMINA_UNARMED_ATTACK;
 	static const float STAMINA_RESTORE_TIMER;
+	static const float EAT_SOUND_DIST;
+	static const float DRINK_SOUND_DIST;
+	static const float ATTACK_SOUND_DIST;
+	static const float TALK_SOUND_DIST;
+	static const float ALERT_SOUND_DIST;
+	static const float PAIN_SOUND_DIST;
+	static const float DIE_SOUND_DIST;
 	static int netid_counter;
 
 	int netid;
@@ -185,7 +192,7 @@ struct Unit
 	const Item* used_item;
 	bool used_item_is_team;
 	vector<Effect> effects;
-	bool hitted, invisible, talking, run_attack, to_remove, temporary, changed, dont_attack, assist, attack_team, fake_unit, moved, mark;
+	bool hitted, invisible, talking, run_attack, to_remove, temporary, changed, dont_attack, assist, attack_team, fake_unit, moved, mark, running;
 	btCollisionObject* cobj;
 	Usable* usable;
 	UnitEventHandler* event_handler;
@@ -768,7 +775,7 @@ public:
 	void Die(LevelContext* ctx, Unit* killer);
 	void DropGold(int count);
 	bool IsDrunkman() const;
-	void PlaySound(SOUND snd, float range = 1.f);
+	void PlaySound(SOUND snd, float range);
 	void CreatePhysics(bool position = false);
 	void UpdatePhysics(const Vec3& pos);
 	SOUND GetTalkSound() const;

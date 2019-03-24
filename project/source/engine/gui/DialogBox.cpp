@@ -8,7 +8,7 @@ TEX DialogBox::tBackground;
 
 //=================================================================================================
 DialogBox::DialogBox(const DialogInfo& info) : name(info.name), text(info.text), type(info.type), event(info.event), order(info.order), pause(info.pause),
-need_delete(false)
+need_delete(false), result(-1)
 {
 	parent = info.parent;
 	focusable = true;

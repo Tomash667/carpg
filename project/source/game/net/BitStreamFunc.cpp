@@ -4,10 +4,10 @@
 #include "Item.h"
 
 //-----------------------------------------------------------------------------
-static ObjectPool<BitStream> bitstream_pool;
+static ObjectPool<BitStream> bitstream_write_pool, bitstream_read_pool;
 
 //-----------------------------------------------------------------------------
-BitStreamWriter::BitStreamWriter() : bitstream(*bitstream_pool.Get()), total_size(bitstream.GetNumberOfBytesUsed()), owned(true)
+BitStreamWriter::BitStreamWriter() : bitstream(*bitstream_write_pool.Get()), total_size(bitstream.GetNumberOfBytesUsed()), owned(true)
 {
 }
 
@@ -20,7 +20,7 @@ BitStreamWriter::~BitStreamWriter()
 	if(owned)
 	{
 		bitstream.Reset();
-		bitstream_pool.Free(&bitstream);
+		bitstream_write_pool.Free(&bitstream);
 	}
 }
 
@@ -68,9 +68,20 @@ void BitStreamWriter::Reset()
 }
 
 //-----------------------------------------------------------------------------
-BitStreamReader::BitStreamReader(BitStream& bitstream) : bitstream(bitstream)
+BitStreamReader::BitStreamReader(BitStream& bitstream) : bitstream(bitstream), pooled(false)
 {
 	ok = true;
+}
+
+BitStreamReader::BitStreamReader(Packet* packet) : bitstream(CreateBitStream(packet)), pooled(true)
+{
+	ok = true;
+}
+
+BitStreamReader::~BitStreamReader()
+{
+	if(pooled)
+		bitstream_read_pool.Free(&bitstream);
 }
 
 void BitStreamReader::Read(void* ptr, uint size)
@@ -106,4 +117,11 @@ bool BitStreamReader::SetPos(uint pos)
 	else
 		bitstream.SetReadOffset(BYTES_TO_BITS(pos));
 	return ok;
+}
+
+BitStream& BitStreamReader::CreateBitStream(Packet* packet)
+{
+	BitStream* bitstream = bitstream_read_pool.Get();
+	new(bitstream)BitStream(packet->data, packet->length, false);
+	return *bitstream;
 }

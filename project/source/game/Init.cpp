@@ -32,6 +32,7 @@
 #include "NameHelper.h"
 #include "CommandParser.h"
 #include "CreateServerPanel.h"
+#include "Render.h"
 
 extern void HumanPredraw(void* ptr, Matrix* mat, int n);
 extern const int ITEM_IMAGE_SIZE;
@@ -117,7 +118,7 @@ void Game::CreatePlaceholderResources()
 	SURFACE surf;
 	D3DLOCKED_RECT rect;
 
-	V(device->CreateTexture(ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &missing_texture, nullptr));
+	V(GetRender()->GetDevice()->CreateTexture(ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &missing_texture, nullptr));
 	V(missing_texture->GetSurfaceLevel(0, &surf));
 	V(surf->LockRect(&rect, nullptr, 0));
 
@@ -323,6 +324,7 @@ void Game::ConfigureGame()
 	}
 
 	CreateTextures();
+	CreateRenderTargets();
 }
 
 //=================================================================================================
@@ -403,9 +405,10 @@ void Game::PostconfigureGame()
 	}
 
 	// save config
-	cfg.Add("adapter", used_adapter);
+	Render* render = GetRender();
+	cfg.Add("adapter", render->GetAdapter());
 	cfg.Add("resolution", Format("%dx%d", GetWindowSize().x, GetWindowSize().y));
-	cfg.Add("refresh", wnd_hz);
+	cfg.Add("refresh", render->GetRefreshRate());
 	SaveCfg();
 
 	// end load screen, show menu
@@ -449,7 +452,8 @@ void Game::StartGameMode()
 		if(quickstart == QUICKSTART_LOAD_MP)
 		{
 			N.mp_load = true;
-			if(gui->saveload->TryLoad(quickstart_slot))
+			N.mp_quickload = false;
+			if(TryLoadGame(quickstart_slot, false, false))
 			{
 				gui->create_server->CloseDialog();
 				gui->server->autoready = true;
@@ -497,7 +501,7 @@ void Game::StartGameMode()
 			Warn("Quickstart: Can't join server, no player nick.");
 		break;
 	case QUICKSTART_LOAD:
-		if(!gui->saveload->TryLoad(quickstart_slot))
+		if(!TryLoadGame(quickstart_slot, false, false))
 			Error("Quickload failed.");
 		break;
 	default:

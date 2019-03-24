@@ -88,7 +88,7 @@ Buffer* FileReader::ReadToBuffer(Cstring path)
 	FileReader f(path);
 	if(!f)
 		return nullptr;
-	Buffer* buffer = BufferPool.Get();
+	Buffer* buffer = Buffer::Get();
 	buffer->Resize(f.GetSize());
 	f.Read(buffer->Data(), buffer->Size());
 	return buffer;
@@ -102,7 +102,7 @@ Buffer* FileReader::ReadToBuffer(Cstring path, uint offset, uint size)
 	f.Skip(offset);
 	if(!f.Ensure(size))
 		return nullptr;
-	Buffer* buffer = BufferPool.Get();
+	Buffer* buffer = Buffer::Get();
 	buffer->Resize(size);
 	f.Read(buffer->Data(), size);
 	return buffer;
@@ -153,7 +153,7 @@ MemoryReader::MemoryReader(Buffer* p_buf) : buf(*p_buf)
 
 MemoryReader::~MemoryReader()
 {
-	BufferPool.Free(&buf);
+	buf.Free();
 }
 
 void MemoryReader::Read(void* ptr, uint size)

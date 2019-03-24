@@ -9,7 +9,7 @@ TextureLock::TextureLock(TEX tex) : tex(tex)
 	assert(tex);
 	D3DLOCKED_RECT lock;
 	V(tex->LockRect(0, &lock, nullptr, 0));
-	data = (byte*)lock.pBits;
+	data = static_cast<byte*>(lock.pBits);
 	pitch = lock.Pitch;
 }
 

@@ -5,7 +5,7 @@
 
 using namespace gui;
 
-DrawBox::DrawBox() : Control(true), tex(nullptr), clicked(false)
+DrawBox::DrawBox() : Control(true), tex(nullptr), clicked(false), default_scale(1.f)
 {
 }
 

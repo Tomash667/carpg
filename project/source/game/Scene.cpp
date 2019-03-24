@@ -12,6 +12,7 @@
 #include "GlobalGui.h"
 #include "GameMessages.h"
 #include "ParticleSystem.h"
+#include "Render.h"
 #include "DirectX.h"
 
 //-----------------------------------------------------------------------------
@@ -146,6 +147,8 @@ void Game::InitScene()
 //=================================================================================================
 void Game::CreateVertexDeclarations()
 {
+	IDirect3DDevice9* device = GetRender()->GetDevice();
+
 	const D3DVERTEXELEMENT9 Default[] = {
 		{0, 0,  D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_POSITION,		0},
 		{0, 12,	D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_NORMAL,		0},
@@ -241,6 +244,7 @@ void Game::BuildDungeon()
 {
 	// ile wierzcho³ków
 	// 19*4, pod³oga, sufit, 4 œciany, niski sufit, 4 kawa³ki niskiego sufitu, 4 œciany w dziurze górnej, 4 œciany w dziurze dolnej
+	IDirect3DDevice9* device = GetRender()->GetDevice();
 
 	uint size = sizeof(VTangent) * 19 * 4;
 	V(device->CreateVertexBuffer(size, D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &vbDungeon, nullptr));
@@ -581,9 +585,10 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 		ListGrass();
 	}
 
-	// teren
+	// terrain
 	if(ctx.type == LevelContext::Outside && IS_SET(draw_flags, DF_TERRAIN))
 	{
+		PROFILER_BLOCK("Terrain");
 		uint parts = L.terrain->GetPartsCount();
 		for(uint i = 0; i < parts; ++i)
 		{
@@ -592,13 +597,17 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 		}
 	}
 
-	// podziemia
+	// dungeon
 	if(ctx.type == LevelContext::Inside && IS_SET(draw_flags, DF_TERRAIN))
+	{
+		PROFILER_BLOCK("Dungeon");
 		FillDrawBatchDungeonParts(frustum);
+	}
 
-	// postacie
+	// units
 	if(IS_SET(draw_flags, DF_UNITS))
 	{
+		PROFILER_BLOCK("Units");
 		for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
 		{
 			Unit& u = **it;
@@ -606,14 +615,15 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 		}
 	}
 
-	// obiekty
+	// objects
 	if(IS_SET(draw_flags, DF_OBJECTS))
 	{
+		PROFILER_BLOCK("Objects");
 		if(ctx.type == LevelContext::Outside)
 		{
-			for(auto part : level_parts)
+			for(LevelPart* part : level_parts)
 			{
-				for(auto& obj : part->objects)
+				for(QuadObj& obj : part->objects)
 				{
 					const Object& o = *obj.obj;
 					if(frustum.SphereToFrustum(o.pos, o.GetRadius()))
@@ -632,9 +642,10 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 		}
 	}
 
-	// przedmioty
+	// items
 	if(IS_SET(draw_flags, DF_ITEMS))
 	{
+		PROFILER_BLOCK("Ground items");
 		Vec3 pos;
 		for(vector<GroundItem*>::iterator it = ctx.items->begin(), end = ctx.items->end(); it != end; ++it)
 		{
@@ -677,9 +688,10 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 		}
 	}
 
-	// u¿ywalne
+	// usable objects
 	if(IS_SET(draw_flags, DF_USABLES))
 	{
+		PROFILER_BLOCK("Usables");
 		for(vector<Usable*>::iterator it = ctx.usables->begin(), end = ctx.usables->end(); it != end; ++it)
 		{
 			Usable& use = **it;
@@ -713,9 +725,10 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 		}
 	}
 
-	// skrzynie
+	// chests
 	if(ctx.chests && IS_SET(draw_flags, DF_USABLES))
 	{
+		PROFILER_BLOCK("Chests");
 		for(vector<Chest*>::iterator it = ctx.chests->begin(), end = ctx.chests->end(); it != end; ++it)
 		{
 			Chest& chest = **it;
@@ -758,7 +771,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 		}
 	}
 
-	// drzwi
+	// doors
 	if(ctx.doors && IS_SET(draw_flags, DF_USABLES))
 	{
 		for(vector<Door*>::iterator it = ctx.doors->begin(), end = ctx.doors->end(); it != end; ++it)
@@ -803,20 +816,13 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 		}
 	}
 
-	// krew
+	// bloods
 	if(IS_SET(draw_flags, DF_BLOOD))
 	{
 		for(vector<Blood>::iterator it = ctx.bloods->begin(), end = ctx.bloods->end(); it != end; ++it)
 		{
 			if(it->size > 0.f && frustum.SphereToFrustum(it->pos, it->size))
 			{
-				/*SceneNode* node = node_pool.Get();
-				node->blood = &*it;
-				node->flags = SceneNode::F_ALPHA_BLEND | SceneNode::F_CUSTOM | SceneNode::F_NO_ZWRITE;
-				node->custom_type = CT_BLOOD;
-				node->tint = Vec4(1,1,1,1);
-				node->dist = distance_sqrt(it->pos, camera_center);
-				draw_batch.nodes.push_back(node);*/
 				if(!outside)
 					it->lights = GatherDrawBatchLights(ctx, nullptr, it->pos.x, it->pos.z, it->size);
 				draw_batch.bloods.push_back(&*it);
@@ -824,7 +830,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 		}
 	}
 
-	// strza³y
+	// bullets
 	if(IS_SET(draw_flags, DF_BULLETS))
 	{
 		for(vector<Bullet>::iterator it = ctx.bullets->begin(), end = ctx.bullets->end(); it != end; ++it)
@@ -850,13 +856,6 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 			{
 				if(frustum.SphereToFrustum(bullet.pos, bullet.tex_size))
 				{
-					/*SceneNode* node = node_pool.Get();
-					node->tex = bullet.tex.Get();
-					node->flags = SceneNode::F_CUSTOM | SceneNode::F_ALPHA_BLEND | SceneNode::F_NO_LIGHT | SceneNode::F_NO_ZWRITE | SceneNode::F_VERTEX_COLOR;
-					node->tint = Vec4(bullet.obj.pos, bullet.tex_size);
-					node->custom_type = CT_BILLBOARD;
-					node->dist = distance_sqrt(bullet.obj.pos, camera_center);
-					draw_batch.nodes.push_back(node);*/
 					Billboard& bb = Add1(draw_batch.billboards);
 					bb.pos = it->pos;
 					bb.size = it->tex_size;
@@ -866,7 +865,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 		}
 	}
 
-	// pu³pki
+	// traps
 	if(ctx.traps && IS_SET(draw_flags, DF_TRAPS))
 	{
 		for(vector<Trap*>::iterator it = ctx.traps->begin(), end = ctx.traps->end(); it != end; ++it)
@@ -913,32 +912,21 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 		}
 	}
 
-	// eksplozje
+	// explosions
 	if(IS_SET(draw_flags, DF_EXPLOS))
 	{
 		for(vector<Explo*>::iterator it = ctx.explos->begin(), end = ctx.explos->end(); it != end; ++it)
 		{
 			Explo& explo = **it;
 			if(frustum.SphereToFrustum(explo.pos, explo.size))
-			{
-				/*SceneNode* node = node_pool.Get();
-				D3DXMatrixScaling(&m1, explo.size);
-				D3DXMatrixTranslation(&m2, explo.pos);
-				D3DXMatrixMultiply(&node->mat, &m1, &m2);
-				node->explosion = explo;
-				node->flags = SceneNode::F_ALPHA_BLEND | SceneNode::F_NO_LIGHT | SceneNode::F_NO_ZWRITE | SceneNode::F_CUSTOM;
-				node->custom_type = CT_EXPLOSION;
-				node->tint = Vec4(1,1,1,1.f - explo.size / explo.sizemax);
-				node->tex_override = nullptr;
-				draw_batch.nodes->push_back(node);*/
 				draw_batch.explos.push_back(&explo);
-			}
 		}
 	}
 
-	// cz¹steczki
+	// particles
 	if(IS_SET(draw_flags, DF_PARTICLES))
 	{
+		PROFILER_BLOCK("Particles");
 		for(vector<ParticleEmitter*>::iterator it = ctx.pes->begin(), end = ctx.pes->end(); it != end; ++it)
 		{
 			ParticleEmitter& pe = **it;
@@ -1133,10 +1121,10 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 	// add stun effect
 	if(u.IsAlive())
 	{
-		auto effect = u.FindEffect(EffectId::Stun);
+		Effect* effect = u.FindEffect(EffectId::Stun);
 		if(effect)
 		{
-			auto& stun = Add1(draw_batch.stuns);
+			StunEffect& stun = Add1(draw_batch.stuns);
 			stun.pos = u.GetHeadPoint();
 			stun.time = effect->time;
 		}
@@ -1871,7 +1859,7 @@ void Game::ListAreas(LevelContext& ctx)
 //=================================================================================================
 void Game::PrepareAreaPath()
 {
-	auto& action = pc->GetAction();
+	Action& action = pc->GetAction();
 	Area2* area_ptr = area2_pool.Get();
 	Area2& area = *area_ptr;
 	area.ok = 2;
@@ -2941,11 +2929,14 @@ void Game::DrawGlowingNodes(bool use_postfx)
 {
 	PROFILER_BLOCK("DrawGlowingNodes");
 
+	Render* render = GetRender();
+	IDirect3DDevice9* device = render->GetDevice();
+
 	// ustaw flagi renderowania
-	SetAlphaBlend(false);
-	SetAlphaTest(false);
-	SetNoCulling(false);
-	SetNoZWrite(true);
+	render->SetAlphaBlend(false);
+	render->SetAlphaTest(false);
+	render->SetNoCulling(false);
+	render->SetNoZWrite(true);
 	V(device->SetRenderState(D3DRS_STENCILENABLE, TRUE));
 	V(device->SetRenderState(D3DRS_STENCILREF, 1));
 	V(device->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_REPLACE));
@@ -2953,7 +2944,7 @@ void Game::DrawGlowingNodes(bool use_postfx)
 
 	// ustaw render target
 	SURFACE render_surface;
-	if(!IsMultisamplingEnabled())
+	if(!render->IsMultisamplingEnabled())
 		V(tPostEffect[0]->GetSurfaceLevel(0, &render_surface));
 	else
 		render_surface = sPostEffect[0];
@@ -2970,7 +2961,7 @@ void Game::DrawGlowingNodes(bool use_postfx)
 	for(vector<GlowNode>::iterator it = draw_batch.glow_nodes.begin(), end = draw_batch.glow_nodes.end(); it != end; ++it)
 	{
 		GlowNode& glow = *it;
-		SetAlphaTest(glow.alpha);
+		render->SetAlphaTest(glow.alpha);
 
 		// animowany czy nie?
 		if(IS_SET(glow.node->flags, SceneNode::F_ANIMATED))
@@ -3079,7 +3070,7 @@ void Game::DrawGlowingNodes(bool use_postfx)
 	// w teksturze s¹ teraz wyrenderowane obiekty z kolorem glow
 	// trzeba rozmyæ teksturê, napierw po X
 	TEX tex;
-	if(!IsMultisamplingEnabled())
+	if(!render->IsMultisamplingEnabled())
 	{
 		render_surface->Release();
 		V(tPostEffect[1]->GetSurfaceLevel(0, &render_surface));
@@ -3123,7 +3114,7 @@ void Game::DrawGlowingNodes(bool use_postfx)
 
 	//======================================================================
 	// rozmywanie po Y
-	if(!IsMultisamplingEnabled())
+	if(!render->IsMultisamplingEnabled())
 	{
 		render_surface->Release();
 		V(tPostEffect[0]->GetSurfaceLevel(0, &render_surface));
@@ -3157,7 +3148,7 @@ void Game::DrawGlowingNodes(bool use_postfx)
 	//======================================================================
 	// Renderowanie tekstury z glow na ekran gry
 	// ustaw normalny render target
-	if(!IsMultisamplingEnabled())
+	if(!render->IsMultisamplingEnabled())
 	{
 		render_surface->Release();
 		tex = tPostEffect[1];
@@ -3178,7 +3169,7 @@ void Game::DrawGlowingNodes(bool use_postfx)
 	}
 	else
 	{
-		if(!IsMultisamplingEnabled())
+		if(!render->IsMultisamplingEnabled())
 		{
 			V(tPostEffect[2]->GetSurfaceLevel(0, &render_surface));
 			render_surface->Release();
@@ -3193,7 +3184,7 @@ void Game::DrawGlowingNodes(bool use_postfx)
 	V(device->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_KEEP));
 	V(device->SetRenderState(D3DRS_STENCILFUNC, D3DCMP_EQUAL));
 	V(device->SetRenderState(D3DRS_STENCILREF, 0));
-	SetAlphaBlend(true);
+	render->SetAlphaBlend(true);
 	V(device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD));
 	V(device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE));
 	V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE));
@@ -3221,10 +3212,13 @@ void Game::DrawGlowingNodes(bool use_postfx)
 //=================================================================================================
 void Game::DrawSkybox()
 {
-	SetAlphaTest(false);
-	SetAlphaBlend(false);
-	SetNoCulling(false);
-	SetNoZWrite(true);
+	Render* render = GetRender();
+	IDirect3DDevice9* device = render->GetDevice();
+
+	render->SetAlphaTest(false);
+	render->SetAlphaBlend(false);
+	render->SetNoCulling(false);
+	render->SetNoZWrite(true);
 
 	uint passes;
 	m2 = Matrix::Translation(cam.center) * cam.matViewProj;
@@ -3252,10 +3246,13 @@ void Game::DrawSkybox()
 //=================================================================================================
 void Game::DrawTerrain(const vector<uint>& parts)
 {
-	SetAlphaTest(false);
-	SetAlphaBlend(false);
-	SetNoCulling(false);
-	SetNoZWrite(false);
+	Render* render = GetRender();
+	IDirect3DDevice9* device = render->GetDevice();
+
+	render->SetAlphaTest(false);
+	render->SetAlphaBlend(false);
+	render->SetNoCulling(false);
+	render->SetNoZWrite(false);
 
 	uint passes;
 	Vec4 fogColor = GetFogColor();
@@ -3308,10 +3305,13 @@ void Game::DrawTerrain(const vector<uint>& parts)
 //=================================================================================================
 void Game::DrawDungeon(const vector<DungeonPart>& parts, const vector<Lights>& lights, const vector<NodeMatrix>& matrices)
 {
-	SetAlphaBlend(false);
-	SetAlphaTest(false);
-	SetNoCulling(false);
-	SetNoZWrite(false);
+	Render* render = GetRender();
+	IDirect3DDevice9* device = render->GetDevice();
+
+	render->SetAlphaBlend(false);
+	render->SetAlphaTest(false);
+	render->SetNoCulling(false);
+	render->SetNoZWrite(false);
 
 	V(device->SetVertexDeclaration(vertex_decl[VDI_TANGENT]));
 	V(device->SetStreamSource(0, vbDungeon, 0, sizeof(VTangent)));
@@ -3386,7 +3386,10 @@ void Game::DrawDungeon(const vector<DungeonPart>& parts, const vector<Lights>& l
 //=================================================================================================
 void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>& lights, bool outside)
 {
-	SetAlphaBlend(false);
+	Render* render = GetRender();
+	IDirect3DDevice9* device = render->GetDevice();
+
+	render->SetAlphaBlend(false);
 
 	Vec4 fogColor = GetFogColor();
 	Vec4 fogParams = GetFogParams();
@@ -3439,9 +3442,9 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 			V(e->FindNextValidTechnique(nullptr, &tech));
 			V(e->SetTechnique(tech));
 
-			SetNoZWrite(IS_SET(current_flags, SceneNode::F_NO_ZWRITE));
-			SetNoCulling(IS_SET(current_flags, SceneNode::F_NO_CULLING));
-			SetAlphaTest(IS_SET(current_flags, SceneNode::F_ALPHA_TEST));
+			render->SetNoZWrite(IS_SET(current_flags, SceneNode::F_NO_ZWRITE));
+			render->SetNoCulling(IS_SET(current_flags, SceneNode::F_NO_CULLING));
+			render->SetAlphaTest(IS_SET(current_flags, SceneNode::F_ALPHA_TEST));
 		}
 
 		// ustaw parametry shadera
@@ -3543,10 +3546,13 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 //=================================================================================================
 void Game::DrawDebugNodes(const vector<DebugSceneNode*>& nodes)
 {
-	SetAlphaTest(false);
-	SetAlphaBlend(false);
-	SetNoCulling(true);
-	SetNoZWrite(false);
+	Render* render = GetRender();
+	IDirect3DDevice9* device = render->GetDevice();
+
+	render->SetAlphaTest(false);
+	render->SetAlphaBlend(false);
+	render->SetNoCulling(true);
+	render->SetNoZWrite(false);
 
 	V(device->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME));
 	V(device->SetRenderState(D3DRS_ZENABLE, FALSE));
@@ -3612,10 +3618,13 @@ void Game::DrawDebugNodes(const vector<DebugSceneNode*>& nodes)
 //=================================================================================================
 void Game::DrawBloods(bool outside, const vector<Blood*>& bloods, const vector<Lights>& lights)
 {
-	SetAlphaTest(false);
-	SetAlphaBlend(true);
-	SetNoCulling(false);
-	SetNoZWrite(true);
+	Render* render = GetRender();
+	IDirect3DDevice9* device = render->GetDevice();
+
+	render->SetAlphaTest(false);
+	render->SetAlphaBlend(true);
+	render->SetNoCulling(false);
+	render->SetNoZWrite(true);
 
 	ID3DXEffect* e = super_shader->GetShader(super_shader->GetShaderId(false, false, cl_fog, false, false, !outside && cl_lighting, outside && cl_lighting));
 	V(device->SetVertexDeclaration(vertex_decl[VDI_DEFAULT]));
@@ -3703,10 +3712,13 @@ void Game::DrawBloods(bool outside, const vector<Blood*>& bloods, const vector<L
 //=================================================================================================
 void Game::DrawBillboards(const vector<Billboard>& billboards)
 {
-	SetAlphaBlend(true);
-	SetAlphaTest(false);
-	SetNoCulling(true);
-	SetNoZWrite(false);
+	Render* render = GetRender();
+	IDirect3DDevice9* device = render->GetDevice();
+
+	render->SetAlphaBlend(true);
+	render->SetAlphaTest(false);
+	render->SetNoCulling(true);
+	render->SetNoZWrite(false);
 
 	V(device->SetVertexDeclaration(vertex_decl[VDI_PARTICLE]));
 
@@ -3739,10 +3751,13 @@ void Game::DrawBillboards(const vector<Billboard>& billboards)
 //=================================================================================================
 void Game::DrawExplosions(const vector<Explo*>& explos)
 {
-	SetAlphaBlend(true);
-	SetAlphaTest(false);
-	SetNoCulling(false);
-	SetNoZWrite(true);
+	Render* render = GetRender();
+	IDirect3DDevice9* device = render->GetDevice();
+
+	render->SetAlphaBlend(true);
+	render->SetAlphaTest(false);
+	render->SetNoCulling(false);
+	render->SetNoZWrite(true);
 
 	Mesh* mesh = aSpellball;
 	V(device->SetVertexDeclaration(vertex_decl[mesh->vertex_decl]));
@@ -3785,10 +3800,13 @@ void Game::DrawExplosions(const vector<Explo*>& explos)
 //=================================================================================================
 void Game::DrawParticles(const vector<ParticleEmitter*>& pes)
 {
-	SetAlphaTest(false);
-	SetAlphaBlend(true);
-	SetNoCulling(true);
-	SetNoZWrite(true);
+	Render* render = GetRender();
+	IDirect3DDevice9* device = render->GetDevice();
+
+	render->SetAlphaTest(false);
+	render->SetAlphaBlend(true);
+	render->SetNoCulling(true);
+	render->SetNoZWrite(true);
 
 	V(device->SetVertexDeclaration(vertex_decl[VDI_PARTICLE]));
 
@@ -3893,10 +3911,13 @@ void Game::DrawParticles(const vector<ParticleEmitter*>& pes)
 //=================================================================================================
 void Game::DrawTrailParticles(const vector<TrailParticleEmitter*>& tpes)
 {
-	SetAlphaTest(false);
-	SetAlphaBlend(true);
-	SetNoCulling(true);
-	SetNoZWrite(true);
+	Render* render = GetRender();
+	IDirect3DDevice9* device = render->GetDevice();
+
+	render->SetAlphaTest(false);
+	render->SetAlphaBlend(true);
+	render->SetNoCulling(true);
+	render->SetNoZWrite(true);
 
 	V(device->SetVertexDeclaration(vertex_decl[VDI_COLOR]));
 
@@ -3956,10 +3977,13 @@ void Game::DrawTrailParticles(const vector<TrailParticleEmitter*>& tpes)
 //=================================================================================================
 void Game::DrawLightings(const vector<Electro*>& electros)
 {
-	SetAlphaTest(false);
-	SetAlphaBlend(true);
-	SetNoCulling(true);
-	SetNoZWrite(true);
+	Render* render = GetRender();
+	IDirect3DDevice9* device = render->GetDevice();
+
+	render->SetAlphaTest(false);
+	render->SetAlphaBlend(true);
+	render->SetNoCulling(true);
+	render->SetNoZWrite(true);
 
 	V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE));
 	V(device->SetVertexDeclaration(vertex_decl[VDI_PARTICLE]));
@@ -4049,10 +4073,13 @@ void Game::DrawLightings(const vector<Electro*>& electros)
 //=================================================================================================
 void Game::DrawStunEffects(const vector<StunEffect>& stuns)
 {
-	SetAlphaTest(false);
-	SetAlphaBlend(true);
-	SetNoCulling(true);
-	SetNoZWrite(true);
+	Render* render = GetRender();
+	IDirect3DDevice9* device = render->GetDevice();
+
+	render->SetAlphaTest(false);
+	render->SetAlphaBlend(true);
+	render->SetNoCulling(true);
+	render->SetNoZWrite(true);
 
 	const Mesh& mesh = *aStun;
 
@@ -4098,10 +4125,13 @@ void Game::DrawStunEffects(const vector<StunEffect>& stuns)
 //=================================================================================================
 void Game::DrawPortals(const vector<Portal*>& portals)
 {
-	SetAlphaTest(false);
-	SetAlphaBlend(true);
-	SetNoCulling(true);
-	SetNoZWrite(false);
+	Render* render = GetRender();
+	IDirect3DDevice9* device = render->GetDevice();
+
+	render->SetAlphaTest(false);
+	render->SetAlphaBlend(true);
+	render->SetNoCulling(true);
+	render->SetNoZWrite(false);
 
 	uint passes;
 	V(device->SetVertexDeclaration(vertex_decl[VDI_PARTICLE]));
@@ -4129,10 +4159,13 @@ void Game::DrawPortals(const vector<Portal*>& portals)
 //=================================================================================================
 void Game::DrawAreas(const vector<Area>& areas, float range, const vector<Area2*>& areas2)
 {
-	SetAlphaTest(false);
-	SetAlphaBlend(true);
-	SetNoCulling(true);
-	SetNoZWrite(true);
+	Render* render = GetRender();
+	IDirect3DDevice9* device = render->GetDevice();
+
+	render->SetAlphaTest(false);
+	render->SetAlphaBlend(true);
+	render->SetNoCulling(true);
+	render->SetNoZWrite(true);
 
 	V(device->SetVertexDeclaration(vertex_decl[VDI_POS]));
 

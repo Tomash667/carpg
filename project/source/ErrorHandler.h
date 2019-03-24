@@ -2,10 +2,6 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Config.h"
-#include "File.h"
-
-//-----------------------------------------------------------------------------
 enum class CrashMode
 {
 	None,
@@ -32,29 +28,6 @@ inline cstring ToString(CrashMode crash_mode)
 }
 
 //-----------------------------------------------------------------------------
-enum class StreamLogMode
-{
-	None,
-	Errors,
-	Full
-};
-
-//-----------------------------------------------------------------------------
-inline cstring ToString(StreamLogMode stream_log_mode)
-{
-	switch(stream_log_mode)
-	{
-	case StreamLogMode::None:
-		return "none";
-	default:
-	case StreamLogMode::Errors:
-		return "errors";
-	case StreamLogMode::Full:
-		return "full";
-	}
-}
-
-//-----------------------------------------------------------------------------
 class ErrorHandler
 {
 public:
@@ -64,29 +37,10 @@ public:
 	}
 
 	void RegisterHandler(Config& cfg, const string& log_path);
-	void UnregisterHandler();
-	void StreamStart(Packet* packet, int type);
-	void StreamEnd(bool ok);
-	void StreamWrite(const void* data, uint size, int type, const SystemAddress& adr);
 
 private:
-	struct WritePacket : ObjectPoolProxy<WritePacket>
-	{
-		vector<byte> data;
-		uint size;
-		int type;
-		SystemAddress adr;
-	};
-
 	ErrorHandler();
 
 	static ErrorHandler handler;
 	CrashMode crash_mode;
-	StreamLogMode stream_log_mode;
-	string stream_log_file;
-	FileWriter stream_log;
-	Packet* current_packet;
-	int current_stream_type;
-	vector<WritePacket*> write_packets;
-	bool registered;
 };

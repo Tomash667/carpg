@@ -62,9 +62,9 @@ load = "Load"
 saveN = "Save %d"
 quickSave = "Quick save"
 emptySlot = "Empty slot %d"
-saveDate = "Date: %04d-%02d-%02d %02d:%02d:%02d\n"
-saveTime = "Year %d, Month %d, Day %d\n"
-savePlayers = "\nPlayers %d"
+saveDate = "Saved at: %04d-%02d-%02d %02d:%02d:%02d\n"
+saveTime = "Date: %s\n"
+savePlayers = "Players: "
 saveName = "Save name:"
 
 // journal
@@ -674,6 +674,10 @@ loadSP = "This savefile is from singleplayer mode."
 loadError = "Failed to load game: "
 loadErrorGeneric = "Failed to load game: file is corrupted or invalid, more information in the log file."
 loadOpenError = "Failed to open file '%s' (%d)."
+cantLoadMultiplayer = "Can't quick load this save: %s"
+tooOldVersion = "Too old save version."
+missingPlayerInSave = "Missing player '%s' in save."
+gameLoaded = "Game loaded"
 
 // game
 goldPlus = "Gold %+d"
@@ -1224,6 +1228,8 @@ preparingWorld = "Preparing world"
 invalidCrc = "Invalid data checksum"
 connectionFailed = "Failed to connect to server."
 registerFailed = "Failed to register server."
+loadingSaveByServer = "Loading save by server..."
+serverFailedToLoadSave = "Server failed to load saved game."
 
 // net
 createServerFailed = "Failed to create server (%d)!"

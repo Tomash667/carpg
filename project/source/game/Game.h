@@ -50,6 +50,12 @@ extern const float PICKUP_RANGE;
 extern const float ARROW_TIMER;
 extern const float MIN_H;
 
+extern const float HIT_SOUND_DIST;
+extern const float ARROW_HIT_SOUND_DIST;
+extern const float SHOOT_SOUND_DIST;
+extern const float SPAWN_SOUND_DIST;
+extern const float MAGIC_SCROLL_SOUND_DIST;
+
 struct AttachedSound
 {
 	FMOD::Channel* channel;
@@ -116,7 +122,7 @@ public:
 
 	void OnCleanup() override;
 	void OnDraw();
-	void OnDraw(bool normal = true);
+	void DrawGame(RenderTarget* target);
 	void OnDebugDraw(DebugDrawer* dd);
 	void OnTick(float dt);
 	void OnChar(char c);
@@ -130,6 +136,7 @@ public:
 	void ChangeTitle();
 	void ClearPointers();
 	void CreateTextures();
+	void CreateRenderTargets();
 	void PreloadData();
 
 	// initialization
@@ -161,7 +168,6 @@ public:
 
 	void ReloadShaders();
 	void ReleaseShaders();
-	void ShaderVersionChanged();
 
 	// scene
 	bool dungeon_tex_wrap;
@@ -232,8 +238,9 @@ public:
 	MeshPtr aBox, aCylinder, aSphere, aCapsule;
 	MeshPtr aArrow, aSkybox, aBag, aChest, aGrating, aDoorWall, aDoorWall2, aStairsDown, aStairsDown2, aStairsUp, aSpellball, aPressurePlate, aDoor, aDoor2, aStun;
 	VertexDataPtr vdSchodyGora, vdSchodyDol, vdNaDrzwi;
-	TEX tItemRegion, tItemRegionRot, tMinimap, tChar, tSave;
-	TEX tCzern, tEmerytura, tPortal, tLightingLine, tRip, tEquipped, tMiniSave, tWarning, tError;
+	RenderTarget* rt_save, *rt_item, *rt_item_rot;
+	TEX tMinimap;
+	TEX tCzern, tEmerytura, tPortal, tLightingLine, tRip, tEquipped, tWarning, tError;
 	TexturePtr tKrew[BLOOD_MAX], tKrewSlad[BLOOD_MAX], tIskra, tSpawn;
 	TexturePack tFloor[2], tWall[2], tCeil[2], tFloorBase, tWallBase, tCeilBase;
 	ID3DXEffect* eMesh, *eParticle, *eSkybox, *eTerrain, *eArea, *ePostFx, *eGlow, *eGrass;
@@ -248,7 +255,6 @@ public:
 	SOUND sGulp, sCoins, sBow[2], sDoor[3], sDoorClosed[2], sDoorClose, sItem[8], sChestOpen, sChestClose, sDoorBudge, sRock, sWood, sCrystal,
 		sMetal, sBody[5], sBone, sSkin, sArenaFight, sArenaWin, sArenaLost, sUnlock, sEvil, sEat, sSummon, sZap;
 	VB vbParticle;
-	SURFACE sChar, sSave, sItemRegion, sItemRegionRot;
 	static cstring txGoldPlus, txQuestCompletedGold;
 	cstring txLoadGuiTextures, txLoadParticles, txLoadPhysicMeshes, txLoadModels, txLoadSpells, txLoadSounds, txLoadMusic, txGenerateWorld;
 	TexturePtr tTrawa, tTrawa2, tTrawa3, tDroga, tZiemia, tPole;
@@ -267,7 +273,8 @@ public:
 		txRecreatingObjects, txGeneratingMinimap, txLoadingComplete, txWaitingForPlayers, txLoadingResources;
 	cstring txTutPlay, txTutTick;
 	cstring txCantSaveGame, txSaveFailed, txLoadFailed, txQuickSave, txGameSaved, txLoadingLocations, txLoadingData, txEndOfLoading, txCantSaveNow,
-		txOnlyServerCanSave, txCantLoadGame, txOnlyServerCanLoad, txLoadSignature, txLoadVersion, txLoadSaveVersionOld, txLoadMP, txLoadSP, txLoadOpenError;
+		txOnlyServerCanSave, txCantLoadGame, txOnlyServerCanLoad, txLoadSignature, txLoadVersion, txLoadSaveVersionOld, txLoadMP, txLoadSP, txLoadOpenError,
+		txCantLoadMultiplayer, txTooOldVersion, txMissingPlayerInSave, txGameLoaded, txLoadError, txLoadErrorGeneric;
 	cstring txPvpRefuse, txWin, txWinMp, txLevelUp, txLevelDown, txRegeneratingLevel, txNeedItem, txGmsAddedItems;
 	cstring txRumor[29], txRumorD[7];
 	cstring txMayorQFailed[3], txQuestAlreadyGiven[2], txMayorNoQ[2], txCaptainQFailed[2], txCaptainNoQ[2], txLocationDiscovered[2], txAllDiscovered[2],
@@ -281,7 +288,7 @@ public:
 		txConnectVersion, txConnectSLikeNet, txCantJoin, txLostConnection, txInvalidPswd, txCantJoin2, txServerFull, txInvalidData, txNickUsed, txInvalidVersion,
 		txInvalidVersion2, txInvalidNick, txGeneratingWorld, txLoadedWorld, txWorldDataError, txLoadedPlayer, txPlayerDataError, txGeneratingLocation,
 		txLoadingLocation, txLoadingLocationError, txLoadingChars, txLoadingCharsError, txSendingWorld, txMpNPCLeft, txLoadingLevel, txDisconnecting,
-		txPreparingWorld, txInvalidCrc, txConnectionFailed;
+		txPreparingWorld, txInvalidCrc, txConnectionFailed, txLoadingSaveByServer, txServerFailedToLoadSave;
 	cstring txServer, txYouAreLeader, txRolledNumber, txPcIsLeader, txReceivedGold, txYouDisconnected, txYouKicked,
 		txGamePaused, txGameResumed, txDevmodeOn, txDevmodeOff, txPlayerLeft, txPlayerDisconnected, txPlayerQuit, txPlayerKicked, txServerClosed;
 	cstring txYell[3];
@@ -323,7 +330,6 @@ public:
 	TEX tPostEffect[3];
 	VB vbFullscreen;
 	vector<PostEffect> post_effects;
-	SURFACE sCustom;
 
 	//---------------------------------
 	// CONSOLE & COMMANDS
@@ -368,6 +374,7 @@ public:
 	float loading_dt, loading_cap;
 	Timer loading_t;
 	int loading_steps, loading_index;
+	bool loading_first_step;
 	Color clear_color2;
 	// used temporary at loading
 	vector<AIController*> ai_bow_targets, ai_cast_targets;
@@ -409,7 +416,7 @@ public:
 	void DoExitToMenu();
 	void GenerateItemImage(TaskData& task_data);
 	TEX TryGenerateItemImage(const Item& item);
-	SURFACE DrawItemImage(const Item& item, TEX tex, SURFACE surface, float rot, bool require_surface = true);
+	void DrawItemImage(const Item& item, RenderTarget* target, float rot);
 	void SetupObject(BaseObject& obj);
 	void SetupCamera(float dt);
 	void LoadShaders();
@@ -421,10 +428,7 @@ public:
 	void UseAction(PlayerController* p, bool from_server, const Vec3* pos_data = nullptr);
 	void SpawnUnitEffect(Unit& unit);
 	void PlayerCheckObjectDistance(Unit& u, const Vec3& pos, void* ptr, float& best_dist, BeforePlayer type);
-
 	int CheckMove(Vec3& pos, const Vec3& dir, float radius, Unit* me, bool* is_small = nullptr);
-	int CheckMovePhase(Vec3& pos, const Vec3& dir, float radius, Unit* me, bool* is_small = nullptr);
-
 	void ParseCommand(const string& str, PrintMsgFunc print_func, PARSE_SOURCE ps = PS_UNKNOWN);
 	void CmdList(Tokenizer& t);
 	void AddCommands();
@@ -479,11 +483,14 @@ public:
 	void OpenDoorsByTeam(const Int2& pt);
 	void ExitToMap();
 	SOUND GetMaterialSound(MATERIAL_TYPE m1, MATERIAL_TYPE m2);
-	void PlayAttachedSound(Unit& unit, SOUND sound, float smin, float smax = 0.f);
+	void PlayAttachedSound(Unit& unit, SOUND sound, float distance);
 	void StopAllSounds();
 	ATTACK_RESULT DoGenericAttack(LevelContext& ctx, Unit& attacker, Unit& hitted, const Vec3& hitpoint, float attack, int dmg_type, bool bash);
-	void SaveGame(GameWriter& f);
+	void SaveGame(GameWriter& f, SaveSlot* slot);
+	void CreateSaveImage();
+	bool LoadGameHeader(GameReader& f, SaveSlot& slot);
 	void LoadGame(GameReader& f);
+	bool TryLoadGame(int slot, bool quickload, bool from_console);
 	void RemoveUnusedAiAndCheck();
 	void CheckUnitsAi(LevelContext& ctx, int& err_count);
 	void CastSpell(LevelContext& ctx, Unit& unit);
@@ -504,7 +511,7 @@ public:
 	void UpdateElectros(LevelContext& ctx, float dt);
 	void UpdateDrains(LevelContext& ctx, float dt);
 	void AI_Shout(LevelContext& ctx, AIController& ai);
-	void AI_DoAttack(AIController& ai, Unit* target, bool w_biegu = false);
+	void AI_DoAttack(AIController& ai, Unit* target, bool running = false);
 	void AI_HitReaction(Unit& unit, const Vec3& pos);
 	void UpdateAttachedSounds(float dt);
 	void BuildRefidTables();
@@ -514,8 +521,9 @@ public:
 	void LoadGameSlot(int slot);
 	void LoadGameFilename(const string& name);
 	void LoadGameCommon(cstring filename, int slot);
+	bool ValidateNetSaveForLoading(GameReader& f, int slot);
 	void Quicksave(bool from_console);
-	bool Quickload(bool from_console);
+	void Quickload(bool from_console);
 	void ClearGameVars(bool new_game);
 	void ClearGame();
 	SOUND GetItemSound(const Item* item);
@@ -526,7 +534,7 @@ public:
 	void UpdateContext(LevelContext& ctx, float dt);
 	bool IsAnyoneTalking() const;
 	// to by mog³o byæ globalna funkcj¹
-	void PlayHitSound(MATERIAL_TYPE mat_bron, MATERIAL_TYPE mat_cialo, const Vec3& hitpoint, float range, bool dmg);
+	void PlayHitSound(MATERIAL_TYPE mat_weapon, MATERIAL_TYPE mat_body, const Vec3& hitpoint, float range, bool dmg);
 	// wczytywanie
 	void LoadingStart(int steps);
 	void LoadingStep(cstring text = nullptr, int end = 0);
@@ -568,7 +576,6 @@ public:
 	bool CanShowEndScreen();
 	void UpdateGameDialogClient();
 	void UpdateGameNet(float dt);
-	void CreateSaveImage(cstring filename);
 	void PlayerUseUsable(Usable* u, bool after_action);
 	void UnitTalk(Unit& u, cstring text);
 	void OnEnterLocation();
@@ -678,7 +685,7 @@ public:
 	void Client_Say(BitStreamReader& f);
 	void Client_Whisper(BitStreamReader& f);
 	void Client_ServerSay(BitStreamReader& f);
-	void Server_Say(BitStream& stream, PlayerInfo& info, Packet* packet);
+	void Server_Say(BitStreamReader& f, PlayerInfo& info, Packet* packet);
 	void Server_Whisper(BitStreamReader& f, PlayerInfo& info, Packet* packet);
 	void ServerProcessUnits(vector<Unit*>& units);
 	void UpdateWarpData(float dt);

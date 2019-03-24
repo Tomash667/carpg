@@ -28,6 +28,7 @@ struct Usable
 	ItemContainer* container;
 	int refid, variant;
 
+	static const float SOUND_DIST;
 	static const int MIN_SIZE = 22;
 	static int netid_counter;
 

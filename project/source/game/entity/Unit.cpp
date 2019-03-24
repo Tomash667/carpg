@@ -35,6 +35,13 @@ const float Unit::STAMINA_BOW_ATTACK = 100.f;
 const float Unit::STAMINA_BASH_ATTACK = 50.f;
 const float Unit::STAMINA_UNARMED_ATTACK = 50.f;
 const float Unit::STAMINA_RESTORE_TIMER = 0.5f;
+const float Unit::EAT_SOUND_DIST = 0.5f;
+const float Unit::DRINK_SOUND_DIST = 0.5f;
+const float Unit::ATTACK_SOUND_DIST = 1.f;
+const float Unit::TALK_SOUND_DIST = 1.f;
+const float Unit::ALERT_SOUND_DIST = 2.f;
+const float Unit::PAIN_SOUND_DIST = 1.f;
+const float Unit::DIE_SOUND_DIST = 1.f;
 vector<Unit*> Unit::refid_table;
 vector<pair<Unit**, int>> Unit::refid_request;
 int Unit::netid_counter;
@@ -1622,6 +1629,7 @@ void Unit::Save(GameWriter& f, bool local)
 
 		f << last_bash;
 		f << moved;
+		f << running;
 	}
 
 	f.WriteVector4(effects);
@@ -1965,6 +1973,10 @@ void Unit::Load(GameReader& f, bool local)
 		f >> last_bash;
 		if(LOAD_VERSION >= V_0_5)
 			f >> moved;
+		if(LOAD_VERSION >= V_DEV)
+			f >> running;
+		else
+			running = false;
 	}
 	else
 	{
@@ -1984,6 +1996,7 @@ void Unit::Load(GameReader& f, bool local)
 		speed = prev_speed = 0.f;
 		alcohol = 0.f;
 		moved = false;
+		running = false;
 	}
 
 	// effects
@@ -2398,6 +2411,7 @@ bool Unit::Read(BitStreamReader& f)
 		hero = nullptr;
 		player = new PlayerController;
 		player->unit = this;
+		alcohol = 0.f;
 		f >> player->name;
 		f.ReadCasted<byte>(player->id);
 		f >> player->credit;
@@ -2502,19 +2516,7 @@ bool Unit::Read(BitStreamReader& f)
 		if(usable_netid == -1)
 			usable = nullptr;
 		else
-		{
-			usable = L.FindUsable(usable_netid);
-			if(usable)
-			{
-				use_rot = Vec3::LookAtAngle(pos, usable->pos);
-				usable->user = this;
-			}
-			else
-			{
-				Error("Missing usable %d.", usable_netid);
-				return false;
-			}
-		}
+			Usable::AddRequest(&usable, usable_netid, this);
 
 		// bow animesh instance
 		if(action == A_SHOOT)
@@ -3909,7 +3911,7 @@ void Unit::UpdateStaminaAction()
 		switch(animation)
 		{
 		case ANI_WALK:
-		case ANI_WALK_TYL:
+		case ANI_WALK_BACK:
 		case ANI_LEFT:
 		case ANI_RIGHT:
 		case ANI_KNEELS:
@@ -4648,7 +4650,7 @@ void Unit::Die(LevelContext* ctx, Unit* killer)
 	else if(data->sounds->Have(SOUND_PAIN))
 		snd = data->sounds->Random(SOUND_PAIN)->sound;
 	if(snd)
-		PlaySound(snd, 2.f);
+		PlaySound(snd, Unit::DIE_SOUND_DIST);
 
 	// move physics
 	UpdatePhysics(pos);

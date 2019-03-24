@@ -50,6 +50,8 @@
 #include "Pathfinding.h"
 #include "SaveSlot.h"
 #include "PlayerInfo.h"
+#include "Render.h"
+#include "RenderTarget.h"
 
 const float LIMIT_DT = 0.3f;
 Game* Game::game;
@@ -57,17 +59,23 @@ cstring Game::txGoldPlus, Game::txQuestCompletedGold;
 GameKeys GKey;
 extern string g_system_dir;
 extern cstring RESTART_MUTEX_NAME;
+extern const int ITEM_IMAGE_SIZE = 64;
+
+const float HIT_SOUND_DIST = 1.5f;
+const float ARROW_HIT_SOUND_DIST = 1.5f;
+const float SHOOT_SOUND_DIST = 1.f;
+const float SPAWN_SOUND_DIST = 1.5f;
+const float MAGIC_SCROLL_SOUND_DIST = 1.5f;
 
 //=================================================================================================
 Game::Game() : have_console(false), vbParticle(nullptr), quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0), cl_fog(true),
 cl_lighting(true), draw_particle_sphere(false), draw_unit_radius(false), draw_hitbox(false), noai(false), testing(false), game_speed(1.f), devmode(false),
-force_seed(0), next_seed(0), force_seed_all(false), debug_info(false), dont_wander(false),
-check_updates(true), skip_tutorial(false), portal_anim(0), debug_info2(false), music_type(MusicType::None), end_of_game(false), prepared_stream(64 * 1024),
-paused(false), draw_flags(0xFFFFFFFF), tMiniSave(nullptr), prev_game_state(GS_LOAD), tSave(nullptr), sItemRegion(nullptr),
-sItemRegionRot(nullptr), sChar(nullptr), sSave(nullptr), sCustom(nullptr), cl_postfx(true), mp_timeout(10.f),
-cl_normalmap(true), cl_specularmap(true), dungeon_tex_wrap(true), profiler_mode(0), vbInstancing(nullptr), vb_instancing_max(0),
-screenshot_format(ImageFormat::JPG), quickstart_class(Class::RANDOM), game_state(GS_LOAD), default_devmode(false),
-default_player_devmode(false), quickstart_slot(SaveSlot::MAX_SLOTS), super_shader(new SuperShader)
+force_seed(0), next_seed(0), force_seed_all(false), debug_info(false), dont_wander(false), check_updates(true), skip_tutorial(false), portal_anim(0),
+debug_info2(false), music_type(MusicType::None), end_of_game(false), prepared_stream(64 * 1024), paused(false), draw_flags(0xFFFFFFFF),
+prev_game_state(GS_LOAD), rt_save(nullptr), rt_item(nullptr), rt_item_rot(nullptr), cl_postfx(true), mp_timeout(10.f), cl_normalmap(true),
+cl_specularmap(true), dungeon_tex_wrap(true), profiler_mode(0), vbInstancing(nullptr), vb_instancing_max(0), screenshot_format(ImageFormat::JPG),
+quickstart_class(Class::RANDOM), game_state(GS_LOAD), default_devmode(false), default_player_devmode(false), quickstart_slot(SaveSlot::MAX_SLOTS),
+super_shader(new SuperShader)
 {
 #ifdef _DEBUG
 	default_devmode = true;
@@ -100,25 +108,26 @@ Game::~Game()
 //=================================================================================================
 void Game::OnDraw()
 {
-	OnDraw(true);
+	if(profiler_mode == 2)
+		Profiler::g_profiler.Start();
+	else if(profiler_mode == 0)
+		Profiler::g_profiler.Clear();
+
+	DrawGame(nullptr);
+
+	Profiler::g_profiler.End();
 }
 
 //=================================================================================================
-void Game::OnDraw(bool normal)
+void Game::DrawGame(RenderTarget* target)
 {
-	if(normal)
-	{
-		if(profiler_mode == 2)
-			Profiler::g_profiler.Start();
-		else if(profiler_mode == 0)
-			Profiler::g_profiler.Clear();
-	}
+	Render* render = GetRender();
+	IDirect3DDevice9* device = render->GetDevice();
 
 	if(post_effects.empty() || !ePostFx)
 	{
-		if(sCustom)
-			V(device->SetRenderTarget(0, sCustom));
-
+		if(target)
+			render->SetTarget(target);
 		V(device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET | D3DCLEAR_STENCIL, clear_color, 1.f, 0));
 		V(device->BeginScene());
 
@@ -144,12 +153,14 @@ void Game::OnDraw(bool normal)
 		GUI.Draw(IS_SET(draw_flags, DF_GUI), IS_SET(draw_flags, DF_MENU));
 
 		V(device->EndScene());
+		if(target)
+			render->SetTarget(nullptr);
 	}
 	else
 	{
 		// render scene to texture
 		SURFACE sPost;
-		if(!IsMultisamplingEnabled())
+		if(!render->IsMultisamplingEnabled())
 			V(tPostEffect[2]->GetSurfaceLevel(0, &sPost));
 		else
 			sPost = sPostEffect[2];
@@ -172,7 +183,7 @@ void Game::OnDraw(bool normal)
 		PROFILER_BLOCK("PostEffects");
 
 		TEX t;
-		if(!IsMultisamplingEnabled())
+		if(!render->IsMultisamplingEnabled())
 		{
 			sPost->Release();
 			t = tPostEffect[2];
@@ -189,10 +200,10 @@ void Game::OnDraw(bool normal)
 		// post effects
 		V(device->SetVertexDeclaration(vertex_decl[VDI_TEX]));
 		V(device->SetStreamSource(0, vbFullscreen, 0, sizeof(VTex)));
-		SetAlphaTest(false);
-		SetAlphaBlend(false);
-		SetNoCulling(false);
-		SetNoZWrite(true);
+		render->SetAlphaTest(false);
+		render->SetAlphaBlend(false);
+		render->SetNoCulling(false);
+		render->SetNoZWrite(true);
 
 		uint passes;
 		int index_surf = 1;
@@ -202,15 +213,15 @@ void Game::OnDraw(bool normal)
 			if(it + 1 == end)
 			{
 				// last pass
-				if(sCustom)
-					surf = sCustom;
+				if(target)
+					surf = target->GetSurface();
 				else
 					V(device->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &surf));
 			}
 			else
 			{
 				// using next pass
-				if(!IsMultisamplingEnabled())
+				if(!render->IsMultisamplingEnabled())
 					V(tPostEffect[index_surf]->GetSurfaceLevel(0, &surf));
 				else
 					surf = sPostEffect[index_surf];
@@ -240,10 +251,10 @@ void Game::OnDraw(bool normal)
 
 			if(it + 1 == end)
 			{
-				if(!sCustom)
+				if(!target)
 					surf->Release();
 			}
-			else if(!IsMultisamplingEnabled())
+			else if(!render->IsMultisamplingEnabled())
 			{
 				surf->Release();
 				t = tPostEffect[index_surf];
@@ -260,8 +271,6 @@ void Game::OnDraw(bool normal)
 			index_surf = (index_surf + 1) % 3;
 		}
 	}
-
-	Profiler::g_profiler.End();
 }
 
 //=================================================================================================
@@ -314,11 +323,14 @@ void Game::OnTick(float dt)
 	GKey.allow_input = GameKeys::ALLOW_INPUT;
 
 	// lost directx device or window don't have focus
-	if(IsLostDevice() || !IsActive() || !IsCursorLocked())
+	if(GetRender()->IsLostDevice() || !IsActive() || !IsCursorLocked())
 	{
 		Key.SetFocus(false);
 		if(Net::IsSingleplayer() && !inactive_update)
+		{
+			Profiler::g_profiler.End();
 			return;
+		}
 	}
 	else
 		Key.SetFocus(true);
@@ -649,15 +661,7 @@ void Game::OnReset()
 	if(eGrass)
 		V(eGrass->OnLostDevice());
 
-	SafeRelease(tItemRegion);
-	SafeRelease(tItemRegionRot);
 	SafeRelease(tMinimap);
-	SafeRelease(tChar);
-	SafeRelease(tSave);
-	SafeRelease(sItemRegion);
-	SafeRelease(sItemRegionRot);
-	SafeRelease(sChar);
-	SafeRelease(sSave);
 	for(int i = 0; i < 3; ++i)
 	{
 		SafeRelease(sPostEffect[i]);
@@ -683,18 +687,20 @@ void Game::OnChar(char c)
 //=================================================================================================
 void Game::TakeScreenshot(bool no_gui)
 {
+	Render* render = GetRender();
+
 	if(no_gui)
 	{
 		int old_flags = draw_flags;
 		draw_flags = (0xFFFF & ~DF_GUI);
-		Render(true);
+		render->Draw(false);
 		draw_flags = old_flags;
 	}
 	else
-		Render(true);
+		render->Draw(false);
 
 	SURFACE back_buffer;
-	HRESULT hr = device->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &back_buffer);
+	HRESULT hr = render->GetDevice()->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &back_buffer);
 	if(FAILED(hr))
 	{
 		cstring msg = Format("Failed to get front buffer data to save screenshot (%d)!", hr);
@@ -784,7 +790,16 @@ void Game::DoExitToMenu()
 	end_of_game = false;
 
 	CloseAllPanels();
+	string msg;
+	DialogBox* box = GUI.GetDialog("fatal");
+	bool console = gui->console->visible;
+	if(box)
+		msg = box->text;
 	GUI.CloseDialogs();
+	if(!msg.empty())
+		GUI.SimpleDialog(msg.c_str(), nullptr, "fatal");
+	if(console)
+		GUI.ShowDialog(gui->console);
 	gui->game_menu->visible = false;
 	gui->game_gui->visible = false;
 	gui->world_map->Hide();
@@ -823,14 +838,7 @@ void Game::ClearPointers()
 	vbFullscreen = nullptr;
 
 	// tekstury render target, powierzchnie
-	tItemRegion = nullptr;
-	tItemRegionRot = nullptr;
 	tMinimap = nullptr;
-	tChar = nullptr;
-	sItemRegion = nullptr;
-	sItemRegionRot = nullptr;
-	sChar = nullptr;
-	sSave = nullptr;
 	for(int i = 0; i < 3; ++i)
 	{
 		sPostEffect[i] = nullptr;
@@ -874,15 +882,7 @@ void Game::OnCleanup()
 	SafeRelease(vbInstancing);
 
 	// tekstury render target, powierzchnie
-	SafeRelease(tItemRegion);
-	SafeRelease(sItemRegionRot);
 	SafeRelease(tMinimap);
-	SafeRelease(tChar);
-	SafeRelease(tSave);
-	SafeRelease(sItemRegion);
-	SafeRelease(sItemRegionRot);
-	SafeRelease(sChar);
-	SafeRelease(sSave);
 	for(int i = 0; i < 3; ++i)
 	{
 		SafeRelease(sPostEffect[i]);
@@ -900,26 +900,20 @@ void Game::OnCleanup()
 //=================================================================================================
 void Game::CreateTextures()
 {
-	if(tItemRegion)
+	if(tMinimap)
 		return;
 
-	auto& wnd_size = GetWindowSize();
+	Render* render = GetRender();
+	IDirect3DDevice9* device = render->GetDevice();
+	const Int2& wnd_size = GetWindowSize();
 
-	V(device->CreateTexture(64, 64, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tItemRegion, nullptr));
-	V(device->CreateTexture(128, 128, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tItemRegionRot, nullptr));
 	V(device->CreateTexture(128, 128, 0, D3DUSAGE_DYNAMIC, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tMinimap, nullptr));
-	V(device->CreateTexture(128, 256, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tChar, nullptr));
-	V(device->CreateTexture(256, 256, 0, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &tSave, nullptr));
 
 	int ms, msq;
-	GetMultisampling(ms, msq);
+	render->GetMultisampling(ms, msq);
 	D3DMULTISAMPLE_TYPE type = (D3DMULTISAMPLE_TYPE)ms;
 	if(ms != D3DMULTISAMPLE_NONE)
 	{
-		V(device->CreateRenderTarget(64, 64, D3DFMT_A8R8G8B8, type, msq, FALSE, &sItemRegion, nullptr));
-		V(device->CreateRenderTarget(128, 128, D3DFMT_A8R8G8B8, type, msq, FALSE, &sItemRegionRot, nullptr));
-		V(device->CreateRenderTarget(128, 256, D3DFMT_A8R8G8B8, type, msq, FALSE, &sChar, nullptr));
-		V(device->CreateRenderTarget(256, 256, D3DFMT_X8R8G8B8, type, msq, FALSE, &sSave, nullptr));
 		for(int i = 0; i < 3; ++i)
 		{
 			V(device->CreateRenderTarget(wnd_size.x, wnd_size.y, D3DFMT_X8R8G8B8, type, msq, FALSE, &sPostEffect[i], nullptr));
@@ -956,6 +950,15 @@ void Game::CreateTextures()
 	v[5] = VTex(-1.f, 1.f, 0.f, u_start, v_start);
 
 	V(vbFullscreen->Unlock());
+}
+
+//=================================================================================================
+void Game::CreateRenderTargets()
+{
+	Render* render = GetRender();
+	rt_save = render->CreateRenderTarget(Int2(256, 256));
+	rt_item = render->CreateRenderTarget(Int2(ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE));
+	rt_item_rot = render->CreateRenderTarget(Int2(128, 128));
 }
 
 //=================================================================================================
@@ -1187,6 +1190,12 @@ void Game::SetGameText()
 	txLoadMP = Str("loadMP");
 	txLoadSP = Str("loadSP");
 	txLoadOpenError = Str("loadOpenError");
+	txCantLoadMultiplayer = Str("cantLoadMultiplayer");
+	txTooOldVersion = Str("tooOldVersion");
+	txMissingPlayerInSave = Str("missingPlayerInSave");
+	txGameLoaded = Str("gameLoaded");
+	txLoadError = Str("loadError");
+	txLoadErrorGeneric = Str("loadErrorGeneric");
 
 	txPvpRefuse = Str("pvpRefuse");
 	txWin = Str("win");
@@ -1295,6 +1304,8 @@ void Game::SetGameText()
 	txPreparingWorld = Str("preparingWorld");
 	txInvalidCrc = Str("invalidCrc");
 	txConnectionFailed = Str("connectionFailed");
+	txLoadingSaveByServer = Str("loadingSaveByServer");
+	txServerFailedToLoadSave = Str("serverFailedToLoadSave");
 
 	// net
 	txServer = Str("server");
@@ -1441,16 +1452,17 @@ void Game::ReloadShaders()
 
 	try
 	{
-		eMesh = CompileShader("mesh.fx");
-		eParticle = CompileShader("particle.fx");
-		eSkybox = CompileShader("skybox.fx");
-		eTerrain = CompileShader("terrain.fx");
-		eArea = CompileShader("area.fx");
-		ePostFx = CompileShader("post.fx");
-		eGlow = CompileShader("glow.fx");
-		eGrass = CompileShader("grass.fx");
+		Render* render = GetRender();
+		eMesh = render->CompileShader("mesh.fx");
+		eParticle = render->CompileShader("particle.fx");
+		eSkybox = render->CompileShader("skybox.fx");
+		eTerrain = render->CompileShader("terrain.fx");
+		eArea = render->CompileShader("area.fx");
+		ePostFx = render->CompileShader("post.fx");
+		eGlow = render->CompileShader("glow.fx");
+		eGrass = render->CompileShader("grass.fx");
 
-		for(ShaderHandler* shader : shaders)
+		for(ShaderHandler* shader : render->GetShaders())
 			shader->OnInit();
 	}
 	catch(cstring err)
@@ -1474,7 +1486,7 @@ void Game::ReleaseShaders()
 	SafeRelease(eGlow);
 	SafeRelease(eGrass);
 
-	for(ShaderHandler* shader : shaders)
+	for(ShaderHandler* shader : GetRender()->GetShaders())
 		shader->OnRelease();
 }
 
@@ -1617,7 +1629,7 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 		f << (byte)L.location_index;
 		f << (byte)0;
 		f << (W.GetState() == World::State::INSIDE_ENCOUNTER);
-		int ack = N.SendAll(f, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT, Stream_TransferServer);
+		int ack = N.SendAll(f, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT);
 		for(auto info : N.players)
 		{
 			if(info->id == Team.my_id)
@@ -1684,8 +1696,11 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 	if(L.location->outside)
 	{
 		loc_gen->OnEnter();
-		SetTerrainTextures();
-		CalculateQuadtree();
+		if(!reenter)
+		{
+			SetTerrainTextures();
+			CalculateQuadtree();
+		}
 	}
 	else
 		EnterLevel(loc_gen);

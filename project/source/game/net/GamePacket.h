@@ -182,7 +182,11 @@ enum GamePacket : byte
 	ID_MASTER_HOST,
 
 	// Update info about this server on master server
-	ID_MASTER_UPDATE
+	ID_MASTER_UPDATE,
+
+	// Game is quickloaded
+	// bool - load on worldmap
+	ID_LOADING
 };
 
 //-----------------------------------------------------------------------------

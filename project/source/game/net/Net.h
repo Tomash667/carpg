@@ -65,25 +65,6 @@ enum class NetState
 };
 
 //-----------------------------------------------------------------------------
-enum StreamLogType
-{
-	Stream_None,
-	Stream_PickServer,
-	Stream_PingIp,
-	Stream_Connect,
-	Stream_Quitting,
-	Stream_QuittingServer,
-	Stream_Transfer,
-	Stream_TransferServer,
-	Stream_ServerSend,
-	Stream_UpdateLobbyServer,
-	Stream_UpdateLobbyClient,
-	Stream_UpdateGameServer,
-	Stream_UpdateGameClient,
-	Stream_Chat
-};
-
-//-----------------------------------------------------------------------------
 enum class MasterServerState
 {
 	NotConnected,
@@ -168,7 +149,7 @@ public:
 	PlayerInfo* FindPlayer(Cstring nick);
 	PlayerInfo* FindPlayer(const SystemAddress& adr);
 	PlayerInfo* TryGetPlayer(int id);
-	void ClosePeer(bool wait = false);
+	void ClosePeer(bool wait = false, bool check_was_client = false);
 
 	LobbyApi* api;
 	RakPeerInterface* peer;
@@ -176,7 +157,7 @@ public:
 	vector<string*> net_strs;
 	float update_timer, mp_interp;
 	int port;
-	bool mp_load, mp_load_worldmap, mp_use_interp, prepare_world;
+	bool mp_load, mp_load_worldmap, mp_use_interp, prepare_world, mp_quickload;
 
 	//****************************************************************************
 	// Server
@@ -184,8 +165,8 @@ public:
 public:
 	void InitServer();
 	void OnChangeLevel(int level);
-	void SendServer(BitStreamWriter& f, PacketPriority priority, PacketReliability reliability, const SystemAddress& adr, StreamLogType type);
-	uint SendAll(BitStreamWriter& f, PacketPriority priority, PacketReliability reliability, StreamLogType type);
+	void SendServer(BitStreamWriter& f, PacketPriority priority, PacketReliability reliability, const SystemAddress& adr);
+	uint SendAll(BitStreamWriter& f, PacketPriority priority, PacketReliability reliability);
 	int GetNewPlayerId();
 	PlayerInfo* FindOldPlayer(cstring nick);
 	void DeleteOldPlayers();
@@ -213,7 +194,7 @@ public:
 	//****************************************************************************
 public:
 	void InitClient();
-	void SendClient(BitStreamWriter& f, PacketPriority priority, PacketReliability reliability, StreamLogType type);
+	void SendClient(BitStreamWriter& f, PacketPriority priority, PacketReliability reliability);
 	void InterpolateUnits(float dt);
 	void FilterClientChanges();
 	bool FilterOut(NetChange& c);
@@ -224,34 +205,8 @@ public:
 	SystemAddress server, ping_adr;
 	bool was_client, join_lan;
 
-	//****************************************************************************
-	BitStream& StreamStart(Packet* packet, StreamLogType type);
-	void StreamEnd();
-	void StreamError();
-	template<typename... Args>
-	inline void StreamError(cstring msg, const Args&... args)
-	{
-		Error(msg, args...);
-		StreamError();
-	}
-	void StreamWrite(vector<byte>& data, StreamLogType type, const SystemAddress& adr)
-	{
-		StreamWrite(data.data(), data.size(), type, adr);
-	}
-	void StreamWrite(BitStream& data, StreamLogType type, const SystemAddress& adr)
-	{
-		StreamWrite(data.GetData(), data.GetNumberOfBytesUsed(), type, adr);
-	}
-	void StreamWrite(Packet* packet, StreamLogType type, const SystemAddress& adr)
-	{
-		StreamWrite(packet->data, packet->length, type, adr);
-	}
-	void StreamWrite(const void* data, uint size, StreamLogType type, const SystemAddress& adr);
-
 private:
 	static Mode mode;
-	BitStream current_stream;
-	Packet* current_packet;
 	cstring txCreateServerFailed, txInitConnectionFailed;
 };
 extern Net N;

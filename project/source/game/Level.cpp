@@ -30,6 +30,7 @@
 #include "Quest_Secret.h"
 #include "LocationGeneratorFactory.h"
 #include "SoundManager.h"
+#include "Render.h"
 
 Level L;
 
@@ -71,7 +72,7 @@ void Level::PostInit()
 	terrain_options.tex_size = 256;
 	terrain_options.tile_size = 2.f;
 	terrain_options.tiles_per_part = 16;
-	terrain->Init(game.device, terrain_options);
+	terrain->Init(game.GetRender()->GetDevice(), terrain_options);
 	terrain->Build();
 	terrain->RemoveHeightMap(true);
 
@@ -1353,8 +1354,11 @@ void Level::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding
 				if(ud)
 				{
 					Unit* u = SpawnUnitNearLocation(ctx, pos, *ud, nullptr, -2);
-					u->rot = Clip(pt.rot.y + rot);
-					u->ai->start_rot = u->rot;
+					if(u)
+					{
+						u->rot = Clip(pt.rot.y + rot);
+						u->ai->start_rot = u->rot;
+					}
 				}
 			}
 		}
@@ -4037,16 +4041,33 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 
 	// location
 	f >> reenter;
-	ApplyContext(location, local_ctx);
-	city_ctx = (location->type == L_CITY ? static_cast<City*>(location) : nullptr);
-	is_open = true;
+	Usable::refid_request.clear();
 	if(!location->Read(f))
 	{
 		Error("Read level: Failed to read location.");
 		return false;
 	}
+	ApplyContext(location, local_ctx);
+	city_ctx = (location->type == L_CITY ? static_cast<City*>(location) : nullptr);
+	is_open = true;
 	game.loc_gen_factory->Get(location)->OnLoad();
 	location->RequireLoadingResources(&loaded_resources);
+
+	// apply usable users
+	for(vector<UsableRequest>::iterator it = Usable::refid_request.begin(), end = Usable::refid_request.end(); it != end; ++it)
+	{
+		Unit* unit = it->user;
+		Usable* u = L.FindUsable(it->refid);
+		if(!u)
+			Warn("Invalid usable netid %d for %s (%d).", it->refid, unit->data->id.c_str(), unit->netid);
+		else
+		{
+			*it->usable = u;
+			u->user = unit;
+			unit->use_rot = Vec3::LookAtAngle(unit->pos, u->pos);
+		}
+	}
+	Usable::refid_request.clear();
 
 	// music
 	MusicType music;

@@ -20,10 +20,10 @@ struct TexId
 	string id;
 	TexturePtr tex;
 
-	explicit TexId(cstring _id) : tex(nullptr)
+	explicit TexId(cstring id) : tex(nullptr)
 	{
-		if(_id)
-			id = _id;
+		if(id)
+			this->id = id;
 	}
 	explicit TexId(const string& id) : id(id), tex(nullptr) {}
 };

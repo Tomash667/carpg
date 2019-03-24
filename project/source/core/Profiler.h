@@ -44,6 +44,7 @@ class ProfilerBlock
 {
 public:
 	explicit ProfilerBlock(cstring name);
+	explicit ProfilerBlock(delegate<cstring()> action);
 	~ProfilerBlock();
 
 private:

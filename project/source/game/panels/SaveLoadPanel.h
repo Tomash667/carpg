@@ -23,21 +23,21 @@ public:
 	void Event(GuiEvent e) override;
 	void SetSaveMode(bool save_mode, bool online, SaveSlot* slots);
 	void SetText();
-	void UpdateSaveInfo(int slot, cstring text);
 	void RemoveHardcoreSave(int slot);
 	void LoadSaveSlots();
 	void ShowSavePanel();
 	void ShowLoadPanel();
-	bool TryLoad(int slot, bool quickload = false);
+	SaveSlot& GetSaveSlot(int slot);
 
 private:
+	void SetSaveImage();
+
 	SaveSlot single_saves[SaveSlot::MAX_SLOTS], multi_saves[SaveSlot::MAX_SLOTS];
 	SaveSlot* slots;
 	TextBox textbox;
 	Button bt[2];
 	int choice;
-	cstring txSaving, txLoading, txSave, txLoad, txSaveN, txQuickSave, txEmptySlot, txSaveDate, txSaveTime, txSavePlayers, txSaveName, txSavedGameN,
-		txLoadError, txLoadErrorGeneric;
+	cstring txSaving, txLoading, txSave, txLoad, txSaveN, txQuickSave, txEmptySlot, txSaveDate, txSaveTime, txSavePlayers, txSaveName, txSavedGameN;
 	TEX tMiniSave;
 	string save_input_text, hardcore_savename;
 	bool save_mode, online;
