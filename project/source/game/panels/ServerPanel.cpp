@@ -362,6 +362,7 @@ void ServerPanel::UpdateLobbyClient(float dt)
 				AddMsg(Format(txStartingIn, 0));
 
 				// close lobby and wait for server
+				N.mp_quickload = false;
 				N.mp_load_worldmap = (packet->data[1] == 1);
 				Info("ServerPanel: Waiting for server.");
 				game->LoadingStart(N.mp_load_worldmap ? 4 : 9);

@@ -56,8 +56,6 @@ void SaveLoad::LoadLanguage()
 	txSavePlayers = Str("savePlayers");
 	txSaveName = Str("saveName");
 	txSavedGameN = Str("savedGameN");
-	txLoadError = Str("loadError");
-	txLoadErrorGeneric = Str("loadErrorGeneric");
 
 	bt[1].text = GUI.txCancel;
 }
@@ -206,7 +204,7 @@ void SaveLoad::Event(GuiEvent e)
 		{
 			// load
 			CloseDialog();
-			TryLoad(choice + 1);
+			game->TryLoadGame(choice + 1, false, false);
 		}
 	}
 }
@@ -409,36 +407,9 @@ void SaveLoad::ShowSavePanel()
 //=================================================================================================
 void SaveLoad::ShowLoadPanel()
 {
-	SetSaveMode(false, N.mp_load, N.mp_load ? multi_saves : single_saves);
+	bool online = (N.mp_load || Net::IsServer());
+	SetSaveMode(false, online, online ? multi_saves : single_saves);
 	GUI.ShowDialog(this);
-}
-
-//=================================================================================================
-bool SaveLoad::TryLoad(int slot, bool quickload)
-{
-	try
-	{
-		game->LoadGameSlot(slot);
-		return true;
-	}
-	catch(const SaveException& ex)
-	{
-		if(quickload && ex.missing_file)
-		{
-			Warn("Missing quicksave.");
-			return false;
-		}
-
-		Error("Failed to load game: %s", ex.msg);
-		cstring dialog_text;
-		if(ex.localized_msg)
-			dialog_text = Format("%s%s", txLoadError, ex.localized_msg);
-		else
-			dialog_text = txLoadErrorGeneric;
-		GUI.SimpleDialog(dialog_text, nullptr);
-		N.mp_load = false;
-		return false;
-	}
 }
 
 //=================================================================================================

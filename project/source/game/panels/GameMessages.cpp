@@ -35,6 +35,7 @@ void GameMessages::LoadLanguage()
 	txLearnedPerk = Str("learnedPerk");
 	txTooComplicated = Str("tooComplicated");
 	txAddedCursedStone = Str("addedCursedStone");
+	txGameLoaded = Str("gameLoaded");
 }
 
 //=================================================================================================
@@ -286,6 +287,10 @@ void GameMessages::AddGameMsg3(GMS id)
 		break;
 	case GMS_ADDED_CURSED_STONE:
 		text = txAddedCursedStone;
+		break;
+	case GMS_GAME_LOADED:
+		text = txGameLoaded;
+		time = 1.f;
 		break;
 	default:
 		assert(0);

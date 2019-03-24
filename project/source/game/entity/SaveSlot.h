@@ -11,5 +11,5 @@ struct SaveSlot
 	Class player_class;
 	time_t save_date;
 	uint img_size, img_offset;
-	bool valid, hardcore;
+	bool valid, hardcore, on_worldmap;
 };

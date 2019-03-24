@@ -27,7 +27,6 @@ public:
 	void LoadSaveSlots();
 	void ShowSavePanel();
 	void ShowLoadPanel();
-	bool TryLoad(int slot, bool quickload = false);
 	SaveSlot& GetSaveSlot(int slot);
 
 private:
@@ -38,8 +37,7 @@ private:
 	TextBox textbox;
 	Button bt[2];
 	int choice;
-	cstring txSaving, txLoading, txSave, txLoad, txSaveN, txQuickSave, txEmptySlot, txSaveDate, txSaveTime, txSavePlayers, txSaveName, txSavedGameN,
-		txLoadError, txLoadErrorGeneric;
+	cstring txSaving, txLoading, txSave, txLoad, txSaveN, txQuickSave, txEmptySlot, txSaveDate, txSaveTime, txSavePlayers, txSaveName, txSavedGameN;
 	TEX tMiniSave;
 	string save_input_text, hardcore_savename;
 	bool save_mode, online;

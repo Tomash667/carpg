@@ -452,7 +452,8 @@ void Game::StartGameMode()
 		if(quickstart == QUICKSTART_LOAD_MP)
 		{
 			N.mp_load = true;
-			if(gui->saveload->TryLoad(quickstart_slot))
+			N.mp_quickload = false;
+			if(TryLoadGame(quickstart_slot, false, false))
 			{
 				gui->create_server->CloseDialog();
 				gui->server->autoready = true;
@@ -500,7 +501,7 @@ void Game::StartGameMode()
 			Warn("Quickstart: Can't join server, no player nick.");
 		break;
 	case QUICKSTART_LOAD:
-		if(!gui->saveload->TryLoad(quickstart_slot))
+		if(!TryLoadGame(quickstart_slot, false, false))
 			Error("Quickload failed.");
 		break;
 	default:

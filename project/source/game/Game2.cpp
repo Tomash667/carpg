@@ -7805,7 +7805,8 @@ void Game::ClearGameVars(bool new_game)
 		L.is_open = false;
 		gui->game_gui->PositionPanels();
 		gui->Clear(true, false);
-		gui->mp_box->visible = Net::IsOnline();
+		if(!N.mp_quickload)
+			gui->mp_box->visible = Net::IsOnline();
 		drunk_anim = 0.f;
 		L.light_angle = Random(PI * 2);
 		cam.Reset();

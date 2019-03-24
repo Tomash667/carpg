@@ -334,7 +334,7 @@ void GlobalGui::Clear(bool reset_mpbox, bool on_enter)
 		game_gui->Reset();
 		if(!on_enter)
 			messages->Reset();
-		if(mp_box && reset_mpbox)
+		if(mp_box && reset_mpbox && !N.mp_quickload)
 			mp_box->visible = false;
 	}
 }

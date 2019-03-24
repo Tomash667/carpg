@@ -42,6 +42,8 @@
 #include "GameMenu.h"
 #include "PlayerInfo.h"
 #include "RenderTarget.h"
+#include "BitStreamFunc.h"
+#include "InfoBox.h"
 
 enum SaveFlags
 {
@@ -50,7 +52,8 @@ enum SaveFlags
 	//SF_DEV = 1 << 1,
 	SF_DEBUG = 1 << 2,
 	//SF_BETA = 1 << 3,
-	SF_HARDCORE = 1 << 4
+	SF_HARDCORE = 1 << 4,
+	SF_ON_WORLDMAP = 1 << 5
 };
 
 int LOAD_VERSION;
@@ -88,8 +91,10 @@ bool Game::CanSaveGame() const
 bool Game::CanLoadGame() const
 {
 	if(Net::IsOnline())
-		return false;
-
+	{
+		if(Net::IsClient() || !Any(game_state, GS_LEVEL, GS_WORLDMAP))
+			return false;
+	}
 	return true;
 }
 
@@ -186,8 +191,8 @@ void Game::CreateSaveImage()
 void Game::LoadGameSlot(int slot)
 {
 	assert(InRange(slot, 1, SaveSlot::MAX_SLOTS));
-
-	cstring filename = Format(N.mp_load ? "saves/multi/%d.sav" : "saves/single/%d.sav", slot);
+	bool online = (N.mp_load || Net::IsServer());
+	cstring filename = Format(online ? "saves/multi/%d.sav" : "saves/single/%d.sav", slot);
 	LoadGameCommon(filename, slot);
 }
 
@@ -216,8 +221,31 @@ void Game::LoadGameCommon(cstring filename, int slot)
 		throw SaveException(Format(txLoadOpenError, filename, last_error), Format("Failed to open file '%s' (%d).", filename, last_error), true);
 	}
 
+	Info("Loading save '%s'.", filename);
+
+	N.mp_quickload = (Net::IsOnline() && Any(game_state, GS_LEVEL, GS_WORLDMAP));
+	if(N.mp_quickload)
+	{
+		bool on_worldmap;
+		try
+		{
+			on_worldmap = ValidateNetSaveForLoading(f, slot);
+		}
+		catch(SaveException& ex)
+		{
+			throw SaveException(Format(txCantLoadMultiplayer, ex.localized_msg), Format("Can't quick load mp game: %s", ex.msg));
+		}
+
+		BitStreamWriter f;
+		f << ID_LOADING;
+		f << on_worldmap;
+		N.SendAll(f, IMMEDIATE_PRIORITY, RELIABLE);
+
+		N.mp_load = true;
+	}
+
 	prev_game_state = game_state;
-	if(N.mp_load)
+	if(N.mp_load && !N.mp_quickload)
 		gui->multiplayer->visible = false;
 	else
 	{
@@ -260,7 +288,20 @@ void Game::LoadGameCommon(cstring filename, int slot)
 			DeleteFile(filename);
 	}
 
-	if(!N.mp_load)
+	if(N.mp_quickload)
+	{
+		for(PlayerInfo* info : N.players)
+		{
+			if(info->left == PlayerInfo::LEFT_NO)
+				info->loaded = true;
+		}
+		game_state = GS_LOAD;
+		net_mode = NM_TRANSFER_SERVER;
+		net_timer = mp_timeout;
+		net_state = NetState::Server_Starting;
+		gui->info_box->Show("");
+	}
+	else if(!N.mp_load)
 	{
 		if(game_state == GS_LEVEL)
 		{
@@ -280,6 +321,42 @@ void Game::LoadGameCommon(cstring filename, int slot)
 		gui->main_menu->visible = true;
 		gui->create_server->Show();
 	}
+}
+
+//=================================================================================================
+bool Game::ValidateNetSaveForLoading(GameReader& f, int slot)
+{
+	SaveSlot* ptr;
+	if(slot == -1)
+	{
+		static SaveSlot ss;
+		if(!LoadGameHeader(f, ss))
+			throw SaveException(txLoadSignature, "Invalid file signature.");
+		f.SetPos(0);
+		ptr = &ss;
+	}
+	else
+		ptr = &gui->saveload->GetSaveSlot(slot);
+	SaveSlot& ss = *ptr;
+	if(ss.load_version < V_DEV)
+		throw SaveException(txTooOldVersion, Format("Too old save version (%d).", ss.load_version));
+	for(PlayerInfo* player : N.players)
+	{
+		bool ok = false;
+		if(player->pc->name == ss.player_name)
+			continue;
+		for(string& str : ss.mp_players)
+		{
+			if(str == player->name)
+			{
+				ok = true;
+				break;
+			}
+		}
+		if(!ok)
+			throw SaveException(Format(txMissingPlayerInSave, player->name.c_str()), Format("Missing player '%s' in save.", player->name.c_str()));
+	}
+	return ss.on_worldmap;
 }
 
 //=================================================================================================
@@ -314,6 +391,8 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 #endif
 	if(hardcore_mode)
 		flags |= SF_HARDCORE;
+	if(game_state == GS_WORLDMAP)
+		flags |= SF_ON_WORLDMAP;
 	f << flags;
 
 	// info
@@ -337,6 +416,7 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 	if(slot)
 	{
 		slot->valid = true;
+		slot->load_version = V_CURRENT;
 		slot->player_name = pc->name;
 		slot->player_class = pc->unit->data->clas;
 		slot->mp_players.clear();
@@ -352,6 +432,8 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 		slot->game_year = W.GetYear();
 		slot->game_month = W.GetMonth();
 		slot->game_day = W.GetDay();
+		slot->hardcore = hardcore_mode;
+		slot->on_worldmap = (game_state == GS_WORLDMAP);
 		slot->location = L.GetCurrentLocationText();
 		slot->img_offset = f.GetPos() + 4;
 	}
@@ -515,6 +597,7 @@ bool Game::LoadGameHeader(GameReader& f, SaveSlot& slot)
 	if(slot.load_version >= V_DEV)
 	{
 		slot.hardcore = IS_SET(flags, SF_HARDCORE);
+		slot.on_worldmap = IS_SET(flags, SF_ON_WORLDMAP);
 		f >> slot.text;
 		f >> slot.player_name;
 		const string& class_id = f.ReadString1();
@@ -1013,7 +1096,8 @@ void Game::LoadGame(GameReader& f)
 	}
 
 	LoadResources(txEndOfLoading, game_state2 == GS_WORLDMAP);
-	gui->load_screen->visible = false;
+	if(!N.mp_quickload)
+		gui->load_screen->visible = false;
 
 #ifdef _DEBUG
 	Team.ValidateTeamItems();
@@ -1037,6 +1121,45 @@ void Game::LoadGame(GameReader& f)
 }
 
 //=================================================================================================
+bool Game::TryLoadGame(int slot, bool quickload, bool from_console)
+{
+	try
+	{
+		game->LoadGameSlot(slot);
+		return true;
+	}
+	catch(const SaveException& ex)
+	{
+		if(quickload && ex.missing_file)
+		{
+			Warn("Missing quicksave.");
+			if(from_console)
+				Msg("Missing quicksave.");
+			return false;
+		}
+
+		cstring msg = Format("Failed to load game: %s", ex.msg);
+		Error(msg);
+		if(from_console)
+			Msg(msg);
+		else
+		{
+			cstring dialog_text;
+			if(ex.localized_msg)
+				dialog_text = Format("%s%s", txLoadError, ex.localized_msg);
+			else
+				dialog_text = txLoadErrorGeneric;
+			Control* parent = nullptr;
+			if(gui->game_menu->visible)
+				parent = gui->game_menu;
+			GUI.SimpleDialog(dialog_text, parent, "fatal");
+		}
+		N.mp_load = false;
+		return false;
+	}
+}
+
+//=================================================================================================
 void Game::Quicksave(bool from_console)
 {
 	if(!CanSaveGame())
@@ -1056,7 +1179,7 @@ void Game::Quicksave(bool from_console)
 }
 
 //=================================================================================================
-bool Game::Quickload(bool from_console)
+void Game::Quickload(bool from_console)
 {
 	if(!CanLoadGame())
 	{
@@ -1064,11 +1187,9 @@ bool Game::Quickload(bool from_console)
 			gui->console->AddMsg(Net::IsClient() ? "Only server can load game." : "Can't load game now.");
 		else
 			GUI.SimpleDialog(Net::IsClient() ? txOnlyServerCanLoad : txCantLoadGame, nullptr);
-		return true;
+		return;
 	}
-
-	Net::SetMode(Net::Mode::Singleplayer);
-	return gui->saveload->TryLoad(SaveSlot::MAX_SLOTS, true);
+	TryLoadGame(SaveSlot::MAX_SLOTS, true, from_console);
 }
 
 //=================================================================================================

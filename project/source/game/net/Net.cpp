@@ -3924,6 +3924,20 @@ void Game::UpdateClient(float dt)
 				return;
 			}
 			break;
+		case ID_LOADING:
+			{
+				Info("Quickloading server game.");
+				N.mp_quickload = true;
+				ClearGame();
+				reader >> N.mp_load_worldmap;
+				LoadingStart(N.mp_load_worldmap ? 4 : 9);
+				gui->info_box->Show(txLoadingSaveByServer);
+				gui->world_map->Hide();
+				net_mode = Game::NM_TRANSFER;
+				net_state = NetState::Client_BeforeTransfer;
+				game_state = GS_LOAD;
+			}
+			break;
 		default:
 			Warn("UpdateClient: Unknown packet from server: %u.", msg_id);
 			break;
@@ -7853,8 +7867,11 @@ void Game::Net_OnNewGameClient()
 		StringPool.Free(N.net_strs);
 	paused = false;
 	hardcore_mode = false;
-	gui->mp_box->Reset();
-	gui->mp_box->visible = true;
+	if(!N.mp_quickload)
+	{
+		gui->mp_box->Reset();
+		gui->mp_box->visible = true;
+	}
 }
 
 //=================================================================================================
@@ -7901,8 +7918,11 @@ void Game::Net_OnNewGameServer()
 	gui->server->server_name = N.server_name;
 	gui->server->UpdateServerInfo();
 	gui->server->Show();
-	gui->mp_box->Reset();
-	gui->mp_box->visible = true;
+	if(!N.mp_quickload)
+	{
+		gui->mp_box->Reset();
+		gui->mp_box->visible = true;
+	}
 
 	if(!N.mp_load)
 		gui->server->CheckAutopick();

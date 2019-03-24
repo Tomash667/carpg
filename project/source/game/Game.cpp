@@ -790,7 +790,16 @@ void Game::DoExitToMenu()
 	end_of_game = false;
 
 	CloseAllPanels();
+	string msg;
+	DialogBox* box = GUI.GetDialog("fatal");
+	bool console = gui->console->visible;
+	if(box)
+		msg = box->text;
 	GUI.CloseDialogs();
+	if(!msg.empty())
+		GUI.SimpleDialog(msg.c_str(), nullptr, "fatal");
+	if(console)
+		GUI.ShowDialog(gui->console);
 	gui->game_menu->visible = false;
 	gui->game_gui->visible = false;
 	gui->world_map->Hide();
@@ -1181,6 +1190,12 @@ void Game::SetGameText()
 	txLoadMP = Str("loadMP");
 	txLoadSP = Str("loadSP");
 	txLoadOpenError = Str("loadOpenError");
+	txCantLoadMultiplayer = Str("cantLoadMultiplayer");
+	txTooOldVersion = Str("tooOldVersion");
+	txMissingPlayerInSave = Str("missingPlayerInSave");
+	txGameLoaded = Str("gameLoaded");
+	txLoadError = Str("loadError");
+	txLoadErrorGeneric = Str("loadErrorGeneric");
 
 	txPvpRefuse = Str("pvpRefuse");
 	txWin = Str("win");
@@ -1289,6 +1304,8 @@ void Game::SetGameText()
 	txPreparingWorld = Str("preparingWorld");
 	txInvalidCrc = Str("invalidCrc");
 	txConnectionFailed = Str("connectionFailed");
+	txLoadingSaveByServer = Str("loadingSaveByServer");
+	txServerFailedToLoadSave = Str("serverFailedToLoadSave");
 
 	// net
 	txServer = Str("server");
