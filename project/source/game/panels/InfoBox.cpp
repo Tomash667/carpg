@@ -53,4 +53,6 @@ void InfoBox::Show(cstring _text)
 
 	if(!visible)
 		GUI.ShowDialog(this);
+	else
+		global_pos = (GUI.wnd_size - size) / 2;
 }

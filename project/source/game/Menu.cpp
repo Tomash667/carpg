@@ -38,6 +38,7 @@
 #include "PlayerInfo.h"
 #include "LobbyApi.h"
 #include "Render.h"
+#include "GameMessages.h"
 
 extern string g_ctime;
 
@@ -213,6 +214,7 @@ void Game::MultiplayerPanelEvent(int id)
 		break;
 	case MultiplayerPanel::IdLoad:
 		N.mp_load = true;
+		N.mp_quickload = false;
 		Net::changes.clear();
 		if(!N.net_strs.empty())
 			StringPool.Free(N.net_strs);
@@ -884,6 +886,14 @@ void Game::UpdateClientTransfer(float dt)
 			ExitToMenu();
 			GUI.SimpleDialog(txLostConnection, nullptr);
 			return;
+		case ID_SERVER_CLOSE:
+			Info("NM_TRANSFER: Server close, failed to load game.");
+			N.peer->DeallocatePacket(packet);
+			N.ClosePeer(true, true);
+			gui->info_box->CloseDialog();
+			ExitToMenu();
+			GUI.SimpleDialog(txServerFailedToLoadSave, nullptr);
+			return;
 		case ID_STATE:
 			{
 				byte state;
@@ -1080,6 +1090,12 @@ void Game::UpdateClientTransfer(float dt)
 					SetMusic(MusicType::Travel);
 					if(change_title_a)
 						ChangeTitle();
+					if(N.mp_quickload)
+					{
+						N.mp_quickload = false;
+						AddMultiMsg(txGameLoaded);
+						gui->messages->AddGameMsg3(GMS_GAME_LOADED);
+					}
 					N.peer->DeallocatePacket(packet);
 				}
 				else
@@ -1109,6 +1125,12 @@ void Game::UpdateClientTransfer(float dt)
 					pc_data.rot_buf = 0.f;
 					if(change_title_a)
 						ChangeTitle();
+					if(N.mp_quickload)
+					{
+						N.mp_quickload = false;
+						AddMultiMsg(txGameLoaded);
+						gui->messages->AddGameMsg3(GMS_GAME_LOADED);
+					}
 					N.peer->DeallocatePacket(packet);
 					gui->Setup(pc);
 					OnEnterLevelOrLocation();
@@ -1312,9 +1334,9 @@ void Game::UpdateServerTransfer(float dt)
 		L.entering = true;
 		const bool in_level = L.is_open;
 		int leader_perk = 0;
-		for(auto pinfo : N.players)
+		for(PlayerInfo* pinfo : N.players)
 		{
-			auto& info = *pinfo;
+			PlayerInfo& info = *pinfo;
 			if(info.left != PlayerInfo::LEFT_NO)
 				continue;
 
@@ -1526,11 +1548,18 @@ void Game::UpdateServerTransfer(float dt)
 				N.update_timer = 0.f;
 				SetMusic(MusicType::Travel);
 				ProcessLeftPlayers();
+				if(N.mp_quickload)
+				{
+					N.mp_quickload = false;
+					AddMultiMsg(txGameLoaded);
+					gui->messages->AddGameMsg3(GMS_GAME_LOADED);
+				}
 				gui->info_box->CloseDialog();
 			}
 			else
 			{
-				LoadingStart(1);
+				if(!N.mp_quickload)
+					LoadingStart(1);
 
 				BitStreamWriter f;
 				f << ID_CHANGE_LEVEL;
@@ -1641,7 +1670,8 @@ void Game::UpdateServerTransfer(float dt)
 				}
 
 				N.DeleteOldPlayers();
-				LoadResources("", false);
+				if(!N.mp_quickload)
+					LoadResources("", false);
 
 				net_mode = NM_SERVER_SEND;
 				net_state = NetState::Server_Send;
@@ -1785,6 +1815,12 @@ void Game::UpdateServerSend(float dt)
 		SetMusic();
 		gui->Setup(pc);
 		ProcessLeftPlayers();
+		if(N.mp_quickload)
+		{
+			N.mp_quickload = false;
+			AddMultiMsg(txGameLoaded);
+			gui->messages->AddGameMsg3(GMS_GAME_LOADED);
+		}
 	}
 }
 
@@ -1824,7 +1860,7 @@ void Game::UpdateServerQuiting(float dt)
 			}
 			else
 			{
-				Info("NM_QUITTING_SERVER: Ignoring packet from %s.",
+				Info("NM_QUITTING_SERVER: Ignoring packet %u from %s.", (byte)packet->data[0],
 					info.state == PlayerInfo::IN_LOBBY ? info.name.c_str() : packet->systemAddress.ToString());
 			}
 		}

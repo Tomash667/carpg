@@ -126,6 +126,8 @@ void Game::DrawGame(RenderTarget* target)
 
 	if(post_effects.empty() || !ePostFx)
 	{
+		if(target)
+			render->SetTarget(target);
 		V(device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET | D3DCLEAR_STENCIL, clear_color, 1.f, 0));
 		V(device->BeginScene());
 
@@ -151,6 +153,8 @@ void Game::DrawGame(RenderTarget* target)
 		GUI.Draw(IS_SET(draw_flags, DF_GUI), IS_SET(draw_flags, DF_MENU));
 
 		V(device->EndScene());
+		if(target)
+			render->SetTarget(nullptr);
 	}
 	else
 	{
@@ -786,7 +790,16 @@ void Game::DoExitToMenu()
 	end_of_game = false;
 
 	CloseAllPanels();
+	string msg;
+	DialogBox* box = GUI.GetDialog("fatal");
+	bool console = gui->console->visible;
+	if(box)
+		msg = box->text;
 	GUI.CloseDialogs();
+	if(!msg.empty())
+		GUI.SimpleDialog(msg.c_str(), nullptr, "fatal");
+	if(console)
+		GUI.ShowDialog(gui->console);
 	gui->game_menu->visible = false;
 	gui->game_gui->visible = false;
 	gui->world_map->Hide();
@@ -1177,6 +1190,12 @@ void Game::SetGameText()
 	txLoadMP = Str("loadMP");
 	txLoadSP = Str("loadSP");
 	txLoadOpenError = Str("loadOpenError");
+	txCantLoadMultiplayer = Str("cantLoadMultiplayer");
+	txTooOldVersion = Str("tooOldVersion");
+	txMissingPlayerInSave = Str("missingPlayerInSave");
+	txGameLoaded = Str("gameLoaded");
+	txLoadError = Str("loadError");
+	txLoadErrorGeneric = Str("loadErrorGeneric");
 
 	txPvpRefuse = Str("pvpRefuse");
 	txWin = Str("win");
@@ -1285,6 +1304,8 @@ void Game::SetGameText()
 	txPreparingWorld = Str("preparingWorld");
 	txInvalidCrc = Str("invalidCrc");
 	txConnectionFailed = Str("connectionFailed");
+	txLoadingSaveByServer = Str("loadingSaveByServer");
+	txServerFailedToLoadSave = Str("serverFailedToLoadSave");
 
 	// net
 	txServer = Str("server");

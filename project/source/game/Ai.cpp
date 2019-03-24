@@ -384,20 +384,20 @@ void Game::UpdateAi(float dt)
 						}
 					}
 
-					bool chowaj_bron = true;
+					bool hide_weapon = true;
 					if(u.action != A_NONE)
-						chowaj_bron = false;
+						hide_weapon = false;
 					else if(ai.idle_action == AIController::Idle_TrainCombat)
 					{
 						if(u.weapon_taken == W_ONE_HANDED)
-							chowaj_bron = false;
+							hide_weapon = false;
 					}
 					else if(ai.idle_action == AIController::Idle_TrainBow)
 					{
 						if(u.weapon_taken == W_BOW)
-							chowaj_bron = false;
+							hide_weapon = false;
 					}
-					if(chowaj_bron)
+					if(hide_weapon)
 					{
 						u.HideWeapon();
 						if(!u.look_target)
@@ -1562,42 +1562,25 @@ void Game::UpdateAi(float dt)
 							ai.timer = 0.25f;
 					}
 
-					// chowanie/wyjmowanie broni
+					// change current weapon
 					if(u.action == A_NONE)
 					{
-						// co wyj¹œæ? broñ do walki wrêcz czy ³uk?
-						WeaponType bron = W_NONE;
-
-						if(u.PreferMelee() || IS_SET(u.data->flags, F_MAGE))
-							bron = W_ONE_HANDED;
-						else if(IS_SET(u.data->flags, F_ARCHER))
-						{
-							if(best_dist > 1.5f && u.HaveBow())
-								bron = W_BOW;
-							else if(u.HaveWeapon())
-								bron = W_ONE_HANDED;
-						}
+						WeaponType weapon = W_NONE;
+						if(u.PreferMelee() || IS_SET(u.data->flags, F_MAGE) || !u.HaveBow())
+							weapon = W_ONE_HANDED;
 						else
 						{
-							if(best_dist > (u.IsHoldingMeeleWeapon() ? 5.f : 2.5f))
-							{
-								if(u.HaveBow())
-									bron = W_BOW;
-								else if(u.HaveWeapon())
-									bron = W_ONE_HANDED;
-							}
+							float safe_dist = (u.IsHoldingMeeleWeapon() ? 5.f : 2.5f);
+							if(IS_SET(u.data->flags, F_ARCHER))
+								safe_dist /= 2.f;
+							if(best_dist > safe_dist)
+								weapon = W_BOW;
 							else
-							{
-								if(u.HaveWeapon())
-									bron = W_ONE_HANDED;
-								else if(u.HaveBow())
-									bron = W_BOW;
-							}
+								weapon = W_ONE_HANDED;
 						}
 
-						// ma co wyj¹œæ ?
-						if(bron != W_NONE && u.weapon_taken != bron)
-							u.TakeWeapon(bron);
+						if(weapon != W_NONE && u.weapon_taken != weapon)
+							u.TakeWeapon(weapon);
 					}
 
 					if(u.data->spells && u.action == A_NONE && u.frozen == FROZEN::NO)
@@ -1730,7 +1713,7 @@ void Game::UpdateAi(float dt)
 						{
 							if(best_dist <= u.GetAttackRange() + 1.f)
 								AI_DoAttack(ai, enemy);
-							else if(u.CanRun() && best_dist <= u.GetAttackRange() * 3 + 1.f)
+							else if(u.running && best_dist <= u.GetAttackRange() * 3 + 1.f)
 								AI_DoAttack(ai, enemy, true);
 						}
 
@@ -1858,6 +1841,19 @@ void Game::UpdateAi(float dt)
 					target_pos = ai.target_last_pos;
 					look_at = LookAtWalk;
 					run_type = Run;
+
+					if(ai.target && (ai.target->to_remove || !ai.target->IsAlive()))
+					{
+						// target is dead
+						ai.state = AIController::Idle;
+						ai.idle_action = AIController::Idle_None;
+						ai.in_combat = false;
+						ai.change_ai_mode = true;
+						ai.loc_timer = Random(5.f, 10.f);
+						ai.timer = Random(1.f, 2.f);
+						ai.target = nullptr;
+						break;
+					}
 
 					if(Vec3::Distance(u.pos, ai.target_last_pos) < 1.f || ai.timer <= 0.f)
 					{
@@ -2329,6 +2325,12 @@ void Game::UpdateAi(float dt)
 							}
 						}
 					}
+					else
+					{
+						// fix for Jozan getting stuck when trying to heal someone
+						if(u.IsHero())
+							try_phase = true;
+					}
 
 					if(u.action == A_CAST)
 						u.target_pos = target_pos;
@@ -2405,13 +2407,14 @@ void Game::UpdateAi(float dt)
 		}
 
 		// ruch postaci
+		u.running = false;
 		if(move_type != DontMove && u.frozen == FROZEN::NO)
 		{
 			int move;
 
 			if(move_type == KeepDistanceCheck)
 			{
-				if(u.action == A_TAKE_WEAPON || CanShootAtLocation(u, *enemy, look_pos))
+				if(u.action == A_TAKE_WEAPON || CanShootAtLocation(u, *enemy, target_pos))
 				{
 					if(best_dist < 8.f)
 						move = -1;
@@ -2470,17 +2473,17 @@ void Game::UpdateAi(float dt)
 				u.speed = u.GetWalkSpeed();
 				u.prev_speed = Clamp((u.prev_speed + (u.speed - u.prev_speed)*dt * 3), 0.f, u.speed);
 				float speed = u.prev_speed * dt;
-				const float kat = Vec3::LookAtAngle(u.pos, target_pos);
+				const float angle = Vec3::LookAtAngle(u.pos, target_pos);
 
 				u.prev_pos = u.pos;
 
-				const Vec3 dir(sin(kat)*speed, 0, cos(kat)*speed);
+				const Vec3 dir(sin(angle)*speed, 0, cos(angle)*speed);
 				bool small;
 
 				if(move_type == KeepDistanceCheck)
 				{
 					u.pos += dir;
-					if(u.action != A_TAKE_WEAPON && !CanShootAtLocation(u, *enemy, look_pos))
+					if(u.action != A_TAKE_WEAPON && !CanShootAtLocation(u, *enemy, target_pos))
 						move = 0;
 					u.pos = u.prev_pos;
 				}
@@ -2490,7 +2493,7 @@ void Game::UpdateAi(float dt)
 					MoveUnit(u);
 
 					if(!small && u.animation != ANI_PLAY)
-						u.animation = ANI_WALK_TYL;
+						u.animation = ANI_WALK_BACK;
 				}
 			}
 			else if(move == 1)
@@ -2692,17 +2695,17 @@ void Game::UpdateAi(float dt)
 					u.speed = run ? u.GetRunSpeed() : u.GetWalkSpeed();
 					u.prev_speed = Clamp((u.prev_speed + (u.speed - u.prev_speed)*dt * 3), 0.f, u.speed);
 					float speed = u.prev_speed * dt;
-					const float kat = Vec3::LookAtAngle(u.pos, move_target) + PI;
+					const float angle = Vec3::LookAtAngle(u.pos, move_target) + PI;
 
 					u.prev_pos = u.pos;
 
-					const Vec3 dir(sin(kat)*speed, 0, cos(kat)*speed);
+					const Vec3 dir(sin(angle)*speed, 0, cos(angle)*speed);
 					bool small;
 
 					if(move_type == KeepDistanceCheck)
 					{
 						u.pos += dir;
-						if(!CanShootAtLocation(u, *enemy, look_pos))
+						if(!CanShootAtLocation(u, *enemy, target_pos))
 							move = 0;
 						u.pos = u.prev_pos;
 					}
@@ -2710,10 +2713,9 @@ void Game::UpdateAi(float dt)
 					if(move != 0)
 					{
 						int move_state = 0;
-						//Vec3 prev = u.pos;
 						if(CheckMove(u.pos, dir, u.GetUnitRadius(), &u, &small))
 							move_state = 1;
-						else if(try_phase && u.hero->phase /*&& CheckMovePhase(u.pos, dir, u.GetUnitRadius(), &u, &small))*/)
+						else if(try_phase && u.hero->phase)
 						{
 							move_state = 2;
 							u.pos += dir;
@@ -2767,7 +2769,10 @@ void Game::UpdateAi(float dt)
 							if(u.animation != ANI_PLAY && !small)
 							{
 								if(run)
+								{
 									u.animation = ANI_RUN;
+									u.running = abs(u.speed - u.prev_speed) < 0.25;
+								}
 								else
 									u.animation = ANI_WALK;
 							}

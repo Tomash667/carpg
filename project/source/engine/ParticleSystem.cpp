@@ -73,7 +73,6 @@ void ParticleEmitter::Init()
 	radius = sqrt(2 * r*r);
 
 	// nowe
-	//gravity = false;
 	manual_delete = 0;
 }
 

@@ -8,6 +8,7 @@ class RenderTarget
 	~RenderTarget() {}
 public:
 	void SaveToFile(cstring filename);
+	uint SaveToFile(FileWriter& f);
 	void FreeSurface();
 	TEX GetTexture() const { return tex; }
 	SURFACE GetSurface();

@@ -1609,6 +1609,7 @@ void Unit::Save(GameWriter& f, bool local)
 
 		f << last_bash;
 		f << moved;
+		f << running;
 	}
 
 	f.WriteVector4(effects);
@@ -1952,6 +1953,10 @@ void Unit::Load(GameReader& f, bool local)
 		f >> last_bash;
 		if(LOAD_VERSION >= V_0_5)
 			f >> moved;
+		if(LOAD_VERSION >= V_DEV)
+			f >> running;
+		else
+			running = false;
 	}
 	else
 	{
@@ -1971,6 +1976,7 @@ void Unit::Load(GameReader& f, bool local)
 		speed = prev_speed = 0.f;
 		alcohol = 0.f;
 		moved = false;
+		running = false;
 	}
 
 	// effects
@@ -3885,7 +3891,7 @@ void Unit::UpdateStaminaAction()
 		switch(animation)
 		{
 		case ANI_WALK:
-		case ANI_WALK_TYL:
+		case ANI_WALK_BACK:
 		case ANI_LEFT:
 		case ANI_RIGHT:
 		case ANI_KNEELS:

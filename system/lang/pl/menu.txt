@@ -62,9 +62,9 @@ load = "Wczytaj"
 saveN = "Zapis %d"
 quickSave = "Szybki zapis"
 emptySlot = "Puste miejsce %d"
-saveDate = "Data: %04d-%02d-%02d %02d:%02d:%02d\n"
-saveTime = "Rok %d, Miesi¹c %d, Dzieñ %d\n"
-savePlayers = "\nGracze %d\n"
+saveDate = "Zapisano: %04d-%02d-%02d %02d:%02d:%02d\n"
+saveTime = "Data: %s\n"
+savePlayers = "Gracze: "
 saveName = "Nazwa zapisu:"
 
 // journal
@@ -674,6 +674,10 @@ loadSP = "Ten zapis pochodzi z trybu pojedynczego gracza."
 loadError = "B³¹d wczytywania gry: "
 loadErrorGeneric = "B³¹d wczytywania gry: plik jest uszkodzony lub nieprawid³owy, wiêcej informacji w pliku log."
 loadOpenError = "Nie mo¿na otworzyæ pliku '%s' (%d)."
+cantLoadMultiplayer = "Nie mo¿na szybko wczytaæ tego zapisu: %s"
+tooOldVersion = "Zbyt stara wersja zapisu."
+missingPlayerInSave = "Brak gracza '%s' w zapisie."
+gameLoaded = "Gra wczytana"
 
 // game
 goldPlus = "Z³oto %+d"
@@ -1221,6 +1225,8 @@ preparingWorld = "Przygotowywanie œwiata"
 invalidCrc = "Z³a suma kontrolna danych"
 connectionFailed = "Nie uda³o siê po³¹czyæ z serwerem."
 registerFailed = "B³¹d rejestracji serwera."
+loadingSaveByServer = "Wczytywanie zapisu przez serwer..."
+serverFailedToLoadSave = "Wyst¹pi³ b³¹d podczas wczytywania gry przez serwer."
 
 // net
 createServerFailed = "B³¹d tworzenia serwera (%d)!"

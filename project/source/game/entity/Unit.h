@@ -17,7 +17,7 @@ enum Animation
 {
 	ANI_NONE = -1,
 	ANI_WALK,
-	ANI_WALK_TYL,
+	ANI_WALK_BACK,
 	ANI_RUN,
 	ANI_LEFT,
 	ANI_RIGHT,
@@ -192,7 +192,7 @@ struct Unit
 	const Item* used_item;
 	bool used_item_is_team;
 	vector<Effect> effects;
-	bool hitted, invisible, talking, run_attack, to_remove, temporary, changed, dont_attack, assist, attack_team, fake_unit, moved, mark;
+	bool hitted, invisible, talking, run_attack, to_remove, temporary, changed, dont_attack, assist, attack_team, fake_unit, moved, mark, running;
 	btCollisionObject* cobj;
 	Usable* usable;
 	UnitEventHandler* event_handler;

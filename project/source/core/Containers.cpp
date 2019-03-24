@@ -15,7 +15,6 @@
 ObjectPool<string> StringPool;
 ObjectPool<vector<void*>> VectorPool;
 ObjectPool<vector<byte>> BufPool;
-ObjectPool<Buffer> BufferPool;
 
 #ifdef _DEBUG
 
@@ -101,10 +100,10 @@ void ObjectPoolLeakManager::Unregister(void* ptr)
 //=================================================================================================
 Buffer* Buffer::Decompress(uint real_size)
 {
-	Buffer* buf = BufferPool.Get();
+	Buffer* buf = Buffer::Get();
 	buf->Resize(real_size);
 	uLong size = real_size;
 	uncompress((Bytef*)buf->Data(), &size, (const Bytef*)Data(), Size());
-	BufferPool.Free(this);
+	Free();
 	return buf;
 }

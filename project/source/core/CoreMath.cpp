@@ -220,8 +220,8 @@ float ShortestArc(float a, float b)
 	if(fabs(b - a) < PI)
 		return b - a;
 	if(b > a)
-		return b - a - PI*2.0f;
-	return b - a + PI*2.0f;
+		return b - a - PI * 2.0f;
+	return b - a + PI * 2.0f;
 }
 
 //=================================================================================================
@@ -249,7 +249,7 @@ void AdjustAngle(float& angle, float expected, float max_diff)
 	if(diff <= max_diff)
 		angle = expected;
 	else
-		angle += ShortestArc(angle, expected) * max_diff;
+		angle = Clip(angle + ShortestArc(angle, expected) * max_diff);
 }
 
 bool CircleToRectangle(float circlex, float circley, float radius, float rectx, float recty, float w, float h)
@@ -274,7 +274,7 @@ bool CircleToRectangle(float circlex, float circley, float radius, float rectx, 
 	float dx = dist_x - w;
 	float dy = dist_y - h;
 
-	return (dx*dx + dy*dy) <= (radius*radius);
+	return (dx*dx + dy * dy) <= (radius*radius);
 }
 
 bool Box2d::IsFullyInside(const Vec2& v, float r) const
@@ -595,7 +595,7 @@ bool LineToLine(const Vec2& start1, const Vec2& end1, const Vec2& start2, const 
 	{
 		float ua = ua_t / u_b;
 		float ub = ub_t / u_b;
-		if(0 <= ua&&ua <= 1 && 0 <= ub&&ub <= 1)
+		if(0 <= ua && ua <= 1 && 0 <= ub && ub <= 1)
 		{
 			if(t)
 				*t = ua;
@@ -701,8 +701,8 @@ inline void RotateVector2DClockwise(Vec2& v, float ang)
 		cosa = cos(ang),
 		sina = sin(ang);
 	t = v.x;
-	v.x = t*cosa + v.y*sina;
-	v.y = -t*sina + v.y*cosa;
+	v.x = t * cosa + v.y*sina;
+	v.y = -t * sina + v.y*cosa;
 }
 
 // Rotated Rectangles Collision Detection, Oren Becker, 2001
@@ -736,7 +736,7 @@ bool RotatedRectanglesCollision(const RotRect& r1, const RotRect& r2)
 	A.x = -r1.size.y*sina; B.x = A.x; t = r1.size.x*cosa; A.x += t; B.x -= t;
 	A.y = r1.size.y*cosa; B.y = A.y; t = r1.size.x*sina; A.y += t; B.y -= t;
 
-	t = sina*cosa;
+	t = sina * cosa;
 
 	// verify that A is vertical min/max, B is horizontal min/max
 	if(t < 0)
@@ -936,7 +936,7 @@ float PointLineDistance(float x0, float y0, float x1, float y1, float x2, float 
 {
 	float x = x2 - x1;
 	float y = y2 - y1;
-	return abs(y*x0 - x*y0 + x2*y1 - y2*x1) / sqrt(y*y + x*x);
+	return abs(y*x0 - x * y0 + x2 * y1 - y2 * x1) / sqrt(y*y + x * x);
 }
 
 float GetClosestPointOnLineSegment(const Vec2& A, const Vec2& B, const Vec2& P, Vec2& result)

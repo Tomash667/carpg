@@ -273,7 +273,8 @@ public:
 		txRecreatingObjects, txGeneratingMinimap, txLoadingComplete, txWaitingForPlayers, txLoadingResources;
 	cstring txTutPlay, txTutTick;
 	cstring txCantSaveGame, txSaveFailed, txLoadFailed, txQuickSave, txGameSaved, txLoadingLocations, txLoadingData, txEndOfLoading, txCantSaveNow,
-		txOnlyServerCanSave, txCantLoadGame, txOnlyServerCanLoad, txLoadSignature, txLoadVersion, txLoadSaveVersionOld, txLoadMP, txLoadSP, txLoadOpenError;
+		txOnlyServerCanSave, txCantLoadGame, txOnlyServerCanLoad, txLoadSignature, txLoadVersion, txLoadSaveVersionOld, txLoadMP, txLoadSP, txLoadOpenError,
+		txCantLoadMultiplayer, txTooOldVersion, txMissingPlayerInSave, txGameLoaded, txLoadError, txLoadErrorGeneric;
 	cstring txPvpRefuse, txWin, txWinMp, txLevelUp, txLevelDown, txRegeneratingLevel, txNeedItem, txGmsAddedItems;
 	cstring txRumor[29], txRumorD[7];
 	cstring txMayorQFailed[3], txQuestAlreadyGiven[2], txMayorNoQ[2], txCaptainQFailed[2], txCaptainNoQ[2], txLocationDiscovered[2], txAllDiscovered[2],
@@ -287,7 +288,7 @@ public:
 		txConnectVersion, txConnectSLikeNet, txCantJoin, txLostConnection, txInvalidPswd, txCantJoin2, txServerFull, txInvalidData, txNickUsed, txInvalidVersion,
 		txInvalidVersion2, txInvalidNick, txGeneratingWorld, txLoadedWorld, txWorldDataError, txLoadedPlayer, txPlayerDataError, txGeneratingLocation,
 		txLoadingLocation, txLoadingLocationError, txLoadingChars, txLoadingCharsError, txSendingWorld, txMpNPCLeft, txLoadingLevel, txDisconnecting,
-		txPreparingWorld, txInvalidCrc, txConnectionFailed;
+		txPreparingWorld, txInvalidCrc, txConnectionFailed, txLoadingSaveByServer, txServerFailedToLoadSave;
 	cstring txServer, txYouAreLeader, txRolledNumber, txPcIsLeader, txReceivedGold, txYouDisconnected, txYouKicked,
 		txGamePaused, txGameResumed, txDevmodeOn, txDevmodeOff, txPlayerLeft, txPlayerDisconnected, txPlayerQuit, txPlayerKicked, txServerClosed;
 	cstring txYell[3];
@@ -373,6 +374,7 @@ public:
 	float loading_dt, loading_cap;
 	Timer loading_t;
 	int loading_steps, loading_index;
+	bool loading_first_step;
 	Color clear_color2;
 	// used temporary at loading
 	vector<AIController*> ai_bow_targets, ai_cast_targets;
@@ -426,10 +428,7 @@ public:
 	void UseAction(PlayerController* p, bool from_server, const Vec3* pos_data = nullptr);
 	void SpawnUnitEffect(Unit& unit);
 	void PlayerCheckObjectDistance(Unit& u, const Vec3& pos, void* ptr, float& best_dist, BeforePlayer type);
-
 	int CheckMove(Vec3& pos, const Vec3& dir, float radius, Unit* me, bool* is_small = nullptr);
-	int CheckMovePhase(Vec3& pos, const Vec3& dir, float radius, Unit* me, bool* is_small = nullptr);
-
 	void ParseCommand(const string& str, PrintMsgFunc print_func, PARSE_SOURCE ps = PS_UNKNOWN);
 	void CmdList(Tokenizer& t);
 	void AddCommands();
@@ -487,8 +486,11 @@ public:
 	void PlayAttachedSound(Unit& unit, SOUND sound, float distance);
 	void StopAllSounds();
 	ATTACK_RESULT DoGenericAttack(LevelContext& ctx, Unit& attacker, Unit& hitted, const Vec3& hitpoint, float attack, int dmg_type, bool bash);
-	void SaveGame(GameWriter& f);
+	void SaveGame(GameWriter& f, SaveSlot* slot);
+	void CreateSaveImage();
+	bool LoadGameHeader(GameReader& f, SaveSlot& slot);
 	void LoadGame(GameReader& f);
+	bool TryLoadGame(int slot, bool quickload, bool from_console);
 	void RemoveUnusedAiAndCheck();
 	void CheckUnitsAi(LevelContext& ctx, int& err_count);
 	void CastSpell(LevelContext& ctx, Unit& unit);
@@ -519,8 +521,9 @@ public:
 	void LoadGameSlot(int slot);
 	void LoadGameFilename(const string& name);
 	void LoadGameCommon(cstring filename, int slot);
+	bool ValidateNetSaveForLoading(GameReader& f, int slot);
 	void Quicksave(bool from_console);
-	bool Quickload(bool from_console);
+	void Quickload(bool from_console);
 	void ClearGameVars(bool new_game);
 	void ClearGame();
 	SOUND GetItemSound(const Item* item);
@@ -531,7 +534,7 @@ public:
 	void UpdateContext(LevelContext& ctx, float dt);
 	bool IsAnyoneTalking() const;
 	// to by mog³o byæ globalna funkcj¹
-	void PlayHitSound(MATERIAL_TYPE mat_bron, MATERIAL_TYPE mat_cialo, const Vec3& hitpoint, float range, bool dmg);
+	void PlayHitSound(MATERIAL_TYPE mat_weapon, MATERIAL_TYPE mat_body, const Vec3& hitpoint, float range, bool dmg);
 	// wczytywanie
 	void LoadingStart(int steps);
 	void LoadingStep(cstring text = nullptr, int end = 0);
@@ -573,7 +576,6 @@ public:
 	bool CanShowEndScreen();
 	void UpdateGameDialogClient();
 	void UpdateGameNet(float dt);
-	void CreateSaveImage(cstring filename);
 	void PlayerUseUsable(Usable* u, bool after_action);
 	void UnitTalk(Unit& u, cstring text);
 	void OnEnterLocation();

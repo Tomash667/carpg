@@ -33,7 +33,8 @@ enum GMS
 	GMS_TOO_COMPLICATED,
 	GMS_GAIN_ATTRIBUTE,
 	GMS_GAIN_SKILL,
-	GMS_ADDED_CURSED_STONE
+	GMS_ADDED_CURSED_STONE,
+	GMS_GAME_LOADED
 };
 
 //-----------------------------------------------------------------------------
@@ -69,5 +70,6 @@ private:
 	int msgs_h;
 	cstring txGamePausedBig, txINeedWeapon, txNoHpp, txCantDo, txDontLootFollower, txDontLootArena, txUnlockedDoor, txNeedKey, txGmsLooted, txGmsRumor,
 		txGmsJournalUpdated, txGmsUsed, txGmsUnitBusy, txGmsGatherTeam, txGmsNotLeader, txGmsNotInCombat, txGmsAddedItem, txGmsGettingOutOfRange,
-		txGmsLeftEvent, txGameSaved, txGainTextAttrib, txGainTextSkill, txGainLearningPoints, txLearnedPerk, txTooComplicated, txAddedCursedStone;
+		txGmsLeftEvent, txGameSaved, txGainTextAttrib, txGainTextSkill, txGainLearningPoints, txLearnedPerk, txTooComplicated, txAddedCursedStone,
+		txGameLoaded;
 };

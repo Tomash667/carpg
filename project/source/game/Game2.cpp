@@ -1313,7 +1313,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 	u.prev_pos = u.pos;
 	u.changed = true;
 
-	bool idle = true, this_frame_run = false;
+	bool idle = true;
 	int move = 0;
 
 	if(!u.usable)
@@ -1398,6 +1398,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 		const bool rotating = (rotate != 0 || pc_data.rot_buf != 0.f);
 
+		u.running = false;
 		if(rotating || move)
 		{
 			// rotating by mouse don't affect idle timer
@@ -1470,7 +1471,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				if(run)
 					u.animation = ANI_RUN;
 				else if(move < -9)
-					u.animation = ANI_WALK_TYL;
+					u.animation = ANI_WALK_BACK;
 				else if(move == -1)
 					u.animation = ANI_LEFT;
 				else if(move == 1)
@@ -1514,7 +1515,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				}
 
 				if(run && abs(u.speed - u.prev_speed) < 0.25f)
-					this_frame_run = true;
+					u.running = true;
 			}
 		}
 
@@ -1535,24 +1536,24 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				u.HideWeapon();
 			else
 			{
-				WeaponType bron = pc->last_weapon;
+				WeaponType weapon = pc->last_weapon;
 
 				// ustal któr¹ broñ wyj¹œæ
-				if(bron == W_NONE)
+				if(weapon == W_NONE)
 				{
 					if(u.HaveWeapon())
-						bron = W_ONE_HANDED;
+						weapon = W_ONE_HANDED;
 					else if(u.HaveBow())
-						bron = W_BOW;
+						weapon = W_BOW;
 				}
-				else if(bron == W_ONE_HANDED)
+				else if(weapon == W_ONE_HANDED)
 				{
 					if(!u.HaveWeapon())
 					{
 						if(u.HaveBow())
-							bron = W_BOW;
+							weapon = W_BOW;
 						else
-							bron = W_NONE;
+							weapon = W_NONE;
 					}
 				}
 				else
@@ -1560,15 +1561,15 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					if(!u.HaveBow())
 					{
 						if(u.HaveWeapon())
-							bron = W_ONE_HANDED;
+							weapon = W_ONE_HANDED;
 						else
-							bron = W_NONE;
+							weapon = W_NONE;
 					}
 				}
 
-				if(bron != W_NONE)
+				if(weapon != W_NONE)
 				{
-					pc->last_weapon = bron;
+					pc->last_weapon = weapon;
 					if(pc->next_action != NA_NONE)
 					{
 						pc->next_action = NA_NONE;
@@ -1580,8 +1581,8 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					{
 					case WS_HIDDEN:
 						// broñ jest schowana, zacznij wyjmowaæ
-						u.mesh_inst->Play(u.GetTakeWeaponAnimation(bron == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
-						u.weapon_taken = bron;
+						u.mesh_inst->Play(u.GetTakeWeaponAnimation(weapon == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
+						u.weapon_taken = weapon;
 						u.animation_state = 0;
 						u.weapon_state = WS_TAKING;
 						u.action = A_TAKE_WEAPON;
@@ -1631,8 +1632,8 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						break;
 					case WS_TAKEN:
 						// broñ jest wyjêta, zacznij chowaæ
-						u.mesh_inst->Play(u.GetTakeWeaponAnimation(bron == W_ONE_HANDED), PLAY_ONCE | PLAY_BACK | PLAY_PRIO1, 1);
-						u.weapon_hiding = bron;
+						u.mesh_inst->Play(u.GetTakeWeaponAnimation(weapon == W_ONE_HANDED), PLAY_ONCE | PLAY_BACK | PLAY_PRIO1, 1);
+						u.weapon_hiding = weapon;
 						u.weapon_taken = W_NONE;
 						u.weapon_state = WS_HIDING;
 						u.action = A_TAKE_WEAPON;
@@ -2427,7 +2428,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					u.action = A_ATTACK;
 					u.attack_id = u.GetRandomAttack();
 					u.mesh_inst->Play(NAMES::ani_attacks[u.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
-					if(this_frame_run)
+					if(u.running)
 					{
 						// running attack
 						u.mesh_inst->groups[1].speed = u.GetAttackSpeed();
@@ -2906,75 +2907,6 @@ int Game::CheckMove(Vec3& _pos, const Vec3& _dir, float _radius, Unit* _me, bool
 			*is_small = (Vec3::Distance(_pos, new_pos2) < SMALL_DISTANCE);
 		_pos = new_pos2;
 		return 2;
-	}
-
-	// nie ma drogi
-	return 0;
-}
-
-//=================================================================================================
-int Game::CheckMovePhase(Vec3& _pos, const Vec3& _dir, float _radius, Unit* _me, bool* is_small)
-{
-	assert(_radius > 0.f && _me);
-
-	Vec3 new_pos = _pos + _dir;
-	Vec3 gather_pos = _pos + _dir / 2;
-	float gather_radius = _dir.Length() + _radius;
-
-	L.global_col.clear();
-
-	Level::IgnoreObjects ignore = { 0 };
-	Unit* ignored[] = { _me, nullptr };
-	ignore.ignored_units = (const Unit**)ignored;
-	ignore.ignore_objects = true;
-	L.GatherCollisionObjects(L.GetContext(*_me), L.global_col, gather_pos, gather_radius, &ignore);
-
-	if(L.global_col.empty())
-	{
-		if(is_small)
-			*is_small = (Vec3::Distance(_pos, new_pos) < SMALL_DISTANCE);
-		_pos = new_pos;
-		return 3;
-	}
-
-	// idŸ prosto po x i z
-	if(!L.Collide(L.global_col, new_pos, _radius))
-	{
-		if(is_small)
-			*is_small = (Vec3::Distance(_pos, new_pos) < SMALL_DISTANCE);
-		_pos = new_pos;
-		return 3;
-	}
-
-	// idŸ po x
-	Vec3 new_pos2 = _me->pos;
-	new_pos2.x = new_pos.x;
-	if(!L.Collide(L.global_col, new_pos2, _radius))
-	{
-		if(is_small)
-			*is_small = (Vec3::Distance(_pos, new_pos2) < SMALL_DISTANCE);
-		_pos = new_pos2;
-		return 1;
-	}
-
-	// idŸ po z
-	new_pos2.x = _me->pos.x;
-	new_pos2.z = new_pos.z;
-	if(!L.Collide(L.global_col, new_pos2, _radius))
-	{
-		if(is_small)
-			*is_small = (Vec3::Distance(_pos, new_pos2) < SMALL_DISTANCE);
-		_pos = new_pos2;
-		return 2;
-	}
-
-	// jeœli zablokowa³ siê w innej jednostce to wyjdŸ z niej
-	if(L.Collide(L.global_col, _pos, _radius))
-	{
-		if(is_small)
-			*is_small = (Vec3::Distance(_pos, new_pos) < SMALL_DISTANCE);
-		_pos = new_pos;
-		return 4;
 	}
 
 	// nie ma drogi
@@ -3612,6 +3544,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	u->guard_target = nullptr;
 	u->alcohol = 0.f;
 	u->moved = false;
+	u->running = false;
 
 	u->fake_unit = true; // to prevent sending hp changed message set temporary as fake unit
 	if(base.group == G_PLAYER)
@@ -4377,7 +4310,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 				if(!Net::IsClient())
 					u.mesh_inst->groups[0].speed = u.GetWalkSpeed() / u.data->walk_speed;
 				break;
-			case ANI_WALK_TYL:
+			case ANI_WALK_BACK:
 				u.mesh_inst->Play(NAMES::ani_move, PLAY_BACK | PLAY_PRIO1 | PLAY_RESTORE, 0);
 				if(!Net::IsClient())
 					u.mesh_inst->groups[0].speed = u.GetWalkSpeed() / u.data->walk_speed;
@@ -5642,7 +5575,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 				}
 
 				// hit enemy unit
-				if(it->owner && hitted->IsAI())
+				if(it->owner && it->owner->IsAlive() && hitted->IsAI())
 					AI_HitReaction(*hitted, it->start_pos);
 
 				// calculate modifiers
@@ -5819,7 +5752,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 					continue;
 				}
 
-				if(hitted->IsAI())
+				if(hitted->IsAI() && it->owner && it->owner->IsAlive())
 					AI_HitReaction(*hitted, it->start_pos);
 
 				float dmg = it->attack;
@@ -6786,7 +6719,6 @@ void Game::SpellHitEffect(LevelContext& ctx, Bullet& bullet, const Vec3& pos, Un
 		pe->op_alpha = POP_LINEAR_SHRINK;
 		pe->mode = 1;
 		pe->Init();
-		//pe->gravity = true;
 		ctx.pes->push_back(pe);
 	}
 
@@ -7526,11 +7458,12 @@ void Game::UpdateElectros(LevelContext& ctx, float dt)
 			if(e.lines.back().t >= 0.25f)
 			{
 				// zadaj obra¿enia
-				if(!e.owner->IsFriend(*e.hitted.back()))
+				Unit* hitted = e.hitted.back();
+				if(!e.owner->IsFriend(*hitted))
 				{
-					if(e.hitted.back()->IsAI())
-						AI_HitReaction(*e.hitted.back(), e.start_pos);
-					GiveDmg(ctx, e.owner, e.dmg, *e.hitted.back(), nullptr, DMG_NO_BLOOD | DMG_MAGICAL);
+					if(hitted->IsAI() && e.owner->IsAlive())
+						AI_HitReaction(*hitted, e.start_pos);
+					GiveDmg(ctx, e.owner, e.dmg, *hitted, nullptr, DMG_NO_BLOOD | DMG_MAGICAL);
 				}
 
 				if(e.spell->sound_hit)
@@ -7600,11 +7533,10 @@ void Game::UpdateElectros(LevelContext& ctx, float dt)
 						for(vector<pair<Unit*, float>>::iterator it2 = targets.begin(), end2 = targets.end(); it2 != end2; ++it2)
 						{
 							Vec3 hitpoint;
-							Unit* hitted;
-
-							if(RayTest(e.lines.back().pts.back(), it2->first->GetCenter(), e.hitted.back(), hitpoint, hitted))
+							Unit* new_hitted;
+							if(RayTest(e.lines.back().pts.back(), it2->first->GetCenter(), hitted, hitpoint, new_hitted))
 							{
-								if(hitted == it2->first)
+								if(new_hitted == it2->first)
 								{
 									target = it2->first;
 									dist = it2->second;
@@ -7681,7 +7613,6 @@ void Game::UpdateElectros(LevelContext& ctx, float dt)
 					pe->op_alpha = POP_LINEAR_SHRINK;
 					pe->mode = 1;
 					pe->Init();
-					//pe->gravity = true;
 					ctx.pes->push_back(pe);
 				}
 
@@ -7874,7 +7805,8 @@ void Game::ClearGameVars(bool new_game)
 		L.is_open = false;
 		gui->game_gui->PositionPanels();
 		gui->Clear(true, false);
-		gui->mp_box->visible = Net::IsOnline();
+		if(!N.mp_quickload)
+			gui->mp_box->visible = Net::IsOnline();
 		drunk_anim = 0.f;
 		L.light_angle = Random(PI * 2);
 		cam.Reset();
@@ -8484,6 +8416,7 @@ void Game::LoadingStart(int steps)
 	loading_cap = 0.66f;
 	loading_steps = steps;
 	loading_index = 0;
+	loading_first_step = true;
 	clear_color = Color::Black;
 	game_state = GS_LOAD;
 	gui->load_screen->visible = true;
@@ -8512,11 +8445,12 @@ void Game::LoadingStep(cstring text, int end)
 	if(end != 1)
 	{
 		loading_dt += loading_t.Tick();
-		if(loading_dt >= 1.f / 30 || end == 2)
+		if(loading_dt >= 1.f / 30 || end == 2 || loading_first_step)
 		{
 			loading_dt = 0.f;
 			DoPseudotick();
 			loading_t.Tick();
+			loading_first_step = false;
 		}
 	}
 }
@@ -9883,21 +9817,6 @@ DialogContext* Game::FindDialogContext(Unit* talker)
 		}
 	}
 	return nullptr;
-}
-
-void Game::CreateSaveImage(cstring filename)
-{
-	assert(filename);
-
-	int old_flags = draw_flags;
-	if(game_state == GS_LEVEL)
-		draw_flags = (0xFFFFFFFF & ~DF_GUI & ~DF_MENU);
-	else
-		draw_flags = (0xFFFFFFFF & ~DF_MENU);
-	DrawGame(rt_save);
-	draw_flags = old_flags;
-
-	rt_save->SaveToFile(filename);
 }
 
 void Game::PlayerUseUsable(Usable* usable, bool after_action)
