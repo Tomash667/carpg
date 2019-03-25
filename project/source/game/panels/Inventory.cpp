@@ -1006,9 +1006,12 @@ void InventoryPanel::Update(float dt)
 						NetChange& c = Add1(Net::changes);
 						if(Net::IsServer())
 						{
-							c.type = NetChange::CHANGE_EQUIPMENT;
-							c.unit = unit;
-							c.id = slot_type;
+							if(IsVisible(slot_type))
+							{
+								c.type = NetChange::CHANGE_EQUIPMENT;
+								c.unit = unit;
+								c.id = slot_type;
+							}
 						}
 						else
 						{
@@ -1102,7 +1105,7 @@ void InventoryPanel::Update(float dt)
 				if(slot)
 				{
 					// nie za³o¿ony przedmiot
-					if(item->IsWearableByHuman())
+					if(item->IsWearableByHuman() && item->type != IT_AMULET)
 					{
 						last_index = INDEX_INVALID;
 
@@ -1316,7 +1319,7 @@ void InventoryPanel::Event(GuiEvent e)
 					game.pc->unit->weight += unit_slots[i]->weight;
 					unit_slots[i] = nullptr;
 
-					if(Net::IsServer())
+					if(Net::IsServer() && IsVisible((ITEM_SLOT)i))
 					{
 						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::CHANGE_EQUIPMENT;
@@ -1414,15 +1417,22 @@ void InventoryPanel::RemoveSlotItem(ITEM_SLOT slot)
 
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::CHANGE_EQUIPMENT;
 		if(Net::IsServer())
 		{
-			c.unit = unit;
-			c.id = slot;
+			if(IsVisible(slot))
+			{
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::CHANGE_EQUIPMENT;
+				c.unit = unit;
+				c.id = slot;
+			}
 		}
 		else
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::CHANGE_EQUIPMENT;
 			c.id = SlotToIIndex(slot);
+		}
 	}
 }
 
@@ -1484,15 +1494,22 @@ void InventoryPanel::EquipSlotItem(ITEM_SLOT slot, int i_index)
 
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::CHANGE_EQUIPMENT;
 		if(Net::IsServer())
 		{
-			c.unit = unit;
-			c.id = slot;
+			if(IsVisible(slot))
+			{
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::CHANGE_EQUIPMENT;
+				c.unit = unit;
+				c.id = slot;
+			}
 		}
 		else
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::CHANGE_EQUIPMENT;
 			c.id = i_index;
+		}
 	}
 }
 
@@ -1845,15 +1862,19 @@ void InventoryPanel::SellSlotItem(ITEM_SLOT slot)
 	// komunikat
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(Net::changes);
 		if(Net::IsServer())
 		{
-			c.type = NetChange::CHANGE_EQUIPMENT;
-			c.unit = unit;
-			c.id = slot;
+			if(IsVisible(slot))
+			{
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::CHANGE_EQUIPMENT;
+				c.unit = unit;
+				c.id = slot;
+			}
 		}
 		else
 		{
+			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::PUT_ITEM;
 			c.id = SlotToIIndex(slot);
 			c.count = 1;
@@ -2044,15 +2065,19 @@ void InventoryPanel::PutSlotItem(ITEM_SLOT slot)
 	// send change
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(Net::changes);
 		if(Net::IsServer())
 		{
-			c.type = NetChange::CHANGE_EQUIPMENT;
-			c.unit = unit;
-			c.id = slot;
+			if(IsVisible(slot))
+			{
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::CHANGE_EQUIPMENT;
+				c.unit = unit;
+				c.id = slot;
+			}
 		}
 		else
 		{
+			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::PUT_ITEM;
 			c.id = SlotToIIndex(slot);
 			c.count = 1;
@@ -2254,7 +2279,7 @@ void InventoryPanel::OnGiveItem(int id)
 	else
 	{
 		slots[slot_type] = nullptr;
-		if(Net::IsServer())
+		if(Net::IsServer() && IsVisible(slot_type))
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::CHANGE_EQUIPMENT;

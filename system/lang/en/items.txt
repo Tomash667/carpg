@@ -517,6 +517,21 @@ item al_necromancer {
 }
 
 //------------------------------------------------------------------------------
+// AMULETS
+item a_silver {
+	name "Silver amulet"
+}
+item a_gold {
+	name "Golden amulet"
+}
+item a_ruby {
+	name "Ruby amulet"
+}
+item a_diamond {
+	name "Diamond amulet"
+}
+
+//------------------------------------------------------------------------------
 // POTIONS
 item p_nreg {
 	name "Healing brew"

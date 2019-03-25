@@ -607,7 +607,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						}
 
 						// send to other players
-						if(N.active_players > 2)
+						if(N.active_players > 2 && IsVisible(slot_type))
 						{
 							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::CHANGE_EQUIPMENT;
@@ -631,7 +631,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							unit.slots[slot] = nullptr;
 
 							// send to other players
-							if(N.active_players > 2)
+							if(N.active_players > 2 && IsVisible(slot))
 							{
 								NetChange& c = Add1(Net::changes);
 								c.type = NetChange::CHANGE_EQUIPMENT;
@@ -866,7 +866,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						slot = nullptr;
 
 						// send info about changing equipment to other players
-						if(N.active_players > 2)
+						if(N.active_players > 2 && IsVisible(slot_type))
 						{
 							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::CHANGE_EQUIPMENT;
@@ -1195,7 +1195,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					slot = nullptr;
 
 					// send info about changing equipment of looted unit
-					if(N.active_players > 2)
+					if(N.active_players > 2 && IsVisible(type))
 					{
 						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::CHANGE_EQUIPMENT;
@@ -1359,7 +1359,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					unit.weight -= slot->weight;
 					slot = nullptr;
 					// send info about changing equipment
-					if(N.active_players > 2)
+					if(N.active_players > 2 && IsVisible(type))
 					{
 						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::CHANGE_EQUIPMENT;
@@ -1395,7 +1395,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							changes = true;
 
 							// send info about changing equipment
-							if(N.active_players > 2)
+							if(N.active_players > 2 && IsVisible((ITEM_SLOT)i))
 							{
 								NetChange& c = Add1(Net::changes);
 								c.type = NetChange::CHANGE_EQUIPMENT;

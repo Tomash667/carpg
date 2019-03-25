@@ -136,9 +136,10 @@ enum IfState
 enum SubprofileKeyword
 {
 	SPK_WEAPON,
-	SPK_ARMOR,
 	SPK_BOW,
 	SPK_SHIELD,
+	SPK_ARMOR,
+	SPK_AMULET,
 	SPK_TAG,
 	SPK_PRIORITY,
 	SPK_PERK,
@@ -406,6 +407,7 @@ void UnitLoader::InitTokenizer()
 		{ "bow", IT_BOW },
 		{ "shield", IT_SHIELD },
 		{ "armor", IT_ARMOR },
+		{ "amulet", IT_AMULET },
 		{ "other", IT_OTHER },
 		{ "consumable", IT_CONSUMABLE },
 		{ "book", IT_BOOK }
@@ -419,14 +421,15 @@ void UnitLoader::InitTokenizer()
 
 	t.AddKeywords(G_SUBPROFILE_GROUP, {
 		{ "weapon", SPK_WEAPON },
-		{ "armor", SPK_ARMOR },
 		{ "bow", SPK_BOW },
 		{ "shield", SPK_SHIELD },
+		{ "armor", SPK_ARMOR },
+		{ "amulet", SPK_AMULET },
 		{ "tag", SPK_TAG },
 		{ "priority", SPK_PRIORITY },
 		{ "perk", SPK_PERK },
 		{ "items", SPK_ITEMS }
-	});
+		});
 }
 
 //=================================================================================================
@@ -1143,10 +1146,10 @@ void UnitLoader::ParseSubprofile(Ptr<StatProfile::Subprofile>& subprofile)
 			break;
 		case SPK_PRIORITY:
 			{
-				int set = 0;
+				int set = 0, index = 0;
 				t.AssertSymbol('{');
 				t.Next();
-				for(int i = 0; i < SLOT_MAX; ++i)
+				while(!t.IsSymbol('}'))
 				{
 					SubprofileKeyword k = (SubprofileKeyword)t.MustGetKeywordId(G_SUBPROFILE_GROUP);
 					ITEM_TYPE type;
@@ -1155,14 +1158,17 @@ void UnitLoader::ParseSubprofile(Ptr<StatProfile::Subprofile>& subprofile)
 					case SPK_WEAPON:
 						type = IT_WEAPON;
 						break;
-					case SPK_ARMOR:
-						type = IT_ARMOR;
-						break;
 					case SPK_SHIELD:
 						type = IT_SHIELD;
 						break;
 					case SPK_BOW:
 						type = IT_BOW;
+						break;
+					case SPK_ARMOR:
+						type = IT_ARMOR;
+						break;
+					case SPK_AMULET:
+						type = IT_AMULET;
 						break;
 					default:
 						t.Unexpected();
@@ -1171,7 +1177,8 @@ void UnitLoader::ParseSubprofile(Ptr<StatProfile::Subprofile>& subprofile)
 					if(IS_SET(set, 1 << type))
 						t.Throw("Subprofile priority already set.");
 					set |= (1 << type);
-					subprofile->priorities[i] = type;
+					subprofile->priorities[index] = type;
+					++index;
 					t.Next();
 				}
 			}
@@ -1439,8 +1446,7 @@ void UnitLoader::ParseItems(Ptr<ItemScript>& script)
 						AddItem(script);
 						t.Next();
 						++count;
-					}
-					while(!t.IsSymbol('}'));
+					} while(!t.IsSymbol('}'));
 
 					if(count < 2)
 						t.Throw("Invalid one of many count %d.", count);
@@ -1741,8 +1747,7 @@ void UnitLoader::ParseSpells(Ptr<SpellList>& list)
 			++index;
 		}
 		t.Next();
-	}
-	while(!t.IsSymbol('}'));
+	} while(!t.IsSymbol('}'));
 
 	if(list->spell[0] == nullptr && list->spell[1] == nullptr && list->spell[2] == nullptr)
 		t.Throw("Empty spell list.");
@@ -1845,8 +1850,7 @@ void UnitLoader::ParseFrames(Ptr<FrameInfo>& frames)
 
 				frames->extra->e.push_back({ start, end, flags });
 				t.Next();
-			}
-			while(!t.IsSymbol('}'));
+			} while(!t.IsSymbol('}'));
 			frames->attacks = frames->extra->e.size();
 			crc.Update(frames->attacks);
 			break;
@@ -1882,8 +1886,7 @@ void UnitLoader::ParseFrames(Ptr<FrameInfo>& frames)
 					++index;
 					++frames->attacks;
 					t.Next();
-				}
-				while(!t.IsSymbol('}'));
+				} while(!t.IsSymbol('}'));
 			}
 			break;
 		case FK_CAST:
@@ -1947,8 +1950,7 @@ void UnitLoader::ParseTextures(Ptr<TexPack>& pack)
 			any = true;
 		}
 		t.Next();
-	}
-	while(!t.IsSymbol('}'));
+	} while(!t.IsSymbol('}'));
 
 	if(!any)
 		t.Throw("Texture pack without textures.");
@@ -1969,8 +1971,7 @@ void UnitLoader::ParseIdles(Ptr<IdlePack>& pack)
 		pack->anims.push_back(s);
 		crc.Update(s);
 		t.Next();
-	}
-	while(!t.IsSymbol('}'));
+	} while(!t.IsSymbol('}'));
 
 	IdlePack::packs.push_back(pack.Pin());
 }

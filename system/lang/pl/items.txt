@@ -517,6 +517,21 @@ item al_necromancer {
 }
 
 //------------------------------------------------------------------------------
+// AMULETS
+item a_silver {
+	name "Srebrny amulet"
+}
+item a_gold {
+	name "Z³oty amulet"
+}
+item a_ruby {
+	name "Rubinowy amulet"
+}
+item a_diamond {
+	name "Diamentowy amulet"
+}
+
+//------------------------------------------------------------------------------
 // POTIONS
 item p_nreg {
 	name "Napar leczniczy"

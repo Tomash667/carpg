@@ -142,8 +142,8 @@ float Unit::CalculateAttack(const Item* weapon) const
 		else
 			p = float(str) / w.req_str;
 		attack += GetEffectSum(EffectId::MeleeAttack)
-			+ wi.str2dmg * float(str - 25)
-			+ wi.dex2dmg * float(dex - 25)
+			+ wi.str2dmg * (str - 25)
+			+ wi.dex2dmg * (dex - 25)
 			+ w.dmg * p
 			+ (Get(SkillId::ONE_HANDED_WEAPON) + Get(wi.skill)) / 2;
 	}
@@ -169,9 +169,9 @@ float Unit::CalculateAttack(const Item* weapon) const
 		else
 			p = float(str) / s.req_str;
 		attack += GetEffectSum(EffectId::MeleeAttack)
-			+ (s.block * p
-			+ Get(SkillId::SHIELD) / 200)
-			+ float(str) * 0.5f;
+			+ s.block * p
+			+ 0.5f * Get(SkillId::SHIELD)
+			+ 0.5f * (str - 25);
 	}
 
 	return attack;
@@ -365,10 +365,13 @@ void Unit::DropItem(ITEM_SLOT slot)
 			c.type = NetChange::DROP_ITEM;
 			c.unit = this;
 
-			NetChange& c2 = Add1(Net::changes);
-			c2.unit = this;
-			c2.id = slot;
-			c2.type = NetChange::CHANGE_EQUIPMENT;
+			if(IsVisible(slot))
+			{
+				NetChange& c2 = Add1(Net::changes);
+				c2.unit = this;
+				c2.id = slot;
+				c2.type = NetChange::CHANGE_EQUIPMENT;
+			}
 		}
 	}
 	else
@@ -1262,6 +1265,13 @@ void Unit::AddItemAndEquipIfNone(const Item* item, uint count)
 				--count;
 			}
 			break;
+		case IT_AMULET:
+			if(!HaveAmulet())
+			{
+				slots[SLOT_AMULET] = item;
+				--count;
+			}
+			break;
 		}
 
 		if(count)
@@ -1665,8 +1675,11 @@ void Unit::Load(GameReader& f, bool local)
 
 	// items
 	bool can_sort = true;
-	for(int i = 0; i < SLOT_MAX; ++i)
+	int max_slots = (LOAD_VERSION >= V_DEV ? SLOT_MAX : 4);
+	for(int i = 0; i < max_slots; ++i)
 		f.ReadOptional(slots[i]);
+	if(LOAD_VERSION < V_DEV)
+		slots[SLOT_AMULET] = nullptr;
 	items.resize(f.Read<uint>());
 	for(ItemSlot& slot : items)
 	{
@@ -2180,22 +2193,13 @@ void Unit::Write(BitStreamWriter& f)
 	// items
 	if(data->type != UNIT_TYPE::ANIMAL)
 	{
-		if(HaveWeapon())
-			f << GetWeapon().id;
-		else
-			f.Write0();
-		if(HaveBow())
-			f << GetBow().id;
-		else
-			f.Write0();
-		if(HaveShield())
-			f << GetShield().id;
-		else
-			f.Write0();
-		if(HaveArmor())
-			f << GetArmor().id;
-		else
-			f.Write0();
+		for(int i = 0; i < SLOT_MAX_VISIBLE; ++i)
+		{
+			if(slots[i])
+				f << slots[i]->id;
+			else
+				f.Write0();
+		}
 	}
 	f.WriteCasted<byte>(live_state);
 	f << pos;
@@ -2314,7 +2318,7 @@ bool Unit::Read(BitStreamReader& f)
 	// equipped items
 	if(data->type != UNIT_TYPE::ANIMAL)
 	{
-		for(int i = 0; i < SLOT_MAX; ++i)
+		for(int i = 0; i < SLOT_MAX_VISIBLE; ++i)
 		{
 			const string& item_id = f.ReadString1();
 			if(!f)
@@ -2337,6 +2341,8 @@ bool Unit::Read(BitStreamReader& f)
 				}
 			}
 		}
+		for(int i = SLOT_MAX_VISIBLE; i < SLOT_MAX; ++i)
+			slots[i] = nullptr;
 	}
 	else
 	{
@@ -2612,6 +2618,7 @@ int Unit::FindHealingPotion() const
 //=================================================================================================
 void Unit::ReequipItems()
 {
+	assert(Net::IsLocal());
 	if(N.active_players > 1)
 	{
 		const Item* prev_slots[SLOT_MAX];
@@ -2622,7 +2629,7 @@ void Unit::ReequipItems()
 
 		for(int i = 0; i < SLOT_MAX; ++i)
 		{
-			if(slots[i] != prev_slots[i])
+			if(slots[i] != prev_slots[i] && IsVisible((ITEM_SLOT)i))
 			{
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::CHANGE_EQUIPMENT;
@@ -2990,6 +2997,7 @@ bool Unit::FindQuestItem(cstring id, Quest** out_quest, int* i_index, bool not_a
 void Unit::RemoveItem(int iindex, bool active_location)
 {
 	assert(!player);
+	assert(Net::IsLocal());
 	if(iindex >= 0)
 	{
 		assert(iindex < (int)items.size());
@@ -3000,7 +3008,7 @@ void Unit::RemoveItem(int iindex, bool active_location)
 		ITEM_SLOT s = IIndexToSlot(iindex);
 		assert(slots[s]);
 		slots[s] = nullptr;
-		if(active_location)
+		if(active_location && IsVisible(s))
 		{
 			NetChange& c = Add1(Net::changes);
 			c.unit = this;
@@ -3039,7 +3047,7 @@ void Unit::RemoveItem(int i_index, uint count)
 		slots[type] = nullptr;
 		removed = true;
 
-		if(Net::IsServer() && N.active_players > 1)
+		if(Net::IsServer() && N.active_players > 1 && IsVisible(type))
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::CHANGE_EQUIPMENT;
@@ -3278,6 +3286,24 @@ bool Unit::IsBetterItem(const Item* item, int* value) const
 		else
 		{
 			if(GetShield().value < item->value)
+			{
+				if(value)
+					*value = item->value;
+				return true;
+			}
+			else
+				return false;
+		}
+	case IT_AMULET:
+		if(!HaveAmulet())
+		{
+			if(value)
+				*value = item->value;
+			return true;
+		}
+		else
+		{
+			if(GetAmulet().value < item->value)
 			{
 				if(value)
 					*value = item->value;
@@ -4137,6 +4163,7 @@ bool Unit::WantAttackTeam() const
 		return IS_SET(ai_mode, AI_MODE_ATTACK_TEAM);
 }
 
+//=================================================================================================
 byte Unit::GetAiMode() const
 {
 	byte mode = 0;
@@ -4846,9 +4873,10 @@ void Unit::SetWeaponState(bool takes_out, WeaponType co)
 }
 
 //=================================================================================================
-// dzia³a tylko dla cz³onków dru¿yny!
 void Unit::UpdateInventory(bool notify)
 {
+	assert(IsTeamMember()); // works only for team members!
+
 	bool changes = false;
 	int index = 0;
 	const Item* prev_slots[SLOT_MAX];
@@ -4968,6 +4996,19 @@ void Unit::UpdateInventory(bool notify)
 				changes = true;
 			}
 			break;
+		case IT_AMULET:
+			if(!HaveAmulet())
+			{
+				slots[SLOT_AMULET] = it->item;
+				it->item = nullptr;
+				changes = true;
+			}
+			else if(GetAmulet().value < it->item->value)
+			{
+				std::swap(slots[SLOT_AMULET], it->item);
+				changes = true;
+			}
+			break;
 		default:
 			break;
 		}
@@ -4982,7 +5023,7 @@ void Unit::UpdateInventory(bool notify)
 		{
 			for(int i = 0; i < SLOT_MAX; ++i)
 			{
-				if(slots[i] != prev_slots[i])
+				if(slots[i] != prev_slots[i] && IsVisible((ITEM_SLOT)i))
 				{
 					NetChange& c = Add1(Net::changes);
 					c.unit = this;
@@ -5152,6 +5193,7 @@ void Unit::RemoveDialog(Quest_Scripted* quest, bool cleanup)
 void Unit::OrderEscapeToUnit(Unit* unit)
 {
 	// TODO
+	assert(0);
 }
 
 //=================================================================================================

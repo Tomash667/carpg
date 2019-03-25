@@ -1407,6 +1407,33 @@ armor al_clothes3b {
 }
 
 //------------------------------------------------------------------------------
+// AMULETS
+//------------------------------------------------------------------------------
+amulet a_silver {
+	weight 0.1
+	value 75
+	tex "amulet_silver.png"
+}
+
+amulet a_gold {
+	weight 0.1
+	value 150
+	tex "amulet_golden.png"
+}
+
+amulet a_ruby {
+	weight 0.1
+	value 300
+	tex "amulet_ruby.png"
+}
+
+amulet a_diamond {
+	weight 0.1
+	value 600
+	tex "amulet_diamond.png"
+}
+
+//------------------------------------------------------------------------------
 // CONSUMABLES
 //------------------------------------------------------------------------------
 consumable p_nreg {

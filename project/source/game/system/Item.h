@@ -101,6 +101,10 @@ struct Item
 	{
 		return Cast<Armor, IT_ARMOR>();
 	}
+	Amulet& ToAmulet()
+	{
+		return Cast<Amulet, IT_AMULET>();
+	}
 	Consumable& ToConsumable()
 	{
 		return Cast<Consumable, IT_CONSUMABLE>();
@@ -130,6 +134,10 @@ struct Item
 	{
 		return Cast<Armor, IT_ARMOR>();
 	}
+	const Amulet& ToAmulet() const
+	{
+		return Cast<Amulet, IT_AMULET>();
+	}
 	const Consumable& ToConsumable() const
 	{
 		return Cast<Consumable, IT_CONSUMABLE>();
@@ -157,7 +165,7 @@ struct Item
 	}
 	bool IsWearable() const
 	{
-		return type == IT_WEAPON || type == IT_ARMOR || type == IT_BOW || type == IT_SHIELD;
+		return Any(type, IT_WEAPON, IT_BOW, IT_SHIELD, IT_ARMOR, IT_AMULET);
 	}
 	bool IsWearableByHuman() const;
 	bool IsQuest() const
@@ -388,8 +396,17 @@ inline bool Item::IsWearableByHuman() const
 	if(type == IT_ARMOR)
 		return ToArmor().armor_unit_type == ArmorUnitType::HUMAN;
 	else
-		return type == IT_WEAPON || type == IT_BOW || type == IT_SHIELD;
+		return Any(type, IT_WEAPON, IT_BOW, IT_SHIELD, IT_AMULET);
 }
+
+//-----------------------------------------------------------------------------
+// Amulet
+struct Amulet : public Item
+{
+	Amulet() : Item(IT_AMULET) {}
+
+	static vector<Amulet*> amulets;
+};
 
 //-----------------------------------------------------------------------------
 // Consumable item effects

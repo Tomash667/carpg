@@ -7864,15 +7864,17 @@ SOUND Game::GetItemSound(const Item* item)
 	{
 	case IT_WEAPON:
 		return sItem[6];
+	case IT_BOW:
+		return sItem[4];
+	case IT_SHIELD:
+		return sItem[5];
 	case IT_ARMOR:
 		if(item->ToArmor().armor_type != AT_LIGHT)
 			return sItem[2];
 		else
 			return sItem[1];
-	case IT_BOW:
-		return sItem[4];
-	case IT_SHIELD:
-		return sItem[5];
+	case IT_AMULET:
+		return sItem[8];
 	case IT_CONSUMABLE:
 		if(item->ToConsumable().cons_type != Food)
 			return sItem[0];
@@ -9237,9 +9239,9 @@ void Game::GenerateQuestUnits()
 
 	if(QM.quest_mine->days >= QM.quest_mine->days_required &&
 		((QM.quest_mine->mine_state2 == Quest_Mine::State2::InBuild && QM.quest_mine->mine_state == Quest_Mine::State::Shares) || // inform player about building mine & give gold
-		QM.quest_mine->mine_state2 == Quest_Mine::State2::Built || // inform player about possible investment
-		QM.quest_mine->mine_state2 == Quest_Mine::State2::InExpand || // inform player about finished mine expanding
-		QM.quest_mine->mine_state2 == Quest_Mine::State2::Expanded)) // inform player about finding portal
+			QM.quest_mine->mine_state2 == Quest_Mine::State2::Built || // inform player about possible investment
+			QM.quest_mine->mine_state2 == Quest_Mine::State2::InExpand || // inform player about finished mine expanding
+			QM.quest_mine->mine_state2 == Quest_Mine::State2::Expanded)) // inform player about finding portal
 	{
 		Unit* u = L.SpawnUnitNearLocation(L.GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("poslaniec_kopalnia"), &Team.leader->pos, -2, 2.f);
 		if(u)

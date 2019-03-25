@@ -12,6 +12,7 @@ Version 0.9 (???):
 + update libraries: Angelscript 2.33, Bullet 2.88, DirectXMath 3.13, FMod 1.10.11, SLikeNet 0.1.2, Visual Leak Detector 2.5.1, zlib 1.2.11
 + better handling of multiplayer when leaving location
 + keeping save image and info inside single file
++ amulets: silver, gold, ruby, diamond
 - fixed failed connection when using LAN with password
 - fixed enemy hp not affecting morale
 - fixed missing magic effect for clients when despawning dead summoned unit
