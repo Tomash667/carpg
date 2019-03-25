@@ -130,4 +130,5 @@ private:
 	const Item* items[SLOT_MAX];
 	TEX tKlasaCecha;
 	RenderTarget* rt_char;
+	SimpleScene* scene;
 };

@@ -246,6 +246,11 @@ void CreateCharacterPanel::LoadData()
 	tex_mgr.AddLoadTask("minus_disabled.png", custom_bt[1].tex[Button::DISABLED]);
 
 	rt_char = game->GetRender()->CreateRenderTarget(Int2(128, 256));
+	scene = new SimpleScene;
+
+	SceneNode2* node = SceneNode2::Get();
+	node->SetMeshInstance(new MeshInstance(Game::Get().aHumanBase));
+	scene->AddNode(node);
 }
 
 //=================================================================================================

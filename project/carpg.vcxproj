@@ -409,7 +409,9 @@
     <ClInclude Include="source\game\system\Spell.h" />
     <ClCompile Include="source\engine\Render.cpp" />
     <ClCompile Include="source\engine\RenderTarget.cpp" />
+    <ClCompile Include="source\engine\Scene2.cpp" />
     <ClCompile Include="source\engine\SceneManager.cpp" />
+    <ClCompile Include="source\engine\SimpleScene.cpp" />
     <ClCompile Include="source\game\entity\Encounter.cpp" />
     <ClCompile Include="source\game\system\Content.cpp" />
     <ClCompile Include="source\game\system\QuestList.cpp" />

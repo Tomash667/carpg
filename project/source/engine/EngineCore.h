@@ -24,6 +24,7 @@ class Scene2;
 class SceneManager;
 class SceneNode2;
 class ShaderHandler;
+class SimpleScene;
 class SoundManager;
 class SuperShader;
 

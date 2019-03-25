@@ -743,6 +743,13 @@ void Render::CreateRenderTargetTexture(RenderTarget* target)
 }
 
 //=================================================================================================
+bool Render::IsReady() const
+{
+	HRESULT hr = device->TestCooperativeLevel();
+	return SUCCEEDED(hr);
+}
+
+//=================================================================================================
 TEX Render::CopyToTexture(RenderTarget* target)
 {
 	assert(target);
