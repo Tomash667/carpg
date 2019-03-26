@@ -699,6 +699,18 @@ item cup {
 item plate {
 	name "Talerz"
 }
+item wolf_pelt {
+	name "Futro wilka"
+}
+item worg_pelt {
+	name "Futro worga"
+}
+item bear_pelt {
+	name "Futro niedüwiedzia"
+}
+item black_bear_pelt {
+	name "Futro czarnego niedüwiedzia"
+}
 
 //------------------------------------------------------------------------------
 // ARTIFACTS

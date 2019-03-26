@@ -76,6 +76,7 @@ enum Property
 	P_RUN_SPEED,
 	P_ROT_SPEED,
 	P_BLOOD,
+	P_BLOOD_SIZE,
 	P_SOUNDS,
 	P_FRAMES,
 	P_TEX,
@@ -208,6 +209,7 @@ void UnitLoader::InitTokenizer()
 		{ "run_speed", P_RUN_SPEED },
 		{ "rot_speed", P_ROT_SPEED },
 		{ "blood", P_BLOOD },
+		{ "blood_size", P_BLOOD_SIZE },
 		{ "sounds", P_SOUNDS },
 		{ "frames", P_FRAMES },
 		{ "tex", P_TEX },
@@ -803,6 +805,10 @@ void UnitLoader::ParseUnit(const string& id)
 		case P_BLOOD:
 			unit->blood = (BLOOD)t.MustGetKeywordId(G_BLOOD);
 			crc.Update(unit->blood);
+			break;
+		case P_BLOOD_SIZE:
+			unit->blood_size = t.MustGetNumberFloat();
+			crc.Update(unit->blood_size);
 			break;
 		case P_SOUNDS:
 			if(t.IsSymbol('{'))
@@ -1866,14 +1872,22 @@ void UnitLoader::ParseFrames(Ptr<FrameInfo>& frames)
 				frames->attacks = 0;
 				do
 				{
-					if(index == 3)
-						t.Throw("To many simple attacks (max 3 for now).");
+					if(index == FrameInfo::MAX_ATTACKS)
+						t.Throw("To many simple attacks (max %d).", FrameInfo::MAX_ATTACKS);
 					t.AssertSymbol('{');
 					t.Next();
 					float start = t.MustGetNumberFloat();
 					t.Next();
 					float end = t.MustGetNumberFloat();
 					t.Next();
+					float power = 1.f;
+					if(t.IsFloat())
+					{
+						power = t.GetFloat();
+						if(power <= 0.f)
+							t.Throw("Invalid attack frame power %g.", power);
+						t.Next();
+					}
 					t.AssertSymbol('}');
 					crc.Update(start);
 					crc.Update(end);
@@ -1883,6 +1897,7 @@ void UnitLoader::ParseFrames(Ptr<FrameInfo>& frames)
 
 					frames->t[F_ATTACK1_START + index * 2] = start;
 					frames->t[F_ATTACK1_END + index * 2] = end;
+					frames->attack_power[index] = power;
 					++index;
 					++frames->attacks;
 					t.Next();

@@ -19,6 +19,7 @@ struct UnitGroup
 
 	bool HaveLeader() const;
 	UnitData* GetLeader(int level) const;
+	Int2 GetLevelRange() const;
 
 	static vector<UnitGroup*> groups;
 	static UnitGroup* TryGet(Cstring id);
@@ -57,8 +58,8 @@ struct TmpUnitGroup : ObjectPoolProxy<TmpUnitGroup>
 
 	void AddRefS() { ++refs; }
 	void ReleaseS();
-	void Fill(UnitGroup* group, int min_level, int max_level);
-	void Fill(UnitGroup* group, int level) { Fill(group, Max(level - 5, level / 2), level + 1); }
+	void Fill(UnitGroup* group, int min_level, int max_level, bool required = true);
+	void Fill(UnitGroup* group, int level, bool required = true) { Fill(group, Max(level - 5, level / 2), level + 1, required); }
 	void FillS(SPAWN_GROUP spawn, int count, int level);
 	void FillInternal(UnitGroup* group);
 	Spawn Get();
@@ -69,27 +70,12 @@ struct TmpUnitGroup : ObjectPoolProxy<TmpUnitGroup>
 };
 
 //-----------------------------------------------------------------------------
-template<int N>
 struct TmpUnitGroupList
 {
-	void Fill(UnitGroup*(&groups)[N], int level)
-	{
-		for(int i = 0; i < N; ++i)
-			e[i]->Fill(groups[i], level);
-	}
-	vector<TmpUnitGroup::Spawn>& Roll(int level, int count)
-	{
-		int index = Rand() % N,
-			start = index;
-		while(true)
-		{
-			TmpUnitGroup& group = e[index];
-			if(group.total != 0)
-				return group.Roll(level, count);
-			index = (index + 1) % N;
-			if(index == start)
-				return group.spawn;
-		}
-	}
-	Pooled<TmpUnitGroup> e[N];
+	~TmpUnitGroupList();
+	void Fill(UnitGroupList* list, int level);
+	vector<TmpUnitGroup::Spawn>& Roll(int level, int count);
+
+private:
+	vector<TmpUnitGroup*> groups;
 };

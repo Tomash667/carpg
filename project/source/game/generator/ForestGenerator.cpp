@@ -62,20 +62,13 @@ void ForestGenerator::GenerateObjects()
 //=================================================================================================
 void ForestGenerator::GenerateUnits()
 {
-	// zbierz grupy
-	static UnitGroup* groups[4] = {
-		UnitGroup::TryGet("wolfs"),
-		UnitGroup::TryGet("spiders"),
-		UnitGroup::TryGet("rats"),
-		UnitGroup::TryGet("animals")
-	};
+	UnitGroupList* list = UnitGroupList::TryGet("forest");
 	UnitData* ud_hunter = UnitData::Get("wild_hunter");
 	const int level = L.GetDifficultyLevel();
-	TmpUnitGroupList<4> tmp;
+	TmpUnitGroupList tmp;
+	tmp.Fill(list, level);
 	static vector<Vec2> poss;
-	tmp.Fill(groups, level);
 	poss.clear();
-	OutsideLocation* outside = (OutsideLocation*)L.location;
 	poss.push_back(Vec2(team_pos.x, team_pos.z));
 
 	for(int added = 0, tries = 50; added < 8 && tries>0; --tries)

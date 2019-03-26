@@ -472,15 +472,10 @@ void CaveGenerator::GenerateObjects()
 //=================================================================================================
 void CaveGenerator::GenerateUnits()
 {
-	// zbierz grupy
-	static UnitGroup* groups[3] = {
-		UnitGroup::TryGet("wolfs"),
-		UnitGroup::TryGet("spiders"),
-		UnitGroup::TryGet("rats")
-	};
+	UnitGroupList* list = UnitGroupList::TryGet("cave");
 	int level = L.GetDifficultyLevel();
-	TmpUnitGroupList<3> e;
-	e.Fill(groups, level);
+	TmpUnitGroupList tmp;
+	tmp.Fill(list, level);
 	static vector<Int2> tiles;
 	Cave* cave = (Cave*)loc;
 	InsideLocationLevel& lvl = cave->GetLevelData();
@@ -508,7 +503,7 @@ void CaveGenerator::GenerateUnits()
 		{
 			tiles.push_back(pt);
 			++added;
-			for(TmpUnitGroup::Spawn& spawn : e.Roll(level, 2))
+			for(TmpUnitGroup::Spawn& spawn : tmp.Roll(level, 2))
 			{
 				if(!L.SpawnUnitNearLocation(L.local_ctx, Vec3(2.f*pt.x + 1.f, 0, 2.f*pt.y + 1.f), *spawn.first, nullptr, spawn.second, 3.f))
 					break;

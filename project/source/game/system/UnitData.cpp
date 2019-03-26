@@ -84,6 +84,7 @@ void UnitData::CopyFrom(UnitData& ud)
 	width = ud.width;
 	attack_range = ud.attack_range;
 	blood = ud.blood;
+	blood_size = ud.blood_size;
 	sounds = ud.sounds;
 	frames = ud.frames;
 	tex = ud.tex;

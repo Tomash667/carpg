@@ -6,6 +6,7 @@ Version 0.9 (???):
 ! cannot load saves from version 0.2.12 or older
 + first scripted quest - deliver resources
 + loading multiplayer game without exiting to menu
++ new enemies: bear, black bear
 + more location icons and names
 + dialog script improvements
 + removing dead end corridors
@@ -13,6 +14,7 @@ Version 0.9 (???):
 + better handling of multiplayer when leaving location
 + keeping save image and info inside single file
 + amulets: silver, gold, ruby, diamond
++ wolf/bear pelts
 - fixed failed connection when using LAN with password
 - fixed enemy hp not affecting morale
 - fixed missing magic effect for clients when despawning dead summoned unit

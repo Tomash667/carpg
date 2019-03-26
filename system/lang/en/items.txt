@@ -699,6 +699,18 @@ item cup {
 item plate {
 	name "Plate"
 }
+item wolf_pelt {
+	name "Wolf pelt
+}
+item worg_pelt {
+	name "Worg pelt"
+}
+item bear_pelt {
+	name "Bear pelt"
+}
+item black_bear_pelt {
+	name "Black bear pelt"
+}
 
 //------------------------------------------------------------------------------
 // ARTIFACTS

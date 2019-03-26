@@ -47,9 +47,11 @@ struct AttackFrameInfo
 // Informacje o ramce animacji
 struct FrameInfo
 {
+	static const int MAX_ATTACKS = 3;
+
 	string id;
 	AttackFrameInfo* extra;
-	float t[F_MAX];
+	float t[F_MAX], attack_power[MAX_ATTACKS];
 	int attacks;
 
 	FrameInfo() : extra(nullptr), attacks(0), t() {}

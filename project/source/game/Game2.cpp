@@ -4098,7 +4098,12 @@ Game::ATTACK_RESULT Game::DoAttack(LevelContext& ctx, Unit& unit)
 	if(!CheckForHit(ctx, unit, hitted, hitpoint))
 		return ATTACK_NOT_HIT;
 
-	return DoGenericAttack(ctx, unit, *hitted, hitpoint, unit.CalculateAttack()*unit.attack_power, unit.GetDmgType(), false);
+	float power;
+	if(unit.data->frames->extra)
+		power = 1.f;
+	else
+		power = unit.data->frames->attack_power[unit.attack_id];
+	return DoGenericAttack(ctx, unit, *hitted, hitpoint, unit.CalculateAttack()*unit.attack_power*power, unit.GetDmgType(), false);
 }
 
 void Game::GiveDmg(LevelContext& ctx, Unit* giver, float dmg, Unit& taker, const Vec3* hitpoint, int dmg_flags)

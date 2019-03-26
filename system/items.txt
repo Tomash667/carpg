@@ -1831,6 +1831,37 @@ other plate {
 	flags ground_mesh
 }
 
+other wolf_pelt {
+	weight 2.5
+	value 25
+	tex "wolf_pelt.png"
+	type other
+}
+
+other worg_pelt {
+	weight 2.5
+	value 50
+	tex "worg_pelt.png"
+	type other
+}
+
+other bear_pelt {
+	weight 4
+	value 75
+	tex "bear_pelt.png"
+	type other
+}
+
+other black_bear_pelt {
+	weight 4
+	value 100
+	tex "black_bear_pelt.png"
+	type other
+}
+
+//------------------------------------------------------------------------------
+// QUEST ITEMS
+//------------------------------------------------------------------------------
 other a_amulet {
 	weight 0.1
 	value 100

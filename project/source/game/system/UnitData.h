@@ -227,7 +227,7 @@ struct UnitData
 	Int2 gold, gold2;
 	GameDialog* dialog;
 	UNIT_GROUP group;
-	float walk_speed, run_speed, rot_speed, width, attack_range;
+	float walk_speed, run_speed, rot_speed, width, attack_range, blood_size;
 	BLOOD blood;
 	SoundPack* sounds;
 	FrameInfo* frames;
@@ -245,7 +245,7 @@ struct UnitData
 		dmg_type(DMG_BLUNT), flags(0), flags2(0), flags3(0), spells(nullptr), gold(0), gold2(0), dialog(nullptr), group(G_CITIZENS), walk_speed(1.5f),
 		run_speed(5.f), rot_speed(3.f), width(0.3f), attack_range(1.f), blood(BLOOD_RED), sounds(nullptr), frames(nullptr), tex(nullptr),
 		armor_type(ArmorUnitType::NONE), item_script(nullptr), idles(nullptr), type(UNIT_TYPE::HUMAN), state(ResourceState::NotLoaded), clas(Class::INVALID),
-		trader(nullptr), upgrade(nullptr), parent(nullptr)
+		trader(nullptr), upgrade(nullptr), parent(nullptr), blood_size(1.f)
 	{
 	}
 	~UnitData()

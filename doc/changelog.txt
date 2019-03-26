@@ -6,6 +6,7 @@ Version 0.9 (???):
 ! nie mo¿na wczytywaæ ju¿ zapisów z wersji 0.2.12 lub starszej
 + pierwsze skryptowe zadanie - dostarcz zasoby
 + wczytywanie gry wieloosobowej bez wychodzenia do menu
++ nowi wrogowie: niedŸwiedŸ, czarny niedŸwiedŸ
 + wiêcej ikon lokalizacji i nazw
 + usprawnienia skryptów dialogowych
 + usuwanie korytarzy prowadz¹cych do nik¹d
@@ -13,6 +14,7 @@ Version 0.9 (???):
 + lepsza obs³uga trybu wielu graczy przy opuszczaniu lokalizacji
 + przechowywanie obrazka i informacji zapisu w jednym pliku
 + amulety: srebrny, z³oty, rubinowy, diamentowy
++ skóry z wilka/niedŸwiedzia
 - naprawiony b³¹d po³¹czenia do serwera przy u¿yciu has³a LAN
 - naprawiony brak wp³ywu hp na morale jednostek
 - naprawiony brak magicznego efektu u klienta gdy znika umar³a przywo³ana jednostka

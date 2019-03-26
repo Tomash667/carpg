@@ -589,6 +589,7 @@ void Quest_Evil::GenerateBloodyAltar()
 			b.type = BLOOD_RED;
 			b.rot = Random(MAX_ANGLE);
 			b.size = 1.f;
+			b.scale = 1.f;
 			b.pos.y = 0.05f;
 			b.normal = Vec3(0, 1, 0);
 		}
@@ -598,6 +599,7 @@ void Quest_Evil::GenerateBloodyAltar()
 			b.type = BLOOD_RED;
 			b.rot = Random(MAX_ANGLE);
 			b.size = 1.f;
+			b.scale = 1.f;
 			b.pos.y = 0.05f;
 			b.normal = Vec3(0, 1, 0);
 		}

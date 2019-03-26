@@ -1567,7 +1567,12 @@ void Game::UpdateAi(float dt)
 					{
 						WeaponType weapon = W_NONE;
 						if(u.PreferMelee() || IS_SET(u.data->flags, F_MAGE) || !u.HaveBow())
-							weapon = W_ONE_HANDED;
+						{
+							if(u.HaveWeapon())
+								weapon = W_ONE_HANDED;
+							else if(u.HaveBow())
+								weapon = W_BOW;
+						}
 						else
 						{
 							float safe_dist = (u.IsHoldingMeeleWeapon() ? 5.f : 2.5f);
@@ -1575,7 +1580,7 @@ void Game::UpdateAi(float dt)
 								safe_dist /= 2.f;
 							if(best_dist > safe_dist)
 								weapon = W_BOW;
-							else
+							else if(u.HaveWeapon())
 								weapon = W_ONE_HANDED;
 						}
 
