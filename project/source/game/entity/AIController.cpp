@@ -213,11 +213,8 @@ void AIController::Load(GameReader& f)
 				escape_room = ((InsideLocation*)L.location)->GetLevelData().rooms[room_id];
 			else
 			{
+				Game::Get().ReportError(1, Format("Unit %s has escape_room %d.", unit->GetName(), room_id));
 				escape_room = nullptr;
-#ifdef _DEBUG
-				Warn("%s had escape_room %d.", unit->GetName(), room_id);
-				Game::Get().gui->messages->AddGameMsg("Unit had escape room!", 5.f);
-#endif
 			}
 		}
 		else

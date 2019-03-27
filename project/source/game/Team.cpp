@@ -1124,62 +1124,6 @@ void TeamSingleton::BuyTeamItems()
 	}
 }
 
-//=================================================================================================
-void TeamSingleton::ValidateTeamItems()
-{
-	if(!Net::IsLocal())
-		return;
-
-	struct IVector
-	{
-		void* _Alval;
-		void* _Myfirst;	// pointer to beginning of array
-		void* _Mylast;	// pointer to current end of sequence
-		void* _Myend;
-	};
-
-	int errors = 0;
-	for(Unit* unit : active_members)
-	{
-		if(unit->items.empty())
-			continue;
-
-		IVector* iv = (IVector*)&unit->items;
-		if(!iv->_Myfirst)
-		{
-			Error("Hero '%s' items._Myfirst = nullptr!", unit->GetName());
-			++errors;
-			continue;
-		}
-
-		int index = 0;
-		for(vector<ItemSlot>::iterator it2 = unit->items.begin(), end2 = unit->items.end(); it2 != end2; ++it2, ++index)
-		{
-			if(!it2->item)
-			{
-				Error("Hero '%s' has nullptr item at index %d.", unit->GetName(), index);
-				++errors;
-			}
-			else if(it2->item->IsStackable())
-			{
-				int index2 = index + 1;
-				for(vector<ItemSlot>::iterator it3 = it2 + 1; it3 != end2; ++it3, ++index2)
-				{
-					if(it2->item == it3->item)
-					{
-						Error("Hero '%s' has multiple stacks of %s, index %d and %d.", unit->GetName(), it2->item->id.c_str(), index, index2);
-						++errors;
-						break;
-					}
-				}
-			}
-		}
-	}
-
-	if(errors)
-		Game::Get().gui->messages->AddGameMsg(Format("%d hero inventory errors!", errors), 10.f);
-}
-
 //-----------------------------------------------------------------------------
 struct ItemToSell
 {

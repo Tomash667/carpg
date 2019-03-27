@@ -109,9 +109,6 @@ void PickServerPanel::Update(float dt)
 	grid.focus = focus;
 	grid.Update(dt);
 
-	// update lobby api
-	N.api->Update();
-
 	if(!focus)
 		return;
 

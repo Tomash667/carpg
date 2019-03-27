@@ -420,12 +420,9 @@ void Game::UpdateAi(float dt)
 					if(u.usable && u.usable->user != &u)
 					{
 						// naprawa b³êdu gdy siê on zdarzy a nie rozwi¹zanie
-						Warn("Invalid usable user: %s is using %s but the user is %s.", u.data->id.c_str(), u.usable->base->id.c_str(),
-							u.usable->user ? u.usable->user->data->id.c_str() : "nullptr");
+						ReportError(2, Format("Invalid usable user: %s is using %s but the user is %s.", u.GetRealName(), u.usable->base->id.c_str(),
+							u.usable->user ? u.usable->user->GetRealName() : "nullptr"));
 						u.usable = nullptr;
-#ifdef _DEBUG
-						gui->messages->AddGameMsg("Invalid usable user!", 5.f);
-#endif
 					}
 					if(u.action == A_BLOCK)
 					{
@@ -441,10 +438,7 @@ void Game::UpdateAi(float dt)
 							c.id = AID_StopBlock;
 							c.f[1] = 1.f;
 						}
-						Warn("Unit %s (%s) blocks in idle.", u.data->id.c_str(), u.GetName());
-#ifdef _DEBUG
-						gui->messages->AddGameMsg("Unit blocks in idle!", 5.f);
-#endif
+						ReportError(3, Format("Unit %s blocks in idle.", u.GetRealName()));
 					}
 					if(u.look_target && !u.usable)
 					{

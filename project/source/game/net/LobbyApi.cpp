@@ -8,6 +8,7 @@
 #include "Game.h"
 #include "GlobalGui.h"
 #include "PickServerPanel.h"
+#include <sstream>
 
 cstring LobbyApi::API_URL = "carpglobby.westeurope.cloudapp.azure.com";
 const int LobbyApi::API_PORT = 8080;
@@ -18,7 +19,8 @@ cstring op_names[] = {
 	"GET_SERVERS",
 	"GET_CHANGES",
 	"GET_VERSION",
-	"IGNORE"
+	"IGNORE",
+	"REPORT"
 };
 
 LobbyApi::LobbyApi() : np_client(nullptr), np_attached(false), current_op(NONE)
@@ -61,11 +63,15 @@ void LobbyApi::UpdateInternal()
 		if(received_op == current_op)
 		{
 			int code = request->GetStatusCode();
-			if(code >= 400)
+			if(code >= 400 || code == 0)
 			{
 				Error("LobbyApi: Bad server response %d for %s.", code, op_names[current_op]);
 				if(current_op == GET_SERVERS || current_op == GET_CHANGES)
 					Game::Get().gui->pick_server->HandleBadRequest();
+			}
+			else if(current_op == REPORT)
+			{
+				// do nothing
 			}
 			else if(request->binaryData)
 			{
@@ -102,7 +108,7 @@ void LobbyApi::UpdateInternal()
 		{
 			if(!requests.empty())
 			{
-				DoOperation(requests.back());
+				DoOperation(requests.front());
 				requests.pop();
 			}
 			else
@@ -139,41 +145,89 @@ void LobbyApi::ParseResponse(const char* response)
 
 void LobbyApi::Reset()
 {
-	while(!requests.empty())
-		requests.pop();
+	if(!requests.empty())
+	{
+		std::queue<Op> copy;
+		while(!requests.empty())
+		{
+			if(requests.front().op == REPORT)
+				copy.push(requests.front());
+			requests.pop();
+		}
+		requests = copy;
+	}
 	if(current_op != NONE)
 		current_op = IGNORE;
 }
 
-void LobbyApi::AddOperation(Operation op)
+void LobbyApi::AddOperation(Op opp)
 {
-	if(op == GET_CHANGES && timestamp == 0)
-		op = GET_SERVERS;
+	if(opp.op == GET_CHANGES && timestamp == 0)
+		opp.op = GET_SERVERS;
 	if(current_op == NONE)
-		DoOperation(op);
+		DoOperation(opp);
 	else
-		requests.push(op);
+		requests.push(opp);
 }
 
-void LobbyApi::DoOperation(Operation op)
+std::string urlencode(const std::string &s)
 {
-	current_op = op;
-	cstring path;
-	switch(op)
+	static const char lookup[] = "0123456789abcdef";
+	std::stringstream e;
+	for(int i = 0, ix = s.length(); i < ix; i++)
 	{
-	default:
-		assert(0);
-	case GET_SERVERS:
-		path = "/api/servers";
-		break;
-	case GET_CHANGES:
-		path = Format("/api/servers/%d", timestamp);
-		break;
-	case GET_VERSION:
-		path = "/api/version";
-		break;
+		const char& c = s[i];
+		if((48 <= c && c <= 57) ||//0-9
+			(65 <= c && c <= 90) ||//abc...xyz
+			(97 <= c && c <= 122) || //ABC...XYZ
+			(c == '-' || c == '_' || c == '.' || c == '~')
+			)
+		{
+			e << c;
+		}
+		else
+		{
+			e << '%';
+			e << lookup[(c & 0xF0) >> 4];
+			e << lookup[(c & 0x0F)];
+		}
 	}
-	http->TransmitRequest(RakString::FormatForGET(Format("%s%s", API_URL, path)), API_URL, API_PORT, false, 4, UNASSIGNED_SYSTEM_ADDRESS, (void*)op);
+	return e.str();
+}
+
+void LobbyApi::DoOperation(Op opp)
+{
+	Operation op = opp.op;
+	current_op = op;
+
+	if(op == REPORT)
+	{
+		string text = urlencode(*opp.str);
+		cstring url = Format("carpg.pl/reports.php?action=add&id=%d&text=%s", opp.value, text.c_str());
+		http->TransmitRequest(RakString::FormatForGET(url), "carpg.pl", 80, false, 4, UNASSIGNED_SYSTEM_ADDRESS, (void*)op);
+	}
+	else
+	{
+		cstring path;
+		switch(op)
+		{
+		default:
+			assert(0);
+		case GET_SERVERS:
+			path = "/api/servers";
+			break;
+		case GET_CHANGES:
+			path = Format("/api/servers/%d", timestamp);
+			break;
+		case GET_VERSION:
+			path = "/api/version";
+			break;
+		}
+		http->TransmitRequest(RakString::FormatForGET(Format("%s%s", API_URL, path)), API_URL, API_PORT, false, 4, UNASSIGNED_SYSTEM_ADDRESS, (void*)op);
+	}
+	
+	if(opp.str)
+		StringPool.Free(opp.str);
 }
 
 class NatPunchthroughDebugInterface_InfoLogger : public NatPunchthroughDebugInterface
@@ -221,7 +275,7 @@ int LobbyApi::GetVersion(delegate<bool()> cancel_clbk)
 	float time = 0;
 	version = -1;
 	version2 = -1;
-	DoOperation(GET_VERSION);
+	DoOperation({ GET_VERSION,0,nullptr });
 	http->TransmitRequest(RakString::FormatForGET("carpg.pl/carpgdata/wersja"), "carpg.pl", 80, false, 4, UNASSIGNED_SYSTEM_ADDRESS, (void*)current_op);
 
 	while(true)
@@ -257,4 +311,11 @@ int LobbyApi::GetVersion(delegate<bool()> cancel_clbk)
 		Error("LobbyApi: Failed to get version.");
 		return -1;
 	}
+}
+
+void LobbyApi::Report(int id, cstring text)
+{
+	string* str = StringPool.Get();
+	*str = text;
+	AddOperation({ REPORT, id, str });
 }

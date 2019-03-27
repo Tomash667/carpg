@@ -1099,10 +1099,6 @@ void Game::LoadGame(GameReader& f)
 	if(!N.mp_quickload)
 		gui->load_screen->visible = false;
 
-#ifdef _DEBUG
-	Team.ValidateTeamItems();
-#endif
-
 	Info("Game loaded.");
 	L.entering = false;
 
@@ -1235,11 +1231,7 @@ void Game::RemoveUnusedAiAndCheck()
 	if(deleted)
 	{
 		RemoveNullElements(ais);
-		cstring s = Format("Removed unused ais: %u.", prev_size - ais.size());
-		Warn(s);
-#ifdef _DEBUG
-		gui->messages->AddGameMsg(s, 10.f);
-#endif
+		ReportError(5, Format("Removed unused ais: %u.", prev_size - ais.size()));
 	}
 
 #ifdef _DEBUG

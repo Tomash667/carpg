@@ -50,7 +50,6 @@ public:
 	void SpawnArenaViewers(int count);
 	void Clean();
 	void RemoveArenaViewers();
-	void Verify();
 	void UpdatePvpRequest(float dt);
 	void StartArenaCombat(int level);
 	void HandlePvpResponse(PlayerInfo& info, bool accepted);

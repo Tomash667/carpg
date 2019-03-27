@@ -15,6 +15,7 @@ Version 0.9 (???):
 + keeping save image and info inside single file
 + amulets: silver, gold, ruby, diamond
 + wolf/bear pelts
++ better error reporting
 - fixed failed connection when using LAN with password
 - fixed enemy hp not affecting morale
 - fixed missing magic effect for clients when despawning dead summoned unit

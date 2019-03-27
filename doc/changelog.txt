@@ -15,6 +15,7 @@ Version 0.9 (???):
 + przechowywanie obrazka i informacji zapisu w jednym pliku
 + amulety: srebrny, z³oty, rubinowy, diamentowy
 + skóry z wilka/niedŸwiedzia
++ lepsze zg³aszanie b³êdów
 - naprawiony b³¹d po³¹czenia do serwera przy u¿yciu has³a LAN
 - naprawiony brak wp³ywu hp na morale jednostek
 - naprawiony brak magicznego efektu u klienta gdy znika umar³a przywo³ana jednostka

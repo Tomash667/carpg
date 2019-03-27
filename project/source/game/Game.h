@@ -138,6 +138,7 @@ public:
 	void CreateTextures();
 	void CreateRenderTargets();
 	void PreloadData();
+	void ReportError(int id, cstring text);
 
 	// initialization
 	bool InitGame() override;

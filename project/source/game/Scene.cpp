@@ -3942,10 +3942,8 @@ void Game::DrawTrailParticles(const vector<TrailParticleEmitter*>& tpes)
 
 		if(id < 0 || id >= (int)tp.parts.size() || !tp.parts[id].exists)
 		{
-			Error("Trail particle emitter error, id = %d!", id);
-#ifdef _DEBUG
-			gui->messages->AddGameMsg("Trail particle emitter error!", 2.f);
-#endif
+			ReportError(6, Format("Trail particle emitter error, id = %d!", id));
+			const_cast<TrailParticleEmitter&>(tp).alive = false;
 			continue;
 		}
 

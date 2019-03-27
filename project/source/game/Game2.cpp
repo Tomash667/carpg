@@ -1133,10 +1133,6 @@ void Game::UpdateGame(float dt)
 
 	// aktualizuj kamerê
 	SetupCamera(dt);
-
-#ifdef _DEBUG
-	arena->Verify();
-#endif
 }
 
 //=================================================================================================
@@ -4536,11 +4532,8 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 			if(!u.mesh_inst)
 			{
 				// fix na skutek, nie na przyczynê ;(
-#ifdef _DEBUG
-				Warn("Unit %s dont have shooting animation, LS:%d A:%D ANI:%d PANI:%d ETA:%d.", u.GetName(), u.live_state, u.action, u.animation,
-					u.current_animation, u.animation_state);
-				gui->messages->AddGameMsg("Unit don't have shooting animation!", 5.f);
-#endif
+				ReportError(4, Format("Unit %s dont have shooting animation, LS:%d A:%D ANI:%d PANI:%d ETA:%d.", u.GetName(), u.live_state, u.action, u.animation,
+					u.current_animation, u.animation_state));
 				goto koniec_strzelania;
 			}
 			if(u.animation_state == 0)

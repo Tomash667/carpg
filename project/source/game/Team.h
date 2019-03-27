@@ -64,7 +64,6 @@ public:
 	void TeamShareSellItem(DialogContext& ctx);
 	void TeamShareDecline(DialogContext& ctx);
 	void BuyTeamItems();
-	void ValidateTeamItems();
 	void CheckCredit(bool require_update = false, bool ignore = false);
 	bool RemoveQuestItem(const Item* item, int refid = -1);
 	Unit* FindPlayerTradingWithUnit(Unit& u);
