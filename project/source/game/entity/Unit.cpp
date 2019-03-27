@@ -2686,8 +2686,12 @@ void Unit::ReequipItemsInternal()
 	}
 
 	// add item if unit have none
-	if(data->type == UNIT_TYPE::HUMANOID && !HaveWeapon())
-		AddItemAndEquipIfNone(UnitHelper::GetBaseWeapon(*this));
+	if(data->type != UNIT_TYPE::ANIMAL && !HaveWeapon())
+	{
+		const Item* item = UnitHelper::GetBaseWeapon(*this);
+		Game::Get().PreloadItem(item);
+		AddItemAndEquipIfNone(item);
+	}
 }
 
 //=================================================================================================

@@ -41,6 +41,7 @@ Version 0.9 (???):
 - fixed ai melee attacks from archers/mages from far range when their line of sight is blocked
 - fixed ai trying to get to enemy corpse when someone else alerted him and target is already dead
 - fixed delay before leaving location on worldmap/entering location before showing load screen
+- fixed crash when necromancer revived enemy with weapons taken [Anonymous]
 
 --------------------------------------------------------------------------------
 Version 0.8.1 (???):
