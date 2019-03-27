@@ -9092,7 +9092,6 @@ void Game::GenerateQuestUnits()
 		assert(u);
 		if(u)
 		{
-			u->hero->name = txArthur;
 			QM.quest_sawmill->sawmill_state = Quest_Sawmill::State::GeneratedUnit;
 			QM.quest_sawmill->hd_lumberjack.Get(*u->human_data);
 			if(devmode)
@@ -9106,7 +9105,6 @@ void Game::GenerateQuestUnits()
 		assert(u);
 		if(u)
 		{
-			u->hero->name = txQuest[272];
 			QM.quest_mine->mine_state = Quest_Mine::State::SpawnedInvestor;
 			if(devmode)
 				Info("Generated quest unit '%s'.", u->GetRealName());
@@ -9119,7 +9117,6 @@ void Game::GenerateQuestUnits()
 		assert(u);
 		if(u)
 		{
-			u->hero->name = txQuest[273];
 			QM.quest_bandits->bandits_state = Quest_Bandits::State::GeneratedMaster;
 			if(devmode)
 				Info("Generated quest unit '%s'.", u->GetRealName());
@@ -9191,7 +9188,6 @@ void Game::GenerateQuestUnits()
 		{
 			QM.quest_goblins->nobleman = u;
 			QM.quest_goblins->hd_nobleman.Get(*u->human_data);
-			u->hero->name = txQuest[274];
 			QM.quest_goblins->goblins_state = Quest_Goblins::State::GeneratedNobleman;
 			if(devmode)
 				Info("Generated quest unit '%s'.", u->GetRealName());
@@ -9206,7 +9202,6 @@ void Game::GenerateQuestUnits()
 		if(u)
 		{
 			u->rot = Random(MAX_ANGLE);
-			u->hero->name = txQuest[275];
 			u->StartAutoTalk();
 			QM.quest_evil->cleric = u;
 			QM.quest_evil->evil_state = Quest_Evil::State::GeneratedCleric;

@@ -817,7 +817,7 @@ unit mayor : base_human {
 	flags | {ai_clerk ai_stay dont_eat limited_rot}
 	items {
 		random {al_clothes3 al_clothes3b}
-		random {!short_blade !long_blade}
+		random {dagger_sword dagger_rapier sword_long sword_scimitar}
 		random 1 3 !normal_food
 	}
 	gold {250 500}

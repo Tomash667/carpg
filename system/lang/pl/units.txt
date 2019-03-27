@@ -22,24 +22,37 @@ unit arena_master = "Mistrz areny"
 unit viewer = "Widz"
 unit captive = "Porwany"
 unit traveler = "Podró¿ny"
-unit artur_drwal = "Drwal"
+unit artur_drwal {
+	name "Drwal"
+	real_name "Artur Drwal"
+}
 unit poslaniec_tartak = "Pos³aniec"
 unit drwal = "Drwal"
-unit inwestor = "Inwestor"
+unit inwestor {
+	name "Inwestor"
+	real_name "Marco Bartoli"
+}
 unit poslaniec_kopalnia = "Pos³aniec"
 unit gornik = "Górnik"
 unit gornik_szef = "Szef górników"
 unit pijak = "Pijak"
-unit mistrz_agentow = "Nieznajomy"
+unit mistrz_agentow {
+	name "Nieznajomy"
+	real_name "Arto"
+}
 unit guard_q_bandyci = "Stra¿nik"
 unit agent = "Agent"
 unit q_magowie_uczony = "Uczony"
 unit q_magowie_stary = "Stary mag"
 unit q_orkowie_straznik = "Stra¿nik"
-unit q_orkowie_gorush = "Ork"
-unit q_orkowie_gorush_woj = "Ork wojownik"
-unit q_orkowie_gorush_lowca = "Ork ³owca"
-unit q_orkowie_gorush_szaman = "Ork szaman"
+unit base_gorush {
+	name "Ork"
+	real_name "Gorush"
+}
+unit q_orkowie_gorush {}
+unit q_orkowie_gorush_woj {}
+unit q_orkowie_gorush_lowca {}
+unit q_orkowie_gorush_szaman {}
 unit q_orkowie_slaby = "S³aby ork"
 unit q_orkowie_kowal = "Ork kowal"
 unit q_orkowie_orc = "Ork"
@@ -48,16 +61,25 @@ unit q_orkowie_orc_fighter = "Ork zbrojny"
 unit q_orkowie_orc_warius = "Ork warius"
 unit q_orkowie_orc_chief = "Ork wódz"
 unit q_orkowie_orc_shaman = "Ork szaman"
-unit q_gobliny_szlachcic = "Szlachcic"
+unit q_gobliny_szlachcic {
+	name "Szlachcic"
+	real_name "Sir Foltest Denhoff"
+}
 unit q_gobliny_poslaniec = "Pos³aniec"
 unit q_gobliny_mag = "Wêdrowny mag"
-unit q_zlo_kaplan = "Kap³an"
+unit q_zlo_kaplan {
+	name "Kap³an"
+	real_name "Jozan"
+}
 unit q_zlo_mag = "Mag"
 unit goblin = "Goblin"
 unit goblin_hunter = "Goblin ³owca"
 unit goblin_fighter = "Goblin zbrojny"
 unit goblin_chief = "Goblin wódz"
-unit q_gobliny_szlachcic2 = "Szlachcic"
+unit q_gobliny_szlachcic2 {
+	name "Szlachcic"
+	real_name "Sir Foltest Denhoff"
+}
 unit q_gobliny_ochroniarz = "Ochroniarz"
 unit tut_goblin = "Goblin"
 unit orc = "Ork"

@@ -154,7 +154,8 @@ void Language::LoadLanguages()
 				lmap = nullptr;
 			}
 		}
-	} while(FindNextFile(fhandle, &data));
+	}
+	while(FindNextFile(fhandle, &data));
 
 	if(lmap)
 		delete lmap;
@@ -209,7 +210,7 @@ void Language::PrepareTokenizer(Tokenizer& t)
 		{ "building", K_BUILDING },
 		{ "action", K_ACTION },
 		{ "usable", K_USABLE }
-	});
+		});
 }
 
 //=================================================================================================
@@ -483,8 +484,15 @@ void Language::LoadObjectFile(Tokenizer& t, cstring filename)
 						}
 						else
 							t.ThrowExpecting("symbol { or =");
-						if(ud->parent && ud->name.empty())
-							ud->name = ud->parent->name;
+						if(ud->parent)
+						{
+							if(ud->name.empty())
+								ud->name = ud->parent->name;
+							if(ud->real_name.empty())
+								ud->real_name = ud->parent->real_name;
+						}
+						if(ud->name.empty())
+							Warn("Missing unit '%s' name.", ud->id.c_str());
 					}
 					break;
 				case K_BUILDING:
@@ -509,7 +517,7 @@ void Language::LoadObjectFile(Tokenizer& t, cstring filename)
 					{
 						t.Next();
 						const string& id = t.MustGetText();
-						auto action = Action::Find(id);
+						Action* action = Action::Find(id);
 						if(!action)
 							t.Throw("Invalid action '%s'.", id.c_str());
 						t.Next();
@@ -525,7 +533,7 @@ void Language::LoadObjectFile(Tokenizer& t, cstring filename)
 					{
 						t.Next();
 						const string& id = t.MustGetText();
-						auto use = BaseUsable::TryGet(id.c_str());
+						BaseUsable* use = BaseUsable::TryGet(id.c_str());
 						if(!use)
 							t.Throw("Invalid usable '%s'.", id.c_str());
 						t.Next();
@@ -579,13 +587,13 @@ void Language::LoadLanguageFiles()
 	if(txLocationStart.empty() || txLocationEnd.empty())
 		throw "Missing locations names.";
 
-	for (auto building : Building::buildings)
+	for(Building* building : Building::buildings)
 	{
-		if (IS_SET(building->flags, Building::HAVE_NAME) && building->name.empty())
+		if(IS_SET(building->flags, Building::HAVE_NAME) && building->name.empty())
 			Warn("Building '%s' don't have name.", building->id.c_str());
 	}
 
-	for(auto usable : BaseUsable::usables)
+	for(BaseUsable* usable : BaseUsable::usables)
 	{
 		if(usable->name.empty())
 			Warn("Usables '%s' don't have name.", usable->name.c_str());

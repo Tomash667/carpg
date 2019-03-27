@@ -1373,7 +1373,7 @@ dialog q_kill_animals_timeout {
 //==============================================================================
 dialog q_kill_animals_end {
 	0 "Doskona³a robota, te stwory czêsto niepokoi³y podró¿nych."
-	1 "Masz tu 2500 sztuk z³ota nagrody."
+	1 "Masz tu $reward$ sztuk z³ota nagrody."
 }
 
 //==============================================================================

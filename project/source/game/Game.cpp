@@ -1246,7 +1246,6 @@ void Game::SetGameText()
 	LoadArray(txELvlStrong, "eLvlStrong");
 
 	// questy
-	txArthur = Str("arthur");
 	txMineBuilt = Str("mineBuilt");
 	txAncientArmory = Str("ancientArmory");
 	txPortalClosed = Str("portalClosed");

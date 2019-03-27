@@ -61,7 +61,6 @@ bool CzyMajaStaryLuk()
 //=================================================================================================
 void DodajStraznikow()
 {
-	Game& game = Game::Get();
 	Unit* u = nullptr;
 	UnitData* ud = UnitData::Get("q_gobliny_szlachcic2");
 
@@ -110,7 +109,6 @@ void DodajStraznikow()
 	}
 
 	// ustaw szlachcica
-	u->hero->name = game.txQuest[215];
 	u->hero->know_name = true;
 	u->ApplyHumanData(QM.quest_goblins->hd_nobleman);
 }

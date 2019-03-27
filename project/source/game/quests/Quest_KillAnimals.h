@@ -24,6 +24,12 @@ public:
 	bool OnTimeout(TimeoutType ttype) override;
 	bool HandleLocationEvent(LocationEventHandler::Event event) override;
 	bool IfNeedTalk(cstring topic) const override;
+	void Save(GameWriter& f) override;
 	bool Load(GameReader& f) override;
 	int GetLocationEventHandlerQuestRefid() override { return refid; }
+
+private:
+	int GetReward() const;
+
+	int st;
 };

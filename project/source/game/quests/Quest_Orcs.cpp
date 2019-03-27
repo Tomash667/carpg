@@ -289,7 +289,6 @@ void Quest_Orcs2::SetProgress(int prog2)
 		{
 			orc = DialogContext::current->talker;
 			orc->RevealName(true);
-			orc->hero->name = game->txQuest[216];
 		}
 		break;
 	case Progress::NotJoined:
