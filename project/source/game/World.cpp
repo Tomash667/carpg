@@ -1346,7 +1346,7 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 		f >> travel_timer;
 	}
 	encounters.resize(f.Read<uint>(), nullptr);
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_9)
 	{
 		int index = 0;
 		for(Encounter*& enc : encounters)

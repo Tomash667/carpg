@@ -16,6 +16,16 @@ Version 0.9 (???):
 + amulety: srebrny, z³oty, rubinowy, diamentowy
 + skóry z wilka/niedŸwiedzia
 + lepsze zg³aszanie b³êdów
+- naprawiony rzadki crash gdy gobliny/orkowie jedz¹ jedzenie (czêsto zdarza³ siê w samouczku) [Harorri]
+- naprawiona komenda kill po u¿yciu na zw³okach blokowa³a zabieranie przedmiotów
+- naprawiony dziennik nie blokowa³ sterowania graczem
+- naprawione rozmawianie/podnoszenie przedmiotów przez drzwi
+- naprawione rozmawianie/podnoszenie przedmiotów w budynkach przez œcianê
+- naprawione generowanie kamieni w jaskini/kopalni które mog³o zablokowaæ przejœcie
+- naprawione rozmawianie z postaci¹ która opuszcza/wchodzi do budynku
+- naprawiony wyciek pamiêci zwi¹zany z portalami u klienta
+- naprawiony crash przy ponownych odwiedzinach lokalizacji za portalem
+- naprawiona nieprawid³owa pozycja na mapie œwiata u klienta po wczytaniu gry w lokalizacji za portalem
 - naprawiony b³¹d po³¹czenia do serwera przy u¿yciu has³a LAN
 - naprawiony brak wp³ywu hp na morale jednostek
 - naprawiony brak magicznego efektu u klienta gdy znika umar³a przywo³ana jednostka
@@ -44,19 +54,6 @@ Version 0.9 (???):
 - naprawione opóŸnienie przy opuszczaniu lokalizacji na mapie œwiata/przy wchodzeniu do lokalizacji przed otwarciem ekranu wczytywania
 - naprawiony crash gdy nekromanta o¿ywi³ wroga któremu zabrano broñ [Anonymous]
 - naprawione zawody na arenie powoduj¹ problemy z dymkami z tekstem
-
---------------------------------------------------------------------------------
-Wersja 0.8.1 (???):
-- naprawiony rzadki crash gdy gobliny/orkowie jedz¹ jedzenie (czêsto zdarza³ siê w samouczku) [Harorri]
-- naprawiona komenda kill po u¿yciu na zw³okach blokowa³a zabieranie przedmiotów
-- naprawiony dziennik nie blokowa³ sterowania graczem
-- naprawione rozmawianie/podnoszenie przedmiotów przez drzwi
-- naprawione rozmawianie/podnoszenie przedmiotów w budynkach przez œcianê
-- naprawione generowanie kamieni w jaskini/kopalni które mog³o zablokowaæ przejœcie
-- naprawione rozmawianie z postaci¹ która opuszcza/wchodzi do budynku
-- naprawiony wyciek pamiêci zwi¹zany z portalami u klienta
-- naprawiony crash przy ponownych odwiedzinach lokalizacji za portalem
-- naprawiona nieprawid³owa pozycja na mapie œwiata u klienta po wczytaniu gry w lokalizacji za portalem
 
 --------------------------------------------------------------------------------
 Wersja 0.8 (2019-02-23):

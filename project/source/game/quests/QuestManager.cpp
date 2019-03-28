@@ -645,7 +645,7 @@ void QuestManager::Load(GameReader& f)
 		f.Skip(sizeof(int) * 3 * count);
 	}
 
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_9)
 	{
 		quest_items.resize(f.Read<uint>());
 		for(Item*& item : quest_items)
@@ -665,7 +665,7 @@ void QuestManager::Load(GameReader& f)
 	f >> quest_rumor_counter;
 	f >> quest_rumor;
 
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_9)
 	{
 		const string& force_id = f.ReadString1();
 		if(force_id.empty())

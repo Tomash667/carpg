@@ -700,7 +700,7 @@ item plate {
 	name "Plate"
 }
 item wolf_pelt {
-	name "Wolf pelt
+	name "Wolf pelt"
 }
 item worg_pelt {
 	name "Worg pelt"

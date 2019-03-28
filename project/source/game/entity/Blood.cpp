@@ -25,7 +25,7 @@ void Blood::Load(FileReader& f)
 	f >> pos;
 	f >> normal;
 	f >> size;
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_9)
 		f >> scale;
 	else
 		scale = 1.f;

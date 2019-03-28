@@ -343,7 +343,7 @@ void SaveLoad::LoadSaveSlots()
 			}
 
 			slot.valid = true;
-			if(slot.load_version < V_DEV)
+			if(slot.load_version < V_0_9)
 			{
 				filename = Format("saves/%s/%d.txt", multi == 0 ? "single" : "multi", i);
 				if(io::FileExists(filename))

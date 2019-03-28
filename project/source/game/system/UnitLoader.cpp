@@ -1783,7 +1783,7 @@ void UnitLoader::ParseSounds(Ptr<SoundPack>& pack)
 			while(!t.IsSymbol('}'))
 			{
 				const string& filename = t.MustGetString();
-				SoundPtr sound = sound_mgr.Get(filename);
+				SoundPtr sound = sound_mgr.TryGet(filename);
 				if(!sound)
 					LoadError("Missing sound '%s'.", filename.c_str());
 				else
@@ -1797,7 +1797,7 @@ void UnitLoader::ParseSounds(Ptr<SoundPack>& pack)
 		else
 		{
 			const string& filename = t.MustGetString();
-			SoundPtr sound = sound_mgr.Get(filename);
+			SoundPtr sound = sound_mgr.TryGet(filename);
 			if(!sound)
 				LoadError("Missing sound '%s'.", filename.c_str());
 			else

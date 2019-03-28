@@ -16,6 +16,16 @@ Version 0.9 (???):
 + amulets: silver, gold, ruby, diamond
 + wolf/bear pelts
 + better error reporting
+- fixed rare crash when goblins/orcs eat food (often happen in tutorial) [Harorri]
+- fixed using kill command on corpse prevent from looting
+- fixed journal not blocking player controlls
+- fixed talking/picking items thru doors at right angle
+- fixed talking/picking items inside building thru walls
+- fixed generating rocks in cave/mine that could block path
+- fixed talking with unit exiting/entering building
+- fixed clients portal memory leak
+- fixed crash when revisiting locations by portal
+- fixed clients invalid position on world map when loading game in locations by portal
 - fixed failed connection when using LAN with password
 - fixed enemy hp not affecting morale
 - fixed missing magic effect for clients when despawning dead summoned unit
@@ -44,19 +54,6 @@ Version 0.9 (???):
 - fixed delay before leaving location on worldmap/entering location before showing load screen
 - fixed crash when necromancer revived enemy with weapons taken [Anonymous]
 - fixed tournament corrupting speech bubbles
-
---------------------------------------------------------------------------------
-Version 0.8.1 (???):
-- fixed rare crash when goblins/orcs eat food (often happen in tutorial) [Harorri]
-- fixed using kill command on corpse prevent from looting
-- fixed journal not blocking player controlls
-- fixed talking/picking items thru doors at right angle
-- fixed talking/picking items inside building thru walls
-- fixed generating rocks in cave/mine that could block path
-- fixed talking with unit exiting/entering building
-- fixed clients portal memory leak
-- fixed crash when revisiting locations by portal
-- fixed clients invalid position on world map when loading game in locations by portal
 
 --------------------------------------------------------------------------------
 Version 0.8 (2019-02-23):

@@ -165,7 +165,7 @@ void Quest_KillAnimals::Save(GameWriter& f)
 bool Quest_KillAnimals::Load(GameReader& f)
 {
 	Quest_Dungeon::Load(f);
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_9)
 		f >> st;
 	else if(target_loc != -1)
 		st = GetTargetLocation().st;

@@ -1675,10 +1675,10 @@ void Unit::Load(GameReader& f, bool local)
 
 	// items
 	bool can_sort = true;
-	int max_slots = (LOAD_VERSION >= V_DEV ? SLOT_MAX : 4);
+	int max_slots = (LOAD_VERSION >= V_0_9 ? SLOT_MAX : 4);
 	for(int i = 0; i < max_slots; ++i)
 		f.ReadOptional(slots[i]);
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_9)
 		slots[SLOT_AMULET] = nullptr;
 	items.resize(f.Read<uint>());
 	for(ItemSlot& slot : items)
@@ -1966,7 +1966,7 @@ void Unit::Load(GameReader& f, bool local)
 		f >> last_bash;
 		if(LOAD_VERSION >= V_0_5)
 			f >> moved;
-		if(LOAD_VERSION >= V_DEV)
+		if(LOAD_VERSION >= V_0_9)
 			f >> running;
 		else
 			running = false;
@@ -2009,7 +2009,7 @@ void Unit::Load(GameReader& f, bool local)
 	}
 
 	// dialogs
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_9)
 	{
 		dialogs.resize(f.Read<uint>());
 		for(QuestDialog& dialog : dialogs)

@@ -338,7 +338,7 @@ bool Game::ValidateNetSaveForLoading(GameReader& f, int slot)
 	else
 		ptr = &gui->saveload->GetSaveSlot(slot);
 	SaveSlot& ss = *ptr;
-	if(ss.load_version < V_DEV)
+	if(ss.load_version < V_0_9)
 		throw SaveException(txTooOldVersion, Format("Too old save version (%d).", ss.load_version));
 	for(PlayerInfo* player : N.players)
 	{
@@ -594,7 +594,7 @@ bool Game::LoadGameHeader(GameReader& f, SaveSlot& slot)
 	f >> flags;
 
 	// info
-	if(slot.load_version >= V_DEV)
+	if(slot.load_version >= V_0_9)
 	{
 		slot.hardcore = IS_SET(flags, SF_HARDCORE);
 		slot.on_worldmap = IS_SET(flags, SF_ON_WORLDMAP);
@@ -712,7 +712,7 @@ void Game::LoadGame(GameReader& f)
 		online_save ? 1 : 0, IS_SET(flags, SF_DEBUG) ? 1 : 0);
 
 	// info
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_9)
 	{
 		f.SkipString1(); // text
 		f.SkipString1(); // player name
