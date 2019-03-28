@@ -410,6 +410,7 @@ void Game::UpdateAi(float dt)
 						assert(0);
 						u.weapon_state = WS_HIDDEN;
 						ai.potion = -1;
+						ReportError(8, Format("Unit %s was hiding weapon without action.", u.GetRealName()));
 					}
 
 					if(ai.in_combat)

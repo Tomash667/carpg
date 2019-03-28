@@ -43,6 +43,7 @@ Version 0.9 (???):
 - fixed ai trying to get to enemy corpse when someone else alerted him and target is already dead
 - fixed delay before leaving location on worldmap/entering location before showing load screen
 - fixed crash when necromancer revived enemy with weapons taken [Anonymous]
+- fixed tournament corrupting speech bubbles
 
 --------------------------------------------------------------------------------
 Version 0.8.1 (???):

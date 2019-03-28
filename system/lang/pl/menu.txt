@@ -652,6 +652,7 @@ tour19 = "Walkê wygrywa %s!"
 tour20 = "%s wygra³ walkê!"
 tour21 = "PodejdŸ tu %s, porozmawiamy o twojej nagrodzie."
 tour22 = "Niestety w tym roku zawody siê nie odbêd¹ z powodu braku chêtnych..."
+tour23 = "Czas na fina³ow¹ walkê %s przeciwko %s!"
 
 // save/load messages
 cantSaveGame = "Nie mo¿esz w tej chwili zapisaæ gry: trwa walka na arenie lub zawody w karczmie."

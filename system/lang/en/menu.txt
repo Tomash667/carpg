@@ -652,6 +652,7 @@ tour19 = "The fight was won by %s!"
 tour20 = "%s won the fight!"
 tour21 = "Come here %s, let's talk about your prize."
 tour22 = "Unfortunately this year the tournament will not take place due to lack of interest..."
+tour23 = "It's time for the final fight between %s and %s!"
 
 // save/load messages
 cantSaveGame = "You can't save now: there is a combat in the arena or a contest at the inn."

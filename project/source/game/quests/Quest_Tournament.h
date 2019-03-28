@@ -50,5 +50,5 @@ private:
 	SmartPtr<Unit> skipped_unit, other_fighter, winner;
 	vector<pair<SmartPtr<Unit>, SmartPtr<Unit>>> pairs;
 	bool generated;
-	cstring txTour[23], txAiJoinTour[4];
+	cstring txTour[24], txAiJoinTour[4];
 };
