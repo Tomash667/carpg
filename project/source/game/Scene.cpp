@@ -650,6 +650,13 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 		for(vector<GroundItem*>::iterator it = ctx.items->begin(), end = ctx.items->end(); it != end; ++it)
 		{
 			GroundItem& item = **it;
+			if(!item.item)
+			{
+				ReportError(7, Format("GroundItem with null item at %g;%g;%g (count %d, team count %d).",
+					item.pos.x, item.pos.y, item.pos.z, item.count, item.team_count));
+				ctx.items->erase(it);
+				break;
+			}
 			Mesh* mesh;
 			pos = item.pos;
 			if(IS_SET(item.item->flags, ITEM_GROUND_MESH))

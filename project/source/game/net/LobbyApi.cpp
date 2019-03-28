@@ -203,7 +203,7 @@ void LobbyApi::DoOperation(Op opp)
 	if(op == REPORT)
 	{
 		string text = urlencode(*opp.str);
-		cstring url = Format("carpg.pl/reports.php?action=add&id=%d&text=%s", opp.value, text.c_str());
+		cstring url = Format("carpg.pl/reports.php?action=add&id=%d&text=%s&ver=%s", opp.value, text.c_str(), VERSION_STR);
 		http->TransmitRequest(RakString::FormatForGET(url), "carpg.pl", 80, false, 4, UNASSIGNED_SYSTEM_ADDRESS, (void*)op);
 	}
 	else
@@ -225,7 +225,7 @@ void LobbyApi::DoOperation(Op opp)
 		}
 		http->TransmitRequest(RakString::FormatForGET(Format("%s%s", API_URL, path)), API_URL, API_PORT, false, 4, UNASSIGNED_SYSTEM_ADDRESS, (void*)op);
 	}
-	
+
 	if(opp.str)
 		StringPool.Free(opp.str);
 }
