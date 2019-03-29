@@ -79,10 +79,7 @@ void MultiInsideLocation::Load(GameReader& f, bool local, LOCATION_TOKEN token)
 	for(LevelInfo& info : infos)
 	{
 		f >> info.last_visit;
-		if(LOAD_VERSION >= V_0_3)
-			f >> info.seed;
-		else
-			info.seed = 0;
+		f >> info.seed;
 		f >> info.cleared;
 		f >> info.reset;
 		info.loaded_resources = false;

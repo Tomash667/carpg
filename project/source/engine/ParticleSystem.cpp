@@ -244,8 +244,5 @@ void TrailParticleEmitter::Load(FileReader& f)
 	f >> last;
 	f >> destroy;
 	f >> alive;
-	if(LOAD_VERSION >= V_0_3)
-		f >> timer;
-	else
-		timer = 0.f;
+	f >> timer;
 }

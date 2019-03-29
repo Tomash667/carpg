@@ -18,10 +18,7 @@ void Blood::Save(FileWriter& f) const
 //=================================================================================================
 void Blood::Load(FileReader& f)
 {
-	if(LOAD_VERSION >= V_0_3)
-		type = (BLOOD)f.Read<byte>();
-	else
-		type = (BLOOD)f.Read<int>();
+	type = (BLOOD)f.Read<byte>();
 	f >> pos;
 	f >> normal;
 	f >> size;

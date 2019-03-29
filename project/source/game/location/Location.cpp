@@ -108,10 +108,7 @@ void Location::Load(GameReader& f, bool, LOCATION_TOKEN token)
 	f >> reset;
 	f >> spawn;
 	f >> dont_clean;
-	if(LOAD_VERSION >= V_0_3)
-		f >> seed;
-	else
-		seed = 0;
+	f >> seed;
 	if(LOAD_VERSION >= V_0_5)
 		f >> image;
 	else

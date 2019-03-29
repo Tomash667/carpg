@@ -1497,8 +1497,6 @@ void World::LoadOld(GameReader& f, LoadingHandler& loading, int part, bool insid
 			travel_location_index = 0;
 			travel_timer = 1.f;
 		}
-		if(LOAD_VERSION < V_0_3)
-			travel_dir = Clip(-travel_dir);
 	}
 	else if(part == 2)
 		LoadNews(f);

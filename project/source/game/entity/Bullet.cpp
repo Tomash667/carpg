@@ -50,8 +50,6 @@ void Bullet::Load(FileReader& f)
 {
 	f >> pos;
 	f >> rot;
-	if(LOAD_VERSION < V_0_3)
-		f.Skip<float>();
 	const string& mesh_id = f.ReadString1();
 	if(!mesh_id.empty())
 		mesh = ResourceManager::Get<Mesh>().GetLoaded(mesh_id);

@@ -791,10 +791,7 @@ void Game::LoadGame(GameReader& f)
 	if(LOAD_VERSION < V_0_8)
 		W.LoadOld(f, loading, 3, false);
 	f >> L.enter_from;
-	if(LOAD_VERSION >= V_0_3)
-		f >> L.light_angle;
-	else
-		L.light_angle = Random(PI * 2);
+	f >> L.light_angle;
 
 	// set entities pointers
 	LoadingStep(txLoadingData);
@@ -990,7 +987,7 @@ void Game::LoadGame(GameReader& f)
 		L.is_open = false;
 
 	// gui
-	if(LOAD_VERSION <= V_0_3)
+	if(LOAD_VERSION == V_0_3)
 		gui->LoadOldGui(f);
 	gui->game_gui->PositionPanels();
 
