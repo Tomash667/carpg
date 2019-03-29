@@ -3936,6 +3936,7 @@ void Game::UpdateClient(float dt)
 				net_mode = Game::NM_TRANSFER;
 				net_state = NetState::Client_BeforeTransfer;
 				game_state = GS_LOAD;
+				items_load.clear();
 			}
 			break;
 		default:

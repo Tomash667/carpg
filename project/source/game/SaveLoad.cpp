@@ -242,6 +242,7 @@ void Game::LoadGameCommon(cstring filename, int slot)
 		N.SendAll(f, IMMEDIATE_PRIORITY, RELIABLE);
 
 		N.mp_load = true;
+		N.ClearChanges();
 	}
 
 	prev_game_state = game_state;
