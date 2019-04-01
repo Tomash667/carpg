@@ -100,7 +100,6 @@ void QuestLoader::ParseQuest(const string& id)
 	Ptr<QuestScheme> quest;
 	quest->id = id;
 	quest->dialogs.push_back(new GameDialog);
-	inner_code.clear();
 	t.Next();
 
 	t.AssertSymbol('{');
@@ -135,7 +134,7 @@ void QuestLoader::ParseQuest(const string& id)
 				t.Throw("Empty progress list.");
 			break;
 		case P_CODE:
-			inner_code = t.GetBlock('{', '}', false);
+			quest->code = t.GetBlock('{', '}', false);
 			break;
 		case P_DIALOG:
 			{
@@ -277,11 +276,39 @@ void QuestLoader::LoadTexts()
 						if(dialog->texts[index].exists)
 							t.Throw("Text %d already set.", index);
 
-						int str_idx = dialog->strs.size();
-						dialog->strs.push_back(t.MustGetString());
-						dialog->texts[index].index = str_idx;
-						dialog->texts[index].exists = true;
-						dialog_loader->CheckDialogText(dialog, index, &scheme->scripts);
+						if(t.IsSymbol('{'))
+						{
+							t.Next();
+							int prev = -1;
+							while(!t.IsSymbol('}'))
+							{
+								int str_idx = dialog->strs.size();
+								dialog->strs.push_back(t.MustGetString());
+								t.Next();
+								if(prev == -1)
+								{
+									dialog->texts[index].index = str_idx;
+									dialog->texts[index].exists = true;
+									prev = index;
+								}
+								else
+								{
+									index = dialog->texts.size();
+									dialog->texts[prev].next = index;
+									dialog->texts.push_back(GameDialog::Text(str_idx));
+									prev = index;
+								}
+								dialog_loader->CheckDialogText(dialog, index, &scheme->scripts);
+							}
+						}
+						else
+						{
+							int str_idx = dialog->strs.size();
+							dialog->strs.push_back(t.MustGetString());
+							dialog->texts[index].index = str_idx;
+							dialog->texts[index].exists = true;
+							dialog_loader->CheckDialogText(dialog, index, &scheme->scripts);
+						}
 						t.Next();
 					}
 					t.Next();
@@ -297,6 +324,7 @@ void QuestLoader::LoadTexts()
 						.Get());
 					skip = true;
 					++errors;
+					break;
 				}
 			}
 
@@ -353,6 +381,13 @@ void QuestLoader::Finalize()
 		scheme->script_type = type;
 		scheme->f_startup = type->GetMethodByDecl("void Startup()");
 		scheme->f_progress = type->GetMethodByDecl("void SetProgress()");
+		if(!scheme->f_progress)
+		{
+			scheme->f_progress = type->GetMethodByDecl("void SetProgress(int)");
+			scheme->set_progress_use_prev = true;
+		}
+		else
+			scheme->set_progress_use_prev = false;
 		scheme->f_event = type->GetMethodByDecl("void OnEvent(Event@)");
 		scheme->scripts.Set(type);
 
@@ -413,12 +448,13 @@ void QuestLoader::BuildQuest(QuestScheme* scheme)
 		}
 	}
 	code += "// inner code\n";
-	code += inner_code;
+	code += scheme->code;
 	code += "\n}";
 
 #ifdef _DEBUG
 	{
-		TextWriter f("quests_debug.txt");
+		CreateDirectory("debug", nullptr);
+		TextWriter f(Format("debug/quests_%s.txt", scheme->id.c_str()));
 		f << code;
 	}
 #endif

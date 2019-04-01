@@ -114,6 +114,7 @@ public:
 	int GetRandomFreeSettlementIndex(int excluded = -1) const;
 	int GetRandomCityIndex(int excluded = -1) const;
 	int GetClosestLocation(LOCATION type, const Vec2& pos, int target = -1);
+	Location* GetClosestLocationS(LOCATION type, const Vec2& pos, int target = -1) { return locations[GetClosestLocation(type, pos, target)]; }
 	int GetClosestLocationNotTarget(LOCATION type, const Vec2& pos, int not_target);
 	bool FindPlaceForLocation(Vec2& pos, float range = 64.f, bool allow_exact = true);
 	int GetRandomSpawnLocation(const Vec2& pos, SPAWN_GROUP group, float range = 160.f);

@@ -82,7 +82,7 @@ void TeamSingleton::AddTeamMember(Unit* unit, bool free)
 	// set as team member
 	unit->hero->team_member = true;
 	unit->hero->free = free;
-	unit->hero->mode = HeroData::Follow;
+	unit->SetOrder(ORDER_FOLLOW);
 
 	// add to team list
 	if(!free)
@@ -1498,4 +1498,51 @@ void TeamSingleton::CalculatePlayersLevel()
 	}
 	if(have_leader_perk)
 		--players_level;
+}
+
+//=================================================================================================
+uint TeamSingleton::RemoveItem(const Item* item, uint count)
+{
+	uint total_removed = 0;
+	for(Unit* unit : members)
+	{
+		uint removed = unit->RemoveItem(item, count);
+		total_removed += removed;
+		if(count != 0)
+		{
+			count -= removed;
+			if(count == 0)
+				break;
+		}
+	}
+	return total_removed;
+}
+
+//=================================================================================================
+void TeamSingleton::SetBandit(bool is_bandit)
+{
+	if(this->is_bandit == is_bandit)
+		return;
+	this->is_bandit = is_bandit;
+	if(Net::IsOnline())
+		Net::PushChange(NetChange::CHANGE_FLAGS);
+}
+
+//=================================================================================================
+Unit* TeamSingleton::GetNearestTeamMember(const Vec3& pos, float* out_dist)
+{
+	Unit* best = nullptr;
+	float best_dist;
+	for(Unit* unit : active_members)
+	{
+		float dist = Vec3::DistanceSquared(unit->pos, pos);
+		if(!best || dist < best_dist)
+		{
+			best = unit;
+			best_dist = dist;
+		}
+	}
+	if(out_dist)
+		*out_dist = sqrtf(best_dist);
+	return best;
 }

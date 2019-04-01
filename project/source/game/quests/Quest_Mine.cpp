@@ -28,6 +28,7 @@ void Quest_Mine::Start()
 	days = 0;
 	days_required = 0;
 	days_gold = 0;
+	QM.AddQuestRumor(refid, Format(QM.txRumorQ[1], GetStartLocationName()));
 }
 
 //=================================================================================================
@@ -115,7 +116,7 @@ void Quest_Mine::SetProgress(int prog2)
 			mine_state2 = State2::InBuild;
 			days = 0;
 			days_required = Random(30, 45);
-			QM.RemoveQuestRumor(R_MINE);
+			QM.RemoveQuestRumor(refid);
 		}
 		break;
 	case Progress::GotFirstGold:
@@ -142,7 +143,7 @@ void Quest_Mine::SetProgress(int prog2)
 			mine_state2 = State2::InBuild;
 			days = 0;
 			days_required = Random(30, 45);
-			QM.RemoveQuestRumor(R_MINE);
+			QM.RemoveQuestRumor(refid);
 		}
 		break;
 	case Progress::NeedTalk:

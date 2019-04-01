@@ -772,11 +772,11 @@ dialog arena_master
 	}
 	choice 22
 	{
-		if special "have_team"
+		if script "Team::HaveMember()"
 		{
-			if special "have_pc_team"
+			if script "Team::HavePcMember()"
 				talk 23
-			if special "have_npc_team"
+			if script "Team::HaveNpcMember()"
 				talk 24
 			special "pvp_gather"
 			if special "have_player/1"
@@ -946,12 +946,12 @@ dialog hero
 		{
 			choice 1
 			{
-				if special "is_lost_pvp"
+				if script "target.hero.lost_pvp"
 				{
 					talk 2
 					restart
 				}
-				if special "is_healthy"
+				if script "target.GetHpp() >= 0.75f"
 				{
 					if special "is_arena_free"
 					{
@@ -975,32 +975,29 @@ dialog hero
 		}
 		if script "pc.IsLeader()"
 		{
-			if special "is_inside_town"
+			if script "Level::IsSettlement() && target.order != ORDER_WANDER"
 			{
-				if special "is_not_free"
+				choice 6
 				{
-					choice 6
-					{
-						special "go_free"
-						talk 7
-						end
-					}
+					script "target.order = ORDER_WANDER"
+					talk 7
+					end
 				}
 			}
-			if special "is_not_follow"
+			if script "target.order != ORDER_FOLLOW"
 			{
 				choice 8
 				{
-					special "follow_me"
+					script "target.order = ORDER_FOLLOW"
 					talk 9
 					end
 				}
 			}
-			if special "is_not_waiting"
+			if script "target.order != ORDER_WAIT"
 			{
 				choice 10
 				{
-					special "wait"
+					script "target.order = ORDER_WAIT"
 					talk 11
 					end
 				}
@@ -1072,10 +1069,10 @@ dialog hero
 	}
 	else
 	{
-		if special "is_not_known"
+		if script "!target.known_name"
 		{
 			do_once
-			special "tell_name"
+			script "target.known_name = true;"
 			talk 28
 		}
 		if once
@@ -1091,7 +1088,7 @@ dialog hero
 		}
 		choice 32
 		{
-			if special "is_team_full"
+			if script "Team::size >= Team::max_size"
 			{
 				talk 33
 				restart
@@ -1186,7 +1183,7 @@ dialog hero_buy_item
 //==============================================================================
 dialog hero_pvp
 {
-	if special "is_lost_pvp"
+	if script "target.hero.lost_pvp"
 		talk 0
 	else
 		talk 1
@@ -1204,12 +1201,12 @@ dialog crazy
 		{
 			choice 1
 			{
-				if special "is_lost_pvp"
+				if script "target.hero.lost_pvp"
 				{
 					talk 2
 					restart
 				}
-				if special "is_healthy"
+				if script "target.GetHpp() >= 0.75f"
 				{
 					if special "is_arena_free"
 					{
@@ -1233,32 +1230,29 @@ dialog crazy
 		}
 		if script "pc.IsLeader()"
 		{
-			if special "is_inside_town"
+			if script "Level::IsSettlement() && target.order != ORDER_WANDER"
 			{
-				if special "is_not_free"
+				choice 6
 				{
-					choice 6
-					{
-						special "go_free"
-						talk 7
-						end
-					}
+					script "target.order = ORDER_WANDER"
+					talk 7
+					end
 				}
 			}
-			if special "is_not_follow"
+			if script "target.order != ORDER_FOLLOW"
 			{
 				choice 8
 				{
-					special "follow_me"
+					script "target.order = ORDER_FOLLOW"
 					talk 9
 					end
 				}
 			}
-			if special "is_not_waiting"
+			if script "target.order != ORDER_WAIT"
 			{
 				choice 10
 				{
-					special "wait"
+					script "target.order = ORDER_WAIT"
 					talk 11
 					end
 				}
@@ -1336,10 +1330,10 @@ dialog crazy
 	}
 	else
 	{
-		if special "is_not_known"
+		if script "!target.known_name"
 		{
 			do_once
-			special "tell_name"
+			script "target.known_name = true;"
 			talk 29
 		}
 		if once
@@ -1355,7 +1349,7 @@ dialog crazy
 		}
 		choice 33
 		{
-			if special "is_team_full"
+			if script "Team::size >= Team::max_size"
 			{
 				if rand 3
 				{
@@ -1480,7 +1474,7 @@ dialog crazy_buy_item
 //==============================================================================
 dialog crazy_pvp
 {
-	if special "is_lost_pvp"
+	if script "target.hero.lost_pvp"
 		talk 0
 	else
 		talk 1
@@ -1496,7 +1490,7 @@ dialog bandits
 		script "target.OrderAttack()"
 		end
 	}
-	if special "is_bandit"
+	if script "Team::bandit"
 	{
 		if rand 3
 		{
@@ -1609,20 +1603,20 @@ dialog captive
 	if script "target.IsTeamMember()"
 	{
 		talk 0
-		if special "is_not_follow"
+		if script "target.order != ORDER_FOLLOW"
 		{
 			choice 1
 			{
-				special "follow_me"
+				script "target.order = ORDER_FOLLOW"
 				talk 2
 				end
 			}
 		}
-		if special "is_not_waiting"
+		if script "target.order != ORDER_WAIT"
 		{
 			choice 3
 			{
-				special "wait"
+				script "target.order = ORDER_WAIT"
 				talk 4
 				end
 			}
@@ -2074,7 +2068,7 @@ dialog q_bandits_master
 {
 	if quest_progress 0
 	{
-		special "tell_name"
+		script "target.known_name = true;"
 		talk 0
 		talk 1
 		talk 2
@@ -2626,7 +2620,7 @@ dialog q_evil_cleric
 		set_quest_progress 3
 		talk 16
 		talk 17
-		special "tell_name"
+		script "target.known_name = true;"
 		talk 18
 		end
 	}
@@ -2797,7 +2791,7 @@ dialog q_goblins_nobleman
 	if quest_progress 0
 	{
 		talk 0
-		special "tell_name"
+		script "target.known_name = true;"
 		talk 1
 		talk 2
 		talk 3
@@ -3308,9 +3302,9 @@ dialog q_mages2_mage
 	}
 	if once
 	{
-		if special "is_not_known"
+		if script "!target.known_name"
 		{
-			special "tell_name"
+			script "target.known_name = true;"
 			talk 34
 			do_once
 		}
@@ -3409,12 +3403,12 @@ dialog q_mine_investor
 {
 	if quest_progress 0
 	{
-		if special "is_not_known"
+		if script "!target.known_name"
 		{
 			if once
 			{
 			}
-			special "tell_name"
+			script "target.known_name = true;"
 			talk 0
 			talk 1
 		}
@@ -4052,7 +4046,7 @@ dialog q_sawmill_talk
 {
 	if quest_progress 0
 	{
-		special "tell_name"
+		script "target.known_name = true;"
 		talk 0
 		talk 1
 		talk 2
@@ -4270,14 +4264,14 @@ dialog tomir
 {
 	talk 0
 	talk 1
-	special "tell_name"
+	script "target.known_name = true;"
 	if script "pc.name == \"Tomir\""
 		talk 2
 	if script "Team::size >= 4"
 	{
 		talk 3
 		talk 11
-		script "target.OrderLeave()"
+		script "target.order = ORDER_LEAVE"
 		end
 	}
 	else
@@ -4295,7 +4289,7 @@ dialog tomir
 		{
 			talk 10
 			talk 11
-			script "target.OrderLeave()"
+			script "target.order = ORDER_LEAVE"
 			end
 		}
 		show_choices

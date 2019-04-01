@@ -34,7 +34,7 @@ public:
 	void SpawnDrunkmans();
 
 	State state;
-	int where, state2, year;
+	int where, state2, year, rumor;
 	vector<Unit*> units;
 	Unit* winner;
 	float time;

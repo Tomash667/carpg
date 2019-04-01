@@ -1,3 +1,4 @@
+//=============================================================================
 quest deliver_resources {
 	dialog start {
 		0 "I have to deliver a box of resource to $(target_loc.name). Normally, I would send one of my people, but since you're already here..."
@@ -31,5 +32,66 @@ quest deliver_resources {
 		5 "I did not have time to deliver resources."
 		6 "Traveling along the road you came across a few bandits. It looks like they've been waiting for you..."
 		7 "I came across bandits who wanted to take away my resources."
+	}
+}
+
+//=============================================================================
+quest alchemist_apprentice
+{
+	dialog alchemist {
+		0 "Welcome. Are you here for the task?"
+		1 "Task"
+		2 "I am looking for someone who will provide me with alchemical herbs from a nearby forest."
+		3 "I sent my student there, but he has not returned for a few days."
+		4 "Will you take care of this?"
+		5 "Yes"
+		6 "No"
+		7 "Thank you for your time."
+		8 "Go to $(forest.name) at $(World::GetDirName(city.pos, forest.pos)) from here."
+		9 "Bring me as much alchemical herbs as you can."
+		10 "My student also went there, but he did not come back so watch yourself."
+		11 "Welcome. Did you find my student or this herbs?"
+		12 "Give back the herbs"
+		13 "Cancel task"
+		14 "Thank you, take this gold."
+		15 "Ehhh, I'm disappointed with you."
+		16 "My student has come back to me all and healthy, please take these potions in thanks."
+		17 "It is a pity that Luke died... He was a great helper."
+		18 "If you change your mind, you know where to find me."
+	}
+	
+	dialog xwokloiz {
+		0 "Greetings! I am $name$. Did my master send you, the alchemist?"
+		1 "He sent me here to collect alchemical herbs, but because of the surrounding beasts, I do not go too fast."
+		2 "I have an idea! You will kill these monsters and I will lead you, what do you say?"
+		3 "Yes"
+		4 "No"
+		5 "Let's go! There, I saw one plant."
+		6 "It's a pity... I'll wait here, maybe you'll change your mind..."
+		7 "Hmmm ... Have you thought about my help offer?"
+		8 "What's happening? We have not found all the plants yet."
+		9 "I see that you handled yourself... Well, I'm going back to $(city.name)."
+		10 "Well done, we've collected everything we could. It's time to get back to the city."
+		11 "I almost forget, take this plant that I found."
+		12 "Relax, I'll find a way to $(city.name) without your help."
+	}
+	
+	texts {
+		12 "" // required when there are multiple text variants in texts
+		0 "Herbs for the alchemist"
+		1 "Received from the alchemist from $(city.name) at $date$."
+		2 "I need to go to $(forest.name) at $(World::GetDirName(Level::location.pos, forest.pos)) from $(city.name) and find as much alchemical herbs as I can. There should also be an alchemist pupil in the area who would be good to find."
+		3 "I met a student of an alchemist in the forest. He wanted to help me find the alchemical herbs but I refused."
+		4 "I met a student of an alchemist in the forest. He offered to help me find the alchemical herbs."
+		5 "I changed my mind and accepted the student's alchemist's help. He will lead me to the surrounding plants."
+		6 "I collected all the herbs I could find. It's time to go back to the alchemist."
+		7 "I provided herbs and received payment. Quest done!"
+		8 "I quit this task."
+		9 {
+			"Another weed!"
+			"I found another plant!"
+		}
+		10 "The student of the alchemist died during the fight in the forest."
+		11 "The alchemist in $(city.name) is looking for a specific type of herbs."
 	}
 }

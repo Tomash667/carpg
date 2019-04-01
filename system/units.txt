@@ -786,7 +786,7 @@ unit alchemist : merchant {
 	}
 	trader {
 		stock alchemist
-		groups {potion}
+		groups {potion herb}
 	}
 	gold {500 1000}
 	dialog alchemist
@@ -2501,6 +2501,26 @@ unit unk {
 	}
 	width 0.4
 	attack_range 1.2
+}
+
+//------------------------------------------------------------------------------
+// Quest units
+//------------------------------------------------------------------------------
+unit xwokloiz : base_human {
+	level 8
+	def 25
+	flags | {ai_stay hero}
+	items {
+		al_studded_hq
+		axe_small
+		bow_long
+		random 1 3 !normal_food
+		alchemist_herb
+		random 3 5 healing_herb
+		2 p_hp
+	}
+	gold {10 50}
+	dialog "alchemist_apprentice/xwokloiz"
 }
 
 //------------------------------------------------------------------------------

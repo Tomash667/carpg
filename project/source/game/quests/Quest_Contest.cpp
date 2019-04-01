@@ -15,6 +15,7 @@
 #include "GlobalGui.h"
 #include "GameMessages.h"
 #include "PlayerInfo.h"
+#include "SaveState.h"
 
 //=================================================================================================
 void Quest_Contest::InitOnce()
@@ -54,6 +55,7 @@ void Quest_Contest::Init()
 	winner = nullptr;
 	generated = false;
 	year = W.GetYear();
+	rumor = QM.AddQuestRumor(QM.txRumorQ[2]);
 }
 
 //=================================================================================================
@@ -63,6 +65,7 @@ void Quest_Contest::Save(GameWriter& f)
 	f << state;
 	f << generated;
 	f << winner;
+	f << rumor;
 	if(state >= CONTEST_STARTING)
 	{
 		f << state2;
@@ -80,6 +83,8 @@ void Quest_Contest::Load(GameReader& f)
 	f >> state;
 	f >> generated;
 	f >> winner;
+	if(LOAD_VERSION >= V_DEV)
+		f >> rumor;
 	if(state >= CONTEST_STARTING)
 	{
 		f >> state2;

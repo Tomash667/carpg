@@ -637,6 +637,7 @@ void Game::LoadGame(GameReader& f)
 	units_mesh_load.clear();
 	Unit::refid_table.clear();
 	Usable::refid_table.clear();
+	GroundItem::refid_table.clear();
 	ParticleEmitter::refid_table.clear();
 	TrailParticleEmitter::refid_table.clear();
 	L.entering = true;

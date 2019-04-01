@@ -30,6 +30,6 @@ struct InsideBuilding final : public ILevel, public LevelArea
 	void Save(GameWriter& f, bool local);
 	void Load(GameReader& f, bool local);
 	void Write(BitStreamWriter& f);
-	bool Load(BitStreamReader& f);
+	bool Read(BitStreamReader& f);
 	Unit* FindUnit(const UnitData* ud) const;
 };

@@ -5,6 +5,8 @@
 #include "Location.h"
 #include "World.h"
 #include "Encounter.h"
+#include "GroundItem.h"
+#include "SaveState.h"
 #pragma warning(error: 4062)
 
 string VarsContainer::tmp_str;
@@ -70,6 +72,18 @@ void VarsContainer::Save(FileWriter& f)
 		case Var::Type::Float:
 			f << e.second->_float;
 			break;
+		case Var::Type::Int2:
+			f << e.second->int2;
+			break;
+		case Var::Type::Vec2:
+			f << e.second->vec2;
+			break;
+		case Var::Type::Vec3:
+			f << e.second->vec3;
+			break;
+		case Var::Type::Vec4:
+			f << e.second->vec4;
+			break;
 		case Var::Type::Item:
 			if(e.second->item)
 				f << e.second->item->id;
@@ -81,6 +95,9 @@ void VarsContainer::Save(FileWriter& f)
 			break;
 		case Var::Type::Encounter:
 			f << (e.second->encounter ? e.second->encounter->index : -1);
+			break;
+		case Var::Type::GroundItem:
+			f << (e.second->ground_item ? e.second->ground_item->refid : -1);
 			break;
 		}
 	}
@@ -106,8 +123,12 @@ void VarsContainer::Load(FileReader& f)
 		{
 			v = it->second;
 			byte type = f.Read<byte>();
+			if(LOAD_VERSION < V_DEV && type >= (byte)Var::Type::Int2)
+				type += 4; // added more simple types
 			if(v->registered)
 				assert(v->type == (Var::Type)type);
+			else
+				v->type = (Var::Type)type;
 		}
 		switch(v->type)
 		{
@@ -121,6 +142,18 @@ void VarsContainer::Load(FileReader& f)
 			break;
 		case Var::Type::Float:
 			f >> v->_float;
+			break;
+		case Var::Type::Int2:
+			f >> v->int2;
+			break;
+		case Var::Type::Vec2:
+			f >> v->vec2;
+			break;
+		case Var::Type::Vec3:
+			f >> v->vec3;
+			break;
+		case Var::Type::Vec4:
+			f >> v->vec4;
 			break;
 		case Var::Type::Item:
 			{
@@ -149,6 +182,13 @@ void VarsContainer::Load(FileReader& f)
 					v->encounter = nullptr;
 				else
 					v->encounter = W.GetEncounter(index);
+			}
+			break;
+		case Var::Type::GroundItem:
+			{
+				int refid;
+				f >> refid;
+				v->ground_item = GroundItem::GetByRefid(refid);
 			}
 			break;
 		}

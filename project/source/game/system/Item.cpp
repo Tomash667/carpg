@@ -213,14 +213,14 @@ bool ItemCmp(const Item* a, const Item* b)
 			ConsumableType c1 = a->ToConsumable().cons_type,
 				c2 = b->ToConsumable().cons_type;
 			if(c1 != c2)
-				return c1 > c2;
+				return c1 < c2;
 		}
 		else if(a->type == IT_OTHER)
 		{
 			OtherType o1 = a->ToOther().other_type,
 				o2 = b->ToOther().other_type;
 			if(o1 != o2)
-				return o1 > o2;
+				return o1 < o2;
 		}
 		if(a->value != b->value)
 			return a->value > b->value;

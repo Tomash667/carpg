@@ -2258,11 +2258,11 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			GroundItem& item = *pc_data.before_player_ptr.item;
 			if(u.action == A_NONE)
 			{
-				bool u_gory = (item.pos.y > u.pos.y + 0.5f);
+				bool up_anim = (item.pos.y > u.pos.y + 0.5f);
 
 				u.action = A_PICKUP;
 				u.animation = ANI_PLAY;
-				u.mesh_inst->Play(u_gory ? "podnosi_gora" : "podnosi", PLAY_ONCE | PLAY_PRIO2, 0);
+				u.mesh_inst->Play(up_anim ? "podnosi_gora" : "podnosi", PLAY_ONCE | PLAY_PRIO2, 0);
 				u.mesh_inst->groups[0].speed = 1.f;
 				u.mesh_inst->frame_end_info = false;
 
@@ -2278,15 +2278,27 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::PICKUP_ITEM;
 						c.unit = pc->unit;
-						c.count = (u_gory ? 1 : 0);
+						c.count = (up_anim ? 1 : 0);
 
 						NetChange& c2 = Add1(Net::changes);
 						c2.type = NetChange::REMOVE_ITEM;
-						c2.id = pc_data.before_player_ptr.item->netid;
+						c2.id = item.netid;
 					}
 
-					DeleteElement(ctx.items, pc_data.before_player_ptr.item);
+					RemoveElement(ctx.items, &item);
 					pc_data.before_player = BP_NONE;
+
+					for(Event& event : L.location->events)
+					{
+						if(event.type == EVENT_PICKUP)
+						{
+							ScriptEvent e(EVENT_PICKUP);
+							e.item = &item;
+							event.quest->FireEvent(e);
+						}
+					}
+
+					delete &item;
 				}
 				else
 				{
@@ -7725,6 +7737,7 @@ void Game::BuildRefidTables()
 	// units and unsable objects
 	Unit::refid_table.clear();
 	Usable::refid_table.clear();
+	GroundItem::refid_table.clear();
 	for(Location* loc : W.GetLocations())
 	{
 		if(loc)
@@ -8152,7 +8165,7 @@ void Game::LeaveLevel(LevelContext& ctx, bool clear)
 						unit.hp = 1.f;
 						unit.live_state = Unit::ALIVE;
 					}
-					unit.hero->mode = HeroData::Follow;
+					unit.SetOrder(ORDER_FOLLOW);
 					unit.talking = false;
 					unit.mesh_inst->need_update = true;
 					unit.ai->Reset();
@@ -8160,22 +8173,31 @@ void Game::LeaveLevel(LevelContext& ctx, bool clear)
 				}
 				else
 				{
-					if(unit.live_state == Unit::DYING)
+					if(unit.order == ORDER_LEAVE && unit.IsAlive())
 					{
-						unit.live_state = Unit::DEAD;
-						unit.mesh_inst->SetToEnd();
-						L.CreateBlood(ctx, unit, true);
+						delete unit.ai;
+						delete &unit;
+						*it = nullptr;
 					}
-					if(unit.ai->goto_inn && L.city_ctx)
+					else
 					{
-						// warp to inn if unit wanted to go there
-						L.WarpToInn(**it);
+						if(unit.live_state == Unit::DYING)
+						{
+							unit.live_state = Unit::DEAD;
+							unit.mesh_inst->SetToEnd();
+							L.CreateBlood(ctx, unit, true);
+						}
+						if(unit.ai->goto_inn && L.city_ctx)
+						{
+							// warp to inn if unit wanted to go there
+							L.WarpToInn(**it);
+						}
+						delete unit.mesh_inst;
+						unit.mesh_inst = nullptr;
+						delete unit.ai;
+						unit.ai = nullptr;
+						unit.EndEffects();
 					}
-					delete unit.mesh_inst;
-					unit.mesh_inst = nullptr;
-					delete unit.ai;
-					unit.ai = nullptr;
-					unit.EndEffects();
 				}
 			}
 			else
@@ -8940,30 +8962,6 @@ void Game::DeleteUnit(Unit* unit)
 		delete unit;
 }
 
-bool Game::CanWander(Unit& u)
-{
-	if(L.city_ctx && u.ai->loc_timer <= 0.f && !dont_wander && IS_SET(u.data->flags, F_AI_WANDERS))
-	{
-		if(u.busy != Unit::Busy_No)
-			return false;
-		if(u.IsHero())
-		{
-			if(u.hero->team_member && u.hero->mode != HeroData::Wander)
-				return false;
-			else if(QM.quest_tournament->IsGenerated())
-				return false;
-			else
-				return true;
-		}
-		else if(u.in_building == -1)
-			return true;
-		else
-			return false;
-	}
-	else
-		return false;
-}
-
 float Game::PlayerAngleY()
 {
 	const float pt0 = 4.6662526f;
@@ -8992,10 +8990,9 @@ void Game::AttackReaction(Unit& attacked, Unit& attacker)
 					}
 				}
 				else
+					Team.SetBandit(true);
 				{
 					Team.is_bandit = true;
-					if(Net::IsOnline())
-						Net::PushChange(NetChange::CHANGE_FLAGS);
 				}
 			}
 		}
@@ -9629,7 +9626,8 @@ void Game::UpdateGame2(float dt)
 						u->ai->idle_action = AIController::Idle_Move;
 						u->ai->idle_data.pos = loc.pos;
 						u->ai->timer = 1.f;
-						u->hero->mode = HeroData::Wait;
+						if(u->order != ORDER_WAIT)
+							u->SetOrder(ORDER_WAIT);
 
 						// zamknij
 						if(dist < 2.f)
@@ -9638,7 +9636,7 @@ void Game::UpdateGame2(float dt)
 							if(QM.quest_evil->timer <= 0.f)
 							{
 								loc.state = Quest_Evil::Loc::State::PortalClosed;
-								u->hero->mode = HeroData::Follow;
+								u->SetOrder(ORDER_FOLLOW);
 								u->ai->idle_action = AIController::Idle_None;
 								QM.quest_evil->OnUpdate(Format(txPortalClosed, L.location->name.c_str()));
 								u->StartAutoTalk();
@@ -9654,8 +9652,8 @@ void Game::UpdateGame2(float dt)
 						else
 							QM.quest_evil->timer = 1.5f;
 					}
-					else
-						u->hero->mode = HeroData::Follow;
+					else if(u->order != ORDER_FOLLOW)
+						u->SetOrder(ORDER_FOLLOW);
 				}
 			}
 		}
@@ -9755,7 +9753,7 @@ void Game::CloseAllPanels(bool close_mp_box)
 bool Game::CanShowEndScreen()
 {
 	if(Net::IsLocal())
-		return !QM.unique_completed_show && QM.unique_quests_completed == UNIQUE_QUESTS && L.city_ctx && !dialog_context.dialog_mode && pc->unit->IsStanding();
+		return !QM.unique_completed_show && QM.unique_quests_completed == QM.unique_quests && L.city_ctx && !dialog_context.dialog_mode && pc->unit->IsStanding();
 	else
 		return QM.unique_completed_show && L.city_ctx && !dialog_context.dialog_mode && pc->unit->IsStanding();
 }

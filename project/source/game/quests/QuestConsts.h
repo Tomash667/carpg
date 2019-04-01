@@ -45,22 +45,22 @@ enum QUEST
 };
 
 //-----------------------------------------------------------------------------
-static const int UNIQUE_QUESTS = 8;
-
-//-----------------------------------------------------------------------------
-enum QUEST_RUMOR
+namespace old
 {
-	R_SAWMILL,
-	R_MINE,
-	R_CONTEST,
-	R_BANDITS,
-	R_MAGES,
-	R_MAGES2,
-	R_ORCS,
-	R_GOBLINS,
-	R_EVIL,
-	R_MAX
-};
+	enum QUEST_RUMOR
+	{
+		R_SAWMILL,
+		R_MINE,
+		R_CONTEST,
+		R_BANDITS,
+		R_MAGES,
+		R_MAGES2,
+		R_ORCS,
+		R_GOBLINS,
+		R_EVIL,
+		R_MAX
+	};
+}
 
 //-----------------------------------------------------------------------------
 #define QUEST_ITEM_PLACEHOLDER ((const Item*)-1)

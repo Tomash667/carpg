@@ -9,6 +9,7 @@
 #include "Net.h"
 #include "QuestScheme.h"
 #include "QuestList.h"
+#include "Language.h"
 
 #include "Quest_Artifacts.h"
 #include "Quest_Bandits.h"
@@ -84,6 +85,7 @@ void QuestManager::InitOnce()
 //=================================================================================================
 void QuestManager::LoadLanguage()
 {
+	LoadArray(txRumorQ, "rumorQ");
 	quest_contest->LoadLanguage();
 	quest_secret->LoadLanguage();
 	quest_tournament->LoadLanguage();
@@ -97,6 +99,13 @@ void QuestManager::PostInit()
 	quests_captain = QuestList::TryGet("captain");
 	quests_random = QuestList::TryGet("random");
 	assert(quests_mayor && quests_captain && quests_random);
+
+	unique_quests = 8;
+	for(QuestScheme* scheme : QuestScheme::schemes)
+	{
+		if(scheme->type == QuestType::Unique)
+			++unique_quests;
+	}
 }
 
 //=================================================================================================
@@ -172,8 +181,6 @@ void QuestManager::InitQuests(bool devmode)
 	quest_mages2->refid = quest_counter++;
 	quest_mages2->Start();
 	unaccepted_quests.push_back(quest_mages2);
-	quest_rumor[R_MAGES2] = true;
-	--quest_rumor_counter;
 
 	// orcs
 	quest_orcs = new Quest_Orcs;
@@ -230,6 +237,18 @@ void QuestManager::InitQuests(bool devmode)
 		Info("Tournament - %s.", W.GetLocation(quest_tournament->GetCity())->name.c_str());
 		Info("Contest - %s.", W.GetLocation(quest_contest->where)->name.c_str());
 		Info("Gladiator armor - %s.", W.GetLocation(quest_artifacts->target_loc)->name.c_str());
+	}
+
+	// init scripted quests
+	for(QuestScheme* scheme : QuestScheme::schemes)
+	{
+		if(scheme->type != QuestType::Unique)
+			continue;
+		Quest_Scripted* quest = new Quest_Scripted;
+		quest->Init(scheme);
+		unaccepted_quests.push_back(quest);
+		quest->refid = quest_counter++;
+		quest->Start();
 	}
 }
 
@@ -409,9 +428,7 @@ void QuestManager::Reset()
 	quest_counter = 0;
 	unique_quests_completed = 0;
 	unique_completed_show = false;
-	quest_rumor_counter = R_MAX;
-	for(int i = 0; i < R_MAX; ++i)
-		quest_rumor[i] = false;
+	quest_rumors.clear();
 }
 
 //=================================================================================================
@@ -607,8 +624,12 @@ void QuestManager::Save(GameWriter& f)
 	f << quest_counter;
 	f << unique_quests_completed;
 	f << unique_completed_show;
-	f << quest_rumor_counter;
-	f << quest_rumor;
+	f << quest_rumors.size();
+	for(pair<int, string>& rumor : quest_rumors)
+	{
+		f << rumor.first;
+		f << rumor.second;
+	}
 	if(force == Q_FORCE_DISABLED)
 		f.Write0();
 	else if(force == Q_FORCE_NONE)
@@ -627,56 +648,6 @@ void QuestManager::Load(GameReader& f)
 	LoadQuests(f, quests);
 	LoadQuests(f, unaccepted_quests);
 
-	quests_timeout.resize(f.Read<uint>());
-	for(Quest_Dungeon*& q : quests_timeout)
-		q = static_cast<Quest_Dungeon*>(FindQuest(f.Read<uint>(), false));
-
-	if(LOAD_VERSION >= V_0_4)
-	{
-		quests_timeout2.resize(f.Read<uint>());
-		for(Quest*& q : quests_timeout2)
-			q = FindQuest(f.Read<uint>(), false);
-	}
-	else
-	{
-		// old timed units (now removed)
-		uint count;
-		f >> count;
-		f.Skip(sizeof(int) * 3 * count);
-	}
-
-	if(LOAD_VERSION >= V_0_9)
-	{
-		quest_items.resize(f.Read<uint>());
-		for(Item*& item : quest_items)
-		{
-			const string& id = f.ReadString1();
-			Item* base = Item::Get(id.c_str() + 1);
-			item = base->CreateCopy();
-			item->id = id;
-			f >> item->refid;
-			f >> item->name;
-		}
-	}
-
-	f >> quest_counter;
-	f >> unique_quests_completed;
-	f >> unique_completed_show;
-	f >> quest_rumor_counter;
-	f >> quest_rumor;
-
-	if(LOAD_VERSION >= V_0_9)
-	{
-		const string& force_id = f.ReadString1();
-		if(force_id.empty())
-			force = Q_FORCE_DISABLED;
-		else
-			SetForcedQuest(force_id);
-	}
-	else if(LOAD_VERSION >= V_0_5)
-		f >> force;
-	else
-		force = Q_FORCE_DISABLED;
 
 	// get quest pointers
 	quest_sawmill = static_cast<Quest_Sawmill*>(FindQuestById(Q_SAWMILL));
@@ -696,7 +667,6 @@ void QuestManager::Load(GameReader& f)
 	quest_crazies = static_cast<Quest_Crazies*>(FindQuestById(Q_CRAZIES));
 	quest_crazies->Init();
 	quest_artifacts = static_cast<Quest_Artifacts*>(FindQuestById(Q_ARTIFACTS));
-
 	if(LOAD_VERSION < V_0_8 && !quest_mages2)
 	{
 		quest_mages2 = new Quest_Mages2;
@@ -706,10 +676,134 @@ void QuestManager::Load(GameReader& f)
 	}
 	quest_mages2->Init();
 
+	// quest timeouts
+	quests_timeout.resize(f.Read<uint>());
+	for(Quest_Dungeon*& q : quests_timeout)
+		q = static_cast<Quest_Dungeon*>(FindQuest(f.Read<uint>(), false));
+	if(LOAD_VERSION >= V_0_4)
+	{
+		quests_timeout2.resize(f.Read<uint>());
+		for(Quest*& q : quests_timeout2)
+			q = FindQuest(f.Read<uint>(), false);
+	}
+	else
+	{
+		// old timed units (now removed)
+		uint count;
+		f >> count;
+		f.Skip(sizeof(int) * 3 * count);
+	}
+
+	// quest rumors
+	if(LOAD_VERSION >= V_0_9)
+	{
+		quest_items.resize(f.Read<uint>());
+		for(Item*& item : quest_items)
+		{
+			const string& id = f.ReadString1();
+			Item* base = Item::Get(id.c_str() + 1);
+			item = base->CreateCopy();
+			item->id = id;
+			f >> item->refid;
+			f >> item->name;
+		}
+	}
+
+	f >> quest_counter;
+	f >> unique_quests_completed;
+	f >> unique_completed_show;
+	if(LOAD_VERSION >= V_DEV)
+	{
+		uint count;
+		f >> count;
+		quest_rumors.resize(count);
+		for(pair<int, string>& rumor : quest_rumors)
+		{
+			f >> rumor.first;
+			f >> rumor.second;
+		}
+	}
+	else
+	{
+		f.Skip<int>(); // quest_rumor_counter
+		bool rumors[old::R_MAX];
+		f >> rumors;
+		for(int i = 0; i < old::R_MAX; ++i)
+		{
+			if(rumors[i])
+				continue;
+			cstring text;
+			QUEST id;
+			switch((old::QUEST_RUMOR)i)
+			{
+			case old::R_SAWMILL:
+				id = Q_SAWMILL;
+				text = Format(txRumorQ[0], W.GetLocation(quest_sawmill->start_loc)->name.c_str());
+				break;
+			case old::R_MINE:
+				id = Q_MINE;
+				text = Format(txRumorQ[1], W.GetLocation(quest_mine->start_loc)->name.c_str());
+				break;
+			case old::R_CONTEST:
+				id = Q_FORCE_NONE;
+				text = txRumorQ[2];
+				break;
+			case old::R_BANDITS:
+				id = Q_BANDITS;
+				text = Format(txRumorQ[3], W.GetLocation(quest_bandits->start_loc)->name.c_str());
+				break;
+			case old::R_MAGES:
+				id = Q_MAGES;
+				text = Format(txRumorQ[4], W.GetLocation(quest_mages->start_loc)->name.c_str());
+				break;
+			case old::R_MAGES2:
+				id = Q_MAGES2;
+				text = txRumorQ[5];
+				break;
+			case old::R_ORCS:
+				id = Q_ORCS;
+				text = Format(txRumorQ[6], W.GetLocation(quest_orcs->start_loc)->name.c_str());
+				break;
+			case old::R_GOBLINS:
+				id = Q_GOBLINS;
+				text = Format(txRumorQ[7], W.GetLocation(quest_goblins->start_loc)->name.c_str());
+				break;
+			case old::R_EVIL:
+				id = Q_EVIL;
+				text = Format(txRumorQ[8], W.GetLocation(quest_evil->start_loc)->name.c_str());
+				break;
+			}
+			if(id == Q_FORCE_NONE)
+			{
+				quest_contest->rumor = quest_counter++;
+				quest_rumors.push_back(pair<int, string>(quest_contest->rumor, text));
+			}
+			else
+			{
+				Quest* quest = FindQuestById(id);
+				quest_rumors.push_back(pair<int, string>(quest->refid, text));
+			}
+		}
+	}
+
+	// force quest
+	if(LOAD_VERSION >= V_0_9)
+	{
+		const string& force_id = f.ReadString1();
+		if(force_id.empty())
+			force = Q_FORCE_DISABLED;
+		else
+			SetForcedQuest(force_id);
+	}
+	else if(LOAD_VERSION >= V_0_5)
+		f >> force;
+	else
+		force = Q_FORCE_DISABLED;
+
 	// process quest requests
 	for(QuestRequest& request : quest_requests)
 	{
-		*request.quest = FindQuest(request.refid, false);
+		*request.quest = FindAnyQuest(request.refid);
 		if(request.callback)
 			request.callback();
 	}
@@ -833,6 +927,26 @@ Quest* QuestManager::FindAnyQuest(int refid)
 }
 
 //=================================================================================================
+Quest* QuestManager::FindAnyQuest(QuestScheme* scheme)
+{
+	assert(scheme);
+
+	for(Quest* quest : quests)
+	{
+		if(quest->quest_id == Q_SCRIPTED && static_cast<Quest_Scripted*>(quest)->GetScheme() == scheme)
+			return quest;
+	}
+
+	for(Quest* quest : unaccepted_quests)
+	{
+		if(quest->quest_id == Q_SCRIPTED && static_cast<Quest_Scripted*>(quest)->GetScheme() == scheme)
+			return quest;
+	}
+
+	return nullptr;
+}
+
+//=================================================================================================
 Quest* QuestManager::FindQuestById(QUEST quest_id)
 {
 	for(Quest* quest : quests)
@@ -891,25 +1005,6 @@ const Item* QuestManager::FindQuestItem(cstring name, int refid)
 
 	assert(0);
 	return nullptr;
-}
-
-//=================================================================================================
-void QuestManager::EndUniqueQuest()
-{
-	++unique_quests_completed;
-}
-
-//=================================================================================================
-bool QuestManager::RemoveQuestRumor(QUEST_RUMOR rumor_id)
-{
-	if(!quest_rumor[rumor_id])
-	{
-		quest_rumor[rumor_id] = true;
-		--quest_rumor_counter;
-		return true;
-	}
-	else
-		return false;
 }
 
 //=================================================================================================
@@ -1017,4 +1112,35 @@ QuestInfo* QuestManager::FindQuest(const string& id)
 			return &info;
 	}
 	return nullptr;
+}
+
+//=================================================================================================
+int QuestManager::AddQuestRumor(cstring str)
+{
+	int refid = quest_counter++;
+	quest_rumors.push_back(pair<int, string>(refid, str));
+	return refid;
+}
+
+//=================================================================================================
+bool QuestManager::RemoveQuestRumor(int refid)
+{
+	for(uint i = 0; i < quest_rumors.size(); ++i)
+	{
+		if(quest_rumors[i].first == refid)
+		{
+			RemoveElementIndex(quest_rumors, i);
+			return true;
+		}
+	}
+	return false;
+}
+
+//=================================================================================================
+string QuestManager::GetRandomQuestRumor()
+{
+	uint index = Rand() % quest_rumors.size();
+	string str = quest_rumors[index].second;
+	RemoveElementIndex(quest_rumors, index);
+	return str;
 }

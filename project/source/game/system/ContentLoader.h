@@ -31,6 +31,7 @@ protected:
 		LoadError(Format(msg, args...));
 	}
 	cstring FormatLanguagePath(cstring filename);
+	void SetLocalId(const string& id) { local_id = id; }
 
 	Tokenizer t;
 	Crc crc;

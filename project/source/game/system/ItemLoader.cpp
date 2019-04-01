@@ -210,7 +210,8 @@ void ItemLoader::InitTokenizer()
 	t.AddKeywords(G_CONSUMABLE_TYPE, {
 		{ "potion", (int)ConsumableType::Potion },
 		{ "drink", (int)ConsumableType::Drink },
-		{ "food", (int)ConsumableType::Food }
+		{ "food", (int)ConsumableType::Food },
+		{ "herb", (int)ConsumableType::Herb }
 		});
 
 	t.AddKeywords(G_EFFECT, {

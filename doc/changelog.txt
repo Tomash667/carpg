@@ -3,7 +3,10 @@ Historia zmian
 --------------------------------------------------------------------------------
 Wersja 0.10 (2019-??-??):
 ! nie mo¿na wczytywaæ ju¿ zapisów z wersji 0.2.20 lub starszej
++ nowe unikalne zadanie: Zio³a dla alchemika
++ alchemik teraz skupuje zio³a
 + aktualizacja bibliotek: FMod 1.10.12, JSON for Modern C++ 3.6.1
+- naprawiony nieskoñczony czas oczekiwania przy u¿yciu opcji -delay
 
 --------------------------------------------------------------------------------
 Wersja 0.9 (2019-03-30):

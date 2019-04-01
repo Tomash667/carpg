@@ -111,6 +111,9 @@ struct GameDialog
 	vector<string> strs;
 	vector<Text> texts;
 	int max_index;
+	QuestScheme* quest;
+
+	Text& GetText(int index);
 
 	static GameDialog* TryGet(cstring id);
 	static void Cleanup();

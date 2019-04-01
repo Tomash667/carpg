@@ -139,6 +139,7 @@ GameDialog* DialogLoader::LoadDialog(const string& id)
 	current_dialog = dialog.Get();
 	dialog->max_index = -1;
 	dialog->id = id;
+	dialog->quest = nullptr;
 	t.Next();
 
 	t.AssertSymbol('{');
@@ -512,7 +513,7 @@ DialogLoader::Node* DialogLoader::ParseChoice()
 	node->op = (escape ? OP_ESCAPE : OP_NONE);
 	node->value = index;
 	t.Next();
-	
+
 	++index;
 	if(index > current_dialog->max_index)
 	{
@@ -779,7 +780,9 @@ GameDialog* DialogLoader::LoadSingleDialog(Tokenizer& parent_t, QuestScheme* que
 	scripts = &quest->scripts;
 	t.FromTokenizer(parent_t);
 	const string& id = t.MustGetItem();
+	SetLocalId(id);
 	GameDialog* dialog = LoadDialog(id);
+	dialog->quest = quest;
 	parent_t.MoveTo(t.GetPos());
 	return dialog;
 }

@@ -9,9 +9,14 @@ struct Var
 		Bool,
 		Int,
 		Float,
+		Int2,
+		Vec2,
+		Vec3,
+		Vec4,
 		Item,
 		Location,
-		Encounter
+		Encounter,
+		GroundItem
 	};
 	Type type;
 	union
@@ -19,12 +24,19 @@ struct Var
 		bool _bool;
 		int _int;
 		float _float;
+		Int2 int2;
+		Vec2 vec2;
+		Vec3 vec3;
+		Vec4 vec4;
 		const Item* item;
 		Location* location;
 		Encounter* encounter;
+		GroundItem* ground_item;
 		void* ptr;
 	};
 	bool registered;
+
+	Var() {}
 
 	bool IsNone() const
 	{

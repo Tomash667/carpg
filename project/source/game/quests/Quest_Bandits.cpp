@@ -31,6 +31,7 @@ void Quest_Bandits::Start()
 	bandits_state = State::None;
 	timer = 0.f;
 	agent = nullptr;
+	QM.AddQuestRumor(refid, Format(QM.txRumorQ[3], GetStartLocationName()));
 }
 
 //=================================================================================================
@@ -114,7 +115,7 @@ void Quest_Bandits::SetProgress(int prog2)
 		else
 		{
 			OnStart(game->txQuest[153]);
-			QM.RemoveQuestRumor(R_BANDITS);
+			QM.RemoveQuestRumor(refid);
 
 			const Item* item = Item::Get("q_bandyci_paczka");
 			DialogContext::current->pc->unit->AddItem2(item, 1u, 1u);
@@ -202,7 +203,7 @@ void Quest_Bandits::SetProgress(int prog2)
 		// porazmawiano z agentem, powiedzia³ gdzie jest skrytka i idzie sobie
 		{
 			bandits_state = State::AgentTalked;
-			DialogContext::current->talker->hero->mode = HeroData::Leave;
+			DialogContext::current->talker->SetOrder(ORDER_LEAVE);
 			DialogContext::current->talker->event_handler = this;
 			Location& target = *W.CreateLocation(L_DUNGEON, GetStartLocation().pos, 64.f, THRONE_VAULT, SG_BANDITS, false);
 			target.active_quest = this;

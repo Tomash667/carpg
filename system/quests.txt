@@ -1,3 +1,6 @@
+//=============================================================================
+// DELIVER RESOURCES
+//=============================================================================
 quest deliver_resources
 {
 	type mayor
@@ -184,10 +187,312 @@ quest deliver_resources
 	}
 }
 
-//------------------------------------------------------------------------------
-// QUEST LISTS
-//------------------------------------------------------------------------------
+//=============================================================================
+// DELIVER RESOURCES
+//=============================================================================
+quest alchemist_apprentice
+{
+	type unique
+	progress {
+		P_ALCH_NONE
+		P_ALCH_ACCEPTED
+		P_ALCH_JOINED
+		P_ALCH_REFUSED
+		P_ALCH_ALL_PICKED
+		P_ALCH_ALL_PICKED_AND_TALKED
+		P_ALCH_ALL_PICKED_MANUALLY
+		P_ALCH_FINISHED
+		P_ALCH_FAILED
+	}
 
+	//-------------------------------------
+	// dialogs
+	dialog alchemist {
+		if quest_progress between P_ALCH_ACCEPTED and P_ALCH_ALL_PICKED_MANUALLY
+		{
+			if once
+			{
+				talk 11
+				do_once
+			}
+			if quest_progress between P_ALCH_ALL_PICKED and P_ALCH_ALL_PICKED_MANUALLY
+			{
+				if script "Team::HaveItem(herb)"
+				{
+					choice 12
+					{
+						set_quest_progress P_ALCH_FINISHED
+						talk 14
+						if script "alive"
+						{
+							talk 16
+							script "pc.unit.AddTeamItem(Item::Get(\"p_hp2\"), 5);"
+						}
+						else
+							talk 17
+						restart
+					}
+				}
+				else
+				{
+					choice 13
+					{
+						set_quest_progress P_ALCH_FAILED
+						talk 15
+						restart
+					}
+				}
+			}
+		}
+		else
+		{
+			if once
+			{
+				talk 0
+				do_once
+			}
+			choice 1
+			{
+				talk 2
+				talk 3
+				talk 4
+				choice 5
+				{
+					talk 7
+					set_quest_progress P_ALCH_ACCEPTED
+					talk 8
+					talk 9
+					talk 10
+					restart
+				}
+				choice 6
+				{
+					talk 18
+					restart
+				}
+				show_choices
+			}
+		}
+		end
+	}
+
+	dialog xwokloiz {
+		if quest_progress P_ALCH_ACCEPTED
+		{
+			script "target.known_name = true;"
+			talk 0
+			talk 1
+			talk 2
+			choice 3
+			{
+				set_quest_progress P_ALCH_JOINED
+				talk 5
+				end
+			}
+			choice 4
+			{
+				set_quest_progress P_ALCH_REFUSED
+				talk 6
+				end
+			}
+			show_choices
+		}
+		else if quest_progress P_ALCH_REFUSED
+		{
+			talk 7
+			choice 3
+			{
+				set_quest_progress P_ALCH_JOINED
+				talk 5
+				end
+			}
+			choice 4
+			{
+				talk 6
+				end
+			}
+			show_choices
+		}
+		else if quest_progress P_ALCH_JOINED
+		{
+			talk 8
+			end
+		}
+		else if quest_progress P_ALCH_ALL_PICKED_MANUALLY
+		{
+			talk 9
+			end
+		}
+		else if quest_progress P_ALCH_ALL_PICKED
+		{
+			talk 10
+			set_quest_progress P_ALCH_ALL_PICKED_AND_TALKED
+			talk 11
+			talk 12
+			end
+		}
+		else
+		{
+			talk 12
+			end
+		}
+	}
+
+	//-------------------------------------
+	// quest code
+	code {
+		Location@ city;
+		Location@ forest;
+		Item@ herb;
+		GroundItem@ last_item;
+		Vec3 last_pos;
+		bool alive;
+		
+		void Startup()
+		{
+			@city = World::GetRandomSettlementWithBuilding("alchemist");
+			city.AddEventHandler(quest, EVENT_ENTER);
+			@herb = Item::Get("alchemist_herb");
+			quest.AddRumor(TEXT(11));
+			DevInfo(Format("Quest 'Alchemist apprentice' - {0}.", city.name));
+			alive = true;
+		}
+
+		void OnEvent(Event@ e)
+		{
+			if(e.event == EVENT_ENTER)
+			{
+				e.location.RemoveEventHandler(quest);
+				if(progress == P_ALCH_NONE)
+				{
+					Unit@ u = Level::FindUnit(UnitData::Get("alchemist"));
+					u.AddDialog(quest, "alchemist");
+				}
+				else if(progress == P_ALCH_ACCEPTED)
+				{
+					Level::SpawnItemRandomly(herb, Random(5, 7));
+					Unit@ enemy = Level::GetNearestEnemy(Team::leader);
+					Unit@ u = Level::SpawnUnitNearLocation(UnitData::Get("xwokloiz"), enemy.pos, 5);
+					u.auto_talk = true;
+					u.OrderEscapeToUnit(Team::leader);
+					u.AddEventHandler(quest, EVENT_DIE);
+					forest.AddEventHandler(quest, EVENT_PICKUP);
+					quest.RemoveRumor();
+				}
+			}
+			else if(e.event == EVENT_UPDATE)
+			{
+				if(last_item is null)
+				{
+					@last_item = Level::FindNearestItem(herb, e.unit.pos);
+					if(last_item !is null)
+					{
+						// move to next herb
+						e.unit.OrderMove(last_item.pos, MOVE_RUN_WHEN_NEAR_TEAM);
+					}
+				}
+				else if(last_item.pos != last_pos)
+				{
+					float dist = Vec3::Distance(e.unit.pos, last_item.pos);
+					if(dist < 2)
+					{
+						e.unit.Talk(TEXT(9), 2);
+						e.unit.OrderLookAt(last_item.pos);
+						e.unit.OrderTimer(1);
+						last_pos = last_item.pos;
+					}
+				}
+			}
+			else if(e.event == EVENT_PICKUP)
+			{
+				if(e.item.base is herb)
+				{
+					if(last_item is e.item)
+						@last_item = null;
+					GroundItem@ item = Level::FindItem(herb);
+					if(item is null)
+					{
+						// all herbs picked
+						Unit@ u = Level::FindUnit(UnitData::Get("xwokloiz"));
+						if(progress == P_ALCH_JOINED)
+						{
+							progress = P_ALCH_ALL_PICKED;
+							u.auto_talk = true;
+							u.RemoveEventHandler(quest);
+						}
+						else
+						{
+							progress = P_ALCH_ALL_PICKED_MANUALLY;
+							u.order = ORDER_LEAVE;
+						}
+						quest.AddEntry(TEXT(6));
+						forest.RemoveEventHandler(quest);
+					}
+				}
+			}
+			else if(e.event == EVENT_DIE)
+			{
+				e.unit.RemoveEventHandler(quest);
+				alive = false;
+				quest.AddEntry(TEXT(10));
+			}
+		}
+
+		void SetProgress(int prev_progress)
+		{
+			switch(progress)
+			{
+			case P_ALCH_ACCEPTED:
+				@forest = World::GetClosestLocation(L_FOREST, city.pos);
+				forest.st = 9;
+				forest.reset = true;
+				@forest.active_quest = quest;
+				forest.AddEventHandler(quest, EVENT_ENTER);
+				forest.SetKnown();
+				quest.SetStarted(TEXT(0));
+				quest.AddEntry(TEXT(1));
+				quest.AddEntry(TEXT(2));
+				break;
+			case P_ALCH_REFUSED:
+				quest.AddEntry(TEXT(3));
+				target.OrderClear();
+				break;
+			case P_ALCH_JOINED:
+				if(prev_progress == P_ALCH_REFUSED)
+					quest.AddEntry(TEXT(5));
+				else
+					quest.AddEntry(TEXT(4));
+				target.AddEventHandler(quest, EVENT_UPDATE);
+				target.OrderClear();
+				break;
+			case P_ALCH_ALL_PICKED_AND_TALKED:
+				pc.unit.AddTeamItem(herb);
+				target.RemoveEventHandler(quest);
+				target.RemoveItem(herb);
+				target.order = ORDER_LEAVE;
+				break;
+			case P_ALCH_FINISHED:
+				{
+					quest.AddEntry(TEXT(7));
+					quest.SetCompleted();
+					uint count = Team::RemoveItem(herb, 0);
+					Team::AddReward(500*count, 7500);
+					@forest.active_quest = null;
+				}
+				break;
+			case P_ALCH_FAILED:
+				quest.AddEntry(TEXT(8));
+				quest.SetFailed();
+				@forest.active_quest = null;
+				break;
+			}
+		}
+	}
+}
+
+//=============================================================================
+// QUEST LISTS
+//=============================================================================
 quest_list mayor {
 	deliver_letter 3
 	deliver_parcel 3

@@ -42,11 +42,13 @@ public:
 	uint GetTeamSize() { return members.size(); }
 	bool HaveActiveNpc();
 	bool HaveQuestItem(const Item* item, int refid = -1) { return FindItemInTeam(item, refid, nullptr, nullptr, true); }
+	bool HaveItem(const Item* item) { return FindItemInTeam(item, -1, nullptr, nullptr, true); }
 	bool HaveNpc();
 	bool HaveOtherActiveTeamMember() { return GetActiveTeamSize() > 1u; }
 	bool HaveOtherPlayer();
 	bool HaveTeamMember() { return GetActiveTeamSize() > 1u; }
 	bool IsAnyoneAlive();
+	bool IsBandit() const { return is_bandit; }
 	bool IsLeader() { return my_id == leader_id; }
 	bool IsLeader(const Unit& unit) { return &unit == GetLeader(); }
 	bool IsLeader(const Unit* unit) { assert(unit); return unit == GetLeader(); }
@@ -74,6 +76,9 @@ public:
 	void AddReward(int gold, int exp = 0);
 	void OnTravel(float dist);
 	void CalculatePlayersLevel();
+	uint RemoveItem(const Item* item, uint count);
+	void SetBandit(bool is_bandit);
+	Unit* GetNearestTeamMember(const Vec3& pos, float* dist = nullptr);
 
 	vector<Unit*> members; // all team members
 	vector<Unit*> active_members; // team members that get gold (without quest units)

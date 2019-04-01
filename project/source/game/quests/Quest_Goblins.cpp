@@ -28,6 +28,7 @@ void Quest_Goblins::Start()
 	goblins_state = State::None;
 	nobleman = nullptr;
 	messenger = nullptr;
+	QM.AddQuestRumor(refid, Format(QM.txRumorQ[7], GetStartLocationName()));
 }
 
 //=================================================================================================
@@ -122,7 +123,7 @@ void Quest_Goblins::SetProgress(int prog2)
 	case Progress::NotAccepted:
 		// nie zaakceptowano
 		{
-			if(QM.RemoveQuestRumor(R_GOBLINS))
+			if(QM.RemoveQuestRumor(refid))
 				game->gui->journal->AddRumor(Format(game->txQuest[211], GetStartLocationName()));
 		}
 		break;
@@ -131,7 +132,7 @@ void Quest_Goblins::SetProgress(int prog2)
 		{
 			OnStart(game->txQuest[212]);
 			// usuñ plotkê
-			QM.RemoveQuestRumor(R_GOBLINS);
+			QM.RemoveQuestRumor(refid);
 			// dodaj lokalizacje
 			target_loc = W.GetNearestLocation(GetStartLocation().pos, 1 << L_FOREST, true);
 			Location& target = GetTargetLocation();

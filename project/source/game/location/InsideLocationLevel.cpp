@@ -309,6 +309,7 @@ void InsideLocationLevel::LoadLevel(GameReader& f, bool local)
 	for(GroundItem*& item : items)
 	{
 		item = new GroundItem;
+		GroundItem::AddRefid(item);
 		item->Load(f);
 	}
 
@@ -431,17 +432,12 @@ Room& InsideLocationLevel::GetFarRoom(bool have_down_stairs, bool no_target)
 //=================================================================================================
 void InsideLocationLevel::BuildRefidTables()
 {
-	for(vector<Unit*>::iterator it = units.begin(), end = units.end(); it != end; ++it)
-	{
-		(*it)->refid = (int)Unit::refid_table.size();
-		Unit::refid_table.push_back(*it);
-	}
-
-	for(vector<Usable*>::iterator it = usables.begin(), end = usables.end(); it != end; ++it)
-	{
-		(*it)->refid = (int)Usable::refid_table.size();
-		Usable::refid_table.push_back(*it);
-	}
+	for(Unit* unit : units)
+		Unit::AddRefid(unit);
+	for(Usable* usable : usables)
+		Usable::AddRefid(usable);
+	for(GroundItem* item : items)
+		GroundItem::AddRefid(item);
 }
 
 //=================================================================================================

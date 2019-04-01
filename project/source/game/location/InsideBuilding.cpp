@@ -172,6 +172,7 @@ void InsideBuilding::Load(GameReader& f, bool local)
 	for(GroundItem*& item : items)
 	{
 		item = new GroundItem;
+		GroundItem::AddRefid(item);
 		item->Load(f);
 	}
 
@@ -278,7 +279,7 @@ void InsideBuilding::Write(BitStreamWriter& f)
 }
 
 //=================================================================================================
-bool InsideBuilding::Load(BitStreamReader& f)
+bool InsideBuilding::Read(BitStreamReader& f)
 {
 	byte count;
 

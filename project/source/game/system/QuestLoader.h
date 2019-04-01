@@ -18,7 +18,7 @@ private:
 	void Finalize() override;
 	void BuildQuest(QuestScheme* scheme);
 
-	string code, inner_code;
+	string code;
 	DialogLoader* dialog_loader;
 	asIScriptEngine* engine;
 	asIScriptModule* module;

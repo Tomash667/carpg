@@ -435,6 +435,7 @@ enum ConsumableType
 {
 	Food,
 	Drink,
+	Herb,
 	Potion
 };
 struct Consumable : public Item

@@ -9,6 +9,8 @@
 #include "Level.h"
 #include "GlobalGui.h"
 #include "GameMessages.h"
+#include "QuestManager.h"
+#include "Quest_Tournament.h"
 
 //=================================================================================================
 void AIController::Init(Unit* _unit)
@@ -314,4 +316,29 @@ float AIController::GetMorale() const
 		m -= 1.f;
 
 	return m;
+}
+
+//=================================================================================================
+bool AIController::CanWander() const
+{
+	if(L.city_ctx && loc_timer <= 0.f && !Game::Get().dont_wander && IS_SET(unit->data->flags, F_AI_WANDERS))
+	{
+		if(unit->busy != Unit::Busy_No)
+			return false;
+		if(unit->IsHero())
+		{
+			if(unit->hero->team_member && unit->order != ORDER_WANDER)
+				return false;
+			else if(QM.quest_tournament->IsGenerated())
+				return false;
+			else
+				return true;
+		}
+		else if(unit->in_building == -1)
+			return true;
+		else
+			return false;
+	}
+	else
+		return false;
 }

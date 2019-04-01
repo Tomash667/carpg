@@ -132,7 +132,7 @@ void InsideLocationGenerator::OnEnter()
 	}
 
 	// questowe rzeczy
-	if(inside->active_quest && inside->active_quest != (Quest_Dungeon*)ACTIVE_QUEST_HOLDER)
+	if(inside->active_quest && inside->active_quest != (Quest_Dungeon*)ACTIVE_QUEST_HOLDER && inside->active_quest->quest_id != Q_SCRIPTED)
 	{
 		Quest_Event* event = inside->active_quest->GetEvent(L.location_index);
 		if(event)

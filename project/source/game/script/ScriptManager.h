@@ -24,8 +24,9 @@ struct ScriptEvent
 	EventType type;
 	Location* location;
 	Unit* unit;
+	GroundItem* item;
 
-	ScriptEvent(EventType type) : type(type), location(nullptr), unit(nullptr) {}
+	ScriptEvent(EventType type) : type(type), location(nullptr), unit(nullptr), item(nullptr) {}
 };
 
 //-----------------------------------------------------------------------------
