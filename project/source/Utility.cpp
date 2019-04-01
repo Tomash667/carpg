@@ -1,6 +1,7 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "Utility.h"
+#include "Timer.h"
 
 //-----------------------------------------------------------------------------
 static cstring MUTEX_NAME = "CaRpgMutex";
@@ -11,13 +12,13 @@ static int* mem;
 static int app_id = 1;
 
 //=================================================================================================
-void utility::InitDelayLock()
+bool utility::InitMutex()
 {
 	mutex = CreateMutex(nullptr, false, MUTEX_NAME);
 	if(!mutex)
 	{
 		Error("Failed to create delay mutex (%d).", GetLastError());
-		return;
+		return false;
 	}
 
 	shmem = CreateFileMapping(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE, 0, sizeof(int), SHARED_MEMORY_NAME);
@@ -26,7 +27,7 @@ void utility::InitDelayLock()
 		Error("Failed to create shared memory (%d).", GetLastError());
 		CloseHandle(mutex);
 		mutex = nullptr;
-		return;
+		return false;
 	}
 
 	mem = (int*)MapViewOfFile(shmem, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(int));
@@ -36,8 +37,17 @@ void utility::InitDelayLock()
 		CloseHandle(shmem);
 		CloseHandle(mutex);
 		mutex = nullptr;
-		return;
+		return false;
 	}
+
+	return true;
+}
+
+//=================================================================================================
+void utility::InitDelayLock()
+{
+	if(!InitMutex())
+		return;
 
 	WaitForSingleObject(mutex, INFINITE);
 	*mem = 1;
@@ -67,41 +77,35 @@ void utility::WaitForDelayLock(int delay)
 {
 	app_id = delay;
 
-	mutex = CreateMutex(nullptr, false, MUTEX_NAME);
-	if(!mutex)
-	{
-		Error("Failed to create delay mutex (%d).", GetLastError());
+	if(!InitMutex())
 		return;
-	}
-
-	shmem = CreateFileMapping(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE, 0, sizeof(int), SHARED_MEMORY_NAME);
-	if(!shmem)
-	{
-		Error("Failed to create shared memory (%d).", GetLastError());
-		CloseHandle(mutex);
-		mutex = nullptr;
-		return;
-	}
-
-	mem = (int*)MapViewOfFile(shmem, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(int));
-	if(!mem)
-	{
-		Error("Failed to map view of file (%d).", GetLastError());
-		CloseHandle(shmem);
-		CloseHandle(mutex);
-		mutex = nullptr;
-		return;
-	}
 
 	Info("Waiting for delay mutex.");
-	bool wait = true;
-	while(wait)
+	Timer t;
+	float time = 0.f;
+	int last = 0;
+	while(true)
 	{
 		WaitForSingleObject(mutex, INFINITE);
-		if(*mem == delay)
-			wait = false;
+		int value = *mem;
 		ReleaseMutex(mutex);
-		Sleep(250);
+		if(value == delay)
+			break;
+		else
+		{
+			time += t.Tick();
+			if(last != value)
+			{
+				last = value;
+				time = 0.f;
+			}
+			else if(time >= (last == 0 ? 10.f : 120.f))
+			{
+				Info("Delay lock timeout.");
+				break;
+			}
+			Sleep(250);
+		}
 	}
 }
 
