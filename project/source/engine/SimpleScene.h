@@ -2,13 +2,19 @@
 
 #include "Scene2.h"
 
-class SimpleScene : public Scene2
+class SimpleScene final : public Scene2
 {
 public:
-	void AddNode(SceneNode2* node)
+	void ListNodes(DrawBatch2& batch) override;
+	void Update(float dt) override;
+	void AddNode(SceneNode2* node) override
 	{
 		assert(node);
 		nodes.push_back(node);
+	}
+	void RemoveNode(SceneNode2* node) override
+	{
+		RemoveElementTry(nodes node);
 	}
 
 private:

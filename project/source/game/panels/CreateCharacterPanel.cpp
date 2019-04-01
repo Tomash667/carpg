@@ -11,6 +11,7 @@
 #include "Unit.h"
 #include "Render.h"
 #include "RenderTarget.h"
+#include "SimpleScene.h"
 
 //-----------------------------------------------------------------------------
 const int SECTION_H = 40;
@@ -249,7 +250,7 @@ void CreateCharacterPanel::LoadData()
 	scene = new SimpleScene;
 
 	SceneNode2* node = SceneNode2::Get();
-	node->SetMeshInstance(new MeshInstance(Game::Get().aHumanBase));
+	node->SetMeshInstance(Game::Get().aHumanBase);
 	scene->AddNode(node);
 }
 
@@ -648,21 +649,7 @@ void CreateCharacterPanel::Event(GuiEvent e)
 //=================================================================================================
 void CreateCharacterPanel::RenderUnit()
 {
-	Render* render = game->GetRender();
-	IDirect3DDevice9* device = render->GetDevice();
-	HRESULT hr = device->TestCooperativeLevel();
-	if(hr != D3D_OK)
-		return;
-
-	render->SetAlphaBlend(false);
-	render->SetAlphaTest(false);
-	render->SetNoCulling(false);
-	render->SetNoZWrite(false);
-	render->SetTarget(rt_char);
-
-	// start rendering
-	V(device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET, 0, 1.f, 0));
-	V(device->BeginScene());
+	scene->Draw(rt_char);
 
 	static vector<Lights> lights;
 
@@ -680,11 +667,6 @@ void CreateCharacterPanel::RenderUnit()
 	game->ListDrawObjectsUnit(nullptr, game->cam.frustum, true, *unit);
 	game->DrawSceneNodes(game->draw_batch.nodes, lights, true);
 	game->draw_batch.Clear();
-
-	// end rendering
-	V(device->EndScene());
-
-	render->SetTarget(nullptr);
 }
 
 //=================================================================================================
