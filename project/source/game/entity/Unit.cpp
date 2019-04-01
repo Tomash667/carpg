@@ -29,6 +29,8 @@
 #include "Arena.h"
 #include "Quest_Scripted.h"
 #include "ScriptException.h"
+#include "GameGui.h"
+#include "ScriptManager.h"
 
 const float Unit::AUTO_TALK_WAIT = 0.333f;
 const float Unit::STAMINA_BOW_ATTACK = 100.f;
@@ -1632,6 +1634,35 @@ void Unit::Save(GameWriter& f, bool local)
 		f << dialog.dialog->id;
 	}
 
+	// events
+	f << events.size();
+	for(Event& e : events)
+	{
+		f << e.type;
+		f << e.quest->refid;
+	}
+
+	// order
+	f << order;
+	f << order_timer;
+	switch(order)
+	{
+	case ORDER_LOOK_AT:
+		f << order_pos;
+		break;
+	case ORDER_MOVE:
+		f << order_pos;
+		f << order_move_type;
+		break;
+	case ORDER_ESCAPE_TO:
+		f << order_pos;
+		break;
+	case ORDER_ESCAPE_TO_UNIT:
+		f << order_unit->refid;
+		f << order_pos;
+		break;
+	}
+
 	if(player)
 	{
 		f.Write1();
@@ -2008,9 +2039,9 @@ void Unit::Load(GameReader& f, bool local)
 		}
 	}
 
-	// dialogs
 	if(LOAD_VERSION >= V_0_9)
 	{
+		// dialogs
 		dialogs.resize(f.Read<uint>());
 		for(QuestDialog& dialog : dialogs)
 		{
@@ -2024,6 +2055,50 @@ void Unit::Load(GameReader& f, bool local)
 				dialog.quest->AddDialogPtr(this);
 			});
 		}
+	}
+	if(LOAD_VERSION >= V_DEV)
+	{
+		// events
+		events.resize(f.Read<uint>());
+		for(Event& e : events)
+		{
+			int refid;
+			f >> e.type;
+			f >> refid;
+			QM.AddQuestRequest(refid, (Quest**)&e.quest, [&]()
+			{
+				EventPtr event;
+				event.source = EventPtr::UNIT;
+				event.unit = this;
+				e.quest->AddEventPtr(event);
+			});
+		}
+
+		// order
+		f >> order;
+		f >> order_timer;
+		switch(order)
+		{
+		case ORDER_LOOK_AT:
+			f >> order_pos;
+			break;
+		case ORDER_MOVE:
+			f >> order_pos;
+			f >> order_move_type;
+			break;
+		case ORDER_ESCAPE_TO:
+			f >> order_pos;
+			break;
+		case ORDER_ESCAPE_TO_UNIT:
+			order_unit = Unit::GetByRefid(f.Read<int>());
+			f >> order_pos;
+			break;
+		}
+	}
+	else
+	{
+		order = ORDER_NONE;
+		order_timer = 0.f;
 	}
 
 	if(f.Read1())
@@ -3023,33 +3098,30 @@ void Unit::RemoveItem(int iindex, bool active_location)
 }
 
 //=================================================================================================
-// usuwa przedmiot z ekwipunku (obs³uguje otwarty ekwipunek, lock i multiplayer), dla 0 usuwa wszystko
-void Unit::RemoveItem(int i_index, uint count)
+// remove item from inventory (handle open inventory, lock & multiplayer), for 0 count remove all items
+uint Unit::RemoveItem(int i_index, uint count)
 {
 	Game& game = Game::Get();
 
-	// usuñ przedmiot
-	bool removed = false;
+	// remove item
+	uint removed;
 	if(i_index >= 0)
 	{
 		ItemSlot& s = items[i_index];
-		uint real_count = (count == 0 ? s.count : min(s.count, count));
-		s.count -= real_count;
+		removed = (count == 0 ? s.count : min(s.count, count));
+		s.count -= removed;
 		if(s.count == 0)
-		{
-			removed = true;
 			items.erase(items.begin() + i_index);
-		}
 		else if(s.team_count > 0)
-			s.team_count -= min(s.team_count, real_count);
-		weight -= s.item->weight*real_count;
+			s.team_count -= min(s.team_count, removed);
+		weight -= s.item->weight*removed;
 	}
 	else
 	{
 		ITEM_SLOT type = IIndexToSlot(i_index);
 		weight -= slots[type]->weight;
 		slots[type] = nullptr;
-		removed = true;
+		removed = 1;
 
 		if(Net::IsServer() && N.active_players > 1 && IsVisible(type))
 		{
@@ -3060,14 +3132,13 @@ void Unit::RemoveItem(int i_index, uint count)
 		}
 	}
 
-	// komunikat
+	// notify
 	if(Net::IsServer())
 	{
 		if(IsPlayer())
 		{
 			if(!player->is_local)
 			{
-				// dodaj komunikat o usuniêciu przedmiotu
 				NetChangePlayer& c = Add1(player->player_info->changes);
 				c.type = NetChangePlayer::REMOVE_ITEMS;
 				c.id = i_index;
@@ -3076,9 +3147,8 @@ void Unit::RemoveItem(int i_index, uint count)
 		}
 		else
 		{
+			// search for player trading with this unit
 			Unit* t = nullptr;
-
-			// szukaj gracza który handluje z t¹ postaci¹
 			for(Unit* member : Team.active_members)
 			{
 				if(member->IsPlayer() && member->player->IsTradingWith(this))
@@ -3090,7 +3160,6 @@ void Unit::RemoveItem(int i_index, uint count)
 
 			if(t && t->player != game.pc)
 			{
-				// dodaj komunikat o dodaniu przedmiotu
 				NetChangePlayer& c = Add1(t->player->player_info->changes);
 				c.type = NetChangePlayer::REMOVE_ITEMS_TRADER;
 				c.id = netid;
@@ -3100,7 +3169,7 @@ void Unit::RemoveItem(int i_index, uint count)
 		}
 	}
 
-	// aktualizuj tymczasowy ekwipunek
+	// update temporary inventory
 	if(game.pc->unit == this)
 	{
 		if(game.gui->inventory->inv_mine->visible || game.gui->inventory->gp_trade->visible)
@@ -3108,16 +3177,26 @@ void Unit::RemoveItem(int i_index, uint count)
 	}
 	else if(game.gui->inventory->gp_trade->visible && game.gui->inventory->inv_trade_other->unit == this)
 		game.gui->inventory->BuildTmpInventory(1);
+
+	return removed;
 }
 
 //=================================================================================================
-bool Unit::RemoveItem(const Item* item, uint count)
+uint Unit::RemoveItem(const Item* item, uint count)
 {
 	int i_index = FindItem(item);
 	if(i_index == INVALID_IINDEX)
-		return false;
-	RemoveItem(i_index, count);
-	return true;
+		return 0;
+	return RemoveItem(i_index, count);
+}
+
+//=================================================================================================
+uint Unit::RemoveItemS(const string& item_id, uint count)
+{
+	const Item* item = Item::TryGet(item_id);
+	if(!item)
+		return 0;
+	return RemoveItem(item, count);
 }
 
 //=================================================================================================
@@ -4118,7 +4197,6 @@ void Unit::UseUsable(Usable* new_usable)
 //=================================================================================================
 void Unit::RevealName(bool set_name)
 {
-	assert(hero);
 	if(!hero || hero->know_name)
 		return;
 	hero->know_name = true;
@@ -4128,6 +4206,29 @@ void Unit::RevealName(bool set_name)
 		c.type = NetChange::TELL_NAME;
 		c.unit = this;
 		c.id = set_name ? 1 : 0;
+	}
+}
+
+//=================================================================================================
+bool Unit::GetKnownName() const
+{
+	if(IsHero())
+		return hero->know_name;
+	return true;
+}
+
+//=================================================================================================
+void Unit::SetKnownName(bool known)
+{
+	if(!hero || hero->know_name)
+		return;
+	hero->know_name = true;
+	if(Net::IsServer())
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::TELL_NAME;
+		c.unit = this;
+		c.id = 0;
 	}
 }
 
@@ -4588,6 +4689,15 @@ void Unit::Die(LevelContext* ctx, Unit* killer)
 		// event
 		if(event_handler)
 			event_handler->HandleUnitEvent(UnitEventHandler::DIE, this);
+		for(Event& event : events)
+		{
+			if(event.type == EVENT_DIE)
+			{
+				ScriptEvent e(EVENT_DIE);
+				e.unit = this;
+				event.quest->FireEvent(e);
+			}
+		}
 
 		// message
 		if(Net::IsOnline())
@@ -5067,7 +5177,7 @@ bool Unit::IsEnemy(Unit &u, bool ignore_dont_attack) const
 			if(g2 == G_CRAZIES)
 				return true;
 			else if(g2 == G_TEAM)
-				return Team.is_bandit || WantAttackTeam();
+				return Team.IsBandit() || WantAttackTeam();
 			else
 				return true;
 		}
@@ -5085,7 +5195,7 @@ bool Unit::IsEnemy(Unit &u, bool ignore_dont_attack) const
 			if(u.WantAttackTeam())
 				return true;
 			else if(g2 == G_CITIZENS)
-				return Team.is_bandit;
+				return Team.IsBandit();
 			else if(g2 == G_CRAZIES)
 				return Team.crazies_attack;
 			else
@@ -5114,14 +5224,14 @@ bool Unit::IsFriend(Unit& u) const
 		{
 			if(u.IsTeamMember())
 				return true;
-			else if(u.IsAI() && !Team.is_bandit && u.IsAssist())
+			else if(u.IsAI() && !Team.IsBandit() && u.IsAssist())
 				return true;
 			else
 				return false;
 		}
 		else if(u.IsTeamMember())
 		{
-			if(IsAI() && !Team.is_bandit && IsAssist())
+			if(IsAI() && !Team.IsBandit() && IsAssist())
 				return true;
 			else
 				return false;
@@ -5194,17 +5304,77 @@ void Unit::RemoveDialog(Quest_Scripted* quest, bool cleanup)
 }
 
 //=================================================================================================
-void Unit::OrderEscapeToUnit(Unit* unit)
+void Unit::AddEventHandler(Quest_Scripted* quest, EventType type)
 {
-	// TODO
-	assert(0);
+	assert(type == EVENT_UPDATE || type == EVENT_DIE);
+
+	Event e;
+	e.quest = quest;
+	e.type = type;
+	events.push_back(e);
+
+	EventPtr event;
+	event.source = EventPtr::UNIT;
+	event.unit = this;
+	quest->AddEventPtr(event);
 }
 
 //=================================================================================================
-void Unit::OrderLeave()
+void Unit::RemoveEventHandler(Quest_Scripted* quest, bool cleanup)
 {
-	if(hero)
-		hero->mode = HeroData::Leave;
+	LoopAndRemove(events, [quest](Event& e)
+	{
+		return e.quest == quest;
+	});
+
+	if(!cleanup)
+	{
+		EventPtr event;
+		event.source = EventPtr::UNIT;
+		event.unit = this;
+		quest->RemoveEventPtr(event);
+	}
+}
+
+//=================================================================================================
+void Unit::RemoveAllEventHandlers()
+{
+	for(Event& e : events)
+	{
+		EventPtr event;
+		event.source = EventPtr::UNIT;
+		event.unit = this;
+		e.quest->RemoveEventPtr(event);
+	}
+	events.clear();
+}
+
+//=================================================================================================
+void Unit::OrderEscapeToUnit(Unit* unit)
+{
+	assert(unit);
+	SetOrder(ORDER_ESCAPE_TO_UNIT);
+	order_unit = unit;
+	order_pos = unit->pos;
+	if(ai)
+	{
+		ai->state = AIController::Escape;
+		ai->escape_room = nullptr;
+	}
+}
+
+//=================================================================================================
+void Unit::SetOrder(UnitOrder order)
+{
+	this->order = order;
+	order_timer = -1.f;
+	if(ai)
+	{
+		ai->timer = 0.f;
+		ai->idle_action = AIController::Idle_None;
+		if(order == ORDER_WANDER)
+			ai->loc_timer = Random(5.f, 10.f);
+	}
 }
 
 //=================================================================================================
@@ -5233,5 +5403,66 @@ void Unit::OrderAttack()
 				unit->ai->change_ai_mode = true;
 			}
 		}
+	}
+}
+
+//=================================================================================================
+void Unit::OrderClear()
+{
+	if(hero && hero->team_member)
+		order = ORDER_FOLLOW;
+	else
+		order = ORDER_NONE;
+	order_timer = 0.f;
+}
+
+//=================================================================================================
+void Unit::OrderMove(const Vec3& pos, MoveType move_type)
+{
+	SetOrder(ORDER_MOVE);
+	order_pos = pos;
+	order_move_type = move_type;
+}
+
+//=================================================================================================
+void Unit::OrderLookAt(const Vec3& pos)
+{
+	SetOrder(ORDER_LOOK_AT);
+	order_pos = pos;
+}
+
+//=================================================================================================
+void Unit::Talk(const string& text, int play_anim)
+{
+	int ani = 0;
+	Game::Get().gui->game_gui->AddSpeechBubble(this, text.c_str());
+	if(play_anim != 0 && data->type == UNIT_TYPE::HUMAN)
+	{
+		if(play_anim == -1)
+		{
+			if(Rand() % 3 != 0)
+				ani = Rand() % 2 + 1;
+		}
+		else
+			ani = Clamp(play_anim, 1, 2);
+	}
+	if(ani != 0)
+	{
+		mesh_inst->Play(ani == 1 ? "i_co" : "pokazuje", PLAY_ONCE | PLAY_PRIO2, 0);
+		mesh_inst->groups[0].speed = 1.f;
+		animation = ANI_PLAY;
+		action = A_ANIMATION;
+	}
+
+	if(Net::IsOnline())
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::TALK;
+		c.unit = this;
+		c.str = StringPool.Get();
+		*c.str = text;
+		c.id = ani;
+		c.count = 0;
+		N.net_strs.push_back(c.str);
 	}
 }

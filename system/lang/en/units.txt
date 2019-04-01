@@ -145,3 +145,7 @@ unit hero_tomir {
 unit tomashu = "Tomashu"
 unit unk = "Unknown"
 unit crazy_cook = "Crazy cook"
+unit xwokloiz {
+	name "Alchemist apprentice"
+	real_name "Luke Herbalist"
+}

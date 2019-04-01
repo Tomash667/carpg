@@ -1225,7 +1225,6 @@ void Game::SetGameText()
 	LoadArray(txCampDiscovered, "campDiscovered");
 	LoadArray(txAllCampDiscovered, "allCampDiscovered");
 	LoadArray(txNoQRumors, "noQRumors");
-	LoadArray(txRumorQ, "rumorQ");
 	txNeedMoreGold = Str("needMoreGold");
 	txNoNearLoc = Str("noNearLoc");
 	txNearLoc = Str("nearLoc");

@@ -20,6 +20,7 @@ void Quest_Sawmill::Start()
 	sawmill_state = State::None;
 	build_state = BuildState::None;
 	days = 0;
+	QM.AddQuestRumor(refid, Format(QM.txRumorQ[0], GetStartLocationName()));
 }
 
 //=================================================================================================
@@ -81,9 +82,7 @@ void Quest_Sawmill::SetProgress(int prog2)
 		{
 			days = 0;
 			sawmill_state = State::InBuild;
-
-			QM.RemoveQuestRumor(R_SAWMILL);
-
+			QM.RemoveQuestRumor(refid);
 			OnUpdate(game->txQuest[128]);
 		}
 		break;

@@ -8,6 +8,7 @@
 #include "Game.h"
 
 int GroundItem::netid_counter;
+vector<GroundItem*> GroundItem::refid_table;
 
 //=================================================================================================
 void GroundItem::Save(FileWriter& f)

@@ -143,6 +143,7 @@ void OutsideLocation::Load(GameReader& f, bool local, LOCATION_TOKEN token)
 		for(GroundItem*& item : items)
 		{
 			item = new GroundItem;
+			GroundItem::AddRefid(item);
 			item->Load(f);
 		}
 
@@ -357,17 +358,12 @@ bool OutsideLocation::Read(BitStreamReader& f)
 //=================================================================================================
 void OutsideLocation::BuildRefidTables()
 {
-	for(vector<Unit*>::iterator it = units.begin(), end = units.end(); it != end; ++it)
-	{
-		(*it)->refid = (int)Unit::refid_table.size();
-		Unit::refid_table.push_back(*it);
-	}
-
-	for(vector<Usable*>::iterator it = usables.begin(), end = usables.end(); it != end; ++it)
-	{
-		(*it)->refid = (int)Usable::refid_table.size();
-		Usable::refid_table.push_back(*it);
-	}
+	for(Unit* unit : units)
+		Unit::AddRefid(unit);
+	for(Usable* usable : usables)
+		Usable::AddRefid(usable);
+	for(GroundItem* item : items)
+		GroundItem::AddRefid(item);
 }
 
 //=================================================================================================

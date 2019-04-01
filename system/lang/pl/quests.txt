@@ -1,3 +1,4 @@
+//=============================================================================
 quest deliver_resources {
 	dialog start {
 		0 "Mam do dostarczenia skrzynkê z zasobami do $(target_loc.name). Normalnie wys³a³ bym jednego z moich ludzi ale skoro ju¿ tu jesteœ..."
@@ -31,5 +32,66 @@ quest deliver_resources {
 		5 "Nie zd¹¿y³em dostarczyæ na czas zasobów."
 		6 "Przemierzaj¹c drogê natrafi³eœ na kilku bandytów. Wygl¹da na to ¿e na ciebie czekali..."
 		7 "Natrafi³em na bandytów którzy chcieli zabraæ mi zasoby."
+	}
+}
+
+//=============================================================================
+quest alchemist_apprentice
+{
+	dialog alchemist {
+		0 "Witaj. Jesteœ tu w sprawie zadania?"
+		1 "Zadanie"
+		2 "Szukam kogoœ kto dostarczy mi alchemiczne ziele z pobliskiego lasu."
+		3 "Wys³a³em tam mojego ucznia ale nie wraca od kilku dni."
+		4 "Zajmiesz siê tym?"
+		5 "Tak"
+		6 "Nie"
+		7 "Dziêkuje ci za twój czas."
+		8 "Udaj siê do $(forest.name) na $(World::GetDirName(city.pos, forest.pos)) st¹d."
+		9 "Przynieœ mi tyle alchemicznego ziela ile zdo³asz."
+		10 "Mój uczeñ te¿ siê tam uda³ ale nie wróci³ wiêc uwa¿aj na siebie."
+		11 "Witaj. Uda³o ci siê znaleŸæ mojego ucznia albo to ziele?"
+		12 "Oddaj ziele"
+		13 "Porzuæ zadanie"
+		14 "Dziêkuje ci, weŸ to z³oto."
+		15 "Ehhh, zawiod³em siê na tobie."
+		16 "Mój uczeñ powróci³ do mnie ca³y i zdrowy, weŸ proszê te mikstury w podziêce."
+		17 "Szkoda ¿e £ukasz umar³... By³ œwietnym pomocnikiem."
+		18 "Jeœli zmienisz zdanie, wiesz gdzie mnie znaleŸæ."
+	}
+	
+	dialog xwokloiz {
+		0 "O witaj! Jestem $name$. Nie przys³a³ cie czasem mój mistrz, alchemik?"
+		1 "Przys³a³ mnie tu abym uzbiera³ ziele alchemiczne ale z powodu okolicznych bestii nie idzie mi to zbyt szybko."
+		2 "Mam pomys³! Ty zabijesz te potwory a ja ciê poprowadzê, co ty na to?"
+		3 "Tak"
+		4 "Nie"
+		5 "Ruszajmy! Tam widzia³em jeden krzak."
+		6 "Szkoda... Zaczekam tutaj, mo¿e zmienisz zdanie..."
+		7 "Hmmm... Przemyœla³eœ moj¹ ofertê pomocy?"
+		8 "Co siê dzieje? Jeszcze nie znaleŸliœmy wszystkich krzaków."
+		9 "Widzê ¿e sam sobie poradzi³eœ... Trudno, wracam do $(city.name)."
+		10 "Dobra robota, zebraliœmy wszystko co siê da³o. Czas wracaæ do miasta."
+		11 "Bym by³ zapomnia³, weŸ jeszcze ten krzak który ja znalaz³em."
+		12 "Spokojnie, sam trafiê do $(city.name)."
+	}
+	
+	texts {
+		12 "" // required when there are multiple text variants in texts
+		0 "Zio³a dla alchemika"
+		1 "Otrzymano od alchemika z $(city.name) dnia $date$."
+		2 "Muszê udaæ siê do $(forest.name) na $(World::GetDirName(Level::location.pos, forest.pos)) od $(city.name) i znaleŸæ tyle alchemicznego ziela ile zdo³am. W okolicy powinnien te¿ byæ uczeñ alchemika którego dobrze by by³o znaleŸæ."
+		3 "Spotka³em ucznia alchemika w lesie. Chcia³ mi pomóc w szukaniu ziela alchemicznego ale odmówi³em."
+		4 "Spotka³em ucznia alchemika w lesie. Zaproponowa³ mi pomoc w szukaniu ziela alchemicznego."
+		5 "Zmieni³em zdanie i przyj¹³em pomoc ucznia alchemika. Zaprowadzi mnie do okolicznych krzaków."
+		6 "Zebra³em ca³e ziele jakie uda³o mi siê znaleŸæ. Czas wracaæ do alchemika."
+		7 "Dostarczy³em ziele i otrzyma³em zap³atê. Zadanie wykonane!"
+		8 "Porzuci³em to zadanie."
+		9 {
+			"Kolejne zielsko!"
+			"Znalaz³em kolejny krzak!"
+		}
+		10 "Uczeñ alchemika zgin¹³ podczas walki w lesie."
+		11 "Alchemik w $(city.name) poszukuje specyficzngo rodzaju zió³."
 	}
 }

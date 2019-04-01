@@ -5,4 +5,4 @@
 //	+ recalculate units stats
 //	+ upgrade units
 
-version 3
+version 4

@@ -229,9 +229,9 @@ public:
 	}
 
 	template<typename T>
-	SpecificTypeBuilder<T> AddStruct(cstring name)
+	SpecificTypeBuilder<T> AddStruct(cstring name, int extra_flags = 0)
 	{
-		CHECKED(engine->RegisterObjectType(name, sizeof(T), asOBJ_VALUE | asOBJ_POD | asGetTypeTraits<T>()));
+		CHECKED(engine->RegisterObjectType(name, sizeof(T), asOBJ_VALUE | asOBJ_POD | asGetTypeTraits<T>() | extra_flags));
 		return SpecificTypeBuilder<T>(name, engine);
 	}
 

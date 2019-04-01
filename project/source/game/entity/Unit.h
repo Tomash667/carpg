@@ -11,6 +11,7 @@
 #include "Usable.h"
 #include "Effect.h"
 #include "Buff.h"
+#include "Event.h"
 
 //-----------------------------------------------------------------------------
 enum Animation
@@ -101,6 +102,21 @@ enum class FROZEN
 };
 
 //-----------------------------------------------------------------------------
+enum UnitOrder
+{
+	ORDER_NONE,
+	ORDER_WANDER,
+	ORDER_WAIT,
+	ORDER_FOLLOW,
+	ORDER_LEAVE,
+	ORDER_MOVE,
+	ORDER_LOOK_AT,
+	ORDER_ESCAPE_TO,
+	ORDER_ESCAPE_TO_UNIT,
+	ORDER_MAX
+};
+
+//-----------------------------------------------------------------------------
 struct TraderStock
 {
 	vector<ItemSlot> items;
@@ -155,6 +171,13 @@ struct Unit
 		PRELOAD,
 		AFTER_PRELOAD,
 		LOAD
+	};
+
+	enum MoveType
+	{
+		MOVE_RUN,
+		MOVE_WALK,
+		MOVE_RUN_WHEN_NEAR_TEAM
 	};
 
 	static const int MIN_SIZE = 36;
@@ -218,10 +241,17 @@ struct Unit
 	float stamina_timer;
 	TraderStock* stock;
 	vector<QuestDialog> dialogs;
+	vector<Event> events;
+	UnitOrder order;
+	float order_timer;
+	Vec3 order_pos;
+	MoveType order_move_type;
+	Unit* order_unit;
 
 	//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	Unit() : mesh_inst(nullptr), hero(nullptr), ai(nullptr), player(nullptr), cobj(nullptr), interp(nullptr), bow_instance(nullptr), fake_unit(false),
-		human_data(nullptr), stamina_action(SA_RESTORE_MORE), summoner(nullptr), moved(false), refs(1), stock(nullptr), stats(nullptr), mark(false) {}
+		human_data(nullptr), stamina_action(SA_RESTORE_MORE), summoner(nullptr), moved(false), refs(1), stock(nullptr), stats(nullptr), mark(false),
+		order(ORDER_NONE) {}
 	~Unit();
 
 	void AddRef() { ++refs; }
@@ -481,7 +511,7 @@ public:
 	}
 	bool IsFollowingTeamMember() const
 	{
-		return IsFollower() && hero->mode == HeroData::Follow;
+		return IsFollower() && order == ORDER_FOLLOW;
 	}
 	Class GetClass() const
 	{
@@ -489,7 +519,7 @@ public:
 	}
 	bool CanFollow() const
 	{
-		return IsHero() && hero->mode == HeroData::Follow && in_arena == -1 && frozen == FROZEN::NO;
+		return IsHero() && order == ORDER_FOLLOW && in_arena == -1 && frozen == FROZEN::NO;
 	}
 	bool IsTeamMember() const
 	{
@@ -518,8 +548,9 @@ public:
 	int FindQuestItem(int quest_refid) const;
 	bool FindQuestItem(cstring id, Quest** quest, int* i_index, bool not_active = false);
 	void RemoveItem(int iindex, bool active_location = true);
-	void RemoveItem(int i_index, uint count);
-	bool RemoveItem(const Item* item, uint count);
+	uint RemoveItem(int i_index, uint count);
+	uint RemoveItem(const Item* item, uint count);
+	uint RemoveItemS(const string& item_id, uint count);
 	int CountItem(const Item* item);
 	const string& GetNameS() const
 	{
@@ -559,6 +590,8 @@ public:
 			return data->name.c_str();
 	}
 	void RevealName(bool set_name);
+	bool GetKnownName() const;
+	void SetKnownName(bool known);
 
 	// szybkoœæ blokowania aktualnie u¿ywanej tarczy (im mniejsza tym lepiej)
 	float GetBlockSpeed() const;
@@ -794,9 +827,19 @@ public:
 	void AddDialogS(Quest_Scripted* quest, const string& dialog_id);
 	void RemoveDialog(Quest_Scripted* quest, bool cleanup);
 	void RemoveDialogS(Quest_Scripted* quest) { RemoveDialog(quest, false); }
+	void AddEventHandler(Quest_Scripted* quest, EventType type);
+	void RemoveEventHandler(Quest_Scripted* quest, bool cleanup);
+	void RemoveEventHandlerS(Quest_Scripted* quest) { RemoveEventHandler(quest, false); }
+	void RemoveAllEventHandlers();
 	void OrderEscapeToUnit(Unit* unit);
-	void OrderLeave();
+	UnitOrder GetOrder() const { return order; }
+	void SetOrder(UnitOrder order);
 	void OrderAttack();
+	void OrderClear();
+	void OrderMove(const Vec3& pos, MoveType move_type);
+	void OrderLookAt(const Vec3& pos);
+	void OrderTimer(float time) { order_timer = time; }
+	void Talk(const string& text, int play_anim = -1);
 
 	//-----------------------------------------------------------------------------
 	static vector<Unit*> refid_table;

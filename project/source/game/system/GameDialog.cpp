@@ -70,6 +70,9 @@ void DialogScripts::GetFormattedCode(FUNC f, string& code)
 void DialogScripts::Build()
 {
 	asIScriptModule* module = SM.GetEngine()->GetModule("Quests", asGM_CREATE_IF_NOT_EXISTS);
+#ifdef _DEBUG
+	string output;
+#endif
 	LocalString code;
 	for(int i = 0; i < F_MAX; ++i)
 	{
@@ -77,10 +80,19 @@ void DialogScripts::Build()
 			continue;
 		cstring name[F_MAX] = { "_script", "_if_script", "_format" };
 		GetFormattedCode((DialogScripts::FUNC)i, code.get_ref());
+#ifdef _DEBUG
+		output += code;
+		output += "\n\n";
+#endif
 		int r = module->CompileFunction(name[i], code.c_str(), -1, 0, &func[i]);
 		if(r < 0)
 			Error("Failed to compile dialogs script %s (%d): %s", name[i], r, code.c_str());
 	}
+#ifdef _DEBUG
+	CreateDirectory("debug", nullptr);
+	TextWriter f("debug/dialog_script.txt");
+	f << output;
+#endif
 	built = true;
 }
 
@@ -92,6 +104,33 @@ void DialogScripts::Set(asITypeInfo* type)
 	func[F_FORMAT] = type->GetMethodByDecl("string _format(int)");
 }
 
+
+//=================================================================================================
+GameDialog::Text& GameDialog::GetText(int index)
+{
+	GameDialog::Text& text = texts[index];
+	if(text.next == -1)
+		return text;
+	else
+	{
+		int count = 1;
+		GameDialog::Text* t = &texts[index];
+		while(t->next != -1)
+		{
+			++count;
+			t = &texts[t->next];
+		}
+		int id = Rand() % count;
+		t = &texts[index];
+		for(int i = 0; i <= id; ++i)
+		{
+			if(i == id)
+				return *t;
+			t = &texts[t->next];
+		}
+	}
+	return text;
+}
 
 //=================================================================================================
 GameDialog* GameDialog::TryGet(cstring id)

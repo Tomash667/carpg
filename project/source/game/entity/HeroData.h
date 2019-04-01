@@ -6,15 +6,6 @@
 //-----------------------------------------------------------------------------
 struct HeroData : public HeroPlayerCommon
 {
-	enum Mode
-	{
-		Wander,
-		Wait,
-		Follow,
-		Leave
-	};
-
-	Mode mode;
 	Unit* following; // pod¹¿a za t¹ postaci¹ w czasie warpowania, nieu¿ywane?
 	int expe;
 	float phase_timer;

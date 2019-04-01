@@ -486,6 +486,7 @@ void Level::RemoveUnit(Unit* unit, bool notify)
 	assert(unit);
 	if(unit->action == A_DESPAWN || (Net::IsClient() && unit->summoner))
 		Game::Get().SpawnUnitEffect(*unit);
+	unit->RemoveAllEventHandlers();
 	unit->to_remove = true;
 	to_remove.push_back(unit);
 	if(notify && Net::IsServer())
@@ -4313,21 +4314,40 @@ void Level::CleanLevel(int building_id)
 //=================================================================================================
 void Level::SpawnItemRandomly(const Item* item, uint count)
 {
-	// TODO
+	assert(location->outside);
+	for(uint i = 0; i < count; ++i)
+	{
+		const float s = (float)OutsideLocation::size;
+		Vec2 pos = Vec2(s, s) + Vec2::RandomPoissonDiscPoint() * (s - 30.f);
+		SpawnGroundItemInsideRadius(item, pos, 3.f, true);
+	}
 }
 
 //=================================================================================================
 Unit* Level::GetNearestEnemy(Unit* unit)
 {
-	// TODO
-	return nullptr;
+	LevelContext& ctx = GetContext(*unit);
+	Unit* best = nullptr;
+	float best_dist;
+	for(Unit* u : *ctx.units)
+	{
+		if(u->IsAlive() && unit->IsEnemy(*u))
+		{
+			float dist = Vec3::DistanceSquared(unit->pos, u->pos);
+			if(!best || dist < best_dist)
+			{
+				best = u;
+				best_dist = dist;
+			}
+		}
+	}
+	return best;
 }
 
 //=================================================================================================
 Unit* Level::SpawnUnitNearLocationS(UnitData* ud, const Vec3& pos, float range)
 {
-	// TODO
-	return nullptr;
+	return SpawnUnitNearLocation(GetContext(pos), pos, *ud, nullptr, -1, range);
 }
 
 //=================================================================================================

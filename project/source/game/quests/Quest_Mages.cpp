@@ -17,7 +17,7 @@ void Quest_Mages::Start()
 {
 	quest_id = Q_MAGES;
 	type = QuestType::Unique;
-	// start_loc ustawiane w InitQuests
+	QM.AddQuestRumor(refid, Format(QM.txRumorQ[4], GetStartLocationName()));
 }
 
 //=================================================================================================
@@ -72,7 +72,7 @@ void Quest_Mages::SetProgress(int prog2)
 
 			Team.AddReward(4000, 12000);
 			OnUpdate(game->txQuest[168]);
-			QM.RemoveQuestRumor(R_MAGES);
+			QM.RemoveQuestRumor(refid);
 		}
 		break;
 	case Progress::EncounteredGolem:
@@ -80,8 +80,7 @@ void Quest_Mages::SetProgress(int prog2)
 			QM.quest_mages2->OnStart(game->txQuest[169]);
 			Quest_Mages2* q = QM.quest_mages2;
 			q->mages_state = Quest_Mages2::State::EncounteredGolem;
-			QM.quest_rumor[R_MAGES2] = false;
-			++QM.quest_rumor_counter;
+			QM.AddQuestRumor(q->refid, QM.txRumorQ[5]);
 			q->msgs.push_back(Format(game->txQuest[170], W.GetDate()));
 			q->msgs.push_back(game->txQuest[171]);
 			W.AddNews(game->txQuest[172]);
@@ -322,7 +321,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			else
 			{
 				// idŸ do startowej lokacji do karczmy
-				u->hero->mode = HeroData::Leave;
+				u->SetOrder(ORDER_LEAVE);
 				u->event_handler = this;
 			}
 
@@ -372,7 +371,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			// idŸ sobie
 			Unit* u = DialogContext::current->talker;
 			Team.RemoveTeamMember(u);
-			u->hero->mode = HeroData::Leave;
+			u->SetOrder(ORDER_LEAVE);
 			scholar = nullptr;
 		}
 		break;
@@ -389,7 +388,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			Team.AddReward(10000, 25000);
 			OnUpdate(game->txQuest[188]);
 			QM.EndUniqueQuest();
-			QM.RemoveQuestRumor(R_MAGES2);
+			QM.RemoveQuestRumor(refid);
 		}
 		break;
 	}

@@ -11,6 +11,7 @@
 #include "World.h"
 #include "Level.h"
 #include "BitStreamFunc.h"
+#include "GroundItem.h"
 
 //=================================================================================================
 City::~City()
@@ -367,7 +368,7 @@ bool City::Read(BitStreamReader& f)
 		ib = new InsideBuilding;
 		L.ApplyContext(ib, ib->ctx);
 		ib->ctx.building_id = index;
-		if(!ib->Load(f))
+		if(!ib->Read(f))
 		{
 			Error("Read level: Failed to loading inside building %d.", index);
 			return false;
@@ -383,19 +384,14 @@ void City::BuildRefidTables()
 {
 	OutsideLocation::BuildRefidTables();
 
-	for(vector<InsideBuilding*>::iterator it2 = inside_buildings.begin(), end2 = inside_buildings.end(); it2 != end2; ++it2)
+	for(InsideBuilding* inside : inside_buildings)
 	{
-		for(vector<Unit*>::iterator it = (*it2)->units.begin(), end = (*it2)->units.end(); it != end; ++it)
-		{
-			(*it)->refid = (int)Unit::refid_table.size();
-			Unit::refid_table.push_back(*it);
-		}
-
-		for(vector<Usable*>::iterator it = (*it2)->usables.begin(), end = (*it2)->usables.end(); it != end; ++it)
-		{
-			(*it)->refid = (int)Usable::refid_table.size();
-			Usable::refid_table.push_back(*it);
-		}
+		for(Unit* unit : inside->units)
+			Unit::AddRefid(unit);
+		for(Usable* usable : inside->usables)
+			Usable::AddRefid(usable);
+		for(GroundItem* item : inside->items)
+			GroundItem::AddRefid(item);
 	}
 }
 

@@ -666,6 +666,10 @@ item healing_herb {
 item green_herb {
 	name "Zielone ziele"
 }
+item alchemist_herb {
+	name "Ziele alchemiczne"
+	desc "Roœlina o nieznanych ci w³aœciwoœciach alchemicznych."
+}
 
 //------------------------------------------------------------------------------
 // VALUABLES

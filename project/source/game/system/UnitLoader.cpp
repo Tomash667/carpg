@@ -418,7 +418,8 @@ void UnitLoader::InitTokenizer()
 	t.AddKeywords(G_CONSUMABLE_GROUP, {
 		{ "food", Food },
 		{ "drink", Drink },
-		{ "potion", Potion }
+		{ "potion", Potion },
+		{ "herb", Herb }
 		});
 
 	t.AddKeywords(G_SUBPROFILE_GROUP, {

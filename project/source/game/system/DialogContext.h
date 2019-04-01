@@ -70,7 +70,6 @@ struct DialogContext
 	void EndDialog();
 	void ClearChoices();
 	cstring GetText(int index);
-	GameDialog::Text& GetTextInner(int index);
 	bool ExecuteSpecial(cstring msg);
 	bool ExecuteSpecialIf(cstring msg);
 	cstring FormatString(const string& str_part);

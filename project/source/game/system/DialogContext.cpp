@@ -58,6 +58,8 @@ void DialogContext::StartDialog(Unit* talker, GameDialog* dialog)
 		talker->busy = Unit::Busy_Talking;
 		talker->look_target = pc->unit;
 	}
+	if(this->dialog && this->dialog->quest)
+		dialog_quest = QM.FindAnyQuest(this->dialog->quest);
 	update_news = true;
 	update_locations = 1;
 	pc->action = PlayerController::Action_Talk;
@@ -83,6 +85,7 @@ void DialogContext::StartDialog(Unit* talker, GameDialog* dialog)
 		quest_dialogs.clear();
 		quest_dialog_index = -1;
 	}
+	assert(this->dialog);
 
 	if(Net::IsLocal())
 	{
@@ -156,8 +159,10 @@ void DialogContext::Update(float dt)
 			{
 				if(choice.quest_dialog_index != -1)
 				{
-					dialog_quest = quest_dialogs[choice.quest_dialog_index].quest;
-					dialog = quest_dialogs[choice.quest_dialog_index].dialog;
+					prev.push_back({ this->dialog, dialog_quest, -1 });
+					quest_dialog_index = choice.quest_dialog_index;
+					dialog_quest = quest_dialogs[quest_dialog_index].quest;
+					dialog = quest_dialogs[quest_dialog_index].dialog;
 				}
 				dialog_pos = choice.pos;
 				ClearChoices();
@@ -311,15 +316,17 @@ void DialogContext::UpdateLoop()
 			quest_dialogs = talker->dialogs;
 			if(!prev.empty())
 			{
+				Entry e = prev[0];
 				prev.clear();
 				if(quest_dialogs.empty())
 				{
-					dialog = talker->data->dialog;
-					dialog_quest = nullptr;
+					dialog = e.dialog;
+					dialog_quest = e.quest;
 					quest_dialog_index = -1;
 				}
 				else
 				{
+					prev.push_back({ e.dialog, e.quest, -1 });
 					dialog = quest_dialogs[0].dialog;
 					dialog_quest = (Quest*)quest_dialogs[0].quest;
 					quest_dialog_index = 0;
@@ -665,7 +672,7 @@ void DialogContext::ClearChoices()
 //=================================================================================================
 cstring DialogContext::GetText(int index)
 {
-	GameDialog::Text& text = GetTextInner(index);
+	GameDialog::Text& text = dialog->GetText(index);
 	const string& str = dialog->strs[text.index];
 
 	if(!text.formatted)
@@ -736,33 +743,6 @@ cstring DialogContext::GetText(int index)
 	}
 
 	return dialog_s_text.c_str();
-}
-
-//=================================================================================================
-GameDialog::Text& DialogContext::GetTextInner(int index)
-{
-	GameDialog::Text& text = dialog->texts[index];
-	if(text.next == -1)
-		return text;
-	else
-	{
-		int count = 1;
-		GameDialog::Text* t = &dialog->texts[index];
-		while(t->next != -1)
-		{
-			++count;
-			t = &dialog->texts[t->next];
-		}
-		int id = Rand() % count;
-		t = &dialog->texts[index];
-		for(int i = 0; i <= id; ++i)
-		{
-			if(i == id)
-				return *t;
-			t = &dialog->texts[t->next];
-		}
-	}
-	return text;
 }
 
 //=================================================================================================
@@ -976,7 +956,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		if(!drunkman && (Rand() % 3 == 0 || (Key.Down(VK_SHIFT) && game.devmode)))
 		{
 			int what = Rand() % 3;
-			if(QM.quest_rumor_counter != 0 && Rand() % 2 == 0)
+			if(QM.HaveQuestRumors() && Rand() % 2 == 0)
 				what = 2;
 			if(game.devmode)
 			{
@@ -1111,7 +1091,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 				break;
 			case 2:
 				// info about quest
-				if(QM.quest_rumor_counter == 0)
+				if(!QM.HaveQuestRumors())
 				{
 					DialogTalk(RandomString(game.txNoQRumors));
 					++dialog_pos;
@@ -1119,46 +1099,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 				}
 				else
 				{
-					what = Rand() % R_MAX;
-					while(QM.quest_rumor[what])
-						what = (what + 1) % R_MAX;
-					--QM.quest_rumor_counter;
-					QM.quest_rumor[what] = true;
-
-					switch(what)
-					{
-					case R_SAWMILL:
-						dialog_s_text = Format(game.txRumorQ[0], locations[QM.quest_sawmill->start_loc]->name.c_str());
-						break;
-					case R_MINE:
-						dialog_s_text = Format(game.txRumorQ[1], locations[QM.quest_mine->start_loc]->name.c_str());
-						break;
-					case R_CONTEST:
-						dialog_s_text = game.txRumorQ[2];
-						break;
-					case R_BANDITS:
-						dialog_s_text = Format(game.txRumorQ[3], locations[QM.quest_bandits->start_loc]->name.c_str());
-						break;
-					case R_MAGES:
-						dialog_s_text = Format(game.txRumorQ[4], locations[QM.quest_mages->start_loc]->name.c_str());
-						break;
-					case R_MAGES2:
-						dialog_s_text = game.txRumorQ[5];
-						break;
-					case R_ORCS:
-						dialog_s_text = Format(game.txRumorQ[6], locations[QM.quest_orcs->start_loc]->name.c_str());
-						break;
-					case R_GOBLINS:
-						dialog_s_text = Format(game.txRumorQ[7], locations[QM.quest_goblins->start_loc]->name.c_str());
-						break;
-					case R_EVIL:
-						dialog_s_text = Format(game.txRumorQ[8], locations[QM.quest_evil->start_loc]->name.c_str());
-						break;
-					default:
-						assert(0);
-						return true;
-					}
-
+					dialog_s_text = QM.GetRandomQuestRumor();
 					game.gui->journal->AddRumor(dialog_s_text.c_str());
 					DialogTalk(dialog_s_text.c_str());
 					++dialog_pos;
@@ -1380,8 +1321,6 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		++dialog_pos;
 		return true;
 	}
-	else if(strcmp(msg, "tell_name") == 0)
-		talker->RevealName(false);
 	else if(strcmp(msg, "hero_about") == 0)
 	{
 		Class clas = talker->GetClass();
@@ -1409,25 +1348,6 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		--Team.free_recruits;
 		talker->temporary = false;
 		talker->hero->SetupMelee();
-	}
-	else if(strcmp(msg, "follow_me") == 0)
-	{
-		assert(talker->IsFollower());
-		talker->hero->mode = HeroData::Follow;
-		talker->ai->city_wander = false;
-	}
-	else if(strcmp(msg, "go_free") == 0)
-	{
-		assert(talker->IsFollower());
-		talker->hero->mode = HeroData::Wander;
-		talker->ai->city_wander = false;
-		talker->ai->loc_timer = Random(5.f, 10.f);
-	}
-	else if(strcmp(msg, "wait") == 0)
-	{
-		assert(talker->IsFollower());
-		talker->hero->mode = HeroData::Wait;
-		talker->ai->city_wander = false;
 	}
 	else if(strcmp(msg, "give_item") == 0)
 	{
@@ -1466,10 +1386,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 	else if(strcmp(msg, "kick_npc") == 0)
 	{
 		Team.RemoveTeamMember(talker);
-		if(L.city_ctx)
-			talker->hero->mode = HeroData::Wander;
-		else
-			talker->hero->mode = HeroData::Leave;
+		talker->SetOrder(L.city_ctx ? ORDER_WANDER : ORDER_LEAVE);
 		talker->hero->credit = 0;
 		talker->ai->city_wander = true;
 		talker->ai->loc_timer = Random(5.f, 10.f);
@@ -1534,7 +1451,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 	{
 		if(talker->hero->team_member)
 			Team.RemoveTeamMember(talker);
-		talker->hero->mode = HeroData::Leave;
+		talker->SetOrder(ORDER_LEAVE);
 		talker->dont_attack = false;
 	}
 	else if(strcmp(msg, "news") == 0)
@@ -1621,58 +1538,16 @@ bool DialogContext::ExecuteSpecialIf(cstring msg)
 	if(QM.HandleSpecialIf(*this, msg, result))
 		return result;
 
-	if(strcmp(msg, "have_team") == 0)
-		return Team.HaveTeamMember();
-	else if(strcmp(msg, "have_pc_team") == 0)
-		return Team.HaveOtherPlayer();
-	else if(strcmp(msg, "have_npc_team") == 0)
-		return Team.HaveActiveNpc();
-	else if(strcmp(msg, "is_drunk") == 0)
+	if(strcmp(msg, "is_drunk") == 0)
 		return IS_SET(talker->data->flags, F_AI_DRUNKMAN) && talker->in_building != -1;
-	else if(strcmp(msg, "is_not_known") == 0)
-	{
-		assert(talker->IsHero());
-		return !talker->hero->know_name;
-	}
 	else if(strcmp(msg, "is_inside_dungeon") == 0)
 		return L.local_ctx.type == LevelContext::Inside;
 	else if(strcmp(msg, "is_team_full") == 0)
 		return Team.GetActiveTeamSize() >= Team.GetMaxSize();
 	else if(strcmp(msg, "can_join") == 0)
 		return pc->unit->gold >= talker->hero->JoinCost();
-	else if(strcmp(msg, "is_inside_town") == 0)
-		return L.city_ctx != nullptr;
-	else if(strcmp(msg, "is_free") == 0)
-	{
-		assert(talker->IsHero());
-		return talker->hero->mode == HeroData::Wander;
-	}
-	else if(strcmp(msg, "is_not_free") == 0)
-	{
-		assert(talker->IsHero());
-		return talker->hero->mode != HeroData::Wander;
-	}
-	else if(strcmp(msg, "is_not_follow") == 0)
-	{
-		assert(talker->IsHero());
-		return talker->hero->mode != HeroData::Follow;
-	}
-	else if(strcmp(msg, "is_not_waiting") == 0)
-	{
-		assert(talker->IsHero());
-		return talker->hero->mode != HeroData::Wait;
-	}
 	else if(strcmp(msg, "is_near_arena") == 0)
 		return L.city_ctx && IS_SET(L.city_ctx->flags, City::HaveArena) && Vec3::Distance2d(talker->pos, L.city_ctx->arena_pos) < 5.f;
-	else if(strcmp(msg, "is_lost_pvp") == 0)
-	{
-		assert(talker->IsHero());
-		return talker->hero->lost_pvp;
-	}
-	else if(strcmp(msg, "is_healthy") == 0)
-		return talker->GetHpp() >= 0.75f;
-	else if(strcmp(msg, "is_bandit") == 0)
-		return Team.is_bandit;
 	else if(strcmp(msg, "is_ginger") == 0)
 		return pc->unit->human_data->hair_color.Equal(g_hair_colors[8]);
 	else if(strcmp(msg, "is_bald") == 0)

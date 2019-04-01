@@ -271,6 +271,11 @@ static void ScriptInfo(const string& str)
 {
 	SM.Log(Logger::L_INFO, str.c_str());
 }
+static void ScriptDevInfo(const string& str)
+{
+	if(Game::Get().devmode)
+		Info(str.c_str());
+}
 static void ScriptWarn(const string& str)
 {
 	SM.Log(Logger::L_WARN, str.c_str());
@@ -290,6 +295,7 @@ void ScriptManager::RegisterCommon()
 	ScriptBuilder sb(engine);
 
 	AddFunction("void Info(const string& in)", asFUNCTION(ScriptInfo));
+	AddFunction("void DevInfo(const string& in)", asFUNCTION(ScriptDevInfo));
 	AddFunction("void Warn(const string& in)", asFUNCTION(ScriptWarn));
 	AddFunction("void Error(const string& in)", asFUNCTION(ScriptError));
 
@@ -304,7 +310,7 @@ void ScriptManager::RegisterCommon()
 	AddFunction("int Random(int, int)", asFUNCTIONPR(Random, (int, int), int));
 	AddFunction("int Rand()", asFUNCTIONPR(Rand, (), int));
 
-	sb.AddStruct<Int2>("Int2")
+	sb.AddStruct<Int2>("Int2", asOBJ_APP_CLASS_ALLINTS)
 		.Constructor<>("void f()")
 		.Constructor<int, int>("void f(int, int)")
 		.Constructor<const Int2&>("void f(const Int2& in)")
@@ -321,7 +327,7 @@ void ScriptManager::RegisterCommon()
 		.Method("Int2 opMul(int) const", asMETHODPR(Int2, operator *, (int) const, Int2))
 		.Method("Int2 opDiv(int) const", asMETHODPR(Int2, operator /, (int) const, Int2));
 
-	sb.AddStruct<Vec2>("Vec2")
+	sb.AddStruct<Vec2>("Vec2", asOBJ_APP_CLASS_ALLFLOATS)
 		.Constructor<>("void f()")
 		.Constructor<float, float>("void f(float, float)")
 		.Constructor<const Vec2&>("void f(const Vec2& in)")
@@ -341,7 +347,7 @@ void ScriptManager::RegisterCommon()
 		.WithNamespace()
 		.AddFunction("float Distance(const Vec2& in, const Vec2& in)", asFUNCTION(Vec2::Distance));
 
-	sb.AddStruct<Vec3>("Vec3")
+	sb.AddStruct<Vec3>("Vec3", asOBJ_APP_CLASS_ALLFLOATS)
 		.Constructor<>("void f()")
 		.Constructor<float, float, float>("void f(float, float, float)")
 		.Constructor<const Vec3&>("void f(const Vec3& in)")
@@ -361,7 +367,7 @@ void ScriptManager::RegisterCommon()
 		.WithNamespace()
 		.AddFunction("float Distance(const Vec3& in, const Vec3& in)", asFUNCTION(Vec3::Distance));
 
-	sb.AddStruct<Vec4>("Vec4")
+	sb.AddStruct<Vec4>("Vec4", asOBJ_APP_CLASS_ALLFLOATS)
 		.Constructor<>("void f()")
 		.Constructor<float, float, float, float>("void f(float, float, float, float)")
 		.Constructor<const Vec4&>("void f(const Vec4& in)")
@@ -393,14 +399,6 @@ VarsContainer* Unit_GetVars(Unit* unit)
 	return SM.GetVars(unit);
 }
 
-
-void Unit_RemoveItem(Unit* unit, const string& id)
-{
-	Item* item = Item::TryGet(id);
-	if(item)
-		unit->RemoveItem(item, 1u);
-}
-
 string World_GetDirName(const Vec2& pos1, const Vec2& pos2)
 {
 	return GetLocationDirName(pos1, pos2);
@@ -409,11 +407,6 @@ string World_GetDirName(const Vec2& pos1, const Vec2& pos2)
 Location* World_GetRandomCity()
 {
 	return W.GetLocation(W.GetRandomCityIndex());
-}
-
-uint Team_GetSize()
-{
-	return Team.active_members.size();
 }
 
 Location* World_GetRandomSettlementWithBuilding(const string& building_id)
@@ -463,6 +456,75 @@ void ScriptManager::RegisterGame()
 {
 	ScriptBuilder sb(engine);
 
+	AddType("Unit");
+	AddType("Player");
+	AddType("Hero");
+
+	AddEnum("ITEM_TYPE", {
+		{ "IT_WEAPON", IT_WEAPON },
+		{ "IT_BOW", IT_BOW },
+		{ "IT_SHIELD", IT_SHIELD },
+		{ "IT_ARMOR", IT_ARMOR },
+		{ "IT_OTHER", IT_OTHER },
+		{ "IT_CONSUMABLE", IT_CONSUMABLE },
+		{ "IT_BOOK", IT_BOOK }
+		});
+
+	AddEnum("ITEM_FLAGS", {
+		{ "ITEM_NOT_SHOP", ITEM_NOT_SHOP },
+		{ "ITEM_NOT_MERCHANT", ITEM_NOT_MERCHANT },
+		{ "ITEM_NOT_BLACKSMITH", ITEM_NOT_BLACKSMITH },
+		{ "ITEM_NOT_ALCHEMIST", ITEM_NOT_ALCHEMIST }
+		});
+
+	AddEnum("EventType", {
+		{ "EVENT_ENTER", EVENT_ENTER },
+		{ "EVENT_PICKUP", EVENT_PICKUP },
+		{ "EVENT_UPDATE", EVENT_UPDATE },
+		{ "EVENT_TIMEOUT", EVENT_TIMEOUT },
+		{ "EVENT_ENCOUNTER", EVENT_ENCOUNTER },
+		{ "EVENT_DIE", EVENT_DIE }
+		});
+
+	AddEnum("LOCATION", {
+		{ "L_CITY", L_CITY },
+		{ "L_CAVE", L_CAVE },
+		{ "L_CAMP", L_CAMP },
+		{ "L_DUNGEON", L_DUNGEON },
+		{ "L_CRYPT", L_CRYPT },
+		{ "L_FOREST", L_FOREST },
+		{ "L_MOONWELL", L_MOONWELL },
+		{ "L_ENCOUNTER", L_ENCOUNTER }
+		});
+
+	AddEnum("SPAWN_GROUP", {
+		{ "SG_GOBLINS", SG_GOBLINS },
+		{ "SG_ORCS", SG_ORCS },
+		{ "SG_BANDITS", SG_BANDITS },
+		{ "SG_UNDEAD", SG_UNDEAD },
+		{ "SG_NECROMANCERS", SG_NECROMANCERS },
+		{ "SG_MAGES", SG_MAGES },
+		{ "SG_GOLEMS", SG_GOLEMS },
+		{ "SG_MAGES_AND_GOLEMS", SG_MAGES_AND_GOLEMS },
+		{ "SG_EVIL", SG_EVIL },
+		});
+
+	AddEnum("UNIT_ORDER", {
+		{ "ORDER_NONE", ORDER_NONE },
+		{ "ORDER_WANDER", ORDER_WANDER },
+		{ "ORDER_WAIT", ORDER_WAIT },
+		{ "ORDER_FOLLOW", ORDER_FOLLOW },
+		{ "ORDER_LEAVE", ORDER_LEAVE },
+		{ "ORDER_MOVE", ORDER_MOVE },
+		{ "ORDER_LOOK_AT", ORDER_LOOK_AT }
+		});
+
+	AddEnum("MOVE_TYPE", {
+		{ "MOVE_RUN", Unit::MOVE_RUN },
+		{ "MOVE_WALK", Unit::MOVE_WALK },
+		{ "MOVE_RUN_WHEN_NEAR_TEAM", Unit::MOVE_RUN_WHEN_NEAR_TEAM }
+		});
+
 	AddType("Var")
 		.Method("bool IsNone() const", asMETHOD(Var, IsNone))
 		.Method("bool IsBool() const", asMETHODPR(Var, IsBool, () const, bool))
@@ -503,24 +565,9 @@ void ScriptManager::RegisterGame()
 		.Method("int get_progress()", asMETHOD(Quest_Scripted, GetProgress))
 		.Method("string GetString(int)", asMETHOD(Quest_Scripted, GetString))
 		.Method("Dialog@ GetDialog(const string& in)", asMETHODPR(Quest_Scripted, GetDialog, (const string&), GameDialog*))
+		.Method("void AddRumor(const string& in)", asMETHOD(Quest_Scripted, AddRumor))
+		.Method("void RemoveRumor()", asMETHOD(Quest_Scripted, RemoveRumor))
 		.WithInstance("Quest@ quest", &ctx.quest);
-
-	AddEnum("ITEM_TYPE", {
-		{ "IT_WEAPON", IT_WEAPON },
-		{ "IT_BOW", IT_BOW },
-		{ "IT_SHIELD", IT_SHIELD },
-		{ "IT_ARMOR", IT_ARMOR },
-		{ "IT_OTHER", IT_OTHER },
-		{ "IT_CONSUMABLE", IT_CONSUMABLE },
-		{ "IT_BOOK", IT_BOOK }
-		});
-
-	AddEnum("ITEM_FLAGS", {
-		{ "ITEM_NOT_SHOP", ITEM_NOT_SHOP },
-		{ "ITEM_NOT_MERCHANT", ITEM_NOT_MERCHANT },
-		{ "ITEM_NOT_BLACKSMITH", ITEM_NOT_BLACKSMITH },
-		{ "ITEM_NOT_ALCHEMIST", ITEM_NOT_ALCHEMIST }
-		});
 
 	AddType("Item")
 		.Member("const int value", offsetof(Item, value))
@@ -538,14 +585,17 @@ void ScriptManager::RegisterGame()
 		.AddFunction("ItemList@ Get(const string& in)", asFUNCTION(ItemList::GetS));
 
 	AddType("GroundItem")
-		.Member("const Vec3 pos", offsetof(GroundItem, pos));
+		.Member("const Vec3 pos", offsetof(GroundItem, pos))
+		.Member("const Item@ base", offsetof(GroundItem, item));
 
 	AddType("UnitData")
 		.WithNamespace()
 		.AddFunction("UnitData@ Get(const string& in)", asFUNCTION(UnitData::GetS));
 
-	AddType("Unit")
+	ForType("Unit")
 		.Member("const Vec3 pos", offsetof(Unit, pos))
+		.Member("const Player@ player", offsetof(Unit, player))
+		.Member("const Hero@ hero", offsetof(Unit, hero))
 		.Method("int get_gold() const", asMETHOD(Unit, GetGold))
 		.Method("void set_gold(int)", asMETHOD(Unit, SetGold))
 		.Method("VarsContainer@ get_vars()", asFUNCTION(Unit_GetVars)) // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -555,61 +605,53 @@ void ScriptManager::RegisterGame()
 		.Method("void set_auto_talk(bool)", asMETHOD(Unit, SetAutoTalk))
 		.Method("bool get_dont_attack() const", asMETHOD(Unit, GetDontAttack))
 		.Method("void set_dont_attack(bool)", asMETHOD(Unit, SetDontAttack))
+		.Method("bool get_known_name() const", asMETHOD(Unit, GetKnownName))
+		.Method("void set_known_name(bool)", asMETHOD(Unit, SetKnownName))
+		.Method("UNIT_ORDER get_order() const", asMETHOD(Unit, GetOrder))
+		.Method("void set_order(UNIT_ORDER)", asMETHOD(Unit, SetOrder))
 		.Method("bool IsTeamMember()", asMETHOD(Unit, IsTeamMember))
+		.Method("float GetHpp()", asMETHOD(Unit, GetHpp))
 		.Method("void AddItem(Item@, uint = 1)", asMETHOD(Unit, AddItemS))
 		.Method("void AddTeamItem(Item@, uint = 1)", asMETHOD(Unit, AddTeamItemS))
-		.Method("void RemoveItem(const string& in)", asFUNCTION(Unit_RemoveItem)) // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+		.Method("uint RemoveItem(const string& in, uint = 1)", asMETHOD(Unit, RemoveItemS))
+		.Method("uint RemoveItem(Item@, uint = 1)", asMETHODPR(Unit, RemoveItem, (const Item*, uint), uint))
 		.Method("void RemoveQuestItem(Quest@)", asMETHOD(Unit, RemoveQuestItemS))
 		.Method("void AddDialog(Quest@, const string& in)", asMETHOD(Unit, AddDialogS))
 		.Method("void RemoveDialog(Quest@)", asMETHOD(Unit, RemoveDialog))
+		.Method("void AddEventHandler(Quest@, EventType)", asMETHOD(Unit, AddEventHandler))
+		.Method("void RemoveEventHandler(Quest@)", asMETHOD(Unit, RemoveEventHandlerS))
 		.Method("void OrderEscapeToUnit(Unit@)", asMETHOD(Unit, OrderEscapeToUnit))
-		.Method("void OrderLeave()", asMETHOD(Unit, OrderLeave))
 		.Method("void OrderAttack()", asMETHOD(Unit, OrderAttack))
+		.Method("void OrderClear()", asMETHOD(Unit, OrderClear))
+		.Method("void OrderMove(const Vec3& in, MOVE_TYPE)", asMETHOD(Unit, OrderMove))
+		.Method("void OrderLookAt(const Vec3& in)", asMETHOD(Unit, OrderLookAt))
+		.Method("void OrderTimer(float)", asMETHOD(Unit, OrderTimer))
+		.Method("void Talk(const string& in, int = -1)", asMETHOD(Unit, Talk))
 		.WithInstance("Unit@ target", &ctx.target);
 
-	AddType("Player")
+	ForType("Player")
 		.Member("Unit@ unit", offsetof(PlayerController, unit))
 		.Member("const string name", offsetof(PlayerController, name))
 		.Method("bool HavePerk(const string& in)", asMETHOD(PlayerController, HavePerkS))
 		.Method("bool IsLeader()", asMETHOD(PlayerController, IsLeader))
 		.WithInstance("Player@ pc", &ctx.pc);
 
+	ForType("Hero")
+		.Member("bool lost_pvp", offsetof(HeroData, lost_pvp));
+
 	WithNamespace("Team", &Team)
+		.AddFunction("Unit@ get_leader()", asMETHOD(TeamSingleton, GetLeader))
+		.AddFunction("uint get_size()", asMETHOD(TeamSingleton, GetActiveTeamSize))
+		.AddFunction("uint get_max_size()", asMETHOD(TeamSingleton, GetMaxSize))
+		.AddFunction("bool get_bandit()", asMETHOD(TeamSingleton, IsBandit))
+		.AddFunction("void set_bandit(bool)", asMETHOD(TeamSingleton, SetBandit))
+		.AddFunction("bool HaveMember()", asMETHOD(TeamSingleton, HaveOtherActiveTeamMember))
+		.AddFunction("bool HavePcMember()", asMETHOD(TeamSingleton, HaveOtherPlayer))
+		.AddFunction("bool HaveNpcMember()", asMETHOD(TeamSingleton, HaveActiveNpc))
+		.AddFunction("bool HaveItem(Item@)", asMETHOD(TeamSingleton, HaveItem))
 		.AddFunction("void AddGold(uint)", asMETHOD(TeamSingleton, AddGoldS))
 		.AddFunction("void AddReward(uint, uint = 0)", asMETHOD(TeamSingleton, AddReward))
-		.AddFunction("Unit@ get_leader()", asMETHOD(TeamSingleton, GetLeader))
-		.AddFunction("uint get_size()", asFUNCTION(Team_GetSize));
-
-	AddEnum("EventType", {
-		{ "EVENT_ENTER", EVENT_ENTER },
-		//{ "EVENT_PICKUP", EVENT_PICKUP },
-		//{ "EVENT_UPDATE", EVENT_UPDATE },
-		{ "EVENT_TIMEOUT", EVENT_TIMEOUT },
-		{ "EVENT_ENCOUNTER", EVENT_ENCOUNTER }
-		});
-
-	AddEnum("LOCATION", {
-		{ "L_CITY", L_CITY },
-		{ "L_CAVE", L_CAVE },
-		{ "L_CAMP", L_CAMP },
-		{ "L_DUNGEON", L_DUNGEON },
-		{ "L_CRYPT", L_CRYPT },
-		{ "L_FOREST", L_FOREST },
-		{ "L_MOONWELL", L_MOONWELL },
-		{ "L_ENCOUNTER", L_ENCOUNTER }
-		});
-
-	AddEnum("SPAWN_GROUP", {
-		{ "SG_GOBLINS", SG_GOBLINS },
-		{ "SG_ORCS", SG_ORCS },
-		{ "SG_BANDITS", SG_BANDITS },
-		{ "SG_UNDEAD", SG_UNDEAD },
-		{ "SG_NECROMANCERS", SG_NECROMANCERS },
-		{ "SG_MAGES", SG_MAGES },
-		{ "SG_GOLEMS", SG_GOLEMS },
-		{ "SG_MAGES_AND_GOLEMS", SG_MAGES_AND_GOLEMS },
-		{ "SG_EVIL", SG_EVIL },
-		});
+		.AddFunction("uint RemoveItem(Item@, uint = 1)", asMETHOD(TeamSingleton, RemoveItem));
 
 	sb.AddStruct<TmpUnitGroup::Spawn>("Spawn");
 
@@ -626,9 +668,12 @@ void ScriptManager::RegisterGame()
 		.Member("const Vec2 pos", offsetof(Location, pos))
 		.Member("const string name", offsetof(Location, name))
 		.Member("const LOCATION type", offsetof(Location, type))
+		.Member("int st", offsetof(Location, st))
+		.Member("bool reset", offsetof(Location, reset))
 		.Member("Quest@ active_quest", offsetof(Location, active_quest))
 		.Method("void AddEventHandler(Quest@, EventType)", asMETHOD(Location, AddEventHandler))
 		.Method("void RemoveEventHandler(Quest@)", asMETHOD(Location, RemoveEventHandlerS))
+		.Method("void SetKnown()", asMETHOD(Location, SetKnown))
 		.Method("bool IsCity()", asFUNCTIONPR(LocationHelper::IsCity, (Location*), bool))
 		.Method("bool IsVillage()", asFUNCTIONPR(LocationHelper::IsVillage, (Location*), bool));
 
@@ -653,6 +698,7 @@ void ScriptManager::RegisterGame()
 		.AddFunction("Location@ GetRandomSettlementWithBuilding(const string& in)", asFUNCTION(World_GetRandomSettlementWithBuilding)) // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 		.AddFunction("Location@ GetRandomSettlement(Location@)", asMETHODPR(World, GetRandomSettlement, (Location*), Location*))
 		.AddFunction("Location@ GetRandomSettlement(GetLocationCallback@)", asFUNCTION(World_GetRandomSettlement))
+		.AddFunction("Location@ GetClosestLocation(LOCATION, const Vec2& in, int = -1)", asMETHOD(World, GetClosestLocationS))
 		.AddFunction("Encounter@ AddEncounter(Quest@)", asMETHOD(World, AddEncounterS))
 		.AddFunction("void RemoveEncounter(Quest@)", asMETHODPR(World, RemoveEncounter, (Quest*), void));
 
@@ -680,13 +726,19 @@ void ScriptManager::RegisterGame()
 	AddType("Event")
 		.Member("EventType event", offsetof(ScriptEvent, type))
 		.Member("Location@ location", offsetof(ScriptEvent, location))
-		.Member("Unit@ unit", offsetof(ScriptEvent, unit));
+		.Member("Unit@ unit", offsetof(ScriptEvent, unit))
+		.Member("GroundItem@ item", offsetof(ScriptEvent, item));
 
 	AddVarType(Var::Type::Bool, "bool", false);
 	AddVarType(Var::Type::Int, "int", false);
 	AddVarType(Var::Type::Float, "float", false);
+	AddVarType(Var::Type::Int2, "Int2", false);
+	AddVarType(Var::Type::Vec2, "Vec2", false);
+	AddVarType(Var::Type::Vec3, "Vec3", false);
+	AddVarType(Var::Type::Vec4, "Vec4", false);
 	AddVarType(Var::Type::Item, "Item", true);
 	AddVarType(Var::Type::Location, "Location", true);
+	AddVarType(Var::Type::GroundItem, "GroundItem", true);
 }
 
 bool ScriptManager::RunScript(cstring code, bool validate)

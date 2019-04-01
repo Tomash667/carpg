@@ -72,12 +72,12 @@ public:
 	Quest* FindQuest(int location, QuestType type);
 	Quest* FindQuest(int refid, bool active = true);
 	Quest* FindAnyQuest(int refid);
+	Quest* FindAnyQuest(QuestScheme* scheme);
 	Quest* FindQuestById(QUEST quest_id);
 	Quest* FindUnacceptedQuest(int location, QuestType type);
 	Quest* FindUnacceptedQuest(int refid);
 	const Item* FindQuestItem(cstring name, int refid);
-	void EndUniqueQuest();
-	bool RemoveQuestRumor(QUEST_RUMOR rumor_id);
+	void EndUniqueQuest() { ++unique_quests_completed; }
 	bool SetForcedQuest(const string& name);
 	int GetForcedQuest() const { return force; }
 	const vector<QuestInfo>& GetQuestInfos() const { return infos; }
@@ -92,6 +92,11 @@ public:
 	QuestInfo* FindQuest(const string& id);
 	void AddQuestRequest(int refid, Quest** quest, delegate<void()> callback = nullptr) { quest_requests.push_back({ refid, quest, callback }); }
 	void AddQuestItem(Item* item) { quest_items.push_back(item); }
+	bool HaveQuestRumors() const { return !quest_rumors.empty(); }
+	int AddQuestRumor(cstring str);
+	void AddQuestRumor(int refid, cstring str) { quest_rumors.push_back(pair<int, string>(refid, str)); }
+	bool RemoveQuestRumor(int refid);
+	string GetRandomQuestRumor();
 
 	vector<Quest*> unaccepted_quests;
 	vector<Quest*> quests;
@@ -114,10 +119,9 @@ public:
 	Quest_Tutorial* quest_tutorial;
 	Quest_Artifacts* quest_artifacts;
 	int quest_counter;
-	int unique_quests_completed;
+	int unique_quests, unique_quests_completed;
 	bool unique_completed_show;
-	int quest_rumor_counter;
-	bool quest_rumor[R_MAX];
+	cstring txRumorQ[9];
 
 private:
 	void LoadQuests(GameReader& f, vector<Quest*>& quests);
@@ -130,5 +134,6 @@ private:
 	QuestList* quests_mayor, *quests_captain, *quests_random;
 	std::map<string, QuestHandler*> special_handlers, special_if_handlers, format_str_handlers;
 	string tmp_str;
+	vector<pair<int, string>> quest_rumors;
 };
 extern QuestManager QM;

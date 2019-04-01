@@ -8,12 +8,22 @@
 #include "Const.h"
 #include "Team.h"
 
+namespace old
+{
+	enum Mode
+	{
+		Wander,
+		Wait,
+		Follow,
+		Leave
+	};
+}
+
 //=================================================================================================
 void HeroData::Init(Unit& _unit)
 {
 	know_name = false;
 	team_member = false;
-	mode = Follow;
 	unit = &_unit;
 	following = nullptr;
 	credit = 0;
@@ -38,7 +48,6 @@ void HeroData::Save(FileWriter& f)
 	f << name;
 	f << know_name;
 	f << team_member;
-	f << mode;
 	f << (following ? following->refid : -1);
 	f << credit;
 	f << expe;
@@ -58,7 +67,27 @@ void HeroData::Load(FileReader& f)
 		f.Skip<Class>(); // old class info
 	f >> know_name;
 	f >> team_member;
-	f >> mode;
+	if(LOAD_VERSION < V_DEV)
+	{
+		old::Mode mode;
+		f >> mode;
+		switch(mode)
+		{
+		case old::Wander:
+			unit->order = ORDER_WANDER;
+			break;
+		case old::Wait:
+			unit->order = ORDER_WAIT;
+			break;
+		case old::Follow:
+			unit->order = ORDER_FOLLOW;
+			break;
+		case old::Leave:
+			unit->order = ORDER_LEAVE;
+			break;
+		}
+		unit->order_timer = 0.f;
+	}
 	following = Unit::GetByRefid(f.Read<int>());
 	f >> credit;
 	f >> expe;

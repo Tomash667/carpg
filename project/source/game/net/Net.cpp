@@ -44,6 +44,7 @@
 #include "FOV.h"
 #include "PlayerInfo.h"
 #include "CommandParser.h"
+#include "Quest_Scripted.h"
 
 vector<NetChange> Net::changes;
 Net::Mode Net::mode;
@@ -952,7 +953,20 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				// remove item
 				if(pc_data.before_player == BP_ITEM && pc_data.before_player_ptr.item == item)
 					pc_data.before_player = BP_NONE;
-				DeleteElement(*ctx->items, item);
+				RemoveElement(*ctx->items, item);
+
+				// event
+				for(Event& event : L.location->events)
+				{
+					if(event.type == EVENT_PICKUP)
+					{
+						ScriptEvent e(EVENT_PICKUP);
+						e.item = item;
+						event.quest->FireEvent(e);
+					}
+				}
+
+				delete item;
 			}
 			break;
 		// player consume item

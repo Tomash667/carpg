@@ -119,6 +119,7 @@ struct AIController
 	bool CheckPotion(bool in_combat = true);
 	void Reset();
 	float GetMorale() const;
+	bool CanWander() const;
 };
 
 //-----------------------------------------------------------------------------

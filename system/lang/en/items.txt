@@ -666,6 +666,10 @@ item healing_herb {
 item green_herb {
 	name "Green herb"
 }
+item alchemist_herb {
+	name "Alchemical herb"
+	desc "A plant with unknown alchemical properties."
+}
 
 //------------------------------------------------------------------------------
 // VALUABLES

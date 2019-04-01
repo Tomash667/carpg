@@ -41,6 +41,7 @@ void Quest_Evil::Start()
 	told_about_boss = false;
 	evil_state = State::None;
 	cleric = nullptr;
+	QM.AddQuestRumor(refid, Format(QM.txRumorQ[8], GetStartLocationName()));
 }
 
 //=================================================================================================
@@ -77,7 +78,7 @@ void Quest_Evil::SetProgress(int prog2)
 	case Progress::NotAccepted:
 		// nie zaakceptowano
 		{
-			if(!QM.RemoveQuestRumor(R_EVIL))
+			if(!QM.RemoveQuestRumor(refid))
 				game->gui->journal->AddRumor(Format(game->txQuest[232], GetStartLocationName()));
 		}
 		break;
@@ -89,7 +90,7 @@ void Quest_Evil::SetProgress(int prog2)
 		{
 			OnStart(game->txQuest[233]);
 			// usuñ plotkê
-			QM.RemoveQuestRumor(R_EVIL);
+			QM.RemoveQuestRumor(refid);
 			// lokacja
 			Location& target = *W.CreateLocation(L_DUNGEON, W.GetWorldPos(), 128.f, OLD_TEMPLE, SG_NONE, false, 1);
 			target.SetKnown();
@@ -283,7 +284,7 @@ void Quest_Evil::SetProgress(int prog2)
 			// usuñ jozana z dru¿yny
 			Unit& u = *DialogContext::current->talker;
 			Team.RemoveTeamMember(&u);
-			u.hero->mode = HeroData::Leave;
+			u.SetOrder(ORDER_LEAVE);
 		}
 		break;
 	}

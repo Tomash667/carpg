@@ -34,6 +34,18 @@ const float UNIT_VIEW_A = 0.2f;
 const float UNIT_VIEW_B = 0.4f;
 const int UNIT_VIEW_MUL = 5;
 
+cstring order_str[ORDER_MAX] = {
+	"NONE",
+	"WANDER",
+	"WAIT",
+	"FOLLOW",
+	"LEAVE",
+	"MOVE",
+	"LOOK_AT",
+	"ESCAPE_TO",
+	"ESCAPE_TO_UNIT"
+};
+
 //-----------------------------------------------------------------------------
 enum class TooltipGroup
 {
@@ -182,11 +194,21 @@ void GameGui::DrawFront()
 				if(u.IsAI())
 				{
 					AIController& ai = *u.ai;
-					str += Format("\nB:%d, F:%d, LVL:%d\nAni:%d, A:%d, Ai:%s %.2f\n%s, %d %.2f %d", u.busy, u.frozen, u.level, u.animation, u.action,
-						str_ai_state[ai.state], ai.timer, str_ai_idle[ai.idle_action], ai.city_wander ? 1 : 0, ai.loc_timer, ai.unit->run_attack ? 1 : 0);
+					str += Format("\nB:%d, F:%d, LVL:%d\nAni:%d, A:%d, Ai:%s%s T:%.2f LT:%.2f\nO:%s", u.busy, u.frozen, u.level,
+						u.animation, u.action, str_ai_state[ai.state], ai.state == AIController::Idle ? Format("(%s)", str_ai_idle[ai.idle_action]) : "",
+						ai.timer, ai.loc_timer, order_str[u.order]);
+					if(u.order_timer > 0.f)
+						str += Format(" %.2f", u.order_timer);
+					switch(u.order)
+					{
+					case ORDER_MOVE:
+					case ORDER_LOOK_AT:
+						str += Format(" Pos:%.1f;%.1f;%.1f", u.order_pos.x, u.order_pos.y, u.order_pos.z);
+						break;
+					}
 				}
 				else
-					str += Format("\nB:%d, F:%d, Ani:%d, A:%d", u.busy, u.frozen, u.animation, u.player->action);
+					str += Format("\nB:%d, F:%d, LVL:%d, Ani:%d, A:%d", u.busy, u.frozen, u.level, u.animation, u.player->action);
 			}
 			DrawUnitInfo(str, u, text_pos, -1);
 		}

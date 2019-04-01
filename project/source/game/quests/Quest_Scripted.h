@@ -9,10 +9,15 @@ struct EventPtr
 {
 	enum Source
 	{
-		LOCATION
+		LOCATION,
+		UNIT
 	};
 	Source source;
-	Location* location;
+	union
+	{
+		Location* location;
+		Unit* unit;
+	};
 
 	bool operator == (const EventPtr& e) const
 	{
@@ -57,6 +62,8 @@ public:
 	string GetString(int index);
 	QuestScheme* GetScheme() { return scheme; }
 	asIScriptObject* GetInstance() { return instance; }
+	void AddRumor(const string& str);
+	void RemoveRumor();
 
 private:
 	void BeforeCall();

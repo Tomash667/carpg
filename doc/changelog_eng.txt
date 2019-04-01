@@ -3,6 +3,8 @@ Changelog
 --------------------------------------------------------------------------------
 Version 0.10 (2019-??-??):
 ! cannot load saves from version 0.2.20 or older
++ new unique quest: Herbs for the alchemist
++ alchemist now buy herbs
 + update libraries: FMod 1.10.12, JSON for Modern C++ 3.6.1
 
 --------------------------------------------------------------------------------

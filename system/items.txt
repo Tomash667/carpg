@@ -1742,7 +1742,7 @@ consumable healing_herb {
 	weight 0.2
 	value 10
 	mesh "healing_herb.qmsh"
-	type food
+	type herb
 	effect heal
 	power 100
 	flags {not_merchant ground_mesh alpha}
@@ -1752,9 +1752,17 @@ consumable green_herb {
 	weight 0.2
 	value 50
 	mesh "green_herb.qmsh"
-	type food
+	type herb
 	effect green_hair
 	flags {not_alchemist not_merchant ground_mesh alpha}
+}
+
+consumable alchemist_herb {
+	weight 0.2
+	value 25
+	mesh "woddruff_herb.qmsh"
+	type herb
+	flags {not_shop not_chest not_random not_alchemist ground_mesh alpha}
 }
 
 //------------------------------------------------------------------------------

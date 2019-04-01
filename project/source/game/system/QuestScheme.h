@@ -14,6 +14,8 @@ struct QuestScheme
 	asITypeInfo* script_type;
 	asIScriptFunction* f_startup, *f_progress, *f_event, *f_format_string;
 	DialogScripts scripts;
+	string code;
+	bool set_progress_use_prev;
 
 	QuestScheme() : type(QuestType::NotSet) {}
 	~QuestScheme();

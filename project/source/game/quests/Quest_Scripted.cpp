@@ -12,6 +12,7 @@
 #include "GameFile.h"
 #include "City.h"
 #include "Encounter.h"
+#include "GroundItem.h"
 #include <angelscript.h>
 #pragma warning(error: 4062)
 
@@ -78,6 +79,18 @@ void Quest_Scripted::Save(GameWriter& f)
 		case Var::Type::Float:
 			f << *(float*)ptr;
 			break;
+		case Var::Type::Int2:
+			f << *(Int2*)ptr;
+			break;
+		case Var::Type::Vec2:
+			f << *(Vec2*)ptr;
+			break;
+		case Var::Type::Vec3:
+			f << *(Vec3*)ptr;
+			break;
+		case Var::Type::Vec4:
+			f << *(Vec4*)ptr;
+			break;
 		case Var::Type::Item:
 			{
 				Item* item = *(Item**)ptr;
@@ -101,6 +114,15 @@ void Quest_Scripted::Save(GameWriter& f)
 				Encounter* enc = *(Encounter**)ptr;
 				if(enc)
 					f << enc->index;
+				else
+					f << -1;
+			}
+			break;
+		case Var::Type::GroundItem:
+			{
+				GroundItem* item = *(GroundItem**)ptr;
+				if(item)
+					f << item->refid;
 				else
 					f << -1;
 			}
@@ -142,6 +164,18 @@ bool Quest_Scripted::Load(GameReader& f)
 		case Var::Type::Float:
 			*(float*)ptr = f.Read<float>();
 			break;
+		case Var::Type::Int2:
+			*(Int2*)ptr = f.Read<Int2>();
+			break;
+		case Var::Type::Vec2:
+			*(Vec2*)ptr = f.Read<Vec2>();
+			break;
+		case Var::Type::Vec3:
+			*(Vec3*)ptr = f.Read<Vec3>();
+			break;
+		case Var::Type::Vec4:
+			*(Vec4*)ptr = f.Read<Vec4>();
+			break;
 		case Var::Type::Item:
 			{
 				const string& item_id = f.ReadString1();
@@ -167,6 +201,12 @@ bool Quest_Scripted::Load(GameReader& f)
 					*(Encounter**)ptr = W.GetEncounter(index);
 				else
 					*(Encounter**)ptr = nullptr;
+			}
+			break;
+		case Var::Type::GroundItem:
+			{
+				int refid = f.Read<int>();
+				*(GroundItem**)ptr = GroundItem::GetByRefid(refid);
 			}
 			break;
 		}
@@ -229,9 +269,19 @@ void Quest_Scripted::SetProgress(int prog2)
 {
 	if(prog == prog2)
 		return;
+	int prev = prog;
 	prog = prog2;
 	BeforeCall();
-	SM.RunScript(scheme->f_progress, instance);
+	if(scheme->set_progress_use_prev)
+	{
+		SM.RunScript(scheme->f_progress, instance, [prev](asIScriptContext* ctx, int stage)
+		{
+			if(stage == 0)
+				CHECKED(ctx->SetArgDWord(0, prev));
+		});
+	}
+	else
+		SM.RunScript(scheme->f_progress, instance);
 	AfterCall();
 }
 
@@ -259,6 +309,8 @@ void Quest_Scripted::SetCompleted()
 		((City&)GetStartLocation()).quest_mayor = CityQuestState::None;
 	else if(type == QuestType::Captain)
 		((City&)GetStartLocation()).quest_captain = CityQuestState::None;
+	if(type == QuestType::Unique)
+		QM.EndUniqueQuest();
 	Cleanup();
 }
 
@@ -326,6 +378,9 @@ void Quest_Scripted::Cleanup()
 		case EventPtr::LOCATION:
 			e.location->RemoveEventHandler(this, true);
 			break;
+		case EventPtr::UNIT:
+			e.unit->RemoveEventHandler(this, true);
+			break;
 		}
 	}
 	events.clear();
@@ -358,6 +413,12 @@ cstring Quest_Scripted::FormatString(const string& str)
 {
 	if(str == "date")
 		return W.GetDate();
+	else if(str == "name")
+	{
+		Unit* talker = DialogContext::current->talker;
+		assert(talker->IsHero());
+		return talker->hero->name.c_str();
+	}
 	else
 	{
 		assert(0);
@@ -371,7 +432,7 @@ string Quest_Scripted::GetString(int index)
 	GameDialog* dialog = scheme->dialogs[0];
 	if(index < 0 || index >= (int)dialog->texts.size())
 		throw ScriptException("Invalid text index.");
-	GameDialog::Text& text = dialog->texts[index];
+	GameDialog::Text& text = dialog->GetText(index);
 	const string& str = dialog->strs[text.index];
 
 	if(!text.formatted)
@@ -420,4 +481,14 @@ string Quest_Scripted::GetString(int index)
 	}
 
 	return dialog_s_text.c_str();
+}
+
+void Quest_Scripted::AddRumor(const string& str)
+{
+	QM.AddQuestRumor(refid, str.c_str());
+}
+
+void Quest_Scripted::RemoveRumor()
+{
+	QM.RemoveQuestRumor(refid);
 }

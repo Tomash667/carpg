@@ -1,5 +1,6 @@
 Core functions:
 	void Info(const string& in msg) - show info msg.
+	void DevInfo(const string& in msg) - like info but only in dev mode.
 	void Warn(const string& in msg) - show warning msg.
 	void Error(const string& in msg) - show error msg.
 	string Format(const string& in format_str, ?& in ...) - return formatted string, takes 0 to 8 any arguments.
@@ -50,6 +51,7 @@ Static methods:
 
 GroundItem type:
 	Vec3 pos - readonly
+	Item@ base - readonly
 
 UnitData type:
 Static methods:
@@ -62,24 +64,54 @@ Quest type:
 	void SetFailed() - mark quest as failed, can only be called when quest is started.
 	void SetTimeout(int days) - register quest timeout, can only be called once (removed when quest is completed or failed).
 	Dialog@ GetDialog(const string& in id) - return quest dialog with this id.
+	void AddRumor(const string& in str) - add quest rumor to available dialogs.
+	void RemoveRumor() - remove quest rumor from available dialogs.
+	
+Enum UNIT_ORDER, values:
+	ORDER_NONE
+	ORDER_WANDER - for heroes, they wander freely around city
+	ORDER_WAIT - for heroes, stay close to current position
+	ORDER_FOLLOW - for heroes, follow team leader
+	ORDER_LEAVE - unit goes to nearest location exit and leave
+	ORDER_MOVE - unit moves to position
+	ORDER_LOOK_AT - unit looks at position
+	ORDER_ESCAPE_TO - unit runs toward position and ignore enemies
+	ORDER_ESCAPE_TO_UNIT - unit runs toward other unit and ignore enemies
+	
+Enum MOVE_TYPE, values:
+	MOVE_RUN - always run
+	MOVE_WALK - always walk
+	MOVE_RUN_WHEN_NEAR_TEAM - run when near team, otherwise look
 
 Unit type:
 	const Vec3 pos
+	Player@ player
+	Hero@ hero
 	int gold - modifying will show message.
 	VarsContainer@ vars - readonly
 	string name - can only be set for heroes (UnitData have hero flag) at startup.
 	bool auto_talk - ai auto talk mode.
 	bool dont_attack - enemy ai don't attack.
+	bool known_name - player known name, can't be changed from true to false.
+	UNIT_ORDER order - current unit order.
 	bool IsTeamMember() - true if unit is team member.
+	float GetHpp() - get health percentage 0..1.
 	void AddItem(Item@ item, uint count = 1) - add item, will show message.
 	void AddTeamItem(Item@ item, uint count = 1) - add team item, will show message.
-	void RemoveItem(const string& in item_id) - remove 1 item by id, will show message.
+	uint RemoveItem(const string& in item_id, uint count = 1) - remove item by id, will show message. For count 0 remove all, return removed count.
+	uint RemoveItem(Item@ item, uint count = 1) - like above but use item handle.
 	void RemoveQuestItem(Quest@) - remove 1 quest item from unit inventory.
 	void AddDialog(Quest@, const string& in dialog_id) - add quest dialog to unit.
 	void RemoveDialog(Quest@) - remove quest dialog from unit.
+	void AddEventHandler(Quest@, EventType) - add event to unit.
+	void RemoveEventHandler(Quest@) - remove event from unit.
 	void OrderEscapeToUnit(Unit@) - orders ai to escape towards unit.
-	void OrderLeave() - orders unit to leave current location and disappear (only works for heroes now).
 	void OrderAttack() - orders unit to attack (crazies in this level will attack team, remove dont_attack).
+	void OrderClear() - clear current unit order.
+	void OrderMove(const Vec3& in pos, MOVE_TYPE) - orders unit to move to position.
+	void OrderLookAt(const Vec3& in pos) - orders unit to look at position.
+	void OrderTimer(float time) - set last order timer (0 is infinity, < 0 - stop when finished).
+	void Talk(const string& in text, int anim = -1) - unit talks text, animation (-1 random, 0 none, 1 what, 2 points).
 Globals:
 	Unit@ target
 
@@ -90,18 +122,30 @@ Player type:
 	bool HavePerk(const string& in perk) - return true if player have this perk.
 Globals:
 	Player@ pc
+	
+Hero type:
+	bool lost_pvp - true if hero recently lost pvp.
 
 Team namespace:
+	Unit@ leader - readonly
 	const uint size - active members count.
+	const uint max_size - max active members count (currently 8).
+	bool bandit - if true team will be attacked by citizens.
+	bool HaveMember() - true if team have any more then 1 player or any npc.
+	bool HavePcMember() - true if team have more then 1 player.
+	bool HaveNpcMember() - true if team have any npc members.
+	bool HaveItem(Item@) - true if anyone in team have this item.
 	void AddGold(uint gold) - add gold divided between team members, shows message.
 	void AddReward(uint gold, uint exp = 0) - add gold and experience divided between team members.
-	Unit@ leader - readonly
+	uint RemoveItem(Item@, uint count = 1) - remove items from team (count 0 = all).
 
 EventType enum:
 	EVENT_ENTER - for locations, send when player enter location (set field location).
 	EVENT_PICKUP - for locations, send when someone pickups ground item (set field unit, item).
 	EVENT_UPDATE - for unit, send every frame (set field unit).
 	EVENT_TIMEOUT - for quests, send when quest timeout expired.
+	EVENT_ENCOUNTER - for quest encounter, send when team start encounter on world map.
+	EVENT_DIE - for units, send when unit dies.
 
 LOCATION enum:
 	L_CITY
@@ -139,9 +183,12 @@ Location type:
 	const Vec2 pos
 	const string name
 	const LOCATION type
+	int st
+	bool reset - when true reset locations (respawn units/loot) when team enters
 	Quest@ active_quest - quest assigned to location, prevent other quests from using this location.
 	bool IsCity() - true if location is city.
 	bool IsVillage() - true if location is village.
+	void SetKnown() - mark location as known.
 	void AddEventHandler(Quest@, EventType) - add event to location.
 	void RemoveEventHandler(Quest@) - remove event handler from location.
 	
@@ -163,6 +210,7 @@ World namespace:
 	Location@ GetRandomSettlementWithBuilding(const string& in building_id) - returns random settlement that have this building.
 	Location@ GetRandomSettlement(Location@) - returns random settlement that is not passed to function.
 	Location@ GetRandomSettlement(GetLocationCallback@) - returns random settlement using callback that returns weight.
+	Location@ GetClosestLocation(LOCATION type, const Vec2& in pos, int target = -1) - get closest location of this type (doesn't return quest locations).
 	Encounter@ AddEncounter(Quest@) - add new encounter attached to this quest.
 	void RemoveEncounter(Quest@) - remove encounters attached to this quest.
 
@@ -195,6 +243,7 @@ Event type:
 	EventType event
 	Location@ location
 	Unit@ unit
+	GroundItem@ item
 
 ScriptContext type, global instance C:
 	Quest@ quest
