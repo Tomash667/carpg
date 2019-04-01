@@ -25,7 +25,7 @@ quest deliver_resources {
 	texts {
 		0 "Resources for $(target_loc.name)"
 		1 "Deliver resources"
-		2 "Received from $(start_loc.IsVillage() ? \"soltys" : \"mayor\") of $(start_loc.name) at $date$."
+		2 "Received from $(start_loc.IsVillage() ? \"soltys\" : \"mayor\") of $(start_loc.name) at $date$."
 		3 "I got the resources I need to deliver within 15 days to $(target_loc.name) which is $(World::GetDirName(start_loc.pos, target_loc.pos)) from here."
 		4 "I provided resources on time. Quest done!"
 		5 "I did not have time to deliver resources."

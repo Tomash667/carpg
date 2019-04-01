@@ -760,7 +760,7 @@ unit merchant : base_human {
 	}
 	trader {
 		stock merchant
-		groups {weapon bow shield armor consumable other book}
+		groups {weapon bow shield armor amulet consumable other book}
 	}
 	gold {500 1000}
 	dialog merchant
@@ -803,7 +803,7 @@ unit tut_czlowiek : citizen {
 	flags | {ai_stay ~ai_wanders limited_rot}
 	trader {
 		stock merchant
-		groups {weapon bow shield armor consumable other book}
+		groups {weapon bow shield armor amulet consumable other book}
 	}
 	dialog q_tutorial
 }
@@ -817,7 +817,7 @@ unit mayor : base_human {
 	flags | {ai_clerk ai_stay dont_eat limited_rot}
 	items {
 		random {al_clothes3 al_clothes3b}
-		random {!short_blade !long_blade}
+		random {dagger_sword dagger_rapier sword_long sword_scimitar}
 		random 1 3 !normal_food
 	}
 	gold {250 500}
@@ -2132,6 +2132,7 @@ unit wolf {
 	def 50
 	items {
 		random 2 3 raw_meat
+		wolf_pelt
 	}
 	group animals
 	dmg_type slash
@@ -2169,6 +2170,10 @@ unit worg : wolf {
 		null
 		null
 	}
+	items {
+		random 2 3 raw_meat
+		worg_pelt
+	}
 }
 
 unit white_wolf_sum : wolf {
@@ -2196,6 +2201,7 @@ unit spider {
 	run_speed 4
 	rot_speed 3.5
 	blood green
+	blood_size 0.8
 	sounds {
 		see_enemy "spider_tarantula_hiss.mp3"
 		attack "spider_bite_and_suck.mp3"
@@ -2242,6 +2248,7 @@ unit rat {
 	run_speed 5
 	rot_speed 3.5
 	blood red
+	blood_size 0.6
 	sounds {
 		see_enemy "rat.wav"
 		death "ratdeath.mp3"
@@ -2257,6 +2264,60 @@ unit rat {
 	}
 	width 0.2
 	attack_range 0.4
+}
+
+unit bear {
+	mesh "bear.qmsh"
+	mat skin
+	level 8
+	flags {fixed_stats dont_open no_power_attack ignore_block dont_eat dont_talk}
+	hp 800
+	stamina 300
+	attack 160
+	def 160
+	items {
+		random 4 6 raw_meat
+		bear_pelt
+	}
+	group animals
+	dmg_type {slash blunt}
+	walk_speed 1.5
+	run_speed 5.5
+	rot_speed 3
+	blood red
+	blood_size 1.5
+	sounds {
+		see_enemy "bear_enemy.mp3"
+		pain "bear_pain.mp3"
+		death "bear_die.mp3"
+		attack "bear_attack.mp3"
+	}
+	frames {
+		simple_attacks {
+			{0.33 0.46}
+			{0.66 0.75 1.5}
+		}
+	}
+	idles {
+		"idle_sit"
+		"idle_look"
+	}
+	width 0.9
+	attack_range 1.5
+}
+
+unit bear_black : bear {
+	tex {
+		"bear_black.jpg"
+	}
+	level 10
+	hp 1000
+	attack 200
+	def 200
+	items {
+		random 4 6 raw_meat
+		black_bear_pelt
+	}
 }
 
 unit wild_hunter : base_human {
@@ -2534,10 +2595,16 @@ group rats {
 	rat 1
 }
 
+group bears {
+	bear 3
+	bear_black 2
+}
+
 group animals {
 	group wolfs
 	group rats
 	group spiders
+	group bears
 }
 
 group hunters {
@@ -2579,6 +2646,7 @@ group_list arena_easy {
 
 group_list arena_medium {
 	hunters
+	bears
 	bandits
 	orcs
 	mages
@@ -2596,6 +2664,21 @@ group_list arena_hard {
 	necros
 	mages_and_golems
 	evils
+}
+
+group_list cave {
+	wolfs
+	spiders
+	rats
+	bears
+}
+
+group_list forest {
+	wolfs
+	spiders
+	rats
+	bears
+	animals
 }
 
 //------------------------------------------------------------------------------

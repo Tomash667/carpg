@@ -224,6 +224,8 @@ group unk
 group_list arena_easy
 group_list arena_medium
 group_list arena_hard
+group_list cave
+group_list forest
 
 //------------------------------------------------------------------------------
 // Required spells

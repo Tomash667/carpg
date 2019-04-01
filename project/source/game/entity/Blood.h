@@ -8,10 +8,10 @@ struct Blood
 {
 	BLOOD type;
 	Vec3 pos, normal;
-	float size, rot;
+	float size, scale, rot;
 	int lights;
 
-	static const int MIN_SIZE = 29;
+	static const int MIN_SIZE = 33;
 
 	void Save(FileWriter& f) const;
 	void Load(FileReader& f);

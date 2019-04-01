@@ -40,6 +40,20 @@ UnitData* UnitGroup::GetLeader(int level) const
 }
 
 //=================================================================================================
+Int2 UnitGroup::GetLevelRange() const
+{
+	Int2 level_range(99, -99);
+	for(const Entry& entry : entries)
+	{
+		if(entry.ud->level.x < level_range.x)
+			level_range.x = entry.ud->level.x;
+		if(entry.ud->level.y > level_range.y)
+			level_range.y = entry.ud->level.y;
+	}
+	return level_range;
+}
+
+//=================================================================================================
 UnitGroup* UnitGroup::TryGet(Cstring id)
 {
 	for(UnitGroup* group : groups)
@@ -71,7 +85,7 @@ void TmpUnitGroup::ReleaseS()
 }
 
 //=================================================================================================
-void TmpUnitGroup::Fill(UnitGroup* group, int min_level, int max_level)
+void TmpUnitGroup::Fill(UnitGroup* group, int min_level, int max_level, bool required)
 {
 	assert(group && min_level <= max_level);
 	this->min_level = min_level;
@@ -81,19 +95,11 @@ void TmpUnitGroup::Fill(UnitGroup* group, int min_level, int max_level)
 
 	FillInternal(group);
 
-	if(entries.empty())
+	if(entries.empty() && required)
 	{
 		// if level is too low pick lowest possible in this unit group
 		// if level is too high pick highest possible in this unit group
-		Int2 level_range(99, -99);
-		for(UnitGroup::Entry& entry : group->entries)
-		{
-			if(entry.ud->level.x < level_range.x)
-				level_range.x = entry.ud->level.x;
-			if(entry.ud->level.y > level_range.y)
-				level_range.y = entry.ud->level.y;
-		}
-
+		Int2 level_range = group->GetLevelRange();
 		if(level_range.y > min_level)
 		{
 			// too low location level
@@ -243,4 +249,61 @@ TmpUnitGroup* TmpUnitGroup::GetInstanceS()
 	TmpUnitGroup* group = ObjectPoolProxy<TmpUnitGroup>::Get();
 	group->refs = 1;
 	return group;
+}
+
+
+//=================================================================================================
+TmpUnitGroupList::~TmpUnitGroupList()
+{
+	TmpUnitGroup::Free(groups);
+}
+
+//=================================================================================================
+void TmpUnitGroupList::Fill(UnitGroupList* list, int level)
+{
+	TmpUnitGroup* tmp = nullptr;
+	for(UnitGroup* group : list->groups)
+	{
+		if(!tmp)
+			tmp = ObjectPoolProxy<TmpUnitGroup>::Get();
+		tmp->Fill(group, level, false);
+		if(!tmp->entries.empty())
+		{
+			groups.push_back(tmp);
+			tmp = nullptr;
+		}
+	}
+
+	if(groups.empty())
+	{
+		UnitGroup* best = nullptr;
+		int best_diff = -1;
+		for(UnitGroup* group : list->groups)
+		{
+			Int2 level_range = group->GetLevelRange();
+			int diff;
+			if(level < level_range.x)
+				diff = level_range.x - level;
+			else
+				diff = level - level_range.y;
+			if(best_diff == -1 || diff < best_diff)
+			{
+				best_diff = diff;
+				best = group;
+			}
+		}
+
+		if(!tmp)
+			tmp = ObjectPoolProxy<TmpUnitGroup>::Get();
+		tmp->Fill(best, level);
+		groups.push_back(tmp);
+	}
+	else if(tmp)
+		tmp->Free();
+}
+
+//=================================================================================================
+vector<TmpUnitGroup::Spawn>& TmpUnitGroupList::Roll(int level, int count)
+{
+	return RandomItem(groups)->Roll(level, count);
 }

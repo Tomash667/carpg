@@ -557,6 +557,34 @@ int Net::GetServerFlags()
 }
 
 //=================================================================================================
+void Net::ClearChanges()
+{
+	for(NetChange& c : changes)
+	{
+		switch(c.type)
+		{
+		case NetChange::TALK:
+		case NetChange::TALK_POS:
+			if(IsServer() && c.str)
+			{
+				StringPool.Free(c.str);
+				RemoveElement(net_strs, c.str);
+				c.str = nullptr;
+			}
+			break;
+		case NetChange::RUN_SCRIPT:
+		case NetChange::CHEAT_ARENA:
+			StringPool.Free(c.str);
+			break;
+		}
+	}
+	changes.clear();
+
+	for(PlayerInfo* info : players)
+		info->changes.clear();
+}
+
+//=================================================================================================
 void Net::InitClient()
 {
 	Info("Initlializing client...");

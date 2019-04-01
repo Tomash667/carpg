@@ -242,6 +242,7 @@ void Game::LoadGameCommon(cstring filename, int slot)
 		N.SendAll(f, IMMEDIATE_PRIORITY, RELIABLE);
 
 		N.mp_load = true;
+		N.ClearChanges();
 	}
 
 	prev_game_state = game_state;
@@ -338,7 +339,7 @@ bool Game::ValidateNetSaveForLoading(GameReader& f, int slot)
 	else
 		ptr = &gui->saveload->GetSaveSlot(slot);
 	SaveSlot& ss = *ptr;
-	if(ss.load_version < V_DEV)
+	if(ss.load_version < V_0_9)
 		throw SaveException(txTooOldVersion, Format("Too old save version (%d).", ss.load_version));
 	for(PlayerInfo* player : N.players)
 	{
@@ -594,7 +595,7 @@ bool Game::LoadGameHeader(GameReader& f, SaveSlot& slot)
 	f >> flags;
 
 	// info
-	if(slot.load_version >= V_DEV)
+	if(slot.load_version >= V_0_9)
 	{
 		slot.hardcore = IS_SET(flags, SF_HARDCORE);
 		slot.on_worldmap = IS_SET(flags, SF_ON_WORLDMAP);
@@ -712,7 +713,7 @@ void Game::LoadGame(GameReader& f)
 		online_save ? 1 : 0, IS_SET(flags, SF_DEBUG) ? 1 : 0);
 
 	// info
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_9)
 	{
 		f.SkipString1(); // text
 		f.SkipString1(); // player name
@@ -790,10 +791,7 @@ void Game::LoadGame(GameReader& f)
 	if(LOAD_VERSION < V_0_8)
 		W.LoadOld(f, loading, 3, false);
 	f >> L.enter_from;
-	if(LOAD_VERSION >= V_0_3)
-		f >> L.light_angle;
-	else
-		L.light_angle = Random(PI * 2);
+	f >> L.light_angle;
 
 	// set entities pointers
 	LoadingStep(txLoadingData);
@@ -989,7 +987,7 @@ void Game::LoadGame(GameReader& f)
 		L.is_open = false;
 
 	// gui
-	if(LOAD_VERSION <= V_0_3)
+	if(LOAD_VERSION == V_0_3)
 		gui->LoadOldGui(f);
 	gui->game_gui->PositionPanels();
 
@@ -1098,10 +1096,6 @@ void Game::LoadGame(GameReader& f)
 	LoadResources(txEndOfLoading, game_state2 == GS_WORLDMAP);
 	if(!N.mp_quickload)
 		gui->load_screen->visible = false;
-
-#ifdef _DEBUG
-	Team.ValidateTeamItems();
-#endif
 
 	Info("Game loaded.");
 	L.entering = false;
@@ -1235,11 +1229,7 @@ void Game::RemoveUnusedAiAndCheck()
 	if(deleted)
 	{
 		RemoveNullElements(ais);
-		cstring s = Format("Removed unused ais: %u.", prev_size - ais.size());
-		Warn(s);
-#ifdef _DEBUG
-		gui->messages->AddGameMsg(s, 10.f);
-#endif
+		ReportError(5, Format("Removed unused ais: %u.", prev_size - ais.size()));
 	}
 
 #ifdef _DEBUG

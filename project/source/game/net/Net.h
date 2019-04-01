@@ -180,6 +180,7 @@ public:
 	void WritePlayerStartData(BitStreamWriter& f, PlayerInfo& info);
 	void WriteLevelData(BitStream& stream, bool loaded_resources);
 	int GetServerFlags();
+	void ClearChanges();
 
 	vector<PlayerInfo*> old_players;
 	uint active_players, max_players;

@@ -271,7 +271,6 @@ void Quest_Sawmill::GenerateSawmill(bool in_progress)
 		Unit* u = L.SpawnUnitNearLocation(L.local_ctx, Vec3(128, 0, 128), ud, nullptr, -2);
 		assert(u);
 		u->rot = Random(MAX_ANGLE);
-		u->hero->name = game->txArthur;
 		u->hero->know_name = true;
 		u->ApplyHumanData(hd_lumberjack);
 
@@ -305,7 +304,6 @@ void Quest_Sawmill::GenerateSawmill(bool in_progress)
 		Unit* u = L.SpawnUnitNearLocation(L.local_ctx, spawn_pt, ud, nullptr, -2);
 		assert(u);
 		u->rot = rot;
-		u->hero->name = game->txArthur;
 		u->hero->know_name = true;
 		u->ApplyHumanData(hd_lumberjack);
 

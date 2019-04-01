@@ -410,6 +410,7 @@ void Game::UpdateAi(float dt)
 						assert(0);
 						u.weapon_state = WS_HIDDEN;
 						ai.potion = -1;
+						ReportError(8, Format("Unit %s was hiding weapon without action.", u.GetRealName()));
 					}
 
 					if(ai.in_combat)
@@ -420,12 +421,9 @@ void Game::UpdateAi(float dt)
 					if(u.usable && u.usable->user != &u)
 					{
 						// naprawa b³êdu gdy siê on zdarzy a nie rozwi¹zanie
-						Warn("Invalid usable user: %s is using %s but the user is %s.", u.data->id.c_str(), u.usable->base->id.c_str(),
-							u.usable->user ? u.usable->user->data->id.c_str() : "nullptr");
+						ReportError(2, Format("Invalid usable user: %s is using %s but the user is %s.", u.GetRealName(), u.usable->base->id.c_str(),
+							u.usable->user ? u.usable->user->GetRealName() : "nullptr"));
 						u.usable = nullptr;
-#ifdef _DEBUG
-						gui->messages->AddGameMsg("Invalid usable user!", 5.f);
-#endif
 					}
 					if(u.action == A_BLOCK)
 					{
@@ -441,10 +439,7 @@ void Game::UpdateAi(float dt)
 							c.id = AID_StopBlock;
 							c.f[1] = 1.f;
 						}
-						Warn("Unit %s (%s) blocks in idle.", u.data->id.c_str(), u.GetName());
-#ifdef _DEBUG
-						gui->messages->AddGameMsg("Unit blocks in idle!", 5.f);
-#endif
+						ReportError(3, Format("Unit %s blocks in idle.", u.GetRealName()));
 					}
 					if(u.look_target && !u.usable)
 					{
@@ -1567,7 +1562,12 @@ void Game::UpdateAi(float dt)
 					{
 						WeaponType weapon = W_NONE;
 						if(u.PreferMelee() || IS_SET(u.data->flags, F_MAGE) || !u.HaveBow())
-							weapon = W_ONE_HANDED;
+						{
+							if(u.HaveWeapon())
+								weapon = W_ONE_HANDED;
+							else if(u.HaveBow())
+								weapon = W_BOW;
+						}
 						else
 						{
 							float safe_dist = (u.IsHoldingMeeleWeapon() ? 5.f : 2.5f);
@@ -1575,7 +1575,7 @@ void Game::UpdateAi(float dt)
 								safe_dist /= 2.f;
 							if(best_dist > safe_dist)
 								weapon = W_BOW;
-							else
+							else if(u.HaveWeapon())
 								weapon = W_ONE_HANDED;
 						}
 

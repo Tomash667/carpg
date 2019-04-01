@@ -1,17 +1,36 @@
 Historia zmian
 
 --------------------------------------------------------------------------------
-Version 0.9 (???):
+Wersja 0.10 (2019-??-??):
+! nie mo¿na wczytywaæ ju¿ zapisów z wersji 0.2.20 lub starszej
++ aktualizacja bibliotek: FMod 1.10.12, JSON for Modern C++ 3.6.1
+
+--------------------------------------------------------------------------------
+Wersja 0.9 (2019-03-30):
 ! usuniête wsparcie dla windowsa xp
 ! nie mo¿na wczytywaæ ju¿ zapisów z wersji 0.2.12 lub starszej
 + pierwsze skryptowe zadanie - dostarcz zasoby
 + wczytywanie gry wieloosobowej bez wychodzenia do menu
++ nowi wrogowie: niedŸwiedŸ, czarny niedŸwiedŸ
 + wiêcej ikon lokalizacji i nazw
 + usprawnienia skryptów dialogowych
 + usuwanie korytarzy prowadz¹cych do nik¹d
 + aktualizacja bibliotek: Angelscript 2.33, Bullet 2.88, DirectXMath 3.13, FMod 1.10.11, SLikeNet 0.1.2, Visual Leak Detector 2.5.1, zlib 1.2.11
 + lepsza obs³uga trybu wielu graczy przy opuszczaniu lokalizacji
 + przechowywanie obrazka i informacji zapisu w jednym pliku
++ amulety: srebrny, z³oty, rubinowy, diamentowy
++ skóry z wilka/niedŸwiedzia
++ lepsze zg³aszanie b³êdów
+- naprawiony rzadki crash gdy gobliny/orkowie jedz¹ jedzenie (czêsto zdarza³ siê w samouczku) [Harorri]
+- naprawiona komenda kill po u¿yciu na zw³okach blokowa³a zabieranie przedmiotów
+- naprawiony dziennik nie blokowa³ sterowania graczem
+- naprawione rozmawianie/podnoszenie przedmiotów przez drzwi
+- naprawione rozmawianie/podnoszenie przedmiotów w budynkach przez œcianê
+- naprawione generowanie kamieni w jaskini/kopalni które mog³o zablokowaæ przejœcie
+- naprawione rozmawianie z postaci¹ która opuszcza/wchodzi do budynku
+- naprawiony wyciek pamiêci zwi¹zany z portalami u klienta
+- naprawiony crash przy ponownych odwiedzinach lokalizacji za portalem
+- naprawiona nieprawid³owa pozycja na mapie œwiata u klienta po wczytaniu gry w lokalizacji za portalem
 - naprawiony b³¹d po³¹czenia do serwera przy u¿yciu has³a LAN
 - naprawiony brak wp³ywu hp na morale jednostek
 - naprawiony brak magicznego efektu u klienta gdy znika umar³a przywo³ana jednostka
@@ -38,19 +57,8 @@ Version 0.9 (???):
 - naprawione u¿ywanie przez ³uczników/magów ataku wrêcz z kilku metrów jeœli coœ blokuje linie strza³u
 - naprawione ai gdy ktoœ inny poinformuje o wrogu próbuje siê tam dostaæ nawet je¿eli ten wróg ju¿ dawno nie ¿yje
 - naprawione opóŸnienie przy opuszczaniu lokalizacji na mapie œwiata/przy wchodzeniu do lokalizacji przed otwarciem ekranu wczytywania
-
---------------------------------------------------------------------------------
-Wersja 0.8.1 (???):
-- naprawiony rzadki crash gdy gobliny/orkowie jedz¹ jedzenie (czêsto zdarza³ siê w samouczku) [Harorri]
-- naprawiona komenda kill po u¿yciu na zw³okach blokowa³a zabieranie przedmiotów
-- naprawiony dziennik nie blokowa³ sterowania graczem
-- naprawione rozmawianie/podnoszenie przedmiotów przez drzwi
-- naprawione rozmawianie/podnoszenie przedmiotów w budynkach przez œcianê
-- naprawione generowanie kamieni w jaskini/kopalni które mog³o zablokowaæ przejœcie
-- naprawione rozmawianie z postaci¹ która opuszcza/wchodzi do budynku
-- naprawiony wyciek pamiêci zwi¹zany z portalami u klienta
-- naprawiony crash przy ponownych odwiedzinach lokalizacji za portalem
-- naprawiona nieprawid³owa pozycja na mapie œwiata u klienta po wczytaniu gry w lokalizacji za portalem
+- naprawiony crash gdy nekromanta o¿ywi³ wroga któremu zabrano broñ [Anonymous]
+- naprawione zawody na arenie powoduj¹ problemy z dymkami z tekstem
 
 --------------------------------------------------------------------------------
 Wersja 0.8 (2019-02-23):

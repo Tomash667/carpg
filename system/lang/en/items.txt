@@ -517,6 +517,21 @@ item al_necromancer {
 }
 
 //------------------------------------------------------------------------------
+// AMULETS
+item a_silver {
+	name "Silver amulet"
+}
+item a_gold {
+	name "Golden amulet"
+}
+item a_ruby {
+	name "Ruby amulet"
+}
+item a_diamond {
+	name "Diamond amulet"
+}
+
+//------------------------------------------------------------------------------
 // POTIONS
 item p_nreg {
 	name "Healing brew"
@@ -683,6 +698,18 @@ item cup {
 }
 item plate {
 	name "Plate"
+}
+item wolf_pelt {
+	name "Wolf pelt"
+}
+item worg_pelt {
+	name "Worg pelt"
+}
+item bear_pelt {
+	name "Bear pelt"
+}
+item black_bear_pelt {
+	name "Black bear pelt"
 }
 
 //------------------------------------------------------------------------------

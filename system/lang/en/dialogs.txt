@@ -1370,7 +1370,7 @@ dialog q_kill_animals_timeout {
 //==============================================================================
 dialog q_kill_animals_end {
 	0 "Excellent work, these creatures often troubled travelers."
-	1 "Here you got 2500 gold pieces as reward."
+	1 "Here you got $reward$ gold pieces as reward."
 }
 
 //==============================================================================

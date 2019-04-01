@@ -36,10 +36,7 @@ void Door::Load(FileReader& f, bool local)
 	f >> locked;
 	f >> state;
 	f >> netid;
-	if(LOAD_VERSION >= V_0_3)
-		f >> door2;
-	else
-		door2 = false;
+	f >> door2;
 
 	if(local)
 	{

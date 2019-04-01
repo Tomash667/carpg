@@ -604,6 +604,7 @@ public:
 	bool HaveBow() const { return slots[SLOT_BOW] != nullptr; }
 	bool HaveShield() const { return slots[SLOT_SHIELD] != nullptr; }
 	bool HaveArmor() const { return slots[SLOT_ARMOR] != nullptr; }
+	bool HaveAmulet() const { return slots[SLOT_AMULET] != nullptr; }
 	const Weapon& GetWeapon() const
 	{
 		assert(HaveWeapon());
@@ -623,6 +624,11 @@ public:
 	{
 		assert(HaveArmor());
 		return slots[SLOT_ARMOR]->ToArmor();
+	}
+	const Item& GetAmulet() const
+	{
+		assert(HaveAmulet());
+		return *slots[SLOT_AMULET];
 	}
 	// wyrzuca przedmiot o podanym indeksie, zwraca czy to by³ ostatni
 	bool DropItem(int index);

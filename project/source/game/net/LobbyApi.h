@@ -23,19 +23,29 @@ class LobbyApi
 		GET_SERVERS,
 		GET_CHANGES,
 		GET_VERSION,
-		IGNORE
+		IGNORE,
+		REPORT
 	};
+
+	struct Op
+	{
+		Operation op;
+		int value;
+		string* str;
+	};
+
 public:
 	LobbyApi();
 	~LobbyApi();
 	void Update();
 	void Reset();
-	void GetServers() { AddOperation(GET_SERVERS); }
-	void GetChanges() { AddOperation(GET_CHANGES); }
+	void GetServers() { AddOperation({ GET_SERVERS, 0, nullptr }); }
+	void GetChanges() { AddOperation({ GET_CHANGES, 0, nullptr }); }
 	bool IsBusy() const { return current_op != NONE; }
 	int GetVersion(delegate<bool()> cancel_clbk);
 	void StartPunchthrough(RakNetGUID* target);
 	void EndPunchthrough();
+	void Report(int id, cstring text);
 
 	static cstring API_URL;
 	static const int API_PORT;
@@ -43,14 +53,14 @@ public:
 
 private:
 	void UpdateInternal();
-	void AddOperation(Operation op);
-	void DoOperation(Operation op);
+	void AddOperation(Op op);
+	void DoOperation(Op op);
 	void ParseResponse(const char* response);
 
 	TCPInterface* tcp;
 	HTTPConnection2* http;
 	NatPunchthroughClient* np_client;
-	std::queue<Operation> requests;
+	std::queue<Op> requests;
 	Operation current_op;
 	int timestamp, version, version2;
 	bool np_attached;

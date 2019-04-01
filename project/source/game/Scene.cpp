@@ -650,6 +650,13 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 		for(vector<GroundItem*>::iterator it = ctx.items->begin(), end = ctx.items->end(); it != end; ++it)
 		{
 			GroundItem& item = **it;
+			if(!item.item)
+			{
+				ReportError(7, Format("GroundItem with null item at %g;%g;%g (count %d, team count %d).",
+					item.pos.x, item.pos.y, item.pos.z, item.count, item.team_count));
+				ctx.items->erase(it);
+				break;
+			}
 			Mesh* mesh;
 			pos = item.pos;
 			if(IS_SET(item.item->flags, ITEM_GROUND_MESH))
@@ -821,7 +828,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 	{
 		for(vector<Blood>::iterator it = ctx.bloods->begin(), end = ctx.bloods->end(); it != end; ++it)
 		{
-			if(it->size > 0.f && frustum.SphereToFrustum(it->pos, it->size))
+			if(it->size > 0.f && frustum.SphereToFrustum(it->pos, it->size * it->scale))
 			{
 				if(!outside)
 					it->lights = GatherDrawBatchLights(ctx, nullptr, it->pos.x, it->pos.z, it->size);
@@ -3642,7 +3649,7 @@ void Game::DrawBloods(bool outside, const vector<Blood*>& bloods, const vector<L
 		for(int i = 0; i < 4; ++i)
 			blood_v[i].normal = blood.normal;
 
-		const float s = blood.size,
+		const float s = blood.size * blood.scale,
 			r = blood.rot;
 
 		if(blood.normal.Equal(Vec3(0, 1, 0)))
@@ -3942,10 +3949,8 @@ void Game::DrawTrailParticles(const vector<TrailParticleEmitter*>& tpes)
 
 		if(id < 0 || id >= (int)tp.parts.size() || !tp.parts[id].exists)
 		{
-			Error("Trail particle emitter error, id = %d!", id);
-#ifdef _DEBUG
-			gui->messages->AddGameMsg("Trail particle emitter error!", 2.f);
-#endif
+			ReportError(6, Format("Trail particle emitter error, id = %d!", id));
+			const_cast<TrailParticleEmitter&>(tp).alive = false;
 			continue;
 		}
 

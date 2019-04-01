@@ -149,57 +149,27 @@ void AIController::Load(GameReader& f)
 	f >> alert_target_pos;
 	f >> start_pos;
 	f >> in_combat;
-	if(LOAD_VERSION >= V_0_3)
+	f >> pf_state;
+	if(pf_state != PFS_NOT_USING)
 	{
-		f >> pf_state;
-		if(pf_state != PFS_NOT_USING)
+		f >> pf_timer;
+		if(pf_state == PFS_WALKING || pf_state == PFS_LOCAL_TRY_WALK)
 		{
-			f >> pf_timer;
-			if(pf_state == PFS_WALKING || pf_state == PFS_LOCAL_TRY_WALK)
-			{
-				f.ReadVector2(pf_path);
-				f >> pf_target_tile;
-				if(pf_state == PFS_LOCAL_TRY_WALK)
-					f >> pf_local_try;
-			}
-			if(pf_state == PFS_WALKING || pf_state == PFS_WALKING_LOCAL)
-			{
-				f.ReadVector1(pf_local_path);
-				f >> pf_local_target_tile;
-			}
-		}
-	}
-	else
-	{
-		bool use_path = f.Read<bool>();
-		if(use_path)
-		{
-			f.ReadVector4(pf_path);
+			f.ReadVector2(pf_path);
 			f >> pf_target_tile;
+			if(pf_state == PFS_LOCAL_TRY_WALK)
+				f >> pf_local_try;
 		}
-		bool use_local_path = f.Read<bool>();
-		if(use_local_path)
+		if(pf_state == PFS_WALKING || pf_state == PFS_WALKING_LOCAL)
 		{
-			f.ReadVector4(pf_local_path);
+			f.ReadVector1(pf_local_path);
 			f >> pf_local_target_tile;
 		}
-		if(use_path && use_local_path)
-			pf_state = PFS_WALKING;
-		else
-			pf_state = PFS_NOT_USING;
 	}
 	f >> next_attack;
 	f >> timer;
 	f >> ignore;
 	f >> morale;
-	if(LOAD_VERSION < V_0_3)
-	{
-		float last_pf_check, last_lpf_check;
-		f >> last_pf_check;
-		f >> last_lpf_check;
-		if(pf_state == PFS_WALKING)
-			pf_timer = last_pf_check;
-	}
 	f >> last_scan;
 	f >> start_rot;
 	if(unit->data->spells)
@@ -213,11 +183,8 @@ void AIController::Load(GameReader& f)
 				escape_room = ((InsideLocation*)L.location)->GetLevelData().rooms[room_id];
 			else
 			{
+				Game::Get().ReportError(1, Format("Unit %s has escape_room %d.", unit->GetName(), room_id));
 				escape_room = nullptr;
-#ifdef _DEBUG
-				Warn("%s had escape_room %d.", unit->GetName(), room_id);
-				Game::Get().gui->messages->AddGameMsg("Unit had escape room!", 5.f);
-#endif
 			}
 		}
 		else

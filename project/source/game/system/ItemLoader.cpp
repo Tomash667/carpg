@@ -105,6 +105,7 @@ void ItemLoader::InitTokenizer()
 		{ "bow", IT_BOW },
 		{ "shield", IT_SHIELD },
 		{ "armor", IT_ARMOR },
+		{ "amulet", IT_AMULET },
 		{ "other", IT_OTHER },
 		{ "consumable", IT_CONSUMABLE },
 		{ "book", IT_BOOK },
@@ -327,6 +328,9 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 	case IT_ARMOR:
 		item = new Armor;
 		req |= BIT(P_DEFENSE) | BIT(P_MOBILITY) | BIT(P_REQ_STR) | BIT(P_MATERIAL) | BIT(P_UNIT_TYPE) | BIT(P_TYPE) | BIT(P_TEX_OVERRIDE);
+		break;
+	case IT_AMULET:
+		item = new Amulet;
 		break;
 	case IT_CONSUMABLE:
 		item = new Consumable;
@@ -591,6 +595,9 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 		break;
 	case IT_ARMOR:
 		Armor::armors.push_back(static_cast<Armor*>(item_ptr));
+		break;
+	case IT_AMULET:
+		Amulet::amulets.push_back(static_cast<Amulet*>(item_ptr));
 		break;
 	case IT_CONSUMABLE:
 		Consumable::consumables.push_back(static_cast<Consumable*>(item_ptr));
@@ -1143,7 +1150,7 @@ void ItemLoader::CalculateCrc()
 
 	for(auto& it : Item::items)
 	{
-		auto item = it.second;
+		Item* item = it.second;
 
 		crc.Update(item->id);
 		crc.Update(item->mesh_id);
@@ -1216,6 +1223,7 @@ void ItemLoader::CalculateCrc()
 			}
 			break;
 		case IT_GOLD:
+		case IT_AMULET:
 			break;
 		default:
 			assert(0);

@@ -165,65 +165,15 @@ void OutsideLocation::Load(GameReader& f, bool local, LOCATION_TOKEN token)
 		size2 *= size2;
 		h = new float[size2];
 		tiles = new TerrainTile[size*size];
-		if(LOAD_VERSION >= V_0_3)
+		f.Read(tiles, sizeof(TerrainTile)*size*size);
+		if(LOAD_VERSION < V_0_5)
 		{
-			f.Read(tiles, sizeof(TerrainTile)*size*size);
-			if(LOAD_VERSION < V_0_5)
-			{
-				for(int i = 0; i < size*size; ++i)
-				{
-					TerrainTile& tt = tiles[i];
-					if(tt.mode == OLD::TM_BUILDING_NO_PHY)
-						tt.mode = TM_BUILDING;
-				}
-			}
-		}
-		else
-		{
-			OLD::TERRAIN_TILE* old_tiles = new OLD::TERRAIN_TILE[size*size];
-			f.Read(old_tiles, sizeof(OLD::TERRAIN_TILE)*size*size);
 			for(int i = 0; i < size*size; ++i)
 			{
 				TerrainTile& tt = tiles[i];
-				tt.t2 = TT_ROAD;
-				tt.alpha = 0;
-				switch(old_tiles[i])
-				{
-				case OLD::TT_GRASS:
-					tt.t = TT_GRASS;
-					tt.mode = TM_NORMAL;
-					break;
-				case OLD::TT_GRASS2:
-					tt.t = TT_GRASS2;
-					tt.mode = TM_NORMAL;
-					break;
-				case OLD::TT_GRASS3:
-					tt.t = TT_GRASS3;
-					tt.mode = TM_NORMAL;
-					break;
-				case OLD::TT_SAND:
-					tt.t = TT_SAND;
-					tt.mode = TM_PATH;
-					break;
-				case OLD::TT_ROAD:
-					tt.t = TT_ROAD;
-					tt.mode = TM_ROAD;
-					break;
-				case OLD::TT_BUILD_GRASS:
-					tt.t = TT_GRASS;
-					tt.mode = TM_BUILDING_BLOCK;
-					break;
-				case OLD::TT_BUILD_SAND:
-					tt.t = TT_SAND;
-					tt.mode = TM_BUILDING_BLOCK;
-					break;
-				case OLD::TT_BUILD_ROAD:
-					tt.t = TT_ROAD;
-					tt.mode = TM_BUILDING_BLOCK;
-					break;
-				}
+				if(tt.mode == OLD::TM_BUILDING_NO_PHY)
+					tt.mode = TM_BUILDING;
 			}
-			delete[] old_tiles;
 		}
 		f.Read(h, sizeof(float)*size2);
 	}

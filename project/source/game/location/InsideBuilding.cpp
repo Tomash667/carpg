@@ -144,10 +144,7 @@ void InsideBuilding::Load(GameReader& f, bool local)
 	f >> level_shift;
 	f >> arena1;
 	f >> arena2;
-	if(LOAD_VERSION >= V_0_3)
-		f >> enter_y;
-	else
-		enter_y = 1.1f;
+	f >> enter_y;
 
 	units.resize(f.Read<uint>());
 	for(Unit*& unit : units)

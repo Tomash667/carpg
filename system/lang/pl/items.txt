@@ -517,6 +517,21 @@ item al_necromancer {
 }
 
 //------------------------------------------------------------------------------
+// AMULETS
+item a_silver {
+	name "Srebrny amulet"
+}
+item a_gold {
+	name "Z≥oty amulet"
+}
+item a_ruby {
+	name "Rubinowy amulet"
+}
+item a_diamond {
+	name "Diamentowy amulet"
+}
+
+//------------------------------------------------------------------------------
 // POTIONS
 item p_nreg {
 	name "Napar leczniczy"
@@ -683,6 +698,18 @@ item cup {
 }
 item plate {
 	name "Talerz"
+}
+item wolf_pelt {
+	name "Futro wilka"
+}
+item worg_pelt {
+	name "Futro worga"
+}
+item bear_pelt {
+	name "Futro niedüwiedzia"
+}
+item black_bear_pelt {
+	name "Futro czarnego niedüwiedzia"
 }
 
 //------------------------------------------------------------------------------

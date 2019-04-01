@@ -1,17 +1,36 @@
 Changelog
 
 --------------------------------------------------------------------------------
-Version 0.9 (???):
+Version 0.10 (2019-??-??):
+! cannot load saves from version 0.2.20 or older
++ update libraries: FMod 1.10.12, JSON for Modern C++ 3.6.1
+
+--------------------------------------------------------------------------------
+Version 0.9 (2019-03-30):
 ! removed support for windows xp
 ! cannot load saves from version 0.2.12 or older
 + first scripted quest - deliver resources
 + loading multiplayer game without exiting to menu
++ new enemies: bear, black bear
 + more location icons and names
 + dialog script improvements
 + removing dead end corridors
 + update libraries: Angelscript 2.33, Bullet 2.88, DirectXMath 3.13, FMod 1.10.11, SLikeNet 0.1.2, Visual Leak Detector 2.5.1, zlib 1.2.11
 + better handling of multiplayer when leaving location
 + keeping save image and info inside single file
++ amulets: silver, gold, ruby, diamond
++ wolf/bear pelts
++ better error reporting
+- fixed rare crash when goblins/orcs eat food (often happen in tutorial) [Harorri]
+- fixed using kill command on corpse prevent from looting
+- fixed journal not blocking player controlls
+- fixed talking/picking items thru doors at right angle
+- fixed talking/picking items inside building thru walls
+- fixed generating rocks in cave/mine that could block path
+- fixed talking with unit exiting/entering building
+- fixed clients portal memory leak
+- fixed crash when revisiting locations by portal
+- fixed clients invalid position on world map when loading game in locations by portal
 - fixed failed connection when using LAN with password
 - fixed enemy hp not affecting morale
 - fixed missing magic effect for clients when despawning dead summoned unit
@@ -38,19 +57,8 @@ Version 0.9 (???):
 - fixed ai melee attacks from archers/mages from far range when their line of sight is blocked
 - fixed ai trying to get to enemy corpse when someone else alerted him and target is already dead
 - fixed delay before leaving location on worldmap/entering location before showing load screen
-
---------------------------------------------------------------------------------
-Version 0.8.1 (???):
-- fixed rare crash when goblins/orcs eat food (often happen in tutorial) [Harorri]
-- fixed using kill command on corpse prevent from looting
-- fixed journal not blocking player controlls
-- fixed talking/picking items thru doors at right angle
-- fixed talking/picking items inside building thru walls
-- fixed generating rocks in cave/mine that could block path
-- fixed talking with unit exiting/entering building
-- fixed clients portal memory leak
-- fixed crash when revisiting locations by portal
-- fixed clients invalid position on world map when loading game in locations by portal
+- fixed crash when necromancer revived enemy with weapons taken [Anonymous]
+- fixed tournament corrupting speech bubbles
 
 --------------------------------------------------------------------------------
 Version 0.8 (2019-02-23):

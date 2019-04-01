@@ -78,6 +78,7 @@ class WorldMapGui;
 //-----------------------------------------------------------------------------
 struct Action;
 struct AIController;
+struct Amulet;
 struct Armor;
 struct BaseObject;
 struct Blood;

@@ -700,186 +700,185 @@ void World::GenerateWorld(int start_location_type, int start_location_target)
 			start_location_type = -1;
 		}
 
-		if(loc.type == L_CITY)
+		switch(loc.type)
 		{
-			City& city = (City&)loc;
-			city.citizens = 0;
-			city.citizens_world = 0;
-			city.st = 1;
-			LocalVector2<Building*> buildings;
-			city.GenerateCityBuildings(buildings.Get(), true);
-			city.buildings.reserve(buildings.size());
-			for(Building* b : buildings)
+		case L_CITY:
 			{
-				CityBuilding& cb = Add1(city.buildings);
-				cb.type = b;
-			}
-
-			if(start_location_type == L_CITY && start_location_target == 1 && city.settlement_type == City::SettlementType::Village)
-			{
-				start_location = index;
-				start_location_type = -1;
-			}
-		}
-		else if(loc.type == L_DUNGEON || loc.type == L_CRYPT)
-		{
-			InsideLocation* inside;
-
-			int target;
-			if(loc.type == L_CRYPT)
-			{
-				if(guaranteed_crypt == -1)
-					target = (Rand() % 2 == 0 ? HERO_CRYPT : MONSTER_CRYPT);
-				else if(guaranteed_crypt == 0)
+				City& city = (City&)loc;
+				city.citizens = 0;
+				city.citizens_world = 0;
+				city.st = 1;
+				LocalVector2<Building*> buildings;
+				city.GenerateCityBuildings(buildings.Get(), true);
+				city.buildings.reserve(buildings.size());
+				for(Building* b : buildings)
 				{
-					target = HERO_CRYPT;
-					++guaranteed_crypt;
+					CityBuilding& cb = Add1(city.buildings);
+					cb.type = b;
 				}
-				else
+
+				if(start_location_type == L_CITY && start_location_target == 1 && city.settlement_type == City::SettlementType::Village)
 				{
-					target = MONSTER_CRYPT;
-					guaranteed_crypt = -1;
+					start_location = index;
+					start_location_type = -1;
 				}
 			}
-			else
+			break;
+		case L_DUNGEON:
+		case L_CRYPT:
 			{
-				if(guaranteed_dungeon == -1)
+				InsideLocation* inside;
+
+				int target;
+				if(loc.type == L_CRYPT)
 				{
-					switch(Rand() % 14)
+					if(guaranteed_crypt == -1)
+						target = (Rand() % 2 == 0 ? HERO_CRYPT : MONSTER_CRYPT);
+					else if(guaranteed_crypt == 0)
 					{
-					default:
-					case 0:
-					case 1:
-						target = HUMAN_FORT;
-						break;
-					case 2:
-					case 3:
-						target = DWARF_FORT;
-						break;
-					case 4:
-					case 5:
-						target = MAGE_TOWER;
-						break;
-					case 6:
-					case 7:
-						target = BANDITS_HIDEOUT;
-						break;
-					case 8:
-					case 9:
-						target = OLD_TEMPLE;
-						break;
-					case 10:
-						target = VAULT;
-						break;
-					case 11:
-					case 12:
-						target = NECROMANCER_BASE;
-						break;
-					case 13:
-						target = LABYRINTH;
-						break;
+						target = HERO_CRYPT;
+						++guaranteed_crypt;
+					}
+					else
+					{
+						target = MONSTER_CRYPT;
+						guaranteed_crypt = -1;
 					}
 				}
 				else
 				{
-					switch(guaranteed_dungeon)
+					if(guaranteed_dungeon == -1)
 					{
-					default:
-					case 0:
-						target = HUMAN_FORT;
-						break;
-					case 1:
-						target = DWARF_FORT;
-						break;
-					case 2:
-						target = MAGE_TOWER;
-						break;
-					case 3:
-						target = BANDITS_HIDEOUT;
-						break;
-					case 4:
-						target = OLD_TEMPLE;
-						break;
-					case 5:
-						target = VAULT;
-						break;
-					case 6:
-						target = NECROMANCER_BASE;
-						break;
-					case 7:
-						target = LABYRINTH;
-						break;
+						switch(Rand() % 14)
+						{
+						default:
+						case 0:
+						case 1:
+							target = HUMAN_FORT;
+							break;
+						case 2:
+						case 3:
+							target = DWARF_FORT;
+							break;
+						case 4:
+						case 5:
+							target = MAGE_TOWER;
+							break;
+						case 6:
+						case 7:
+							target = BANDITS_HIDEOUT;
+							break;
+						case 8:
+						case 9:
+							target = OLD_TEMPLE;
+							break;
+						case 10:
+							target = VAULT;
+							break;
+						case 11:
+						case 12:
+							target = NECROMANCER_BASE;
+							break;
+						case 13:
+							target = LABYRINTH;
+							break;
+						}
 					}
+					else
+					{
+						switch(guaranteed_dungeon)
+						{
+						default:
+						case 0:
+							target = HUMAN_FORT;
+							break;
+						case 1:
+							target = DWARF_FORT;
+							break;
+						case 2:
+							target = MAGE_TOWER;
+							break;
+						case 3:
+							target = BANDITS_HIDEOUT;
+							break;
+						case 4:
+							target = OLD_TEMPLE;
+							break;
+						case 5:
+							target = VAULT;
+							break;
+						case 6:
+							target = NECROMANCER_BASE;
+							break;
+						case 7:
+							target = LABYRINTH;
+							break;
+						}
 
-					++guaranteed_dungeon;
-					if(target == 8)
-						guaranteed_dungeon = -1;
+						++guaranteed_dungeon;
+						if(target == 8)
+							guaranteed_dungeon = -1;
+					}
+				}
+
+				BaseLocation& base = g_base_locations[target];
+				int levels = base.levels.Random();
+
+				if(levels == 1)
+					inside = new SingleInsideLocation;
+				else
+					inside = new MultiInsideLocation(levels);
+
+				inside->type = loc.type;
+				inside->state = loc.state;
+				inside->pos = loc.pos;
+				inside->index = loc.index;
+				delete &loc;
+				*it = inside;
+
+				inside->target = target;
+				int& st = GetTileSt(inside->pos);
+				if(target == LABYRINTH)
+				{
+					if(st < 6)
+						st = 6;
+					else if(st > 14)
+						st = 14;
+					inside->spawn = SG_UNDEAD;
+				}
+				else
+				{
+					if(st < 3)
+						st = 3;
+					inside->spawn = base.GetRandomSpawnGroup();
+				}
+				inside->st = st;
+
+				if(start_location_type == loc.type && start_location_target == target)
+				{
+					start_location = index;
+					start_location_type = -1;
 				}
 			}
-
-			BaseLocation& base = g_base_locations[target];
-			int levels = base.levels.Random();
-
-			if(levels == 1)
-				inside = new SingleInsideLocation;
-			else
-				inside = new MultiInsideLocation(levels);
-
-			inside->type = loc.type;
-			inside->state = loc.state;
-			inside->pos = loc.pos;
-			inside->index = loc.index;
-			delete &loc;
-			*it = inside;
-
-			inside->target = target;
-			int& st = GetTileSt(inside->pos);
-			if(target == LABYRINTH)
-			{
-				if(st < 6)
-					st = 6;
-				else if(st > 14)
-					st = 14;
-				inside->spawn = SG_UNDEAD;
-			}
-			else
-			{
-				if(st < 3)
-					st = 3;
-				inside->spawn = base.GetRandomSpawnGroup();
-			}
-			inside->st = st;
-
-			if(start_location_type == loc.type && start_location_target == target)
-			{
-				start_location = index;
-				start_location_type = -1;
-			}
-		}
-		else if(loc.type == L_ENCOUNTER)
+			break;
+		case L_ENCOUNTER:
 			loc.st = 10;
-		else if(loc.type == L_MOONWELL)
-		{
+			break;
+		case L_MOONWELL:
 			loc.st = 10;
 			GetTileSt(loc.pos) = 10;
-		}
-		else if(loc.type == L_CAVE)
-		{
-			int& st = GetTileSt(loc.pos);
-			if(st < 2)
-				st = 2;
-			else if(st > 6)
-				st = 6;
-			loc.st = st;
-		}
-		else if(loc.type == L_FOREST)
-		{
-			int& st = GetTileSt(loc.pos);
-			if(st < 2)
-				st = 2;
-			else if(st > 10)
-				st = 10;
-			loc.st = st;
+			break;
+		case L_CAVE:
+		case L_FOREST:
+			{
+				int& st = GetTileSt(loc.pos);
+				if(st < 2)
+					st = 2;
+				else if(st > 10)
+					st = 10;
+				loc.st = st;
+			}
+			break;
 		}
 
 		SetLocationImageAndName(*it);
@@ -1347,7 +1346,7 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 		f >> travel_timer;
 	}
 	encounters.resize(f.Read<uint>(), nullptr);
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_9)
 	{
 		int index = 0;
 		for(Encounter*& enc : encounters)
@@ -1498,8 +1497,6 @@ void World::LoadOld(GameReader& f, LoadingHandler& loading, int part, bool insid
 			travel_location_index = 0;
 			travel_timer = 1.f;
 		}
-		if(LOAD_VERSION < V_0_3)
-			travel_dir = Clip(-travel_dir);
 	}
 	else if(part == 2)
 		LoadNews(f);

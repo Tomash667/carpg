@@ -2663,6 +2663,7 @@ void Level::CreateBlood(LevelContext& ctx, const Unit& u, bool fully_created)
 	b.type = u.data->blood;
 	b.rot = Random(MAX_ANGLE);
 	b.size = (fully_created ? 1.f : 0.f);
+	b.scale = u.data->blood_size;
 
 	if(ctx.have_terrain)
 	{

@@ -415,7 +415,7 @@ void Options::Event(GuiEvent e)
 		case IdVsync:
 			{
 				Render* render = game->GetRender();
-				render->SetVsync(render->IsVsyncEnabled());
+				render->SetVsync(!render->IsVsyncEnabled());
 			}
 			break;
 		}

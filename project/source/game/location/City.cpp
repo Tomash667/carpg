@@ -145,28 +145,13 @@ void City::Load(GameReader& f, bool local, LOCATION_TOKEN token)
 
 		if(last_visit != -1)
 		{
-			int side;
-			Box2d spawn_area;
-			Box2d exit_area;
-			float spawn_dir;
+			f.ReadVector<byte>(entry_points);
+			bool have_exit;
+			f >> have_exit;
+			gates = f.Read<byte>();
 
-			if(LOAD_VERSION < V_0_3)
-			{
-				f >> side;
-				f >> spawn_area;
-				f >> exit_area;
-				f >> spawn_dir;
-			}
-			else
-			{
-				f.ReadVector<byte>(entry_points);
-				bool have_exit;
-				f >> have_exit;
-				gates = f.Read<byte>();
-
-				if(have_exit)
-					flags |= HaveExit;
-			}
+			if(have_exit)
+				flags |= HaveExit;
 
 			uint count;
 			f >> count;
@@ -203,268 +188,6 @@ void City::Load(GameReader& f, bool local, LOCATION_TOKEN token)
 			f >> quest_captain_time;
 			f >> arena_time;
 			f >> arena_pos;
-
-			if(LOAD_VERSION < V_0_3)
-			{
-				const float aa = 11.1f;
-				const float bb = 12.6f;
-				const float es = 1.3f;
-				const int mur1 = int(0.15f*size);
-				const int mur2 = int(0.85f*size);
-				TERRAIN_TILE road_type;
-
-				// setup entrance
-				switch(side)
-				{
-				case 0: // from top
-					{
-						Vec2 p(float(size) + 1.f, 0.8f*size * 2);
-						exit_area = Box2d(p.x - es, p.y + aa, p.x + es, p.y + bb);
-						gates = GATE_NORTH;
-						road_type = tiles[size / 2 + int(0.85f*size - 2)*size].t;
-					}
-					break;
-				case 1: // from left
-					{
-						Vec2 p(0.2f*size * 2, float(size) + 1.f);
-						exit_area = Box2d(p.x - bb, p.y - es, p.x - aa, p.y + es);
-						gates = GATE_WEST;
-						road_type = tiles[int(0.15f*size) + 2 + (size / 2)*size].t;
-					}
-					break;
-				case 2: // from bottom
-					{
-						Vec2 p(float(size) + 1.f, 0.2f*size * 2);
-						exit_area = Box2d(p.x - es, p.y - bb, p.x + es, p.y - aa);
-						gates = GATE_SOUTH;
-						road_type = tiles[size / 2 + int(0.15f*size + 2)*size].t;
-					}
-					break;
-				case 3: // from right
-					{
-						Vec2 p(0.8f*size * 2, float(size) + 1.f);
-						exit_area = Box2d(p.x + aa, p.y - es, p.x + bb, p.y + es);
-						gates = GATE_EAST;
-						road_type = tiles[int(0.85f*size) - 2 + (size / 2)*size].t;
-					}
-					break;
-				}
-
-				// update terrain tiles
-				// tiles under walls
-				for(int i = mur1; i <= mur2; ++i)
-				{
-					// north
-					tiles[i + mur1*size].Set(TT_SAND, TM_BUILDING);
-					if(tiles[i + (mur1 + 1)*size].t == TT_GRASS)
-						tiles[i + (mur1 + 1)*size].Set(TT_SAND, TT_GRASS, 128, TM_BUILDING);
-					// south
-					tiles[i + mur2*size].Set(TT_SAND, TM_BUILDING);
-					if(tiles[i + (mur2 - 1)*size].t == TT_GRASS)
-						tiles[i + (mur2 - 1)*size].Set(TT_SAND, TT_GRASS, 128, TM_BUILDING);
-					// west
-					tiles[mur1 + i*size].Set(TT_SAND, TM_BUILDING);
-					if(tiles[mur1 + 1 + i*size].t == TT_GRASS)
-						tiles[mur1 + 1 + i*size].Set(TT_SAND, TT_GRASS, 128, TM_BUILDING);
-					// east
-					tiles[mur2 + i*size].Set(TT_SAND, TM_BUILDING);
-					if(tiles[mur2 - 1 + i*size].t == TT_GRASS)
-						tiles[mur2 - 1 + i*size].Set(TT_SAND, TT_GRASS, 128, TM_BUILDING);
-				}
-
-				// tiles under gates
-				if(gates == GATE_SOUTH)
-				{
-					tiles[size / 2 - 1 + int(0.15f*size)*size].Set(road_type, TM_ROAD);
-					tiles[size / 2 + int(0.15f*size)*size].Set(road_type, TM_ROAD);
-					tiles[size / 2 + 1 + int(0.15f*size)*size].Set(road_type, TM_ROAD);
-					tiles[size / 2 - 1 + (int(0.15f*size) + 1)*size].Set(road_type, TM_ROAD);
-					tiles[size / 2 + (int(0.15f*size) + 1)*size].Set(road_type, TM_ROAD);
-					tiles[size / 2 + 1 + (int(0.15f*size) + 1)*size].Set(road_type, TM_ROAD);
-				}
-				if(gates == GATE_WEST)
-				{
-					tiles[int(0.15f*size) + (size / 2 - 1)*size].Set(road_type, TM_ROAD);
-					tiles[int(0.15f*size) + (size / 2)*size].Set(road_type, TM_ROAD);
-					tiles[int(0.15f*size) + (size / 2 + 1)*size].Set(road_type, TM_ROAD);
-					tiles[int(0.15f*size) + 1 + (size / 2 - 1)*size].Set(road_type, TM_ROAD);
-					tiles[int(0.15f*size) + 1 + (size / 2)*size].Set(road_type, TM_ROAD);
-					tiles[int(0.15f*size) + 1 + (size / 2 + 1)*size].Set(road_type, TM_ROAD);
-				}
-				if(gates == GATE_NORTH)
-				{
-					tiles[size / 2 - 1 + int(0.85f*size)*size].Set(road_type, TM_ROAD);
-					tiles[size / 2 + int(0.85f*size)*size].Set(road_type, TM_ROAD);
-					tiles[size / 2 + 1 + int(0.85f*size)*size].Set(road_type, TM_ROAD);
-					tiles[size / 2 - 1 + (int(0.85f*size) - 1)*size].Set(road_type, TM_ROAD);
-					tiles[size / 2 + (int(0.85f*size) - 1)*size].Set(road_type, TM_ROAD);
-					tiles[size / 2 + 1 + (int(0.85f*size) - 1)*size].Set(road_type, TM_ROAD);
-				}
-				if(gates == GATE_EAST)
-				{
-					tiles[int(0.85f*size) + (size / 2 - 1)*size].Set(road_type, TM_ROAD);
-					tiles[int(0.85f*size) + (size / 2)*size].Set(road_type, TM_ROAD);
-					tiles[int(0.85f*size) + (size / 2 + 1)*size].Set(road_type, TM_ROAD);
-					tiles[int(0.85f*size) - 1 + (size / 2 - 1)*size].Set(road_type, TM_ROAD);
-					tiles[int(0.85f*size) - 1 + (size / 2)*size].Set(road_type, TM_ROAD);
-					tiles[int(0.85f*size) - 1 + (size / 2 + 1)*size].Set(road_type, TM_ROAD);
-				}
-
-				// delete old walls
-				BaseObject* to_remove = BaseObject::Get("to_remove");
-				LoopAndRemove(objects, [to_remove](const Object* obj)
-				{
-					if(obj->base == to_remove)
-					{
-						delete obj;
-						return true;
-					}
-					return false;
-				});
-
-				// add new buildings
-				BaseObject* oWall = BaseObject::Get("wall"),
-					*oTower = BaseObject::Get("tower");
-
-				const int mid = int(0.5f*size);
-
-				// walls
-				for(int i = mur1; i < mur2; i += 3)
-				{
-					// top
-					if(side != 2 || i < mid - 1 || i > mid)
-					{
-						Object* o = new Object;
-						o->pos = Vec3(float(i) * 2 + 1.f, 1.f, int(0.15f*size) * 2 + 1.f);
-						o->rot = Vec3(0, PI, 0);
-						o->scale = 1.f;
-						o->base = oWall;
-						o->mesh = oWall->mesh;
-						objects.push_back(o);
-					}
-
-					// bottom
-					if(side != 0 || i < mid - 1 || i > mid)
-					{
-						Object* o = new Object;
-						o->pos = Vec3(float(i) * 2 + 1.f, 1.f, int(0.85f*size) * 2 + 1.f);
-						o->rot = Vec3(0, 0, 0);
-						o->scale = 1.f;
-						o->base = oWall;
-						o->mesh = oWall->mesh;
-						objects.push_back(o);
-					}
-
-					// left
-					if(side != 1 || i < mid - 1 || i > mid)
-					{
-						Object* o = new Object;
-						o->pos = Vec3(int(0.15f*size) * 2 + 1.f, 1.f, float(i) * 2 + 1.f);
-						o->rot = Vec3(0, PI * 3 / 2, 0);
-						o->scale = 1.f;
-						o->base = oWall;
-						o->mesh = oWall->mesh;
-						objects.push_back(o);
-					}
-
-					// right
-					if(side != 3 || i < mid - 1 || i > mid)
-					{
-						Object* o = new Object;
-						o->pos = Vec3(int(0.85f*size) * 2 + 1.f, 1.f, float(i) * 2 + 1.f);
-						o->rot = Vec3(0, PI / 2, 0);
-						o->scale = 1.f;
-						o->base = oWall;
-						o->mesh = oWall->mesh;
-						objects.push_back(o);
-					}
-				}
-
-				// towers
-				{
-					// right top
-					Object* o = new Object;
-					o->pos = Vec3(int(0.85f*size) * 2 + 1.f, 1.f, int(0.85f*size) * 2 + 1.f);
-					o->rot = Vec3(0, 0, 0);
-					o->scale = 1.f;
-					o->base = oTower;
-					o->mesh = oTower->mesh;
-					objects.push_back(o);
-				}
-				{
-					// right bottom
-					Object* o = new Object;
-					o->pos = Vec3(int(0.85f*size) * 2 + 1.f, 1.f, int(0.15f*size) * 2 + 1.f);
-					o->rot = Vec3(0, PI / 2, 0);
-					o->scale = 1.f;
-					o->base = oTower;
-					o->mesh = oTower->mesh;
-					objects.push_back(o);
-				}
-				{
-					// left bottom
-					Object* o = new Object;
-					o->pos = Vec3(int(0.15f*size) * 2 + 1.f, 1.f, int(0.15f*size) * 2 + 1.f);
-					o->rot = Vec3(0, PI, 0);
-					o->scale = 1.f;
-					o->base = oTower;
-					o->mesh = oTower->mesh;
-					objects.push_back(o);
-				}
-				{
-					// left top
-					Object* o = new Object;
-					o->pos = Vec3(int(0.15f*size) * 2 + 1.f, 1.f, int(0.85f*size) * 2 + 1.f);
-					o->rot = Vec3(0, PI * 3 / 2, 0);
-					o->scale = 1.f;
-					o->base = oTower;
-					o->mesh = oTower->mesh;
-					objects.push_back(o);
-				}
-
-				// gate
-				Object* o = new Object;
-				o->rot.x = o->rot.z = 0.f;
-				o->scale = 1.f;
-				o->base = BaseObject::Get("gate");
-				o->mesh = o->base->mesh;
-				switch(side)
-				{
-				case 0:
-					o->rot.y = 0;
-					o->pos = Vec3(0.5f*size * 2 + 1.f, 1.f, 0.85f*size * 2);
-					break;
-				case 1:
-					o->rot.y = PI * 3 / 2;
-					o->pos = Vec3(0.15f*size * 2, 1.f, 0.5f*size * 2 + 1.f);
-					break;
-				case 2:
-					o->rot.y = PI;
-					o->pos = Vec3(0.5f*size * 2 + 1.f, 1.f, 0.15f*size * 2);
-					break;
-				case 3:
-					o->rot.y = PI / 2;
-					o->pos = Vec3(0.85f*size * 2, 1.f, 0.5f*size * 2 + 1.f);
-					break;
-				}
-				objects.push_back(o);
-
-				// grate
-				Object* o2 = new Object;
-				o2->pos = o->pos;
-				o2->rot = o->rot;
-				o2->scale = 1.f;
-				o2->base = BaseObject::Get("grate");
-				o2->mesh = o2->base->mesh;
-				objects.push_back(o2);
-
-				// exit
-				EntryPoint& entry = Add1(entry_points);
-				entry.spawn_area = spawn_area;
-				entry.spawn_rot = spawn_dir;
-				entry.exit_area = exit_area;
-				entry.exit_y = 1.1f;
-			}
 		}
 
 		if(token == LT_VILLAGE_OLD)
@@ -472,18 +195,13 @@ void City::Load(GameReader& f, bool local, LOCATION_TOKEN token)
 			OLD_BUILDING v_buildings[2];
 			f >> v_buildings;
 
-			if(LOAD_VERSION <= V_0_3 && v_buildings[1] == OLD_BUILDING::B_COTTAGE)
-				v_buildings[1] = OLD_BUILDING::B_NONE;
-
 			// fix wrong village house building
 			if(last_visit != -1 && LOAD_VERSION < V_0_4)
 			{
 				bool need_fix = false;
 				Building* village_hall = Building::GetOld(OLD_BUILDING::B_VILLAGE_HALL);
 
-				if(LOAD_VERSION < V_0_3)
-					need_fix = true;
-				else if(LOAD_VERSION == V_0_3)
+				if(LOAD_VERSION == V_0_3)
 				{
 					InsideBuilding* b = FindInsideBuilding(village_hall);
 					// easiest way to find out if it uses old mesh

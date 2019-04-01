@@ -444,6 +444,11 @@ void Quest_Tournament::Update(float dt)
 				cstring text;
 				if(state3 == 0)
 					text = Format(txTour[4], round + 1);
+				else if(pairs.size() == 1u && !skipped_unit)
+				{
+					auto& p = pairs[0];
+					text = Format(txTour[23], p.first->GetRealName(), p.second->GetRealName());
+				}
 				else if(state3 <= (int)pairs.size())
 				{
 					auto& p = pairs[state3 - 1];
@@ -483,8 +488,10 @@ void Quest_Tournament::Update(float dt)
 		{
 			if(state3 == 0)
 			{
-				// tell next fight participants
-				if(master->CanAct())
+				// tell next fight participants (skip talking at final round)
+				if(pairs.size() == 1u && units.empty() && !skipped_unit)
+					state3 = 1;
+				else if(master->CanAct())
 				{
 					auto& p = pairs.back();
 					Talk(Format(txTour[9], p.first->GetRealName(), p.second->GetRealName()));

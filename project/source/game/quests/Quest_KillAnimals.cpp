@@ -7,6 +7,9 @@
 #include "City.h"
 #include "World.h"
 #include "Team.h"
+#include "GameFile.h"
+#include "SaveState.h"
+#include "ItemHelper.h"
 
 //=================================================================================================
 void Quest_KillAnimals::Start()
@@ -56,6 +59,7 @@ void Quest_KillAnimals::SetProgress(int prog2)
 			tl.SetKnown();
 			if(tl.st < 5)
 				tl.st = 5;
+			st = tl.st;
 
 			msgs.push_back(Format(game->txQuest[29], sl.name.c_str(), W.GetDate()));
 			msgs.push_back(Format(game->txQuest[77], sl.name.c_str(), tl.name.c_str(), GetLocationDirName(sl.pos, tl.pos)));
@@ -79,7 +83,8 @@ void Quest_KillAnimals::SetProgress(int prog2)
 		{
 			state = Quest::Completed;
 			((City&)GetStartLocation()).quest_captain = CityQuestState::None;
-			Team.AddReward(2500, 7500);
+			int reward = GetReward();
+			Team.AddReward(2500, reward * 3);
 			OnUpdate(game->txQuest[79]);
 		}
 		break;
@@ -108,6 +113,8 @@ cstring Quest_KillAnimals::FormatString(const string& str)
 		return GetTargetLocationName();
 	else if(str == "target_dir")
 		return GetLocationDirName(GetStartLocation().pos, GetTargetLocation().pos);
+	else if(str == "reward")
+		return Format("%d", GetReward());
 	else
 	{
 		assert(0);
@@ -148,12 +155,31 @@ bool Quest_KillAnimals::IfNeedTalk(cstring topic) const
 }
 
 //=================================================================================================
+void Quest_KillAnimals::Save(GameWriter& f)
+{
+	Quest_Dungeon::Save(f);
+	f << st;
+}
+
+//=================================================================================================
 bool Quest_KillAnimals::Load(GameReader& f)
 {
 	Quest_Dungeon::Load(f);
+	if(LOAD_VERSION >= V_0_9)
+		f >> st;
+	else if(target_loc != -1)
+		st = GetTargetLocation().st;
+	else
+		st = 5;
 
 	location_event_handler = this;
 	at_level = 0;
 
 	return true;
+}
+
+//=================================================================================================
+int Quest_KillAnimals::GetReward() const
+{
+	return ItemHelper::CalculateReward(st, Int2(5, 10), Int2(2500, 4000));
 }

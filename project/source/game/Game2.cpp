@@ -1133,10 +1133,6 @@ void Game::UpdateGame(float dt)
 
 	// aktualizuj kamerê
 	SetupCamera(dt);
-
-#ifdef _DEBUG
-	arena->Verify();
-#endif
 }
 
 //=================================================================================================
@@ -4098,7 +4094,12 @@ Game::ATTACK_RESULT Game::DoAttack(LevelContext& ctx, Unit& unit)
 	if(!CheckForHit(ctx, unit, hitted, hitpoint))
 		return ATTACK_NOT_HIT;
 
-	return DoGenericAttack(ctx, unit, *hitted, hitpoint, unit.CalculateAttack()*unit.attack_power, unit.GetDmgType(), false);
+	float power;
+	if(unit.data->frames->extra)
+		power = 1.f;
+	else
+		power = unit.data->frames->attack_power[unit.attack_id];
+	return DoGenericAttack(ctx, unit, *hitted, hitpoint, unit.CalculateAttack()*unit.attack_power*power, unit.GetDmgType(), false);
 }
 
 void Game::GiveDmg(LevelContext& ctx, Unit* giver, float dmg, Unit& taker, const Vec3* hitpoint, int dmg_flags)
@@ -4531,11 +4532,8 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 			if(!u.mesh_inst)
 			{
 				// fix na skutek, nie na przyczynê ;(
-#ifdef _DEBUG
-				Warn("Unit %s dont have shooting animation, LS:%d A:%D ANI:%d PANI:%d ETA:%d.", u.GetName(), u.live_state, u.action, u.animation,
-					u.current_animation, u.animation_state);
-				gui->messages->AddGameMsg("Unit don't have shooting animation!", 5.f);
-#endif
+				ReportError(4, Format("Unit %s dont have shooting animation, LS:%d A:%D ANI:%d PANI:%d ETA:%d.", u.GetName(), u.live_state, u.action, u.animation,
+					u.current_animation, u.animation_state));
 				goto koniec_strzelania;
 			}
 			if(u.animation_state == 0)
@@ -7864,15 +7862,17 @@ SOUND Game::GetItemSound(const Item* item)
 	{
 	case IT_WEAPON:
 		return sItem[6];
+	case IT_BOW:
+		return sItem[4];
+	case IT_SHIELD:
+		return sItem[5];
 	case IT_ARMOR:
 		if(item->ToArmor().armor_type != AT_LIGHT)
 			return sItem[2];
 		else
 			return sItem[1];
-	case IT_BOW:
-		return sItem[4];
-	case IT_SHIELD:
-		return sItem[5];
+	case IT_AMULET:
+		return sItem[8];
 	case IT_CONSUMABLE:
 		if(item->ToConsumable().cons_type != Food)
 			return sItem[0];
@@ -9085,7 +9085,6 @@ void Game::GenerateQuestUnits()
 		assert(u);
 		if(u)
 		{
-			u->hero->name = txArthur;
 			QM.quest_sawmill->sawmill_state = Quest_Sawmill::State::GeneratedUnit;
 			QM.quest_sawmill->hd_lumberjack.Get(*u->human_data);
 			if(devmode)
@@ -9099,7 +9098,6 @@ void Game::GenerateQuestUnits()
 		assert(u);
 		if(u)
 		{
-			u->hero->name = txQuest[272];
 			QM.quest_mine->mine_state = Quest_Mine::State::SpawnedInvestor;
 			if(devmode)
 				Info("Generated quest unit '%s'.", u->GetRealName());
@@ -9112,7 +9110,6 @@ void Game::GenerateQuestUnits()
 		assert(u);
 		if(u)
 		{
-			u->hero->name = txQuest[273];
 			QM.quest_bandits->bandits_state = Quest_Bandits::State::GeneratedMaster;
 			if(devmode)
 				Info("Generated quest unit '%s'.", u->GetRealName());
@@ -9184,7 +9181,6 @@ void Game::GenerateQuestUnits()
 		{
 			QM.quest_goblins->nobleman = u;
 			QM.quest_goblins->hd_nobleman.Get(*u->human_data);
-			u->hero->name = txQuest[274];
 			QM.quest_goblins->goblins_state = Quest_Goblins::State::GeneratedNobleman;
 			if(devmode)
 				Info("Generated quest unit '%s'.", u->GetRealName());
@@ -9199,7 +9195,6 @@ void Game::GenerateQuestUnits()
 		if(u)
 		{
 			u->rot = Random(MAX_ANGLE);
-			u->hero->name = txQuest[275];
 			u->StartAutoTalk();
 			QM.quest_evil->cleric = u;
 			QM.quest_evil->evil_state = Quest_Evil::State::GeneratedCleric;
@@ -9237,9 +9232,9 @@ void Game::GenerateQuestUnits()
 
 	if(QM.quest_mine->days >= QM.quest_mine->days_required &&
 		((QM.quest_mine->mine_state2 == Quest_Mine::State2::InBuild && QM.quest_mine->mine_state == Quest_Mine::State::Shares) || // inform player about building mine & give gold
-		QM.quest_mine->mine_state2 == Quest_Mine::State2::Built || // inform player about possible investment
-		QM.quest_mine->mine_state2 == Quest_Mine::State2::InExpand || // inform player about finished mine expanding
-		QM.quest_mine->mine_state2 == Quest_Mine::State2::Expanded)) // inform player about finding portal
+			QM.quest_mine->mine_state2 == Quest_Mine::State2::Built || // inform player about possible investment
+			QM.quest_mine->mine_state2 == Quest_Mine::State2::InExpand || // inform player about finished mine expanding
+			QM.quest_mine->mine_state2 == Quest_Mine::State2::Expanded)) // inform player about finding portal
 	{
 		Unit* u = L.SpawnUnitNearLocation(L.GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("poslaniec_kopalnia"), &Team.leader->pos, -2, 2.f);
 		if(u)

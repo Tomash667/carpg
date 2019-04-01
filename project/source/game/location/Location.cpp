@@ -108,10 +108,7 @@ void Location::Load(GameReader& f, bool, LOCATION_TOKEN token)
 	f >> reset;
 	f >> spawn;
 	f >> dont_clean;
-	if(LOAD_VERSION >= V_0_3)
-		f >> seed;
-	else
-		seed = 0;
+	f >> seed;
 	if(LOAD_VERSION >= V_0_5)
 		f >> image;
 	else
@@ -168,7 +165,7 @@ void Location::Load(GameReader& f, bool, LOCATION_TOKEN token)
 		portal = nullptr;
 
 	// events
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_9)
 	{
 		events.resize(f.Read<uint>());
 		for(Event& e : events)

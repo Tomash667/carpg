@@ -771,7 +771,8 @@ void Game::AddLoadTasks()
 		sound_mgr.AddLoadTask("wood-small.wav", sItem[4]); // bow
 		sound_mgr.AddLoadTask("cloth-heavy.wav", sItem[5]); // shield
 		sound_mgr.AddLoadTask("sword-unsheathe.wav", sItem[6]); // weapon
-		sound_mgr.AddLoadTask("interface3.wav", sItem[7]);
+		sound_mgr.AddLoadTask("interface3.wav", sItem[7]); // other
+		sound_mgr.AddLoadTask("amulet.mp3", sItem[8]); // amulet
 		sound_mgr.AddLoadTask("chest_open.mp3", sChestOpen);
 		sound_mgr.AddLoadTask("chest_close.mp3", sChestClose);
 		sound_mgr.AddLoadTask("door_budge.mp3", sDoorBudge);

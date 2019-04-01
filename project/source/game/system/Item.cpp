@@ -19,6 +19,7 @@ vector<Weapon*> Weapon::weapons;
 vector<Bow*> Bow::bows;
 vector<Shield*> Shield::shields;
 vector<Armor*> Armor::armors;
+vector<Amulet*> Amulet::amulets;
 vector<Consumable*> Consumable::consumables;
 vector<OtherItem*> OtherItem::others;
 vector<OtherItem*> OtherItem::artifacts;
@@ -222,7 +223,7 @@ bool ItemCmp(const Item* a, const Item* b)
 				return o1 > o2;
 		}
 		if(a->value != b->value)
-			return a->value < b->value;
+			return a->value > b->value;
 		else
 			return strcoll(a->name.c_str(), b->name.c_str()) < 0;
 	}

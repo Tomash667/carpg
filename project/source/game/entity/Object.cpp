@@ -37,19 +37,7 @@ void Object::Load(FileReader& f)
 	else
 	{
 		base = nullptr;
-		const string& mesh_id = f.ReadString1();
-		if(LOAD_VERSION >= V_0_3)
-			mesh = ResourceManager::Get<Mesh>().GetLoaded(mesh_id);
-		else
-		{
-			if(mesh_id == "mur.qmsh" || mesh_id == "mur2.qmsh" || mesh_id == "brama.qmsh")
-			{
-				base = BaseObject::Get("to_remove");
-				mesh = base->mesh;
-			}
-			else
-				mesh = ResourceManager::Get<Mesh>().GetLoaded(mesh_id);
-		}
+		mesh = ResourceManager::Get<Mesh>().GetLoaded(f.ReadString1());
 	}
 }
 

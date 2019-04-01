@@ -918,7 +918,12 @@ void GameGui::UpdateSpeechBubbles(float dt)
 					sb.unit->talking = false;
 					sb.unit->bubble = nullptr;
 					// fix na crash, powody dla których ani jest NULLem nie s¹ znane :S
-					if(sb.unit->mesh_inst)
+					if(!sb.unit->mesh_inst)
+					{
+						game.ReportError(9, Format("Speech bubble for unit withou mesh_inst (unit %s, text \"%.100s\").",
+							sb.unit->GetRealName(), sb.text.c_str()));
+					}
+					else
 						sb.unit->mesh_inst->need_update = true;
 				}
 				SpeechBubblePool.Free(*it);
@@ -1017,8 +1022,6 @@ void GameGui::AddSpeechBubble(const Vec3& pos, cstring text)
 	sb->length = 1.5f + float(strlen(text)) / 20;
 	sb->visible = true;
 	sb->last_pos = pos;
-
-	speech_bbs.push_back(sb);
 }
 
 //=================================================================================================

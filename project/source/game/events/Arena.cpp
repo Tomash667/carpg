@@ -227,30 +227,6 @@ void Arena::RemoveArenaViewers()
 }
 
 //=================================================================================================
-void Arena::Verify()
-{
-	if(Net::IsLocal() && free)
-	{
-		Game& game = Game::Get();
-		int err_count = 0;
-		for(Unit* unit : Team.members)
-		{
-			for(Unit* unit2 : Team.members)
-			{
-				if(unit != unit2 && !unit->IsFriend(*unit2))
-				{
-					Warn("%s (%d,%d) i %s (%d,%d) are not friends!", unit->data->id.c_str(), unit->in_arena, unit->IsTeamMember() ? 1 : 0,
-						unit2->data->id.c_str(), unit2->in_arena, unit2->IsTeamMember() ? 1 : 0);
-					++err_count;
-				}
-			}
-		}
-		if(err_count)
-			game.gui->messages->AddGameMsg(Format("%d arena friends errors!", err_count), 10.f);
-	}
-}
-
-//=================================================================================================
 void Arena::UpdatePvpRequest(float dt)
 {
 	Game& game = Game::Get();

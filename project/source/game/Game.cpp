@@ -52,6 +52,8 @@
 #include "PlayerInfo.h"
 #include "Render.h"
 #include "RenderTarget.h"
+#include "LobbyApi.h"
+#include "GameMessages.h"
 
 const float LIMIT_DT = 0.3f;
 Game* Game::game;
@@ -310,6 +312,8 @@ void Game::OnTick(float dt)
 		Profiler::g_profiler.Start();
 	else if(profiler_mode == 0)
 		Profiler::g_profiler.Clear();
+
+	N.api->Update();
 
 	UpdateMusic();
 
@@ -1246,7 +1250,6 @@ void Game::SetGameText()
 	LoadArray(txELvlStrong, "eLvlStrong");
 
 	// questy
-	txArthur = Str("arthur");
 	txMineBuilt = Str("mineBuilt");
 	txAncientArmory = Str("ancientArmory");
 	txPortalClosed = Str("portalClosed");
@@ -1867,4 +1870,15 @@ void Game::OnResize()
 void Game::OnFocus(bool focus, const Int2& activation_point)
 {
 	gui->OnFocus(focus, activation_point);
+}
+
+//=================================================================================================
+void Game::ReportError(int id, cstring text)
+{
+	cstring str = Format("[Report %d]: %s", id, text);
+	Warn(str);
+#ifdef _DEBUG
+	gui->messages->AddGameMsg(str, 5.f);
+#endif
+	N.api->Report(id, text);
 }

@@ -101,18 +101,12 @@ void MoonwellGenerator::GenerateObjects()
 //=================================================================================================
 void MoonwellGenerator::GenerateUnits()
 {
-	// zbierz grupy
-	static UnitGroup* groups[4] = {
-		UnitGroup::TryGet("wolfs"),
-		UnitGroup::TryGet("spiders"),
-		UnitGroup::TryGet("rats"),
-		UnitGroup::TryGet("animals")
-	};
+	UnitGroupList* list = UnitGroupList::TryGet("forest");
 	UnitData* ud_hunter = UnitData::Get("wild_hunter");
-	int level = L.GetDifficultyLevel();
-	TmpUnitGroupList<4> tmp;
+	const int level = L.GetDifficultyLevel();
+	TmpUnitGroupList tmp;
+	tmp.Fill(list, level);
 	static vector<Vec2> poss;
-	tmp.Fill(groups, level);
 	poss.clear();
 	poss.push_back(Vec2(team_pos.x, team_pos.z));
 
