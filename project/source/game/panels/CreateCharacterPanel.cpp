@@ -251,6 +251,11 @@ void CreateCharacterPanel::LoadData()
 
 	SceneNode2* node = SceneNode2::Get();
 	node->SetMeshInstance(Game::Get().aHumanBase);
+
+	SceneNode2* node_armor = SceneNode2::Get();
+	node->AddChild(node_armor, SceneNode2::BONE_USE_PARENT_SKELETON);
+
+	node->AddChild()
 	scene->AddNode(node);
 }
 

@@ -8,7 +8,11 @@ void SimpleScene::ListNodes(DrawBatch2& batch)
 	const FrustumPlanes& frustum = camera->GetFrustum();
 	for(SceneNode2* node : nodes)
 	{
-		if(frustum.SphereToFrustum(node->))
+		if(frustum.SphereToFrustum(node->GetPos(), node->GetSphereRadius()))
+		{
+			batch.nodes.push_back(node);
+			if(node->GetChi)
+		}
 	}
 }
 
