@@ -1210,7 +1210,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 	// przedmiot w d³oni
 	Mesh* right_hand_item = nullptr;
 	int right_hand_item_flags = 0;
-	bool w_dloni = false;
+	bool in_hand = false;
 
 	switch(u.weapon_state)
 	{
@@ -1228,7 +1228,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 				right_hand_item = aArrow;
 		}
 		else if(u.weapon_taken == W_ONE_HANDED)
-			w_dloni = true;
+			in_hand = true;
 		break;
 	case WS_TAKING:
 		if(u.animation_state == 1)
@@ -1236,7 +1236,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 			if(u.weapon_taken == W_BOW)
 				right_hand_item = aArrow;
 			else
-				w_dloni = true;
+				in_hand = true;
 		}
 		break;
 	case WS_HIDING:
@@ -1245,7 +1245,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 			if(u.weapon_hiding == W_BOW)
 				right_hand_item = aArrow;
 			else
-				w_dloni = true;
+				in_hand = true;
 		}
 		break;
 	}
@@ -1272,7 +1272,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 	Mesh* mesh;
 	if(u.HaveWeapon() && right_hand_item != (mesh = u.GetWeapon().mesh))
 	{
-		Mesh::Point* point = u.mesh_inst->mesh->GetPoint(w_dloni ? NAMES::point_weapon : NAMES::point_hidden_weapon);
+		Mesh::Point* point = u.mesh_inst->mesh->GetPoint(in_hand ? NAMES::point_weapon : NAMES::point_hidden_weapon);
 		assert(point);
 
 		SceneNode* node2 = node_pool.Get();
@@ -1316,7 +1316,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 	if(u.HaveShield() && u.GetShield().mesh)
 	{
 		Mesh* shield = u.GetShield().mesh;
-		Mesh::Point* point = u.mesh_inst->mesh->GetPoint(w_dloni ? NAMES::point_shield : NAMES::point_shield_hidden);
+		Mesh::Point* point = u.mesh_inst->mesh->GetPoint(in_hand ? NAMES::point_shield : NAMES::point_shield_hidden);
 		assert(point);
 
 		SceneNode* node2 = node_pool.Get();
@@ -1389,28 +1389,28 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 	// ³uk
 	if(u.HaveBow())
 	{
-		bool w_dloni;
+		bool in_hand;
 
 		switch(u.weapon_state)
 		{
 		case WS_HIDING:
-			w_dloni = (u.weapon_hiding == W_BOW && u.animation_state == 0);
+			in_hand = (u.weapon_hiding == W_BOW && u.animation_state == 0);
 			break;
 		case WS_HIDDEN:
-			w_dloni = false;
+			in_hand = false;
 			break;
 		case WS_TAKING:
-			w_dloni = (u.weapon_taken == W_BOW && u.animation_state == 1);
+			in_hand = (u.weapon_taken == W_BOW && u.animation_state == 1);
 			break;
 		case WS_TAKEN:
-			w_dloni = (u.weapon_taken == W_BOW);
+			in_hand = (u.weapon_taken == W_BOW);
 			break;
 		}
 
 		SceneNode* node2 = node_pool.Get();
 		node2->billboard = false;
 
-		Mesh::Point* point = u.mesh_inst->mesh->GetPoint(w_dloni ? NAMES::point_bow : NAMES::point_shield_hidden);
+		Mesh::Point* point = u.mesh_inst->mesh->GetPoint(in_hand ? NAMES::point_bow : NAMES::point_shield_hidden);
 		assert(point);
 
 		if(u.action == A_SHOOT)
@@ -1426,7 +1426,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 			node2->flags = 0;
 		}
 
-		if(w_dloni)
+		if(in_hand)
 			m1 = Matrix::RotationZ(-PI / 2) * point->mat * u.mesh_inst->mat_bones[point->bone];
 		else
 			m1 = point->mat * u.mesh_inst->mat_bones[point->bone];

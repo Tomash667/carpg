@@ -33,6 +33,20 @@ enum ButtonId
 	IdRandomSet
 };
 
+enum NODES
+{
+	NODE_HAIR = 1,
+	NODE_EYEBROWS,
+	NODE_HAIR,
+	NODE_BEARD,
+	NODE_MUSTACHE,
+	NODE_WEAPON,
+	NODE_BOW,
+	NODE_SHIELD,
+	NODE_ARMOR,
+	NODE_ITEM
+};
+
 //=================================================================================================
 CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : GameDialogBox(info), unit(nullptr), rt_char(nullptr)
 {
@@ -249,14 +263,49 @@ void CreateCharacterPanel::LoadData()
 	rt_char = game->GetRender()->CreateRenderTarget(Int2(128, 256));
 	scene = new SimpleScene;
 
-	SceneNode2* node = SceneNode2::Get();
-	node->SetMeshInstance(Game::Get().aHumanBase);
+	node_human = SceneNode2::Get();
+	node_human->SetMeshInstance(game->aHumanBase);
 
-	SceneNode2* node_armor = SceneNode2::Get();
-	node->AddChild(node_armor, SceneNode2::BONE_USE_PARENT_SKELETON);
+	SceneNode2* node;
 
-	node->AddChild()
-	scene->AddNode(node);
+	node = SceneNode2::Get();
+	node->SetId(NODE_EYEBROWS);
+	node->SetMesh(game->aEyebrows);
+	node_human->AddChild(node, SceneNode2::USE_PARENT_SKELETON);
+
+	node = SceneNode2::Get();
+	node->SetId(NODE_HAIR);
+	node_human->AddChild(node, SceneNode2::USE_PARENT_SKELETON);
+
+	node = SceneNode2::Get();
+	node->SetId(NODE_BEARD);
+	node_human->AddChild(node, SceneNode2::USE_PARENT_SKELETON);
+
+	node = SceneNode2::Get();
+	node->SetId(NODE_MUSTACHE);
+	node_human->AddChild(node, SceneNode2::USE_PARENT_SKELETON);
+
+	node = SceneNode2::Get();
+	node->SetId(NODE_WEAPON);
+	node_human->AddChild(node);
+
+	node = SceneNode2::Get();
+	node->SetId(NODE_BOW);
+	node_human->AddChild(node);
+
+	node = SceneNode2::Get();
+	node->SetId(NODE_SHIELD);
+	node_human->AddChild(node);
+
+	node = SceneNode2::Get();
+	node->SetId(NODE_ARMOR);
+	node_human->AddChild(node, SceneNode2::USE_PARENT_SKELETON);
+
+	node = SceneNode2::Get();
+	node->SetId(NODE_ITEM);
+	node_human->AddChild(node, NAMES::point_weapon);
+
+	scene->AddNode(node_human);
 }
 
 //=================================================================================================
@@ -654,6 +703,8 @@ void CreateCharacterPanel::Event(GuiEvent e)
 //=================================================================================================
 void CreateCharacterPanel::RenderUnit()
 {
+	UpdateSceneNode();
+
 	scene->Draw(rt_char);
 
 	static vector<Lights> lights;
@@ -924,7 +975,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 		break;
 	}
 
-	unit->mesh_inst->Update(dt);
+	scene->Update(dt);
 }
 
 //=================================================================================================
@@ -1590,4 +1641,162 @@ void CreateCharacterPanel::ResetDoll(bool instant)
 		unit->bow_instance = nullptr;
 	}
 	unit->action = A_NONE;
+}
+
+//=================================================================================================
+void CreateCharacterPanel::UpdateSceneNode()
+{
+	SceneNode2* node;
+	HumanData& hd = *unit->human_data;
+
+	// hair
+	node = node_human->GetNode(NODE_HAIR);
+	if(hd.hair == -1)
+		node->SetVisible(false);
+	else
+	{
+		node->SetVisible(true);
+		node->SetMesh(game->aHair[hd.hair]);
+		node->SetTint(hd.hair_color);
+	}
+
+	// eyebrows
+	node = node_human->GetNode(NODE_EYEBROWS);
+	node->SetTint(hd.hair_color);
+
+	// beard
+	node = node_human->GetNode(NODE_BEARD);
+	if(hd.beard == -1)
+		node->SetVisible(false);
+	else
+	{
+		node->SetVisible(true);
+		node->SetMesh(game->aBeard[hd.beard]);
+		node->SetTint(hd.hair_color);
+	}
+
+	// mustache
+	node = node_human->GetNode(NODE_MUSTACHE);
+	if(hd.mustache == -1 || (hd.beard != -1 && g_beard_and_mustache[hd.beard]))
+		node->SetVisible(false);
+	else
+	{
+		node->SetVisible(true);
+		node->SetMesh(game->aMustache[hd.mustache]);
+		node->SetTint(hd.hair_color);
+	}
+
+	bool in_hand = false,
+		arrow_in_hand = false;
+
+	switch(unit->weapon_state)
+	{
+	case WS_HIDDEN:
+		break;
+	case WS_TAKEN:
+		if(unit->weapon_taken == W_BOW)
+		{
+			if(unit->action == A_SHOOT)
+			{
+				if(unit->animation_state != 2)
+					arrow_in_hand = true;
+			}
+			else
+				arrow_in_hand = true;
+		}
+		else if(unit->weapon_taken == W_ONE_HANDED)
+			in_hand = true;
+		break;
+	case WS_TAKING:
+		if(unit->animation_state == 1)
+		{
+			if(unit->weapon_taken == W_BOW)
+				arrow_in_hand = true;
+			else
+				in_hand = true;
+		}
+		break;
+	case WS_HIDING:
+		if(unit->animation_state == 0)
+		{
+			if(unit->weapon_hiding == W_BOW)
+				arrow_in_hand = true;
+			else
+				in_hand = true;
+		}
+		break;
+	}
+
+	// weapon
+	node = node_human->GetNode(NODE_WEAPON);
+	if(!unit->HaveWeapon())
+		node->SetVisible(false);
+	else
+	{
+		node->SetVisible(true);
+		node->SetParentPoint(in_hand ? NAMES::point_weapon : NAMES::point_hidden_weapon);
+		node->SetMesh(unit->GetWeapon().mesh);
+	}
+
+	// shield
+	node = node_human->GetNode(NODE_SHIELD);
+	if(!unit->HaveShield())
+		node->SetVisible(false);
+	else
+	{
+		node->SetVisible(true);
+		node->SetParentPoint(in_hand ? NAMES::point_shield : NAMES::point_shield_hidden);
+		node->SetMesh(unit->GetShield().mesh);
+	}
+
+	// bow
+	node = node_human->GetNode(NODE_BOW);
+	if(!unit->HaveBow())
+		node->SetVisible(false);
+	else
+	{
+		switch(unit->weapon_state)
+		{
+		case WS_HIDING:
+			in_hand = (unit->weapon_hiding == W_BOW && unit->animation_state == 0);
+			break;
+		case WS_HIDDEN:
+			in_hand = false;
+			break;
+		case WS_TAKING:
+			in_hand = (unit->weapon_taken == W_BOW && unit->animation_state == 1);
+			break;
+		case WS_TAKEN:
+			in_hand = (unit->weapon_taken == W_BOW);
+			break;
+		}
+		node->SetVisible(true);
+		node->SetParentPoint(in_hand ? NAMES::point_bow : NAMES::point_shield_hidden);
+		if(unit->action == A_SHOOT)
+			node->SetMeshInstance(unit->bow_instance);
+		else
+			node->SetMesh(unit->GetBow().mesh);
+	}
+
+	// armor
+	node = node_human->GetNode(NODE_ARMOR);
+	if(!unit->HaveArmor())
+		node->SetVisible(false);
+	else
+	{
+		Armor& armor = unit->GetArmor();
+		node->SetVisible(true);
+		node->SetMesh(armor.mesh);
+		node->SetTextureOverride(armor.GetTextureOverride());
+	}
+
+	// item
+	node = node_human->GetNode(NODE_ITEM);
+	if(!arrow_in_hand)
+		node->SetVisible(false);
+	else
+	{
+		node->SetVisible(true);
+		node->SetMesh(game->aArrow);
+	}
 }

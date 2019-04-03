@@ -11,6 +11,7 @@ struct ParticleEmitter;
 struct StartupOptions;
 struct TaskData;
 struct Terrain;
+struct TexId;
 struct TrailParticleEmitter;
 class Camera2;
 class CustomCollisionWorld;

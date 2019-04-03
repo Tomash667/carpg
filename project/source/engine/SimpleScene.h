@@ -18,5 +18,8 @@ public:
 	}
 
 private:
+	void ListNodes(DrawBatch2& batch, const FrustumPlanes& frustum, SceneNode2* parent);
+	void Update(SceneNode2* parent, float dt);
+
 	vector<SceneNode2*> nodes;
 };

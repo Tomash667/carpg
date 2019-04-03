@@ -100,6 +100,7 @@ private:
 	void UpdateInventory();
 	void ResetDoll(bool instant);
 	void RandomAppearance();
+	void UpdateSceneNode();
 
 	Mode mode;
 	bool enter_name;
@@ -131,4 +132,5 @@ private:
 	TEX tKlasaCecha;
 	RenderTarget* rt_char;
 	SimpleScene* scene;
+	SceneNode2* node_human;
 };

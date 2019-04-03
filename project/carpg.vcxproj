@@ -411,6 +411,7 @@
     <ClCompile Include="source\engine\RenderTarget.cpp" />
     <ClCompile Include="source\engine\Scene2.cpp" />
     <ClCompile Include="source\engine\SceneManager.cpp" />
+    <ClCompile Include="source\engine\SceneNode2.cpp" />
     <ClCompile Include="source\engine\SimpleScene.cpp" />
     <ClCompile Include="source\game\entity\Encounter.cpp" />
     <ClCompile Include="source\game\system\Content.cpp" />

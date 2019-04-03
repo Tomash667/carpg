@@ -838,6 +838,9 @@
     <ClCompile Include="source\engine\Scene2.cpp">
       <Filter>2. engine\scene</Filter>
     </ClCompile>
+    <ClCompile Include="source\engine\SceneNode2.cpp">
+      <Filter>2. engine\scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\resource\resource1.h">

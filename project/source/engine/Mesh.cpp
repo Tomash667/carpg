@@ -507,6 +507,19 @@ Mesh::Point* Mesh::GetPoint(cstring name)
 }
 
 //=================================================================================================
+Mesh::Point* Mesh::GetPointIndex(cstring name)
+{
+	assert(name);
+	int index = 0;
+	for(vector<Point>::iterator it = attach_points.begin(), end = attach_points.end(); it != end; ++it, ++index)
+	{
+		if(it->name == name)
+			return index;
+	}
+	return -1;
+}
+
+//=================================================================================================
 // Zwraca dane ramki
 //=================================================================================================
 void Mesh::GetKeyframeData(KeyframeBone& keyframe, Animation* anim, uint bone, float time)
