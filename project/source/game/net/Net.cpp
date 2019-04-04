@@ -3779,14 +3779,16 @@ void Game::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 			case NetChangePlayer::ADD_EFFECT:
 				f.WriteCasted<char>(c.id);
 				f.WriteCasted<char>(c.count);
-				f.WriteCasted<char>(c.a);
+				f.WriteCasted<char>(c.a1);
+				f.WriteCasted<char>(c.a2);
 				f << c.pos.x;
 				f << c.pos.y;
 				break;
 			case NetChangePlayer::REMOVE_EFFECT:
 				f.WriteCasted<char>(c.id);
 				f.WriteCasted<char>(c.count);
-				f.WriteCasted<char>(c.a);
+				f.WriteCasted<char>(c.a1);
+				f.WriteCasted<char>(c.a2);
 				break;
 			case NetChangePlayer::ON_REST:
 				f.WriteCasted<byte>(c.count);
@@ -7353,6 +7355,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 					f.ReadCasted<char>(e.effect);
 					f.ReadCasted<char>(e.source);
 					f.ReadCasted<char>(e.source_id);
+					f.ReadCasted<char>(e.value);
 					f >> e.power;
 					f >> e.time;
 					if(!f)
@@ -7366,14 +7369,15 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 				{
 					EffectId effect;
 					EffectSource source;
-					int source_id;
+					int source_id, value;
 					f.ReadCasted<char>(effect);
 					f.ReadCasted<char>(source);
 					f.ReadCasted<char>(source_id);
+					f.ReadCasted<char>(value);
 					if(!f)
 						Error("Update single client: Broken REMOVE_EFFECT.");
 					else if(pc)
-						pc->unit->RemoveEffects(effect, source, source_id);
+						pc->unit->RemoveEffects(effect, source, source_id, value);
 				}
 				break;
 			// player is resting

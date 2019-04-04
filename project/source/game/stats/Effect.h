@@ -20,6 +20,10 @@ enum class EffectId
 	RangedAttack,
 	Defense,
 	PoisonResistance,
+	Stamina, // mod max stamina (add)
+	Attribute,
+	Skill,
+	StaminaRegenerationMod, // multiple
 
 	Max // max 127 values
 };
@@ -39,15 +43,25 @@ struct Effect
 {
 	EffectId effect;
 	EffectSource source;
-	int source_id;
+	int source_id, value;
 	float time, power;
 };
 
 //-----------------------------------------------------------------------------
 struct EffectInfo
 {
+	enum ValueType
+	{
+		None,
+		Attribute,
+		Skill
+	};
+
 	EffectId effect;
 	cstring id, desc;
+	ValueType value_type;
+
+	EffectInfo(EffectId effect, cstring id, cstring desc, ValueType value_type = None) : effect(effect), id(id), desc(desc), value_type(value_type) {}
 
 	static EffectInfo effects[(uint)EffectId::Max];
 	static EffectId TryGet(const string& id);

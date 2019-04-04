@@ -5,6 +5,43 @@
 
 std::map<pair<StatProfile*, SubprofileInfo>, UnitStats*> UnitStats::shared_stats;
 
+
+//=================================================================================================
+void StatInfo::Mod(int value)
+{
+	if(value > 0)
+		plus += value;
+	else
+		minus -= value;
+}
+
+//=================================================================================================
+StatState StatInfo::GetState()
+{
+	if(plus == minus)
+	{
+		if(plus == 0)
+			return StatState::NORMAL;
+		else
+			return StatState::MIXED;
+	}
+	else if(plus > minus)
+	{
+		if(minus > 0)
+			return StatState::POSITIVE_MIXED;
+		else
+			return StatState::POSITIVE;
+	}
+	else
+	{
+		if(plus > 0)
+			return StatState::NEGATIVE_MIXED;
+		else
+			return StatState::NEGATIVE;
+	}
+}
+
+
 //=================================================================================================
 void UnitStats::Set(StatProfile& profile)
 {

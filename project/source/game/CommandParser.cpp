@@ -77,6 +77,7 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f)
 			f.ReadCasted<char>(e.effect);
 			f.ReadCasted<char>(e.source);
 			f.ReadCasted<char>(e.source_id);
+			f.ReadCasted<char>(e.value);
 			f >> e.power;
 			f >> e.time;
 
@@ -115,6 +116,20 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f)
 				return false;
 			}
 
+			EffectInfo& info = EffectInfo::effects[(int)e.effect];
+			bool ok_value;
+			if(info.value_type == EffectInfo::None)
+				ok_value = (e.value == -1);
+			else if(info.value_type == EffectInfo::Attribute)
+				ok_value = (e.value >= 0 && e.value < (int)AttributeId::MAX);
+			else
+				ok_value = (e.value >= 0 && e.value < (int)SkillId::MAX);
+			if(!ok_value)
+			{
+				Error("CommandParser CMD_ADD_EFFECT: Invalid value %d for effect %s.", e.value, info.id);
+				return false;
+			}
+
 			unit->AddEffect(e);
 		}
 		break;
@@ -124,11 +139,13 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f)
 			EffectId effect;
 			EffectSource source;
 			int source_id;
+			int value;
 
 			f >> netid;
 			f.ReadCasted<char>(effect);
 			f.ReadCasted<char>(source);
 			f.ReadCasted<char>(source_id);
+			f.ReadCasted<char>(value);
 
 			Unit* unit = L.FindUnit(netid);
 			if(!unit)
@@ -160,7 +177,24 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f)
 				return false;
 			}
 
-			RemoveEffect(unit, effect, source, source_id);
+			if((int)effect >= 0)
+			{
+				EffectInfo& info = EffectInfo::effects[(int)effect];
+				bool ok_value;
+				if(info.value_type == EffectInfo::None)
+					ok_value = (value == -1);
+				else if(info.value_type == EffectInfo::Attribute)
+					ok_value = (value >= 0 && value < (int)AttributeId::MAX);
+				else
+					ok_value = (value >= 0 && value < (int)SkillId::MAX);
+				if(!ok_value)
+				{
+					Error("CommandParser CMD_REMOVE_EFFECT: Invalid value %d for effect %s.", value, info.id);
+					return false;
+				}
+			}
+
+			RemoveEffect(unit, effect, source, source_id, value);
 		}
 		break;
 	case CMD_LIST_EFFECTS:
@@ -338,7 +372,7 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f)
 				Error("CommandParser CMD_ADD_LEARNING_POINTS: Invalid count %d.", count);
 				return false;
 			}
-			
+
 			unit->player->AddLearningPoint(count);
 		}
 		break;
@@ -349,9 +383,9 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f)
 	return true;
 }
 
-void CommandParser::RemoveEffect(Unit* u, EffectId effect, EffectSource source, int source_id)
+void CommandParser::RemoveEffect(Unit* u, EffectId effect, EffectSource source, int source_id, int value)
 {
-	uint removed = u->RemoveEffects(effect, source, source_id);
+	uint removed = u->RemoveEffects(effect, source, source_id, value);
 	Msg("%u effects removed.", removed);
 }
 
@@ -367,7 +401,14 @@ void CommandParser::ListEffects(Unit* u)
 	s = Format("Unit effects (%u):", u->effects.size());
 	for(Effect& e : u->effects)
 	{
-		s += Format("\n%s, power %g, source ", EffectInfo::effects[(int)e.effect].id, e.power);
+		EffectInfo& info = EffectInfo::effects[(int)e.effect];
+		s += '\n';
+		s += info.id;
+		if(info.value_type == EffectInfo::Attribute)
+			s += Format("(%s)", Attribute::attributes[e.value].id);
+		else if(info.value_type == EffectInfo::Skill)
+			s += Format("(%s)", Skill::skills[e.value].id);
+		s += Format(", power %g, source ", e.power);
 		switch(e.source)
 		{
 		case EffectSource::Temporary:
@@ -434,7 +475,8 @@ void CommandParser::ListStats(Unit* u)
 	}
 	Msg("Health: %d/%d (bonus: %+g, regeneration: %+g/sec, natural: x%g)", hp, (int)u->hpmax, u->GetEffectSum(EffectId::Health),
 		u->GetEffectSum(EffectId::Regeneration), u->GetEffectMul(EffectId::NaturalHealingMod));
-	Msg("Stamina: %d/%d", (int)u->stamina, (int)u->stamina_max);
+	Msg("Stamina: %d/%d (bonus: %+g, regeneration: %+g/sec, mod: x%g)", (int)u->stamina, (int)u->stamina_max, u->GetEffectSum(EffectId::Stamina),
+		u->GetEffectMax(EffectId::StaminaRegeneration), u->GetEffectMul(EffectId::StaminaRegenerationMod));
 	Msg("Melee attack: %s (bonus: %+g), ranged: %s (bonus: %+g)",
 		(u->HaveWeapon() || u->data->type == UNIT_TYPE::ANIMAL) ? Format("%d", (int)u->CalculateAttack()) : "-",
 		u->GetEffectSum(EffectId::MeleeAttack),

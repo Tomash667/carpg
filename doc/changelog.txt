@@ -4,6 +4,8 @@ Historia zmian
 Wersja 0.10 (2019-??-??):
 ! nie mo¿na wczytywaæ ju¿ zapisów z wersji 0.2.20 lub starszej
 + nowe unikalne zadanie: Zio³a dla alchemika
++ nowe efekty postaci: maksymalna wytrzyma³oœæ, szybkoœæ regeneracji wytrzyma³oœci, premia do atrybutu/umiejêtnoœci
++ nowy atut (energiczny)
 + alchemik teraz skupuje zio³a
 + pierœcienie: srebrny, z³oty, szmaragdowy
 + aktualizacja bibliotek: FMod 1.10.12, JSON for Modern C++ 3.6.1

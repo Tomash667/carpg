@@ -3,21 +3,25 @@
 #include "Effect.h"
 
 EffectInfo EffectInfo::effects[] = {
-	EffectId::Health, "health", "modify max hp",
-	EffectId::Carry, "carry", "modify carry %",
-	EffectId::Poison, "poison", "deal poison damage",
-	EffectId::Alcohol, "alcohol", "deal alcohol damage",
-	EffectId::Regeneration, "regeneration", "regenerate hp",
-	EffectId::StaminaRegeneration, "stamina_regeneration", "regenerate stamina",
-	EffectId::FoodRegeneration, "food_regneration", "food regenerate hp",
-	EffectId::NaturalHealingMod, "natural_healing_mod", "natural healing modifier % (timer in days)",
-	EffectId::MagicResistance, "magic_resistance", "magic resistance %",
-	EffectId::Stun, "stun", "unit is stunned",
-	EffectId::Mobility, "mobility", "modify mobility",
-	EffectId::MeleeAttack, "melee_attack", "modify melee attack",
-	EffectId::RangedAttack, "ranged_attack", "modify ranged attack",
-	EffectId::Defense, "defense", "modify defense",
-	EffectId::PoisonResistance, "poison_resistance", "poison resistance %"
+	EffectInfo(EffectId::Health, "health", "modify max hp"),
+	EffectInfo(EffectId::Carry, "carry", "modify carry %"),
+	EffectInfo(EffectId::Poison, "poison", "deal poison damage"),
+	EffectInfo(EffectId::Alcohol, "alcohol", "deal alcohol damage"),
+	EffectInfo(EffectId::Regeneration, "regeneration", "regenerate hp"),
+	EffectInfo(EffectId::StaminaRegeneration, "stamina_regeneration", "regenerate stamina"),
+	EffectInfo(EffectId::FoodRegeneration, "food_regneration", "food regenerate hp"),
+	EffectInfo(EffectId::NaturalHealingMod, "natural_healing_mod", "natural healing modifier % (timer in days)"),
+	EffectInfo(EffectId::MagicResistance, "magic_resistance", "magic resistance %"),
+	EffectInfo(EffectId::Stun, "stun", "unit is stunned"),
+	EffectInfo(EffectId::Mobility, "mobility", "modify mobility"),
+	EffectInfo(EffectId::MeleeAttack, "melee_attack", "modify melee attack"),
+	EffectInfo(EffectId::RangedAttack, "ranged_attack", "modify ranged attack"),
+	EffectInfo(EffectId::Defense, "defense", "modify defense"),
+	EffectInfo(EffectId::PoisonResistance, "poison_resistance", "poison resistance %"),
+	EffectInfo(EffectId::Stamina, "stamina", "modify max stamina"),
+	EffectInfo(EffectId::Attribute, "attribute", "modify attribute", EffectInfo::Attribute),
+	EffectInfo(EffectId::Skill, "skill", "modify skill", EffectInfo::Skill),
+	EffectInfo(EffectId::StaminaRegenerationMod, "stamina_regeneration_mod", "stamina regeneration modifier %")
 };
 
 EffectId EffectInfo::TryGet(const string& id)

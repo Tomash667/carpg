@@ -52,8 +52,8 @@ struct NetChangePlayer
 		GAME_MESSAGE, // show game message [int(id)-game message id]
 		RUN_SCRIPT_RESULT, // run script result [string(str)-output]
 		GENERIC_CMD_RESPONSE, // response to GENERIC_CMD [string(str)-result]
-		ADD_EFFECT, // add effect to player [char(id)-effect, char(count)-source, char(a)-source_id, pos.x-power, pos.y-time]
-		REMOVE_EFFECT, // remove effect from player [char(id)-effect, char(count)-source, char(a)-source_id]
+		ADD_EFFECT, // add effect to player [char(id)-effect, char(count)-source, char(a1)-source_id, char(a2)-value, pos.x-power, pos.y-time]
+		REMOVE_EFFECT, // remove effect from player [char(id)-effect, char(count)-source, char(a1)-source_id, char(a2)-value]
 		ON_REST, // player is resting [byte(count)-days]
 		GAME_MESSAGE_FORMATTED, // add formatted message [int(id)-game message id, int(a)-subtype, int(count)-value]
 
@@ -65,6 +65,10 @@ struct NetChangePlayer
 		int a;
 		Unit* unit;
 		string* str;
+		struct
+		{
+			short a1, a2;
+		};
 	};
 	const Item* item;
 	Vec3 pos;

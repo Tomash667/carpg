@@ -92,12 +92,11 @@ float Unit::CalculateMaxHp() const
 //=================================================================================================
 float Unit::CalculateMaxStamina() const
 {
+	float stamina = (float)data->stamina + GetEffectSum(EffectId::Stamina);
 	if(IS_SET(data->flags2, F2_FIXED_STATS))
-		return (float)data->stamina;
+		return stamina;
 	float v = 0.6f*Get(AttributeId::END) + 0.4f*Get(AttributeId::DEX);
-	return (float)data->stamina
-		+ 250.f
-		+ v * 2.f;
+	return stamina + 250.f + v * 2.f;
 }
 
 //=================================================================================================
@@ -809,7 +808,23 @@ void Unit::AddItem2(const Item* item, uint count, uint team_count, bool show_msg
 void Unit::AddEffect(Effect& e, bool send)
 {
 	effects.push_back(e);
+	OnAddRemoveEffect(e);
+	if(send && player && !player->IsLocal() && Net::IsServer())
+	{
+		NetChangePlayer& c = Add1(player->player_info->changes);
+		c.type = NetChangePlayer::ADD_EFFECT;
+		c.id = (int)e.effect;
+		c.count = (int)e.source;
+		c.a1 = e.source_id;
+		c.a2 = e.value;
+		c.pos.x = e.power;
+		c.pos.y = e.time;
+	}
+}
 
+//=================================================================================================
+void Unit::OnAddRemoveEffect(Effect& e)
+{
 	switch(e.effect)
 	{
 	case EffectId::Health:
@@ -818,17 +833,12 @@ void Unit::AddEffect(Effect& e, bool send)
 	case EffectId::Carry:
 		CalculateLoad();
 		break;
-	}
-
-	if(send && player && !player->IsLocal() && Net::IsServer())
-	{
-		NetChangePlayer& c = Add1(player->player_info->changes);
-		c.type = NetChangePlayer::ADD_EFFECT;
-		c.id = (int)e.effect;
-		c.count = (int)e.source;
-		c.a = e.source_id;
-		c.pos.x = e.power;
-		c.pos.y = e.time;
+	case EffectId::Stamina:
+		RecalculateStamina();
+		break;
+	case EffectId::Attribute:
+		ApplyStat((AttributeId)e.value);
+		break;
 	}
 }
 
@@ -858,6 +868,7 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 				e.effect = item.ToEffect();
 				e.source = EffectSource::Temporary;
 				e.source_id = -1;
+				e.value = -1;
 				e.time = item.time;
 				e.power = item.power / item.time * poison_res;
 				AddEffect(e);
@@ -873,6 +884,7 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 			e.effect = item.ToEffect();
 			e.source = EffectSource::Temporary;
 			e.source_id = -1;
+			e.value = -1;
 			e.time = item.time;
 			e.power = item.power;
 			AddEffect(e);
@@ -917,6 +929,7 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 			e.effect = item.ToEffect();
 			e.source = EffectSource::Temporary;
 			e.source_id = -1;
+			e.value = -1;
 			e.time = item.power;
 			e.power = 1.f;
 			AddEffect(e);
@@ -944,13 +957,15 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 }
 
 //=================================================================================================
-uint Unit::RemoveEffects(EffectId effect, EffectSource source, int source_id)
+uint Unit::RemoveEffects(EffectId effect, EffectSource source, int source_id, int value)
 {
 	uint index = 0;
 	for(Effect& e : effects)
 	{
-		// same effect or same source & source id
-		if(e.effect == effect || (source != EffectSource::None && e.source == source && (source_id == -1 || e.source_id == source_id)))
+		if((effect == EffectId::None || e.effect == effect)
+			&& (value == -1 || e.value == value)
+			&& (source == EffectSource::None || e.source == source)
+			&& (source_id == -1 || e.source_id == source_id))
 			_to_remove.push_back(index);
 		++index;
 	}
@@ -964,7 +979,7 @@ uint Unit::RemoveEffects(EffectId effect, EffectSource source, int source_id)
 void Unit::UpdateEffects(float dt)
 {
 	Game& game = Game::Get();
-	float regen = 0.f, temp_regen = 0.f, poison_dmg = 0.f, alco_sum = 0.f, best_stamina = 0.f;
+	float regen = 0.f, temp_regen = 0.f, poison_dmg = 0.f, alco_sum = 0.f, best_stamina = 0.f, stamina_mod = 1.f;
 	int food_heal = 0;
 
 	// update effects timer
@@ -996,6 +1011,9 @@ void Unit::UpdateEffects(float dt)
 		case EffectId::StaminaRegeneration:
 			if(it->power > best_stamina)
 				best_stamina = it->power;
+			break;
+		case EffectId::StaminaRegenerationMod:
+			stamina_mod *= it->power;
 			break;
 		}
 		if(it->source == EffectSource::Temporary)
@@ -1094,7 +1112,7 @@ void Unit::UpdateEffects(float dt)
 		}
 		if(stamina_restore < 0)
 			stamina_restore = 0;
-		stamina += ((stamina_max * stamina_restore / 100) + best_stamina) * dt;
+		stamina += ((stamina_max * stamina_restore / 100) + best_stamina) * dt * stamina_mod;
 		if(stamina > stamina_max)
 			stamina = stamina_max;
 		if(Net::IsServer() && player && !player->is_local)
@@ -1222,6 +1240,18 @@ float Unit::GetEffectMul(EffectId effect) const
 		}
 	}
 	return value * tmp_value_low * tmp_value_high;
+}
+
+//=================================================================================================
+float Unit::GetEffectMax(EffectId effect) const
+{
+	float value = 0.f;
+	for(const Effect& e : effects)
+	{
+		if(e.effect == effect && e.power > value)
+			value = e.power;
+	}
+	return value;
 }
 
 //=================================================================================================
@@ -1474,8 +1504,7 @@ int Unit::GetRandomAttack() const
 			int n = Rand() % data->frames->attacks;
 			if(IS_SET(data->frames->extra->e[n].flags, a))
 				return n;
-		}
-		while(1);
+		} while(1);
 	}
 	else
 		return Rand() % data->frames->attacks;
@@ -2035,8 +2064,21 @@ void Unit::Load(GameReader& f, bool local)
 	}
 
 	// effects
-	if(LOAD_VERSION >= V_0_8)
+	if(LOAD_VERSION >= V_DEV)
 		f.ReadVector4(effects);
+	else if(LOAD_VERSION >= V_0_8)
+	{
+		effects.resize(f.Read<uint>());
+		for(Effect& e : effects)
+		{
+			f >> e.effect;
+			f >> e.source;
+			f >> e.source_id;
+			f >> e.time;
+			f >> e.power;
+			e.value = -1;
+		}
+	}
 	else
 	{
 		effects.resize(f.Read<uint>());
@@ -2950,7 +2992,7 @@ void Unit::RemoveEffect(EffectId effect)
 
 	if(effect == EffectId::Stun && !_to_remove.empty() && Net::IsServer())
 	{
-		auto& c = Add1(Net::changes);
+		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::STUN;
 		c.unit = this;
 		c.f[0] = 0;
@@ -3553,9 +3595,6 @@ void Unit::RemoveEffects(bool send)
 	if(_to_remove.empty())
 		return;
 
-	bool recalc_hp = false,
-		recalc_load = false;
-
 	send = (send && player && !player->IsLocal() && Net::IsServer());
 
 	while(!_to_remove.empty())
@@ -3568,12 +3607,12 @@ void Unit::RemoveEffects(bool send)
 			c.type = NetChangePlayer::REMOVE_EFFECT;
 			c.id = (int)e.effect;
 			c.count = (int)e.source;
-			c.a = e.source_id;
+			c.a1 = e.source_id;
+			c.a2 = e.value;
 		}
-		if(e.effect == EffectId::Health)
-			recalc_hp = true;
-		else if(e.effect == EffectId::Carry)
-			recalc_load = true;
+
+		OnAddRemoveEffect(e);
+
 		_to_remove.pop_back();
 		if(index == effects.size() - 1)
 			effects.pop_back();
@@ -3583,11 +3622,6 @@ void Unit::RemoveEffects(bool send)
 			effects.pop_back();
 		}
 	}
-
-	if(recalc_hp)
-		RecalculateHp(true);
-	if(recalc_load)
-		CalculateLoad();
 }
 
 //=================================================================================================
@@ -3649,10 +3683,40 @@ bool Unit::CanAct()
 }
 
 //=================================================================================================
-int Unit::Get(SkillId s) const
+int Unit::Get(AttributeId a, StatState* state) const
+{
+	int value = stats->attrib[(int)a];
+	StatInfo stat_info;
+
+	for(const Effect& e : effects)
+	{
+		if(e.effect == EffectId::Attribute && e.value == (int)a)
+		{
+			value += (int)e.power;
+			stat_info.Mod((int)e.power);
+		}
+	}
+
+	if(state)
+		*state = stat_info.GetState();
+	return value;
+}
+
+//=================================================================================================
+int Unit::Get(SkillId s, StatState* state) const
 {
 	int index = (int)s;
 	int value = stats->skill[index];
+	StatInfo stat_info;
+
+	for(const Effect& e : effects)
+	{
+		if(e.effect == EffectId::Skill && e.value == (int)s)
+		{
+			value += (int)e.power;
+			stat_info.Mod((int)e.power);
+		}
+	}
 
 	// apply skill synergy
 	switch(s)
@@ -3702,6 +3766,8 @@ int Unit::Get(SkillId s) const
 		break;
 	}
 
+	if(state)
+		*state = stat_info.GetState();
 	return value;
 }
 
@@ -4173,6 +4239,7 @@ void Unit::ApplyStun(float length)
 		e.effect = EffectId::Stun;
 		e.source = EffectSource::Temporary;
 		e.source_id = -1;
+		e.value = -1;
 		e.power = 0.f;
 		e.time = length;
 		AddEffect(e);

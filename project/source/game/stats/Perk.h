@@ -53,6 +53,7 @@ enum class Perk
 	HardSkin, // (60 end) +10 def
 	Adaptation, // (75 end) poison resistance
 	PerfectHealth, // (100 end) +5 hp reg
+	Energetic, // (60 dex/end) +100 stamina
 
 	Max
 };

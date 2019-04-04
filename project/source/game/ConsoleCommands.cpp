@@ -121,8 +121,8 @@ void Game::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_REFRESH_COOLDOWN, "refresh_cooldown", "refresh action cooldown/charges", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_DRAW_PATH, "draw_path", "draw debug pathfinding, look at target", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_VERIFY, "verify", "verify game state integrity", F_GAME | F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_ADD_EFFECT, "add_effect", "add effect to selected unit (add_effect effect power [source [perk/time]])", F_GAME | F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_REMOVE_EFFECT, "remove_effect", "remove effect from selected unit (remove_effect effect/source [perk])", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_ADD_EFFECT, "add_effect", "add effect to selected unit (add_effect effect <value_type> power [source [perk/time]])", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_REMOVE_EFFECT, "remove_effect", "remove effect from selected unit (remove_effect effect/source [perk] [value_type])", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_LIST_EFFECTS, "list_effects", "display selected unit effects", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_ADD_PERK, "add_perk", "add perk to selected unit (add_perk perk)", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_REMOVE_PERK, "remove_perk", "remove perk from selected unit (remove_perk perk)", F_GAME | F_CHEAT));
@@ -1592,6 +1592,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						Msg("add_effect regeneration 5 - add permanent regeneration 5 hp/sec");
 						Msg("add_effect melee_attack 30 perk strong_back - add 30 melee attack assigned to perk");
 						Msg("add_effect magic_resistance 0.5 temporary 30 - add 50% magic resistance for 30 seconds");
+						Msg("add_effect attribute str 5 temporary 10 - add +5 strength for 10 seconds");
 					}
 					else
 					{
@@ -1602,6 +1603,29 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						if(e.effect == EffectId::None)
 							t.Throw("Invalid effect '%s'.", effect_id.c_str());
 						t.Next();
+
+						EffectInfo& info = EffectInfo::effects[(int)e.effect];
+						if(info.value_type == EffectInfo::None)
+							e.value = -1;
+						else
+						{
+							const string& value = t.MustGetItem();
+							if(info.value_type == EffectInfo::Attribute)
+							{
+								Attribute* attrib = Attribute::Find(value);
+								if(!attrib)
+									t.Throw("Invalid attribute '%s' for effect '%s'.", value.c_str(), info.id);
+								e.value = (int)attrib->attrib_id;
+							}
+							else
+							{
+								Skill* skill = Skill::Find(value);
+								if(!skill)
+									t.Throw("Invalid skill '%s' for effect '%s'.", value.c_str(), info.id);
+								e.value = (int)skill->skill_id;
+							}
+							t.Next();
+						}
 
 						e.power = t.MustGetNumberFloat();
 						if(t.Next())
@@ -1652,6 +1676,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								<< (char)e.effect
 								<< (char)e.source
 								<< (char)e.source_id
+								<< (char)e.value
 								<< e.power
 								<< e.time;
 						}
@@ -1665,6 +1690,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						EffectSource source = EffectSource::None;
 						EffectId effect = EffectId::None;
 						int source_id = -1;
+						int value = -1;
 
 						const string& str = t.MustGetItem();
 						if(str == "permanent")
@@ -1701,10 +1727,36 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								Msg("Invalid effect or source '%s'.", effect_name.c_str());
 								break;
 							}
+
+							EffectInfo& info = EffectInfo::effects[(int)effect];
+							if(info.value_type != EffectInfo::None && t.Next())
+							{
+								const string& value_str = t.MustGetItem();
+								if(info.value_type == EffectInfo::Attribute)
+								{
+									Attribute* attrib = Attribute::Find(value_str);
+									if(!attrib)
+									{
+										Msg("Invalid effect attribute '%s'.", value_str.c_str());
+										break;
+									}
+									value = (int)attrib->attrib_id;
+								}
+								else
+								{
+									Skill* skill = Skill::Find(value_str);
+									if(!skill)
+									{
+										Msg("Invalid effect skill '%s'.", value_str.c_str());
+										break;
+									}
+									value = (int)skill->skill_id;
+								}
+							}
 						}
 
 						if(Net::IsLocal())
-							cmdp->RemoveEffect(pc_data.selected_unit, effect, source, source_id);
+							cmdp->RemoveEffect(pc_data.selected_unit, effect, source, source_id, value);
 						else
 						{
 							NetChange& c = Add1(Net::changes);
@@ -1713,7 +1765,8 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								<< pc_data.selected_unit->netid
 								<< (char)effect
 								<< (char)source
-								<< (char)source_id;
+								<< (char)source_id
+								<< (char)value;
 						}
 					}
 					break;

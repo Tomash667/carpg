@@ -29,8 +29,11 @@ enum class StatState
 //-----------------------------------------------------------------------------
 struct StatInfo
 {
-	int value, unmod, base;
-	StatState state;
+	int plus, minus;
+
+	StatInfo() : plus(0), minus(0) {}
+	void Mod(int value);
+	StatState GetState();
 };
 
 //-----------------------------------------------------------------------------

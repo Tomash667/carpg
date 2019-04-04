@@ -618,10 +618,12 @@ public:
 		RemoveEffect(EffectId::Poison);
 	}
 	void RemoveEffects(bool send = true);
-	uint RemoveEffects(EffectId effect, EffectSource source, int source_id);
+	uint RemoveEffects(EffectId effect, EffectSource source, int source_id, int value);
 	float GetEffectSum(EffectId effect) const;
 	float GetEffectMul(EffectId effect) const;
+	float GetEffectMax(EffectId effect) const;
 	bool HaveEffect(EffectId effect) const;
+	void OnAddRemoveEffect(Effect& e);
 
 	//-----------------------------------------------------------------------------
 	// EQUIPMENT
@@ -744,8 +746,8 @@ public:
 	}
 	bool CanAct();
 
-	int Get(AttributeId a) const { return stats->attrib[(int)a]; }
-	int Get(SkillId s) const;
+	int Get(AttributeId a, StatState* state = nullptr) const;
+	int Get(SkillId s, StatState* state = nullptr) const;
 	int GetBase(AttributeId a) const { return stats->attrib[(int)a]; }
 	int GetBase(SkillId s) const { return stats->skill[(int)s]; }
 	void Set(AttributeId a, int value);
