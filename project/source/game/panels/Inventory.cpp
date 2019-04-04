@@ -1105,7 +1105,7 @@ void InventoryPanel::Update(float dt)
 				if(slot)
 				{
 					// nie za³o¿ony przedmiot
-					if(item->IsWearableByHuman() && item->type != IT_AMULET)
+					if(item->IsWearableByHuman() && item->type != IT_AMULET && item->type != IT_RING)
 					{
 						last_index = INDEX_INVALID;
 
@@ -1466,24 +1466,33 @@ void InventoryPanel::EquipSlotItem(ITEM_SLOT slot, int i_index)
 {
 	const Item* item = items->at(i_index).item;
 
+	// for rings - use empty slot or last equipped slot
+	if(slot == SLOT_RING1)
+	{
+		if(slots[slot])
+		{
+			if(!slots[SLOT_RING2] || game.pc->last_ring)
+				slot = SLOT_RING2;
+		}
+		game.pc->last_ring = (slot == SLOT_RING2);
+	}
+
 	// play sound
 	game.sound_mgr->PlaySound2d(game.GetItemSound(item));
 
 	if(slots[slot])
 	{
+		// replace equipped item
 		const Item* prev_item = slots[slot];
-		// ustaw slot
 		slots[slot] = item;
 		items->erase(items->begin() + i_index);
-		// dodaj stary przedmiot
 		unit->AddItem(prev_item, 1, false);
 		unit->weight -= prev_item->weight;
 	}
 	else
 	{
-		// ustaw slot
+		// equip item
 		slots[slot] = item;
-		// usuñ przedmiot
 		items->erase(items->begin() + i_index);
 	}
 

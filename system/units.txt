@@ -760,7 +760,7 @@ unit merchant : base_human {
 	}
 	trader {
 		stock merchant
-		groups {weapon bow shield armor amulet consumable other book}
+		groups {weapon bow shield armor amulet ring consumable other book}
 	}
 	gold {500 1000}
 	dialog merchant
@@ -803,7 +803,7 @@ unit tut_czlowiek : citizen {
 	flags | {ai_stay ~ai_wanders limited_rot}
 	trader {
 		stock merchant
-		groups {weapon bow shield armor amulet consumable other book}
+		groups {weapon bow shield armor amulet ring consumable other book}
 	}
 	dialog q_tutorial
 }

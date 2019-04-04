@@ -20,6 +20,7 @@ vector<Bow*> Bow::bows;
 vector<Shield*> Shield::shields;
 vector<Armor*> Armor::armors;
 vector<Amulet*> Amulet::amulets;
+vector<Ring*> Ring::rings;
 vector<Consumable*> Consumable::consumables;
 vector<OtherItem*> OtherItem::others;
 vector<OtherItem*> OtherItem::artifacts;

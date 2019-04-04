@@ -360,6 +360,7 @@ void PlayerController::Save(FileWriter& f)
 	f << always_run;
 	f << exp;
 	f << exp_level;
+	f << last_ring;
 }
 
 //=================================================================================================
@@ -638,6 +639,10 @@ void PlayerController::Load(FileReader& f)
 		exp_level = 0;
 	}
 	exp_need = GetExpNeed();
+	if(LOAD_VERSION >= V_DEV)
+		f >> last_ring;
+	else
+		last_ring = false;
 
 	action = Action_None;
 }
@@ -1057,6 +1062,7 @@ void PlayerController::Write(BitStreamWriter& f) const
 		assert(0);
 		break;
 	}
+	f << last_ring;
 }
 
 //=================================================================================================
@@ -1120,6 +1126,7 @@ bool PlayerController::Read(BitStreamReader& f)
 		assert(0);
 		break;
 	}
+	f >> last_ring;
 	return true;
 }
 

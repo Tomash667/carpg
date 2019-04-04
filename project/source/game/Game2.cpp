@@ -7886,6 +7886,8 @@ SOUND Game::GetItemSound(const Item* item)
 			return sItem[1];
 	case IT_AMULET:
 		return sItem[8];
+	case IT_RING:
+		return sItem[9];
 	case IT_CONSUMABLE:
 		if(item->ToConsumable().cons_type != Food)
 			return sItem[0];

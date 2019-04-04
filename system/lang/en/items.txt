@@ -532,6 +532,18 @@ item a_diamond {
 }
 
 //------------------------------------------------------------------------------
+// RINGS
+item r_silver {
+	name "Silver ring"
+}
+item r_gold {
+	name "Golden ring"
+}
+item r_emerald {
+	name "Emerald ring"
+}
+
+//------------------------------------------------------------------------------
 // POTIONS
 item p_nreg {
 	name "Healing brew"

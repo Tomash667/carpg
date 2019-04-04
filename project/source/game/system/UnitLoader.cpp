@@ -141,6 +141,7 @@ enum SubprofileKeyword
 	SPK_SHIELD,
 	SPK_ARMOR,
 	SPK_AMULET,
+	SPK_RING,
 	SPK_TAG,
 	SPK_PRIORITY,
 	SPK_PERK,
@@ -410,6 +411,7 @@ void UnitLoader::InitTokenizer()
 		{ "shield", IT_SHIELD },
 		{ "armor", IT_ARMOR },
 		{ "amulet", IT_AMULET },
+		{ "ring", IT_RING },
 		{ "other", IT_OTHER },
 		{ "consumable", IT_CONSUMABLE },
 		{ "book", IT_BOOK }
@@ -428,6 +430,7 @@ void UnitLoader::InitTokenizer()
 		{ "shield", SPK_SHIELD },
 		{ "armor", SPK_ARMOR },
 		{ "amulet", SPK_AMULET },
+		{ "ring", SPK_RING },
 		{ "tag", SPK_TAG },
 		{ "priority", SPK_PRIORITY },
 		{ "perk", SPK_PERK },
@@ -1176,6 +1179,9 @@ void UnitLoader::ParseSubprofile(Ptr<StatProfile::Subprofile>& subprofile)
 						break;
 					case SPK_AMULET:
 						type = IT_AMULET;
+						break;
+					case SPK_RING:
+						type = IT_RING;
 						break;
 					default:
 						t.Unexpected();

@@ -110,7 +110,7 @@ struct PlayerController : public HeroPlayerCommon
 		};
 	} next_action_data;
 	WeaponType last_weapon;
-	bool godmode, noclip, is_local, recalculate_level, leaving_event, always_run;
+	bool godmode, noclip, is_local, recalculate_level, leaving_event, always_run, last_ring;
 	int id, free_days, action_charges, learning_points, exp, exp_need, exp_level;
 	//----------------------
 	enum Action
@@ -141,7 +141,7 @@ struct PlayerController : public HeroPlayerCommon
 	vector<Unit*> action_targets;
 
 	PlayerController() : dialog_ctx(nullptr), stat_flags(0), player_info(nullptr), is_local(false), action_recharge(0.f),
-		action_cooldown(0.f), action_charges(0)
+		action_cooldown(0.f), action_charges(0), last_ring(false)
 	{
 	}
 	~PlayerController();

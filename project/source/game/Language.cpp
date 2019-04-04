@@ -393,7 +393,7 @@ void Language::LoadObjectFile(Tokenizer& t, cstring filename)
 					{
 						t.Next();
 						const string& id = t.MustGetText();
-						Item* item = Item::Get(id);
+						Item* item = Item::TryGet(id);
 						if(!item)
 							t.Throw("Invalid item '%s'.", id.c_str());
 						t.Next();

@@ -105,6 +105,10 @@ struct Item
 	{
 		return Cast<Amulet, IT_AMULET>();
 	}
+	Ring& ToRing()
+	{
+		return Cast<Ring, IT_RING>();
+	}
 	Consumable& ToConsumable()
 	{
 		return Cast<Consumable, IT_CONSUMABLE>();
@@ -138,6 +142,10 @@ struct Item
 	{
 		return Cast<Amulet, IT_AMULET>();
 	}
+	const Ring& ToRing() const
+	{
+		return Cast<Ring, IT_RING>();
+	}
 	const Consumable& ToConsumable() const
 	{
 		return Cast<Consumable, IT_CONSUMABLE>();
@@ -165,7 +173,7 @@ struct Item
 	}
 	bool IsWearable() const
 	{
-		return Any(type, IT_WEAPON, IT_BOW, IT_SHIELD, IT_ARMOR, IT_AMULET);
+		return Any(type, IT_WEAPON, IT_BOW, IT_SHIELD, IT_ARMOR, IT_AMULET, IT_RING);
 	}
 	bool IsWearableByHuman() const;
 	bool IsQuest() const
@@ -396,7 +404,7 @@ inline bool Item::IsWearableByHuman() const
 	if(type == IT_ARMOR)
 		return ToArmor().armor_unit_type == ArmorUnitType::HUMAN;
 	else
-		return Any(type, IT_WEAPON, IT_BOW, IT_SHIELD, IT_AMULET);
+		return Any(type, IT_WEAPON, IT_BOW, IT_SHIELD, IT_AMULET, IT_RING);
 }
 
 //-----------------------------------------------------------------------------
@@ -406,6 +414,15 @@ struct Amulet : public Item
 	Amulet() : Item(IT_AMULET) {}
 
 	static vector<Amulet*> amulets;
+};
+
+//-----------------------------------------------------------------------------
+// Ring
+struct Ring : public Item
+{
+	Ring() : Item(IT_RING) {}
+
+	static vector<Ring*> rings;
 };
 
 //-----------------------------------------------------------------------------

@@ -106,6 +106,7 @@ void ItemLoader::InitTokenizer()
 		{ "shield", IT_SHIELD },
 		{ "armor", IT_ARMOR },
 		{ "amulet", IT_AMULET },
+		{ "ring", IT_RING },
 		{ "other", IT_OTHER },
 		{ "consumable", IT_CONSUMABLE },
 		{ "book", IT_BOOK },
@@ -332,6 +333,9 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 		break;
 	case IT_AMULET:
 		item = new Amulet;
+		break;
+	case IT_RING:
+		item = new Ring;
 		break;
 	case IT_CONSUMABLE:
 		item = new Consumable;
@@ -599,6 +603,9 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 		break;
 	case IT_AMULET:
 		Amulet::amulets.push_back(static_cast<Amulet*>(item_ptr));
+		break;
+	case IT_RING:
+		Ring::rings.push_back(static_cast<Ring*>(item_ptr));
 		break;
 	case IT_CONSUMABLE:
 		Consumable::consumables.push_back(static_cast<Consumable*>(item_ptr));
@@ -1225,6 +1232,7 @@ void ItemLoader::CalculateCrc()
 			break;
 		case IT_GOLD:
 		case IT_AMULET:
+		case IT_RING:
 			break;
 		default:
 			assert(0);

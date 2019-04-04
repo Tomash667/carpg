@@ -6,7 +6,7 @@ ItemLoader.cpp
 UnitLoader.cpp - to allow selling
 If equippable
 	Item.IsWearable/IsWearableByHuman
-	ItemSlot.h - Add new slots in ItemSlot.h (ItemTypeToSlot, IsVisible)
+	ItemSlot.h - Add new slots in ItemSlot.h (ItemTypeToSlot)
 	Unit.AddItemAndEquipIfNone
 	Unit.UpdateInventory
 	Unit.IsBetterItem
@@ -22,11 +22,14 @@ Game2.cpp:GetItemSound
 */
 enum ITEM_TYPE
 {
+	IT_NONE = -1,
+
 	IT_WEAPON,
 	IT_BOW,
 	IT_SHIELD,
 	IT_ARMOR,
 	IT_AMULET,
+	IT_RING,
 	IT_OTHER,
 	IT_MAX_WEARABLE = IT_OTHER, // used in Team.cpp priorities
 	IT_CONSUMABLE,

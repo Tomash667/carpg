@@ -532,6 +532,18 @@ item a_diamond {
 }
 
 //------------------------------------------------------------------------------
+// RINGS
+item r_silver {
+	name "Srebrny pierœcieñ"
+}
+item r_gold {
+	name "Z³oty pierœcieñ"
+}
+item r_emerald {
+	name "Szmaragdowy pierœcieñ"
+}
+
+//------------------------------------------------------------------------------
 // POTIONS
 item p_nreg {
 	name "Napar leczniczy"

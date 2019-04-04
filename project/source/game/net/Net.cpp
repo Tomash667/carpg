@@ -596,6 +596,15 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						}
 
 						ITEM_SLOT slot_type = ItemTypeToSlot(slot.item->type);
+						if(slot_type == SLOT_RING1)
+						{
+							if(unit.slots[slot_type])
+							{
+								if(!unit.slots[SLOT_RING2] || unit.player->last_ring)
+									slot_type = SLOT_RING2;
+							}
+							unit.player->last_ring = (slot_type == SLOT_RING2);
+						}
 						if(unit.slots[slot_type])
 						{
 							std::swap(unit.slots[slot_type], slot.item);

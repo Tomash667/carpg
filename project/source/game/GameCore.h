@@ -139,6 +139,7 @@ struct QuestHandler;
 struct QuestInfo;
 struct QuestList;
 struct QuestScheme;
+struct Ring;
 struct Room;
 struct SaveSlot;
 struct ScriptEvent;

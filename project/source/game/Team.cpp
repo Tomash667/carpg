@@ -47,10 +47,15 @@ struct SortTeamShares
 	explicit SortTeamShares(Unit* unit)
 	{
 		// convert of list of item priority to rank of item priority
-		static_assert(IT_MAX_WEARABLE == SLOT_MAX, "Array size mismatch!");
 		const ITEM_TYPE* p = unit->stats->priorities;
 		for(int i = 0; i < IT_MAX_WEARABLE; ++i)
+			priorities[i] = -1;
+		for(int i = 0; i < IT_MAX_WEARABLE; ++i)
+		{
+			if(p[i] == IT_NONE)
+				break;
 			priorities[p[i]] = i;
+		}
 	}
 
 	bool operator () (const TeamSingleton::TeamShareItem& t1, const TeamSingleton::TeamShareItem& t2) const
@@ -539,7 +544,7 @@ void TeamSingleton::CheckTeamItemShares()
 			int index = 0;
 			for(ItemSlot& slot : other_unit->items)
 			{
-				if(slot.item && slot.item->IsWearableByHuman() && slot.item->type != IT_AMULET)
+				if(slot.item && slot.item->IsWearableByHuman() && slot.item->type != IT_AMULET && slot.item->type != IT_RING)
 				{
 					// don't check if can't buy
 					if(slot.team_count == 0 && slot.item->value / 2 > unit->gold && unit != other_unit)
@@ -961,7 +966,7 @@ void TeamSingleton::BuyTeamItems()
 		const ItemList* lis = ItemList::Get("base_items").lis;
 		const ITEM_TYPE* priorities = unit->stats->priorities;
 		const Item* item;
-		for(int i = 0; i < SLOT_MAX; ++i)
+		for(int i = 0; i < IT_MAX_WEARABLE; ++i)
 		{
 			switch(priorities[i])
 			{
@@ -1023,8 +1028,8 @@ void TeamSingleton::BuyTeamItems()
 					u.gold -= item->value;
 				}
 				break;
-			default:
-				assert(0); // ai don't buy useless amulets yet
+			case IT_NONE:
+				// ai don't buy useless amulets/rings yet
 				break;
 			}
 		}

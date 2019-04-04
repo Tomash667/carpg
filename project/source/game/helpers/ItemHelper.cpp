@@ -83,6 +83,10 @@ void ItemHelper::GenerateTreasure(int level, int _count, vector<ItemSlot>& items
 			item = Amulet::amulets[Rand() % Amulet::amulets.size()];
 			count = 1;
 			break;
+		case IT_RING:
+			item = Ring::rings[Rand() % Ring::rings.size()];
+			count = 1;
+			break;
 		case IT_CONSUMABLE:
 			item = Consumable::consumables[Rand() % Consumable::consumables.size()];
 			count = Random(2, 5);

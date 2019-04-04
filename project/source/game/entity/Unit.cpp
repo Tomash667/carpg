@@ -1706,11 +1706,22 @@ void Unit::Load(GameReader& f, bool local)
 
 	// items
 	bool can_sort = true;
-	int max_slots = (LOAD_VERSION >= V_0_9 ? SLOT_MAX : 4);
+	int max_slots;
+	if(LOAD_VERSION >= V_DEV)
+		max_slots = SLOT_MAX;
+	else if(LOAD_VERSION >= V_0_9)
+		max_slots = 5;
+	else
+		max_slots = 4;
 	for(int i = 0; i < max_slots; ++i)
 		f.ReadOptional(slots[i]);
 	if(LOAD_VERSION < V_0_9)
 		slots[SLOT_AMULET] = nullptr;
+	if(LOAD_VERSION < V_DEV)
+	{
+		slots[SLOT_RING1] = nullptr;
+		slots[SLOT_RING2] = nullptr;
+	}
 	items.resize(f.Read<uint>());
 	for(ItemSlot& slot : items)
 	{
@@ -4058,7 +4069,7 @@ void Unit::CreateMesh(CREATE_MESH mode)
 				if(data->sounds)
 				{
 					auto& sound_mgr = ResourceManager::Get<Sound>();
-					for(int i = 0; i < SLOT_MAX; ++i)
+					for(int i = 0; i < SOUND_MAX; ++i)
 					{
 						for(SoundPtr sound : data->sounds->sounds[i])
 							sound_mgr.AddLoadTask(sound);
@@ -4087,7 +4098,7 @@ void Unit::CreateMesh(CREATE_MESH mode)
 			if(data->sounds)
 			{
 				auto& sound_mgr = ResourceManager::Get<Sound>();
-				for(int i = 0; i < SLOT_MAX; ++i)
+				for(int i = 0; i < SOUND_MAX; ++i)
 				{
 					for(SoundPtr sound : data->sounds->sounds[i])
 						sound_mgr.Load(sound);
