@@ -435,6 +435,11 @@ public:
 	{
 		WriteString<uint>(str);
 	}
+	void WriteStringF(cstring str)
+	{
+		uint length = strlen(str);
+		Write(str, length);
+	}
 
 	template<typename CountType, typename LengthType>
 	void WriteStringArray(const vector<string>& strs)
@@ -546,6 +551,7 @@ public:
 	FileWriter() : file(INVALID_FILE_HANDLE), own_handle(true) {}
 	explicit FileWriter(FileHandle file) : file(file), own_handle(false) {}
 	explicit FileWriter(cstring filename) : own_handle(true) { Open(filename); }
+	explicit FileWriter(const string& filename) : FileWriter(filename.c_str()) {}
 	~FileWriter();
 
 	bool Open(cstring filename);

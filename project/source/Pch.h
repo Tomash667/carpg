@@ -47,7 +47,9 @@
 #include <random>
 #include <thread>
 #include <DirectXMath.h>
+#ifndef COMMON_ONLY
 #include <json_fwd.hpp>
+#endif
 
 //-----------------------------------------------------------------------------
 using std::string;

@@ -1,38 +1,6 @@
 #include "PCH.hpp"
 #include "Mesh.h"
 
-#define BIT(bit) (1<<(bit))
-#define IS_SET(flaga,bit) (((flaga) & (bit)) != 0)
-#define IS_CLEAR(flaga,bit) (((flaga) & (bit)) == 0)
-#define IS_ALL_SET(flaga,bity) (((flaga) & (bity)) == (bity))
-#define SET_BIT(flaga,bit) ((flaga) |= (bit))
-#define CLEAR_BIT(flaga,bit) ((flaga) &= ~(bit))
-#define SET_BIT_VALUE(flaga,bit,wartos) { if(wartos) SET_BIT(flaga,bit); else CLEAR_BIT(flaga,bit); }
-#define COPY_BIT(flaga,flaga2,bit) { if(((flaga2) & (bit)) != 0) SET_BIT(flaga,bit); else CLEAR_BIT(flaga,bit); }
-
-static const uint FORMAT_STRINGS = 8;
-static const uint FORMAT_LENGTH = 2048;
-static char format_buf[FORMAT_STRINGS][FORMAT_LENGTH];
-static int format_marker;
-string BUF;
-
-cstring Formats(cstring str, ...)
-{
-	assert(str);
-
-	va_list list;
-	va_start(list, str);
-	char* cbuf = format_buf[format_marker];
-	_vsnprintf_s(cbuf, FORMAT_LENGTH, FORMAT_LENGTH - 1, str, list);
-	cbuf[FORMAT_LENGTH - 1] = 0;
-	format_marker = (format_marker + 1) % FORMAT_STRINGS;
-	va_end(list);
-
-	return cbuf;
-}
-
-#pragma once
-
 //-----------------------------------------------------------------------------
 enum VertexDeclarationId
 {
@@ -53,7 +21,7 @@ const Vec3 DefaultSpecularColor(1, 1, 1);
 const float DefaultSpecularIntensity = 0.2f;
 const int DefaultSpecularHardness = 10;
 
-inline float GetYaw(MATRIX& m)
+inline float GetYaw(Matrix& m)
 {
 	if(m._21 > 0.998f || m._21 < -0.998f)
 		return atan2(m._13, m._33);
@@ -68,15 +36,13 @@ void Mesh::LoadSafe(cstring path)
 	{
 		Load(path);
 	}
-	catch(Error& er)
+	catch(cstring er)
 	{
-		string str;
-		er.GetMessage_(&str, "", "");
-		throw Formats("Reading error: %s", str.c_str());;
+		throw Format("Reading error: %s", er);
 	}
 }
 
-void ReadMatrix33(common::FileStream& f, MATRIX& m)
+void ReadMatrix33(FileReader& f, Matrix& m)
 {
 	f.Read(m._11);
 	f.Read(m._12);
@@ -98,18 +64,19 @@ void ReadMatrix33(common::FileStream& f, MATRIX& m)
 
 void Mesh::Load(cstring path)
 {
-	FileStream f(path, FM_READ);
+	FileReader f(path);
 
 	// head
 	uint size = sizeof(Header) - sizeof(uint);
-	if(!f.Read(&head, size))
+	f.Read(&head, size);
+	if(!f)
 		throw "Failed to read file header.";
 	if(memcmp(head.format, "QMSH", 4) != 0)
-		throw Formats("Invalid file signature '%.4s'.", head.format);
+		throw Format("Invalid file signature '%.4s'.", head.format);
 	if(head.version < 12 || head.version > 21)
-		throw Formats("Invalid file version '%d'.", head.version);
+		throw Format("Invalid file version '%d'.", head.version);
 	if(head.n_bones >= 32)
-		throw Formats("Too many bones (%d).", head.n_bones);
+		throw Format("Too many bones (%d).", head.n_bones);
 	if(head.n_subs == 0)
 		throw "Missing model mesh!";
 	if(IS_SET(head.flags, F_ANIMATED) && !IS_SET(head.flags, F_STATIC))
@@ -204,9 +171,9 @@ void Mesh::Load(cstring path)
 		f.Read(sub.tris);
 		f.Read(sub.min_ind);
 		f.Read(sub.n_ind);
-		f.ReadString1(&sub.name);
-		f.ReadString1(&sub.tex);
-		
+		f.ReadString1(sub.name);
+		f.ReadString1(sub.tex);
+
 		if(head.version >= 16)
 		{
 			// specular value
@@ -226,7 +193,7 @@ void Mesh::Load(cstring path)
 			// normalmap
 			if(IS_SET(head.flags, F_TANGENTS))
 			{
-				f.ReadString1(&sub.tex_normal);
+				f.ReadString1(sub.tex_normal);
 				if(!sub.tex_normal.empty())
 					f.Read(sub.normal_factor);
 			}
@@ -234,7 +201,7 @@ void Mesh::Load(cstring path)
 				sub.tex_normal = "";
 
 			// specular map
-			f.ReadString1(&sub.tex_specular);
+			f.ReadString1(sub.tex_specular);
 			if(!sub.tex_specular.empty())
 			{
 				f.Read(sub.specular_factor);
@@ -269,7 +236,7 @@ void Mesh::Load(cstring path)
 			Bone& bone = bones[i];
 			if(head.version >= 21)
 			{
-				f.ReadString1(&bone.name);
+				f.ReadString1(bone.name);
 				f.Read(bone.parent);
 				ReadMatrix33(f, bone.mat);
 				f.Read(bone.raw_mat);
@@ -285,7 +252,7 @@ void Mesh::Load(cstring path)
 				bone.head = Vec4(1, 1, 0, 0.1f);
 				bone.tail = Vec4(1, 1, 1, 0.1f);
 				bone.connected = false;
-				f.ReadString1(&bone.name);
+				f.ReadString1(bone.name);
 			}
 		}
 
@@ -306,7 +273,7 @@ void Mesh::Load(cstring path)
 		{
 			Animation& anim = anims[i];
 
-			f.ReadString1(&anim.name);
+			f.ReadString1(anim.name);
 			f.Read(anim.length);
 			f.Read(anim.n_frames);
 
@@ -337,7 +304,7 @@ void Mesh::Load(cstring path)
 	{
 		Point& p = attach_points[i];
 
-		f.ReadString1(&p.name);
+		f.ReadString1(p.name);
 		f.Read(p.mat);
 		f.Read(p.bone);
 		if(head.version == 12)
@@ -380,7 +347,7 @@ void Mesh::Load(cstring path)
 	head.version = 21;
 }
 
-void Mesh::LoadBoneGroups(common::FileStream& f)
+void Mesh::LoadBoneGroups(FileReader& f)
 {
 	// groups
 	if(head.version == 12 && head.n_groups < 2)
@@ -405,7 +372,7 @@ void Mesh::LoadBoneGroups(common::FileStream& f)
 		{
 			BoneGroup& gr = groups[i];
 
-			f.ReadString1(&gr.name);
+			f.ReadString1(gr.name);
 
 			// parent group
 			f.Read(gr.parent);
@@ -428,7 +395,7 @@ void Mesh::LoadBoneGroups(common::FileStream& f)
 
 void Mesh::Save(cstring path)
 {
-	FileStream f(path, FM_WRITE);
+	FileWriter f(path);
 
 	// head
 	f.Write(head);
@@ -438,7 +405,7 @@ void Mesh::Save(cstring path)
 	f.Write(cam_pos);
 	f.Write(cam_target);
 	f.Write(cam_up);
-	
+
 	// vertices
 	f.Write(vdata, vdata_size);
 
@@ -517,7 +484,7 @@ void Mesh::Save(cstring path)
 			f.Write(gr.parent);
 
 			// bone indexes
-			byte count = gr.bones.size();
+			byte count = (byte)gr.bones.size();
 			f.Write(count);
 			f.Write(gr.bones.data(), gr.bones.size());
 		}

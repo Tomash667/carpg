@@ -235,12 +235,13 @@ namespace tokenizer
 			F_HIDE_ID = 1 << 7, // in exceptions don't write keyword/group id, only name
 		};
 
-		explicit Tokenizer(int _flags = F_UNESCAPE);
+		explicit Tokenizer(int flags = F_UNESCAPE);
 		~Tokenizer();
 
-		void FromString(cstring _str);
-		void FromString(const string& _str);
+		void FromString(cstring str);
+		void FromString(const string& str);
 		bool FromFile(cstring path);
+		bool FromFile(const string& path) { return FromFile(path.c_str()); }
 		void FromTokenizer(const Tokenizer& t);
 
 		typedef bool(*SkipToFunc)(Tokenizer& t);

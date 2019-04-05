@@ -56,16 +56,16 @@ static float dDOT41(const float *a, const float *b) { return dDOTpq(a, b, 4, 1);
 static float dDOT14(const float *a, const float *b) { return dDOTpq(a, b, 1, 4); }
 #define dMULTIPLYOP1_331(A,op,B,C) \
 {\
-  (A)[0] op dDOT41((B),(C)); \
-  (A)[1] op dDOT41((B+1),(C)); \
-  (A)[2] op dDOT41((B+2),(C)); \
+  (A)[0] op dDOT41((const float*)(B),(const float*)(C)); \
+  (A)[1] op dDOT41((const float*)(B+1),(const float*)(C)); \
+  (A)[2] op dDOT41((const float*)(B+2),(const float*)(C)); \
 }
 
 #define dMULTIPLYOP0_331(A,op,B,C) \
 { \
-  (A)[0] op dDOT((B),(C)); \
-  (A)[1] op dDOT((B+4),(C)); \
-  (A)[2] op dDOT((B+8),(C)); \
+  (A)[0] op dDOT((const float*)(B),(const float*)(C)); \
+  (A)[1] op dDOT((const float*)(B+4),(const float*)(C)); \
+  (A)[2] op dDOT((const float*)(B+8),(const float*)(C)); \
 }
 
 #define dMULTIPLY1_331(A,B,C) dMULTIPLYOP1_331(A,=,B,C)
@@ -84,9 +84,9 @@ void dLineClosestApproach(const Vec3& pa, const Vec3& ua,
 	p[0] = pb[0] - pa[0];
 	p[1] = pb[1] - pa[1];
 	p[2] = pb[2] - pa[2];
-	float uaub = dDOT(ua, ub);
-	float q1 = dDOT(ua, p);
-	float q2 = -dDOT(ub, p);
+	float uaub = dDOT((const float*)ua, (const float*)ub);
+	float q1 = dDOT((const float*)ua, (const float*)p);
+	float q2 = -dDOT((const float*)ub, (const float*)p);
 	float d = 1 - uaub*uaub;
 	if(d <= float(0.0001f)) {
 		// @@@ this needs to be made more robust
@@ -276,9 +276,9 @@ int dBoxBox2(const Vec3& p1, const dMatrix3 R1,
 	TST(pp[2], (A[2] + B[0] * Q31 + B[1] * Q32 + B[2] * Q33), R1 + 2, 3);
 
 	// separating axis = v1,v2,v3
-	TST(dDOT41(R2 + 0, p), (A[0] * Q11 + A[1] * Q21 + A[2] * Q31 + B[0]), R2 + 0, 4);
-	TST(dDOT41(R2 + 1, p), (A[0] * Q12 + A[1] * Q22 + A[2] * Q32 + B[1]), R2 + 1, 5);
-	TST(dDOT41(R2 + 2, p), (A[0] * Q13 + A[1] * Q23 + A[2] * Q33 + B[2]), R2 + 2, 6);
+	TST(dDOT41(R2 + 0, (const float*)p), (A[0] * Q11 + A[1] * Q21 + A[2] * Q31 + B[0]), R2 + 0, 4);
+	TST(dDOT41(R2 + 1, (const float*)p), (A[0] * Q12 + A[1] * Q22 + A[2] * Q32 + B[1]), R2 + 1, 5);
+	TST(dDOT41(R2 + 2, (const float*)p), (A[0] * Q13 + A[1] * Q23 + A[2] * Q33 + B[2]), R2 + 2, 6);
 
 	// note: cross product axes need to be scaled when s is computed.
 	// normal (n1,n2,n3) is relative to box 1.
@@ -357,7 +357,7 @@ int dBoxBox2(const Vec3& p1, const dMatrix3 R1,
 		float sign;
 		for(i = 0; i < 3; i++) pa[i] = p1[i];
 		for(j = 0; j < 3; j++) {
-			sign = (dDOT14(normal, R1 + j) > 0) ? float(1.0) : float(-1.0);
+			sign = (dDOT14((const float*)normal, R1 + j) > 0) ? float(1.0) : float(-1.0);
 			for(i = 0; i < 3; i++) pa[i] += sign * A[j] * R1[i * 4 + j];
 		}
 
@@ -365,7 +365,7 @@ int dBoxBox2(const Vec3& p1, const dMatrix3 R1,
 		Vec3 pb;
 		for(i = 0; i < 3; i++) pb[i] = p2[i];
 		for(j = 0; j < 3; j++) {
-			sign = (dDOT14(normal, R2 + j) > 0) ? float(-1.0) : float(1.0);
+			sign = (dDOT14((const float*)normal, R2 + j) > 0) ? float(-1.0) : float(1.0);
 			for(i = 0; i < 3; i++) pb[i] += sign * B[j] * R2[i * 4 + j];
 		}
 
@@ -405,16 +405,16 @@ int dBoxBox2(const Vec3& p1, const dMatrix3 R1,
 	if(code <= 3) {
 		Ra = R1;
 		Rb = R2;
-		pa = p1;
-		pb = p2;
+		pa = (const float*)p1;
+		pb = (const float*)p2;
 		Sa = A;
 		Sb = B;
 	}
 	else {
 		Ra = R2;
 		Rb = R1;
-		pa = p2;
-		pb = p1;
+		pa = (const float*)p2;
+		pb = (const float*)p1;
 		Sa = B;
 		Sb = A;
 	}
@@ -494,8 +494,8 @@ int dBoxBox2(const Vec3& p1, const dMatrix3 R1,
 	// find the four corners of the incident face, in reference-face coordinates
 	float quad[8]; // 2D coordinate of incident face (x,y pairs)
 	float c1, c2, m11, m12, m21, m22;
-	c1 = dDOT14(center, Ra + code1);
-	c2 = dDOT14(center, Ra + code2);
+	c1 = dDOT14((const float*)center, Ra + code1);
+	c2 = dDOT14((const float*)center, Ra + code2);
 	// optimize this? - we have already computed this data above, but it is not
 	// stored in an easy-to-index format. for now it's quicker just to recompute
 	// the four dot products.
@@ -545,7 +545,7 @@ int dBoxBox2(const Vec3& p1, const dMatrix3 R1,
 		float k2 = -m21*(ret[j * 2] - c1) + m11*(ret[j * 2 + 1] - c2);
 		for(i = 0; i < 3; i++) point[cnum * 3 + i] =
 			center[i] + k1*Rb[i * 4 + a1] + k2*Rb[i * 4 + a2];
-		dep[cnum] = Sa[codeN] - dDOT(normal2, point + cnum * 3);
+		dep[cnum] = Sa[codeN] - dDOT((const float*)normal2, point + cnum * 3);
 		if(dep[cnum] >= 0) {
 			ret[cnum * 2] = ret[j * 2];
 			ret[cnum * 2 + 1] = ret[j * 2 + 1];

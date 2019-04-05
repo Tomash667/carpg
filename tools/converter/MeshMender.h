@@ -3,36 +3,6 @@
 #pragma warning( disable : 4786)
 #pragma warning( disable : 4100)
 
-/*bool operator<( const Vec3 & lhs, const Vec3 & rhs )
-{
-	//needed to have a vertex in a map.
-	//must be an absolute sort so that we can reliably find the exact
-	//position again, not a fuzzy compare for equality based on an epsilon.
-    if (lhs.x == rhs.x)
-    {
-        if (lhs.y == rhs.y)
-        {
-            if (lhs.z == rhs.z)
-            {
-                return false;
-            }
-            else
-            {
-                return lhs.z < rhs.z;
-            }
-        }
-        else
-        {
-            return lhs.y < rhs.y;
-        }
-    }
-    else
-    {
-        return lhs.x < rhs.x;
-    }
-}*/
-
-
 class MeshMender
 {
 public:

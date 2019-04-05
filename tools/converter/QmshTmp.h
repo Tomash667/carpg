@@ -78,7 +78,7 @@ namespace tmp
 		float HeadRadius;
 		Vec3 Tail;
 		float TailRadius;
-		MATRIX Matrix;
+		Matrix matrix;
 		bool connected;
 	};
 
@@ -132,7 +132,7 @@ namespace tmp
 	{
 		string name, bone, type;
 		Vec3 size, rot;
-		MATRIX matrix;
+		Matrix matrix;
 	};
 
 	struct QMSH

@@ -1,6 +1,6 @@
 #include "Pch.h"
 #include "Core.h"
-#ifdef _DEBUG
+#ifdef CHECK_POOL_LEAKS
 #include "WindowsIncludes.h"
 #define IN
 #define OUT
@@ -10,13 +10,15 @@
 #pragma warning(pop)
 #endif
 #undef FAR
+#ifndef COMMON_ONLY
 #include <zlib.h>
+#endif
 
 ObjectPool<string> StringPool;
 ObjectPool<vector<void*>> VectorPool;
 ObjectPool<vector<byte>> BufPool;
 
-#ifdef _DEBUG
+#ifdef CHECK_POOL_LEAKS
 
 ObjectPoolLeakManager ObjectPoolLeakManager::instance;
 
@@ -98,6 +100,7 @@ void ObjectPoolLeakManager::Unregister(void* ptr)
 #endif
 
 //=================================================================================================
+#ifndef COMMON_ONLY
 Buffer* Buffer::Decompress(uint real_size)
 {
 	Buffer* buf = Buffer::Get();
@@ -107,3 +110,4 @@ Buffer* Buffer::Decompress(uint real_size)
 	Free();
 	return buf;
 }
+#endif

@@ -49,61 +49,71 @@ const int DefaultSpecularHardness = 50;
 
 void QmshTmpLoader::LoadQmshTmpFile(tmp::QMSH *Out, const string &FileName)
 {
-	FileStream input_file(FileName, FM_READ);
-	Tokenizer t(&input_file, 0);
+	Tokenizer t(Tokenizer::F_JOIN_MINUS | Tokenizer::F_UNESCAPE);
+	t.FromFile(FileName);
 
-	t.RegisterKeyword(T_OBJECTS, "objects");
-	t.RegisterKeyword(T_MESH, "mesh");
-	t.RegisterKeyword(T_MATERIALS, "materials");
-	t.RegisterKeyword(T_VERTICES, "vertices");
-	t.RegisterKeyword(T_FACES, "faces");
-	t.RegisterKeyword(T_VERTEX_GROUPS, "vertex_groups");
-	t.RegisterKeyword(T_ARMATURE, "armature");
-	t.RegisterKeyword(T_BONE, "bone");
-	t.RegisterKeyword(T_HEAD, "head");
-	t.RegisterKeyword(T_TAIL, "tail");
-	t.RegisterKeyword(T_ACTIONS, "actions");
-	t.RegisterKeyword(T_PARAMS, "params");
-	t.RegisterKeyword(T_FPS, "fps");
-	t.RegisterKeyword(T_STATIC, "static");
-	t.RegisterKeyword(T_POINTS, "points");
-	t.RegisterKeyword(T_POS, "pos");
-	t.RegisterKeyword(T_ROT, "rot");
-	t.RegisterKeyword(T_SCALE, "scale");
-	t.RegisterKeyword(T_PARENT, "parent");
-	t.RegisterKeyword(T_IMAGE, "image");
-	t.RegisterKeyword(T_NONE, "none");
-	t.RegisterKeyword(T_EMPTY, "empty");
-	t.RegisterKeyword(T_BONE, "bone");
-	t.RegisterKeyword(T_TYPE, "type");
-	t.RegisterKeyword(T_SIZE, "size");
-	t.RegisterKeyword(T_MATRIX, "matrix");
-	t.RegisterKeyword(T_CAMERA, "camera");
-	t.RegisterKeyword(T_MATERIAL, "material");
-	t.RegisterKeyword(T_TEXTURE, "texture");
-	t.RegisterKeyword(T_DIFFUSE, "diffuse");
-	t.RegisterKeyword(T_NORMAL, "normal");
-	t.RegisterKeyword(T_SPECULAR, "specular");
-	t.RegisterKeyword(T_SPECULAR_COLOR, "specular_color");
-	t.RegisterKeyword(T_TANGENTS, "tangents");
-	t.RegisterKeyword(T_SPLIT, "split");
-	t.RegisterKeyword(T_GROUP, "group");
+	t.AddKeywords(0, {
+		{ "objects", T_OBJECTS },
+		{ "mesh", T_MESH },
+		{ "materials", T_MATERIALS },
+		{ "vertices", T_VERTICES },
+		{ "faces", T_FACES },
+		{ "vertex_groups", T_VERTEX_GROUPS },
+		{ "armature", T_ARMATURE },
+		{ "bone", T_BONE },
+		{ "head", T_HEAD },
+		{ "tail", T_TAIL },
+		{ "actions", T_ACTIONS },
+		{ "params", T_PARAMS },
+		{ "fps", T_FPS },
+		{ "static", T_STATIC },
+		{ "points", T_POINTS },
+		{ "pos", T_POS },
+		{ "rot", T_ROT },
+		{ "scale", T_SCALE },
+		{ "parent", T_PARENT },
+		{ "image", T_IMAGE },
+		{ "none", T_NONE },
+		{ "empty", T_EMPTY },
+		{ "type", T_TYPE },
+		{ "size", T_SIZE },
+		{ "matrix", T_MATRIX },
+		{ "camera", T_CAMERA },
+		{ "material", T_MATERIAL },
+		{ "texture", T_TEXTURE },
+		{ "diffuse", T_DIFFUSE },
+		{ "normal", T_NORMAL },
+		{ "specular", T_SPECULAR },
+		{ "specular_color", T_SPECULAR_COLOR },
+		{ "tangents", T_TANGENTS },
+		{ "split", T_SPLIT },
+		{ "group", T_GROUP }
+		});
 
+	try
+	{
+		LoadQmshTmpFileInternal(Out, t);
+	}
+	catch(const Tokenizer::Exception& ex)
+	{
+		throw Format("Failed to load qmsh tmp: %s", ex.ToString());
+	}
+}
+
+void QmshTmpLoader::LoadQmshTmpFileInternal(tmp::QMSH* Out, Tokenizer& t)
+{
 	t.Next();
 
 	// Nag³ówek
-	t.AssertToken(Tokenizer::TOKEN_IDENTIFIER);
-	if(t.GetString() != "QMSH") t.CreateError("B³êdny nag³ówek");
+	t.AssertItem("QMSH");
 	t.Next();
 
-	t.AssertToken(Tokenizer::TOKEN_IDENTIFIER);
-	if(t.GetString() != "TMP") t.CreateError("B³êdny nag³ówek");
+	t.AssertItem("TMP");
 	t.Next();
 
-	t.AssertToken(Tokenizer::TOKEN_INTEGER);
-	uint4 wersja = t.MustGetUint4();
-	if(wersja < (uint4)QMSH_TMP_HANDLED_VERSION.x || wersja > (uint4)QMSH_TMP_HANDLED_VERSION.y)
-		t.CreateError("B³êdna wersja");
+	uint wersja = t.MustGetUint();
+	if(wersja < (uint)QMSH_TMP_HANDLED_VERSION.x || wersja > (uint)QMSH_TMP_HANDLED_VERSION.y)
+		t.Throw("B³êdna wersja");
 	t.Next();
 	load_version = wersja;
 
@@ -117,23 +127,22 @@ void QmshTmpLoader::LoadQmshTmpFile(tmp::QMSH *Out, const string &FileName)
 	// Obiekty
 	for(;;)
 	{
-		if(t.GetToken() == Tokenizer::TOKEN_SYMBOL && t.GetChar() == '}')
+		if(t.IsSymbol('}'))
 		{
 			t.Next();
 			break;
 		}
 
-		t.AssertToken(Tokenizer::TOKEN_KEYWORD);
-		// mesh
-		if(t.GetId() == T_MESH)
+		TOKEN token = (TOKEN)t.MustGetKeywordId();
+		if(token == T_MESH)
 		{
+			// mesh
 			t.Next();
 
 			shared_ptr<tmp::MESH> object(new tmp::MESH);
 
 			// Nazwa
-			t.AssertToken(Tokenizer::TOKEN_STRING);
-			object->Name = t.GetString();
+			object->Name = t.MustGetString();
 			t.Next();
 
 			// '{'
@@ -175,12 +184,10 @@ void QmshTmpLoader::LoadQmshTmpFile(tmp::QMSH *Out, const string &FileName)
 				t.AssertSymbol(':');
 				t.Next();
 			}
-			t.AssertToken(Tokenizer::TOKEN_STRING);
-			object->ParentArmature = t.GetString();
+			object->ParentArmature = t.MustGetString();
 			t.Next();
 			// parent bone
-			t.AssertToken(Tokenizer::TOKEN_STRING);
-			object->ParentBone = t.GetString();
+			object->ParentBone = t.MustGetString();
 			t.Next();
 
 			// Materia³y
@@ -192,8 +199,7 @@ void QmshTmpLoader::LoadQmshTmpFile(tmp::QMSH *Out, const string &FileName)
 				t.Next();
 			}
 
-			t.AssertToken(Tokenizer::TOKEN_INTEGER);
-			uint NumMaterials = t.MustGetUint4();
+			uint NumMaterials = t.MustGetUint();
 			object->Materials.resize(NumMaterials);
 			t.Next();
 
@@ -211,8 +217,7 @@ void QmshTmpLoader::LoadQmshTmpFile(tmp::QMSH *Out, const string &FileName)
 					t.Next();
 
 					// name
-					t.AssertToken(Tokenizer::TOKEN_STRING);
-					m->name = t.GetString();
+					m->name = t.MustGetString();
 					t.Next();
 
 					// {
@@ -232,7 +237,7 @@ void QmshTmpLoader::LoadQmshTmpFile(tmp::QMSH *Out, const string &FileName)
 						ParseVec3(&m->specular_color, t);
 						m->specular_intensity = t.MustGetFloat();
 						t.Next();
-						m->specular_hardness = t.MustGetInt4();
+						m->specular_hardness = t.MustGetInt();
 						t.Next();
 					}
 					else
@@ -247,7 +252,7 @@ void QmshTmpLoader::LoadQmshTmpFile(tmp::QMSH *Out, const string &FileName)
 					while(true)
 					{
 						// texture lub }
-						if(t.QuerySymbol('}'))
+						if(t.IsSymbol('}'))
 						{
 							t.Next();
 							break;
@@ -256,9 +261,8 @@ void QmshTmpLoader::LoadQmshTmpFile(tmp::QMSH *Out, const string &FileName)
 						t.Next();
 
 						// image
-						t.AssertToken(Tokenizer::TOKEN_STRING);
 						shared_ptr<tmp::Texture> tex(new tmp::Texture);
-						tex->image = t.GetString();
+						tex->image = t.MustGetString();
 						t.Next();
 
 						// {
@@ -268,15 +272,14 @@ void QmshTmpLoader::LoadQmshTmpFile(tmp::QMSH *Out, const string &FileName)
 						while(true)
 						{
 							// keyword lub }
-							if(t.QuerySymbol('}'))
+							if(t.IsSymbol('}'))
 							{
 								t.Next();
 								break;
 							}
-							t.AssertToken(Tokenizer::TOKEN_KEYWORD);
-							TOKEN id = (TOKEN)t.GetId();
+							TOKEN id = (TOKEN)t.MustGetKeywordId();
 							if(id != T_DIFFUSE && id != T_SPECULAR && id != T_SPECULAR_COLOR && id != T_NORMAL)
-								t.CreateError("Oczekiwano na rodzaj tekstury.");
+								t.Throw("Oczekiwano na rodzaj tekstury.");
 							t.Next();
 
 							// wartoœæ
@@ -315,25 +318,25 @@ void QmshTmpLoader::LoadQmshTmpFile(tmp::QMSH *Out, const string &FileName)
 				for(uint mi = 0; mi < NumMaterials; mi++)
 				{
 					shared_ptr<tmp::Material> m(new tmp::Material);
-					t.AssertToken(Tokenizer::TOKEN_STRING);
-					m->name = t.GetString();
+					m->name = t.MustGetString();
 					t.Next();
 
 					t.AssertSymbol(',');
 					t.Next();
 
-					t.AssertToken(Tokenizer::TOKEN_KEYWORD);
-					if(t.GetId() == T_IMAGE)
+					if(t.IsKeyword(T_IMAGE))
 					{
 						t.Next();
-						t.AssertToken(Tokenizer::TOKEN_STRING);
-						m->image = t.GetString();
+						m->image = t.MustGetString();
 						t.Next();
 					}
+					else if(t.IsKeyword(T_NONE))
+						t.Next();
 					else
 					{
-						t.AssertKeyword(T_NONE);
-						t.Next();
+						int k1 = T_IMAGE,
+							k2 = T_NONE;
+						t.StartUnexpected().Add(tokenizer::T_KEYWORD, &k1).Add(tokenizer::T_KEYWORD, &k2).Throw();
 					}
 
 					m->diffuse_color = DefaultDiffuseColor;
@@ -358,8 +361,7 @@ void QmshTmpLoader::LoadQmshTmpFile(tmp::QMSH *Out, const string &FileName)
 				t.Next();
 			}
 
-			t.AssertToken(Tokenizer::TOKEN_INTEGER);
-			uint NumVertices = t.MustGetUint4();
+			uint NumVertices = t.MustGetUint();
 			object->Vertices.resize(NumVertices);
 			t.Next();
 
@@ -425,8 +427,7 @@ void QmshTmpLoader::LoadQmshTmpFile(tmp::QMSH *Out, const string &FileName)
 				t.Next();
 			}
 
-			t.AssertToken(Tokenizer::TOKEN_INTEGER);
-			uint NumFaces = t.MustGetUint4();
+			uint NumFaces = t.MustGetUint();
 			object->Faces.resize(NumFaces);
 			t.Next();
 
@@ -438,18 +439,15 @@ void QmshTmpLoader::LoadQmshTmpFile(tmp::QMSH *Out, const string &FileName)
 			{
 				tmp::FACE & f = object->Faces[fi];
 
-				t.AssertToken(Tokenizer::TOKEN_INTEGER);
-				f.NumVertices = t.MustGetUint4();
+				f.NumVertices = t.MustGetUint();
 				if(f.NumVertices != 3 && f.NumVertices != 4)
-					throw Error("B³êdna liczba wierzcho³ków w œciance.");
+					throw "B³êdna liczba wierzcho³ków w œciance.";
 				t.Next();
 
-				t.AssertToken(Tokenizer::TOKEN_INTEGER);
-				f.MaterialIndex = t.MustGetUint4();
+				f.MaterialIndex = t.MustGetUint();
 				t.Next();
 
-				t.AssertToken(Tokenizer::TOKEN_INTEGER);
-				f.Smooth = (t.MustGetUint4() > 0);
+				f.Smooth = (t.MustGetUint() > 0);
 				if(f.Smooth)
 					++use_smooth;
 				else
@@ -460,8 +458,7 @@ void QmshTmpLoader::LoadQmshTmpFile(tmp::QMSH *Out, const string &FileName)
 				for(uint vi = 0; vi < f.NumVertices; vi++)
 				{
 					// Indeks wierzcho³ka
-					t.AssertToken(Tokenizer::TOKEN_INTEGER);
-					f.VertexIndices[vi] = t.MustGetUint4();
+					f.VertexIndices[vi] = t.MustGetUint();
 					t.Next();
 
 					// Wspó³rzêdne tekstury
@@ -488,7 +485,7 @@ void QmshTmpLoader::LoadQmshTmpFile(tmp::QMSH *Out, const string &FileName)
 
 			if(use_smooth > 0 && use_flat > 0)
 			{
-				Warning("Mixed smooth/flat shading. # invalid bones.");
+				WarnOnce(2, "Mixed smooth/flat shading.");
 				object->vertex_normals = false;
 			}
 			else if(use_flat)
@@ -509,7 +506,7 @@ void QmshTmpLoader::LoadQmshTmpFile(tmp::QMSH *Out, const string &FileName)
 			t.AssertSymbol('{');
 			t.Next();
 
-			while(!t.QuerySymbol('}'))
+			while(!t.IsSymbol('}'))
 			{
 				shared_ptr<tmp::VERTEX_GROUP> VertexGroup(new tmp::VERTEX_GROUP);
 				ParseVertexGroup(VertexGroup.get(), t);
@@ -522,18 +519,17 @@ void QmshTmpLoader::LoadQmshTmpFile(tmp::QMSH *Out, const string &FileName)
 			Out->Meshes.push_back(object);
 		}
 		// armature
-		else if(t.GetId() == T_ARMATURE)
+		else if(token == T_ARMATURE)
 		{
 			t.Next();
 
 			if(Out->Armature != NULL)
-				t.CreateError("Multiple armature objects not allowed.");
+				t.Throw("Multiple armature objects not allowed.");
 
 			Out->Armature.reset(new tmp::ARMATURE);
 			tmp::ARMATURE & arm = *Out->Armature.get();
 
-			t.AssertToken(Tokenizer::TOKEN_STRING);
-			arm.Name = t.GetString();
+			arm.Name = t.MustGetString();
 			t.Next();
 
 			t.AssertSymbol('{');
@@ -546,19 +542,17 @@ void QmshTmpLoader::LoadQmshTmpFile(tmp::QMSH *Out, const string &FileName)
 
 			if(wersja < 17)
 			{
-				t.AssertToken(Tokenizer::TOKEN_INTEGER);
-				t.MustGetUint4();
+				t.MustGetUint();
 				t.Next();
 
-				t.AssertToken(Tokenizer::TOKEN_INTEGER);
-				t.MustGetUint4();
+				t.MustGetUint();
 				t.Next();
 			}
 
 			// Koœci
-			while(!t.QuerySymbol('}'))
+			while(!t.IsSymbol('}'))
 			{
-				if(t.QueryKeyword(T_GROUP))
+				if(t.IsKeyword(T_GROUP))
 				{
 					shared_ptr<tmp::BONE_GROUP> group(new tmp::BONE_GROUP);
 					ParseBoneGroup(group.get(), t);
@@ -572,14 +566,13 @@ void QmshTmpLoader::LoadQmshTmpFile(tmp::QMSH *Out, const string &FileName)
 				}
 			}
 		}
-		else if(t.GetId() == T_EMPTY)
+		else if(token == T_EMPTY)
 		{
 			t.Next();
 			shared_ptr<tmp::POINT> point(new tmp::POINT);
 
 			// nazwa
-			t.AssertToken(Tokenizer::TOKEN_STRING);
-			point->name = t.GetString();
+			point->name = t.MustGetString();
 			t.Next();
 
 			// {
@@ -594,8 +587,7 @@ void QmshTmpLoader::LoadQmshTmpFile(tmp::QMSH *Out, const string &FileName)
 				t.AssertSymbol(':');
 				t.Next();
 			}
-			t.AssertToken(Tokenizer::TOKEN_STRING);
-			point->bone = t.GetString();
+			point->bone = t.MustGetString();
 			t.Next();
 
 			// type
@@ -606,8 +598,7 @@ void QmshTmpLoader::LoadQmshTmpFile(tmp::QMSH *Out, const string &FileName)
 				t.AssertSymbol(':');
 				t.Next();
 			}
-			t.AssertToken(Tokenizer::TOKEN_STRING);
-			point->type = t.GetString();
+			point->type = t.MustGetString();
 			t.Next();
 
 			// size
@@ -665,7 +656,7 @@ void QmshTmpLoader::LoadQmshTmpFile(tmp::QMSH *Out, const string &FileName)
 
 			Out->points.push_back(point);
 		}
-		else if(t.GetId() == T_CAMERA)
+		else if(token == T_CAMERA)
 		{
 			// kamera
 
@@ -693,7 +684,7 @@ void QmshTmpLoader::LoadQmshTmpFile(tmp::QMSH *Out, const string &FileName)
 			Out->camera_target = rot;
 		}
 		else
-			t.CreateError();
+			t.Unexpected();
 
 		t.AssertSymbol('}');
 		t.Next();
@@ -706,7 +697,7 @@ void QmshTmpLoader::LoadQmshTmpFile(tmp::QMSH *Out, const string &FileName)
 	t.AssertSymbol('{');
 	t.Next();
 
-	while(!t.QuerySymbol('}'))
+	while(!t.IsSymbol('}'))
 	{
 		shared_ptr<tmp::ACTION> action(new tmp::ACTION);
 		ParseAction(action.get(), t);
@@ -721,10 +712,9 @@ void QmshTmpLoader::LoadQmshTmpFile(tmp::QMSH *Out, const string &FileName)
 	t.AssertSymbol('{');
 	t.Next();
 
-	while(!t.QuerySymbol('}'))
+	while(!t.IsSymbol('}'))
 	{
-		t.AssertToken(Tokenizer::TOKEN_KEYWORD);
-		int id = t.GetId();
+		int id = t.MustGetKeywordId();
 		switch(id)
 		{
 		case T_FPS:
@@ -734,7 +724,7 @@ void QmshTmpLoader::LoadQmshTmpFile(tmp::QMSH *Out, const string &FileName)
 				t.AssertSymbol('=');
 				t.Next();
 			}
-			Out->FPS = t.MustGetInt4();
+			Out->FPS = t.MustGetInt();
 			t.Next();
 			break;
 		case T_STATIC:
@@ -744,7 +734,7 @@ void QmshTmpLoader::LoadQmshTmpFile(tmp::QMSH *Out, const string &FileName)
 				t.AssertSymbol('=');
 				t.Next();
 			}
-			Out->static_anim = (t.MustGetInt4() > 0);
+			Out->static_anim = (t.MustGetInt() > 0);
 			t.Next();
 			break;
 		case T_TANGENTS:
@@ -754,22 +744,22 @@ void QmshTmpLoader::LoadQmshTmpFile(tmp::QMSH *Out, const string &FileName)
 				t.AssertSymbol('=');
 				t.Next();
 			}
-			Out->force_tangents = (t.MustGetInt4() > 0);
+			Out->force_tangents = (t.MustGetInt() > 0);
 			t.Next();
 			break;
 		case T_SPLIT:
 			t.Next();
-			Out->split = (t.MustGetInt4() > 0);
+			Out->split = (t.MustGetInt() > 0);
 			t.Next();
 			break;
 		default:
-			t.CreateError();
+			t.Unexpected();
 			break;
 		}
 	}
 
 	t.Next();
-	t.AssertEOF();
+	t.AssertEof();
 }
 
 void QmshTmpLoader::ParseVec2(Vec2 *Out, Tokenizer &t)
@@ -802,7 +792,7 @@ void QmshTmpLoader::ParseVec3(Vec3 *Out, Tokenizer &t)
 	t.Next();
 }
 
-void QmshTmpLoader::ParseMatrix3x3(MATRIX *Out, Tokenizer &t, bool old)
+void QmshTmpLoader::ParseMatrix3x3(Matrix *Out, Tokenizer &t, bool old)
 {
 	Out->_11 = t.MustGetFloat(); t.Next(); t.AssertSymbol(','); t.Next();
 	Out->_12 = t.MustGetFloat(); t.Next(); t.AssertSymbol(','); t.Next();
@@ -827,7 +817,7 @@ void QmshTmpLoader::ParseMatrix3x3(MATRIX *Out, Tokenizer &t, bool old)
 	Out->_44 = 1.f;
 }
 
-void QmshTmpLoader::ParseMatrix4x4(MATRIX *Out, Tokenizer &t, bool old)
+void QmshTmpLoader::ParseMatrix4x4(Matrix *Out, Tokenizer &t, bool old)
 {
 	Out->_11 = t.MustGetFloat(); t.Next(); t.AssertSymbol(','); t.Next();
 	Out->_12 = t.MustGetFloat(); t.Next(); t.AssertSymbol(','); t.Next();
@@ -852,18 +842,17 @@ void QmshTmpLoader::ParseMatrix4x4(MATRIX *Out, Tokenizer &t, bool old)
 
 void QmshTmpLoader::ParseVertexGroup(tmp::VERTEX_GROUP *Out, Tokenizer &t)
 {
-	t.AssertToken(Tokenizer::TOKEN_STRING);
-	Out->Name = t.GetString();
+	Out->Name = t.MustGetString();
 	t.Next();
 
 	t.AssertSymbol('{');
 	t.Next();
 
-	while(!t.QuerySymbol('}'))
+	while(!t.IsSymbol('}'))
 	{
 		tmp::VERTEX_IN_GROUP vig;
 
-		vig.Index = t.MustGetUint4();
+		vig.Index = t.MustGetUint();
 		t.Next();
 
 		vig.Weight = t.MustGetFloat();
@@ -879,8 +868,7 @@ void QmshTmpLoader::ParseBone(tmp::BONE *Out, Tokenizer &t, int wersja)
 	t.AssertKeyword(T_BONE);
 	t.Next();
 
-	t.AssertToken(Tokenizer::TOKEN_STRING);
-	Out->Name = t.GetString();
+	Out->Name = t.MustGetString();
 	t.Next();
 
 	t.AssertSymbol('{');
@@ -893,8 +881,7 @@ void QmshTmpLoader::ParseBone(tmp::BONE *Out, Tokenizer &t, int wersja)
 		t.Next();
 	}
 
-	t.AssertToken(Tokenizer::TOKEN_STRING);
-	Out->Parent = t.GetString();
+	Out->Parent = t.MustGetString();
 	t.Next();
 
 	// bone group
@@ -903,8 +890,7 @@ void QmshTmpLoader::ParseBone(tmp::BONE *Out, Tokenizer &t, int wersja)
 		t.AssertKeyword(T_GROUP);
 		t.Next();
 
-		t.AssertToken(Tokenizer::TOKEN_STRING);
-		Out->Group = t.GetString();
+		Out->Group = t.MustGetString();
 		t.Next();
 	}
 
@@ -951,7 +937,7 @@ void QmshTmpLoader::ParseBone(tmp::BONE *Out, Tokenizer &t, int wersja)
 	}
 	else
 	{
-		Out->connected = (t.MustGetInt4() == 1);
+		Out->connected = (t.MustGetInt() == 1);
 		t.Next();
 	}
 	if(wersja < 17)
@@ -964,10 +950,10 @@ void QmshTmpLoader::ParseBone(tmp::BONE *Out, Tokenizer &t, int wersja)
 	if(wersja < 21)
 	{
 		// old bonespace matrix
-		MATRIX m;
+		Matrix m;
 		ParseMatrix3x3(&m, t, wersja < 19);
 	}
-	ParseMatrix4x4(&Out->Matrix, t, wersja < 19);
+	ParseMatrix4x4(&Out->matrix, t, wersja < 19);
 
 	t.AssertSymbol('}');
 	t.Next();
@@ -978,8 +964,7 @@ void QmshTmpLoader::ParseBoneGroup(tmp::BONE_GROUP* Out, Tokenizer& t)
 	t.AssertKeyword(T_GROUP);
 	t.Next();
 
-	t.AssertToken(Tokenizer::TOKEN_STRING);
-	Out->Name = t.GetString();
+	Out->Name = t.MustGetString();
 	t.Next();
 
 	t.AssertSymbol('{');
@@ -988,8 +973,7 @@ void QmshTmpLoader::ParseBoneGroup(tmp::BONE_GROUP* Out, Tokenizer& t)
 	t.AssertKeyword(T_PARENT);
 	t.Next();
 
-	t.AssertToken(Tokenizer::TOKEN_STRING);
-	Out->Parent = t.GetString();
+	Out->Parent = t.MustGetString();
 	t.Next();
 
 	t.AssertSymbol('}');
@@ -998,35 +982,30 @@ void QmshTmpLoader::ParseBoneGroup(tmp::BONE_GROUP* Out, Tokenizer& t)
 
 void QmshTmpLoader::ParseInterpolationMethod(tmp::INTERPOLATION_METHOD *Out, Tokenizer &t)
 {
-	t.AssertToken(Tokenizer::TOKEN_IDENTIFIER);
-
-	if(t.GetString() == "CONST")
+	const string& id = t.MustGetItem();
+	if(id == "CONST")
 		*Out = tmp::INTERPOLATION_CONST;
-	else if(t.GetString() == "LINEAR")
+	else if(id == "LINEAR")
 		*Out = tmp::INTERPOLATION_LINEAR;
-	else if(t.GetString() == "BEZIER")
+	else if(id == "BEZIER")
 		*Out = tmp::INTERPOLATION_BEZIER;
 	else
-		t.CreateError();
-
+		t.Unexpected();
 	t.Next();
 }
 
 // used in old version (pre 18)
 void QmshTmpLoader::ParseExtendMethod(Tokenizer &t)
 {
-	t.AssertToken(Tokenizer::TOKEN_IDENTIFIER);
-
-	if(t.GetString() != "CONST" && t.GetString() != "EXTRAP" && t.GetString() != "CYCLIC" && t.GetString() != "CYCLIC_EXTRAP")
-		t.CreateError();
-
+	const string& id = t.MustGetItem();
+	if(id != "CONST" && id != "EXTRAP" && id != "CYCLIC" && id != "CYCLIC_EXTRAP")
+		t.Unexpected();
 	t.Next();
 }
 
 void QmshTmpLoader::ParseCurve(tmp::CURVE *Out, Tokenizer &t)
 {
-	t.AssertToken(Tokenizer::TOKEN_STRING);
-	Out->Name = t.GetString();
+	Out->Name = t.MustGetString();
 	t.Next();
 
 	ParseInterpolationMethod(&Out->Interpolation, t);
@@ -1036,7 +1015,7 @@ void QmshTmpLoader::ParseCurve(tmp::CURVE *Out, Tokenizer &t)
 	t.AssertSymbol('{');
 	t.Next();
 
-	while(!t.QuerySymbol('}'))
+	while(!t.IsSymbol('}'))
 	{
 		Vec2 pt;
 		ParseVec2(&pt, t);
@@ -1047,14 +1026,13 @@ void QmshTmpLoader::ParseCurve(tmp::CURVE *Out, Tokenizer &t)
 
 void QmshTmpLoader::ParseChannel(tmp::CHANNEL *Out, Tokenizer &t)
 {
-	t.AssertToken(Tokenizer::TOKEN_STRING);
-	Out->Name = t.GetString();
+	Out->Name = t.MustGetString();
 	t.Next();
 
 	t.AssertSymbol('{');
 	t.Next();
 
-	while(!t.QuerySymbol('}'))
+	while(!t.IsSymbol('}'))
 	{
 		shared_ptr<tmp::CURVE> curve(new tmp::CURVE);
 		ParseCurve(curve.get(), t);
@@ -1065,14 +1043,13 @@ void QmshTmpLoader::ParseChannel(tmp::CHANNEL *Out, Tokenizer &t)
 
 void QmshTmpLoader::ParseAction(tmp::ACTION *Out, Tokenizer &t)
 {
-	t.AssertToken(Tokenizer::TOKEN_STRING);
-	Out->Name = t.GetString();
+	Out->Name = t.MustGetString();
 	t.Next();
 
 	t.AssertSymbol('{');
 	t.Next();
 
-	while(!t.QuerySymbol('}'))
+	while(!t.IsSymbol('}'))
 	{
 		shared_ptr<tmp::CHANNEL> channel(new tmp::CHANNEL);
 		ParseChannel(channel.get(), t);

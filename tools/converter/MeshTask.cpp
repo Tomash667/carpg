@@ -13,17 +13,25 @@
 #include "Mesh.h"
 #include <cassert>
 #include <conio.h>
+#include <Windows.h>
 
 void LoadQmshTmp(QMSH *Out, ConversionData& cs )
 {
 	// Wczytaj plik QMSH.TMP
-	Writeln("Loading QMSH TMP file \"" + cs.input + "\"...");
+	Info("Loading QMSH TMP file \"%s\"...", cs.input.c_str());
 
 	QmshTmpLoader loader;
 	tmp::QMSH Tmp;
-	loader.LoadQmshTmpFile(&Tmp, cs.input);
+	try
+	{
+		loader.LoadQmshTmpFile(&Tmp, cs.input);
+	}
+	catch(const Tokenizer::Exception& ex)
+	{
+		throw Format("Failed to load qmsh tmp: %s", ex.ToString());
+	}
 	if(Tmp.Meshes.empty())
-		throw Error("Empty mesh!");
+		throw "Empty mesh!";
 
 	// Przekonwertuj do QMSH
 	Converter converter;
@@ -42,23 +50,23 @@ void Convert(ConversionData& cs)
 
 	if(cs.gopt == GO_CREATE)
 	{
-		printf("Zapisywanie pliku konfiguracyjnego: %s.\n", cs.group_file.c_str());
+		Info("Zapisywanie pliku konfiguracyjnego: %s.\n", cs.group_file.c_str());
 
-		FileStream file(cs.group_file, FM_WRITE);
+		TextWriter file(cs.group_file);
 
 		// nazwa pliku
-		file.WriteStringF(format("file: \"%s\"\n", cs.input.c_str()));
+		file.Write(Format("file: \"%s\"\n", cs.input.c_str()));
 
 		// nazwa pliku wyjœciowego
 		if(cs.force_output)
-			file.WriteStringF(format("output: \"%s\"\n", cs.output.c_str()));
-		
+			file.Write(Format("output: \"%s\"\n", cs.output.c_str()));
+
 		// liczba koœci, grupy
-		file.WriteStringF(format("bones: %u\ngroups: 1\ngroup: 0 {\n\tname: \"default\"\n\tparent: 0\n};\n", Qmsh.Bones.size()));
+		file.Write(Format("bones: %u\ngroups: 1\ngroup: 0 {\n\tname: \"default\"\n\tparent: 0\n};\n", Qmsh.Bones.size()));
 
 		// koœci
 		for(std::vector<shared_ptr<QMSH_BONE> >::iterator it = Qmsh.Bones.begin(), end = Qmsh.Bones.end(); it != end; ++it)
-			file.WriteStringF(format("bone: \"%s\" {\n\tgroup: 0\n\tspecial: 0\n};\n", (*it)->Name.c_str()));
+			file.Write(Format("bone: \"%s\" {\n\tgroup: 0\n\tspecial: 0\n};\n", (*it)->Name.c_str()));
 	}
 	else
 	{
@@ -82,7 +90,7 @@ void WriteMeshFlags(byte flags)
 	printf("(%u)", flags);
 }
 
-void Info(const char* path, const char* options)
+void MeshInfo(const char* path, const char* options)
 {
 	Mesh* mesh = new Mesh;
 
@@ -92,7 +100,7 @@ void Info(const char* path, const char* options)
 	}
 	catch(cstring err)
 	{
-		printf("Info - Failed to load '%s': %s\n", path, err);
+		Error("Failed to load '%s': %s\n", path, err);
 		delete mesh;
 		return;
 	}
@@ -102,30 +110,36 @@ void Info(const char* path, const char* options)
 
 	if(options)
 	{
-		Tokenizer t(options, strlen(options), 0);
-		t.Next();
-		while(!t.QueryEOF())
+		Tokenizer t(Tokenizer::F_JOIN_MINUS | Tokenizer::F_UNESCAPE);
+		try
 		{
-			t.AssertToken(Tokenizer::TOKEN_IDENTIFIER);
-			const string& str = t.GetString();
-			if(str == "groups")
-				groups_details = true;
-			else if(str == "points")
-				points_details = true;
-			else if(str == "point")
-			{
-				t.Next();
-				t.AssertToken(Tokenizer::TOKEN_IDENTIFIER, Tokenizer::TOKEN_STRING);
-				const string& id = t.GetString();
-				Mesh::Point* pt = mesh->GetPoint(id);
-				if(!pt)
-					printf("Error - invalid point '%s'.\n", id.c_str());
-				else
-					points.push_back(pt);
-			}
-			else
-				t.CreateError("Unknown option.");
+			t.FromString(options);
 			t.Next();
+			while(!t.IsEof())
+			{
+				const string& str = t.MustGetString();
+				if(str == "groups")
+					groups_details = true;
+				else if(str == "points")
+					points_details = true;
+				else if(str == "point")
+				{
+					t.Next();
+					const string& id = t.MustGetText();
+					Mesh::Point* pt = mesh->GetPoint(id);
+					if(!pt)
+						Error("Error - invalid point '%s'.\n", id.c_str());
+					else
+						points.push_back(pt);
+				}
+				else
+					t.Throw("Unknown option.");
+				t.Next();
+			}
+		}
+		catch(const Tokenizer::Exception& ex)
+		{
+			Error("Error - invalid mesh info options: %s\n", ex.ToString());
 		}
 	}
 
@@ -182,7 +196,7 @@ void Compare(const char* path1, const char* path2)
 	}
 	catch(cstring err)
 	{
-		printf("Info - Failed to load '%s': %s\n", path1, err);
+		Error("Info - Failed to load '%s': %s\n", path1, err);
 		delete mesh1;
 		delete mesh2;
 		return;
@@ -194,13 +208,13 @@ void Compare(const char* path1, const char* path2)
 	}
 	catch(cstring err)
 	{
-		printf("Info - Failed to load '%s': %s\n", path2, err);
+		Error("Info - Failed to load '%s': %s\n", path2, err);
 		delete mesh1;
 		delete mesh2;
 		return;
 	}
 
-	printf("Info - Comparing A (%s) to B (%s)\n", path1, path2);
+	Info("Info - Comparing A (%s) to B (%s)\n", path1, path2);
 
 	bool any = false;
 
@@ -670,27 +684,25 @@ int Upgrade(const char* path, bool force)
 		mesh->LoadSafe(path);
 		if(mesh->old_ver == mesh->head.version && !force)
 		{
-			printf("File '%s': version up to date\n", path);
+			Info("File '%s': version up to date\n", path);
 			result = 0;
 		}
 		else
 		{
-			printf("File '%s': upgrading version %d -> %d\n", path, mesh->old_ver, mesh->head.version);
+			Info("File '%s': upgrading version %d -> %d\n", path, mesh->old_ver, mesh->head.version);
 			mesh->Save(path);
 			result = 1;
 		}
 	}
 	catch(cstring err)
 	{
-		printf("Upgrade - Failed to load '%s': %s\n", path, err);
+		Error("Upgrade - Failed to load '%s': %s\n", path, err);
 		result = -1;
 	}
 
 	delete mesh;
 	return result;
 }
-
-cstring Formats(cstring str, ...);
 
 bool EndsWith(cstring str, cstring end)
 {
@@ -710,11 +722,11 @@ bool EndsWith(cstring str, cstring end)
 void UpgradeDir(const char* path, bool force, bool subdir, int& upgraded, int& ok, int& failed)
 {
 	WIN32_FIND_DATA find;
-	printf("Upgrade checking dir '%s'\n", path);
-	HANDLE f = FindFirstFile(Formats("%s/*", path), &find);
+	Info("Upgrade checking dir '%s'\n", path);
+	HANDLE f = FindFirstFile(Format("%s/*", path), &find);
 	if(f == INVALID_HANDLE_VALUE)
 	{
-		printf("FIND failed...\n");
+		Error("FIND failed...\n");
 		++failed;
 		return;
 	}
@@ -725,7 +737,7 @@ void UpgradeDir(const char* path, bool force, bool subdir, int& upgraded, int& o
 		{
 			if(subdir && strcmp(find.cFileName, ".") != 0 && strcmp(find.cFileName, "..") != 0)
 			{
-				string new_path = Formats("%s/%s", path, find.cFileName);
+				string new_path = Format("%s/%s", path, find.cFileName);
 				UpgradeDir(new_path.c_str(), force, subdir, upgraded, ok, failed);
 			}
 		}
@@ -733,7 +745,7 @@ void UpgradeDir(const char* path, bool force, bool subdir, int& upgraded, int& o
 		{
 			if(EndsWith(find.cFileName, ".qmsh") || EndsWith(find.cFileName, ".phy"))
 			{
-				string file_path = Formats("%s/%s", path, find.cFileName);
+				string file_path = Format("%s/%s", path, find.cFileName);
 				int result = Upgrade(file_path.c_str(), force);
 				if(result == -1)
 					failed++;
@@ -755,6 +767,6 @@ void UpgradeDir(const char* path, bool force, bool subdir)
 
 	UpgradeDir(path, force, subdir, upgraded, ok, failed);
 
-	printf("UPGRADEDIR COMPLETE\nUpgraded: %d\nUp to date: %d\nFailed: %d\n", upgraded, ok, failed);
+	Info("UPGRADEDIR COMPLETE\nUpgraded: %d\nUp to date: %d\nFailed: %d\n", upgraded, ok, failed);
 	_getch();
 }
