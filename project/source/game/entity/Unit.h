@@ -359,9 +359,10 @@ struct Unit
 	Vec3 GetLootCenter() const;
 
 	float CalculateWeaponPros(const Weapon& weapon) const;
-	bool IsBetterWeapon(const Weapon& weapon, int* value = nullptr) const;
-	bool IsBetterArmor(const Armor& armor, int* value = nullptr) const;
-	bool IsBetterItem(const Item* item, int* value = nullptr) const;
+	bool IsBetterWeapon(const Weapon& weapon, int* value = nullptr, int* prev_value = nullptr) const;
+	bool IsBetterArmor(const Armor& armor, int* value = nullptr, int* prev_value = nullptr) const;
+	bool IsBetterItem(const Item* item, int* value = nullptr, int* prev_value = nullptr, ITEM_SLOT* target_slot = nullptr) const;
+	float GetItemAiValue(const Item* item) const;
 	bool IsPlayer() const { return (player != nullptr); }
 	bool IsClient() const { return IsPlayer() && !player->IsLocal(); }
 	bool IsLocal() const { return IsPlayer() && player->IsLocal(); }
@@ -598,7 +599,8 @@ public:
 
 	float CalculateMagicResistance() const;
 	float GetPoisonResistance() const;
-	int CalculateMagicPower() const;
+	int CalculateMagicPower() const { return (int)GetEffectSum(EffectId::MagicPower); }
+	float GetBackstabMod(const Item* item) const;
 
 	//-----------------------------------------------------------------------------
 	// EFFECTS
@@ -621,9 +623,12 @@ public:
 	uint RemoveEffects(EffectId effect, EffectSource source, int source_id, int value);
 	float GetEffectSum(EffectId effect) const;
 	float GetEffectMul(EffectId effect) const;
+	float GetEffectMulInv(EffectId effect) const;
 	float GetEffectMax(EffectId effect) const;
 	bool HaveEffect(EffectId effect) const;
 	void OnAddRemoveEffect(Effect& e);
+	void ApplyItemEffects(const Item* item, ITEM_SLOT slot);
+	void RemoveItemEffects(const Item* item, ITEM_SLOT slot);
 
 	//-----------------------------------------------------------------------------
 	// EQUIPMENT
@@ -640,6 +645,7 @@ public:
 	bool HaveShield() const { return slots[SLOT_SHIELD] != nullptr; }
 	bool HaveArmor() const { return slots[SLOT_ARMOR] != nullptr; }
 	bool HaveAmulet() const { return slots[SLOT_AMULET] != nullptr; }
+	bool CanWear(const Item* item) const;
 	const Weapon& GetWeapon() const
 	{
 		assert(HaveWeapon());
@@ -747,7 +753,7 @@ public:
 	bool CanAct();
 
 	int Get(AttributeId a, StatState* state = nullptr) const;
-	int Get(SkillId s, StatState* state = nullptr) const;
+	int Get(SkillId s, StatState* state = nullptr, bool skill_bonus = true) const;
 	int GetBase(AttributeId a) const { return stats->attrib[(int)a]; }
 	int GetBase(SkillId s) const { return stats->skill[(int)s]; }
 	void Set(AttributeId a, int value);

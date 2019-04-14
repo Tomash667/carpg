@@ -135,7 +135,9 @@ void Stock::ParseInternal(vector<ItemSlot>& items)
 					++i;
 					StockEntry type = (StockEntry)code[i];
 					++i;
-					AddItems(items, type, code[i], (uint)Random(a, b), action == SE_SAME_RANDOM);
+					uint count = (uint)Random(a, b);
+					if(count > 0)
+						AddItems(items, type, code[i], count, action == SE_SAME_RANDOM);
 				}
 				else
 					i += 4;
@@ -192,6 +194,18 @@ void Stock::AddItems(vector<ItemSlot>& items, StockEntry type, int code, uint co
 			{
 				for(uint i = 0; i < count; ++i)
 					InsertItemBare(items, lis->Get());
+			}
+		}
+		break;
+	case SE_LEVELED_LIST:
+		{
+			LeveledItemList* llis = reinterpret_cast<LeveledItemList*>(code);
+			if(same)
+				InsertItemBare(items, llis->Get(), count);
+			else
+			{
+				for(uint i = 0; i < count; ++i)
+					InsertItemBare(items, llis->Get());
 			}
 		}
 		break;

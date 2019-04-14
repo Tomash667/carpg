@@ -711,12 +711,12 @@ void Quest_Orcs2::ChangeClass(OrcClass new_orc_class)
 	orc->stats = orc->data->GetStats(orc->level);
 	orc->CalculateStats();
 	game->ParseItemScript(*orc, ud->item_script);
-	for(auto item : orc->slots)
+	for(const Item* item : orc->slots)
 	{
 		if(item)
 			game->PreloadItem(item);
 	}
-	for(auto& slot : orc->items)
+	for(ItemSlot& slot : orc->items)
 		game->PreloadItem(slot.item);
 	orc->MakeItemsTeam(false);
 	orc->UpdateInventory();

@@ -63,6 +63,15 @@ inline bool IsVisible(ITEM_SLOT slot)
 }
 
 //-----------------------------------------------------------------------------
+struct ItemSlotInfo
+{
+	cstring id;
+
+	static ItemSlotInfo slots[SLOT_MAX];
+	static ITEM_SLOT Find(const string& id);
+};
+
+//-----------------------------------------------------------------------------
 struct ItemSlot
 {
 	const Item* item;

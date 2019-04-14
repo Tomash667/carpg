@@ -17,7 +17,7 @@ private:
 	void ParseItemList(const string& id);
 	void ParseLeveledItemList(const string& id);
 	void ParseStock(const string& id);
-	const Item* GetItemOrList(const ItemList*& lis);
+	void ParseItemOrList(Stock* stock);
 	void ParseBookScheme(const string& id);
 	void ParseStartItems();
 	void ParseBetterItems();

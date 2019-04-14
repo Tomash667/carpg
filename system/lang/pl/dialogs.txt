@@ -1967,3 +1967,18 @@ dialog tomir {
 	10 "Widaæ tak mia³o byæ..."
 	11 "Nic tu po mnie, mo¿e jeszcze kiedyœ siê spotkamy. Do zobaczenia..."
 }
+
+//==============================================================================
+dialog mage_seller {
+	0 {
+		"Witaj. Potrzebujesz jakichœ magicznych przedmiotów?"
+		"Co s³ychaæ w œwiecie magii?"
+		"Magiczne artefakty w przystêpnych cenach!"
+	}
+	1 "Pohandlujmy"
+	2 "Czym siê zajmujesz?"
+	3 "Jestem magiem. Razem z kilkoma innymi magami w wie¿y zajmujemy siê umagicznaniem przedmiotów."
+	4 "Zapytaj o dziwny kamieñ"
+	5 "Wyczuwam magiczn¹ aurê emanuj¹c¹ od tego kamienia, wygl¹da na to ¿e jest przeklêty."
+	6 "Koniec rozmowy"
+}

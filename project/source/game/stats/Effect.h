@@ -24,6 +24,11 @@ enum class EffectId
 	Attribute,
 	Skill,
 	StaminaRegenerationMod, // multiple
+	MagicPower, // sum
+	Backstab, // sum
+	Heal, // consumable
+	Antidote, // consumable
+	GreenHair, // consumable
 
 	Max // max 127 values
 };
@@ -35,6 +40,7 @@ enum class EffectSource
 	Temporary, // potion or magic effect
 	Permanent,
 	Perk,
+	Item,
 	Max
 };
 

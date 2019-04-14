@@ -54,7 +54,11 @@ void UnitStats::Set(StatProfile& profile)
 		for(int i = 0; i < (int)AttributeId::MAX; ++i)
 			attrib[i] = profile.attrib[i];
 		for(int i = 0; i < (int)SkillId::MAX; ++i)
+		{
 			skill[i] = profile.skill[i];
+			if(skill[i] == -1)
+				skill[i] = 0;
+		}
 	}
 	else if(profile.subprofiles.empty())
 	{

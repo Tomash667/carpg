@@ -21,13 +21,6 @@
 #include "UnitGroup.h"
 
 
-#ifdef _DEBUG
-#	define CHECKED(x) { int _r = (x); assert(_r >= 0); }
-#else
-#	define CHECKED(x) x
-#endif
-
-
 ScriptManager SM;
 static std::map<int, asIScriptFunction*> tostring_map;
 static string tmp_str_result;

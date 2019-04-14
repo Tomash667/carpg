@@ -4,5 +4,6 @@
 //	+ sort items in inventory when value changed
 //	+ recalculate units stats
 //	+ upgrade units
+//	+ reapply all item effects
 
 version 4

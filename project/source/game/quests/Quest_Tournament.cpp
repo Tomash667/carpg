@@ -661,6 +661,9 @@ void Quest_Tournament::Update(float dt)
 					static const Consumable* p1 = (Consumable*)Item::Get("p_hp");
 					static const Consumable* p2 = (Consumable*)Item::Get("p_hp2");
 					static const Consumable* p3 = (Consumable*)Item::Get("p_hp3");
+					static const float p1_power = p1->GetEffectPower(EffectId::Heal);
+					static const float p2_power = p2->GetEffectPower(EffectId::Heal);
+					static const float p3_power = p3->GetEffectPower(EffectId::Heal);
 					for(vector<Unit*>::iterator it = game.arena->units.begin(), end = game.arena->units.end(); it != end; ++it)
 					{
 						Unit& u = **it;
@@ -668,25 +671,25 @@ void Quest_Tournament::Update(float dt)
 						uint given_items = 0;
 						if(mhp > 0.f && u.IsAI())
 							u.ai->have_potion = 2;
-						if(mhp >= p3->power)
+						if(mhp >= p3_power)
 						{
-							int count = (int)floor(mhp / p3->power);
+							int count = (int)floor(mhp / p3_power);
 							game.AddItem(u, p3, count, false, true);
-							mhp -= p3->power * count;
+							mhp -= p3_power * count;
 							given_items += count;
 						}
-						if(mhp >= p2->power)
+						if(mhp >= p2_power)
 						{
-							int count = (int)floor(mhp / p2->power);
+							int count = (int)floor(mhp / p2_power);
 							game.AddItem(u, p2, count, false, true);
-							mhp -= p2->power * count;
+							mhp -= p2_power * count;
 							given_items += count;
 						}
 						if(mhp > 0.f)
 						{
-							int count = (int)ceil(mhp / p1->power);
+							int count = (int)ceil(mhp / p1_power);
 							game.AddItem(u, p1, count, false, true);
-							mhp -= p1->power * count;
+							mhp -= p1_power * count;
 							given_items += count;
 						}
 						if(u.IsPlayer() && given_items)

@@ -42,34 +42,12 @@ enum TeamItemPriority
 //-----------------------------------------------------------------------------
 struct SortTeamShares
 {
-	int priorities[IT_MAX_WEARABLE];
-
-	explicit SortTeamShares(Unit* unit)
-	{
-		// convert of list of item priority to rank of item priority
-		const ITEM_TYPE* p = unit->stats->priorities;
-		for(int i = 0; i < IT_MAX_WEARABLE; ++i)
-			priorities[i] = -1;
-		for(int i = 0; i < IT_MAX_WEARABLE; ++i)
-		{
-			if(p[i] == IT_NONE)
-				break;
-			priorities[p[i]] = i;
-		}
-	}
-
 	bool operator () (const TeamSingleton::TeamShareItem& t1, const TeamSingleton::TeamShareItem& t2) const
 	{
-		if(t1.item->type != t2.item->type)
-		{
-			int p1 = priorities[t1.item->type];
-			int p2 = priorities[t2.item->type];
-			return p1 < p2;
-		}
-		else if(t1.value != t2.value)
-			return t1.value > t2.value;
-		else
+		if(t1.value == t2.value)
 			return t1.priority < t2.priority;
+		else
+			return t1.value > t2.value;
 	}
 };
 
@@ -544,7 +522,7 @@ void TeamSingleton::CheckTeamItemShares()
 			int index = 0;
 			for(ItemSlot& slot : other_unit->items)
 			{
-				if(slot.item && slot.item->IsWearableByHuman() && slot.item->type != IT_AMULET && slot.item->type != IT_RING)
+				if(slot.item && unit->CanWear(slot.item))
 				{
 					// don't check if can't buy
 					if(slot.team_count == 0 && slot.item->value / 2 > unit->gold && unit != other_unit)
@@ -553,26 +531,27 @@ void TeamSingleton::CheckTeamItemShares()
 						continue;
 					}
 
-					int value;
-					if(unit->IsBetterItem(slot.item, &value))
+					int value, prev_value;
+					if(unit->IsBetterItem(slot.item, &value, &prev_value))
 					{
-						TeamShareItem& tsi = Add1(team_shares);
-						tsi.from = other_unit;
-						tsi.to = unit;
-						tsi.item = slot.item;
-						tsi.index = index;
-						tsi.value = value;
-						tsi.is_team = (slot.team_count != 0);
-						if(unit == other_unit)
+						float real_value = 1000.f * value * unit->stats->priorities[slot.item->type] / slot.item->value;
+						if(real_value > 0)
 						{
-							if(slot.team_count == 0)
-								tsi.priority = PRIO_MY_ITEM;
-							else
-								tsi.priority = PRIO_MY_TEAM_ITEM;
-						}
-						else
-						{
-							if(slot.team_count != 0)
+							TeamShareItem& tsi = Add1(team_shares);
+							tsi.from = other_unit;
+							tsi.to = unit;
+							tsi.item = slot.item;
+							tsi.index = index;
+							tsi.value = real_value;
+							tsi.is_team = (slot.team_count != 0);
+							if(unit == other_unit)
+							{
+								if(slot.team_count == 0)
+									tsi.priority = PRIO_MY_ITEM;
+								else
+									tsi.priority = PRIO_MY_TEAM_ITEM;
+							}
+							else if(slot.team_count != 0)
 							{
 								if(other_unit->IsPlayer())
 									tsi.priority = PRIO_PC_TEAM_ITEM;
@@ -593,20 +572,22 @@ void TeamSingleton::CheckTeamItemShares()
 			}
 		}
 
-		// sort and remove duplictes
+		// remove duplictes
 		pos_b = team_shares.size();
 		if(pos_b - pos_a > 1)
 		{
 			std::vector<TeamShareItem>::iterator it2 = std::unique(team_shares.begin() + pos_a, team_shares.end(), UniqueTeamShares);
 			team_shares.resize(std::distance(team_shares.begin(), it2));
-			std::sort(team_shares.begin() + pos_a, team_shares.end(), SortTeamShares(unit));
 		}
 	}
 
 	if(team_shares.empty())
 		team_share_id = -1;
 	else
+	{
 		team_share_id = 0;
+		std::sort(team_shares.begin(), team_shares.end(), SortTeamShares());
+	}
 }
 
 //=================================================================================================
@@ -642,7 +623,8 @@ void TeamSingleton::UpdateTeamItemShares()
 	else
 	{
 		ItemSlot& slot = tsi.from->items[tsi.index];
-		if(!tsi.to->IsBetterItem(tsi.item))
+		ITEM_SLOT target_slot;
+		if(!tsi.to->IsBetterItem(tsi.item, nullptr, nullptr, &target_slot))
 			state = 0;
 		else
 		{
@@ -651,9 +633,8 @@ void TeamSingleton::UpdateTeamItemShares()
 
 			// old item, can be sold if overweight
 			int prev_item_weight;
-			ITEM_SLOT slot_type = ItemTypeToSlot(slot.item->type);
-			if(tsi.to->slots[slot_type])
-				prev_item_weight = tsi.to->slots[slot_type]->weight;
+			if(tsi.to->slots[target_slot])
+				prev_item_weight = tsi.to->slots[target_slot]->weight;
 			else
 				prev_item_weight = 0;
 
@@ -964,73 +945,118 @@ void TeamSingleton::BuyTeamItems()
 
 		// buy items
 		const ItemList* lis = ItemList::Get("base_items").lis;
-		const ITEM_TYPE* priorities = unit->stats->priorities;
-		const Item* item;
+		const float* priorities = unit->stats->priorities;
+		to_buy.clear();
 		for(int i = 0; i < IT_MAX_WEARABLE; ++i)
 		{
-			switch(priorities[i])
+			if(priorities[i] == 0)
+				continue;
+
+			ITEM_SLOT slot_type = ItemTypeToSlot((ITEM_TYPE)i);
+			if(slot_type == SLOT_AMULET)
 			{
-			case IT_WEAPON:
-				if(!u.HaveWeapon())
-					u.AddItem(UnitHelper::GetBaseWeapon(u, lis));
-				else
+				UnitHelper::BetterItem result = UnitHelper::GetBetterAmulet(*unit);
+				if(result.item)
 				{
-					const Item* weapon = u.slots[SLOT_WEAPON];
-					while(true)
+					float real_value = 1000.f * (result.value - result.prev_value) * priorities[IT_AMULET] / result.item->value;
+					to_buy.push_back({ result.item, result.value, real_value });
+				}
+			}
+			else if(slot_type == SLOT_RING1)
+			{
+				array<UnitHelper::BetterItem, 2> result = UnitHelper::GetBetterRings(*unit);
+				for(int i = 0; i < 2; ++i)
+				{
+					if(result[i].item)
 					{
-						item = ItemHelper::GetBetterItem(weapon);
-						if(item && u.gold >= item->value)
-						{
-							if(u.IsBetterWeapon(item->ToWeapon()))
-							{
-								u.AddItem(item, 1, false);
-								u.gold -= item->value;
-								break;
-							}
-							else
-								weapon = item;
-						}
-						else
-							break;
+						float real_value = 1000.f * (result[i].value - result[i].prev_value) * priorities[IT_AMULET] / result[i].item->value;
+						to_buy.push_back({ result[i].item, result[i].value, real_value });
 					}
 				}
-				break;
-			case IT_BOW:
-				if(!u.HaveBow())
-					item = UnitHelper::GetBaseBow(lis);
-				else
-					item = ItemHelper::GetBetterItem(&u.GetBow());
-				if(item && u.gold >= item->value)
+			}
+			else
+			{
+				const Item* item;
+				if(!unit->slots[slot_type])
 				{
-					u.AddItem(item, 1, false);
-					u.gold -= item->value;
+					switch(i)
+					{
+					case IT_WEAPON:
+						item = UnitHelper::GetBaseWeapon(u, lis);
+						break;
+					case IT_ARMOR:
+						item = UnitHelper::GetBaseArmor(u, lis);
+						break;
+					default:
+						item = UnitHelper::GetBaseItem((ITEM_TYPE)i, lis);
+						break;
+					}
 				}
-				break;
-			case IT_SHIELD:
-				if(!u.HaveShield())
-					item = UnitHelper::GetBaseShield(lis);
 				else
-					item = ItemHelper::GetBetterItem(&u.GetShield());
-				if(item && u.gold >= item->value)
+					item = ItemHelper::GetBetterItem(unit->slots[slot_type]);
+
+				while(item && u.gold >= item->value)
 				{
-					u.AddItem(item, 1, false);
-					u.gold -= item->value;
+					int value, prev_value;
+					if(u.IsBetterItem(item, &value, &prev_value))
+					{
+						float real_value = 1000.f * (value - prev_value) * priorities[IT_BOW] / item->value;
+						to_buy.push_back({ item, (float)value, real_value });
+					}
+					item = ItemHelper::GetBetterItem(item);
 				}
-				break;
-			case IT_ARMOR:
-				if(!u.HaveArmor())
-					item = UnitHelper::GetBaseArmor(u, lis);
-				else
-					item = ItemHelper::GetBetterItem(&u.GetArmor());
-				if(item && u.gold >= item->value && u.IsBetterArmor(item->ToArmor()))
+			}
+		}
+
+		if(to_buy.empty())
+			continue;
+
+		std::sort(to_buy.begin(), to_buy.end(), [](const ItemToBuy& a, const ItemToBuy& b)
+		{
+			return a.priority > b.priority;
+		});
+
+		// get best items to buy by priority & gold left
+		to_buy2.clear();
+		int gold_spent = 0;
+		for(const ItemToBuy& buy : to_buy)
+		{
+			if(u.gold - gold_spent >= buy.item->value)
+			{
+				bool add = true;
+				if(!Any(buy.item->type, IT_AMULET, IT_RING))
 				{
-					u.AddItem(item, 1, false);
-					u.gold -= item->value;
+					for(auto it = to_buy2.begin(), end = to_buy2.end(); it != end; ++it)
+					{
+						const ItemToBuy& buy2 = *it;
+						if(buy2.item->type == buy.item->type)
+						{
+							if(buy.ai_value > buy2.ai_value)
+							{
+								gold_spent -= buy2.item->value;
+								to_buy2.erase(it);
+							}
+							else
+								add = false;
+							break;
+						}
+					}
 				}
-				break;
-			case IT_NONE:
-				// ai don't buy useless amulets/rings yet
-				break;
+				if(add)
+				{
+					gold_spent += buy.item->value;
+					to_buy2.push_back(buy);
+				}
+			}
+		}
+
+		for(const ItemToBuy& buy : to_buy2)
+		{
+			const Item* item = buy.item;
+			if(u.gold >= item->value)
+			{
+				u.AddItem(item, 1, false);
+				u.gold -= item->value;
 			}
 		}
 

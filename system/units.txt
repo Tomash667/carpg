@@ -12,20 +12,31 @@ items mage {
 		p_hp2
 		random 0 1 p_hp
 		chance 25 magic_scroll
+		r_mage
+		a_mage
+		r_def
 	}
 	else if level 16 {
 		p_hp2
 		chance 10 magic_scroll
+		r_mage
+		chance 75 r_def
+		chance 25 a_mage
 	}
 	else if level 12 {
 		random 1 2 p_hp
 		chance 5 magic_scroll
+		r_mage
+		chance 25 r_def
+		chance 10 a_mage 
 	}
 	else if level 8 {
 		p_hp
+		chance 50 r_mage
 	}
 	else {
 		chance 75 p_hp
+		chance 25 r_mage
 	}
 	random 1 3 !normal_food
 }
@@ -132,7 +143,21 @@ profile cleric {
 		tag one_handed_weapon
 		tag armor
 		tag shield
-		priority {weapon armor shield bow}
+		priority {
+			weapon 1
+			armor 1
+			shield 1
+			bow 0.5
+		}
+		tags {
+			str 1
+			dex 1
+			melee 1
+			ranged 1
+			def 1
+			stamina 1
+			mage 0
+		}
 	}
 }
 
@@ -164,7 +189,21 @@ profile hunter {
 		tag light_armor
 		tag weapon
 		tag one_handed_weapon
-		priority {bow armor weapon shield}
+		priority {
+			bow 1
+			armor 0.9
+			weapon 0.75
+			shield 0.5
+		}
+		tags {
+			str 1
+			dex 2
+			melee 1
+			ranged 2
+			def 1
+			stamina 1.5
+			mage 0
+		}
 		perk talent dexterity
 		perk skill_focus bow
 		items {
@@ -175,19 +214,52 @@ profile hunter {
 			if level 20 {
 				p_hp3
 				p_hp
+				a_archer
+				r_dex2
+				random {r_dex r_ranged_attack r_bow}
 			}
 			else if level 16 {
 				p_hp3
+				if chance 50 {
+					a_archer
+				}
+				else {
+					a_stamina
+				}
+				r_dex2
+				random {r_dex r_ranged_attack r_bow}
 			}
 			else if level 12 {
 				p_hp2
 				p_hp
+				if chance 25 {
+					a_stamina
+				}
+				else {
+					a_sprinter
+				}
+				if chance 50 {
+					r_dex2
+				}
+				else {
+					random {r_dex r_ranged_attack r_bow}
+				}
+				if chance 25 {
+					random {r_dex r_ranged_attack r_bow}
+				}
 			}
 			else if level 8 {
 				p_hp2
+				if chance 50 {
+					random {r_dex r_ranged_attack r_bow}
+				}
+				chance 25 a_sprinter
 			}
 			else {
 				random 1 2 p_hp
+				if chance 10 {
+					random {r_dex r_ranged_attack r_bow}
+				}
 			}
 			random 1 3 !normal_food
 		}
@@ -202,7 +274,21 @@ profile hunter {
 		tag one_handed_weapon
 		tag armor
 		tag bow
-		priority {weapon armor bow shield}
+		priority {
+			weapon 1
+			armor 0.9
+			bow 0.75
+			shield 0.6
+		}
+		tags {
+			str 1
+			dex 2
+			melee 2
+			ranged 1
+			def 1.2
+			stamina 1.5
+			mage 0
+		}
 		perk talent dexterity
 		perk skill_focus weapon
 		items {
@@ -213,19 +299,52 @@ profile hunter {
 			if level 20 {
 				p_hp3
 				p_hp
+				a_warrior
+				r_dex2
+				random {r_dex r_attack r_one_handed_weapon}
 			}
 			else if level 16 {
 				p_hp3
+				if chance 50 {
+					a_warrior
+				}
+				else {
+					a_stamina
+				}
+				r_dex2
+				random {r_dex r_attack r_one_handed_weapon}
 			}
 			else if level 12 {
 				p_hp2
 				p_hp
+				if chance 25 {
+					a_stamina
+				}
+				else {
+					a_sprinter
+				}
+				if chance 50 {
+					r_dex2
+				}
+				else {
+					random {r_dex r_attack r_one_handed_weapon}
+				}
+				if chance 25 {
+					random {r_dex r_attack r_one_handed_weapon}
+				}
 			}
 			else if level 8 {
 				p_hp2
+				if chance 50 {
+					random {r_dex r_attack r_one_handed_weapon}
+				}
+				chance 25 a_sprinter
 			}
 			else {
 				random 1 2 p_hp
+				if chance 10 {
+					random {r_dex r_attack r_one_handed_weapon}
+				}
 			}
 			random 1 3 !normal_food
 		}
@@ -241,7 +360,21 @@ profile hunter {
 		tag one_handed_weapon
 		tag armor
 		tag shield
-		priority {weapon armor shield bow}
+		priority {
+			weapon 1
+			armor 1
+			shield 0.8
+			bow 0.6
+		}
+		tags {
+			str 1.5
+			dex 1
+			melee 2
+			ranged 1
+			def 1.5
+			stamina 1.5
+			mage 0
+		}
 		perk talent endurance
 		perk skill_focus weapon
 		items {
@@ -252,20 +385,53 @@ profile hunter {
 			if level 20 {
 				p_hp3
 				p_hp2
+				a_warrior
+				r_str2
+				random {r_str r_attack r_one_handed_weapon}
 			}
 			else if level 16 {
 				p_hp3
 				p_hp
+				if chance 50 {
+					a_warrior
+				}
+				else {
+					a_stamina
+				}
+				r_str2
+				random {r_str r_attack r_one_handed_weapon}
 			}
 			else if level 12 {
 				2 p_hp2
+				if chance 25 {
+					a_stamina
+				}
+				else {
+					a_food
+				}
+				if chance 50 {
+					r_str2
+				}
+				else {
+					random {r_str r_attack r_one_handed_weapon}
+				}
+				if chance 25 {
+					random {r_str r_attack r_one_handed_weapon}
+				}
 			}
 			else if level 8 {
 				p_hp2
 				random 0 1 p_hp
+				if chance 50 {
+					random {r_str r_attack r_one_handed_weapon}
+				}
+				chance 25 a_food
 			}
 			else {
 				random 1 2 p_hp
+				if chance 10 {
+					random {r_str r_attack r_one_handed_weapon}
+				}
 			}
 			random 1 3 !normal_food
 		}
@@ -289,6 +455,26 @@ profile mage {
 	shield 0
 	light_armor 10
 	haggle 0
+	
+	subprofile mage {
+		weapon short_blade
+		armor light_armor
+		priority {
+			weapon 1
+			armor 1
+			shield 0.5
+			bow 0
+		}
+		tags {
+			str 1
+			dex 1
+			melee 0
+			ranged 0
+			def 1.5
+			stamina 1
+			mage 3
+		}
+	}
 }
 
 profile rogue {
@@ -320,7 +506,21 @@ profile rogue {
 		tag one_handed_weapon
 		tag armor
 		tag shield
-		priority {weapon armor shield bow}
+		priority {
+			weapon 1
+			armor 0.9
+			shield 0.8
+			bow 0.7
+		}
+		tags {
+			str 1
+			dex 2
+			melee 2
+			ranged 1
+			def 1
+			stamina 1.5
+			mage 0
+		}
 		perk talent dexterity
 		perk skill_focus weapon
 		items {
@@ -330,19 +530,52 @@ profile rogue {
 			chance 50 !-4bow
 			if level 20 {
 				p_hp3
+				a_warrior
+				r_dex2
+				random {r_dex r_attack r_one_handed_weapon}
 			}
 			else if level 16 {
 				p_hp2
 				p_hp
+				if chance 50 {
+					a_warrior
+				}
+				else {
+					a_stamina
+				}
+				r_dex2
+				random {r_dex r_attack r_one_handed_weapon}
 			}
 			else if level 12 {
 				p_hp2
+				if chance 25 {
+					a_stamina
+				}
+				else {
+					a_sprinter
+				}
+				if chance 50 {
+					r_dex2
+				}
+				else {
+					random {r_dex r_attack r_one_handed_weapon}
+				}
+				if chance 25 {
+					random {r_dex r_attack r_one_handed_weapon}
+				}
 			}
 			else if level 8 {
 				random 1 2 p_hp
+				if chance 50 {
+					random {r_dex r_attack r_one_handed_weapon}
+				}
+				chance 25 a_sprinter
 			}
 			else {
 				p_hp
+				if chance 10 {
+					random {r_dex r_attack r_one_handed_weapon}
+				}
 			}
 			random 1 3 !normal_food
 		}
@@ -357,7 +590,21 @@ profile rogue {
 		tag armor
 		tag weapon
 		tag one_handed_weapon
-		priority {bow armor weapon shield}
+		priority {
+			bow 1
+			armor 0.9
+			weapon 0.75
+			shield 0.5
+		}
+		tags {
+			str 1
+			dex 2
+			melee 1
+			ranged 2
+			def 1
+			stamina 1.5
+			mage 0
+		}
 		perk talent dexterity
 		perk skill_focus bow
 		items {
@@ -367,19 +614,52 @@ profile rogue {
 			chance 50 !-4shield
 			if level 20 {
 				p_hp3
+				a_archer
+				r_dex2
+				random {r_dex r_ranged_attack r_bow}
 			}
 			else if level 16 {
 				p_hp2
 				p_hp
+				if chance 50 {
+					a_archer
+				}
+				else {
+					a_stamina
+				}
+				r_dex2
+				random {r_dex r_ranged_attack r_bow}
 			}
 			else if level 12 {
 				p_hp2
+				if chance 25 {
+					a_stamina
+				}
+				else {
+					a_sprinter
+				}
+				if chance 50 {
+					r_dex2
+				}
+				else {
+					random {r_dex r_ranged_attack r_bow}
+				}
+				if chance 25 {
+					random {r_dex r_ranged_attack r_bow}
+				}
 			}
 			else if level 8 {
 				random 1 2 p_hp
+				if chance 50 {
+					random {r_dex r_ranged_attack r_bow}
+				}
+				chance 25 a_sprinter
 			}
 			else {
 				p_hp
+				if chance 10 {
+					random {r_dex r_ranged_attack r_bow}
+				}
 			}
 			random 1 3 !normal_food
 		}
@@ -417,7 +697,21 @@ profile warrior {
 		tag shield
 		tag weapon
 		tag one_handed_weapon
-		priority {armor shield weapon bow}
+		priority {
+			armor 1
+			shield 1
+			weapon 0.8
+			bow 0.5
+		}
+		tags {
+			str 1
+			dex 0.5
+			melee 1
+			ranged 0.5
+			def 2
+			stamina 1
+			mage 0
+		}
 		perk talent endurance
 		perk skill_focus armor
 		items {
@@ -426,21 +720,54 @@ profile warrior {
 			!heavy_armor
 			if level 20 {
 				2 p_hp3
+				random {a_antimagic a_health}
+				random {r_end2 r_regeneration}
+				random {r_end r_hp r_def}
 			}
 			else if level 16 {
 				p_hp3
 				p_hp2
+				if chance 50 {
+					a_antimagic
+				}
+				else {
+					a_defense
+				}
+				random {r_end2 r_regeneration}
+				random {r_end r_hp r_def}
 			}
 			else if level 12 {
 				p_hp3
 				p_hp
+				if chance 25 {
+					a_defense
+				}
+				else {
+					a_food
+				}
+				if chance 50 {
+					random {r_end2 r_regeneration}
+				}
+				else {
+					random {r_end r_hp r_def}
+				}
+				if chance 25 {
+					random {r_end r_hp r_def}
+				}
 			}
 			else if level 8 {
 				p_hp2
 				p_hp
+				if chance 50 {
+					random {r_end r_hp r_def}
+				}
+				chance 25 a_food
 			}
 			else {
 				p_hp2
+				if chance 10 {
+					random {r_end r_hp r_def}
+				}
 			}
 			random 1 3 !normal_food
 		}
@@ -456,7 +783,21 @@ profile warrior {
 		tag one_handed_weapon
 		tag armor
 		tag shield
-		priority {weapon armor shield bow}
+		priority {
+			weapon 1
+			armor 1
+			shield 0.9
+			bow 0.5
+		}
+		tags {
+			str 2
+			dex 0.5
+			melee 2
+			ranged 0.5
+			def 1.5
+			stamina 1.5
+			mage 0
+		}
 		perk talent strength
 		perk skill_focus weapon
 		items {
@@ -467,20 +808,53 @@ profile warrior {
 			if level 20 {
 				p_hp3
 				p_hp2
+				a_warrior
+				r_str2
+				random {r_str r_attack r_one_handed_weapon}
 			}
 			else if level 16 {
 				p_hp3
 				p_hp
+				if chance 50 {
+					a_warrior
+				}
+				else {
+					a_stamina
+				}
+				r_str2
+				random {r_str r_attack r_one_handed_weapon}
 			}
 			else if level 12 {
 				2 p_hp2
+				if chance 25 {
+					a_stamina
+				}
+				else {
+					a_food
+				}
+				if chance 50 {
+					r_str2
+				}
+				else {
+					random {r_str r_attack r_one_handed_weapon}
+				}
+				if chance 25 {
+					random {r_str r_attack r_one_handed_weapon}
+				}
 			}
 			else if level 8 {
 				p_hp2
 				random 0 1 p_hp
+				if chance 50 {
+					random {r_str r_attack r_one_handed_weapon}
+				}
+				chance 25 a_food
 			}
 			else {
 				random 1 2 p_hp
+				if chance 10 {
+					random {r_str r_attack r_one_handed_weapon}
+				}
 			}
 			random 1 3 !normal_food
 		}
@@ -497,7 +871,21 @@ profile warrior {
 		tag one_handed_weapon
 		tag armor
 		tag bow
-		priority {weapon armor bow shield}
+		priority {
+			weapon 1
+			armor 0.9
+			bow 0.75
+			shield 0.75
+		}
+		tags {
+			str 2
+			dex 1
+			melee 2
+			ranged 1
+			def 1
+			stamina 1.5
+			mage 0
+		}
 		perk talent strength
 		perk skill_focus weapon
 		items {
@@ -508,20 +896,53 @@ profile warrior {
 			if level 20 {
 				p_hp3
 				p_hp2
+				a_warrior
+				r_str2
+				random {r_str r_attack r_one_handed_weapon}
 			}
 			else if level 16 {
 				p_hp3
 				p_hp
+				if chance 50 {
+					a_warrior
+				}
+				else {
+					a_stamina
+				}
+				r_str2
+				random {r_str r_attack r_one_handed_weapon}
 			}
 			else if level 12 {
 				2 p_hp2
+				if chance 25 {
+					a_stamina
+				}
+				else {
+					a_food
+				}
+				if chance 50 {
+					r_str2
+				}
+				else {
+					random {r_str r_attack r_one_handed_weapon}
+				}
+				if chance 25 {
+					random {r_str r_attack r_one_handed_weapon}
+				}
 			}
 			else if level 8 {
 				p_hp2
 				random 0 1 p_hp
+				if chance 50 {
+					random {r_str r_attack r_one_handed_weapon}
+				}
+				chance 25 a_food
 			}
 			else {
 				random 1 2 p_hp
+				if chance 10 {
+					random {r_str r_attack r_one_handed_weapon}
+				}
 			}
 			random 1 3 !normal_food
 		}
@@ -891,6 +1312,20 @@ unit innkeeper : merchant {
 	dialog innkeeper
 }
 
+unit mage_seller : base_human {
+	level 10
+	profile ai_mage
+	flags | {ai_stay ai_guard dont_eat limited_rot mage}
+	items mage
+	trader {
+		stock mage_seller
+		groups {amulet ring}
+	}
+	gold {1000 2000}
+	spells mage
+	dialog mage_seller
+}
+
 unit arena_master : base_human {
 	level 15
 	flags | {ai_guard ai_stay limited_rot dont_eat talk_at_competition}
@@ -941,6 +1376,7 @@ unit artur_drwal : base_human {
 		!light_armor
 		axe_battle
 		random 1 3 !normal_food
+		r_axe
 	}
 	gold {250 500}
 	dialog q_sawmill
@@ -979,6 +1415,7 @@ unit inwestor : base_human {
 		random {al_clothes3 al_clothes3b}
 		dagger_rapier
 		random 1 3 !normal_food
+		r_haggle
 	}
 	gold {2500 5000}
 	dialog q_mine
@@ -1313,6 +1750,7 @@ unit q_orkowie_gorush_woj : base_gorush {
 		axe_crystal
 		bow_long
 		random 3 5 !orc_food
+		r_str
 	}
 	class warrior
 }
@@ -1328,6 +1766,7 @@ unit q_orkowie_gorush_lowca : base_gorush {
 		axe_orcish
 		al_orc
 		random 3 5 !orc_food
+		r_dex
 	}
 	class hunter
 }
@@ -1342,6 +1781,7 @@ unit q_orkowie_gorush_szaman : base_gorush {
 		blunt_orcish_shaman
 		shield_iron
 		random 3 5 !orc_food
+		r_mage
 	}
 	spells orc_shaman
 	tex {
@@ -1510,6 +1950,7 @@ unit q_orkowie_boss : base_orc {
 		shield_adamantine
 		p_str
 		random 3 5 !orc_food
+		r_str2
 	}
 	gold {1000 2000}
 	sounds {
@@ -1802,6 +2243,7 @@ unit q_zlo_boss : base_human {
 		p_str
 		p_end
 		random 2 4 raw_meat
+		r_regeneration
 	}
 	gold {4000 6000}
 	spells {
@@ -1842,6 +2284,7 @@ unit thief : base_bandit {
 		chance 5 p_hp
 		chance 5 golden_cup
 		random 0 2 !normal_food
+		chance 10 r_silver
 	}
 	gold {{15 30} {25 50}}
 }
@@ -1861,6 +2304,7 @@ unit bandit : base_bandit {
 		!shield
 		chance 10 p_hp
 		random 1 3 !normal_food
+		chance 10 r_gold
 	}
 	gold {{30 60} {40 80}}
 }
@@ -1875,6 +2319,7 @@ unit bandit_archer : base_bandit {
 		!bow
 		chance 5 p_hp
 		random 1 3 !normal_food
+		chance 10 r_gold
 	}
 	gold {{30 60} {40 80}}
 }
@@ -1888,6 +2333,7 @@ unit bandit_chief : base_bandit {
 		chance 50 !-4bow
 		chance 15 p_hp2
 		random 2 4 !normal_food
+		chance 10 r_emerald
 	}
 	gold {{70 140} {100 200}}
 }
@@ -1946,6 +2392,7 @@ unit q_bandyci_szef : base_bandit {
 		p_hp3
 		p_dex
 		random 2 4 !normal_food
+		r_dex2
 	}
 	gold {1000 2000}
 	dialog q_bandits
@@ -1964,10 +2411,19 @@ unit mage : base_human {
 		if level 13 {
 			chance 10 p_hp2
 			chance 9 magic_scroll
+			if chance 20 {
+				if chance 75 {
+					r_mage
+				}
+				else {
+					a_mage
+				}
+			}
 		}
 		else if level 9 {
 			chance 10 p_hp
 			chance 3 magic_scroll
+			chance 10 r_mage
 		}
 		else {
 			chance 5 p_hp
@@ -2107,6 +2563,8 @@ unit q_magowie_boss : base_human {
 		p_end
 		random 2 4 !normal_food
 		magic_scroll
+		r_mage
+		a_mage
 	}
 	gold {1000 2000}
 	spells {
@@ -2462,6 +2920,7 @@ unit tomashu : base_human {
 		bow_dragonbone
 		3 p_hp3
 		5 krystal
+		a_health
 	}
 	gold 666
 	spells {

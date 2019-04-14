@@ -5,13 +5,14 @@
 ItemLoader.cpp
 UnitLoader.cpp - to allow selling
 If equippable
-	Item.IsWearable/IsWearableByHuman
+	Item.IsWearable
 	ItemSlot.h - Add new slots in ItemSlot.h (ItemTypeToSlot)
-	Unit.AddItemAndEquipIfNone
-	Unit.UpdateInventory
-	Unit.IsBetterItem
-	Unit.Save/Load, Read/Write for visible slots
+	Unit.UpdateInventory, IsBetterItem, CanWear, Save/Load, Read/Write for visible slots
 	Team.CheckTeamItemShares, BuyTeamItems
+	If item have multiple slots:
+		Unit.AddItemAndEquipIfNone
+		Inventory.cpp
+	UnitStats default_priorities
 If need special texts in inventory:
 	ItemSlot.GetItemString
 If require special ordering:

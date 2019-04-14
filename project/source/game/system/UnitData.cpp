@@ -40,9 +40,15 @@ UnitStats* UnitData::GetStats(SubprofileInfo sub)
 		{
 			stats->Set(*stat_profile);
 			if(!stat_profile->subprofiles.empty())
+			{
 				stats->priorities = stat_profile->subprofiles[sub.index]->priorities;
+				stats->tag_priorities = stat_profile->subprofiles[sub.index]->tag_priorities;
+			}
 			else
+			{
 				stats->priorities = StatProfile::Subprofile::default_priorities;
+				stats->tag_priorities = StatProfile::Subprofile::default_tag_priorities;
+			}
 		}
 		else
 		{

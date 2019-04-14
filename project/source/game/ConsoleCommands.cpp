@@ -1592,7 +1592,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						Msg("add_effect regeneration 5 - add permanent regeneration 5 hp/sec");
 						Msg("add_effect melee_attack 30 perk strong_back - add 30 melee attack assigned to perk");
 						Msg("add_effect magic_resistance 0.5 temporary 30 - add 50% magic resistance for 30 seconds");
-						Msg("add_effect attribute str 5 temporary 10 - add +5 strength for 10 seconds");
+						Msg("add_effect attribute str 5 item weapon - add +5 strength assigned to weapon");
 					}
 					else
 					{
@@ -1655,6 +1655,16 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								t.Next();
 								e.time = t.MustGetNumberFloat();
 							}
+							else if(source_name == "item")
+							{
+								e.source = EffectSource::Item;
+								t.Next();
+								const string slot_id = t.MustGetItem();
+								e.source_id = ItemSlotInfo::Find(slot_id);
+								if(e.source_id == SLOT_INVALID)
+									t.Throw("Invalid item source '%s'.", slot_id.c_str());
+								e.time = 0;
+							}
 							else
 								t.Throw("Invalid effect source '%s'.", source_name.c_str());
 						}
@@ -1713,6 +1723,20 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								if(info != nullptr)
 								{
 									source_id = (int)info->perk_id;
+									t.Next();
+								}
+							}
+						}
+						else if(str == "item")
+						{
+							source = EffectSource::Item;
+							if(t.Next())
+							{
+								const string slot_id = t.MustGetItem();
+								ITEM_SLOT slot = ItemSlotInfo::Find(slot_id);
+								if(slot != SLOT_INVALID)
+								{
+									source_id = slot;
 									t.Next();
 								}
 							}

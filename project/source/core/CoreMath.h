@@ -205,6 +205,23 @@ inline T Min(T a, T2 b, Args... args)
 	else
 		return Min(a, args...);
 }
+template<typename T, int N>
+inline T Min(const T(&arr)[N])
+{
+	static_assert(std::is_integral<T>::value || std::is_floating_point<T>::value, "T must be int or float");
+	T value = arr[0];
+	for(int i = 1; i < N; ++i)
+	{
+		if(arr[i] < value)
+			value = arr[i];
+	}
+	return value;
+}
+template<typename T>
+inline T Min(const T(&arr)[2])
+{
+	return Min(arr[0], arr[1]);
+}
 
 // Find min value from any arguments count
 template<typename T, typename T2>
@@ -224,6 +241,23 @@ inline T Max(T a, T2 b, Args... args)
 		return Max(b, args...);
 	else
 		return Max(a, args...);
+}
+template<typename T, int N>
+inline T Max(const T(&arr)[N])
+{
+	static_assert(std::is_integral<T>::value || std::is_floating_point<T>::value, "T must be int or float");
+	T value = arr[0];
+	for(int i = 1; i < N; ++i)
+	{
+		if(arr[i] > value)
+			value = arr[i];
+	}
+	return value;
+}
+template<typename T>
+inline T Max(const T(&arr)[2])
+{
+	return Max(arr[0], arr[1]);
 }
 
 // Distance between two 2d points

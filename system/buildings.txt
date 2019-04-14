@@ -383,6 +383,27 @@ building village_hall_old {
 	}
 }
 
+building mages_tower {
+	mesh "mages_tower.qmsh"
+	flags {favor_center favor_road have_name list}
+	scheme {
+		" |||| "
+		"||||||"
+		"||||||"
+		"||||||"
+		"||||||"
+		" |||| "
+		"  +@  "
+	}
+	unit mage_seller
+	shift {
+		bottom {1 1}
+		left {0 1}
+		top {1 0}
+		right {1 1}
+	}
+}
+
 
 //================================================================================
 // Building script
@@ -397,6 +418,13 @@ building_script city {
 		alchemist
 		inn
 		training_grounds
+		if first_city == 1
+			mages_tower
+		else
+			if rand 2
+				mages_tower
+			endif
+		endif
 	shuffle end
 	barracks
 	set citizens = random(12,15)

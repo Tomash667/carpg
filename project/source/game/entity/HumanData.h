@@ -3,9 +3,9 @@
 
 //-----------------------------------------------------------------------------
 // Iloœæ bród, w³osów i w¹sów
-#define MAX_BEARD 6
-#define MAX_HAIR 6
-#define MAX_MUSTACHE 3
+static const uint MAX_BEARD = 6;
+static const uint MAX_HAIR = 6;
+static const uint MAX_MUSTACHE = 3;
 
 //-----------------------------------------------------------------------------
 // Ustawienia brodow¹sów

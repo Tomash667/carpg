@@ -88,12 +88,19 @@ void Bullet::Load(FileReader& f)
 	if(LOAD_VERSION >= V_0_4)
 	{
 		f >> level;
-		f >> backstab;
+		if(LOAD_VERSION >= V_DEV)
+			f >> backstab;
+		else
+		{
+			int backstab_value;
+			f >> backstab_value;
+			backstab = 0.25f * (backstab_value + 1);
+		}
 	}
 	else
 	{
 		level = (int)round(f.Read<float>());
-		backstab = 0;
+		backstab = 0.25f;
 	}
 	f >> start_pos;
 }

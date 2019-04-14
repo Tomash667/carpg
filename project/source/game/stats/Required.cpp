@@ -203,7 +203,7 @@ bool Game::LoadRequiredStats(uint& errors)
 				case R_ITEM:
 					{
 						ItemListResult result;
-						const Item* item = Item::Get(str);
+						const Item* item = Item::TryGet(str);
 						if(!item)
 						{
 							Error("Missing required item '%s'.", str.c_str());
@@ -213,15 +213,24 @@ bool Game::LoadRequiredStats(uint& errors)
 					break;
 				case R_LIST:
 					{
+						bool leveled = false;
+						if(t.IsItem("leveled"))
+						{
+							leveled = true;
+							t.Next();
+						}
 						ItemListResult result = ItemList::TryGet(str.c_str());
 						if(!result.lis)
 						{
 							Error("Missing required item list '%s'.", str.c_str());
 							++errors;
 						}
-						else if(result.is_leveled)
+						else if(result.is_leveled != leveled)
 						{
-							Error("Required list '%s' is leveled.", str.c_str());
+							if(leveled)
+								Error("Required list '%s' must be leveled.", str.c_str());
+							else
+								Error("Required list '%s' is leveled.", str.c_str());
 							++errors;
 						}
 						else if(result.lis->items.empty())

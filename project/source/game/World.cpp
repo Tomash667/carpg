@@ -683,6 +683,7 @@ void World::GenerateWorld(int start_location_type, int start_location_target)
 	CalculateTiles();
 
 	// reveal near locations, generate content
+	bool first_city_gen = true;
 	int index = 0, guaranteed_dungeon = 0, guaranteed_crypt = 0;
 	const Vec2& start_pos = locations[start_location]->pos;
 	for(vector<Location*>::iterator it = locations.begin(), end = locations.end(); it != end; ++it, ++index)
@@ -709,13 +710,14 @@ void World::GenerateWorld(int start_location_type, int start_location_target)
 				city.citizens_world = 0;
 				city.st = 1;
 				LocalVector2<Building*> buildings;
-				city.GenerateCityBuildings(buildings.Get(), true);
+				city.GenerateCityBuildings(buildings.Get(), true, first_city_gen);
 				city.buildings.reserve(buildings.size());
 				for(Building* b : buildings)
 				{
 					CityBuilding& cb = Add1(city.buildings);
 					cb.type = b;
 				}
+				first_city_gen = false;
 
 				if(start_location_type == L_CITY && start_location_target == 1 && city.settlement_type == City::SettlementType::Village)
 				{

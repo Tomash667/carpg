@@ -91,7 +91,7 @@ item cup
 item book_adventurer
 // 0.8 artifacts armor
 item am_gladiator
-// V_DEV quest deliver resources
+// 0.8 quest deliver resources
 item q_resources
 
 //------------------------------------------------------------------------------
@@ -106,6 +106,8 @@ list contest_reward
 list treasure
 list books
 list rare_books
+list leveled amulets
+list leveled rings
 
 //------------------------------------------------------------------------------
 // Required item stock

@@ -9,7 +9,7 @@ EffectInfo EffectInfo::effects[] = {
 	EffectInfo(EffectId::Alcohol, "alcohol", "deal alcohol damage"),
 	EffectInfo(EffectId::Regeneration, "regeneration", "regenerate hp"),
 	EffectInfo(EffectId::StaminaRegeneration, "stamina_regeneration", "regenerate stamina"),
-	EffectInfo(EffectId::FoodRegeneration, "food_regneration", "food regenerate hp"),
+	EffectInfo(EffectId::FoodRegeneration, "food_regeneration", "food regenerate hp"),
 	EffectInfo(EffectId::NaturalHealingMod, "natural_healing_mod", "natural healing modifier % (timer in days)"),
 	EffectInfo(EffectId::MagicResistance, "magic_resistance", "magic resistance %"),
 	EffectInfo(EffectId::Stun, "stun", "unit is stunned"),
@@ -21,7 +21,12 @@ EffectInfo EffectInfo::effects[] = {
 	EffectInfo(EffectId::Stamina, "stamina", "modify max stamina"),
 	EffectInfo(EffectId::Attribute, "attribute", "modify attribute", EffectInfo::Attribute),
 	EffectInfo(EffectId::Skill, "skill", "modify skill", EffectInfo::Skill),
-	EffectInfo(EffectId::StaminaRegenerationMod, "stamina_regeneration_mod", "stamina regeneration modifier %")
+	EffectInfo(EffectId::StaminaRegenerationMod, "stamina_regeneration_mod", "stamina regeneration modifier %"),
+	EffectInfo(EffectId::MagicPower, "magic_power", "magic power"),
+	EffectInfo(EffectId::Backstab, "backstab", "backstab modifier"),
+	EffectInfo(EffectId::Heal, "heal", "heal damage on consume"),
+	EffectInfo(EffectId::Antidote, "antidote", "heal poison on consume"),
+	EffectInfo(EffectId::GreenHair, "green_hair", "turn hair green on consume")
 };
 
 EffectId EffectInfo::TryGet(const string& id)

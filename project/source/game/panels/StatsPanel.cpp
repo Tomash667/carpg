@@ -172,7 +172,8 @@ void StatsPanel::SetText()
 	flowSkills.Clear();
 	for(int i = 0; i < (int)SkillId::MAX; ++i)
 	{
-		if(pc->unit->GetBase((SkillId)i) > 0)
+		int value = pc->unit->Get((SkillId)i, nullptr, false);
+		if(value > 0)
 		{
 			Skill& info = Skill::skills[i];
 			if(info.group != last_group)

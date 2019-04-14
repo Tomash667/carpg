@@ -50,6 +50,7 @@
 #ifndef COMMON_ONLY
 #include <json_fwd.hpp>
 #endif
+#include <array>
 
 //-----------------------------------------------------------------------------
 using std::string;
@@ -59,3 +60,4 @@ using std::min;
 using std::max;
 using std::thread;
 using std::pair;
+using std::array;

@@ -6,8 +6,11 @@ Version 0.10 (2019-??-??):
 + new unique quest: Herbs for the alchemist
 + new unit effects: maximum stamina, stamina regeneration speed, attribute/skill bonus
 + new feat (energetic)
++ mages tower shop inside some cities
 + alchemist now buy herbs
-+ rings: silver, golden, emerald
++ rings: silver, golden, emerald, 27 magic rings
++ new item: spring water, troll hide armor, 9 magic amulets
++ better priorities for heroes buying/asking for items
 + update libraries: FMod 1.10.12, JSON for Modern C++ 3.6.1
 - fixed infinite wait time when using -delay switch
 
