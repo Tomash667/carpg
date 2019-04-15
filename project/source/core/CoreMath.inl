@@ -494,6 +494,16 @@ inline Vec2::operator const float*() const
 	return &x;
 }
 
+inline float& Vec2::operator [](int index)
+{
+	return ((float*)*this)[index];
+}
+
+inline const float& Vec2::operator [](int index) const
+{
+	return ((const float*)*this)[index];
+}
+
 inline bool Vec2::operator == (const Vec2& v) const
 {
 	XMVECTOR v1 = XMLoadFloat2(this);
@@ -506,6 +516,19 @@ inline bool Vec2::operator != (const Vec2& v) const
 	XMVECTOR v1 = XMLoadFloat2(this);
 	XMVECTOR v2 = XMLoadFloat2(&v);
 	return XMVector2NotEqual(v1, v2);
+}
+
+inline bool Vec2::operator < (const Vec2& v) const
+{
+	if(x == v.x)
+	{
+		if(y == v.y)
+			return false;
+		else
+			return y < v.y;
+	}
+	else
+		return x < v.x;
 }
 
 inline Vec2& Vec2::operator = (const Vec2& v)
@@ -994,7 +1017,7 @@ inline Vec2 Vec2::Slerp(const Vec2& a, const Vec2& b, float t)
 inline void Vec2::SmoothStep(const Vec2& v1, const Vec2& v2, float t, Vec2& result)
 {
 	t = (t > 1.0f) ? 1.0f : ((t < 0.0f) ? 0.0f : t);  // Clamp value to 0 to 1
-	t = t*t*(3.f - 2.f*t);
+	t = t * t*(3.f - 2.f*t);
 	XMVECTOR x1 = XMLoadFloat2(&v1);
 	XMVECTOR x2 = XMLoadFloat2(&v2);
 	XMVECTOR X = XMVectorLerp(x1, x2, t);
@@ -1004,7 +1027,7 @@ inline void Vec2::SmoothStep(const Vec2& v1, const Vec2& v2, float t, Vec2& resu
 inline Vec2 Vec2::SmoothStep(const Vec2& v1, const Vec2& v2, float t)
 {
 	t = (t > 1.0f) ? 1.0f : ((t < 0.0f) ? 0.0f : t);  // Clamp value to 0 to 1
-	t = t*t*(3.f - 2.f*t);
+	t = t * t*(3.f - 2.f*t);
 	XMVECTOR x1 = XMLoadFloat2(&v1);
 	XMVECTOR x2 = XMLoadFloat2(&v2);
 	XMVECTOR X = XMVectorLerp(x1, x2, t);
@@ -1142,6 +1165,16 @@ inline Vec3::operator const float*() const
 	return &x;
 }
 
+inline float& Vec3::operator [](int index)
+{
+	return ((float*)*this)[index];
+}
+
+inline const float& Vec3::operator [](int index) const
+{
+	return ((const float*)*this)[index];
+}
+
 inline bool Vec3::operator == (const Vec3& v) const
 {
 	XMVECTOR v1 = XMLoadFloat3(this);
@@ -1154,6 +1187,24 @@ inline bool Vec3::operator != (const Vec3& v) const
 	XMVECTOR v1 = XMLoadFloat3(this);
 	XMVECTOR v2 = XMLoadFloat3(&v);
 	return XMVector3NotEqual(v1, v2);
+}
+
+inline bool Vec3::operator < (const Vec3& v) const
+{
+	if(x == v.x)
+	{
+		if(y == v.y)
+		{
+			if(z == v.z)
+				return false;
+			else
+				return z < v.z;
+		}
+		else
+			return y < v.y;
+	}
+	else
+		return x < v.x;
 }
 
 inline Vec3& Vec3::operator = (const Vec3& v)
@@ -1323,12 +1374,12 @@ inline float Vec3::Dot(const Vec3& V) const
 
 inline float Vec3::Dot2d(const Vec3& v) const
 {
-	return (x*v.x + z*v.z);
+	return (x*v.x + z * v.z);
 }
 
 inline float Vec3::Dot2d() const
 {
-	return x*x + z*z;
+	return x * x + z * z;
 }
 
 inline bool Vec3::Equal(const Vec3& v) const
@@ -1484,7 +1535,7 @@ inline float Vec3::Distance2d(const Vec3& v1, const Vec3& v2)
 {
 	float x = abs(v1.x - v2.x),
 		z = abs(v1.z - v2.z);
-	return sqrt(x*x + z*z);
+	return sqrt(x*x + z * z);
 }
 
 inline void Vec3::Hermite(const Vec3& v1, const Vec3& t1, const Vec3& v2, const Vec3& t2, float t, Vec3& result)
@@ -1633,7 +1684,7 @@ inline Vec3 Vec3::Refract(const Vec3& ivec, const Vec3& nvec, float refractionIn
 inline void Vec3::SmoothStep(const Vec3& v1, const Vec3& v2, float t, Vec3& result)
 {
 	t = (t > 1.0f) ? 1.0f : ((t < 0.0f) ? 0.0f : t);  // Clamp value to 0 to 1
-	t = t*t*(3.f - 2.f*t);
+	t = t * t*(3.f - 2.f*t);
 	XMVECTOR x1 = XMLoadFloat3(&v1);
 	XMVECTOR x2 = XMLoadFloat3(&v2);
 	XMVECTOR X = XMVectorLerp(x1, x2, t);
@@ -1643,7 +1694,7 @@ inline void Vec3::SmoothStep(const Vec3& v1, const Vec3& v2, float t, Vec3& resu
 inline Vec3 Vec3::SmoothStep(const Vec3& v1, const Vec3& v2, float t)
 {
 	t = (t > 1.0f) ? 1.0f : ((t < 0.0f) ? 0.0f : t);  // Clamp value to 0 to 1
-	t = t*t*(3.f - 2.f*t);
+	t = t * t*(3.f - 2.f*t);
 	XMVECTOR x1 = XMLoadFloat3(&v1);
 	XMVECTOR x2 = XMLoadFloat3(&v2);
 	XMVECTOR X = XMVectorLerp(x1, x2, t);
@@ -1792,6 +1843,16 @@ inline Vec4::operator const float*() const
 	return &x;
 }
 
+inline float& Vec4::operator [](int index)
+{
+	return ((float*)*this)[index];
+}
+
+inline const float& Vec4::operator [](int index) const
+{
+	return ((const float*)*this)[index];
+}
+
 inline bool Vec4::operator == (const Vec4& v) const
 {
 	XMVECTOR v1 = XMLoadFloat4(this);
@@ -1804,6 +1865,29 @@ inline bool Vec4::operator != (const Vec4& v) const
 	XMVECTOR v1 = XMLoadFloat4(this);
 	XMVECTOR v2 = XMLoadFloat4(&v);
 	return XMVector4NotEqual(v1, v2);
+}
+
+inline bool Vec4::operator < (const Vec4& v) const
+{
+	if(x == v.x)
+	{
+		if(y == v.y)
+		{
+			if(z == v.z)
+			{
+				if(w == v.w)
+					return false;
+				else
+					return w < v.w;
+			}
+			else
+				return z < v.z;
+		}
+		else
+			return y < v.y;
+	}
+	else
+		return x < v.x;
 }
 
 inline Vec4& Vec4::operator = (const Vec4& v)
@@ -2217,7 +2301,7 @@ inline Vec4 Vec4::Refract(const Vec4& ivec, const Vec4& nvec, float refractionIn
 inline void Vec4::SmoothStep(const Vec4& v1, const Vec4& v2, float t, Vec4& result)
 {
 	t = (t > 1.0f) ? 1.0f : ((t < 0.0f) ? 0.0f : t);  // Clamp value to 0 to 1
-	t = t*t*(3.f - 2.f*t);
+	t = t * t*(3.f - 2.f*t);
 	XMVECTOR x1 = XMLoadFloat4(&v1);
 	XMVECTOR x2 = XMLoadFloat4(&v2);
 	XMVECTOR X = XMVectorLerp(x1, x2, t);
@@ -2227,7 +2311,7 @@ inline void Vec4::SmoothStep(const Vec4& v1, const Vec4& v2, float t, Vec4& resu
 inline Vec4 Vec4::SmoothStep(const Vec4& v1, const Vec4& v2, float t)
 {
 	t = (t > 1.0f) ? 1.0f : ((t < 0.0f) ? 0.0f : t);  // Clamp value to 0 to 1
-	t = t*t*(3.f - 2.f*t);
+	t = t * t*(3.f - 2.f*t);
 	XMVECTOR x1 = XMLoadFloat4(&v1);
 	XMVECTOR x2 = XMLoadFloat4(&v2);
 	XMVECTOR X = XMVectorLerp(x1, x2, t);
@@ -2650,6 +2734,16 @@ inline Box operator * (float f, const Box& b)
 // Methods
 //------------------------------------------------------------------------------
 
+inline void Box::AddPoint(const Vec3& v)
+{
+	v1.x = min(v1.x, v.x);
+	v1.y = min(v1.y, v.y);
+	v1.z = min(v1.z, v.z);
+	v2.x = max(v2.x, v.x);
+	v2.y = max(v2.y, v.y);
+	v2.z = max(v2.z, v.z);
+}
+
 inline Vec3 Box::GetRandomPoint() const
 {
 	return Vec3(::Random(v1.x, v2.x), ::Random(v1.y, v2.y), ::Random(v1.z, v2.z));
@@ -2724,10 +2818,10 @@ inline Matrix::Matrix(
 	float m20, float m21, float m22, float m23,
 	float m30, float m31, float m32, float m33) :
 	XMFLOAT4X4(
-		m00, m01, m02, m03,
-		m10, m11, m12, m13,
-		m20, m21, m22, m23,
-		m30, m31, m32, m33)
+	m00, m01, m02, m03,
+	m10, m11, m12, m13,
+	m20, m21, m22, m23,
+	m30, m31, m32, m33)
 {
 }
 

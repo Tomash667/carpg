@@ -1936,45 +1936,48 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 		if(GKey.KeyPressedReleaseAllowed(GK_POTION) && !Equal(u.hp, u.hpmax))
 		{
-			idle = false;
-			// wypij miksturkê lecznicz¹
-			float brakuje = u.hpmax - u.hp;
-			int wypij = -1, index = 0;
-			float wyleczy;
+			// drink healing potion
+			float healed_hp,
+				missing_hp = u.hpmax - u.hp;
+			int potion_index = -1, index = 0;
 
 			for(vector<ItemSlot>::iterator it = u.items.begin(), end = u.items.end(); it != end; ++it, ++index)
 			{
 				if(!it->item || it->item->type != IT_CONSUMABLE)
 					continue;
 				const Consumable& pot = it->item->ToConsumable();
-				if(pot.effect == E_HEAL)
+				if(pot.IsHealingPotion())
 				{
-					if(wypij == -1)
+					float power = pot.GetEffectPower(EffectId::Heal);
+					if(potion_index == -1)
 					{
-						wypij = index;
-						wyleczy = pot.power;
+						potion_index = index;
+						healed_hp = power;
 					}
 					else
 					{
-						if(pot.power > brakuje)
+						if(power > missing_hp)
 						{
-							if(pot.power < wyleczy)
+							if(power < healed_hp)
 							{
-								wypij = index;
-								wyleczy = pot.power;
+								potion_index = index;
+								healed_hp = power;
 							}
 						}
-						else if(pot.power > wyleczy)
+						else if(power > healed_hp)
 						{
-							wypij = index;
-							wyleczy = pot.power;
+							potion_index = index;
+							healed_hp = power;
 						}
 					}
 				}
 			}
 
-			if(wypij != -1)
-				u.ConsumeItem(wypij);
+			if(potion_index != -1)
+			{
+				idle = false;
+				u.ConsumeItem(potion_index);
+			}
 			else
 				gui->messages->AddGameMsg3(GMS_NO_POTION);
 		}
@@ -3567,6 +3570,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	u->CalculateStats();
 	u->hp = u->hpmax = u->CalculateMaxHp();
 	u->stamina = u->stamina_max = u->CalculateMaxStamina();
+	u->stamina_timer = 0;
 	u->fake_unit = false;
 
 	// items
@@ -4560,11 +4564,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 					u.hitted = true;
 					Bullet& b = Add1(ctx.bullets);
 					b.level = u.level;
-					b.backstab = 0;
-					if(IS_SET(u.data->flags, F2_BACKSTAB))
-						++b.backstab;
-					if(IS_SET(u.GetBow().flags, ITEM_BACKSTAB))
-						++b.backstab;
+					b.backstab = u.GetBackstabMod(&u.GetBow());
 
 					if(u.human_data)
 						u.mesh_inst->SetupBones(&u.human_data->mat_scale[0]);
@@ -5602,13 +5602,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 
 				// backstab bonus damage
 				float angle_dif = AngleDiff(it->rot.y, hitted->rot);
-				float backstab_mod;
-				if(it->backstab == 0)
-					backstab_mod = 0.25f;
-				if(it->backstab == 1)
-					backstab_mod = 0.5f;
-				else
-					backstab_mod = 0.75f;
+				float backstab_mod = it->backstab;
 				if(IS_SET(hitted->data->flags2, F2_BACKSTAB_RES))
 					backstab_mod /= 2;
 				m += angle_dif / PI * backstab_mod;
@@ -5729,6 +5723,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 						e.effect = EffectId::Poison;
 						e.source = EffectSource::Temporary;
 						e.source_id = -1;
+						e.value = -1;
 						e.power = it->poison_attack / 5 * poison_res;
 						e.time = 5.f;
 						hitted->AddEffect(e);
@@ -5804,6 +5799,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 						e.effect = EffectId::Poison;
 						e.source = EffectSource::Temporary;
 						e.source_id = -1;
+						e.value = -1;
 						e.power = dmg / 5 * poison_res;
 						e.time = 5.f;
 						hitted->AddEffect(e);
@@ -6214,11 +6210,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 
 	// backstab bonus
 	float angle_dif = AngleDiff(Clip(attacker.rot + PI), hitted.rot);
-	float backstab_mod = 0.25f;
-	if(IS_SET(attacker.data->flags, F2_BACKSTAB))
-		backstab_mod += 0.25f;
-	if(attacker.HaveWeapon() && IS_SET(attacker.GetWeapon().flags, ITEM_BACKSTAB))
-		backstab_mod += 0.25f;
+	float backstab_mod = attacker.GetBackstabMod(bash ? attacker.slots[SLOT_SHIELD] : attacker.slots[SLOT_WEAPON]);
 	if(IS_SET(hitted.data->flags2, F2_BACKSTAB_RES))
 		backstab_mod /= 2;
 	m += angle_dif / PI * backstab_mod;
@@ -6347,6 +6339,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 			e.effect = EffectId::Poison;
 			e.source = EffectSource::Temporary;
 			e.source_id = -1;
+			e.value = -1;
 			e.power = dmg / 10 * poison_res;
 			e.time = 5.f;
 			hitted.AddEffect(e);
@@ -6390,7 +6383,7 @@ void Game::CastSpell(LevelContext& ctx, Unit& u)
 			Bullet& b = Add1(ctx.bullets);
 
 			b.level = u.level + u.CalculateMagicPower();
-			b.backstab = 0;
+			b.backstab = 0.25f;
 			b.pos = coord;
 			b.attack = float(spell.dmg);
 			b.rot = Vec3(0, current_rot + Random(-0.05f, 0.05f), 0);
@@ -7089,7 +7082,7 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 					{
 						Bullet& b = Add1(ctx.bullets);
 						b.level = 4;
-						b.backstab = 0;
+						b.backstab = 0.25f;
 						b.attack = float(trap.base->attack);
 						b.mesh = aArrow;
 						b.pos = Vec3(2.f*trap.tile.x + trap.pos.x - float(int(trap.pos.x / 2) * 2) + Random(-trap.base->rw, trap.base->rw) - 1.2f*DirToPos(trap.dir).x,
@@ -7886,6 +7879,8 @@ SOUND Game::GetItemSound(const Item* item)
 			return sItem[1];
 	case IT_AMULET:
 		return sItem[8];
+	case IT_RING:
+		return sItem[9];
 	case IT_CONSUMABLE:
 		if(item->ToConsumable().cons_type != Food)
 			return sItem[0];

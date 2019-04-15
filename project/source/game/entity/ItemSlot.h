@@ -12,6 +12,8 @@ enum ITEM_SLOT
 	SLOT_ARMOR,
 	SLOT_AMULET,
 	SLOT_MAX_VISIBLE = SLOT_AMULET,
+	SLOT_RING1,
+	SLOT_RING2,
 	SLOT_MAX,
 	SLOT_INVALID
 };
@@ -43,6 +45,8 @@ inline ITEM_SLOT ItemTypeToSlot(ITEM_TYPE type)
 		return SLOT_ARMOR;
 	case IT_AMULET:
 		return SLOT_AMULET;
+	case IT_RING:
+		return SLOT_RING1;
 	default:
 		return SLOT_INVALID;
 	}
@@ -57,6 +61,15 @@ inline bool IsVisible(ITEM_SLOT slot)
 {
 	return slot < SLOT_MAX_VISIBLE;
 }
+
+//-----------------------------------------------------------------------------
+struct ItemSlotInfo
+{
+	cstring id;
+
+	static ItemSlotInfo slots[SLOT_MAX];
+	static ITEM_SLOT Find(const string& id);
+};
 
 //-----------------------------------------------------------------------------
 struct ItemSlot

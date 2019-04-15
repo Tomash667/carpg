@@ -26,7 +26,7 @@ struct QMSH_SUBMESH
 	Vec3 specular_color, center;
 	int specular_hardness;
 	float specular_intensity, specular_factor, specular_color_factor, normal_factor, range;
-	BOX box;
+	Box box;
 };
 
 struct QMSH_BONE
@@ -35,8 +35,8 @@ struct QMSH_BONE
 	// Koœci indeksowane s¹ od 1, 0 jest zarezerwowane dla braku koœci (czyli ¿e nie ma parenta)
 	uint ParentIndex;
 	// Macierz przeszta³caj¹ca ze wsp. danej koœci do wsp. koœci nadrzêdnej w Bind Pose, ³¹cznie z translacj¹
-	MATRIX Matrix;
-	MATRIX RawMatrix;
+	Matrix matrix;
+	Matrix RawMatrix;
 	Vec4 head, tail;
 
 	// Indeksy podkoœci, indeksowane równie¿ od 1
@@ -54,7 +54,7 @@ struct QMSH_BONE
 struct QMSH_KEYFRAME_BONE
 {
 	Vec3 Translation;
-	QUATERNION Rotation;
+	Quat Rotation;
 	float Scaling;
 };
 
@@ -76,7 +76,7 @@ struct QMSH_POINT
 	string name;
 	unsigned short bone, type;
 	Vec3 size, rot;
-	MATRIX matrix;
+	Matrix matrix;
 };
 
 struct QMSH_GROUP
@@ -99,7 +99,7 @@ struct QMSH
 {
 	uint Flags;
 	std::vector<QMSH_VERTEX> Vertices;
-	std::vector<uint2> Indices;
+	std::vector<word> Indices;
 	std::vector<shared_ptr<QMSH_SUBMESH>> Submeshes;
 	std::vector<shared_ptr<QMSH_BONE>> Bones; // Tylko kiedy Flags & SKINNING
 	std::vector<shared_ptr<QMSH_ANIMATION>> Animations; // Tylko kiedy Flags & SKINNING
@@ -109,10 +109,8 @@ struct QMSH
 	// Bry³y otaczaj¹ce
 	// Dotycz¹ wierzcho³ków w pozycji spoczynkowej.
 	float BoundingSphereRadius;
-	BOX BoundingBox;
+	Box BoundingBox;
 	Vec3 camera_pos, camera_target, camera_up;
-
-	uint real_bones;
 
 	static const uint VERSION = 21u;
 };

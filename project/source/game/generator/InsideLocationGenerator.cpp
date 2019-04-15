@@ -1226,6 +1226,7 @@ void InsideLocationGenerator::SpawnHeroesInsideDungeon()
 							slot.item = u.slots[i];
 							slot.count = slot.team_count = 1u;
 							u.weight -= u.slots[i]->weight;
+							u.RemoveItemEffects(u.slots[i], (ITEM_SLOT)i);
 							u.slots[i] = nullptr;
 						}
 					}

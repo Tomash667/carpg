@@ -5,13 +5,16 @@
 
 //-----------------------------------------------------------------------------
 vector<StatProfile*> StatProfile::profiles;
-const ITEM_TYPE StatProfile::Subprofile::default_priorities[SLOT_MAX] = { IT_WEAPON, IT_BOW, IT_ARMOR, IT_SHIELD };
+const float StatProfile::Subprofile::default_priorities[IT_MAX_WEARABLE] = { 1.f, 1.f, 1.f, 1.f, 1.f, 1.f };
+const float StatProfile::Subprofile::default_tag_priorities[TAG_MAX] = { 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f };
 
 //=================================================================================================
 StatProfile::Subprofile::Subprofile() : weapon_chance(), weapon_total(0), armor_chance(), armor_total(0), item_script(nullptr)
 {
-	for(int i = 0; i < SLOT_MAX; ++i)
+	for(int i = 0; i < IT_MAX_WEARABLE; ++i)
 		priorities[i] = default_priorities[i];
+	for(int i = 0; i < TAG_MAX; ++i)
+		tag_priorities[i] = default_tag_priorities[i];
 	for(int i = 0; i < StatProfile::MAX_TAGS; ++i)
 		tag_skills[i] = SkillId::NONE;
 	for(int i = 0; i < StatProfile::MAX_PERKS; ++i)

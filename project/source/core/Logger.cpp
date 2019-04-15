@@ -4,6 +4,7 @@
 
 //-----------------------------------------------------------------------------
 Logger* Logger::global;
+static std::set<int> once_id;
 const cstring Logger::level_names[4] = {
 	"INFO ",
 	"WARN ",
@@ -104,4 +105,14 @@ void PreLogger::Log(Level level, cstring text, const tm& time)
 void PreLogger::Flush()
 {
 	flush = true;
+}
+
+//-----------------------------------------------------------------------------
+void WarnOnce(int id, cstring msg)
+{
+	if(once_id.find(id) != once_id.end())
+	{
+		once_id.insert(id);
+		Warn(msg);
+	}
 }

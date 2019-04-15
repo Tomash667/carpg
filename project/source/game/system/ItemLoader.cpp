@@ -18,17 +18,19 @@ enum Group
 	G_ARMOR_TYPE,
 	G_ARMOR_UNIT_TYPE,
 	G_CONSUMABLE_TYPE,
-	G_EFFECT,
 	G_OTHER_TYPE,
 	G_STOCK_KEYWORD,
 	G_BOOK_SCHEME_PROPERTY,
-	G_SKILL
+	G_SKILL,
+	G_EFFECT,
+	G_TAG
 };
 
 enum Property
 {
 	P_WEIGHT,
 	P_VALUE,
+	P_AI_VALUE,
 	P_MESH,
 	P_TEX,
 	P_ATTACK,
@@ -41,13 +43,13 @@ enum Property
 	P_MOBILITY,
 	P_UNIT_TYPE,
 	P_TEX_OVERRIDE,
-	P_EFFECT,
-	P_POWER,
 	P_TIME,
 	P_SPEED,
 	P_SCHEME,
 	P_RUNIC,
-	P_BLOCK
+	P_BLOCK,
+	P_EFFECTS,
+	P_TAG
 	// max 32 bits
 };
 
@@ -106,6 +108,7 @@ void ItemLoader::InitTokenizer()
 		{ "shield", IT_SHIELD },
 		{ "armor", IT_ARMOR },
 		{ "amulet", IT_AMULET },
+		{ "ring", IT_RING },
 		{ "other", IT_OTHER },
 		{ "consumable", IT_CONSUMABLE },
 		{ "book", IT_BOOK },
@@ -122,6 +125,7 @@ void ItemLoader::InitTokenizer()
 	t.AddKeywords(G_PROPERTY, {
 		{ "weight", P_WEIGHT },
 		{ "value", P_VALUE },
+		{ "ai_value", P_AI_VALUE },
 		{ "mesh", P_MESH },
 		{ "tex", P_TEX },
 		{ "attack", P_ATTACK },
@@ -134,13 +138,13 @@ void ItemLoader::InitTokenizer()
 		{ "mobility", P_MOBILITY },
 		{ "unit_type", P_UNIT_TYPE },
 		{ "tex_override", P_TEX_OVERRIDE },
-		{ "effect", P_EFFECT },
-		{ "power", P_POWER },
 		{ "time", P_TIME },
 		{ "speed", P_SPEED },
 		{ "scheme", P_SCHEME },
 		{ "runic", P_RUNIC },
-		{ "block", P_BLOCK }
+		{ "block", P_BLOCK },
+		{ "effects", P_EFFECTS },
+		{ "tag", P_TAG }
 		});
 
 	t.AddKeywords(G_WEAPON_TYPE, {
@@ -176,13 +180,6 @@ void ItemLoader::InitTokenizer()
 		{ "not_blacksmith", ITEM_NOT_BLACKSMITH },
 		{ "mage", ITEM_MAGE },
 		{ "dont_drop", ITEM_DONT_DROP },
-		{ "backstab", ITEM_BACKSTAB },
-		{ "power1", ITEM_POWER_1 },
-		{ "power2", ITEM_POWER_2 },
-		{ "power3", ITEM_POWER_3 },
-		{ "power4", ITEM_POWER_4 },
-		{ "magic_resistance10", ITEM_MAGIC_RESISTANCE_10 },
-		{ "magic_resistance25", ITEM_MAGIC_RESISTANCE_25 },
 		{ "ground_mesh", ITEM_GROUND_MESH },
 		{ "crystal_sound", ITEM_CRYSTAL_SOUND },
 		{ "important", ITEM_IMPORTANT },
@@ -214,23 +211,6 @@ void ItemLoader::InitTokenizer()
 		{ "herb", (int)ConsumableType::Herb }
 		});
 
-	t.AddKeywords(G_EFFECT, {
-		{ "heal", E_HEAL },
-		{ "regenerate", E_REGENERATE },
-		{ "natural", E_NATURAL },
-		{ "antidote", E_ANTIDOTE },
-		{ "poison", E_POISON },
-		{ "alcohol", E_ALCOHOL },
-		{ "str", E_STR },
-		{ "end", E_END },
-		{ "dex", E_DEX },
-		{ "antimagic", E_ANTIMAGIC },
-		{ "food", E_FOOD },
-		{ "green_hair", E_GREEN_HAIR },
-		{ "stamina", E_STAMINA },
-		{ "stun", E_STUN }
-		});
-
 	t.AddKeywords(G_OTHER_TYPE, {
 		{ "tool", Tool },
 		{ "valuable", Valuable },
@@ -258,6 +238,19 @@ void ItemLoader::InitTokenizer()
 
 	for(Skill& si : Skill::skills)
 		t.AddKeyword(si.id, (int)si.skill_id, G_SKILL);
+
+	for(int i = 0; i < (int)EffectId::Max; ++i)
+		t.AddKeyword(EffectInfo::effects[i].id, i, G_EFFECT);
+
+	t.AddKeywords(G_TAG, {
+		{ "str", TAG_STR },
+		{ "dex", TAG_DEX },
+		{ "melee", TAG_MELEE },
+		{ "ranged", TAG_RANGED },
+		{ "def", TAG_DEF },
+		{ "stamina", TAG_STAMINA },
+		{ "mage", TAG_MAGE }
+		});
 }
 
 //=================================================================================================
@@ -310,32 +303,37 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 		t.Throw("Id must be unique.");
 
 	// create
-	int req = BIT(P_WEIGHT) | BIT(P_VALUE) | BIT(P_MESH) | BIT(P_TEX) | BIT(P_FLAGS);
+	int req = BIT(P_WEIGHT) | BIT(P_VALUE) | BIT(P_AI_VALUE) | BIT(P_MESH) | BIT(P_TEX) | BIT(P_FLAGS);
 	Ptr<Item> item(nullptr);
 	switch(type)
 	{
 	case IT_WEAPON:
 		item = new Weapon;
-		req |= BIT(P_ATTACK) | BIT(P_REQ_STR) | BIT(P_TYPE) | BIT(P_MATERIAL) | BIT(P_DMG_TYPE);
+		req |= BIT(P_ATTACK) | BIT(P_REQ_STR) | BIT(P_TYPE) | BIT(P_MATERIAL) | BIT(P_DMG_TYPE) | BIT(P_EFFECTS);
 		break;
 	case IT_BOW:
 		item = new Bow;
-		req |= BIT(P_ATTACK) | BIT(P_REQ_STR) | BIT(P_SPEED);
+		req |= BIT(P_ATTACK) | BIT(P_REQ_STR) | BIT(P_SPEED) | BIT(P_EFFECTS);
 		break;
 	case IT_SHIELD:
 		item = new Shield;
-		req |= BIT(P_BLOCK) | BIT(P_REQ_STR) | BIT(P_MATERIAL);
+		req |= BIT(P_BLOCK) | BIT(P_REQ_STR) | BIT(P_MATERIAL) | BIT(P_EFFECTS);
 		break;
 	case IT_ARMOR:
 		item = new Armor;
-		req |= BIT(P_DEFENSE) | BIT(P_MOBILITY) | BIT(P_REQ_STR) | BIT(P_MATERIAL) | BIT(P_UNIT_TYPE) | BIT(P_TYPE) | BIT(P_TEX_OVERRIDE);
+		req |= BIT(P_DEFENSE) | BIT(P_MOBILITY) | BIT(P_REQ_STR) | BIT(P_MATERIAL) | BIT(P_UNIT_TYPE) | BIT(P_TYPE) | BIT(P_TEX_OVERRIDE) | BIT(P_EFFECTS);
 		break;
 	case IT_AMULET:
 		item = new Amulet;
+		req |= BIT(P_EFFECTS) | BIT(P_TAG);
+		break;
+	case IT_RING:
+		item = new Ring;
+		req |= BIT(P_EFFECTS) | BIT(P_TAG);
 		break;
 	case IT_CONSUMABLE:
 		item = new Consumable;
-		req |= BIT(P_EFFECT) | BIT(P_TIME) | BIT(P_POWER) | BIT(P_TYPE);
+		req |= BIT(P_TIME) | BIT(P_TYPE) | BIT(P_EFFECTS);
 		break;
 	case IT_BOOK:
 		item = new Book;
@@ -359,8 +357,8 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 	if(t.IsSymbol(':'))
 	{
 		t.Next();
-		auto& parent_id = t.MustGetItem();
-		auto parent = Item::TryGet(parent_id);
+		const string& parent_id = t.MustGetItem();
+		Item* parent = Item::TryGet(parent_id);
 		if(!parent)
 			t.Throw("Missing parent item '%s'.", parent_id.c_str());
 		if(parent->type != type)
@@ -393,6 +391,11 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 			item->value = t.MustGetInt();
 			if(item->value < 0)
 				t.Throw("Can't have negative value %d.", item->value);
+			break;
+		case P_AI_VALUE:
+			item->ai_value = t.MustGetInt();
+			if(item->value < 0)
+				t.Throw("Can't have negative ai value %d.", item->ai_value);
 			break;
 		case P_MESH:
 			if(IS_SET(item->flags, ITEM_TEX_ONLY))
@@ -523,22 +526,10 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 					{
 						tex_o.push_back(TexId(t.MustGetString().c_str()));
 						t.Next();
-					}
-					while(!t.IsSymbol('}'));
+					} while(!t.IsSymbol('}'));
 				}
 				else
 					tex_o.push_back(TexId(t.MustGetString().c_str()));
-			}
-			break;
-		case P_EFFECT:
-			item->ToConsumable().effect = (ConsumeEffect)t.MustGetKeywordId(G_EFFECT);
-			break;
-		case P_POWER:
-			{
-				float power = t.MustGetNumberFloat();
-				if(power < 0.f)
-					t.Throw("Can't have negative power %g.", power);
-				item->ToConsumable().power = power;
 			}
 			break;
 		case P_TIME:
@@ -560,7 +551,7 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 		case P_SCHEME:
 			{
 				const string& str = t.MustGetText();
-				auto scheme = BookScheme::TryGet(str);
+				BookScheme* scheme = BookScheme::TryGet(str);
 				if(!scheme)
 					t.Throw("Book scheme '%s' not found.", str.c_str());
 				item->ToBook().scheme = scheme;
@@ -568,6 +559,68 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 			break;
 		case P_RUNIC:
 			item->ToBook().runic = t.MustGetBool();
+			break;
+		case P_EFFECTS:
+			t.AssertSymbol('{');
+			t.Next();
+			while(!t.IsSymbol('}'))
+			{
+				bool on_attack = false;
+				if(t.IsItem("on_attack"))
+				{
+					on_attack = true;
+					t.Next();
+				}
+				EffectId effect = (EffectId)t.MustGetKeywordId(G_EFFECT);
+				t.Next();
+				int effect_value;
+				EffectInfo& info = EffectInfo::effects[(int)effect];
+				if(info.value_type != EffectInfo::None)
+				{
+					if(info.value_type == EffectInfo::Attribute)
+					{
+						const string& value = t.MustGetItemKeyword();
+						Attribute* attrib = Attribute::Find(value);
+						if(!attrib)
+							t.Throw("Invalid attribute '%s' for effect '%s'.", value.c_str(), info.id);
+						effect_value = (int)attrib->attrib_id;
+					}
+					else
+						effect_value = t.MustGetKeywordId(G_SKILL);
+					t.Next();
+				}
+				else
+					effect_value = -1;
+				float power = t.MustGetNumberFloat();
+				t.Next();
+				item->effects.push_back({ effect, power, effect_value, on_attack });
+			}
+			break;
+		case P_TAG:
+			{
+				ItemTag* tags;
+				if(item->type == IT_AMULET)
+					tags = item->ToAmulet().tag;
+				else
+					tags = item->ToRing().tag;
+				for(int i = 0; i < MAX_ITEM_TAGS; ++i)
+					tags[i] = TAG_NONE;
+				if(t.IsSymbol('{'))
+				{
+					t.Next();
+					int index = 0;
+					while(!t.IsSymbol('}'))
+					{
+						if(index >= MAX_ITEM_TAGS)
+							t.Throw("Too many item tags.");
+						tags[index] = (ItemTag)t.MustGetKeywordId(G_TAG);
+						++index;
+						t.Next();
+					}
+				}
+				else
+					tags[0] = (ItemTag)t.MustGetKeywordId(G_TAG);
+			}
 			break;
 		default:
 			assert(0);
@@ -580,7 +633,7 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 	if(item->mesh_id.empty())
 		t.Throw("No mesh/texture.");
 
-	auto item_ptr = item.Pin();
+	Item* item_ptr = item.Pin();
 	Item::items.insert(it, ItemsMap::value_type(item_ptr->id.c_str(), item_ptr));
 
 	switch(item_ptr->type)
@@ -600,8 +653,25 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 	case IT_AMULET:
 		Amulet::amulets.push_back(static_cast<Amulet*>(item_ptr));
 		break;
+	case IT_RING:
+		Ring::rings.push_back(static_cast<Ring*>(item_ptr));
+		break;
 	case IT_CONSUMABLE:
-		Consumable::consumables.push_back(static_cast<Consumable*>(item_ptr));
+		{
+			Consumable* consumable = static_cast<Consumable*>(item_ptr);
+			if(consumable->cons_type == Potion)
+			{
+				for(ItemEffect& e : consumable->effects)
+				{
+					if(e.effect == EffectId::Heal && e.power > 0.f)
+					{
+						consumable->is_healing_potion = true;
+						break;
+					}
+				}
+			}
+			Consumable::consumables.push_back(consumable);
+		}
 		break;
 	case IT_OTHER:
 		{
@@ -630,7 +700,7 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 //=================================================================================================
 void ItemLoader::ParseItemList(const string& id)
 {
-	auto existing_list = ItemList::TryGet(id);
+	ItemListResult existing_list = ItemList::TryGet(id);
 	if(existing_list)
 		t.Throw("Id must be unique.");
 
@@ -646,8 +716,8 @@ void ItemLoader::ParseItemList(const string& id)
 
 	while(!t.IsSymbol('}'))
 	{
-		auto& item_id = t.MustGetItemKeyword();
-		auto item = Item::TryGet(item_id);
+		const string& item_id = t.MustGetItemKeyword();
+		Item* item = Item::TryGet(item_id);
 		if(!item)
 			t.Throw("Missing item %s.", item_id.c_str());
 		lis->items.push_back(item);
@@ -660,7 +730,7 @@ void ItemLoader::ParseItemList(const string& id)
 //=================================================================================================
 void ItemLoader::ParseLeveledItemList(const string& id)
 {
-	auto existing_list = ItemList::TryGet(id);
+	ItemListResult existing_list = ItemList::TryGet(id);
 	if(existing_list)
 		t.Throw("Id must be unique.");
 
@@ -676,7 +746,7 @@ void ItemLoader::ParseLeveledItemList(const string& id)
 
 	while(!t.IsSymbol('}'))
 	{
-		auto item = Item::TryGet(t.MustGetItemKeyword());
+		Item* item = Item::TryGet(t.MustGetItemKeyword());
 		if(!item)
 			t.Throw("Missing item '%s'.", t.GetTokenString().c_str());
 
@@ -695,13 +765,12 @@ void ItemLoader::ParseLeveledItemList(const string& id)
 //=================================================================================================
 void ItemLoader::ParseStock(const string& id)
 {
-	auto existing_stock = Stock::TryGet(id);
+	Stock* existing_stock = Stock::TryGet(id);
 	if(existing_stock)
 		t.Throw("Id must be unique.");
 
 	Ptr<Stock> stock;
 	bool in_set = false, in_city = false, in_city_else;
-	const ItemList* lis;
 
 	// id
 	stock->id = t.MustGetItemKeyword();
@@ -770,20 +839,9 @@ void ItemLoader::ParseStock(const string& id)
 				}
 				else if(t.IsItem())
 				{
-					const Item* item = GetItemOrList(lis);
 					stock->code.push_back(SE_CITY);
 					stock->code.push_back(SE_ADD);
-					if(lis != nullptr)
-					{
-						stock->code.push_back(SE_LIST);
-						stock->code.push_back((int)lis);
-					}
-					else
-					{
-						stock->code.push_back(SE_ITEM);
-						stock->code.push_back((int)item);
-					}
-					t.Next();
+					ParseItemOrList(stock);
 					stock->code.push_back(SE_ANY_CITY);
 				}
 				else
@@ -804,18 +862,7 @@ void ItemLoader::ParseStock(const string& id)
 					int count = 0, chance = 0;
 					while(!t.IsSymbol('}'))
 					{
-						const Item* item = GetItemOrList(lis);
-						if(lis != nullptr)
-						{
-							stock->code.push_back(SE_LIST);
-							stock->code.push_back((int)lis);
-						}
-						else
-						{
-							stock->code.push_back(SE_ITEM);
-							stock->code.push_back((int)item);
-						}
-						t.Next();
+						ParseItemOrList(stock);
 						int ch = t.MustGetInt();
 						if(ch <= 0)
 							t.Throw("Negative chance %d.", ch);
@@ -838,19 +885,8 @@ void ItemLoader::ParseStock(const string& id)
 					stock->code.push_back(2);
 					for(int i = 0; i < 2; ++i)
 					{
-						const Item* item = GetItemOrList(lis);
-						if(lis != nullptr)
-						{
-							stock->code.push_back(SE_LIST);
-							stock->code.push_back((int)lis);
-						}
-						else
-						{
-							stock->code.push_back(SE_ITEM);
-							stock->code.push_back((int)item);
-						}
+						ParseItemOrList(stock);
 						stock->code.push_back(1);
-						t.Next();
 					}
 				}
 				break;
@@ -860,8 +896,8 @@ void ItemLoader::ParseStock(const string& id)
 					int a = t.MustGetInt();
 					t.Next();
 					int b = t.MustGetInt();
-					if(a >= b || a < 1 || b < 1)
-						t.Throw("Invalid Random values (%d, %d).", a, b);
+					if(a >= b || a < 0 || b < 1)
+						t.Throw("Invalid random values (%d, %d).", a, b);
 					t.Next();
 
 					StockEntry type = SE_RANDOM;
@@ -874,19 +910,7 @@ void ItemLoader::ParseStock(const string& id)
 					stock->code.push_back(type);
 					stock->code.push_back(a);
 					stock->code.push_back(b);
-
-					const Item* item = GetItemOrList(lis);
-					if(lis != nullptr)
-					{
-						stock->code.push_back(SE_LIST);
-						stock->code.push_back((int)lis);
-					}
-					else
-					{
-						stock->code.push_back(SE_ITEM);
-						stock->code.push_back((int)item);
-					}
-					t.Next();
+					ParseItemOrList(stock);
 				}
 				break;
 			case SK_SCRIPT:
@@ -924,37 +948,13 @@ void ItemLoader::ParseStock(const string& id)
 
 			stock->code.push_back(type);
 			stock->code.push_back(count);
-
-			const Item* item = GetItemOrList(lis);
-			if(lis != nullptr)
-			{
-				stock->code.push_back(SE_LIST);
-				stock->code.push_back((int)lis);
-			}
-			else
-			{
-				stock->code.push_back(SE_ITEM);
-				stock->code.push_back((int)item);
-			}
-			t.Next();
+			ParseItemOrList(stock);
 		}
 		else if(t.IsItem())
 		{
 			// item
 			stock->code.push_back(SE_ADD);
-
-			const Item* item = GetItemOrList(lis);
-			if(lis != nullptr)
-			{
-				stock->code.push_back(SE_LIST);
-				stock->code.push_back((int)lis);
-			}
-			else
-			{
-				stock->code.push_back(SE_ITEM);
-				stock->code.push_back((int)item);
-			}
-			t.Next();
+			ParseItemOrList(stock);
 		}
 		else
 			t.Unexpected();
@@ -967,28 +967,38 @@ void ItemLoader::ParseStock(const string& id)
 }
 
 //=================================================================================================
-const Item* ItemLoader::GetItemOrList(const ItemList*& lis)
+void ItemLoader::ParseItemOrList(Stock* stock)
 {
 	ItemListResult result;
-	const string& item_id = t.GetItem();
+	const string& item_id = t.MustGetItemKeyword();
 	const Item* item = FindItemOrList(item_id, result);
 	if(result.lis != nullptr)
 	{
 		if(result.is_leveled)
-			t.Throw("Can't use leveled list '%s' in stock script.", item_id.c_str());
-		lis = result.lis;
-		return nullptr;
+		{
+			stock->code.push_back(SE_LEVELED_LIST);
+			stock->code.push_back((int)result.llis);
+		}
+		else
+		{
+			stock->code.push_back(SE_LIST);
+			stock->code.push_back((int)result.lis);
+		}
 	}
-	else if(!item)
-		t.Throw("Missing item '%s'.", item_id.c_str());
-	lis = nullptr;
-	return item;
+	else if(item)
+	{
+		stock->code.push_back(SE_ITEM);
+		stock->code.push_back((int)item);
+	}
+	else
+		t.Throw("Missing item or list '%s'.", item_id.c_str());
+	t.Next();
 }
 
 //=================================================================================================
 void ItemLoader::ParseBookScheme(const string& id)
 {
-	auto existing_scheme = BookScheme::TryGet(id);
+	BookScheme* existing_scheme = BookScheme::TryGet(id);
 	if(existing_scheme)
 		t.Throw("Id must be unique.");
 
@@ -1112,14 +1122,14 @@ void ItemLoader::ParseBetterItems()
 
 	while(!t.IsSymbol('}'))
 	{
-		auto& str = t.MustGetItemKeyword();
-		auto item = Item::TryGet(str);
+		const string& str = t.MustGetItemKeyword();
+		Item* item = Item::TryGet(str);
 		if(!item)
 			t.Throw("Missing item '%s'.", str.c_str());
 		t.Next();
 
-		auto& str2 = t.MustGetItemKeyword();
-		auto item2 = Item::TryGet(str2);
+		const string& str2 = t.MustGetItemKeyword();
+		Item* item2 = Item::TryGet(str2);
 		if(!item2)
 			t.Throw("Missing item '%s'.", str2.c_str());
 
@@ -1131,13 +1141,13 @@ void ItemLoader::ParseBetterItems()
 //=================================================================================================
 void ItemLoader::ParseAlias(const string& id)
 {
-	auto item = Item::TryGet(id);
+	Item* item = Item::TryGet(id);
 	if(!item)
 		t.Throw("Missing item '%s'.", id.c_str());
 	t.Next();
 
-	auto& alias = t.MustGetItemKeyword();
-	auto item2 = Item::TryGet(alias);
+	const string& alias = t.MustGetItemKeyword();
+	Item* item2 = Item::TryGet(alias);
 	if(item2)
 		t.Throw("Can't create alias '%s', already exists.", alias.c_str());
 
@@ -1154,11 +1164,14 @@ void ItemLoader::CalculateCrc()
 		Item* item = it.second;
 
 		crc.Update(item->id);
+		crc.Update(item->value);
+		crc.Update(item->ai_value);
 		crc.Update(item->mesh_id);
 		crc.Update(item->weight);
 		crc.Update(item->value);
 		crc.Update(item->flags);
 		crc.Update(item->type);
+		crc.Update(item->effects);
 
 		switch(item->type)
 		{
@@ -1202,11 +1215,21 @@ void ItemLoader::CalculateCrc()
 					crc.Update(t.id);
 			}
 			break;
+		case IT_AMULET:
+			{
+				Amulet& a = item->ToAmulet();
+				crc.Update(a.tag);
+			}
+			break;
+		case IT_RING:
+			{
+				Ring& r = item->ToRing();
+				crc.Update(r.tag);
+			}
+			break;
 		case IT_CONSUMABLE:
 			{
 				Consumable& c = item->ToConsumable();
-				crc.Update(c.effect);
-				crc.Update(c.power);
 				crc.Update(c.time);
 				crc.Update(c.cons_type);
 			}
@@ -1224,7 +1247,6 @@ void ItemLoader::CalculateCrc()
 			}
 			break;
 		case IT_GOLD:
-		case IT_AMULET:
 			break;
 		default:
 			assert(0);
@@ -1232,7 +1254,7 @@ void ItemLoader::CalculateCrc()
 		}
 	}
 
-	for(auto lis : ItemList::lists)
+	for(ItemList* lis : ItemList::lists)
 	{
 		crc.Update(lis->id);
 		crc.Update(lis->items.size());
@@ -1240,7 +1262,7 @@ void ItemLoader::CalculateCrc()
 			crc.Update(i->id);
 	}
 
-	for(auto lis : LeveledItemList::lists)
+	for(LeveledItemList* lis : LeveledItemList::lists)
 	{
 		crc.Update(lis->id);
 		crc.Update(lis->items.size());

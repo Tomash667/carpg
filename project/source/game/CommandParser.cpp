@@ -77,6 +77,7 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f)
 			f.ReadCasted<char>(e.effect);
 			f.ReadCasted<char>(e.source);
 			f.ReadCasted<char>(e.source_id);
+			f.ReadCasted<char>(e.value);
 			f >> e.power;
 			f >> e.time;
 
@@ -98,9 +99,17 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f)
 			}
 			if(e.source == EffectSource::Perk)
 			{
-				if(e.source_id >= (int)Perk::Max)
+				if(e.source_id < 0 || e.source_id >= (int)Perk::Max)
 				{
 					Error("CommandParser CMD_ADD_EFFECT: Invalid source id %d for perk source.", e.source_id);
+					return false;
+				}
+			}
+			else if(e.source == EffectSource::Item)
+			{
+				if(e.source_id < 0 || e.source_id >= SLOT_MAX)
+				{
+					Error("CommandParser CMD_ADD_EFFECT: Invalid source id %d for item source.", e.source_id);
 					return false;
 				}
 			}
@@ -115,6 +124,20 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f)
 				return false;
 			}
 
+			EffectInfo& info = EffectInfo::effects[(int)e.effect];
+			bool ok_value;
+			if(info.value_type == EffectInfo::None)
+				ok_value = (e.value == -1);
+			else if(info.value_type == EffectInfo::Attribute)
+				ok_value = (e.value >= 0 && e.value < (int)AttributeId::MAX);
+			else
+				ok_value = (e.value >= 0 && e.value < (int)SkillId::MAX);
+			if(!ok_value)
+			{
+				Error("CommandParser CMD_ADD_EFFECT: Invalid value %d for effect %s.", e.value, info.id);
+				return false;
+			}
+
 			unit->AddEffect(e);
 		}
 		break;
@@ -124,11 +147,13 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f)
 			EffectId effect;
 			EffectSource source;
 			int source_id;
+			int value;
 
 			f >> netid;
 			f.ReadCasted<char>(effect);
 			f.ReadCasted<char>(source);
 			f.ReadCasted<char>(source_id);
+			f.ReadCasted<char>(value);
 
 			Unit* unit = L.FindUnit(netid);
 			if(!unit)
@@ -148,9 +173,17 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f)
 			}
 			if(source == EffectSource::Perk)
 			{
-				if(source_id >= (int)Perk::Max)
+				if(source_id < 0 || source_id >= (int)Perk::Max)
 				{
 					Error("CommandParser CMD_REMOVE_EFFECT: Invalid source id %d for perk source.", source_id);
+					return false;
+				}
+			}
+			else if(source == EffectSource::Item)
+			{
+				if(source_id < 0 || source_id >= SLOT_MAX)
+				{
+					Error("CommandParser CMD_REMOVE_EFFECT: Invalid source id %d for item source.", source_id);
 					return false;
 				}
 			}
@@ -160,7 +193,24 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f)
 				return false;
 			}
 
-			RemoveEffect(unit, effect, source, source_id);
+			if((int)effect >= 0)
+			{
+				EffectInfo& info = EffectInfo::effects[(int)effect];
+				bool ok_value;
+				if(info.value_type == EffectInfo::None)
+					ok_value = (value == -1);
+				else if(info.value_type == EffectInfo::Attribute)
+					ok_value = (value >= 0 && value < (int)AttributeId::MAX);
+				else
+					ok_value = (value >= 0 && value < (int)SkillId::MAX);
+				if(!ok_value)
+				{
+					Error("CommandParser CMD_REMOVE_EFFECT: Invalid value %d for effect %s.", value, info.id);
+					return false;
+				}
+			}
+
+			RemoveEffect(unit, effect, source, source_id, value);
 		}
 		break;
 	case CMD_LIST_EFFECTS:
@@ -338,7 +388,7 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f)
 				Error("CommandParser CMD_ADD_LEARNING_POINTS: Invalid count %d.", count);
 				return false;
 			}
-			
+
 			unit->player->AddLearningPoint(count);
 		}
 		break;
@@ -349,9 +399,9 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f)
 	return true;
 }
 
-void CommandParser::RemoveEffect(Unit* u, EffectId effect, EffectSource source, int source_id)
+void CommandParser::RemoveEffect(Unit* u, EffectId effect, EffectSource source, int source_id, int value)
 {
-	uint removed = u->RemoveEffects(effect, source, source_id);
+	uint removed = u->RemoveEffects(effect, source, source_id, value);
 	Msg("%u effects removed.", removed);
 }
 
@@ -367,7 +417,14 @@ void CommandParser::ListEffects(Unit* u)
 	s = Format("Unit effects (%u):", u->effects.size());
 	for(Effect& e : u->effects)
 	{
-		s += Format("\n%s, power %g, source ", EffectInfo::effects[(int)e.effect].id, e.power);
+		EffectInfo& info = EffectInfo::effects[(int)e.effect];
+		s += '\n';
+		s += info.id;
+		if(info.value_type == EffectInfo::Attribute)
+			s += Format("(%s)", Attribute::attributes[e.value].id);
+		else if(info.value_type == EffectInfo::Skill)
+			s += Format("(%s)", Skill::skills[e.value].id);
+		s += Format(", power %g, source ", e.power);
 		switch(e.source)
 		{
 		case EffectSource::Temporary:
@@ -378,6 +435,14 @@ void CommandParser::ListEffects(Unit* u)
 			break;
 		case EffectSource::Permanent:
 			s += "permanent";
+			break;
+		case EffectSource::Item:
+			s += "item (";
+			if(e.source_id < 0 || e.source_id >= SLOT_MAX)
+				s += Format("invalid %d", e.source_id);
+			else
+				s += ItemSlotInfo::slots[e.source_id].id;
+			s += ')';
 			break;
 		}
 	}
@@ -418,6 +483,11 @@ void CommandParser::ListPerks(PlayerController* pc)
 	Msg(s.c_str());
 }
 
+int ConvertResistance(float value)
+{
+	return (int)round((1.f - value) * 100);
+}
+
 void CommandParser::ListStats(Unit* u)
 {
 	int hp = int(u->hp);
@@ -434,27 +504,54 @@ void CommandParser::ListStats(Unit* u)
 	}
 	Msg("Health: %d/%d (bonus: %+g, regeneration: %+g/sec, natural: x%g)", hp, (int)u->hpmax, u->GetEffectSum(EffectId::Health),
 		u->GetEffectSum(EffectId::Regeneration), u->GetEffectMul(EffectId::NaturalHealingMod));
-	Msg("Stamina: %d/%d", (int)u->stamina, (int)u->stamina_max);
-	Msg("Melee attack: %s (bonus: %+g), ranged: %s (bonus: %+g)",
+	Msg("Stamina: %d/%d (bonus: %+g, regeneration: %+g/sec, mod: x%g)", (int)u->stamina, (int)u->stamina_max, u->GetEffectSum(EffectId::Stamina),
+		u->GetEffectMax(EffectId::StaminaRegeneration), u->GetEffectMul(EffectId::StaminaRegenerationMod));
+	Msg("Melee attack: %s (bonus: %+g, backstab: x%g), ranged: %s (bonus: %+g, backstab: x%g)",
 		(u->HaveWeapon() || u->data->type == UNIT_TYPE::ANIMAL) ? Format("%d", (int)u->CalculateAttack()) : "-",
 		u->GetEffectSum(EffectId::MeleeAttack),
+		1.f + u->GetBackstabMod(u->slots[SLOT_WEAPON]),
 		u->HaveBow() ? Format("%d", (int)u->CalculateAttack(&u->GetBow())) : "-",
-		u->GetEffectSum(EffectId::RangedAttack));
+		u->GetEffectSum(EffectId::RangedAttack),
+		1.f + u->GetBackstabMod(u->slots[SLOT_BOW]));
 	Msg("Defense %d (bonus: %+g), block: %s", (int)u->CalculateDefense(), u->GetEffectSum(EffectId::Defense),
-		u->HaveShield() ? Format("%d", (int)u->CalculateBlock()) : "");
+		u->HaveShield() ? Format("%d", (int)u->CalculateBlock()) : "-");
 	Msg("Mobility: %d (bonus %+g)", (int)u->CalculateMobility(), u->GetEffectSum(EffectId::Mobility));
 	Msg("Carry: %g/%g (mod: x%g)", float(u->weight) / 10, float(u->weight_max) / 10, u->GetEffectMul(EffectId::Carry));
-	Msg("Magic resistance: %d%%", (int)((1.f - u->CalculateMagicResistance()) * 100));
-	Msg("Poison resistance: %d%%", (int)((1.f - u->GetEffectMul(EffectId::PoisonResistance)) * 100));
+	Msg("Magic resistance: %d%%, magic power: %+d", ConvertResistance(u->CalculateMagicResistance()), u->CalculateMagicPower());
+	Msg("Poison resistance: %d%%", ConvertResistance(u->GetPoisonResistance()));
 	LocalString s = "Attributes: ";
 	for(int i = 0; i < (int)AttributeId::MAX; ++i)
-		s += Format("%s:%d ", Attribute::attributes[i].id, u->stats->attrib[i]);
+	{
+		int value = u->Get((AttributeId)i);
+		float bonus = 0;
+		for(Effect& e : u->effects)
+		{
+			if(e.effect == EffectId::Attribute && e.value == i)
+				bonus += e.power;
+		}
+		if(bonus == 0)
+			s += Format("%s:%d ", Attribute::attributes[i].id, value);
+		else
+			s += Format("%s:%d(%+g) ", Attribute::attributes[i].id, value, bonus);
+	}
 	Msg(s.c_str());
 	s = "Skills: ";
 	for(int i = 0; i < (int)SkillId::MAX; ++i)
 	{
-		if(u->stats->skill[i] > 0)
-			s += Format("%s:%d ", Skill::skills[i].id, u->stats->skill[i]);
+		int value = u->Get((SkillId)i, nullptr, false);
+		if(value > 0)
+		{
+			float bonus = 0;
+			for(Effect& e : u->effects)
+			{
+				if(e.effect == EffectId::Skill && e.value == i)
+					bonus += e.power;
+			}
+			if(bonus == 0)
+				s += Format("%s:%d ", Skill::skills[i].id, value);
+			else
+				s += Format("%s:%d(%+g)", Skill::skills[i].id, value, bonus);
+		}
 	}
 	Msg(s.c_str());
 }

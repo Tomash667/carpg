@@ -2,18 +2,6 @@
 
 //-----------------------------------------------------------------------------
 // Macros
-#define BIT(bit) (1<<(bit))
-#define IS_SET(flags,bit) (((flags) & (bit)) != 0)
-#define IS_CLEAR(flags,bit) (((flags) & (bit)) == 0)
-#define IS_ALL_SET(flags,bity) (((flags) & (bity)) == (bity))
-#define SET_BIT(flags,bit) ((flags) |= (bit))
-#define CLEAR_BIT(flags,bit) ((flags) &= ~(bit))
-#define SET_BIT_VALUE(flags,bit,wartos) { if(wartos) SET_BIT(flags,bit); else CLEAR_BIT(flags,bit); }
-#define COPY_BIT(flags,flags2,bit) { if(((flags2) & (bit)) != 0) SET_BIT(flags,bit); else CLEAR_BIT(flags,bit); }
-#define FLT10(x) (float(int((x)*10))/10)
-#define FLT100(x) (float(int((x)*100))/100)
-#define OR2_EQ(var,val1,val2) (((var) == (val1)) || ((var) == (val2)))
-#define OR3_EQ(var,val1,val2,val3) (((var) == (val1)) || ((var) == (val2)) || ((var) == (val3)))
 #ifndef STRING
 #	define _STRING(str) #str
 #	define STRING(str) _STRING(str)
@@ -22,6 +10,20 @@
 #define JOIN(a,b) _JOIN(a,b)
 
 //-----------------------------------------------------------------------------
+constexpr int BIT(int a) { return 1 << a; }
+constexpr bool IS_SET(int flags, int bit) { return (flags & bit) != 0; }
+constexpr bool IS_CLEAR(int flags, int bit) { return (flags & bit) == 0; }
+constexpr bool IS_ALL_SET(int flags, int bits) { return (flags & bits) == bits; }
+constexpr void SET_BIT(int& flags, int bit) { flags |= bit; }
+constexpr void CLEAR_BIT(int& flags, int bit) { flags &= ~bit; }
+constexpr void SET_BIT_VALUE(int& flags, int bit, bool value) { if(value) SET_BIT(flags, bit); else CLEAR_BIT(flags, bit); }
+constexpr void COPY_BIT(int& flags, int flags2, int bit) { if((flags2 & bit) != 0) SET_BIT(flags, bit); else CLEAR_BIT(flags, bit); }
+constexpr float FLT10(float a) { return float(int(a * 10) / 10); }
+constexpr float FLT100(float a) { return float(int(a * 100) / 100); }
+template<typename T, typename T1, typename T2>
+constexpr bool OR2_EQ(const T& var, const T1& val1, const T2& val2) { return var == val1 || var == val2; }
+template<typename T, typename T1, typename T2, typename T3>
+constexpr bool OR3_EQ(const T& var, const T1& val1, const T2& val2, const T3& val3) { return var == val1 || var == val2 || var == val3; }
 template<class T, size_t N>
 constexpr size_t countof(T(&)[N]) { return N; }
 

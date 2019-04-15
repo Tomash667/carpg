@@ -91,3 +91,7 @@ perk perfect_health {
 	name "Perfekcyjne zdrowie"
 	desc "Zapewnia 5 punktów na sekundê regeneracji zdrowia."
 }
+perk energetic {
+	name "Energiczny"
+	desc "+100 do wytrzyma³oœci."
+}

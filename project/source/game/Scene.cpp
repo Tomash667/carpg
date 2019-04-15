@@ -4185,8 +4185,8 @@ void Game::DrawAreas(const vector<Area>& areas, float range, const vector<Area2*
 	V(eArea->Begin(&passes, 0));
 	V(eArea->BeginPass(0));
 
-	for(auto& area : areas)
-		V(device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, area.v[0], sizeof(Vec3)));
+	for(const Area& area : areas)
+		V(device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, (const void*)&area.v[0], sizeof(Vec3)));
 
 	V(eArea->EndPass());
 	V(eArea->End());

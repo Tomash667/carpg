@@ -92,12 +92,11 @@ float Unit::CalculateMaxHp() const
 //=================================================================================================
 float Unit::CalculateMaxStamina() const
 {
+	float stamina = (float)data->stamina + GetEffectSum(EffectId::Stamina);
 	if(IS_SET(data->flags2, F2_FIXED_STATS))
-		return (float)data->stamina;
+		return stamina;
 	float v = 0.6f*Get(AttributeId::END) + 0.4f*Get(AttributeId::DEX);
-	return (float)data->stamina
-		+ 250.f
-		+ v * 2.f;
+	return stamina + 250.f + v * 2.f;
 }
 
 //=================================================================================================
@@ -272,6 +271,18 @@ void Unit::SetGold(int new_gold)
 }
 
 //=================================================================================================
+bool Unit::CanWear(const Item* item) const
+{
+	if(item->IsWearable())
+	{
+		if(item->type == IT_ARMOR)
+			return item->ToArmor().armor_unit_type == data->armor_type;
+		return true;
+	}
+	return false;
+}
+
+//=================================================================================================
 bool Unit::DropItem(int index)
 {
 	bool no_more = false;
@@ -350,6 +361,8 @@ void Unit::DropItem(ITEM_SLOT slot)
 
 	if(Net::IsLocal())
 	{
+		RemoveItemEffects(item2, slot);
+
 		GroundItem* item = new GroundItem;
 		item->item = item2;
 		item->count = 1;
@@ -809,7 +822,23 @@ void Unit::AddItem2(const Item* item, uint count, uint team_count, bool show_msg
 void Unit::AddEffect(Effect& e, bool send)
 {
 	effects.push_back(e);
+	OnAddRemoveEffect(e);
+	if(send && player && !player->IsLocal() && Net::IsServer())
+	{
+		NetChangePlayer& c = Add1(player->player_info->changes);
+		c.type = NetChangePlayer::ADD_EFFECT;
+		c.id = (int)e.effect;
+		c.count = (int)e.source;
+		c.a1 = e.source_id;
+		c.a2 = e.value;
+		c.pos.x = e.power;
+		c.pos.y = e.time;
+	}
+}
 
+//=================================================================================================
+void Unit::OnAddRemoveEffect(Effect& e)
+{
 	switch(e.effect)
 	{
 	case EffectId::Health:
@@ -818,139 +847,150 @@ void Unit::AddEffect(Effect& e, bool send)
 	case EffectId::Carry:
 		CalculateLoad();
 		break;
+	case EffectId::Stamina:
+		RecalculateStamina();
+		break;
+	case EffectId::Attribute:
+		ApplyStat((AttributeId)e.value);
+		break;
 	}
+}
 
-	if(send && player && !player->IsLocal() && Net::IsServer())
+//=================================================================================================
+void Unit::ApplyItemEffects(const Item* item, ITEM_SLOT slot)
+{
+	if(item->effects.empty())
+		return;
+	for(const ItemEffect& e : item->effects)
 	{
-		NetChangePlayer& c = Add1(player->player_info->changes);
-		c.type = NetChangePlayer::ADD_EFFECT;
-		c.id = (int)e.effect;
-		c.count = (int)e.source;
-		c.a = e.source_id;
-		c.pos.x = e.power;
-		c.pos.y = e.time;
+		if(e.on_attack)
+			continue;
+		Effect effect;
+		effect.effect = e.effect;
+		effect.power = e.power;
+		effect.source = EffectSource::Item;
+		effect.source_id = (int)slot;
+		effect.value = e.value;
+		effect.time = 0.f;
+		AddEffect(effect);
 	}
+}
+
+//=================================================================================================
+void Unit::RemoveItemEffects(const Item* item, ITEM_SLOT slot)
+{
+	if(item->effects.empty())
+		return;
+	RemoveEffects(EffectId::None, EffectSource::Item, (int)slot, -1);
 }
 
 //=================================================================================================
 void Unit::ApplyConsumableEffect(const Consumable& item)
 {
-	switch(item.effect)
+	for(const ItemEffect& effect : item.effects)
 	{
-	case E_HEAL:
-		hp += item.power;
-		if(hp > hpmax)
-			hp = hpmax;
-		if(Net::IsOnline())
+		switch(effect.effect)
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::UPDATE_HP;
-			c.unit = this;
-		}
-		break;
-	case E_POISON:
-	case E_ALCOHOL:
-		{
-			float poison_res = GetPoisonResistance();
-			if(poison_res > 0.f)
-			{
-				Effect e;
-				e.effect = item.ToEffect();
-				e.source = EffectSource::Temporary;
-				e.source_id = -1;
-				e.time = item.time;
-				e.power = item.power / item.time * poison_res;
-				AddEffect(e);
-			}
-		}
-		break;
-	case E_REGENERATE:
-	case E_NATURAL:
-	case E_ANTIMAGIC:
-	case E_STAMINA:
-		{
-			Effect e;
-			e.effect = item.ToEffect();
-			e.source = EffectSource::Temporary;
-			e.source_id = -1;
-			e.time = item.time;
-			e.power = item.power;
-			AddEffect(e);
-		}
-		break;
-	case E_ANTIDOTE:
-		{
-			uint index = 0;
-			for(vector<Effect>::iterator it = effects.begin(), end = effects.end(); it != end; ++it, ++index)
-			{
-				if(it->effect == EffectId::Poison || it->effect == EffectId::Alcohol)
-					_to_remove.push_back(index);
-			}
-
-			RemoveEffects();
-
-			if(alcohol != 0.f)
-			{
-				alcohol = 0.f;
-				if(IsPlayer() && !player->is_local)
-					player->player_info->update_flags |= PlayerInfo::UF_ALCOHOL;
-			}
-		}
-		break;
-	case E_NONE:
-		break;
-	case E_STR:
-		if(IsPlayer())
-			player->Train(false, (int)AttributeId::STR, TrainMode::Potion);
-		break;
-	case E_END:
-		if(IsPlayer())
-			player->Train(false, (int)AttributeId::END, TrainMode::Potion);
-		break;
-	case E_DEX:
-		if(IsPlayer())
-			player->Train(false, (int)AttributeId::DEX, TrainMode::Potion);
-		break;
-	case E_FOOD:
-		{
-			Effect e;
-			e.effect = item.ToEffect();
-			e.source = EffectSource::Temporary;
-			e.source_id = -1;
-			e.time = item.power;
-			e.power = 1.f;
-			AddEffect(e);
-		}
-		break;
-	case E_GREEN_HAIR:
-		if(human_data)
-		{
-			human_data->hair_color = Vec4(0, 1, 0, 1);
+		case EffectId::Heal:
+			hp += effect.power;
+			if(hp > hpmax)
+				hp = hpmax;
 			if(Net::IsOnline())
 			{
 				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::HAIR_COLOR;
+				c.type = NetChange::UPDATE_HP;
 				c.unit = this;
 			}
+			break;
+		case EffectId::Poison:
+		case EffectId::Alcohol:
+			{
+				float poison_res = GetPoisonResistance();
+				if(poison_res > 0.f)
+				{
+					Effect e;
+					e.effect = effect.effect;
+					e.source = EffectSource::Temporary;
+					e.source_id = -1;
+					e.value = -1;
+					e.time = item.time;
+					e.power = effect.power / item.time * poison_res;
+					AddEffect(e);
+				}
+			}
+			break;
+		case EffectId::Antidote:
+			{
+				uint index = 0;
+				for(vector<Effect>::iterator it = effects.begin(), end = effects.end(); it != end; ++it, ++index)
+				{
+					if(it->effect == EffectId::Poison || it->effect == EffectId::Alcohol)
+						_to_remove.push_back(index);
+				}
+
+				RemoveEffects();
+
+				if(alcohol != 0.f)
+				{
+					alcohol = 0.f;
+					if(IsPlayer() && !player->is_local)
+						player->player_info->update_flags |= PlayerInfo::UF_ALCOHOL;
+				}
+			}
+			break;
+		case EffectId::FoodRegeneration:
+			{
+				Effect e;
+				e.effect = effect.effect;
+				e.source = EffectSource::Temporary;
+				e.source_id = -1;
+				e.value = -1;
+				e.time = item.time;
+				e.power = effect.power / item.time;
+				AddEffect(e);
+			}
+			break;
+		case EffectId::GreenHair:
+			if(human_data)
+			{
+				human_data->hair_color = Vec4(0, 1, 0, 1);
+				if(Net::IsOnline())
+				{
+					NetChange& c = Add1(Net::changes);
+					c.type = NetChange::HAIR_COLOR;
+					c.unit = this;
+				}
+			}
+			break;
+		default:
+			if(item.time == 0.f && effect.effect == EffectId::Attribute)
+				player->Train(false, effect.value, TrainMode::Potion);
+			else
+			{
+				Effect e;
+				e.effect = effect.effect;
+				e.source = EffectSource::Temporary;
+				e.source_id = -1;
+				e.value = -1;
+				e.time = item.time;
+				e.power = effect.power;
+				AddEffect(e);
+			}
+			break;
 		}
-		break;
-	case E_STUN:
-		ApplyStun(item.time);
-		break;
-	default:
-		assert(0);
-		break;
 	}
 }
 
 //=================================================================================================
-uint Unit::RemoveEffects(EffectId effect, EffectSource source, int source_id)
+uint Unit::RemoveEffects(EffectId effect, EffectSource source, int source_id, int value)
 {
 	uint index = 0;
 	for(Effect& e : effects)
 	{
-		// same effect or same source & source id
-		if(e.effect == effect || (source != EffectSource::None && e.source == source && (source_id == -1 || e.source_id == source_id)))
+		if((effect == EffectId::None || e.effect == effect)
+			&& (value == -1 || e.value == value)
+			&& (source == EffectSource::None || e.source == source)
+			&& (source_id == -1 || e.source_id == source_id))
 			_to_remove.push_back(index);
 		++index;
 	}
@@ -964,7 +1004,7 @@ uint Unit::RemoveEffects(EffectId effect, EffectSource source, int source_id)
 void Unit::UpdateEffects(float dt)
 {
 	Game& game = Game::Get();
-	float regen = 0.f, temp_regen = 0.f, poison_dmg = 0.f, alco_sum = 0.f, best_stamina = 0.f;
+	float regen = 0.f, temp_regen = 0.f, poison_dmg = 0.f, alco_sum = 0.f, best_stamina = 0.f, stamina_mod = 1.f;
 	int food_heal = 0;
 
 	// update effects timer
@@ -996,6 +1036,9 @@ void Unit::UpdateEffects(float dt)
 		case EffectId::StaminaRegeneration:
 			if(it->power > best_stamina)
 				best_stamina = it->power;
+			break;
+		case EffectId::StaminaRegenerationMod:
+			stamina_mod *= it->power;
 			break;
 		}
 		if(it->source == EffectSource::Temporary)
@@ -1056,7 +1099,17 @@ void Unit::UpdateEffects(float dt)
 
 	// restore stamina
 	if(stamina_timer > 0)
+	{
 		stamina_timer -= dt;
+		if(best_stamina > 0.f)
+		{
+			stamina += best_stamina * dt * stamina_mod;
+			if(stamina > stamina_max)
+				stamina = stamina_max;
+			if(Net::IsServer() && player && !player->is_local)
+				player->player_info->update_flags |= PlayerInfo::UF_STAMINA;
+		}
+	}
 	else if(stamina != stamina_max && (stamina_action != SA_DONT_RESTORE || best_stamina > 0.f))
 	{
 		float stamina_restore;
@@ -1094,7 +1147,7 @@ void Unit::UpdateEffects(float dt)
 		}
 		if(stamina_restore < 0)
 			stamina_restore = 0;
-		stamina += ((stamina_max * stamina_restore / 100) + best_stamina) * dt;
+		stamina += ((stamina_max * stamina_restore / 100) + best_stamina) * dt * stamina_mod;
 		if(stamina > stamina_max)
 			stamina = stamina_max;
 		if(Net::IsServer() && player && !player->is_local)
@@ -1225,6 +1278,43 @@ float Unit::GetEffectMul(EffectId effect) const
 }
 
 //=================================================================================================
+float Unit::GetEffectMulInv(EffectId effect) const
+{
+	float value = 1.f,
+		tmp_value_low = 1.f,
+		tmp_value_high = 1.f;
+	for(const Effect& e : effects)
+	{
+		if(e.effect == effect)
+		{
+			float power = (1.f - e.power);
+			if(e.source == EffectSource::Temporary)
+			{
+				if(power > tmp_value_high)
+					tmp_value_high = power;
+				else if(power < tmp_value_low)
+					tmp_value_low = power;
+			}
+			else
+				value *= power;
+		}
+	}
+	return value * tmp_value_low * tmp_value_high;
+}
+
+//=================================================================================================
+float Unit::GetEffectMax(EffectId effect) const
+{
+	float value = 0.f;
+	for(const Effect& e : effects)
+	{
+		if(e.effect == effect && e.power > value)
+			value = e.power;
+	}
+	return value;
+}
+
+//=================================================================================================
 // Dodaje przedmioty do ekwipunku i zak³ada je jeœli nie ma nic za³o¿onego. Dodane przedmioty s¹
 // traktowane jako dru¿ynowe
 //=================================================================================================
@@ -1232,53 +1322,25 @@ void Unit::AddItemAndEquipIfNone(const Item* item, uint count)
 {
 	assert(item && count != 0);
 
-	if(item->IsStackable())
-		AddItem(item, count, count);
-	else
+	if(item->IsStackable() || !CanWear(item))
 	{
-		// za³ó¿ jeœli nie ma
-		switch(item->type)
-		{
-		case IT_WEAPON:
-			if(!HaveWeapon())
-			{
-				slots[SLOT_WEAPON] = item;
-				--count;
-			}
-			break;
-		case IT_BOW:
-			if(!HaveBow())
-			{
-				slots[SLOT_BOW] = item;
-				--count;
-			}
-			break;
-		case IT_SHIELD:
-			if(!HaveShield())
-			{
-				slots[SLOT_SHIELD] = item;
-				--count;
-			}
-			break;
-		case IT_ARMOR:
-			if(!HaveArmor())
-			{
-				slots[SLOT_ARMOR] = item;
-				--count;
-			}
-			break;
-		case IT_AMULET:
-			if(!HaveAmulet())
-			{
-				slots[SLOT_AMULET] = item;
-				--count;
-			}
-			break;
-		}
-
-		if(count)
-			AddItem(item, count, count);
+		AddItem(item, count, count);
+		return;
 	}
+
+	ITEM_SLOT item_slot = ItemTypeToSlot(item->type);
+	if(item_slot == SLOT_RING1 && slots[item_slot])
+		item_slot = SLOT_RING2;
+
+	if(!slots[item_slot])
+	{
+		slots[item_slot] = item;
+		ApplyItemEffects(item, item_slot);
+		--count;
+	}
+
+	if(count)
+		AddItem(item, count, count);
 }
 
 //=================================================================================================
@@ -1337,40 +1399,50 @@ float Unit::CalculateWeaponPros(const Weapon& weapon) const
 }
 
 //=================================================================================================
-bool Unit::IsBetterWeapon(const Weapon& weapon, int* value) const
+bool Unit::IsBetterWeapon(const Weapon& weapon, int* value, int* prev_value) const
 {
 	if(!HaveWeapon())
 	{
 		if(value)
+		{
 			*value = (int)CalculateWeaponPros(weapon);
+			*prev_value = 0;
+		}
 		return true;
 	}
 
 	if(value)
 	{
 		float v = CalculateWeaponPros(weapon);
+		float prev_v = CalculateWeaponPros(GetWeapon());
 		*value = (int)v;
-		return CalculateWeaponPros(GetWeapon()) < v;
+		*prev_value = (int)prev_v;
+		return prev_v < v;
 	}
 	else
 		return CalculateWeaponPros(GetWeapon()) < CalculateWeaponPros(weapon);
 }
 
 //=================================================================================================
-bool Unit::IsBetterArmor(const Armor& armor, int* value) const
+bool Unit::IsBetterArmor(const Armor& armor, int* value, int* prev_value) const
 {
 	if(!HaveArmor())
 	{
 		if(value)
+		{
 			*value = (int)CalculateDefense(&armor);
+			*prev_value = 0;
+		}
 		return true;
 	}
 
 	if(value)
 	{
 		float v = CalculateDefense(&armor);
+		float prev_v = CalculateDefense();
 		*value = (int)v;
-		return CalculateDefense() < v;
+		*prev_value = (int)prev_v;
+		return prev_v < v;
 	}
 	else
 		return CalculateDefense() < CalculateDefense(&armor);
@@ -1474,8 +1546,7 @@ int Unit::GetRandomAttack() const
 			int n = Rand() % data->frames->attacks;
 			if(IS_SET(data->frames->extra->e[n].flags, a))
 				return n;
-		}
-		while(1);
+		} while(1);
 	}
 	else
 		return Rand() % data->frames->attacks;
@@ -1594,7 +1665,7 @@ void Unit::Save(GameWriter& f, bool local)
 		f << alcohol;
 		f << raise_timer;
 
-		if(action == A_DASH)
+		if(action == A_DASH || action == A_ANIMATION2)
 			f << use_rot;
 
 		if(used_item)
@@ -1706,11 +1777,22 @@ void Unit::Load(GameReader& f, bool local)
 
 	// items
 	bool can_sort = true;
-	int max_slots = (LOAD_VERSION >= V_0_9 ? SLOT_MAX : 4);
+	int max_slots;
+	if(LOAD_VERSION >= V_DEV)
+		max_slots = SLOT_MAX;
+	else if(LOAD_VERSION >= V_0_9)
+		max_slots = 5;
+	else
+		max_slots = 4;
 	for(int i = 0; i < max_slots; ++i)
 		f.ReadOptional(slots[i]);
 	if(LOAD_VERSION < V_0_9)
 		slots[SLOT_AMULET] = nullptr;
+	if(LOAD_VERSION < V_DEV)
+	{
+		slots[SLOT_RING1] = nullptr;
+		slots[SLOT_RING2] = nullptr;
+	}
 	items.resize(f.Read<uint>());
 	for(ItemSlot& slot : items)
 	{
@@ -1781,6 +1863,14 @@ void Unit::Load(GameReader& f, bool local)
 			stats->fixed = false;
 			stats->subprofile.value = 0;
 			stats->Load(f);
+			if(LOAD_VERSION < V_DEV)
+			{
+				for(int i = 0; i < (int)SkillId::MAX; ++i)
+				{
+					if(stats->skill[i] == -1)
+						stats->skill[i] = 0;
+				}
+			}
 		}
 		else
 		{
@@ -1970,6 +2060,13 @@ void Unit::Load(GameReader& f, bool local)
 
 		if(action == A_DASH)
 			f >> use_rot;
+		else if(action == A_ANIMATION2)
+		{
+			if(LOAD_VERSION >= V_DEV)
+				f >> use_rot;
+			else
+				use_rot = 0.f;
+		}
 
 		const string& item_id = f.ReadString1();
 		if(!item_id.empty())
@@ -2024,8 +2121,21 @@ void Unit::Load(GameReader& f, bool local)
 	}
 
 	// effects
-	if(LOAD_VERSION >= V_0_8)
+	if(LOAD_VERSION >= V_DEV)
 		f.ReadVector4(effects);
+	else if(LOAD_VERSION >= V_0_8)
+	{
+		effects.resize(f.Read<uint>());
+		for(Effect& e : effects)
+		{
+			f >> e.effect;
+			f >> e.source;
+			f >> e.source_id;
+			f >> e.time;
+			f >> e.power;
+			e.value = -1;
+		}
+	}
 	else
 	{
 		effects.resize(f.Read<uint>());
@@ -2036,6 +2146,15 @@ void Unit::Load(GameReader& f, bool local)
 			e.power = f.Read<float>();
 			e.source = EffectSource::Temporary;
 			e.source_id = -1;
+		}
+	}
+	if(content.require_update)
+	{
+		RemoveEffects(EffectId::None, EffectSource::Item, -1, -1);
+		for(int i = 0; i < SLOT_MAX; ++i)
+		{
+			if(slots[i])
+				ApplyItemEffects(slots[i], (ITEM_SLOT)i);
 		}
 	}
 
@@ -2655,19 +2774,20 @@ int Unit::FindHealingPotion() const
 			if(!pot.IsHealingPotion())
 				continue;
 
-			if(pot.power <= missing)
+			float power = pot.GetEffectPower(EffectId::Heal);
+			if(power <= missing)
 			{
-				if(pot.power > heal)
+				if(power > heal)
 				{
-					heal = pot.power;
+					heal = power;
 					id = index;
 				}
 			}
 			else
 			{
-				if(pot.power < heal2)
+				if(power < heal2)
 				{
-					heal2 = pot.power;
+					heal2 = power;
 					id2 = index;
 				}
 			}
@@ -2732,7 +2852,7 @@ void Unit::ReequipItemsInternal()
 			item_slot.item = nullptr;
 			changes = true;
 		}
-		else if(item_slot.item->IsWearableByHuman())
+		else if(CanWear(item_slot.item))
 		{
 			ITEM_SLOT slot = ItemTypeToSlot(item_slot.item->type);
 			assert(slot != SLOT_INVALID);
@@ -2742,12 +2862,15 @@ void Unit::ReequipItemsInternal()
 				if(slots[slot]->value < item_slot.item->value)
 				{
 					const Item* item = slots[slot];
+					RemoveItemEffects(item, slot);
+					ApplyItemEffects(item_slot.item, slot);
 					slots[slot] = item_slot.item;
 					item_slot.item = item;
 				}
 			}
 			else
 			{
+				ApplyItemEffects(item_slot.item, slot);
 				slots[slot] = item_slot.item;
 				item_slot.item = nullptr;
 				changes = true;
@@ -2939,7 +3062,7 @@ void Unit::RemoveEffect(EffectId effect)
 
 	if(effect == EffectId::Stun && !_to_remove.empty() && Net::IsServer())
 	{
-		auto& c = Add1(Net::changes);
+		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::STUN;
 		c.unit = this;
 		c.f[0] = 0;
@@ -3301,104 +3424,142 @@ float Unit::GetBlockSpeed() const
 }
 
 //=================================================================================================
-bool Unit::IsBetterItem(const Item* item, int* value) const
+bool Unit::IsBetterItem(const Item* item, int* value, int* prev_value, ITEM_SLOT* target_slot) const
 {
 	assert(item);
+
+	if(target_slot)
+		*target_slot = ItemTypeToSlot(item->type);
 
 	switch(item->type)
 	{
 	case IT_WEAPON:
-		if(!HaveWeapon())
-		{
-			if(value)
-				*value = item->value;
-			return true;
-		}
-		else if(!IS_SET(data->flags, F_MAGE))
-			return IsBetterWeapon(item->ToWeapon(), value);
+		if(!IS_SET(data->flags, F_MAGE))
+			return IsBetterWeapon(item->ToWeapon(), value, prev_value);
 		else
 		{
-			if(IS_SET(item->flags, ITEM_MAGE) && item->value > GetWeapon().value)
+			int v = item->ai_value;
+			int prev_v = HaveWeapon() ? GetWeapon().ai_value : 0;
+			if(value)
 			{
-				if(value)
-					*value = item->value;
-				return true;
+				*value = v;
+				*prev_value = prev_v;
 			}
-			else
-				return false;
+			return v > prev_v;
 		}
 	case IT_BOW:
-		if(!HaveBow())
 		{
+			int v = item->ToBow().dmg;
+			int prev_v = HaveBow() ? GetBow().dmg : 0;
 			if(value)
-				*value = item->value;
-			return true;
-		}
-		else
-		{
-			if(GetBow().value < item->value)
 			{
-				if(value)
-					*value = item->value;
-				return true;
+				*value = v * 2;
+				*prev_value = prev_v * 2;
 			}
-			else
-				return false;
+			return v > prev_v;
+		}
+	case IT_SHIELD:
+		{
+			int v = item->ToShield().block;
+			int prev_v = HaveShield() ? GetShield().block : 0;
+			if(value)
+			{
+				*value = v * 2;
+				*prev_value = prev_v * 2;
+			}
+			return v > prev_v;
 		}
 	case IT_ARMOR:
 		if(!IS_SET(data->flags, F_MAGE))
-			return IsBetterArmor(item->ToArmor(), value);
+			return IsBetterArmor(item->ToArmor(), value, prev_value);
 		else
 		{
-			if(IS_SET(item->flags, ITEM_MAGE) && item->value > GetArmor().value)
-			{
-				if(value)
-					*value = item->value;
-				return true;
-			}
-			else
-				return false;
-		}
-	case IT_SHIELD:
-		if(!HaveShield())
-		{
+			int v = item->ai_value;
+			int prev_v = HaveArmor() ? GetArmor().ai_value : 0;
 			if(value)
-				*value = item->value;
-			return true;
-		}
-		else
-		{
-			if(GetShield().value < item->value)
 			{
-				if(value)
-					*value = item->value;
-				return true;
+				*value = v;
+				*prev_value = prev_v;
 			}
-			else
-				return false;
+			return v > prev_v;
 		}
 	case IT_AMULET:
-		if(!HaveAmulet())
 		{
+			float v = GetItemAiValue(item);
+			float prev_v = HaveAmulet() ? GetItemAiValue(&GetAmulet()) : 0;
 			if(value)
-				*value = item->value;
-			return true;
-		}
-		else
-		{
-			if(GetAmulet().value < item->value)
 			{
-				if(value)
-					*value = item->value;
-				return true;
+				*value = (int)v;
+				*prev_value = (int)prev_v;
+			}
+			return v > prev_v && v > 0;
+		}
+	case IT_RING:
+		{
+			float v = GetItemAiValue(item);
+			float prev_v;
+			ITEM_SLOT best_slot;
+			if(!slots[SLOT_RING1])
+			{
+				prev_v = 0;
+				best_slot = SLOT_RING1;
+			}
+			else if(!slots[SLOT_RING2])
+			{
+				prev_v = 0;
+				best_slot = SLOT_RING2;
 			}
 			else
-				return false;
+			{
+				float prev_v1 = GetItemAiValue(slots[SLOT_RING1]),
+					prev_v2 = GetItemAiValue(slots[SLOT_RING2]);
+				if(prev_v1 > prev_v2)
+				{
+					prev_v = prev_v2;
+					best_slot = SLOT_RING2;
+				}
+				else
+				{
+					prev_v = prev_v1;
+					best_slot = SLOT_RING1;
+				}
+			}
+			if(value)
+			{
+				*value = (int)v;
+				*prev_value = (int)prev_v;
+			}
+			if(target_slot)
+				*target_slot = best_slot;
+			return v > prev_v && v > 0;
 		}
 	default:
 		assert(0);
 		return false;
 	}
+}
+
+//=================================================================================================
+float Unit::GetItemAiValue(const Item* item) const
+{
+	assert(Any(item->type, IT_AMULET, IT_RING)); // TODO
+
+	const float* priorities = stats->tag_priorities;
+	const ItemTag* tags;
+	if(item->type == IT_AMULET)
+		tags = item->ToAmulet().tag;
+	else
+		tags = item->ToRing().tag;
+
+	float value = (float)item->ai_value;
+	for(int i = 0; i < MAX_ITEM_TAGS; ++i)
+	{
+		if(tags[i] == TAG_NONE)
+			break;
+		value *= priorities[tags[i]];
+	}
+
+	return value;
 }
 
 //=================================================================================================
@@ -3474,6 +3635,7 @@ Mesh::Animation* Unit::GetTakeWeaponAnimation(bool melee) const
 }
 
 //=================================================================================================
+// 0-immune, 0.5-resists 50%, 1-normal, 1.5-50% extra damage etc
 float Unit::CalculateMagicResistance() const
 {
 	float mres = 1.f;
@@ -3481,23 +3643,7 @@ float Unit::CalculateMagicResistance() const
 		mres = 0.5f;
 	else if(IS_SET(data->flags2, F2_MAGIC_RES25))
 		mres = 0.75f;
-	if(HaveArmor())
-	{
-		const Armor& a = GetArmor();
-		if(IS_SET(a.flags, ITEM_MAGIC_RESISTANCE_25))
-			mres *= 0.75f;
-		else if(IS_SET(a.flags, ITEM_MAGIC_RESISTANCE_10))
-			mres *= 0.9f;
-	}
-	if(HaveShield())
-	{
-		const Shield& s = GetShield();
-		if(IS_SET(s.flags, ITEM_MAGIC_RESISTANCE_25))
-			mres *= 0.75f;
-		else if(IS_SET(s.flags, ITEM_MAGIC_RESISTANCE_10))
-			mres *= 0.9f;
-	}
-	float effect_mres = GetEffectMul(EffectId::MagicResistance);
+	float effect_mres = GetEffectMulInv(EffectId::MagicResistance);
 	return mres * effect_mres;
 }
 
@@ -3506,23 +3652,25 @@ float Unit::GetPoisonResistance() const
 {
 	if(IS_SET(data->flags, F_POISON_RES))
 		return 0.f;
-	return GetEffectMul(EffectId::PoisonResistance);
+	return GetEffectMulInv(EffectId::PoisonResistance);
 }
 
 //=================================================================================================
-int Unit::CalculateMagicPower() const
+float Unit::GetBackstabMod(const Item* item) const
 {
-	int mlvl = 0;
-	if(HaveArmor())
-		mlvl += GetArmor().GetMagicPower();
-	if(weapon_state == WS_TAKEN)
+	float mod = 0.25f;
+	if(IS_SET(data->flags, F2_BACKSTAB))
+		mod += 0.25f;
+	if(item)
 	{
-		if(weapon_taken == W_ONE_HANDED)
-			mlvl += GetWeapon().GetMagicPower();
-		else
-			mlvl += GetBow().GetMagicPower();
+		for(const ItemEffect& e : item->effects)
+		{
+			if(e.on_attack && e.effect == EffectId::Backstab)
+				mod += e.power;
+		}
 	}
-	return mlvl;
+	mod += GetEffectSum(EffectId::Backstab);
+	return mod;
 }
 
 //=================================================================================================
@@ -3542,27 +3690,22 @@ void Unit::RemoveEffects(bool send)
 	if(_to_remove.empty())
 		return;
 
-	bool recalc_hp = false,
-		recalc_load = false;
-
 	send = (send && player && !player->IsLocal() && Net::IsServer());
 
 	while(!_to_remove.empty())
 	{
 		uint index = _to_remove.back();
-		Effect& e = effects[index];
+		Effect e = effects[index];
 		if(send)
 		{
 			NetChangePlayer& c = Add1(player->player_info->changes);
 			c.type = NetChangePlayer::REMOVE_EFFECT;
 			c.id = (int)e.effect;
 			c.count = (int)e.source;
-			c.a = e.source_id;
+			c.a1 = e.source_id;
+			c.a2 = e.value;
 		}
-		if(e.effect == EffectId::Health)
-			recalc_hp = true;
-		else if(e.effect == EffectId::Carry)
-			recalc_load = true;
+
 		_to_remove.pop_back();
 		if(index == effects.size() - 1)
 			effects.pop_back();
@@ -3571,12 +3714,9 @@ void Unit::RemoveEffects(bool send)
 			std::iter_swap(effects.begin() + index, effects.end() - 1);
 			effects.pop_back();
 		}
-	}
 
-	if(recalc_hp)
-		RecalculateHp(true);
-	if(recalc_load)
-		CalculateLoad();
+		OnAddRemoveEffect(e);
+	}
 }
 
 //=================================================================================================
@@ -3638,59 +3778,95 @@ bool Unit::CanAct()
 }
 
 //=================================================================================================
-int Unit::Get(SkillId s) const
+int Unit::Get(AttributeId a, StatState* state) const
 {
-	int index = (int)s;
-	int value = stats->skill[index];
+	int value = stats->attrib[(int)a];
+	StatInfo stat_info;
 
-	// apply skill synergy
-	switch(s)
+	for(const Effect& e : effects)
 	{
-	case SkillId::LIGHT_ARMOR:
-	case SkillId::HEAVY_ARMOR:
+		if(e.effect == EffectId::Attribute && e.value == (int)a)
 		{
-			int other_val = GetBase(SkillId::MEDIUM_ARMOR);
-			if(other_val > value)
-				value += (other_val - value) / 2;
+			value += (int)e.power;
+			stat_info.Mod((int)e.power);
 		}
-		break;
-	case SkillId::MEDIUM_ARMOR:
-		{
-			int other_val = max(GetBase(SkillId::LIGHT_ARMOR), GetBase(SkillId::HEAVY_ARMOR));
-			if(other_val > value)
-				value += (other_val - value) / 2;
-		}
-		break;
-	case SkillId::SHORT_BLADE:
-		{
-			int other_val = max(max(GetBase(SkillId::LONG_BLADE), GetBase(SkillId::BLUNT)), GetBase(SkillId::AXE));
-			if(other_val > value)
-				value += (other_val - value) / 2;
-		}
-		break;
-	case SkillId::LONG_BLADE:
-		{
-			int other_val = max(max(GetBase(SkillId::SHORT_BLADE), GetBase(SkillId::BLUNT)), GetBase(SkillId::AXE));
-			if(other_val > value)
-				value += (other_val - value) / 2;
-		}
-		break;
-	case SkillId::BLUNT:
-		{
-			int other_val = max(max(GetBase(SkillId::LONG_BLADE), GetBase(SkillId::SHORT_BLADE)), GetBase(SkillId::AXE));
-			if(other_val > value)
-				value += (other_val - value) / 2;
-		}
-		break;
-	case SkillId::AXE:
-		{
-			int other_val = max(max(GetBase(SkillId::LONG_BLADE), GetBase(SkillId::BLUNT)), GetBase(SkillId::SHORT_BLADE));
-			if(other_val > value)
-				value += (other_val - value) / 2;
-		}
-		break;
 	}
 
+	if(state)
+		*state = stat_info.GetState();
+	return value;
+}
+
+//=================================================================================================
+int Unit::Get(SkillId s, StatState* state, bool skill_bonus) const
+{
+	int index = (int)s;
+	int base = stats->skill[index];
+	int value = base;
+	StatInfo stat_info;
+
+	for(const Effect& e : effects)
+	{
+		if(e.effect == EffectId::Skill && e.value == (int)s)
+		{
+			value += (int)e.power;
+			stat_info.Mod((int)e.power);
+		}
+	}
+
+	// apply skill synergy
+	if(skill_bonus && base > 0)
+	{
+		switch(s)
+		{
+		case SkillId::LIGHT_ARMOR:
+		case SkillId::HEAVY_ARMOR:
+			{
+				int other_val = GetBase(SkillId::MEDIUM_ARMOR);
+				if(other_val > value)
+					value += (other_val - value) / 2;
+			}
+			break;
+		case SkillId::MEDIUM_ARMOR:
+			{
+				int other_val = max(GetBase(SkillId::LIGHT_ARMOR), GetBase(SkillId::HEAVY_ARMOR));
+				if(other_val > value)
+					value += (other_val - value) / 2;
+			}
+			break;
+		case SkillId::SHORT_BLADE:
+			{
+				int other_val = max(max(GetBase(SkillId::LONG_BLADE), GetBase(SkillId::BLUNT)), GetBase(SkillId::AXE));
+				if(other_val > value)
+					value += (other_val - value) / 2;
+			}
+			break;
+		case SkillId::LONG_BLADE:
+			{
+				int other_val = max(max(GetBase(SkillId::SHORT_BLADE), GetBase(SkillId::BLUNT)), GetBase(SkillId::AXE));
+				if(other_val > value)
+					value += (other_val - value) / 2;
+			}
+			break;
+		case SkillId::BLUNT:
+			{
+				int other_val = max(max(GetBase(SkillId::LONG_BLADE), GetBase(SkillId::SHORT_BLADE)), GetBase(SkillId::AXE));
+				if(other_val > value)
+					value += (other_val - value) / 2;
+			}
+			break;
+		case SkillId::AXE:
+			{
+				int other_val = max(max(GetBase(SkillId::LONG_BLADE), GetBase(SkillId::BLUNT)), GetBase(SkillId::SHORT_BLADE));
+				if(other_val > value)
+					value += (other_val - value) / 2;
+			}
+			break;
+		}
+	}
+
+	if(state)
+		*state = stat_info.GetState();
 	return value;
 }
 
@@ -4058,7 +4234,7 @@ void Unit::CreateMesh(CREATE_MESH mode)
 				if(data->sounds)
 				{
 					auto& sound_mgr = ResourceManager::Get<Sound>();
-					for(int i = 0; i < SLOT_MAX; ++i)
+					for(int i = 0; i < SOUND_MAX; ++i)
 					{
 						for(SoundPtr sound : data->sounds->sounds[i])
 							sound_mgr.AddLoadTask(sound);
@@ -4087,7 +4263,7 @@ void Unit::CreateMesh(CREATE_MESH mode)
 			if(data->sounds)
 			{
 				auto& sound_mgr = ResourceManager::Get<Sound>();
-				for(int i = 0; i < SLOT_MAX; ++i)
+				for(int i = 0; i < SOUND_MAX; ++i)
 				{
 					for(SoundPtr sound : data->sounds->sounds[i])
 						sound_mgr.Load(sound);
@@ -4162,6 +4338,7 @@ void Unit::ApplyStun(float length)
 		e.effect = EffectId::Stun;
 		e.source = EffectSource::Temporary;
 		e.source_id = -1;
+		e.value = -1;
 		e.power = 0.f;
 		e.time = length;
 		AddEffect(e);
@@ -4989,8 +5166,6 @@ void Unit::SetWeaponState(bool takes_out, WeaponType co)
 //=================================================================================================
 void Unit::UpdateInventory(bool notify)
 {
-	assert(IsTeamMember()); // works only for team members!
-
 	bool changes = false;
 	int index = 0;
 	const Item* prev_slots[SLOT_MAX];
@@ -4999,132 +5174,25 @@ void Unit::UpdateInventory(bool notify)
 
 	for(vector<ItemSlot>::iterator it = items.begin(), end = items.end(); it != end; ++it, ++index)
 	{
-		if(!it->item || it->team_count != 0)
+		if(!it->item || it->team_count != 0 || !CanWear(it->item))
 			continue;
 
-		switch(it->item->type)
+		ITEM_SLOT target_slot;
+		if(IsBetterItem(it->item, nullptr, nullptr, &target_slot))
 		{
-		case IT_WEAPON:
-			if(!HaveWeapon())
+			if(slots[target_slot])
 			{
-				slots[SLOT_WEAPON] = it->item;
+				RemoveItemEffects(slots[target_slot], target_slot);
+				ApplyItemEffects(it->item, target_slot);
+				std::swap(slots[target_slot], it->item);
+			}
+			else
+			{
+				ApplyItemEffects(it->item, target_slot);
+				slots[target_slot] = it->item;
 				it->item = nullptr;
-				changes = true;
 			}
-			else if(IS_SET(data->flags, F_MAGE))
-			{
-				if(IS_SET(it->item->flags, ITEM_MAGE))
-				{
-					if(IS_SET(GetWeapon().flags, ITEM_MAGE))
-					{
-						if(GetWeapon().value < it->item->value)
-						{
-							std::swap(slots[SLOT_WEAPON], it->item);
-							changes = true;
-						}
-					}
-					else
-					{
-						std::swap(slots[SLOT_WEAPON], it->item);
-						changes = true;
-					}
-				}
-				else
-				{
-					if(!IS_SET(GetWeapon().flags, ITEM_MAGE) && IsBetterWeapon(it->item->ToWeapon()))
-					{
-						std::swap(slots[SLOT_WEAPON], it->item);
-						changes = true;
-					}
-				}
-			}
-			else if(IsBetterWeapon(it->item->ToWeapon()))
-			{
-				std::swap(slots[SLOT_WEAPON], it->item);
-				changes = true;
-			}
-			break;
-		case IT_BOW:
-			if(!HaveBow())
-			{
-				slots[SLOT_BOW] = it->item;
-				it->item = nullptr;
-				changes = true;
-			}
-			else if(GetBow().value < it->item->value)
-			{
-				std::swap(slots[SLOT_BOW], it->item);
-				changes = true;
-			}
-			break;
-		case IT_ARMOR:
-			if(!HaveArmor())
-			{
-				slots[SLOT_ARMOR] = it->item;
-				it->item = nullptr;
-				changes = true;
-			}
-			else if(IS_SET(data->flags, F_MAGE))
-			{
-				if(IS_SET(it->item->flags, ITEM_MAGE))
-				{
-					if(IS_SET(GetArmor().flags, ITEM_MAGE))
-					{
-						if(it->item->value > GetArmor().value)
-						{
-							std::swap(slots[SLOT_ARMOR], it->item);
-							changes = true;
-						}
-					}
-					else
-					{
-						std::swap(slots[SLOT_ARMOR], it->item);
-						changes = true;
-					}
-				}
-				else
-				{
-					if(!IS_SET(GetArmor().flags, ITEM_MAGE) && IsBetterArmor(it->item->ToArmor()))
-					{
-						std::swap(slots[SLOT_ARMOR], it->item);
-						changes = true;
-					}
-				}
-			}
-			else if(IsBetterArmor(it->item->ToArmor()))
-			{
-				std::swap(slots[SLOT_ARMOR], it->item);
-				changes = true;
-			}
-			break;
-		case IT_SHIELD:
-			if(!HaveShield())
-			{
-				slots[SLOT_SHIELD] = it->item;
-				it->item = nullptr;
-				changes = true;
-			}
-			else if(GetShield().value < it->item->value)
-			{
-				std::swap(slots[SLOT_SHIELD], it->item);
-				changes = true;
-			}
-			break;
-		case IT_AMULET:
-			if(!HaveAmulet())
-			{
-				slots[SLOT_AMULET] = it->item;
-				it->item = nullptr;
-				changes = true;
-			}
-			else if(GetAmulet().value < it->item->value)
-			{
-				std::swap(slots[SLOT_AMULET], it->item);
-				changes = true;
-			}
-			break;
-		default:
-			break;
+			changes = true;
 		}
 	}
 

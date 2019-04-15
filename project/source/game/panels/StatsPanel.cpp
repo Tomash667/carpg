@@ -139,7 +139,11 @@ void StatsPanel::SetText()
 	flowAttribs.Clear();
 	flowAttribs.Add()->Set(txAttributes);
 	for(int i = 0; i < (int)AttributeId::MAX; ++i)
-		flowAttribs.Add()->Set(Format("%s: $c%c%d$c-", Attribute::attributes[i].name.c_str(), StatStateToColor(StatState::NORMAL), pc->unit->Get((AttributeId)i)), G_ATTRIB, i);
+	{
+		StatState state;
+		int value = pc->unit->Get((AttributeId)i, &state);
+		flowAttribs.Add()->Set(Format("%s: $c%c%d$c-", Attribute::attributes[i].name.c_str(), StatStateToColor(state), value), G_ATTRIB, i);
+	}
 	flowAttribs.Reposition();
 
 	// stats
@@ -168,7 +172,8 @@ void StatsPanel::SetText()
 	flowSkills.Clear();
 	for(int i = 0; i < (int)SkillId::MAX; ++i)
 	{
-		if(pc->unit->GetBase((SkillId)i) > 0)
+		int value = pc->unit->Get((SkillId)i, nullptr, false);
+		if(value > 0)
 		{
 			Skill& info = Skill::skills[i];
 			if(info.group != last_group)
@@ -176,7 +181,9 @@ void StatsPanel::SetText()
 				flowSkills.Add()->Set(SkillGroup::groups[(int)info.group].name.c_str());
 				last_group = info.group;
 			}
-			flowSkills.Add()->Set(Format("%s: $c%c%d$c-", info.name.c_str(), StatStateToColor(StatState::NORMAL), pc->unit->Get((SkillId)i)), G_SKILL, i);
+			StatState state;
+			int value = pc->unit->Get((SkillId)i, &state);
+			flowSkills.Add()->Set(Format("%s: $c%c%d$c-", info.name.c_str(), StatStateToColor(state), value), G_SKILL, i);
 		}
 	}
 	flowSkills.Reposition();

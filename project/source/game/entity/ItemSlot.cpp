@@ -8,6 +8,27 @@
 cstring txAttack, txDefense, txBlock, txMobility, txRequiredStrength, txDTBlunt, txDTPierce, txDTSlash, txDTBluntPierce, txDTBluntSlash, txDTSlashPierce, txDTMagical,
 txWeight, txValue, txInvalidArmor;
 
+ItemSlotInfo ItemSlotInfo::slots[SLOT_MAX] = {
+	"weapon",
+	"bow",
+	"shield",
+	"armor",
+	"amulet",
+	"ring1",
+	"ring2"
+};
+
+//=================================================================================================
+ITEM_SLOT ItemSlotInfo::Find(const string& id)
+{
+	for(int i = 0; i < SLOT_MAX; ++i)
+	{
+		if(id == slots[i].id)
+			return (ITEM_SLOT)i;
+	}
+	return SLOT_INVALID;
+}
+
 //=================================================================================================
 void SetItemStatsText()
 {

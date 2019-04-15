@@ -24,25 +24,17 @@ enum ITEM_FLAGS
 	ITEM_NOT_BLACKSMITH = 1 << 4,
 	ITEM_MAGE = 1 << 5,
 	ITEM_DONT_DROP = 1 << 6, // can't drop when in dialog
-	//ITEM_SECRET = 1 << 7, - removed
-	ITEM_BACKSTAB = 1 << 8,
-	ITEM_POWER_1 = 1 << 9,
-	ITEM_POWER_2 = 1 << 10,
-	ITEM_POWER_3 = 1 << 11,
-	ITEM_POWER_4 = 1 << 12,
-	ITEM_MAGIC_RESISTANCE_10 = 1 << 13,
-	ITEM_MAGIC_RESISTANCE_25 = 1 << 14,
-	ITEM_GROUND_MESH = 1 << 15, // when on ground is displayed as mesh not as bag
-	ITEM_CRYSTAL_SOUND = 1 << 16,
-	ITEM_IMPORTANT = 1 << 17, // drawn on map as gold bag in minimap, mark dead units with this item
-	ITEM_TEX_ONLY = 1 << 18,
-	ITEM_NOT_MERCHANT = 1 << 19,
-	ITEM_NOT_RANDOM = 1 << 20,
-	ITEM_HQ = 1 << 21, // high quality item icon
-	ITEM_MAGICAL = 1 << 23, // magic quality item icon
-	ITEM_UNIQUE = 1 << 24, // unique quality item icon
-	ITEM_ALPHA = 1 << 25, // item require alpha test
-	ITEM_MAGIC_SCROLL = 1 << 26,
+	ITEM_GROUND_MESH = 1 << 7, // when on ground is displayed as mesh not as bag
+	ITEM_CRYSTAL_SOUND = 1 << 8,
+	ITEM_IMPORTANT = 1 << 9, // drawn on map as gold bag in minimap, mark dead units with this item
+	ITEM_TEX_ONLY = 1 << 10,
+	ITEM_NOT_MERCHANT = 1 << 11,
+	ITEM_NOT_RANDOM = 1 << 12,
+	ITEM_HQ = 1 << 13, // high quality item icon
+	ITEM_MAGICAL = 1 << 14, // magic quality item icon
+	ITEM_UNIQUE = 1 << 15, // unique quality item icon
+	ITEM_ALPHA = 1 << 16, // item require alpha test
+	ITEM_MAGIC_SCROLL = 1 << 17
 };
 
 //-----------------------------------------------------------------------------
@@ -61,10 +53,20 @@ struct CstringHash
 typedef std::unordered_map<cstring, Item*, CstringHash, CstringEqualComparer> ItemsMap;
 
 //-----------------------------------------------------------------------------
+struct ItemEffect
+{
+	EffectId effect;
+	float power;
+	int value;
+	bool on_attack;
+};
+
+//-----------------------------------------------------------------------------
 // Base item type
 struct Item
 {
-	explicit Item(ITEM_TYPE type) : type(type), weight(1), value(0), flags(0), mesh(nullptr), tex(nullptr), icon(nullptr), state(ResourceState::NotLoaded)
+	explicit Item(ITEM_TYPE type) : type(type), weight(1), value(0), ai_value(0), flags(0), mesh(nullptr), tex(nullptr), icon(nullptr),
+		state(ResourceState::NotLoaded)
 	{
 	}
 	virtual ~Item() {}
@@ -85,116 +87,35 @@ struct Item
 		return *(const T*)this;
 	}
 
-	Weapon& ToWeapon()
-	{
-		return Cast<Weapon, IT_WEAPON>();
-	}
-	Bow& ToBow()
-	{
-		return Cast<Bow, IT_BOW>();
-	}
-	Shield& ToShield()
-	{
-		return Cast<Shield, IT_SHIELD>();
-	}
-	Armor& ToArmor()
-	{
-		return Cast<Armor, IT_ARMOR>();
-	}
-	Amulet& ToAmulet()
-	{
-		return Cast<Amulet, IT_AMULET>();
-	}
-	Consumable& ToConsumable()
-	{
-		return Cast<Consumable, IT_CONSUMABLE>();
-	}
-	OtherItem& ToOther()
-	{
-		return Cast<OtherItem, IT_OTHER>();
-	}
-	Book& ToBook()
-	{
-		return Cast<Book, IT_BOOK>();
-	}
+	Weapon& ToWeapon() { return Cast<Weapon, IT_WEAPON>(); }
+	Bow& ToBow() { return Cast<Bow, IT_BOW>(); }
+	Shield& ToShield() { return Cast<Shield, IT_SHIELD>(); }
+	Armor& ToArmor() { return Cast<Armor, IT_ARMOR>(); }
+	Amulet& ToAmulet() { return Cast<Amulet, IT_AMULET>(); }
+	Ring& ToRing() { return Cast<Ring, IT_RING>(); }
+	Consumable& ToConsumable() { return Cast<Consumable, IT_CONSUMABLE>(); }
+	OtherItem& ToOther() { return Cast<OtherItem, IT_OTHER>(); }
+	Book& ToBook() { return Cast<Book, IT_BOOK>(); }
 
-	const Weapon& ToWeapon() const
-	{
-		return Cast<Weapon, IT_WEAPON>();
-	}
-	const Bow& ToBow() const
-	{
-		return Cast<Bow, IT_BOW>();
-	}
-	const Shield& ToShield() const
-	{
-		return Cast<Shield, IT_SHIELD>();
-	}
-	const Armor& ToArmor() const
-	{
-		return Cast<Armor, IT_ARMOR>();
-	}
-	const Amulet& ToAmulet() const
-	{
-		return Cast<Amulet, IT_AMULET>();
-	}
-	const Consumable& ToConsumable() const
-	{
-		return Cast<Consumable, IT_CONSUMABLE>();
-	}
-	const OtherItem& ToOther() const
-	{
-		return Cast<OtherItem, IT_OTHER>();
-	}
-	const Book& ToBook() const
-	{
-		return Cast<Book, IT_BOOK>();
-	}
+	const Weapon& ToWeapon() const { return Cast<Weapon, IT_WEAPON>(); }
+	const Bow& ToBow() const { return Cast<Bow, IT_BOW>(); }
+	const Shield& ToShield() const { return Cast<Shield, IT_SHIELD>(); }
+	const Armor& ToArmor() const { return Cast<Armor, IT_ARMOR>(); }
+	const Amulet& ToAmulet() const { return Cast<Amulet, IT_AMULET>(); }
+	const Ring& ToRing() const { return Cast<Ring, IT_RING>(); }
+	const Consumable& ToConsumable() const { return Cast<Consumable, IT_CONSUMABLE>(); }
+	const OtherItem& ToOther() const { return Cast<OtherItem, IT_OTHER>(); }
+	const Book& ToBook() const { return Cast<Book, IT_BOOK>(); }
 
-	float GetWeight() const
-	{
-		return float(weight) / 10;
-	}
-	bool IsStackable() const
-	{
-		return type == IT_CONSUMABLE || type == IT_GOLD || (type == IT_OTHER && !IS_SET(flags, ITEM_QUEST)) || type == IT_BOOK;
-	}
-	bool CanBeGenerated() const
-	{
-		return !IS_SET(flags, ITEM_NOT_RANDOM);
-	}
-	bool IsWearable() const
-	{
-		return Any(type, IT_WEAPON, IT_BOW, IT_SHIELD, IT_ARMOR, IT_AMULET);
-	}
-	bool IsWearableByHuman() const;
-	bool IsQuest() const
-	{
-		return IS_SET(flags, ITEM_QUEST);
-	}
-	bool IsQuest(int quest_refid) const
-	{
-		return IsQuest() && refid == quest_refid;
-	}
+	bool IsStackable() const { return Any(type, IT_CONSUMABLE, IT_GOLD, IT_BOOK) || (type == IT_OTHER && !IS_SET(flags, ITEM_QUEST)); }
+	bool CanBeGenerated() const { return !IS_SET(flags, ITEM_NOT_RANDOM); }
+	bool IsWearable() const { return Any(type, IT_WEAPON, IT_BOW, IT_SHIELD, IT_ARMOR, IT_AMULET, IT_RING); }
+	bool IsQuest() const { return IS_SET(flags, ITEM_QUEST); }
+	bool IsQuest(int quest_refid) const { return IsQuest() && refid == quest_refid; }
 
-	int GetMagicPower() const
-	{
-		if(IS_SET(flags, ITEM_POWER_1))
-			return 1;
-		else if(IS_SET(flags, ITEM_POWER_2))
-			return 2;
-		else if(IS_SET(flags, ITEM_POWER_3))
-			return 3;
-		else if(IS_SET(flags, ITEM_POWER_4))
-			return 4;
-		else
-			return 0;
-	}
-
-	float GetWeightValue() const
-	{
-		return float(value) / weight;
-	}
+	float GetWeight() const { return float(weight) / 10; }
+	float GetWeightValue() const { return float(value) / weight; }
+	float GetEffectPower(EffectId effect) const;
 
 	void CreateCopy(Item& item) const;
 	Item* CreateCopy() const;
@@ -202,7 +123,8 @@ struct Item
 	void Rename(cstring name);
 
 	string id, mesh_id, name, desc;
-	int weight, value, flags, refid;
+	int weight, value, ai_value, flags, refid;
+	vector<ItemEffect> effects;
 	ITEM_TYPE type;
 	MeshPtr mesh;
 	TexturePtr tex;
@@ -390,43 +312,42 @@ struct Armor : public Item
 };
 
 //-----------------------------------------------------------------------------
-// Can item can be weared by human?
-inline bool Item::IsWearableByHuman() const
+enum ItemTag
 {
-	if(type == IT_ARMOR)
-		return ToArmor().armor_unit_type == ArmorUnitType::HUMAN;
-	else
-		return Any(type, IT_WEAPON, IT_BOW, IT_SHIELD, IT_AMULET);
-}
+	TAG_NONE = -1,
+	TAG_STR,
+	TAG_DEX,
+	TAG_MELEE,
+	TAG_RANGED,
+	TAG_DEF,
+	TAG_STAMINA,
+	TAG_MAGE,
+	TAG_MAX
+};
+static_assert(TAG_MAX < 32, "Too many ItemTag!");
+
+static const int MAX_ITEM_TAGS = 2;
 
 //-----------------------------------------------------------------------------
 // Amulet
 struct Amulet : public Item
 {
-	Amulet() : Item(IT_AMULET) {}
+	Amulet() : Item(IT_AMULET), tag() {}
+
+	ItemTag tag[MAX_ITEM_TAGS];
 
 	static vector<Amulet*> amulets;
 };
 
 //-----------------------------------------------------------------------------
-// Consumable item effects
-enum ConsumeEffect
+// Ring
+struct Ring : public Item
 {
-	E_NONE, // no effects
-	E_HEAL, // heals instantly X hp
-	E_REGENERATE, // heals X hp/sec for Y sec (don't stack)
-	E_NATURAL, // speed up natural regeneration for Y days
-	E_ANTIDOTE, // remove poison and alcohol
-	E_POISON, // deal X dmg/sec for Y sec
-	E_ALCOHOL, // deals X alcohol points in Y sec
-	E_STR, // permanently increase strength
-	E_END, // permanently increase endurance
-	E_DEX, // permanently increase dexterity
-	E_ANTIMAGIC, // gives 50% magic resistance for Y sec
-	E_FOOD, // heals 1 hp/sec for Y sec (stack)
-	E_GREEN_HAIR, // turn hair into green
-	E_STAMINA, // regenerate stamina
-	E_STUN, // unit stunned, can't do anything
+	Ring() : Item(IT_RING), tag() {}
+
+	ItemTag tag[MAX_ITEM_TAGS];
+
+	static vector<Ring*> rings;
 };
 
 //-----------------------------------------------------------------------------
@@ -440,17 +361,13 @@ enum ConsumableType
 };
 struct Consumable : public Item
 {
-	Consumable() : Item(IT_CONSUMABLE), effect(E_NONE), power(0), time(0), cons_type(Drink) {}
+	Consumable() : Item(IT_CONSUMABLE), time(0), cons_type(Drink), is_healing_potion(false) {}
 
-	bool IsHealingPotion() const
-	{
-		return effect == E_HEAL && cons_type == Potion;
-	}
+	bool IsHealingPotion() const { return is_healing_potion; }
 
-	ConsumeEffect effect;
-	float power, time;
+	float time;
 	ConsumableType cons_type;
-	EffectId ToEffect() const;
+	bool is_healing_potion;
 
 	static vector<Consumable*> consumables;
 };
@@ -539,6 +456,10 @@ struct LeveledItemList
 	string id;
 	vector<Entry> items;
 
+	const Item* Get() const
+	{
+		return items[Rand() % items.size()].item;
+	}
 	const Item* Get(int level) const;
 
 	static vector<LeveledItemList*> lists;

@@ -54,8 +54,8 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>.\Common;..\..\external\DirectX\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.;..\..\project\source;..\..\project\source\core;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;COMMON_ONLY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -78,8 +78,8 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>.\Common;..\..\external\DirectX\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.;..\..\project\source;..\..\project\source\core;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;COMMON_ONLY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>PCH.hpp</PrecompiledHeaderFile>
@@ -100,31 +100,28 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Common\Base.cpp" />
-    <ClCompile Include="Common\Error.cpp" />
-    <ClCompile Include="Common\Files.cpp" />
-    <ClCompile Include="Common\Math.cpp" />
-    <ClCompile Include="Common\Stream.cpp" />
-    <ClCompile Include="Common\Tokenizer.cpp" />
+    <ClCompile Include="..\..\project\source\core\Containers.cpp" />
+    <ClCompile Include="..\..\project\source\core\CoreMath.cpp" />
+    <ClCompile Include="..\..\project\source\core\File.cpp" />
+    <ClCompile Include="..\..\project\source\core\Logger.cpp" />
+    <ClCompile Include="..\..\project\source\core\Text.cpp" />
+    <ClCompile Include="..\..\project\source\core\Tokenizer.cpp" />
     <ClCompile Include="Converter.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="MeshMender.cpp" />
     <ClCompile Include="MeshTask.cpp" />
-    <ClCompile Include="PCH.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="QmshSaver.cpp" />
     <ClCompile Include="QmshTmpLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Common\Base.hpp" />
-    <ClInclude Include="Common\Error.hpp" />
-    <ClInclude Include="Common\Files.hpp" />
-    <ClInclude Include="Common\Math.hpp" />
-    <ClInclude Include="Common\Stream.hpp" />
-    <ClInclude Include="Common\Tokenizer.hpp" />
+    <ClInclude Include="..\..\project\source\core\Containers.h" />
+    <ClInclude Include="..\..\project\source\core\Core.h" />
+    <ClInclude Include="..\..\project\source\core\CoreMath.h" />
+    <ClInclude Include="..\..\project\source\core\File.h" />
+    <ClInclude Include="..\..\project\source\core\Logger.h" />
+    <ClInclude Include="..\..\project\source\core\Text.h" />
+    <ClInclude Include="..\..\project\source\core\Tokenizer.h" />
     <ClInclude Include="ConversionData.h" />
     <ClInclude Include="Converter.h" />
     <ClInclude Include="Mesh.h" />
@@ -139,6 +136,9 @@
   <ItemGroup>
     <Text Include="changelog.txt" />
     <Text Include="UWAGI.TXT" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\project\source\core\CoreMath.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

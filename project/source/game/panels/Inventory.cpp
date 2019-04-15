@@ -763,7 +763,7 @@ void InventoryPanel::Update(float dt)
 				}
 				else
 				{
-					if(item->IsWearableByHuman() && slot->team_count > 0 && Team.GetActiveTeamSize() > 1)
+					if(unit->CanWear(item) && slot->team_count > 0 && Team.GetActiveTeamSize() > 1)
 					{
 						DialogInfo di;
 						di.event = delegate<void(int)>(this, &InventoryPanel::OnTakeItem);
@@ -995,8 +995,10 @@ void InventoryPanel::Update(float dt)
 							c.unit = unit;
 						}
 					}
-					slots[slot_type] = nullptr;
+					if(Net::IsLocal())
+						unit->RemoveItemEffects(item, slot_type);
 					unit->weight -= item->weight;
+					slots[slot_type] = nullptr;
 					base.BuildTmpInventory(1);
 					// dŸwiêk
 					game.sound_mgr->PlaySound2d(game.GetItemSound(item));
@@ -1105,7 +1107,7 @@ void InventoryPanel::Update(float dt)
 				if(slot)
 				{
 					// nie za³o¿ony przedmiot
-					if(item->IsWearableByHuman() && item->type != IT_AMULET)
+					if(t->CanWear(item))
 					{
 						last_index = INDEX_INVALID;
 
@@ -1317,6 +1319,8 @@ void InventoryPanel::Event(GuiEvent e)
 
 					InsertItemBare(itms, unit_slots[i]);
 					game.pc->unit->weight += unit_slots[i]->weight;
+					if(Net::IsLocal())
+						game.pc->unit->RemoveItemEffects(unit_slots[i], (ITEM_SLOT)i);
 					unit_slots[i] = nullptr;
 
 					if(Net::IsServer() && IsVisible((ITEM_SLOT)i))
@@ -1410,6 +1414,8 @@ void InventoryPanel::RemoveSlotItem(ITEM_SLOT slot)
 {
 	const Item* item = slots[slot];
 	game.sound_mgr->PlaySound2d(game.GetItemSound(item));
+	if(Net::IsLocal())
+		unit->RemoveItemEffects(item, slot);
 	unit->AddItem(item, 1, false);
 	unit->weight -= item->weight;
 	slots[slot] = nullptr;
@@ -1466,24 +1472,40 @@ void InventoryPanel::EquipSlotItem(ITEM_SLOT slot, int i_index)
 {
 	const Item* item = items->at(i_index).item;
 
+	// for rings - use empty slot or last equipped slot
+	if(slot == SLOT_RING1)
+	{
+		if(slots[slot])
+		{
+			if(!slots[SLOT_RING2] || game.pc->last_ring)
+				slot = SLOT_RING2;
+		}
+		game.pc->last_ring = (slot == SLOT_RING2);
+	}
+
 	// play sound
 	game.sound_mgr->PlaySound2d(game.GetItemSound(item));
 
 	if(slots[slot])
 	{
+		// replace equipped item
 		const Item* prev_item = slots[slot];
-		// ustaw slot
+		if(Net::IsLocal())
+		{
+			unit->RemoveItemEffects(prev_item, slot);
+			unit->ApplyItemEffects(item, slot);
+		}
 		slots[slot] = item;
 		items->erase(items->begin() + i_index);
-		// dodaj stary przedmiot
 		unit->AddItem(prev_item, 1, false);
 		unit->weight -= prev_item->weight;
 	}
 	else
 	{
-		// ustaw slot
+		// equip item
 		slots[slot] = item;
-		// usuñ przedmiot
+		if(Net::IsLocal())
+			unit->ApplyItemEffects(item, slot);
 		items->erase(items->begin() + i_index);
 	}
 
@@ -1610,7 +1632,7 @@ void InventoryPanel::FormatBox(int group, string& text, string& small_text, TEX&
 			text += Format(base.txPrice, price);
 		}
 		small_text = item->desc;
-		if(AllowForUnit() && item->IsWearableByHuman())
+		if(AllowForUnit() && game.pc->action_unit->CanWear(item))
 		{
 			if(!small_text.empty())
 				small_text += '\n';
@@ -1856,6 +1878,8 @@ void InventoryPanel::SellSlotItem(ITEM_SLOT slot)
 	InsertItem(*unit->player->chest_trade, item, 1, 0);
 	UpdateGrid(false);
 	// usuñ przedmiot graczowi
+	if(Net::IsLocal())
+		unit->RemoveItemEffects(item, slot);
 	slots[slot] = nullptr;
 	unit->weight -= item->weight;
 	UpdateGrid(true);
@@ -2058,6 +2082,8 @@ void InventoryPanel::PutSlotItem(ITEM_SLOT slot)
 	UpdateGrid(false);
 
 	// remove from player
+	if(Net::IsLocal())
+		unit->RemoveItemEffects(item, slot);
 	slots[slot] = nullptr;
 	UpdateGrid(true);
 	unit->weight -= item->weight;
@@ -2178,7 +2204,7 @@ void InventoryPanel::ShareGiveItem(int index, uint count)
 		c.id = index;
 		c.count = count;
 	}
-	else if(item->type == IT_CONSUMABLE && item->ToConsumable().effect == E_HEAL)
+	else if(item->type == IT_CONSUMABLE && item->ToConsumable().IsHealingPotion())
 		unit->player->action_unit->ai->have_potion = 2;
 }
 
@@ -2217,7 +2243,7 @@ void InventoryPanel::ShareTakeItem(int index, uint count)
 		c.id = index;
 		c.count = count;
 	}
-	else if(item->type == IT_CONSUMABLE && item->ToConsumable().effect == E_HEAL)
+	else if(item->type == IT_CONSUMABLE && item->ToConsumable().IsHealingPotion())
 		unit->ai->have_potion = 1;
 }
 
@@ -2278,6 +2304,8 @@ void InventoryPanel::OnGiveItem(int id)
 		items->erase(items->begin() + iindex);
 	else
 	{
+		if(Net::IsLocal())
+			unit->RemoveItemEffects(slots[slot_type], slot_type);
 		slots[slot_type] = nullptr;
 		if(Net::IsServer() && IsVisible(slot_type))
 		{

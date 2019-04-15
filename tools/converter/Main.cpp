@@ -3,8 +3,9 @@
 #include "QmshTmpLoader.h"
 #include "Qmsh.h"
 #include <conio.h>
+#include <Windows.h>
 
-const char* CONVERTER_VERSION = "21.1";
+const char* CONVERTER_VERSION = "21.2";
 
 string group_file, output_file;
 GROUP_OPTION gopt;
@@ -15,33 +16,39 @@ bool export_phy, force_output;
 //=================================================================================================
 void ParseConfig(ConversionData& cs, std::string& filename)
 {
-	FileStream file(filename, FM_READ);
-	Tokenizer t(&file, 0);
-	t.RegisterKeyword(0, "file");
-	t.RegisterKeyword(1, "output");
+	Tokenizer t(Tokenizer::F_JOIN_MINUS | Tokenizer::F_UNESCAPE);
 
-	t.Next();
-	t.AssertKeyword(0);
-	t.Next();
-	t.AssertSymbol(':');
-	t.Next();
-	t.AssertToken(Tokenizer::TOKEN_STRING);
-
-	cs.input = t.GetString();
-	cs.gopt = GO_FILE;
-	cs.group_file = filename;
-
-	t.Next();
-	if(t.QueryKeyword(1) && !force_output)
+	try
 	{
+		t.FromFile(filename);
+		t.AddKeyword("file", 0);
+		t.AddKeyword("output", 1);
+
+		t.Next();
+		t.AssertKeyword(0);
 		t.Next();
 		t.AssertSymbol(':');
 		t.Next();
-		t.AssertToken(Tokenizer::TOKEN_STRING);
-		cs.output = t.GetString();
-	}
 
-	printf("Using configuration file '%s'.\n", filename.c_str());
+		cs.input = t.MustGetString();
+		cs.gopt = GO_FILE;
+		cs.group_file = filename;
+
+		t.Next();
+		if(t.IsKeyword(1) && !force_output)
+		{
+			t.Next();
+			t.AssertSymbol(':');
+			t.Next();
+			cs.output = t.MustGetString();
+		}
+
+		Info("Using configuration file '%s'.", filename.c_str());
+	}
+	catch(const Tokenizer::Exception& ex)
+	{
+		Error("Failed to parse configuration file '%s': %s", filename.c_str(), ex.ToString());
+	}
 }
 
 //=================================================================================================
@@ -62,11 +69,9 @@ bool ConvertToQmsh(std::string& filename)
 			{
 				ParseConfig(cs, filename);
 			}
-			catch(Error& er)
+			catch(const Tokenizer::Exception& ex)
 			{
-				string msg;
-				er.GetMessage_(&msg);
-				printf("File '%s' is not configuration file!\n%s\n", filename.c_str(), msg.c_str());
+				Error("File '%s' is not configuration file!\n%s", filename.c_str(), ex.ToString());
 			}
 		}
 	}
@@ -109,14 +114,12 @@ bool ConvertToQmsh(std::string& filename)
 	{
 		Convert(cs);
 
-		printf("Ok.\n");
+		Info("Ok.");
 		return true;
 	}
-	catch(const Error &e)
+	catch(cstring err)
 	{
-		string Msg;
-		e.GetMessage_(&Msg, "  ");
-		printf("B³¹d: %s\n", Msg.c_str());
+		Error("B³¹d: %s", err);
 		return false;
 	}
 }
@@ -126,6 +129,8 @@ bool ConvertToQmsh(std::string& filename)
 //=================================================================================================
 int main(int argc, char **argv)
 {
+	Logger::global = new ConsoleLogger;
+
 	setlocale(LC_ALL, "");
 	setlocale(LC_NUMERIC, "C");
 
@@ -225,7 +230,7 @@ int main(int argc, char **argv)
 				if(i + 1 < argc)
 				{
 					++i;
-					Info(argv[i]);
+					MeshInfo(argv[i]);
 				}
 				else
 					printf("Missing FILE for '-info'!\n");
@@ -234,7 +239,7 @@ int main(int argc, char **argv)
 			{
 				if(i + 2 < argc)
 				{
-					Info(argv[i + 2], argv[i + 1]);
+					MeshInfo(argv[i + 2], argv[i + 1]);
 					i += 2;
 				}
 				else

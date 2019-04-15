@@ -37,7 +37,8 @@ enum Group
 	G_TRADER_KEYWORD,
 	G_ITEM_GROUP,
 	G_CONSUMABLE_GROUP,
-	G_SUBPROFILE_GROUP
+	G_SUBPROFILE_GROUP,
+	G_TAG
 };
 
 enum UnitDataType
@@ -141,10 +142,12 @@ enum SubprofileKeyword
 	SPK_SHIELD,
 	SPK_ARMOR,
 	SPK_AMULET,
+	SPK_RING,
 	SPK_TAG,
 	SPK_PRIORITY,
 	SPK_PERK,
-	SPK_ITEMS
+	SPK_ITEMS,
+	SPK_TAGS
 };
 
 
@@ -410,6 +413,7 @@ void UnitLoader::InitTokenizer()
 		{ "shield", IT_SHIELD },
 		{ "armor", IT_ARMOR },
 		{ "amulet", IT_AMULET },
+		{ "ring", IT_RING },
 		{ "other", IT_OTHER },
 		{ "consumable", IT_CONSUMABLE },
 		{ "book", IT_BOOK }
@@ -428,10 +432,22 @@ void UnitLoader::InitTokenizer()
 		{ "shield", SPK_SHIELD },
 		{ "armor", SPK_ARMOR },
 		{ "amulet", SPK_AMULET },
+		{ "ring", SPK_RING },
 		{ "tag", SPK_TAG },
 		{ "priority", SPK_PRIORITY },
 		{ "perk", SPK_PERK },
-		{ "items", SPK_ITEMS }
+		{ "items", SPK_ITEMS },
+		{ "tags", SPK_TAGS }
+		});
+
+	t.AddKeywords(G_TAG, {
+		{ "str", TAG_STR },
+		{ "dex", TAG_DEX },
+		{ "melee", TAG_MELEE },
+		{ "ranged", TAG_RANGED },
+		{ "def", TAG_DEF },
+		{ "stamina", TAG_STAMINA },
+		{ "mage", TAG_MAGE }
 		});
 }
 
@@ -1153,7 +1169,7 @@ void UnitLoader::ParseSubprofile(Ptr<StatProfile::Subprofile>& subprofile)
 			break;
 		case SPK_PRIORITY:
 			{
-				int set = 0, index = 0;
+				int set = 0;
 				t.AssertSymbol('{');
 				t.Next();
 				while(!t.IsSymbol('}'))
@@ -1177,6 +1193,9 @@ void UnitLoader::ParseSubprofile(Ptr<StatProfile::Subprofile>& subprofile)
 					case SPK_AMULET:
 						type = IT_AMULET;
 						break;
+					case SPK_RING:
+						type = IT_RING;
+						break;
 					default:
 						t.Unexpected();
 						break;
@@ -1184,8 +1203,11 @@ void UnitLoader::ParseSubprofile(Ptr<StatProfile::Subprofile>& subprofile)
 					if(IS_SET(set, 1 << type))
 						t.Throw("Subprofile priority already set.");
 					set |= (1 << type);
-					subprofile->priorities[index] = type;
-					++index;
+					t.Next();
+					float value = t.MustGetNumberFloat();
+					if(value < 0.f)
+						t.Throw("Invalid subprofile priority %g.", value);
+					subprofile->priorities[type] = value;
 					t.Next();
 				}
 			}
@@ -1231,6 +1253,26 @@ void UnitLoader::ParseSubprofile(Ptr<StatProfile::Subprofile>& subprofile)
 				script->is_subprofile = true;
 				subprofile->item_script = script.Get();
 				ParseItems(script);
+			}
+			break;
+		case SPK_TAGS:
+			{
+				int set = 0;
+				t.AssertSymbol('{');
+				t.Next();
+				while(!t.IsSymbol('}'))
+				{
+					ItemTag tag = (ItemTag)t.MustGetKeywordId(G_TAG);
+					if(IS_SET(set, 1 << tag))
+						t.Throw("Subprofile tag priority already set.");
+					set |= (1 << tag);
+					t.Next();
+					float value = t.MustGetNumberFloat();
+					if(value < 0.f)
+						t.Throw("Invalid subprofile tag priority %g.", value);
+					subprofile->tag_priorities[tag] = value;
+					t.Next();
+				}
 			}
 			break;
 		default:

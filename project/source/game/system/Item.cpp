@@ -20,6 +20,7 @@ vector<Bow*> Bow::bows;
 vector<Shield*> Shield::shields;
 vector<Armor*> Armor::armors;
 vector<Amulet*> Amulet::amulets;
+vector<Ring*> Ring::rings;
 vector<Consumable*> Consumable::consumables;
 vector<OtherItem*> OtherItem::others;
 vector<OtherItem*> OtherItem::artifacts;
@@ -47,12 +48,13 @@ Item& Item::operator = (const Item& i)
 	weight = i.weight;
 	value = i.value;
 	flags = i.flags;
+	effects = i.effects;
 	switch(type)
 	{
 	case IT_WEAPON:
 		{
-			auto& w = ToWeapon();
-			auto& w2 = i.ToWeapon();
+			Weapon& w = ToWeapon();
+			const Weapon& w2 = i.ToWeapon();
 			w.dmg = w2.dmg;
 			w.dmg_type = w2.dmg_type;
 			w.req_str = w2.req_str;
@@ -62,8 +64,8 @@ Item& Item::operator = (const Item& i)
 		break;
 	case IT_BOW:
 		{
-			auto& b = ToBow();
-			auto& b2 = i.ToBow();
+			Bow& b = ToBow();
+			const Bow& b2 = i.ToBow();
 			b.dmg = b2.dmg;
 			b.req_str = b2.req_str;
 			b.speed = b2.speed;
@@ -71,8 +73,8 @@ Item& Item::operator = (const Item& i)
 		break;
 	case IT_SHIELD:
 		{
-			auto& s = ToShield();
-			auto& s2 = i.ToShield();
+			Shield& s = ToShield();
+			const Shield& s2 = i.ToShield();
 			s.block = s2.block;
 			s.req_str = s2.req_str;
 			s.material = s2.material;
@@ -80,8 +82,8 @@ Item& Item::operator = (const Item& i)
 		break;
 	case IT_ARMOR:
 		{
-			auto& a = ToArmor();
-			auto& a2 = i.ToArmor();
+			Armor& a = ToArmor();
+			const Armor& a2 = i.ToArmor();
 			a.def = a2.def;
 			a.req_str = a2.req_str;
 			a.mobility = a2.mobility;
@@ -91,27 +93,42 @@ Item& Item::operator = (const Item& i)
 			a.tex_override = a2.tex_override;
 		}
 		break;
+	case IT_AMULET:
+		{
+			Amulet& a = ToAmulet();
+			const Amulet& a2 = i.ToAmulet();
+			for(int i = 0; i < MAX_ITEM_TAGS; ++i)
+				a.tag[i] = a2.tag[i];
+		}
+		break;
+	case IT_RING:
+		{
+			Ring& r = ToRing();
+			const Ring& r2 = i.ToRing();
+			for(int i = 0; i < MAX_ITEM_TAGS; ++i)
+				r.tag[i] = r2.tag[i];
+		}
+		break;
 	case IT_OTHER:
 		{
-			auto& o = ToOther();
-			auto& o2 = i.ToOther();
+			OtherItem& o = ToOther();
+			const OtherItem& o2 = i.ToOther();
 			o.other_type = o2.other_type;
 		}
 		break;
 	case IT_CONSUMABLE:
 		{
-			auto& c = ToConsumable();
-			auto& c2 = i.ToConsumable();
-			c.effect = c2.effect;
-			c.power = c2.power;
+			Consumable& c = ToConsumable();
+			const Consumable& c2 = i.ToConsumable();
 			c.time = c2.time;
 			c.cons_type = c2.cons_type;
+			c.is_healing_potion = c2.is_healing_potion;
 		}
 		break;
 	case IT_BOOK:
 		{
-			auto& b = ToBook();
-			auto& b2 = i.ToBook();
+			Book& b = ToBook();
+			const Book& b2 = i.ToBook();
 			b.scheme = b2.scheme;
 			b.runic = b2.runic;
 		}
@@ -229,6 +246,18 @@ bool ItemCmp(const Item* a, const Item* b)
 	}
 	else
 		return a->type < b->type;
+}
+
+//=================================================================================================
+float Item::GetEffectPower(EffectId effect) const
+{
+	float power = 0.f;
+	for(const ItemEffect& e : effects)
+	{
+		if(e.effect == effect)
+			power += e.power;
+	}
+	return power;
 }
 
 //=================================================================================================
@@ -467,40 +496,4 @@ const Item* FindItemOrList(Cstring id, ItemListResult& lis)
 
 	lis = ItemList::TryGet(id);
 	return nullptr;
-}
-
-//=================================================================================================
-EffectId Consumable::ToEffect() const
-{
-	switch(effect)
-	{
-	case E_NONE:
-		return EffectId::None;
-	case E_HEAL:
-	case E_ANTIDOTE:
-	case E_STR:
-	case E_END:
-	case E_DEX:
-	case E_GREEN_HAIR:
-	default:
-		// instant effects
-		assert(0);
-		return EffectId::None;
-	case E_REGENERATE:
-		return EffectId::Regeneration;
-	case E_NATURAL:
-		return EffectId::NaturalHealingMod;
-	case E_POISON:
-		return EffectId::Poison;
-	case E_ALCOHOL:
-		return EffectId::Alcohol;
-	case E_ANTIMAGIC:
-		return EffectId::MagicResistance;
-	case E_FOOD:
-		return EffectId::FoodRegeneration;
-	case E_STAMINA:
-		return EffectId::StaminaRegeneration;
-	case E_STUN:
-		return EffectId::Stun;
-	}
 }

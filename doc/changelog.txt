@@ -4,7 +4,13 @@ Historia zmian
 Wersja 0.10 (2019-??-??):
 ! nie mo¿na wczytywaæ ju¿ zapisów z wersji 0.2.20 lub starszej
 + nowe unikalne zadanie: Zio³a dla alchemika
++ nowe efekty postaci: maksymalna wytrzyma³oœæ, szybkoœæ regeneracji wytrzyma³oœci, premia do atrybutu/umiejêtnoœci
++ nowy atut (energiczny)
++ sklep wie¿a magów w niektórych miastach
 + alchemik teraz skupuje zio³a
++ pierœcienie: srebrny, z³oty, szmaragdowy, 27 magicznych pierœcieni
++ nowe przedmioty: Ÿródlana woda, pancerz ze skóry trolla, 9 magicznych amuletów
++ lepsze ustalanie priorytetów przez bohaterów kupuj¹cych/prosz¹cych o przedmioty
 + aktualizacja bibliotek: FMod 1.10.12, JSON for Modern C++ 3.6.1
 - naprawiony nieskoñczony czas oczekiwania przy u¿yciu opcji -delay
 

@@ -5,13 +5,14 @@
 ItemLoader.cpp
 UnitLoader.cpp - to allow selling
 If equippable
-	Item.IsWearable/IsWearableByHuman
-	ItemSlot.h - Add new slots in ItemSlot.h (ItemTypeToSlot, IsVisible)
-	Unit.AddItemAndEquipIfNone
-	Unit.UpdateInventory
-	Unit.IsBetterItem
-	Unit.Save/Load, Read/Write for visible slots
+	Item.IsWearable
+	ItemSlot.h - Add new slots in ItemSlot.h (ItemTypeToSlot)
+	Unit.UpdateInventory, IsBetterItem, CanWear, Save/Load, Read/Write for visible slots
 	Team.CheckTeamItemShares, BuyTeamItems
+	If item have multiple slots:
+		Unit.AddItemAndEquipIfNone
+		Inventory.cpp
+	UnitStats default_priorities
 If need special texts in inventory:
 	ItemSlot.GetItemString
 If require special ordering:
@@ -22,11 +23,14 @@ Game2.cpp:GetItemSound
 */
 enum ITEM_TYPE
 {
+	IT_NONE = -1,
+
 	IT_WEAPON,
 	IT_BOW,
 	IT_SHIELD,
 	IT_ARMOR,
 	IT_AMULET,
+	IT_RING,
 	IT_OTHER,
 	IT_MAX_WEARABLE = IT_OTHER, // used in Team.cpp priorities
 	IT_CONSUMABLE,

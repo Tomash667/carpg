@@ -1,6 +1,10 @@
 CHANGELOG
 Minor updates have changes only in exporter/converer, don't affect qmsh file.
 ---------------------------
+v21.2:
+CONVERTER:
++ refactoring old TFQ code
+
 v21.1:
 IMPORTER (v21):
 + importer tries to fix duplicated faces

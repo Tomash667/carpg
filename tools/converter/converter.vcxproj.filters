@@ -1,65 +1,46 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Common">
-      <UniqueIdentifier>{9dfde5a3-b5b1-4a6d-8660-96f2c1150a68}</UniqueIdentifier>
-    </Filter>
     <Filter Include="external">
       <UniqueIdentifier>{409bf09a-475d-43f9-8141-21468da4c79f}</UniqueIdentifier>
     </Filter>
     <Filter Include="doc">
       <UniqueIdentifier>{173bfe71-4736-4115-8bd7-5cae9a324d4e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="core">
+      <UniqueIdentifier>{e734b5f8-5bd5-4fe6-82cf-89490ad88a4d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Common\Base.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
-    <ClCompile Include="Common\Error.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
-    <ClCompile Include="Common\Files.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
-    <ClCompile Include="Common\Math.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
-    <ClCompile Include="Common\Stream.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
-    <ClCompile Include="Common\Tokenizer.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MeshMender.cpp" />
     <ClCompile Include="MeshTask.cpp" />
-    <ClCompile Include="PCH.cpp" />
     <ClCompile Include="Mesh.cpp">
       <Filter>external</Filter>
     </ClCompile>
     <ClCompile Include="QmshTmpLoader.cpp" />
     <ClCompile Include="QmshSaver.cpp" />
     <ClCompile Include="Converter.cpp" />
+    <ClCompile Include="..\..\project\source\core\Tokenizer.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\project\source\core\Containers.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\project\source\core\CoreMath.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\project\source\core\File.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\project\source\core\Logger.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\project\source\core\Text.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Common\Base.hpp">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="Common\Error.hpp">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="Common\Files.hpp">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="Common\Math.hpp">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="Common\Stream.hpp">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="Common\Tokenizer.hpp">
-      <Filter>Common</Filter>
-    </ClInclude>
     <ClInclude Include="MeshMender.h" />
     <ClInclude Include="MeshTask.hpp" />
     <ClInclude Include="PCH.hpp" />
@@ -72,6 +53,27 @@
     <ClInclude Include="Converter.h" />
     <ClInclude Include="QmshSaver.h" />
     <ClInclude Include="ConversionData.h" />
+    <ClInclude Include="..\..\project\source\core\Tokenizer.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\project\source\core\Containers.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\project\source\core\Core.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\project\source\core\CoreMath.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\project\source\core\File.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\project\source\core\Logger.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\project\source\core\Text.h">
+      <Filter>core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="changelog.txt">
@@ -80,5 +82,10 @@
     <Text Include="UWAGI.TXT">
       <Filter>doc</Filter>
     </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\project\source\core\CoreMath.inl">
+      <Filter>core</Filter>
+    </None>
   </ItemGroup>
 </Project>

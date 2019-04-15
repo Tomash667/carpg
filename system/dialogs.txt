@@ -4295,3 +4295,28 @@ dialog tomir
 		show_choices
 	}
 }
+
+//==============================================================================
+dialog mage_seller
+{
+	if once
+		talk 0
+	choice 1
+		trade
+	choice 2
+	{
+		talk 3
+		restart
+	}
+	if have_item q_szaleni_kamien
+	{
+		choice 4
+		{
+			talk 5
+			restart
+		}
+	}
+	escape choice 6
+		end
+	show_choices
+}

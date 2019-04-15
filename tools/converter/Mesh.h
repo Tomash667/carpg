@@ -85,7 +85,7 @@ struct Mesh
 		byte version, flags;
 		word n_verts, n_tris, n_subs, n_bones, n_anims, n_points, n_groups;
 		float radius;
-		BOX bbox;
+		Box bbox;
 		uint points_offset;
 	};
 
@@ -144,7 +144,7 @@ struct Mesh
 		string name;
 		word id;
 		word parent;
-		MATRIX mat, raw_mat;
+		Matrix mat, raw_mat;
 		Vec4 head, tail;
 		vector<word> childs;
 		bool connected;
@@ -168,7 +168,7 @@ struct Mesh
 	struct KeyframeBone
 	{
 		Vec3 pos;
-		QUATERNION rot;
+		Quat rot;
 		float scale;
 
 		bool operator == (const KeyframeBone& keyframe_bone) const
@@ -224,7 +224,7 @@ struct Mesh
 		};
 
 		string name;
-		MATRIX mat;
+		Matrix mat;
 		Vec3 rot;
 		word bone;
 		Type type;
@@ -256,7 +256,7 @@ struct Mesh
 	{
 		Vec3 pos;
 		float radius;
-		BOX box;
+		Box box;
 	};
 
 	Mesh() : vdata(nullptr), fdata(nullptr)
@@ -269,7 +269,7 @@ struct Mesh
 	}
 	void LoadSafe(cstring path);
 	void Load(cstring path);
-	void LoadBoneGroups(common::FileStream& f);
+	void LoadBoneGroups(FileReader& f);
 	void Save(cstring path);
 	Point* GetPoint(const string& id);
 

@@ -178,7 +178,7 @@ See changelog_eng.txt file.
 To open console press ~ [to the left from 1]. Some commands are only available
 in multiplayer on lobby. Devmode must be activated (devmode 1).
 Available commands:
-	add_effect - add effect to selected unit (add_effect effect power [source [perk/time]]).
+	add_effect - add effect to selected unit (add_effect effect <value_type> power [source [perk/time]]).
 	add_gold - give gold to player (add_gold count).
 	add_team_gold - give gold to team (add_team_gold count).
 	add_item - add item to player inventory (add_item id [count]).
@@ -242,7 +242,7 @@ Available commands:
 	ready - set player as ready/unready.
 	refresh_cooldown - refresh action cooldown/charges.
 	reload_shaders - reload shaders.
-	remove_effect - remove effect from selected unit (remove_effect effect/source [perk]).
+	remove_effect - remove effect from selected unit (remove_effect effect/source [perk] [value_type]).
 	remove_perk - remove perk from selected unit (remove_perk perk).
 	resolution - show or change display resolution (resolution [w h hz]).
 	reveal - reveal all locations on world map.

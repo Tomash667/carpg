@@ -664,6 +664,7 @@ void BuildingLoader::StartVariant(BuildingScript& script)
 	AddVar("counter");
 	AddVar("citizens");
 	AddVar("citizens_world");
+	AddVar("first_city", true);
 }
 
 //=================================================================================================

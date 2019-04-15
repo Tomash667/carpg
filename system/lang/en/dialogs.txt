@@ -1964,3 +1964,18 @@ dialog tomir {
 	10 "I guess it was supposed to be this way..."
 	11 "Nothing here for me, maybe we will meet again someday. See you later..."
 }
+
+//==============================================================================
+dialog mage_seller {
+	0 {
+		"Welcome. Do you need some magic items?"
+		"What's going on in the world of magic?"
+		"Magical artifacts at affordable prices!"
+	}
+	1 "Let's trade"
+	2 "What you do here?"
+	3 "I am a magician. Together with several other mages in the tower, we deal with the enchanting of item."
+	4 "Ask about strange stone"
+	5 "I can feel the magical aura emanating from this stone, it looks like it is cursed."
+	6 "End dialog"
+}

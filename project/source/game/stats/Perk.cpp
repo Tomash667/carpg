@@ -40,7 +40,8 @@ PerkInfo PerkInfo::perks[] = {
 	PerkInfo(Perk::Tough, "tough", 0, 2),
 	PerkInfo(Perk::HardSkin, "hard_skin", 0, 2),
 	PerkInfo(Perk::Adaptation, "adaptation", 0, 3),
-	PerkInfo(Perk::PerfectHealth, "perfect_health", 0, 5)
+	PerkInfo(Perk::PerfectHealth, "perfect_health", 0, 5),
+	PerkInfo(Perk::Energetic, "energetic", 0, 2)
 };
 
 //-----------------------------------------------------------------------------
@@ -127,6 +128,7 @@ void PerkContext::AddEffect(Perk perk, EffectId effect, float power)
 		e.effect = effect;
 		e.source = EffectSource::Perk;
 		e.source_id = (int)perk;
+		e.value = -1;
 		e.power = power;
 		e.time = 0.f;
 		pc->unit->AddEffect(e, false); // don't send ADD_EFFECT, adding perk will add effects
@@ -137,7 +139,7 @@ void PerkContext::AddEffect(Perk perk, EffectId effect, float power)
 void PerkContext::RemoveEffect(Perk perk)
 {
 	if(pc)
-		pc->unit->RemoveEffects(EffectId::None, EffectSource::Perk, (int)perk);
+		pc->unit->RemoveEffects(EffectId::None, EffectSource::Perk, (int)perk, -1);
 }
 
 //=================================================================================================
@@ -329,6 +331,8 @@ bool TakenPerk::CanTake(PerkContext& ctx)
 		return ctx.Have(AttributeId::END, 75) && !ctx.HavePerk(Perk::ChronicDisease);
 	case Perk::PerfectHealth:
 		return ctx.Have(AttributeId::END, 90) && !ctx.HavePerk(Perk::ChronicDisease);
+	case Perk::Energetic:
+		return ctx.Have(AttributeId::DEX, 60) && ctx.Have(AttributeId::END, 60) && !ctx.HavePerk(Perk::Sluggish);
 	default:
 		assert(0);
 		return true;
@@ -429,6 +433,11 @@ void TakenPerk::Apply(PerkContext& ctx)
 		ctx.AddEffect(perk, EffectId::Regeneration, 5.f);
 		ctx.AddRequired(AttributeId::END);
 		break;
+	case Perk::Energetic:
+		ctx.AddEffect(perk, EffectId::Stamina, 100.f);
+		ctx.AddRequired(AttributeId::DEX);
+		ctx.AddRequired(AttributeId::END);
+		break;
 	}
 
 	if(ctx.cc)
@@ -504,6 +513,10 @@ void TakenPerk::Remove(PerkContext& ctx)
 		ctx.RemoveRequired(AttributeId::END);
 		break;
 	case Perk::PerfectHealth:
+		ctx.RemoveRequired(AttributeId::END);
+		break;
+	case Perk::Energetic:
+		ctx.RemoveRequired(AttributeId::DEX);
 		ctx.RemoveRequired(AttributeId::END);
 		break;
 	}

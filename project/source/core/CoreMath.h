@@ -205,6 +205,23 @@ inline T Min(T a, T2 b, Args... args)
 	else
 		return Min(a, args...);
 }
+template<typename T, int N>
+inline T Min(const T(&arr)[N])
+{
+	static_assert(std::is_integral<T>::value || std::is_floating_point<T>::value, "T must be int or float");
+	T value = arr[0];
+	for(int i = 1; i < N; ++i)
+	{
+		if(arr[i] < value)
+			value = arr[i];
+	}
+	return value;
+}
+template<typename T>
+inline T Min(const T(&arr)[2])
+{
+	return Min(arr[0], arr[1]);
+}
 
 // Find min value from any arguments count
 template<typename T, typename T2>
@@ -224,6 +241,23 @@ inline T Max(T a, T2 b, Args... args)
 		return Max(b, args...);
 	else
 		return Max(a, args...);
+}
+template<typename T, int N>
+inline T Max(const T(&arr)[N])
+{
+	static_assert(std::is_integral<T>::value || std::is_floating_point<T>::value, "T must be int or float");
+	T value = arr[0];
+	for(int i = 1; i < N; ++i)
+	{
+		if(arr[i] > value)
+			value = arr[i];
+	}
+	return value;
+}
+template<typename T>
+inline T Max(const T(&arr)[2])
+{
+	return Max(arr[0], arr[1]);
 }
 
 // Distance between two 2d points
@@ -588,12 +622,15 @@ struct Vec2 : XMFLOAT2
 	explicit Vec2(const XMVECTORF32& v);
 
 	operator XMVECTOR() const;
-	operator float*();
-	operator const float*() const;
+	explicit operator float*();
+	explicit operator const float*() const;
+	float& operator [](int index);
+	const float& operator [](int index) const;
 
 	// Comparison operators
 	bool operator == (const Vec2& v) const;
 	bool operator != (const Vec2& v) const;
+	bool operator < (const Vec2& v) const;
 
 	// Assignment operators
 	Vec2& operator = (const Vec2& v);
@@ -699,12 +736,15 @@ struct Vec3 : XMFLOAT3
 	explicit Vec3(const float* f);
 
 	operator XMVECTOR() const;
-	operator float*();
-	operator const float*() const;
+	explicit operator float*();
+	explicit operator const float*() const;
+	float& operator [](int index);
+	const float& operator [](int index) const;
 
 	// Comparison operators
 	bool operator == (const Vec3& v) const;
 	bool operator != (const Vec3& v) const;
+	bool operator < (const Vec3& v) const;
 
 	// Assignment operators
 	Vec3& operator = (const Vec3& v);
@@ -814,12 +854,15 @@ struct Vec4 : XMFLOAT4
 	explicit Vec4(const XMVECTORF32& v);
 
 	operator XMVECTOR() const;
-	operator float*();
-	operator const float*() const;
+	explicit operator float*();
+	explicit operator const float*() const;
+	float& operator [](int index);
+	const float& operator [](int index) const;
 
 	// Comparison operators
 	bool operator == (const Vec4& v) const;
 	bool operator != (const Vec4& v) const;
+	bool operator < (const Vec4& v) const;
 
 	// Assignment operators
 	Vec4& operator = (const Vec4& v);
@@ -1105,6 +1148,7 @@ struct Box
 	friend Box operator * (float f, const Box& b);
 
 	// Methods
+	void AddPoint(const Vec3& v);
 	Vec3 GetRandomPoint() const;
 	bool IsInside(const Vec3& v) const;
 	bool IsValid() const;
@@ -1427,6 +1471,10 @@ bool OOBToOOB(const Oob& a, const Oob& b);
 float DistanceRectangleToPoint(const Vec2& pos, const Vec2& size, const Vec2& pt);
 float PointLineDistance(float x0, float y0, float x1, float y1, float x2, float y2);
 float GetClosestPointOnLineSegment(const Vec2& A, const Vec2& B, const Vec2& P, Vec2& result);
+inline float ClosestPointOnLine(const Vec3& p, const Vec3& ray_pos, const Vec3& ray_dir)
+{
+	return ray_dir.Dot(p - ray_pos);
+}
 
 //-----------------------------------------------------------------------------
 #include "CoreMath.inl"

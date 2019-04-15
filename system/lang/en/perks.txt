@@ -91,3 +91,7 @@ perk perfect_health {
 	name "Perfect health"
 	desc "Gives a health regeneration that restores 5 points per second."
 }
+perk energetic {
+	name "Energetic"
+	desc "+100 stamina."
+}

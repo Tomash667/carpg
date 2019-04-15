@@ -10,8 +10,8 @@ struct Bullet
 	Spell* spell;
 	Vec3 pos, rot, start_pos;
 	Mesh* mesh;
-	float speed, timer, attack, tex_size, yspeed, poison_attack;
-	int level, backstab;
+	float speed, timer, attack, tex_size, yspeed, poison_attack, backstab;
+	int level;
 	TexturePtr tex;
 	TrailParticleEmitter* trail, *trail2;
 	ParticleEmitter* pe;

@@ -273,7 +273,10 @@ inline bool IsInside(const vector<T>* v, const T& elem)
 //-----------------------------------------------------------------------------
 // Object pool pattern
 //-----------------------------------------------------------------------------
-#ifdef _DEBUG
+#if defined(_DEBUG) && !defined(COMMON_ONLY)
+#	define CHECK_POOL_LEAKS
+#endif
+#ifdef CHECK_POOL_LEAKS
 struct ObjectPoolLeakManager
 {
 	struct CallStackEntry;
@@ -313,7 +316,7 @@ struct ObjectPool
 		{
 			t->OnGet();
 		}
-#ifdef _DEBUG
+#ifdef CHECK_POOL_LEAKS
 		ObjectPoolLeakManager::instance.Register(t);
 #endif
 		return t;
@@ -342,7 +345,7 @@ public:
 	void Free(T* e)
 	{
 		assert(e && !destroyed);
-#ifdef _DEBUG
+#ifdef CHECK_POOL_LEAKS
 		VerifyElement(e);
 		ObjectPoolLeakManager::instance.Unregister(e);
 #endif
@@ -368,7 +371,7 @@ public:
 			}
 		}
 
-#ifdef _DEBUG
+#ifdef CHECK_POOL_LEAKS
 		CheckDuplicates(elems);
 		for(T* e : elems)
 		{
@@ -392,7 +395,7 @@ public:
 			__if_exists(T::OnFree)
 			{
 				e->OnFree();
-#ifdef _DEBUG
+#ifdef CHECK_POOL_LEAKS
 				ObjectPoolLeakManager::instance.Unregister(e);
 #endif
 			}
@@ -402,7 +405,7 @@ public:
 
 	void SafeFree(vector<T*>& elems)
 	{
-#ifdef _DEBUG
+#ifdef CHECK_POOL_LEAKS
 		CheckDuplicates(elems);
 #endif
 		if(!destroyed)
@@ -411,7 +414,7 @@ public:
 			{
 				if(e)
 				{
-#ifdef _DEBUG
+#ifdef CHECK_POOL_LEAKS
 					VerifyElement(e);
 					ObjectPoolLeakManager::instance.Unregister(e);
 #endif
@@ -433,7 +436,7 @@ public:
 					{
 						e->OnFree();
 					}
-#ifdef _DEBUG
+#ifdef CHECK_POOL_LEAKS
 					ObjectPoolLeakManager::instance.Unregister(e);
 #endif
 					delete e;
@@ -1355,7 +1358,9 @@ public:
 		return data.data();
 	}
 	// decompress buffer to new buffer and return it, old one is freed
+#ifndef COMMON_ONLY
 	Buffer* Decompress(uint real_size);
+#endif
 	void Resize(uint size)
 	{
 		data.resize(size);

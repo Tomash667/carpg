@@ -233,7 +233,6 @@ item al_padded_hq {
 	desc "The simplest kind of armor made of layers of cloth that were sewn together. This one is of high quality."
 }
 item al_padded_m {
-	//name "Padded armor"
 	name "Magical padded armor"
 	desc "The simplest armor made of sewn together layers of cloth. This one is magical."
 }
@@ -246,13 +245,11 @@ item al_leather_hq {
 	desc "Armor from tanned cowhide, hardened by cooking it in oil. This one is of high quality."
 }
 item al_leather_m {
-	//name "Leather armor"
 	name "Magical leather armor"
 	desc "Armor from tanned cowhide, hardened by cooking it in oil. This one is magical."
 }
 item al_dragonskin {
 	name "Dragonskin armor"
-	//desc "Leather armor made of red dragon skin, it's heavier but gives very good protection. Provides protection against fire."
 	desc "Leather armor made of red dragon skin, it's heavier but gives very good protection."
 }
 item al_studded {
@@ -264,7 +261,6 @@ item al_studded_hq {
 	desc "Leather armor with pounded metal studs. This one is of high quality."
 }
 item al_studded_m {
-	//name "Studded armor"
 	name "Magical studded armor"
 	desc "Leather armor with pounded metal studs. This one is magical."
 }
@@ -281,7 +277,6 @@ item al_chain_shirt_hq {
 	desc "Light armor made from small interwoven circles to protect the torso. Other parts of the body are protected by leather. This one is of high quality."
 }
 item al_chain_shirt_m {
-	//name "Chain shirt"
 	name "Magical chain shirt"
 	desc "Light armor made from small interwoven circles to protect the torso. Other parts of the body are protected by leather. This one is magical."
 }
@@ -291,7 +286,6 @@ item al_chain_shirt_mith {
 }
 item al_angelskin {
 	name "Angelskin armor"
-	//desc "Artifact chain shirt created by angels from another plane. Wearing it feels like being naked. Improves regeneration of allies and gives resistance to negative energy."
 	desc "Artifact chain shirt created by angels from another plane. Wearing it feels like being naked."
 }
 
@@ -306,14 +300,12 @@ item am_hide_hq {
 	desc "Created from multiple layers of wild animal hide. It limits movement and is not too durable, but cheap to produce. This one is of high quality."
 }
 item am_hide_m {
-	//name "Hide armor"
 	name "Magical hide armor"
 	desc "Created from multiple layers of wild animal hide. It limits movement and is not too durable but, cheap to produce. This one is magical."
 }
 item am_troll_hide {
 	name "Troll hide armor"
-	//desc "An armor made of troll hide. Its owner, like a troll, gains increased strength and endurance and rapid natural regeneration."
-	desc "An armor made of troll hide. It's very durable."
+	desc "An armor made of troll hide. Its owner, like a troll, gains health regeneration."
 }
 item am_chainmail {
 	name "Chainmail"
@@ -324,7 +316,6 @@ item am_chainmail_hq {
 	desc "Armor made of many metal rings and a leather insole. This one is of high quality."
 }
 item am_chainmail_m {
-	//name "Chainmail"
 	name "Magical chainmail"
 	desc "Armor made of many metal rings and a leather insole. This one is magical."
 }
@@ -341,13 +332,11 @@ item am_scale_hq {
 	desc "Leather armor covered with metal pieces whick look like fish scales. This one is of high quality."
 }
 item am_scale_m {
-	//name "Scale armor"
 	name "Magical scale armor"
 	desc "Leather armor covered with metal pieces whick look like fish scales. This one is magical."
 }
 item am_dragonscale {
 	name "Dragonscale armor"
-	//desc "Scale armor created from red dragon scales. Provides protection against fire."
 	desc "Scale armor created from red dragon scales."
 }
 item am_breastplate {
@@ -359,7 +348,6 @@ item am_breastplate_hq {
 	desc "Breastplate made of two large pieces of metal which protect the stomach and chest. The limbs are exposed to blows. This one is of high quality."
 }
 item am_breastplate_m {
-	//name "Breastplate"
 	name "Magical breastplate"
 	desc "Breastplate made of two large pieces of metal which protect the stomach and chest. The limbs are exposed to blows. This one is magical."
 }
@@ -374,7 +362,6 @@ item am_breastplate_adam {
 item am_gladiator {
 	name "Gladiator armor"
 	desc "The magical breastplate that the gladiator Cord the Swindler used for many years. He won dozens of fights in the arena before someone realized that it is magical. They took him and threw him into the arena without it, pitting him against some goblins who defeated him."
-//	Increases attributes and skills that are useful in combat."
 }
 
 //------------------------------------------------------------------------------
@@ -392,7 +379,6 @@ item ah_splint_hq {
 	desc "Armor made of multiple metal strips tightly clinging to the leather pad. It provides good protection at the cost of mobility. This one is of high quality."
 }
 item ah_splint_m {
-	//name "Splint armor"
 	name "Magical splint armor"
 	desc "Armor made of multiple metal strips tightly clinging to the leather pad. It provides good protection at the cost of mobility. This one is magical."
 }
@@ -413,7 +399,6 @@ item ah_plate_hq {
 	desc "Armor made of metal plates overlapping each other, providing a very good protection. The only downsides are the weight and cost. This one is of high quality."
 }
 item ah_plate_m {
-	//name "Plate armor"
 	name "Magical plate armor"
 	desc "Armor made of metal plates overlapping each other, providing a very good protection. The only downsides are the weight and cost. This one is magical."
 }
@@ -435,7 +420,6 @@ item ah_crystal {
 	desc "Deep in the caves, strange crystals can be found. Dwarves quickly got their hands on them and began to create armors. The resulting armors are extremely heavy and durable."
 }
 item ah_crystal_m {
-	//name "Crystal armor"
 	name "Magical crystal armor"
 	desc "Deep in the caves, strange crystals can be found. Dwarves quickly got their hands on them and began to create armors. The resulting armors are extremely heavy and durable. This one is magical."
 }
@@ -530,6 +514,162 @@ item a_ruby {
 item a_diamond {
 	name "Diamond amulet"
 }
+item a_food {
+	name "Amulet of gourmet"
+	desc "+50% to health recovered by eating food or rest."
+}
+item a_sprinter {
+	name "Amulet of sprinter"
+	desc "+25 to mobility."
+}
+item a_mage {
+	name "Amulet of mage"
+	desc "Increase power of mage spells."
+}
+item a_defense {
+	name "Amulet of natural armor"
+	desc "+50 to defense."
+}
+item a_stamina {
+	name "Amulet of energy"
+	desc "+100 to stamina and increase regeneration speed of stamina."
+}
+item a_warrior {
+	name "Amulet of warrior"
+	desc "+50 to melee attack, +10 to strength, +20 to one handed weapon skill."
+}
+item a_archer {
+	name "Amulet of archer"
+	desc "+50 to ranged attack, +10 to dexterity, +20 to bow skill."
+}
+item a_antimagic {
+	name "Amulet of antimagic"
+	desc "+25% to magic resistance."
+}
+item a_health {
+	name "Amulet of health"
+	desc "+250 to health, +10 to endurance, +10 health regeneration, +25% poison resistance."
+}
+
+//------------------------------------------------------------------------------
+// RINGS
+item r_silver {
+	name "Silver ring"
+}
+item r_gold {
+	name "Golden ring"
+}
+item r_emerald {
+	name "Emerald ring"
+}
+item r_str {
+	name "Ring of strength"
+	desc "+5 to strength."
+}
+item r_end {
+	name "Ring of endurance"
+	desc "+5 to endurance."
+}
+item r_dex {
+	name "Ring of dexterity"
+	desc "+5 to dexterity."
+}
+item r_hp {
+	name "Ring of health"
+	desc "+100 to health."
+}
+item r_stamina {
+	name "Ring of stamina"
+	desc "+50 to stamina."
+}
+item r_def {
+	name "Ring of defense"
+	desc "+15 to defense."
+}
+item r_attack {
+	name "Ring of attack"
+	desc "+15 to melee attack."
+}
+item r_ranged_attack {
+	name "Ring of ranged attack"
+	desc "+15 to ranged attack."
+}
+item r_mage {
+	name "Ring of mage"
+	desc "Increase power of mage spells."
+}
+item r_one_handed_weapon {
+	name "Ring of one handed weapon"
+	desc "+10 to one handed weapon skill."
+}
+item r_short_blade {
+	name "Ring of short blade"
+	desc "+10 to short blade skill."
+}
+item r_long_blade {
+	name "Ring of long blade"
+	desc "+10 to long blade skill."
+}
+item r_axe {
+	name "Ring of axe"
+	desc "+10 to axe skill."
+}
+item r_blunt {
+	name "Ring of blunt weapon"
+	desc "+10 to blunt weapon skill."
+}
+item r_bow {
+	name "Ring of bow"
+	desc "+10 to bow skill."
+}
+item r_shield {
+	name "Ring of shield"
+	desc "+10 to shield skill."
+}
+item r_light_armor {
+	name "Ring of light armor"
+	desc "+10 to light armor skill."
+}
+item r_medium_armor {
+	name "Ring of medium armor"
+	desc "+10 to medium armor skill."
+}
+item r_heavy_armor {
+	name "Ring of heavy armor"
+	desc "+10 to heavy armor skill."
+}
+item r_haggle {
+	name "Ring of haggle"
+	desc "+10 to haggle skill."
+}
+item r_carry {
+	name "Ring of porter"
+	desc "+50% to carry capacity."
+}
+item r_str2 {
+	name "Ring of greater strength"
+	desc "+15 to strength."
+}
+item r_end2 {
+	name "Ring of greater endurance"
+	desc "+15 to endurance."
+}
+item r_dex2 {
+	name "Ring of greater dexterity"
+	desc "+15 to dexterity."
+}
+item r_regeneration {
+	name "Ring of regeneration"
+	desc "+5 health regeneration."
+}
+item r_assassin {
+	name "Ring of assassin"
+	desc "+25% to backstab damage."
+}
+item r_poison_resistance {
+	name "Ring of poison resistance"
+	desc "+50% poison resistance."
+}
 
 //------------------------------------------------------------------------------
 // POTIONS
@@ -584,84 +724,88 @@ item p_antimagic {
 
 //------------------------------------------------------------------------------
 // DRINK
-item potion_beer {
+item beer {
 	name "Beer"
 	desc "A small dose of poison for oral administration. Bottoms up."
 }
-item potion_vodka {
+item vodka {
 	name "Vodka"
 	desc "A big dose of poison for oral administration."
 }
-item potion_spirit {
+item spirit {
 	name "Spirit"
 	desc "A very big dose of poison for oral administration. Are you sure you don't want something lighter?"
 }
-item potion_water {
+item water {
 	name "Water"
 	desc "Restores stamina."
+}
+item spring_water {
+	name "Spring water"
+	desc "Refreshing!"
 }
 
 //------------------------------------------------------------------------------
 // FOOD
 item bread {
 	name "Bread"
-	desc "Heals 20 hit points after eating."
+	desc "Heals 40 hit points after eating."
 }
 item meat {
 	name "Meat"
-	desc "Heals 25 hit points after eating."
+	desc "Heals 50 hit points after eating."
 }
 item raw_meat {
 	name "Raw meat"
-	desc "Heals 10 hit points after eating."
+	desc "Heals 20 hit points after eating."
 }
 item sausage {
 	name "Sausage"
-	desc "Heals 30 hit points after eating."
+	desc "Heals 60 hit points after eating."
 }
 item fish_meat {
 	name "Fish meat"
-	desc "Heals 20 hit points after eating."
+	desc "Heals 40 hit points after eating."
 }
 item fish {
 	name "Fish"
-	desc "Heals 10 hit points after eating."
+	desc "Heals 15 hit points after eating."
 }
 item apple {
 	name "Apple"
-	desc "Heals 15 hit points after eating."
+	desc "Heals 25 hit points after eating."
 }
 item cheese {
 	name "Cheese"
-	desc "Heals 20 hit points after eating."
+	desc "Heals 40 hit points after eating."
 }
 item honeycomb {
 	name "Honeycomb"
-	desc "Heals 30 hit points after eating."
+	desc "Heals 75 hit points after eating."
 }
 item rice {
 	name "Rice"
-	desc "Heals 15 hit points after eating."
+	desc "Heals 30 hit points after eating."
 }
 item soup {
 	name "Soup"
-	desc "Heals 20 hit points after eating."
+	desc "Heals 45 hit points after eating."
 }
 item stew {
 	name "Stew"
-	desc "Heals 30 hit points after eating."
+	desc "Heals 60 hit points after eating."
 }
 item muffin {
 	name "Muffin"
-	desc "Heals 50 hit points after eating."
+	desc "Heals 100 hit points after eating."
 }
 item mushroom {
 	name "Mushroom"
-	desc "Heals 10 hit points after eating."
+	desc "Heals 15 hit points after eating."
 }
 item healing_herb {
 	name "Healing herb"
-	desc "Instantly heals 200 hit points."
+	desc "Instantly heals 150 hit points."
 }
 item green_herb {
 	name "Green herb"

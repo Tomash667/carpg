@@ -2,45 +2,34 @@
 #include "MeshMender.h"
 #include <set>
 
-//using namespace nv;
 #define nvCheck(x)
-
-/*bool operator<( const Vec3 & lhs, const Vec3 & rhs )
-{
-	return true;
-}*/
 
 Vec3 normalize(const Vec3& v,float = 0.f)
 {
-	Vec3 out;
-	D3DXVec3Normalize((D3DXVECTOR3*)&out,(D3DXVECTOR3*)&v);
-	return out;
+	return v.Normalized();
 }
 
 float dot(const Vec3& v1,const Vec3& v2)
 {
-	return D3DXVec3Dot((D3DXVECTOR3*)&v1,(D3DXVECTOR3*)&v2);
+	return v1.Dot(v2);
 }
 
 Vec3 cross(const Vec3& v1,const Vec3& v2)
 {
-	Vec3 out;
-	D3DXVec3Cross((D3DXVECTOR3*)&out,(D3DXVECTOR3*)&v1,(D3DXVECTOR3*)&v2);
-	return out;
+	return v1.Cross(v2);
 }
 
 Vec3 normalizeSafe(const Vec3& v, const Vec3& fallback, float epsilon)
 {
-	float l = D3DXVec3Length((D3DXVECTOR3*)&v);
-	if (abs(l)<=epsilon) {
+	float l = v.Length();
+	if (abs(l)<=epsilon)
 		return fallback;
-	}
 	return v * (1.0f / l);
 }
 
 float length(const Vec3& v)
 {
-	return D3DXVec3Length((D3DXVECTOR3*)&v);
+	return v.Length();
 }
 
 

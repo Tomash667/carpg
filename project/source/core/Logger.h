@@ -152,6 +152,13 @@ inline void Warn(cstring msg, const Args&... args)
 	Logger::global->Log(Logger::L_WARN, Format(msg, args...));
 }
 
+void WarnOnce(int id, cstring msg);
+template<typename... Args>
+inline void WarnOnce(int id, cstring msg, const Args&... args)
+{
+	WarnOnce(id, Format(msg, args...));
+}
+
 inline void Error(cstring msg)
 {
 	Logger::global->Log(Logger::L_ERROR, msg);
