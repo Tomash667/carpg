@@ -448,7 +448,6 @@ bool Net::FilterOut(NetChangePlayer& c)
 {
 	switch(c.type)
 	{
-	case NetChangePlayer::GOLD_MSG:
 	case NetChangePlayer::DEVMODE:
 	case NetChangePlayer::GOLD_RECEIVED:
 	case NetChangePlayer::ADDED_ITEMS_MSG:
@@ -845,7 +844,7 @@ bool Net::ReadPlayerStartData(BitStreamReader& f)
 bool Net::ReadLevelData(BitStreamReader& f)
 {
 	Game& game = Game::Get();
-	game.cam.Reset();
+	L.camera.Reset();
 	game.pc_data.rot_buf = 0.f;
 	W.RemoveBossLevel();
 

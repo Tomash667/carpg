@@ -262,7 +262,7 @@ void Quest_Contest::Update(float dt)
 			float prev = time;
 			time += dt;
 			if(prev < 5.f && time >= 5.f)
-				game.UnitTalk(innkeeper, txContestStart);
+				innkeeper.Talk(txContestStart);
 		}
 
 		if(time >= 15.f && innkeeper.busy != Unit::Busy_Talking)
@@ -345,7 +345,7 @@ void Quest_Contest::Update(float dt)
 				innkeeper.ai->idle_data.rot = innkeeper.ai->start_rot;
 				innkeeper.ai->timer = 3.f;
 				innkeeper.busy = Unit::Busy_Yes;
-				game.UnitTalk(innkeeper, txContestNoPeople);
+				innkeeper.Talk(txContestNoPeople);
 			}
 			else
 			{
@@ -353,7 +353,7 @@ void Quest_Contest::Update(float dt)
 				innkeeper.ai->idle_data.rot = innkeeper.ai->start_rot;
 				innkeeper.ai->timer = 3.f;
 				innkeeper.busy = Unit::Busy_Yes;
-				game.UnitTalk(innkeeper, txContestTalk[0]);
+				innkeeper.Talk(txContestTalk[0]);
 			}
 		}
 	}
@@ -449,7 +449,7 @@ void Quest_Contest::Update(float dt)
 			if(innkeeper.CanAct())
 			{
 				if(next_text)
-					game.UnitTalk(innkeeper, next_text);
+					innkeeper.Talk(next_text);
 				else
 				{
 					assert(next_drink);
@@ -470,7 +470,7 @@ void Quest_Contest::Update(float dt)
 				if(units.size() >= 2)
 				{
 					assert(next_text);
-					game.UnitTalk(innkeeper, next_text);
+					innkeeper.Talk(next_text);
 					++state2;
 				}
 				else if(units.size() == 1)
@@ -479,14 +479,14 @@ void Quest_Contest::Update(float dt)
 					state2 = 0;
 					innkeeper.look_target = units.back();
 					W.AddNews(Format(txContestWinNews, units.back()->GetName()));
-					game.UnitTalk(innkeeper, txContestWin);
+					innkeeper.Talk(txContestWin);
 				}
 				else
 				{
 					state = CONTEST_FINISH;
 					state2 = 1;
 					W.AddNews(txContestNoWinner);
-					game.UnitTalk(innkeeper, txContestNoWinner);
+					innkeeper.Talk(txContestNoWinner);
 				}
 			}
 		}
@@ -499,7 +499,7 @@ void Quest_Contest::Update(float dt)
 			{
 			case 0: // wygrana
 				state2 = 2;
-				game.UnitTalk(innkeeper, txContestPrize);
+				innkeeper.Talk(txContestPrize);
 				break;
 			case 1: // remis
 				innkeeper.busy = Unit::Busy_No;

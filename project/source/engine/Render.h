@@ -1,6 +1,16 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+enum TextureAddressMode
+{
+	TEX_ADR_WRAP = 1,
+	TEX_ADR_MIRROR = 2,
+	TEX_ADR_CLAMP = 3,
+	TEX_ADR_BORDER = 4,
+	TEX_ADR_MIRRORONCE = 5
+};
+
+//-----------------------------------------------------------------------------
 struct Resolution
 {
 	Int2 size;
@@ -32,6 +42,7 @@ public:
 	void RegisterShader(ShaderHandler* shader);
 	ID3DXEffect* CompileShader(cstring name);
 	ID3DXEffect* CompileShader(CompileShaderParams& params);
+	TEX CreateTexture(const Int2& size);
 	RenderTarget* CreateRenderTarget(const Int2& size);
 	TEX CopyToTexture(RenderTarget* target);
 	bool IsLostDevice() const { return lost_device; }
@@ -55,6 +66,7 @@ public:
 	void SetRefreshRateInternal(int refresh_hz) { this->refresh_hz = refresh_hz; }
 	void SetShaderVersion(int shader_version) { this->shader_version = shader_version; }
 	void SetTarget(RenderTarget* target);
+	void SetTextureAddressMode(TextureAddressMode mode);
 
 private:
 	void GatherParams(D3DPRESENT_PARAMETERS& d3dpp);

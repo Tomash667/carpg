@@ -30,6 +30,7 @@ public:
 	void ShowMultiplayer();
 	void ShowQuitDialog();
 	void ShowCreateCharacterPanel(bool enter_name, bool redo = false);
+	void CloseAllPanels(bool close_mp_box = false);
 
 	// panels
 	LoadScreen* load_screen;

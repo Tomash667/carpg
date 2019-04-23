@@ -7,7 +7,6 @@
 #include "Perlin.h"
 #include "Level.h"
 #include "UnitGroup.h"
-#include "Game.h"
 
 //=================================================================================================
 void MoonwellGenerator::Generate()

@@ -679,13 +679,9 @@ public:
 	bool DropItems(int index, uint count);
 	// dodaje przedmiot do ekwipunku, zwraca czy siê zestackowa³
 	bool AddItem(const Item* item, uint count, uint team_count);
-	bool AddItem(const Item* item, uint count = 1, bool is_team = true)
-	{
-		return AddItem(item, count, is_team ? count : 0);
-	}
-	// add item and show game message, send net notification, calls preload
-	void AddItem2(const Item* item, uint count, uint team_count, bool show_msg = true);
-	void AddItemS(const Item* item, uint count) { AddItem2(item, count, 0); }
+	// add item and show game message, send net notification, calls preload, refresh inventory if open
+	void AddItem2(const Item* item, uint count, uint team_count, bool show_msg = true, bool notify = true);
+	void AddItemS(const Item* item, uint count) { AddItem2(item, count, 0u); }
 	void AddTeamItemS(const Item* item, uint count) { AddItem2(item, count, count); }
 	// dodaje przedmiot i zak³ada jeœli nie ma takiego typu, przedmiot jest dru¿ynowy
 	void AddItemAndEquipIfNone(const Item* item, uint count = 1);
@@ -847,7 +843,8 @@ public:
 	void OrderMove(const Vec3& pos, MoveType move_type);
 	void OrderLookAt(const Vec3& pos);
 	void OrderTimer(float time) { order_timer = time; }
-	void Talk(const string& text, int play_anim = -1);
+	void Talk(cstring text, int play_anim = -1);
+	void TalkS(const string& text, int play_anim = -1) { Talk(text.c_str(), play_anim); }
 
 	//-----------------------------------------------------------------------------
 	static vector<Unit*> refid_table;

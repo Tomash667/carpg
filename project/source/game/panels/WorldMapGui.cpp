@@ -20,7 +20,6 @@
 #include "Level.h"
 #include "GameStats.h"
 #include "ResourceManager.h"
-#include "DirectX.h"
 #include "Team.h"
 #include "SaveState.h"
 #include "Debug.h"
@@ -91,14 +90,13 @@ void WorldMapGui::LoadData()
 //=================================================================================================
 void WorldMapGui::Draw(ControlDrawData*)
 {
+	Render* render = game.GetRender();
+
 	// background
-	IDirect3DDevice9* device = game.GetRender()->GetDevice();
 	Rect rect0(Int2::Zero, game.GetWindowSize());
-	device->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP);
-	device->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP);
+	render->SetTextureAddressMode(TEX_ADR_WRAP);
 	GUI.DrawSpriteRectPart(tMapBg, rect0, rect0);
-	device->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP);
-	device->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP);
+	render->SetTextureAddressMode(TEX_ADR_CLAMP);
 
 	// map
 	Matrix mat = Matrix::Transform2D(&offset, 0.f, &Vec2(float(W.world_size) / MAP_IMG_SIZE * zoom), nullptr, 0.f, &(GetCameraCenter() - offset));
@@ -275,9 +273,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 		GUI.DrawSpriteFull(game.tCzern, color);
 
 		// obrazek
-		D3DSURFACE_DESC desc;
-		V(game.tEmerytura->GetLevelDesc(0, &desc));
-		GUI.DrawSprite(game.tEmerytura, Center(desc.Width, desc.Height), color);
+		GUI.DrawSprite(game.tEmerytura, Center(Texture::GetSize(game.tEmerytura)), color);
 
 		// tekst
 		cstring text = Format(txGameTimeout, game.pc->kills, GameStats::Get().total_kills - game.pc->kills);

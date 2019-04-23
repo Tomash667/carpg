@@ -108,7 +108,7 @@ void Quest_Wanted::SetProgress(int prog2)
 			((City&)GetStartLocation()).quest_captain = CityQuestState::None;
 
 			Team.AddReward(level * 100, level * 250);
-			
+
 			OnUpdate(Format(game->txQuest[263], unit_name.c_str()));
 		}
 		break;

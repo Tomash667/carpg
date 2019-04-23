@@ -34,7 +34,6 @@ public:
 	float GetWindowAspect() const { return float(wnd_size.x) / wnd_size.y; }
 	HWND GetWindowHandle() const { return hwnd; }
 	const Int2& GetWindowSize() const { return wnd_size; }
-	DebugDrawer* GetDebugDrawer() { return debug_drawer.get(); }
 	Render* GetRender() { return render.get(); }
 
 	void SetTitle(cstring title);
@@ -94,5 +93,4 @@ private:
 	bool active, fullscreen;
 
 	std::unique_ptr<Render> render;
-	std::unique_ptr<DebugDrawer> debug_drawer;
 };

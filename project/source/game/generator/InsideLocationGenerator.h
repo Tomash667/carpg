@@ -26,6 +26,7 @@ protected:
 	void RespawnTraps();
 	void GenerateDungeonTreasure(vector<Chest*>& chests, int level, bool extra = false);
 	void SpawnHeroesInsideDungeon();
+	void OpenDoorsByTeam(const Int2& pt);
 
 	InsideLocation* inside;
 };

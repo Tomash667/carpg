@@ -577,6 +577,7 @@ namespace tokenizer
 		}
 		uint GetLine() const { return normal_seek.line + 1; }
 		uint GetCharPos() const { return normal_seek.charpos + 1; }
+		const string& GetInnerString() const { return *str; }
 		const Keyword* GetKeyword() const
 		{
 			assert(IsKeyword());

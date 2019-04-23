@@ -15,6 +15,7 @@
 #include "PlayerInfo.h"
 #include "Team.h"
 #include "LobbyApi.h"
+#include "CommandParser.h"
 
 //-----------------------------------------------------------------------------
 #ifdef _DEBUG
@@ -1394,7 +1395,7 @@ void ServerPanel::OnKick(int id)
 void ServerPanel::OnInput(const string& str)
 {
 	if(str[0] == '/')
-		game->ParseCommand(str.substr(1), PrintMsgFunc(this, &ServerPanel::AddMsg), PS_LOBBY);
+		global::cmdp->ParseCommand(str.substr(1), PrintMsgFunc(this, &ServerPanel::AddMsg), PS_LOBBY);
 	else
 	{
 		// wyœlij tekst

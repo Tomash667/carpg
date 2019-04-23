@@ -2,8 +2,9 @@
 #include "GameCore.h"
 #include "Console.h"
 #include "KeyStates.h"
-#include "Game.h"
 #include "ResourceManager.h"
+#include "CommandParser.h"
+#include "GameKeys.h"
 
 //=================================================================================================
 Console::Console(const DialogInfo& info) : GameDialogBox(info), added(false)
@@ -68,7 +69,7 @@ void Console::Update(float dt)
 					cstring best_cmd_name = nullptr;
 					int best_index = -1, index = 0;
 
-					for(ConsoleCommand& cmd : Game::Get().cmds)
+					for(const ConsoleCommand& cmd : global::cmdp->GetCommands())
 					{
 						if(strncmp(cmd.name, s.c_str(), s.length()) == 0)
 						{
@@ -117,5 +118,5 @@ void Console::Event(GuiEvent e)
 //=================================================================================================
 void Console::OnInput(const string& str)
 {
-	Game::Get().ParseCommand(str, PrintMsgFunc(this, &Console::AddMsg), PS_CONSOLE);
+	global::cmdp->ParseCommand(str, PrintMsgFunc(this, &Console::AddMsg), PS_CONSOLE);
 }

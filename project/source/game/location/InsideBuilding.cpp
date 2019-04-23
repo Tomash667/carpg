@@ -11,7 +11,6 @@
 #include "GroundItem.h"
 #include "ParticleSystem.h"
 #include "BitStreamFunc.h"
-#include "Game.h"
 
 //=================================================================================================
 InsideBuilding::~InsideBuilding()

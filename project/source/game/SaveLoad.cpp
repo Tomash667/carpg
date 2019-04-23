@@ -44,6 +44,7 @@
 #include "RenderTarget.h"
 #include "BitStreamFunc.h"
 #include "InfoBox.h"
+#include "ConsoleCommands.h"
 
 enum SaveFlags
 {
@@ -458,15 +459,15 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 	f << L.light_angle;
 
 	// camera
-	f << cam.real_rot.y;
-	f << cam.dist;
+	f << L.camera.real_rot.y;
+	f << L.camera.dist;
 
 	// vars
 	f << devmode;
 	f << noai;
 	f << dont_wander;
-	f << cl_fog;
-	f << cl_lighting;
+	f << L.cl_fog;
+	f << L.cl_lighting;
 	f << draw_particle_sphere;
 	f << draw_unit_radius;
 	f << draw_hitbox;
@@ -813,9 +814,9 @@ void Game::LoadGame(GameReader& f)
 	Usable::refid_request.clear();
 
 	// camera
-	f >> cam.real_rot.y;
-	f >> cam.dist;
-	cam.Reset();
+	f >> L.camera.real_rot.y;
+	f >> L.camera.dist;
+	L.camera.Reset();
 	pc_data.rot_buf = 0.f;
 
 	// traders stock
@@ -847,8 +848,8 @@ void Game::LoadGame(GameReader& f)
 	f >> dont_wander;
 	if(LOAD_VERSION >= V_0_4)
 	{
-		f >> cl_fog;
-		f >> cl_lighting;
+		f >> L.cl_fog;
+		f >> L.cl_lighting;
 		f >> draw_particle_sphere;
 		f >> draw_unit_radius;
 		f >> draw_hitbox;
@@ -870,8 +871,8 @@ void Game::LoadGame(GameReader& f)
 	}
 	else
 	{
-		cl_fog = true;
-		cl_lighting = true;
+		L.cl_fog = true;
+		L.cl_lighting = true;
 		draw_particle_sphere = false;
 		draw_unit_radius = false;
 		draw_hitbox = false;
@@ -886,7 +887,7 @@ void Game::LoadGame(GameReader& f)
 	pc = player->player;
 	if(!N.mp_load)
 		pc->id = 0;
-	cam.real_rot.x = pc->unit->rot;
+	L.camera.real_rot.x = pc->unit->rot;
 	pc->dialog_ctx = &dialog_context;
 	dialog_context.dialog_mode = false;
 	dialog_context.is_local = true;
@@ -1112,7 +1113,7 @@ void Game::LoadGame(GameReader& f)
 	else
 		SetMusic(MusicType::Travel);
 	game_state = game_state2;
-	clear_color = clear_color2;
+	clear_color = L.clear_color2;
 }
 
 //=================================================================================================

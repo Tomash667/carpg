@@ -13,7 +13,19 @@ struct Tri
 };
 
 //-----------------------------------------------------------------------------
-void CalculateNormal(VTerrain& v1, VTerrain& v2, VTerrain& v3);
+struct TerrainVertex
+{
+	TerrainVertex() {}
+	TerrainVertex(float x, float y, float z, float u, float v, float u2, float v2) : pos(x, y, z), tex(u, v), tex2(u2, v2) {}
+
+	Vec3 pos;
+	Vec3 normal;
+	Vec2 tex;
+	Vec2 tex2;
+};
+
+//-----------------------------------------------------------------------------
+void CalculateNormal(TerrainVertex& v1, TerrainVertex& v2, TerrainVertex& v3);
 
 //-----------------------------------------------------------------------------
 struct TerrainOptions
@@ -55,12 +67,6 @@ public:
 	void Rebuild(bool smooth = true);
 	void RebuildUv();
 	void Make(bool smooth = true);
-	void ApplyTextures(ID3DXEffect* effect); // to delete
-	void ApplyStreamSource(); // to delete, create reference leaks
-	/*void Draw(uint i)
-	{
-		V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, n_verts, part_tris*i * 3, part_tris));
-	}*/
 	void SetHeight(float height);
 	void ClearHeight()
 	{
@@ -71,7 +77,7 @@ public:
 	void Randomize();
 	void CalculateBox();
 	void SmoothNormals();
-	void SmoothNormals(VTerrain* v);
+	void SmoothNormals(TerrainVertex* v);
 	float Raytest(const Vec3& from, const Vec3& to) const;
 	void FillGeometry(vector<Tri>& tris, vector<Vec3>& verts);
 	void FillGeometryPart(vector<Tri>& tris, vector<Vec3>& verts, int px, int pz, const Vec3& offset = Vec3(0, 0, 0)) const;

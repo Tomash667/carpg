@@ -2238,7 +2238,7 @@ void Game::UpdateAi(float dt)
 				}
 				else
 				{
-					if(!ValidateTarget(u, ai.cast_target))
+					if(!ai.ValidateTarget(ai.cast_target))
 					{
 						ai.state = AIController::Idle;
 						ai.idle_action = AIController::Idle_None;

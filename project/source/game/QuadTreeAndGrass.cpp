@@ -7,6 +7,7 @@
 #include "Level.h"
 #include "ResourceManager.h"
 #include "Render.h"
+#include "GrassShader.h"
 #include "DirectX.h"
 
 enum QuadPartType
@@ -175,84 +176,18 @@ void Game::DrawGrass()
 
 	PROFILER_BLOCK("DrawGrass");
 
-	Render* render = GetRender();
-	IDirect3DDevice9* device = render->GetDevice();
-
-	render->SetAlphaBlend(false);
-	render->SetAlphaTest(true);
-	render->SetNoCulling(true);
-	render->SetNoZWrite(false);
-
-	const uint count = max(grass_count[0], grass_count[1]);
-
-	// create vertex buffer if existing is too small
-	if(!vbInstancing || vb_instancing_max < count)
+	grass_shader->SetCamera(L.camera);
+	grass_shader->SetFog(L.GetFogColor(), L.GetFogParams());
+	grass_shader->Begin(max(grass_count[0], grass_count[1]));
+	for(int i = 0; i < 2; ++i)
 	{
-		SafeRelease(vbInstancing);
-		if(vb_instancing_max < count)
-			vb_instancing_max = count;
-		V(device->CreateVertexBuffer(sizeof(Matrix)*vb_instancing_max, D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &vbInstancing, nullptr));
-	}
-
-	// setup stream source for instancing
-	V(device->SetStreamSourceFreq(1, D3DSTREAMSOURCE_INSTANCEDATA | 1));
-	V(device->SetStreamSource(1, vbInstancing, 0, sizeof(Matrix)));
-
-	// set effect
-	Vec4 fogColor = GetFogColor();
-	Vec4 fogParams = GetFogParams();
-	Vec4 ambientColor(0.8f, 0.8f, 0.8f, 1.f);
-	uint passes;
-	V(eGrass->SetTechnique(techGrass));
-	V(eGrass->SetVector(hGrassFogColor, (D3DXVECTOR4*)&fogColor));
-	V(eGrass->SetVector(hGrassFogParams, (D3DXVECTOR4*)&fogParams));
-	V(eGrass->SetVector(hGrassAmbientColor, (D3DXVECTOR4*)&ambientColor));
-	V(eGrass->SetMatrix(hGrassViewProj, (D3DXMATRIX*)&cam.matViewProj));
-	V(eGrass->Begin(&passes, 0));
-	V(eGrass->BeginPass(0));
-
-	// normal grass
-	for(int j = 0; j < 2; ++j)
-	{
-		if(!grass_patches[j].empty())
+		if(grass_count[i] > 0)
 		{
-			Mesh* mesh = BaseObject::Get(j == 0 ? "grass" : "corn")->mesh;
-
-			// setup instancing data
-			Matrix* m;
-			V(vbInstancing->Lock(0, 0, (void**)&m, D3DLOCK_DISCARD));
-			int index = 0;
-			for(vector< const vector<Matrix>* >::const_iterator it = grass_patches[j].begin(), end = grass_patches[j].end(); it != end; ++it)
-			{
-				const vector<Matrix>& vm = **it;
-				memcpy(&m[index], &vm[0], sizeof(Matrix)*vm.size());
-				index += vm.size();
-			}
-			V(vbInstancing->Unlock());
-
-			// setup stream source for mesh
-			V(device->SetVertexDeclaration(vertex_decl[VDI_GRASS]));
-			V(device->SetStreamSourceFreq(0, D3DSTREAMSOURCE_INDEXEDDATA | grass_count[j]));
-			V(device->SetStreamSource(0, mesh->vb, 0, mesh->vertex_size));
-			V(device->SetIndices(mesh->ib));
-
-			// draw
-			for(int i = 0; i < mesh->head.n_subs; ++i)
-			{
-				V(eGrass->SetTexture(hGrassTex, mesh->subs[i].tex->tex));
-				V(eGrass->CommitChanges());
-				V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, mesh->subs[i].min_ind, mesh->subs[i].n_ind, mesh->subs[i].first * 3, mesh->subs[i].tris));
-			}
+			Mesh* mesh = BaseObject::Get(i == 0 ? "grass" : "corn")->mesh;
+			grass_shader->Draw(mesh, grass_patches[i], grass_count[i]);
 		}
 	}
-
-	// end draw
-	V(eGrass->EndPass());
-	V(eGrass->End());
-
-	// restore vertex stream frequency
-	V(device->SetStreamSourceFreq(0, 1));
-	V(device->SetStreamSourceFreq(1, 1));
+	grass_shader->End();
 }
 
 void Game::ListGrass()
@@ -263,7 +198,7 @@ void Game::ListGrass()
 	PROFILER_BLOCK("ListGrass");
 	OutsideLocation* outside = static_cast<OutsideLocation*>(L.location);
 	Vec3 pos, angle;
-	Vec2 from = cam.from.XZ();
+	Vec2 from = L.camera.from.XZ();
 	float in_dist = settings.grass_range * settings.grass_range;
 
 	for(LevelParts::iterator it = level_parts.begin(), end = level_parts.end(); it != end; ++it)
@@ -398,5 +333,5 @@ void Game::CalculateQuadtree()
 void Game::ListQuadtreeNodes()
 {
 	PROFILER_BLOCK("ListQuadtreeNodes");
-	quadtree.List(cam.frustum, (QuadTree::Nodes&)level_parts);
+	quadtree.List(L.camera.frustum, (QuadTree::Nodes&)level_parts);
 }

@@ -1,38 +1,25 @@
 #include "Pch.h"
 #include "EngineCore.h"
 #include "DebugDrawer.h"
-#include "Engine.h"
 #include "Render.h"
 #include "CameraBase.h"
 #include "DirectX.h"
 
 //=================================================================================================
-DebugDrawer::DebugDrawer() : effect(nullptr), vertex_decl(nullptr), vb(nullptr), batch(false)
+DebugDrawer::DebugDrawer(Render* render) : render(render), device(render->GetDevice()), effect(nullptr), vertex_decl(nullptr), vb(nullptr), batch(false)
 {
+	const D3DVERTEXELEMENT9 decl[] = {
+		{ 0, 0,  D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_POSITION,	0 },
+		{ 0, 12, D3DDECLTYPE_FLOAT4,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_COLOR,		0 },
+		D3DDECL_END()
+	};
+	V(device->CreateVertexDeclaration(decl, &vertex_decl));
+
+	render->RegisterShader(this);
 }
 
 //=================================================================================================
 DebugDrawer::~DebugDrawer()
-{
-}
-
-//=================================================================================================
-void DebugDrawer::InitOnce()
-{
-	Render* render = Engine::Get().GetRender();
-
-	render->RegisterShader(this);
-
-	const D3DVERTEXELEMENT9 v[] = {
-		{ 0, 0,  D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_POSITION,		0 },
-		{ 0, 12, D3DDECLTYPE_FLOAT4,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_COLOR,			0 },
-		D3DDECL_END()
-	};
-	V(render->GetDevice()->CreateVertexDeclaration(v, &vertex_decl));
-}
-
-//=================================================================================================
-void DebugDrawer::Cleanup()
 {
 	SafeRelease(vertex_decl);
 }
@@ -40,7 +27,7 @@ void DebugDrawer::Cleanup()
 //=================================================================================================
 void DebugDrawer::OnInit()
 {
-	effect = Engine::Get().GetRender()->CompileShader("debug.fx");
+	effect = render->CompileShader("debug.fx");
 
 	hTechSimple = effect->GetTechniqueByName("simple");
 	assert(hTechSimple);
@@ -72,21 +59,26 @@ void DebugDrawer::OnRelease()
 }
 
 //=================================================================================================
+void DebugDrawer::SetCamera(const CameraBase& camera)
+{
+	mat_view_proj = camera.matViewProj;
+}
+
+//=================================================================================================
 void DebugDrawer::Draw()
 {
-	if(handler)
-	{
-		Render* render = Engine::Get().GetRender();
-		render->SetAlphaBlend(true);
-		render->SetAlphaTest(false);
-		render->SetNoZWrite(false);
-		render->SetNoCulling(true);
-		V(render->GetDevice()->SetVertexDeclaration(vertex_decl));
-		if(vb)
-			V(render->GetDevice()->SetStreamSource(0, vb, 0, sizeof(VColor)));
+	if(!handler)
+		return;
 
-		handler(this);
-	}
+	render->SetAlphaBlend(true);
+	render->SetAlphaTest(false);
+	render->SetNoZWrite(false);
+	render->SetNoCulling(true);
+	V(device->SetVertexDeclaration(vertex_decl));
+	if(vb)
+		V(device->SetStreamSource(0, vb, 0, sizeof(VColor)));
+
+	handler(this);
 }
 
 //=================================================================================================
@@ -116,8 +108,6 @@ void DebugDrawer::EndBatch()
 	if(verts.empty())
 		return;
 
-	IDirect3DDevice9* device = Engine::Get().GetRender()->GetDevice();
-
 	if(!vb || verts.size() > vb_size)
 	{
 		SafeRelease(vb);
@@ -137,7 +127,7 @@ void DebugDrawer::EndBatch()
 	V(effect->Begin(&passes, 0));
 	V(effect->BeginPass(0));
 
-	V(effect->SetMatrix(hMatCombined, (const D3DXMATRIX*)&Engine::Get().cam_base->matViewProj));
+	V(effect->SetMatrix(hMatCombined, (const D3DXMATRIX*)&mat_view_proj));
 	V(effect->CommitChanges());
 
 	V(device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, verts.size() / 3));

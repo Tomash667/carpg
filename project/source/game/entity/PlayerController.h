@@ -209,6 +209,7 @@ public:
 	void AddExp(int exp);
 	int GetExpNeed() const;
 	int GetTrainCost(int train) const;
+	void Yell();
 };
 
 //-----------------------------------------------------------------------------

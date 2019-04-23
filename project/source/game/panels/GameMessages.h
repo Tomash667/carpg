@@ -34,7 +34,9 @@ enum GMS
 	GMS_GAIN_ATTRIBUTE,
 	GMS_GAIN_SKILL,
 	GMS_ADDED_CURSED_STONE,
-	GMS_GAME_LOADED
+	GMS_GAME_LOADED,
+	GMS_GOLD_ADDED,
+	GMS_QUEST_COMPLETED_GOLD
 };
 
 //-----------------------------------------------------------------------------
@@ -71,5 +73,5 @@ private:
 	cstring txGamePausedBig, txINeedWeapon, txNoHpp, txCantDo, txDontLootFollower, txDontLootArena, txUnlockedDoor, txNeedKey, txGmsLooted, txGmsRumor,
 		txGmsJournalUpdated, txGmsUsed, txGmsUnitBusy, txGmsGatherTeam, txGmsNotLeader, txGmsNotInCombat, txGmsAddedItem, txGmsGettingOutOfRange,
 		txGmsLeftEvent, txGameSaved, txGainTextAttrib, txGainTextSkill, txGainLearningPoints, txLearnedPerk, txTooComplicated, txAddedCursedStone,
-		txGameLoaded;
+		txGameLoaded, txGoldPlus, txQuestCompletedGold;
 };

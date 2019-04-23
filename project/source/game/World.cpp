@@ -160,7 +160,7 @@ void World::Update(int days, UpdateMode mode)
 	{
 		Info("Game over: you are too old.");
 		Game& game = Game::Get();
-		game.CloseAllPanels(true);
+		global::gui->CloseAllPanels(true);
 		game.end_of_game = true;
 		game.death_fade = 0.f;
 		if(Net::IsOnline())

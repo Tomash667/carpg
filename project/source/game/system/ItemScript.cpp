@@ -2,6 +2,7 @@
 #include "GameCore.h"
 #include "ItemScript.h"
 #include "StatProfile.h"
+#include "Unit.h"
 
 //-----------------------------------------------------------------------------
 vector<ItemScript*> ItemScript::scripts;
@@ -211,4 +212,183 @@ ItemScript* ItemScript::TryGet(Cstring id)
 	}
 
 	return nullptr;
+}
+
+//=================================================================================================
+void ItemScript::Parse(Unit& unit) const
+{
+	const int* ps = code.data();
+	int a, b, depth = 0, depth_if = 0;
+
+	while(*ps != PS_END)
+	{
+		ParseScript type = (ParseScript)*ps;
+		++ps;
+
+		switch(type)
+		{
+		case PS_ONE:
+			if(depth == depth_if)
+				GiveItem(unit, ps, 1);
+			else
+				SkipItem(ps, 1);
+			break;
+		case PS_ONE_OF_MANY:
+			a = *ps;
+			++ps;
+			if(depth == depth_if)
+			{
+				b = Rand() % a;
+				for(int i = 0; i < a; ++i)
+				{
+					if(i == b)
+						GiveItem(unit, ps, 1);
+					else
+						SkipItem(ps, 1);
+				}
+			}
+			else
+				SkipItem(ps, a);
+			break;
+		case PS_CHANCE:
+			a = *ps;
+			++ps;
+			if(depth == depth_if && Rand() % 100 < a)
+				GiveItem(unit, ps, 1);
+			else
+				SkipItem(ps, 1);
+			break;
+		case PS_CHANCE2:
+			a = *ps;
+			++ps;
+			if(depth == depth_if)
+			{
+				if(Rand() % 100 < a)
+				{
+					GiveItem(unit, ps, 1);
+					SkipItem(ps, 1);
+				}
+				else
+				{
+					SkipItem(ps, 1);
+					GiveItem(unit, ps, 1);
+				}
+			}
+			else
+				SkipItem(ps, 2);
+			break;
+		case PS_IF_CHANCE:
+			a = *ps;
+			if(depth == depth_if && Rand() % 100 < a)
+				++depth_if;
+			++depth;
+			++ps;
+			break;
+		case PS_IF_LEVEL:
+			if(depth == depth_if && unit.level >= *ps)
+				++depth_if;
+			++depth;
+			++ps;
+			break;
+		case PS_ELSE:
+			if(depth == depth_if)
+				--depth_if;
+			else if(depth == depth_if + 1)
+				++depth_if;
+			break;
+		case PS_END_IF:
+			if(depth == depth_if)
+				--depth_if;
+			--depth;
+			break;
+		case PS_MANY:
+			a = *ps;
+			++ps;
+			if(depth == depth_if)
+				GiveItem(unit, ps, a);
+			else
+				SkipItem(ps, 1);
+			break;
+		case PS_RANDOM:
+			a = *ps;
+			++ps;
+			b = *ps;
+			++ps;
+			a = Random(a, b);
+			if(depth == depth_if && a > 0)
+				GiveItem(unit, ps, a);
+			else
+				SkipItem(ps, 1);
+			break;
+		default:
+			assert(0);
+			break;
+		}
+	}
+}
+
+//=================================================================================================
+void ItemScript::GiveItem(Unit& unit, const int*& ps, int count) const
+{
+	int type = *ps;
+	++ps;
+	switch(type)
+	{
+	case PS_ITEM:
+		unit.AddItemAndEquipIfNone((const Item*)(*ps), count);
+		break;
+	case  PS_LIST:
+		{
+			const ItemList& lis = *(const ItemList*)(*ps);
+			for(int i = 0; i < count; ++i)
+				unit.AddItemAndEquipIfNone(lis.Get());
+		}
+		break;
+	case PS_LEVELED_LIST:
+		{
+			const LeveledItemList& lis = *(const LeveledItemList*)(*ps);
+			for(int i = 0; i < count; ++i)
+				unit.AddItemAndEquipIfNone(lis.Get(unit.level + Random(-2, 1)));
+		}
+		break;
+	case PS_LEVELED_LIST_MOD:
+		{
+			int mod = *ps++;
+			const LeveledItemList& lis = *(const LeveledItemList*)(*ps);
+			for(int i = 0; i < count; ++i)
+				unit.AddItemAndEquipIfNone(lis.Get(unit.level + Random(-2, 1) + mod));
+		}
+		break;
+	case PS_SPECIAL_ITEM:
+		{
+			int special = *ps;
+			const LeveledItemList& lis = ItemScript::GetSpecial(special, unit.stats->subprofile.value);
+			for(int i = 0; i < count; ++i)
+				unit.AddItemAndEquipIfNone(lis.Get(unit.level + Random(-2, 1)));
+		}
+		break;
+	case PS_SPECIAL_ITEM_MOD:
+		{
+			int mod = *ps++;
+			int special = *ps;
+			const LeveledItemList& lis = ItemScript::GetSpecial(special, unit.stats->subprofile.value);
+			for(int i = 0; i < count; ++i)
+				unit.AddItemAndEquipIfNone(lis.Get(unit.level + Random(-2, 1) + mod));
+		}
+	}
+
+	++ps;
+}
+
+//=================================================================================================
+void ItemScript::SkipItem(const int*& ps, int count) const
+{
+	for(int i = 0; i < count; ++i)
+	{
+		int type = *ps;
+		++ps;
+		if(type == PS_LEVELED_LIST_MOD || type == PS_SPECIAL_ITEM_MOD)
+			++ps;
+		++ps;
+	}
 }

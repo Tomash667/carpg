@@ -33,6 +33,10 @@ struct ParticleEmitter
 	int alive, refid;
 	bool destroy;
 
+	void Init();
+	bool Update(float dt);
+	void Save(FileWriter& f);
+	void Load(FileReader& f);
 	float GetAlpha(const Particle &p) const
 	{
 		if(op_alpha == POP_CONST)
@@ -49,10 +53,7 @@ struct ParticleEmitter
 			return Lerp(0.f, size, p.life / particle_life);
 	}
 
-	void Init();
-	void Save(FileWriter& f);
-	void Load(FileReader& f);
-
+	static vector<ParticleEmitter*> refid_table;
 	static ParticleEmitter* GetByRefid(int _refid)
 	{
 		if(_refid == -1 || _refid >= (int)refid_table.size())
@@ -60,8 +61,6 @@ struct ParticleEmitter
 		else
 			return refid_table[_refid];
 	}
-	static vector<ParticleEmitter*> refid_table;
-
 	static void AddRefid(ParticleEmitter* pe)
 	{
 		assert(pe);
@@ -82,20 +81,18 @@ struct TrailParticle
 //-----------------------------------------------------------------------------
 struct TrailParticleEmitter
 {
-	void Init(int maxp);
-	bool Update(float dt, Vec3* pt1, Vec3* pt2);
-
 	float fade, timer;
 	Vec4 color1, color2;
-
-	//private:
 	vector<TrailParticle> parts;
 	int first, last, alive, refid;
 	bool destroy;
 
+	void Init(int maxp);
+	bool Update(float dt, Vec3* pt1, Vec3* pt2);
 	void Save(FileWriter& f);
 	void Load(FileReader& f);
 
+	static vector<TrailParticleEmitter*> refid_table;
 	static TrailParticleEmitter* GetByRefid(int _refid)
 	{
 		if(_refid == -1 || _refid >= (int)refid_table.size())
@@ -103,8 +100,6 @@ struct TrailParticleEmitter
 		else
 			return refid_table[_refid];
 	}
-	static vector<TrailParticleEmitter*> refid_table;
-
 	static void AddRefid(TrailParticleEmitter* pe)
 	{
 		assert(pe);

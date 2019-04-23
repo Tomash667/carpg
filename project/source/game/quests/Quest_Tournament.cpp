@@ -351,7 +351,7 @@ void Quest_Tournament::Update(float dt)
 				unit->ai->idle_data.pos = walk_pt;
 				unit->ai->timer = Random(5.f, 10.f);
 
-				game.UnitTalk(*unit, RandomString(txAiJoinTour));
+				unit->Talk(RandomString(txAiJoinTour));
 			}
 		}
 
@@ -674,21 +674,21 @@ void Quest_Tournament::Update(float dt)
 						if(mhp >= p3_power)
 						{
 							int count = (int)floor(mhp / p3_power);
-							game.AddItem(u, p3, count, false, true);
+							u.AddItem2(p3, count, 0, false);
 							mhp -= p3_power * count;
 							given_items += count;
 						}
 						if(mhp >= p2_power)
 						{
 							int count = (int)floor(mhp / p2_power);
-							game.AddItem(u, p2, count, false, true);
+							u.AddItem2(p2, count, 0, false);
 							mhp -= p2_power * count;
 							given_items += count;
 						}
 						if(mhp > 0.f)
 						{
 							int count = (int)ceil(mhp / p1_power);
-							game.AddItem(u, p1, count, false, true);
+							u.AddItem2(p1, count, 0, false);
 							mhp -= p1_power * count;
 							given_items += count;
 						}
@@ -798,7 +798,7 @@ void Quest_Tournament::StartRound()
 void Quest_Tournament::Talk(cstring text)
 {
 	Game& game = Game::Get();
-	game.UnitTalk(*master, text);
+	master->Talk(text);
 	Vec3 pos = L.GetArena()->exit_area.Midpoint().XZ(1.5f);
 	game.gui->game_gui->AddSpeechBubble(pos, text);
 	if(Net::IsOnline())

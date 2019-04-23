@@ -8,9 +8,8 @@ struct Texture : public Resource
 {
 	TEX tex;
 
-	Texture() : tex(nullptr)
-	{
-	}
+	Texture() : tex(nullptr) {}
+	static Int2 GetSize(TEX tex);
 };
 
 //-----------------------------------------------------------------------------

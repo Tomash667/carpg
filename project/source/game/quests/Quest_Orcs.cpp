@@ -710,7 +710,7 @@ void Quest_Orcs2::ChangeClass(OrcClass new_orc_class)
 	orc->level = ud->level.x;
 	orc->stats = orc->data->GetStats(orc->level);
 	orc->CalculateStats();
-	game->ParseItemScript(*orc, ud->item_script);
+	ud->item_script->Parse(*orc);
 	for(const Item* item : orc->slots)
 	{
 		if(item)

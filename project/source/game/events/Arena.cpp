@@ -600,7 +600,7 @@ void Arena::Update(float dt)
 				else
 					text = Format(RandomString(txArenaTextU), GetRandomArenaHero()->GetRealName());
 
-				game.UnitTalk(u, text);
+				u.Talk(text);
 			}
 		}
 

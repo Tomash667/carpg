@@ -54,10 +54,11 @@
 #include "RenderTarget.h"
 #include "LobbyApi.h"
 #include "GameMessages.h"
+#include "GrassShader.h"
+#include "TerrainShader.h"
 
 const float LIMIT_DT = 0.3f;
 Game* Game::game;
-cstring Game::txGoldPlus, Game::txQuestCompletedGold;
 GameKeys GKey;
 extern string g_system_dir;
 extern cstring RESTART_MUTEX_NAME;
@@ -70,14 +71,13 @@ const float SPAWN_SOUND_DIST = 1.5f;
 const float MAGIC_SCROLL_SOUND_DIST = 1.5f;
 
 //=================================================================================================
-Game::Game() : have_console(false), vbParticle(nullptr), quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0), cl_fog(true),
-cl_lighting(true), draw_particle_sphere(false), draw_unit_radius(false), draw_hitbox(false), noai(false), testing(false), game_speed(1.f), devmode(false),
-force_seed(0), next_seed(0), force_seed_all(false), debug_info(false), dont_wander(false), check_updates(true), skip_tutorial(false), portal_anim(0),
-debug_info2(false), music_type(MusicType::None), end_of_game(false), prepared_stream(64 * 1024), paused(false), draw_flags(0xFFFFFFFF),
-prev_game_state(GS_LOAD), rt_save(nullptr), rt_item(nullptr), rt_item_rot(nullptr), cl_postfx(true), mp_timeout(10.f), cl_normalmap(true),
-cl_specularmap(true), dungeon_tex_wrap(true), profiler_mode(0), vbInstancing(nullptr), vb_instancing_max(0), screenshot_format(ImageFormat::JPG),
-quickstart_class(Class::RANDOM), game_state(GS_LOAD), default_devmode(false), default_player_devmode(false), quickstart_slot(SaveSlot::MAX_SLOTS),
-super_shader(new SuperShader)
+Game::Game() : have_console(false), vbParticle(nullptr), quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0), draw_particle_sphere(false),
+draw_unit_radius(false), draw_hitbox(false), noai(false), testing(false), game_speed(1.f), devmode(false), force_seed(0), next_seed(0), force_seed_all(false),
+debug_info(false), dont_wander(false), check_updates(true), skip_tutorial(false), portal_anim(0), debug_info2(false), music_type(MusicType::None),
+end_of_game(false), prepared_stream(64 * 1024), paused(false), draw_flags(0xFFFFFFFF), prev_game_state(GS_LOAD), rt_save(nullptr), rt_item(nullptr),
+rt_item_rot(nullptr), cl_postfx(true), mp_timeout(10.f), cl_normalmap(true), cl_specularmap(true), dungeon_tex_wrap(true), profiler_mode(0),
+screenshot_format(ImageFormat::JPG), quickstart_class(Class::RANDOM), game_state(GS_LOAD), default_devmode(false), default_player_devmode(false),
+quickstart_slot(SaveSlot::MAX_SLOTS)
 {
 #ifdef _DEBUG
 	default_devmode = true;
@@ -96,7 +96,7 @@ super_shader(new SuperShader)
 	ClearPointers();
 
 	uv_mod = Terrain::DEFAULT_UV_MOD;
-	cam.draw_range = 80.f;
+	L.camera.draw_range = 80.f;
 
 	SetupConfigVars();
 }
@@ -104,7 +104,6 @@ super_shader(new SuperShader)
 //=================================================================================================
 Game::~Game()
 {
-	delete super_shader;
 }
 
 //=================================================================================================
@@ -147,11 +146,11 @@ void Game::DrawGame(RenderTarget* target)
 			}
 
 			// debug draw
-			GetDebugDrawer()->Draw();
+			debug_drawer->Draw();
 		}
 
 		// draw gui
-		GUI.mViewProj = cam.matViewProj;
+		GUI.mViewProj = L.camera.matViewProj;
 		GUI.Draw(IS_SET(draw_flags, DF_GUI), IS_SET(draw_flags, DF_MENU));
 
 		V(device->EndScene());
@@ -179,7 +178,7 @@ void Game::DrawGame(RenderTarget* target)
 				DrawGlowingNodes(true);
 
 			// debug draw
-			GetDebugDrawer()->Draw();
+			debug_drawer->Draw();
 		}
 
 		PROFILER_BLOCK("PostEffects");
@@ -245,7 +244,7 @@ void Game::DrawGame(RenderTarget* target)
 
 			if(it + 1 == end)
 			{
-				GUI.mViewProj = cam.matViewProj;
+				GUI.mViewProj = L.camera.matViewProj;
 				GUI.Draw(IS_SET(draw_flags, DF_GUI), IS_SET(draw_flags, DF_MENU));
 			}
 
@@ -279,7 +278,10 @@ void Game::DrawGame(RenderTarget* target)
 void Game::OnDebugDraw(DebugDrawer* dd)
 {
 	if(pathfinding->IsDebugDraw())
+	{
+		dd->SetCamera(L.camera);
 		pathfinding->Draw(dd);
+	}
 }
 
 //=================================================================================================
@@ -620,8 +622,6 @@ void Game::OnReload()
 		V(eMesh->OnResetDevice());
 	if(eParticle)
 		V(eParticle->OnResetDevice());
-	if(eTerrain)
-		V(eTerrain->OnResetDevice());
 	if(eSkybox)
 		V(eSkybox->OnResetDevice());
 	if(eArea)
@@ -630,8 +630,6 @@ void Game::OnReload()
 		V(ePostFx->OnResetDevice());
 	if(eGlow)
 		V(eGlow->OnResetDevice());
-	if(eGrass)
-		V(eGrass->OnResetDevice());
 
 	CreateTextures();
 	BuildDungeon();
@@ -652,8 +650,6 @@ void Game::OnReset()
 		V(eMesh->OnLostDevice());
 	if(eParticle)
 		V(eParticle->OnLostDevice());
-	if(eTerrain)
-		V(eTerrain->OnLostDevice());
 	if(eSkybox)
 		V(eSkybox->OnLostDevice());
 	if(eArea)
@@ -662,8 +658,6 @@ void Game::OnReset()
 		V(ePostFx->OnLostDevice());
 	if(eGlow)
 		V(eGlow->OnLostDevice());
-	if(eGrass)
-		V(eGrass->OnLostDevice());
 
 	SafeRelease(tMinimap);
 	for(int i = 0; i < 3; ++i)
@@ -675,8 +669,6 @@ void Game::OnReset()
 	SafeRelease(vbParticle);
 	SafeRelease(vbDungeon);
 	SafeRelease(ibDungeon);
-	SafeRelease(vbInstancing);
-	vb_instancing_max = 0;
 }
 
 //=================================================================================================
@@ -793,7 +785,7 @@ void Game::DoExitToMenu()
 	SetMusic(MusicType::Title);
 	end_of_game = false;
 
-	CloseAllPanels();
+	gui->CloseAllPanels();
 	string msg;
 	DialogBox* box = GUI.GetDialog("fatal");
 	bool console = gui->console->visible;
@@ -828,12 +820,10 @@ void Game::ClearPointers()
 	// shadery
 	eMesh = nullptr;
 	eParticle = nullptr;
-	eTerrain = nullptr;
 	eSkybox = nullptr;
 	eArea = nullptr;
 	ePostFx = nullptr;
 	eGlow = nullptr;
-	eGrass = nullptr;
 
 	// bufory wierzcho³ków i indeksy
 	vbParticle = nullptr;
@@ -876,14 +866,12 @@ void Game::OnCleanup()
 
 	// shadery
 	ReleaseShaders();
-	super_shader->Cleanup();
 
 	// bufory wierzcho³ków i indeksy
 	SafeRelease(vbParticle);
 	SafeRelease(vbDungeon);
 	SafeRelease(ibDungeon);
 	SafeRelease(vbFullscreen);
-	SafeRelease(vbInstancing);
 
 	// tekstury render target, powierzchnie
 	SafeRelease(tMinimap);
@@ -898,7 +886,6 @@ void Game::OnCleanup()
 		SafeRelease(it.second);
 
 	draw_batch.Clear();
-	super_shader->Cleanup();
 }
 
 //=================================================================================================
@@ -966,120 +953,6 @@ void Game::CreateRenderTargets()
 }
 
 //=================================================================================================
-void Game::InitGameKeys()
-{
-	GKey[GK_MOVE_FORWARD].id = "keyMoveForward";
-	GKey[GK_MOVE_BACK].id = "keyMoveBack";
-	GKey[GK_MOVE_LEFT].id = "keyMoveLeft";
-	GKey[GK_MOVE_RIGHT].id = "keyMoveRight";
-	GKey[GK_WALK].id = "keyWalk";
-	GKey[GK_ROTATE_LEFT].id = "keyRotateLeft";
-	GKey[GK_ROTATE_RIGHT].id = "keyRotateRight";
-	GKey[GK_TAKE_WEAPON].id = "keyTakeWeapon";
-	GKey[GK_ATTACK_USE].id = "keyAttackUse";
-	GKey[GK_USE].id = "keyUse";
-	GKey[GK_BLOCK].id = "keyBlock";
-	GKey[GK_STATS].id = "keyStats";
-	GKey[GK_INVENTORY].id = "keyInventory";
-	GKey[GK_TEAM_PANEL].id = "keyTeam";
-	GKey[GK_ACTION_PANEL].id = "keyActions";
-	GKey[GK_JOURNAL].id = "keyGameJournal";
-	GKey[GK_MINIMAP].id = "keyMinimap";
-	GKey[GK_QUICKSAVE].id = "keyQuicksave";
-	GKey[GK_QUICKLOAD].id = "keyQuickload";
-	GKey[GK_POTION].id = "keyPotion";
-	GKey[GK_MELEE_WEAPON].id = "keyMeleeWeapon";
-	GKey[GK_RANGED_WEAPON].id = "keyRangedWeapon";
-	GKey[GK_ACTION].id = "keyAction";
-	GKey[GK_TAKE_ALL].id = "keyTakeAll";
-	GKey[GK_SELECT_DIALOG].id = "keySelectDialog";
-	GKey[GK_SKIP_DIALOG].id = "keySkipDialog";
-	GKey[GK_TALK_BOX].id = "keyTalkBox";
-	GKey[GK_PAUSE].id = "keyPause";
-	GKey[GK_YELL].id = "keyYell";
-	GKey[GK_CONSOLE].id = "keyConsole";
-	GKey[GK_ROTATE_CAMERA].id = "keyRotateCamera";
-	GKey[GK_AUTOWALK].id = "keyAutowalk";
-	GKey[GK_TOGGLE_WALK].id = "keyToggleWalk";
-
-	for(int i = 0; i < GK_MAX; ++i)
-		GKey[i].text = Str(GKey[i].id);
-}
-
-//=================================================================================================
-void Game::ResetGameKeys()
-{
-	GKey[GK_MOVE_FORWARD].Set('W', VK_UP);
-	GKey[GK_MOVE_BACK].Set('S', VK_DOWN);
-	GKey[GK_MOVE_LEFT].Set('A', VK_LEFT);
-	GKey[GK_MOVE_RIGHT].Set('D', VK_RIGHT);
-	GKey[GK_WALK].Set(VK_SHIFT);
-	GKey[GK_ROTATE_LEFT].Set('Q');
-	GKey[GK_ROTATE_RIGHT].Set('E');
-	GKey[GK_TAKE_WEAPON].Set(VK_SPACE);
-	GKey[GK_ATTACK_USE].Set(VK_LBUTTON, 'Z');
-	GKey[GK_USE].Set('R');
-	GKey[GK_BLOCK].Set(VK_RBUTTON, 'X');
-	GKey[GK_STATS].Set('C');
-	GKey[GK_INVENTORY].Set('I');
-	GKey[GK_TEAM_PANEL].Set('T');
-	GKey[GK_ACTION_PANEL].Set('K');
-	GKey[GK_JOURNAL].Set('J');
-	GKey[GK_MINIMAP].Set('M');
-	GKey[GK_QUICKSAVE].Set(VK_F5);
-	GKey[GK_QUICKLOAD].Set(VK_F9);
-	GKey[GK_POTION].Set('H');
-	GKey[GK_MELEE_WEAPON].Set('1');
-	GKey[GK_RANGED_WEAPON].Set('2');
-	GKey[GK_ACTION].Set('3');
-	GKey[GK_TAKE_ALL].Set('F');
-	GKey[GK_SELECT_DIALOG].Set(VK_RETURN);
-	GKey[GK_SKIP_DIALOG].Set(VK_SPACE);
-	GKey[GK_TALK_BOX].Set('N');
-	GKey[GK_PAUSE].Set(VK_PAUSE);
-	GKey[GK_YELL].Set('Y');
-	GKey[GK_CONSOLE].Set(VK_OEM_3);
-	GKey[GK_ROTATE_CAMERA].Set('V');
-	GKey[GK_AUTOWALK].Set('F');
-	GKey[GK_TOGGLE_WALK].Set(VK_CAPITAL);
-}
-
-//=================================================================================================
-void Game::SaveGameKeys()
-{
-	for(int i = 0; i < GK_MAX; ++i)
-	{
-		GameKey& k = GKey[i];
-		for(int j = 0; j < 2; ++j)
-			cfg.Add(Format("%s%d", k.id, j), k[j]);
-	}
-
-	SaveCfg();
-}
-
-//=================================================================================================
-void Game::LoadGameKeys()
-{
-	for(int i = 0; i < GK_MAX; ++i)
-	{
-		GameKey& k = GKey[i];
-		for(int j = 0; j < 2; ++j)
-		{
-			cstring s = Format("%s%d", k.id, j);
-			int w = cfg.GetInt(s);
-			if(w == VK_ESCAPE || w < -1 || w > 255)
-			{
-				Warn("Config: Invalid value for %s: %d.", s, w);
-				w = -1;
-				cfg.Add(s, k[j]);
-			}
-			if(w != -1)
-				k[j] = (byte)w;
-		}
-	}
-}
-
-//=================================================================================================
 void Game::RestartGame()
 {
 	// stwórz mutex
@@ -1117,9 +990,6 @@ void Game::SetStatsText()
 //=================================================================================================
 void Game::SetGameText()
 {
-	txGoldPlus = Str("goldPlus");
-	txQuestCompletedGold = Str("questCompletedGold");
-
 	// ai
 	LoadArray(txAiNoHpPot, "aiNoHpPot");
 	LoadArray(txAiCity, "aiCity");
@@ -1354,22 +1224,6 @@ void Game::SetGameText()
 }
 
 //=================================================================================================
-bool Game::ValidateTarget(Unit& u, Unit* target)
-{
-	assert(target);
-
-	LevelContext& ctx = L.GetContext(u);
-
-	for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
-	{
-		if(*it == target)
-			return true;
-	}
-
-	return false;
-}
-
-//=================================================================================================
 void Game::UpdateLights(vector<Light>& lights)
 {
 	for(vector<Light>::iterator it = lights.begin(), end = lights.end(); it != end; ++it)
@@ -1426,26 +1280,6 @@ void Game::UpdatePostEffects(float dt)
 }
 
 //=================================================================================================
-void Game::PlayerYell(Unit& u)
-{
-	UnitTalk(u, RandomString(txYell));
-
-	LevelContext& ctx = L.GetContext(u);
-	for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
-	{
-		Unit& u2 = **it;
-		if(u2.IsAI() && u2.IsStanding() && !u.IsEnemy(u2) && !u.IsFriend(u2) && u2.busy == Unit::Busy_No && u2.frozen == FROZEN::NO && !u2.usable
-			&& u2.ai->state == AIController::Idle && !IS_SET(u2.data->flags, F_AI_STAY)
-			&& Any(u2.ai->idle_action, AIController::Idle_None, AIController::Idle_Animation, AIController::Idle_Rot, AIController::Idle_Look))
-		{
-			u2.ai->idle_action = AIController::Idle_MoveAway;
-			u2.ai->idle_data.unit = &u;
-			u2.ai->timer = Random(3.f, 5.f);
-		}
-	}
-}
-
-//=================================================================================================
 void Game::ReloadShaders()
 {
 	Info("Reloading shaders...");
@@ -1458,11 +1292,9 @@ void Game::ReloadShaders()
 		eMesh = render->CompileShader("mesh.fx");
 		eParticle = render->CompileShader("particle.fx");
 		eSkybox = render->CompileShader("skybox.fx");
-		eTerrain = render->CompileShader("terrain.fx");
 		eArea = render->CompileShader("area.fx");
 		ePostFx = render->CompileShader("post.fx");
 		eGlow = render->CompileShader("glow.fx");
-		eGrass = render->CompileShader("grass.fx");
 
 		for(ShaderHandler* shader : render->GetShaders())
 			shader->OnInit();
@@ -1481,12 +1313,10 @@ void Game::ReleaseShaders()
 {
 	SafeRelease(eMesh);
 	SafeRelease(eParticle);
-	SafeRelease(eTerrain);
 	SafeRelease(eSkybox);
 	SafeRelease(eArea);
 	SafeRelease(ePostFx);
 	SafeRelease(eGlow);
-	SafeRelease(eGrass);
 
 	for(ShaderHandler* shader : GetRender()->GetShaders())
 		shader->OnRelease();
@@ -1712,7 +1542,7 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 
 	l.last_visit = W.GetWorldtime();
 	L.CheckIfLocationCleared();
-	cam.Reset();
+	L.camera.Reset();
 	pc_data.rot_buf = 0.f;
 	SetMusic();
 
@@ -1745,7 +1575,7 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 	}
 	else
 	{
-		clear_color = clear_color2;
+		clear_color = L.clear_color2;
 		game_state = GS_LEVEL;
 		gui->load_screen->visible = false;
 		gui->main_menu->visible = false;

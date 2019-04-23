@@ -174,6 +174,8 @@ struct ConsoleCommand
 };
 
 //-----------------------------------------------------------------------------
+typedef delegate<void(cstring)> PrintMsgFunc;
+
 extern PrintMsgFunc g_print_func;
 
 inline void Msg(cstring msg)

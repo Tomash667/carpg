@@ -124,7 +124,7 @@ void Game::Draw()
 	else
 		outside = true;
 
-	ListDrawObjects(ctx, cam.frustum, outside);
+	ListDrawObjects(ctx, L.camera.frustum, outside);
 	DrawScene(outside);
 }
 
@@ -263,18 +263,18 @@ void Game::SetupCamera(float dt)
 	LevelContext& ctx = L.GetContext(*target);
 
 	float rotX;
-	if(cam.free_rot)
-		rotX = cam.real_rot.x;
+	if(L.camera.free_rot)
+		rotX = L.camera.real_rot.x;
 	else
 		rotX = target->rot;
 
-	cam.UpdateRot(dt, Vec2(rotX, cam.real_rot.y));
+	L.camera.UpdateRot(dt, Vec2(rotX, L.camera.real_rot.y));
 
 	Matrix mat, matProj, matView;
 	const Vec3 cam_h(0, target->GetUnitHeight() + 0.2f, 0);
-	Vec3 dist(0, -cam.tmp_dist, 0);
+	Vec3 dist(0, -L.camera.tmp_dist, 0);
 
-	mat = Matrix::Rotation(cam.rot.x, cam.rot.y, 0);
+	mat = Matrix::Rotation(L.camera.rot.x, L.camera.rot.y, 0);
 	dist = Vec3::Transform(dist, mat);
 
 	// !!! to => from !!!
@@ -544,18 +544,18 @@ void Game::SetupCamera(float dt)
 		real_dist = 0.01f;
 	Vec3 from = to + dist.Normalize() * real_dist;
 
-	cam.Update(dt, from, to);
+	L.camera.Update(dt, from, to);
 
 	float drunk = pc->unit->alcohol / pc->unit->hpmax;
 	float drunk_mod = (drunk > 0.1f ? (drunk - 0.1f) / 0.9f : 0.f);
 
-	matView = Matrix::CreateLookAt(cam.from, cam.to);
+	matView = Matrix::CreateLookAt(L.camera.from, L.camera.to);
 	matProj = Matrix::CreatePerspectiveFieldOfView(PI / 4 + sin(drunk_anim)*(PI / 16)*drunk_mod,
-		GetWindowAspect() * (1.f + sin(drunk_anim) / 10 * drunk_mod), 0.1f, cam.draw_range);
-	cam.matViewProj = matView * matProj;
-	cam.matViewInv = matView.Inverse();
-	cam.center = cam.from;
-	cam.frustum.Set(cam.matViewProj);
+		GetWindowAspect() * (1.f + sin(drunk_anim) / 10 * drunk_mod), 0.1f, L.camera.draw_range);
+	L.camera.matViewProj = matView * matProj;
+	L.camera.matViewInv = matView.Inverse();
+	L.camera.center = L.camera.from;
+	L.camera.frustum.Set(L.camera.matViewProj);
 
 	// centrum dŸwiêku 3d
 	sound_mgr->SetListenerPosition(target->GetHeadSoundPos(), Vec3(sin(target->rot + PI), 0, cos(target->rot + PI)));
@@ -570,11 +570,9 @@ void Game::LoadShaders()
 	eMesh = render->CompileShader("mesh.fx");
 	eParticle = render->CompileShader("particle.fx");
 	eSkybox = render->CompileShader("skybox.fx");
-	eTerrain = render->CompileShader("terrain.fx");
 	eArea = render->CompileShader("area.fx");
 	ePostFx = render->CompileShader("post.fx");
 	eGlow = render->CompileShader("glow.fx");
-	eGrass = render->CompileShader("grass.fx");
 
 	SetupShaders();
 }
@@ -590,13 +588,11 @@ void Game::SetupShaders()
 	techParticle = eParticle->GetTechniqueByName("particle");
 	techTrail = eParticle->GetTechniqueByName("trail");
 	techSkybox = eSkybox->GetTechniqueByName("skybox");
-	techTerrain = eTerrain->GetTechniqueByName("terrain");
 	techArea = eArea->GetTechniqueByName("area");
 	techGlowMesh = eGlow->GetTechniqueByName("mesh");
 	techGlowAni = eGlow->GetTechniqueByName("ani");
-	techGrass = eGrass->GetTechniqueByName("grass");
-	assert(techMesh && techMeshDir && techMeshSimple && techMeshSimple2 && techMeshExplo && techParticle && techTrail && techSkybox && techTerrain && techArea
-		&& techGlowMesh && techGlowAni && techGrass);
+	assert(techMesh && techMeshDir && techMeshSimple && techMeshSimple2 && techMeshExplo && techParticle && techTrail && techSkybox && techArea
+		&& techGlowMesh && techGlowAni);
 
 	hMeshCombined = eMesh->GetParameterByName(nullptr, "matCombined");
 	hMeshWorld = eMesh->GetParameterByName(nullptr, "matWorld");
@@ -619,22 +615,6 @@ void Game::SetupShaders()
 	hSkyboxTex = eSkybox->GetParameterByName(nullptr, "tex0");
 	assert(hSkyboxCombined && hSkyboxTex);
 
-	hTerrainCombined = eTerrain->GetParameterByName(nullptr, "matCombined");
-	hTerrainWorld = eTerrain->GetParameterByName(nullptr, "matWorld");
-	hTerrainTexBlend = eTerrain->GetParameterByName(nullptr, "texBlend");
-	hTerrainTex[0] = eTerrain->GetParameterByName(nullptr, "tex0");
-	hTerrainTex[1] = eTerrain->GetParameterByName(nullptr, "tex1");
-	hTerrainTex[2] = eTerrain->GetParameterByName(nullptr, "tex2");
-	hTerrainTex[3] = eTerrain->GetParameterByName(nullptr, "tex3");
-	hTerrainTex[4] = eTerrain->GetParameterByName(nullptr, "tex4");
-	hTerrainColorAmbient = eTerrain->GetParameterByName(nullptr, "colorAmbient");
-	hTerrainColorDiffuse = eTerrain->GetParameterByName(nullptr, "colorDiffuse");
-	hTerrainLightDir = eTerrain->GetParameterByName(nullptr, "lightDir");
-	hTerrainFogColor = eTerrain->GetParameterByName(nullptr, "fogColor");
-	hTerrainFogParam = eTerrain->GetParameterByName(nullptr, "fogParam");
-	assert(hTerrainCombined && hTerrainWorld && hTerrainTexBlend && hTerrainTex[0] && hTerrainTex[1] && hTerrainTex[2] && hTerrainTex[3] && hTerrainTex[4] &&
-		hTerrainColorAmbient && hTerrainColorDiffuse && hTerrainLightDir && hTerrainFogColor && hTerrainFogParam);
-
 	hAreaCombined = eArea->GetParameterByName(nullptr, "matCombined");
 	hAreaColor = eArea->GetParameterByName(nullptr, "color");
 	hAreaPlayerPos = eArea->GetParameterByName(nullptr, "playerPos");
@@ -651,12 +631,6 @@ void Game::SetupShaders()
 	hGlowColor = eGlow->GetParameterByName(nullptr, "color");
 	hGlowTex = eGlow->GetParameterByName(nullptr, "texDiffuse");
 	assert(hGlowCombined && hGlowBones && hGlowColor && hGlowTex);
-
-	hGrassViewProj = eGrass->GetParameterByName(nullptr, "matViewProj");
-	hGrassTex = eGrass->GetParameterByName(nullptr, "texDiffuse");
-	hGrassFogColor = eGrass->GetParameterByName(nullptr, "fogColor");
-	hGrassFogParams = eGrass->GetParameterByName(nullptr, "fogParam");
-	hGrassAmbientColor = eGrass->GetParameterByName(nullptr, "ambientColor");
 }
 
 //=================================================================================================
@@ -840,18 +814,18 @@ void Game::UpdateGame(float dt)
 	{
 		if(dialog_context.dialog_mode && gui->inventory->mode <= I_INVENTORY)
 		{
-			cam.free_rot = false;
-			if(cam.real_rot.y > 4.2875104f)
+			L.camera.free_rot = false;
+			if(L.camera.real_rot.y > 4.2875104f)
 			{
-				cam.real_rot.y -= dt;
-				if(cam.real_rot.y < 4.2875104f)
-					cam.real_rot.y = 4.2875104f;
+				L.camera.real_rot.y -= dt;
+				if(L.camera.real_rot.y < 4.2875104f)
+					L.camera.real_rot.y = 4.2875104f;
 			}
-			else if(cam.real_rot.y < 4.2875104f)
+			else if(L.camera.real_rot.y < 4.2875104f)
 			{
-				cam.real_rot.y += dt;
-				if(cam.real_rot.y > 4.2875104f)
-					cam.real_rot.y = 4.2875104f;
+				L.camera.real_rot.y += dt;
+				if(L.camera.real_rot.y > 4.2875104f)
+					L.camera.real_rot.y = 4.2875104f;
 			}
 		}
 		else
@@ -862,47 +836,47 @@ void Game::UpdateGame(float dt)
 				const float c_cam_angle_max = PI * 1.8f - 0.1f;
 
 				int div = (pc->unit->action == A_SHOOT ? 800 : 400);
-				cam.real_rot.y += -float(Key.GetMouseDif().y) * settings.mouse_sensitivity_f / div;
-				if(cam.real_rot.y > c_cam_angle_max)
-					cam.real_rot.y = c_cam_angle_max;
-				if(cam.real_rot.y < c_cam_angle_min)
-					cam.real_rot.y = c_cam_angle_min;
+				L.camera.real_rot.y += -float(Key.GetMouseDif().y) * settings.mouse_sensitivity_f / div;
+				if(L.camera.real_rot.y > c_cam_angle_max)
+					L.camera.real_rot.y = c_cam_angle_max;
+				if(L.camera.real_rot.y < c_cam_angle_min)
+					L.camera.real_rot.y = c_cam_angle_min;
 
-				if(!cam.free_rot)
+				if(!L.camera.free_rot)
 				{
-					cam.free_rot_key = GKey.KeyDoReturn(GK_ROTATE_CAMERA, &KeyStates::Pressed);
-					if(cam.free_rot_key != VK_NONE)
+					L.camera.free_rot_key = GKey.KeyDoReturn(GK_ROTATE_CAMERA, &KeyStates::Pressed);
+					if(L.camera.free_rot_key != VK_NONE)
 					{
-						cam.real_rot.x = Clip(pc->unit->rot + PI);
-						cam.free_rot = true;
+						L.camera.real_rot.x = Clip(pc->unit->rot + PI);
+						L.camera.free_rot = true;
 					}
 				}
 				else
 				{
-					if(GKey.KeyUpAllowed(cam.free_rot_key))
-						cam.free_rot = false;
+					if(GKey.KeyUpAllowed(L.camera.free_rot_key))
+						L.camera.free_rot = false;
 					else
-						cam.real_rot.x = Clip(cam.real_rot.x + float(Key.GetMouseDif().x) * settings.mouse_sensitivity_f / 400);
+						L.camera.real_rot.x = Clip(L.camera.real_rot.x + float(Key.GetMouseDif().x) * settings.mouse_sensitivity_f / 400);
 				}
 			}
 			else
-				cam.free_rot = false;
+				L.camera.free_rot = false;
 		}
 	}
 	else
 	{
-		cam.free_rot = false;
-		if(cam.real_rot.y > PI + 0.1f)
+		L.camera.free_rot = false;
+		if(L.camera.real_rot.y > PI + 0.1f)
 		{
-			cam.real_rot.y -= dt;
-			if(cam.real_rot.y < PI + 0.1f)
-				cam.real_rot.y = PI + 0.1f;
+			L.camera.real_rot.y -= dt;
+			if(L.camera.real_rot.y < PI + 0.1f)
+				L.camera.real_rot.y = PI + 0.1f;
 		}
-		else if(cam.real_rot.y < PI + 0.1f)
+		else if(L.camera.real_rot.y < PI + 0.1f)
 		{
-			cam.real_rot.y += dt;
-			if(cam.real_rot.y > PI + 0.1f)
-				cam.real_rot.y = PI + 0.1f;
+			L.camera.real_rot.y += dt;
+			if(L.camera.real_rot.y > PI + 0.1f)
+				L.camera.real_rot.y = PI + 0.1f;
 		}
 	}
 
@@ -911,12 +885,12 @@ void Game::UpdateGame(float dt)
 	{
 		if(!dialog_context.dialog_mode || !dialog_context.show_choices || !gui->game_gui->IsMouseInsideDialog())
 		{
-			cam.dist -= Key.GetMouseWheel();
-			cam.dist = Clamp(cam.dist, 0.5f, 6.f);
+			L.camera.dist -= Key.GetMouseWheel();
+			L.camera.dist = Clamp(L.camera.dist, 0.5f, 6.f);
 		}
 
 		if(Key.PressedRelease(VK_MBUTTON))
-			cam.dist = 3.5f;
+			L.camera.dist = 3.5f;
 	}
 
 	// umieranie
@@ -926,7 +900,7 @@ void Game::UpdateGame(float dt)
 		{
 			Info("Game over: all players died.");
 			SetMusic(MusicType::Death);
-			CloseAllPanels(true);
+			gui->CloseAllPanels(true);
 			++death_screen;
 			death_fade = 0;
 			death_solo = (Team.GetTeamSize() == 1u);
@@ -1065,11 +1039,11 @@ void Game::UpdateGame(float dt)
 		UpdateAi(dt);
 
 	// aktualizuj konteksty poziomów
-	lights_dt += dt;
+	L.lights_dt += dt;
 	for(LevelContext& ctx : L.ForEachContext())
 		UpdateContext(ctx, dt);
-	if(lights_dt >= 1.f / 60)
-		lights_dt = 0.f;
+	if(L.lights_dt >= 1.f / 60)
+		L.lights_dt = 0.f;
 
 	// aktualizacja minimapy
 	L.UpdateDungeonMinimap(true);
@@ -1374,12 +1348,12 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 		if(u.action == A_NONE && !u.talking && GKey.KeyPressedReleaseAllowed(GK_YELL))
 		{
 			if(Net::IsLocal())
-				PlayerYell(u);
+				pc->Yell();
 			else
 				Net::PushChange(NetChange::YELL);
 		}
 
-		if((GKey.allow_input == GameKeys::ALLOW_INPUT || GKey.allow_input == GameKeys::ALLOW_MOUSE) && !cam.free_rot)
+		if((GKey.allow_input == GameKeys::ALLOW_INPUT || GKey.allow_input == GameKeys::ALLOW_MOUSE) && !L.camera.free_rot)
 		{
 			int div = (pc->unit->action == A_SHOOT ? 800 : 400);
 			pc_data.rot_buf *= (1.f - dt * 2);
@@ -2271,7 +2245,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 				if(Net::IsLocal())
 				{
-					AddItem(u, item.item, item.count, item.team_count);
+					u.AddItem2(item.item, item.count, item.team_count, false);
 
 					if(item.item->type == IT_GOLD)
 						sound_mgr->PlaySound2d(sCoins);
@@ -2954,7 +2928,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 								{
 									if(Net::IsLocal())
 									{
-										auto result = CanLeaveLocation(unit);
+										CanLeaveLocationResult result = L.CanLeaveLocation(unit);
 										if(result == CanLeaveLocationResult::Yes)
 										{
 											allow_exit = true;
@@ -2979,7 +2953,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 							Net_LeaveLocation(ENTER_FROM_OUTSIDE);
 						else
 						{
-							auto result = CanLeaveLocation(unit);
+							CanLeaveLocationResult result = L.CanLeaveLocation(unit);
 							if(result == CanLeaveLocationResult::Yes)
 							{
 								allow_exit = true;
@@ -3106,7 +3080,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 				{
 					if(Net::IsLocal())
 					{
-						auto result = CanLeaveLocation(unit);
+						CanLeaveLocationResult result = L.CanLeaveLocation(unit);
 						if(result == CanLeaveLocationResult::Yes)
 						{
 							fallback_type = FALLBACK::CHANGE_LEVEL;
@@ -3159,7 +3133,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 				{
 					if(Net::IsLocal())
 					{
-						auto result = CanLeaveLocation(unit);
+						CanLeaveLocationResult result = L.CanLeaveLocation(unit);
 						if(result == CanLeaveLocationResult::Yes)
 						{
 							fallback_type = FALLBACK::CHANGE_LEVEL;
@@ -3202,7 +3176,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 					{
 						if(Net::IsLocal())
 						{
-							auto result = CanLeaveLocation(unit);
+							CanLeaveLocationResult result = L.CanLeaveLocation(unit);
 							if(result == CanLeaveLocationResult::Yes)
 							{
 								fallback_type = FALLBACK::USE_PORTAL;
@@ -3581,7 +3555,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 		ItemScript* script = base.item_script;
 		if(base.stat_profile && !base.stat_profile->subprofiles.empty() && base.stat_profile->subprofiles[u->stats->subprofile.index]->item_script)
 			script = base.stat_profile->subprofiles[u->stats->subprofile.index]->item_script;
-		ParseItemScript(*u, script);
+		script->Parse(*u);
 		SortItems(u->items);
 		u->RecalculateWeight();
 		if(!ResourceManager::Get().IsLoadScreen())
@@ -3683,186 +3657,6 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	}
 
 	return u;
-}
-
-//=================================================================================================
-void GiveItem(Unit& unit, const int*& ps, int count)
-{
-	int type = *ps;
-	++ps;
-	switch(type)
-	{
-	case PS_ITEM:
-		unit.AddItemAndEquipIfNone((const Item*)(*ps), count);
-		break;
-	case  PS_LIST:
-		{
-			const ItemList& lis = *(const ItemList*)(*ps);
-			for(int i = 0; i < count; ++i)
-				unit.AddItemAndEquipIfNone(lis.Get());
-		}
-		break;
-	case PS_LEVELED_LIST:
-		{
-			const LeveledItemList& lis = *(const LeveledItemList*)(*ps);
-			for(int i = 0; i < count; ++i)
-				unit.AddItemAndEquipIfNone(lis.Get(unit.level + Random(-2, 1)));
-		}
-		break;
-	case PS_LEVELED_LIST_MOD:
-		{
-			int mod = *ps++;
-			const LeveledItemList& lis = *(const LeveledItemList*)(*ps);
-			for(int i = 0; i < count; ++i)
-				unit.AddItemAndEquipIfNone(lis.Get(unit.level + Random(-2, 1) + mod));
-		}
-		break;
-	case PS_SPECIAL_ITEM:
-		{
-			int special = *ps;
-			const LeveledItemList& lis = ItemScript::GetSpecial(special, unit.stats->subprofile.value);
-			for(int i = 0; i < count; ++i)
-				unit.AddItemAndEquipIfNone(lis.Get(unit.level + Random(-2, 1)));
-		}
-		break;
-	case PS_SPECIAL_ITEM_MOD:
-		{
-			int mod = *ps++;
-			int special = *ps;
-			const LeveledItemList& lis = ItemScript::GetSpecial(special, unit.stats->subprofile.value);
-			for(int i = 0; i < count; ++i)
-				unit.AddItemAndEquipIfNone(lis.Get(unit.level + Random(-2, 1) + mod));
-		}
-	}
-
-	++ps;
-}
-
-//=================================================================================================
-void SkipItem(const int*& ps, int count)
-{
-	for(int i = 0; i < count; ++i)
-	{
-		int type = *ps;
-		++ps;
-		if(type == PS_LEVELED_LIST_MOD || type == PS_SPECIAL_ITEM_MOD)
-			++ps;
-		++ps;
-	}
-}
-
-void Game::ParseItemScript(Unit& unit, const ItemScript* script)
-{
-	assert(script);
-
-	const int* ps = script->code.data();
-	int a, b, depth = 0, depth_if = 0;
-
-	while(*ps != PS_END)
-	{
-		ParseScript type = (ParseScript)*ps;
-		++ps;
-
-		switch(type)
-		{
-		case PS_ONE:
-			if(depth == depth_if)
-				GiveItem(unit, ps, 1);
-			else
-				SkipItem(ps, 1);
-			break;
-		case PS_ONE_OF_MANY:
-			a = *ps;
-			++ps;
-			if(depth == depth_if)
-			{
-				b = Rand() % a;
-				for(int i = 0; i < a; ++i)
-				{
-					if(i == b)
-						GiveItem(unit, ps, 1);
-					else
-						SkipItem(ps, 1);
-				}
-			}
-			else
-				SkipItem(ps, a);
-			break;
-		case PS_CHANCE:
-			a = *ps;
-			++ps;
-			if(depth == depth_if && Rand() % 100 < a)
-				GiveItem(unit, ps, 1);
-			else
-				SkipItem(ps, 1);
-			break;
-		case PS_CHANCE2:
-			a = *ps;
-			++ps;
-			if(depth == depth_if)
-			{
-				if(Rand() % 100 < a)
-				{
-					GiveItem(unit, ps, 1);
-					SkipItem(ps, 1);
-				}
-				else
-				{
-					SkipItem(ps, 1);
-					GiveItem(unit, ps, 1);
-				}
-			}
-			else
-				SkipItem(ps, 2);
-			break;
-		case PS_IF_CHANCE:
-			a = *ps;
-			if(depth == depth_if && Rand() % 100 < a)
-				++depth_if;
-			++depth;
-			++ps;
-			break;
-		case PS_IF_LEVEL:
-			if(depth == depth_if && unit.level >= *ps)
-				++depth_if;
-			++depth;
-			++ps;
-			break;
-		case PS_ELSE:
-			if(depth == depth_if)
-				--depth_if;
-			else if(depth == depth_if + 1)
-				++depth_if;
-			break;
-		case PS_END_IF:
-			if(depth == depth_if)
-				--depth_if;
-			--depth;
-			break;
-		case PS_MANY:
-			a = *ps;
-			++ps;
-			if(depth == depth_if)
-				GiveItem(unit, ps, a);
-			else
-				SkipItem(ps, 1);
-			break;
-		case PS_RANDOM:
-			a = *ps;
-			++ps;
-			b = *ps;
-			++ps;
-			a = Random(a, b);
-			if(depth == depth_if && a > 0)
-				GiveItem(unit, ps, a);
-			else
-				SkipItem(ps, 1);
-			break;
-		default:
-			assert(0);
-			break;
-		}
-	}
 }
 
 bool Game::CheckForHit(LevelContext& ctx, Unit& unit, Unit*& hitted, Vec3& hitpoint)
@@ -4016,90 +3810,28 @@ bool Game::CheckForHit(LevelContext& ctx, Unit& _unit, Unit*& _hitted, Mesh::Poi
 
 void Game::UpdateParticles(LevelContext& ctx, float dt)
 {
-	// aktualizuj cz¹steczki
-	bool deletions = false;
-	for(vector<ParticleEmitter*>::iterator it = ctx.pes->begin(), end = ctx.pes->end(); it != end; ++it)
+	LoopAndRemove(*ctx.pes, [dt](ParticleEmitter* pe)
 	{
-		ParticleEmitter& pe = **it;
-
-		if(pe.emisions == 0 || (pe.life > 0 && (pe.life -= dt) <= 0.f))
-			pe.destroy = true;
-
-		if(pe.destroy && pe.alive == 0)
+		if(pe->Update(dt))
 		{
-			deletions = true;
-			if(pe.manual_delete == 0)
-				delete *it;
+			if(pe->manual_delete == 0)
+				delete pe;
 			else
-				pe.manual_delete = 2;
-			*it = nullptr;
-			continue;
+				pe->manual_delete = 2;
+			return true;
 		}
+		return false;
+	});
 
-		// aktualizuj cz¹steczki
-		for(vector<Particle>::iterator it2 = pe.particles.begin(), end2 = pe.particles.end(); it2 != end2; ++it2)
-		{
-			Particle& p = *it2;
-			if(!p.exists)
-				continue;
-
-			if((p.life -= dt) <= 0.f)
-			{
-				p.exists = false;
-				--pe.alive;
-			}
-			else
-			{
-				p.pos += p.speed * dt;
-				p.speed.y -= p.gravity * dt;
-			}
-		}
-
-		// emisja
-		if(!pe.destroy && (pe.emisions == -1 || pe.emisions > 0) && ((pe.time += dt) >= pe.emision_interval))
-		{
-			if(pe.emisions > 0)
-				--pe.emisions;
-			pe.time -= pe.emision_interval;
-
-			int count = min(Random(pe.spawn_min, pe.spawn_max), pe.max_particles - pe.alive);
-			vector<Particle>::iterator it2 = pe.particles.begin();
-
-			for(int i = 0; i < count; ++i)
-			{
-				while(it2->exists)
-					++it2;
-
-				Particle& p = *it2;
-				p.exists = true;
-				p.gravity = 9.81f;
-				p.life = pe.particle_life;
-				p.pos = pe.pos + Vec3::Random(pe.pos_min, pe.pos_max);
-				p.speed = Vec3::Random(pe.speed_min, pe.speed_max);
-			}
-
-			pe.alive += count;
-		}
-	}
-
-	if(deletions)
-		RemoveNullElements(ctx.pes);
-
-	// aktualizuj cz¹steczki szlakowe
-	deletions = false;
-
-	for(vector<TrailParticleEmitter*>::iterator it = ctx.tpes->begin(), end = ctx.tpes->end(); it != end; ++it)
+	LoopAndRemove(*ctx.tpes, [dt](TrailParticleEmitter* tpe)
 	{
-		if((*it)->Update(dt, nullptr, nullptr))
+		if(tpe->Update(dt, nullptr, nullptr))
 		{
-			delete *it;
-			*it = nullptr;
-			deletions = true;
+			delete tpe;
+			return true;
 		}
-	}
-
-	if(deletions)
-		RemoveNullElements(ctx.tpes);
+		return false;
+	});
 }
 
 Game::ATTACK_RESULT Game::DoAttack(LevelContext& ctx, Unit& unit)
@@ -5411,44 +5143,6 @@ bool Game::DoShieldSmash(LevelContext& ctx, Unit& attacker)
 	return true;
 }
 
-Vec4 Game::GetFogColor()
-{
-	return fog_color;
-}
-
-Vec4 Game::GetFogParams()
-{
-	if(cl_fog)
-		return fog_params;
-	else
-		return Vec4(cam.draw_range, cam.draw_range + 1, 1, 0);
-}
-
-Vec4 Game::GetAmbientColor()
-{
-	if(!cl_lighting)
-		return Vec4(1, 1, 1, 1);
-	//return Vec4(0.1f,0.1f,0.1f,1);
-	return ambient_color;
-}
-
-Vec4 Game::GetLightDir()
-{
-	// 	Vec3 light_dir(1, 1, 1);
-	// 	D3DXVec3Normalize(&light_dir, &light_dir);
-	// 	return Vec4(light_dir, 1);
-
-	Vec3 light_dir(sin(L.light_angle), 2.f, cos(L.light_angle));
-	light_dir.Normalize();
-	return Vec4(light_dir, 1);
-}
-
-Vec4 Game::GetLightColor()
-{
-	return Vec4(1, 1, 1, 1);
-	//return Vec4(0.5f,0.5f,0.5f,1);
-}
-
 struct BulletCallback : public btCollisionWorld::ConvexResultCallback
 {
 	BulletCallback(btCollisionObject* ignore) : target(nullptr), ignore(ignore)
@@ -6085,7 +5779,7 @@ void Game::ChangeLevel(int where)
 	}
 	else
 	{
-		clear_color = clear_color2;
+		clear_color = L.clear_color2;
 		game_state = GS_LEVEL;
 		gui->load_screen->visible = false;
 		gui->main_menu->visible = false;
@@ -6096,41 +5790,10 @@ void Game::ChangeLevel(int where)
 	L.entering = false;
 }
 
-void Game::OpenDoorsByTeam(const Int2& pt)
-{
-	static vector<Int2> tmp_path;
-	InsideLocation* inside = (InsideLocation*)L.location;
-	InsideLocationLevel& lvl = inside->GetLevelData();
-	for(Unit* unit : Team.members)
-	{
-		Int2 unit_pt = PosToPt(unit->pos);
-		if(pathfinding->FindPath(L.local_ctx, unit_pt, pt, tmp_path))
-		{
-			for(vector<Int2>::iterator it2 = tmp_path.begin(), end2 = tmp_path.end(); it2 != end2; ++it2)
-			{
-				Tile& p = lvl.map[(*it2)(lvl.w)];
-				if(p.type == DOORS)
-				{
-					Door* door = lvl.FindDoor(*it2);
-					if(door && door->state == Door::Closed)
-					{
-						door->state = Door::Open;
-						btVector3& pos = door->phy->getWorldTransform().getOrigin();
-						pos.setY(pos.y() - 100.f);
-						door->mesh_inst->SetToEnd(&door->mesh_inst->mesh->anims[0]);
-					}
-				}
-			}
-		}
-		else
-			Warn("OpenDoorsByTeam: Can't find path from unit %s (%d,%d) to spawn point (%d,%d).", unit->data->id.c_str(), unit_pt.x, unit_pt.y, pt.x, pt.y);
-	}
-}
-
 void Game::ExitToMap()
 {
 	// zamknij gui layer
-	CloseAllPanels();
+	gui->CloseAllPanels();
 
 	clear_color = Color::Black;
 	game_state = GS_WORLDMAP;
@@ -7773,8 +7436,8 @@ void Game::ClearGameVars(bool new_game)
 	gui->world_map->picked_location = -1;
 	post_effects.clear();
 	grayout = 0.f;
-	cam.Reset();
-	lights_dt = 1.f;
+	L.camera.Reset();
+	L.lights_dt = 1.f;
 	pc_data.Reset();
 	SM.Reset();
 	L.Reset();
@@ -7788,16 +7451,16 @@ void Game::ClearGameVars(bool new_game)
 	if(new_game)
 	{
 		devmode = default_devmode;
-		cl_fog = true;
-		cl_lighting = true;
+		L.cl_fog = true;
+		L.cl_lighting = true;
 		draw_particle_sphere = false;
 		draw_unit_radius = false;
 		draw_hitbox = false;
 		noai = false;
 		draw_phy = false;
 		draw_col = false;
-		cam.real_rot = Vec2(0, 4.2875104f);
-		cam.dist = 3.5f;
+		L.camera.real_rot = Vec2(0, 4.2875104f);
+		L.camera.dist = 3.5f;
 		game_speed = 1.f;
 		L.dungeon_level = 0;
 		QM.Reset();
@@ -7813,7 +7476,7 @@ void Game::ClearGameVars(bool new_game)
 			gui->mp_box->visible = Net::IsOnline();
 		drunk_anim = 0.f;
 		L.light_angle = Random(PI * 2);
-		cam.Reset();
+		L.camera.Reset();
 		pc_data.rot_buf = 0.f;
 		start_version = VERSION;
 
@@ -7995,11 +7658,11 @@ void Game::ApplyLocationTexturePack(TexturePack& pack, LocationTexturePack::Entr
 void Game::SetDungeonParamsAndTextures(BaseLocation& base)
 {
 	// ustawienia t³a
-	cam.draw_range = base.draw_range;
-	fog_params = Vec4(base.fog_range.x, base.fog_range.y, base.fog_range.y - base.fog_range.x, 0);
-	fog_color = Vec4(base.fog_color, 1);
-	ambient_color = Vec4(base.ambient_color, 1);
-	clear_color2 = Color(int(fog_color.x * 255), int(fog_color.y * 255), int(fog_color.z * 255));
+	L.camera.draw_range = base.draw_range;
+	L.fog_params = Vec4(base.fog_range.x, base.fog_range.y, base.fog_range.y - base.fog_range.x, 0);
+	L.fog_color = Vec4(base.fog_color, 1);
+	L.ambient_color = Vec4(base.ambient_color, 1);
+	L.clear_color2 = Color(int(L.fog_color.x * 255), int(L.fog_color.y * 255), int(L.fog_color.z * 255));
 
 	// tekstury podziemi
 	ApplyLocationTexturePack(tFloor[0], tWall[0], tCeil[0], base.tex);
@@ -8108,9 +7771,9 @@ void Game::LeaveLevel(bool clear)
 
 	ClearQuadtree();
 
-	CloseAllPanels();
+	gui->CloseAllPanels();
 
-	cam.Reset();
+	L.camera.Reset();
 	pc_data.rot_buf = 0.f;
 	pc_data.target_unit = nullptr;
 	dialog_context.dialog_mode = false;
@@ -8305,7 +7968,7 @@ void Game::UpdateContext(LevelContext& ctx, float dt)
 	// aktualizuj postacie
 	UpdateUnits(ctx, dt);
 
-	if(ctx.lights && lights_dt >= 1.f / 60)
+	if(ctx.lights && L.lights_dt >= 1.f / 60)
 		UpdateLights(*ctx.lights);
 
 	// aktualizuj skrzynie
@@ -8960,7 +8623,7 @@ void Game::DeleteUnit(Unit* unit)
 float Game::PlayerAngleY()
 {
 	const float pt0 = 4.6662526f;
-	return cam.rot.y - pt0;
+	return L.camera.rot.y - pt0;
 }
 
 void Game::AttackReaction(Unit& attacked, Unit& attacker)
@@ -9012,61 +8675,6 @@ void Game::AttackReaction(Unit& attacked, Unit& attacker)
 			}
 		}
 	}
-}
-
-Game::CanLeaveLocationResult Game::CanLeaveLocation(Unit& unit)
-{
-	if(QM.quest_secret->state == Quest_Secret::SECRET_FIGHT)
-		return CanLeaveLocationResult::InCombat;
-
-	if(L.city_ctx)
-	{
-		for(Unit* p_unit : Team.members)
-		{
-			Unit& u = *p_unit;
-			if(u.summoner != nullptr)
-				continue;
-
-			if(u.busy != Unit::Busy_No && u.busy != Unit::Busy_Tournament)
-				return CanLeaveLocationResult::TeamTooFar;
-
-			if(u.IsPlayer())
-			{
-				if(u.in_building != -1 || Vec3::Distance2d(unit.pos, u.pos) > 8.f)
-					return CanLeaveLocationResult::TeamTooFar;
-			}
-
-			for(vector<Unit*>::iterator it2 = L.local_ctx.units->begin(), end2 = L.local_ctx.units->end(); it2 != end2; ++it2)
-			{
-				Unit& u2 = **it2;
-				if(&u != &u2 && u2.IsStanding() && u.IsEnemy(u2) && u2.IsAI() && u2.ai->in_combat
-					&& Vec3::Distance2d(u.pos, u2.pos) < ALERT_RANGE && L.CanSee(u, u2))
-					return CanLeaveLocationResult::InCombat;
-			}
-		}
-	}
-	else
-	{
-		for(Unit* p_unit : Team.members)
-		{
-			Unit& u = *p_unit;
-			if(u.summoner != nullptr)
-				continue;
-
-			if(u.busy != Unit::Busy_No || Vec3::Distance2d(unit.pos, u.pos) > 8.f)
-				return CanLeaveLocationResult::TeamTooFar;
-
-			for(vector<Unit*>::iterator it2 = L.local_ctx.units->begin(), end2 = L.local_ctx.units->end(); it2 != end2; ++it2)
-			{
-				Unit& u2 = **it2;
-				if(&u != &u2 && u2.IsStanding() && u.IsEnemy(u2) && u2.IsAI() && u2.ai->in_combat
-					&& Vec3::Distance2d(u.pos, u2.pos) < ALERT_RANGE && L.CanSee(u, u2))
-					return CanLeaveLocationResult::InCombat;
-			}
-		}
-	}
-
-	return CanLeaveLocationResult::Yes;
 }
 
 void Game::GenerateQuestUnits()
@@ -9739,12 +9347,6 @@ void Game::CloseInventory()
 	}
 }
 
-void Game::CloseAllPanels(bool close_mp_box)
-{
-	if(gui->game_gui)
-		gui->game_gui->ClosePanels(close_mp_box);
-}
-
 bool Game::CanShowEndScreen()
 {
 	if(Net::IsLocal())
@@ -9891,35 +9493,6 @@ void Game::PlayerUseUsable(Usable* usable, bool after_action)
 	}
 }
 
-void Game::UnitTalk(Unit& u, cstring text)
-{
-	assert(text && Net::IsLocal());
-
-	gui->game_gui->AddSpeechBubble(&u, text);
-
-	int ani = 0;
-	if(u.data->type == UNIT_TYPE::HUMAN && u.action == A_NONE && Rand() % 3 != 0)
-	{
-		ani = Rand() % 2 + 1;
-		u.mesh_inst->Play(ani == 1 ? "i_co" : "pokazuje", PLAY_ONCE | PLAY_PRIO2, 0);
-		u.mesh_inst->groups[0].speed = 1.f;
-		u.animation = ANI_PLAY;
-		u.action = A_ANIMATION;
-	}
-
-	if(Net::IsOnline())
-	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::TALK;
-		c.unit = &u;
-		c.str = StringPool.Get();
-		*c.str = text;
-		c.id = ani;
-		c.count = -1;
-		N.net_strs.push_back(c.str);
-	}
-}
-
 void Game::OnEnterLocation()
 {
 	Unit* talker = nullptr;
@@ -9995,7 +9568,7 @@ void Game::OnEnterLocation()
 	}
 
 	if(talker)
-		UnitTalk(*talker, text);
+		talker->Talk(text);
 }
 
 void Game::OnEnterLevel()
@@ -10204,13 +9777,13 @@ void Game::OnEnterLevel()
 				break;
 			}
 
-			UnitTalk(*Team.GetRandomSaneHero(), s->c_str());
+			Team.GetRandomSaneHero()->Talk(s->c_str());
 			return;
 		}
 	}
 
 	if(talker)
-		UnitTalk(*talker, text);
+		talker->Talk(text);
 }
 
 cstring Game::GetRandomIdleText(Unit& u)
@@ -10325,80 +9898,10 @@ cstring Game::GetRandomIdleText(Unit& u)
 	}
 }
 
-void Game::AddItem(Unit& unit, const Item* item, uint count, uint team_count, bool send_msg)
-{
-	assert(item && count && team_count <= count);
-
-	// dodaj przedmiot
-	unit.AddItem(item, count, team_count);
-
-	// komunikat
-	if(send_msg && Net::IsServer())
-	{
-		if(unit.IsPlayer())
-		{
-			if(unit.player != pc)
-			{
-				// dodaj komunikat o dodaniu przedmiotu
-				NetChangePlayer& c = Add1(unit.player->player_info->changes);
-				c.type = NetChangePlayer::ADD_ITEMS;
-				c.item = item;
-				c.count = count;
-				c.id = team_count;
-			}
-		}
-		else
-		{
-			// sprawdŸ czy ta jednostka nie wymienia siê przedmiotami z graczem
-			Unit* u = nullptr;
-			for(Unit* member : Team.active_members)
-			{
-				if(member->IsPlayer() && member->player->IsTradingWith(&unit))
-				{
-					u = member;
-					break;
-				}
-			}
-
-			if(u && u->player != pc)
-			{
-				// wyœlij komunikat do gracza z aktualizacj¹ ekwipunku
-				NetChangePlayer& c = Add1(u->player->player_info->changes);
-				c.type = NetChangePlayer::ADD_ITEMS_TRADER;
-				c.item = item;
-				c.id = unit.netid;
-				c.count = count;
-				c.a = team_count;
-			}
-		}
-	}
-
-	// czy trzeba budowaæ tymczasowy ekwipunek
-	int rebuild_id = -1;
-	if(&unit == pc->unit)
-	{
-		if(gui->inventory->inv_mine->visible || gui->inventory->gp_trade->visible)
-			rebuild_id = 0;
-	}
-	else if(gui->inventory->gp_trade->visible && gui->inventory->inv_trade_other->unit == &unit)
-		rebuild_id = 1;
-	if(rebuild_id != -1)
-		gui->inventory->BuildTmpInventory(rebuild_id);
-}
-
-void Game::SetOutsideParams()
-{
-	cam.draw_range = 80.f;
-	clear_color2 = Color::White;
-	fog_params = Vec4(40, 80, 40, 0);
-	fog_color = Vec4(0.9f, 0.85f, 0.8f, 1);
-	ambient_color = Vec4(0.5f, 0.5f, 0.5f, 1);
-}
-
 void Game::OnEnterLevelOrLocation()
 {
 	gui->Clear(false, true);
-	lights_dt = 1.f;
+	L.lights_dt = 1.f;
 	pc_data.autowalk = false;
 	pc_data.selected_unit = pc->unit;
 	fallback_t = -0.5f;

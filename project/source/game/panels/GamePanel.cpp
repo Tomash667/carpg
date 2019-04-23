@@ -20,7 +20,7 @@ enum MenuId
 };
 
 //=================================================================================================
-GamePanel::GamePanel() : /*resizing(false), draging(false),*/ box_state(BOX_NOT_VISIBLE), order(0), last_index(INDEX_INVALID), last_index2(INDEX_INVALID)
+GamePanel::GamePanel() : box_state(BOX_NOT_VISIBLE), order(0), last_index(INDEX_INVALID), last_index2(INDEX_INVALID)
 {
 	focusable = true;
 }
@@ -32,172 +32,6 @@ void GamePanel::Draw(ControlDrawData*)
 }
 
 //=================================================================================================
-void GamePanel::Update(float dt)
-{
-	// for version > 0.3 panels are no longer moveable/sizeable
-	// maybe it will be allowed in future
-
-	/*if(!focus)
-		return;
-
-	Int2 cpos = GetCursorPos();
-
-	if(resizing)
-	{
-		if(!Key.Focus() || Key.Up(VK_LBUTTON))
-		{
-			resizing = false;
-			return;
-		}
-
-		Int2 off = (cpos - move_offset);
-
-		switch(move_what)
-		{
-		case 0:
-			if(size.x - off.x < min_size.x)
-				off.x = size.x - min_size.x;
-			if(size.y - off.y < min_size.y)
-				off.y = size.y - min_size.y;
-			pos += off;
-			global_pos += off;
-			size -= off;
-			if(off != Int2(0,0))
-			{
-				Event(GuiEvent_Moved);
-				Event(GuiEvent_Resize);
-			}
-			break;
-		case 1:
-			if(size.x + off.x < min_size.x)
-				off.x = min_size.x - size.x;
-			if(size.y - off.y < min_size.y)
-				off.y = size.y - min_size.y;
-			pos.y += off.y;
-			global_pos.y += off.y;
-			size.x += off.x;
-			size.y -= off.y;
-			move_offset.x += off.x;
-			if(off.y != 0)
-				Event(GuiEvent_Moved);
-			if(off != Int2(0,0))
-				Event(GuiEvent_Resize);
-			break;
-		case 2:
-			if(size.x - off.x < min_size.x)
-				off.x = size.x - min_size.x;
-			if(size.y + off.y < min_size.y)
-				off.y = min_size.y - size.y;
-			pos.x += off.x;
-			global_pos.x += off.x;
-			size.x -= off.x;
-			size.y += off.y;
-			move_offset.y += off.y;
-			if(off.x != 0)
-				Event(GuiEvent_Moved);
-			if(off != Int2(0,0))
-				Event(GuiEvent_Resize);
-			break;
-		case 3:
-			if(size.x + off.x < min_size.x)
-				off.x = min_size.x - size.x;
-			if(size.y + off.y < min_size.y)
-				off.y = min_size.y - size.y;
-			if(shift_size)
-			{
-				if(off.x > off.y)
-				{
-					off.y = off.x;
-					if(size.y + off.y < min_size.y)
-						off.x = off.y = min_size.y - size.y;
-				}
-				else if(off.y > off.x)
-				{
-					off.x = off.y;
-					if(size.x + off.x < min_size.x)
-						off.y = off.x = min_size.x - size.x;
-				}
-			}
-			if(off != Int2(0,0))
-			{
-				size += off;
-				move_offset += off;
-				Event(GuiEvent_Resize);
-			}
-			break;
-		}
-	}
-	else if(draging)
-	{
-		if(!Key.Focus() || Key.Up(VK_LBUTTON))
-		{
-			draging = false;
-			return;
-		}
-
-		Int2 off = (cpos - move_offset);
-		if(off != Int2(0,0))
-		{
-			pos += off;
-			global_pos += off;
-			Event(GuiEvent_Moved);
-		}
-	}
-	else if(Key.Focus() && Key.Pressed(VK_LBUTTON))
-	{
-		const int siz = 12;
-
-		move_what = -1;
-		if(cpos.x >= 0 && cpos.x < siz && cpos.y >= 0 && cpos.y < siz)
-		{
-			resizing = true;
-			move_what = 0;
-		}
-		else if(cpos.x >= size.x-siz && cpos.x < size.x && cpos.y >= 0 && cpos.y < siz)
-		{
-			resizing = true;
-			move_what = 1;
-		}
-		else if(cpos.x >= 0 && cpos.x < siz && cpos.y >= size.y-siz && cpos.y < size.y)
-		{
-			resizing = true;
-			move_what = 2;
-		}
-		else if(cpos.x >= size.x-siz && cpos.x < size.x && cpos.y >= size.y-siz && cpos.y < size.y)
-		{
-			resizing = true;
-			move_what = 3;
-		}
-		else if(cpos.x >= siz && cpos.x < size.x-siz && cpos.y >= 0 && cpos.y < siz)
-		{
-			draging = true;
-			move_what = 0;
-		}
-		else if(cpos.x >= siz && cpos.x < size.x-siz && cpos.y >= size.y-siz && cpos.y < size.y)
-		{
-			draging = true;
-			move_what = 0;
-		}
-		else if(cpos.x >= 0 && cpos.x < siz && cpos.y >= siz && cpos.y < size.y-siz)
-		{
-			draging = true;
-			move_what = 0;
-		}
-		else if(cpos.x >= size.x-siz && cpos.x < size.x && cpos.y >= siz && cpos.y < size.y-siz)
-		{
-			draging = true;
-			move_what = 0;
-		}
-
-		if(move_what != -1)
-		{
-			move_offset = cpos;
-			shift_size = Key.Down(VK_SHIFT);
-		}
-	}*/
-}
-
-//=================================================================================================
 void GamePanel::Event(GuiEvent e)
 {
 	if(e == GuiEvent_Show)
@@ -205,11 +39,6 @@ void GamePanel::Event(GuiEvent e)
 		box_state = BOX_NOT_VISIBLE;
 		last_index = INDEX_INVALID;
 	}
-	/*else if(e == GuiEvent_LostFocus)
-	{
-		resizing = false;
-		draging = false;
-	}*/
 }
 
 //=================================================================================================

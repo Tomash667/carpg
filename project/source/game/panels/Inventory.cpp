@@ -982,7 +982,7 @@ void InventoryPanel::Update(float dt)
 					// za³o¿ony przedmiot
 					last_index = INDEX_INVALID;
 					// dodaj
-					game.pc->unit->AddItem(item);
+					game.pc->unit->AddItem(item, 1u, 1u);
 					base.BuildTmpInventory(0);
 					// usuñ
 					if(slot_type == SLOT_WEAPON && slots[SLOT_WEAPON] == unit->used_item)
@@ -1632,7 +1632,7 @@ void InventoryPanel::FormatBox(int group, string& text, string& small_text, TEX&
 			text += Format(base.txPrice, price);
 		}
 		small_text = item->desc;
-		if(AllowForUnit() && game.pc->action_unit->CanWear(item))
+		if(AllowForUnit() && game.pc->action_unit->CanWear(item) && !Any(item->type, IT_AMULET, IT_RING))
 		{
 			if(!small_text.empty())
 				small_text += '\n';

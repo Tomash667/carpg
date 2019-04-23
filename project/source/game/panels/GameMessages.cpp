@@ -36,6 +36,8 @@ void GameMessages::LoadLanguage()
 	txTooComplicated = Str("tooComplicated");
 	txAddedCursedStone = Str("addedCursedStone");
 	txGameLoaded = Str("gameLoaded");
+	txGoldPlus = Str("goldPlus");
+	txQuestCompletedGold = Str("questCompletedGold");
 }
 
 //=================================================================================================
@@ -346,6 +348,13 @@ void GameMessages::AddFormattedMessage(PlayerController* player, GMS id, int sub
 			break;
 		case GMS_GAIN_SKILL:
 			text = Format(txGainTextSkill, Skill::skills[subtype].name.c_str(), value);
+			break;
+		case GMS_GOLD_ADDED:
+			text = Format(txGoldPlus, value);
+			break;
+		case GMS_QUEST_COMPLETED_GOLD:
+			text = Format(txQuestCompletedGold, value);
+			time = 4.f;
 			break;
 		default:
 			assert(0);

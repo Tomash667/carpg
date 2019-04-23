@@ -15,6 +15,7 @@ struct TrailParticleEmitter;
 class CustomCollisionWorld;
 class DebugDrawer;
 class Engine;
+class GrassShader;
 class Pak;
 class Render;
 class RenderTarget;
@@ -22,6 +23,7 @@ class ResourceManager;
 class ShaderHandler;
 class SoundManager;
 class SuperShader;
+class TerrainShader;
 
 // Resource types
 struct Mesh;

@@ -253,18 +253,17 @@ void Unit::SetGold(int new_gold)
 	gold = new_gold;
 	if(IsPlayer())
 	{
+		global::gui->messages->AddFormattedMessage(player, GMS_GOLD_ADDED, -1, dif);
 		if(player->is_local)
 		{
 			Game& game = Game::Get();
-			game.gui->messages->AddGameMsg(Format(game.txGoldPlus, dif), 3.f);
 			game.sound_mgr->PlaySound2d(game.sCoins);
 		}
 		else
 		{
 			NetChangePlayer& c = Add1(player->player_info->changes);
-			c.type = NetChangePlayer::GOLD_MSG;
-			c.count = dif;
-			c.id = 1;
+			c.type = NetChangePlayer::SOUND;
+			c.id = 0;
 			player->player_info->UpdateGold();
 		}
 	}
@@ -798,24 +797,68 @@ bool Unit::AddItem(const Item* item, uint count, uint team_count)
 }
 
 //=================================================================================================
-void Unit::AddItem2(const Item* item, uint count, uint team_count, bool show_msg)
+void Unit::AddItem2(const Item* item, uint count, uint team_count, bool show_msg, bool notify)
 {
+	assert(item && count && team_count <= count);
+
 	Game::Get().PreloadItem(item);
+
 	AddItem(item, count, team_count);
 
-	if(IsPlayer())
+	// multiplayer notify
+	if(notify && Net::IsServer())
 	{
-		if(!player->IsLocal())
+		if(IsPlayer())
 		{
-			NetChangePlayer& c = Add1(player->player_info->changes);
-			c.type = NetChangePlayer::ADD_ITEMS;
-			c.item = item;
-			c.id = team_count;
-			c.count = count;
+			if(!player->is_local)
+			{
+				NetChangePlayer& c = Add1(player->player_info->changes);
+				c.type = NetChangePlayer::ADD_ITEMS;
+				c.item = item;
+				c.count = count;
+				c.id = team_count;
+			}
 		}
-		if(show_msg)
-			player->AddItemMessage(count);
+		else
+		{
+			// check if unit is trading with someone that gets this item
+			Unit* u = nullptr;
+			for(Unit* member : Team.active_members)
+			{
+				if(member->IsPlayer() && member->player->IsTradingWith(this))
+				{
+					u = member;
+					break;
+				}
+			}
+
+			if(u && !u->player->is_local)
+			{
+				// wyœlij komunikat do gracza z aktualizacj¹ ekwipunku
+				NetChangePlayer& c = Add1(u->player->player_info->changes);
+				c.type = NetChangePlayer::ADD_ITEMS_TRADER;
+				c.item = item;
+				c.id = netid;
+				c.count = count;
+				c.a = team_count;
+			}
+		}
 	}
+
+	if(show_msg && IsPlayer())
+		player->AddItemMessage(count);
+
+	// rebuild inventory
+	int rebuild_id = -1;
+	if(IsLocal())
+	{
+		if(global::gui->inventory->inv_mine->visible || global::gui->inventory->gp_trade->visible)
+			rebuild_id = 0;
+	}
+	else if(global::gui->inventory->gp_trade->visible && global::gui->inventory->inv_trade_other->unit == this)
+		rebuild_id = 1;
+	if(rebuild_id != -1)
+		global::gui->inventory->BuildTmpInventory(rebuild_id);
 }
 
 //=================================================================================================
@@ -4488,7 +4531,7 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 		if(animation_state == 0)
 		{
 			if(Net::IsLocal())
-				game.AddItem(*this, used_item, 1, used_item_is_team);
+				AddItem2(used_item, 1, used_item_is_team, false);
 			if(mode != BREAK_ACTION_MODE::FALL)
 				used_item = nullptr;
 		}
@@ -4501,7 +4544,7 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 		if(animation_state < 2)
 		{
 			if(Net::IsLocal())
-				game.AddItem(*this, used_item, 1, used_item_is_team);
+				AddItem2(used_item, 1, used_item_is_team, false);
 			if(mode != BREAK_ACTION_MODE::FALL)
 				used_item = nullptr;
 		}
@@ -4826,7 +4869,7 @@ void Unit::Die(LevelContext* ctx, Unit* killer)
 		// add gold to inventory
 		if(gold && !(IsPlayer() || IsFollower()))
 		{
-			AddItem(Item::gold, (uint)gold);
+			AddItem(Item::gold, (uint)gold, (uint)gold);
 			gold = 0;
 		}
 
@@ -5500,10 +5543,14 @@ void Unit::OrderLookAt(const Vec3& pos)
 }
 
 //=================================================================================================
-void Unit::Talk(const string& text, int play_anim)
+void Unit::Talk(cstring text, int play_anim)
 {
+	assert(text && Net::IsLocal());
+
+	global::gui->game_gui->AddSpeechBubble(this, text);
+
+	// animation
 	int ani = 0;
-	Game::Get().gui->game_gui->AddSpeechBubble(this, text.c_str());
 	if(play_anim != 0 && data->type == UNIT_TYPE::HUMAN)
 	{
 		if(play_anim == -1)
@@ -5522,6 +5569,7 @@ void Unit::Talk(const string& text, int play_anim)
 		action = A_ANIMATION;
 	}
 
+	// sent
 	if(Net::IsOnline())
 	{
 		NetChange& c = Add1(Net::changes);

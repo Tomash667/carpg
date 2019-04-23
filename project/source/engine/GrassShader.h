@@ -2,40 +2,32 @@
 
 //-----------------------------------------------------------------------------
 #include "ShaderHandler.h"
-#include "VertexDeclaration.h"
 
 //-----------------------------------------------------------------------------
-class DebugDrawer : public ShaderHandler
+class GrassShader : public ShaderHandler
 {
 public:
-	typedef delegate<void(DebugDrawer*)> Handler;
-
-	DebugDrawer(Render* render);
-	~DebugDrawer();
+	GrassShader(Render* render);
+	~GrassShader();
 	void OnInit() override;
 	void OnReset() override;
 	void OnReload() override;
 	void OnRelease() override;
+	void SetFog(const Vec4& color, const Vec4& params);
 	void SetCamera(const CameraBase& camera);
-	void Draw();
-	void BeginBatch();
-	void AddQuad(const Vec3(&pts)[4], const Vec4& color);
-	void EndBatch();
-
-	Handler GetHandler() const { return handler; }
-
-	void SetHandler(Handler handler) { this->handler = handler; }
+	void Begin(uint max_size);
+	void Draw(Mesh* mesh, const vector<const vector<Matrix>*>& patches, uint count);
+	void End();
 
 private:
 	Render* render;
 	IDirect3DDevice9* device;
-	Handler handler;
-	ID3DXEffect* effect;
-	D3DXHANDLE hTechSimple, hMatCombined;
 	IDirect3DVertexDeclaration9* vertex_decl;
+	ID3DXEffect* effect;
+	D3DXHANDLE tech;
+	D3DXHANDLE h_view_proj, h_tex, h_fog_color, h_fog_params, h_ambient;
 	VB vb;
 	uint vb_size;
-	vector<VColor> verts;
 	Matrix mat_view_proj;
-	bool batch;
+	Vec4 fog_color, fog_params;
 };

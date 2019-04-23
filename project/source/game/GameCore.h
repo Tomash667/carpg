@@ -121,6 +121,7 @@ struct Light;
 struct LoadingHandler;
 struct LocationEventHandler;
 struct LocationTexturePack;
+struct Music;
 struct NetChange;
 struct NetChangePlayer;
 struct News;
@@ -215,3 +216,11 @@ enum class SkillId;
 
 //-----------------------------------------------------------------------------
 typedef pair<UnitData*, int> TmpSpawn;
+
+//-----------------------------------------------------------------------------
+namespace global
+{
+	extern CommandParser* cmdp;
+	extern GlobalGui* gui;
+	extern Pathfinding* pathfinding;
+}

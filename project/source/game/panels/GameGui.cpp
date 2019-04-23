@@ -30,6 +30,7 @@
 #include "PlayerInfo.h"
 
 //-----------------------------------------------------------------------------
+GlobalGui* global::gui;
 const float UNIT_VIEW_A = 0.2f;
 const float UNIT_VIEW_B = 0.4f;
 const int UNIT_VIEW_MUL = 5;
@@ -174,7 +175,7 @@ void GameGui::DrawFront()
 		{
 			if(!unit->IsAlive())
 				continue;
-			float dist = Vec3::DistanceSquared(game.cam.from, unit->pos);
+			float dist = Vec3::DistanceSquared(L.camera.from, unit->pos);
 			sorted_units.push_back({ unit, dist, 255, nullptr });
 		}
 
@@ -244,7 +245,7 @@ void GameGui::DrawFront()
 
 			if(alpha)
 			{
-				float dist = Vec3::DistanceSquared(game.cam.from, it->unit->pos);
+				float dist = Vec3::DistanceSquared(L.camera.from, it->unit->pos);
 				sorted_units.push_back({ it->unit, dist, alpha, &it->last_pos });
 			}
 		}
@@ -634,7 +635,7 @@ void GameGui::DrawSpeechBubbles()
 			sb.visible = true;
 			if(sb.time > 0.25f)
 			{
-				float cam_dist = Vec3::Distance(game.cam.from, pos);
+				float cam_dist = Vec3::Distance(L.camera.from, pos);
 				sorted_speech_bbs.push_back({ &sb, cam_dist, pt });
 			}
 		}
@@ -1501,7 +1502,7 @@ void GameGui::UpdatePlayerView(float dt)
 		{
 			float dist = Vec3::Distance(u.visual_pos, u2.visual_pos);
 
-			if(dist < ALERT_RANGE && game.cam.frustum.SphereToFrustum(u2.visual_pos, u2.GetSphereRadius()) && L.CanSee(u, u2))
+			if(dist < ALERT_RANGE && L.camera.frustum.SphereToFrustum(u2.visual_pos, u2.GetSphereRadius()) && L.CanSee(u, u2))
 			{
 				// dodaj do pobliskich jednostek
 				bool jest = false;

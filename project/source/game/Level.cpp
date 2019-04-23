@@ -36,7 +36,8 @@ Level L;
 
 //=================================================================================================
 Level::Level() : terrain(nullptr), terrain_shape(nullptr), dungeon_shape(nullptr), dungeon_shape_data(nullptr), shape_wall(nullptr), shape_stairs(nullptr),
-shape_stairs_part(), shape_block(nullptr), shape_barrier(nullptr), shape_door(nullptr), shape_arrow(nullptr), shape_summon(nullptr)
+shape_stairs_part(), shape_block(nullptr), shape_barrier(nullptr), shape_door(nullptr), shape_arrow(nullptr), shape_summon(nullptr), cl_fog(true),
+cl_lighting(true)
 {
 }
 
@@ -200,7 +201,7 @@ void Level::ProcessUnitWarps()
 
 		if(warp.unit == game.pc->unit)
 		{
-			game.cam.Reset();
+			camera.Reset();
 			game.pc_data.rot_buf = 0.f;
 
 			if(game.fallback_type == FALLBACK::ARENA)
@@ -4059,7 +4060,7 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 	for(vector<UsableRequest>::iterator it = Usable::refid_request.begin(), end = Usable::refid_request.end(); it != end; ++it)
 	{
 		Unit* unit = it->user;
-		Usable* u = L.FindUsable(it->refid);
+		Usable* u = FindUsable(it->refid);
 		if(!u)
 			Warn("Invalid usable netid %d for %s (%d).", it->refid, unit->data->id.c_str(), unit->netid);
 		else
@@ -4426,4 +4427,95 @@ bool Level::IsSafe()
 		else
 			return (location->state == LS_CLEARED);
 	}
+}
+
+//=================================================================================================
+CanLeaveLocationResult Level::CanLeaveLocation(Unit& unit)
+{
+	if(QM.quest_secret->state == Quest_Secret::SECRET_FIGHT)
+		return CanLeaveLocationResult::InCombat;
+
+	if(city_ctx)
+	{
+		for(Unit* p_unit : Team.members)
+		{
+			Unit& u = *p_unit;
+			if(u.summoner != nullptr)
+				continue;
+
+			if(u.busy != Unit::Busy_No && u.busy != Unit::Busy_Tournament)
+				return CanLeaveLocationResult::TeamTooFar;
+
+			if(u.IsPlayer())
+			{
+				if(u.in_building != -1 || Vec3::Distance2d(unit.pos, u.pos) > 8.f)
+					return CanLeaveLocationResult::TeamTooFar;
+			}
+
+			for(vector<Unit*>::iterator it2 = local_ctx.units->begin(), end2 = local_ctx.units->end(); it2 != end2; ++it2)
+			{
+				Unit& u2 = **it2;
+				if(&u != &u2 && u2.IsStanding() && u.IsEnemy(u2) && u2.IsAI() && u2.ai->in_combat
+					&& Vec3::Distance2d(u.pos, u2.pos) < ALERT_RANGE && CanSee(u, u2))
+					return CanLeaveLocationResult::InCombat;
+			}
+		}
+	}
+	else
+	{
+		for(Unit* p_unit : Team.members)
+		{
+			Unit& u = *p_unit;
+			if(u.summoner != nullptr)
+				continue;
+
+			if(u.busy != Unit::Busy_No || Vec3::Distance2d(unit.pos, u.pos) > 8.f)
+				return CanLeaveLocationResult::TeamTooFar;
+
+			for(vector<Unit*>::iterator it2 = local_ctx.units->begin(), end2 = local_ctx.units->end(); it2 != end2; ++it2)
+			{
+				Unit& u2 = **it2;
+				if(&u != &u2 && u2.IsStanding() && u.IsEnemy(u2) && u2.IsAI() && u2.ai->in_combat
+					&& Vec3::Distance2d(u.pos, u2.pos) < ALERT_RANGE && CanSee(u, u2))
+					return CanLeaveLocationResult::InCombat;
+			}
+		}
+	}
+
+	return CanLeaveLocationResult::Yes;
+}
+
+//=================================================================================================
+Vec4 Level::GetFogParams()
+{
+	if(cl_fog)
+		return fog_params;
+	else
+		return Vec4(camera.draw_range, camera.draw_range + 1, 1, 0);
+}
+
+//=================================================================================================
+Vec4 Level::GetAmbientColor()
+{
+	if(!cl_lighting)
+		return Vec4(1, 1, 1, 1);
+	return ambient_color;
+}
+
+//=================================================================================================
+Vec4 Level::GetLightDir()
+{
+	Vec3 light_dir(sin(light_angle), 2.f, cos(light_angle));
+	light_dir.Normalize();
+	return Vec4(light_dir, 1);
+}
+
+//=================================================================================================
+void Level::SetOutsideParams()
+{
+	camera.draw_range = 80.f;
+	clear_color2 = Color::White;
+	fog_params = Vec4(40, 80, 40, 0);
+	fog_color = Vec4(0.9f, 0.85f, 0.8f, 1);
+	ambient_color = Vec4(0.5f, 0.5f, 0.5f, 1);
 }

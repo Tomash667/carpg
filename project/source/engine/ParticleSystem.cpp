@@ -77,6 +77,63 @@ void ParticleEmitter::Init()
 }
 
 //=================================================================================================
+bool ParticleEmitter::Update(float dt)
+{
+	if(emisions == 0 || (life > 0 && (life -= dt) <= 0.f))
+		destroy = true;
+
+	if(destroy && alive == 0)
+		return true;
+
+	// aktualizuj cz¹steczki
+	for(vector<Particle>::iterator it2 = particles.begin(), end2 = particles.end(); it2 != end2; ++it2)
+	{
+		Particle& p = *it2;
+		if(!p.exists)
+			continue;
+
+		if((p.life -= dt) <= 0.f)
+		{
+			p.exists = false;
+			--alive;
+		}
+		else
+		{
+			p.pos += p.speed * dt;
+			p.speed.y -= p.gravity * dt;
+		}
+	}
+
+	// emisja
+	if(!destroy && (emisions == -1 || emisions > 0) && ((time += dt) >= emision_interval))
+	{
+		if(emisions > 0)
+			--emisions;
+		time -= emision_interval;
+
+		int count = min(Random(spawn_min, spawn_max), max_particles - alive);
+		vector<Particle>::iterator it2 = particles.begin();
+
+		for(int i = 0; i < count; ++i)
+		{
+			while(it2->exists)
+				++it2;
+
+			Particle& p = *it2;
+			p.exists = true;
+			p.gravity = G;
+			p.life = particle_life;
+			p.pos = pos + Vec3::Random(pos_min, pos_max);
+			p.speed = Vec3::Random(speed_min, speed_max);
+		}
+
+		alive += count;
+	}
+
+	return false;
+}
+
+//=================================================================================================
 void ParticleEmitter::Save(FileWriter& f)
 {
 	f << tex->filename;

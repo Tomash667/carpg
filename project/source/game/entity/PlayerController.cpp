@@ -14,6 +14,7 @@
 #include "Team.h"
 #include "World.h"
 #include "ScriptException.h"
+#include "AIController.h"
 
 //=================================================================================================
 PlayerController::~PlayerController()
@@ -1417,5 +1418,25 @@ int PlayerController::GetTrainCost(int train) const
 		return 4;
 	default:
 		return 5;
+	}
+}
+
+//=================================================================================================
+void PlayerController::Yell()
+{
+	unit->Talk(RandomString(Game::Get().txYell));
+
+	LevelContext& ctx = L.GetContext(*unit);
+	for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
+	{
+		Unit& u2 = **it;
+		if(u2.IsAI() && u2.IsStanding() && !unit->IsEnemy(u2) && !unit->IsFriend(u2) && u2.busy == Unit::Busy_No && u2.frozen == FROZEN::NO && !u2.usable
+			&& u2.ai->state == AIController::Idle && !IS_SET(u2.data->flags, F_AI_STAY)
+			&& Any(u2.ai->idle_action, AIController::Idle_None, AIController::Idle_Animation, AIController::Idle_Rot, AIController::Idle_Look))
+		{
+			u2.ai->idle_action = AIController::Idle_MoveAway;
+			u2.ai->idle_data.unit = unit;
+			u2.ai->timer = Random(3.f, 5.f);
+		}
 	}
 }

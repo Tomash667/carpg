@@ -404,3 +404,10 @@ void GlobalGui::ShowCreateCharacterPanel(bool require_name, bool redo)
 	else
 		create_character->Show(require_name);
 }
+
+//=================================================================================================
+void GlobalGui::CloseAllPanels(bool close_mp_box)
+{
+	if(game_gui)
+		game_gui->ClosePanels(close_mp_box);
+}

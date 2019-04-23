@@ -10,7 +10,6 @@
 #include "Level.h"
 #include "Team.h"
 #include "UnitGroup.h"
-#include "Game.h"
 
 //=================================================================================================
 void ForestGenerator::Generate()

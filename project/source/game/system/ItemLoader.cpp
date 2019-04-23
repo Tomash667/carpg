@@ -289,6 +289,8 @@ void ItemLoader::LoadEntity(int top, const string& id)
 //=================================================================================================
 void ItemLoader::Finalize()
 {
+	Item::gold = Item::Get("gold");
+
 	CalculateCrc();
 
 	Info("Loaded items (%u), lists (%u) - crc %p.", Item::items.size(), ItemList::lists.size() + LeveledItemList::lists.size(),

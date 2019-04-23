@@ -1111,7 +1111,7 @@ void Game::UpdateClientTransfer(float dt)
 				{
 					net_state = NetState::Client_Start;
 					Info("NM_TRANSFER: Level started.");
-					clear_color = clear_color2;
+					clear_color = L.clear_color2;
 					game_state = GS_LEVEL;
 					gui->load_screen->visible = false;
 					gui->main_menu->visible = false;
@@ -1121,7 +1121,7 @@ void Game::UpdateClientTransfer(float dt)
 					N.update_timer = 0.f;
 					fallback_type = FALLBACK::NONE;
 					fallback_t = -0.5f;
-					cam.Reset();
+					L.camera.Reset();
 					pc_data.rot_buf = 0.f;
 					if(change_title_a)
 						ChangeTitle();
@@ -1533,7 +1533,7 @@ void Game::UpdateServerTransfer(float dt)
 
 				N.DeleteOldPlayers();
 
-				clear_color = clear_color2;
+				clear_color = L.clear_color2;
 				game_state = GS_WORLDMAP;
 				gui->load_screen->visible = false;
 				gui->world_map->Show();
@@ -1801,7 +1801,7 @@ void Game::UpdateServerSend(float dt)
 			}
 		}
 		Info("NM_SERVER_SEND: All players ready. Starting game.");
-		clear_color = clear_color2;
+		clear_color = L.clear_color2;
 		game_state = GS_LEVEL;
 		gui->info_box->CloseDialog();
 		gui->load_screen->visible = false;
