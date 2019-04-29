@@ -846,55 +846,25 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 	case CMD_INVISIBLE:
 		if(t.Next())
 		{
-			if(!t.MustGetBool())
+			game.pc->invisible = t.MustGetBool();
+			if(!Net::IsLocal())
 			{
-				game.pc->unit->invisible = false;
-				if(!Net::IsLocal())
-				{
-					game.invisible = false;
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::CHEAT_INVISIBLE;
-					c.id = 0;
-				}
-			}
-			else
-			{
-				game.pc->unit->invisible = true;
-				if(!Net::IsLocal())
-				{
-					game.invisible = true;
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::CHEAT_INVISIBLE;
-					c.id = 1;
-				}
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::CHEAT_INVISIBLE;
+				c.id = game.pc->invisible ? 1 : 0;
 			}
 		}
-		Msg("invisible = %d", game.pc->unit->invisible ? 1 : 0);
+		Msg("invisible = %d", game.pc->invisible ? 1 : 0);
 		break;
 	case CMD_GODMODE:
 		if(t.Next())
 		{
-			if(!t.MustGetBool())
+			game.pc->godmode = t.MustGetBool();
+			if(!Net::IsLocal())
 			{
-				game.pc->godmode = false;
-				if(!Net::IsLocal())
-				{
-					game.godmode = false;
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::CHEAT_GODMODE;
-					c.id = 0;
-				}
-			}
-			else
-			{
-				game.pc->godmode = true;
-				if(!Net::IsLocal())
-				{
-					game.godmode = true;
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::CHEAT_GODMODE;
-					c.id = 1;
-				}
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::CHEAT_GODMODE;
+				c.id = game.pc->godmode ? 1 : 0;
 			}
 		}
 		Msg("godmode = %d", game.pc->godmode ? 1 : 0);
@@ -902,27 +872,12 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 	case CMD_NOCLIP:
 		if(t.Next())
 		{
-			if(!t.MustGetBool())
+			game.pc->noclip = t.MustGetBool();
+			if(!Net::IsLocal())
 			{
-				game.pc->noclip = false;
-				if(!Net::IsLocal())
-				{
-					game.noclip = false;
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::CHEAT_NOCLIP;
-					c.id = 0;
-				}
-			}
-			else
-			{
-				game.pc->noclip = true;
-				if(!Net::IsLocal())
-				{
-					game.noclip = true;
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::CHEAT_NOCLIP;
-					c.id = 1;
-				}
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::CHEAT_NOCLIP;
+				c.id = game.pc->noclip ? 1 : 0;
 			}
 		}
 		Msg("noclip = %d", game.pc->noclip ? 1 : 0);

@@ -62,7 +62,7 @@ people. Expect changes for the better!
 	1 - equip melee weapon and shield
 	2 - equip ranged weapon
 	3 - use action
-	H - drink healing potion
+	4 - drink best healing potion
 	F - auto walk forward
 	Caps Lock - toggle run/walk
 	Y - yell
@@ -83,9 +83,6 @@ people. Expect changes for the better!
 3.4. World map
 	left mouse button - travel to location / enter
 	Tab - open / close multiplayer input panel
-	click + shift - if there is multiple items it will apply to all of them
-	click + ctrl - if there is multiple items it will apply to one of them
-	click + alt - show dialog how many items to apply
 	Enter - input text in multiplayer
 3.5. Journal
 	A / left arrow - previous page

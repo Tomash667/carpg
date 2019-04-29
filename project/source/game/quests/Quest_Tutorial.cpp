@@ -45,6 +45,7 @@ void Quest_Tutorial::Start()
 	shield2 = nullptr;
 	QM.quest_contest->state = Quest_Contest::CONTEST_NOT_DONE;
 	game.pc_data.autowalk = false;
+	game.pc->shortcuts[2].type = Shortcut::TYPE_NONE; // disable action in tutorial
 
 	// ekwipunek
 	game.pc->unit->ClearInventory();

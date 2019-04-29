@@ -498,21 +498,11 @@ void Net::WritePlayerStartData(BitStreamWriter& f, PlayerInfo& info)
 	f << ID_PLAYER_START_DATA;
 
 	// flags
-	byte flags = 0;
-	if(info.devmode)
-		flags |= SF_DEVMODE;
-	if(mp_load)
-	{
-		if(info.u->invisible)
-			flags |= SF_INVISIBLE;
-		if(info.u->player->noclip)
-			flags |= SF_NOCLIP;
-		if(info.u->player->godmode)
-			flags |= SF_GODMODE;
-	}
-	if(Game::Get().noai)
-		flags |= SF_NOAI;
-	f << flags;
+	f << info.devmode;
+	f << Game::Get().noai;
+
+	// player
+	info.u->player->WriteStart(f);
 
 	// notes
 	f.WriteStringArray<word, word>(info.notes);
@@ -719,6 +709,7 @@ bool Net::FilterOut(NetChange& c)
 	case NetChange::CLOSE_ENCOUNTER:
 	case NetChange::GAME_STATS:
 	case NetChange::CHANGE_ALWAYS_RUN:
+	case NetChange::SET_SHORTCUT:
 		return false;
 	case NetChange::TALK:
 	case NetChange::TALK_POS:
@@ -811,22 +802,14 @@ bool Net::ReadPlayerStartData(BitStreamReader& f)
 {
 	Game& game = Game::Get();
 
-	byte flags;
-	f >> flags;
+	game.pc = new PlayerController;
+
+	f >> game.devmode;
+	f >> game.noai;
+	game.pc->ReadStart(f);
 	f.ReadStringArray<word, word>(game.gui->journal->GetNotes());
 	if(!f)
 		return false;
-
-	if(IS_SET(flags, SF_DEVMODE))
-		game.devmode = true;
-	if(IS_SET(flags, SF_INVISIBLE))
-		game.invisible = true;
-	if(IS_SET(flags, SF_NOCLIP))
-		game.noclip = true;
-	if(IS_SET(flags, SF_GODMODE))
-		game.godmode = true;
-	if(IS_SET(flags, SF_NOAI))
-		game.noai = true;
 
 	// checksum
 	byte check;

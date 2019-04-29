@@ -34,6 +34,7 @@ GlobalGui* global::gui;
 const float UNIT_VIEW_A = 0.2f;
 const float UNIT_VIEW_B = 0.4f;
 const int UNIT_VIEW_MUL = 5;
+extern const int ITEM_IMAGE_SIZE;
 
 cstring order_str[ORDER_MAX] = {
 	"NONE",
@@ -53,7 +54,7 @@ enum class TooltipGroup
 	Sidebar,
 	Buff,
 	Bar,
-	Action,
+	Shortcut,
 	Invalid = -1
 };
 enum Bar
@@ -83,16 +84,23 @@ GameGui::~GameGui()
 //=================================================================================================
 void GameGui::LoadLanguage()
 {
-	txDeath = Str("death");
-	txDeathAlone = Str("deathAlone");
-	txGameTimeout = Str("gameTimeout");
-	txChest = Str("chest");
-	txDoor = Str("door");
-	txDoorLocked = Str("doorLocked");
-	txPressEsc = Str("pressEsc");
-	txMenu = Str("menu");
-	txHp = Str("hp");
-	txStamina = Str("stamina");
+	Language::LanguageSection s = Language::GetSection("GameGui");
+	txDeath = s.Get("death");
+	txDeathAlone = s.Get("deathAlone");
+	txGameTimeout = s.Get("gameTimeout");
+	txChest = s.Get("chest");
+	txDoor = s.Get("door");
+	txDoorLocked = s.Get("doorLocked");
+	txPressEsc = s.Get("pressEsc");
+	txMenu = s.Get("menu");
+	txHp = s.Get("hp");
+	txStamina = s.Get("stamina");
+	txMeleeWeapon = s.Get("meleeWeapon");
+	txRangedWeapon = s.Get("rangedWeapon");
+	txPotion = s.Get("potion");
+	txMeleeWeaponDesc = s.Get("meleeWeaponDesc");
+	txRangedWeaponDesc = s.Get("rangedWeaponDesc");
+	txPotionDesc = s.Get("potionDesc");
 	BuffInfo::LoadText();
 }
 
@@ -115,7 +123,7 @@ void GameGui::LoadData()
 	tex_mgr.AddLoadTask("bt_team.png", tSideButton[(int)SideButtonId::Team]);
 	tex_mgr.AddLoadTask("bt_minimap.png", tSideButton[(int)SideButtonId::Minimap]);
 	tex_mgr.AddLoadTask("bt_journal.png", tSideButton[(int)SideButtonId::Journal]);
-	tex_mgr.AddLoadTask("bt_inventory.png", tSideButton[(int)SideButtonId::InventoryPanel]);
+	tex_mgr.AddLoadTask("bt_inventory.png", tSideButton[(int)SideButtonId::Inventory]);
 	tex_mgr.AddLoadTask("bt_action.png", tSideButton[(int)SideButtonId::Action]);
 	tex_mgr.AddLoadTask("bt_stats.png", tSideButton[(int)SideButtonId::Stats]);
 	tex_mgr.AddLoadTask("bt_talk.png", tSideButton[(int)SideButtonId::Talk]);
@@ -123,6 +131,11 @@ void GameGui::LoadData()
 	tex_mgr.AddLoadTask("minihp2.png", tMinihp[1]);
 	tex_mgr.AddLoadTask("ministamina.png", tMinistamina);
 	tex_mgr.AddLoadTask("action_cooldown.png", tActionCooldown);
+	tex_mgr.AddLoadTask("sword-brandish.png", tMelee);
+	tex_mgr.AddLoadTask("bow-arrow.png", tRanged);
+	tex_mgr.AddLoadTask("health-potion.png", tPotion);
+	tex_mgr.AddLoadTask("emerytura.jpg", tEmerytura);
+	tex_mgr.AddLoadTask("equipped.png", tEquipped);
 
 	BuffInfo::LoadImages();
 }
@@ -156,13 +169,15 @@ void GameGui::DrawFront()
 		return;
 	}
 
+	PlayerController& pc = *game.pc;
+
 	// crosshair
-	if(game.pc->unit->weapon_state == WS_TAKEN && game.pc->unit->weapon_taken == W_BOW)
+	if(pc.unit->weapon_state == WS_TAKEN && pc.unit->weapon_taken == W_BOW)
 		GUI.DrawSprite(tCrosshair, Center(32, 32));
 
 	// obwódka bólu
-	if(game.pc->dmgc > 0.f)
-		GUI.DrawSpriteFull(tObwodkaBolu, Color::Alpha((int)Clamp<float>(game.pc->dmgc / game.pc->unit->hp * 5 * 255, 0.f, 255.f)));
+	if(pc.dmgc > 0.f)
+		GUI.DrawSpriteFull(tObwodkaBolu, Color::Alpha((int)Clamp<float>(pc.dmgc / pc.unit->hp * 5 * 255, 0.f, 255.f)));
 
 	// debug info
 	if(game.debug_info && !game.devmode)
@@ -170,7 +185,7 @@ void GameGui::DrawFront()
 	if(game.debug_info)
 	{
 		sorted_units.clear();
-		vector<Unit*>& units = *L.GetContext(*game.pc->unit).units;
+		vector<Unit*>& units = *L.GetContext(*pc.unit).units;
 		for(auto unit : units)
 		{
 			if(!unit->IsAlive())
@@ -376,11 +391,11 @@ void GameGui::DrawFront()
 	}
 
 	// get buffs
-	int buffs = game.pc->unit->GetBuffs();
+	int buffs = pc.unit->GetBuffs();
 
 	// healthbar
 	float wnd_scale = float(GUI.wnd_size.x) / 800;
-	float hpp = Clamp(game.pc->unit->hp / game.pc->unit->hpmax, 0.f, 1.f);
+	float hpp = Clamp(pc.unit->hp / pc.unit->hpmax, 0.f, 1.f);
 	Rect part = { 0, 0, int(hpp * 256), 16 };
 	Matrix mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale, wnd_scale), nullptr, 0.f, &Vec2(0.f, float(GUI.wnd_size.y) - wnd_scale * 35));
 	if(part.Right() > 0)
@@ -388,7 +403,7 @@ void GameGui::DrawFront()
 	GUI.DrawSprite2(tBar, mat, nullptr, nullptr, Color::White);
 
 	// stamina bar
-	float stamina_p = game.pc->unit->stamina / game.pc->unit->stamina_max;
+	float stamina_p = pc.unit->stamina / pc.unit->stamina_max;
 	part.Right() = int(stamina_p * 256);
 	mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale, wnd_scale), nullptr, 0.f, &Vec2(0.f, float(GUI.wnd_size.y) - wnd_scale * 17));
 	if(part.Right() > 0)
@@ -405,67 +420,135 @@ void GameGui::DrawFront()
 	float scale;
 	int offset;
 
-	int img_size = 64 * GUI.wnd_size.x / 1920;
+	int img_size = 76 * GUI.wnd_size.x / 1920;
 	offset = img_size + 2;
 	scale = float(img_size) / 64;
-	Int2 spos(256.f*wnd_scale + offset, GUI.wnd_size.y - offset);
-
-	// action
-	if(!QM.quest_tutorial->in_tutorial)
-	{
-		auto& action = game.pc->GetAction();
-		PlayerController& pc = *game.pc;
-		const float pad = 2.f;
-		const float img_size = 32.f;
-		const float img_ratio = 0.25f;
-
-		float charge;
-		if(pc.action_charges > 0 || pc.action_cooldown >= pc.action_recharge)
-		{
-			if(action.cooldown == 0)
-				charge = 0.f;
-			else
-				charge = pc.action_cooldown / action.cooldown;
-		}
-		else
-			charge = pc.action_recharge / action.recharge;
-
-		if(charge == 0.f)
-		{
-			mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale * img_ratio, wnd_scale * img_ratio), nullptr, 0.f,
-				&Vec2((256.f + pad) * wnd_scale, GUI.wnd_size.y - (img_size + pad) * wnd_scale));
-			GUI.DrawSprite2(action.tex->tex, mat);
-		}
-		else
-		{
-			mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale * img_ratio, wnd_scale * img_ratio), nullptr, 0.f,
-				&Vec2((256.f + pad) * wnd_scale, GUI.wnd_size.y - (img_size + pad) * wnd_scale));
-			GUI.UseGrayscale(true);
-			GUI.DrawSprite2(action.tex->tex, mat);
-			GUI.UseGrayscale(false);
-			if(charge < 1.f)
-			{
-				Rect part = { 0, 128 - int((1.f - charge) * 128), 128, 128 };
-				GUI.DrawSprite2(action.tex->tex, mat, &part);
-			}
-			GUI.DrawSprite2(tActionCooldown, mat);
-		}
-
-		// charges
-		if(action.charges > 1)
-		{
-			Rect r(int(wnd_scale * (256 + pad * 2)), int(GUI.wnd_size.y - (pad * 2) * wnd_scale) - 12, 0, 0);
-			GUI.DrawText(GUI.fSmall, Format("%d/%d", pc.action_charges, action.charges), DTF_SINGLELINE, Color::Black, r);
-		}
-	}
+	Int2 spos(256.f*wnd_scale, GUI.wnd_size.y - offset);
 
 	// shortcuts
-	/*for(int i = 0; i<10; ++i)
+	for(int i = 0; i < Shortcut::MAX; ++i)
 	{
+		const Shortcut& shortcut = pc.shortcuts[i];
+
 		mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(scale, scale), nullptr, 0.f, &Vec2(float(spos.x), float(spos.y)));
-		GUI.DrawSprite2(tShortcut, &mat, nullptr, nullptr, Color::White);
+		GUI.DrawSprite2(tShortcut, mat);
+
+		Rect r(spos.x + 2, spos.y + 2);
+		r.p2.x += img_size - 4;
+		r.p2.y += img_size - 4;
+
+		TEX icon = nullptr;
+		int count = 0, icon_size = 128;
+		bool enabled = true, is_action = false, equipped = false;
+		if(shortcut.type == Shortcut::TYPE_SPECIAL)
+		{
+			switch(shortcut.value)
+			{
+			case Shortcut::SPECIAL_MELEE_WEAPON:
+				icon = tMelee;
+				enabled = pc.unit->HaveWeapon();
+				break;
+			case Shortcut::SPECIAL_RANGED_WEAPON:
+				icon = tRanged;
+				enabled = pc.unit->HaveBow();
+				break;
+			case Shortcut::SPECIAL_ACTION:
+				is_action = true;
+				break;
+			case Shortcut::SPECIAL_HEALING_POTION:
+				icon = tPotion;
+				enabled = pc.GetHealingPotion() != -1;
+				break;
+			}
+		}
+		else if(shortcut.type == Shortcut::TYPE_ITEM)
+		{
+			icon = shortcut.item->icon;
+			icon_size = ITEM_IMAGE_SIZE;
+			if(shortcut.item->IsWearable())
+			{
+				if(pc.unit->HaveItemEquipped(shortcut.item))
+				{
+					equipped = true;
+					enabled = true;
+				}
+				else
+					enabled = pc.unit->HaveItem(shortcut.item, Team.HaveOtherActiveTeamMember());
+			}
+			else if(shortcut.item->IsStackable())
+			{
+				count = pc.unit->CountItem(shortcut.item);
+				enabled = (count > 0);
+			}
+			else
+				enabled = pc.unit->HaveItem(shortcut.item);
+		}
+
+		float scale2 = float(img_size - 2) / icon_size;
+		mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(scale2, scale2), nullptr, 0.f, &Vec2(float(spos.x + 1), float(spos.y + 1)));
+		if(icon)
+		{
+			if(drag_and_drop == 2 && drag_and_drop_type == -1 && drag_and_drop_index == i)
+				drag_and_drop_icon = icon;
+
+			if(enabled)
+			{
+				if(equipped)
+					GUI.DrawSprite2(tEquipped, mat);
+				GUI.DrawSprite2(icon, mat);
+				if(count > 0)
+					GUI.DrawText(GUI.fSmall, Format("%d", count), DTF_RIGHT | DTF_BOTTOM, Color::Black, r);
+			}
+			else
+			{
+				GUI.UseGrayscale(true);
+				GUI.DrawSprite2(icon, mat, nullptr, nullptr, Color::Alpha(128));
+				GUI.UseGrayscale(false);
+			}
+		}
+		else if(is_action)
+		{
+			Action& action = pc.GetAction();
+			float charge;
+			if(pc.action_charges > 0 || pc.action_cooldown >= pc.action_recharge)
+			{
+				if(action.cooldown == 0)
+					charge = 0.f;
+				else
+					charge = pc.action_cooldown / action.cooldown;
+			}
+			else
+				charge = pc.action_recharge / action.recharge;
+
+			if(drag_and_drop == 2 && drag_and_drop_type == -1 && drag_and_drop_index == i)
+				drag_and_drop_icon = action.tex->tex;
+
+			if(charge == 0.f)
+				GUI.DrawSprite2(action.tex->tex, mat);
+			else
+			{
+				GUI.UseGrayscale(true);
+				GUI.DrawSprite2(action.tex->tex, mat);
+				GUI.UseGrayscale(false);
+				if(charge < 1.f)
+				{
+					Rect part = { 0, 128 - int((1.f - charge) * 128), 128, 128 };
+					GUI.DrawSprite2(action.tex->tex, mat, &part);
+				}
+				GUI.DrawSprite2(tActionCooldown, mat);
+			}
+
+			// charges
+			if(action.charges > 1)
+				GUI.DrawText(GUI.fSmall, Format("%d/%d", pc.action_charges, action.charges), DTF_RIGHT | DTF_BOTTOM, Color::Black, r);
+		}
+
+		const GameKey& gk = GKey[GK_SHORTCUT1 + i];
+		if(gk[0] != VK_NONE)
+			GUI.DrawText(GUI.fSmall, global::gui->controls->key_text[gk[0]], DTF_SINGLELINE, Color::White, r);
+
 		spos.x += offset;
-	}*/
+	}
 
 	// sidebar
 	if(sidebar > 0.f)
@@ -511,6 +594,14 @@ void GameGui::DrawFront()
 //=================================================================================================
 void GameGui::DrawBack()
 {
+	if(drag_and_drop == 2 && drag_and_drop_icon)
+	{
+		int img_size = 76 * GUI.wnd_size.x / 1920;
+		float scale = float(img_size) / Texture::GetSize(drag_and_drop_icon).x;
+		Matrix mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(scale, scale), nullptr, 0.f, &Vec2(GUI.cursor_pos + Int2(16, 16)));
+		GUI.DrawSprite2(drag_and_drop_icon, mat);
+	}
+
 	// debug info
 	if(game.debug_info2)
 	{
@@ -518,8 +609,9 @@ void GameGui::DrawBack()
 		cstring text;
 		if(game.devmode)
 		{
-			text = Format("Pos: %g; %g; %g (%d; %d)\nRot: %g %s\nFps: %g", FLT10(u.pos.x), FLT10(u.pos.y), FLT10(u.pos.z), int(u.pos.x / 2), int(u.pos.z / 2),
-				FLT100(u.rot), dir_name_short[AngleToDir(Clip(u.rot))], FLT10(game.GetFps()));
+			text = Format("Pos: %g; %g; %g (%d; %d)\nRot: %g %s\nFps: %g\n%p (%s)", FLT10(u.pos.x), FLT10(u.pos.y), FLT10(u.pos.z), int(u.pos.x / 2), int(u.pos.z / 2),
+				FLT100(u.rot), dir_name_short[AngleToDir(Clip(u.rot))], FLT10(game.GetFps()), game.pc, game.pc->name.c_str());
+			FIXME;
 		}
 		else
 			text = Format("Fps: %g", FLT10(game.GetFps()));
@@ -588,19 +680,19 @@ void GameGui::DrawDeathScreen()
 //=================================================================================================
 void GameGui::DrawEndOfGameScreen()
 {
+	// background
 	int color;
 	if(game.death_fade < 1.f)
 		color = (int(game.death_fade * 255) << 24) | 0x00FFFFFF;
 	else
 		color = Color::White;
-
 	GUI.DrawSpriteFull(game.tCzern, color);
 
-	// obrazek
-	Int2 sprite_pos = Center(gui::GetSize(game.tEmerytura));
-	GUI.DrawSprite(game.tEmerytura, sprite_pos, color);
+	// image
+	Int2 sprite_pos = Center(gui::GetSize(tEmerytura));
+	GUI.DrawSprite(tEmerytura, sprite_pos, color);
 
-	// tekst
+	// text
 	cstring text = Format(txGameTimeout, game.pc->kills, GameStats::Get().total_kills - game.pc->kills);
 	cstring text2 = Format("%s\n\n%s", text, game.death_fade >= 1.f ? txPressEsc : "\n");
 	Rect rect = { 0, 0, GUI.wnd_size.x, GUI.wnd_size.y };
@@ -774,10 +866,10 @@ void GameGui::Update(float dt)
 
 	// sidebar
 	int max = (int)SideButtonId::Max;
-	if(Net::IsOnline())
+	if(!Net::IsOnline())
 		--max;
 
-	sidebar_state[(int)SideButtonId::InventoryPanel] = (game.gui->inventory->inv_mine->visible ? 2 : 0);
+	sidebar_state[(int)SideButtonId::Inventory] = (game.gui->inventory->inv_mine->visible ? 2 : 0);
 	sidebar_state[(int)SideButtonId::Journal] = (game.gui->journal->visible ? 2 : 0);
 	sidebar_state[(int)SideButtonId::Stats] = (game.gui->stats->visible ? 2 : 0);
 	sidebar_state[(int)SideButtonId::Team] = (game.gui->team->visible ? 2 : 0);
@@ -787,7 +879,7 @@ void GameGui::Update(float dt)
 	sidebar_state[(int)SideButtonId::Menu] = 0;
 
 	bool anything = use_cursor;
-	if(game.gui->inventory->gp_trade->visible)
+	if(game.gui->inventory->gp_trade->visible || game.gui->book->visible)
 		anything = true;
 	bool show_tooltips = anything;
 	if(!anything)
@@ -837,20 +929,63 @@ void GameGui::Update(float dt)
 			id = Bar::BAR_STAMINA;
 		}
 
-		// action
-		if(!QM.quest_tutorial->in_tutorial)
+		// shortcuts
+		int shortcut_index = GetShortcutIndex();
+		if(drag_and_drop == 1)
 		{
-			auto& action = game.pc->GetAction();
-			const float pad = 2.f;
-			const float img_size = 32.f;
-			const float img_ratio = 0.25f;
-			mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale * img_ratio, wnd_scale * img_ratio), nullptr, 0.f,
-				&Vec2((256.f + pad) * wnd_scale, GUI.wnd_size.y - (img_size + pad) * wnd_scale));
-			r = GUI.GetSpriteRect(action.tex->tex, mat);
-			if(r.IsInside(GUI.cursor_pos))
-				group = TooltipGroup::Action;
+			if(Int2::Distance(GUI.cursor_pos, drag_and_drop_pos) > 3)
+				drag_and_drop = 2;
+			if(Key.Released(VK_LBUTTON))
+			{
+				drag_and_drop = 0;
+				game.pc->shortcuts[drag_and_drop_index].trigger = true;
+			}
+		}
+		else if(drag_and_drop == 2)
+		{
+			if(Key.Released(VK_LBUTTON))
+			{
+				drag_and_drop = 0;
+				if(shortcut_index != -1)
+				{
+					if(drag_and_drop_type == -1)
+					{
+						// drag & drop between game gui shortcuts
+						if(shortcut_index != drag_and_drop_index)
+						{
+							game.pc->SetShortcut(shortcut_index, game.pc->shortcuts[drag_and_drop_index].type, game.pc->shortcuts[drag_and_drop_index].value);
+							game.pc->SetShortcut(drag_and_drop_index, Shortcut::TYPE_NONE);
+						}
+					}
+					else
+					{
+						// drag & drop from actions/inventory
+						game.pc->SetShortcut(shortcut_index, (Shortcut::Type)drag_and_drop_type, drag_and_drop_index);
+					}
+				}
+			}
+		}
+		if(shortcut_index != -1 && game.pc->shortcuts[shortcut_index].type != Shortcut::TYPE_NONE)
+		{
+			group = TooltipGroup::Shortcut;
+			id = shortcut_index;
+			if(!GUI.HaveDialog())
+			{
+				if(Key.Pressed(VK_LBUTTON))
+				{
+					drag_and_drop = 1;
+					drag_and_drop_pos = GUI.cursor_pos;
+					drag_and_drop_type = -1;
+					drag_and_drop_index = shortcut_index;
+					drag_and_drop_icon = nullptr;
+				}
+				else if(Key.PressedRelease(VK_RBUTTON))
+					game.pc->SetShortcut(shortcut_index, Shortcut::TYPE_NONE);
+			}
 		}
 	}
+	else
+		drag_and_drop = 0;
 
 	if(anything)
 		sidebar += dt * 5;
@@ -860,7 +995,7 @@ void GameGui::Update(float dt)
 
 	if(sidebar > 0.f && !GUI.HaveDialog() && show_tooltips)
 	{
-		int img_size = 64 * GUI.wnd_size.x / 1920;
+		int img_size = 76 * GUI.wnd_size.x / 1920;
 		int offset = img_size + 2;
 		int total = offset * max;
 		int sposy = GUI.wnd_size.y - (GUI.wnd_size.y - total) / 2 - offset;
@@ -873,7 +1008,7 @@ void GameGui::Update(float dt)
 
 				if(sidebar_state[i] == 0)
 					sidebar_state[i] = 1;
-				if(!GUI.HaveDialog() && Key.PressedRelease(VK_LBUTTON))
+				if(Key.PressedRelease(VK_LBUTTON))
 				{
 					switch((SideButtonId)i)
 					{
@@ -892,8 +1027,8 @@ void GameGui::Update(float dt)
 					case SideButtonId::Journal:
 						ShowPanel(OpenPanel::Journal);
 						break;
-					case SideButtonId::InventoryPanel:
-						ShowPanel(OpenPanel::InventoryPanel);
+					case SideButtonId::Inventory:
+						ShowPanel(OpenPanel::Inventory);
 						break;
 					case SideButtonId::Action:
 						ShowPanel(OpenPanel::Action);
@@ -906,11 +1041,33 @@ void GameGui::Update(float dt)
 						break;
 					}
 				}
+
+				break;
 			}
 		}
 	}
 
-	tooltip.UpdateTooltip(dt, (int)group, id);
+	if(drag_and_drop != 2)
+		tooltip.UpdateTooltip(dt, (int)group, id);
+	else
+		tooltip.anything = false;
+}
+
+//=================================================================================================
+int GameGui::GetShortcutIndex()
+{
+	float wnd_scale = float(GUI.wnd_size.x) / 800;
+	int img_size = 76 * GUI.wnd_size.x / 1920;
+	int offset = img_size + 2;
+	Int2 spos(256.f*wnd_scale, GUI.wnd_size.y - offset);
+	for(int i = 0; i < Shortcut::MAX; ++i)
+	{
+		Rect r = Rect::Create(spos, Int2(img_size, img_size));
+		if(r.IsInside(GUI.cursor_pos))
+			return i;
+		spos.x += offset;
+	}
+	return -1;
 }
 
 //=================================================================================================
@@ -1200,7 +1357,7 @@ void GameGui::GetTooltip(TooltipController*, int _group, int id)
 			case SideButtonId::Journal:
 				gk = GK_JOURNAL;
 				break;
-			case SideButtonId::InventoryPanel:
+			case SideButtonId::Inventory:
 				gk = GK_INVENTORY;
 				break;
 			case SideButtonId::Action:
@@ -1236,11 +1393,48 @@ void GameGui::GetTooltip(TooltipController*, int _group, int id)
 			}
 		}
 		break;
-	case TooltipGroup::Action:
+	case TooltipGroup::Shortcut:
 		{
-			auto& action = game.pc->GetAction();
-			tooltip.text = action.name;
-			tooltip.small_text = action.desc;
+			const Shortcut& shortcut = game.pc->shortcuts[id];
+			cstring title = nullptr, desc = nullptr;
+			if(shortcut.type == Shortcut::TYPE_SPECIAL)
+			{
+				switch(shortcut.value)
+				{
+				case Shortcut::SPECIAL_MELEE_WEAPON:
+					title = txMeleeWeapon;
+					desc = txMeleeWeaponDesc;
+					break;
+				case Shortcut::SPECIAL_RANGED_WEAPON:
+					title = txRangedWeapon;
+					desc = txRangedWeaponDesc;
+					break;
+				case Shortcut::SPECIAL_ACTION:
+					{
+						Action& action = game.pc->GetAction();
+						title = action.name.c_str();
+						desc = action.desc.c_str();
+					}
+					break;
+				case Shortcut::SPECIAL_HEALING_POTION:
+					title = txPotion;
+					desc = txPotionDesc;
+					break;
+				}
+			}
+			else
+			{
+				title = shortcut.item->name.c_str();
+				desc = shortcut.item->desc.c_str();
+			}
+			const GameKey& gk = GKey[GK_SHORTCUT1 + id];
+			if(gk[0] != VK_NONE)
+				title = Format("%s (%s)", title, global::gui->controls->key_text[gk[0]]);
+			tooltip.text = title;
+			if(desc)
+				tooltip.small_text = desc;
+			else
+				tooltip.small_text.clear();
 		}
 		break;
 	}
@@ -1277,6 +1471,8 @@ void GameGui::ClosePanels(bool close_mp_box)
 		game.gui->mp_box->visible = false;
 	if(game.gui->actions->visible)
 		game.gui->actions->Hide();
+	if(game.gui->book->visible)
+		game.gui->book->Hide();
 }
 
 //=================================================================================================
@@ -1299,7 +1495,7 @@ OpenPanel GameGui::GetOpenPanel()
 	if(game.gui->stats->visible)
 		return OpenPanel::Stats;
 	else if(game.gui->inventory->inv_mine->visible)
-		return OpenPanel::InventoryPanel;
+		return OpenPanel::Inventory;
 	else if(game.gui->team->visible)
 		return OpenPanel::Team;
 	else if(game.gui->journal->visible)
@@ -1310,6 +1506,8 @@ OpenPanel GameGui::GetOpenPanel()
 		return OpenPanel::Trade;
 	else if(game.gui->actions->visible)
 		return OpenPanel::Action;
+	else if(game.gui->book->visible)
+		return OpenPanel::Book;
 	else
 		return OpenPanel::None;
 }
@@ -1328,7 +1526,7 @@ void GameGui::ShowPanel(OpenPanel to_open, OpenPanel open)
 	case OpenPanel::Stats:
 		game.gui->stats->Hide();
 		break;
-	case OpenPanel::InventoryPanel:
+	case OpenPanel::Inventory:
 		game.gui->inventory->inv_mine->Hide();
 		break;
 	case OpenPanel::Team:
@@ -1347,6 +1545,9 @@ void GameGui::ShowPanel(OpenPanel to_open, OpenPanel open)
 	case OpenPanel::Action:
 		game.gui->actions->Hide();
 		break;
+	case OpenPanel::Book:
+		game.gui->book->Hide();
+		break;
 	}
 
 	// open new panel
@@ -1357,7 +1558,7 @@ void GameGui::ShowPanel(OpenPanel to_open, OpenPanel open)
 		case OpenPanel::Stats:
 			game.gui->stats->Show();
 			break;
-		case OpenPanel::InventoryPanel:
+		case OpenPanel::Inventory:
 			game.gui->inventory->inv_mine->Show();
 			break;
 		case OpenPanel::Team:
@@ -1609,4 +1810,13 @@ void GameGui::RemoveUnit(Unit* unit)
 			break;
 		}
 	}
+}
+
+//=================================================================================================
+void GameGui::StartDragAndDrop(int type, int value, TEX icon)
+{
+	drag_and_drop = 2;
+	drag_and_drop_type = type;
+	drag_and_drop_index = value;
+	drag_and_drop_icon = icon;
 }

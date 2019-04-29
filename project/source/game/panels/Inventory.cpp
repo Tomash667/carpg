@@ -527,7 +527,10 @@ void InventoryPanel::Update(float dt)
 	GamePanel::Update(dt);
 
 	if(game.gui->book->visible)
+	{
+		drag_and_drop = false;
 		return;
+	}
 
 	if(mode == INVENTORY && Key.Focus() && Key.PressedRelease(VK_ESCAPE))
 	{
@@ -578,7 +581,7 @@ void InventoryPanel::Update(float dt)
 			int i_index = i_items->at(last_index);
 			const Item* item;
 			if(i_index < 0)
-				item = slots[-i_index - 1];
+				item = slots[IIndexToSlot(i_index)];
 			else
 				item = items->at(i_index).item;
 			if(item != last_item)
@@ -589,7 +592,7 @@ void InventoryPanel::Update(float dt)
 		}
 	}
 
-	if(have_focus)
+	if(have_focus && !global::gui->game_gui->IsDragAndDrop())
 	{
 		// przedmiot
 		if(cursor_pos.x >= shift_x && cursor_pos.y >= shift_y)
@@ -654,6 +657,35 @@ void InventoryPanel::Update(float dt)
 		rot += PI * dt / 2;
 	}
 
+	if(focus && Key.Focus() && IsInside(GUI.cursor_pos))
+	{
+		for(int i = 0; i < Shortcut::MAX; ++i)
+		{
+			if(GKey.PressedRelease((GAME_KEYS)(GK_SHORTCUT1 + i)))
+			{
+				if(new_index >= 0)
+				{
+					const Item* item;
+					int i_index = i_items->at(new_index);
+					if(i_index < 0)
+						item = slots[IIndexToSlot(i_index)];
+					else
+						item = items->at(i_index).item;
+					game.pc->SetShortcut(i, Shortcut::TYPE_ITEM, (int)item);
+				}
+			}
+		}
+	}
+
+	if(drag_and_drop)
+	{
+		if(Int2::Distance(GUI.cursor_pos, drag_and_drop_pos) > 3)
+		{
+			global::gui->game_gui->StartDragAndDrop(Shortcut::TYPE_ITEM, (int)drag_and_drop_item, drag_and_drop_item->icon);
+			drag_and_drop = false;
+		}
+	}
+
 	if(new_index >= 0)
 	{
 		// pobierz przedmiot
@@ -663,9 +695,9 @@ void InventoryPanel::Update(float dt)
 		int i_index = i_items->at(new_index);
 		if(i_index < 0)
 		{
-			item = slots[-i_index - 1];
 			slot = nullptr;
-			slot_type = (ITEM_SLOT)(-i_index - 1);
+			slot_type = IIndexToSlot(i_index);
+			item = slots[slot_type];
 		}
 		else
 		{
@@ -676,11 +708,11 @@ void InventoryPanel::Update(float dt)
 
 		last_item = item;
 
-		if(!focus || !(game.pc->unit->action == A_NONE || game.pc->unit->CanDoWhileUsing()) || base.lock)
+		if(!focus || !(game.pc->unit->action == A_NONE || game.pc->unit->CanDoWhileUsing()) || base.lock || !Key.Focus())
 			return;
 
 		// obs³uga kilkania w ekwipunku
-		if(mode == INVENTORY && Key.Focus() && Key.PressedRelease(VK_RBUTTON) && game.pc->unit->action == A_NONE)
+		if(mode == INVENTORY && Key.PressedRelease(VK_RBUTTON) && game.pc->unit->action == A_NONE)
 		{
 			// wyrzuæ przedmiot
 			if(IS_SET(item->flags, ITEM_DONT_DROP) && game.IsAnyoneTalking())
@@ -689,7 +721,7 @@ void InventoryPanel::Update(float dt)
 			{
 				if(!slot)
 				{
-					if(SlotRequireHideWeapon(slot_type))
+					if(unit->SlotRequireHideWeapon(slot_type))
 					{
 						// drop item after hiding it
 						unit->HideWeapon();
@@ -740,7 +772,7 @@ void InventoryPanel::Update(float dt)
 				}
 			}
 		}
-		else if(Key.Focus() && Key.PressedRelease(VK_LBUTTON))
+		else if(HandleLeftClick(item))
 		{
 			switch(mode)
 			{
@@ -749,7 +781,7 @@ void InventoryPanel::Update(float dt)
 				if(!slot)
 				{
 					// zdejmij przedmiot
-					if(SlotRequireHideWeapon(slot_type))
+					if(unit->SlotRequireHideWeapon(slot_type))
 					{
 						// hide weapon & add next action to unequip
 						unit->HideWeapon();
@@ -786,7 +818,7 @@ void InventoryPanel::Update(float dt)
 					else if(item->IsWearable())
 					{
 						ITEM_SLOT type = ItemTypeToSlot(item->type);
-						if(SlotRequireHideWeapon(type))
+						if(unit->SlotRequireHideWeapon(type))
 						{
 							// hide equipped item & equip new one
 							unit->HideWeapon();
@@ -822,7 +854,7 @@ void InventoryPanel::Update(float dt)
 				else if(!slot)
 				{
 					// za³o¿ony przedmiot
-					if(SlotRequireHideWeapon(slot_type))
+					if(unit->SlotRequireHideWeapon(slot_type))
 					{
 						// hide equipped item and sell it
 						unit->HideWeapon();
@@ -919,7 +951,7 @@ void InventoryPanel::Update(float dt)
 				else
 				{
 					// za³o¿ony przedmiot
-					if(SlotRequireHideWeapon(slot_type))
+					if(unit->SlotRequireHideWeapon(slot_type))
 					{
 						// hide equipped item and put it in container
 						unit->HideWeapon();
@@ -1199,7 +1231,7 @@ void InventoryPanel::Update(float dt)
 							// za³o¿ony przedmiot
 							if(t->CanTake(item))
 							{
-								if(SlotRequireHideWeapon(slot_type))
+								if(unit->SlotRequireHideWeapon(slot_type))
 								{
 									// hide equipped item and give it
 									unit->HideWeapon();
@@ -1277,6 +1309,7 @@ void InventoryPanel::Event(GuiEvent e)
 		{
 			base.tooltip.Clear();
 			bt.text = Game::Get().GetShortcutText(GK_TAKE_ALL);
+			drag_and_drop = false;
 		}
 	}
 	else if(e == GuiEvent_LostFocus)
@@ -1390,21 +1423,6 @@ void InventoryPanel::Event(GuiEvent e)
 			SortItems(itms);
 		base.gp_trade->Hide();
 		game.OnCloseInventory();
-	}
-}
-
-//=================================================================================================
-bool InventoryPanel::SlotRequireHideWeapon(ITEM_SLOT slot)
-{
-	switch(slot)
-	{
-	case SLOT_WEAPON:
-	case SLOT_SHIELD:
-		return (unit->weapon_state == WS_TAKEN && unit->weapon_taken == W_ONE_HANDED);
-	case SLOT_BOW:
-		return (unit->weapon_state == WS_TAKEN && unit->weapon_taken == W_BOW);
-	default:
-		return false;
 	}
 }
 
@@ -1590,7 +1608,7 @@ void InventoryPanel::FormatBox(int group, string& text, string& small_text, TEX&
 		int i_index = i_items->at(group);
 		if(i_index < 0)
 		{
-			item = slots[-i_index - 1];
+			item = slots[IIndexToSlot(i_index)];
 			count = 1;
 			team_count = (mode == LOOT_OTHER ? 1 : 0);
 		}
@@ -2477,7 +2495,7 @@ void InventoryPanel::IsBetterItemResponse(bool is_better)
 			const Item*& item = unit->slots[slot_type];
 			if(!t->CanTake(item))
 				GUI.SimpleDialog(Format(base.txNpcCantCarry, t->GetName()), this);
-			else if(SlotRequireHideWeapon(slot_type))
+			else if(unit->SlotRequireHideWeapon(slot_type))
 			{
 				// hide equipped item and give it
 				unit->HideWeapon();
@@ -2570,4 +2588,29 @@ int InventoryPanel::GetLockIndexOrSlotAndRelease()
 		iindex = Unit::INVALID_IINDEX;
 	base.lock = nullptr;
 	return iindex;
+}
+
+//=================================================================================================
+bool InventoryPanel::HandleLeftClick(const Item* item)
+{
+	if(mode == INVENTORY)
+	{
+		if(drag_and_drop)
+		{
+			if(Key.Released(VK_LBUTTON))
+			{
+				drag_and_drop = false;
+				return true;
+			}
+		}
+		else if(Key.Pressed(VK_LBUTTON))
+		{
+			drag_and_drop = true;
+			drag_and_drop_pos = GUI.cursor_pos;
+			drag_and_drop_item = item;
+		}
+		return false;
+	}
+	else
+		return Key.PressedRelease(VK_LBUTTON);
 }

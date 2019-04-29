@@ -308,9 +308,6 @@ bool Game::ReadPlayerData(BitStreamReader& f)
 	Team.leader = leader_info->u;
 
 	dialog_context.pc = unit->player;
-	pc->noclip = noclip;
-	pc->godmode = godmode;
-	pc->unit->invisible = invisible;
 
 	// multiplayer load data
 	if(N.mp_load)
@@ -1861,7 +1858,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				if(!f)
 					Error("Update server: Broken CHEAT_INVISIBLE from %s.", info.name.c_str());
 				else if(info.devmode)
-					unit.invisible = state;
+					player.invisible = state;
 				else
 					Error("Update server: Player %s used CHEAT_INVISIBLE without devmode.", info.name.c_str());
 			}
@@ -3051,6 +3048,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					break;
 				case NA_EQUIP:
 				case NA_CONSUME:
+				case NA_EQUIP_DRAW:
 					{
 						f >> player.next_action_data.index;
 						const string& item_id = f.ReadString1();
@@ -3190,6 +3188,42 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					Error("Update server: Player %s used CLEAN_LEVEL without devmode.", info.name.c_str());
 				else if(game_state == GS_LEVEL)
 					L.CleanLevel(building_id);
+			}
+			break;
+		// player set shortcut
+		case NetChange::SET_SHORTCUT:
+			{
+				int index, value;
+				Shortcut::Type type;
+				f.ReadCasted<byte>(index);
+				f.ReadCasted<byte>(type);
+				if(type == Shortcut::TYPE_SPECIAL)
+					f.ReadCasted<byte>(value);
+				else if(type == Shortcut::TYPE_ITEM)
+				{
+					const string& item_id = f.ReadString1();
+					if(f)
+					{
+						value = (int)Item::TryGet(item_id);
+						if(value == 0)
+						{
+							Error("Update server: SET_SHORTCUT invalid item '%s' from %s.", item_id.c_str(), info.name.c_str());
+							break;
+						}
+					}
+				}
+				else
+					value = 0;
+				if(!f)
+					Error("Update server: Broken SET_SHORTCUT from %s.", info.name.c_str());
+				else if(index < 0 || index >= Shortcut::MAX)
+					Error("Update server: SET_SHORTCUT invalid index %d from %s.", index, info.name.c_str());
+				else
+				{
+					Shortcut& shortcut = info.pc->shortcuts[index];
+					shortcut.type = type;
+					shortcut.value = value;
+				}
 			}
 			break;
 		// invalid change
@@ -7203,7 +7237,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 						f.Read(BUF, sizeof(int)*set_flags);
 						if(!f)
 							Error("Update single client: Broken PLAYER_STATS(2).");
-						else if(pc)
+						else
 						{
 							int* buf = (int*)BUF;
 							if(IS_SET(flags, STAT_KILLS))
@@ -7250,13 +7284,13 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 						case ChangedStatType::ATTRIBUTE:
 							if(what >= (byte)AttributeId::MAX)
 								Error("Update single client: STAT_CHANGED, invalid attribute %u.", what);
-							else if(pc)
+							else
 								pc->unit->Set((AttributeId)what, value);
 							break;
 						case ChangedStatType::SKILL:
 							if(what >= (byte)SkillId::MAX)
 								Error("Update single client: STAT_CHANGED, invalid skill %u.", what);
-							else if(pc)
+							else
 								pc->unit->Set((SkillId)what, value);
 							break;
 						default:
@@ -7275,7 +7309,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 					f.ReadCasted<char>(value);
 					if(!f)
 						Error("Update single client: Broken ADD_PERK.");
-					else if(pc)
+					else
 						pc->AddPerk(perk, value);
 				}
 				break;
@@ -7288,7 +7322,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 					f.ReadCasted<char>(value);
 					if(!f)
 						Error("Update single client: Broken REMOVE_PERK.");
-					else if(pc)
+					else
 						pc->RemovePerk(perk, value);
 				}
 				break;
@@ -7299,7 +7333,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 					f >> gm_id;
 					if(!f)
 						Error("Update single client: Broken GAME_MESSAGE.");
-					else if(pc)
+					else
 						gui->messages->AddGameMsg3((GMS)gm_id);
 				}
 				break;
@@ -7310,7 +7344,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 					f.ReadString4(*output);
 					if(!f)
 						Error("Update single client: Broken RUN_SCRIPT_RESULT.");
-					else if(pc)
+					else
 						gui->console->AddMsg(output->c_str());
 					StringPool.Free(output);
 				}
@@ -7322,7 +7356,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 					f.ReadString4(*output);
 					if(!f)
 						Error("Update single client: Broken GENERIC_CMD_RESPONSE.");
-					else if(pc)
+					else
 						g_print_func(output->c_str());
 					StringPool.Free(output);
 				}
@@ -7339,7 +7373,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 					f >> e.time;
 					if(!f)
 						Error("Update single client: Broken ADD_EFFECT.");
-					else if(pc)
+					else
 						pc->unit->AddEffect(e);
 				}
 				break;
@@ -7355,7 +7389,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 					f.ReadCasted<char>(value);
 					if(!f)
 						Error("Update single client: Broken REMOVE_EFFECT.");
-					else if(pc)
+					else
 						pc->unit->RemoveEffects(effect, source, source_id, value);
 				}
 				break;
@@ -7366,7 +7400,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 					f.ReadCasted<byte>(days);
 					if(!f)
 						Error("Update single client: Broken ON_REST.");
-					else if(pc)
+					else
 						pc->Rest(days, false, false);
 				}
 				break;
@@ -7380,7 +7414,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 					f >> value;
 					if(!f)
 						Error("Update single client: Broken GAME_MESSAGE_FORMATTED.");
-					else if(pc)
+					else
 						gui->messages->AddFormattedMessage(pc, id, subtype, value);
 				}
 				break;
@@ -7667,6 +7701,7 @@ void Game::WriteClientChanges(BitStreamWriter& f)
 				break;
 			case NA_EQUIP:
 			case NA_CONSUME:
+			case NA_EQUIP_DRAW:
 				f << pc->next_action_data.index;
 				f << pc->next_action_data.item->id;
 				break;
@@ -7695,6 +7730,17 @@ void Game::WriteClientChanges(BitStreamWriter& f)
 		case NetChange::CHEAT_TRAVEL_POS:
 			f << c.pos.x;
 			f << c.pos.y;
+			break;
+		case NetChange::SET_SHORTCUT:
+			{
+				const Shortcut& shortcut = pc->shortcuts[c.id];
+				f.WriteCasted<byte>(c.id);
+				f.WriteCasted<byte>(shortcut.type);
+				if(shortcut.type == Shortcut::TYPE_SPECIAL)
+					f.WriteCasted<byte>(shortcut.value);
+				else if(shortcut.type == Shortcut::TYPE_ITEM)
+					f << shortcut.item->id;
+			}
 			break;
 		default:
 			Error("UpdateClient: Unknown change %d.", c.type);
@@ -7876,9 +7922,6 @@ void Game::Net_OnNewGameClient()
 	devmode = default_devmode;
 	train_move = 0.f;
 	anyone_talking = false;
-	godmode = false;
-	noclip = false;
-	invisible = false;
 	interpolate_timer = 0.f;
 	Net::changes.clear();
 	if(!N.net_strs.empty())
@@ -7903,7 +7946,7 @@ void Game::Net_OnNewGameServer()
 	paused = false;
 	hardcore_mode = false;
 
-	auto info = new PlayerInfo;
+	PlayerInfo* info = new PlayerInfo;
 	N.players.push_back(info);
 
 	PlayerInfo& sp = *info;

@@ -222,7 +222,7 @@ public:
 	VertexDataPtr vdSchodyGora, vdSchodyDol, vdNaDrzwi;
 	RenderTarget* rt_save, *rt_item, *rt_item_rot;
 	TEX tMinimap;
-	TEX tCzern, tEmerytura, tPortal, tLightingLine, tRip, tEquipped, tWarning, tError;
+	TEX tCzern, tPortal, tLightingLine, tRip, tEquipped, tWarning, tError;
 	TexturePtr tKrew[BLOOD_MAX], tKrewSlad[BLOOD_MAX], tIskra, tSpawn;
 	TexturePack tFloor[2], tWall[2], tCeil[2], tFloorBase, tWallBase, tCeilBase;
 	ID3DXEffect* eMesh, *eParticle, *eSkybox, *eArea, *ePostFx, *eGlow;
@@ -597,8 +597,6 @@ public:
 	vector<WarpData> mp_warps;
 	float train_move; // u¿ywane przez klienta do trenowania przez chodzenie
 	bool anyone_talking;
-	// u¿ywane u klienta który nie zapamiêtuje zmiennej 'pc'
-	bool godmode, noclip, invisible;
 	float interpolate_timer;
 	bool paused;
 	vector<ItemSlot> chest_trade; // used by clients when trading

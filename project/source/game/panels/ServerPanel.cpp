@@ -439,10 +439,10 @@ bool ServerPanel::DoLobbyUpdate(BitStreamReader& f)
 				}
 				else if(id != Team.my_id)
 				{
-					auto pinfo = new PlayerInfo;
+					PlayerInfo* pinfo = new PlayerInfo;
 					N.players.push_back(pinfo);
 
-					auto& info = *pinfo;
+					PlayerInfo& info = *pinfo;
 					info.state = PlayerInfo::IN_LOBBY;
 					info.id = id;
 					info.loaded = true;

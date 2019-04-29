@@ -11,8 +11,10 @@ Version 0.10 (2019-??-??):
 + rings: silver, golden, emerald, 27 magic rings
 + new item: spring water, troll hide armor, 9 magic amulets
 + better priorities for heroes buying/asking for items
++ configureable item/action shortcuts
 + update libraries: FMod 1.10.12, JSON for Modern C++ 3.6.1
 - fixed infinite wait time when using -delay switch
+- fixed broken side menu
 
 --------------------------------------------------------------------------------
 Version 0.9 (2019-03-30):

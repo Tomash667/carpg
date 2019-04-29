@@ -187,6 +187,7 @@ struct NetChange
 		CLEAN_LEVEL, // clean level from blood and corpses [int(id)-building id (-1 outside, -2 all)]
 		CHANGE_LOCATION_IMAGE, // change location image [byte(id)-index, auto:byte-image]
 		CHANGE_LOCATION_NAME, // change location name [byte(id)-index, auto:string1-name]
+		SET_SHORTCUT, // player set shortcut [byte(id)-index, auto:byte-type, byte/string1-value]
 
 		MAX
 	} type;

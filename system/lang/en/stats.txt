@@ -1,7 +1,3 @@
-// stats
-hp = "Health"
-stamina = "Stamina"
-
 // weapon types
 wt_shortBlade = "Short blade"
 wt_longBlade = "Long blade"

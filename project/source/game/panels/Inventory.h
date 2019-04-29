@@ -121,7 +121,6 @@ public:
 
 	void FormatBox(bool refresh = false);
 	void InitTooltip();
-	bool SlotRequireHideWeapon(ITEM_SLOT slot);
 	void RemoveSlotItem(ITEM_SLOT slot);
 	void DropSlotItem(ITEM_SLOT slot);
 	void ConsumeItem(int index);
@@ -173,10 +172,13 @@ private:
 	bool AllowForUnit() { return Any(mode, GIVE_MY, GIVE_OTHER, SHARE_MY, SHARE_OTHER); }
 	int GetLockIndexAndRelease();
 	int GetLockIndexOrSlotAndRelease();
+	bool HandleLeftClick(const Item* item);
 
 	Inventory& base;
 	Game& game;
 	float rot;
 	const Item* item_visible;
-	bool for_unit, tex_replaced;
+	const Item* drag_and_drop_item;
+	Int2 drag_and_drop_pos;
+	bool for_unit, tex_replaced, drag_and_drop;
 };

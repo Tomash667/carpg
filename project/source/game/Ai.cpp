@@ -207,7 +207,7 @@ void Game::UpdateAi(float dt)
 		float best_dist = ALERT_RANGE + 0.1f, dist;
 		for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
 		{
-			if((*it2)->to_remove || !(*it2)->IsAlive() || (*it2)->invisible || !u.IsEnemy(**it2))
+			if((*it2)->to_remove || !(*it2)->IsAlive() || (*it2)->IsInvisible() || !u.IsEnemy(**it2))
 				continue;
 
 			dist = Vec3::Distance(u.pos, (*it2)->pos);
@@ -921,7 +921,7 @@ void Game::UpdateAi(float dt)
 										close_enemies.clear();
 										for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
 										{
-											if((*it2)->to_remove || !(*it2)->IsStanding() || (*it2)->invisible || *it2 == &u)
+											if((*it2)->to_remove || !(*it2)->IsStanding() || (*it2)->IsInvisible() || *it2 == &u)
 												continue;
 
 											if(Vec3::Distance(u.pos, (*it2)->pos) < 10.f && L.CanSee(u, **it2))
@@ -952,7 +952,7 @@ void Game::UpdateAi(float dt)
 										close_enemies.clear();
 										for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
 										{
-											if((*it2)->to_remove || !(*it2)->IsStanding() || (*it2)->invisible || *it2 == &u)
+											if((*it2)->to_remove || !(*it2)->IsStanding() || (*it2)->IsInvisible() || *it2 == &u)
 												continue;
 
 											if(Vec3::Distance(u.pos, (*it2)->pos) < d && L.CanSee(u, **it2))
@@ -1670,7 +1670,7 @@ void Game::UpdateAi(float dt)
 
 							for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
 							{
-								if(!(*it2)->to_remove && (*it2)->IsStanding() && !(*it2)->invisible && u.IsEnemy(**it2) && (*it2)->action == A_ATTACK && !(*it2)->hitted
+								if(!(*it2)->to_remove && (*it2)->IsStanding() && !(*it2)->IsInvisible() && u.IsEnemy(**it2) && (*it2)->action == A_ATTACK && !(*it2)->hitted
 									&& (*it2)->animation_state < 2)
 								{
 									float dist = Vec3::Distance(u.pos, (*it2)->pos);
@@ -1982,7 +1982,7 @@ void Game::UpdateAi(float dt)
 								close_enemies.clear();
 								for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
 								{
-									if((*it2)->to_remove || !(*it2)->IsStanding() || (*it2)->invisible || !u.IsEnemy(**it2))
+									if((*it2)->to_remove || !(*it2)->IsStanding() || (*it2)->IsInvisible() || !u.IsEnemy(**it2))
 										continue;
 
 									if(Vec3::Distance(u.pos, (*it2)->pos) < ALERT_RANGE + 0.1f)
@@ -2081,7 +2081,7 @@ void Game::UpdateAi(float dt)
 
 					for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
 					{
-						if(!(*it2)->to_remove && (*it2)->IsStanding() && !(*it2)->invisible && u.IsEnemy(**it2) && (*it2)->action == A_ATTACK && !(*it2)->hitted
+						if(!(*it2)->to_remove && (*it2)->IsStanding() && !(*it2)->IsInvisible() && u.IsEnemy(**it2) && (*it2)->action == A_ATTACK && !(*it2)->hitted
 							&& (*it2)->animation_state < 2)
 						{
 							float dist = Vec3::Distance(u.pos, (*it2)->pos);
@@ -2158,7 +2158,7 @@ void Game::UpdateAi(float dt)
 
 					for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
 					{
-						if(!(*it2)->to_remove && (*it2)->IsStanding() && !(*it2)->invisible && u.IsEnemy(**it2))
+						if(!(*it2)->to_remove && (*it2)->IsStanding() && !(*it2)->IsInvisible() && u.IsEnemy(**it2))
 						{
 							float dist = Vec3::Distance(u.pos, (*it2)->pos);
 							if(dist < best_dist)
@@ -2301,7 +2301,7 @@ void Game::UpdateAi(float dt)
 
 					for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
 					{
-						if(!(*it2)->to_remove && (*it2)->IsStanding() && !(*it2)->invisible && u.IsEnemy(**it2))
+						if(!(*it2)->to_remove && (*it2)->IsStanding() && !(*it2)->IsInvisible() && u.IsEnemy(**it2))
 						{
 							float dist = Vec3::Distance(u.pos, (*it2)->pos);
 							if(dist < best_dist)

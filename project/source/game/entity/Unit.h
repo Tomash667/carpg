@@ -215,7 +215,7 @@ struct Unit
 	const Item* used_item;
 	bool used_item_is_team;
 	vector<Effect> effects;
-	bool hitted, invisible, talking, run_attack, to_remove, temporary, changed, dont_attack, assist, attack_team, fake_unit, moved, mark, running;
+	bool hitted, talking, run_attack, to_remove, temporary, changed, dont_attack, assist, attack_team, fake_unit, moved, mark, running;
 	btCollisionObject* cobj;
 	Usable* usable;
 	UnitEventHandler* event_handler;
@@ -472,7 +472,9 @@ public:
 	bool HaveQuestItem(int quest_refid);
 	void RemoveQuestItem(int quest_refid);
 	void RemoveQuestItemS(Quest* quest);
-	bool HaveItem(const Item* item);
+	bool HaveItem(const Item* item, bool owned = false) const;
+	bool HaveItemEquipped(const Item* item) const;
+	bool SlotRequireHideWeapon(ITEM_SLOT slot) const;
 	float GetAttackSpeed(const Weapon* weapon = nullptr) const;
 	float GetAttackSpeedModFromStrength(const Weapon& wep) const
 	{
@@ -546,6 +548,7 @@ public:
 	// szuka przedmiotu w ekwipunku, zwraca i_index (INVALID_IINDEX jeœli nie ma takiego przedmiotu)
 	static const int INVALID_IINDEX = (-SLOT_INVALID - 1);
 	int FindItem(const Item* item, int quest_refid = -1) const;
+	int FindItem(delegate<bool(const ItemSlot& slot)> callback) const;
 	int FindQuestItem(int quest_refid) const;
 	bool FindQuestItem(cstring id, Quest** quest, int* i_index, bool not_active = false);
 	void RemoveItem(int iindex, bool active_location = true);
@@ -825,6 +828,7 @@ public:
 	void UpdateInventory(bool notify = true);
 	bool IsEnemy(Unit& u, bool ignore_dont_attack = false) const;
 	bool IsFriend(Unit& u) const;
+	bool IsInvisible() const { return IsPlayer() && player->invisible; }
 	void RefreshStock();
 	float GetMaxMorale() const { return IS_SET(data->flags, F_COWARD) ? 5.f : 10.f; }
 	void AddDialog(Quest_Scripted* quest, GameDialog* dialog);

@@ -1650,7 +1650,6 @@ void Unit::Save(GameWriter& f, bool local)
 	else
 		f << stats->subprofile;
 	f << gold;
-	f << invisible;
 	f << in_building;
 	f << to_remove;
 	f << temporary;
@@ -1967,7 +1966,9 @@ void Unit::Load(GameReader& f, bool local)
 		}
 	}
 	f >> gold;
-	f >> invisible;
+	bool old_invisible = false;
+	if(LOAD_VERSION < V_DEV)
+		f >> old_invisible;
 	f >> in_building;
 	f >> to_remove;
 	f >> temporary;
@@ -2268,6 +2269,8 @@ void Unit::Load(GameReader& f, bool local)
 		player = new PlayerController;
 		player->unit = this;
 		player->Load(f);
+		if(LOAD_VERSION < V_DEV)
+			player->invisible = old_invisible;
 	}
 	else
 		player = nullptr;
@@ -2470,8 +2473,8 @@ void Unit::Write(BitStreamWriter& f)
 	}
 	else if(IsPlayer())
 	{
-		f << player->name;
 		f.WriteCasted<byte>(player->id);
+		f << player->name;
 		f << player->credit;
 		f << player->free_days;
 	}
@@ -2630,13 +2633,21 @@ bool Unit::Read(BitStreamReader& f)
 	else if(type == 2)
 	{
 		// player
+		int id;
+		f.ReadCasted<byte>(id);
+		if(id == Team.my_id)
+		{
+			assert(game.pc);
+			player = game.pc;
+		}
+		else
+			player = new PlayerController;
 		ai = nullptr;
 		hero = nullptr;
-		player = new PlayerController;
+		player->id = id;
 		player->unit = this;
 		alcohol = 0.f;
 		f >> player->name;
-		f.ReadCasted<byte>(player->id);
 		f >> player->credit;
 		f >> player->free_days;
 		if(!f)
@@ -2975,14 +2986,46 @@ void Unit::RemoveQuestItemS(Quest* quest)
 }
 
 //=================================================================================================
-bool Unit::HaveItem(const Item* item)
+bool Unit::HaveItem(const Item* item, bool owned) const
 {
-	for(vector<ItemSlot>::iterator it = items.begin(), end = items.end(); it != end; ++it)
+	for(const Item* slot_item : slots)
 	{
-		if(it->item == item)
+		if(slot_item == item)
+			return true;
+	}
+	for(vector<ItemSlot>::const_iterator it = items.begin(), end = items.end(); it != end; ++it)
+	{
+		if(it->item == item && (!owned || it->team_count != it->count))
 			return true;
 	}
 	return false;
+}
+
+//=================================================================================================
+bool Unit::HaveItemEquipped(const Item* item) const
+{
+	ITEM_SLOT slot_type = ItemTypeToSlot(item->type);
+	if(slot_type == SLOT_INVALID)
+		return false;
+	else if(slot_type == SLOT_RING1)
+		return slots[SLOT_RING1] == item || slots[SLOT_RING2] == item;
+	else
+		return slots[slot_type] == item;
+}
+
+//=================================================================================================
+bool Unit::SlotRequireHideWeapon(ITEM_SLOT slot) const
+{
+	switch(slot)
+	{
+	case SLOT_WEAPON:
+	case SLOT_SHIELD:
+		return weapon_state == WS_TAKEN && weapon_taken == W_ONE_HANDED;
+	case SLOT_BOW:
+		return weapon_state == WS_TAKEN && weapon_taken == W_BOW;
+	default:
+		return false;
+	}
 }
 
 //=================================================================================================
@@ -3132,6 +3175,19 @@ int Unit::FindItem(const Item* item, int quest_refid) const
 			return index;
 	}
 
+	return INVALID_IINDEX;
+}
+
+//=================================================================================================
+int Unit::FindItem(delegate<bool(const ItemSlot& slot)> callback) const
+{
+	int index = 0;
+	for(const ItemSlot& slot : items)
+	{
+		if(callback(slot))
+			return index;
+		++index;
+	}
 	return INVALID_IINDEX;
 }
 

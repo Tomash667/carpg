@@ -399,7 +399,7 @@ void Game::OnTick(float dt)
 		if(GKey.PressedRelease(GK_STATS))
 			to_open = OpenPanel::Stats;
 		else if(GKey.PressedRelease(GK_INVENTORY))
-			to_open = OpenPanel::InventoryPanel;
+			to_open = OpenPanel::Inventory;
 		else if(GKey.PressedRelease(GK_TEAM_PANEL))
 			to_open = OpenPanel::Team;
 		else if(GKey.PressedRelease(GK_JOURNAL))
@@ -423,11 +423,12 @@ void Game::OnTick(float dt)
 				GKey.allow_input = GameKeys::ALLOW_KEYBOARD;
 			break;
 		case OpenPanel::Stats:
-		case OpenPanel::InventoryPanel:
+		case OpenPanel::Inventory:
 		case OpenPanel::Team:
 		case OpenPanel::Trade:
 		case OpenPanel::Action:
 		case OpenPanel::Journal:
+		case OpenPanel::Book:
 			GKey.allow_input = GameKeys::ALLOW_KEYBOARD;
 			break;
 		}
@@ -473,7 +474,7 @@ void Game::OnTick(float dt)
 				GKey.allow_input = GameKeys::ALLOW_KEYBOARD;
 			break;
 		case OpenPanel::Stats:
-		case OpenPanel::InventoryPanel:
+		case OpenPanel::Inventory:
 		case OpenPanel::Team:
 		case OpenPanel::Trade:
 		case OpenPanel::Action:
@@ -1667,9 +1668,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 			Net::PushChange(NetChange::CHANGE_FLAGS);
 	}
 
-	if(!Net::IsLocal())
-		pc = nullptr;
-	else if(end_buffs)
+	if(Net::IsLocal() && end_buffs)
 	{
 		// usuñ tymczasowe bufy
 		for(Unit* unit : Team.members)

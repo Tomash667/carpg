@@ -585,9 +585,9 @@ void Game::UpdateClientConnectingIp(float dt)
 
 					// add player
 					DeleteElements(N.players);
-					auto pinfo = new PlayerInfo;
+					PlayerInfo* pinfo = new PlayerInfo;
 					N.players.push_back(pinfo);
-					auto& info = *pinfo;
+					PlayerInfo& info = *pinfo;
 					info.clas = Class::INVALID;
 					info.ready = false;
 					info.name = player_name;
@@ -1086,7 +1086,6 @@ void Game::UpdateClientTransfer(float dt)
 					N.update_timer = 0.f;
 					Team.leader_id = 0;
 					Team.leader = nullptr;
-					pc = nullptr;
 					SetMusic(MusicType::Travel);
 					if(change_title_a)
 						ChangeTitle();

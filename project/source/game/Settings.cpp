@@ -27,10 +27,6 @@ void Settings::InitGameKeys()
 	GKey[GK_MINIMAP].id = "keyMinimap";
 	GKey[GK_QUICKSAVE].id = "keyQuicksave";
 	GKey[GK_QUICKLOAD].id = "keyQuickload";
-	GKey[GK_POTION].id = "keyPotion";
-	GKey[GK_MELEE_WEAPON].id = "keyMeleeWeapon";
-	GKey[GK_RANGED_WEAPON].id = "keyRangedWeapon";
-	GKey[GK_ACTION].id = "keyAction";
 	GKey[GK_TAKE_ALL].id = "keyTakeAll";
 	GKey[GK_SELECT_DIALOG].id = "keySelectDialog";
 	GKey[GK_SKIP_DIALOG].id = "keySkipDialog";
@@ -41,6 +37,16 @@ void Settings::InitGameKeys()
 	GKey[GK_ROTATE_CAMERA].id = "keyRotateCamera";
 	GKey[GK_AUTOWALK].id = "keyAutowalk";
 	GKey[GK_TOGGLE_WALK].id = "keyToggleWalk";
+	GKey[GK_SHORTCUT1].id = "keyShortcut1";
+	GKey[GK_SHORTCUT2].id = "keyShortcut2";
+	GKey[GK_SHORTCUT3].id = "keyShortcut3";
+	GKey[GK_SHORTCUT4].id = "keyShortcut4";
+	GKey[GK_SHORTCUT5].id = "keyShortcut5";
+	GKey[GK_SHORTCUT6].id = "keyShortcut6";
+	GKey[GK_SHORTCUT7].id = "keyShortcut7";
+	GKey[GK_SHORTCUT8].id = "keyShortcut8";
+	GKey[GK_SHORTCUT9].id = "keyShortcut9";
+	GKey[GK_SHORTCUT10].id = "keyShortcut10";
 
 	for(int i = 0; i < GK_MAX; ++i)
 		GKey[i].text = Str(GKey[i].id);
@@ -68,10 +74,6 @@ void Settings::ResetGameKeys()
 	GKey[GK_MINIMAP].Set('M');
 	GKey[GK_QUICKSAVE].Set(VK_F5);
 	GKey[GK_QUICKLOAD].Set(VK_F9);
-	GKey[GK_POTION].Set('H');
-	GKey[GK_MELEE_WEAPON].Set('1');
-	GKey[GK_RANGED_WEAPON].Set('2');
-	GKey[GK_ACTION].Set('3');
 	GKey[GK_TAKE_ALL].Set('F');
 	GKey[GK_SELECT_DIALOG].Set(VK_RETURN);
 	GKey[GK_SKIP_DIALOG].Set(VK_SPACE);
@@ -82,6 +84,16 @@ void Settings::ResetGameKeys()
 	GKey[GK_ROTATE_CAMERA].Set('V');
 	GKey[GK_AUTOWALK].Set('F');
 	GKey[GK_TOGGLE_WALK].Set(VK_CAPITAL);
+	GKey[GK_SHORTCUT1].Set('1');
+	GKey[GK_SHORTCUT2].Set('2');
+	GKey[GK_SHORTCUT3].Set('3');
+	GKey[GK_SHORTCUT4].Set('4');
+	GKey[GK_SHORTCUT5].Set('5');
+	GKey[GK_SHORTCUT6].Set('6');
+	GKey[GK_SHORTCUT7].Set('7');
+	GKey[GK_SHORTCUT8].Set('8');
+	GKey[GK_SHORTCUT9].Set('9');
+	GKey[GK_SHORTCUT10].Set('0');
 }
 
 //=================================================================================================

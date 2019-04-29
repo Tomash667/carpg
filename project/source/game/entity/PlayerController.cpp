@@ -34,16 +34,17 @@ void PlayerController::Init(Unit& _unit, bool partial)
 	idle_timer = Random(1.f, 2.f);
 	credit = 0;
 	on_credit = false;
-	godmode = false;
-	noclip = false;
 	action = Action_None;
 	free_days = 0;
 	recalculate_level = false;
 	split_gold = 0.f;
-	always_run = true;
 
 	if(!partial)
 	{
+		godmode = false;
+		noclip = false;
+		invisible = false;
+		always_run = true;
 		kills = 0;
 		dmg_done = 0;
 		dmg_taken = 0;
@@ -68,7 +69,26 @@ void PlayerController::Init(Unit& _unit, bool partial)
 		exp = 0;
 		exp_level = 0;
 		exp_need = GetExpNeed();
+		InitShortcuts();
 	}
+}
+
+//=================================================================================================
+void PlayerController::InitShortcuts()
+{
+	for(int i = 0; i < Shortcut::MAX; ++i)
+	{
+		shortcuts[i].type = Shortcut::TYPE_NONE;
+		shortcuts[i].trigger = false;
+	}
+	shortcuts[0].type = Shortcut::TYPE_SPECIAL;
+	shortcuts[0].value = Shortcut::SPECIAL_MELEE_WEAPON;
+	shortcuts[1].type = Shortcut::TYPE_SPECIAL;
+	shortcuts[1].value = Shortcut::SPECIAL_RANGED_WEAPON;
+	shortcuts[2].type = Shortcut::TYPE_SPECIAL;
+	shortcuts[2].value = Shortcut::SPECIAL_ACTION;
+	shortcuts[3].type = Shortcut::TYPE_SPECIAL;
+	shortcuts[3].value = Shortcut::SPECIAL_HEALING_POTION;
 }
 
 //=================================================================================================
@@ -320,6 +340,7 @@ void PlayerController::Save(FileWriter& f)
 		break;
 	case NA_EQUIP:
 	case NA_CONSUME:
+	case NA_EQUIP_DRAW:
 		f << next_action_data.index;
 		f << next_action_data.item->id;
 		break;
@@ -334,6 +355,7 @@ void PlayerController::Save(FileWriter& f)
 	f << credit;
 	f << godmode;
 	f << noclip;
+	f << invisible;
 	f << id;
 	f << free_days;
 	f << kills;
@@ -362,6 +384,14 @@ void PlayerController::Save(FileWriter& f)
 	f << exp;
 	f << exp_level;
 	f << last_ring;
+	for(Shortcut& shortcut : shortcuts)
+	{
+		f << shortcut.type;
+		if(shortcut.type == Shortcut::TYPE_SPECIAL)
+			f << shortcut.value;
+		else if(shortcut.type == Shortcut::TYPE_ITEM)
+			f << shortcut.item->id;
+	}
 }
 
 //=================================================================================================
@@ -479,6 +509,7 @@ void PlayerController::Load(FileReader& f)
 			break;
 		case NA_EQUIP:
 		case NA_CONSUME:
+		case NA_EQUIP_DRAW:
 			f >> next_action_data.index;
 			next_action_data.item = Item::Get(f.ReadString1());
 			break;
@@ -498,6 +529,8 @@ void PlayerController::Load(FileReader& f)
 	f >> credit;
 	f >> godmode;
 	f >> noclip;
+	if(LOAD_VERSION >= V_DEV)
+		f >> invisible;
 	f >> id;
 	f >> free_days;
 	f >> kills;
@@ -644,6 +677,20 @@ void PlayerController::Load(FileReader& f)
 		f >> last_ring;
 	else
 		last_ring = false;
+	if(LOAD_VERSION >= V_DEV)
+	{
+		for(Shortcut& shortcut : shortcuts)
+		{
+			f >> shortcut.type;
+			if(shortcut.type == Shortcut::TYPE_SPECIAL)
+				f >> shortcut.value;
+			else if(shortcut.type == Shortcut::TYPE_ITEM)
+				shortcut.item = Item::Get(f.ReadString1());
+			shortcut.trigger = false;
+		}
+	}
+	else
+		InitShortcuts();
 
 	action = Action_None;
 }
@@ -1024,6 +1071,23 @@ void PlayerController::Train(bool is_skill, int id, TrainMode mode)
 }
 
 //=================================================================================================
+void PlayerController::WriteStart(BitStreamWriter& f) const
+{
+	f << invisible;
+	f << noclip;
+	f << godmode;
+	f << always_run;
+	for(const Shortcut& shortcut : shortcuts)
+	{
+		f << shortcut.type;
+		if(shortcut.type == Shortcut::TYPE_SPECIAL)
+			f << shortcut.value;
+		else if(shortcut.type == Shortcut::TYPE_ITEM)
+			f << shortcut.item->id;
+	}
+}
+
+//=================================================================================================
 // Used to send per-player data in WritePlayerData
 void PlayerController::Write(BitStreamWriter& f) const
 {
@@ -1042,7 +1106,6 @@ void PlayerController::Write(BitStreamWriter& f) const
 	f << action_cooldown;
 	f << action_recharge;
 	f << action_charges;
-	f << always_run;
 	f.WriteCasted<byte>(next_action);
 	switch(next_action)
 	{
@@ -1054,6 +1117,7 @@ void PlayerController::Write(BitStreamWriter& f) const
 		break;
 	case NA_EQUIP:
 	case NA_CONSUME:
+	case NA_EQUIP_DRAW:
 		f << GetNextActionItemIndex();
 		break;
 	case NA_USE:
@@ -1064,6 +1128,24 @@ void PlayerController::Write(BitStreamWriter& f) const
 		break;
 	}
 	f << last_ring;
+}
+
+//=================================================================================================
+void PlayerController::ReadStart(BitStreamReader& f)
+{
+	f >> invisible;
+	f >> noclip;
+	f >> godmode;
+	f >> always_run;
+	for(Shortcut& shortcut : shortcuts)
+	{
+		f >> shortcut.type;
+		if(shortcut.type == Shortcut::TYPE_SPECIAL)
+			f >> shortcut.value;
+		else if(shortcut.type == Shortcut::TYPE_ITEM)
+			shortcut.item = Item::Get(f.ReadString1());
+		shortcut.trigger = false;
+	}
 }
 
 //=================================================================================================
@@ -1089,7 +1171,6 @@ bool PlayerController::Read(BitStreamReader& f)
 	f >> action_cooldown;
 	f >> action_recharge;
 	f >> action_charges;
-	f >> always_run;
 	f.ReadCasted<byte>(next_action);
 	if(!f)
 		return false;
@@ -1105,6 +1186,7 @@ bool PlayerController::Read(BitStreamReader& f)
 		break;
 	case NA_EQUIP:
 	case NA_CONSUME:
+	case NA_EQUIP_DRAW:
 		{
 			f >> next_action_data.index;
 			if(!f)
@@ -1438,5 +1520,68 @@ void PlayerController::Yell()
 			u2.ai->idle_data.unit = unit;
 			u2.ai->timer = Random(3.f, 5.f);
 		}
+	}
+}
+
+//=================================================================================================
+int PlayerController::GetHealingPotion() const
+{
+	float healed_hp,
+		missing_hp = unit->hpmax - unit->hp;
+	int potion_index = -1, index = 0;
+
+	for(vector<ItemSlot>::iterator it = unit->items.begin(), end = unit->items.end(); it != end; ++it, ++index)
+	{
+		if(!it->item || it->item->type != IT_CONSUMABLE)
+			continue;
+		const Consumable& pot = it->item->ToConsumable();
+		if(pot.IsHealingPotion())
+		{
+			float power = pot.GetEffectPower(EffectId::Heal);
+			if(potion_index == -1)
+			{
+				potion_index = index;
+				healed_hp = power;
+			}
+			else
+			{
+				if(power > missing_hp)
+				{
+					if(power < healed_hp)
+					{
+						potion_index = index;
+						healed_hp = power;
+					}
+				}
+				else if(power > healed_hp)
+				{
+					potion_index = index;
+					healed_hp = power;
+				}
+			}
+		}
+	}
+
+	return potion_index;
+}
+
+//=================================================================================================
+void PlayerController::ClearShortcuts()
+{
+	for(int i = 0; i < Shortcut::MAX; ++i)
+		shortcuts[i].trigger = false;
+}
+
+//=================================================================================================
+void PlayerController::SetShortcut(int index, Shortcut::Type type, int value)
+{
+	assert(index >= 0 && index < Shortcut::MAX);
+	shortcuts[index].type = type;
+	shortcuts[index].value = value;
+	if(Net::IsClient())
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::SET_SHORTCUT;
+		c.id = index;
 	}
 }

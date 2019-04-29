@@ -62,6 +62,7 @@ osoby. Oczekuj zmian na lepsze!
 	1 - wybierz broñ do walki wrêcz i tarcze
 	2 - wybierz broñ dystansow¹
 	3 - u¿yj akcji
+	4 - wypij najlepsz¹ miksturkê zdrowia
 	F - automatyczny ruch do przodu
 	Caps Lock - prze³¹cz bieganie/chodzenie
 	Y - okrzyk
@@ -69,7 +70,6 @@ osoby. Oczekuj zmian na lepsze!
 	J - dziennik
 	M - minimapa
 	N - okno rozmowy
-	H - wypij miksturkê zdrowia
 	Enter - wprowadzanie tekstu w multiplayer
 	Kó³ko myszy - zmiana odleg³oœci kamery
 	F2 - poka¿/ukryj fps

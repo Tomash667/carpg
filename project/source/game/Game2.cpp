@@ -70,6 +70,7 @@
 #include "Quest_Scripted.h"
 #include "Render.h"
 #include "RenderTarget.h"
+#include "BookPanel.h"
 
 const float ALERT_RANGE = 20.f;
 const float ALERT_SPAWN_RANGE = 25.f;
@@ -1104,6 +1105,7 @@ void Game::UpdateGame(float dt)
 				info->pc->Update(dt, false);
 		}
 	}
+	pc->ClearShortcuts();
 
 	// aktualizuj kamerê
 	SetupCamera(dt);
@@ -1497,6 +1499,99 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 		}
 	}
 
+	// shortcuts
+	Shortcut shortcut;
+	shortcut.type = Shortcut::TYPE_NONE;
+	for(int i = 0; i < Shortcut::MAX; ++i)
+	{
+		if(pc->shortcuts[i].type != Shortcut::TYPE_NONE
+			&& (GKey.KeyPressedReleaseAllowed((GAME_KEYS)(GK_SHORTCUT1 + i)) || pc->shortcuts[i].trigger))
+		{
+			shortcut = pc->shortcuts[i];
+			if(shortcut.type == Shortcut::TYPE_ITEM)
+			{
+				const Item* item = reinterpret_cast<const Item*>(shortcut.value);
+				if(item->IsWearable())
+				{
+					if(pc->unit->HaveItemEquipped(item))
+					{
+						if(item->type == IT_WEAPON || item->type == IT_SHIELD)
+						{
+							shortcut.type = Shortcut::TYPE_SPECIAL;
+							shortcut.value = Shortcut::SPECIAL_MELEE_WEAPON;
+						}
+						else if(item->type == IT_BOW)
+						{
+							shortcut.type = Shortcut::TYPE_SPECIAL;
+							shortcut.value = Shortcut::SPECIAL_RANGED_WEAPON;
+						}
+					}
+					else if(pc->unit->CanWear(item))
+					{
+						bool ignore_team = !Team.HaveOtherActiveTeamMember();
+						int i_index = pc->unit->FindItem([=](const ItemSlot& slot)
+						{
+							return slot.item == item && (slot.team_count == 0u || ignore_team);
+						});
+						if(i_index != Unit::INVALID_IINDEX)
+						{
+							ITEM_SLOT slot_type = ItemTypeToSlot(item->type);
+							if(pc->unit->SlotRequireHideWeapon(slot_type))
+							{
+								pc->unit->HideWeapon();
+								pc->next_action = NA_EQUIP_DRAW;
+								pc->next_action_data.item = item;
+								pc->next_action_data.index = i_index;
+								if(Net::IsClient())
+									Net::PushChange(NetChange::SET_NEXT_ACTION);
+							}
+							else
+							{
+								gui->inventory->inv_mine->EquipSlotItem(slot_type, i_index);
+								if(item->type == IT_WEAPON || item->type == IT_SHIELD)
+								{
+									shortcut.type = Shortcut::TYPE_SPECIAL;
+									shortcut.value = Shortcut::SPECIAL_MELEE_WEAPON;
+								}
+								else if(item->type == IT_BOW)
+								{
+									shortcut.type = Shortcut::TYPE_SPECIAL;
+									shortcut.value = Shortcut::SPECIAL_RANGED_WEAPON;
+								}
+							}
+						}
+					}
+				}
+				else if(item->type == IT_CONSUMABLE)
+				{
+					int i_index = pc->unit->FindItem(item);
+					if(i_index != Unit::INVALID_IINDEX)
+						pc->unit->ConsumeItem(i_index);
+				}
+				else if(item->type == IT_BOOK)
+				{
+					int i_index = pc->unit->FindItem(item);
+					if(i_index != Unit::INVALID_IINDEX)
+					{
+						if(IS_SET(item->flags, ITEM_MAGIC_SCROLL))
+						{
+							if(!pc->unit->usable) // can't use when sitting
+								pc->unit->UseItem(i_index);
+						}
+						else
+						{
+							OpenPanel open = gui->game_gui->GetOpenPanel();
+							if(open != OpenPanel::Inventory)
+								gui->game_gui->ClosePanels();
+							gui->book->Show((const Book*)item);
+						}
+					}
+				}
+			}
+			break;
+		}
+	}
+
 	if(u.action == A_NONE || u.action == A_TAKE_WEAPON || u.CanDoWhileUsing())
 	{
 		if(GKey.KeyPressedReleaseAllowed(GK_TAKE_WEAPON))
@@ -1626,7 +1721,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				}
 			}
 		}
-		else if(u.HaveWeapon() && GKey.KeyPressedReleaseAllowed(GK_MELEE_WEAPON))
+		else if(u.HaveWeapon() && (shortcut.type == Shortcut::TYPE_SPECIAL && shortcut.value == Shortcut::SPECIAL_MELEE_WEAPON))
 		{
 			idle = false;
 			if(u.weapon_state == WS_HIDDEN)
@@ -1766,7 +1861,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				}
 			}
 		}
-		else if(u.HaveBow() && GKey.KeyPressedReleaseAllowed(GK_RANGED_WEAPON))
+		else if(u.HaveBow() && (shortcut.type == Shortcut::TYPE_SPECIAL && shortcut.value == Shortcut::SPECIAL_RANGED_WEAPON))
 		{
 			idle = false;
 			if(u.weapon_state == WS_HIDDEN)
@@ -1908,45 +2003,10 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			}
 		}
 
-		if(GKey.KeyPressedReleaseAllowed(GK_POTION) && !Equal(u.hp, u.hpmax))
+		if((shortcut.type == Shortcut::TYPE_SPECIAL && shortcut.value == Shortcut::SPECIAL_HEALING_POTION) && !Equal(u.hp, u.hpmax))
 		{
 			// drink healing potion
-			float healed_hp,
-				missing_hp = u.hpmax - u.hp;
-			int potion_index = -1, index = 0;
-
-			for(vector<ItemSlot>::iterator it = u.items.begin(), end = u.items.end(); it != end; ++it, ++index)
-			{
-				if(!it->item || it->item->type != IT_CONSUMABLE)
-					continue;
-				const Consumable& pot = it->item->ToConsumable();
-				if(pot.IsHealingPotion())
-				{
-					float power = pot.GetEffectPower(EffectId::Heal);
-					if(potion_index == -1)
-					{
-						potion_index = index;
-						healed_hp = power;
-					}
-					else
-					{
-						if(power > missing_hp)
-						{
-							if(power < healed_hp)
-							{
-								potion_index = index;
-								healed_hp = power;
-							}
-						}
-						else if(power > healed_hp)
-						{
-							potion_index = index;
-							healed_hp = power;
-						}
-					}
-				}
-			}
-
+			int potion_index = pc->GetHealingPotion();
 			if(potion_index != -1)
 			{
 				idle = false;
@@ -2549,8 +2609,8 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 	// action
 	if(!pc_data.action_ready)
 	{
-		if(u.frozen == FROZEN::NO && Any(u.action, A_NONE, A_ATTACK, A_BLOCK, A_BASH) && GKey.KeyPressedReleaseAllowed(GK_ACTION) && pc->CanUseAction()
-			&& !QM.quest_tutorial->in_tutorial)
+		if(u.frozen == FROZEN::NO && Any(u.action, A_NONE, A_ATTACK, A_BLOCK, A_BASH) && shortcut.type == Shortcut::TYPE_SPECIAL
+			&& shortcut.value == Shortcut::SPECIAL_ACTION && pc->CanUseAction() && !QM.quest_tutorial->in_tutorial)
 		{
 			pc_data.action_ready = true;
 			pc_data.action_ok = false;
@@ -3506,7 +3566,6 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	u->player = nullptr;
 	u->ai = nullptr;
 	u->speed = u->prev_speed = 0.f;
-	u->invisible = false;
 	u->hurt_timer = 0.f;
 	u->talking = false;
 	u->usable = nullptr;
@@ -4206,25 +4265,44 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 					{
 						switch(pc->next_action)
 						{
-							// unequip item
+						// unequip item
 						case NA_REMOVE:
 							if(u.slots[pc->next_action_data.slot])
 								gui->inventory->inv_mine->RemoveSlotItem(pc->next_action_data.slot);
 							break;
-							// equip item after unequiping old one
+						// equip item after unequiping old one
 						case NA_EQUIP:
+						case NA_EQUIP_DRAW:
 							{
 								int index = pc->GetNextActionItemIndex();
 								if(index != -1)
+								{
 									gui->inventory->inv_mine->EquipSlotItem(index);
+									if(pc->next_action == NA_EQUIP_DRAW)
+									{
+										switch(pc->next_action_data.item->type)
+										{
+										case IT_WEAPON:
+											pc->unit->TakeWeapon(W_ONE_HANDED);
+											break;
+										case IT_SHIELD:
+											if(pc->unit->HaveWeapon())
+												pc->unit->TakeWeapon(W_ONE_HANDED);
+											break;
+										case IT_BOW:
+											pc->unit->TakeWeapon(W_BOW);
+											break;
+										}
+									}
+								}
 							}
 							break;
-							// drop item after hiding it
+						// drop item after hiding it
 						case NA_DROP:
 							if(u.slots[pc->next_action_data.slot])
 								gui->inventory->inv_mine->DropSlotItem(pc->next_action_data.slot);
 							break;
-							// use consumable
+						// use consumable
 						case NA_CONSUME:
 							{
 								int index = pc->GetNextActionItemIndex();
@@ -4232,22 +4310,22 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 									gui->inventory->inv_mine->ConsumeItem(index);
 							}
 							break;
-							//  use usable
+						//  use usable
 						case NA_USE:
 							if(!pc->next_action_data.usable->user)
 								PlayerUseUsable(pc->next_action_data.usable, true);
 							break;
-							// sell equipped item
+						// sell equipped item
 						case NA_SELL:
 							if(u.slots[pc->next_action_data.slot])
 								gui->inventory->inv_trade_mine->SellSlotItem(pc->next_action_data.slot);
 							break;
-							// put equipped item in container
+						// put equipped item in container
 						case NA_PUT:
 							if(u.slots[pc->next_action_data.slot])
 								gui->inventory->inv_trade_mine->PutSlotItem(pc->next_action_data.slot);
 							break;
-							// give equipped item
+						// give equipped item
 						case NA_GIVE:
 							if(u.slots[pc->next_action_data.slot])
 								gui->inventory->inv_trade_mine->GiveSlotItem(pc->next_action_data.slot);
@@ -7521,6 +7599,7 @@ void Game::ClearGame()
 	QM.Clear();
 	W.Reset();
 	gui->Clear(true, false);
+	pc = nullptr;
 }
 
 SOUND Game::GetItemSound(const Item* item)
@@ -7878,6 +7957,9 @@ void Game::LeaveLevel(LevelContext& ctx, bool clear)
 				continue;
 
 			Unit& unit = **it;
+
+			if(unit.IsLocal() && !clear)
+				unit.player = nullptr; // don't delete game.pc
 
 			if(unit.cobj)
 				delete unit.cobj->getCollisionShape();
@@ -8832,9 +8914,9 @@ void Game::GenerateQuestUnits()
 
 	if(QM.quest_mine->days >= QM.quest_mine->days_required &&
 		((QM.quest_mine->mine_state2 == Quest_Mine::State2::InBuild && QM.quest_mine->mine_state == Quest_Mine::State::Shares) || // inform player about building mine & give gold
-			QM.quest_mine->mine_state2 == Quest_Mine::State2::Built || // inform player about possible investment
-			QM.quest_mine->mine_state2 == Quest_Mine::State2::InExpand || // inform player about finished mine expanding
-			QM.quest_mine->mine_state2 == Quest_Mine::State2::Expanded)) // inform player about finding portal
+		QM.quest_mine->mine_state2 == Quest_Mine::State2::Built || // inform player about possible investment
+		QM.quest_mine->mine_state2 == Quest_Mine::State2::InExpand || // inform player about finished mine expanding
+		QM.quest_mine->mine_state2 == Quest_Mine::State2::Expanded)) // inform player about finding portal
 	{
 		Unit* u = L.SpawnUnitNearLocation(L.GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("poslaniec_kopalnia"), &Team.leader->pos, -2, 2.f);
 		if(u)

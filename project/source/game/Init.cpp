@@ -519,7 +519,6 @@ void Game::AddLoadTasks()
 
 	// gui textures
 	res_mgr.AddTaskCategory(txLoadGuiTextures);
-	tex_mgr.AddLoadTask("emerytura.jpg", tEmerytura);
 	tex_mgr.AddLoadTask("equipped.png", tEquipped);
 	tex_mgr.AddLoadTask("czern.bmp", tCzern);
 	tex_mgr.AddLoadTask("rip.jpg", tRip);

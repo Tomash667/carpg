@@ -191,20 +191,17 @@ void TooltipController::FormatBox()
 		h += text_size.y;
 		r_small_text.Bottom() = h;
 
-		if(!small_text.empty())
+		int img_bot = img_size.y + 24;
+		if(r_small_text.Top() < img_bot)
 		{
-			int img_bot = img_size.y + 24;
-			if(r_small_text.Top() < img_bot)
-			{
-				int dif = r_small_text.SizeY();
-				r_small_text.Top() = img_bot;
-				r_small_text.Bottom() = img_bot + dif;
-				h = r_small_text.Bottom();
-			}
+			int dif = r_small_text.SizeY();
+			r_small_text.Top() = img_bot;
+			r_small_text.Bottom() = img_bot + dif;
+			h = r_small_text.Bottom();
 		}
 	}
-	else if(img)
-		h += max(0, img_size.y - text_size.y);
+	else if(img && h < img_size.y + 12)
+		h = img_size.y + 12;
 
 	w += 24;
 	h += 12;
