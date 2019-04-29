@@ -933,6 +933,6 @@ void Render::SetTarget(RenderTarget* target)
 //=================================================================================================
 void Render::SetTextureAddressMode(TextureAddressMode mode)
 {
-	V(device->SetSamplerState(0, D3DSAMP_ADDRESSU, (D3DTEXTUREADDRESS)D3DTADDRESS_WRAP));
-	V(device->SetSamplerState(0, D3DSAMP_ADDRESSV, (D3DTEXTUREADDRESS)D3DTADDRESS_WRAP));
+	V(device->SetSamplerState(0, D3DSAMP_ADDRESSU, (D3DTEXTUREADDRESS)mode));
+	V(device->SetSamplerState(0, D3DSAMP_ADDRESSV, (D3DTEXTUREADDRESS)mode));
 }

@@ -13,6 +13,7 @@ Wersja 0.10 (2019-??-??):
 + konfigurowalne skróty na przedmioty/akcje
 + lepsze ustalanie priorytetów przez bohaterów kupuj¹cych/prosz¹cych o przedmioty
 + aktualizacja bibliotek: FMod 1.10.12, JSON for Modern C++ 3.6.1
+- naprawiony rzadki crash przy wchodzeniu do niektórych podziemi
 - naprawiony nieskoñczony czas oczekiwania przy u¿yciu opcji -delay
 - naprawione b³êdne dzia³anie bocznego menu
 
