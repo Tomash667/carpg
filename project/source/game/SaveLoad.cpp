@@ -111,7 +111,7 @@ bool Game::SaveGameSlot(int slot, cstring text)
 		return false;
 	}
 
-	cstring filename = Format(Net::IsOnline() ? "saves/multi/%d.sav" : "saves/single/%d.sav", slot);
+	LocalString filename = Format(Net::IsOnline() ? "saves/multi/%d.sav" : "saves/single/%d.sav", slot);
 	return SaveGameCommon(filename, slot, text);
 }
 

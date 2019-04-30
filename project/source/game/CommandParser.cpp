@@ -2542,6 +2542,8 @@ void CommandParser::ListStats(Unit* u)
 	int hp = int(u->hp);
 	if(hp == 0 && u->hp > 0)
 		hp = 1;
+	if(u->IsPlayer())
+		u->player->RecalculateLevel();
 	Msg("--- %s (%s) level %d ---", u->GetName(), u->data->id.c_str(), u->level);
 	if(u->data->stat_profile && !u->data->stat_profile->subprofiles.empty() && !u->IsPlayer())
 	{
