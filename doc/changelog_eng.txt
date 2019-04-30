@@ -13,11 +13,13 @@ Version 0.10 (2019-??-??):
 + better priorities for heroes buying/asking for items
 + configureable item/action shortcuts
 + update libraries: FMod 1.10.12, JSON for Modern C++ 3.6.1
-- fixed crash when accepting some quests that generate new locations
-- fixed rare crash when entering some dungeons
+- fixed crash when accepting some quests that generate new locations [Anonymous]
+- fixed rare crash when entering some dungeons 
 - fixed infinite wait time when using -delay switch
 - fixed broken side menu
 - fixed save sometimes failing on world map
+- fixed crash when used clean_level command twice without closing console
+- fixed crash when using whisper command by client [Anonymous]
 
 --------------------------------------------------------------------------------
 Version 0.9 (2019-03-30):

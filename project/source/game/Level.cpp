@@ -4298,7 +4298,7 @@ void Level::CleanLevel(int building_id)
 			ctx.bloods->clear();
 			for(Unit* unit : *ctx.units)
 			{
-				if(!unit->IsAlive() && !unit->IsTeamMember())
+				if(!unit->IsAlive() && !unit->IsTeamMember() && !unit->to_remove)
 					RemoveUnit(unit, false);
 			}
 		}

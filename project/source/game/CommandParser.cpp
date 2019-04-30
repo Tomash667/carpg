@@ -1026,14 +1026,14 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 	case CMD_WHISPER:
 		if(t.Next())
 		{
-			const string& player_nick = t.MustGetItem();
+			const string& player_nick = t.MustGetText();
 			PlayerInfo* info = N.FindPlayer(player_nick);
 			if(!info)
 				Msg("No player with nick '%s'.", player_nick.c_str());
 			else if(t.NextLine())
 			{
 				const string& text = t.MustGetItem();
-				if(info->pc->IsLocal())
+				if(info->id == Team.my_id)
 					Msg("Whispers in your head: %s", text.c_str());
 				else
 				{
@@ -1100,7 +1100,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			Msg("You need to enter leader nick.");
 		else
 		{
-			const string& player_name = t.MustGetItem();
+			const string& player_name = t.MustGetText();
 			PlayerInfo* info = N.FindPlayer(player_name);
 			if(!info)
 				Msg("No player with nick '%s'.", player_name.c_str());
@@ -1235,7 +1235,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 	case CMD_PLAYER_DEVMODE:
 		if(t.Next())
 		{
-			string player_name = t.MustGetItem();
+			string player_name = t.MustGetText();
 			if(t.Next())
 			{
 				bool b = t.MustGetBool();

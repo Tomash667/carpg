@@ -5012,7 +5012,11 @@ void Unit::Die(LevelContext* ctx, Unit* killer)
 				}
 			}
 			else
-				Game::Get().arena->RewardExp(this);
+			{
+				Arena* arena = Game::Get().arena;
+				if(arena)
+					arena->RewardExp(this);
+			}
 		}
 	}
 	else

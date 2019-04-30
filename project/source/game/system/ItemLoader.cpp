@@ -1173,7 +1173,13 @@ void ItemLoader::CalculateCrc()
 		crc.Update(item->value);
 		crc.Update(item->flags);
 		crc.Update(item->type);
-		crc.Update(item->effects);
+		for(ItemEffect& effect : item->effects)
+		{
+			crc.Update(effect.effect);
+			crc.Update(effect.power);
+			crc.Update(effect.value);
+			crc.Update(effect.on_attack);
+		}
 
 		switch(item->type)
 		{

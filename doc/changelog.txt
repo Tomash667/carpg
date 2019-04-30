@@ -13,11 +13,13 @@ Wersja 0.10 (2019-??-??):
 + konfigurowalne skróty na przedmioty/akcje
 + lepsze ustalanie priorytetów przez bohaterów kupuj¹cych/prosz¹cych o przedmioty
 + aktualizacja bibliotek: FMod 1.10.12, JSON for Modern C++ 3.6.1
-- naprawiony crash przy akceptowaniu zadañ które generuj¹ now¹ lokalizacjê
+- naprawiony crash przy akceptowaniu zadañ które generuj¹ now¹ lokalizacjê [Anonymous]
 - naprawiony rzadki crash przy wchodzeniu do niektórych podziemi
 - naprawiony nieskoñczony czas oczekiwania przy u¿yciu opcji -delay
 - naprawione b³êdne dzia³anie bocznego menu
 - naprawiony rzadki b³¹d zapisu gry na mapie œwiata
+- naprawiony crash po podwójnym u¿yciu komendy clean_level bez zamykania konsoli
+- naprawiony crash po u¿yciu komendy whisper przez klienta [Anonymous]
 
 --------------------------------------------------------------------------------
 Wersja 0.9 (2019-03-30):
