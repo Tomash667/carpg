@@ -12,6 +12,7 @@ Wersja 0.10 (2019-??-??):
 + nowe przedmioty: Ÿródlana woda, pancerz ze skóry trolla, 9 magicznych amuletów
 + konfigurowalne skróty na przedmioty/akcje
 + lepsze ustalanie priorytetów przez bohaterów kupuj¹cych/prosz¹cych o przedmioty
++ poprawiona aktualizacja ekwipunku
 + aktualizacja bibliotek: FMod 1.10.12, JSON for Modern C++ 3.6.1
 - naprawiony crash przy akceptowaniu zadañ które generuj¹ now¹ lokalizacjê [Anonymous]
 - naprawiony rzadki crash przy wchodzeniu do niektórych podziemi
@@ -20,6 +21,7 @@ Wersja 0.10 (2019-??-??):
 - naprawiony rzadki b³¹d zapisu gry na mapie œwiata
 - naprawiony crash po podwójnym u¿yciu komendy clean_level bez zamykania konsoli
 - naprawiony crash po u¿yciu komendy whisper przez klienta [Anonymous]
+- naprawiony b³¹d w zadaniu "Bandyci pobieraj¹ op³atê" [Zielu]
 
 --------------------------------------------------------------------------------
 Wersja 0.9 (2019-03-30):

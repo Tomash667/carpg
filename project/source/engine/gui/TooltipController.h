@@ -18,6 +18,7 @@ public:
 
 	void Init(TooltipGetText get_text);
 	void Clear();
+	void Refresh() { FormatBox(); }
 	void UpdateTooltip(float dt, int group, int id);
 
 	string big_text, text, small_text;

@@ -1047,8 +1047,7 @@ uint Unit::RemoveEffects(EffectId effect, EffectSource source, int source_id, in
 void Unit::UpdateEffects(float dt)
 {
 	Game& game = Game::Get();
-	float regen = 0.f, temp_regen = 0.f, poison_dmg = 0.f, alco_sum = 0.f, best_stamina = 0.f, stamina_mod = 1.f;
-	int food_heal = 0;
+	float regen = 0.f, temp_regen = 0.f, poison_dmg = 0.f, alco_sum = 0.f, best_stamina = 0.f, stamina_mod = 1.f, food_heal = 0.f;
 
 	// update effects timer
 	uint index = 0;
@@ -1074,7 +1073,7 @@ void Unit::UpdateEffects(float dt)
 			alco_sum += it->power;
 			break;
 		case EffectId::FoodRegeneration:
-			++food_heal;
+			food_heal += it->power;
 			break;
 		case EffectId::StaminaRegeneration:
 			if(it->power > best_stamina)
@@ -1235,7 +1234,7 @@ void Unit::EndEffects(int days, float* o_natural_mod)
 			hp -= it->power * it->time;
 			break;
 		case EffectId::FoodRegeneration:
-			food += it->time;
+			food += it->power * it->time;
 			break;
 		case EffectId::NaturalHealingMod:
 			if(it->source == EffectSource::Temporary)

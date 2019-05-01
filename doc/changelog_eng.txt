@@ -12,6 +12,7 @@ Version 0.10 (2019-??-??):
 + new item: spring water, troll hide armor, 9 magic amulets
 + better priorities for heroes buying/asking for items
 + configureable item/action shortcuts
++ improved inventory updates
 + update libraries: FMod 1.10.12, JSON for Modern C++ 3.6.1
 - fixed crash when accepting some quests that generate new locations [Anonymous]
 - fixed rare crash when entering some dungeons 
@@ -20,6 +21,7 @@ Version 0.10 (2019-??-??):
 - fixed save sometimes failing on world map
 - fixed crash when used clean_level command twice without closing console
 - fixed crash when using whisper command by client [Anonymous]
+- fixed bugged quest "Bandits collect toll" [Zielu]
 
 --------------------------------------------------------------------------------
 Version 0.9 (2019-03-30):

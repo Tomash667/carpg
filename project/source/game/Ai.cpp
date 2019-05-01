@@ -469,9 +469,113 @@ void Game::UpdateAi(float dt)
 							u.OrderClear();
 					}
 
+					UnitOrder order = u.order;
+					if(u.assist)
+						order = ORDER_FOLLOW;
+					if(ai.goto_inn)
+						order = ORDER_GOTO_INN;
+
 					bool use_idle = true;
-					switch(u.order)
+					switch(order)
 					{
+					case ORDER_FOLLOW:
+						if(Team.leader->in_arena == -1 && u.busy != Unit::Busy_Tournament)
+						{
+							Unit* leader = Team.GetLeader();
+							dist = Vec3::Distance(u.pos, leader->pos);
+							if(dist >= (u.assist ? 4.f : 2.f))
+							{
+								// podπøaj za liderem
+								if(u.usable)
+								{
+									if(u.busy != Unit::Busy_Talking && (u.action != A_ANIMATION2 || u.animation_state != AS_ANIMATION2_MOVE_TO_ENDPOINT))
+									{
+										Unit_StopUsingUsable(ctx, u);
+										ai.idle_action = AIController::Idle_None;
+										ai.timer = Random(1.f, 2.f);
+										ai.city_wander = false;
+									}
+								}
+								else if(leader->in_building != u.in_building)
+								{
+									// lider jest w innym obszarze
+									ai.idle_action = AIController::Idle_RunRegion;
+									ai.timer = Random(15.f, 30.f);
+
+									if(u.in_building == -1)
+									{
+										// bohater nie jest w budynku, lider jest; idü do wejúcia
+										ai.idle_data.area.id = leader->in_building;
+										ai.idle_data.area.pos = L.city_ctx->inside_buildings[leader->in_building]->enter_area.Midpoint().XZ();
+									}
+									else
+									{
+										// bohater jest w budynku, lider na zewnπtrz lub w innym; opuúÊ budynek
+										ai.idle_data.area.id = -1;
+										ai.idle_data.area.pos = L.city_ctx->inside_buildings[u.in_building]->exit_area.Midpoint().XZ();
+									}
+
+									if(u.IsHero())
+										try_phase = true;
+								}
+								else
+								{
+									// idü do lidera
+									if(dist > 8.f)
+										look_at = LookAtWalk;
+									else
+									{
+										look_at = LookAtPoint;
+										look_pos = leader->pos;
+									}
+									move_type = MovePoint;
+									target_pos = leader->pos;
+									run_type = WalkIfNear2;
+									ai.idle_action = AIController::Idle_None;
+									ai.city_wander = false;
+									ai.timer = Random(2.f, 5.f);
+									path_unit_ignore = leader;
+									if(u.IsHero())
+										try_phase = true;
+								}
+								use_idle = false;
+							}
+							else
+							{
+								// odsuÒ siÍ øeby nie blokowaÊ
+								if(u.usable)
+								{
+									if(u.busy != Unit::Busy_Talking && (u.action != A_ANIMATION2 || u.animation_state != AS_ANIMATION2_MOVE_TO_ENDPOINT))
+									{
+										Unit_StopUsingUsable(ctx, u);
+										ai.idle_action = AIController::Idle_None;
+										ai.timer = Random(1.f, 2.f);
+										ai.city_wander = false;
+										use_idle = false;
+									}
+								}
+								else
+								{
+									for(Unit* unit : Team.members)
+									{
+										if(unit != &u && Vec3::Distance(unit->pos, u.pos) < 1.f)
+										{
+											look_at = LookAtPoint;
+											look_pos = unit->pos;
+											move_type = MoveAway;
+											target_pos = unit->pos;
+											run_type = Walk;
+											ai.idle_action = AIController::Idle_None;
+											ai.timer = Random(2.f, 5.f);
+											ai.city_wander = false;
+											use_idle = false;
+											break;
+										}
+									}
+								}
+							}
+						}
+						break;
 					case ORDER_LEAVE:
 						if(u.usable)
 						{
@@ -530,6 +634,58 @@ void Game::UpdateAi(float dt)
 								}
 							}
 							break;
+						}
+						break;
+					case ORDER_GOTO_INN:
+						if(!(u.IsHero() && tournament->IsGenerated()))
+						{
+							if(u.usable)
+							{
+								if(u.busy != Unit::Busy_Talking && (u.action != A_ANIMATION2 || u.animation_state != AS_ANIMATION2_MOVE_TO_ENDPOINT))
+								{
+									Unit_StopUsingUsable(ctx, u);
+									ai.idle_action = AIController::Idle_None;
+									ai.timer = Random(1.f, 2.f);
+									use_idle = false;
+								}
+							}
+							else
+							{
+								int inn_id;
+								InsideBuilding* inn = L.city_ctx->FindInn(inn_id);
+								if(u.in_building == -1)
+								{
+									// idü do karczmy
+									if(ai.timer <= 0.f)
+									{
+										ai.idle_action = AIController::Idle_MoveRegion;
+										ai.idle_data.area.pos = inn->enter_area.Midpoint().XZ();
+										ai.idle_data.area.id = inn_id;
+										ai.timer = Random(30.f, 40.f);
+										ai.city_wander = true;
+									}
+								}
+								else
+								{
+									if(u.in_building == inn_id)
+									{
+										// jest w karczmie, idü do losowego punktu w karczmie
+										ai.goto_inn = false;
+										ai.timer = Random(5.f, 7.5f);
+										ai.idle_action = AIController::Idle_Move;
+										ai.idle_data.pos = (Rand() % 5 == 0 ? inn->arena2.Midpoint() : inn->arena1.Midpoint()).XZ();
+									}
+									else
+									{
+										// jest w budynku nie karczmie, wyjdü na zewnπtrz
+										ai.timer = Random(15.f, 30.f);
+										ai.idle_action = AIController::Idle_MoveRegion;
+										ai.idle_data.area.pos = L.city_ctx->inside_buildings[u.in_building]->exit_area.Midpoint().XZ();
+										ai.idle_data.area.id = -1;
+									}
+								}
+								use_idle = false;
+							}
 						}
 						break;
 					}

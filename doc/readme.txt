@@ -290,7 +290,7 @@ Tomashu - Programowanie, modele, tekstury, pomys³y, fabu³a.
 Leinnan - Modele, tekstury, pomys³y, testowanie.
 MarkK - Modele i tekstury jedzenia oraz innych obiektów.
 Shdorsh - Poprawki w angielskim t³umaczeniu.
-Zielu - Niechêtne testowanie.
+Zielu - Testowanie.
 
 Podziêkowania za znalezione b³êdy:
 	darktorq

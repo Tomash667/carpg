@@ -3208,7 +3208,7 @@ cstring Level::GetCurrentLocationText()
 //=================================================================================================
 void Level::CheckIfLocationCleared()
 {
-	if(city_ctx || location->state == LS_HIDDEN)
+	if(city_ctx)
 		return;
 
 	Game& game = Game::Get();
@@ -3239,7 +3239,7 @@ void Level::CheckIfLocationCleared()
 		else
 			cleared = true;
 
-		if(cleared)
+		if(cleared && location->state != LS_HIDDEN)
 			location->state = LS_CLEARED;
 
 		bool prevent = false;

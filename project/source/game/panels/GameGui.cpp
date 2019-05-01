@@ -45,7 +45,8 @@ cstring order_str[ORDER_MAX] = {
 	"MOVE",
 	"LOOK_AT",
 	"ESCAPE_TO",
-	"ESCAPE_TO_UNIT"
+	"ESCAPE_TO_UNIT",
+	"GOTO_INN"
 };
 
 //-----------------------------------------------------------------------------

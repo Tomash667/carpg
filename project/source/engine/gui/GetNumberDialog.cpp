@@ -13,7 +13,7 @@ GetNumberDialog::GetNumberDialog(const DialogInfo& info) : DialogBox(info), scro
 }
 
 //=================================================================================================
-void GetNumberDialog::Draw(ControlDrawData* cdd/* =nullptr */)
+void GetNumberDialog::Draw(ControlDrawData*)
 {
 	GUI.DrawSpriteFull(tBackground, Color::Alpha(128));
 	GUI.DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
@@ -27,7 +27,7 @@ void GetNumberDialog::Draw(ControlDrawData* cdd/* =nullptr */)
 	textBox.Draw();
 	scrollbar.Draw();
 
-	Rect r2 = { global_pos.x + 16,global_pos.y + 124,global_pos.x + size.x - 16,global_pos.y + size.y };
+	Rect r2 = { global_pos.x + 16,global_pos.y + 120,global_pos.x + size.x - 16,global_pos.y + size.y };
 	GUI.DrawText(GUI.default_font, Format("%d", min_value), DTF_LEFT, Color::Black, r2);
 	GUI.DrawText(GUI.default_font, Format("%d", max_value), DTF_RIGHT, Color::Black, r2);
 }
@@ -70,7 +70,7 @@ void GetNumberDialog::Update(float dt)
 			else
 				num += scrollbar.change;
 			textBox.SetText(Format("%d", num));
-			scrollbar.offset = float(num - min_value) / max_value*(scrollbar.total - scrollbar.part);
+			scrollbar.offset = float(num - min_value) / (max_value - min_value) * (scrollbar.total - scrollbar.part);
 			changed = true;
 		}
 		else if(!Equal(scrollbar.offset, prev_offset))
@@ -98,7 +98,7 @@ void GetNumberDialog::Update(float dt)
 		{
 			int num = atoi(textBox.GetText().c_str());
 			if(!scrollbar.clicked)
-				scrollbar.offset = float(num - min_value) / max_value*(scrollbar.total - scrollbar.part);
+				scrollbar.offset = float(num - min_value) / (max_value - min_value) * (scrollbar.total - scrollbar.part);
 		}
 		if(textBox.GetText().empty())
 			bts[1].state = Button::DISABLED;
@@ -216,7 +216,7 @@ GetNumberDialog* GetNumberDialog::Show(Control* parent, DialogEvent event, cstri
 	self->scrollbar.global_pos = self->scrollbar.pos + self->global_pos;
 	self->scrollbar.offset = 0;
 	self->scrollbar.manual_change = true;
-	self->textBox.SetText(nullptr);
+	self->textBox.SetText(Format("%d", *value));
 
 	GUI.ShowDialog(self);
 
