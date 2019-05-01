@@ -1037,11 +1037,11 @@ void InventoryPanel::Update(float dt)
 					// komunikat
 					if(Net::IsOnline())
 					{
-						NetChange& c = Add1(Net::changes);
 						if(Net::IsServer())
 						{
 							if(IsVisible(slot_type))
 							{
+								NetChange& c = Add1(Net::changes);
 								c.type = NetChange::CHANGE_EQUIPMENT;
 								c.unit = unit;
 								c.id = slot_type;
@@ -1049,6 +1049,7 @@ void InventoryPanel::Update(float dt)
 						}
 						else
 						{
+							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::GET_ITEM;
 							c.id = i_index;
 							c.count = 1;
