@@ -151,7 +151,7 @@ bool Quest_KillAnimals::HandleLocationEvent(LocationEventHandler::Event event)
 //=================================================================================================
 bool Quest_KillAnimals::IfNeedTalk(cstring topic) const
 {
-	return (strcmp(topic, "animals") == 0 && prog == Progress::ClearedLocation);
+	return strcmp(topic, "animals") == 0 && prog == Progress::ClearedLocation && W.GetCurrentLocationIndex() == start_loc;
 }
 
 //=================================================================================================

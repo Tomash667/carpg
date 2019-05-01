@@ -3210,7 +3210,7 @@ int Unit::FindQuestItem(int quest_refid) const
 }
 
 //=================================================================================================
-bool Unit::FindQuestItem(cstring id, Quest** out_quest, int* i_index, bool not_active)
+bool Unit::FindQuestItem(cstring id, Quest** out_quest, int* i_index, bool not_active, int required_refid)
 {
 	assert(id);
 
@@ -3219,7 +3219,7 @@ bool Unit::FindQuestItem(cstring id, Quest** out_quest, int* i_index, bool not_a
 		// szukaj w za³o¿onych przedmiotach
 		for(int i = 0; i < SLOT_MAX; ++i)
 		{
-			if(slots[i] && slots[i]->IsQuest())
+			if(slots[i] && slots[i]->IsQuest() && (required_refid == -1 || required_refid == slots[i]->refid))
 			{
 				Quest* quest = QM.FindQuest(slots[i]->refid, !not_active);
 				if(quest && (not_active || quest->IsActive()) && quest->IfHaveQuestItem2(id))
@@ -3237,7 +3237,7 @@ bool Unit::FindQuestItem(cstring id, Quest** out_quest, int* i_index, bool not_a
 		int index = 0;
 		for(vector<ItemSlot>::iterator it2 = items.begin(), end2 = items.end(); it2 != end2; ++it2, ++index)
 		{
-			if(it2->item && it2->item->IsQuest())
+			if(it2->item && it2->item->IsQuest() && (required_refid == -1 || required_refid == it2->item->refid))
 			{
 				Quest* quest = QM.FindQuest(it2->item->refid, !not_active);
 				if(quest && (not_active || quest->IsActive()) && quest->IfHaveQuestItem2(id))

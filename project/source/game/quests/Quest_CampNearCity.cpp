@@ -223,7 +223,7 @@ bool Quest_CampNearCity::HandleLocationEvent(LocationEventHandler::Event event)
 //=================================================================================================
 bool Quest_CampNearCity::IfNeedTalk(cstring topic) const
 {
-	return (strcmp(topic, "camp") == 0 && prog == Progress::ClearedLocation);
+	return strcmp(topic, "camp") == 0 && prog == Progress::ClearedLocation && W.GetCurrentLocationIndex() == start_loc;
 }
 
 //=================================================================================================

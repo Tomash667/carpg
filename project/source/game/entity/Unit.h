@@ -551,7 +551,7 @@ public:
 	int FindItem(const Item* item, int quest_refid = -1) const;
 	int FindItem(delegate<bool(const ItemSlot& slot)> callback) const;
 	int FindQuestItem(int quest_refid) const;
-	bool FindQuestItem(cstring id, Quest** quest, int* i_index, bool not_active = false);
+	bool FindQuestItem(cstring id, Quest** quest, int* i_index, bool not_active = false, int required_refid = -1);
 	void RemoveItem(int iindex, bool active_location = true);
 	uint RemoveItem(int i_index, uint count);
 	uint RemoveItem(const Item* item, uint count);

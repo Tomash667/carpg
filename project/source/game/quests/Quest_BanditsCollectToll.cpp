@@ -150,7 +150,7 @@ bool Quest_BanditsCollectToll::HandleLocationEvent(LocationEventHandler::Event e
 //=================================================================================================
 bool Quest_BanditsCollectToll::IfNeedTalk(cstring topic) const
 {
-	return (strcmp(topic, "road_bandits") == 0 && prog == Progress::KilledBandits);
+	return strcmp(topic, "road_bandits") == 0 && prog == Progress::KilledBandits && W.GetCurrentLocationIndex() == start_loc;
 }
 
 //=================================================================================================

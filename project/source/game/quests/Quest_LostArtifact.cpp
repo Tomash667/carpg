@@ -68,36 +68,36 @@ void Quest_LostArtifact::SetProgress(int prog2)
 			tl.SetKnown();
 			st = tl.st;
 
-			cstring poziom;
+			cstring level;
 			switch(at_level)
 			{
 			case 0:
-				poziom = game->txQuest[107];
+				level = game->txQuest[107];
 				break;
 			case 1:
-				poziom = game->txQuest[108];
+				level = game->txQuest[108];
 				break;
 			case 2:
-				poziom = game->txQuest[109];
+				level = game->txQuest[109];
 				break;
 			case 3:
-				poziom = game->txQuest[110];
+				level = game->txQuest[110];
 				break;
 			case 4:
-				poziom = game->txQuest[111];
+				level = game->txQuest[111];
 				break;
 			case 5:
-				poziom = game->txQuest[112];
+				level = game->txQuest[112];
 				break;
 			default:
-				poziom = game->txQuest[113];
+				level = game->txQuest[113];
 				break;
 			}
 
 			DialogContext::current->talker->temporary = false;
 
 			msgs.push_back(Format(game->txQuest[82], sl.name.c_str(), W.GetDate()));
-			msgs.push_back(Format(game->txQuest[114], item->name.c_str(), poziom, tl.name.c_str(), GetLocationDirName(sl.pos, tl.pos)));
+			msgs.push_back(Format(game->txQuest[114], item->name.c_str(), level, tl.name.c_str(), GetLocationDirName(sl.pos, tl.pos)));
 		}
 		break;
 	case Progress::Finished:

@@ -178,7 +178,7 @@ bool Quest_Wanted::IfHaveQuestItem() const
 //=================================================================================================
 bool Quest_Wanted::IfNeedTalk(cstring topic) const
 {
-	return prog == Progress::Killed && strcmp(topic, "wanted") == 0;
+	return prog == Progress::Killed && strcmp(topic, "wanted") == 0 && W.GetCurrentLocationIndex() == start_loc;
 }
 
 //=================================================================================================
