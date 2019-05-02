@@ -17,7 +17,7 @@ string g_system_dir, g_ctime;
 bool ShowPickLanguageDialog(string& lang);
 
 //=================================================================================================
-// Parsuje linie komend z WinMain do main
+// WinMain -> main command line parser
 //=================================================================================================
 int ParseCmdLine(char* lpCmd, char*** out)
 {
@@ -33,7 +33,7 @@ int ParseCmdLine(char* lpCmd, char*** out)
 		{
 			if(*str == '"')
 			{
-				// znajdŸ zamykaj¹cy cudzys³ów
+				// find enclosing quotemark
 				++str;
 				while(*str && *str != '"')
 					++str;
@@ -49,7 +49,7 @@ int ParseCmdLine(char* lpCmd, char*** out)
 		}
 	}
 
-	// rozdziel argumenty
+	// separate arguments
 	char** argv = new char*[argc];
 	char** cargv = argv;
 	str = lpCmd;
@@ -86,7 +86,7 @@ int ParseCmdLine(char* lpCmd, char*** out)
 		}
 	}
 
-	// ustaw
+	// set
 	*out = argv;
 	return argc;
 }
@@ -403,7 +403,7 @@ void GetCompileTime()
 }
 
 //=================================================================================================
-// G³ówna funkcja programu
+// Program main function
 //=================================================================================================
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
@@ -417,17 +417,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	GetCompileTime();
 
-	// logger (w tym przypadku prelogger bo jeszcze nie wiemy gdzie to zapisywaæ)
+	// logger (prelogger in this case, because we do not know where to save it yet)
 	PreLogger plog;
 	Logger::global = &plog;
 
-	// stwórz foldery na zapisy
+	// create Save folders
 	CreateDirectory("saves", nullptr);
 	CreateDirectory("saves/single", nullptr);
 	CreateDirectory("saves/multi", nullptr);
 
 	//-------------------------------------------------------------------------
-	// pocz¹tek
+	// beginning
 	time_t t = time(0);
 	tm t2;
 	localtime_s(&t2, &t);
@@ -456,7 +456,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	string log_filename;
 
 	//-------------------------------------------------------------------------
-	// parsuj linie komend
+	// parse command lines
 	int cmd_len = strlen(lpCmdLine) + 1;
 	char* cmd_line = new char[cmd_len];
 	memcpy(cmd_line, lpCmdLine, cmd_len);
@@ -566,7 +566,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	LoadSystemDir();
 
 	//-------------------------------------------------------------------------
-	// wczytaj plik konfiguracyjny
+	// load configuration file
 	Info("Loading config file");
 	Config::Result result = cfg.Load(game.cfg_file.c_str());
 	if(result == Config::NO_FILE)
@@ -586,20 +586,20 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			utility::WaitForDelayLock(delay);
 	}
 
-	// konsola
+	// console
 	if(console == None)
 		console = cfg.GetBool3("console", False);
 	if(console == True)
 	{
 		game.have_console = true;
 
-		// konsola
+		// console
 		AllocConsole();
 		freopen("CONIN$", "r", stdin);
 		freopen("CONOUT$", "w", stdout);
 		freopen("CONOUT$", "w", stderr);
 
-		// polskie znaki w konsoli, tymczasowe rozwi¹zanie
+		// console polish signs (temporary solution)
 		SetConsoleCP(1250);
 		SetConsoleOutputCP(1250);
 	}
@@ -607,7 +607,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	setlocale(LC_COLLATE, "");
 	setlocale(LC_CTYPE, "");
 
-	// tryb okienkowy
+	// windowed mode
 	if(windowed == None)
 	{
 		Bool3 b = cfg.GetBool3("fullscreen", True);
@@ -618,7 +618,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	}
 	options.fullscreen = (windowed == False);
 
-	// rozdzielczoœæ
+	// resolution
 	const string& res = cfg.GetString("resolution", "0x0");
 	if(sscanf_s(res.c_str(), "%dx%d", &options.size.x, &options.size.y) != 2)
 	{
@@ -636,16 +636,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	options.used_adapter = cfg.GetInt("adapter", 0);
 	Info("Settings: Adapter %d.", options.used_adapter);
 
-	// logowanie
+	// logging
 	log_to_file = (cfg.GetBool3("log", True) == True);
 
-	// plik logowania
+	// logging file
 	if(log_to_file)
 		log_filename = cfg.GetString("log_filename", "log.txt");
 
 	game.hardcore_option = ToBool(cfg.GetBool3("hardcore_mode", False));
 
-	// nie zatrzymywanie gry w razie braku aktywnoœci okna
+	// game not stopping in case of no window activity
 	if(cfg.GetBool3("inactive_update", False) == True)
 		game.inactive_update = true;
 
@@ -663,11 +663,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	options.sound_volume = Clamp(cfg.GetInt("sound_volume", 100), 0, 100);
 	options.music_volume = Clamp(cfg.GetInt("music_volume", 50), 0, 100);
 
-	// ustawienia myszki
+	// mouse settings
 	game.settings.mouse_sensitivity = Clamp(cfg.GetInt("mouse_sensitivity", 50), 0, 100);
 	game.settings.mouse_sensitivity_f = Lerp(0.5f, 1.5f, float(game.settings.mouse_sensitivity) / 100);
 
-	// tryb multiplayer
+	// multiplayer mode
 	game.player_name = cfg.GetString("nick", "");
 #define LIMIT(x) if(x.length() > 16) x = x.substr(0,16)
 	LIMIT(game.player_name);
@@ -681,7 +681,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	N.server_lan = cfg.GetBool("server_lan");
 	N.join_lan = cfg.GetBool("join_lan");
 
-	// szybki start
+	// quickstart
 	if(game.quickstart == QUICKSTART_NONE)
 	{
 		const string& mode = cfg.GetString("quickstart", "");
@@ -728,7 +728,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	game.change_title_a = ToBool(cfg.GetBool3("change_title", False));
 
-	// pozycja rozmiar okien
+	// windows position and size
 	int con_pos_x = cfg.GetInt("con_pos_x"),
 		con_pos_y = cfg.GetInt("con_pos_y");
 
@@ -755,7 +755,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	options.multisampling = cfg.GetInt("multisampling", 0);
 	options.multisampling_quality = cfg.GetInt("multisampling_quality", 0);
 
-	// inne
+	// miscellaneous
 	game.cl_postfx = cfg.GetBool("cl_postfx", true);
 	game.cl_normalmap = cfg.GetBool("cl_normalmap", true);
 	game.cl_specularmap = cfg.GetBool("cl_specularmap", true);
@@ -829,7 +829,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	ErrorHandler::Get().RegisterHandler(cfg, log_filename);
 
 	//-------------------------------------------------------------------------
-	// skrypty instalacyjne
+	// instalation scripts
 	if(!RunInstallScripts())
 	{
 		MessageBox(nullptr, "Failed to run installation scripts. Check log for details.", nullptr, MB_OK | MB_ICONERROR | MB_TASKMODAL);
@@ -837,7 +837,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	}
 
 	//-------------------------------------------------------------------------
-	// jêzyk
+	// language
 	Language::Init();
 	Language::LoadLanguages();
 	const string& lang = cfg.GetString("language", "");
@@ -862,7 +862,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		Language::prefix = lang;
 
 	//-------------------------------------------------------------------------
-	// pseudolosowoœæ
+	// pseudorandomness
 	uint cfg_seed = cfg.GetUint("seed"), seed;
 	if(cfg_seed == 0)
 		seed = (uint)time(nullptr);
@@ -876,20 +876,20 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	Info("random seed: %u/%u/%d", seed, game.next_seed, (game.force_seed_all ? 1 : 0));
 	Srand(seed);
 
-	// inne
+	// miscellaneous
 	game.check_updates = ToBool(cfg.GetBool3("check_updates", True));
 	game.skip_tutorial = ToBool(cfg.GetBool3("skip_tutorial", False));
 
-	// zapisz konfiguracjê
+	// save configuration
 	game.SaveCfg();
 
 	//-------------------------------------------------------------------------
-	// rozpocznij grê
+	// start game
 	Info("Starting game engine.");
 	bool b = game.Start0(options);
 
 	//-------------------------------------------------------------------------
-	// sprz¹tanie
+	// cleanup
 	Language::Cleanup();
 	delete[] cmd_line;
 	delete[] argv;
