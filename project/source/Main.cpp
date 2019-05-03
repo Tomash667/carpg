@@ -17,7 +17,7 @@ string g_system_dir, g_ctime;
 bool ShowPickLanguageDialog(string& lang);
 
 //=================================================================================================
-// Parsuje linie komend z WinMain do main
+// Parse command line (WinMain -> main)
 //=================================================================================================
 int ParseCmdLine(char* lpCmd, char*** out)
 {
