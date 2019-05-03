@@ -49,7 +49,7 @@ int ParseCmdLine(char* lpCmd, char*** out)
 		}
 	}
 
-	// rozdziel argumenty
+	// divide arguments
 	char** argv = new char*[argc];
 	char** cargv = argv;
 	str = lpCmd;
