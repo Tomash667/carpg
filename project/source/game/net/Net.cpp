@@ -1031,13 +1031,13 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 			}
 			break;
 		// player wants to loot chest
-		case NetChange::LOOT_CHEST:
+		case NetChange::USE_CHEST:
 			{
 				int netid;
 				f >> netid;
 				if(!f)
 				{
-					Error("Update server: Broken LOOT_CHEST from %s.", info.name.c_str());
+					Error("Update server: Broken USE_CHEST from %s.", info.name.c_str());
 					break;
 				}
 
@@ -1047,13 +1047,13 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				Chest* chest = L.FindChest(netid);
 				if(!chest)
 				{
-					Error("Update server: LOOT_CHEST from %s, missing chest %d.", info.name.c_str(), netid);
+					Error("Update server: USE_CHEST from %s, missing chest %d.", info.name.c_str(), netid);
 					break;
 				}
 
 				NetChangePlayer& c = Add1(info.changes);
 				c.type = NetChangePlayer::LOOT;
-				if(chest->user)
+				if(chest->GetUser())
 				{
 					// someone else is already looting this chest
 					c.id = 0;
@@ -1062,23 +1062,10 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				{
 					// start looting chest
 					c.id = 1;
-					chest->user = player.unit;
 					player.action = PlayerController::Action_LootChest;
 					player.action_chest = chest;
 					player.chest_trade = &chest->items;
-
-					// send info about opening chest
-					NetChange& c2 = Add1(Net::changes);
-					c2.type = NetChange::CHEST_OPEN;
-					c2.id = chest->netid;
-
-					// animation / sound
-					chest->mesh_inst->Play(&chest->mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END, 0);
-					sound_mgr->PlaySound3d(sChestOpen, chest->GetCenter(), Chest::SOUND_DIST);
-
-					// event handler
-					if(chest->handler)
-						chest->handler->HandleChestEvent(ChestEventHandler::Opened, chest);
+					chest->OpenClose(player.unit);
 				}
 			}
 			break;
@@ -1468,14 +1455,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 			}
 
 			if(player.action == PlayerController::Action_LootChest)
-			{
-				player.action_chest->user = nullptr;
-				player.action_chest->mesh_inst->Play(&player.action_chest->mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
-				sound_mgr->PlaySound3d(sChestClose, player.action_chest->GetCenter(), Chest::SOUND_DIST);
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::CHEST_CLOSE;
-				c.id = player.action_chest->netid;
-			}
+				player.action_chest->OpenClose(nullptr);
 			else if(player.action == PlayerController::Action_LootContainer)
 			{
 				unit.UseUsable(nullptr);
@@ -3347,9 +3327,6 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 		case NetChange::SPAWN_ITEM:
 			c.item->Write(f);
 			break;
-		case NetChange::REMOVE_ITEM:
-			f << c.id;
-			break;
 		case NetChange::CONSUME_ITEM:
 			{
 				const Item* item = (const Item*)c.id;
@@ -3414,13 +3391,12 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 		case NetChange::GAME_SAVED:
 		case NetChange::END_TRAVEL:
 			break;
-		case NetChange::CHEST_OPEN:
-		case NetChange::CHEST_CLOSE:
 		case NetChange::KICK_NPC:
 		case NetChange::REMOVE_UNIT:
 		case NetChange::REMOVE_TRAP:
 		case NetChange::TRIGGER_TRAP:
 		case NetChange::CLEAN_LEVEL:
+		case NetChange::REMOVE_ITEM:
 			f << c.id;
 			break;
 		case NetChange::TALK:
@@ -3627,6 +3603,10 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 		case NetChange::CHANGE_LOCATION_NAME:
 			f.WriteCasted<byte>(c.id);
 			f << W.GetLocation(c.id)->name;
+			break;
+		case NetChange::USE_CHEST:
+			f << c.id;
+			f << c.count;
 			break;
 		default:
 			Error("Update server: Unknown change %d.", c.type);
@@ -5572,46 +5552,6 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				}
 			}
 			break;
-		// chest opening animation
-		case NetChange::CHEST_OPEN:
-			{
-				int netid;
-				f >> netid;
-				if(!f)
-					Error("Update client: Broken CHEST_OPEN.");
-				else if(game_state == GS_LEVEL)
-				{
-					Chest* chest = L.FindChest(netid);
-					if(!chest)
-						Error("Update client: CHEST_OPEN, missing chest %d.", netid);
-					else
-					{
-						chest->mesh_inst->Play(&chest->mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END, 0);
-						sound_mgr->PlaySound3d(sChestOpen, chest->GetCenter(), Chest::SOUND_DIST);
-					}
-				}
-			}
-			break;
-		// chest closing animation
-		case NetChange::CHEST_CLOSE:
-			{
-				int netid;
-				f >> netid;
-				if(!f)
-					Error("Update client: Broken CHEST_CLOSE.");
-				else if(game_state == GS_LEVEL)
-				{
-					Chest* chest = L.FindChest(netid);
-					if(!chest)
-						Error("Update client: CHEST_CLOSE, missing chest %d.", netid);
-					else
-					{
-						chest->mesh_inst->Play(&chest->mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
-						sound_mgr->PlaySound3d(sChestClose, chest->GetCenter(), Chest::SOUND_DIST);
-					}
-				}
-			}
-			break;
 		// create explosion effect
 		case NetChange::CREATE_EXPLOSION:
 			{
@@ -6551,6 +6491,32 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					W.GetLocation(index)->SetName(name.c_str());
 			}
 			break;
+		// unit uses chest
+		case NetChange::USE_CHEST:
+			{
+				int chest_id, unit_id;
+				f >> chest_id;
+				f >> unit_id;
+				if(!f)
+				{
+					Error("Update client: Broken USE_CHEST.");
+					break;
+				}
+				Chest* chest = L.FindChest(chest_id);
+				if(!chest)
+					Error("Update client: USE_CHEST, missing chest %d.", chest_id);
+				else if(unit_id == -1)
+					chest->OpenClose(nullptr);
+				else
+				{
+					Unit* unit = L.FindUnit(unit_id);
+					if(!unit)
+						Error("Update client: USE_CHEST, missing unit %d.", unit_id);
+					else
+						chest->OpenClose(unit);
+				}
+			}
+			break;
 		// invalid change
 		default:
 			Warn("Update client: Unknown change type %d.", type);
@@ -6648,6 +6614,8 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 					if(game_state != GS_LEVEL)
 						break;
 
+					if(pc->unit->action == A_PREPARE)
+						pc->unit->action = A_NONE;
 					if(!can_loot)
 					{
 						gui->messages->AddGameMsg3(GMS_IS_LOOTED);
@@ -6668,10 +6636,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 					else if(pc->action == PlayerController::Action_LootContainer)
 						gui->inventory->StartTrade(I_LOOT_CONTAINER, pc->action_usable->container->items);
 					else
-					{
-						pc->action_chest->user = pc->unit;
 						gui->inventory->StartTrade(I_LOOT_CHEST, pc->action_chest->items);
-					}
 				}
 				break;
 			// start dialog with unit or is busy
@@ -7590,7 +7555,7 @@ void Game::WriteClientChanges(BitStreamWriter& f)
 		case NetChange::PICKUP_ITEM:
 		case NetChange::LOOT_UNIT:
 		case NetChange::TALK:
-		case NetChange::LOOT_CHEST:
+		case NetChange::USE_CHEST:
 		case NetChange::SKIP_DIALOG:
 		case NetChange::CHEAT_SKIP_DAYS:
 		case NetChange::PAY_CREDIT:

@@ -346,7 +346,7 @@ bool InsideLocation::RemoveQuestItemFromChest(int quest_refid, int& at_level)
 		return false;
 	else
 	{
-		if(!chest->user)
+		if(!chest->GetUser())
 			chest->RemoveItem(index);
 		return true;
 	}

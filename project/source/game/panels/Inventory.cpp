@@ -293,7 +293,6 @@ void Inventory::StartTrade2(InventoryMode mode, void* ptr)
 			Chest* chest = (Chest*)ptr;
 			pc->action = PlayerController::Action_LootChest;
 			pc->action_chest = chest;
-			pc->action_chest->user = pc->unit;
 			pc->chest_trade = &pc->action_chest->items;
 			inv_trade_mine->mode = InventoryPanel::LOOT_MY;
 			inv_trade_other->unit = nullptr;

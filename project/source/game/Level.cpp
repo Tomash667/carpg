@@ -658,8 +658,6 @@ ObjectEntity Level::SpawnObjectEntity(LevelContext& ctx, BaseObject* base, const
 		chest->mesh_inst = new MeshInstance(base->mesh);
 		chest->rot = rot;
 		chest->pos = pos;
-		chest->handler = nullptr;
-		chest->user = nullptr;
 		ctx.chests->push_back(chest);
 		if(Net::IsOnline())
 			chest->netid = Chest::netid_counter++;

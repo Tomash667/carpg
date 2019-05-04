@@ -13,6 +13,7 @@ Wersja 0.10 (2019-??-??):
 + konfigurowalne skróty na przedmioty/akcje
 + lepsze ustalanie priorytetów przez bohaterów kupuj¹cych/prosz¹cych o przedmioty
 + poprawiona aktualizacja ekwipunku
++ usprawinona obs³uga skrzyni w multiplayer
 + aktualizacja bibliotek: FMod 1.10.12, JSON for Modern C++ 3.6.1
 - naprawiony crash przy akceptowaniu zadañ które generuj¹ now¹ lokalizacjê [Anonymous]
 - naprawiony rzadki crash przy wchodzeniu do niektórych podziemi

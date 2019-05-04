@@ -2043,7 +2043,10 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 	if(ctx.chests && !ctx.chests->empty())
 	{
 		for(vector<Chest*>::iterator it = ctx.chests->begin(), end = ctx.chests->end(); it != end; ++it)
-			PlayerCheckObjectDistance(u, (*it)->pos, *it, best_dist, BP_CHEST);
+		{
+			if(!(*it)->GetUser())
+				PlayerCheckObjectDistance(u, (*it)->pos, *it, best_dist, BP_CHEST);
+		}
 	}
 
 	// doors in front of player
@@ -2159,41 +2162,20 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			}
 			else if(Net::IsLocal())
 			{
-				if(pc_data.before_player_ptr.chest->user)
-				{
-					// ktoœ ju¿ zajmuje siê t¹ skrzyni¹
-					gui->messages->AddGameMsg3(GMS_IS_LOOTED);
-				}
-				else
-				{
-					// rozpocznij ograbianie skrzyni
-					gui->inventory->StartTrade2(I_LOOT_CHEST, pc_data.before_player_ptr.chest);
-
-					// animacja / dŸwiêk
-					pc->action_chest->mesh_inst->Play(&pc->action_chest->mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END, 0);
-					sound_mgr->PlaySound3d(sChestOpen, pc->action_chest->GetCenter(), Chest::SOUND_DIST);
-
-					// event handler
-					if(pc_data.before_player_ptr.chest->handler)
-						pc_data.before_player_ptr.chest->handler->HandleChestEvent(ChestEventHandler::Opened, pc->action_chest);
-
-					if(Net::IsOnline())
-					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::CHEST_OPEN;
-						c.id = pc->action_chest->netid;
-					}
-				}
+				// rozpocznij ograbianie skrzyni
+				gui->inventory->StartTrade2(I_LOOT_CHEST, pc_data.before_player_ptr.chest);
+				pc_data.before_player_ptr.chest->OpenClose(pc->unit);
 			}
 			else
 			{
 				// wyœlij wiadomoœæ o pl¹drowaniu skrzyni
 				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::LOOT_CHEST;
+				c.type = NetChange::USE_CHEST;
 				c.id = pc_data.before_player_ptr.chest->netid;
 				pc->action = PlayerController::Action_LootChest;
 				pc->action_chest = pc_data.before_player_ptr.chest;
 				pc->chest_trade = &pc->action_chest->items;
+				pc->unit->action = A_PREPARE;
 			}
 		}
 		else if(pc_data.before_player == BP_DOOR)
@@ -8634,16 +8616,7 @@ void Game::DeleteUnit(Unit* unit)
 			switch(unit->player->action)
 			{
 			case PlayerController::Action_LootChest:
-				{
-					// close chest
-					unit->player->action_chest->user = nullptr;
-					unit->player->action_chest->mesh_inst->Play(&unit->player->action_chest->mesh_inst->mesh->anims[0],
-						PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
-					sound_mgr->PlaySound3d(sChestClose, unit->player->action_chest->GetCenter(), Chest::SOUND_DIST);
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::CHEST_CLOSE;
-					c.id = unit->player->action_chest->netid;
-				}
+				unit->player->action_chest->OpenClose(nullptr);
 				break;
 			case PlayerController::Action_LootUnit:
 				unit->player->action_unit->busy = Unit::Busy_No;
@@ -9373,11 +9346,7 @@ void Game::OnCloseInventory()
 			Net::PushChange(NetChange::STOP_TRADE);
 	}
 	else if(gui->inventory->mode == I_LOOT_CHEST && Net::IsLocal())
-	{
-		pc->action_chest->user = nullptr;
-		pc->action_chest->mesh_inst->Play(&pc->action_chest->mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
-		sound_mgr->PlaySound3d(sChestClose, pc->action_chest->GetCenter(), Chest::SOUND_DIST);
-	}
+		pc->action_chest->OpenClose(nullptr);
 	else if(gui->inventory->mode == I_LOOT_CONTAINER)
 	{
 		if(Net::IsLocal())
@@ -9402,12 +9371,6 @@ void Game::OnCloseInventory()
 			Net::PushChange(NetChange::STOP_TRADE);
 		else if(gui->inventory->mode == I_LOOT_BODY)
 			pc->action_unit->busy = Unit::Busy_No;
-		else
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::CHEST_CLOSE;
-			c.id = pc->action_chest->netid;
-		}
 	}
 
 	if(Any(pc->next_action, NA_PUT, NA_GIVE, NA_SELL))

@@ -2804,7 +2804,7 @@ void World::AbadonLocation(Location* loc)
 		// remove items from chests
 		for(Chest* chest : outside->chests)
 		{
-			if(!chest->user)
+			if(!chest->GetUser())
 				chest->items.clear();
 		}
 	}

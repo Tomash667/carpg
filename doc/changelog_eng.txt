@@ -13,6 +13,7 @@ Version 0.10 (2019-??-??):
 + better priorities for heroes buying/asking for items
 + configureable item/action shortcuts
 + improved inventory updates
++ improved chest handling in multiplayer
 + update libraries: FMod 1.10.12, JSON for Modern C++ 3.6.1
 - fixed crash when accepting some quests that generate new locations [Anonymous]
 - fixed rare crash when entering some dungeons 
