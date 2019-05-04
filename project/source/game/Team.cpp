@@ -1445,7 +1445,7 @@ void TeamSingleton::AddGold(int count, vector<Unit*>* units, bool show, bool is_
 		Unit& u = **it;
 		if(u.IsPlayer())
 		{
-			if(u.player->gold_get && u.player->is_local)
+			if(u.player->gold_get && !u.player->is_local)
 				u.player->player_info->UpdateGold();
 			if(show && (u.player->gold_get || is_quest))
 				global::gui->messages->AddFormattedMessage(u.player, msg, -1, u.player->gold_get);

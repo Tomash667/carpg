@@ -1130,7 +1130,7 @@ void InsideLocationGenerator::OnLoad()
 	BaseLocation& base = g_base_locations[inside->target];
 
 	game.SetDungeonParamsAndTextures(base);
-	L.RecreateObjects(false);
+	L.RecreateObjects(Net::IsClient());
 	L.SpawnDungeonColliders();
 	CreateMinimap();
 }

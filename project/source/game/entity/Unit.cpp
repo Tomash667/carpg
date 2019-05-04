@@ -2016,7 +2016,6 @@ void Unit::Load(GameReader& f, bool local)
 		event_handler = reinterpret_cast<UnitEventHandler*>(unit_event_handler_quest_refid);
 		Game::Get().load_unit_handler.push_back(this);
 	}
-	CalculateLoad();
 	if(can_sort && content.require_update)
 		SortItems(items);
 	f >> weight;
@@ -2371,6 +2370,8 @@ void Unit::Load(GameReader& f, bool local)
 		stamina_action = SA_RESTORE_MORE;
 		stamina_timer = 0;
 	}
+
+	CalculateLoad();
 }
 
 //=================================================================================================
@@ -2467,6 +2468,8 @@ void Unit::Write(BitStreamWriter& f)
 			b |= 0x01;
 		if(hero->team_member)
 			b |= 0x02;
+		if(hero->free)
+			b |= 0x04;
 		f << b;
 		f << hero->credit;
 	}
@@ -2501,6 +2504,12 @@ void Unit::Write(BitStreamWriter& f)
 		else
 			f.Write0();
 		f << (usable ? usable->netid : -1);
+	}
+	else
+	{
+		// player changing dungeon level keeps weapon state
+		f.WriteCasted<byte>(weapon_taken);
+		f.WriteCasted<byte>(weapon_state);
 	}
 }
 
@@ -2628,6 +2637,7 @@ bool Unit::Read(BitStreamReader& f)
 			return false;
 		hero->know_name = IS_SET(flags, 0x01);
 		hero->team_member = IS_SET(flags, 0x02);
+		hero->free = IS_SET(flags, 0x04);
 	}
 	else if(type == 2)
 	{
@@ -2759,6 +2769,12 @@ bool Unit::Read(BitStreamReader& f)
 			bow_instance->groups[0].speed = mesh_inst->groups[1].speed;
 			bow_instance->groups[0].time = mesh_inst->groups[1].time;
 		}
+	}
+	else
+	{
+		// player changing dungeon level keeps weapon state
+		f.ReadCasted<byte>(weapon_taken);
+		f.ReadCasted<byte>(weapon_state);
 	}
 
 	// physics

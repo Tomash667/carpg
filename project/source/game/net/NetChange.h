@@ -146,7 +146,7 @@ struct NetChange
 		CHEAT_NOAI, // player used cheat 'noai' or notification to players [bool(id)-state]
 		END_OF_GAME, // end of game, time run out []
 		REST, // player rest in inn [byte(id)-days]
-		TRAIN, // player trains [byte(id)-type (0-attribute, 1-skill, 2-tournament), byte(count)-stat type]
+		TRAIN, // player trains [byte(id)-type (0-attribute, 1-skill, 2-tournament, 3-perk), byte(count)-stat type]
 		UPDATE_FREE_DAYS, // update players free days [vector<size:byte, int-unit netid, int-days>]
 		CHANGE_MP_VARS, // multiplayer vars changed [auto: bool-mp_use_interp, float-mp_interp]
 		GAME_SAVED, // game saved notification []

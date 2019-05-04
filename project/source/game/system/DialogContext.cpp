@@ -1770,19 +1770,19 @@ bool DialogContext::LearnPerk(int perk)
 	pc->learning_points -= info.cost;
 	pc->unit->ModGold(-cost);
 	pc->unit->frozen = FROZEN::YES;
-	pc->AddPerk((Perk)perk, -1);
 	if(is_local)
 	{
 		game.fallback_type = FALLBACK::TRAIN;
 		game.fallback_t = -1.f;
 		game.fallback_1 = 3;
+		game.fallback_2 = perk;
 	}
 	else
 	{
 		NetChangePlayer& c = Add1(pc->player_info->changes);
 		c.type = NetChangePlayer::TRAIN;
 		c.id = 3;
-		c.count = 0;
+		c.count = perk;
 
 		pc->player_info->update_flags |= PlayerInfo::UF_LEARNING_POINTS;
 	}

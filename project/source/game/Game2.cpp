@@ -1128,22 +1128,24 @@ void Game::UpdateFallback(float dt)
 			switch(fallback_type)
 			{
 			case FALLBACK::TRAIN:
-				if(fallback_1 == 3)
+				if(Net::IsLocal())
 				{
-					// learning perk
-					gui->messages->AddGameMsg3(GMS_LEARNED_PERK);
-					if(Net::IsClient())
+					switch(fallback_1)
 					{
-						fallback_type = FALLBACK::CLIENT2;
-						fallback_t = 0.f;
-					}
-				}
-				else if(Net::IsLocal())
-				{
-					if(fallback_1 == 2)
+					case 0:
+						pc->Train(false, fallback_2);
+						break;
+					case 1:
+						pc->Train(true, fallback_2);
+						break;
+					case 2:
 						QM.quest_tournament->Train(*pc);
-					else
-						pc->Train(fallback_1 == 1, fallback_2);
+						break;
+					case 3:
+						pc->AddPerk((Perk)fallback_2, -1);
+						gui->messages->AddGameMsg3(GMS_LEARNED_PERK);
+						break;
+					}
 					pc->Rest(10, false);
 					if(Net::IsOnline())
 						pc->UseDays(10);

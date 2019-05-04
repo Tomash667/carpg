@@ -2592,17 +2592,31 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							if(stat_type >= (byte)AttributeId::MAX)
 								error = "attribute";
 						}
-						else
+						else if(type == 1)
 						{
 							if(stat_type >= (byte)SkillId::MAX)
 								error = "skill";
 						}
+						else
+						{
+							if(stat_type >= (byte)Perk::Max)
+								error = "perk";
+						}
+
 						if(error)
 						{
 							Error("Update server: TRAIN from %s, invalid %d %u.", info.name.c_str(), error, stat_type);
 							break;
 						}
-						player.Train(type == 1, stat_type);
+						if(type == 3)
+						{
+							player.AddPerk((Perk)stat_type, -1);
+							NetChangePlayer& c = Add1(info.changes);
+							c.type = NetChangePlayer::GAME_MESSAGE;
+							c.id = GMS_LEARNED_PERK;
+						}
+						else
+							player.Train(type == 1, stat_type);
 					}
 					player.Rest(10, false);
 					player.UseDays(10);
