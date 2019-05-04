@@ -25,6 +25,8 @@ Version 0.10 (2019-??-??):
 - fixed bugged quest "Bandits collect toll" [Zielu]
 - fixed possibility to complete quest when talking to different captain/traveler in some quests [Zielu]
 - fixed crash when server takes equipped ring from corpse in multiplayer [Zielu]
+- fixed one bookcase in townhall being not lootable
+- fixed leaving rescue captive inside city, can be talked again and act like it is start of quest
 
 --------------------------------------------------------------------------------
 Version 0.9 (2019-03-30):

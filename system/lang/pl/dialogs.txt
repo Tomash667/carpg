@@ -1801,6 +1801,7 @@ dialog q_rescue_captive_talk {
 	4 "Bêdê szed³ za tob¹."
 	5 "Nie"
 	6 "Jesteœ równie tchórzliwy jak ci stra¿nicy. Wynoszê siê st¹d, mo¿e mi siê uda!"
+	7 "Bez ³aski! Sam trafiê do karczmy."
 }
 
 //==============================================================================

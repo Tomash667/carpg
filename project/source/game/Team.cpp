@@ -102,6 +102,7 @@ void TeamSingleton::RemoveTeamMember(Unit* unit)
 
 	// set as not team member
 	unit->hero->team_member = false;
+	unit->order = ORDER_NONE;
 
 	// remove from team list
 	if(!unit->hero->free)

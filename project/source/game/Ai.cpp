@@ -537,8 +537,8 @@ void Game::UpdateAi(float dt)
 									path_unit_ignore = leader;
 									if(u.IsHero())
 										try_phase = true;
+									use_idle = false;
 								}
-								use_idle = false;
 							}
 							else
 							{
@@ -684,7 +684,6 @@ void Game::UpdateAi(float dt)
 										ai.idle_data.area.id = -1;
 									}
 								}
-								use_idle = false;
 							}
 						}
 						break;

@@ -151,7 +151,7 @@ public:
 	Int2 GetSpawnPoint();
 	Vec3 GetExitPos(Unit& u, bool force_border = false);
 	bool CanSee(Unit& unit, Unit& unit2);
-	bool CanSee(LevelContext& ctx, const Vec3& v1, const Vec3& v2, bool is_door = false);
+	bool CanSee(LevelContext& ctx, const Vec3& v1, const Vec3& v2, bool is_door = false, void* ignored = nullptr);
 	bool KillAll(int mode, Unit& unit, Unit* ignore);
 	void AddPlayerTeam(const Vec3& pos, float rot, bool reenter, bool hide_weapon);
 	void UpdateDungeonMinimap(bool in_level);

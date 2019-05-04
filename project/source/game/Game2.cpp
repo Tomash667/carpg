@@ -493,7 +493,7 @@ void Game::SetupCamera(float dt)
 	// objects
 	for(vector<CollisionObject>::iterator it = ctx.colliders->begin(), end = ctx.colliders->end(); it != end; ++it)
 	{
-		if(it->ptr != CAM_COLLIDER)
+		if(!it->cam_collider)
 			continue;
 
 		if(it->type == CollisionObject::SPHERE)
@@ -2872,7 +2872,7 @@ void Game::PlayerCheckObjectDistance(Unit& u, const Vec3& pos, void* ptr, float&
 				}
 			}
 			dist += angle;
-			if(dist < best_dist && L.CanSee(L.GetContext(u), u.pos, pos, type == BP_DOOR))
+			if(dist < best_dist && L.CanSee(L.GetContext(u), u.pos, pos, type == BP_DOOR, ptr))
 			{
 				best_dist = dist;
 				pc_data.before_player_ptr.any = ptr;

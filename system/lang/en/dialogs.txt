@@ -1798,6 +1798,7 @@ dialog q_rescue_captive_talk {
 	4 "I'll be following you."
 	5 "No"
 	6 "You're as cowardly as those guards. I'm out of here, maybe I can do!"
+	7 "Forget it! I'll find the way to inn by myself."
 }
 
 //==============================================================================

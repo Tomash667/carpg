@@ -796,7 +796,8 @@ void Level::SpawnObjectExtras(LevelContext& ctx, BaseObject* obj, const Vec3& po
 	if(obj->shape)
 	{
 		CollisionObject& c = Add1(ctx.colliders);
-		c.ptr = user_ptr;
+		c.owner = user_ptr;
+		c.cam_collider = IS_SET(obj->flags, OBJ_PHY_BLOCKS_CAM);
 
 		int group = CG_OBJECT;
 		if(IS_SET(obj->flags, OBJ_PHY_BLOCKS_CAM))
@@ -867,9 +868,6 @@ void Level::SpawnObjectExtras(LevelContext& ctx, BaseObject* obj, const Vec3& po
 			assert(user_ptr);
 			cobj->setUserPointer(user_ptr);
 		}
-
-		if(IS_SET(obj->flags, OBJ_PHY_BLOCKS_CAM))
-			c.ptr = CAM_COLLIDER;
 
 		if(IS_SET(obj->flags, OBJ_DOUBLE_PHYSICS))
 			SpawnObjectExtras(ctx, obj->next_obj, pos, rot, user_ptr, scale, flags);
@@ -1061,7 +1059,8 @@ void Level::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding
 				cobj.radius = pt.size.x;
 				cobj.pt.x = pos.x;
 				cobj.pt.y = pos.z;
-				cobj.ptr = (is_wall ? CAM_COLLIDER : nullptr);
+				cobj.owner = nullptr;
+				cobj.cam_collider = is_wall;
 
 				if(ctx.type == LevelContext::Outside)
 				{
@@ -1089,7 +1088,8 @@ void Level::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding
 				cobj.pt.y = pos.z;
 				cobj.w = pt.size.x;
 				cobj.h = pt.size.z;
-				cobj.ptr = (block_camera ? CAM_COLLIDER : nullptr);
+				cobj.owner = nullptr;
+				cobj.cam_collider = block_camera;
 
 				btBoxShape* shape;
 				if(token != "squarevp")
@@ -2177,12 +2177,12 @@ void Level::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _
 	{
 		for(vector<CollisionObject>::iterator it = ctx.colliders->begin(), end = ctx.colliders->end(); it != end; ++it)
 		{
-			if(it->ptr)
+			if(it->owner)
 			{
 				const void** objs = ignore->ignored_objects;
 				do
 				{
-					if(it->ptr == *objs)
+					if(it->owner == *objs)
 						goto ignoruj;
 					else if(!*objs)
 						break;
@@ -2384,12 +2384,12 @@ void Level::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _
 	{
 		for(vector<CollisionObject>::iterator it = ctx.colliders->begin(), end = ctx.colliders->end(); it != end; ++it)
 		{
-			if(it->ptr)
+			if(it->owner)
 			{
 				const void** objs = ignore->ignored_objects;
 				do
 				{
-					if(it->ptr == *objs)
+					if(it->owner == *objs)
 						goto ignoruj;
 					else if(!*objs)
 						break;
@@ -3628,7 +3628,7 @@ bool Level::CanSee(Unit& u1, Unit& u2)
 	{
 		for(vector<CollisionObject>::iterator it = ctx.colliders->begin(), end = ctx.colliders->end(); it != end; ++it)
 		{
-			if(it->ptr != CAM_COLLIDER || it->type != CollisionObject::RECTANGLE)
+			if(!it->cam_collider || it->type != CollisionObject::RECTANGLE)
 				continue;
 
 			Box2d box(it->pt.x - it->w, it->pt.y - it->h, it->pt.x + it->w, it->pt.y + it->h);
@@ -3667,7 +3667,7 @@ bool Level::CanSee(Unit& u1, Unit& u2)
 }
 
 //=================================================================================================
-bool Level::CanSee(LevelContext& ctx, const Vec3& v1, const Vec3& v2, bool is_door)
+bool Level::CanSee(LevelContext& ctx, const Vec3& v1, const Vec3& v2, bool is_door, void* ignore)
 {
 	Int2 tile1(int(v1.x / 2), int(v1.z / 2)),
 		tile2(int(v2.x / 2), int(v2.z / 2));
@@ -3741,7 +3741,7 @@ bool Level::CanSee(LevelContext& ctx, const Vec3& v1, const Vec3& v2, bool is_do
 	{
 		for(vector<CollisionObject>::iterator it = ctx.colliders->begin(), end = ctx.colliders->end(); it != end; ++it)
 		{
-			if(it->ptr != CAM_COLLIDER || it->type != CollisionObject::RECTANGLE)
+			if(!it->cam_collider || it->type != CollisionObject::RECTANGLE || (ignore && ignore == it->owner))
 				continue;
 
 			Box2d box(it->pt.x - it->w, it->pt.y - it->h, it->pt.x + it->w, it->pt.y + it->h);

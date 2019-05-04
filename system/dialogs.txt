@@ -3980,6 +3980,11 @@ dialog q_rescue_captive_end
 //==============================================================================
 dialog q_rescue_captive_talk
 {
+	if quest_progress 9
+	{
+		talk 7
+		end2
+	}
 	if quest_progress 2
 	{
 		talk 0
