@@ -115,7 +115,7 @@ void LogProcessorFeatures()
 	__cpuid(info, 0x80000000);
 	int nExIds = info[0];
 
-	// Detect Instruction Set
+	// detect Instruction Set
 	if(nIds >= 1)
 	{
 		__cpuid(info, 0x00000001);
@@ -599,7 +599,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		freopen("CONOUT$", "w", stdout);
 		freopen("CONOUT$", "w", stderr);
 
-		// console polish signs (temporary solution)
+		// console polish diacritics (temporary solution)
 		SetConsoleCP(1250);
 		SetConsoleOutputCP(1250);
 	}
@@ -681,7 +681,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	N.server_lan = cfg.GetBool("server_lan");
 	N.join_lan = cfg.GetBool("join_lan");
 
-	// quick start
+	// quickstart
 	if(game.quickstart == QUICKSTART_NONE)
 	{
 		const string& mode = cfg.GetString("quickstart", "");
@@ -704,7 +704,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	N.port = Clamp(cfg.GetInt("port", PORT), 0, 0xFFFF);
 
-	// autopicked class in quickstart
+	// quickstart class autopick
 	{
 		const string& clas = cfg.GetString("class", "");
 		if(!clas.empty())
@@ -889,7 +889,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	bool b = game.Start0(options);
 
 	//-------------------------------------------------------------------------
-	// Cleanup
+	// cleanup
 	Language::Cleanup();
 	delete[] cmd_line;
 	delete[] argv;
