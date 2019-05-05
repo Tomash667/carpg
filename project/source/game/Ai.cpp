@@ -60,21 +60,20 @@ cstring str_ai_idle[AIController::Idle_Max] = {
 
 enum MOVE_TYPE
 {
-	DontMove,				
-	not moving
+	DontMove,				// not moving
 	MoveAway,				// moving from the point
 	MovePoint,				// moving to the point
 	KeepDistance,			// keep 8-10 meter distance
 	KeepDistanceCheck,		// keep 8-10 distance AND check if enemy is possible to hit
-	RunAway					// running to the point
+	RunAway					// running away from the point
 };
 
 enum RUN_TYPE
 {
 	Walk,					// always walk
-	WalkIfNear,				// walk if target is nearby
+	WalkIfNear,				// walk if target is nearby (closer than 1.5 meter)
 	Run,					// always run
-	WalkIfNear2				// ???
+	WalkIfNear2				// walk if target is nearby (closer than 3m meter)
 };
 
 enum LOOK_AT
@@ -703,7 +702,7 @@ void Game::UpdateAi(float dt)
 						{
 							if(IS_SET(u.data->flags2, F2_XAR))
 							{
-								// search the altar
+								// search for altar
 								BaseObject* base_obj = BaseObject::Get("bloody_altar");
 								Object* obj = L.local_ctx.FindObject(base_obj);
 
@@ -1250,7 +1249,7 @@ void Game::UpdateAi(float dt)
 												if(ai2.state == AIController::Idle
 													&& OR3_EQ(ai2.idle_action, AIController::Idle_None, AIController::Idle_Rot, AIController::Idle_Look))
 												{
-													// look at the person in response to his
+													// look at the person in response to his looking
 													ai2.idle_action = AIController::Idle_Chat;
 													ai2.timer = ai.timer + Random(1.f);
 													ai2.idle_data.unit = &u;
@@ -1395,7 +1394,7 @@ void Game::UpdateAi(float dt)
 										}
 										else
 										{
-											// rotate towards user
+											// rotate towards usable object
 											look_at = LookAtPoint;
 											look_pos = use.pos;
 										}
@@ -1881,7 +1880,7 @@ void Game::UpdateAi(float dt)
 				break;
 
 			//===================================================================================================================
-			// go last known enemy position
+			// go to the last known enemy position
 			case AIController::SeenEnemy:
 				{
 					if(enemy)
@@ -1901,7 +1900,7 @@ void Game::UpdateAi(float dt)
 							ai.alert_target = nullptr;
 						else
 						{
-							// spotted by someone
+							// someone else spotted enemy
 							ai.target = ai.alert_target;
 							ai.target_last_pos = ai.alert_target_pos;
 							ai.state = AIController::Fighting;
@@ -2123,7 +2122,7 @@ void Game::UpdateAi(float dt)
 						}
 						else if(!ai.escape_room)
 						{
-							// escape location not known yet
+							// escape location not set yet
 							if(best_dist < 1.5f)
 							{
 								// better not to stay back to the enemy at this moment
@@ -2650,7 +2649,7 @@ void Game::UpdateAi(float dt)
 						Door& door = **it;
 						if(door.IsBlocking() && door.state == Door::Closed && door.locked == LOCK_NONE && Vec3::Distance(door.pos, u.pos) < 1.f)
 						{
-							// open magic doors :o
+							// doors get opened automatically when AI moves next to them
 							if(!L.location->outside)
 								L.minimap_opened_doors = true;
 							door.state = Door::Opening;
@@ -3013,7 +3012,7 @@ void Game::AI_Shout(LevelContext& ctx, AIController& ai)
 }
 
 //=================================================================================================
-// attack does not imply damage for nullptr target (dummy training)
+// when target is nullptr, it deals no damage (dummy training)
 void Game::AI_DoAttack(AIController& ai, Unit* target, bool running)
 {
 	Unit& u = *ai.unit;

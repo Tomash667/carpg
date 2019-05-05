@@ -492,7 +492,7 @@ public:
 	bool IsAnyoneTalking() const;
 	// this could be a global function
 	void PlayHitSound(MATERIAL_TYPE mat_weapon, MATERIAL_TYPE mat_body, const Vec3& hitpoint, float range, bool dmg);
-	// reading
+	// loading
 	void LoadingStart(int steps);
 	void LoadingStep(cstring text = nullptr, int end = 0);
 	void LoadResources(cstring text, bool worldmap);
@@ -591,7 +591,7 @@ public:
 	struct WarpData
 	{
 		Unit* u;
-		int where; // <-1 - from the building,  >=0 - towards the building
+		int where; // <-1 - get outside the building,  >=0 - get inside the building
 		float timer;
 	};
 	vector<WarpData> mp_warps;

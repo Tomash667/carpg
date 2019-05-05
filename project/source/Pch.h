@@ -18,7 +18,7 @@
 #pragma warning (disable: 4351)
 
 //-----------------------------------------------------------------------------
-// debug version service
+// debug version handling
 #ifndef _DEBUG
 #	define NDEBUG
 #	define _SECURE_SCL 0
