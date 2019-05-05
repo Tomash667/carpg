@@ -1,7 +1,7 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-// info o kompilacji PCH
+// PCH compilation info
 #ifdef PRECOMPILED_INFO
 #	pragma message("Compiling PCH...")
 #endif
@@ -14,11 +14,11 @@
 #define _WINSOCKAPI_
 
 //-----------------------------------------------------------------------------
-// warning o liœcie inicjalizacyjnej [struct C { C() : elem() {} int elem[10]; ]
+// initialization list compiler warning [struct C { C() : elem() {} int elem[10]; ]
 #pragma warning (disable: 4351)
 
 //-----------------------------------------------------------------------------
-// obs³uga wersji debug
+// debug version handling
 #ifndef _DEBUG
 #	define NDEBUG
 #	define _SECURE_SCL 0
