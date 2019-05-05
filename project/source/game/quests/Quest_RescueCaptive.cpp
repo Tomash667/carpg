@@ -367,15 +367,7 @@ bool Quest_RescueCaptive::Load(GameReader& f)
 {
 	Quest_Dungeon::Load(f);
 
-	if(LOAD_VERSION >= V_0_4)
-		f >> group;
-	else
-	{
-		if(prog != Progress::None)
-			f >> group;
-		else
-			group = GetRandomGroup();
-	}
+	f >> group;
 	f >> captive;
 	if(LOAD_VERSION >= V_0_8)
 		f >> st;

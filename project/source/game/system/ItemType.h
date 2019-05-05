@@ -11,6 +11,7 @@ If equippable
 	Team.CheckTeamItemShares, BuyTeamItems
 	If item have multiple slots:
 		Unit.AddItemAndEquipIfNone
+		Unit.HaveItemEquipped
 		Inventory.cpp
 	UnitStats default_priorities
 If need special texts in inventory:

@@ -76,15 +76,6 @@ enum class MasterServerState
 //-----------------------------------------------------------------------------
 class Net : public GameComponent
 {
-	enum StartFlags
-	{
-		SF_DEVMODE = 1 << 0,
-		SF_INVISIBLE = 1 << 1,
-		SF_NOCLIP = 1 << 2,
-		SF_GODMODE = 1 << 3,
-		SF_NOAI = 1 << 4
-	};
-
 public:
 	enum class Mode
 	{
@@ -93,36 +84,15 @@ public:
 		Client
 	};
 
-	static Mode GetMode()
-	{
-		return mode;
-	}
+	static Mode GetMode() { return mode; }
 
-	static bool IsLocal()
-	{
-		return mode != Mode::Client;
-	}
-	static bool IsOnline()
-	{
-		return mode != Mode::Singleplayer;
-	}
-	static bool IsServer()
-	{
-		return mode == Mode::Server;
-	}
-	static bool IsClient()
-	{
-		return mode == Mode::Client;
-	}
-	static bool IsSingleplayer()
-	{
-		return mode == Mode::Singleplayer;
-	}
+	static bool IsLocal() { return mode != Mode::Client; }
+	static bool IsOnline() { return mode != Mode::Singleplayer; }
+	static bool IsServer() { return mode == Mode::Server; }
+	static bool IsClient() { return mode == Mode::Client; }
+	static bool IsSingleplayer() { return mode == Mode::Singleplayer; }
 
-	static void SetMode(Mode _mode)
-	{
-		mode = _mode;
-	}
+	static void SetMode(Mode _mode) { mode = _mode; }
 
 	static NetChange& PushChange(NetChange::TYPE type)
 	{

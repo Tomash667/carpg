@@ -5,7 +5,7 @@
 #include "DirectX.h"
 
 //-----------------------------------------------------------------------------
-void CalculateNormal(VTerrain& v1, VTerrain& v2, VTerrain& v3)
+void CalculateNormal(TerrainVertex& v1, TerrainVertex& v2, TerrainVertex& v3)
 {
 	Vec3 v01 = v2.pos - v1.pos;
 	Vec3 v02 = v3.pos - v1.pos;
@@ -49,7 +49,7 @@ Terrain::~Terrain()
 void Terrain::Init(IDirect3DDevice9* dev, const TerrainOptions& o)
 {
 	assert(state == 0);
-	assert(dev && o.tile_size > 0.f && o.n_parts > 0 && o.tiles_per_part > 0 /*&& is_pow2(o.tex_size)*/);
+	assert(dev && o.tile_size > 0.f && o.n_parts > 0 && o.tiles_per_part > 0 && IsPow2(o.tex_size));
 
 	device = dev;
 	pos = Vec3(0, 0, 0);
@@ -110,16 +110,14 @@ void Terrain::Build(bool smooth)
 	if(FAILED(hr))
 		throw Format("Failed to create new terrain mesh (%d)!", hr);
 
-	VTerrain* v;
-	//word* idx;
+	TerrainVertex* v;
 	uint* idx;
 	uint n = 0;
-	//uint index = 0;
 
 	V(mesh->LockVertexBuffer(0, (void**)&v));
 	V(mesh->LockIndexBuffer(0, (void**)&idx));
 
-#define TRI(xx,zz,uu,vv) v[n++] = VTerrain((x+xx)*tile_size, h[x+xx+(z+zz)*hszer], (z+zz)*tile_size, float(uu)/uv_mod, float(vv)/uv_mod,\
+#define TRI(xx,zz,uu,vv) v[n++] = TerrainVertex((x+xx)*tile_size, h[x+xx+(z+zz)*hszer], (z+zz)*tile_size, float(uu)/uv_mod, float(vv)/uv_mod,\
 	((float)(x+xx)) / n_tiles, ((float)(z+zz)) / n_tiles)
 
 	for(uint z = 0; z < n_tiles; ++z)
@@ -186,7 +184,7 @@ void Terrain::Rebuild(bool smooth)
 {
 	assert(state == 2);
 
-	VTerrain* v;
+	TerrainVertex* v;
 
 	V(mesh->LockVertexBuffer(0, (void**)&v));
 
@@ -221,7 +219,7 @@ void Terrain::RebuildUv()
 {
 	assert(state == 2);
 
-	VTerrain* v;
+	TerrainVertex* v;
 
 	V(mesh->LockVertexBuffer(0, (void**)&v));
 
@@ -263,32 +261,6 @@ void Terrain::Make(bool smooth)
 		Build(smooth);
 	else
 		Rebuild(smooth);
-}
-
-//=================================================================================================
-void Terrain::ApplyTextures(ID3DXEffect* effect)
-{
-	assert(state > 1);
-	assert(effect);
-
-	V(effect->SetTexture("tex0", tex[0]->tex));
-	V(effect->SetTexture("tex1", tex[1]->tex));
-	V(effect->SetTexture("tex2", tex[2]->tex));
-	V(effect->SetTexture("tex3", tex[3]->tex));
-	V(effect->SetTexture("tex4", tex[4]->tex));
-	V(effect->SetTexture("texBlend", texSplat));
-}
-
-//=================================================================================================
-void Terrain::ApplyStreamSource()
-{
-	VB vb;
-	IB ib;
-
-	V(mesh->GetVertexBuffer(&vb));
-	V(mesh->GetIndexBuffer(&ib));
-	V(device->SetStreamSource(0, vb, 0, sizeof(VTerrain)));
-	V(device->SetIndices(ib));
 }
 
 //=================================================================================================
@@ -425,7 +397,6 @@ void Terrain::Randomize()
 	RoundHeight();
 	RoundHeight();
 	CalculateBox();
-	//RandomizeTexture();
 }
 
 //=================================================================================================
@@ -433,7 +404,7 @@ void Terrain::SmoothNormals()
 {
 	assert(state > 0);
 
-	VTerrain* v;
+	TerrainVertex* v;
 	V(mesh->LockVertexBuffer(0, (void**)&v));
 
 	SmoothNormals(v);
@@ -442,7 +413,7 @@ void Terrain::SmoothNormals()
 }
 
 //=================================================================================================
-void Terrain::SmoothNormals(VTerrain* v)
+void Terrain::SmoothNormals(TerrainVertex* v)
 {
 	assert(state > 0);
 	assert(v);

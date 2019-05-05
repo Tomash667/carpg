@@ -16,6 +16,8 @@
 #include "RoomType.h"
 #include "ItemHelper.h"
 #include "Game.h"
+#include "Team.h"
+#include "Pathfinding.h"
 
 // don't spawn objects near other objects to not block path
 const float EXTRA_RADIUS = 0.8f;
@@ -279,7 +281,7 @@ void InsideLocationGenerator::OnEnter()
 	}
 
 	L.AddPlayerTeam(spawn_pos, spawn_rot, reenter, L.enter_from == ENTER_FROM_OUTSIDE);
-	game.OpenDoorsByTeam(spawn_pt);
+	OpenDoorsByTeam(spawn_pt);
 }
 
 //=================================================================================================
@@ -1128,7 +1130,7 @@ void InsideLocationGenerator::OnLoad()
 	BaseLocation& base = g_base_locations[inside->target];
 
 	game.SetDungeonParamsAndTextures(base);
-	L.RecreateObjects(false);
+	L.RecreateObjects(Net::IsClient());
 	L.SpawnDungeonColliders();
 	CreateMinimap();
 }
@@ -1399,4 +1401,35 @@ void InsideLocationGenerator::SpawnHeroesInsideDungeon()
 
 	// sprawdü czy lokacja oczyszczona (raczej nie jest)
 	L.CheckIfLocationCleared();
+}
+
+//=================================================================================================
+void InsideLocationGenerator::OpenDoorsByTeam(const Int2& pt)
+{
+	static vector<Int2> tmp_path;
+	InsideLocationLevel& lvl = inside->GetLevelData();
+	for(Unit* unit : Team.members)
+	{
+		Int2 unit_pt = PosToPt(unit->pos);
+		if(global::pathfinding->FindPath(L.local_ctx, unit_pt, pt, tmp_path))
+		{
+			for(vector<Int2>::iterator it2 = tmp_path.begin(), end2 = tmp_path.end(); it2 != end2; ++it2)
+			{
+				Tile& p = lvl.map[(*it2)(lvl.w)];
+				if(p.type == DOORS)
+				{
+					Door* door = lvl.FindDoor(*it2);
+					if(door && door->state == Door::Closed)
+					{
+						door->state = Door::Open;
+						btVector3& pos = door->phy->getWorldTransform().getOrigin();
+						pos.setY(pos.y() - 100.f);
+						door->mesh_inst->SetToEnd(&door->mesh_inst->mesh->anims[0]);
+					}
+				}
+			}
+		}
+		else
+			Warn("OpenDoorsByTeam: Can't find path from unit %s (%d,%d) to spawn point (%d,%d).", unit->data->id.c_str(), unit_pt.x, unit_pt.y, pt.x, pt.y);
+	}
 }

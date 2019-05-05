@@ -23,3 +23,15 @@ const int I_CONNECT_TRIES = 5; // liczba prób po³¹czenia (ca³kowity czas ³¹czeni
 const float T_CONNECT = 5.f; // czas na po³¹czenie do serwera
 
 const int MAX_LEVEL = 25;
+
+extern const float ALERT_RANGE;
+extern const float ALERT_SPAWN_RANGE;
+extern const float PICKUP_RANGE;
+extern const float ARROW_TIMER;
+extern const float MIN_H;
+
+extern const float HIT_SOUND_DIST;
+extern const float ARROW_HIT_SOUND_DIST;
+extern const float SHOOT_SOUND_DIST;
+extern const float SPAWN_SOUND_DIST;
+extern const float MAGIC_SCROLL_SOUND_DIST;

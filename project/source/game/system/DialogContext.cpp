@@ -104,7 +104,7 @@ void DialogContext::StartDialog(Unit* talker, GameDialog* dialog)
 	}
 
 	if(is_local)
-		Game::Get().CloseAllPanels();
+		global::gui->CloseAllPanels();
 }
 
 //=================================================================================================
@@ -415,7 +415,10 @@ void DialogContext::UpdateLoop()
 		case DTF_IF_HAVE_QUEST_ITEM:
 			{
 				cstring msg = dialog->strs[de.value].c_str();
-				cmp_result = pc->unit->FindQuestItem(msg, nullptr, nullptr, false);
+				int required_refid = -1;
+				if(msg[0] == '$' && msg[1] == '$')
+					required_refid = talker->quest_refid;
+				cmp_result = pc->unit->FindQuestItem(msg, nullptr, nullptr, false, required_refid);
 				if(de.op == OP_NOT_EQUAL)
 					cmp_result = !cmp_result;
 			}
@@ -436,8 +439,11 @@ void DialogContext::UpdateLoop()
 		case DTF_DO_QUEST_ITEM:
 			{
 				cstring msg = dialog->strs[de.value].c_str();
+				int required_refid = -1;
+				if(msg[0] == '$' && msg[1] == '$')
+					required_refid = talker->quest_refid;
 				Quest* quest;
-				if(pc->unit->FindQuestItem(msg, &quest, nullptr))
+				if(pc->unit->FindQuestItem(msg, &quest, nullptr, false, required_refid))
 					StartNextDialog(quest->GetDialog(QUEST_DIALOG_NEXT), quest);
 			}
 			break;
@@ -1764,19 +1770,19 @@ bool DialogContext::LearnPerk(int perk)
 	pc->learning_points -= info.cost;
 	pc->unit->ModGold(-cost);
 	pc->unit->frozen = FROZEN::YES;
-	pc->AddPerk((Perk)perk, -1);
 	if(is_local)
 	{
 		game.fallback_type = FALLBACK::TRAIN;
 		game.fallback_t = -1.f;
 		game.fallback_1 = 3;
+		game.fallback_2 = perk;
 	}
 	else
 	{
 		NetChangePlayer& c = Add1(pc->player_info->changes);
 		c.type = NetChangePlayer::TRAIN;
 		c.id = 3;
-		c.count = 0;
+		c.count = perk;
 
 		pc->player_info->update_flags |= PlayerInfo::UF_LEARNING_POINTS;
 	}

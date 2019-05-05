@@ -196,45 +196,6 @@ void City::Load(GameReader& f, bool local, LOCATION_TOKEN token)
 			OLD_BUILDING v_buildings[2];
 			f >> v_buildings;
 
-			// fix wrong village house building
-			if(last_visit != -1 && LOAD_VERSION < V_0_4)
-			{
-				bool need_fix = false;
-				Building* village_hall = Building::GetOld(OLD_BUILDING::B_VILLAGE_HALL);
-
-				if(LOAD_VERSION == V_0_3)
-				{
-					InsideBuilding* b = FindInsideBuilding(village_hall);
-					// easiest way to find out if it uses old mesh
-					if(b->top > 3.5f)
-						need_fix = true;
-				}
-
-				if(need_fix)
-				{
-					Building* village_hall_old = Building::GetOld(OLD_BUILDING::B_VILLAGE_HALL_OLD);
-					FindBuilding(village_hall)->type = village_hall_old;
-					for(Object* obj : objects)
-					{
-						if(strcmp(obj->mesh->filename, "soltys.qmsh") == 0)
-						{
-							obj->mesh = ResourceManager::Get<Mesh>().GetLoaded("soltys_old.qmsh");
-							break;
-						}
-					}
-					InsideBuilding* b = FindInsideBuilding(village_hall);
-					b->type = village_hall_old;
-					for(Object* obj : b->objects)
-					{
-						if(strcmp(obj->mesh->filename, "soltys_srodek.qmsh") == 0)
-						{
-							obj->mesh = ResourceManager::Get<Mesh>().GetLoaded("soltys_srodek_old.qmsh");
-							break;
-						}
-					}
-				}
-			}
-
 			if(state == LS_KNOWN)
 			{
 				buildings.push_back(CityBuilding(Building::GetOld(OLD_BUILDING::B_VILLAGE_HALL)));

@@ -45,6 +45,7 @@ void Quest_Tutorial::Start()
 	shield2 = nullptr;
 	QM.quest_contest->state = Quest_Contest::CONTEST_NOT_DONE;
 	game.pc_data.autowalk = false;
+	game.pc->shortcuts[2].type = Shortcut::TYPE_NONE; // disable action in tutorial
 
 	// ekwipunek
 	game.pc->unit->ClearInventory();
@@ -74,8 +75,8 @@ void Quest_Tutorial::Start()
 	game.gui->main_menu->visible = false;
 	game.gui->game_gui->visible = true;
 	game.gui->world_map->Hide();
-	game.clear_color = game.clear_color2;
-	game.cam.Reset();
+	game.clear_color = L.clear_color2;
+	L.camera.Reset();
 }
 
 /*

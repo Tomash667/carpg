@@ -477,14 +477,10 @@ bool Quest_Evil::Load(GameReader& f)
 	f >> closed;
 	f >> changed;
 	f >> told_about_boss;
-
-	if(LOAD_VERSION >= V_0_4)
-	{
-		f >> evil_state;
-		f >> pos;
-		f >> timer;
-		f >> cleric;
-	}
+	f >> evil_state;
+	f >> pos;
+	f >> timer;
+	f >> cleric;
 
 	next_event = &loc[0];
 	loc[0].next_event = &loc[1];
@@ -507,21 +503,6 @@ bool Quest_Evil::Load(GameReader& f)
 	unit_event_handler = this;
 
 	return true;
-}
-
-//=================================================================================================
-void Quest_Evil::LoadOld(GameReader& f)
-{
-	int old_refid, city, where, where2;
-
-	f >> evil_state;
-	f >> old_refid;
-	f >> city;
-	f >> where;
-	f >> where2;
-	f >> pos;
-	f >> timer;
-	f >> cleric;
 }
 
 //=================================================================================================

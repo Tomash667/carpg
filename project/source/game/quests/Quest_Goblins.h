@@ -60,7 +60,6 @@ public:
 	int GetUnitEventHandlerQuestRefid() override { return refid; }
 	void Save(GameWriter& f) override;
 	bool Load(GameReader& f) override;
-	void LoadOld(GameReader& f);
 	bool SpecialIf(DialogContext& ctx, cstring msg) override;
 
 	State goblins_state;

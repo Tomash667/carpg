@@ -164,42 +164,14 @@ bool Quest_Sawmill::Load(GameReader& f)
 
 	location_event_handler = this;
 
-	if(LOAD_VERSION >= V_0_4)
-	{
-		f >> sawmill_state;
-		f >> build_state;
-		f >> days;
-		f >> messenger;
-		if(sawmill_state != State::None && build_state != BuildState::Finished)
-			f >> hd_lumberjack;
-	}
-
-	return true;
-}
-
-//=================================================================================================
-void Quest_Sawmill::LoadOld(GameReader& f)
-{
-	int city, forest;
-
-	f >> city;
 	f >> sawmill_state;
 	f >> build_state;
 	f >> days;
-	f >> refid;
-	f >> forest;
 	f >> messenger;
-	if(sawmill_state != State::None && build_state != BuildState::InProgress)
+	if(sawmill_state != State::None && build_state != BuildState::Finished)
 		f >> hd_lumberjack;
-	else if(sawmill_state != State::None && build_state == BuildState::InProgress)
-	{
-		// fix for missing human data
-		Unit* u = ForLocation(target_loc)->FindUnit(UnitData::Get("artur_drwal"));
-		if(u)
-			hd_lumberjack.Get(*u->human_data);
-		else
-			hd_lumberjack.Random();
-	}
+
+	return true;
 }
 
 //=================================================================================================

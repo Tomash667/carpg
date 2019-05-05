@@ -503,18 +503,14 @@ bool Quest_Mages2::Load(GameReader& f)
 
 	f >> mage_loc;
 	f >> talked;
-
-	if(LOAD_VERSION >= V_0_4)
-	{
-		f >> mages_state;
-		f >> days;
-		f >> paid;
-		f >> timer;
-		f >> scholar;
-		f >> evil_mage_name;
-		f >> good_mage_name;
-		f >> hd_mage;
-	}
+	f >> mages_state;
+	f >> days;
+	f >> paid;
+	f >> timer;
+	f >> scholar;
+	f >> evil_mage_name;
+	f >> good_mage_name;
+	f >> hd_mage;
 
 	if(!done && prog >= Progress::MageDrinkPotion)
 	{
@@ -528,23 +524,4 @@ bool Quest_Mages2::Load(GameReader& f)
 	}
 
 	return true;
-}
-
-//=================================================================================================
-void Quest_Mages2::LoadOld(GameReader& f)
-{
-	int old_refid, old_refid2, city, where;
-
-	f >> mages_state;
-	f >> old_refid;
-	f >> old_refid2;
-	f >> city;
-	f >> days;
-	f >> where;
-	f >> paid;
-	f >> timer;
-	f >> scholar;
-	f >> evil_mage_name;
-	f >> good_mage_name;
-	f >> hd_mage;
 }

@@ -264,7 +264,7 @@ void TeamPanel::Event(GuiEvent e)
 		else
 		{
 			counter = min(game.pc->credit, game.pc->unit->gold);
-			GetNumberDialog::Show(this, delegate<void(int)>(this, &TeamPanel::OnPayCredit), Format(txPayCreditAmount, game.pc->credit), 0, counter, &counter);
+			GetNumberDialog::Show(this, delegate<void(int)>(this, &TeamPanel::OnPayCredit), Format(txPayCreditAmount, game.pc->credit), 1, counter, &counter);
 		}
 		break;
 	}
@@ -362,8 +362,8 @@ void TeamPanel::GiveGold()
 		SimpleDialog(txGiveGoldSelf);
 	else
 	{
-		counter = 0;
-		GetNumberDialog::Show(this, DialogEvent(this, &TeamPanel::OnGiveGold), Format(txGiveGoldAmount, target->GetName()), 0, game.pc->unit->gold, &counter);
+		counter = 1;
+		GetNumberDialog::Show(this, DialogEvent(this, &TeamPanel::OnGiveGold), Format(txGiveGoldAmount, target->GetName()), 1, game.pc->unit->gold, &counter);
 	}
 }
 

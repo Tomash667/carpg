@@ -14,8 +14,6 @@ public:
 
 	using FileReader::operator >> ;
 
-	void LoadArtifact(const Item*& item);
-
 	void operator >> (Unit*& unit)
 	{
 		int refid = Read<int>();

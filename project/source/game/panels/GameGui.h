@@ -10,13 +10,14 @@ enum class OpenPanel
 {
 	None,
 	Stats,
-	InventoryPanel,
+	Inventory,
 	Team,
 	Journal,
 	Minimap,
 	Action,
 	Trade,
-	Unknown
+	Unknown,
+	Book
 };
 
 //-----------------------------------------------------------------------------
@@ -26,7 +27,7 @@ enum class SideButtonId
 	Team,
 	Minimap,
 	Journal,
-	InventoryPanel,
+	Inventory,
 	Action,
 	Stats,
 	Talk,
@@ -86,6 +87,9 @@ public:
 	bool IsMouseInsideDialog() const { return PointInRect(GUI.cursor_pos, dialog_pos, dialog_size); }
 	void Setup();
 	void RemoveUnit(Unit* unit);
+	void DrawEndOfGameScreen();
+	void StartDragAndDrop(int type, int value, TEX tex);
+	bool IsDragAndDrop() const { return drag_and_drop == 2; }
 
 	Int2 dialog_cursor_pos;
 	bool use_cursor;
@@ -117,9 +121,9 @@ private:
 	void DrawFront();
 	void DrawBack();
 	void DrawDeathScreen();
-	void DrawEndOfGameScreen();
 	void DrawSpeechBubbles();
 	void DrawUnitInfo(cstring text, Unit& unit, const Vec3& pos, int alpha);
+	int GetShortcutIndex();
 	void UpdateSpeechBubbles(float dt);
 	void GetTooltip(TooltipController*, int group, int id);
 	void SortUnits();
@@ -131,13 +135,16 @@ private:
 	vector<BuffImage> buff_images;
 	vector<SortedUnitView> sorted_units;
 	float sidebar;
-	int sidebar_state[(int)SideButtonId::Max];
+	int sidebar_state[(int)SideButtonId::Max], drag_and_drop, drag_and_drop_type, drag_and_drop_index;
+	Int2 drag_and_drop_pos;
 	TEX tBar, tHpBar, tPoisonedHpBar, tStaminaBar, tManaBar, tShortcut, tShortcutHover, tShortcutDown, tSideButton[(int)SideButtonId::Max], tMinihp[2],
-		tMinistamina, tCrosshair, tBubble, tObwodkaBolu, tActionCooldown;
+		tMinistamina, tCrosshair, tBubble, tObwodkaBolu, tActionCooldown, tMelee, tRanged, tPotion, tEmerytura, tEquipped;
+	TEX drag_and_drop_icon;
 	Scrollbar scrollbar;
 	vector<SpeechBubble*> speech_bbs;
 	vector<SortedSpeechBubble> sorted_speech_bbs;
-	cstring txMenu, txDeath, txDeathAlone, txGameTimeout, txChest, txDoor, txDoorLocked, txPressEsc, txHp, txStamina;
+	cstring txMenu, txDeath, txDeathAlone, txGameTimeout, txChest, txDoor, txDoorLocked, txPressEsc, txHp, txStamina, txMeleeWeapon, txRangedWeapon, txPotion,
+		txMeleeWeaponDesc, txRangedWeaponDesc, txPotionDesc;
 	Int2 debug_info_size, dialog_pos, dialog_size, profiler_size;
 	vector<UnitView> unit_views;
 };

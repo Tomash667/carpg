@@ -19,6 +19,25 @@ bool Room::IsConnected(Room* room)
 }
 
 //=================================================================================================
+void Room::AddTile(const Int2& pt)
+{
+	if(pt.x < pos.x)
+	{
+		size.x += pos.x - pt.x;
+		pos.x = pt.x;
+	}
+	else if(pt.x > pos.x + size.x)
+		size.x = pt.x - pos.x;
+	if(pt.y < pos.y)
+	{
+		size.y += pos.y - pt.y;
+		pos.y = pt.y;
+	}
+	else if(pt.y > pos.y + size.y)
+		size.y = pt.y - pos.y;
+}
+
+//=================================================================================================
 void Room::Save(FileWriter& f)
 {
 	f << pos;

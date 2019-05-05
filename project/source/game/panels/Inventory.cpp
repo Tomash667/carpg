@@ -293,7 +293,6 @@ void Inventory::StartTrade2(InventoryMode mode, void* ptr)
 			Chest* chest = (Chest*)ptr;
 			pc->action = PlayerController::Action_LootChest;
 			pc->action_chest = chest;
-			pc->action_chest->user = pc->unit;
 			pc->chest_trade = &pc->action_chest->items;
 			inv_trade_mine->mode = InventoryPanel::LOOT_MY;
 			inv_trade_other->unit = nullptr;
@@ -527,7 +526,10 @@ void InventoryPanel::Update(float dt)
 	GamePanel::Update(dt);
 
 	if(game.gui->book->visible)
+	{
+		drag_and_drop = false;
 		return;
+	}
 
 	if(mode == INVENTORY && Key.Focus() && Key.PressedRelease(VK_ESCAPE))
 	{
@@ -578,7 +580,7 @@ void InventoryPanel::Update(float dt)
 			int i_index = i_items->at(last_index);
 			const Item* item;
 			if(i_index < 0)
-				item = slots[-i_index - 1];
+				item = slots[IIndexToSlot(i_index)];
 			else
 				item = items->at(i_index).item;
 			if(item != last_item)
@@ -589,7 +591,7 @@ void InventoryPanel::Update(float dt)
 		}
 	}
 
-	if(have_focus)
+	if(have_focus && !global::gui->game_gui->IsDragAndDrop())
 	{
 		// przedmiot
 		if(cursor_pos.x >= shift_x && cursor_pos.y >= shift_y)
@@ -654,6 +656,35 @@ void InventoryPanel::Update(float dt)
 		rot += PI * dt / 2;
 	}
 
+	if(focus && Key.Focus() && IsInside(GUI.cursor_pos))
+	{
+		for(int i = 0; i < Shortcut::MAX; ++i)
+		{
+			if(GKey.PressedRelease((GAME_KEYS)(GK_SHORTCUT1 + i)))
+			{
+				if(new_index >= 0)
+				{
+					const Item* item;
+					int i_index = i_items->at(new_index);
+					if(i_index < 0)
+						item = slots[IIndexToSlot(i_index)];
+					else
+						item = items->at(i_index).item;
+					game.pc->SetShortcut(i, Shortcut::TYPE_ITEM, (int)item);
+				}
+			}
+		}
+	}
+
+	if(drag_and_drop)
+	{
+		if(Int2::Distance(GUI.cursor_pos, drag_and_drop_pos) > 3)
+		{
+			global::gui->game_gui->StartDragAndDrop(Shortcut::TYPE_ITEM, (int)drag_and_drop_item, drag_and_drop_item->icon);
+			drag_and_drop = false;
+		}
+	}
+
 	if(new_index >= 0)
 	{
 		// pobierz przedmiot
@@ -663,9 +694,9 @@ void InventoryPanel::Update(float dt)
 		int i_index = i_items->at(new_index);
 		if(i_index < 0)
 		{
-			item = slots[-i_index - 1];
 			slot = nullptr;
-			slot_type = (ITEM_SLOT)(-i_index - 1);
+			slot_type = IIndexToSlot(i_index);
+			item = slots[slot_type];
 		}
 		else
 		{
@@ -676,11 +707,11 @@ void InventoryPanel::Update(float dt)
 
 		last_item = item;
 
-		if(!focus || !(game.pc->unit->action == A_NONE || game.pc->unit->CanDoWhileUsing()) || base.lock)
+		if(!focus || !(game.pc->unit->action == A_NONE || game.pc->unit->CanDoWhileUsing()) || base.lock || !Key.Focus())
 			return;
 
 		// obs³uga kilkania w ekwipunku
-		if(mode == INVENTORY && Key.Focus() && Key.PressedRelease(VK_RBUTTON) && game.pc->unit->action == A_NONE)
+		if(mode == INVENTORY && Key.PressedRelease(VK_RBUTTON) && game.pc->unit->action == A_NONE)
 		{
 			// wyrzuæ przedmiot
 			if(IS_SET(item->flags, ITEM_DONT_DROP) && game.IsAnyoneTalking())
@@ -689,7 +720,7 @@ void InventoryPanel::Update(float dt)
 			{
 				if(!slot)
 				{
-					if(SlotRequireHideWeapon(slot_type))
+					if(unit->SlotRequireHideWeapon(slot_type))
 					{
 						// drop item after hiding it
 						unit->HideWeapon();
@@ -725,14 +756,14 @@ void InventoryPanel::Update(float dt)
 								base.tooltip.Clear();
 						}
 						else
-							FormatBox();
+							base.tooltip.Refresh();
 					}
 					else
 					{
 						// wyrzuæ okreœlon¹ liczbê
 						counter = 1;
 						base.lock.Lock(i_index, *slot);
-						GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnDropItem), base.txDropItemCount, 0, slot->count, &counter);
+						GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnDropItem), base.txDropItemCount, 1, slot->count, &counter);
 						last_index = INDEX_INVALID;
 						if(mode == INVENTORY)
 							base.tooltip.Clear();
@@ -740,7 +771,7 @@ void InventoryPanel::Update(float dt)
 				}
 			}
 		}
-		else if(Key.Focus() && Key.PressedRelease(VK_LBUTTON))
+		else if(HandleLeftClick(item))
 		{
 			switch(mode)
 			{
@@ -749,7 +780,7 @@ void InventoryPanel::Update(float dt)
 				if(!slot)
 				{
 					// zdejmij przedmiot
-					if(SlotRequireHideWeapon(slot_type))
+					if(unit->SlotRequireHideWeapon(slot_type))
 					{
 						// hide weapon & add next action to unequip
 						unit->HideWeapon();
@@ -786,7 +817,7 @@ void InventoryPanel::Update(float dt)
 					else if(item->IsWearable())
 					{
 						ITEM_SLOT type = ItemTypeToSlot(item->type);
-						if(SlotRequireHideWeapon(type))
+						if(unit->SlotRequireHideWeapon(type))
 						{
 							// hide equipped item & equip new one
 							unit->HideWeapon();
@@ -822,7 +853,7 @@ void InventoryPanel::Update(float dt)
 				else if(!slot)
 				{
 					// za³o¿ony przedmiot
-					if(SlotRequireHideWeapon(slot_type))
+					if(unit->SlotRequireHideWeapon(slot_type))
 					{
 						// hide equipped item and sell it
 						unit->HideWeapon();
@@ -847,7 +878,7 @@ void InventoryPanel::Update(float dt)
 						{
 							counter = 1;
 							base.lock.Lock(i_index, *slot);
-							GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnSellItem), base.txSellItemCount, 0, slot->count, &counter);
+							GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnSellItem), base.txSellItemCount, 1, slot->count, &counter);
 							last_index = INDEX_INVALID;
 							if(mode == INVENTORY)
 								base.tooltip.Clear();
@@ -875,7 +906,7 @@ void InventoryPanel::Update(float dt)
 						{
 							counter = 1;
 							base.lock.Lock(i_index, *slot);
-							GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnBuyItem), base.txBuyItemCount, 0, slot->count, &counter);
+							GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnBuyItem), base.txBuyItemCount, 1, slot->count, &counter);
 							last_index = INDEX_INVALID;
 							if(mode == INVENTORY)
 								base.tooltip.Clear();
@@ -904,7 +935,7 @@ void InventoryPanel::Update(float dt)
 						{
 							counter = 1;
 							base.lock.Lock(i_index, *slot);
-							GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnPutItem), base.txPutItemCount, 0, slot->count, &counter);
+							GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnPutItem), base.txPutItemCount, 1, slot->count, &counter);
 							last_index = INDEX_INVALID;
 							if(mode == INVENTORY)
 								base.tooltip.Clear();
@@ -919,7 +950,7 @@ void InventoryPanel::Update(float dt)
 				else
 				{
 					// za³o¿ony przedmiot
-					if(SlotRequireHideWeapon(slot_type))
+					if(unit->SlotRequireHideWeapon(slot_type))
 					{
 						// hide equipped item and put it in container
 						unit->HideWeapon();
@@ -965,7 +996,7 @@ void InventoryPanel::Update(float dt)
 						{
 							counter = 1;
 							base.lock.Lock(i_index, *slot);
-							GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnLootItem), base.txLootItemCount, 0, slot->count, &counter);
+							GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnLootItem), base.txLootItemCount, 1, slot->count, &counter);
 							last_index = INDEX_INVALID;
 							if(mode == INVENTORY)
 								base.tooltip.Clear();
@@ -982,7 +1013,7 @@ void InventoryPanel::Update(float dt)
 					// za³o¿ony przedmiot
 					last_index = INDEX_INVALID;
 					// dodaj
-					game.pc->unit->AddItem(item);
+					game.pc->unit->AddItem(item, 1u, 1u);
 					base.BuildTmpInventory(0);
 					// usuñ
 					if(slot_type == SLOT_WEAPON && slots[SLOT_WEAPON] == unit->used_item)
@@ -1005,11 +1036,11 @@ void InventoryPanel::Update(float dt)
 					// komunikat
 					if(Net::IsOnline())
 					{
-						NetChange& c = Add1(Net::changes);
 						if(Net::IsServer())
 						{
 							if(IsVisible(slot_type))
 							{
+								NetChange& c = Add1(Net::changes);
 								c.type = NetChange::CHANGE_EQUIPMENT;
 								c.unit = unit;
 								c.id = slot_type;
@@ -1017,6 +1048,7 @@ void InventoryPanel::Update(float dt)
 						}
 						else
 						{
+							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::GET_ITEM;
 							c.id = i_index;
 							c.count = 1;
@@ -1041,7 +1073,7 @@ void InventoryPanel::Update(float dt)
 							counter = 1;
 							base.lock.Lock(i_index, *slot);
 							GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnShareGiveItem),
-								base.txShareGiveItemCount, 0, slot->team_count, &counter);
+								base.txShareGiveItemCount, 1, slot->team_count, &counter);
 							last_index = INDEX_INVALID;
 							if(mode == INVENTORY)
 								base.tooltip.Clear();
@@ -1080,8 +1112,8 @@ void InventoryPanel::Update(float dt)
 						{
 							counter = 1;
 							base.lock.Lock(i_index, *slot);
-							GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnShareTakeItem), base.txShareTakeItemCount, 0, slot->team_count,
-								&counter);
+							GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnShareTakeItem), base.txShareTakeItemCount,
+								1, slot->team_count, &counter);
 							last_index = INDEX_INVALID;
 							if(mode == INVENTORY)
 								base.tooltip.Clear();
@@ -1169,7 +1201,8 @@ void InventoryPanel::Update(float dt)
 							{
 								counter = 1;
 								base.lock.Lock(i_index, *slot);
-								GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnGivePotion), base.txGivePotionCount, 0, slot->count, &counter);
+								GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnGivePotion), base.txGivePotionCount,
+									1, slot->count, &counter);
 								last_index = INDEX_INVALID;
 								if(mode == INVENTORY)
 									base.tooltip.Clear();
@@ -1199,7 +1232,7 @@ void InventoryPanel::Update(float dt)
 							// za³o¿ony przedmiot
 							if(t->CanTake(item))
 							{
-								if(SlotRequireHideWeapon(slot_type))
+								if(unit->SlotRequireHideWeapon(slot_type))
 								{
 									// hide equipped item and give it
 									unit->HideWeapon();
@@ -1242,11 +1275,11 @@ void InventoryPanel::Update(float dt)
 				base.tooltip.Clear();
 			counter = 0;
 			if(mode == INVENTORY)
-				GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnDropGold), base.txDropGoldCount, 0, unit->gold, &counter);
+				GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnDropGold), base.txDropGoldCount, 1, unit->gold, &counter);
 			else if(mode == LOOT_MY)
-				GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnPutGold), base.txPutGoldCount, 0, unit->gold, &counter);
+				GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnPutGold), base.txPutGoldCount, 1, unit->gold, &counter);
 			else if(mode == GIVE_MY || mode == SHARE_MY)
-				GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnGiveGold), base.txGiveGoldCount, 0, unit->gold, &counter);
+				GetNumberDialog::Show(this, delegate<void(int)>(this, &InventoryPanel::OnGiveGold), base.txGiveGoldCount, 1, unit->gold, &counter);
 		}
 	}
 }
@@ -1277,6 +1310,7 @@ void InventoryPanel::Event(GuiEvent e)
 		{
 			base.tooltip.Clear();
 			bt.text = Game::Get().GetShortcutText(GK_TAKE_ALL);
+			drag_and_drop = false;
 		}
 	}
 	else if(e == GuiEvent_LostFocus)
@@ -1394,21 +1428,6 @@ void InventoryPanel::Event(GuiEvent e)
 }
 
 //=================================================================================================
-bool InventoryPanel::SlotRequireHideWeapon(ITEM_SLOT slot)
-{
-	switch(slot)
-	{
-	case SLOT_WEAPON:
-	case SLOT_SHIELD:
-		return (unit->weapon_state == WS_TAKEN && unit->weapon_taken == W_ONE_HANDED);
-	case SLOT_BOW:
-		return (unit->weapon_state == WS_TAKEN && unit->weapon_taken == W_BOW);
-	default:
-		return false;
-	}
-}
-
-//=================================================================================================
 // przek³ada przedmiot ze slotu do ekwipunku
 void InventoryPanel::RemoveSlotItem(ITEM_SLOT slot)
 {
@@ -1463,8 +1482,8 @@ void InventoryPanel::ConsumeItem(int index)
 		base.BuildTmpInventory(0);
 		UpdateScrollbar();
 	}
-	else if(w == 1 && last_index - base.tmp_inventory_shift[0] == index)
-		FormatBox();
+	else
+		base.tooltip.Refresh();
 }
 
 //=================================================================================================
@@ -1590,7 +1609,7 @@ void InventoryPanel::FormatBox(int group, string& text, string& small_text, TEX&
 		int i_index = i_items->at(group);
 		if(i_index < 0)
 		{
-			item = slots[-i_index - 1];
+			item = slots[IIndexToSlot(i_index)];
 			count = 1;
 			team_count = (mode == LOOT_OTHER ? 1 : 0);
 		}
@@ -1632,7 +1651,7 @@ void InventoryPanel::FormatBox(int group, string& text, string& small_text, TEX&
 			text += Format(base.txPrice, price);
 		}
 		small_text = item->desc;
-		if(AllowForUnit() && game.pc->action_unit->CanWear(item))
+		if(AllowForUnit() && game.pc->action_unit->CanWear(item) && !Any(item->type, IT_AMULET, IT_RING))
 		{
 			if(!small_text.empty())
 				small_text += '\n';
@@ -1800,7 +1819,7 @@ void InventoryPanel::BuyItem(int index, uint count)
 			UpdateGrid(false);
 		}
 		else
-			FormatBox();
+			base.tooltip.Refresh();
 		// komunikat
 		if(!Net::IsLocal())
 		{
@@ -1848,7 +1867,7 @@ void InventoryPanel::SellItem(int index, uint count)
 	}
 	else
 	{
-		FormatBox();
+		base.tooltip.Refresh();
 		slot.team_count -= team_count;
 	}
 	// komunikat
@@ -1987,7 +2006,7 @@ void InventoryPanel::LootItem(int index, uint count)
 	}
 	else
 	{
-		FormatBox();
+		base.tooltip.Refresh();
 		slot.team_count -= team_count;
 	}
 	// komunikat
@@ -2047,7 +2066,7 @@ void InventoryPanel::PutItem(int index, uint count)
 	}
 	else
 	{
-		FormatBox();
+		base.tooltip.Refresh();
 		slot.team_count -= team_count;
 	}
 
@@ -2193,7 +2212,7 @@ void InventoryPanel::ShareGiveItem(int index, uint count)
 	}
 	else
 	{
-		FormatBox();
+		base.tooltip.Refresh();
 		slot.team_count -= team_count;
 	}
 	// komunikat
@@ -2232,7 +2251,7 @@ void InventoryPanel::ShareTakeItem(int index, uint count)
 	}
 	else
 	{
-		FormatBox();
+		base.tooltip.Refresh();
 		slot.team_count -= team_count;
 	}
 	// komunikat
@@ -2369,7 +2388,7 @@ void InventoryPanel::GivePotion(int index, uint count)
 	}
 	else
 	{
-		FormatBox();
+		base.tooltip.Refresh();
 		slot.team_count -= team_count;
 	}
 	// komunikat
@@ -2477,7 +2496,7 @@ void InventoryPanel::IsBetterItemResponse(bool is_better)
 			const Item*& item = unit->slots[slot_type];
 			if(!t->CanTake(item))
 				GUI.SimpleDialog(Format(base.txNpcCantCarry, t->GetName()), this);
-			else if(SlotRequireHideWeapon(slot_type))
+			else if(unit->SlotRequireHideWeapon(slot_type))
 			{
 				// hide equipped item and give it
 				unit->HideWeapon();
@@ -2570,4 +2589,29 @@ int InventoryPanel::GetLockIndexOrSlotAndRelease()
 		iindex = Unit::INVALID_IINDEX;
 	base.lock = nullptr;
 	return iindex;
+}
+
+//=================================================================================================
+bool InventoryPanel::HandleLeftClick(const Item* item)
+{
+	if(mode == INVENTORY)
+	{
+		if(drag_and_drop)
+		{
+			if(Key.Released(VK_LBUTTON))
+			{
+				drag_and_drop = false;
+				return true;
+			}
+		}
+		else if(Key.Pressed(VK_LBUTTON))
+		{
+			drag_and_drop = true;
+			drag_and_drop_pos = GUI.cursor_pos;
+			drag_and_drop_item = item;
+		}
+		return false;
+	}
+	else
+		return Key.PressedRelease(VK_LBUTTON);
 }

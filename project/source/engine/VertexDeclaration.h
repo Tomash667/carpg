@@ -10,9 +10,7 @@ enum VertexDeclarationId
 	VDI_TEX, // Pos Tex
 	VDI_COLOR, // Pos Color
 	VDI_PARTICLE, // Pos Tex Color
-	VDI_TERRAIN, // Pos Normal Tex Tex2
 	VDI_POS, // Pos
-	VDI_GRASS, // Pos Tex Normal Matrix
 	VDI_MAX
 };
 
@@ -87,18 +85,6 @@ struct VParticle
 	Vec3 pos;
 	Vec2 tex;
 	Vec4 color;
-};
-
-//-----------------------------------------------------------------------------
-struct VTerrain
-{
-	VTerrain() {}
-	VTerrain(float x, float y, float z, float u, float v, float u2, float v2) : pos(x, y, z), tex(u, v), tex2(u2, v2) {}
-
-	Vec3 pos;
-	Vec3 normal;
-	Vec2 tex;
-	Vec2 tex2;
 };
 
 //-----------------------------------------------------------------------------

@@ -41,7 +41,12 @@ struct ItemScript
 
 	void Test(string& errors, uint& count);
 	void CheckItem(const int*& ps, string& errors, uint& count);
+	void Parse(Unit& unit) const;
+private:
+	void GiveItem(Unit& unit, const int*& ps, int count) const;
+	void SkipItem(const int*& ps, int count) const;
 
+public:
 	static vector<ItemScript*> scripts;
 	static const LeveledItemList* weapon_list[WT_MAX], *armor_list[AT_MAX];
 	static ItemScript* TryGet(Cstring id);

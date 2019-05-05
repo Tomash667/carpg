@@ -289,6 +289,8 @@ void ItemLoader::LoadEntity(int top, const string& id)
 //=================================================================================================
 void ItemLoader::Finalize()
 {
+	Item::gold = Item::Get("gold");
+
 	CalculateCrc();
 
 	Info("Loaded items (%u), lists (%u) - crc %p.", Item::items.size(), ItemList::lists.size() + LeveledItemList::lists.size(),
@@ -1171,7 +1173,13 @@ void ItemLoader::CalculateCrc()
 		crc.Update(item->value);
 		crc.Update(item->flags);
 		crc.Update(item->type);
-		crc.Update(item->effects);
+		for(ItemEffect& effect : item->effects)
+		{
+			crc.Update(effect.effect);
+			crc.Update(effect.power);
+			crc.Update(effect.value);
+			crc.Update(effect.on_attack);
+		}
 
 		switch(item->type)
 		{

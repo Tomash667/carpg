@@ -115,7 +115,6 @@ public:
 	int GetLocationEventHandlerQuestRefid() override { return refid; }
 	void Save(GameWriter& f) override;
 	bool Load(GameReader& f) override;
-	void LoadOld(GameReader& f);
 	OrcClass GetOrcClass() const { return orc_class; }
 
 	State orcs_state;

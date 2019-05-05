@@ -951,6 +951,8 @@ bool DungeonMapGenerator::AddStairs(Room& room, Int2& pos, GameDirection& dir, T
 	PosDir& pd = choice[Rand() % count];
 	pos = pd.pos;
 	map[pd.pos.x + pd.pos.y*map_w].type = tile;
+	map[pd.pos.x + pd.pos.y*map_w].room = room.index;
+	room.AddTile(pd.pos);
 	in_wall = pd.in_wall;
 
 	for(int y = max(0, pd.pos.y - 1); y <= min(map_h, pd.pos.y + 1); ++y)

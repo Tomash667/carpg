@@ -82,6 +82,9 @@
     <Filter Include="2. engine\resources">
       <UniqueIdentifier>{20e4856c-a4ec-49d1-bea8-1656b3df0327}</UniqueIdentifier>
     </Filter>
+    <Filter Include="2. engine\shaders">
+      <UniqueIdentifier>{1b30961f-ddf3-41c8-bc93-4c5f4140681d}</UniqueIdentifier>
+    </Filter>
     <Filter Include="2. engine\scene">
       <UniqueIdentifier>{11b496df-3d1a-4c5b-8e66-0b51742340ce}</UniqueIdentifier>
     </Filter>
@@ -104,9 +107,6 @@
     </ClCompile>
     <ClCompile Include="source\core\Tokenizer.cpp">
       <Filter>1. core</Filter>
-    </ClCompile>
-    <ClCompile Include="source\game\ConsoleCommands.cpp">
-      <Filter>3. game</Filter>
     </ClCompile>
     <ClCompile Include="source\game\FOV.cpp">
       <Filter>3. game</Filter>
@@ -401,9 +401,6 @@
     </ClCompile>
     <ClCompile Include="source\game\quests\Quest.cpp">
       <Filter>3. game\quests</Filter>
-    </ClCompile>
-    <ClCompile Include="source\game\GameFile.cpp">
-      <Filter>3. game</Filter>
     </ClCompile>
     <ClCompile Include="source\game\Team.cpp">
       <Filter>3. game</Filter>
@@ -739,9 +736,6 @@
     <ClCompile Include="source\game\location\LevelArea.cpp">
       <Filter>3. game\location</Filter>
     </ClCompile>
-    <ClCompile Include="source\engine\SuperShader.cpp">
-      <Filter>2. engine</Filter>
-    </ClCompile>
     <ClCompile Include="source\game\generator\TutorialLocationGenerator.cpp">
       <Filter>3. game\generator</Filter>
     </ClCompile>
@@ -750,9 +744,6 @@
     </ClCompile>
     <ClCompile Include="source\game\events\Arena.cpp">
       <Filter>3. game\events</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\DebugDrawer.cpp">
-      <Filter>2. engine</Filter>
     </ClCompile>
     <ClCompile Include="source\game\system\DialogContext.cpp">
       <Filter>3. game\system\dialogs</Filter>
@@ -831,6 +822,21 @@
     </ClCompile>
     <ClCompile Include="source\engine\RenderTarget.cpp">
       <Filter>2. engine</Filter>
+    </ClCompile>
+    <ClCompile Include="source\engine\GrassShader.cpp">
+      <Filter>2. engine\shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="source\engine\SuperShader.cpp">
+      <Filter>2. engine\shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="source\engine\DebugDrawer.cpp">
+      <Filter>2. engine\shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\Settings.cpp">
+      <Filter>3. game</Filter>
+    </ClCompile>
+    <ClCompile Include="source\engine\TerrainShader.cpp">
+      <Filter>2. engine\shaders</Filter>
     </ClCompile>
     <ClCompile Include="source\engine\SimpleScene.cpp">
       <Filter>2. engine\scene</Filter>
@@ -1576,9 +1582,6 @@
     <ClInclude Include="source\game\entity\TerrainTile.h">
       <Filter>3. game\entity</Filter>
     </ClInclude>
-    <ClInclude Include="source\engine\SuperShader.h">
-      <Filter>2. engine</Filter>
-    </ClInclude>
     <ClInclude Include="source\game\generator\TutorialLocationGenerator.h">
       <Filter>3. game\generator</Filter>
     </ClInclude>
@@ -1593,12 +1596,6 @@
     </ClInclude>
     <ClInclude Include="source\game\Settings.h">
       <Filter>3. game</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\DebugDrawer.h">
-      <Filter>2. engine</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\ShaderHandler.h">
-      <Filter>2. engine</Filter>
     </ClInclude>
     <ClInclude Include="source\engine\CameraBase.h">
       <Filter>2. engine</Filter>
@@ -1728,6 +1725,21 @@
     </ClInclude>
     <ClInclude Include="source\engine\Render.h">
       <Filter>2. engine</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\GrassShader.h">
+      <Filter>2. engine\shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\SuperShader.h">
+      <Filter>2. engine\shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\DebugDrawer.h">
+      <Filter>2. engine\shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\ShaderHandler.h">
+      <Filter>2. engine\shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\TerrainShader.h">
+      <Filter>2. engine\shaders</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

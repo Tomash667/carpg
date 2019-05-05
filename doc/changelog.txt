@@ -1,7 +1,11 @@
 Historia zmian
 
 --------------------------------------------------------------------------------
-Wersja 0.10 (2019-??-??):
+Wersja 0.11 (2019-??-??):
+! nie mo¿na wczytywaæ ju¿ zapisów z wersji 0.3 lub starszej
+
+--------------------------------------------------------------------------------
+Wersja 0.10 (2019-05-05):
 ! nie mo¿na wczytywaæ ju¿ zapisów z wersji 0.2.20 lub starszej
 + nowe unikalne zadanie: Zio³a dla alchemika
 + nowe efekty postaci: maksymalna wytrzyma³oœæ, szybkoœæ regeneracji wytrzyma³oœci, premia do atrybutu/umiejêtnoœci
@@ -10,9 +14,29 @@ Wersja 0.10 (2019-??-??):
 + alchemik teraz skupuje zio³a
 + pierœcienie: srebrny, z³oty, szmaragdowy, 27 magicznych pierœcieni
 + nowe przedmioty: Ÿródlana woda, pancerz ze skóry trolla, 9 magicznych amuletów
++ konfigurowalne skróty na przedmioty/akcje
 + lepsze ustalanie priorytetów przez bohaterów kupuj¹cych/prosz¹cych o przedmioty
++ poprawiona aktualizacja ekwipunku
++ usprawinona obs³uga skrzyni w multiplayer
 + aktualizacja bibliotek: FMod 1.10.12, JSON for Modern C++ 3.6.1
+- naprawiony crash przy akceptowaniu zadañ które generuj¹ now¹ lokalizacjê [Anonymous]
+- naprawiony rzadki crash przy wchodzeniu do niektórych podziemi
 - naprawiony nieskoñczony czas oczekiwania przy u¿yciu opcji -delay
+- naprawione b³êdne dzia³anie bocznego menu
+- naprawiony rzadki b³¹d zapisu gry na mapie œwiata
+- naprawiony crash po podwójnym u¿yciu komendy clean_level bez zamykania konsoli
+- naprawiony crash po u¿yciu komendy whisper przez klienta [Anonymous]
+- naprawiony b³¹d w zadaniu "Bandyci pobieraj¹ op³atê" [Zielu]
+- naprawiony b³¹d który umo¿liwia³ ukoñczenie niektórych zadañ podczas rozmowy z innym kapitanem stra¿y/podró¿nikiem [Zielu]
+- naprawiony crash gdy serwer zabiera za³o¿ony pierœcieñ ze zw³ok w trybie multiplayer [Zielu]
+- jednej z biblioteczek w ratuszu nie mo¿na by³o spl¹drowaæ
+- naprawione zostawianie porwanej osoby w mieœcie, mo¿na by³o porozmawiaæ i mia³a dialog jakbyœ j¹ znalaz³ w podziemiach
+- naprawiony brak wp³ywu atutu ciê¿kie plecy na maksymalny udŸwig po wczytaniu gry [Zielu]
+- naprawione z³e wyœwietlanie udzia³ów w z³ocie u klienta dla np przywo³anego wilka
+- naprawiony brak efektu ognia pochodni u klientów
+- naprawiony stan broni u klienta przy zmianie poziomu podziemi
+- nauka atutów poprawnie trwa 10 dni
+- czasami w podziemiach ko³o schodów w dó³ nieby³o œciany
 
 --------------------------------------------------------------------------------
 Wersja 0.9 (2019-03-30):

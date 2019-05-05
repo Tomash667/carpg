@@ -20,7 +20,6 @@
 #include "Level.h"
 #include "GameStats.h"
 #include "ResourceManager.h"
-#include "DirectX.h"
 #include "Team.h"
 #include "SaveState.h"
 #include "Debug.h"
@@ -46,7 +45,6 @@ WorldMapGui::WorldMapGui() : game(Game::Get()), zoom(1.2f), offset(0.f, 0.f), fo
 //=================================================================================================
 void WorldMapGui::LoadLanguage()
 {
-	txGameTimeout = Str("gameTimeout");
 	txWorldDate = Str("worldDate");
 	txCurrentLoc = Str("currentLoc");
 	txCitizens = Str("citizens");
@@ -91,14 +89,13 @@ void WorldMapGui::LoadData()
 //=================================================================================================
 void WorldMapGui::Draw(ControlDrawData*)
 {
+	Render* render = game.GetRender();
+
 	// background
-	IDirect3DDevice9* device = game.GetRender()->GetDevice();
 	Rect rect0(Int2::Zero, game.GetWindowSize());
-	device->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP);
-	device->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP);
+	render->SetTextureAddressMode(TEX_ADR_WRAP);
 	GUI.DrawSpriteRectPart(tMapBg, rect0, rect0);
-	device->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP);
-	device->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP);
+	render->SetTextureAddressMode(TEX_ADR_CLAMP);
 
 	// map
 	Matrix mat = Matrix::Transform2D(&offset, 0.f, &Vec2(float(W.world_size) / MAP_IMG_SIZE * zoom), nullptr, 0.f, &(GetCameraCenter() - offset));
@@ -264,26 +261,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 	GUI.DrawText(GUI.default_font, s, 0, Color::Black, rect);
 
 	if(game.end_of_game)
-	{
-		// czarne t³o
-		int color;
-		if(game.death_fade < 1.f)
-			color = (int(game.death_fade * 255) << 24) | 0x00FFFFFF;
-		else
-			color = Color::White;
-
-		GUI.DrawSpriteFull(game.tCzern, color);
-
-		// obrazek
-		D3DSURFACE_DESC desc;
-		V(game.tEmerytura->GetLevelDesc(0, &desc));
-		GUI.DrawSprite(game.tEmerytura, Center(desc.Width, desc.Height), color);
-
-		// tekst
-		cstring text = Format(txGameTimeout, game.pc->kills, GameStats::Get().total_kills - game.pc->kills);
-		Rect rect = { 0, 0, GUI.wnd_size.x, GUI.wnd_size.y };
-		GUI.DrawText(GUI.default_font, text, DTF_CENTER | DTF_BOTTOM, color, rect);
-	}
+		global::gui->game_gui->DrawEndOfGameScreen();
 
 	if(game.gui->mp_box->visible)
 		game.gui->mp_box->Draw();

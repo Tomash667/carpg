@@ -20,7 +20,6 @@ public:
 	void UpdateGui(float dt);
 	void Save(FileWriter& f);
 	void Load(FileReader& f);
-	void LoadOldGui(FileReader& f);
 	void Clear(bool reset_mpbox, bool on_enter);
 	void Setup(PlayerController* pc);
 	void OnResize();
@@ -30,6 +29,7 @@ public:
 	void ShowMultiplayer();
 	void ShowQuitDialog();
 	void ShowCreateCharacterPanel(bool enter_name, bool redo = false);
+	void CloseAllPanels(bool close_mp_box = false);
 
 	// panels
 	LoadScreen* load_screen;

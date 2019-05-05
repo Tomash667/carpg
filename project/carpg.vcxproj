@@ -152,6 +152,7 @@
     <ClInclude Include="source\engine\FileFormat.h" />
     <ClInclude Include="source\engine\Font.h" />
     <ClInclude Include="source\engine\EngineCore.h" />
+    <ClInclude Include="source\engine\GrassShader.h" />
     <ClInclude Include="source\engine\gui\AreaLayout.h" />
     <ClInclude Include="source\engine\gui\Button.h" />
     <ClInclude Include="source\engine\gui\CheckBox.h" />
@@ -214,6 +215,7 @@
     <ClInclude Include="source\engine\StartupOptions.h" />
     <ClInclude Include="source\engine\SuperShader.h" />
     <ClInclude Include="source\engine\Terrain.h" />
+    <ClInclude Include="source\engine\TerrainShader.h" />
     <ClInclude Include="source\engine\Texture.h" />
     <ClInclude Include="source\engine\VertexData.h" />
     <ClInclude Include="source\engine\VertexDeclaration.h" />
@@ -407,13 +409,16 @@
     <ClInclude Include="source\game\system\ItemScript.h" />
     <ClInclude Include="source\game\system\ItemType.h" />
     <ClInclude Include="source\game\system\Spell.h" />
+    <ClCompile Include="source\engine\GrassShader.cpp" />
     <ClCompile Include="source\engine\Render.cpp" />
     <ClCompile Include="source\engine\RenderTarget.cpp" />
+    <ClCompile Include="source\engine\TerrainShader.cpp" />
     <ClCompile Include="source\engine\Scene2.cpp" />
     <ClCompile Include="source\engine\SceneManager.cpp" />
     <ClCompile Include="source\engine\SceneNode2.cpp" />
     <ClCompile Include="source\engine\SimpleScene.cpp" />
     <ClCompile Include="source\game\entity\Encounter.cpp" />
+    <ClCompile Include="source\game\Settings.cpp" />
     <ClCompile Include="source\game\system\Content.cpp" />
     <ClCompile Include="source\game\system\QuestList.cpp" />
     <ClCompile Include="source\game\system\QuestLoader.cpp" />
@@ -501,7 +506,6 @@
     <ClCompile Include="source\ErrorHandler.cpp" />
     <ClCompile Include="source\game\Ai.cpp" />
     <ClCompile Include="source\game\CommandParser.cpp" />
-    <ClCompile Include="source\game\ConsoleCommands.cpp" />
     <ClCompile Include="source\game\entity\Camera.cpp" />
     <ClCompile Include="source\game\entity\ItemContainer.cpp" />
     <ClCompile Include="source\game\entity\Portal.cpp" />
@@ -509,7 +513,6 @@
     <ClCompile Include="source\game\entity\TerrainTile.cpp" />
     <ClCompile Include="source\game\entity\Tile.cpp" />
     <ClCompile Include="source\game\events\Arena.cpp" />
-    <ClCompile Include="source\game\GameFile.cpp" />
     <ClCompile Include="source\game\GameStats.cpp" />
     <ClCompile Include="source\game\generator\CampGenerator.cpp" />
     <ClCompile Include="source\game\generator\CaveGenerator.cpp" />

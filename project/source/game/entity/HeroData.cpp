@@ -67,7 +67,7 @@ void HeroData::Load(FileReader& f)
 		f.Skip<Class>(); // old class info
 	f >> know_name;
 	f >> team_member;
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_10)
 	{
 		old::Mode mode;
 		f >> mode;

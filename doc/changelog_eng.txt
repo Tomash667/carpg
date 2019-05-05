@@ -1,7 +1,11 @@
 Changelog
 
 --------------------------------------------------------------------------------
-Version 0.10 (2019-??-??):
+Version 0.11 (2019-??-??):
+! cannot load saves from version 0.3 or older
+
+--------------------------------------------------------------------------------
+Version 0.10 (2019-05-05):
 ! cannot load saves from version 0.2.20 or older
 + new unique quest: Herbs for the alchemist
 + new unit effects: maximum stamina, stamina regeneration speed, attribute/skill bonus
@@ -11,8 +15,28 @@ Version 0.10 (2019-??-??):
 + rings: silver, golden, emerald, 27 magic rings
 + new item: spring water, troll hide armor, 9 magic amulets
 + better priorities for heroes buying/asking for items
++ configureable item/action shortcuts
++ improved inventory updates
++ improved chest handling in multiplayer
 + update libraries: FMod 1.10.12, JSON for Modern C++ 3.6.1
+- fixed crash when accepting some quests that generate new locations [Anonymous]
+- fixed rare crash when entering some dungeons 
 - fixed infinite wait time when using -delay switch
+- fixed broken side menu
+- fixed save sometimes failing on world map
+- fixed crash when used clean_level command twice without closing console
+- fixed crash when using whisper command by client [Anonymous]
+- fixed bugged quest "Bandits collect toll" [Zielu]
+- fixed possibility to complete quest when talking to different captain/traveler in some quests [Zielu]
+- fixed crash when server takes equipped ring from corpse in multiplayer [Zielu]
+- fixed one bookcase in townhall being not lootable
+- fixed leaving rescue captive inside city, can be talked again and act like it is start of quest
+- fixed strong back perk not affecting carry capacity after loading [Zielu]
+- fixed invalid gold share calculations for clients for example summoned wolf
+- fixed missing torch particles for clients
+- fixed weapon state when changing dungeon level for clients
+- fixed learning perks take no time
+- fixed sometimes missing wall next to dungeon stairs
 
 --------------------------------------------------------------------------------
 Version 0.9 (2019-03-30):

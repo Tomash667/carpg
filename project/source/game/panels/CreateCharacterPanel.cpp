@@ -11,6 +11,7 @@
 #include "Unit.h"
 #include "Render.h"
 #include "RenderTarget.h"
+#include "Level.h"
 #include "SimpleScene.h"
 
 //-----------------------------------------------------------------------------
@@ -709,18 +710,18 @@ void CreateCharacterPanel::RenderUnit()
 
 	static vector<Lights> lights;
 
-	game->SetOutsideParams();
+	L.SetOutsideParams();
 
 	Matrix matView, matProj;
 	Vec3 from = Vec3(0.f, 2.f, dist);
 	matView = Matrix::CreateLookAt(from, Vec3(0.f, 1.f, 0.f), Vec3(0, 1, 0));
 	matProj = Matrix::CreatePerspectiveFieldOfView(PI / 4, 0.5f, 1.f, 5.f);
-	game->cam.matViewProj = matView * matProj;
-	game->cam.center = from;
-	game->cam.matViewInv = matView.Inverse();
+	L.camera.matViewProj = matView * matProj;
+	L.camera.center = from;
+	L.camera.matViewInv = matView.Inverse();
 
-	game->cam.frustum.Set(game->cam.matViewProj);
-	game->ListDrawObjectsUnit(nullptr, game->cam.frustum, true, *unit);
+	L.camera.frustum.Set(L.camera.matViewProj);
+	game->ListDrawObjectsUnit(nullptr, L.camera.frustum, true, *unit);
 	game->DrawSceneNodes(game->draw_batch.nodes, lights, true);
 	game->draw_batch.Clear();
 }

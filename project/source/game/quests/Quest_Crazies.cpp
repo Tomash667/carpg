@@ -118,28 +118,11 @@ bool Quest_Crazies::Load(GameReader& f)
 
 	stone = Item::Get("q_szaleni_kamien");
 
-	if(LOAD_VERSION >= V_0_4)
-	{
-		f >> crazies_state;
-		f >> days;
-		f >> check_stone;
-	}
-
-	return true;
-}
-
-//=================================================================================================
-void Quest_Crazies::LoadOld(GameReader& f)
-{
-	stone = Item::Get("q_szaleni_kamien");
-
-	int old_refid;
 	f >> crazies_state;
-	f >> old_refid;
+	f >> days;
 	f >> check_stone;
 
-	// days was missing in save!
-	days = 13;
+	return true;
 }
 
 //=================================================================================================

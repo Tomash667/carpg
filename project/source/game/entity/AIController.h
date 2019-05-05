@@ -120,6 +120,7 @@ struct AIController
 	void Reset();
 	float GetMorale() const;
 	bool CanWander() const;
+	bool ValidateTarget(Unit* target);
 };
 
 //-----------------------------------------------------------------------------

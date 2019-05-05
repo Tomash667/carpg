@@ -1,7 +1,3 @@
-// stats
-hp = "Zdrowie"
-stamina = "Wytrzyma³oœæ"
-
 // weapon types
 wt_shortBlade = "Krótkie ostrze"
 wt_longBlade = "D³ugie ostrze"

@@ -44,14 +44,12 @@
 #include "RenderTarget.h"
 #include "BitStreamFunc.h"
 #include "InfoBox.h"
+#include "ConsoleCommands.h"
 
 enum SaveFlags
 {
-	// SF_DEV, SF_BETA removed in 0.4 (remove with compability V_0_4)
 	SF_ONLINE = 1 << 0,
-	//SF_DEV = 1 << 1,
 	SF_DEBUG = 1 << 2,
-	//SF_BETA = 1 << 3,
 	SF_HARDCORE = 1 << 4,
 	SF_ON_WORLDMAP = 1 << 5
 };
@@ -110,7 +108,7 @@ bool Game::SaveGameSlot(int slot, cstring text)
 		return false;
 	}
 
-	cstring filename = Format(Net::IsOnline() ? "saves/multi/%d.sav" : "saves/single/%d.sav", slot);
+	LocalString filename = Format(Net::IsOnline() ? "saves/multi/%d.sav" : "saves/single/%d.sav", slot);
 	return SaveGameCommon(filename, slot, text);
 }
 
@@ -458,15 +456,15 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 	f << L.light_angle;
 
 	// camera
-	f << cam.real_rot.y;
-	f << cam.dist;
+	f << L.camera.real_rot.y;
+	f << L.camera.dist;
 
 	// vars
 	f << devmode;
 	f << noai;
 	f << dont_wander;
-	f << cl_fog;
-	f << cl_lighting;
+	f << L.cl_fog;
+	f << L.cl_lighting;
 	f << draw_particle_sphere;
 	f << draw_unit_radius;
 	f << draw_hitbox;
@@ -571,24 +569,15 @@ bool Game::LoadGameHeader(GameReader& f, SaveSlot& slot)
 	// save version
 	f >> slot.load_version;
 	if(slot.load_version < V_0_4)
-	{
-		// build - unused
-		uint build;
-		f >> build;
-	}
+		f.Skip<uint>(); // build version
 
 	// start version
 	if(slot.load_version >= V_0_4)
-		f >> start_version;
-	else
-		start_version = version;
+		f.Skip<int>();
 
 	// content version
 	if(slot.load_version >= V_0_7)
-	{
-		uint content_version;
-		f >> content_version;
-	}
+		f.Skip<uint>();
 
 	// save flags
 	byte flags;
@@ -670,18 +659,7 @@ void Game::LoadGame(GameReader& f)
 		cstring ver_str = VersionToString(version);
 		throw SaveException(Format(txLoadSaveVersionOld, ver_str), Format("Unsupported version '%s'.", ver_str));
 	}
-	if(LOAD_VERSION < V_0_4)
-	{
-		// build - unused
-		uint build;
-		f >> build;
-	}
-
-	// start version
-	if(LOAD_VERSION >= V_0_4)
-		f >> start_version;
-	else
-		start_version = version;
+	f >> start_version;
 
 	// content version
 	if(LOAD_VERSION >= V_0_7)
@@ -813,9 +791,9 @@ void Game::LoadGame(GameReader& f)
 	Usable::refid_request.clear();
 
 	// camera
-	f >> cam.real_rot.y;
-	f >> cam.dist;
-	cam.Reset();
+	f >> L.camera.real_rot.y;
+	f >> L.camera.dist;
+	L.camera.Reset();
 	pc_data.rot_buf = 0.f;
 
 	// traders stock
@@ -835,58 +813,37 @@ void Game::LoadGame(GameReader& f)
 		f >> used_cheats;
 	}
 	f >> devmode;
-	if(LOAD_VERSION < V_0_4)
-	{
-		bool no_sound;
-		f >> no_sound;
-	}
 	f >> noai;
 #ifdef _DEBUG
 	noai = true;
 #endif
 	f >> dont_wander;
-	if(LOAD_VERSION >= V_0_4)
+	f >> L.cl_fog;
+	f >> L.cl_lighting;
+	f >> draw_particle_sphere;
+	f >> draw_unit_radius;
+	f >> draw_hitbox;
+	f >> draw_phy;
+	f >> draw_col;
+	f >> game_speed;
+	f >> next_seed;
+	if(LOAD_VERSION < V_0_5)
 	{
-		f >> cl_fog;
-		f >> cl_lighting;
-		f >> draw_particle_sphere;
-		f >> draw_unit_radius;
-		f >> draw_hitbox;
-		f >> draw_phy;
-		f >> draw_col;
-		f >> game_speed;
-		f >> next_seed;
-		if(LOAD_VERSION < V_0_5)
+		bool next_seed_extra;
+		f >> next_seed_extra;
+		if(next_seed_extra)
 		{
-			bool next_seed_extra;
-			f >> next_seed_extra;
-			if(next_seed_extra)
-			{
-				int next_seed_val[3];
-				f >> next_seed_val;
-			}
+			int next_seed_val[3];
+			f >> next_seed_val;
 		}
-		f >> draw_flags;
 	}
-	else
-	{
-		cl_fog = true;
-		cl_lighting = true;
-		draw_particle_sphere = false;
-		draw_unit_radius = false;
-		draw_hitbox = false;
-		draw_phy = false;
-		draw_col = false;
-		game_speed = 1.f;
-		next_seed = 0;
-		draw_flags = 0xFFFFFFFF;
-	}
+	f >> draw_flags;
 	Unit* player;
 	f >> player;
 	pc = player->player;
 	if(!N.mp_load)
 		pc->id = 0;
-	cam.real_rot.x = pc->unit->rot;
+	L.camera.real_rot.x = pc->unit->rot;
 	pc->dialog_ctx = &dialog_context;
 	dialog_context.dialog_mode = false;
 	dialog_context.is_local = true;
@@ -988,8 +945,6 @@ void Game::LoadGame(GameReader& f)
 		L.is_open = false;
 
 	// gui
-	if(LOAD_VERSION == V_0_3)
-		gui->LoadOldGui(f);
 	gui->game_gui->PositionPanels();
 
 	// cele ai
@@ -1112,7 +1067,7 @@ void Game::LoadGame(GameReader& f)
 	else
 		SetMusic(MusicType::Travel);
 	game_state = game_state2;
-	clear_color = clear_color2;
+	clear_color = L.clear_color2;
 }
 
 //=================================================================================================

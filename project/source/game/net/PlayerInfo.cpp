@@ -27,8 +27,6 @@ void PlayerInfo::Load(FileReader& f)
 {
 	f >> name;
 	f >> clas;
-	if(LOAD_VERSION < V_0_4)
-		clas = ClassInfo::OldToNew(clas);
 	f >> id;
 	f >> devmode;
 	int old_left;

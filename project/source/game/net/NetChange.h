@@ -62,9 +62,6 @@ struct NetChange
 		ALL_QUESTS_COMPLETED, // info about completing all unique quests []
 		TALK, // unit talks or player start dialog SERVER[int(netid)-unit, byte(id)-animation, int(count)-skip id, string1(str)-text] / CLIENT[int(netid)-unit]
 		TALK_POS, // show talk text at position [Vec3(pos), string1(str)-text]
-		LOOT_CHEST, // player wants to loot chest [int(id)-chest netid]
-		CHEST_OPEN, // chest opening animation [int(id)-chest netid]
-		CHEST_CLOSE, // chest closing animation [int(id)-chest netid]
 		CHOICE, // player selected dialog choice [byte(id)-choice]
 		SKIP_DIALOG, // skip dialog by player [int(id)-skip id]
 		CHANGE_LOCATION_STATE, // change location state to known [byte(id)-location index]
@@ -149,7 +146,7 @@ struct NetChange
 		CHEAT_NOAI, // player used cheat 'noai' or notification to players [bool(id)-state]
 		END_OF_GAME, // end of game, time run out []
 		REST, // player rest in inn [byte(id)-days]
-		TRAIN, // player trains [byte(id)-type (0-attribute, 1-skill, 2-tournament), byte(count)-stat type]
+		TRAIN, // player trains [byte(id)-type (0-attribute, 1-skill, 2-tournament, 3-perk), byte(count)-stat type]
 		UPDATE_FREE_DAYS, // update players free days [vector<size:byte, int-unit netid, int-days>]
 		CHANGE_MP_VARS, // multiplayer vars changed [auto: bool-mp_use_interp, float-mp_interp]
 		GAME_SAVED, // game saved notification []
@@ -187,6 +184,8 @@ struct NetChange
 		CLEAN_LEVEL, // clean level from blood and corpses [int(id)-building id (-1 outside, -2 all)]
 		CHANGE_LOCATION_IMAGE, // change location image [byte(id)-index, auto:byte-image]
 		CHANGE_LOCATION_NAME, // change location name [byte(id)-index, auto:string1-name]
+		SET_SHORTCUT, // player set shortcut [byte(id)-index, auto:byte-type, byte/string1-value]
+		USE_CHEST, // unit uses chest SERVER[int(id)-chest id, int(count)-unit id] / CLIENT[int(id)-chest id]
 
 		MAX
 	} type;

@@ -154,7 +154,7 @@ void OutsideLocationGenerator::OnEnter()
 	if(IS_SET(update_flags, PREVENT_RESET))
 		need_reset = false;
 
-	game.SetOutsideParams();
+	L.SetOutsideParams();
 
 	W.GetOutsideSpawnPoint(team_pos, team_dir);
 
@@ -438,11 +438,11 @@ void OutsideLocationGenerator::CreateMinimap()
 void OutsideLocationGenerator::OnLoad()
 {
 	Game& game = Game::Get();
-	game.SetOutsideParams();
+	L.SetOutsideParams();
 	game.SetTerrainTextures();
 	ApplyTiles();
 
-	L.RecreateObjects(false);
+	L.RecreateObjects(Net::IsClient());
 	L.SpawnTerrainCollider();
 	SpawnOutsideBariers();
 	game.InitQuadTree();

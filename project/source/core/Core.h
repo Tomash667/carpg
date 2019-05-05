@@ -79,7 +79,6 @@ template<typename T>
 using delegate = ssvu::FastFunc<T>;
 typedef delegate<void()> VoidDelegate;
 typedef delegate<void()> VoidF;
-typedef delegate<void(cstring)> PrintMsgFunc;
 
 //-----------------------------------------------------------------------------
 // Allocators

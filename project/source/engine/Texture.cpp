@@ -4,6 +4,14 @@
 #include "DirectX.h"
 
 //=================================================================================================
+Int2 Texture::GetSize(TEX tex)
+{
+	D3DSURFACE_DESC desc;
+	V(tex->GetLevelDesc(0, &desc));
+	return Int2(desc.Width, desc.Height);
+}
+
+//=================================================================================================
 TextureLock::TextureLock(TEX tex) : tex(tex)
 {
 	assert(tex);

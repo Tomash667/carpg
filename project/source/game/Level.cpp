@@ -36,7 +36,8 @@ Level L;
 
 //=================================================================================================
 Level::Level() : terrain(nullptr), terrain_shape(nullptr), dungeon_shape(nullptr), dungeon_shape_data(nullptr), shape_wall(nullptr), shape_stairs(nullptr),
-shape_stairs_part(), shape_block(nullptr), shape_barrier(nullptr), shape_door(nullptr), shape_arrow(nullptr), shape_summon(nullptr)
+shape_stairs_part(), shape_block(nullptr), shape_barrier(nullptr), shape_door(nullptr), shape_arrow(nullptr), shape_summon(nullptr), cl_fog(true),
+cl_lighting(true)
 {
 }
 
@@ -200,7 +201,7 @@ void Level::ProcessUnitWarps()
 
 		if(warp.unit == game.pc->unit)
 		{
-			game.cam.Reset();
+			camera.Reset();
 			game.pc_data.rot_buf = 0.f;
 
 			if(game.fallback_type == FALLBACK::ARENA)
@@ -657,8 +658,6 @@ ObjectEntity Level::SpawnObjectEntity(LevelContext& ctx, BaseObject* base, const
 		chest->mesh_inst = new MeshInstance(base->mesh);
 		chest->rot = rot;
 		chest->pos = pos;
-		chest->handler = nullptr;
-		chest->user = nullptr;
 		ctx.chests->push_back(chest);
 		if(Net::IsOnline())
 			chest->netid = Chest::netid_counter++;
@@ -797,7 +796,8 @@ void Level::SpawnObjectExtras(LevelContext& ctx, BaseObject* obj, const Vec3& po
 	if(obj->shape)
 	{
 		CollisionObject& c = Add1(ctx.colliders);
-		c.ptr = user_ptr;
+		c.owner = user_ptr;
+		c.cam_collider = IS_SET(obj->flags, OBJ_PHY_BLOCKS_CAM);
 
 		int group = CG_OBJECT;
 		if(IS_SET(obj->flags, OBJ_PHY_BLOCKS_CAM))
@@ -868,9 +868,6 @@ void Level::SpawnObjectExtras(LevelContext& ctx, BaseObject* obj, const Vec3& po
 			assert(user_ptr);
 			cobj->setUserPointer(user_ptr);
 		}
-
-		if(IS_SET(obj->flags, OBJ_PHY_BLOCKS_CAM))
-			c.ptr = CAM_COLLIDER;
 
 		if(IS_SET(obj->flags, OBJ_DOUBLE_PHYSICS))
 			SpawnObjectExtras(ctx, obj->next_obj, pos, rot, user_ptr, scale, flags);
@@ -1062,7 +1059,8 @@ void Level::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding
 				cobj.radius = pt.size.x;
 				cobj.pt.x = pos.x;
 				cobj.pt.y = pos.z;
-				cobj.ptr = (is_wall ? CAM_COLLIDER : nullptr);
+				cobj.owner = nullptr;
+				cobj.cam_collider = is_wall;
 
 				if(ctx.type == LevelContext::Outside)
 				{
@@ -1090,7 +1088,8 @@ void Level::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding
 				cobj.pt.y = pos.z;
 				cobj.w = pt.size.x;
 				cobj.h = pt.size.z;
-				cobj.ptr = (block_camera ? CAM_COLLIDER : nullptr);
+				cobj.owner = nullptr;
+				cobj.cam_collider = block_camera;
 
 				btBoxShape* shape;
 				if(token != "squarevp")
@@ -2178,12 +2177,12 @@ void Level::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _
 	{
 		for(vector<CollisionObject>::iterator it = ctx.colliders->begin(), end = ctx.colliders->end(); it != end; ++it)
 		{
-			if(it->ptr)
+			if(it->owner)
 			{
 				const void** objs = ignore->ignored_objects;
 				do
 				{
-					if(it->ptr == *objs)
+					if(it->owner == *objs)
 						goto ignoruj;
 					else if(!*objs)
 						break;
@@ -2385,12 +2384,12 @@ void Level::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _
 	{
 		for(vector<CollisionObject>::iterator it = ctx.colliders->begin(), end = ctx.colliders->end(); it != end; ++it)
 		{
-			if(it->ptr)
+			if(it->owner)
 			{
 				const void** objs = ignore->ignored_objects;
 				do
 				{
-					if(it->ptr == *objs)
+					if(it->owner == *objs)
 						goto ignoruj;
 					else if(!*objs)
 						break;
@@ -3207,7 +3206,7 @@ cstring Level::GetCurrentLocationText()
 //=================================================================================================
 void Level::CheckIfLocationCleared()
 {
-	if(city_ctx || location->state == LS_HIDDEN)
+	if(city_ctx)
 		return;
 
 	Game& game = Game::Get();
@@ -3238,7 +3237,7 @@ void Level::CheckIfLocationCleared()
 		else
 			cleared = true;
 
-		if(cleared)
+		if(cleared && location->state != LS_HIDDEN)
 			location->state = LS_CLEARED;
 
 		bool prevent = false;
@@ -3629,7 +3628,7 @@ bool Level::CanSee(Unit& u1, Unit& u2)
 	{
 		for(vector<CollisionObject>::iterator it = ctx.colliders->begin(), end = ctx.colliders->end(); it != end; ++it)
 		{
-			if(it->ptr != CAM_COLLIDER || it->type != CollisionObject::RECTANGLE)
+			if(!it->cam_collider || it->type != CollisionObject::RECTANGLE)
 				continue;
 
 			Box2d box(it->pt.x - it->w, it->pt.y - it->h, it->pt.x + it->w, it->pt.y + it->h);
@@ -3668,7 +3667,7 @@ bool Level::CanSee(Unit& u1, Unit& u2)
 }
 
 //=================================================================================================
-bool Level::CanSee(LevelContext& ctx, const Vec3& v1, const Vec3& v2, bool is_door)
+bool Level::CanSee(LevelContext& ctx, const Vec3& v1, const Vec3& v2, bool is_door, void* ignore)
 {
 	Int2 tile1(int(v1.x / 2), int(v1.z / 2)),
 		tile2(int(v2.x / 2), int(v2.z / 2));
@@ -3742,7 +3741,7 @@ bool Level::CanSee(LevelContext& ctx, const Vec3& v1, const Vec3& v2, bool is_do
 	{
 		for(vector<CollisionObject>::iterator it = ctx.colliders->begin(), end = ctx.colliders->end(); it != end; ++it)
 		{
-			if(it->ptr != CAM_COLLIDER || it->type != CollisionObject::RECTANGLE)
+			if(!it->cam_collider || it->type != CollisionObject::RECTANGLE || (ignore && ignore == it->owner))
 				continue;
 
 			Box2d box(it->pt.x - it->w, it->pt.y - it->h, it->pt.x + it->w, it->pt.y + it->h);
@@ -4059,7 +4058,7 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 	for(vector<UsableRequest>::iterator it = Usable::refid_request.begin(), end = Usable::refid_request.end(); it != end; ++it)
 	{
 		Unit* unit = it->user;
-		Usable* u = L.FindUsable(it->refid);
+		Usable* u = FindUsable(it->refid);
 		if(!u)
 			Warn("Invalid usable netid %d for %s (%d).", it->refid, unit->data->id.c_str(), unit->netid);
 		else
@@ -4297,7 +4296,7 @@ void Level::CleanLevel(int building_id)
 			ctx.bloods->clear();
 			for(Unit* unit : *ctx.units)
 			{
-				if(!unit->IsAlive() && !unit->IsTeamMember())
+				if(!unit->IsAlive() && !unit->IsTeamMember() && !unit->to_remove)
 					RemoveUnit(unit, false);
 			}
 		}
@@ -4426,4 +4425,95 @@ bool Level::IsSafe()
 		else
 			return (location->state == LS_CLEARED);
 	}
+}
+
+//=================================================================================================
+CanLeaveLocationResult Level::CanLeaveLocation(Unit& unit)
+{
+	if(QM.quest_secret->state == Quest_Secret::SECRET_FIGHT)
+		return CanLeaveLocationResult::InCombat;
+
+	if(city_ctx)
+	{
+		for(Unit* p_unit : Team.members)
+		{
+			Unit& u = *p_unit;
+			if(u.summoner != nullptr)
+				continue;
+
+			if(u.busy != Unit::Busy_No && u.busy != Unit::Busy_Tournament)
+				return CanLeaveLocationResult::TeamTooFar;
+
+			if(u.IsPlayer())
+			{
+				if(u.in_building != -1 || Vec3::Distance2d(unit.pos, u.pos) > 8.f)
+					return CanLeaveLocationResult::TeamTooFar;
+			}
+
+			for(vector<Unit*>::iterator it2 = local_ctx.units->begin(), end2 = local_ctx.units->end(); it2 != end2; ++it2)
+			{
+				Unit& u2 = **it2;
+				if(&u != &u2 && u2.IsStanding() && u.IsEnemy(u2) && u2.IsAI() && u2.ai->in_combat
+					&& Vec3::Distance2d(u.pos, u2.pos) < ALERT_RANGE && CanSee(u, u2))
+					return CanLeaveLocationResult::InCombat;
+			}
+		}
+	}
+	else
+	{
+		for(Unit* p_unit : Team.members)
+		{
+			Unit& u = *p_unit;
+			if(u.summoner != nullptr)
+				continue;
+
+			if(u.busy != Unit::Busy_No || Vec3::Distance2d(unit.pos, u.pos) > 8.f)
+				return CanLeaveLocationResult::TeamTooFar;
+
+			for(vector<Unit*>::iterator it2 = local_ctx.units->begin(), end2 = local_ctx.units->end(); it2 != end2; ++it2)
+			{
+				Unit& u2 = **it2;
+				if(&u != &u2 && u2.IsStanding() && u.IsEnemy(u2) && u2.IsAI() && u2.ai->in_combat
+					&& Vec3::Distance2d(u.pos, u2.pos) < ALERT_RANGE && CanSee(u, u2))
+					return CanLeaveLocationResult::InCombat;
+			}
+		}
+	}
+
+	return CanLeaveLocationResult::Yes;
+}
+
+//=================================================================================================
+Vec4 Level::GetFogParams()
+{
+	if(cl_fog)
+		return fog_params;
+	else
+		return Vec4(camera.draw_range, camera.draw_range + 1, 1, 0);
+}
+
+//=================================================================================================
+Vec4 Level::GetAmbientColor()
+{
+	if(!cl_lighting)
+		return Vec4(1, 1, 1, 1);
+	return ambient_color;
+}
+
+//=================================================================================================
+Vec4 Level::GetLightDir()
+{
+	Vec3 light_dir(sin(light_angle), 2.f, cos(light_angle));
+	light_dir.Normalize();
+	return Vec4(light_dir, 1);
+}
+
+//=================================================================================================
+void Level::SetOutsideParams()
+{
+	camera.draw_range = 80.f;
+	clear_color2 = Color::White;
+	fog_params = Vec4(40, 80, 40, 0);
+	fog_color = Vec4(0.9f, 0.85f, 0.8f, 1);
+	ambient_color = Vec4(0.5f, 0.5f, 0.5f, 1);
 }

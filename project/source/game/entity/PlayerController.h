@@ -18,7 +18,8 @@ enum NextAction
 	NA_USE, // use usable
 	NA_SELL, // sell equipped item
 	NA_PUT, // put equipped item in container
-	NA_GIVE // give equipped item
+	NA_GIVE, // give equipped item
+	NA_EQUIP_DRAW // equip item and draw it if possible
 };
 
 //-----------------------------------------------------------------------------
@@ -82,6 +83,35 @@ inline int GetRequiredSkillPoints(int level)
 }
 
 //-----------------------------------------------------------------------------
+struct Shortcut
+{
+	static const uint MAX = 10;
+
+	enum Type
+	{
+		TYPE_NONE,
+		TYPE_SPECIAL,
+		TYPE_ITEM
+	};
+
+	enum Special
+	{
+		SPECIAL_MELEE_WEAPON,
+		SPECIAL_RANGED_WEAPON,
+		SPECIAL_ACTION,
+		SPECIAL_HEALING_POTION
+	};
+
+	Type type;
+	union
+	{
+		int value;
+		const Item* item;
+	};
+	bool trigger;
+};
+
+//-----------------------------------------------------------------------------
 struct PlayerController : public HeroPlayerCommon
 {
 	struct StatData
@@ -110,7 +140,7 @@ struct PlayerController : public HeroPlayerCommon
 		};
 	} next_action_data;
 	WeaponType last_weapon;
-	bool godmode, noclip, is_local, recalculate_level, leaving_event, always_run, last_ring;
+	bool godmode, noclip, invisible, is_local, recalculate_level, leaving_event, always_run, last_ring;
 	int id, free_days, action_charges, learning_points, exp, exp_need, exp_level;
 	//----------------------
 	enum Action
@@ -139,6 +169,7 @@ struct PlayerController : public HeroPlayerCommon
 	int kills, dmg_done, dmg_taken, knocks, arena_fights, stat_flags;
 	vector<TakenPerk> perks;
 	vector<Unit*> action_targets;
+	Shortcut shortcuts[Shortcut::MAX];
 
 	PlayerController() : dialog_ctx(nullptr), stat_flags(0), player_info(nullptr), is_local(false), action_recharge(0.f),
 		action_cooldown(0.f), action_charges(0), last_ring(false)
@@ -151,6 +182,7 @@ struct PlayerController : public HeroPlayerCommon
 	void Init(Unit& _unit, bool partial = false);
 	void Update(float dt, bool is_local = true);
 private:
+	void InitShortcuts();
 	void Train(SkillId s, float points);
 	void Train(AttributeId a, float points);
 	void TrainMod(AttributeId a, float points);
@@ -167,7 +199,9 @@ public:
 
 	void Save(FileWriter& f);
 	void Load(FileReader& f);
+	void WriteStart(BitStreamWriter& f) const;
 	void Write(BitStreamWriter& f) const;
+	void ReadStart(BitStreamReader& f);
 	bool Read(BitStreamReader& f);
 
 	bool IsTradingWith(Unit* t) const
@@ -209,6 +243,10 @@ public:
 	void AddExp(int exp);
 	int GetExpNeed() const;
 	int GetTrainCost(int train) const;
+	void Yell();
+	int GetHealingPotion() const;
+	void ClearShortcuts();
+	void SetShortcut(int index, Shortcut::Type type, int value = 0);
 };
 
 //-----------------------------------------------------------------------------

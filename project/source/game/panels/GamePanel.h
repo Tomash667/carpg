@@ -23,7 +23,6 @@ public:
 	GamePanel();
 
 	void Draw(ControlDrawData* cdd = nullptr) override;
-	void Update(float dt) override;
 	void Event(GuiEvent e) override;
 	bool NeedCursor() const override { return true; }
 
@@ -32,15 +31,10 @@ public:
 	virtual void FormatBox(bool refresh) {}
 
 	static TEX tBackground;
-	//Int2 min_size;
 	uint order;
 
 private:
 	void DrawBoxInternal();
-
-	/*bool resizing, draging, shift_size; // zmiana rozmiaru z shiftem zrobiona tylko dla lewego dolnego rogu
-	int move_what;
-	Int2 move_offset;*/
 
 protected:
 	BOX_STATE box_state;
@@ -58,8 +52,8 @@ class GamePanelContainer : public Container
 {
 public:
 	GamePanelContainer();
-	void Draw(ControlDrawData* cdd/* =nullptr */);
-	void Update(float dt);
+	void Draw(ControlDrawData*);
+	void Update(float dt) override;
 	bool NeedCursor() const { return true; }
 
 	void Add(GamePanel* panel);

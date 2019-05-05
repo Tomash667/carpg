@@ -2,26 +2,21 @@
 #include "EngineCore.h"
 #include "SuperShader.h"
 #include "File.h"
-#include "Engine.h"
 #include "Render.h"
 #include "DirectX.h"
 
 extern string g_system_dir;
 
 //=================================================================================================
-SuperShader::SuperShader() : pool(nullptr)
-{
-}
-
-//=================================================================================================
-void SuperShader::InitOnce()
+SuperShader::SuperShader(Render* render) : render(render), pool(nullptr)
 {
 	V(D3DXCreateEffectPool(&pool));
-	Engine::Get().GetRender()->RegisterShader(this);
+
+	render->RegisterShader(this);
 }
 
 //=================================================================================================
-void SuperShader::Cleanup()
+SuperShader::~SuperShader()
 {
 	SafeRelease(pool);
 }
@@ -119,7 +114,6 @@ ID3DXEffect* SuperShader::GetShader(uint id)
 //=================================================================================================
 ID3DXEffect* SuperShader::CompileShader(uint id)
 {
-	Render* render = Engine::Get().GetRender();
 	int shader_version = render->GetShaderVersion();
 	D3DXMACRO macros[10] = { 0 };
 	uint i = 0;

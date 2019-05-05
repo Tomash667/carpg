@@ -17,6 +17,7 @@ class Camera2;
 class CustomCollisionWorld;
 class DebugDrawer;
 class Engine;
+class GrassShader;
 class Pak;
 class Render;
 class RenderTarget;
@@ -28,6 +29,7 @@ class ShaderHandler;
 class SimpleScene;
 class SoundManager;
 class SuperShader;
+class TerrainShader;
 
 // Resource types
 struct Mesh;

@@ -12,7 +12,6 @@ struct NetChangePlayer
 	{
 		PICKUP, // item picked up [int(id)-count, int(count)-team count]
 		LOOT, // response to looting [bool(id)-can loot, if can: ItemListTeam]
-		GOLD_MSG, // message about gained gold [bool(id)-default msg, int(count)-count]
 		START_DIALOG, // start dialog with unit or is busy [int(netid)-unit]
 		END_DIALOG, // end of dialog []
 		SHOW_DIALOG_CHOICES, // show dialog choices [auto:byte-count, char-escape choice, vector<string1>-choices]
@@ -56,6 +55,7 @@ struct NetChangePlayer
 		REMOVE_EFFECT, // remove effect from player [char(id)-effect, char(count)-source, char(a1)-source_id, char(a2)-value]
 		ON_REST, // player is resting [byte(count)-days]
 		GAME_MESSAGE_FORMATTED, // add formatted message [int(id)-game message id, int(a)-subtype, int(count)-value]
+		SOUND, // play sound [int(id)-sound id (0-gold)]
 
 		MAX
 	} type;

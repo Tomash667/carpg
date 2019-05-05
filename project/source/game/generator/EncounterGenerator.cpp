@@ -125,7 +125,7 @@ void EncounterGenerator::OnEnter()
 	L.ApplyContext(outside, L.local_ctx);
 
 	ApplyTiles();
-	game.SetOutsideParams();
+	L.SetOutsideParams();
 
 	// generate objects
 	game.LoadingStep(game.txGeneratingObjects);

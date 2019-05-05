@@ -554,8 +554,6 @@ void Engine::Init(StartupOptions& options)
 	sound_mgr->Init(options);
 	phy_world = CustomCollisionWorld::Init();
 	ResourceManager::Get().Init(render->GetDevice(), sound_mgr.get());
-	debug_drawer.reset(new DebugDrawer);
-	debug_drawer->InitOnce();
 }
 
 //=================================================================================================

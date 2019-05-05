@@ -1,7 +1,7 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "LevelContext.h"
-#include "Game.h"
+#include "GameCommon.h"
 #include "Chest.h"
 #include "Level.h"
 #include "City.h"

@@ -19,12 +19,9 @@ typedef bool (Level::*CollisionCheck)(const CollisionObject& co, const Vec3& pos
 typedef bool (Level::*CollisionCheckRect)(const CollisionObject& co, const Box2d& box) const;
 
 //-----------------------------------------------------------------------------
-#define CAM_COLLIDER ((void*)1)
-
-//-----------------------------------------------------------------------------
 struct CollisionObject
 {
-	enum Type
+	enum Type : short
 	{
 		RECTANGLE,
 		SPHERE,
@@ -46,8 +43,9 @@ struct CollisionObject
 			int extra;
 		};
 	};
+	void* owner; // pointer to Object/Chest/Usable
 	Type type;
-	void* ptr; // w³aœciciel tej kolizji (np Object) lub CAM_COLLIDER
+	bool cam_collider;
 };
 
 //-----------------------------------------------------------------------------

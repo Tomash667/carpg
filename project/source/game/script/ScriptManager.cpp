@@ -619,7 +619,7 @@ void ScriptManager::RegisterGame()
 		.Method("void OrderMove(const Vec3& in, MOVE_TYPE)", asMETHOD(Unit, OrderMove))
 		.Method("void OrderLookAt(const Vec3& in)", asMETHOD(Unit, OrderLookAt))
 		.Method("void OrderTimer(float)", asMETHOD(Unit, OrderTimer))
-		.Method("void Talk(const string& in, int = -1)", asMETHOD(Unit, Talk))
+		.Method("void Talk(const string& in, int = -1)", asMETHOD(Unit, TalkS))
 		.WithInstance("Unit@ target", &ctx.target);
 
 	ForType("Player")

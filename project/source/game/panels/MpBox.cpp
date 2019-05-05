@@ -6,6 +6,7 @@
 #include "GameGui.h"
 #include "BitStreamFunc.h"
 #include "Team.h"
+#include "CommandParser.h"
 
 //=================================================================================================
 MpBox::MpBox() : have_focus(false)
@@ -80,7 +81,7 @@ void MpBox::OnInput(const string& str)
 {
 	Game& game = Game::Get();
 	if(str[0] == '/')
-		game.ParseCommand(str.substr(1), PrintMsgFunc(&game, &Game::AddMultiMsg), PS_CHAT);
+		global::cmdp->ParseCommand(str.substr(1), PrintMsgFunc(&game, &Game::AddMultiMsg), PS_CHAT);
 	else
 	{
 		if(Net::IsOnline() && N.active_players != 1)

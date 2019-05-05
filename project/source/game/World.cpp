@@ -160,7 +160,7 @@ void World::Update(int days, UpdateMode mode)
 	{
 		Info("Game over: you are too old.");
 		Game& game = Game::Get();
-		game.CloseAllPanels(true);
+		global::gui->CloseAllPanels(true);
 		game.end_of_game = true;
 		game.death_fade = 0.f;
 		if(Net::IsOnline())
@@ -1094,8 +1094,7 @@ void World::SetLocationImageAndName(Location* l)
 		do
 		{
 			s2 = RandomItem(txLocationEnd).c_str();
-		}
-		while(_stricmp(s1, s2) == 0);
+		} while(_stricmp(s1, s2) == 0);
 		l->name += s1;
 		if(l->name[l->name.length() - 1] == s2[0])
 			l->name += (s2 + 1);
@@ -1105,7 +1104,7 @@ void World::SetLocationImageAndName(Location* l)
 		bool exists = false;
 		for(Location* l2 : locations)
 		{
-			if(l != l2 && l2->name == l->name)
+			if(l2 && l != l2 && l2->name == l->name)
 			{
 				exists = true;
 				break;
@@ -2035,8 +2034,7 @@ City* World::GetRandomSettlement(delegate<bool(City*)> pred)
 		if(pred(loc))
 			return loc;
 		index = (index + 1) % settlements;
-	}
-	while(index != start_index);
+	} while(index != start_index);
 	return nullptr;
 }
 
@@ -2063,8 +2061,7 @@ Location* World::GetRandomSettlementWeighted(delegate<float(Location*)> func)
 			best_index = index;
 		}
 		index = (index + 1) % settlements;
-	}
-	while(index != start_index);
+	} while(index != start_index);
 	return (best_index != -1 ? locations[best_index] : nullptr);
 }
 
@@ -2807,7 +2804,7 @@ void World::AbadonLocation(Location* loc)
 		// remove items from chests
 		for(Chest* chest : outside->chests)
 		{
-			if(!chest->user)
+			if(!chest->GetUser())
 				chest->items.clear();
 		}
 	}

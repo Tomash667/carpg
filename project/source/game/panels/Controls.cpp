@@ -384,12 +384,15 @@ void Controls::Event(GuiEvent e)
 	else if(e == Button_Ok)
 	{
 		if(changed)
-			game->SaveGameKeys();
+		{
+			game->settings.SaveGameKeys(game->cfg);
+			game->SaveCfg();
+		}
 		CloseDialog();
 	}
 	else if(e == Button_Reset)
 	{
-		game->ResetGameKeys();
+		game->settings.ResetGameKeys();
 		changed = true;
 	}
 }
@@ -440,7 +443,7 @@ void Controls::InitKeyText()
 			key_text[i] = nullptr;
 	}
 
-	game->InitGameKeys();
+	game->settings.InitGameKeys();
 }
 
 //=================================================================================================

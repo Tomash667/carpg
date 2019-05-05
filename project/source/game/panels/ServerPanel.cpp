@@ -15,6 +15,7 @@
 #include "PlayerInfo.h"
 #include "Team.h"
 #include "LobbyApi.h"
+#include "CommandParser.h"
 
 //-----------------------------------------------------------------------------
 #ifdef _DEBUG
@@ -438,10 +439,10 @@ bool ServerPanel::DoLobbyUpdate(BitStreamReader& f)
 				}
 				else if(id != Team.my_id)
 				{
-					auto pinfo = new PlayerInfo;
+					PlayerInfo* pinfo = new PlayerInfo;
 					N.players.push_back(pinfo);
 
-					auto& info = *pinfo;
+					PlayerInfo& info = *pinfo;
 					info.state = PlayerInfo::IN_LOBBY;
 					info.id = id;
 					info.loaded = true;
@@ -1394,7 +1395,7 @@ void ServerPanel::OnKick(int id)
 void ServerPanel::OnInput(const string& str)
 {
 	if(str[0] == '/')
-		game->ParseCommand(str.substr(1), PrintMsgFunc(this, &ServerPanel::AddMsg), PS_LOBBY);
+		global::cmdp->ParseCommand(str.substr(1), PrintMsgFunc(this, &ServerPanel::AddMsg), PS_LOBBY);
 	else
 	{
 		// wyœlij tekst

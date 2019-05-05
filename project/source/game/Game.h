@@ -3,7 +3,6 @@
 #include "Engine.h"
 #include "Const.h"
 #include "GameCommon.h"
-#include "ConsoleCommands.h"
 #include "Net.h"
 #include "DialogContext.h"
 #include "BaseLocation.h"
@@ -11,7 +10,6 @@
 #include "SceneNode.h"
 #include "QuadTree.h"
 #include "Music.h"
-#include "Camera.h"
 #include "Config.h"
 #include "Settings.h"
 #include "Blood.h"
@@ -19,7 +17,7 @@
 #include "PlayerController.h"
 
 //-----------------------------------------------------------------------------
-// Tryb szybkiego uruchamiania gry
+// quickstart mode
 enum QUICKSTART
 {
 	QUICKSTART_NONE,
@@ -32,7 +30,7 @@ enum QUICKSTART
 };
 
 //-----------------------------------------------------------------------------
-// Stan gry
+// game state
 enum GAME_STATE
 {
 	GS_MAIN_MENU,
@@ -43,18 +41,6 @@ enum GAME_STATE
 	GS_QUIT,
 	GS_LOAD_MENU
 };
-
-extern const float ALERT_RANGE;
-extern const float ALERT_SPAWN_RANGE;
-extern const float PICKUP_RANGE;
-extern const float ARROW_TIMER;
-extern const float MIN_H;
-
-extern const float HIT_SOUND_DIST;
-extern const float ARROW_HIT_SOUND_DIST;
-extern const float SHOOT_SOUND_DIST;
-extern const float SPAWN_SOUND_DIST;
-extern const float MAGIC_SCROLL_SOUND_DIST;
 
 struct AttachedSound
 {
@@ -102,8 +88,6 @@ enum DRAW_FLAGS
 	DF_MENU = 1 << 15,
 };
 
-typedef delegate<void(cstring)> PrintMsgFunc;
-
 struct PostEffect
 {
 	int id;
@@ -121,15 +105,15 @@ public:
 	~Game();
 
 	void OnCleanup() override;
-	void OnDraw();
+	void OnDraw() override;
 	void DrawGame(RenderTarget* target);
 	void OnDebugDraw(DebugDrawer* dd);
-	void OnTick(float dt);
-	void OnChar(char c);
-	void OnReload();
-	void OnReset();
-	void OnResize();
-	void OnFocus(bool focus, const Int2& activation_point);
+	void OnTick(float dt) override;
+	void OnChar(char c) override;
+	void OnReload() override;
+	void OnReset() override;
+	void OnResize() override;
+	void OnFocus(bool focus, const Int2& activation_point) override;
 
 	bool Start0(StartupOptions& options);
 	void GetTitle(LocalString& s);
@@ -182,11 +166,8 @@ public:
 	int uv_mod;
 	QuadTree quadtree;
 	LevelParts level_parts;
-	VB vbInstancing;
-	uint vb_instancing_max;
 	vector<const vector<Matrix>*> grass_patches[2];
 	uint grass_count[2];
-	float lights_dt;
 
 	void InitScene();
 	void CreateVertexDeclarations();
@@ -233,7 +214,7 @@ public:
 	int profiler_mode;
 
 	//-----------------------------------------------------------------
-	// ZASOBY
+	// resources
 	//-----------------------------------------------------------------
 	MeshPtr aHumanBase, aHair[5], aBeard[5], aMustache[2], aEyebrows;
 	MeshPtr aBox, aCylinder, aSphere, aCapsule;
@@ -241,22 +222,18 @@ public:
 	VertexDataPtr vdSchodyGora, vdSchodyDol, vdNaDrzwi;
 	RenderTarget* rt_save, *rt_item, *rt_item_rot;
 	TEX tMinimap;
-	TEX tCzern, tEmerytura, tPortal, tLightingLine, tRip, tEquipped, tWarning, tError;
+	TEX tCzern, tPortal, tLightingLine, tRip, tEquipped, tWarning, tError;
 	TexturePtr tKrew[BLOOD_MAX], tKrewSlad[BLOOD_MAX], tIskra, tSpawn;
 	TexturePack tFloor[2], tWall[2], tCeil[2], tFloorBase, tWallBase, tCeilBase;
-	ID3DXEffect* eMesh, *eParticle, *eSkybox, *eTerrain, *eArea, *ePostFx, *eGlow, *eGrass;
-	D3DXHANDLE techMesh, techMeshDir, techMeshSimple, techMeshSimple2, techMeshExplo, techParticle, techSkybox, techTerrain, techArea, techTrail, techGlowMesh,
-		techGlowAni, techGrass;
+	ID3DXEffect* eMesh, *eParticle, *eSkybox, *eArea, *ePostFx, *eGlow;
+	D3DXHANDLE techMesh, techMeshDir, techMeshSimple, techMeshSimple2, techMeshExplo, techParticle, techSkybox, techArea, techTrail, techGlowMesh, techGlowAni;
 	D3DXHANDLE hAniCombined, hAniWorld, hAniBones, hAniTex, hAniFogColor, hAniFogParam, hAniTint, hAniHairColor, hAniAmbientColor, hAniLightDir,
 		hAniLightColor, hAniLights, hMeshCombined, hMeshWorld, hMeshTex, hMeshFogColor, hMeshFogParam, hMeshTint, hMeshAmbientColor, hMeshLightDir,
 		hMeshLightColor, hMeshLights, hParticleCombined, hParticleTex, hSkyboxCombined, hSkyboxTex, hAreaCombined, hAreaColor, hAreaPlayerPos, hAreaRange,
-		hTerrainCombined, hTerrainWorld, hTerrainTexBlend, hTerrainTex[5], hTerrainColorAmbient, hTerrainColorDiffuse, hTerrainLightDir, hTerrainFogColor,
-		hTerrainFogParam, hGuiSize, hGuiTex, hPostTex, hPostPower, hPostSkill, hGlowCombined, hGlowBones, hGlowColor, hGlowTex, hGrassViewProj, hGrassTex,
-		hGrassFogColor, hGrassFogParams, hGrassAmbientColor;
+		hGuiSize, hGuiTex, hPostTex, hPostPower, hPostSkill, hGlowCombined, hGlowBones, hGlowColor, hGlowTex;
 	SOUND sGulp, sCoins, sBow[2], sDoor[3], sDoorClosed[2], sDoorClose, sItem[10], sChestOpen, sChestClose, sDoorBudge, sRock, sWood, sCrystal,
 		sMetal, sBody[5], sBone, sSkin, sArenaFight, sArenaWin, sArenaLost, sUnlock, sEvil, sEat, sSummon, sZap;
 	VB vbParticle;
-	static cstring txGoldPlus, txQuestCompletedGold;
 	cstring txLoadGuiTextures, txLoadParticles, txLoadPhysicMeshes, txLoadModels, txLoadSpells, txLoadSounds, txLoadMusic, txGenerateWorld;
 	TexturePtr tTrawa, tTrawa2, tTrawa3, tDroga, tZiemia, tPole;
 
@@ -306,7 +283,6 @@ public:
 	//-----------------------------------------------------------------
 	// GAME
 	//---------------------------------
-	Camera cam;
 	int start_version;
 	ItemTextureMap item_texture_map;
 	uint load_errors, load_warnings;
@@ -321,9 +297,7 @@ public:
 	VB vbDungeon;
 	IB ibDungeon;
 	Int2 dungeon_part[16], dungeon_part2[16], dungeon_part3[16], dungeon_part4[16];
-	vector<ParticleEmitter*> pes2;
-	Vec4 fog_color, fog_params, ambient_color;
-	bool cl_fog, cl_lighting, draw_particle_sphere, draw_unit_radius, draw_hitbox, draw_phy, draw_col;
+	bool draw_particle_sphere, draw_unit_radius, draw_hitbox, draw_phy, draw_col;
 	BaseObject obj_alpha;
 	float portal_anim, drunk_anim;
 	// post effect u¿ywa 3 tekstur lub jeœli jest w³¹czony multisampling 3 surface i 1 tekstury
@@ -337,7 +311,6 @@ public:
 	Settings settings;
 	bool have_console, inactive_update, noai, devmode, default_devmode, default_player_devmode, debug_info, debug_info2, dont_wander;
 	string cfg_file;
-	vector<ConsoleCommand> cmds;
 
 	void SetupConfigVars();
 
@@ -365,7 +338,7 @@ public:
 	//---------------------------------
 	// DIALOGS
 	DialogContext dialog_context;
-	vector<string> dialog_choices; // u¿ywane w MP u klienta
+	vector<string> dialog_choices; // used in client multiplayer mode
 	string predialog;
 
 	DialogContext* FindDialogContext(Unit* talker);
@@ -376,7 +349,6 @@ public:
 	Timer loading_t;
 	int loading_steps, loading_index;
 	bool loading_first_step;
-	Color clear_color2;
 	// used temporary at loading
 	vector<AIController*> ai_bow_targets, ai_cast_targets;
 	vector<Location*> load_location_quest;
@@ -406,12 +378,6 @@ public:
 	float grayout;
 	bool cl_postfx;
 
-	// keys
-	void InitGameKeys();
-	void ResetGameKeys();
-	void SaveGameKeys();
-	void LoadGameKeys();
-
 	void Draw();
 	void ExitToMenu();
 	void DoExitToMenu();
@@ -430,9 +396,6 @@ public:
 	void SpawnUnitEffect(Unit& unit);
 	void PlayerCheckObjectDistance(Unit& u, const Vec3& pos, void* ptr, float& best_dist, BeforePlayer type);
 	int CheckMove(Vec3& pos, const Vec3& dir, float radius, Unit* me, bool* is_small = nullptr);
-	void ParseCommand(const string& str, PrintMsgFunc print_func, PARSE_SOURCE ps = PS_UNKNOWN);
-	void CmdList(Tokenizer& t);
-	void AddCommands();
 	void UpdateAi(float dt);
 	void CheckAutoTalk(Unit& unit, float dt);
 	void ApplyLocationTexturePack(TexturePack& floor, TexturePack& wall, TexturePack& ceil, LocationTexturePack& tex);
@@ -444,11 +407,10 @@ public:
 	uint TestGameData(bool major);
 	void TestUnitSpells(const SpellList& spells, string& errors, uint& count);
 	Unit* CreateUnit(UnitData& base, int level = -1, Human* human_data = nullptr, Unit* test_unit = nullptr, bool create_physics = true, bool custom = false);
-	void ParseItemScript(Unit& unit, const ItemScript* script);
 	bool CheckForHit(LevelContext& ctx, Unit& unit, Unit*& hitted, Vec3& hitpoint);
 	bool CheckForHit(LevelContext& ctx, Unit& unit, Unit*& hitted, Mesh::Point& hitbox, Mesh::Point* bone, Vec3& hitpoint);
 	void UpdateParticles(LevelContext& ctx, float dt);
-	// wykonuje atak postaci
+	// perform character attack
 	enum ATTACK_RESULT
 	{
 		ATTACK_NOT_HIT,
@@ -468,11 +430,6 @@ public:
 	bool CanLoadGame() const;
 	bool CanSaveGame() const;
 	bool DoShieldSmash(LevelContext& ctx, Unit& attacker);
-	Vec4 GetFogColor();
-	Vec4 GetFogParams();
-	Vec4 GetAmbientColor();
-	Vec4 GetLightColor();
-	Vec4 GetLightDir();
 	void UpdateBullets(LevelContext& ctx, float dt);
 	Vec3 PredictTargetPos(const Unit& me, const Unit& target, float bullet_speed) const;
 	bool CanShootAtLocation(const Unit& me, const Unit& target, const Vec3& pos) const { return CanShootAtLocation2(me, &target, pos); }
@@ -481,7 +438,6 @@ public:
 	void LoadItemsData();
 	Unit* CreateUnitWithAI(LevelContext& ctx, UnitData& unit, int level = -1, Human* human_data = nullptr, const Vec3* pos = nullptr, const float* rot = nullptr, AIController** ai = nullptr);
 	void ChangeLevel(int where);
-	void OpenDoorsByTeam(const Int2& pt);
 	void ExitToMap();
 	SOUND GetMaterialSound(MATERIAL_TYPE m1, MATERIAL_TYPE m2);
 	void PlayAttachedSound(Unit& unit, SOUND sound, float distance);
@@ -534,9 +490,9 @@ public:
 	void LeaveLevel(LevelContext& ctx, bool clear);
 	void UpdateContext(LevelContext& ctx, float dt);
 	bool IsAnyoneTalking() const;
-	// to by mog³o byæ globalna funkcj¹
+	// this could be a global function
 	void PlayHitSound(MATERIAL_TYPE mat_weapon, MATERIAL_TYPE mat_body, const Vec3& hitpoint, float range, bool dmg);
-	// wczytywanie
+	// loading
 	void LoadingStart(int steps);
 	void LoadingStep(cstring text = nullptr, int end = 0);
 	void LoadResources(cstring text, bool worldmap);
@@ -557,13 +513,6 @@ public:
 	}
 	float PlayerAngleY();
 	void AttackReaction(Unit& attacked, Unit& attacker);
-	enum class CanLeaveLocationResult
-	{
-		Yes,
-		TeamTooFar,
-		InCombat
-	};
-	CanLeaveLocationResult CanLeaveLocation(Unit& unit);
 	void GenerateQuestUnits();
 	void GenerateQuestUnits2();
 	void UpdateQuests(int days);
@@ -572,32 +521,18 @@ public:
 	void UpdateGame2(float dt);
 	void OnCloseInventory();
 	void CloseInventory();
-	void CloseAllPanels(bool close_mp_box = false);
 	bool CanShowEndScreen();
 	void UpdateGameDialogClient();
 	void UpdateGameNet(float dt);
 	void PlayerUseUsable(Usable* u, bool after_action);
-	void UnitTalk(Unit& u, cstring text);
 	void OnEnterLocation();
 	void OnEnterLevel();
 	void OnEnterLevelOrLocation();
 	cstring GetRandomIdleText(Unit& u);
 	void HandleQuestEvent(Quest_Event* event);
 
-	// dodaje przedmiot do ekwipunku postaci (obs³uguje z³oto, otwarty ekwipunek i multiplayer)
-	void AddItem(Unit& unit, const Item* item, uint count, uint team_count, bool send_msg = true);
-	void AddItem(Unit& unit, const Item* item, uint count = 1, bool is_team = true, bool send_msg = true)
-	{
-		AddItem(unit, item, count, is_team ? count : 0, send_msg);
-	}
-
-	bool ValidateTarget(Unit& u, Unit* target);
-
 	void UpdateLights(vector<Light>& lights);
 	void UpdatePostEffects(float dt);
-
-	void PlayerYell(Unit& u);
-	void SetOutsideParams();
 
 	//-----------------------------------------------------------------
 	// MENU / MAIN MENU / OPTIONS
@@ -656,14 +591,12 @@ public:
 	struct WarpData
 	{
 		Unit* u;
-		int where; // -1-z budynku, >=0-do budynku
+		int where; // <-1 - get outside the building,  >=0 - get inside the building
 		float timer;
 	};
 	vector<WarpData> mp_warps;
-	float train_move; // u¿ywane przez klienta do trenowania przez chodzenie
+	float train_move; // used by client to training by walking
 	bool anyone_talking;
-	// u¿ywane u klienta który nie zapamiêtuje zmiennej 'pc'
-	bool godmode, noclip, invisible;
 	float interpolate_timer;
 	bool paused;
 	vector<ItemSlot> chest_trade; // used by clients when trading
@@ -722,10 +655,12 @@ public:
 	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 	LocationGeneratorFactory* loc_gen_factory;
 	Pathfinding* pathfinding;
-	SuperShader* super_shader;
 	Arena* arena;
 	GlobalGui* gui;
-	CommandParser* cmdp;
+	std::unique_ptr<DebugDrawer> debug_drawer;
+	std::unique_ptr<GrassShader> grass_shader;
+	std::unique_ptr<SuperShader> super_shader;
+	std::unique_ptr<TerrainShader> terrain_shader;
 
 private:
 	vector<GameComponent*> components;

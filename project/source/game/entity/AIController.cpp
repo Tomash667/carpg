@@ -48,7 +48,7 @@ void AIController::Save(GameWriter& f)
 {
 	if(state == Cast)
 	{
-		if(!Game::Get().ValidateTarget(*unit, cast_target))
+		if(!ValidateTarget(cast_target))
 		{
 			state = Idle;
 			idle_action = Idle_None;
@@ -260,7 +260,7 @@ bool AIController::CheckPotion(bool in_combat)
 				if(unit->busy == Unit::Busy_No && unit->IsFollower() && !unit->summoner)
 				{
 					Game& game = Game::Get();
-					game.UnitTalk(*unit, RandomString(game.txAiNoHpPot));
+					unit->Talk(RandomString(game.txAiNoHpPot));
 				}
 				have_potion = 0;
 				return false;
@@ -341,4 +341,20 @@ bool AIController::CanWander() const
 	}
 	else
 		return false;
+}
+
+//=================================================================================================
+bool AIController::ValidateTarget(Unit* target)
+{
+	assert(target);
+
+	LevelContext& ctx = L.GetContext(*unit);
+
+	for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
+	{
+		if(*it == target)
+			return true;
+	}
+
+	return false;
 }

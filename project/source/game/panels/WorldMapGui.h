@@ -27,7 +27,7 @@ public:
 	}
 	bool HaveFocus() const { return !combo_box.focus; }
 
-	cstring txGameTimeout, txWorldDate, txCurrentLoc, txCitizens, txAvailable, txTarget, txDistance, txTravelTime, txDay, txDays, txOnlyLeaderCanTravel;
+	cstring txWorldDate, txCurrentLoc, txCitizens, txAvailable, txTarget, txDistance, txTravelTime, txDay, txDays, txOnlyLeaderCanTravel;
 	int picked_location;
 	DialogBox* dialog_enc;
 

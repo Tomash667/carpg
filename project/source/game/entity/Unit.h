@@ -113,6 +113,7 @@ enum UnitOrder
 	ORDER_LOOK_AT,
 	ORDER_ESCAPE_TO,
 	ORDER_ESCAPE_TO_UNIT,
+	ORDER_GOTO_INN,
 	ORDER_MAX
 };
 
@@ -215,7 +216,7 @@ struct Unit
 	const Item* used_item;
 	bool used_item_is_team;
 	vector<Effect> effects;
-	bool hitted, invisible, talking, run_attack, to_remove, temporary, changed, dont_attack, assist, attack_team, fake_unit, moved, mark, running;
+	bool hitted, talking, run_attack, to_remove, temporary, changed, dont_attack, assist, attack_team, fake_unit, moved, mark, running;
 	btCollisionObject* cobj;
 	Usable* usable;
 	UnitEventHandler* event_handler;
@@ -472,7 +473,9 @@ public:
 	bool HaveQuestItem(int quest_refid);
 	void RemoveQuestItem(int quest_refid);
 	void RemoveQuestItemS(Quest* quest);
-	bool HaveItem(const Item* item);
+	bool HaveItem(const Item* item, bool owned = false) const;
+	bool HaveItemEquipped(const Item* item) const;
+	bool SlotRequireHideWeapon(ITEM_SLOT slot) const;
 	float GetAttackSpeed(const Weapon* weapon = nullptr) const;
 	float GetAttackSpeedModFromStrength(const Weapon& wep) const
 	{
@@ -546,8 +549,9 @@ public:
 	// szuka przedmiotu w ekwipunku, zwraca i_index (INVALID_IINDEX jeœli nie ma takiego przedmiotu)
 	static const int INVALID_IINDEX = (-SLOT_INVALID - 1);
 	int FindItem(const Item* item, int quest_refid = -1) const;
+	int FindItem(delegate<bool(const ItemSlot& slot)> callback) const;
 	int FindQuestItem(int quest_refid) const;
-	bool FindQuestItem(cstring id, Quest** quest, int* i_index, bool not_active = false);
+	bool FindQuestItem(cstring id, Quest** quest, int* i_index, bool not_active = false, int required_refid = -1);
 	void RemoveItem(int iindex, bool active_location = true);
 	uint RemoveItem(int i_index, uint count);
 	uint RemoveItem(const Item* item, uint count);
@@ -679,13 +683,9 @@ public:
 	bool DropItems(int index, uint count);
 	// dodaje przedmiot do ekwipunku, zwraca czy siê zestackowa³
 	bool AddItem(const Item* item, uint count, uint team_count);
-	bool AddItem(const Item* item, uint count = 1, bool is_team = true)
-	{
-		return AddItem(item, count, is_team ? count : 0);
-	}
-	// add item and show game message, send net notification, calls preload
-	void AddItem2(const Item* item, uint count, uint team_count, bool show_msg = true);
-	void AddItemS(const Item* item, uint count) { AddItem2(item, count, 0); }
+	// add item and show game message, send net notification, calls preload, refresh inventory if open
+	void AddItem2(const Item* item, uint count, uint team_count, bool show_msg = true, bool notify = true);
+	void AddItemS(const Item* item, uint count) { AddItem2(item, count, 0u); }
 	void AddTeamItemS(const Item* item, uint count) { AddItem2(item, count, count); }
 	// dodaje przedmiot i zak³ada jeœli nie ma takiego typu, przedmiot jest dru¿ynowy
 	void AddItemAndEquipIfNone(const Item* item, uint count = 1);
@@ -829,6 +829,7 @@ public:
 	void UpdateInventory(bool notify = true);
 	bool IsEnemy(Unit& u, bool ignore_dont_attack = false) const;
 	bool IsFriend(Unit& u) const;
+	bool IsInvisible() const { return IsPlayer() && player->invisible; }
 	void RefreshStock();
 	float GetMaxMorale() const { return IS_SET(data->flags, F_COWARD) ? 5.f : 10.f; }
 	void AddDialog(Quest_Scripted* quest, GameDialog* dialog);
@@ -847,7 +848,8 @@ public:
 	void OrderMove(const Vec3& pos, MoveType move_type);
 	void OrderLookAt(const Vec3& pos);
 	void OrderTimer(float time) { order_timer = time; }
-	void Talk(const string& text, int play_anim = -1);
+	void Talk(cstring text, int play_anim = -1);
+	void TalkS(const string& text, int play_anim = -1) { Talk(text.c_str(), play_anim); }
 
 	//-----------------------------------------------------------------------------
 	static vector<Unit*> refid_table;

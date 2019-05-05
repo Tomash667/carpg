@@ -4,6 +4,7 @@
 #include "GameComponent.h"
 #include "LevelContext.h"
 #include "ObjectEntity.h"
+#include "Camera.h"
 
 //-----------------------------------------------------------------------------
 enum EnterFrom
@@ -19,6 +20,14 @@ enum WarpTo
 {
 	WARP_OUTSIDE = -1,
 	WARP_ARENA = -2
+};
+
+//-----------------------------------------------------------------------------
+enum class CanLeaveLocationResult
+{
+	Yes,
+	TeamTooFar,
+	InCombat
 };
 
 //-----------------------------------------------------------------------------
@@ -142,7 +151,7 @@ public:
 	Int2 GetSpawnPoint();
 	Vec3 GetExitPos(Unit& u, bool force_border = false);
 	bool CanSee(Unit& unit, Unit& unit2);
-	bool CanSee(LevelContext& ctx, const Vec3& v1, const Vec3& v2, bool is_door = false);
+	bool CanSee(LevelContext& ctx, const Vec3& v1, const Vec3& v2, bool is_door = false, void* ignored = nullptr);
 	bool KillAll(int mode, Unit& unit, Unit* ignore);
 	void AddPlayerTeam(const Vec3& pos, float rot, bool reenter, bool hide_weapon);
 	void UpdateDungeonMinimap(bool in_level);
@@ -163,11 +172,23 @@ public:
 	GroundItem* FindItem(const Item* item);
 	Unit* GetMayor();
 	bool IsSafe();
+	CanLeaveLocationResult CanLeaveLocation(Unit& unit);
+	Vec4 GetFogColor() { return fog_color; }
+	Vec4 GetFogParams();
+	Vec4 GetAmbientColor();
+	Vec4 GetLightColor() { return Vec4(1, 1, 1, 1); }
+	Vec4 GetLightDir();
+	void SetOutsideParams();
 
 	Location* location; // same as W.current_location
 	int location_index; // same as W.current_location_index
 	int dungeon_level;
 	bool reenter;
+	Camera camera;
+	Vec4 fog_color, fog_params, ambient_color;
+	bool cl_fog, cl_lighting;
+	float lights_dt;
+	Color clear_color2;
 
 	// colliders
 	CustomCollisionWorld* phy_world;

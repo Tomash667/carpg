@@ -17,7 +17,6 @@
 #include "ScriptManager.h"
 #include "SaveState.h"
 #include "World.h"
-#include "DirectX.h"
 #include "LocationGeneratorFactory.h"
 #include "Pathfinding.h"
 #include "Level.h"
@@ -33,6 +32,8 @@
 #include "CommandParser.h"
 #include "CreateServerPanel.h"
 #include "Render.h"
+#include "GrassShader.h"
+#include "TerrainShader.h"
 
 extern void HumanPredraw(void* ptr, Matrix* mat, int n);
 extern const int ITEM_IMAGE_SIZE;
@@ -78,17 +79,19 @@ void Game::PreconfigureGame()
 	Info("Game: Preconfiguring game.");
 
 	UnlockCursor(false);
-	cam_base = &cam;
+	cam_base = &L.camera;
 
 	// set animesh callback
 	MeshInstance::Predraw = HumanPredraw;
 
 	// game components
 	pathfinding = new Pathfinding;
+	global::pathfinding = pathfinding;
 	arena = new Arena;
 	loc_gen_factory = new LocationGeneratorFactory;
 	gui = new GlobalGui;
-	cmdp = new CommandParser;
+	global::gui = gui;
+	global::cmdp = new CommandParser;
 	components.push_back(&W);
 	components.push_back(pathfinding);
 	components.push_back(&QM);
@@ -97,7 +100,7 @@ void Game::PreconfigureGame()
 	components.push_back(gui);
 	components.push_back(&L);
 	components.push_back(&SM);
-	components.push_back(cmdp);
+	components.push_back(global::cmdp);
 	components.push_back(&N);
 	for(GameComponent* component : components)
 		component->Prepare();
@@ -114,28 +117,18 @@ void Game::PreconfigureGame()
 //=================================================================================================
 void Game::CreatePlaceholderResources()
 {
-	// create item missing texture
-	SURFACE surf;
-	D3DLOCKED_RECT rect;
-
-	V(GetRender()->GetDevice()->CreateTexture(ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &missing_texture, nullptr));
-	V(missing_texture->GetSurfaceLevel(0, &surf));
-	V(surf->LockRect(&rect, nullptr, 0));
-
-	const DWORD col[2] = { Color(255, 0, 255), Color(0, 255, 0) };
-
+	missing_texture = GetRender()->CreateTexture(Int2(ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE));
+	TextureLock lock(missing_texture);
+	const uint col[2] = { Color(255, 0, 255), Color(0, 255, 0) };
 	for(int y = 0; y < ITEM_IMAGE_SIZE; ++y)
 	{
-		DWORD* pix = (DWORD*)(((byte*)rect.pBits) + rect.Pitch*y);
+		uint* pix = lock[y];
 		for(int x = 0; x < ITEM_IMAGE_SIZE; ++x)
 		{
 			*pix = col[(x >= ITEM_IMAGE_SIZE / 2 ? 1 : 0) + (y >= ITEM_IMAGE_SIZE / 2 ? 1 : 0) % 2];
 			++pix;
 		}
 	}
-
-	surf->UnlockRect();
-	surf->Release();
 }
 
 //=================================================================================================
@@ -302,10 +295,9 @@ void Game::ConfigureGame()
 	gui->load_screen->Tick(txConfiguringGame);
 
 	InitScene();
-	super_shader->InitOnce();
-	AddCommands();
-	ResetGameKeys();
-	LoadGameKeys();
+	global::cmdp->AddCommands();
+	settings.ResetGameKeys();
+	settings.LoadGameKeys(cfg);
 	BaseLocation::SetRoomPointers();
 
 	for(int i = 0; i < SG_MAX; ++i)
@@ -353,17 +345,20 @@ void Game::PostconfigureGame()
 	for(GameComponent* component : components)
 		component->PostInit();
 
-	GetDebugDrawer()->SetHandler(delegate<void(DebugDrawer*)>(this, &Game::OnDebugDraw));
-
-	// get pointer to gold item
-	Item::gold = Item::Get("gold");
-
 	// copy first dungeon texture to second
 	tFloor[1] = tFloorBase;
 	tCeil[1] = tCeilBase;
 	tWall[1] = tWallBase;
 
 	ItemScript::Init();
+
+	// shaders
+	Render* render = GetRender();
+	debug_drawer.reset(new DebugDrawer(render));
+	grass_shader.reset(new GrassShader(render));
+	super_shader.reset(new SuperShader(render));
+	terrain_shader.reset(new TerrainShader(render));
+	debug_drawer->SetHandler(delegate<void(DebugDrawer*)>(this, &Game::OnDebugDraw));
 
 	// test & validate game data (in debug always check some things)
 	if(testing)
@@ -405,7 +400,6 @@ void Game::PostconfigureGame()
 	}
 
 	// save config
-	Render* render = GetRender();
 	cfg.Add("adapter", render->GetAdapter());
 	cfg.Add("resolution", Format("%dx%d", GetWindowSize().x, GetWindowSize().y));
 	cfg.Add("refresh", render->GetRefreshRate());
@@ -525,7 +519,6 @@ void Game::AddLoadTasks()
 
 	// gui textures
 	res_mgr.AddTaskCategory(txLoadGuiTextures);
-	tex_mgr.AddLoadTask("emerytura.jpg", tEmerytura);
 	tex_mgr.AddLoadTask("equipped.png", tEquipped);
 	tex_mgr.AddLoadTask("czern.bmp", tCzern);
 	tex_mgr.AddLoadTask("rip.jpg", tRip);

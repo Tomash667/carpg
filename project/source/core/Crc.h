@@ -9,6 +9,7 @@ public:
 	uint Get() const { return ~m_crc; }
 	operator uint() const { return Get(); }
 
+	// Don't use for types with padding!
 	template<typename T>
 	void Update(const T& item)
 	{
@@ -29,6 +30,7 @@ public:
 		Update((const byte*)str, strlen(str));
 	}
 
+	// Don't use for types with padding!
 	template<typename T>
 	void Update(const vector<T>& v)
 	{

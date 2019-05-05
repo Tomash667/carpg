@@ -253,18 +253,17 @@ void Unit::SetGold(int new_gold)
 	gold = new_gold;
 	if(IsPlayer())
 	{
+		global::gui->messages->AddFormattedMessage(player, GMS_GOLD_ADDED, -1, dif);
 		if(player->is_local)
 		{
 			Game& game = Game::Get();
-			game.gui->messages->AddGameMsg(Format(game.txGoldPlus, dif), 3.f);
 			game.sound_mgr->PlaySound2d(game.sCoins);
 		}
 		else
 		{
 			NetChangePlayer& c = Add1(player->player_info->changes);
-			c.type = NetChangePlayer::GOLD_MSG;
-			c.count = dif;
-			c.id = 1;
+			c.type = NetChangePlayer::SOUND;
+			c.id = 0;
 			player->player_info->UpdateGold();
 		}
 	}
@@ -798,24 +797,68 @@ bool Unit::AddItem(const Item* item, uint count, uint team_count)
 }
 
 //=================================================================================================
-void Unit::AddItem2(const Item* item, uint count, uint team_count, bool show_msg)
+void Unit::AddItem2(const Item* item, uint count, uint team_count, bool show_msg, bool notify)
 {
+	assert(item && count && team_count <= count);
+
 	Game::Get().PreloadItem(item);
+
 	AddItem(item, count, team_count);
 
-	if(IsPlayer())
+	// multiplayer notify
+	if(notify && Net::IsServer())
 	{
-		if(!player->IsLocal())
+		if(IsPlayer())
 		{
-			NetChangePlayer& c = Add1(player->player_info->changes);
-			c.type = NetChangePlayer::ADD_ITEMS;
-			c.item = item;
-			c.id = team_count;
-			c.count = count;
+			if(!player->is_local)
+			{
+				NetChangePlayer& c = Add1(player->player_info->changes);
+				c.type = NetChangePlayer::ADD_ITEMS;
+				c.item = item;
+				c.count = count;
+				c.id = team_count;
+			}
 		}
-		if(show_msg)
-			player->AddItemMessage(count);
+		else
+		{
+			// check if unit is trading with someone that gets this item
+			Unit* u = nullptr;
+			for(Unit* member : Team.active_members)
+			{
+				if(member->IsPlayer() && member->player->IsTradingWith(this))
+				{
+					u = member;
+					break;
+				}
+			}
+
+			if(u && !u->player->is_local)
+			{
+				// wyœlij komunikat do gracza z aktualizacj¹ ekwipunku
+				NetChangePlayer& c = Add1(u->player->player_info->changes);
+				c.type = NetChangePlayer::ADD_ITEMS_TRADER;
+				c.item = item;
+				c.id = netid;
+				c.count = count;
+				c.a = team_count;
+			}
+		}
 	}
+
+	if(show_msg && IsPlayer())
+		player->AddItemMessage(count);
+
+	// rebuild inventory
+	int rebuild_id = -1;
+	if(IsLocal())
+	{
+		if(global::gui->inventory->inv_mine->visible || global::gui->inventory->gp_trade->visible)
+			rebuild_id = 0;
+	}
+	else if(global::gui->inventory->gp_trade->visible && global::gui->inventory->inv_trade_other->unit == this)
+		rebuild_id = 1;
+	if(rebuild_id != -1)
+		global::gui->inventory->BuildTmpInventory(rebuild_id);
 }
 
 //=================================================================================================
@@ -1004,8 +1047,7 @@ uint Unit::RemoveEffects(EffectId effect, EffectSource source, int source_id, in
 void Unit::UpdateEffects(float dt)
 {
 	Game& game = Game::Get();
-	float regen = 0.f, temp_regen = 0.f, poison_dmg = 0.f, alco_sum = 0.f, best_stamina = 0.f, stamina_mod = 1.f;
-	int food_heal = 0;
+	float regen = 0.f, temp_regen = 0.f, poison_dmg = 0.f, alco_sum = 0.f, best_stamina = 0.f, stamina_mod = 1.f, food_heal = 0.f;
 
 	// update effects timer
 	uint index = 0;
@@ -1031,7 +1073,7 @@ void Unit::UpdateEffects(float dt)
 			alco_sum += it->power;
 			break;
 		case EffectId::FoodRegeneration:
-			++food_heal;
+			food_heal += it->power;
 			break;
 		case EffectId::StaminaRegeneration:
 			if(it->power > best_stamina)
@@ -1192,7 +1234,7 @@ void Unit::EndEffects(int days, float* o_natural_mod)
 			hp -= it->power * it->time;
 			break;
 		case EffectId::FoodRegeneration:
-			food += it->time;
+			food += it->power * it->time;
 			break;
 		case EffectId::NaturalHealingMod:
 			if(it->source == EffectSource::Temporary)
@@ -1607,7 +1649,6 @@ void Unit::Save(GameWriter& f, bool local)
 	else
 		f << stats->subprofile;
 	f << gold;
-	f << invisible;
 	f << in_building;
 	f << to_remove;
 	f << temporary;
@@ -1778,7 +1819,7 @@ void Unit::Load(GameReader& f, bool local)
 	// items
 	bool can_sort = true;
 	int max_slots;
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_10)
 		max_slots = SLOT_MAX;
 	else if(LOAD_VERSION >= V_0_9)
 		max_slots = 5;
@@ -1788,7 +1829,7 @@ void Unit::Load(GameReader& f, bool local)
 		f.ReadOptional(slots[i]);
 	if(LOAD_VERSION < V_0_9)
 		slots[SLOT_AMULET] = nullptr;
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_10)
 	{
 		slots[SLOT_RING1] = nullptr;
 		slots[SLOT_RING2] = nullptr;
@@ -1863,7 +1904,7 @@ void Unit::Load(GameReader& f, bool local)
 			stats->fixed = false;
 			stats->subprofile.value = 0;
 			stats->Load(f);
-			if(LOAD_VERSION < V_DEV)
+			if(LOAD_VERSION < V_0_10)
 			{
 				for(int i = 0; i < (int)SkillId::MAX; ++i)
 				{
@@ -1879,7 +1920,7 @@ void Unit::Load(GameReader& f, bool local)
 			stats = data->GetStats(sub);
 		}
 	}
-	else if(LOAD_VERSION >= V_0_4)
+	else
 	{
 		UnitStats::Skip(f); // old temporary stats
 		if(data->group == G_PLAYER)
@@ -1896,35 +1937,10 @@ void Unit::Load(GameReader& f, bool local)
 			UnitStats::Skip(f);
 		}
 	}
-	else
-	{
-		if(data->group == G_PLAYER)
-		{
-			stats = new UnitStats;
-			stats->fixed = false;
-			stats->subprofile.value = 0;
-			for(int i = 0; i < 3; ++i)
-				f >> stats->attrib[i];
-			for(int i = 3; i < (int)AttributeId::MAX; ++i)
-				stats->attrib[i] = UnitStats::NEW_STAT;
-			for(int i = 0; i < (int)SkillId::MAX; ++i)
-				stats->skill[i] = UnitStats::NEW_STAT;
-			int old_skill[(int)old::SkillId::MAX];
-			f >> old_skill;
-			stats->skill[(int)SkillId::ONE_HANDED_WEAPON] = old_skill[(int)old::SkillId::WEAPON];
-			stats->skill[(int)SkillId::BOW] = old_skill[(int)old::SkillId::BOW];
-			stats->skill[(int)SkillId::SHIELD] = old_skill[(int)old::SkillId::SHIELD];
-			stats->skill[(int)SkillId::LIGHT_ARMOR] = old_skill[(int)old::SkillId::LIGHT_ARMOR];
-			stats->skill[(int)SkillId::HEAVY_ARMOR] = old_skill[(int)old::SkillId::HEAVY_ARMOR];
-		}
-		else
-		{
-			stats = data->GetStats(level);
-			f.Skip(sizeof(int) * (3 + (int)old::SkillId::MAX));
-		}
-	}
 	f >> gold;
-	f >> invisible;
+	bool old_invisible = false;
+	if(LOAD_VERSION < V_0_10)
+		f >> old_invisible;
 	f >> in_building;
 	f >> to_remove;
 	f >> temporary;
@@ -1973,7 +1989,6 @@ void Unit::Load(GameReader& f, bool local)
 		event_handler = reinterpret_cast<UnitEventHandler*>(unit_event_handler_quest_refid);
 		Game::Get().load_unit_handler.push_back(this);
 	}
-	CalculateLoad();
 	if(can_sort && content.require_update)
 		SortItems(items);
 	f >> weight;
@@ -2062,7 +2077,7 @@ void Unit::Load(GameReader& f, bool local)
 			f >> use_rot;
 		else if(action == A_ANIMATION2)
 		{
-			if(LOAD_VERSION >= V_DEV)
+			if(LOAD_VERSION >= V_0_10)
 				f >> use_rot;
 			else
 				use_rot = 0.f;
@@ -2121,7 +2136,7 @@ void Unit::Load(GameReader& f, bool local)
 	}
 
 	// effects
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_10)
 		f.ReadVector4(effects);
 	else if(LOAD_VERSION >= V_0_8)
 	{
@@ -2175,7 +2190,7 @@ void Unit::Load(GameReader& f, bool local)
 			});
 		}
 	}
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_10)
 	{
 		// events
 		events.resize(f.Read<uint>());
@@ -2225,6 +2240,8 @@ void Unit::Load(GameReader& f, bool local)
 		player = new PlayerController;
 		player->unit = this;
 		player->Load(f);
+		if(LOAD_VERSION < V_0_10)
+			player->invisible = old_invisible;
 	}
 	else
 		player = nullptr;
@@ -2269,7 +2286,7 @@ void Unit::Load(GameReader& f, bool local)
 		if(content.require_update)
 			CalculateStats();
 	}
-	else if(LOAD_VERSION >= V_0_4)
+	else
 	{
 		if(IsPlayer())
 		{
@@ -2292,31 +2309,6 @@ void Unit::Load(GameReader& f, bool local)
 		}
 		CalculateStats();
 	}
-	else
-	{
-		if(IsPlayer())
-		{
-			player->RecalculateLevel();
-
-			// set new attributes & skills
-			StatProfile& profile = data->GetStatProfile();
-			stats->subprofile.value = 0;
-			stats->subprofile.level = level;
-			stats->SetForNew(profile);
-
-			// set apptitude
-			UnitStats base_stats;
-			base_stats.subprofile.value = 0;
-			base_stats.fixed = false;
-			base_stats.Set(profile);
-			for(int i = 0; i < (int)AttributeId::MAX; ++i)
-				player->attrib[i].apt = (base_stats.attrib[i] - 50) / 5;
-			for(int i = 0; i < (int)SkillId::MAX; ++i)
-				player->skill[i].apt = base_stats.skill[i] / 5;
-			player->SetRequiredPoints();
-		}
-		CalculateStats();
-	}
 
 	// compability
 	if(LOAD_VERSION < V_0_5)
@@ -2326,6 +2318,8 @@ void Unit::Load(GameReader& f, bool local)
 		stamina_action = SA_RESTORE_MORE;
 		stamina_timer = 0;
 	}
+
+	CalculateLoad();
 }
 
 //=================================================================================================
@@ -2422,13 +2416,15 @@ void Unit::Write(BitStreamWriter& f)
 			b |= 0x01;
 		if(hero->team_member)
 			b |= 0x02;
+		if(hero->free)
+			b |= 0x04;
 		f << b;
 		f << hero->credit;
 	}
 	else if(IsPlayer())
 	{
-		f << player->name;
 		f.WriteCasted<byte>(player->id);
+		f << player->name;
 		f << player->credit;
 		f << player->free_days;
 	}
@@ -2456,6 +2452,12 @@ void Unit::Write(BitStreamWriter& f)
 		else
 			f.Write0();
 		f << (usable ? usable->netid : -1);
+	}
+	else
+	{
+		// player changing dungeon level keeps weapon state
+		f.WriteCasted<byte>(weapon_taken);
+		f.WriteCasted<byte>(weapon_state);
 	}
 }
 
@@ -2583,17 +2585,26 @@ bool Unit::Read(BitStreamReader& f)
 			return false;
 		hero->know_name = IS_SET(flags, 0x01);
 		hero->team_member = IS_SET(flags, 0x02);
+		hero->free = IS_SET(flags, 0x04);
 	}
 	else if(type == 2)
 	{
 		// player
+		int id;
+		f.ReadCasted<byte>(id);
+		if(id == Team.my_id)
+		{
+			assert(game.pc);
+			player = game.pc;
+		}
+		else
+			player = new PlayerController;
 		ai = nullptr;
 		hero = nullptr;
-		player = new PlayerController;
+		player->id = id;
 		player->unit = this;
 		alcohol = 0.f;
 		f >> player->name;
-		f.ReadCasted<byte>(player->id);
 		f >> player->credit;
 		f >> player->free_days;
 		if(!f)
@@ -2706,6 +2717,12 @@ bool Unit::Read(BitStreamReader& f)
 			bow_instance->groups[0].speed = mesh_inst->groups[1].speed;
 			bow_instance->groups[0].time = mesh_inst->groups[1].time;
 		}
+	}
+	else
+	{
+		// player changing dungeon level keeps weapon state
+		f.ReadCasted<byte>(weapon_taken);
+		f.ReadCasted<byte>(weapon_state);
 	}
 
 	// physics
@@ -2932,14 +2949,46 @@ void Unit::RemoveQuestItemS(Quest* quest)
 }
 
 //=================================================================================================
-bool Unit::HaveItem(const Item* item)
+bool Unit::HaveItem(const Item* item, bool owned) const
 {
-	for(vector<ItemSlot>::iterator it = items.begin(), end = items.end(); it != end; ++it)
+	for(const Item* slot_item : slots)
 	{
-		if(it->item == item)
+		if(slot_item == item)
+			return true;
+	}
+	for(vector<ItemSlot>::const_iterator it = items.begin(), end = items.end(); it != end; ++it)
+	{
+		if(it->item == item && (!owned || it->team_count != it->count))
 			return true;
 	}
 	return false;
+}
+
+//=================================================================================================
+bool Unit::HaveItemEquipped(const Item* item) const
+{
+	ITEM_SLOT slot_type = ItemTypeToSlot(item->type);
+	if(slot_type == SLOT_INVALID)
+		return false;
+	else if(slot_type == SLOT_RING1)
+		return slots[SLOT_RING1] == item || slots[SLOT_RING2] == item;
+	else
+		return slots[slot_type] == item;
+}
+
+//=================================================================================================
+bool Unit::SlotRequireHideWeapon(ITEM_SLOT slot) const
+{
+	switch(slot)
+	{
+	case SLOT_WEAPON:
+	case SLOT_SHIELD:
+		return weapon_state == WS_TAKEN && weapon_taken == W_ONE_HANDED;
+	case SLOT_BOW:
+		return weapon_state == WS_TAKEN && weapon_taken == W_BOW;
+	default:
+		return false;
+	}
 }
 
 //=================================================================================================
@@ -3093,6 +3142,19 @@ int Unit::FindItem(const Item* item, int quest_refid) const
 }
 
 //=================================================================================================
+int Unit::FindItem(delegate<bool(const ItemSlot& slot)> callback) const
+{
+	int index = 0;
+	for(const ItemSlot& slot : items)
+	{
+		if(callback(slot))
+			return index;
+		++index;
+	}
+	return INVALID_IINDEX;
+}
+
+//=================================================================================================
 int Unit::FindQuestItem(int quest_refid) const
 {
 	for(int i = 0; i < SLOT_MAX; ++i)
@@ -3112,7 +3174,7 @@ int Unit::FindQuestItem(int quest_refid) const
 }
 
 //=================================================================================================
-bool Unit::FindQuestItem(cstring id, Quest** out_quest, int* i_index, bool not_active)
+bool Unit::FindQuestItem(cstring id, Quest** out_quest, int* i_index, bool not_active, int required_refid)
 {
 	assert(id);
 
@@ -3121,7 +3183,7 @@ bool Unit::FindQuestItem(cstring id, Quest** out_quest, int* i_index, bool not_a
 		// szukaj w za³o¿onych przedmiotach
 		for(int i = 0; i < SLOT_MAX; ++i)
 		{
-			if(slots[i] && slots[i]->IsQuest())
+			if(slots[i] && slots[i]->IsQuest() && (required_refid == -1 || required_refid == slots[i]->refid))
 			{
 				Quest* quest = QM.FindQuest(slots[i]->refid, !not_active);
 				if(quest && (not_active || quest->IsActive()) && quest->IfHaveQuestItem2(id))
@@ -3139,7 +3201,7 @@ bool Unit::FindQuestItem(cstring id, Quest** out_quest, int* i_index, bool not_a
 		int index = 0;
 		for(vector<ItemSlot>::iterator it2 = items.begin(), end2 = items.end(); it2 != end2; ++it2, ++index)
 		{
-			if(it2->item && it2->item->IsQuest())
+			if(it2->item && it2->item->IsQuest() && (required_refid == -1 || required_refid == it2->item->refid))
 			{
 				Quest* quest = QM.FindQuest(it2->item->refid, !not_active);
 				if(quest && (not_active || quest->IsActive()) && quest->IfHaveQuestItem2(id))
@@ -4488,7 +4550,7 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 		if(animation_state == 0)
 		{
 			if(Net::IsLocal())
-				game.AddItem(*this, used_item, 1, used_item_is_team);
+				AddItem2(used_item, 1, used_item_is_team, false);
 			if(mode != BREAK_ACTION_MODE::FALL)
 				used_item = nullptr;
 		}
@@ -4501,7 +4563,7 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 		if(animation_state < 2)
 		{
 			if(Net::IsLocal())
-				game.AddItem(*this, used_item, 1, used_item_is_team);
+				AddItem2(used_item, 1, used_item_is_team, false);
 			if(mode != BREAK_ACTION_MODE::FALL)
 				used_item = nullptr;
 		}
@@ -4826,7 +4888,7 @@ void Unit::Die(LevelContext* ctx, Unit* killer)
 		// add gold to inventory
 		if(gold && !(IsPlayer() || IsFollower()))
 		{
-			AddItem(Item::gold, (uint)gold);
+			AddItem(Item::gold, (uint)gold, (uint)gold);
 			gold = 0;
 		}
 
@@ -4913,7 +4975,11 @@ void Unit::Die(LevelContext* ctx, Unit* killer)
 				}
 			}
 			else
-				Game::Get().arena->RewardExp(this);
+			{
+				Arena* arena = Game::Get().arena;
+				if(arena)
+					arena->RewardExp(this);
+			}
 		}
 	}
 	else
@@ -5500,10 +5566,14 @@ void Unit::OrderLookAt(const Vec3& pos)
 }
 
 //=================================================================================================
-void Unit::Talk(const string& text, int play_anim)
+void Unit::Talk(cstring text, int play_anim)
 {
+	assert(text && Net::IsLocal());
+
+	global::gui->game_gui->AddSpeechBubble(this, text);
+
+	// animation
 	int ani = 0;
-	Game::Get().gui->game_gui->AddSpeechBubble(this, text.c_str());
 	if(play_anim != 0 && data->type == UNIT_TYPE::HUMAN)
 	{
 		if(play_anim == -1)
@@ -5522,6 +5592,7 @@ void Unit::Talk(const string& text, int play_anim)
 		action = A_ANIMATION;
 	}
 
+	// sent
 	if(Net::IsOnline())
 	{
 		NetChange& c = Add1(Net::changes);

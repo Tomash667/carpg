@@ -2217,7 +2217,7 @@ void CityGenerator::OnEnter()
 		ApplyTiles();
 	}
 
-	game.SetOutsideParams();
+	L.SetOutsideParams();
 
 	if(first)
 	{
@@ -2879,11 +2879,11 @@ void CityGenerator::CreateMinimap()
 void CityGenerator::OnLoad()
 {
 	Game& game = Game::Get();
-	game.SetOutsideParams();
+	L.SetOutsideParams();
 	game.SetTerrainTextures();
 	ApplyTiles();
 
-	L.RecreateObjects(false);
+	L.RecreateObjects(Net::IsClient());
 	L.SpawnTerrainCollider();
 	RespawnBuildingPhysics();
 	SpawnCityPhysics();

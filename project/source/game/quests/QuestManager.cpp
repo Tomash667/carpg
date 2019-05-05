@@ -680,19 +680,9 @@ void QuestManager::Load(GameReader& f)
 	quests_timeout.resize(f.Read<uint>());
 	for(Quest_Dungeon*& q : quests_timeout)
 		q = static_cast<Quest_Dungeon*>(FindQuest(f.Read<uint>(), false));
-	if(LOAD_VERSION >= V_0_4)
-	{
-		quests_timeout2.resize(f.Read<uint>());
-		for(Quest*& q : quests_timeout2)
-			q = FindQuest(f.Read<uint>(), false);
-	}
-	else
-	{
-		// old timed units (now removed)
-		uint count;
-		f >> count;
-		f.Skip(sizeof(int) * 3 * count);
-	}
+	quests_timeout2.resize(f.Read<uint>());
+	for(Quest*& q : quests_timeout2)
+		q = FindQuest(f.Read<uint>(), false);
 
 	// quest rumors
 	if(LOAD_VERSION >= V_0_9)
@@ -712,7 +702,7 @@ void QuestManager::Load(GameReader& f)
 	f >> quest_counter;
 	f >> unique_quests_completed;
 	f >> unique_completed_show;
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_10)
 	{
 		uint count;
 		f >> count;
@@ -835,19 +825,6 @@ void QuestManager::Load(GameReader& f)
 		delete *it;
 	}
 	quest_item_requests.clear();
-
-	// load quests old data (now are stored inside quest)
-	if(LOAD_VERSION < V_0_4)
-	{
-		quest_sawmill->LoadOld(f);
-		quest_mine->LoadOld(f);
-		quest_bandits->LoadOld(f);
-		quest_mages2->LoadOld(f);
-		quest_orcs2->LoadOld(f);
-		quest_goblins->LoadOld(f);
-		quest_evil->LoadOld(f);
-		quest_crazies->LoadOld(f);
-	}
 
 	// load pseudo-quests
 	quest_secret->Load(f);

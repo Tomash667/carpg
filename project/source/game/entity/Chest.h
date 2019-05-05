@@ -25,14 +25,17 @@ struct Chest : public ItemContainer
 	float rot;
 	MeshInstance* mesh_inst;
 	ChestEventHandler* handler;
+
+private:
 	// temporary - not saved
 	Unit* user;
 
+public:
 	static const int MIN_SIZE = 20;
 	static const float SOUND_DIST;
 	static int netid_counter;
 
-	Chest() : mesh_inst(nullptr) {}
+	Chest() : mesh_inst(nullptr), user(nullptr), handler(nullptr) {}
 	~Chest() { delete mesh_inst; }
 
 	void Save(FileWriter& f, bool local);
@@ -47,4 +50,6 @@ struct Chest : public ItemContainer
 	}
 	bool AddItem(const Item* item, uint count, uint team_count, bool notify = true);
 	bool AddItem(const Item* item, uint count = 1) { return AddItem(item, count, count); }
+	void OpenClose(Unit* unit);
+	Unit* GetUser() const { return user; }
 };

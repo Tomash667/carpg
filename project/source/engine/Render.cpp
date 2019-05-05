@@ -721,6 +721,14 @@ ID3DXEffect* Render::CompileShader(CompileShaderParams& params)
 }
 
 //=================================================================================================
+TEX Render::CreateTexture(const Int2& size)
+{
+	TEX tex;
+	V(device->CreateTexture(size.x, size.y, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &tex, nullptr));
+	return tex;
+}
+
+//=================================================================================================
 RenderTarget* Render::CreateRenderTarget(const Int2& size)
 {
 	assert(size.x > 0 && size.y > 0 && IsPow2(size.x) && IsPow2(size.y));
@@ -927,4 +935,11 @@ void Render::SetTarget(RenderTarget* target)
 		current_target = nullptr;
 		current_surf = nullptr;
 	}
+}
+
+//=================================================================================================
+void Render::SetTextureAddressMode(TextureAddressMode mode)
+{
+	V(device->SetSamplerState(0, D3DSAMP_ADDRESSU, (D3DTEXTUREADDRESS)mode));
+	V(device->SetSamplerState(0, D3DSAMP_ADDRESSV, (D3DTEXTUREADDRESS)mode));
 }

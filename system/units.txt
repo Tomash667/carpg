@@ -1079,7 +1079,7 @@ unit base_human {
 	profile ai_fighter
 	walk_speed 1.5
 	run_speed 5
-	rot_speed 3
+	rot_speed 4.5
 	blood red
 	sounds {
 		see_enemy "hey.mp3"
@@ -1564,7 +1564,7 @@ unit base_goblin {
 	group goblins
 	walk_speed 1.75
 	run_speed 6
-	rot_speed 3.5
+	rot_speed 4.6
 	blood red
 	sounds {
 		see_enemy "goblin-3.wav"
@@ -1692,7 +1692,7 @@ unit base_orc {
 	profile ai_fighter
 	walk_speed 1.5
 	run_speed 5
-	rot_speed 3
+	rot_speed 4
 	blood red
 	sounds {
 		see_enemy "ogre2.wav"
@@ -2041,7 +2041,7 @@ unit base_skeleton {
 	dmg_type slash
 	walk_speed 1.5
 	run_speed 5
-	rot_speed 3
+	rot_speed 4.5
 	blood bone
 	sounds {
 		see_enemy "skeleton_alert.mp3"
@@ -2596,7 +2596,7 @@ unit wolf {
 	dmg_type slash
 	walk_speed 1.5
 	run_speed 6
-	rot_speed 3.5
+	rot_speed 4.5
 	blood red
 	sounds {
 		see_enemy "wolf_x.mp3"
@@ -2657,7 +2657,7 @@ unit spider {
 	dmg_type pierce
 	walk_speed 1
 	run_speed 4
-	rot_speed 3.5
+	rot_speed 4.5
 	blood green
 	blood_size 0.8
 	sounds {
@@ -2704,7 +2704,7 @@ unit rat {
 	dmg_type pierce
 	walk_speed 1
 	run_speed 5
-	rot_speed 3.5
+	rot_speed 4.5
 	blood red
 	blood_size 0.6
 	sounds {
@@ -2741,7 +2741,7 @@ unit bear {
 	dmg_type {slash blunt}
 	walk_speed 1.5
 	run_speed 5.5
-	rot_speed 3
+	rot_speed 4
 	blood red
 	blood_size 1.5
 	sounds {

@@ -6,6 +6,7 @@
 #include "Inventory.h"
 #include "GlobalGui.h"
 #include "PlayerInfo.h"
+#include "SoundManager.h"
 
 const float Chest::SOUND_DIST = 1.f;
 int Chest::netid_counter;
@@ -114,4 +115,42 @@ bool Chest::AddItem(const Item* item, uint count, uint team_count, bool notify)
 	}
 
 	return stacked;
+}
+
+//=================================================================================================
+void Chest::OpenClose(Unit* unit)
+{
+	Game& game = Game::Get();
+	if(unit)
+	{
+		// open chest by unit
+		assert(!user);
+		user = unit;
+		mesh_inst->Play(&mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END, 0);
+		game.sound_mgr->PlaySound3d(game.sChestOpen, GetCenter(), SOUND_DIST);
+		if(Net::IsLocal() && handler)
+			handler->HandleChestEvent(ChestEventHandler::Opened, this);
+		if(Net::IsServer())
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::USE_CHEST;
+			c.id = netid;
+			c.count = unit->netid;
+		}
+	}
+	else
+	{
+		// close chest
+		assert(user);
+		user = nullptr;
+		mesh_inst->Play(&mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
+		game.sound_mgr->PlaySound3d(game.sChestClose, GetCenter(), SOUND_DIST);
+		if(Net::IsServer())
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::USE_CHEST;
+			c.id = netid;
+			c.count = -1;
+		}
+	}
 }

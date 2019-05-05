@@ -635,17 +635,13 @@ bool Quest_Orcs2::Load(GameReader& f)
 
 	f >> near_loc;
 	f >> talked;
-
-	if(LOAD_VERSION >= V_0_4)
-	{
-		f >> orcs_state;
-		f >> days;
-		f >> guard;
-		f >> orc;
-		f >> orc_class;
-		if(LOAD_VERSION < V_0_8)
-			ItemHelper::SkipStock(f);
-	}
+	f >> orcs_state;
+	f >> days;
+	f >> guard;
+	f >> orc;
+	f >> orc_class;
+	if(LOAD_VERSION < V_0_8)
+		ItemHelper::SkipStock(f);
 
 	if(!done)
 	{
@@ -662,23 +658,6 @@ bool Quest_Orcs2::Load(GameReader& f)
 	}
 
 	return true;
-}
-
-//=================================================================================================
-void Quest_Orcs2::LoadOld(GameReader& f)
-{
-	int city, old_refid, old_refid2, where;
-
-	f >> orcs_state;
-	f >> city;
-	f >> old_refid;
-	f >> old_refid2;
-	f >> days;
-	f >> where;
-	f >> guard;
-	f >> orc;
-	f >> orc_class;
-	ItemHelper::SkipStock(f);
 }
 
 //=================================================================================================
@@ -710,7 +689,7 @@ void Quest_Orcs2::ChangeClass(OrcClass new_orc_class)
 	orc->level = ud->level.x;
 	orc->stats = orc->data->GetStats(orc->level);
 	orc->CalculateStats();
-	game->ParseItemScript(*orc, ud->item_script);
+	ud->item_script->Parse(*orc);
 	for(const Item* item : orc->slots)
 	{
 		if(item)
