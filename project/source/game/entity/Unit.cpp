@@ -1920,7 +1920,7 @@ void Unit::Load(GameReader& f, bool local)
 			stats = data->GetStats(sub);
 		}
 	}
-	else if(LOAD_VERSION >= V_0_4)
+	else
 	{
 		UnitStats::Skip(f); // old temporary stats
 		if(data->group == G_PLAYER)
@@ -1935,33 +1935,6 @@ void Unit::Load(GameReader& f, bool local)
 		{
 			stats = data->GetStats(level);
 			UnitStats::Skip(f);
-		}
-	}
-	else
-	{
-		if(data->group == G_PLAYER)
-		{
-			stats = new UnitStats;
-			stats->fixed = false;
-			stats->subprofile.value = 0;
-			for(int i = 0; i < 3; ++i)
-				f >> stats->attrib[i];
-			for(int i = 3; i < (int)AttributeId::MAX; ++i)
-				stats->attrib[i] = UnitStats::NEW_STAT;
-			for(int i = 0; i < (int)SkillId::MAX; ++i)
-				stats->skill[i] = UnitStats::NEW_STAT;
-			int old_skill[(int)old::SkillId::MAX];
-			f >> old_skill;
-			stats->skill[(int)SkillId::ONE_HANDED_WEAPON] = old_skill[(int)old::SkillId::WEAPON];
-			stats->skill[(int)SkillId::BOW] = old_skill[(int)old::SkillId::BOW];
-			stats->skill[(int)SkillId::SHIELD] = old_skill[(int)old::SkillId::SHIELD];
-			stats->skill[(int)SkillId::LIGHT_ARMOR] = old_skill[(int)old::SkillId::LIGHT_ARMOR];
-			stats->skill[(int)SkillId::HEAVY_ARMOR] = old_skill[(int)old::SkillId::HEAVY_ARMOR];
-		}
-		else
-		{
-			stats = data->GetStats(level);
-			f.Skip(sizeof(int) * (3 + (int)old::SkillId::MAX));
 		}
 	}
 	f >> gold;
@@ -2313,7 +2286,7 @@ void Unit::Load(GameReader& f, bool local)
 		if(content.require_update)
 			CalculateStats();
 	}
-	else if(LOAD_VERSION >= V_0_4)
+	else
 	{
 		if(IsPlayer())
 		{
@@ -2333,31 +2306,6 @@ void Unit::Load(GameReader& f, bool local)
 			}
 			player->SetRequiredPoints();
 			player->RecalculateLevel();
-		}
-		CalculateStats();
-	}
-	else
-	{
-		if(IsPlayer())
-		{
-			player->RecalculateLevel();
-
-			// set new attributes & skills
-			StatProfile& profile = data->GetStatProfile();
-			stats->subprofile.value = 0;
-			stats->subprofile.level = level;
-			stats->SetForNew(profile);
-
-			// set apptitude
-			UnitStats base_stats;
-			base_stats.subprofile.value = 0;
-			base_stats.fixed = false;
-			base_stats.Set(profile);
-			for(int i = 0; i < (int)AttributeId::MAX; ++i)
-				player->attrib[i].apt = (base_stats.attrib[i] - 50) / 5;
-			for(int i = 0; i < (int)SkillId::MAX; ++i)
-				player->skill[i].apt = base_stats.skill[i] / 5;
-			player->SetRequiredPoints();
 		}
 		CalculateStats();
 	}

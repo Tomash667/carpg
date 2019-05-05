@@ -502,7 +502,6 @@
     <ClCompile Include="source\game\entity\TerrainTile.cpp" />
     <ClCompile Include="source\game\entity\Tile.cpp" />
     <ClCompile Include="source\game\events\Arena.cpp" />
-    <ClCompile Include="source\game\GameFile.cpp" />
     <ClCompile Include="source\game\GameStats.cpp" />
     <ClCompile Include="source\game\generator\CampGenerator.cpp" />
     <ClCompile Include="source\game\generator\CaveGenerator.cpp" />

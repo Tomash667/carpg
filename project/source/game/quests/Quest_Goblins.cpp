@@ -332,15 +332,11 @@ bool Quest_Goblins::Load(GameReader& f)
 	Quest_Dungeon::Load(f);
 
 	f >> enc;
-
-	if(LOAD_VERSION >= V_0_4)
-	{
-		f >> goblins_state;
-		f >> days;
-		f >> nobleman;
-		f >> messenger;
-		f >> hd_nobleman;
-	}
+	f >> goblins_state;
+	f >> days;
+	f >> nobleman;
+	f >> messenger;
+	f >> hd_nobleman;
 
 	if(!done)
 	{
@@ -386,20 +382,6 @@ bool Quest_Goblins::Load(GameReader& f)
 	}
 
 	return true;
-}
-
-//=================================================================================================
-void Quest_Goblins::LoadOld(GameReader& f)
-{
-	int old_refid, city;
-
-	f >> goblins_state;
-	f >> old_refid;
-	f >> city;
-	f >> days;
-	f >> nobleman;
-	f >> messenger;
-	f >> hd_nobleman;
 }
 
 //=================================================================================================

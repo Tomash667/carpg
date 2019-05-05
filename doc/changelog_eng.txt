@@ -1,6 +1,10 @@
 Changelog
 
 --------------------------------------------------------------------------------
+Version 0.11 (2019-??-??):
+! cannot load saves from version 0.3 or older
+
+--------------------------------------------------------------------------------
 Version 0.10 (2019-05-05):
 ! cannot load saves from version 0.2.20 or older
 + new unique quest: Herbs for the alchemist

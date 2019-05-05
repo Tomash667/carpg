@@ -217,7 +217,7 @@ bool Quest_LostArtifact::Load(GameReader& f)
 {
 	Quest_Dungeon::Load(f);
 
-	f.LoadArtifact(item);
+	f >> item;
 	if(LOAD_VERSION >= V_0_8)
 		f >> st;
 	else if(target_loc != -1)

@@ -5,20 +5,6 @@
 #include "Attribute.h"
 
 //-----------------------------------------------------------------------------
-namespace old
-{
-	enum class SkillId
-	{
-		WEAPON,
-		BOW,
-		LIGHT_ARMOR,
-		HEAVY_ARMOR,
-		SHIELD,
-		MAX
-	};
-}
-
-//-----------------------------------------------------------------------------
 enum class SkillId
 {
 	// weapon

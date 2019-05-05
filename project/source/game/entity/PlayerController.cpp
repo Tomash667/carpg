@@ -426,30 +426,11 @@ void PlayerController::Load(FileReader& f)
 		}
 		SetRequiredPoints();
 	}
-	else if(LOAD_VERSION >= V_0_4)
-	{
-		for(StatData& stat : attrib)
-		{
-			f >> stat.points;
-			stat.train = 0;
-			stat.apt = 0;
-			stat.train_part = 0;
-			stat.blocked = false;
-		}
-		for(StatData& stat : skill)
-		{
-			f >> stat.points;
-			stat.train = 0;
-			stat.apt = 0;
-			stat.train_part = 0;
-			stat.blocked = false;
-		}
-	}
 	else
 	{
 		for(StatData& stat : attrib)
 		{
-			stat.points = 0;
+			f >> stat.points;
 			stat.train = 0;
 			stat.apt = 0;
 			stat.train_part = 0;
@@ -457,38 +438,12 @@ void PlayerController::Load(FileReader& f)
 		}
 		for(StatData& stat : skill)
 		{
-			stat.points = 0;
+			f >> stat.points;
 			stat.train = 0;
 			stat.apt = 0;
 			stat.train_part = 0;
 			stat.blocked = false;
 		}
-		// skill points
-		int old_sp[(int)old::SkillId::MAX];
-		f >> old_sp;
-		skill[(int)SkillId::ONE_HANDED_WEAPON].points = old_sp[(int)old::SkillId::WEAPON];
-		skill[(int)SkillId::BOW].points = old_sp[(int)old::SkillId::BOW];
-		skill[(int)SkillId::SHIELD].points = old_sp[(int)old::SkillId::SHIELD];
-		skill[(int)SkillId::LIGHT_ARMOR].points = old_sp[(int)old::SkillId::LIGHT_ARMOR];
-		skill[(int)SkillId::HEAVY_ARMOR].points = old_sp[(int)old::SkillId::HEAVY_ARMOR];
-		// skip skill need
-		f.Skip(5 * sizeof(int));
-		// attribute points (str, end, dex)
-		for(int i = 0; i < 3; ++i)
-			f >> attrib[i].points;
-		// skip attribute need
-		f.Skip(3 * sizeof(int));
-
-		// skip old version trainage data
-		// __int64 spg[(int)SkillId::MAX][T_MAX], apg[(int)AttributeId::MAX][T_MAX];
-		// T_MAX = 4
-		// SkillId::MAX = 5
-		// AttributeId::MAX = 3
-		// size = sizeof(__int64) * T_MAX * (S_MAX + A_MAX)
-		// size = 8 * 4 * (5 + 3) = 256
-		f.Skip(256);
-
-		// SetRequiredPoints called from Unit::Load after setting new attributes/skills
 	}
 	f >> action_key;
 	f >> next_action;
@@ -538,100 +493,95 @@ void PlayerController::Load(FileReader& f)
 	f >> dmg_done;
 	f >> dmg_taken;
 	f >> arena_fights;
-	if(LOAD_VERSION >= V_0_4)
+	if(LOAD_VERSION < V_0_8)
 	{
-		if(LOAD_VERSION < V_0_8)
-		{
-			UnitStats old_stats;
-			old_stats.Load(f);
-			for(int i = 0; i < (int)AttributeId::MAX; ++i)
-				attrib[i].apt = (old_stats.attrib[i] - 50) / 5;
-			for(int i = 0; i < (int)SkillId::MAX; ++i)
-				skill[i].apt = old_stats.skill[i] / 5;
-			f.Skip(sizeof(StatState) * ((int)AttributeId::MAX + (int)SkillId::MAX)); // old stat state
-		}
-		// perk points
-		if(LOAD_VERSION >= V_0_8)
-			f >> learning_points;
-		else
-			learning_points = 0;
-		// perks
-		byte count;
-		f >> count;
-		perks.resize(count);
-		for(TakenPerk& tp : perks)
-		{
-			tp.perk = (Perk)f.Read<byte>();
-			f >> tp.value;
-		}
-		// translate perks
-		if(LOAD_VERSION < V_0_8)
-		{
-			LoopAndRemove(perks, [this](TakenPerk& tp)
-			{
-				switch((old::Perk)tp.perk)
-				{
-				case old::Perk::Weakness:
-					{
-						switch((AttributeId)tp.value)
-						{
-						case AttributeId::STR:
-							tp.perk = Perk::BadBack;
-							break;
-						case AttributeId::DEX:
-							tp.perk = Perk::Sluggish;
-							break;
-						case AttributeId::END:
-							tp.perk = Perk::ChronicDisease;
-							break;
-						case AttributeId::INT:
-							tp.perk = Perk::SlowLearner;
-							break;
-						case AttributeId::WIS:
-							return true;
-						case AttributeId::CHA:
-							tp.perk = Perk::Asocial;
-							break;
-						}
-						PerkContext ctx(this, false);
-						ctx.upgrade = true;
-						tp.Apply(ctx);
-						tp.value = 0;
-					}
-					break;
-				case old::Perk::Strength:
-					tp.perk = Perk::Talent;
-					break;
-				case old::Perk::Skilled:
-					tp.perk = Perk::Skilled;
-					break;
-				case old::Perk::SkillFocus:
-					return true;
-				case old::Perk::Talent:
-					tp.perk = Perk::SkillFocus;
-					break;
-				case old::Perk::AlchemistApprentice:
-					tp.perk = Perk::AlchemistApprentice;
-					break;
-				case old::Perk::Wealthy:
-					tp.perk = Perk::Wealthy;
-					break;
-				case old::Perk::VeryWealthy:
-					tp.perk = Perk::VeryWealthy;
-					break;
-				case old::Perk::FamilyHeirloom:
-					tp.perk = Perk::FamilyHeirloom;
-					break;
-				case old::Perk::Leader:
-					tp.perk = Perk::Leader;
-					break;
-				}
-				return false;
-			});
-		}
+		UnitStats old_stats;
+		old_stats.Load(f);
+		for(int i = 0; i < (int)AttributeId::MAX; ++i)
+			attrib[i].apt = (old_stats.attrib[i] - 50) / 5;
+		for(int i = 0; i < (int)SkillId::MAX; ++i)
+			skill[i].apt = old_stats.skill[i] / 5;
+		f.Skip(sizeof(StatState) * ((int)AttributeId::MAX + (int)SkillId::MAX)); // old stat state
 	}
+	// perk points
+	if(LOAD_VERSION >= V_0_8)
+		f >> learning_points;
 	else
 		learning_points = 0;
+	// perks
+	byte count;
+	f >> count;
+	perks.resize(count);
+	for(TakenPerk& tp : perks)
+	{
+		tp.perk = (Perk)f.Read<byte>();
+		f >> tp.value;
+	}
+	// translate perks
+	if(LOAD_VERSION < V_0_8)
+	{
+		LoopAndRemove(perks, [this](TakenPerk& tp)
+		{
+			switch((old::Perk)tp.perk)
+			{
+			case old::Perk::Weakness:
+				{
+					switch((AttributeId)tp.value)
+					{
+					case AttributeId::STR:
+						tp.perk = Perk::BadBack;
+						break;
+					case AttributeId::DEX:
+						tp.perk = Perk::Sluggish;
+						break;
+					case AttributeId::END:
+						tp.perk = Perk::ChronicDisease;
+						break;
+					case AttributeId::INT:
+						tp.perk = Perk::SlowLearner;
+						break;
+					case AttributeId::WIS:
+						return true;
+					case AttributeId::CHA:
+						tp.perk = Perk::Asocial;
+						break;
+					}
+					PerkContext ctx(this, false);
+					ctx.upgrade = true;
+					tp.Apply(ctx);
+					tp.value = 0;
+				}
+				break;
+			case old::Perk::Strength:
+				tp.perk = Perk::Talent;
+				break;
+			case old::Perk::Skilled:
+				tp.perk = Perk::Skilled;
+				break;
+			case old::Perk::SkillFocus:
+				return true;
+			case old::Perk::Talent:
+				tp.perk = Perk::SkillFocus;
+				break;
+			case old::Perk::AlchemistApprentice:
+				tp.perk = Perk::AlchemistApprentice;
+				break;
+			case old::Perk::Wealthy:
+				tp.perk = Perk::Wealthy;
+				break;
+			case old::Perk::VeryWealthy:
+				tp.perk = Perk::VeryWealthy;
+				break;
+			case old::Perk::FamilyHeirloom:
+				tp.perk = Perk::FamilyHeirloom;
+				break;
+			case old::Perk::Leader:
+				tp.perk = Perk::Leader;
+				break;
+			}
+			return false;
+		});
+	}
 	if(LOAD_VERSION >= V_0_5)
 	{
 		f >> action_cooldown;

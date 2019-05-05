@@ -248,7 +248,7 @@ bool Quest_StolenArtifact::Load(GameReader& f)
 {
 	Quest_Dungeon::Load(f);
 
-	f.LoadArtifact(item);
+	f >> item;
 	f >> group;
 	if(LOAD_VERSION >= V_0_8)
 		f >> st;

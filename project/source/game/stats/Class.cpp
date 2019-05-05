@@ -108,25 +108,6 @@ void ClassInfo::Validate(uint& err)
 }
 
 //=================================================================================================
-Class ClassInfo::OldToNew(Class c)
-{
-	switch((int)c)
-	{
-	case 0:
-	default:
-		return Class::WARRIOR;
-	case 1:
-		return Class::HUNTER;
-	case 2:
-		return Class::ROGUE;
-	case 3:
-		return Class::MAGE;
-	case 4:
-		return Class::CLERIC;
-	}
-}
-
-//=================================================================================================
 UnitData& ClassInfo::GetUnitData(Class clas, bool crazy)
 {
 	cstring id = nullptr;

@@ -238,16 +238,9 @@ bool Quest_Wanted::Load(GameReader& f)
 	f >> level;
 	f >> crazy;
 	f >> clas;
-	if(LOAD_VERSION < V_0_4)
-		clas = ClassInfo::OldToNew(clas);
 	f >> unit_name;
 	f >> target_unit;
-	if(LOAD_VERSION >= V_0_4)
-		f >> in_location;
-	else if(!target_unit || target_unit->hero->team_member)
-		in_location = -1;
-	else
-		in_location = W.FindWorldUnit(target_unit, target_loc, W.GetCurrentLocationIndex());
+	f >> in_location;
 
 	if(!done)
 	{

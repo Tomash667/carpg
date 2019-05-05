@@ -85,22 +85,14 @@ void Bullet::Load(FileReader& f)
 	f >> refid;
 	pe = ParticleEmitter::GetByRefid(refid);
 	f >> remove;
-	if(LOAD_VERSION >= V_0_4)
-	{
-		f >> level;
-		if(LOAD_VERSION >= V_0_10)
-			f >> backstab;
-		else
-		{
-			int backstab_value;
-			f >> backstab_value;
-			backstab = 0.25f * (backstab_value + 1);
-		}
-	}
+	f >> level;
+	if(LOAD_VERSION >= V_0_10)
+		f >> backstab;
 	else
 	{
-		level = (int)round(f.Read<float>());
-		backstab = 0.25f;
+		int backstab_value;
+		f >> backstab_value;
+		backstab = 0.25f * (backstab_value + 1);
 	}
 	f >> start_pos;
 }

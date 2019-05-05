@@ -48,7 +48,6 @@ struct ClassInfo
 	static Class GetRandomPlayer();
 	static Class GetRandomEvil();
 	static void Validate(uint &err);
-	static Class OldToNew(Class c);
 	static UnitData& GetUnitData(Class clas, bool crazy = false);
 	static UnitData& GetRandomData() { return GetUnitData(GetRandom()); }
 

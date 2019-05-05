@@ -290,39 +290,18 @@ bool Quest_Mine::Load(GameReader& f)
 
 	f >> sub.done;
 	f >> dungeon_loc;
-
-	if(LOAD_VERSION >= V_0_4)
-	{
-		f >> mine_state;
-		f >> mine_state2;
-		f >> mine_state3;
-		f >> days;
-		f >> days_required;
-		f >> days_gold;
-		f >> messenger;
-	}
+	f >> mine_state;
+	f >> mine_state2;
+	f >> mine_state3;
+	f >> days;
+	f >> days_required;
+	f >> days_gold;
+	f >> messenger;
 
 	location_event_handler = this;
 	InitSub();
 
 	return true;
-}
-
-//=================================================================================================
-void Quest_Mine::LoadOld(GameReader& f)
-{
-	int city, cave;
-
-	f >> mine_state;
-	f >> mine_state2;
-	f >> mine_state3;
-	f >> city;
-	f >> cave;
-	f >> refid;
-	f >> days;
-	f >> days_required;
-	f >> days_gold;
-	f >> messenger;
 }
 
 //=================================================================================================

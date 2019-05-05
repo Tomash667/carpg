@@ -311,21 +311,6 @@ void GlobalGui::Load(FileReader& f)
 }
 
 //=================================================================================================
-void GlobalGui::LoadOldGui(FileReader& f)
-{
-	// old gui settings, now removed
-	LocalVector<GamePanel*> panels;
-	game_gui->GetGamePanels(panels);
-	Int2 prev_wnd_size, _pos, _size;
-	f >> prev_wnd_size;
-	for(vector<GamePanel*>::iterator it = panels->begin(), end = panels->end(); it != end; ++it)
-	{
-		f >> _pos;
-		f >> _size;
-	}
-}
-
-//=================================================================================================
 // Clear gui state after new game/loading/entering new location
 void GlobalGui::Clear(bool reset_mpbox, bool on_enter)
 {

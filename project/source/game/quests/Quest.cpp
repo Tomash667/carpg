@@ -45,10 +45,7 @@ bool Quest::Load(GameReader& f)
 	f >> start_loc;
 	f >> type;
 	f.ReadStringArray<byte, word>(msgs);
-	if(LOAD_VERSION >= V_0_4)
-		f >> timeout;
-	else
-		timeout = false;
+	f >> timeout;
 
 	return true;
 }
@@ -125,12 +122,7 @@ bool Quest_Dungeon::Load(GameReader& f)
 
 	f >> target_loc;
 	f >> done;
-	if(LOAD_VERSION >= V_0_4 || !done)
-		f >> at_level;
-	else
-		at_level = -1;
-	if(LOAD_VERSION < V_0_4 && target_loc != -1 && GetTargetLocation().outside)
-		at_level = -1;
+	f >> at_level;
 
 	return true;
 }

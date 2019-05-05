@@ -359,13 +359,9 @@ bool Quest_Bandits::Load(GameReader& f)
 	f >> other_loc;
 	f >> camp_loc;
 	f >> get_letter;
-
-	if(LOAD_VERSION >= V_0_4)
-	{
-		f >> bandits_state;
-		f >> timer;
-		f >> agent;
-	}
+	f >> bandits_state;
+	f >> timer;
+	f >> agent;
 
 	if(enc != -1)
 	{
@@ -400,17 +396,4 @@ bool Quest_Bandits::Load(GameReader& f)
 	}
 
 	return true;
-}
-
-//=================================================================================================
-void Quest_Bandits::LoadOld(GameReader& f)
-{
-	int old_refid, city, where;
-
-	f >> old_refid;
-	f >> city;
-	f >> where;
-	f >> bandits_state;
-	f >> timer;
-	f >> agent;
 }

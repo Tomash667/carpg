@@ -1,6 +1,10 @@
 Historia zmian
 
 --------------------------------------------------------------------------------
+Wersja 0.11 (2019-??-??):
+! nie mo¿na wczytywaæ ju¿ zapisów z wersji 0.3 lub starszej
+
+--------------------------------------------------------------------------------
 Wersja 0.10 (2019-05-05):
 ! nie mo¿na wczytywaæ ju¿ zapisów z wersji 0.2.20 lub starszej
 + nowe unikalne zadanie: Zio³a dla alchemika
