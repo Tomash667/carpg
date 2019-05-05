@@ -17,7 +17,7 @@
 #include "PlayerController.h"
 
 //-----------------------------------------------------------------------------
-// Tryb szybkiego uruchamiania gry
+// quickstart mode
 enum QUICKSTART
 {
 	QUICKSTART_NONE,
@@ -30,7 +30,7 @@ enum QUICKSTART
 };
 
 //-----------------------------------------------------------------------------
-// Stan gry
+// game state
 enum GAME_STATE
 {
 	GS_MAIN_MENU,
@@ -214,7 +214,7 @@ public:
 	int profiler_mode;
 
 	//-----------------------------------------------------------------
-	// ZASOBY
+	// resources
 	//-----------------------------------------------------------------
 	MeshPtr aHumanBase, aHair[5], aBeard[5], aMustache[2], aEyebrows;
 	MeshPtr aBox, aCylinder, aSphere, aCapsule;
@@ -338,7 +338,7 @@ public:
 	//---------------------------------
 	// DIALOGS
 	DialogContext dialog_context;
-	vector<string> dialog_choices; // u¿ywane w MP u klienta
+	vector<string> dialog_choices; // used in client multiplayer mode
 	string predialog;
 
 	DialogContext* FindDialogContext(Unit* talker);
@@ -410,7 +410,7 @@ public:
 	bool CheckForHit(LevelContext& ctx, Unit& unit, Unit*& hitted, Vec3& hitpoint);
 	bool CheckForHit(LevelContext& ctx, Unit& unit, Unit*& hitted, Mesh::Point& hitbox, Mesh::Point* bone, Vec3& hitpoint);
 	void UpdateParticles(LevelContext& ctx, float dt);
-	// wykonuje atak postaci
+	// perform character attack
 	enum ATTACK_RESULT
 	{
 		ATTACK_NOT_HIT,
@@ -490,9 +490,9 @@ public:
 	void LeaveLevel(LevelContext& ctx, bool clear);
 	void UpdateContext(LevelContext& ctx, float dt);
 	bool IsAnyoneTalking() const;
-	// to by mog³o byæ globalna funkcj¹
+	// this could be a global function
 	void PlayHitSound(MATERIAL_TYPE mat_weapon, MATERIAL_TYPE mat_body, const Vec3& hitpoint, float range, bool dmg);
-	// wczytywanie
+	// reading
 	void LoadingStart(int steps);
 	void LoadingStep(cstring text = nullptr, int end = 0);
 	void LoadResources(cstring text, bool worldmap);
@@ -591,11 +591,11 @@ public:
 	struct WarpData
 	{
 		Unit* u;
-		int where; // -1-z budynku, >=0-do budynku
+		int where; // <-1 - from the building,  >=0 - towards the building
 		float timer;
 	};
 	vector<WarpData> mp_warps;
-	float train_move; // u¿ywane przez klienta do trenowania przez chodzenie
+	float train_move; // used by client to training by walking
 	bool anyone_talking;
 	float interpolate_timer;
 	bool paused;
