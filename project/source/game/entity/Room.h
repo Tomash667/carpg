@@ -86,6 +86,7 @@ struct Room : ObjectPoolProxy<Room>
 	bool IsCorridor() const { return target == RoomTarget::Corridor; }
 	bool IsConnected(Room* room);
 	bool CanJoinRoom() const { return target == RoomTarget::None || target == RoomTarget::StairsUp || target == RoomTarget::StairsDown; }
+	void AddTile(const Int2& pt);
 
 	void Save(FileWriter& f);
 	void Load(FileReader& f);

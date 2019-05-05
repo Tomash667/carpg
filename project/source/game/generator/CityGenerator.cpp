@@ -2883,7 +2883,7 @@ void CityGenerator::OnLoad()
 	game.SetTerrainTextures();
 	ApplyTiles();
 
-	L.RecreateObjects(false);
+	L.RecreateObjects(Net::IsClient());
 	L.SpawnTerrainCollider();
 	RespawnBuildingPhysics();
 	SpawnCityPhysics();

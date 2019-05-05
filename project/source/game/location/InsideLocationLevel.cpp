@@ -76,7 +76,7 @@ Room* InsideLocationLevel::FindEscapeRoom(const Vec3& my_pos, const Vec3& enemy_
 Room* InsideLocationLevel::GetRoom(const Int2& pt)
 {
 	Room* room = rooms[map[pt(w)].room];
-	if(room->IsInside(pt) || Any(map[pt(w)].type, STAIRS_UP, STAIRS_DOWN))
+	if(room->IsInside(pt))
 		return room;
 	return nullptr;
 }

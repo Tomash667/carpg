@@ -1703,10 +1703,17 @@ void Game::OnFocus(bool focus, const Int2& activation_point)
 //=================================================================================================
 void Game::ReportError(int id, cstring text)
 {
+	cstring mode;
+	if(Net::IsSingleplayer())
+		mode = "SP";
+	else if(Net::IsServer())
+		mode = "SV";
+	else
+		mode = "CL";
 	cstring str = Format("[Report %d]: %s", id, text);
 	Warn(str);
 #ifdef _DEBUG
 	gui->messages->AddGameMsg(str, 5.f);
 #endif
-	N.api->Report(id, text);
+	N.api->Report(id, Format("[%s] %s", mode, text));
 }

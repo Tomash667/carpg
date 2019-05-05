@@ -442,7 +442,7 @@ void OutsideLocationGenerator::OnLoad()
 	game.SetTerrainTextures();
 	ApplyTiles();
 
-	L.RecreateObjects(false);
+	L.RecreateObjects(Net::IsClient());
 	L.SpawnTerrainCollider();
 	SpawnOutsideBariers();
 	game.InitQuadTree();

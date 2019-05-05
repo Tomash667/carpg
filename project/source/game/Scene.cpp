@@ -14,6 +14,7 @@
 #include "ParticleSystem.h"
 #include "Render.h"
 #include "TerrainShader.h"
+#include "ResourceManager.h"
 #include "DirectX.h"
 
 //-----------------------------------------------------------------------------
@@ -3356,6 +3357,12 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 	{
 		const SceneNode* node = *it;
 		const Mesh& mesh = node->GetMesh();
+		if(!mesh.IsLoaded())
+		{
+			ReportError(10, Format("Drawing not loaded mesh '%s'.", mesh.filename));
+			ResourceManager::Get<Mesh>().Load(const_cast<Mesh*>(&mesh));
+			break;
+		}
 
 		// pobierz nowy efekt jeœli trzeba
 		if(node->flags != current_flags)
