@@ -111,14 +111,9 @@ public:
 	Unit* SpawnUnit(LevelContext& ctx, TmpSpawn spawn);
 	struct IgnoreObjects
 	{
-		// nullptr lub tablica jednostek zakoñczona nullptr
-		const Unit** ignored_units;
-		// nullptr lub tablica obiektów [u¿ywalnych lub nie] zakoñczona nullptr
-		const void** ignored_objects;
-		// czy ignorowaæ bloki
-		bool ignore_blocks;
-		// czy ignorowaæ obiekty
-		bool ignore_objects;
+		const Unit** ignored_units; // nullptr or array of units with last element of nullptr
+		const void** ignored_objects; // nullptr or array of objects/usable objects with last element of nullptr
+		bool ignore_blocks, ignore_objects, ignore_units, ignore_doors;
 	};
 	void GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& objects, const Vec3& pos, float radius, const IgnoreObjects* ignore = nullptr);
 	void GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& objects, const Box2d& box, const IgnoreObjects* ignore = nullptr);

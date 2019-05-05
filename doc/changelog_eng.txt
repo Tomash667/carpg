@@ -3,6 +3,7 @@ Changelog
 --------------------------------------------------------------------------------
 Version 0.11 (2019-??-??):
 ! cannot load saves from version 0.3 or older
+- fixed skeleton corpse animation moving it thru wall making it not lootable [Zielu]
 
 --------------------------------------------------------------------------------
 Version 0.10 (2019-05-05):

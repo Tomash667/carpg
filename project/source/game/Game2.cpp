@@ -4167,6 +4167,29 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 		// zmieñ stan z umiera na umar³ i stwórz krew (chyba ¿e tylko upad³)
 		if(!u.IsStanding())
 		{
+			// move corpse that thanks to animation is now not lootable
+			if(Net::IsLocal() && (Any(u.live_state, Unit::DYING, Unit::FALLING) || u.action == A_POSITION_CORPSE))
+			{
+				Vec3 pos = u.GetLootCenter();
+				L.global_col.clear();
+				Level::IgnoreObjects ignore = { 0 };
+				ignore.ignore_units = true;
+				ignore.ignore_doors = true;
+				L.GatherCollisionObjects(ctx, L.global_col, pos, 0.25f, &ignore);
+				if(L.Collide(L.global_col, pos, 0.25f))
+				{
+					Vec3 dir = u.pos - pos;
+					dir.y = 0;
+					u.pos += dir * dt * 2;
+					u.visual_pos = u.pos;
+					u.moved = true;
+					u.action = A_POSITION_CORPSE;
+					u.changed = true;
+				}
+				else
+					u.action = A_NONE;
+			}
+
 			if(u.mesh_inst->frame_end_info)
 			{
 				if(u.live_state == Unit::DYING)

@@ -53,7 +53,8 @@ enum ACTION
 	A_DESPAWN,
 	A_PREPARE, // mp client want to use object, waiting for response
 	A_STAND_UP,
-	A_USE_ITEM
+	A_USE_ITEM,
+	A_POSITION_CORPSE, // move corpse that thanks to animation is now not lootable
 };
 
 //-----------------------------------------------------------------------------

@@ -2099,117 +2099,117 @@ void Level::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _
 	}
 
 	// units
-	float radius;
-	Vec3 pos;
-	if(ignore && ignore->ignored_units)
+	if(!(ignore && ignore->ignore_units))
 	{
-		for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
+		float radius;
+		Vec3 pos;
+		if(ignore && ignore->ignored_units)
 		{
-			if(!*it || !(*it)->IsStanding())
-				continue;
+			for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
+			{
+				if(!*it || !(*it)->IsStanding())
+					continue;
 
-			const Unit** u = ignore->ignored_units;
-			do
-			{
-				if(!*u)
-					break;
-				if(*u == *it)
-					goto jest;
-				++u;
-			}
-			while(1);
-
-			radius = (*it)->GetUnitRadius();
-			pos = (*it)->GetColliderPos();
-			if(Distance(pos.x, pos.z, _pos.x, _pos.z) <= radius + _radius)
-			{
-				CollisionObject& co = Add1(_objects);
-				co.pt = Vec2(pos.x, pos.z);
-				co.radius = radius;
-				co.type = CollisionObject::SPHERE;
-			}
-
-		jest:
-			;
-		}
-	}
-	else
-	{
-		for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
-		{
-			if(!*it || !(*it)->IsStanding())
-				continue;
-
-			radius = (*it)->GetUnitRadius();
-			Vec3 pos = (*it)->GetColliderPos();
-			if(Distance(pos.x, pos.z, _pos.x, _pos.z) <= radius + _radius)
-			{
-				CollisionObject& co = Add1(_objects);
-				co.pt = Vec2(pos.x, pos.z);
-				co.radius = radius;
-				co.type = CollisionObject::SPHERE;
-			}
-		}
-	}
-
-	// obiekty kolizji
-	if(ignore && ignore->ignore_objects)
-	{
-		// ignoruj obiekty
-	}
-	else if(!ignore || !ignore->ignored_objects)
-	{
-		for(vector<CollisionObject>::iterator it = ctx.colliders->begin(), end = ctx.colliders->end(); it != end; ++it)
-		{
-			if(it->type == CollisionObject::RECTANGLE)
-			{
-				if(CircleToRectangle(_pos.x, _pos.z, _radius, it->pt.x, it->pt.y, it->w, it->h))
-					_objects.push_back(*it);
-			}
-			else
-			{
-				if(CircleToCircle(_pos.x, _pos.z, _radius, it->pt.x, it->pt.y, it->radius))
-					_objects.push_back(*it);
-			}
-		}
-	}
-	else
-	{
-		for(vector<CollisionObject>::iterator it = ctx.colliders->begin(), end = ctx.colliders->end(); it != end; ++it)
-		{
-			if(it->owner)
-			{
-				const void** objs = ignore->ignored_objects;
+				const Unit** u = ignore->ignored_units;
 				do
 				{
-					if(it->owner == *objs)
-						goto ignoruj;
-					else if(!*objs)
+					if(!*u)
 						break;
-					else
-						++objs;
+					if(*u == *it)
+						goto jest;
+					++u;
+				} while(1);
+
+				radius = (*it)->GetUnitRadius();
+				pos = (*it)->GetColliderPos();
+				if(Distance(pos.x, pos.z, _pos.x, _pos.z) <= radius + _radius)
+				{
+					CollisionObject& co = Add1(_objects);
+					co.pt = Vec2(pos.x, pos.z);
+					co.radius = radius;
+					co.type = CollisionObject::SPHERE;
 				}
-				while(1);
-			}
 
-			if(it->type == CollisionObject::RECTANGLE)
-			{
-				if(CircleToRectangle(_pos.x, _pos.z, _radius, it->pt.x, it->pt.y, it->w, it->h))
-					_objects.push_back(*it);
+			jest:
+				;
 			}
-			else
+		}
+		else
+		{
+			for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
 			{
-				if(CircleToCircle(_pos.x, _pos.z, _radius, it->pt.x, it->pt.y, it->radius))
-					_objects.push_back(*it);
-			}
+				if(!*it || !(*it)->IsStanding())
+					continue;
 
-		ignoruj:
-			;
+				radius = (*it)->GetUnitRadius();
+				Vec3 pos = (*it)->GetColliderPos();
+				if(Distance(pos.x, pos.z, _pos.x, _pos.z) <= radius + _radius)
+				{
+					CollisionObject& co = Add1(_objects);
+					co.pt = Vec2(pos.x, pos.z);
+					co.radius = radius;
+					co.type = CollisionObject::SPHERE;
+				}
+			}
 		}
 	}
 
-	// drzwi
-	if(ctx.doors && !ctx.doors->empty())
+	// object colliders
+	if(!(ignore && ignore->ignore_objects))
+	{
+		if(!ignore || !ignore->ignored_objects)
+		{
+			for(vector<CollisionObject>::iterator it = ctx.colliders->begin(), end = ctx.colliders->end(); it != end; ++it)
+			{
+				if(it->type == CollisionObject::RECTANGLE)
+				{
+					if(CircleToRectangle(_pos.x, _pos.z, _radius, it->pt.x, it->pt.y, it->w, it->h))
+						_objects.push_back(*it);
+				}
+				else
+				{
+					if(CircleToCircle(_pos.x, _pos.z, _radius, it->pt.x, it->pt.y, it->radius))
+						_objects.push_back(*it);
+				}
+			}
+		}
+		else
+		{
+			for(vector<CollisionObject>::iterator it = ctx.colliders->begin(), end = ctx.colliders->end(); it != end; ++it)
+			{
+				if(it->owner)
+				{
+					const void** objs = ignore->ignored_objects;
+					do
+					{
+						if(it->owner == *objs)
+							goto ignoruj;
+						else if(!*objs)
+							break;
+						else
+							++objs;
+					} while(1);
+				}
+
+				if(it->type == CollisionObject::RECTANGLE)
+				{
+					if(CircleToRectangle(_pos.x, _pos.z, _radius, it->pt.x, it->pt.y, it->w, it->h))
+						_objects.push_back(*it);
+				}
+				else
+				{
+					if(CircleToCircle(_pos.x, _pos.z, _radius, it->pt.x, it->pt.y, it->radius))
+						_objects.push_back(*it);
+				}
+
+			ignoruj:
+				;
+			}
+		}
+	}
+
+	// doors
+	if(!(ignore && ignore->ignore_doors) && ctx.doors && !ctx.doors->empty())
 	{
 		for(vector<Door*>::iterator it = ctx.doors->begin(), end = ctx.doors->end(); it != end; ++it)
 		{
@@ -2309,109 +2309,109 @@ void Level::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _
 		rectsize = _box.Size();
 
 	// units
-	float radius;
-	if(ignore && ignore->ignored_units)
+	if(!(ignore && ignore->ignore_units))
 	{
-		for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
+		float radius;
+		if(ignore && ignore->ignored_units)
 		{
-			if(!(*it)->IsStanding())
-				continue;
+			for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
+			{
+				if(!(*it)->IsStanding())
+					continue;
 
-			const Unit** u = ignore->ignored_units;
-			do
-			{
-				if(!*u)
-					break;
-				if(*u == *it)
-					goto jest;
-				++u;
-			}
-			while(1);
-
-			radius = (*it)->GetUnitRadius();
-			if(CircleToRectangle((*it)->pos.x, (*it)->pos.z, radius, rectpos.x, rectpos.y, rectsize.x, rectsize.y))
-			{
-				CollisionObject& co = Add1(_objects);
-				co.pt = Vec2((*it)->pos.x, (*it)->pos.z);
-				co.radius = radius;
-				co.type = CollisionObject::SPHERE;
-			}
-
-		jest:
-			;
-		}
-	}
-	else
-	{
-		for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
-		{
-			if(!(*it)->IsStanding())
-				continue;
-
-			radius = (*it)->GetUnitRadius();
-			if(CircleToRectangle((*it)->pos.x, (*it)->pos.z, radius, rectpos.x, rectpos.y, rectsize.x, rectsize.y))
-			{
-				CollisionObject& co = Add1(_objects);
-				co.pt = Vec2((*it)->pos.x, (*it)->pos.z);
-				co.radius = radius;
-				co.type = CollisionObject::SPHERE;
-			}
-		}
-	}
-
-	// obiekty kolizji
-	if(ignore && ignore->ignore_objects)
-	{
-		// ignoruj obiekty
-	}
-	else if(!ignore || !ignore->ignored_objects)
-	{
-		for(vector<CollisionObject>::iterator it = ctx.colliders->begin(), end = ctx.colliders->end(); it != end; ++it)
-		{
-			if(it->type == CollisionObject::RECTANGLE)
-			{
-				if(RectangleToRectangle(it->pt.x - it->w, it->pt.y - it->h, it->pt.x + it->w, it->pt.y + it->h, _box.v1.x, _box.v1.y, _box.v2.x, _box.v2.y))
-					_objects.push_back(*it);
-			}
-			else
-			{
-				if(CircleToRectangle(it->pt.x, it->pt.y, it->radius, rectpos.x, rectpos.y, rectsize.x, rectsize.y))
-					_objects.push_back(*it);
-			}
-		}
-	}
-	else
-	{
-		for(vector<CollisionObject>::iterator it = ctx.colliders->begin(), end = ctx.colliders->end(); it != end; ++it)
-		{
-			if(it->owner)
-			{
-				const void** objs = ignore->ignored_objects;
+				const Unit** u = ignore->ignored_units;
 				do
 				{
-					if(it->owner == *objs)
-						goto ignoruj;
-					else if(!*objs)
+					if(!*u)
 						break;
-					else
-						++objs;
+					if(*u == *it)
+						goto jest;
+					++u;
+				} while(1);
+
+				radius = (*it)->GetUnitRadius();
+				if(CircleToRectangle((*it)->pos.x, (*it)->pos.z, radius, rectpos.x, rectpos.y, rectsize.x, rectsize.y))
+				{
+					CollisionObject& co = Add1(_objects);
+					co.pt = Vec2((*it)->pos.x, (*it)->pos.z);
+					co.radius = radius;
+					co.type = CollisionObject::SPHERE;
 				}
-				while(1);
-			}
 
-			if(it->type == CollisionObject::RECTANGLE)
-			{
-				if(RectangleToRectangle(it->pt.x - it->w, it->pt.y - it->h, it->pt.x + it->w, it->pt.y + it->h, _box.v1.x, _box.v1.y, _box.v2.x, _box.v2.y))
-					_objects.push_back(*it);
+			jest:
+				;
 			}
-			else
+		}
+		else
+		{
+			for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
 			{
-				if(CircleToRectangle(it->pt.x, it->pt.y, it->radius, rectpos.x, rectpos.y, rectsize.x, rectsize.y))
-					_objects.push_back(*it);
-			}
+				if(!(*it)->IsStanding())
+					continue;
 
-		ignoruj:
-			;
+				radius = (*it)->GetUnitRadius();
+				if(CircleToRectangle((*it)->pos.x, (*it)->pos.z, radius, rectpos.x, rectpos.y, rectsize.x, rectsize.y))
+				{
+					CollisionObject& co = Add1(_objects);
+					co.pt = Vec2((*it)->pos.x, (*it)->pos.z);
+					co.radius = radius;
+					co.type = CollisionObject::SPHERE;
+				}
+			}
+		}
+	}
+
+	// object colliders
+	if(!(ignore && ignore->ignore_objects))
+	{
+		if(!ignore || !ignore->ignored_objects)
+		{
+			for(vector<CollisionObject>::iterator it = ctx.colliders->begin(), end = ctx.colliders->end(); it != end; ++it)
+			{
+				if(it->type == CollisionObject::RECTANGLE)
+				{
+					if(RectangleToRectangle(it->pt.x - it->w, it->pt.y - it->h, it->pt.x + it->w, it->pt.y + it->h, _box.v1.x, _box.v1.y, _box.v2.x, _box.v2.y))
+						_objects.push_back(*it);
+				}
+				else
+				{
+					if(CircleToRectangle(it->pt.x, it->pt.y, it->radius, rectpos.x, rectpos.y, rectsize.x, rectsize.y))
+						_objects.push_back(*it);
+				}
+			}
+		}
+		else
+		{
+			for(vector<CollisionObject>::iterator it = ctx.colliders->begin(), end = ctx.colliders->end(); it != end; ++it)
+			{
+				if(it->owner)
+				{
+					const void** objs = ignore->ignored_objects;
+					do
+					{
+						if(it->owner == *objs)
+							goto ignoruj;
+						else if(!*objs)
+							break;
+						else
+							++objs;
+					} while(1);
+				}
+
+				if(it->type == CollisionObject::RECTANGLE)
+				{
+					if(RectangleToRectangle(it->pt.x - it->w, it->pt.y - it->h, it->pt.x + it->w, it->pt.y + it->h, _box.v1.x, _box.v1.y, _box.v2.x, _box.v2.y))
+						_objects.push_back(*it);
+				}
+				else
+				{
+					if(CircleToRectangle(it->pt.x, it->pt.y, it->radius, rectpos.x, rectpos.y, rectsize.x, rectsize.y))
+						_objects.push_back(*it);
+				}
+
+			ignoruj:
+				;
+			}
 		}
 	}
 }
