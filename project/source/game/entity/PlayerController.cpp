@@ -529,7 +529,7 @@ void PlayerController::Load(FileReader& f)
 	f >> credit;
 	f >> godmode;
 	f >> noclip;
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_10)
 		f >> invisible;
 	f >> id;
 	f >> free_days;
@@ -673,11 +673,11 @@ void PlayerController::Load(FileReader& f)
 		exp_level = 0;
 	}
 	exp_need = GetExpNeed();
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_10)
 		f >> last_ring;
 	else
 		last_ring = false;
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_10)
 	{
 		for(Shortcut& shortcut : shortcuts)
 		{

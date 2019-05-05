@@ -362,7 +362,7 @@ void TeamPanel::GiveGold()
 		SimpleDialog(txGiveGoldSelf);
 	else
 	{
-		counter = 0;
+		counter = 1;
 		GetNumberDialog::Show(this, DialogEvent(this, &TeamPanel::OnGiveGold), Format(txGiveGoldAmount, target->GetName()), 1, game.pc->unit->gold, &counter);
 	}
 }

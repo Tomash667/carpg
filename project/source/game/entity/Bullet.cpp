@@ -88,7 +88,7 @@ void Bullet::Load(FileReader& f)
 	if(LOAD_VERSION >= V_0_4)
 	{
 		f >> level;
-		if(LOAD_VERSION >= V_DEV)
+		if(LOAD_VERSION >= V_0_10)
 			f >> backstab;
 		else
 		{

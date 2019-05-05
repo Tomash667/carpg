@@ -83,7 +83,7 @@ void Quest_Contest::Load(GameReader& f)
 	f >> state;
 	f >> generated;
 	f >> winner;
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_10)
 		f >> rumor;
 	if(state >= CONTEST_STARTING)
 	{

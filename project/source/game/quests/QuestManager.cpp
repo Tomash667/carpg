@@ -712,7 +712,7 @@ void QuestManager::Load(GameReader& f)
 	f >> quest_counter;
 	f >> unique_quests_completed;
 	f >> unique_completed_show;
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_10)
 	{
 		uint count;
 		f >> count;

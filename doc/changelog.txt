@@ -1,7 +1,7 @@
 Historia zmian
 
 --------------------------------------------------------------------------------
-Wersja 0.10 (2019-??-??):
+Wersja 0.10 (2019-05-05):
 ! nie mo¿na wczytywaæ ju¿ zapisów z wersji 0.2.20 lub starszej
 + nowe unikalne zadanie: Zio³a dla alchemika
 + nowe efekty postaci: maksymalna wytrzyma³oœæ, szybkoœæ regeneracji wytrzyma³oœci, premia do atrybutu/umiejêtnoœci

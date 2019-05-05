@@ -1819,7 +1819,7 @@ void Unit::Load(GameReader& f, bool local)
 	// items
 	bool can_sort = true;
 	int max_slots;
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_10)
 		max_slots = SLOT_MAX;
 	else if(LOAD_VERSION >= V_0_9)
 		max_slots = 5;
@@ -1829,7 +1829,7 @@ void Unit::Load(GameReader& f, bool local)
 		f.ReadOptional(slots[i]);
 	if(LOAD_VERSION < V_0_9)
 		slots[SLOT_AMULET] = nullptr;
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_10)
 	{
 		slots[SLOT_RING1] = nullptr;
 		slots[SLOT_RING2] = nullptr;
@@ -1904,7 +1904,7 @@ void Unit::Load(GameReader& f, bool local)
 			stats->fixed = false;
 			stats->subprofile.value = 0;
 			stats->Load(f);
-			if(LOAD_VERSION < V_DEV)
+			if(LOAD_VERSION < V_0_10)
 			{
 				for(int i = 0; i < (int)SkillId::MAX; ++i)
 				{
@@ -1966,7 +1966,7 @@ void Unit::Load(GameReader& f, bool local)
 	}
 	f >> gold;
 	bool old_invisible = false;
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_10)
 		f >> old_invisible;
 	f >> in_building;
 	f >> to_remove;
@@ -2104,7 +2104,7 @@ void Unit::Load(GameReader& f, bool local)
 			f >> use_rot;
 		else if(action == A_ANIMATION2)
 		{
-			if(LOAD_VERSION >= V_DEV)
+			if(LOAD_VERSION >= V_0_10)
 				f >> use_rot;
 			else
 				use_rot = 0.f;
@@ -2163,7 +2163,7 @@ void Unit::Load(GameReader& f, bool local)
 	}
 
 	// effects
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_10)
 		f.ReadVector4(effects);
 	else if(LOAD_VERSION >= V_0_8)
 	{
@@ -2217,7 +2217,7 @@ void Unit::Load(GameReader& f, bool local)
 			});
 		}
 	}
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_10)
 	{
 		// events
 		events.resize(f.Read<uint>());
@@ -2267,7 +2267,7 @@ void Unit::Load(GameReader& f, bool local)
 		player = new PlayerController;
 		player->unit = this;
 		player->Load(f);
-		if(LOAD_VERSION < V_DEV)
+		if(LOAD_VERSION < V_0_10)
 			player->invisible = old_invisible;
 	}
 	else
