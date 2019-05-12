@@ -133,7 +133,10 @@ void Inventory::LoadData()
 //=================================================================================================
 void Inventory::OnReset()
 {
-	TEX tex = Game::Get().rt_item_rot->GetTexture();
+	RenderTarget* target = Game::Get().rt_item_rot;
+	if(!target)
+		return;
+	TEX tex = target->GetTexture();
 	if(inv_mine->visible)
 	{
 		if(tooltip.img == tex)
@@ -160,7 +163,10 @@ void Inventory::OnReset()
 //=================================================================================================
 void Inventory::OnReload()
 {
-	TEX tex = Game::Get().rt_item_rot->GetTexture();
+	RenderTarget* target = Game::Get().rt_item_rot;
+	if(!target)
+		return;
+	TEX tex = target->GetTexture();
 	if(inv_mine->tex_replaced)
 	{
 		tooltip.img = tex;

@@ -4,6 +4,7 @@ Historia zmian
 Wersja 0.11 (2019-??-??):
 ! nie mo¿na wczytywaæ ju¿ zapisów z wersji 0.3 lub starszej
 - naprawione pozycjonowanie szkieletów po œmierci tak by nie wpada³y w œciany gdzie nie mo¿na ich ograbiæ [Zielu]
+- naprawiony rzadki crash przy u¿ywaniu alt tab przy uruchamianiu gry
 
 --------------------------------------------------------------------------------
 Wersja 0.10 (2019-05-05):
