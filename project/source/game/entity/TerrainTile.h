@@ -23,6 +23,7 @@ enum TILE_MODE : byte
 	TM_BUILDING_SAND,
 	TM_BUILDING, // wyœwiela siê jako budynek, nie ma fizyki ani kolizji
 	TM_BUILDING_BLOCK, // wyœwietla siê jako budynek, ma fizykê i kolizje
+	TM_NO_GRASS,
 	TM_MAX
 };
 
@@ -46,7 +47,7 @@ struct TerrainTile
 
 	bool IsBlocking() const
 	{
-		return mode >= TM_BUILDING_BLOCK;
+		return mode >= TM_BUILDING_BLOCK && mode != TM_NO_GRASS;
 	}
 
 	void Set(TERRAIN_TILE _t, TILE_MODE _mode)
@@ -70,7 +71,7 @@ struct TerrainTile
 
 	bool IsBuilding() const
 	{
-		return mode >= TM_BUILDING;
+		return mode >= TM_BUILDING && mode != TM_NO_GRASS;
 	}
 
 	cstring GetInfo() const

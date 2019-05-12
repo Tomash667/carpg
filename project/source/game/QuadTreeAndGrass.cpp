@@ -221,28 +221,31 @@ void Game::ListGrass()
 					TERRAIN_TILE t = outside->tiles[x + y*OutsideLocation::size].t;
 					if(t == TT_GRASS)
 					{
-						if(outside->tiles[x - 1 + y*OutsideLocation::size].t == TT_GRASS &&
-							outside->tiles[x + 1 + y*OutsideLocation::size].t == TT_GRASS &&
-							outside->tiles[x + (y - 1)*OutsideLocation::size].t == TT_GRASS &&
-							outside->tiles[x + (y + 1)*OutsideLocation::size].t == TT_GRASS)
+						if(outside->tiles[x + y * OutsideLocation::size].mode != TM_NO_GRASS)
 						{
-							for(int i = 0; i < 6; ++i)
+							if(outside->tiles[x - 1 + y * OutsideLocation::size].t == TT_GRASS &&
+								outside->tiles[x + 1 + y * OutsideLocation::size].t == TT_GRASS &&
+								outside->tiles[x + (y - 1)*OutsideLocation::size].t == TT_GRASS &&
+								outside->tiles[x + (y + 1)*OutsideLocation::size].t == TT_GRASS)
 							{
-								pos = Vec3(2.f*x + Random(2.f), 0.f, 2.f*y + Random(2.f));
-								L.terrain->GetAngle(pos.x, pos.z, angle);
-								if(angle.y < 0.7f)
-									continue;
-								L.terrain->SetH(pos);
-								part.grass.push_back(Matrix::Scale(Random(3.f, 4.f)) * Matrix::RotationY(Random(MAX_ANGLE)) * Matrix::Translation(pos));
+								for(int i = 0; i < 6; ++i)
+								{
+									pos = Vec3(2.f*x + Random(2.f), 0.f, 2.f*y + Random(2.f));
+									L.terrain->GetAngle(pos.x, pos.z, angle);
+									if(angle.y < 0.7f)
+										continue;
+									L.terrain->SetH(pos);
+									part.grass.push_back(Matrix::Scale(Random(3.f, 4.f)) * Matrix::RotationY(Random(MAX_ANGLE)) * Matrix::Translation(pos));
+								}
 							}
-						}
-						else
-						{
-							for(int i = 0; i < 4; ++i)
+							else
 							{
-								pos = Vec3(2.f*x + 0.1f + Random(1.8f), 0, 2.f*y + 0.1f + Random(1.8f));
-								L.terrain->SetH(pos);
-								part.grass.push_back(Matrix::Scale(Random(2.f, 3.f)) * Matrix::RotationY(Random(MAX_ANGLE)) * Matrix::Translation(pos));
+								for(int i = 0; i < 4; ++i)
+								{
+									pos = Vec3(2.f*x + 0.1f + Random(1.8f), 0, 2.f*y + 0.1f + Random(1.8f));
+									L.terrain->SetH(pos);
+									part.grass.push_back(Matrix::Scale(Random(2.f, 3.f)) * Matrix::RotationY(Random(MAX_ANGLE)) * Matrix::Translation(pos));
+								}
 							}
 						}
 					}

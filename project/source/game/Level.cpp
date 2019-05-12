@@ -2041,7 +2041,7 @@ void Level::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _
 			{
 				for(int x = minx; x <= maxx; ++x)
 				{
-					if(tiles[x + z * OutsideLocation::size].mode >= TM_BUILDING_BLOCK)
+					if(tiles[x + z * OutsideLocation::size].IsBlocking())
 					{
 						CollisionObject& co = Add1(_objects);
 						co.pt = Vec2(2.f*x + 1.f, 2.f*z + 1.f);
@@ -2248,7 +2248,7 @@ void Level::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _
 			{
 				for(int x = minx; x <= maxx; ++x)
 				{
-					if(tiles[x + z * OutsideLocation::size].mode >= TM_BUILDING_BLOCK)
+					if(tiles[x + z * OutsideLocation::size].IsBlocking())
 					{
 						CollisionObject& co = Add1(_objects);
 						co.pt = Vec2(2.f*x + 1.f, 2.f*z + 1.f);
@@ -3573,7 +3573,7 @@ bool Level::CanSee(Unit& u1, Unit& u2)
 		{
 			for(int x = xmin; x <= xmax; ++x)
 			{
-				if(outside->tiles[x + y * OutsideLocation::size].mode >= TM_BUILDING_BLOCK
+				if(outside->tiles[x + y * OutsideLocation::size].IsBlocking()
 					&& LineToRectangle(u1.pos, u2.pos, Vec2(2.f*x, 2.f*y), Vec2(2.f*(x + 1), 2.f*(y + 1))))
 					return false;
 			}
@@ -3685,7 +3685,7 @@ bool Level::CanSee(LevelContext& ctx, const Vec3& v1, const Vec3& v2, bool is_do
 		{
 			for(int x = xmin; x <= xmax; ++x)
 			{
-				if(outside->tiles[x + y * OutsideLocation::size].mode >= TM_BUILDING_BLOCK && LineToRectangle(v1, v2, Vec2(2.f*x, 2.f*y), Vec2(2.f*(x + 1), 2.f*(y + 1))))
+				if(outside->tiles[x + y * OutsideLocation::size].IsBlocking() && LineToRectangle(v1, v2, Vec2(2.f*x, 2.f*y), Vec2(2.f*(x + 1), 2.f*(y + 1))))
 					return false;
 			}
 		}

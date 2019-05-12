@@ -1054,7 +1054,7 @@ void World::SetLocationImageAndName(Location* l)
 	case L_MOONWELL:
 		l->image = LI_MOONWELL;
 		l->name = txMoonwell;
-		break;
+		return;
 	case L_DUNGEON:
 		switch(static_cast<InsideLocation*>(l)->target)
 		{

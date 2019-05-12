@@ -304,7 +304,7 @@ void Game::SetupCamera(float dt)
 		{
 			for(int x = minx; x <= maxx; ++x)
 			{
-				if(outside->tiles[x + z * OutsideLocation::size].mode >= TM_BUILDING_BLOCK)
+				if(outside->tiles[x + z * OutsideLocation::size].IsBlocking())
 				{
 					const Box box(float(x) * 2, 0, float(z) * 2, float(x + 1) * 2, 8.f, float(z + 1) * 2);
 					if(RayToBox(to, dist, box, &tout) && tout < min_tout && tout > 0.f)
