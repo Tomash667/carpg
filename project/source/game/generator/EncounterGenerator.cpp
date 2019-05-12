@@ -192,25 +192,17 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 
 	if(encounter.mode == ENCOUNTER_COMBAT)
 	{
-		switch(encounter.enemy)
+		if(encounter.group->id == "bandits")
 		{
-		case -1:
-			if(Rand() % 3 != 0)
-				essential = UnitData::Get("wild_hunter");
-			group_name = "animals";
-			break;
-		case SG_BANDITS:
-			group_name = "bandits";
 			dont_attack = true;
 			dialog = GameDialog::TryGet("bandits");
-			break;
-		case SG_GOBLINS:
-			group_name = "goblins";
-			break;
-		case SG_ORCS:
-			group_name = "orcs";
-			break;
 		}
+		else if(encounter.group->id == "animals")
+		{
+			if(Rand() % 3 != 0)
+				essential = UnitData::Get("wild_hunter");
+		}
+		group_name = encounter.group->id.c_str();
 		count = Random(3, 5);
 	}
 	else if(encounter.mode == ENCOUNTER_SPECIAL)
@@ -397,23 +389,12 @@ void EncounterGenerator::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker,
 	else
 	{
 		Encounter* enc = encounter.encounter;
-		switch(enc->group)
+		if(enc->group->id == "animals")
 		{
-		case -1:
 			if(Rand() % 3 != 0)
 				essential = UnitData::Get("wild_hunter");
-			group_name = "animals";
-			break;
-		case SG_BANDITS:
-			group_name = "bandits";
-			break;
-		case SG_GOBLINS:
-			group_name = "goblins";
-			break;
-		case SG_ORCS:
-			group_name = "orcs";
-			break;
 		}
+		group_name = enc->group->id.c_str();
 
 		count = Random(3, 5);
 		if(enc->st == -1)

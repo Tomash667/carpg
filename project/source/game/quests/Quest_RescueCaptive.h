@@ -35,10 +35,9 @@ public:
 	int GetUnitEventHandlerQuestRefid() override { return refid; }
 
 private:
-	SPAWN_GROUP GetRandomGroup() const;
 	int GetReward() const;
 
-	SPAWN_GROUP group;
+	UnitGroup* group;
 	Unit* captive;
 	int st;
 };

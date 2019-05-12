@@ -152,7 +152,6 @@ int LabyrinthGenerator::TryGenerate(const Int2& maze_size, const Int2& room_size
 void LabyrinthGenerator::GenerateLabyrinth(Tile*& tiles, const Int2& size, const Int2& room_size, Int2& stairs, GameDirection& stairs_dir, Int2& room_pos,
 	int grating_chance)
 {
-	// mo¿na by daæ, ¿e nie ma centralnego pokoju
 	assert(room_size.x > 4 && room_size.y > 4 && size.x >= room_size.x * 2 + 4 && size.y >= room_size.y * 2 + 4);
 	Int2 maze_size(size.x - 2, size.y - 2), doors;
 
@@ -205,7 +204,7 @@ void LabyrinthGenerator::CreateStairs(Tile* tiles, const Int2& size, Int2& stair
 	{
 		switch(order[i])
 		{
-		case 0: // dó³
+		case GDIR_DOWN:
 			{
 				int start = Random(1, size.x - 1);
 				int p = start;
@@ -237,7 +236,7 @@ void LabyrinthGenerator::CreateStairs(Tile* tiles, const Int2& size, Int2& stair
 				} while(p != start);
 			}
 			break;
-		case 1: // lewa
+		case GDIR_LEFT:
 			{
 				int start = Random(1, size.y - 1);
 				int p = start;
@@ -269,7 +268,7 @@ void LabyrinthGenerator::CreateStairs(Tile* tiles, const Int2& size, Int2& stair
 				} while(p != start);
 			}
 			break;
-		case 2: // góra
+		case GDIR_UP:
 			{
 				int start = Random(1, size.x - 1);
 				int p = start;
@@ -301,7 +300,7 @@ void LabyrinthGenerator::CreateStairs(Tile* tiles, const Int2& size, Int2& stair
 				} while(p != start);
 			}
 			break;
-		case 3: // prawa
+		case GDIR_RIGHT:
 			{
 				int start = Random(1, size.y - 1);
 				int p = start;
@@ -339,7 +338,7 @@ void LabyrinthGenerator::CreateStairs(Tile* tiles, const Int2& size, Int2& stair
 		throw "Failed to generate labyrinth.";
 	tiles[stairs.x + stairs.y*size.x].type = STAIRS_UP;
 
-	// ustal kierunek schodów
+	// set stairs direction
 	if(tiles[stairs.x + (stairs.y + 1)*size.x].type == EMPTY)
 		stairs_dir = GDIR_UP;
 	else if(tiles[stairs.x - 1 + stairs.y*size.x].type == EMPTY)
@@ -430,26 +429,23 @@ void LabyrinthGenerator::GenerateObjects()
 //=================================================================================================
 void LabyrinthGenerator::GenerateUnits()
 {
-	// ustal jakie jednostki mo¿na tu wygenerowaæ
-	cstring group_id;
+	// decide what to spawn
 	int count, tries;
-	if(L.location->spawn == SG_UNKNOWN)
+	if(L.location->group->id == "unk")
 	{
-		group_id = "unk";
 		count = 30;
 		tries = 150;
 	}
 	else
 	{
-		group_id = "labyrinth";
 		count = 20;
 		tries = 100;
 	}
 	int level = L.GetDifficultyLevel();
 	Pooled<TmpUnitGroup> t;
-	t->Fill(UnitGroup::TryGet(group_id), level);
+	t->Fill(L.location->group, level);
 
-	// generuj jednostki
+	// spawn units
 	InsideLocationLevel& lvl = ((InsideLocation*)L.location)->GetLevelData();
 	for(int added = 0; added < count && tries; --tries)
 	{
@@ -464,8 +460,8 @@ void LabyrinthGenerator::GenerateUnits()
 			++added;
 	}
 
-	// wrogowie w skarbcu
-	if(L.location->spawn == SG_UNKNOWN)
+	// enemies inside treasure room
+	if(L.location->group->id == "unk")
 	{
 		for(int i = 0; i < 3; ++i)
 		{

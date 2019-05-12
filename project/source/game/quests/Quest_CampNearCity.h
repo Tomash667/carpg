@@ -31,6 +31,6 @@ public:
 private:
 	int GetReward() const;
 
-	SPAWN_GROUP group;
+	UnitGroup* group;
 	int st;
 };

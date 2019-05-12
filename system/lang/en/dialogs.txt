@@ -1766,11 +1766,11 @@ dialog q_orcs2_orc {
 
 //==============================================================================
 dialog q_rescue_captive_start {
-	0 "Goddamn $i_bandyci$ kidnapped one of our citizens. Demanding ransom now and I do not have enough guards to take care of them."
+	0 "$Goddamn_bandits$ kidnapped one of our citizens. Demanding ransom now and I do not have enough guards to take care of them."
 	1 "Maybe you want to prove yourself?"
 	2 "Yes"
-	3 "Those $ci_bandyci$ probably are holding a kidnapped person in the camp $target_dir$ from here."
-	4 "Those $ci_bandyci$ probably are holding a kidnapped person in $locname$. It's $target_dir$ from here."
+	3 "$Those_bandits$ probably are holding a kidnapped person in the camp $target_dir$ from here."
+	4 "$Those_bandits$ probably are holding a kidnapped person in $locname$. It's $target_dir$ from here."
 	5 "If you fail to complete this task in a month, the family will have to pay a ransom."
 	6 "No"
 }

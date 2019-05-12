@@ -1,8 +1,6 @@
-// bazowe typy podziemi i krypt
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "SpawnGroup.h"
 #include "Resource.h"
 
 //-----------------------------------------------------------------------------
@@ -64,15 +62,19 @@ enum BaseLocationOptions
 struct RoomType;
 
 //-----------------------------------------------------------------------------
-struct RoomStr
+template<typename T>
+struct NameValue
 {
 	cstring id;
-	RoomType* room;
+	T* value;
 
-	explicit RoomStr(cstring id) : id(id), room(nullptr)
-	{
-	}
+	NameValue(nullptr_t) : id(nullptr), value(nullptr) {}
+	NameValue(cstring id) : id(id), value(nullptr) {}
 };
+
+//-----------------------------------------------------------------------------
+typedef NameValue<RoomType> RoomStr;
+typedef NameValue<UnitGroup> GroupStr;
 
 //-----------------------------------------------------------------------------
 struct RoomStrChance
@@ -144,15 +146,15 @@ struct BaseLocation
 	RoomStrChance* rooms;
 	uint room_count, room_total;
 	int door_chance, door_open, bars_chance;
-	SPAWN_GROUP sg1, sg2, sg3;
-	int schance1, schance2, schance3;
+	GroupStr group[3];
+	int group_chance[3];
 	int traps, tex2;
 	LocationTexturePack tex;
 
 	RoomType* GetRandomRoomType() const;
-	SPAWN_GROUP GetRandomSpawnGroup() const;
+	UnitGroup* GetRandomGroup() const;
 	static void PreloadTextures();
-	static void SetRoomPointers();
+	static uint SetRoomPointers();
 };
 extern BaseLocation g_base_locations[];
 extern const uint n_base_locations;

@@ -2985,11 +2985,21 @@ unit xwokloiz : base_human {
 //------------------------------------------------------------------------------
 // Unit groups
 //------------------------------------------------------------------------------
+group empty {
+	food_mod -1
+	special 1
+}
+
 group goblins {
 	goblin 10
 	goblin_hunter 7
 	goblin_fighter 7
 	goblin_chief leader 2
+	
+	orc_food 1
+	have_camps 1
+	encounter_chance 2
+	gender 1
 }
 
 group orcs {
@@ -2999,6 +3009,10 @@ group orcs {
 	orc_warius 4
 	orc_chief leader 2
 	orc_shaman 3
+	
+	orc_food 1
+	have_camps 1
+	encounter_chance 2
 }
 
 group bandits {
@@ -3009,6 +3023,9 @@ group bandits {
 	ruffian 2
 	assassin 2
 	ruffian_hegemon leader 1
+	
+	have_camps 1
+	encounter_chance 3
 }
 
 group crazies {
@@ -3026,21 +3043,27 @@ group undead {
 	zombie 10
 	zombie_rotting 8
 	zombie_ancient 6
+	
+	food_mod -2
 }
 
-group necros {
+group necromancers {
 	necromancer leader 3
 	necromancer2 leader 3
 	necromancer3 leader 3
 	undead_guard 6
 	undead_archer 6
 	group undead
+	
+	food_mod -1
 }
 
-group evils {
+group evil {
 	evil_cleric leader 3
 	evil_cleric2 leader 3
 	group undead
+	
+	food_mod -1
 }
 
 group mages {
@@ -3053,11 +3076,16 @@ group mages {
 group golems {
 	golem_stone 1
 	golem_iron 1
+	
+	food_mod -2
+	gender 1
 }
 
 group mages_and_golems {
 	group mages
 	group golems
+	
+	food_mod -1
 }
 
 group wolfs {
@@ -3091,10 +3119,6 @@ group hunters {
 	wild_hunter 2
 }
 
-group labyrinth {
-	group undead
-}
-
 group heroes {
 	hero_mage 1
 	hero_warrior 2
@@ -3112,60 +3136,94 @@ group wagon_guards {
 
 group unk {
 	unk 1
+	
+	food_mod -2
 }
 
-group_list arena_easy {
-	animals
-	hunters
-	spiders
-	goblins
-	bandits
-	wolfs
+group challange {
+	list {
+		orcs
+		mages_and_golems
+		evil
+	}
+	special 2
 }
 
-group_list arena_medium {
-	hunters
-	bears
-	bandits
-	orcs
-	mages
-	necros
-	mages_and_golems
-	undead
-	evils
-	golems
+group arena_easy {
+	list {
+		animals
+		hunters
+		spiders
+		goblins
+		bandits
+		wolfs
+	}
 }
 
-group_list arena_hard {
-	orcs
-	mages
-	crazies
-	necros
-	mages_and_golems
-	evils
+group arena_medium {
+	list {
+		hunters
+		bears
+		bandits
+		orcs
+		mages
+		necromancers
+		mages_and_golems
+		undead
+		evil
+		golems
+	}
 }
 
-group_list cave {
-	wolfs
-	spiders
-	rats
-	bears
+group arena_hard {
+	list {
+		orcs
+		mages
+		crazies
+		necromancers
+		mages_and_golems
+		evil
+	}
 }
 
-group_list forest {
-	wolfs
-	spiders
-	rats
-	bears
-	animals
+group cave {
+	list {
+		wolfs
+		spiders
+		rats
+		bears
+	}
+	gender 1
+}
+
+group forest {
+	list {
+		wolfs
+		spiders
+		rats
+		bears
+		animals
+	}
+	encounter_chance 1
+	gender 1
+}
+
+group random {
+	list {
+		2 goblins
+		2 orcs
+		2 bandits
+		1 mages
+		1 necromancers
+		1 evil
+		1 empty
+	}
 }
 
 //------------------------------------------------------------------------------
 // Unit alias for old names (for save compability)
 // alias unit_id other_id
 //------------------------------------------------------------------------------
-// fixed in 0.4
-alias citizen citzen
 // renamed in 0.8
 alias bandit_chief bandit_hegemon
 alias guard_wagon guard2

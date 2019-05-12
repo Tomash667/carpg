@@ -57,6 +57,10 @@ UnitData type:
 Static methods:
 	UnitData@ Get(const string& in id) - return unit data with id.
 
+UnitGroup type:
+Static method:
+	UnitGroup@ Get(const string& in id) - return unit group with id.
+
 Quest type:
 	void AddEntry(const string& in str) - add journal message.
 	void SetStarted(const string& in title) - mark quest as started, add journal entry with quest title, can only be called once.
@@ -156,23 +160,12 @@ LOCATION enum:
 	L_FOREST
 	L_MOONWELL
 	L_ENCOUNTER
-	
-SPAWN_GROUP enum:
-	SG_GOBLINS
-	SG_ORCS
-	SG_BANDITS
-	SG_UNDEAD
-	SG_NECROMANCERS
-	SG_MAGES
-	SG_GOLEMS
-	SG_MAGES_AND_GOLEMS
-	SG_EVIL
-	
+		
 Spawn struct - unit & level.
 
 SpawnGroup type:
 	const uint count - rolled units count.
-	void Fill(SPAWN_GROUP group, uint count, uint level) - roll units from random list.
+	void Fill(UnitGroup@ group, uint count, uint level) - roll units from random list.
 	Spawn Get(uint index) - get rolled unit by index.
 Static methods:
 	SpawnGroup@ Get() - return new instance.
@@ -198,7 +191,7 @@ Encounter type:
 	Quest@ quest
 	Dialog@ dialog
 	int st
-	SPAWN_GROUP group
+	UnitGroup@ group
 	string text
 
 World namespace:

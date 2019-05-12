@@ -1769,11 +1769,11 @@ dialog q_orcs2_orc {
 
 //==============================================================================
 dialog q_rescue_captive_start {
-	0 "Cholern$i_bandyci$ porwali jednego z naszych obywateli. Teraz ¿¹daj¹ okupu a ja nie mam doœæ stra¿ników aby siê nimi zaj¹æ."
+	0 "$Goddamn_bandits$ porwali jednego z naszych obywateli. Teraz ¿¹daj¹ okupu a ja nie mam doœæ stra¿ników aby siê nimi zaj¹æ."
 	1 "Mo¿e ty chcesz siê wykazaæ?"
 	2 "Tak"
-	3 "$ci_bandyci$ prawdopodobnie przetrzymuj¹ porwan¹ osobê w obozie na $target_dir$ st¹d."
-	4 "$ci_bandyci$ prawdopodobnie przetrzymuj¹ porwan¹ osobê w $locname$. To na $target_dir$ st¹d."
+	3 "$Those_bandits$ prawdopodobnie przetrzymuj¹ porwan¹ osobê w obozie na $target_dir$ st¹d."
+	4 "$Those_bandits$ prawdopodobnie przetrzymuj¹ porwan¹ osobê w $locname$. To na $target_dir$ st¹d."
 	5 "Jeœli nie za³atwisz tego w ci¹gu miesi¹ca to rodzina bêdzie musia³a zap³aciæ okup."
 	6 "Nie"
 }

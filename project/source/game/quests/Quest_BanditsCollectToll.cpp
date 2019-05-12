@@ -54,7 +54,7 @@ void Quest_BanditsCollectToll::SetProgress(int prog2)
 			Encounter* e = W.AddEncounter(enc);
 			e->dialog = GameDialog::TryGet("q_bandits_collect_toll_talk");
 			e->dont_attack = true;
-			e->group = SG_BANDITS;
+			e->group = UnitGroup::Get("bandits");
 			e->pos = (sl.pos + ol.pos) / 2;
 			e->quest = this;
 			e->chance = 50;
@@ -176,7 +176,7 @@ bool Quest_BanditsCollectToll::Load(GameReader& f)
 		Encounter* e = W.RecreateEncounter(enc);
 		e->dialog = GameDialog::TryGet("q_bandits_collect_toll_talk");
 		e->dont_attack = true;
-		e->group = SG_BANDITS;
+		e->group = UnitGroup::Get("bandits");
 		e->pos = (sl.pos + ol.pos) / 2;
 		e->quest = this;
 		e->chance = 50;

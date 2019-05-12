@@ -3,6 +3,7 @@
 //-----------------------------------------------------------------------------
 #include "GameComponent.h"
 #include "Location.h"
+#include "UnitGroup.h"
 
 //-----------------------------------------------------------------------------
 struct EncounterData
@@ -11,7 +12,7 @@ struct EncounterData
 	union
 	{
 		Encounter* encounter;
-		SPAWN_GROUP enemy;
+		UnitGroup* group;
 		SpecialEncounter special;
 	};
 	int st;
@@ -75,12 +76,14 @@ public:
 	void SmoothTiles();
 	void CreateCity(const Vec2& pos, bool village);
 	void SetLocationImageAndName(Location* l);
-	int CreateCamp(const Vec2& pos, SPAWN_GROUP group, float range = 64.f, bool allow_exact = true);
-	Location* CreateLocation(LOCATION type, int levels = -1, bool is_village = false);
-	Location* CreateLocation(LOCATION type, const Vec2& pos, float range = 64.f, int target = -1, SPAWN_GROUP spawn = SG_RANDOM, bool allow_exact = true,
-		int dungeon_levels = -1);
+	int CreateCamp(const Vec2& pos, UnitGroup* group, float range = 64.f, bool allow_exact = true);
+private:
 	typedef pair<LOCATION, bool>(*AddLocationsCallback)(uint index);
 	void AddLocations(uint count, AddLocationsCallback clbk, float valid_dist);
+	Location* CreateLocation(LOCATION type, int levels = -1, bool is_village = false);
+public:
+	Location* CreateLocation(LOCATION type, const Vec2& pos, float range = 64.f, int target = -1, UnitGroup* group = UnitGroup::random,
+		bool allow_exact = true, int dungeon_levels = -1);
 	int AddLocation(Location* loc);
 	void AddLocationAtIndex(Location* loc);
 	void RemoveLocation(int index);
@@ -117,7 +120,7 @@ public:
 	Location* GetClosestLocationS(LOCATION type, const Vec2& pos, int target = -1) { return locations[GetClosestLocation(type, pos, target)]; }
 	int GetClosestLocationNotTarget(LOCATION type, const Vec2& pos, int not_target);
 	bool FindPlaceForLocation(Vec2& pos, float range = 64.f, bool allow_exact = true);
-	int GetRandomSpawnLocation(const Vec2& pos, SPAWN_GROUP group, float range = 160.f);
+	int GetRandomSpawnLocation(const Vec2& pos, UnitGroup* group, float range = 160.f);
 	int GetNearestLocation(const Vec2& pos, int flags, bool not_quest, int target_flags = -1);
 	int GetNearestSettlement(const Vec2& pos) { return GetNearestLocation(pos, (1 << L_CITY), false); }
 	const Vec2& GetWorldBounds() const { return world_bounds; }
@@ -199,7 +202,7 @@ private:
 		worldtime; // number of passed game days, starts at 0
 	vector<News*> news;
 	cstring txDate, txEncCrazyMage, txEncCrazyHeroes, txEncCrazyCook, txEncMerchant, txEncHeroes, txEncSingleHero, txEncBanditsAttackTravelers,
-		txEncHeroesAttack, txEncGolem, txEncCrazy, txEncUnk, txEncBandits, txEncAnimals, txEncOrcs, txEncGoblins, txEncEnemiesCombat;
+		txEncHeroesAttack, txEncGolem, txEncCrazy, txEncUnk, txEncEnemiesCombat;
 	cstring txCamp, txCave, txCity, txCrypt, txDungeon, txForest, txVillage, txMoonwell, txOtherness, txRandomEncounter, txTower, txLabyrinth;
 	bool first_city, // spawn more low level heroes in first city
 		boss_level_mp, // used by clients instead boss_levels
@@ -211,7 +214,7 @@ private:
 	void UpdateEncounters();
 	void UpdateLocations();
 	void UpdateNews();
-	void StartEncounter(int enc, int what);
+	void StartEncounter(int enc, UnitGroup* group);
 	void LoadLocations(GameReader& f, LoadingHandler& loading);
 	void LoadNews(GameReader& f);
 };

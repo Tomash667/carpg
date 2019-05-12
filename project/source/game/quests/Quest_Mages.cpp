@@ -46,7 +46,7 @@ void Quest_Mages::SetProgress(int prog2)
 			Location& tl = GetTargetLocation();
 			tl.active_quest = this;
 			tl.reset = true;
-			tl.spawn = SG_UNDEAD;
+			tl.group = UnitGroup::Get("undead");
 			tl.st = 8;
 			tl.SetKnown();
 
@@ -233,7 +233,7 @@ void Quest_Mages2::SetProgress(int prog2)
 	case Progress::GotoTower:
 		// idzie za tob¹ do pustej wie¿y
 		{
-			Location& loc = *W.CreateLocation(L_DUNGEON, Vec2(0, 0), -64.f, MAGE_TOWER, SG_NONE, true, 2);
+			Location& loc = *W.CreateLocation(L_DUNGEON, Vec2(0, 0), -64.f, MAGE_TOWER, UnitGroup::empty, true, 2);
 			loc.st = 1;
 			loc.SetKnown();
 			target_loc = loc.index;
@@ -284,7 +284,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			mages_state = State::MageCured;
 			OnUpdate(game->txQuest[181]);
 			GetTargetLocation().active_quest = nullptr;
-			Location& loc = *W.CreateLocation(L_DUNGEON, Vec2(0, 0), -64.f, MAGE_TOWER, SG_MAGES_AND_GOLEMS);
+			Location& loc = *W.CreateLocation(L_DUNGEON, Vec2(0, 0), -64.f, MAGE_TOWER, UnitGroup::Get("mages_and_golems"));
 			loc.state = LS_HIDDEN;
 			loc.st = 15;
 			loc.active_quest = this;

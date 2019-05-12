@@ -366,8 +366,7 @@ void Arena::StartArenaCombat(int level)
 		SpawnArenaViewers(5);
 		break;
 	}
-	UnitGroupList* list = UnitGroupList::Get(list_id);
-	UnitGroup* group = list->groups[Rand() % list->groups.size()];
+	UnitGroup* group = UnitGroup::Get(list_id)->GetRandomGroup();
 
 	// prepare list of units that can be spawned
 	int lvl = level * 5 + Random(-1, +1) + 3;

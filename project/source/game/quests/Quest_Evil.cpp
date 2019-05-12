@@ -92,7 +92,7 @@ void Quest_Evil::SetProgress(int prog2)
 			// usuñ plotkê
 			QM.RemoveQuestRumor(refid);
 			// lokacja
-			Location& target = *W.CreateLocation(L_DUNGEON, W.GetWorldPos(), 128.f, OLD_TEMPLE, SG_NONE, false, 1);
+			Location& target = *W.CreateLocation(L_DUNGEON, W.GetWorldPos(), 128.f, OLD_TEMPLE, UnitGroup::empty, false, 1);
 			target.SetKnown();
 			target.st = 8;
 			target.active_quest = this;
@@ -158,12 +158,12 @@ void Quest_Evil::SetProgress(int prog2)
 			{
 				LOCATION type;
 				int target;
-				SPAWN_GROUP spawn;
+				cstring group;
 				int st;
 			} l_info[3] = {
-				L_DUNGEON, OLD_TEMPLE, SG_EVIL, 16,
-				L_DUNGEON, NECROMANCER_BASE, SG_NECROMANCERS, 15,
-				L_CRYPT, MONSTER_CRYPT, SG_UNDEAD, 13
+				L_DUNGEON, OLD_TEMPLE, "evil", 16,
+				L_DUNGEON, NECROMANCER_BASE, "necromancers", 15,
+				L_CRYPT, MONSTER_CRYPT, "undead", 13
 			};
 
 			cstring new_msgs[4];
@@ -172,7 +172,7 @@ void Quest_Evil::SetProgress(int prog2)
 			for(int i = 0; i < 3; ++i)
 			{
 				Int2 levels = g_base_locations[l_info[i].target].levels;
-				Location& target = *W.CreateLocation(l_info[i].type, Vec2(0, 0), -128.f, l_info[i].target, l_info[i].spawn, true,
+				Location& target = *W.CreateLocation(l_info[i].type, Vec2(0, 0), -128.f, l_info[i].target, UnitGroup::Get(l_info[i].group), true,
 					Random(max(levels.x, 2), max(levels.y, 2)));
 				target.st = l_info[i].st;
 				target.SetKnown();
@@ -223,7 +223,7 @@ void Quest_Evil::SetProgress(int prog2)
 			at_level = 0;
 			Location& target = GetTargetLocation();
 			target.st = 15;
-			target.spawn = SG_EVIL;
+			target.group = UnitGroup::Get("evil");
 			target.reset = true;
 			evil_state = State::KillBoss;
 			OnUpdate(Format(game->txQuest[248], GetTargetLocationName()));

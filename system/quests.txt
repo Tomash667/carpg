@@ -120,7 +120,7 @@ quest deliver_resources
 						enc.pos = (start_loc.pos + target_loc.pos) / 2;
 						enc.dont_attack = true;
 						enc.text = TEXT(6);
-						enc.group = SG_BANDITS;
+						@enc.group = UnitGroup::Get("bandits");
 						@enc.dialog = quest.GetDialog("bandits_enc");
 						@enc.quest = quest;
 						enc.st = 8;
@@ -153,7 +153,7 @@ quest deliver_resources
 					mayor.dont_attack = true;
 					LevelContext@ ctx = Level::GetContext(mayor);
 					SpawnGroup group;
-					group.Fill(SG_BANDITS, 2, 8);
+					group.Fill(UnitGroup::Get("bandits"), 2, 8);
 					bool first = true;
 					for(uint i=0; i<group.count; ++i)
 					{

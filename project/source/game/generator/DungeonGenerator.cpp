@@ -243,30 +243,18 @@ void DungeonGenerator::GenerateObjects()
 //=================================================================================================
 void DungeonGenerator::GenerateUnits()
 {
-	SPAWN_GROUP spawn_group;
-	int base_level;
-
-	if(L.location->spawn != SG_CHALLANGE)
-	{
-		spawn_group = L.location->spawn;
-		base_level = L.GetDifficultyLevel();
-	}
-	else
-	{
-		base_level = L.location->st;
-		if(dungeon_level == 0)
-			spawn_group = SG_ORCS;
-		else if(dungeon_level == 1)
-			spawn_group = SG_MAGES_AND_GOLEMS;
-		else
-			spawn_group = SG_EVIL;
-	}
-
-	SpawnGroup& spawn = g_spawn_groups[spawn_group];
-	if(!spawn.unit_group)
+	if(L.location->group->IsEmpty())
 		return;
+
+	UnitGroup* group = GetGroup();
+	int base_level;
+	if(L.location->group->IsChallange())
+		base_level = L.location->st; // all levels have max st
+	else
+		base_level = L.GetDifficultyLevel();
+
 	Pooled<TmpUnitGroup> tmp;
-	tmp->Fill(spawn.unit_group, base_level);
+	tmp->Fill(group, base_level);
 
 	// chance for spawning units
 	const int chance_for_none = 10,
@@ -358,24 +346,14 @@ void DungeonGenerator::GenerateDungeonItems()
 	if(IS_SET(base.options, BLO_LESS_FOOD))
 		--mod;
 
-	SPAWN_GROUP spawn = loc->spawn;
-	if(spawn == SG_CHALLANGE)
-	{
-		if(dungeon_level == 0)
-			spawn = SG_ORCS;
-		else if(dungeon_level == 1)
-			spawn = SG_MAGES_AND_GOLEMS;
-		else
-			spawn = SG_EVIL;
-	}
-	SpawnGroup& sg = g_spawn_groups[spawn];
-	mod += sg.food_mod;
+	UnitGroup* group = GetGroup();
+	mod += group->food_mod;
 
 	if(mod <= 0)
 		return;
 
 	// get food list and base objects
-	const ItemList& lis = *ItemList::Get(sg.orc_food ? "orc_food" : "normal_food").lis;
+	const ItemList& lis = *ItemList::Get(group->orc_food ? "orc_food" : "normal_food").lis;
 	BaseObject* table = BaseObject::Get("table"),
 		*shelves = BaseObject::Get("shelves");
 	const Item* plate = Item::Get("plate");
@@ -419,4 +397,16 @@ void DungeonGenerator::GenerateDungeonItems()
 			}
 		}
 	}
+}
+
+//=================================================================================================
+UnitGroup* DungeonGenerator::GetGroup()
+{
+	UnitGroup* group = loc->group;
+	if(group->IsChallange())
+	{
+		assert(group->is_list);
+		group = group->entries[dungeon_level % group->entries.size()].group;
+	}
+	return group;
 }

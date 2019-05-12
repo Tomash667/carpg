@@ -150,3 +150,47 @@ unit xwokloiz {
 	name "Alchemist apprentice"
 	real_name "Luke Herbalist"
 }
+
+unit_group orcs {
+	name "orcs"
+	encounter_text "You encounter a pack of orcs looking for easy loot!"
+}
+unit_group bandits {
+	name "bandits"
+	encounter_text "While traveling you encountered a group of bandits!"
+}
+unit_group goblins {
+	name "goblins"
+	encounter_text "Out of surprise, a band of goblins attacked you!"
+}
+unit_group undead {
+	name "undead"
+}
+unit_group necromancers {
+	name "necromancers"
+}
+unit_group evil {
+	name "evil clerics"
+}
+unit_group mages {
+	name "mages"
+}
+unit_group golems {
+	name "golems"
+}
+unit_group mages_and_golems {
+	name "mages and golems"
+}
+unit_group unk {
+	name "unknown monsters"
+}
+unit_group challange {
+	name "powerful enemies"
+}
+unit_group forest {
+	name "animals"
+	encounter_text "Suddenly, wild animals jump out of the bushes!"
+}
+unit_group cave {
+	name "animals"
+}

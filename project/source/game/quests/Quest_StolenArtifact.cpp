@@ -21,20 +21,20 @@ void Quest_StolenArtifact::Start()
 	switch(Rand() % 6)
 	{
 	case 0:
-		group = SG_BANDITS;
+		group = UnitGroup::Get("bandits");
 		break;
 	case 1:
-		group = SG_ORCS;
+		group = UnitGroup::Get("orcs");
 		break;
 	case 2:
-		group = SG_GOBLINS;
+		group = UnitGroup::Get("goblins");
 		break;
 	case 3:
 	case 4:
-		group = SG_MAGES;
+		group = UnitGroup::Get("mages");
 		break;
 	case 5:
-		group = SG_EVIL;
+		group = UnitGroup::Get("evil");
 		break;
 	}
 }
@@ -80,36 +80,14 @@ void Quest_StolenArtifact::SetProgress(int prog2)
 			quest_item.refid = refid;
 			spawn_item = Quest_Dungeon::Item_GiveSpawned;
 			item_to_give[0] = &quest_item;
-			unit_to_spawn = g_spawn_groups[group].GetSpawnLeader(tl.st);
+			unit_to_spawn = group->GetLeader(tl.st);
 			unit_spawn_level = -3;
-
-			cstring kto;
-			switch(group)
-			{
-			case SG_BANDITS:
-				kto = game->txQuest[87];
-				break;
-			case SG_GOBLINS:
-				kto = game->txQuest[88];
-				break;
-			case SG_ORCS:
-				kto = game->txQuest[89];
-				break;
-			case SG_MAGES:
-				kto = game->txQuest[90];
-				break;
-			case SG_EVIL:
-				kto = game->txQuest[91];
-				break;
-			default:
-				kto = game->txQuest[92];
-				break;
-			}
 
 			DialogContext::current->talker->temporary = false;
 
 			msgs.push_back(Format(game->txQuest[82], sl.name.c_str(), W.GetDate()));
-			msgs.push_back(Format(game->txQuest[93], item->name.c_str(), kto, tl.name.c_str(), GetLocationDirName(sl.pos, tl.pos)));
+			msgs.push_back(Format(game->txQuest[93], item->name.c_str(), group->name.c_str(), game->txQuest[group->gender ? 88 : 87],
+				tl.name.c_str(), GetLocationDirName(sl.pos, tl.pos)));
 		}
 		break;
 	case Progress::Finished:
@@ -159,43 +137,9 @@ cstring Quest_StolenArtifact::FormatString(const string& str)
 	else if(str == "random_loc")
 		return W.GetRandomSettlement(start_loc)->name.c_str();
 	else if(str == "Bandyci_ukradli")
-	{
-		switch(group)
-		{
-		case SG_BANDITS:
-			return game->txQuest[96];
-		case SG_ORCS:
-			return game->txQuest[97];
-		case SG_GOBLINS:
-			return game->txQuest[98];
-		case SG_MAGES:
-			return game->txQuest[99];
-		case SG_EVIL:
-			return game->txQuest[100];
-		default:
-			assert(0);
-			return nullptr;
-		}
-	}
+		return Format("%s %s", Upper(group->name.c_str()), game->txQuest[group->gender ? 97 : 96]);
 	else if(str == "Ci_bandyci")
-	{
-		switch(group)
-		{
-		case SG_BANDITS:
-			return game->txQuest[101];
-		case SG_ORCS:
-			return game->txQuest[102];
-		case SG_GOBLINS:
-			return game->txQuest[103];
-		case SG_MAGES:
-			return game->txQuest[104];
-		case SG_EVIL:
-			return game->txQuest[105];
-		default:
-			assert(0);
-			return nullptr;
-		}
-	}
+		return Format("%s %s", game->txQuest[group->gender ? 99 : 98], group->name.c_str());
 	else if(str == "reward")
 		return Format("%d", GetReward());
 	else
@@ -264,7 +208,7 @@ bool Quest_StolenArtifact::Load(GameReader& f)
 		quest_item.refid = refid;
 		spawn_item = Quest_Dungeon::Item_GiveSpawned;
 		item_to_give[0] = &quest_item;
-		unit_to_spawn = g_spawn_groups[group].GetSpawnLeader(st);
+		unit_to_spawn = group->GetLeader(st);
 		unit_spawn_level = -3;
 	}
 

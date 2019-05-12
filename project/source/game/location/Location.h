@@ -1,7 +1,6 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "SpawnGroup.h"
 #include "LevelContext.h"
 #include "Event.h"
 
@@ -90,7 +89,7 @@ struct Location : public ILevel
 	int last_visit; // worldtime from last time when team entered location or -1
 	int st; // poziom trudnoœci
 	uint seed;
-	SPAWN_GROUP spawn; // rodzaj wrogów w tej lokacji
+	UnitGroup* group; // cannot be null (use UnitGroup::empty)
 	Portal* portal;
 	LOCATION_IMAGE image;
 	vector<Event> events;
@@ -99,7 +98,7 @@ struct Location : public ILevel
 	bool dont_clean;
 	bool loaded_resources;
 
-	Location(bool outside) : active_quest(nullptr), last_visit(-1), reset(false), state(LS_UNKNOWN), outside(outside), st(0), spawn(SG_NONE),
+	Location(bool outside) : active_quest(nullptr), last_visit(-1), reset(false), state(LS_UNKNOWN), outside(outside), st(0), group(nullptr),
 		portal(nullptr), dont_clean(false), loaded_resources(false)
 	{
 	}

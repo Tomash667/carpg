@@ -17,6 +17,7 @@ public:
 private:
 	void CreatePortal(InsideLocationLevel& lvl);
 	void GenerateDungeonItems();
+	UnitGroup* GetGroup();
 
 	DungeonMapGenerator map_gen;
 };

@@ -902,6 +902,8 @@ struct WeightPair
 template<typename T>
 inline T& RandomItemWeight(vector<WeightPair<T>>& items, int max_weight)
 {
+	if(items.size() == (uint)max_weight)
+		return RandomItem(items).item;
 	int a = Rand() % max_weight, b = 0;
 	for(auto& item : items)
 	{

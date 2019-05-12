@@ -2,11 +2,12 @@
 #include "GameCore.h"
 #include "UnitGroup.h"
 #include "UnitData.h"
-#include "SpawnGroup.h"
+#include "ScriptException.h"
 
 //-----------------------------------------------------------------------------
 vector<UnitGroup*> UnitGroup::groups;
-vector<UnitGroupList*> UnitGroupList::lists;
+UnitGroup* UnitGroup::empty;
+UnitGroup* UnitGroup::random;
 
 //=================================================================================================
 bool UnitGroup::HaveLeader() const
@@ -54,24 +55,31 @@ Int2 UnitGroup::GetLevelRange() const
 }
 
 //=================================================================================================
+UnitGroup* UnitGroup::GetRandomGroup()
+{
+	assert(is_list);
+	if(entries.size() == max_weight)
+		return RandomItem(entries).group;
+	else
+	{
+		int a = Rand() % max_weight, b = 0;
+		for(const Entry& entry : entries)
+		{
+			b += entry.weight;
+			if(a < b)
+				return entry.group;
+		}
+		return entries[0].group;
+	}
+}
+
+//=================================================================================================
 UnitGroup* UnitGroup::TryGet(Cstring id)
 {
 	for(UnitGroup* group : groups)
 	{
 		if(group->id == id.s)
 			return group;
-	}
-	return nullptr;
-}
-
-
-//=================================================================================================
-UnitGroupList* UnitGroupList::TryGet(Cstring id)
-{
-	for(UnitGroupList* list : lists)
-	{
-		if(list->id == id.s)
-			return list;
 	}
 	return nullptr;
 }
@@ -90,7 +98,7 @@ void TmpUnitGroup::Fill(UnitGroup* group, int min_level, int max_level, bool req
 	assert(group && min_level <= max_level);
 	this->min_level = min_level;
 	this->max_level = max_level;
-	total = 0;
+	total_weight = 0;
 	entries.clear();
 
 	FillInternal(group);
@@ -119,9 +127,11 @@ void TmpUnitGroup::Fill(UnitGroup* group, int min_level, int max_level, bool req
 }
 
 //=================================================================================================
-void TmpUnitGroup::FillS(SPAWN_GROUP spawn, int count, int level)
+void TmpUnitGroup::FillS(const string& group_id, int count, int level)
 {
-	UnitGroup* group = g_spawn_groups[spawn].unit_group;
+	UnitGroup* group = UnitGroup::TryGet(group_id);
+	if(!group)
+		throw ScriptException("");
 	Fill(group, level);
 	Roll(level, count);
 }
@@ -135,8 +145,8 @@ void TmpUnitGroup::FillInternal(UnitGroup* group)
 		{
 			UnitGroup::Entry& new_entry = Add1(entries);
 			new_entry.ud = entry.ud;
-			new_entry.count = entry.count;
-			total += new_entry.count;
+			new_entry.weight = entry.weight;
+			total_weight += new_entry.weight;
 		}
 	}
 }
@@ -144,10 +154,10 @@ void TmpUnitGroup::FillInternal(UnitGroup* group)
 //=================================================================================================
 TmpUnitGroup::Spawn TmpUnitGroup::Get()
 {
-	int x = Rand() % total, y = 0;
+	int x = Rand() % total_weight, y = 0;
 	for(UnitGroup::Entry& entry : entries)
 	{
-		y += entry.count;
+		y += entry.weight;
 		if(x < y)
 		{
 			int unit_lvl = entry.ud->level.Random();
@@ -172,10 +182,10 @@ vector<TmpUnitGroup::Spawn>& TmpUnitGroup::Roll(int level, int count)
 	int points = level * count + Random(-level / 2, level / 2);
 	while(points > 0 && spawn.size() < (uint)count *2)
 	{
-		int x = Rand() % total, y = 0;
+		int x = Rand() % total_weight, y = 0;
 		for(UnitGroup::Entry& entry : entries)
 		{
-			y += entry.count;
+			y += entry.weight;
 			if(x < y)
 			{
 				// chose unit level
@@ -259,14 +269,15 @@ TmpUnitGroupList::~TmpUnitGroupList()
 }
 
 //=================================================================================================
-void TmpUnitGroupList::Fill(UnitGroupList* list, int level)
+void TmpUnitGroupList::Fill(UnitGroup* group, int level)
 {
+	assert(group->is_list);
 	TmpUnitGroup* tmp = nullptr;
-	for(UnitGroup* group : list->groups)
+	for(UnitGroup::Entry& entry : group->entries)
 	{
 		if(!tmp)
 			tmp = ObjectPoolProxy<TmpUnitGroup>::Get();
-		tmp->Fill(group, level, false);
+		tmp->Fill(entry.group, level, false);
 		if(!tmp->entries.empty())
 		{
 			groups.push_back(tmp);
@@ -278,9 +289,9 @@ void TmpUnitGroupList::Fill(UnitGroupList* list, int level)
 	{
 		UnitGroup* best = nullptr;
 		int best_diff = -1;
-		for(UnitGroup* group : list->groups)
+		for(UnitGroup::Entry& entry : group->entries)
 		{
-			Int2 level_range = group->GetLevelRange();
+			Int2 level_range = entry.group->GetLevelRange();
 			int diff;
 			if(level < level_range.x)
 				diff = level_range.x - level;
@@ -289,7 +300,7 @@ void TmpUnitGroupList::Fill(UnitGroupList* list, int level)
 			if(best_diff == -1 || diff < best_diff)
 			{
 				best_diff = diff;
-				best = group;
+				best = entry.group;
 			}
 		}
 
@@ -306,4 +317,51 @@ void TmpUnitGroupList::Fill(UnitGroupList* list, int level)
 vector<TmpUnitGroup::Spawn>& TmpUnitGroupList::Roll(int level, int count)
 {
 	return RandomItem(groups)->Roll(level, count);
+}
+
+
+//=================================================================================================
+UnitGroup* old::OldToNew(SPAWN_GROUP spawn)
+{
+	cstring id;
+	switch(spawn)
+	{
+	default:
+	case SG_GOBLINS:
+		id = "goblins";
+		break;
+	case SG_ORCS:
+		id = "orcs";
+		break;
+	case SG_BANDITS:
+		id = "bandits";
+		break;
+	case SG_UNDEAD:
+		id = "undead";
+		break;
+	case SG_NECROMANCERS:
+		id = "necromancers";
+		break;
+	case SG_MAGES:
+		id = "mages";
+		break;
+	case SG_GOLEMS:
+		id = "golems";
+		break;
+	case SG_MAGES_AND_GOLEMS:
+		id = "mages_and_golems";
+		break;
+	case SG_EVIL:
+		id = "evil";
+		break;
+	case SG_NONE:
+		return nullptr;
+	case SG_UNKNOWN:
+		id = "unk";
+		break;
+	case SG_CHALLANGE:
+		id = "challange";
+		break;
+	}
+	return UnitGroup::Get(id);
 }

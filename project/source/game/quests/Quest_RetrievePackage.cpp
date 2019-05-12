@@ -49,7 +49,7 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 			OnStart(game->txQuest[265]);
 			QM.quests_timeout.push_back(this);
 
-			target_loc = W.GetRandomSpawnLocation((GetStartLocation().pos + W.GetLocation(from_loc)->pos) / 2, SG_BANDITS);
+			target_loc = W.GetRandomSpawnLocation((GetStartLocation().pos + W.GetLocation(from_loc)->pos) / 2, UnitGroup::Get("bandits"));
 
 			Location& loc = GetStartLocation();
 			Location& loc2 = GetTargetLocation();
@@ -63,7 +63,7 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 			parcel.id = "$stolen_parcel";
 			parcel.name = Format(game->txQuest[8], who, loc.name.c_str());
 			parcel.refid = refid;
-			unit_to_spawn = g_spawn_groups[SG_BANDITS].GetSpawnLeader(8);
+			unit_to_spawn = UnitGroup::Get("bandits")->GetLeader(8);
 			unit_spawn_level = -3;
 			spawn_item = Quest_Dungeon::Item_GiveSpawned;
 			item_to_give[0] = &parcel;
@@ -215,7 +215,7 @@ bool Quest_RetrievePackage::Load(GameReader& f)
 			parcel.refid = refid;
 
 			item_to_give[0] = &parcel;
-			unit_to_spawn = g_spawn_groups[SG_BANDITS].GetSpawnLeader(8);
+			unit_to_spawn = UnitGroup::Get("bandits")->GetLeader(8);
 			unit_spawn_level = -3;
 			spawn_item = Quest_Dungeon::Item_GiveSpawned;
 		}

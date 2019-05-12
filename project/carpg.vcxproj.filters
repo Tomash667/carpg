@@ -210,9 +210,6 @@
     <ClCompile Include="source\game\stats\RoomType.cpp">
       <Filter>3. game\stats</Filter>
     </ClCompile>
-    <ClCompile Include="source\game\stats\SpawnGroup.cpp">
-      <Filter>3. game\stats</Filter>
-    </ClCompile>
     <ClCompile Include="source\game\stats\UnitStats.cpp">
       <Filter>3. game\stats</Filter>
     </ClCompile>
@@ -832,6 +829,9 @@
     <ClCompile Include="source\engine\TerrainShader.cpp">
       <Filter>2. engine\shaders</Filter>
     </ClCompile>
+    <ClCompile Include="source\game\GameFile.cpp">
+      <Filter>3. game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\resource\resource1.h">
@@ -961,9 +961,6 @@
       <Filter>3. game\stats</Filter>
     </ClInclude>
     <ClInclude Include="source\game\stats\RoomType.h">
-      <Filter>3. game\stats</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\stats\SpawnGroup.h">
       <Filter>3. game\stats</Filter>
     </ClInclude>
     <ClInclude Include="source\game\stats\UnitStats.h">

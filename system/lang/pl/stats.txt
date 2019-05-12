@@ -4,18 +4,6 @@ wt_longBlade = "D³ugie ostrze"
 wt_blunt = "Broñ obuchowa"
 wt_axe = "Topór"
 
-// enemy types
-sg_goblins = "gobliny"
-sg_orcs = "orkowie"
-sg_bandits = "bandyci"
-sg_undead = "nieumarli"
-sg_necros = "nekromanci"
-sg_mages = "magowie"
-sg_golems = "golemy"
-sg_mages_and_golems = "magowie"
-sg_evils = "nieumarli"
-sg_unk = "nieznani"
-
 // buffs
 buff_poison = "Zatrucie"
 buff_alcohol = "Alkohol"

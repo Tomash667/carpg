@@ -9,6 +9,7 @@
 #include "GameFile.h"
 #include "Quest_Scripted.h"
 #include "QuestManager.h"
+#include "UnitGroup.h"
 
 //=================================================================================================
 Location::~Location()
@@ -59,7 +60,7 @@ void Location::Save(GameWriter& f, bool)
 	f << st;
 	f << outside;
 	f << reset;
-	f << spawn;
+	f << group;
 	f << dont_clean;
 	f << seed;
 	f << image;
@@ -106,7 +107,7 @@ void Location::Load(GameReader& f, bool, LOCATION_TOKEN token)
 	f >> st;
 	f >> outside;
 	f >> reset;
-	f >> spawn;
+	f >> group;
 	f >> dont_clean;
 	f >> seed;
 	if(LOAD_VERSION >= V_0_5)

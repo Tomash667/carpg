@@ -202,7 +202,6 @@ enum GameDirection;
 enum ITEM_TYPE;
 enum MATERIAL_TYPE;
 enum TRAP_TYPE;
-enum SPAWN_GROUP;
 enum SpecialEncounter;
 enum class AttributeId;
 enum class Class;

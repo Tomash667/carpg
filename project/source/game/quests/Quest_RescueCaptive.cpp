@@ -19,7 +19,19 @@ void Quest_RescueCaptive::Start()
 	quest_id = Q_RESCUE_CAPTIVE;
 	type = QuestType::Captain;
 	start_loc = W.GetCurrentLocationIndex();
-	group = GetRandomGroup();
+	switch(Rand() % 4)
+	{
+	case 0:
+	case 1:
+		group = UnitGroup::Get("bandits");
+		break;
+	case 2:
+		group = UnitGroup::Get("orcs");
+		break;
+	case 3:
+		group = UnitGroup::Get("goblins");
+		break;
+	}
 }
 
 //=================================================================================================
@@ -71,30 +83,15 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 
 			msgs.push_back(Format(game->txQuest[29], loc.name.c_str(), W.GetDate()));
 
-			cstring co;
-			switch(group)
-			{
-			case SG_BANDITS:
-			default:
-				co = game->txQuest[30];
-				break;
-			case SG_ORCS:
-				co = game->txQuest[31];
-				break;
-			case SG_GOBLINS:
-				co = game->txQuest[32];
-				break;
-			}
-
 			if(loc2.type == L_CAMP)
 			{
 				game->target_loc_is_camp = true;
-				msgs.push_back(Format(game->txQuest[33], loc.name.c_str(), co, GetLocationDirName(loc.pos, loc2.pos)));
+				msgs.push_back(Format(game->txQuest[33], loc.name.c_str(), group->name.c_str(), GetLocationDirName(loc.pos, loc2.pos)));
 			}
 			else
 			{
 				game->target_loc_is_camp = false;
-				msgs.push_back(Format(game->txQuest[34], loc.name.c_str(), co, loc2.name.c_str(), GetLocationDirName(loc.pos, loc2.pos)));
+				msgs.push_back(Format(game->txQuest[34], loc.name.c_str(), group->name.c_str(), loc2.name.c_str(), GetLocationDirName(loc.pos, loc2.pos)));
 			}
 		}
 		break;
@@ -242,36 +239,10 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 //=================================================================================================
 cstring Quest_RescueCaptive::FormatString(const string& str)
 {
-	if(str == "i_bandyci")
-	{
-		switch(group)
-		{
-		case SG_BANDITS:
-			return game->txQuest[43];
-		case SG_ORCS:
-			return game->txQuest[44];
-		case SG_GOBLINS:
-			return game->txQuest[45];
-		default:
-			assert(0);
-			return game->txQuest[46];
-		}
-	}
-	else if(str == "ci_bandyci")
-	{
-		switch(group)
-		{
-		case SG_BANDITS:
-			return game->txQuest[47];
-		case SG_ORCS:
-			return game->txQuest[48];
-		case SG_GOBLINS:
-			return game->txQuest[49];
-		default:
-			assert(0);
-			return game->txQuest[50];
-		}
-	}
+	if(str == "Goddamn_bandits")
+		return Format("%s %s", game->txQuest[group->gender ? 44 : 43], group->name.c_str());
+	else if(str == "Those_bandits")
+		return Format("%s %s", game->txQuest[group->gender ? 46 : 45], group->name.c_str());
 	else if(str == "locname")
 		return GetTargetLocationName();
 	else if(str == "target_dir")
@@ -385,23 +356,6 @@ bool Quest_RescueCaptive::Load(GameReader& f)
 	}
 
 	return true;
-}
-
-//=================================================================================================
-SPAWN_GROUP Quest_RescueCaptive::GetRandomGroup() const
-{
-	switch(Rand() % 4)
-	{
-	default:
-	case 0:
-	case 1:
-		return SG_BANDITS;
-	case 2:
-		return SG_ORCS;
-		break;
-	case 3:
-		return SG_GOBLINS;
-	}
 }
 
 //=================================================================================================

@@ -101,7 +101,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			Encounter* e = W.AddEncounter(enc);
 			e->dialog = GameDialog::TryGet("q_bandits");
 			e->dont_attack = true;
-			e->group = SG_BANDITS;
+			e->group = UnitGroup::Get("bandits");
 			e->location_event_handler = nullptr;
 			e->pos = (sl.pos + other.pos) / 2;
 			e->quest = reinterpret_cast<Quest_Encounter*>(this);
@@ -125,7 +125,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			Encounter* e = W.AddEncounter(enc);
 			e->dialog = GameDialog::TryGet("q_bandits");
 			e->dont_attack = true;
-			e->group = SG_BANDITS;
+			e->group = UnitGroup::Get("bandits");
 			e->location_event_handler = nullptr;
 			e->pos = (sl.pos + other.pos) / 2;
 			e->quest = reinterpret_cast<Quest_Encounter*>(this);
@@ -159,7 +159,7 @@ void Quest_Bandits::SetProgress(int prog2)
 	case Progress::NeedTalkWithCaptain:
 		// info o obozie
 		{
-			camp_loc = W.CreateCamp(GetStartLocation().pos, SG_BANDITS);
+			camp_loc = W.CreateCamp(GetStartLocation().pos, UnitGroup::Get("bandits"));
 			Location& camp = *W.GetLocation(camp_loc);
 			camp.st = 10;
 			camp.state = LS_HIDDEN;
@@ -205,7 +205,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			bandits_state = State::AgentTalked;
 			DialogContext::current->talker->SetOrder(ORDER_LEAVE);
 			DialogContext::current->talker->event_handler = this;
-			Location& target = *W.CreateLocation(L_DUNGEON, GetStartLocation().pos, 64.f, THRONE_VAULT, SG_BANDITS, false);
+			Location& target = *W.CreateLocation(L_DUNGEON, GetStartLocation().pos, 64.f, THRONE_VAULT, UnitGroup::Get("bandits"), false);
 			target.active_quest = this;
 			target.SetKnown();
 			target.st = 12;
@@ -368,7 +368,7 @@ bool Quest_Bandits::Load(GameReader& f)
 		Encounter* e = W.RecreateEncounter(enc);
 		e->dialog = GameDialog::TryGet("q_bandits");
 		e->dont_attack = true;
-		e->group = SG_BANDITS;
+		e->group = UnitGroup::Get("bandits");
 		e->location_event_handler = nullptr;
 		e->pos = (GetStartLocation().pos + W.GetLocation(other_loc)->pos) / 2;
 		e->quest = reinterpret_cast<Quest_Encounter*>(this);

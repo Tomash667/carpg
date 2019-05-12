@@ -1062,27 +1062,9 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 						else
 							distance = game.txVeryFar;
 
-						cstring enemies;
-						switch(loc.spawn)
-						{
-						case SG_ORCS:
-							enemies = game.txSGOOrcs;
-							break;
-						case SG_BANDITS:
-							enemies = game.txSGOBandits;
-							break;
-						case SG_GOBLINS:
-							enemies = game.txSGOGoblins;
-							break;
-						default:
-							assert(0);
-							enemies = game.txSGOEnemies;
-							break;
-						}
-
 						loc.SetKnown();
 
-						dialog_s_text = Format(RandomString(game.txCampDiscovered), distance, GetLocationDirName(cloc.pos, loc.pos), enemies);
+						dialog_s_text = Format(RandomString(game.txCampDiscovered), distance, GetLocationDirName(cloc.pos, loc.pos), loc.group->name2.c_str());
 						DialogTalk(dialog_s_text.c_str());
 						++dialog_pos;
 						return true;
@@ -1274,53 +1256,25 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		Location& loc = *locations[id];
 		loc.SetKnown();
 		dialog_s_text = Format(game.txNearLoc, GetLocationDirName(W.GetWorldPos(), loc.pos), loc.name.c_str());
-		if(loc.spawn == SG_NONE)
-		{
-			if(loc.type != L_CAVE && loc.type != L_FOREST && loc.type != L_MOONWELL)
-				dialog_s_text += RandomString(game.txNearLocEmpty);
-		}
+		if(loc.group->IsEmpty())
+			dialog_s_text += RandomString(game.txNearLocEmpty);
 		else if(loc.state == LS_CLEARED)
-			dialog_s_text += Format(game.txNearLocCleared, g_spawn_groups[loc.spawn].name);
+			dialog_s_text += Format(game.txNearLocCleared, loc.group->name3.c_str());
 		else
 		{
-			SpawnGroup& sg = g_spawn_groups[loc.spawn];
-			cstring jacy;
+			int gender = loc.group->gender ? 1 : 0;
+			cstring desc;
 			if(loc.st < 5)
-			{
-				if(sg.k == K_I)
-					jacy = game.txELvlVeryWeak[0];
-				else
-					jacy = game.txELvlVeryWeak[1];
-			}
+				desc = game.txELvlVeryWeak[gender];
 			else if(loc.st < 8)
-			{
-				if(sg.k == K_I)
-					jacy = game.txELvlWeak[0];
-				else
-					jacy = game.txELvlWeak[1];
-			}
+				desc = game.txELvlWeak[gender];
 			else if(loc.st < 11)
-			{
-				if(sg.k == K_I)
-					jacy = game.txELvlAverage[0];
-				else
-					jacy = game.txELvlAverage[1];
-			}
+				desc = game.txELvlAverage[gender];
 			else if(loc.st < 14)
-			{
-				if(sg.k == K_I)
-					jacy = game.txELvlQuiteStrong[0];
-				else
-					jacy = game.txELvlQuiteStrong[1];
-			}
+				desc = game.txELvlQuiteStrong[gender];
 			else
-			{
-				if(sg.k == K_I)
-					jacy = game.txELvlStrong[0];
-				else
-					jacy = game.txELvlStrong[1];
-			}
-			dialog_s_text += Format(RandomString(game.txNearLocEnemy), jacy, g_spawn_groups[loc.spawn].name);
+				desc = game.txELvlStrong[gender];
+			dialog_s_text += Format(RandomString(game.txNearLocEnemy), desc, loc.group->name.c_str());
 		}
 
 		DialogTalk(dialog_s_text.c_str());

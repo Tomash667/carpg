@@ -134,7 +134,7 @@ bool Quest_Secret::CheckMoonStone(GroundItem* item, Unit& unit)
 	{
 		Game::Get().gui->messages->AddGameMsg(txSecretAppear, 3.f);
 		state = SECRET_DROPPED_STONE;
-		Location& l = *W.CreateLocation(L_DUNGEON, Vec2(0, 0), -128.f, DWARF_FORT, SG_CHALLANGE, false, 3);
+		Location& l = *W.CreateLocation(L_DUNGEON, Vec2(0, 0), -128.f, DWARF_FORT, UnitGroup::Get("challange"), false, 3);
 		l.st = 18;
 		l.active_quest = (Quest_Dungeon*)ACTIVE_QUEST_HOLDER;
 		l.state = LS_UNKNOWN;

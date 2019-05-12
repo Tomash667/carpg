@@ -29,7 +29,7 @@ void Quest_Artifacts::Start()
 		pos = Vec2(bounds.y, bounds.y);
 		break;
 	}
-	Location* target = W.CreateLocation(L_CRYPT, pos, 64.f, HERO_CRYPT, SG_GOLEMS, true, 2);
+	Location* target = W.CreateLocation(L_CRYPT, pos, 64.f, HERO_CRYPT, UnitGroup::Get("golems"), true, 2);
 	target->active_quest = this;
 	target->st = 12;
 	target_loc = target->index;

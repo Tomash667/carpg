@@ -595,10 +595,10 @@ void WorldMapGui::AppendLocationText(Location& loc, string& s)
 		{
 			InsideLocation* inside = (InsideLocation*)&loc;
 			s += Format("%s, %s, st %d, levels %d, ",
-				g_base_locations[inside->target].name, g_spawn_groups[inside->spawn].id, inside->st, inside->GetLastLevel() + 1);
+				g_base_locations[inside->target].name, loc.group->id.c_str(), loc.st, inside->GetLastLevel() + 1);
 		}
 		else if(loc.type == L_FOREST || loc.type == L_CAMP || loc.type == L_CAVE || loc.type == L_MOONWELL)
-			s += Format("%s, st %d, ", g_spawn_groups[loc.spawn].id, loc.st);
+			s += Format("%s, st %d, ", loc.group->id.c_str(), loc.st);
 		s += Format("quest 0x%p)", loc.active_quest);
 	}
 	if(loc.state >= LS_VISITED && loc.type == L_CITY)

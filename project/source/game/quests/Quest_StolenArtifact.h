@@ -31,6 +31,6 @@ private:
 
 	const Item* item;
 	OtherItem quest_item;
-	SPAWN_GROUP group;
+	UnitGroup* group;
 	int st;
 };

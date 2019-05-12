@@ -175,7 +175,7 @@ void InsideLocationGenerator::OnEnter()
 	}
 
 	if((first || need_reset) && (Rand() % 50 == 0 || DebugKey('C')) && L.location->type != L_CAVE && inside->target != LABYRINTH
-		&& !L.location->active_quest && dungeon_level == 0)
+		&& !L.location->active_quest && dungeon_level == 0 && !L.location->group->IsEmpty())
 		SpawnHeroesInsideDungeon();
 
 	// stwórz obiekty kolizji
@@ -485,7 +485,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 		flags = Level::SOE_MAGIC_LIGHT;
 
 	bool required = false;
-	if(base.required.room)
+	if(base.required.value)
 		required = true;
 
 	for(Room* room : lvl.rooms)
@@ -532,8 +532,8 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 						blocks.push_back(Int2(pt.x + x, pt.y + y));
 				}
 
-				if(base.stairs.room)
-					rt = base.stairs.room;
+				if(base.stairs.value)
+					rt = base.stairs.value;
 				else
 					rt = base.GetRandomRoomType();
 			}
@@ -541,7 +541,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 		else
 		{
 			if(required)
-				rt = base.required.room;
+				rt = base.required.value;
 			else
 				rt = base.GetRandomRoomType();
 		}

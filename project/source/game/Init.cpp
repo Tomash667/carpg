@@ -298,15 +298,7 @@ void Game::ConfigureGame()
 	global::cmdp->AddCommands();
 	settings.ResetGameKeys();
 	settings.LoadGameKeys(cfg);
-	BaseLocation::SetRoomPointers();
-
-	for(int i = 0; i < SG_MAX; ++i)
-	{
-		if(g_spawn_groups[i].unit_group_id[0] == 0)
-			g_spawn_groups[i].unit_group = nullptr;
-		else
-			g_spawn_groups[i].unit_group = UnitGroup::Get(g_spawn_groups[i].unit_group_id);
-	}
+	load_errors += BaseLocation::SetRoomPointers();
 
 	for (ClassInfo& ci : ClassInfo::classes)
 	{

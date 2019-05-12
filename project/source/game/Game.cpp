@@ -1198,26 +1198,6 @@ void Game::SetGameText()
 	txPlayerKicked = Str("playerKicked");
 	txServerClosed = Str("serverClosed");
 
-	// obóz wrogów
-	txSGOOrcs = Str("sgo_orcs");
-	txSGOGoblins = Str("sgo_goblins");
-	txSGOBandits = Str("sgo_bandits");
-	txSGOEnemies = Str("sgo_enemies");
-	txSGOUndead = Str("sgo_undead");
-	txSGOMages = Str("sgo_mages");
-	txSGOGolems = Str("sgo_golems");
-	txSGOMagesAndGolems = Str("sgo_magesAndGolems");
-	txSGOUnk = Str("sgo_unk");
-	txSGOPowerfull = Str("sgo_powerfull");
-
-	// rodzaje wrogów
-	for(int i = 0; i < SG_MAX; ++i)
-	{
-		SpawnGroup& sg = g_spawn_groups[i];
-		if(!sg.name)
-			sg.name = Str(Format("sg_%s", sg.unit_group_id));
-	}
-
 	// dialogi
 	LoadArray(txYell, "yell");
 

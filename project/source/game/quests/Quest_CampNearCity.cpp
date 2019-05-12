@@ -20,13 +20,13 @@ void Quest_CampNearCity::Start()
 	switch(Rand() % 3)
 	{
 	case 0:
-		group = SG_BANDITS;
+		group = UnitGroup::Get("bandits");
 		break;
 	case 1:
-		group = SG_GOBLINS;
+		group = UnitGroup::Get("goblins");
 		break;
 	case 2:
-		group = SG_ORCS;
+		group = UnitGroup::Get("orcs");
 		break;
 	}
 }
@@ -73,23 +73,8 @@ void Quest_CampNearCity::SetProgress(int prog2)
 			tl.st += Random(3, 5);
 			st = tl.st;
 
-			cstring gn;
-			switch(group)
-			{
-			case SG_BANDITS:
-			default:
-				gn = game->txQuest[59];
-				break;
-			case SG_ORCS:
-				gn = game->txQuest[60];
-				break;
-			case SG_GOBLINS:
-				gn = game->txQuest[61];
-				break;
-			}
-
 			msgs.push_back(Format(game->txQuest[29], sl.name.c_str(), W.GetDate()));
-			msgs.push_back(Format(game->txQuest[62], gn, GetLocationDirName(sl.pos, tl.pos), sl.name.c_str(),
+			msgs.push_back(Format(game->txQuest[group->gender ? 62 : 61], Upper(group->name.c_str()), GetLocationDirName(sl.pos, tl.pos), sl.name.c_str(),
 				is_city ? game->txQuest[63] : game->txQuest[64]));
 		}
 		break;
@@ -139,20 +124,7 @@ void Quest_CampNearCity::SetProgress(int prog2)
 cstring Quest_CampNearCity::FormatString(const string& str)
 {
 	if(str == "Bandyci_zalozyli")
-	{
-		switch(group)
-		{
-		case SG_BANDITS:
-			return game->txQuest[68];
-		case SG_ORCS:
-			return game->txQuest[69];
-		case SG_GOBLINS:
-			return game->txQuest[70];
-		default:
-			assert(0);
-			return game->txQuest[71];
-		}
-	}
+		return Format("%s %s", Upper(group->name.c_str()), game->txQuest[group->gender ? 69 : 68]);
 	else if(str == "naszego_miasta")
 	{
 		if(LocationHelper::IsCity(GetStartLocation()))
@@ -170,20 +142,7 @@ cstring Quest_CampNearCity::FormatString(const string& str)
 	else if(str == "dir")
 		return GetLocationDirName(GetStartLocation().pos, GetTargetLocation().pos);
 	else if(str == "bandyci_zaatakowali")
-	{
-		switch(group)
-		{
-		case SG_BANDITS:
-			return game->txQuest[74];
-		case SG_ORCS:
-			return game->txQuest[75];
-		case SG_GOBLINS:
-			return game->txQuest[266];
-		default:
-			assert(0);
-			return nullptr;
-		}
-	}
+		return Format("%s %s", group->name.c_str(), game->txQuest[group->gender ? 75 : 74]);
 	else if(str == "reward")
 		return Format("%d", GetReward());
 	else

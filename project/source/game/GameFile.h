@@ -3,6 +3,7 @@
 //-----------------------------------------------------------------------------
 #include "Item.h"
 #include "Unit.h"
+#include "UnitGroup.h"
 
 //-----------------------------------------------------------------------------
 class GameReader final : public FileReader
@@ -52,6 +53,8 @@ public:
 		else
 			item = Item::Get(id);
 	}
+
+	void operator >> (UnitGroup*& group);
 };
 
 //-----------------------------------------------------------------------------
@@ -99,5 +102,10 @@ public:
 			WriteString1(item->id);
 		else
 			Write0();
+	}
+
+	void operator << (UnitGroup* group)
+	{
+		WriteString1(group->id);
 	}
 };

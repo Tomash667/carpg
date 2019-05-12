@@ -472,10 +472,9 @@ void CaveGenerator::GenerateObjects()
 //=================================================================================================
 void CaveGenerator::GenerateUnits()
 {
-	UnitGroupList* list = UnitGroupList::TryGet("cave");
 	int level = L.GetDifficultyLevel();
 	TmpUnitGroupList tmp;
-	tmp.Fill(list, level);
+	tmp.Fill(loc->group, level);
 	static vector<Int2> tiles;
 	Cave* cave = (Cave*)loc;
 	InsideLocationLevel& lvl = cave->GetLevelData();

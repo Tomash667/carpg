@@ -490,18 +490,6 @@ void ScriptManager::RegisterGame()
 		{ "L_ENCOUNTER", L_ENCOUNTER }
 		});
 
-	AddEnum("SPAWN_GROUP", {
-		{ "SG_GOBLINS", SG_GOBLINS },
-		{ "SG_ORCS", SG_ORCS },
-		{ "SG_BANDITS", SG_BANDITS },
-		{ "SG_UNDEAD", SG_UNDEAD },
-		{ "SG_NECROMANCERS", SG_NECROMANCERS },
-		{ "SG_MAGES", SG_MAGES },
-		{ "SG_GOLEMS", SG_GOLEMS },
-		{ "SG_MAGES_AND_GOLEMS", SG_MAGES_AND_GOLEMS },
-		{ "SG_EVIL", SG_EVIL },
-		});
-
 	AddEnum("UNIT_ORDER", {
 		{ "ORDER_NONE", ORDER_NONE },
 		{ "ORDER_WANDER", ORDER_WANDER },
@@ -632,6 +620,10 @@ void ScriptManager::RegisterGame()
 	ForType("Hero")
 		.Member("bool lost_pvp", offsetof(HeroData, lost_pvp));
 
+	AddType("UnitGroup")
+		.WithNamespace()
+		.AddFunction("UnitGroup@ Get(const string& in)", asFUNCTION(UnitGroup::GetS));
+
 	WithNamespace("Team", &Team)
 		.AddFunction("Unit@ get_leader()", asMETHOD(TeamSingleton, GetLeader))
 		.AddFunction("uint get_size()", asMETHOD(TeamSingleton, GetActiveTeamSize))
@@ -652,7 +644,7 @@ void ScriptManager::RegisterGame()
 		.Factory(asFUNCTION(TmpUnitGroup::GetInstanceS))
 		.ReferenceCounting(asMETHOD(TmpUnitGroup, AddRefS), asMETHOD(TmpUnitGroup, ReleaseS))
 		.Method("uint get_count()", asMETHOD(TmpUnitGroup, GetCount))
-		.Method("void Fill(SPAWN_GROUP, int, int)", asMETHOD(TmpUnitGroup, FillS))
+		.Method("void Fill(UnitGroup@, int, int)", asMETHOD(TmpUnitGroup, FillS))
 		.Method("Spawn Get(uint)", asMETHOD(TmpUnitGroup, GetS));
 
 	AddType("LevelContext");
@@ -676,7 +668,7 @@ void ScriptManager::RegisterGame()
 		.Member("Quest@ quest", offsetof(Encounter, quest))
 		.Member("Dialog@ dialog", offsetof(Encounter, dialog))
 		.Member("int st", offsetof(Encounter, st))
-		.Member("SPAWN_GROUP group", offsetof(Encounter, group))
+		.Member("UnitGroup@ group", offsetof(Encounter, group))
 		.Method("const string& get_text()", asMETHOD(Encounter, GetTextS))
 		.Method("void set_text(const string& in)", asMETHOD(Encounter, SetTextS));
 

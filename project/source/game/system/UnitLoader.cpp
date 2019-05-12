@@ -38,7 +38,8 @@ enum Group
 	G_ITEM_GROUP,
 	G_CONSUMABLE_GROUP,
 	G_SUBPROFILE_GROUP,
-	G_TAG
+	G_TAG,
+	G_GROUP_OPTIONS
 };
 
 enum UnitDataType
@@ -52,8 +53,7 @@ enum UnitDataType
 	T_TEX,
 	T_IDLES,
 	T_ALIAS,
-	T_GROUP,
-	T_GROUP_LIST
+	T_GROUP
 };
 
 enum Property
@@ -117,7 +117,14 @@ enum SpellKeyword
 enum GroupKeyword
 {
 	GK_LEADER,
-	GK_GROUP
+	GK_GROUP,
+	GK_FOOD_MOD,
+	GK_ORC_FOOD,
+	GK_HAVE_CAMPS,
+	GK_ENCOUNTER_CHANCE,
+	GK_SPECIAL,
+	GK_LIST,
+	GK_GENDER
 };
 
 enum TraderKeyword
@@ -169,7 +176,6 @@ void UnitLoader::Cleanup()
 	DeleteElements(FrameInfo::frames);
 	DeleteElements(UnitData::units);
 	DeleteElements(UnitGroup::groups);
-	DeleteElements(UnitGroupList::lists);
 	DeleteElements(UnitStats::shared_stats);
 }
 
@@ -188,8 +194,7 @@ void UnitLoader::InitTokenizer()
 		{ "tex", T_TEX },
 		{ "idles", T_IDLES },
 		{ "alias", T_ALIAS },
-		{ "group", T_GROUP },
-		{ "group_list", T_GROUP_LIST }
+		{ "group", T_GROUP }
 		});
 
 	t.AddKeywords(G_PROPERTY, {
@@ -395,7 +400,14 @@ void UnitLoader::InitTokenizer()
 
 	t.AddKeywords(G_GROUP_KEYWORD, {
 		{ "leader", GK_LEADER },
-		{ "group", GK_GROUP }
+		{ "group", GK_GROUP },
+		{ "food_mod", GK_FOOD_MOD },
+		{ "orc_food", GK_ORC_FOOD },
+		{ "have_camps", GK_HAVE_CAMPS },
+		{ "encounter_chance", GK_ENCOUNTER_CHANCE },
+		{ "special", GK_SPECIAL },
+		{ "list", GK_LIST },
+		{ "gender", GK_GENDER }
 		});
 
 	for(ClassInfo& clas : ClassInfo::classes)
@@ -538,9 +550,6 @@ void UnitLoader::LoadEntity(int top, const string& id)
 	case T_GROUP:
 		ParseGroup(id);
 		break;
-	case T_GROUP_LIST:
-		ParseGroupList(id);
-		break;
 	default:
 		assert(0);
 		break;
@@ -550,6 +559,9 @@ void UnitLoader::LoadEntity(int top, const string& id)
 //=================================================================================================
 void UnitLoader::Finalize()
 {
+	UnitGroup::empty = UnitGroup::Get("empty");
+	UnitGroup::random = UnitGroup::Get("random");
+
 	uint crc_value = crc.Get();
 	content.crc[(int)Content::Id::Units] = crc_value;
 	Info("Loaded units (%u) - crc %p.", UnitData::units.size(), crc_value);
@@ -2056,7 +2068,6 @@ void UnitLoader::ParseGroup(const string& id)
 {
 	Ptr<UnitGroup> group;
 	group->id = id;
-	group->total = 0;
 	if(UnitGroup::TryGet(group->id))
 		t.Throw("Group with that id already exists.");
 	t.Next();
@@ -2066,20 +2077,87 @@ void UnitLoader::ParseGroup(const string& id)
 
 	while(!t.IsSymbol('}'))
 	{
-		if(t.IsKeyword(GK_GROUP, G_GROUP_KEYWORD))
+		if(t.IsKeywordGroup(G_GROUP_KEYWORD))
 		{
+			GroupKeyword k = (GroupKeyword)t.GetKeywordId(G_GROUP_KEYWORD);
 			t.Next();
-			const string& id = t.MustGetItemKeyword();
-			UnitGroup* other_group = UnitGroup::TryGet(id);
-			if(!other_group)
-				t.Throw("Missing group '%s'.", id.c_str());
-			for(UnitGroup::Entry& e : other_group->entries)
-				group->entries.push_back(e);
-			group->total += other_group->total;
-			crc.Update(id);
+			switch(k)
+			{
+			case GK_GROUP:
+				{
+					const string& id = t.MustGetItemKeyword();
+					UnitGroup* other_group = UnitGroup::TryGet(id);
+					if(!other_group)
+						t.Throw("Missing group '%s'.", id.c_str());
+					for(UnitGroup::Entry& e : other_group->entries)
+						group->entries.push_back(e);
+					group->max_weight += other_group->max_weight;
+					crc.Update(id);
+				}
+				break;
+			case GK_FOOD_MOD:
+				group->food_mod = t.MustGetInt();
+				if(!InRange(group->food_mod, -2, 0))
+					t.Throw("Invalid food_mod %d.", group->food_mod);
+				break;
+			case GK_ORC_FOOD:
+				group->orc_food = t.MustGetBool();
+				break;
+			case GK_HAVE_CAMPS:
+				group->have_camps = t.MustGetBool();
+				break;
+			case GK_ENCOUNTER_CHANCE:
+				group->encounter_chance = t.MustGetInt();
+				if(group->encounter_chance <= 0)
+					t.Throw("Invalid encounter_chance %d.", group->encounter_chance);
+				break;
+			case GK_SPECIAL:
+				group->special = (UnitGroup::Special)t.MustGetInt();
+				if(!InRange((int)group->special, 0, 2))
+					t.Throw("Invalid special %d.", group->special);
+				break;
+			case GK_GENDER:
+				group->gender = t.MustGetBool();
+				break;
+			case GK_LIST:
+				if(!group->entries.empty())
+					t.Throw("Group already have entries.");
+				group->is_list = true;
+				t.AssertSymbol('{');
+				t.Next();
+				while(!t.IsSymbol('}'))
+				{
+					int weight = 1;
+					if(t.IsInt())
+					{
+						weight = t.GetInt();
+						if(weight < 1)
+							t.Throw("Invalid list item weight %d.", weight);
+						t.Next();
+					}
+					const string& id = t.MustGetItemKeyword();
+					UnitGroup* gr = UnitGroup::TryGet(id);
+					if(!gr)
+						t.Throw("Missing unit group '%s'.", id.c_str());
+					group->entries.push_back(UnitGroup::Entry(gr, weight));
+					group->max_weight += weight;
+					crc.Update(id);
+					crc.Update(weight);
+					t.Next();
+				}
+				if(group->entries.empty())
+					t.Throw("Empty list.");
+				break;
+			default:
+				t.Unexpected();
+				break;
+			}
 		}
 		else
 		{
+			if(group->is_list)
+				t.Throw("Can't mix units and group list.");
+
 			const string& id = t.MustGetItemKeyword();
 			UnitData* ud = UnitData::TryGet(id.c_str());
 			if(!ud)
@@ -2094,51 +2172,21 @@ void UnitLoader::ParseGroup(const string& id)
 				t.Next();
 			}
 
-			int count = t.MustGetInt();
-			if(count < 1)
-				t.Throw("Invalid unit count %d.", count);
-			group->entries.push_back(UnitGroup::Entry(ud, count, is_leader));
-			group->total += count;
-			crc.Update(count);
+			int weight = t.MustGetInt();
+			if(weight < 1)
+				t.Throw("Invalid unit weight %d.", weight);
+			group->entries.push_back(UnitGroup::Entry(ud, weight, is_leader));
+			group->max_weight += weight;
+			crc.Update(weight);
 			crc.Update(is_leader);
 		}
 		t.Next();
 	}
 
-	if(group->entries.empty())
+	if(group->entries.empty() && !group->special)
 		t.Throw("Empty group.");
 
 	UnitGroup::groups.push_back(group.Pin());
-}
-
-//=================================================================================================
-void UnitLoader::ParseGroupList(const string& id)
-{
-	Ptr<UnitGroupList> list;
-	list->id = id;
-	if(UnitGroupList::TryGet(list->id))
-		t.Throw("Group list with that id already exists.");
-	crc.Update(list->id);
-	t.Next();
-
-	t.AssertSymbol('{');
-	t.Next();
-
-	while(!t.IsSymbol('}'))
-	{
-		auto& id = t.MustGetItemKeyword();
-		auto group = UnitGroup::TryGet(id);
-		if(!group)
-			t.Throw("Missing unit group '%s'.", id.c_str());
-		list->groups.push_back(group);
-		crc.Update(id);
-		t.Next();
-	}
-
-	if(list->groups.empty())
-		t.Throw("Empty list.");
-
-	UnitGroupList::lists.push_back(list.Pin());
 }
 
 //=================================================================================================

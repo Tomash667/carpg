@@ -137,7 +137,7 @@ void CampGenerator::GenerateObjects()
 		{
 			BaseObject* obj = camp_objs_ptrs[Rand() % n_camp_objs];
 			auto e = L.SpawnObjectNearLocation(L.local_ctx, obj, pt, Random(MAX_ANGLE), 2.f);
-			if(e.IsChest() && L.location->spawn != SG_NONE) // empty chests for empty camps
+			if(e.IsChest() && !L.location->group->IsEmpty()) // empty chests for empty camps
 			{
 				int gold, level = L.location->st;
 				Chest* chest = (Chest*)e;
@@ -156,35 +156,12 @@ void CampGenerator::GenerateUnits()
 	static vector<Vec2> poss;
 	poss.clear();
 	int level = outside->st;
-	cstring group_name;
 
-	switch(outside->spawn)
-	{
-	default:
-		assert(0);
-	case SG_BANDITS:
-		group_name = "bandits";
-		break;
-	case SG_ORCS:
-		group_name = "orcs";
-		break;
-	case SG_GOBLINS:
-		group_name = "goblins";
-		break;
-	case SG_MAGES:
-		group_name = "mages";
-		break;
-	case SG_EVIL:
-		group_name = "evil";
-		break;
-	case SG_NONE:
-		// spawn empty camp, no units
-		return;
-	}
+	if(outside->group->IsEmpty())
+		return; // spawn empty camp, no units
 
-	// ustal wrogów
 	Pooled<TmpUnitGroup> group;
-	group->Fill(UnitGroup::TryGet(group_name), level);
+	group->Fill(outside->group, level);
 
 	for(int added = 0, tries = 50; added < 5 && tries>0; --tries)
 	{

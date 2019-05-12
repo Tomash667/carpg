@@ -74,10 +74,6 @@ void World::LoadLanguage()
 	txEncGolem = Str("encGolem");
 	txEncCrazy = Str("encCrazy");
 	txEncUnk = Str("encUnk");
-	txEncBandits = Str("encBandits");
-	txEncAnimals = Str("encAnimals");
-	txEncOrcs = Str("encOrcs");
-	txEncGoblins = Str("encGoblins");
 	txEncEnemiesCombat = Str("encEnemiesCombat");
 
 	// location names
@@ -205,9 +201,9 @@ void World::SpawnCamps(int days)
 		while(true)
 		{
 			Location* loc = locations[index];
-			if(loc && loc->state != LS_CLEARED && Any(loc->type, L_DUNGEON, L_CRYPT) && Any(loc->spawn, SG_BANDITS, SG_ORCS, SG_GOBLINS))
+			if(loc && loc->state != LS_CLEARED && Any(loc->type, L_DUNGEON, L_CRYPT) && loc->group->have_camps)
 			{
-				CreateCamp(loc->pos, loc->spawn, 128.f, false);
+				CreateCamp(loc->pos, loc->group, 128.f, false);
 				break;
 			}
 
@@ -280,8 +276,7 @@ void World::UpdateLocations()
 			if(loc->type == L_DUNGEON || loc->type == L_CRYPT)
 			{
 				InsideLocation* inside = static_cast<InsideLocation*>(loc);
-				if(inside->target != LABYRINTH)
-					inside->spawn = g_base_locations[inside->target].GetRandomSpawnGroup();
+				inside->group = g_base_locations[inside->target].GetRandomGroup();
 				if(inside->IsMultilevel())
 					static_cast<MultiInsideLocation*>(inside)->Reset();
 			}
@@ -304,15 +299,17 @@ void World::UpdateNews()
 }
 
 //=================================================================================================
-int World::CreateCamp(const Vec2& pos, SPAWN_GROUP group, float range, bool allow_exact)
+int World::CreateCamp(const Vec2& pos, UnitGroup* group, float range, bool allow_exact)
 {
+	assert(group);
+
 	Camp* loc = new Camp;
 	loc->state = LS_UNKNOWN;
 	loc->active_quest = nullptr;
 	loc->type = L_CAMP;
 	loc->last_visit = -1;
 	loc->reset = false;
-	loc->spawn = group;
+	loc->group = group;
 	loc->pos = pos;
 	loc->create_time = worldtime;
 	SetLocationImageAndName(loc);
@@ -375,8 +372,10 @@ Location* World::CreateLocation(LOCATION type, int levels, bool is_village)
 //	0 - minimum randomly generated
 //	9 - maximum randomly generated
 //	other - used number
-Location* World::CreateLocation(LOCATION type, const Vec2& pos, float range, int target, SPAWN_GROUP spawn, bool allow_exact, int dungeon_levels)
+Location* World::CreateLocation(LOCATION type, const Vec2& pos, float range, int target, UnitGroup* group, bool allow_exact, int dungeon_levels)
 {
+	assert(group);
+
 	Vec2 pt = pos;
 	if(range < 0.f)
 	{
@@ -409,12 +408,11 @@ Location* World::CreateLocation(LOCATION type, const Vec2& pos, float range, int
 	{
 		InsideLocation* inside = static_cast<InsideLocation*>(loc);
 		inside->target = target;
+		inside->group = group;
+		if(inside->group == UnitGroup::random)
+			inside->group = g_base_locations[target].GetRandomGroup();
 		if(target == LABYRINTH)
 		{
-			if(spawn == SG_RANDOM)
-				inside->spawn = SG_UNDEAD;
-			else
-				inside->spawn = spawn;
 			inside->st = GetTileSt(loc->pos);
 			if(inside->st < 6)
 				inside->st = 6;
@@ -423,10 +421,6 @@ Location* World::CreateLocation(LOCATION type, const Vec2& pos, float range, int
 		}
 		else
 		{
-			if(spawn == SG_RANDOM)
-				inside->spawn = g_base_locations[target].GetRandomSpawnGroup();
-			else
-				inside->spawn = spawn;
 			inside->st = GetTileSt(loc->pos);
 			if(inside->st < 3)
 				inside->st = 3;
@@ -437,8 +431,8 @@ Location* World::CreateLocation(LOCATION type, const Vec2& pos, float range, int
 		loc->st = GetTileSt(loc->pos);
 		if(loc->st < 2)
 			loc->st = 2;
-		if(spawn != SG_RANDOM)
-			loc->spawn = spawn;
+		if(group != UnitGroup::random)
+			loc->group = group;
 	}
 
 	SetLocationImageAndName(loc);
@@ -686,6 +680,8 @@ void World::GenerateWorld(int start_location_type, int start_location_target)
 	bool first_city_gen = true;
 	int index = 0, guaranteed_dungeon = 0, guaranteed_crypt = 0;
 	const Vec2& start_pos = locations[start_location]->pos;
+	UnitGroup* forest_group = UnitGroup::Get("forest");
+	UnitGroup* cave_group = UnitGroup::Get("cave");
 	for(vector<Location*>::iterator it = locations.begin(), end = locations.end(); it != end; ++it, ++index)
 	{
 		if(!*it)
@@ -709,6 +705,7 @@ void World::GenerateWorld(int start_location_type, int start_location_target)
 				city.citizens = 0;
 				city.citizens_world = 0;
 				city.st = 1;
+				city.group = UnitGroup::empty;
 				LocalVector2<Building*> buildings;
 				city.GenerateCityBuildings(buildings.Get(), true, first_city_gen);
 				city.buildings.reserve(buildings.size());
@@ -839,6 +836,7 @@ void World::GenerateWorld(int start_location_type, int start_location_target)
 				*it = inside;
 
 				inside->target = target;
+				inside->group = base.GetRandomGroup();
 				int& st = GetTileSt(inside->pos);
 				if(target == LABYRINTH)
 				{
@@ -846,13 +844,11 @@ void World::GenerateWorld(int start_location_type, int start_location_target)
 						st = 6;
 					else if(st > 14)
 						st = 14;
-					inside->spawn = SG_UNDEAD;
 				}
 				else
 				{
 					if(st < 3)
 						st = 3;
-					inside->spawn = base.GetRandomSpawnGroup();
 				}
 				inside->st = st;
 
@@ -865,9 +861,11 @@ void World::GenerateWorld(int start_location_type, int start_location_target)
 			break;
 		case L_ENCOUNTER:
 			loc.st = 10;
+			loc.group = UnitGroup::empty;
 			break;
 		case L_MOONWELL:
 			loc.st = 10;
+			loc.group = forest_group;
 			GetTileSt(loc.pos) = 10;
 			break;
 		case L_CAVE:
@@ -879,6 +877,7 @@ void World::GenerateWorld(int start_location_type, int start_location_target)
 				else if(st > 10)
 					st = 10;
 				loc.st = st;
+				loc.group = loc.type == L_CAVE ? cave_group : forest_group;
 			}
 			break;
 		}
@@ -1937,7 +1936,7 @@ bool World::FindPlaceForLocation(Vec2& pos, float range, bool allow_exact)
 // Searches for location with selected spawn group
 // If cleared respawns enemies
 // If nothing found creates camp
-int World::GetRandomSpawnLocation(const Vec2& pos, SPAWN_GROUP group, float range)
+int World::GetRandomSpawnLocation(const Vec2& pos, UnitGroup* group, float range)
 {
 	int best_ok = -1, best_empty = -1, index = settlements;
 	float ok_range, empty_range, dist;
@@ -1949,12 +1948,12 @@ int World::GetRandomSpawnLocation(const Vec2& pos, SPAWN_GROUP group, float rang
 		if(!(*it)->active_quest && ((*it)->type == L_DUNGEON || (*it)->type == L_CRYPT))
 		{
 			InsideLocation* inside = (InsideLocation*)*it;
-			if((*it)->state == LS_CLEARED || inside->spawn == group || inside->spawn == SG_NONE)
+			if((*it)->state == LS_CLEARED || inside->group == group || !inside->group)
 			{
 				dist = Vec2::Distance(pos, (*it)->pos);
 				if(dist <= range)
 				{
-					if(inside->spawn == group)
+					if(inside->group == group)
 					{
 						if(best_ok == -1 || dist < ok_range)
 						{
@@ -1983,7 +1982,7 @@ int World::GetRandomSpawnLocation(const Vec2& pos, SPAWN_GROUP group, float rang
 
 	if(best_empty != -1)
 	{
-		locations[best_empty]->spawn = group;
+		locations[best_empty]->group = group;
 		locations[best_empty]->reset = true;
 		return best_empty;
 	}
@@ -2229,7 +2228,7 @@ void World::UpdateTravel(float dt)
 		{
 			reveal_timer = 0;
 
-			int what = -2;
+			UnitGroup* group = nullptr;
 			for(Location* ploc : locations)
 			{
 				if(!ploc)
@@ -2238,24 +2237,10 @@ void World::UpdateTravel(float dt)
 				float dist = Vec2::Distance(world_pos, loc.pos);
 				if(dist <= 50.f)
 				{
-					if(loc.state != LS_CLEARED && dist <= 32.f)
+					if(loc.state != LS_CLEARED && dist <= 32.f && loc.group && loc.group->encounter_chance != 0)
 					{
-						int chance = 0;
-						if(loc.type == L_FOREST)
-						{
-							chance = 1;
-							what = -1;
-						}
-						else if(loc.spawn == SG_BANDITS)
-						{
-							chance = 3;
-							what = loc.spawn;
-						}
-						else if(loc.spawn == SG_ORCS || loc.spawn == SG_GOBLINS)
-						{
-							chance = 2;
-							what = loc.spawn;
-						}
+						group = loc.group;
+						int chance = loc.group->encounter_chance;
 						if(loc.type == L_CAMP)
 							chance *= 2;
 						encounter_chance += chance;
@@ -2287,14 +2272,14 @@ void World::UpdateTravel(float dt)
 			if(Rand() % 500 < ((int)encounter_chance) - 25 || (gui->HaveFocus() && DebugKey('E')))
 			{
 				encounter_chance = 0.f;
-				StartEncounter(enc, what);
+				StartEncounter(enc, group);
 			}
 		}
 	}
 }
 
 //=================================================================================================
-void World::StartEncounter(int enc, int what)
+void World::StartEncounter(int enc, UnitGroup* group)
 {
 	state = State::ENCOUNTER;
 	if(Net::IsOnline())
@@ -2317,6 +2302,7 @@ void World::StartEncounter(int enc, int what)
 	{
 		Quest_Crazies::State c_state = QM.quest_crazies->crazies_state;
 
+		bool special = false;
 		bool golem = (QM.quest_mages2->mages_state >= Quest_Mages2::State::Encounter
 			&& QM.quest_mages2->mages_state < Quest_Mages2::State::Completed && Rand() % 3 == 0) || DebugKey('G');
 		bool crazy = (c_state == Quest_Crazies::State::TalkedWithCrazy && (Rand() % 2 == 0 || DebugKey('S')));
@@ -2326,17 +2312,17 @@ void World::StartEncounter(int enc, int what)
 		if(c_state == Quest_Crazies::State::PickedStone && Rand() % 2 == 0)
 			unk = true;
 
-		if(what == -2)
+		if(!group)
 		{
 			if(Rand() % 6 == 0)
-				what = SG_BANDITS;
+				group = UnitGroup::Get("bandits");
 			else
-				what = -3;
+				special = true;
 		}
 		else if(Rand() % 3 == 0)
-			what = -3;
+			special = true;
 
-		if(crazy || unk || golem || what == -3 || DebugKey(VK_SHIFT))
+		if(crazy || unk || golem || special || DebugKey(VK_SHIFT))
 		{
 			// special encounter
 			encounter.mode = ENCOUNTER_SPECIAL;
@@ -2413,25 +2399,8 @@ void World::StartEncounter(int enc, int what)
 		{
 			// combat encounter
 			encounter.mode = ENCOUNTER_COMBAT;
-			encounter.enemy = (SPAWN_GROUP)what;
-
-			switch(what)
-			{
-			default:
-				assert(0);
-			case SG_BANDITS:
-				text = txEncBandits;
-				break;
-			case -1:
-				text = txEncAnimals;
-				break;
-			case SG_ORCS:
-				text = txEncOrcs;
-				break;
-			case SG_GOBLINS:
-				text = txEncGoblins;
-				break;
-			}
+			encounter.group = group;
+			text = group->encounter_text.c_str();
 		}
 	}
 
@@ -2516,6 +2485,7 @@ Encounter* World::AddEncounter(int& index, Quest* quest)
 		enc = new Encounter(quest);
 	else
 		enc = new Encounter;
+	enc->group = UnitGroup::empty;
 
 	for(int i = 0, size = (int)encounters.size(); i < size; ++i)
 	{
@@ -2827,7 +2797,7 @@ void World::AbadonLocation(Location* loc)
 			chest->items.clear();
 	}
 
-	loc->spawn = SG_NONE;
+	loc->group = UnitGroup::empty;
 	loc->last_visit = worldtime;
 }
 

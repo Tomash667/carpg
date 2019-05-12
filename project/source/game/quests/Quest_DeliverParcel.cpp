@@ -69,7 +69,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 				e->chance = 45;
 				e->dont_attack = true;
 				e->dialog = GameDialog::TryGet("q_deliver_parcel_bandits");
-				e->group = SG_BANDITS;
+				e->group = UnitGroup::Get("bandits");
 				e->text = game->txQuest[11];
 				e->quest = this;
 				e->timed = true;
@@ -240,7 +240,7 @@ bool Quest_DeliverParcel::Load(GameReader& f)
 		e->chance = 45;
 		e->dont_attack = true;
 		e->dialog = GameDialog::TryGet("q_deliver_parcel_bandits");
-		e->group = SG_BANDITS;
+		e->group = UnitGroup::Get("bandits");
 		e->text = game->txQuest[11];
 		e->quest = this;
 		e->timed = true;

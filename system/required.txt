@@ -203,13 +203,14 @@ unit hero_tomir
 //------------------------------------------------------------------------------
 // Required unit groups
 //------------------------------------------------------------------------------
+group empty
 group with_leader goblins
 group with_leader orcs
 group with_leader bandits
 group crazies
 group undead
-group necros
-group with_leader evils
+group necromancers
+group with_leader evil
 group with_leader mages
 group golems
 group mages_and_golems
@@ -218,16 +219,17 @@ group spiders
 group rats
 group animals
 group hunters
-group labyrinth
 group heroes
 group merchant_guards
 group wagon_guards
 group unk
-group_list arena_easy
-group_list arena_medium
-group_list arena_hard
-group_list cave
-group_list forest
+group list challange
+group list cave
+group list forest
+group list arena_easy
+group list arena_medium
+group list arena_hard
+group list random
 
 //------------------------------------------------------------------------------
 // Required spells

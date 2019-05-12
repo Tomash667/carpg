@@ -1,9 +1,6 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "SpawnGroup.h"
-
-//-----------------------------------------------------------------------------
 typedef bool(*BoolFunc)();
 
 //-----------------------------------------------------------------------------
@@ -40,7 +37,7 @@ struct Encounter
 	float range;
 	Quest* quest;
 	GameDialog* dialog;
-	SPAWN_GROUP group;
+	UnitGroup* group;
 	cstring text;
 	string* pooled_string;
 	LocationEventHandler* location_event_handler;
@@ -50,7 +47,7 @@ struct Encounter
 
 	// dla kompatybilnoœci ze starym kodem, ustawia tylko nowe pola
 	Encounter() : check_func(nullptr), st(-1), pooled_string(nullptr), scripted(false) {}
-	Encounter(Quest* quest) : pos(Vec2::Zero), chance(100), range(64.f), dont_attack(false), timed(false), dialog(nullptr), group(SG_NONE), text(nullptr),
+	Encounter(Quest* quest) : pos(Vec2::Zero), chance(100), range(64.f), dont_attack(false), timed(false), dialog(nullptr), group(nullptr), text(nullptr),
 		pooled_string(nullptr), quest(quest), location_event_handler(nullptr), check_func(nullptr), st(-1), scripted(true) {}
 	~Encounter();
 	const string& GetTextS();

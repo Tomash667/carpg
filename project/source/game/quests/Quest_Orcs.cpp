@@ -83,7 +83,7 @@ void Quest_Orcs::SetProgress(int prog2)
 				u = nullptr;
 			}
 			// generate location
-			Location& tl = *W.CreateLocation(L_DUNGEON, GetStartLocation().pos, 64.f, HUMAN_FORT, SG_ORCS, false);
+			Location& tl = *W.CreateLocation(L_DUNGEON, GetStartLocation().pos, 64.f, HUMAN_FORT, UnitGroup::Get("orcs"), false);
 			tl.SetKnown();
 			tl.st = 8;
 			tl.active_quest = this;
@@ -98,7 +98,7 @@ void Quest_Orcs::SetProgress(int prog2)
 			unit_to_spawn = UnitData::Get("q_orkowie_gorush");
 			spawn_unit_room = RoomTarget::Prison;
 			unit_dont_attack = true;
-			unit_to_spawn2 = g_spawn_groups[SG_ORCS].GetSpawnLeader(10);
+			unit_to_spawn2 = UnitGroup::Get("orcs")->GetLeader(10);
 			unit_spawn_level2 = -3;
 			QM.quest_orcs2->orcs_state = Quest_Orcs2::State::Accepted;
 			// questowe rzeczy
@@ -207,7 +207,7 @@ bool Quest_Orcs::Load(GameReader& f)
 		item_to_give[0] = Item::Get("q_orkowie_klucz");
 		spawn_item = Quest_Event::Item_GiveSpawned2;
 		unit_to_spawn = UnitData::Get("q_orkowie_gorush");
-		unit_to_spawn2 = g_spawn_groups[SG_ORCS].GetSpawnLeader(10);
+		unit_to_spawn2 = UnitGroup::Get("orcs")->GetLeader(10);
 		unit_spawn_level2 = -3;
 		spawn_unit_room = RoomTarget::Prison;
 	}
@@ -320,7 +320,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 	case Progress::TalkedAboutCamp:
 		// powiedzia³ o obozie
 		{
-			target_loc = W.CreateCamp(W.GetWorldPos(), SG_ORCS, 256.f, false);
+			target_loc = W.CreateCamp(W.GetWorldPos(), UnitGroup::Get("orcs"), 256.f, false);
 			Location& target = GetTargetLocation();
 			target.state = LS_HIDDEN;
 			target.st = 11;
@@ -413,7 +413,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 		// pogada³ o bazie
 		{
 			done = false;
-			Location& target = *W.CreateLocation(L_DUNGEON, W.GetWorldPos(), 256.f, THRONE_FORT, SG_ORCS, false);
+			Location& target = *W.CreateLocation(L_DUNGEON, W.GetWorldPos(), 256.f, THRONE_FORT, UnitGroup::Get("orcs"), false);
 			target.st = 15;
 			target.active_quest = this;
 			target.state = LS_HIDDEN;

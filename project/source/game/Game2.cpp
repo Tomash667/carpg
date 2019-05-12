@@ -9282,7 +9282,7 @@ void Game::UpdateGame2(float dt)
 				QM.quest_evil->SetProgress(Quest_Evil::Progress::AltarEvent);
 				// spawn undead
 				InsideLocation* inside = (InsideLocation*)L.location;
-				inside->spawn = SG_UNDEAD;
+				inside->group = UnitGroup::Get("undead");
 				DungeonGenerator* gen = (DungeonGenerator*)loc_gen_factory->Get(L.location);
 				gen->GenerateUnits();
 				break;
@@ -9600,32 +9600,13 @@ void Game::OnEnterLocation()
 				text = txAiForest;
 				break;
 			case L_CAMP:
-				if(L.location->state != LS_CLEARED)
+				if(L.location->state != LS_CLEARED && !L.location->group->IsEmpty())
 				{
-					always_use = true;
-					cstring enemies;
-
-					switch(L.location->spawn)
+					if(!L.location->group->name2.empty())
 					{
-					case SG_GOBLINS:
-						enemies = txSGOGoblins;
-						break;
-					case SG_BANDITS:
-						enemies = txSGOBandits;
-						break;
-					case SG_ORCS:
-						enemies = txSGOOrcs;
-						break;
-					default:
-						always_use = false;
-						enemies = nullptr;
-						break;
+						always_use = true;
+						text = Format(txAiCampFull, L.location->group->name2.c_str());
 					}
-
-					if(always_use)
-						text = Format(txAiCampFull, enemies);
-					else
-						text = nullptr;
 				}
 				else
 					text = txAiCampEmpty;
@@ -9796,50 +9777,10 @@ void Game::OnEnterLevel()
 						break;
 					}
 
-					if(inside->spawn == SG_NONE)
+					if(inside->group->IsEmpty())
 						s += txAiNoEnemies;
 					else
-					{
-						cstring enemies;
-
-						switch(inside->spawn)
-						{
-						case SG_GOBLINS:
-							enemies = txSGOGoblins;
-							break;
-						case SG_ORCS:
-							enemies = txSGOOrcs;
-							break;
-						case SG_BANDITS:
-							enemies = txSGOBandits;
-							break;
-						case SG_UNDEAD:
-						case SG_NECROMANCERS:
-						case SG_EVIL:
-							enemies = txSGOUndead;
-							break;
-						case SG_MAGES:
-							enemies = txSGOMages;
-							break;
-						case SG_GOLEMS:
-							enemies = txSGOGolems;
-							break;
-						case SG_MAGES_AND_GOLEMS:
-							enemies = txSGOMagesAndGolems;
-							break;
-						case SG_UNKNOWN:
-							enemies = txSGOUnk;
-							break;
-						case SG_CHALLANGE:
-							enemies = txSGOPowerfull;
-							break;
-						default:
-							enemies = txSGOEnemies;
-							break;
-						}
-
-						s += Format(txAiNearEnemies, enemies);
-					}
+						s += Format(txAiNearEnemies, inside->group->name2.c_str());
 				}
 				break;
 			case L_CAVE:

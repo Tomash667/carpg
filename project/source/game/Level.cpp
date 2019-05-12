@@ -3095,7 +3095,7 @@ int Level::GetDifficultyLevel() const
 int Level::GetChestDifficultyLevel() const
 {
 	int st = GetDifficultyLevel();
-	if(location->spawn == SG_NONE)
+	if(location->group->IsEmpty())
 	{
 		if(st > 10)
 			return 3;
@@ -3244,7 +3244,7 @@ void Level::CheckIfLocationCleared()
 		if(event_handler)
 			prevent = event_handler->HandleLocationEvent(LocationEventHandler::CLEARED);
 
-		if(cleared && prevent && location->spawn != SG_NONE)
+		if(cleared && prevent && !location->group->IsEmpty())
 		{
 			if(location->type == L_CAMP)
 				W.AddNews(Format(txNewsCampCleared, W.GetLocation(W.GetNearestSettlement(location->pos))->name.c_str()));

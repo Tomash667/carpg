@@ -797,7 +797,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 			loc->from_portal = true;
 			loc->name = game->txAncientArmory;
 			loc->pos = Vec2(-999, -999);
-			loc->spawn = SG_GOLEMS;
+			loc->group = UnitGroup::Get("golems");
 			loc->st = 12;
 			loc->type = L_DUNGEON;
 			loc->image = LI_DUNGEON;
