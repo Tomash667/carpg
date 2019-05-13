@@ -185,6 +185,7 @@ void Game::LoadSystem()
 
 	for(GameComponent* component : components)
 		component->InitOnce();
+	gui->main_menu->UpdateCheckVersion();
 	AddFilesystem();
 	LoadDatafiles();
 	LoadLanguageFiles();

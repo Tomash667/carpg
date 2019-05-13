@@ -4,6 +4,7 @@ Historia zmian
 Wersja 0.11 (2019-??-??):
 ! nie mo¿na wczytywaæ ju¿ zapisów z wersji 0.3 lub starszej
 + wczytywanie ustawieñ grup jednostek z pliku
++ lepsze sprawdzanie wersji, informacje o zmianach w nowej wersji
 - naprawione pozycjonowanie szkieletów po œmierci tak by nie wpada³y w œciany gdzie nie mo¿na ich ograbiæ [Zielu]
 - naprawiony rzadki crash przy u¿ywaniu alt tab przy uruchamianiu gry
 - brak trawy wystaj¹cej spod ksiê¿ycowej studni

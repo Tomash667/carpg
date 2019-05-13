@@ -27,6 +27,7 @@ public:
 	void Event(GuiEvent e) override;
 	bool NeedCursor() const override { return true; }
 	void ShutdownThread();
+	void UpdateCheckVersion();
 
 private:
 	enum class CheckVersionStatus
@@ -44,14 +45,13 @@ private:
 	void PlaceButtons();
 	void OnNewVersion(int id);
 	void CheckVersion();
-	void UpdateCheckVersion();
 
 	Game* game;
 	Button bt[BUTTONS];
 	TEX tBackground, tLogo, tFModLogo;
 	CheckVersionStatus check_status;
 	int version_new;
-	string version_text;
+	string version_text, version_changelog;
 	cstring txInfoText, txVersion;
 	thread check_version_thread;
 	bool check_updates;

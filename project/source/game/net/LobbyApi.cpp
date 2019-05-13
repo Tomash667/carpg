@@ -8,6 +8,7 @@
 #include "Game.h"
 #include "GlobalGui.h"
 #include "PickServerPanel.h"
+#include "Language.h"
 #include <sstream>
 
 cstring LobbyApi::API_URL = "carpglobby.westeurope.cloudapp.azure.com";
@@ -20,7 +21,8 @@ cstring op_names[] = {
 	"GET_CHANGES",
 	"GET_VERSION",
 	"IGNORE",
-	"REPORT"
+	"REPORT",
+	"GET_CHANGELOG"
 };
 
 LobbyApi::LobbyApi() : np_client(nullptr), np_attached(false), current_op(NONE)
@@ -57,8 +59,9 @@ void LobbyApi::UpdateInternal()
 
 	while(http->HasResponse())
 	{
-		HTTPConnection2::Request* request;
+		HTTPConnection2::Request* request = nullptr;
 		http->GetRawResponse(request);
+		assert(request);
 		Operation received_op = (Operation)(int)request->userData;
 		if(received_op == current_op)
 		{
@@ -66,6 +69,7 @@ void LobbyApi::UpdateInternal()
 			if(code >= 400 || code == 0)
 			{
 				Error("LobbyApi: Bad server response %d for %s.", code, op_names[current_op]);
+				last_request_failed = true;
 				if(current_op == GET_SERVERS || current_op == GET_CHANGES)
 					Game::Get().gui->pick_server->HandleBadRequest();
 			}
@@ -84,10 +88,10 @@ void LobbyApi::UpdateInternal()
 					{
 						Error("LobbyApi: Invalid binary version sign 0x%p.", data[0]);
 						Error(request->stringReceived.C_String());
-						version2 = -1;
+						version = -1;
 					}
 					else
-						version2 = (data[1] & 0xFFFFFF);
+						version = (data[1] & 0xFFFFFF);
 				}
 			}
 			else
@@ -99,12 +103,13 @@ void LobbyApi::UpdateInternal()
 				catch(const nlohmann::json::parse_error& ex)
 				{
 					Error("LobbyApi: Failed to parse response for %s: %s", op_names[current_op], ex.what());
+					last_request_failed = true;
 				}
 			}
 		}
 		OP_DELETE(request, _FILE_AND_LINE_);
 
-		if(current_op != GET_VERSION)
+		if(!Any(current_op, GET_VERSION, GET_CHANGELOG))
 		{
 			if(!requests.empty())
 			{
@@ -114,6 +119,8 @@ void LobbyApi::UpdateInternal()
 			else
 				current_op = NONE;
 		}
+		else
+			current_op = NONE;
 	}
 }
 
@@ -124,6 +131,7 @@ void LobbyApi::ParseResponse(const char* response)
 	{
 		string& error = j["error"].get_ref<string&>();
 		Error("LobbyApi: Server returned error for method %s: %s", op_names[current_op], error.c_str());
+		last_request_failed = true;
 		return;
 	}
 
@@ -139,6 +147,13 @@ void LobbyApi::ParseResponse(const char* response)
 		break;
 	case GET_VERSION:
 		version = j["version"].get<int>();
+		break;
+	case GET_CHANGELOG:
+		{
+			std::map<string, string> changelogs = j["changes"].get<std::map<string, string>>();
+			if(!changelogs.empty())
+				changelog = changelogs.begin()->second;
+		}
 		break;
 	}
 }
@@ -170,7 +185,7 @@ void LobbyApi::AddOperation(Op opp)
 		requests.push(opp);
 }
 
-std::string urlencode(const std::string &s)
+string urlencode(const string &s)
 {
 	static const char lookup[] = "0123456789abcdef";
 	std::stringstream e;
@@ -221,6 +236,9 @@ void LobbyApi::DoOperation(Op opp)
 			break;
 		case GET_VERSION:
 			path = "/api/version";
+			break;
+		case GET_CHANGELOG:
+			path = Format("/api/version/changelog?lang=%s", Language::prefix.c_str());
 			break;
 		}
 		http->TransmitRequest(RakString::FormatForGET(Format("%s%s", API_URL, path)), API_URL, API_PORT, false, 4, UNASSIGNED_SYSTEM_ADDRESS, (void*)op);
@@ -273,10 +291,10 @@ int LobbyApi::GetVersion(delegate<bool()> cancel_clbk)
 	assert(!IsBusy());
 	Timer t;
 	float time = 0;
+	bool primary = true;
+	last_request_failed = false;
 	version = -1;
-	version2 = -1;
 	DoOperation({ GET_VERSION,0,nullptr });
-	http->TransmitRequest(RakString::FormatForGET("carpg.pl/carpgdata/wersja"), "carpg.pl", 80, false, 4, UNASSIGNED_SYSTEM_ADDRESS, (void*)current_op);
 
 	while(true)
 	{
@@ -284,7 +302,7 @@ int LobbyApi::GetVersion(delegate<bool()> cancel_clbk)
 			return -2;
 
 		UpdateInternal();
-		if(version >= 0)
+		if(version >= 0 || current_op == NONE)
 			break;
 
 		Sleep(30);
@@ -293,24 +311,83 @@ int LobbyApi::GetVersion(delegate<bool()> cancel_clbk)
 			break;
 	}
 
+	if(version == -1)
+	{
+		// check secondary server
+		primary = false;
+		current_op = GET_VERSION;
+		last_request_failed = false;
+		time = 0;
+		http->TransmitRequest(RakString::FormatForGET("carpg.pl/carpgdata/wersja"), "carpg.pl", 80, false, 4, UNASSIGNED_SYSTEM_ADDRESS, (void*)current_op);
+		while(true)
+		{
+			if(cancel_clbk())
+				return -2;
+
+			UpdateInternal();
+			if(version >= 0 || current_op == NONE)
+				break;
+
+			Sleep(30);
+			time += t.Tick();
+			if(time >= 2.f)
+				break;
+		}
+	}
+
 	current_op = NONE;
 	Reset();
 	if(version >= 0)
 	{
-		if(version2 != -1 && version != version2)
-			Warn("LobbyApi: Get version mismatch %s and %s.", VersionToString(version), VersionToString(version2));
+		if(!primary)
+			Warn("LobbyApi: Failed to get version from primary server. Secondary returned %s.", VersionToString(version));
 		return version;
-	}
-	else if(version2 >= 0)
-	{
-		Warn("LobbyApi: Failed to get version from primary server. Secondary returned %s.", VersionToString(version2));
-		return version2;
 	}
 	else
 	{
 		Error("LobbyApi: Failed to get version.");
 		return -1;
 	}
+}
+
+bool LobbyApi::GetChangelog(string& changelog, delegate<bool()> cancel_clbk)
+{
+	assert(!IsBusy());
+	Timer t;
+	float time = 0;
+	bool ok = true;
+	this->changelog.clear();
+	last_request_failed = false;
+	DoOperation({ GET_CHANGELOG,0,nullptr });
+
+	while(true)
+	{
+		if(cancel_clbk())
+			return false;
+
+		UpdateInternal();
+		if(last_request_failed)
+		{
+			ok = false;
+			break;
+		}
+		if(current_op == NONE)
+			break;
+
+		Sleep(30);
+		time += t.Tick();
+		if(time >= 2.f)
+		{
+			ok = false;
+			break;
+		}
+	}
+
+	current_op = NONE;
+	Reset();
+	if(ok)
+		changelog = this->changelog;
+	return ok;
 }
 
 void LobbyApi::Report(int id, cstring text)

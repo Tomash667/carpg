@@ -23,6 +23,7 @@ newVersion = "Dostêpna nowa wersja CaRpg %s."
 newVersionDialog = "Dostêpna jest nowa wersja CaRpg.\nAktualna: %s\nDostêpna: %s"
 download = "Pobierz"
 skip = "Pomiñ"
+changes = "Zmiany: "
 version = "Wersja: %s"
 haveErrors = "Wyst¹pi³y %u b³êdy oraz %u ostrze¿enia podczas wczytywania gry. SprawdŸ log w celu poznania szczegó³ów."
 

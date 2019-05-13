@@ -143,6 +143,8 @@ void MainMenu::UpdateCheckVersion()
 			info.parent = nullptr;
 			info.pause = false;
 			info.text = Format(Str("newVersionDialog"), VERSION_STR, VersionToString(version_new));
+			if(!version_changelog.empty())
+				info.text += Format("\n\n%s\n%s", Str("changes"), version_changelog.c_str());
 			info.type = DIALOG_YESNO;
 			cstring names[] = { Str("download"), Str("skip") };
 			info.custom_names = names;
@@ -174,11 +176,17 @@ void MainMenu::UpdateCheckVersion()
 //=================================================================================================
 void MainMenu::CheckVersion()
 {
-	version_new = N.api->GetVersion([&]() {return check_status == CheckVersionStatus::Cancel; });
+	auto cancel = [&]() { return check_status == CheckVersionStatus::Cancel; };
+	version_new = N.api->GetVersion(cancel);
 	if(version_new < 0)
 		check_status = CheckVersionStatus::Error;
 	else
+	{
+		version_changelog.clear();
+		if(version_new > VERSION)
+			N.api->GetChangelog(version_changelog, cancel);
 		check_status = CheckVersionStatus::Done;
+	}
 }
 
 //=================================================================================================

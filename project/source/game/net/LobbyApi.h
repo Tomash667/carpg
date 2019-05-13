@@ -24,7 +24,8 @@ class LobbyApi
 		GET_CHANGES,
 		GET_VERSION,
 		IGNORE,
-		REPORT
+		REPORT,
+		GET_CHANGELOG
 	};
 
 	struct Op
@@ -43,6 +44,7 @@ public:
 	void GetChanges() { AddOperation({ GET_CHANGES, 0, nullptr }); }
 	bool IsBusy() const { return current_op != NONE; }
 	int GetVersion(delegate<bool()> cancel_clbk);
+	bool GetChangelog(string& changelog, delegate<bool()> cancel_clbk);
 	void StartPunchthrough(RakNetGUID* target);
 	void EndPunchthrough();
 	void Report(int id, cstring text);
@@ -62,6 +64,7 @@ private:
 	NatPunchthroughClient* np_client;
 	std::queue<Op> requests;
 	Operation current_op;
-	int timestamp, version, version2;
-	bool np_attached;
+	string changelog;
+	int timestamp, version;
+	bool np_attached, last_request_failed;
 };

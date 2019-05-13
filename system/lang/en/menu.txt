@@ -23,6 +23,7 @@ newVersionDialog = "A new version of CaRpg is available.\nCurrent: %s\nNew: %s"
 checkVersionError = "Error while trying to check CaRpg version."
 download = "Download"
 skip = "Skip"
+changes = "Changes: "
 version = "Version: %s"
 haveErrors = "While loading the game, %u errors and %u warning were found. Check log for details."
 
