@@ -1594,7 +1594,8 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 		}
 	}
 
-	if(u.action == A_NONE || u.action == A_TAKE_WEAPON || u.CanDoWhileUsing())
+	if(u.action == A_NONE || u.action == A_TAKE_WEAPON || u.CanDoWhileUsing() || (u.action == A_ATTACK && u.animation_state == 0)
+		|| (u.action == A_SHOOT && u.animation_state == 0))
 	{
 		if(GKey.KeyPressedReleaseAllowed(GK_TAKE_WEAPON))
 		{
@@ -1699,6 +1700,11 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						break;
 					case WS_TAKEN:
 						// broñ jest wyjêta, zacznij chowaæ
+						if(u.action == A_SHOOT)
+						{
+							bow_instances.push_back(u.bow_instance);
+							u.bow_instance = nullptr;
+						}
 						u.mesh_inst->Play(u.GetTakeWeaponAnimation(weapon == W_ONE_HANDED), PLAY_ONCE | PLAY_BACK | PLAY_PRIO1, 1);
 						u.weapon_hiding = weapon;
 						u.weapon_taken = W_NONE;
@@ -1839,12 +1845,18 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				// broñ wyjêta
 				if(u.weapon_taken == W_BOW)
 				{
+					if(u.action == A_SHOOT)
+					{
+						bow_instances.push_back(u.bow_instance);
+						u.bow_instance = nullptr;
+					}
 					pc->last_weapon = u.weapon_taken = W_ONE_HANDED;
 					u.weapon_hiding = W_BOW;
 					u.weapon_state = WS_HIDING;
 					u.animation_state = 0;
 					u.action = A_TAKE_WEAPON;
 					u.mesh_inst->Play(NAMES::ani_take_bow, PLAY_BACK | PLAY_ONCE | PLAY_PRIO1, 1);
+					u.mesh_inst->groups[1].speed = 1.f;
 
 					if(pc->next_action != NA_NONE)
 					{
@@ -1981,6 +1993,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				if(u.weapon_taken == W_ONE_HANDED)
 				{
 					u.mesh_inst->Play(u.GetTakeWeaponAnimation(true), PLAY_BACK | PLAY_ONCE | PLAY_PRIO1, 1);
+					u.mesh_inst->groups[1].speed = 1.f;
 					pc->last_weapon = u.weapon_taken = W_BOW;
 					u.weapon_hiding = W_ONE_HANDED;
 					u.weapon_state = WS_HIDING;

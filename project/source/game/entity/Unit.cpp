@@ -487,7 +487,7 @@ int Unit::ConsumeItem(int index)
 	assert(slot.item && slot.item->type == IT_CONSUMABLE);
 
 	// jeœli coœ robi to nie mo¿e u¿yæ
-	if(action != A_NONE)
+	if(action != A_NONE && !(animation_state == 0 && Any(action, A_ATTACK, A_SHOOT)))
 	{
 		if(action == A_TAKE_WEAPON && weapon_state == WS_HIDING)
 		{
@@ -704,7 +704,13 @@ void Unit::HideWeapon()
 		}
 		break;
 	case WS_TAKEN:
+		if(action == A_SHOOT)
+		{
+			Game::Get().bow_instances.push_back(bow_instance);
+			bow_instance = nullptr;
+		}
 		mesh_inst->Play(GetTakeWeaponAnimation(weapon_taken == W_ONE_HANDED), PLAY_PRIO1 | PLAY_ONCE | PLAY_BACK, 1);
+		mesh_inst->groups[1].speed = 1.f;
 		weapon_hiding = weapon_taken;
 		weapon_taken = W_NONE;
 		animation_state = 0;

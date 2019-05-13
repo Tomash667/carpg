@@ -53,25 +53,6 @@ struct UnitGroup
 };
 
 //-----------------------------------------------------------------------------
-//struct UnitGroupList
-//{
-//	string id;
-//	vector<WeightPair<UnitGroup*>> groups;
-//	int max_weight;
-//
-//	UnitGroup* GetRandom() { return RandomItemWeight(groups, max_weight); }
-//
-//	static vector<UnitGroupList*> lists;
-//	static UnitGroupList* TryGet(Cstring id);
-//	static UnitGroupList* Get(Cstring id)
-//	{
-//		auto list = TryGet(id);
-//		assert(list);
-//		return list;
-//	}
-//};
-
-//-----------------------------------------------------------------------------
 struct TmpUnitGroup : ObjectPoolProxy<TmpUnitGroup>
 {
 	typedef pair<UnitData*, int> Spawn;
