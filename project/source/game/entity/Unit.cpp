@@ -44,6 +44,7 @@ const float Unit::TALK_SOUND_DIST = 1.f;
 const float Unit::ALERT_SOUND_DIST = 2.f;
 const float Unit::PAIN_SOUND_DIST = 1.f;
 const float Unit::DIE_SOUND_DIST = 1.f;
+const float Unit::YELL_SOUND_DIST = 2.f;
 vector<Unit*> Unit::refid_table;
 vector<pair<Unit**, int>> Unit::refid_request;
 int Unit::netid_counter;
@@ -3823,6 +3824,9 @@ int Unit::GetBuffs() const
 		case EffectId::Stun:
 			b |= BUFF_STUN;
 			break;
+		case EffectId::PoisonResistance:
+			b |= BUFF_POISON_RES;
+			break;
 		}
 	}
 
@@ -5118,10 +5122,10 @@ void Unit::UpdatePhysics(const Vec3& pos)
 }
 
 //=================================================================================================
-SOUND Unit::GetTalkSound() const
+SOUND Unit::GetSound(SOUND_ID sound_id) const
 {
-	if(data->sounds->Have(SOUND_TALK))
-		return data->sounds->Random(SOUND_TALK)->sound;
+	if(data->sounds->Have(sound_id))
+		return data->sounds->Random(sound_id)->sound;
 	return nullptr;
 }
 

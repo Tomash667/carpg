@@ -15,6 +15,7 @@
 #include "World.h"
 #include "ScriptException.h"
 #include "AIController.h"
+#include "SoundManager.h"
 
 //=================================================================================================
 PlayerController::~PlayerController()
@@ -1456,7 +1457,18 @@ int PlayerController::GetTrainCost(int train) const
 //=================================================================================================
 void PlayerController::Yell()
 {
-	unit->Talk(RandomString(Game::Get().txYell));
+	if(SOUND sound = unit->GetSound(SOUND_SEE_ENEMY))
+	{
+		Game::Get().PlayAttachedSound(*unit, sound, Unit::ALERT_SOUND_DIST);
+		if(Net::IsServer())
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::UNIT_SOUND;
+			c.unit = unit;
+			c.id = SOUND_SEE_ENEMY;
+		}
+	}
+	unit->Talk(RandomString(Game::Get().txYell), 0);
 
 	LevelContext& ctx = L.GetContext(*unit);
 	for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)

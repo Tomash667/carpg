@@ -54,6 +54,7 @@ class GameMessages : public Control
 {
 public:
 	void LoadLanguage();
+	void LoadData();
 	void Draw(ControlDrawData* cdd = nullptr) override;
 	void Update(float dt) override;
 	void Reset();
@@ -74,4 +75,6 @@ private:
 		txGmsJournalUpdated, txGmsUsed, txGmsUnitBusy, txGmsGatherTeam, txGmsNotLeader, txGmsNotInCombat, txGmsAddedItem, txGmsGettingOutOfRange,
 		txGmsLeftEvent, txGameSaved, txGainTextAttrib, txGainTextSkill, txGainLearningPoints, txLearnedPerk, txTooComplicated, txAddedCursedStone,
 		txGameLoaded, txGoldPlus, txQuestCompletedGold;
+public:
+	SOUND snd_scribble;
 };

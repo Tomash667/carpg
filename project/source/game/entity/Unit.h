@@ -195,6 +195,7 @@ struct Unit
 	static const float ALERT_SOUND_DIST;
 	static const float PAIN_SOUND_DIST;
 	static const float DIE_SOUND_DIST;
+	static const float YELL_SOUND_DIST;
 	static int netid_counter;
 
 	int netid;
@@ -825,7 +826,7 @@ public:
 	void PlaySound(SOUND snd, float range);
 	void CreatePhysics(bool position = false);
 	void UpdatePhysics(const Vec3& pos);
-	SOUND GetTalkSound() const;
+	SOUND GetSound(SOUND_ID sound_id) const;
 	void SetWeaponState(bool takes_out, WeaponType co);
 	void UpdateInventory(bool notify = true);
 	bool IsEnemy(Unit& u, bool ignore_dont_attack = false) const;

@@ -6,6 +6,7 @@ Wersja 0.11 (2019-??-??):
 + wczytywanie ustawieñ grup jednostek z pliku
 + lepsze sprawdzanie wersji, informacje o zmianach w nowej wersji
 + gracz mo¿e teraz schowaæ broñ w celu anulowania ataku
++ gracz mo¿e obracaæ kamerê le¿¹c na ziemi
 - naprawione pozycjonowanie szkieletów po œmierci tak by nie wpada³y w œciany gdzie nie mo¿na ich ograbiæ [Zielu]
 - naprawiony rzadki crash przy u¿ywaniu alt tab przy uruchamianiu gry
 - brak trawy wystaj¹cej spod ksiê¿ycowej studni
@@ -23,7 +24,7 @@ Wersja 0.10 (2019-05-05):
 + konfigurowalne skróty na przedmioty/akcje
 + lepsze ustalanie priorytetów przez bohaterów kupuj¹cych/prosz¹cych o przedmioty
 + poprawiona aktualizacja ekwipunku
-+ usprawinona obs³uga skrzyni w multiplayer
++ usprawniona obs³uga skrzyni w multiplayer
 + aktualizacja bibliotek: FMod 1.10.12, JSON for Modern C++ 3.6.1
 - naprawiony crash przy akceptowaniu zadañ które generuj¹ now¹ lokalizacjê [Anonymous]
 - naprawiony rzadki crash przy wchodzeniu do niektórych podziemi
@@ -90,7 +91,7 @@ Wersja 0.9 (2019-03-30):
 - naprawione ai biegn¹ce na wroga podczas jedzenia/picia
 - naprawione celowanie przez ai z czarów bardziej na prawo
 - naprawione celowanie przez ai z czarów promieni
-- naprawione zbyt czêst zmienianie przez ³uczników broni pomiêdzy ³ukiem a do walki wrêcz
+- naprawione zbyt czêste zmienianie przez ³uczników broni pomiêdzy ³ukiem a do walki wrêcz
 - naprawione ai szukaj¹ce ju¿ martwego przeciwnika jeœli zosta³ trafiony wolno poruszaj¹cym siê pociskiem po œmierci osoby która go wystrzeli³a
 - naprawione blokowanie siê ai kleryka gdy próbuje kogoœ uleczyæ
 - naprawione u¿ywanie przez ³uczników/magów ataku wrêcz z kilku metrów jeœli coœ blokuje linie strza³u

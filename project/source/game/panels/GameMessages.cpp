@@ -5,6 +5,8 @@
 #include "Language.h"
 #include "PlayerInfo.h"
 #include "SaveState.h"
+#include "SoundManager.h"
+#include "ResourceManager.h"
 
 //=================================================================================================
 void GameMessages::LoadLanguage()
@@ -38,6 +40,13 @@ void GameMessages::LoadLanguage()
 	txGameLoaded = Str("gameLoaded");
 	txGoldPlus = Str("goldPlus");
 	txQuestCompletedGold = Str("questCompletedGold");
+}
+
+//=================================================================================================
+void GameMessages::LoadData()
+{
+	if(!Game::Get().sound_mgr->IsSoundDisabled())
+		ResourceManager::Get<Sound>().AddLoadTask("scribble.mp3", snd_scribble);
 }
 
 //=================================================================================================
@@ -222,10 +231,12 @@ void GameMessages::AddGameMsg3(GMS id)
 	case GMS_ADDED_RUMOR:
 		repeat = true;
 		text = txGmsRumor;
+		Game::Get().sound_mgr->PlaySound2d(snd_scribble);
 		break;
 	case GMS_JOURNAL_UPDATED:
 		repeat = true;
 		text = txGmsJournalUpdated;
+		Game::Get().sound_mgr->PlaySound2d(snd_scribble);
 		break;
 	case GMS_USED:
 		text = txGmsUsed;

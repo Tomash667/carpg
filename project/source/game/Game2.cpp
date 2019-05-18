@@ -843,7 +843,13 @@ void Game::UpdateGame(float dt)
 				if(L.camera.real_rot.y < c_cam_angle_min)
 					L.camera.real_rot.y = c_cam_angle_min;
 
-				if(!L.camera.free_rot)
+				if(!pc->unit->IsStanding())
+				{
+					L.camera.real_rot.x = Clip(L.camera.real_rot.x + float(Key.GetMouseDif().x) * settings.mouse_sensitivity_f / 400);
+					L.camera.free_rot = true;
+					L.camera.free_rot_key = VK_NONE;
+				}
+				else if(!L.camera.free_rot)
 				{
 					L.camera.free_rot_key = GKey.KeyDoReturn(GK_ROTATE_CAMERA, &KeyStates::Pressed);
 					if(L.camera.free_rot_key != VK_NONE)
@@ -854,7 +860,7 @@ void Game::UpdateGame(float dt)
 				}
 				else
 				{
-					if(GKey.KeyUpAllowed(L.camera.free_rot_key))
+					if(L.camera.free_rot_key == VK_NONE || GKey.KeyUpAllowed(L.camera.free_rot_key))
 						L.camera.free_rot = false;
 					else
 						L.camera.real_rot.x = Clip(L.camera.real_rot.x + float(Key.GetMouseDif().x) * settings.mouse_sensitivity_f / 400);
@@ -3994,8 +4000,9 @@ void Game::GiveDmg(LevelContext& ctx, Unit* giver, float dmg, Unit& taker, const
 			if(Net::IsOnline())
 			{
 				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::HURT_SOUND;
+				c.type = NetChange::UNIT_SOUND;
 				c.unit = &taker;
+				c.id = SOUND_PAIN;
 			}
 		}
 

@@ -1997,9 +1997,11 @@ consumable p_antidote {
 	value 50
 	mesh "antidotum.qmsh"
 	type potion
+	time 30
 	flags ground_mesh
 	effects {
 		antidote 0
+		poison_resistance 0.5
 	}
 }
 

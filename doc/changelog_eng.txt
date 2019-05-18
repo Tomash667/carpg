@@ -6,6 +6,7 @@ Version 0.11 (2019-??-??):
 + loading unit group settings from file
 + better version checking, new version popup shows changelog
 + player can now cancel attack by hiding weapon
++ player can rotate camera when lying on ground
 - fixed skeleton corpse animation moving it thru wall making it not lootable [Zielu]
 - fixed rare crash when alt tabbing at startup
 - fixed grass under moon well

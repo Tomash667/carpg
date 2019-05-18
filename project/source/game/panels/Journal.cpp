@@ -12,6 +12,7 @@
 #include "World.h"
 #include "GlobalGui.h"
 #include "GameMessages.h"
+#include "SoundManager.h"
 
 //=================================================================================================
 Journal::Journal() : mode(Quests), game(Game::Get())
@@ -36,7 +37,7 @@ void Journal::LoadLanguage()
 }
 
 //=================================================================================================
-void Journal::Draw(ControlDrawData* /*cdd*/)
+void Journal::Draw(ControlDrawData*)
 {
 	Rect r = { global_pos.x, global_pos.y, global_pos.x + size.x, global_pos.y + size.y };
 	GUI.DrawSpriteRect(tBook, r);
@@ -505,6 +506,7 @@ void Journal::OnAddNote(int id)
 	if(id == BUTTON_OK)
 	{
 		notes.push_back(Format(txAddTime, W.GetDate(), input.c_str()));
+		game.sound_mgr->PlaySound2d(game.gui->messages->snd_scribble);
 		Build();
 		if(!Net::IsLocal())
 			Net::PushChange(NetChange::ADD_NOTE);

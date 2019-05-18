@@ -3307,14 +3307,11 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 			f.WriteCasted<byte>(c.id);
 			f << c.pos;
 			break;
-		case NetChange::HURT_SOUND:
 		case NetChange::DIE:
 		case NetChange::FALL:
 		case NetChange::DROP_ITEM:
 		case NetChange::STUNNED:
-		case NetChange::HELLO:
 		case NetChange::STAND_UP:
-		case NetChange::SHOUT:
 		case NetChange::CREATE_DRAIN:
 		case NetChange::HERO_LEAVE:
 		case NetChange::REMOVE_USED_ITEM:
@@ -3330,6 +3327,7 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 			if(c.id == 1)
 				f << c.unit->hero->name;
 			break;
+		case NetChange::UNIT_SOUND:
 		case NetChange::CAST_SPELL:
 			f << c.unit->netid;
 			f.WriteCasted<byte>(c.id);
@@ -4358,20 +4356,44 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				}
 			}
 			break;
-		// play unit hurt sound
-		case NetChange::HURT_SOUND:
+		// play unit sound
+		case NetChange::UNIT_SOUND:
 			{
 				int netid;
+				SOUND_ID sound_id;
 				f >> netid;
+				f.ReadCasted<byte>(sound_id);
 				if(!f)
-					Error("Update client: Broken HURT_SOUND.");
+					Error("Update client: Broken UNIT_SOUND.");
 				else if(game_state == GS_LEVEL)
 				{
 					Unit* unit = L.FindUnit(netid);
 					if(!unit)
-						Error("Update client: HURT_SOUND, missing unit %d.", netid);
-					else if(unit->data->sounds->Have(SOUND_PAIN))
-						PlayAttachedSound(*unit, unit->data->sounds->Random(SOUND_PAIN)->sound, Unit::PAIN_SOUND_DIST);
+						Error("Update client: UNIT_SOUND, missing unit %d.", netid);
+					else if(SOUND sound = unit->GetSound(sound_id))
+					{
+						float dist;
+						switch(sound_id)
+						{
+						default:
+						case SOUND_SEE_ENEMY:
+							dist = Unit::ALERT_SOUND_DIST;
+							break;
+						case SOUND_PAIN:
+							dist = Unit::PAIN_SOUND_DIST;
+							break;
+						case SOUND_DEATH:
+							dist = Unit::DIE_SOUND_DIST;
+							break;
+						case SOUND_ATTACK:
+							dist = Unit::ATTACK_SOUND_DIST;
+							break;
+						case SOUND_TALK:
+							dist = Unit::TALK_SOUND_DIST;
+							break;
+						}
+						PlayAttachedSound(*unit, sound, dist);
+					}
 				}
 			}
 			break;
@@ -4705,27 +4727,6 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 						unit->mesh_inst->groups[0].speed = 1.f;
 						unit->mesh_inst->frame_end_info = false;
 						unit->animation = ANI_IDLE;
-					}
-				}
-			}
-			break;
-		// play unit hello sound
-		case NetChange::HELLO:
-			{
-				int netid;
-				f >> netid;
-				if(!f)
-					Error("Update client: Broken HELLO.");
-				else if(game_state == GS_LEVEL)
-				{
-					Unit* unit = L.FindUnit(netid);
-					if(!unit)
-						Error("Update client: BROKEN, missing unit %d.", netid);
-					else
-					{
-						SOUND snd = unit->GetTalkSound();
-						if(snd)
-							PlayAttachedSound(*unit, snd, Unit::TALK_SOUND_DIST);
 					}
 				}
 			}
@@ -5400,23 +5401,6 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					else
 						snd = sArenaLost;
 					sound_mgr->PlaySound2d(snd);
-				}
-			}
-			break;
-		// unit shout after seeing enemy
-		case NetChange::SHOUT:
-			{
-				int netid;
-				f >> netid;
-				if(!f)
-					Error("Update client: Broken SHOUT.");
-				else if(game_state == GS_LEVEL)
-				{
-					Unit* unit = L.FindUnit(netid);
-					if(!unit)
-						Error("Update client: SHOUT, missing unit %d.", netid);
-					else if(unit->data->sounds->Have(SOUND_SEE_ENEMY))
-						PlayAttachedSound(*unit, unit->data->sounds->Random(SOUND_SEE_ENEMY)->sound, Unit::ALERT_SOUND_DIST);
 				}
 			}
 			break;

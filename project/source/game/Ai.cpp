@@ -2992,8 +2992,9 @@ void Game::AI_Shout(LevelContext& ctx, AIController& ai)
 	if(Net::IsOnline())
 	{
 		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::SHOUT;
+		c.type = NetChange::UNIT_SOUND;
 		c.unit = &unit;
+		c.id = SOUND_SEE_ENEMY;
 	}
 
 	// alarm near allies
@@ -3100,8 +3101,9 @@ void Game::AI_HitReaction(Unit& unit, const Vec3& pos)
 	if(Net::IsOnline())
 	{
 		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::SHOUT;
+		c.type = NetChange::UNIT_SOUND;
 		c.unit = &unit;
+		c.id = SOUND_SEE_ENEMY;
 	}
 
 	// alarm near allies

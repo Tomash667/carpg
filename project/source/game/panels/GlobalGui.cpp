@@ -256,6 +256,7 @@ void GlobalGui::LoadData()
 	inventory->LoadData();
 	journal->LoadData();
 	main_menu->LoadData();
+	messages->LoadData();
 	minimap->LoadData();
 	pick_server->LoadData();
 	server->LoadData();

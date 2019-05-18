@@ -12,8 +12,9 @@ enum BUFF_FLAGS
 	BUFF_ANTIMAGIC = 1 << 5,
 	BUFF_STAMINA = 1 << 6,
 	BUFF_STUN = 1 << 7,
+	BUFF_POISON_RES = 1 << 8,
 
-	BUFF_COUNT = 8
+	BUFF_COUNT = 9
 };
 
 //-----------------------------------------------------------------------------
