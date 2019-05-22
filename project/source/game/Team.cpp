@@ -65,7 +65,7 @@ void TeamSingleton::AddTeamMember(Unit* unit, bool free)
 	// set as team member
 	unit->hero->team_member = true;
 	unit->hero->free = free;
-	unit->SetOrder(ORDER_FOLLOW);
+	unit->OrderFollow(DialogContext::current ? DialogContext::current->pc->unit : leader);
 
 	// add to team list
 	if(!free)
@@ -102,7 +102,7 @@ void TeamSingleton::RemoveTeamMember(Unit* unit)
 
 	// set as not team member
 	unit->hero->team_member = false;
-	unit->order = ORDER_NONE;
+	unit->OrderClear();
 
 	// remove from team list
 	if(!unit->hero->free)

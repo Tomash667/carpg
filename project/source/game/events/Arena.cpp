@@ -332,11 +332,10 @@ void Arena::StartArenaCombat(int level)
 			c.type = NetChange::CHANGE_ARENA_STATE;
 			c.unit = unit;
 		}
-		else if(unit->IsHero() && unit->CanFollow())
+		else if(unit->IsHero() && unit->CanFollowWarp())
 		{
 			unit->frozen = FROZEN::YES;
 			unit->in_arena = 0;
-			unit->hero->following = ctx.pc->unit;
 			units.push_back(unit);
 
 			if(Net::IsOnline())
@@ -467,9 +466,7 @@ void Arena::StartPvp(PlayerController* player, Unit* unit)
 	units.push_back(player->unit);
 	unit->frozen = FROZEN::YES;
 	units.push_back(unit);
-	if(unit->IsHero())
-		unit->hero->following = player->unit;
-	else if(unit->IsPlayer())
+	if(unit->IsPlayer())
 	{
 		unit->player->arena_fights++;
 		unit->player->stat_flags |= STAT_ARENA_FIGHTS;
@@ -672,7 +669,7 @@ void Arena::Update(float dt)
 			timer = 0.f;
 		}
 	}
-	else
+	else if(state == WAITING_TO_EXIT)
 	{
 		timer += dt * 2;
 		if(timer >= 1.f)
@@ -777,7 +774,8 @@ void Arena::Update(float dt)
 				if(mode == PVP && fighter && fighter->IsHero())
 				{
 					fighter->hero->lost_pvp = (result == 0);
-					pvp_player->StartDialog(fighter, GameDialog::TryGet(IS_SET(fighter->data->flags, F_CRAZY) ? "crazy_pvp" : "hero_pvp"));
+					state = WAITING_TO_EXIT_TALK;
+					timer = 0.f;
 				}
 			}
 
@@ -788,6 +786,19 @@ void Arena::Update(float dt)
 			}
 			else
 				QM.quest_tournament->FinishCombat();
+			if(state != WAITING_TO_EXIT_TALK)
+			{
+				mode = NONE;
+				free = true;
+			}
+		}
+	}
+	else
+	{
+		timer += dt;
+		if(timer >= 0.5f)
+		{
+			pvp_player->StartDialog(fighter, GameDialog::TryGet(IS_SET(fighter->data->flags, F_CRAZY) ? "crazy_pvp" : "hero_pvp"));
 			mode = NONE;
 			free = true;
 		}

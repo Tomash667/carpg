@@ -973,34 +973,31 @@ dialog hero
 				}
 			}
 		}
-		if script "pc.IsLeader()"
+		if script "Level::IsSettlement() && target.order != ORDER_WANDER"
 		{
-			if script "Level::IsSettlement() && target.order != ORDER_WANDER"
+			choice 6
 			{
-				choice 6
-				{
-					script "target.order = ORDER_WANDER"
-					talk 7
-					end
-				}
+				script "target.order = ORDER_WANDER"
+				talk 7
+				end
 			}
-			if script "target.order != ORDER_FOLLOW"
+		}
+		if script "!target.IsFollowing(pc.unit)"
+		{
+			choice 8
 			{
-				choice 8
-				{
-					script "target.order = ORDER_FOLLOW"
-					talk 9
-					end
-				}
+				script "target.OrderFollow(pc.unit)"
+				talk 9
+				end
 			}
-			if script "target.order != ORDER_WAIT"
+		}
+		if script "target.order != ORDER_WAIT"
+		{
+			choice 10
 			{
-				choice 10
-				{
-					script "target.order = ORDER_WAIT"
-					talk 11
-					end
-				}
+				script "target.order = ORDER_WAIT"
+				talk 11
+				end
 			}
 		}
 		choice 12
@@ -1015,52 +1012,49 @@ dialog hero
 			special "share_items"
 			end
 		}
-		if script "pc.IsLeader()"
+		if special "is_not_mage"
 		{
-			if special "is_not_mage"
+			if special "prefer_melee"
 			{
-				if special "prefer_melee"
+				choice 16
 				{
-					choice 16
-					{
-						special "go_ranged"
-						talk 17
-						restart
-					}
-				}
-				else
-				{
-					choice 18
-					{
-						special "go_melee"
-						talk 19
-						restart
-					}
-				}
-			}
-			choice 20
-			{
-				if script "Level::IsSafe()"
-				{
-					talk 21
-					choice 22
-					{
-						special "kick_npc"
-						talk 23
-						end
-					}
-					escape choice 24
-					{
-						talk 25
-						restart
-					}
-					show_choices
-				}
-				else
-				{
-					talk 26
+					special "go_ranged"
+					talk 17
 					restart
 				}
+			}
+			else
+			{
+				choice 18
+				{
+					special "go_melee"
+					talk 19
+					restart
+				}
+			}
+		}
+		choice 20
+		{
+			if script "Level::IsSafe()"
+			{
+				talk 21
+				choice 22
+				{
+					special "kick_npc"
+					talk 23
+					end
+				}
+				escape choice 24
+				{
+					talk 25
+					restart
+				}
+				show_choices
+			}
+			else
+			{
+				talk 26
+				restart
 			}
 		}
 		escape choice 27
@@ -1228,34 +1222,31 @@ dialog crazy
 				}
 			}
 		}
-		if script "pc.IsLeader()"
+		if script "Level::IsSettlement() && target.order != ORDER_WANDER"
 		{
-			if script "Level::IsSettlement() && target.order != ORDER_WANDER"
+			choice 6
 			{
-				choice 6
-				{
-					script "target.order = ORDER_WANDER"
-					talk 7
-					end
-				}
+				script "target.order = ORDER_WANDER"
+				talk 7
+				end
 			}
-			if script "target.order != ORDER_FOLLOW"
+		}
+		if script "!target.IsFollowing(pc.unit)"
+		{
+			choice 8
 			{
-				choice 8
-				{
-					script "target.order = ORDER_FOLLOW"
-					talk 9
-					end
-				}
+				script "target.OrderFollow(pc.unit)"
+				talk 9
+				end
 			}
-			if script "target.order != ORDER_WAIT"
+		}
+		if script "target.order != ORDER_WAIT"
+		{
+			choice 10
 			{
-				choice 10
-				{
-					script "target.order = ORDER_WAIT"
-					talk 11
-					end
-				}
+				script "target.order = ORDER_WAIT"
+				talk 11
+				end
 			}
 		}
 		choice 12
@@ -1270,58 +1261,55 @@ dialog crazy
 			special "share_items"
 			end
 		}
-		if script "pc.IsLeader()"
+		if special "is_not_mage"
 		{
-			if special "is_not_mage"
+			if special "prefer_melee"
 			{
-				if special "prefer_melee"
+				choice 16
 				{
-					choice 16
-					{
-						special "go_ranged"
-						talk 17
-						restart
-					}
-				}
-				else
-				{
-					choice 18
-					{
-						special "go_melee"
-						talk 19
-						restart
-					}
-				}
-			}
-			choice 20
-			{
-				if script "Level::IsSafe()"
-				{
-					talk 21
-					choice 22
-					{
-						special "kick_npc"
-						if rand 3
-						{
-							talk 23
-							script "target.OrderAttack()"
-							end
-						}
-						talk 24
-						end
-					}
-					escape choice 25
-					{
-						talk 26
-						restart
-					}
-					show_choices
-				}
-				else
-				{
-					talk 27
+					special "go_ranged"
+					talk 17
 					restart
 				}
+			}
+			else
+			{
+				choice 18
+				{
+					special "go_melee"
+					talk 19
+					restart
+				}
+			}
+		}
+		choice 20
+		{
+			if script "Level::IsSafe()"
+			{
+				talk 21
+				choice 22
+				{
+					special "kick_npc"
+					if rand 3
+					{
+						talk 23
+						script "target.OrderAttack()"
+						end
+					}
+					talk 24
+					end
+				}
+				escape choice 25
+				{
+					talk 26
+					restart
+				}
+				show_choices
+			}
+			else
+			{
+				talk 27
+				restart
 			}
 		}
 		escape choice 28
@@ -1603,11 +1591,11 @@ dialog captive
 	if script "target.IsTeamMember()"
 	{
 		talk 0
-		if script "target.order != ORDER_FOLLOW"
+		if script "!target.IsFollowing(pc.unit)"
 		{
 			choice 1
 			{
-				script "target.order = ORDER_FOLLOW"
+				script "target.OrderFollow(pc.unit)"
 				talk 2
 				end
 			}

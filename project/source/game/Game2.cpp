@@ -2790,6 +2790,7 @@ void Game::UseAction(PlayerController* p, bool from_server, const Vec3* pos)
 				if(unit->in_arena != -1)
 					arena->units.push_back(unit);
 				Team.AddTeamMember(unit, true);
+				unit->order_unit = p->unit;
 				SpawnUnitEffect(*unit);
 			}
 		}
@@ -7929,7 +7930,8 @@ void Game::LeaveLevel(LevelContext& ctx, bool clear)
 						unit.hp = 1.f;
 						unit.live_state = Unit::ALIVE;
 					}
-					unit.SetOrder(ORDER_FOLLOW);
+					if(unit.order != ORDER_FOLLOW)
+						unit.OrderFollow(Team.GetLeader());
 					unit.talking = false;
 					unit.mesh_inst->need_update = true;
 					unit.ai->Reset();
@@ -9339,7 +9341,7 @@ void Game::UpdateGame2(float dt)
 							if(QM.quest_evil->timer <= 0.f)
 							{
 								loc.state = Quest_Evil::Loc::State::PortalClosed;
-								u->SetOrder(ORDER_FOLLOW);
+								u->OrderFollow(Team.GetLeader());
 								u->ai->idle_action = AIController::Idle_None;
 								QM.quest_evil->OnUpdate(Format(txPortalClosed, L.location->name.c_str()));
 								u->StartAutoTalk();
@@ -9356,7 +9358,7 @@ void Game::UpdateGame2(float dt)
 							QM.quest_evil->timer = 1.5f;
 					}
 					else if(u->order != ORDER_FOLLOW)
-						u->SetOrder(ORDER_FOLLOW);
+						u->OrderFollow(Team.GetLeader());
 				}
 			}
 		}

@@ -326,6 +326,8 @@ UnitGroup* old::OldToNew(SPAWN_GROUP spawn)
 	cstring id;
 	switch(spawn)
 	{
+	case SG_NONE:
+		return UnitGroup::empty;
 	default:
 	case SG_GOBLINS:
 		id = "goblins";
@@ -354,8 +356,6 @@ UnitGroup* old::OldToNew(SPAWN_GROUP spawn)
 	case SG_EVIL:
 		id = "evil";
 		break;
-	case SG_NONE:
-		return nullptr;
 	case SG_UNKNOWN:
 		id = "unk";
 		break;

@@ -6,7 +6,6 @@
 //-----------------------------------------------------------------------------
 struct HeroData : public HeroPlayerCommon
 {
-	Unit* following; // pod¹¿a za t¹ postaci¹ w czasie warpowania, nieu¿ywane?
 	int expe;
 	float phase_timer;
 	bool know_name, team_member, lost_pvp, melee, phase,

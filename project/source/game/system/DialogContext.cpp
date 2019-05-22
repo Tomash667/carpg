@@ -123,7 +123,6 @@ void DialogContext::StartNextDialog(GameDialog* new_dialog, Quest* quest)
 void DialogContext::Update(float dt)
 {
 	Game& game = Game::Get();
-	current = this;
 
 	// wyœwietlono opcje dialogowe, wybierz jedn¹ z nich (w mp czekaj na wybór)
 	if(show_choices)
@@ -239,7 +238,9 @@ void DialogContext::Update(float dt)
 	ScriptContext& ctx = SM.GetContext();
 	ctx.pc = pc;
 	ctx.target = talker;
+	current = this;
 	UpdateLoop();
+	current = nullptr;
 	ctx.pc = nullptr;
 	ctx.target = nullptr;
 }

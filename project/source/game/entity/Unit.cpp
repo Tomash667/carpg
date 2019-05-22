@@ -1766,6 +1766,9 @@ void Unit::Save(GameWriter& f, bool local)
 	f << order_timer;
 	switch(order)
 	{
+	case ORDER_FOLLOW:
+		f << order_unit->refid;
+		break;
 	case ORDER_LOOK_AT:
 		f << order_pos;
 		break;
@@ -2220,6 +2223,12 @@ void Unit::Load(GameReader& f, bool local)
 		f >> order_timer;
 		switch(order)
 		{
+		case ORDER_FOLLOW:
+			if(LOAD_VERSION >= V_DEV)
+				AddRequest(&order_unit, f.Read<int>());
+			else
+				Unit::AddRequest(&order_unit, Unit::REFID_LEADER);
+			break;
 		case ORDER_LOOK_AT:
 			f >> order_pos;
 			break;
@@ -2231,7 +2240,7 @@ void Unit::Load(GameReader& f, bool local)
 			f >> order_pos;
 			break;
 		case ORDER_ESCAPE_TO_UNIT:
-			order_unit = Unit::GetByRefid(f.Read<int>());
+			AddRequest(&order_unit, f.Read<int>());
 			f >> order_pos;
 			break;
 		}
@@ -5554,10 +5563,20 @@ void Unit::OrderAttack()
 void Unit::OrderClear()
 {
 	if(hero && hero->team_member)
+	{
 		order = ORDER_FOLLOW;
+		order_unit = Team.GetLeader();
+	}
 	else
 		order = ORDER_NONE;
 	order_timer = 0.f;
+}
+
+//=================================================================================================
+void Unit::OrderFollow(Unit* target)
+{
+	SetOrder(ORDER_FOLLOW);
+	order_unit = target;
 }
 
 //=================================================================================================

@@ -7,9 +7,12 @@ Version 0.11 (2019-??-??):
 + better version checking, new version popup shows changelog
 + player can now cancel attack by hiding weapon
 + player can rotate camera when lying on ground
++ summoned wolf follow owner, heroes follow player that asked for it
 - fixed skeleton corpse animation moving it thru wall making it not lootable [Zielu]
 - fixed rare crash when alt tabbing at startup
 - fixed grass under moon well
+- after player fights at arena with npc ally, npc will warp with player when entering/exiting buildings, this could crash game when npc was outside building and player exit building
+- fixed dialog after pvp with hero
 
 --------------------------------------------------------------------------------
 Version 0.10 (2019-05-05):

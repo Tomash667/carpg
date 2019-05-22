@@ -507,26 +507,12 @@ public:
 		else
 			return 0.75f * float(b.req_str - str) / (b.req_str / 2);
 	}
-	bool IsHero() const
-	{
-		return hero != nullptr;
-	}
-	bool IsFollower() const
-	{
-		return hero && hero->team_member;
-	}
-	bool IsFollowingTeamMember() const
-	{
-		return IsFollower() && order == ORDER_FOLLOW;
-	}
-	Class GetClass() const
-	{
-		return data->clas;
-	}
-	bool CanFollow() const
-	{
-		return IsHero() && order == ORDER_FOLLOW && in_arena == -1 && frozen == FROZEN::NO;
-	}
+	bool IsHero() const { return hero != nullptr; }
+	bool IsFollower() const { return hero && hero->team_member; }
+	bool IsFollowing(Unit* u) const { return order == ORDER_FOLLOW && order_unit == u; }
+	bool IsFollowingTeamMember() const { return IsFollower() && order == ORDER_FOLLOW; }
+	Class GetClass() const { return data->clas; }
+	bool CanFollowWarp() const { return IsHero() && order == ORDER_FOLLOW && in_arena == -1 && frozen == FROZEN::NO; }
 	bool IsTeamMember() const
 	{
 		if(IsPlayer())
@@ -847,6 +833,7 @@ public:
 	void SetOrder(UnitOrder order);
 	void OrderAttack();
 	void OrderClear();
+	void OrderFollow(Unit* target);
 	void OrderMove(const Vec3& pos, MoveType move_type);
 	void OrderLookAt(const Vec3& pos);
 	void OrderTimer(float time) { order_timer = time; }
@@ -856,6 +843,9 @@ public:
 	//-----------------------------------------------------------------------------
 	static vector<Unit*> refid_table;
 	static vector<pair<Unit**, int>> refid_request;
+
+	// special value for AddRequest to get team leader
+	static const int REFID_LEADER = -2;
 
 	static Unit* GetByRefid(int _refid)
 	{

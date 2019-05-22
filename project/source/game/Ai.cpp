@@ -470,8 +470,12 @@ void Game::UpdateAi(float dt)
 					}
 
 					UnitOrder order = u.order;
+					Unit* order_unit = u.order_unit;
 					if(u.assist)
+					{
 						order = ORDER_FOLLOW;
+						order_unit = Team.GetLeader();
+					}
 					if(ai.goto_inn)
 						order = ORDER_GOTO_INN;
 
@@ -479,13 +483,12 @@ void Game::UpdateAi(float dt)
 					switch(order)
 					{
 					case ORDER_FOLLOW:
-						if(Team.leader->in_arena == -1 && u.busy != Unit::Busy_Tournament)
+						if(order_unit->in_arena == -1 && u.busy != Unit::Busy_Tournament)
 						{
-							Unit* leader = Team.GetLeader();
-							dist = Vec3::Distance(u.pos, leader->pos);
+							dist = Vec3::Distance(u.pos, order_unit->pos);
 							if(dist >= (u.assist ? 4.f : 2.f))
 							{
-								// follow the leader
+								// follow the target
 								if(u.usable)
 								{
 									if(u.busy != Unit::Busy_Talking && (u.action != A_ANIMATION2 || u.animation_state != AS_ANIMATION2_MOVE_TO_ENDPOINT))
@@ -496,21 +499,21 @@ void Game::UpdateAi(float dt)
 										ai.city_wander = false;
 									}
 								}
-								else if(leader->in_building != u.in_building)
+								else if(order_unit->in_building != u.in_building)
 								{
-									// leader is in another area
+									// target is in another area
 									ai.idle_action = AIController::Idle_RunRegion;
 									ai.timer = Random(15.f, 30.f);
 
 									if(u.in_building == -1)
 									{
-										// leader is in the building but hero is not - go to the entrance
-										ai.idle_data.area.id = leader->in_building;
-										ai.idle_data.area.pos = L.city_ctx->inside_buildings[leader->in_building]->enter_area.Midpoint().XZ();
+										// target is in the building but hero is not - go to the entrance
+										ai.idle_data.area.id = order_unit->in_building;
+										ai.idle_data.area.pos = L.city_ctx->inside_buildings[order_unit->in_building]->enter_area.Midpoint().XZ();
 									}
 									else
 									{
-										// leader is not in the building but the hero is - leave the building
+										// target is not in the building but the hero is - leave the building
 										ai.idle_data.area.id = -1;
 										ai.idle_data.area.pos = L.city_ctx->inside_buildings[u.in_building]->exit_area.Midpoint().XZ();
 									}
@@ -520,21 +523,21 @@ void Game::UpdateAi(float dt)
 								}
 								else
 								{
-									// move to leader
+									// move to target
 									if(dist > 8.f)
 										look_at = LookAtWalk;
 									else
 									{
 										look_at = LookAtPoint;
-										look_pos = leader->pos;
+										look_pos = order_unit->pos;
 									}
 									move_type = MovePoint;
-									target_pos = leader->pos;
+									target_pos = order_unit->pos;
 									run_type = WalkIfNear2;
 									ai.idle_action = AIController::Idle_None;
 									ai.city_wander = false;
 									ai.timer = Random(2.f, 5.f);
-									path_unit_ignore = leader;
+									path_unit_ignore = order_unit;
 									if(u.IsHero())
 										try_phase = true;
 									use_idle = false;

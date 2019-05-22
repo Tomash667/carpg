@@ -25,7 +25,6 @@ void HeroData::Init(Unit& _unit)
 	know_name = false;
 	team_member = false;
 	unit = &_unit;
-	following = nullptr;
 	credit = 0;
 	on_credit = false;
 	lost_pvp = false;
@@ -48,7 +47,6 @@ void HeroData::Save(FileWriter& f)
 	f << name;
 	f << know_name;
 	f << team_member;
-	f << (following ? following->refid : -1);
 	f << credit;
 	f << expe;
 	f << melee;
@@ -71,24 +69,29 @@ void HeroData::Load(FileReader& f)
 	{
 		old::Mode mode;
 		f >> mode;
-		switch(mode)
+		if(team_member)
 		{
-		case old::Wander:
-			unit->order = ORDER_WANDER;
-			break;
-		case old::Wait:
-			unit->order = ORDER_WAIT;
-			break;
-		case old::Follow:
-			unit->order = ORDER_FOLLOW;
-			break;
-		case old::Leave:
-			unit->order = ORDER_LEAVE;
-			break;
+			switch(mode)
+			{
+			case old::Wander:
+				unit->order = ORDER_WANDER;
+				break;
+			case old::Wait:
+				unit->order = ORDER_WAIT;
+				break;
+			case old::Follow:
+				unit->order = ORDER_FOLLOW;
+				Unit::AddRequest(&unit->order_unit, Unit::REFID_LEADER);
+				break;
+			case old::Leave:
+				unit->order = ORDER_LEAVE;
+				break;
+			}
+			unit->order_timer = 0.f;
 		}
-		unit->order_timer = 0.f;
 	}
-	following = Unit::GetByRefid(f.Read<int>());
+	if(LOAD_VERSION < V_DEV)
+		f.Skip<int>(); // old following
 	f >> credit;
 	f >> expe;
 	f >> melee;

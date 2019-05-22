@@ -7858,12 +7858,6 @@ void Game::UpdateWarpData(float dt)
 		{
 			L.WarpUnit(it->u, it->where);
 
-			for(Unit* unit : Team.members)
-			{
-				if(unit->IsHero() && unit->hero->following == it->u)
-					L.WarpUnit(unit, it->where);
-			}
-
 			NetChangePlayer& c = Add1(it->u->player->player_info->changes);
 			c.type = NetChangePlayer::SET_FROZEN;
 			c.id = 0;

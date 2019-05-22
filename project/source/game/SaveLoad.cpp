@@ -775,8 +775,10 @@ void Game::LoadGame(GameReader& f)
 	// set entities pointers
 	LoadingStep(txLoadingData);
 	for(vector<pair<Unit**, int>>::iterator it = Unit::refid_request.begin(), end = Unit::refid_request.end(); it != end; ++it)
-		*(it->first) = Unit::refid_table[it->second];
-	Unit::refid_request.clear();
+	{
+		if(it->second != Unit::REFID_LEADER)
+			*(it->first) = Unit::refid_table[it->second];
+	}
 	for(vector<UsableRequest>::iterator it = Usable::refid_request.begin(), end = Usable::refid_request.end(); it != end; ++it)
 	{
 		Usable* u = Usable::refid_table[it->refid];
@@ -867,6 +869,12 @@ void Game::LoadGame(GameReader& f)
 
 	// wczytaj dru¿ynê
 	Team.Load(f);
+	for(vector<pair<Unit**, int>>::iterator it = Unit::refid_request.begin(), end = Unit::refid_request.end(); it != end; ++it)
+	{
+		if(it->second == Unit::REFID_LEADER)
+			*(it->first) = Team.GetLeader();
+	}
+	Unit::refid_request.clear();
 
 	// load quests
 	LoadingStep(txLoadingQuests);
