@@ -34,14 +34,14 @@ ActionPanel::ActionPanel()
 //=================================================================================================
 void ActionPanel::LoadLanguage()
 {
-	Language::LanguageSection s = Language::GetSection("ActionPanel");
+	Language::Section s = Language::GetSection("ActionPanel");
 	txActions = s.Get("actions");
 	txCooldown = s.Get("cooldown");
 	txCooldownCharges = s.Get("cooldownCharges");
 	txAbilities = s.Get("abilities");
 	txOther = s.Get("other");
 
-	Language::LanguageSection s2 = Language::GetSection("GameGui");
+	Language::Section s2 = Language::GetSection("GameGui");
 	txMeleeWeapon = s2.Get("meleeWeapon");
 	txRangedWeapon = s2.Get("rangedWeapon");
 	txPotion = s2.Get("potion");

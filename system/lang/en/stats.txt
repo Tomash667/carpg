@@ -1,10 +1,4 @@
-// weapon types
-wt_shortBlade = "Short blade"
-wt_longBlade = "Long blade"
-wt_blunt = "Blunt"
-wt_axe = "Axe"
-
-// buffs
+[Buffs]
 buff_poison = "Poisoned"
 buff_alcohol = "Alcohol"
 buff_regeneration = "Regeneration"
@@ -14,3 +8,370 @@ buff_antimagic = "Antimagic"
 buff_stamina = "Restoring stamina"
 buff_stun = "Stunned"
 buff_poison_res = "Poison resistance"
+
+[Directions]
+dirN = "north"
+dirS = "south"
+dirE = "east"
+dirW = "west"
+dirNE = "north east"
+dirNW = "north west"
+dirSE = "south east"
+dirSW = "south west"
+
+[Encounters]
+encCrazyMage = "You encountered some mage on road. He seems to have a few screws loose..."
+encCrazyHeroes = "You come across some not quite normal \"heroes\"."
+encCrazyCook = "A cook stopped you in middle of travel."
+encMerchant = "You met a traveling merchant."
+encHeroes = "You have stumbled on a bunch of heroes tending in the opposite direction."
+encSingleHero = "You have stumbled on a single hero tending in the opposite direction."
+encBanditsAttackTravelers = "You noticed some travelers not far away riding on wagon.\nSuddenly, a group of bandits jumped out of the bushes and attacked the travelers."
+encHeroesAttack = "In the distance you have noticed a group of heroes fighting with some enemies."
+encGolem = "While traveling the road you encounter a rock golem!"
+encCrazy = "A madman jumps out of a bush..."
+encUnk = "You feel that someone or something is watching you, you hear a sound behind your back!"
+encEnemiesCombat = "In the distance you noticed two groups of enemies fighting with each other."
+
+[Locations]
+camp = "Camp"
+cave = "Cave"
+city = "City"
+crypt = "Crypt"
+dungeon = "Dungeon"
+forest = "Forest"
+village = "Village"
+moonwell = "Moonwell"
+otherness = "Otherness"
+randomEncounter = "Random encounter"
+tower = "Tower"
+labyrinth = "Labyrinth"
+
+[WeaponTypes]
+shortBlade = "Short blade"
+longBlade = "Long blade"
+blunt = "Blunt"
+axe = "Axe"
+[]
+
+//------------------------------------------------------------------------------
+// ACTIONS
+action "bull_charge" {
+	name "Bull's charge"
+	desc "You move forward stunning all enemies in your path and dealing damage to them."
+}
+action "dash" {
+	name "Dash"
+	desc "You move fast in a selected direction. Has three charges."
+}
+action "summon_wolf" {
+	name "Animal ally"
+	desc "You summon a wolf that will help you in combat until it is killed."
+}
+
+//------------------------------------------------------------------------------
+// ATTRIBUTES
+attributes = "Attributes"
+relatedAttributes = "Related attributes"
+
+attribute str {
+	name "Strength"
+	desc "\tIncreases the damage dealt in melee combat, block power, the maximum carry capacity and health slightly. Required for the efficient use of heavy items.\n\tUsing heavy weapons and armor or carrying heavy items trains strength.\n\tAffected skills: one-handed weapons, long blades, blunt weapons, axes, shields, heavy armor."
+}
+attribute end {
+	name "Endurance"
+	desc "\tIncreases health, stamina and resistance.\n\tTaking damage and natural healing trains endurance.\n\tAffected skills: medium armor, heavy armor."
+}
+attribute dex {
+	name "Dexterity"
+	desc "\tIncreases stamina, attack speed, movement and rotation speed, and the damage of light and ranged weapons.\n\tRunning and fighting trains dexterity.\n\tAffected skills: one-handed weapons, short blade, long blade, bows, shields, light armor, medium armor."
+}
+attribute int {
+	name "Intelligence"
+	desc "\tIncreases power of mage spells and learning speed."
+}
+attribute wis {
+	name "Wisdom"
+	desc "\tIncreases the power of cleric and druid spells."
+}
+attribute cha {
+	name "Charisma"
+	desc "\tIncreases the chance to affect others.\n\tTalking and trading trains charisma.\n\tAffected skills: haggle."
+}
+
+//------------------------------------------------------------------------------
+// CLASSES
+class barbarian {
+	name "Barbarian"
+	desc "A wild warrior who despises heavy armor. He gets into a frenzy to gain an advantage in battle."
+	about "?"
+}
+class bard {
+	name "Bard"
+	desc "Hector who travels from town to town. He knows about everything and nothing."
+	about "?"
+}
+class cleric {
+	name "Cleric"
+	desc "A firm follower of god, recompensated for his devotion with the power to cast spells."
+	about "?"
+}
+class druid {
+	name "Druid"
+	desc "A follower of nature magic, who uses it to protect nature and destroy those who threaten it."
+	about "?"
+}
+class hunter {
+	name "Hunter"
+	desc "Hunters take care about nature and forest. They are specialized in using bow and tracking creatures. Given enough time, they gain knowledge about nature magic.\n\nSpecial action: Animal ally"
+	about "I'm a hunter. I spent my entire life on journeys, exploring the forests and caves. I shoot perfectly with a bow but that doesn't mean that I'm afraid of hand combat."
+}
+class mage {
+	name "Mage"
+	desc "Adept of mystical arts. Simply by using the power of his mind, he can create magic bullets and fireballs."
+	about "I'm a mage. Through the power of mind, I have mastered the mysteries of magic and calculated the indefinite integral. Now I travel the world to put my skills into practice."
+}
+class monk {
+	name "Monk"
+	desc "Fights using simple weapons, including his own body. He may not use armor but through sheer resolve withstands hits and strives for excellence."
+	about "?"
+}
+class paladin {
+	name "Paladin"
+	desc "He is a holy warrior who is guided by the moral code of their god. He knows the magic of the gods, though doesn't handle it as proficiently as the cleric."
+	about "?"
+}
+class rogue {
+	name "Rogue"
+	desc "Rogues use light armor and short blade. They are known to attack enemies by surprise to gain advantage in combat. Knows lockpicking, traps, sneaking and stealing.\n\nSpecial action: Dash"
+	about "I'm a rogue. I travel here and there, as I wish. Sometimes I rob someone or stab them in the back. Nothing interesting, as usual."
+}
+class warrior {
+	name "Warrior"
+	desc "Warrior can use any weapon and heavy armor and shield. Prefer melee combat. Can specialize in specific weapon.\n\nSpecial action: Bull's charge"
+	about "I'm a warrior. Earn by killing monsters, bandits and other scum. Rely mostly on melee weapons, heavy armor and shield."
+}
+
+//------------------------------------------------------------------------------
+// PERKS
+increasedAttrib = "Increased attribute"
+increasedSkill = "Increased skill"
+decreasedAttrib = "Decreased attribute"
+decreasedSkill = "Decreased skill"
+
+perk bad_back {
+	name "Bad back"
+	desc "Your back is not suitable for carrying heavy loads. Reduced strength by 5 points and decreased carrying capacity."
+}
+perk chronic_disease {
+	name "Chronic disease"
+	desc "Since you were a child you got sick faster than all the others. Reduced endurance by 5 points and decreased wounds healing speed."
+}
+perk sluggish {
+	name "Sluggish"
+	desc "You are sluggish. Reduced dexterity by 5 points and slower running speed."
+}
+perk slow_learner {
+	name "Slow learner"
+	desc "Learning new skills comes with great difficulty for you. Reduces intelligence by 5 points and slows down skill growth."
+}
+perk asocial {
+	name "Asocial"
+	desc "You don't get along well with other people. Reduces charisma by 5 points and increases the prices in stores."
+}
+perk poor {
+	name "Poor"
+	desc "You start your adventure with an empty purse. Your equipment is also of lower quality."
+}
+perk talent {
+	name "Talent"
+	desc "Increases chosen attribute by 5 points. Faster training for a selected attribute."
+}
+perk skilled {
+	name "Skilled"
+	desc "Gives three extra skill points."
+}
+perk skill_focus {
+	name "Skill focus"
+	desc "Increases chosen skill by 5 points and increases the speed with which you gain experience in it."
+}
+perk alchemist {
+	name "Alchemist apprentice"
+	desc "You worked as an alchemist apprentice. You haven't learned to brew potions, but earned a large number of potions."
+}
+perk wealthy {
+	name "Wealthy"
+	desc "You come from a wealthy family. You receive 2500 gold so you can buy better equipment."
+}
+perk very_wealthy {
+	name "Very wealthy"
+	desc "You come from a very wealthy. You received a small sum of 50000 gold to help you start the adventure as a hero."
+}
+perk heirloom {
+	name "Family heirloom"
+	desc "In your family certain items were passed from father to son for generations. Now is your turn."
+}
+perk leader {
+	name "Leader"
+	desc "You have a predisposition to become a great leader. You have even recruited one hero to come with you. Heroes gain experience faster when you are in charge."
+}
+perk strong_back {
+	name "Strong back"
+	desc "+25% to maximum carrying capacity."
+}
+perk aggressive {
+	name "Aggressive"
+	desc "+10 to attack with melee weapons."
+}
+perk mobility {
+	name "Mobility"
+	desc "+20 to base mobility."
+}
+perk finesse {
+	name "Finesse"
+	desc "+10 to attack with ranged weapons."
+}
+perk tough {
+	name "Tough"
+	desc "+100 to maximum health."
+}
+perk hard_skin {
+	name "Hard skin"
+	desc "+10 to defense."
+}
+perk adaptation {
+	name "Adaptation"
+	desc "Gives resistance to poisons."
+}
+perk perfect_health {
+	name "Perfect health"
+	desc "Gives a health regeneration that restores 5 points per second."
+}
+perk energetic {
+	name "Energetic"
+	desc "+100 stamina."
+}
+
+//------------------------------------------------------------------------------
+// SKILLS
+skill_group weapon = "Weapons"
+skill_group armor = "Shield & Armor"
+skill_group magic = "Magic"
+skill_group other = "Other"
+
+skill one_handed_weapon {
+	name "One-handed weapons"
+	desc "Affects damage and attack speed of all one-handed weapons."
+}
+skill short_blade {
+	name "Short blade"
+	desc "Affects damage and attack speed for daggers, short swords and rapiers."
+}
+skill long_blade {
+	name "Long blade"
+	desc "Affects damage and attack speed for long swords and scimitars."
+}
+skill axe {
+	name "Axe"
+	desc "Affects damage and attack speed for axes."
+}
+skill blunt {
+	name "Blunt"
+	desc "Affects damage and attack speed for clubs, maces and morningstars."
+}
+skill bow {
+	name "Bow"
+	desc "Affects accuracy, damage and attack speed for bows."
+}
+skill unarmed {
+	name "Unarmed"
+	desc "Affects damage and attack speed for unarmed attacks."
+}
+skill shield {
+	name "Shields"
+	desc "Affects block speed, blocked damage and gives small defense bonus."
+}
+skill light_armor {
+	name "Light armor"
+	desc "Affects defense and reduce armor penalty when using light armor."
+}
+skill medium_armor {
+	name "Medium armor"
+	desc "Affects defense and reduce armor penalty when using medium armor."
+}
+skill heavy_armor {
+	name "Heavy armor"
+	desc "Affects defense and reduce armor penalty when using heavy armor."
+}
+skill nature_magic {
+	name "Nature magic"
+	desc "Affects power of nature spells and allows cast better spells."
+}
+skill gods_magic {
+	name "Gods magic"
+	desc "Affects power of gods spells and allows cast better spells."
+}
+skill mystic_magic {
+	name "Mystic magic"
+	desc "Affects power of mystic spells and allows cast better spells."
+}
+skill spellcraft {
+	name "Spellcrafting"
+	desc "Allows creating new and better spells."	
+}
+skill concentration {
+	name "Concentration"
+	desc "Increase mana capacity and allows to avoid breaking casting spell when taking damage."
+}
+skill identification {
+	name "Identification"
+	desc "Allows with the knowledge to know magical properties of items."
+}
+skill lockpick {
+	name "Lockpick"
+	desc "Allows opening locks and do it faster."
+}
+skill sneak {
+	name "Sneak"
+	desc "Affects chance to be seen and heard by enemies."
+}
+skill traps {
+	name "Traps"
+	desc "Affects chance to find hidden traps, disarming traps and power of traps you set."
+}
+skill steal {
+	name "Theft"
+	desc "Affects chance to steal from others."
+}
+skill animal_empathy {
+	name "Animal empathy"
+	desc "Allows to understand, calm and recruit encountered animals."
+}
+skill survival {
+	name "Survival"
+	desc "Allows to take animal skin and avoid ambushes. Increase travel speed and chance to find something useful."
+}
+skill haggle {
+	name "Haggle"
+	desc "Affects shop prices and allows to affects others."
+}
+skill alchemy {
+	name "Alchemy"
+	desc "Allows to create better alchemical potions."
+}
+skill crafting {
+	name "Crafting"
+	desc "Allows creating armors and weapons."
+}
+skill healing {
+	name "Healing"
+	desc "Allows using bandages and other healing non-magical items."
+}
+skill athletics {
+	name "Athletics"
+	desc "Affects health, endurance and caring capacity."
+}
+skill rage {
+	name "Rage"
+	desc "Affects power and duration of rage."
+}

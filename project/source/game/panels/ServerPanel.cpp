@@ -122,46 +122,47 @@ ServerPanel::ServerPanel(const DialogInfo& info) : GameDialogBox(info), autoread
 //=================================================================================================
 void ServerPanel::LoadLanguage()
 {
-	txReady = Str("ready");
-	txNotReady = Str("notReady");
-	txStart = Str("start");
-	txStop = Str("stop");
-	txPickChar = Str("pickChar");
-	txKick = Str("kick");
-	txNone = Str("none");
-	txSetLeader = Str("setLeader");
-	txNick = Str("nick2");
-	txChar = Str("char");
-	txLoadedCharInfo = Str("loadedCharInfo");
-	txNotLoadedCharInfo = Str("notLoadedCharInfo");
-	txChangeChar = Str("changeChar");
-	txCantKickMyself = Str("cantKickMyself2");
-	txCantKickUnconnected = Str("cantKickUnconnected");
-	txReallyKick = Str("reallyKick2");
-	txAlreadyLeader = Str("alreadyLeader2");
-	txLeaderChanged = Str("leaderChanged");
-	txNotJoinedYet = Str("notJoinedYet");
-	txNotAllReady = Str("notAllReady");
-	txStartingIn = Str("startingIn");
-	txStartingStop = Str("startingStop");
-	txDisconnecting = Str("disconnecting");
-	txYouAreLeader = Str("youAreLeader2");
-	txJoined = Str("joined");
-	txPlayerLeft = Str("playerLeft");
-	txNeedSelectedPlayer = Str("needSelectedPlayer");
-	txServerText = Str("serverText");
-	txDisconnected = Str("disconnected");
-	txClosing = Str("closing");
-	txKicked = Str("kicked");
-	txUnknown = Str("unknown");
-	txUnconnected = Str("unconnected");
-	txIpLostConnection = Str("ipLostConnection");
-	txPlayerLostConnection = Str("playerLostConnection");
-	txLeft = Str("left");
-	txStartingGame = Str("startingGame");
-	txWaitingForServer = Str("waitingForServer");
-	txRegisterFailed = Str("registerFailed");
-	txPlayerDisconnected2 = Str("playerDisconnected2");
+	Language::Section s = Language::GetSection("ServerPanel");
+	txReady = s.Get("ready");
+	txNotReady = s.Get("notReady");
+	txStart = s.Get("start");
+	txStop = s.Get("stop");
+	txPickChar = s.Get("pickChar");
+	txKick = s.Get("kick");
+	txNone = s.Get("none");
+	txSetLeader = s.Get("setLeader");
+	txNick = s.Get("nick");
+	txChar = s.Get("char");
+	txLoadedCharInfo = s.Get("loadedCharInfo");
+	txNotLoadedCharInfo = s.Get("notLoadedCharInfo");
+	txChangeChar = s.Get("changeChar");
+	txCantKickMyself = s.Get("cantKickMyself");
+	txCantKickUnconnected = s.Get("cantKickUnconnected");
+	txReallyKick = s.Get("reallyKick");
+	txAlreadyLeader = s.Get("alreadyLeader");
+	txLeaderChanged = s.Get("leaderChanged");
+	txNotJoinedYet = s.Get("notJoinedYet");
+	txNotAllReady = s.Get("notAllReady");
+	txStartingIn = s.Get("startingIn");
+	txStartingStop = s.Get("startingStop");
+	txDisconnecting = s.Get("disconnecting");
+	txYouAreLeader = s.Get("youAreLeader");
+	txJoined = s.Get("joined");
+	txPlayerLeft = s.Get("playerLeft");
+	txNeedSelectedPlayer = s.Get("needSelectedPlayer");
+	txServerText = s.Get("serverText");
+	txDisconnected = s.Get("disconnected");
+	txClosing = s.Get("closing");
+	txKicked = s.Get("kicked");
+	txUnknown = s.Get("unknown");
+	txUnconnected = s.Get("unconnected");
+	txIpLostConnection = s.Get("ipLostConnection");
+	txPlayerLostConnection = s.Get("playerLostConnection");
+	txLeft = s.Get("left");
+	txStartingGame = s.Get("startingGame");
+	txWaitingForServer = s.Get("waitingForServer");
+	txRegisterFailed = s.Get("registerFailed");
+	txPlayerDisconnected = s.Get("playerDisconnected");
 
 	bts[0].text = txPickChar; // change char
 	bts[1].text = txReady; // not ready
@@ -284,7 +285,7 @@ void ServerPanel::UpdateLobbyClient(float dt)
 				cstring reason, reason_eng;
 				if(msg_id == ID_DISCONNECTION_NOTIFICATION)
 				{
-					reason = txPlayerDisconnected2;
+					reason = txPlayerDisconnected;
 					reason_eng = "disconnected";
 				}
 				else if(msg_id == ID_CONNECTION_LOST)
@@ -465,7 +466,7 @@ bool ServerPanel::DoLobbyUpdate(BitStreamReader& f)
 					return false;
 				}
 				Info("ServerPanel: Player %s %s.", info->name.c_str(), is_kick ? "was kicked" : "left lobby");
-				AddMsg(Format(is_kick ? game->txPlayerKicked : game->txPlayerLeft, info->name.c_str()));
+				AddMsg(Format(is_kick ? game->txPlayerKicked : txPlayerLeft, info->name.c_str()));
 				int index = info->GetIndex();
 				grid.RemoveItem(index);
 				auto it = N.players.begin() + index;

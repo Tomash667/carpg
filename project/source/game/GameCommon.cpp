@@ -23,14 +23,15 @@ cstring dir_name_short[] = {
 //=================================================================================================
 void SetGameCommonText()
 {
-	dir_name[DIR_N] = Str("dirN");
-	dir_name[DIR_S] = Str("dirS");
-	dir_name[DIR_E] = Str("dirE");
-	dir_name[DIR_W] = Str("dirW");
-	dir_name[DIR_NE] = Str("dirNE");
-	dir_name[DIR_NW] = Str("dirNW");
-	dir_name[DIR_SE] = Str("dirSE");
-	dir_name[DIR_SW] = Str("dirSW");
+	Language::Section s = Language::GetSection("Directions");
+	dir_name[DIR_N] = s.Get("dirN");
+	dir_name[DIR_S] = s.Get("dirS");
+	dir_name[DIR_E] = s.Get("dirE");
+	dir_name[DIR_W] = s.Get("dirW");
+	dir_name[DIR_NE] = s.Get("dirNE");
+	dir_name[DIR_NW] = s.Get("dirNW");
+	dir_name[DIR_SE] = s.Get("dirSE");
+	dir_name[DIR_SW] = s.Get("dirSW");
 }
 
 //=================================================================================================

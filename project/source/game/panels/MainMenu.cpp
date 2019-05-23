@@ -23,8 +23,18 @@ MainMenu::MainMenu(Game* game) : game(game), check_status(CheckVersionStatus::No
 //=================================================================================================
 void MainMenu::LoadLanguage()
 {
-	txInfoText = Str("infoText");
-	txVersion = Str("version");
+	Language::Section& s = Language::GetSection("MainMenu");
+	txInfoText = s.Get("infoText");
+	txVersion = s.Get("version");
+	txCheckingVersion = s.Get("checkingVersion");
+	txNewVersion = s.Get("newVersion");
+	txNewVersionDialog = s.Get("newVersionDialog");
+	txChanges = s.Get("changes");
+	txDownload = s.Get("download");
+	txSkip = s.Get("skip");
+	txNewerVersion = s.Get("newerVersion");
+	txNoNewVersion = s.Get("noNewVersion");
+	txCheckVersionError = s.Get("checkVersionError");
 
 	const cstring names[BUTTONS] = {
 		"newGame",
@@ -44,7 +54,7 @@ void MainMenu::LoadLanguage()
 		Button& b = bt[i];
 		b.id = IdNewGame + i;
 		b.parent = this;
-		b.text = Str(names[i]);
+		b.text = s.Get(names[i]);
 		b.size = GUI.default_font->CalculateSize(b.text) + Int2(24, 24);
 
 		maxsize = Int2::Max(maxsize, b.size);
@@ -119,7 +129,7 @@ void MainMenu::UpdateCheckVersion()
 #endif
 		if(check_updates)
 		{
-			version_text = Str("checkingVersion");
+			version_text = txCheckingVersion;
 			Info("Checking CaRpg version.");
 			check_status = CheckVersionStatus::Checking;
 			check_version_thread = thread(&MainMenu::CheckVersion, this);
@@ -132,7 +142,7 @@ void MainMenu::UpdateCheckVersion()
 		if(version_new > VERSION)
 		{
 			cstring str = VersionToString(version_new);
-			version_text = Format(Str("newVersion"), str);
+			version_text = Format(txNewVersion, str);
 			Info("New version %s is available.", str);
 
 			// show dialog box with question about updating
@@ -142,23 +152,23 @@ void MainMenu::UpdateCheckVersion()
 			info.order = ORDER_TOP;
 			info.parent = nullptr;
 			info.pause = false;
-			info.text = Format(Str("newVersionDialog"), VERSION_STR, VersionToString(version_new));
+			info.text = Format(txNewVersionDialog, VERSION_STR, VersionToString(version_new));
 			if(!version_changelog.empty())
-				info.text += Format("\n\n%s\n%s", Str("changes"), version_changelog.c_str());
+				info.text += Format("\n\n%s\n%s", txChanges, version_changelog.c_str());
 			info.type = DIALOG_YESNO;
-			cstring names[] = { Str("download"), Str("skip") };
+			cstring names[] = { txDownload, txSkip };
 			info.custom_names = names;
 
 			GUI.ShowDialog(info);
 		}
 		else if(version_new < VERSION)
 		{
-			version_text = Str("newerVersion");
+			version_text = txNewerVersion;
 			Info("You have newer version then available.");
 		}
 		else
 		{
-			version_text = Str("noNewVersion");
+			version_text = txNoNewVersion;
 			Info("No new version available.");
 		}
 		check_status = CheckVersionStatus::Finished;
@@ -166,7 +176,7 @@ void MainMenu::UpdateCheckVersion()
 	}
 	else if(check_status == CheckVersionStatus::Error)
 	{
-		version_text = Str("checkVersionError");
+		version_text = txCheckVersionError;
 		Error("Failed to check version.");
 		check_status = CheckVersionStatus::Finished;
 		check_version_thread.join();

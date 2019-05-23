@@ -17,15 +17,15 @@
 extern string g_system_dir;
 extern vector<string> name_random, nickname_random, crazy_name, txLocationStart, txLocationEnd;
 string Language::prefix, Language::tstr;
-Language::LanguageMap Language::strs;
-Language::LanguageSections Language::sections;
-vector<Language::LanguageMap*> Language::languages;
+Language::Map Language::strs;
+Language::Sections Language::sections;
+vector<Language::Map*> Language::languages;
 
 //=================================================================================================
 void Language::Init()
 {
 	sections[""] = &strs;
-	sections["(placeholder)"] = new LanguageMap;
+	sections["(placeholder)"] = new Map;
 }
 
 //=================================================================================================
@@ -45,18 +45,18 @@ bool Language::LoadFile(cstring filename)
 {
 	assert(filename);
 	LocalString path = Format("%s/lang/%s/%s", g_system_dir.c_str(), prefix.c_str(), filename);
-	return LoadFileInternal(path);
+	Tokenizer t;
+	return LoadFileInternal(t, path);
 }
 
 //=================================================================================================
 // If lmap is passed it is used instead and sections are ignored
-bool Language::LoadFileInternal(cstring path, LanguageMap* lmap)
+bool Language::LoadFileInternal(Tokenizer& t, cstring path, Map* lmap)
 {
 	assert(path);
 
-	Tokenizer t;
 	LocalString current_section;
-	LanguageMap* lm = lmap ? lmap : sections[""];
+	Map* lm = lmap ? lmap : sections[""];
 
 	try
 	{
@@ -65,7 +65,9 @@ bool Language::LoadFileInternal(cstring path, LanguageMap* lmap)
 
 		while(t.Next())
 		{
-			if(t.IsSymbol('['))
+			if(t.IsKeyword())
+				ParseObject(t);
+			else if(t.IsSymbol('['))
 			{
 				// open section
 				t.Next();
@@ -80,11 +82,11 @@ bool Language::LoadFileInternal(cstring path, LanguageMap* lmap)
 
 				if(!lmap)
 				{
-					LanguageSections::iterator it = sections.find(current_section.get_ref());
+					Sections::iterator it = sections.find(current_section.get_ref());
 					if(it == sections.end())
 					{
-						lm = new LanguageMap;
-						sections.insert(it, LanguageSections::value_type(current_section, lm));
+						lm = new Map;
+						sections.insert(it, Sections::value_type(current_section, lm));
 					}
 					else
 						lm = it->second;
@@ -98,7 +100,7 @@ bool Language::LoadFileInternal(cstring path, LanguageMap* lmap)
 				t.AssertSymbol('=');
 				t.Next();
 				const string& text = t.MustGetString();
-				pair<LanguageMap::iterator, bool> const& r = lm->insert(LanguageMap::value_type(tstr, text));
+				pair<Map::iterator, bool> const& r = lm->insert(Map::value_type(tstr, text));
 				if(!r.second)
 				{
 					if(current_section->empty())
@@ -132,7 +134,8 @@ void Language::LoadLanguages()
 		return;
 	}
 
-	LanguageMap* lmap = nullptr;
+	Map* lmap = nullptr;
+	Tokenizer t;
 
 	do
 	{
@@ -142,10 +145,10 @@ void Language::LoadLanguages()
 			if(lmap)
 				lmap->clear();
 			else
-				lmap = new LanguageMap;
-			if(LoadFileInternal(path, lmap))
+				lmap = new Map;
+			if(LoadFileInternal(t, path, lmap))
 			{
-				LanguageMap::iterator it = lmap->find("dir"), end = lmap->end();
+				Map::iterator it = lmap->find("dir"), end = lmap->end();
 				if(!(it != end && it->second == data.cFileName && lmap->find("englishName") != end && lmap->find("localName") != end && lmap->find("locale") != end))
 				{
 					Warn("File '%s' is invalid language file.", path->c_str());
@@ -258,364 +261,9 @@ void Language::LoadObjectFile(Tokenizer& t, cstring filename)
 		return;
 	}
 
-	LocalString lstr;
-
 	try
 	{
-		while(t.Next())
-		{
-			if(!t.IsKeyword())
-			{
-				tstr = t.MustGetItem();
-				t.Next();
-				t.AssertSymbol('=');
-				t.Next();
-				const string& text = t.MustGetString();
-				pair<LanguageMap::iterator, bool> const& r = strs.insert(LanguageMap::value_type(tstr, text));
-				if(!r.second)
-					Warn("LANG: String '%s' already exists: \"%s\"; new text: \"%s\".", tstr.c_str(), r.first->second.c_str(), text.c_str());
-				continue;
-			}
-
-			Keyword k = (Keyword)t.MustGetKeywordId(G_KEYWORD);
-			t.Next();
-			switch(k)
-			{
-			case K_ATTRIBUTE:
-				// attribute id {
-				//		name "text"
-				//		desc "text"
-				// }
-				{
-					const string& id = t.MustGetText();
-					Attribute* ai = Attribute::Find(id);
-					if(!ai)
-						t.Throw("Invalid attribute '%s'.", id.c_str());
-					t.Next();
-					t.AssertSymbol('{');
-					t.Next();
-					GetString(t, P_NAME, ai->name);
-					GetString(t, P_DESC, ai->desc);
-					t.AssertSymbol('}');
-				}
-				break;
-			case K_SKILL_GROUP:
-				// skill_group id = "text"
-				{
-					const string& id = t.MustGetText();
-					SkillGroup* sgi = SkillGroup::Find(id);
-					if(!sgi)
-						t.Throw("Invalid skill group '%s'.", id.c_str());
-					t.Next();
-					t.AssertSymbol('=');
-					t.Next();
-					sgi->name = t.MustGetString();
-				}
-				break;
-			case K_SKILL:
-				// skill id {
-				//		name "text"
-				//		desc "text
-				// }
-				{
-					const string& id = t.MustGetText();
-					Skill* si = Skill::Find(id);
-					if(!si)
-						t.Throw("Invalid skill '%s'.", id.c_str());
-					t.Next();
-					t.AssertSymbol('{');
-					t.Next();
-					GetString(t, P_NAME, si->name);
-					GetString(t, P_DESC, si->desc);
-					t.AssertSymbol('}');
-				}
-				break;
-			case K_CLASS:
-				// class id {
-				//		name "text"
-				//		desc "text"
-				//		about "text"
-				// }
-				{
-					const string& id = t.MustGetText();
-					ClassInfo* ci = ClassInfo::Find(id);
-					if(!ci)
-						t.Throw("Invalid class '%s'.", id.c_str());
-					t.Next();
-					t.AssertSymbol('{');
-					t.Next();
-					GetString(t, P_NAME, ci->name);
-					GetString(t, P_DESC, ci->desc);
-					GetString(t, P_ABOUT, ci->about);
-					t.AssertSymbol('}');
-				}
-				break;
-			case K_NAME:
-			case K_NICKNAME:
-				// (nick)name type {
-				//		"text"
-				//		"text"
-				//		...
-				// }
-				{
-					bool nickname = (k == K_NICKNAME);
-					vector<string>* names = nullptr;
-					if(t.IsKeyword())
-					{
-						int id = t.GetKeywordId();
-						if(id == K_CRAZY)
-						{
-							if(nickname)
-								t.Throw("Crazies can't have nicknames.");
-							names = &crazy_name;
-						}
-						else if(id == K_RANDOM)
-						{
-							if(nickname)
-								names = &nickname_random;
-							else
-								names = &name_random;
-						}
-						else if(id == K_LOCATION_START)
-						{
-							if(nickname)
-								t.Unexpected();
-							names = &txLocationStart;
-						}
-						else if(id == K_LOCATION_END)
-						{
-							if(nickname)
-								t.Unexpected();
-							names = &txLocationEnd;
-						}
-						else
-							t.Unexpected();
-					}
-					else
-					{
-						ClassInfo* ci = ClassInfo::Find(t.MustGetItem());
-						if(ci)
-						{
-							if(nickname)
-								names = &ci->nicknames;
-							else
-								names = &ci->names;
-						}
-						else
-							t.Unexpected();
-					}
-					t.Next();
-					t.AssertSymbol('{');
-					while(true)
-					{
-						t.Next();
-						if(t.IsSymbol('}'))
-							break;
-						names->push_back(t.MustGetString());
-					}
-				}
-				break;
-			case K_ITEM:
-				// item id {
-				//		name "text"
-				//		[desc "text"]
-				//      [text "text" (for books)]
-				// }
-				{
-					const string& id = t.MustGetText();
-					Item* item = Item::TryGet(id);
-					if(!item)
-						t.Throw("Invalid item '%s'.", id.c_str());
-					t.Next();
-					t.AssertSymbol('{');
-					t.Next();
-					while(!t.IsSymbol('}'))
-					{
-						Property prop = (Property)t.MustGetKeywordId(G_PROPERTY);
-						if(prop != P_NAME && prop != P_DESC && prop != P_TEXT)
-							t.Unexpected();
-						t.Next();
-						switch(prop)
-						{
-						case P_NAME:
-							item->name = t.MustGetString();
-							break;
-						case P_DESC:
-							item->desc = t.MustGetString();
-							break;
-						case P_TEXT:
-							if(item->type != IT_BOOK)
-								t.Throw("Item '%s' can't have text element.", item->id.c_str());
-							item->ToBook().text = t.MustGetString();
-							break;
-						}
-						t.Next();
-					}
-				}
-				break;
-			case K_PERK:
-				// perk id {
-				//		name "text"
-				//		desc "text"
-				// }
-				{
-					const string& id = t.MustGetText();
-					PerkInfo* ci = PerkInfo::Find(id);
-					if(!ci)
-						t.Throw("Invalid perk '%s'.", id.c_str());
-					t.Next();
-					t.AssertSymbol('{');
-					t.Next();
-					GetString(t, P_NAME, ci->name);
-					GetString(t, P_DESC, ci->desc);
-					t.AssertSymbol('}');
-				}
-				break;
-			case K_UNIT:
-				// unit id = "text"
-				// or
-				// unit id {
-				//      [name "text"]
-				//      [real_name "text"]
-				// }
-				{
-					const string& id = t.MustGetText();
-					UnitData* ud = UnitData::TryGet(id);
-					if(!ud)
-						t.Throw("Invalid unit '%s'.", id.c_str());
-					t.Next();
-					if(t.IsSymbol('{'))
-					{
-						t.Next();
-						while(!t.IsSymbol('}'))
-						{
-							Property prop = (Property)t.MustGetKeywordId(G_PROPERTY);
-							if(prop != P_NAME && prop != P_REAL_NAME)
-								t.Unexpected();
-							t.Next();
-							switch(prop)
-							{
-							case P_NAME:
-								ud->name = t.MustGetString();
-								break;
-							case P_REAL_NAME:
-								ud->real_name = t.MustGetString();
-								break;
-							}
-							t.Next();
-						}
-					}
-					else if(t.IsSymbol('='))
-					{
-						t.Next();
-						ud->name = t.MustGetString();
-					}
-					else
-						t.ThrowExpecting("symbol { or =");
-					if(ud->parent)
-					{
-						if(ud->name.empty())
-							ud->name = ud->parent->name;
-						if(ud->real_name.empty())
-							ud->real_name = ud->parent->real_name;
-					}
-					if(ud->name.empty())
-						Warn("Missing unit '%s' name.", ud->id.c_str());
-				}
-				break;
-			case K_UNIT_GROUP:
-				// unit_group id {
-				//		name "text"
-				//		[name2 "text"]
-				//		[name3 "text"]
-				//		[encounter_text "text"] - required when encounter_chance > 0
-				// }
-				{
-					const string& id = t.MustGetText();
-					UnitGroup* group = UnitGroup::TryGet(id);
-					if(!group)
-						t.Throw("Invalid unit group '%s'.", id.c_str());
-					t.Next();
-					t.AssertSymbol('{');
-					t.Next();
-					while(!t.IsSymbol('}'))
-					{
-						Property prop = (Property)t.MustGetKeywordId(G_PROPERTY);
-						if(!Any(prop, P_NAME, P_NAME2, P_NAME3, P_ENCOUNTER_TEXT))
-							t.Unexpected();
-						t.Next();
-						switch(prop)
-						{
-						case P_NAME:
-							group->name = t.MustGetString();
-							break;
-						case P_NAME2:
-							group->name2 = t.MustGetString();
-							break;
-						case P_NAME3:
-							group->name3 = t.MustGetString();
-							break;
-						case P_ENCOUNTER_TEXT:
-							group->encounter_text = t.MustGetString();
-							break;
-						}
-						t.Next();
-					}
-					if(group->name2.empty())
-						group->name2 = group->name;
-					if(group->name3.empty())
-						group->name3 = group->name;
-				}
-				break;
-			case K_BUILDING:
-				// building id = "text"
-				{
-					const string& id = t.MustGetText();
-					Building* b = Building::TryGet(id);
-					if(!b)
-						t.Throw("Invalid building '%s'.", id.c_str());
-					t.Next();
-					t.AssertSymbol('=');
-					t.Next();
-					b->name = t.MustGetString();
-				}
-				break;
-			case K_ACTION:
-				// action id {
-				//		name "text"
-				//		desc "text"
-				// }
-				{
-					const string& id = t.MustGetText();
-					Action* action = Action::Find(id);
-					if(!action)
-						t.Throw("Invalid action '%s'.", id.c_str());
-					t.Next();
-					t.AssertSymbol('{');
-					t.Next();
-					GetString(t, P_NAME, action->name);
-					GetString(t, P_DESC, action->desc);
-					t.AssertSymbol('}');
-				}
-				break;
-			case K_USABLE:
-				// usable id = "text"
-				{
-					const string& id = t.MustGetText();
-					BaseUsable* use = BaseUsable::TryGet(id);
-					if(!use)
-						t.Throw("Invalid usable '%s'.", id.c_str());
-					t.Next();
-					t.AssertSymbol('=');
-					t.Next();
-					use->name = t.MustGetString();
-				}
-				break;
-			default:
-				t.Unexpected();
-				break;
-			}
-		}
+		LoadFileInternal(t, path);
 	}
 	catch(const Tokenizer::Exception& e)
 	{
@@ -624,22 +272,362 @@ void Language::LoadObjectFile(Tokenizer& t, cstring filename)
 }
 
 //=================================================================================================
+void Language::ParseObject(Tokenizer& t)
+{
+	Keyword k = (Keyword)t.MustGetKeywordId(G_KEYWORD);
+	t.Next();
+	switch(k)
+	{
+	case K_ATTRIBUTE:
+		// attribute id {
+		//		name "text"
+		//		desc "text"
+		// }
+		{
+			const string& id = t.MustGetText();
+			Attribute* ai = Attribute::Find(id);
+			if(!ai)
+				t.Throw("Invalid attribute '%s'.", id.c_str());
+			t.Next();
+			t.AssertSymbol('{');
+			t.Next();
+			GetString(t, P_NAME, ai->name);
+			GetString(t, P_DESC, ai->desc);
+			t.AssertSymbol('}');
+		}
+		break;
+	case K_SKILL_GROUP:
+		// skill_group id = "text"
+		{
+			const string& id = t.MustGetText();
+			SkillGroup* sgi = SkillGroup::Find(id);
+			if(!sgi)
+				t.Throw("Invalid skill group '%s'.", id.c_str());
+			t.Next();
+			t.AssertSymbol('=');
+			t.Next();
+			sgi->name = t.MustGetString();
+		}
+		break;
+	case K_SKILL:
+		// skill id {
+		//		name "text"
+		//		desc "text
+		// }
+		{
+			const string& id = t.MustGetText();
+			Skill* si = Skill::Find(id);
+			if(!si)
+				t.Throw("Invalid skill '%s'.", id.c_str());
+			t.Next();
+			t.AssertSymbol('{');
+			t.Next();
+			GetString(t, P_NAME, si->name);
+			GetString(t, P_DESC, si->desc);
+			t.AssertSymbol('}');
+		}
+		break;
+	case K_CLASS:
+		// class id {
+		//		name "text"
+		//		desc "text"
+		//		about "text"
+		// }
+		{
+			const string& id = t.MustGetText();
+			ClassInfo* ci = ClassInfo::Find(id);
+			if(!ci)
+				t.Throw("Invalid class '%s'.", id.c_str());
+			t.Next();
+			t.AssertSymbol('{');
+			t.Next();
+			GetString(t, P_NAME, ci->name);
+			GetString(t, P_DESC, ci->desc);
+			GetString(t, P_ABOUT, ci->about);
+			t.AssertSymbol('}');
+		}
+		break;
+	case K_NAME:
+	case K_NICKNAME:
+		// (nick)name type {
+		//		"text"
+		//		"text"
+		//		...
+		// }
+		{
+			bool nickname = (k == K_NICKNAME);
+			vector<string>* names = nullptr;
+			if(t.IsKeyword())
+			{
+				int id = t.GetKeywordId();
+				if(id == K_CRAZY)
+				{
+					if(nickname)
+						t.Throw("Crazies can't have nicknames.");
+					names = &crazy_name;
+				}
+				else if(id == K_RANDOM)
+				{
+					if(nickname)
+						names = &nickname_random;
+					else
+						names = &name_random;
+				}
+				else if(id == K_LOCATION_START)
+				{
+					if(nickname)
+						t.Unexpected();
+					names = &txLocationStart;
+				}
+				else if(id == K_LOCATION_END)
+				{
+					if(nickname)
+						t.Unexpected();
+					names = &txLocationEnd;
+				}
+				else
+					t.Unexpected();
+			}
+			else
+			{
+				ClassInfo* ci = ClassInfo::Find(t.MustGetItem());
+				if(ci)
+				{
+					if(nickname)
+						names = &ci->nicknames;
+					else
+						names = &ci->names;
+				}
+				else
+					t.Unexpected();
+			}
+			t.Next();
+			t.AssertSymbol('{');
+			while(true)
+			{
+				t.Next();
+				if(t.IsSymbol('}'))
+					break;
+				names->push_back(t.MustGetString());
+			}
+		}
+		break;
+	case K_ITEM:
+		// item id {
+		//		name "text"
+		//		[desc "text"]
+		//      [text "text" (for books)]
+		// }
+		{
+			const string& id = t.MustGetText();
+			Item* item = Item::TryGet(id);
+			if(!item)
+				t.Throw("Invalid item '%s'.", id.c_str());
+			t.Next();
+			t.AssertSymbol('{');
+			t.Next();
+			while(!t.IsSymbol('}'))
+			{
+				Property prop = (Property)t.MustGetKeywordId(G_PROPERTY);
+				if(prop != P_NAME && prop != P_DESC && prop != P_TEXT)
+					t.Unexpected();
+				t.Next();
+				switch(prop)
+				{
+				case P_NAME:
+					item->name = t.MustGetString();
+					break;
+				case P_DESC:
+					item->desc = t.MustGetString();
+					break;
+				case P_TEXT:
+					if(item->type != IT_BOOK)
+						t.Throw("Item '%s' can't have text element.", item->id.c_str());
+					item->ToBook().text = t.MustGetString();
+					break;
+				}
+				t.Next();
+			}
+		}
+		break;
+	case K_PERK:
+		// perk id {
+		//		name "text"
+		//		desc "text"
+		// }
+		{
+			const string& id = t.MustGetText();
+			PerkInfo* ci = PerkInfo::Find(id);
+			if(!ci)
+				t.Throw("Invalid perk '%s'.", id.c_str());
+			t.Next();
+			t.AssertSymbol('{');
+			t.Next();
+			GetString(t, P_NAME, ci->name);
+			GetString(t, P_DESC, ci->desc);
+			t.AssertSymbol('}');
+		}
+		break;
+	case K_UNIT:
+		// unit id = "text"
+		// or
+		// unit id {
+		//      [name "text"]
+		//      [real_name "text"]
+		// }
+		{
+			const string& id = t.MustGetText();
+			UnitData* ud = UnitData::TryGet(id);
+			if(!ud)
+				t.Throw("Invalid unit '%s'.", id.c_str());
+			t.Next();
+			if(t.IsSymbol('{'))
+			{
+				t.Next();
+				while(!t.IsSymbol('}'))
+				{
+					Property prop = (Property)t.MustGetKeywordId(G_PROPERTY);
+					if(prop != P_NAME && prop != P_REAL_NAME)
+						t.Unexpected();
+					t.Next();
+					switch(prop)
+					{
+					case P_NAME:
+						ud->name = t.MustGetString();
+						break;
+					case P_REAL_NAME:
+						ud->real_name = t.MustGetString();
+						break;
+					}
+					t.Next();
+				}
+			}
+			else if(t.IsSymbol('='))
+			{
+				t.Next();
+				ud->name = t.MustGetString();
+			}
+			else
+				t.ThrowExpecting("symbol { or =");
+			if(ud->parent)
+			{
+				if(ud->name.empty())
+					ud->name = ud->parent->name;
+				if(ud->real_name.empty())
+					ud->real_name = ud->parent->real_name;
+			}
+			if(ud->name.empty())
+				Warn("Missing unit '%s' name.", ud->id.c_str());
+		}
+		break;
+	case K_UNIT_GROUP:
+		// unit_group id {
+		//		name "text"
+		//		[name2 "text"]
+		//		[name3 "text"]
+		//		[encounter_text "text"] - required when encounter_chance > 0
+		// }
+		{
+			const string& id = t.MustGetText();
+			UnitGroup* group = UnitGroup::TryGet(id);
+			if(!group)
+				t.Throw("Invalid unit group '%s'.", id.c_str());
+			t.Next();
+			t.AssertSymbol('{');
+			t.Next();
+			while(!t.IsSymbol('}'))
+			{
+				Property prop = (Property)t.MustGetKeywordId(G_PROPERTY);
+				if(!Any(prop, P_NAME, P_NAME2, P_NAME3, P_ENCOUNTER_TEXT))
+					t.Unexpected();
+				t.Next();
+				switch(prop)
+				{
+				case P_NAME:
+					group->name = t.MustGetString();
+					break;
+				case P_NAME2:
+					group->name2 = t.MustGetString();
+					break;
+				case P_NAME3:
+					group->name3 = t.MustGetString();
+					break;
+				case P_ENCOUNTER_TEXT:
+					group->encounter_text = t.MustGetString();
+					break;
+				}
+				t.Next();
+			}
+			if(group->name2.empty())
+				group->name2 = group->name;
+			if(group->name3.empty())
+				group->name3 = group->name;
+		}
+		break;
+	case K_BUILDING:
+		// building id = "text"
+		{
+			const string& id = t.MustGetText();
+			Building* b = Building::TryGet(id);
+			if(!b)
+				t.Throw("Invalid building '%s'.", id.c_str());
+			t.Next();
+			t.AssertSymbol('=');
+			t.Next();
+			b->name = t.MustGetString();
+		}
+		break;
+	case K_ACTION:
+		// action id {
+		//		name "text"
+		//		desc "text"
+		// }
+		{
+			const string& id = t.MustGetText();
+			Action* action = Action::Find(id);
+			if(!action)
+				t.Throw("Invalid action '%s'.", id.c_str());
+			t.Next();
+			t.AssertSymbol('{');
+			t.Next();
+			GetString(t, P_NAME, action->name);
+			GetString(t, P_DESC, action->desc);
+			t.AssertSymbol('}');
+		}
+		break;
+	case K_USABLE:
+		// usable id = "text"
+		{
+			const string& id = t.MustGetText();
+			BaseUsable* use = BaseUsable::TryGet(id);
+			if(!use)
+				t.Throw("Invalid usable '%s'.", id.c_str());
+			t.Next();
+			t.AssertSymbol('=');
+			t.Next();
+			use->name = t.MustGetString();
+		}
+		break;
+	default:
+		t.Unexpected();
+		break;
+	}
+}
+
+//=================================================================================================
 void Language::LoadLanguageFiles()
 {
+	LoadFile("menu.txt");
+	LoadFile("talks.txt");
+
 	Tokenizer t(Tokenizer::F_UNESCAPE | Tokenizer::F_MULTI_KEYWORDS);
-
 	PrepareTokenizer(t);
-
-	LoadObjectFile(t, "actions.txt");
-	LoadObjectFile(t, "attribute.txt");
-	LoadObjectFile(t, "skill.txt");
-	LoadObjectFile(t, "class.txt");
 	LoadObjectFile(t, "names.txt");
 	LoadObjectFile(t, "items.txt");
-	LoadObjectFile(t, "perks.txt");
 	LoadObjectFile(t, "units.txt");
 	LoadObjectFile(t, "buildings.txt");
 	LoadObjectFile(t, "objects.txt");
+	LoadObjectFile(t, "stats.txt");
 
 	if(txLocationStart.empty() || txLocationEnd.empty())
 		throw "Missing locations names.";
@@ -673,22 +661,22 @@ cstring Language::TryGetString(cstring str, bool err)
 }
 
 //=================================================================================================
-Language::LanguageSection Language::GetSection(cstring name)
+Language::Section Language::GetSection(cstring name)
 {
 	assert(name);
 	auto it = sections.find(name);
 	if(it != sections.end())
-		return LanguageSection(*it->second, name);
+		return Section(*it->second, name);
 	else
-		return LanguageSection(*sections["(default)"], name);
+		return Section(*sections["(default)"], name);
 }
 
 //=================================================================================================
-cstring Language::LanguageSection::Get(cstring str)
+cstring Language::Section::Get(cstring str)
 {
 	assert(str);
-	auto it = lm.find(str);
-	if(it != lm.end())
+	auto it = lm.get().find(str);
+	if(it != lm.get().end())
 		return it->second.c_str();
 	else
 	{

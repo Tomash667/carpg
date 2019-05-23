@@ -128,16 +128,15 @@ Options::Options(const DialogInfo& info) : GameDialogBox(info)
 	scroll[3].offset = 0;
 	scroll[3].hscrollbar = true;
 
-	// jêzyk
 	language.SetCollapsed(true);
 	language.parent = this;
 	language.pos = Int2(20, 383);
 	language.size = Int2(250, 25);
 	language.event_handler = DialogEvent(this, &Options::OnChangeLanguage);
 	int index = 0;
-	for(Language::LanguageMap* p_lmap : Language::GetLanguages())
+	for(Language::Map* p_lmap : Language::GetLanguages())
 	{
-		Language::LanguageMap& lmap = *p_lmap;
+		Language::Map& lmap = *p_lmap;
 		string& dir = lmap["dir"];
 		language.Add(new LanguageItem(dir, Format("%s, %s, %s", dir.c_str(), lmap["englishName"].c_str(), lmap["localName"].c_str())));
 		if(dir == Language::prefix)
@@ -152,25 +151,27 @@ Options::Options(const DialogInfo& info) : GameDialogBox(info)
 //=================================================================================================
 void Options::LoadLanguage()
 {
-	txOPTIONS = Str("OPTIONS");
-	txResolution = Str("resolution");
-	txMultisampling = Str("multisampling");
-	txLanguage = Str("language");
-	txMultisamplingError = Str("multisamplingError");
-	txNeedRestart = Str("needRestart");
-	txSoundVolume = Str("soundVolume");
-	txMusicVolume = Str("musicVolume");
-	txMouseSensitivity = Str("mouseSensitivity");
-	txGrassRange = Str("grassRange");
+	Language::Section s = Language::GetSection("Options");
 
-	txQuality = Str("quality");
-	txMsNone = Str("msNone");
+	txOPTIONS = s.Get("OPTIONS");
+	txResolution = s.Get("resolution");
+	txMultisampling = s.Get("multisampling");
+	txLanguage = s.Get("language");
+	txMultisamplingError = s.Get("multisamplingError");
+	txNeedRestart = s.Get("needRestart");
+	txSoundVolume = s.Get("soundVolume");
+	txMusicVolume = s.Get("musicVolume");
+	txMouseSensitivity = s.Get("mouseSensitivity");
+	txGrassRange = s.Get("grassRange");
 
-	check[0].text = Str("fullscreenMode");
-	check[1].text = Str("glow");
-	check[2].text = Str("normalMap");
-	check[3].text = Str("specularMap");
-	check[4].text = Str("vsync");
+	txQuality = s.Get("quality");
+	txMsNone = s.Get("msNone");
+
+	check[0].text = s.Get("fullscreenMode");
+	check[1].text = s.Get("glow");
+	check[2].text = s.Get("normalMap");
+	check[3].text = s.Get("specularMap");
+	check[4].text = s.Get("vsync");
 
 	bts[0].id = IdOk;
 	bts[0].parent = this;
@@ -178,7 +179,7 @@ void Options::LoadLanguage()
 	bts[0].size = GUI.default_font->CalculateSize(bts[0].text) + Int2(24, 24);
 	bts[1].id = IdControls;
 	bts[1].parent = this;
-	bts[1].text = Str("controls");
+	bts[1].text = s.Get("controls");
 	bts[1].size = GUI.default_font->CalculateSize(bts[1].text) + Int2(24, 24);
 	bts[0].size.x = bts[1].size.x = max(bts[0].size.x, bts[1].size.x);
 	bts[0].pos = Int2(20, 410);

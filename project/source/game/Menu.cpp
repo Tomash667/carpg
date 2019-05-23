@@ -2014,7 +2014,7 @@ void Game::CloseConnection(VoidF f)
 				net_mode = Game::NM_QUITTING_SERVER;
 				--N.active_players;
 				net_timer = T_WAIT_FOR_DISCONNECT;
-				gui->info_box->Show(gui->server->txDisconnecting);
+				gui->info_box->Show(txDisconnecting);
 				net_callback = f;
 			}
 			else
@@ -2048,7 +2048,7 @@ void Game::CloseConnection(VoidF f)
 				net_mode = Game::NM_QUITTING_SERVER;
 				--N.active_players;
 				net_timer = T_WAIT_FOR_DISCONNECT;
-				gui->info_box->Show(gui->server->txDisconnecting);
+				gui->info_box->Show(txDisconnecting);
 				net_callback = f;
 			}
 			else

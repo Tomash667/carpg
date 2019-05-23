@@ -193,7 +193,7 @@ void CreateCharacterPanel::LoadLanguage()
 	txAttributes = Str("attributes");
 	txRelatedAttributes = Str("relatedAttributes");
 
-	Language::LanguageSection section = Language::GetSection("CreateCharacterPanel");
+	Language::Section section = Language::GetSection("CreateCharacterPanel");
 	txHardcoreMode = section.Get("hardcoreMode");
 	txHair = section.Get("hair");
 	txMustache = section.Get("mustache");

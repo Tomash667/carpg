@@ -44,18 +44,19 @@ SaveLoad::SaveLoad(const DialogInfo& info) : GameDialogBox(info), choice(0), tMi
 //=================================================================================================
 void SaveLoad::LoadLanguage()
 {
-	txSaving = Str("SAVINGGAME");
-	txLoading = Str("LOADINGGAME");
-	txSave = Str("save");
-	txLoad = Str("load");
-	txSaveN = Str("saveN");
-	txQuickSave = Str("quickSave");
-	txEmptySlot = Str("emptySlot");
-	txSaveDate = Str("saveDate");
-	txSaveTime = Str("saveTime");
-	txSavePlayers = Str("savePlayers");
-	txSaveName = Str("saveName");
-	txSavedGameN = Str("savedGameN");
+	Language::Section s = Language::GetSection("SaveLoad");
+	txSaving = s.Get("SAVINGGAME");
+	txLoading = s.Get("LOADINGGAME");
+	txSave = s.Get("save");
+	txLoad = s.Get("load");
+	txSaveN = s.Get("saveN");
+	txQuickSave = s.Get("quickSave");
+	txEmptySlot = s.Get("emptySlot");
+	txSaveDate = s.Get("saveDate");
+	txSaveTime = s.Get("saveTime");
+	txSavePlayers = s.Get("savePlayers");
+	txSaveName = s.Get("saveName");
+	txSavedGameN = s.Get("savedGameN");
 
 	bt[1].text = GUI.txCancel;
 }

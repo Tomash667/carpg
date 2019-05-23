@@ -32,9 +32,9 @@ static INT_PTR CALLBACK PickLanguageDialogProc(HWND hwndDlg, uint uMsg, WPARAM w
 			Tokenizer t;
 
 			// szukaj plików z informacj¹ o jêzyku
-			for(Language::LanguageMap* p_lmap : Language::GetLanguages())
+			for(Language::Map* p_lmap : Language::GetLanguages())
 			{
-				Language::LanguageMap& lmap = *p_lmap;
+				Language::Map& lmap = *p_lmap;
 
 				// parse locale
 				t.FromString(lmap["locale"]);
@@ -174,7 +174,7 @@ bool ShowPickLanguageDialog(string& lang)
 static void UpdateTexts(HWND hwndDlg, int select_index)
 {
 	// update texts
-	Language::LanguageMap& lmap = *Language::GetLanguages()[select_index];
+	Language::Map& lmap = *Language::GetLanguages()[select_index];
 	auto it = lmap.find("text"), end = lmap.end();
 	if(it != end)
 		SetDlgItemText(hwndDlg, IDC_STATIC1, it->second.c_str());

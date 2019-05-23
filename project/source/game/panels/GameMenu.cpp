@@ -17,9 +17,10 @@ GameMenu::GameMenu(const DialogInfo& info) : DialogBox(info), prev_can_save(true
 //=================================================================================================
 void GameMenu::LoadLanguage()
 {
-	txSave = Str("saveGame");
-	txSaveAndExit = Str("saveAndExit");
-	txExitToMenuDialog = Str("exitToMenuDialog");
+	Language::Section& s = Language::GetSection("GameMenu");
+	txSave = s.Get("saveGame");
+	txSaveAndExit = s.Get("saveAndExit");
+	txExitToMenuDialog = s.Get("exitToMenuDialog");
 
 	cstring names[] = {
 		"returnToGame",
@@ -36,7 +37,7 @@ void GameMenu::LoadLanguage()
 	{
 		bt[i].id = IdReturnToGame + i;
 		bt[i].parent = this;
-		bt[i].text = Str(names[i]);
+		bt[i].text = s.Get(names[i]);
 		bt[i].size = GUI.default_font->CalculateSize(bt[i].text) + Int2(24, 24);
 
 		maxsize = Int2::Max(maxsize, bt[i].size);

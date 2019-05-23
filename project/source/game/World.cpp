@@ -63,32 +63,36 @@ struct TmpLocation : public Location
 void World::LoadLanguage()
 {
 	txDate = Str("dateFormat");
-	txEncCrazyMage = Str("encCrazyMage");
-	txEncCrazyHeroes = Str("encCrazyHeroes");
-	txEncCrazyCook = Str("encCrazyCook");
-	txEncMerchant = Str("encMerchant");
-	txEncHeroes = Str("encHeroes");
-	txEncSingleHero = Str("encSingleHero");
-	txEncBanditsAttackTravelers = Str("encBanditsAttackTravelers");
-	txEncHeroesAttack = Str("encHeroesAttack");
-	txEncGolem = Str("encGolem");
-	txEncCrazy = Str("encCrazy");
-	txEncUnk = Str("encUnk");
-	txEncEnemiesCombat = Str("encEnemiesCombat");
+
+	// encounters
+	Language::Section s = Language::GetSection("Encounters");
+	txEncCrazyMage = s.Get("encCrazyMage");
+	txEncCrazyHeroes = s.Get("encCrazyHeroes");
+	txEncCrazyCook = s.Get("encCrazyCook");
+	txEncMerchant = s.Get("encMerchant");
+	txEncHeroes = s.Get("encHeroes");
+	txEncSingleHero = s.Get("encSingleHero");
+	txEncBanditsAttackTravelers = s.Get("encBanditsAttackTravelers");
+	txEncHeroesAttack = s.Get("encHeroesAttack");
+	txEncGolem = s.Get("encGolem");
+	txEncCrazy = s.Get("encCrazy");
+	txEncUnk = s.Get("encUnk");
+	txEncEnemiesCombat = s.Get("encEnemiesCombat");
 
 	// location names
-	txCamp = Str("camp");
-	txCave = Str("cave");
-	txCity = Str("city");
-	txCrypt = Str("crypt");
-	txDungeon = Str("dungeon");
-	txForest = Str("forest");
-	txVillage = Str("village");
-	txMoonwell = Str("moonwell");
-	txOtherness = Str("otherness");
-	txRandomEncounter = Str("randomEncounter");
-	txTower = Str("tower");
-	txLabyrinth = Str("labyrinth");
+	s = Language::GetSection("Locations");
+	txCamp = s.Get("camp");
+	txCave = s.Get("cave");
+	txCity = s.Get("city");
+	txCrypt = s.Get("crypt");
+	txDungeon = s.Get("dungeon");
+	txForest = s.Get("forest");
+	txVillage = s.Get("village");
+	txMoonwell = s.Get("moonwell");
+	txOtherness = s.Get("otherness");
+	txRandomEncounter = s.Get("randomEncounter");
+	txTower = s.Get("tower");
+	txLabyrinth = s.Get("labyrinth");
 }
 
 //=================================================================================================

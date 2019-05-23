@@ -302,12 +302,14 @@ Controls::Controls(const DialogInfo& info) : GameDialogBox(info), picked(-1)
 //=================================================================================================
 void Controls::LoadLanguage()
 {
-	bts[0].text = Str("resetKeys");
+	Language::Section& s = Language::GetSection("Controls");
+
+	bts[0].text = s.Get("resetKeys");
 	bts[1].text = GUI.txOk;
 
-	grid.AddColumn(Grid::TEXT, 200, Str("action"));
-	grid.AddColumn(Grid::TEXT, 175, Str("key_1"));
-	grid.AddColumn(Grid::TEXT, 175, Str("key_2"));
+	grid.AddColumn(Grid::TEXT, 200, s.Get("action"));
+	grid.AddColumn(Grid::TEXT, 175, s.Get("key_1"));
+	grid.AddColumn(Grid::TEXT, 175, s.Get("key_2"));
 	grid.Init();
 
 	InitKeyText();
@@ -435,10 +437,11 @@ void Controls::GetCell(int item, int column, Cell& cell)
 //=================================================================================================
 void Controls::InitKeyText()
 {
+	Language::Section& s = Language::GetSection("Keys");
 	for(int i = 0; i < n_texts; ++i)
 	{
 		if(IS_SET(in_text[i], 0x02))
-			key_text[i] = Str(Format("k%d", i));
+			key_text[i] = s.Get(Format("k%d", i));
 		else
 			key_text[i] = nullptr;
 	}

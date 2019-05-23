@@ -50,15 +50,17 @@ MultiplayerPanel::MultiplayerPanel(const DialogInfo& info) : GameDialogBox(info)
 //=================================================================================================
 void MultiplayerPanel::LoadLanguage()
 {
-	txMultiplayerGame = Str("multiplayerGame");
-	txNick = Str("nick");
-	txNeedEnterNick = Str("needEnterNick");
-	txEnterValidNick = Str("enterValidNick");
+	Language::Section& s = Language::GetSection("MultiplayerPanel");
 
-	bts[0].text = Str("join");
-	bts[1].text = Str("joinIP");
-	bts[2].text = Str("host");
-	bts[3].text = Str("load");
+	txMultiplayerGame = s.Get("multiplayerGame");
+	txNick = s.Get("nick");
+	txNeedEnterNick = s.Get("needEnterNick");
+	txEnterValidNick = s.Get("enterValidNick");
+
+	bts[0].text = s.Get("join");
+	bts[1].text = s.Get("joinIP");
+	bts[2].text = s.Get("host");
+	bts[3].text = s.Get("load");
 	bts[4].text = GUI.txCancel;
 }
 

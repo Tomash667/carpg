@@ -48,8 +48,9 @@ void Settings::InitGameKeys()
 	GKey[GK_SHORTCUT9].id = "keyShortcut9";
 	GKey[GK_SHORTCUT10].id = "keyShortcut10";
 
+	Language::Section& s = Language::GetSection("GameKeys");
 	for(int i = 0; i < GK_MAX; ++i)
-		GKey[i].text = Str(GKey[i].id);
+		GKey[i].text = s.Get(GKey[i].id);
 }
 
 //=================================================================================================

@@ -85,7 +85,7 @@ GameGui::~GameGui()
 //=================================================================================================
 void GameGui::LoadLanguage()
 {
-	Language::LanguageSection s = Language::GetSection("GameGui");
+	Language::Section s = Language::GetSection("GameGui");
 	txDeath = s.Get("death");
 	txDeathAlone = s.Get("deathAlone");
 	txGameTimeout = s.Get("gameTimeout");

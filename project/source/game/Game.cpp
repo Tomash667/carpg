@@ -981,11 +981,11 @@ void Game::RestartGame()
 //=================================================================================================
 void Game::SetStatsText()
 {
-	// typ broni
-	WeaponTypeInfo::info[WT_SHORT_BLADE].name = Str("wt_shortBlade");
-	WeaponTypeInfo::info[WT_LONG_BLADE].name = Str("wt_longBlade");
-	WeaponTypeInfo::info[WT_BLUNT].name = Str("wt_blunt");
-	WeaponTypeInfo::info[WT_AXE].name = Str("wt_axe");
+	Language::Section s = Language::GetSection("WeaponTypes");
+	WeaponTypeInfo::info[WT_SHORT_BLADE].name = s.Get("shortBlade");
+	WeaponTypeInfo::info[WT_LONG_BLADE].name = s.Get("longBlade");
+	WeaponTypeInfo::info[WT_BLUNT].name = s.Get("blunt");
+	WeaponTypeInfo::info[WT_AXE].name = s.Get("axe");
 }
 
 //=================================================================================================
@@ -1192,7 +1192,6 @@ void Game::SetGameText()
 	txGameResumed = Str("gameResumed");
 	txDevmodeOn = Str("devmodeOn");
 	txDevmodeOff = Str("devmodeOff");
-	txPlayerLeft = Str("playerLeft");
 	txPlayerDisconnected = Str("playerDisconnected");
 	txPlayerQuit = Str("playerQuit");
 	txPlayerKicked = Str("playerKicked");

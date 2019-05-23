@@ -26,14 +26,14 @@ Journal::Journal() : mode(Quests), game(Game::Get())
 //=================================================================================================
 void Journal::LoadLanguage()
 {
-	txAdd = Str("add");
-	txNoteText = Str("noteText");
-	txNoQuests = Str("noQuests");
-	txNoRumors = Str("noRumors");
-	txNoNotes = Str("noNotes");
-	txAddNote = Str("addNote");
-	txAddTime = Str("addTime");
-
+	Language::Section s = Language::GetSection("Journal");
+	txAdd = s.Get("add");
+	txNoteText = s.Get("noteText");
+	txNoQuests = s.Get("noQuests");
+	txNoRumors = s.Get("noRumors");
+	txNoNotes = s.Get("noNotes");
+	txAddNote = s.Get("addNote");
+	txAddTime = s.Get("addTime");
 }
 
 //=================================================================================================

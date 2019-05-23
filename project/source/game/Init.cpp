@@ -261,8 +261,6 @@ void Game::LoadLanguageFiles()
 	Info("Game: Loading language files.");
 	gui->load_screen->Tick(txLoadingLanguageFiles);
 
-	Language::LoadFile("menu.txt");
-	Language::LoadFile("stats.txt");
 	Language::LoadLanguageFiles();
 
 	SetGameCommonText();
@@ -280,7 +278,6 @@ void Game::LoadLanguageFiles()
 	txLoadSounds = Str("loadSounds");
 	txLoadMusic = Str("loadMusic");
 	txGenerateWorld = Str("generateWorld");
-
 	txHaveErrors = Str("haveErrors");
 
 	for(GameComponent* component : components)

@@ -52,7 +52,8 @@ private:
 	CheckVersionStatus check_status;
 	int version_new;
 	string version_text, version_changelog;
-	cstring txInfoText, txVersion;
+	cstring txInfoText, txVersion, txCheckingVersion, txNewVersion, txNewVersionDialog, txChanges, txDownload, txSkip, txNewerVersion, txNoNewVersion,
+		txCheckVersionError;
 	thread check_version_thread;
 	bool check_updates;
 };

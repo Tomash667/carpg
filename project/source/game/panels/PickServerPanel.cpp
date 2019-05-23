@@ -56,7 +56,7 @@ void PickServerPanel::LoadLanguage()
 	txFailedToGetServers = s.Get("failedToGetServers");
 	txInvalidServerVersion = s.Get("invalidServerVersion");
 
-	bts[0].text = Str("join");
+	bts[0].text = s.Get("join");
 	bts[1].text = GUI.txCancel;
 
 	cb_internet.text = s.Get("internet");
@@ -180,7 +180,7 @@ void PickServerPanel::Update(float dt)
 					Warn("PickServer: Broken response from %.", packet->systemAddress.ToString());
 					break;
 				}
-				
+
 				// search for server in list
 				bool found = false;
 				int index = 0;

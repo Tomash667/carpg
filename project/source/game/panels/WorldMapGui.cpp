@@ -45,17 +45,18 @@ WorldMapGui::WorldMapGui() : game(Game::Get()), zoom(1.2f), offset(0.f, 0.f), fo
 //=================================================================================================
 void WorldMapGui::LoadLanguage()
 {
-	txWorldDate = Str("worldDate");
-	txCurrentLoc = Str("currentLoc");
-	txCitizens = Str("citizens");
-	txAvailable = Str("available");
-	txTarget = Str("target");
-	txDistance = Str("distance");
-	txTravelTime = Str("travelTime");
-	txDay = Str("day");
-	txDays = Str("days");
-	txOnlyLeaderCanTravel = Str("onlyLeaderCanTravel");
-	txBuildings = Str("buildings");
+	Language::Section& s = Language::GetSection("WorldMap");
+	txWorldDate = s.Get("worldDate");
+	txCurrentLoc = s.Get("currentLoc");
+	txCitizens = s.Get("citizens");
+	txAvailable = s.Get("available");
+	txTarget = s.Get("target");
+	txDistance = s.Get("distance");
+	txTravelTime = s.Get("travelTime");
+	txDay = s.Get("day");
+	txDays = s.Get("days");
+	txOnlyLeaderCanTravel = s.Get("onlyLeaderCanTravel");
+	txBuildings = s.Get("buildings");
 }
 
 //=================================================================================================

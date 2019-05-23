@@ -41,34 +41,36 @@ TeamPanel::TeamPanel() : game(Game::Get())
 //=================================================================================================
 void TeamPanel::LoadLanguage()
 {
-	bt[0].text = Str("giveGold");
-	bt[1].text = Str("payCredit");
-	bt[2].text = Str("changeLeader");
-	bt[3].text = Str("kick");
+	Language::Section& s = Language::GetSection("TeamPanel");
 
-	txTeam = Str("team");
-	txCharInTeam = Str("charInTeam");
-	txPing = Str("charPing");
-	txDays = Str("charDays");
-	txPickCharacter = Str("pickCharacter");
-	txNoCredit = Str("noCredit");
-	txPayCreditAmount = Str("payCreditAmount");
-	txNotEnoughGold = Str("notEnoughGold");
-	txPaidCredit = Str("paidCredit");
-	txPaidCreditPart = Str("paidCreditPart");
-	txGiveGoldSelf = Str("giveGoldSelf");
-	txGiveGoldAmount = Str("giveGoldAmount");
-	txOnlyPcLeader = Str("onlyPcLeader");
-	txAlreadyLeader = Str("alreadyLeader");
-	txYouAreLeader = Str("youAreLeader");
-	txCantChangeLeader = Str("cantChangeLeader");
-	txPcAlreadyLeader = Str("pcAlreadyLeader");
-	txPcIsLeader = Str("pcIsLeader");
-	txCantKickMyself = Str("cantKickMyself");
-	txCantKickAi = Str("cantKickAi");
-	txReallyKick = Str("reallyKick");
-	txAlreadyLeft = Str("alreadyLeft");
-	txCAlreadyLeft = Str("cAlreadyLeft");
+	bt[0].text = s.Get("giveGold");
+	bt[1].text = s.Get("payCredit");
+	bt[2].text = s.Get("changeLeader");
+	bt[3].text = s.Get("kick");
+
+	txTeam = s.Get("team");
+	txCharInTeam = s.Get("charInTeam");
+	txPing = s.Get("charPing");
+	txDays = s.Get("charDays");
+	txPickCharacter = s.Get("pickCharacter");
+	txNoCredit = s.Get("noCredit");
+	txPayCreditAmount = s.Get("payCreditAmount");
+	txNotEnoughGold = s.Get("notEnoughGold");
+	txPaidCredit = s.Get("paidCredit");
+	txPaidCreditPart = s.Get("paidCreditPart");
+	txGiveGoldSelf = s.Get("giveGoldSelf");
+	txGiveGoldAmount = s.Get("giveGoldAmount");
+	txOnlyPcLeader = s.Get("onlyPcLeader");
+	txAlreadyLeader = s.Get("alreadyLeader");
+	txYouAreLeader = s.Get("youAreLeader");
+	txCantChangeLeader = s.Get("cantChangeLeader");
+	txPcAlreadyLeader = s.Get("pcAlreadyLeader");
+	txPcIsLeader = s.Get("pcIsLeader");
+	txCantKickMyself = s.Get("cantKickMyself");
+	txCantKickAi = s.Get("cantKickAi");
+	txReallyKick = s.Get("reallyKick");
+	txAlreadyLeft = s.Get("alreadyLeft");
+	txCAlreadyLeft = s.Get("cAlreadyLeft");
 }
 
 //=================================================================================================
