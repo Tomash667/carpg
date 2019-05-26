@@ -9,6 +9,15 @@
 #include "Level.h"
 #include "ResourceManager.h"
 
+enum UnitType
+{
+	UNIT_ME,
+	UNIT_TEAM,
+	UNIT_ENEMY,
+	UNIT_NPC,
+	UNIT_CORPSE
+};
+
 //=================================================================================================
 Minimap::Minimap()
 {
@@ -19,42 +28,43 @@ Minimap::Minimap()
 void Minimap::LoadData()
 {
 	auto& tex_mgr = ResourceManager::Get<Texture>();
-	tex_mgr.AddLoadTask("mini_unit.png", tMiniunit[0]);
-	tex_mgr.AddLoadTask("mini_unit2.png", tMiniunit[1]);
-	tex_mgr.AddLoadTask("mini_unit3.png", tMiniunit[2]);
-	tex_mgr.AddLoadTask("mini_unit4.png", tMiniunit[3]);
-	tex_mgr.AddLoadTask("mini_unit5.png", tMiniunit[4]);
-	tex_mgr.AddLoadTask("schody_dol.png", tSchodyDol);
-	tex_mgr.AddLoadTask("schody_gora.png", tSchodyGora);
-	tex_mgr.AddLoadTask("mini_bag.png", tMinibag);
-	tex_mgr.AddLoadTask("mini_bag2.png", tMinibag2);
-	tex_mgr.AddLoadTask("mini_portal.png", tMiniportal);
+	tex_mgr.AddLoadTask("mini_unit.png", tUnit[UNIT_ME]);
+	tex_mgr.AddLoadTask("mini_unit2.png", tUnit[UNIT_TEAM]);
+	tex_mgr.AddLoadTask("mini_unit3.png", tUnit[UNIT_ENEMY]);
+	tex_mgr.AddLoadTask("mini_unit4.png", tUnit[UNIT_NPC]);
+	tex_mgr.AddLoadTask("mini_unit5.png", tUnit[UNIT_CORPSE]);
+	tex_mgr.AddLoadTask("schody_dol.png", tStairsDown);
+	tex_mgr.AddLoadTask("schody_gora.png", tStairsUp);
+	tex_mgr.AddLoadTask("mini_bag.png", tBag);
+	tex_mgr.AddLoadTask("mini_bag2.png", tBagImportant);
+	tex_mgr.AddLoadTask("mini_portal.png", tPortal);
+	tex_mgr.AddLoadTask("mini_chest.png", tChest);
 }
 
 //=================================================================================================
-void Minimap::Draw(ControlDrawData* /*cdd*/)
+void Minimap::Draw(ControlDrawData*)
 {
 	Game& game = Game::Get();
 	LOCATION type = L.location->type;
 
-	// tekstura minimapy
+	// map texture
 	Rect r = { global_pos.x, global_pos.y, global_pos.x + size.x, global_pos.y + size.y };
 	Rect r_part = { 0, 0, minimap_size, minimap_size };
 	GUI.DrawSpriteRectPart(game.tMinimap, r, r_part, Color::Alpha(140));
 
-	// schody w podziemiach
+	// stairs
 	if(type == L_DUNGEON || type == L_CRYPT || type == L_CAVE)
 	{
 		InsideLocation* inside = (InsideLocation*)L.location;
 		InsideLocationLevel& lvl = inside->GetLevelData();
 
 		if(inside->HaveDownStairs() && IS_SET(lvl.map[lvl.staircase_down(lvl.w)].flags, Tile::F_REVEALED))
-			GUI.DrawSprite(tSchodyDol, Int2(TileToPoint(lvl.staircase_down)) - Int2(16, 16), Color::Alpha(180));
+			GUI.DrawSprite(tStairsDown, Int2(TileToPoint(lvl.staircase_down)) - Int2(16, 16), Color::Alpha(180));
 		if(inside->HaveUpStairs() && IS_SET(lvl.map[lvl.staircase_up(lvl.w)].flags, Tile::F_REVEALED))
-			GUI.DrawSprite(tSchodyGora, Int2(TileToPoint(lvl.staircase_up)) - Int2(16, 16), Color::Alpha(180));
+			GUI.DrawSprite(tStairsUp, Int2(TileToPoint(lvl.staircase_up)) - Int2(16, 16), Color::Alpha(180));
 	}
 
-	// portale
+	// portals
 	Portal* p = L.location->portal;
 	InsideLocationLevel* lvl = nullptr;
 	if(L.location->type == L_DUNGEON || L.location->type == L_CRYPT || L.location->type == L_CAVE)
@@ -62,11 +72,24 @@ void Minimap::Draw(ControlDrawData* /*cdd*/)
 	while(p)
 	{
 		if(!lvl || (L.dungeon_level == p->at_level && lvl->IsTileVisible(p->pos)))
-			GUI.DrawSprite(tMiniportal, Int2(TileToPoint(PosToPt(p->pos))) - Int2(24, 8), Color::Alpha(180));
+			GUI.DrawSprite(tPortal, Int2(TileToPoint(PosToPt(p->pos))) - Int2(24, 8), Color::Alpha(180));
 		p = p->next_portal;
 	}
 
-	// przedmioty
+	// chests
+	if(L.local_ctx.chests)
+	{
+		for(Chest* chest : *L.local_ctx.chests)
+		{
+			if(!lvl || lvl->IsTileVisible(chest->pos))
+			{
+				m1 = Matrix::Transform2D(&Vec2(16, 16), 0.f, &Vec2(0.5f, 0.5f), nullptr, 0.f, &(PosToPoint(Vec2(chest->pos.x, chest->pos.z)) - Vec2(16, 16)));
+				GUI.DrawSpriteTransform(tChest, m1, Color::Alpha(140));
+			}
+		}
+	}
+
+	// items
 	LocalVector<GroundItem*> important_items;
 	for(vector<GroundItem*>::iterator it = L.local_ctx.items->begin(), end = L.local_ctx.items->end(); it != end; ++it)
 	{
@@ -75,7 +98,7 @@ void Minimap::Draw(ControlDrawData* /*cdd*/)
 		else if(!lvl || lvl->IsTileVisible((*it)->pos))
 		{
 			m1 = Matrix::Transform2D(&Vec2(16, 16), 0.f, &Vec2(0.25f, 0.25f), nullptr, 0.f, &(PosToPoint(Vec2((*it)->pos.x, (*it)->pos.z)) - Vec2(16, 16)));
-			GUI.DrawSpriteTransform(tMinibag, m1, Color::Alpha(140));
+			GUI.DrawSpriteTransform(tBag, m1, Color::Alpha(140));
 		}
 	}
 	for(vector<GroundItem*>::iterator it = important_items->begin(), end = important_items->end(); it != end; ++it)
@@ -83,31 +106,31 @@ void Minimap::Draw(ControlDrawData* /*cdd*/)
 		if(!lvl || lvl->IsTileVisible((*it)->pos))
 		{
 			m1 = Matrix::Transform2D(&Vec2(16, 16), 0.f, &Vec2(0.25f, 0.25f), nullptr, 0.f, &(PosToPoint(Vec2((*it)->pos.x, (*it)->pos.z)) - Vec2(16, 16)));
-			GUI.DrawSpriteTransform(tMinibag2, m1, Color::Alpha(140));
+			GUI.DrawSpriteTransform(tBagImportant, m1, Color::Alpha(140));
 		}
 	}
 
-	// obrazek postaci
+	// team members
 	for(Unit* unit : Team.members)
 	{
 		m1 = Matrix::Transform2D(&Vec2(16, 16), 0.f, &Vec2(0.25f, 0.25f), &Vec2(16, 16), unit->rot, &(PosToPoint(GetMapPosition(*unit)) - Vec2(16, 16)));
-		GUI.DrawSpriteTransform(tMiniunit[unit == game.pc->unit ? 0 : 1], m1, Color::Alpha(140));
+		GUI.DrawSpriteTransform(tUnit[unit == game.pc->unit ? UNIT_ME : UNIT_TEAM], m1, Color::Alpha(140));
 	}
 
-	// obrazki pozosta³ych postaci
+	// other units
 	for(vector<Unit*>::iterator it = L.local_ctx.units->begin(), end = L.local_ctx.units->end(); it != end; ++it)
 	{
 		Unit& u = **it;
 		if((u.IsAlive() || u.mark) && !u.IsTeamMember() && (!lvl || lvl->IsTileVisible(u.pos)))
 		{
 			m1 = Matrix::Transform2D(&Vec2(16, 16), 0.f, &Vec2(0.25f, 0.25f), &Vec2(16, 16), (*it)->rot, &(PosToPoint(GetMapPosition(u)) - Vec2(16, 16)));
-			GUI.DrawSpriteTransform(tMiniunit[u.IsAlive() ? (u.IsEnemy(*game.pc->unit) ? 2 : 3) : 4], m1, Color::Alpha(140));
+			GUI.DrawSpriteTransform(tUnit[u.IsAlive() ? (u.IsEnemy(*game.pc->unit) ? UNIT_ENEMY : UNIT_NPC) : UNIT_CORPSE], m1, Color::Alpha(140));
 		}
 	}
 
 	if(L.city_ctx)
 	{
-		// teksty w mieœcie
+		// building names
 		for(Text& text : texts)
 		{
 			Int2 pt(Convert(text.pos));
@@ -115,7 +138,7 @@ void Minimap::Draw(ControlDrawData* /*cdd*/)
 			GUI.DrawText(GUI.default_font, text.text, DTF_SINGLELINE, Color::Black, rect);
 		}
 
-		// linie do tekstów
+		// lines from building name to building
 		GUI.LineBegin();
 		for(vector<Text>::iterator it = texts.begin(), end = texts.end(); it != end; ++it)
 		{
@@ -128,7 +151,7 @@ void Minimap::Draw(ControlDrawData* /*cdd*/)
 		GUI.LineEnd();
 	}
 
-	// nazwa lokacji
+	// location name
 	Rect rect = { 0,0,GUI.wnd_size.x - 8,GUI.wnd_size.y - 8 };
 	GUI.DrawText(GUI.default_font, L.GetCurrentLocationText(), DTF_RIGHT | DTF_OUTLINE, Color(255, 0, 0, 222), rect);
 }
@@ -157,7 +180,7 @@ void Minimap::Update(float dt)
 				{
 					Vec2 dir = it->pos - it2->pos;
 					dir.Normalize();
-					it->pos += dir*dt;
+					it->pos += dir * dt;
 				}
 			}
 		}

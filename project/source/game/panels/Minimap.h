@@ -59,6 +59,6 @@ public:
 	City* city;
 
 private:
-	TEX tMiniunit[5], tSchodyDol, tSchodyGora, tMinibag, tMinibag2, tMiniportal;
+	TEX tUnit[5], tStairsDown, tStairsUp, tBag, tBagImportant, tPortal, tChest;
 	int minimap_size;
 };

@@ -8,6 +8,7 @@ Version 0.11 (2019-??-??):
 + player can now cancel attack by hiding weapon
 + player can rotate camera when lying on ground
 + summoned wolf follow owner, heroes follow player that asked for it
++ drawing chests on minimap
 - fixed skeleton corpse animation moving it thru wall making it not lootable [Zielu]
 - fixed rare crash when alt tabbing at startup
 - fixed grass under moon well

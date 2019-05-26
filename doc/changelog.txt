@@ -8,6 +8,7 @@ Wersja 0.11 (2019-??-??):
 + gracz mo¿e teraz schowaæ broñ w celu anulowania ataku
 + gracz mo¿e obracaæ kamerê le¿¹c na ziemi
 + przywo³any wilk pod¹¿a za w³aœcicielem a nie przywódc¹ dru¿yny, bohaterowie pod¹¿aj¹ za osob¹ która im to powie
++ wyœwietlanie skrzyñ na minimapie
 - naprawione pozycjonowanie szkieletów po œmierci tak by nie wpada³y w œciany gdzie nie mo¿na ich ograbiæ [Zielu]
 - naprawiony rzadki crash przy u¿ywaniu alt tab przy uruchamianiu gry
 - brak trawy wystaj¹cej spod ksiê¿ycowej studni
