@@ -217,8 +217,18 @@ object mushrooms {
 }
 
 object stalactite {
-	mesh "stalaktyt.qmsh"
+	mesh "stalactite.qmsh"
 	flags no_physics
+}
+
+object stalagmite {
+	mesh "stalagmite.qmsh"
+	cylinder { 0.2 0.5 }
+}
+
+object stalagmite2 {
+	mesh "stalagmite2.qmsh"
+	cylinder { 0.2 4 }
 }
 
 object plant2 {

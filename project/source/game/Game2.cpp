@@ -5358,7 +5358,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 				if(it->owner && it->owner->IsFriend(*hitted) || it->attack < -50.f)
 				{
 					// friendly fire
-					if(hitted->action == A_BLOCK && AngleDiff(Clip(it->rot.y + PI), hitted->rot) < PI * 2 / 5)
+					if(hitted->IsBlocking() && AngleDiff(Clip(it->rot.y + PI), hitted->rot) < PI * 2 / 5)
 					{
 						MATERIAL_TYPE mat = hitted->GetShield().material;
 						sound_mgr->PlaySound3d(GetMaterialSound(MAT_IRON, mat), hitpoint, ARROW_HIT_SOUND_DIST);
@@ -5402,7 +5402,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 				// apply modifiers
 				float attack = it->attack * m;
 
-				if(hitted->action == A_BLOCK && angle_dif < PI * 2 / 5)
+				if(hitted->IsBlocking() && angle_dif < PI * 2 / 5)
 				{
 					// play sound
 					MATERIAL_TYPE mat = hitted->GetShield().material;
@@ -5421,7 +5421,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 						hitted->player->Train(TrainWhat::BlockBullet, attack / hitted->hpmax, it->level);
 
 					// reduce damage
-					float block = hitted->CalculateBlock() * hitted->mesh_inst->groups[1].GetBlendT() * (1.f - angle_dif / (PI * 2 / 5));
+					float block = hitted->CalculateBlock() * hitted->GetBlockMod() * (1.f - angle_dif / (PI * 2 / 5));
 					float stamina = min(block, attack);
 					attack -= block;
 					hitted->RemoveStaminaBlock(stamina);
@@ -5531,7 +5531,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 					SpellHitEffect(ctx, *it, hitpoint, hitted);
 
 					// dŸwiêk trafienia w postaæ
-					if(hitted->action == A_BLOCK && AngleDiff(Clip(it->rot.y + PI), hitted->rot) < PI * 2 / 5)
+					if(hitted->IsBlocking() && AngleDiff(Clip(it->rot.y + PI), hitted->rot) < PI * 2 / 5)
 					{
 						MATERIAL_TYPE mat = hitted->GetShield().material;
 						sound_mgr->PlaySound3d(GetMaterialSound(MAT_IRON, mat), hitpoint, ARROW_HIT_SOUND_DIST);
@@ -5558,9 +5558,9 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 				float angle_dif = AngleDiff(it->rot.y, hitted->rot);
 				float base_dmg = dmg;
 
-				if(hitted->action == A_BLOCK && angle_dif < PI * 2 / 5)
+				if(hitted->IsBlocking() && angle_dif < PI * 2 / 5)
 				{
-					float block = hitted->CalculateBlock() * hitted->mesh_inst->groups[1].GetBlendT() * (1.f - angle_dif / (PI * 2 / 5));
+					float block = hitted->CalculateBlock() * hitted->GetBlockMod() * (1.f - angle_dif / (PI * 2 / 5));
 					float stamina = min(dmg, block);
 					dmg -= block / 2;
 					hitted->RemoveStaminaBlock(stamina);
@@ -5985,7 +5985,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 	attack *= m;
 
 	// blocking
-	if(hitted.action == A_BLOCK && angle_dif < PI / 2)
+	if(hitted.IsBlocking() && angle_dif < PI / 2)
 	{
 		// play sound
 		MATERIAL_TYPE hitted_mat = hitted.GetShield().material;
@@ -6005,7 +6005,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 			hitted.player->Train(TrainWhat::BlockAttack, attack / hitted.hpmax, attacker.level);
 
 		// reduce damage
-		float block = hitted.CalculateBlock() * hitted.mesh_inst->groups[1].GetBlendT();
+		float block = hitted.CalculateBlock() * hitted.GetBlockMod();
 		float stamina = min(attack, block);
 		if(IS_SET(attacker.data->flags2, F2_IGNORE_BLOCK))
 			block *= 2.f / 3;

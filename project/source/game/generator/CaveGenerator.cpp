@@ -456,13 +456,14 @@ void CaveGenerator::GenerateObjects()
 		}
 	}
 
-	// rocks
-	base_obj = BaseObject::Get("rock");
+	// stalagmites
+	base_obj = BaseObject::Get("stalagmite");
+	BaseObject* base_obj2 = BaseObject::Get("stalagmite2");
 	for(int i = 0; i < 80; ++i)
 	{
 		Int2 pt = cave->GetRandomTile();
 		if(lvl.map[pt.x + pt.y*lvl.w].type == EMPTY)
-			GenerateDungeonObject(lvl, pt, base_obj);
+			GenerateDungeonObject(lvl, pt, Rand() % 2 == 0 ? base_obj : base_obj2);
 	}
 
 	if(L.location_index == QM.quest_mine->target_loc)
