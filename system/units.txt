@@ -3129,7 +3129,7 @@ group heroes {
 group tournament {
 	hero_warrior 3
 	hero_hunter 2
-	hero_rouge 2
+	hero_rogue 2
 	hero_mage 1
 }
 

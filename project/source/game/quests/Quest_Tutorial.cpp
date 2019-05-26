@@ -41,8 +41,6 @@ void Quest_Tutorial::Start()
 	in_tutorial = true;
 	state = 0;
 	texts.clear();
-	shield = nullptr;
-	shield2 = nullptr;
 	QM.quest_contest->state = Quest_Contest::CONTEST_NOT_DONE;
 	game.pc_data.autowalk = false;
 	game.pc->shortcuts[2].type = Shortcut::TYPE_NONE; // disable action in tutorial
@@ -62,6 +60,7 @@ void Quest_Tutorial::Start()
 	loc->name = txTutLoc;
 	loc->type = L_DUNGEON;
 	loc->image = LI_DUNGEON;
+	loc->group = UnitGroup::empty;
 	W.StartInLocation(loc);
 	L.dungeon_level = 0;
 
@@ -101,80 +100,7 @@ state:
 //=================================================================================================
 void Quest_Tutorial::Update()
 {
-	Game& game = Game::Get();
-	PlayerController* pc = game.pc;
-
-	// atakowanie manekina
-	if(pc->unit->action == A_ATTACK && pc->unit->animation_state == 1 && !pc->unit->hitted && pc->unit->mesh_inst->GetProgress2() >= pc->unit->GetAttackFrame(1)
-		&& Vec3::Distance(pc->unit->pos, dummy) < 5.f)
-	{
-		Mesh::Point* hitbox, *point;
-		hitbox = pc->unit->GetWeapon().mesh->FindPoint("hit");
-		point = pc->unit->mesh_inst->mesh->GetPoint(NAMES::point_weapon);
-
-		Obbox obox1, obox2;
-
-		// calculate hitbox matrix
-		Matrix m_unit = Matrix::RotationY(pc->unit->rot) * Matrix::Translation(pc->unit->pos);
-		Matrix m_weapon = point->mat * pc->unit->mesh_inst->mat_bones[point->bone] * m_unit;
-		Matrix m_hitbox = hitbox->mat * m_weapon;
-
-		// create weapon hitbox oriented bounding box
-		obox1.pos = Vec3::TransformZero(m_hitbox);
-		obox1.size = hitbox->size / 2;
-		obox1.rot = m_hitbox;
-
-		// create dummy oriented bounding box
-		obox2.pos = dummy;
-		obox2.pos.y += 1.f;
-		obox2.size = Vec3(0.6f, 2.f, 0.6f);
-		obox2.rot = Matrix::IdentityMatrix;
-
-		Vec3 hitpoint;
-
-		// sprawdŸ czy jest kolizja
-		if(OrientedBoxToOrientedBox(obox1, obox2, &hitpoint))
-		{
-			pc->unit->hitted = true;
-			ParticleEmitter* pe = new ParticleEmitter;
-			pe->tex = game.tIskra;
-			pe->emision_interval = 0.01f;
-			pe->life = 5.f;
-			pe->particle_life = 0.5f;
-			pe->emisions = 1;
-			pe->spawn_min = 10;
-			pe->spawn_max = 15;
-			pe->max_particles = 15;
-			pe->pos = hitpoint;
-			pe->speed_min = Vec3(-1, 0, -1);
-			pe->speed_max = Vec3(1, 1, 1);
-			pe->pos_min = Vec3(-0.1f, -0.1f, -0.1f);
-			pe->pos_max = Vec3(0.1f, 0.1f, 0.1f);
-			pe->size = 0.3f;
-			pe->op_size = POP_LINEAR_SHRINK;
-			pe->alpha = 0.9f;
-			pe->op_alpha = POP_LINEAR_SHRINK;
-			pe->mode = 0;
-			pe->Init();
-			L.local_ctx.pes->push_back(pe);
-			// jest kolizja
-			game.sound_mgr->PlaySound3d(game.GetMaterialSound(MAT_IRON, MAT_ROCK), hitpoint, HIT_SOUND_DIST);
-			if(state == 5)
-			{
-				pc->Train(true, (int)SkillId::ONE_HANDED_WEAPON, TrainMode::Tutorial);
-				state = 6;
-				int activate = 4;
-				for(vector<Text>::iterator it = texts.begin(), end = texts.end(); it != end; ++it)
-				{
-					if(it->id == activate)
-					{
-						it->state = 1;
-						break;
-					}
-				}
-			}
-		}
-	}
+	PlayerController* pc = Game::Get().pc;
 
 	// check tutorial texts
 	for(Text& text : texts)
@@ -369,29 +295,48 @@ void Quest_Tutorial::HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit)
 }
 
 //=================================================================================================
-void Quest_Tutorial::HandleBulletCollision(void* ptr)
+void Quest_Tutorial::HandleMeleeAttackCollision()
 {
-	if((ptr == shield || ptr == shield2) && state == 12)
+	if(state != 5)
+		return;
+
+	Game::Get().pc->Train(true, (int)SkillId::ONE_HANDED_WEAPON, TrainMode::Tutorial);
+	state = 6;
+	int activate = 4;
+	for(vector<Text>::iterator it = texts.begin(), end = texts.end(); it != end; ++it)
 	{
-		Game::Get().pc->Train(true, (int)SkillId::BOW, TrainMode::Tutorial);
-		state = 13;
-		int unlock = 6;
-		int activate = 8;
-		for(vector<Text>::iterator it = texts.begin(), end = texts.end(); it != end; ++it)
+		if(it->id == activate)
 		{
-			if(it->id == activate)
-			{
-				it->state = 1;
-				break;
-			}
+			it->state = 1;
+			break;
 		}
-		for(vector<Door*>::iterator it = L.local_ctx.doors->begin(), end = L.local_ctx.doors->end(); it != end; ++it)
+	}
+}
+
+//=================================================================================================
+void Quest_Tutorial::HandleBulletCollision()
+{
+	if(state != 12)
+		return;
+
+	Game::Get().pc->Train(true, (int)SkillId::BOW, TrainMode::Tutorial);
+	state = 13;
+	int unlock = 6;
+	int activate = 8;
+	for(vector<Text>::iterator it = texts.begin(), end = texts.end(); it != end; ++it)
+	{
+		if(it->id == activate)
 		{
-			if((*it)->locked == LOCK_TUTORIAL + unlock)
-			{
-				(*it)->locked = LOCK_NONE;
-				break;
-			}
+			it->state = 1;
+			break;
+		}
+	}
+	for(vector<Door*>::iterator it = L.local_ctx.doors->begin(), end = L.local_ctx.doors->end(); it != end; ++it)
+	{
+		if((*it)->locked == LOCK_TUTORIAL + unlock)
+		{
+			(*it)->locked = LOCK_NONE;
+			break;
 		}
 	}
 }

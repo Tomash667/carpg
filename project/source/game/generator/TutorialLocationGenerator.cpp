@@ -249,13 +249,7 @@ void TutorialLocationGenerator::OnEnter()
 						}
 						break;
 					case 5:
-						{
-							Object* o = L.SpawnObjectEntity(L.local_ctx, BaseObject::Get("bow_target"), Vec3(2.f*x + 1, 0, 2.f*y + 1), -PI / 2);
-							if(quest.shield)
-								quest.shield2 = o;
-							else
-								quest.shield = o;
-						}
+						L.SpawnObjectEntity(L.local_ctx, BaseObject::Get("bow_target"), Vec3(2.f*x + 1, 0, 2.f*y + 1), -PI / 2);
 						break;
 					case 6:
 						{

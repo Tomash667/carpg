@@ -523,9 +523,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			utility::WaitForDelayLock(delay);
 	}
 
-	// system dir
-	g_system_dir = cfg.GetString("system", "system");
-
 	// console
 	if(console == None)
 		console = cfg.GetBool3("console", False);

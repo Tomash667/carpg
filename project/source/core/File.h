@@ -617,7 +617,7 @@ public:
 
 	static void WriteAll(Cstring filename, const string& text)
 	{
-		FileWriter f(filename);
+		TextWriter f(filename);
 		f << text;
 	}
 

@@ -3751,96 +3751,39 @@ bool Game::CheckForHit(LevelContext& ctx, Unit& unit, Unit*& hitted, Vec3& hitpo
 
 // Sprawdza czy jest kolizja hitboxa z jak¹œ postaci¹
 // S¹ dwie opcje:
-//  - _bone to punkt "bron", _hitbox to hitbox z bronii
-//  - _bone jest nullptr, _hitbox jest na modelu postaci
+//  - bone to punkt "bron", hitbox to hitbox z bronii
+//  - bone jest nullptr, hitbox jest na modelu postaci
 // Na drodze testów ustali³em ¿e najlepiej dzia³a gdy stosuje siê sam¹ funkcjê OrientedBoxToOrientedBox
-bool Game::CheckForHit(LevelContext& ctx, Unit& _unit, Unit*& _hitted, Mesh::Point& _hitbox, Mesh::Point* _bone, Vec3& _hitpoint)
+bool Game::CheckForHit(LevelContext& ctx, Unit& unit, Unit*& hitted, Mesh::Point& hitbox, Mesh::Point* bone, Vec3& hitpoint)
 {
-	assert(_hitted && _hitbox.IsBox());
-
-	//Box box1, box2;
+	assert(hitted && hitbox.IsBox());
 
 	// ustaw koœci
-	if(_unit.human_data)
-		_unit.mesh_inst->SetupBones(&_unit.human_data->mat_scale[0]);
+	if(unit.human_data)
+		unit.mesh_inst->SetupBones(&unit.human_data->mat_scale[0]);
 	else
-		_unit.mesh_inst->SetupBones();
+		unit.mesh_inst->SetupBones();
 
 	// oblicz macierz hitbox
 
 	// transformacja postaci
-	m1 = Matrix::RotationY(_unit.rot) * Matrix::Translation(_unit.pos); // m1 (World) = Rot * Pos
+	m1 = Matrix::RotationY(unit.rot) * Matrix::Translation(unit.pos); // m1 (World) = Rot * Pos
 
-	if(_bone)
+	if(bone)
 	{
 		// m1 = BoxMatrix * PointMatrix * BoneMatrix * UnitRot * UnitPos
-		m1 = _hitbox.mat * (_bone->mat * _unit.mesh_inst->mat_bones[_bone->bone] * m1);
+		m1 = hitbox.mat * (bone->mat * unit.mesh_inst->mat_bones[bone->bone] * m1);
 	}
 	else
 	{
-		m1 = _hitbox.mat * _unit.mesh_inst->mat_bones[_hitbox.bone] * m1;
+		m1 = hitbox.mat * unit.mesh_inst->mat_bones[hitbox.bone] * m1;
 	}
-
-	// m1 to macierz hitboxa
-	// teraz mo¿emy stworzyæ AABBOX wokó³ broni
-	//CreateAABBOX(box1, m1);
-
-	// przy okazji stwórz obrócony Box
-	/*Obbox obox1, obox2;
-	D3DXMatrixIdentity(&obox2.rot);
-	D3DXVec3TransformCoord(&obox1.pos, &Vec3(0,0,0), &m1);
-	obox1.size = _hitbox.size*2;
-	obox1.rot = m1;
-	obox1.rot._11 = obox2.rot._22 = obox2.rot._33 = 1.f;
-
-	// szukaj kolizji
-	for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
-	{
-		if(*it == &_unit || !(*it)->IsAlive() || distance((*it)->pos, _unit.pos) > 5.f || IsFriend(_unit, **it))
-			continue;
-
-		Box box2;
-		(*it)->GetBox(box2);
-
-		//bool jest1 = BoxToBox(box1, box2);
-
-		// wstêpnie mo¿e byæ tu jakaœ kolizja, trzeba sprawdziæ dok³adniejszymi metodami
-		// stwórz obrócony box
-		obox2.pos = box2.Midpoint();
-		obox2.size = box2.Size()*2;
-
-		// sprawdŸ czy jest kolizja
-		//bool jest2 = OrientedBoxToOrientedBox(obox1, obox2, &_hitpoint);
-
-		//if(jest1 && jest2)
-		if(OrientedBoxToOrientedBox(obox1, obox2, &_hitpoint))
-		{
-			// teraz z kolei hitpoint jest za daleko >:(
-			float dist = distance2d((*it)->pos, _hitpoint);
-			float r = (*it)->GetUnitRadius()*3/2;
-			if(dist > r)
-			{
-				Vec3 dir = _hitpoint - (*it)->pos;
-				D3DXVec3Length(&dir);
-				dir *= r;
-				dir.y = _hitpoint.y;
-				_hitpoint = dir;
-				_hitpoint.x += (*it)->pos.x;
-				_hitpoint.z += (*it)->pos.z;
-			}
-			if(_hitpoint.y > (*it)->pos.y + (*it)->GetUnitHeight())
-				_hitpoint.y = (*it)->pos.y + (*it)->GetUnitHeight();
-			// jest kolizja
-			_hitted = *it;
-			return true;
-		}
-	}*/
 
 	// a - hitbox broni, b - hitbox postaci
 	Oob a, b;
 	m1._11 = m1._22 = m1._33 = 1.f;
 	a.c = Vec3::TransformZero(m1);
-	a.e = _hitbox.size;
+	a.e = hitbox.size;
 	a.u[0] = Vec3(m1._11, m1._12, m1._13);
 	a.u[1] = Vec3(m1._21, m1._22, m1._23);
 	a.u[2] = Vec3(m1._31, m1._32, m1._33);
@@ -3851,7 +3794,7 @@ bool Game::CheckForHit(LevelContext& ctx, Unit& _unit, Unit*& _hitted, Mesh::Poi
 	// szukaj kolizji
 	for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
 	{
-		if(*it == &_unit || !(*it)->IsAlive() || Vec3::Distance((*it)->pos, _unit.pos) > 5.f || _unit.IsFriend(**it))
+		if(*it == &unit || !(*it)->IsAlive() || Vec3::Distance((*it)->pos, unit.pos) > 5.f || unit.IsFriend(**it))
 			continue;
 
 		Box box2;
@@ -3861,9 +3804,59 @@ bool Game::CheckForHit(LevelContext& ctx, Unit& _unit, Unit*& _hitted, Mesh::Poi
 
 		if(OOBToOOB(b, a))
 		{
-			_hitpoint = a.c;
-			_hitted = *it;
+			hitpoint = a.c;
+			hitted = *it;
 			return true;
+		}
+	}
+
+	// collisions with melee_target
+	b.e = Vec3(0.6f, 2.f, 0.6f);
+	for(Object* obj : *ctx.objects)
+	{
+		if(obj->base && obj->base->id == "melee_target")
+		{
+			b.c = obj->pos;
+			b.c.y += 1.f;
+
+			if(OOBToOOB(b, a))
+			{
+				hitpoint = a.c;
+				unit.hitted = true;
+
+				ParticleEmitter* pe = new ParticleEmitter;
+				pe->tex = tIskra;
+				pe->emision_interval = 0.01f;
+				pe->life = 5.f;
+				pe->particle_life = 0.5f;
+				pe->emisions = 1;
+				pe->spawn_min = 10;
+				pe->spawn_max = 15;
+				pe->max_particles = 15;
+				pe->pos = hitpoint;
+				pe->speed_min = Vec3(-1, 0, -1);
+				pe->speed_max = Vec3(1, 1, 1);
+				pe->pos_min = Vec3(-0.1f, -0.1f, -0.1f);
+				pe->pos_max = Vec3(0.1f, 0.1f, 0.1f);
+				pe->size = 0.3f;
+				pe->op_size = POP_LINEAR_SHRINK;
+				pe->alpha = 0.9f;
+				pe->op_alpha = POP_LINEAR_SHRINK;
+				pe->mode = 0;
+				pe->Init();
+				ctx.pes->push_back(pe);
+
+				sound_mgr->PlaySound3d(GetMaterialSound(MAT_IRON, MAT_ROCK), hitpoint, HIT_SOUND_DIST);
+
+				if(Net::IsLocal() && unit.IsPlayer())
+				{
+					if(QM.quest_tutorial->in_tutorial)
+						QM.quest_tutorial->HandleMeleeAttackCollision();
+					unit.player->Train(TrainWhat::AttackNoDamage, 0.f, 1);
+				}
+				
+				return false;
+			}
 		}
 	}
 
@@ -5638,10 +5631,15 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 				pe->Init();
 				ctx.pes->push_back(pe);
 
-				if(Net::IsLocal() && QM.quest_tutorial->in_tutorial && callback.target)
+				if(it->owner && it->owner->IsPlayer() && Net::IsLocal() && callback.target && IS_SET(callback.target->getCollisionFlags(), CG_OBJECT))
 				{
-					void* ptr = callback.target->getUserPointer();
-					QM.quest_tutorial->HandleBulletCollision(ptr);
+					Object* obj = static_cast<Object*>(callback.target->getUserPointer());
+					if(obj->base && obj->base->id == "bow_target")
+					{
+						if(QM.quest_tutorial->in_tutorial)
+							QM.quest_tutorial->HandleBulletCollision();
+						it->owner->player->Train(TrainWhat::BowNoDamage, 0.f, 1);
+					}
 				}
 			}
 			else

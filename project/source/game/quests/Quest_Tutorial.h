@@ -36,13 +36,13 @@ public:
 	void HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit) override;
 	int GetChestEventHandlerQuestRefid() override { return -1; } // can't save in tutorial
 	int GetUnitEventHandlerQuestRefid() override { return -1; } // can't save in tutorial
-	void HandleBulletCollision(void* ptr);
+	void HandleMeleeAttackCollision();
+	void HandleBulletCollision();
 
 private:
 	int state;
 	vector<Text> texts;
 	Vec3 dummy;
-	Object* shield, *shield2;
 	Chest* chests[2];
 	cstring txTut[10], txTutNote, txTutLoc;
 
