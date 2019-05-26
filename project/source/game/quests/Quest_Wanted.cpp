@@ -19,7 +19,7 @@ void Quest_Wanted::Start()
 	type = QuestType::Captain;
 	level = Random(5, 15);
 	crazy = (Rand() % 5 == 0);
-	clas = ClassInfo::GetRandomEvil();
+	clas = ClassInfo::GetRandom();
 	target_unit = nullptr;
 	in_location = -1;
 }

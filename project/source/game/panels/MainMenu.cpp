@@ -10,8 +10,7 @@
 #include "SaveLoadPanel.h"
 #include <thread>
 #include "LobbyApi.h"
-
-extern string g_ctime;
+#include "Utility.h"
 
 //=================================================================================================
 MainMenu::MainMenu(Game* game) : game(game), check_status(CheckVersionStatus::None), check_updates(game->check_updates)
@@ -223,7 +222,7 @@ void MainMenu::Event(GuiEvent e)
 			game->gui->ShowOptions();
 			break;
 		case IdInfo:
-			GUI.SimpleDialog(Format(txInfoText, VERSION_STR, g_ctime.c_str()), nullptr);
+			GUI.SimpleDialog(Format(txInfoText, VERSION_STR, utility::GetCompileTime().c_str()), nullptr);
 			break;
 		case IdWebsite:
 			io::OpenUrl(Format("http://carpg.pl/redirect.php?language=%s", Language::prefix.c_str()));

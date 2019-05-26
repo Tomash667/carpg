@@ -41,6 +41,19 @@ UnitData* UnitGroup::GetLeader(int level) const
 }
 
 //=================================================================================================
+UnitData* UnitGroup::GetRandomUnit() const
+{
+	int a = Rand() % max_weight, b = 0;
+	for(const Entry& entry : entries)
+	{
+		b += entry.weight;
+		if(a < b)
+			return entry.ud;
+	}
+	return entries[0].ud;
+}
+
+//=================================================================================================
 Int2 UnitGroup::GetLevelRange() const
 {
 	Int2 level_range(99, -99);

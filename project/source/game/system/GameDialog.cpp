@@ -89,9 +89,8 @@ void DialogScripts::Build()
 			Error("Failed to compile dialogs script %s (%d): %s", name[i], r, code.c_str());
 	}
 #ifdef _DEBUG
-	CreateDirectory("debug", nullptr);
-	TextWriter f("debug/dialog_script.txt");
-	f << output;
+	io::CreateDirectory("debug");
+	TextWriter::WriteAll("debug/dialog_script.txt", output);
 #endif
 	built = true;
 }

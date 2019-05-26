@@ -686,7 +686,7 @@ ID3DXEffect* Render::CompileShader(CompileShaderParams& params)
 	SafeRelease(errors);
 
 	// save to cache
-	CreateDirectory("cache", nullptr);
+	io::CreateDirectory("cache");
 	FileWriter f(cache_path);
 	if(f)
 	{

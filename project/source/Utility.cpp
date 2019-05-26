@@ -10,6 +10,7 @@ static HANDLE mutex;
 static HANDLE shmem;
 static int* mem;
 static int app_id = 1;
+static string compile_time;
 
 //=================================================================================================
 bool utility::InitMutex()
@@ -113,4 +114,65 @@ void utility::WaitForDelayLock(int delay)
 int utility::GetAppId()
 {
 	return app_id;
+}
+
+//=================================================================================================
+const string& utility::GetCompileTime()
+{
+	if(!compile_time.empty())
+		return compile_time;
+
+	int len = GetModuleFileName(nullptr, BUF, 256);
+	HANDLE file;
+
+	if(len == 256)
+	{
+		char* b = new char[2048];
+		GetModuleFileName(nullptr, b, 2048);
+		file = CreateFile(b, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+		delete[] b;
+	}
+	else
+		file = CreateFile(BUF, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+
+	if(file == INVALID_HANDLE_VALUE)
+	{
+		compile_time = "0";
+		return compile_time;
+	}
+
+	// read header position
+	int offset;
+	DWORD tmp;
+	SetFilePointer(file, 0x3C, nullptr, FILE_BEGIN);
+	ReadFile(file, &offset, sizeof(offset), &tmp, nullptr);
+	SetFilePointer(file, offset + 8, nullptr, FILE_BEGIN);
+
+	// read time
+	static_assert(sizeof(time_t) == 8, "time_t must be 64 bit");
+	union TimeUnion
+	{
+		time_t t;
+		struct
+		{
+			uint low;
+			uint high;
+		};
+	};
+	TimeUnion datetime = { 0 };
+	ReadFile(file, &datetime.low, sizeof(datetime.low), &tmp, nullptr);
+
+	CloseHandle(file);
+
+	tm t;
+	errno_t err = gmtime_s(&t, &datetime.t);
+	if(err == 0)
+	{
+		strftime(BUF, 256, "%Y-%m-%d %H:%M:%S", &t);
+		compile_time = BUF;
+	}
+	else
+		compile_time = "0";
+
+	return compile_time;
 }

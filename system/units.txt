@@ -28,7 +28,7 @@ items mage {
 		chance 5 magic_scroll
 		r_mage
 		chance 25 r_def
-		chance 10 a_mage 
+		chance 10 a_mage
 	}
 	else if level 8 {
 		p_hp
@@ -455,7 +455,7 @@ profile mage {
 	shield 0
 	light_armor 10
 	haggle 0
-	
+
 	subprofile mage {
 		weapon short_blade
 		armor light_armor
@@ -2995,7 +2995,7 @@ group goblins {
 	goblin_hunter 7
 	goblin_fighter 7
 	goblin_chief leader 2
-	
+
 	orc_food 1
 	have_camps 1
 	encounter_chance 2
@@ -3009,7 +3009,7 @@ group orcs {
 	orc_warius 4
 	orc_chief leader 2
 	orc_shaman 3
-	
+
 	orc_food 1
 	have_camps 1
 	encounter_chance 2
@@ -3023,7 +3023,7 @@ group bandits {
 	ruffian 2
 	assassin 2
 	ruffian_hegemon leader 1
-	
+
 	have_camps 1
 	encounter_chance 3
 }
@@ -3043,7 +3043,7 @@ group undead {
 	zombie 10
 	zombie_rotting 8
 	zombie_ancient 6
-	
+
 	food_mod -2
 }
 
@@ -3054,7 +3054,7 @@ group necromancers {
 	undead_guard 6
 	undead_archer 6
 	group undead
-	
+
 	food_mod -1
 }
 
@@ -3062,7 +3062,7 @@ group evil {
 	evil_cleric leader 3
 	evil_cleric2 leader 3
 	group undead
-	
+
 	food_mod -1
 }
 
@@ -3076,7 +3076,7 @@ group mages {
 group golems {
 	golem_stone 1
 	golem_iron 1
-	
+
 	food_mod -2
 	gender 1
 }
@@ -3084,7 +3084,7 @@ group golems {
 group mages_and_golems {
 	group mages
 	group golems
-	
+
 	food_mod -1
 }
 
@@ -3126,6 +3126,13 @@ group heroes {
 	hero_rogue 2
 }
 
+group tournament {
+	hero_warrior 3
+	hero_hunter 2
+	hero_rouge 2
+	hero_mage 1
+}
+
 group merchant_guards {
 	guard_merchant 1
 }
@@ -3136,7 +3143,7 @@ group wagon_guards {
 
 group unk {
 	unk 1
-	
+
 	food_mod -2
 }
 

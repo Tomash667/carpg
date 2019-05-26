@@ -8,6 +8,9 @@
 #include "Level.h"
 
 int Door::netid_counter;
+const float Door::WIDTH = 0.842f;
+const float Door::THICKNESS = 0.181f;
+const float Door::HEIGHT = 1.319f;
 const float Door::SOUND_DIST = 1.f;
 const float Door::UNLOCK_SOUND_DIST = 0.5f;
 const float Door::BLOCKED_SOUND_DIST = 1.f;
@@ -51,7 +54,7 @@ void Door::Load(FileReader& f, bool local)
 
 		btTransform& tr = phy->getWorldTransform();
 		Vec3 pos2 = pos;
-		pos2.y += 1.319f;
+		pos2.y += Door::HEIGHT;
 		tr.setOrigin(ToVector3(pos2));
 		tr.setRotation(btQuaternion(rot, 0, 0));
 		game.phy_world->addCollisionObject(phy, CG_DOOR);
@@ -108,7 +111,7 @@ bool Door::Read(BitStreamReader& f)
 
 	btTransform& tr = phy->getWorldTransform();
 	Vec3 pos = this->pos;
-	pos.y += 1.319f;
+	pos.y += Door::HEIGHT;
 	tr.setOrigin(ToVector3(pos));
 	tr.setRotation(btQuaternion(rot, 0, 0));
 	game.phy_world->addCollisionObject(phy, CG_DOOR);

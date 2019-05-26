@@ -335,6 +335,11 @@ void Game::PostconfigureGame()
 	for(GameComponent* component : components)
 		component->PostInit();
 
+	// create save folders
+	io::CreateDirectory("saves");
+	io::CreateDirectory("saves/single");
+	io::CreateDirectory("saves/multi");
+
 	// copy first dungeon texture to second
 	tFloor[1] = tFloorBase;
 	tCeil[1] = tCeilBase;

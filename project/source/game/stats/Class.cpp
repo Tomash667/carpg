@@ -18,10 +18,6 @@ ClassInfo ClassInfo::classes[(int)Class::MAX] = {
 	ClassInfo(Class::WARRIOR, "warrior", "base_warrior", "icon_warrior.png", true, "bull_charge")
 };
 
-// START EQUIPMENT
-//barbarian - axe2, light armor, vodka, healing potions
-//bard - weapon for picked skill or short blade
-
 //=================================================================================================
 ClassInfo* ClassInfo::Find(const string& id)
 {
@@ -136,8 +132,6 @@ UnitData& ClassInfo::GetUnitData(Class clas, bool crazy)
 //=================================================================================================
 Class ClassInfo::GetRandom()
 {
-	// get Random hero class, ignore new one for now
-	//return (Class)(Rand() % (int)Class::MAX);
 	switch(Rand() % 7)
 	{
 	default:
@@ -168,39 +162,4 @@ Class ClassInfo::GetRandomPlayer()
 		}
 	}
 	return RandomItem(classes);
-}
-
-//=================================================================================================
-Class ClassInfo::GetRandomEvil()
-{
-	return GetRandom();
-	/*switch(Rand() % 16)
-	{
-	case 0:
-	case 1:
-	case 2:
-		return Class::BARBARIAN;
-	case 3:
-		return Class::BARD;
-	case 4:
-		return Class::CLERIC;
-	case 5:
-		return Class::DRUID;
-	case 6:
-	case 7:
-		return Class::HUNTER;
-	case 8:
-		return Class::MAGE;
-	case 9:
-		return Class::MONK;
-	case 10:
-	case 11:
-	case 12:
-		return Class::ROGUE;
-	case 13:
-	case 14:
-	case 15:
-	default:
-		return Class::WARRIOR;
-	}*/
 }

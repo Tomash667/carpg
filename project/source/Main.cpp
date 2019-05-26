@@ -11,7 +11,7 @@
 
 //-----------------------------------------------------------------------------
 cstring RESTART_MUTEX_NAME = "CARPG-RESTART-MUTEX";
-string g_system_dir, g_ctime;
+string g_system_dir;
 
 //-----------------------------------------------------------------------------
 bool ShowPickLanguageDialog(string& lang);
@@ -347,62 +347,6 @@ void LoadSystemDir()
 }
 
 //=================================================================================================
-void GetCompileTime()
-{
-	int len = GetModuleFileName(nullptr, BUF, 256);
-	HANDLE file;
-
-	if(len == 256)
-	{
-		char* b = new char[2048];
-		GetModuleFileName(nullptr, b, 2048);
-		file = CreateFile(b, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-		delete[] b;
-	}
-	else
-		file = CreateFile(BUF, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-
-	if(file == INVALID_HANDLE_VALUE)
-	{
-		g_ctime = "0";
-		return;
-	}
-
-	// read header position
-	int offset;
-	DWORD tmp;
-	SetFilePointer(file, 0x3C, nullptr, FILE_BEGIN);
-	ReadFile(file, &offset, sizeof(offset), &tmp, nullptr);
-	SetFilePointer(file, offset + 8, nullptr, FILE_BEGIN);
-
-	// read time
-	static_assert(sizeof(time_t) == 8, "time_t must be 64 bit");
-	union TimeUnion
-	{
-		time_t t;
-		struct
-		{
-			uint low;
-			uint high;
-		};
-	};
-	TimeUnion datetime = { 0 };
-	ReadFile(file, &datetime.low, sizeof(datetime.low), &tmp, nullptr);
-
-	CloseHandle(file);
-
-	tm t;
-	errno_t err = gmtime_s(&t, &datetime.t);
-	if(err == 0)
-	{
-		strftime(BUF, 256, "%Y-%m-%d %H:%M:%S", &t);
-		g_ctime = BUF;
-	}
-	else
-		g_ctime = "0";
-}
-
-//=================================================================================================
 // program main function
 //=================================================================================================
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
@@ -415,16 +359,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	}
 #endif
 
-	GetCompileTime();
-
 	// logger (prelogger in this case, because we do not know save location yet)
 	PreLogger plog;
 	Logger::global = &plog;
-
-	// create save folders
-	CreateDirectory("saves", nullptr);
-	CreateDirectory("saves/single", nullptr);
-	CreateDirectory("saves/multi", nullptr);
 
 	//-------------------------------------------------------------------------
 	// beginning
@@ -433,7 +370,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	localtime_s(&t2, &t);
 	Info("CaRpg " VERSION_STR);
 	Info("Date: %04d-%02d-%02d", t2.tm_year + 1900, t2.tm_mon + 1, t2.tm_mday);
-	Info("Build date: %s", g_ctime.c_str());
+	Info("Build date: %s", utility::GetCompileTime().c_str());
 	Info("Process ID: %d", GetCurrentProcessId());
 	{
 		cstring build_type =
@@ -585,6 +522,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		else
 			utility::WaitForDelayLock(delay);
 	}
+
+	// system dir
+	g_system_dir = cfg.GetString("system", "system");
 
 	// console
 	if(console == None)

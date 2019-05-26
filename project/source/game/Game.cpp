@@ -706,7 +706,7 @@ void Game::TakeScreenshot(bool no_gui)
 	}
 	else
 	{
-		CreateDirectory("screenshots", nullptr);
+		io::CreateDirectory("screenshots");
 
 		time_t t = ::time(0);
 		tm lt;

@@ -7,6 +7,7 @@
 #include <Windows.h>
 
 #undef CreateFont
+#undef CreateDirectory
 #undef DialogBox
 #undef far
 #undef near

@@ -40,8 +40,6 @@
 #include "Render.h"
 #include "GameMessages.h"
 
-extern string g_ctime;
-
 // consts
 const float T_TRY_CONNECT = 5.f;
 const int T_SHUTDOWN = 1000;

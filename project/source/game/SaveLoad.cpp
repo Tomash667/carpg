@@ -130,8 +130,8 @@ void Game::SaveGameFilename(const string& name)
 //=================================================================================================
 bool Game::SaveGameCommon(cstring filename, int slot, cstring text)
 {
-	CreateDirectory("saves", nullptr);
-	CreateDirectory(Net::IsOnline() ? "saves/multi" : "saves/single", nullptr);
+	io::CreateDirectory("saves");
+	io::CreateDirectory(Net::IsOnline() ? "saves/multi" : "saves/single");
 
 	if(io::FileExists(filename))
 	{

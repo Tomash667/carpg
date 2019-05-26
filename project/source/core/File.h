@@ -13,7 +13,7 @@ namespace io
 		bool is_dir;
 	};
 
-	// Delete directory.
+	void CreateDirectory(cstring dir);
 	bool DeleteDirectory(cstring dir);
 	// Check if directory exists.
 	bool DirectoryExists(cstring dir);
@@ -613,6 +613,12 @@ public:
 	void operator << (float f)
 	{
 		Write(Format("%g", f));
+	}
+
+	static void WriteAll(Cstring filename, const string& text)
+	{
+		FileWriter f(filename);
+		f << text;
 	}
 
 private:

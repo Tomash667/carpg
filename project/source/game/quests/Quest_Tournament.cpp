@@ -205,30 +205,8 @@ void Quest_Tournament::Progress()
 //=================================================================================================
 UnitData& Quest_Tournament::GetRandomHeroData()
 {
-	cstring id;
-
-	switch(Rand() % 8)
-	{
-	case 0:
-	case 1:
-	case 2:
-		id = "hero_warrior";
-		break;
-	case 3:
-	case 4:
-		id = "hero_hunter";
-		break;
-	case 5:
-	case 6:
-		id = "hero_rogue";
-		break;
-	case 7:
-	default:
-		id = "hero_mage";
-		break;
-	}
-
-	return *UnitData::Get(id);
+	static UnitGroup* group = UnitGroup::Get("tournament");
+	return *group->GetRandomUnit();
 }
 
 //=================================================================================================

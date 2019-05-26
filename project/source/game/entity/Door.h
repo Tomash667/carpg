@@ -28,6 +28,9 @@ struct Door
 		Max
 	};
 
+	static const float WIDTH;
+	static const float THICKNESS;
+	static const float HEIGHT;
 	static const float SOUND_DIST;
 	static const float UNLOCK_SOUND_DIST;
 	static const float BLOCKED_SOUND_DIST;

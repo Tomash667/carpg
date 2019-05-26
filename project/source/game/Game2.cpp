@@ -403,22 +403,21 @@ void Game::SetupCamera(float dt)
 					Door* door = L.FindDoor(ctx, Int2(x, z));
 					if(door && door->IsBlocking())
 					{
-						// 0.842f, 1.319f, 0.181f
 						Box box(pos.x, 0.f, pos.z);
-						box.v2.y = 1.319f * 2;
+						box.v2.y = Door::HEIGHT * 2;
 						if(rot == 0.f)
 						{
-							box.v1.x -= 0.842f;
-							box.v2.x += 0.842f;
-							box.v1.z -= 0.181f;
-							box.v2.z += 0.181f;
+							box.v1.x -= Door::WIDTH;
+							box.v2.x += Door::WIDTH;
+							box.v1.z -= Door::THICKNESS;
+							box.v2.z += Door::THICKNESS;
 						}
 						else
 						{
-							box.v1.z -= 0.842f;
-							box.v2.z += 0.842f;
-							box.v1.x -= 0.181f;
-							box.v2.x += 0.181f;
+							box.v1.z -= Door::WIDTH;
+							box.v2.z += Door::WIDTH;
+							box.v1.x -= Door::THICKNESS;
+							box.v2.x += Door::THICKNESS;
 						}
 
 						if(RayToBox(to, dist, box, &tout) && tout < min_tout && tout > 0.f)
@@ -465,20 +464,20 @@ void Game::SetupCamera(float dt)
 			if(door.IsBlocking())
 			{
 				Box box(door.pos);
-				box.v2.y = 1.319f * 2;
+				box.v2.y = Door::HEIGHT * 2;
 				if(door.rot == 0.f)
 				{
-					box.v1.x -= 0.842f;
-					box.v2.x += 0.842f;
-					box.v1.z -= 0.181f;
-					box.v2.z += 0.181f;
+					box.v1.x -= Door::WIDTH;
+					box.v2.x += Door::WIDTH;
+					box.v1.z -= Door::THICKNESS;
+					box.v2.z += Door::THICKNESS;
 				}
 				else
 				{
-					box.v1.z -= 0.842f;
-					box.v2.z += 0.842f;
-					box.v1.x -= 0.181f;
-					box.v2.x += 0.181f;
+					box.v1.z -= Door::WIDTH;
+					box.v2.z += Door::WIDTH;
+					box.v1.x -= Door::THICKNESS;
+					box.v2.x += Door::THICKNESS;
 				}
 
 				if(RayToBox(to, dist, box, &tout) && tout < min_tout && tout > 0.f)
@@ -8120,7 +8119,7 @@ void Game::UpdateContext(LevelContext& ctx, float dt)
 
 						for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
 						{
-							if((*it)->IsAlive() && CircleToRotatedRectangle((*it)->pos.x, (*it)->pos.z, (*it)->GetUnitRadius(), door.pos.x, door.pos.z, 0.842f, 0.181f, door.rot))
+							if((*it)->IsAlive() && CircleToRotatedRectangle((*it)->pos.x, (*it)->pos.z, (*it)->GetUnitRadius(), door.pos.x, door.pos.z, Door::WIDTH, Door::THICKNESS, door.rot))
 							{
 								blocking = true;
 								break;

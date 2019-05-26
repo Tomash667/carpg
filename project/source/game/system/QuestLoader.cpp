@@ -452,11 +452,8 @@ void QuestLoader::BuildQuest(QuestScheme* scheme)
 	code += "\n}";
 
 #ifdef _DEBUG
-	{
-		CreateDirectory("debug", nullptr);
-		TextWriter f(Format("debug/quests_%s.txt", scheme->id.c_str()));
-		f << code;
-	}
+	io::CreateDirectory("debug");
+	TextWriter::WriteAll(Format("debug/quests_%s.txt", scheme->id.c_str()), code);
 #endif
 
 	int r = module->AddScriptSection(scheme->id.c_str(), code.c_str());

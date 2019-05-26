@@ -46,7 +46,6 @@ struct ClassInfo
 	static bool IsPickable(Class c);
 	static Class GetRandom();
 	static Class GetRandomPlayer();
-	static Class GetRandomEvil();
 	static void Validate(uint &err);
 	static UnitData& GetUnitData(Class clas, bool crazy = false);
 	static UnitData& GetRandomData() { return GetUnitData(GetRandom()); }

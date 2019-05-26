@@ -458,7 +458,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 					door->netid = Door::netid_counter++;
 					btTransform& tr = door->phy->getWorldTransform();
 					Vec3 pos = door->pos;
-					pos.y += 1.319f;
+					pos.y += Door::HEIGHT;
 					tr.setOrigin(ToVector3(pos));
 					tr.setRotation(btQuaternion(door->rot, 0, 0));
 					game.phy_world->addCollisionObject(door->phy, CG_DOOR);

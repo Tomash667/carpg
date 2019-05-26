@@ -245,6 +245,13 @@ bool FileWriter::SetPos(uint pos)
 	return true;
 }
 
+
+//=================================================================================================
+void io::CreateDirectory(cstring dir)
+{
+	CreateDirectoryA(dir, nullptr);
+}
+
 //=================================================================================================
 bool io::DeleteDirectory(cstring dir)
 {

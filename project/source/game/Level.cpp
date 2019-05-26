@@ -96,7 +96,7 @@ void Level::PostInit()
 	tr.setOrigin(btVector3(0.95f, 2.f, 0.f));
 	s->addChildShape(tr, b);
 	shape_stairs = s;
-	shape_door = new btBoxShape(btVector3(0.842f, 1.319f, 0.181f));
+	shape_door = new btBoxShape(btVector3(Door::WIDTH, Door::HEIGHT, Door::THICKNESS));
 	shape_block = new btBoxShape(btVector3(1.f, 4.f, 1.f));
 	shape_barrier = new btBoxShape(btVector3(size / 2, 40.f, border / 2));
 	shape_summon = new btCylinderShape(btVector3(1.5f / 2, 0.75f, 1.5f / 2));
@@ -1289,7 +1289,7 @@ void Level::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding
 
 					btTransform& tr = door->phy->getWorldTransform();
 					Vec3 pos = door->pos;
-					pos.y += 1.319f;
+					pos.y += Door::HEIGHT;
 					tr.setOrigin(ToVector3(pos));
 					tr.setRotation(btQuaternion(door->rot, 0, 0));
 					phy_world->addCollisionObject(door->phy, CG_DOOR);
@@ -2213,13 +2213,13 @@ void Level::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _
 	{
 		for(vector<Door*>::iterator it = ctx.doors->begin(), end = ctx.doors->end(); it != end; ++it)
 		{
-			if((*it)->IsBlocking() && CircleToRotatedRectangle(_pos.x, _pos.z, _radius, (*it)->pos.x, (*it)->pos.z, 0.842f, 0.181f, (*it)->rot))
+			if((*it)->IsBlocking() && CircleToRotatedRectangle(_pos.x, _pos.z, _radius, (*it)->pos.x, (*it)->pos.z, Door::WIDTH, Door::THICKNESS, (*it)->rot))
 			{
 				CollisionObject& co = Add1(_objects);
 				co.pt = Vec2((*it)->pos.x, (*it)->pos.z);
 				co.type = CollisionObject::RECTANGLE_ROT;
-				co.w = 0.842f;
-				co.h = 0.181f;
+				co.w = Door::WIDTH;
+				co.h = Door::THICKNESS;
 				co.rot = (*it)->rot;
 			}
 		}
@@ -3143,7 +3143,7 @@ void Level::OnReenterLevel()
 				door.phy->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_DOOR);
 				btTransform& tr = door.phy->getWorldTransform();
 				Vec3 pos = door.pos;
-				pos.y += 1.319f;
+				pos.y += Door::HEIGHT;
 				tr.setOrigin(ToVector3(pos));
 				tr.setRotation(btQuaternion(door.rot, 0, 0));
 				phy_world->addCollisionObject(door.phy, CG_DOOR);
@@ -3600,21 +3600,20 @@ bool Level::CanSee(Unit& u1, Unit& u2)
 					Door* door = FindDoor(ctx, Int2(x, y));
 					if(door && door->IsBlocking())
 					{
-						// 0.842f, 1.319f, 0.181f
 						Box2d box(door->pos.x, door->pos.z);
 						if(door->rot == 0.f || door->rot == PI)
 						{
 							box.v1.x -= 1.f;
 							box.v2.x += 1.f;
-							box.v1.y -= 0.181f;
-							box.v2.y += 0.181f;
+							box.v1.y -= Door::THICKNESS;
+							box.v2.y += Door::THICKNESS;
 						}
 						else
 						{
 							box.v1.y -= 1.f;
 							box.v2.y += 1.f;
-							box.v1.x -= 0.181f;
-							box.v2.x += 0.181f;
+							box.v1.x -= Door::THICKNESS;
+							box.v2.x += Door::THICKNESS;
 						}
 
 						if(LineToRectangle(u1.pos, u2.pos, box.v1, box.v2))
@@ -3646,15 +3645,15 @@ bool Level::CanSee(Unit& u1, Unit& u2)
 				{
 					box.v1.x -= 1.f;
 					box.v2.x += 1.f;
-					box.v1.y -= 0.181f;
-					box.v2.y += 0.181f;
+					box.v1.y -= Door::THICKNESS;
+					box.v2.y += Door::THICKNESS;
 				}
 				else
 				{
 					box.v1.y -= 1.f;
 					box.v2.y += 1.f;
-					box.v1.x -= 0.181f;
-					box.v2.x += 0.181f;
+					box.v1.x -= Door::THICKNESS;
+					box.v2.x += Door::THICKNESS;
 				}
 
 				if(LineToRectangle(u1.pos, u2.pos, box.v1, box.v2))
@@ -3713,21 +3712,20 @@ bool Level::CanSee(LevelContext& ctx, const Vec3& v1, const Vec3& v2, bool is_do
 					if(door && door->IsBlocking()
 						&& (!is_door || tile2 != pt)) // ignore target door
 					{
-						// 0.842f, 1.319f, 0.181f
 						Box2d box(door->pos.x, door->pos.z);
 						if(door->rot == 0.f || door->rot == PI)
 						{
 							box.v1.x -= 1.f;
 							box.v2.x += 1.f;
-							box.v1.y -= 0.181f;
-							box.v2.y += 0.181f;
+							box.v1.y -= Door::THICKNESS;
+							box.v2.y += Door::THICKNESS;
 						}
 						else
 						{
 							box.v1.y -= 1.f;
 							box.v2.y += 1.f;
-							box.v1.x -= 0.181f;
-							box.v2.x += 0.181f;
+							box.v1.x -= Door::THICKNESS;
+							box.v2.x += Door::THICKNESS;
 						}
 
 						if(LineToRectangle(v1, v2, box.v1, box.v2))
@@ -3760,15 +3758,15 @@ bool Level::CanSee(LevelContext& ctx, const Vec3& v1, const Vec3& v2, bool is_do
 				{
 					box.v1.x -= 1.f;
 					box.v2.x += 1.f;
-					box.v1.y -= 0.181f;
-					box.v2.y += 0.181f;
+					box.v1.y -= Door::THICKNESS;
+					box.v2.y += Door::THICKNESS;
 				}
 				else
 				{
 					box.v1.y -= 1.f;
 					box.v2.y += 1.f;
-					box.v1.x -= 0.181f;
-					box.v2.x += 0.181f;
+					box.v1.x -= Door::THICKNESS;
+					box.v2.x += Door::THICKNESS;
 				}
 
 				if(LineToRectangle(v1, v2, box.v1, box.v2))

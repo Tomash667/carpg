@@ -36,6 +36,7 @@ struct UnitGroup
 	bool IsEmpty() const { return special == S_EMPTY; }
 	bool IsChallange() const { return special == S_CHALLANGE; }
 	UnitData* GetLeader(int level) const;
+	UnitData* GetRandomUnit() const;
 	Int2 GetLevelRange() const;
 	UnitGroup* GetRandomGroup();
 

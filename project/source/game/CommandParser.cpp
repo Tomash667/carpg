@@ -28,11 +28,11 @@
 #include "Render.h"
 #include "Terrain.h"
 #include "Pathfinding.h"
+#include "Utility.h"
 
 //-----------------------------------------------------------------------------
 CommandParser* global::cmdp;
 PrintMsgFunc g_print_func;
-extern string g_ctime;
 
 //=================================================================================================
 void CommandParser::AddCommands()
@@ -408,7 +408,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			Net::PushChange(NetChange::CHEAT_GOTO_MAP);
 		break;
 	case CMD_VERSION:
-		Msg("CaRpg version " VERSION_STR ", built %s.", g_ctime.c_str());
+		Msg("CaRpg version " VERSION_STR ", built %s.", utility::GetCompileTime().c_str());
 		break;
 	case CMD_QUIT:
 		if(t.Next() && t.IsInt() && t.GetInt() == 1)
