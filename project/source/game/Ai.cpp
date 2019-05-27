@@ -1461,7 +1461,7 @@ void Game::UpdateAi(float dt)
 											u.TakeWeapon(W_BOW);
 											float dir = Vec3::LookAtAngle(u.pos, ai.idle_data.obj.pos);
 											if(AngleDiff(u.rot, dir) < PI / 4 && u.action == A_NONE && u.weapon_taken == W_BOW && ai.next_attack <= 0.f
-												&& u.frozen == FROZEN::NO && u.stamina > 0 && CanShootAtLocation2(u, ai.idle_data.obj.ptr, ai.idle_data.obj.pos))
+												&& u.frozen == FROZEN::NO && CanShootAtLocation2(u, ai.idle_data.obj.ptr, ai.idle_data.obj.pos))
 											{
 												// bow shooting
 												float speed = u.GetBowAttackSpeed();
@@ -1747,7 +1747,7 @@ void Game::UpdateAi(float dt)
 
 					if(u.IsHoldingBow())
 					{
-						if(u.action == A_NONE && ai.next_attack <= 0.f && u.frozen == FROZEN::NO && u.stamina > 0)
+						if(u.action == A_NONE && ai.next_attack <= 0.f && u.frozen == FROZEN::NO)
 						{
 							// shooting possibility check
 							look_pos = PredictTargetPos(u, *enemy, u.GetArrowSpeed());
@@ -2257,14 +2257,15 @@ void Game::UpdateAi(float dt)
 						target_pos = top->pos;
 
 						// hit with shield
-						if(best_dist <= u.GetAttackRange() && !u.mesh_inst->groups[1].IsBlending() && ai.ignore <= 0.f && u.stamina > 0)
+						if(best_dist <= u.GetAttackRange() && !u.mesh_inst->groups[1].IsBlending() && ai.ignore <= 0.f)
 						{
 							if(Rand() % 2 == 0)
 							{
+								float speed = u.GetBashSpeed();
 								u.action = A_BASH;
 								u.animation_state = 0;
 								u.mesh_inst->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1 | PLAY_RESTORE, 1);
-								u.mesh_inst->groups[1].speed = 2.f;
+								u.mesh_inst->groups[1].speed = speed;
 								u.mesh_inst->frame_end_info2 = false;
 								u.hitted = false;
 								u.RemoveStamina(Unit::STAMINA_BASH_ATTACK);
@@ -2275,7 +2276,7 @@ void Game::UpdateAi(float dt)
 									c.type = NetChange::ATTACK;
 									c.unit = &u;
 									c.id = AID_Bash;
-									c.f[1] = 2.f;
+									c.f[1] = speed;
 								}
 							}
 							else
@@ -3021,7 +3022,7 @@ void Game::AI_DoAttack(AIController& ai, Unit* target, bool running)
 {
 	Unit& u = *ai.unit;
 
-	if(u.action == A_NONE && (u.mesh_inst->mesh->head.n_groups == 1 || u.weapon_state == WS_TAKEN) && ai.next_attack <= 0.f && u.stamina > 0)
+	if(u.action == A_NONE && (u.mesh_inst->mesh->head.n_groups == 1 || u.weapon_state == WS_TAKEN) && ai.next_attack <= 0.f)
 	{
 		if(u.data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
 			PlayAttachedSound(u, u.data->sounds->Random(SOUND_ATTACK)->sound, Unit::ATTACK_SOUND_DIST);
@@ -3054,7 +3055,7 @@ void Game::AI_DoAttack(AIController& ai, Unit* target, bool running)
 			stamina *= Unit::STAMINA_UNARMED_ATTACK;
 		u.RemoveStamina(stamina);
 
-		float speed(do_power_attack ? ai.unit->GetPowerAttackSpeed() : ai.unit->GetAttackSpeed());
+		float speed = (do_power_attack ? ai.unit->GetPowerAttackSpeed() : ai.unit->GetAttackSpeed()) * u.GetStaminaAttackSpeedMod();
 
 		if(u.mesh_inst->mesh->head.n_groups > 1)
 		{

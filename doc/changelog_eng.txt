@@ -10,6 +10,7 @@ Version 0.11 (2019-??-??):
 + summoned wolf follow owner, heroes follow player that asked for it
 + drawing chests on minimap
 + hitting melee targets and shooting at ranged targets trains player
++ missing stamina slows down attacks instead of preventing them
 - fixed skeleton corpse animation moving it thru wall making it not lootable [Zielu]
 - fixed rare crash when alt tabbing at startup
 - fixed grass under moon well

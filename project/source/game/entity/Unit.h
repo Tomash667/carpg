@@ -841,6 +841,8 @@ public:
 	void TalkS(const string& text, int play_anim = -1) { Talk(text.c_str(), play_anim); }
 	bool IsBlocking() const { return action == A_BLOCK || (action == A_BASH && animation_state == 0); }
 	float GetBlockMod() const { return action == A_BLOCK ? mesh_inst->groups[1].GetBlendT() : 0.5f; }
+	float GetStaminaAttackSpeedMod() const;
+	float GetBashSpeed() const { return 2.f * GetStaminaAttackSpeedMod(); }
 
 	//-----------------------------------------------------------------------------
 	static vector<Unit*> refid_table;

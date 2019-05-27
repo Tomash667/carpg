@@ -703,7 +703,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						{
 							unit.attack_power = unit.mesh_inst->groups[1].time / unit.GetAttackFrame(0);
 							unit.animation_state = 1;
-							unit.mesh_inst->groups[1].speed = unit.attack_power + unit.GetAttackSpeed();
+							unit.mesh_inst->groups[1].speed = (unit.attack_power + unit.GetAttackSpeed()) * unit.GetStaminaAttackSpeedMod();
 							unit.attack_power += 1.f;
 						}
 						else
@@ -769,7 +769,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							unit.action = A_BASH;
 							unit.animation_state = 0;
 							unit.mesh_inst->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1 | PLAY_RESTORE, 1);
-							unit.mesh_inst->groups[1].speed = 2.f;
+							unit.mesh_inst->groups[1].speed = attack_speed;
 							unit.mesh_inst->frame_end_info2 = false;
 							unit.hitted = false;
 							unit.player->Train(TrainWhat::BashStart, 0.f, 0);
@@ -4239,7 +4239,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 						unit.action = A_BASH;
 						unit.animation_state = 0;
 						unit.mesh_inst->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1 | PLAY_RESTORE, group);
-						unit.mesh_inst->groups[1].speed = 2.f;
+						unit.mesh_inst->groups[1].speed = attack_speed;
 						unit.mesh_inst->frame_end_info2 = false;
 						unit.hitted = false;
 					}

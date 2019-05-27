@@ -2374,7 +2374,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						// release attack
 						u.attack_power = u.mesh_inst->groups[1].time / u.GetAttackFrame(0);
 						u.animation_state = 1;
-						u.mesh_inst->groups[1].speed = u.attack_power + u.GetAttackSpeed();
+						u.mesh_inst->groups[1].speed = (u.attack_power + u.GetAttackSpeed()) * u.GetStaminaAttackSpeedMod();
 						u.attack_power += 1.f;
 
 						if(Net::IsOnline())
@@ -2393,13 +2393,13 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				else if(u.animation_state == 2)
 				{
 					byte k = GKey.KeyDoReturn(GK_ATTACK_USE, &KeyStates::Down);
-					if(k != VK_NONE && u.stamina > 0)
+					if(k != VK_NONE)
 					{
 						// prepare next attack
 						u.action = A_ATTACK;
 						u.attack_id = u.GetRandomAttack();
 						u.mesh_inst->Play(NAMES::ani_attacks[u.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
-						u.mesh_inst->groups[1].speed = u.GetPowerAttackSpeed();
+						u.mesh_inst->groups[1].speed = u.GetPowerAttackSpeed() * u.GetStaminaAttackSpeedMod();
 						pc->action_key = k;
 						u.animation_state = 0;
 						u.run_attack = false;
@@ -2440,13 +2440,14 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				}
 				else if(!u.mesh_inst->groups[1].IsBlending() && u.HaveShield())
 				{
-					if(GKey.KeyPressedUpAllowed(GK_ATTACK_USE) && u.stamina > 0)
+					if(GKey.KeyPressedUpAllowed(GK_ATTACK_USE))
 					{
 						// shield bash
+						float speed = u.GetBashSpeed();
 						u.action = A_BASH;
 						u.animation_state = 0;
 						u.mesh_inst->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1 | PLAY_RESTORE, 1);
-						u.mesh_inst->groups[1].speed = 2.f;
+						u.mesh_inst->groups[1].speed = speed;
 						u.mesh_inst->frame_end_info2 = false;
 						u.hitted = false;
 
@@ -2456,7 +2457,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 							c.type = NetChange::ATTACK;
 							c.unit = pc->unit;
 							c.id = AID_Bash;
-							c.f[1] = 2.f;
+							c.f[1] = speed;
 						}
 
 						if(Net::IsLocal())
@@ -2470,7 +2471,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			else if(u.action == A_NONE && u.frozen == FROZEN::NO && !GKey.KeyDownAllowed(GK_BLOCK))
 			{
 				byte k = GKey.KeyDoReturnIgnore(GK_ATTACK_USE, &KeyStates::Down, pc_data.wasted_key);
-				if(k != VK_NONE && u.stamina > 0)
+				if(k != VK_NONE)
 				{
 					u.action = A_ATTACK;
 					u.attack_id = u.GetRandomAttack();
@@ -2478,7 +2479,8 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					if(u.running)
 					{
 						// running attack
-						u.mesh_inst->groups[1].speed = u.GetAttackSpeed();
+						float speed = u.GetAttackSpeed() * u.GetStaminaAttackSpeedMod();
+						u.mesh_inst->groups[1].speed = speed;
 						u.animation_state = 1;
 						u.run_attack = true;
 						u.attack_power = 1.5f;
@@ -2489,7 +2491,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 							c.type = NetChange::ATTACK;
 							c.unit = pc->unit;
 							c.id = AID_RunningAttack;
-							c.f[1] = u.mesh_inst->groups[1].speed;
+							c.f[1] = speed;
 						}
 
 						if(Net::IsLocal())
@@ -2501,7 +2503,8 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					else
 					{
 						// prepare attack
-						u.mesh_inst->groups[1].speed = u.GetPowerAttackSpeed();
+						float speed = u.GetPowerAttackSpeed() * u.GetStaminaAttackSpeedMod();
+						u.mesh_inst->groups[1].speed = speed;
 						pc->action_key = k;
 						u.animation_state = 0;
 						u.run_attack = false;
@@ -2513,7 +2516,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 							c.type = NetChange::ATTACK;
 							c.unit = pc->unit;
 							c.id = AID_PrepareAttack;
-							c.f[1] = u.mesh_inst->groups[1].speed;
+							c.f[1] = speed;
 						}
 
 						if(Net::IsLocal())
@@ -2579,7 +2582,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			else if(u.frozen == FROZEN::NO)
 			{
 				byte k = GKey.KeyDoReturnIgnore(GK_ATTACK_USE, &KeyStates::Down, pc_data.wasted_key);
-				if(k != VK_NONE && u.stamina > 0)
+				if(k != VK_NONE)
 				{
 					float speed = u.GetBowAttackSpeed();
 					u.mesh_inst->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
@@ -4551,7 +4554,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 				{
 					if(Net::IsLocal() && u.IsAI())
 					{
-						u.mesh_inst->groups[index].speed = 1.f + u.GetAttackSpeed();
+						u.mesh_inst->groups[index].speed = (1.f + u.GetAttackSpeed()) * u.GetStaminaAttackSpeedMod();
 						u.attack_power = 2.f;
 						++u.animation_state;
 						if(Net::IsOnline())
@@ -5634,7 +5637,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 				if(it->owner && it->owner->IsPlayer() && Net::IsLocal() && callback.target && IS_SET(callback.target->getCollisionFlags(), CG_OBJECT))
 				{
 					Object* obj = static_cast<Object*>(callback.target->getUserPointer());
-					if(obj->base && obj->base->id == "bow_target")
+					if(obj && obj->base && obj->base->id == "bow_target")
 					{
 						if(QM.quest_tutorial->in_tutorial)
 							QM.quest_tutorial->HandleBulletCollision();

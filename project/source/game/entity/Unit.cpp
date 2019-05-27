@@ -3061,8 +3061,9 @@ float Unit::GetAttackSpeed(const Weapon* used_weapon) const
 //=================================================================================================
 float Unit::GetBowAttackSpeed() const
 {
+	float base_mod = GetStaminaAttackSpeedMod();
 	if(IS_SET(data->flags2, F2_FIXED_STATS))
-		return 1.f;
+		return base_mod;
 
 	// values range
 	//	1 dex, 0 skill = 0.8
@@ -3076,6 +3077,7 @@ float Unit::GetBowAttackSpeed() const
 	else if(mobility > 100)
 		mod += Lerp(0.f, 0.1f, (mobility - 100) / 100);
 
+	mod *= base_mod;
 	if(mod < 0.5f)
 		mod = 0.5f;
 
@@ -4273,6 +4275,8 @@ void Unit::UpdateStaminaAction()
 void Unit::RemoveStamina(float value)
 {
 	stamina -= value;
+	if(stamina < -stamina_max / 2)
+		stamina = -stamina_max / 2;
 	stamina_timer = STAMINA_RESTORE_TIMER;
 	if(player && Net::IsLocal())
 	{
@@ -5633,4 +5637,16 @@ void Unit::Talk(cstring text, int play_anim)
 		c.count = 0;
 		N.net_strs.push_back(c.str);
 	}
+}
+
+//=================================================================================================
+float Unit::GetStaminaAttackSpeedMod() const
+{
+	float sp = max(0.f, GetStaminap());
+	const float limit = 0.25f;
+	const float mod = 0.4f;
+	if(sp >= limit)
+		return 1.f;
+	float t = (limit - sp) * (1.f / limit);
+	return 1.f - mod * t;
 }
