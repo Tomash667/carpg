@@ -93,9 +93,7 @@ void Terrain::Init(IDirect3DDevice9* dev, const TerrainOptions& o)
 //=================================================================================================
 void Terrain::CreateSplatTexture()
 {
-	DWORD usage = D3DUSAGE_AUTOGENMIPMAP;
-
-	HRESULT hr = D3DXCreateTexture(device, tex_size, tex_size, 1, usage, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &texSplat);
+	HRESULT hr = D3DXCreateTexture(device, tex_size, tex_size, 1, D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &texSplat);
 	if(FAILED(hr))
 		throw Format("Failed to create terrain texture with size '%d' (%d)!", tex_size, hr);
 }

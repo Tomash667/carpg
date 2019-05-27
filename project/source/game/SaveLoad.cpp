@@ -133,19 +133,13 @@ bool Game::SaveGameCommon(cstring filename, int slot, cstring text)
 	io::CreateDirectory("saves");
 	io::CreateDirectory(Net::IsOnline() ? "saves/multi" : "saves/single");
 
-	if(io::FileExists(filename))
-	{
-		cstring bak_filename = Format("%s.bak", filename);
-		DeleteFile(bak_filename);
-		MoveFile(filename, bak_filename);
-	}
-
 	CreateSaveImage();
 
-	GameWriter f(filename);
+	LocalString tmp_filename = Format("%s.new", filename);
+	GameWriter f(tmp_filename);
 	if(!f)
 	{
-		Error(txLoadOpenError, filename, GetLastError());
+		Error(txLoadOpenError, tmp_filename, GetLastError());
 		GUI.SimpleDialog(txSaveFailed, gui->saveload->visible ? gui->saveload : nullptr);
 		return false;
 	}
@@ -158,6 +152,11 @@ bool Game::SaveGameCommon(cstring filename, int slot, cstring text)
 	}
 
 	SaveGame(f, ss);
+	f.Close();
+
+	if(io::FileExists(filename))
+		io::MoveFile(filename, Format("%s.bak", filename));
+	io::MoveFile(tmp_filename, filename);
 
 	cstring msg = Format("Game saved '%s'.", filename);
 	gui->console->AddMsg(msg);

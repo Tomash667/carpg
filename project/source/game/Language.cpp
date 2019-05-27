@@ -126,44 +126,34 @@ bool Language::LoadFileInternal(Tokenizer& t, cstring path, Map* lmap)
 //=================================================================================================
 void Language::LoadLanguages()
 {
-	WIN32_FIND_DATA data;
-	HANDLE fhandle = FindFirstFile(Format("%s/lang/*", g_system_dir.c_str()), &data);
-	if(fhandle == INVALID_HANDLE_VALUE)
-	{
-		Error("LoadLanguages: FindFirstFile failed (%d).", GetLastError());
-		return;
-	}
-
 	Map* lmap = nullptr;
 	Tokenizer t;
 
-	do
+	io::FindFiles(Format("%s/lang/*", g_system_dir.c_str()), [&](const io::FileInfo& info)
 	{
-		if(strcmp(data.cFileName, ".") != 0 && strcmp(data.cFileName, "..") != 0 && IS_SET(data.dwFileAttributes, FILE_ATTRIBUTE_DIRECTORY))
+		if(info.is_dir)
+			return true;
+		LocalString path = Format("%s/lang/%s/info.txt", g_system_dir.c_str(), info.filename);
+		if(lmap)
+			lmap->clear();
+		else
+			lmap = new Map;
+		if(LoadFileInternal(t, path, lmap))
 		{
-			LocalString path = Format("%s/lang/%s/info.txt", g_system_dir.c_str(), data.cFileName);
-			if(lmap)
-				lmap->clear();
-			else
-				lmap = new Map;
-			if(LoadFileInternal(t, path, lmap))
+			Map::iterator it = lmap->find("dir"), end = lmap->end();
+			if(!(it != end && it->second == info.filename && lmap->find("englishName") != end && lmap->find("localName") != end && lmap->find("locale") != end))
 			{
-				Map::iterator it = lmap->find("dir"), end = lmap->end();
-				if(!(it != end && it->second == data.cFileName && lmap->find("englishName") != end && lmap->find("localName") != end && lmap->find("locale") != end))
-				{
-					Warn("File '%s' is invalid language file.", path->c_str());
-					continue;
-				}
-				languages.push_back(lmap);
-				lmap = nullptr;
+				Warn("File '%s' is invalid language file.", path->c_str());
+				return true;
 			}
+			languages.push_back(lmap);
+			lmap = nullptr;
 		}
-	}
-	while(FindNextFile(fhandle, &data));
+		return true;
+	});
 
 	if(lmap)
 		delete lmap;
-	FindClose(fhandle);
 }
 
 enum Group

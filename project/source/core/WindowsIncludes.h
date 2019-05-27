@@ -9,11 +9,11 @@
 #undef CreateFont
 #undef CreateDirectory
 #undef DialogBox
+#undef DrawText
+#undef MoveFile
 #undef far
 #undef near
 #undef small
-#undef DrawText
-#undef DialogBox
 #undef IN
 #undef OUT
 #undef ERROR

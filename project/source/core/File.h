@@ -19,6 +19,7 @@ namespace io
 	bool DirectoryExists(cstring dir);
 	// Check if file exists.
 	bool FileExists(cstring filename);
+	void MoveFile(cstring filename, cstring new_filename);
 	// Find files matching pattern, return false from func to stop.
 	bool FindFiles(cstring pattern, delegate<bool(const FileInfo&)> func);
 	// Call ShellExecute on file
@@ -320,14 +321,15 @@ public:
 	~FileReader();
 	void operator = (FileReader& f);
 
-	bool Open(Cstring filename);
 	using StreamReader::Read;
+	using StreamReader::Skip;
+	using StreamReader::ReadToBuffer;
+	bool Open(Cstring filename);
+	void Close();
 	void Read(void* ptr, uint size) override final;
 	void ReadToString(string& s);
-	using StreamReader::ReadToBuffer;
 	static Buffer* ReadToBuffer(Cstring path);
 	static Buffer* ReadToBuffer(Cstring path, uint offset, uint size);
-	using StreamReader::Skip;
 	void Skip(uint size) override final;
 	uint GetSize() const override final { return size; }
 	uint GetPos() const override final;
@@ -554,8 +556,9 @@ public:
 	explicit FileWriter(const string& filename) : FileWriter(filename.c_str()) {}
 	~FileWriter();
 
-	bool Open(cstring filename);
 	using StreamWriter::Write;
+	bool Open(cstring filename);
+	void Close();
 	void Write(const void* ptr, uint size) override final;
 	void Flush();
 	uint GetPos() const override final;

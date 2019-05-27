@@ -30,7 +30,7 @@ enum TILE_MODE : byte
 //-----------------------------------------------------------------------------
 struct TerrainTileInfo
 {
-	DWORD mask, shift;
+	uint mask, shift;
 	cstring name;
 };
 

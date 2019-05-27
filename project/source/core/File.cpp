@@ -67,6 +67,17 @@ bool FileReader::Open(Cstring filename)
 	return ok;
 }
 
+void FileReader::Close()
+{
+	if(file != INVALID_HANDLE_VALUE)
+	{
+		if(own_handle)
+			CloseHandle(file);
+		file = INVALID_HANDLE_VALUE;
+		ok = false;
+	}
+}
+
 void FileReader::Read(void* ptr, uint size)
 {
 	BOOL result = ReadFile(file, ptr, size, &tmp, nullptr);
@@ -202,6 +213,16 @@ bool FileWriter::Open(cstring filename)
 	return (file != INVALID_HANDLE_VALUE);
 }
 
+void FileWriter::Close()
+{
+	if(file != INVALID_HANDLE_VALUE)
+	{
+		if(own_handle)
+			CloseHandle(file);
+		file = INVALID_HANDLE_VALUE;
+	}
+}
+
 void FileWriter::Write(const void* ptr, uint size)
 {
 	WriteFile(file, ptr, size, &tmp, nullptr);
@@ -298,6 +319,16 @@ bool io::FileExists(cstring filename)
 }
 
 //=================================================================================================
+void io::MoveFile(cstring filename, cstring new_filename)
+{
+	if(MoveFileExA(filename, new_filename, MOVEFILE_REPLACE_EXISTING) == 0)
+	{
+		uint error = GetLastError();
+		Error("Failed to move file '%s' to '%s' (%u).", filename, new_filename, error);
+	}
+}
+
+//=================================================================================================
 bool io::FindFiles(cstring pattern, delegate<bool(const FileInfo&)> func)
 {
 	assert(pattern);
@@ -321,8 +352,7 @@ bool io::FindFiles(cstring pattern, delegate<bool(const FileInfo&)> func)
 		};
 		if(!func(info))
 			break;
-	}
-	while(FindNextFile(find, &find_data) != 0);
+	} while(FindNextFile(find, &find_data) != 0);
 
 	DWORD result = GetLastError();
 	FindClose(find);

@@ -192,10 +192,6 @@ struct InstallScript
 bool RunInstallScripts()
 {
 	Info("Reading install scripts.");
-	WIN32_FIND_DATA data;
-	HANDLE find = FindFirstFile(Format("%s/install/*.txt", g_system_dir.c_str()), &data);
-	if(find == INVALID_HANDLE_VALUE)
-		return true;
 
 	vector<InstallScript> scripts;
 
@@ -204,22 +200,22 @@ bool RunInstallScripts()
 	t.AddKeyword("version", 1);
 	t.AddKeyword("remove", 2);
 
-	do
+	io::FindFiles(Format("%s/install/*.txt", g_system_dir.c_str()), [&](const io::FileInfo& info)
 	{
 		int major, minor, patch;
 
 		// read file to find version info
 		try
 		{
-			if(t.FromFile(Format("%s/install/%s", g_system_dir.c_str(), data.cFileName)))
+			if(t.FromFile(Format("%s/install/%s", g_system_dir.c_str(), info.filename)))
 			{
 				t.Next();
 				if(t.MustGetKeywordId() == 2)
 				{
 					// old install script
-					if(sscanf_s(data.cFileName, "%d.%d.%d.txt", &major, &minor, &patch) != 3)
+					if(sscanf_s(info.filename, "%d.%d.%d.txt", &major, &minor, &patch) != 3)
 					{
-						if(sscanf_s(data.cFileName, "%d.%d.txt", &major, &minor) == 2)
+						if(sscanf_s(info.filename, "%d.%d.txt", &major, &minor) == 2)
 							patch = 0;
 						else
 						{
@@ -247,17 +243,17 @@ bool RunInstallScripts()
 				}
 
 				InstallScript& s = Add1(scripts);
-				s.filename = data.cFileName;
+				s.filename = info.filename;
 				s.version = (((major & 0xFF) << 16) | ((minor & 0xFF) << 8) | (patch & 0xFF));
 			}
 		}
 		catch(const Tokenizer::Exception& e)
 		{
-			Warn("Unknown install script '%s': %s", data.cFileName, e.ToString());
+			Warn("Unknown install script '%s': %s", info.filename, e.ToString());
 		}
-	} while(FindNextFile(find, &data));
 
-	FindClose(find);
+		return true;
+	});
 
 	if(scripts.empty())
 		return true;
@@ -269,7 +265,7 @@ bool RunInstallScripts()
 	char* filename;
 	GetFullPathName(BUF, 512, buf, &filename);
 	*filename = 0;
-	DWORD len = strlen(buf);
+	uint len = strlen(buf);
 
 	LocalString s, s2;
 
