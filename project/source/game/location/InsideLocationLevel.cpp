@@ -245,10 +245,7 @@ void InsideLocationLevel::SaveLevel(GameWriter& f, bool local)
 	// room groups
 	f << groups.size();
 	for(RoomGroup& group : groups)
-	{
-		f << group.rooms;
-		f << group.target;
-	}
+		group.Save(f);
 
 	// traps
 	f << traps.size();
@@ -347,13 +344,14 @@ void InsideLocationLevel::LoadLevel(GameReader& f, bool local)
 	}
 
 	// room groups
+	index = 0;
 	if(LOAD_VERSION >= V_0_8)
 	{
 		groups.resize(f.Read<uint>());
 		for(RoomGroup& group : groups)
 		{
-			f >> group.rooms;
-			f >> group.target;
+			group.Load(f);
+			group.index = index++;
 		}
 	}
 	else
@@ -363,8 +361,11 @@ void InsideLocationLevel::LoadLevel(GameReader& f, bool local)
 		{
 			groups[i].rooms.push_back(i);
 			groups[i].target = rooms[i]->target;
+			groups[i].index++;
 		}
 	}
+	if(LOAD_VERSION <= V_DEV)
+		RoomGroup::SetRoomGroupConnections(groups, rooms);
 
 	// traps
 	traps.resize(f.Read<uint>());
@@ -597,4 +598,18 @@ int InsideLocationLevel::GetTileDirFlags(const Int2& pt)
 	if(pt.x == w - 1 || pt.y == h - 1 || IsBlocking(map[pt.x + 1 + (pt.y + 1) * w]))
 		flags |= GDIRF_RIGHT_UP;
 	return flags;
+}
+
+//=================================================================================================
+pair<Room*, Room*> InsideLocationLevel::GetConnectingRooms(RoomGroup* group1, RoomGroup* group2)
+{
+	assert(group1 && group2 && group1->IsConnected(group2->index));
+
+	for(RoomGroup::Connection& c : group1->connections)
+	{
+		if(c.group_index == group2->index)
+			return std::make_pair(rooms[c.my_room], rooms[c.other_room]);
+	}
+
+	return pair<Room*, Room*>(nullptr, nullptr);
 }

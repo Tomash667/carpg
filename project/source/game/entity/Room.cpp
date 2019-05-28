@@ -46,6 +46,7 @@ void Room::Save(FileWriter& f)
 	for(Room* room : connected)
 		f << room->index;
 	f << target;
+	f << group;
 }
 
 //=================================================================================================
@@ -69,6 +70,8 @@ void Room::Load(FileReader& f)
 		else
 			target = (RoomTarget)(old_target + 1);
 	}
+	if(LOAD_VERSION >= V_DEV)
+		f >> group;
 }
 
 //=================================================================================================
@@ -92,4 +95,61 @@ void Room::Read(BitStreamReader& f)
 	for(Room*& room : connected)
 		room = reinterpret_cast<Room*>((int)f.Read<byte>());
 	f.ReadCasted<byte>(target);
+}
+
+
+//=================================================================================================
+bool RoomGroup::IsConnected(int group_index) const
+{
+	for(const Connection& c : connections)
+	{
+		if(c.group_index == group_index)
+			return true;
+	}
+	return false;
+}
+
+//=================================================================================================
+bool RoomGroup::HaveRoom(int room_index) const
+{
+	for(int index : rooms)
+	{
+		if(index == room_index)
+			return true;
+	}
+	return false;
+}
+
+//=================================================================================================
+void RoomGroup::Save(FileWriter& f)
+{
+	f << connections;
+	f << rooms;
+	f << target;
+}
+
+//=================================================================================================
+void RoomGroup::Load(FileReader& f)
+{
+	if(LOAD_VERSION >= V_DEV)
+		f >> connections;
+	f >> rooms;
+	f >> target;
+}
+
+//=================================================================================================
+void RoomGroup::SetRoomGroupConnections(vector<RoomGroup>& groups, vector<Room*>& rooms)
+{
+	for(RoomGroup& group : groups)
+	{
+		for(int room_index : group.rooms)
+		{
+			Room* room = rooms[room_index];
+			for(Room* room2 : room->connected)
+			{
+				if(!group.HaveRoom(room2->index))
+					group.connections.push_back({ room2->group, room_index, room2->index });
+			}
+		}
+	}
 }

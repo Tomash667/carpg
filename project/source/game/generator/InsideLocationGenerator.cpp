@@ -175,7 +175,7 @@ void InsideLocationGenerator::OnEnter()
 	}
 
 	if((first || need_reset) && (Rand() % 50 == 0 || DebugKey('C')) && L.location->type != L_CAVE && inside->target != LABYRINTH
-		&& !L.location->active_quest && dungeon_level == 0 && !L.location->group->IsEmpty())
+		&& !L.location->active_quest && dungeon_level == 0 && !L.location->group->IsEmpty() && inside->IsMultilevel())
 		SpawnHeroesInsideDungeon();
 
 	// stwórz obiekty kolizji
@@ -1160,152 +1160,125 @@ void InsideLocationGenerator::SpawnHeroesInsideDungeon()
 	Game& game = Game::Get();
 	InsideLocationLevel& lvl = GetLevelData();
 
-	Room* room = lvl.GetUpStairsRoom();
-	int chance = 23;
-	bool first = true;
+	vector<RoomGroup*> groups;
+	FindPathFromStairsToStairs(groups);
 
-	vector<Room*> checked, ok_room;
-	checked.push_back(room);
+	uint depth = (Random(groups.size() / 3, groups.size() - 1u) + Random(groups.size() / 3, groups.size() - 1u)) / 2;
+	while(groups[depth]->target == RoomTarget::Corridor)
+		--depth; // don't stay in corridor
 
-	while(true)
+	vector<Room*> visited;
+	for(uint i = 0; i < depth; ++i)
 	{
-		room = checked.back();
-		for(Room* room2 : room->connected)
-		{
-			bool ok = true;
-			for(Room* c : checked)
-			{
-				if(c == room2)
-				{
-					ok = false;
-					break;
-				}
-			}
-			if(ok && (Rand() % 20 < chance || Rand() % 3 == 0 || first))
-				ok_room.push_back(room2);
-		}
-
-		first = false;
-		if(ok_room.empty())
-			break;
-		else
-		{
-			room = RandomItem(ok_room);
-			ok_room.clear();
-			checked.push_back(room);
-			--chance;
-		}
+		RoomGroup* group = groups[i];
+		for(int index : group->rooms)
+			visited.push_back(lvl.rooms[index]);
 	}
-
-	// cofnij ich z korytarza
-	while(checked.back()->IsCorridor())
-		checked.pop_back();
 
 	int gold = 0;
 	vector<ItemSlot> items;
 	LocalVector<Chest*> chests;
 
-	// pozabijaj jednostki w pokojach, ograb skrzynie
-	// trochê to nieefektywne :/
-	vector<Room*>::iterator end = checked.end();
-	if(Rand() % 2 == 0)
-		--end;
+	// kill units in visited rooms
 	for(vector<Unit*>::iterator it2 = L.local_ctx.units->begin(), end2 = L.local_ctx.units->end(); it2 != end2; ++it2)
 	{
 		Unit& u = **it2;
 		if(u.IsAlive() && game.pc->unit->IsEnemy(u))
 		{
-			for(vector<Room*>::iterator it = checked.begin(); it != end; ++it)
+			for(Room* room : visited)
 			{
-				if((*it)->IsInside(u.pos))
+				if(!room->IsInside(u.pos))
+					continue;
+
+				gold += u.gold;
+				for(int i = 0; i < SLOT_MAX; ++i)
 				{
-					gold += u.gold;
-					for(int i = 0; i < SLOT_MAX; ++i)
+					if(u.slots[i] && u.slots[i]->GetWeightValue() >= 5.f)
 					{
-						if(u.slots[i] && u.slots[i]->GetWeightValue() >= 5.f)
-						{
-							ItemSlot& slot = Add1(items);
-							slot.item = u.slots[i];
-							slot.count = slot.team_count = 1u;
-							u.weight -= u.slots[i]->weight;
-							u.RemoveItemEffects(u.slots[i], (ITEM_SLOT)i);
-							u.slots[i] = nullptr;
-						}
+						ItemSlot& slot = Add1(items);
+						slot.item = u.slots[i];
+						slot.count = slot.team_count = 1u;
+						u.weight -= u.slots[i]->weight;
+						u.RemoveItemEffects(u.slots[i], (ITEM_SLOT)i);
+						u.slots[i] = nullptr;
 					}
-					for(vector<ItemSlot>::iterator it3 = u.items.begin(), end3 = u.items.end(); it3 != end3;)
-					{
-						if(it3->item->GetWeightValue() >= 5.f)
-						{
-							u.weight -= it3->item->weight * it3->count;
-							items.push_back(*it3);
-							it3 = u.items.erase(it3);
-							end3 = u.items.end();
-						}
-						else
-							++it3;
-					}
-					u.gold = 0;
-					u.live_state = Unit::DEAD;
-					if(u.data->mesh->IsLoaded())
-					{
-						u.animation = u.current_animation = ANI_DIE;
-						u.SetAnimationAtEnd(NAMES::ani_die);
-						L.CreateBlood(L.local_ctx, u, true);
-					}
-					else
-						L.blood_to_spawn.push_back(&u);
-					u.hp = 0.f;
-					++GameStats::Get().total_kills;
-					u.UpdatePhysics(Vec3::Zero);
-					if(u.event_handler)
-						u.event_handler->HandleUnitEvent(UnitEventHandler::DIE, &u);
-					break;
 				}
-			}
-		}
-	}
-	for(vector<Chest*>::iterator it2 = L.local_ctx.chests->begin(), end2 = L.local_ctx.chests->end(); it2 != end2; ++it2)
-	{
-		for(vector<Room*>::iterator it = checked.begin(); it != end; ++it)
-		{
-			if((*it)->IsInside((*it2)->pos))
-			{
-				for(vector<ItemSlot>::iterator it3 = (*it2)->items.begin(), end3 = (*it2)->items.end(); it3 != end3;)
+				for(vector<ItemSlot>::iterator it3 = u.items.begin(), end3 = u.items.end(); it3 != end3;)
 				{
-					if(it3->item->type == IT_GOLD)
+					if(it3->item->GetWeightValue() >= 5.f)
 					{
-						gold += it3->count;
-						it3 = (*it2)->items.erase(it3);
-						end3 = (*it2)->items.end();
-					}
-					else if(it3->item->GetWeightValue() >= 5.f)
-					{
+						u.weight -= it3->item->weight * it3->count;
 						items.push_back(*it3);
-						it3 = (*it2)->items.erase(it3);
-						end3 = (*it2)->items.end();
+						it3 = u.items.erase(it3);
+						end3 = u.items.end();
 					}
 					else
 						++it3;
 				}
-				chests->push_back(*it2);
+				u.gold = 0;
+				u.live_state = Unit::DEAD;
+				if(u.data->mesh->IsLoaded())
+				{
+					u.animation = u.current_animation = ANI_DIE;
+					u.SetAnimationAtEnd(NAMES::ani_die);
+					L.CreateBlood(L.local_ctx, u, true);
+				}
+				else
+					L.blood_to_spawn.push_back(&u);
+				u.hp = 0.f;
+				++GameStats::Get().total_kills;
+				u.UpdatePhysics(Vec3::Zero);
+				if(u.event_handler)
+					u.event_handler->HandleUnitEvent(UnitEventHandler::DIE, &u);
 				break;
 			}
 		}
 	}
 
-	// otwórz drzwi pomiêdzy obszarami
-	for(vector<Room*>::iterator it2 = checked.begin(), end2 = checked.end() - 1; it2 != end2; ++it2)
+	// loot chests in visited rooms
+	for(vector<Chest*>::iterator it2 = L.local_ctx.chests->begin(), end2 = L.local_ctx.chests->end(); it2 != end2; ++it2)
 	{
-		Room& a = **it2,
-			&b = **(it2 + 1);
+		for(Room* room : visited)
+		{
+			if(!room->IsInside((*it2)->pos))
+				continue;
 
-		// wspólny obszar pomiêdzy pokojami
+			for(vector<ItemSlot>::iterator it3 = (*it2)->items.begin(), end3 = (*it2)->items.end(); it3 != end3;)
+			{
+				if(it3->item->type == IT_GOLD)
+				{
+					gold += it3->count;
+					it3 = (*it2)->items.erase(it3);
+					end3 = (*it2)->items.end();
+				}
+				else if(it3->item->GetWeightValue() >= 5.f)
+				{
+					items.push_back(*it3);
+					it3 = (*it2)->items.erase(it3);
+					end3 = (*it2)->items.end();
+				}
+				else
+					++it3;
+			}
+			chests->push_back(*it2);
+			break;
+		}
+	}
+
+	// open doors between rooms
+	for(uint i=0; i<depth; ++i)
+	{
+		pair<Room*, Room*> connected = lvl.GetConnectingRooms(groups[i], groups[i + 1]);
+		Room& a = *connected.first,
+			&b = *connected.second;
+
+		// get common area between rooms
 		int x1 = max(a.pos.x, b.pos.x),
 			x2 = min(a.pos.x + a.size.x, b.pos.x + b.size.x),
 			y1 = max(a.pos.y, b.pos.y),
 			y2 = min(a.pos.y + a.size.y, b.pos.y + b.size.y);
 
-		// szukaj drzwi
+		// find doors
 		for(int y = y1; y < y2; ++y)
 		{
 			for(int x = x1; x < x2; ++x)
@@ -1326,10 +1299,15 @@ void InsideLocationGenerator::SpawnHeroesInsideDungeon()
 		}
 	}
 
-	// stwórz bohaterów
+	// create heroes
 	int count = Random(3, 4);
 	LocalVector<Unit*> heroes;
-	room = checked.back();
+	Room* room;
+	RoomGroup* group = groups[depth];
+	if(group->rooms.size() == 1u)
+		room = lvl.rooms[group->rooms.front()];
+	else
+		room = lvl.GetConnectingRooms(groups[depth - 1], group).second;
 	for(int i = 0; i < count; ++i)
 	{
 		int level = loc->st + Random(-2, 2);
@@ -1340,13 +1318,7 @@ void InsideLocationGenerator::SpawnHeroesInsideDungeon()
 			break;
 	}
 
-	// sortuj przedmioty wed³ug wartoœci
-	std::sort(items.begin(), items.end(), [](const ItemSlot& a, const ItemSlot& b)
-	{
-		return a.item->GetWeightValue() < b.item->GetWeightValue();
-	});
-
-	// rozdziel z³oto
+	// split gold
 	int gold_per_hero = gold / heroes->size();
 	for(vector<Unit*>::iterator it = heroes->begin(), end = heroes->end(); it != end; ++it)
 		(*it)->gold += gold_per_hero;
@@ -1354,7 +1326,11 @@ void InsideLocationGenerator::SpawnHeroesInsideDungeon()
 	if(gold)
 		heroes->back()->gold += gold;
 
-	// rozdziel przedmioty
+	// split items
+	std::sort(items.begin(), items.end(), [](const ItemSlot& a, const ItemSlot& b)
+	{
+		return a.item->GetWeightValue() < b.item->GetWeightValue();
+	});
 	vector<Unit*>::iterator heroes_it = heroes->begin(), heroes_end = heroes->end();
 	while(!items.empty())
 	{
@@ -1371,7 +1347,7 @@ void InsideLocationGenerator::SpawnHeroesInsideDungeon()
 			}
 			else
 			{
-				// ten heros nie mo¿e wzi¹œæ tego przedmiotu, jest szansa ¿e wzi¹³by jakiœ l¿ejszy i tañszy ale ma³a
+				// this hero can't carry more items
 				heroes_it = heroes->erase(heroes_it);
 				if(heroes->empty())
 					break;
@@ -1385,7 +1361,7 @@ void InsideLocationGenerator::SpawnHeroesInsideDungeon()
 		items.pop_back();
 	}
 
-	// pozosta³e przedmioty schowaj do skrzyni o ile jest co i gdzie
+	// put rest of items inside some chest
 	if(!chests->empty() && !items.empty())
 	{
 		chests.Shuffle();
@@ -1399,8 +1375,35 @@ void InsideLocationGenerator::SpawnHeroesInsideDungeon()
 		}
 	}
 
-	// sprawdŸ czy lokacja oczyszczona (raczej nie jest)
+	// check if location is cleared (realy small chance)
 	L.CheckIfLocationCleared();
+}
+
+//=================================================================================================
+void InsideLocationGenerator::FindPathFromStairsToStairs(vector<RoomGroup*>& groups)
+{
+	InsideLocationLevel& lvl = GetLevelData();
+
+	vector<Int2> path;
+	global::pathfinding->FindPath(L.local_ctx, lvl.staircase_up, lvl.staircase_down, path);
+	std::reverse(path.begin(), path.end());
+
+	RoomGroup* prev_group = nullptr;
+	word prev_room_index = 0xFFFF;
+	for(const Int2& pt : path)
+	{
+		word room_index = lvl.map[pt.x + pt.y * lvl.w].room;
+		if(room_index != prev_room_index)
+		{
+			RoomGroup* group = &lvl.groups[lvl.rooms[room_index]->group];
+			if(group != prev_group)
+			{
+				groups.push_back(group);
+				prev_group = group;
+			}
+			prev_room_index = room_index;
+		}
+	}
 }
 
 //=================================================================================================

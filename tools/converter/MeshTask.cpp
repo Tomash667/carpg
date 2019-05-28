@@ -165,7 +165,7 @@ void MeshInfo(const char* path, const char* options)
 	}
 	for(Mesh::Point* pt : points)
 	{
-		printf("\tPoint %s\n\t\tType: %d\n\t\tBone: %u\n\t\tRot: %g;%g;%g\n\t\tSize: %g;%g;%g\n", pt->name.c_str(), pt->type, pt->bone,
+		printf("\tPoint %s\n\t\tType: %u\n\t\tBone: %u\n\t\tRot: %g;%g;%g\n\t\tSize: %g;%g;%g\n", pt->name.c_str(), pt->type, pt->bone,
 			pt->rot.x, pt->rot.y, pt->rot.z, pt->size.x, pt->size.y, pt->size.z);
 	}
 	printf("Groups: %u\n", head.n_groups);

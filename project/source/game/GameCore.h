@@ -142,6 +142,7 @@ struct QuestList;
 struct QuestScheme;
 struct Ring;
 struct Room;
+struct RoomGroup;
 struct SaveSlot;
 struct ScriptEvent;
 struct Shield;

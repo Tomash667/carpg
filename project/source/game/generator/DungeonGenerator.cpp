@@ -55,6 +55,7 @@ void DungeonGenerator::Generate()
 		room->size = Int2(7, 7);
 		room->pos.x = room->pos.y = (settings.map_w - 7) / 2;
 		room->connected.clear();
+		room->index = 0;
 		inside->special_room = 0;
 		lvl.rooms.push_back(room);
 		settings.stairs_up_loc = MapSettings::FAR_FROM_ROOM;
@@ -68,6 +69,7 @@ void DungeonGenerator::Generate()
 		room->pos.x = (settings.map_w - 13) / 2;
 		room->pos.y = (settings.map_w - 7) / 2;
 		room->connected.clear();
+		room->index = 0;
 		inside->special_room = 0;
 		lvl.rooms.push_back(room);
 		settings.stairs_up_loc = MapSettings::FAR_FROM_ROOM;
@@ -80,6 +82,7 @@ void DungeonGenerator::Generate()
 		room->size = Int2(7, 7);
 		room->pos.x = room->pos.y = (settings.map_w - 7) / 2;
 		room->connected.clear();
+		room->index = 0;
 		inside->special_room = 0;
 		lvl.rooms.push_back(room);
 		settings.stairs_up_loc = MapSettings::FAR_FROM_ROOM;

@@ -396,6 +396,8 @@ void LabyrinthGenerator::Generate()
 	room->pos = room_pos;
 	room->size = base.room_size;
 	room->connected.clear();
+	room->index = 0;
+	room->group = -1;
 	lvl.rooms.push_back(room);
 }
 

@@ -22,7 +22,7 @@ struct Room : ObjectPoolProxy<Room>
 	Int2 pos, size;
 	vector<Room*> connected;
 	RoomTarget target;
-	int index;
+	int index, group;
 
 	static const int MIN_SIZE = 19;
 	static const float HEIGHT;
@@ -97,6 +97,19 @@ struct Room : ObjectPoolProxy<Room>
 //-----------------------------------------------------------------------------
 struct RoomGroup
 {
+	struct Connection
+	{
+		int group_index, my_room, other_room;
+	};
+
+	int index;
+	vector<Connection> connections;
 	vector<int> rooms;
 	RoomTarget target;
+
+	bool IsConnected(int group_index) const;
+	bool HaveRoom(int room_index) const;
+	void Save(FileWriter& f);
+	void Load(FileReader& f);
+	static void SetRoomGroupConnections(vector<RoomGroup>& groups, vector<Room*>& rooms);
 };

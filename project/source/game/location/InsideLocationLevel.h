@@ -43,12 +43,13 @@ struct InsideLocationLevel : public LevelArea
 	Int2 GetUpStairsFrontTile() const { return staircase_up + DirToPos(staircase_up_dir); }
 	Int2 GetDownStairsFrontTile() const { return staircase_down + DirToPos(staircase_down_dir); }
 	Room* GetRandomRoom() { return rooms[Rand() % rooms.size()]; }
-	bool GetRandomNearWallTile(const Room& pokoj, Int2& tile, GameDirection& rot, bool nocol = false);
+	bool GetRandomNearWallTile(const Room& room, Int2& tile, GameDirection& rot, bool nocol = false);
 	Room& GetFarRoom(bool have_down_stairs, bool no_target = false);
 	Room* GetRoom(const Int2& pt);
 	Room* GetUpStairsRoom() { return GetRoom(staircase_up); }
 	Room* GetDownStairsRoom() { return GetRoom(staircase_down); }
 	Room* GetRandomRoom(RoomTarget target, delegate<bool(Room&)> clbk, int* index, int* group);
+	pair<Room*, Room*> GetConnectingRooms(RoomGroup* group1, RoomGroup* group2);
 
 	void SaveLevel(GameWriter& f, bool local);
 	void LoadLevel(GameReader& f, bool local);

@@ -10,18 +10,18 @@ class Pathfinding : public GameComponent
 
 	struct APoint
 	{
-		int odleglosc, koszt, suma, stan;
+		int dist, cost, sum, state;
 		Int2 prev;
 
-		bool IsLower(int suma2) const
+		bool IsLower(int sum2) const
 		{
-			return stan == 0 || suma2 < suma;
+			return state == 0 || sum2 < sum;
 		}
 	};
 
 public:
 	void Cleanup() override { delete this; }
-	bool FindPath(LevelContext& ctx, const Int2& start_tile, const Int2& target_tile, vector<Int2>& path, bool can_open_doors = true, bool wedrowanie = false, vector<Int2>* blocked = nullptr);
+	bool FindPath(LevelContext& ctx, const Int2& start_tile, const Int2& target_tile, vector<Int2>& path, bool can_open_doors = true, bool wandering = false, vector<Int2>* blocked = nullptr);
 	int FindLocalPath(LevelContext& ctx, vector<Int2>& path, const Int2& my_tile, const Int2& target_tile, const Unit* me, const Unit* other, const void* usable = nullptr, bool is_end_point = false);
 	void Draw(DebugDrawer* dd);
 	void SetTarget(Unit* target) { marked = target; }

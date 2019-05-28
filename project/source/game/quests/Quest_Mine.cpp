@@ -684,6 +684,8 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 		room->pos = pt;
 		room->size = Int2(5, 5);
 		room->connected.clear();
+		room->index = 0;
+		room->group = -1;
 		lvl.rooms.push_back(room);
 
 		// doors

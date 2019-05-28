@@ -9,7 +9,7 @@
 #include "DebugDrawer.h"
 
 //-----------------------------------------------------------------------------
-const float SS = 0.25f;//0.25f/8;
+const float SS = 0.25f;
 Pathfinding* global::pathfinding;
 
 
@@ -22,35 +22,35 @@ struct Point
 //-----------------------------------------------------------------------------
 struct AStarSort
 {
-	AStarSort(vector<Pathfinding::APoint>& a_map, int rozmiar) : a_map(a_map), rozmiar(rozmiar)
+	AStarSort(vector<Pathfinding::APoint>& a_map, int size) : a_map(a_map), size(size)
 	{
 	}
 
 	bool operator() (const Point& pt1, const Point& pt2) const
 	{
-		return a_map[pt1.pt.x + pt1.pt.y*rozmiar].suma > a_map[pt2.pt.x + pt2.pt.y*rozmiar].suma;
+		return a_map[pt1.pt.x + pt1.pt.y*size].sum > a_map[pt2.pt.x + pt2.pt.y*size].sum;
 	}
 
 	vector<Pathfinding::APoint>& a_map;
-	int rozmiar;
+	int size;
 };
 
 
 //=================================================================================================
 // szuka œcie¿ki u¿ywaj¹c algorytmu A-Star
 // zwraca true jeœli znaleziono i w wektorze jest ta œcie¿ka, w œcie¿ce nie ma pocz¹tkowego kafelka
-bool Pathfinding::FindPath(LevelContext& ctx, const Int2& _start_tile, const Int2& _target_tile, vector<Int2>& _path, bool can_open_doors, bool wedrowanie, vector<Int2>* blocked)
+bool Pathfinding::FindPath(LevelContext& ctx, const Int2& start_tile, const Int2& target_tile, vector<Int2>& path, bool can_open_doors, bool wandering, vector<Int2>* blocked)
 {
-	if(_start_tile == _target_tile || ctx.type == LevelContext::Building)
+	if(start_tile == target_tile || ctx.type == LevelContext::Building)
 	{
 		// jest w tym samym miejscu
-		_path.clear();
-		_path.push_back(_target_tile);
+		path.clear();
+		path.push_back(target_tile);
 		return true;
 	}
 
-	static vector<Point> do_sprawdzenia;
-	do_sprawdzenia.clear();
+	static vector<Point> to_check;
+	to_check.clear();
 
 	if(ctx.type == LevelContext::Outside)
 	{
@@ -60,11 +60,11 @@ bool Pathfinding::FindPath(LevelContext& ctx, const Int2& _start_tile, const Int
 		const int w = OutsideLocation::size;
 
 		// czy poza map¹
-		if(!outside->IsInside(_start_tile) || !outside->IsInside(_target_tile))
+		if(!outside->IsInside(start_tile) || !outside->IsInside(target_tile))
 			return false;
 
 		// czy na blokuj¹cym miejscu
-		if(m[_start_tile(w)].IsBlocking() || m[_target_tile(w)].IsBlocking())
+		if(m[start_tile(w)].IsBlocking() || m[target_tile(w)].IsBlocking())
 			return false;
 
 		// powiêksz mapê
@@ -74,43 +74,43 @@ bool Pathfinding::FindPath(LevelContext& ctx, const Int2& _start_tile, const Int
 
 		// wyzeruj
 		memset(&a_map[0], 0, sizeof(APoint)*size);
-		_path.clear();
+		path.clear();
 
 		// apply blocked tiles
 		if(blocked)
 		{
 			for(vector<Int2>::iterator it = blocked->begin(), end = blocked->end(); it != end; ++it)
-				a_map[(*it)(w)].stan = 1;
-			if(a_map[_start_tile(w)].stan == 1 || a_map[_target_tile(w)].stan == 1)
+				a_map[(*it)(w)].state = 1;
+			if(a_map[start_tile(w)].state == 1 || a_map[target_tile(w)].state == 1)
 				return false;
 		}
 
 		// dodaj pierwszy kafelek do sprawdzenia
 		APoint apt, prev_apt;
-		apt.suma = apt.odleglosc = 10 * (abs(_target_tile.x - _start_tile.x) + abs(_target_tile.y - _start_tile.y));
-		apt.stan = 1;
-		apt.koszt = 0;
-		a_map[_start_tile(w)] = apt;
+		apt.sum = apt.dist = 10 * (abs(target_tile.x - start_tile.x) + abs(target_tile.y - start_tile.y));
+		apt.state = 1;
+		apt.cost = 0;
+		a_map[start_tile(w)] = apt;
 
 		Point pt, new_pt;
-		pt.pt = pt.prev = _start_tile;
-		do_sprawdzenia.push_back(pt);
+		pt.pt = pt.prev = start_tile;
+		to_check.push_back(pt);
 
-		AStarSort sortownik(a_map, w);
+		AStarSort sorter(a_map, w);
 
 		// szukaj drogi
-		while(!do_sprawdzenia.empty())
+		while(!to_check.empty())
 		{
-			pt = do_sprawdzenia.back();
-			do_sprawdzenia.pop_back();
+			pt = to_check.back();
+			to_check.pop_back();
 
 			apt = a_map[pt.pt(w)];
 			prev_apt = a_map[pt.prev(w)];
 
-			if(pt.pt == _target_tile)
+			if(pt.pt == target_tile)
 			{
 				APoint& ept = a_map[pt.pt(w)];
-				ept.stan = 1;
+				ept.state = 1;
 				ept.prev = pt.prev;
 				break;
 			}
@@ -134,68 +134,68 @@ bool Pathfinding::FindPath(LevelContext& ctx, const Int2& _start_tile, const Int
 				const Int2& pt1 = kierunek[i] + pt.pt;
 				const Int2& pt2 = kierunek2[i] + pt.pt;
 
-				if(pt1.x >= 0 && pt1.y >= 0 && pt1.x < w - 1 && pt1.y < w - 1 && a_map[pt1(w)].stan == 0 && !m[pt1(w)].IsBlocking())
+				if(pt1.x >= 0 && pt1.y >= 0 && pt1.x < w - 1 && pt1.y < w - 1 && a_map[pt1(w)].state == 0 && !m[pt1(w)].IsBlocking())
 				{
 					apt.prev = pt.pt;
-					apt.koszt = prev_apt.koszt + 10;
-					if(wedrowanie)
+					apt.cost = prev_apt.cost + 10;
+					if(wandering)
 					{
 						TERRAIN_TILE type = m[pt1(w)].t;
 						if(type == TT_SAND)
-							apt.koszt += 10;
+							apt.cost += 10;
 						else if(type != TT_ROAD)
-							apt.koszt += 30;
+							apt.cost += 30;
 					}
-					apt.odleglosc = (abs(pt1.x - _target_tile.x) + abs(pt1.y - _target_tile.y)) * 10;
-					apt.suma = apt.odleglosc + apt.koszt;
-					apt.stan = 1;
+					apt.dist = (abs(pt1.x - target_tile.x) + abs(pt1.y - target_tile.y)) * 10;
+					apt.sum = apt.dist + apt.cost;
+					apt.state = 1;
 					a_map[pt1(w)] = apt;
 
 					new_pt.pt = pt1;
 					new_pt.prev = pt.pt;
-					do_sprawdzenia.push_back(new_pt);
+					to_check.push_back(new_pt);
 				}
 
-				if(pt2.x >= 0 && pt2.y >= 0 && pt2.x < w - 1 && pt2.y < w - 1 && a_map[pt2(w)].stan == 0 &&
+				if(pt2.x >= 0 && pt2.y >= 0 && pt2.x < w - 1 && pt2.y < w - 1 && a_map[pt2(w)].state == 0 &&
 					!m[pt2(w)].IsBlocking() &&
 					!m[kierunek2[i].x + pt.pt.x + pt.pt.y*w].IsBlocking() &&
 					!m[pt.pt.x + (kierunek2[i].y + pt.pt.y)*w].IsBlocking())
 				{
 					apt.prev = pt.pt;
-					apt.koszt = prev_apt.koszt + 15;
-					if(wedrowanie)
+					apt.cost = prev_apt.cost + 15;
+					if(wandering)
 					{
 						TERRAIN_TILE type = m[pt2(w)].t;
 						if(type == TT_SAND)
-							apt.koszt += 10;
+							apt.cost += 10;
 						else if(type != TT_ROAD)
-							apt.koszt += 30;
+							apt.cost += 30;
 					}
-					apt.odleglosc = (abs(pt2.x - _target_tile.x) + abs(pt2.y - _target_tile.y)) * 10;
-					apt.suma = apt.odleglosc + apt.koszt;
-					apt.stan = 1;
+					apt.dist = (abs(pt2.x - target_tile.x) + abs(pt2.y - target_tile.y)) * 10;
+					apt.sum = apt.dist + apt.cost;
+					apt.state = 1;
 					a_map[pt2(w)] = apt;
 
 					new_pt.pt = pt2;
 					new_pt.prev = pt.pt;
-					do_sprawdzenia.push_back(new_pt);
+					to_check.push_back(new_pt);
 				}
 			}
 
-			std::sort(do_sprawdzenia.begin(), do_sprawdzenia.end(), sortownik);
+			std::sort(to_check.begin(), to_check.end(), sorter);
 		}
 
 		// jeœli cel jest niezbadany to nie znaleziono œcie¿ki
-		if(a_map[_target_tile(w)].stan == 0)
+		if(a_map[target_tile(w)].state == 0)
 			return false;
 
 		// wype³nij elementami œcie¿kê
-		_path.push_back(_target_tile);
+		path.push_back(target_tile);
 
 		Int2 p;
 
-		while((p = _path.back()) != _start_tile)
-			_path.push_back(a_map[p(w)].prev);
+		while((p = path.back()) != start_tile)
+			path.push_back(a_map[p(w)].prev);
 	}
 	else
 	{
@@ -206,11 +206,11 @@ bool Pathfinding::FindPath(LevelContext& ctx, const Int2& _start_tile, const Int
 		const int w = lvl.w, h = lvl.h;
 
 		// czy poza map¹
-		if(!lvl.IsInside(_start_tile) || !lvl.IsInside(_target_tile))
+		if(!lvl.IsInside(start_tile) || !lvl.IsInside(target_tile))
 			return false;
 
 		// czy na blokuj¹cym miejscu
-		if(IsBlocking(m[_start_tile(w)]) || IsBlocking(m[_target_tile(w)]))
+		if(IsBlocking(m[start_tile(w)]) || IsBlocking(m[target_tile(w)]))
 			return false;
 
 		// powiêksz mapê
@@ -220,44 +220,44 @@ bool Pathfinding::FindPath(LevelContext& ctx, const Int2& _start_tile, const Int
 
 		// wyzeruj
 		memset(&a_map[0], 0, sizeof(APoint)*size);
-		_path.clear();
+		path.clear();
 
 		// apply blocked tiles
 		if(blocked)
 		{
 			for(vector<Int2>::iterator it = blocked->begin(), end = blocked->end(); it != end; ++it)
-				a_map[(*it)(w)].stan = 1;
-			if(a_map[_start_tile(w)].stan == 1 || a_map[_target_tile(w)].stan == 1)
+				a_map[(*it)(w)].state = 1;
+			if(a_map[start_tile(w)].state == 1 || a_map[target_tile(w)].state == 1)
 				return false;
 		}
 
 		// dodaj pierwszy kafelek do sprawdzenia
 		APoint apt, prev_apt;
-		apt.suma = apt.odleglosc = 10 * (abs(_target_tile.x - _start_tile.x) + abs(_target_tile.y - _start_tile.y));
-		apt.stan = 1;
-		apt.koszt = 0;
-		a_map[_start_tile(w)] = apt;
+		apt.sum = apt.dist = 10 * (abs(target_tile.x - start_tile.x) + abs(target_tile.y - start_tile.y));
+		apt.state = 1;
+		apt.cost = 0;
+		a_map[start_tile(w)] = apt;
 
 		Point pt, new_pt;
-		pt.pt = pt.prev = _start_tile;
-		do_sprawdzenia.push_back(pt);
+		pt.pt = pt.prev = start_tile;
+		to_check.push_back(pt);
 
-		AStarSort sortownik(a_map, w);
+		AStarSort sorter(a_map, w);
 
 		// szukaj drogi
-		while(!do_sprawdzenia.empty())
+		while(!to_check.empty())
 		{
-			pt = do_sprawdzenia.back();
-			do_sprawdzenia.pop_back();
+			pt = to_check.back();
+			to_check.pop_back();
 
 			prev_apt = a_map[pt.pt(w)];
 
-			//Info("(%d,%d)->(%d,%d), K:%d D:%d S:%d", pt.prev.x, pt.prev.y, pt.pt.x, pt.pt.y, prev_apt.koszt, prev_apt.odleglosc, prev_apt.suma);
+			//Info("(%d,%d)->(%d,%d), K:%d D:%d S:%d", pt.prev.x, pt.prev.y, pt.pt.x, pt.pt.y, prev_apt.cost, prev_apt.dist, prev_apt.sum);
 
-			if(pt.pt == _target_tile)
+			if(pt.pt == target_tile)
 			{
 				APoint& ept = a_map[pt.pt(w)];
-				ept.stan = 1;
+				ept.state = 1;
 				ept.prev = pt.prev;
 				break;
 			}
@@ -286,18 +286,18 @@ bool Pathfinding::FindPath(LevelContext& ctx, const Int2& _start_tile, const Int
 					if(pt1.x >= 0 && pt1.y >= 0 && pt1.x < w - 1 && pt1.y < h - 1 && !IsBlocking(m[pt1(w)]))
 					{
 						apt.prev = pt.pt;
-						apt.koszt = prev_apt.koszt + 10;
-						apt.odleglosc = (abs(pt1.x - _target_tile.x) + abs(pt1.y - _target_tile.y)) * 10;
-						apt.suma = apt.odleglosc + apt.koszt;
+						apt.cost = prev_apt.cost + 10;
+						apt.dist = (abs(pt1.x - target_tile.x) + abs(pt1.y - target_tile.y)) * 10;
+						apt.sum = apt.dist + apt.cost;
 
-						if(a_map[pt1(w)].IsLower(apt.suma))
+						if(a_map[pt1(w)].IsLower(apt.sum))
 						{
-							apt.stan = 1;
+							apt.state = 1;
 							a_map[pt1(w)] = apt;
 
 							new_pt.pt = pt1;
 							new_pt.prev = pt.pt;
-							do_sprawdzenia.push_back(new_pt);
+							to_check.push_back(new_pt);
 						}
 					}
 
@@ -307,18 +307,18 @@ bool Pathfinding::FindPath(LevelContext& ctx, const Int2& _start_tile, const Int
 						!IsBlocking(m[pt.pt.x + (kierunek2[i].y + pt.pt.y)*w]))
 					{
 						apt.prev = pt.pt;
-						apt.koszt = prev_apt.koszt + 15;
-						apt.odleglosc = (abs(pt2.x - _target_tile.x) + abs(pt2.y - _target_tile.y)) * 10;
-						apt.suma = apt.odleglosc + apt.koszt;
+						apt.cost = prev_apt.cost + 15;
+						apt.dist = (abs(pt2.x - target_tile.x) + abs(pt2.y - target_tile.y)) * 10;
+						apt.sum = apt.dist + apt.cost;
 
-						if(a_map[pt2(w)].IsLower(apt.suma))
+						if(a_map[pt2(w)].IsLower(apt.sum))
 						{
-							apt.stan = 1;
+							apt.state = 1;
 							a_map[pt2(w)] = apt;
 
 							new_pt.pt = pt2;
 							new_pt.prev = pt.pt;
-							do_sprawdzenia.push_back(new_pt);
+							to_check.push_back(new_pt);
 						}
 					}
 				}
@@ -407,20 +407,20 @@ bool Pathfinding::FindPath(LevelContext& ctx, const Int2& _start_tile, const Int
 						if(ok)
 						{
 							apt.prev = pt.pt;
-							apt.koszt = prev_apt.koszt + 10;
-							apt.odleglosc = (abs(pt1.x - _target_tile.x) + abs(pt1.y - _target_tile.y)) * 10;
-							apt.suma = apt.odleglosc + apt.koszt;
+							apt.cost = prev_apt.cost + 10;
+							apt.dist = (abs(pt1.x - target_tile.x) + abs(pt1.y - target_tile.y)) * 10;
+							apt.sum = apt.dist + apt.cost;
 
-							if(a_map[pt1(w)].IsLower(apt.suma))
+							if(a_map[pt1(w)].IsLower(apt.sum))
 							{
-								apt.stan = 1;
+								apt.state = 1;
 								a_map[pt1(w)] = apt;
 
 								if(ok == 2)
 								{
 									new_pt.pt = pt1;
 									new_pt.prev = pt.pt;
-									do_sprawdzenia.push_back(new_pt);
+									to_check.push_back(new_pt);
 								}
 							}
 						}
@@ -457,42 +457,42 @@ bool Pathfinding::FindPath(LevelContext& ctx, const Int2& _start_tile, const Int
 						if(ok)
 						{
 							apt.prev = pt.pt;
-							apt.koszt = prev_apt.koszt + 15;
-							apt.odleglosc = (abs(pt2.x - _target_tile.x) + abs(pt2.y - _target_tile.y)) * 10;
-							apt.suma = apt.odleglosc + apt.koszt;
+							apt.cost = prev_apt.cost + 15;
+							apt.dist = (abs(pt2.x - target_tile.x) + abs(pt2.y - target_tile.y)) * 10;
+							apt.sum = apt.dist + apt.cost;
 
-							if(a_map[pt2(w)].IsLower(apt.suma))
+							if(a_map[pt2(w)].IsLower(apt.sum))
 							{
-								apt.stan = 1;
+								apt.state = 1;
 								a_map[pt2(w)] = apt;
 
 								new_pt.pt = pt2;
 								new_pt.prev = pt.pt;
-								do_sprawdzenia.push_back(new_pt);
+								to_check.push_back(new_pt);
 							}
 						}
 					}
 				}
 			}
 
-			std::sort(do_sprawdzenia.begin(), do_sprawdzenia.end(), sortownik);
+			std::sort(to_check.begin(), to_check.end(), sorter);
 		}
 
 		// jeœli cel jest niezbadany to nie znaleziono œcie¿ki
-		if(a_map[_target_tile(w)].stan == 0)
+		if(a_map[target_tile(w)].state == 0)
 			return false;
 
 		// wype³nij elementami œcie¿kê
-		_path.push_back(_target_tile);
+		path.push_back(target_tile);
 
 		Int2 p;
 
-		while((p = _path.back()) != _start_tile)
-			_path.push_back(a_map[p(w)].prev);
+		while((p = path.back()) != start_tile)
+			path.push_back(a_map[p(w)].prev);
 	}
 
 	// usuñ ostatni element œcie¿ki
-	_path.pop_back();
+	path.pop_back();
 
 	return true;
 }
@@ -504,11 +504,11 @@ bool Pathfinding::FindPath(LevelContext& ctx, const Int2& _start_tile, const Int
 // 3 - start tile and target tile is equal
 // 4 - target tile is blocked
 // 5 - path not found
-int Pathfinding::FindLocalPath(LevelContext& ctx, vector<Int2>& _path, const Int2& my_tile, const Int2& target_tile, const Unit* _me, const Unit* _other, const void* usable, bool is_end_point)
+int Pathfinding::FindLocalPath(LevelContext& ctx, vector<Int2>& path, const Int2& my_tile, const Int2& target_tile, const Unit* _me, const Unit* _other, const void* usable, bool is_end_point)
 {
 	assert(_me);
 
-	_path.clear();
+	path.clear();
 	if(marked == _me)
 		test_pf.clear();
 
@@ -617,38 +617,38 @@ int Pathfinding::FindLocalPath(LevelContext& ctx, vector<Int2>& _path, const Int
 		return 2;
 
 	// dodaj pierwszy punkt do sprawdzenia
-	static vector<Point> do_sprawdzenia;
-	do_sprawdzenia.clear();
+	static vector<Point> to_check;
+	to_check.clear();
 	{
-		Point& pt = Add1(do_sprawdzenia);
+		Point& pt = Add1(to_check);
 		pt.pt = target_rel;
 		pt.prev = Int2(0, 0);
 	}
 
 	APoint apt, prev_apt;
-	apt.odleglosc = apt.suma = Int2::Distance(my_rel, target_rel) * 10;
-	apt.koszt = 0;
-	apt.stan = 1;
+	apt.dist = apt.sum = Int2::Distance(my_rel, target_rel) * 10;
+	apt.cost = 0;
+	apt.state = 1;
 	apt.prev = Int2(0, 0);
 	a_map[target_rel(w)] = apt;
 
-	AStarSort sortownik(a_map, w);
+	AStarSort sorter(a_map, w);
 	Point new_pt;
 
 	const int MAX_STEPS = 100;
 	int steps = 0;
 
 	// rozpocznij szukanie œcie¿ki
-	while(!do_sprawdzenia.empty())
+	while(!to_check.empty())
 	{
-		Point pt = do_sprawdzenia.back();
-		do_sprawdzenia.pop_back();
+		Point pt = to_check.back();
+		to_check.pop_back();
 		prev_apt = a_map[pt.pt(w)];
 
 		if(pt.pt == my_rel)
 		{
 			APoint& ept = a_map[pt.pt(w)];
-			ept.stan = 1;
+			ept.state = 1;
 			ept.prev = pt.prev;
 			break;
 		}
@@ -675,37 +675,36 @@ int Pathfinding::FindLocalPath(LevelContext& ctx, vector<Int2>& _path, const Int
 			if(pt1.x >= 0 && pt1.y >= 0 && pt1.x < w - 1 && pt1.y < h - 1 && !local_pfmap[pt1(w)])
 			{
 				apt.prev = pt.pt;
-				apt.koszt = prev_apt.koszt + 10;
-				apt.odleglosc = Int2::Distance(pt1, my_rel) * 10;
-				apt.suma = apt.odleglosc + apt.koszt;
+				apt.cost = prev_apt.cost + 10;
+				apt.dist = Int2::Distance(pt1, my_rel) * 10;
+				apt.sum = apt.dist + apt.cost;
 
-				if(a_map[pt1(w)].IsLower(apt.suma))
+				if(a_map[pt1(w)].IsLower(apt.sum))
 				{
-					apt.stan = 1;
+					apt.state = 1;
 					a_map[pt1(w)] = apt;
 
 					new_pt.pt = pt1;
 					new_pt.prev = pt.pt;
-					do_sprawdzenia.push_back(new_pt);
+					to_check.push_back(new_pt);
 				}
 			}
 
-			if(pt2.x >= 0 && pt2.y >= 0 && pt2.x < w - 1 && pt2.y < h - 1 && !local_pfmap[pt2(w)] /*&&
-				!local_pfmap[kierunek2[i].x+pt.pt.x+pt.pt.y*w] && !local_pfmap[pt.pt.x+(kierunek2[i].y+pt.pt.y)*w]*/)
+			if(pt2.x >= 0 && pt2.y >= 0 && pt2.x < w - 1 && pt2.y < h - 1 && !local_pfmap[pt2(w)])
 			{
 				apt.prev = pt.pt;
-				apt.koszt = prev_apt.koszt + 15;
-				apt.odleglosc = Int2::Distance(pt2, my_rel) * 10;
-				apt.suma = apt.odleglosc + apt.koszt;
+				apt.cost = prev_apt.cost + 15;
+				apt.dist = Int2::Distance(pt2, my_rel) * 10;
+				apt.sum = apt.dist + apt.cost;
 
-				if(a_map[pt2(w)].IsLower(apt.suma))
+				if(a_map[pt2(w)].IsLower(apt.sum))
 				{
-					apt.stan = 1;
+					apt.state = 1;
 					a_map[pt2(w)] = apt;
 
 					new_pt.pt = pt2;
 					new_pt.prev = pt.pt;
-					do_sprawdzenia.push_back(new_pt);
+					to_check.push_back(new_pt);
 				}
 			}
 		}
@@ -714,7 +713,7 @@ int Pathfinding::FindLocalPath(LevelContext& ctx, vector<Int2>& _path, const Int
 		if(steps > MAX_STEPS)
 			break;
 
-		std::sort(do_sprawdzenia.begin(), do_sprawdzenia.end(), sortownik);
+		std::sort(to_check.begin(), to_check.end(), sorter);
 	}
 
 	if(marked)
@@ -722,7 +721,7 @@ int Pathfinding::FindLocalPath(LevelContext& ctx, vector<Int2>& _path, const Int
 		if(marked == _me)
 			test_pf_outside = (L.location->outside && _me->in_building == -1);
 
-		if(a_map[my_rel(w)].stan == 0)
+		if(a_map[my_rel(w)].state == 0)
 		{
 			if(marked == _me)
 			{
@@ -745,13 +744,13 @@ int Pathfinding::FindLocalPath(LevelContext& ctx, vector<Int2>& _path, const Int
 		{
 			if(marked == _me)
 				test_pf.push_back(pair<Vec2, int>(Vec2(0.25f*(p.x + minx), 0.25f*(p.y + miny)), 1));
-			_path.push_back(Int2(p.x + minx, p.y + miny));
+			path.push_back(Int2(p.x + minx, p.y + miny));
 			p = a_map[p(w)].prev;
 		} while(p != target_rel);
 	}
 	else
 	{
-		if(a_map[my_rel(w)].stan == 0)
+		if(a_map[my_rel(w)].state == 0)
 			return 5;
 
 		// populate path vector (and debug drawing)
@@ -759,14 +758,14 @@ int Pathfinding::FindLocalPath(LevelContext& ctx, vector<Int2>& _path, const Int
 
 		do
 		{
-			_path.push_back(Int2(p.x + minx, p.y + miny));
+			path.push_back(Int2(p.x + minx, p.y + miny));
 			p = a_map[p(w)].prev;
 		} while(p != target_rel);
 	}
 
-	_path.push_back(target_tile);
-	std::reverse(_path.begin(), _path.end());
-	_path.pop_back();
+	path.push_back(target_tile);
+	std::reverse(path.begin(), path.end());
+	path.pop_back();
 
 	return 0;
 }

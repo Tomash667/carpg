@@ -556,7 +556,11 @@ void DungeonMapGenerator::Finalize()
 	if(settings->room_join_chance > 0)
 		JoinRooms();
 
-	CreateRoomGroups();
+	if(settings->groups)
+	{
+		CreateRoomGroups();
+		RoomGroup::SetRoomGroupConnections(*settings->groups, *settings->rooms);
+	}
 
 	// generate stairs
 	if(settings->stairs_down_loc != MapSettings::NONE || settings->stairs_up_loc != MapSettings::NONE)
@@ -645,14 +649,17 @@ bool DungeonMapGenerator::IsConnectingWall(int x, int y, Room* room1, Room* room
 //=================================================================================================
 void DungeonMapGenerator::CreateRoomGroups()
 {
-	if(!settings->groups)
-		return;
-
 	if(joined.empty())
 	{
 		settings->groups->resize(settings->rooms->size());
 		for(int i = 0; i < (int)settings->rooms->size(); ++i)
-			settings->groups->at(i).rooms.push_back(i);
+		{
+			RoomGroup& group = settings->groups->at(i);
+			group.rooms.push_back(i);
+			group.index = i;
+
+			settings->rooms->at(i)->group = i;
+		}
 		return;
 	}
 
@@ -662,6 +669,7 @@ void DungeonMapGenerator::CreateRoomGroups()
 	{
 		visited[room->index] = true;
 		group.rooms.push_back(room->index);
+		room->group = group.index;
 		for(Room* room2 : room->connected)
 		{
 			if(!visited[room2->index])
@@ -677,10 +685,16 @@ void DungeonMapGenerator::CreateRoomGroups()
 			}
 		}
 	};
+
+	int index = 0;
 	for(Room* room : *settings->rooms)
 	{
 		if(!visited[room->index])
-			c(Add1(settings->groups), room);
+		{
+			RoomGroup& group = Add1(settings->groups);
+			group.index = index++;
+			c(group, room);
+		}
 	}
 
 	//if(settings->devmode)
