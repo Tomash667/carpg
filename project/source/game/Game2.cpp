@@ -1041,8 +1041,19 @@ void Game::UpdateGame(float dt)
 	}
 
 	// aktualizuj ai
-	if(!noai && Net::IsLocal())
-		UpdateAi(dt);
+	if(Net::IsLocal())
+	{
+		if(noai)
+		{
+			for(AIController* ai : ais)
+			{
+				if(ai->unit->IsStanding() && Any(ai->unit->animation, ANI_WALK, ANI_WALK_BACK, ANI_RUN, ANI_LEFT, ANI_RIGHT))
+					ai->unit->animation = ANI_STAND;
+			}
+		}
+		else
+			UpdateAi(dt);
+	}
 
 	// aktualizuj konteksty poziomów
 	L.lights_dt += dt;

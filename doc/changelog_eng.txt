@@ -11,11 +11,13 @@ Version 0.11 (2019-??-??):
 + drawing chests on minimap
 + hitting melee targets and shooting at ranged targets trains player
 + missing stamina slows down attacks instead of preventing them
++ bigger cave, stalagmites
 - fixed skeleton corpse animation moving it thru wall making it not lootable [Zielu]
 - fixed rare crash when alt tabbing at startup
 - fixed grass under moon well
 - after player fights at arena with npc ally, npc will warp with player when entering/exiting buildings, this could crash game when npc was outside building and player exit building
 - fixed dialog after pvp with hero
+- missing magic effects for clients after loading inside building
 
 --------------------------------------------------------------------------------
 Version 0.10 (2019-05-05):

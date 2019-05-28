@@ -3992,43 +3992,46 @@ void Level::Write(BitStreamWriter& f)
 	if(!N.mp_load && !reenter)
 		return;
 
-	// bullets
-	f.WriteCasted<byte>(local_ctx.bullets->size());
-	for(Bullet& bullet : *local_ctx.bullets)
+	for(LevelContext& ctx : ForEachContext())
 	{
-		f << bullet.pos;
-		f << bullet.rot;
-		f << bullet.speed;
-		f << bullet.yspeed;
-		f << bullet.timer;
-		f << (bullet.owner ? bullet.owner->netid : -1);
-		if(bullet.spell)
-			f << bullet.spell->id;
-		else
-			f.Write0();
-	}
-
-	// explosions
-	f.WriteCasted<byte>(local_ctx.explos->size());
-	for(Explo* explo : *local_ctx.explos)
-	{
-		f << explo->tex->filename;
-		f << explo->pos;
-		f << explo->size;
-		f << explo->sizemax;
-	}
-
-	// electros
-	f.WriteCasted<byte>(local_ctx.electros->size());
-	for(Electro* electro : *local_ctx.electros)
-	{
-		f << electro->netid;
-		f.WriteCasted<byte>(electro->lines.size());
-		for(ElectroLine& line : electro->lines)
+		// bullets
+		f.WriteCasted<byte>(ctx.bullets->size());
+		for(Bullet& bullet : *ctx.bullets)
 		{
-			f << line.pts.front();
-			f << line.pts.back();
-			f << line.t;
+			f << bullet.pos;
+			f << bullet.rot;
+			f << bullet.speed;
+			f << bullet.yspeed;
+			f << bullet.timer;
+			f << (bullet.owner ? bullet.owner->netid : -1);
+			if(bullet.spell)
+				f << bullet.spell->id;
+			else
+				f.Write0();
+		}
+
+		// explosions
+		f.WriteCasted<byte>(ctx.explos->size());
+		for(Explo* explo : *ctx.explos)
+		{
+			f << explo->tex->filename;
+			f << explo->pos;
+			f << explo->size;
+			f << explo->sizemax;
+		}
+
+		// electros
+		f.WriteCasted<byte>(ctx.electros->size());
+		for(Electro* electro : *ctx.electros)
+		{
+			f << electro->netid;
+			f.WriteCasted<byte>(electro->lines.size());
+			for(ElectroLine& line : electro->lines)
+			{
+				f << line.pts.front();
+				f << line.pts.back();
+				f << line.t;
+			}
 		}
 	}
 }
@@ -4086,167 +4089,170 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 	if(!N.mp_load && !reenter)
 		return true;
 
-	// bullets
-	byte count;
-	f >> count;
-	if(!f.Ensure(count * Bullet::MIN_SIZE))
+	for(LevelContext& ctx : ForEachContext())
 	{
-		Error("Read level: Broken bullet count.");
-		return false;
-	}
-	local_ctx.bullets->resize(count);
-	for(Bullet& bullet : *local_ctx.bullets)
-	{
-		f >> bullet.pos;
-		f >> bullet.rot;
-		f >> bullet.speed;
-		f >> bullet.yspeed;
-		f >> bullet.timer;
-		int netid = f.Read<int>();
-		const string& spell_id = f.ReadString1();
-		if(!f)
-		{
-			Error("Read level: Broken bullet.");
-			return false;
-		}
-		if(spell_id.empty())
-		{
-			bullet.spell = nullptr;
-			bullet.mesh = game.aArrow;
-			bullet.pe = nullptr;
-			bullet.remove = false;
-			bullet.tex = nullptr;
-			bullet.tex_size = 0.f;
-
-			TrailParticleEmitter* tpe = new TrailParticleEmitter;
-			tpe->fade = 0.3f;
-			tpe->color1 = Vec4(1, 1, 1, 0.5f);
-			tpe->color2 = Vec4(1, 1, 1, 0);
-			tpe->Init(50);
-			local_ctx.tpes->push_back(tpe);
-			bullet.trail = tpe;
-
-			TrailParticleEmitter* tpe2 = new TrailParticleEmitter;
-			tpe2->fade = 0.3f;
-			tpe2->color1 = Vec4(1, 1, 1, 0.5f);
-			tpe2->color2 = Vec4(1, 1, 1, 0);
-			tpe2->Init(50);
-			local_ctx.tpes->push_back(tpe2);
-			bullet.trail2 = tpe2;
-		}
-		else
-		{
-			Spell* spell_ptr = Spell::TryGet(spell_id);
-			if(!spell_ptr)
-			{
-				Error("Read level: Missing spell '%s'.", spell_id.c_str());
-				return false;
-			}
-
-			Spell& spell = *spell_ptr;
-			bullet.spell = &spell;
-			bullet.mesh = spell.mesh;
-			bullet.tex = spell.tex;
-			bullet.tex_size = spell.size;
-			bullet.remove = false;
-			bullet.trail = nullptr;
-			bullet.trail2 = nullptr;
-			bullet.pe = nullptr;
-
-			if(spell.tex_particle)
-			{
-				ParticleEmitter* pe = new ParticleEmitter;
-				pe->tex = spell.tex_particle;
-				pe->emision_interval = 0.1f;
-				pe->life = -1;
-				pe->particle_life = 0.5f;
-				pe->emisions = -1;
-				pe->spawn_min = 3;
-				pe->spawn_max = 4;
-				pe->max_particles = 50;
-				pe->pos = bullet.pos;
-				pe->speed_min = Vec3(-1, -1, -1);
-				pe->speed_max = Vec3(1, 1, 1);
-				pe->pos_min = Vec3(-spell.size, -spell.size, -spell.size);
-				pe->pos_max = Vec3(spell.size, spell.size, spell.size);
-				pe->size = spell.size_particle;
-				pe->op_size = POP_LINEAR_SHRINK;
-				pe->alpha = 1.f;
-				pe->op_alpha = POP_LINEAR_SHRINK;
-				pe->mode = 1;
-				pe->Init();
-				local_ctx.pes->push_back(pe);
-				bullet.pe = pe;
-			}
-		}
-
-		if(netid != -1)
-		{
-			bullet.owner = FindUnit(netid);
-			if(!bullet.owner)
-			{
-				Error("Read level: Missing bullet owner %d.", netid);
-				return false;
-			}
-		}
-		else
-			bullet.owner = nullptr;
-	}
-
-	// explosions
-	f >> count;
-	if(!f.Ensure(count * Explo::MIN_SIZE))
-	{
-		Error("Read level: Broken explosion count.");
-		return false;
-	}
-	local_ctx.explos->resize(count);
-	for(Explo*& explo : *local_ctx.explos)
-	{
-		explo = new Explo;
-		const string& tex_id = f.ReadString1();
-		f >> explo->pos;
-		f >> explo->size;
-		f >> explo->sizemax;
-		if(!f)
-		{
-			Error("Read level: Broken explosion.");
-			return false;
-		}
-		explo->tex = ResourceManager::Get<Texture>().GetLoaded(tex_id);
-	}
-
-	// electro effects
-	f >> count;
-	if(!f.Ensure(count * Electro::MIN_SIZE))
-	{
-		Error("Read level: Broken electro count.");
-		return false;
-	}
-	local_ctx.electros->resize(count);
-	Spell* electro_spell = Spell::TryGet("thunder_bolt");
-	for(Electro*& electro : *local_ctx.electros)
-	{
-		electro = new Electro;
-		electro->spell = electro_spell;
-		electro->valid = true;
-		f >> electro->netid;
+		// bullets
+		byte count;
 		f >> count;
-		if(!f.Ensure(count * Electro::LINE_MIN_SIZE))
+		if(!f.Ensure(count * Bullet::MIN_SIZE))
 		{
-			Error("Read level: Broken electro.");
+			Error("Read level: Broken bullet count.");
 			return false;
 		}
-		electro->lines.resize(count);
-		Vec3 from, to;
-		float t;
-		for(byte i = 0; i < count; ++i)
+		ctx.bullets->resize(count);
+		for(Bullet& bullet : *ctx.bullets)
 		{
-			f >> from;
-			f >> to;
-			f >> t;
-			electro->AddLine(from, to);
-			electro->lines.back().t = t;
+			f >> bullet.pos;
+			f >> bullet.rot;
+			f >> bullet.speed;
+			f >> bullet.yspeed;
+			f >> bullet.timer;
+			int netid = f.Read<int>();
+			const string& spell_id = f.ReadString1();
+			if(!f)
+			{
+				Error("Read level: Broken bullet.");
+				return false;
+			}
+			if(spell_id.empty())
+			{
+				bullet.spell = nullptr;
+				bullet.mesh = game.aArrow;
+				bullet.pe = nullptr;
+				bullet.remove = false;
+				bullet.tex = nullptr;
+				bullet.tex_size = 0.f;
+
+				TrailParticleEmitter* tpe = new TrailParticleEmitter;
+				tpe->fade = 0.3f;
+				tpe->color1 = Vec4(1, 1, 1, 0.5f);
+				tpe->color2 = Vec4(1, 1, 1, 0);
+				tpe->Init(50);
+				ctx.tpes->push_back(tpe);
+				bullet.trail = tpe;
+
+				TrailParticleEmitter* tpe2 = new TrailParticleEmitter;
+				tpe2->fade = 0.3f;
+				tpe2->color1 = Vec4(1, 1, 1, 0.5f);
+				tpe2->color2 = Vec4(1, 1, 1, 0);
+				tpe2->Init(50);
+				ctx.tpes->push_back(tpe2);
+				bullet.trail2 = tpe2;
+			}
+			else
+			{
+				Spell* spell_ptr = Spell::TryGet(spell_id);
+				if(!spell_ptr)
+				{
+					Error("Read level: Missing spell '%s'.", spell_id.c_str());
+					return false;
+				}
+
+				Spell& spell = *spell_ptr;
+				bullet.spell = &spell;
+				bullet.mesh = spell.mesh;
+				bullet.tex = spell.tex;
+				bullet.tex_size = spell.size;
+				bullet.remove = false;
+				bullet.trail = nullptr;
+				bullet.trail2 = nullptr;
+				bullet.pe = nullptr;
+
+				if(spell.tex_particle)
+				{
+					ParticleEmitter* pe = new ParticleEmitter;
+					pe->tex = spell.tex_particle;
+					pe->emision_interval = 0.1f;
+					pe->life = -1;
+					pe->particle_life = 0.5f;
+					pe->emisions = -1;
+					pe->spawn_min = 3;
+					pe->spawn_max = 4;
+					pe->max_particles = 50;
+					pe->pos = bullet.pos;
+					pe->speed_min = Vec3(-1, -1, -1);
+					pe->speed_max = Vec3(1, 1, 1);
+					pe->pos_min = Vec3(-spell.size, -spell.size, -spell.size);
+					pe->pos_max = Vec3(spell.size, spell.size, spell.size);
+					pe->size = spell.size_particle;
+					pe->op_size = POP_LINEAR_SHRINK;
+					pe->alpha = 1.f;
+					pe->op_alpha = POP_LINEAR_SHRINK;
+					pe->mode = 1;
+					pe->Init();
+					ctx.pes->push_back(pe);
+					bullet.pe = pe;
+				}
+			}
+
+			if(netid != -1)
+			{
+				bullet.owner = FindUnit(netid);
+				if(!bullet.owner)
+				{
+					Error("Read level: Missing bullet owner %d.", netid);
+					return false;
+				}
+			}
+			else
+				bullet.owner = nullptr;
+		}
+
+		// explosions
+		f >> count;
+		if(!f.Ensure(count * Explo::MIN_SIZE))
+		{
+			Error("Read level: Broken explosion count.");
+			return false;
+		}
+		ctx.explos->resize(count);
+		for(Explo*& explo : *ctx.explos)
+		{
+			explo = new Explo;
+			const string& tex_id = f.ReadString1();
+			f >> explo->pos;
+			f >> explo->size;
+			f >> explo->sizemax;
+			if(!f)
+			{
+				Error("Read level: Broken explosion.");
+				return false;
+			}
+			explo->tex = ResourceManager::Get<Texture>().GetLoaded(tex_id);
+		}
+
+		// electro effects
+		f >> count;
+		if(!f.Ensure(count * Electro::MIN_SIZE))
+		{
+			Error("Read level: Broken electro count.");
+			return false;
+		}
+		ctx.electros->resize(count);
+		Spell* electro_spell = Spell::TryGet("thunder_bolt");
+		for(Electro*& electro : *ctx.electros)
+		{
+			electro = new Electro;
+			electro->spell = electro_spell;
+			electro->valid = true;
+			f >> electro->netid;
+			f >> count;
+			if(!f.Ensure(count * Electro::LINE_MIN_SIZE))
+			{
+				Error("Read level: Broken electro.");
+				return false;
+			}
+			electro->lines.resize(count);
+			Vec3 from, to;
+			float t;
+			for(byte i = 0; i < count; ++i)
+			{
+				f >> from;
+				f >> to;
+				f >> t;
+				electro->AddLine(from, to);
+				electro->lines.back().t = t;
+			}
 		}
 	}
 

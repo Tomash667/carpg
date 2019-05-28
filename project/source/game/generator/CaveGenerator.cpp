@@ -208,7 +208,7 @@ void CaveGenerator::GenerateCave(Tile*& tiles, int size, Int2& stairs, GameDirec
 
 	this->size = size;
 
-	while(TryGenerate() < 200);
+	while(TryGenerate() < 500);
 
 	tiles = new Tile[size2];
 	memset(tiles, 0, sizeof(Tile)*size2);

@@ -11,11 +11,13 @@ Wersja 0.11 (2019-??-??):
 + wyœwietlanie skrzyñ na minimapie
 + atakowanie manekinów i strzelanie do tarcz strzelniczych trenuje gracza
 + brak wytrzyma³oœci spowalnia ataki zamiast ich blokowaæ
++ wiêksza jaskinia, stalagmity
 - naprawione pozycjonowanie szkieletów po œmierci tak by nie wpada³y w œciany gdzie nie mo¿na ich ograbiæ [Zielu]
 - naprawiony rzadki crash przy u¿ywaniu alt tab przy uruchamianiu gry
 - brak trawy wystaj¹cej spod ksiê¿ycowej studni
 - po walce na arenie bohater NPC teleportuje siê za graczem gdy ten wchodzi lub wychodzi z budynku, crashowa³o gdy gracz wychodzi³ a bohater by³ ju¿ na zewn¹trz
 - naprawiona rozmowa po walce pvp z bohaterem
+- brak magicznych efektów w budynku u klienta po wczytaniu
 
 --------------------------------------------------------------------------------
 Wersja 0.10 (2019-05-05):
