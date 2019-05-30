@@ -71,7 +71,7 @@ const float SPAWN_SOUND_DIST = 1.5f;
 const float MAGIC_SCROLL_SOUND_DIST = 1.5f;
 
 //=================================================================================================
-Game::Game() : have_console(false), vbParticle(nullptr), quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0), draw_particle_sphere(false),
+Game::Game() : vbParticle(nullptr), quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0), draw_particle_sphere(false),
 draw_unit_radius(false), draw_hitbox(false), noai(false), testing(false), game_speed(1.f), devmode(false), force_seed(0), next_seed(0), force_seed_all(false),
 debug_info(false), dont_wander(false), check_updates(true), skip_tutorial(false), portal_anim(0), debug_info2(false), music_type(MusicType::None),
 end_of_game(false), prepared_stream(64 * 1024), paused(false), draw_flags(0xFFFFFFFF), prev_game_state(GS_LOAD), rt_save(nullptr), rt_item(nullptr),
@@ -84,9 +84,6 @@ quickstart_slot(SaveSlot::MAX_SLOTS)
 	default_player_devmode = true;
 #endif
 	devmode = default_devmode;
-
-	obj_alpha.id = "tmp_alpha";
-	obj_alpha.alpha = 1;
 
 	game = this;
 	Quest::game = this;
@@ -841,9 +838,9 @@ void Game::ClearPointers()
 	}
 
 	// vertex data
-	vdSchodyGora = nullptr;
-	vdSchodyDol = nullptr;
-	vdNaDrzwi = nullptr;
+	vdStairsUp = nullptr;
+	vdStairsDown = nullptr;
+	vdDoorHole = nullptr;
 
 	// vertex declarations
 	for(int i = 0; i < VDI_MAX; ++i)

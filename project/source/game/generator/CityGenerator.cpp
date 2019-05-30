@@ -896,20 +896,20 @@ void CityGenerator::GenerateBuildings(vector<ToBuild>& tobuild)
 		{
 			for(int xx = -x1, xr = 0; xx <= x2; ++xx, ++xr)
 			{
-				Building::TileScheme co;
+				Building::TileScheme scheme;
 				switch(best_dir)
 				{
 				case GDIR_DOWN:
-					co = build_it->type->scheme[xr + (ext2.y - yr - 1)*ext2.x];
+					scheme = build_it->type->scheme[xr + (ext2.y - yr - 1)*ext2.x];
 					break;
 				case GDIR_LEFT:
-					co = build_it->type->scheme[ext2.y - yr - 1 + (ext2.x - xr - 1)*ext2.y];
+					scheme = build_it->type->scheme[ext2.y - yr - 1 + (ext2.x - xr - 1)*ext2.y];
 					break;
 				case GDIR_UP:
-					co = build_it->type->scheme[ext2.x - xr - 1 + yr*ext2.x];
+					scheme = build_it->type->scheme[ext2.x - xr - 1 + yr*ext2.x];
 					break;
 				case GDIR_RIGHT:
-					co = build_it->type->scheme[yr + xr * ext2.y];
+					scheme = build_it->type->scheme[yr + xr * ext2.y];
 					break;
 				default:
 					assert(0);
@@ -921,7 +921,7 @@ void CityGenerator::GenerateBuildings(vector<ToBuild>& tobuild)
 				TerrainTile& t = tiles[pt2.x + (pt2.y)*w];
 				assert(t.t == TT_GRASS);
 
-				switch(co)
+				switch(scheme)
 				{
 				case Building::SCHEME_GRASS:
 					break;

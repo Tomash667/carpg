@@ -1,7 +1,7 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "Trap.h"
-#include "Game.h"
+#include "Net.h"
 #include "BitStreamFunc.h"
 #include "Unit.h"
 
@@ -71,7 +71,7 @@ void Trap::Load(FileReader& f, bool local)
 		obj2.base = nullptr;
 	}
 	else if(type == TRAP_FIREBALL)
-		obj.base = &Game::Get().obj_alpha;
+		obj.base = &BaseObject::obj_alpha;
 
 	if(local && base->type != TRAP_FIREBALL)
 	{
@@ -154,7 +154,7 @@ bool Trap::Read(BitStreamReader& f)
 		hitted = nullptr;
 	}
 	else
-		obj.base = &Game::Get().obj_alpha;
+		obj.base = &BaseObject::obj_alpha;
 
 	return true;
 }

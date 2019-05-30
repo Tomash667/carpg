@@ -157,12 +157,12 @@ RoomType* BaseLocation::GetRandomRoomType() const
 {
 	assert(rooms);
 
-	int total = 0, co = Rand() % room_total;
+	int total = 0, choice = Rand() % room_total;
 
 	for(uint i = 0; i < room_count; ++i)
 	{
 		total += rooms[i].chance;
-		if(co < total)
+		if(choice < total)
 			return rooms[i].room;
 	}
 

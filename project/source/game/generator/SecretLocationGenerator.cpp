@@ -102,37 +102,37 @@ void SecretLocationGenerator::GenerateObjects()
 
 	TerrainTile* tiles = ((OutsideLocation*)L.location)->tiles;
 
-	// drzewa
+	// trees
 	for(int i = 0; i < 1024; ++i)
 	{
 		Int2 pt(Random(1, OutsideLocation::size - 2), Random(1, OutsideLocation::size - 2));
 		if(Distance(float(pt.x), float(pt.y), 64.f, 32.f) > 4.f
 			&& Distance(float(pt.x), float(pt.y), 64.f, 96.f) > 12.f)
 		{
-			TERRAIN_TILE co = tiles[pt.x + pt.y*OutsideLocation::size].t;
-			if(co == TT_GRASS)
+			TERRAIN_TILE tile = tiles[pt.x + pt.y*OutsideLocation::size].t;
+			if(tile == TT_GRASS)
 			{
 				Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 				pos.y = terrain->GetH(pos);
 				OutsideObject& o = trees[Rand() % n_trees];
 				L.SpawnObjectEntity(L.local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 			}
-			else if(co == TT_GRASS3)
+			else if(tile == TT_GRASS3)
 			{
 				Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 				pos.y = terrain->GetH(pos);
-				int co;
+				int type;
 				if(Rand() % 12 == 0)
-					co = 3;
+					type = 3;
 				else
-					co = Rand() % 3;
-				OutsideObject& o = trees2[co];
+					type = Rand() % 3;
+				OutsideObject& o = trees2[type];
 				L.SpawnObjectEntity(L.local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 			}
 		}
 	}
 
-	// inne
+	// other objects
 	for(int i = 0; i < 512; ++i)
 	{
 		Int2 pt(Random(1, OutsideLocation::size - 2), Random(1, OutsideLocation::size - 2));

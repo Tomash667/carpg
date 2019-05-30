@@ -2063,8 +2063,8 @@ void Level::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _
 			{
 				for(int x = minx; x <= maxx; ++x)
 				{
-					TILE_TYPE co = lvl.map[x + z * lvl.w].type;
-					if(IsBlocking(co))
+					TILE_TYPE type = lvl.map[x + z * lvl.w].type;
+					if(IsBlocking(type))
 					{
 						CollisionObject& co = Add1(_objects);
 						co.pt = Vec2(2.f*x + 1.f, 2.f*z + 1.f);
@@ -2072,7 +2072,7 @@ void Level::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _
 						co.h = 1.f;
 						co.type = CollisionObject::RECTANGLE;
 					}
-					else if(co == STAIRS_DOWN)
+					else if(type == STAIRS_DOWN)
 					{
 						if(!lvl.staircase_down_in_wall)
 						{
@@ -2084,7 +2084,7 @@ void Level::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _
 							co.type = CollisionObject::CUSTOM;
 						}
 					}
-					else if(co == STAIRS_UP)
+					else if(type == STAIRS_UP)
 					{
 						CollisionObject& co = Add1(_objects);
 						co.pt = Vec2(2.f*x + 1.f, 2.f*z + 1.f);
@@ -2270,8 +2270,8 @@ void Level::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _
 			{
 				for(int x = minx; x <= maxx; ++x)
 				{
-					TILE_TYPE co = lvl.map[x + z * lvl.w].type;
-					if(IsBlocking(co))
+					TILE_TYPE type = lvl.map[x + z * lvl.w].type;
+					if(IsBlocking(type))
 					{
 						CollisionObject& co = Add1(_objects);
 						co.pt = Vec2(2.f*x + 1.f, 2.f*z + 1.f);
@@ -2279,7 +2279,7 @@ void Level::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _
 						co.h = 1.f;
 						co.type = CollisionObject::RECTANGLE;
 					}
-					else if(co == STAIRS_DOWN)
+					else if(type == STAIRS_DOWN)
 					{
 						if(!lvl.staircase_down_in_wall)
 						{
@@ -2291,7 +2291,7 @@ void Level::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _
 							co.type = CollisionObject::CUSTOM;
 						}
 					}
-					else if(co == STAIRS_UP)
+					else if(type == STAIRS_UP)
 					{
 						CollisionObject& co = Add1(_objects);
 						co.pt = Vec2(2.f*x + 1.f, 2.f*z + 1.f);
@@ -2914,7 +2914,7 @@ Trap* Level::CreateTrap(Int2 pt, TRAP_TYPE type, bool timed)
 	else
 	{
 		trap.obj.rot = Vec3(0, PI / 2 * (Rand() % 4), 0);
-		trap.obj.base = &Game::Get().obj_alpha;
+		trap.obj.base = &BaseObject::obj_alpha;
 	}
 
 	if(timed)

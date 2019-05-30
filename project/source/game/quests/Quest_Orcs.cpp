@@ -396,13 +396,18 @@ void Quest_Orcs2::SetProgress(int prog2)
 			}
 			else
 			{
-				int co = Rand() % 3;
-				if(co == 0)
+				switch(Rand() % 3)
+				{
+				case 0:
 					clas = OrcClass::Warrior;
-				else if(co == 1)
+					break;
+				case 1:
 					clas = OrcClass::Hunter;
-				else
+					break;
+				case 2:
 					clas = OrcClass::Shaman;
+					break;
+				}
 			}
 
 			apply = false;

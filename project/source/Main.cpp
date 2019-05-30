@@ -520,11 +520,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	}
 
 	// console
+	bool have_console = false;
 	if(console == None)
 		console = cfg.GetBool3("console", False);
 	if(console == True)
 	{
-		game.have_console = true;
+		have_console = true;
 
 		// console
 		AllocConsole();
@@ -665,7 +666,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	int con_pos_x = cfg.GetInt("con_pos_x"),
 		con_pos_y = cfg.GetInt("con_pos_y");
 
-	if(game.have_console && (con_pos_x != -1 || con_pos_y != -1))
+	if(have_console && (con_pos_x != -1 || con_pos_y != -1))
 	{
 		HWND con = GetConsoleWindow();
 		Rect rect;
@@ -720,7 +721,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	//-------------------------------------------------------------------------
 	// logger
 	int count = 0;
-	if(game.have_console)
+	if(have_console)
 		++count;
 	if(log_to_file)
 		++count;
@@ -737,7 +738,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	}
 	else if(count == 1)
 	{
-		if(game.have_console)
+		if(have_console)
 		{
 			ConsoleLogger* l = new ConsoleLogger;
 			plog.Apply(l);

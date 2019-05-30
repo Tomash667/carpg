@@ -356,13 +356,13 @@ void Game::SetupCamera(float dt)
 				}
 				if(p.type == STAIRS_UP)
 				{
-					if(vdSchodyGora->RayToMesh(to, dist, PtToPos(lvl.staircase_up), DirToRot(lvl.staircase_up_dir), tout) && tout < min_tout)
+					if(vdStairsUp->RayToMesh(to, dist, PtToPos(lvl.staircase_up), DirToRot(lvl.staircase_up_dir), tout) && tout < min_tout)
 						min_tout = tout;
 				}
 				else if(p.type == STAIRS_DOWN)
 				{
 					if(!lvl.staircase_down_in_wall
-						&& vdSchodyDol->RayToMesh(to, dist, PtToPos(lvl.staircase_down), DirToRot(lvl.staircase_down_dir), tout) && tout < min_tout)
+						&& vdStairsDown->RayToMesh(to, dist, PtToPos(lvl.staircase_down), DirToRot(lvl.staircase_down_dir), tout) && tout < min_tout)
 						min_tout = tout;
 				}
 				else if(p.type == DOORS || p.type == HOLE_FOR_DOORS)
@@ -397,7 +397,7 @@ void Game::SetupCamera(float dt)
 							pos.x -= 0.8229f;
 					}
 
-					if(vdNaDrzwi->RayToMesh(to, dist, pos, rot, tout) && tout < min_tout)
+					if(vdDoorHole->RayToMesh(to, dist, pos, rot, tout) && tout < min_tout)
 						min_tout = tout;
 
 					Door* door = L.FindDoor(ctx, Int2(x, z));
@@ -484,7 +484,7 @@ void Game::SetupCamera(float dt)
 					min_tout = tout;
 			}
 
-			if(vdNaDrzwi->RayToMesh(to, dist, door.pos, door.rot, tout) && tout < min_tout)
+			if(vdDoorHole->RayToMesh(to, dist, door.pos, door.rot, tout) && tout < min_tout)
 				min_tout = tout;
 		}
 	}
@@ -678,8 +678,6 @@ void Game::UpdateGame(float dt)
 	if(portal_anim >= 1.f)
 		portal_anim -= 1.f;
 	L.light_angle = Clip(L.light_angle + dt / 100);
-
-	LevelContext& player_ctx = (pc->unit->in_building == -1 ? L.local_ctx : L.city_ctx->inside_buildings[pc->unit->in_building]->ctx);
 
 	UpdateFallback(dt);
 	if(!L.location)
@@ -1031,7 +1029,7 @@ void Game::UpdateGame(float dt)
 		pc_data.action_ready = false;
 	}
 	else if(!IsBlocking(pc->unit->action) && !pc->unit->HaveEffect(EffectId::Stun))
-		UpdatePlayer(player_ctx, dt);
+		UpdatePlayer(dt);
 	else
 	{
 		pc_data.before_player = BP_NONE;
@@ -1263,8 +1261,9 @@ void Game::UpdateFallback(float dt)
 }
 
 //=================================================================================================
-void Game::UpdatePlayer(LevelContext& ctx, float dt)
+void Game::UpdatePlayer(float dt)
 {
+	LevelContext& ctx = (pc->unit->in_building == -1 ? L.local_ctx : L.city_ctx->inside_buildings[pc->unit->in_building]->ctx);
 	Unit& u = *pc->unit;
 
 	// unit is on ground
@@ -3868,7 +3867,7 @@ bool Game::CheckForHit(LevelContext& ctx, Unit& unit, Unit*& hitted, Mesh::Point
 						QM.quest_tutorial->HandleMeleeAttackCollision();
 					unit.player->Train(TrainWhat::AttackNoDamage, 0.f, 1);
 				}
-				
+
 				return false;
 			}
 		}
@@ -3924,7 +3923,6 @@ void Game::GiveDmg(LevelContext& ctx, Unit* giver, float dmg, Unit& taker, const
 	// blood particles
 	if(!IS_SET(dmg_flags, DMG_NO_BLOOD))
 	{
-		// krew
 		ParticleEmitter* pe = new ParticleEmitter;
 		pe->tex = tKrew[taker.data->blood];
 		pe->emision_interval = 0.01f;
@@ -8945,9 +8943,9 @@ void Game::GenerateQuestUnits()
 
 	if(QM.quest_mine->days >= QM.quest_mine->days_required &&
 		((QM.quest_mine->mine_state2 == Quest_Mine::State2::InBuild && QM.quest_mine->mine_state == Quest_Mine::State::Shares) || // inform player about building mine & give gold
-		QM.quest_mine->mine_state2 == Quest_Mine::State2::Built || // inform player about possible investment
-		QM.quest_mine->mine_state2 == Quest_Mine::State2::InExpand || // inform player about finished mine expanding
-		QM.quest_mine->mine_state2 == Quest_Mine::State2::Expanded)) // inform player about finding portal
+			QM.quest_mine->mine_state2 == Quest_Mine::State2::Built || // inform player about possible investment
+			QM.quest_mine->mine_state2 == Quest_Mine::State2::InExpand || // inform player about finished mine expanding
+			QM.quest_mine->mine_state2 == Quest_Mine::State2::Expanded)) // inform player about finding portal
 	{
 		Unit* u = L.SpawnUnitNearLocation(L.GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("poslaniec_kopalnia"), &Team.leader->pos, -2, 2.f);
 		if(u)

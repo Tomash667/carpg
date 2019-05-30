@@ -219,7 +219,7 @@ public:
 	MeshPtr aHumanBase, aHair[5], aBeard[5], aMustache[2], aEyebrows;
 	MeshPtr aBox, aCylinder, aSphere, aCapsule;
 	MeshPtr aArrow, aSkybox, aBag, aChest, aGrating, aDoorWall, aDoorWall2, aStairsDown, aStairsDown2, aStairsUp, aSpellball, aPressurePlate, aDoor, aDoor2, aStun;
-	VertexDataPtr vdSchodyGora, vdSchodyDol, vdNaDrzwi;
+	VertexDataPtr vdStairsUp, vdStairsDown, vdDoorHole;
 	RenderTarget* rt_save, *rt_item, *rt_item_rot;
 	TEX tMinimap;
 	TEX tCzern, tPortal, tLightingLine, tRip, tEquipped, tWarning, tError;
@@ -297,7 +297,6 @@ public:
 	IB ibDungeon;
 	Int2 dungeon_part[16], dungeon_part2[16], dungeon_part3[16], dungeon_part4[16];
 	bool draw_particle_sphere, draw_unit_radius, draw_hitbox, draw_phy, draw_col;
-	BaseObject obj_alpha;
 	float portal_anim, drunk_anim;
 	// post effect u¿ywa 3 tekstur lub jeœli jest w³¹czony multisampling 3 surface i 1 tekstury
 	SURFACE sPostEffect[3];
@@ -308,7 +307,7 @@ public:
 	//---------------------------------
 	// CONSOLE & COMMANDS
 	Settings settings;
-	bool have_console, inactive_update, noai, devmode, default_devmode, default_player_devmode, debug_info, debug_info2, dont_wander;
+	bool inactive_update, noai, devmode, default_devmode, default_player_devmode, debug_info, debug_info2, dont_wander;
 	string cfg_file;
 
 	void SetupConfigVars();
@@ -390,7 +389,7 @@ public:
 	void TakeScreenshot(bool no_gui = false);
 	void UpdateGame(float dt);
 	void UpdateFallback(float dt);
-	void UpdatePlayer(LevelContext& ctx, float dt);
+	void UpdatePlayer(float dt);
 	void UseAction(PlayerController* p, bool from_server, const Vec3* pos_data = nullptr);
 	void SpawnUnitEffect(Unit& unit);
 	void PlayerCheckObjectDistance(Unit& u, const Vec3& pos, void* ptr, float& best_dist, BeforePlayer type);

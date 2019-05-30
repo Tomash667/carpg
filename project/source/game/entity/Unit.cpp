@@ -5143,7 +5143,7 @@ SOUND Unit::GetSound(SOUND_ID sound_id) const
 }
 
 //=================================================================================================
-void Unit::SetWeaponState(bool takes_out, WeaponType co)
+void Unit::SetWeaponState(bool takes_out, WeaponType type)
 {
 	if(takes_out)
 	{
@@ -5151,14 +5151,14 @@ void Unit::SetWeaponState(bool takes_out, WeaponType co)
 		{
 		case WS_HIDDEN:
 			// wyjmij bron
-			mesh_inst->Play(GetTakeWeaponAnimation(co == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
+			mesh_inst->Play(GetTakeWeaponAnimation(type == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
 			action = A_TAKE_WEAPON;
-			weapon_taken = co;
+			weapon_taken = type;
 			weapon_state = WS_TAKING;
 			animation_state = 0;
 			break;
 		case WS_HIDING:
-			if(weapon_hiding == co)
+			if(weapon_hiding == type)
 			{
 				if(animation_state == 0)
 				{
@@ -5181,9 +5181,9 @@ void Unit::SetWeaponState(bool takes_out, WeaponType co)
 			else
 			{
 				// chowa broñ, zacznij wyci¹gaæ
-				mesh_inst->Play(GetTakeWeaponAnimation(co == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
+				mesh_inst->Play(GetTakeWeaponAnimation(type == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
 				action = A_TAKE_WEAPON;
-				weapon_taken = co;
+				weapon_taken = type;
 				weapon_hiding = W_NONE;
 				weapon_state = WS_TAKING;
 				animation_state = 0;
@@ -5191,14 +5191,14 @@ void Unit::SetWeaponState(bool takes_out, WeaponType co)
 			break;
 		case WS_TAKING:
 		case WS_TAKEN:
-			if(weapon_taken != co)
+			if(weapon_taken != type)
 			{
 				// wyjmuje z³¹ broñ, zacznij wyjmowaæ dobr¹
 				// lub
 				// powinien mieæ wyjêt¹ broñ, ale nie t¹!
-				mesh_inst->Play(GetTakeWeaponAnimation(co == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
+				mesh_inst->Play(GetTakeWeaponAnimation(type == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
 				action = A_TAKE_WEAPON;
-				weapon_taken = co;
+				weapon_taken = type;
 				weapon_hiding = W_NONE;
 				weapon_state = WS_TAKING;
 				animation_state = 0;
@@ -5214,10 +5214,10 @@ void Unit::SetWeaponState(bool takes_out, WeaponType co)
 			// schowana to schowana, nie ma co sprawdzaæ czy to ta
 			break;
 		case WS_HIDING:
-			if(weapon_hiding != co)
+			if(weapon_hiding != type)
 			{
 				// chowa z³¹ broñ, zamieñ
-				weapon_hiding = co;
+				weapon_hiding = type;
 			}
 			break;
 		case WS_TAKING:
@@ -5241,8 +5241,8 @@ void Unit::SetWeaponState(bool takes_out, WeaponType co)
 			break;
 		case WS_TAKEN:
 			// zacznij chowaæ
-			mesh_inst->Play(GetTakeWeaponAnimation(co == W_ONE_HANDED), PLAY_ONCE | PLAY_BACK | PLAY_PRIO1, 1);
-			weapon_hiding = co;
+			mesh_inst->Play(GetTakeWeaponAnimation(type == W_ONE_HANDED), PLAY_ONCE | PLAY_BACK | PLAY_PRIO1, 1);
+			weapon_hiding = type;
 			weapon_taken = W_NONE;
 			weapon_state = WS_HIDING;
 			action = A_TAKE_WEAPON;

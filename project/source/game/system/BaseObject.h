@@ -133,6 +133,7 @@ struct BaseObject
 		return IS_SET(flags, OBJ_USABLE);
 	}
 
+	static BaseObject obj_alpha;
 	static SetContainer<BaseObject> objs;
 	static BaseObject* TryGet(Cstring id, bool* is_group = nullptr);
 	static BaseObject* Get(Cstring id, bool* is_group = nullptr)

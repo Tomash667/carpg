@@ -813,7 +813,7 @@ public:
 	void CreatePhysics(bool position = false);
 	void UpdatePhysics(const Vec3& pos);
 	SOUND GetSound(SOUND_ID sound_id) const;
-	void SetWeaponState(bool takes_out, WeaponType co);
+	void SetWeaponState(bool takes_out, WeaponType type);
 	void UpdateInventory(bool notify = true);
 	bool IsEnemy(Unit& u, bool ignore_dont_attack = false) const;
 	bool IsFriend(Unit& u) const;

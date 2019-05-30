@@ -562,9 +562,9 @@ void Game::AddLoadTasks()
 
 	// physic meshes
 	res_mgr.AddTaskCategory(txLoadPhysicMeshes);
-	vdSchodyGora = vd_mgr.AddLoadTask("schody_gora.phy");
-	vdSchodyDol = vd_mgr.AddLoadTask("schody_dol.phy");
-	vdNaDrzwi = vd_mgr.AddLoadTask("nadrzwi.phy");
+	vdStairsUp = vd_mgr.AddLoadTask("schody_gora.phy");
+	vdStairsDown = vd_mgr.AddLoadTask("schody_dol.phy");
+	vdDoorHole = vd_mgr.AddLoadTask("nadrzwi.phy");
 
 	// models
 	res_mgr.AddTaskCategory(txLoadModels);

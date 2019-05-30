@@ -297,45 +297,45 @@ void InsideLocationGenerator::AddRoomColliders(InsideLocationLevel& lvl, Room& r
 	for(int x = 0; x < room.size.x; ++x)
 	{
 		// top
-		TILE_TYPE co = lvl.map[room.pos.x + x + (room.pos.y + room.size.y - 1)*lvl.w].type;
-		if(co == EMPTY || co == BARS || co == BARS_FLOOR || co == BARS_CEILING || co == DOORS || co == HOLE_FOR_DOORS)
+		TILE_TYPE type = lvl.map[room.pos.x + x + (room.pos.y + room.size.y - 1)*lvl.w].type;
+		if(Any(type, EMPTY, BARS, BARS_FLOOR, BARS_CEILING, DOORS, HOLE_FOR_DOORS))
 		{
 			blocks.push_back(Int2(room.pos.x + x, room.pos.y + room.size.y - 1));
 			blocks.push_back(Int2(room.pos.x + x, room.pos.y + room.size.y - 2));
 		}
-		else if(co == WALL || co == BLOCKADE_WALL)
+		else if(type == WALL || type == BLOCKADE_WALL)
 			blocks.push_back(Int2(room.pos.x + x, room.pos.y + room.size.y - 1));
 
 		// bottom
-		co = lvl.map[room.pos.x + x + room.pos.y*lvl.w].type;
-		if(co == EMPTY || co == BARS || co == BARS_FLOOR || co == BARS_CEILING || co == DOORS || co == HOLE_FOR_DOORS)
+		type = lvl.map[room.pos.x + x + room.pos.y*lvl.w].type;
+		if(Any(type, EMPTY, BARS, BARS_FLOOR, BARS_CEILING, DOORS, HOLE_FOR_DOORS))
 		{
 			blocks.push_back(Int2(room.pos.x + x, room.pos.y));
 			blocks.push_back(Int2(room.pos.x + x, room.pos.y + 1));
 		}
-		else if(co == WALL || co == BLOCKADE_WALL)
+		else if(type == WALL || type == BLOCKADE_WALL)
 			blocks.push_back(Int2(room.pos.x + x, room.pos.y));
 	}
 	for(int y = 0; y < room.size.y; ++y)
 	{
 		// left
-		TILE_TYPE co = lvl.map[room.pos.x + (room.pos.y + y)*lvl.w].type;
-		if(co == EMPTY || co == BARS || co == BARS_FLOOR || co == BARS_CEILING || co == DOORS || co == HOLE_FOR_DOORS)
+		TILE_TYPE type = lvl.map[room.pos.x + (room.pos.y + y)*lvl.w].type;
+		if(Any(type, EMPTY, BARS, BARS_FLOOR, BARS_CEILING, DOORS, HOLE_FOR_DOORS))
 		{
 			blocks.push_back(Int2(room.pos.x, room.pos.y + y));
 			blocks.push_back(Int2(room.pos.x + 1, room.pos.y + y));
 		}
-		else if(co == WALL || co == BLOCKADE_WALL)
+		else if(type == WALL || type == BLOCKADE_WALL)
 			blocks.push_back(Int2(room.pos.x, room.pos.y + y));
 
 		// right
-		co = lvl.map[room.pos.x + room.size.x - 1 + (room.pos.y + y)*lvl.w].type;
-		if(co == EMPTY || co == BARS || co == BARS_FLOOR || co == BARS_CEILING || co == DOORS || co == HOLE_FOR_DOORS)
+		type = lvl.map[room.pos.x + room.size.x - 1 + (room.pos.y + y)*lvl.w].type;
+		if(Any(type, EMPTY, BARS, BARS_FLOOR, BARS_CEILING, DOORS, HOLE_FOR_DOORS))
 		{
 			blocks.push_back(Int2(room.pos.x + room.size.x - 1, room.pos.y + y));
 			blocks.push_back(Int2(room.pos.x + room.size.x - 2, room.pos.y + y));
 		}
-		else if(co == WALL || co == BLOCKADE_WALL)
+		else if(type == WALL || type == BLOCKADE_WALL)
 			blocks.push_back(Int2(room.pos.x + room.size.x - 1, room.pos.y + y));
 	}
 }

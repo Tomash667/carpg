@@ -138,6 +138,9 @@ void ObjectLoader::LoadEntity(int top, const string& id)
 //=================================================================================================
 void ObjectLoader::Finalize()
 {
+	BaseObject::obj_alpha.id = "tmp_alpha";
+	BaseObject::obj_alpha.alpha = 1;
+
 	CalculateCrc();
 
 	Info("Loaded objects (%u), usables (%u) - crc %p.",

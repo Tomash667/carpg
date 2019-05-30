@@ -534,13 +534,13 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		}
 		else
 		{
-			int co;
+			int value;
 			bool skill;
 			const string& s = t.MustGetItem();
 			Attribute* ai = Attribute::Find(s);
 			if(ai)
 			{
-				co = (int)ai->attrib_id;
+				value = (int)ai->attrib_id;
 				skill = false;
 			}
 			else
@@ -548,7 +548,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 				Skill* si = Skill::Find(s);
 				if(si)
 				{
-					co = (int)si->skill_id;
+					value = (int)si->skill_id;
 					skill = true;
 				}
 				else
@@ -569,23 +569,23 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 					if(skill)
 					{
 						if(cmd.cmd == CMD_MOD_STAT)
-							num += game.pc->unit->stats->skill[co];
+							num += game.pc->unit->stats->skill[value];
 						int v = Clamp(num, Skill::MIN, Skill::MAX);
-						game.pc->unit->Set((SkillId)co, v);
+						game.pc->unit->Set((SkillId)value, v);
 					}
 					else
 					{
 						if(cmd.cmd == CMD_MOD_STAT)
-							num += game.pc->unit->stats->attrib[co];
+							num += game.pc->unit->stats->attrib[value];
 						int v = Clamp(num, Attribute::MIN, Attribute::MAX);
-						game.pc->unit->Set((AttributeId)co, v);
+						game.pc->unit->Set((AttributeId)value, v);
 					}
 				}
 				else
 				{
 					NetChange& c = Add1(Net::changes);
 					c.type = (cmd.cmd == CMD_SET_STAT ? NetChange::CHEAT_SET_STAT : NetChange::CHEAT_MOD_STAT);
-					c.id = co;
+					c.id = value;
 					c.count = (skill ? 1 : 0);
 					c.i = num;
 				}
