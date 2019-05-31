@@ -304,19 +304,19 @@ void Game::OnTick(float dt)
 	// check for memory corruption
 	assert(_CrtCheckMemory());
 
-	if(dt > LIMIT_DT)
+	if (dt > LIMIT_DT)
 		dt = LIMIT_DT;
 
-	if(profiler_mode == 1)
+	if (profiler_mode)
 		Profiler::g_profiler.Start();
-	else if(profiler_mode == 0)
+	else
 		Profiler::g_profiler.Clear();
 
 	N.api->Update();
 
 	UpdateMusic();
 
-	if(Net::IsSingleplayer() || !paused)
+	if(Net::IsSingleplayer() && !paused)
 	{
 		// update time spent in game
 		if(game_state != GS_MAIN_MENU && game_state != GS_LOAD)

@@ -211,7 +211,7 @@ public:
 	void ListQuadtreeNodes();
 
 	// profiler
-	int profiler_mode;
+	bool profiler_mode;
 
 	//-----------------------------------------------------------------
 	// resources

@@ -23,18 +23,18 @@ enum ShortcutKey
 typedef delegate<void(int)> KeyDownCallback;
 
 //-----------------------------------------------------------------------------
-// stan klawiatury
+// keyboard state
 struct KeyStates
 {
 	KeyStates();
 
-	// proste sprawdzanie czy klawisz zosta³ wciœniêty, wyciœniêty, jest wciœniêty, jest wyciœniêty
+	// key pressed/unpressed state check. If it is pressed - it is not pressed.
 	bool Pressed(byte key) const { return keystate[key] == IS_PRESSED; }
 	bool Released(byte key) const { return keystate[key] == IS_RELEASED; }
 	bool Down(byte key) const { return keystate[key] >= IS_DOWN; }
 	bool Up(byte key) const { return keystate[key] <= IS_RELEASED; }
 
-	// jednorazowe sprawdzanie czy klawisz jest wciœniêty, jeœli by³ to go ustawia na wyciœniêtego
+	// one-time check if key is pressed. if it is, set him to unpressed 
 	bool PressedRelease(byte key)
 	{
 		if(Pressed(key))
