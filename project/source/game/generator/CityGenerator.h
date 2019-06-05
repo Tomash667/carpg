@@ -6,7 +6,6 @@
 #include "TerrainTile.h"
 #include "Building.h"
 #include "EntryPoint.h"
-#include "LevelContext.h"
 
 //-----------------------------------------------------------------------------
 class CityGenerator final : public OutsideLocationGenerator

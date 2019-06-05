@@ -101,20 +101,20 @@ void TeamPanel::Draw(ControlDrawData*)
 	int hitbox_counter = 0;
 	hitboxes.clear();
 	Matrix mat;
-	for(Unit* u : Team.members)
+	for(Unit& unit : Team.members)
 	{
-		if(u->GetClass() != Class::INVALID)
+		if(unit.GetClass() != Class::INVALID)
 		{
-			TEX t = ClassInfo::classes[(int)u->GetClass()].icon;
+			TEX t = ClassInfo::classes[(int)unit.GetClass()].icon;
 			Int2 img_size;
 			Vec2 scale;
 			Control::ResizeImage(t, Int2(32, 32), img_size, scale);
 			mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &Vec2((float)offset.x, (float)offset.y));
 			GUI.DrawSprite2(t, mat, nullptr, &rect, Color::White);
 		}
-		if(u == Team.leader)
+		if(&unit == Team.leader)
 			GUI.DrawSprite(tKorona, Int2(offset.x + 32, offset.y), Color::White, &rect);
-		if(!u->IsAlive())
+		if(!unit.IsAlive())
 			GUI.DrawSprite(tCzaszka, Int2(offset.x + 64, offset.y), Color::White, &rect);
 
 		Rect r2 = {
@@ -124,17 +124,17 @@ void TeamPanel::Draw(ControlDrawData*)
 			offset.y + 32
 		};
 		s = "$h+";
-		s += Format(txCharInTeam, u->GetName(), u->IsPlayer() ? pc_share : (u->hero->free ? 0 : npc_share), u->GetCredit());
-		if(u->IsPlayer() && Net::IsOnline())
+		s += Format(txCharInTeam, unit.GetName(), unit.IsPlayer() ? pc_share : (unit.hero->free ? 0 : npc_share), unit.GetCredit());
+		if(unit.IsPlayer() && Net::IsOnline())
 		{
 			if(Net::IsServer())
 			{
-				if(u != game.pc->unit)
-					s += Format(txPing, N.peer->GetAveragePing(u->player->player_info->adr));
+				if(&unit != game.pc->unit)
+					s += Format(txPing, N.peer->GetAveragePing(unit.player->player_info->adr));
 			}
-			else if(u == game.pc->unit)
+			else if(&unit == game.pc->unit)
 				s += Format(txPing, N.peer->GetAveragePing(N.server));
-			s += Format(txDays, u->player->free_days);
+			s += Format(txDays, unit.player->free_days);
 		}
 		s += ")$h-";
 		if(!GUI.DrawText(GUI.default_font, s->c_str(), DTF_VCENTER | DTF_SINGLELINE | DTF_PARSE_SPECIAL, (n == picked ? Color::White : Color::Black), r2, &rect, &hitboxes, &hitbox_counter))
@@ -176,7 +176,7 @@ void TeamPanel::Update(float dt)
 				picking = false;
 				if(picked >= 0)
 				{
-					target = Team.members[picked];
+					target = Team.members.ptrs[picked];
 					switch(mode)
 					{
 					case Bt_GiveGold:

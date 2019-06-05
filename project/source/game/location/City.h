@@ -11,13 +11,13 @@
 // Budynek w mieœcie
 struct CityBuilding
 {
-	Building* type;
+	Building* building;
 	Int2 pt, unit_pt;
 	GameDirection rot;
 	Vec3 walk_pt;
 
 	CityBuilding() {}
-	explicit CityBuilding(Building* type) : type(type) {}
+	explicit CityBuilding(Building* building) : building(building) {}
 };
 
 //-----------------------------------------------------------------------------
@@ -69,6 +69,7 @@ struct City : public OutsideLocation
 	~City();
 
 	// from Location
+	void Apply(vector<std::reference_wrapper<LevelArea>>& areas) override;
 	void Save(GameWriter& f, bool local) override;
 	void Load(GameReader& f, bool local, LOCATION_TOKEN token) override;
 	void Write(BitStreamWriter& f) override;
@@ -81,13 +82,13 @@ struct City : public OutsideLocation
 	void GenerateCityBuildings(vector<Building*>& buildings, bool required, bool first_city);
 	void PrepareCityBuildings(vector<ToBuild>& tobuild);
 	bool IsInsideCity(const Vec3& _pos);
-	InsideBuilding* FindInsideBuilding(Building* type);
+	InsideBuilding* FindInsideBuilding(Building* building);
 	InsideBuilding* FindInsideBuilding(BuildingGroup* group);
 	InsideBuilding* FindInsideBuilding(BuildingGroup* group, int& index);
 	InsideBuilding* FindInn() { return FindInsideBuilding(BuildingGroup::BG_INN); }
 	InsideBuilding* FindInn(int& id) { return FindInsideBuilding(BuildingGroup::BG_INN, id); }
 	CityBuilding* FindBuilding(BuildingGroup* group);
-	CityBuilding* FindBuilding(Building* type);
+	CityBuilding* FindBuilding(Building* building);
 	bool IsVillage() const { return settlement_type == SettlementType::Village; }
 	void GetEntry(Vec3& pos, float& rot);
 };

@@ -98,6 +98,13 @@ struct PostEffect
 
 typedef std::map<Mesh*, TEX> ItemTextureMap;
 
+enum class ProfilerMode
+{
+	Disabled,
+	Update,
+	Rendering
+};
+
 class Game final : public Engine
 {
 public:
@@ -150,6 +157,7 @@ public:
 
 	QUICKSTART quickstart;
 	int quickstart_slot;
+	ProfilerMode profiler_mode;
 
 	void ReloadShaders();
 	void ReleaseShaders();
@@ -175,15 +183,15 @@ public:
 	void ChangeDungeonTexWrap();
 	void FillDungeonPart(Int2* dungeon_part, word* faces, int& index, word offset);
 	void CleanScene();
-	void ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outside);
-	void ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool outside, Unit& u);
-	void AddObjectToDrawBatch(LevelContext& ctx, const Object& o, FrustumPlanes& frustum);
-	void ListAreas(LevelContext& ctx);
+	void ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside);
+	void ListDrawObjectsUnit(LevelArea* area, FrustumPlanes& frustum, bool outside, Unit& u);
+	void AddObjectToDrawBatch(LevelArea& area, const Object& o, FrustumPlanes& frustum);
+	void ListAreas(LevelArea& area);
 	void PrepareAreaPath();
 	void PrepareAreaPathCircle(Area2& area, float radius, float range, float rot, bool outside);
 	void FillDrawBatchDungeonParts(FrustumPlanes& frustum);
 	void AddOrSplitSceneNode(SceneNode* node, int exclude_subs = 0);
-	int GatherDrawBatchLights(LevelContext& ctx, SceneNode* node, float x, float z, float radius, int sub = 0);
+	int GatherDrawBatchLights(LevelArea& area, SceneNode* node, float x, float z, float radius, int sub = 0);
 	void DrawScene(bool outside);
 	void DrawGlowingNodes(bool use_postfx);
 	void DrawSkybox();
@@ -209,9 +217,6 @@ public:
 	void ClearGrass();
 	void CalculateQuadtree();
 	void ListQuadtreeNodes();
-
-	// profiler
-	int profiler_mode;
 
 	//-----------------------------------------------------------------
 	// resources
@@ -405,9 +410,9 @@ public:
 	uint TestGameData(bool major);
 	void TestUnitSpells(const SpellList& spells, string& errors, uint& count);
 	Unit* CreateUnit(UnitData& base, int level = -1, Human* human_data = nullptr, Unit* test_unit = nullptr, bool create_physics = true, bool custom = false);
-	bool CheckForHit(LevelContext& ctx, Unit& unit, Unit*& hitted, Vec3& hitpoint);
-	bool CheckForHit(LevelContext& ctx, Unit& unit, Unit*& hitted, Mesh::Point& hitbox, Mesh::Point* bone, Vec3& hitpoint);
-	void UpdateParticles(LevelContext& ctx, float dt);
+	bool CheckForHit(LevelArea& area, Unit& unit, Unit*& hitted, Vec3& hitpoint);
+	bool CheckForHit(LevelArea& area, Unit& unit, Unit*& hitted, Mesh::Point& hitbox, Mesh::Point* bone, Vec3& hitpoint);
+	void UpdateParticles(LevelArea& area, float dt);
 	// perform character attack
 	enum ATTACK_RESULT
 	{
@@ -417,41 +422,41 @@ public:
 		ATTACK_HIT,
 		ATTACK_CLEAN_HIT
 	};
-	ATTACK_RESULT DoAttack(LevelContext& ctx, Unit& unit);
+	ATTACK_RESULT DoAttack(LevelArea& area, Unit& unit);
 	enum DamageFlags
 	{
 		DMG_NO_BLOOD = 1 << 0,
 		DMG_MAGICAL = 1 << 1
 	};
-	void GiveDmg(LevelContext& ctx, Unit* giver, float dmg, Unit& taker, const Vec3* hitpoint = nullptr, int dmg_flags = 0);
-	void UpdateUnits(LevelContext& ctx, float dt);
+	void GiveDmg(LevelArea& area, Unit* giver, float dmg, Unit& taker, const Vec3* hitpoint = nullptr, int dmg_flags = 0);
+	void UpdateUnits(LevelArea& area, float dt);
 	bool CanLoadGame() const;
 	bool CanSaveGame() const;
-	bool DoShieldSmash(LevelContext& ctx, Unit& attacker);
-	void UpdateBullets(LevelContext& ctx, float dt);
+	bool DoShieldSmash(LevelArea& area, Unit& attacker);
+	void UpdateBullets(LevelArea& area, float dt);
 	Vec3 PredictTargetPos(const Unit& me, const Unit& target, float bullet_speed) const;
 	bool CanShootAtLocation(const Unit& me, const Unit& target, const Vec3& pos) const { return CanShootAtLocation2(me, &target, pos); }
 	bool CanShootAtLocation(const Vec3& from, const Vec3& to) const;
 	bool CanShootAtLocation2(const Unit& me, const void* ptr, const Vec3& to) const;
 	void LoadItemsData();
-	Unit* CreateUnitWithAI(LevelContext& ctx, UnitData& unit, int level = -1, Human* human_data = nullptr, const Vec3* pos = nullptr, const float* rot = nullptr, AIController** ai = nullptr);
+	Unit* CreateUnitWithAI(LevelArea& area, UnitData& unit, int level = -1, Human* human_data = nullptr, const Vec3* pos = nullptr, const float* rot = nullptr, AIController** ai = nullptr);
 	void ChangeLevel(int where);
 	void ExitToMap();
 	SOUND GetMaterialSound(MATERIAL_TYPE m1, MATERIAL_TYPE m2);
 	void PlayAttachedSound(Unit& unit, SOUND sound, float distance);
 	void StopAllSounds();
-	ATTACK_RESULT DoGenericAttack(LevelContext& ctx, Unit& attacker, Unit& hitted, const Vec3& hitpoint, float attack, int dmg_type, bool bash);
+	ATTACK_RESULT DoGenericAttack(LevelArea& area, Unit& attacker, Unit& hitted, const Vec3& hitpoint, float attack, int dmg_type, bool bash);
 	void SaveGame(GameWriter& f, SaveSlot* slot);
 	void CreateSaveImage();
 	bool LoadGameHeader(GameReader& f, SaveSlot& slot);
 	void LoadGame(GameReader& f);
 	bool TryLoadGame(int slot, bool quickload, bool from_console);
 	void RemoveUnusedAiAndCheck();
-	void CheckUnitsAi(LevelContext& ctx, int& err_count);
-	void CastSpell(LevelContext& ctx, Unit& unit);
-	void SpellHitEffect(LevelContext& ctx, Bullet& bullet, const Vec3& pos, Unit* hitted);
-	void UpdateExplosions(LevelContext& ctx, float dt);
-	void UpdateTraps(LevelContext& ctx, float dt);
+	void CheckUnitsAi(LevelArea& area, int& err_count);
+	void CastSpell(LevelArea& area, Unit& unit);
+	void SpellHitEffect(LevelArea& area, Bullet& bullet, const Vec3& pos, Unit* hitted);
+	void UpdateExplosions(LevelArea& area, float dt);
+	void UpdateTraps(LevelArea& area, float dt);
 	void PreloadTraps(vector<Trap*>& traps);
 	bool RayTest(const Vec3& from, const Vec3& to, Unit* ignore, Vec3& hitpoint, Unit*& hitted);
 	enum LINE_TEST_RESULT
@@ -463,9 +468,9 @@ public:
 	bool LineTest(btCollisionShape* shape, const Vec3& from, const Vec3& dir, delegate<LINE_TEST_RESULT(btCollisionObject*, bool)> clbk, float& t,
 		vector<float>* t_list = nullptr, bool use_clbk2 = false, float* end_t = nullptr);
 	bool ContactTest(btCollisionObject* obj, delegate<bool(btCollisionObject*, bool)> clbk, bool use_clbk2 = false);
-	void UpdateElectros(LevelContext& ctx, float dt);
-	void UpdateDrains(LevelContext& ctx, float dt);
-	void AI_Shout(LevelContext& ctx, AIController& ai);
+	void UpdateElectros(LevelArea& area, float dt);
+	void UpdateDrains(LevelArea& area, float dt);
+	void AI_Shout(LevelArea& area, AIController& ai);
 	void AI_DoAttack(AIController& ai, Unit* target, bool running = false);
 	void AI_HitReaction(Unit& unit, const Vec3& pos);
 	void UpdateAttachedSounds(float dt);
@@ -482,11 +487,11 @@ public:
 	void ClearGameVars(bool new_game);
 	void ClearGame();
 	SOUND GetItemSound(const Item* item);
-	void Unit_StopUsingUsable(LevelContext& ctx, Unit& unit, bool send = true);
+	void Unit_StopUsingUsable(LevelArea& area, Unit& unit, bool send = true);
 	void EnterLevel(LocationGenerator* loc_gen);
 	void LeaveLevel(bool clear = false);
-	void LeaveLevel(LevelContext& ctx, bool clear);
-	void UpdateContext(LevelContext& ctx, float dt);
+	void LeaveLevel(LevelArea& area, bool clear);
+	void UpdateArea(LevelArea& area, float dt);
 	bool IsAnyoneTalking() const;
 	// this could be a global function
 	void PlayHitSound(MATERIAL_TYPE mat_weapon, MATERIAL_TYPE mat_body, const Vec3& hitpoint, float range, bool dmg);

@@ -96,10 +96,10 @@ bool Net::ValidateNick(cstring nick)
 PlayerInfo* Net::FindPlayer(Cstring nick)
 {
 	assert(nick);
-	for(PlayerInfo* info : players)
+	for(PlayerInfo& info : players)
 	{
-		if(info->left == PlayerInfo::LEFT_NO && info->name == nick)
-			return info;
+		if(info.left == PlayerInfo::LEFT_NO && info.name == nick)
+			return &info;
 	}
 	return nullptr;
 }
@@ -108,10 +108,10 @@ PlayerInfo* Net::FindPlayer(Cstring nick)
 PlayerInfo* Net::FindPlayer(const SystemAddress& adr)
 {
 	assert(adr != UNASSIGNED_SYSTEM_ADDRESS);
-	for(PlayerInfo* info : players)
+	for(PlayerInfo& info : players)
 	{
-		if(info->adr == adr)
-			return info;
+		if(info.adr == adr)
+			return &info;
 	}
 	return nullptr;
 }
@@ -119,12 +119,12 @@ PlayerInfo* Net::FindPlayer(const SystemAddress& adr)
 //=================================================================================================
 PlayerInfo* Net::TryGetPlayer(int id)
 {
-	for(PlayerInfo* info : players)
+	for(PlayerInfo& info : players)
 	{
-		if(info->id == id)
+		if(info.id == id)
 		{
-			if(info->left == PlayerInfo::LEFT_NO)
-				return info;
+			if(info.left == PlayerInfo::LEFT_NO)
+				return &info;
 			break;
 		}
 	}
@@ -209,15 +209,15 @@ void Net::OnChangeLevel(int level)
 	f << false;
 
 	uint ack = SendAll(f, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT);
-	for(PlayerInfo* info : players)
+	for(PlayerInfo& info : players)
 	{
-		if(info->id == Team.my_id)
-			info->state = PlayerInfo::IN_GAME;
+		if(info.id == Team.my_id)
+			info.state = PlayerInfo::IN_GAME;
 		else
 		{
-			info->state = PlayerInfo::WAITING_FOR_RESPONSE;
-			info->ack = ack;
-			info->timer = CHANGE_LEVEL_TIMER;
+			info.state = PlayerInfo::WAITING_FOR_RESPONSE;
+			info.ack = ack;
+			info.timer = CHANGE_LEVEL_TIMER;
 		}
 	}
 }
@@ -246,9 +246,9 @@ int Net::GetNewPlayerId()
 	{
 		last_id = (last_id + 1) % 256;
 		bool ok = true;
-		for(PlayerInfo* info : players)
+		for(PlayerInfo& info : players)
 		{
-			if(info->id == last_id)
+			if(info.id == last_id)
 			{
 				ok = false;
 				break;
@@ -264,10 +264,10 @@ PlayerInfo* Net::FindOldPlayer(cstring nick)
 {
 	assert(nick);
 
-	for(auto info : old_players)
+	for(PlayerInfo& info : old_players)
 	{
-		if(info->name == nick)
-			return info;
+		if(info.name == nick)
+			return &info;
 	}
 
 	return nullptr;
@@ -277,13 +277,12 @@ PlayerInfo* Net::FindOldPlayer(cstring nick)
 void Net::DeleteOldPlayers()
 {
 	const bool in_level = L.is_open;
-	for(vector<PlayerInfo*>::iterator it = old_players.begin(), end = old_players.end(); it != end; ++it)
+	for(PlayerInfo& info : old_players)
 	{
-		auto& info = **it;
 		if(!info.loaded && info.u)
 		{
 			if(in_level)
-				RemoveElement(L.GetContext(*info.u).units, info.u);
+				RemoveElement(L.GetArea(*info.u).units, info.u);
 			if(info.u->cobj)
 			{
 				delete info.u->cobj->getCollisionShape();
@@ -305,16 +304,16 @@ void Net::Save(GameWriter& f)
 	f << max_players;
 	f << last_id;
 	uint count = 0;
-	for(auto info : players)
+	for(PlayerInfo& info : players)
 	{
-		if(info->left == PlayerInfo::LEFT_NO)
+		if(info.left == PlayerInfo::LEFT_NO)
 			++count;
 	}
 	f << count;
-	for(PlayerInfo* info : players)
+	for(PlayerInfo& info : players)
 	{
-		if(info->left == PlayerInfo::LEFT_NO)
-			info->Save(f);
+		if(info.left == PlayerInfo::LEFT_NO)
+			info.Save(f);
 	}
 	f << Unit::netid_counter;
 	f << GroundItem::netid_counter;
@@ -338,11 +337,11 @@ void Net::Load(GameReader& f)
 	uint count;
 	f >> count;
 	DeleteElements(old_players);
-	old_players.resize(count);
+	old_players.ptrs.resize(count);
 	for(uint i = 0; i < count; ++i)
 	{
-		old_players[i] = new PlayerInfo;
-		old_players[i]->Load(f);
+		old_players.ptrs[i] = new PlayerInfo;
+		old_players.ptrs[i]->Load(f);
 	}
 	f >> Unit::netid_counter;
 	f >> GroundItem::netid_counter;
@@ -358,10 +357,10 @@ void Net::Load(GameReader& f)
 //=================================================================================================
 void Net::InterpolatePlayers(float dt)
 {
-	for(PlayerInfo* info : players)
+	for(PlayerInfo& info : players)
 	{
-		if(!info->pc->is_local && info->left == PlayerInfo::LEFT_NO)
-			info->u->interp->Update(dt, info->u->visual_pos, info->u->rot);
+		if(!info.pc->is_local && info.left == PlayerInfo::LEFT_NO)
+			info.u->interp->Update(dt, info.u->visual_pos, info.u->rot);
 	}
 }
 
@@ -419,22 +418,22 @@ void Net::FilterServerChanges()
 			++it;
 	}
 
-	for(PlayerInfo* info : players)
+	for(PlayerInfo& info : players)
 	{
-		for(vector<NetChangePlayer>::iterator it = info->changes.begin(), end = info->changes.end(); it != end;)
+		for(vector<NetChangePlayer>::iterator it = info.changes.begin(), end = info.changes.end(); it != end;)
 		{
 			if(FilterOut(*it))
 			{
 				if(it + 1 == end)
 				{
-					info->changes.pop_back();
+					info.changes.pop_back();
 					break;
 				}
 				else
 				{
 					std::iter_swap(it, end - 1);
-					info->changes.pop_back();
-					end = info->changes.end();
+					info.changes.pop_back();
+					end = info.changes.end();
 				}
 			}
 			else
@@ -569,8 +568,8 @@ void Net::ClearChanges()
 	}
 	changes.clear();
 
-	for(PlayerInfo* info : players)
-		info->changes.clear();
+	for(PlayerInfo& info : players)
+		info.changes.clear();
 }
 
 //=================================================================================================
@@ -612,9 +611,9 @@ void Net::SendClient(BitStreamWriter& f, PacketPriority priority, PacketReliabil
 //=================================================================================================
 void Net::InterpolateUnits(float dt)
 {
-	for(LevelContext& ctx : L.ForEachContext())
+	for(LevelArea& area : L.ForEachArea())
 	{
-		for(Unit* unit : *ctx.units)
+		for(Unit* unit : area.units)
 		{
 			if(!unit->IsLocal())
 				unit->interp->Update(dt, unit->visual_pos, unit->rot);

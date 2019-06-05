@@ -8,6 +8,7 @@
 #include "ResourceManager.h"
 #include "Render.h"
 #include "GrassShader.h"
+#include "Object.h"
 #include "DirectX.h"
 
 enum QuadPartType
@@ -323,10 +324,10 @@ void Game::ClearGrass()
 
 void Game::CalculateQuadtree()
 {
-	if(L.local_ctx.type != LevelContext::Outside)
+	if(L.local_area->area_type != LevelArea::Type::Outside)
 		return;
 
-	for(Object* obj : *L.local_ctx.objects)
+	for(Object* obj : L.local_area->objects)
 	{
 		auto node = (LevelPart*)quadtree.GetNode(obj->pos.XZ(), obj->GetRadius());
 		node->objects.push_back(QuadObj(obj));

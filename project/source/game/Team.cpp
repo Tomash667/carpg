@@ -71,7 +71,7 @@ void TeamSingleton::AddTeamMember(Unit* unit, bool free)
 	if(!free)
 	{
 		if(GetActiveTeamSize() == 1u)
-			active_members[0]->MakeItemsTeam(false);
+			active_members[0].MakeItemsTeam(false);
 		active_members.push_back(unit);
 	}
 	members.push_back(unit);
@@ -106,8 +106,8 @@ void TeamSingleton::RemoveTeamMember(Unit* unit)
 
 	// remove from team list
 	if(!unit->hero->free)
-		RemoveElementOrder(active_members, unit);
-	RemoveElementOrder(members, unit);
+		RemoveElementOrder(active_members.ptrs, unit);
+	RemoveElementOrder(members.ptrs, unit);
 
 	// set items as team
 	unit->MakeItemsTeam(true);
@@ -131,10 +131,10 @@ void TeamSingleton::RemoveTeamMember(Unit* unit)
 
 Unit* TeamSingleton::FindActiveTeamMember(int netid)
 {
-	for(Unit* unit : active_members)
+	for(Unit& unit : active_members)
 	{
-		if(unit->netid == netid)
-			return unit;
+		if(unit.netid == netid)
+			return &unit;
 	}
 
 	return nullptr;
@@ -144,15 +144,15 @@ bool TeamSingleton::FindItemInTeam(const Item* item, int refid, Unit** unit_resu
 {
 	assert(item);
 
-	for(Unit* unit : members)
+	for(Unit& unit : members)
 	{
-		if(unit->IsPlayer() || check_npc)
+		if(unit.IsPlayer() || check_npc)
 		{
-			int index = unit->FindItem(item, refid);
+			int index = unit.FindItem(item, refid);
 			if(index != Unit::INVALID_IINDEX)
 			{
 				if(unit_result)
-					*unit_result = unit;
+					*unit_result = &unit;
 				if(i_index)
 					*i_index = index;
 				return true;
@@ -168,10 +168,10 @@ Unit* TeamSingleton::FindTeamMember(cstring id)
 	UnitData* unit_data = UnitData::Get(id);
 	assert(unit_data);
 
-	for(Unit* unit : members)
+	for(Unit& unit : members)
 	{
-		if(unit->data == unit_data)
-			return unit;
+		if(unit.data == unit_data)
+			return &unit;
 	}
 
 	assert(0);
@@ -181,9 +181,9 @@ Unit* TeamSingleton::FindTeamMember(cstring id)
 uint TeamSingleton::GetActiveNpcCount()
 {
 	uint count = 0;
-	for(Unit* unit : active_members)
+	for(Unit& unit : active_members)
 	{
-		if(!unit->player)
+		if(!unit.player)
 			++count;
 	}
 	return count;
@@ -192,9 +192,9 @@ uint TeamSingleton::GetActiveNpcCount()
 uint TeamSingleton::GetNpcCount()
 {
 	uint count = 0;
-	for(Unit* unit : members)
+	for(Unit& unit : members)
 	{
-		if(!unit->player)
+		if(!unit.player)
 			++count;
 	}
 	return count;
@@ -203,11 +203,11 @@ uint TeamSingleton::GetNpcCount()
 Vec2 TeamSingleton::GetShare()
 {
 	uint pc = 0, npc = 0;
-	for(Unit* unit : active_members)
+	for(Unit& unit : active_members)
 	{
-		if(unit->IsPlayer())
+		if(unit.IsPlayer())
 			++pc;
-		else if(!unit->hero->free)
+		else if(!unit.hero->free)
 			++npc;
 	}
 	return GetShare(pc, npc);
@@ -234,10 +234,10 @@ Unit* TeamSingleton::GetRandomSaneHero()
 {
 	LocalVector<Unit*> v;
 
-	for(Unit* unit : active_members)
+	for(Unit& unit : active_members)
 	{
-		if(unit->IsHero() && !IS_SET(unit->data->flags, F_CRAZY))
-			v->push_back(unit);
+		if(unit.IsHero() && !IS_SET(unit.data->flags, F_CRAZY))
+			v->push_back(&unit);
 	}
 
 	return v->at(Rand() % v->size());
@@ -252,28 +252,28 @@ void TeamSingleton::GetTeamInfo(TeamInfo& info)
 	info.insane_heroes = 0;
 	info.free_members = 0;
 
-	for(Unit* unit : members)
+	for(Unit& unit : members)
 	{
-		if(unit->IsPlayer())
+		if(unit.IsPlayer())
 			++info.players;
 		else
 		{
 			++info.npcs;
-			if(unit->IsHero())
+			if(unit.IsHero())
 			{
-				if(unit->summoner != nullptr)
+				if(unit.summoner != nullptr)
 				{
 					++info.free_members;
 					++info.summons;
 				}
 				else
 				{
-					if(unit->hero->free)
+					if(unit.hero->free)
 						++info.free_members;
 					else
 					{
 						++info.heroes;
-						if(IS_SET(unit->data->flags, F_CRAZY))
+						if(IS_SET(unit.data->flags, F_CRAZY))
 							++info.insane_heroes;
 						else
 							++info.sane_heroes;
@@ -289,9 +289,9 @@ void TeamSingleton::GetTeamInfo(TeamInfo& info)
 uint TeamSingleton::GetPlayersCount()
 {
 	uint count = 0;
-	for(Unit* unit : active_members)
+	for(Unit& unit : active_members)
 	{
-		if(unit->player)
+		if(unit.player)
 			++count;
 	}
 	return count;
@@ -299,9 +299,9 @@ uint TeamSingleton::GetPlayersCount()
 
 bool TeamSingleton::HaveActiveNpc()
 {
-	for(Unit* unit : active_members)
+	for(Unit& unit : active_members)
 	{
-		if(!unit->player)
+		if(!unit.player)
 			return true;
 	}
 	return false;
@@ -309,9 +309,9 @@ bool TeamSingleton::HaveActiveNpc()
 
 bool TeamSingleton::HaveNpc()
 {
-	for(Unit* unit : members)
+	for(Unit& unit : members)
 	{
-		if(!unit->player)
+		if(!unit.player)
 			return true;
 	}
 	return false;
@@ -320,9 +320,9 @@ bool TeamSingleton::HaveNpc()
 bool TeamSingleton::HaveOtherPlayer()
 {
 	bool first = true;
-	for(Unit* unit : active_members)
+	for(Unit& unit : active_members)
 	{
-		if(unit->player)
+		if(unit.player)
 		{
 			if(!first)
 				return true;
@@ -334,9 +334,9 @@ bool TeamSingleton::HaveOtherPlayer()
 
 bool TeamSingleton::IsAnyoneAlive()
 {
-	for(Unit* unit : members)
+	for(Unit& unit : members)
 	{
-		if(unit->IsAlive() || unit->in_arena != -1)
+		if(unit.IsAlive() || unit.in_arena != -1)
 			return true;
 	}
 
@@ -355,9 +355,9 @@ bool TeamSingleton::IsTeamMember(Unit& unit)
 
 bool TeamSingleton::IsTeamNotBusy()
 {
-	for(Unit* unit : members)
+	for(Unit& unit : members)
 	{
-		if(unit->busy)
+		if(unit.busy)
 			return false;
 	}
 
@@ -366,12 +366,12 @@ bool TeamSingleton::IsTeamNotBusy()
 
 void TeamSingleton::Load(GameReader& f)
 {
-	members.resize(f.Read<uint>());
-	for(Unit*& unit : members)
+	members.ptrs.resize(f.Read<uint>());
+	for(Unit*& unit : members.ptrs)
 		unit = Unit::GetByRefid(f.Read<int>());
 
-	active_members.resize(f.Read<uint>());
-	for(Unit*& unit : active_members)
+	active_members.ptrs.resize(f.Read<uint>());
+	for(Unit*& unit : active_members.ptrs)
 		unit = Unit::GetByRefid(f.Read<int>());
 
 	leader = Unit::GetByRefid(f.Read<int>());
@@ -382,15 +382,15 @@ void TeamSingleton::Load(GameReader& f)
 		if(team_gold > 0)
 		{
 			Vec2 share = GetShare();
-			for(Unit* unit : active_members)
+			for(Unit& unit : active_members)
 			{
-				float gold = (unit->IsPlayer() ? share.x : share.y) * team_gold;
+				float gold = (unit.IsPlayer() ? share.x : share.y) * team_gold;
 				float gold_int, part = modf(gold, &gold_int);
-				unit->gold += (int)gold_int;
-				if(unit->IsPlayer())
-					unit->player->split_gold = part;
+				unit.gold += (int)gold_int;
+				if(unit.IsPlayer())
+					unit.player->split_gold = part;
 				else
-					unit->hero->split_gold = part;
+					unit.hero->split_gold = part;
 			}
 		}
 	}
@@ -428,12 +428,12 @@ void TeamSingleton::ClearOnNewGameOrLoad()
 void TeamSingleton::Save(GameWriter& f)
 {
 	f << GetTeamSize();
-	for(Unit* unit : members)
-		f << unit->refid;
+	for(Unit& unit : members)
+		f << unit.refid;
 
 	f << GetActiveTeamSize();
-	for(Unit* unit : active_members)
-		f << unit->refid;
+	for(Unit& unit : active_members)
+		f << unit.refid;
 
 	f << leader->refid;
 	f << crazies_attack;
@@ -444,11 +444,11 @@ void TeamSingleton::Save(GameWriter& f)
 void TeamSingleton::SaveOnWorldmap(GameWriter& f)
 {
 	f << GetTeamSize();
-	for(Unit* unit : members)
+	for(Unit& unit : members)
 	{
-		unit->Save(f, false);
-		unit->refid = (int)Unit::refid_table.size();
-		Unit::refid_table.push_back(unit);
+		unit.Save(f, false);
+		unit.refid = (int)Unit::refid_table.size();
+		Unit::refid_table.push_back(&unit);
 	}
 }
 
@@ -456,10 +456,10 @@ void TeamSingleton::Update(int days, bool travel)
 {
 	if(!travel)
 	{
-		for(Unit* unit : members)
+		for(Unit& unit : members)
 		{
-			if(unit->IsHero())
-				unit->hero->PassTime(days);
+			if(unit.IsHero())
+				unit.hero->PassTime(days);
 		}
 	}
 	else
@@ -467,32 +467,32 @@ void TeamSingleton::Update(int days, bool travel)
 		bool autoheal = (QM.quest_evil->evil_state == Quest_Evil::State::ClosingPortals || QM.quest_evil->evil_state == Quest_Evil::State::KillBoss);
 
 		// regeneracja hp / trenowanie
-		for(Unit* unit : members)
+		for(Unit& unit : members)
 		{
 			if(autoheal)
-				unit->hp = unit->hpmax;
-			if(unit->IsPlayer())
-				unit->player->Rest(1, false, true);
+				unit.hp = unit.hpmax;
+			if(unit.IsPlayer())
+				unit.player->Rest(1, false, true);
 			else
-				unit->hero->PassTime(1, true);
+				unit.hero->PassTime(1, true);
 		}
 
 		// ubywanie wolnych dni
 		if(Net::IsOnline())
 		{
-			int maks = 0;
-			for(Unit* unit : active_members)
+			int max_days = 0;
+			for(Unit& unit : active_members)
 			{
-				if(unit->IsPlayer() && unit->player->free_days > maks)
-					maks = unit->player->free_days;
+				if(unit.IsPlayer() && unit.player->free_days > max_days)
+					max_days = unit.player->free_days;
 			}
 
-			if(maks > 0)
+			if(max_days > 0)
 			{
-				for(Unit* unit : active_members)
+				for(Unit& unit : active_members)
 				{
-					if(unit->IsPlayer() && unit->player->free_days == maks)
-						--unit->player->free_days;
+					if(unit.IsPlayer() && unit.player->free_days == max_days)
+						--unit.player->free_days;
 				}
 			}
 		}
@@ -511,41 +511,41 @@ void TeamSingleton::CheckTeamItemShares()
 	team_shares.clear();
 	uint pos_a, pos_b;
 
-	for(Unit* unit : active_members)
+	for(Unit& unit : active_members)
 	{
-		if(unit->IsPlayer())
+		if(unit.IsPlayer())
 			continue;
 
 		pos_a = team_shares.size();
 
-		for(Unit* other_unit : active_members)
+		for(Unit& other_unit : active_members)
 		{
 			int index = 0;
-			for(ItemSlot& slot : other_unit->items)
+			for(ItemSlot& slot : other_unit.items)
 			{
-				if(slot.item && unit->CanWear(slot.item))
+				if(slot.item && unit.CanWear(slot.item))
 				{
 					// don't check if can't buy
-					if(slot.team_count == 0 && slot.item->value / 2 > unit->gold && unit != other_unit)
+					if(slot.team_count == 0 && slot.item->value / 2 > unit.gold && &unit != &other_unit)
 					{
 						++index;
 						continue;
 					}
 
 					int value, prev_value;
-					if(unit->IsBetterItem(slot.item, &value, &prev_value))
+					if(unit.IsBetterItem(slot.item, &value, &prev_value))
 					{
-						float real_value = 1000.f * value * unit->stats->priorities[slot.item->type] / slot.item->value;
+						float real_value = 1000.f * value * unit.stats->priorities[slot.item->type] / slot.item->value;
 						if(real_value > 0)
 						{
 							TeamShareItem& tsi = Add1(team_shares);
-							tsi.from = other_unit;
-							tsi.to = unit;
+							tsi.from = &other_unit;
+							tsi.to = &unit;
 							tsi.item = slot.item;
 							tsi.index = index;
 							tsi.value = real_value;
 							tsi.is_team = (slot.team_count != 0);
-							if(unit == other_unit)
+							if(&unit == &other_unit)
 							{
 								if(slot.team_count == 0)
 									tsi.priority = PRIO_MY_ITEM;
@@ -554,14 +554,14 @@ void TeamSingleton::CheckTeamItemShares()
 							}
 							else if(slot.team_count != 0)
 							{
-								if(other_unit->IsPlayer())
+								if(other_unit.IsPlayer())
 									tsi.priority = PRIO_PC_TEAM_ITEM;
 								else
 									tsi.priority = PRIO_NPC_TEAM_ITEM;
 							}
 							else
 							{
-								if(other_unit->IsPlayer())
+								if(other_unit.IsPlayer())
 									tsi.priority = PRIO_PC_ITEM;
 								else
 									tsi.priority = PRIO_NPC_ITEM;
@@ -841,15 +841,14 @@ void TeamSingleton::BuyTeamItems()
 	const Item* hp2 = Item::Get("p_hp2");
 	const Item* hp3 = Item::Get("p_hp3");
 
-	for(Unit* unit : active_members)
+	for(Unit& unit : active_members)
 	{
-		Unit& u = *unit;
-		if(u.IsPlayer())
+		if(unit.IsPlayer())
 			continue;
 
 		// sell old items, count potions
 		int hp1count = 0, hp2count = 0, hp3count = 0;
-		for(vector<ItemSlot>::iterator it2 = u.items.begin(), end2 = u.items.end(); it2 != end2;)
+		for(vector<ItemSlot>::iterator it2 = unit.items.begin(), end2 = unit.items.end(); it2 != end2;)
 		{
 			assert(it2->item);
 			if(it2->item->type == IT_CONSUMABLE)
@@ -864,17 +863,17 @@ void TeamSingleton::BuyTeamItems()
 			}
 			else if(it2->item->IsWearable() && it2->team_count == 0)
 			{
-				u.weight -= it2->item->weight;
-				u.gold += it2->item->value / 2;
+				unit.weight -= it2->item->weight;
+				unit.gold += it2->item->value / 2;
 				if(it2 + 1 == end2)
 				{
-					u.items.pop_back();
+					unit.items.pop_back();
 					break;
 				}
 				else
 				{
-					it2 = u.items.erase(it2);
-					end2 = u.items.end();
+					it2 = unit.items.erase(it2);
+					end2 = unit.items.end();
 				}
 			}
 			else
@@ -883,25 +882,25 @@ void TeamSingleton::BuyTeamItems()
 
 		// buy potions
 		int p1, p2, p3;
-		if(u.level < 4)
+		if(unit.level < 4)
 		{
 			p1 = 5;
 			p2 = 0;
 			p3 = 0;
 		}
-		else if(u.level < 8)
+		else if(unit.level < 8)
 		{
 			p1 = 5;
 			p2 = 2;
 			p3 = 0;
 		}
-		else if(u.level < 12)
+		else if(unit.level < 12)
 		{
 			p1 = 6;
 			p2 = 3;
 			p3 = 1;
 		}
-		else if(u.level < 16)
+		else if(unit.level < 16)
 		{
 			p1 = 6;
 			p2 = 4;
@@ -914,39 +913,39 @@ void TeamSingleton::BuyTeamItems()
 			p3 = 4;
 		}
 
-		while(hp3count < p3 && u.gold >= hp3->value / 2)
+		while(hp3count < p3 && unit.gold >= hp3->value / 2)
 		{
-			u.AddItem(hp3, 1, false);
-			u.gold -= hp3->value / 2;
+			unit.AddItem(hp3, 1, false);
+			unit.gold -= hp3->value / 2;
 			++hp3count;
 		}
-		while(hp2count < p2 && u.gold >= hp2->value / 2)
+		while(hp2count < p2 && unit.gold >= hp2->value / 2)
 		{
-			u.AddItem(hp2, 1, false);
-			u.gold -= hp2->value / 2;
+			unit.AddItem(hp2, 1, false);
+			unit.gold -= hp2->value / 2;
 			++hp2count;
 		}
-		while(hp1count < p1 && u.gold >= hp1->value / 2)
+		while(hp1count < p1 && unit.gold >= hp1->value / 2)
 		{
-			u.AddItem(hp1, 1, false);
-			u.gold -= hp1->value / 2;
+			unit.AddItem(hp1, 1, false);
+			unit.gold -= hp1->value / 2;
 			++hp1count;
 		}
 
 		// free potions for poor heroes
 		int count = p1 / 2 - hp1count;
 		if(count > 0)
-			u.AddItem(hp1, (uint)count, false);
+			unit.AddItem(hp1, (uint)count, false);
 		count = p2 / 2 - hp2count;
 		if(count > 0)
-			u.AddItem(hp2, (uint)count, false);
+			unit.AddItem(hp2, (uint)count, false);
 		count = p3 / 2 - hp3count;
 		if(count > 0)
-			u.AddItem(hp3, (uint)count, false);
+			unit.AddItem(hp3, (uint)count, false);
 
 		// buy items
 		const ItemList* lis = ItemList::Get("base_items").lis;
-		const float* priorities = unit->stats->priorities;
+		const float* priorities = unit.stats->priorities;
 		to_buy.clear();
 		for(int i = 0; i < IT_MAX_WEARABLE; ++i)
 		{
@@ -956,7 +955,7 @@ void TeamSingleton::BuyTeamItems()
 			ITEM_SLOT slot_type = ItemTypeToSlot((ITEM_TYPE)i);
 			if(slot_type == SLOT_AMULET)
 			{
-				UnitHelper::BetterItem result = UnitHelper::GetBetterAmulet(*unit);
+				UnitHelper::BetterItem result = UnitHelper::GetBetterAmulet(unit);
 				if(result.item)
 				{
 					float real_value = 1000.f * (result.value - result.prev_value) * priorities[IT_AMULET] / result.item->value;
@@ -965,7 +964,7 @@ void TeamSingleton::BuyTeamItems()
 			}
 			else if(slot_type == SLOT_RING1)
 			{
-				array<UnitHelper::BetterItem, 2> result = UnitHelper::GetBetterRings(*unit);
+				array<UnitHelper::BetterItem, 2> result = UnitHelper::GetBetterRings(unit);
 				for(int i = 0; i < 2; ++i)
 				{
 					if(result[i].item)
@@ -978,15 +977,15 @@ void TeamSingleton::BuyTeamItems()
 			else
 			{
 				const Item* item;
-				if(!unit->slots[slot_type])
+				if(!unit.slots[slot_type])
 				{
 					switch(i)
 					{
 					case IT_WEAPON:
-						item = UnitHelper::GetBaseWeapon(u, lis);
+						item = UnitHelper::GetBaseWeapon(unit, lis);
 						break;
 					case IT_ARMOR:
-						item = UnitHelper::GetBaseArmor(u, lis);
+						item = UnitHelper::GetBaseArmor(unit, lis);
 						break;
 					default:
 						item = UnitHelper::GetBaseItem((ITEM_TYPE)i, lis);
@@ -994,12 +993,12 @@ void TeamSingleton::BuyTeamItems()
 					}
 				}
 				else
-					item = ItemHelper::GetBetterItem(unit->slots[slot_type]);
+					item = ItemHelper::GetBetterItem(unit.slots[slot_type]);
 
-				while(item && u.gold >= item->value)
+				while(item && unit.gold >= item->value)
 				{
 					int value, prev_value;
-					if(u.IsBetterItem(item, &value, &prev_value))
+					if(unit.IsBetterItem(item, &value, &prev_value))
 					{
 						float real_value = 1000.f * (value - prev_value) * priorities[IT_BOW] / item->value;
 						to_buy.push_back({ item, (float)value, real_value });
@@ -1022,7 +1021,7 @@ void TeamSingleton::BuyTeamItems()
 		int gold_spent = 0;
 		for(const ItemToBuy& buy : to_buy)
 		{
-			if(u.gold - gold_spent >= buy.item->value)
+			if(unit.gold - gold_spent >= buy.item->value)
 			{
 				bool add = true;
 				if(!Any(buy.item->type, IT_AMULET, IT_RING))
@@ -1054,33 +1053,33 @@ void TeamSingleton::BuyTeamItems()
 		for(const ItemToBuy& buy : to_buy2)
 		{
 			const Item* item = buy.item;
-			if(u.gold >= item->value)
+			if(unit.gold >= item->value)
 			{
-				u.AddItem(item, 1, false);
-				u.gold -= item->value;
+				unit.AddItem(item, 1, false);
+				unit.gold -= item->value;
 			}
 		}
 
 		// equip new items
-		u.UpdateInventory(false);
-		u.ai->have_potion = 2;
+		unit.UpdateInventory(false);
+		unit.ai->have_potion = 2;
 
 		// sell old items
-		for(vector<ItemSlot>::iterator it2 = u.items.begin(), end2 = u.items.end(); it2 != end2;)
+		for(vector<ItemSlot>::iterator it2 = unit.items.begin(), end2 = unit.items.end(); it2 != end2;)
 		{
 			if(it2->item && it2->item->type != IT_CONSUMABLE && it2->item->IsWearable() && it2->team_count == 0)
 			{
-				u.weight -= it2->item->weight;
-				u.gold += it2->item->value / 2;
+				unit.weight -= it2->item->weight;
+				unit.gold += it2->item->value / 2;
 				if(it2 + 1 == end2)
 				{
-					u.items.pop_back();
+					unit.items.pop_back();
 					break;
 				}
 				else
 				{
-					it2 = u.items.erase(it2);
-					end2 = u.items.end();
+					it2 = unit.items.erase(it2);
+					end2 = unit.items.end();
 				}
 			}
 			else
@@ -1142,15 +1141,14 @@ void TeamSingleton::BuyTeamItems()
 	// buying points for cleric
 	if(QM.quest_evil->evil_state == Quest_Evil::State::ClosingPortals || QM.quest_evil->evil_state == Quest_Evil::State::KillBoss)
 	{
-		Unit* u = FindTeamMember("q_zlo_kaplan");
-
-		if(u)
+		Unit* unit = FindTeamMember("q_zlo_kaplan");
+		if(unit)
 		{
-			int count = max(0, 5 - u->CountItem(hp2));
+			int count = max(0, 5 - unit->CountItem(hp2));
 			if(count)
 			{
-				u->AddItem(hp2, count, false);
-				u->ai->have_potion = 2;
+				unit->AddItem(hp2, count, false);
+				unit->ai->have_potion = 2;
 			}
 		}
 	}
@@ -1224,11 +1222,10 @@ void TeamSingleton::CheckCredit(bool require_update, bool ignore)
 {
 	if(GetActiveTeamSize() > 1)
 	{
-		int max_credit = active_members.front()->GetCredit();
-
-		for(vector<Unit*>::iterator it = active_members.begin() + 1, end = active_members.end(); it != end; ++it)
+		int max_credit = 0;
+		for(Unit& unit : active_members)
 		{
-			int credit = (*it)->GetCredit();
+			int credit = unit.GetCredit();
 			if(credit < max_credit)
 				max_credit = credit;
 		}
@@ -1236,12 +1233,12 @@ void TeamSingleton::CheckCredit(bool require_update, bool ignore)
 		if(max_credit > 0)
 		{
 			require_update = true;
-			for(vector<Unit*>::iterator it = active_members.begin(), end = active_members.end(); it != end; ++it)
-				(*it)->GetCredit() -= max_credit;
+			for(Unit& unit : active_members)
+				unit.GetCredit() -= max_credit;
 		}
 	}
 	else
-		active_members[0]->player->credit = 0;
+		active_members[0].player->credit = 0;
 
 	if(!ignore && require_update && Net::IsOnline())
 		Net::PushChange(NetChange::UPDATE_CREDIT);
@@ -1265,10 +1262,10 @@ bool TeamSingleton::RemoveQuestItem(const Item* item, int refid)
 //=================================================================================================
 Unit* TeamSingleton::FindPlayerTradingWithUnit(Unit& u)
 {
-	for(Unit* unit : active_members)
+	for(Unit& unit : active_members)
 	{
-		if(unit->IsPlayer() && unit->player->IsTradingWith(&u))
-			return unit;
+		if(unit.IsPlayer() && unit.player->IsTradingWith(&u))
+			return &unit;
 	}
 
 	return nullptr;
@@ -1278,16 +1275,16 @@ Unit* TeamSingleton::FindPlayerTradingWithUnit(Unit& u)
 void TeamSingleton::AddLearningPoint(int count)
 {
 	assert(count >= 1);
-	for(Unit* unit : active_members)
+	for(Unit& unit : active_members)
 	{
-		if(unit->IsPlayer())
-			unit->player->AddLearningPoint(count);
+		if(unit.IsPlayer())
+			unit.player->AddLearningPoint(count);
 	}
 }
 
 //=================================================================================================
 // when exp is negative it doesn't depend of units count
-void TeamSingleton::AddExp(int exp, vector<Unit*>* units)
+void TeamSingleton::AddExp(int exp, rvector<Unit>* units)
 {
 	if(!units)
 		units = &active_members;
@@ -1324,17 +1321,17 @@ void TeamSingleton::AddExp(int exp, vector<Unit*>* units)
 	else
 		exp = -exp;
 
-	for(Unit* unit : *units)
+	for(Unit& unit : *units)
 	{
-		if(unit->IsPlayer())
-			unit->player->AddExp(exp);
+		if(unit.IsPlayer())
+			unit.player->AddExp(exp);
 		else
-			unit->hero->AddExp(exp);
+			unit.hero->AddExp(exp);
 	}
 }
 
 //=================================================================================================
-void TeamSingleton::AddGold(int count, vector<Unit*>* units, bool show, bool is_quest)
+void TeamSingleton::AddGold(int count, rvector<Unit>* units, bool show, bool is_quest)
 {
 	Game& game = Game::Get();
 
@@ -1345,7 +1342,7 @@ void TeamSingleton::AddGold(int count, vector<Unit*>* units, bool show, bool is_
 
 	if(units->size() == 1)
 	{
-		Unit& u = *units->front();
+		Unit& u = units->front();
 		u.gold += count;
 		if(u.IsPlayer())
 		{
@@ -1371,20 +1368,19 @@ void TeamSingleton::AddGold(int count, vector<Unit*>* units, bool show, bool is_
 	int pc_count = 0, npc_count = 0;
 	bool credit_info = false;
 
-	for(vector<Unit*>::iterator it = units->begin(), end = units->end(); it != end; ++it)
+	for(Unit& unit : *units)
 	{
-		Unit& u = **it;
-		if(u.IsPlayer())
+		if(unit.IsPlayer())
 		{
 			++pc_count;
-			u.player->on_credit = false;
-			u.player->gold_get = 0;
+			unit.player->on_credit = false;
+			unit.player->gold_get = 0;
 		}
 		else
 		{
 			++npc_count;
-			u.hero->on_credit = false;
-			u.hero->gained_gold = false;
+			unit.hero->on_credit = false;
+			unit.hero->gained_gold = false;
 		}
 	}
 
@@ -1393,14 +1389,13 @@ void TeamSingleton::AddGold(int count, vector<Unit*>* units, bool show, bool is_
 		Vec2 share = GetShare(pc_count, npc_count);
 		int gold_left = 0;
 
-		for(vector<Unit*>::iterator it = units->begin(), end = units->end(); it != end; ++it)
+		for(Unit& unit : *units)
 		{
-			Unit& u = **it;
-			HeroPlayerCommon& hpc = *(u.IsPlayer() ? (HeroPlayerCommon*)u.player : u.hero);
+			HeroPlayerCommon& hpc = *(unit.IsPlayer() ? (HeroPlayerCommon*)unit.player : unit.hero);
 			if(hpc.on_credit)
 				continue;
 
-			float gain = (u.IsPlayer() ? share.x : share.y) * count + hpc.split_gold;
+			float gain = (unit.IsPlayer() ? share.x : share.y) * count + hpc.split_gold;
 			float gained_f;
 			hpc.split_gold = modf(gain, &gained_f);
 			int gained = (int)gained_f;
@@ -1410,7 +1405,7 @@ void TeamSingleton::AddGold(int count, vector<Unit*>* units, bool show, bool is_
 				hpc.credit -= gained;
 				gold_left += gained;
 				hpc.on_credit = true;
-				if(u.IsPlayer())
+				if(unit.IsPlayer())
 					--pc_count;
 				else
 					--npc_count;
@@ -1421,44 +1416,43 @@ void TeamSingleton::AddGold(int count, vector<Unit*>* units, bool show, bool is_
 				gained -= hpc.credit;
 				gold_left += hpc.credit;
 				hpc.credit = 0;
-				u.gold += gained;
-				if(u.IsPlayer())
-					u.player->gold_get += gained;
+				unit.gold += gained;
+				if(unit.IsPlayer())
+					unit.player->gold_get += gained;
 				else
-					u.hero->gained_gold = true;
+					unit.hero->gained_gold = true;
 			}
 			else
 			{
-				u.gold += gained;
-				if(u.IsPlayer())
-					u.player->gold_get += gained;
+				unit.gold += gained;
+				if(unit.IsPlayer())
+					unit.player->gold_get += gained;
 				else
-					u.hero->gained_gold = true;
+					unit.hero->gained_gold = true;
 			}
 		}
 
 		count = gold_left;
 	}
 
-	for(vector<Unit*>::iterator it = units->begin(), end = units->end(); it != end; ++it)
+	for(Unit& unit : *units)
 	{
-		Unit& u = **it;
-		if(u.IsPlayer())
+		if(unit.IsPlayer())
 		{
-			if(u.player->gold_get && !u.player->is_local)
-				u.player->player_info->UpdateGold();
-			if(show && (u.player->gold_get || is_quest))
-				global::gui->messages->AddFormattedMessage(u.player, msg, -1, u.player->gold_get);
+			if(unit.player->gold_get && !unit.player->is_local)
+				unit.player->player_info->UpdateGold();
+			if(show && (unit.player->gold_get || is_quest))
+				global::gui->messages->AddFormattedMessage(unit.player, msg, -1, unit.player->gold_get);
 		}
-		else if(u.hero->gained_gold && u.busy == Unit::Busy_Trading)
+		else if(unit.hero->gained_gold && unit.busy == Unit::Busy_Trading)
 		{
-			Unit* trader = FindPlayerTradingWithUnit(u);
+			Unit* trader = FindPlayerTradingWithUnit(unit);
 			if(trader != game.pc->unit)
 			{
 				NetChangePlayer& c = Add1(trader->player->player_info->changes);
 				c.type = NetChangePlayer::UPDATE_TRADER_GOLD;
-				c.id = u.netid;
-				c.count = u.gold;
+				c.id = unit.netid;
+				c.count = unit.gold;
 			}
 		}
 	}
@@ -1478,10 +1472,10 @@ void TeamSingleton::AddReward(int gold, int exp)
 //=================================================================================================
 void TeamSingleton::OnTravel(float dist)
 {
-	for(Unit* unit : active_members)
+	for(Unit& unit : active_members)
 	{
-		if(unit->IsPlayer())
-			unit->player->TrainMove(dist);
+		if(unit.IsPlayer())
+			unit.player->TrainMove(dist);
 	}
 }
 
@@ -1490,13 +1484,13 @@ void TeamSingleton::CalculatePlayersLevel()
 {
 	bool have_leader_perk = false;
 	players_level = -1;
-	for(Unit* unit : active_members)
+	for(Unit& unit : active_members)
 	{
-		if(unit->IsPlayer())
+		if(unit.IsPlayer())
 		{
-			if(unit->level > players_level)
-				players_level = unit->level;
-			if(unit->player->HavePerk(Perk::Leader))
+			if(unit.level > players_level)
+				players_level = unit.level;
+			if(unit.player->HavePerk(Perk::Leader))
 				have_leader_perk = true;
 		}
 	}
@@ -1508,9 +1502,9 @@ void TeamSingleton::CalculatePlayersLevel()
 uint TeamSingleton::RemoveItem(const Item* item, uint count)
 {
 	uint total_removed = 0;
-	for(Unit* unit : members)
+	for(Unit& unit : members)
 	{
-		uint removed = unit->RemoveItem(item, count);
+		uint removed = unit.RemoveItem(item, count);
 		total_removed += removed;
 		if(count != 0)
 		{
@@ -1537,12 +1531,12 @@ Unit* TeamSingleton::GetNearestTeamMember(const Vec3& pos, float* out_dist)
 {
 	Unit* best = nullptr;
 	float best_dist;
-	for(Unit* unit : active_members)
+	for(Unit& unit : active_members)
 	{
-		float dist = Vec3::DistanceSquared(unit->pos, pos);
+		float dist = Vec3::DistanceSquared(unit.pos, pos);
 		if(!best || dist < best_dist)
 		{
-			best = unit;
+			best = &unit;
 			best_dist = dist;
 		}
 	}

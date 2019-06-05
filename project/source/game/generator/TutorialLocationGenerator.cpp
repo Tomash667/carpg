@@ -132,10 +132,9 @@ void TutorialLocationGenerator::OnEnter()
 	Quest_Tutorial& quest = *QM.quest_tutorial;
 	Int2 start_tile;
 
-	L.city_ctx = nullptr;
 	lvl.w = lvl.h = 22;
 	inside->SetActiveLevel(dungeon_level);
-	L.ApplyContext(loc, L.local_ctx);
+	L.Apply();
 	game.SetDungeonParamsAndTextures(g_base_locations[TUTORIAL_FORT]);
 
 	// rooms
@@ -217,7 +216,7 @@ void TutorialLocationGenerator::OnEnter()
 					case 1:
 						{
 							BaseObject* o = BaseObject::Get("chest");
-							Chest* chest = L.SpawnObjectEntity(L.local_ctx, o, Vec3(2.f*x + 1, 0, 2.f*y + o->size.y), PI);
+							Chest* chest = L.SpawnObjectEntity(lvl, o, Vec3(2.f*x + 1, 0, 2.f*y + o->size.y), PI);
 							chest->AddItem(Item::Get("sword_long"));
 							chest->AddItem(Item::Get("shield_wood"));
 							chest->AddItem(Item::Get("al_leather"));
@@ -228,11 +227,11 @@ void TutorialLocationGenerator::OnEnter()
 						break;
 					case 2:
 						quest.dummy = Vec3(2.f*x + 1, 0, 2.f*y + 1);
-						L.SpawnObjectEntity(L.local_ctx, BaseObject::Get("melee_target"), quest.dummy, PI / 2);
+						L.SpawnObjectEntity(lvl, BaseObject::Get("melee_target"), quest.dummy, PI / 2);
 						break;
 					case 3:
 						{
-							Unit* u = L.SpawnUnitNearLocation(L.local_ctx, Vec3(2.f*x + 1, 0, 2.f*y + 1), *UnitData::Get("tut_goblin"), nullptr, 1);
+							Unit* u = L.SpawnUnitNearLocation(lvl, Vec3(2.f*x + 1, 0, 2.f*y + 1), *UnitData::Get("tut_goblin"), nullptr, 1);
 							u->rot = PI;
 							u->event_handler = &quest;
 						}
@@ -240,7 +239,7 @@ void TutorialLocationGenerator::OnEnter()
 					case 4:
 						{
 							BaseObject* o = BaseObject::Get("chest");
-							Chest* chest = L.SpawnObjectEntity(L.local_ctx, o, Vec3(2.f*x + 1, 0, 2.f*y + o->size.y), PI);
+							Chest* chest = L.SpawnObjectEntity(lvl, o, Vec3(2.f*x + 1, 0, 2.f*y + o->size.y), PI);
 							chest->AddItem(Item::Get("bow_short"));
 							chest->AddItem(Item::Get("p_hp"));
 							chest->AddItem(Item::gold, Random(75, 100));
@@ -249,11 +248,11 @@ void TutorialLocationGenerator::OnEnter()
 						}
 						break;
 					case 5:
-						L.SpawnObjectEntity(L.local_ctx, BaseObject::Get("bow_target"), Vec3(2.f*x + 1, 0, 2.f*y + 1), -PI / 2);
+						L.SpawnObjectEntity(lvl, BaseObject::Get("bow_target"), Vec3(2.f*x + 1, 0, 2.f*y + 1), -PI / 2);
 						break;
 					case 6:
 						{
-							Unit* u = L.SpawnUnitNearLocation(L.local_ctx, Vec3(2.f*x + 1, 0, 2.f*y + 1), *UnitData::Get("tut_czlowiek"), nullptr, 1);
+							Unit* u = L.SpawnUnitNearLocation(lvl, Vec3(2.f*x + 1, 0, 2.f*y + 1), *UnitData::Get("tut_czlowiek"), nullptr, 1);
 							u->rot = PI;
 						}
 						break;
@@ -283,11 +282,11 @@ void TutorialLocationGenerator::OnEnter()
 	GenerateDungeonObjects();
 
 	// doors
-	for(vector<Door*>::iterator it = L.local_ctx.doors->begin(), end = L.local_ctx.doors->end(); it != end; ++it)
+	for(Door* door : lvl.doors)
 	{
-		char c = mapa_t3[(*it)->pt(22)];
+		char c = mapa_t3[door->pt(22)];
 		assert(InRange(c, '0', '9'));
-		(*it)->locked = LOCK_TUTORIAL + int(c - '0');
+		door->locked = LOCK_TUTORIAL + int(c - '0');
 	}
 
 	L.SpawnDungeonColliders();

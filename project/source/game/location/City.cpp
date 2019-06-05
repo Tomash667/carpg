@@ -20,6 +20,14 @@ City::~City()
 }
 
 //=================================================================================================
+void City::Apply(vector<std::reference_wrapper<LevelArea>>& areas)
+{
+	areas.push_back(*this);
+	for(InsideBuilding* ib : inside_buildings)
+		areas.push_back(*ib);
+}
+
+//=================================================================================================
 void City::Save(GameWriter& f, bool local)
 {
 	OutsideLocation::Save(f, local);
@@ -35,7 +43,7 @@ void City::Save(GameWriter& f, bool local)
 		// list of buildings in this location is generated
 		f << buildings.size();
 		for(CityBuilding& b : buildings)
-			f << b.type->id;
+			f << b.building->id;
 	}
 	else
 	{
@@ -45,7 +53,7 @@ void City::Save(GameWriter& f, bool local)
 		f << buildings.size();
 		for(CityBuilding& b : buildings)
 		{
-			f << b.type->id;
+			f << b.building->id;
 			f << b.pt;
 			f << b.unit_pt;
 			f << b.rot;
@@ -88,8 +96,8 @@ void City::Load(GameReader& f, bool local, LOCATION_TOKEN token)
 			buildings.resize(count);
 			for(CityBuilding& b : buildings)
 			{
-				b.type = Building::Get(f.ReadString1());
-				assert(b.type != nullptr);
+				b.building = Building::Get(f.ReadString1());
+				assert(b.building != nullptr);
 			}
 		}
 		else
@@ -102,12 +110,12 @@ void City::Load(GameReader& f, bool local, LOCATION_TOKEN token)
 			buildings.resize(count);
 			for(CityBuilding& b : buildings)
 			{
-				b.type = Building::Get(f.ReadString1());
+				b.building = Building::Get(f.ReadString1());
 				f >> b.pt;
 				f >> b.unit_pt;
 				f >> b.rot;
 				f >> b.walk_pt;
-				assert(b.type != nullptr);
+				assert(b.building != nullptr);
 			}
 
 			f >> inside_offset;
@@ -116,11 +124,10 @@ void City::Load(GameReader& f, bool local, LOCATION_TOKEN token)
 			int index = 0;
 			for(InsideBuilding*& b : inside_buildings)
 			{
-				b = new InsideBuilding;
+				b = new InsideBuilding(index);
 				b->Load(f, local);
-				b->ctx.building_id = index;
-				b->ctx.mine = Int2(b->level_shift.x * 256, b->level_shift.y * 256);
-				b->ctx.maxe = b->ctx.mine + Int2(256, 256);
+				b->mine = Int2(b->level_shift.x * 256, b->level_shift.y * 256);
+				b->maxe = b->mine + Int2(256, 256);
 				++index;
 			}
 
@@ -159,14 +166,14 @@ void City::Load(GameReader& f, bool local, LOCATION_TOKEN token)
 			buildings.resize(count);
 			for(CityBuilding& b : buildings)
 			{
-				OLD_BUILDING type;
-				f >> type;
+				old::BUILDING old_type;
+				f >> old_type;
 				f >> b.pt;
 				f >> b.unit_pt;
 				f >> b.rot;
 				f >> b.walk_pt;
-				b.type = Building::GetOld(type);
-				assert(b.type != nullptr);
+				b.building = old::Convert(old_type);
+				assert(b.building != nullptr);
 			}
 
 			f >> inside_offset;
@@ -175,11 +182,10 @@ void City::Load(GameReader& f, bool local, LOCATION_TOKEN token)
 			int index = 0;
 			for(InsideBuilding*& b : inside_buildings)
 			{
-				b = new InsideBuilding;
+				b = new InsideBuilding(index);
 				b->Load(f, local);
-				b->ctx.building_id = index;
-				b->ctx.mine = Int2(b->level_shift.x * 256, b->level_shift.y * 256);
-				b->ctx.maxe = b->ctx.mine + Int2(256, 256);
+				b->mine = Int2(b->level_shift.x * 256, b->level_shift.y * 256);
+				b->maxe = b->mine + Int2(256, 256);
 				++index;
 			}
 
@@ -193,43 +199,43 @@ void City::Load(GameReader& f, bool local, LOCATION_TOKEN token)
 
 		if(token == LT_VILLAGE_OLD)
 		{
-			OLD_BUILDING v_buildings[2];
+			old::BUILDING v_buildings[2];
 			f >> v_buildings;
 
 			if(state == LS_KNOWN)
 			{
-				buildings.push_back(CityBuilding(Building::GetOld(OLD_BUILDING::B_VILLAGE_HALL)));
-				buildings.push_back(CityBuilding(Building::GetOld(OLD_BUILDING::B_MERCHANT)));
-				buildings.push_back(CityBuilding(Building::GetOld(OLD_BUILDING::B_FOOD_SELLER)));
-				buildings.push_back(CityBuilding(Building::GetOld(OLD_BUILDING::B_VILLAGE_INN)));
-				if(v_buildings[0] != OLD_BUILDING::B_NONE)
-					buildings.push_back(CityBuilding(Building::GetOld(v_buildings[0])));
-				if(v_buildings[1] != OLD_BUILDING::B_NONE)
-					buildings.push_back(CityBuilding(Building::GetOld(v_buildings[1])));
+				buildings.push_back(CityBuilding(old::Convert(old::BUILDING::B_VILLAGE_HALL)));
+				buildings.push_back(CityBuilding(old::Convert(old::BUILDING::B_MERCHANT)));
+				buildings.push_back(CityBuilding(old::Convert(old::BUILDING::B_FOOD_SELLER)));
+				buildings.push_back(CityBuilding(old::Convert(old::BUILDING::B_VILLAGE_INN)));
+				if(v_buildings[0] != old::BUILDING::B_NONE)
+					buildings.push_back(CityBuilding(old::Convert(v_buildings[0])));
+				if(v_buildings[1] != old::BUILDING::B_NONE)
+					buildings.push_back(CityBuilding(old::Convert(v_buildings[1])));
 				std::random_shuffle(buildings.begin() + 1, buildings.end(), MyRand);
-				buildings.push_back(CityBuilding(Building::GetOld(OLD_BUILDING::B_BARRACKS)));
+				buildings.push_back(CityBuilding(old::Convert(old::BUILDING::B_BARRACKS)));
 
 				flags |= HaveInn | HaveMerchant | HaveFoodSeller;
-				if(v_buildings[0] == OLD_BUILDING::B_TRAINING_GROUNDS || v_buildings[1] == OLD_BUILDING::B_TRAINING_GROUNDS)
+				if(v_buildings[0] == old::BUILDING::B_TRAINING_GROUNDS || v_buildings[1] == old::BUILDING::B_TRAINING_GROUNDS)
 					flags |= HaveTrainingGrounds;
-				if(v_buildings[0] == OLD_BUILDING::B_BLACKSMITH || v_buildings[1] == OLD_BUILDING::B_BLACKSMITH)
+				if(v_buildings[0] == old::BUILDING::B_BLACKSMITH || v_buildings[1] == old::BUILDING::B_BLACKSMITH)
 					flags |= HaveBlacksmith;
-				if(v_buildings[0] == OLD_BUILDING::B_ALCHEMIST || v_buildings[1] == OLD_BUILDING::B_ALCHEMIST)
+				if(v_buildings[0] == old::BUILDING::B_ALCHEMIST || v_buildings[1] == old::BUILDING::B_ALCHEMIST)
 					flags |= HaveAlchemist;
 			}
 		}
 		else if(state == LS_KNOWN)
 		{
-			buildings.push_back(CityBuilding(Building::GetOld(OLD_BUILDING::B_CITY_HALL)));
-			buildings.push_back(CityBuilding(Building::GetOld(OLD_BUILDING::B_ARENA)));
-			buildings.push_back(CityBuilding(Building::GetOld(OLD_BUILDING::B_MERCHANT)));
-			buildings.push_back(CityBuilding(Building::GetOld(OLD_BUILDING::B_FOOD_SELLER)));
-			buildings.push_back(CityBuilding(Building::GetOld(OLD_BUILDING::B_BLACKSMITH)));
-			buildings.push_back(CityBuilding(Building::GetOld(OLD_BUILDING::B_ALCHEMIST)));
-			buildings.push_back(CityBuilding(Building::GetOld(OLD_BUILDING::B_INN)));
-			buildings.push_back(CityBuilding(Building::GetOld(OLD_BUILDING::B_TRAINING_GROUNDS)));
+			buildings.push_back(CityBuilding(old::Convert(old::BUILDING::B_CITY_HALL)));
+			buildings.push_back(CityBuilding(old::Convert(old::BUILDING::B_ARENA)));
+			buildings.push_back(CityBuilding(old::Convert(old::BUILDING::B_MERCHANT)));
+			buildings.push_back(CityBuilding(old::Convert(old::BUILDING::B_FOOD_SELLER)));
+			buildings.push_back(CityBuilding(old::Convert(old::BUILDING::B_BLACKSMITH)));
+			buildings.push_back(CityBuilding(old::Convert(old::BUILDING::B_ALCHEMIST)));
+			buildings.push_back(CityBuilding(old::Convert(old::BUILDING::B_INN)));
+			buildings.push_back(CityBuilding(old::Convert(old::BUILDING::B_TRAINING_GROUNDS)));
 			std::random_shuffle(buildings.begin() + 2, buildings.end(), MyRand);
-			buildings.push_back(CityBuilding(Building::GetOld(OLD_BUILDING::B_BARRACKS)));
+			buildings.push_back(CityBuilding(old::Convert(old::BUILDING::B_BARRACKS)));
 
 			flags |= HaveTrainingGrounds | HaveArena | HaveMerchant | HaveFoodSeller | HaveBlacksmith | HaveAlchemist | HaveInn;
 		}
@@ -245,13 +251,13 @@ void City::Write(BitStreamWriter& f)
 	f.WriteCasted<byte>(entry_points.size());
 	for(EntryPoint& entry_point : entry_points)
 	{
-		f << entry_point.exit_area;
+		f << entry_point.exit_region;
 		f << entry_point.exit_y;
 	}
 	f.WriteCasted<byte>(buildings.size());
 	for(CityBuilding& building : buildings)
 	{
-		f << building.type->id;
+		f << building.building->id;
 		f << building.pt;
 		f.WriteCasted<byte>(building.rot);
 	}
@@ -278,7 +284,7 @@ bool City::Read(BitStreamReader& f)
 	entry_points.resize(count);
 	for(EntryPoint& entry : entry_points)
 	{
-		f.Read(entry.exit_area);
+		f.Read(entry.exit_region);
 		f.Read(entry.exit_y);
 	}
 	if(!f)
@@ -306,8 +312,8 @@ bool City::Read(BitStreamReader& f)
 			Error("Read level: Broken packet for buildings.");
 			return false;
 		}
-		building.type = Building::Get(building_id);
-		if(!building.type)
+		building.building = Building::Get(building_id);
+		if(!building.building)
 		{
 			Error("Read level: Invalid building id '%s'.", building_id.c_str());
 			return false;
@@ -326,9 +332,7 @@ bool City::Read(BitStreamReader& f)
 	int index = 0;
 	for(InsideBuilding*& ib : inside_buildings)
 	{
-		ib = new InsideBuilding;
-		L.ApplyContext(ib, ib->ctx);
-		ib->ctx.building_id = index;
+		ib = new InsideBuilding(index);
 		if(!ib->Read(f))
 		{
 			Error("Read level: Failed to loading inside building %d.", index);
@@ -343,17 +347,9 @@ bool City::Read(BitStreamReader& f)
 //=================================================================================================
 void City::BuildRefidTables()
 {
-	OutsideLocation::BuildRefidTables();
-
+	LevelArea::BuildRefidTables();
 	for(InsideBuilding* inside : inside_buildings)
-	{
-		for(Unit* unit : inside->units)
-			Unit::AddRefid(unit);
-		for(Usable* usable : inside->usables)
-			Usable::AddRefid(usable);
-		for(GroundItem* item : inside->items)
-			GroundItem::AddRefid(item);
-	}
+		inside->BuildRefidTables();
 }
 
 //=================================================================================================
@@ -427,12 +423,12 @@ bool City::IsInsideCity(const Vec3& _pos)
 }
 
 //=================================================================================================
-InsideBuilding* City::FindInsideBuilding(Building* type)
+InsideBuilding* City::FindInsideBuilding(Building* building)
 {
-	assert(type);
+	assert(building);
 	for(InsideBuilding* i : inside_buildings)
 	{
-		if(i->type == type)
+		if(i->building == building)
 			return i;
 	}
 	return nullptr;
@@ -444,7 +440,7 @@ InsideBuilding* City::FindInsideBuilding(BuildingGroup* group)
 	assert(group);
 	for(InsideBuilding* i : inside_buildings)
 	{
-		if(i->type->group == group)
+		if(i->building->group == group)
 			return i;
 	}
 	return nullptr;
@@ -457,7 +453,7 @@ InsideBuilding* City::FindInsideBuilding(BuildingGroup* group, int& index)
 	index = 0;
 	for(InsideBuilding* i : inside_buildings)
 	{
-		if(i->type->group == group)
+		if(i->building->group == group)
 			return i;
 		++index;
 	}
@@ -471,19 +467,19 @@ CityBuilding* City::FindBuilding(BuildingGroup* group)
 	assert(group);
 	for(CityBuilding& b : buildings)
 	{
-		if(b.type->group == group)
+		if(b.building->group == group)
 			return &b;
 	}
 	return nullptr;
 }
 
 //=================================================================================================
-CityBuilding* City::FindBuilding(Building* type)
+CityBuilding* City::FindBuilding(Building* building)
 {
-	assert(type);
+	assert(building);
 	for(CityBuilding& b : buildings)
 	{
-		if(b.type == type)
+		if(b.building == building)
 			return &b;
 	}
 	return nullptr;
@@ -729,7 +725,7 @@ void City::GetEntry(Vec3& pos, float& rot)
 {
 	if(entry_points.size() == 1)
 	{
-		pos = entry_points[0].spawn_area.Midpoint().XZ();
+		pos = entry_points[0].spawn_region.Midpoint().XZ();
 		rot = entry_points[0].spawn_rot;
 	}
 	else
@@ -747,7 +743,7 @@ void City::GetEntry(Vec3& pos, float& rot)
 				best_index = index;
 			}
 		}
-		pos = entry_points[best_index].spawn_area.Midpoint().XZ();
+		pos = entry_points[best_index].spawn_region.Midpoint().XZ();
 		rot = entry_points[best_index].spawn_rot;
 	}
 }
@@ -758,7 +754,7 @@ void City::PrepareCityBuildings(vector<ToBuild>& tobuild)
 	// required buildings
 	tobuild.reserve(buildings.size());
 	for(CityBuilding& cb : buildings)
-		tobuild.push_back(ToBuild(cb.type, true));
+		tobuild.push_back(ToBuild(cb.building, true));
 	buildings.clear();
 
 	// not required buildings
@@ -771,19 +767,19 @@ void City::PrepareCityBuildings(vector<ToBuild>& tobuild)
 	// set flags
 	for(ToBuild& tb : tobuild)
 	{
-		if(tb.type->group == BuildingGroup::BG_TRAINING_GROUNDS)
+		if(tb.building->group == BuildingGroup::BG_TRAINING_GROUNDS)
 			flags |= HaveTrainingGrounds;
-		else if(tb.type->group == BuildingGroup::BG_BLACKSMITH)
+		else if(tb.building->group == BuildingGroup::BG_BLACKSMITH)
 			flags |= HaveBlacksmith;
-		else if(tb.type->group == BuildingGroup::BG_MERCHANT)
+		else if(tb.building->group == BuildingGroup::BG_MERCHANT)
 			flags |= HaveMerchant;
-		else if(tb.type->group == BuildingGroup::BG_ALCHEMIST)
+		else if(tb.building->group == BuildingGroup::BG_ALCHEMIST)
 			flags |= HaveAlchemist;
-		else if(tb.type->group == BuildingGroup::BG_FOOD_SELLER)
+		else if(tb.building->group == BuildingGroup::BG_FOOD_SELLER)
 			flags |= HaveFoodSeller;
-		else if(tb.type->group == BuildingGroup::BG_INN)
+		else if(tb.building->group == BuildingGroup::BG_INN)
 			flags |= HaveInn;
-		else if(tb.type->group == BuildingGroup::BG_ARENA)
+		else if(tb.building->group == BuildingGroup::BG_ARENA)
 			flags |= HaveArena;
 	}
 }

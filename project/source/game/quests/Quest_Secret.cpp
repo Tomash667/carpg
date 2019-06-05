@@ -79,15 +79,15 @@ bool Quest_Secret::Special(DialogContext& ctx, cstring msg)
 			c.unit = ctx.talker;
 		}
 
-		for(Unit* unit : Team.members)
+		for(Unit& unit : Team.members)
 		{
-			unit->in_arena = 0;
-			game.arena->units.push_back(unit);
+			unit.in_arena = 0;
+			game.arena->units.push_back(&unit);
 			if(Net::IsOnline())
 			{
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::CHANGE_ARENA_STATE;
-				c.unit = unit;
+				c.unit = &unit;
 			}
 		}
 	}

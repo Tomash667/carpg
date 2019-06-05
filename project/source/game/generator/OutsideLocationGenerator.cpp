@@ -141,12 +141,12 @@ void OutsideLocationGenerator::RandomizeHeight(int octaves, float frequency, flo
 void OutsideLocationGenerator::OnEnter()
 {
 	Game& game = Game::Get();
-	L.city_ctx = nullptr;
+	LevelArea& area = *L.local_area;
 	if(!reenter)
-		L.ApplyContext(outside, L.local_ctx);
-
-	if(!reenter)
+	{
+		L.Apply();
 		ApplyTiles();
+	}
 
 	int days;
 	bool need_reset = outside->CheckUpdate(days, W.GetWorldtime());
@@ -180,7 +180,7 @@ void OutsideLocationGenerator::OnEnter()
 		if(need_reset)
 		{
 			// remove alive units
-			for(vector<Unit*>::iterator it = L.local_ctx.units->begin(), end = L.local_ctx.units->end(); it != end; ++it)
+			for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
 			{
 				if((*it)->IsAlive())
 				{
@@ -188,7 +188,7 @@ void OutsideLocationGenerator::OnEnter()
 					*it = nullptr;
 				}
 			}
-			RemoveNullElements(L.local_ctx.units);
+			RemoveNullElements(area.units);
 		}
 
 		// recreate colliders
@@ -244,7 +244,7 @@ void OutsideLocationGenerator::OnEnter()
 		Vec3 pos = team_pos + Vec3(sin(team_dir + PI) * 8, 0, cos(team_dir + PI) * 8);
 		for(int i = 0; i < count; ++i)
 		{
-			Unit* u = L.SpawnUnitNearLocation(L.local_ctx, pos, *ud, &Team.leader->pos, 6, 4.f);
+			Unit* u = L.SpawnUnitNearLocation(area, pos, *ud, &Team.leader->pos, 6, 4.f);
 			u->assist = true;
 		}
 	}
@@ -253,6 +253,7 @@ void OutsideLocationGenerator::OnEnter()
 //=================================================================================================
 void OutsideLocationGenerator::SpawnForestObjects(int road_dir)
 {
+	LevelArea& area = *(OutsideLocation*)loc;
 	TerrainTile* tiles = ((OutsideLocation*)loc)->tiles;
 
 	// obelisk
@@ -267,19 +268,19 @@ void OutsideLocationGenerator::SpawnForestObjects(int road_dir)
 			pos = Vec3(Rand() % 2 == 0 ? 127.f - 32.f : 127.f + 32.f, 0, 127.f);
 		terrain->SetH(pos);
 		pos.y -= 1.f;
-		L.SpawnObjectEntity(L.local_ctx, BaseObject::Get("obelisk"), pos, 0.f);
+		L.SpawnObjectEntity(area, BaseObject::Get("obelisk"), pos, 0.f);
 	}
 	else if(Rand() % 16 == 0)
 	{
 		// tree with rocks around it
 		Vec3 pos(Random(48.f, 208.f), 0, Random(48.f, 208.f));
 		pos.y = terrain->GetH(pos) - 1.f;
-		L.SpawnObjectEntity(L.local_ctx, trees2[3].obj, pos, Random(MAX_ANGLE), 4.f);
+		L.SpawnObjectEntity(area, trees2[3].obj, pos, Random(MAX_ANGLE), 4.f);
 		for(int i = 0; i < 12; ++i)
 		{
 			Vec3 pos2 = pos + Vec3(sin(PI * 2 * i / 12)*8.f, 0, cos(PI * 2 * i / 12)*8.f);
 			pos2.y = terrain->GetH(pos2);
-			L.SpawnObjectEntity(L.local_ctx, misc[4].obj, pos2, Random(MAX_ANGLE));
+			L.SpawnObjectEntity(area, misc[4].obj, pos2, Random(MAX_ANGLE));
 		}
 	}
 
@@ -293,7 +294,7 @@ void OutsideLocationGenerator::SpawnForestObjects(int road_dir)
 			Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 			pos.y = terrain->GetH(pos);
 			OutsideObject& o = trees[Rand() % n_trees];
-			L.SpawnObjectEntity(L.local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+			L.SpawnObjectEntity(area, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 		}
 		else if(tile == TT_GRASS3)
 		{
@@ -305,7 +306,7 @@ void OutsideLocationGenerator::SpawnForestObjects(int road_dir)
 			else
 				type = Rand() % 3;
 			OutsideObject& o = trees2[type];
-			L.SpawnObjectEntity(L.local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+			L.SpawnObjectEntity(area, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 		}
 	}
 
@@ -318,7 +319,7 @@ void OutsideLocationGenerator::SpawnForestObjects(int road_dir)
 			Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 			pos.y = terrain->GetH(pos);
 			OutsideObject& o = misc[Rand() % n_misc];
-			L.SpawnObjectEntity(L.local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+			L.SpawnObjectEntity(area, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 		}
 	}
 }
@@ -485,6 +486,7 @@ void OutsideLocationGenerator::ApplyTiles()
 //=================================================================================================
 void OutsideLocationGenerator::SpawnOutsideBariers()
 {
+	TmpLevelArea& tmp_area = *((OutsideLocation*)loc)->tmp;
 	const float size = 256.f;
 	const float size2 = size / 2;
 	const float border = 32.f;
@@ -492,7 +494,7 @@ void OutsideLocationGenerator::SpawnOutsideBariers()
 
 	// top
 	{
-		CollisionObject& cobj = Add1(L.local_ctx.colliders);
+		CollisionObject& cobj = Add1(tmp_area.colliders);
 		cobj.type = CollisionObject::RECTANGLE;
 		cobj.pt = Vec2(size2, border2);
 		cobj.w = size2;
@@ -510,7 +512,7 @@ void OutsideLocationGenerator::SpawnOutsideBariers()
 
 	// bottom
 	{
-		CollisionObject& cobj = Add1(L.local_ctx.colliders);
+		CollisionObject& cobj = Add1(tmp_area.colliders);
 		cobj.type = CollisionObject::RECTANGLE;
 		cobj.pt = Vec2(size2, size - border2);
 		cobj.w = size2;
@@ -528,7 +530,7 @@ void OutsideLocationGenerator::SpawnOutsideBariers()
 
 	// left
 	{
-		CollisionObject& cobj = Add1(L.local_ctx.colliders);
+		CollisionObject& cobj = Add1(tmp_area.colliders);
 		cobj.type = CollisionObject::RECTANGLE;
 		cobj.pt = Vec2(border2, size2);
 		cobj.w = border2;
@@ -546,7 +548,7 @@ void OutsideLocationGenerator::SpawnOutsideBariers()
 
 	// right
 	{
-		CollisionObject& cobj = Add1(L.local_ctx.colliders);
+		CollisionObject& cobj = Add1(tmp_area.colliders);
 		cobj.type = CollisionObject::RECTANGLE;
 		cobj.pt = Vec2(size - border2, size2);
 		cobj.w = border2;

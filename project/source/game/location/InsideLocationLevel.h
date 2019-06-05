@@ -3,7 +3,6 @@
 //-----------------------------------------------------------------------------
 #include "Tile.h"
 #include "Room.h"
-#include "Light.h"
 #include "Unit.h"
 #include "Chest.h"
 #include "Trap.h"
@@ -19,20 +18,13 @@ struct InsideLocationLevel : public LevelArea
 {
 	Tile* map;
 	int w, h;
-	vector<Chest*> chests;
-	vector<Object*> objects;
-	vector<Light> lights;
 	vector<Room*> rooms;
 	vector<RoomGroup> groups;
-	vector<Trap*> traps;
-	vector<Door*> doors;
-	vector<Usable*> usables;
-	vector<Blood> bloods;
 	Int2 staircase_up, staircase_down;
 	GameDirection staircase_up_dir, staircase_down_dir;
 	bool staircase_down_in_wall;
 
-	InsideLocationLevel() : map(nullptr) {}
+	InsideLocationLevel() : LevelArea(LevelArea::Type::Inside, 0, false), map(nullptr) {}
 	~InsideLocationLevel();
 
 	bool IsInside(int x, int y) const { return x >= 0 && y >= 0 && x < w && y < h; }
@@ -53,8 +45,6 @@ struct InsideLocationLevel : public LevelArea
 
 	void SaveLevel(GameWriter& f, bool local);
 	void LoadLevel(GameReader& f, bool local);
-
-	void BuildRefidTables();
 
 	Tile& At(const Int2& pt)
 	{
@@ -78,10 +68,6 @@ struct InsideLocationLevel : public LevelArea
 	bool IsTileNearWall(const Int2& pt) const;
 	bool IsTileNearWall(const Int2& pt, int& dir) const;
 
-	bool FindUnit(Unit* unit);
-	Unit* FindUnit(UnitData* data);
-	Chest* FindChestWithItem(const Item* item, int* index);
-	Chest* FindChestWithQuestItem(int quest_refid, int* index);
 	Room& GetRoom(RoomTarget target, bool down_stairs);
 	int GetTileDirFlags(const Int2& pt);
 };

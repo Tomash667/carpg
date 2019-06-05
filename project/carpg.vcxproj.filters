@@ -180,9 +180,6 @@
     <ClCompile Include="source\game\location\InsideLocationLevel.cpp">
       <Filter>3. game\location</Filter>
     </ClCompile>
-    <ClCompile Include="source\game\location\LevelContext.cpp">
-      <Filter>3. game\location</Filter>
-    </ClCompile>
     <ClCompile Include="source\game\location\Location.cpp">
       <Filter>3. game\location</Filter>
     </ClCompile>
@@ -922,9 +919,6 @@
       <Filter>3. game\location</Filter>
     </ClInclude>
     <ClInclude Include="source\game\location\InsideLocationLevel.h">
-      <Filter>3. game\location</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\location\LevelContext.h">
       <Filter>3. game\location</Filter>
     </ClInclude>
     <ClInclude Include="source\game\location\Location.h">

@@ -618,12 +618,12 @@ void WorldMapGui::GetCityText(City& city, string& s)
 	// list buildings
 	for(CityBuilding& b : city.buildings)
 	{
-		if(IS_SET(b.type->flags, Building::LIST))
+		if(IS_SET(b.building->flags, Building::LIST))
 		{
 			bool found = false;
 			for(auto& i : items)
 			{
-				if(*i.first == b.type->name)
+				if(*i.first == b.building->name)
 				{
 					++i.second;
 					found = true;
@@ -633,7 +633,7 @@ void WorldMapGui::GetCityText(City& city, string& s)
 			if(!found)
 			{
 				string* s = StringPool.Get();
-				*s = b.type->name;
+				*s = b.building->name;
 				items.push_back(pair<string*, uint>(s, 1u));
 			}
 		}

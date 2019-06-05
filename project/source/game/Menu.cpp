@@ -1309,12 +1309,12 @@ void Game::UpdateServerTransfer(float dt)
 			Info("NM_TRANSFER_SERVER: Send world data, size %d.", f.GetSize());
 			net_state = NetState::Server_WaitForPlayersToLoadWorld;
 			net_timer = mp_timeout;
-			for(auto info : N.players)
+			for(PlayerInfo& info : N.players)
 			{
-				if(info->id != Team.my_id)
-					info->ready = false;
+				if(info.id != Team.my_id)
+					info.ready = false;
 				else
-					info->ready = true;
+					info.ready = true;
 			}
 			gui->info_box->Show(txWaitingForPlayers);
 		}
@@ -1325,15 +1325,14 @@ void Game::UpdateServerTransfer(float dt)
 
 		// create team
 		if(N.mp_load)
-			prev_team = Team.members;
+			prev_team = Team.members.ptrs;
 		Team.members.clear();
 		Team.active_members.clear();
 		L.entering = true;
 		const bool in_level = L.is_open;
 		int leader_perk = 0;
-		for(PlayerInfo* pinfo : N.players)
+		for(PlayerInfo& info : N.players)
 		{
-			PlayerInfo& info = *pinfo;
 			if(info.left != PlayerInfo::LEFT_NO)
 				continue;
 
@@ -1469,11 +1468,11 @@ void Game::UpdateServerTransfer(float dt)
 	{
 		// wait for all players
 		bool ok = true;
-		for(auto info : N.players)
+		for(PlayerInfo& info : N.players)
 		{
-			if(info->left != PlayerInfo::LEFT_NO)
+			if(info.left != PlayerInfo::LEFT_NO)
 				continue;
-			if(!info->ready)
+			if(!info.ready)
 			{
 				ok = false;
 				break;
@@ -1483,9 +1482,8 @@ void Game::UpdateServerTransfer(float dt)
 		if(!ok && net_timer <= 0.f)
 		{
 			bool anyone_removed = false;
-			for(auto pinfo : N.players)
+			for(PlayerInfo& info : N.players)
 			{
-				auto& info = *pinfo;
 				if(info.left != PlayerInfo::LEFT_NO)
 					continue;
 				if(!info.ready)
@@ -1561,15 +1559,15 @@ void Game::UpdateServerTransfer(float dt)
 				f << (byte)L.dungeon_level;
 				f << (W.GetState() == World::State::INSIDE_ENCOUNTER);
 				int ack = N.SendAll(f, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT);
-				for(auto info : N.players)
+				for(PlayerInfo& info : N.players)
 				{
-					if(info->id == Team.my_id)
-						info->state = PlayerInfo::IN_GAME;
+					if(info.id == Team.my_id)
+						info.state = PlayerInfo::IN_GAME;
 					else
 					{
-						info->state = PlayerInfo::WAITING_FOR_RESPONSE;
-						info->ack = ack;
-						info->timer = mp_timeout;
+						info.state = PlayerInfo::WAITING_FOR_RESPONSE;
+						info.ack = ack;
+						info.timer = mp_timeout;
 					}
 				}
 
@@ -1580,11 +1578,11 @@ void Game::UpdateServerTransfer(float dt)
 				else
 				{
 					// anyone
-					for(auto info : N.players)
+					for(PlayerInfo& info : N.players)
 					{
-						if(info->loaded)
+						if(info.loaded)
 						{
-							center_unit = info->u;
+							center_unit = info.u;
 							break;
 						}
 					}
@@ -1595,23 +1593,22 @@ void Game::UpdateServerTransfer(float dt)
 				{
 					// get positon of unit or building entrance
 					Vec3 pos;
-					if(center_unit->in_building == -1)
+					if(center_unit->area_id == LevelArea::OUTSIDE_ID)
 						pos = center_unit->pos;
 					else
 					{
-						InsideBuilding* inside = L.city_ctx->inside_buildings[center_unit->in_building];
-						Vec2 p = inside->enter_area.Midpoint();
+						InsideBuilding* inside = L.city_ctx->inside_buildings[center_unit->area_id];
+						Vec2 p = inside->enter_region.Midpoint();
 						pos = Vec3(p.x, inside->enter_y, p.y);
 					}
 
 					// warp
-					for(auto pinfo : N.players)
+					for(PlayerInfo& info : N.players)
 					{
-						auto& info = *pinfo;
 						if(!info.loaded)
 						{
-							L.local_ctx.units->push_back(info.u);
-							L.WarpNearLocation(L.local_ctx, *info.u, pos, 4.f, false, 20);
+							L.local_area->units.push_back(info.u);
+							L.WarpNearLocation(*L.local_area, *info.u, pos, 4.f, false, 20);
 							info.u->rot = Vec3::LookAtAngle(info.u->pos, pos);
 							info.u->interp->Reset(info.u->pos, info.u->rot);
 						}
@@ -1650,13 +1647,12 @@ void Game::UpdateServerTransfer(float dt)
 						W.GetOutsideSpawnPoint(pos, rot);
 
 					// warp
-					for(auto pinfo : N.players)
+					for(PlayerInfo& info : N.players)
 					{
-						auto& info = *pinfo;
 						if(!info.loaded)
 						{
-							L.local_ctx.units->push_back(info.u);
-							L.WarpNearLocation(L.local_ctx, *info.u, pos, L.location->outside ? 4.f : 2.f, false, 20);
+							L.local_area->units.push_back(info.u);
+							L.WarpNearLocation(*L.local_area, *info.u, pos, L.location->outside ? 4.f : 2.f, false, 20);
 							info.u->rot = rot;
 							info.u->interp->Reset(info.u->pos, info.u->rot);
 						}
@@ -1756,9 +1752,8 @@ void Game::UpdateServerSend(float dt)
 	}
 
 	bool ok = true;
-	for(vector<PlayerInfo*>::iterator it = N.players.begin(), end = N.players.end(); it != end;)
+	for(PlayerInfo& info : N.players)
 	{
-		auto& info = **it;
 		if(info.state != PlayerInfo::IN_GAME && info.left == PlayerInfo::LEFT_NO)
 		{
 			info.timer -= dt;
@@ -1772,14 +1767,9 @@ void Game::UpdateServerSend(float dt)
 				info.left = PlayerInfo::LEFT_TIMEOUT;
 			}
 			else
-			{
 				ok = false;
-				++it;
 			}
 		}
-		else
-			++it;
-	}
 	if(ok)
 	{
 		if(N.active_players > 1)
@@ -1787,15 +1777,10 @@ void Game::UpdateServerSend(float dt)
 			byte b = ID_START;
 			N.peer->Send((cstring)&b, 1, HIGH_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 		}
-		for(vector<Unit*>::iterator it = L.local_ctx.units->begin(), end = L.local_ctx.units->end(); it != end; ++it)
-			(*it)->changed = false;
-		if(L.city_ctx)
+		for(LevelArea& area : L.ForEachArea())
 		{
-			for(vector<InsideBuilding*>::iterator it = L.city_ctx->inside_buildings.begin(), end = L.city_ctx->inside_buildings.end(); it != end; ++it)
-			{
-				for(vector<Unit*>::iterator it2 = (*it)->units.begin(), end2 = (*it)->units.end(); it2 != end2; ++it2)
-					(*it2)->changed = false;
-			}
+			for(Unit* unit : area.units)
+				unit->changed = false;
 		}
 		Info("NM_SERVER_SEND: All players ready. Starting game.");
 		clear_color = L.clear_color2;

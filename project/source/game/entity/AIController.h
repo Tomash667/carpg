@@ -9,7 +9,7 @@ struct ObjP
 };
 
 //-----------------------------------------------------------------------------
-struct AreaTarget
+struct RegionTarget
 {
 	Vec3 pos;
 	int id;
@@ -100,7 +100,7 @@ struct AIController
 		Unit* unit;
 		Usable* usable;
 		ObjP obj;
-		AreaTarget area;
+		RegionTarget region;
 
 		IdleData() {}
 	} idle_data;

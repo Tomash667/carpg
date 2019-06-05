@@ -56,7 +56,7 @@ void CommandParser::AddCommands()
 	cmds.push_back(ConsoleCommand(&game.cl_specularmap, "cl_specularmap", "use specular mapping (cl_specularmap 0/1)", F_ANYWHERE | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&game.cl_glow, "cl_glow", "use glow (cl_glow 0/1)", F_ANYWHERE | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&game.uv_mod, "uv_mod", "terrain uv mod (uv_mod 1-256)", F_ANYWHERE, 1, 256, VoidF(this, &Game::UvModChanged)));
-	cmds.push_back(ConsoleCommand(&game.profiler_mode, "profiler", "profiler execution: 0-disabled, 1-update, 2-rendering", F_ANYWHERE | F_WORLD_MAP, 0, 2));
+	cmds.push_back(ConsoleCommand(reinterpret_cast<int*>(&game.profiler_mode), "profiler", "profiler execution: 0-disabled, 1-update, 2-rendering", F_ANYWHERE | F_WORLD_MAP, 0, 2));
 	cmds.push_back(ConsoleCommand(&game.settings.grass_range, "grass_range", "grass draw range", F_ANYWHERE | F_WORLD_MAP, 0.f));
 	cmds.push_back(ConsoleCommand(&game.devmode, "devmode", "developer mode (devmode 0/1)", F_GAME | F_SERVER | F_WORLD_MAP | F_MENU));
 
@@ -711,11 +711,11 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 
 				if(Net::IsLocal())
 				{
-					LevelContext& ctx = L.GetContext(*game.pc->unit);
+					LevelArea& area = L.GetArea(*game.pc->unit);
 
 					for(int i = 0; i < count; ++i)
 					{
-						Unit* u = L.SpawnUnitNearLocation(ctx, game.pc->unit->GetFrontPos(), *data, &game.pc->unit->pos, level);
+						Unit* u = L.SpawnUnitNearLocation(area, game.pc->unit->GetFrontPos(), *data, &game.pc->unit->pos, level);
 						if(!u)
 						{
 							Msg("No free space for unit '%s'!", data->id.c_str());
@@ -763,7 +763,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		if(game.pc_data.target_unit && game.pc_data.target_unit->IsAlive())
 		{
 			if(Net::IsLocal())
-				game.GiveDmg(L.GetContext(*game.pc->unit), nullptr, game.pc_data.target_unit->hpmax, *game.pc_data.target_unit);
+				game.GiveDmg(L.GetArea(*game.pc->unit), nullptr, game.pc_data.target_unit->hpmax, *game.pc_data.target_unit);
 			else
 			{
 				NetChange& c = Add1(Net::changes);
@@ -807,7 +807,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		break;
 	case CMD_SUICIDE:
 		if(Net::IsLocal())
-			game.GiveDmg(L.GetContext(*game.pc->unit), nullptr, game.pc->unit->hpmax, *game.pc->unit);
+			game.GiveDmg(L.GetArea(*game.pc->unit), nullptr, game.pc->unit->hpmax, *game.pc->unit);
 		else
 			Net::PushChange(NetChange::CHEAT_SUICIDE);
 		break;
@@ -1241,12 +1241,12 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 				bool b = t.MustGetBool();
 				if(player_name == "all")
 				{
-					for(PlayerInfo* info : N.players)
+					for(PlayerInfo& info : N.players)
 					{
-						if(info->left == PlayerInfo::LEFT_NO && info->devmode != b && info->id != 0)
+						if(info.left == PlayerInfo::LEFT_NO && info.devmode != b && info.id != 0)
 						{
-							info->devmode = b;
-							NetChangePlayer& c = Add1(info->pc->player_info->changes);
+							info.devmode = b;
+							NetChangePlayer& c = Add1(info.pc->player_info->changes);
 							c.type = NetChangePlayer::DEVMODE;
 							c.id = (b ? 1 : 0);
 						}
@@ -1272,11 +1272,11 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 				{
 					LocalString s = "Players devmode: ";
 					bool any = false;
-					for(PlayerInfo* info : N.players)
+					for(PlayerInfo& info : N.players)
 					{
-						if(info->left == PlayerInfo::LEFT_NO && info->id != 0)
+						if(info.left == PlayerInfo::LEFT_NO && info.id != 0)
 						{
-							s += Format("%s(%d), ", info->name.c_str(), info->devmode ? 1 : 0);
+							s += Format("%s(%d), ", info.name.c_str(), info.devmode ? 1 : 0);
 							any = true;
 						}
 					}
@@ -1451,7 +1451,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			if(Net::IsLocal())
 			{
 				if(cmd.cmd == CMD_HURT)
-					game.GiveDmg(L.GetContext(*u), nullptr, 100.f, *u);
+					game.GiveDmg(L.GetArea(*u), nullptr, 100.f, *u);
 				else if(cmd.cmd == CMD_BREAK_ACTION)
 					u->BreakAction(Unit::BREAK_ACTION_MODE::NORMAL, true);
 				else
@@ -1476,7 +1476,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			return;
 		break;
 	case CMD_TILE_INFO:
-		if(L.location->outside && game.pc->unit->in_building == -1 && L.terrain->IsInside(game.pc->unit->pos))
+		if(L.location->outside && game.pc->unit->area_id == LevelArea::OUTSIDE_ID && L.terrain->IsInside(game.pc->unit->pos))
 		{
 			OutsideLocation* outside = static_cast<OutsideLocation*>(L.location);
 			const TerrainTile& t = outside->tiles[PosToPt(game.pc->unit->pos)(outside->size)];

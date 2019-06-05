@@ -34,6 +34,8 @@
 #include "Render.h"
 #include "GrassShader.h"
 #include "TerrainShader.h"
+#include "UnitData.h"
+#include "BaseUsable.h"
 
 extern void HumanPredraw(void* ptr, Matrix* mat, int n);
 extern const int ITEM_IMAGE_SIZE;

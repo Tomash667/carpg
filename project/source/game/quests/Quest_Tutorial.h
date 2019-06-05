@@ -32,6 +32,7 @@ public:
 	void Update();
 	void Finish(int);
 	void OnEvent(Event event);
+	void HandleEvent(int activate, int unlock);
 	void HandleChestEvent(ChestEventHandler::Event event, Chest* chest) override;
 	void HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit) override;
 	int GetChestEventHandlerQuestRefid() override { return -1; } // can't save in tutorial

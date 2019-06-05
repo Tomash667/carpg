@@ -1,35 +1,22 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Location.h"
 #include "LevelArea.h"
 #include "Building.h"
-#include "Blood.h"
-#include "Light.h"
 
 //-----------------------------------------------------------------------------
-struct InsideBuilding final : public ILevel, public LevelArea
+struct InsideBuilding final : public LevelArea
 {
-	vector<Door*> doors;
-	vector<Object*> objects;
-	vector<Usable*> usables;
-	vector<Blood> bloods;
-	vector<Light> lights;
 	Vec2 offset;
 	Vec3 inside_spawn, outside_spawn, xsphere_pos;
-	Box2d enter_area, exit_area, arena1, arena2;
+	Box2d enter_region, exit_region, region1, region2;
 	float outside_rot, top, xsphere_radius, enter_y;
-	LevelContext ctx;
-	Building* type;
+	Building* building;
 	Int2 level_shift;
-	vector<LightMask> masks;
 
-	~InsideBuilding();
-
-	void ApplyContext(LevelContext& ctx);
+	InsideBuilding(int area_id) : LevelArea(LevelArea::Type::Building, area_id, false) {}
 	void Save(GameWriter& f, bool local);
 	void Load(GameReader& f, bool local);
 	void Write(BitStreamWriter& f);
 	bool Read(BitStreamReader& f);
-	Unit* FindUnit(const UnitData* ud) const;
 };

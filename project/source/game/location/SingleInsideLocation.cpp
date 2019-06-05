@@ -3,25 +3,9 @@
 #include "SingleInsideLocation.h"
 
 //=================================================================================================
-void SingleInsideLocation::ApplyContext(LevelContext& ctx)
+void SingleInsideLocation::Apply(vector<std::reference_wrapper<LevelArea>>& areas)
 {
-	ctx.units = &units;
-	ctx.objects = &objects;
-	ctx.chests = &chests;
-	ctx.traps = &traps;
-	ctx.doors = &doors;
-	ctx.items = &items;
-	ctx.usables = &usables;
-	ctx.bloods = &bloods;
-	ctx.lights = &lights;
-	ctx.have_terrain = false;
-	ctx.require_tmp_ctx = true;
-	ctx.type = LevelContext::Inside;
-	ctx.building_id = -1;
-	ctx.mine = Int2(0, 0);
-	ctx.maxe = Int2(w, h);
-	ctx.tmp_ctx = nullptr;
-	ctx.masks = nullptr;
+	areas.push_back(*this);
 }
 
 //=================================================================================================
@@ -45,13 +29,13 @@ void SingleInsideLocation::Load(GameReader& f, bool local, LOCATION_TOKEN token)
 //=================================================================================================
 void SingleInsideLocation::BuildRefidTables()
 {
-	InsideLocationLevel::BuildRefidTables();
+	LevelArea::BuildRefidTables();
 }
 
 //=================================================================================================
 bool SingleInsideLocation::FindUnit(Unit* unit, int* level)
 {
-	if(InsideLocationLevel::FindUnit(unit))
+	if(HaveUnit(unit))
 	{
 		if(level)
 			*level = 0;

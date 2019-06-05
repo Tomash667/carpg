@@ -11,6 +11,7 @@
 #include "OutsideLocation.h"
 #include "Terrain.h"
 #include "Team.h"
+#include "Object.h"
 
 //=================================================================================================
 void Quest_Sawmill::Start()
@@ -189,15 +190,13 @@ BaseObject* tartak_objs_ptrs[n_tartak_objs];
 
 void Quest_Sawmill::GenerateSawmill(bool in_progress)
 {
-	for(vector<Unit*>::iterator it = L.local_ctx.units->begin(), end = L.local_ctx.units->end(); it != end; ++it)
-		delete *it;
-	L.local_ctx.units->clear();
-	L.local_ctx.bloods->clear();
+	OutsideLocation& outside = *(OutsideLocation*)L.location;
+	DeleteElements(outside.units);
+	outside.bloods.clear();
 
 	// wyrównaj teren
-	OutsideLocation* outside = (OutsideLocation*)L.location;
-	float* h = outside->h;
-	const int _s = outside->size + 1;
+	float* h = outside.h;
+	const int _s = outside.size + 1;
 	vector<Int2> tiles;
 	float wys = 0.f;
 	for(int y = 64 - 6; y < 64 + 6; ++y)
@@ -217,7 +216,7 @@ void Quest_Sawmill::GenerateSawmill(bool in_progress)
 	L.terrain->Rebuild(true);
 
 	// usuñ obiekty
-	LoopAndRemove(*L.local_ctx.objects, [](const Object* obj)
+	LoopAndRemove(outside.objects, [](const Object* obj)
 	{
 		if(Vec3::Distance2d(obj->pos, Vec3(128, 0, 128)) < 16.f)
 		{
@@ -239,7 +238,7 @@ void Quest_Sawmill::GenerateSawmill(bool in_progress)
 	if(in_progress)
 	{
 		// artur drwal
-		Unit* u = L.SpawnUnitNearLocation(L.local_ctx, Vec3(128, 0, 128), ud, nullptr, -2);
+		Unit* u = L.SpawnUnitNearLocation(outside, Vec3(128, 0, 128), ud, nullptr, -2);
 		assert(u);
 		u->rot = Random(MAX_ANGLE);
 		u->hero->know_name = true;
@@ -250,14 +249,14 @@ void Quest_Sawmill::GenerateSawmill(bool in_progress)
 		{
 			Vec2 pt = Vec2::Random(Vec2(128 - 16, 128 - 16), Vec2(128 + 16, 128 + 16));
 			BaseObject* obj = tartak_objs_ptrs[Rand() % n_tartak_objs];
-			L.SpawnObjectNearLocation(L.local_ctx, obj, pt, Random(MAX_ANGLE), 2.f);
+			L.SpawnObjectNearLocation(outside, obj, pt, Random(MAX_ANGLE), 2.f);
 		}
 
 		// generuj innych drwali
 		int count = Random(5, 10);
 		for(int i = 0; i < count; ++i)
 		{
-			Unit* u = L.SpawnUnitNearLocation(L.local_ctx, Vec3::Random(Vec3(128 - 16, 0, 128 - 16), Vec3(128 + 16, 0, 128 + 16)), ud2, nullptr, -2);
+			Unit* u = L.SpawnUnitNearLocation(outside, Vec3::Random(Vec3(128 - 16, 0, 128 - 16), Vec3(128 + 16, 0, 128 + 16)), ud2, nullptr, -2);
 			if(u)
 				u->rot = Random(MAX_ANGLE);
 		}
@@ -269,10 +268,10 @@ void Quest_Sawmill::GenerateSawmill(bool in_progress)
 		// budynek
 		Vec3 spawn_pt;
 		float rot = PI / 2 * (Rand() % 4);
-		L.SpawnObjectEntity(L.local_ctx, BaseObject::Get("tartak"), Vec3(128, wys, 128), rot, 1.f, 0, &spawn_pt);
+		L.SpawnObjectEntity(outside, BaseObject::Get("tartak"), Vec3(128, wys, 128), rot, 1.f, 0, &spawn_pt);
 
 		// artur drwal
-		Unit* u = L.SpawnUnitNearLocation(L.local_ctx, spawn_pt, ud, nullptr, -2);
+		Unit* u = L.SpawnUnitNearLocation(outside, spawn_pt, ud, nullptr, -2);
 		assert(u);
 		u->rot = rot;
 		u->hero->know_name = true;
@@ -283,14 +282,14 @@ void Quest_Sawmill::GenerateSawmill(bool in_progress)
 		{
 			Vec2 pt = Vec2::Random(Vec2(128 - 16, 128 - 16), Vec2(128 + 16, 128 + 16));
 			BaseObject* obj = tartak_objs_ptrs[Rand() % n_tartak_objs];
-			L.SpawnObjectNearLocation(L.local_ctx, obj, pt, Random(MAX_ANGLE), 2.f);
+			L.SpawnObjectNearLocation(outside, obj, pt, Random(MAX_ANGLE), 2.f);
 		}
 
 		// inni drwale
 		int count = Random(5, 10);
 		for(int i = 0; i < count; ++i)
 		{
-			Unit* u = L.SpawnUnitNearLocation(L.local_ctx, Vec3::Random(Vec3(128 - 16, 0, 128 - 16), Vec3(128 + 16, 0, 128 + 16)), ud2, nullptr, -2);
+			Unit* u = L.SpawnUnitNearLocation(outside, Vec3::Random(Vec3(128 - 16, 0, 128 - 16), Vec3(128 + 16, 0, 128 + 16)), ud2, nullptr, -2);
 			if(u)
 				u->rot = Random(MAX_ANGLE);
 		}

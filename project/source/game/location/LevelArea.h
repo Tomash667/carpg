@@ -1,11 +1,98 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-class LevelArea
+#include "Collision.h"
+#include "Bullet.h"
+#include "SpellEffects.h"
+#include "Blood.h"
+#include "Light.h"
+
+//-----------------------------------------------------------------------------
+struct LightMask
 {
-public:
+	Vec2 pos, size;
+};
+
+//-----------------------------------------------------------------------------
+namespace old
+{
+	enum class LoadCompatibility
+	{
+		None,
+		InsideBuilding,
+		InsideLocationLevel,
+		InsideLocationLevelTraps,
+		OutsideLocation
+	};
+}
+
+//-----------------------------------------------------------------------------
+// Part of Location Level (outside, building or dungeon level)
+struct LevelArea
+{
+	enum class Type
+	{
+		Outside,
+		Inside,
+		Building
+	};
+
+	static const int OUTSIDE_ID = -1;
+
+	const int area_id; // -1 outside, 0+ building or dungeon level
+	const Type area_type;
+	TmpLevelArea* tmp;
 	vector<Unit*> units;
+	vector<Object*> objects;
+	vector<Usable*> usables;
+	vector<Door*> doors;
+	vector<Chest*> chests;
 	vector<GroundItem*> items;
+	vector<Trap*> traps;
+	vector<Blood> bloods;
+	vector<Light> lights;
+	vector<LightMask> masks;
+	Int2 mine, maxe;
+	const bool have_terrain;
+
+	LevelArea(Type area_type, int area_id, bool have_terrain) : area_type(area_type), area_id(area_id), have_terrain(have_terrain), tmp(nullptr) {}
+	~LevelArea();
+	void Save(GameWriter& f);
+	void Load(GameReader& f, bool local, old::LoadCompatibility compatibility = old::LoadCompatibility::None);
+	void Write(BitStreamWriter& f);
+	bool Read(BitStreamReader& f);
+	cstring GetName();
+	void BuildRefidTables();
+	Unit* FindUnit(UnitData* ud);
+	Usable* FindUsable(BaseUsable* base);
+	bool RemoveItem(const Item* item);
+	bool FindItemInCorpse(const Item* item, Unit** unit, int* slot);
+	bool RemoveGroundItem(const Item* item);
+	bool FindItemInChest(const Item* item, Chest** chest, int* slot);
+	Object* FindObject(BaseObject* base_obj);
+	Chest* FindChestInRoom(const Room& p);
+	Chest* GetRandomFarChest(const Int2& pt);
+	bool HaveUnit(Unit* unit);
+	Chest* FindChestWithItem(const Item* item, int* index);
+	Chest* FindChestWithQuestItem(int quest_refid, int* index);
+	Door* FindDoor(const Int2& pt);
+};
+
+//-----------------------------------------------------------------------------
+// Temporary level area (used only for active level areas to hold temporary entities)
+struct TmpLevelArea : ObjectPoolProxy<TmpLevelArea>
+{
+	vector<Bullet> bullets;
+	vector<ParticleEmitter*> pes;
+	vector<TrailParticleEmitter*> tpes;
+	vector<Explo*> explos;
+	vector<Electro*> electros;
+	vector<Drain> drains;
+	vector<CollisionObject> colliders;
+
+	void Clear();
+	void Save(GameWriter& f);
+	void Load(GameReader& f);
 };
 
 //-----------------------------------------------------------------------------

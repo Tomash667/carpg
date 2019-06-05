@@ -1,7 +1,6 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "LevelContext.h"
 #include "Event.h"
 
 //-----------------------------------------------------------------------------
@@ -78,7 +77,7 @@ enum LOCATION_STATE
 
 //-----------------------------------------------------------------------------
 // struktura opisuj¹ca lokacje na mapie œwiata
-struct Location : public ILevel
+struct Location
 {
 	int index;
 	LOCATION type; // typ lokacji
@@ -106,6 +105,7 @@ struct Location : public ILevel
 	virtual ~Location();
 
 	// virtual functions to implement
+	virtual void Apply(vector<std::reference_wrapper<LevelArea>>& areas) = 0;
 	virtual void Save(GameWriter& f, bool local);
 	virtual void Load(GameReader& f, bool local, LOCATION_TOKEN token);
 	virtual void Write(BitStreamWriter& f) = 0;

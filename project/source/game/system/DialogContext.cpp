@@ -1501,9 +1501,9 @@ bool DialogContext::ExecuteSpecialIf(cstring msg)
 		return result;
 
 	if(strcmp(msg, "is_drunk") == 0)
-		return IS_SET(talker->data->flags, F_AI_DRUNKMAN) && talker->in_building != -1;
+		return IS_SET(talker->data->flags, F_AI_DRUNKMAN) && talker->area_id != LevelArea::OUTSIDE_ID;
 	else if(strcmp(msg, "is_inside_dungeon") == 0)
-		return L.local_ctx.type == LevelContext::Inside;
+		return L.local_area->area_type == LevelArea::Type::Inside;
 	else if(strcmp(msg, "is_team_full") == 0)
 		return Team.GetActiveTeamSize() >= Team.GetMaxSize();
 	else if(strcmp(msg, "can_join") == 0)

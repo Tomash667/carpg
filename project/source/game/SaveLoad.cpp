@@ -288,10 +288,10 @@ void Game::LoadGameCommon(cstring filename, int slot)
 
 	if(N.mp_quickload)
 	{
-		for(PlayerInfo* info : N.players)
+		for(PlayerInfo& info : N.players)
 		{
-			if(info->left == PlayerInfo::LEFT_NO)
-				info->loaded = true;
+			if(info.left == PlayerInfo::LEFT_NO)
+				info.loaded = true;
 		}
 		game_state = GS_LOAD;
 		net_mode = NM_TRANSFER_SERVER;
@@ -338,21 +338,21 @@ bool Game::ValidateNetSaveForLoading(GameReader& f, int slot)
 	SaveSlot& ss = *ptr;
 	if(ss.load_version < V_0_9)
 		throw SaveException(txTooOldVersion, Format("Too old save version (%d).", ss.load_version));
-	for(PlayerInfo* player : N.players)
+	for(PlayerInfo& info : N.players)
 	{
 		bool ok = false;
-		if(player->pc->name == ss.player_name)
+		if(info.pc->name == ss.player_name)
 			continue;
 		for(string& str : ss.mp_players)
 		{
-			if(str == player->name)
+			if(str == info.name)
 			{
 				ok = true;
 				break;
 			}
 		}
 		if(!ok)
-			throw SaveException(Format(txMissingPlayerInSave, player->name.c_str()), Format("Missing player '%s' in save.", player->name.c_str()));
+			throw SaveException(Format(txMissingPlayerInSave, info.name.c_str()), Format("Missing player '%s' in save.", info.name.c_str()));
 	}
 	return ss.on_worldmap;
 }
@@ -400,10 +400,10 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 	if(Net::IsOnline())
 	{
 		f.WriteCasted<byte>(N.active_players - 1);
-		for(PlayerInfo* info : N.players)
+		for(PlayerInfo& info : N.players)
 		{
-			if(!info->pc->is_local && info->left == PlayerInfo::LEFT_NO)
-				f << info->pc->name;
+			if(!info.pc->is_local && info.left == PlayerInfo::LEFT_NO)
+				f << info.pc->name;
 		}
 	}
 	f << time(nullptr);
@@ -420,10 +420,10 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 		slot->mp_players.clear();
 		if(Net::IsOnline())
 		{
-			for(PlayerInfo* info : N.players)
+			for(PlayerInfo& info : N.players)
 			{
-				if(!info->pc->is_local && info->left == PlayerInfo::LEFT_NO)
-					slot->mp_players.push_back(info->pc->name);
+				if(!info.pc->is_local && info.left == PlayerInfo::LEFT_NO)
+					slot->mp_players.push_back(info.pc->name);
 			}
 		}
 		slot->save_date = time(nullptr);
@@ -495,41 +495,6 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 
 	f << check_id;
 	++check_id;
-
-	if(game_state == GS_LEVEL)
-	{
-		// particles
-		f << L.local_ctx.pes->size();
-		for(ParticleEmitter* pe : *L.local_ctx.pes)
-			pe->Save(f);
-
-		f << L.local_ctx.tpes->size();
-		for(TrailParticleEmitter* tpe : *L.local_ctx.tpes)
-			tpe->Save(f);
-
-		// explosions
-		f << L.local_ctx.explos->size();
-		for(Explo* explo : *L.local_ctx.explos)
-			explo->Save(f);
-
-		// electric effects
-		f << L.local_ctx.electros->size();
-		for(Electro* electro : *L.local_ctx.electros)
-			electro->Save(f);
-
-		// drain effects
-		f << L.local_ctx.drains->size();
-		for(Drain& drain : *L.local_ctx.drains)
-			drain.Save(f);
-
-		// bullets
-		f << L.local_ctx.bullets->size();
-		for(Bullet& bullet : *L.local_ctx.bullets)
-			bullet.Save(f);
-
-		f << check_id;
-		++check_id;
-	}
 
 	if(Net::IsOnline())
 	{
@@ -898,53 +863,15 @@ void Game::LoadGame(GameReader& f)
 		LocationGenerator* loc_gen = loc_gen_factory->Get(L.location);
 		loc_gen->OnLoad();
 
-		// particles
-		L.local_ctx.pes->resize(f.Read<uint>());
-		for(ParticleEmitter*& pe : *L.local_ctx.pes)
+		if(LOAD_VERSION < V_DEV)
 		{
-			pe = new ParticleEmitter;
-			ParticleEmitter::AddRefid(pe);
-			pe->Load(f);
+			L.local_area->tmp->Load(f);
+
+			f >> read_id;
+			if(read_id != check_id)
+				throw "Failed to read level data.";
+			++check_id;
 		}
-
-		L.local_ctx.tpes->resize(f.Read<uint>());
-		for(TrailParticleEmitter*& tpe : *L.local_ctx.tpes)
-		{
-			tpe = new TrailParticleEmitter;
-			TrailParticleEmitter::AddRefid(tpe);
-			tpe->Load(f);
-		}
-
-		// explosions
-		L.local_ctx.explos->resize(f.Read<uint>());
-		for(Explo*& explo : *L.local_ctx.explos)
-		{
-			explo = new Explo;
-			explo->Load(f);
-		}
-
-		// electric effects
-		L.local_ctx.electros->resize(f.Read<uint>());
-		for(Electro*& electro : *L.local_ctx.electros)
-		{
-			electro = new Electro;
-			electro->Load(f);
-		}
-
-		// drain effects
-		L.local_ctx.drains->resize(f.Read<uint>());
-		for(Drain& drain : *L.local_ctx.drains)
-			drain.Load(f);
-
-		// bullets
-		L.local_ctx.bullets->resize(f.Read<uint>());
-		for(Bullet& bullet : *L.local_ctx.bullets)
-			bullet.Load(f);
-
-		f >> read_id;
-		if(read_id != check_id)
-			throw "Failed to read level data.";
-		++check_id;
 
 		RemoveUnusedAiAndCheck();
 	}
@@ -957,22 +884,20 @@ void Game::LoadGame(GameReader& f)
 	// cele ai
 	if(!ai_bow_targets.empty())
 	{
-		BaseObject* tarcza_s = BaseObject::Get("bow_target");
+		BaseObject* bow_target = BaseObject::Get("bow_target");
 		for(vector<AIController*>::iterator it = ai_bow_targets.begin(), end = ai_bow_targets.end(); it != end; ++it)
 		{
 			AIController& ai = **it;
-			LevelContext& ctx = L.GetContext(*ai.unit);
 			Object* ptr = nullptr;
 			float dist, best_dist;
-			for(vector<Object*>::iterator it = ctx.objects->begin(), end = ctx.objects->end(); it != end; ++it)
+			for(Object* obj : L.GetArea(*ai.unit).objects)
 			{
-				Object& obj = **it;
-				if(obj.base == tarcza_s)
+				if(obj->base == bow_target)
 				{
-					dist = Vec3::Distance(obj.pos, ai.idle_data.pos);
+					dist = Vec3::Distance(obj->pos, ai.idle_data.pos);
 					if(!ptr || dist < best_dist)
 					{
-						ptr = &obj;
+						ptr = obj;
 						best_dist = dist;
 					}
 				}
@@ -1159,27 +1084,18 @@ void Game::RemoveUnusedAiAndCheck()
 	for(vector<AIController*>::iterator it = ais.begin(), end = ais.end(); it != end; ++it)
 	{
 		bool ok = false;
-		for(vector<Unit*>::iterator it2 = L.local_ctx.units->begin(), end2 = L.local_ctx.units->end(); it2 != end2; ++it2)
+		for(LevelArea& area : L.ForEachArea())
 		{
-			if((*it2)->ai == *it)
+			for(Unit* unit : area.units)
 			{
-				ok = true;
-				break;
-			}
-		}
-		if(!ok && L.city_ctx)
-		{
-			for(vector<InsideBuilding*>::iterator it2 = L.city_ctx->inside_buildings.begin(), end2 = L.city_ctx->inside_buildings.end(); it2 != end2 && !ok; ++it2)
-			{
-				for(vector<Unit*>::iterator it3 = (*it2)->units.begin(), end3 = (*it2)->units.end(); it3 != end3; ++it3)
+				if(unit->ai == *it)
 				{
-					if((*it3)->ai == *it)
-					{
-						ok = true;
-						break;
-					}
+					ok = true;
+					break;
 				}
 			}
+			if(ok)
+				break;
 		}
 		if(!ok)
 		{
@@ -1197,21 +1113,17 @@ void Game::RemoveUnusedAiAndCheck()
 
 #ifdef _DEBUG
 	int err_count = 0;
-	CheckUnitsAi(L.local_ctx, err_count);
-	if(L.city_ctx)
-	{
-		for(vector<InsideBuilding*>::iterator it = L.city_ctx->inside_buildings.begin(), end = L.city_ctx->inside_buildings.end(); it != end; ++it)
-			CheckUnitsAi((*it)->ctx, err_count);
-	}
+	for(LevelArea& area : L.ForEachArea())
+		CheckUnitsAi(area, err_count);
 	if(err_count)
 		gui->messages->AddGameMsg(Format("CheckUnitsAi: %d errors!", err_count), 10.f);
 #endif
 }
 
 //=================================================================================================
-void Game::CheckUnitsAi(LevelContext& ctx, int& err_count)
+void Game::CheckUnitsAi(LevelArea& area, int& err_count)
 {
-	for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
+	for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
 	{
 		Unit& u = **it;
 		if(u.player && u.ai)

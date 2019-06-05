@@ -4,29 +4,34 @@
 
 //-----------------------------------------------------------------------------
 // Old building enum - required for pre 0.5 compability
-enum class OLD_BUILDING
+namespace old
 {
-	B_MERCHANT,
-	B_BLACKSMITH,
-	B_ALCHEMIST,
-	B_TRAINING_GROUNDS,
-	B_INN,
-	B_CITY_HALL,
-	B_VILLAGE_HALL,
-	B_BARRACKS,
-	B_HOUSE,
-	B_HOUSE2,
-	B_HOUSE3,
-	B_ARENA,
-	B_FOOD_SELLER,
-	B_COTTAGE,
-	B_COTTAGE2,
-	B_COTTAGE3,
-	B_VILLAGE_INN,
-	B_NONE,
-	B_VILLAGE_HALL_OLD,
-	B_MAX
-};
+	enum class BUILDING
+	{
+		B_MERCHANT,
+		B_BLACKSMITH,
+		B_ALCHEMIST,
+		B_TRAINING_GROUNDS,
+		B_INN,
+		B_CITY_HALL,
+		B_VILLAGE_HALL,
+		B_BARRACKS,
+		B_HOUSE,
+		B_HOUSE2,
+		B_HOUSE3,
+		B_ARENA,
+		B_FOOD_SELLER,
+		B_COTTAGE,
+		B_COTTAGE2,
+		B_COTTAGE3,
+		B_VILLAGE_INN,
+		B_NONE,
+		B_VILLAGE_HALL_OLD,
+		B_MAX
+	};
+
+	Building* Convert(BUILDING building_id);
+}
 
 //-----------------------------------------------------------------------------
 struct Building
@@ -68,17 +73,16 @@ struct Building
 		assert(building);
 		return building;
 	}
-	static Building* GetOld(OLD_BUILDING building_id);
 };
 
 //-----------------------------------------------------------------------------
 // Building used when constructing map
 struct ToBuild
 {
-	Building* type;
+	Building* building;
 	Int2 pt, unit_pt;
 	GameDirection rot;
 	bool required;
 
-	ToBuild(Building* type, bool required = true) : type(type), required(required) {}
+	ToBuild(Building* building, bool required = true) : building(building), required(required) {}
 };

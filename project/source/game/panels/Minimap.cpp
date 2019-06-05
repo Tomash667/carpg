@@ -45,6 +45,7 @@ void Minimap::LoadData()
 void Minimap::Draw(ControlDrawData*)
 {
 	Game& game = Game::Get();
+	LevelArea& area = *L.local_area;
 	LOCATION type = L.location->type;
 
 	// map texture
@@ -77,21 +78,18 @@ void Minimap::Draw(ControlDrawData*)
 	}
 
 	// chests
-	if(L.local_ctx.chests)
+	for(Chest* chest : area.chests)
 	{
-		for(Chest* chest : *L.local_ctx.chests)
+		if(!lvl || lvl->IsTileVisible(chest->pos))
 		{
-			if(!lvl || lvl->IsTileVisible(chest->pos))
-			{
-				m1 = Matrix::Transform2D(&Vec2(16, 16), 0.f, &Vec2(0.5f, 0.5f), nullptr, 0.f, &(PosToPoint(Vec2(chest->pos.x, chest->pos.z)) - Vec2(16, 16)));
-				GUI.DrawSpriteTransform(tChest, m1, Color::Alpha(140));
-			}
+			m1 = Matrix::Transform2D(&Vec2(16, 16), 0.f, &Vec2(0.5f, 0.5f), nullptr, 0.f, &(PosToPoint(Vec2(chest->pos.x, chest->pos.z)) - Vec2(16, 16)));
+			GUI.DrawSpriteTransform(tChest, m1, Color::Alpha(140));
 		}
 	}
 
 	// items
 	LocalVector<GroundItem*> important_items;
-	for(vector<GroundItem*>::iterator it = L.local_ctx.items->begin(), end = L.local_ctx.items->end(); it != end; ++it)
+	for(vector<GroundItem*>::iterator it = area.items.begin(), end = area.items.end(); it != end; ++it)
 	{
 		if(IS_SET((*it)->item->flags, ITEM_IMPORTANT))
 			important_items->push_back(*it);
@@ -111,14 +109,14 @@ void Minimap::Draw(ControlDrawData*)
 	}
 
 	// team members
-	for(Unit* unit : Team.members)
+	for(Unit& unit : Team.members)
 	{
-		m1 = Matrix::Transform2D(&Vec2(16, 16), 0.f, &Vec2(0.25f, 0.25f), &Vec2(16, 16), unit->rot, &(PosToPoint(GetMapPosition(*unit)) - Vec2(16, 16)));
-		GUI.DrawSpriteTransform(tUnit[unit == game.pc->unit ? UNIT_ME : UNIT_TEAM], m1, Color::Alpha(140));
+		m1 = Matrix::Transform2D(&Vec2(16, 16), 0.f, &Vec2(0.25f, 0.25f), &Vec2(16, 16), unit.rot, &(PosToPoint(GetMapPosition(unit)) - Vec2(16, 16)));
+		GUI.DrawSpriteTransform(tUnit[&unit == game.pc->unit ? UNIT_ME : UNIT_TEAM], m1, Color::Alpha(140));
 	}
 
 	// other units
-	for(vector<Unit*>::iterator it = L.local_ctx.units->begin(), end = L.local_ctx.units->end(); it != end; ++it)
+	for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
 	{
 		Unit& u = **it;
 		if((u.IsAlive() || u.mark) && !u.IsTeamMember() && (!lvl || lvl->IsTileVisible(u.pos)))
@@ -224,11 +222,11 @@ void Minimap::Build()
 
 		for(CityBuilding& b : city->buildings)
 		{
-			if(IS_SET(b.type->flags, Building::HAVE_NAME))
+			if(IS_SET(b.building->flags, Building::HAVE_NAME))
 			{
 				Text& text = Add1(texts);
-				text.text = b.type->name.c_str();
-				text.size = GUI.default_font->CalculateSize(b.type->name);
+				text.text = b.building->name.c_str();
+				text.size = GUI.default_font->CalculateSize(b.building->name);
 				text.pos = text.anchor = TransformTile(b.pt);
 			}
 		}
@@ -238,14 +236,14 @@ void Minimap::Build()
 //=================================================================================================
 Vec2 Minimap::GetMapPosition(Unit& unit)
 {
-	if(unit.in_building == -1)
+	if(!L.city_ctx || unit.area_id == LevelArea::OUTSIDE_ID)
 		return Vec2(unit.pos.x, unit.pos.z);
 	else
 	{
-		Building* type = L.city_ctx->inside_buildings[unit.in_building]->type;
+		Building* building = L.city_ctx->inside_buildings[unit.area_id]->building;
 		for(CityBuilding& b : L.city_ctx->buildings)
 		{
-			if(b.type == type)
+			if(b.building == building)
 				return Vec2(float(b.pt.x * 2), float(b.pt.y * 2));
 		}
 	}

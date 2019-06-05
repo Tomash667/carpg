@@ -164,10 +164,10 @@ void Game::SendPlayerData(PlayerInfo& info)
 
 	// other team members
 	f.WriteCasted<byte>(Team.members.size() - 1);
-	for(Unit* other_unit : Team.members)
+	for(Unit& other_unit : Team.members)
 	{
-		if(other_unit != &unit)
-			f << other_unit->netid;
+		if(&other_unit != &unit)
+			f << other_unit.netid;
 	}
 	f.WriteCasted<byte>(Team.leader_id);
 
@@ -406,12 +406,8 @@ void Game::UpdateServer(float dt)
 		// dodaj zmiany pozycji jednostek i ai_mode
 		if(game_state == GS_LEVEL)
 		{
-			ServerProcessUnits(*L.local_ctx.units);
-			if(L.city_ctx)
-			{
-				for(vector<InsideBuilding*>::iterator it = L.city_ctx->inside_buildings.begin(), end = L.city_ctx->inside_buildings.end(); it != end; ++it)
-					ServerProcessUnits((*it)->units);
-			}
+			for(LevelArea& area : L.ForEachArea())
+				ServerProcessUnits(area.units);
 		}
 
 		// wyœlij odkryte kawa³ki minimapy
@@ -429,9 +425,8 @@ void Game::UpdateServer(float dt)
 		assert(N.net_strs.empty());
 		N.SendAll(f, HIGH_PRIORITY, RELIABLE_ORDERED);
 
-		for(PlayerInfo* ptr_info : N.players)
+		for(PlayerInfo& info : N.players)
 		{
-			auto& info = *ptr_info;
 			if(info.id == Team.my_id || info.left != PlayerInfo::LEFT_NO)
 				continue;
 
@@ -896,7 +891,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					item->pos.z -= cos(unit.rot)*0.25f;
 					item->rot = Random(MAX_ANGLE);
 					if(!QM.quest_secret->CheckMoonStone(item, unit))
-						L.AddGroundItem(L.GetContext(unit), item);
+						L.AddGroundItem(L.GetArea(unit), item);
 
 					// send to other players
 					if(N.active_players > 2)
@@ -922,8 +917,8 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				if(game_state != GS_LEVEL)
 					break;
 
-				LevelContext* ctx;
-				GroundItem* item = L.FindGroundItem(netid, &ctx);
+				LevelArea* area;
+				GroundItem* item = L.FindGroundItem(netid, &area);
 				if(!item)
 				{
 					Error("Update server: PICKUP_ITEM from %s, missing item %d.", info.name.c_str(), netid);
@@ -964,7 +959,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				// remove item
 				if(pc_data.before_player == BP_ITEM && pc_data.before_player_ptr.item == item)
 					pc_data.before_player = BP_NONE;
-				RemoveElement(*ctx->items, item);
+				RemoveElement(area->items, item);
 
 				// event
 				for(Event& event : L.location->events)
@@ -1561,7 +1556,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					// can't talk to unit
 					c.id = -1;
 				}
-				else if(talk_to->in_building != unit.in_building)
+				else if(talk_to->area_id != unit.area_id)
 				{
 					// unit left/entered building
 					c.id = -2;
@@ -1631,11 +1626,11 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 		case NetChange::EXIT_BUILDING:
 			if(game_state == GS_LEVEL)
 			{
-				if(unit.in_building != -1)
+				if(unit.area_id != LevelArea::OUTSIDE_ID)
 				{
 					WarpData& warp = Add1(mp_warps);
 					warp.u = &unit;
-					warp.where = -1;
+					warp.where = LevelArea::OUTSIDE_ID;
 					warp.timer = 1.f;
 					unit.frozen = FROZEN::YES;
 				}
@@ -1786,7 +1781,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 			if(info.devmode)
 			{
 				if(game_state == GS_LEVEL)
-					GiveDmg(L.GetContext(unit), nullptr, unit.hpmax, unit);
+					GiveDmg(L.GetArea(unit), nullptr, unit.hpmax, unit);
 			}
 			else
 				Error("Update server: Player %s used CHEAT_SUICIDE without devmode.", info.name.c_str());
@@ -1987,7 +1982,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					if(!target)
 						Error("Update server: CHEAT_KILL from %s, missing unit %d.", info.name.c_str(), netid);
 					else if(target->IsAlive())
-						GiveDmg(L.GetContext(*target), nullptr, target->hpmax, *target);
+						GiveDmg(L.GetArea(*target), nullptr, target->hpmax, *target);
 				}
 			}
 			break;
@@ -2169,12 +2164,12 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						if(in_arena < -1 || in_arena > 1)
 							in_arena = -1;
 
-						LevelContext& ctx = L.GetContext(*info.u);
+						LevelArea& area = L.GetArea(*info.u);
 						Vec3 pos = info.u->GetFrontPos();
 
 						for(byte i = 0; i < count; ++i)
 						{
-							Unit* spawned = L.SpawnUnitNearLocation(ctx, pos, *data, &unit.pos, level);
+							Unit* spawned = L.SpawnUnitNearLocation(area, pos, *data, &unit.pos, level);
 							if(!spawned)
 							{
 								Warn("Update server: CHEAT_SPAWN_UNIT from %s, no free space for unit.", info.name.c_str());
@@ -2306,8 +2301,8 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						}
 
 						fallback_t = -1.f;
-						for(Unit* team_member : Team.members)
-							team_member->frozen = FROZEN::YES;
+						for(Unit& team_member : Team.members)
+							team_member.frozen = FROZEN::YES;
 					}
 					else
 					{
@@ -2760,7 +2755,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						item->pos.x -= sin(unit.rot)*0.25f;
 						item->pos.z -= cos(unit.rot)*0.25f;
 						item->rot = Random(MAX_ANGLE);
-						L.AddGroundItem(L.GetContext(*info.u), item);
+						L.AddGroundItem(L.GetArea(*info.u), item);
 
 						// send info to other players
 						if(N.active_players > 2)
@@ -2868,7 +2863,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				{
 					Unit* target = L.FindUnit(netid);
 					if(target)
-						GiveDmg(L.GetContext(*target), nullptr, 100.f, *target);
+						GiveDmg(L.GetArea(*target), nullptr, 100.f, *target);
 					else
 						Error("Update server: CHEAT_HURT from %s, missing unit %d.", info.name.c_str(), netid);
 				}
@@ -3363,10 +3358,10 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 		case NetChange::UPDATE_CREDIT:
 			{
 				f << (byte)Team.GetActiveTeamSize();
-				for(Unit* unit : Team.active_members)
+				for(Unit& unit : Team.active_members)
 				{
-					f << unit->netid;
-					f << unit->GetCredit();
+					f << unit.netid;
+					f << unit.GetCredit();
 				}
 			}
 			break;
@@ -3374,12 +3369,12 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 			{
 				byte count = 0;
 				uint pos = f.BeginPatch(count);
-				for(PlayerInfo* info : N.players)
+				for(PlayerInfo& info : N.players)
 				{
-					if(info->left == PlayerInfo::LEFT_NO)
+					if(info.left == PlayerInfo::LEFT_NO)
 					{
-						f << info->u->netid;
-						f << info->u->player->free_days;
+						f << info.u->netid;
+						f << info.u->player->free_days;
 						++count;
 					}
 				}
@@ -3437,7 +3432,7 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 			break;
 		case NetChange::WARP:
 			f << c.unit->netid;
-			f.WriteCasted<char>(c.unit->in_building);
+			f.WriteCasted<char>(c.unit->area_id);
 			f << c.unit->pos;
 			f << c.unit->rot;
 			break;
@@ -4352,7 +4347,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					pe->op_alpha = POP_LINEAR_SHRINK;
 					pe->mode = 0;
 					pe->Init();
-					L.GetContext(pos).pes->push_back(pe);
+					L.GetArea(pos).tmp->pes.push_back(pe);
 				}
 			}
 			break;
@@ -4410,7 +4405,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					if(!unit)
 						Error("Update client: DIE, missing unit %d.", netid);
 					else
-						unit->Die(&L.GetContext(*unit), nullptr);
+						unit->Die(L.GetArea(*unit), nullptr);
 				}
 			}
 			break;
@@ -4467,7 +4462,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				else
 				{
 					PreloadItem(item->item);
-					L.GetContext(item->pos).items->push_back(item);
+					L.GetArea(item->pos).items.push_back(item);
 				}
 			}
 			break;
@@ -4505,13 +4500,13 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Error("Update client: Broken REMOVE_ITEM.");
 				else if(game_state == GS_LEVEL)
 				{
-					LevelContext* ctx;
-					GroundItem* item = L.FindGroundItem(netid, &ctx);
+					LevelArea* area;
+					GroundItem* item = L.FindGroundItem(netid, &area);
 					if(!item)
 						Error("Update client: REMOVE_ITEM, missing ground item %d.", netid);
 					else
 					{
-						RemoveElement(ctx->items, item);
+						RemoveElement(area->items, item);
 						if(pc_data.before_player == BP_ITEM && pc_data.before_player_ptr.item == item)
 							pc_data.before_player = BP_NONE;
 						if(pc_data.picking_item_state == 1 && pc_data.picking_item == item)
@@ -4628,9 +4623,9 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 						}
 					}
 
-					LevelContext& ctx = L.GetContext(pos);
+					LevelArea& area = L.GetArea(pos);
 
-					Bullet& b = Add1(ctx.bullets);
+					Bullet& b = Add1(area.tmp->bullets);
 					b.mesh = aArrow;
 					b.pos = pos;
 					b.start_pos = pos;
@@ -4651,7 +4646,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					tpe->color1 = Vec4(1, 1, 1, 0.5f);
 					tpe->color2 = Vec4(1, 1, 1, 0);
 					tpe->Init(50);
-					ctx.tpes->push_back(tpe);
+					area.tmp->tpes.push_back(tpe);
 					b.trail = tpe;
 
 					TrailParticleEmitter* tpe2 = new TrailParticleEmitter;
@@ -4659,7 +4654,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					tpe2->color1 = Vec4(1, 1, 1, 0.5f);
 					tpe2->color2 = Vec4(1, 1, 1, 0);
 					tpe2->Init(50);
-					ctx.tpes->push_back(tpe2);
+					area.tmp->tpes.push_back(tpe2);
 					b.trail2 = tpe2;
 
 					sound_mgr->PlaySound3d(sBow[Rand() % 2], b.pos, ARROW_HIT_SOUND_DIST);
@@ -4874,11 +4869,11 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 		case NetChange::WARP:
 			{
 				int netid;
-				char in_building;
+				char area_id;
 				Vec3 pos;
 				float rot;
 				f >> netid;
-				f >> in_building;
+				f >> area_id;
 				f >> pos;
 				f >> rot;
 
@@ -4900,8 +4895,8 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 
 				unit->BreakAction(Unit::BREAK_ACTION_MODE::INSTANT, false, true);
 
-				int old_in_building = unit->in_building;
-				unit->in_building = in_building;
+				int old_area_id = unit->area_id;
+				unit->area_id = area_id;
 				unit->pos = pos;
 				unit->rot = rot;
 
@@ -4909,10 +4904,10 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				if(unit->interp)
 					unit->interp->Reset(unit->pos, unit->rot);
 
-				if(old_in_building != unit->in_building)
+				if(old_area_id != unit->area_id)
 				{
-					RemoveElement(L.GetContextFromInBuilding(old_in_building).units, unit);
-					L.GetContextFromInBuilding(unit->in_building).units->push_back(unit);
+					RemoveElement(L.GetAreaFromAreaId(old_area_id).units, unit);
+					L.GetAreaFromAreaId(unit->area_id).units.push_back(unit);
 				}
 				if(unit == pc->unit)
 				{
@@ -5149,7 +5144,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					{
 						info->left = reason;
 						RemovePlayer(*info);
-						N.players.erase(N.players.begin() + info->GetIndex());
+						N.players.erase(info->GetIndex());
 						delete info;
 					}
 				}
@@ -5311,9 +5306,9 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					else
 					{
 						unit->hero->team_member = false;
-						RemoveElement(Team.members, unit);
+						RemoveElement(Team.members.ptrs, unit);
 						if(!unit->hero->free)
-							RemoveElement(Team.active_members, unit);
+							RemoveElement(Team.active_members.ptrs, unit);
 						if(gui->team->visible)
 							gui->team->Changed();
 					}
@@ -5348,9 +5343,9 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				}
 				else if(game_state == GS_LEVEL)
 				{
-					LevelContext& ctx = L.GetContext(unit->pos);
-					ctx.units->push_back(unit);
-					unit->in_building = ctx.building_id;
+					LevelArea& area = L.GetArea(unit->pos);
+					area.units.push_back(unit);
+					unit->area_id = area.area_id;
 					if(unit->summoner != nullptr)
 						SpawnUnitEffect(*unit);
 				}
@@ -5391,7 +5386,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				if(!f)
 					Error("Update client: Broken ARENA_SOUND.");
 				else if(game_state == GS_LEVEL && L.city_ctx && IS_SET(L.city_ctx->flags, City::HaveArena)
-					&& L.GetArena()->ctx.building_id == pc->unit->in_building)
+					&& L.GetArena()->area_id == pc->unit->area_id)
 				{
 					SOUND snd;
 					if(type == 0)
@@ -5588,7 +5583,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 
 				sound_mgr->PlaySound3d(spell.sound_hit, explo->pos, spell.sound_hit_dist);
 
-				L.GetContext(pos).explos->push_back(explo);
+				L.GetArea(pos).tmp->explos.push_back(explo);
 			}
 			break;
 		// remove trap
@@ -5684,28 +5679,28 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 			{
 				// change object
 				BaseObject* base_obj = BaseObject::Get("bloody_altar");
-				Object* obj = L.local_ctx.FindObject(base_obj);
+				Object* obj = L.local_area->FindObject(base_obj);
 				obj->base = BaseObject::Get("altar");
 				obj->mesh = obj->base->mesh;
 				ResourceManager::Get<Mesh>().Load(obj->mesh);
 
 				// remove particles
 				float best_dist = 999.f;
-				ParticleEmitter* pe = nullptr;
-				for(vector<ParticleEmitter*>::iterator it = L.local_ctx.pes->begin(), end = L.local_ctx.pes->end(); it != end; ++it)
+				ParticleEmitter* best_pe = nullptr;
+				for(ParticleEmitter* pe : L.local_area->tmp->pes)
 				{
-					if((*it)->tex == tKrew[BLOOD_RED])
+					if(pe->tex == tKrew[BLOOD_RED])
 					{
-						float dist = Vec3::Distance((*it)->pos, obj->pos);
+						float dist = Vec3::Distance(pe->pos, obj->pos);
 						if(dist < best_dist)
 						{
 							best_dist = dist;
-							pe = *it;
+							best_pe = pe;
 						}
 					}
 				}
-				assert(pe);
-				pe->destroy = true;
+				assert(best_pe);
+				best_pe->destroy = true;
 			}
 			break;
 		// add new location
@@ -5882,9 +5877,9 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				}
 
 				Spell& spell = *spell_ptr;
-				LevelContext& ctx = L.GetContext(pos);
+				LevelArea& area = L.GetArea(pos);
 
-				Bullet& b = Add1(ctx.bullets);
+				Bullet& b = Add1(area.tmp->bullets);
 
 				b.pos = pos;
 				b.rot = Vec3(0, rotY, 0);
@@ -5924,7 +5919,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					pe->op_alpha = POP_LINEAR_SHRINK;
 					pe->mode = 1;
 					pe->Init();
-					ctx.pes->push_back(pe);
+					area.tmp->pes.push_back(pe);
 					b.pe = pe;
 				}
 			}
@@ -5969,15 +5964,15 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 						Error("Update client: CREATE_DRAIN, missing unit %d.", netid);
 					else
 					{
-						LevelContext& ctx = L.GetContext(*unit);
-						if(ctx.pes->empty())
+						TmpLevelArea& tmp_area = *L.GetArea(*unit).tmp;
+						if(tmp_area.pes.empty())
 							Error("Update client: CREATE_DRAIN, missing blood.");
 						else
 						{
-							Drain& drain = Add1(ctx.drains);
+							Drain& drain = Add1(tmp_area.drains);
 							drain.from = nullptr;
 							drain.to = unit;
-							drain.pe = ctx.pes->back();
+							drain.pe = tmp_area.pes.back();
 							drain.t = 0.f;
 							drain.pe->manual_delete = 1;
 							drain.pe->speed_min = Vec3(-3, 0, -3);
@@ -6005,7 +6000,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					e->netid = netid;
 					e->AddLine(p1, p2);
 					e->valid = true;
-					L.GetContext(p1).electros->push_back(e);
+					L.GetArea(p1).tmp->electros.push_back(e);
 				}
 			}
 			break;
@@ -6070,7 +6065,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 						pe->mode = 1;
 						pe->Init();
 
-						L.GetContext(pos).pes->push_back(pe);
+						L.GetArea(pos).tmp->pes.push_back(pe);
 					}
 				}
 			}
@@ -6107,7 +6102,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					pe->mode = 1;
 					pe->Init();
 
-					L.GetContext(pos).pes->push_back(pe);
+					L.GetArea(pos).tmp->pes.push_back(pe);
 				}
 			}
 			break;
@@ -6143,7 +6138,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					pe->mode = 1;
 					pe->Init();
 
-					L.GetContext(pos).pes->push_back(pe);
+					L.GetArea(pos).tmp->pes.push_back(pe);
 				}
 			}
 			break;
@@ -8022,7 +8017,7 @@ bool Game::CheckMoveNet(Unit& unit, const Vec3& pos)
 	ignore.ignored_units = (const Unit**)ignored;
 	ignore.ignored_objects = ignored_objects;
 
-	L.GatherCollisionObjects(L.GetContext(unit), L.global_col, pos, radius, &ignore);
+	L.GatherCollisionObjects(L.GetArea(unit), L.global_col, pos, radius, &ignore);
 
 	if(L.global_col.empty())
 		return true;
@@ -8036,9 +8031,8 @@ void Game::ProcessLeftPlayers()
 	if(!N.players_left)
 		return;
 
-	LoopAndRemove(N.players, [this](PlayerInfo* pinfo)
+	LoopAndRemove(N.players, [this](PlayerInfo& info)
 	{
-		auto& info = *pinfo;
 		if(info.left == PlayerInfo::LEFT_NO)
 			return false;
 
@@ -8066,7 +8060,7 @@ void Game::ProcessLeftPlayers()
 
 		Team.CheckCredit();
 		Team.CalculatePlayersLevel();
-		delete pinfo;
+		delete &info;
 
 		return true;
 	});
@@ -8112,8 +8106,8 @@ void Game::RemovePlayer(PlayerInfo& info)
 		return;
 
 	Unit* unit = info.u;
-	RemoveElement(Team.members, unit);
-	RemoveElement(Team.active_members, unit);
+	RemoveElement(Team.members.ptrs, unit);
+	RemoveElement(Team.active_members.ptrs, unit);
 	if(game_state == GS_WORLDMAP)
 	{
 		if(Net::IsLocal() && !L.is_open)

@@ -115,7 +115,7 @@ public:
 	// Common
 	//****************************************************************************
 public:
-	PlayerInfo& GetMe() { return *players[0]; }
+	PlayerInfo& GetMe() { return players[0]; }
 	PlayerInfo* FindPlayer(Cstring nick);
 	PlayerInfo* FindPlayer(const SystemAddress& adr);
 	PlayerInfo* TryGetPlayer(int id);
@@ -123,7 +123,7 @@ public:
 
 	LobbyApi* api;
 	RakPeerInterface* peer;
-	vector<PlayerInfo*> players; // contains players that left too
+	rvector<PlayerInfo> players; // contains players that left too
 	vector<string*> net_strs;
 	float update_timer, mp_interp;
 	int port;
@@ -152,7 +152,7 @@ public:
 	int GetServerFlags();
 	void ClearChanges();
 
-	vector<PlayerInfo*> old_players;
+	rvector<PlayerInfo> old_players;
 	uint active_players, max_players;
 	string server_name, password;
 	int last_id;

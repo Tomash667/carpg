@@ -73,10 +73,10 @@ bool Arena::Special(DialogContext& ctx, cstring msg)
 	else if(strcmp(msg, "pvp_gather") == 0)
 	{
 		near_players.clear();
-		for(Unit* unit : Team.active_members)
+		for(Unit& unit : Team.active_members)
 		{
-			if(unit->IsPlayer() && unit->player != ctx.pc && Vec3::Distance2d(unit->pos, L.city_ctx->arena_pos) < 5.f)
-				near_players.push_back(unit);
+			if(unit.IsPlayer() && unit.player != ctx.pc && Vec3::Distance2d(unit.pos, L.city_ctx->arena_pos) < 5.f)
+				near_players.push_back(&unit);
 		}
 		near_players_str.resize(near_players.size());
 		for(uint i = 0, size = near_players.size(); i != size; ++i)
@@ -157,7 +157,7 @@ void Arena::SpawnArenaViewers(int count)
 	vector<Mesh::Point*> points;
 	UnitData& ud = *UnitData::Get("viewer");
 	InsideBuilding* arena = L.GetArena();
-	Mesh* mesh = arena->type->inside_mesh;
+	Mesh* mesh = arena->building->inside_mesh;
 
 	for(vector<Mesh::Point>::iterator it = mesh->attach_points.begin(), end = mesh->attach_points.end(); it != end; ++it)
 	{
@@ -172,7 +172,7 @@ void Arena::SpawnArenaViewers(int count)
 		points.erase(points.begin() + id);
 		Vec3 pos(pt->mat._41 + arena->offset.x, pt->mat._42, pt->mat._43 + arena->offset.y);
 		Vec3 look_at(arena->offset.x, 0, arena->offset.y);
-		Unit* u = L.SpawnUnitNearLocation(arena->ctx, pos, ud, &look_at, -1, 2.f);
+		Unit* u = L.SpawnUnitNearLocation(*arena, pos, ud, &look_at, -1, 2.f);
 		if(u)
 		{
 			u->ai->loc_timer = Random(6.f, 12.f);
@@ -194,7 +194,7 @@ void Arena::Clean()
 		Unit& u = **it;
 		u.frozen = FROZEN::NO;
 		u.in_arena = -1;
-		u.in_building = -1;
+		u.area_id = LevelArea::OUTSIDE_ID;
 		u.busy = Unit::Busy_No;
 		if(u.hp <= 0.f)
 		{
@@ -215,9 +215,9 @@ void Arena::Clean()
 void Arena::RemoveArenaViewers()
 {
 	UnitData* ud = UnitData::Get("viewer");
-	LevelContext& ctx = L.GetArena()->ctx;
+	LevelArea& area = *L.GetArena();
 
-	for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
+	for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
 	{
 		if((*it)->data == ud)
 			L.RemoveUnit(*it);
@@ -302,47 +302,47 @@ void Arena::StartArenaCombat(int level)
 		c.unit = ctx.pc->unit;
 	}
 
-	for(Unit* unit : Team.members)
+	for(Unit& unit : Team.members)
 	{
-		if(unit->frozen != FROZEN::NO || Vec3::Distance2d(unit->pos, L.city_ctx->arena_pos) > 5.f)
+		if(unit.frozen != FROZEN::NO || Vec3::Distance2d(unit.pos, L.city_ctx->arena_pos) > 5.f)
 			continue;
-		if(unit->IsPlayer())
+		if(unit.IsPlayer())
 		{
-			unit->BreakAction(Unit::BREAK_ACTION_MODE::NORMAL, true, true);
+			unit.BreakAction(Unit::BREAK_ACTION_MODE::NORMAL, true, true);
 
-			unit->frozen = FROZEN::YES;
-			unit->in_arena = 0;
-			units.push_back(unit);
+			unit.frozen = FROZEN::YES;
+			unit.in_arena = 0;
+			units.push_back(&unit);
 
-			unit->player->arena_fights++;
-			unit->player->stat_flags |= STAT_ARENA_FIGHTS;
+			unit.player->arena_fights++;
+			unit.player->stat_flags |= STAT_ARENA_FIGHTS;
 
-			if(unit->player == game.pc)
+			if(unit.player == game.pc)
 			{
 				game.fallback_type = FALLBACK::ARENA;
 				game.fallback_t = -1.f;
 			}
 			else
 			{
-				NetChangePlayer& c = Add1(unit->player->player_info->changes);
+				NetChangePlayer& c = Add1(unit.player->player_info->changes);
 				c.type = NetChangePlayer::ENTER_ARENA;
 			}
 
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::CHANGE_ARENA_STATE;
-			c.unit = unit;
+			c.unit = &unit;
 		}
-		else if(unit->IsHero() && unit->CanFollowWarp())
+		else if(unit.IsHero() && unit.CanFollowWarp())
 		{
-			unit->frozen = FROZEN::YES;
-			unit->in_arena = 0;
-			units.push_back(unit);
+			unit.frozen = FROZEN::YES;
+			unit.in_arena = 0;
+			units.push_back(&unit);
 
 			if(Net::IsOnline())
 			{
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::CHANGE_ARENA_STATE;
-				c.unit = unit;
+				c.unit = &unit;
 			}
 		}
 	}
@@ -378,7 +378,7 @@ void Arena::StartArenaCombat(int level)
 	InsideBuilding* arena = L.GetArena();
 	for(TmpUnitGroup::Spawn& spawn : part->Roll(lvl, units.size()))
 	{
-		Unit* u = L.SpawnUnitInsideArea(arena->ctx, arena->arena2, *spawn.first, spawn.second);
+		Unit* u = L.SpawnUnitInsideRegion(*arena, arena->region2, *spawn.first, spawn.second);
 		if(u)
 		{
 			u->rot = 0.f;
@@ -488,7 +488,7 @@ void Arena::StartPvp(PlayerController* player, Unit* unit)
 //=================================================================================================
 void Arena::AddReward(int gold, int exp)
 {
-	vector<Unit*> v;
+	rvector<Unit> v;
 	for(vector<Unit*>::iterator it = units.begin(), end = units.end(); it != end; ++it)
 	{
 		if((*it)->in_arena == 0)
@@ -559,7 +559,7 @@ void Arena::Update(float dt)
 		timer += dt;
 		if(timer >= 2.f)
 		{
-			if(L.GetArena()->ctx.building_id == game.pc->unit->in_building)
+			if(L.GetArena()->area_id == game.pc->unit->area_id)
 				game.sound_mgr->PlaySound2d(game.sArenaFight);
 			if(Net::IsOnline())
 			{
@@ -632,7 +632,7 @@ void Arena::Update(float dt)
 					victory_sound = true;
 			}
 
-			if(L.GetArena()->ctx.building_id == game.pc->unit->in_building)
+			if(L.GetArena()->area_id == game.pc->unit->area_id)
 				game.sound_mgr->PlaySound2d(victory_sound ? game.sArenaWin : game.sArenaLost);
 			if(Net::IsOnline())
 			{
@@ -907,13 +907,13 @@ void Arena::RewardExp(Unit* dead_unit)
 	}
 	else if(!dead_unit->IsTeamMember())
 	{
-		LocalVector<Unit*> to_reward;
+		rvector<Unit> to_reward;
 		for(Unit* unit : units)
 		{
 			if(unit->in_arena != dead_unit->in_arena)
-				to_reward->push_back(unit);
+				to_reward.push_back(unit);
 		}
-		Team.AddExp(50 * dead_unit->level, to_reward);
+		Team.AddExp(50 * dead_unit->level, &to_reward);
 	}
 }
 
@@ -922,7 +922,7 @@ void Arena::SpawnUnit(const vector<Enemy>& units)
 {
 	InsideBuilding* arena = L.GetArena();
 
-	L.CleanLevel(arena->ctx.building_id);
+	L.CleanLevel(arena->area_id);
 
 	for(const Enemy& unit : units)
 	{
@@ -930,7 +930,7 @@ void Arena::SpawnUnit(const vector<Enemy>& units)
 		{
 			if(unit.side)
 			{
-				Unit* u = L.SpawnUnitInsideArea(arena->ctx, arena->arena2, *unit.unit, unit.level);
+				Unit* u = L.SpawnUnitInsideRegion(*arena, arena->region2, *unit.unit, unit.level);
 				if(u)
 				{
 					u->rot = 0.f;
@@ -939,7 +939,7 @@ void Arena::SpawnUnit(const vector<Enemy>& units)
 			}
 			else
 			{
-				Unit* u = L.SpawnUnitInsideArea(arena->ctx, arena->arena1, *unit.unit, unit.level);
+				Unit* u = L.SpawnUnitInsideRegion(*arena, arena->region1, *unit.unit, unit.level);
 				if(u)
 				{
 					u->rot = PI;

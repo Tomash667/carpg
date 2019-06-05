@@ -469,9 +469,8 @@ bool ServerPanel::DoLobbyUpdate(BitStreamReader& f)
 				AddMsg(Format(is_kick ? game->txPlayerKicked : txPlayerLeft, info->name.c_str()));
 				int index = info->GetIndex();
 				grid.RemoveItem(index);
-				auto it = N.players.begin() + index;
-				delete *it;
-				N.players.erase(it);
+				delete info;
+				N.players.erase(index);
 			}
 			break;
 		case Lobby_ChangeCount:
@@ -509,9 +508,9 @@ void ServerPanel::UpdateLobbyServer(float dt)
 	if(!starting && autostart_count != 0u && autostart_count <= N.active_players)
 	{
 		bool ok = true;
-		for(auto info : N.players)
+		for(PlayerInfo& info : N.players)
 		{
-			if(!info->ready)
+			if(!info.ready)
 			{
 				ok = false;
 				break;
@@ -545,9 +544,8 @@ void ServerPanel::UpdateLobbyServer(float dt)
 				OnChangePlayersCount();
 				int index = info->GetIndex();
 				grid.RemoveItem(index);
-				auto it = N.players.begin() + index;
-				delete *it;
-				N.players.erase(it);
+				delete info;
+				N.players.erase(index);
 			}
 			else
 			{
@@ -659,9 +657,8 @@ void ServerPanel::UpdateLobbyServer(float dt)
 						// roz³¹czy³ siê przed przyjêciem do lobby, mo¿na go usun¹æ
 						AddMsg(Format(dis ? txDisconnected : txIpLostConnection, packet->systemAddress.ToString()));
 						Info("ServerPanel: %s %s.", packet->systemAddress.ToString(), dis ? "disconnected" : "lost connection");
-						auto it = N.players.begin() + index;
-						delete *it;
-						N.players.erase(it);
+						delete info;
+						N.players.erase(index);
 						--N.active_players;
 						OnChangePlayersCount();
 					}
@@ -683,9 +680,8 @@ void ServerPanel::UpdateLobbyServer(float dt)
 								AddLobbyUpdate(Int2(Lobby_ChangeLeader, 0));
 							AddMsg(txYouAreLeader);
 						}
-						auto it = N.players.begin() + index;
-						delete *it;
-						N.players.erase(it);
+						delete info;
+						N.players.erase(index);
 						CheckReady();
 					}
 				}
@@ -741,9 +737,9 @@ void ServerPanel::UpdateLobbyServer(float dt)
 				{
 					// check if nick is unique
 					bool ok = true;
-					for(auto info2 : N.players)
+					for(PlayerInfo& info2 : N.players)
 					{
-						if(info2->id != info->id && info2->state == PlayerInfo::IN_LOBBY && info2->name == info->name)
+						if(info2.id != info->id && info2.state == PlayerInfo::IN_LOBBY && info2.name == info->name)
 						{
 							ok = false;
 							break;
@@ -782,15 +778,15 @@ void ServerPanel::UpdateLobbyServer(float dt)
 					fw.WriteCasted<byte>(Team.leader_id);
 					fw.Write0();
 					int count = 0;
-					for(auto info2 : N.players)
+					for(PlayerInfo& info2 : N.players)
 					{
-						if(info2->id == info->id || info2->state != PlayerInfo::IN_LOBBY)
+						if(info2.id == info->id || info2.state != PlayerInfo::IN_LOBBY)
 							continue;
 						++count;
-						fw.WriteCasted<byte>(info2->id);
-						fw.WriteCasted<byte>(info2->ready ? 1 : 0);
-						fw.WriteCasted<byte>(info2->clas);
-						fw << info2->name;
+						fw.WriteCasted<byte>(info2.id);
+						fw.WriteCasted<byte>(info2.ready ? 1 : 0);
+						fw.WriteCasted<byte>(info2.clas);
+						fw << info2.name;
 					}
 					fw.Patch<byte>(4, count);
 					if(N.mp_load)
@@ -875,9 +871,8 @@ void ServerPanel::UpdateLobbyServer(float dt)
 				int index = info->GetIndex();
 				grid.RemoveItem(index);
 				N.peer->CloseConnection(packet->systemAddress, true);
-				auto it = N.players.begin() + index;
-				delete *it;
-				N.players.erase(it);
+				delete info;
+				N.players.erase(index);
 				CheckReady();
 			}
 			break;
@@ -935,9 +930,8 @@ void ServerPanel::UpdateLobbyServer(float dt)
 	}
 
 	int index = 0;
-	for(vector<PlayerInfo*>::iterator it = N.players.begin(), end = N.players.end(); it != end;)
+	LoopAndRemove(N.players, [&](PlayerInfo& info)
 	{
-		auto& info = **it;
 		if(info.state != PlayerInfo::IN_LOBBY)
 		{
 			info.timer -= dt;
@@ -949,23 +943,22 @@ void ServerPanel::UpdateLobbyServer(float dt)
 				--N.active_players;
 				if(N.active_players > 1)
 					AddLobbyUpdate(Int2(Lobby_RemovePlayer, 0));
-				delete *it;
-				it = N.players.erase(it);
-				end = N.players.end();
+				delete &info;
 				grid.RemoveItem(index);
+				return true;
 			}
 			else
 			{
 				++index;
-				++it;
+				return false;
 			}
 		}
 		else
 		{
-			++it;
 			++index;
+			return false;
 		}
-	}
+	});
 
 	// wysy³anie aktualizacji lobby
 	update_timer += dt;
@@ -1062,21 +1055,18 @@ void ServerPanel::UpdateLobbyServer(float dt)
 			game->net_timer = game->mp_timeout;
 			game->net_state = NetState::Server_Starting;
 			// kick players that connected but didn't join
-			for(vector<PlayerInfo*>::iterator it = N.players.begin(), end = N.players.end(); it != end;)
+			LoopAndRemove(N.players, [](PlayerInfo& info)
 			{
-				auto& info = **it;
 				if(info.state != PlayerInfo::IN_LOBBY)
 				{
 					N.peer->CloseConnection(info.adr, true);
 					Warn("ServerPanel: Disconnecting %s.", info.adr.ToString());
-					delete *it;
-					it = N.players.erase(it);
-					end = N.players.end();
+					delete &info;
 					--N.active_players;
+					return true;
 				}
-				else
-					++it;
-			}
+				return false;
+			});
 			CloseDialog();
 			game->gui->info_box->Show(txStartingGame);
 		}
@@ -1212,7 +1202,7 @@ void ServerPanel::Event(GuiEvent e)
 				AddMsg(txCantKickMyself);
 			else
 			{
-				PlayerInfo& info = *N.players[grid.selected];
+				PlayerInfo& info = N.players[grid.selected];
 				if(info.state != PlayerInfo::IN_LOBBY)
 					AddMsg(txCantKickUnconnected);
 				else
@@ -1240,7 +1230,7 @@ void ServerPanel::Event(GuiEvent e)
 			AddMsg(txNeedSelectedPlayer);
 		else
 		{
-			PlayerInfo& info = *N.players[grid.selected];
+			PlayerInfo& info = N.players[grid.selected];
 			if(info.id == Team.leader_id)
 				AddMsg(txAlreadyLeader);
 			else if(info.state == PlayerInfo::IN_LOBBY)
@@ -1258,9 +1248,9 @@ void ServerPanel::Event(GuiEvent e)
 		{
 			cstring error_text = nullptr;
 
-			for(auto player : N.players)
+			for(PlayerInfo& info : N.players)
 			{
-				if(!player->ready)
+				if(!info.ready)
 				{
 					error_text = txNotAllReady;
 					AddMsg(error_text);
@@ -1310,7 +1300,7 @@ void ServerPanel::Show()
 //=================================================================================================
 void ServerPanel::GetCell(int item, int column, Cell& cell)
 {
-	PlayerInfo& info = *N.players[item];
+	PlayerInfo& info = N.players[item];
 
 	if(column == 0)
 		cell.img = (info.ready ? tReady : tNotReady);
@@ -1506,9 +1496,9 @@ void ServerPanel::CheckReady()
 {
 	bool all_ready = true;
 
-	for(PlayerInfo* info : N.players)
+	for(PlayerInfo& info : N.players)
 	{
-		if(!info->ready)
+		if(!info.ready)
 		{
 			all_ready = false;
 			break;
@@ -1564,9 +1554,9 @@ bool ServerPanel::Quickstart()
 				}
 			}
 
-			for(PlayerInfo* info : N.players)
+			for(PlayerInfo& info : N.players)
 			{
-				if(!info->ready)
+				if(!info.ready)
 					return false;
 			}
 
@@ -1597,9 +1587,9 @@ cstring ServerPanel::TryStart()
 	if(starting)
 		return "Server is already starting.";
 
-	for(PlayerInfo* info : N.players)
+	for(PlayerInfo& info : N.players)
 	{
-		if(!info->ready)
+		if(!info.ready)
 			return "Not everyone is ready.";
 	}
 

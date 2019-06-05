@@ -71,8 +71,8 @@ public:
 	bool RemoveQuestItem(const Item* item, int refid = -1);
 	Unit* FindPlayerTradingWithUnit(Unit& u);
 	void AddLearningPoint(int count = 1);
-	void AddExp(int exp, vector<Unit*>* units = nullptr);
-	void AddGold(int count, vector<Unit*>* to = nullptr, bool show = false, bool is_quest = false);
+	void AddExp(int exp, rvector<Unit>* units = nullptr);
+	void AddGold(int count, rvector<Unit>* to = nullptr, bool show = false, bool is_quest = false);
 	void AddGoldS(int count) { AddGold(count, nullptr, true); }
 	void AddReward(int gold, int exp = 0);
 	void OnTravel(float dist);
@@ -81,8 +81,8 @@ public:
 	void SetBandit(bool is_bandit);
 	Unit* GetNearestTeamMember(const Vec3& pos, float* dist = nullptr);
 
-	vector<Unit*> members; // all team members
-	vector<Unit*> active_members; // team members that get gold (without quest units)
+	rvector<Unit> members; // all team members
+	rvector<Unit> active_members; // team members that get gold (without quest units)
 	Unit* leader;
 	int my_id, leader_id, players_level, free_recruits;
 	bool crazies_attack, // team attacked by crazies on current level

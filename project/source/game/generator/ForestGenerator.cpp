@@ -61,6 +61,7 @@ void ForestGenerator::GenerateObjects()
 //=================================================================================================
 void ForestGenerator::GenerateUnits()
 {
+	LevelArea& area = *L.local_area;
 	UnitData* ud_hunter = UnitData::Get("wild_hunter");
 	const int level = L.GetDifficultyLevel();
 	TmpUnitGroupList tmp;
@@ -94,11 +95,11 @@ void ForestGenerator::GenerateUnits()
 			if(Rand() % 5 == 0 && ud_hunter->level.x <= level)
 			{
 				int enemy_level = Random(ud_hunter->level.x, min(ud_hunter->level.y, level));
-				L.SpawnUnitNearLocation(L.local_ctx, pos3, *ud_hunter, nullptr, enemy_level, 6.f);
+				L.SpawnUnitNearLocation(area, pos3, *ud_hunter, nullptr, enemy_level, 6.f);
 			}
 			for(TmpUnitGroup::Spawn& spawn : tmp.Roll(level, 2))
 			{
-				if(!L.SpawnUnitNearLocation(L.local_ctx, pos3, *spawn.first, nullptr, spawn.second, 6.f))
+				if(!L.SpawnUnitNearLocation(area, pos3, *spawn.first, nullptr, spawn.second, 6.f))
 					break;
 			}
 		}

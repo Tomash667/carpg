@@ -318,7 +318,7 @@ bool Unit::DropItem(int index)
 			items.erase(items.begin() + index);
 		}
 		if(!QM.quest_secret->CheckMoonStone(item, *this))
-			L.AddGroundItem(L.GetContext(*this), item);
+			L.AddGroundItem(L.GetArea(*this), item);
 
 		if(Net::IsServer())
 		{
@@ -372,7 +372,7 @@ void Unit::DropItem(ITEM_SLOT slot)
 		item->pos.z -= cos(rot)*0.25f;
 		item->rot = Random(MAX_ANGLE);
 		item2 = nullptr;
-		L.AddGroundItem(L.GetContext(*this), item);
+		L.AddGroundItem(L.GetArea(*this), item);
 
 		if(Net::IsOnline())
 		{
@@ -434,7 +434,7 @@ bool Unit::DropItems(int index, uint count)
 			no_more = true;
 			items.erase(items.begin() + index);
 		}
-		L.AddGroundItem(L.GetContext(*this), item);
+		L.AddGroundItem(L.GetArea(*this), item);
 
 		if(Net::IsServer())
 		{
@@ -830,11 +830,11 @@ void Unit::AddItem2(const Item* item, uint count, uint team_count, bool show_msg
 		{
 			// check if unit is trading with someone that gets this item
 			Unit* u = nullptr;
-			for(Unit* member : Team.active_members)
+			for(Unit& member : Team.active_members)
 			{
-				if(member->IsPlayer() && member->player->IsTradingWith(this))
+				if(member.IsPlayer() && member.player->IsTradingWith(this))
 				{
-					u = member;
+					u = &member;
 					break;
 				}
 			}
@@ -1138,7 +1138,7 @@ void Unit::UpdateEffects(float dt)
 
 	// update poison damage
 	if(poison_dmg != 0.f)
-		game.GiveDmg(L.GetContext(*this), nullptr, poison_dmg * dt, *this, nullptr, Game::DMG_NO_BLOOD);
+		game.GiveDmg(L.GetArea(*this), nullptr, poison_dmg * dt, *this, nullptr, Game::DMG_NO_BLOOD);
 	if(IsPlayer())
 	{
 		if(Net::IsOnline() && !player->is_local && player->last_dmg_poison != poison_dmg)
@@ -1656,7 +1656,7 @@ void Unit::Save(GameWriter& f, bool local)
 	else
 		f << stats->subprofile;
 	f << gold;
-	f << in_building;
+	f << area_id;
 	f << to_remove;
 	f << temporary;
 	f << quest_refid;
@@ -1951,7 +1951,7 @@ void Unit::Load(GameReader& f, bool local)
 	bool old_invisible = false;
 	if(LOAD_VERSION < V_0_10)
 		f >> old_invisible;
-	f >> in_building;
+	f >> area_id;
 	f >> to_remove;
 	f >> temporary;
 	f >> quest_refid;
@@ -2668,7 +2668,6 @@ bool Unit::Read(BitStreamReader& f)
 	weapon_state = WS_HIDDEN;
 	talking = false;
 	busy = Unit::Busy_No;
-	in_building = -1;
 	frozen = FROZEN::NO;
 	usable = nullptr;
 	used_item = nullptr;
@@ -3352,11 +3351,11 @@ uint Unit::RemoveItem(int i_index, uint count)
 		{
 			// search for player trading with this unit
 			Unit* t = nullptr;
-			for(Unit* member : Team.active_members)
+			for(Unit& member : Team.active_members)
 			{
-				if(member->IsPlayer() && member->player->IsTradingWith(this))
+				if(member.IsPlayer() && member.player->IsTradingWith(this))
 				{
-					t = member;
+					t = &member;
 					break;
 				}
 			}
@@ -4649,7 +4648,7 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 		{
 			target_pos2 = target_pos = pos;
 			const Item* prev_used_item = used_item;
-			game.Unit_StopUsingUsable(L.GetContext(*this), *this, mode != BREAK_ACTION_MODE::FALL && notify);
+			game.Unit_StopUsingUsable(L.GetArea(*this), *this, mode != BREAK_ACTION_MODE::FALL && notify);
 			if(prev_used_item && slots[SLOT_WEAPON] == prev_used_item && !HaveShield())
 			{
 				weapon_state = WS_TAKEN;
@@ -4808,9 +4807,9 @@ void Unit::TryStandup(float dt)
 				else
 				{
 					// sprawdŸ czy nie ma wrogów
-					LevelContext& ctx = L.GetContext(*this);
+					LevelArea& area = L.GetArea(*this);
 					ok = true;
-					for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
+					for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
 					{
 						if((*it)->IsStanding() && IsEnemy(**it) && Vec3::Distance(pos, (*it)->pos) <= 20.f && L.CanSee(*this, **it))
 						{
@@ -4891,7 +4890,7 @@ void Unit::Standup()
 }
 
 //=================================================================================================
-void Unit::Die(LevelContext* ctx, Unit* killer)
+void Unit::Die(LevelArea& area, Unit* killer)
 {
 	ACTION prev_action = action;
 	Game& game = Game::Get();
@@ -4899,7 +4898,7 @@ void Unit::Die(LevelContext* ctx, Unit* killer)
 	if(live_state == FALL)
 	{
 		// unit already on ground, add blood
-		L.CreateBlood(*ctx, *this);
+		L.CreateBlood(area, *this);
 		live_state = DEAD;
 	}
 	else
@@ -4933,7 +4932,7 @@ void Unit::Die(LevelContext* ctx, Unit* killer)
 		}
 
 		// notify about death
-		for(vector<Unit*>::iterator it = ctx->units->begin(), end = ctx->units->end(); it != end; ++it)
+		for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
 		{
 			if((*it)->IsPlayer() || !(*it)->IsStanding() || !IsFriend(**it))
 				continue;
@@ -5068,7 +5067,7 @@ void Unit::DropGold(int count)
 		item->pos.x -= sin(rot)*0.25f;
 		item->pos.z -= cos(rot)*0.25f;
 		item->rot = Random(MAX_ANGLE);
-		L.AddGroundItem(L.GetContext(*this), item);
+		L.AddGroundItem(L.GetArea(*this), item);
 
 		// wyœlij info o animacji
 		if(Net::IsServer())
@@ -5551,8 +5550,7 @@ void Unit::OrderAttack()
 	}
 	else
 	{
-		LevelContext& ctx = L.GetContext(*this);
-		for(Unit* unit : *ctx.units)
+		for(Unit* unit : L.GetArea(*this).units)
 		{
 			if(unit->dont_attack && unit->IsEnemy(*Team.leader, true) && !IS_SET(unit->data->flags, F_PEACEFUL))
 			{

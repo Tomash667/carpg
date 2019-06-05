@@ -9,6 +9,8 @@
 #include "Perlin.h"
 #include "Portal.h"
 #include "Level.h"
+#include "BaseObject.h"
+#include "UnitData.h"
 
 //=================================================================================================
 void SecretLocationGenerator::Generate()
@@ -80,16 +82,18 @@ void SecretLocationGenerator::Generate()
 //=================================================================================================
 void SecretLocationGenerator::GenerateObjects()
 {
+	LevelArea& area = *L.local_area;
+
 	Vec3 pos(128.f, 0, 96.f * 2);
 	terrain->SetH(pos);
 	BaseObject* o = BaseObject::Get("tomashu_dom");
 	pos.y += 0.05f;
-	L.SpawnObjectEntity(L.local_ctx, o, pos, 0);
-	L.ProcessBuildingObjects(L.local_ctx, nullptr, nullptr, o->mesh, nullptr, 0.f, 0, Vec3(0, 0, 0), nullptr, nullptr, false);
+	L.SpawnObjectEntity(area, o, pos, 0);
+	L.ProcessBuildingObjects(area, nullptr, nullptr, o->mesh, nullptr, 0.f, 0, Vec3(0, 0, 0), nullptr, nullptr, false);
 
 	pos.z = 64.f;
 	terrain->SetH(pos);
-	L.SpawnObjectEntity(L.local_ctx, BaseObject::Get("portal"), pos, 0);
+	L.SpawnObjectEntity(area, BaseObject::Get("portal"), pos, 0);
 
 	Portal* portal = new Portal;
 	portal->at_level = 0;
@@ -115,7 +119,7 @@ void SecretLocationGenerator::GenerateObjects()
 				Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 				pos.y = terrain->GetH(pos);
 				OutsideObject& o = trees[Rand() % n_trees];
-				L.SpawnObjectEntity(L.local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+				L.SpawnObjectEntity(area, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 			}
 			else if(tile == TT_GRASS3)
 			{
@@ -127,7 +131,7 @@ void SecretLocationGenerator::GenerateObjects()
 				else
 					type = Rand() % 3;
 				OutsideObject& o = trees2[type];
-				L.SpawnObjectEntity(L.local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+				L.SpawnObjectEntity(area, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 			}
 		}
 	}
@@ -144,7 +148,7 @@ void SecretLocationGenerator::GenerateObjects()
 				Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 				pos.y = terrain->GetH(pos);
 				OutsideObject& o = misc[Rand() % n_misc];
-				L.SpawnObjectEntity(L.local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+				L.SpawnObjectEntity(area, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 			}
 		}
 	}
@@ -153,6 +157,7 @@ void SecretLocationGenerator::GenerateObjects()
 //=================================================================================================
 void SecretLocationGenerator::GenerateUnits()
 {
+	LevelArea& area = *L.local_area;
 	UnitData* golem = UnitData::Get("golem_adamantine");
 	static vector<Vec2> poss;
 
@@ -175,7 +180,7 @@ void SecretLocationGenerator::GenerateUnits()
 
 		if(ok)
 		{
-			L.SpawnUnitNearLocation(L.local_ctx, Vec3(pos.x, 0, pos.y), *golem, nullptr, -2);
+			L.SpawnUnitNearLocation(area, Vec3(pos.x, 0, pos.y), *golem, nullptr, -2);
 			poss.push_back(pos);
 			++added;
 		}

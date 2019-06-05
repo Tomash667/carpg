@@ -4,28 +4,21 @@
 #include "Location.h"
 #include "LevelArea.h"
 #include "TerrainTile.h"
-#include "Blood.h"
-#include "Object.h"
 
 //-----------------------------------------------------------------------------
 struct OutsideLocation : public Location, public LevelArea
 {
-	vector<Object*> objects;
-	vector<Chest*> chests;
-	vector<Usable*> usables;
-	vector<Blood> bloods;
 	TerrainTile* tiles;
 	float* h;
 	static const int size = 16 * 8;
 
-	OutsideLocation() : Location(true), tiles(nullptr), h(nullptr)
+	OutsideLocation() : Location(true), LevelArea(LevelArea::Type::Outside, LevelArea::OUTSIDE_ID, true), tiles(nullptr), h(nullptr)
 	{
 	}
 	virtual ~OutsideLocation();
 
-	// from ILevel
-	void ApplyContext(LevelContext& ctx) override;
 	// from Location
+	void Apply(vector<std::reference_wrapper<LevelArea>>& areas) override;
 	void Save(GameWriter& f, bool local) override;
 	void Load(GameReader& f, bool local, LOCATION_TOKEN token) override;
 	void Write(BitStreamWriter& f) override;

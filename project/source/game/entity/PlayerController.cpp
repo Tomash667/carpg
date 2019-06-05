@@ -1243,14 +1243,14 @@ void PlayerController::AddItemMessage(uint count)
 //=================================================================================================
 void PlayerController::PayCredit(int count)
 {
-	LocalVector<Unit*> units;
-	for(Unit* u : Team.active_members)
+	rvector<Unit> units;
+	for(Unit& u : Team.active_members)
 	{
-		if(u != unit)
-			units->push_back(u);
+		if(&u != unit)
+			units.push_back(&u);
 	}
 
-	Team.AddGold(count, units);
+	Team.AddGold(count, &units);
 
 	credit -= count;
 	if(credit < 0)
@@ -1275,10 +1275,10 @@ void PlayerController::UseDays(int count)
 		count -= free_days;
 		free_days = 0;
 
-		for(auto info : N.players)
+		for(PlayerInfo& info : N.players)
 		{
-			if(info->left == PlayerInfo::LEFT_NO && info->pc != this)
-				info->pc->free_days += count;
+			if(info.left == PlayerInfo::LEFT_NO && info.pc != this)
+				info.pc->free_days += count;
 		}
 
 		W.Update(count, World::UM_NORMAL);
@@ -1470,8 +1470,8 @@ void PlayerController::Yell()
 	}
 	unit->Talk(RandomString(Game::Get().txYell), 0);
 
-	LevelContext& ctx = L.GetContext(*unit);
-	for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
+	LevelArea& area = L.GetArea(*unit);
+	for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
 	{
 		Unit& u2 = **it;
 		if(u2.IsAI() && u2.IsStanding() && !unit->IsEnemy(u2) && !unit->IsFriend(u2) && u2.busy == Unit::Busy_No && u2.frozen == FROZEN::NO && !u2.usable

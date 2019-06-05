@@ -15,25 +15,9 @@ MultiInsideLocation::MultiInsideLocation(int _levels) : active_level(-1), active
 }
 
 //=================================================================================================
-void MultiInsideLocation::ApplyContext(LevelContext& ctx)
+void MultiInsideLocation::Apply(vector<std::reference_wrapper<LevelArea>>& areas)
 {
-	ctx.units = &active->units;
-	ctx.objects = &active->objects;
-	ctx.chests = &active->chests;
-	ctx.traps = &active->traps;
-	ctx.doors = &active->doors;
-	ctx.items = &active->items;
-	ctx.usables = &active->usables;
-	ctx.bloods = &active->bloods;
-	ctx.lights = &active->lights;
-	ctx.have_terrain = false;
-	ctx.require_tmp_ctx = true;
-	ctx.type = LevelContext::Inside;
-	ctx.building_id = -1;
-	ctx.mine = Int2(0, 0);
-	ctx.maxe = Int2(active->w, active->h);
-	ctx.tmp_ctx = nullptr;
-	ctx.masks = nullptr;
+	areas.push_back(*active);
 }
 
 //=================================================================================================
@@ -61,7 +45,7 @@ void MultiInsideLocation::Save(GameWriter& f, bool local)
 void MultiInsideLocation::Load(GameReader& f, bool local, LOCATION_TOKEN token)
 {
 	InsideLocation::Load(f, local, token);
-	
+
 	f >> active_level;
 	f >> generated;
 
@@ -155,7 +139,7 @@ bool MultiInsideLocation::FindUnit(Unit* unit, int* level)
 
 	for(int i = 0; i < generated; ++i)
 	{
-		if(levels[i].FindUnit(unit))
+		if(levels[i].HaveUnit(unit))
 		{
 			if(level)
 				*level = i;

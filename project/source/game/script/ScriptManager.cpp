@@ -649,7 +649,7 @@ void ScriptManager::RegisterGame()
 		.Method("void Fill(UnitGroup@, int, int)", asMETHOD(TmpUnitGroup, FillS))
 		.Method("Spawn Get(uint)", asMETHOD(TmpUnitGroup, GetS));
 
-	AddType("LevelContext");
+	AddType("LevelArea");
 
 	AddType("Location")
 		.Member("const Vec2 pos", offsetof(Location, pos))
@@ -702,9 +702,9 @@ void ScriptManager::RegisterGame()
 		.AddFunction("GroundItem@ FindNearestItem(Item@, const Vec3& in)", asMETHOD(Level, FindNearestItem))
 		.AddFunction("void SpawnItemRandomly(Item@, uint = 1)", asMETHOD(Level, SpawnItemRandomly))
 		.AddFunction("Unit@ SpawnUnitNearLocation(UnitData@, const Vec3& in, float)", asMETHOD(Level, SpawnUnitNearLocationS))
-		.AddFunction("Unit@ SpawnUnit(LevelContext@, Spawn)", asMETHOD(Level, SpawnUnit))
+		.AddFunction("Unit@ SpawnUnit(LevelArea@, Spawn)", asMETHOD(Level, SpawnUnit))
 		.AddFunction("Unit@ GetMayor()", asMETHOD(Level, GetMayor))
-		.AddFunction("LevelContext@ GetContext(Unit@)", asMETHODPR(Level, GetContext, (Unit&), LevelContext&));
+		.AddFunction("LevelArea@ GetArea(Unit@)", asMETHODPR(Level, GetArea, (Unit&), LevelArea&));
 
 	WithNamespace("StockScript")
 		.AddFunction("void AddItem(Item@, uint = 1)", asFUNCTION(StockScript_AddItem)) // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<

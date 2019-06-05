@@ -62,22 +62,13 @@ bool TeamHaveOldBow()
 //=================================================================================================
 void DodajStraznikow()
 {
-	Unit* u = nullptr;
-	UnitData* ud = UnitData::Get("q_gobliny_szlachcic2");
-
 	// szukaj szlachcica
-	for(vector<Unit*>::iterator it = L.local_ctx.units->begin(), end = L.local_ctx.units->end(); it != end; ++it)
-	{
-		if((*it)->data == ud)
-		{
-			u = *it;
-			break;
-		}
-	}
+	UnitData* ud = UnitData::Get("q_gobliny_szlachcic2");
+	Unit* u = L.local_area->FindUnit(ud);
 	assert(u);
 
 	// szukaj tronu
-	Usable* use = L.local_ctx.FindUsable("throne");
+	Usable* use = L.local_area->FindUsable(BaseUsable::Get("throne"));
 	assert(use);
 
 	// przesuñ szlachcica w pobli¿e tronu
@@ -88,7 +79,7 @@ void DodajStraznikow()
 	InsideLocationLevel& lvl = inside->GetLevelData();
 	Room* room = lvl.GetNearestRoom(u->pos);
 	assert(room);
-	for(vector<Unit*>::iterator it = L.local_ctx.units->begin(), end = L.local_ctx.units->end(); it != end; ++it)
+	for(vector<Unit*>::iterator it = L.local_area->units.begin(), end = L.local_area->units.end(); it != end; ++it)
 	{
 		if((*it)->data != ud && room->IsInside((*it)->pos))
 		{

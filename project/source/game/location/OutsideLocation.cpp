@@ -40,25 +40,9 @@ OutsideLocation::~OutsideLocation()
 }
 
 //=================================================================================================
-void OutsideLocation::ApplyContext(LevelContext& ctx)
+void OutsideLocation::Apply(vector<std::reference_wrapper<LevelArea>>& areas)
 {
-	ctx.units = &units;
-	ctx.objects = &objects;
-	ctx.chests = &chests;
-	ctx.traps = nullptr;
-	ctx.doors = nullptr;
-	ctx.items = &items;
-	ctx.usables = &usables;
-	ctx.bloods = &bloods;
-	ctx.lights = nullptr;
-	ctx.have_terrain = true;
-	ctx.require_tmp_ctx = true;
-	ctx.type = LevelContext::Outside;
-	ctx.building_id = -1;
-	ctx.mine = Int2(0, 0);
-	ctx.maxe = Int2(size, size);
-	ctx.tmp_ctx = nullptr;
-	ctx.masks = nullptr;
+	areas.push_back(*this);
 }
 
 //=================================================================================================
@@ -68,35 +52,7 @@ void OutsideLocation::Save(GameWriter& f, bool local)
 
 	if(last_visit != -1)
 	{
-		// units
-		f << units.size();
-		for(Unit* unit : units)
-			unit->Save(f, local);
-
-		// objects
-		f << objects.size();
-		for(Object* object : objects)
-			object->Save(f);
-
-		// chests
-		f << chests.size();
-		for(Chest* chest : chests)
-			chest->Save(f, local);
-
-		// ground items
-		f << items.size();
-		for(GroundItem* item : items)
-			item->Save(f);
-
-		// usable objects
-		f << usables.size();
-		for(Usable* usable : usables)
-			usable->Save(f, local);
-
-		// blood
-		f << bloods.size();
-		for(Blood& blood : bloods)
-			blood.Save(f);
+		LevelArea::Save(f);
 
 		// terrain
 		f.Write(tiles, sizeof(TerrainTile)*size*size);
@@ -113,53 +69,10 @@ void OutsideLocation::Load(GameReader& f, bool local, LOCATION_TOKEN token)
 
 	if(last_visit != -1)
 	{
-		// units
-		units.resize(f.Read<uint>());
-		for(Unit*& unit : units)
-		{
-			unit = new Unit;
-			Unit::AddRefid(unit);
-			unit->Load(f, local);
-		}
-
-		// objects
-		objects.resize(f.Read<uint>());
-		for(Object*& object : objects)
-		{
-			object = new Object;
-			object->Load(f);
-		}
-
-		// chests
-		chests.resize(f.Read<uint>());
-		for(Chest*& chest : chests)
-		{
-			chest = new Chest;
-			chest->Load(f, local);
-		}
-
-		// ground items
-		items.resize(f.Read<uint>());
-		for(GroundItem*& item : items)
-		{
-			item = new GroundItem;
-			GroundItem::AddRefid(item);
-			item->Load(f);
-		}
-
-		// usable objects
-		usables.resize(f.Read<uint>());
-		for(Usable*& usable : usables)
-		{
-			usable = new Usable;
-			Usable::AddRefid(usable);
-			usable->Load(f, local);
-		}
-
-		// bloods
-		bloods.resize(f.Read<uint>());
-		for(Blood& blood : bloods)
-			blood.Load(f);
+		if(LOAD_VERSION >= V_DEV)
+			LevelArea::Load(f, local);
+		else
+			LevelArea::Load(f, local, old::LoadCompatibility::OutsideLocation);
 
 		// terrain
 		int size2 = size + 1;
@@ -190,30 +103,7 @@ void OutsideLocation::Write(BitStreamWriter& f)
 	f.Write((cstring)h, sizeof(float)*(size + 1)*(size + 1));
 	f << L.light_angle;
 
-	// usable objects
-	f.WriteCasted<byte>(usables.size());
-	for(Usable* usable : usables)
-		usable->Write(f);
-	// units
-	f.WriteCasted<byte>(units.size());
-	for(Unit* unit : units)
-		unit->Write(f);
-	// ground items
-	f.WriteCasted<byte>(items.size());
-	for(GroundItem* item : items)
-		item->Write(f);
-	// bloods
-	f.WriteCasted<word>(bloods.size());
-	for(Blood& blood : bloods)
-		blood.Write(f);
-	// objects
-	f.WriteCasted<word>(objects.size());
-	for(Object* object : objects)
-		object->Write(f);
-	// chests
-	f.WriteCasted<byte>(chests.size());
-	for(Chest* chest : chests)
-		chest->Write(f);
+	LevelArea::Write(f);
 
 	WritePortals(f);
 }
@@ -237,113 +127,8 @@ bool OutsideLocation::Read(BitStreamReader& f)
 		return false;
 	}
 
-	// usable objects
-	byte count;
-	f >> count;
-	if(!f.Ensure(count * Usable::MIN_SIZE))
-	{
-		Error("Read level: Broken usable object count.");
+	if(!LevelArea::Read(f))
 		return false;
-	}
-	usables.resize(count);
-	for(Usable*& usable : usables)
-	{
-		usable = new Usable;
-		if(!usable->Read(f))
-		{
-			Error("Read level: Broken usable object.");
-			return false;
-		}
-	}
-
-	// units
-	f >> count;
-	if(!f.Ensure(count * Unit::MIN_SIZE))
-	{
-		Error("Read level: Broken unit count.");
-		return false;
-	}
-	units.resize(count);
-	for(Unit*& unit : units)
-	{
-		unit = new Unit;
-		if(!unit->Read(f))
-		{
-			Error("Read level: Broken unit.");
-			return false;
-		}
-	}
-
-	// ground items
-	f >> count;
-	if(!f.Ensure(count * GroundItem::MIN_SIZE))
-	{
-		Error("Read level: Broken ground item count.");
-		return false;
-	}
-	items.resize(count);
-	for(GroundItem*& item : items)
-	{
-		item = new GroundItem;
-		if(!item->Read(f))
-		{
-			Error("Read level: Broken ground item.");
-			return false;
-		}
-	}
-
-	// bloods
-	word count2;
-	f >> count2;
-	if(!f.Ensure(count2 * Blood::MIN_SIZE))
-	{
-		Error("Read level: Broken blood count.");
-		return false;
-	}
-	bloods.resize(count2);
-	for(Blood& blood : bloods)
-		blood.Read(f);
-	if(!f)
-	{
-		Error("Read level: Broken blood.");
-		return false;
-	}
-
-	// objects
-	f >> count2;
-	if(!f.Ensure(count2 * Object::MIN_SIZE))
-	{
-		Error("Read level: Broken object count.");
-		return false;
-	}
-	objects.resize(count2);
-	for(Object*& object : objects)
-	{
-		object = new Object;
-		if(!object->Read(f))
-		{
-			Error("Read level: Broken object.");
-			return false;
-		}
-	}
-
-	// chests
-	f >> count;
-	if(!f.Ensure(count * Chest::MIN_SIZE))
-	{
-		Error("Read level: Broken chest count.");
-		return false;
-	}
-	chests.resize(count);
-	for(Chest*& chest : chests)
-	{
-		chest = new Chest;
-		if(!chest->Read(f))
-		{
-			Error("Read level: Broken chest.");
-			return false;
-		}
-	}
 
 	// portals
 	if(!ReadPortals(f, L.dungeon_level))
@@ -358,12 +143,7 @@ bool OutsideLocation::Read(BitStreamReader& f)
 //=================================================================================================
 void OutsideLocation::BuildRefidTables()
 {
-	for(Unit* unit : units)
-		Unit::AddRefid(unit);
-	for(Usable* usable : usables)
-		Usable::AddRefid(usable);
-	for(GroundItem* item : items)
-		GroundItem::AddRefid(item);
+	LevelArea::BuildRefidTables();
 }
 
 //=================================================================================================

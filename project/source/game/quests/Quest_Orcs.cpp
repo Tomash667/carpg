@@ -257,10 +257,12 @@ GameDialog* Quest_Orcs2::GetDialog(int type2)
 //=================================================================================================
 void WarpToThroneOrcBoss()
 {
+	LevelArea& area = *L.local_area;
+
 	// szukaj orka
 	UnitData* ud = UnitData::Get("q_orkowie_boss");
 	Unit* u = nullptr;
-	for(vector<Unit*>::iterator it = L.local_ctx.units->begin(), end = L.local_ctx.units->end(); it != end; ++it)
+	for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
 	{
 		if((*it)->data == ud)
 		{
@@ -271,7 +273,7 @@ void WarpToThroneOrcBoss()
 	assert(u);
 
 	// szukaj tronu
-	Usable* use = L.local_ctx.FindUsable("throne");
+	Usable* use = area.FindUsable(BaseUsable::Get("throne"));
 	assert(use);
 
 	// przenieœ
@@ -457,18 +459,19 @@ void Quest_Orcs2::SetProgress(int prog2)
 	case Progress::Finished:
 		// pogadano z gorushem
 		{
+			LevelArea& area = *L.local_area;
 			state = Quest::Completed;
 			Team.AddReward(Random(9000, 11000), 25000);
 			OnUpdate(game->txQuest[206]);
 			QM.EndUniqueQuest();
 			// gorush
 			Team.RemoveTeamMember(orc);
-			Usable* tron = L.local_ctx.FindUsable("throne");
-			assert(tron);
-			if(tron)
+			Usable* throne = area.FindUsable(BaseUsable::Get("throne"));
+			assert(throne);
+			if(throne)
 			{
 				orc->ai->idle_action = AIController::Idle_WalkUse;
-				orc->ai->idle_data.usable = tron;
+				orc->ai->idle_data.usable = throne;
 				orc->ai->timer = 9999.f;
 			}
 			orc = nullptr;
@@ -483,7 +486,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 			};
 			UnitData* ud_slaby = UnitData::Get("q_orkowie_slaby");
 
-			for(vector<Unit*>::iterator it = L.local_ctx.units->begin(), end = L.local_ctx.units->end(); it != end; ++it)
+			for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
 			{
 				Unit& u = **it;
 				if(u.IsAlive())

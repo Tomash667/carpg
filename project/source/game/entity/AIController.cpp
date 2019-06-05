@@ -126,8 +126,8 @@ void AIController::Save(GameWriter& f)
 		break;
 	case AIController::Idle_MoveRegion:
 	case AIController::Idle_RunRegion:
-		f << idle_data.area.id;
-		f << idle_data.area.pos;
+		f << idle_data.region.id;
+		f << idle_data.region.pos;
 		break;
 	default:
 		assert(0);
@@ -232,8 +232,8 @@ void AIController::Load(GameReader& f)
 		break;
 	case AIController::Idle_MoveRegion:
 	case AIController::Idle_RunRegion:
-		f >> idle_data.area.id;
-		f >> idle_data.area.pos;
+		f >> idle_data.region.id;
+		f >> idle_data.region.pos;
 		break;
 	default:
 		assert(0);
@@ -334,7 +334,7 @@ bool AIController::CanWander() const
 			else
 				return true;
 		}
-		else if(unit->in_building == -1)
+		else if(unit->area_id == LevelArea::OUTSIDE_ID)
 			return true;
 		else
 			return false;
@@ -348,9 +348,9 @@ bool AIController::ValidateTarget(Unit* target)
 {
 	assert(target);
 
-	LevelContext& ctx = L.GetContext(*unit);
+	LevelArea& area = L.GetArea(*unit);
 
-	for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
+	for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
 	{
 		if(*it == target)
 			return true;

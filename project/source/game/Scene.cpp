@@ -554,20 +554,22 @@ void Game::CleanScene()
 }
 
 //=================================================================================================
-void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outside)
+void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside)
 {
 	PROFILER_BLOCK("ListDrawObjects");
 
+	TmpLevelArea& tmp_area = *area.tmp;
+
 	draw_batch.Clear();
 	ClearGrass();
-	if(ctx.type == LevelContext::Outside)
+	if(area.area_type == LevelArea::Type::Outside)
 	{
 		ListQuadtreeNodes();
 		ListGrass();
 	}
 
 	// terrain
-	if(ctx.type == LevelContext::Outside && IS_SET(draw_flags, DF_TERRAIN))
+	if(area.area_type == LevelArea::Type::Outside && IS_SET(draw_flags, DF_TERRAIN))
 	{
 		PROFILER_BLOCK("Terrain");
 		uint parts = L.terrain->GetPartsCount();
@@ -579,7 +581,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 	}
 
 	// dungeon
-	if(ctx.type == LevelContext::Inside && IS_SET(draw_flags, DF_TERRAIN))
+	if(area.area_type == LevelArea::Type::Inside && IS_SET(draw_flags, DF_TERRAIN))
 	{
 		PROFILER_BLOCK("Dungeon");
 		FillDrawBatchDungeonParts(frustum);
@@ -589,10 +591,10 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 	if(IS_SET(draw_flags, DF_UNITS))
 	{
 		PROFILER_BLOCK("Units");
-		for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
+		for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
 		{
 			Unit& u = **it;
-			ListDrawObjectsUnit(&ctx, frustum, outside, u);
+			ListDrawObjectsUnit(&area, frustum, outside, u);
 		}
 	}
 
@@ -600,7 +602,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 	if(IS_SET(draw_flags, DF_OBJECTS))
 	{
 		PROFILER_BLOCK("Objects");
-		if(ctx.type == LevelContext::Outside)
+		if(area.area_type == LevelArea::Type::Outside)
 		{
 			for(LevelPart* part : level_parts)
 			{
@@ -608,17 +610,17 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 				{
 					const Object& o = *obj.obj;
 					if(frustum.SphereToFrustum(o.pos, o.GetRadius()))
-						AddObjectToDrawBatch(ctx, o, frustum);
+						AddObjectToDrawBatch(area, o, frustum);
 				}
 			}
 		}
 		else
 		{
-			for(vector<Object*>::iterator it = ctx.objects->begin(), end = ctx.objects->end(); it != end; ++it)
+			for(vector<Object*>::iterator it = area.objects.begin(), end = area.objects.end(); it != end; ++it)
 			{
 				const Object& o = **it;
 				if(frustum.SphereToFrustum(o.pos, o.GetRadius()))
-					AddObjectToDrawBatch(ctx, o, frustum);
+					AddObjectToDrawBatch(area, o, frustum);
 			}
 		}
 	}
@@ -628,14 +630,14 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 	{
 		PROFILER_BLOCK("Ground items");
 		Vec3 pos;
-		for(vector<GroundItem*>::iterator it = ctx.items->begin(), end = ctx.items->end(); it != end; ++it)
+		for(vector<GroundItem*>::iterator it = area.items.begin(), end = area.items.end(); it != end; ++it)
 		{
 			GroundItem& item = **it;
 			if(!item.item)
 			{
 				ReportError(7, Format("GroundItem with null item at %g;%g;%g (count %d, team count %d).",
 					item.pos.x, item.pos.y, item.pos.z, item.count, item.team_count));
-				ctx.items->erase(it);
+				area.items.erase(it);
 				break;
 			}
 			Mesh* mesh;
@@ -657,7 +659,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 				node->tex_override = nullptr;
 				node->tint = Vec4(1, 1, 1, 1);
 				if(!outside)
-					node->lights = GatherDrawBatchLights(ctx, node, item.pos.x, item.pos.z, mesh->head.radius);
+					node->lights = GatherDrawBatchLights(area, node, item.pos.x, item.pos.z, mesh->head.radius);
 				if(pc_data.before_player == BP_ITEM && pc_data.before_player_ptr.item == &item)
 				{
 					if(cl_glow)
@@ -680,7 +682,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 	if(IS_SET(draw_flags, DF_USABLES))
 	{
 		PROFILER_BLOCK("Usables");
-		for(vector<Usable*>::iterator it = ctx.usables->begin(), end = ctx.usables->end(); it != end; ++it)
+		for(vector<Usable*>::iterator it = area.usables.begin(), end = area.usables.end(); it != end; ++it)
 		{
 			Usable& use = **it;
 			Mesh* mesh = use.GetMesh();
@@ -694,7 +696,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 				node->tex_override = nullptr;
 				node->tint = Vec4(1, 1, 1, 1);
 				if(!outside)
-					node->lights = GatherDrawBatchLights(ctx, node, use.pos.x, use.pos.z, mesh->head.radius);
+					node->lights = GatherDrawBatchLights(area, node, use.pos.x, use.pos.z, mesh->head.radius);
 				if(pc_data.before_player == BP_USABLE && pc_data.before_player_ptr.usable == &use)
 				{
 					if(cl_glow)
@@ -714,10 +716,10 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 	}
 
 	// chests
-	if(ctx.chests && IS_SET(draw_flags, DF_USABLES))
+	if(IS_SET(draw_flags, DF_USABLES))
 	{
 		PROFILER_BLOCK("Chests");
-		for(vector<Chest*>::iterator it = ctx.chests->begin(), end = ctx.chests->end(); it != end; ++it)
+		for(vector<Chest*>::iterator it = area.chests.begin(), end = area.chests.end(); it != end; ++it)
 		{
 			Chest& chest = **it;
 			if(frustum.SphereToFrustum(chest.pos, chest.mesh_inst->mesh->head.radius))
@@ -740,7 +742,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 				node->tex_override = nullptr;
 				node->tint = Vec4(1, 1, 1, 1);
 				if(!outside)
-					node->lights = GatherDrawBatchLights(ctx, node, chest.pos.x, chest.pos.z, chest.mesh_inst->mesh->head.radius);
+					node->lights = GatherDrawBatchLights(area, node, chest.pos.x, chest.pos.z, chest.mesh_inst->mesh->head.radius);
 				if(pc_data.before_player == BP_CHEST && pc_data.before_player_ptr.chest == &chest)
 				{
 					if(cl_glow)
@@ -760,9 +762,9 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 	}
 
 	// doors
-	if(ctx.doors && IS_SET(draw_flags, DF_USABLES))
+	if(IS_SET(draw_flags, DF_USABLES))
 	{
-		for(vector<Door*>::iterator it = ctx.doors->begin(), end = ctx.doors->end(); it != end; ++it)
+		for(vector<Door*>::iterator it = area.doors.begin(), end = area.doors.end(); it != end; ++it)
 		{
 			Door& door = **it;
 			if(frustum.SphereToFrustum(door.pos, door.mesh_inst->mesh->head.radius))
@@ -785,7 +787,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 				node->tex_override = nullptr;
 				node->tint = Vec4(1, 1, 1, 1);
 				if(!outside)
-					node->lights = GatherDrawBatchLights(ctx, node, door.pos.x, door.pos.z, door.mesh_inst->mesh->head.radius);
+					node->lights = GatherDrawBatchLights(area, node, door.pos.x, door.pos.z, door.mesh_inst->mesh->head.radius);
 				if(pc_data.before_player == BP_DOOR && pc_data.before_player_ptr.door == &door)
 				{
 					if(cl_glow)
@@ -807,12 +809,12 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 	// bloods
 	if(IS_SET(draw_flags, DF_BLOOD))
 	{
-		for(vector<Blood>::iterator it = ctx.bloods->begin(), end = ctx.bloods->end(); it != end; ++it)
+		for(vector<Blood>::iterator it = area.bloods.begin(), end = area.bloods.end(); it != end; ++it)
 		{
 			if(it->size > 0.f && frustum.SphereToFrustum(it->pos, it->size * it->scale))
 			{
 				if(!outside)
-					it->lights = GatherDrawBatchLights(ctx, nullptr, it->pos.x, it->pos.z, it->size);
+					it->lights = GatherDrawBatchLights(area, nullptr, it->pos.x, it->pos.z, it->size);
 				draw_batch.bloods.push_back(&*it);
 			}
 		}
@@ -821,7 +823,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 	// bullets
 	if(IS_SET(draw_flags, DF_BULLETS))
 	{
-		for(vector<Bullet>::iterator it = ctx.bullets->begin(), end = ctx.bullets->end(); it != end; ++it)
+		for(vector<Bullet>::iterator it = tmp_area.bullets.begin(), end = tmp_area.bullets.end(); it != end; ++it)
 		{
 			Bullet& bullet = *it;
 			if(bullet.mesh)
@@ -836,7 +838,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 					node->tint = Vec4(1, 1, 1, 1);
 					node->tex_override = nullptr;
 					if(!outside)
-						node->lights = GatherDrawBatchLights(ctx, node, bullet.pos.x, bullet.pos.z, bullet.mesh->head.radius);
+						node->lights = GatherDrawBatchLights(area, node, bullet.pos.x, bullet.pos.z, bullet.mesh->head.radius);
 					AddOrSplitSceneNode(node);
 				}
 			}
@@ -854,9 +856,9 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 	}
 
 	// traps
-	if(ctx.traps && IS_SET(draw_flags, DF_TRAPS))
+	if(IS_SET(draw_flags, DF_TRAPS))
 	{
-		for(vector<Trap*>::iterator it = ctx.traps->begin(), end = ctx.traps->end(); it != end; ++it)
+		for(vector<Trap*>::iterator it = area.traps.begin(), end = area.traps.end(); it != end; ++it)
 		{
 			Trap& trap = **it;
 			if((trap.state == 0 || (trap.base->type != TRAP_ARROW && trap.base->type != TRAP_POISON)) && frustum.SphereToFrustum(trap.obj.pos, trap.obj.mesh->head.radius))
@@ -875,7 +877,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 				node->tex_override = nullptr;
 				node->tint = Vec4(1, 1, 1, 1);
 				if(!outside)
-					node->lights = GatherDrawBatchLights(ctx, node, trap.obj.pos.x, trap.obj.pos.z, trap.obj.mesh->head.radius);
+					node->lights = GatherDrawBatchLights(area, node, trap.obj.pos.x, trap.obj.pos.z, trap.obj.mesh->head.radius);
 				AddOrSplitSceneNode(node);
 			}
 			if(trap.base->type == TRAP_SPEAR && InRange(trap.state, 2, 4) && frustum.SphereToFrustum(trap.obj2.pos, trap.obj2.mesh->head.radius))
@@ -894,7 +896,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 				node->tex_override = nullptr;
 				node->tint = Vec4(1, 1, 1, 1);
 				if(!outside)
-					node->lights = GatherDrawBatchLights(ctx, node, trap.obj2.pos.x, trap.obj2.pos.z, trap.obj2.mesh->head.radius);
+					node->lights = GatherDrawBatchLights(area, node, trap.obj2.pos.x, trap.obj2.pos.z, trap.obj2.mesh->head.radius);
 				AddOrSplitSceneNode(node);
 			}
 		}
@@ -903,7 +905,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 	// explosions
 	if(IS_SET(draw_flags, DF_EXPLOS))
 	{
-		for(vector<Explo*>::iterator it = ctx.explos->begin(), end = ctx.explos->end(); it != end; ++it)
+		for(vector<Explo*>::iterator it = tmp_area.explos.begin(), end = tmp_area.explos.end(); it != end; ++it)
 		{
 			Explo& explo = **it;
 			if(frustum.SphereToFrustum(explo.pos, explo.size))
@@ -915,7 +917,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 	if(IS_SET(draw_flags, DF_PARTICLES))
 	{
 		PROFILER_BLOCK("Particles");
-		for(vector<ParticleEmitter*>::iterator it = ctx.pes->begin(), end = ctx.pes->end(); it != end; ++it)
+		for(vector<ParticleEmitter*>::iterator it = tmp_area.pes.begin(), end = tmp_area.pes.end(); it != end; ++it)
 		{
 			ParticleEmitter& pe = **it;
 			if(pe.alive && frustum.SphereToFrustum(pe.pos, pe.radius))
@@ -932,22 +934,22 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 			}
 		}
 
-		if(ctx.tpes->empty())
+		if(tmp_area.tpes.empty())
 			draw_batch.tpes = nullptr;
 		else
-			draw_batch.tpes = ctx.tpes;
+			draw_batch.tpes = &tmp_area.tpes;
 	}
 	else
 		draw_batch.tpes = nullptr;
 
 	// electros
-	if(IS_SET(draw_flags, DF_LIGHTINGS) && !ctx.electros->empty())
-		draw_batch.electros = ctx.electros;
+	if(IS_SET(draw_flags, DF_LIGHTINGS) && !tmp_area.electros.empty())
+		draw_batch.electros = &tmp_area.electros;
 	else
 		draw_batch.electros = nullptr;
 
 	// portals
-	if(IS_SET(draw_flags, DF_PORTALS) && ctx.type != LevelContext::Building)
+	if(IS_SET(draw_flags, DF_PORTALS) && area.area_type != LevelArea::Type::Building)
 	{
 		Portal* portal = L.location->portal;
 		while(portal)
@@ -960,12 +962,12 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 
 	// areas
 	if(IS_SET(draw_flags, DF_AREA))
-		ListAreas(ctx);
+		ListAreas(area);
 
 	// colliders
 	if(draw_col)
 	{
-		for(vector<CollisionObject>::iterator it = ctx.colliders->begin(), end = ctx.colliders->end(); it != end; ++it)
+		for(vector<CollisionObject>::iterator it = tmp_area.colliders.begin(), end = tmp_area.colliders.end(); it != end; ++it)
 		{
 			DebugSceneNode::Type type = DebugSceneNode::MaxType;
 			Vec3 scale;
@@ -1101,7 +1103,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 }
 
 //=================================================================================================
-void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool outside, Unit& u)
+void Game::ListDrawObjectsUnit(LevelArea* area, FrustumPlanes& frustum, bool outside, Unit& u)
 {
 	if(!frustum.SphereToFrustum(u.visual_pos, u.GetSphereRadius()))
 		return;
@@ -1140,8 +1142,8 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 	int lights = -1;
 	if(!outside)
 	{
-		assert(ctx);
-		lights = GatherDrawBatchLights(*ctx, node, u.pos.x, u.pos.z, u.GetSphereRadius());
+		assert(area);
+		lights = GatherDrawBatchLights(*area, node, u.pos.x, u.pos.z, u.GetSphereRadius());
 	}
 	node->lights = lights;
 	if(selected)
@@ -1586,7 +1588,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 }
 
 //=================================================================================================
-void Game::AddObjectToDrawBatch(LevelContext& ctx, const Object& o, FrustumPlanes& frustum)
+void Game::AddObjectToDrawBatch(LevelArea& area, const Object& o, FrustumPlanes& frustum)
 {
 	SceneNode* node = node_pool.Get();
 	if(!o.IsBillboard())
@@ -1614,8 +1616,8 @@ void Game::AddObjectToDrawBatch(LevelContext& ctx, const Object& o, FrustumPlane
 	node->tint = Vec4(1, 1, 1, 1);
 	if(!IS_SET(node->mesh->head.flags, Mesh::F_SPLIT))
 	{
-		if(ctx.type != LevelContext::Outside)
-			node->lights = GatherDrawBatchLights(ctx, node, o.pos.x, o.pos.z, o.GetRadius());
+		if(area.area_type != LevelArea::Type::Outside)
+			node->lights = GatherDrawBatchLights(area, node, o.pos.x, o.pos.z, o.GetRadius());
 		AddOrSplitSceneNode(node);
 	}
 	else
@@ -1660,8 +1662,8 @@ void Game::AddObjectToDrawBatch(LevelContext& ctx, const Object& o, FrustumPlane
 					node2->flags |= SceneNode::F_NORMAL_MAP;
 				if(cl_specularmap && mesh.subs[i].tex_specular)
 					node2->flags |= SceneNode::F_SPECULAR_MAP;
-				if(ctx.type != LevelContext::Outside)
-					node2->lights = GatherDrawBatchLights(ctx, node2, pos.x, pos.z, radius, i);
+				if(area.area_type != LevelArea::Type::Outside)
+					node2->lights = GatherDrawBatchLights(area, node2, pos.x, pos.z, radius, i);
 				draw_batch.nodes.push_back(node2);
 			}
 
@@ -1682,9 +1684,9 @@ void Game::AddObjectToDrawBatch(LevelContext& ctx, const Object& o, FrustumPlane
 }
 
 //=================================================================================================
-void Game::ListAreas(LevelContext& ctx)
+void Game::ListAreas(LevelArea& area)
 {
-	if(ctx.type == LevelContext::Outside)
+	if(area.area_type == LevelArea::Type::Outside)
 	{
 		if(L.city_ctx)
 		{
@@ -1695,10 +1697,10 @@ void Game::ListAreas(LevelContext& ctx)
 				{
 					const EntryPoint& e = *entry_it;
 					Area& a = Add1(draw_batch.areas);
-					a.v[0] = Vec3(e.exit_area.v1.x, e.exit_y, e.exit_area.v2.y);
-					a.v[1] = Vec3(e.exit_area.v2.x, e.exit_y, e.exit_area.v2.y);
-					a.v[2] = Vec3(e.exit_area.v1.x, e.exit_y, e.exit_area.v1.y);
-					a.v[3] = Vec3(e.exit_area.v2.x, e.exit_y, e.exit_area.v1.y);
+					a.v[0] = Vec3(e.exit_region.v1.x, e.exit_y, e.exit_region.v2.y);
+					a.v[1] = Vec3(e.exit_region.v2.x, e.exit_y, e.exit_region.v2.y);
+					a.v[2] = Vec3(e.exit_region.v1.x, e.exit_y, e.exit_region.v1.y);
+					a.v[3] = Vec3(e.exit_region.v2.x, e.exit_y, e.exit_region.v1.y);
 				}
 			}
 
@@ -1706,10 +1708,10 @@ void Game::ListAreas(LevelContext& ctx)
 			{
 				const InsideBuilding& ib = **it;
 				Area& a = Add1(draw_batch.areas);
-				a.v[0] = Vec3(ib.enter_area.v1.x, ib.enter_y, ib.enter_area.v2.y);
-				a.v[1] = Vec3(ib.enter_area.v2.x, ib.enter_y, ib.enter_area.v2.y);
-				a.v[2] = Vec3(ib.enter_area.v1.x, ib.enter_y, ib.enter_area.v1.y);
-				a.v[3] = Vec3(ib.enter_area.v2.x, ib.enter_y, ib.enter_area.v1.y);
+				a.v[0] = Vec3(ib.enter_region.v1.x, ib.enter_y, ib.enter_region.v2.y);
+				a.v[1] = Vec3(ib.enter_region.v2.x, ib.enter_y, ib.enter_region.v2.y);
+				a.v[2] = Vec3(ib.enter_region.v1.x, ib.enter_y, ib.enter_region.v1.y);
+				a.v[3] = Vec3(ib.enter_region.v2.x, ib.enter_y, ib.enter_region.v1.y);
 			}
 		}
 
@@ -1756,7 +1758,7 @@ void Game::ListAreas(LevelContext& ctx)
 		}
 		draw_batch.area_range = 10.f;
 	}
-	else if(ctx.type == LevelContext::Inside)
+	else if(area.area_type == LevelArea::Type::Inside)
 	{
 		InsideLocation* inside = static_cast<InsideLocation*>(L.location);
 		InsideLocationLevel& lvl = inside->GetLevelData();
@@ -1831,11 +1833,11 @@ void Game::ListAreas(LevelContext& ctx)
 	{
 		// exit from building
 		Area& a = Add1(draw_batch.areas);
-		const Box2d& area = L.city_ctx->inside_buildings[ctx.building_id]->exit_area;
-		a.v[0] = Vec3(area.v1.x, 0.1f, area.v2.y);
-		a.v[1] = Vec3(area.v2.x, 0.1f, area.v2.y);
-		a.v[2] = Vec3(area.v1.x, 0.1f, area.v1.y);
-		a.v[3] = Vec3(area.v2.x, 0.1f, area.v1.y);
+		const Box2d& region = L.city_ctx->inside_buildings[area.area_id]->exit_region;
+		a.v[0] = Vec3(region.v1.x, 0.1f, region.v2.y);
+		a.v[1] = Vec3(region.v2.x, 0.1f, region.v2.y);
+		a.v[2] = Vec3(region.v1.x, 0.1f, region.v1.y);
+		a.v[3] = Vec3(region.v2.x, 0.1f, region.v1.y);
 		draw_batch.area_range = 5.f;
 	}
 
@@ -1878,7 +1880,7 @@ void Game::PrepareAreaPath()
 
 		float len = action.area_size.x * t;
 
-		if(L.location->outside && pc->unit->in_building == -1)
+		if(L.location->outside && pc->unit->area_id == LevelArea::OUTSIDE_ID)
 		{
 			// build line on terrain
 			area.points.clear();
@@ -2059,7 +2061,7 @@ void Game::PrepareAreaPath()
 			pc_data.action_ok = true;
 		}
 
-		bool outside = (L.location->outside && pc->unit->in_building == -1);
+		bool outside = (L.location->outside && pc->unit->area_id == LevelArea::OUTSIDE_ID);
 
 		// build circle
 		PrepareAreaPathCircle(area, radius, t * range, rot, outside);
@@ -2580,9 +2582,9 @@ void Game::AddOrSplitSceneNode(SceneNode* node, int exclude_subs)
 }
 
 //=================================================================================================
-int Game::GatherDrawBatchLights(LevelContext& ctx, SceneNode* node, float x, float z, float radius, int sub)
+int Game::GatherDrawBatchLights(LevelArea& area, SceneNode* node, float x, float z, float radius, int sub)
 {
-	assert(radius > 0 && ctx.lights);
+	assert(radius > 0);
 
 	Light* light[3];
 	float range[3], dist;
@@ -2590,9 +2592,9 @@ int Game::GatherDrawBatchLights(LevelContext& ctx, SceneNode* node, float x, flo
 	light[0] = light[1] = light[2] = nullptr;
 	range[0] = range[1] = range[2] = L.camera.draw_range;
 
-	if(!ctx.masks)
+	if(area.masks.empty())
 	{
-		for(vector<Light>::iterator it3 = ctx.lights->begin(), end3 = ctx.lights->end(); it3 != end3; ++it3)
+		for(vector<Light>::iterator it3 = area.lights.begin(), end3 = area.lights.end(); it3 != end3; ++it3)
 		{
 			dist = Distance(x, z, it3->t_pos.x, it3->t_pos.z);
 			if(dist < it3->range + radius && dist < range[2])
@@ -2660,7 +2662,7 @@ int Game::GatherDrawBatchLights(LevelContext& ctx, SceneNode* node, float x, flo
 		bool is_split = (node && IS_SET(node->GetMesh().head.flags, Mesh::F_SPLIT));
 		Vec2 light_pos;
 
-		for(vector<Light>::iterator it3 = ctx.lights->begin(), end3 = ctx.lights->end(); it3 != end3; ++it3)
+		for(vector<Light>::iterator it3 = area.lights.begin(), end3 = area.lights.end(); it3 != end3; ++it3)
 		{
 			bool ok = false;
 			if(!is_split)
@@ -2674,7 +2676,7 @@ int Game::GatherDrawBatchLights(LevelContext& ctx, SceneNode* node, float x, flo
 					float range_sum = 0.f;
 
 					// are there any masks between object and light?
-					for(vector<LightMask>::iterator it4 = ctx.masks->begin(), end4 = ctx.masks->end(); it4 != end4; ++it4)
+					for(vector<LightMask>::iterator it4 = area.masks.begin(), end4 = area.masks.end(); it4 != end4; ++it4)
 					{
 						if(LineToRectangleSize(obj_pos, light_pos, it4->pos, it4->size))
 						{
@@ -2723,7 +2725,7 @@ int Game::GatherDrawBatchLights(LevelContext& ctx, SceneNode* node, float x, flo
 					float range_sum = 0.f;
 
 					// are there any masks between object and light?
-					for(vector<LightMask>::iterator it4 = ctx.masks->begin(), end4 = ctx.masks->end(); it4 != end4; ++it4)
+					for(vector<LightMask>::iterator it4 = area.masks.begin(), end4 = area.masks.end(); it4 != end4; ++it4)
 					{
 						if(LineToRectangleSize(obj_pos, light_pos, it4->pos, it4->size))
 						{

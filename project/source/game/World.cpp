@@ -50,7 +50,7 @@ struct TmpLocation : public Location
 {
 	TmpLocation() : Location(false) {}
 
-	void ApplyContext(LevelContext& ctx) {}
+	void Apply(vector<std::reference_wrapper<LevelArea>>& areas) {}
 	void Write(BitStreamWriter& f) {}
 	bool Read(BitStreamReader& f) { return false; }
 	void BuildRefidTables() {}
@@ -716,7 +716,7 @@ void World::GenerateWorld(int start_location_type, int start_location_target)
 				for(Building* b : buildings)
 				{
 					CityBuilding& cb = Add1(city.buildings);
-					cb.type = b;
+					cb.building = b;
 				}
 				first_city_gen = false;
 
@@ -1424,10 +1424,7 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 	L.location_index = current_location_index;
 	L.location = current_location;
 	if(L.location && Any(state, State::INSIDE_LOCATION, State::INSIDE_ENCOUNTER))
-	{
-		L.ApplyContext(L.location, L.local_ctx);
-		L.city_ctx = (L.location->type == L_CITY ? static_cast<City*>(L.location) : nullptr);
-	}
+		L.Apply();
 }
 
 //=================================================================================================
@@ -2874,7 +2871,7 @@ void World::VerifyObjects()
 					VerifyObjects(ib->objects, e);
 					if(e > 0)
 					{
-						Error("%d errors in city '%s', building '%s'.", e, city->name.c_str(), ib->type->id.c_str());
+						Error("%d errors in city '%s', building '%s'.", e, city->name.c_str(), ib->building->id.c_str());
 						errors += e;
 					}
 				}

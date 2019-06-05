@@ -81,7 +81,7 @@ void Quest_Tournament::Load(GameReader& f)
 	state = TOURNAMENT_NOT_DONE;
 	units.clear();
 	if(generated)
-		master = L.local_ctx.FindUnit("arena_master");
+		master = L.local_area->FindUnit(UnitData::Get("arena_master"));
 	else
 		master = nullptr;
 }
@@ -250,17 +250,18 @@ bool Quest_Tournament::ShouldJoin(Unit& u)
 //=================================================================================================
 void Quest_Tournament::GenerateUnits()
 {
+	LevelArea& area = *L.city_ctx;
 	Vec3 pos = L.city_ctx->FindBuilding(BuildingGroup::BG_ARENA)->walk_pt;
-	master = L.local_ctx.FindUnit("arena_master");
+	master = area.FindUnit(UnitData::Get("arena_master"));
 
 	// warp heroes in front of arena
-	for(vector<Unit*>::iterator it = L.local_ctx.units->begin(), end = L.local_ctx.units->end(); it != end; ++it)
+	for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
 	{
 		Unit& u = **it;
 		if(ShouldJoin(u) && !u.IsFollowingTeamMember())
 		{
 			u.BreakAction(Unit::BREAK_ACTION_MODE::INSTANT, true);
-			L.WarpNearLocation(L.local_ctx, u, pos, 12.f, false);
+			L.WarpNearLocation(area, u, pos, 12.f, false);
 		}
 	}
 	InsideBuilding* inn = L.city_ctx->FindInn();
@@ -270,9 +271,9 @@ void Quest_Tournament::GenerateUnits()
 		if(ShouldJoin(u) && !u.IsFollowingTeamMember())
 		{
 			u.BreakAction(Unit::BREAK_ACTION_MODE::INSTANT, true);
-			u.in_building = -1;
-			L.WarpNearLocation(L.local_ctx, u, pos, 12.f, false);
-			L.local_ctx.units->push_back(&u);
+			u.area_id = LevelArea::OUTSIDE_ID;
+			L.WarpNearLocation(area, u, pos, 12.f, false);
+			area.units.push_back(&u);
 			it = inn->units.erase(it);
 			end = inn->units.end();
 		}
@@ -284,7 +285,7 @@ void Quest_Tournament::GenerateUnits()
 	int count = Random(6, 9);
 	for(int i = 0; i < count; ++i)
 	{
-		Unit* u = L.SpawnUnitNearLocation(L.local_ctx, pos, GetRandomHeroData(), nullptr, Random(5, 20), 12.f);
+		Unit* u = L.SpawnUnitNearLocation(area, pos, GetRandomHeroData(), nullptr, Random(5, 20), 12.f);
 		if(u)
 			u->temporary = true;
 	}
@@ -320,16 +321,16 @@ void Quest_Tournament::Update(float dt)
 
 		// team members joining
 		const Vec3& walk_pt = L.city_ctx->FindBuilding(BuildingGroup::BG_ARENA)->walk_pt;
-		for(Unit* unit : Team.members)
+		for(Unit& unit : Team.members)
 		{
-			if(unit->busy == Unit::Busy_No && Vec3::Distance2d(unit->pos, master->pos) <= 16.f && !unit->dont_attack && ShouldJoin(*unit))
+			if(unit.busy == Unit::Busy_No && Vec3::Distance2d(unit.pos, master->pos) <= 16.f && !unit.dont_attack && ShouldJoin(unit))
 			{
-				unit->busy = Unit::Busy_Tournament;
-				unit->ai->idle_action = AIController::Idle_Move;
-				unit->ai->idle_data.pos = walk_pt;
-				unit->ai->timer = Random(5.f, 10.f);
+				unit.busy = Unit::Busy_Tournament;
+				unit.ai->idle_action = AIController::Idle_Move;
+				unit.ai->idle_data.pos = walk_pt;
+				unit.ai->timer = Random(5.f, 10.f);
 
-				unit->Talk(RandomString(txAiJoinTour));
+				unit.Talk(RandomString(txAiJoinTour));
 			}
 		}
 
@@ -356,7 +357,7 @@ void Quest_Tournament::Update(float dt)
 			if(timer >= 60.f)
 			{
 				// gather npc's
-				for(vector<Unit*>::iterator it = L.local_ctx.units->begin(), end = L.local_ctx.units->end(); it != end; ++it)
+				for(vector<Unit*>::iterator it = L.local_area->units.begin(), end = L.local_area->units.end(); it != end; ++it)
 				{
 					Unit& u = **it;
 					if(Vec3::Distance2d(u.pos, master->pos) < 64.f && ShouldJoin(u))
@@ -483,7 +484,7 @@ void Quest_Tournament::Update(float dt)
 				{
 					auto& p = pairs.back();
 					if(p.first->to_remove || !p.first->IsStanding() || p.first->frozen != FROZEN::NO
-						|| !(Vec3::Distance2d(p.first->pos, master->pos) <= 64.f || p.first->in_building == arena))
+						|| !(Vec3::Distance2d(p.first->pos, master->pos) <= 64.f || p.first->area_id == arena))
 					{
 						// first unit left or can't fight, check other
 						state3 = 2;
@@ -493,7 +494,7 @@ void Quest_Tournament::Update(float dt)
 							game.gui->messages->AddGameMsg3(p.first->player, GMS_LEFT_EVENT);
 					}
 					else if(p.second->to_remove || !p.second->IsStanding() || p.second->frozen != FROZEN::NO
-						|| !(Vec3::Distance2d(p.second->pos, master->pos) <= 64.f || p.second->in_building == arena))
+						|| !(Vec3::Distance2d(p.second->pos, master->pos) <= 64.f || p.second->area_id == arena))
 					{
 						// second unit left or can't fight, first automaticaly goes to next round
 						state3 = 3;
@@ -557,7 +558,7 @@ void Quest_Tournament::Update(float dt)
 				{
 					if(other_fighter->to_remove || !other_fighter->IsStanding() || other_fighter->frozen != FROZEN::NO
 						|| !(Vec3::Distance2d(other_fighter->pos, master->pos) <= 64.f
-							|| other_fighter->in_building == arena))
+							|| other_fighter->area_id == arena))
 					{
 						// second unit left too
 						Talk(Format(txTour[13], other_fighter->GetRealName()));
@@ -737,9 +738,9 @@ void Quest_Tournament::VerifyUnit(Unit* unit)
 	if(!unit || !unit->IsPlayer() || unit->to_remove)
 		return;
 	bool leaving_event = true;
-	if(unit->in_building == arena)
+	if(unit->area_id == arena)
 		leaving_event = false;
-	else if(unit->in_building == -1)
+	else if(unit->area_id == LevelArea::OUTSIDE_ID)
 		leaving_event = Vec3::Distance2d(unit->pos, master->pos) > 16.f;
 
 	if(leaving_event != unit->player->leaving_event)
@@ -777,7 +778,7 @@ void Quest_Tournament::Talk(cstring text)
 {
 	Game& game = Game::Get();
 	master->Talk(text);
-	Vec3 pos = L.GetArena()->exit_area.Midpoint().XZ(1.5f);
+	Vec3 pos = L.GetArena()->exit_region.Midpoint().XZ(1.5f);
 	game.gui->game_gui->AddSpeechBubble(pos, text);
 	if(Net::IsOnline())
 	{

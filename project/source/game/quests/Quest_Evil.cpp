@@ -241,27 +241,27 @@ void Quest_Evil::SetProgress(int prog2)
 			target.active_quest = nullptr;
 			target.dont_clean = false;
 			BaseObject* base_obj = BaseObject::Get("bloody_altar");
-			Object* obj = L.local_ctx.FindObject(base_obj);
+			Object* obj = L.local_area->FindObject(base_obj);
 			obj->base = BaseObject::Get("altar");
 			obj->mesh = obj->base->mesh;
 			ResourceManager::Get<Mesh>().Load(obj->mesh);
 			// usuÒ czπsteczki
 			float best_dist = 999.f;
-			ParticleEmitter* pe = nullptr;
-			for(vector<ParticleEmitter*>::iterator it = L.local_ctx.pes->begin(), end = L.local_ctx.pes->end(); it != end; ++it)
+			ParticleEmitter* best_pe = nullptr;
+			for(ParticleEmitter* pe : L.local_area->tmp->pes)
 			{
-				if((*it)->tex == game->tKrew[BLOOD_RED])
+				if(pe->tex == game->tKrew[BLOOD_RED])
 				{
-					float dist = Vec3::Distance((*it)->pos, obj->pos);
+					float dist = Vec3::Distance(pe->pos, obj->pos);
 					if(dist < best_dist)
 					{
 						best_dist = dist;
-						pe = *it;
+						best_pe = pe;
 					}
 				}
 			}
-			assert(pe);
-			pe->destroy = true;
+			assert(best_pe);
+			best_pe->destroy = true;
 			// gadanie przez jozana
 			Unit* unit = Team.FindTeamMember("q_zlo_kaplan");
 			if(unit)
@@ -556,16 +556,16 @@ void Quest_Evil::GenerateBloodyAltar()
 	pe->tex = game->tKrew[BLOOD_RED];
 	pe->size = 0.5f;
 	pe->Init();
-	L.local_ctx.pes->push_back(pe);
+	lvl.tmp->pes.push_back(pe);
 
 	// dodaj krew
 	vector<Int2> path;
-	game->pathfinding->FindPath(L.local_ctx, lvl.staircase_up, PosToPt(obj->pos), path);
+	game->pathfinding->FindPath(lvl, lvl.staircase_up, PosToPt(obj->pos), path);
 	for(vector<Int2>::iterator it = path.begin(), end = path.end(); it != end; ++it)
 	{
 		if(it != path.begin())
 		{
-			Blood& b = Add1(L.local_ctx.bloods);
+			Blood& b = Add1(lvl.bloods);
 			b.pos = Vec3::Random(Vec3(-0.5f, 0.05f, -0.5f), Vec3(0.5f, 0.05f, 0.5f))
 				+ Vec3(2.f*it->x + 1 + (float(it->x) - (it - 1)->x) / 2, 0, 2.f*it->y + 1 + (float(it->y) - (it - 1)->y) / 2);
 			b.type = BLOOD_RED;
@@ -576,7 +576,7 @@ void Quest_Evil::GenerateBloodyAltar()
 			b.normal = Vec3(0, 1, 0);
 		}
 		{
-			Blood& b = Add1(L.local_ctx.bloods);
+			Blood& b = Add1(lvl.bloods);
 			b.pos = Vec3::Random(Vec3(-0.5f, 0.05f, -0.5f), Vec3(0.5f, 0.05f, 0.5f)) + Vec3(2.f*it->x + 1, 0, 2.f*it->y + 1);
 			b.type = BLOOD_RED;
 			b.rot = Random(MAX_ANGLE);
@@ -623,7 +623,7 @@ void Quest_Evil::GeneratePortal()
 		good_pts.pop_back();
 
 		L.global_col.clear();
-		L.GatherCollisionObjects(L.local_ctx, L.global_col, room->Center(), 2.f);
+		L.GatherCollisionObjects(lvl, L.global_col, room->Center(), 2.f);
 		if(L.global_col.empty())
 			break;
 
@@ -635,7 +635,7 @@ void Quest_Evil::GeneratePortal()
 	Vec3 portal_pos = room->Center();
 	room->target = RoomTarget::PortalCreate;
 	float rot = PI*Random(0, 3);
-	L.SpawnObjectEntity(L.local_ctx, BaseObject::Get("portal"), portal_pos, rot);
+	L.SpawnObjectEntity(lvl, BaseObject::Get("portal"), portal_pos, rot);
 	inside->portal = new Portal;
 	inside->portal->target_loc = -1;
 	inside->portal->next_portal = nullptr;
@@ -654,12 +654,14 @@ void Quest_Evil::GeneratePortal()
 //=================================================================================================
 void Quest_Evil::WarpEvilBossToAltar()
 {
+	LevelArea& area = *L.local_area;
+
 	// znajdü bossa
-	Unit* u = L.local_ctx.FindUnit("q_zlo_boss");
+	Unit* u = area.FindUnit(UnitData::Get("q_zlo_boss"));
 	assert(u);
 
 	// znajdü krwawy o≥tarz
-	Object* o = L.local_ctx.FindObject("bloody_altar");
+	Object* o = area.FindObject(BaseUsable::Get("bloody_altar"));
 	assert(o);
 
 	if(u && o)
@@ -671,7 +673,7 @@ void Quest_Evil::WarpEvilBossToAltar()
 
 		for(int i = 0; i < 2; ++i)
 		{
-			Unit* u2 = L.SpawnUnitNearLocation(L.local_ctx, u->pos, *UnitData::Get("zombie_ancient"));
+			Unit* u2 = L.SpawnUnitNearLocation(area, u->pos, *UnitData::Get("zombie_ancient"));
 			if(u2)
 			{
 				u2->dont_attack = true;

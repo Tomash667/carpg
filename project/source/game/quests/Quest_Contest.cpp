@@ -211,8 +211,8 @@ void Quest_Contest::Update(float dt)
 	if(Any(state, CONTEST_NOT_DONE, CONTEST_DONE, CONTEST_TODAY))
 		return;
 
-	int id;
-	InsideBuilding* inn = L.city_ctx->FindInn(id);
+	int area_id;
+	InsideBuilding* inn = L.city_ctx->FindInn(area_id);
 	Unit& innkeeper = *inn->FindUnit(UnitData::Get("innkeeper"));
 
 	if(!innkeeper.IsAlive())
@@ -247,7 +247,7 @@ void Quest_Contest::Update(float dt)
 			if(!unit->IsPlayer())
 				continue;
 			float dist = Vec3::Distance2d(unit->pos, innkeeper.pos);
-			bool leaving_event = (dist > 10.f || unit->in_building != id);
+			bool leaving_event = (dist > 10.f || unit->area_id != area_id);
 			if(leaving_event != unit->player->leaving_event)
 			{
 				unit->player->leaving_event = leaving_event;
@@ -271,7 +271,7 @@ void Quest_Contest::Update(float dt)
 			state = CONTEST_IN_PROGRESS;
 
 			// gather units
-			for(vector<Unit*>::iterator it = inn->ctx.units->begin(), end = inn->ctx.units->end(); it != end; ++it)
+			for(vector<Unit*>::iterator it = inn->units.begin(), end = inn->units.end(); it != end; ++it)
 			{
 				Unit& u = **it;
 				if(u.IsStanding() && u.IsAI() && !u.event_handler && u.frozen == FROZEN::NO && u.busy == Unit::Busy_No)
@@ -310,9 +310,9 @@ void Quest_Contest::Update(float dt)
 				if(u.IsPlayer())
 				{
 					float dist = Vec3::Distance2d(u.pos, innkeeper.pos);
-					kick = (dist > 10.f || u.in_building != id);
+					kick = (dist > 10.f || u.area_id != area_id);
 				}
-				if(kick || u.in_building != id || u.frozen != FROZEN::NO || !u.IsStanding())
+				if(kick || u.area_id != area_id || u.frozen != FROZEN::NO || !u.IsStanding())
 				{
 					if(u.IsPlayer())
 						game.gui->messages->AddGameMsg3(u.player, GMS_LEFT_EVENT);

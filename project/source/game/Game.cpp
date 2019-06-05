@@ -75,7 +75,7 @@ Game::Game() : vbParticle(nullptr), quickstart(QUICKSTART_NONE), inactive_update
 draw_unit_radius(false), draw_hitbox(false), noai(false), testing(false), game_speed(1.f), devmode(false), force_seed(0), next_seed(0), force_seed_all(false),
 debug_info(false), dont_wander(false), check_updates(true), skip_tutorial(false), portal_anim(0), debug_info2(false), music_type(MusicType::None),
 end_of_game(false), prepared_stream(64 * 1024), paused(false), draw_flags(0xFFFFFFFF), prev_game_state(GS_LOAD), rt_save(nullptr), rt_item(nullptr),
-rt_item_rot(nullptr), cl_postfx(true), mp_timeout(10.f), cl_normalmap(true), cl_specularmap(true), dungeon_tex_wrap(true), profiler_mode(0),
+rt_item_rot(nullptr), cl_postfx(true), mp_timeout(10.f), cl_normalmap(true), cl_specularmap(true), dungeon_tex_wrap(true), profiler_mode(ProfilerMode::Disabled),
 screenshot_format(ImageFormat::JPG), quickstart_class(Class::RANDOM), game_state(GS_LOAD), default_devmode(false), default_player_devmode(false),
 quickstart_slot(SaveSlot::MAX_SLOTS)
 {
@@ -106,9 +106,9 @@ Game::~Game()
 //=================================================================================================
 void Game::OnDraw()
 {
-	if(profiler_mode == 2)
+	if(profiler_mode == ProfilerMode::Rendering)
 		Profiler::g_profiler.Start();
-	else if(profiler_mode == 0)
+	else if(profiler_mode == ProfilerMode::Disabled)
 		Profiler::g_profiler.Clear();
 
 	DrawGame(nullptr);
@@ -307,9 +307,9 @@ void Game::OnTick(float dt)
 	if(dt > LIMIT_DT)
 		dt = LIMIT_DT;
 
-	if(profiler_mode == 1)
+	if(profiler_mode == ProfilerMode::Update)
 		Profiler::g_profiler.Start();
-	else if(profiler_mode == 0)
+	else if(profiler_mode == ProfilerMode::Disabled)
 		Profiler::g_profiler.Clear();
 
 	N.api->Update();
@@ -1439,15 +1439,15 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 		f << (byte)0;
 		f << (W.GetState() == World::State::INSIDE_ENCOUNTER);
 		int ack = N.SendAll(f, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT);
-		for(auto info : N.players)
+		for(PlayerInfo& info : N.players)
 		{
-			if(info->id == Team.my_id)
-				info->state = PlayerInfo::IN_GAME;
+			if(info.id == Team.my_id)
+				info.state = PlayerInfo::IN_GAME;
 			else
 			{
-				info->state = PlayerInfo::WAITING_FOR_RESPONSE;
-				info->ack = ack;
-				info->timer = 5.f;
+				info.state = PlayerInfo::WAITING_FOR_RESPONSE;
+				info.ack = ack;
+				info.timer = 5.f;
 			}
 		}
 		N.FilterServerChanges();
@@ -1499,8 +1499,6 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 	}
 	else if(!Any(l.type, L_DUNGEON, L_CRYPT, L_CAVE))
 		Info("Entering location '%s'.", l.name.c_str());
-
-	L.city_ctx = nullptr;
 
 	if(L.location->outside)
 	{
@@ -1647,8 +1645,8 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 	if(Net::IsLocal() && end_buffs)
 	{
 		// usuñ tymczasowe bufy
-		for(Unit* unit : Team.members)
-			unit->EndEffects();
+		for(Unit& unit : Team.members)
+			unit.EndEffects();
 	}
 
 	L.is_open = false;

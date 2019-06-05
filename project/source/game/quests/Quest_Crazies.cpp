@@ -167,17 +167,14 @@ void Quest_Crazies::CheckStone()
 			if(target_loc == L.location_index)
 			{
 				// jest w dobrym miejscu, sprawdŸ czy w³o¿y³ kamieñ do skrzyni
-				if(L.local_ctx.chests && L.local_ctx.chests->size() > 0)
+				Chest* chest;
+				int slot;
+				if(L.local_area->FindItemInChest(stone, &chest, &slot))
 				{
-					Chest* chest;
-					int slot;
-					if(L.local_ctx.FindItemInChest(stone, &chest, &slot))
-					{
-						// w³o¿y³ kamieñ, koniec questa
-						chest->items.erase(chest->items.begin() + slot);
-						SetProgress(Progress::Finished);
-						return;
-					}
+					// w³o¿y³ kamieñ, koniec questa
+					chest->items.erase(chest->items.begin() + slot);
+					SetProgress(Progress::Finished);
+					return;
 				}
 			}
 

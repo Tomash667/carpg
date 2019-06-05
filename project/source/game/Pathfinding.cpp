@@ -39,9 +39,9 @@ struct AStarSort
 //=================================================================================================
 // szuka œcie¿ki u¿ywaj¹c algorytmu A-Star
 // zwraca true jeœli znaleziono i w wektorze jest ta œcie¿ka, w œcie¿ce nie ma pocz¹tkowego kafelka
-bool Pathfinding::FindPath(LevelContext& ctx, const Int2& start_tile, const Int2& target_tile, vector<Int2>& path, bool can_open_doors, bool wandering, vector<Int2>* blocked)
+bool Pathfinding::FindPath(LevelArea& area, const Int2& start_tile, const Int2& target_tile, vector<Int2>& path, bool can_open_doors, bool wandering, vector<Int2>* blocked)
 {
-	if(start_tile == target_tile || ctx.type == LevelContext::Building)
+	if(start_tile == target_tile || area.area_type == LevelArea::Type::Building)
 	{
 		// jest w tym samym miejscu
 		path.clear();
@@ -52,7 +52,7 @@ bool Pathfinding::FindPath(LevelContext& ctx, const Int2& start_tile, const Int2
 	static vector<Point> to_check;
 	to_check.clear();
 
-	if(ctx.type == LevelContext::Outside)
+	if(area.area_type == LevelArea::Type::Outside)
 	{
 		// zewnêtrze
 		OutsideLocation* outside = static_cast<OutsideLocation*>(L.location);
@@ -336,7 +336,7 @@ bool Pathfinding::FindPath(LevelContext& ctx, const Int2& start_tile, const Int2
 
 						if(m[pt1(w)].type == DOORS)
 						{
-							Door* door = L.FindDoor(ctx, pt1);
+							Door* door = area.FindDoor(pt1);
 							if(door && door->IsBlocking())
 							{
 								// ustal gdzie s¹ drzwi na polu i czy z tej strony mo¿na na nie wejœæ
@@ -435,21 +435,21 @@ bool Pathfinding::FindPath(LevelContext& ctx, const Int2& start_tile, const Int2
 
 						if(m[pt2(w)].type == DOORS)
 						{
-							Door* door = L.FindDoor(ctx, pt2);
+							Door* door = area.FindDoor(pt2);
 							if(door && door->IsBlocking())
 								ok = false;
 						}
 
 						if(ok && m[kierunek2[i].x + pt.pt.x + pt.pt.y*w].type == DOORS)
 						{
-							Door* door = L.FindDoor(ctx, Int2(kierunek2[i].x + pt.pt.x, pt.pt.y));
+							Door* door = area.FindDoor(Int2(kierunek2[i].x + pt.pt.x, pt.pt.y));
 							if(door && door->IsBlocking())
 								ok = false;
 						}
 
 						if(ok && m[pt.pt.x + (kierunek2[i].y + pt.pt.y)*w].type == DOORS)
 						{
-							Door* door = L.FindDoor(ctx, Int2(pt.pt.x, kierunek2[i].y + pt.pt.y));
+							Door* door = area.FindDoor(Int2(pt.pt.x, kierunek2[i].y + pt.pt.y));
 							if(door && door->IsBlocking())
 								ok = false;
 						}
@@ -504,12 +504,13 @@ bool Pathfinding::FindPath(LevelContext& ctx, const Int2& start_tile, const Int2
 // 3 - start tile and target tile is equal
 // 4 - target tile is blocked
 // 5 - path not found
-int Pathfinding::FindLocalPath(LevelContext& ctx, vector<Int2>& path, const Int2& my_tile, const Int2& target_tile, const Unit* _me, const Unit* _other, const void* usable, bool is_end_point)
+int Pathfinding::FindLocalPath(LevelArea& area, vector<Int2>& path, const Int2& my_tile, const Int2& target_tile, const Unit* me, const Unit* other,
+	const void* usable, bool is_end_point)
 {
-	assert(_me);
+	assert(me);
 
 	path.clear();
-	if(marked == _me)
+	if(marked == me)
 		test_pf.clear();
 
 	if(my_tile == target_tile)
@@ -522,10 +523,10 @@ int Pathfinding::FindLocalPath(LevelContext& ctx, vector<Int2>& path, const Int2
 	// œrodek
 	const Int2 center_tile((my_tile + target_tile) / 2);
 
-	int minx = max(ctx.mine.x * 8, center_tile.x - 15),
-		miny = max(ctx.mine.y * 8, center_tile.y - 15),
-		maxx = min(ctx.maxe.x * 8 - 1, center_tile.x + 16),
-		maxy = min(ctx.maxe.y * 8 - 1, center_tile.y + 16);
+	int minx = max(area.mine.x * 8, center_tile.x - 15),
+		miny = max(area.mine.y * 8, center_tile.y - 15),
+		maxx = min(area.maxe.x * 8 - 1, center_tile.x + 16),
+		maxy = min(area.maxe.y * 8 - 1, center_tile.y + 16);
 
 	int w = maxx - minx,
 		h = maxy - miny;
@@ -538,9 +539,9 @@ int Pathfinding::FindLocalPath(LevelContext& ctx, vector<Int2>& path, const Int2
 	if(local_pfmap.size() < size)
 		local_pfmap.resize(size);
 
-	const Unit* ignored_units[3] = { _me, 0 };
-	if(_other)
-		ignored_units[1] = _other;
+	const Unit* ignored_units[3] = { me, 0 };
+	if(other)
+		ignored_units[1] = other;
 	Level::IgnoreObjects ignore = { 0 };
 	ignore.ignored_units = (const Unit**)ignored_units;
 	const void* ignored_objects[2] = { 0 };
@@ -551,11 +552,11 @@ int Pathfinding::FindLocalPath(LevelContext& ctx, vector<Int2>& path, const Int2
 	}
 
 	L.global_col.clear();
-	L.GatherCollisionObjects(ctx, L.global_col, Box2d(float(minx) / 4 - 0.25f, float(miny) / 4 - 0.25f, float(maxx) / 4 + 0.25f, float(maxy) / 4 + 0.25f), &ignore);
+	L.GatherCollisionObjects(area, L.global_col, Box2d(float(minx) / 4 - 0.25f, float(miny) / 4 - 0.25f, float(maxx) / 4 + 0.25f, float(maxy) / 4 + 0.25f), &ignore);
 
-	const float r = _me->GetUnitRadius() - 0.25f / 2;
+	const float r = me->GetUnitRadius() - 0.25f / 2;
 
-	if(marked == _me)
+	if(marked == me)
 	{
 		for(int y = miny, y2 = 0; y < maxy; ++y, ++y2)
 		{
@@ -718,12 +719,12 @@ int Pathfinding::FindLocalPath(LevelContext& ctx, vector<Int2>& path, const Int2
 
 	if(marked)
 	{
-		if(marked == _me)
-			test_pf_outside = (L.location->outside && _me->in_building == -1);
+		if(marked == me)
+			test_pf_outside = (L.location->outside && me->area_id == LevelArea::OUTSIDE_ID);
 
 		if(a_map[my_rel(w)].state == 0)
 		{
-			if(marked == _me)
+			if(marked == me)
 			{
 				test_pf.push_back(pair<Vec2, int>(Vec2(0.25f*my_tile.x, 0.25f*my_tile.y), 1));
 				test_pf.push_back(pair<Vec2, int>(Vec2(0.25f*target_tile.x, 0.25f*target_tile.y), 1));
@@ -731,7 +732,7 @@ int Pathfinding::FindLocalPath(LevelContext& ctx, vector<Int2>& path, const Int2
 			return 5;
 		}
 
-		if(marked == _me)
+		if(marked == me)
 		{
 			test_pf.push_back(pair<Vec2, int>(Vec2(0.25f*my_tile.x, 0.25f*my_tile.y), 1));
 			test_pf.push_back(pair<Vec2, int>(Vec2(0.25f*target_tile.x, 0.25f*target_tile.y), 1));
@@ -742,7 +743,7 @@ int Pathfinding::FindLocalPath(LevelContext& ctx, vector<Int2>& path, const Int2
 
 		do
 		{
-			if(marked == _me)
+			if(marked == me)
 				test_pf.push_back(pair<Vec2, int>(Vec2(0.25f*(p.x + minx), 0.25f*(p.y + miny)), 1));
 			path.push_back(Int2(p.x + minx, p.y + miny));
 			p = a_map[p(w)].prev;

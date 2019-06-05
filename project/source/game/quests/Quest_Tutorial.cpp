@@ -169,30 +169,7 @@ void Quest_Tutorial::Update()
 			break;
 		}
 
-		if(activate != -1)
-		{
-			for(Text& to_activate : texts)
-			{
-				if(to_activate.id == activate)
-				{
-					to_activate.state = 1;
-					break;
-				}
-			}
-		}
-
-		if(unlock != -1)
-		{
-			for(Door* door : *L.local_ctx.doors)
-			{
-				if(door->locked == LOCK_TUTORIAL + unlock)
-				{
-					door->locked = LOCK_NONE;
-					break;
-				}
-			}
-		}
-
+		HandleEvent(activate, unlock);
 		break;
 	}
 }
@@ -257,6 +234,12 @@ void Quest_Tutorial::OnEvent(Event event)
 		break;
 	}
 
+	HandleEvent(activate, unlock);
+}
+
+//=================================================================================================
+void Quest_Tutorial::HandleEvent(int activate, int unlock)
+{
 	if(activate != -1)
 	{
 		for(vector<Text>::iterator it = texts.begin(), end = texts.end(); it != end; ++it)
@@ -271,11 +254,11 @@ void Quest_Tutorial::OnEvent(Event event)
 
 	if(unlock != -1)
 	{
-		for(vector<Door*>::iterator it = L.local_ctx.doors->begin(), end = L.local_ctx.doors->end(); it != end; ++it)
+		for(Door* door : L.local_area->doors)
 		{
-			if((*it)->locked == LOCK_TUTORIAL + unlock)
+			if(door->locked == LOCK_TUTORIAL + unlock)
 			{
-				(*it)->locked = LOCK_NONE;
+				door->locked = LOCK_NONE;
 				break;
 			}
 		}
@@ -331,7 +314,7 @@ void Quest_Tutorial::HandleBulletCollision()
 			break;
 		}
 	}
-	for(vector<Door*>::iterator it = L.local_ctx.doors->begin(), end = L.local_ctx.doors->end(); it != end; ++it)
+	for(vector<Door*>::iterator it = L.local_area->doors.begin(), end = L.local_area->doors.end(); it != end; ++it)
 	{
 		if((*it)->locked == LOCK_TUTORIAL + unlock)
 		{

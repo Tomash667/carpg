@@ -867,9 +867,65 @@ inline T& RandomItem(LocalVector2<T>& v)
 }
 
 //-----------------------------------------------------------------------------
+template<typename T>
+struct rvector
+{
+
+	struct iter
+	{
+		typedef typename vector<T*>::iterator InnerIt;
+
+		bool operator != (const iter& it2)
+		{
+			return it != it2.it;
+		}
+		iter& operator ++ ()
+		{
+			++it;
+			return *this;
+		}
+		T& operator * ()
+		{
+			return **it;
+		}
+
+		InnerIt it;
+	};
+
+	T& operator [](uint index) { return *ptrs[index]; }
+
+	iter begin() { return iter{ ptrs.begin() }; }
+	iter end() { return iter{ ptrs.end() }; }
+	uint size() const { return ptrs.size(); }
+	void push_back(T* ptr)
+	{
+		assert(ptr);
+		ptrs.push_back(ptr);
+	}
+	void erase(int index) { ptrs.erase(ptrs.begin() + index); }
+	void erase(iter it) { ptrs.erase(it.it); }
+	void erase(iter start, iter end) { ptrs.erase(start.it, end.it); }
+	void clear() { ptrs.clear(); }
+	T& front() { return *ptrs.front(); }
+
+	vector<T*> ptrs;
+};
+
+template<typename T>
+void DeleteElements(rvector<T>& v)
+{
+	DeleteElements(v.ptrs);
+}
+
+//-----------------------------------------------------------------------------
 // Loop over items and erase elements that returned true
 template<typename T, typename Action>
 inline void LoopAndRemove(vector<T>& items, Action action)
+{
+	items.erase(std::remove_if(items.begin(), items.end(), action), items.end());
+}
+template<typename T, typename Action>
+inline void LoopAndRemove(rvector<T>& items, Action action)
 {
 	items.erase(std::remove_if(items.begin(), items.end(), action), items.end());
 }

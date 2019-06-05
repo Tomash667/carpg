@@ -375,7 +375,7 @@ void CaveGenerator::GenerateObjects()
 	o->rot = Vec3(0, DirToRot(lvl.staircase_up_dir), 0);
 	o->scale = 1;
 	o->base = nullptr;
-	L.local_ctx.objects->push_back(o);
+	L.local_area->objects.push_back(o);
 
 	// lights
 	for(vector<Int2>::iterator it = cave->holes.begin(), end = cave->holes.end(); it != end; ++it)
@@ -415,7 +415,7 @@ void CaveGenerator::GenerateObjects()
 			o->scale = Random(1.f, 2.f);
 			o->rot = Vec3(0, Random(MAX_ANGLE), 0);
 			o->pos = Vec3(2.f*pt.x + 1.f, 4.f, 2.f*pt.y + 1.f);
-			L.local_ctx.objects->push_back(o);
+			L.local_area->objects.push_back(o);
 			sta.push_back(pt);
 		}
 	}
@@ -434,7 +434,7 @@ void CaveGenerator::GenerateObjects()
 			o->scale = 1.f;
 			o->rot = Vec3(0, Random(MAX_ANGLE), 0);
 			o->pos = Vec3(2.f*pt.x + Random(0.1f, 1.9f), 0.f, 2.f*pt.y + Random(0.1f, 1.9f));
-			L.local_ctx.objects->push_back(o);
+			L.local_area->objects.push_back(o);
 		}
 	}
 
@@ -452,7 +452,7 @@ void CaveGenerator::GenerateObjects()
 			o->scale = 1.f;
 			o->rot = Vec3(0, Random(MAX_ANGLE), 0);
 			o->pos = Vec3(2.f*pt.x + Random(0.1f, 1.9f), 0.f, 2.f*pt.y + Random(0.1f, 1.9f));
-			L.local_ctx.objects->push_back(o);
+			L.local_area->objects.push_back(o);
 		}
 	}
 
@@ -505,7 +505,7 @@ void CaveGenerator::GenerateUnits()
 			++added;
 			for(TmpUnitGroup::Spawn& spawn : tmp.Roll(level, 2))
 			{
-				if(!L.SpawnUnitNearLocation(L.local_ctx, Vec3(2.f*pt.x + 1.f, 0, 2.f*pt.y + 1.f), *spawn.first, nullptr, spawn.second, 3.f))
+				if(!L.SpawnUnitNearLocation(*L.local_area, Vec3(2.f*pt.x + 1.f, 0, 2.f*pt.y + 1.f), *spawn.first, nullptr, spawn.second, 3.f))
 					break;
 			}
 		}

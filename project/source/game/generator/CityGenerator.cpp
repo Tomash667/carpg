@@ -15,6 +15,7 @@
 #include "Texture.h"
 #include "Arena.h"
 #include "Game.h"
+#include "Object.h"
 
 enum RoadFlags
 {
@@ -562,7 +563,7 @@ void CityGenerator::GenerateBuildings(vector<ToBuild>& tobuild)
 	// budynki
 	for(vector<ToBuild>::iterator build_it = tobuild.begin(), build_end = tobuild.end(); build_it != build_end; ++build_it)
 	{
-		Int2 ext = build_it->type->size - Int2(1, 1);
+		Int2 ext = build_it->building->size - Int2(1, 1);
 
 		bool ok;
 		vector<BuildPt> points;
@@ -672,7 +673,7 @@ void CityGenerator::GenerateBuildings(vector<ToBuild>& tobuild)
 				tobuild.erase(build_it, tobuild.end());
 				break;
 			}
-			Error("Failed to generate city map! No place for building %d!", build_it->type);
+			Error("Failed to generate city map! No place for building %s!", build_it->building->id.c_str());
 			return;
 		}
 
@@ -826,11 +827,11 @@ void CityGenerator::GenerateBuildings(vector<ToBuild>& tobuild)
 				}
 			}
 
-			if(IS_SET(build_it->type->flags, Building::FAVOR_CENTER))
+			if(IS_SET(build_it->building->flags, Building::FAVOR_CENTER))
 				range = Int2::Distance(centrum, it->pt);
 			else
 				range = 0;
-			if(IS_SET(build_it->type->flags, Building::FAVOR_ROAD))
+			if(IS_SET(build_it->building->flags, Building::FAVOR_ROAD))
 				range += max(0, best_length - 1);
 			else
 				range += max(0, best_length - 5);
@@ -879,7 +880,7 @@ void CityGenerator::GenerateBuildings(vector<ToBuild>& tobuild)
 		build_it->pt = pt.first;
 		build_it->rot = best_dir;
 
-		Int2 ext2 = build_it->type->size;
+		Int2 ext2 = build_it->building->size;
 		if(best_dir == GDIR_LEFT || best_dir == GDIR_RIGHT)
 			std::swap(ext2.x, ext2.y);
 
@@ -900,16 +901,16 @@ void CityGenerator::GenerateBuildings(vector<ToBuild>& tobuild)
 				switch(best_dir)
 				{
 				case GDIR_DOWN:
-					scheme = build_it->type->scheme[xr + (ext2.y - yr - 1)*ext2.x];
+					scheme = build_it->building->scheme[xr + (ext2.y - yr - 1)*ext2.x];
 					break;
 				case GDIR_LEFT:
-					scheme = build_it->type->scheme[ext2.y - yr - 1 + (ext2.x - xr - 1)*ext2.y];
+					scheme = build_it->building->scheme[ext2.y - yr - 1 + (ext2.x - xr - 1)*ext2.y];
 					break;
 				case GDIR_UP:
-					scheme = build_it->type->scheme[ext2.x - xr - 1 + yr*ext2.x];
+					scheme = build_it->building->scheme[ext2.x - xr - 1 + yr*ext2.x];
 					break;
 				case GDIR_RIGHT:
-					scheme = build_it->type->scheme[yr + xr * ext2.y];
+					scheme = build_it->building->scheme[yr + xr * ext2.y];
 					break;
 				default:
 					assert(0);
@@ -1281,96 +1282,96 @@ void CityGenerator::CreateEntry(vector<EntryPoint>& entry_points, EntryDir dir)
 		{
 			Vec2 p(SPAWN_RATIO*w * 2, float(h) + 1);
 			ep.spawn_rot = PI * 3 / 2;
-			ep.spawn_area = Box2d(p.x - SPAWN_RANGE, p.y - SPAWN_RANGE, p.x + SPAWN_RANGE, p.y + SPAWN_RANGE);
-			ep.exit_area = Box2d(p.x - EXIT_END, p.y - EXIT_WIDTH, p.x - EXIT_START, p.y + EXIT_WIDTH);
+			ep.spawn_region = Box2d(p.x - SPAWN_RANGE, p.y - SPAWN_RANGE, p.x + SPAWN_RANGE, p.y + SPAWN_RANGE);
+			ep.exit_region = Box2d(p.x - EXIT_END, p.y - EXIT_WIDTH, p.x - EXIT_START, p.y + EXIT_WIDTH);
 		}
 		break;
 	case ED_Right:
 		{
 			Vec2 p((1.f - SPAWN_RATIO)*w * 2, float(h) + 1);
 			ep.spawn_rot = PI / 2;
-			ep.spawn_area = Box2d(p.x - SPAWN_RANGE, p.y - SPAWN_RANGE, p.x + SPAWN_RANGE, p.y + SPAWN_RANGE);
-			ep.exit_area = Box2d(p.x + EXIT_START, p.y - EXIT_WIDTH, p.x + EXIT_END, p.y + EXIT_WIDTH);
+			ep.spawn_region = Box2d(p.x - SPAWN_RANGE, p.y - SPAWN_RANGE, p.x + SPAWN_RANGE, p.y + SPAWN_RANGE);
+			ep.exit_region = Box2d(p.x + EXIT_START, p.y - EXIT_WIDTH, p.x + EXIT_END, p.y + EXIT_WIDTH);
 		}
 		break;
 	case ED_Bottom:
 		{
 			Vec2 p(float(w) + 1, SPAWN_RATIO*h * 2);
 			ep.spawn_rot = PI;
-			ep.spawn_area = Box2d(p.x - SPAWN_RANGE, p.y - SPAWN_RANGE, p.x + SPAWN_RANGE, p.y + SPAWN_RANGE);
-			ep.exit_area = Box2d(p.x - EXIT_WIDTH, p.y - EXIT_END, p.x + EXIT_WIDTH, p.y - EXIT_START);
+			ep.spawn_region = Box2d(p.x - SPAWN_RANGE, p.y - SPAWN_RANGE, p.x + SPAWN_RANGE, p.y + SPAWN_RANGE);
+			ep.exit_region = Box2d(p.x - EXIT_WIDTH, p.y - EXIT_END, p.x + EXIT_WIDTH, p.y - EXIT_START);
 		}
 		break;
 	case ED_Top:
 		{
 			Vec2 p(float(w) + 1, (1.f - SPAWN_RATIO)*h * 2);
 			ep.spawn_rot = 0;
-			ep.spawn_area = Box2d(p.x - SPAWN_RANGE, p.y - SPAWN_RANGE, p.x + SPAWN_RANGE, p.y + SPAWN_RANGE);
-			ep.exit_area = Box2d(p.x - EXIT_WIDTH, p.y + EXIT_START, p.x + EXIT_WIDTH, p.y + EXIT_END);
+			ep.spawn_region = Box2d(p.x - SPAWN_RANGE, p.y - SPAWN_RANGE, p.x + SPAWN_RANGE, p.y + SPAWN_RANGE);
+			ep.exit_region = Box2d(p.x - EXIT_WIDTH, p.y + EXIT_START, p.x + EXIT_WIDTH, p.y + EXIT_END);
 		}
 		break;
 	case ED_LeftBottom:
 		{
 			Vec2 p(SPAWN_RATIO*w * 2, float(h / 2 - road_part) * 2 + 1);
 			ep.spawn_rot = PI * 3 / 2;
-			ep.spawn_area = Box2d(p.x - SPAWN_RANGE, p.y - SPAWN_RANGE, p.x + SPAWN_RANGE, p.y + SPAWN_RANGE);
-			ep.exit_area = Box2d(p.x - EXIT_END, p.y - EXIT_WIDTH, p.x + EXIT_START, p.y + EXIT_WIDTH);
+			ep.spawn_region = Box2d(p.x - SPAWN_RANGE, p.y - SPAWN_RANGE, p.x + SPAWN_RANGE, p.y + SPAWN_RANGE);
+			ep.exit_region = Box2d(p.x - EXIT_END, p.y - EXIT_WIDTH, p.x + EXIT_START, p.y + EXIT_WIDTH);
 		}
 		break;
 	case ED_LeftTop:
 		{
 			Vec2 p(SPAWN_RATIO*w * 2, float(h / 2 + road_part) * 2 + 1);
 			ep.spawn_rot = PI * 3 / 2;
-			ep.spawn_area = Box2d(p.x - SPAWN_RANGE, p.y - SPAWN_RANGE, p.x + SPAWN_RANGE, p.y + SPAWN_RANGE);
-			ep.exit_area = Box2d(p.x - EXIT_END, p.y - EXIT_WIDTH, p.x + EXIT_START, p.y + EXIT_WIDTH);
+			ep.spawn_region = Box2d(p.x - SPAWN_RANGE, p.y - SPAWN_RANGE, p.x + SPAWN_RANGE, p.y + SPAWN_RANGE);
+			ep.exit_region = Box2d(p.x - EXIT_END, p.y - EXIT_WIDTH, p.x + EXIT_START, p.y + EXIT_WIDTH);
 		}
 		break;
 	case ED_RightBottom:
 		{
 			Vec2 p((1.f - SPAWN_RATIO)*w * 2, float(h / 2 - road_part) * 2 + 1);
 			ep.spawn_rot = PI / 2;
-			ep.spawn_area = Box2d(p.x - SPAWN_RANGE, p.y - SPAWN_RANGE, p.x + SPAWN_RANGE, p.y + SPAWN_RANGE);
-			ep.exit_area = Box2d(p.x + EXIT_START, p.y - EXIT_WIDTH, p.x + EXIT_END, p.y + EXIT_WIDTH);
+			ep.spawn_region = Box2d(p.x - SPAWN_RANGE, p.y - SPAWN_RANGE, p.x + SPAWN_RANGE, p.y + SPAWN_RANGE);
+			ep.exit_region = Box2d(p.x + EXIT_START, p.y - EXIT_WIDTH, p.x + EXIT_END, p.y + EXIT_WIDTH);
 		}
 		break;
 	case ED_RightTop:
 		{
 			Vec2 p((1.f - SPAWN_RATIO)*w * 2, float(h / 2 + road_part) * 2 + 1);
 			ep.spawn_rot = PI / 2;
-			ep.spawn_area = Box2d(p.x - SPAWN_RANGE, p.y - SPAWN_RANGE, p.x + SPAWN_RANGE, p.y + SPAWN_RANGE);
-			ep.exit_area = Box2d(p.x + EXIT_START, p.y - EXIT_WIDTH, p.x + EXIT_END, p.y + EXIT_WIDTH);
+			ep.spawn_region = Box2d(p.x - SPAWN_RANGE, p.y - SPAWN_RANGE, p.x + SPAWN_RANGE, p.y + SPAWN_RANGE);
+			ep.exit_region = Box2d(p.x + EXIT_START, p.y - EXIT_WIDTH, p.x + EXIT_END, p.y + EXIT_WIDTH);
 		}
 		break;
 	case ED_BottomLeft:
 		{
 			Vec2 p(float(w / 2 - road_part) * 2 + 1, SPAWN_RATIO*h * 2);
 			ep.spawn_rot = PI;
-			ep.spawn_area = Box2d(p.x - SPAWN_RANGE, p.y - SPAWN_RANGE, p.x + SPAWN_RANGE, p.y + SPAWN_RANGE);
-			ep.exit_area = Box2d(p.x - EXIT_WIDTH, p.y - EXIT_END, p.x + EXIT_WIDTH, p.y + EXIT_START);
+			ep.spawn_region = Box2d(p.x - SPAWN_RANGE, p.y - SPAWN_RANGE, p.x + SPAWN_RANGE, p.y + SPAWN_RANGE);
+			ep.exit_region = Box2d(p.x - EXIT_WIDTH, p.y - EXIT_END, p.x + EXIT_WIDTH, p.y + EXIT_START);
 		}
 		break;
 	case ED_BottomRight:
 		{
 			Vec2 p(float(w / 2 + road_part) * 2 + 1, SPAWN_RATIO*h * 2);
 			ep.spawn_rot = PI;
-			ep.spawn_area = Box2d(p.x - SPAWN_RANGE, p.y - SPAWN_RANGE, p.x + SPAWN_RANGE, p.y + SPAWN_RANGE);
-			ep.exit_area = Box2d(p.x - EXIT_WIDTH, p.y - EXIT_END, p.x + EXIT_WIDTH, p.y + EXIT_START);
+			ep.spawn_region = Box2d(p.x - SPAWN_RANGE, p.y - SPAWN_RANGE, p.x + SPAWN_RANGE, p.y + SPAWN_RANGE);
+			ep.exit_region = Box2d(p.x - EXIT_WIDTH, p.y - EXIT_END, p.x + EXIT_WIDTH, p.y + EXIT_START);
 		}
 		break;
 	case ED_TopLeft:
 		{
 			Vec2 p(float(w / 2 - road_part) * 2 + 1, (1.f - SPAWN_RATIO)*h * 2);
 			ep.spawn_rot = 0;
-			ep.spawn_area = Box2d(p.x - SPAWN_RANGE, p.y - SPAWN_RANGE, p.x + SPAWN_RANGE, p.y + SPAWN_RANGE);
-			ep.exit_area = Box2d(p.x - EXIT_WIDTH, p.y + EXIT_START, p.x + EXIT_WIDTH, p.y + EXIT_END);
+			ep.spawn_region = Box2d(p.x - SPAWN_RANGE, p.y - SPAWN_RANGE, p.x + SPAWN_RANGE, p.y + SPAWN_RANGE);
+			ep.exit_region = Box2d(p.x - EXIT_WIDTH, p.y + EXIT_START, p.x + EXIT_WIDTH, p.y + EXIT_END);
 		}
 		break;
 	case ED_TopRight:
 		{
 			Vec2 p(float(w / 2 + road_part) * 2 + 1, (1.f - SPAWN_RATIO)*h * 2);
 			ep.spawn_rot = 0;
-			ep.spawn_area = Box2d(p.x - SPAWN_RANGE, p.y - SPAWN_RANGE, p.x + SPAWN_RANGE, p.y + SPAWN_RANGE);
-			ep.exit_area = Box2d(p.x - EXIT_WIDTH, p.y + EXIT_START, p.x + EXIT_WIDTH, p.y + EXIT_END);
+			ep.spawn_region = Box2d(p.x - SPAWN_RANGE, p.y - SPAWN_RANGE, p.x + SPAWN_RANGE, p.y + SPAWN_RANGE);
+			ep.exit_region = Box2d(p.x - EXIT_WIDTH, p.y + EXIT_START, p.x + EXIT_WIDTH, p.y + EXIT_END);
 		}
 		break;
 	}
@@ -2186,7 +2187,7 @@ void CityGenerator::Generate()
 	vector<ToBuild>::iterator build_it = tobuild.begin();
 	for(vector<CityBuilding>::iterator it = city->buildings.begin(), end = city->buildings.end(); it != end; ++it, ++build_it)
 	{
-		it->type = build_it->type;
+		it->building = build_it->building;
 		it->pt = build_it->pt;
 		it->rot = build_it->rot;
 		it->unit_pt = build_it->unit_pt;
@@ -2197,7 +2198,7 @@ void CityGenerator::Generate()
 		// set exits y
 		terrain->SetHeightMap(city->h);
 		for(vector<EntryPoint>::iterator entry_it = city->entry_points.begin(), entry_end = city->entry_points.end(); entry_it != entry_end; ++entry_it)
-			entry_it->exit_y = terrain->GetH(entry_it->exit_area.Midpoint()) + 0.1f;
+			entry_it->exit_y = terrain->GetH(entry_it->exit_region.Midpoint()) + 0.1f;
 		terrain->RemoveHeightMap();
 	}
 
@@ -2208,12 +2209,11 @@ void CityGenerator::Generate()
 void CityGenerator::OnEnter()
 {
 	Game& game = Game::Get();
-	L.city_ctx = city;
 	game.arena->free = true;
 
 	if(!reenter)
 	{
-		L.ApplyContext(city, L.local_ctx);
+		L.Apply();
 		ApplyTiles();
 	}
 
@@ -2251,13 +2251,6 @@ void CityGenerator::OnEnter()
 		city->CheckUpdate(days, W.GetWorldtime());
 		if(days > 0)
 			L.UpdateLocation(days, 100, false);
-
-		// apply temp context
-		for(InsideBuilding* inside : city->inside_buildings)
-		{
-			if(inside->ctx.require_tmp_ctx && !inside->ctx.tmp_ctx)
-				inside->ctx.SetTmpCtx(L.tmp_ctx_pool.Get());
-		}
 
 		// recreate units
 		game.LoadingStep(game.txGeneratingUnits);
@@ -2317,10 +2310,10 @@ void CityGenerator::OnEnter()
 	if(!reenter)
 		game.GenerateQuestUnits();
 
-	for(Unit* unit : Team.members)
+	for(Unit& unit : Team.members)
 	{
-		if(unit->IsHero())
-			unit->hero->lost_pvp = false;
+		if(unit.IsHero())
+			unit.hero->lost_pvp = false;
 	}
 
 	Team.CheckTeamItemShares();
@@ -2333,6 +2326,7 @@ void CityGenerator::OnEnter()
 //=================================================================================================
 void CityGenerator::SpawnBuildings()
 {
+	LevelArea& area = *city;
 	const int mur1 = int(0.15f*OutsideLocation::size);
 	const int mur2 = int(0.85f*OutsideLocation::size);
 
@@ -2357,13 +2351,13 @@ void CityGenerator::SpawnBuildings()
 			break;
 		}
 
-		o->pos = Vec3(float(it->pt.x + it->type->shift[it->rot].x) * 2, 1.f, float(it->pt.y + it->type->shift[it->rot].y) * 2);
+		o->pos = Vec3(float(it->pt.x + it->building->shift[it->rot].x) * 2, 1.f, float(it->pt.y + it->building->shift[it->rot].y) * 2);
 		terrain->SetH(o->pos);
 		o->rot.x = o->rot.z = 0.f;
 		o->scale = 1.f;
 		o->base = nullptr;
-		o->mesh = it->type->mesh;
-		L.local_ctx.objects->push_back(o);
+		o->mesh = it->building->mesh;
+		area.objects.push_back(o);
 	}
 
 	// create walls, towers & gates
@@ -2380,63 +2374,63 @@ void CityGenerator::SpawnBuildings()
 		{
 			// north
 			if(!IS_SET(city->gates, GATE_NORTH) || i < mid - 1 || i > mid)
-				L.SpawnObjectEntity(L.local_ctx, oWall, Vec3(float(i) * 2 + 1.f, 1.f, int(0.85f*OutsideLocation::size) * 2 + 1.f), 0);
+				L.SpawnObjectEntity(area, oWall, Vec3(float(i) * 2 + 1.f, 1.f, int(0.85f*OutsideLocation::size) * 2 + 1.f), 0);
 
 			// south
 			if(!IS_SET(city->gates, GATE_SOUTH) || i < mid - 1 || i > mid)
-				L.SpawnObjectEntity(L.local_ctx, oWall, Vec3(float(i) * 2 + 1.f, 1.f, int(0.15f*OutsideLocation::size) * 2 + 1.f), PI);
+				L.SpawnObjectEntity(area, oWall, Vec3(float(i) * 2 + 1.f, 1.f, int(0.15f*OutsideLocation::size) * 2 + 1.f), PI);
 
 			// west
 			if(!IS_SET(city->gates, GATE_WEST) || i < mid - 1 || i > mid)
-				L.SpawnObjectEntity(L.local_ctx, oWall, Vec3(int(0.15f*OutsideLocation::size) * 2 + 1.f, 1.f, float(i) * 2 + 1.f), PI * 3 / 2);
+				L.SpawnObjectEntity(area, oWall, Vec3(int(0.15f*OutsideLocation::size) * 2 + 1.f, 1.f, float(i) * 2 + 1.f), PI * 3 / 2);
 
 			// east
 			if(!IS_SET(city->gates, GATE_EAST) || i < mid - 1 || i > mid)
-				L.SpawnObjectEntity(L.local_ctx, oWall, Vec3(int(0.85f*OutsideLocation::size) * 2 + 1.f, 1.f, float(i) * 2 + 1.f), PI / 2);
+				L.SpawnObjectEntity(area, oWall, Vec3(int(0.85f*OutsideLocation::size) * 2 + 1.f, 1.f, float(i) * 2 + 1.f), PI / 2);
 		}
 
 		// towers
 		// north east
-		L.SpawnObjectEntity(L.local_ctx, oTower, Vec3(int(0.85f*OutsideLocation::size) * 2 + 1.f, 1.f, int(0.85f*OutsideLocation::size) * 2 + 1.f), 0);
+		L.SpawnObjectEntity(area, oTower, Vec3(int(0.85f*OutsideLocation::size) * 2 + 1.f, 1.f, int(0.85f*OutsideLocation::size) * 2 + 1.f), 0);
 		// south east
-		L.SpawnObjectEntity(L.local_ctx, oTower, Vec3(int(0.85f*OutsideLocation::size) * 2 + 1.f, 1.f, int(0.15f*OutsideLocation::size) * 2 + 1.f), PI / 2);
+		L.SpawnObjectEntity(area, oTower, Vec3(int(0.85f*OutsideLocation::size) * 2 + 1.f, 1.f, int(0.15f*OutsideLocation::size) * 2 + 1.f), PI / 2);
 		// south west
-		L.SpawnObjectEntity(L.local_ctx, oTower, Vec3(int(0.15f*OutsideLocation::size) * 2 + 1.f, 1.f, int(0.15f*OutsideLocation::size) * 2 + 1.f), PI);
+		L.SpawnObjectEntity(area, oTower, Vec3(int(0.15f*OutsideLocation::size) * 2 + 1.f, 1.f, int(0.15f*OutsideLocation::size) * 2 + 1.f), PI);
 		// north west
-		L.SpawnObjectEntity(L.local_ctx, oTower, Vec3(int(0.15f*OutsideLocation::size) * 2 + 1.f, 1.f, int(0.85f*OutsideLocation::size) * 2 + 1.f), PI * 3 / 2);
+		L.SpawnObjectEntity(area, oTower, Vec3(int(0.15f*OutsideLocation::size) * 2 + 1.f, 1.f, int(0.85f*OutsideLocation::size) * 2 + 1.f), PI * 3 / 2);
 
 		// gates
 		if(IS_SET(city->gates, GATE_NORTH))
 		{
-			L.SpawnObjectEntity(L.local_ctx, oGate, Vec3(0.5f*OutsideLocation::size * 2 + 1.f, 1.f, 0.85f*OutsideLocation::size * 2), 0);
-			L.SpawnObjectEntity(L.local_ctx, oGrate, Vec3(0.5f*OutsideLocation::size * 2 + 1.f, 1.f, 0.85f*OutsideLocation::size * 2), 0);
+			L.SpawnObjectEntity(area, oGate, Vec3(0.5f*OutsideLocation::size * 2 + 1.f, 1.f, 0.85f*OutsideLocation::size * 2), 0);
+			L.SpawnObjectEntity(area, oGrate, Vec3(0.5f*OutsideLocation::size * 2 + 1.f, 1.f, 0.85f*OutsideLocation::size * 2), 0);
 		}
 
 		if(IS_SET(city->gates, GATE_SOUTH))
 		{
-			L.SpawnObjectEntity(L.local_ctx, oGate, Vec3(0.5f*OutsideLocation::size * 2 + 1.f, 1.f, 0.15f*OutsideLocation::size * 2), PI);
-			L.SpawnObjectEntity(L.local_ctx, oGrate, Vec3(0.5f*OutsideLocation::size * 2 + 1.f, 1.f, 0.15f*OutsideLocation::size * 2), PI);
+			L.SpawnObjectEntity(area, oGate, Vec3(0.5f*OutsideLocation::size * 2 + 1.f, 1.f, 0.15f*OutsideLocation::size * 2), PI);
+			L.SpawnObjectEntity(area, oGrate, Vec3(0.5f*OutsideLocation::size * 2 + 1.f, 1.f, 0.15f*OutsideLocation::size * 2), PI);
 		}
 
 		if(IS_SET(city->gates, GATE_WEST))
 		{
-			L.SpawnObjectEntity(L.local_ctx, oGate, Vec3(0.15f*OutsideLocation::size * 2, 1.f, 0.5f*OutsideLocation::size * 2 + 1.f), PI * 3 / 2);
-			L.SpawnObjectEntity(L.local_ctx, oGrate, Vec3(0.15f*OutsideLocation::size * 2, 1.f, 0.5f*OutsideLocation::size * 2 + 1.f), PI * 3 / 2);
+			L.SpawnObjectEntity(area, oGate, Vec3(0.15f*OutsideLocation::size * 2, 1.f, 0.5f*OutsideLocation::size * 2 + 1.f), PI * 3 / 2);
+			L.SpawnObjectEntity(area, oGrate, Vec3(0.15f*OutsideLocation::size * 2, 1.f, 0.5f*OutsideLocation::size * 2 + 1.f), PI * 3 / 2);
 		}
 
 		if(IS_SET(city->gates, GATE_EAST))
 		{
-			L.SpawnObjectEntity(L.local_ctx, oGate, Vec3(0.85f*OutsideLocation::size * 2, 1.f, 0.5f*OutsideLocation::size * 2 + 1.f), PI / 2);
-			L.SpawnObjectEntity(L.local_ctx, oGrate, Vec3(0.85f*OutsideLocation::size * 2, 1.f, 0.5f*OutsideLocation::size * 2 + 1.f), PI / 2);
+			L.SpawnObjectEntity(area, oGate, Vec3(0.85f*OutsideLocation::size * 2, 1.f, 0.5f*OutsideLocation::size * 2 + 1.f), PI / 2);
+			L.SpawnObjectEntity(area, oGrate, Vec3(0.85f*OutsideLocation::size * 2, 1.f, 0.5f*OutsideLocation::size * 2 + 1.f), PI / 2);
 		}
 	}
 
 	// obiekty i fizyka budynków
 	for(vector<CityBuilding>::iterator it = city->buildings.begin(), end = city->buildings.end(); it != end; ++it)
 	{
-		Building* b = it->type;
-		L.ProcessBuildingObjects(L.local_ctx, city, nullptr, b->mesh, b->inside_mesh, DirToRot(it->rot), it->rot,
-			Vec3(float(it->pt.x + b->shift[it->rot].x) * 2, 0.f, float(it->pt.y + b->shift[it->rot].y) * 2), it->type, &*it);
+		Building* b = it->building;
+		L.ProcessBuildingObjects(area, city, nullptr, b->mesh, b->inside_mesh, DirToRot(it->rot), it->rot,
+			Vec3(float(it->pt.x + b->shift[it->rot].x) * 2, 0.f, float(it->pt.y + b->shift[it->rot].y) * 2), b, &*it);
 	}
 }
 
@@ -2456,6 +2450,8 @@ const uint n_outside_objects = countof(outside_objects);
 
 void CityGenerator::SpawnObjects()
 {
+	LevelArea& area = *city;
+
 	if(!outside_objects[0].obj)
 	{
 		for(uint i = 0; i < n_outside_objects; ++i)
@@ -2467,7 +2463,7 @@ void CityGenerator::SpawnObjects()
 	{
 		Vec3 pos = PtToPos(well_pt);
 		terrain->SetH(pos);
-		L.SpawnObjectEntity(L.local_ctx, BaseObject::Get("coveredwell"), pos, PI / 2 * (Rand() % 4), 1.f, 0, nullptr);
+		L.SpawnObjectEntity(area, BaseObject::Get("coveredwell"), pos, PI / 2 * (Rand() % 4), 1.f, 0, nullptr);
 	}
 
 	TerrainTile* tiles = city->tiles;
@@ -2488,7 +2484,7 @@ void CityGenerator::SpawnObjects()
 			Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 			pos.y = terrain->GetH(pos);
 			OutsideObject& o = outside_objects[Rand() % n_outside_objects];
-			L.SpawnObjectEntity(L.local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+			L.SpawnObjectEntity(area, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 		}
 	}
 }
@@ -2497,10 +2493,11 @@ void CityGenerator::SpawnObjects()
 void CityGenerator::SpawnUnits()
 {
 	Game& game = Game::Get();
+	LevelArea& area = *city;
 
 	for(CityBuilding& b : city->buildings)
 	{
-		UnitData* ud = b.type->unit;
+		UnitData* ud = b.building->unit;
 		if(!ud)
 			continue;
 
@@ -2527,10 +2524,10 @@ void CityGenerator::SpawnUnits()
 		u->UpdatePhysics(u->pos);
 		u->visual_pos = u->pos;
 
-		if(b.type->group == BuildingGroup::BG_ARENA)
+		if(b.building->group == BuildingGroup::BG_ARENA)
 			city->arena_pos = u->pos;
 
-		L.local_ctx.units->push_back(u);
+		area.units.push_back(u);
 
 		AIController* ai = new AIController;
 		ai->Init(u);
@@ -2557,7 +2554,7 @@ void CityGenerator::SpawnUnits()
 			Int2 pt(Random(a, b), Random(a, b));
 			if(city->tiles[pt(OutsideLocation::size)].IsRoadOrPath())
 			{
-				L.SpawnUnitNearLocation(L.local_ctx, Vec3(2.f*pt.x + 1, 0, 2.f*pt.y + 1), *dweller, nullptr, -2, 2.f);
+				L.SpawnUnitNearLocation(area, Vec3(2.f*pt.x + 1, 0, 2.f*pt.y + 1), *dweller, nullptr, -2, 2.f);
 				break;
 			}
 		}
@@ -2572,7 +2569,7 @@ void CityGenerator::SpawnUnits()
 			Int2 pt(Random(a, b), Random(a, b));
 			if(city->tiles[pt(OutsideLocation::size)].IsRoadOrPath())
 			{
-				L.SpawnUnitNearLocation(L.local_ctx, Vec3(2.f*pt.x + 1, 0, 2.f*pt.y + 1), *guard, nullptr, -2, 2.f);
+				L.SpawnUnitNearLocation(area, Vec3(2.f*pt.x + 1, 0, 2.f*pt.y + 1), *guard, nullptr, -2, 2.f);
 				break;
 			}
 		}
@@ -2611,7 +2608,7 @@ void CityGenerator::SpawnTemporaryUnits()
 		else
 		{
 			// on training grounds
-			Unit* u = L.SpawnUnitNearLocation(L.local_ctx, Vec3(2.f*training_grounds->unit_pt.x + 1, 0, 2.f*training_grounds->unit_pt.y + 1), ud, nullptr,
+			Unit* u = L.SpawnUnitNearLocation(*city, Vec3(2.f*training_grounds->unit_pt.x + 1, 0, 2.f*training_grounds->unit_pt.y + 1), ud, nullptr,
 				level.Random(), 8.f);
 			if(u)
 				u->temporary = true;
@@ -2626,9 +2623,9 @@ void CityGenerator::SpawnTemporaryUnits()
 //=================================================================================================
 void CityGenerator::RemoveTemporaryUnits()
 {
-	for(LevelContext& ctx : L.ForEachContext())
+	for(LevelArea& area : L.ForEachArea())
 	{
-		LoopAndRemove(*ctx.units, [](Unit* u)
+		LoopAndRemove(area.units, [](Unit* u)
 		{
 			if(u->temporary)
 			{
@@ -2655,13 +2652,13 @@ void CityGenerator::RepositionUnits()
 	UnitData* guard = UnitData::Get("guard_move");
 	InsideBuilding* inn = city->FindInn();
 
-	for(vector<Unit*>::iterator it = L.local_ctx.units->begin(), end = L.local_ctx.units->end(); it != end; ++it)
+	for(vector<Unit*>::iterator it = city->units.begin(), end = city->units.end(); it != end; ++it)
 	{
 		Unit& u = **it;
 		if(u.IsAlive() && u.IsAI())
 		{
 			if(u.ai->goto_inn)
-				L.WarpToArea(inn->ctx, (Rand() % 5 == 0 ? inn->arena2 : inn->arena1), u.GetUnitRadius(), u.pos);
+				L.WarpToRegion(*inn, (Rand() % 5 == 0 ? inn->region2 : inn->region1), u.GetUnitRadius(), u.pos);
 			else if(u.data == citizen || u.data == guard)
 			{
 				for(int j = 0; j < 50; ++j)
@@ -2685,17 +2682,17 @@ void CityGenerator::GeneratePickableItems()
 		*shelves = BaseObject::Get("shelves");
 
 	// piwa w karczmie
-	InsideBuilding* inn = city->FindInn();
+	InsideBuilding& inn = *city->FindInn();
 	const Item* beer = Item::Get("beer");
 	const Item* vodka = Item::Get("vodka");
 	const Item* plate = Item::Get("plate");
 	const Item* cup = Item::Get("cup");
-	for(vector<Object*>::iterator it = inn->ctx.objects->begin(), end = inn->ctx.objects->end(); it != end; ++it)
+	for(vector<Object*>::iterator it = inn.objects.begin(), end = inn.objects.end(); it != end; ++it)
 	{
 		Object& obj = **it;
 		if(obj.base == table)
 		{
-			L.PickableItemBegin(inn->ctx, obj);
+			L.PickableItemBegin(inn, obj);
 			if(Rand() % 2 == 0)
 			{
 				L.PickableItemAdd(beer);
@@ -2709,7 +2706,7 @@ void CityGenerator::GeneratePickableItems()
 		}
 		else if(obj.base == shelves)
 		{
-			L.PickableItemBegin(inn->ctx, obj);
+			L.PickableItemBegin(inn, obj);
 			for(int i = 0, count = Random(3, 5); i < count; ++i)
 				L.PickableItemAdd(beer);
 			for(int i = 0, count = Random(1, 3); i < count; ++i)
@@ -2723,7 +2720,7 @@ void CityGenerator::GeneratePickableItems()
 	{
 		Object* found_obj = nullptr;
 		float best_dist = 9999.f, dist;
-		for(vector<Object*>::iterator it = L.local_ctx.objects->begin(), end = L.local_ctx.objects->end(); it != end; ++it)
+		for(vector<Object*>::iterator it = city->objects.begin(), end = city->objects.end(); it != end; ++it)
 		{
 			Object& obj = **it;
 			if(obj.base == shelves)
@@ -2740,7 +2737,7 @@ void CityGenerator::GeneratePickableItems()
 		if(found_obj)
 		{
 			const ItemList* lis = ItemList::Get("food_and_drink").lis;
-			L.PickableItemBegin(L.local_ctx, *found_obj);
+			L.PickableItemBegin(*city, *found_obj);
 			for(int i = 0; i < 20; ++i)
 				L.PickableItemAdd(lis->Get());
 		}
@@ -2752,7 +2749,7 @@ void CityGenerator::GeneratePickableItems()
 	{
 		Object* found_obj = nullptr;
 		float best_dist = 9999.f, dist;
-		for(vector<Object*>::iterator it = L.local_ctx.objects->begin(), end = L.local_ctx.objects->end(); it != end; ++it)
+		for(vector<Object*>::iterator it = city->objects.begin(), end = city->objects.end(); it != end; ++it)
 		{
 			Object& obj = **it;
 			if(obj.base == shelves)
@@ -2768,7 +2765,7 @@ void CityGenerator::GeneratePickableItems()
 
 		if(found_obj)
 		{
-			L.PickableItemBegin(L.local_ctx, *found_obj);
+			L.PickableItemBegin(*city, *found_obj);
 			const Item* heal_pot = Item::Get("p_hp");
 			L.PickableItemAdd(heal_pot);
 			if(Rand() % 2 == 0)
@@ -2920,14 +2917,14 @@ void CityGenerator::RespawnBuildingPhysics()
 {
 	for(vector<CityBuilding>::iterator it = city->buildings.begin(), end = city->buildings.end(); it != end; ++it)
 	{
-		Building* b = it->type;
-		L.ProcessBuildingObjects(L.local_ctx, city, nullptr, b->mesh, nullptr, DirToRot(it->rot), it->rot,
+		Building* b = it->building;
+		L.ProcessBuildingObjects(*city, city, nullptr, b->mesh, nullptr, DirToRot(it->rot), it->rot,
 			Vec3(float(it->pt.x + b->shift[it->rot].x) * 2, 1.f, float(it->pt.y + b->shift[it->rot].y) * 2), nullptr, &*it, true);
 	}
 
 	for(vector<InsideBuilding*>::iterator it = city->inside_buildings.begin(), end = city->inside_buildings.end(); it != end; ++it)
 	{
-		L.ProcessBuildingObjects((*it)->ctx, city, *it, (*it)->type->inside_mesh, nullptr, 0.f, 0, Vec3((*it)->offset.x, 0.f, (*it)->offset.y), nullptr,
+		L.ProcessBuildingObjects(**it, city, *it, (*it)->building->inside_mesh, nullptr, 0.f, 0, Vec3((*it)->offset.x, 0.f, (*it)->offset.y), nullptr,
 			nullptr, true);
 	}
 }

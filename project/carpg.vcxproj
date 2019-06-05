@@ -325,7 +325,6 @@
     <ClInclude Include="source\game\location\InsideLocation.h" />
     <ClInclude Include="source\game\location\InsideLocationLevel.h" />
     <ClInclude Include="source\game\location\LevelArea.h" />
-    <ClInclude Include="source\game\location\LevelContext.h" />
     <ClInclude Include="source\game\location\Location.h" />
     <ClInclude Include="source\game\location\MultiInsideLocation.h" />
     <ClInclude Include="source\game\location\OutsideLocation.h" />
@@ -580,7 +579,6 @@
     <ClCompile Include="source\game\location\InsideBuilding.cpp" />
     <ClCompile Include="source\game\location\InsideLocation.cpp" />
     <ClCompile Include="source\game\location\InsideLocationLevel.cpp" />
-    <ClCompile Include="source\game\location\LevelContext.cpp" />
     <ClCompile Include="source\game\location\Location.cpp" />
     <ClCompile Include="source\game\location\MultiInsideLocation.cpp" />
     <ClCompile Include="source\game\location\OutsideLocation.cpp" />

@@ -19,9 +19,8 @@ struct MultiInsideLocation : public InsideLocation
 
 	explicit MultiInsideLocation(int _levels);
 
-	// from ILevel
-	void ApplyContext(LevelContext& ctx) override;
 	// from Location
+	void Apply(vector<std::reference_wrapper<LevelArea>>& areas) override;
 	void Save(GameWriter& f, bool local) override;
 	void Load(GameReader& f, bool local, LOCATION_TOKEN token) override;
 	void BuildRefidTables() override;

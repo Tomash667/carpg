@@ -197,45 +197,7 @@ void InsideLocationLevel::SaveLevel(GameWriter& f, bool local)
 	f << h;
 	f.Write(map, sizeof(Tile)*w*h);
 
-	// units
-	f << units.size();
-	for(Unit* unit : units)
-		unit->Save(f, local);
-
-	// chests
-	f << chests.size();
-	for(Chest* chest : chests)
-		chest->Save(f, local);
-
-	// objects
-	f << objects.size();
-	for(Object* object : objects)
-		object->Save(f);
-
-	// doors
-	f << doors.size();
-	for(Door* door : doors)
-		door->Save(f, local);
-
-	// ground items
-	f << items.size();
-	for(GroundItem* item : items)
-		item->Save(f);
-
-	// usable objects
-	f << usables.size();
-	for(Usable* usable : usables)
-		usable->Save(f, local);
-
-	// bloods
-	f << bloods.size();
-	for(Blood& blood : bloods)
-		blood.Save(f);
-
-	// lights
-	f << lights.size();
-	for(Light& light : lights)
-		light.Save(f);
+	LevelArea::Save(f);
 
 	// rooms
 	f << rooms.size();
@@ -246,11 +208,6 @@ void InsideLocationLevel::SaveLevel(GameWriter& f, bool local)
 	f << groups.size();
 	for(RoomGroup& group : groups)
 		group.Save(f);
-
-	// traps
-	f << traps.size();
-	for(Trap* trap : traps)
-		trap->Save(f, local);
 
 	f << staircase_up;
 	f << staircase_down;
@@ -267,112 +224,93 @@ void InsideLocationLevel::LoadLevel(GameReader& f, bool local)
 	map = new Tile[w*h];
 	f.Read(map, sizeof(Tile)*w*h);
 
-	// units
-	units.resize(f.Read<uint>());
-	for(Unit*& unit : units)
+	if(LOAD_VERSION >= V_DEV)
 	{
-		unit = new Unit;
-		Unit::AddRefid(unit);
-		unit->Load(f, local);
-	}
+		LevelArea::Load(f, local);
 
-	// chests
-	chests.resize(f.Read<uint>());
-	for(Chest*& chest : chests)
-	{
-		chest = new Chest;
-		chest->Load(f, local);
-	}
-
-	// objects
-	objects.resize(f.Read<uint>());
-	for(Object*& object : objects)
-	{
-		object = new Object;
-		object->Load(f);
-	}
-
-	// doors
-	doors.resize(f.Read<uint>());
-	for(Door*& door : doors)
-	{
-		door = new Door;
-		door->Load(f, local);
-	}
-
-	// ground items
-	items.resize(f.Read<int>());
-	for(GroundItem*& item : items)
-	{
-		item = new GroundItem;
-		GroundItem::AddRefid(item);
-		item->Load(f);
-	}
-
-	// usable objects
-	usables.resize(f.Read<uint>());
-	for(Usable*& usable : usables)
-	{
-		usable = new Usable;
-		Usable::AddRefid(usable);
-		usable->Load(f, local);
-	}
-
-	// bloods
-	bloods.resize(f.Read<uint>());
-	for(Blood& blood : bloods)
-		blood.Load(f);
-
-	// lights
-	lights.resize(f.Read<uint>());
-	for(Light& light : lights)
-		light.Load(f);
-
-	// rooms
-	rooms.resize(f.Read<uint>());
-	int index = 0;
-	for(Room*& room : rooms)
-	{
-		room = Room::Get();
-		room->index = index++;
-		room->Load(f);
-	}
-	for(Room* room : rooms)
-	{
-		for(Room*& c : room->connected)
-			c = rooms[(int)c];
-	}
-
-	// room groups
-	index = 0;
-	if(LOAD_VERSION >= V_0_8)
-	{
-		groups.resize(f.Read<uint>());
-		for(RoomGroup& group : groups)
+		// rooms
+		rooms.resize(f.Read<uint>());
+		int index = 0;
+		for(Room*& room : rooms)
 		{
-			group.Load(f);
-			group.index = index++;
+			room = Room::Get();
+			room->index = index++;
+			room->Load(f);
 		}
+		for(Room* room : rooms)
+		{
+			for(Room*& c : room->connected)
+				c = rooms[(int)c];
+		}
+
+		// room groups
+		index = 0;
+		if(LOAD_VERSION >= V_0_8)
+		{
+			groups.resize(f.Read<uint>());
+			for(RoomGroup& group : groups)
+			{
+				group.Load(f);
+				group.index = index++;
+			}
+		}
+		else
+		{
+			groups.resize(rooms.size());
+			for(int i = 0; i < (int)rooms.size(); ++i)
+			{
+				groups[i].rooms.push_back(i);
+				groups[i].target = rooms[i]->target;
+				groups[i].index++;
+			}
+		}
+		if(LOAD_VERSION <= V_DEV)
+			RoomGroup::SetRoomGroupConnections(groups, rooms);
 	}
 	else
 	{
-		groups.resize(rooms.size());
-		for(int i = 0; i < (int)rooms.size(); ++i)
-		{
-			groups[i].rooms.push_back(i);
-			groups[i].target = rooms[i]->target;
-			groups[i].index++;
-		}
-	}
-	if(LOAD_VERSION <= V_DEV)
-		RoomGroup::SetRoomGroupConnections(groups, rooms);
+		LevelArea::Load(f, local, old::LoadCompatibility::InsideLocationLevel);
 
-	// traps
-	traps.resize(f.Read<uint>());
-	for(Trap*& trap : traps)
-	{
-		trap = new Trap;
-		trap->Load(f, local);
+		// rooms
+		rooms.resize(f.Read<uint>());
+		int index = 0;
+		for(Room*& room : rooms)
+		{
+			room = Room::Get();
+			room->index = index++;
+			room->Load(f);
+		}
+		for(Room* room : rooms)
+		{
+			for(Room*& c : room->connected)
+				c = rooms[(int)c];
+		}
+
+		// room groups
+		index = 0;
+		if(LOAD_VERSION >= V_0_8)
+		{
+			groups.resize(f.Read<uint>());
+			for(RoomGroup& group : groups)
+			{
+				group.Load(f);
+				group.index = index++;
+			}
+		}
+		else
+		{
+			groups.resize(rooms.size());
+			for(int i = 0; i < (int)rooms.size(); ++i)
+			{
+				groups[i].rooms.push_back(i);
+				groups[i].target = rooms[i]->target;
+				groups[i].index++;
+			}
+		}
+		if(LOAD_VERSION <= V_DEV)
+			RoomGroup::SetRoomGroupConnections(groups, rooms);
+
+		LevelArea::Load(f, local, old::LoadCompatibility::InsideLocationLevelTraps);
 	}
 
 	f >> staircase_up;
@@ -430,17 +368,6 @@ Room& InsideLocationLevel::GetFarRoom(bool have_down_stairs, bool no_target)
 }
 
 //=================================================================================================
-void InsideLocationLevel::BuildRefidTables()
-{
-	for(Unit* unit : units)
-		Unit::AddRefid(unit);
-	for(Usable* usable : usables)
-		Usable::AddRefid(usable);
-	for(GroundItem* item : items)
-		GroundItem::AddRefid(item);
-}
-
-//=================================================================================================
 Door* InsideLocationLevel::FindDoor(const Int2& pt) const
 {
 	for(vector<Door*>::const_iterator it = doors.begin(), end = doors.end(); it != end; ++it)
@@ -493,70 +420,6 @@ bool InsideLocationLevel::IsTileNearWall(const Int2& pt, int& dir) const
 	}
 
 	return true;
-}
-
-//=================================================================================================
-bool InsideLocationLevel::FindUnit(Unit* unit)
-{
-	assert(unit);
-
-	for(Unit* u : units)
-	{
-		if(u == unit)
-			return true;
-	}
-
-	return false;
-}
-
-//=================================================================================================
-Unit* InsideLocationLevel::FindUnit(UnitData* data)
-{
-	assert(data);
-
-	for(Unit* u : units)
-	{
-		if(u->data == data)
-			return u;
-	}
-
-	return nullptr;
-}
-
-//=================================================================================================
-Chest* InsideLocationLevel::FindChestWithItem(const Item* item, int* index)
-{
-	assert(item);
-
-	for(Chest* chest : chests)
-	{
-		int idx = chest->FindItem(item);
-		if(idx != -1)
-		{
-			if(index)
-				*index = idx;
-			return chest;
-		}
-	}
-
-	return nullptr;
-}
-
-//=================================================================================================
-Chest* InsideLocationLevel::FindChestWithQuestItem(int quest_refid, int* index)
-{
-	for(Chest* chest : chests)
-	{
-		int idx = chest->FindQuestItem(quest_refid);
-		if(idx != -1)
-		{
-			if(index)
-				*index = idx;
-			return chest;
-		}
-	}
-
-	return nullptr;
 }
 
 //=================================================================================================

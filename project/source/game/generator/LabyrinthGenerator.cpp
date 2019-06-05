@@ -422,10 +422,10 @@ void LabyrinthGenerator::GenerateObjects()
 		pos = Vec3(2.f*pt.x + 1.f, 0.f, 2.f*pt.y + torch->size.y + 0.1f);
 	else if(IsBlocking(lvl.map[pt.x + (pt.y + 1)*lvl.w].type))
 		pos = Vec3(2.f*pt.x + 1.f, 0.f, 2.f*(pt.y + 1) + torch->size.y - 0.1f);
-	L.SpawnObjectEntity(L.local_ctx, torch, pos, Random(MAX_ANGLE));
+	L.SpawnObjectEntity(lvl, torch, pos, Random(MAX_ANGLE));
 
 	// torch inside treasure
-	L.SpawnObjectEntity(L.local_ctx, torch, lvl.rooms[0]->Center(), Random(MAX_ANGLE));
+	L.SpawnObjectEntity(lvl, torch, lvl.rooms[0]->Center(), Random(MAX_ANGLE));
 }
 
 //=================================================================================================
@@ -458,7 +458,7 @@ void LabyrinthGenerator::GenerateUnits()
 			continue;
 
 		TmpUnitGroup::Spawn spawn = t->Get();
-		if(L.SpawnUnitNearLocation(L.local_ctx, Vec3(2.f*pt.x + 1.f, 0, 2.f*pt.y + 1.f), *spawn.first, nullptr, spawn.second))
+		if(L.SpawnUnitNearLocation(lvl, Vec3(2.f*pt.x + 1.f, 0, 2.f*pt.y + 1.f), *spawn.first, nullptr, spawn.second))
 			++added;
 	}
 
