@@ -14,7 +14,6 @@ namespace tokenizer
 		T_INT,
 		T_FLOAT,
 		T_KEYWORD,
-
 		T_KEYWORD_GROUP,
 		T_NUMBER,
 		T_TEXT,
@@ -130,10 +129,11 @@ namespace tokenizer
 				bool first = true;
 				for(int item : items)
 				{
-					if(first)
+					// omit the ',' sign for the first item
+					if(!first)
+						s += Format("%d", item);
+					else
 						first = false;
-					s += ", ";
-					s += Format("%d", item);
 				}
 				s += "}";
 				++count;
