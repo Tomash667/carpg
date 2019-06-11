@@ -49,7 +49,7 @@ int ParseCmdLine(char* lpCmd, char*** out)
 		}
 	}
 
-	// divide arguments
+	// split arguments
 	char** argv = new char*[argc];
 	char** cargv = argv;
 	str = lpCmd;
@@ -343,7 +343,7 @@ void LoadSystemDir()
 }
 
 //=================================================================================================
-// program main function
+// main program function
 //=================================================================================================
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {

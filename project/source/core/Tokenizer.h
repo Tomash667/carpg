@@ -14,7 +14,6 @@ namespace tokenizer
 		T_INT,
 		T_FLOAT,
 		T_KEYWORD,
-
 		T_KEYWORD_GROUP,
 		T_NUMBER,
 		T_TEXT,
@@ -127,14 +126,9 @@ namespace tokenizer
 					s += ", ";
 				s += t->FormatToken(token);
 				s += "{";
-				bool first = true;
 				for(int item : items)
-				{
-					if(first)
-						first = false;
-					s += ", ";
-					s += Format("%d", item);
-				}
+					s += Format("%d, ", item);
+				s.pop_back(); s.pop_back; // delete the last two characters (", ")
 				s += "}";
 				++count;
 				return *this;
