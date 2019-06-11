@@ -126,15 +126,9 @@ namespace tokenizer
 					s += ", ";
 				s += t->FormatToken(token);
 				s += "{";
-				bool first = true;
 				for(int item : items)
-				{
-					// omit the ',' sign for the first item
-					if(!first)
-						s += Format("%d", item);
-					else
-						first = false;
-				}
+					s += Format("%d, ", item);
+				s.pop_back(); s.pop_back; // delete the last two characters (", ")
 				s += "}";
 				++count;
 				return *this;
