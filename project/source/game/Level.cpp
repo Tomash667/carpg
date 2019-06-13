@@ -605,6 +605,16 @@ ObjectEntity Level::SpawnObjectEntity(LevelArea& area, BaseObject* base, const V
 			const Item* item = Book::GetRandom();
 			if(item)
 				u->container->items.push_back({ item, 1, 1 });
+			if(Rand() % 2 == 0)
+			{
+				uint level;
+				if(city_ctx)
+					level = 1;
+				else
+					level = GetChestDifficultyLevel();
+				uint gold = Random(level * 5, level * 10);
+				u->container->items.push_back({ Item::gold, gold , gold });
+			}
 		}
 
 		if(variant == -1)

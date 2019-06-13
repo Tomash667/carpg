@@ -128,7 +128,7 @@ namespace tokenizer
 				s += "{";
 				for(int item : items)
 					s += Format("%d, ", item);
-				s.pop_back(); s.pop_back; // delete the last two characters (", ")
+				s.pop_back(); s.pop_back(); // delete the last two characters (", ")
 				s += "}";
 				++count;
 				return *this;

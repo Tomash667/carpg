@@ -108,18 +108,6 @@ namespace TextHelper
 	bool ToBool(cstring s, bool& result);
 }
 
-struct Trimmer
-{
-	bool done;
-	Trimmer() : done(false) {}
-	bool operator () (char c) const
-	{
-		if(done)
-			return false;
-		return c == ' ';
-	}
-};
-
 // trim from start
 inline string& Ltrim(string& str)
 {

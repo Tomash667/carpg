@@ -411,7 +411,7 @@ weapon wand_1 {
 
 weapon wand_2 {
 	weight 0.6
-	value 150
+	value 200
 	ai_value 200
 	mesh "rozdzka2.qmsh"
 	attack 15
@@ -427,7 +427,7 @@ weapon wand_2 {
 
 weapon wand_3 {
 	weight 0.6
-	value 250
+	value 1250
 	ai_value 300
 	mesh "rozdzka3.qmsh"
 	attack 20
@@ -1350,7 +1350,7 @@ armor am_orc {
 
 armor al_mage {
 	weight 1.5
-	value 30
+	value 50
 	ai_value 100
 	mesh "robe.qmsh"
 	type light
@@ -1367,7 +1367,7 @@ armor al_mage {
 
 armor al_mage2 {
 	weight 1.5
-	value 100
+	value 150
 	ai_value 200
 	mesh "robe.qmsh"
 	tex_override "robe2.jpg"
@@ -1386,7 +1386,7 @@ armor al_mage2 {
 
 armor al_mage3 {
 	weight 1.5
-	value 350
+	value 1000
 	ai_value 300
 	mesh "robe.qmsh"
 	tex_override "robe3.jpg"
@@ -1405,7 +1405,7 @@ armor al_mage3 {
 
 armor al_mage4 {
 	weight 1.5
-	value 1500
+	value 3500
 	ai_value 400
 	mesh "robe.qmsh"
 	tex_override "robe4.jpg"
@@ -1424,7 +1424,7 @@ armor al_mage4 {
 
 armor al_necromancer {
 	weight 2
-	value 80
+	value 100
 	ai_value 250
 	mesh "necromancer_robe.qmsh"
 	type light

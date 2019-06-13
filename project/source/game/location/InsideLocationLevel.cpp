@@ -245,27 +245,12 @@ void InsideLocationLevel::LoadLevel(GameReader& f, bool local)
 
 		// room groups
 		index = 0;
-		if(LOAD_VERSION >= V_0_8)
+		groups.resize(f.Read<uint>());
+		for(RoomGroup& group : groups)
 		{
-			groups.resize(f.Read<uint>());
-			for(RoomGroup& group : groups)
-			{
-				group.Load(f);
-				group.index = index++;
-			}
+			group.Load(f);
+			group.index = index++;
 		}
-		else
-		{
-			groups.resize(rooms.size());
-			for(int i = 0; i < (int)rooms.size(); ++i)
-			{
-				groups[i].rooms.push_back(i);
-				groups[i].target = rooms[i]->target;
-				groups[i].index++;
-			}
-		}
-		if(LOAD_VERSION <= V_DEV)
-			RoomGroup::SetRoomGroupConnections(groups, rooms);
 	}
 	else
 	{
@@ -307,8 +292,7 @@ void InsideLocationLevel::LoadLevel(GameReader& f, bool local)
 				groups[i].index++;
 			}
 		}
-		if(LOAD_VERSION <= V_DEV)
-			RoomGroup::SetRoomGroupConnections(groups, rooms);
+		RoomGroup::SetRoomGroupConnections(groups, rooms);
 
 		LevelArea::Load(f, local, old::LoadCompatibility::InsideLocationLevelTraps);
 	}
