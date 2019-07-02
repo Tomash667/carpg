@@ -2279,12 +2279,12 @@ void Game::UpdatePlayer(float dt)
 				door->mesh_inst->frame_end_info = false;
 				if(Rand() % 2 == 0)
 				{
-					SOUND snd;
+					Sound* sound;
 					if(Rand() % 2 == 0)
-						snd = sDoorClose;
+						sound = sDoorClose;
 					else
-						snd = sDoor[Rand() % 3];
-					sound_mgr->PlaySound3d(snd, door->GetCenter(), Door::SOUND_DIST);
+						sound = sDoor[Rand() % 3];
+					sound_mgr->PlaySound3d(sound, door->GetCenter(), Door::SOUND_DIST);
 				}
 				if(Net::IsOnline())
 				{
@@ -2717,7 +2717,7 @@ void Game::UseAction(PlayerController* p, bool from_server, const Vec3* pos)
 
 	Action& action = p->GetAction();
 	if(action.sound)
-		PlayAttachedSound(*p->unit, action.sound->sound, action.sound_dist);
+		PlayAttachedSound(*p->unit, action.sound, action.sound_dist);
 
 	if(!from_server)
 	{
@@ -3992,7 +3992,7 @@ void Game::GiveDmg(LevelArea& area, Unit* giver, float dmg, Unit& taker, const V
 		// unit hurt sound
 		if(taker.hurt_timer <= 0.f && taker.data->sounds->Have(SOUND_PAIN))
 		{
-			PlayAttachedSound(taker, taker.data->sounds->Random(SOUND_PAIN)->sound, Unit::PAIN_SOUND_DIST);
+			PlayAttachedSound(taker, taker.data->sounds->Random(SOUND_PAIN), Unit::PAIN_SOUND_DIST);
 			taker.hurt_timer = Random(1.f, 1.5f);
 			if(IS_SET(dmg_flags, DMG_NO_BLOOD))
 				taker.hurt_timer += 1.f;
@@ -4830,7 +4830,7 @@ void Game::UpdateUnits(LevelArea& area, float dt)
 								if(u.animation_state == AS_ANIMATION2_USING)
 								{
 									u.animation_state = AS_ANIMATION2_USING_SOUND;
-									sound_mgr->PlaySound3d(bu.sound->sound, u.GetCenter(), Usable::SOUND_DIST);
+									sound_mgr->PlaySound3d(bu.sound, u.GetCenter(), Usable::SOUND_DIST);
 									if(Net::IsServer())
 									{
 										NetChange& c = Add1(Net::changes);
@@ -5919,7 +5919,7 @@ void Game::ExitToMap()
 	gui->game_gui->visible = false;
 }
 
-SOUND Game::GetMaterialSound(MATERIAL_TYPE atakuje, MATERIAL_TYPE trafiony)
+Sound* Game::GetMaterialSound(MATERIAL_TYPE atakuje, MATERIAL_TYPE trafiony)
 {
 	switch(trafiony)
 	{
@@ -5944,7 +5944,7 @@ SOUND Game::GetMaterialSound(MATERIAL_TYPE atakuje, MATERIAL_TYPE trafiony)
 	}
 }
 
-void Game::PlayAttachedSound(Unit& unit, SOUND sound, float distance)
+void Game::PlayAttachedSound(Unit& unit, Sound* sound, float distance)
 {
 	assert(sound);
 
@@ -6640,7 +6640,7 @@ void Game::UpdateTraps(LevelArea& area, float dt)
 
 				if(trigger)
 				{
-					sound_mgr->PlaySound3d(trap.base->sound->sound, trap.pos, trap.base->sound_dist);
+					sound_mgr->PlaySound3d(trap.base->sound, trap.pos, trap.base->sound_dist);
 					trap.state = 1;
 					trap.time = Random(0.5f, 0.75f);
 
@@ -6673,7 +6673,7 @@ void Game::UpdateTraps(LevelArea& area, float dt)
 					trap.state = 2;
 					trap.time = 0.f;
 
-					sound_mgr->PlaySound3d(trap.base->sound2->sound, trap.pos, trap.base->sound_dist2);
+					sound_mgr->PlaySound3d(trap.base->sound2, trap.pos, trap.base->sound_dist2);
 
 					if(Net::IsServer())
 					{
@@ -6764,7 +6764,7 @@ void Game::UpdateTraps(LevelArea& area, float dt)
 				{
 					trap.state = 4;
 					trap.time = 1.5f;
-					sound_mgr->PlaySound3d(trap.base->sound3->sound, trap.pos, trap.base->sound_dist3);
+					sound_mgr->PlaySound3d(trap.base->sound3, trap.pos, trap.base->sound_dist3);
 				}
 			}
 			else if(trap.state == 4)
@@ -6848,7 +6848,7 @@ void Game::UpdateTraps(LevelArea& area, float dt)
 					// someone step on trap, shoot arrow
 					trap.state = is_local ? 1 : 2;
 					trap.time = Random(5.f, 7.5f);
-					sound_mgr->PlaySound3d(trap.base->sound->sound, trap.pos, trap.base->sound_dist);
+					sound_mgr->PlaySound3d(trap.base->sound, trap.pos, trap.base->sound_dist);
 
 					if(is_local)
 					{
@@ -7621,7 +7621,7 @@ void Game::ClearGame()
 	pc = nullptr;
 }
 
-SOUND Game::GetItemSound(const Item* item)
+Sound* Game::GetItemSound(const Item* item)
 {
 	assert(item);
 
@@ -8392,10 +8392,13 @@ void Game::PreloadUnit(Unit* unit)
 	if(data.mesh)
 		mesh_mgr.AddLoadTask(data.mesh);
 
-	for(int i = 0; i < SOUND_MAX; ++i)
+	if(!Game::Get().sound_mgr->IsDisabled())
 	{
-		for(SoundPtr sound : data.sounds->sounds[i])
-			sound_mgr.AddLoadTask(sound);
+		for(int i = 0; i < SOUND_MAX; ++i)
+		{
+			for(SoundPtr sound : data.sounds->sounds[i])
+				sound_mgr.AddLoadTask(sound);
+		}
 	}
 
 	if(data.tex)

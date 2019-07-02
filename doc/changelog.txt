@@ -19,6 +19,7 @@ Wersja 0.11 (2019-??-??):
 - po walce na arenie bohater NPC teleportuje siê za graczem gdy ten wchodzi lub wychodzi z budynku, crashowa³o gdy gracz wychodzi³ a bohater by³ ju¿ na zewn¹trz
 - naprawiona rozmowa po walce pvp z bohaterem
 - brak magicznych efektów w budynku u klienta po wczytaniu
+- naprawione crashe przy u¿yciu opcji nosound i nomusic
 
 --------------------------------------------------------------------------------
 Wersja 0.10 (2019-05-05):

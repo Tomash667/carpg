@@ -9,10 +9,10 @@ public:
 	void Init(StartupOptions& options);
 	void Update(float dt);
 	int LoadSound(Sound* sound);
-	void PlayMusic(FMOD::Sound* music);
-	void PlaySound2d(FMOD::Sound* sound);
-	void PlaySound3d(FMOD::Sound* sound, const Vec3& pos, float distance);
-	FMOD::Channel* CreateChannel(FMOD::Sound* sound, const Vec3& pos, float distance);
+	void PlayMusic(Sound* music);
+	void PlaySound2d(Sound* sound);
+	void PlaySound3d(Sound* sound, const Vec3& pos, float distance);
+	FMOD::Channel* CreateChannel(Sound* sound, const Vec3& pos, float distance);
 	void StopSounds();
 	void SetListenerPosition(const Vec3& pos, const Vec3& dir, const Vec3& up = Vec3(0, 1, 0));
 	void SetSoundVolume(int volume);

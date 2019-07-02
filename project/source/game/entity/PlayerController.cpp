@@ -1457,7 +1457,7 @@ int PlayerController::GetTrainCost(int train) const
 //=================================================================================================
 void PlayerController::Yell()
 {
-	if(SOUND sound = unit->GetSound(SOUND_SEE_ENEMY))
+	if(Sound* sound = unit->GetSound(SOUND_SEE_ENEMY))
 	{
 		Game::Get().PlayAttachedSound(*unit, sound, Unit::ALERT_SOUND_DIST);
 		if(Net::IsServer())

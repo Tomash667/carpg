@@ -90,10 +90,10 @@ void DialogContext::StartDialog(Unit* talker, GameDialog* dialog)
 	if(Net::IsLocal())
 	{
 		// talk sound
-		SOUND snd = talker->GetSound(SOUND_TALK);
-		if(snd)
+		Sound* sound = talker->GetSound(SOUND_TALK);
+		if(sound)
 		{
-			Game::Get().PlayAttachedSound(*talker, snd, Unit::TALK_SOUND_DIST);
+			Game::Get().PlayAttachedSound(*talker, sound, Unit::TALK_SOUND_DIST);
 			if(Net::IsServer())
 			{
 				NetChange& c = Add1(Net::changes);

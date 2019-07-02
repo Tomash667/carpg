@@ -29,7 +29,7 @@ struct Spell
 	};
 
 	string id, sound_cast_id, sound_hit_id, tex_id, tex_particle_id, tex_explode_id, mesh_id;
-	SOUND sound_cast, sound_hit;
+	SoundPtr sound_cast, sound_hit;
 	TexturePtr tex, tex_particle, tex_explode;
 	Vec2 cooldown;
 	Type type;

@@ -2990,7 +2990,7 @@ void Game::AI_Shout(LevelArea& area, AIController& ai)
 	if(!unit.data->sounds->Have(SOUND_SEE_ENEMY))
 		return;
 
-	PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_SEE_ENEMY)->sound, Unit::ALERT_SOUND_DIST);
+	PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_SEE_ENEMY), Unit::ALERT_SOUND_DIST);
 
 	if(Net::IsOnline())
 	{
@@ -3024,7 +3024,7 @@ void Game::AI_DoAttack(AIController& ai, Unit* target, bool running)
 	if(u.action == A_NONE && (u.mesh_inst->mesh->head.n_groups == 1 || u.weapon_state == WS_TAKEN) && ai.next_attack <= 0.f)
 	{
 		if(u.data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
-			PlayAttachedSound(u, u.data->sounds->Random(SOUND_ATTACK)->sound, Unit::ATTACK_SOUND_DIST);
+			PlayAttachedSound(u, u.data->sounds->Random(SOUND_ATTACK), Unit::ATTACK_SOUND_DIST);
 		u.action = A_ATTACK;
 		u.attack_id = u.GetRandomAttack();
 
@@ -3099,7 +3099,7 @@ void Game::AI_HitReaction(Unit& unit, const Vec3& pos)
 	if(!unit.data->sounds->Have(SOUND_SEE_ENEMY))
 		return;
 
-	PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_SEE_ENEMY)->sound, Unit::ALERT_SOUND_DIST);
+	PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_SEE_ENEMY), Unit::ALERT_SOUND_DIST);
 
 	if(Net::IsOnline())
 	{

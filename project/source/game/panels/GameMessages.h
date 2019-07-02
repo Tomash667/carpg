@@ -76,5 +76,5 @@ private:
 		txGmsLeftEvent, txGameSaved, txGainTextAttrib, txGainTextSkill, txGainLearningPoints, txLearnedPerk, txTooComplicated, txAddedCursedStone,
 		txGameLoaded, txGoldPlus, txQuestCompletedGold;
 public:
-	SOUND snd_scribble;
+	Sound* snd_scribble;
 };

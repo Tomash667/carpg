@@ -150,6 +150,9 @@ void SoundManager::Update(float dt)
 int SoundManager::LoadSound(Sound* sound)
 {
 	assert(sound);
+	
+	if(!system)
+		return 0;
 
 	int flags = FMOD_LOWMEM;
 	if(sound->is_music)
@@ -175,7 +178,7 @@ int SoundManager::LoadSound(Sound* sound)
 }
 
 //=================================================================================================
-void SoundManager::PlayMusic(FMOD::Sound* music)
+void SoundManager::PlayMusic(Sound* music)
 {
 	if(nomusic || (!music && !current_music))
 	{
@@ -183,13 +186,15 @@ void SoundManager::PlayMusic(FMOD::Sound* music)
 		return;
 	}
 
+	assert(!music || music->IsLoaded());
+
 	music_ended = false;
 	if(music && current_music)
 	{
 		FMOD::Sound* music_sound;
 		current_music->getCurrentSound(&music_sound);
 
-		if(music_sound == music)
+		if(music_sound == music->sound)
 			return;
 	}
 
@@ -198,7 +203,7 @@ void SoundManager::PlayMusic(FMOD::Sound* music)
 
 	if(music)
 	{
-		system->playSound(music, group_music, true, &current_music);
+		system->playSound(music->sound, group_music, true, &current_music);
 		current_music->setVolume(0.f);
 		current_music->setPaused(false);
 	}
@@ -207,28 +212,32 @@ void SoundManager::PlayMusic(FMOD::Sound* music)
 }
 
 //=================================================================================================
-void SoundManager::PlaySound2d(FMOD::Sound* sound)
+void SoundManager::PlaySound2d(Sound* sound)
 {
 	assert(sound);
 
 	if(!play_sound)
 		return;
 
+	assert(sound->IsLoaded());
+
 	FMOD::Channel* channel;
-	system->playSound(sound, group_default, false, &channel);
+	system->playSound(sound->sound, group_default, false, &channel);
 	playing_sounds.push_back(channel);
 }
 
 //=================================================================================================
-void SoundManager::PlaySound3d(FMOD::Sound* sound, const Vec3& pos, float distance)
+void SoundManager::PlaySound3d(Sound* sound, const Vec3& pos, float distance)
 {
 	assert(sound);
 
 	if(!play_sound)
 		return;
 
+	assert(sound->IsLoaded());
+
 	FMOD::Channel* channel;
-	system->playSound(sound, group_default, true, &channel);
+	system->playSound(sound->sound, group_default, true, &channel);
 	channel->set3DAttributes((const FMOD_VECTOR*)&pos, nullptr);
 	channel->set3DMinMaxDistance(distance, 10000.f);
 	channel->setPaused(false);
@@ -236,12 +245,13 @@ void SoundManager::PlaySound3d(FMOD::Sound* sound, const Vec3& pos, float distan
 }
 
 //=================================================================================================
-FMOD::Channel* SoundManager::CreateChannel(FMOD::Sound* sound, const Vec3& pos, float distance)
+FMOD::Channel* SoundManager::CreateChannel(Sound* sound, const Vec3& pos, float distance)
 {
 	assert(play_sound && sound);
+	assert(sound->IsLoaded());
 
 	FMOD::Channel* channel;
-	system->playSound(sound, group_default, true, &channel);
+	system->playSound(sound->sound, group_default, true, &channel);
 	channel->set3DAttributes((const FMOD_VECTOR*)&pos, nullptr);
 	channel->set3DMinMaxDistance(distance, 10000.f);
 	channel->setPaused(false);

@@ -52,7 +52,7 @@ void Game::SetupTracks()
 
 	track_id = 0;
 	last_music = tracks.front();
-	sound_mgr->PlayMusic(last_music->music->sound);
+	sound_mgr->PlayMusic(last_music->music);
 }
 
 //=================================================================================================
@@ -79,7 +79,7 @@ void Game::UpdateMusic()
 		{
 			++track_id;
 			last_music = tracks[track_id];
-			sound_mgr->PlayMusic(last_music->music->sound);
+			sound_mgr->PlayMusic(last_music->music);
 		}
 	}
 }

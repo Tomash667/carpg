@@ -704,7 +704,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						else
 						{
 							if(unit.data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
-								PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK)->sound, Unit::ATTACK_SOUND_DIST);
+								PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK), Unit::ATTACK_SOUND_DIST);
 							unit.action = A_ATTACK;
 							unit.attack_id = ((typeflags & 0xF0) >> 4);
 							unit.attack_power = 1.f;
@@ -718,7 +718,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					case AID_PrepareAttack:
 						{
 							if(unit.data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
-								PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK)->sound, Unit::ATTACK_SOUND_DIST);
+								PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK), Unit::ATTACK_SOUND_DIST);
 							unit.action = A_ATTACK;
 							unit.attack_id = ((typeflags & 0xF0) >> 4);
 							unit.attack_power = 1.f;
@@ -774,7 +774,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					case AID_RunningAttack:
 						{
 							if(unit.data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
-								PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK)->sound, Unit::ATTACK_SOUND_DIST);
+								PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK), Unit::ATTACK_SOUND_DIST);
 							unit.action = A_ATTACK;
 							unit.attack_id = ((typeflags & 0xF0) >> 4);
 							unit.attack_power = 1.5f;
@@ -2392,12 +2392,12 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 
 				if(ok && Rand() == 0)
 				{
-					SOUND snd;
+					Sound* sound;
 					if(is_closing && Rand() % 2 == 0)
-						snd = sDoorClose;
+						sound = sDoorClose;
 					else
-						snd = sDoor[Rand() % 3];
-					sound_mgr->PlaySound3d(snd, door->GetCenter(), Door::SOUND_DIST);
+						sound = sDoor[Rand() % 3];
+					sound_mgr->PlaySound3d(sound, door->GetCenter(), Door::SOUND_DIST);
 				}
 
 				// send to other players
@@ -4180,7 +4180,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					else
 					{
 						if(unit.data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
-							PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK)->sound, Unit::ATTACK_SOUND_DIST);
+							PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK), Unit::ATTACK_SOUND_DIST);
 						unit.action = A_ATTACK;
 						unit.attack_id = ((typeflags & 0xF0) >> 4);
 						unit.attack_power = 1.f;
@@ -4193,7 +4193,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				case AID_PrepareAttack:
 					{
 						if(unit.data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
-							PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK)->sound, Unit::ATTACK_SOUND_DIST);
+							PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK), Unit::ATTACK_SOUND_DIST);
 						unit.action = A_ATTACK;
 						unit.attack_id = ((typeflags & 0xF0) >> 4);
 						unit.attack_power = 1.f;
@@ -4242,7 +4242,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				case AID_RunningAttack:
 					{
 						if(unit.data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
-							PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK)->sound, Unit::ATTACK_SOUND_DIST);
+							PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_ATTACK), Unit::ATTACK_SOUND_DIST);
 						unit.action = A_ATTACK;
 						unit.attack_id = ((typeflags & 0xF0) >> 4);
 						unit.attack_power = 1.5f;
@@ -4365,7 +4365,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Unit* unit = L.FindUnit(netid);
 					if(!unit)
 						Error("Update client: UNIT_SOUND, missing unit %d.", netid);
-					else if(SOUND sound = unit->GetSound(sound_id))
+					else if(Sound* sound = unit->GetSound(sound_id))
 					{
 						float dist;
 						switch(sound_id)
@@ -5388,14 +5388,14 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				else if(game_state == GS_LEVEL && L.city_ctx && IS_SET(L.city_ctx->flags, City::HaveArena)
 					&& L.GetArena()->area_id == pc->unit->area_id)
 				{
-					SOUND snd;
+					Sound* sound;
 					if(type == 0)
-						snd = sArenaFight;
+						sound = sArenaFight;
 					else if(type == 1)
-						snd = sArenaWin;
+						sound = sArenaWin;
 					else
-						snd = sArenaLost;
-					sound_mgr->PlaySound2d(snd);
+						sound = sArenaLost;
+					sound_mgr->PlaySound2d(sound);
 				}
 			}
 			break;
@@ -5534,12 +5534,12 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 
 						if(ok && Rand() == 0)
 						{
-							SOUND snd;
+							Sound* sound;
 							if(is_closing && Rand() % 2 == 0)
-								snd = sDoorClose;
+								sound = sDoorClose;
 							else
-								snd = sDoor[Rand() % 3];
-							sound_mgr->PlaySound3d(snd, door->GetCenter(), Door::SOUND_DIST);
+								sound = sDoor[Rand() % 3];
+							sound_mgr->PlaySound3d(sound, door->GetCenter(), Door::SOUND_DIST);
 						}
 					}
 				}
@@ -6339,7 +6339,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					else if(!unit->usable)
 						Error("Update client: USABLE_SOUND, unit %d (%s) don't use usable.", netid, unit->data->id.c_str());
 					else if(unit != pc->unit)
-						sound_mgr->PlaySound3d(unit->usable->base->sound->sound, unit->GetCenter(), Usable::SOUND_DIST);
+						sound_mgr->PlaySound3d(unit->usable->base->sound, unit->GetCenter(), Usable::SOUND_DIST);
 				}
 			}
 			break;

@@ -19,6 +19,7 @@ Version 0.11 (2019-??-??):
 - after player fights at arena with npc ally, npc will warp with player when entering/exiting buildings, this could crash game when npc was outside building and player exit building
 - fixed dialog after pvp with hero
 - missing magic effects for clients after loading inside building
+- fixed crashes when using nosound/nomusic config options
 
 --------------------------------------------------------------------------------
 Version 0.10 (2019-05-05):

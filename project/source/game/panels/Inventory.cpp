@@ -1328,7 +1328,7 @@ void InventoryPanel::Event(GuiEvent e)
 
 		// take all event
 		bool gold = false;
-		SOUND snd[3] = { 0 };
+		SoundPtr sound[3] = { 0 };
 		vector<ItemSlot>& itms = game.pc->unit->items;
 		bool changes = false;
 
@@ -1340,18 +1340,18 @@ void InventoryPanel::Event(GuiEvent e)
 			{
 				if(unit_slots[i])
 				{
-					SOUND s = game.GetItemSound(unit_slots[i]);
+					Sound* s = game.GetItemSound(unit_slots[i]);
 					if(s == game.sCoins)
 						gold = true;
 					else
 					{
 						for(int i = 0; i < 3; ++i)
 						{
-							if(snd[i] == s)
+							if(sound[i] == s)
 								break;
-							else if(!snd[i])
+							else if(!sound[i])
 							{
-								snd[i] = s;
+								sound[i] = s;
 								break;
 							}
 						}
@@ -1394,14 +1394,14 @@ void InventoryPanel::Event(GuiEvent e)
 			{
 				InsertItemBare(itms, it->item, it->count, it->team_count);
 				game.pc->unit->weight += it->item->weight * it->count;
-				SOUND s = game.GetItemSound(it->item);
+				Sound* s = game.GetItemSound(it->item);
 				for(int i = 0; i < 3; ++i)
 				{
-					if(snd[i] == s)
+					if(sound[i] == s)
 						break;
-					else if(!snd[i])
+					else if(!sound[i])
 					{
-						snd[i] = s;
+						sound[i] = s;
 						break;
 					}
 				}
@@ -1419,8 +1419,8 @@ void InventoryPanel::Event(GuiEvent e)
 		// pick item sound
 		for(int i = 0; i < 3; ++i)
 		{
-			if(snd[i])
-				game.sound_mgr->PlaySound2d(snd[i]);
+			if(sound[i])
+				game.sound_mgr->PlaySound2d(sound[i]);
 		}
 		if(gold)
 			game.sound_mgr->PlaySound2d(game.sCoins);

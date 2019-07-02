@@ -809,10 +809,10 @@ public:
 	void Die(LevelArea& area, Unit* killer);
 	void DropGold(int count);
 	bool IsDrunkman() const;
-	void PlaySound(SOUND snd, float range);
+	void PlaySound(Sound* sound, float range);
 	void CreatePhysics(bool position = false);
 	void UpdatePhysics(const Vec3& pos);
-	SOUND GetSound(SOUND_ID sound_id) const;
+	Sound* GetSound(SOUND_ID sound_id) const;
 	void SetWeaponState(bool takes_out, WeaponType type);
 	void UpdateInventory(bool notify = true);
 	bool IsEnemy(Unit& u, bool ignore_dont_attack = false) const;

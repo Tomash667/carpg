@@ -30,6 +30,6 @@ private:
 	uint max_page, current_page;
 	Vec2 scale;
 	TEX tArrowL, tArrowR;
-	SOUND sound;
+	Sound* sound;
 	Font* normal_font, *runic_font;
 };

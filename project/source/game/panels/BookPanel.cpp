@@ -20,8 +20,7 @@ void BookPanel::LoadData()
 	tex_mgr.AddLoadTask("strzalka_l.png", tArrowL);
 	tex_mgr.AddLoadTask("strzalka_p.png", tArrowR);
 
-	if(!Game::Get().sound_mgr->IsSoundDisabled())
-		ResourceManager::Get<Sound>().AddLoadTask("page-turn.wav", sound);
+	sound = ResourceManager::Get<Sound>().AddLoadTask("page-turn.wav");
 
 	GUI.AddFont("Dwarf Runes.ttf");
 	normal_font = GUI.CreateFont("Arial", 16, 800, 512);

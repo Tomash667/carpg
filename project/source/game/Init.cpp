@@ -511,7 +511,6 @@ void Game::AddLoadTasks()
 	auto& mesh_mgr = ResourceManager::Get<Mesh>();
 	auto& vd_mgr = ResourceManager::Get<VertexData>();
 	auto& sound_mgr = ResourceManager::Get<Sound>();
-	bool nosound = this->sound_mgr->IsSoundDisabled();
 	bool nomusic = this->sound_mgr->IsMusicDisabled();
 
 	// gui textures
@@ -639,15 +638,12 @@ void Game::AddLoadTasks()
 		}
 		if(t.mesh_id2)
 			t.mesh2 = mesh_mgr.Get(t.mesh_id2);
-		if(!nosound)
-		{
-			if(t.sound_id)
-				t.sound = sound_mgr.Get(t.sound_id);
-			if(t.sound_id2)
-				t.sound2 = sound_mgr.Get(t.sound_id2);
-			if(t.sound_id3)
-				t.sound3 = sound_mgr.Get(t.sound_id3);
-		}
+		if(t.sound_id)
+			t.sound = sound_mgr.Get(t.sound_id);
+		if(t.sound_id2)
+			t.sound2 = sound_mgr.Get(t.sound_id2);
+		if(t.sound_id3)
+			t.sound3 = sound_mgr.Get(t.sound_id3);
 	}
 
 	// spells
@@ -656,13 +652,10 @@ void Game::AddLoadTasks()
 	{
 		Spell& spell = *spell_ptr;
 
-		if(!nosound)
-		{
-			if(!spell.sound_cast_id.empty())
-				sound_mgr.AddLoadTask(spell.sound_cast_id, spell.sound_cast);
-			if(!spell.sound_hit_id.empty())
-				sound_mgr.AddLoadTask(spell.sound_hit_id, spell.sound_hit);
-		}
+		if(!spell.sound_cast_id.empty())
+			spell.sound_cast = sound_mgr.AddLoadTask(spell.sound_cast_id);
+		if(!spell.sound_hit_id.empty())
+			spell.sound_hit = sound_mgr.AddLoadTask(spell.sound_hit_id);
 		if(!spell.tex_id.empty())
 			spell.tex = tex_mgr.AddLoadTask(spell.tex_id);
 		if(!spell.tex_particle_id.empty())
@@ -707,7 +700,7 @@ void Game::AddLoadTasks()
 		if(obj.IsUsable())
 		{
 			BaseUsable& bu = *(BaseUsable*)p_obj;
-			if(!nosound && !bu.sound_id.empty())
+			if(!bu.sound_id.empty())
 				bu.sound = sound_mgr.Get(bu.sound_id);
 			if(!bu.item_id.empty())
 				bu.item = Item::Get(bu.item_id);
@@ -741,53 +734,50 @@ void Game::AddLoadTasks()
 	LoadItemsData();
 
 	// sounds
-	if(!nosound)
-	{
-		res_mgr.AddTaskCategory(txLoadSounds);
-		sound_mgr.AddLoadTask("gulp.mp3", sGulp);
-		sound_mgr.AddLoadTask("moneta2.mp3", sCoins);
-		sound_mgr.AddLoadTask("bow1.mp3", sBow[0]);
-		sound_mgr.AddLoadTask("bow2.mp3", sBow[1]);
-		sound_mgr.AddLoadTask("drzwi-02.mp3", sDoor[0]);
-		sound_mgr.AddLoadTask("drzwi-03.mp3", sDoor[1]);
-		sound_mgr.AddLoadTask("drzwi-04.mp3", sDoor[2]);
-		sound_mgr.AddLoadTask("104528__skyumori__door-close-sqeuak-02.mp3", sDoorClose);
-		sound_mgr.AddLoadTask("wont_budge.ogg", sDoorClosed[0]);
-		sound_mgr.AddLoadTask("wont_budge2.ogg", sDoorClosed[1]);
-		sound_mgr.AddLoadTask("bottle.wav", sItem[0]); // potion
-		sound_mgr.AddLoadTask("armor-light.wav", sItem[1]); // light armor
-		sound_mgr.AddLoadTask("chainmail1.wav", sItem[2]); // heavy armor
-		sound_mgr.AddLoadTask("metal-ringing.wav", sItem[3]); // crystal
-		sound_mgr.AddLoadTask("wood-small.wav", sItem[4]); // bow
-		sound_mgr.AddLoadTask("cloth-heavy.wav", sItem[5]); // shield
-		sound_mgr.AddLoadTask("sword-unsheathe.wav", sItem[6]); // weapon
-		sound_mgr.AddLoadTask("interface3.wav", sItem[7]); // other
-		sound_mgr.AddLoadTask("amulet.mp3", sItem[8]); // amulet
-		sound_mgr.AddLoadTask("ring.mp3", sItem[9]); // ring
-		sound_mgr.AddLoadTask("chest_open.mp3", sChestOpen);
-		sound_mgr.AddLoadTask("chest_close.mp3", sChestClose);
-		sound_mgr.AddLoadTask("door_budge.mp3", sDoorBudge);
-		sound_mgr.AddLoadTask("atak_kamien.mp3", sRock);
-		sound_mgr.AddLoadTask("atak_drewno.mp3", sWood);
-		sound_mgr.AddLoadTask("atak_krysztal.mp3", sCrystal);
-		sound_mgr.AddLoadTask("atak_metal.mp3", sMetal);
-		sound_mgr.AddLoadTask("atak_cialo.mp3", sBody[0]);
-		sound_mgr.AddLoadTask("atak_cialo2.mp3", sBody[1]);
-		sound_mgr.AddLoadTask("atak_cialo3.mp3", sBody[2]);
-		sound_mgr.AddLoadTask("atak_cialo4.mp3", sBody[3]);
-		sound_mgr.AddLoadTask("atak_cialo5.mp3", sBody[4]);
-		sound_mgr.AddLoadTask("atak_kosci.mp3", sBone);
-		sound_mgr.AddLoadTask("atak_skora.mp3", sSkin);
-		sound_mgr.AddLoadTask("arena_fight.mp3", sArenaFight);
-		sound_mgr.AddLoadTask("arena_wygrana.mp3", sArenaWin);
-		sound_mgr.AddLoadTask("arena_porazka.mp3", sArenaLost);
-		sound_mgr.AddLoadTask("unlock.mp3", sUnlock);
-		sound_mgr.AddLoadTask("TouchofDeath.ogg", sEvil);
-		sound_mgr.AddLoadTask("eat.mp3", sEat);
-		sound_mgr.AddLoadTask("whooshy-puff.wav", sSummon);
-		sound_mgr.AddLoadTask("zap.mp3", sZap);
-	}
-
+	res_mgr.AddTaskCategory(txLoadSounds);
+	sGulp = sound_mgr.AddLoadTask("gulp.mp3");
+	sCoins = sound_mgr.AddLoadTask("moneta2.mp3");
+	sBow[0] = sound_mgr.AddLoadTask("bow1.mp3");
+	sBow[1] = sound_mgr.AddLoadTask("bow2.mp3");
+	sDoor[0] = sound_mgr.AddLoadTask("drzwi-02.mp3");
+	sDoor[1] = sound_mgr.AddLoadTask("drzwi-03.mp3");
+	sDoor[2] = sound_mgr.AddLoadTask("drzwi-04.mp3");
+	sDoorClose = sound_mgr.AddLoadTask("104528__skyumori__door-close-sqeuak-02.mp3");
+	sDoorClosed[0] = sound_mgr.AddLoadTask("wont_budge.ogg");
+	sDoorClosed[1] = sound_mgr.AddLoadTask("wont_budge2.ogg");
+	sItem[0] = sound_mgr.AddLoadTask("bottle.wav"); // potion
+	sItem[1] = sound_mgr.AddLoadTask("armor-light.wav"); // light armor
+	sItem[2] = sound_mgr.AddLoadTask("chainmail1.wav"); // heavy armor
+	sItem[3] = sound_mgr.AddLoadTask("metal-ringing.wav"); // crystal
+	sItem[4] = sound_mgr.AddLoadTask("wood-small.wav"); // bow
+	sItem[5] = sound_mgr.AddLoadTask("cloth-heavy.wav"); // shield
+	sItem[6] = sound_mgr.AddLoadTask("sword-unsheathe.wav"); // weapon
+	sItem[7] = sound_mgr.AddLoadTask("interface3.wav"); // other
+	sItem[8] = sound_mgr.AddLoadTask("amulet.mp3"); // amulet
+	sItem[9] = sound_mgr.AddLoadTask("ring.mp3"); // ring
+	sChestOpen = sound_mgr.AddLoadTask("chest_open.mp3");
+	sChestClose = sound_mgr.AddLoadTask("chest_close.mp3");
+	sDoorBudge = sound_mgr.AddLoadTask("door_budge.mp3");
+	sRock = sound_mgr.AddLoadTask("atak_kamien.mp3");
+	sWood = sound_mgr.AddLoadTask("atak_drewno.mp3");
+	sCrystal = sound_mgr.AddLoadTask("atak_krysztal.mp3");
+	sMetal = sound_mgr.AddLoadTask("atak_metal.mp3");
+	sBody[0] = sound_mgr.AddLoadTask("atak_cialo.mp3");
+	sBody[1] = sound_mgr.AddLoadTask("atak_cialo2.mp3");
+	sBody[2] = sound_mgr.AddLoadTask("atak_cialo3.mp3");
+	sBody[3] = sound_mgr.AddLoadTask("atak_cialo4.mp3");
+	sBody[4] = sound_mgr.AddLoadTask("atak_cialo5.mp3");
+	sBone = sound_mgr.AddLoadTask("atak_kosci.mp3");
+	sSkin = sound_mgr.AddLoadTask("atak_skora.mp3");
+	sArenaFight = sound_mgr.AddLoadTask("arena_fight.mp3");
+	sArenaWin = sound_mgr.AddLoadTask("arena_wygrana.mp3");
+	sArenaLost = sound_mgr.AddLoadTask("arena_porazka.mp3");
+	sUnlock = sound_mgr.AddLoadTask("unlock.mp3");
+	sEvil = sound_mgr.AddLoadTask("TouchofDeath.ogg");
+	sEat = sound_mgr.AddLoadTask("eat.mp3");
+	sSummon = sound_mgr.AddLoadTask("whooshy-puff.wav");
+	sZap = sound_mgr.AddLoadTask("zap.mp3");
+	
 	// musics
 	if(!nomusic)
 		LoadMusic(MusicType::Title);

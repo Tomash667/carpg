@@ -45,8 +45,7 @@ void GameMessages::LoadLanguage()
 //=================================================================================================
 void GameMessages::LoadData()
 {
-	if(!Game::Get().sound_mgr->IsSoundDisabled())
-		ResourceManager::Get<Sound>().AddLoadTask("scribble.mp3", snd_scribble);
+	snd_scribble = ResourceManager::Get<Sound>().AddLoadTask("scribble.mp3");
 }
 
 //=================================================================================================

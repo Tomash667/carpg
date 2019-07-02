@@ -5030,13 +5030,13 @@ void Unit::Die(LevelArea& area, Unit* killer)
 	mesh_inst->need_update = true;
 
 	// sound
-	SOUND snd = nullptr;
+	Sound* sound = nullptr;
 	if(data->sounds->Have(SOUND_DEATH))
-		snd = data->sounds->Random(SOUND_DEATH)->sound;
+		sound = data->sounds->Random(SOUND_DEATH);
 	else if(data->sounds->Have(SOUND_PAIN))
-		snd = data->sounds->Random(SOUND_PAIN)->sound;
-	if(snd)
-		PlaySound(snd, Unit::DIE_SOUND_DIST);
+		sound = data->sounds->Random(SOUND_PAIN);
+	if(sound)
+		PlaySound(sound, Unit::DIE_SOUND_DIST);
 
 	// move physics
 	UpdatePhysics(pos);
@@ -5100,9 +5100,9 @@ bool Unit::IsDrunkman() const
 }
 
 //=================================================================================================
-void Unit::PlaySound(SOUND snd, float range)
+void Unit::PlaySound(Sound* sound, float range)
 {
-	Game::Get().sound_mgr->PlaySound3d(snd, GetHeadSoundPos(), range);
+	Game::Get().sound_mgr->PlaySound3d(sound, GetHeadSoundPos(), range);
 }
 
 //=================================================================================================
@@ -5134,10 +5134,10 @@ void Unit::UpdatePhysics(const Vec3& pos)
 }
 
 //=================================================================================================
-SOUND Unit::GetSound(SOUND_ID sound_id) const
+Sound* Unit::GetSound(SOUND_ID sound_id) const
 {
 	if(data->sounds->Have(sound_id))
-		return data->sounds->Random(sound_id)->sound;
+		return data->sounds->Random(sound_id);
 	return nullptr;
 }
 
