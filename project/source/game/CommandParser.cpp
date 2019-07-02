@@ -279,7 +279,7 @@ void CommandParser::ParseCommand(const string& command_str, PrintMsgFunc print_f
 						return;
 					}
 
-					float f2 = Clamp(t.MustGetNumberFloat(), it->_float.x, it->_float.y);
+					float f2 = Clamp(t.MustGetFloat(), it->_float.x, it->_float.y);
 					if(!Equal(f, f2))
 					{
 						f = f2;
@@ -1515,7 +1515,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 	case CMD_STUN:
 		{
 			float length = 1.f;
-			if(t.Next() && t.IsNumber())
+			if(t.Next() && t.IsFloat())
 			{
 				length = t.GetFloat();
 				if(length <= 0.f)
@@ -1604,7 +1604,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 				t.Next();
 			}
 
-			e.power = t.MustGetNumberFloat();
+			e.power = t.MustGetFloat();
 			if(t.Next())
 			{
 				const string& source_name = t.MustGetItem();
@@ -1630,7 +1630,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 					e.source = EffectSource::Temporary;
 					e.source_id = -1;
 					t.Next();
-					e.time = t.MustGetNumberFloat();
+					e.time = t.MustGetFloat();
 				}
 				else if(source_name == "item")
 				{

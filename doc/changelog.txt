@@ -12,6 +12,7 @@ Wersja 0.11 (2019-??-??):
 + atakowanie manekinów i strzelanie do tarcz strzelniczych trenuje gracza
 + brak wytrzyma³oœci spowalnia ataki zamiast ich blokowaæ
 + wiêksza jaskinia, stalagmity
++ zloto na biblioteczkach
 - naprawione pozycjonowanie szkieletów po œmierci tak by nie wpada³y w œciany gdzie nie mo¿na ich ograbiæ [Zielu]
 - naprawiony rzadki crash przy u¿ywaniu alt tab przy uruchamianiu gry
 - brak trawy wystaj¹cej spod ksiê¿ycowej studni

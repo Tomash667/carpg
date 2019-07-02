@@ -385,7 +385,7 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 		switch(prop)
 		{
 		case P_WEIGHT:
-			item->weight = int(t.MustGetNumberFloat() * 10);
+			item->weight = int(t.MustGetFloat() * 10);
 			if(item->weight < 0)
 				t.Throw("Can't have negative weight %g.", item->GetWeight());
 			break;
@@ -536,7 +536,7 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 			break;
 		case P_TIME:
 			{
-				float time = t.MustGetNumberFloat();
+				float time = t.MustGetFloat();
 				if(time < 0.f)
 					t.Throw("Can't have negative time %g.", time);
 				item->ToConsumable().time = time;
@@ -593,7 +593,7 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 				}
 				else
 					effect_value = -1;
-				float power = t.MustGetNumberFloat();
+				float power = t.MustGetFloat();
 				t.Next();
 				item->effects.push_back({ effect, power, effect_value, on_attack });
 			}

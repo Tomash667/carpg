@@ -12,6 +12,7 @@ Version 0.11 (2019-??-??):
 + hitting melee targets and shooting at ranged targets trains player
 + missing stamina slows down attacks instead of preventing them
 + bigger cave, stalagmites
++ gold on bookcases
 - fixed skeleton corpse animation moving it thru wall making it not lootable [Zielu]
 - fixed rare crash when alt tabbing at startup
 - fixed grass under moon well

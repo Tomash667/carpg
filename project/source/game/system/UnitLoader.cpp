@@ -814,19 +814,19 @@ void UnitLoader::ParseUnit(const string& id)
 			crc.Update(unit->dmg_type);
 			break;
 		case P_WALK_SPEED:
-			unit->walk_speed = t.MustGetNumberFloat();
+			unit->walk_speed = t.MustGetFloat();
 			if(unit->walk_speed < 0.5f)
 				t.Throw("Invalid walk speed %g.", unit->walk_speed);
 			crc.Update(unit->walk_speed);
 			break;
 		case P_RUN_SPEED:
-			unit->run_speed = t.MustGetNumberFloat();
+			unit->run_speed = t.MustGetFloat();
 			if(unit->run_speed < 0)
 				t.Throw("Invalid run speed %g.", unit->run_speed);
 			crc.Update(unit->run_speed);
 			break;
 		case P_ROT_SPEED:
-			unit->rot_speed = t.MustGetNumberFloat();
+			unit->rot_speed = t.MustGetFloat();
 			if(unit->rot_speed < 0.5f)
 				t.Throw("Invalid rot speed %g.", unit->rot_speed);
 			crc.Update(unit->rot_speed);
@@ -836,7 +836,7 @@ void UnitLoader::ParseUnit(const string& id)
 			crc.Update(unit->blood);
 			break;
 		case P_BLOOD_SIZE:
-			unit->blood_size = t.MustGetNumberFloat();
+			unit->blood_size = t.MustGetFloat();
 			crc.Update(unit->blood_size);
 			break;
 		case P_SOUNDS:
@@ -904,13 +904,13 @@ void UnitLoader::ParseUnit(const string& id)
 			}
 			break;
 		case P_WIDTH:
-			unit->width = t.MustGetNumberFloat();
+			unit->width = t.MustGetFloat();
 			if(unit->width < 0.1f)
 				t.Throw("Invalid width %g.", unit->width);
 			crc.Update(unit->width);
 			break;
 		case P_ATTACK_RANGE:
-			unit->attack_range = t.MustGetNumberFloat();
+			unit->attack_range = t.MustGetFloat();
 			if(unit->attack_range < 0.1f)
 				t.Throw("Invalid attack range %g.", unit->attack_range);
 			crc.Update(unit->attack_range);
@@ -1216,7 +1216,7 @@ void UnitLoader::ParseSubprofile(Ptr<StatProfile::Subprofile>& subprofile)
 						t.Throw("Subprofile priority already set.");
 					set |= (1 << type);
 					t.Next();
-					float value = t.MustGetNumberFloat();
+					float value = t.MustGetFloat();
 					if(value < 0.f)
 						t.Throw("Invalid subprofile priority %g.", value);
 					subprofile->priorities[type] = value;
@@ -1279,7 +1279,7 @@ void UnitLoader::ParseSubprofile(Ptr<StatProfile::Subprofile>& subprofile)
 						t.Throw("Subprofile tag priority already set.");
 					set |= (1 << tag);
 					t.Next();
-					float value = t.MustGetNumberFloat();
+					float value = t.MustGetFloat();
 					if(value < 0.f)
 						t.Throw("Invalid subprofile tag priority %g.", value);
 					subprofile->tag_priorities[tag] = value;
@@ -1894,9 +1894,9 @@ void UnitLoader::ParseFrames(Ptr<FrameInfo>& frames)
 			{
 				t.AssertSymbol('{');
 				t.Next();
-				float start = t.MustGetNumberFloat();
+				float start = t.MustGetFloat();
 				t.Next();
-				float end = t.MustGetNumberFloat();
+				float end = t.MustGetFloat();
 				t.Next();
 				int flags = 0;
 				t.ParseFlags(G_WEAPON_FLAG, flags);
@@ -1931,9 +1931,9 @@ void UnitLoader::ParseFrames(Ptr<FrameInfo>& frames)
 						t.Throw("To many simple attacks (max %d).", FrameInfo::MAX_ATTACKS);
 					t.AssertSymbol('{');
 					t.Next();
-					float start = t.MustGetNumberFloat();
+					float start = t.MustGetFloat();
 					t.Next();
-					float end = t.MustGetNumberFloat();
+					float end = t.MustGetFloat();
 					t.Next();
 					float power = 1.f;
 					if(t.IsFloat())
@@ -1961,7 +1961,7 @@ void UnitLoader::ParseFrames(Ptr<FrameInfo>& frames)
 			break;
 		case FK_CAST:
 			{
-				float f = t.MustGetNumberFloat();
+				float f = t.MustGetFloat();
 				if(!InRange(f, 0.f, 1.f))
 					t.Throw("Invalid cast frame time %g.", f);
 				frames->t[F_CAST] = f;
@@ -1971,7 +1971,7 @@ void UnitLoader::ParseFrames(Ptr<FrameInfo>& frames)
 			break;
 		case FK_TAKE_WEAPON:
 			{
-				float f = t.MustGetNumberFloat();
+				float f = t.MustGetFloat();
 				if(!InRange(f, 0.f, 1.f))
 					t.Throw("Invalid take weapon frame time %g.", f);
 				frames->t[F_TAKE_WEAPON] = f;
@@ -1981,7 +1981,7 @@ void UnitLoader::ParseFrames(Ptr<FrameInfo>& frames)
 			break;
 		case FK_BASH:
 			{
-				float f = t.MustGetNumberFloat();
+				float f = t.MustGetFloat();
 				if(!InRange(f, 0.f, 1.f))
 					t.Throw("Invalid bash frame time %g.", f);
 				frames->t[F_BASH] = f;

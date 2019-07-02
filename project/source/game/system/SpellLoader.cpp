@@ -158,21 +158,21 @@ void SpellLoader::ParseSpell(const string& id)
 			crc.Update(spell->cooldown);
 			break;
 		case K_RANGE:
-			spell->range = t.MustGetNumberFloat();
+			spell->range = t.MustGetFloat();
 			if(spell->range < 0.f)
 				t.Throw("Negative range %g.", spell->range);
 			crc.Update(spell->range);
 			t.Next();
 			break;
 		case K_SPEED:
-			spell->speed = t.MustGetNumberFloat();
+			spell->speed = t.MustGetFloat();
 			if(spell->speed < 0.f)
 				t.Throw("Negative speed %g.", spell->speed);
 			crc.Update(spell->speed);
 			t.Next();
 			break;
 		case K_EXPLODE_RANGE:
-			spell->explode_range = t.MustGetNumberFloat();
+			spell->explode_range = t.MustGetFloat();
 			if(spell->explode_range < 0.f)
 				t.Throw("Negative explode range %g.", spell->explode_range);
 			crc.Update(spell->explode_range);
@@ -184,7 +184,7 @@ void SpellLoader::ParseSpell(const string& id)
 				t.Throw("Empty mesh.");
 			crc.Update(spell->mesh_id);
 			t.Next();
-			spell->size = t.MustGetNumberFloat();
+			spell->size = t.MustGetFloat();
 			if(spell->size <= 0.f)
 				t.Throw("Invalid mesh size %g.", spell->size);
 			crc.Update(spell->size);
@@ -196,7 +196,7 @@ void SpellLoader::ParseSpell(const string& id)
 				t.Throw("Empty texture.");
 			crc.Update(spell->tex_id);
 			t.Next();
-			spell->size = t.MustGetNumberFloat();
+			spell->size = t.MustGetFloat();
 			if(spell->size <= 0.f)
 				t.Throw("Invalid texture size %g.", spell->size);
 			crc.Update(spell->size);
@@ -208,7 +208,7 @@ void SpellLoader::ParseSpell(const string& id)
 				t.Throw("Empty particle texture.");
 			crc.Update(spell->tex_particle_id);
 			t.Next();
-			spell->size_particle = t.MustGetNumberFloat();
+			spell->size_particle = t.MustGetFloat();
 			if(spell->size_particle <= 0.f)
 				t.Throw("Invalid particle texture size %g.", spell->size_particle);
 			crc.Update(spell->size_particle);
@@ -227,7 +227,7 @@ void SpellLoader::ParseSpell(const string& id)
 				t.Throw("Empty cast sound.");
 			crc.Update(spell->sound_cast_id);
 			t.Next();
-			spell->sound_cast_dist = t.MustGetNumberFloat();
+			spell->sound_cast_dist = t.MustGetFloat();
 			if(spell->sound_cast_dist <= 0.f)
 				t.Throw("Invalid cast sound distance %g.", spell->sound_cast_dist);
 			crc.Update(spell->sound_cast_dist);
@@ -239,7 +239,7 @@ void SpellLoader::ParseSpell(const string& id)
 				t.Throw("Empty hit sound.");
 			crc.Update(spell->sound_hit_id);
 			t.Next();
-			spell->sound_hit_dist = t.MustGetNumberFloat();
+			spell->sound_hit_dist = t.MustGetFloat();
 			if(spell->sound_hit_dist <= 0.f)
 				t.Throw("Invalid hit sound distance %g}.", spell->sound_hit_dist);
 			crc.Update(spell->sound_hit_dist);

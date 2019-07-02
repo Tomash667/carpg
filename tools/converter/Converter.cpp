@@ -2,6 +2,10 @@
 #include "Converter.h"
 #include "Mesh.h"
 
+const Vec3 DefaultSpecularColor(1, 1, 1);
+const float DefaultSpecularIntensity = 0.2f;
+const int DefaultSpecularHardness = 10;
+
 // Przechowuje dane na temat wybranej koœci we wsp. globalnych modelu w uk³adzie DirectX
 struct BONE_INTER_DATA
 {
@@ -197,15 +201,7 @@ void Converter::ConvertQmshTmpToQmsh(QMSH *Out, tmp::QMSH &QmshTmp, ConversionDa
 			if(MaterialIndicesUse[mi])
 			{
 				shared_ptr<QMSH_SUBMESH> submesh(new QMSH_SUBMESH);
-				tmp::Material& m = *o.Materials[mi];
 
-				// Nazwa podsiatki
-				// (Jeœli wiêcej u¿ytych materia³ów, to obiekt jest rozbijany na wiele podsiatek i do nazwy dodawany jest materia³)
-				submesh->Name = (NumMatUse == 1 ? o.Name : o.Name + "." + m.name);
-
-				submesh->specular_color = m.specular_color;
-				submesh->specular_intensity = m.specular_intensity;
-				submesh->specular_hardness = m.specular_hardness;
 				submesh->normal_factor = 0;
 				submesh->specular_factor = 0;
 				submesh->specular_color_factor = 0;
@@ -213,7 +209,15 @@ void Converter::ConvertQmshTmpToQmsh(QMSH *Out, tmp::QMSH &QmshTmp, ConversionDa
 				// Nazwa materia³u
 				if(mi < o.Materials.size())
 				{
+					tmp::Material& m = *o.Materials[mi];
+
+					// Nazwa podsiatki
+					// (Jeœli wiêcej u¿ytych materia³ów, to obiekt jest rozbijany na wiele podsiatek i do nazwy dodawany jest materia³)
+					submesh->Name = (NumMatUse == 1 ? o.Name : o.Name + "." + m.name);
 					submesh->MaterialName = m.name;
+					submesh->specular_color = m.specular_color;
+					submesh->specular_intensity = m.specular_intensity;
+					submesh->specular_hardness = m.specular_hardness;
 
 					if(m.image.empty())
 					{
@@ -269,6 +273,14 @@ void Converter::ConvertQmshTmpToQmsh(QMSH *Out, tmp::QMSH &QmshTmp, ConversionDa
 						// zwyk³a tekstura diffuse
 						submesh->texture = m.image;
 					}
+				}
+				else
+				{
+					submesh->Name = o.Name;
+					submesh->MaterialName = o.Name;
+					submesh->specular_color = DefaultSpecularColor;
+					submesh->specular_intensity = DefaultSpecularIntensity;
+					submesh->specular_hardness = DefaultSpecularHardness;
 				}
 
 				// Indeksy

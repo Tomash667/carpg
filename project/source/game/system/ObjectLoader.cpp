@@ -191,9 +191,9 @@ void ObjectLoader::ParseObjectProperty(ObjectProperty prop, BaseObject* obj)
 	case OP_CYLINDER:
 		t.AssertSymbol('{');
 		t.Next();
-		obj->r = t.MustGetNumberFloat();
+		obj->r = t.MustGetFloat();
 		t.Next();
-		obj->h = t.MustGetNumberFloat();
+		obj->h = t.MustGetFloat();
 		if(obj->r <= 0 || obj->h <= 0)
 			t.Throw("Invalid cylinder size.");
 		obj->type = OBJ_CYLINDER;
@@ -202,7 +202,7 @@ void ObjectLoader::ParseObjectProperty(ObjectProperty prop, BaseObject* obj)
 		t.Next();
 		break;
 	case OP_CENTER_Y:
-		obj->centery = t.MustGetNumberFloat();
+		obj->centery = t.MustGetFloat();
 		t.Next();
 		break;
 	case OP_FLAGS:
@@ -233,7 +233,7 @@ void ObjectLoader::ParseObjectProperty(ObjectProperty prop, BaseObject* obj)
 		}
 		break;
 	case OP_EXTRA_DIST:
-		obj->extra_dist = t.MustGetNumberFloat();
+		obj->extra_dist = t.MustGetFloat();
 		if(obj->extra_dist < 0.f)
 			t.Throw("Invalid extra distance.");
 		t.Next();
@@ -307,7 +307,7 @@ void ObjectLoader::ParseUsable(const string& id)
 				t.Next();
 				use->sound_id = t.MustGetString();
 				t.Next();
-				use->sound_timer = t.MustGetNumberFloat();
+				use->sound_timer = t.MustGetFloat();
 				if(!InRange(use->sound_timer, 0.f, 1.f))
 					t.Throw("Invalid animation sound timer.");
 				t.Next();

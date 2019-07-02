@@ -15,7 +15,6 @@ namespace tokenizer
 		T_FLOAT,
 		T_KEYWORD,
 		T_KEYWORD_GROUP,
-		T_NUMBER,
 		T_TEXT,
 		T_BOOL,
 		T_SYMBOLS_LIST,
@@ -394,8 +393,7 @@ namespace tokenizer
 		bool IsSymbol(cstring s, char* c = nullptr) const;
 		bool IsText() const { return IsItem() || IsString() || IsKeyword(); }
 		bool IsInt() const { return IsToken(T_INT); }
-		bool IsFloat() const { return IsToken(T_FLOAT); }
-		bool IsNumber() const { return IsToken(T_INT) || IsToken(T_FLOAT); }
+		bool IsFloat() const { return IsToken(T_FLOAT) || IsToken(T_INT); }
 		bool IsKeyword() const { return IsToken(T_KEYWORD); }
 		bool IsKeyword(int id) const
 		{
@@ -482,11 +480,10 @@ namespace tokenizer
 				Unexpected(T_SYMBOL, (int*)&c);
 		}
 		void AssertInt() const { AssertToken(T_INT); }
-		void AssertFloat() const { AssertToken(T_FLOAT); }
-		void AssertNumber() const
+		void AssertFloat() const
 		{
-			if(!IsNumber())
-				Unexpected(T_NUMBER);
+			if(!IsFloat())
+				AssertToken(T_FLOAT);
 		}
 		void AssertKeyword() const { AssertToken(T_KEYWORD); }
 		void AssertKeyword(int id) const
@@ -556,17 +553,17 @@ namespace tokenizer
 		}
 		int GetInt() const
 		{
-			assert(IsNumber());
+			assert(IsFloat());
 			return normal_seek._int;
 		}
 		uint GetUint() const
 		{
-			assert(IsNumber());
+			assert(IsFloat());
 			return normal_seek._uint;
 		}
 		float GetFloat() const
 		{
-			assert(IsNumber());
+			assert(IsFloat());
 			return normal_seek._float;
 		}
 		uint GetLine() const { return normal_seek.line + 1; }
@@ -679,29 +676,19 @@ namespace tokenizer
 			return GetSymbol();
 		}
 		char MustGetSymbol(cstring symbols) const;
-		int MustGetNumberInt() const
-		{
-			AssertNumber();
-			return GetInt();
-		}
 		int MustGetInt() const
 		{
-			AssertToken(T_INT);
+			AssertInt();
 			return GetInt();
 		}
 		uint MustGetUint() const
 		{
-			AssertToken(T_INT);
+			AssertInt();
 			return GetUint();
-		}
-		float MustGetNumberFloat() const
-		{
-			AssertNumber();
-			return GetFloat();
 		}
 		float MustGetFloat() const
 		{
-			AssertToken(T_FLOAT);
+			AssertFloat();
 			return GetFloat();
 		}
 		const Keyword* MustGetKeyword() const

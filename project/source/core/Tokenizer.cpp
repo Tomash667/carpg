@@ -821,7 +821,6 @@ cstring Tokenizer::FormatToken(TOKEN token, int* what, int* what2)
 	case T_SYMBOL:
 		return Format("%s '%c'", name, *(char*)what);
 	case T_INT:
-	case T_NUMBER:
 	case T_BOOL:
 		return Format("%s %d", name, *what);
 	case T_FLOAT:
@@ -1094,16 +1093,16 @@ void Tokenizer::Parse(Vec2& v)
 	if(IsSymbol('{'))
 	{
 		Next();
-		v.x = MustGetNumberFloat();
+		v.x = MustGetFloat();
 		Next();
-		v.y = MustGetNumberFloat();
+		v.y = MustGetFloat();
 		Next();
 		AssertSymbol('}');
 		Next();
 	}
 	else
 	{
-		v.x = v.y = MustGetNumberFloat();
+		v.x = v.y = MustGetFloat();
 		Next();
 	}
 }
@@ -1204,8 +1203,6 @@ cstring Tokenizer::GetTokenName(TOKEN _tt)
 		return "keyword";
 	case T_KEYWORD_GROUP:
 		return "keyword group";
-	case T_NUMBER:
-		return "number";
 	case T_TEXT:
 		return "text";
 	case T_BOOL:
