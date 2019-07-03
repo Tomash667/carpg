@@ -355,6 +355,7 @@ Shdorsh - English translation fixes.
 Zielu - Testing.
 
 Thanks for bug founding:
+	Ampped
 	darktorq
 	Docucat
 	fire

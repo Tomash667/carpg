@@ -1675,8 +1675,18 @@ void Game::OnFocus(bool focus, const Int2& activation_point)
 }
 
 //=================================================================================================
-void Game::ReportError(int id, cstring text)
+void Game::ReportError(int id, cstring text, bool once)
 {
+	if(once)
+	{
+		for(int error : reported_errors)
+		{
+			if(id == error)
+				return;
+		}
+		reported_errors.push_back(id);
+	}
+
 	cstring mode;
 	if(Net::IsSingleplayer())
 		mode = "SP";

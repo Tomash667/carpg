@@ -293,6 +293,7 @@ Shdorsh - Poprawki w angielskim t³umaczeniu.
 Zielu - Testowanie.
 
 Podziêkowania za znalezione b³êdy:
+	Ampped
 	darktorq
 	Docucat
 	fire

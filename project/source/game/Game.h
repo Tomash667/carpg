@@ -129,7 +129,7 @@ public:
 	void CreateTextures();
 	void CreateRenderTargets();
 	void PreloadData();
-	void ReportError(int id, cstring text);
+	void ReportError(int id, cstring text, bool once = false);
 
 	// initialization
 	bool InitGame() override;
@@ -385,6 +385,7 @@ public:
 	void ExitToMenu();
 	void DoExitToMenu();
 	void GenerateItemImage(TaskData& task_data);
+	void GenerateItemImageImpl(Item& item);
 	TEX TryGenerateItemImage(const Item& item);
 	void DrawItemImage(const Item& item, RenderTarget* target, float rot);
 	void SetupObject(BaseObject& obj);
@@ -667,4 +668,5 @@ public:
 
 private:
 	vector<GameComponent*> components;
+	vector<int> reported_errors;
 };

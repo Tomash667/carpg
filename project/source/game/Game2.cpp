@@ -133,6 +133,12 @@ void Game::Draw()
 void Game::GenerateItemImage(TaskData& task_data)
 {
 	Item& item = *(Item*)task_data.ptr;
+	GenerateItemImageImpl(item);
+}
+
+//=================================================================================================
+void Game::GenerateItemImageImpl(Item& item)
+{
 	item.state = ResourceState::Loaded;
 
 	// if item use image, set it as icon

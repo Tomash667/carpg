@@ -589,7 +589,9 @@ void Game::LoadGame(GameReader& f)
 	load_chest_handler.clear();
 	units_mesh_load.clear();
 	Unit::refid_table.clear();
+	Unit::refid_request.clear();
 	Usable::refid_table.clear();
+	Usable::refid_request.clear();
 	GroundItem::refid_table.clear();
 	ParticleEmitter::refid_table.clear();
 	TrailParticleEmitter::refid_table.clear();

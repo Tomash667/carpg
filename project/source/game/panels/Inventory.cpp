@@ -485,14 +485,28 @@ void InventoryPanel::Draw(ControlDrawData*)
 				team = 1;
 		}
 
+		if(!item)
+		{
+			// temporary fix
+			Game::Get().ReportError(11, Format("Null item in inventory (mode:%d, i_item:%d, unit:%s)", mode, i_item, unit->data->id.c_str()), true);
+			continue;
+		}
+
 		int x = i % cells_w,
 			y = i / cells_w;
 
-		// obrazek za³o¿onego przedmiotu
+		// equipped item effect
 		if(i_item < 0)
 			GUI.DrawSprite(base.tEquipped, Int2(shift_x + x * 63, shift_y + y * 63));
 
 		// item icon
+		if(!item->icon)
+		{
+			// temporary fix
+			Game& game = Game::Get();
+			game.ReportError(12, Format("Null item icon '%s'", item->id.c_str()));
+			game.GenerateItemImageImpl(const_cast<Item&>(*item));
+		}
 		GUI.DrawSprite(item->icon, Int2(shift_x + x * 63, shift_y + y * 63));
 
 		// item quality icon
