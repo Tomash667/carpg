@@ -29,6 +29,7 @@
 #include "Terrain.h"
 #include "Pathfinding.h"
 #include "Utility.h"
+#include "Engine.h"
 
 //-----------------------------------------------------------------------------
 CommandParser* global::cmdp;
@@ -1325,11 +1326,11 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			int level = -1;
 			if(t.Next())
 				level = t.MustGetInt();
-			int result = game.GetRender()->SetMultisampling(type, level);
+			int result = game.render->SetMultisampling(type, level);
 			if(result == 2)
 			{
 				int ms, msq;
-				game.GetRender()->GetMultisampling(ms, msq);
+				game.render->GetMultisampling(ms, msq);
 				Msg("Changed multisampling to %d, %d.", ms, msq);
 			}
 			else
@@ -1338,7 +1339,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		else
 		{
 			int ms, msq;
-			game.GetRender()->GetMultisampling(ms, msq);
+			game.render->GetMultisampling(ms, msq);
 			Msg("multisampling = %d, %d", ms, msq);
 		}
 		break;
@@ -1364,7 +1365,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 				}
 			}
 			vector<Resolution> resolutions;
-			game.GetRender()->GetResolutions(resolutions);
+			game.render->GetResolutions(resolutions);
 			for(const Resolution& res : resolutions)
 			{
 				if(w == res.size.x)
@@ -1396,16 +1397,16 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 				}
 			}
 			if(valid)
-				game.ChangeMode(Int2(w, h), game.IsFullscreen(), hz);
+				game.engine->ChangeMode(Int2(w, h), game.engine->IsFullscreen(), hz);
 			else
 				Msg("Can't change resolution to %dx%d (%d Hz).", w, h, hz);
 		}
 		else
 		{
 			LocalString s = Format("Current resolution %dx%d (%d Hz). Available: ",
-				game.GetWindowSize().x, game.GetWindowSize().y, game.GetRender()->GetRefreshRate());
+				game.engine->GetWindowSize().x, game.engine->GetWindowSize().y, game.render->GetRefreshRate());
 			vector<Resolution> resolutions;
-			game.GetRender()->GetResolutions(resolutions);
+			game.render->GetResolutions(resolutions);
 			for(const Resolution& res : resolutions)
 				s += Format("%dx%d(%d), ", res.size.x, res.size.y, res.hz);
 			s.pop(2u);
@@ -1472,7 +1473,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		break;
 	case CMD_RELOAD_SHADERS:
 		game.ReloadShaders();
-		if(game.IsEngineShutdown())
+		if(game.engine->IsEngineShutdown())
 			return;
 		break;
 	case CMD_TILE_INFO:
@@ -2030,7 +2031,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		break;
 	case CMD_SHADER_VERSION:
 		if(!t.Next() || !t.IsInt())
-			Msg("shader_version: %d", game.GetRender()->GetShaderVersion());
+			Msg("shader_version: %d", game.render->GetShaderVersion());
 		else
 		{
 			int value = t.GetInt();
@@ -2038,7 +2039,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 				Msg("Invalid shader version, must be 2 or 3.");
 			else
 			{
-				game.GetRender()->SetShaderVersion(value);
+				game.render->SetShaderVersion(value);
 				Msg("shader_version: %d", value);
 				game.ReloadShaders();
 			}

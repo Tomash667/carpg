@@ -12,6 +12,7 @@ struct StartupOptions;
 struct TaskData;
 struct Terrain;
 struct TrailParticleEmitter;
+class App;
 class CustomCollisionWorld;
 class DebugDrawer;
 class Engine;

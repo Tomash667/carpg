@@ -145,6 +145,7 @@
     <ClInclude Include="source\core\Timer.h" />
     <ClInclude Include="source\core\Tokenizer.h" />
     <ClInclude Include="source\core\WindowsIncludes.h" />
+    <ClInclude Include="source\engine\App.h" />
     <ClInclude Include="source\engine\CameraBase.h" />
     <ClInclude Include="source\engine\DebugDrawer.h" />
     <ClInclude Include="source\engine\DirectX.h" />

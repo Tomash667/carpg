@@ -56,6 +56,7 @@
 #include "GameMessages.h"
 #include "GrassShader.h"
 #include "TerrainShader.h"
+#include "Engine.h"
 
 const float LIMIT_DT = 0.3f;
 Game* Game::game;
@@ -77,7 +78,7 @@ debug_info(false), dont_wander(false), check_updates(true), skip_tutorial(false)
 end_of_game(false), prepared_stream(64 * 1024), paused(false), draw_flags(0xFFFFFFFF), prev_game_state(GS_LOAD), rt_save(nullptr), rt_item(nullptr),
 rt_item_rot(nullptr), cl_postfx(true), mp_timeout(10.f), cl_normalmap(true), cl_specularmap(true), dungeon_tex_wrap(true), profiler_mode(ProfilerMode::Disabled),
 screenshot_format(ImageFormat::JPG), quickstart_class(Class::RANDOM), game_state(GS_LOAD), default_devmode(false), default_player_devmode(false),
-quickstart_slot(SaveSlot::MAX_SLOTS)
+quickstart_slot(SaveSlot::MAX_SLOTS), clear_color(Color::Black), engine(new Engine)
 {
 #ifdef _DEBUG
 	default_devmode = true;
@@ -101,6 +102,7 @@ quickstart_slot(SaveSlot::MAX_SLOTS)
 //=================================================================================================
 Game::~Game()
 {
+	delete engine;
 }
 
 //=================================================================================================
@@ -119,7 +121,6 @@ void Game::OnDraw()
 //=================================================================================================
 void Game::DrawGame(RenderTarget* target)
 {
-	Render* render = GetRender();
 	IDirect3DDevice9* device = render->GetDevice();
 
 	if(post_effects.empty() || !ePostFx)
@@ -326,7 +327,7 @@ void Game::OnTick(float dt)
 	GKey.allow_input = GameKeys::ALLOW_INPUT;
 
 	// lost directx device or window don't have focus
-	if(GetRender()->IsLostDevice() || !IsActive() || !IsCursorLocked())
+	if(render->IsLostDevice() || !engine->IsActive() || !engine->IsCursorLocked())
 	{
 		Key.SetFocus(false);
 		if(Net::IsSingleplayer() && !inactive_update)
@@ -369,12 +370,12 @@ void Game::OnTick(float dt)
 			GUI.ShowDialog(gui->console);
 
 		// unlock cursor
-		if(!IsFullscreen() && IsActive() && IsCursorLocked() && Key.Shortcut(KEY_CONTROL, 'U'))
-			UnlockCursor();
+		if(!engine->IsFullscreen() && engine->IsActive() && engine->IsCursorLocked() && Key.Shortcut(KEY_CONTROL, 'U'))
+			engine->UnlockCursor();
 
 		// switch window mode
 		if(Key.Shortcut(KEY_ALT, VK_RETURN))
-			ChangeMode(!IsFullscreen());
+			engine->ChangeMode(!engine->IsFullscreen());
 
 		// screenshot
 		if(Key.PressedRelease(VK_SNAPSHOT))
@@ -453,7 +454,7 @@ void Game::OnTick(float dt)
 	else if(game_state == GS_QUIT)
 	{
 		ClearGame();
-		EngineShutdown();
+		engine->EngineShutdown();
 		return;
 	}
 
@@ -601,16 +602,16 @@ void Game::ChangeTitle()
 	LocalString s;
 	GetTitle(s);
 	SetConsoleTitle(s->c_str());
-	SetTitle(s->c_str());
+	engine->SetTitle(s->c_str());
 }
 
 //=================================================================================================
-bool Game::Start0(StartupOptions& options)
+bool Game::Start(StartupOptions& options)
 {
 	LocalString s;
 	GetTitle(s);
 	options.title = s.c_str();
-	return Start(options);
+	return engine->Start(this, options);
 }
 
 //=================================================================================================
@@ -681,8 +682,6 @@ void Game::OnChar(char c)
 //=================================================================================================
 void Game::TakeScreenshot(bool no_gui)
 {
-	Render* render = GetRender();
-
 	if(no_gui)
 	{
 		int old_flags = draw_flags;
@@ -892,9 +891,8 @@ void Game::CreateTextures()
 	if(tMinimap)
 		return;
 
-	Render* render = GetRender();
 	IDirect3DDevice9* device = render->GetDevice();
-	const Int2& wnd_size = GetWindowSize();
+	const Int2& wnd_size = engine->GetWindowSize();
 
 	V(device->CreateTexture(128, 128, 0, D3DUSAGE_DYNAMIC, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tMinimap, nullptr));
 
@@ -944,7 +942,6 @@ void Game::CreateTextures()
 //=================================================================================================
 void Game::CreateRenderTargets()
 {
-	Render* render = GetRender();
 	rt_save = render->CreateRenderTarget(Int2(256, 256));
 	rt_item = render->CreateRenderTarget(Int2(ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE));
 	rt_item_rot = render->CreateRenderTarget(Int2(128, 128));
@@ -1249,7 +1246,7 @@ void Game::UpdatePostEffects(float dt)
 			mod = 1.f;
 		else
 			mod = 1.f + (drunk - 0.5f) * 2;
-		e->skill = e2->skill = Vec4(1.f / GetWindowSize().x*mod, 1.f / GetWindowSize().y*mod, 0, 0);
+		e->skill = e2->skill = Vec4(1.f / engine->GetWindowSize().x*mod, 1.f / engine->GetWindowSize().y*mod, 0, 0);
 		// 0.1-0
 		// 1-1
 		e->power = e2->power = (drunk - 0.1f) / 0.9f;
@@ -1265,7 +1262,6 @@ void Game::ReloadShaders()
 
 	try
 	{
-		Render* render = GetRender();
 		eMesh = render->CompileShader("mesh.fx");
 		eParticle = render->CompileShader("particle.fx");
 		eSkybox = render->CompileShader("skybox.fx");
@@ -1278,7 +1274,7 @@ void Game::ReloadShaders()
 	}
 	catch(cstring err)
 	{
-		FatalError(Format("Failed to reload shaders.\n%s", err));
+		engine->FatalError(Format("Failed to reload shaders.\n%s", err));
 		return;
 	}
 
@@ -1295,7 +1291,7 @@ void Game::ReleaseShaders()
 	SafeRelease(ePostFx);
 	SafeRelease(eGlow);
 
-	for(ShaderHandler* shader : GetRender()->GetShaders())
+	for(ShaderHandler* shader : render->GetShaders())
 		shader->OnRelease();
 }
 
@@ -1550,7 +1546,7 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 	}
 	else
 	{
-		clear_color = L.clear_color2;
+		clear_color = clear_color_next;
 		game_state = GS_LEVEL;
 		gui->load_screen->visible = false;
 		gui->main_menu->visible = false;

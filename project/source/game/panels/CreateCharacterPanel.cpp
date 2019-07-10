@@ -246,7 +246,7 @@ void CreateCharacterPanel::LoadData()
 	tex_mgr.AddLoadTask("minus_down.png", custom_bt[1].tex[Button::DOWN]);
 	tex_mgr.AddLoadTask("minus_disabled.png", custom_bt[1].tex[Button::DISABLED]);
 
-	rt_char = game->GetRender()->CreateRenderTarget(Int2(128, 256));
+	rt_char = game->render->CreateRenderTarget(Int2(128, 256));
 }
 
 //=================================================================================================
@@ -644,8 +644,8 @@ void CreateCharacterPanel::Event(GuiEvent e)
 //=================================================================================================
 void CreateCharacterPanel::RenderUnit()
 {
-	Render* render = game->GetRender();
-	IDirect3DDevice9* device = render->GetDevice();
+	Render* render = game->render;
+	IDirect3DDevice9* device = game->render->GetDevice();
 	HRESULT hr = device->TestCooperativeLevel();
 	if(hr != D3D_OK)
 		return;

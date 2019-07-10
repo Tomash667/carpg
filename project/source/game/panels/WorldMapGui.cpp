@@ -24,6 +24,7 @@
 #include "SaveState.h"
 #include "Debug.h"
 #include "Render.h"
+#include "Engine.h"
 
 const float MAP_IMG_SIZE = 512.f;
 
@@ -90,13 +91,11 @@ void WorldMapGui::LoadData()
 //=================================================================================================
 void WorldMapGui::Draw(ControlDrawData*)
 {
-	Render* render = game.GetRender();
-
 	// background
-	Rect rect0(Int2::Zero, game.GetWindowSize());
-	render->SetTextureAddressMode(TEX_ADR_WRAP);
+	Rect rect0(Int2::Zero, game.engine->GetWindowSize());
+	game.render->SetTextureAddressMode(TEX_ADR_WRAP);
 	GUI.DrawSpriteRectPart(tMapBg, rect0, rect0);
-	render->SetTextureAddressMode(TEX_ADR_CLAMP);
+	game.render->SetTextureAddressMode(TEX_ADR_CLAMP);
 
 	// map
 	Matrix mat = Matrix::Transform2D(&offset, 0.f, &Vec2(float(W.world_size) / MAP_IMG_SIZE * zoom), nullptr, 0.f, &(GetCameraCenter() - offset));

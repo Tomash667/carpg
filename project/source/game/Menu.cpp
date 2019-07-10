@@ -39,6 +39,7 @@
 #include "LobbyApi.h"
 #include "Render.h"
 #include "GameMessages.h"
+#include "Engine.h"
 
 // consts
 const float T_TRY_CONNECT = 5.f;
@@ -55,8 +56,7 @@ bool Game::CanShowMenu()
 //=================================================================================================
 void Game::SaveOptions()
 {
-	Render* render = GetRender();
-	cfg.Add("fullscreen", IsFullscreen());
+	cfg.Add("fullscreen", engine->IsFullscreen());
 	cfg.Add("cl_glow", cl_glow);
 	cfg.Add("cl_normalmap", cl_normalmap);
 	cfg.Add("cl_specularmap", cl_specularmap);
@@ -64,7 +64,7 @@ void Game::SaveOptions()
 	cfg.Add("music_volume", sound_mgr->GetMusicVolume());
 	cfg.Add("mouse_sensitivity", settings.mouse_sensitivity);
 	cfg.Add("grass_range", settings.grass_range);
-	cfg.Add("resolution", Format("%dx%d", GetWindowSize().x, GetWindowSize().y));
+	cfg.Add("resolution", Format("%dx%d", engine->GetWindowSize().x, engine->GetWindowSize().y));
 	cfg.Add("refresh", render->GetRefreshRate());
 	cfg.Add("skip_tutorial", skip_tutorial);
 	cfg.Add("language", Language::prefix);
@@ -1108,7 +1108,7 @@ void Game::UpdateClientTransfer(float dt)
 				{
 					net_state = NetState::Client_Start;
 					Info("NM_TRANSFER: Level started.");
-					clear_color = L.clear_color2;
+					clear_color = clear_color_next;
 					game_state = GS_LEVEL;
 					gui->load_screen->visible = false;
 					gui->main_menu->visible = false;
@@ -1528,7 +1528,7 @@ void Game::UpdateServerTransfer(float dt)
 
 				N.DeleteOldPlayers();
 
-				clear_color = L.clear_color2;
+				clear_color = clear_color_next;
 				game_state = GS_WORLDMAP;
 				gui->load_screen->visible = false;
 				gui->world_map->Show();
@@ -1783,7 +1783,7 @@ void Game::UpdateServerSend(float dt)
 				unit->changed = false;
 		}
 		Info("NM_SERVER_SEND: All players ready. Starting game.");
-		clear_color = L.clear_color2;
+		clear_color = clear_color_next;
 		game_state = GS_LEVEL;
 		gui->info_box->CloseDialog();
 		gui->load_screen->visible = false;
@@ -1903,7 +1903,7 @@ void Game::OnEnterPassword(int id)
 
 void Game::ForceRedraw()
 {
-	DoPseudotick();
+	engine->DoPseudotick();
 }
 
 void Game::QuickJoinIp()

@@ -6,6 +6,7 @@
 #include "Engine.h"
 #include "ShaderHandler.h"
 #include "File.h"
+#include "App.h"
 #include "DirectX.h"
 
 static const D3DFORMAT DISPLAY_FORMAT = D3DFMT_X8R8G8B8;
@@ -453,7 +454,7 @@ void Render::Draw(bool call_present)
 			throw Format("Render: Lost directx device (%d).", hr);
 	}
 
-	Engine::Get().OnDraw();
+	Engine::Get().app->OnDraw();
 
 	if(call_present)
 	{
@@ -474,7 +475,7 @@ void Render::BeforeReset()
 	if(res_freed)
 		return;
 	res_freed = true;
-	Engine::Get().OnReset();
+	Engine::Get().app->OnReset();
 	V(sprite->OnLostDevice());
 	for(ShaderHandler* shader : shaders)
 		shader->OnReset();
@@ -495,7 +496,7 @@ void Render::AfterReset()
 	for(RenderTarget* target : targets)
 		CreateRenderTargetTexture(target);
 	V(sprite->OnResetDevice());
-	Engine::Get().OnReload();
+	Engine::Get().app->OnReload();
 	lost_device = false;
 	res_freed = false;
 }

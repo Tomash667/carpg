@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Engine.h"
+#include "App.h"
 #include "Const.h"
 #include "GameCommon.h"
 #include "Net.h"
@@ -15,6 +15,7 @@
 #include "Blood.h"
 #include "BaseObject.h"
 #include "PlayerController.h"
+#include "Timer.h"
 
 //-----------------------------------------------------------------------------
 // quickstart mode
@@ -105,7 +106,7 @@ enum class ProfilerMode
 	Rendering
 };
 
-class Game final : public Engine
+class Game final : public App
 {
 public:
 	Game();
@@ -122,7 +123,7 @@ public:
 	void OnResize() override;
 	void OnFocus(bool focus, const Int2& activation_point) override;
 
-	bool Start0(StartupOptions& options);
+	bool Start(StartupOptions& options);
 	void GetTitle(LocalString& s);
 	void ChangeTitle();
 	void ClearPointers();
@@ -132,7 +133,7 @@ public:
 	void ReportError(int id, cstring text, bool once = false);
 
 	// initialization
-	bool InitGame() override;
+	bool OnInit() override;
 	void PreconfigureGame();
 	void PreloadLanguage();
 	void CreatePlaceholderResources();
@@ -163,6 +164,7 @@ public:
 	void ReleaseShaders();
 
 	// scene
+	Color clear_color, clear_color_next;
 	bool dungeon_tex_wrap;
 	bool cl_normalmap, cl_specularmap, cl_glow;
 	DrawBatch draw_batch;
@@ -283,6 +285,11 @@ public:
 	{
 		return *game;
 	}
+
+	Engine* engine;
+	Render* render;
+	SoundManager* sound_mgr;
+	CustomCollisionWorld* phy_world;
 
 	//-----------------------------------------------------------------
 	// GAME

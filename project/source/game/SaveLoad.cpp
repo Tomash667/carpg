@@ -1001,7 +1001,7 @@ void Game::LoadGame(GameReader& f)
 	else
 		SetMusic(MusicType::Travel);
 	game_state = game_state2;
-	clear_color = L.clear_color2;
+	clear_color = clear_color_next;
 }
 
 //=================================================================================================

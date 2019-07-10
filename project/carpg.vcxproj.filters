@@ -1696,6 +1696,9 @@
     <ClInclude Include="source\engine\TerrainShader.h">
       <Filter>2. engine\shaders</Filter>
     </ClInclude>
+    <ClInclude Include="source\engine\App.h">
+      <Filter>2. engine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="source\resource\resource.rc">

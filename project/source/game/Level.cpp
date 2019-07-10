@@ -75,7 +75,7 @@ void Level::PostInit()
 	terrain_options.tex_size = 256;
 	terrain_options.tile_size = 2.f;
 	terrain_options.tiles_per_part = 16;
-	terrain->Init(game.GetRender()->GetDevice(), terrain_options);
+	terrain->Init(game.render->GetDevice(), terrain_options);
 	terrain->Build();
 	terrain->RemoveHeightMap(true);
 
@@ -4498,7 +4498,7 @@ Vec4 Level::GetLightDir()
 void Level::SetOutsideParams()
 {
 	camera.draw_range = 80.f;
-	clear_color2 = Color::White;
+	Game::Get().clear_color_next = Color::White;
 	fog_params = Vec4(40, 80, 40, 0);
 	fog_color = Vec4(0.9f, 0.85f, 0.8f, 1);
 	ambient_color = Vec4(0.5f, 0.5f, 0.5f, 1);

@@ -71,6 +71,7 @@
 #include "Render.h"
 #include "RenderTarget.h"
 #include "BookPanel.h"
+#include "Engine.h"
 
 const float ALERT_RANGE = 20.f;
 const float ALERT_SPAWN_RANGE = 25.f;
@@ -177,7 +178,7 @@ TEX Game::TryGenerateItemImage(const Item& item)
 	while(true)
 	{
 		DrawItemImage(item, rt_item, 0.f);
-		TEX tex = GetRender()->CopyToTexture(rt_item);
+		TEX tex = render->CopyToTexture(rt_item);
 		if(tex)
 			return tex;
 	}
@@ -186,7 +187,6 @@ TEX Game::TryGenerateItemImage(const Item& item)
 //=================================================================================================
 void Game::DrawItemImage(const Item& item, RenderTarget* target, float rot)
 {
-	Render* render = GetRender();
 	IDirect3DDevice9* device = render->GetDevice();
 
 	if(IS_SET(ITEM_ALPHA, item.flags))
@@ -557,7 +557,7 @@ void Game::SetupCamera(float dt)
 
 	matView = Matrix::CreateLookAt(L.camera.from, L.camera.to);
 	matProj = Matrix::CreatePerspectiveFieldOfView(PI / 4 + sin(drunk_anim)*(PI / 16)*drunk_mod,
-		GetWindowAspect() * (1.f + sin(drunk_anim) / 10 * drunk_mod), 0.1f, L.camera.draw_range);
+		engine->GetWindowAspect() * (1.f + sin(drunk_anim) / 10 * drunk_mod), 0.1f, L.camera.draw_range);
 	L.camera.matViewProj = matView * matProj;
 	L.camera.matViewInv = matView.Inverse();
 	L.camera.center = L.camera.from;
@@ -572,7 +572,6 @@ void Game::LoadShaders()
 {
 	Info("Loading shaders.");
 
-	Render* render = GetRender();
 	eMesh = render->CompileShader("mesh.fx");
 	eParticle = render->CompileShader("particle.fx");
 	eSkybox = render->CompileShader("skybox.fx");
@@ -5894,7 +5893,7 @@ void Game::ChangeLevel(int where)
 	}
 	else
 	{
-		clear_color = L.clear_color2;
+		clear_color = clear_color_next;
 		game_state = GS_LEVEL;
 		gui->load_screen->visible = false;
 		gui->main_menu->visible = false;
@@ -7766,7 +7765,7 @@ void Game::SetDungeonParamsAndTextures(BaseLocation& base)
 	L.fog_params = Vec4(base.fog_range.x, base.fog_range.y, base.fog_range.y - base.fog_range.x, 0);
 	L.fog_color = Vec4(base.fog_color, 1);
 	L.ambient_color = Vec4(base.ambient_color, 1);
-	L.clear_color2 = Color(int(L.fog_color.x * 255), int(L.fog_color.y * 255), int(L.fog_color.z * 255));
+	clear_color_next = Color(int(L.fog_color.x * 255), int(L.fog_color.y * 255), int(L.fog_color.z * 255));
 
 	// tekstury podziemi
 	ApplyLocationTexturePack(tFloor[0], tWall[0], tCeil[0], base.tex);
@@ -8206,7 +8205,7 @@ void Game::LoadingStep(cstring text, int end)
 		if(loading_dt >= 1.f / 30 || end == 2 || loading_first_step)
 		{
 			loading_dt = 0.f;
-			DoPseudotick();
+			engine->DoPseudotick();
 			loading_t.Tick();
 			loading_first_step = false;
 		}

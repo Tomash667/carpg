@@ -82,8 +82,7 @@ void GlobalGui::Prepare()
 {
 	Game& game = Game::Get();
 
-	Render* render = game.GetRender();
-	GUI.Init(render->GetDevice(), render->GetSprite());
+	GUI.Init(game.render->GetDevice(), game.render->GetSprite());
 	GUI.AddFont("Florence-Regular.otf");
 	GUI.default_font = GUI.CreateFont("Arial", 12, 800, 512, 2);
 	GUI.fBig = GUI.CreateFont("Florence Regular", 28, 800, 512);

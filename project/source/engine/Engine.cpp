@@ -8,6 +8,7 @@
 #include "DirectX.h"
 #include "Physics.h"
 #include "Render.h"
+#include "App.h"
 
 //-----------------------------------------------------------------------------
 const Int2 Engine::MIN_WINDOW_SIZE = Int2(800, 600);
@@ -17,15 +18,10 @@ const Int2 Engine::DEFAULT_WINDOW_SIZE = Int2(1024, 768);
 Engine* Engine::engine;
 
 //=================================================================================================
-Engine::Engine() : engine_shutdown(false), timer(false), hwnd(nullptr), cursor_visible(true), replace_cursor(false), locked_cursor(true),
-clear_color(Color::Black), active(false), activation_point(-1, -1), phy_world(nullptr)
+Engine::Engine() : app(nullptr), engine_shutdown(false), timer(false), hwnd(nullptr), cursor_visible(true), replace_cursor(false), locked_cursor(true),
+active(false), activation_point(-1, -1), phy_world(nullptr)
 {
 	engine = this;
-}
-
-//=================================================================================================
-Engine::~Engine()
-{
 }
 
 //=================================================================================================
@@ -116,7 +112,7 @@ bool Engine::ChangeMode(const Int2& size, bool new_fullscreen, int hz)
 	ChangeMode();
 
 	if(size_changed)
-		OnResize();
+		app->OnResize();
 
 	return true;
 }
@@ -127,7 +123,7 @@ void Engine::Cleanup()
 {
 	Info("Engine: Cleanup.");
 
-	OnCleanup();
+	app->OnCleanup();
 
 	ResourceManager::Get().Cleanup();
 
@@ -205,7 +201,7 @@ void Engine::DoTick(bool update_game)
 
 	// update game
 	if(update_game)
-		OnTick(dt);
+		app->OnTick(dt);
 	if(engine_shutdown)
 	{
 		if(active && locked_cursor)
@@ -335,7 +331,7 @@ long Engine::HandleEvent(HWND in_hwnd, uint msg, uint wParam, long lParam)
 	// handle text input
 	case WM_CHAR:
 	case WM_SYSCHAR:
-		OnChar((char)wParam);
+		app->OnChar((char)wParam);
 		return 0;
 
 	// handle mouse wheel
@@ -500,9 +496,10 @@ void Engine::ShowError(cstring msg, Logger::Level level)
 
 //=================================================================================================
 // Initialize and start engine
-bool Engine::Start(StartupOptions& options)
+bool Engine::Start(App* app, StartupOptions& options)
 {
 	// set parameters
+	this->app = app;
 	fullscreen = options.fullscreen;
 	wnd_size = Int2::Max(options.size, MIN_WINDOW_SIZE);
 
@@ -519,7 +516,7 @@ bool Engine::Start(StartupOptions& options)
 	}
 
 	// initialize game
-	if(!InitGame())
+	if(!app->OnInit())
 	{
 		Cleanup();
 		return false;
@@ -615,7 +612,7 @@ void Engine::UpdateActivity(bool is_active)
 		ShowCursor(true);
 		Key.ReleaseKeys();
 	}
-	OnFocus(active, activation_point);
+	app->OnFocus(active, activation_point);
 	activation_point = Int2(-1, -1);
 }
 

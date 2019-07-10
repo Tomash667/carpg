@@ -182,7 +182,6 @@ public:
 	Vec4 fog_color, fog_params, ambient_color;
 	bool cl_fog, cl_lighting;
 	float lights_dt;
-	Color clear_color2;
 	vector<std::reference_wrapper<LevelArea>> areas;
 	LevelArea* local_area;
 

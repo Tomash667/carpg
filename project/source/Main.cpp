@@ -820,7 +820,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	//-------------------------------------------------------------------------
 	// start the game
 	Info("Starting game engine.");
-	bool b = game.Start0(options);
+	bool b = game.Start(options);
 
 	//-------------------------------------------------------------------------
 	// cleanup

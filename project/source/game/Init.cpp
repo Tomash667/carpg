@@ -36,6 +36,7 @@
 #include "TerrainShader.h"
 #include "UnitData.h"
 #include "BaseUsable.h"
+#include "Engine.h"
 
 extern void HumanPredraw(void* ptr, Matrix* mat, int n);
 extern const int ITEM_IMAGE_SIZE;
@@ -44,10 +45,14 @@ extern string g_system_dir;
 //=================================================================================================
 // Initialize game and show loadscreen.
 //=================================================================================================
-bool Game::InitGame()
+bool Game::OnInit()
 {
 	Info("Game: Initializing game.");
 	game_state = GS_LOAD_MENU;
+
+	phy_world = engine->GetPhysicsWorld();
+	render = engine->GetRender();
+	sound_mgr = engine->GetSoundManager();
 
 	try
 	{
@@ -68,7 +73,7 @@ bool Game::InitGame()
 	}
 	catch(cstring err)
 	{
-		ShowError(Format("Game: Failed to initialize game: %s", err), Logger::L_FATAL);
+		engine->ShowError(Format("Game: Failed to initialize game: %s", err), Logger::L_FATAL);
 		return false;
 	}
 }
@@ -80,8 +85,8 @@ void Game::PreconfigureGame()
 {
 	Info("Game: Preconfiguring game.");
 
-	UnlockCursor(false);
-	cam_base = &L.camera;
+	engine->UnlockCursor(false);
+	engine->cam_base = &L.camera;
 
 	// set animesh callback
 	MeshInstance::Predraw = HumanPredraw;
@@ -119,7 +124,7 @@ void Game::PreconfigureGame()
 //=================================================================================================
 void Game::CreatePlaceholderResources()
 {
-	missing_texture = GetRender()->CreateTexture(Int2(ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE));
+	missing_texture = render->CreateTexture(Int2(ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE));
 	TextureLock lock(missing_texture);
 	const uint col[2] = { Color(255, 0, 255), Color(0, 255, 0) };
 	for(int y = 0; y < ITEM_IMAGE_SIZE; ++y)
@@ -333,7 +338,7 @@ void Game::PostconfigureGame()
 {
 	Info("Game: Postconfiguring game.");
 
-	LockCursor();
+	engine->LockCursor();
 	for(GameComponent* component : components)
 		component->PostInit();
 
@@ -350,7 +355,6 @@ void Game::PostconfigureGame()
 	ItemScript::Init();
 
 	// shaders
-	Render* render = GetRender();
 	debug_drawer.reset(new DebugDrawer(render));
 	grass_shader.reset(new GrassShader(render));
 	super_shader.reset(new SuperShader(render));
@@ -398,7 +402,7 @@ void Game::PostconfigureGame()
 
 	// save config
 	cfg.Add("adapter", render->GetAdapter());
-	cfg.Add("resolution", Format("%dx%d", GetWindowSize().x, GetWindowSize().y));
+	cfg.Add("resolution", Format("%dx%d", engine->GetWindowSize().x, engine->GetWindowSize().y));
 	cfg.Add("refresh", render->GetRefreshRate());
 	SaveCfg();
 
@@ -777,7 +781,7 @@ void Game::AddLoadTasks()
 	sEat = sound_mgr.AddLoadTask("eat.mp3");
 	sSummon = sound_mgr.AddLoadTask("whooshy-puff.wav");
 	sZap = sound_mgr.AddLoadTask("zap.mp3");
-	
+
 	// musics
 	if(!nomusic)
 		LoadMusic(MusicType::Title);

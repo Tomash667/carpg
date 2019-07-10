@@ -149,7 +149,7 @@ void Game::InitScene()
 //=================================================================================================
 void Game::CreateVertexDeclarations()
 {
-	IDirect3DDevice9* device = GetRender()->GetDevice();
+	IDirect3DDevice9* device = render->GetDevice();
 
 	const D3DVERTEXELEMENT9 Default[] = {
 		{0, 0,  D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_POSITION,		0},
@@ -225,7 +225,7 @@ void Game::BuildDungeon()
 {
 	// ile wierzcho³ków
 	// 19*4, pod³oga, sufit, 4 œciany, niski sufit, 4 kawa³ki niskiego sufitu, 4 œciany w dziurze górnej, 4 œciany w dziurze dolnej
-	IDirect3DDevice9* device = GetRender()->GetDevice();
+	IDirect3DDevice9* device = render->GetDevice();
 
 	uint size = sizeof(VTangent) * 19 * 4;
 	V(device->CreateVertexBuffer(size, D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &vbDungeon, nullptr));
@@ -2919,7 +2919,6 @@ void Game::DrawGlowingNodes(bool use_postfx)
 {
 	PROFILER_BLOCK("DrawGlowingNodes");
 
-	Render* render = GetRender();
 	IDirect3DDevice9* device = render->GetDevice();
 
 	// ustaw flagi renderowania
@@ -3202,7 +3201,6 @@ void Game::DrawGlowingNodes(bool use_postfx)
 //=================================================================================================
 void Game::DrawSkybox()
 {
-	Render* render = GetRender();
 	IDirect3DDevice9* device = render->GetDevice();
 
 	render->SetAlphaTest(false);
@@ -3245,7 +3243,6 @@ void Game::DrawTerrain(const vector<uint>& parts)
 //=================================================================================================
 void Game::DrawDungeon(const vector<DungeonPart>& parts, const vector<Lights>& lights, const vector<NodeMatrix>& matrices)
 {
-	Render* render = GetRender();
 	IDirect3DDevice9* device = render->GetDevice();
 
 	render->SetAlphaBlend(false);
@@ -3326,7 +3323,6 @@ void Game::DrawDungeon(const vector<DungeonPart>& parts, const vector<Lights>& l
 //=================================================================================================
 void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>& lights, bool outside)
 {
-	Render* render = GetRender();
 	IDirect3DDevice9* device = render->GetDevice();
 
 	render->SetAlphaBlend(false);
@@ -3492,7 +3488,6 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 //=================================================================================================
 void Game::DrawDebugNodes(const vector<DebugSceneNode*>& nodes)
 {
-	Render* render = GetRender();
 	IDirect3DDevice9* device = render->GetDevice();
 
 	render->SetAlphaTest(false);
@@ -3564,7 +3559,6 @@ void Game::DrawDebugNodes(const vector<DebugSceneNode*>& nodes)
 //=================================================================================================
 void Game::DrawBloods(bool outside, const vector<Blood*>& bloods, const vector<Lights>& lights)
 {
-	Render* render = GetRender();
 	IDirect3DDevice9* device = render->GetDevice();
 
 	render->SetAlphaTest(false);
@@ -3659,7 +3653,6 @@ void Game::DrawBloods(bool outside, const vector<Blood*>& bloods, const vector<L
 //=================================================================================================
 void Game::DrawBillboards(const vector<Billboard>& billboards)
 {
-	Render* render = GetRender();
 	IDirect3DDevice9* device = render->GetDevice();
 
 	render->SetAlphaBlend(true);
@@ -3698,7 +3691,6 @@ void Game::DrawBillboards(const vector<Billboard>& billboards)
 //=================================================================================================
 void Game::DrawExplosions(const vector<Explo*>& explos)
 {
-	Render* render = GetRender();
 	IDirect3DDevice9* device = render->GetDevice();
 
 	render->SetAlphaBlend(true);
@@ -3747,7 +3739,6 @@ void Game::DrawExplosions(const vector<Explo*>& explos)
 //=================================================================================================
 void Game::DrawParticles(const vector<ParticleEmitter*>& pes)
 {
-	Render* render = GetRender();
 	IDirect3DDevice9* device = render->GetDevice();
 
 	render->SetAlphaTest(false);
@@ -3858,7 +3849,6 @@ void Game::DrawParticles(const vector<ParticleEmitter*>& pes)
 //=================================================================================================
 void Game::DrawTrailParticles(const vector<TrailParticleEmitter*>& tpes)
 {
-	Render* render = GetRender();
 	IDirect3DDevice9* device = render->GetDevice();
 
 	render->SetAlphaTest(false);
@@ -3922,7 +3912,6 @@ void Game::DrawTrailParticles(const vector<TrailParticleEmitter*>& tpes)
 //=================================================================================================
 void Game::DrawLightings(const vector<Electro*>& electros)
 {
-	Render* render = GetRender();
 	IDirect3DDevice9* device = render->GetDevice();
 
 	render->SetAlphaTest(false);
@@ -4018,7 +4007,6 @@ void Game::DrawLightings(const vector<Electro*>& electros)
 //=================================================================================================
 void Game::DrawStunEffects(const vector<StunEffect>& stuns)
 {
-	Render* render = GetRender();
 	IDirect3DDevice9* device = render->GetDevice();
 
 	render->SetAlphaTest(false);
@@ -4070,7 +4058,6 @@ void Game::DrawStunEffects(const vector<StunEffect>& stuns)
 //=================================================================================================
 void Game::DrawPortals(const vector<Portal*>& portals)
 {
-	Render* render = GetRender();
 	IDirect3DDevice9* device = render->GetDevice();
 
 	render->SetAlphaTest(false);
@@ -4104,7 +4091,6 @@ void Game::DrawPortals(const vector<Portal*>& portals)
 //=================================================================================================
 void Game::DrawAreas(const vector<Area>& areas, float range, const vector<Area2*>& areas2)
 {
-	Render* render = GetRender();
 	IDirect3DDevice9* device = render->GetDevice();
 
 	render->SetAlphaTest(false);
