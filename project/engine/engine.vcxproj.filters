@@ -1,0 +1,490 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="include\App.h" />
+    <ClInclude Include="include\DirectX.h" />
+    <ClInclude Include="include\Engine.h" />
+    <ClInclude Include="include\EngineCore.h" />
+    <ClInclude Include="include\StartupOptions.h" />
+    <ClInclude Include="include\Algorithm.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Base64.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Color.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Config.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Containers.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\CoreMath.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Crc.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\CriticalSection.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\FastFunc.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\File.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Logger.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Perlin.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Profiler.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Text.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Timer.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Tokenizer.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\CheckBox.h">
+      <Filter>gui controls</Filter>
+    </ClInclude>
+    <ClInclude Include="include\CheckBoxGroup.h">
+      <Filter>gui controls</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ComboBox.h">
+      <Filter>gui controls</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Container.h">
+      <Filter>gui controls</Filter>
+    </ClInclude>
+    <ClInclude Include="include\DrawBox.h">
+      <Filter>gui controls</Filter>
+    </ClInclude>
+    <ClInclude Include="include\FlowContainer.h">
+      <Filter>gui controls</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Grid.h">
+      <Filter>gui controls</Filter>
+    </ClInclude>
+    <ClInclude Include="include\InputTextBox.h">
+      <Filter>gui controls</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ListBox.h">
+      <Filter>gui controls</Filter>
+    </ClInclude>
+    <ClInclude Include="include\MenuBar.h">
+      <Filter>gui controls</Filter>
+    </ClInclude>
+    <ClInclude Include="include\MenuList.h">
+      <Filter>gui controls</Filter>
+    </ClInclude>
+    <ClInclude Include="include\MenuStrip.h">
+      <Filter>gui controls</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Scrollbar.h">
+      <Filter>gui controls</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Slider.h">
+      <Filter>gui controls</Filter>
+    </ClInclude>
+    <ClInclude Include="include\SplitPanel.h">
+      <Filter>gui controls</Filter>
+    </ClInclude>
+    <ClInclude Include="include\TabControl.h">
+      <Filter>gui controls</Filter>
+    </ClInclude>
+    <ClInclude Include="include\TextBox.h">
+      <Filter>gui controls</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ToolStrip.h">
+      <Filter>gui controls</Filter>
+    </ClInclude>
+    <ClInclude Include="include\TooltipController.h">
+      <Filter>gui controls</Filter>
+    </ClInclude>
+    <ClInclude Include="include\TreeView.h">
+      <Filter>gui controls</Filter>
+    </ClInclude>
+    <ClInclude Include="include\GetNumberDialog.h">
+      <Filter>gui dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="include\GetTextDialog.h">
+      <Filter>gui dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PickFileDialog.h">
+      <Filter>gui dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PickItemDialog.h">
+      <Filter>gui dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Texture.h">
+      <Filter>resources</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Sound.h">
+      <Filter>resources</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Pak.h">
+      <Filter>resources</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Mesh.h">
+      <Filter>resources</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Font.h">
+      <Filter>resources</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Button.h">
+      <Filter>gui controls</Filter>
+    </ClInclude>
+    <ClInclude Include="include\DebugDrawer.h">
+      <Filter>shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="include\GrassShader.h">
+      <Filter>shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="include\SuperShader.h">
+      <Filter>shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="include\DialogBox.h">
+      <Filter>gui dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ShaderHandler.h">
+      <Filter>shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="include\TerrainShader.h">
+      <Filter>shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Window.h">
+      <Filter>gui controls</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Label.h">
+      <Filter>gui controls</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Resource.h">
+      <Filter>resources</Filter>
+    </ClInclude>
+    <ClInclude Include="include\SoundManager.h">
+      <Filter>systems</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ResourceManager.h">
+      <Filter>systems</Filter>
+    </ClInclude>
+    <ClInclude Include="include\KeyStates.h">
+      <Filter>systems</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Control.h">
+      <Filter>gui controls</Filter>
+    </ClInclude>
+    <ClInclude Include="include\GuiRect.h">
+      <Filter>gui controls</Filter>
+    </ClInclude>
+    <ClInclude Include="include\GuiContainer.h">
+      <Filter>gui controls</Filter>
+    </ClInclude>
+    <ClInclude Include="include\GuiDialog.h">
+      <Filter>gui controls</Filter>
+    </ClInclude>
+    <ClInclude Include="include\GuiElement.h">
+      <Filter>gui controls</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Gui.h">
+      <Filter>systems</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Render.h">
+      <Filter>systems</Filter>
+    </ClInclude>
+    <ClInclude Include="include\VertexData.h">
+      <Filter>resources</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Layout.h">
+      <Filter>gui controls</Filter>
+    </ClInclude>
+    <ClInclude Include="include\AreaLayout.h">
+      <Filter>gui controls</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Panel.h">
+      <Filter>gui controls</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Overlay.h">
+      <Filter>gui controls</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Terrain.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RenderTarget.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ParticleSystem.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="include\MeshInstance.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="include\QuadTree.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Physics.h">
+      <Filter>systems</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Core.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\CameraBase.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Key.h">
+      <Filter>const</Filter>
+    </ClInclude>
+    <ClInclude Include="include\FileFormat.h">
+      <Filter>const</Filter>
+    </ClInclude>
+    <ClInclude Include="include\VertexDeclaration.h">
+      <Filter>const</Filter>
+    </ClInclude>
+    <ClInclude Include="include\WindowsIncludes.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="include\EnginePch.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="source\Engine.cpp" />
+    <ClCompile Include="source\BoxToBox.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Bresenham.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Color.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Config.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Containers.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="source\CoreMath.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Crc.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="source\CriticalSection.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="source\File.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Logger.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Perlin.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Profiler.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Text.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Timer.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Tokenizer.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="source\CheckBox.cpp">
+      <Filter>gui controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\CheckBoxGroup.cpp">
+      <Filter>gui controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\ComboBox.cpp">
+      <Filter>gui controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Container.cpp">
+      <Filter>gui controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Control.cpp">
+      <Filter>gui controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\DrawBox.cpp">
+      <Filter>gui controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\FlowContainer.cpp">
+      <Filter>gui controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Grid.cpp">
+      <Filter>gui controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\InputTextBox.cpp">
+      <Filter>gui controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\ListBox.cpp">
+      <Filter>gui controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\MenuBar.cpp">
+      <Filter>gui controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\MenuList.cpp">
+      <Filter>gui controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\MenuStrip.cpp">
+      <Filter>gui controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Scrollbar.cpp">
+      <Filter>gui controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Slider.cpp">
+      <Filter>gui controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\SplitPanel.cpp">
+      <Filter>gui controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\TabControl.cpp">
+      <Filter>gui controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\TextBox.cpp">
+      <Filter>gui controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\TooltipController.cpp">
+      <Filter>gui controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\TreeView.cpp">
+      <Filter>gui controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\GetNumberDialog.cpp">
+      <Filter>gui dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="source\GetTextDialog.cpp">
+      <Filter>gui dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="source\PickFileDialog.cpp">
+      <Filter>gui dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="source\PickItemDialog.cpp">
+      <Filter>gui dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Texture.cpp">
+      <Filter>resources</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Mesh.cpp">
+      <Filter>resources</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Font.cpp">
+      <Filter>resources</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Button.cpp">
+      <Filter>gui controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\DebugDrawer.cpp">
+      <Filter>shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="source\GrassShader.cpp">
+      <Filter>shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="source\SuperShader.cpp">
+      <Filter>shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="source\DialogBox.cpp">
+      <Filter>gui dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="source\TerrainShader.cpp">
+      <Filter>shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Window.cpp">
+      <Filter>gui controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Label.cpp">
+      <Filter>gui controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\SoundManager.cpp">
+      <Filter>systems</Filter>
+    </ClCompile>
+    <ClCompile Include="source\ResourceManager.cpp">
+      <Filter>systems</Filter>
+    </ClCompile>
+    <ClCompile Include="source\KeyStates.cpp">
+      <Filter>systems</Filter>
+    </ClCompile>
+    <ClCompile Include="source\GuiContainer.cpp">
+      <Filter>gui controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\GuiDialog.cpp">
+      <Filter>gui controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Gui.cpp">
+      <Filter>systems</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Render.cpp">
+      <Filter>systems</Filter>
+    </ClCompile>
+    <ClCompile Include="source\VertexData.cpp">
+      <Filter>resources</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Layout.cpp">
+      <Filter>gui controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Overlay.cpp">
+      <Filter>gui controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Panel.cpp">
+      <Filter>gui controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Terrain.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="source\RenderTarget.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="source\ParticleSystem.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="source\MeshInstance.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Physics.cpp">
+      <Filter>systems</Filter>
+    </ClCompile>
+    <ClCompile Include="source\EnginePch.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="core">
+      <UniqueIdentifier>{f1ffa7f2-e21c-40e4-95f0-74a3d1dc5b91}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gui controls">
+      <UniqueIdentifier>{211d53bb-6508-4b42-9bf4-5a03d8ad61dc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gui dialogs">
+      <UniqueIdentifier>{82ca4d5a-c15a-471d-b4d2-b339b3bc7f55}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="resources">
+      <UniqueIdentifier>{5c97a670-0121-45b3-8b9d-65ed2db9eba6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shaders">
+      <UniqueIdentifier>{9fe5b09e-d471-462b-80f1-b7a633204ca4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="systems">
+      <UniqueIdentifier>{ed81dba0-00e0-4480-850f-eecdfe99c249}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="entity">
+      <UniqueIdentifier>{ecc90b28-ccc2-4fa6-b3c2-79e375b8508d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="const">
+      <UniqueIdentifier>{8dd306d7-b865-4bd3-b382-9faaff4f7177}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="include\CoreMath.inl">
+      <Filter>core</Filter>
+    </None>
+  </ItemGroup>
+</Project>

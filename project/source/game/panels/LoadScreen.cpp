@@ -3,6 +3,7 @@
 #include "LoadScreen.h"
 #include "ResourceManager.h"
 #include "Engine.h"
+#include "Utility.h"
 
 //=================================================================================================
 void LoadScreen::LoadData()
@@ -59,4 +60,12 @@ void LoadScreen::Tick(cstring str)
 	if(str)
 		text = str;
 	Engine::Get().DoPseudotick();
+}
+
+//=================================================================================================
+void LoadScreen::SetProgressCallback(float progress, cstring str)
+{
+	SetProgressOptional(progress, str);
+	if(progress >= 0.5f)
+		utility::IncrementDelayLock();
 }

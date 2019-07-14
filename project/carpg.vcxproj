@@ -55,7 +55,7 @@
       <SDLCheck>true</SDLCheck>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>source;source\core;source\engine;source\engine\gui;source\game;source\game\entity;source\game\events;source\game\generator;source\game\helpers;source\game\location;source\game\net;source\game\panels;source\game\quests;source\game\script;source\game\stats;source\game\system;source\resource;..\external\angelscript_sdk\angelscript\include;..\external\angelscript_sdk\add_on;..\external\Bullet\src;..\external\CrashRpt\include;..\external\DirectX\Include;..\external\DirectXMath\Inc;..\external\FMod\inc;..\external\json;..\external\SLikeNet\Source\include;..\external\Visual Leak Detector\include;..\external\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>engine\include;source;source\game;source\game\entity;source\game\events;source\game\generator;source\game\helpers;source\game\location;source\game\net;source\game\panels;source\game\quests;source\game\script;source\game\stats;source\game\system;source\resource;..\external\angelscript_sdk\angelscript\include;..\external\angelscript_sdk\add_on;..\external\Bullet\src;..\external\CrashRpt\include;..\external\DirectX\Include;..\external\DirectXMath\Inc;..\external\FMod\inc;..\external\json;..\external\SLikeNet\Source\include;..\external\Visual Leak Detector\include;..\external\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>false</MultiProcessorCompilation>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <AdditionalOptions>/w34706 /w34702 /w34189 /w34265 /w34266 /w34928 %(AdditionalOptions)</AdditionalOptions>
@@ -66,7 +66,7 @@
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>../external/CrashRpt/lib;../external/DirectX/Lib/x86;../external/FMod/lib;../external/Visual Leak Detector/lib/Win32;lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>angelscript_addon_debug.lib;angelscript_debug.lib;CrashRpt1500.lib;d3d9.lib;d3dx9d.lib;SLikeNet_debug.lib;ws2_32.lib;fmod_vc.lib;dbghelp.lib;LinearMath_debug.lib;BulletCollision_debug.lib;zlib_debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>angelscript_addon_debug.lib;angelscript_debug.lib;BulletCollision_debug.lib;CrashRpt1500.lib;d3d9.lib;d3dx9d.lib;dbghelp.lib;engine_d.lib;fmod_vc.lib;LinearMath_debug.lib;SLikeNet_debug.lib;ws2_32.lib;zlib_debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/ignore:4098 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <Manifest>
@@ -93,7 +93,7 @@
       <SDLCheck>true</SDLCheck>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>source;source\core;source\engine;source\engine\gui;source\game;source\game\entity;source\game\events;source\game\generator;source\game\helpers;source\game\location;source\game\net;source\game\panels;source\game\quests;source\game\script;source\game\stats;source\game\system;source\resource;..\external\angelscript_sdk\angelscript\include;..\external\angelscript_sdk\add_on;..\external\Bullet\src;..\external\CrashRpt\include;..\external\DirectX\Include;..\external\DirectXMath\Inc;..\external\FMod\inc;..\external\json;..\external\SLikeNet\Source\include;..\external\Visual Leak Detector\include;..\external\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>engine\include;source;source\game;source\game\entity;source\game\events;source\game\generator;source\game\helpers;source\game\location;source\game\net;source\game\panels;source\game\quests;source\game\script;source\game\stats;source\game\system;source\resource;..\external\angelscript_sdk\angelscript\include;..\external\angelscript_sdk\add_on;..\external\Bullet\src;..\external\CrashRpt\include;..\external\DirectX\Include;..\external\DirectXMath\Inc;..\external\FMod\inc;..\external\json;..\external\SLikeNet\Source\include;..\external\Visual Leak Detector\include;..\external\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -107,7 +107,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>../external/CrashRpt/lib;../external/DirectX/Lib/x86;../external/FMod/lib;../external/Visual Leak Detector/lib/Win32;lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>angelscript_addon.lib;angelscript.lib;CrashRpt1500.lib;d3d9.lib;d3dx9.lib;SLikeNet.lib;ws2_32.lib;fmod_vc.lib;dbghelp.lib;LinearMath.lib;BulletCollision.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>angelscript_addon.lib;angelscript.lib;BulletCollision.lib;CrashRpt1500.lib;d3d9.lib;d3dx9.lib;dbghelp.lib;engine.lib;fmod_vc.lib;LinearMath.lib;SLikeNet.lib;ws2_32.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/ignore:4098 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <Manifest>
@@ -126,93 +126,6 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="source\core\Algorithm.h" />
-    <ClInclude Include="source\core\Base64.h" />
-    <ClInclude Include="source\core\Color.h" />
-    <ClInclude Include="source\core\Core.h" />
-    <ClInclude Include="source\core\Config.h" />
-    <ClInclude Include="source\core\Containers.h" />
-    <ClInclude Include="source\core\CoreMath.h" />
-    <ClInclude Include="source\core\Crc.h" />
-    <ClInclude Include="source\core\CriticalSection.h" />
-    <ClInclude Include="source\core\FastFunc.h" />
-    <ClInclude Include="source\core\File.h" />
-    <ClInclude Include="source\core\Logger.h" />
-    <ClInclude Include="source\core\Perlin.h" />
-    <ClInclude Include="source\core\Profiler.h" />
-    <ClInclude Include="source\core\QuadTree.h" />
-    <ClInclude Include="source\core\Text.h" />
-    <ClInclude Include="source\core\Timer.h" />
-    <ClInclude Include="source\core\Tokenizer.h" />
-    <ClInclude Include="source\core\WindowsIncludes.h" />
-    <ClInclude Include="source\engine\App.h" />
-    <ClInclude Include="source\engine\CameraBase.h" />
-    <ClInclude Include="source\engine\DebugDrawer.h" />
-    <ClInclude Include="source\engine\DirectX.h" />
-    <ClInclude Include="source\engine\FileFormat.h" />
-    <ClInclude Include="source\engine\Font.h" />
-    <ClInclude Include="source\engine\EngineCore.h" />
-    <ClInclude Include="source\engine\GrassShader.h" />
-    <ClInclude Include="source\engine\gui\AreaLayout.h" />
-    <ClInclude Include="source\engine\gui\Button.h" />
-    <ClInclude Include="source\engine\gui\CheckBox.h" />
-    <ClInclude Include="source\engine\gui\CheckBoxGroup.h" />
-    <ClInclude Include="source\engine\gui\ComboBox.h" />
-    <ClInclude Include="source\engine\gui\Container.h" />
-    <ClInclude Include="source\engine\gui\Control.h" />
-    <ClInclude Include="source\engine\gui\DialogBox.h" />
-    <ClInclude Include="source\engine\gui\DrawBox.h" />
-    <ClInclude Include="source\engine\gui\FlowContainer.h" />
-    <ClInclude Include="source\engine\gui\GetNumberDialog.h" />
-    <ClInclude Include="source\engine\gui\GetTextDialog.h" />
-    <ClInclude Include="source\engine\gui\Grid.h" />
-    <ClInclude Include="source\engine\gui\Gui.h" />
-    <ClInclude Include="source\engine\gui\GuiContainer.h" />
-    <ClInclude Include="source\engine\gui\GuiDialog.h" />
-    <ClInclude Include="source\engine\gui\GuiElement.h" />
-    <ClInclude Include="source\engine\gui\GuiRect.h" />
-    <ClInclude Include="source\engine\gui\InputTextBox.h" />
-    <ClInclude Include="source\engine\gui\Label.h" />
-    <ClInclude Include="source\engine\gui\Layout.h" />
-    <ClInclude Include="source\engine\gui\ListBox.h" />
-    <ClInclude Include="source\engine\gui\MenuBar.h" />
-    <ClInclude Include="source\engine\gui\MenuList.h" />
-    <ClInclude Include="source\engine\gui\MenuStrip.h" />
-    <ClInclude Include="source\engine\gui\Overlay.h" />
-    <ClInclude Include="source\engine\gui\Panel.h" />
-    <ClInclude Include="source\engine\gui\PickFileDialog.h" />
-    <ClInclude Include="source\engine\gui\PickItemDialog.h" />
-    <ClInclude Include="source\engine\gui\Scrollbar.h" />
-    <ClInclude Include="source\engine\gui\Slider.h" />
-    <ClInclude Include="source\engine\gui\SplitPanel.h" />
-    <ClInclude Include="source\engine\gui\TabControl.h" />
-    <ClInclude Include="source\engine\gui\TextBox.h" />
-    <ClInclude Include="source\engine\gui\ToolStrip.h" />
-    <ClInclude Include="source\engine\gui\TooltipController.h" />
-    <ClInclude Include="source\engine\gui\TreeView.h" />
-    <ClInclude Include="source\engine\gui\Window.h" />
-    <ClInclude Include="source\engine\Key.h" />
-    <ClInclude Include="source\engine\Mesh.h" />
-    <ClInclude Include="source\engine\Engine.h" />
-    <ClInclude Include="source\engine\KeyStates.h" />
-    <ClInclude Include="source\engine\MeshInstance.h" />
-    <ClInclude Include="source\engine\Pak.h" />
-    <ClInclude Include="source\engine\ParticleSystem.h" />
-    <ClInclude Include="source\engine\Physics.h" />
-    <ClInclude Include="source\engine\Render.h" />
-    <ClInclude Include="source\engine\RenderTarget.h" />
-    <ClInclude Include="source\engine\Resource.h" />
-    <ClInclude Include="source\engine\ResourceManager.h" />
-    <ClInclude Include="source\engine\ShaderHandler.h" />
-    <ClInclude Include="source\engine\Sound.h" />
-    <ClInclude Include="source\engine\SoundManager.h" />
-    <ClInclude Include="source\engine\StartupOptions.h" />
-    <ClInclude Include="source\engine\SuperShader.h" />
-    <ClInclude Include="source\engine\Terrain.h" />
-    <ClInclude Include="source\engine\TerrainShader.h" />
-    <ClInclude Include="source\engine\Texture.h" />
-    <ClInclude Include="source\engine\VertexData.h" />
-    <ClInclude Include="source\engine\VertexDeclaration.h" />
     <ClInclude Include="source\ErrorHandler.h" />
     <ClInclude Include="source\game\CommandParser.h" />
     <ClInclude Include="source\game\ConsoleCommands.h" />
@@ -401,10 +314,6 @@
     <ClInclude Include="source\game\system\ItemScript.h" />
     <ClInclude Include="source\game\system\ItemType.h" />
     <ClInclude Include="source\game\system\Spell.h" />
-    <ClCompile Include="source\engine\GrassShader.cpp" />
-    <ClCompile Include="source\engine\Render.cpp" />
-    <ClCompile Include="source\engine\RenderTarget.cpp" />
-    <ClCompile Include="source\engine\TerrainShader.cpp" />
     <ClCompile Include="source\game\entity\Encounter.cpp" />
     <ClCompile Include="source\game\GameFile.cpp" />
     <ClCompile Include="source\game\Settings.cpp" />
@@ -429,69 +338,6 @@
     <ClInclude Include="source\Version.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="source\core\Color.cpp" />
-    <ClCompile Include="source\core\CoreMath.cpp" />
-    <ClCompile Include="source\core\BoxToBox.cpp" />
-    <ClCompile Include="source\core\Bresenham.cpp" />
-    <ClCompile Include="source\core\Config.cpp" />
-    <ClCompile Include="source\core\Containers.cpp" />
-    <ClCompile Include="source\core\Crc.cpp" />
-    <ClCompile Include="source\core\CriticalSection.cpp" />
-    <ClCompile Include="source\core\File.cpp" />
-    <ClCompile Include="source\core\Logger.cpp" />
-    <ClCompile Include="source\core\Perlin.cpp" />
-    <ClCompile Include="source\core\Profiler.cpp" />
-    <ClCompile Include="source\core\Text.cpp" />
-    <ClCompile Include="source\core\Timer.cpp" />
-    <ClCompile Include="source\core\Tokenizer.cpp" />
-    <ClCompile Include="source\engine\DebugDrawer.cpp" />
-    <ClCompile Include="source\engine\Font.cpp" />
-    <ClCompile Include="source\engine\gui\Button.cpp" />
-    <ClCompile Include="source\engine\gui\CheckBox.cpp" />
-    <ClCompile Include="source\engine\gui\CheckBoxGroup.cpp" />
-    <ClCompile Include="source\engine\gui\ComboBox.cpp" />
-    <ClCompile Include="source\engine\gui\Container.cpp" />
-    <ClCompile Include="source\engine\gui\Control.cpp" />
-    <ClCompile Include="source\engine\gui\DialogBox.cpp" />
-    <ClCompile Include="source\engine\gui\DrawBox.cpp" />
-    <ClCompile Include="source\engine\gui\FlowContainer.cpp" />
-    <ClCompile Include="source\engine\gui\GetNumberDialog.cpp" />
-    <ClCompile Include="source\engine\gui\GetTextDialog.cpp" />
-    <ClCompile Include="source\engine\gui\Grid.cpp" />
-    <ClCompile Include="source\engine\gui\Gui.cpp" />
-    <ClCompile Include="source\engine\gui\GuiContainer.cpp" />
-    <ClCompile Include="source\engine\gui\GuiDialog.cpp" />
-    <ClCompile Include="source\engine\gui\InputTextBox.cpp" />
-    <ClCompile Include="source\engine\gui\Label.cpp" />
-    <ClCompile Include="source\engine\gui\Layout.cpp" />
-    <ClCompile Include="source\engine\gui\ListBox.cpp" />
-    <ClCompile Include="source\engine\gui\MenuBar.cpp" />
-    <ClCompile Include="source\engine\gui\MenuList.cpp" />
-    <ClCompile Include="source\engine\gui\MenuStrip.cpp" />
-    <ClCompile Include="source\engine\gui\Overlay.cpp" />
-    <ClCompile Include="source\engine\gui\Panel.cpp" />
-    <ClCompile Include="source\engine\gui\PickFileDialog.cpp" />
-    <ClCompile Include="source\engine\gui\PickItemDialog.cpp" />
-    <ClCompile Include="source\engine\gui\Scrollbar.cpp" />
-    <ClCompile Include="source\engine\gui\Slider.cpp" />
-    <ClCompile Include="source\engine\gui\SplitPanel.cpp" />
-    <ClCompile Include="source\engine\gui\TabControl.cpp" />
-    <ClCompile Include="source\engine\gui\TextBox.cpp" />
-    <ClCompile Include="source\engine\gui\TooltipController.cpp" />
-    <ClCompile Include="source\engine\gui\TreeView.cpp" />
-    <ClCompile Include="source\engine\gui\Window.cpp" />
-    <ClCompile Include="source\engine\Mesh.cpp" />
-    <ClCompile Include="source\engine\Engine.cpp" />
-    <ClCompile Include="source\engine\KeyStates.cpp" />
-    <ClCompile Include="source\engine\MeshInstance.cpp" />
-    <ClCompile Include="source\engine\ParticleSystem.cpp" />
-    <ClCompile Include="source\engine\Physics.cpp" />
-    <ClCompile Include="source\engine\ResourceManager.cpp" />
-    <ClCompile Include="source\engine\SoundManager.cpp" />
-    <ClCompile Include="source\engine\SuperShader.cpp" />
-    <ClCompile Include="source\engine\Terrain.cpp" />
-    <ClCompile Include="source\engine\Texture.cpp" />
-    <ClCompile Include="source\engine\VertexData.cpp" />
     <ClCompile Include="source\ErrorHandler.cpp" />
     <ClCompile Include="source\game\Ai.cpp" />
     <ClCompile Include="source\game\CommandParser.cpp" />
@@ -687,9 +533,6 @@
     <Text Include="..\doc\script.txt" />
     <Text Include="..\doc\system.txt" />
     <Text Include="..\doc\todo.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="source\core\CoreMath.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

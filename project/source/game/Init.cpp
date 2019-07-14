@@ -116,7 +116,7 @@ void Game::PreconfigureGame()
 	PreloadLanguage();
 	PreloadData();
 	CreatePlaceholderResources();
-	ResourceManager::Get().SetLoadScreen(gui->load_screen);
+	ResourceManager::Get().SetProgressCallback(ProgressCallback(gui->load_screen, &LoadScreen::SetProgressCallback));
 }
 
 //=================================================================================================

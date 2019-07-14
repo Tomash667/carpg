@@ -4,12 +4,6 @@
     <Filter Include="0. doc">
       <UniqueIdentifier>{5abd613a-c921-4c80-8be5-819125f7176f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="1. core">
-      <UniqueIdentifier>{39ae4fd0-b29a-4a35-a8c3-ca6a8929af37}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="2. engine">
-      <UniqueIdentifier>{29be10ab-825b-401f-b1e3-16b4bbd51c12}</UniqueIdentifier>
-    </Filter>
     <Filter Include="3. game">
       <UniqueIdentifier>{13fb0c96-7c4c-4be5-8bab-d9f41bdca2b9}</UniqueIdentifier>
     </Filter>
@@ -43,15 +37,6 @@
     <Filter Include="4. resource">
       <UniqueIdentifier>{bc9d59f8-23a1-480d-ba81-5772aad70353}</UniqueIdentifier>
     </Filter>
-    <Filter Include="2. engine\gui">
-      <UniqueIdentifier>{e46e24fb-8a88-4bb0-9a04-b18bd011d68d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="2. engine\gui\controls">
-      <UniqueIdentifier>{6de9f675-6f0f-42b1-a437-37f63f3161d3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="2. engine\gui\dialogs">
-      <UniqueIdentifier>{22378397-713d-49a2-bddf-1773b059fcbc}</UniqueIdentifier>
-    </Filter>
     <Filter Include="3. game\system\objects">
       <UniqueIdentifier>{40df2bfe-e01b-47b1-9ab8-c6bcab9c75aa}</UniqueIdentifier>
     </Filter>
@@ -79,31 +64,10 @@
     <Filter Include="3. game\system\spells">
       <UniqueIdentifier>{f6296568-67e0-4b62-a5f9-05cd186cb0ee}</UniqueIdentifier>
     </Filter>
-    <Filter Include="2. engine\resources">
-      <UniqueIdentifier>{20e4856c-a4ec-49d1-bea8-1656b3df0327}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="2. engine\shaders">
-      <UniqueIdentifier>{1b30961f-ddf3-41c8-bc93-4c5f4140681d}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\resource\PickLanguage.cpp">
       <Filter>4. resource</Filter>
-    </ClCompile>
-    <ClCompile Include="source\core\BoxToBox.cpp">
-      <Filter>1. core</Filter>
-    </ClCompile>
-    <ClCompile Include="source\core\Bresenham.cpp">
-      <Filter>1. core</Filter>
-    </ClCompile>
-    <ClCompile Include="source\core\Perlin.cpp">
-      <Filter>1. core</Filter>
-    </ClCompile>
-    <ClCompile Include="source\core\Timer.cpp">
-      <Filter>1. core</Filter>
-    </ClCompile>
-    <ClCompile Include="source\core\Tokenizer.cpp">
-      <Filter>1. core</Filter>
     </ClCompile>
     <ClCompile Include="source\game\FOV.cpp">
       <Filter>3. game</Filter>
@@ -365,13 +329,7 @@
     <ClCompile Include="source\game\quests\Quest_Crazies.cpp">
       <Filter>3. game\quests</Filter>
     </ClCompile>
-    <ClCompile Include="source\core\Crc.cpp">
-      <Filter>1. core</Filter>
-    </ClCompile>
     <ClCompile Include="source\ErrorHandler.cpp" />
-    <ClCompile Include="source\core\Config.cpp">
-      <Filter>1. core</Filter>
-    </ClCompile>
     <ClCompile Include="source\game\entity\Light.cpp">
       <Filter>3. game\entity</Filter>
     </ClCompile>
@@ -402,47 +360,8 @@
     <ClCompile Include="source\game\Ai.cpp">
       <Filter>3. game</Filter>
     </ClCompile>
-    <ClCompile Include="source\core\Logger.cpp">
-      <Filter>1. core</Filter>
-    </ClCompile>
-    <ClCompile Include="source\core\Text.cpp">
-      <Filter>1. core</Filter>
-    </ClCompile>
-    <ClCompile Include="source\core\File.cpp">
-      <Filter>1. core</Filter>
-    </ClCompile>
-    <ClCompile Include="source\core\Profiler.cpp">
-      <Filter>1. core</Filter>
-    </ClCompile>
-    <ClCompile Include="source\core\CoreMath.cpp">
-      <Filter>1. core</Filter>
-    </ClCompile>
-    <ClCompile Include="source\core\Containers.cpp">
-      <Filter>1. core</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\Engine.cpp">
-      <Filter>2. engine</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\KeyStates.cpp">
-      <Filter>2. engine</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\ParticleSystem.cpp">
-      <Filter>2. engine</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\Physics.cpp">
-      <Filter>2. engine</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\ResourceManager.cpp">
-      <Filter>2. engine</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\Terrain.cpp">
-      <Filter>2. engine</Filter>
-    </ClCompile>
     <ClCompile Include="source\game\stats\Buff.cpp">
       <Filter>3. game\stats</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\MeshInstance.cpp">
-      <Filter>2. engine</Filter>
     </ClCompile>
     <ClCompile Include="source\game\entity\Usable.cpp">
       <Filter>3. game\entity</Filter>
@@ -454,105 +373,6 @@
       <Filter>3. game\panels</Filter>
     </ClCompile>
     <ClCompile Include="source\Utility.cpp" />
-    <ClCompile Include="source\engine\gui\GuiContainer.cpp">
-      <Filter>2. engine\gui</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\gui\GuiDialog.cpp">
-      <Filter>2. engine\gui</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\gui\Layout.cpp">
-      <Filter>2. engine\gui</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\gui\Overlay.cpp">
-      <Filter>2. engine\gui</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\gui\Button.cpp">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\gui\CheckBox.cpp">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\gui\CheckBoxGroup.cpp">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\gui\Container.cpp">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\gui\Control.cpp">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\gui\DrawBox.cpp">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\gui\FlowContainer.cpp">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\gui\Grid.cpp">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\gui\InputTextBox.cpp">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\gui\Label.cpp">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\gui\ListBox.cpp">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\gui\MenuBar.cpp">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\gui\MenuList.cpp">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\gui\MenuStrip.cpp">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\gui\Panel.cpp">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\gui\Scrollbar.cpp">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\gui\Slider.cpp">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\gui\SplitPanel.cpp">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\gui\TabControl.cpp">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\gui\TextBox.cpp">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\gui\TooltipController.cpp">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\gui\TreeView.cpp">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\gui\Window.cpp">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\gui\GetNumberDialog.cpp">
-      <Filter>2. engine\gui\dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\gui\GetTextDialog.cpp">
-      <Filter>2. engine\gui\dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\gui\PickFileDialog.cpp">
-      <Filter>2. engine\gui\dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\gui\PickItemDialog.cpp">
-      <Filter>2. engine\gui\dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\gui\DialogBox.cpp">
-      <Filter>2. engine\gui\dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\gui\Gui.cpp">
-      <Filter>2. engine\gui</Filter>
-    </ClCompile>
     <ClCompile Include="source\game\panels\BookPanel.cpp">
       <Filter>3. game\panels</Filter>
     </ClCompile>
@@ -613,9 +433,6 @@
     <ClCompile Include="source\game\entity\Blood.cpp">
       <Filter>3. game\entity</Filter>
     </ClCompile>
-    <ClCompile Include="source\engine\SoundManager.cpp">
-      <Filter>2. engine</Filter>
-    </ClCompile>
     <ClCompile Include="source\game\net\PlayerInfo.cpp">
       <Filter>3. game\net</Filter>
     </ClCompile>
@@ -628,14 +445,8 @@
     <ClCompile Include="source\game\script\Var.cpp">
       <Filter>3. game\script</Filter>
     </ClCompile>
-    <ClCompile Include="source\core\Color.cpp">
-      <Filter>1. core</Filter>
-    </ClCompile>
     <ClCompile Include="source\game\net\BitStreamFunc.cpp">
       <Filter>3. game\net</Filter>
-    </ClCompile>
-    <ClCompile Include="source\core\CriticalSection.cpp">
-      <Filter>1. core</Filter>
     </ClCompile>
     <ClCompile Include="source\game\entity\Portal.cpp">
       <Filter>3. game\entity</Filter>
@@ -760,9 +571,6 @@
     <ClCompile Include="source\game\helpers\CombatHelper.cpp">
       <Filter>3. game\helpers</Filter>
     </ClCompile>
-    <ClCompile Include="source\engine\gui\ComboBox.cpp">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClCompile>
     <ClCompile Include="source\game\quests\Quest_Artifacts.cpp">
       <Filter>3. game\quests</Filter>
     </ClCompile>
@@ -771,18 +579,6 @@
     </ClCompile>
     <ClCompile Include="source\game\system\SpellLoader.cpp">
       <Filter>3. game\system\spells</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\Font.cpp">
-      <Filter>2. engine\resources</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\Mesh.cpp">
-      <Filter>2. engine\resources</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\VertexData.cpp">
-      <Filter>2. engine\resources</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\Texture.cpp">
-      <Filter>2. engine\resources</Filter>
     </ClCompile>
     <ClCompile Include="source\game\quests\Quest_Scripted.cpp">
       <Filter>3. game\quests</Filter>
@@ -805,26 +601,8 @@
     <ClCompile Include="source\game\generator\DungeonMapGenerator.cpp">
       <Filter>3. game\generator</Filter>
     </ClCompile>
-    <ClCompile Include="source\engine\Render.cpp">
-      <Filter>2. engine</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\RenderTarget.cpp">
-      <Filter>2. engine</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\GrassShader.cpp">
-      <Filter>2. engine\shaders</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\SuperShader.cpp">
-      <Filter>2. engine\shaders</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\DebugDrawer.cpp">
-      <Filter>2. engine\shaders</Filter>
-    </ClCompile>
     <ClCompile Include="source\game\Settings.cpp">
       <Filter>3. game</Filter>
-    </ClCompile>
-    <ClCompile Include="source\engine\TerrainShader.cpp">
-      <Filter>2. engine\shaders</Filter>
     </ClCompile>
     <ClCompile Include="source\game\GameFile.cpp">
       <Filter>3. game</Filter>
@@ -833,18 +611,6 @@
   <ItemGroup>
     <ClInclude Include="source\resource\resource1.h">
       <Filter>4. resource</Filter>
-    </ClInclude>
-    <ClInclude Include="source\core\Perlin.h">
-      <Filter>1. core</Filter>
-    </ClInclude>
-    <ClInclude Include="source\core\QuadTree.h">
-      <Filter>1. core</Filter>
-    </ClInclude>
-    <ClInclude Include="source\core\Timer.h">
-      <Filter>1. core</Filter>
-    </ClInclude>
-    <ClInclude Include="source\core\Tokenizer.h">
-      <Filter>1. core</Filter>
     </ClInclude>
     <ClInclude Include="source\game\ConsoleCommands.h">
       <Filter>3. game</Filter>
@@ -1124,16 +890,10 @@
     <ClInclude Include="source\game\entity\Camera.h">
       <Filter>3. game\entity</Filter>
     </ClInclude>
-    <ClInclude Include="source\core\Crc.h">
-      <Filter>1. core</Filter>
-    </ClInclude>
     <ClInclude Include="source\game\location\LevelArea.h">
       <Filter>3. game\location</Filter>
     </ClInclude>
     <ClInclude Include="source\ErrorHandler.h" />
-    <ClInclude Include="source\core\Config.h">
-      <Filter>1. core</Filter>
-    </ClInclude>
     <ClInclude Include="source\game\entity\Light.h">
       <Filter>3. game\entity</Filter>
     </ClInclude>
@@ -1145,9 +905,6 @@
     </ClInclude>
     <ClInclude Include="source\game\helpers\LocationHelper.h">
       <Filter>3. game\helpers</Filter>
-    </ClInclude>
-    <ClInclude Include="source\core\FastFunc.h">
-      <Filter>1. core</Filter>
     </ClInclude>
     <ClInclude Include="source\game\GameStats.h">
       <Filter>3. game</Filter>
@@ -1164,62 +921,11 @@
     <ClInclude Include="source\game\quests\Quest_RetrievePackage.h">
       <Filter>3. game\quests</Filter>
     </ClInclude>
-    <ClInclude Include="source\core\Logger.h">
-      <Filter>1. core</Filter>
-    </ClInclude>
-    <ClInclude Include="source\core\Text.h">
-      <Filter>1. core</Filter>
-    </ClInclude>
-    <ClInclude Include="source\core\File.h">
-      <Filter>1. core</Filter>
-    </ClInclude>
-    <ClInclude Include="source\core\CriticalSection.h">
-      <Filter>1. core</Filter>
-    </ClInclude>
-    <ClInclude Include="source\core\Profiler.h">
-      <Filter>1. core</Filter>
-    </ClInclude>
-    <ClInclude Include="source\core\CoreMath.h">
-      <Filter>1. core</Filter>
-    </ClInclude>
-    <ClInclude Include="source\core\Containers.h">
-      <Filter>1. core</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\Engine.h">
-      <Filter>2. engine</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\KeyStates.h">
-      <Filter>2. engine</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\ParticleSystem.h">
-      <Filter>2. engine</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\Physics.h">
-      <Filter>2. engine</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\ResourceManager.h">
-      <Filter>2. engine</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\Terrain.h">
-      <Filter>2. engine</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\VertexDeclaration.h">
-      <Filter>2. engine</Filter>
-    </ClInclude>
-    <ClInclude Include="source\core\Core.h">
-      <Filter>1. core</Filter>
-    </ClInclude>
-    <ClInclude Include="source\core\Algorithm.h">
-      <Filter>1. core</Filter>
-    </ClInclude>
     <ClInclude Include="source\game\system\ContentLoader.h">
       <Filter>3. game\system</Filter>
     </ClInclude>
     <ClInclude Include="source\game\stats\Buff.h">
       <Filter>3. game\stats</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\MeshInstance.h">
-      <Filter>2. engine</Filter>
     </ClInclude>
     <ClInclude Include="source\game\entity\Usable.h">
       <Filter>3. game\entity</Filter>
@@ -1240,128 +946,14 @@
     <ClInclude Include="source\game\net\NetChangePlayer.h">
       <Filter>3. game\net</Filter>
     </ClInclude>
-    <ClInclude Include="source\engine\gui\AreaLayout.h">
-      <Filter>2. engine\gui</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\gui\GuiContainer.h">
-      <Filter>2. engine\gui</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\gui\GuiDialog.h">
-      <Filter>2. engine\gui</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\gui\GuiElement.h">
-      <Filter>2. engine\gui</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\gui\GuiRect.h">
-      <Filter>2. engine\gui</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\gui\Layout.h">
-      <Filter>2. engine\gui</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\gui\Overlay.h">
-      <Filter>2. engine\gui</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\gui\Button.h">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\gui\CheckBox.h">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\gui\CheckBoxGroup.h">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\gui\Container.h">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\gui\Control.h">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\gui\DrawBox.h">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\gui\FlowContainer.h">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\gui\Grid.h">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\gui\InputTextBox.h">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\gui\Label.h">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\gui\ListBox.h">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\gui\MenuBar.h">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\gui\MenuList.h">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\gui\MenuStrip.h">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\gui\Panel.h">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\gui\Scrollbar.h">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\gui\Slider.h">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\gui\SplitPanel.h">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\gui\TabControl.h">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\gui\TextBox.h">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\gui\TooltipController.h">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\gui\TreeView.h">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\gui\Window.h">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\gui\GetNumberDialog.h">
-      <Filter>2. engine\gui\dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\gui\GetTextDialog.h">
-      <Filter>2. engine\gui\dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\gui\PickFileDialog.h">
-      <Filter>2. engine\gui\dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\gui\PickItemDialog.h">
-      <Filter>2. engine\gui\dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\gui\ToolStrip.h">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\gui\DialogBox.h">
-      <Filter>2. engine\gui\dialogs</Filter>
-    </ClInclude>
     <ClInclude Include="source\game\panels\GameDialogBox.h">
       <Filter>3. game\panels</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\gui\Gui.h">
-      <Filter>2. engine\gui</Filter>
     </ClInclude>
     <ClInclude Include="source\game\panels\BookPanel.h">
       <Filter>3. game\panels</Filter>
     </ClInclude>
     <ClInclude Include="source\game\entity\ItemContainer.h">
       <Filter>3. game\entity</Filter>
-    </ClInclude>
-    <ClInclude Include="source\core\Base64.h">
-      <Filter>1. core</Filter>
     </ClInclude>
     <ClInclude Include="source\game\system\BaseObject.h">
       <Filter>3. game\system\objects</Filter>
@@ -1402,9 +994,6 @@
     <ClInclude Include="source\game\system\Stock.h">
       <Filter>3. game\system\items</Filter>
     </ClInclude>
-    <ClInclude Include="source\engine\EngineCore.h">
-      <Filter>2. engine</Filter>
-    </ClInclude>
     <ClInclude Include="source\game\GameCore.h">
       <Filter>3. game</Filter>
     </ClInclude>
@@ -1420,12 +1009,6 @@
     <ClInclude Include="source\game\entity\BloodType.h">
       <Filter>3. game\entity</Filter>
     </ClInclude>
-    <ClInclude Include="source\engine\SoundManager.h">
-      <Filter>2. engine</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\StartupOptions.h">
-      <Filter>2. engine</Filter>
-    </ClInclude>
     <ClInclude Include="source\game\net\PlayerInfo.h">
       <Filter>3. game\net</Filter>
     </ClInclude>
@@ -1438,23 +1021,8 @@
     <ClInclude Include="source\game\script\Var.h">
       <Filter>3. game\script</Filter>
     </ClInclude>
-    <ClInclude Include="source\engine\DirectX.h">
-      <Filter>2. engine</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\FileFormat.h">
-      <Filter>2. engine</Filter>
-    </ClInclude>
-    <ClInclude Include="source\core\Color.h">
-      <Filter>1. core</Filter>
-    </ClInclude>
     <ClInclude Include="source\game\net\BitStreamFunc.h">
       <Filter>3. game\net</Filter>
-    </ClInclude>
-    <ClInclude Include="source\core\WindowsIncludes.h">
-      <Filter>1. core</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\Key.h">
-      <Filter>2. engine</Filter>
     </ClInclude>
     <ClInclude Include="source\game\entity\Portal.h">
       <Filter>3. game\entity</Filter>
@@ -1573,9 +1141,6 @@
     <ClInclude Include="source\game\Settings.h">
       <Filter>3. game</Filter>
     </ClInclude>
-    <ClInclude Include="source\engine\CameraBase.h">
-      <Filter>2. engine</Filter>
-    </ClInclude>
     <ClInclude Include="source\game\FOV.h">
       <Filter>3. game</Filter>
     </ClInclude>
@@ -1603,35 +1168,11 @@
     <ClInclude Include="source\game\helpers\CombatHelper.h">
       <Filter>3. game\helpers</Filter>
     </ClInclude>
-    <ClInclude Include="source\engine\gui\ComboBox.h">
-      <Filter>2. engine\gui\controls</Filter>
-    </ClInclude>
     <ClInclude Include="source\game\quests\Quest_Artifacts.h">
       <Filter>3. game\quests</Filter>
     </ClInclude>
     <ClInclude Include="source\game\system\Spell.h">
       <Filter>3. game\system\spells</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\Font.h">
-      <Filter>2. engine\resources</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\Mesh.h">
-      <Filter>2. engine\resources</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\VertexData.h">
-      <Filter>2. engine\resources</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\Texture.h">
-      <Filter>2. engine\resources</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\Resource.h">
-      <Filter>2. engine\resources</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\Pak.h">
-      <Filter>2. engine\resources</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\Sound.h">
-      <Filter>2. engine\resources</Filter>
     </ClInclude>
     <ClInclude Include="source\game\quests\Quest_Scripted.h">
       <Filter>3. game\quests</Filter>
@@ -1675,30 +1216,6 @@
     <ClInclude Include="source\game\generator\DungeonMapGenerator.h">
       <Filter>3. game\generator</Filter>
     </ClInclude>
-    <ClInclude Include="source\engine\RenderTarget.h">
-      <Filter>2. engine</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\Render.h">
-      <Filter>2. engine</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\GrassShader.h">
-      <Filter>2. engine\shaders</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\SuperShader.h">
-      <Filter>2. engine\shaders</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\DebugDrawer.h">
-      <Filter>2. engine\shaders</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\ShaderHandler.h">
-      <Filter>2. engine\shaders</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\TerrainShader.h">
-      <Filter>2. engine\shaders</Filter>
-    </ClInclude>
-    <ClInclude Include="source\engine\App.h">
-      <Filter>2. engine</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="source\resource\resource.rc">
@@ -1730,10 +1247,5 @@
     <Text Include="..\doc\script.txt">
       <Filter>0. doc</Filter>
     </Text>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="source\core\CoreMath.inl">
-      <Filter>1. core</Filter>
-    </None>
   </ItemGroup>
 </Project>

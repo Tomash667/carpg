@@ -195,7 +195,7 @@ void GlobalGui::InitOnce()
 //=================================================================================================
 void GlobalGui::LoadLanguage()
 {
-	GUI.SetText();
+	GUI.SetText(Str("ok"), Str("yes"), Str("no"), Str("cancel"));
 
 	txReallyQuit = Str("reallyQuit");
 

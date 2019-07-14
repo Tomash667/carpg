@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\Algorithm.h" />
+    <ClInclude Include="include\App.h" />
+    <ClInclude Include="include\AreaLayout.h" />
+    <ClInclude Include="include\Base64.h" />
+    <ClInclude Include="include\Button.h" />
+    <ClInclude Include="include\CameraBase.h" />
+    <ClInclude Include="include\CheckBox.h" />
+    <ClInclude Include="include\CheckBoxGroup.h" />
+    <ClInclude Include="include\Color.h" />
+    <ClInclude Include="include\ComboBox.h" />
+    <ClInclude Include="include\Config.h" />
+    <ClInclude Include="include\Container.h" />
+    <ClInclude Include="include\Containers.h" />
+    <ClInclude Include="include\Control.h" />
+    <ClInclude Include="include\Core.h" />
+    <ClInclude Include="include\CoreMath.h" />
+    <ClInclude Include="include\Crc.h" />
+    <ClInclude Include="include\CriticalSection.h" />
+    <ClInclude Include="include\DebugDrawer.h" />
+    <ClInclude Include="include\DialogBox.h" />
+    <ClInclude Include="include\DirectX.h" />
+    <ClInclude Include="include\DrawBox.h" />
+    <ClInclude Include="include\Engine.h" />
+    <ClInclude Include="include\EngineCore.h" />
+    <ClInclude Include="include\EnginePch.h" />
+    <ClInclude Include="include\FastFunc.h" />
+    <ClInclude Include="include\File.h" />
+    <ClInclude Include="include\FileFormat.h" />
+    <ClInclude Include="include\FlowContainer.h" />
+    <ClInclude Include="include\Font.h" />
+    <ClInclude Include="include\GetNumberDialog.h" />
+    <ClInclude Include="include\GetTextDialog.h" />
+    <ClInclude Include="include\GrassShader.h" />
+    <ClInclude Include="include\Grid.h" />
+    <ClInclude Include="include\Gui.h" />
+    <ClInclude Include="include\GuiContainer.h" />
+    <ClInclude Include="include\GuiDialog.h" />
+    <ClInclude Include="include\GuiElement.h" />
+    <ClInclude Include="include\GuiRect.h" />
+    <ClInclude Include="include\InputTextBox.h" />
+    <ClInclude Include="include\Key.h" />
+    <ClInclude Include="include\KeyStates.h" />
+    <ClInclude Include="include\Label.h" />
+    <ClInclude Include="include\Layout.h" />
+    <ClInclude Include="include\ListBox.h" />
+    <ClInclude Include="include\Logger.h" />
+    <ClInclude Include="include\MenuBar.h" />
+    <ClInclude Include="include\MenuList.h" />
+    <ClInclude Include="include\MenuStrip.h" />
+    <ClInclude Include="include\Mesh.h" />
+    <ClInclude Include="include\MeshInstance.h" />
+    <ClInclude Include="include\Overlay.h" />
+    <ClInclude Include="include\Pak.h" />
+    <ClInclude Include="include\Panel.h" />
+    <ClInclude Include="include\ParticleSystem.h" />
+    <ClInclude Include="include\Perlin.h" />
+    <ClInclude Include="include\Physics.h" />
+    <ClInclude Include="include\PickFileDialog.h" />
+    <ClInclude Include="include\PickItemDialog.h" />
+    <ClInclude Include="include\Profiler.h" />
+    <ClInclude Include="include\QuadTree.h" />
+    <ClInclude Include="include\Render.h" />
+    <ClInclude Include="include\RenderTarget.h" />
+    <ClInclude Include="include\Resource.h" />
+    <ClInclude Include="include\ResourceManager.h" />
+    <ClInclude Include="include\Scrollbar.h" />
+    <ClInclude Include="include\ShaderHandler.h" />
+    <ClInclude Include="include\Slider.h" />
+    <ClInclude Include="include\Sound.h" />
+    <ClInclude Include="include\SoundManager.h" />
+    <ClInclude Include="include\SplitPanel.h" />
+    <ClInclude Include="include\StartupOptions.h" />
+    <ClInclude Include="include\SuperShader.h" />
+    <ClInclude Include="include\TabControl.h" />
+    <ClInclude Include="include\Terrain.h" />
+    <ClInclude Include="include\TerrainShader.h" />
+    <ClInclude Include="include\Text.h" />
+    <ClInclude Include="include\TextBox.h" />
+    <ClInclude Include="include\Texture.h" />
+    <ClInclude Include="include\Timer.h" />
+    <ClInclude Include="include\Tokenizer.h" />
+    <ClInclude Include="include\ToolStrip.h" />
+    <ClInclude Include="include\TooltipController.h" />
+    <ClInclude Include="include\TreeView.h" />
+    <ClInclude Include="include\VertexData.h" />
+    <ClInclude Include="include\VertexDeclaration.h" />
+    <ClInclude Include="include\Window.h" />
+    <ClInclude Include="include\WindowsIncludes.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="include\CoreMath.inl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="source\BoxToBox.cpp" />
+    <ClCompile Include="source\Bresenham.cpp" />
+    <ClCompile Include="source\Button.cpp" />
+    <ClCompile Include="source\CheckBox.cpp" />
+    <ClCompile Include="source\CheckBoxGroup.cpp" />
+    <ClCompile Include="source\Color.cpp" />
+    <ClCompile Include="source\ComboBox.cpp" />
+    <ClCompile Include="source\Config.cpp" />
+    <ClCompile Include="source\Container.cpp" />
+    <ClCompile Include="source\Containers.cpp" />
+    <ClCompile Include="source\Control.cpp" />
+    <ClCompile Include="source\CoreMath.cpp" />
+    <ClCompile Include="source\Crc.cpp" />
+    <ClCompile Include="source\CriticalSection.cpp" />
+    <ClCompile Include="source\DebugDrawer.cpp" />
+    <ClCompile Include="source\DialogBox.cpp" />
+    <ClCompile Include="source\DrawBox.cpp" />
+    <ClCompile Include="source\Engine.cpp" />
+    <ClCompile Include="source\EnginePch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="source\File.cpp" />
+    <ClCompile Include="source\FlowContainer.cpp" />
+    <ClCompile Include="source\Font.cpp" />
+    <ClCompile Include="source\GetNumberDialog.cpp" />
+    <ClCompile Include="source\GetTextDialog.cpp" />
+    <ClCompile Include="source\GrassShader.cpp" />
+    <ClCompile Include="source\Grid.cpp" />
+    <ClCompile Include="source\Gui.cpp" />
+    <ClCompile Include="source\GuiContainer.cpp" />
+    <ClCompile Include="source\GuiDialog.cpp" />
+    <ClCompile Include="source\InputTextBox.cpp" />
+    <ClCompile Include="source\KeyStates.cpp" />
+    <ClCompile Include="source\Label.cpp" />
+    <ClCompile Include="source\Layout.cpp" />
+    <ClCompile Include="source\ListBox.cpp" />
+    <ClCompile Include="source\Logger.cpp" />
+    <ClCompile Include="source\MenuBar.cpp" />
+    <ClCompile Include="source\MenuList.cpp" />
+    <ClCompile Include="source\MenuStrip.cpp" />
+    <ClCompile Include="source\Mesh.cpp" />
+    <ClCompile Include="source\MeshInstance.cpp" />
+    <ClCompile Include="source\Overlay.cpp" />
+    <ClCompile Include="source\Panel.cpp" />
+    <ClCompile Include="source\ParticleSystem.cpp" />
+    <ClCompile Include="source\Perlin.cpp" />
+    <ClCompile Include="source\Physics.cpp" />
+    <ClCompile Include="source\PickFileDialog.cpp" />
+    <ClCompile Include="source\PickItemDialog.cpp" />
+    <ClCompile Include="source\Profiler.cpp" />
+    <ClCompile Include="source\Render.cpp" />
+    <ClCompile Include="source\RenderTarget.cpp" />
+    <ClCompile Include="source\ResourceManager.cpp" />
+    <ClCompile Include="source\Scrollbar.cpp" />
+    <ClCompile Include="source\Slider.cpp" />
+    <ClCompile Include="source\SoundManager.cpp" />
+    <ClCompile Include="source\SplitPanel.cpp" />
+    <ClCompile Include="source\SuperShader.cpp" />
+    <ClCompile Include="source\TabControl.cpp" />
+    <ClCompile Include="source\Terrain.cpp" />
+    <ClCompile Include="source\TerrainShader.cpp" />
+    <ClCompile Include="source\Text.cpp" />
+    <ClCompile Include="source\TextBox.cpp" />
+    <ClCompile Include="source\Texture.cpp" />
+    <ClCompile Include="source\Timer.cpp" />
+    <ClCompile Include="source\Tokenizer.cpp" />
+    <ClCompile Include="source\TooltipController.cpp" />
+    <ClCompile Include="source\TreeView.cpp" />
+    <ClCompile Include="source\VertexData.cpp" />
+    <ClCompile Include="source\Window.cpp" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <ProjectGuid>{56C508B6-848B-436A-BB6A-1CA2F91FA054}</ProjectGuid>
+    <RootNamespace>engine</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <TargetName>$(ProjectName)_d</TargetName>
+    <IntDir>$(SolutionDir)output\$(ProjectName)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)lib\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IntDir>$(SolutionDir)output\$(ProjectName)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)lib\</OutDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>false</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)..\..\external\Bullet\src;$(ProjectDir)..\..\external\DirectX\Include;$(ProjectDir)..\..\external\DirectXMath\Inc;$(ProjectDir)..\..\external\FMod\inc;$(ProjectDir)..\..\external\Visual Leak Detector\include;$(ProjectDir)..\..\external\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>EnginePch.h</PrecompiledHeaderFile>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>false</ConformanceMode>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)..\..\external\Bullet\src;$(ProjectDir)..\..\external\DirectX\Include;$(ProjectDir)..\..\external\DirectXMath\Inc;$(ProjectDir)..\..\external\FMod\inc;$(ProjectDir)..\..\external\Visual Leak Detector\include;$(ProjectDir)..\..\external\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>EnginePch.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
