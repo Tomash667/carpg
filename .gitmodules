@@ -1,0 +1,3 @@
+[submodule "carpglib"]
+	path = carpglib
+	url = https://github.com/Tomash667/carpglib.git

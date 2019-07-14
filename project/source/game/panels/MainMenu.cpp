@@ -128,7 +128,6 @@ void MainMenu::UpdateCheckVersion()
 #endif
 		if(check_updates)
 		{
-			version_text = txCheckingVersion;
 			Info("Checking CaRpg version.");
 			check_status = CheckVersionStatus::Checking;
 			check_version_thread = thread(&MainMenu::CheckVersion, this);
@@ -201,7 +200,12 @@ void MainMenu::CheckVersion()
 //=================================================================================================
 void MainMenu::Event(GuiEvent e)
 {
-	if(e == GuiEvent_WindowResize)
+	if(e == GuiEvent_Show)
+	{
+		if(check_status == CheckVersionStatus::Checking)
+			version_text = txCheckingVersion;
+	}
+	else if(e == GuiEvent_WindowResize)
 		PlaceButtons();
 	else if(e >= GuiEvent_Custom)
 	{

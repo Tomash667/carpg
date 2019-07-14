@@ -300,7 +300,7 @@ void HumanPredraw(void* ptr, Matrix* mat, int n)
 }
 
 //=================================================================================================
-void Game::OnTick(float dt)
+void Game::OnUpdate(float dt)
 {
 	// check for memory corruption
 	assert(_CrtCheckMemory());
@@ -454,7 +454,7 @@ void Game::OnTick(float dt)
 	else if(game_state == GS_QUIT)
 	{
 		ClearGame();
-		engine->EngineShutdown();
+		engine->Shutdown();
 		return;
 	}
 

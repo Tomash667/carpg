@@ -116,7 +116,7 @@ public:
 	void OnDraw() override;
 	void DrawGame(RenderTarget* target);
 	void OnDebugDraw(DebugDrawer* dd);
-	void OnTick(float dt) override;
+	void OnUpdate(float dt) override;
 	void OnChar(char c) override;
 	void OnReload() override;
 	void OnReset() override;

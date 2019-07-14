@@ -827,7 +827,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	Language::Cleanup();
 	delete[] cmd_line;
 	delete[] argv;
-	delete Logger::global;
 
 	return (b ? 0 : 1);
 }

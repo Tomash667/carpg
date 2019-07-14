@@ -50,10 +50,6 @@ bool Game::OnInit()
 	Info("Game: Initializing game.");
 	game_state = GS_LOAD_MENU;
 
-	phy_world = engine->GetPhysicsWorld();
-	render = engine->GetRender();
-	sound_mgr = engine->GetSoundManager();
-
 	try
 	{
 		// set everything needed to show loadscreen
@@ -84,6 +80,11 @@ bool Game::OnInit()
 void Game::PreconfigureGame()
 {
 	Info("Game: Preconfiguring game.");
+
+	phy_world = engine->GetPhysicsWorld();
+	render = engine->GetRender();
+	render->SetShadersDir(Format("%s/shaders", g_system_dir.c_str()));
+	sound_mgr = engine->GetSoundManager();
 
 	engine->UnlockCursor(false);
 	engine->cam_base = &L.camera;

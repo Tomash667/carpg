@@ -1473,7 +1473,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		break;
 	case CMD_RELOAD_SHADERS:
 		game.ReloadShaders();
-		if(game.engine->IsEngineShutdown())
+		if(game.engine->IsShutdown())
 			return;
 		break;
 	case CMD_TILE_INFO:
