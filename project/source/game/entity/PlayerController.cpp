@@ -1470,7 +1470,7 @@ void PlayerController::Yell()
 	}
 	unit->Talk(RandomString(Game::Get().txYell), 0);
 
-	LevelArea& area = L.GetArea(*unit);
+	LevelArea& area = *unit->area;
 	for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
 	{
 		Unit& u2 = **it;

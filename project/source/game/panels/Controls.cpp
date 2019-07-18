@@ -351,7 +351,7 @@ void Controls::Update(float dt)
 		grid.mouse_focus = focus;
 		grid.Update(dt);
 
-		if(focus && Key.Focus() && Key.PressedRelease(VK_ESCAPE))
+		if(focus && input->Focus() && input->PressedRelease(Key::Escape))
 			Event((GuiEvent)Button_Ok);
 	}
 	else
@@ -421,7 +421,7 @@ void Controls::GetCell(int item, int column, Cell& cell)
 		}
 		else
 		{
-			int n = k[column - 1];
+			int n = (int)k[column - 1];
 			if(n > n_texts)
 				cell.text = "";
 			else
@@ -454,15 +454,15 @@ void Controls::SelectCell(int item, int column, int button)
 {
 	if(button == 0)
 	{
-		Key.SetState(VK_LBUTTON, IS_UP);
+		input->SetState(Key::LeftButton, IS_UP);
 		picked = item;
 		picked_n = column - 1;
 		cursor_tick = 0.f;
-		Key.key_callback = KeyDownCallback(this, &Controls::OnKey);
+		input->SetCallback(Input::Callback(this, &Controls::OnKey));
 		game->gui->cursor_allow_move = false;
 	}
 	else
-		GKey[item][column - 1] = VK_NONE;
+		GKey[item][column - 1] = Key::None;
 }
 
 //=================================================================================================
@@ -471,14 +471,14 @@ void Controls::OnKey(int key)
 	if(key == VK_ESCAPE)
 	{
 		picked = -1;
-		Key.key_callback = nullptr;
+		input->SetCallback(nullptr);
 		game->gui->cursor_allow_move = true;
 	}
 	else if(key < n_texts && IS_SET(in_text[key], 0x01))
 	{
-		GKey[picked][picked_n] = (byte)key;
+		GKey[picked][picked_n] = (Key)key;
 		picked = -1;
-		Key.key_callback = nullptr;
+		input->SetCallback(nullptr);
 		game->gui->cursor_allow_move = true;
 		changed = true;
 	}

@@ -3,7 +3,7 @@
 #include "SaveLoadPanel.h"
 #include "SaveState.h"
 #include "Language.h"
-#include "KeyStates.h"
+#include "Input.h"
 #include "Class.h"
 #include "Scrollbar.h"
 #include "Net.h"
@@ -112,7 +112,7 @@ void SaveLoad::Update(float dt)
 	textbox.mouse_focus = focus;
 	textbox.Update(dt);
 
-	if(focus && Key.Focus())
+	if(focus && input->Focus())
 	{
 		Rect rect = Rect::Create(Int2(global_pos.x + 12, global_pos.y + 76), Int2(256, 20));
 
@@ -121,7 +121,7 @@ void SaveLoad::Update(float dt)
 			if(rect.IsInside(GUI.cursor_pos))
 			{
 				GUI.cursor_mode = CURSOR_HAND;
-				if(Key.PressedRelease(VK_LBUTTON) && choice != i)
+				if(input->PressedRelease(Key::LeftButton) && choice != i)
 				{
 					choice = i;
 					if(!save_mode)
@@ -135,7 +135,7 @@ void SaveLoad::Update(float dt)
 			rect.Bottom() = rect.Top() + 20;
 		}
 
-		if(Key.PressedRelease(VK_ESCAPE))
+		if(input->PressedRelease(Key::Escape))
 			Event((GuiEvent)IdCancel);
 	}
 

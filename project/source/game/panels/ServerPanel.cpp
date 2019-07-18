@@ -222,7 +222,7 @@ void ServerPanel::Update(float dt)
 	grid.focus = focus;
 	grid.Update(dt);
 
-	if(focus && Key.Focus() && Key.PressedRelease(VK_ESCAPE))
+	if(focus && input->Focus() && input->PressedRelease(Key::Escape))
 		Event(GuiEvent(Net::IsServer() ? IdCancel : IdKick));
 
 	if(visible)

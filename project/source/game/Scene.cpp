@@ -1629,7 +1629,7 @@ void Game::AddObjectToDrawBatch(LevelArea& area, const Object& o, FrustumPlanes&
 		//#define DEBUG_SPLITS
 #ifdef DEBUG_SPLITS
 		static int req = 33;
-		if(Key.PressedRelease('8'))
+		if(input->PressedRelease('8'))
 		{
 			++req;
 			if(req == mesh.head.n_subs)
@@ -1833,7 +1833,7 @@ void Game::ListAreas(LevelArea& area)
 	{
 		// exit from building
 		Area& a = Add1(draw_batch.areas);
-		const Box2d& region = L.city_ctx->inside_buildings[area.area_id]->exit_region;
+		const Box2d& region = static_cast<InsideBuilding&>(area).exit_region;
 		a.v[0] = Vec3(region.v1.x, 0.1f, region.v2.y);
 		a.v[1] = Vec3(region.v2.x, 0.1f, region.v2.y);
 		a.v[2] = Vec3(region.v1.x, 0.1f, region.v1.y);
@@ -1880,7 +1880,7 @@ void Game::PrepareAreaPath()
 
 		float len = action.area_size.x * t;
 
-		if(L.location->outside && pc->unit->area_id == LevelArea::OUTSIDE_ID)
+		if(L.location->outside && pc->unit->area->area_type == LevelArea::Type::Outside)
 		{
 			// build line on terrain
 			area.points.clear();
@@ -2061,7 +2061,7 @@ void Game::PrepareAreaPath()
 			pc_data.action_ok = true;
 		}
 
-		bool outside = (L.location->outside && pc->unit->area_id == LevelArea::OUTSIDE_ID);
+		bool outside = (L.location->outside && pc->unit->area->area_type == LevelArea::Type::Outside);
 
 		// build circle
 		PrepareAreaPathCircle(area, radius, t * range, rot, outside);

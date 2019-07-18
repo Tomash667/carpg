@@ -222,7 +222,7 @@ void Quest_Tournament::StartTournament(Unit* arena_master)
 	pairs.clear();
 	skipped_unit = nullptr;
 	other_fighter = nullptr;
-	L.city_ctx->FindInsideBuilding(BuildingGroup::BG_ARENA, arena);
+	arena = L.city_ctx->FindInsideBuilding(BuildingGroup::BG_ARENA);
 }
 
 //=================================================================================================
@@ -271,7 +271,7 @@ void Quest_Tournament::GenerateUnits()
 		if(ShouldJoin(u) && !u.IsFollowingTeamMember())
 		{
 			u.BreakAction(Unit::BREAK_ACTION_MODE::INSTANT, true);
-			u.area_id = LevelArea::OUTSIDE_ID;
+			u.area = &area;
 			L.WarpNearLocation(area, u, pos, 12.f, false);
 			area.units.push_back(&u);
 			it = inn->units.erase(it);
@@ -484,7 +484,7 @@ void Quest_Tournament::Update(float dt)
 				{
 					auto& p = pairs.back();
 					if(p.first->to_remove || !p.first->IsStanding() || p.first->frozen != FROZEN::NO
-						|| !(Vec3::Distance2d(p.first->pos, master->pos) <= 64.f || p.first->area_id == arena))
+						|| !(Vec3::Distance2d(p.first->pos, master->pos) <= 64.f || p.first->area == arena))
 					{
 						// first unit left or can't fight, check other
 						state3 = 2;
@@ -494,7 +494,7 @@ void Quest_Tournament::Update(float dt)
 							game.gui->messages->AddGameMsg3(p.first->player, GMS_LEFT_EVENT);
 					}
 					else if(p.second->to_remove || !p.second->IsStanding() || p.second->frozen != FROZEN::NO
-						|| !(Vec3::Distance2d(p.second->pos, master->pos) <= 64.f || p.second->area_id == arena))
+						|| !(Vec3::Distance2d(p.second->pos, master->pos) <= 64.f || p.second->area == arena))
 					{
 						// second unit left or can't fight, first automaticaly goes to next round
 						state3 = 3;
@@ -558,7 +558,7 @@ void Quest_Tournament::Update(float dt)
 				{
 					if(other_fighter->to_remove || !other_fighter->IsStanding() || other_fighter->frozen != FROZEN::NO
 						|| !(Vec3::Distance2d(other_fighter->pos, master->pos) <= 64.f
-							|| other_fighter->area_id == arena))
+							|| other_fighter->area == arena))
 					{
 						// second unit left too
 						Talk(Format(txTour[13], other_fighter->GetRealName()));
@@ -738,9 +738,9 @@ void Quest_Tournament::VerifyUnit(Unit* unit)
 	if(!unit || !unit->IsPlayer() || unit->to_remove)
 		return;
 	bool leaving_event = true;
-	if(unit->area_id == arena)
+	if(unit->area == arena)
 		leaving_event = false;
-	else if(unit->area_id == LevelArea::OUTSIDE_ID)
+	else if(unit->area->area_type == LevelArea::Type::Outside)
 		leaving_event = Vec3::Distance2d(unit->pos, master->pos) > 16.f;
 
 	if(leaving_event != unit->player->leaving_event)

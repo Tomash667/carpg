@@ -88,7 +88,7 @@ enum LOOK_AT
 enum AI_ACTION
 {
 	AI_NOT_SET = -2,
-	AI_NONE = -1,			
+	AI_NONE = -1,
 	AI_ANIMATION = 0,
 	AI_ROTATE,
 	AI_LOOK,
@@ -145,7 +145,7 @@ void Game::UpdateAi(float dt)
 		else if(u.HaveEffect(EffectId::Stun) || u.action == A_STAND_UP)
 			continue;
 
-		LevelArea& area = L.GetArea(u);
+		LevelArea& area = *u.area;
 
 		// update time
 		u.prev_pos = u.pos;
@@ -499,23 +499,24 @@ void Game::UpdateAi(float dt)
 										ai.city_wander = false;
 									}
 								}
-								else if(order_unit->area_id != u.area_id)
+								else if(order_unit->area != u.area)
 								{
 									// target is in another area
 									ai.idle_action = AIController::Idle_RunRegion;
+									ai.idle_data.region.exit = false;
 									ai.timer = Random(15.f, 30.f);
 
-									if(u.area_id == LevelArea::OUTSIDE_ID)
+									if(u.area->area_type == LevelArea::Type::Outside)
 									{
 										// target is in the building but hero is not - go to the entrance
-										ai.idle_data.region.id = order_unit->area_id;
-										ai.idle_data.region.pos = L.city_ctx->inside_buildings[order_unit->area_id]->enter_region.Midpoint().XZ();
+										ai.idle_data.region.area = order_unit->area;
+										ai.idle_data.region.pos = static_cast<InsideBuilding*>(order_unit->area)->enter_region.Midpoint().XZ();
 									}
 									else
 									{
 										// target is not in the building but the hero is - leave the building
-										ai.idle_data.region.id = -1;
-										ai.idle_data.region.pos = L.city_ctx->inside_buildings[u.area_id]->exit_region.Midpoint().XZ();
+										ai.idle_data.region.area = L.local_area;
+										ai.idle_data.region.pos = static_cast<InsideBuilding*>(u.area)->exit_region.Midpoint().XZ();
 									}
 
 									if(u.IsHero())
@@ -594,10 +595,11 @@ void Game::UpdateAi(float dt)
 						{
 							ai.idle_action = AIController::Idle_MoveRegion;
 							ai.timer = Random(30.f, 40.f);
-							ai.idle_data.region.id = -1;
-							ai.idle_data.region.pos = (u.area_id == LevelArea::OUTSIDE_ID ?
-								L.GetExitPos(u) :
-								L.city_ctx->inside_buildings[u.area_id]->exit_region.Midpoint().XZ());
+							ai.idle_data.region.area = L.local_area;
+							ai.idle_data.region.exit = false;
+							ai.idle_data.region.pos = u.area->area_type == LevelArea::Type::Building ?
+								static_cast<InsideBuilding*>(u.area)->exit_region.Midpoint().XZ() :
+								L.GetExitPos(u);
 						}
 						break;
 					case ORDER_LOOK_AT:
@@ -654,25 +656,25 @@ void Game::UpdateAi(float dt)
 							}
 							else
 							{
-								int inn_id;
-								InsideBuilding* inn = L.city_ctx->FindInn(inn_id);
-								if(u.area_id == LevelArea::OUTSIDE_ID)
+								InsideBuilding* inn = L.city_ctx->FindInn();
+								if(u.area->area_type == LevelArea::Type::Outside)
 								{
-									// go to Inn
+									// go to inn
 									if(ai.timer <= 0.f)
 									{
 										ai.idle_action = AIController::Idle_MoveRegion;
+										ai.idle_data.region.area = inn;
+										ai.idle_data.region.exit = false;
 										ai.idle_data.region.pos = inn->enter_region.Midpoint().XZ();
-										ai.idle_data.region.id = inn_id;
 										ai.timer = Random(30.f, 40.f);
 										ai.city_wander = true;
 									}
 								}
 								else
 								{
-									if(u.area_id == inn_id)
+									if(u.area == inn)
 									{
-										// is in the Inn: move to the random point.
+										// is inside inn - move to random point
 										ai.goto_inn = false;
 										ai.timer = Random(5.f, 7.5f);
 										ai.idle_action = AIController::Idle_Move;
@@ -680,11 +682,12 @@ void Game::UpdateAi(float dt)
 									}
 									else
 									{
-										// is in not Inn building - go outside
+										// is not inside inn - go outside
 										ai.timer = Random(15.f, 30.f);
 										ai.idle_action = AIController::Idle_MoveRegion;
-										ai.idle_data.region.pos = L.city_ctx->inside_buildings[u.area_id]->exit_region.Midpoint().XZ();
-										ai.idle_data.region.id = -1;
+										ai.idle_data.region.area = L.local_area;
+										ai.idle_data.region.exit = false;
+										ai.idle_data.region.pos = static_cast<InsideBuilding*>(u.area)->exit_region.Midpoint().XZ();
 									}
 								}
 							}
@@ -745,7 +748,7 @@ void Game::UpdateAi(float dt)
 							}
 							else if(ai.idle_action == AIController::Idle_Use)
 							{
-								if(u.usable->base == stool && u.area_id != LevelArea::OUTSIDE_ID)
+								if(u.usable->base == stool && u.area->area_type == LevelArea::Type::Building)
 								{
 									int what;
 									if(u.IsDrunkman())
@@ -811,7 +814,7 @@ void Game::UpdateAi(float dt)
 							{
 								if(u.IsHero())
 								{
-									if(u.area_id == LevelArea::OUTSIDE_ID)
+									if(u.area->area_type == LevelArea::Type::Outside)
 									{
 										// unit is outside
 										int where = Rand() % (IS_SET(L.city_ctx->flags, City::HaveTrainingGrounds) ? 3 : 2);
@@ -826,9 +829,12 @@ void Game::UpdateAi(float dt)
 										else if(where == 1)
 										{
 											// go to inn
+											InsideBuilding* inn = L.city_ctx->FindInn();
 											ai.loc_timer = ai.timer = Random(75.f, 150.f);
 											ai.idle_action = AIController::Idle_MoveRegion;
-											ai.idle_data.region.pos = L.city_ctx->FindInn(ai.idle_data.region.id)->enter_region.Midpoint().XZ();
+											ai.idle_data.region.area = inn;
+											ai.idle_data.region.exit = false;
+											ai.idle_data.region.pos = inn->enter_region.Midpoint().XZ();
 										}
 										else if(where == 2)
 										{
@@ -844,8 +850,9 @@ void Game::UpdateAi(float dt)
 										// leave building
 										ai.loc_timer = ai.timer = Random(15.f, 30.f);
 										ai.idle_action = AIController::Idle_MoveRegion;
-										ai.idle_data.region.pos = L.city_ctx->inside_buildings[u.area_id]->exit_region.Midpoint().XZ();
-										ai.idle_data.region.id = -1;
+										ai.idle_data.region.area = L.local_area;
+										ai.idle_data.region.exit = false;
+										ai.idle_data.region.pos = static_cast<InsideBuilding*>(u.area)->exit_region.Midpoint().XZ();
 									}
 									ai.city_wander = true;
 								}
@@ -1373,7 +1380,7 @@ void Game::UpdateAi(float dt)
 												else
 												{
 													ai.idle_action = AIController::Idle_Use;
-													if(u.usable->base == stool && u.area_id != LevelArea::OUTSIDE_ID && u.IsDrunkman())
+													if(u.usable->base == stool && u.area->area_type == LevelArea::Type::Building && u.IsDrunkman())
 														ai.timer = Random(10.f, 20.f);
 													else if(u.usable->base == throne)
 														ai.timer = 120.f;
@@ -1503,19 +1510,18 @@ void Game::UpdateAi(float dt)
 							case AIController::Idle_RunRegion:
 								if(Vec3::Distance2d(u.pos, ai.idle_data.region.pos) < u.GetUnitRadius() * 2)
 								{
-									if(L.city_ctx && !IS_SET(L.city_ctx->flags, City::HaveExit) && ai.idle_data.region.id == -1 && u.area_id == -1)
+									if(L.city_ctx && !IS_SET(L.city_ctx->flags, City::HaveExit)
+										&& ai.idle_data.region.area->area_type == LevelArea::Type::Outside && !ai.idle_data.region.exit)
 									{
 										// in exit area, go to border
+										ai.idle_data.region.exit = true;
 										ai.idle_data.region.pos = L.GetExitPos(u, true);
-										ai.idle_data.region.id = -2;
 									}
 									else
 									{
-										if(ai.idle_data.region.id == -2)
-											ai.idle_data.region.id = -1;
 										ai.idle_action = AIController::Idle_None;
-										L.WarpUnit(&u, ai.idle_data.region.id);
-										if(ai.idle_data.region.id == -1 || (u.IsFollower() && u.order == ORDER_FOLLOW))
+										L.WarpUnit(&u, ai.idle_data.region.area->area_id);
+										if(ai.idle_data.region.area->area_type == LevelArea::Type::Outside || (u.IsFollower() && u.order == ORDER_FOLLOW))
 										{
 											ai.loc_timer = -1.f;
 											ai.timer = -1.f;
@@ -1526,7 +1532,7 @@ void Game::UpdateAi(float dt)
 											ai.idle_action = AIController::Idle_Move;
 											ai.timer = Random(5.f, 15.f);
 											ai.loc_timer = Random(60.f, 120.f);
-											InsideBuilding* inside = L.city_ctx->inside_buildings[ai.idle_data.region.id];
+											InsideBuilding* inside = static_cast<InsideBuilding*>(ai.idle_data.region.area);
 											ai.idle_data.pos = (Rand() % 5 == 0 ? inside->region2 : inside->region1).GetRandomPos3();
 										}
 									}
@@ -1950,7 +1956,7 @@ void Game::UpdateAi(float dt)
 							Room* room = inside->FindChaseRoom(u.pos);
 							if(room)
 							{
-								// underground, go to random nearby room 
+								// underground, go to random nearby room
 								ai.timer = u.IsFollower() ? Random(1.f, 2.f) : Random(15.f, 30.f);
 								ai.state = AIController::SearchEnemy;
 								ai.escape_room = room->connected[Rand() % room->connected.size()];
@@ -1958,7 +1964,7 @@ void Game::UpdateAi(float dt)
 							}
 							else
 							{
-								// does not work because of no rooms in the labirynth/cave 
+								// does not work because of no rooms in the labirynth/cave
 								ai.state = AIController::Idle;
 								ai.idle_action = AIController::Idle_None;
 								ai.in_combat = false;
@@ -3110,8 +3116,7 @@ void Game::AI_HitReaction(Unit& unit, const Vec3& pos)
 	}
 
 	// alarm near allies
-	LevelArea& area = L.GetArea(unit);
-	for(Unit* u : area.units)
+	for(Unit* u : unit.area->units)
 	{
 		if(u->to_remove || &unit == u || !u->IsStanding() || u->IsPlayer() || !unit.IsFriend(*u) || u->dont_attack)
 			continue;
@@ -3186,7 +3191,7 @@ void Game::CheckAutoTalk(Unit& unit, float dt)
 	std::sort(near_units.begin(), near_units.end(), [](const NearUnit& nu1, const NearUnit& nu2) { return nu1.dist < nu2.dist; });
 
 	// get near player that don't have enemies nearby
-	LevelArea& area = L.GetArea(unit);
+	LevelArea& area = *unit.area;
 	PlayerController* talk_player = nullptr;
 	for(auto& near_unit : near_units)
 	{

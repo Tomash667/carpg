@@ -5,7 +5,7 @@
 #include "UnitStats.h"
 #include "ItemSlot.h"
 #include "Perk.h"
-#include "KeyStates.h"
+#include "Input.h"
 
 //-----------------------------------------------------------------------------
 enum NextAction
@@ -127,7 +127,7 @@ struct PlayerController : public HeroPlayerCommon
 	PlayerInfo* player_info;
 	float move_tick, last_dmg, last_dmg_poison, dmgc, poison_dmgc, idle_timer, action_recharge, action_cooldown;
 	StatData skill[(int)SkillId::MAX], attrib[(int)AttributeId::MAX];
-	byte action_key;
+	Key action_key;
 	NextAction next_action;
 	union
 	{
@@ -282,7 +282,7 @@ struct LocalPlayerData
 	Vec3 action_point;
 	int picking_item_state;
 	float rot_buf, action_rot;
-	byte wasted_key;
+	Key wasted_key;
 	bool autowalk, action_ready, action_ok;
 
 	void Reset()
@@ -294,7 +294,7 @@ struct LocalPlayerData
 		picking_item = nullptr;
 		picking_item_state = 0;
 		rot_buf = 0.f;
-		wasted_key = VK_NONE;
+		wasted_key = Key::None;
 		autowalk = false;
 		action_ready = false;
 	}

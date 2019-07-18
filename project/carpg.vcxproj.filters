@@ -1,1251 +1,1173 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="0. doc">
+    <Filter Include="doc">
       <UniqueIdentifier>{5abd613a-c921-4c80-8be5-819125f7176f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="3. game">
-      <UniqueIdentifier>{13fb0c96-7c4c-4be5-8bab-d9f41bdca2b9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="3. game\entity">
+    <Filter Include="entity">
       <UniqueIdentifier>{b0232feb-569a-409a-8131-6cd4a6fb9d0b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="3. game\generator">
-      <UniqueIdentifier>{5c09d15a-bfc6-4c10-ae87-959327953243}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="3. game\location">
-      <UniqueIdentifier>{ae903167-74dc-4497-bee0-0931dbe6d2f2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="3. game\net">
-      <UniqueIdentifier>{929811af-2ec9-429b-ab7b-4695cb616a46}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="3. game\panels">
-      <UniqueIdentifier>{429adc31-6d5b-40e7-bb3c-f90c3c12841e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="3. game\stats">
-      <UniqueIdentifier>{135d795b-2d45-43ab-a66c-27665390b549}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="3. game\quests">
-      <UniqueIdentifier>{75442383-f3f1-4d6a-8061-523ae64f7b2a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="3. game\helpers">
-      <UniqueIdentifier>{64ea01de-d08c-4399-8072-b6fc9082ce0b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="3. game\system">
-      <UniqueIdentifier>{bbb926f1-86f9-418e-9b48-fe794630f134}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="4. resource">
-      <UniqueIdentifier>{bc9d59f8-23a1-480d-ba81-5772aad70353}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="3. game\system\objects">
-      <UniqueIdentifier>{40df2bfe-e01b-47b1-9ab8-c6bcab9c75aa}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="3. game\system\buildings">
-      <UniqueIdentifier>{832797a9-e416-46ec-bdc8-965ed5a4bd43}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="3. game\system\items">
-      <UniqueIdentifier>{538a0371-6a23-4988-b2e4-0735a1ab3812}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="3. game\script">
-      <UniqueIdentifier>{686e4789-ffae-4b38-8307-8b1d7e1d50e1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="3. game\events">
+    <Filter Include="events">
       <UniqueIdentifier>{611f9aef-8d8e-4ffd-bd54-a5732babb50e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="3. game\system\quests">
+    <Filter Include="generator">
+      <UniqueIdentifier>{5c09d15a-bfc6-4c10-ae87-959327953243}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="helpers">
+      <UniqueIdentifier>{64ea01de-d08c-4399-8072-b6fc9082ce0b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="location">
+      <UniqueIdentifier>{ae903167-74dc-4497-bee0-0931dbe6d2f2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="net">
+      <UniqueIdentifier>{929811af-2ec9-429b-ab7b-4695cb616a46}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="panels">
+      <UniqueIdentifier>{429adc31-6d5b-40e7-bb3c-f90c3c12841e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="quests">
+      <UniqueIdentifier>{75442383-f3f1-4d6a-8061-523ae64f7b2a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="script">
+      <UniqueIdentifier>{686e4789-ffae-4b38-8307-8b1d7e1d50e1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="stats">
+      <UniqueIdentifier>{135d795b-2d45-43ab-a66c-27665390b549}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="system">
+      <UniqueIdentifier>{bbb926f1-86f9-418e-9b48-fe794630f134}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="system\objects">
+      <UniqueIdentifier>{40df2bfe-e01b-47b1-9ab8-c6bcab9c75aa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="system\buildings">
+      <UniqueIdentifier>{832797a9-e416-46ec-bdc8-965ed5a4bd43}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="system\items">
+      <UniqueIdentifier>{538a0371-6a23-4988-b2e4-0735a1ab3812}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="system\quests">
       <UniqueIdentifier>{6f3e0ca2-fca9-4927-8fa3-93ec840b5c55}</UniqueIdentifier>
     </Filter>
-    <Filter Include="3. game\system\units">
+    <Filter Include="system\units">
       <UniqueIdentifier>{2110a0ec-a4bb-43a5-bcc7-ad64a4a78f1a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="3. game\system\dialogs">
+    <Filter Include="system\dialogs">
       <UniqueIdentifier>{4fa50a58-faa4-4845-82e7-383202a0bd2b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="3. game\system\spells">
+    <Filter Include="system\spells">
       <UniqueIdentifier>{f6296568-67e0-4b62-a5f9-05cd186cb0ee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="resource">
+      <UniqueIdentifier>{bc9d59f8-23a1-480d-ba81-5772aad70353}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\resource\PickLanguage.cpp">
-      <Filter>4. resource</Filter>
-    </ClCompile>
-    <ClCompile Include="source\game\FOV.cpp">
-      <Filter>3. game</Filter>
-    </ClCompile>
-    <ClCompile Include="source\game\Game.cpp">
-      <Filter>3. game</Filter>
-    </ClCompile>
-    <ClCompile Include="source\game\Game2.cpp">
-      <Filter>3. game</Filter>
-    </ClCompile>
-    <ClCompile Include="source\game\GameCommon.cpp">
-      <Filter>3. game</Filter>
-    </ClCompile>
-    <ClCompile Include="source\game\Menu.cpp">
-      <Filter>3. game</Filter>
-    </ClCompile>
-    <ClCompile Include="source\game\QuadTreeAndGrass.cpp">
-      <Filter>3. game</Filter>
-    </ClCompile>
-    <ClCompile Include="source\game\SaveLoad.cpp">
-      <Filter>3. game</Filter>
-    </ClCompile>
-    <ClCompile Include="source\game\Scene.cpp">
-      <Filter>3. game</Filter>
+      <Filter>resource</Filter>
     </ClCompile>
     <ClCompile Include="source\game\entity\AIController.cpp">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClCompile>
     <ClCompile Include="source\game\entity\Bullet.cpp">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClCompile>
     <ClCompile Include="source\game\entity\Chest.cpp">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClCompile>
     <ClCompile Include="source\game\entity\Door.cpp">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClCompile>
     <ClCompile Include="source\game\entity\GroundItem.cpp">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClCompile>
     <ClCompile Include="source\game\entity\HeroData.cpp">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClCompile>
     <ClCompile Include="source\game\entity\HumanData.cpp">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClCompile>
     <ClCompile Include="source\game\entity\ItemSlot.cpp">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClCompile>
     <ClCompile Include="source\game\entity\Object.cpp">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClCompile>
     <ClCompile Include="source\game\entity\PlayerController.cpp">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClCompile>
     <ClCompile Include="source\game\entity\SpellEffects.cpp">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClCompile>
     <ClCompile Include="source\game\entity\Trap.cpp">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClCompile>
     <ClCompile Include="source\game\generator\CityGenerator.cpp">
-      <Filter>3. game\generator</Filter>
+      <Filter>generator</Filter>
     </ClCompile>
     <ClCompile Include="source\game\location\Camp.cpp">
-      <Filter>3. game\location</Filter>
+      <Filter>location</Filter>
     </ClCompile>
     <ClCompile Include="source\game\location\InsideBuilding.cpp">
-      <Filter>3. game\location</Filter>
+      <Filter>location</Filter>
     </ClCompile>
     <ClCompile Include="source\game\location\InsideLocation.cpp">
-      <Filter>3. game\location</Filter>
+      <Filter>location</Filter>
     </ClCompile>
     <ClCompile Include="source\game\location\InsideLocationLevel.cpp">
-      <Filter>3. game\location</Filter>
+      <Filter>location</Filter>
     </ClCompile>
     <ClCompile Include="source\game\location\Location.cpp">
-      <Filter>3. game\location</Filter>
+      <Filter>location</Filter>
     </ClCompile>
     <ClCompile Include="source\game\location\MultiInsideLocation.cpp">
-      <Filter>3. game\location</Filter>
+      <Filter>location</Filter>
     </ClCompile>
     <ClCompile Include="source\game\location\OutsideLocation.cpp">
-      <Filter>3. game\location</Filter>
+      <Filter>location</Filter>
     </ClCompile>
     <ClCompile Include="source\game\location\SingleInsideLocation.cpp">
-      <Filter>3. game\location</Filter>
+      <Filter>location</Filter>
     </ClCompile>
     <ClCompile Include="source\game\net\Net.cpp">
-      <Filter>3. game\net</Filter>
+      <Filter>net</Filter>
     </ClCompile>
     <ClCompile Include="source\game\stats\BaseLocation.cpp">
-      <Filter>3. game\stats</Filter>
+      <Filter>stats</Filter>
     </ClCompile>
     <ClCompile Include="source\game\stats\BaseTrap.cpp">
-      <Filter>3. game\stats</Filter>
+      <Filter>stats</Filter>
     </ClCompile>
     <ClCompile Include="source\game\stats\Class.cpp">
-      <Filter>3. game\stats</Filter>
+      <Filter>stats</Filter>
     </ClCompile>
     <ClCompile Include="source\game\stats\RoomType.cpp">
-      <Filter>3. game\stats</Filter>
+      <Filter>stats</Filter>
     </ClCompile>
     <ClCompile Include="source\game\stats\UnitStats.cpp">
-      <Filter>3. game\stats</Filter>
+      <Filter>stats</Filter>
     </ClCompile>
     <ClCompile Include="source\game\panels\Console.cpp">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClCompile>
     <ClCompile Include="source\game\panels\CreateCharacterPanel.cpp">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClCompile>
     <ClCompile Include="source\game\panels\CreateServerPanel.cpp">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClCompile>
     <ClCompile Include="source\game\panels\GameGui.cpp">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClCompile>
     <ClCompile Include="source\game\panels\GameMenu.cpp">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClCompile>
     <ClCompile Include="source\game\panels\GamePanel.cpp">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClCompile>
     <ClCompile Include="source\game\panels\InfoBox.cpp">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClCompile>
     <ClCompile Include="source\game\panels\Inventory.cpp">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClCompile>
     <ClCompile Include="source\game\panels\Journal.cpp">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClCompile>
     <ClCompile Include="source\game\panels\LoadScreen.cpp">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClCompile>
     <ClCompile Include="source\game\panels\MainMenu.cpp">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClCompile>
     <ClCompile Include="source\game\panels\Minimap.cpp">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClCompile>
     <ClCompile Include="source\game\panels\MpBox.cpp">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClCompile>
     <ClCompile Include="source\game\panels\MultiplayerPanel.cpp">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClCompile>
     <ClCompile Include="source\game\panels\Options.cpp">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClCompile>
     <ClCompile Include="source\game\panels\PickServerPanel.cpp">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClCompile>
     <ClCompile Include="source\game\panels\SaveLoadPanel.cpp">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClCompile>
     <ClCompile Include="source\game\panels\ServerPanel.cpp">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClCompile>
     <ClCompile Include="source\game\panels\StatsPanel.cpp">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClCompile>
     <ClCompile Include="source\game\panels\TeamPanel.cpp">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClCompile>
     <ClCompile Include="source\game\panels\WorldMapGui.cpp">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClCompile>
     <ClCompile Include="source\Main.cpp" />
     <ClCompile Include="source\Pch.cpp" />
-    <ClCompile Include="source\game\Language.cpp">
-      <Filter>3. game</Filter>
-    </ClCompile>
     <ClCompile Include="source\game\stats\Attribute.cpp">
-      <Filter>3. game\stats</Filter>
+      <Filter>stats</Filter>
     </ClCompile>
     <ClCompile Include="source\game\stats\Music.cpp">
-      <Filter>3. game\stats</Filter>
+      <Filter>stats</Filter>
     </ClCompile>
     <ClCompile Include="source\game\stats\Skill.cpp">
-      <Filter>3. game\stats</Filter>
+      <Filter>stats</Filter>
     </ClCompile>
     <ClCompile Include="source\game\panels\Controls.cpp">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClCompile>
     <ClCompile Include="source\game\stats\Perk.cpp">
-      <Filter>3. game\stats</Filter>
+      <Filter>stats</Filter>
     </ClCompile>
     <ClCompile Include="source\game\entity\CreatedCharacter.cpp">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClCompile>
     <ClCompile Include="source\game\panels\GameMessages.cpp">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClCompile>
     <ClCompile Include="source\game\stats\Effect.cpp">
-      <Filter>3. game\stats</Filter>
+      <Filter>stats</Filter>
     </ClCompile>
     <ClCompile Include="source\game\quests\QuestManager.cpp">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClCompile>
     <ClCompile Include="source\game\quests\Quest_Main.cpp">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClCompile>
     <ClCompile Include="source\game\quests\Quest_DeliverLetter.cpp">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClCompile>
     <ClCompile Include="source\game\quests\Quest_DeliverParcel.cpp">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClCompile>
     <ClCompile Include="source\game\quests\Quest_SpreadNews.cpp">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClCompile>
     <ClCompile Include="source\game\quests\Quest_RescueCaptive.cpp">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClCompile>
     <ClCompile Include="source\game\quests\Quest_BanditsCollectToll.cpp">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClCompile>
     <ClCompile Include="source\game\quests\Quest_CampNearCity.cpp">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClCompile>
     <ClCompile Include="source\game\quests\Quest_KillAnimals.cpp">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClCompile>
     <ClCompile Include="source\game\quests\Quest_FindArtifact.cpp">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClCompile>
     <ClCompile Include="source\game\quests\Quest_LostArtifact.cpp">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClCompile>
     <ClCompile Include="source\game\quests\Quest_StolenArtifact.cpp">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClCompile>
     <ClCompile Include="source\game\quests\Quest_Wanted.cpp">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClCompile>
     <ClCompile Include="source\game\quests\Quest_Sawmill.cpp">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClCompile>
     <ClCompile Include="source\game\quests\Quest_Mine.cpp">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClCompile>
     <ClCompile Include="source\game\quests\Quest_Bandits.cpp">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClCompile>
     <ClCompile Include="source\game\quests\Quest_Mages.cpp">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClCompile>
     <ClCompile Include="source\game\quests\Quest_Orcs.cpp">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClCompile>
     <ClCompile Include="source\game\quests\Quest_Goblins.cpp">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClCompile>
     <ClCompile Include="source\game\quests\Quest_Evil.cpp">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClCompile>
     <ClCompile Include="source\game\quests\Quest_Crazies.cpp">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClCompile>
     <ClCompile Include="source\ErrorHandler.cpp" />
     <ClCompile Include="source\game\entity\Light.cpp">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClCompile>
     <ClCompile Include="source\game\stats\Required.cpp">
-      <Filter>3. game\stats</Filter>
+      <Filter>stats</Filter>
     </ClCompile>
     <ClCompile Include="source\game\helpers\UnitHelper.cpp">
-      <Filter>3. game\helpers</Filter>
+      <Filter>helpers</Filter>
     </ClCompile>
     <ClCompile Include="source\game\location\City.cpp">
-      <Filter>3. game\location</Filter>
-    </ClCompile>
-    <ClCompile Include="source\game\Init.cpp">
-      <Filter>3. game</Filter>
-    </ClCompile>
-    <ClCompile Include="source\game\GameStats.cpp">
-      <Filter>3. game</Filter>
+      <Filter>location</Filter>
     </ClCompile>
     <ClCompile Include="source\game\quests\Quest.cpp">
-      <Filter>3. game\quests</Filter>
-    </ClCompile>
-    <ClCompile Include="source\game\Team.cpp">
-      <Filter>3. game</Filter>
+      <Filter>quests</Filter>
     </ClCompile>
     <ClCompile Include="source\game\quests\Quest_RetrievePackage.cpp">
-      <Filter>3. game\quests</Filter>
-    </ClCompile>
-    <ClCompile Include="source\game\Ai.cpp">
-      <Filter>3. game</Filter>
+      <Filter>quests</Filter>
     </ClCompile>
     <ClCompile Include="source\game\stats\Buff.cpp">
-      <Filter>3. game\stats</Filter>
+      <Filter>stats</Filter>
     </ClCompile>
     <ClCompile Include="source\game\entity\Usable.cpp">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClCompile>
     <ClCompile Include="source\game\stats\Action.cpp">
-      <Filter>3. game\stats</Filter>
+      <Filter>stats</Filter>
     </ClCompile>
     <ClCompile Include="source\game\panels\ActionPanel.cpp">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClCompile>
     <ClCompile Include="source\Utility.cpp" />
     <ClCompile Include="source\game\panels\BookPanel.cpp">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClCompile>
     <ClCompile Include="source\game\entity\ItemContainer.cpp">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClCompile>
     <ClCompile Include="source\game\system\BaseObject.cpp">
-      <Filter>3. game\system\objects</Filter>
+      <Filter>system\objects</Filter>
     </ClCompile>
     <ClCompile Include="source\game\system\BaseUsable.cpp">
-      <Filter>3. game\system\objects</Filter>
+      <Filter>system\objects</Filter>
     </ClCompile>
     <ClCompile Include="source\game\system\ObjectLoader.cpp">
-      <Filter>3. game\system\objects</Filter>
+      <Filter>system\objects</Filter>
     </ClCompile>
     <ClCompile Include="source\game\system\BuildingLoader.cpp">
-      <Filter>3. game\system\buildings</Filter>
+      <Filter>system\buildings</Filter>
     </ClCompile>
     <ClCompile Include="source\game\system\Building.cpp">
-      <Filter>3. game\system\buildings</Filter>
+      <Filter>system\buildings</Filter>
     </ClCompile>
     <ClCompile Include="source\game\system\BuildingScript.cpp">
-      <Filter>3. game\system\buildings</Filter>
+      <Filter>system\buildings</Filter>
     </ClCompile>
     <ClCompile Include="source\game\system\BuildingGroup.cpp">
-      <Filter>3. game\system\buildings</Filter>
+      <Filter>system\buildings</Filter>
     </ClCompile>
     <ClCompile Include="source\game\system\ItemLoader.cpp">
-      <Filter>3. game\system\items</Filter>
+      <Filter>system\items</Filter>
     </ClCompile>
     <ClCompile Include="source\game\system\Item.cpp">
-      <Filter>3. game\system\items</Filter>
+      <Filter>system\items</Filter>
     </ClCompile>
     <ClCompile Include="source\game\system\UnitLoader.cpp">
-      <Filter>3. game\system\units</Filter>
+      <Filter>system\units</Filter>
     </ClCompile>
     <ClCompile Include="source\game\system\ItemScript.cpp">
-      <Filter>3. game\system\units</Filter>
+      <Filter>system\units</Filter>
     </ClCompile>
     <ClCompile Include="source\game\system\UnitGroup.cpp">
-      <Filter>3. game\system\units</Filter>
+      <Filter>system\units</Filter>
     </ClCompile>
     <ClCompile Include="source\game\system\FrameInfo.cpp">
-      <Filter>3. game\system\units</Filter>
+      <Filter>system\units</Filter>
     </ClCompile>
     <ClCompile Include="source\game\system\StatProfile.cpp">
-      <Filter>3. game\system\units</Filter>
+      <Filter>system\units</Filter>
     </ClCompile>
     <ClCompile Include="source\game\system\UnitData.cpp">
-      <Filter>3. game\system\units</Filter>
+      <Filter>system\units</Filter>
     </ClCompile>
     <ClCompile Include="source\game\system\Stock.cpp">
-      <Filter>3. game\system\items</Filter>
+      <Filter>system\items</Filter>
     </ClCompile>
     <ClCompile Include="source\game\entity\Unit.cpp">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClCompile>
     <ClCompile Include="source\game\entity\Blood.cpp">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClCompile>
     <ClCompile Include="source\game\net\PlayerInfo.cpp">
-      <Filter>3. game\net</Filter>
+      <Filter>net</Filter>
     </ClCompile>
     <ClCompile Include="source\game\script\ScriptManager.cpp">
-      <Filter>3. game\script</Filter>
+      <Filter>script</Filter>
     </ClCompile>
     <ClCompile Include="source\game\system\ContentLoader.cpp">
-      <Filter>3. game\system</Filter>
+      <Filter>system</Filter>
     </ClCompile>
     <ClCompile Include="source\game\script\Var.cpp">
-      <Filter>3. game\script</Filter>
+      <Filter>script</Filter>
     </ClCompile>
     <ClCompile Include="source\game\net\BitStreamFunc.cpp">
-      <Filter>3. game\net</Filter>
+      <Filter>net</Filter>
     </ClCompile>
     <ClCompile Include="source\game\entity\Portal.cpp">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClCompile>
     <ClCompile Include="source\game\entity\Camera.cpp">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClCompile>
     <ClCompile Include="source\game\net\EntityInterpolator.cpp">
-      <Filter>3. game\net</Filter>
-    </ClCompile>
-    <ClCompile Include="source\game\World.cpp">
-      <Filter>3. game</Filter>
-    </ClCompile>
-    <ClCompile Include="source\game\Level.cpp">
-      <Filter>3. game</Filter>
+      <Filter>net</Filter>
     </ClCompile>
     <ClCompile Include="source\game\panels\GlobalGui.cpp">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClCompile>
     <ClCompile Include="source\game\helpers\LoadingHandler.cpp">
-      <Filter>3. game\helpers</Filter>
+      <Filter>helpers</Filter>
     </ClCompile>
     <ClCompile Include="source\game\quests\Quest_Contest.cpp">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClCompile>
     <ClCompile Include="source\game\quests\Quest_Secret.cpp">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClCompile>
     <ClCompile Include="source\game\quests\Quest_Tournament.cpp">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClCompile>
     <ClCompile Include="source\game\generator\LocationGeneratorFactory.cpp">
-      <Filter>3. game\generator</Filter>
+      <Filter>generator</Filter>
     </ClCompile>
     <ClCompile Include="source\game\generator\LocationGenerator.cpp">
-      <Filter>3. game\generator</Filter>
+      <Filter>generator</Filter>
     </ClCompile>
     <ClCompile Include="source\game\generator\EncounterGenerator.cpp">
-      <Filter>3. game\generator</Filter>
+      <Filter>generator</Filter>
     </ClCompile>
     <ClCompile Include="source\game\generator\ForestGenerator.cpp">
-      <Filter>3. game\generator</Filter>
+      <Filter>generator</Filter>
     </ClCompile>
     <ClCompile Include="source\game\generator\DungeonGenerator.cpp">
-      <Filter>3. game\generator</Filter>
+      <Filter>generator</Filter>
     </ClCompile>
     <ClCompile Include="source\game\generator\CaveGenerator.cpp">
-      <Filter>3. game\generator</Filter>
+      <Filter>generator</Filter>
     </ClCompile>
     <ClCompile Include="source\game\entity\Room.cpp">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClCompile>
     <ClCompile Include="source\game\entity\Tile.cpp">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClCompile>
     <ClCompile Include="source\game\generator\LabyrinthGenerator.cpp">
-      <Filter>3. game\generator</Filter>
+      <Filter>generator</Filter>
     </ClCompile>
     <ClCompile Include="source\game\generator\InsideLocationGenerator.cpp">
-      <Filter>3. game\generator</Filter>
+      <Filter>generator</Filter>
     </ClCompile>
     <ClCompile Include="source\game\generator\OutsideLocationGenerator.cpp">
-      <Filter>3. game\generator</Filter>
+      <Filter>generator</Filter>
     </ClCompile>
     <ClCompile Include="source\game\generator\MoonwellGenerator.cpp">
-      <Filter>3. game\generator</Filter>
+      <Filter>generator</Filter>
     </ClCompile>
     <ClCompile Include="source\game\generator\CampGenerator.cpp">
-      <Filter>3. game\generator</Filter>
+      <Filter>generator</Filter>
     </ClCompile>
     <ClCompile Include="source\game\generator\SecretLocationGenerator.cpp">
-      <Filter>3. game\generator</Filter>
+      <Filter>generator</Filter>
     </ClCompile>
     <ClCompile Include="source\game\location\Cave.cpp">
-      <Filter>3. game\location</Filter>
-    </ClCompile>
-    <ClCompile Include="source\game\Pathfinding.cpp">
-      <Filter>3. game</Filter>
+      <Filter>location</Filter>
     </ClCompile>
     <ClCompile Include="source\game\quests\Quest_Tutorial.cpp">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClCompile>
     <ClCompile Include="source\game\entity\TerrainTile.cpp">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClCompile>
     <ClCompile Include="source\game\net\Net2.cpp">
-      <Filter>3. game\net</Filter>
+      <Filter>net</Filter>
     </ClCompile>
     <ClCompile Include="source\game\location\LevelArea.cpp">
-      <Filter>3. game\location</Filter>
+      <Filter>location</Filter>
     </ClCompile>
     <ClCompile Include="source\game\generator\TutorialLocationGenerator.cpp">
-      <Filter>3. game\generator</Filter>
+      <Filter>generator</Filter>
     </ClCompile>
     <ClCompile Include="source\game\helpers\ItemHelper.cpp">
-      <Filter>3. game\helpers</Filter>
+      <Filter>helpers</Filter>
     </ClCompile>
     <ClCompile Include="source\game\events\Arena.cpp">
-      <Filter>3. game\events</Filter>
+      <Filter>events</Filter>
     </ClCompile>
     <ClCompile Include="source\game\system\DialogContext.cpp">
-      <Filter>3. game\system\dialogs</Filter>
+      <Filter>system\dialogs</Filter>
     </ClCompile>
     <ClCompile Include="source\game\system\GameDialog.cpp">
-      <Filter>3. game\system\dialogs</Filter>
+      <Filter>system\dialogs</Filter>
     </ClCompile>
     <ClCompile Include="source\game\system\DialogLoader.cpp">
-      <Filter>3. game\system\dialogs</Filter>
+      <Filter>system\dialogs</Filter>
     </ClCompile>
     <ClCompile Include="source\game\generator\NameHelper.cpp">
-      <Filter>3. game\helpers</Filter>
+      <Filter>helpers</Filter>
     </ClCompile>
     <ClCompile Include="source\game\net\NetChange.cpp">
-      <Filter>3. game\net</Filter>
-    </ClCompile>
-    <ClCompile Include="source\game\CommandParser.cpp">
-      <Filter>3. game</Filter>
+      <Filter>net</Filter>
     </ClCompile>
     <ClCompile Include="source\game\net\LobbyApi.cpp">
-      <Filter>3. game\net</Filter>
+      <Filter>net</Filter>
     </ClCompile>
     <ClCompile Include="source\game\helpers\CombatHelper.cpp">
-      <Filter>3. game\helpers</Filter>
+      <Filter>helpers</Filter>
     </ClCompile>
     <ClCompile Include="source\game\quests\Quest_Artifacts.cpp">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClCompile>
     <ClCompile Include="source\game\system\Spell.cpp">
-      <Filter>3. game\system\spells</Filter>
+      <Filter>system\spells</Filter>
     </ClCompile>
     <ClCompile Include="source\game\system\SpellLoader.cpp">
-      <Filter>3. game\system\spells</Filter>
+      <Filter>system\spells</Filter>
     </ClCompile>
     <ClCompile Include="source\game\quests\Quest_Scripted.cpp">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClCompile>
     <ClCompile Include="source\game\system\QuestScheme.cpp">
-      <Filter>3. game\system\quests</Filter>
+      <Filter>system\quests</Filter>
     </ClCompile>
     <ClCompile Include="source\game\system\QuestLoader.cpp">
-      <Filter>3. game\system\quests</Filter>
+      <Filter>system\quests</Filter>
     </ClCompile>
     <ClCompile Include="source\game\system\Content.cpp">
-      <Filter>3. game\system</Filter>
+      <Filter>system</Filter>
     </ClCompile>
     <ClCompile Include="source\game\system\QuestList.cpp">
-      <Filter>3. game\system\quests</Filter>
+      <Filter>system\quests</Filter>
     </ClCompile>
     <ClCompile Include="source\game\entity\Encounter.cpp">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClCompile>
     <ClCompile Include="source\game\generator\DungeonMapGenerator.cpp">
-      <Filter>3. game\generator</Filter>
+      <Filter>generator</Filter>
     </ClCompile>
-    <ClCompile Include="source\game\Settings.cpp">
-      <Filter>3. game</Filter>
-    </ClCompile>
-    <ClCompile Include="source\game\GameFile.cpp">
-      <Filter>3. game</Filter>
-    </ClCompile>
+    <ClCompile Include="source\game\Ai.cpp" />
+    <ClCompile Include="source\game\CommandParser.cpp" />
+    <ClCompile Include="source\game\FOV.cpp" />
+    <ClCompile Include="source\game\Game.cpp" />
+    <ClCompile Include="source\game\Game2.cpp" />
+    <ClCompile Include="source\game\GameCommon.cpp" />
+    <ClCompile Include="source\game\GameFile.cpp" />
+    <ClCompile Include="source\game\GameStats.cpp" />
+    <ClCompile Include="source\game\Init.cpp" />
+    <ClCompile Include="source\game\Language.cpp" />
+    <ClCompile Include="source\game\Level.cpp" />
+    <ClCompile Include="source\game\Menu.cpp" />
+    <ClCompile Include="source\game\Pathfinding.cpp" />
+    <ClCompile Include="source\game\QuadTreeAndGrass.cpp" />
+    <ClCompile Include="source\game\SaveLoad.cpp" />
+    <ClCompile Include="source\game\Scene.cpp" />
+    <ClCompile Include="source\game\Settings.cpp" />
+    <ClCompile Include="source\game\Team.cpp" />
+    <ClCompile Include="source\game\World.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\resource\resource1.h">
-      <Filter>4. resource</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\ConsoleCommands.h">
-      <Filter>3. game</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\Game.h">
-      <Filter>3. game</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\GameCommon.h">
-      <Filter>3. game</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\GameKeys.h">
-      <Filter>3. game</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\SaveState.h">
-      <Filter>3. game</Filter>
+      <Filter>resource</Filter>
     </ClInclude>
     <ClInclude Include="source\game\entity\AIController.h">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="source\game\entity\Bullet.h">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="source\game\entity\Chest.h">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="source\game\entity\Door.h">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="source\game\entity\GroundItem.h">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="source\game\entity\HeroData.h">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="source\game\entity\HeroPlayerCommon.h">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="source\game\entity\HumanData.h">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="source\game\entity\ItemSlot.h">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="source\game\entity\Object.h">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="source\game\entity\PlayerController.h">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="source\game\entity\SceneNode.h">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="source\game\entity\SpellEffects.h">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="source\game\entity\Trap.h">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="source\game\generator\CityGenerator.h">
-      <Filter>3. game\generator</Filter>
+      <Filter>generator</Filter>
     </ClInclude>
     <ClInclude Include="source\game\location\Camp.h">
-      <Filter>3. game\location</Filter>
+      <Filter>location</Filter>
     </ClInclude>
     <ClInclude Include="source\game\location\EntryPoint.h">
-      <Filter>3. game\location</Filter>
+      <Filter>location</Filter>
     </ClInclude>
     <ClInclude Include="source\game\location\InsideBuilding.h">
-      <Filter>3. game\location</Filter>
+      <Filter>location</Filter>
     </ClInclude>
     <ClInclude Include="source\game\location\InsideLocation.h">
-      <Filter>3. game\location</Filter>
+      <Filter>location</Filter>
     </ClInclude>
     <ClInclude Include="source\game\location\InsideLocationLevel.h">
-      <Filter>3. game\location</Filter>
+      <Filter>location</Filter>
     </ClInclude>
     <ClInclude Include="source\game\location\Location.h">
-      <Filter>3. game\location</Filter>
+      <Filter>location</Filter>
     </ClInclude>
     <ClInclude Include="source\game\location\MultiInsideLocation.h">
-      <Filter>3. game\location</Filter>
+      <Filter>location</Filter>
     </ClInclude>
     <ClInclude Include="source\game\location\OutsideLocation.h">
-      <Filter>3. game\location</Filter>
+      <Filter>location</Filter>
     </ClInclude>
     <ClInclude Include="source\game\location\SingleInsideLocation.h">
-      <Filter>3. game\location</Filter>
+      <Filter>location</Filter>
     </ClInclude>
     <ClInclude Include="source\game\net\Net.h">
-      <Filter>3. game\net</Filter>
+      <Filter>net</Filter>
     </ClInclude>
     <ClInclude Include="source\game\stats\BaseLocation.h">
-      <Filter>3. game\stats</Filter>
+      <Filter>stats</Filter>
     </ClInclude>
     <ClInclude Include="source\game\stats\BaseTrap.h">
-      <Filter>3. game\stats</Filter>
+      <Filter>stats</Filter>
     </ClInclude>
     <ClInclude Include="source\game\stats\Class.h">
-      <Filter>3. game\stats</Filter>
+      <Filter>stats</Filter>
     </ClInclude>
     <ClInclude Include="source\game\stats\Const.h">
-      <Filter>3. game\stats</Filter>
+      <Filter>stats</Filter>
     </ClInclude>
     <ClInclude Include="source\game\stats\DamageTypes.h">
-      <Filter>3. game\stats</Filter>
+      <Filter>stats</Filter>
     </ClInclude>
     <ClInclude Include="source\game\stats\Material.h">
-      <Filter>3. game\stats</Filter>
+      <Filter>stats</Filter>
     </ClInclude>
     <ClInclude Include="source\game\stats\RoomType.h">
-      <Filter>3. game\stats</Filter>
+      <Filter>stats</Filter>
     </ClInclude>
     <ClInclude Include="source\game\stats\UnitStats.h">
-      <Filter>3. game\stats</Filter>
+      <Filter>stats</Filter>
     </ClInclude>
     <ClInclude Include="source\game\panels\Console.h">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClInclude>
     <ClInclude Include="source\game\panels\CreateCharacterPanel.h">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClInclude>
     <ClInclude Include="source\game\panels\CreateServerPanel.h">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClInclude>
     <ClInclude Include="source\game\panels\GameGui.h">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClInclude>
     <ClInclude Include="source\game\panels\GameMenu.h">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClInclude>
     <ClInclude Include="source\game\panels\GamePanel.h">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClInclude>
     <ClInclude Include="source\game\panels\InfoBox.h">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClInclude>
     <ClInclude Include="source\game\panels\Inventory.h">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClInclude>
     <ClInclude Include="source\game\panels\Journal.h">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClInclude>
     <ClInclude Include="source\game\panels\LoadScreen.h">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClInclude>
     <ClInclude Include="source\game\panels\MainMenu.h">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClInclude>
     <ClInclude Include="source\game\panels\Minimap.h">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClInclude>
     <ClInclude Include="source\game\panels\MpBox.h">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClInclude>
     <ClInclude Include="source\game\panels\MultiplayerPanel.h">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClInclude>
     <ClInclude Include="source\game\panels\Options.h">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClInclude>
     <ClInclude Include="source\game\panels\PickServerPanel.h">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClInclude>
     <ClInclude Include="source\game\panels\SaveLoadPanel.h">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClInclude>
     <ClInclude Include="source\game\panels\ServerPanel.h">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClInclude>
     <ClInclude Include="source\game\panels\StatsPanel.h">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClInclude>
     <ClInclude Include="source\game\panels\TeamPanel.h">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClInclude>
     <ClInclude Include="source\game\panels\WorldMapGui.h">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClInclude>
     <ClInclude Include="source\Pch.h" />
-    <ClInclude Include="source\game\Language.h">
-      <Filter>3. game</Filter>
-    </ClInclude>
     <ClInclude Include="source\game\stats\Attribute.h">
-      <Filter>3. game\stats</Filter>
+      <Filter>stats</Filter>
     </ClInclude>
     <ClInclude Include="source\game\stats\Music.h">
-      <Filter>3. game\stats</Filter>
+      <Filter>stats</Filter>
     </ClInclude>
     <ClInclude Include="source\game\stats\Skill.h">
-      <Filter>3. game\stats</Filter>
+      <Filter>stats</Filter>
     </ClInclude>
     <ClInclude Include="source\game\panels\Controls.h">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClInclude>
     <ClInclude Include="source\game\stats\Perk.h">
-      <Filter>3. game\stats</Filter>
+      <Filter>stats</Filter>
     </ClInclude>
     <ClInclude Include="source\game\entity\CreatedCharacter.h">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="source\game\stats\ArmorUnitType.h">
-      <Filter>3. game\stats</Filter>
+      <Filter>stats</Filter>
     </ClInclude>
     <ClInclude Include="source\game\panels\GameMessages.h">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClInclude>
     <ClInclude Include="source\game\stats\Effect.h">
-      <Filter>3. game\stats</Filter>
+      <Filter>stats</Filter>
     </ClInclude>
     <ClInclude Include="source\game\quests\QuestManager.h">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClInclude>
     <ClInclude Include="source\game\quests\Quest_Main.h">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClInclude>
     <ClInclude Include="source\game\quests\Quest_DeliverLetter.h">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClInclude>
     <ClInclude Include="source\game\quests\Quest_DeliverParcel.h">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClInclude>
     <ClInclude Include="source\game\quests\Quest_SpreadNews.h">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClInclude>
     <ClInclude Include="source\game\quests\Quest_RescueCaptive.h">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClInclude>
     <ClInclude Include="source\game\quests\Quest_BanditsCollectToll.h">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClInclude>
     <ClInclude Include="source\game\quests\Quest_CampNearCity.h">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClInclude>
     <ClInclude Include="source\game\quests\Quest_KillAnimals.h">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClInclude>
     <ClInclude Include="source\game\quests\Quest_FindArtifact.h">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClInclude>
     <ClInclude Include="source\game\quests\Quest_LostArtifact.h">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClInclude>
     <ClInclude Include="source\game\quests\Quest_StolenArtifact.h">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClInclude>
     <ClInclude Include="source\game\quests\Quest_Wanted.h">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClInclude>
     <ClInclude Include="source\game\quests\Quest_Sawmill.h">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClInclude>
     <ClInclude Include="source\game\quests\Quest_Mine.h">
-      <Filter>3. game\quests</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\GameFile.h">
-      <Filter>3. game</Filter>
+      <Filter>quests</Filter>
     </ClInclude>
     <ClInclude Include="source\game\quests\Quest_Bandits.h">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClInclude>
     <ClInclude Include="source\game\quests\Quest_Mages.h">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClInclude>
     <ClInclude Include="source\game\quests\Quest_Orcs.h">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClInclude>
     <ClInclude Include="source\game\quests\Quest_Goblins.h">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClInclude>
     <ClInclude Include="source\game\quests\Quest_Evil.h">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClInclude>
     <ClInclude Include="source\game\quests\Quest_Crazies.h">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClInclude>
     <ClInclude Include="source\Version.h" />
     <ClInclude Include="source\game\entity\Camera.h">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="source\game\location\LevelArea.h">
-      <Filter>3. game\location</Filter>
+      <Filter>location</Filter>
     </ClInclude>
     <ClInclude Include="source\ErrorHandler.h" />
     <ClInclude Include="source\game\entity\Light.h">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="source\game\helpers\UnitHelper.h">
-      <Filter>3. game\helpers</Filter>
+      <Filter>helpers</Filter>
     </ClInclude>
     <ClInclude Include="source\game\location\City.h">
-      <Filter>3. game\location</Filter>
+      <Filter>location</Filter>
     </ClInclude>
     <ClInclude Include="source\game\helpers\LocationHelper.h">
-      <Filter>3. game\helpers</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\GameStats.h">
-      <Filter>3. game</Filter>
+      <Filter>helpers</Filter>
     </ClInclude>
     <ClInclude Include="source\game\quests\Quest.h">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClInclude>
     <ClInclude Include="source\game\quests\QuestConsts.h">
-      <Filter>3. game\quests</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\Team.h">
-      <Filter>3. game</Filter>
+      <Filter>quests</Filter>
     </ClInclude>
     <ClInclude Include="source\game\quests\Quest_RetrievePackage.h">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClInclude>
     <ClInclude Include="source\game\system\ContentLoader.h">
-      <Filter>3. game\system</Filter>
+      <Filter>system</Filter>
     </ClInclude>
     <ClInclude Include="source\game\stats\Buff.h">
-      <Filter>3. game\stats</Filter>
+      <Filter>stats</Filter>
     </ClInclude>
     <ClInclude Include="source\game\entity\Usable.h">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="source\game\stats\Action.h">
-      <Filter>3. game\stats</Filter>
+      <Filter>stats</Filter>
     </ClInclude>
     <ClInclude Include="source\game\panels\ActionPanel.h">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClInclude>
     <ClInclude Include="source\Utility.h" />
     <ClInclude Include="source\game\net\GamePacket.h">
-      <Filter>3. game\net</Filter>
+      <Filter>net</Filter>
     </ClInclude>
     <ClInclude Include="source\game\net\NetChange.h">
-      <Filter>3. game\net</Filter>
+      <Filter>net</Filter>
     </ClInclude>
     <ClInclude Include="source\game\net\NetChangePlayer.h">
-      <Filter>3. game\net</Filter>
+      <Filter>net</Filter>
     </ClInclude>
     <ClInclude Include="source\game\panels\GameDialogBox.h">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClInclude>
     <ClInclude Include="source\game\panels\BookPanel.h">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClInclude>
     <ClInclude Include="source\game\entity\ItemContainer.h">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="source\game\system\BaseObject.h">
-      <Filter>3. game\system\objects</Filter>
+      <Filter>system\objects</Filter>
     </ClInclude>
     <ClInclude Include="source\game\system\BaseUsable.h">
-      <Filter>3. game\system\objects</Filter>
+      <Filter>system\objects</Filter>
     </ClInclude>
     <ClInclude Include="source\game\system\BuildingGroup.h">
-      <Filter>3. game\system\buildings</Filter>
+      <Filter>system\buildings</Filter>
     </ClInclude>
     <ClInclude Include="source\game\system\Building.h">
-      <Filter>3. game\system\buildings</Filter>
+      <Filter>system\buildings</Filter>
     </ClInclude>
     <ClInclude Include="source\game\system\BuildingScript.h">
-      <Filter>3. game\system\buildings</Filter>
+      <Filter>system\buildings</Filter>
     </ClInclude>
     <ClInclude Include="source\game\system\Item.h">
-      <Filter>3. game\system\items</Filter>
+      <Filter>system\items</Filter>
     </ClInclude>
     <ClInclude Include="source\game\system\ItemType.h">
-      <Filter>3. game\system\items</Filter>
+      <Filter>system\items</Filter>
     </ClInclude>
     <ClInclude Include="source\game\system\ItemScript.h">
-      <Filter>3. game\system\units</Filter>
+      <Filter>system\units</Filter>
     </ClInclude>
     <ClInclude Include="source\game\system\UnitGroup.h">
-      <Filter>3. game\system\units</Filter>
+      <Filter>system\units</Filter>
     </ClInclude>
     <ClInclude Include="source\game\system\FrameInfo.h">
-      <Filter>3. game\system\units</Filter>
+      <Filter>system\units</Filter>
     </ClInclude>
     <ClInclude Include="source\game\system\StatProfile.h">
-      <Filter>3. game\system\units</Filter>
+      <Filter>system\units</Filter>
     </ClInclude>
     <ClInclude Include="source\game\system\UnitData.h">
-      <Filter>3. game\system\units</Filter>
+      <Filter>system\units</Filter>
     </ClInclude>
     <ClInclude Include="source\game\system\Stock.h">
-      <Filter>3. game\system\items</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\GameCore.h">
-      <Filter>3. game</Filter>
+      <Filter>system\items</Filter>
     </ClInclude>
     <ClInclude Include="source\game\entity\Unit.h">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="source\game\entity\UnitEventHandler.h">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="source\game\entity\Blood.h">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="source\game\entity\BloodType.h">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="source\game\net\PlayerInfo.h">
-      <Filter>3. game\net</Filter>
+      <Filter>net</Filter>
     </ClInclude>
     <ClInclude Include="source\game\script\ScriptManager.h">
-      <Filter>3. game\script</Filter>
+      <Filter>script</Filter>
     </ClInclude>
     <ClInclude Include="source\game\script\TypeBuilder.h">
-      <Filter>3. game\script</Filter>
+      <Filter>script</Filter>
     </ClInclude>
     <ClInclude Include="source\game\script\Var.h">
-      <Filter>3. game\script</Filter>
+      <Filter>script</Filter>
     </ClInclude>
     <ClInclude Include="source\game\net\BitStreamFunc.h">
-      <Filter>3. game\net</Filter>
+      <Filter>net</Filter>
     </ClInclude>
     <ClInclude Include="source\game\entity\Portal.h">
-      <Filter>3. game\entity</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\World.h">
-      <Filter>3. game</Filter>
+      <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="source\game\net\EntityInterpolator.h">
-      <Filter>3. game\net</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\Level.h">
-      <Filter>3. game</Filter>
+      <Filter>net</Filter>
     </ClInclude>
     <ClInclude Include="source\game\panels\GlobalGui.h">
-      <Filter>3. game\panels</Filter>
+      <Filter>panels</Filter>
     </ClInclude>
     <ClInclude Include="source\game\helpers\LoadingHandler.h">
-      <Filter>3. game\helpers</Filter>
+      <Filter>helpers</Filter>
     </ClInclude>
     <ClInclude Include="source\game\entity\News.h">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="source\game\quests\Quest_Contest.h">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClInclude>
     <ClInclude Include="source\game\quests\Quest_Secret.h">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClInclude>
     <ClInclude Include="source\game\quests\Quest_Tournament.h">
-      <Filter>3. game\quests</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\Debug.h">
-      <Filter>3. game</Filter>
+      <Filter>quests</Filter>
     </ClInclude>
     <ClInclude Include="source\game\entity\Encounter.h">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="source\game\quests\QuestHandler.h">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClInclude>
     <ClInclude Include="source\game\generator\LocationGenerator.h">
-      <Filter>3. game\generator</Filter>
+      <Filter>generator</Filter>
     </ClInclude>
     <ClInclude Include="source\game\generator\LocationGeneratorFactory.h">
-      <Filter>3. game\generator</Filter>
+      <Filter>generator</Filter>
     </ClInclude>
     <ClInclude Include="source\game\generator\EncounterGenerator.h">
-      <Filter>3. game\generator</Filter>
+      <Filter>generator</Filter>
     </ClInclude>
     <ClInclude Include="source\game\generator\ForestGenerator.h">
-      <Filter>3. game\generator</Filter>
+      <Filter>generator</Filter>
     </ClInclude>
     <ClInclude Include="source\game\generator\DungeonGenerator.h">
-      <Filter>3. game\generator</Filter>
+      <Filter>generator</Filter>
     </ClInclude>
     <ClInclude Include="source\game\generator\CaveGenerator.h">
-      <Filter>3. game\generator</Filter>
+      <Filter>generator</Filter>
     </ClInclude>
     <ClInclude Include="source\game\entity\Tile.h">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="source\game\entity\Room.h">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="source\game\generator\LabyrinthGenerator.h">
-      <Filter>3. game\generator</Filter>
+      <Filter>generator</Filter>
     </ClInclude>
     <ClInclude Include="source\game\generator\InsideLocationGenerator.h">
-      <Filter>3. game\generator</Filter>
+      <Filter>generator</Filter>
     </ClInclude>
     <ClInclude Include="source\game\entity\OutsideObject.h">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="source\game\generator\OutsideLocationGenerator.h">
-      <Filter>3. game\generator</Filter>
+      <Filter>generator</Filter>
     </ClInclude>
     <ClInclude Include="source\game\generator\MoonwellGenerator.h">
-      <Filter>3. game\generator</Filter>
+      <Filter>generator</Filter>
     </ClInclude>
     <ClInclude Include="source\game\generator\CampGenerator.h">
-      <Filter>3. game\generator</Filter>
+      <Filter>generator</Filter>
     </ClInclude>
     <ClInclude Include="source\game\generator\SecretLocationGenerator.h">
-      <Filter>3. game\generator</Filter>
+      <Filter>generator</Filter>
     </ClInclude>
     <ClInclude Include="source\game\location\Cave.h">
-      <Filter>3. game\location</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\Pathfinding.h">
-      <Filter>3. game</Filter>
+      <Filter>location</Filter>
     </ClInclude>
     <ClInclude Include="source\game\quests\Quest_Tutorial.h">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClInclude>
     <ClInclude Include="source\game\entity\ObjectEntity.h">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="source\game\entity\Collision.h">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="source\game\entity\TerrainTile.h">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="source\game\generator\TutorialLocationGenerator.h">
-      <Filter>3. game\generator</Filter>
+      <Filter>generator</Filter>
     </ClInclude>
     <ClInclude Include="source\game\helpers\ItemHelper.h">
-      <Filter>3. game\helpers</Filter>
+      <Filter>helpers</Filter>
     </ClInclude>
     <ClInclude Include="source\game\events\Arena.h">
-      <Filter>3. game\events</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\GameComponent.h">
-      <Filter>3. game</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\Settings.h">
-      <Filter>3. game</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\FOV.h">
-      <Filter>3. game</Filter>
+      <Filter>events</Filter>
     </ClInclude>
     <ClInclude Include="source\game\entity\SaveSlot.h">
-      <Filter>3. game\entity</Filter>
+      <Filter>entity</Filter>
     </ClInclude>
     <ClInclude Include="source\game\system\GameDialog.h">
-      <Filter>3. game\system\dialogs</Filter>
+      <Filter>system\dialogs</Filter>
     </ClInclude>
     <ClInclude Include="source\game\system\DialogContext.h">
-      <Filter>3. game\system\dialogs</Filter>
+      <Filter>system\dialogs</Filter>
     </ClInclude>
     <ClInclude Include="source\game\system\DialogLoader.h">
-      <Filter>3. game\system\dialogs</Filter>
+      <Filter>system\dialogs</Filter>
     </ClInclude>
     <ClInclude Include="source\game\generator\NameHelper.h">
-      <Filter>3. game\helpers</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\CommandParser.h">
-      <Filter>3. game</Filter>
+      <Filter>helpers</Filter>
     </ClInclude>
     <ClInclude Include="source\game\net\LobbyApi.h">
-      <Filter>3. game\net</Filter>
+      <Filter>net</Filter>
     </ClInclude>
     <ClInclude Include="source\game\helpers\CombatHelper.h">
-      <Filter>3. game\helpers</Filter>
+      <Filter>helpers</Filter>
     </ClInclude>
     <ClInclude Include="source\game\quests\Quest_Artifacts.h">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClInclude>
     <ClInclude Include="source\game\system\Spell.h">
-      <Filter>3. game\system\spells</Filter>
+      <Filter>system\spells</Filter>
     </ClInclude>
     <ClInclude Include="source\game\quests\Quest_Scripted.h">
-      <Filter>3. game\quests</Filter>
+      <Filter>quests</Filter>
     </ClInclude>
     <ClInclude Include="source\game\system\DialogLoader.h">
       <Filter>3. game\system\dialogs</Filter>
     </ClInclude>
     <ClInclude Include="source\game\system\QuestScheme.h">
-      <Filter>3. game\system\quests</Filter>
+      <Filter>system\quests</Filter>
     </ClInclude>
     <ClInclude Include="source\game\system\ItemLoader.h">
-      <Filter>3. game\system\items</Filter>
+      <Filter>system\items</Filter>
     </ClInclude>
     <ClInclude Include="source\game\system\UnitLoader.h">
-      <Filter>3. game\system\units</Filter>
+      <Filter>system\units</Filter>
     </ClInclude>
     <ClInclude Include="source\game\system\ObjectLoader.h">
-      <Filter>3. game\system\objects</Filter>
+      <Filter>system\objects</Filter>
     </ClInclude>
     <ClInclude Include="source\game\system\BuildingLoader.h">
-      <Filter>3. game\system\buildings</Filter>
+      <Filter>system\buildings</Filter>
     </ClInclude>
     <ClInclude Include="source\game\system\QuestLoader.h">
-      <Filter>3. game\system\quests</Filter>
+      <Filter>system\quests</Filter>
     </ClInclude>
     <ClInclude Include="source\game\system\Content.h">
-      <Filter>3. game\system</Filter>
+      <Filter>system</Filter>
     </ClInclude>
     <ClInclude Include="source\game\stats\Event.h">
-      <Filter>3. game\stats</Filter>
+      <Filter>stats</Filter>
     </ClInclude>
     <ClInclude Include="source\game\script\ScriptException.h">
-      <Filter>3. game\script</Filter>
+      <Filter>script</Filter>
     </ClInclude>
     <ClInclude Include="source\game\system\QuestList.h">
-      <Filter>3. game\system\quests</Filter>
+      <Filter>system\quests</Filter>
     </ClInclude>
     <ClInclude Include="source\game\system\SpellLoader.h">
-      <Filter>3. game\system\spells</Filter>
+      <Filter>system\spells</Filter>
     </ClInclude>
     <ClInclude Include="source\game\generator\DungeonMapGenerator.h">
-      <Filter>3. game\generator</Filter>
+      <Filter>generator</Filter>
     </ClInclude>
+    <ClInclude Include="source\game\CommandParser.h" />
+    <ClInclude Include="source\game\ConsoleCommands.h" />
+    <ClInclude Include="source\game\FOV.h" />
+    <ClInclude Include="source\game\Game.h" />
+    <ClInclude Include="source\game\GameCommon.h" />
+    <ClInclude Include="source\game\GameComponent.h" />
+    <ClInclude Include="source\game\GameCore.h" />
+    <ClInclude Include="source\game\GameFile.h" />
+    <ClInclude Include="source\game\GameKeys.h" />
+    <ClInclude Include="source\game\GameStats.h" />
+    <ClInclude Include="source\game\Language.h" />
+    <ClInclude Include="source\game\Level.h" />
+    <ClInclude Include="source\game\Pathfinding.h" />
+    <ClInclude Include="source\game\SaveState.h" />
+    <ClInclude Include="source\game\Settings.h" />
+    <ClInclude Include="source\game\Team.h" />
+    <ClInclude Include="source\game\World.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="source\resource\resource.rc">
-      <Filter>4. resource</Filter>
+      <Filter>resource</Filter>
     </ResourceCompile>
     <ResourceCompile Include="source\resource\resource2.rc">
-      <Filter>4. resource</Filter>
+      <Filter>resource</Filter>
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\doc\changelog.TXT">
-      <Filter>0. doc</Filter>
+      <Filter>doc</Filter>
     </Text>
     <Text Include="..\doc\changelog_eng.TXT">
-      <Filter>0. doc</Filter>
+      <Filter>doc</Filter>
     </Text>
     <Text Include="..\doc\readme.txt">
-      <Filter>0. doc</Filter>
+      <Filter>doc</Filter>
     </Text>
     <Text Include="..\doc\readme_eng.txt">
-      <Filter>0. doc</Filter>
+      <Filter>doc</Filter>
     </Text>
     <Text Include="..\doc\system.txt">
-      <Filter>0. doc</Filter>
+      <Filter>doc</Filter>
     </Text>
     <Text Include="..\doc\todo.txt">
-      <Filter>0. doc</Filter>
+      <Filter>doc</Filter>
     </Text>
     <Text Include="..\doc\script.txt">
-      <Filter>0. doc</Filter>
+      <Filter>doc</Filter>
     </Text>
   </ItemGroup>
 </Project>

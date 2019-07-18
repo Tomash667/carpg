@@ -5,6 +5,8 @@
 //=================================================================================================
 void SingleInsideLocation::Apply(vector<std::reference_wrapper<LevelArea>>& areas)
 {
+	mine = Int2::Zero;
+	maxe = Int2(w, h);
 	areas.push_back(*this);
 }
 

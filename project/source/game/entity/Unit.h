@@ -199,6 +199,7 @@ struct Unit
 	static int netid_counter;
 
 	int netid;
+	LevelArea* area;
 	UnitData* data;
 	PlayerController* player;
 	AIController* ai;
@@ -209,7 +210,7 @@ struct Unit
 	LiveState live_state;
 	Vec3 pos, visual_pos, prev_pos, target_pos, target_pos2;
 	float rot, prev_speed, hp, hpmax, stamina, stamina_max, speed, hurt_timer, talk_timer, timer, use_rot, attack_power, last_bash, alcohol, raise_timer;
-	int refs, animation_state, level, gold, attack_id, refid, area_id, in_arena, quest_refid;
+	int refs, animation_state, level, gold, attack_id, refid, in_arena, quest_refid;
 	FROZEN frozen;
 	ACTION action;
 	WeaponType weapon_taken, weapon_hiding;
@@ -806,7 +807,7 @@ public:
 	void Fall();
 	void TryStandup(float dt);
 	void Standup();
-	void Die(LevelArea& area, Unit* killer);
+	void Die(Unit* killer);
 	void DropGold(int count);
 	bool IsDrunkman() const;
 	void PlaySound(Sound* sound, float range);

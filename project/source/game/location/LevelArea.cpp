@@ -84,6 +84,7 @@ void LevelArea::Load(GameReader& f, bool local, old::LoadCompatibility compatibi
 				unit = new Unit;
 				Unit::AddRefid(unit);
 				unit->Load(f, local);
+				unit->area = this;
 			}
 
 			objects.resize(f.Read<uint>());
@@ -147,7 +148,7 @@ void LevelArea::Load(GameReader& f, bool local, old::LoadCompatibility compatibi
 				unit = new Unit;
 				Unit::AddRefid(unit);
 				unit->Load(f, local);
-				unit->area_id = area_id;
+				unit->area = this;
 			}
 
 			doors.resize(f.Read<uint>());
@@ -197,7 +198,7 @@ void LevelArea::Load(GameReader& f, bool local, old::LoadCompatibility compatibi
 				unit = new Unit;
 				Unit::AddRefid(unit);
 				unit->Load(f, local);
-				unit->area_id = area_id;
+				unit->area = this;
 			}
 
 			chests.resize(f.Read<uint>());
@@ -264,7 +265,7 @@ void LevelArea::Load(GameReader& f, bool local, old::LoadCompatibility compatibi
 				unit = new Unit;
 				Unit::AddRefid(unit);
 				unit->Load(f, local);
-				unit->area_id = area_id;
+				unit->area = this;
 			}
 
 			objects.resize(f.Read<uint>());
@@ -370,7 +371,7 @@ bool LevelArea::Read(BitStreamReader& f)
 			Error("Broken packet for units.");
 			return false;
 		}
-		unit->area_id = area_id;
+		unit->area = this;
 	}
 
 	// objects

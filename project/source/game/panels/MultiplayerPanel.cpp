@@ -1,7 +1,7 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "MultiplayerPanel.h"
-#include "KeyStates.h"
+#include "Input.h"
 #include "Language.h"
 #include "Game.h"
 
@@ -101,7 +101,7 @@ void MultiplayerPanel::Update(float dt)
 	textbox.mouse_focus = focus;
 	textbox.Update(dt);
 
-	if(focus && Key.Focus() && Key.PressedRelease(VK_ESCAPE))
+	if(focus && input->Focus() && input->PressedRelease(Key::Escape))
 		Event((GuiEvent)IdCancel);
 }
 

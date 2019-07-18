@@ -55,7 +55,6 @@
 #include "Quest_Secret.h"
 #include "Quest_Tournament.h"
 #include "Quest_Tutorial.h"
-#include "Debug.h"
 #include "LocationGeneratorFactory.h"
 #include "DungeonGenerator.h"
 #include "Texture.h"
@@ -115,7 +114,7 @@ void Game::Draw()
 {
 	PROFILER_BLOCK("Draw");
 
-	LevelArea& area = L.GetArea(*pc->unit);
+	LevelArea& area = *pc->unit->area;
 	bool outside;
 	if(area.area_type == LevelArea::Type::Outside)
 		outside = true;
@@ -267,7 +266,7 @@ void Game::DrawItemImage(const Item& item, RenderTarget* target, float rot)
 void Game::SetupCamera(float dt)
 {
 	Unit* target = pc->unit;
-	LevelArea& area = L.GetArea(*target);
+	LevelArea& area = *target->area;
 
 	float rotX;
 	if(L.camera.free_rot)
@@ -436,7 +435,7 @@ void Game::SetupCamera(float dt)
 	else
 	{
 		// building
-		InsideBuilding& building = *L.city_ctx->inside_buildings[area.area_id];
+		InsideBuilding& building = static_cast<InsideBuilding&>(area);
 
 		// ceil
 		if(building.top > 0.f)
@@ -731,11 +730,11 @@ void Game::UpdateGame(float dt)
 			InsideLocation* inside = (InsideLocation*)L.location;
 			InsideLocationLevel& lvl = inside->GetLevelData();
 
-			if(Key.Pressed(VK_OEM_COMMA) && Key.Down(VK_SHIFT) && inside->HaveUpStairs())
+			// key [<,] - warp to stairs up or upper level
+			if(input->Down(Key::Shift) && input->Pressed(Key::Comma) && inside->HaveUpStairs())
 			{
-				if(!Key.Down(VK_CONTROL))
+				if(!input->Down(Key::Control))
 				{
-					// teleportuj gracza do schodÛw w gÛrÍ
 					if(Net::IsLocal())
 					{
 						Int2 tile = lvl.GetUpStairsFrontTile();
@@ -765,9 +764,11 @@ void Game::UpdateGame(float dt)
 					}
 				}
 			}
-			if(Key.Pressed(VK_OEM_PERIOD) && Key.Down(VK_SHIFT) && inside->HaveDownStairs())
+
+			// key [>.] - warp to down stairs or lower level
+			if(input->Down(Key::Shift) && input->Pressed(Key::Period) && inside->HaveDownStairs())
 			{
-				if(!Key.Down(VK_CONTROL))
+				if(!input->Down(Key::Control))
 				{
 					// teleportuj gracza do schodÛw w dÛ≥
 					if(Net::IsLocal())
@@ -800,7 +801,7 @@ void Game::UpdateGame(float dt)
 				}
 			}
 		}
-		else if(Key.Pressed(VK_OEM_COMMA) && Key.Down(VK_SHIFT) && Key.Down(VK_CONTROL))
+		else if(input->Pressed(Key::Comma) && input->Down(Key::Shift) && input->Down(Key::Control))
 		{
 			if(Net::IsLocal())
 			{
@@ -839,7 +840,7 @@ void Game::UpdateGame(float dt)
 				const float c_cam_angle_max = PI * 1.8f - 0.1f;
 
 				int div = (pc->unit->action == A_SHOOT ? 800 : 400);
-				L.camera.real_rot.y += -float(Key.GetMouseDif().y) * settings.mouse_sensitivity_f / div;
+				L.camera.real_rot.y += -float(input->GetMouseDif().y) * settings.mouse_sensitivity_f / div;
 				if(L.camera.real_rot.y > c_cam_angle_max)
 					L.camera.real_rot.y = c_cam_angle_max;
 				if(L.camera.real_rot.y < c_cam_angle_min)
@@ -847,14 +848,14 @@ void Game::UpdateGame(float dt)
 
 				if(!pc->unit->IsStanding())
 				{
-					L.camera.real_rot.x = Clip(L.camera.real_rot.x + float(Key.GetMouseDif().x) * settings.mouse_sensitivity_f / 400);
+					L.camera.real_rot.x = Clip(L.camera.real_rot.x + float(input->GetMouseDif().x) * settings.mouse_sensitivity_f / 400);
 					L.camera.free_rot = true;
-					L.camera.free_rot_key = VK_NONE;
+					L.camera.free_rot_key = Key::None;
 				}
 				else if(!L.camera.free_rot)
 				{
-					L.camera.free_rot_key = GKey.KeyDoReturn(GK_ROTATE_CAMERA, &KeyStates::Pressed);
-					if(L.camera.free_rot_key != VK_NONE)
+					L.camera.free_rot_key = GKey.KeyDoReturn(GK_ROTATE_CAMERA, &Input::Pressed);
+					if(L.camera.free_rot_key != Key::None)
 					{
 						L.camera.real_rot.x = Clip(pc->unit->rot + PI);
 						L.camera.free_rot = true;
@@ -862,10 +863,10 @@ void Game::UpdateGame(float dt)
 				}
 				else
 				{
-					if(L.camera.free_rot_key == VK_NONE || GKey.KeyUpAllowed(L.camera.free_rot_key))
+					if(L.camera.free_rot_key == Key::None || GKey.KeyUpAllowed(L.camera.free_rot_key))
 						L.camera.free_rot = false;
 					else
-						L.camera.real_rot.x = Clip(L.camera.real_rot.x + float(Key.GetMouseDif().x) * settings.mouse_sensitivity_f / 400);
+						L.camera.real_rot.x = Clip(L.camera.real_rot.x + float(input->GetMouseDif().x) * settings.mouse_sensitivity_f / 400);
 				}
 			}
 			else
@@ -894,11 +895,11 @@ void Game::UpdateGame(float dt)
 	{
 		if(!dialog_context.dialog_mode || !dialog_context.show_choices || !gui->game_gui->IsMouseInsideDialog())
 		{
-			L.camera.dist -= Key.GetMouseWheel();
+			L.camera.dist -= input->GetMouseWheel();
 			L.camera.dist = Clamp(L.camera.dist, 0.5f, 6.f);
 		}
 
-		if(Key.PressedRelease(VK_MBUTTON))
+		if(input->PressedRelease(Key::MiddleButton))
 			L.camera.dist = 3.5f;
 	}
 
@@ -928,7 +929,7 @@ void Game::UpdateGame(float dt)
 				++death_screen;
 			}
 		}
-		if(death_screen >= 2 && GKey.AllowKeyboard() && Key.Pressed2Release(VK_ESCAPE, VK_RETURN))
+		if(death_screen >= 2 && GKey.AllowKeyboard() && input->Pressed2Release(Key::Escape, Key::Enter) != Key::None)
 		{
 			ExitToMenu();
 			return;
@@ -936,8 +937,8 @@ void Game::UpdateGame(float dt)
 	}
 
 	// aktualizuj gracza
-	if(pc_data.wasted_key != VK_NONE && Key.Up(pc_data.wasted_key))
-		pc_data.wasted_key = VK_NONE;
+	if(pc_data.wasted_key != Key::None && input->Up(pc_data.wasted_key))
+		pc_data.wasted_key = Key::None;
 	if(dialog_context.dialog_mode || pc->unit->look_target || gui->inventory->mode > I_INVENTORY)
 	{
 		Vec3 pos;
@@ -1269,7 +1270,7 @@ void Game::UpdateFallback(float dt)
 void Game::UpdatePlayer(float dt)
 {
 	Unit& u = *pc->unit;
-	LevelArea& area = L.GetArea(u);
+	LevelArea& area = *u.area;
 
 	// unit is on ground
 	if(!u.IsStanding())
@@ -1381,7 +1382,7 @@ void Game::UpdatePlayer(float dt)
 		{
 			int div = (pc->unit->action == A_SHOOT ? 800 : 400);
 			pc_data.rot_buf *= (1.f - dt * 2);
-			pc_data.rot_buf += float(Key.GetMouseDif().x) * settings.mouse_sensitivity_f / div;
+			pc_data.rot_buf += float(input->GetMouseDif().x) * settings.mouse_sensitivity_f / div;
 			if(pc_data.rot_buf > 0.1f)
 				pc_data.rot_buf = 0.1f;
 			else if(pc_data.rot_buf < -0.1f)
@@ -2401,8 +2402,8 @@ void Game::UpdatePlayer(float dt)
 				}
 				else if(u.animation_state == 2)
 				{
-					byte k = GKey.KeyDoReturn(GK_ATTACK_USE, &KeyStates::Down);
-					if(k != VK_NONE)
+					Key k = GKey.KeyDoReturn(GK_ATTACK_USE, &Input::Down);
+					if(k != Key::None)
 					{
 						// prepare next attack
 						u.action = A_ATTACK;
@@ -2479,8 +2480,8 @@ void Game::UpdatePlayer(float dt)
 			}
 			else if(u.action == A_NONE && u.frozen == FROZEN::NO && !GKey.KeyDownAllowed(GK_BLOCK))
 			{
-				byte k = GKey.KeyDoReturnIgnore(GK_ATTACK_USE, &KeyStates::Down, pc_data.wasted_key);
-				if(k != VK_NONE)
+				Key k = GKey.KeyDoReturnIgnore(GK_ATTACK_USE, &Input::Down, pc_data.wasted_key);
+				if(k != Key::None)
 				{
 					u.action = A_ATTACK;
 					u.attack_id = u.GetRandomAttack();
@@ -2547,8 +2548,8 @@ void Game::UpdatePlayer(float dt)
 
 				if(oks != 1)
 				{
-					byte k = GKey.KeyDoReturnIgnore(GK_BLOCK, &KeyStates::Down, pc_data.wasted_key);
-					if(k != VK_NONE)
+					Key k = GKey.KeyDoReturnIgnore(GK_BLOCK, &Input::Down, pc_data.wasted_key);
+					if(k != Key::None)
 					{
 						// start blocking
 						u.action = A_BLOCK;
@@ -2590,8 +2591,8 @@ void Game::UpdatePlayer(float dt)
 			}
 			else if(u.frozen == FROZEN::NO)
 			{
-				byte k = GKey.KeyDoReturnIgnore(GK_ATTACK_USE, &KeyStates::Down, pc_data.wasted_key);
-				if(k != VK_NONE)
+				Key k = GKey.KeyDoReturnIgnore(GK_ATTACK_USE, &Input::Down, pc_data.wasted_key);
+				if(k != Key::None)
 				{
 					float speed = u.GetBowAttackSpeed();
 					u.mesh_inst->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
@@ -2667,18 +2668,18 @@ void Game::UpdatePlayer(float dt)
 			}
 		}
 
-		pc_data.wasted_key = GKey.KeyDoReturn(GK_ATTACK_USE, &KeyStates::PressedRelease);
-		if(pc_data.wasted_key != VK_NONE)
+		pc_data.wasted_key = GKey.KeyDoReturn(GK_ATTACK_USE, &Input::PressedRelease);
+		if(pc_data.wasted_key != Key::None)
 		{
 			if(pc_data.action_ok)
 				UseAction(pc, false);
 			else
-				pc_data.wasted_key = VK_NONE;
+				pc_data.wasted_key = Key::None;
 		}
 		else
 		{
-			pc_data.wasted_key = GKey.KeyDoReturn(GK_BLOCK, &KeyStates::PressedRelease);
-			if(pc_data.wasted_key != VK_NONE)
+			pc_data.wasted_key = GKey.KeyDoReturn(GK_BLOCK, &Input::PressedRelease);
+			if(pc_data.wasted_key != Key::None)
 				pc_data.action_ready = false;
 		}
 	}
@@ -2793,7 +2794,7 @@ void Game::UseAction(PlayerController* p, bool from_server, const Vec3* pos)
 				assert(pos);
 				spawn_pos = *pos;
 			}
-			Unit* unit = L.SpawnUnitNearLocation(L.GetArea(*p->unit), spawn_pos, *UnitData::Get("white_wolf_sum"), nullptr, p->unit->level);
+			Unit* unit = L.SpawnUnitNearLocation(*p->unit->area, spawn_pos, *UnitData::Get("white_wolf_sum"), nullptr, p->unit->level);
 			if(unit)
 			{
 				unit->summoner = p->unit;
@@ -2856,7 +2857,7 @@ void Game::SpawnUnitEffect(Unit& unit)
 	pe->op_alpha = POP_LINEAR_SHRINK;
 	pe->mode = 0;
 	pe->Init();
-	L.GetArea(unit).tmp->pes.push_back(pe);
+	unit.area->tmp->pes.push_back(pe);
 }
 
 //=================================================================================================
@@ -2905,7 +2906,7 @@ void Game::PlayerCheckObjectDistance(Unit& u, const Vec3& pos, void* ptr, float&
 				}
 			}
 			dist += angle;
-			if(dist < best_dist && L.CanSee(L.GetArea(u), u.pos, pos, type == BP_DOOR, ptr))
+			if(dist < best_dist && L.CanSee(*u.area, u.pos, pos, type == BP_DOOR, ptr))
 			{
 				best_dist = dist;
 				pc_data.before_player_ptr.any = ptr;
@@ -2928,7 +2929,7 @@ int Game::CheckMove(Vec3& _pos, const Vec3& _dir, float _radius, Unit* _me, bool
 	Level::IgnoreObjects ignore = { 0 };
 	Unit* ignored[] = { _me, nullptr };
 	ignore.ignored_units = (const Unit**)ignored;
-	L.GatherCollisionObjects(L.GetArea(*_me), L.global_col, gather_pos, gather_radius, &ignore);
+	L.GatherCollisionObjects(*_me->area, L.global_col, gather_pos, gather_radius, &ignore);
 
 	if(L.global_col.empty())
 	{
@@ -2980,7 +2981,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 {
 	if(L.location->outside)
 	{
-		if(unit.area_id == LevelArea::OUTSIDE_ID)
+		if(unit.area->area_type == LevelArea::Type::Outside)
 		{
 			if(L.terrain->IsInside(unit.pos))
 			{
@@ -3093,8 +3094,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 
 			// jest w budynku
 			// sprawdü czy nie wszed≥ na wyjúcie (tylko gracz moøe opuszczaÊ budynek, na razie)
-			City* city = (City*)L.location;
-			InsideBuilding& building = *city->inside_buildings[unit.area_id];
+			InsideBuilding& building = *static_cast<InsideBuilding*>(unit.area);
 
 			if(unit.IsPlayer() && building.exit_region.IsInside(unit.pos) && WantExitLevel() && unit.frozen == FROZEN::NO && !dash)
 			{
@@ -3584,7 +3584,6 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	u->hurt_timer = 0.f;
 	u->talking = false;
 	u->usable = nullptr;
-	u->area_id = LevelArea::OUTSIDE_ID;
 	u->frozen = FROZEN::NO;
 	u->in_arena = -1;
 	u->run_attack = false;
@@ -3917,7 +3916,7 @@ Game::ATTACK_RESULT Game::DoAttack(LevelArea& area, Unit& unit)
 	return DoGenericAttack(area, unit, *hitted, hitpoint, unit.CalculateAttack()*unit.attack_power*power, unit.GetDmgType(), false);
 }
 
-void Game::GiveDmg(LevelArea& area, Unit* giver, float dmg, Unit& taker, const Vec3* hitpoint, int dmg_flags)
+void Game::GiveDmg(Unit& taker, float dmg, Unit* giver, const Vec3* hitpoint, int dmg_flags)
 {
 	// blood particles
 	if(!IS_SET(dmg_flags, DMG_NO_BLOOD))
@@ -3948,7 +3947,7 @@ void Game::GiveDmg(LevelArea& area, Unit* giver, float dmg, Unit& taker, const V
 		pe->op_alpha = POP_LINEAR_SHRINK;
 		pe->mode = 0;
 		pe->Init();
-		area.tmp->pes.push_back(pe);
+		taker.area->tmp->pes.push_back(pe);
 
 		if(Net::IsOnline())
 		{
@@ -3990,7 +3989,7 @@ void Game::GiveDmg(LevelArea& area, Unit* giver, float dmg, Unit& taker, const V
 	if((taker.hp -= dmg) <= 0.f && !taker.IsImmortal())
 	{
 		// unit killed
-		taker.Die(area, giver);
+		taker.Die(giver);
 	}
 	else
 	{
@@ -4033,6 +4032,9 @@ void Game::UpdateUnits(LevelArea& area, float dt)
 	for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
 	{
 		Unit& u = **it;
+
+		FIXME;
+		assert(u.area == &area);
 
 		// update effects and mouth moving
 		if(u.IsAlive())
@@ -5070,7 +5072,7 @@ void Game::UpdateUnits(LevelArea& area, float dt)
 									PlayHitSound(MAT_IRON, unit->GetBodyMaterial(), unit->GetCenter(), HIT_SOUND_DIST, true);
 									if(unit->IsPlayer())
 										unit->player->Train(TrainWhat::TakeDamageArmor, attack / unit->hpmax, u.level);
-									GiveDmg(area, &u, dmg, *unit);
+									GiveDmg(*unit, dmg, &u);
 									if(u.IsPlayer())
 										u.player->Train(TrainWhat::BullsCharge, 0.f, unit->level);
 									if(!unit->IsAlive())
@@ -5514,7 +5516,7 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 					it->owner->player->Train(TrainWhat::BowAttack, v, hitted->level);
 				}
 
-				GiveDmg(area, it->owner, dmg, *hitted, &hitpoint, 0);
+				GiveDmg(*hitted, dmg, it->owner, &hitpoint);
 
 				// apply poison
 				if(it->poison_attack > 0.f)
@@ -5590,7 +5592,7 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 					}
 				}
 
-				GiveDmg(area, it->owner, dmg, *hitted, &hitpoint, !IS_SET(it->spell->flags, Spell::Poison) ? DMG_MAGICAL : 0);
+				GiveDmg(*hitted, dmg, it->owner, &hitpoint, !IS_SET(it->spell->flags, Spell::Poison) ? DMG_MAGICAL : 0);
 
 				// apply poison
 				if(IS_SET(it->spell->flags, Spell::Poison))
@@ -5741,7 +5743,7 @@ bool Game::CanShootAtLocation2(const Unit& me, const void* ptr, const Vec3& to) 
 Unit* Game::CreateUnitWithAI(LevelArea& area, UnitData& unit, int level, Human* human_data, const Vec3* pos, const float* rot, AIController** ai)
 {
 	Unit* u = CreateUnit(unit, level, human_data);
-	u->area_id = area.area_id;
+	u->area = &area;
 
 	if(pos)
 	{
@@ -6104,7 +6106,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelArea& area, Unit& attacker, Unit&
 		attacker.player->Train(bash ? TrainWhat::BashHit : TrainWhat::AttackHit, ratio, hitted.level);
 	}
 
-	GiveDmg(area, &attacker, dmg, hitted, &hitpoint);
+	GiveDmg(hitted, dmg, &attacker, &hitpoint);
 
 	// apply poison
 	if(IS_SET(attacker.data->flags, F_POISON_ATTACK))
@@ -6305,7 +6307,8 @@ void Game::CastSpell(LevelArea& area, Unit& u)
 					drain.from = hitted;
 					drain.to = &u;
 
-					GiveDmg(area, &u, float(spell.dmg + (u.CalculateMagicPower() + u.level)*spell.dmg_bonus), *hitted, nullptr, DMG_MAGICAL);
+					float dmg = float(spell.dmg + (u.CalculateMagicPower() + u.level)*spell.dmg_bonus);
+					GiveDmg(*hitted, dmg, &u, nullptr, DMG_MAGICAL);
 
 					drain.pe = area.tmp->pes.back();
 					drain.t = 0.f;
@@ -6313,7 +6316,7 @@ void Game::CastSpell(LevelArea& area, Unit& u)
 					drain.pe->speed_min = Vec3(-3, 0, -3);
 					drain.pe->speed_max = Vec3(3, 3, 3);
 
-					u.hp += float(spell.dmg);
+					u.hp += dmg;
 					if(u.hp > u.hpmax)
 						u.hp = u.hpmax;
 
@@ -6558,18 +6561,18 @@ void Game::UpdateExplosions(LevelArea& area, float dt)
 					continue;
 
 				// sprawdü czy juø nie zosta≥ trafiony
-				bool jest = false;
+				bool already_hit = false;
 				for(vector<Unit*>::iterator it3 = e.hitted.begin(), end3 = e.hitted.end(); it3 != end3; ++it3)
 				{
 					if(*it2 == *it3)
 					{
-						jest = true;
+						already_hit = true;
 						break;
 					}
 				}
 
 				// nie zosta≥ trafiony
-				if(!jest)
+				if(!already_hit)
 				{
 					Box box;
 					(*it2)->GetBox(box);
@@ -6577,7 +6580,7 @@ void Game::UpdateExplosions(LevelArea& area, float dt)
 					if(SphereToBox(e.pos, e.size, box))
 					{
 						// zadaj obraøenia
-						GiveDmg(area, e.owner, dmg, **it2, nullptr, DMG_NO_BLOOD | DMG_MAGICAL);
+						GiveDmg(**it2, dmg, e.owner, nullptr, DMG_NO_BLOOD | DMG_MAGICAL);
 						e.hitted.push_back(*it2);
 					}
 				}
@@ -6745,7 +6748,7 @@ void Game::UpdateTraps(LevelArea& area, float dt)
 
 								// damage
 								if(dmg > 0)
-									GiveDmg(area, nullptr, dmg, *unit);
+									GiveDmg(*unit, dmg);
 
 								trap.hitted->push_back(unit);
 							}
@@ -7243,7 +7246,7 @@ void Game::UpdateElectros(LevelArea& area, float dt)
 				{
 					if(hitted->IsAI() && e.owner->IsAlive())
 						AI_HitReaction(*hitted, e.start_pos);
-					GiveDmg(area, e.owner, e.dmg, *hitted, nullptr, DMG_NO_BLOOD | DMG_MAGICAL);
+					GiveDmg(*hitted, e.dmg, e.owner, nullptr, DMG_NO_BLOOD | DMG_MAGICAL);
 				}
 
 				if(e.spell->sound_hit)
@@ -8581,7 +8584,7 @@ void Game::DeleteUnit(Unit* unit)
 
 	if(L.is_open)
 	{
-		RemoveElement(L.GetArea(*unit).units, unit);
+		RemoveElement(unit->area->units, unit);
 		gui->game_gui->RemoveUnit(unit);
 		if(pc_data.before_player == BP_UNIT && pc_data.before_player_ptr.unit == unit)
 			pc_data.before_player = BP_NONE;
@@ -8860,7 +8863,7 @@ void Game::GenerateQuestUnits()
 		if(QM.quest_sawmill->days >= 30 && L.city_ctx)
 		{
 			QM.quest_sawmill->days = 29;
-			Unit* u = L.SpawnUnitNearLocation(L.GetArea(*Team.leader), Team.leader->pos, *UnitData::Get("poslaniec_tartak"), &Team.leader->pos, -2, 2.f);
+			Unit* u = L.SpawnUnitNearLocation(*Team.leader->area, Team.leader->pos, *UnitData::Get("poslaniec_tartak"), &Team.leader->pos, -2, 2.f);
 			if(u)
 			{
 				QM.quest_sawmill->messenger = u;
@@ -8884,7 +8887,7 @@ void Game::GenerateQuestUnits()
 			QM.quest_mine->mine_state2 == Quest_Mine::State2::InExpand || // inform player about finished mine expanding
 			QM.quest_mine->mine_state2 == Quest_Mine::State2::Expanded)) // inform player about finding portal
 	{
-		Unit* u = L.SpawnUnitNearLocation(L.GetArea(*Team.leader), Team.leader->pos, *UnitData::Get("poslaniec_kopalnia"), &Team.leader->pos, -2, 2.f);
+		Unit* u = L.SpawnUnitNearLocation(*Team.leader->area, Team.leader->pos, *UnitData::Get("poslaniec_kopalnia"), &Team.leader->pos, -2, 2.f);
 		if(u)
 		{
 			QM.quest_mine->messenger = u;
@@ -8915,7 +8918,7 @@ void Game::GenerateQuestUnits2()
 {
 	if(QM.quest_goblins->goblins_state == Quest_Goblins::State::Counting && QM.quest_goblins->days <= 0)
 	{
-		Unit* u = L.SpawnUnitNearLocation(L.GetArea(*Team.leader), Team.leader->pos, *UnitData::Get("q_gobliny_poslaniec"), &Team.leader->pos, -2, 2.f);
+		Unit* u = L.SpawnUnitNearLocation(*Team.leader->area, Team.leader->pos, *UnitData::Get("q_gobliny_poslaniec"), &Team.leader->pos, -2, 2.f);
 		if(u)
 		{
 			QM.quest_goblins->messenger = u;
@@ -8927,7 +8930,7 @@ void Game::GenerateQuestUnits2()
 
 	if(QM.quest_goblins->goblins_state == Quest_Goblins::State::NoblemanLeft && QM.quest_goblins->days <= 0)
 	{
-		Unit* u = L.SpawnUnitNearLocation(L.GetArea(*Team.leader), Team.leader->pos, *UnitData::Get("q_gobliny_mag"), &Team.leader->pos, 5, 2.f);
+		Unit* u = L.SpawnUnitNearLocation(*Team.leader->area, Team.leader->pos, *UnitData::Get("q_gobliny_mag"), &Team.leader->pos, 5, 2.f);
 		if(u)
 		{
 			QM.quest_goblins->messenger = u;
@@ -8955,7 +8958,7 @@ void Game::UpdateQuests(int days)
 		if(QM.quest_sawmill->days >= 30 && L.city_ctx && game_state == GS_LEVEL)
 		{
 			QM.quest_sawmill->days = 29;
-			Unit* u = L.SpawnUnitNearLocation(L.GetArea(*Team.leader), Team.leader->pos, *UnitData::Get("poslaniec_tartak"), &Team.leader->pos, -2, 2.f);
+			Unit* u = L.SpawnUnitNearLocation(*Team.leader->area, Team.leader->pos, *UnitData::Get("poslaniec_tartak"), &Team.leader->pos, -2, 2.f);
 			if(u)
 			{
 				QM.quest_sawmill->messenger = u;
@@ -8985,7 +8988,7 @@ void Game::UpdateQuests(int days)
 				// player invesetd in mine, inform him about finishing
 				if(L.city_ctx && game_state == GS_LEVEL)
 				{
-					Unit* u = L.SpawnUnitNearLocation(L.GetArea(*Team.leader), Team.leader->pos, *UnitData::Get("poslaniec_kopalnia"), &Team.leader->pos, -2, 2.f);
+					Unit* u = L.SpawnUnitNearLocation(*Team.leader->area, Team.leader->pos, *UnitData::Get("poslaniec_kopalnia"), &Team.leader->pos, -2, 2.f);
 					if(u)
 					{
 						W.AddNews(Format(txMineBuilt, W.GetLocation(QM.quest_mine->target_loc)->name.c_str()));
@@ -9015,7 +9018,7 @@ void Game::UpdateQuests(int days)
 		QM.quest_mine->days += days;
 		if(QM.quest_mine->days >= QM.quest_mine->days_required && L.city_ctx && game_state == GS_LEVEL)
 		{
-			Unit* u = L.SpawnUnitNearLocation(L.GetArea(*Team.leader), Team.leader->pos, *UnitData::Get("poslaniec_kopalnia"), &Team.leader->pos, -2, 2.f);
+			Unit* u = L.SpawnUnitNearLocation(*Team.leader->area, Team.leader->pos, *UnitData::Get("poslaniec_kopalnia"), &Team.leader->pos, -2, 2.f);
 			if(u)
 			{
 				QM.quest_mine->messenger = u;
@@ -9217,7 +9220,7 @@ void Game::UpdateGame2(float dt)
 		if(QM.quest_bandits->timer <= 0.f)
 		{
 			// spawn agent
-			Unit* u = L.SpawnUnitNearLocation(L.GetArea(*Team.leader), Team.leader->pos, *UnitData::Get("agent"), &Team.leader->pos, -2, 2.f);
+			Unit* u = L.SpawnUnitNearLocation(*Team.leader->area, Team.leader->pos, *UnitData::Get("agent"), &Team.leader->pos, -2, 2.f);
 			if(u)
 			{
 				QM.quest_bandits->bandits_state = Quest_Bandits::State::AgentCome;
@@ -9410,7 +9413,7 @@ void Game::UpdateGameDialogClient()
 	else if(dialog_context.dialog_wait > 0.f && dialog_context.skip_id != -1)
 	{
 		if(GKey.KeyPressedReleaseAllowed(GK_SKIP_DIALOG) || GKey.KeyPressedReleaseAllowed(GK_SELECT_DIALOG) || GKey.KeyPressedReleaseAllowed(GK_ATTACK_USE)
-			|| (GKey.AllowKeyboard() && Key.PressedRelease(VK_ESCAPE)))
+			|| (GKey.AllowKeyboard() && input->PressedRelease(Key::Escape)))
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::SKIP_DIALOG;
@@ -9799,10 +9802,9 @@ cstring Game::GetRandomIdleText(Unit& u)
 	case G_CITIZENS:
 		if(!u.IsTeamMember())
 		{
-			if(u.area_id != LevelArea::OUTSIDE_ID && (IS_SET(u.data->flags, F_AI_DRUNKMAN) || IS_SET(u.data->flags3, F3_DRUNKMAN_AFTER_CONTEST)))
+			if(u.area->area_type == LevelArea::Type::Building && (IS_SET(u.data->flags, F_AI_DRUNKMAN) || IS_SET(u.data->flags3, F3_DRUNKMAN_AFTER_CONTEST)))
 			{
-				int id;
-				if(L.city_ctx->FindInn(id) && id == u.area_id)
+				if(L.city_ctx->FindInn() == u.area)
 				{
 					if(IS_SET(u.data->flags, F_AI_DRUNKMAN) || QM.quest_contest->state != Quest_Contest::CONTEST_TODAY)
 					{

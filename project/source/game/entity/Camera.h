@@ -11,7 +11,7 @@ struct Camera : public CameraBase
 	Matrix matViewInv;
 	float dist, tmp_dist, draw_range, springiness, d;
 	FrustumPlanes frustum, frustum2;
-	byte free_rot_key;
+	Key free_rot_key;
 	bool free_rot;
 
 private:

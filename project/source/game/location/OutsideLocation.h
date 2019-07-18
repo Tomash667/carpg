@@ -12,10 +12,8 @@ struct OutsideLocation : public Location, public LevelArea
 	float* h;
 	static const int size = 16 * 8;
 
-	OutsideLocation() : Location(true), LevelArea(LevelArea::Type::Outside, LevelArea::OUTSIDE_ID, true), tiles(nullptr), h(nullptr)
-	{
-	}
-	virtual ~OutsideLocation();
+	OutsideLocation();
+	~OutsideLocation();
 
 	// from Location
 	void Apply(vector<std::reference_wrapper<LevelArea>>& areas) override;

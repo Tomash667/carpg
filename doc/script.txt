@@ -98,6 +98,7 @@ Unit type:
 	bool dont_attack - enemy ai don't attack.
 	bool known_name - player known name, can't be changed from true to false.
 	UNIT_ORDER order - current unit order.
+	LevelArea@ area - level area unit is in.
 	bool IsTeamMember() - true if unit is team member.
 	float GetHpp() - get health percentage 0..1.
 	void AddItem(Item@ item, uint count = 1) - add item, will show message.
@@ -222,7 +223,6 @@ Level namespace:
 	Unit@ SpawnUnitNearLocation(UnitData@, const Vec3& in pos, float range) - spawns unit near position.
 	Unit@ SpawnUnit(LevelArea@, Spawn) - spawns unit inside area.
 	Unit@ GetMayor() - returns city mayor or village soltys or null.
-	LevelArea@ GetArea(Unit@) - get area with unit.
 
 StockScript namespace - can only be called from stock script:
 	void AddItem(Item@, uint count = 1) - add item to stock.

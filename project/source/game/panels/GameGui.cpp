@@ -187,8 +187,7 @@ void GameGui::DrawFront()
 	if(game.debug_info)
 	{
 		sorted_units.clear();
-		vector<Unit*>& units = L.GetArea(*pc.unit).units;
-		for(auto unit : units)
+		for(Unit* unit : pc.unit->area->units)
 		{
 			if(!unit->IsAlive())
 				continue;
@@ -546,8 +545,8 @@ void GameGui::DrawFront()
 		}
 
 		const GameKey& gk = GKey[GK_SHORTCUT1 + i];
-		if(gk[0] != VK_NONE)
-			GUI.DrawText(GUI.fSmall, global::gui->controls->key_text[gk[0]], DTF_SINGLELINE, Color::White, r);
+		if(gk[0] != Key::None)
+			GUI.DrawText(GUI.fSmall, global::gui->controls->key_text[(int)gk[0]], DTF_SINGLELINE, Color::White, r);
 
 		spos.x += offset;
 	}
@@ -704,7 +703,7 @@ void GameGui::DrawEndOfGameScreen()
 void GameGui::DrawSpeechBubbles()
 {
 	// get list to sort
-	LevelArea& area = L.GetArea(*game.pc->unit);
+	LevelArea& area = *game.pc->unit->area;
 	sorted_speech_bbs.clear();
 	for(vector<SpeechBubble*>::iterator it = speech_bbs.begin(), end = speech_bbs.end(); it != end; ++it)
 	{
@@ -836,7 +835,7 @@ void GameGui::Update(float dt)
 
 	game.gui->messages->Update(dt);
 
-	if(!GUI.HaveDialog() && !Game::Get().dialog_context.dialog_mode && Key.Down(VK_MENU))
+	if(!GUI.HaveDialog() && !Game::Get().dialog_context.dialog_mode && input->Down(Key::Alt))
 		use_cursor = true;
 	else
 		use_cursor = false;
@@ -936,7 +935,7 @@ void GameGui::Update(float dt)
 		{
 			if(Int2::Distance(GUI.cursor_pos, drag_and_drop_pos) > 3)
 				drag_and_drop = 2;
-			if(Key.Released(VK_LBUTTON))
+			if(input->Released(Key::LeftButton))
 			{
 				drag_and_drop = 0;
 				game.pc->shortcuts[drag_and_drop_index].trigger = true;
@@ -944,7 +943,7 @@ void GameGui::Update(float dt)
 		}
 		else if(drag_and_drop == 2)
 		{
-			if(Key.Released(VK_LBUTTON))
+			if(input->Released(Key::LeftButton))
 			{
 				drag_and_drop = 0;
 				if(shortcut_index != -1)
@@ -972,7 +971,7 @@ void GameGui::Update(float dt)
 			id = shortcut_index;
 			if(!GUI.HaveDialog())
 			{
-				if(Key.Pressed(VK_LBUTTON))
+				if(input->Pressed(Key::LeftButton))
 				{
 					drag_and_drop = 1;
 					drag_and_drop_pos = GUI.cursor_pos;
@@ -980,7 +979,7 @@ void GameGui::Update(float dt)
 					drag_and_drop_index = shortcut_index;
 					drag_and_drop_icon = nullptr;
 				}
-				else if(Key.PressedRelease(VK_RBUTTON))
+				else if(input->PressedRelease(Key::RightButton))
 					game.pc->SetShortcut(shortcut_index, Shortcut::TYPE_NONE);
 			}
 		}
@@ -1009,7 +1008,7 @@ void GameGui::Update(float dt)
 
 				if(sidebar_state[i] == 0)
 					sidebar_state[i] = 1;
-				if(Key.PressedRelease(VK_LBUTTON))
+				if(input->PressedRelease(Key::LeftButton))
 				{
 					switch((SideButtonId)i)
 					{
@@ -1260,11 +1259,11 @@ bool GameGui::UpdateChoice(DialogContext& ctx, int choices)
 	}
 
 	// wybór opcji dialogowej z klawiatury (1,2,3,..,9,0)
-	if(GKey.AllowKeyboard() && !Key.Down(VK_SHIFT))
+	if(GKey.AllowKeyboard() && !input->Down(Key::Shift))
 	{
 		for(int i = 0; i < min(10, choices); ++i)
 		{
-			if(Key.PressedRelease((byte)'1' + i))
+			if(input->PressedRelease((Key)('1' + i)))
 			{
 				ctx.choice_selected = i;
 				return true;
@@ -1272,7 +1271,7 @@ bool GameGui::UpdateChoice(DialogContext& ctx, int choices)
 		}
 		if(choices >= 10)
 		{
-			if(Key.PressedRelease('0'))
+			if(input->PressedRelease(Key::N0))
 			{
 				ctx.choice_selected = 9;
 				return true;
@@ -1283,24 +1282,24 @@ bool GameGui::UpdateChoice(DialogContext& ctx, int choices)
 	// wybieranie enterem/esc/spacj¹
 	if(GKey.KeyPressedReleaseAllowed(GK_SELECT_DIALOG))
 		return true;
-	else if(ctx.dialog_esc != -1 && GKey.AllowKeyboard() && Key.PressedRelease(VK_ESCAPE))
+	else if(ctx.dialog_esc != -1 && GKey.AllowKeyboard() && input->PressedRelease(Key::Escape))
 	{
 		ctx.choice_selected = ctx.dialog_esc;
 		return true;
 	}
 
 	// wybieranie klikniêciem
-	if(GKey.AllowMouse() && cursor_choice != -1 && Key.PressedRelease(VK_LBUTTON))
+	if(GKey.AllowMouse() && cursor_choice != -1 && input->PressedRelease(Key::LeftButton))
 	{
 		if(ctx.is_local)
-			game.pc_data.wasted_key = VK_LBUTTON;
+			game.pc_data.wasted_key = Key::LeftButton;
 		ctx.choice_selected = cursor_choice;
 		return true;
 	}
 
 	// aktualizacja paska przewijania
 	scrollbar.mouse_focus = focus;
-	if(Key.Focus() && PointInRect(GUI.cursor_pos, dialog_pos, dialog_size) && scrollbar.ApplyMouseWheel())
+	if(input->Focus() && PointInRect(GUI.cursor_pos, dialog_pos, dialog_size) && scrollbar.ApplyMouseWheel())
 		dialog_cursor_pos = Int2(-1, -1);
 	scrollbar.Update(0.f);
 
@@ -1429,8 +1428,8 @@ void GameGui::GetTooltip(TooltipController*, int _group, int id)
 				desc = shortcut.item->desc.c_str();
 			}
 			const GameKey& gk = GKey[GK_SHORTCUT1 + id];
-			if(gk[0] != VK_NONE)
-				title = Format("%s (%s)", title, global::gui->controls->key_text[gk[0]]);
+			if(gk[0] != Key::None)
+				title = Format("%s (%s)", title, global::gui->controls->key_text[(int)gk[0]]);
 			tooltip.text = title;
 			if(desc)
 				tooltip.small_text = desc;
@@ -1676,7 +1675,7 @@ void GameGui::SortUnits()
 //=================================================================================================
 void GameGui::UpdatePlayerView(float dt)
 {
-	LevelArea& area = L.GetArea(*game.pc->unit);
+	LevelArea& area = *game.pc->unit->area;
 	Unit& u = *game.pc->unit;
 
 	// mark previous views as invalid
@@ -1707,18 +1706,18 @@ void GameGui::UpdatePlayerView(float dt)
 			if(dist < ALERT_RANGE && L.camera.frustum.SphereToFrustum(u2.visual_pos, u2.GetSphereRadius()) && L.CanSee(u, u2))
 			{
 				// dodaj do pobliskich jednostek
-				bool jest = false;
+				bool exists = false;
 				for(vector<UnitView>::iterator it2 = unit_views.begin(), end2 = unit_views.end(); it2 != end2; ++it2)
 				{
 					if(it2->unit == *it)
 					{
-						jest = true;
+						exists = true;
 						it2->valid = true;
 						it2->last_pos = u2.GetUnitTextPos();
 						break;
 					}
 				}
-				if(!jest)
+				if(!exists)
 				{
 					UnitView& uv = Add1(unit_views);
 					uv.valid = true;

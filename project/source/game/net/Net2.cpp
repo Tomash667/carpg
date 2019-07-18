@@ -282,7 +282,7 @@ void Net::DeleteOldPlayers()
 		if(!info.loaded && info.u)
 		{
 			if(in_level)
-				RemoveElement(L.GetArea(*info.u).units, info.u);
+				RemoveElement(info.u->area->units, info.u);
 			if(info.u->cobj)
 			{
 				delete info.u->cobj->getCollisionShape();

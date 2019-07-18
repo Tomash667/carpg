@@ -601,7 +601,7 @@ int Pathfinding::FindLocalPath(LevelArea& area, vector<Int2>& path, const Int2& 
 		Int2(1,1)
 	};
 
-	bool jest = false;
+	bool have_empty_tile = false;
 	for(int i = 0; i < 8; ++i)
 	{
 		Int2 pt = my_rel + neis[i];
@@ -609,12 +609,12 @@ int Pathfinding::FindLocalPath(LevelArea& area, vector<Int2>& path, const Int2& 
 			continue;
 		if(!local_pfmap[pt(w)])
 		{
-			jest = true;
+			have_empty_tile = true;
 			break;
 		}
 	}
 
-	if(!jest)
+	if(!have_empty_tile)
 		return 2;
 
 	// dodaj pierwszy punkt do sprawdzenia
@@ -720,7 +720,7 @@ int Pathfinding::FindLocalPath(LevelArea& area, vector<Int2>& path, const Int2& 
 	if(marked)
 	{
 		if(marked == me)
-			test_pf_outside = (L.location->outside && me->area_id == LevelArea::OUTSIDE_ID);
+			test_pf_outside = (L.location->outside && me->area->area_type == LevelArea::Type::Outside);
 
 		if(a_map[my_rel(w)].state == 0)
 		{

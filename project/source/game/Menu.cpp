@@ -111,6 +111,7 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 	UnitData& ud = *ClassInfo::classes[(int)clas].unit_data;
 
 	Unit* u = CreateUnit(ud, -1, nullptr, nullptr, false, true);
+	u->area = nullptr;
 	u->ApplyHumanData(hd);
 	Team.members.clear();
 	Team.active_members.clear();
@@ -144,6 +145,7 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 	if(!tutorial && cc.HavePerk(Perk::Leader))
 	{
 		Unit* npc = CreateUnit(ClassInfo::GetRandomData(), -1, nullptr, nullptr, false);
+		npc->area = nullptr;
 		npc->ai = new AIController;
 		npc->ai->Init(npc);
 		npc->hero->know_name = true;
@@ -1342,9 +1344,10 @@ void Game::UpdateServerTransfer(float dt)
 				UnitData& ud = *ClassInfo::classes[(int)info.clas].unit_data;
 
 				u = CreateUnit(ud, -1, nullptr, nullptr, in_level, true);
-				info.u = u;
+				u->area = nullptr;
 				u->ApplyHumanData(info.hd);
 				u->mesh_inst->need_update = true;
+				info.u = u;
 
 				u->fake_unit = true; // to prevent sending hp changed message set temporary as fake unit
 				u->player = new PlayerController;
@@ -1435,6 +1438,7 @@ void Game::UpdateServerTransfer(float dt)
 			UnitData& ud = ClassInfo::GetRandomData();
 			int level = ud.level.x + 2 * (leader_perk - 1);
 			Unit* npc = CreateUnit(ud, level, nullptr, nullptr, false);
+			npc->area = nullptr;
 			npc->ai = new AIController;
 			npc->ai->Init(npc);
 			npc->hero->know_name = true;
@@ -1593,14 +1597,14 @@ void Game::UpdateServerTransfer(float dt)
 				{
 					// get positon of unit or building entrance
 					Vec3 pos;
-					if(center_unit->area_id == LevelArea::OUTSIDE_ID)
-						pos = center_unit->pos;
-					else
+					if(center_unit->area->area_type == LevelArea::Type::Building)
 					{
-						InsideBuilding* inside = L.city_ctx->inside_buildings[center_unit->area_id];
+						InsideBuilding* inside = static_cast<InsideBuilding*>(center_unit->area);
 						Vec2 p = inside->enter_region.Midpoint();
 						pos = Vec3(p.x, inside->enter_y, p.y);
 					}
+					else
+						pos = center_unit->pos;
 
 					// warp
 					for(PlayerInfo& info : N.players)

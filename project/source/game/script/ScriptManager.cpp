@@ -452,6 +452,7 @@ void ScriptManager::RegisterGame()
 	AddType("Unit");
 	AddType("Player");
 	AddType("Hero");
+	AddType("LevelArea");
 
 	AddEnum("ITEM_TYPE", {
 		{ "IT_WEAPON", IT_WEAPON },
@@ -577,6 +578,7 @@ void ScriptManager::RegisterGame()
 		.Member("const Vec3 pos", offsetof(Unit, pos))
 		.Member("const Player@ player", offsetof(Unit, player))
 		.Member("const Hero@ hero", offsetof(Unit, hero))
+		.Member("LevelArea@ area", offsetof(Unit, area))
 		.Method("int get_gold() const", asMETHOD(Unit, GetGold))
 		.Method("void set_gold(int)", asMETHOD(Unit, SetGold))
 		.Method("VarsContainer@ get_vars()", asFUNCTION(Unit_GetVars)) // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -649,8 +651,6 @@ void ScriptManager::RegisterGame()
 		.Method("void Fill(UnitGroup@, int, int)", asMETHOD(TmpUnitGroup, FillS))
 		.Method("Spawn Get(uint)", asMETHOD(TmpUnitGroup, GetS));
 
-	AddType("LevelArea");
-
 	AddType("Location")
 		.Member("const Vec2 pos", offsetof(Location, pos))
 		.Member("const string name", offsetof(Location, name))
@@ -703,8 +703,7 @@ void ScriptManager::RegisterGame()
 		.AddFunction("void SpawnItemRandomly(Item@, uint = 1)", asMETHOD(Level, SpawnItemRandomly))
 		.AddFunction("Unit@ SpawnUnitNearLocation(UnitData@, const Vec3& in, float)", asMETHOD(Level, SpawnUnitNearLocationS))
 		.AddFunction("Unit@ SpawnUnit(LevelArea@, Spawn)", asMETHOD(Level, SpawnUnit))
-		.AddFunction("Unit@ GetMayor()", asMETHOD(Level, GetMayor))
-		.AddFunction("LevelArea@ GetArea(Unit@)", asMETHODPR(Level, GetArea, (Unit&), LevelArea&));
+		.AddFunction("Unit@ GetMayor()", asMETHOD(Level, GetMayor));
 
 	WithNamespace("StockScript")
 		.AddFunction("void AddItem(Item@, uint = 1)", asFUNCTION(StockScript_AddItem)) // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<

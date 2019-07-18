@@ -28,6 +28,13 @@ namespace OLD
 }
 
 //=================================================================================================
+OutsideLocation::OutsideLocation() : Location(true), LevelArea(LevelArea::Type::Outside, LevelArea::OUTSIDE_ID, true), tiles(nullptr), h(nullptr)
+{
+	mine = Int2(0, 0);
+	maxe = Int2(size, size);
+}
+
+//=================================================================================================
 OutsideLocation::~OutsideLocation()
 {
 	delete[] tiles;

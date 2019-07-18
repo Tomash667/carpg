@@ -364,17 +364,17 @@ void CreateCharacterPanel::Update(float dt)
 	UpdateUnit(dt);
 
 	// rotating unit
-	if(PointInRect(GUI.cursor_pos, Int2(pos.x + 228, pos.y + 94), Int2(128, 256)) && Key.Focus() && focus)
+	if(PointInRect(GUI.cursor_pos, Int2(pos.x + 228, pos.y + 94), Int2(128, 256)) && input->Focus() && focus)
 	{
 		bool rotate = false;
 		if(rotating)
 		{
-			if(Key.Down(VK_LBUTTON))
+			if(input->Down(Key::LeftButton))
 				rotate = true;
 			else
 				rotating = false;
 		}
-		else if(Key.Pressed(VK_LBUTTON))
+		else if(input->Pressed(Key::LeftButton))
 		{
 			rotate = true;
 			rotating = true;
@@ -410,7 +410,7 @@ void CreateCharacterPanel::Update(float dt)
 
 			if(!flow_scroll.clicked && PointInRect(GUI.cursor_pos, flow_pos + global_pos, flow_size))
 			{
-				if(focus && Key.Focus())
+				if(focus && input->Focus())
 					flow_scroll.ApplyMouseWheel();
 
 				int y = GUI.cursor_pos.y - global_pos.y - flow_pos.y + (int)flow_scroll.offset;
@@ -426,7 +426,7 @@ void CreateCharacterPanel::Update(float dt)
 						break;
 				}
 			}
-			else if(!flow_scroll.clicked && PointInRect(GUI.cursor_pos, flow_scroll.pos + global_pos, flow_scroll.size) && focus && Key.Focus())
+			else if(!flow_scroll.clicked && PointInRect(GUI.cursor_pos, flow_scroll.pos + global_pos, flow_scroll.size) && focus && input->Focus())
 				flow_scroll.ApplyMouseWheel();
 
 			tooltip.UpdateTooltip(dt, group, id);
@@ -485,7 +485,7 @@ void CreateCharacterPanel::Update(float dt)
 		break;
 	}
 
-	if(focus && Key.Focus() && Key.PressedRelease(VK_ESCAPE))
+	if(focus && input->Focus() && input->PressedRelease(Key::Escape))
 		Event((GuiEvent)IdCancel);
 }
 

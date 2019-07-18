@@ -2,7 +2,7 @@
 #include "GameCore.h"
 #include "CreateServerPanel.h"
 #include "Language.h"
-#include "KeyStates.h"
+#include "Input.h"
 #include "Const.h"
 #include "Net.h"
 
@@ -98,7 +98,7 @@ void CreateServerPanel::Update(float dt)
 {
 	cont.Update(dt);
 
-	if(focus && Key.Focus() && Key.PressedRelease(VK_ESCAPE))
+	if(focus && input->Focus() && input->PressedRelease(Key::Escape))
 		Event((GuiEvent)(GuiEvent_Custom + BUTTON_CANCEL));
 }
 

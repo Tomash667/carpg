@@ -160,18 +160,18 @@ void TeamPanel::Update(float dt)
 
 	if(focus)
 	{
-		if(Key.Focus() && IsInside(GUI.cursor_pos))
+		if(input->Focus() && IsInside(GUI.cursor_pos))
 			scrollbar.ApplyMouseWheel();
 
 		scrollbar.mouse_focus = mouse_focus;
 		scrollbar.Update(dt);
 
-		if(picking && Key.Focus())
+		if(picking && input->Focus())
 		{
 			picked = -1;
 			GUI.Intersect(hitboxes, GUI.cursor_pos, &picked);
 
-			if(Key.Pressed(VK_LBUTTON))
+			if(input->Pressed(Key::LeftButton))
 			{
 				picking = false;
 				if(picked >= 0)
@@ -191,7 +191,7 @@ void TeamPanel::Update(float dt)
 					}
 				}
 			}
-			else if(Key.Pressed(VK_RBUTTON))
+			else if(input->Pressed(Key::RightButton))
 				picking = false;
 		}
 	}
@@ -212,7 +212,7 @@ void TeamPanel::Update(float dt)
 		bt[i].Update(dt);
 	}
 
-	if(focus && Key.Focus() && Key.PressedRelease(VK_ESCAPE))
+	if(focus && input->Focus() && input->PressedRelease(Key::Escape))
 		Hide();
 }
 

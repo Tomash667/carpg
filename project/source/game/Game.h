@@ -287,6 +287,7 @@ public:
 	}
 
 	Engine* engine;
+	Input* input;
 	Render* render;
 	SoundManager* sound_mgr;
 	CustomCollisionWorld* phy_world;
@@ -436,7 +437,7 @@ public:
 		DMG_NO_BLOOD = 1 << 0,
 		DMG_MAGICAL = 1 << 1
 	};
-	void GiveDmg(LevelArea& area, Unit* giver, float dmg, Unit& taker, const Vec3* hitpoint = nullptr, int dmg_flags = 0);
+	void GiveDmg(Unit& taker, float dmg, Unit* giver = nullptr, const Vec3* hitpoint = nullptr, int dmg_flags = 0);
 	void UpdateUnits(LevelArea& area, float dt);
 	bool CanLoadGame() const;
 	bool CanSaveGame() const;

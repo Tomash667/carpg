@@ -185,7 +185,7 @@ void ActionPanel::Update(float dt)
 			global::gui->game_gui->StartDragAndDrop(Shortcut::TYPE_SPECIAL, value, icon);
 			drag_and_drop = false;
 		}
-		if(Key.Released(VK_LBUTTON))
+		if(input->Released(Key::LeftButton))
 			drag_and_drop = false;
 	}
 
@@ -196,7 +196,7 @@ void ActionPanel::Update(float dt)
 	UpdateGroup(3, G_OTHER, group, id);
 	tooltip.UpdateTooltip(dt, group, id);
 
-	if(Key.Focus())
+	if(input->Focus())
 	{
 		if(IsInside(GUI.cursor_pos))
 		{
@@ -210,7 +210,7 @@ void ActionPanel::Update(float dt)
 			}
 		}
 
-		if(Key.PressedRelease(VK_ESCAPE))
+		if(input->PressedRelease(Key::Escape))
 			Hide();
 	}
 }
@@ -234,7 +234,7 @@ void ActionPanel::UpdateGroup(uint count, int group, int& group_result, int& id_
 			{
 				group_result = group;
 				id_result = index;
-				if(Key.Focus() && Key.Pressed(VK_LBUTTON))
+				if(input->Focus() && input->Pressed(Key::LeftButton))
 				{
 					drag_and_drop = true;
 					drag_and_drop_pos = GUI.cursor_pos;

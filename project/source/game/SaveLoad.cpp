@@ -722,6 +722,7 @@ void Game::LoadGame(GameReader& f)
 		{
 			Unit* u = new Unit;
 			u->Load(f, false);
+			u->area = nullptr;
 			Unit::AddRefid(u);
 			u->CreateMesh(Unit::CREATE_MESH::ON_WORLDMAP);
 
@@ -892,7 +893,7 @@ void Game::LoadGame(GameReader& f)
 			AIController& ai = **it;
 			Object* ptr = nullptr;
 			float dist, best_dist;
-			for(Object* obj : L.GetArea(*ai.unit).objects)
+			for(Object* obj : ai.unit->area->objects)
 			{
 				if(obj->base == bow_target)
 				{

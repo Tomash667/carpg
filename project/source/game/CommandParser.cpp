@@ -712,8 +712,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 
 				if(Net::IsLocal())
 				{
-					LevelArea& area = L.GetArea(*game.pc->unit);
-
+					LevelArea& area = *game.pc->unit->area;
 					for(int i = 0; i < count; ++i)
 					{
 						Unit* u = L.SpawnUnitNearLocation(area, game.pc->unit->GetFrontPos(), *data, &game.pc->unit->pos, level);
@@ -764,7 +763,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		if(game.pc_data.target_unit && game.pc_data.target_unit->IsAlive())
 		{
 			if(Net::IsLocal())
-				game.GiveDmg(L.GetArea(*game.pc->unit), nullptr, game.pc_data.target_unit->hpmax, *game.pc_data.target_unit);
+				game.GiveDmg(*game.pc_data.target_unit, game.pc_data.target_unit->hpmax);
 			else
 			{
 				NetChange& c = Add1(Net::changes);
@@ -808,7 +807,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		break;
 	case CMD_SUICIDE:
 		if(Net::IsLocal())
-			game.GiveDmg(L.GetArea(*game.pc->unit), nullptr, game.pc->unit->hpmax, *game.pc->unit);
+			game.GiveDmg(*game.pc->unit, game.pc->unit->hpmax);
 		else
 			Net::PushChange(NetChange::CHEAT_SUICIDE);
 		break;
@@ -1452,7 +1451,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			if(Net::IsLocal())
 			{
 				if(cmd.cmd == CMD_HURT)
-					game.GiveDmg(L.GetArea(*u), nullptr, 100.f, *u);
+					game.GiveDmg(*u, 100.f);
 				else if(cmd.cmd == CMD_BREAK_ACTION)
 					u->BreakAction(Unit::BREAK_ACTION_MODE::NORMAL, true);
 				else
@@ -1477,7 +1476,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			return;
 		break;
 	case CMD_TILE_INFO:
-		if(L.location->outside && game.pc->unit->area_id == LevelArea::OUTSIDE_ID && L.terrain->IsInside(game.pc->unit->pos))
+		if(L.location->outside && game.pc->unit->area->area_type == LevelArea::Type::Outside && L.terrain->IsInside(game.pc->unit->pos))
 		{
 			OutsideLocation* outside = static_cast<OutsideLocation*>(L.location);
 			const TerrainTile& t = outside->tiles[PosToPt(game.pc->unit->pos)(outside->size)];

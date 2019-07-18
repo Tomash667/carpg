@@ -151,13 +151,12 @@ quest deliver_resources
 				{
 					World::RemoveEncounter(quest);
 					mayor.dont_attack = true;
-					LevelArea@ area = Level::GetArea(mayor);
 					SpawnGroup group;
 					group.Fill(UnitGroup::Get("bandits"), 2, 8);
 					bool first = true;
 					for(uint i=0; i<group.count; ++i)
 					{
-						Unit@ unit = Level::SpawnUnit(area, group.Get(i));
+						Unit@ unit = Level::SpawnUnit(mayor.area, group.Get(i));
 						if(unit !is null)
 						{
 							unit.dont_attack = true;

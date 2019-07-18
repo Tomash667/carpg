@@ -1,7 +1,7 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "Console.h"
-#include "KeyStates.h"
+#include "Input.h"
 #include "ResourceManager.h"
 #include "CommandParser.h"
 #include "GameKeys.h"
@@ -45,7 +45,7 @@ void Console::Update(float dt)
 {
 	itb.mouse_focus = focus;
 	itb.Update(dt);
-	if(Key.Focus())
+	if(input->Focus())
 	{
 		if(GKey.KeyDownUp(GK_CONSOLE))
 		{
@@ -54,16 +54,16 @@ void Console::Update(float dt)
 		}
 		else if(focus)
 		{
-			if(Key.Shortcut(KEY_CONTROL, 'V'))
+			if(input->Shortcut(KEY_CONTROL, Key::V))
 			{
 				cstring text = GUI.GetClipboard();
 				if(text)
-					itb.input += text;
+					itb.input_str += text;
 			}
-			else if(Key.PressedRelease(VK_TAB))
+			else if(input->PressedRelease(Key::Tab))
 			{
 				// autocomplete on tab key
-				string s = Trimmed(itb.input);
+				string s = Trimmed(itb.input_str);
 				if(!s.empty() && s.find_first_of(' ') == string::npos)
 				{
 					cstring best_cmd_name = nullptr;
@@ -84,8 +84,8 @@ void Console::Update(float dt)
 
 					if(best_index != -1)
 					{
-						itb.input = best_cmd_name;
-						itb.input += ' ';
+						itb.input_str = best_cmd_name;
+						itb.input_str += ' ';
 					}
 				}
 			}

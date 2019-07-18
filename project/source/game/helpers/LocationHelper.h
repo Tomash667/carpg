@@ -2,6 +2,7 @@
 
 //-----------------------------------------------------------------------------
 #include "City.h"
+#include "InsideLocation.h"
 
 //-----------------------------------------------------------------------------
 namespace LocationHelper
@@ -28,5 +29,14 @@ namespace LocationHelper
 	{
 		assert(loc);
 		return IsVillage(*loc);
+	}
+
+	inline bool IsMultiLevel(Location* loc)
+	{
+		assert(loc);
+		if(loc->outside)
+			return false;
+		InsideLocation* inside = static_cast<InsideLocation*>(loc);
+		return inside->IsMultilevel();
 	}
 }

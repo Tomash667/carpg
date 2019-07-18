@@ -2502,6 +2502,7 @@ void CityGenerator::SpawnUnits()
 			continue;
 
 		Unit* u = game.CreateUnit(*ud, -2);
+		u->area = city;
 
 		switch(b.rot)
 		{

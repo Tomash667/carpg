@@ -2,7 +2,7 @@
 #include "GameCore.h"
 #include "GamePanel.h"
 #include "GameDialogBox.h"
-#include "KeyStates.h"
+#include "Input.h"
 #include "Game.h"
 #include "Language.h"
 
@@ -209,7 +209,7 @@ void GamePanelContainer::Update(float dt)
 		if(top)
 		{
 			top->mouse_focus = true;
-			if((Key.Pressed(VK_LBUTTON) || Key.Pressed(VK_RBUTTON)) && top->order != order - 1)
+			if((input->Pressed(Key::LeftButton) || input->Pressed(Key::RightButton)) && top->order != order - 1)
 			{
 				ctrls.back()->Event(GuiEvent_LostFocus);
 				ctrls.back()->focus = false;

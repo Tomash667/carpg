@@ -56,45 +56,45 @@ void Settings::InitGameKeys()
 //=================================================================================================
 void Settings::ResetGameKeys()
 {
-	GKey[GK_MOVE_FORWARD].Set('W', VK_UP);
-	GKey[GK_MOVE_BACK].Set('S', VK_DOWN);
-	GKey[GK_MOVE_LEFT].Set('A', VK_LEFT);
-	GKey[GK_MOVE_RIGHT].Set('D', VK_RIGHT);
-	GKey[GK_WALK].Set(VK_SHIFT);
-	GKey[GK_ROTATE_LEFT].Set('Q');
-	GKey[GK_ROTATE_RIGHT].Set('E');
-	GKey[GK_TAKE_WEAPON].Set(VK_SPACE);
-	GKey[GK_ATTACK_USE].Set(VK_LBUTTON, 'Z');
-	GKey[GK_USE].Set('R');
-	GKey[GK_BLOCK].Set(VK_RBUTTON, 'X');
-	GKey[GK_STATS].Set('C');
-	GKey[GK_INVENTORY].Set('I');
-	GKey[GK_TEAM_PANEL].Set('T');
-	GKey[GK_ACTION_PANEL].Set('K');
-	GKey[GK_JOURNAL].Set('J');
-	GKey[GK_MINIMAP].Set('M');
-	GKey[GK_QUICKSAVE].Set(VK_F5);
-	GKey[GK_QUICKLOAD].Set(VK_F9);
-	GKey[GK_TAKE_ALL].Set('F');
-	GKey[GK_SELECT_DIALOG].Set(VK_RETURN);
-	GKey[GK_SKIP_DIALOG].Set(VK_SPACE);
-	GKey[GK_TALK_BOX].Set('N');
-	GKey[GK_PAUSE].Set(VK_PAUSE);
-	GKey[GK_YELL].Set('Y');
-	GKey[GK_CONSOLE].Set(VK_OEM_3);
-	GKey[GK_ROTATE_CAMERA].Set('V');
-	GKey[GK_AUTOWALK].Set('F');
-	GKey[GK_TOGGLE_WALK].Set(VK_CAPITAL);
-	GKey[GK_SHORTCUT1].Set('1');
-	GKey[GK_SHORTCUT2].Set('2');
-	GKey[GK_SHORTCUT3].Set('3');
-	GKey[GK_SHORTCUT4].Set('4');
-	GKey[GK_SHORTCUT5].Set('5');
-	GKey[GK_SHORTCUT6].Set('6');
-	GKey[GK_SHORTCUT7].Set('7');
-	GKey[GK_SHORTCUT8].Set('8');
-	GKey[GK_SHORTCUT9].Set('9');
-	GKey[GK_SHORTCUT10].Set('0');
+	GKey[GK_MOVE_FORWARD].Set(Key::W, Key::Up);
+	GKey[GK_MOVE_BACK].Set(Key::S, Key::Down);
+	GKey[GK_MOVE_LEFT].Set(Key::A, Key::Left);
+	GKey[GK_MOVE_RIGHT].Set(Key::D, Key::Right);
+	GKey[GK_WALK].Set(Key::Shift);
+	GKey[GK_ROTATE_LEFT].Set(Key::Q);
+	GKey[GK_ROTATE_RIGHT].Set(Key::E);
+	GKey[GK_TAKE_WEAPON].Set(Key::Spacebar);
+	GKey[GK_ATTACK_USE].Set(Key::LeftButton, Key::Z);
+	GKey[GK_USE].Set(Key::R);
+	GKey[GK_BLOCK].Set(Key::RightButton, Key::X);
+	GKey[GK_STATS].Set(Key::C);
+	GKey[GK_INVENTORY].Set(Key::I);
+	GKey[GK_TEAM_PANEL].Set(Key::T);
+	GKey[GK_ACTION_PANEL].Set(Key::K);
+	GKey[GK_JOURNAL].Set(Key::J);
+	GKey[GK_MINIMAP].Set(Key::M);
+	GKey[GK_QUICKSAVE].Set(Key::F5);
+	GKey[GK_QUICKLOAD].Set(Key::F9);
+	GKey[GK_TAKE_ALL].Set(Key::F);
+	GKey[GK_SELECT_DIALOG].Set(Key::Enter);
+	GKey[GK_SKIP_DIALOG].Set(Key::Spacebar);
+	GKey[GK_TALK_BOX].Set(Key::N);
+	GKey[GK_PAUSE].Set(Key::Pause);
+	GKey[GK_YELL].Set(Key::Y);
+	GKey[GK_CONSOLE].Set(Key::Tilde);
+	GKey[GK_ROTATE_CAMERA].Set(Key::V);
+	GKey[GK_AUTOWALK].Set(Key::F);
+	GKey[GK_TOGGLE_WALK].Set(Key::CapsLock);
+	GKey[GK_SHORTCUT1].Set(Key::N1);
+	GKey[GK_SHORTCUT2].Set(Key::N2);
+	GKey[GK_SHORTCUT3].Set(Key::N3);
+	GKey[GK_SHORTCUT4].Set(Key::N4);
+	GKey[GK_SHORTCUT5].Set(Key::N5);
+	GKey[GK_SHORTCUT6].Set(Key::N6);
+	GKey[GK_SHORTCUT7].Set(Key::N7);
+	GKey[GK_SHORTCUT8].Set(Key::N8);
+	GKey[GK_SHORTCUT9].Set(Key::N9);
+	GKey[GK_SHORTCUT10].Set(Key::N0);
 }
 
 //=================================================================================================
@@ -104,7 +104,7 @@ void Settings::SaveGameKeys(Config& cfg)
 	{
 		GameKey& k = GKey[i];
 		for(int j = 0; j < 2; ++j)
-			cfg.Add(Format("%s%d", k.id, j), k[j]);
+			cfg.Add(Format("%s%d", k.id, j), (int)k[j]);
 	}
 }
 
@@ -122,10 +122,10 @@ void Settings::LoadGameKeys(Config& cfg)
 			{
 				Warn("Config: Invalid value for %s: %d.", s, w);
 				w = -1;
-				cfg.Add(s, k[j]);
+				cfg.Add(s, (int)k[j]);
 			}
 			if(w != -1)
-				k[j] = (byte)w;
+				k[j] = (Key)w;
 		}
 	}
 }

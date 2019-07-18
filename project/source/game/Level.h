@@ -57,9 +57,8 @@ public:
 	void ProcessRemoveUnits(bool leave);
 	vector<std::reference_wrapper<LevelArea>>& ForEachArea() { return areas; }
 	void Apply();
-	LevelArea& GetArea(Unit& unit);
 	LevelArea& GetArea(const Vec3& pos);
-	LevelArea& GetAreaFromAreaId(int area_id);
+	LevelArea* GetAreaById(int area_id);
 	Unit* FindUnit(int netid);
 	Unit* FindUnit(delegate<bool(Unit*)> pred);
 	Unit* FindUnit(UnitData* ud);

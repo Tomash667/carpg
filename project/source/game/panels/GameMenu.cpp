@@ -2,7 +2,7 @@
 #include "GameCore.h"
 #include "GameMenu.h"
 #include "Language.h"
-#include "KeyStates.h"
+#include "Input.h"
 #include "ResourceManager.h"
 #include "Game.h"
 #include "GlobalGui.h"
@@ -106,7 +106,7 @@ void GameMenu::Update(float dt)
 		bt[i].Update(dt);
 	}
 
-	if(focus && Key.Focus() && Key.PressedRelease(VK_ESCAPE))
+	if(focus && input->Focus() && input->PressedRelease(Key::Escape))
 		GUI.CloseDialog(this);
 }
 

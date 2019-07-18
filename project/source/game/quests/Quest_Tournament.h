@@ -43,9 +43,10 @@ private:
 	void Talk(cstring text);
 
 	State state;
-	int year, city_year, city, state2, state3, round, arena;
+	int year, city_year, city, state2, state3, round;
 	vector<SmartPtr<Unit>> units;
 	float timer;
+	InsideBuilding* arena;
 	Unit* master;
 	SmartPtr<Unit> skipped_unit, other_fighter, winner;
 	vector<pair<SmartPtr<Unit>, SmartPtr<Unit>>> pairs;

@@ -1,7 +1,7 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "Journal.h"
-#include "KeyStates.h"
+#include "Input.h"
 #include "Game.h"
 #include "GetTextDialog.h"
 #include "Language.h"
@@ -99,14 +99,14 @@ void Journal::Update(float dt)
 
 	Mode new_mode = Invalid;
 
-	if(Key.Focus())
+	if(input->Focus())
 	{
 		// zmiana trybu
-		if(Key.PressedRelease('1'))
+		if(input->PressedRelease(Key::N1))
 			new_mode = Quests;
-		else if(Key.PressedRelease('2'))
+		else if(input->PressedRelease(Key::N2))
 			new_mode = Rumors;
-		else if(Key.PressedRelease('3'))
+		else if(input->PressedRelease(Key::N3))
 			new_mode = Notes;
 		// zmiana strony
 		if(page != 0 && GKey.PressedRelease(GK_MOVE_LEFT))
@@ -123,7 +123,7 @@ void Journal::Update(float dt)
 		// zmiana wybranego zadania
 		if(mode == Quests && !QM.quests.empty())
 		{
-			if(GKey.PressedR(GK_ROTATE_LEFT))
+			if(GKey.PressedR(GK_ROTATE_LEFT) != Key::None)
 			{
 				if(!details)
 				{
@@ -143,7 +143,7 @@ void Journal::Update(float dt)
 					Build();
 				}
 			}
-			if(GKey.PressedR(GK_ROTATE_RIGHT))
+			if(GKey.PressedR(GK_ROTATE_RIGHT) != Key::None)
 			{
 				if(!details)
 				{
@@ -204,7 +204,7 @@ void Journal::Update(float dt)
 	if(new_mode != Invalid)
 	{
 		GUI.cursor_mode = CURSOR_HAND;
-		if(Key.Focus() && Key.PressedRelease(VK_LBUTTON))
+		if(input->Focus() && input->PressedRelease(Key::LeftButton))
 		{
 			// zmieñ zak³adkê
 			if(new_mode == mode)
@@ -248,7 +248,7 @@ void Journal::Update(float dt)
 				if(what < int(QM.quests.size()))
 				{
 					GUI.cursor_mode = CURSOR_HAND;
-					if(Key.Focus() && Key.PressedRelease(VK_LBUTTON))
+					if(input->Focus() && input->PressedRelease(Key::LeftButton))
 					{
 						details = true;
 						prev_page = page;
@@ -280,12 +280,12 @@ void Journal::Update(float dt)
 			if(ok && GUI.cursor_pos.y >= rect.Top() + last_text.y*font_height && GUI.cursor_pos.y <= rect.Top() + (last_text.y + 1)*font_height)
 			{
 				GUI.cursor_mode = CURSOR_HAND;
-				if(Key.Focus() && Key.PressedRelease(VK_LBUTTON))
+				if(input->Focus() && input->PressedRelease(Key::LeftButton))
 				{
 					// dodaj notatkê
 					cstring names[] = { nullptr, txAdd };
-					input.clear();
-					GetTextDialogParams params(txNoteText, input);
+					input_str.clear();
+					GetTextDialogParams params(txNoteText, input_str);
 					params.custom_names = names;
 					params.event = delegate<void(int)>(this, &Journal::OnAddNote);
 					params.limit = 255;
@@ -306,7 +306,7 @@ void Journal::Update(float dt)
 			if(PointInRect(GUI.cursor_pos, rect.LeftBottom() - Int2(8, 8), Int2(16, 16)))
 			{
 				GUI.cursor_mode = CURSOR_HAND;
-				if(Key.Focus() && Key.PressedRelease(VK_LBUTTON))
+				if(input->Focus() && input->PressedRelease(Key::LeftButton))
 					--page;
 			}
 		}
@@ -315,13 +315,13 @@ void Journal::Update(float dt)
 			if(PointInRect(GUI.cursor_pos, rect.RightBottom() + Int2(8, -8), Int2(16, 16)))
 			{
 				GUI.cursor_mode = CURSOR_HAND;
-				if(Key.Focus() && Key.PressedRelease(VK_LBUTTON))
+				if(input->Focus() && input->PressedRelease(Key::LeftButton))
 					++page;
 			}
 		}
 	}
 
-	if(Key.Focus() && Key.PressedRelease(VK_ESCAPE))
+	if(input->Focus() && input->PressedRelease(Key::Escape))
 		Hide();
 }
 
@@ -505,7 +505,7 @@ void Journal::OnAddNote(int id)
 {
 	if(id == BUTTON_OK)
 	{
-		notes.push_back(Format(txAddTime, W.GetDate(), input.c_str()));
+		notes.push_back(Format(txAddTime, W.GetDate(), input_str.c_str()));
 		game.sound_mgr->PlaySound2d(game.gui->messages->snd_scribble);
 		Build();
 		if(!Net::IsLocal())

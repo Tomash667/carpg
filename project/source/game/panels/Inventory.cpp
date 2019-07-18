@@ -551,7 +551,7 @@ void InventoryPanel::Update(float dt)
 		return;
 	}
 
-	if(mode == INVENTORY && Key.Focus() && Key.PressedRelease(VK_ESCAPE))
+	if(mode == INVENTORY && input->Focus() && input->PressedRelease(Key::Escape))
 	{
 		Hide();
 		return;
@@ -578,7 +578,7 @@ void InventoryPanel::Update(float dt)
 
 	bool have_focus = (mode == INVENTORY ? focus : mouse_focus);
 
-	if(have_focus && Key.Focus() && IsInside(GUI.cursor_pos))
+	if(have_focus && input->Focus() && IsInside(GUI.cursor_pos))
 		scrollbar.ApplyMouseWheel();
 	if(focus)
 	{
@@ -650,7 +650,7 @@ void InventoryPanel::Update(float dt)
 	}
 
 	// klawisz to podnoszenia wszystkich przedmiotów
-	if(mode == LOOT_OTHER && (focus || base.inv_trade_mine->focus) && Key.Focus() && GKey.PressedRelease(GK_TAKE_ALL))
+	if(mode == LOOT_OTHER && (focus || base.inv_trade_mine->focus) && input->Focus() && GKey.PressedRelease(GK_TAKE_ALL))
 	{
 		Event(GuiEvent_Custom);
 		return;
@@ -663,7 +663,7 @@ void InventoryPanel::Update(float dt)
 	{
 		bool old_for_unit = for_unit;
 		if(AllowForUnit())
-			for_unit = Key.Down(VK_SHIFT);
+			for_unit = input->Down(Key::Shift);
 		else
 			for_unit = false;
 		UpdateBoxIndex(dt, new_index, -1, old_for_unit != for_unit);
@@ -676,7 +676,7 @@ void InventoryPanel::Update(float dt)
 		rot += PI * dt / 2;
 	}
 
-	if(focus && Key.Focus() && IsInside(GUI.cursor_pos))
+	if(focus && input->Focus() && IsInside(GUI.cursor_pos))
 	{
 		for(int i = 0; i < Shortcut::MAX; ++i)
 		{
@@ -727,11 +727,11 @@ void InventoryPanel::Update(float dt)
 
 		last_item = item;
 
-		if(!focus || !(game.pc->unit->action == A_NONE || game.pc->unit->CanDoWhileUsing()) || base.lock || !Key.Focus())
+		if(!focus || !(game.pc->unit->action == A_NONE || game.pc->unit->CanDoWhileUsing()) || base.lock || !input->Focus())
 			return;
 
 		// obs³uga kilkania w ekwipunku
-		if(mode == INVENTORY && Key.PressedRelease(VK_RBUTTON) && game.pc->unit->action == A_NONE)
+		if(mode == INVENTORY && input->PressedRelease(Key::RightButton) && game.pc->unit->action == A_NONE)
 		{
 			// wyrzuæ przedmiot
 			if(IS_SET(item->flags, ITEM_DONT_DROP) && game.IsAnyoneTalking())
@@ -754,7 +754,7 @@ void InventoryPanel::Update(float dt)
 				}
 				else
 				{
-					if(Key.Down(VK_SHIFT))
+					if(input->Down(Key::Shift))
 					{
 						// wyrzuæ wszystkie
 						unit->DropItems(i_index, 0);
@@ -764,7 +764,7 @@ void InventoryPanel::Update(float dt)
 						base.BuildTmpInventory(0);
 						UpdateScrollbar();
 					}
-					else if(Key.Down(VK_CONTROL) || slot->count == 1)
+					else if(input->Down(Key::Control) || slot->count == 1)
 					{
 						// wyrzuæ jeden
 						if(unit->DropItem(i_index))
@@ -890,9 +890,9 @@ void InventoryPanel::Update(float dt)
 					uint count;
 					if(item->IsStackable() && slot->count != 1)
 					{
-						if(Key.Down(VK_SHIFT))
+						if(input->Down(Key::Shift))
 							count = slot->count;
-						else if(Key.Down(VK_CONTROL))
+						else if(input->Down(Key::Control))
 							count = 1;
 						else
 						{
@@ -918,9 +918,9 @@ void InventoryPanel::Update(float dt)
 					uint count;
 					if(item->IsStackable() && slot->count != 1)
 					{
-						if(Key.Down(VK_SHIFT))
+						if(input->Down(Key::Shift))
 							count = slot->count;
-						else if(Key.Down(VK_CONTROL))
+						else if(input->Down(Key::Control))
 							count = 1;
 						else
 						{
@@ -947,9 +947,9 @@ void InventoryPanel::Update(float dt)
 					uint count;
 					if(item->IsStackable() && slot->count != 1)
 					{
-						if(Key.Down(VK_SHIFT))
+						if(input->Down(Key::Shift))
 							count = slot->count;
-						else if(Key.Down(VK_CONTROL))
+						else if(input->Down(Key::Control))
 							count = 1;
 						else
 						{
@@ -992,18 +992,18 @@ void InventoryPanel::Update(float dt)
 						int option;
 						if(item->type == IT_GOLD)
 						{
-							if(Key.Down(VK_CONTROL))
+							if(input->Down(Key::Control))
 								option = 1;
-							else if(Key.Down(VK_MENU))
+							else if(input->Down(Key::Alt))
 								option = 0;
 							else
 								option = 2;
 						}
 						else
 						{
-							if(Key.Down(VK_SHIFT))
+							if(input->Down(Key::Shift))
 								option = 2;
-							else if(Key.Down(VK_CONTROL))
+							else if(input->Down(Key::Control))
 								option = 1;
 							else
 								option = 0;
@@ -1084,9 +1084,9 @@ void InventoryPanel::Update(float dt)
 					uint count;
 					if(item->IsStackable() && slot->team_count != 1)
 					{
-						if(Key.Down(VK_CONTROL))
+						if(input->Down(Key::Control))
 							count = 1;
-						else if(Key.Down(VK_SHIFT))
+						else if(input->Down(Key::Shift))
 							count = slot->team_count;
 						else
 						{
@@ -1124,9 +1124,9 @@ void InventoryPanel::Update(float dt)
 					uint count;
 					if(item->IsStackable() && slot->team_count != 1)
 					{
-						if(Key.Down(VK_SHIFT))
+						if(input->Down(Key::Shift))
 							count = 1;
-						else if(Key.Down(VK_CONTROL))
+						else if(input->Down(Key::Control))
 							count = slot->team_count;
 						else
 						{
@@ -1213,9 +1213,9 @@ void InventoryPanel::Update(float dt)
 						uint count;
 						if(slot->count != 1)
 						{
-							if(Key.Down(VK_CONTROL))
+							if(input->Down(Key::Control))
 								count = 1;
-							else if(Key.Down(VK_SHIFT))
+							else if(input->Down(Key::Shift))
 								count = slot->count;
 							else
 							{
@@ -1288,7 +1288,7 @@ void InventoryPanel::Update(float dt)
 	else if(new_index == INDEX_GOLD && mode != GIVE_OTHER && mode != SHARE_OTHER && !base.lock)
 	{
 		// wyrzucanie/chowanie/dawanie z³ota
-		if(Key.PressedRelease(VK_LBUTTON))
+		if(input->PressedRelease(Key::LeftButton))
 		{
 			last_index = INDEX_INVALID;
 			if(mode == INVENTORY)
@@ -2618,13 +2618,13 @@ bool InventoryPanel::HandleLeftClick(const Item* item)
 	{
 		if(drag_and_drop)
 		{
-			if(Key.Released(VK_LBUTTON))
+			if(input->Released(Key::LeftButton))
 			{
 				drag_and_drop = false;
 				return true;
 			}
 		}
-		else if(Key.Pressed(VK_LBUTTON))
+		else if(input->Pressed(Key::LeftButton))
 		{
 			drag_and_drop = true;
 			drag_and_drop_pos = GUI.cursor_pos;
@@ -2633,5 +2633,5 @@ bool InventoryPanel::HandleLeftClick(const Item* item)
 		return false;
 	}
 	else
-		return Key.PressedRelease(VK_LBUTTON);
+		return input->PressedRelease(Key::LeftButton);
 }

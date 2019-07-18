@@ -65,7 +65,6 @@ struct City : public OutsideLocation
 		inside_offset(1, 0), arena_time(-1), flags(HaveExit), settlement_type(SettlementType::City), variant(-1)
 	{
 	}
-
 	~City();
 
 	// from Location

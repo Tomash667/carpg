@@ -24,7 +24,6 @@
 #include "Quest_Mages.h"
 #include "Quest_Scripted.h"
 #include "Game.h"
-#include "Debug.h"
 #include "GlobalGui.h"
 #include "WorldMapGui.h"
 
@@ -2270,7 +2269,7 @@ void World::UpdateTravel(float dt)
 
 			encounter_chance += 1;
 
-			if(Rand() % 500 < ((int)encounter_chance) - 25 || (gui->HaveFocus() && DebugKey('E')))
+			if(Rand() % 500 < ((int)encounter_chance) - 25 || (gui->HaveFocus() && GKey.DebugKey(Key::E)))
 			{
 				encounter_chance = 0.f;
 				StartEncounter(enc, group);
@@ -2305,9 +2304,9 @@ void World::StartEncounter(int enc, UnitGroup* group)
 
 		bool special = false;
 		bool golem = (QM.quest_mages2->mages_state >= Quest_Mages2::State::Encounter
-			&& QM.quest_mages2->mages_state < Quest_Mages2::State::Completed && Rand() % 3 == 0) || DebugKey('G');
-		bool crazy = (c_state == Quest_Crazies::State::TalkedWithCrazy && (Rand() % 2 == 0 || DebugKey('S')));
-		bool unk = (c_state >= Quest_Crazies::State::PickedStone && c_state < Quest_Crazies::State::End && (Rand() % 3 == 0 || DebugKey('S')));
+			&& QM.quest_mages2->mages_state < Quest_Mages2::State::Completed && Rand() % 3 == 0) || GKey.DebugKey(Key::G);
+		bool crazy = (c_state == Quest_Crazies::State::TalkedWithCrazy && (Rand() % 2 == 0 || GKey.DebugKey(Key::S)));
+		bool unk = (c_state >= Quest_Crazies::State::PickedStone && c_state < Quest_Crazies::State::End && (Rand() % 3 == 0 || GKey.DebugKey(Key::S)));
 		if(QM.quest_mages2->mages_state == Quest_Mages2::State::Encounter && Rand() % 2 == 0)
 			golem = true;
 		if(c_state == Quest_Crazies::State::PickedStone && Rand() % 2 == 0)
@@ -2323,7 +2322,7 @@ void World::StartEncounter(int enc, UnitGroup* group)
 		else if(Rand() % 3 == 0)
 			special = true;
 
-		if(crazy || unk || golem || special || DebugKey(VK_SHIFT))
+		if(crazy || unk || golem || special || GKey.DebugKey(Key::Shift))
 		{
 			// special encounter
 			encounter.mode = ENCOUNTER_SPECIAL;
@@ -2337,13 +2336,13 @@ void World::StartEncounter(int enc, UnitGroup* group)
 				encounter.special = SE_GOLEM;
 				QM.quest_mages2->paid = false;
 			}
-			else if(DEBUG_BOOL && Key.Focus())
+			else if(IsDebug() && Game::Get().input->Focus())
 			{
-				if(Key.Down('I'))
+				if(Game::Get().input->Down(Key::I))
 					encounter.special = SE_CRAZY_HEROES;
-				else if(Key.Down('B'))
+				else if(Game::Get().input->Down(Key::B))
 					encounter.special = SE_BANDITS_VS_TRAVELERS;
-				else if(Key.Down('C'))
+				else if(Game::Get().input->Down(Key::C))
 					encounter.special = SE_CRAZY_COOK;
 			}
 

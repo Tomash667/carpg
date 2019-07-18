@@ -3,7 +3,7 @@
 #include "StatsPanel.h"
 #include "Unit.h"
 #include "PlayerController.h"
-#include "KeyStates.h"
+#include "Input.h"
 #include "Game.h"
 #include "GameStats.h"
 #include "Language.h"
@@ -128,7 +128,7 @@ void StatsPanel::Update(float dt)
 
 	tooltip.UpdateTooltip(dt, group, id);
 
-	if(focus && Key.Focus() && Key.PressedRelease(VK_ESCAPE))
+	if(focus && input->Focus() && input->PressedRelease(Key::Escape))
 		Hide();
 }
 

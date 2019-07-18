@@ -2,7 +2,7 @@
 #include "GameCore.h"
 #include "BookPanel.h"
 #include "Item.h"
-#include "KeyStates.h"
+#include "Input.h"
 #include "ResourceManager.h"
 #include "Game.h"
 #include "SoundManager.h"
@@ -70,7 +70,7 @@ void BookPanel::Draw(ControlDrawData*)
 	}
 
 #ifdef _DEBUG
-	if(Key.Down('B'))
+	if(input->Down(Key::B))
 	{
 		for(auto& rect : book->scheme->regions)
 		{
@@ -98,7 +98,7 @@ void BookPanel::Update(float dt)
 	{
 		Int2 arrow_size = gui::GetSize(tArrowL);
 		if(Rect::Create(book_pos + book->scheme->prev * scale, arrow_size * scale).IsInside(GUI.cursor_pos)
-			&& Key.PressedRelease(VK_LBUTTON))
+			&& input->PressedRelease(Key::LeftButton))
 			ChangePage(-1);
 	}
 
@@ -107,11 +107,11 @@ void BookPanel::Update(float dt)
 	{
 		Int2 arrow_size = gui::GetSize(tArrowR);
 		if(Rect::Create(book_pos + book->scheme->next * scale, arrow_size * scale).IsInside(GUI.cursor_pos)
-			&& Key.PressedRelease(VK_LBUTTON))
+			&& input->PressedRelease(Key::LeftButton))
 			ChangePage(+1);
 	}
 
-	if(Key.Focus() && Key.PressedRelease(VK_ESCAPE))
+	if(input->Focus() && input->PressedRelease(Key::Escape))
 		Hide();
 }
 

@@ -2,7 +2,7 @@
 #include "GameCore.h"
 #include "PickServerPanel.h"
 #include "Language.h"
-#include "KeyStates.h"
+#include "Input.h"
 #include "Const.h"
 #include "Game.h"
 #include "Version.h"
@@ -112,7 +112,7 @@ void PickServerPanel::Update(float dt)
 	if(!focus)
 		return;
 
-	if(Key.Focus() && Key.PressedRelease(VK_ESCAPE))
+	if(input->Focus() && input->PressedRelease(Key::Escape))
 	{
 		Event((GuiEvent)(IdCancel));
 		return;

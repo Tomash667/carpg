@@ -38,6 +38,7 @@ struct LevelArea
 	};
 
 	static const int OUTSIDE_ID = -1;
+	static const int OLD_EXIT_ID = -2;
 
 	const int area_id; // -1 outside, 0+ building or dungeon level
 	const Type area_type;

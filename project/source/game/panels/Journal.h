@@ -52,6 +52,6 @@ private:
 	vector<string> notes;
 	vector<string> rumors;
 	vector<pair<Mode, int>> changes;
-	string input;
+	string input_str;
 	bool details;
 };

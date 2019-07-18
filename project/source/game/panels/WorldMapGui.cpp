@@ -22,7 +22,6 @@
 #include "ResourceManager.h"
 #include "Team.h"
 #include "SaveState.h"
-#include "Debug.h"
 #include "Render.h"
 #include "Engine.h"
 
@@ -102,7 +101,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 	GUI.DrawSpriteTransform(tWorldMap, mat);
 
 	// debug tiles
-	if(!combo_box.focus && !GUI.HaveDialog() && DebugKey('S') && !Net::IsClient())
+	if(!combo_box.focus && !GUI.HaveDialog() && GKey.DebugKey(Key::S) && !Net::IsClient())
 	{
 		const vector<int>& tiles = W.GetTiles();
 		int ts = W.world_size / World::TILE_SIZE;
@@ -286,7 +285,7 @@ void WorldMapGui::Update(float dt)
 			mp_box->LostFocus();
 		mp_box->Update(dt);
 
-		if(Key.Focus() && !mp_box->have_focus && !GUI.HaveDialog() && Key.PressedRelease(VK_RETURN))
+		if(input->Focus() && !mp_box->have_focus && !GUI.HaveDialog() && input->PressedRelease(Key::Enter))
 			mp_box->have_focus = true;
 	}
 
@@ -298,7 +297,7 @@ void WorldMapGui::Update(float dt)
 		game.gui->journal->focus = true;
 		game.gui->journal->Update(dt);
 	}
-	if(!GUI.HaveDialog() && !(mp_box->visible && mp_box->itb.focus) && Key.Focus() && !combo_box.focus && game.death_screen == 0
+	if(!GUI.HaveDialog() && !(mp_box->visible && mp_box->itb.focus) && input->Focus() && !combo_box.focus && game.death_screen == 0
 		&& GKey.PressedRelease(GK_JOURNAL))
 	{
 		if(game.gui->journal->visible)
@@ -316,14 +315,14 @@ void WorldMapGui::Update(float dt)
 			combo_box.LostFocus();
 
 		combo_box.mouse_focus = focus;
-		if(combo_box.IsInside(GUI.cursor_pos) && Key.PressedRelease(VK_LBUTTON))
+		if(combo_box.IsInside(GUI.cursor_pos) && input->PressedRelease(Key::LeftButton))
 			combo_box.GainFocus();
 		combo_box.Update(dt);
 
-		zoom = Clamp(zoom + 0.1f * Key.GetMouseWheel(), 0.5f, 2.f);
+		zoom = Clamp(zoom + 0.1f * input->GetMouseWheel(), 0.5f, 2.f);
 		if(clicked)
 		{
-			offset -= Vec2(Key.GetMouseDif()) / (float(W.world_size) / MAP_IMG_SIZE * zoom);
+			offset -= Vec2(input->GetMouseDif()) / (float(W.world_size) / MAP_IMG_SIZE * zoom);
 			if(offset.x < 0)
 				offset.x = 0;
 			if(offset.y < 0)
@@ -332,10 +331,10 @@ void WorldMapGui::Update(float dt)
 				offset.x = MAP_IMG_SIZE;
 			if(offset.y > MAP_IMG_SIZE)
 				offset.y = MAP_IMG_SIZE;
-			if(Key.Up(VK_RBUTTON))
+			if(input->Up(Key::RightButton))
 				clicked = false;
 		}
-		if(Key.Pressed(VK_RBUTTON))
+		if(input->Pressed(Key::RightButton))
 		{
 			clicked = true;
 			follow = false;
@@ -343,7 +342,7 @@ void WorldMapGui::Update(float dt)
 			combo_box.LostFocus();
 		}
 
-		if(!combo_box.focus && Key.Down(VK_SPACE))
+		if(!combo_box.focus && input->Down(Key::Spacebar))
 		{
 			follow = true;
 			tracking = -1;
@@ -364,7 +363,7 @@ void WorldMapGui::Update(float dt)
 			return;
 
 		bool stop = false;
-		if(focus && Key.Focus() && GUI.cursor_pos.x < GUI.wnd_size.x * 2 / 3 && Key.PressedRelease(VK_LBUTTON))
+		if(focus && input->Focus() && GUI.cursor_pos.x < GUI.wnd_size.x * 2 / 3 && input->PressedRelease(Key::LeftButton))
 		{
 			if(Team.IsLeader())
 			{
@@ -389,7 +388,7 @@ void WorldMapGui::Update(float dt)
 		if(focus && c_pos.x > 0 && c_pos.y > 0 && c_pos.x < W.world_size && c_pos.y < W.world_size && GUI.cursor_pos.x < GUI.wnd_size.x * 2 / 3)
 		{
 			c_pos_valid = true;
-			if(!Key.Down(VK_SHIFT))
+			if(!input->Down(Key::Shift))
 			{
 				int i = 0;
 				for(vector<Location*>::iterator it = W.locations.begin(), end = W.locations.end(); it != end; ++it, ++i)
@@ -411,9 +410,9 @@ void WorldMapGui::Update(float dt)
 		if(loc)
 		{
 			picked_location = index;
-			if(W.GetState() == World::State::ON_MAP && Key.Focus())
+			if(W.GetState() == World::State::ON_MAP && input->Focus())
 			{
-				if(Key.PressedRelease(VK_LBUTTON))
+				if(input->PressedRelease(Key::LeftButton))
 				{
 					combo_box.LostFocus();
 					if(Team.IsLeader())
@@ -435,7 +434,7 @@ void WorldMapGui::Update(float dt)
 					else
 						game.gui->messages->AddGameMsg2(txOnlyLeaderCanTravel, 3.f, GMS_ONLY_LEADER_CAN_TRAVEL);
 				}
-				else if(game.devmode && picked_location != W.GetCurrentLocationIndex() && !combo_box.focus && Key.PressedRelease('T'))
+				else if(game.devmode && picked_location != W.GetCurrentLocationIndex() && !combo_box.focus && input->PressedRelease(Key::T))
 				{
 					if(Team.IsLeader())
 					{
@@ -457,9 +456,9 @@ void WorldMapGui::Update(float dt)
 		else
 		{
 			picked_location = -1;
-			if(c_pos_valid && W.GetState() == World::State::ON_MAP && Key.Focus())
+			if(c_pos_valid && W.GetState() == World::State::ON_MAP && input->Focus())
 			{
-				if(Key.PressedRelease(VK_LBUTTON))
+				if(input->PressedRelease(Key::LeftButton))
 				{
 					combo_box.LostFocus();
 					if(Team.IsLeader())
@@ -471,7 +470,7 @@ void WorldMapGui::Update(float dt)
 					else
 						game.gui->messages->AddGameMsg2(txOnlyLeaderCanTravel, 3.f, GMS_ONLY_LEADER_CAN_TRAVEL);
 				}
-				else if(game.devmode && !combo_box.focus && Key.PressedRelease('T'))
+				else if(game.devmode && !combo_box.focus && input->PressedRelease(Key::T))
 				{
 					if(Team.IsLeader())
 					{
@@ -493,7 +492,7 @@ void WorldMapGui::Update(float dt)
 		}
 	}
 
-	if(focus && Key.PressedRelease(VK_LBUTTON))
+	if(focus && input->PressedRelease(Key::LeftButton))
 		combo_box.LostFocus();
 
 	game.gui->messages->Update(dt);

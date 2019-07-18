@@ -9,7 +9,6 @@
 #include "Quest_Orcs.h"
 #include "Quest_Secret.h"
 #include "Stock.h"
-#include "Debug.h"
 #include "Portal.h"
 #include "Texture.h"
 #include "GameStats.h"
@@ -174,7 +173,7 @@ void InsideLocationGenerator::OnEnter()
 		}
 	}
 
-	if((first || need_reset) && (Rand() % 50 == 0 || DebugKey('C')) && L.location->type != L_CAVE && inside->target != LABYRINTH
+	if((first || need_reset) && (Rand() % 50 == 0 || GKey.DebugKey(Key::C)) && L.location->type != L_CAVE && inside->target != LABYRINTH
 		&& !L.location->active_quest && dungeon_level == 0 && !L.location->group->IsEmpty() && inside->IsMultilevel())
 		SpawnHeroesInsideDungeon();
 

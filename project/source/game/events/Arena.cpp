@@ -194,7 +194,7 @@ void Arena::Clean()
 		Unit& u = **it;
 		u.frozen = FROZEN::NO;
 		u.in_arena = -1;
-		u.area_id = LevelArea::OUTSIDE_ID;
+		u.area = L.local_area;
 		u.busy = Unit::Busy_No;
 		if(u.hp <= 0.f)
 		{
@@ -559,7 +559,7 @@ void Arena::Update(float dt)
 		timer += dt;
 		if(timer >= 2.f)
 		{
-			if(L.GetArena()->area_id == game.pc->unit->area_id)
+			if(L.GetArena() == game.pc->unit->area)
 				game.sound_mgr->PlaySound2d(game.sArenaFight);
 			if(Net::IsOnline())
 			{
@@ -632,7 +632,7 @@ void Arena::Update(float dt)
 					victory_sound = true;
 			}
 
-			if(L.GetArena()->area_id == game.pc->unit->area_id)
+			if(L.GetArena() == game.pc->unit->area)
 				game.sound_mgr->PlaySound2d(victory_sound ? game.sArenaWin : game.sArenaLost);
 			if(Net::IsOnline())
 			{

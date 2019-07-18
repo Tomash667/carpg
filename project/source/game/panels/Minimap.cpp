@@ -184,7 +184,7 @@ void Minimap::Update(float dt)
 		}
 	}
 
-	if(focus && Key.Focus() && Key.PressedRelease(VK_ESCAPE))
+	if(focus && input->Focus() && input->PressedRelease(Key::Escape))
 		Hide();
 }
 
@@ -236,11 +236,11 @@ void Minimap::Build()
 //=================================================================================================
 Vec2 Minimap::GetMapPosition(Unit& unit)
 {
-	if(!L.city_ctx || unit.area_id == LevelArea::OUTSIDE_ID)
+	if(!L.city_ctx || unit.area->area_type == LevelArea::Type::Outside)
 		return Vec2(unit.pos.x, unit.pos.z);
 	else
 	{
-		Building* building = L.city_ctx->inside_buildings[unit.area_id]->building;
+		Building* building = static_cast<InsideBuilding*>(unit.area)->building;
 		for(CityBuilding& b : L.city_ctx->buildings)
 		{
 			if(b.building == building)

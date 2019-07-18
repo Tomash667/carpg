@@ -329,7 +329,7 @@ void Game::OnUpdate(float dt)
 	// lost directx device or window don't have focus
 	if(render->IsLostDevice() || !engine->IsActive() || !engine->IsCursorLocked())
 	{
-		Key.SetFocus(false);
+		input->SetFocus(false);
 		if(Net::IsSingleplayer() && !inactive_update)
 		{
 			Profiler::g_profiler.End();
@@ -337,24 +337,24 @@ void Game::OnUpdate(float dt)
 		}
 	}
 	else
-		Key.SetFocus(true);
+		input->SetFocus(true);
 
 	if(devmode)
 	{
-		if(Key.PressedRelease(VK_F3))
+		if(input->PressedRelease(Key::F3))
 			debug_info = !debug_info;
 	}
-	if(Key.PressedRelease(VK_F2))
+	if(input->PressedRelease(Key::F2))
 		debug_info2 = !debug_info2;
 
 	// fast quit (alt+f4)
-	if(Key.Focus() && Key.Down(VK_MENU) && Key.Down(VK_F4) && !GUI.HaveTopDialog("dialog_alt_f4"))
+	if(input->Focus() && input->Shortcut(KEY_ALT, Key::F4) && !GUI.HaveTopDialog("dialog_alt_f4"))
 		gui->ShowQuitDialog();
 
 	if(end_of_game)
 	{
 		death_fade += dt;
-		if(death_fade >= 1.f && GKey.AllowKeyboard() && Key.PressedRelease(VK_ESCAPE))
+		if(death_fade >= 1.f && GKey.AllowKeyboard() && input->PressedRelease(Key::Escape))
 		{
 			ExitToMenu();
 			end_of_game = false;
@@ -370,16 +370,16 @@ void Game::OnUpdate(float dt)
 			GUI.ShowDialog(gui->console);
 
 		// unlock cursor
-		if(!engine->IsFullscreen() && engine->IsActive() && engine->IsCursorLocked() && Key.Shortcut(KEY_CONTROL, 'U'))
+		if(!engine->IsFullscreen() && engine->IsActive() && engine->IsCursorLocked() && input->Shortcut(KEY_CONTROL, Key::U))
 			engine->UnlockCursor();
 
 		// switch window mode
-		if(Key.Shortcut(KEY_ALT, VK_RETURN))
+		if(input->Shortcut(KEY_ALT, Key::Enter))
 			engine->ChangeMode(!engine->IsFullscreen());
 
 		// screenshot
-		if(Key.PressedRelease(VK_SNAPSHOT))
-			TakeScreenshot(Key.Down(VK_SHIFT));
+		if(input->PressedRelease(Key::PrintScreen))
+			TakeScreenshot(input->Down(Key::Shift));
 
 		// pause/resume game
 		if(GKey.KeyPressedReleaseAllowed(GK_PAUSE) && !Net::IsClient())
@@ -406,7 +406,7 @@ void Game::OnUpdate(float dt)
 			to_open = OpenPanel::Minimap;
 		else if(GKey.PressedRelease(GK_ACTION_PANEL))
 			to_open = OpenPanel::Action;
-		else if(open == OpenPanel::Trade && Key.PressedRelease(VK_ESCAPE))
+		else if(open == OpenPanel::Trade && input->PressedRelease(Key::Escape))
 			to_open = OpenPanel::Trade; // ShowPanel hide when already opened
 
 		if(to_open != OpenPanel::None)
@@ -487,7 +487,7 @@ void Game::OnUpdate(float dt)
 		GKey.allow_input = GameKeys::ALLOW_INPUT;
 
 	// open game menu
-	if(GKey.AllowKeyboard() && CanShowMenu() && Key.PressedRelease(VK_ESCAPE))
+	if(GKey.AllowKeyboard() && CanShowMenu() && input->PressedRelease(Key::Escape))
 		gui->ShowMenu();
 
 	arena->UpdatePvpRequest(dt);
@@ -544,7 +544,7 @@ void Game::OnUpdate(float dt)
 		UpdateGameNet(dt);
 
 	// open/close mp box
-	if(GKey.AllowKeyboard() && game_state == GS_LEVEL && gui->mp_box->visible && !gui->mp_box->itb.focus && Key.PressedRelease(VK_RETURN))
+	if(GKey.AllowKeyboard() && game_state == GS_LEVEL && gui->mp_box->visible && !gui->mp_box->itb.focus && input->PressedRelease(Key::Enter))
 	{
 		gui->mp_box->itb.focus = true;
 		gui->mp_box->Event(GuiEvent_GainFocus);
@@ -1345,17 +1345,17 @@ void Game::SetupConfigVars()
 cstring Game::GetShortcutText(GAME_KEYS key, cstring action)
 {
 	auto& k = GKey[key];
-	bool first_key = (k[0] != VK_NONE),
-		second_key = (k[1] != VK_NONE);
+	bool first_key = (k[0] != Key::None),
+		second_key = (k[1] != Key::None);
 	if(!action)
 		action = k.text;
 
 	if(first_key && second_key)
-		return Format("%s (%s, %s)", action, gui->controls->key_text[k[0]], gui->controls->key_text[k[1]]);
+		return Format("%s (%s, %s)", action, gui->controls->key_text[(int)k[0]], gui->controls->key_text[(int)k[1]]);
 	else if(first_key || second_key)
 	{
-		byte used = k[first_key ? 0 : 1];
-		return Format("%s (%s)", action, gui->controls->key_text[used]);
+		Key used = k[first_key ? 0 : 1];
+		return Format("%s (%s)", action, gui->controls->key_text[(int)used]);
 	}
 	else
 		return action;

@@ -81,6 +81,8 @@ void Game::PreconfigureGame()
 {
 	Info("Game: Preconfiguring game.");
 
+	input = engine->GetInput();
+	GKey.input = input;
 	phy_world = engine->GetPhysicsWorld();
 	render = engine->GetRender();
 	render->SetShadersDir(Format("%s/shaders", g_system_dir.c_str()));

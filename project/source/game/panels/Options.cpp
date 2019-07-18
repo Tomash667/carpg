@@ -2,7 +2,7 @@
 #include "GameCore.h"
 #include "Options.h"
 #include "Language.h"
-#include "KeyStates.h"
+#include "Input.h"
 #include "GlobalGui.h"
 #include "Game.h"
 #include "MenuList.h"
@@ -343,7 +343,7 @@ void Options::Update(float dt)
 	language.mouse_focus = focus;
 	language.Update(dt);
 
-	if(focus && Key.Focus() && Key.PressedRelease(VK_ESCAPE))
+	if(focus && input->Focus() && input->PressedRelease(Key::Escape))
 		Event((GuiEvent)IdOk);
 }
 
