@@ -1,0 +1,1171 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="doc">
+      <UniqueIdentifier>{5abd613a-c921-4c80-8be5-819125f7176f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="entity">
+      <UniqueIdentifier>{b0232feb-569a-409a-8131-6cd4a6fb9d0b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="events">
+      <UniqueIdentifier>{611f9aef-8d8e-4ffd-bd54-a5732babb50e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="generator">
+      <UniqueIdentifier>{5c09d15a-bfc6-4c10-ae87-959327953243}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="helpers">
+      <UniqueIdentifier>{64ea01de-d08c-4399-8072-b6fc9082ce0b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="location">
+      <UniqueIdentifier>{ae903167-74dc-4497-bee0-0931dbe6d2f2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="net">
+      <UniqueIdentifier>{929811af-2ec9-429b-ab7b-4695cb616a46}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="panels">
+      <UniqueIdentifier>{429adc31-6d5b-40e7-bb3c-f90c3c12841e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="quests">
+      <UniqueIdentifier>{75442383-f3f1-4d6a-8061-523ae64f7b2a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="script">
+      <UniqueIdentifier>{686e4789-ffae-4b38-8307-8b1d7e1d50e1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="stats">
+      <UniqueIdentifier>{135d795b-2d45-43ab-a66c-27665390b549}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="system">
+      <UniqueIdentifier>{bbb926f1-86f9-418e-9b48-fe794630f134}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="system\objects">
+      <UniqueIdentifier>{40df2bfe-e01b-47b1-9ab8-c6bcab9c75aa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="system\buildings">
+      <UniqueIdentifier>{832797a9-e416-46ec-bdc8-965ed5a4bd43}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="system\items">
+      <UniqueIdentifier>{538a0371-6a23-4988-b2e4-0735a1ab3812}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="system\quests">
+      <UniqueIdentifier>{6f3e0ca2-fca9-4927-8fa3-93ec840b5c55}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="system\units">
+      <UniqueIdentifier>{2110a0ec-a4bb-43a5-bcc7-ad64a4a78f1a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="system\dialogs">
+      <UniqueIdentifier>{4fa50a58-faa4-4845-82e7-383202a0bd2b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="system\spells">
+      <UniqueIdentifier>{f6296568-67e0-4b62-a5f9-05cd186cb0ee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="resource">
+      <UniqueIdentifier>{bc9d59f8-23a1-480d-ba81-5772aad70353}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="resource\PickLanguage.cpp">
+      <Filter>resource</Filter>
+    </ClCompile>
+    <ClCompile Include="entity\AIController.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="entity\Bullet.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="entity\Chest.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="entity\Door.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="entity\GroundItem.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="entity\HeroData.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="entity\HumanData.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="entity\ItemSlot.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="entity\Object.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="entity\PlayerController.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="entity\SpellEffects.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="entity\Trap.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="generator\CityGenerator.cpp">
+      <Filter>generator</Filter>
+    </ClCompile>
+    <ClCompile Include="location\Camp.cpp">
+      <Filter>location</Filter>
+    </ClCompile>
+    <ClCompile Include="location\InsideBuilding.cpp">
+      <Filter>location</Filter>
+    </ClCompile>
+    <ClCompile Include="location\InsideLocation.cpp">
+      <Filter>location</Filter>
+    </ClCompile>
+    <ClCompile Include="location\InsideLocationLevel.cpp">
+      <Filter>location</Filter>
+    </ClCompile>
+    <ClCompile Include="location\Location.cpp">
+      <Filter>location</Filter>
+    </ClCompile>
+    <ClCompile Include="location\MultiInsideLocation.cpp">
+      <Filter>location</Filter>
+    </ClCompile>
+    <ClCompile Include="location\OutsideLocation.cpp">
+      <Filter>location</Filter>
+    </ClCompile>
+    <ClCompile Include="location\SingleInsideLocation.cpp">
+      <Filter>location</Filter>
+    </ClCompile>
+    <ClCompile Include="net\Net.cpp">
+      <Filter>net</Filter>
+    </ClCompile>
+    <ClCompile Include="stats\BaseLocation.cpp">
+      <Filter>stats</Filter>
+    </ClCompile>
+    <ClCompile Include="stats\BaseTrap.cpp">
+      <Filter>stats</Filter>
+    </ClCompile>
+    <ClCompile Include="stats\Class.cpp">
+      <Filter>stats</Filter>
+    </ClCompile>
+    <ClCompile Include="stats\RoomType.cpp">
+      <Filter>stats</Filter>
+    </ClCompile>
+    <ClCompile Include="stats\UnitStats.cpp">
+      <Filter>stats</Filter>
+    </ClCompile>
+    <ClCompile Include="panels\Console.cpp">
+      <Filter>panels</Filter>
+    </ClCompile>
+    <ClCompile Include="panels\CreateCharacterPanel.cpp">
+      <Filter>panels</Filter>
+    </ClCompile>
+    <ClCompile Include="panels\CreateServerPanel.cpp">
+      <Filter>panels</Filter>
+    </ClCompile>
+    <ClCompile Include="panels\GameGui.cpp">
+      <Filter>panels</Filter>
+    </ClCompile>
+    <ClCompile Include="panels\GameMenu.cpp">
+      <Filter>panels</Filter>
+    </ClCompile>
+    <ClCompile Include="panels\GamePanel.cpp">
+      <Filter>panels</Filter>
+    </ClCompile>
+    <ClCompile Include="panels\InfoBox.cpp">
+      <Filter>panels</Filter>
+    </ClCompile>
+    <ClCompile Include="panels\Inventory.cpp">
+      <Filter>panels</Filter>
+    </ClCompile>
+    <ClCompile Include="panels\Journal.cpp">
+      <Filter>panels</Filter>
+    </ClCompile>
+    <ClCompile Include="panels\LoadScreen.cpp">
+      <Filter>panels</Filter>
+    </ClCompile>
+    <ClCompile Include="panels\MainMenu.cpp">
+      <Filter>panels</Filter>
+    </ClCompile>
+    <ClCompile Include="panels\Minimap.cpp">
+      <Filter>panels</Filter>
+    </ClCompile>
+    <ClCompile Include="panels\MpBox.cpp">
+      <Filter>panels</Filter>
+    </ClCompile>
+    <ClCompile Include="panels\MultiplayerPanel.cpp">
+      <Filter>panels</Filter>
+    </ClCompile>
+    <ClCompile Include="panels\Options.cpp">
+      <Filter>panels</Filter>
+    </ClCompile>
+    <ClCompile Include="panels\PickServerPanel.cpp">
+      <Filter>panels</Filter>
+    </ClCompile>
+    <ClCompile Include="panels\SaveLoadPanel.cpp">
+      <Filter>panels</Filter>
+    </ClCompile>
+    <ClCompile Include="panels\ServerPanel.cpp">
+      <Filter>panels</Filter>
+    </ClCompile>
+    <ClCompile Include="panels\StatsPanel.cpp">
+      <Filter>panels</Filter>
+    </ClCompile>
+    <ClCompile Include="panels\TeamPanel.cpp">
+      <Filter>panels</Filter>
+    </ClCompile>
+    <ClCompile Include="panels\WorldMapGui.cpp">
+      <Filter>panels</Filter>
+    </ClCompile>
+    <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Pch.cpp" />
+    <ClCompile Include="stats\Attribute.cpp">
+      <Filter>stats</Filter>
+    </ClCompile>
+    <ClCompile Include="stats\Music.cpp">
+      <Filter>stats</Filter>
+    </ClCompile>
+    <ClCompile Include="stats\Skill.cpp">
+      <Filter>stats</Filter>
+    </ClCompile>
+    <ClCompile Include="panels\Controls.cpp">
+      <Filter>panels</Filter>
+    </ClCompile>
+    <ClCompile Include="stats\Perk.cpp">
+      <Filter>stats</Filter>
+    </ClCompile>
+    <ClCompile Include="entity\CreatedCharacter.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="panels\GameMessages.cpp">
+      <Filter>panels</Filter>
+    </ClCompile>
+    <ClCompile Include="stats\Effect.cpp">
+      <Filter>stats</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\QuestManager.cpp">
+      <Filter>quests</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_Main.cpp">
+      <Filter>quests</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_DeliverLetter.cpp">
+      <Filter>quests</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_DeliverParcel.cpp">
+      <Filter>quests</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_SpreadNews.cpp">
+      <Filter>quests</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_RescueCaptive.cpp">
+      <Filter>quests</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_BanditsCollectToll.cpp">
+      <Filter>quests</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_CampNearCity.cpp">
+      <Filter>quests</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_KillAnimals.cpp">
+      <Filter>quests</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_FindArtifact.cpp">
+      <Filter>quests</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_LostArtifact.cpp">
+      <Filter>quests</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_StolenArtifact.cpp">
+      <Filter>quests</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_Wanted.cpp">
+      <Filter>quests</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_Sawmill.cpp">
+      <Filter>quests</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_Mine.cpp">
+      <Filter>quests</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_Bandits.cpp">
+      <Filter>quests</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_Mages.cpp">
+      <Filter>quests</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_Orcs.cpp">
+      <Filter>quests</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_Goblins.cpp">
+      <Filter>quests</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_Evil.cpp">
+      <Filter>quests</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_Crazies.cpp">
+      <Filter>quests</Filter>
+    </ClCompile>
+    <ClCompile Include="ErrorHandler.cpp" />
+    <ClCompile Include="entity\Light.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="stats\Required.cpp">
+      <Filter>stats</Filter>
+    </ClCompile>
+    <ClCompile Include="helpers\UnitHelper.cpp">
+      <Filter>helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="location\City.cpp">
+      <Filter>location</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest.cpp">
+      <Filter>quests</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_RetrievePackage.cpp">
+      <Filter>quests</Filter>
+    </ClCompile>
+    <ClCompile Include="stats\Buff.cpp">
+      <Filter>stats</Filter>
+    </ClCompile>
+    <ClCompile Include="entity\Usable.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="stats\Action.cpp">
+      <Filter>stats</Filter>
+    </ClCompile>
+    <ClCompile Include="panels\ActionPanel.cpp">
+      <Filter>panels</Filter>
+    </ClCompile>
+    <ClCompile Include="Utility.cpp" />
+    <ClCompile Include="panels\BookPanel.cpp">
+      <Filter>panels</Filter>
+    </ClCompile>
+    <ClCompile Include="entity\ItemContainer.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="system\BaseObject.cpp">
+      <Filter>system\objects</Filter>
+    </ClCompile>
+    <ClCompile Include="system\BaseUsable.cpp">
+      <Filter>system\objects</Filter>
+    </ClCompile>
+    <ClCompile Include="system\ObjectLoader.cpp">
+      <Filter>system\objects</Filter>
+    </ClCompile>
+    <ClCompile Include="system\BuildingLoader.cpp">
+      <Filter>system\buildings</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Building.cpp">
+      <Filter>system\buildings</Filter>
+    </ClCompile>
+    <ClCompile Include="system\BuildingScript.cpp">
+      <Filter>system\buildings</Filter>
+    </ClCompile>
+    <ClCompile Include="system\BuildingGroup.cpp">
+      <Filter>system\buildings</Filter>
+    </ClCompile>
+    <ClCompile Include="system\ItemLoader.cpp">
+      <Filter>system\items</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Item.cpp">
+      <Filter>system\items</Filter>
+    </ClCompile>
+    <ClCompile Include="system\UnitLoader.cpp">
+      <Filter>system\units</Filter>
+    </ClCompile>
+    <ClCompile Include="system\ItemScript.cpp">
+      <Filter>system\units</Filter>
+    </ClCompile>
+    <ClCompile Include="system\UnitGroup.cpp">
+      <Filter>system\units</Filter>
+    </ClCompile>
+    <ClCompile Include="system\FrameInfo.cpp">
+      <Filter>system\units</Filter>
+    </ClCompile>
+    <ClCompile Include="system\StatProfile.cpp">
+      <Filter>system\units</Filter>
+    </ClCompile>
+    <ClCompile Include="system\UnitData.cpp">
+      <Filter>system\units</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Stock.cpp">
+      <Filter>system\items</Filter>
+    </ClCompile>
+    <ClCompile Include="entity\Unit.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="entity\Blood.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="net\PlayerInfo.cpp">
+      <Filter>net</Filter>
+    </ClCompile>
+    <ClCompile Include="script\ScriptManager.cpp">
+      <Filter>script</Filter>
+    </ClCompile>
+    <ClCompile Include="system\ContentLoader.cpp">
+      <Filter>system</Filter>
+    </ClCompile>
+    <ClCompile Include="script\Var.cpp">
+      <Filter>script</Filter>
+    </ClCompile>
+    <ClCompile Include="net\BitStreamFunc.cpp">
+      <Filter>net</Filter>
+    </ClCompile>
+    <ClCompile Include="entity\Portal.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="entity\Camera.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="net\EntityInterpolator.cpp">
+      <Filter>net</Filter>
+    </ClCompile>
+    <ClCompile Include="panels\GlobalGui.cpp">
+      <Filter>panels</Filter>
+    </ClCompile>
+    <ClCompile Include="helpers\LoadingHandler.cpp">
+      <Filter>helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_Contest.cpp">
+      <Filter>quests</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_Secret.cpp">
+      <Filter>quests</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_Tournament.cpp">
+      <Filter>quests</Filter>
+    </ClCompile>
+    <ClCompile Include="generator\LocationGeneratorFactory.cpp">
+      <Filter>generator</Filter>
+    </ClCompile>
+    <ClCompile Include="generator\LocationGenerator.cpp">
+      <Filter>generator</Filter>
+    </ClCompile>
+    <ClCompile Include="generator\EncounterGenerator.cpp">
+      <Filter>generator</Filter>
+    </ClCompile>
+    <ClCompile Include="generator\ForestGenerator.cpp">
+      <Filter>generator</Filter>
+    </ClCompile>
+    <ClCompile Include="generator\DungeonGenerator.cpp">
+      <Filter>generator</Filter>
+    </ClCompile>
+    <ClCompile Include="generator\CaveGenerator.cpp">
+      <Filter>generator</Filter>
+    </ClCompile>
+    <ClCompile Include="entity\Room.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="entity\Tile.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="generator\LabyrinthGenerator.cpp">
+      <Filter>generator</Filter>
+    </ClCompile>
+    <ClCompile Include="generator\InsideLocationGenerator.cpp">
+      <Filter>generator</Filter>
+    </ClCompile>
+    <ClCompile Include="generator\OutsideLocationGenerator.cpp">
+      <Filter>generator</Filter>
+    </ClCompile>
+    <ClCompile Include="generator\MoonwellGenerator.cpp">
+      <Filter>generator</Filter>
+    </ClCompile>
+    <ClCompile Include="generator\CampGenerator.cpp">
+      <Filter>generator</Filter>
+    </ClCompile>
+    <ClCompile Include="generator\SecretLocationGenerator.cpp">
+      <Filter>generator</Filter>
+    </ClCompile>
+    <ClCompile Include="location\Cave.cpp">
+      <Filter>location</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_Tutorial.cpp">
+      <Filter>quests</Filter>
+    </ClCompile>
+    <ClCompile Include="entity\TerrainTile.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="net\Net2.cpp">
+      <Filter>net</Filter>
+    </ClCompile>
+    <ClCompile Include="location\LevelArea.cpp">
+      <Filter>location</Filter>
+    </ClCompile>
+    <ClCompile Include="generator\TutorialLocationGenerator.cpp">
+      <Filter>generator</Filter>
+    </ClCompile>
+    <ClCompile Include="helpers\ItemHelper.cpp">
+      <Filter>helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="events\Arena.cpp">
+      <Filter>events</Filter>
+    </ClCompile>
+    <ClCompile Include="system\DialogContext.cpp">
+      <Filter>system\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="system\GameDialog.cpp">
+      <Filter>system\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="system\DialogLoader.cpp">
+      <Filter>system\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="generator\NameHelper.cpp">
+      <Filter>helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="net\NetChange.cpp">
+      <Filter>net</Filter>
+    </ClCompile>
+    <ClCompile Include="net\LobbyApi.cpp">
+      <Filter>net</Filter>
+    </ClCompile>
+    <ClCompile Include="helpers\CombatHelper.cpp">
+      <Filter>helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_Artifacts.cpp">
+      <Filter>quests</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Spell.cpp">
+      <Filter>system\spells</Filter>
+    </ClCompile>
+    <ClCompile Include="system\SpellLoader.cpp">
+      <Filter>system\spells</Filter>
+    </ClCompile>
+    <ClCompile Include="quests\Quest_Scripted.cpp">
+      <Filter>quests</Filter>
+    </ClCompile>
+    <ClCompile Include="system\QuestScheme.cpp">
+      <Filter>system\quests</Filter>
+    </ClCompile>
+    <ClCompile Include="system\QuestLoader.cpp">
+      <Filter>system\quests</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Content.cpp">
+      <Filter>system</Filter>
+    </ClCompile>
+    <ClCompile Include="system\QuestList.cpp">
+      <Filter>system\quests</Filter>
+    </ClCompile>
+    <ClCompile Include="entity\Encounter.cpp">
+      <Filter>entity</Filter>
+    </ClCompile>
+    <ClCompile Include="generator\DungeonMapGenerator.cpp">
+      <Filter>generator</Filter>
+    </ClCompile>
+    <ClCompile Include="Ai.cpp" />
+    <ClCompile Include="CommandParser.cpp" />
+    <ClCompile Include="FOV.cpp" />
+    <ClCompile Include="Game.cpp" />
+    <ClCompile Include="Game2.cpp" />
+    <ClCompile Include="GameCommon.cpp" />
+    <ClCompile Include="GameFile.cpp" />
+    <ClCompile Include="GameStats.cpp" />
+    <ClCompile Include="Init.cpp" />
+    <ClCompile Include="Language.cpp" />
+    <ClCompile Include="Level.cpp" />
+    <ClCompile Include="Menu.cpp" />
+    <ClCompile Include="Pathfinding.cpp" />
+    <ClCompile Include="QuadTreeAndGrass.cpp" />
+    <ClCompile Include="SaveLoad.cpp" />
+    <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="Settings.cpp" />
+    <ClCompile Include="Team.cpp" />
+    <ClCompile Include="World.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="entity\AIController.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\Bullet.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\Chest.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\Door.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\GroundItem.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\HeroData.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\HeroPlayerCommon.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\HumanData.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\ItemSlot.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\Object.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\PlayerController.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\SceneNode.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\SpellEffects.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\Trap.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="generator\CityGenerator.h">
+      <Filter>generator</Filter>
+    </ClInclude>
+    <ClInclude Include="location\Camp.h">
+      <Filter>location</Filter>
+    </ClInclude>
+    <ClInclude Include="location\EntryPoint.h">
+      <Filter>location</Filter>
+    </ClInclude>
+    <ClInclude Include="location\InsideBuilding.h">
+      <Filter>location</Filter>
+    </ClInclude>
+    <ClInclude Include="location\InsideLocation.h">
+      <Filter>location</Filter>
+    </ClInclude>
+    <ClInclude Include="location\InsideLocationLevel.h">
+      <Filter>location</Filter>
+    </ClInclude>
+    <ClInclude Include="location\Location.h">
+      <Filter>location</Filter>
+    </ClInclude>
+    <ClInclude Include="location\MultiInsideLocation.h">
+      <Filter>location</Filter>
+    </ClInclude>
+    <ClInclude Include="location\OutsideLocation.h">
+      <Filter>location</Filter>
+    </ClInclude>
+    <ClInclude Include="location\SingleInsideLocation.h">
+      <Filter>location</Filter>
+    </ClInclude>
+    <ClInclude Include="net\Net.h">
+      <Filter>net</Filter>
+    </ClInclude>
+    <ClInclude Include="stats\BaseLocation.h">
+      <Filter>stats</Filter>
+    </ClInclude>
+    <ClInclude Include="stats\BaseTrap.h">
+      <Filter>stats</Filter>
+    </ClInclude>
+    <ClInclude Include="stats\Class.h">
+      <Filter>stats</Filter>
+    </ClInclude>
+    <ClInclude Include="stats\Const.h">
+      <Filter>stats</Filter>
+    </ClInclude>
+    <ClInclude Include="stats\DamageTypes.h">
+      <Filter>stats</Filter>
+    </ClInclude>
+    <ClInclude Include="stats\Material.h">
+      <Filter>stats</Filter>
+    </ClInclude>
+    <ClInclude Include="stats\RoomType.h">
+      <Filter>stats</Filter>
+    </ClInclude>
+    <ClInclude Include="stats\UnitStats.h">
+      <Filter>stats</Filter>
+    </ClInclude>
+    <ClInclude Include="panels\Console.h">
+      <Filter>panels</Filter>
+    </ClInclude>
+    <ClInclude Include="panels\CreateCharacterPanel.h">
+      <Filter>panels</Filter>
+    </ClInclude>
+    <ClInclude Include="panels\CreateServerPanel.h">
+      <Filter>panels</Filter>
+    </ClInclude>
+    <ClInclude Include="panels\GameGui.h">
+      <Filter>panels</Filter>
+    </ClInclude>
+    <ClInclude Include="panels\GameMenu.h">
+      <Filter>panels</Filter>
+    </ClInclude>
+    <ClInclude Include="panels\GamePanel.h">
+      <Filter>panels</Filter>
+    </ClInclude>
+    <ClInclude Include="panels\InfoBox.h">
+      <Filter>panels</Filter>
+    </ClInclude>
+    <ClInclude Include="panels\Inventory.h">
+      <Filter>panels</Filter>
+    </ClInclude>
+    <ClInclude Include="panels\Journal.h">
+      <Filter>panels</Filter>
+    </ClInclude>
+    <ClInclude Include="panels\LoadScreen.h">
+      <Filter>panels</Filter>
+    </ClInclude>
+    <ClInclude Include="panels\MainMenu.h">
+      <Filter>panels</Filter>
+    </ClInclude>
+    <ClInclude Include="panels\Minimap.h">
+      <Filter>panels</Filter>
+    </ClInclude>
+    <ClInclude Include="panels\MpBox.h">
+      <Filter>panels</Filter>
+    </ClInclude>
+    <ClInclude Include="panels\MultiplayerPanel.h">
+      <Filter>panels</Filter>
+    </ClInclude>
+    <ClInclude Include="panels\Options.h">
+      <Filter>panels</Filter>
+    </ClInclude>
+    <ClInclude Include="panels\PickServerPanel.h">
+      <Filter>panels</Filter>
+    </ClInclude>
+    <ClInclude Include="panels\SaveLoadPanel.h">
+      <Filter>panels</Filter>
+    </ClInclude>
+    <ClInclude Include="panels\ServerPanel.h">
+      <Filter>panels</Filter>
+    </ClInclude>
+    <ClInclude Include="panels\StatsPanel.h">
+      <Filter>panels</Filter>
+    </ClInclude>
+    <ClInclude Include="panels\TeamPanel.h">
+      <Filter>panels</Filter>
+    </ClInclude>
+    <ClInclude Include="panels\WorldMapGui.h">
+      <Filter>panels</Filter>
+    </ClInclude>
+    <ClInclude Include="Pch.h" />
+    <ClInclude Include="stats\Attribute.h">
+      <Filter>stats</Filter>
+    </ClInclude>
+    <ClInclude Include="stats\Music.h">
+      <Filter>stats</Filter>
+    </ClInclude>
+    <ClInclude Include="stats\Skill.h">
+      <Filter>stats</Filter>
+    </ClInclude>
+    <ClInclude Include="panels\Controls.h">
+      <Filter>panels</Filter>
+    </ClInclude>
+    <ClInclude Include="stats\Perk.h">
+      <Filter>stats</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\CreatedCharacter.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="stats\ArmorUnitType.h">
+      <Filter>stats</Filter>
+    </ClInclude>
+    <ClInclude Include="panels\GameMessages.h">
+      <Filter>panels</Filter>
+    </ClInclude>
+    <ClInclude Include="stats\Effect.h">
+      <Filter>stats</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\QuestManager.h">
+      <Filter>quests</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_Main.h">
+      <Filter>quests</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_DeliverLetter.h">
+      <Filter>quests</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_DeliverParcel.h">
+      <Filter>quests</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_SpreadNews.h">
+      <Filter>quests</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_RescueCaptive.h">
+      <Filter>quests</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_BanditsCollectToll.h">
+      <Filter>quests</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_CampNearCity.h">
+      <Filter>quests</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_KillAnimals.h">
+      <Filter>quests</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_FindArtifact.h">
+      <Filter>quests</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_LostArtifact.h">
+      <Filter>quests</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_StolenArtifact.h">
+      <Filter>quests</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_Wanted.h">
+      <Filter>quests</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_Sawmill.h">
+      <Filter>quests</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_Mine.h">
+      <Filter>quests</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_Bandits.h">
+      <Filter>quests</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_Mages.h">
+      <Filter>quests</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_Orcs.h">
+      <Filter>quests</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_Goblins.h">
+      <Filter>quests</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_Evil.h">
+      <Filter>quests</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_Crazies.h">
+      <Filter>quests</Filter>
+    </ClInclude>
+    <ClInclude Include="Version.h" />
+    <ClInclude Include="entity\Camera.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="location\LevelArea.h">
+      <Filter>location</Filter>
+    </ClInclude>
+    <ClInclude Include="ErrorHandler.h" />
+    <ClInclude Include="entity\Light.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="helpers\UnitHelper.h">
+      <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="location\City.h">
+      <Filter>location</Filter>
+    </ClInclude>
+    <ClInclude Include="helpers\LocationHelper.h">
+      <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest.h">
+      <Filter>quests</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\QuestConsts.h">
+      <Filter>quests</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_RetrievePackage.h">
+      <Filter>quests</Filter>
+    </ClInclude>
+    <ClInclude Include="system\ContentLoader.h">
+      <Filter>system</Filter>
+    </ClInclude>
+    <ClInclude Include="stats\Buff.h">
+      <Filter>stats</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\Usable.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="stats\Action.h">
+      <Filter>stats</Filter>
+    </ClInclude>
+    <ClInclude Include="panels\ActionPanel.h">
+      <Filter>panels</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility.h" />
+    <ClInclude Include="net\GamePacket.h">
+      <Filter>net</Filter>
+    </ClInclude>
+    <ClInclude Include="net\NetChange.h">
+      <Filter>net</Filter>
+    </ClInclude>
+    <ClInclude Include="net\NetChangePlayer.h">
+      <Filter>net</Filter>
+    </ClInclude>
+    <ClInclude Include="panels\GameDialogBox.h">
+      <Filter>panels</Filter>
+    </ClInclude>
+    <ClInclude Include="panels\BookPanel.h">
+      <Filter>panels</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\ItemContainer.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="system\BaseObject.h">
+      <Filter>system\objects</Filter>
+    </ClInclude>
+    <ClInclude Include="system\BaseUsable.h">
+      <Filter>system\objects</Filter>
+    </ClInclude>
+    <ClInclude Include="system\BuildingGroup.h">
+      <Filter>system\buildings</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Building.h">
+      <Filter>system\buildings</Filter>
+    </ClInclude>
+    <ClInclude Include="system\BuildingScript.h">
+      <Filter>system\buildings</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Item.h">
+      <Filter>system\items</Filter>
+    </ClInclude>
+    <ClInclude Include="system\ItemType.h">
+      <Filter>system\items</Filter>
+    </ClInclude>
+    <ClInclude Include="system\ItemScript.h">
+      <Filter>system\units</Filter>
+    </ClInclude>
+    <ClInclude Include="system\UnitGroup.h">
+      <Filter>system\units</Filter>
+    </ClInclude>
+    <ClInclude Include="system\FrameInfo.h">
+      <Filter>system\units</Filter>
+    </ClInclude>
+    <ClInclude Include="system\StatProfile.h">
+      <Filter>system\units</Filter>
+    </ClInclude>
+    <ClInclude Include="system\UnitData.h">
+      <Filter>system\units</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Stock.h">
+      <Filter>system\items</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\Unit.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\UnitEventHandler.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\Blood.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\BloodType.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="net\PlayerInfo.h">
+      <Filter>net</Filter>
+    </ClInclude>
+    <ClInclude Include="script\ScriptManager.h">
+      <Filter>script</Filter>
+    </ClInclude>
+    <ClInclude Include="script\TypeBuilder.h">
+      <Filter>script</Filter>
+    </ClInclude>
+    <ClInclude Include="script\Var.h">
+      <Filter>script</Filter>
+    </ClInclude>
+    <ClInclude Include="net\BitStreamFunc.h">
+      <Filter>net</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\Portal.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="net\EntityInterpolator.h">
+      <Filter>net</Filter>
+    </ClInclude>
+    <ClInclude Include="panels\GlobalGui.h">
+      <Filter>panels</Filter>
+    </ClInclude>
+    <ClInclude Include="helpers\LoadingHandler.h">
+      <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\News.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_Contest.h">
+      <Filter>quests</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_Secret.h">
+      <Filter>quests</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_Tournament.h">
+      <Filter>quests</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\Encounter.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\QuestHandler.h">
+      <Filter>quests</Filter>
+    </ClInclude>
+    <ClInclude Include="generator\LocationGenerator.h">
+      <Filter>generator</Filter>
+    </ClInclude>
+    <ClInclude Include="generator\LocationGeneratorFactory.h">
+      <Filter>generator</Filter>
+    </ClInclude>
+    <ClInclude Include="generator\EncounterGenerator.h">
+      <Filter>generator</Filter>
+    </ClInclude>
+    <ClInclude Include="generator\ForestGenerator.h">
+      <Filter>generator</Filter>
+    </ClInclude>
+    <ClInclude Include="generator\DungeonGenerator.h">
+      <Filter>generator</Filter>
+    </ClInclude>
+    <ClInclude Include="generator\CaveGenerator.h">
+      <Filter>generator</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\Tile.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\Room.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="generator\LabyrinthGenerator.h">
+      <Filter>generator</Filter>
+    </ClInclude>
+    <ClInclude Include="generator\InsideLocationGenerator.h">
+      <Filter>generator</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\OutsideObject.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="generator\OutsideLocationGenerator.h">
+      <Filter>generator</Filter>
+    </ClInclude>
+    <ClInclude Include="generator\MoonwellGenerator.h">
+      <Filter>generator</Filter>
+    </ClInclude>
+    <ClInclude Include="generator\CampGenerator.h">
+      <Filter>generator</Filter>
+    </ClInclude>
+    <ClInclude Include="generator\SecretLocationGenerator.h">
+      <Filter>generator</Filter>
+    </ClInclude>
+    <ClInclude Include="location\Cave.h">
+      <Filter>location</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_Tutorial.h">
+      <Filter>quests</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\ObjectEntity.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\Collision.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\TerrainTile.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="generator\TutorialLocationGenerator.h">
+      <Filter>generator</Filter>
+    </ClInclude>
+    <ClInclude Include="helpers\ItemHelper.h">
+      <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="events\Arena.h">
+      <Filter>events</Filter>
+    </ClInclude>
+    <ClInclude Include="entity\SaveSlot.h">
+      <Filter>entity</Filter>
+    </ClInclude>
+    <ClInclude Include="system\GameDialog.h">
+      <Filter>system\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="system\DialogContext.h">
+      <Filter>system\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="system\DialogLoader.h">
+      <Filter>system\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="generator\NameHelper.h">
+      <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="net\LobbyApi.h">
+      <Filter>net</Filter>
+    </ClInclude>
+    <ClInclude Include="helpers\CombatHelper.h">
+      <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_Artifacts.h">
+      <Filter>quests</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Spell.h">
+      <Filter>system\spells</Filter>
+    </ClInclude>
+    <ClInclude Include="quests\Quest_Scripted.h">
+      <Filter>quests</Filter>
+    </ClInclude>
+    <ClInclude Include="system\DialogLoader.h">
+      <Filter>3. game\system\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="system\QuestScheme.h">
+      <Filter>system\quests</Filter>
+    </ClInclude>
+    <ClInclude Include="system\ItemLoader.h">
+      <Filter>system\items</Filter>
+    </ClInclude>
+    <ClInclude Include="system\UnitLoader.h">
+      <Filter>system\units</Filter>
+    </ClInclude>
+    <ClInclude Include="system\ObjectLoader.h">
+      <Filter>system\objects</Filter>
+    </ClInclude>
+    <ClInclude Include="system\BuildingLoader.h">
+      <Filter>system\buildings</Filter>
+    </ClInclude>
+    <ClInclude Include="system\QuestLoader.h">
+      <Filter>system\quests</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Content.h">
+      <Filter>system</Filter>
+    </ClInclude>
+    <ClInclude Include="stats\Event.h">
+      <Filter>stats</Filter>
+    </ClInclude>
+    <ClInclude Include="script\ScriptException.h">
+      <Filter>script</Filter>
+    </ClInclude>
+    <ClInclude Include="system\QuestList.h">
+      <Filter>system\quests</Filter>
+    </ClInclude>
+    <ClInclude Include="system\SpellLoader.h">
+      <Filter>system\spells</Filter>
+    </ClInclude>
+    <ClInclude Include="generator\DungeonMapGenerator.h">
+      <Filter>generator</Filter>
+    </ClInclude>
+    <ClInclude Include="CommandParser.h" />
+    <ClInclude Include="ConsoleCommands.h" />
+    <ClInclude Include="FOV.h" />
+    <ClInclude Include="Game.h" />
+    <ClInclude Include="GameCommon.h" />
+    <ClInclude Include="GameComponent.h" />
+    <ClInclude Include="GameCore.h" />
+    <ClInclude Include="GameFile.h" />
+    <ClInclude Include="GameKeys.h" />
+    <ClInclude Include="GameStats.h" />
+    <ClInclude Include="Language.h" />
+    <ClInclude Include="Level.h" />
+    <ClInclude Include="Pathfinding.h" />
+    <ClInclude Include="SaveState.h" />
+    <ClInclude Include="Settings.h" />
+    <ClInclude Include="Team.h" />
+    <ClInclude Include="World.h" />
+    <ClInclude Include="reresource1.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="resource\resource.rc">
+      <Filter>resource</Filter>
+    </ResourceCompile>
+    <ResourceCompile Include="resource\resource2.rc">
+      <Filter>resource</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\doc\changelog.TXT">
+      <Filter>doc</Filter>
+    </Text>
+    <Text Include="..\doc\changelog_eng.TXT">
+      <Filter>doc</Filter>
+    </Text>
+    <Text Include="..\doc\readme.txt">
+      <Filter>doc</Filter>
+    </Text>
+    <Text Include="..\doc\readme_eng.txt">
+      <Filter>doc</Filter>
+    </Text>
+    <Text Include="..\doc\system.txt">
+      <Filter>doc</Filter>
+    </Text>
+    <Text Include="..\doc\todo.txt">
+      <Filter>doc</Filter>
+    </Text>
+    <Text Include="..\doc\script.txt">
+      <Filter>doc</Filter>
+    </Text>
+  </ItemGroup>
+</Project>

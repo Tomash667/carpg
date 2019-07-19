@@ -1,27 +1,12 @@
-*.sdf
-*.cfg
-*.opensdf
-*.suo
-*.user
-*.lnk
-*.VC.db
-*.opendb
-*.idb
 *.aps
-*.pdb
-*.lib
-*.obj
+*.user
 
 .vs
-Output
-
-/bin/cache
-/bin/data
-/bin/*
+/bin
+/lib
 /other
+/output
 /paks/out
-/project/lib
-/project/output
 
 /tools/converter/Debug
 /tools/converter/Release

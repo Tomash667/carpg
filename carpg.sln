@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26730.12
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "carpg", "carpg.vcxproj", "{AE943349-930C-4F29-BC46-AAD479B34562}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "carpg", "source/carpg.vcxproj", "{AE943349-930C-4F29-BC46-AAD479B34562}"
 	ProjectSection(ProjectDependencies) = postProject
 		{A0BA4E27-2235-40F9-B4EC-2845EC92F3D3} = {A0BA4E27-2235-40F9-B4EC-2845EC92F3D3}
 		{39E6AF97-6BA3-4A72-8C61-BCEBF214EBFD} = {39E6AF97-6BA3-4A72-8C61-BCEBF214EBFD}
@@ -11,43 +11,43 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "carpg", "carpg.vcxproj", "{
 		{56C508B6-848B-436A-BB6A-1CA2F91FA054} = {56C508B6-848B-436A-BB6A-1CA2F91FA054}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "client_dbg", "client_dbg.vcxproj", "{87061FAA-FE77-42FE-B52C-28EC1979269F}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "client_dbg", "source/client_dbg.vcxproj", "{87061FAA-FE77-42FE-B52C-28EC1979269F}"
 	ProjectSection(ProjectDependencies) = postProject
 		{AE943349-930C-4F29-BC46-AAD479B34562} = {AE943349-930C-4F29-BC46-AAD479B34562}
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Debug", "Debug", "{38AAC0F2-1AC9-45C6-8C56-50418D654DD7}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "client_dbg2", "client_dbg2.vcxproj", "{E00DB219-45EA-4095-A420-11A07328A203}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "client_dbg2", "source/client_dbg2.vcxproj", "{E00DB219-45EA-4095-A420-11A07328A203}"
 	ProjectSection(ProjectDependencies) = postProject
 		{AE943349-930C-4F29-BC46-AAD479B34562} = {AE943349-930C-4F29-BC46-AAD479B34562}
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "External", "External", "{AC7FB149-0361-45B3-9777-0D664978F3FA}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "angelscript", "..\external\angelscript_sdk\angelscript\projects\msvc2015\angelscript.vcxproj", "{39E6AF97-6BA3-4A72-8C61-BCEBF214EBFD}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "angelscript", "external\angelscript_sdk\angelscript\projects\msvc2015\angelscript.vcxproj", "{39E6AF97-6BA3-4A72-8C61-BCEBF214EBFD}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "angelscript_addon", "..\external\angelscript_sdk\add_on\angelscript_addon.vcxproj", "{A0BA4E27-2235-40F9-B4EC-2845EC92F3D3}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "angelscript_addon", "external\angelscript_sdk\add_on\angelscript_addon.vcxproj", "{A0BA4E27-2235-40F9-B4EC-2845EC92F3D3}"
 	ProjectSection(ProjectDependencies) = postProject
 		{39E6AF97-6BA3-4A72-8C61-BCEBF214EBFD} = {39E6AF97-6BA3-4A72-8C61-BCEBF214EBFD}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SLikeNet", "..\external\SLikeNet\Lib\LibStatic\SLikeNet.vcxproj", "{6533BDAE-0F0C-45E4-8FE7-ADD0F37FE063}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SLikeNet", "external\SLikeNet\Lib\LibStatic\SLikeNet.vcxproj", "{6533BDAE-0F0C-45E4-8FE7-ADD0F37FE063}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "carpglib", "..\carpglib\carpglib.vcxproj", "{56C508B6-848B-436A-BB6A-1CA2F91FA054}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "carpglib", "carpglib\carpglib.vcxproj", "{56C508B6-848B-436A-BB6A-1CA2F91FA054}"
 	ProjectSection(ProjectDependencies) = postProject
 		{76424983-1BE0-4E8D-9023-8AA316172A00} = {76424983-1BE0-4E8D-9023-8AA316172A00}
 		{54AE91C7-48D4-9C49-A5B1-0CED554CADFA} = {54AE91C7-48D4-9C49-A5B1-0CED554CADFA}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LinearMath", "..\carpglib\external\Bullet\build\vs2015\LinearMath.vcxproj", "{58D08522-C69F-904C-A7ED-733DA229F1BA}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LinearMath", "carpglib\external\Bullet\build\vs2015\LinearMath.vcxproj", "{58D08522-C69F-904C-A7ED-733DA229F1BA}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BulletCollision", "..\carpglib\external\Bullet\build\vs2015\BulletCollision.vcxproj", "{54AE91C7-48D4-9C49-A5B1-0CED554CADFA}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BulletCollision", "carpglib\external\Bullet\build\vs2015\BulletCollision.vcxproj", "{54AE91C7-48D4-9C49-A5B1-0CED554CADFA}"
 	ProjectSection(ProjectDependencies) = postProject
 		{58D08522-C69F-904C-A7ED-733DA229F1BA} = {58D08522-C69F-904C-A7ED-733DA229F1BA}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zlib", "..\carpglib\external\zlib\contrib\vstudio\zlibstat.vcxproj", "{76424983-1BE0-4E8D-9023-8AA316172A00}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zlib", "carpglib\external\zlib\contrib\vstudio\zlibstat.vcxproj", "{76424983-1BE0-4E8D-9023-8AA316172A00}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

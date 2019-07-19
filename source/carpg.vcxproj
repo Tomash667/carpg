@@ -1,0 +1,539 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{AE943349-930C-4F29-BC46-AAD479B34562}</ProjectGuid>
+    <RootNamespace>carpg</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <TargetName>carpg_d</TargetName>
+    <IntDir>$(SolutionDir)output\$(ProjectName)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)..\bin\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IntDir>$(SolutionDir)output\$(ProjectName)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)..\bin\</OutDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>..\carpglib\include;..\carpglib\external\Bullet\src;..\carpglib\external\DirectX\Include;..\carpglib\external\DirectXMath\Inc;..\carpglib\external\FMod\inc;..\carpglib\external\Visual Leak Detector\include;..\carpglib\external\zlib;.;entity;events;generator;helpers;location;net;panels;quests;script;stats;system;resource;..\external\angelscript_sdk\angelscript\include;..\external\angelscript_sdk\add_on;..\external\CrashRpt\include;..\external\json;..\external\SLikeNet\Source\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>false</MultiProcessorCompilation>
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
+      <AdditionalOptions>/w34706 /w34702 /w34189 /w34265 /w34266 /w34928 %(AdditionalOptions)</AdditionalOptions>
+      <LanguageStandard>
+      </LanguageStandard>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalLibraryDirectories>../lib;../carpglib/external/DirectX/Lib/x86;../carpglib/external/FMod/lib;../carpglib/external/Visual Leak Detector/lib/Win32;../external/CrashRpt/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>angelscript_addon_debug.lib;angelscript_debug.lib;BulletCollision_debug.lib;carpglib_debug.lib;CrashRpt1500.lib;d3d9.lib;d3dx9d.lib;dbghelp.lib;fmod_vc.lib;LinearMath_debug.lib;SLikeNet_debug.lib;ws2_32.lib;zlib_debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/ignore:4098 %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+    <Manifest>
+      <AdditionalManifestFiles>carpg.exe.manifest</AdditionalManifestFiles>
+    </Manifest>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>..\carpglib\include;..\carpglib\external\Bullet\src;..\carpglib\external\DirectX\Include;..\carpglib\external\DirectXMath\Inc;..\carpglib\external\FMod\inc;..\carpglib\external\Visual Leak Detector\include;..\carpglib\external\zlib;.;entity;events;generator;helpers;location;net;panels;quests;script;stats;system;resource;..\external\angelscript_sdk\angelscript\include;..\external\angelscript_sdk\add_on;..\external\CrashRpt\include;..\external\json;..\external\SLikeNet\Source\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
+      <AdditionalOptions>/w34706 /w34702 /w34189 /w34265 /w34266 /w34928 %(AdditionalOptions)</AdditionalOptions>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalLibraryDirectories>../lib;../carpglib/external/DirectX/Lib/x86;../carpglib/external/FMod/lib;../carpglib/external/Visual Leak Detector/lib/Win32;../external/CrashRpt/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>angelscript_addon.lib;angelscript.lib;BulletCollision.lib;carpglib.lib;CrashRpt1500.lib;d3d9.lib;d3dx9.lib;dbghelp.lib;fmod_vc.lib;LinearMath.lib;SLikeNet.lib;ws2_32.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/ignore:4098 %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+    <Manifest>
+      <AdditionalManifestFiles>carpg.exe.manifest</AdditionalManifestFiles>
+    </Manifest>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="ErrorHandler.h" />
+    <ClInclude Include="CommandParser.h" />
+    <ClInclude Include="ConsoleCommands.h" />
+    <ClInclude Include="entity\BloodType.h" />
+    <ClInclude Include="entity\Collision.h" />
+    <ClInclude Include="entity\Encounter.h" />
+    <ClInclude Include="entity\ItemContainer.h" />
+    <ClInclude Include="entity\News.h" />
+    <ClInclude Include="entity\ObjectEntity.h" />
+    <ClInclude Include="entity\OutsideObject.h" />
+    <ClInclude Include="entity\Portal.h" />
+    <ClInclude Include="entity\Room.h" />
+    <ClInclude Include="entity\SaveSlot.h" />
+    <ClInclude Include="entity\TerrainTile.h" />
+    <ClInclude Include="entity\Tile.h" />
+    <ClInclude Include="entity\UnitEventHandler.h" />
+    <ClInclude Include="events\Arena.h" />
+    <ClInclude Include="FOV.h" />
+    <ClInclude Include="GameComponent.h" />
+    <ClInclude Include="GameCore.h" />
+    <ClInclude Include="GameStats.h" />
+    <ClInclude Include="generator\CampGenerator.h" />
+    <ClInclude Include="generator\CaveGenerator.h" />
+    <ClInclude Include="generator\DungeonGenerator.h" />
+    <ClInclude Include="generator\EncounterGenerator.h" />
+    <ClInclude Include="generator\ForestGenerator.h" />
+    <ClInclude Include="generator\InsideLocationGenerator.h" />
+    <ClInclude Include="generator\LabyrinthGenerator.h" />
+    <ClInclude Include="generator\LocationGenerator.h" />
+    <ClInclude Include="generator\LocationGeneratorFactory.h" />
+    <ClInclude Include="generator\MoonwellGenerator.h" />
+    <ClInclude Include="generator\NameHelper.h" />
+    <ClInclude Include="generator\OutsideLocationGenerator.h" />
+    <ClInclude Include="generator\SecretLocationGenerator.h" />
+    <ClInclude Include="generator\TutorialLocationGenerator.h" />
+    <ClInclude Include="helpers\CombatHelper.h" />
+    <ClInclude Include="helpers\ItemHelper.h" />
+    <ClInclude Include="helpers\LoadingHandler.h" />
+    <ClInclude Include="Level.h" />
+    <ClInclude Include="net\BitStreamFunc.h" />
+    <ClInclude Include="net\EntityInterpolator.h" />
+    <ClInclude Include="net\GamePacket.h" />
+    <ClInclude Include="net\LobbyApi.h" />
+    <ClInclude Include="net\NetChange.h" />
+    <ClInclude Include="net\NetChangePlayer.h" />
+    <ClInclude Include="net\PlayerInfo.h" />
+    <ClInclude Include="panels\ActionPanel.h" />
+    <ClInclude Include="panels\BookPanel.h" />
+    <ClInclude Include="panels\GameDialogBox.h" />
+    <ClInclude Include="panels\GlobalGui.h" />
+    <ClInclude Include="Pathfinding.h" />
+    <ClInclude Include="quests\QuestHandler.h" />
+    <ClInclude Include="quests\QuestConsts.h" />
+    <ClInclude Include="quests\Quest_Artifacts.h" />
+    <ClInclude Include="quests\Quest_Contest.h" />
+    <ClInclude Include="quests\Quest_Scripted.h" />
+    <ClInclude Include="quests\Quest_Secret.h" />
+    <ClInclude Include="quests\Quest_Tournament.h" />
+    <ClInclude Include="quests\Quest_Tutorial.h" />
+    <ClInclude Include="script\ScriptException.h" />
+    <ClInclude Include="script\TypeBuilder.h" />
+    <ClInclude Include="script\ScriptManager.h" />
+    <ClInclude Include="script\Var.h" />
+    <ClInclude Include="Settings.h" />
+    <ClInclude Include="stats\Action.h" />
+    <ClInclude Include="stats\Buff.h" />
+    <ClInclude Include="stats\Event.h" />
+    <ClInclude Include="system\BaseObject.h" />
+    <ClInclude Include="system\BaseUsable.h" />
+    <ClInclude Include="system\Building.h" />
+    <ClInclude Include="system\BuildingGroup.h" />
+    <ClInclude Include="system\BuildingLoader.h" />
+    <ClInclude Include="system\BuildingScript.h" />
+    <ClInclude Include="system\Content.h" />
+    <ClInclude Include="system\ContentLoader.h" />
+    <ClInclude Include="entity\AIController.h" />
+    <ClInclude Include="entity\Blood.h" />
+    <ClInclude Include="entity\Bullet.h" />
+    <ClInclude Include="entity\Camera.h" />
+    <ClInclude Include="entity\Chest.h" />
+    <ClInclude Include="entity\CreatedCharacter.h" />
+    <ClInclude Include="entity\Door.h" />
+    <ClInclude Include="entity\GroundItem.h" />
+    <ClInclude Include="entity\HeroData.h" />
+    <ClInclude Include="entity\HeroPlayerCommon.h" />
+    <ClInclude Include="entity\HumanData.h" />
+    <ClInclude Include="entity\ItemSlot.h" />
+    <ClInclude Include="entity\Light.h" />
+    <ClInclude Include="entity\Object.h" />
+    <ClInclude Include="entity\PlayerController.h" />
+    <ClInclude Include="entity\SceneNode.h" />
+    <ClInclude Include="entity\SpellEffects.h" />
+    <ClInclude Include="entity\Trap.h" />
+    <ClInclude Include="entity\Unit.h" />
+    <ClInclude Include="entity\Usable.h" />
+    <ClInclude Include="Game.h" />
+    <ClInclude Include="GameCommon.h" />
+    <ClInclude Include="GameFile.h" />
+    <ClInclude Include="GameKeys.h" />
+    <ClInclude Include="generator\CityGenerator.h" />
+    <ClInclude Include="generator\DungeonMapGenerator.h" />
+    <ClInclude Include="helpers\LocationHelper.h" />
+    <ClInclude Include="helpers\UnitHelper.h" />
+    <ClInclude Include="Language.h" />
+    <ClInclude Include="location\Camp.h" />
+    <ClInclude Include="location\Cave.h" />
+    <ClInclude Include="location\City.h" />
+    <ClInclude Include="location\EntryPoint.h" />
+    <ClInclude Include="location\InsideBuilding.h" />
+    <ClInclude Include="location\InsideLocation.h" />
+    <ClInclude Include="location\InsideLocationLevel.h" />
+    <ClInclude Include="location\LevelArea.h" />
+    <ClInclude Include="location\Location.h" />
+    <ClInclude Include="location\MultiInsideLocation.h" />
+    <ClInclude Include="location\OutsideLocation.h" />
+    <ClInclude Include="location\SingleInsideLocation.h" />
+    <ClInclude Include="net\Net.h" />
+    <ClInclude Include="panels\Console.h" />
+    <ClInclude Include="panels\Controls.h" />
+    <ClInclude Include="panels\CreateCharacterPanel.h" />
+    <ClInclude Include="panels\CreateServerPanel.h" />
+    <ClInclude Include="panels\GameGui.h" />
+    <ClInclude Include="panels\GameMenu.h" />
+    <ClInclude Include="panels\GameMessages.h" />
+    <ClInclude Include="panels\GamePanel.h" />
+    <ClInclude Include="panels\InfoBox.h" />
+    <ClInclude Include="panels\Inventory.h" />
+    <ClInclude Include="panels\Journal.h" />
+    <ClInclude Include="panels\LoadScreen.h" />
+    <ClInclude Include="panels\MainMenu.h" />
+    <ClInclude Include="panels\Minimap.h" />
+    <ClInclude Include="panels\MpBox.h" />
+    <ClInclude Include="panels\MultiplayerPanel.h" />
+    <ClInclude Include="panels\Options.h" />
+    <ClInclude Include="panels\PickServerPanel.h" />
+    <ClInclude Include="panels\SaveLoadPanel.h" />
+    <ClInclude Include="panels\ServerPanel.h" />
+    <ClInclude Include="panels\StatsPanel.h" />
+    <ClInclude Include="panels\TeamPanel.h" />
+    <ClInclude Include="panels\WorldMapGui.h" />
+    <ClInclude Include="quests\Quest.h" />
+    <ClInclude Include="quests\Quest_Bandits.h" />
+    <ClInclude Include="quests\Quest_BanditsCollectToll.h" />
+    <ClInclude Include="quests\Quest_CampNearCity.h" />
+    <ClInclude Include="quests\Quest_Crazies.h" />
+    <ClInclude Include="quests\Quest_DeliverLetter.h" />
+    <ClInclude Include="quests\Quest_DeliverParcel.h" />
+    <ClInclude Include="quests\Quest_Evil.h" />
+    <ClInclude Include="quests\Quest_FindArtifact.h" />
+    <ClInclude Include="quests\Quest_Goblins.h" />
+    <ClInclude Include="quests\Quest_KillAnimals.h" />
+    <ClInclude Include="quests\Quest_LostArtifact.h" />
+    <ClInclude Include="quests\Quest_Mages.h" />
+    <ClInclude Include="quests\Quest_Main.h" />
+    <ClInclude Include="quests\QuestManager.h" />
+    <ClInclude Include="quests\Quest_Mine.h" />
+    <ClInclude Include="quests\Quest_Orcs.h" />
+    <ClInclude Include="quests\Quest_RescueCaptive.h" />
+    <ClInclude Include="quests\Quest_RetrievePackage.h" />
+    <ClInclude Include="quests\Quest_Sawmill.h" />
+    <ClInclude Include="quests\Quest_SpreadNews.h" />
+    <ClInclude Include="quests\Quest_StolenArtifact.h" />
+    <ClInclude Include="quests\Quest_Wanted.h" />
+    <ClInclude Include="SaveState.h" />
+    <ClInclude Include="stats\ArmorUnitType.h" />
+    <ClInclude Include="stats\Attribute.h" />
+    <ClInclude Include="stats\BaseLocation.h" />
+    <ClInclude Include="stats\BaseTrap.h" />
+    <ClInclude Include="stats\Class.h" />
+    <ClInclude Include="stats\Const.h" />
+    <ClInclude Include="stats\DamageTypes.h" />
+    <ClInclude Include="stats\Effect.h" />
+    <ClInclude Include="stats\Material.h" />
+    <ClInclude Include="stats\Music.h" />
+    <ClInclude Include="stats\Perk.h" />
+    <ClInclude Include="stats\RoomType.h" />
+    <ClInclude Include="stats\Skill.h" />
+    <ClInclude Include="stats\UnitStats.h" />
+    <ClInclude Include="system\DialogContext.h" />
+    <ClInclude Include="system\DialogLoader.h" />
+    <ClInclude Include="system\FrameInfo.h" />
+    <ClInclude Include="system\GameDialog.h" />
+    <ClInclude Include="system\Item.h" />
+    <ClInclude Include="system\ItemLoader.h" />
+    <ClInclude Include="system\ItemScript.h" />
+    <ClInclude Include="system\ItemType.h" />
+    <ClInclude Include="system\Spell.h" />
+    <ClCompile Include="entity\Encounter.cpp" />
+    <ClCompile Include="GameFile.cpp" />
+    <ClCompile Include="Settings.cpp" />
+    <ClCompile Include="system\Content.cpp" />
+    <ClCompile Include="system\QuestList.cpp" />
+    <ClCompile Include="system\QuestLoader.cpp" />
+    <ClInclude Include="system\ObjectLoader.h" />
+    <ClInclude Include="system\QuestList.h" />
+    <ClInclude Include="system\QuestLoader.h" />
+    <ClInclude Include="system\QuestScheme.h" />
+    <ClInclude Include="system\SpellLoader.h" />
+    <ClInclude Include="system\StatProfile.h" />
+    <ClInclude Include="system\Stock.h" />
+    <ClInclude Include="system\UnitData.h" />
+    <ClInclude Include="system\UnitGroup.h" />
+    <ClInclude Include="system\UnitLoader.h" />
+    <ClInclude Include="Team.h" />
+    <ClInclude Include="World.h" />
+    <ClInclude Include="Pch.h" />
+    <ClInclude Include="reresource1.h" />
+    <ClInclude Include="Utility.h" />
+    <ClInclude Include="Version.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="ErrorHandler.cpp" />
+    <ClCompile Include="Ai.cpp" />
+    <ClCompile Include="CommandParser.cpp" />
+    <ClCompile Include="entity\Camera.cpp" />
+    <ClCompile Include="entity\ItemContainer.cpp" />
+    <ClCompile Include="entity\Portal.cpp" />
+    <ClCompile Include="entity\Room.cpp" />
+    <ClCompile Include="entity\TerrainTile.cpp" />
+    <ClCompile Include="entity\Tile.cpp" />
+    <ClCompile Include="events\Arena.cpp" />
+    <ClCompile Include="GameStats.cpp" />
+    <ClCompile Include="generator\CampGenerator.cpp" />
+    <ClCompile Include="generator\CaveGenerator.cpp" />
+    <ClCompile Include="generator\DungeonGenerator.cpp" />
+    <ClCompile Include="generator\EncounterGenerator.cpp" />
+    <ClCompile Include="generator\ForestGenerator.cpp" />
+    <ClCompile Include="generator\InsideLocationGenerator.cpp" />
+    <ClCompile Include="generator\LabyrinthGenerator.cpp" />
+    <ClCompile Include="generator\LocationGenerator.cpp" />
+    <ClCompile Include="generator\LocationGeneratorFactory.cpp" />
+    <ClCompile Include="generator\MoonwellGenerator.cpp" />
+    <ClCompile Include="generator\NameHelper.cpp" />
+    <ClCompile Include="generator\OutsideLocationGenerator.cpp" />
+    <ClCompile Include="generator\SecretLocationGenerator.cpp" />
+    <ClCompile Include="generator\TutorialLocationGenerator.cpp" />
+    <ClCompile Include="helpers\CombatHelper.cpp" />
+    <ClCompile Include="helpers\ItemHelper.cpp" />
+    <ClCompile Include="helpers\LoadingHandler.cpp" />
+    <ClCompile Include="Level.cpp" />
+    <ClCompile Include="location\LevelArea.cpp" />
+    <ClCompile Include="net\BitStreamFunc.cpp" />
+    <ClCompile Include="net\EntityInterpolator.cpp" />
+    <ClCompile Include="net\LobbyApi.cpp" />
+    <ClCompile Include="net\Net2.cpp" />
+    <ClCompile Include="net\NetChange.cpp" />
+    <ClCompile Include="net\PlayerInfo.cpp" />
+    <ClCompile Include="panels\ActionPanel.cpp" />
+    <ClCompile Include="panels\BookPanel.cpp" />
+    <ClCompile Include="panels\GlobalGui.cpp" />
+    <ClCompile Include="Pathfinding.cpp" />
+    <ClCompile Include="quests\Quest_Artifacts.cpp" />
+    <ClCompile Include="quests\Quest_Contest.cpp" />
+    <ClCompile Include="quests\Quest_Scripted.cpp" />
+    <ClCompile Include="quests\Quest_Secret.cpp" />
+    <ClCompile Include="quests\Quest_Tournament.cpp" />
+    <ClCompile Include="quests\Quest_Tutorial.cpp" />
+    <ClCompile Include="script\ScriptManager.cpp" />
+    <ClCompile Include="script\Var.cpp" />
+    <ClCompile Include="stats\Action.cpp" />
+    <ClCompile Include="stats\Buff.cpp" />
+    <ClCompile Include="system\BaseObject.cpp" />
+    <ClCompile Include="system\BaseUsable.cpp" />
+    <ClCompile Include="system\Building.cpp" />
+    <ClCompile Include="system\BuildingGroup.cpp" />
+    <ClCompile Include="system\BuildingLoader.cpp" />
+    <ClCompile Include="system\BuildingScript.cpp" />
+    <ClCompile Include="entity\AIController.cpp" />
+    <ClCompile Include="entity\Blood.cpp" />
+    <ClCompile Include="entity\Bullet.cpp" />
+    <ClCompile Include="entity\Chest.cpp" />
+    <ClCompile Include="entity\CreatedCharacter.cpp" />
+    <ClCompile Include="entity\Door.cpp" />
+    <ClCompile Include="entity\GroundItem.cpp" />
+    <ClCompile Include="entity\HeroData.cpp" />
+    <ClCompile Include="entity\HumanData.cpp" />
+    <ClCompile Include="entity\ItemSlot.cpp" />
+    <ClCompile Include="entity\Light.cpp" />
+    <ClCompile Include="entity\Object.cpp" />
+    <ClCompile Include="entity\PlayerController.cpp" />
+    <ClCompile Include="entity\SpellEffects.cpp" />
+    <ClCompile Include="entity\Trap.cpp" />
+    <ClCompile Include="entity\Unit.cpp" />
+    <ClCompile Include="entity\Usable.cpp" />
+    <ClCompile Include="FOV.cpp" />
+    <ClCompile Include="Game.cpp" />
+    <ClCompile Include="Game2.cpp" />
+    <ClCompile Include="GameCommon.cpp" />
+    <ClCompile Include="generator\CityGenerator.cpp" />
+    <ClCompile Include="generator\DungeonMapGenerator.cpp" />
+    <ClCompile Include="helpers\UnitHelper.cpp" />
+    <ClCompile Include="Init.cpp" />
+    <ClCompile Include="Language.cpp" />
+    <ClCompile Include="location\Camp.cpp" />
+    <ClCompile Include="location\Cave.cpp" />
+    <ClCompile Include="location\City.cpp" />
+    <ClCompile Include="location\InsideBuilding.cpp" />
+    <ClCompile Include="location\InsideLocation.cpp" />
+    <ClCompile Include="location\InsideLocationLevel.cpp" />
+    <ClCompile Include="location\Location.cpp" />
+    <ClCompile Include="location\MultiInsideLocation.cpp" />
+    <ClCompile Include="location\OutsideLocation.cpp" />
+    <ClCompile Include="location\SingleInsideLocation.cpp" />
+    <ClCompile Include="Menu.cpp" />
+    <ClCompile Include="net\Net.cpp" />
+    <ClCompile Include="panels\Console.cpp" />
+    <ClCompile Include="panels\Controls.cpp" />
+    <ClCompile Include="panels\CreateCharacterPanel.cpp" />
+    <ClCompile Include="panels\CreateServerPanel.cpp" />
+    <ClCompile Include="panels\GameGui.cpp" />
+    <ClCompile Include="panels\GameMenu.cpp" />
+    <ClCompile Include="panels\GameMessages.cpp" />
+    <ClCompile Include="panels\GamePanel.cpp" />
+    <ClCompile Include="panels\InfoBox.cpp" />
+    <ClCompile Include="panels\Inventory.cpp" />
+    <ClCompile Include="panels\Journal.cpp" />
+    <ClCompile Include="panels\LoadScreen.cpp" />
+    <ClCompile Include="panels\MainMenu.cpp" />
+    <ClCompile Include="panels\Minimap.cpp" />
+    <ClCompile Include="panels\MpBox.cpp" />
+    <ClCompile Include="panels\MultiplayerPanel.cpp" />
+    <ClCompile Include="panels\Options.cpp" />
+    <ClCompile Include="panels\PickServerPanel.cpp" />
+    <ClCompile Include="panels\SaveLoadPanel.cpp" />
+    <ClCompile Include="panels\ServerPanel.cpp" />
+    <ClCompile Include="panels\StatsPanel.cpp" />
+    <ClCompile Include="panels\TeamPanel.cpp" />
+    <ClCompile Include="panels\WorldMapGui.cpp" />
+    <ClCompile Include="QuadTreeAndGrass.cpp" />
+    <ClCompile Include="quests\Quest.cpp" />
+    <ClCompile Include="quests\Quest_Bandits.cpp" />
+    <ClCompile Include="quests\Quest_BanditsCollectToll.cpp" />
+    <ClCompile Include="quests\Quest_CampNearCity.cpp" />
+    <ClCompile Include="quests\Quest_Crazies.cpp" />
+    <ClCompile Include="quests\Quest_DeliverLetter.cpp" />
+    <ClCompile Include="quests\Quest_DeliverParcel.cpp" />
+    <ClCompile Include="quests\Quest_Evil.cpp" />
+    <ClCompile Include="quests\Quest_FindArtifact.cpp" />
+    <ClCompile Include="quests\Quest_Goblins.cpp" />
+    <ClCompile Include="quests\Quest_KillAnimals.cpp" />
+    <ClCompile Include="quests\Quest_LostArtifact.cpp" />
+    <ClCompile Include="quests\Quest_Mages.cpp" />
+    <ClCompile Include="quests\Quest_Main.cpp" />
+    <ClCompile Include="quests\QuestManager.cpp" />
+    <ClCompile Include="quests\Quest_Mine.cpp" />
+    <ClCompile Include="quests\Quest_Orcs.cpp" />
+    <ClCompile Include="quests\Quest_RescueCaptive.cpp" />
+    <ClCompile Include="quests\Quest_RetrievePackage.cpp" />
+    <ClCompile Include="quests\Quest_Sawmill.cpp" />
+    <ClCompile Include="quests\Quest_SpreadNews.cpp" />
+    <ClCompile Include="quests\Quest_StolenArtifact.cpp" />
+    <ClCompile Include="quests\Quest_Wanted.cpp" />
+    <ClCompile Include="SaveLoad.cpp" />
+    <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="stats\Attribute.cpp" />
+    <ClCompile Include="stats\BaseLocation.cpp" />
+    <ClCompile Include="stats\BaseTrap.cpp" />
+    <ClCompile Include="stats\Class.cpp" />
+    <ClCompile Include="stats\Effect.cpp" />
+    <ClCompile Include="stats\Music.cpp" />
+    <ClCompile Include="stats\Perk.cpp" />
+    <ClCompile Include="stats\Required.cpp" />
+    <ClCompile Include="stats\RoomType.cpp" />
+    <ClCompile Include="stats\Skill.cpp" />
+    <ClCompile Include="stats\UnitStats.cpp" />
+    <ClCompile Include="system\ContentLoader.cpp" />
+    <ClCompile Include="system\DialogContext.cpp" />
+    <ClCompile Include="system\DialogLoader.cpp" />
+    <ClCompile Include="system\FrameInfo.cpp" />
+    <ClCompile Include="system\GameDialog.cpp" />
+    <ClCompile Include="system\Item.cpp" />
+    <ClCompile Include="system\ItemLoader.cpp" />
+    <ClCompile Include="system\ItemScript.cpp" />
+    <ClCompile Include="system\ObjectLoader.cpp" />
+    <ClCompile Include="system\Spell.cpp" />
+    <ClCompile Include="system\SpellLoader.cpp" />
+    <ClCompile Include="system\QuestScheme.cpp" />
+    <ClCompile Include="system\StatProfile.cpp" />
+    <ClCompile Include="system\Stock.cpp" />
+    <ClCompile Include="system\UnitData.cpp" />
+    <ClCompile Include="system\UnitGroup.cpp" />
+    <ClCompile Include="system\UnitLoader.cpp" />
+    <ClCompile Include="Team.cpp" />
+    <ClCompile Include="World.cpp" />
+    <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Pch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="resource\PickLanguage.cpp" />
+    <ClCompile Include="Utility.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="resource\resource.rc" />
+    <ResourceCompile Include="resource\resource2.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\doc\changelog.TXT" />
+    <Text Include="..\doc\changelog_eng.TXT" />
+    <Text Include="..\doc\readme.txt" />
+    <Text Include="..\doc\readme_eng.txt" />
+    <Text Include="..\doc\script.txt" />
+    <Text Include="..\doc\system.txt" />
+    <Text Include="..\doc\todo.txt" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
