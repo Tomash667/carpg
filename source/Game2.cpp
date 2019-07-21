@@ -4033,9 +4033,6 @@ void Game::UpdateUnits(LevelArea& area, float dt)
 	{
 		Unit& u = **it;
 
-		FIXME;
-		assert(u.area == &area);
-
 		// update effects and mouth moving
 		if(u.IsAlive())
 		{
@@ -6316,6 +6313,7 @@ void Game::CastSpell(LevelArea& area, Unit& u)
 					drain.pe->speed_min = Vec3(-3, 0, -3);
 					drain.pe->speed_max = Vec3(3, 3, 3);
 
+					dmg *= hitted->CalculateMagicResistance();
 					u.hp += dmg;
 					if(u.hp > u.hpmax)
 						u.hp = u.hpmax;

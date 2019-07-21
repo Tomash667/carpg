@@ -23,6 +23,7 @@ Version 0.11 (2019-??-??):
 - fixed rare crash when generating world/traveling [Ampped]
 - loading corrupted save and then loading correct one can crash game [Ampped]
 - added temporary fix for inventory crashing [Ampped/jakee248]
+- drain spell healing effect was not affected by magic resistance
 
 --------------------------------------------------------------------------------
 Version 0.10 (2019-05-05):

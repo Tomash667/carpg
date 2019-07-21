@@ -332,7 +332,6 @@
     <ClInclude Include="Team.h" />
     <ClInclude Include="World.h" />
     <ClInclude Include="Pch.h" />
-    <ClInclude Include="reresource1.h" />
     <ClInclude Include="Utility.h" />
     <ClInclude Include="Version.h" />
   </ItemGroup>

@@ -1135,7 +1135,6 @@
     <ClInclude Include="Settings.h" />
     <ClInclude Include="Team.h" />
     <ClInclude Include="World.h" />
-    <ClInclude Include="reresource1.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resource\resource.rc">

@@ -23,6 +23,7 @@ Wersja 0.11 (2019-??-??):
 - naprawiony rzadki crash przy generowaniu/wêdrówce [Ampped]
 - wczytywanie zepsutego zapisu a nastêpnie dobrego mo¿e zcrashowaæ grê [Ampped]
 - dodanie zabezpieczenia przed crashem w ekwipunku [Ampped/jakee248]
+- efekt leczenia zaklêcia wyssania krwii ignorowa³ odpornoœæ na czary celu
 
 --------------------------------------------------------------------------------
 Wersja 0.10 (2019-05-05):
