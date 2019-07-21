@@ -1521,7 +1521,7 @@ void Game::UpdateAi(float dt)
 									{
 										ai.idle_action = AIController::Idle_None;
 										L.WarpUnit(&u, ai.idle_data.region.area->area_id);
-										if(ai.idle_data.region.area->area_type == LevelArea::Type::Outside || (u.IsFollower() && u.order == ORDER_FOLLOW))
+										if(ai.idle_data.region.area->area_type != LevelArea::Type::Building || (u.IsFollower() && u.order == ORDER_FOLLOW))
 										{
 											ai.loc_timer = -1.f;
 											ai.timer = -1.f;

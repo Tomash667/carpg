@@ -144,25 +144,22 @@ void Level::ProcessUnitWarps()
 
 	for(UnitWarpData& warp : unit_warp_data)
 	{
-		if(warp.where == WARP_OUTSIDE)
+		if(warp.where == warp.unit->area->area_id)
 		{
-			if(city_ctx && warp.unit->area->area_type != LevelArea::Type::Outside)
-			{
-				// exit from building
-				InsideBuilding& building = *static_cast<InsideBuilding*>(warp.unit->area);
-				RemoveElement(building.units, warp.unit);
-				warp.unit->area = local_area;
-				warp.unit->rot = building.outside_rot;
-				WarpUnit(*warp.unit, building.outside_spawn);
-				local_area->units.push_back(warp.unit);
-			}
-			else
-			{
-				// unit left location
-				if(warp.unit->event_handler)
-					warp.unit->event_handler->HandleUnitEvent(UnitEventHandler::LEAVE, warp.unit);
-				RemoveUnit(warp.unit);
-			}
+			// unit left location
+			if(warp.unit->event_handler)
+				warp.unit->event_handler->HandleUnitEvent(UnitEventHandler::LEAVE, warp.unit);
+			RemoveUnit(warp.unit);
+		}
+		else if(warp.where == WARP_OUTSIDE)
+		{
+			// exit from building
+			InsideBuilding& building = *static_cast<InsideBuilding*>(warp.unit->area);
+			RemoveElement(building.units, warp.unit);
+			warp.unit->area = local_area;
+			warp.unit->rot = building.outside_rot;
+			WarpUnit(*warp.unit, building.outside_spawn);
+			local_area->units.push_back(warp.unit);
 		}
 		else if(warp.where == WARP_ARENA)
 		{

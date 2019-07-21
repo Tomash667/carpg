@@ -24,6 +24,9 @@ Version 0.11 (2019-??-??):
 - loading corrupted save and then loading correct one can crash game [Ampped]
 - added temporary fix for inventory crashing [Ampped/jakee248]
 - drain spell healing effect was not affected by magic resistance
+- random camps was not spawning
+- crash when entering bandits quest final dungeon [Ampped]
+- crash when leaving location before Jozan does [Ampped]
 
 --------------------------------------------------------------------------------
 Version 0.10 (2019-05-05):

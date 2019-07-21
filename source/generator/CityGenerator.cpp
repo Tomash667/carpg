@@ -36,7 +36,7 @@ const float EXIT_END = 12.6f;
 void CityGenerator::Init()
 {
 	OutsideLocationGenerator::Init();
-	city = (City*)outside;
+	city = static_cast<City*>(outside);
 }
 
 //=================================================================================================

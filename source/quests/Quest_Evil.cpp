@@ -661,7 +661,7 @@ void Quest_Evil::WarpEvilBossToAltar()
 	assert(u);
 
 	// znajdü krwawy o≥tarz
-	Object* o = area.FindObject(BaseUsable::Get("bloody_altar"));
+	Object* o = area.FindObject(BaseObject::Get("bloody_altar"));
 	assert(o);
 
 	if(u && o)

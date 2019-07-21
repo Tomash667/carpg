@@ -24,6 +24,9 @@ Wersja 0.11 (2019-??-??):
 - wczytywanie zepsutego zapisu a nastêpnie dobrego mo¿e zcrashowaæ grê [Ampped]
 - dodanie zabezpieczenia przed crashem w ekwipunku [Ampped/jakee248]
 - efekt leczenia zaklêcia wyssania krwii ignorowa³ odpornoœæ na czary celu
+- losowe obozy siê nie generowa³y
+- crash po wejœciu do podziemi w zadaniu z bandytami [Ampped]
+- crash po wyjœciu z podziemi przed Jozanem [Ampped]
 
 --------------------------------------------------------------------------------
 Wersja 0.10 (2019-05-05):

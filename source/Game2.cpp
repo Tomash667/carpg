@@ -9125,14 +9125,6 @@ void Game::RemoveQuestUnits(bool on_leave)
 	if(QM.quest_bandits->bandits_state == Quest_Bandits::State::AgentTalked)
 	{
 		QM.quest_bandits->bandits_state = Quest_Bandits::State::AgentLeft;
-		for(vector<Unit*>::iterator it = L.local_area->units.begin(), end = L.local_area->units.end(); it != end; ++it)
-		{
-			if(*it == QM.quest_bandits->agent && (*it)->IsAlive())
-			{
-				L.RemoveUnit(*it, !on_leave);
-				break;
-			}
-		}
 		QM.quest_bandits->agent = nullptr;
 	}
 
@@ -9167,7 +9159,6 @@ void Game::RemoveQuestUnits(bool on_leave)
 
 	if(QM.quest_evil->evil_state == Quest_Evil::State::ClericLeaving)
 	{
-		L.RemoveUnit(QM.quest_evil->cleric, !on_leave);
 		QM.quest_evil->cleric = nullptr;
 		QM.quest_evil->evil_state = Quest_Evil::State::ClericLeft;
 	}

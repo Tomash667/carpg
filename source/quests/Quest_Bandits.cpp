@@ -205,7 +205,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			W.GetLocation(camp_loc)->active_quest = nullptr;
 			OnUpdate(Format(game->txQuest[161], target.name.c_str(), GetLocationDirName(GetStartLocation().pos, target.pos)));
 			done = false;
-			at_level = 0;
+			at_level = 1;
 			unit_to_spawn = UnitData::Get("q_bandyci_szef");
 			spawn_unit_room = RoomTarget::Throne;
 			unit_dont_attack = true;
@@ -380,6 +380,7 @@ bool Quest_Bandits::Load(GameReader& f)
 	{
 		unit_to_spawn = UnitData::Get("q_bandyci_szef");
 		spawn_unit_room = RoomTarget::Throne;
+		at_level = 1;
 		unit_dont_attack = true;
 		location_event_handler = nullptr;
 		unit_event_handler = this;

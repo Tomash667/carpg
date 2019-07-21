@@ -183,13 +183,13 @@ private:
 	vector<Int2> boss_levels; // levels with boss music (x-location index, y-dungeon level)
 	uint settlements, // count and index below this value is city/village
 		empty_locations, // counter
-		encounter_loc, // encounter location index
-		create_camp; // counter to create new random camps
+		encounter_loc; // encounter location index
 	Vec2 world_bounds,
 		world_pos,
 		travel_start_pos,
 		travel_target_pos;
-	int world_size;
+	int world_size,
+		create_camp; // counter to create new random camps
 	float travel_timer,
 		day_timer,
 		reveal_timer, // increase chance for encounter every 0.25 sec

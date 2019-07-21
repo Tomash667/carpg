@@ -57,7 +57,7 @@ void OutsideLocationGenerator::InitOnce()
 //=================================================================================================
 void OutsideLocationGenerator::Init()
 {
-	outside = (OutsideLocation*)loc;
+	outside = static_cast<OutsideLocation*>(loc);
 	terrain = L.terrain;
 }
 
@@ -141,7 +141,6 @@ void OutsideLocationGenerator::RandomizeHeight(int octaves, float frequency, flo
 void OutsideLocationGenerator::OnEnter()
 {
 	Game& game = Game::Get();
-	LevelArea& area = *L.local_area;
 	if(!reenter)
 	{
 		L.Apply();
@@ -180,7 +179,7 @@ void OutsideLocationGenerator::OnEnter()
 		if(need_reset)
 		{
 			// remove alive units
-			for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
+			for(vector<Unit*>::iterator it = outside->units.begin(), end = outside->units.end(); it != end; ++it)
 			{
 				if((*it)->IsAlive())
 				{
@@ -188,7 +187,7 @@ void OutsideLocationGenerator::OnEnter()
 					*it = nullptr;
 				}
 			}
-			RemoveNullElements(area.units);
+			RemoveNullElements(outside->units);
 		}
 
 		// recreate colliders
@@ -244,7 +243,7 @@ void OutsideLocationGenerator::OnEnter()
 		Vec3 pos = team_pos + Vec3(sin(team_dir + PI) * 8, 0, cos(team_dir + PI) * 8);
 		for(int i = 0; i < count; ++i)
 		{
-			Unit* u = L.SpawnUnitNearLocation(area, pos, *ud, &Team.leader->pos, 6, 4.f);
+			Unit* u = L.SpawnUnitNearLocation(*outside, pos, *ud, &Team.leader->pos, 6, 4.f);
 			u->assist = true;
 		}
 	}
@@ -253,8 +252,8 @@ void OutsideLocationGenerator::OnEnter()
 //=================================================================================================
 void OutsideLocationGenerator::SpawnForestObjects(int road_dir)
 {
-	LevelArea& area = *(OutsideLocation*)loc;
-	TerrainTile* tiles = ((OutsideLocation*)loc)->tiles;
+	LevelArea& area = *outside;
+	TerrainTile* tiles = outside->tiles;
 
 	// obelisk
 	if(Rand() % (road_dir == -1 ? 10 : 15) == 0)
@@ -362,7 +361,7 @@ void OutsideLocationGenerator::SpawnForestItems(int count_mod)
 		Item::Get("green_herb"), green_herbs,
 		Item::Get("healing_herb"), herbs
 	};
-	TerrainTile* tiles = ((OutsideLocation*)loc)->tiles;
+	TerrainTile* tiles = outside->tiles;
 	Vec2 region_size(2.f, 2.f);
 	for(const ItemToSpawn& to_spawn : items_to_spawn)
 	{
@@ -486,7 +485,7 @@ void OutsideLocationGenerator::ApplyTiles()
 //=================================================================================================
 void OutsideLocationGenerator::SpawnOutsideBariers()
 {
-	TmpLevelArea& tmp_area = *((OutsideLocation*)loc)->tmp;
+	TmpLevelArea& tmp_area = *outside->tmp;
 	const float size = 256.f;
 	const float size2 = size / 2;
 	const float border = 32.f;
