@@ -81,7 +81,7 @@ void ActionPanel::Draw(ControlDrawData*)
 		pos.x + size.x - 16,
 		pos.y + size.y - 16
 	};
-	GUI.DrawText(GUI.fBig, txActions, DTF_TOP | DTF_CENTER, Color::Black, rect);
+	gui->DrawText(gui->fBig, txActions, DTF_TOP | DTF_CENTER, Color::Black, rect);
 
 	// abilities grid group
 	if(!actions.empty())
@@ -110,7 +110,7 @@ void ActionPanel::DrawGroup(cstring text)
 	int shift_x = pos.x + 12 + (size.x - 48) % 63 / 2;
 	int shift_y = pos.y + 48 + (size.y - 64 - 34) % 63 / 2 + grid_offset;
 
-	GUI.DrawText(GUI.fBig, text, DTF_LEFT, Color::Black, Rect(shift_x, shift_y, shift_x + 400, shift_y + 50));
+	gui->DrawText(gui->fBig, text, DTF_LEFT, Color::Black, Rect(shift_x, shift_y, shift_x + 400, shift_y + 50));
 	shift_y += 40;
 
 	for(int y = 0; y < count_h; ++y)
@@ -118,13 +118,13 @@ void ActionPanel::DrawGroup(cstring text)
 		for(int x = 0; x < count_w; ++x)
 		{
 			Int2 shift(shift_x + x * 63, shift_y + y * 63);
-			GUI.DrawSprite(tItemBar, shift);
+			gui->DrawSprite(tItemBar, shift);
 			uint index = x + y * count_w;
 			if(index < images.size())
 			{
 				const float ratio = 62.f / 128.f;
 				Matrix mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(ratio, ratio), nullptr, 0.f, &Vec2(shift + Int2(1, 1)));
-				GUI.DrawSprite2(images[index], mat);
+				gui->DrawSprite2(images[index], mat);
 			}
 		}
 	}
@@ -163,7 +163,7 @@ void ActionPanel::Update(float dt)
 
 	if(drag_and_drop)
 	{
-		if(Int2::Distance(GUI.cursor_pos, drag_and_drop_pos) > 3)
+		if(Int2::Distance(gui->cursor_pos, drag_and_drop_pos) > 3)
 		{
 			int value = ConvertToShortcutSpecial(drag_and_drop_group, drag_and_drop_index);
 			TEX icon = nullptr;
@@ -198,7 +198,7 @@ void ActionPanel::Update(float dt)
 
 	if(input->Focus())
 	{
-		if(IsInside(GUI.cursor_pos))
+		if(IsInside(gui->cursor_pos))
 		{
 			for(int i = 0; i < Shortcut::MAX; ++i)
 			{
@@ -230,14 +230,14 @@ void ActionPanel::UpdateGroup(uint count, int group, int& group_result, int& id_
 			uint index = x + y * count_w;
 			if(index >= count)
 				break;
-			if(PointInRect(GUI.cursor_pos, Int2(shift_x + x * 63, shift_y + y * 63), Int2(64, 64)))
+			if(PointInRect(gui->cursor_pos, Int2(shift_x + x * 63, shift_y + y * 63), Int2(64, 64)))
 			{
 				group_result = group;
 				id_result = index;
 				if(input->Focus() && input->Pressed(Key::LeftButton))
 				{
 					drag_and_drop = true;
-					drag_and_drop_pos = GUI.cursor_pos;
+					drag_and_drop_pos = gui->cursor_pos;
 					drag_and_drop_group = group;
 					drag_and_drop_index = index;
 				}

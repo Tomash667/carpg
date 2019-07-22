@@ -16,14 +16,14 @@ void InfoBox::Draw(ControlDrawData*)
 {
 	// t³o
 	if(!game->gui->load_screen->visible)
-		GUI.DrawSpriteFull(tBackground, Color::Alpha(128));
+		gui->DrawSpriteFull(tBackground, Color::Alpha(128));
 
 	// panel
-	GUI.DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
+	gui->DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
 
 	// tekst
 	Rect r = { global_pos.x, global_pos.y, global_pos.x + size.x, global_pos.y + size.y };
-	GUI.DrawText(GUI.default_font, text, DTF_CENTER | DTF_VCENTER, Color::Black, r);
+	gui->DrawText(gui->default_font, text, DTF_CENTER | DTF_VCENTER, Color::Black, r);
 }
 
 //=================================================================================================
@@ -39,7 +39,7 @@ void InfoBox::Event(GuiEvent e)
 	{
 		if(e == GuiEvent_Show)
 			visible = true;
-		global_pos = (GUI.wnd_size - size) / 2;
+		global_pos = (gui->wnd_size - size) / 2;
 	}
 	else if(e == GuiEvent_Close)
 		visible = false;
@@ -48,11 +48,11 @@ void InfoBox::Event(GuiEvent e)
 //=================================================================================================
 void InfoBox::Show(cstring _text)
 {
-	size = GUI.default_font->CalculateSize(_text) + Int2(24, 24);
+	size = gui->default_font->CalculateSize(_text) + Int2(24, 24);
 	text = _text;
 
 	if(!visible)
-		GUI.ShowDialog(this);
+		gui->ShowDialog(this);
 	else
-		global_pos = (GUI.wnd_size - size) / 2;
+		global_pos = (gui->wnd_size - size) / 2;
 }

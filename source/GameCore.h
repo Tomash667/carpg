@@ -227,3 +227,4 @@ namespace global
 	extern GlobalGui* gui;
 	extern Pathfinding* pathfinding;
 }
+using namespace global;

@@ -93,15 +93,15 @@ void WorldMapGui::Draw(ControlDrawData*)
 	// background
 	Rect rect0(Int2::Zero, game.engine->GetWindowSize());
 	game.render->SetTextureAddressMode(TEX_ADR_WRAP);
-	GUI.DrawSpriteRectPart(tMapBg, rect0, rect0);
+	gui->DrawSpriteRectPart(tMapBg, rect0, rect0);
 	game.render->SetTextureAddressMode(TEX_ADR_CLAMP);
 
 	// map
 	Matrix mat = Matrix::Transform2D(&offset, 0.f, &Vec2(float(W.world_size) / MAP_IMG_SIZE * zoom), nullptr, 0.f, &(GetCameraCenter() - offset));
-	GUI.DrawSpriteTransform(tWorldMap, mat);
+	gui->DrawSpriteTransform(tWorldMap, mat);
 
 	// debug tiles
-	if(!combo_box.focus && !GUI.HaveDialog() && GKey.DebugKey(Key::S) && !Net::IsClient())
+	if(!combo_box.focus && !gui->HaveDialog() && GKey.DebugKey(Key::S) && !Net::IsClient())
 	{
 		const vector<int>& tiles = W.GetTiles();
 		int ts = W.world_size / World::TILE_SIZE;
@@ -117,7 +117,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 					c = Color::Lerp(Color::Yellow, Color::Red, float(st - 9) / 7);
 				Rect rect(Int2(WorldPosToScreen(Vec2((float)x*World::TILE_SIZE, (float)y*World::TILE_SIZE))),
 					Int2(WorldPosToScreen(Vec2((float)(x + 1)*World::TILE_SIZE, (float)(y + 1)*World::TILE_SIZE))));
-				GUI.DrawSpriteRect(GUI.tPix, rect, c);
+				gui->DrawSpriteRect(gui->tPix, rect, c);
 			}
 		}
 	}
@@ -131,7 +131,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 		if(loc.state == LS_UNKNOWN || loc.state == LS_HIDDEN)
 			continue;
 		mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(zoom, zoom), nullptr, 0.f, &WorldPosToScreen(Vec2(loc.pos.x - 16.f, loc.pos.y + 16.f)));
-		GUI.DrawSpriteTransform(tMapIcon[loc.image], mat, loc.state == LS_KNOWN ? 0x70707070 : Color::White);
+		gui->DrawSpriteTransform(tMapIcon[loc.image], mat, loc.state == LS_KNOWN ? 0x70707070 : Color::White);
 	}
 
 	// encounter locations
@@ -142,7 +142,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 			if(enc)
 			{
 				mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(zoom, zoom), nullptr, 0.f, &WorldPosToScreen(Vec2(enc->pos.x - 16.f, enc->pos.y + 16.f)));
-				GUI.DrawSpriteTransform(tEnc, mat);
+				gui->DrawSpriteTransform(tEnc, mat);
 			}
 		}
 	}
@@ -155,7 +155,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 	{
 		Location& current = *W.GetCurrentLocation();
 		mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(zoom, zoom), nullptr, 0.f, &WorldPosToScreen(Vec2(current.pos.x - 32.f, current.pos.y + 32.f)));
-		GUI.DrawSpriteTransform(tSelected[1], mat, 0xAAFFFFFF);
+		gui->DrawSpriteTransform(tSelected[1], mat, 0xAAFFFFFF);
 		s += Format("\n\n%s: %s", txCurrentLoc, current.name.c_str());
 		AppendLocationText(current, s.get_ref());
 	}
@@ -180,7 +180,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 			s += Format("\n%s: %g km\n%s: %s", txDistance, ceil(distance * 10) / 10, txTravelTime, cost);
 		}
 		mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(zoom, zoom), nullptr, 0.f, &WorldPosToScreen(Vec2(picked.pos.x - 32.f, picked.pos.y + 32.f)));
-		GUI.DrawSpriteTransform(tSelected[0], mat, 0xAAFFFFFF);
+		gui->DrawSpriteTransform(tSelected[0], mat, 0xAAFFFFFF);
 	}
 	else if(c_pos_valid)
 	{
@@ -200,7 +200,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 	if(W.GetCurrentLocationIndex() == -1)
 	{
 		mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(zoom, zoom), nullptr, 0.f, &WorldPosToScreen(Vec2(world_pos.x - 8, world_pos.y + 8)));
-		GUI.DrawSpriteTransform(tMover, mat, 0xBBFFFFFF);
+		gui->DrawSpriteTransform(tMover, mat, 0xBBFFFFFF);
 	}
 
 	// line from team to target position
@@ -224,9 +224,9 @@ void WorldMapGui::Draw(ControlDrawData*)
 	if(ok)
 	{
 		Vec2 pts[2] = { WorldPosToScreen(world_pos), WorldPosToScreen(target_pos) };
-		GUI.LineBegin();
-		GUI.DrawLine(pts, 1, 0xAA000000);
-		GUI.LineEnd();
+		gui->LineBegin();
+		gui->DrawLine(pts, 1, 0xAA000000);
+		gui->LineEnd();
 	}
 
 	// encounter chance
@@ -238,26 +238,26 @@ void WorldMapGui::Draw(ControlDrawData*)
 	{
 		Vec2 pos = W.GetLocation(tracking)->pos;
 		mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(zoom / 2, zoom / 2), nullptr, 0.f, &WorldPosToScreen(Vec2(pos.x - 40.f, pos.y + 40.f)));
-		GUI.DrawSpriteTransform(tTrackingArrow, mat);
+		gui->DrawSpriteTransform(tTrackingArrow, mat);
 	}
 
 	// side images
-	GUI.DrawSpriteRect(tSide, Rect(GUI.wnd_size.x * 2 / 3, 0, GUI.wnd_size.x, GUI.wnd_size.y));
+	gui->DrawSpriteRect(tSide, Rect(gui->wnd_size.x * 2 / 3, 0, gui->wnd_size.x, gui->wnd_size.y));
 
 	// magnifying glass & combo box
-	Rect rect(int(float(GUI.wnd_size.x) * 2 / 3 + 16.f*GUI.wnd_size.x / 1024),
-		int(float(GUI.wnd_size.y) - 138.f * GUI.wnd_size.y / 768));
-	rect.p2.x += int(32.f * GUI.wnd_size.x / 1024);
-	rect.p2.y += int(32.f * GUI.wnd_size.y / 768);
-	GUI.DrawSpriteRect(tMagnifyingGlass, rect);
+	Rect rect(int(float(gui->wnd_size.x) * 2 / 3 + 16.f*gui->wnd_size.x / 1024),
+		int(float(gui->wnd_size.y) - 138.f * gui->wnd_size.y / 768));
+	rect.p2.x += int(32.f * gui->wnd_size.x / 1024);
+	rect.p2.y += int(32.f * gui->wnd_size.y / 768);
+	gui->DrawSpriteRect(tMagnifyingGlass, rect);
 	combo_box.Draw();
 
 	// text
-	rect = Rect(int(float(GUI.wnd_size.x) * 2 / 3 + 16.f * GUI.wnd_size.x / 1024),
-		int(94.f * GUI.wnd_size.y / 768),
-		int(float(GUI.wnd_size.x) - 16.f * GUI.wnd_size.x / 1024),
-		int(float(GUI.wnd_size.y) - 90.f * GUI.wnd_size.y / 768));
-	GUI.DrawText(GUI.default_font, s, 0, Color::Black, rect);
+	rect = Rect(int(float(gui->wnd_size.x) * 2 / 3 + 16.f * gui->wnd_size.x / 1024),
+		int(94.f * gui->wnd_size.y / 768),
+		int(float(gui->wnd_size.x) - 16.f * gui->wnd_size.x / 1024),
+		int(float(gui->wnd_size.y) - 90.f * gui->wnd_size.y / 768));
+	gui->DrawText(gui->default_font, s, 0, Color::Black, rect);
 
 	if(game.end_of_game)
 		global::gui->game_gui->DrawEndOfGameScreen();
@@ -281,11 +281,11 @@ void WorldMapGui::Update(float dt)
 	{
 		mp_box->focus = true;
 		mp_box->Event(GuiEvent_GainFocus);
-		if(GUI.HaveDialog())
+		if(gui->HaveDialog())
 			mp_box->LostFocus();
 		mp_box->Update(dt);
 
-		if(input->Focus() && !mp_box->have_focus && !GUI.HaveDialog() && input->PressedRelease(Key::Enter))
+		if(input->Focus() && !mp_box->have_focus && !gui->HaveDialog() && input->PressedRelease(Key::Enter))
 			mp_box->have_focus = true;
 	}
 
@@ -297,7 +297,7 @@ void WorldMapGui::Update(float dt)
 		game.gui->journal->focus = true;
 		game.gui->journal->Update(dt);
 	}
-	if(!GUI.HaveDialog() && !(mp_box->visible && mp_box->itb.focus) && input->Focus() && !combo_box.focus && game.death_screen == 0
+	if(!gui->HaveDialog() && !(mp_box->visible && mp_box->itb.focus) && input->Focus() && !combo_box.focus && game.death_screen == 0
 		&& GKey.PressedRelease(GK_JOURNAL))
 	{
 		if(game.gui->journal->visible)
@@ -315,7 +315,7 @@ void WorldMapGui::Update(float dt)
 			combo_box.LostFocus();
 
 		combo_box.mouse_focus = focus;
-		if(combo_box.IsInside(GUI.cursor_pos) && input->PressedRelease(Key::LeftButton))
+		if(combo_box.IsInside(gui->cursor_pos) && input->PressedRelease(Key::LeftButton))
 			combo_box.GainFocus();
 		combo_box.Update(dt);
 
@@ -359,11 +359,11 @@ void WorldMapGui::Update(float dt)
 
 	if(W.GetState() == World::State::TRAVEL)
 	{
-		if(game.paused || (!Net::IsOnline() && GUI.HavePauseDialog()))
+		if(game.paused || (!Net::IsOnline() && gui->HavePauseDialog()))
 			return;
 
 		bool stop = false;
-		if(focus && input->Focus() && GUI.cursor_pos.x < GUI.wnd_size.x * 2 / 3 && input->PressedRelease(Key::LeftButton))
+		if(focus && input->Focus() && gui->cursor_pos.x < gui->wnd_size.x * 2 / 3 && input->PressedRelease(Key::LeftButton))
 		{
 			if(Team.IsLeader())
 			{
@@ -378,14 +378,14 @@ void WorldMapGui::Update(float dt)
 	}
 	else if(W.GetState() != World::State::ENCOUNTER && !game.gui->journal->visible)
 	{
-		Vec2 cursor_pos(float(GUI.cursor_pos.x), float(GUI.cursor_pos.y));
+		Vec2 cursor_pos(float(gui->cursor_pos.x), float(gui->cursor_pos.y));
 		Location* loc = nullptr;
 		float dist = 17.f;
 		int index;
 
-		c_pos = (Vec2(GUI.cursor_pos) - GetCameraCenter()) / zoom+offset * float(W.world_size) / MAP_IMG_SIZE;
+		c_pos = (Vec2(gui->cursor_pos) - GetCameraCenter()) / zoom+offset * float(W.world_size) / MAP_IMG_SIZE;
 		c_pos.y = float(W.world_size) - c_pos.y;
-		if(focus && c_pos.x > 0 && c_pos.y > 0 && c_pos.x < W.world_size && c_pos.y < W.world_size && GUI.cursor_pos.x < GUI.wnd_size.x * 2 / 3)
+		if(focus && c_pos.x > 0 && c_pos.y > 0 && c_pos.x < W.world_size && c_pos.y < W.world_size && gui->cursor_pos.x < gui->wnd_size.x * 2 / 3)
 		{
 			c_pos_valid = true;
 			if(!input->Down(Key::Shift))
@@ -510,10 +510,10 @@ void WorldMapGui::Event(GuiEvent e)
 	case GuiEvent_Show:
 	case GuiEvent_WindowResize:
 		{
-			Rect rect(int(float(GUI.wnd_size.x) * 2 / 3 + 52.f*GUI.wnd_size.x / 1024),
-				int(float(GUI.wnd_size.y) - 138.f * GUI.wnd_size.y / 768));
-			rect.p2.x = int(float(GUI.wnd_size.x) - 20.f * GUI.wnd_size.y / 1024);
-			rect.p2.y += int(32.f * GUI.wnd_size.y / 768);
+			Rect rect(int(float(gui->wnd_size.x) * 2 / 3 + 52.f*gui->wnd_size.x / 1024),
+				int(float(gui->wnd_size.y) - 138.f * gui->wnd_size.y / 768));
+			rect.p2.x = int(float(gui->wnd_size.x) - 20.f * gui->wnd_size.y / 1024);
+			rect.p2.y += int(32.f * gui->wnd_size.y / 768);
 			combo_box.pos = rect.p1;
 			combo_box.global_pos = combo_box.pos;
 			combo_box.size = rect.Size();
@@ -675,7 +675,7 @@ void WorldMapGui::ShowEncounterMessage(cstring text)
 	info.pause = true;
 	info.text = text;
 	info.type = DIALOG_OK;
-	dialog_enc = GUI.ShowDialog(info);
+	dialog_enc = gui->ShowDialog(info);
 
 	if(Net::IsOnline())
 	{
@@ -712,5 +712,5 @@ void WorldMapGui::CenterView(float dt, const Vec2* target)
 //=================================================================================================
 Vec2 WorldMapGui::GetCameraCenter() const
 {
-	return Vec2(float(GUI.wnd_size.x) / 3, float(GUI.wnd_size.y) / 2);
+	return Vec2(float(gui->wnd_size.x) / 3, float(gui->wnd_size.y) / 2);
 }

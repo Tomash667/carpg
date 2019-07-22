@@ -38,7 +38,7 @@ void GameMenu::LoadLanguage()
 		bt[i].id = IdReturnToGame + i;
 		bt[i].parent = this;
 		bt[i].text = s.Get(names[i]);
-		bt[i].size = GUI.default_font->CalculateSize(bt[i].text) + Int2(24, 24);
+		bt[i].size = gui->default_font->CalculateSize(bt[i].text) + Int2(24, 24);
 
 		maxsize = Int2::Max(maxsize, bt[i].size);
 	}
@@ -65,10 +65,10 @@ void GameMenu::LoadData()
 //=================================================================================================
 void GameMenu::Draw(ControlDrawData*)
 {
-	GUI.DrawSpriteFull(tBackground, Color::Alpha(128));
-	GUI.DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
+	gui->DrawSpriteFull(tBackground, Color::Alpha(128));
+	gui->DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
 
-	GUI.DrawSprite(tLogo, global_pos + Int2(8, 8));
+	gui->DrawSprite(tLogo, global_pos + Int2(8, 8));
 
 	for(int i = 0; i < 6; ++i)
 		bt[i].Draw();
@@ -107,7 +107,7 @@ void GameMenu::Update(float dt)
 	}
 
 	if(focus && input->Focus() && input->PressedRelease(Key::Escape))
-		GUI.CloseDialog(this);
+		gui->CloseDialog(this);
 }
 
 //=================================================================================================
@@ -117,7 +117,7 @@ void GameMenu::Event(GuiEvent e)
 	{
 		if(e == GuiEvent_Show)
 			visible = true;
-		pos = global_pos = (GUI.wnd_size - size) / 2;
+		pos = global_pos = (gui->wnd_size - size) / 2;
 		for(int i = 0; i < 6; ++i)
 			bt[i].global_pos = bt[i].pos + global_pos;
 	}
@@ -155,7 +155,7 @@ void GameMenu::Event(GuiEvent e)
 				info.order = ORDER_TOP;
 				info.type = DIALOG_YESNO;
 
-				GUI.ShowDialog(info);
+				gui->ShowDialog(info);
 			}
 			break;
 		case IdQuit:

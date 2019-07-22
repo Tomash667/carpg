@@ -36,6 +36,8 @@
 #include "PlayerInfo.h"
 #include "Render.h"
 
+GlobalGui* global::gui;
+
 //=================================================================================================
 GlobalGui::GlobalGui() : load_screen(nullptr), game_gui(nullptr), inventory(nullptr), stats(nullptr), team(nullptr),
 journal(nullptr), minimap(nullptr), actions(nullptr), book(nullptr), messages(nullptr), mp_box(nullptr), world_map(nullptr), main_menu(nullptr),
@@ -74,7 +76,7 @@ GlobalGui::~GlobalGui()
 	delete GetTextDialog::self;
 	delete GetNumberDialog::self;
 	delete PickItemDialog::self;
-	gui::PickFileDialog::Destroy();
+	PickFileDialog::Destroy();
 }
 
 //=================================================================================================
@@ -82,18 +84,17 @@ void GlobalGui::Prepare()
 {
 	Game& game = Game::Get();
 
-	GUI.Init(game.render->GetDevice(), game.render->GetSprite(), game.input);
-	GUI.AddFont("Florence-Regular.otf");
-	GUI.default_font = GUI.CreateFont("Arial", 12, 800, 512, 2);
-	GUI.fBig = GUI.CreateFont("Florence Regular", 28, 800, 512);
-	GUI.fSmall = GUI.CreateFont("Arial", 10, 500, 512);
-	GUI.InitLayout();
+	gui->AddFont("Florence-Regular.otf");
+	gui->default_font = gui->CreateFont("Arial", 12, 800, 512, 2);
+	gui->fBig = gui->CreateFont("Florence Regular", 28, 800, 512);
+	gui->fSmall = gui->CreateFont("Arial", 10, 500, 512);
+	gui->InitLayout();
 
 	GameDialogBox::game = &game;
 
 	// load screen
 	load_screen = new LoadScreen;
-	GUI.Add(load_screen);
+	gui->Add(load_screen);
 }
 
 //=================================================================================================
@@ -103,7 +104,7 @@ void GlobalGui::InitOnce()
 
 	// game gui & panels
 	game_gui = new GameGui;
-	GUI.Add(game_gui);
+	gui->Add(game_gui);
 
 	mp_box = new MpBox;
 	game_gui->Add(mp_box);
@@ -135,11 +136,11 @@ void GlobalGui::InitOnce()
 
 	// worldmap
 	world_map = new WorldMapGui;
-	GUI.Add(world_map);
+	gui->Add(world_map);
 
 	// main menu
 	main_menu = new MainMenu(&game);
-	GUI.Add(main_menu);
+	gui->Add(main_menu);
 
 	// dialogs
 	DialogInfo info;
@@ -189,13 +190,13 @@ void GlobalGui::InitOnce()
 	info.parent = options;
 	controls = new Controls(info);
 
-	GUI.Add(this);
+	gui->Add(this);
 }
 
 //=================================================================================================
 void GlobalGui::LoadLanguage()
 {
-	GUI.SetText(Str("ok"), Str("yes"), Str("no"), Str("cancel"));
+	gui->SetText(Str("ok"), Str("yes"), Str("no"), Str("cancel"));
 
 	txReallyQuit = Str("reallyQuit");
 
@@ -227,9 +228,9 @@ void GlobalGui::LoadData()
 	tex_mgr.AddLoadTask("dialog.png", Control::tDialog);
 	tex_mgr.AddLoadTask("scrollbar.png", Scrollbar::tex);
 	tex_mgr.AddLoadTask("scrollbar2.png", Scrollbar::tex2);
-	tex_mgr.AddLoadTask("cursor.png", GUI.tCursor[CURSOR_NORMAL]);
-	tex_mgr.AddLoadTask("hand.png", GUI.tCursor[CURSOR_HAND]);
-	tex_mgr.AddLoadTask("text.png", GUI.tCursor[CURSOR_TEXT]);
+	tex_mgr.AddLoadTask("cursor.png", gui->tCursor[CURSOR_NORMAL]);
+	tex_mgr.AddLoadTask("hand.png", gui->tCursor[CURSOR_HAND]);
+	tex_mgr.AddLoadTask("text.png", gui->tCursor[CURSOR_TEXT]);
 	tex_mgr.AddLoadTask("button.png", Button::tex[Button::NONE]);
 	tex_mgr.AddLoadTask("button_hover.png", Button::tex[Button::HOVER]);
 	tex_mgr.AddLoadTask("button_down.png", Button::tex[Button::DOWN]);
@@ -237,10 +238,10 @@ void GlobalGui::LoadData()
 	tex_mgr.AddLoadTask("background.bmp", DialogBox::tBackground);
 	tex_mgr.AddLoadTask("scrollbar.png", TextBox::tBox);
 	tex_mgr.AddLoadTask("ticked.png", CheckBox::tTick);
-	tex_mgr.AddLoadTask("box.png", IGUI::tBox);
-	tex_mgr.AddLoadTask("box2.png", IGUI::tBox2);
-	tex_mgr.AddLoadTask("pix.png", IGUI::tPix);
-	tex_mgr.AddLoadTask("dialog_down.png", IGUI::tDown);
+	tex_mgr.AddLoadTask("box.png", Gui::tBox);
+	tex_mgr.AddLoadTask("box2.png", Gui::tBox2);
+	tex_mgr.AddLoadTask("pix.png", Gui::tPix);
+	tex_mgr.AddLoadTask("dialog_down.png", Gui::tDown);
 	tex_mgr.AddLoadTask("close.png", PickItemDialog::custom_x.tex[Button::NONE]);
 	tex_mgr.AddLoadTask("close_hover.png", PickItemDialog::custom_x.tex[Button::HOVER]);
 	tex_mgr.AddLoadTask("close_down.png", PickItemDialog::custom_x.tex[Button::DOWN]);
@@ -270,13 +271,13 @@ void GlobalGui::PostInit()
 	saveload->LoadSaveSlots();
 
 	// load gui textures that require instant loading
-	GUI.GetLayout()->LoadDefault();
+	gui->GetLayout()->LoadDefault();
 }
 
 //=================================================================================================
 void GlobalGui::Cleanup()
 {
-	GUI.OnClean();
+	gui->OnClean();
 	delete this;
 }
 
@@ -287,9 +288,16 @@ void GlobalGui::Draw(ControlDrawData*)
 }
 
 //=================================================================================================
+void GlobalGui::Draw(const Matrix& mat_view_proj, bool draw_gui, bool draw_dialogs)
+{
+	gui->mViewProj = mat_view_proj;
+	gui->Draw(draw_gui, draw_dialogs);
+}
+
+//=================================================================================================
 void GlobalGui::UpdateGui(float dt)
 {
-	GUI.Update(dt, cursor_allow_move ? Game::Get().settings.mouse_sensitivity_f : -1.f);
+	gui->Update(dt, cursor_allow_move ? Game::Get().settings.mouse_sensitivity_f : -1.f);
 }
 
 //=================================================================================================
@@ -334,7 +342,7 @@ void GlobalGui::Setup(PlayerController* pc)
 //=================================================================================================
 void GlobalGui::OnResize()
 {
-	GUI.OnResize();
+	gui->OnResize();
 	if(game_gui)
 		game_gui->PositionPanels();
 	console->Event(GuiEvent_WindowResize);
@@ -346,7 +354,7 @@ void GlobalGui::OnFocus(bool focus, const Int2& activation_point)
 	if(!focus && game_gui)
 		game_gui->use_cursor = false;
 	if(focus && activation_point.x != -1)
-		GUI.cursor_pos = activation_point;
+		gui->cursor_pos = activation_point;
 }
 
 //=================================================================================================
@@ -365,7 +373,7 @@ void GlobalGui::ShowQuitDialog()
 	{
 		if(id == BUTTON_YES)
 		{
-			GUI.GetDialog("dialog_alt_f4")->visible = false;
+			gui->GetDialog("dialog_alt_f4")->visible = false;
 			Game::Get().Quit();
 		}
 	};
@@ -375,7 +383,7 @@ void GlobalGui::ShowQuitDialog()
 	di.order = ORDER_TOPMOST;
 	di.pause = true;
 
-	GUI.ShowDialog(di);
+	gui->ShowDialog(di);
 }
 
 //=================================================================================================

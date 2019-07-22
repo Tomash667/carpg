@@ -2473,9 +2473,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 			{
 				if(gui->world_map->dialog_enc)
 				{
-					GUI.CloseDialog(gui->world_map->dialog_enc);
-					RemoveElement(GUI.created_dialogs, gui->world_map->dialog_enc);
-					delete gui->world_map->dialog_enc;
+					gui->CloseDialog(gui->world_map->dialog_enc);
 					gui->world_map->dialog_enc = nullptr;
 				}
 				Net::PushChange(NetChange::CLOSE_ENCOUNTER);
@@ -3891,7 +3889,7 @@ void Game::UpdateClient(float dt)
 				Info(text_eng);
 				N.peer->DeallocatePacket(packet);
 				ExitToMenu();
-				GUI.SimpleDialog(text, nullptr);
+				gui->SimpleDialog(text, nullptr);
 				return;
 			}
 		case ID_SAY:
@@ -3920,7 +3918,7 @@ void Game::UpdateClient(float dt)
 				Info("Update client: %s", reason_text);
 				N.peer->DeallocatePacket(packet);
 				ExitToMenu();
-				GUI.SimpleDialog(reason_text_int, nullptr);
+				gui->SimpleDialog(reason_text_int, nullptr);
 				return;
 			}
 		case ID_CHANGE_LEVEL:
@@ -3948,9 +3946,7 @@ void Game::UpdateClient(float dt)
 					arena->ClosePvpDialog();
 					if(gui->world_map->dialog_enc)
 					{
-						GUI.CloseDialog(gui->world_map->dialog_enc);
-						RemoveElement(GUI.created_dialogs, gui->world_map->dialog_enc);
-						delete gui->world_map->dialog_enc;
+						gui->CloseDialog(gui->world_map->dialog_enc);
 						gui->world_map->dialog_enc = nullptr;
 					}
 					N.peer->DeallocatePacket(packet);
@@ -5649,7 +5645,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					info.type = DIALOG_OK;
 					info.text = text;
 
-					gui->world_map->dialog_enc = GUI.ShowDialog(info);
+					gui->world_map->dialog_enc = gui->ShowDialog(info);
 					if(!Team.IsLeader())
 						gui->world_map->dialog_enc->bts[0].state = Button::DISABLED;
 					assert(W.GetState() == World::State::TRAVEL);
@@ -5661,9 +5657,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 		case NetChange::CLOSE_ENCOUNTER:
 			if(game_state == GS_WORLDMAP && gui->world_map->dialog_enc)
 			{
-				GUI.CloseDialog(gui->world_map->dialog_enc);
-				RemoveElement(GUI.created_dialogs, gui->world_map->dialog_enc);
-				delete gui->world_map->dialog_enc;
+				gui->CloseDialog(gui->world_map->dialog_enc);
 				gui->world_map->dialog_enc = nullptr;
 			}
 			break;

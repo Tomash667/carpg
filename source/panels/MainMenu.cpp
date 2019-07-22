@@ -54,7 +54,7 @@ void MainMenu::LoadLanguage()
 		b.id = IdNewGame + i;
 		b.parent = this;
 		b.text = s.Get(names[i]);
-		b.size = GUI.default_font->CalculateSize(b.text) + Int2(24, 24);
+		b.size = gui->default_font->CalculateSize(b.text) + Int2(24, 24);
 
 		maxsize = Int2::Max(maxsize, b.size);
 	}
@@ -78,26 +78,26 @@ void MainMenu::LoadData()
 //=================================================================================================
 void MainMenu::Draw(ControlDrawData*)
 {
-	GUI.DrawSpriteFull(tBackground, Color::White);
-	GUI.DrawSprite(tLogo, Int2(GUI.wnd_size.x - 512 - 16, 16));
-	GUI.DrawSpriteRect(tFModLogo, Rect(int(GUI.wnd_size.x - 562.f * GUI.wnd_size.x / 1920), int(GUI.wnd_size.y - 185.f * GUI.wnd_size.y / 1080),
-		int(GUI.wnd_size.x - 50.f * GUI.wnd_size.x / 1920), int(GUI.wnd_size.y - 50.f * GUI.wnd_size.y / 1080)), Color::Alpha(250));
+	gui->DrawSpriteFull(tBackground, Color::White);
+	gui->DrawSprite(tLogo, Int2(gui->wnd_size.x - 512 - 16, 16));
+	gui->DrawSpriteRect(tFModLogo, Rect(int(gui->wnd_size.x - 562.f * gui->wnd_size.x / 1920), int(gui->wnd_size.y - 185.f * gui->wnd_size.y / 1080),
+		int(gui->wnd_size.x - 50.f * gui->wnd_size.x / 1920), int(gui->wnd_size.y - 50.f * gui->wnd_size.y / 1080)), Color::Alpha(250));
 
-	Rect r = { 0, 0, GUI.wnd_size.x, GUI.wnd_size.y };
+	Rect r = { 0, 0, gui->wnd_size.x, gui->wnd_size.y };
 	r.Top() = r.Bottom() - 64;
-	GUI.DrawText(GUI.default_font, "Devmode(2013,2019) Tomashu & Leinnan", DTF_CENTER | DTF_BOTTOM | DTF_OUTLINE, Color::White, r);
+	gui->DrawText(gui->default_font, "Devmode(2013,2019) Tomashu & Leinnan", DTF_CENTER | DTF_BOTTOM | DTF_OUTLINE, Color::White, r);
 
-	r.Left() = GUI.wnd_size.x - 512 - 16;
-	r.Right() = GUI.wnd_size.x - 16;
+	r.Left() = gui->wnd_size.x - 512 - 16;
+	r.Right() = gui->wnd_size.x - 16;
 	r.Top() = 256 + 24;
 	r.Bottom() = r.Top() + 64;
-	GUI.DrawText(GUI.default_font, Format(txVersion, VERSION_STR), DTF_CENTER | DTF_OUTLINE, Color::White, r);
+	gui->DrawText(gui->default_font, Format(txVersion, VERSION_STR), DTF_CENTER | DTF_OUTLINE, Color::White, r);
 
 	r.Left() = 0;
-	r.Right() = GUI.wnd_size.x;
-	r.Bottom() = GUI.wnd_size.y - 16;
+	r.Right() = gui->wnd_size.x;
+	r.Bottom() = gui->wnd_size.y - 16;
 	r.Top() = r.Bottom() - 64;
-	GUI.DrawText(GUI.default_font, version_text, DTF_CENTER | DTF_BOTTOM | DTF_OUTLINE, Color::White, r);
+	gui->DrawText(gui->default_font, version_text, DTF_CENTER | DTF_BOTTOM | DTF_OUTLINE, Color::White, r);
 
 	for(int i = 0; i < BUTTONS; ++i)
 	{
@@ -157,7 +157,7 @@ void MainMenu::UpdateCheckVersion()
 			cstring names[] = { txDownload, txSkip };
 			info.custom_names = names;
 
-			GUI.ShowDialog(info);
+			gui->ShowDialog(info);
 		}
 		else if(version_new < VERSION)
 		{
@@ -226,7 +226,7 @@ void MainMenu::Event(GuiEvent e)
 			game->gui->ShowOptions();
 			break;
 		case IdInfo:
-			GUI.SimpleDialog(Format(txInfoText, VERSION_STR, utility::GetCompileTime().c_str()), nullptr);
+			gui->SimpleDialog(Format(txInfoText, VERSION_STR, utility::GetCompileTime().c_str()), nullptr);
 			break;
 		case IdWebsite:
 			io::OpenUrl(Format("http://carpg.pl/redirect.php?language=%s", Language::prefix.c_str()));
@@ -246,7 +246,7 @@ void MainMenu::PlaceButtons()
 	{
 		if(!bt[i].visible)
 			continue;
-		bt[i].pos = bt[i].global_pos = Int2(16 + GUI.wnd_size.x - 200 + int(sin(kat)*(GUI.wnd_size.x - 200)), 100 + int(cos(kat)*GUI.wnd_size.y));
+		bt[i].pos = bt[i].global_pos = Int2(16 + gui->wnd_size.x - 200 + int(sin(kat)*(gui->wnd_size.x - 200)), 100 + int(cos(kat)*gui->wnd_size.y));
 		kat += PI / 4 / BUTTONS;
 	}
 }

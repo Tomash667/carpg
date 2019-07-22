@@ -1349,7 +1349,7 @@ void TeamSingleton::AddGold(int count, rvector<Unit>* units, bool show, bool is_
 			if(!u.player->is_local)
 				u.player->player_info->UpdateGold();
 			if(show)
-				global::gui->messages->AddFormattedMessage(u.player, msg, -1, count);
+				gui->messages->AddFormattedMessage(u.player, msg, -1, count);
 		}
 		else if(!u.IsPlayer() && u.busy == Unit::Busy_Trading)
 		{
@@ -1442,7 +1442,7 @@ void TeamSingleton::AddGold(int count, rvector<Unit>* units, bool show, bool is_
 			if(unit.player->gold_get && !unit.player->is_local)
 				unit.player->player_info->UpdateGold();
 			if(show && (unit.player->gold_get || is_quest))
-				global::gui->messages->AddFormattedMessage(unit.player, msg, -1, unit.player->gold_get);
+				gui->messages->AddFormattedMessage(unit.player, msg, -1, unit.player->gold_get);
 		}
 		else if(unit.hero->gained_gold && unit.busy == Unit::Busy_Trading)
 		{

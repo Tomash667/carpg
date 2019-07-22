@@ -110,7 +110,7 @@ bool Arena::Special(DialogContext& ctx, cstring msg)
 				info.pause = false;
 				info.text = Format(txPvp, ctx.pc->name.c_str());
 				info.type = DIALOG_YESNO;
-				dialog_pvp = GUI.ShowDialog(info);
+				dialog_pvp = gui->ShowDialog(info);
 				pvp_unit = near_players[id];
 			}
 			else
@@ -241,8 +241,6 @@ void Arena::UpdatePvpRequest(float dt)
 			if(pvp_response.to == game.pc->unit)
 			{
 				dialog_pvp->CloseDialog();
-				RemoveElement(GUI.created_dialogs, dialog_pvp);
-				delete dialog_pvp;
 				dialog_pvp = nullptr;
 			}
 			if(Net::IsServer())
@@ -411,9 +409,7 @@ void Arena::HandlePvpResponse(PlayerInfo& info, bool accepted)
 
 		if(pvp_response.ok && pvp_response.to == game.pc->unit && dialog_pvp)
 		{
-			GUI.CloseDialog(dialog_pvp);
-			RemoveElement(GUI.created_dialogs, dialog_pvp);
-			delete dialog_pvp;
+			gui->CloseDialog(dialog_pvp);
 			dialog_pvp = nullptr;
 		}
 
@@ -862,9 +858,7 @@ void Arena::ClosePvpDialog()
 	{
 		if(dialog_pvp)
 		{
-			GUI.CloseDialog(dialog_pvp);
-			RemoveElement(GUI.created_dialogs, dialog_pvp);
-			delete dialog_pvp;
+			gui->CloseDialog(dialog_pvp);
 			dialog_pvp = nullptr;
 		}
 		pvp_response.ok = false;
@@ -884,7 +878,7 @@ void Arena::ShowPvpRequest(Unit* unit)
 	info.pause = false;
 	info.text = Format(txPvp, unit->player->name.c_str());
 	info.type = DIALOG_YESNO;
-	dialog_pvp = GUI.ShowDialog(info);
+	dialog_pvp = gui->ShowDialog(info);
 
 	pvp_response.ok = true;
 	pvp_response.timer = 0.f;

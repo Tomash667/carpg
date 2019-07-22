@@ -715,7 +715,7 @@ void Game::UpdateGame(float dt)
 		else
 			text = txWin;
 
-		GUI.SimpleDialog(Format(text, pc->kills, GameStats::Get().total_kills - pc->kills), nullptr);
+		gui->SimpleDialog(Format(text, pc->kills, GameStats::Get().total_kills - pc->kills), nullptr);
 	}
 
 	// licznik otrzymanych obra¿eñ

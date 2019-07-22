@@ -116,7 +116,7 @@ void Quest_Tutorial::Update()
 		info.pause = true;
 		info.text = text.text;
 		info.type = DIALOG_OK;
-		GUI.ShowDialog(info);
+		gui->ShowDialog(info);
 
 		text.state = 2;
 
@@ -178,7 +178,7 @@ void Quest_Tutorial::Update()
 void Quest_Tutorial::Finish(int)
 {
 	Game& game = Game::Get();
-	GUI.GetDialog("tut_end")->visible = false;
+	gui->GetDialog("tut_end")->visible = false;
 	finished_tutorial = true;
 	game.ClearGame();
 	game.StartNewGame();
@@ -226,7 +226,7 @@ void Quest_Tutorial::OnEvent(Event event)
 			info.pause = true;
 			info.text = txTut[9];
 			info.type = DIALOG_OK;
-			GUI.ShowDialog(info);
+			gui->ShowDialog(info);
 		}
 		break;
 	default:

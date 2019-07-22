@@ -9,7 +9,7 @@
 //=================================================================================================
 Console::Console(const DialogInfo& info) : GameDialogBox(info), added(false)
 {
-	size = Int2(GUI.wnd_size.x, GUI.wnd_size.y / 3);
+	size = Int2(gui->wnd_size.x, gui->wnd_size.y / 3);
 	itb.parent = this;
 	itb.max_cache = 10;
 	itb.max_lines = 100;
@@ -17,7 +17,7 @@ Console::Console(const DialogInfo& info) : GameDialogBox(info), added(false)
 	itb.lose_focus = false;
 	itb.pos = Int2(0, 0);
 	itb.global_pos = Int2(0, 0);
-	itb.size = Int2(GUI.wnd_size.x, GUI.wnd_size.y / 3);
+	itb.size = Int2(gui->wnd_size.x, gui->wnd_size.y / 3);
 	itb.event = InputEvent(this, &Console::OnInput);
 	itb.background = nullptr;
 	itb.Init();
@@ -33,8 +33,8 @@ void Console::LoadData()
 void Console::Draw(ControlDrawData*)
 {
 	// t³o
-	Rect r = { 0, 0, GUI.wnd_size.x, GUI.wnd_size.y / 3 };
-	GUI.DrawSpriteRect(tBackground, r, 0xAAFFFFFF);
+	Rect r = { 0, 0, gui->wnd_size.x, gui->wnd_size.y / 3 };
+	gui->DrawSpriteRect(tBackground, r, 0xAAFFFFFF);
 
 	// tekst
 	itb.Draw();
@@ -50,13 +50,13 @@ void Console::Update(float dt)
 		if(GKey.KeyDownUp(GK_CONSOLE))
 		{
 			Event(GuiEvent_LostFocus);
-			GUI.CloseDialog(this);
+			gui->CloseDialog(this);
 		}
 		else if(focus)
 		{
 			if(input->Shortcut(KEY_CONTROL, Key::V))
 			{
-				cstring text = GUI.GetClipboard();
+				cstring text = gui->GetClipboard();
 				if(text)
 					itb.input_str += text;
 			}
@@ -108,7 +108,7 @@ void Console::Event(GuiEvent e)
 	}
 	else if(e == GuiEvent_Resize || e == GuiEvent_WindowResize)
 	{
-		size = Int2(GUI.wnd_size.x, GUI.wnd_size.y / 3);
+		size = Int2(gui->wnd_size.x, gui->wnd_size.y / 3);
 		itb.Event(GuiEvent_Resize);
 	}
 	else if(e == GuiEvent_Moved)

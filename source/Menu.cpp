@@ -49,7 +49,7 @@ const float T_WAIT_FOR_DATA = 5.f;
 //=================================================================================================
 bool Game::CanShowMenu()
 {
-	return !GUI.HaveDialog() && !gui->game_gui->HavePanelOpen() && !gui->main_menu->visible && game_state != GS_MAIN_MENU && death_screen != 3 && !end_of_game
+	return !gui->HaveDialog() && !gui->game_gui->HavePanelOpen() && !gui->main_menu->visible && game_state != GS_MAIN_MENU && death_screen != 3 && !end_of_game
 		&& !dialog_context.dialog_mode;
 }
 
@@ -182,12 +182,12 @@ void Game::MultiplayerPanelEvent(int id)
 	// check nick
 	if(player_name.empty())
 	{
-		GUI.SimpleDialog(gui->multiplayer->txNeedEnterNick, gui->multiplayer);
+		gui->SimpleDialog(gui->multiplayer->txNeedEnterNick, gui->multiplayer);
 		return;
 	}
 	if(!N.ValidateNick(player_name.c_str()))
 	{
-		GUI.SimpleDialog(gui->multiplayer->txEnterValidNick, gui->multiplayer);
+		gui->SimpleDialog(gui->multiplayer->txEnterValidNick, gui->multiplayer);
 		return;
 	}
 
@@ -258,7 +258,7 @@ void Game::CreateServerEvent(int id)
 		}
 		if(error_text)
 		{
-			GUI.SimpleDialog(error_text, gui->create_server);
+			gui->SimpleDialog(error_text, gui->create_server);
 			gui->create_server->cont.give_focus = give_focus;
 			return;
 		}
@@ -280,7 +280,7 @@ void Game::CreateServerEvent(int id)
 		}
 		catch(cstring err)
 		{
-			GUI.SimpleDialog(err, gui->main_menu);
+			gui->SimpleDialog(err, gui->main_menu);
 			return;
 		}
 
@@ -332,7 +332,7 @@ void Game::OnEnterIp(int id)
 			}
 			catch(cstring error)
 			{
-				GUI.SimpleDialog(error, gui->multiplayer);
+				gui->SimpleDialog(error, gui->multiplayer);
 				return;
 			}
 
@@ -348,7 +348,7 @@ void Game::OnEnterIp(int id)
 			N.peer->Ping(N.ping_adr.ToString(false), N.ping_adr.GetPort(), false);
 		}
 		else
-			GUI.SimpleDialog(txInvalidIp, gui->multiplayer);
+			gui->SimpleDialog(txInvalidIp, gui->multiplayer);
 	}
 }
 
@@ -357,7 +357,7 @@ void Game::EndConnecting(cstring msg, bool wait)
 {
 	gui->info_box->CloseDialog();
 	if(msg)
-		GUI.SimpleDialog(msg, gui->pick_server->visible ? (DialogBox*)gui->pick_server : (DialogBox*)gui->multiplayer);
+		gui->SimpleDialog(msg, gui->pick_server->visible ? (DialogBox*)gui->pick_server : (DialogBox*)gui->multiplayer);
 	if(wait)
 		ForceRedraw();
 	if(!gui->pick_server->visible)
@@ -884,7 +884,7 @@ void Game::UpdateClientTransfer(float dt)
 			N.ClosePeer(false, true);
 			gui->info_box->CloseDialog();
 			ExitToMenu();
-			GUI.SimpleDialog(txLostConnection, nullptr);
+			gui->SimpleDialog(txLostConnection, nullptr);
 			return;
 		case ID_SERVER_CLOSE:
 			Info("NM_TRANSFER: Server close, failed to load game.");
@@ -892,7 +892,7 @@ void Game::UpdateClientTransfer(float dt)
 			N.ClosePeer(true, true);
 			gui->info_box->CloseDialog();
 			ExitToMenu();
-			GUI.SimpleDialog(txServerFailedToLoadSave, nullptr);
+			gui->SimpleDialog(txServerFailedToLoadSave, nullptr);
 			return;
 		case ID_STATE:
 			{
@@ -1921,7 +1921,7 @@ void Game::QuickJoinIp()
 		}
 		catch(cstring error)
 		{
-			GUI.SimpleDialog(error, nullptr);
+			gui->SimpleDialog(error, nullptr);
 			return;
 		}
 
@@ -2102,7 +2102,7 @@ void Game::OnCreateCharacter(int id)
 			info.tick_text = txTutTick;
 			info.type = DIALOG_YESNO;
 
-			GUI.ShowDialog(info);
+			gui->ShowDialog(info);
 		}
 		else
 			StartNewGame();
@@ -2117,7 +2117,7 @@ void Game::OnPlayTutorial(int id)
 		skip_tutorial = false;
 	else
 	{
-		GUI.GetDialog("tutorial_dialog")->visible = false;
+		gui->GetDialog("tutorial_dialog")->visible = false;
 		SaveOptions();
 		if(id == BUTTON_YES)
 			QM.quest_tutorial->Start();
@@ -2218,5 +2218,5 @@ void Game::ClearAndExitToMenu(cstring msg)
 	ClearGame();
 	N.ClosePeer(false, true);
 	ExitToMenu();
-	GUI.SimpleDialog(msg, gui->main_menu);
+	gui->SimpleDialog(msg, gui->main_menu);
 }

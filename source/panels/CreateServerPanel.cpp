@@ -67,7 +67,7 @@ void CreateServerPanel::LoadLanguage()
 	txInvalidPlayersCount = s.Get("invalidPlayersCount");
 
 	bts[0].text = s.Get("create");
-	bts[1].text = GUI.txCancel;
+	bts[1].text = gui->txCancel;
 
 	textbox[0].label = s.Get("serverName");
 	textbox[1].label = s.Get("serverPlayers");
@@ -80,14 +80,14 @@ void CreateServerPanel::LoadLanguage()
 void CreateServerPanel::Draw(ControlDrawData*)
 {
 	// t³o
-	GUI.DrawSpriteFull(tBackground, Color::Alpha(128));
+	gui->DrawSpriteFull(tBackground, Color::Alpha(128));
 
 	// panel
-	GUI.DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
+	gui->DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
 
 	// tekst
 	Rect r = { global_pos.x + 12, global_pos.y + 8, global_pos.x + size.x - 12, global_pos.y + size.y };
-	GUI.DrawText(GUI.fBig, txCreateServer, DTF_TOP | DTF_CENTER, Color::Black, r);
+	gui->DrawText(gui->fBig, txCreateServer, DTF_TOP | DTF_CENTER, Color::Black, r);
 
 	// reszta
 	cont.Draw();
@@ -114,7 +114,7 @@ void CreateServerPanel::Event(GuiEvent e)
 			cont.GainFocus();
 			visible = true;
 		}
-		global_pos = pos = (GUI.wnd_size - size) / 2;
+		global_pos = pos = (gui->wnd_size - size) / 2;
 		cont.Move(global_pos);
 		break;
 	case GuiEvent_GainFocus:
@@ -143,5 +143,5 @@ void CreateServerPanel::Show()
 	textbox[1].SetText(Format("%d", N.max_players));
 	textbox[2].SetText(N.password.c_str());
 	checkbox.checked = N.server_lan;
-	GUI.ShowDialog(this);
+	gui->ShowDialog(this);
 }

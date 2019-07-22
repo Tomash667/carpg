@@ -254,7 +254,7 @@ void Unit::SetGold(int new_gold)
 	gold = new_gold;
 	if(IsPlayer())
 	{
-		global::gui->messages->AddFormattedMessage(player, GMS_GOLD_ADDED, -1, dif);
+		gui->messages->AddFormattedMessage(player, GMS_GOLD_ADDED, -1, dif);
 		if(player->is_local)
 		{
 			Game& game = Game::Get();
@@ -859,13 +859,13 @@ void Unit::AddItem2(const Item* item, uint count, uint team_count, bool show_msg
 	int rebuild_id = -1;
 	if(IsLocal())
 	{
-		if(global::gui->inventory->inv_mine->visible || global::gui->inventory->gp_trade->visible)
+		if(gui->inventory->inv_mine->visible || gui->inventory->gp_trade->visible)
 			rebuild_id = 0;
 	}
-	else if(global::gui->inventory->gp_trade->visible && global::gui->inventory->inv_trade_other->unit == this)
+	else if(gui->inventory->gp_trade->visible && gui->inventory->inv_trade_other->unit == this)
 		rebuild_id = 1;
 	if(rebuild_id != -1)
-		global::gui->inventory->BuildTmpInventory(rebuild_id);
+		gui->inventory->BuildTmpInventory(rebuild_id);
 }
 
 //=================================================================================================
@@ -5600,7 +5600,7 @@ void Unit::Talk(cstring text, int play_anim)
 {
 	assert(text && Net::IsLocal());
 
-	global::gui->game_gui->AddSpeechBubble(this, text);
+	gui->game_gui->AddSpeechBubble(this, text);
 
 	// animation
 	int ani = 0;

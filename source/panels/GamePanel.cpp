@@ -28,7 +28,7 @@ GamePanel::GamePanel() : box_state(BOX_NOT_VISIBLE), order(0), last_index(INDEX_
 //=================================================================================================
 void GamePanel::Draw(ControlDrawData*)
 {
-	GUI.DrawItem(tBackground, pos, size, Color::Alpha(222), 16);
+	gui->DrawItem(tBackground, pos, size, Color::Alpha(222), 16);
 }
 
 //=================================================================================================
@@ -55,18 +55,18 @@ void GamePanel::DrawBoxInternal()
 		alpha2 = int(box_alpha * 255);
 
 	// box
-	GUI.DrawItem(tDialog, box_pos, box_size, Color::Alpha(alpha), 12);
+	gui->DrawItem(tDialog, box_pos, box_size, Color::Alpha(alpha), 12);
 
 	// obrazek
 	if(box_img)
-		GUI.DrawSprite(box_img, box_img_pos, Color::Alpha(alpha2));
+		gui->DrawSprite(box_img, box_img_pos, Color::Alpha(alpha2));
 
 	// du¿y tekst
-	GUI.DrawText(GUI.default_font, box_text, DTF_PARSE_SPECIAL, Color(0, 0, 0, alpha2), box_big);
+	gui->DrawText(gui->default_font, box_text, DTF_PARSE_SPECIAL, Color(0, 0, 0, alpha2), box_big);
 
 	// ma³y tekst
 	if(!box_text_small.empty())
-		GUI.DrawText(GUI.fSmall, box_text_small, DTF_PARSE_SPECIAL, Color(0, 0, 0, alpha2), box_small);
+		gui->DrawText(gui->fSmall, box_text_small, DTF_PARSE_SPECIAL, Color(0, 0, 0, alpha2), box_small);
 }
 
 //=================================================================================================
@@ -104,7 +104,7 @@ void GamePanel::UpdateBoxIndex(float dt, int index, int index2, bool refresh)
 		{
 			FormatBox(refresh);
 			if(box_img)
-				box_img_size = gui::GetSize(box_img);
+				box_img_size = GetSize(box_img);
 		}
 	}
 	else
@@ -116,10 +116,10 @@ void GamePanel::UpdateBoxIndex(float dt, int index, int index2, bool refresh)
 
 	if(box_state == BOX_VISIBLE)
 	{
-		Int2 text_size = GUI.default_font->CalculateSize(box_text);
+		Int2 text_size = gui->default_font->CalculateSize(box_text);
 		box_big = Rect::Create(Int2(0, 0), text_size);
 		Int2 size = text_size + Int2(24, 24);
-		Int2 pos2 = Int2(GUI.cursor_pos) + Int2(24, 24);
+		Int2 pos2 = Int2(gui->cursor_pos) + Int2(24, 24);
 		Int2 text_pos(12, 12);
 
 		// uwzglêdnij rozmiar obrazka
@@ -140,16 +140,16 @@ void GamePanel::UpdateBoxIndex(float dt, int index, int index2, bool refresh)
 
 		if(!box_text_small.empty())
 		{
-			Int2 size_small = GUI.fSmall->CalculateSize(box_text_small, size.x - 24);
+			Int2 size_small = gui->fSmall->CalculateSize(box_text_small, size.x - 24);
 			box_small = Rect::Create(Int2(0, 0), size_small);
 			int size_y = size_small.y;
 			size.y += size_y + 12;
 		}
 
-		if(pos2.x + size.x >= GUI.wnd_size.x)
-			pos2.x = GUI.wnd_size.x - size.x - 1;
-		if(pos2.y + size.y >= GUI.wnd_size.y)
-			pos2.y = GUI.wnd_size.y - size.y - 1;
+		if(pos2.x + size.x >= gui->wnd_size.x)
+			pos2.x = gui->wnd_size.x - size.x - 1;
+		if(pos2.y + size.y >= gui->wnd_size.y)
+			pos2.y = gui->wnd_size.y - size.y - 1;
 
 		box_img_pos = Int2(pos2.x + 12, pos2.y + 12);
 		box_big = Rect::Create(text_pos + pos2, text_size);
@@ -195,7 +195,7 @@ void GamePanelContainer::Update(float dt)
 			ctrls.back()->focus = true;
 		}
 
-		Int2 cp = GUI.cursor_pos;
+		Int2 cp = gui->cursor_pos;
 		GamePanel* top = nullptr;
 
 		for(vector<Control*>::iterator it = ctrls.begin(), end = ctrls.end(); it != end; ++it)

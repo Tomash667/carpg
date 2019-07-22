@@ -20,7 +20,7 @@ Journal::Journal() : mode(Quests), game(Game::Get())
 	visible = false;
 	Reset();
 
-	font_height = GUI.default_font->height;
+	font_height = gui->default_font->height;
 }
 
 //=================================================================================================
@@ -40,8 +40,8 @@ void Journal::LoadLanguage()
 void Journal::Draw(ControlDrawData*)
 {
 	Rect r = { global_pos.x, global_pos.y, global_pos.x + size.x, global_pos.y + size.y };
-	GUI.DrawSpriteRect(tBook, r);
-	GUI.DrawSprite(tPage[mode], global_pos - Int2(64, 0));
+	gui->DrawSpriteRect(tBook, r);
+	gui->DrawSprite(tPage[mode], global_pos - Int2(64, 0));
 
 	int x1 = page * 2, x2 = page * 2 + 1;
 
@@ -60,21 +60,21 @@ void Journal::Draw(ControlDrawData*)
 
 			const Color color[3] = { Color::Black, Color::Red, Color::Green };
 
-			GUI.DrawText(GUI.default_font, it->text, 0, color[it->color], r);
+			gui->DrawText(gui->default_font, it->text, 0, color[it->color], r);
 		}
 	}
 
 	// numery stron
 	int pages = texts.back().x + 1;
-	GUI.DrawText(GUI.default_font, Format("%d/%d", x1 + 1, pages), DTF_BOTTOM | DTF_CENTER, Color::Black, rect);
+	gui->DrawText(gui->default_font, Format("%d/%d", x1 + 1, pages), DTF_BOTTOM | DTF_CENTER, Color::Black, rect);
 	if(x2 != pages)
-		GUI.DrawText(GUI.default_font, Format("%d/%d", x2 + 1, pages), DTF_BOTTOM | DTF_CENTER, Color::Black, rect2);
+		gui->DrawText(gui->default_font, Format("%d/%d", x2 + 1, pages), DTF_BOTTOM | DTF_CENTER, Color::Black, rect2);
 
 	// strza³ki 32, 243
 	if(page != 0)
-		GUI.DrawSprite(tArrowL, Int2(rect.Left() - 8, rect.Bottom() - 8));
+		gui->DrawSprite(tArrowL, Int2(rect.Left() - 8, rect.Bottom() - 8));
 	if(texts.back().x > x2)
-		GUI.DrawSprite(tArrowR, Int2(rect2.Right() + 8, rect.Bottom() - 8));
+		gui->DrawSprite(tArrowR, Int2(rect2.Right() + 8, rect.Bottom() - 8));
 }
 
 //=================================================================================================
@@ -194,16 +194,16 @@ void Journal::Update(float dt)
 	}
 
 	// wybór zak³adki z lewej
-	if(PointInRect(GUI.cursor_pos, global_pos.x - 64 + 28, global_pos.y + 32, global_pos.x - 64 + 82, global_pos.y + 119))
+	if(PointInRect(gui->cursor_pos, global_pos.x - 64 + 28, global_pos.y + 32, global_pos.x - 64 + 82, global_pos.y + 119))
 		new_mode = Quests;
-	else if(PointInRect(GUI.cursor_pos, global_pos.x - 64 + 28, global_pos.y + 122, global_pos.x - 64 + 82, global_pos.y + 209))
+	else if(PointInRect(gui->cursor_pos, global_pos.x - 64 + 28, global_pos.y + 122, global_pos.x - 64 + 82, global_pos.y + 209))
 		new_mode = Rumors;
-	else if(PointInRect(GUI.cursor_pos, global_pos.x - 64 + 28, global_pos.y + 212, global_pos.x - 64 + 82, global_pos.y + 299))
+	else if(PointInRect(gui->cursor_pos, global_pos.x - 64 + 28, global_pos.y + 212, global_pos.x - 64 + 82, global_pos.y + 299))
 		new_mode = Notes;
 
 	if(new_mode != Invalid)
 	{
-		GUI.cursor_mode = CURSOR_HAND;
+		gui->cursor_mode = CURSOR_HAND;
 		if(input->Focus() && input->PressedRelease(Key::LeftButton))
 		{
 			// zmieñ zak³adkê
@@ -237,17 +237,17 @@ void Journal::Update(float dt)
 		{
 			// wybór questa
 			int what = -1;
-			if(rect.IsInside(GUI.cursor_pos))
-				what = (GUI.cursor_pos.y - rect.Top()) / font_height;
-			else if(rect2.IsInside(GUI.cursor_pos))
-				what = (GUI.cursor_pos.y - rect.Top()) / font_height + rect_lines;
+			if(rect.IsInside(gui->cursor_pos))
+				what = (gui->cursor_pos.y - rect.Top()) / font_height;
+			else if(rect2.IsInside(gui->cursor_pos))
+				what = (gui->cursor_pos.y - rect.Top()) / font_height + rect_lines;
 
 			if(what != -1)
 			{
 				what += page * rect_lines * 2;
 				if(what < int(QM.quests.size()))
 				{
-					GUI.cursor_mode = CURSOR_HAND;
+					gui->cursor_mode = CURSOR_HAND;
 					if(input->Focus() && input->PressedRelease(Key::LeftButton))
 					{
 						details = true;
@@ -268,18 +268,18 @@ void Journal::Update(float dt)
 			bool ok = false;
 			if(last_text.x % 2 == 0)
 			{
-				if(GUI.cursor_pos.x >= rect.Left() && GUI.cursor_pos.x <= rect.Right())
+				if(gui->cursor_pos.x >= rect.Left() && gui->cursor_pos.x <= rect.Right())
 					ok = true;
 			}
 			else
 			{
-				if(GUI.cursor_pos.x >= rect2.Left() && GUI.cursor_pos.x <= rect2.Right())
+				if(gui->cursor_pos.x >= rect2.Left() && gui->cursor_pos.x <= rect2.Right())
 					ok = true;
 			}
 
-			if(ok && GUI.cursor_pos.y >= rect.Top() + last_text.y*font_height && GUI.cursor_pos.y <= rect.Top() + (last_text.y + 1)*font_height)
+			if(ok && gui->cursor_pos.y >= rect.Top() + last_text.y*font_height && gui->cursor_pos.y <= rect.Top() + (last_text.y + 1)*font_height)
 			{
-				GUI.cursor_mode = CURSOR_HAND;
+				gui->cursor_mode = CURSOR_HAND;
 				if(input->Focus() && input->PressedRelease(Key::LeftButton))
 				{
 					// dodaj notatkê
@@ -303,18 +303,18 @@ void Journal::Update(float dt)
 	{
 		if(page != 0)
 		{
-			if(PointInRect(GUI.cursor_pos, rect.LeftBottom() - Int2(8, 8), Int2(16, 16)))
+			if(PointInRect(gui->cursor_pos, rect.LeftBottom() - Int2(8, 8), Int2(16, 16)))
 			{
-				GUI.cursor_mode = CURSOR_HAND;
+				gui->cursor_mode = CURSOR_HAND;
 				if(input->Focus() && input->PressedRelease(Key::LeftButton))
 					--page;
 			}
 		}
 		if(texts.back().x > page * 2 + 1)
 		{
-			if(PointInRect(GUI.cursor_pos, rect.RightBottom() + Int2(8, -8), Int2(16, 16)))
+			if(PointInRect(gui->cursor_pos, rect.RightBottom() + Int2(8, -8), Int2(16, 16)))
 			{
-				GUI.cursor_mode = CURSOR_HAND;
+				gui->cursor_mode = CURSOR_HAND;
 				if(input->Focus() && input->PressedRelease(Key::LeftButton))
 					++page;
 			}
@@ -451,7 +451,7 @@ void Journal::AddEntry(cstring text, int color, bool singleline)
 	}
 
 	// ile linijek zajmuje tekst?
-	Int2 osize = GUI.default_font->CalculateSize(text, rect_w);
+	Int2 osize = gui->default_font->CalculateSize(text, rect_w);
 	int h = osize.y / font_height + 1;
 
 	if(y + h >= rect_lines)

@@ -105,7 +105,7 @@ void DialogContext::StartDialog(Unit* talker, GameDialog* dialog)
 	}
 
 	if(is_local)
-		global::gui->CloseAllPanels();
+		gui->CloseAllPanels();
 }
 
 //=================================================================================================

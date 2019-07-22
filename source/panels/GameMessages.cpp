@@ -65,15 +65,15 @@ void GameMessages::Draw(ControlDrawData*)
 			a = 255 + int(it->fade * 2550);
 		else if(it->fade > 0 && it->time < 0.f)
 			a = 255 - int(it->fade * 2550);
-		Rect rect = { 0, int(it->pos.y) - it->size.y / 2, GUI.wnd_size.x, int(it->pos.y) + it->size.y / 2 };
-		GUI.DrawText(GUI.default_font, it->msg, DTF_CENTER | DTF_OUTLINE, Color::Alpha(a), rect);
+		Rect rect = { 0, int(it->pos.y) - it->size.y / 2, gui->wnd_size.x, int(it->pos.y) + it->size.y / 2 };
+		gui->DrawText(gui->default_font, it->msg, DTF_CENTER | DTF_OUTLINE, Color::Alpha(a), rect);
 	}
 
 	Game& game = Game::Get();
 	if(game.paused)
 	{
-		Rect r = { 0, 0, GUI.wnd_size.x, GUI.wnd_size.y };
-		GUI.DrawText(GUI.fBig, txGamePausedBig, DTF_CENTER | DTF_VCENTER, Color::Black, r);
+		Rect r = { 0, 0, gui->wnd_size.x, gui->wnd_size.y };
+		gui->DrawText(gui->fBig, txGamePausedBig, DTF_CENTER | DTF_VCENTER, Color::Black, r);
 	}
 }
 
@@ -109,7 +109,7 @@ void GameMessages::Update(float dt)
 			}
 		}
 
-		float target_h = float(GUI.wnd_size.y) / 2 - float(total_h) / 2 + h;
+		float target_h = float(gui->wnd_size.y) / 2 - float(total_h) / 2 + h;
 		m.pos.y += (target_h - m.pos.y)*dt * 2;
 	}
 }
@@ -169,18 +169,18 @@ void GameMessages::AddMessage(cstring text, float time, int type, int subtype, i
 	m.subtype = subtype;
 	m.time = time;
 	m.fade = -0.1f;
-	m.size = GUI.default_font->CalculateSize(text, GUI.wnd_size.x - 64);
+	m.size = gui->default_font->CalculateSize(text, gui->wnd_size.x - 64);
 	m.size.y += 6;
 	m.value = value;
 
 	if(msgs.size() == 1u)
-		m.pos = Vec2(float(GUI.wnd_size.x) / 2, float(GUI.wnd_size.y) / 2);
+		m.pos = Vec2(float(gui->wnd_size.x) / 2, float(gui->wnd_size.y) / 2);
 	else
 	{
 		list<GameMsg>::reverse_iterator it = msgs.rbegin();
 		++it;
 		GameMsg& prev = *it;
-		m.pos = Vec2(float(GUI.wnd_size.x) / 2, prev.pos.y + prev.size.y);
+		m.pos = Vec2(float(gui->wnd_size.x) / 2, prev.pos.y + prev.size.y);
 	}
 
 	msgs_h += m.size.y;
@@ -376,7 +376,7 @@ void GameMessages::AddFormattedMessage(PlayerController* player, GMS id, int sub
 			GameMsg& msg = *existing;
 			msg.msg = text;
 			msg.time = time;
-			msg.size = GUI.default_font->CalculateSize(text, GUI.wnd_size.x - 64);
+			msg.size = gui->default_font->CalculateSize(text, gui->wnd_size.x - 64);
 			msg.size.y += 6;
 			msg.value = value;
 		}

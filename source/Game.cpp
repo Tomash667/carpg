@@ -148,8 +148,7 @@ void Game::DrawGame(RenderTarget* target)
 		}
 
 		// draw gui
-		GUI.mViewProj = L.camera.matViewProj;
-		GUI.Draw(IS_SET(draw_flags, DF_GUI), IS_SET(draw_flags, DF_MENU));
+		gui->Draw(L.camera.matViewProj, IS_SET(draw_flags, DF_GUI), IS_SET(draw_flags, DF_MENU));
 
 		V(device->EndScene());
 		if(target)
@@ -241,10 +240,7 @@ void Game::DrawGame(RenderTarget* target)
 			V(ePostFx->End());
 
 			if(it + 1 == end)
-			{
-				GUI.mViewProj = L.camera.matViewProj;
-				GUI.Draw(IS_SET(draw_flags, DF_GUI), IS_SET(draw_flags, DF_MENU));
-			}
+				gui->Draw(L.camera.matViewProj, IS_SET(draw_flags, DF_GUI), IS_SET(draw_flags, DF_MENU));
 
 			V(device->EndScene());
 
@@ -348,7 +344,7 @@ void Game::OnUpdate(float dt)
 		debug_info2 = !debug_info2;
 
 	// fast quit (alt+f4)
-	if(input->Focus() && input->Shortcut(KEY_ALT, Key::F4) && !GUI.HaveTopDialog("dialog_alt_f4"))
+	if(input->Focus() && input->Shortcut(KEY_ALT, Key::F4) && !gui->HaveTopDialog("dialog_alt_f4"))
 		gui->ShowQuitDialog();
 
 	if(end_of_game)
@@ -366,8 +362,8 @@ void Game::OnUpdate(float dt)
 	if(GKey.allow_input == GameKeys::ALLOW_INPUT)
 	{
 		// handle open/close of console
-		if(!GUI.HaveTopDialog("dialog_alt_f4") && !GUI.HaveDialog("console") && GKey.KeyDownUpAllowed(GK_CONSOLE))
-			GUI.ShowDialog(gui->console);
+		if(!gui->HaveTopDialog("dialog_alt_f4") && !gui->HaveDialog("console") && GKey.KeyDownUpAllowed(GK_CONSOLE))
+			gui->ShowDialog(gui->console);
 
 		// unlock cursor
 		if(!engine->IsFullscreen() && engine->IsActive() && engine->IsCursorLocked() && input->Shortcut(KEY_CONTROL, Key::U))
@@ -387,7 +383,7 @@ void Game::OnUpdate(float dt)
 	}
 
 	// handle panels
-	if(GUI.HaveDialog() || (gui->mp_box->visible && gui->mp_box->itb.focus))
+	if(gui->HaveDialog() || (gui->mp_box->visible && gui->mp_box->itb.focus))
 		GKey.allow_input = GameKeys::ALLOW_NONE;
 	else if(GKey.AllowKeyboard() && game_state == GS_LEVEL && death_screen == 0 && !dialog_context.dialog_mode)
 	{
@@ -433,8 +429,8 @@ void Game::OnUpdate(float dt)
 	}
 
 	// quicksave, quickload
-	bool console_open = GUI.HaveTopDialog("console");
-	bool special_key_allowed = (GKey.allow_input == GameKeys::ALLOW_KEYBOARD || GKey.allow_input == GameKeys::ALLOW_INPUT || (!GUI.HaveDialog() || console_open));
+	bool console_open = gui->HaveTopDialog("console");
+	bool special_key_allowed = (GKey.allow_input == GameKeys::ALLOW_KEYBOARD || GKey.allow_input == GameKeys::ALLOW_INPUT || (!gui->HaveDialog() || console_open));
 	if(GKey.KeyPressedReleaseSpecial(GK_QUICKSAVE, special_key_allowed))
 		Quicksave(console_open);
 	if(GKey.KeyPressedReleaseSpecial(GK_QUICKLOAD, special_key_allowed))
@@ -459,7 +455,7 @@ void Game::OnUpdate(float dt)
 	}
 
 	// handle blocking input by gui
-	if(GUI.HaveDialog() || (gui->mp_box->visible && gui->mp_box->itb.focus))
+	if(gui->HaveDialog() || (gui->mp_box->visible && gui->mp_box->itb.focus))
 		GKey.allow_input = GameKeys::ALLOW_NONE;
 	else if(GKey.AllowKeyboard() && game_state == GS_LEVEL && death_screen == 0 && !dialog_context.dialog_mode)
 	{
@@ -510,7 +506,7 @@ void Game::OnUpdate(float dt)
 				if(Net::IsOnline())
 					UpdateGameNet(dt);
 			}
-			else if(GUI.HavePauseDialog())
+			else if(gui->HavePauseDialog())
 			{
 				if(Net::IsOnline())
 					UpdateGame(dt);
@@ -611,6 +607,7 @@ bool Game::Start(StartupOptions& options)
 	LocalString s;
 	GetTitle(s);
 	options.title = s.c_str();
+	BeforeInit();
 	return engine->Start(this, options);
 }
 
@@ -668,15 +665,6 @@ void Game::OnReset()
 	SafeRelease(vbParticle);
 	SafeRelease(vbDungeon);
 	SafeRelease(ibDungeon);
-}
-
-//=================================================================================================
-void Game::OnChar(char c)
-{
-	if((c != VK_BACK && c != VK_RETURN && byte(c) < 0x20) || c == '`')
-		return;
-
-	GUI.OnChar(c);
 }
 
 //=================================================================================================
@@ -784,15 +772,15 @@ void Game::DoExitToMenu()
 
 	gui->CloseAllPanels();
 	string msg;
-	DialogBox* box = GUI.GetDialog("fatal");
+	DialogBox* box = gui->GetDialog("fatal");
 	bool console = gui->console->visible;
 	if(box)
 		msg = box->text;
-	GUI.CloseDialogs();
+	gui->CloseDialogs();
 	if(!msg.empty())
-		GUI.SimpleDialog(msg.c_str(), nullptr, "fatal");
+		gui->SimpleDialog(msg.c_str(), nullptr, "fatal");
 	if(console)
-		GUI.ShowDialog(gui->console);
+		gui->ShowDialog(gui->console);
 	gui->game_menu->visible = false;
 	gui->game_gui->visible = false;
 	gui->world_map->Hide();

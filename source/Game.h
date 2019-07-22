@@ -117,7 +117,6 @@ public:
 	void DrawGame(RenderTarget* target);
 	void OnDebugDraw(DebugDrawer* dd);
 	void OnUpdate(float dt) override;
-	void OnChar(char c) override;
 	void OnReload() override;
 	void OnReset() override;
 	void OnResize() override;
@@ -133,6 +132,7 @@ public:
 	void ReportError(int id, cstring text, bool once = false);
 
 	// initialization
+	void BeforeInit();
 	bool OnInit() override;
 	void PreconfigureGame();
 	void PreloadLanguage();

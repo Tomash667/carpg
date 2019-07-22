@@ -57,7 +57,7 @@ void PickServerPanel::LoadLanguage()
 	txInvalidServerVersion = s.Get("invalidServerVersion");
 
 	bts[0].text = s.Get("join");
-	bts[1].text = GUI.txCancel;
+	bts[1].text = gui->txCancel;
 
 	cb_internet.text = s.Get("internet");
 	cb_lan.text = s.Get("lan");
@@ -80,10 +80,10 @@ void PickServerPanel::LoadData()
 void PickServerPanel::Draw(ControlDrawData*)
 {
 	// background
-	GUI.DrawSpriteFull(tBackground, Color::Alpha(128));
+	gui->DrawSpriteFull(tBackground, Color::Alpha(128));
 
 	// panel
-	GUI.DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
+	gui->DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
 
 	// controls
 	for(int i = 0; i < 2; ++i)
@@ -270,7 +270,7 @@ void PickServerPanel::Event(GuiEvent e)
 	case GuiEvent_WindowResize:
 		if(e == GuiEvent_Show)
 			visible = true;
-		pos = global_pos = (GUI.wnd_size - size) / 2;
+		pos = global_pos = (gui->wnd_size - size) / 2;
 		for(int i = 0; i < 2; ++i)
 			bts[i].global_pos = global_pos + bts[i].pos;
 		cb_internet.global_pos = global_pos + cb_internet.pos;
@@ -288,7 +288,7 @@ void PickServerPanel::Event(GuiEvent e)
 		if(servers[grid.selected].IsValidVersion())
 			event(e);
 		else
-			GUI.SimpleDialog(Format(txInvalidServerVersion, VersionToString(servers[grid.selected].version), VERSION_STR), this);
+			gui->SimpleDialog(Format(txInvalidServerVersion, VersionToString(servers[grid.selected].version), VERSION_STR), this);
 		break;
 	case IdCancel:
 		N.ClosePeer();
@@ -317,7 +317,7 @@ void PickServerPanel::Show(bool pick_autojoin)
 	}
 	catch(cstring err)
 	{
-		GUI.SimpleDialog(err, (Control*)game->gui->main_menu);
+		gui->SimpleDialog(err, (Control*)game->gui->main_menu);
 		return;
 	}
 
@@ -344,7 +344,7 @@ void PickServerPanel::Show(bool pick_autojoin)
 	servers.clear();
 	grid.Reset();
 
-	GUI.ShowDialog(this);
+	gui->ShowDialog(this);
 }
 
 //=================================================================================================
@@ -396,7 +396,7 @@ void PickServerPanel::OnChangeMode(bool lan_mode)
 //=================================================================================================
 bool PickServerPanel::HandleGetServers(nlohmann::json& j)
 {
-	if(!visible || lan_mode || GUI.HaveDialog("GetTextDialog"))
+	if(!visible || lan_mode || gui->HaveDialog("GetTextDialog"))
 		return false;
 
 	auto& servers = j["servers"];
@@ -426,7 +426,7 @@ void PickServerPanel::AddServer(nlohmann::json& server)
 //=================================================================================================
 bool PickServerPanel::HandleGetChanges(nlohmann::json& j)
 {
-	if(!visible || lan_mode || GUI.HaveDialog("GetTextDialog"))
+	if(!visible || lan_mode || gui->HaveDialog("GetTextDialog"))
 		return false;
 
 	auto& changes = j["changes"];
@@ -511,5 +511,5 @@ void PickServerPanel::CheckAutojoin()
 void PickServerPanel::HandleBadRequest()
 {
 	bad_request = true;
-	GUI.SimpleDialog(txFailedToGetServers, this);
+	gui->SimpleDialog(txFailedToGetServers, this);
 }

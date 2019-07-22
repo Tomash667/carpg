@@ -104,7 +104,7 @@ bool Game::SaveGameSlot(int slot, cstring text)
 	if(!CanSaveGame())
 	{
 		// w tej chwili nie mo¿na zapisaæ gry
-		GUI.SimpleDialog(Net::IsClient() ? txOnlyServerCanSave : txCantSaveGame, gui->saveload->visible ? gui->saveload : nullptr);
+		gui->SimpleDialog(Net::IsClient() ? txOnlyServerCanSave : txCantSaveGame, gui->saveload->visible ? gui->saveload : nullptr);
 		return false;
 	}
 
@@ -140,7 +140,7 @@ bool Game::SaveGameCommon(cstring filename, int slot, cstring text)
 	if(!f)
 	{
 		Error(txLoadOpenError, tmp_filename, GetLastError());
-		GUI.SimpleDialog(txSaveFailed, gui->saveload->visible ? gui->saveload : nullptr);
+		gui->SimpleDialog(txSaveFailed, gui->saveload->visible ? gui->saveload : nullptr);
 		return false;
 	}
 
@@ -1037,7 +1037,7 @@ bool Game::TryLoadGame(int slot, bool quickload, bool from_console)
 			Control* parent = nullptr;
 			if(gui->game_menu->visible)
 				parent = gui->game_menu;
-			GUI.SimpleDialog(dialog_text, parent, "fatal");
+			gui->SimpleDialog(dialog_text, parent, "fatal");
 		}
 		N.mp_load = false;
 		return false;
@@ -1052,7 +1052,7 @@ void Game::Quicksave(bool from_console)
 		if(from_console)
 			gui->console->AddMsg(Net::IsClient() ? "Only server can save game." : "Can't save game now.");
 		else
-			GUI.SimpleDialog(Net::IsClient() ? txOnlyServerCanSave : txCantSaveNow, nullptr);
+			gui->SimpleDialog(Net::IsClient() ? txOnlyServerCanSave : txCantSaveNow, nullptr);
 		return;
 	}
 
@@ -1071,7 +1071,7 @@ void Game::Quickload(bool from_console)
 		if(from_console)
 			gui->console->AddMsg(Net::IsClient() ? "Only server can load game." : "Can't load game now.");
 		else
-			GUI.SimpleDialog(Net::IsClient() ? txOnlyServerCanLoad : txCantLoadGame, nullptr);
+			gui->SimpleDialog(Net::IsClient() ? txOnlyServerCanLoad : txCantLoadGame, nullptr);
 		return;
 	}
 	TryLoadGame(SaveSlot::MAX_SLOTS, true, from_console);

@@ -305,7 +305,7 @@ void Controls::LoadLanguage()
 	Language::Section& s = Language::GetSection("Controls");
 
 	bts[0].text = s.Get("resetKeys");
-	bts[1].text = GUI.txOk;
+	bts[1].text = gui->txOk;
 
 	grid.AddColumn(Grid::TEXT, 200, s.Get("action"));
 	grid.AddColumn(Grid::TEXT, 175, s.Get("key_1"));
@@ -319,10 +319,10 @@ void Controls::LoadLanguage()
 void Controls::Draw(ControlDrawData*)
 {
 	// t³o
-	GUI.DrawSpriteFull(tBackground, Color::Alpha(128));
+	gui->DrawSpriteFull(tBackground, Color::Alpha(128));
 
 	// panel
-	GUI.DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
+	gui->DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
 
 	// przyciski
 	for(int i = 0; i < 2; ++i)
@@ -371,7 +371,7 @@ void Controls::Event(GuiEvent e)
 			visible = true;
 			changed = false;
 		}
-		pos = global_pos = (GUI.wnd_size - size) / 2;
+		pos = global_pos = (gui->wnd_size - size) / 2;
 		for(int i = 0; i < 2; ++i)
 			bts[i].global_pos = global_pos + bts[i].pos;
 		grid.Move(global_pos);

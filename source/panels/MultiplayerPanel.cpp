@@ -61,25 +61,25 @@ void MultiplayerPanel::LoadLanguage()
 	bts[1].text = s.Get("joinIP");
 	bts[2].text = s.Get("host");
 	bts[3].text = s.Get("load");
-	bts[4].text = GUI.txCancel;
+	bts[4].text = gui->txCancel;
 }
 
 //=================================================================================================
 void MultiplayerPanel::Draw(ControlDrawData*)
 {
 	// t³o
-	GUI.DrawSpriteFull(tBackground, Color::Alpha(128));
+	gui->DrawSpriteFull(tBackground, Color::Alpha(128));
 
 	// panel
-	GUI.DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
+	gui->DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
 
 	// tekst
 	Rect r = { global_pos.x + 12, global_pos.y + 8, global_pos.x + size.x - 12, global_pos.y + size.y };
-	GUI.DrawText(GUI.fBig, txMultiplayerGame, DTF_TOP | DTF_CENTER, Color::Black, r);
+	gui->DrawText(gui->fBig, txMultiplayerGame, DTF_TOP | DTF_CENTER, Color::Black, r);
 
 	// tekst nick
 	r.Top() += 60;
-	GUI.DrawText(GUI.default_font, txNick, 0, Color::Black, r);
+	gui->DrawText(gui->default_font, txNick, 0, Color::Black, r);
 
 	// textbox
 	textbox.Draw();
@@ -118,7 +118,7 @@ void MultiplayerPanel::Event(GuiEvent e)
 			textbox.focus = true;
 			textbox.Event(GuiEvent_GainFocus);
 		}
-		pos = global_pos = (GUI.wnd_size - size) / 2;
+		pos = global_pos = (gui->wnd_size - size) / 2;
 		for(int i = 0; i < 5; ++i)
 			bts[i].global_pos = global_pos + bts[i].pos;
 		textbox.global_pos = global_pos + textbox.pos;
@@ -150,5 +150,5 @@ void MultiplayerPanel::Event(GuiEvent e)
 void MultiplayerPanel::Show()
 {
 	textbox.SetText(game->player_name.c_str());
-	GUI.ShowDialog(this);
+	gui->ShowDialog(this);
 }

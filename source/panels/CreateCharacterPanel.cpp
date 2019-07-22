@@ -253,17 +253,17 @@ void CreateCharacterPanel::LoadData()
 void CreateCharacterPanel::Draw(ControlDrawData*)
 {
 	// background
-	GUI.DrawSpriteFull(tBackground, Color::Alpha(128));
+	gui->DrawSpriteFull(tBackground, Color::Alpha(128));
 
 	// panel
-	GUI.DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
+	gui->DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
 
 	// top text
 	Rect rect0 = { 12 + pos.x, 12 + pos.y, pos.x + size.x - 12, 12 + pos.y + 72 };
-	GUI.DrawText(GUI.fBig, txCharacterCreation, DTF_CENTER, Color::Black, rect0);
+	gui->DrawText(gui->fBig, txCharacterCreation, DTF_CENTER, Color::Black, rect0);
 
 	// character
-	GUI.DrawSprite(rt_char->GetTexture(), Int2(pos.x + 228, pos.y + 64));
+	gui->DrawSprite(rt_char->GetTexture(), Int2(pos.x + 228, pos.y + 64));
 
 	// close button
 	btCancel.Draw();
@@ -285,7 +285,7 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 
 			// attribute/skill flow panel
 			Int2 fpos = flow_pos + global_pos;
-			GUI.DrawItem(GUI.tBox, fpos, flow_size, Color::White, 8, 32);
+			gui->DrawItem(gui->tBox, fpos, flow_size, Color::White, 8, 32);
 			flow_scroll.Draw();
 
 			rect = Rect::Create(fpos + Int2(2, 2), flow_size - Int2(4, 4));
@@ -299,7 +299,7 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 				if(fi.section)
 				{
 					r.Bottom() = r.Top() + SECTION_H;
-					if(!GUI.DrawText(GUI.fBig, item_text, DTF_SINGLELINE, Color::Black, r, &rect))
+					if(!gui->DrawText(gui->fBig, item_text, DTF_SINGLELINE, Color::Black, r, &rect))
 						break;
 				}
 				else
@@ -308,10 +308,10 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 					{
 						mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(float(flow_size.x - 4) / 256, 17.f / 32), nullptr, 0.f, &Vec2(r.LeftTop()));
 						part.Right() = int(fi.part * 256);
-						GUI.DrawSprite2(tKlasaCecha, mat, &part, &rect, Color::White);
+						gui->DrawSprite2(tKlasaCecha, mat, &part, &rect, Color::White);
 					}
 					r.Bottom() = r.Top() + VALUE_H;
-					if(!GUI.DrawText(GUI.default_font, item_text, DTF_SINGLELINE, Color::Black, r, &rect))
+					if(!gui->DrawText(gui->default_font, item_text, DTF_SINGLELINE, Color::Black, r, &rect))
 						break;
 				}
 			}
@@ -332,11 +332,11 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 
 			// left text "Skill points: X/Y"
 			Rect r = { global_pos.x + 16, global_pos.y + 310, global_pos.x + 216, global_pos.y + 360 };
-			GUI.DrawText(GUI.default_font, Format(txSkillPoints, cc.sp, cc.sp_max), 0, Color::Black, r);
+			gui->DrawText(gui->default_font, Format(txSkillPoints, cc.sp, cc.sp_max), 0, Color::Black, r);
 
 			// right text "Feats: X/Y"
 			Rect r2 = { global_pos.x + size.x - 216, global_pos.y + 310, global_pos.x + size.x - 16, global_pos.y + 360 };
-			GUI.DrawText(GUI.default_font, Format(txPerkPoints, cc.perks, cc.perks_max), DTF_RIGHT, Color::Black, r2);
+			gui->DrawText(gui->default_font, Format(txPerkPoints, cc.perks, cc.perks_max), DTF_RIGHT, Color::Black, r2);
 
 			tooltip.Draw();
 		}
@@ -364,7 +364,7 @@ void CreateCharacterPanel::Update(float dt)
 	UpdateUnit(dt);
 
 	// rotating unit
-	if(PointInRect(GUI.cursor_pos, Int2(pos.x + 228, pos.y + 94), Int2(128, 256)) && input->Focus() && focus)
+	if(PointInRect(gui->cursor_pos, Int2(pos.x + 228, pos.y + 94), Int2(128, 256)) && input->Focus() && focus)
 	{
 		bool rotate = false;
 		if(rotating)
@@ -381,7 +381,7 @@ void CreateCharacterPanel::Update(float dt)
 		}
 
 		if(rotate)
-			unit->rot = Clip(unit->rot - float(GUI.cursor_pos.x - pos.x - 228 - 64) / 16 * dt);
+			unit->rot = Clip(unit->rot - float(gui->cursor_pos.x - pos.x - 228 - 64) / 16 * dt);
 	}
 	else
 		rotating = false;
@@ -408,12 +408,12 @@ void CreateCharacterPanel::Update(float dt)
 
 			int group = -1, id = -1;
 
-			if(!flow_scroll.clicked && PointInRect(GUI.cursor_pos, flow_pos + global_pos, flow_size))
+			if(!flow_scroll.clicked && PointInRect(gui->cursor_pos, flow_pos + global_pos, flow_size))
 			{
 				if(focus && input->Focus())
 					flow_scroll.ApplyMouseWheel();
 
-				int y = GUI.cursor_pos.y - global_pos.y - flow_pos.y + (int)flow_scroll.offset;
+				int y = gui->cursor_pos.y - global_pos.y - flow_pos.y + (int)flow_scroll.offset;
 				for(OldFlowItem& fi : flow_items)
 				{
 					if(y >= fi.y && y <= fi.y + 20)
@@ -426,7 +426,7 @@ void CreateCharacterPanel::Update(float dt)
 						break;
 				}
 			}
-			else if(!flow_scroll.clicked && PointInRect(GUI.cursor_pos, flow_scroll.pos + global_pos, flow_scroll.size) && focus && input->Focus())
+			else if(!flow_scroll.clicked && PointInRect(gui->cursor_pos, flow_scroll.pos + global_pos, flow_scroll.size) && focus && input->Focus())
 				flow_scroll.ApplyMouseWheel();
 
 			tooltip.UpdateTooltip(dt, group, id);
@@ -500,7 +500,7 @@ void CreateCharacterPanel::Event(GuiEvent e)
 			unit->rot = 0;
 			dist = -2.5f;
 		}
-		pos = global_pos = (GUI.wnd_size - size) / 2;
+		pos = global_pos = (gui->wnd_size - size) / 2;
 		btCancel.global_pos = global_pos + btCancel.pos;
 		btBack.global_pos = global_pos + btBack.pos;
 		btNext.global_pos = global_pos + btNext.pos;
@@ -548,7 +548,7 @@ void CreateCharacterPanel::Event(GuiEvent e)
 			else
 			{
 				if(cc.sp < 0 || cc.perks < 0)
-					GUI.SimpleDialog(txCreateCharTooMany, this);
+					gui->SimpleDialog(txCreateCharTooMany, this);
 				else if(cc.sp != 0 || cc.perks != 0)
 				{
 					DialogInfo di;
@@ -563,7 +563,7 @@ void CreateCharacterPanel::Event(GuiEvent e)
 					di.pause = false;
 					di.text = txCreateCharWarn;
 					di.type = DIALOG_YESNO;
-					GUI.ShowDialog(di);
+					gui->ShowDialog(di);
 				}
 				else
 					mode = Mode::PickAppearance;
@@ -978,7 +978,7 @@ void CreateCharacterPanel::Show(bool enter_name)
 
 	SetControls();
 	SetCharacter();
-	GUI.ShowDialog(this);
+	gui->ShowDialog(this);
 	ResetDoll(true);
 	RenderUnit();
 }
@@ -1001,7 +1001,7 @@ void CreateCharacterPanel::ShowRedo(Class clas, HumanData& hd, CreatedCharacter&
 
 	SetControls();
 	SetCharacter();
-	GUI.ShowDialog(this);
+	gui->ShowDialog(this);
 	ResetDoll(true);
 }
 
@@ -1286,7 +1286,7 @@ void CreateCharacterPanel::OnPickPerk(int group, int id)
 				s += PerkInfo::perks[(int)p].name;
 			}
 			s += ".";
-			GUI.SimpleDialog(s.c_str(), this);
+			gui->SimpleDialog(s.c_str(), this);
 		}
 		CheckSkillsUpdate();
 		RebuildPerksFlow();

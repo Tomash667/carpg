@@ -169,7 +169,7 @@ void ServerPanel::LoadLanguage()
 	bts[2].text = txKick; // cancel
 	bts[3].text = txSetLeader;
 	bts[4].text = txStart;
-	bts[5].text = GUI.txCancel;
+	bts[5].text = gui->txCancel;
 
 	grid.AddColumn(Grid::IMG, 20);
 	grid.AddColumn(Grid::TEXT_COLOR, 140, txNick);
@@ -189,10 +189,10 @@ void ServerPanel::LoadData()
 void ServerPanel::Draw(ControlDrawData*)
 {
 	// background
-	GUI.DrawSpriteFull(tBackground, Color::Alpha(128));
+	gui->DrawSpriteFull(tBackground, Color::Alpha(128));
 
 	// panel
-	GUI.DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
+	gui->DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
 
 	// controls
 	int count = (Net::IsServer() ? 6 : 3);
@@ -203,7 +203,7 @@ void ServerPanel::Draw(ControlDrawData*)
 
 	// text
 	Rect r = { 340 + global_pos.x, 355 + global_pos.y, 340 + 185 + global_pos.x, 355 + 160 + global_pos.y };
-	GUI.DrawText(GUI.default_font, Format(txServerText, server_name.c_str(), N.active_players, max_players, N.password.empty() ? GUI.txNo : GUI.txYes),
+	gui->DrawText(gui->default_font, Format(txServerText, server_name.c_str(), N.active_players, max_players, N.password.empty() ? gui->txNo : gui->txYes),
 		0, Color::Black, r, &r);
 }
 
@@ -315,7 +315,7 @@ void ServerPanel::UpdateLobbyClient(float dt)
 				}
 
 				Info("ServerPanel: Disconnected from server: %s.", reason_eng);
-				GUI.SimpleDialog(Format(txUnconnected, reason), nullptr);
+				gui->SimpleDialog(Format(txUnconnected, reason), nullptr);
 
 				CloseDialog();
 				N.peer->DeallocatePacket(packet);
@@ -1147,7 +1147,7 @@ void ServerPanel::Event(GuiEvent e)
 			itb.focus = true;
 			itb.Event(GuiEvent_GainFocus);
 		}
-		global_pos = (GUI.wnd_size - size) / 2;
+		global_pos = (gui->wnd_size - size) / 2;
 		for(int i = 0; i < 6; ++i)
 			bts[i].global_pos = global_pos + bts[i].pos;
 		itb.Event(GuiEvent_Moved);
@@ -1217,7 +1217,7 @@ void ServerPanel::Event(GuiEvent e)
 					di.pause = false;
 					di.text = Format(txReallyKick, info.name.c_str());
 					di.type = DIALOG_YESNO;
-					GUI.ShowDialog(di);
+					gui->ShowDialog(di);
 				}
 				return;
 			}
@@ -1288,13 +1288,13 @@ void ServerPanel::Show()
 		bts[4].text = txStart;
 	}
 	else
-		bts[2].text = GUI.txCancel;
+		bts[2].text = gui->txCancel;
 
 	itb.Reset();
 	grid.Reset();
 	grid.AddItems(N.players.size());
 
-	GUI.ShowDialog(this);
+	gui->ShowDialog(this);
 }
 
 //=================================================================================================

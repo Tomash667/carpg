@@ -43,6 +43,17 @@ extern const int ITEM_IMAGE_SIZE;
 extern string g_system_dir;
 
 //=================================================================================================
+void Game::BeforeInit()
+{
+	input = engine->GetInput();
+	GKey.input = input;
+	phy_world = engine->GetPhysicsWorld();
+	render = engine->GetRender();
+	render->SetShadersDir(Format("%s/shaders", g_system_dir.c_str()));
+	sound_mgr = engine->GetSoundManager();
+}
+
+//=================================================================================================
 // Initialize game and show loadscreen.
 //=================================================================================================
 bool Game::OnInit()
@@ -81,13 +92,6 @@ void Game::PreconfigureGame()
 {
 	Info("Game: Preconfiguring game.");
 
-	input = engine->GetInput();
-	GKey.input = input;
-	phy_world = engine->GetPhysicsWorld();
-	render = engine->GetRender();
-	render->SetShadersDir(Format("%s/shaders", g_system_dir.c_str()));
-	sound_mgr = engine->GetSoundManager();
-
 	engine->UnlockCursor(false);
 	engine->cam_base = &L.camera;
 
@@ -100,7 +104,7 @@ void Game::PreconfigureGame()
 	arena = new Arena;
 	loc_gen_factory = new LocationGeneratorFactory;
 	gui = new GlobalGui;
-	global::gui = gui;
+	gui = gui;
 	global::cmdp = new CommandParser;
 	components.push_back(&W);
 	components.push_back(pathfinding);
@@ -386,7 +390,7 @@ void Game::PostconfigureGame()
 		TEX img = (load_errors > 0 ? tError : tWarning);
 		cstring text = Format(txHaveErrors, load_errors, load_warnings);
 #ifdef _DEBUG
-		GUI.AddNotification(text, img, 5.f);
+		gui->AddNotification(text, img, 5.f);
 #else
 		DialogInfo info;
 		info.name = "have_errors";
@@ -398,7 +402,7 @@ void Game::PostconfigureGame()
 		info.order = ORDER_TOPMOST;
 		info.pause = false;
 		info.auto_wrap = true;
-		GUI.ShowDialog(info);
+		gui->ShowDialog(info);
 		start_game_mode = false;
 #endif
 	}
@@ -469,7 +473,7 @@ void Game::StartGameMode()
 		}
 		catch(cstring err)
 		{
-			GUI.SimpleDialog(err, nullptr);
+			gui->SimpleDialog(err, nullptr);
 			break;
 		}
 

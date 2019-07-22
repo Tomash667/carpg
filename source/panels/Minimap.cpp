@@ -51,7 +51,7 @@ void Minimap::Draw(ControlDrawData*)
 	// map texture
 	Rect r = { global_pos.x, global_pos.y, global_pos.x + size.x, global_pos.y + size.y };
 	Rect r_part = { 0, 0, minimap_size, minimap_size };
-	GUI.DrawSpriteRectPart(game.tMinimap, r, r_part, Color::Alpha(140));
+	gui->DrawSpriteRectPart(game.tMinimap, r, r_part, Color::Alpha(140));
 
 	// stairs
 	if(type == L_DUNGEON || type == L_CRYPT || type == L_CAVE)
@@ -60,9 +60,9 @@ void Minimap::Draw(ControlDrawData*)
 		InsideLocationLevel& lvl = inside->GetLevelData();
 
 		if(inside->HaveDownStairs() && IS_SET(lvl.map[lvl.staircase_down(lvl.w)].flags, Tile::F_REVEALED))
-			GUI.DrawSprite(tStairsDown, Int2(TileToPoint(lvl.staircase_down)) - Int2(16, 16), Color::Alpha(180));
+			gui->DrawSprite(tStairsDown, Int2(TileToPoint(lvl.staircase_down)) - Int2(16, 16), Color::Alpha(180));
 		if(inside->HaveUpStairs() && IS_SET(lvl.map[lvl.staircase_up(lvl.w)].flags, Tile::F_REVEALED))
-			GUI.DrawSprite(tStairsUp, Int2(TileToPoint(lvl.staircase_up)) - Int2(16, 16), Color::Alpha(180));
+			gui->DrawSprite(tStairsUp, Int2(TileToPoint(lvl.staircase_up)) - Int2(16, 16), Color::Alpha(180));
 	}
 
 	// portals
@@ -73,7 +73,7 @@ void Minimap::Draw(ControlDrawData*)
 	while(p)
 	{
 		if(!lvl || (L.dungeon_level == p->at_level && lvl->IsTileVisible(p->pos)))
-			GUI.DrawSprite(tPortal, Int2(TileToPoint(PosToPt(p->pos))) - Int2(24, 8), Color::Alpha(180));
+			gui->DrawSprite(tPortal, Int2(TileToPoint(PosToPt(p->pos))) - Int2(24, 8), Color::Alpha(180));
 		p = p->next_portal;
 	}
 
@@ -83,7 +83,7 @@ void Minimap::Draw(ControlDrawData*)
 		if(!lvl || lvl->IsTileVisible(chest->pos))
 		{
 			m1 = Matrix::Transform2D(&Vec2(16, 16), 0.f, &Vec2(0.5f, 0.5f), nullptr, 0.f, &(PosToPoint(Vec2(chest->pos.x, chest->pos.z)) - Vec2(16, 16)));
-			GUI.DrawSpriteTransform(tChest, m1, Color::Alpha(140));
+			gui->DrawSpriteTransform(tChest, m1, Color::Alpha(140));
 		}
 	}
 
@@ -96,7 +96,7 @@ void Minimap::Draw(ControlDrawData*)
 		else if(!lvl || lvl->IsTileVisible((*it)->pos))
 		{
 			m1 = Matrix::Transform2D(&Vec2(16, 16), 0.f, &Vec2(0.25f, 0.25f), nullptr, 0.f, &(PosToPoint(Vec2((*it)->pos.x, (*it)->pos.z)) - Vec2(16, 16)));
-			GUI.DrawSpriteTransform(tBag, m1, Color::Alpha(140));
+			gui->DrawSpriteTransform(tBag, m1, Color::Alpha(140));
 		}
 	}
 	for(vector<GroundItem*>::iterator it = important_items->begin(), end = important_items->end(); it != end; ++it)
@@ -104,7 +104,7 @@ void Minimap::Draw(ControlDrawData*)
 		if(!lvl || lvl->IsTileVisible((*it)->pos))
 		{
 			m1 = Matrix::Transform2D(&Vec2(16, 16), 0.f, &Vec2(0.25f, 0.25f), nullptr, 0.f, &(PosToPoint(Vec2((*it)->pos.x, (*it)->pos.z)) - Vec2(16, 16)));
-			GUI.DrawSpriteTransform(tBagImportant, m1, Color::Alpha(140));
+			gui->DrawSpriteTransform(tBagImportant, m1, Color::Alpha(140));
 		}
 	}
 
@@ -112,7 +112,7 @@ void Minimap::Draw(ControlDrawData*)
 	for(Unit& unit : Team.members)
 	{
 		m1 = Matrix::Transform2D(&Vec2(16, 16), 0.f, &Vec2(0.25f, 0.25f), &Vec2(16, 16), unit.rot, &(PosToPoint(GetMapPosition(unit)) - Vec2(16, 16)));
-		GUI.DrawSpriteTransform(tUnit[&unit == game.pc->unit ? UNIT_ME : UNIT_TEAM], m1, Color::Alpha(140));
+		gui->DrawSpriteTransform(tUnit[&unit == game.pc->unit ? UNIT_ME : UNIT_TEAM], m1, Color::Alpha(140));
 	}
 
 	// other units
@@ -122,7 +122,7 @@ void Minimap::Draw(ControlDrawData*)
 		if((u.IsAlive() || u.mark) && !u.IsTeamMember() && (!lvl || lvl->IsTileVisible(u.pos)))
 		{
 			m1 = Matrix::Transform2D(&Vec2(16, 16), 0.f, &Vec2(0.25f, 0.25f), &Vec2(16, 16), (*it)->rot, &(PosToPoint(GetMapPosition(u)) - Vec2(16, 16)));
-			GUI.DrawSpriteTransform(tUnit[u.IsAlive() ? (u.IsEnemy(*game.pc->unit) ? UNIT_ENEMY : UNIT_NPC) : UNIT_CORPSE], m1, Color::Alpha(140));
+			gui->DrawSpriteTransform(tUnit[u.IsAlive() ? (u.IsEnemy(*game.pc->unit) ? UNIT_ENEMY : UNIT_NPC) : UNIT_CORPSE], m1, Color::Alpha(140));
 		}
 	}
 
@@ -133,25 +133,25 @@ void Minimap::Draw(ControlDrawData*)
 		{
 			Int2 pt(Convert(text.pos));
 			Rect rect = { pt.x - text.size.x / 2, pt.y - text.size.y / 2, pt.x + text.size.x / 2, pt.y + text.size.y / 2 };
-			GUI.DrawText(GUI.default_font, text.text, DTF_SINGLELINE, Color::Black, rect);
+			gui->DrawText(gui->default_font, text.text, DTF_SINGLELINE, Color::Black, rect);
 		}
 
 		// lines from building name to building
-		GUI.LineBegin();
+		gui->LineBegin();
 		for(vector<Text>::iterator it = texts.begin(), end = texts.end(); it != end; ++it)
 		{
 			Vec2 pts[2] = {
 				Convert(it->pos),
 				Convert(it->anchor)
 			};
-			GUI.DrawLine(pts, 1, Color(0, 0, 0, 140));
+			gui->DrawLine(pts, 1, Color(0, 0, 0, 140));
 		}
-		GUI.LineEnd();
+		gui->LineEnd();
 	}
 
 	// location name
-	Rect rect = { 0,0,GUI.wnd_size.x - 8,GUI.wnd_size.y - 8 };
-	GUI.DrawText(GUI.default_font, L.GetCurrentLocationText(), DTF_RIGHT | DTF_OUTLINE, Color(255, 0, 0, 222), rect);
+	Rect rect = { 0,0,gui->wnd_size.x - 8,gui->wnd_size.y - 8 };
+	gui->DrawText(gui->default_font, L.GetCurrentLocationText(), DTF_RIGHT | DTF_OUTLINE, Color(255, 0, 0, 222), rect);
 }
 
 //=================================================================================================
@@ -226,7 +226,7 @@ void Minimap::Build()
 			{
 				Text& text = Add1(texts);
 				text.text = b.building->name.c_str();
-				text.size = GUI.default_font->CalculateSize(b.building->name);
+				text.size = gui->default_font->CalculateSize(b.building->name);
 				text.pos = text.anchor = TransformTile(b.pt);
 			}
 		}

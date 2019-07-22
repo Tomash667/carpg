@@ -191,7 +191,7 @@ void CommandParser::ParseCommand(const string& command_str, PrintMsgFunc print_f
 
 			if(!IS_ALL_SET(it->flags, F_ANYWHERE))
 			{
-				if(global::gui->server->visible)
+				if(gui->server->visible)
 				{
 					if(!IS_SET(it->flags, F_LOBBY))
 					{
@@ -613,7 +613,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 
 					if(!IS_ALL_SET(cmd.flags, F_ANYWHERE))
 					{
-						if(global::gui->server->visible)
+						if(gui->server->visible)
 						{
 							if(!IS_SET(cmd.flags, F_LOBBY))
 								ok = false;
@@ -943,15 +943,15 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 					game.LoadGameSlot(slot);
 				else
 					game.LoadGameFilename(name.get_ref());
-				GUI.CloseDialog(global::gui->console);
+				gui->CloseDialog(gui->console);
 			}
 			catch(const SaveException& ex)
 			{
 				cstring error = Format("Failed to load game: %s", ex.msg);
 				Error(error);
 				Msg(error);
-				if(!GUI.HaveDialog(global::gui->console))
-					GUI.ShowDialog(global::gui->console);
+				if(!gui->HaveDialog(gui->console))
+					gui->ShowDialog(gui->console);
 			}
 		}
 		else
@@ -1070,7 +1070,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			game.AddServerMsg(text.c_str());
 			Info("SERVER: %s", text.c_str());
 			if(game.game_state == GS_LEVEL)
-				global::gui->game_gui->AddSpeechBubble(game.pc->unit, text.c_str());
+				gui->game_gui->AddSpeechBubble(game.pc->unit, text.c_str());
 		}
 		else
 			Msg("You need to enter message.");
@@ -1092,7 +1092,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		{
 			PlayerInfo& info = N.GetMe();
 			info.ready = !info.ready;
-			global::gui->server->ChangeReady();
+			gui->server->ChangeReady();
 		}
 		break;
 	case CMD_LEADER:
@@ -1110,12 +1110,12 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 				Msg("You can't change a leader."); // must be current leader or server
 			else
 			{
-				if(global::gui->server->visible)
+				if(gui->server->visible)
 				{
 					if(Net::IsServer())
 					{
 						Team.leader_id = info->id;
-						global::gui->server->AddLobbyUpdate(Int2(Lobby_ChangeLeader, 0));
+						gui->server->AddLobbyUpdate(Int2(Lobby_ChangeLeader, 0));
 					}
 					else
 						Msg("You can't change a leader.");
@@ -1131,8 +1131,8 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 						Team.leader_id = info->id;
 						Team.leader = info->u;
 
-						if(global::gui->world_map->dialog_enc)
-							global::gui->world_map->dialog_enc->bts[0].state = (Team.IsLeader() ? Button::NONE : Button::DISABLED);
+						if(gui->world_map->dialog_enc)
+							gui->world_map->dialog_enc->bts[0].state = (Team.IsLeader() ? Button::NONE : Button::DISABLED);
 					}
 				}
 
@@ -1144,7 +1144,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		game.ExitToMenu();
 		break;
 	case CMD_RANDOM:
-		if(global::gui->server->visible)
+		if(gui->server->visible)
 		{
 			if(t.Next())
 			{
@@ -1178,7 +1178,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 					{
 						if(ClassInfo::IsPickable(ci->class_id))
 						{
-							global::gui->server->PickClass(ci->class_id, false);
+							gui->server->PickClass(ci->class_id, false);
 							Msg("You picked Random character.");
 						}
 						else
@@ -1190,7 +1190,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			}
 			else
 			{
-				global::gui->server->PickClass(Class::RANDOM, false);
+				gui->server->PickClass(Class::RANDOM, false);
 				Msg("You picked Random character.");
 			}
 		}
@@ -1208,7 +1208,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		break;
 	case CMD_START:
 		{
-			cstring msg = global::gui->server->TryStart();
+			cstring msg = gui->server->TryStart();
 			if(msg)
 				Msg(msg);
 		}
@@ -1413,20 +1413,20 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		}
 		break;
 	case CMD_QS:
-		if(!global::gui->server->Quickstart())
+		if(!gui->server->Quickstart())
 			Msg("Not everyone is ready.");
 		break;
 	case CMD_CLEAR:
 		switch(source)
 		{
 		case PS_CONSOLE:
-			global::gui->console->Reset();
+			gui->console->Reset();
 			break;
 		case PS_CHAT:
-			global::gui->mp_box->itb.Reset();
+			gui->mp_box->itb.Reset();
 			break;
 		case PS_LOBBY:
-			global::gui->server->itb.Reset();
+			gui->server->itb.Reset();
 			break;
 		case PS_UNKNOWN:
 		default:

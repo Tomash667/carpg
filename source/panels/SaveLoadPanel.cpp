@@ -58,16 +58,16 @@ void SaveLoad::LoadLanguage()
 	txSaveName = s.Get("saveName");
 	txSavedGameN = s.Get("savedGameN");
 
-	bt[1].text = GUI.txCancel;
+	bt[1].text = gui->txCancel;
 }
 
 //=================================================================================================
 void SaveLoad::Draw(ControlDrawData*)
 {
-	GUI.DrawSpriteFull(tBackground, Color::Alpha(128));
-	GUI.DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
+	gui->DrawSpriteFull(tBackground, Color::Alpha(128));
+	gui->DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
 	Rect r = { global_pos.x, global_pos.y + 8, global_pos.x + size.x, global_pos.y + size.y };
-	GUI.DrawText(GUI.fBig, save_mode ? txSaving : txLoading, DTF_CENTER, Color::Black, r);
+	gui->DrawText(gui->fBig, save_mode ? txSaving : txLoading, DTF_CENTER, Color::Black, r);
 	for(int i = 0; i < 2; ++i)
 		bt[i].Draw();
 	textbox.Draw();
@@ -92,7 +92,7 @@ void SaveLoad::Draw(ControlDrawData*)
 				text = Format(txEmptySlot, i + 1);
 		}
 
-		GUI.DrawText(GUI.default_font, text, DTF_SINGLELINE | DTF_VCENTER, choice == i ? Color::Green : Color::Black, r);
+		gui->DrawText(gui->default_font, text, DTF_SINGLELINE | DTF_VCENTER, choice == i ? Color::Green : Color::Black, r);
 
 		r.Top() = r.Bottom() + 4;
 		r.Bottom() = r.Top() + 20;
@@ -102,7 +102,7 @@ void SaveLoad::Draw(ControlDrawData*)
 	if(tMiniSave)
 	{
 		Rect r2 = Rect::Create(Int2(global_pos.x + 400 - 81, global_pos.y + 42 + 103), Int2(256, 192));
-		GUI.DrawSpriteRect(tMiniSave, r2);
+		gui->DrawSpriteRect(tMiniSave, r2);
 	}
 }
 
@@ -118,9 +118,9 @@ void SaveLoad::Update(float dt)
 
 		for(int i = 0; i < SaveSlot::MAX_SLOTS; ++i)
 		{
-			if(rect.IsInside(GUI.cursor_pos))
+			if(rect.IsInside(gui->cursor_pos))
 			{
-				GUI.cursor_mode = CURSOR_HAND;
+				gui->cursor_mode = CURSOR_HAND;
 				if(input->PressedRelease(Key::LeftButton) && choice != i)
 				{
 					choice = i;
@@ -151,7 +151,7 @@ void SaveLoad::Event(GuiEvent e)
 {
 	if(e == GuiEvent_Show || e == GuiEvent_WindowResize)
 	{
-		global_pos = pos = (GUI.wnd_size - size) / 2;
+		global_pos = pos = (gui->wnd_size - size) / 2;
 		for(int i = 0; i < 2; ++i)
 			bt[i].global_pos = bt[i].pos + global_pos;
 		textbox.global_pos = textbox.pos + global_pos;
@@ -164,7 +164,7 @@ void SaveLoad::Event(GuiEvent e)
 		if(e == IdCancel)
 		{
 			N.mp_load = false;
-			GUI.CloseDialog(this);
+			gui->CloseDialog(this);
 			return;
 		}
 
@@ -175,7 +175,7 @@ void SaveLoad::Event(GuiEvent e)
 			if(choice == SaveSlot::MAX_SLOTS - 1)
 			{
 				// quicksave
-				GUI.CloseDialog(this);
+				gui->CloseDialog(this);
 				game->SaveGameSlot(choice + 1, txQuickSave);
 			}
 			else
@@ -194,7 +194,7 @@ void SaveLoad::Event(GuiEvent e)
 				{
 					if(id == BUTTON_OK && game->SaveGameSlot(choice + 1, save_input_text.c_str()))
 					{
-						GUI.CloseDialog(this);
+						gui->CloseDialog(this);
 					}
 				};
 				params.parent = this;
@@ -245,13 +245,13 @@ void SaveLoad::SetSaveImage()
 		{
 			cstring filename = Format("saves/%s/%d.jpg", online ? "multi" : "single", choice + 1);
 			if(io::FileExists(filename))
-				V(D3DXCreateTextureFromFile(GUI.GetDevice(), filename, &tMiniSave));
+				V(D3DXCreateTextureFromFile(gui->GetDevice(), filename, &tMiniSave));
 		}
 		else
 		{
 			cstring filename = Format("saves/%s/%d.sav", online ? "multi" : "single", choice + 1);
 			Buffer* buf = FileReader::ReadToBuffer(filename, slot.img_offset, slot.img_size);
-			V(D3DXCreateTextureFromFileInMemory(GUI.GetDevice(), buf->Data(), buf->Size(), &tMiniSave));
+			V(D3DXCreateTextureFromFileInMemory(gui->GetDevice(), buf->Data(), buf->Size(), &tMiniSave));
 			buf->Free();
 		}
 	}
@@ -402,7 +402,7 @@ void SaveLoad::LoadSaveSlots()
 void SaveLoad::ShowSavePanel()
 {
 	SetSaveMode(true, Net::IsOnline(), Net::IsOnline() ? multi_saves : single_saves);
-	GUI.ShowDialog(this);
+	gui->ShowDialog(this);
 }
 
 //=================================================================================================
@@ -410,7 +410,7 @@ void SaveLoad::ShowLoadPanel()
 {
 	bool online = (N.mp_load || Net::IsServer());
 	SetSaveMode(false, online, online ? multi_saves : single_saves);
-	GUI.ShowDialog(this);
+	gui->ShowDialog(this);
 }
 
 //=================================================================================================
