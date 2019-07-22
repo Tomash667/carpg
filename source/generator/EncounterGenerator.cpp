@@ -152,12 +152,10 @@ void EncounterGenerator::OnEnter()
 
 	// add team
 	SpawnEncounterTeam();
+
+	// auto talk with leader
 	if(dialog)
-	{
-		DialogContext& ctx = *Team.leader->player->dialog_ctx;
-		Team.leader->player->StartDialog(talker, dialog);
-		ctx.dialog_quest = quest;
-	}
+		talker->StartAutoTalk(true, dialog);
 }
 
 //=================================================================================================

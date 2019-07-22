@@ -522,18 +522,17 @@ void Quest_Orcs2::SetProgress(int prog2)
 			}
 			// zak³ada ¿e gadamy na ostatnim levelu, mam nadzieje ¿e gracz z tamt¹d nie spierdoli przed pogadaniem :3
 			MultiInsideLocation* multi = (MultiInsideLocation*)W.GetCurrentLocation();
-			for(vector<InsideLocationLevel>::iterator it = multi->levels.begin(), end = multi->levels.end() - 1; it != end; ++it)
+			for(vector<InsideLocationLevel*>::iterator it = multi->levels.begin(), end = multi->levels.end() - 1; it != end; ++it)
 			{
-				for(vector<Unit*>::iterator it2 = it->units.begin(), end2 = it->units.end(); it2 != end2; ++it2)
+				for(Unit* unit : (*it)->units)
 				{
-					Unit& u = **it2;
-					if(u.IsAlive())
+					if(unit->IsAlive())
 					{
 						for(int i = 0; i < 5; ++i)
 						{
-							if(u.data == ud[i * 2])
+							if(unit->data == ud[i * 2])
 							{
-								u.data = ud[i * 2 + 1];
+								unit->data = ud[i * 2 + 1];
 								break;
 							}
 						}

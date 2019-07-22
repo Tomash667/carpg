@@ -9130,10 +9130,8 @@ void Game::RemoveQuestUnits(bool on_leave)
 
 	if(QM.quest_mages2->mages_state == Quest_Mages2::State::MageLeaving)
 	{
-		QM.quest_mages2->hd_mage.Set(*QM.quest_mages2->scholar->human_data);
-		QM.quest_mages2->scholar = nullptr;
-		RemoveQuestUnit(UnitData::Get("q_magowie_stary"), on_leave);
 		QM.quest_mages2->mages_state = Quest_Mages2::State::MageLeft;
+		QM.quest_mages2->scholar = nullptr;
 	}
 
 	if(QM.quest_goblins->goblins_state == Quest_Goblins::State::MessengerTalked && QM.quest_goblins->messenger)

@@ -505,7 +505,7 @@ void CityGenerator::GenerateMainRoad(RoadType type, GameDirection dir, int rocky
 			for(int y = miny; y <= maxy; ++y)
 			{
 				for(int x = minx; x <= maxx; ++x)
-					road_ids[x + y*w] = i;
+					road_ids[x + y * w] = i;
 			}
 		}
 	}
@@ -519,7 +519,7 @@ void CityGenerator::CreateRoad(const Rect& r, TERRAIN_TILE t)
 	{
 		for(int x = r.p1.x; x <= r.p2.x; ++x)
 		{
-			TerrainTile& tt = tiles[x + y*w];
+			TerrainTile& tt = tiles[x + y * w];
 			tt.t = t;
 			tt.t2 = t;
 			tt.alpha = 0;
@@ -656,7 +656,7 @@ void CityGenerator::GenerateBuildings(vector<ToBuild>& tobuild)
 							side = 1;
 					}
 				}
-				
+
 				if(side != -1)
 				{
 					BuildPt& bpt = Add1(points);
@@ -907,7 +907,7 @@ void CityGenerator::GenerateBuildings(vector<ToBuild>& tobuild)
 					scheme = build_it->building->scheme[ext2.y - yr - 1 + (ext2.x - xr - 1)*ext2.y];
 					break;
 				case GDIR_UP:
-					scheme = build_it->building->scheme[ext2.x - xr - 1 + yr*ext2.x];
+					scheme = build_it->building->scheme[ext2.x - xr - 1 + yr * ext2.x];
 					break;
 				case GDIR_RIGHT:
 					scheme = build_it->building->scheme[yr + xr * ext2.y];
@@ -976,7 +976,7 @@ void CityGenerator::GeneratePath(const Int2& pt)
 {
 	assert(pt.x >= 0 && pt.y >= 0 && pt.x < w && pt.y < h);
 
-	int size = w*h;
+	int size = w * h;
 	if(size > (int)grid.size())
 		grid.resize(size);
 	memset(&grid[0], 0, sizeof(APoint2)*size);
@@ -1181,7 +1181,7 @@ void CityGenerator::FlattenRoad()
 	{
 		for(int x = 2; x < w - 2; ++x)
 		{
-			if(OR2_EQ(tiles[x + y*w].mode, TM_ROAD, TM_PATH))
+			if(OR2_EQ(tiles[x + y * w].mode, TM_ROAD, TM_PATH))
 			{
 				for(int i = 1; i < 21; ++i)
 					block[i] = !tiles[x + blocked[i].x + (y + blocked[i].y)*w].IsBuilding();
@@ -1212,10 +1212,10 @@ void CityGenerator::SmoothTerrain()
 	{
 		for(int x = 1; x < w; ++x)
 		{
-			if(tiles[x + y*w].mode < TM_BUILDING_SAND && tiles[x - 1 + y*w].mode < TM_BUILDING_SAND && tiles[x + (y - 1)*w].mode < TM_BUILDING_SAND && tiles[x - 1 + (y - 1)*w].mode < TM_BUILDING_SAND)
+			if(tiles[x + y * w].mode < TM_BUILDING_SAND && tiles[x - 1 + y * w].mode < TM_BUILDING_SAND && tiles[x + (y - 1)*w].mode < TM_BUILDING_SAND && tiles[x - 1 + (y - 1)*w].mode < TM_BUILDING_SAND)
 			{
-				float sum = (height[x + y*(w + 1)] + height[x - 1 + y*(w + 1)] + height[x + 1 + y*(w + 1)] + height[x + (y - 1)*(h + 1)] + height[x + (y + 1)*(h + 1)]) / 5;
-				height[x + y*(w + 1)] = sum;
+				float sum = (height[x + y * (w + 1)] + height[x - 1 + y * (w + 1)] + height[x + 1 + y * (w + 1)] + height[x + (y - 1)*(h + 1)] + height[x + (y + 1)*(h + 1)]) / 5;
+				height[x + y * (w + 1)] = sum;
 			}
 		}
 	}
@@ -1386,7 +1386,7 @@ void CityGenerator::CleanBorders()
 	for(int x = 1; x < w; ++x)
 	{
 		height[x] = height[x + (w + 1)];
-		height[x + h*(w + 1)] = height[x + (h - 1)*(w + 1)];
+		height[x + h * (w + 1)] = height[x + (h - 1)*(w + 1)];
 	}
 
 	// left / right
@@ -1399,7 +1399,7 @@ void CityGenerator::CleanBorders()
 	// corners
 	height[0] = (height[1] + height[w + 1]) / 2;
 	height[w] = (height[w - 1] + height[(w + 1) * 2 - 1]) / 2;
-	height[h*(w + 1)] = (height[1 + h*(w + 1)] + height[(h - 1)*(w + 1)]) / 2;
+	height[h*(w + 1)] = (height[1 + h * (w + 1)] + height[(h - 1)*(w + 1)]) / 2;
 	height[(h + 1)*(w + 1) - 1] = (height[(h + 1)*(w + 1) - 2] + height[h*(w + 1) - 1]) / 2;
 }
 
@@ -1409,15 +1409,15 @@ void CityGenerator::FlattenRoadExits()
 	// left
 	for(int yy = 0; yy < h; ++yy)
 	{
-		if(tiles[15 + yy*w].mode == TM_ROAD)
+		if(tiles[15 + yy * w].mode == TM_ROAD)
 		{
-			float th = height[15 + yy*(w + 1)];
+			float th = height[15 + yy * (w + 1)];
 			for(int y = 0; y <= h; ++y)
 			{
 				for(int x = 0; x < 15; ++x)
 				{
 					if(IsPointNearRoad(x, y))
-						height[x + y*(w + 1)] = th;
+						height[x + y * (w + 1)] = th;
 				}
 			}
 			break;
@@ -1427,15 +1427,15 @@ void CityGenerator::FlattenRoadExits()
 	// right
 	for(int yy = 0; yy < h; ++yy)
 	{
-		if(tiles[w - 15 + yy*w].mode == TM_ROAD)
+		if(tiles[w - 15 + yy * w].mode == TM_ROAD)
 		{
-			float th = height[w - 15 + yy*(w + 1)];
+			float th = height[w - 15 + yy * (w + 1)];
 			for(int y = 0; y <= h; ++y)
 			{
 				for(int x = w - 15; x < w; ++x)
 				{
 					if(IsPointNearRoad(x, y))
-						height[x + y*(w + 1)] = th;
+						height[x + y * (w + 1)] = th;
 				}
 			}
 			break;
@@ -1453,7 +1453,7 @@ void CityGenerator::FlattenRoadExits()
 				for(int x = 0; x <= w; ++x)
 				{
 					if(IsPointNearRoad(x, y))
-						height[x + y*(w + 1)] = th;
+						height[x + y * (w + 1)] = th;
 				}
 			}
 			break;
@@ -1471,7 +1471,7 @@ void CityGenerator::FlattenRoadExits()
 				for(int x = 0; x <= w; ++x)
 				{
 					if(IsPointNearRoad(x, y))
-						height[x + y*(w + 1)] = th;
+						height[x + y * (w + 1)] = th;
 				}
 			}
 			break;
@@ -1502,7 +1502,7 @@ void CityGenerator::GenerateFields()
 		{
 			for(int x = pt.x - 1; x <= pt.x + fw; ++x)
 			{
-				if(tiles[x + y*w].mode != TM_NORMAL)
+				if(tiles[x + y * w].mode != TM_NORMAL)
 					goto next;
 			}
 		}
@@ -1511,9 +1511,9 @@ void CityGenerator::GenerateFields()
 		{
 			for(int x = pt.x; x < pt.x + fw; ++x)
 			{
-				tiles[x + y*w].Set(TT_FIELD, TM_FIELD);
-				float sum = (height[x + y*(w + 1)] + height[x + y*(w + 1)] + height[x + (y + 1)*(w + 1)] + height[x + 1 + (y - 1)*(w + 1)] + height[x + 1 + (y + 1)*(w + 1)]) / 5;
-				height[x + y*(w + 1)] = sum;
+				tiles[x + y * w].Set(TT_FIELD, TM_FIELD);
+				float sum = (height[x + y * (w + 1)] + height[x + y * (w + 1)] + height[x + (y + 1)*(w + 1)] + height[x + 1 + (y - 1)*(w + 1)] + height[x + 1 + (y + 1)*(w + 1)]) / 5;
+				height[x + y * (w + 1)] = sum;
 				height[x + (y + 1)*(w + 1)] = sum;
 				height[x + 1 + (y - 1)*(w + 1)] = sum;
 				height[x + 1 + (y + 1)*(w + 1)] = sum;
@@ -1535,40 +1535,40 @@ void CityGenerator::ApplyWallTiles(int gates)
 	for(int i = mur1; i <= mur2; ++i)
 	{
 		// north
-		tiles[i + mur1*w].Set(TT_SAND, TM_BUILDING);
+		tiles[i + mur1 * w].Set(TT_SAND, TM_BUILDING);
 		if(tiles[i + (mur1 + 1)*w].t == TT_GRASS)
 			tiles[i + (mur1 + 1)*w].Set(TT_SAND, TT_GRASS, 128, TM_BUILDING);
 		height[i + (mur1 - 2) * w1] = 1.f;
 		height[i + (mur1 - 1) * w1] = 1.f;
-		height[i + mur1*w1] = 1.f;
+		height[i + mur1 * w1] = 1.f;
 		height[i + (mur1 + 1)*w1] = 1.f;
 		height[i + (mur1 + 2)*w1] = 1.f;
 		// south
-		tiles[i + mur2*w].Set(TT_SAND, TM_BUILDING);
+		tiles[i + mur2 * w].Set(TT_SAND, TM_BUILDING);
 		if(tiles[i + (mur2 - 1)*w].t == TT_GRASS)
 			tiles[i + (mur2 - 1)*w].Set(TT_SAND, TT_GRASS, 128, TM_BUILDING);
 		height[i + (mur2 + 2)*w1] = 1.f;
 		height[i + (mur2 + 1)*w1] = 1.f;
-		height[i + mur2*w1] = 1.f;
+		height[i + mur2 * w1] = 1.f;
 		height[i + (mur2 - 1)*w1] = 1.f;
 		height[i + (mur2 - 2)*w1] = 1.f;
 		// west
-		tiles[mur1 + i*w].Set(TT_SAND, TM_BUILDING);
-		if(tiles[mur1 + 1 + i*w].t == TT_GRASS)
-			tiles[mur1 + 1 + i*w].Set(TT_SAND, TT_GRASS, 128, TM_BUILDING);
+		tiles[mur1 + i * w].Set(TT_SAND, TM_BUILDING);
+		if(tiles[mur1 + 1 + i * w].t == TT_GRASS)
+			tiles[mur1 + 1 + i * w].Set(TT_SAND, TT_GRASS, 128, TM_BUILDING);
 		height[mur1 - 2 + i * w1] = 1.f;
 		height[mur1 - 1 + i * w1] = 1.f;
-		height[mur1 + i*w1] = 1.f;
-		height[mur1 + 1 + i*w1] = 1.f;
+		height[mur1 + i * w1] = 1.f;
+		height[mur1 + 1 + i * w1] = 1.f;
 		height[mur1 + 2 + i * w1] = 1.f;
 		// east
-		tiles[mur2 + i*w].Set(TT_SAND, TM_BUILDING);
-		if(tiles[mur2 - 1 + i*w].t == TT_GRASS)
-			tiles[mur2 - 1 + i*w].Set(TT_SAND, TT_GRASS, 128, TM_BUILDING);
+		tiles[mur2 + i * w].Set(TT_SAND, TM_BUILDING);
+		if(tiles[mur2 - 1 + i * w].t == TT_GRASS)
+			tiles[mur2 - 1 + i * w].Set(TT_SAND, TT_GRASS, 128, TM_BUILDING);
 		height[mur2 + 2 + i * w1] = 1.f;
 		height[mur2 + 1 + i * w1] = 1.f;
-		height[mur2 + i*w1] = 1.f;
-		height[mur2 - 1 + i*w1] = 1.f;
+		height[mur2 + i * w1] = 1.f;
+		height[mur2 - 1 + i * w1] = 1.f;
 		height[mur2 - 2 + i * w1] = 1.f;
 	}
 
@@ -1901,7 +1901,7 @@ void CityGenerator::FillRoad(const Int2& pt, GameDirection dir, int dist)
 	{
 		for(int x = minx; x <= maxx; ++x)
 		{
-			int j = x + y*w;
+			int j = x + y * w;
 			if(tiles[j].mode != TM_ROAD)
 				tiles[j].Set(road_tile, TM_ROAD);
 			int& road_id = road_ids[j];
@@ -1950,7 +1950,7 @@ void CityGenerator::CheckTiles(TERRAIN_TILE t)
 	{
 		for(int x = 0; x < w; ++x)
 		{
-			TerrainTile& tt = tiles[x + y*w];
+			TerrainTile& tt = tiles[x + y * w];
 			if(tt.t == t || tt.t2 == t)
 			{
 				assert(0);
@@ -2021,13 +2021,13 @@ bool CityGenerator::IsPointNearRoad(int x, int y)
 
 	if(x > 0 && y != h)
 	{
-		if(tiles[x - 1 + y*w].mode == TM_ROAD)
+		if(tiles[x - 1 + y * w].mode == TM_ROAD)
 			return true;
 	}
 
 	if(x != w && y != h)
 	{
-		if(tiles[x + y*w].mode == TM_ROAD)
+		if(tiles[x + y * w].mode == TM_ROAD)
 			return true;
 	}
 
@@ -2290,6 +2290,11 @@ void CityGenerator::OnEnter()
 		L.SpawnTerrainCollider();
 		SpawnCityPhysics();
 		SpawnOutsideBariers();
+		for(InsideBuilding* b : city->inside_buildings)
+		{
+			b->mine = Int2(b->level_shift.x * 256, b->level_shift.y * 256);
+			b->maxe = b->mine + Int2(256, 256);
+		}
 	}
 
 	// spawn quest units

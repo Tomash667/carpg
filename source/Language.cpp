@@ -131,7 +131,7 @@ void Language::LoadLanguages()
 
 	io::FindFiles(Format("%s/lang/*", g_system_dir.c_str()), [&](const io::FileInfo& info)
 	{
-		if(info.is_dir)
+		if(!info.is_dir)
 			return true;
 		LocalString path = Format("%s/lang/%s/info.txt", g_system_dir.c_str(), info.filename);
 		if(lmap)

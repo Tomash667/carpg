@@ -6,6 +6,7 @@
 //-----------------------------------------------------------------------------
 struct SingleInsideLocation : public InsideLocation, public InsideLocationLevel
 {
+	SingleInsideLocation() : InsideLocationLevel(0) {}
 	// from Location
 	void Apply(vector<std::reference_wrapper<LevelArea>>& areas) override;
 	void Save(GameWriter& f, bool local) override;

@@ -24,7 +24,7 @@ struct InsideLocationLevel : public LevelArea
 	GameDirection staircase_up_dir, staircase_down_dir;
 	bool staircase_down_in_wall;
 
-	InsideLocationLevel() : LevelArea(LevelArea::Type::Inside, 0, false), map(nullptr) {}
+	InsideLocationLevel(int area_id) : LevelArea(LevelArea::Type::Inside, area_id, false), map(nullptr) {}
 	~InsideLocationLevel();
 
 	bool IsInside(int x, int y) const { return x >= 0 && y >= 0 && x < w && y < h; }

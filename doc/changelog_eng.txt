@@ -27,6 +27,9 @@ Version 0.11 (2019-??-??):
 - random camps was not spawning
 - crash when entering bandits quest final dungeon [Ampped]
 - crash when leaving location before Jozan does [Ampped]
+- crash when leaving location before old mage after refusing to take him to team
+- missing golem sound in encounter on world map
+- journal next page arrow was not working
 
 --------------------------------------------------------------------------------
 Version 0.10 (2019-05-05):

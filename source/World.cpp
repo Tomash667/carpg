@@ -2885,10 +2885,10 @@ void World::VerifyObjects()
 			{
 				MultiInsideLocation* m = static_cast<MultiInsideLocation*>(inside);
 				int index = 1;
-				for(auto& lvl : m->levels)
+				for(InsideLocationLevel* lvl : m->levels)
 				{
 					e = 0;
-					VerifyObjects(lvl.objects, e);
+					VerifyObjects(lvl->objects, e);
 					if(e > 0)
 					{
 						Error("%d errors in multi inside location '%s' at level %d.", e, m->name.c_str(), index);

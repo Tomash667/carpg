@@ -5,13 +5,19 @@
 #include "GameFile.h"
 
 //=================================================================================================
-MultiInsideLocation::MultiInsideLocation(int _levels) : active_level(-1), active(nullptr), generated(0)
+MultiInsideLocation::MultiInsideLocation(int level_count) : active_level(-1), active(nullptr), generated(0)
 {
-	levels.resize(_levels);
+	levels.resize(level_count);
+	for(int i = 0; i < level_count; ++i)
+		levels[i] = new InsideLocationLevel(i);
 	LevelInfo li = { -1, false, false, false };
-	infos.resize(_levels, li);
-	for(vector<InsideLocationLevel>::iterator it = levels.begin(), end = levels.end(); it != end; ++it)
-		it->map = nullptr;
+	infos.resize(level_count, li);
+}
+
+//=================================================================================================
+MultiInsideLocation::~MultiInsideLocation()
+{
+	DeleteElements(levels);
 }
 
 //=================================================================================================
@@ -30,9 +36,8 @@ void MultiInsideLocation::Save(GameWriter& f, bool local)
 	f << active_level;
 	f << generated;
 
-	f << levels.size();
 	for(int i = 0; i < generated; ++i)
-		levels[i].SaveLevel(f, local && i == active_level);
+		levels[i]->SaveLevel(f, local && i == active_level);
 
 	for(LevelInfo& info : infos)
 	{
@@ -51,17 +56,17 @@ void MultiInsideLocation::Load(GameReader& f, bool local, LOCATION_TOKEN token)
 	f >> active_level;
 	f >> generated;
 
-	uint count = f.Read<uint>();
-	levels.resize(count);
+	if(LOAD_VERSION < V_DEV)
+		f.Read<uint>(); // skip levels count, already set in constructor
 	for(int i = 0; i < generated; ++i)
-		levels[i].LoadLevel(f, local && active_level == i);
+		levels[i]->LoadLevel(f, local && active_level == i);
 
 	if(active_level != -1)
-		active = &levels[active_level];
+		active = levels[active_level];
 	else
 		active = nullptr;
 
-	infos.resize(count);
+	infos.resize(levels.size());
 	for(LevelInfo& info : infos)
 	{
 		f >> info.last_visit;
@@ -130,8 +135,8 @@ int MultiInsideLocation::GetRandomLevel() const
 //=================================================================================================
 void MultiInsideLocation::BuildRefidTables()
 {
-	for(vector<InsideLocationLevel>::iterator it = levels.begin(), end = levels.end(); it != end; ++it)
-		it->BuildRefidTables();
+	for(InsideLocationLevel* level : levels)
+		level->BuildRefidTables();
 }
 
 //=================================================================================================
@@ -141,7 +146,7 @@ bool MultiInsideLocation::FindUnit(Unit* unit, int* level)
 
 	for(int i = 0; i < generated; ++i)
 	{
-		if(levels[i].HaveUnit(unit))
+		if(levels[i]->HaveUnit(unit))
 		{
 			if(level)
 				*level = i;
@@ -159,7 +164,7 @@ Unit* MultiInsideLocation::FindUnit(UnitData* data, int& at_level)
 	{
 		for(int i = 0; i < generated; ++i)
 		{
-			Unit* u = levels[i].FindUnit(data);
+			Unit* u = levels[i]->FindUnit(data);
 			if(u)
 			{
 				at_level = i;
@@ -168,7 +173,7 @@ Unit* MultiInsideLocation::FindUnit(UnitData* data, int& at_level)
 		}
 	}
 	else if(at_level < generated)
-		return levels[at_level].FindUnit(data);
+		return levels[at_level]->FindUnit(data);
 
 	return nullptr;
 }
@@ -180,7 +185,7 @@ Chest* MultiInsideLocation::FindChestWithItem(const Item* item, int& at_level, i
 	{
 		for(int i = 0; i < generated; ++i)
 		{
-			Chest* chest = levels[i].FindChestWithItem(item, index);
+			Chest* chest = levels[i]->FindChestWithItem(item, index);
 			if(chest)
 			{
 				at_level = i;
@@ -189,7 +194,7 @@ Chest* MultiInsideLocation::FindChestWithItem(const Item* item, int& at_level, i
 		}
 	}
 	else if(at_level < generated)
-		return levels[at_level].FindChestWithItem(item, index);
+		return levels[at_level]->FindChestWithItem(item, index);
 
 	return nullptr;
 }
@@ -201,7 +206,7 @@ Chest* MultiInsideLocation::FindChestWithQuestItem(int quest_refid, int& at_leve
 	{
 		for(int i = 0; i < generated; ++i)
 		{
-			Chest* chest = levels[i].FindChestWithQuestItem(quest_refid, index);
+			Chest* chest = levels[i]->FindChestWithQuestItem(quest_refid, index);
 			if(chest)
 			{
 				at_level = i;
@@ -210,7 +215,7 @@ Chest* MultiInsideLocation::FindChestWithQuestItem(int quest_refid, int& at_leve
 		}
 	}
 	else if(at_level < generated)
-		return levels[at_level].FindChestWithQuestItem(quest_refid, index);
+		return levels[at_level]->FindChestWithQuestItem(quest_refid, index);
 
 	return nullptr;
 }

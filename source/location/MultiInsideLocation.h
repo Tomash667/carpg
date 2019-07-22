@@ -12,12 +12,13 @@ struct MultiInsideLocation : public InsideLocation
 		uint seed;
 		bool cleared, reset, loaded_resources;
 	};
-	vector<InsideLocationLevel> levels;
+	vector<InsideLocationLevel*> levels;
 	vector<LevelInfo> infos;
 	int active_level, generated;
 	InsideLocationLevel* active;
 
-	explicit MultiInsideLocation(int _levels);
+	explicit MultiInsideLocation(int level_count);
+	~MultiInsideLocation();
 
 	// from Location
 	void Apply(vector<std::reference_wrapper<LevelArea>>& areas) override;
@@ -38,7 +39,7 @@ struct MultiInsideLocation : public InsideLocation
 	{
 		assert(InRange(level, 0, (int)levels.size()));
 		active_level = level;
-		active = &levels[level];
+		active = levels[level];
 	}
 	bool HaveUpStairs() const override { return !(from_portal && active_level == 0); }
 	bool HaveDownStairs() const override { return (active_level + 1 < (int)levels.size()); }
@@ -47,7 +48,7 @@ struct MultiInsideLocation : public InsideLocation
 	InsideLocationLevel* GetLastLevelData() override
 	{
 		if(last_visit == -1 || generated == levels.size())
-			return &levels.back();
+			return levels.back();
 		else
 			return nullptr;
 	}

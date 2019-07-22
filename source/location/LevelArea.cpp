@@ -877,7 +877,7 @@ ForLocation::ForLocation(int loc, int level)
 					{
 						LevelAreaContext::Entry& e = ctx->entries[i];
 						e.active = (active && L.dungeon_level == i);
-						e.area = &multi->levels[i];
+						e.area = multi->levels[i];
 						e.level = i;
 						e.loc = loc;
 					}
@@ -887,7 +887,7 @@ ForLocation::ForLocation(int loc, int level)
 					assert(level >= 0 && level < multi->generated);
 					LevelAreaContext::Entry& e = Add1(ctx->entries);
 					e.active = (active && L.dungeon_level == level);
-					e.area = &multi->levels[level];
+					e.area = multi->levels[level];
 					e.level = level;
 					e.loc = loc;
 				}

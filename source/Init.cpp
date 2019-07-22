@@ -47,7 +47,6 @@ void Game::BeforeInit()
 {
 	input = engine->GetInput();
 	GKey.input = input;
-	phy_world = engine->GetPhysicsWorld();
 	render = engine->GetRender();
 	render->SetShadersDir(Format("%s/shaders", g_system_dir.c_str()));
 	sound_mgr = engine->GetSoundManager();
@@ -92,6 +91,7 @@ void Game::PreconfigureGame()
 {
 	Info("Game: Preconfiguring game.");
 
+	phy_world = engine->GetPhysicsWorld();
 	engine->UnlockCursor(false);
 	engine->cam_base = &L.camera;
 
@@ -104,7 +104,7 @@ void Game::PreconfigureGame()
 	arena = new Arena;
 	loc_gen_factory = new LocationGeneratorFactory;
 	gui = new GlobalGui;
-	gui = gui;
+	global::gui = gui;
 	global::cmdp = new CommandParser;
 	components.push_back(&W);
 	components.push_back(pathfinding);

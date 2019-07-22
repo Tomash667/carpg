@@ -27,6 +27,9 @@ Wersja 0.11 (2019-??-??):
 - losowe obozy siê nie generowa³y
 - crash po wejœciu do podziemi w zadaniu z bandytami [Ampped]
 - crash po wyjœciu z podziemi przed Jozanem [Ampped]
+- crash po wyjœciu z lokalizacji przed starym magiem po tym jak odmówi siê mu przy³¹czenia do dru¿yny
+- brakuj¹cy dŸwiêk golema przy spotkaniu na mapie
+- strza³ka nastêpnej strony w dzienniku nie dzia³a³a
 
 --------------------------------------------------------------------------------
 Wersja 0.10 (2019-05-05):

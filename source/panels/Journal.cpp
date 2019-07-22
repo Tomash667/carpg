@@ -312,7 +312,7 @@ void Journal::Update(float dt)
 		}
 		if(texts.back().x > page * 2 + 1)
 		{
-			if(PointInRect(gui->cursor_pos, rect.RightBottom() + Int2(8, -8), Int2(16, 16)))
+			if(PointInRect(gui->cursor_pos, rect2.RightBottom() + Int2(8, -8), Int2(16, 16)))
 			{
 				gui->cursor_mode = CURSOR_HAND;
 				if(input->Focus() && input->PressedRelease(Key::LeftButton))

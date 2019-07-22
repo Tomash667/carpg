@@ -325,7 +325,7 @@ LevelArea* Level::GetAreaById(int area_id)
 	{
 		MultiInsideLocation* loc = static_cast<MultiInsideLocation*>(location);
 		if(area_id >= 0 && area_id < (int)loc->levels.size())
-			return &loc->levels[area_id];
+			return loc->levels[area_id];
 	}
 	return nullptr;
 }
