@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26730.12
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "carpg", "source/carpg.vcxproj", "{AE943349-930C-4F29-BC46-AAD479B34562}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "carpg", "source\carpg.vcxproj", "{AE943349-930C-4F29-BC46-AAD479B34562}"
 	ProjectSection(ProjectDependencies) = postProject
 		{A0BA4E27-2235-40F9-B4EC-2845EC92F3D3} = {A0BA4E27-2235-40F9-B4EC-2845EC92F3D3}
 		{39E6AF97-6BA3-4A72-8C61-BCEBF214EBFD} = {39E6AF97-6BA3-4A72-8C61-BCEBF214EBFD}
@@ -11,14 +11,14 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "carpg", "source/carpg.vcxpr
 		{56C508B6-848B-436A-BB6A-1CA2F91FA054} = {56C508B6-848B-436A-BB6A-1CA2F91FA054}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "client_dbg", "source/client_dbg.vcxproj", "{87061FAA-FE77-42FE-B52C-28EC1979269F}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "client_dbg", "source\client_dbg.vcxproj", "{87061FAA-FE77-42FE-B52C-28EC1979269F}"
 	ProjectSection(ProjectDependencies) = postProject
 		{AE943349-930C-4F29-BC46-AAD479B34562} = {AE943349-930C-4F29-BC46-AAD479B34562}
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Debug", "Debug", "{38AAC0F2-1AC9-45C6-8C56-50418D654DD7}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "client_dbg2", "source/client_dbg2.vcxproj", "{E00DB219-45EA-4095-A420-11A07328A203}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "client_dbg2", "source\client_dbg2.vcxproj", "{E00DB219-45EA-4095-A420-11A07328A203}"
 	ProjectSection(ProjectDependencies) = postProject
 		{AE943349-930C-4F29-BC46-AAD479B34562} = {AE943349-930C-4F29-BC46-AAD479B34562}
 	EndProjectSection

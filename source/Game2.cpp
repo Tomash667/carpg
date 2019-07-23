@@ -1589,7 +1589,7 @@ void Game::UpdatePlayer(float dt)
 				{
 					int i_index = pc->unit->FindItem(item);
 					if(i_index != Unit::INVALID_IINDEX)
-						pc->unit->ConsumeItem(i_index);
+						gui->inventory->inv_mine->ConsumeItem(i_index);
 				}
 				else if(item->type == IT_BOOK)
 				{

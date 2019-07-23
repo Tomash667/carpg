@@ -30,6 +30,8 @@ Version 0.11 (2019-??-??):
 - crash when leaving location before old mage after refusing to take him to team
 - missing golem sound in encounter on world map
 - journal next page arrow was not working
+- crash when generating secret portal in mine [Ampped]
+- crash when using last item with shortcut with inventory open [Anonymous]
 
 --------------------------------------------------------------------------------
 Version 0.10 (2019-05-05):
