@@ -6,8 +6,10 @@
 #include "Language.h"
 #include "ErrorHandler.h"
 #include "Utility.h"
-#include "StartupOptions.h"
 #include "SaveSlot.h"
+#include <Engine.h>
+#include <Render.h>
+#include <SoundManager.h>
 
 //-----------------------------------------------------------------------------
 cstring RESTART_MUTEX_NAME = "CARPG-RESTART-MUTEX";
@@ -343,52 +345,16 @@ void LoadSystemDir()
 }
 
 //=================================================================================================
-// main program function
-//=================================================================================================
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
+void LoadConfiguration(Game& game, char* lpCmdLine)
 {
-#ifdef _DEBUG
-	if(IsDebuggerPresent() && !io::FileExists("D3DX9_43.dll"))
-	{
-		MessageBox(nullptr, "Invalid debug working directory.", nullptr, MB_OK | MB_ICONERROR);
-		return 1;
-	}
-#endif
-
-	// logger (prelogger in this case, because we do not know save location yet)
-	PreLogger plog;
-	Logger::global = &plog;
-
-	//-------------------------------------------------------------------------
-	// beginning
-	time_t t = time(0);
-	tm t2;
-	localtime_s(&t2, &t);
-	Info("CaRpg " VERSION_STR);
-	Info("Date: %04d-%02d-%02d", t2.tm_year + 1900, t2.tm_mon + 1, t2.tm_mday);
-	Info("Build date: %s", utility::GetCompileTime().c_str());
-	Info("Process ID: %d", GetCurrentProcessId());
-	{
-		cstring build_type =
-#ifdef _DEBUG
-			"debug ";
-#else
-			"release ";
-#endif
-		Info("Build type: %s", build_type);
-	}
-	LogProcessorFeatures();
-
-	Game game;
-	Config& cfg = Game::Get().cfg;
-	StartupOptions options;
+	Config& cfg = game.cfg;
+	game.cfg_file = "carpg.cfg";
+	string log_filename;
+	int delay = -1;
 	Bool3 windowed = None,
 		console = None;
-	game.cfg_file = "carpg.cfg";
-	bool log_to_file;
-	string log_filename;
+	bool log_to_file, nosound = false, nomusic = false, restarted = false;
 
-	//-------------------------------------------------------------------------
 	// parse command line
 	int cmd_len = strlen(lpCmdLine) + 1;
 	char* cmd_line = new char[cmd_len];
@@ -396,8 +362,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	char** argv;
 	Info("Parsing command line.");
 	int argc = ParseCmdLine(cmd_line, &argv);
-	bool restarted = false;
-	int delay = -1;
 
 	for(int i = 0; i < argc; ++i)
 	{
@@ -457,9 +421,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			else if(strcmp(arg, "fullscreen") == 0)
 				windowed = False;
 			else if(strcmp(arg, "nosound") == 0)
-				options.nosound = true;
+				nosound = true;
 			else if(strcmp(arg, "nomusic") == 0)
-				options.nomusic = true;
+				nomusic = true;
 			else if(strcmp(arg, "test") == 0)
 			{
 				game.testing = true;
@@ -496,9 +460,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		}
 	}
 
-	LoadSystemDir();
+	delete[] cmd_line;
+	delete[] argv;
 
-	//-------------------------------------------------------------------------
 	// load configuration file
 	Info("Loading config file");
 	Config::Result result = cfg.Load(game.cfg_file.c_str());
@@ -507,7 +471,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	else if(result == Config::PARSE_ERROR)
 		Error("Config file parse error '%s' : %s", game.cfg_file.c_str(), cfg.GetError().c_str());
 
-	//-------------------------------------------------------------------------
 	// startup delay to synchronize mp game on localhost
 	if(delay == -1)
 		delay = cfg.GetInt("delay", delay);
@@ -541,7 +504,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	setlocale(LC_COLLATE, "");
 	setlocale(LC_CTYPE, "");
 
-	// window mode
+	// window resolution & mode
 	if(windowed == None)
 	{
 		Bool3 b = cfg.GetBool3("fullscreen", True);
@@ -550,25 +513,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		else
 			windowed = True;
 	}
-	options.fullscreen = (windowed == False);
-
-	// resolution
-	const string& res = cfg.GetString("resolution", "0x0");
-	if(sscanf_s(res.c_str(), "%dx%d", &options.size.x, &options.size.y) != 2)
-	{
-		Warn("Settings: Invalid resolution value '%s'.", res.c_str());
-		options.size = Int2::Zero;
-	}
-	else
-		Info("Settings: Resolution %dx%d.", options.size.x, options.size.y);
-
-	// screen refresh rate
-	options.refresh_hz = cfg.GetInt("refresh", 0);
-	Info("Settings: Refresh rate %d Hz.", options.refresh_hz);
+	Int2 wnd_size = cfg.GetInt2("resolution");
+	int refresh_hz = cfg.GetInt("refresh");
+	Info("Settings: Resolution %dx%d (%d Hz, %s).", wnd_size.x, wnd_size.y, refresh_hz, windowed == False ? "fullscreen" : "windowed");
+	game.engine->ChangeMode(wnd_size, windowed == False, refresh_hz);
 
 	// adapter
-	options.used_adapter = cfg.GetInt("adapter", 0);
-	Info("Settings: Adapter %d.", options.used_adapter);
+	int used_adapter = cfg.GetInt("adapter");
+	Info("Settings: Adapter %d.", used_adapter);
+	game.engine->GetRender()->SetAdapter(used_adapter);
 
 	// log
 	log_to_file = (cfg.GetBool3("log", True) == True);
@@ -584,18 +537,20 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		game.inactive_update = true;
 
 	// sound/music settings
-	if(options.nosound || cfg.GetBool("nosound"))
+	if(nosound || cfg.GetBool("nosound"))
 	{
-		options.nosound = true;
+		nosound = true;
 		Info("Settings: no sound.");
 	}
-	if(options.nomusic || cfg.GetBool("nomusic"))
+	if(nomusic || cfg.GetBool("nomusic"))
 	{
-		options.nomusic = true;
+		nomusic = true;
 		Info("Settings: no music.");
 	}
-	options.sound_volume = Clamp(cfg.GetInt("sound_volume", 100), 0, 100);
-	options.music_volume = Clamp(cfg.GetInt("music_volume", 50), 0, 100);
+	if(nosound || nomusic)
+		game.sound_mgr->Disable(nosound, nomusic);
+	game.sound_mgr->SetSoundVolume(Clamp(cfg.GetInt("sound_volume", 100), 0, 100));
+	game.sound_mgr->SetMusicVolume(Clamp(cfg.GetInt("music_volume", 50), 0, 100));
 
 	// mouse settings
 	game.settings.mouse_sensitivity = Clamp(cfg.GetInt("mouse_sensitivity", 50), 0, 100);
@@ -632,7 +587,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		else if(mode == "loadmp")
 			game.quickstart = QUICKSTART_LOAD_MP;
 	}
-	int slot = cfg.GetInt("loadslot");
+	int slot = cfg.GetInt("loadslot", -1);
 	if(slot != -1 && slot >= 1 && slot <= SaveSlot::MAX_SLOTS)
 		game.quickstart_slot = slot;
 
@@ -663,39 +618,36 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	game.change_title_a = ToBool(cfg.GetBool3("change_title", False));
 
 	// window position & size
-	int con_pos_x = cfg.GetInt("con_pos_x"),
-		con_pos_y = cfg.GetInt("con_pos_y");
-
-	if(have_console && (con_pos_x != -1 || con_pos_y != -1))
+	Int2 con_pos = cfg.GetInt2("con_pos", Int2(-1, -1));
+	if(have_console && (con_pos.x != -1 || con_pos.y != -1))
 	{
 		HWND con = GetConsoleWindow();
 		Rect rect;
 		GetWindowRect(con, (RECT*)&rect);
-		if(con_pos_x != -1)
-			rect.Left() = con_pos_x;
-		if(con_pos_y != -1)
-			rect.Top() = con_pos_y;
+		if(con_pos.x != -1)
+			rect.Left() = con_pos.x;
+		if(con_pos.y != -1)
+			rect.Top() = con_pos.y;
 		SetWindowPos(con, 0, rect.Left(), rect.Top(), 0, 0, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER);
 	}
 
-	options.force_size.x = cfg.GetInt("wnd_size_x");
-	options.force_size.y = cfg.GetInt("wnd_size_y");
-	options.force_pos.x = cfg.GetInt("wnd_pos_x");
-	options.force_pos.y = cfg.GetInt("wnd_pos_y");
-
-	options.hidden_window = cfg.GetBool("hidden_window");
+	Int2 force_size = cfg.GetInt2("wnd_size", Int2(-1, -1)),
+		force_pos = cfg.GetInt2("wnd_pos", Int2(-1, -1));
+	game.engine->SetWindowInitialPos(force_pos, force_size);
+	game.engine->HideWindow(cfg.GetBool("hidden_window"));
 
 	// multisampling
-	options.multisampling = cfg.GetInt("multisampling", 0);
-	options.multisampling_quality = cfg.GetInt("multisampling_quality", 0);
+	int multisampling = cfg.GetInt("multisampling"),
+		multisampling_quality = cfg.GetInt("multisampling_quality");
+	game.engine->GetRender()->SetMultisampling(multisampling, multisampling_quality);
 
 	// miscellaneous
 	game.cl_postfx = cfg.GetBool("cl_postfx", true);
 	game.cl_normalmap = cfg.GetBool("cl_normalmap", true);
 	game.cl_specularmap = cfg.GetBool("cl_specularmap", true);
 	game.cl_glow = cfg.GetBool("cl_glow", true);
-	options.shader_version = cfg.GetInt("cl_shader_version");
-	options.vsync = cfg.GetBool("vsync", true);
+	game.engine->GetRender()->SetShaderVersion(cfg.GetInt("cl_shader_version", -1));
+	game.engine->GetRender()->SetVsync(cfg.GetBool("vsync", true));
 	game.settings.grass_range = cfg.GetFloat("grass_range", 40.f);
 	if(game.settings.grass_range < 0.f)
 		game.settings.grass_range = 0.f;
@@ -718,84 +670,29 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	cfg.LoadConfigVars();
 
-	//-------------------------------------------------------------------------
 	// logger
+	PreLogger* plog = static_cast<PreLogger*>(Logger::GetInstance());
 	int count = 0;
 	if(have_console)
 		++count;
 	if(log_to_file)
 		++count;
 
+	Logger* logger;
 	if(count == 2)
-	{
-		MultiLogger* multi = new MultiLogger;
-		ConsoleLogger* clog = new ConsoleLogger;
-		TextLogger* tlog = new TextLogger(log_filename.c_str());
-		multi->loggers.push_back(clog);
-		multi->loggers.push_back(tlog);
-		plog.Apply(multi);
-		Logger::global = multi;
-	}
+		logger = new MultiLogger({ new ConsoleLogger , new TextLogger(log_filename.c_str()) });
 	else if(count == 1)
 	{
 		if(have_console)
-		{
-			ConsoleLogger* l = new ConsoleLogger;
-			plog.Apply(l);
-			Logger::global = l;
-		}
+			logger = new ConsoleLogger;
 		else
-		{
-			TextLogger* l = new TextLogger(log_filename.c_str());
-			plog.Apply(l);
-			Logger::global = l;
-		}
+			logger = new TextLogger(log_filename.c_str());
 	}
 	else
-	{
-		Logger* l = new Logger;
-		plog.Clear();
-		Logger::global = l;
-	}
+		logger = new Logger;
+	plog->Apply(logger);
+	Logger::SetInstance(logger);
 
-	//-------------------------------------------------------------------------
-	// error handler
-	ErrorHandler::Get().RegisterHandler(cfg, log_filename);
-
-	//-------------------------------------------------------------------------
-	// instalation scripts
-	if(!RunInstallScripts())
-	{
-		MessageBox(nullptr, "Failed to run installation scripts. Check log for details.", nullptr, MB_OK | MB_ICONERROR | MB_TASKMODAL);
-		return 3;
-	}
-
-	//-------------------------------------------------------------------------
-	// language
-	Language::Init();
-	Language::LoadLanguages();
-	const string& lang = cfg.GetString("language", "");
-	if(lang == "")
-	{
-		LocalString s;
-		if(!ShowPickLanguageDialog(s.get_ref()))
-		{
-			Language::Cleanup();
-			delete[] cmd_line;
-			delete[] argv;
-			delete Logger::global;
-			return 2;
-		}
-		else
-		{
-			Language::prefix = s;
-			cfg.Add("language", s->c_str());
-		}
-	}
-	else
-		Language::prefix = lang;
-
-	//-------------------------------------------------------------------------
 	// pseudorandomness
 	uint cfg_seed = cfg.GetUint("seed"), seed;
 	if(cfg_seed == 0)
@@ -814,19 +711,87 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	game.check_updates = ToBool(cfg.GetBool3("check_updates", True));
 	game.skip_tutorial = ToBool(cfg.GetBool3("skip_tutorial", False));
 
+	// crash reporter
+	ErrorHandler::Get().RegisterHandler(cfg, log_filename);
+}
+
+//=================================================================================================
+// main program function
+//=================================================================================================
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
+{
+#ifdef _DEBUG
+	if(IsDebuggerPresent() && !io::FileExists("D3DX9_43.dll"))
+	{
+		MessageBox(nullptr, "Invalid debug working directory.", nullptr, MB_OK | MB_ICONERROR);
+		return 1;
+	}
+#endif
+
+	// logger (prelogger in this case, because we do not know where to log yet)
+	Logger::SetInstance(new PreLogger);
+
+	// beginning
+	time_t t = time(0);
+	tm t2;
+	localtime_s(&t2, &t);
+	Info("CaRpg " VERSION_STR);
+	Info("Date: %04d-%02d-%02d", t2.tm_year + 1900, t2.tm_mon + 1, t2.tm_mday);
+	Info("Build date: %s", utility::GetCompileTime().c_str());
+	Info("Process ID: %d", GetCurrentProcessId());
+	{
+		cstring build_type =
+#ifdef _DEBUG
+			"debug ";
+#else
+			"release ";
+#endif
+		Info("Build type: %s", build_type);
+	}
+	LogProcessorFeatures();
+	LoadSystemDir();
+
+	// instalation scripts
+	if(!RunInstallScripts())
+	{
+		MessageBox(nullptr, "Failed to run installation scripts. Check log for details.", nullptr, MB_OK | MB_ICONERROR | MB_TASKMODAL);
+		return 3;
+	}
+
+	// settings
+	Game game;
+	LoadConfiguration(game, lpCmdLine);
+
+	// language
+	Language::Init();
+	Language::LoadLanguages();
+	const string& lang = game.cfg.GetString("language", "");
+	if(lang == "")
+	{
+		LocalString s;
+		if(!ShowPickLanguageDialog(s.get_ref()))
+		{
+			Language::Cleanup();
+			return 2;
+		}
+		else
+		{
+			Language::prefix = s;
+			game.cfg.Add("language", s->c_str());
+		}
+	}
+	else
+		Language::prefix = lang;
+
 	// save configuration
 	game.SaveCfg();
 
-	//-------------------------------------------------------------------------
 	// start the game
 	Info("Starting game engine.");
-	bool b = game.Start(options);
+	bool b = game.Start();
 
-	//-------------------------------------------------------------------------
 	// cleanup
 	Language::Cleanup();
-	delete[] cmd_line;
-	delete[] argv;
 
 	return (b ? 0 : 1);
 }

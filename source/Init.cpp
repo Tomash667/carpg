@@ -119,7 +119,6 @@ void Game::PreconfigureGame()
 	for(GameComponent* component : components)
 		component->Prepare();
 
-	CreateVertexDeclarations();
 	PreloadLanguage();
 	PreloadData();
 	CreatePlaceholderResources();
@@ -362,10 +361,10 @@ void Game::PostconfigureGame()
 	ItemScript::Init();
 
 	// shaders
-	debug_drawer.reset(new DebugDrawer(render));
-	grass_shader.reset(new GrassShader(render));
-	super_shader.reset(new SuperShader(render));
-	terrain_shader.reset(new TerrainShader(render));
+	debug_drawer = new DebugDrawer(render);
+	grass_shader = new GrassShader(render);
+	super_shader = new SuperShader(render);
+	terrain_shader = new TerrainShader(render);
 	debug_drawer->SetHandler(delegate<void(DebugDrawer*)>(this, &Game::OnDebugDraw));
 
 	// test & validate game data (in debug always check some things)
@@ -409,7 +408,7 @@ void Game::PostconfigureGame()
 
 	// save config
 	cfg.Add("adapter", render->GetAdapter());
-	cfg.Add("resolution", Format("%dx%d", engine->GetWindowSize().x, engine->GetWindowSize().y));
+	cfg.Add("resolution", engine->GetWindowSize());
 	cfg.Add("refresh", render->GetRefreshRate());
 	SaveCfg();
 

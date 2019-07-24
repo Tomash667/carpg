@@ -277,8 +277,7 @@ In configuration file (by default carpg.cfg) you can use such options:
 	* change_title (true [false]) - change window title depending on game mode.
 	* check_updates ([true] false) - check for game updates
 	* class (warrior hunter rogue) - selected class in quick singleplayer game
-	* con_pos_x - console position x
-	* con_pos_y - console position y
+	* con_pos Int2 - console position x, y
 	* console (true [false]) - windows console
 	* crash_mode (none [normal] dataseg full) - mode to save crash information
 	* grass_range (0-100) - grass draw range
@@ -315,10 +314,8 @@ In configuration file (by default carpg.cfg) you can use such options:
 	* timeout (1-3600) - time before kicking player from server when loading if
 		no response (default 10)
 	* vsync ([true] false) - force vertical synchronization
-	* wnd_pos_x - window position x
-	* wnd_pos_y - window position y
-	* wnd_size_x - window width
-	* wnd_size_y - window height
+	* wnd_pos Int2 - window position x, y
+	* wnd_size - window size x, y
 
 ===============================================================================
 9) Command line

@@ -239,7 +239,7 @@ void Game::DrawItemImage(const Item& item, RenderTarget* target, float rot)
 	V(eMesh->SetVector(hMeshTint, (D3DXVECTOR4*)&Vec4(1, 1, 1, 1)));
 	V(eMesh->SetRawValue(hMeshLights, &ld, 0, sizeof(LightData)));
 
-	V(device->SetVertexDeclaration(vertex_decl[mesh.vertex_decl]));
+	V(device->SetVertexDeclaration(render->GetVertexDeclaration(mesh.vertex_decl)));
 	V(device->SetStreamSource(0, mesh.vb, 0, mesh.vertex_size));
 	V(device->SetIndices(mesh.ib));
 
@@ -280,7 +280,7 @@ void Game::SetupCamera(float dt)
 	const Vec3 cam_h(0, target->GetUnitHeight() + 0.2f, 0);
 	Vec3 dist(0, -L.camera.tmp_dist, 0);
 
-	mat = Matrix::Rotation(L.camera.rot.x, L.camera.rot.y, 0);
+	mat = Matrix::Rotation(L.camera.rot.y, L.camera.rot.x, 0);
 	dist = Vec3::Transform(dist, mat);
 
 	// !!! to => from !!!

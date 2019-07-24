@@ -89,10 +89,11 @@ cstring CodeToString(DWORD err)
 //=================================================================================================
 TextLogger* GetTextLogger()
 {
-	TextLogger* tlog = dynamic_cast<TextLogger*>(Logger::global);
+	Logger* log = Logger::GetInstance();
+	TextLogger* tlog = dynamic_cast<TextLogger*>(log);
 	if(tlog)
 		return tlog;
-	MultiLogger* mlog = dynamic_cast<MultiLogger*>(Logger::global);
+	MultiLogger* mlog = dynamic_cast<MultiLogger*>(log);
 	if(mlog)
 	{
 		for(vector<Logger*>::iterator it = mlog->loggers.begin(), end = mlog->loggers.end(); it != end; ++it)

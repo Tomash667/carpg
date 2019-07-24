@@ -902,7 +902,7 @@ void ScriptManager::CloseOutput()
 void ScriptManager::Log(Logger::Level level, cstring msg, cstring code)
 {
 	if(code)
-		Logger::global->Log(level, Format("ScriptManager: %s Code:\n%s", msg, code));
+		Logger::GetInstance()->Log(level, Format("ScriptManager: %s Code:\n%s", msg, code));
 	if(gather_output)
 	{
 		if(!output.empty())
@@ -922,7 +922,7 @@ void ScriptManager::Log(Logger::Level level, cstring msg, cstring code)
 		output += msg;
 	}
 	else
-		Logger::global->Log(level, msg);
+		Logger::GetInstance()->Log(level, msg);
 }
 
 void ScriptManager::AddFunction(cstring decl, const asSFuncPtr& funcPointer)

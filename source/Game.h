@@ -122,7 +122,7 @@ public:
 	void OnResize() override;
 	void OnFocus(bool focus, const Int2& activation_point) override;
 
-	bool Start(StartupOptions& options);
+	bool Start();
 	void GetTitle(LocalString& s);
 	void ChangeTitle();
 	void ClearPointers();
@@ -172,7 +172,6 @@ public:
 	VParticle billboard_v[4];
 	Vec3 billboard_ext[4];
 	VParticle portal_v[4];
-	IDirect3DVertexDeclaration9* vertex_decl[VDI_MAX];
 	int uv_mod;
 	QuadTree quadtree;
 	LevelParts level_parts;
@@ -180,11 +179,9 @@ public:
 	uint grass_count[2];
 
 	void InitScene();
-	void CreateVertexDeclarations();
 	void BuildDungeon();
 	void ChangeDungeonTexWrap();
 	void FillDungeonPart(Int2* dungeon_part, word* faces, int& index, word offset);
-	void CleanScene();
 	void ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside);
 	void ListDrawObjectsUnit(LevelArea* area, FrustumPlanes& frustum, bool outside, Unit& u);
 	void AddObjectToDrawBatch(LevelArea& area, const Object& o, FrustumPlanes& frustum);
@@ -669,10 +666,10 @@ public:
 	Pathfinding* pathfinding;
 	Arena* arena;
 	GlobalGui* gui;
-	std::unique_ptr<DebugDrawer> debug_drawer;
-	std::unique_ptr<GrassShader> grass_shader;
-	std::unique_ptr<SuperShader> super_shader;
-	std::unique_ptr<TerrainShader> terrain_shader;
+	DebugDrawer* debug_drawer;
+	GrassShader* grass_shader;
+	SuperShader* super_shader;
+	TerrainShader* terrain_shader;
 
 private:
 	vector<GameComponent*> components;

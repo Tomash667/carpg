@@ -147,80 +147,6 @@ void Game::InitScene()
 }
 
 //=================================================================================================
-void Game::CreateVertexDeclarations()
-{
-	IDirect3DDevice9* device = render->GetDevice();
-
-	const D3DVERTEXELEMENT9 Default[] = {
-		{0, 0,  D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_POSITION,		0},
-		{0, 12,	D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_NORMAL,		0},
-		{0, 24, D3DDECLTYPE_FLOAT2,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_TEXCOORD,		0},
-		D3DDECL_END()
-	};
-	V(device->CreateVertexDeclaration(Default, &vertex_decl[VDI_DEFAULT]));
-
-	const D3DVERTEXELEMENT9 Animated[] = {
-		{0,	0,	D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_POSITION,		0},
-		{0,	12,	D3DDECLTYPE_FLOAT1,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_BLENDWEIGHT,	0},
-		{0,	16,	D3DDECLTYPE_UBYTE4,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_BLENDINDICES,	0},
-		{0,	20,	D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_NORMAL,		0},
-		{0,	32,	D3DDECLTYPE_FLOAT2,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_TEXCOORD,		0},
-		D3DDECL_END()
-	};
-	V(device->CreateVertexDeclaration(Animated, &vertex_decl[VDI_ANIMATED]));
-
-	const D3DVERTEXELEMENT9 Tangents[] = {
-		{0, 0,  D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_POSITION,		0},
-		{0, 12,	D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_NORMAL,		0},
-		{0, 24, D3DDECLTYPE_FLOAT2,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_TEXCOORD,		0},
-		{0,	32,	D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_TANGENT,		0},
-		{0,	44,	D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_BINORMAL,		0},
-		D3DDECL_END()
-	};
-	V(device->CreateVertexDeclaration(Tangents, &vertex_decl[VDI_TANGENT]));
-
-	const D3DVERTEXELEMENT9 AnimatedTangents[] = {
-		{0,	0,	D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_POSITION,		0},
-		{0,	12,	D3DDECLTYPE_FLOAT1,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_BLENDWEIGHT,	0},
-		{0,	16,	D3DDECLTYPE_UBYTE4,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_BLENDINDICES,	0},
-		{0,	20,	D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_NORMAL,		0},
-		{0,	32,	D3DDECLTYPE_FLOAT2,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_TEXCOORD,		0},
-		{0,	40,	D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_TANGENT,		0},
-		{0,	52,	D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_BINORMAL,		0},
-		D3DDECL_END()
-	};
-	V(device->CreateVertexDeclaration(AnimatedTangents, &vertex_decl[VDI_ANIMATED_TANGENT]));
-
-	const D3DVERTEXELEMENT9 Tex[] = {
-		{0, 0,  D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_POSITION,		0},
-		{0, 12, D3DDECLTYPE_FLOAT2,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_TEXCOORD,		0},
-		D3DDECL_END()
-	};
-	V(device->CreateVertexDeclaration(Tex, &vertex_decl[VDI_TEX]));
-
-	const D3DVERTEXELEMENT9 Color[] = {
-		{0, 0,  D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_POSITION,		0},
-		{0, 12, D3DDECLTYPE_FLOAT4,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_COLOR,			0},
-		D3DDECL_END()
-	};
-	V(device->CreateVertexDeclaration(Color, &vertex_decl[VDI_COLOR]));
-
-	const D3DVERTEXELEMENT9 Particle[] = {
-		{0, 0,  D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_POSITION,		0},
-		{0, 12, D3DDECLTYPE_FLOAT2,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_TEXCOORD,		0},
-		{0, 20, D3DDECLTYPE_FLOAT4,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_COLOR,			0},
-		D3DDECL_END()
-	};
-	V(device->CreateVertexDeclaration(Particle, &vertex_decl[VDI_PARTICLE]));
-
-	const D3DVERTEXELEMENT9 Pos[] = {
-		{0,	0,	D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_POSITION,		0},
-		D3DDECL_END()
-	};
-	V(device->CreateVertexDeclaration(Pos, &vertex_decl[VDI_POS]));
-}
-
-//=================================================================================================
 void Game::BuildDungeon()
 {
 	// ile wierzcho³ków
@@ -547,13 +473,6 @@ void Game::FillDungeonPart(Int2* _part, word* faces, int& index, word offset)
 }
 
 //=================================================================================================
-void Game::CleanScene()
-{
-	for(int i = 0; i < VDI_MAX; ++i)
-		SafeRelease(vertex_decl[i]);
-}
-
-//=================================================================================================
 void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside)
 {
 	PROFILER_BLOCK("ListDrawObjects");
@@ -865,7 +784,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 			{
 				SceneNode* node = node_pool.Get();
 				node->billboard = false;
-				node->mat = Matrix::Scale(trap.obj.scale) * Matrix::Rotation(trap.obj.rot) * Matrix::Translation(trap.obj.pos);
+				node->mat = Matrix::Transform(trap.obj.pos, trap.obj.rot, trap.obj.scale);
 				node->mesh = trap.obj.mesh;
 				int alpha = trap.obj.RequireAlphaTest();
 				if(alpha == -1)
@@ -884,7 +803,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 			{
 				SceneNode* node = node_pool.Get();
 				node->billboard = false;
-				node->mat = Matrix::Scale(trap.obj2.scale) * Matrix::Rotation(trap.obj2.rot) * Matrix::Translation(trap.obj2.pos);
+				node->mat = Matrix::Transform(trap.obj2.pos, trap.obj2.rot, trap.obj2.scale);
 				node->mesh = trap.obj2.mesh;
 				int alpha = trap.obj2.RequireAlphaTest();
 				if(alpha == -1)
@@ -1594,9 +1513,7 @@ void Game::AddObjectToDrawBatch(LevelArea& area, const Object& o, FrustumPlanes&
 	if(!o.IsBillboard())
 	{
 		node->billboard = false;
-		node->mat = Matrix::Scale(o.scale)
-			* Matrix::Rotation(o.rot)
-			* Matrix::Translation(o.pos);
+		node->mat = Matrix::Transform(o.pos, o.rot, o.scale);
 	}
 	else
 	{
@@ -3018,7 +2935,7 @@ void Game::DrawGlowingNodes(bool use_postfx)
 		V(eGlow->CommitChanges());
 
 		// ustawienia modelu
-		V(device->SetVertexDeclaration(vertex_decl[mesh->vertex_decl]));
+		V(device->SetVertexDeclaration(render->GetVertexDeclaration(mesh->vertex_decl)));
 		V(device->SetStreamSource(0, mesh->vb, 0, mesh->vertex_size));
 		V(device->SetIndices(mesh->ib));
 
@@ -3089,7 +3006,7 @@ void Game::DrawGlowingNodes(bool use_postfx)
 	V(ePostFx->SetFloat(hPostPower, 1));
 
 	// ustawienia modelu
-	V(device->SetVertexDeclaration(vertex_decl[VDI_TEX]));
+	V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_TEX)));
 	V(device->SetStreamSource(0, vbFullscreen, 0, sizeof(VTex)));
 
 	// renderowanie
@@ -3211,7 +3128,7 @@ void Game::DrawSkybox()
 	uint passes;
 	m2 = Matrix::Translation(L.camera.center) * L.camera.matViewProj;
 
-	V(device->SetVertexDeclaration(vertex_decl[aSkybox->vertex_decl]));
+	V(device->SetVertexDeclaration(render->GetVertexDeclaration(aSkybox->vertex_decl)));
 	V(device->SetStreamSource(0, aSkybox->vb, 0, aSkybox->vertex_size));
 	V(device->SetIndices(aSkybox->ib));
 
@@ -3250,7 +3167,7 @@ void Game::DrawDungeon(const vector<DungeonPart>& parts, const vector<Lights>& l
 	render->SetNoCulling(false);
 	render->SetNoZWrite(false);
 
-	V(device->SetVertexDeclaration(vertex_decl[VDI_TANGENT]));
+	V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_TANGENT)));
 	V(device->SetStreamSource(0, vbDungeon, 0, sizeof(VTangent)));
 	V(device->SetIndices(ibDungeon));
 
@@ -3406,7 +3323,7 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 		// ustaw model
 		if(prev_mesh != &mesh)
 		{
-			V(device->SetVertexDeclaration(vertex_decl[mesh.vertex_decl]));
+			V(device->SetVertexDeclaration(render->GetVertexDeclaration(mesh.vertex_decl)));
 			V(device->SetStreamSource(0, mesh.vb, 0, mesh.vertex_size));
 			V(device->SetIndices(mesh.ib));
 			prev_mesh = &mesh;
@@ -3530,7 +3447,7 @@ void Game::DrawDebugNodes(const vector<DebugSceneNode*>& nodes)
 			btTriangleIndexVertexArray* mesh = (btTriangleIndexVertexArray*)node.mesh_ptr;
 			// currently only dungeon mesh is supported here
 			assert(mesh == L.dungeon_shape_data);
-			V(device->SetVertexDeclaration(vertex_decl[VDI_POS]));
+			V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_POS)));
 			V(eMesh->CommitChanges());
 
 			V(device->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, L.dungeon_shape_pos.size(), L.dungeon_shape_index.size() / 3, L.dungeon_shape_index.data(),
@@ -3539,7 +3456,7 @@ void Game::DrawDebugNodes(const vector<DebugSceneNode*>& nodes)
 		else
 		{
 			Mesh* mesh = meshes[node.type];
-			V(device->SetVertexDeclaration(vertex_decl[mesh->vertex_decl]));
+			V(device->SetVertexDeclaration(render->GetVertexDeclaration(mesh->vertex_decl)));
 			V(device->SetStreamSource(0, mesh->vb, 0, mesh->vertex_size));
 			V(device->SetIndices(mesh->ib));
 			V(eMesh->CommitChanges());
@@ -3568,7 +3485,7 @@ void Game::DrawBloods(bool outside, const vector<Blood*>& bloods, const vector<L
 
 	ID3DXEffect* e = super_shader->GetShader(
 		super_shader->GetShaderId(false, false, L.cl_fog, false, false, !outside && L.cl_lighting, outside && L.cl_lighting));
-	V(device->SetVertexDeclaration(vertex_decl[VDI_DEFAULT]));
+	V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_DEFAULT)));
 	V(e->SetVector(super_shader->hTint, (D3DXVECTOR4*)&Vec4(1, 1, 1, 1)));
 
 	uint passes;
@@ -3660,7 +3577,7 @@ void Game::DrawBillboards(const vector<Billboard>& billboards)
 	render->SetNoCulling(true);
 	render->SetNoZWrite(false);
 
-	V(device->SetVertexDeclaration(vertex_decl[VDI_PARTICLE]));
+	V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_PARTICLE)));
 
 	uint passes;
 	V(eParticle->SetTechnique(techParticle));
@@ -3699,7 +3616,7 @@ void Game::DrawExplosions(const vector<Explo*>& explos)
 	render->SetNoZWrite(true);
 
 	Mesh* mesh = aSpellball;
-	V(device->SetVertexDeclaration(vertex_decl[mesh->vertex_decl]));
+	V(device->SetVertexDeclaration(render->GetVertexDeclaration((mesh->vertex_decl))));
 	V(device->SetStreamSource(0, mesh->vb, 0, mesh->vertex_size));
 	V(device->SetIndices(mesh->ib));
 
@@ -3746,7 +3663,7 @@ void Game::DrawParticles(const vector<ParticleEmitter*>& pes)
 	render->SetNoCulling(true);
 	render->SetNoZWrite(true);
 
-	V(device->SetVertexDeclaration(vertex_decl[VDI_PARTICLE]));
+	V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_PARTICLE)));
 
 	uint passes;
 	V(eParticle->SetTechnique(techParticle));
@@ -3856,7 +3773,7 @@ void Game::DrawTrailParticles(const vector<TrailParticleEmitter*>& tpes)
 	render->SetNoCulling(true);
 	render->SetNoZWrite(true);
 
-	V(device->SetVertexDeclaration(vertex_decl[VDI_COLOR]));
+	V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_COLOR)));
 
 	uint passes;
 	V(eParticle->SetTechnique(techTrail));
@@ -3920,7 +3837,7 @@ void Game::DrawLightings(const vector<Electro*>& electros)
 	render->SetNoZWrite(true);
 
 	V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE));
-	V(device->SetVertexDeclaration(vertex_decl[VDI_PARTICLE]));
+	V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_PARTICLE)));
 
 	uint passes;
 	V(eParticle->SetTechnique(techParticle));
@@ -4024,7 +3941,7 @@ void Game::DrawStunEffects(const vector<StunEffect>& stuns)
 	V(eMesh->SetVector(hMeshLightDir, (D3DXVECTOR4*)&Vec4(1, 1, 1, 1)));
 	V(eMesh->SetVector(hMeshLightColor, (D3DXVECTOR4*)&Vec4(1, 1, 1, 1)));
 
-	V(device->SetVertexDeclaration(vertex_decl[mesh.vertex_decl]));
+	V(device->SetVertexDeclaration(render->GetVertexDeclaration(mesh.vertex_decl)));
 	V(device->SetStreamSource(0, mesh.vb, 0, mesh.vertex_size));
 	V(device->SetIndices(mesh.ib));
 	V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE));
@@ -4066,7 +3983,7 @@ void Game::DrawPortals(const vector<Portal*>& portals)
 	render->SetNoZWrite(false);
 
 	uint passes;
-	V(device->SetVertexDeclaration(vertex_decl[VDI_PARTICLE]));
+	V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_PARTICLE)));
 	V(eParticle->SetTechnique(techParticle));
 	V(eParticle->SetTexture(hParticleTex, tPortal));
 	V(eParticle->SetMatrix(hParticleCombined, (D3DXMATRIX*)&L.camera.matViewProj));
@@ -4076,7 +3993,7 @@ void Game::DrawPortals(const vector<Portal*>& portals)
 	for(vector<Portal*>::const_iterator it = portals.begin(), end = portals.end(); it != end; ++it)
 	{
 		const Portal& portal = **it;
-		m2 = Matrix::Rotation(portal.rot, 0, -portal_anim * PI * 2)
+		m2 = Matrix::Rotation(0, portal.rot, -portal_anim * PI * 2)
 			* Matrix::Translation(portal.pos + Vec3(0, 0.67f + 0.305f, 0))
 			* L.camera.matViewProj;
 		V(eParticle->SetMatrix(hParticleCombined, (D3DXMATRIX*)&m2));
@@ -4098,7 +4015,7 @@ void Game::DrawAreas(const vector<Area>& areas, float range, const vector<Area2*
 	render->SetNoCulling(true);
 	render->SetNoZWrite(true);
 
-	V(device->SetVertexDeclaration(vertex_decl[VDI_POS]));
+	V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_POS)));
 
 	V(eArea->SetTechnique(techArea));
 	V(eArea->SetMatrix(hAreaCombined, (D3DXMATRIX*)&L.camera.matViewProj));

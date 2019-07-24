@@ -22,7 +22,6 @@
 #include "Spell.h"
 #include "Team.h"
 #include "RoomType.h"
-#include "StartupOptions.h"
 #include "SoundManager.h"
 #include "ScriptManager.h"
 #include "Inventory.h"
@@ -97,6 +96,7 @@ quickstart_slot(SaveSlot::MAX_SLOTS), clear_color(Color::Black), engine(new Engi
 	L.camera.draw_range = 80.f;
 
 	SetupConfigVars();
+	BeforeInit();
 }
 
 //=================================================================================================
@@ -196,7 +196,7 @@ void Game::DrawGame(RenderTarget* target)
 		}
 
 		// post effects
-		V(device->SetVertexDeclaration(vertex_decl[VDI_TEX]));
+		V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_TEX)));
 		V(device->SetStreamSource(0, vbFullscreen, 0, sizeof(VTex)));
 		render->SetAlphaTest(false);
 		render->SetAlphaBlend(false);
@@ -602,13 +602,12 @@ void Game::ChangeTitle()
 }
 
 //=================================================================================================
-bool Game::Start(StartupOptions& options)
+bool Game::Start()
 {
 	LocalString s;
 	GetTitle(s);
-	options.title = s.c_str();
-	BeforeInit();
-	return engine->Start(this, options);
+	engine->SetTitle(s.c_str());
+	return engine->Start(this);
 }
 
 //=================================================================================================
@@ -828,10 +827,6 @@ void Game::ClearPointers()
 	vdStairsUp = nullptr;
 	vdStairsDown = nullptr;
 	vdDoorHole = nullptr;
-
-	// vertex declarations
-	for(int i = 0; i < VDI_MAX; ++i)
-		vertex_decl[i] = nullptr;
 }
 
 //=================================================================================================
@@ -845,7 +840,6 @@ void Game::OnCleanup()
 	for(GameComponent* component : components)
 		component->Cleanup();
 
-	CleanScene();
 	DeleteElements(bow_instances);
 	ClearQuadtree();
 

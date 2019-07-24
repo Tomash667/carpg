@@ -64,7 +64,7 @@ void Game::SaveOptions()
 	cfg.Add("music_volume", sound_mgr->GetMusicVolume());
 	cfg.Add("mouse_sensitivity", settings.mouse_sensitivity);
 	cfg.Add("grass_range", settings.grass_range);
-	cfg.Add("resolution", Format("%dx%d", engine->GetWindowSize().x, engine->GetWindowSize().y));
+	cfg.Add("resolution", engine->GetWindowSize());
 	cfg.Add("refresh", render->GetRefreshRate());
 	cfg.Add("skip_tutorial", skip_tutorial);
 	cfg.Add("language", Language::prefix);

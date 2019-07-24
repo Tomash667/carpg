@@ -210,8 +210,7 @@ W pliku konfiguracyjnym (domyœlnie carpg.cfg) mo¿na u¿ywaæ takich opcji:
 	* check_updates ([true] false) - czy sprawdzaæ czy jest nowa wersja
 	* class (warrior hunter rogue) - wybrana klasa postaci w trybie szybkiej
 		gry
-	* con_pos_x - pozycja konsoli x
-	* con_pos_y - pozycja konsoli y
+	* con_pos Int2 - pozycja konsoli x, y
 	* console (true [false]) - konsola systemowa
 	* crash_mode (none [normal] dataseg full) - okreœla tryb zapisywania
 		informacji o crashu
@@ -252,10 +251,8 @@ W pliku konfiguracyjnym (domyœlnie carpg.cfg) mo¿na u¿ywaæ takich opcji:
 	* stream_log_mode (none [errors] full) - tryb logowania informacji w mp
 	* timeout (1-3600) - czas oczekiwania na graczy w sekundach (domyœlnie 10)
 	* vsync ([true] false) - ustawia synchronizacjê pionow¹
-	* wnd_pos_x - pozycja okna x
-	* wnd_pos_y - pozycja okna y
-	* wnd_size_x - szerokoœæ okna
-	* wnd_size_y - wysokoœæ okna
+	* wnd_pos Int2 - pozycja okna x, y
+	* wnd_size Int2 - wymiary okna x, y
 
 ===============================================================================
 9) Linia komend

@@ -117,7 +117,7 @@ void Settings::LoadGameKeys(Config& cfg)
 		for(int j = 0; j < 2; ++j)
 		{
 			cstring s = Format("%s%d", k.id, j);
-			int w = cfg.GetInt(s);
+			int w = cfg.GetInt(s, -1);
 			if(w == VK_ESCAPE || w < -1 || w > 255)
 			{
 				Warn("Config: Invalid value for %s: %d.", s, w);

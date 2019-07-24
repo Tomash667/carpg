@@ -354,9 +354,9 @@ void SaveLoad::LoadSaveSlots()
 					slot.player_name = cfg.GetString("player_name", "");
 					slot.location = cfg.GetString("location", "");
 					slot.text = cfg.GetString("text", "");
-					slot.game_day = cfg.GetInt("game_day");
-					slot.game_month = cfg.GetInt("game_month");
-					slot.game_year = cfg.GetInt("game_year");
+					slot.game_day = cfg.GetInt("game_day", -1);
+					slot.game_month = cfg.GetInt("game_month", -1);
+					slot.game_year = cfg.GetInt("game_year", -1);
 					slot.hardcore = cfg.GetBool("hardcore");
 					slot.mp_players.clear();
 					slot.save_date = cfg.GetInt64("save_date");
