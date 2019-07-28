@@ -239,9 +239,6 @@
     <ClCompile Include="quests\QuestManager.cpp">
       <Filter>quests</Filter>
     </ClCompile>
-    <ClCompile Include="quests\Quest_Main.cpp">
-      <Filter>quests</Filter>
-    </ClCompile>
     <ClCompile Include="quests\Quest_DeliverLetter.cpp">
       <Filter>quests</Filter>
     </ClCompile>
@@ -759,9 +756,6 @@
       <Filter>stats</Filter>
     </ClInclude>
     <ClInclude Include="quests\QuestManager.h">
-      <Filter>quests</Filter>
-    </ClInclude>
-    <ClInclude Include="quests\Quest_Main.h">
       <Filter>quests</Filter>
     </ClInclude>
     <ClInclude Include="quests\Quest_DeliverLetter.h">

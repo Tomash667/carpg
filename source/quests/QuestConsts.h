@@ -39,12 +39,13 @@ enum QUEST
 	Q_FIND_ARTIFACT,
 	Q_CRAZIES,
 	Q_WANTED,
-	Q_MAIN,
+	Q_MAIN, // removed
 	Q_ARTIFACTS,
 	Q_SCRIPTED
 };
 
 //-----------------------------------------------------------------------------
+// pre V_0_10 compatibility
 namespace old
 {
 	enum QUEST_RUMOR

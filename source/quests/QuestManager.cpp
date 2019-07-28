@@ -25,7 +25,6 @@
 #include "Quest_KillAnimals.h"
 #include "Quest_LostArtifact.h"
 #include "Quest_Mages.h"
-#include "Quest_Main.h"
 #include "Quest_Mine.h"
 #include "Quest_Orcs.h"
 #include "Quest_RescueCaptive.h"
@@ -69,7 +68,6 @@ void QuestManager::InitOnce()
 	infos.push_back(QuestInfo(Q_FIND_ARTIFACT, QuestType::Random, "find_artifact"));
 	infos.push_back(QuestInfo(Q_CRAZIES, QuestType::Unique, "crazies"));
 	infos.push_back(QuestInfo(Q_WANTED, QuestType::Captain, "wanted"));
-	infos.push_back(QuestInfo(Q_MAIN, QuestType::Unique, "main"));
 	infos.push_back({ Q_ARTIFACTS, QuestType::Unique, "artifacts" });
 
 	// create pseudo quests
@@ -301,8 +299,6 @@ Quest* QuestManager::CreateQuest(QUEST quest_id)
 		return new Quest_Crazies;
 	case Q_WANTED:
 		return new Quest_Wanted;
-	case Q_MAIN:
-		return new Quest_Main;
 	case Q_ARTIFACTS:
 		return new Quest_Artifacts;
 	case Q_FORCE_NONE:
@@ -785,10 +781,8 @@ void QuestManager::Load(GameReader& f)
 		else
 			SetForcedQuest(force_id);
 	}
-	else if(LOAD_VERSION >= V_0_5)
-		f >> force;
 	else
-		force = Q_FORCE_DISABLED;
+		f >> force;
 
 	// process quest requests
 	for(QuestRequest& request : quest_requests)

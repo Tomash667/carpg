@@ -1,6 +1,10 @@
 Historia zmian
 
 --------------------------------------------------------------------------------
+Wersja 0.12 (???):
+! nie mo¿na wczytywaæ ju¿ zapisów z wersji 0.4.20 lub starszej
+
+--------------------------------------------------------------------------------
 Wersja 0.11 (2019-07-28):
 ! nie mo¿na wczytywaæ ju¿ zapisów z wersji 0.3 lub starszej
 + wczytywanie ustawieñ grup jednostek z pliku

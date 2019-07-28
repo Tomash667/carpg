@@ -81,164 +81,59 @@ void City::Load(GameReader& f, bool local, LOCATION_TOKEN token)
 
 	f >> citizens;
 	f >> citizens_world;
+	f >> settlement_type;
+	f >> flags;
+	f >> variant;
 
-	if(LOAD_VERSION >= V_0_5)
+	if(last_visit == -1)
 	{
-		f >> settlement_type;
-		f >> flags;
-		f >> variant;
-
-		if(last_visit == -1)
+		// list of buildings in this location is generated
+		uint count;
+		f >> count;
+		buildings.resize(count);
+		for(CityBuilding& b : buildings)
 		{
-			// list of buildings in this location is generated
-			uint count;
-			f >> count;
-			buildings.resize(count);
-			for(CityBuilding& b : buildings)
-			{
-				b.building = Building::Get(f.ReadString1());
-				assert(b.building != nullptr);
-			}
-		}
-		else
-		{
-			f >> entry_points;
-			f >> gates;
-
-			uint count;
-			f >> count;
-			buildings.resize(count);
-			for(CityBuilding& b : buildings)
-			{
-				b.building = Building::Get(f.ReadString1());
-				f >> b.pt;
-				f >> b.unit_pt;
-				f >> b.rot;
-				f >> b.walk_pt;
-				assert(b.building != nullptr);
-			}
-
-			f >> inside_offset;
-			f >> count;
-			inside_buildings.resize(count);
-			int index = 0;
-			for(InsideBuilding*& b : inside_buildings)
-			{
-				b = new InsideBuilding(index);
-				b->Load(f, local);
-				b->mine = Int2(b->level_shift.x * 256, b->level_shift.y * 256);
-				b->maxe = b->mine + Int2(256, 256);
-				++index;
-			}
-
-			f >> quest_mayor;
-			f >> quest_mayor_time;
-			f >> quest_captain;
-			f >> quest_captain_time;
-			f >> arena_time;
-			f >> arena_pos;
+			b.building = Building::Get(f.ReadString1());
+			assert(b.building != nullptr);
 		}
 	}
 	else
 	{
-		if(token == LT_CITY)
-			settlement_type = SettlementType::City;
-		else
+		f >> entry_points;
+		f >> gates;
+
+		uint count;
+		f >> count;
+		buildings.resize(count);
+		for(CityBuilding& b : buildings)
 		{
-			settlement_type = SettlementType::Village;
-			image = LI_VILLAGE;
-		}
-		flags = 0;
-		variant = 0;
-
-		if(last_visit != -1)
-		{
-			f.ReadVector<byte>(entry_points);
-			bool have_exit;
-			f >> have_exit;
-			gates = f.Read<byte>();
-
-			if(have_exit)
-				flags |= HaveExit;
-
-			uint count;
-			f >> count;
-			buildings.resize(count);
-			for(CityBuilding& b : buildings)
-			{
-				old::BUILDING old_type;
-				f >> old_type;
-				f >> b.pt;
-				f >> b.unit_pt;
-				f >> b.rot;
-				f >> b.walk_pt;
-				b.building = old::Convert(old_type);
-				assert(b.building != nullptr);
-			}
-
-			f >> inside_offset;
-			f >> count;
-			inside_buildings.resize(count);
-			int index = 0;
-			for(InsideBuilding*& b : inside_buildings)
-			{
-				b = new InsideBuilding(index);
-				b->Load(f, local);
-				b->mine = Int2(b->level_shift.x * 256, b->level_shift.y * 256);
-				b->maxe = b->mine + Int2(256, 256);
-				++index;
-			}
-
-			f >> quest_mayor;
-			f >> quest_mayor_time;
-			f >> quest_captain;
-			f >> quest_captain_time;
-			f >> arena_time;
-			f >> arena_pos;
+			b.building = Building::Get(f.ReadString1());
+			f >> b.pt;
+			f >> b.unit_pt;
+			f >> b.rot;
+			f >> b.walk_pt;
+			assert(b.building != nullptr);
 		}
 
-		if(token == LT_VILLAGE_OLD)
+		f >> inside_offset;
+		f >> count;
+		inside_buildings.resize(count);
+		int index = 0;
+		for(InsideBuilding*& b : inside_buildings)
 		{
-			old::BUILDING v_buildings[2];
-			f >> v_buildings;
-
-			if(state == LS_KNOWN)
-			{
-				buildings.push_back(CityBuilding(old::Convert(old::BUILDING::B_VILLAGE_HALL)));
-				buildings.push_back(CityBuilding(old::Convert(old::BUILDING::B_MERCHANT)));
-				buildings.push_back(CityBuilding(old::Convert(old::BUILDING::B_FOOD_SELLER)));
-				buildings.push_back(CityBuilding(old::Convert(old::BUILDING::B_VILLAGE_INN)));
-				if(v_buildings[0] != old::BUILDING::B_NONE)
-					buildings.push_back(CityBuilding(old::Convert(v_buildings[0])));
-				if(v_buildings[1] != old::BUILDING::B_NONE)
-					buildings.push_back(CityBuilding(old::Convert(v_buildings[1])));
-				std::random_shuffle(buildings.begin() + 1, buildings.end(), MyRand);
-				buildings.push_back(CityBuilding(old::Convert(old::BUILDING::B_BARRACKS)));
-
-				flags |= HaveInn | HaveMerchant | HaveFoodSeller;
-				if(v_buildings[0] == old::BUILDING::B_TRAINING_GROUNDS || v_buildings[1] == old::BUILDING::B_TRAINING_GROUNDS)
-					flags |= HaveTrainingGrounds;
-				if(v_buildings[0] == old::BUILDING::B_BLACKSMITH || v_buildings[1] == old::BUILDING::B_BLACKSMITH)
-					flags |= HaveBlacksmith;
-				if(v_buildings[0] == old::BUILDING::B_ALCHEMIST || v_buildings[1] == old::BUILDING::B_ALCHEMIST)
-					flags |= HaveAlchemist;
-			}
+			b = new InsideBuilding(index);
+			b->Load(f, local);
+			b->mine = Int2(b->level_shift.x * 256, b->level_shift.y * 256);
+			b->maxe = b->mine + Int2(256, 256);
+			++index;
 		}
-		else if(state == LS_KNOWN)
-		{
-			buildings.push_back(CityBuilding(old::Convert(old::BUILDING::B_CITY_HALL)));
-			buildings.push_back(CityBuilding(old::Convert(old::BUILDING::B_ARENA)));
-			buildings.push_back(CityBuilding(old::Convert(old::BUILDING::B_MERCHANT)));
-			buildings.push_back(CityBuilding(old::Convert(old::BUILDING::B_FOOD_SELLER)));
-			buildings.push_back(CityBuilding(old::Convert(old::BUILDING::B_BLACKSMITH)));
-			buildings.push_back(CityBuilding(old::Convert(old::BUILDING::B_ALCHEMIST)));
-			buildings.push_back(CityBuilding(old::Convert(old::BUILDING::B_INN)));
-			buildings.push_back(CityBuilding(old::Convert(old::BUILDING::B_TRAINING_GROUNDS)));
-			std::random_shuffle(buildings.begin() + 2, buildings.end(), MyRand);
-			buildings.push_back(CityBuilding(old::Convert(old::BUILDING::B_BARRACKS)));
 
-			flags |= HaveTrainingGrounds | HaveArena | HaveMerchant | HaveFoodSeller | HaveBlacksmith | HaveAlchemist | HaveInn;
-		}
+		f >> quest_mayor;
+		f >> quest_mayor_time;
+		f >> quest_captain;
+		f >> quest_captain_time;
+		f >> arena_time;
+		f >> arena_pos;
 	}
 }
 

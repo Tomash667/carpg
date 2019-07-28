@@ -1873,18 +1873,13 @@ void Unit::Load(GameReader& f, bool local)
 	f >> rot;
 	f >> hp;
 	f >> hpmax;
-	if(LOAD_VERSION >= V_0_5)
-	{
-		f >> stamina;
-		f >> stamina_max;
-		f >> stamina_action;
-		if(LOAD_VERSION >= V_0_7)
-			f >> stamina_timer;
-		else
-			stamina_timer = 0;
-	}
-	if(LOAD_VERSION < V_0_5)
-		f.Skip<int>(); // old type
+	f >> stamina;
+	f >> stamina_max;
+	f >> stamina_action;
+	if(LOAD_VERSION >= V_0_7)
+		f >> stamina_timer;
+	else
+		stamina_timer = 0;
 	f >> level;
 	if(content.require_update && data->group != G_PLAYER)
 	{
@@ -1958,32 +1953,15 @@ void Unit::Load(GameReader& f, bool local)
 	f >> assist;
 
 	// auto talking
-	if(LOAD_VERSION >= V_0_5)
+	f >> auto_talk;
+	if(auto_talk != AutoTalkMode::No)
 	{
-		f >> auto_talk;
-		if(auto_talk != AutoTalkMode::No)
-		{
-			const string& dialog_id = f.ReadString1();
-			if(dialog_id.empty())
-				auto_talk_dialog = nullptr;
-			else
-				auto_talk_dialog = GameDialog::TryGet(dialog_id.c_str());
-			f >> auto_talk_timer;
-		}
-	}
-	else
-	{
-		auto_talk_timer = Unit::AUTO_TALK_WAIT;
-		auto_talk_dialog = nullptr;
-
-		int old_auto_talk;
-		f >> old_auto_talk;
-		if(old_auto_talk == 2)
-		{
-			f >> auto_talk_timer;
-			auto_talk_timer = 1.f - auto_talk_timer;
-		}
-		auto_talk = (AutoTalkMode)old_auto_talk;
+		const string& dialog_id = f.ReadString1();
+		if(dialog_id.empty())
+			auto_talk_dialog = nullptr;
+		else
+			auto_talk_dialog = GameDialog::TryGet(dialog_id.c_str());
+		f >> auto_talk_timer;
 	}
 
 	f >> dont_attack;
@@ -2011,16 +1989,11 @@ void Unit::Load(GameReader& f, bool local)
 	else
 		AddRequest(&guard_target, guard_refid);
 
-	if(LOAD_VERSION >= V_0_5)
-	{
-		int summoner_refid = f.Read<int>();
-		if(summoner_refid == -1)
-			summoner = nullptr;
-		else
-			AddRequest(&summoner, summoner_refid);
-	}
-	else
+	int summoner_refid = f.Read<int>();
+	if(summoner_refid == -1)
 		summoner = nullptr;
+	else
+		AddRequest(&summoner, summoner_refid);
 
 	if(live_state >= DYING)
 	{
@@ -2117,8 +2090,7 @@ void Unit::Load(GameReader& f, bool local)
 		}
 
 		f >> last_bash;
-		if(LOAD_VERSION >= V_0_5)
-			f >> moved;
+		f >> moved;
 		if(LOAD_VERSION >= V_0_9)
 			f >> running;
 		else
@@ -2324,15 +2296,6 @@ void Unit::Load(GameReader& f, bool local)
 			player->RecalculateLevel();
 		}
 		CalculateStats();
-	}
-
-	// compability
-	if(LOAD_VERSION < V_0_5)
-	{
-		stamina_max = CalculateMaxStamina();
-		stamina = stamina_max;
-		stamina_action = SA_RESTORE_MORE;
-		stamina_timer = 0;
 	}
 
 	CalculateLoad();

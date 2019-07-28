@@ -583,29 +583,20 @@ void PlayerController::Load(FileReader& f)
 			return false;
 		});
 	}
-	if(LOAD_VERSION >= V_0_5)
+	f >> action_cooldown;
+	f >> action_recharge;
+	action_charges = f.Read<byte>();
+	if(unit->action == A_DASH && unit->animation_state == 1)
 	{
-		f >> action_cooldown;
-		f >> action_recharge;
-		action_charges = f.Read<byte>();
-		if(unit->action == A_DASH && unit->animation_state == 1)
+		uint count;
+		f >> count;
+		action_targets.resize(count);
+		for(uint i = 0; i < count; ++i)
 		{
-			uint count;
-			f >> count;
-			action_targets.resize(count);
-			for(uint i = 0; i < count; ++i)
-			{
-				int refid;
-				f >> refid;
-				Unit::AddRequest(&action_targets[i], refid);
-			}
+			int refid;
+			f >> refid;
+			Unit::AddRequest(&action_targets[i], refid);
 		}
-	}
-	else
-	{
-		action_cooldown = 0.f;
-		action_recharge = 0.f;
-		action_charges = GetAction().charges;
 	}
 	if(LOAD_VERSION >= V_0_7)
 		f >> split_gold;

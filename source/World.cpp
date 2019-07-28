@@ -37,6 +37,7 @@ const int def_world_size = 1200;
 World W;
 vector<string> txLocationStart, txLocationEnd;
 
+// pre V_0_8 compatibility
 namespace old
 {
 	const int def_world_size = 600;

@@ -87,15 +87,6 @@ void OutsideLocation::Load(GameReader& f, bool local, LOCATION_TOKEN token)
 		h = new float[size2];
 		tiles = new TerrainTile[size*size];
 		f.Read(tiles, sizeof(TerrainTile)*size*size);
-		if(LOAD_VERSION < V_0_5)
-		{
-			for(int i = 0; i < size*size; ++i)
-			{
-				TerrainTile& tt = tiles[i];
-				if(tt.mode == OLD::TM_BUILDING_NO_PHY)
-					tt.mode = TM_BUILDING;
-			}
-		}
 		f.Read(h, sizeof(float)*size2);
 	}
 

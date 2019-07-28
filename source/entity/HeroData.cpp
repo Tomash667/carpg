@@ -8,6 +8,7 @@
 #include "Const.h"
 #include "Team.h"
 
+// pre V_0_10 compatibility
 namespace old
 {
 	enum Mode

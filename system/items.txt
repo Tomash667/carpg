@@ -3462,29 +3462,7 @@ better_items {
 //------------------------------------------------------------------------------
 // ALIASES (new id, old id)
 //------------------------------------------------------------------------------
-// renamed items in 0.5
-alias blacksmith_hammer blunt_blacksmith
-alias water potion_water
-alias water p_water
-alias beer potion_beer
-alias beer p_beer
-alias vodka potion_vodka
-alias vodka p_vodka
-alias spirit potion_spirit
-alias spirit p_spirit
-alias bread f_bread
-alias meat f_meat
-alias raw_meat f_raw_meat
-alias apple f_apple
-alias cheese f_cheese
-alias honeycomb f_honeycomb
-alias rice f_rice
-alias mushroom f_mushroom
-alias emerald vs_emerald
-alias ruby vs_ruby
-alias diamond vs_diamond
-alias krystal vs_krystal
-// renamed in 0.8
+// renamed in V_0_8
 alias sword_semur sword_unique
 alias bow_angel bow_unique
 alias shield_wall shield_unique

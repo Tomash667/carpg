@@ -1,6 +1,7 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+// pre V_0_8 compatibility
 namespace old
 {
 	enum class Perk

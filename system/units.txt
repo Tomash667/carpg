@@ -3231,11 +3231,11 @@ group random {
 // Unit alias for old names (for save compability)
 // alias unit_id other_id
 //------------------------------------------------------------------------------
-// renamed in 0.8
+// renamed in V_0_8
 alias bandit_chief bandit_hegemon
 alias guard_wagon guard2
 alias guard_merchant guard3
-// removed quest units in 0.8 (map to normal units)
+// removed quest units in V_0_8 (map to normal units)
 alias mage mage_q
 alias evil_cleric evil_cleric_q
 alias bandit_chief bandit_hegemon_q

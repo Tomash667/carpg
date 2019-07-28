@@ -776,11 +776,6 @@ void Game::LoadGame(GameReader& f)
 	}
 
 	// vars
-	if(LOAD_VERSION < V_0_5)
-	{
-		bool used_cheats;
-		f >> used_cheats;
-	}
 	f >> devmode;
 	f >> noai;
 #ifdef _DEBUG
@@ -796,16 +791,6 @@ void Game::LoadGame(GameReader& f)
 	f >> draw_col;
 	f >> game_speed;
 	f >> next_seed;
-	if(LOAD_VERSION < V_0_5)
-	{
-		bool next_seed_extra;
-		f >> next_seed_extra;
-		if(next_seed_extra)
-		{
-			int next_seed_val[3];
-			f >> next_seed_val;
-		}
-	}
 	f >> draw_flags;
 	Unit* player;
 	f >> player;
@@ -967,13 +952,10 @@ void Game::LoadGame(GameReader& f)
 		pc->is_local = true;
 
 	// end of save
-	if(LOAD_VERSION >= V_0_5)
-	{
-		char eos[3];
-		f.Read(eos);
-		if(eos[0] != 'E' || eos[1] != 'O' || eos[2] != 'S')
-			throw "Missing EOS.";
-	}
+	char eos[3];
+	f.Read(eos);
+	if(eos[0] != 'E' || eos[1] != 'O' || eos[2] != 'S')
+		throw "Missing EOS.";
 
 	// load music
 	LoadingStep(txLoadMusic);

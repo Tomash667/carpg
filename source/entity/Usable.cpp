@@ -8,6 +8,7 @@
 #include "ItemContainer.h"
 #include "Net.h"
 
+// pre V_0_6_2 compatibility
 namespace old
 {
 	enum USABLE_ID

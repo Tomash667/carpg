@@ -3301,7 +3301,7 @@ dialog q_mages2_mage
 	}
 	if quest_progress 2
 	{
-		if have_item p_beer
+		if have_item beer
 		{
 			choice 36
 			{
@@ -3315,7 +3315,7 @@ dialog q_mages2_mage
 	}
 	if quest_progress 3
 	{
-		if have_item p_vodka
+		if have_item vodka
 		{
 			choice 40
 			{

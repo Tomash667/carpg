@@ -1,6 +1,10 @@
 Changelog
 
 --------------------------------------------------------------------------------
+Version 0.12 (???):
+! cannot load saves from version 0.4.20 or older
+
+--------------------------------------------------------------------------------
 Version 0.11 (2019-07-28):
 ! cannot load saves from version 0.3 or older
 + loading unit group settings from file

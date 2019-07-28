@@ -88,8 +88,6 @@ void Location::Save(GameWriter& f, bool)
 void Location::Load(GameReader& f, bool, LOCATION_TOKEN token)
 {
 	f >> type;
-	if(LOAD_VERSION < V_0_5 && type == L_VILLAGE_OLD)
-		type = L_CITY;
 	f >> pos;
 	f >> name;
 	f >> state;
@@ -110,36 +108,7 @@ void Location::Load(GameReader& f, bool, LOCATION_TOKEN token)
 	f >> group;
 	f >> dont_clean;
 	f >> seed;
-	if(LOAD_VERSION >= V_0_5)
-		f >> image;
-	else
-	{
-		switch(type)
-		{
-		case L_CITY:
-			image = LI_CITY;
-			break;
-		case L_CAVE:
-			image = LI_CAVE;
-			break;
-		case L_CAMP:
-			image = LI_CAMP;
-			break;
-		default:
-		case L_DUNGEON:
-			image = LI_DUNGEON;
-			break;
-		case L_CRYPT:
-			image = LI_CRYPT;
-			break;
-		case L_FOREST:
-			image = LI_FOREST;
-			break;
-		case L_MOONWELL:
-			image = LI_MOONWELL;
-			break;
-		}
-	}
+	f >> image;
 
 	// portals
 	if(f.Read1())

@@ -14,6 +14,7 @@ struct LightMask
 };
 
 //-----------------------------------------------------------------------------
+// pre V_0_11 compatibility
 namespace old
 {
 	enum class LoadCompatibility

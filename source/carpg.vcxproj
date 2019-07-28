@@ -279,7 +279,6 @@
     <ClInclude Include="quests\Quest_KillAnimals.h" />
     <ClInclude Include="quests\Quest_LostArtifact.h" />
     <ClInclude Include="quests\Quest_Mages.h" />
-    <ClInclude Include="quests\Quest_Main.h" />
     <ClInclude Include="quests\QuestManager.h" />
     <ClInclude Include="quests\Quest_Mine.h" />
     <ClInclude Include="quests\Quest_Orcs.h" />
@@ -467,7 +466,6 @@
     <ClCompile Include="quests\Quest_KillAnimals.cpp" />
     <ClCompile Include="quests\Quest_LostArtifact.cpp" />
     <ClCompile Include="quests\Quest_Mages.cpp" />
-    <ClCompile Include="quests\Quest_Main.cpp" />
     <ClCompile Include="quests\QuestManager.cpp" />
     <ClCompile Include="quests\Quest_Mine.cpp" />
     <ClCompile Include="quests\Quest_Orcs.cpp" />
