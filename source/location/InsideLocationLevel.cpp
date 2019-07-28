@@ -224,7 +224,7 @@ void InsideLocationLevel::LoadLevel(GameReader& f, bool local)
 	map = new Tile[w*h];
 	f.Read(map, sizeof(Tile)*w*h);
 
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_11)
 	{
 		LevelArea::Load(f, local);
 

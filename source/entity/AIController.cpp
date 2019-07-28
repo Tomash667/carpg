@@ -237,7 +237,7 @@ void AIController::Load(GameReader& f)
 			int area_id;
 			f >> area_id;
 			f >> idle_data.region.pos;
-			if(LOAD_VERSION >= V_DEV)
+			if(LOAD_VERSION >= V_0_11)
 			{
 				f >> idle_data.region.exit;
 				idle_data.region.area = L.GetAreaById(area_id);

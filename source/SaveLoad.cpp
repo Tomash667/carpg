@@ -866,7 +866,7 @@ void Game::LoadGame(GameReader& f)
 		LocationGenerator* loc_gen = loc_gen_factory->Get(L.location);
 		loc_gen->OnLoad();
 
-		if(LOAD_VERSION < V_DEV)
+		if(LOAD_VERSION < V_0_11)
 		{
 			L.local_area->tmp->Load(f);
 

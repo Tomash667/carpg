@@ -56,7 +56,7 @@ void MultiInsideLocation::Load(GameReader& f, bool local, LOCATION_TOKEN token)
 	f >> active_level;
 	f >> generated;
 
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_11)
 		f.Read<uint>(); // skip levels count, already set in constructor
 	for(int i = 0; i < generated; ++i)
 		levels[i]->LoadLevel(f, local && active_level == i);

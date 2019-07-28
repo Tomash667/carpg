@@ -59,7 +59,7 @@ void InsideBuilding::Load(GameReader& f, bool local)
 	f >> region2;
 	f >> enter_y;
 
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_11)
 		LevelArea::Load(f, local);
 	else
 		LevelArea::Load(f, local, old::LoadCompatibility::InsideBuilding);

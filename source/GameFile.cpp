@@ -6,7 +6,7 @@
 
 void GameReader::operator >> (UnitGroup*& group)
 {
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_11)
 	{
 		const string& id = ReadString1();
 		group = UnitGroup::Get(id);

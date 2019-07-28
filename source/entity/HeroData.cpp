@@ -90,7 +90,7 @@ void HeroData::Load(FileReader& f)
 			unit->order_timer = 0.f;
 		}
 	}
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_11)
 		f.Skip<int>(); // old following
 	f >> credit;
 	f >> expe;

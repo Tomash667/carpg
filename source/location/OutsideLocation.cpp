@@ -76,7 +76,7 @@ void OutsideLocation::Load(GameReader& f, bool local, LOCATION_TOKEN token)
 
 	if(last_visit != -1)
 	{
-		if(LOAD_VERSION >= V_DEV)
+		if(LOAD_VERSION >= V_0_11)
 			LevelArea::Load(f, local);
 		else
 			LevelArea::Load(f, local, old::LoadCompatibility::OutsideLocation);

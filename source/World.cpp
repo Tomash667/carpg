@@ -1332,7 +1332,7 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 	f >> create_camp;
 	if(LOAD_VERSION < V_0_8)
 		create_camp = 10 - create_camp;
-	else if(LOAD_VERSION < V_DEV && create_camp > 10)
+	else if(LOAD_VERSION < V_0_11 && create_camp > 10)
 		create_camp = 10;
 	f >> world_pos;
 	f >> reveal_timer;

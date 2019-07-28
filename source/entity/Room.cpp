@@ -70,7 +70,7 @@ void Room::Load(FileReader& f)
 		else
 			target = (RoomTarget)(old_target + 1);
 	}
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_11)
 		f >> group;
 }
 
@@ -131,7 +131,7 @@ void RoomGroup::Save(FileWriter& f)
 //=================================================================================================
 void RoomGroup::Load(FileReader& f)
 {
-	if(LOAD_VERSION >= V_DEV)
+	if(LOAD_VERSION >= V_0_11)
 		f >> connections;
 	f >> rooms;
 	f >> target;

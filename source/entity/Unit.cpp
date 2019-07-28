@@ -1950,7 +1950,7 @@ void Unit::Load(GameReader& f, bool local)
 	bool old_invisible = false;
 	if(LOAD_VERSION < V_0_10)
 		f >> old_invisible;
-	if(LOAD_VERSION < V_DEV)
+	if(LOAD_VERSION < V_0_11)
 		f.Skip<int>(); // old inside_building
 	f >> to_remove;
 	f >> temporary;
@@ -2224,10 +2224,10 @@ void Unit::Load(GameReader& f, bool local)
 		switch(order)
 		{
 		case ORDER_FOLLOW:
-			if(LOAD_VERSION >= V_DEV)
+			if(LOAD_VERSION >= V_0_11)
 				AddRequest(&order_unit, f.Read<int>());
 			else
-				Unit::AddRequest(&order_unit, Unit::REFID_LEADER);
+				AddRequest(&order_unit, Unit::REFID_LEADER);
 			break;
 		case ORDER_LOOK_AT:
 			f >> order_pos;
