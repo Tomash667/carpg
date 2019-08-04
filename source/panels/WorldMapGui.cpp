@@ -117,7 +117,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 					c = Color::Lerp(Color::Yellow, Color::Red, float(st - 9) / 7);
 				Rect rect(Int2(WorldPosToScreen(Vec2((float)x*World::TILE_SIZE, (float)y*World::TILE_SIZE))),
 					Int2(WorldPosToScreen(Vec2((float)(x + 1)*World::TILE_SIZE, (float)(y + 1)*World::TILE_SIZE))));
-				gui->DrawSpriteRect(gui->tPix, rect, c);
+				gui->DrawArea(c, rect);
 			}
 		}
 	}
@@ -257,7 +257,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 		int(94.f * gui->wnd_size.y / 768),
 		int(float(gui->wnd_size.x) - 16.f * gui->wnd_size.x / 1024),
 		int(float(gui->wnd_size.y) - 90.f * gui->wnd_size.y / 768));
-	gui->DrawText(gui->default_font, s, 0, Color::Black, rect);
+	gui->DrawText(GlobalGui::font, s, 0, Color::Black, rect);
 
 	if(game.end_of_game)
 		global::gui->game_gui->DrawEndOfGameScreen();

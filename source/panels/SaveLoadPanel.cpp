@@ -64,10 +64,9 @@ void SaveLoad::LoadLanguage()
 //=================================================================================================
 void SaveLoad::Draw(ControlDrawData*)
 {
-	gui->DrawSpriteFull(tBackground, Color::Alpha(128));
-	gui->DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
+	DrawPanel();
 	Rect r = { global_pos.x, global_pos.y + 8, global_pos.x + size.x, global_pos.y + size.y };
-	gui->DrawText(gui->fBig, save_mode ? txSaving : txLoading, DTF_CENTER, Color::Black, r);
+	gui->DrawText(GlobalGui::font_big, save_mode ? txSaving : txLoading, DTF_CENTER, Color::Black, r);
 	for(int i = 0; i < 2; ++i)
 		bt[i].Draw();
 	textbox.Draw();
@@ -92,7 +91,7 @@ void SaveLoad::Draw(ControlDrawData*)
 				text = Format(txEmptySlot, i + 1);
 		}
 
-		gui->DrawText(gui->default_font, text, DTF_SINGLELINE | DTF_VCENTER, choice == i ? Color::Green : Color::Black, r);
+		gui->DrawText(GlobalGui::font, text, DTF_SINGLELINE | DTF_VCENTER, choice == i ? Color::Green : Color::Black, r);
 
 		r.Top() = r.Bottom() + 4;
 		r.Bottom() = r.Top() + 20;
@@ -120,7 +119,7 @@ void SaveLoad::Update(float dt)
 		{
 			if(rect.IsInside(gui->cursor_pos))
 			{
-				gui->cursor_mode = CURSOR_HAND;
+				gui->cursor_mode = CURSOR_HOVER;
 				if(input->PressedRelease(Key::LeftButton) && choice != i)
 				{
 					choice = i;

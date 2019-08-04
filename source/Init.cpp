@@ -37,6 +37,7 @@
 #include "UnitData.h"
 #include "BaseUsable.h"
 #include "Engine.h"
+#include "Notifications.h"
 
 extern void HumanPredraw(void* ptr, Matrix* mat, int n);
 extern const int ITEM_IMAGE_SIZE;
@@ -177,6 +178,8 @@ void Game::PreloadData()
 {
 	ResourceManager::Get().AddDir("data/preload");
 
+	GlobalGui::font = gui->gui->CreateFont("Arial", 12, 800, 512, 2);
+
 	// loadscreen textures
 	gui->load_screen->LoadData();
 
@@ -199,10 +202,10 @@ void Game::LoadSystem()
 	Info("Game: Loading system.");
 	gui->load_screen->Setup(0.f, 0.33f, 14, txCreatingListOfFiles);
 
+	AddFilesystem();
 	for(GameComponent* component : components)
 		component->InitOnce();
 	gui->main_menu->UpdateCheckVersion();
-	AddFilesystem();
 	LoadDatafiles();
 	LoadLanguageFiles();
 	gui->load_screen->Tick(txLoadingShaders);
@@ -392,7 +395,7 @@ void Game::PostconfigureGame()
 		Texture* img = (load_errors > 0 ? tError : tWarning);
 		cstring text = Format(txHaveErrors, load_errors, load_warnings);
 #ifdef _DEBUG
-		gui->AddNotification(text, img, 5.f);
+		gui->notifications->Add(text, img, 5.f);
 #else
 		DialogInfo info;
 		info.name = "have_errors";

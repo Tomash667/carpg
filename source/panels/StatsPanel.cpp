@@ -8,6 +8,7 @@
 #include "GameStats.h"
 #include "Language.h"
 #include "World.h"
+#include "GlobalGui.h"
 
 //-----------------------------------------------------------------------------
 enum Group
@@ -67,7 +68,7 @@ void StatsPanel::Draw(ControlDrawData*)
 		pos.x + size.x - 16,
 		pos.y + size.y - 16
 	};
-	gui->DrawText(gui->fBig, txTitle, DTF_TOP | DTF_CENTER, Color::Black, rect);
+	gui->DrawText(GlobalGui::font_big, txTitle, DTF_TOP | DTF_CENTER, Color::Black, rect);
 
 	flowAttribs.Draw();
 	flowStats.Draw();

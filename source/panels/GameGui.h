@@ -138,7 +138,7 @@ private:
 	int sidebar_state[(int)SideButtonId::Max], drag_and_drop, drag_and_drop_type, drag_and_drop_index;
 	Int2 drag_and_drop_pos;
 	TexturePtr tBar, tHpBar, tPoisonedHpBar, tStaminaBar, tManaBar, tShortcut, tShortcutHover, tShortcutDown, tSideButton[(int)SideButtonId::Max], tMinihp[2],
-		tMinistamina, tCrosshair, tBubble, tObwodkaBolu, tActionCooldown, tMelee, tRanged, tPotion, tEmerytura, tEquipped;
+		tMinistamina, tCrosshair, tBubble, tObwodkaBolu, tActionCooldown, tMelee, tRanged, tPotion, tEmerytura, tEquipped, tDialog;
 	Texture* drag_and_drop_icon;
 	Scrollbar scrollbar;
 	vector<SpeechBubble*> speech_bbs;

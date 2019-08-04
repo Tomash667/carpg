@@ -20,7 +20,7 @@ Journal::Journal() : mode(Quests), game(Game::Get())
 	visible = false;
 	Reset();
 
-	font_height = gui->default_font->height;
+	font_height = GlobalGui::font->height;
 }
 
 //=================================================================================================
@@ -60,15 +60,15 @@ void Journal::Draw(ControlDrawData*)
 
 			const Color color[3] = { Color::Black, Color::Red, Color::Green };
 
-			gui->DrawText(gui->default_font, it->text, 0, color[it->color], r);
+			gui->DrawText(GlobalGui::font, it->text, 0, color[it->color], r);
 		}
 	}
 
 	// numery stron
 	int pages = texts.back().x + 1;
-	gui->DrawText(gui->default_font, Format("%d/%d", x1 + 1, pages), DTF_BOTTOM | DTF_CENTER, Color::Black, rect);
+	gui->DrawText(GlobalGui::font, Format("%d/%d", x1 + 1, pages), DTF_BOTTOM | DTF_CENTER, Color::Black, rect);
 	if(x2 != pages)
-		gui->DrawText(gui->default_font, Format("%d/%d", x2 + 1, pages), DTF_BOTTOM | DTF_CENTER, Color::Black, rect2);
+		gui->DrawText(GlobalGui::font, Format("%d/%d", x2 + 1, pages), DTF_BOTTOM | DTF_CENTER, Color::Black, rect2);
 
 	// strza³ki 32, 243
 	if(page != 0)
@@ -203,7 +203,7 @@ void Journal::Update(float dt)
 
 	if(new_mode != Invalid)
 	{
-		gui->cursor_mode = CURSOR_HAND;
+		gui->cursor_mode = CURSOR_HOVER;
 		if(input->Focus() && input->PressedRelease(Key::LeftButton))
 		{
 			// zmieñ zak³adkê
@@ -247,7 +247,7 @@ void Journal::Update(float dt)
 				what += page * rect_lines * 2;
 				if(what < int(QM.quests.size()))
 				{
-					gui->cursor_mode = CURSOR_HAND;
+					gui->cursor_mode = CURSOR_HOVER;
 					if(input->Focus() && input->PressedRelease(Key::LeftButton))
 					{
 						details = true;
@@ -279,7 +279,7 @@ void Journal::Update(float dt)
 
 			if(ok && gui->cursor_pos.y >= rect.Top() + last_text.y*font_height && gui->cursor_pos.y <= rect.Top() + (last_text.y + 1)*font_height)
 			{
-				gui->cursor_mode = CURSOR_HAND;
+				gui->cursor_mode = CURSOR_HOVER;
 				if(input->Focus() && input->PressedRelease(Key::LeftButton))
 				{
 					// dodaj notatkê
@@ -305,7 +305,7 @@ void Journal::Update(float dt)
 		{
 			if(PointInRect(gui->cursor_pos, rect.LeftBottom() - Int2(8, 8), Int2(16, 16)))
 			{
-				gui->cursor_mode = CURSOR_HAND;
+				gui->cursor_mode = CURSOR_HOVER;
 				if(input->Focus() && input->PressedRelease(Key::LeftButton))
 					--page;
 			}
@@ -314,7 +314,7 @@ void Journal::Update(float dt)
 		{
 			if(PointInRect(gui->cursor_pos, rect2.RightBottom() + Int2(8, -8), Int2(16, 16)))
 			{
-				gui->cursor_mode = CURSOR_HAND;
+				gui->cursor_mode = CURSOR_HOVER;
 				if(input->Focus() && input->PressedRelease(Key::LeftButton))
 					++page;
 			}
@@ -451,7 +451,7 @@ void Journal::AddEntry(cstring text, int color, bool singleline)
 	}
 
 	// ile linijek zajmuje tekst?
-	Int2 osize = gui->default_font->CalculateSize(text, rect_w);
+	Int2 osize = GlobalGui::font->CalculateSize(text, rect_w);
 	int h = osize.y / font_height + 1;
 
 	if(y + h >= rect_lines)

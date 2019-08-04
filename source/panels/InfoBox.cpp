@@ -14,16 +14,11 @@ InfoBox::InfoBox(const DialogInfo& info) : GameDialogBox(info)
 //=================================================================================================
 void InfoBox::Draw(ControlDrawData*)
 {
-	// t³o
-	if(!game->gui->load_screen->visible)
-		gui->DrawSpriteFull(tBackground, Color::Alpha(128));
+	DrawPanel(!game->gui->load_screen->visible);
 
-	// panel
-	gui->DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
-
-	// tekst
+	// text
 	Rect r = { global_pos.x, global_pos.y, global_pos.x + size.x, global_pos.y + size.y };
-	gui->DrawText(gui->default_font, text, DTF_CENTER | DTF_VCENTER, Color::Black, r);
+	gui->DrawText(GlobalGui::font, text, DTF_CENTER | DTF_VCENTER, Color::Black, r);
 }
 
 //=================================================================================================
@@ -48,7 +43,7 @@ void InfoBox::Event(GuiEvent e)
 //=================================================================================================
 void InfoBox::Show(cstring _text)
 {
-	size = gui->default_font->CalculateSize(_text) + Int2(24, 24);
+	size = GlobalGui::font->CalculateSize(_text) + Int2(24, 24);
 	text = _text;
 
 	if(!visible)

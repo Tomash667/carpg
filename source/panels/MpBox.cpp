@@ -19,8 +19,7 @@ MpBox::MpBox() : have_focus(false)
 	itb.pos = Int2(0, 0);
 	itb.global_pos = Int2(100, 50);
 	itb.size = Int2(320, 182);
-	itb.event = InputEvent(this, &MpBox::OnInput);
-	itb.background = gui->tPix;
+	itb.event = InputTextBox::InputEvent(this, &MpBox::OnInput);
 	itb.background_color = Color(0, 142, 254, 43);
 	itb.Init();
 

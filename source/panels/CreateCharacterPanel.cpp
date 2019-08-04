@@ -12,6 +12,7 @@
 #include "Render.h"
 #include "RenderTarget.h"
 #include "Level.h"
+#include "GlobalGui.h"
 
 //-----------------------------------------------------------------------------
 const int SECTION_H = 40;
@@ -232,19 +233,20 @@ void CreateCharacterPanel::LoadLanguage()
 void CreateCharacterPanel::LoadData()
 {
 	ResourceManager& res_mgr = ResourceManager::Get();
-	tKlasaCecha = res_mgr.Load<Texture>("klasa_cecha.png");
-	custom_x.tex[Button::NONE] = res_mgr.Load<Texture>("close.png");
-	custom_x.tex[Button::HOVER] = res_mgr.Load<Texture>("close_hover.png");
-	custom_x.tex[Button::DOWN] = res_mgr.Load<Texture>("close_down.png");
-	custom_x.tex[Button::DISABLED] = res_mgr.Load<Texture>("close_disabled.png");
-	custom_bt[0].tex[Button::NONE] = res_mgr.Load<Texture>("plus.png");
-	custom_bt[0].tex[Button::HOVER] = res_mgr.Load<Texture>("plus_hover.png");
-	custom_bt[0].tex[Button::DOWN] = res_mgr.Load<Texture>("plus_down.png");
-	custom_bt[0].tex[Button::DISABLED] = res_mgr.Load<Texture>("plus_disabled.png");
-	custom_bt[1].tex[Button::NONE] = res_mgr.Load<Texture>("minus.png");
-	custom_bt[1].tex[Button::HOVER] = res_mgr.Load<Texture>("minus_hover.png");
-	custom_bt[1].tex[Button::DOWN] = res_mgr.Load<Texture>("minus_down.png");
-	custom_bt[1].tex[Button::DISABLED] = res_mgr.Load<Texture>("minus_disabled.png");
+	tBox = res_mgr.Load<Texture>("box.png");
+	tPowerBar = res_mgr.Load<Texture>("klasa_cecha.png");
+	custom_x.tex[Button::NONE] = AreaLayout(res_mgr.Load<Texture>("close.png"));
+	custom_x.tex[Button::HOVER] = AreaLayout(res_mgr.Load<Texture>("close_hover.png"));
+	custom_x.tex[Button::DOWN] = AreaLayout(res_mgr.Load<Texture>("close_down.png"));
+	custom_x.tex[Button::DISABLED] = AreaLayout(res_mgr.Load<Texture>("close_disabled.png"));
+	custom_bt[0].tex[Button::NONE] = AreaLayout(res_mgr.Load<Texture>("plus.png"));
+	custom_bt[0].tex[Button::HOVER] = AreaLayout(res_mgr.Load<Texture>("plus_hover.png"));
+	custom_bt[0].tex[Button::DOWN] = AreaLayout(res_mgr.Load<Texture>("plus_down.png"));
+	custom_bt[0].tex[Button::DISABLED] = AreaLayout(res_mgr.Load<Texture>("plus_disabled.png"));
+	custom_bt[1].tex[Button::NONE] = AreaLayout(res_mgr.Load<Texture>("minus.png"));
+	custom_bt[1].tex[Button::HOVER] = AreaLayout(res_mgr.Load<Texture>("minus_hover.png"));
+	custom_bt[1].tex[Button::DOWN] = AreaLayout(res_mgr.Load<Texture>("minus_down.png"));
+	custom_bt[1].tex[Button::DISABLED] = AreaLayout(res_mgr.Load<Texture>("minus_disabled.png"));
 
 	rt_char = game->render->CreateRenderTarget(Int2(128, 256));
 }
@@ -252,15 +254,11 @@ void CreateCharacterPanel::LoadData()
 //=================================================================================================
 void CreateCharacterPanel::Draw(ControlDrawData*)
 {
-	// background
-	gui->DrawSpriteFull(tBackground, Color::Alpha(128));
-
-	// panel
-	gui->DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
+	DrawPanel();
 
 	// top text
 	Rect rect0 = { 12 + pos.x, 12 + pos.y, pos.x + size.x - 12, 12 + pos.y + 72 };
-	gui->DrawText(gui->fBig, txCharacterCreation, DTF_CENTER, Color::Black, rect0);
+	gui->DrawText(GlobalGui::font_big, txCharacterCreation, DTF_CENTER, Color::Black, rect0);
 
 	// character
 	gui->DrawSprite(rt_char->GetTexture(), Int2(pos.x + 228, pos.y + 64));
@@ -285,7 +283,7 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 
 			// attribute/skill flow panel
 			Int2 fpos = flow_pos + global_pos;
-			gui->DrawItem(gui->tBox, fpos, flow_size, Color::White, 8, 32);
+			gui->DrawItem(tBox, fpos, flow_size, Color::White, 8, 32);
 			flow_scroll.Draw();
 
 			rect = Rect::Create(fpos + Int2(2, 2), flow_size - Int2(4, 4));
@@ -299,7 +297,7 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 				if(fi.section)
 				{
 					r.Bottom() = r.Top() + SECTION_H;
-					if(!gui->DrawText(gui->fBig, item_text, DTF_SINGLELINE, Color::Black, r, &rect))
+					if(!gui->DrawText(GlobalGui::font_big, item_text, DTF_SINGLELINE, Color::Black, r, &rect))
 						break;
 				}
 				else
@@ -308,10 +306,10 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 					{
 						mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(float(flow_size.x - 4) / 256, 17.f / 32), nullptr, 0.f, &Vec2(r.LeftTop()));
 						part.Right() = int(fi.part * 256);
-						gui->DrawSprite2(tKlasaCecha, mat, &part, &rect, Color::White);
+						gui->DrawSprite2(tPowerBar, mat, &part, &rect, Color::White);
 					}
 					r.Bottom() = r.Top() + VALUE_H;
-					if(!gui->DrawText(gui->default_font, item_text, DTF_SINGLELINE, Color::Black, r, &rect))
+					if(!gui->DrawText(GlobalGui::font, item_text, DTF_SINGLELINE, Color::Black, r, &rect))
 						break;
 				}
 			}
@@ -332,11 +330,11 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 
 			// left text "Skill points: X/Y"
 			Rect r = { global_pos.x + 16, global_pos.y + 310, global_pos.x + 216, global_pos.y + 360 };
-			gui->DrawText(gui->default_font, Format(txSkillPoints, cc.sp, cc.sp_max), 0, Color::Black, r);
+			gui->DrawText(GlobalGui::font, Format(txSkillPoints, cc.sp, cc.sp_max), 0, Color::Black, r);
 
 			// right text "Feats: X/Y"
 			Rect r2 = { global_pos.x + size.x - 216, global_pos.y + 310, global_pos.x + size.x - 16, global_pos.y + 360 };
-			gui->DrawText(gui->default_font, Format(txPerkPoints, cc.perks, cc.perks_max), DTF_RIGHT, Color::Black, r2);
+			gui->DrawText(GlobalGui::font, Format(txPerkPoints, cc.perks, cc.perks_max), DTF_RIGHT, Color::Black, r2);
 
 			tooltip.Draw();
 		}

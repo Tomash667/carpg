@@ -318,17 +318,11 @@ void Controls::LoadLanguage()
 //=================================================================================================
 void Controls::Draw(ControlDrawData*)
 {
-	// t³o
-	gui->DrawSpriteFull(tBackground, Color::Alpha(128));
+	DrawPanel();
 
-	// panel
-	gui->DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
+	for(Button& button : bts)
+		button.Draw();
 
-	// przyciski
-	for(int i = 0; i < 2; ++i)
-		bts[i].Draw();
-
-	// grid
 	grid.Draw();
 }
 
@@ -341,10 +335,10 @@ void Controls::Update(float dt)
 
 	if(picked == -1)
 	{
-		for(int i = 0; i < 2; ++i)
+		for(Button& button : bts)
 		{
-			bts[i].mouse_focus = focus;
-			bts[i].Update(dt);
+			button.mouse_focus = focus;
+			button.Update(dt);
 		}
 
 		grid.focus = focus;

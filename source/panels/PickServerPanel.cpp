@@ -79,11 +79,7 @@ void PickServerPanel::LoadData()
 //=================================================================================================
 void PickServerPanel::Draw(ControlDrawData*)
 {
-	// background
-	gui->DrawSpriteFull(tBackground, Color::Alpha(128));
-
-	// panel
-	gui->DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
+	DrawPanel();
 
 	// controls
 	for(int i = 0; i < 2; ++i)

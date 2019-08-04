@@ -18,8 +18,7 @@ Console::Console(const DialogInfo& info) : GameDialogBox(info), added(false)
 	itb.pos = Int2(0, 0);
 	itb.global_pos = Int2(0, 0);
 	itb.size = Int2(gui->wnd_size.x, gui->wnd_size.y / 3);
-	itb.event = InputEvent(this, &Console::OnInput);
-	itb.background = nullptr;
+	itb.event = InputTextBox::InputEvent(this, &Console::OnInput);
 	itb.Init();
 }
 

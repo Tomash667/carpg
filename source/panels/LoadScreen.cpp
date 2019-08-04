@@ -4,6 +4,7 @@
 #include "ResourceManager.h"
 #include "Engine.h"
 #include "Utility.h"
+#include "GlobalGui.h"
 
 //=================================================================================================
 void LoadScreen::LoadData()
@@ -32,7 +33,7 @@ void LoadScreen::Draw(ControlDrawData*)
 
 	// text
 	Rect r2 = { 32, 0, gui->wnd_size.x - 32, LONG(gui->wnd_size.y - img_size.y - 32) };
-	gui->DrawText(gui->default_font, text, DTF_CENTER | DTF_BOTTOM, Color::White, r2);
+	gui->DrawText(GlobalGui::font, text, DTF_CENTER | DTF_BOTTOM, Color::White, r2);
 }
 
 //=================================================================================================

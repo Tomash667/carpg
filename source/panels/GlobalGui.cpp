@@ -35,14 +35,17 @@
 #include "Language.h"
 #include "PlayerInfo.h"
 #include "Render.h"
+#include "Notifications.h"
+#include "LayoutLoader.h"
 
 GlobalGui* global::gui;
+FontPtr GlobalGui::font, GlobalGui::font_small, GlobalGui::font_big;
 
 //=================================================================================================
 GlobalGui::GlobalGui() : load_screen(nullptr), game_gui(nullptr), inventory(nullptr), stats(nullptr), team(nullptr),
 journal(nullptr), minimap(nullptr), actions(nullptr), book(nullptr), messages(nullptr), mp_box(nullptr), world_map(nullptr), main_menu(nullptr),
 console(nullptr), game_menu(nullptr), options(nullptr), saveload(nullptr), create_character(nullptr), multiplayer(nullptr), create_server(nullptr),
-pick_server(nullptr), server(nullptr), info_box(nullptr), controls(nullptr), cursor_allow_move(true)
+pick_server(nullptr), server(nullptr), info_box(nullptr), controls(nullptr), cursor_allow_move(true), notifications(nullptr)
 {
 }
 
@@ -73,6 +76,7 @@ GlobalGui::~GlobalGui()
 	delete server;
 	delete info_box;
 	delete controls;
+	delete notifications;
 	delete GetTextDialog::self;
 	delete GetNumberDialog::self;
 	delete PickItemDialog::self;
@@ -83,13 +87,6 @@ GlobalGui::~GlobalGui()
 void GlobalGui::Prepare()
 {
 	Game& game = Game::Get();
-
-	gui->AddFont("Florence-Regular.otf");
-	gui->default_font = gui->CreateFont("Arial", 12, 800, 512, 2);
-	gui->fBig = gui->CreateFont("Florence Regular", 28, 800, 512);
-	gui->fSmall = gui->CreateFont("Arial", 10, 500, 512);
-	gui->InitLayout();
-
 	GameDialogBox::game = &game;
 
 	// load screen
@@ -101,6 +98,15 @@ void GlobalGui::Prepare()
 void GlobalGui::InitOnce()
 {
 	Game& game = Game::Get();
+
+	// layout
+	LayoutLoader* loader = new LayoutLoader(gui);
+	Layout* layout = loader->LoadFromFile("../system/layout.txt");
+	font = loader->GetFont("normal");
+	font_small = loader->GetFont("small");
+	font_big = loader->GetFont("big");
+	gui->SetLayout(layout);
+	delete loader;
 
 	// game gui & panels
 	game_gui = new GameGui;
@@ -141,6 +147,10 @@ void GlobalGui::InitOnce()
 	// main menu
 	main_menu = new MainMenu(&game);
 	gui->Add(main_menu);
+
+	// notifications
+	notifications = new Notifications;
+	gui->Add(notifications);
 
 	// dialogs
 	DialogInfo info;
@@ -225,27 +235,7 @@ void GlobalGui::LoadData()
 {
 	ResourceManager& res_mgr = ResourceManager::Get();
 	GamePanel::tBackground = res_mgr.Load<Texture>("game_panel.png");
-	Control::tDialog = res_mgr.Load<Texture>("dialog.png");
-	Scrollbar::tex = res_mgr.Load<Texture>("scrollbar.png");
-	Scrollbar::tex2 = res_mgr.Load<Texture>("scrollbar2.png");
-	gui->tCursor[CURSOR_NORMAL] = res_mgr.Load<Texture>("cursor.png");
-	gui->tCursor[CURSOR_HAND] = res_mgr.Load<Texture>("hand.png");
-	gui->tCursor[CURSOR_TEXT] = res_mgr.Load<Texture>("text.png");
-	Button::tex[Button::NONE] = res_mgr.Load<Texture>("button.png");
-	Button::tex[Button::HOVER] = res_mgr.Load<Texture>("button_hover.png");
-	Button::tex[Button::DOWN] = res_mgr.Load<Texture>("button_down.png");
-	Button::tex[Button::DISABLED] = res_mgr.Load<Texture>("button_disabled.png");
-	DialogBox::tBackground = res_mgr.Load<Texture>("background.bmp");
-	TextBox::tBox = res_mgr.Load<Texture>("scrollbar.png");
-	CheckBox::tTick = res_mgr.Load<Texture>("ticked.png");
-	Gui::tBox = res_mgr.Load<Texture>("box.png");
-	Gui::tBox2 = res_mgr.Load<Texture>("box2.png");
-	Gui::tPix = res_mgr.Load<Texture>("pix.png");
-	Gui::tDown = res_mgr.Load<Texture>("dialog_down.png");
-	PickItemDialog::custom_x.tex[Button::NONE] = res_mgr.Load<Texture>("close.png");
-	PickItemDialog::custom_x.tex[Button::HOVER] = res_mgr.Load<Texture>("close_hover.png");
-	PickItemDialog::custom_x.tex[Button::DOWN] = res_mgr.Load<Texture>("close_down.png");
-	PickItemDialog::custom_x.tex[Button::DISABLED] = res_mgr.Load<Texture>("close_disabled.png");
+	GamePanel::tDialog = res_mgr.Load<Texture>("dialog.png");
 
 	actions->LoadData();
 	book->LoadData();
@@ -269,9 +259,6 @@ void GlobalGui::PostInit()
 {
 	create_character->Init();
 	saveload->LoadSaveSlots();
-
-	// load gui textures that require instant loading
-	gui->GetLayout()->LoadDefault();
 }
 
 //=================================================================================================

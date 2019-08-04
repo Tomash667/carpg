@@ -54,7 +54,7 @@ void MainMenu::LoadLanguage()
 		b.id = IdNewGame + i;
 		b.parent = this;
 		b.text = s.Get(names[i]);
-		b.size = gui->default_font->CalculateSize(b.text) + Int2(24, 24);
+		b.size = GlobalGui::font->CalculateSize(b.text) + Int2(24, 24);
 
 		maxsize = Int2::Max(maxsize, b.size);
 	}
@@ -85,19 +85,19 @@ void MainMenu::Draw(ControlDrawData*)
 
 	Rect r = { 0, 0, gui->wnd_size.x, gui->wnd_size.y };
 	r.Top() = r.Bottom() - 64;
-	gui->DrawText(gui->default_font, "Devmode(2013,2019) Tomashu & Leinnan", DTF_CENTER | DTF_BOTTOM | DTF_OUTLINE, Color::White, r);
+	gui->DrawText(GlobalGui::font, "Devmode(2013,2019) Tomashu & Leinnan", DTF_CENTER | DTF_BOTTOM | DTF_OUTLINE, Color::White, r);
 
 	r.Left() = gui->wnd_size.x - 512 - 16;
 	r.Right() = gui->wnd_size.x - 16;
 	r.Top() = 256 + 24;
 	r.Bottom() = r.Top() + 64;
-	gui->DrawText(gui->default_font, Format(txVersion, VERSION_STR), DTF_CENTER | DTF_OUTLINE, Color::White, r);
+	gui->DrawText(GlobalGui::font, Format(txVersion, VERSION_STR), DTF_CENTER | DTF_OUTLINE, Color::White, r);
 
 	r.Left() = 0;
 	r.Right() = gui->wnd_size.x;
 	r.Bottom() = gui->wnd_size.y - 16;
 	r.Top() = r.Bottom() - 64;
-	gui->DrawText(gui->default_font, version_text, DTF_CENTER | DTF_BOTTOM | DTF_OUTLINE, Color::White, r);
+	gui->DrawText(GlobalGui::font, version_text, DTF_CENTER | DTF_BOTTOM | DTF_OUTLINE, Color::White, r);
 
 	for(int i = 0; i < BUTTONS; ++i)
 	{

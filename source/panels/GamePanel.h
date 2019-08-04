@@ -30,7 +30,7 @@ public:
 	void UpdateBoxIndex(float dt, int index, int index2 = -1, bool refresh = false);
 	virtual void FormatBox(bool refresh) {}
 
-	static Texture* tBackground;
+	static TexturePtr tBackground, tDialog;
 	uint order;
 
 private:

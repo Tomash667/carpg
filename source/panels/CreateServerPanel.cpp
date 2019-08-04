@@ -5,6 +5,7 @@
 #include "Input.h"
 #include "Const.h"
 #include "Net.h"
+#include "GlobalGui.h"
 
 //=================================================================================================
 CreateServerPanel::CreateServerPanel(const DialogInfo& info) : GameDialogBox(info)
@@ -79,15 +80,11 @@ void CreateServerPanel::LoadLanguage()
 //=================================================================================================
 void CreateServerPanel::Draw(ControlDrawData*)
 {
-	// t³o
-	gui->DrawSpriteFull(tBackground, Color::Alpha(128));
-
-	// panel
-	gui->DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
+	DrawPanel();
 
 	// tekst
 	Rect r = { global_pos.x + 12, global_pos.y + 8, global_pos.x + size.x - 12, global_pos.y + size.y };
-	gui->DrawText(gui->fBig, txCreateServer, DTF_TOP | DTF_CENTER, Color::Black, r);
+	gui->DrawText(GlobalGui::font_big, txCreateServer, DTF_TOP | DTF_CENTER, Color::Black, r);
 
 	// reszta
 	cont.Draw();

@@ -38,7 +38,7 @@ void GameMenu::LoadLanguage()
 		bt[i].id = IdReturnToGame + i;
 		bt[i].parent = this;
 		bt[i].text = s.Get(names[i]);
-		bt[i].size = gui->default_font->CalculateSize(bt[i].text) + Int2(24, 24);
+		bt[i].size = GlobalGui::font->CalculateSize(bt[i].text) + Int2(24, 24);
 
 		maxsize = Int2::Max(maxsize, bt[i].size);
 	}
@@ -65,8 +65,7 @@ void GameMenu::LoadData()
 //=================================================================================================
 void GameMenu::Draw(ControlDrawData*)
 {
-	gui->DrawSpriteFull(tBackground, Color::Alpha(128));
-	gui->DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
+	DrawPanel();
 
 	gui->DrawSprite(tLogo, global_pos + Int2(8, 8));
 

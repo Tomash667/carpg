@@ -8,6 +8,7 @@
 #include "Portal.h"
 #include "Level.h"
 #include "ResourceManager.h"
+#include "GlobalGui.h"
 
 enum UnitType
 {
@@ -133,7 +134,7 @@ void Minimap::Draw(ControlDrawData*)
 		{
 			Int2 pt(Convert(text.pos));
 			Rect rect = { pt.x - text.size.x / 2, pt.y - text.size.y / 2, pt.x + text.size.x / 2, pt.y + text.size.y / 2 };
-			gui->DrawText(gui->default_font, text.text, DTF_SINGLELINE, Color::Black, rect);
+			gui->DrawText(GlobalGui::font, text.text, DTF_SINGLELINE, Color::Black, rect);
 		}
 
 		// lines from building name to building
@@ -151,7 +152,7 @@ void Minimap::Draw(ControlDrawData*)
 
 	// location name
 	Rect rect = { 0,0,gui->wnd_size.x - 8,gui->wnd_size.y - 8 };
-	gui->DrawText(gui->default_font, L.GetCurrentLocationText(), DTF_RIGHT | DTF_OUTLINE, Color(255, 0, 0, 222), rect);
+	gui->DrawText(GlobalGui::font, L.GetCurrentLocationText(), DTF_RIGHT | DTF_OUTLINE, Color(255, 0, 0, 222), rect);
 }
 
 //=================================================================================================
@@ -226,7 +227,7 @@ void Minimap::Build()
 			{
 				Text& text = Add1(texts);
 				text.text = b.building->name.c_str();
-				text.size = gui->default_font->CalculateSize(b.building->name);
+				text.size = GlobalGui::font->CalculateSize(b.building->name);
 				text.pos = text.anchor = TransformTile(b.pt);
 			}
 		}

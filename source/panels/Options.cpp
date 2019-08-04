@@ -177,11 +177,11 @@ void Options::LoadLanguage()
 	bts[0].id = IdOk;
 	bts[0].parent = this;
 	bts[0].text = Str("ok");
-	bts[0].size = gui->default_font->CalculateSize(bts[0].text) + Int2(24, 24);
+	bts[0].size = GlobalGui::font->CalculateSize(bts[0].text) + Int2(24, 24);
 	bts[1].id = IdControls;
 	bts[1].parent = this;
 	bts[1].text = s.Get("controls");
-	bts[1].size = gui->default_font->CalculateSize(bts[1].text) + Int2(24, 24);
+	bts[1].size = GlobalGui::font->CalculateSize(bts[1].text) + Int2(24, 24);
 	bts[0].size.x = bts[1].size.x = max(bts[0].size.x, bts[1].size.x);
 	bts[0].pos = Int2(20, 410);
 	bts[1].pos = Int2(bts[0].size.x + 40, 410);
@@ -234,13 +234,9 @@ void Options::LoadLanguage()
 }
 
 //=================================================================================================
-void Options::Draw(ControlDrawData* /*cdd*/)
+void Options::Draw(ControlDrawData*)
 {
-	// t³o
-	gui->DrawSpriteFull(tBackground, Color::Alpha(128));
-
-	// panel
-	gui->DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
+	DrawPanel();
 
 	// checkboxy
 	for(int i = 0; i < 5; ++i)
@@ -256,36 +252,36 @@ void Options::Draw(ControlDrawData* /*cdd*/)
 
 	// tekst OPCJE
 	Rect r = { global_pos.x, global_pos.y + 8, global_pos.x + size.x, global_pos.y + size.y };
-	gui->DrawText(gui->fBig, txOPTIONS, DTF_TOP | DTF_CENTER, Color::Black, r);
+	gui->DrawText(GlobalGui::font_big, txOPTIONS, DTF_TOP | DTF_CENTER, Color::Black, r);
 
 	// tekst Rozdzielczoœæ:
 	Rect r2 = { global_pos.x + 10, global_pos.y + 50, global_pos.x + size.x, global_pos.y + 75 };
-	gui->DrawText(gui->default_font, txResolution, DTF_SINGLELINE, Color::Black, r2);
+	gui->DrawText(GlobalGui::font, txResolution, DTF_SINGLELINE, Color::Black, r2);
 	// Multisampling:
 	r2.Top() = global_pos.y + 300;
 	r2.Bottom() = r2.Top() + 20;
-	gui->DrawText(gui->default_font, txMultisampling, DTF_SINGLELINE, Color::Black, r2);
+	gui->DrawText(GlobalGui::font, txMultisampling, DTF_SINGLELINE, Color::Black, r2);
 	// Jêzyk:
 	r2.Top() = global_pos.y + 360;
 	r2.Bottom() = r2.Top() + 20;
-	gui->DrawText(gui->default_font, txLanguage, DTF_SINGLELINE, Color::Black, r2);
+	gui->DrawText(GlobalGui::font, txLanguage, DTF_SINGLELINE, Color::Black, r2);
 	// G³oœnoœæ dŸwiêku (0)
 	r2.Left() = global_pos.x + 290;
 	r2.Top() = global_pos.y + 270;
 	r2.Bottom() = r2.Top() + 20;
-	gui->DrawText(gui->default_font, Format("%s (%d)", txSoundVolume, sound_volume), DTF_SINGLELINE, Color::Black, r2);
+	gui->DrawText(GlobalGui::font, Format("%s (%d)", txSoundVolume, sound_volume), DTF_SINGLELINE, Color::Black, r2);
 	// G³oœnoœæ muzyki (0)
 	r2.Top() = global_pos.y + 310;
 	r2.Bottom() = r2.Top() + 20;
-	gui->DrawText(gui->default_font, Format("%s (%d)", txMusicVolume, music_volume), DTF_SINGLELINE, Color::Black, r2);
+	gui->DrawText(GlobalGui::font, Format("%s (%d)", txMusicVolume, music_volume), DTF_SINGLELINE, Color::Black, r2);
 	// Czu³oœæ myszki (0)
 	r2.Top() = global_pos.y + 350;
 	r2.Bottom() = r2.Top() + 20;
-	gui->DrawText(gui->default_font, Format("%s (%d)", txMouseSensitivity, mouse_sensitivity), DTF_SINGLELINE, Color::Black, r2);
+	gui->DrawText(GlobalGui::font, Format("%s (%d)", txMouseSensitivity, mouse_sensitivity), DTF_SINGLELINE, Color::Black, r2);
 	// Zasiêg trawy (0)
 	r2.Top() = global_pos.y + 390;
 	r2.Bottom() = r2.Top() + 20;
-	gui->DrawText(gui->default_font, Format("%s (%d)", txGrassRange, grass_range), DTF_SINGLELINE, Color::Black, r2);
+	gui->DrawText(GlobalGui::font, Format("%s (%d)", txGrassRange, grass_range), DTF_SINGLELINE, Color::Black, r2);
 
 	// listbox z rozdzielczoœciami
 	res.Draw();

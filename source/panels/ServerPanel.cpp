@@ -88,7 +88,7 @@ ServerPanel::ServerPanel(const DialogInfo& info) : GameDialogBox(info), autoread
 	itb.lose_focus = false;
 	itb.pos = Int2(10, 320);
 	itb.size = Int2(320, 182);
-	itb.event = InputEvent(this, &ServerPanel::OnInput);
+	itb.event = InputTextBox::InputEvent(this, &ServerPanel::OnInput);
 	itb.Init();
 
 	visible = false;
@@ -188,11 +188,7 @@ void ServerPanel::LoadData()
 //=================================================================================================
 void ServerPanel::Draw(ControlDrawData*)
 {
-	// background
-	gui->DrawSpriteFull(tBackground, Color::Alpha(128));
-
-	// panel
-	gui->DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
+	DrawPanel();
 
 	// controls
 	int count = (Net::IsServer() ? 6 : 3);
@@ -203,7 +199,7 @@ void ServerPanel::Draw(ControlDrawData*)
 
 	// text
 	Rect r = { 340 + global_pos.x, 355 + global_pos.y, 340 + 185 + global_pos.x, 355 + 160 + global_pos.y };
-	gui->DrawText(gui->default_font, Format(txServerText, server_name.c_str(), N.active_players, max_players, N.password.empty() ? gui->txNo : gui->txYes),
+	gui->DrawText(GlobalGui::font, Format(txServerText, server_name.c_str(), N.active_players, max_players, N.password.empty() ? gui->txNo : gui->txYes),
 		0, Color::Black, r, &r);
 }
 

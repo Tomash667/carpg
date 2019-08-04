@@ -138,6 +138,7 @@ void GameGui::LoadData()
 	tPotion = res_mgr.Load<Texture>("health-potion.png");
 	tEmerytura = res_mgr.Load<Texture>("emerytura.jpg");
 	tEquipped = res_mgr.Load<Texture>("equipped.png");
+	tDialog = res_mgr.Load<Texture>("dialog.png");
 
 	BuffInfo::LoadImages();
 }
@@ -297,14 +298,14 @@ void GameGui::DrawFront()
 		{
 			Vec3 text_pos = game.pc_data.before_player_ptr.chest->pos;
 			text_pos.y += 0.75f;
-			gui->DrawText3D(gui->default_font, txChest, DTF_OUTLINE, Color::White, text_pos);
+			gui->DrawText3D(GlobalGui::font, txChest, DTF_OUTLINE, Color::White, text_pos);
 		}
 		break;
 	case BP_DOOR:
 		{
 			Vec3 text_pos = game.pc_data.before_player_ptr.door->pos;
 			text_pos.y += 1.75f;
-			gui->DrawText3D(gui->default_font, game.pc_data.before_player_ptr.door->locked == LOCK_NONE ? txDoor : txDoorLocked, DTF_OUTLINE, Color::White, text_pos);
+			gui->DrawText3D(GlobalGui::font, game.pc_data.before_player_ptr.door->locked == LOCK_NONE ? txDoor : txDoorLocked, DTF_OUTLINE, Color::White, text_pos);
 		}
 		break;
 	case BP_ITEM:
@@ -322,7 +323,7 @@ void GameGui::DrawFront()
 				text = item.item->name.c_str();
 			else
 				text = Format("%s (%d)", item.item->name.c_str(), item.count);
-			gui->DrawText3D(gui->default_font, text, DTF_OUTLINE, Color::White, text_pos);
+			gui->DrawText3D(GlobalGui::font, text, DTF_OUTLINE, Color::White, text_pos);
 		}
 		break;
 	case BP_USABLE:
@@ -330,7 +331,7 @@ void GameGui::DrawFront()
 			Usable& u = *game.pc_data.before_player_ptr.usable;
 			Vec3 text_pos = u.pos;
 			text_pos.y += u.GetMesh()->head.radius;
-			gui->DrawText3D(gui->default_font, u.base->name, DTF_OUTLINE, Color::White, text_pos);
+			gui->DrawText3D(GlobalGui::font, u.base->name, DTF_OUTLINE, Color::White, text_pos);
 		}
 		break;
 	}
@@ -351,8 +352,8 @@ void GameGui::DrawFront()
 			int off = int(scrollbar.offset);
 
 			// zaznaczenie
-			Rect r_img = Rect::Create(Int2(offset.x, offset.y + game.dialog_context.choice_selected*gui->default_font->height - off + 6),
-				Int2(dsize.x - 16, gui->default_font->height));
+			Rect r_img = Rect::Create(Int2(offset.x, offset.y + game.dialog_context.choice_selected*GlobalGui::font->height - off + 6),
+				Int2(dsize.x - 16, GlobalGui::font->height));
 			if(r_img.Bottom() >= r.Top() && r_img.Top() < r.Bottom())
 			{
 				if(r_img.Top() < r.Top())
@@ -382,13 +383,13 @@ void GameGui::DrawFront()
 			}
 			Rect r2 = r;
 			r2 -= Int2(0, off);
-			gui->DrawText(gui->default_font, s, 0, Color::Black, r2, &r);
+			gui->DrawText(GlobalGui::font, s, 0, Color::Black, r2, &r);
 
 			// pasek przewijania
 			scrollbar.Draw();
 		}
 		else if(game.dialog_context.dialog_text)
-			gui->DrawText(gui->default_font, game.dialog_context.dialog_text, DTF_CENTER | DTF_VCENTER, Color::Black, r);
+			gui->DrawText(GlobalGui::font, game.dialog_context.dialog_text, DTF_CENTER | DTF_VCENTER, Color::Black, r);
 	}
 
 	// get buffs
@@ -498,7 +499,7 @@ void GameGui::DrawFront()
 					gui->DrawSprite2(tEquipped, mat);
 				gui->DrawSprite2(icon, mat);
 				if(count > 0)
-					gui->DrawText(gui->fSmall, Format("%d", count), DTF_RIGHT | DTF_BOTTOM, Color::Black, r);
+					gui->DrawText(GlobalGui::font_small, Format("%d", count), DTF_RIGHT | DTF_BOTTOM, Color::Black, r);
 			}
 			else
 			{
@@ -541,12 +542,12 @@ void GameGui::DrawFront()
 
 			// charges
 			if(action.charges > 1)
-				gui->DrawText(gui->fSmall, Format("%d/%d", pc.action_charges, action.charges), DTF_RIGHT | DTF_BOTTOM, Color::Black, r);
+				gui->DrawText(GlobalGui::font_small, Format("%d/%d", pc.action_charges, action.charges), DTF_RIGHT | DTF_BOTTOM, Color::Black, r);
 		}
 
 		const GameKey& gk = GKey[GK_SHORTCUT1 + i];
 		if(gk[0] != Key::None)
-			gui->DrawText(gui->fSmall, global::gui->controls->key_text[(int)gk[0]], DTF_SINGLELINE, Color::White, r);
+			gui->DrawText(GlobalGui::font_small, global::gui->controls->key_text[(int)gk[0]], DTF_SINGLELINE, Color::White, r);
 
 		spos.x += offset;
 	}
@@ -615,25 +616,25 @@ void GameGui::DrawBack()
 		}
 		else
 			text = Format("Fps: %g", FLT10(game.engine->GetFps()));
-		Int2 s = gui->default_font->CalculateSize(text);
+		Int2 s = GlobalGui::font->CalculateSize(text);
 		if(Int2::Distance(s, debug_info_size) < 32)
 			debug_info_size = Int2::Max(s, debug_info_size);
 		else
 			debug_info_size = s;
 		gui->DrawItem(tDialog, Int2(0, 0), debug_info_size + Int2(24, 24), Color::Alpha(128));
 		Rect r = { 12, 12, 12 + s.x, 12 + s.y };
-		gui->DrawText(gui->default_font, text, 0, Color::Black, r);
+		gui->DrawText(GlobalGui::font, text, 0, Color::Black, r);
 	}
 
 	// profiler
 	const string& str = Profiler::g_profiler.GetString();
 	if(!str.empty())
 	{
-		Int2 block_size = gui->default_font->CalculateSize(str) + Int2(24, 24);
+		Int2 block_size = GlobalGui::font->CalculateSize(str) + Int2(24, 24);
 		profiler_size = Int2::Max(block_size, profiler_size);
 		gui->DrawItem(tDialog, Int2(gui->wnd_size.x - profiler_size.x, 0), profiler_size, Color::Alpha(128));
 		Rect rect = { gui->wnd_size.x - profiler_size.x + 12, 12, gui->wnd_size.x, gui->wnd_size.y };
-		gui->DrawText(gui->default_font, str, DTF_LEFT, Color::Black, rect);
+		gui->DrawText(GlobalGui::font, str, DTF_LEFT, Color::Black, rect);
 	}
 
 	// tooltip
@@ -672,7 +673,7 @@ void GameGui::DrawDeathScreen()
 			cstring text = Format(game.death_solo ? txDeathAlone : txDeath, game.pc->kills, GameStats::Get().total_kills - game.pc->kills);
 			cstring text2 = Format("%s\n\n%s", text, game.death_screen == 3 ? txPressEsc : "\n");
 			Rect rect = { 0, 0, gui->wnd_size.x, gui->wnd_size.y };
-			gui->DrawText(gui->default_font, text2, DTF_CENTER | DTF_BOTTOM, color, rect);
+			gui->DrawText(GlobalGui::font, text2, DTF_CENTER | DTF_BOTTOM, color, rect);
 		}
 	}
 }
@@ -696,7 +697,7 @@ void GameGui::DrawEndOfGameScreen()
 	cstring text = Format(txGameTimeout, game.pc->kills, GameStats::Get().total_kills - game.pc->kills);
 	cstring text2 = Format("%s\n\n%s", text, game.death_fade >= 1.f ? txPressEsc : "\n");
 	Rect rect = { 0, 0, gui->wnd_size.x, gui->wnd_size.y };
-	gui->DrawText(gui->default_font, text2, DTF_CENTER | DTF_BOTTOM, color, rect);
+	gui->DrawText(GlobalGui::font, text2, DTF_CENTER | DTF_BOTTOM, color, rect);
 }
 
 //=================================================================================================
@@ -768,7 +769,7 @@ void GameGui::DrawSpeechBubbles()
 
 		Rect rect = Rect::Create(Int2(it.pt.x - sb.size.x / 2, it.pt.y - sb.size.y / 2), sb.size);
 		gui->DrawItem(tBubble, rect.LeftTop(), sb.size, a1);
-		gui->DrawText(gui->fSmall, sb.text, DTF_CENTER | DTF_VCENTER, a2, rect);
+		gui->DrawText(GlobalGui::font_small, sb.text, DTF_CENTER | DTF_VCENTER, a2, rect);
 	}
 }
 
@@ -788,7 +789,7 @@ void GameGui::DrawUnitInfo(cstring text, Unit& unit, const Vec3& pos, int alpha)
 
 	// text
 	Rect r;
-	if(gui->DrawText3D(gui->default_font, text, DTF_OUTLINE, text_color, pos, &r))
+	if(gui->DrawText3D(GlobalGui::font, text, DTF_OUTLINE, text_color, pos, &r))
 	{
 		float hpp;
 		if(!unit.IsAlive() && !unit.IsFollower())
@@ -1153,7 +1154,7 @@ void GameGui::AddSpeechBubble(Unit* unit, cstring text)
 	}
 
 	// calculate size
-	Int2 s = gui->fSmall->CalculateSize(text);
+	Int2 s = GlobalGui::font_small->CalculateSize(text);
 	int total = s.x;
 	int lines = 1 + total / 400;
 
@@ -1191,7 +1192,7 @@ void GameGui::AddSpeechBubble(const Vec3& pos, cstring text)
 		speech_bbs.push_back(sb);
 	}
 
-	Int2 size = gui->fSmall->CalculateSize(text);
+	Int2 size = GlobalGui::font_small->CalculateSize(text);
 	int total = size.x;
 	int lines = 1 + total / 400;
 
@@ -1224,7 +1225,7 @@ bool GameGui::UpdateChoice(DialogContext& ctx, int choices)
 	int cursor_choice = -1;
 	if(gui->cursor_pos.x >= offset.x && gui->cursor_pos.x < offset.x + dsize.x - 16 && gui->cursor_pos.y >= offset.y && gui->cursor_pos.y < offset.y + dsize.y - 12)
 	{
-		int w = (gui->cursor_pos.y - offset.y + int(scrollbar.offset)) / gui->default_font->height;
+		int w = (gui->cursor_pos.y - offset.y + int(scrollbar.offset)) / GlobalGui::font->height;
 		if(w < choices)
 			cursor_choice = w;
 	}
@@ -1251,7 +1252,7 @@ bool GameGui::UpdateChoice(DialogContext& ctx, int choices)
 	}
 	if(moved && choices > 5)
 	{
-		scrollbar.offset = float(gui->default_font->height*(ctx.choice_selected - 2));
+		scrollbar.offset = float(GlobalGui::font->height*(ctx.choice_selected - 2));
 		if(scrollbar.offset < 0.f)
 			scrollbar.offset = 0.f;
 		else if(scrollbar.offset + scrollbar.part > scrollbar.total)
@@ -1311,7 +1312,7 @@ void GameGui::UpdateScrollbar(int choices)
 {
 	scrollbar.part = 104 - 12;
 	scrollbar.offset = 0.f;
-	scrollbar.total = choices * gui->default_font->height;
+	scrollbar.total = choices * GlobalGui::font->height;
 	scrollbar.LostFocus();
 }
 

@@ -128,6 +128,6 @@ private:
 	vector<Perk> available_perks;
 	vector<pair<cstring, int>> taken_perks;
 	const Item* items[SLOT_MAX];
-	Texture* tKlasaCecha;
+	TexturePtr tBox, tPowerBar;
 	RenderTarget* rt_char;
 };

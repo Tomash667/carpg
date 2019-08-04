@@ -81,7 +81,7 @@ void ActionPanel::Draw(ControlDrawData*)
 		pos.x + size.x - 16,
 		pos.y + size.y - 16
 	};
-	gui->DrawText(gui->fBig, txActions, DTF_TOP | DTF_CENTER, Color::Black, rect);
+	gui->DrawText(GlobalGui::font_big, txActions, DTF_TOP | DTF_CENTER, Color::Black, rect);
 
 	// abilities grid group
 	if(!actions.empty())
@@ -110,7 +110,7 @@ void ActionPanel::DrawGroup(cstring text)
 	int shift_x = pos.x + 12 + (size.x - 48) % 63 / 2;
 	int shift_y = pos.y + 48 + (size.y - 64 - 34) % 63 / 2 + grid_offset;
 
-	gui->DrawText(gui->fBig, text, DTF_LEFT, Color::Black, Rect(shift_x, shift_y, shift_x + 400, shift_y + 50));
+	gui->DrawText(GlobalGui::font_big, text, DTF_LEFT, Color::Black, Rect(shift_x, shift_y, shift_x + 400, shift_y + 50));
 	shift_y += 40;
 
 	for(int y = 0; y < count_h; ++y)
