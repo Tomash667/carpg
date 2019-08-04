@@ -69,10 +69,10 @@ void MainMenu::LoadLanguage()
 //=================================================================================================
 void MainMenu::LoadData()
 {
-	auto& tex_mgr = ResourceManager::Get<Texture>();
-	tex_mgr.AddLoadTask("menu_bg.jpg", tBackground);
-	tex_mgr.AddLoadTask("logo.png", tLogo);
-	tex_mgr.AddLoadTask("fmod_logo.png", tFModLogo);
+	ResourceManager& res_mgr = ResourceManager::Get();
+	tBackground = res_mgr.Load<Texture>("menu_bg.jpg");
+	tLogo = res_mgr.Load<Texture>("logo.png");
+	tFModLogo = res_mgr.Load<Texture>("fmod_logo.png");
 }
 
 //=================================================================================================

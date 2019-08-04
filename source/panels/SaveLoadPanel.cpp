@@ -19,7 +19,7 @@
 #include "DirectX.h"
 
 //=================================================================================================
-SaveLoad::SaveLoad(const DialogInfo& info) : GameDialogBox(info), choice(0), tMiniSave(nullptr)
+SaveLoad::SaveLoad(const DialogInfo& info) : GameDialogBox(info), choice(0)
 {
 	size = Int2(610, 400);
 
@@ -99,10 +99,10 @@ void SaveLoad::Draw(ControlDrawData*)
 	}
 
 	// image
-	if(tMiniSave)
+	if(tMiniSave.tex)
 	{
 		Rect r2 = Rect::Create(Int2(global_pos.x + 400 - 81, global_pos.y + 42 + 103), Int2(256, 192));
-		gui->DrawSpriteRect(tMiniSave, r2);
+		gui->DrawSpriteRect(&tMiniSave, r2);
 	}
 }
 
@@ -238,21 +238,26 @@ void SaveLoad::SetSaveMode(bool save_mode, bool online, SaveSlot* slots)
 void SaveLoad::SetSaveImage()
 {
 	SaveSlot& slot = slots[choice];
-	SafeRelease(tMiniSave);
+	SafeRelease(tMiniSave.tex);
+	tMiniSave.state = ResourceState::NotLoaded;
 	if(slot.valid)
 	{
 		if(slot.img_size == 0)
 		{
 			cstring filename = Format("saves/%s/%d.jpg", online ? "multi" : "single", choice + 1);
 			if(io::FileExists(filename))
-				V(D3DXCreateTextureFromFile(gui->GetDevice(), filename, &tMiniSave));
+			{
+				V(D3DXCreateTextureFromFile(gui->GetDevice(), filename, &tMiniSave.tex));
+				tMiniSave.state = ResourceState::Loaded;
+			}
 		}
 		else
 		{
 			cstring filename = Format("saves/%s/%d.sav", online ? "multi" : "single", choice + 1);
 			Buffer* buf = FileReader::ReadToBuffer(filename, slot.img_offset, slot.img_size);
-			V(D3DXCreateTextureFromFileInMemory(gui->GetDevice(), buf->Data(), buf->Size(), &tMiniSave));
+			V(D3DXCreateTextureFromFileInMemory(gui->GetDevice(), buf->Data(), buf->Size(), &tMiniSave.tex));
 			buf->Free();
+			tMiniSave.state = ResourceState::Loaded;
 		}
 	}
 }

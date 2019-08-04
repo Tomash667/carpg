@@ -223,29 +223,29 @@ void GlobalGui::LoadLanguage()
 //=================================================================================================
 void GlobalGui::LoadData()
 {
-	auto& tex_mgr = ResourceManager::Get<Texture>();
-	tex_mgr.AddLoadTask("game_panel.png", GamePanel::tBackground);
-	tex_mgr.AddLoadTask("dialog.png", Control::tDialog);
-	tex_mgr.AddLoadTask("scrollbar.png", Scrollbar::tex);
-	tex_mgr.AddLoadTask("scrollbar2.png", Scrollbar::tex2);
-	tex_mgr.AddLoadTask("cursor.png", gui->tCursor[CURSOR_NORMAL]);
-	tex_mgr.AddLoadTask("hand.png", gui->tCursor[CURSOR_HAND]);
-	tex_mgr.AddLoadTask("text.png", gui->tCursor[CURSOR_TEXT]);
-	tex_mgr.AddLoadTask("button.png", Button::tex[Button::NONE]);
-	tex_mgr.AddLoadTask("button_hover.png", Button::tex[Button::HOVER]);
-	tex_mgr.AddLoadTask("button_down.png", Button::tex[Button::DOWN]);
-	tex_mgr.AddLoadTask("button_disabled.png", Button::tex[Button::DISABLED]);
-	tex_mgr.AddLoadTask("background.bmp", DialogBox::tBackground);
-	tex_mgr.AddLoadTask("scrollbar.png", TextBox::tBox);
-	tex_mgr.AddLoadTask("ticked.png", CheckBox::tTick);
-	tex_mgr.AddLoadTask("box.png", Gui::tBox);
-	tex_mgr.AddLoadTask("box2.png", Gui::tBox2);
-	tex_mgr.AddLoadTask("pix.png", Gui::tPix);
-	tex_mgr.AddLoadTask("dialog_down.png", Gui::tDown);
-	tex_mgr.AddLoadTask("close.png", PickItemDialog::custom_x.tex[Button::NONE]);
-	tex_mgr.AddLoadTask("close_hover.png", PickItemDialog::custom_x.tex[Button::HOVER]);
-	tex_mgr.AddLoadTask("close_down.png", PickItemDialog::custom_x.tex[Button::DOWN]);
-	tex_mgr.AddLoadTask("close_disabled.png", PickItemDialog::custom_x.tex[Button::DISABLED]);
+	ResourceManager& res_mgr = ResourceManager::Get();
+	GamePanel::tBackground = res_mgr.Load<Texture>("game_panel.png");
+	Control::tDialog = res_mgr.Load<Texture>("dialog.png");
+	Scrollbar::tex = res_mgr.Load<Texture>("scrollbar.png");
+	Scrollbar::tex2 = res_mgr.Load<Texture>("scrollbar2.png");
+	gui->tCursor[CURSOR_NORMAL] = res_mgr.Load<Texture>("cursor.png");
+	gui->tCursor[CURSOR_HAND] = res_mgr.Load<Texture>("hand.png");
+	gui->tCursor[CURSOR_TEXT] = res_mgr.Load<Texture>("text.png");
+	Button::tex[Button::NONE] = res_mgr.Load<Texture>("button.png");
+	Button::tex[Button::HOVER] = res_mgr.Load<Texture>("button_hover.png");
+	Button::tex[Button::DOWN] = res_mgr.Load<Texture>("button_down.png");
+	Button::tex[Button::DISABLED] = res_mgr.Load<Texture>("button_disabled.png");
+	DialogBox::tBackground = res_mgr.Load<Texture>("background.bmp");
+	TextBox::tBox = res_mgr.Load<Texture>("scrollbar.png");
+	CheckBox::tTick = res_mgr.Load<Texture>("ticked.png");
+	Gui::tBox = res_mgr.Load<Texture>("box.png");
+	Gui::tBox2 = res_mgr.Load<Texture>("box2.png");
+	Gui::tPix = res_mgr.Load<Texture>("pix.png");
+	Gui::tDown = res_mgr.Load<Texture>("dialog_down.png");
+	PickItemDialog::custom_x.tex[Button::NONE] = res_mgr.Load<Texture>("close.png");
+	PickItemDialog::custom_x.tex[Button::HOVER] = res_mgr.Load<Texture>("close_hover.png");
+	PickItemDialog::custom_x.tex[Button::DOWN] = res_mgr.Load<Texture>("close_down.png");
+	PickItemDialog::custom_x.tex[Button::DISABLED] = res_mgr.Load<Texture>("close_disabled.png");
 
 	actions->LoadData();
 	book->LoadData();

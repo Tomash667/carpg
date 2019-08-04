@@ -26,16 +26,15 @@ public:
 	void OnGiveGold(int id);
 	void OnKick(int id);
 
-	TEX tKorona, tCzaszka;
+private:
+	Game& game;
 	Scrollbar scrollbar;
 	Button bt[4];
 	cstring txTeam, txCharInTeam, txPing, txDays, txPickCharacter, txNoCredit, txPayCreditAmount, txNotEnoughGold, txPaidCredit, txPaidCreditPart, txGiveGoldSelf, txGiveGoldAmount, txOnlyPcLeader,
 		txAlreadyLeader, txYouAreLeader, txCantChangeLeader, txPcAlreadyLeader, txPcIsLeader, txCantKickMyself, txCantKickAi, txReallyKick, txAlreadyLeft, txCAlreadyLeft;
 	int counter, mode, picked;
+	TexturePtr tCrown, tSkull;
 	vector<Hitbox> hitboxes;
 	Unit* target;
 	bool picking;
-
-private:
-	Game& game;
 };

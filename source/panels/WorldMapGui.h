@@ -38,7 +38,7 @@ private:
 	Vec2 GetCameraCenter() const;
 
 	Game& game;
-	TEX tMapBg, tWorldMap, tMapIcon[LI_MAX], tEnc, tSelected[2], tMover, tSide, tMagnifyingGlass, tTrackingArrow;
+	TexturePtr tMapBg, tWorldMap, tMapIcon[LI_MAX], tEnc, tSelected[2], tMover, tSide, tMagnifyingGlass, tTrackingArrow;
 	cstring txBuildings;
 	ComboBox combo_box;
 	Vec2 offset, c_pos;

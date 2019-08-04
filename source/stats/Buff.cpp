@@ -18,12 +18,12 @@ BuffInfo BuffInfo::info[] = {
 
 void BuffInfo::LoadImages()
 {
-	auto& tex_mgr = ResourceManager::Get<Texture>();
+	ResourceManager& res_mgr = ResourceManager::Get();
 	for(int i=0; i<BUFF_COUNT; ++i)
 	{
-		auto& buff = info[i];
+		BuffInfo& buff = info[i];
 		cstring path = Format("%s.png", buff.id);
-		tex_mgr.AddLoadTask(path, buff.img);
+		buff.img = res_mgr.Load<Texture>(path);
 	}
 }
 

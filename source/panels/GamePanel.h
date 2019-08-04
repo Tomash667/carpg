@@ -30,7 +30,7 @@ public:
 	void UpdateBoxIndex(float dt, int index, int index2 = -1, bool refresh = false);
 	virtual void FormatBox(bool refresh) {}
 
-	static TEX tBackground;
+	static Texture* tBackground;
 	uint order;
 
 private:
@@ -41,7 +41,7 @@ protected:
 	float show_timer, box_alpha;
 	int last_index, last_index2;
 	string box_text, box_text_small;
-	TEX box_img;
+	Texture* box_img;
 	Rect box_big, box_small;
 	Int2 box_size, box_pos;
 	Int2 box_img_pos, box_img_size;

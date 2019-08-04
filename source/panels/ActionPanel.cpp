@@ -53,11 +53,11 @@ void ActionPanel::LoadLanguage()
 //=================================================================================================
 void ActionPanel::LoadData()
 {
-	auto& tex_mgr = ResourceManager::Get<Texture>();
-	tex_mgr.AddLoadTask("item_bar.png", tItemBar);
-	tex_mgr.AddLoadTask("sword-brandish.png", tMelee);
-	tex_mgr.AddLoadTask("bow-arrow.png", tRanged);
-	tex_mgr.AddLoadTask("health-potion.png", tPotion);
+	ResourceManager& res_mgr = ResourceManager::Get();
+	tItemBar = res_mgr.Load<Texture>("item_bar.png");
+	tMelee = res_mgr.Load<Texture>("sword-brandish.png");
+	tRanged = res_mgr.Load<Texture>("bow-arrow.png");
+	tPotion = res_mgr.Load<Texture>("health-potion.png");
 }
 
 //=================================================================================================
@@ -87,7 +87,7 @@ void ActionPanel::Draw(ControlDrawData*)
 	if(!actions.empty())
 	{
 		images.clear();
-		images.push_back(actions[0]->tex->tex);
+		images.push_back(actions[0]->tex);
 		DrawGroup(txAbilities);
 	}
 
@@ -166,7 +166,7 @@ void ActionPanel::Update(float dt)
 		if(Int2::Distance(gui->cursor_pos, drag_and_drop_pos) > 3)
 		{
 			int value = ConvertToShortcutSpecial(drag_and_drop_group, drag_and_drop_index);
-			TEX icon = nullptr;
+			Texture* icon = nullptr;
 			switch(value)
 			{
 			case Shortcut::SPECIAL_MELEE_WEAPON:
@@ -179,7 +179,7 @@ void ActionPanel::Update(float dt)
 				icon = tPotion;
 				break;
 			case Shortcut::SPECIAL_ACTION:
-				icon = actions[0]->tex->tex;
+				icon = actions[0]->tex;
 				break;
 			}
 			global::gui->game_gui->StartDragAndDrop(Shortcut::TYPE_SPECIAL, value, icon);
@@ -262,7 +262,7 @@ void ActionPanel::GetTooltip(TooltipController*, int group, int id)
 	{
 		Action& action = *actions[id];
 		tooltip.anything = true;
-		tooltip.img = action.tex->tex;
+		tooltip.img = action.tex;
 		tooltip.big_text = action.name;
 		tooltip.text = action.desc;
 		if(action.charges == 1)

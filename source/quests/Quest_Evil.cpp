@@ -244,7 +244,7 @@ void Quest_Evil::SetProgress(int prog2)
 			Object* obj = L.local_area->FindObject(base_obj);
 			obj->base = BaseObject::Get("altar");
 			obj->mesh = obj->base->mesh;
-			ResourceManager::Get<Mesh>().Load(obj->mesh);
+			ResourceManager::Get().Load(obj->mesh);
 			// usuñ cz¹steczki
 			float best_dist = 999.f;
 			ParticleEmitter* best_pe = nullptr;

@@ -144,7 +144,7 @@ void Game::GenerateItemImageImpl(Item& item)
 	// if item use image, set it as icon
 	if(item.tex)
 	{
-		item.icon = item.tex->tex;
+		item.icon = item.tex;
 		return;
 	}
 
@@ -165,19 +165,21 @@ void Game::GenerateItemImageImpl(Item& item)
 	else
 		it = item_texture_map.end();
 
-	TEX t = TryGenerateItemImage(item);
+	Texture* t = TryGenerateItemImage(item);
 	item.icon = t;
 	if(it != item_texture_map.end())
 		item_texture_map.insert(it, ItemTextureMap::value_type(item.mesh, t));
+	else
+		over_item_textures.push_back(t);
 }
 
 //=================================================================================================
-TEX Game::TryGenerateItemImage(const Item& item)
+Texture* Game::TryGenerateItemImage(const Item& item)
 {
 	while(true)
 	{
 		DrawItemImage(item, rt_item, 0.f);
-		TEX tex = render->CopyToTexture(rt_item);
+		Texture* tex = render->CopyToTexture(rt_item);
 		if(tex)
 			return tex;
 	}
@@ -3292,7 +3294,7 @@ uint Game::TestGameData(bool major)
 {
 	string str;
 	uint errors = 0;
-	auto& mesh_mgr = ResourceManager::Get<Mesh>();
+	ResourceManager& res_mgr = ResourceManager::Get();
 
 	Info("Test: Checking items...");
 
@@ -3307,7 +3309,7 @@ uint Game::TestGameData(bool major)
 		}
 		else
 		{
-			mesh_mgr.LoadMetadata(w.mesh);
+			res_mgr.LoadMeshMetadata(w.mesh);
 			Mesh::Point* pt = w.mesh->FindPoint("hit");
 			if(!pt || !pt->IsBox())
 			{
@@ -3333,7 +3335,7 @@ uint Game::TestGameData(bool major)
 		}
 		else
 		{
-			mesh_mgr.LoadMetadata(s.mesh);
+			res_mgr.LoadMeshMetadata(s.mesh);
 			Mesh::Point* pt = s.mesh->FindPoint("hit");
 			if(!pt || !pt->IsBox())
 			{
@@ -3435,12 +3437,12 @@ uint Game::TestGameData(bool major)
 			}
 			else
 			{
-				Mesh& a = *ud.mesh;
-				mesh_mgr.Load(ud.mesh);
+				Mesh& mesh = *ud.mesh;
+				res_mgr.Load(&mesh);
 
 				for(uint i = 0; i < NAMES::n_ani_base; ++i)
 				{
-					if(!a.GetAnimation(NAMES::ani_base[i]))
+					if(!mesh.GetAnimation(NAMES::ani_base[i]))
 					{
 						str += Format("\tMissing animation '%s'.\n", NAMES::ani_base[i]);
 						++errors;
@@ -3449,7 +3451,7 @@ uint Game::TestGameData(bool major)
 
 				if(!IS_SET(ud.flags, F_SLOW))
 				{
-					if(!a.GetAnimation(NAMES::ani_run))
+					if(!mesh.GetAnimation(NAMES::ani_run))
 					{
 						str += Format("\tMissing animation '%s'.\n", NAMES::ani_run);
 						++errors;
@@ -3458,7 +3460,7 @@ uint Game::TestGameData(bool major)
 
 				if(!IS_SET(ud.flags, F_DONT_SUFFER))
 				{
-					if(!a.GetAnimation(NAMES::ani_hurt))
+					if(!mesh.GetAnimation(NAMES::ani_hurt))
 					{
 						str += Format("\tMissing animation '%s'.\n", NAMES::ani_hurt);
 						++errors;
@@ -3469,7 +3471,7 @@ uint Game::TestGameData(bool major)
 				{
 					for(uint i = 0; i < NAMES::n_points; ++i)
 					{
-						if(!a.GetPoint(NAMES::points[i]))
+						if(!mesh.GetPoint(NAMES::points[i]))
 						{
 							str += Format("\tMissing attachment point '%s'.\n", NAMES::points[i]);
 							++errors;
@@ -3478,7 +3480,7 @@ uint Game::TestGameData(bool major)
 
 					for(uint i = 0; i < NAMES::n_ani_humanoid; ++i)
 					{
-						if(!a.GetAnimation(NAMES::ani_humanoid[i]))
+						if(!mesh.GetAnimation(NAMES::ani_humanoid[i]))
 						{
 							str += Format("\tMissing animation '%s'.\n", NAMES::ani_humanoid[i]);
 							++errors;
@@ -3496,7 +3498,7 @@ uint Game::TestGameData(bool major)
 					}
 					for(int i = 0; i < min(ud.frames->attacks, NAMES::max_attacks); ++i)
 					{
-						if(!a.GetAnimation(NAMES::ani_attacks[i]))
+						if(!mesh.GetAnimation(NAMES::ani_attacks[i]))
 						{
 							str += Format("\tMissing animation '%s'.\n", NAMES::ani_attacks[i]);
 							++errors;
@@ -3509,7 +3511,7 @@ uint Game::TestGameData(bool major)
 				{
 					for(const string& s : ud.idles->anims)
 					{
-						if(!a.GetAnimation(s.c_str()))
+						if(!mesh.GetAnimation(s.c_str()))
 						{
 							str += Format("\tMissing animation '%s'.\n", s.c_str());
 							++errors;
@@ -3518,7 +3520,7 @@ uint Game::TestGameData(bool major)
 				}
 
 				// punkt czaru
-				if(ud.spells && !a.GetPoint(NAMES::point_cast))
+				if(ud.spells && !mesh.GetPoint(NAMES::point_cast))
 				{
 					str += Format("\tMissing attachment point '%s'.\n", NAMES::point_cast);
 					++errors;
@@ -7034,8 +7036,7 @@ void Game::UpdateTraps(LevelArea& area, float dt)
 
 void Game::PreloadTraps(vector<Trap*>& traps)
 {
-	auto& mesh_mgr = ResourceManager::Get<Mesh>();
-	auto& sound_mgr = ResourceManager::Get<Sound>();
+	ResourceManager& res_mgr = ResourceManager::Get();
 
 	for(Trap* trap : traps)
 	{
@@ -7044,15 +7045,15 @@ void Game::PreloadTraps(vector<Trap*>& traps)
 			continue;
 
 		if(base.mesh)
-			mesh_mgr.AddLoadTask(base.mesh);
+			res_mgr.Load(base.mesh);
 		if(base.mesh2)
-			mesh_mgr.AddLoadTask(base.mesh2);
+			res_mgr.Load(base.mesh2);
 		if(base.sound)
-			sound_mgr.AddLoadTask(base.sound);
+			res_mgr.Load(base.sound);
 		if(base.sound2)
-			sound_mgr.AddLoadTask(base.sound2);
+			res_mgr.Load(base.sound2);
 		if(base.sound3)
-			sound_mgr.AddLoadTask(base.sound3);
+			res_mgr.Load(base.sound3);
 
 		base.state = ResourceState::Loaded;
 	}
@@ -7751,12 +7752,12 @@ void Game::ApplyLocationTexturePack(TexturePack& pack, LocationTexturePack::Entr
 	else
 		pack = pack_def;
 
-	auto& tex_mgr = ResourceManager::Get<Texture>();
-	tex_mgr.AddLoadTask(pack.diffuse);
+	ResourceManager& res_mgr = ResourceManager::Get();
+	res_mgr.Load(pack.diffuse);
 	if(pack.normal)
-		tex_mgr.AddLoadTask(pack.normal);
+		res_mgr.Load(pack.normal);
 	if(pack.specular)
-		tex_mgr.AddLoadTask(pack.specular);
+		res_mgr.Load(pack.specular);
 }
 
 void Game::SetDungeonParamsAndTextures(BaseLocation& base)
@@ -8263,7 +8264,7 @@ void Game::LoadResources(cstring text, bool worldmap)
 // When there is something new to load, add task to load it when entering location etc
 void Game::PreloadResources(bool worldmap)
 {
-	auto& mesh_mgr = ResourceManager::Get<Mesh>();
+	ResourceManager& res_mgr = ResourceManager::Get();
 
 	if(Net::IsLocal())
 		items_load.clear();
@@ -8297,11 +8298,11 @@ void Game::PreloadResources(bool worldmap)
 		{
 			// load music
 			if(!sound_mgr->IsMusicDisabled())
-				LoadMusic(L.GetLocationMusic(), false, true);
+				LoadMusic(L.GetLocationMusic(), false);
 
 			// load objects
 			for(Object* obj : L.local_area->objects)
-				mesh_mgr.AddLoadTask(obj->mesh);
+				res_mgr.Load(obj->mesh);
 
 			// load usables
 			PreloadUsables(L.local_area->usables);
@@ -8315,9 +8316,9 @@ void Game::PreloadResources(bool worldmap)
 					if(building.state == ResourceState::NotLoaded)
 					{
 						if(building.mesh)
-							mesh_mgr.AddLoadTask(building.mesh);
+							res_mgr.Load(building.mesh);
 						if(building.inside_mesh)
-							mesh_mgr.AddLoadTask(building.inside_mesh);
+							res_mgr.Load(building.inside_mesh);
 						building.state = ResourceState::Loaded;
 					}
 				}
@@ -8326,7 +8327,7 @@ void Game::PreloadResources(bool worldmap)
 				{
 					// load building objects
 					for(Object* obj : ib->objects)
-						mesh_mgr.AddLoadTask(obj->mesh);
+						res_mgr.Load(obj->mesh);
 
 					// load building usables
 					PreloadUsables(ib->usables);
@@ -8344,8 +8345,7 @@ void Game::PreloadResources(bool worldmap)
 
 void Game::PreloadUsables(vector<Usable*>& usables)
 {
-	auto& mesh_mgr = ResourceManager::Get<Mesh>();
-	auto& sound_mgr = ResourceManager::Get<Sound>();
+	ResourceManager& res_mgr = ResourceManager::Get();
 
 	for(auto u : usables)
 	{
@@ -8355,12 +8355,12 @@ void Game::PreloadUsables(vector<Usable*>& usables)
 			if(base->variants)
 			{
 				for(uint i = 0; i < base->variants->entries.size(); ++i)
-					mesh_mgr.AddLoadTask(base->variants->entries[i].mesh);
+					res_mgr.Load(base->variants->entries[i].mesh);
 			}
 			else
-				mesh_mgr.AddLoadTask(base->mesh);
+				res_mgr.Load(base->mesh);
 			if(base->sound)
-				sound_mgr.AddLoadTask(base->sound);
+				res_mgr.Load(base->sound);
 			base->state = ResourceState::Loaded;
 		}
 	}
@@ -8374,10 +8374,7 @@ void Game::PreloadUnits(vector<Unit*>& units)
 
 void Game::PreloadUnit(Unit* unit)
 {
-	auto& mesh_mgr = ResourceManager::Get<Mesh>();
-	auto& tex_mgr = ResourceManager::Get<Texture>();
-	auto& sound_mgr = ResourceManager::Get<Sound>();
-
+	ResourceManager& res_mgr = ResourceManager::Get();
 	UnitData& data = *unit->data;
 
 	if(Net::IsLocal())
@@ -8396,14 +8393,14 @@ void Game::PreloadUnit(Unit* unit)
 		return;
 
 	if(data.mesh)
-		mesh_mgr.AddLoadTask(data.mesh);
+		res_mgr.Load(data.mesh);
 
 	if(!Game::Get().sound_mgr->IsDisabled())
 	{
 		for(int i = 0; i < SOUND_MAX; ++i)
 		{
 			for(SoundPtr sound : data.sounds->sounds[i])
-				sound_mgr.AddLoadTask(sound);
+				res_mgr.Load(sound);
 		}
 	}
 
@@ -8412,7 +8409,7 @@ void Game::PreloadUnit(Unit* unit)
 		for(TexId& ti : data.tex->textures)
 		{
 			if(ti.tex)
-				tex_mgr.AddLoadTask(ti.tex);
+				res_mgr.Load(ti.tex);
 		}
 	}
 
@@ -8431,7 +8428,8 @@ void Game::PreloadItem(const Item* p_item)
 	if(item.state == ResourceState::Loaded)
 		return;
 
-	if(ResourceManager::Get().IsLoadScreen())
+	ResourceManager& res_mgr = ResourceManager::Get();
+	if(res_mgr.IsLoadScreen())
 	{
 		if(item.state != ResourceState::Loading)
 		{
@@ -8440,24 +8438,24 @@ void Game::PreloadItem(const Item* p_item)
 				Armor& armor = item.ToArmor();
 				if(!armor.tex_override.empty())
 				{
-					auto& tex_mgr = ResourceManager::Get<Texture>();
 					for(TexId& ti : armor.tex_override)
 					{
 						if(!ti.id.empty())
-							ti.tex = tex_mgr.AddLoadTask(ti.id);
+							ti.tex = res_mgr.Load<Texture>(ti.id);
 					}
 				}
 			}
 			else if(item.type == IT_BOOK)
 			{
 				Book& book = item.ToBook();
-				ResourceManager::Get<Texture>().AddLoadTask(book.scheme->tex);
+				res_mgr.Load(book.scheme->tex);
 			}
 
 			if(item.tex)
-				ResourceManager::Get<Texture>().AddLoadTask(item.tex, &item, TaskCallback(this, &Game::GenerateItemImage), true);
+				res_mgr.Load(item.tex);
 			else
-				ResourceManager::Get<Mesh>().AddLoadTask(item.mesh, &item, TaskCallback(this, &Game::GenerateItemImage), true);
+				res_mgr.Load(item.mesh);
+			res_mgr.AddTask(&item, TaskCallback(this, &Game::GenerateItemImage));
 
 			item.state = ResourceState::Loading;
 		}
@@ -8470,28 +8468,27 @@ void Game::PreloadItem(const Item* p_item)
 			Armor& armor = item.ToArmor();
 			if(!armor.tex_override.empty())
 			{
-				auto& tex_mgr = ResourceManager::Get<Texture>();
 				for(TexId& ti : armor.tex_override)
 				{
 					if(!ti.id.empty())
-						tex_mgr.Load(ti.tex);
+						res_mgr.Load(ti.tex);
 				}
 			}
 		}
 		else if(item.type == IT_BOOK)
 		{
 			Book& book = item.ToBook();
-			ResourceManager::Get<Texture>().Load(book.scheme->tex);
+			res_mgr.Load(book.scheme->tex);
 		}
 
 		if(item.tex)
 		{
-			ResourceManager::Get<Texture>().Load(item.tex);
-			item.icon = item.tex->tex;
+			res_mgr.Load(item.tex);
+			item.icon = item.tex;
 		}
 		else
 		{
-			ResourceManager::Get<Mesh>().Load(item.mesh);
+			res_mgr.Load(item.mesh);
 			TaskData task;
 			task.ptr = &item;
 			GenerateItemImage(task);

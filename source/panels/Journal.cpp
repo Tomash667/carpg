@@ -522,13 +522,13 @@ void Journal::NeedUpdate(Mode at_mode, int quest_id)
 //=================================================================================================
 void Journal::LoadData()
 {
-	auto& tex_mgr = ResourceManager::Get<Texture>();
-	tex_mgr.AddLoadTask("book.png", tBook);
-	tex_mgr.AddLoadTask("dziennik_przyciski.png", tPage[0]);
-	tex_mgr.AddLoadTask("dziennik_przyciski2.png", tPage[1]);
-	tex_mgr.AddLoadTask("dziennik_przyciski3.png", tPage[2]);
-	tex_mgr.AddLoadTask("strzalka_l.png", tArrowL);
-	tex_mgr.AddLoadTask("strzalka_p.png", tArrowR);
+	ResourceManager& res_mgr = ResourceManager::Get();
+	tBook = res_mgr.Load<Texture>("book.png");
+	tPage[0] = res_mgr.Load<Texture>("dziennik_przyciski.png");
+	tPage[1] = res_mgr.Load<Texture>("dziennik_przyciski2.png");
+	tPage[2] = res_mgr.Load<Texture>("dziennik_przyciski3.png");
+	tArrowL = res_mgr.Load<Texture>("strzalka_l.png");
+	tArrowR = res_mgr.Load<Texture>("strzalka_p.png");
 }
 
 //=================================================================================================

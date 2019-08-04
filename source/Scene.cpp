@@ -2955,7 +2955,7 @@ void Game::DrawGlowingNodes(bool use_postfx)
 		}
 		else
 		{
-			V(eGlow->SetTexture(hGlowTex, tCzern));
+			V(eGlow->SetTexture(hGlowTex, tCzern->tex));
 			V(eGlow->CommitChanges());
 			for(int i = 0; i < mesh->head.n_subs; ++i)
 			{
@@ -3275,7 +3275,7 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 		if(!mesh.IsLoaded())
 		{
 			ReportError(10, Format("Drawing not loaded mesh '%s'.", mesh.filename));
-			ResourceManager::Get<Mesh>().Load(const_cast<Mesh*>(&mesh));
+			ResourceManager::Get().Load(const_cast<Mesh*>(&mesh));
 			break;
 		}
 
@@ -3841,7 +3841,7 @@ void Game::DrawLightings(const vector<Electro*>& electros)
 
 	uint passes;
 	V(eParticle->SetTechnique(techParticle));
-	V(eParticle->SetTexture(hParticleTex, tLightingLine));
+	V(eParticle->SetTexture(hParticleTex, tLightingLine->tex));
 	V(eParticle->SetMatrix(hParticleCombined, (D3DXMATRIX*)&L.camera.matViewProj));
 	V(eParticle->Begin(&passes, 0));
 	V(eParticle->BeginPass(0));
@@ -3985,7 +3985,7 @@ void Game::DrawPortals(const vector<Portal*>& portals)
 	uint passes;
 	V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_PARTICLE)));
 	V(eParticle->SetTechnique(techParticle));
-	V(eParticle->SetTexture(hParticleTex, tPortal));
+	V(eParticle->SetTexture(hParticleTex, tPortal->tex));
 	V(eParticle->SetMatrix(hParticleCombined, (D3DXMATRIX*)&L.camera.matViewProj));
 	V(eParticle->Begin(&passes, 0));
 	V(eParticle->BeginPass(0));

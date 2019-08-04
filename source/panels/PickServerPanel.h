@@ -51,7 +51,7 @@ private:
 	void AddServer(nlohmann::json&);
 	void CheckAutojoin();
 
-	TEX tIcoPassword, tIcoSave;
+	TexturePtr tIcoPassword, tIcoSave;
 	CheckBox cb_internet, cb_lan;
 	float timer;
 	cstring txFailedToGetServers, txInvalidServerVersion;

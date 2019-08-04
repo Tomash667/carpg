@@ -63,5 +63,7 @@ public:
 		txCantKickMyself, txCantKickUnconnected, txReallyKick, txAlreadyLeader, txLeaderChanged, txNotJoinedYet, txNotAllReady, txStartingIn, txStartingStop,
 		txDisconnecting, txYouAreLeader, txJoined, txPlayerLeft, txNeedSelectedPlayer, txServerText, txDisconnected, txClosing, txKicked, txUnknown,
 		txUnconnected, txIpLostConnection, txPlayerLostConnection, txLeft, txStartingGame, txWaitingForServer, txRegisterFailed, txPlayerDisconnected;
-	TEX tReady, tNotReady;
+
+private:
+	TexturePtr tReady, tNotReady;
 };

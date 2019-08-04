@@ -120,14 +120,14 @@ void Inventory::LoadLanguage()
 //=================================================================================================
 void Inventory::LoadData()
 {
-	auto& tex_mgr = ResourceManager::Get<Texture>();
-	tex_mgr.AddLoadTask("item_bar.png", tItemBar);
-	tex_mgr.AddLoadTask("equipped.png", tEquipped);
-	tex_mgr.AddLoadTask("coins.png", tGold);
-	tex_mgr.AddLoadTask("star_hq.png", tStarHq);
-	tex_mgr.AddLoadTask("star_m.png", tStarM);
-	tex_mgr.AddLoadTask("star_u.png", tStarU);
-	tex_mgr.AddLoadTask("team_item.png", tTeamItem);
+	ResourceManager& res_mgr = ResourceManager::Get();
+	tItemBar = res_mgr.Load<Texture>("item_bar.png");
+	tEquipped = res_mgr.Load<Texture>("equipped.png");
+	tGold = res_mgr.Load<Texture>("coins.png");
+	tStarHq = res_mgr.Load<Texture>("star_hq.png");
+	tStarM = res_mgr.Load<Texture>("star_m.png");
+	tStarU = res_mgr.Load<Texture>("star_u.png");
+	tTeamItem = res_mgr.Load<Texture>("team_item.png");
 }
 
 //=================================================================================================
@@ -136,7 +136,7 @@ void Inventory::OnReset()
 	RenderTarget* target = Game::Get().rt_item_rot;
 	if(!target)
 		return;
-	TEX tex = target->GetTexture();
+	Texture* tex = target->GetTexture();
 	if(inv_mine->visible)
 	{
 		if(tooltip.img == tex)
@@ -166,7 +166,7 @@ void Inventory::OnReload()
 	RenderTarget* target = Game::Get().rt_item_rot;
 	if(!target)
 		return;
-	TEX tex = target->GetTexture();
+	Texture* tex = target->GetTexture();
 	if(inv_mine->tex_replaced)
 	{
 		tooltip.img = tex;
@@ -510,7 +510,7 @@ void InventoryPanel::Draw(ControlDrawData*)
 		gui->DrawSprite(item->icon, Int2(shift_x + x * 63, shift_y + y * 63));
 
 		// item quality icon
-		TEX icon;
+		Texture* icon;
 		if(IS_SET(item->flags, ITEM_HQ))
 			icon = base.tStarHq;
 		else if(IS_SET(item->flags, ITEM_MAGICAL))
@@ -1587,7 +1587,7 @@ void InventoryPanel::FormatBox(bool refresh)
 }
 
 //=================================================================================================
-void InventoryPanel::FormatBox(int group, string& text, string& small_text, TEX& img, bool refresh)
+void InventoryPanel::FormatBox(int group, string& text, string& small_text, Texture*& img, bool refresh)
 {
 	if(group == INDEX_GOLD)
 	{

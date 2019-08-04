@@ -34,7 +34,7 @@ void Explo::Load(FileReader& f)
 	for(uint i = 0; i < hitted.size(); ++i)
 		hitted[i] = Unit::GetByRefid(f.Read<int>());
 	owner = Unit::GetByRefid(f.Read<int>());
-	tex = ResourceManager::Get<Texture>().GetLoaded(f.ReadString1());
+	tex = ResourceManager::Get().Load<Texture>(f.ReadString1());
 }
 
 //=================================================================================================

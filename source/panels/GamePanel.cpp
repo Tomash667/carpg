@@ -7,7 +7,7 @@
 #include "Language.h"
 
 //-----------------------------------------------------------------------------
-TEX GamePanel::tBackground;
+Texture* GamePanel::tBackground;
 Game* GameDialogBox::game;
 
 //-----------------------------------------------------------------------------
@@ -104,7 +104,7 @@ void GamePanel::UpdateBoxIndex(float dt, int index, int index2, bool refresh)
 		{
 			FormatBox(refresh);
 			if(box_img)
-				box_img_size = GetSize(box_img);
+				box_img_size = box_img->GetSize();
 		}
 	}
 	else

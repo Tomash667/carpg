@@ -57,10 +57,10 @@ void Level::LoadLanguage()
 //=================================================================================================
 void Level::LoadData()
 {
-	auto& tex_mgr = ResourceManager::Get<Texture>();
-	tFlare = tex_mgr.AddLoadTask("flare.png");
-	tFlare2 = tex_mgr.AddLoadTask("flare2.png");
-	tWater = tex_mgr.AddLoadTask("water.png");
+	ResourceManager& res_mgr = ResourceManager::Get();
+	tFlare = res_mgr.Load<Texture>("flare.png");
+	tFlare2 = res_mgr.Load<Texture>("flare2.png");
+	tWater = res_mgr.Load<Texture>("water.png");
 }
 
 //=================================================================================================
@@ -3871,7 +3871,7 @@ void Level::UpdateDungeonMinimap(bool in_level)
 	if(minimap_reveal.empty())
 		return;
 
-	TextureLock lock(Game::Get().tMinimap);
+	TextureLock lock(Game::Get().tMinimap.tex);
 	InsideLocationLevel& lvl = ((InsideLocation*)location)->GetLevelData();
 
 	for(vector<Int2>::iterator it = minimap_reveal.begin(), end = minimap_reveal.end(); it != end; ++it)
@@ -4051,7 +4051,7 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 		return false;
 	}
 	if(!game.sound_mgr->IsMusicDisabled())
-		game.LoadMusic(music, false);
+		game.LoadMusic(music, false, true);
 	if(W.IsBossLevel())
 		game.SetMusic();
 	else
@@ -4191,7 +4191,7 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 				Error("Read level: Broken explosion.");
 				return false;
 			}
-			explo->tex = ResourceManager::Get<Texture>().GetLoaded(tex_id);
+			explo->tex = ResourceManager::Get().Load<Texture>(tex_id);
 		}
 
 		// electro effects

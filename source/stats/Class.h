@@ -27,7 +27,7 @@ struct ClassInfo
 	cstring id, unit_data_id, icon_file, action_id;
 	string name, desc, about;
 	vector<string> names, nicknames;
-	TEX icon;
+	Texture* icon;
 	bool pickable;
 	UnitData* unit_data;
 	Action* action;

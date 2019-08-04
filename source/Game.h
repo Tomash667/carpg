@@ -9,7 +9,7 @@
 #include "GameKeys.h"
 #include "SceneNode.h"
 #include "QuadTree.h"
-#include "Music.h"
+#include "MusicTrack.h"
 #include "Config.h"
 #include "Settings.h"
 #include "Blood.h"
@@ -97,7 +97,7 @@ struct PostEffect
 	Vec4 skill;
 };
 
-typedef std::map<Mesh*, TEX> ItemTextureMap;
+typedef std::map<Mesh*, Texture*> ItemTextureMap;
 
 enum class ProfilerMode
 {
@@ -225,8 +225,8 @@ public:
 	MeshPtr aArrow, aSkybox, aBag, aChest, aGrating, aDoorWall, aDoorWall2, aStairsDown, aStairsDown2, aStairsUp, aSpellball, aPressurePlate, aDoor, aDoor2, aStun;
 	VertexDataPtr vdStairsUp, vdStairsDown, vdDoorHole;
 	RenderTarget* rt_save, *rt_item, *rt_item_rot;
-	TEX tMinimap;
-	TEX tCzern, tPortal, tLightingLine, tRip, tEquipped, tWarning, tError;
+	Texture tMinimap;
+	TexturePtr tCzern, tPortal, tLightingLine, tRip, tEquipped, tWarning, tError;
 	TexturePtr tKrew[BLOOD_MAX], tKrewSlad[BLOOD_MAX], tIskra, tSpawn;
 	TexturePack tFloor[2], tWall[2], tCeil[2], tFloorBase, tWallBase, tCeilBase;
 	ID3DXEffect* eMesh, *eParticle, *eSkybox, *eArea, *ePostFx, *eGlow;
@@ -239,7 +239,7 @@ public:
 		sBody[5], sBone, sSkin, sArenaFight, sArenaWin, sArenaLost, sUnlock, sEvil, sEat, sSummon, sZap;
 	VB vbParticle;
 	cstring txLoadGuiTextures, txLoadParticles, txLoadPhysicMeshes, txLoadModels, txLoadSpells, txLoadSounds, txLoadMusic, txGenerateWorld;
-	TexturePtr tTrawa, tTrawa2, tTrawa3, tDroga, tZiemia, tPole;
+	TexturePtr tGrass, tGrass2, tGrass3, tRoad, tFootpath, tField;
 
 	//-----------------------------------------------------------------
 	// Localized texts
@@ -294,8 +294,9 @@ public:
 	//---------------------------------
 	int start_version;
 	ItemTextureMap item_texture_map;
+	vector<Texture*> over_item_textures;
 	uint load_errors, load_warnings;
-	TEX missing_texture;
+	Texture missing_item_texture;
 	vector<pair<Unit*, bool>> units_mesh_load;
 	std::set<const Item*> items_load;
 
@@ -373,10 +374,10 @@ public:
 
 	// music
 	MusicType music_type;
-	Music* last_music;
-	vector<Music*> tracks;
+	MusicTrack* last_music;
+	vector<MusicTrack*> tracks;
 	int track_id;
-	void LoadMusic(MusicType type, bool new_load_screen = true, bool task = false);
+	void LoadMusic(MusicType type, bool new_load_screen = true, bool instant = false);
 	void SetMusic();
 	void SetMusic(MusicType type);
 	void SetupTracks();
@@ -391,9 +392,9 @@ public:
 	void DoExitToMenu();
 	void GenerateItemImage(TaskData& task_data);
 	void GenerateItemImageImpl(Item& item);
-	TEX TryGenerateItemImage(const Item& item);
+	Texture* TryGenerateItemImage(const Item& item);
 	void DrawItemImage(const Item& item, RenderTarget* target, float rot);
-	void SetupObject(BaseObject& obj);
+	void SetupObject(ResourceManager& res_mgr, BaseObject& obj);
 	void SetupCamera(float dt);
 	void LoadShaders();
 	void SetupShaders();
@@ -444,7 +445,7 @@ public:
 	bool CanShootAtLocation(const Unit& me, const Unit& target, const Vec3& pos) const { return CanShootAtLocation2(me, &target, pos); }
 	bool CanShootAtLocation(const Vec3& from, const Vec3& to) const;
 	bool CanShootAtLocation2(const Unit& me, const void* ptr, const Vec3& to) const;
-	void LoadItemsData();
+	void LoadItemsData(ResourceManager& res_mgr);
 	Unit* CreateUnitWithAI(LevelArea& area, UnitData& unit, int level = -1, Human* human_data = nullptr, const Vec3* pos = nullptr, const float* rot = nullptr, AIController** ai = nullptr);
 	void ChangeLevel(int where);
 	void ExitToMap();

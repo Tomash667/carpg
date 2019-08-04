@@ -3,7 +3,7 @@
 #include "Tokenizer.h"
 #include "Content.h"
 #include "Spell.h"
-#include "Music.h"
+#include "MusicTrack.h"
 #include "BitStreamFunc.h"
 #include "BuildingLoader.h"
 #include "DialogLoader.h"
@@ -67,7 +67,7 @@ void Content::LoadContent(delegate<void(Id)> callback)
 
 	Info("Game: Loading music.");
 	callback(Id::Musics);
-	loaded = Music::Load(errors);
+	loaded = MusicTrack::Load(errors);
 	Info("Game: Loaded music: %u.", loaded);
 
 	Info("Game: Loading quests.");
@@ -119,7 +119,7 @@ void Content::CleanupContent()
 	DialogLoader::Cleanup();
 	UnitLoader::Cleanup();
 	BuildingLoader::Cleanup();
-	Music::Cleanup();
+	MusicTrack::Cleanup();
 	QuestLoader::Cleanup();
 }
 

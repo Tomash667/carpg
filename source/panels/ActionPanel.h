@@ -24,10 +24,10 @@ private:
 
 	TooltipController tooltip;
 	vector<Action*> actions;
-	vector<TEX> images;
+	vector<Texture*> images;
 	cstring txActions, txCooldown, txCooldownCharges, txAbilities, txOther;
 	cstring txMeleeWeapon, txRangedWeapon, txPotion, txMeleeWeaponDesc, txRangedWeaponDesc, txPotionDesc;
-	TEX tItemBar, tMelee, tRanged, tPotion;
+	TexturePtr tItemBar, tMelee, tRanged, tPotion;
 	Int2 drag_and_drop_pos;
 	int grid_offset, drag_and_drop_group, drag_and_drop_index;
 	bool drag_and_drop;

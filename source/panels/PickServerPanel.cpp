@@ -71,9 +71,9 @@ void PickServerPanel::LoadLanguage()
 //=================================================================================================
 void PickServerPanel::LoadData()
 {
-	auto& tex_mgr = ResourceManager::Get<Texture>();
-	tex_mgr.AddLoadTask("save-16.png", tIcoSave);
-	tex_mgr.AddLoadTask("padlock-16.png", tIcoPassword);
+	ResourceManager& res_mgr = ResourceManager::Get();
+	tIcoSave = res_mgr.Load<Texture>("save-16.png");
+	tIcoPassword = res_mgr.Load<Texture>("padlock-16.png");
 }
 
 //=================================================================================================
@@ -354,7 +354,7 @@ void PickServerPanel::GetCell(int item, int column, Cell& cell)
 
 	if(column == 0)
 	{
-		vector<TEX>& imgs = *cell.imgset;
+		vector<Texture*>& imgs = *cell.imgset;
 		if(IS_SET(server.flags, SERVER_PASSWORD))
 			imgs.push_back(tIcoPassword);
 		if(IS_SET(server.flags, SERVER_SAVED))

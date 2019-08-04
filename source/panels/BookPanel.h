@@ -29,7 +29,7 @@ private:
 	vector<Split> splits;
 	uint max_page, current_page;
 	Vec2 scale;
-	TEX tArrowL, tArrowR;
+	TexturePtr tArrowL, tArrowR;
 	Sound* sound;
 	Font* normal_font, *runic_font;
 };

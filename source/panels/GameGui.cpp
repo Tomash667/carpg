@@ -109,35 +109,35 @@ void GameGui::LoadLanguage()
 //=================================================================================================
 void GameGui::LoadData()
 {
-	auto& tex_mgr = ResourceManager::Get<Texture>();
-	tex_mgr.AddLoadTask("crosshair.png", tCrosshair);
-	tex_mgr.AddLoadTask("bubble.png", tBubble);
-	tex_mgr.AddLoadTask("czerwono.png", tObwodkaBolu);
-	tex_mgr.AddLoadTask("bar.png", tBar);
-	tex_mgr.AddLoadTask("hp_bar.png", tHpBar);
-	tex_mgr.AddLoadTask("poisoned_hp_bar.png", tPoisonedHpBar);
-	tex_mgr.AddLoadTask("stamina_bar.png", tStaminaBar);
-	tex_mgr.AddLoadTask("mana_bar.png", tManaBar);
-	tex_mgr.AddLoadTask("shortcut.png", tShortcut);
-	tex_mgr.AddLoadTask("shortcut_hover.png", tShortcutHover);
-	tex_mgr.AddLoadTask("shortcut_down.png", tShortcutDown);
-	tex_mgr.AddLoadTask("bt_menu.png", tSideButton[(int)SideButtonId::Menu]);
-	tex_mgr.AddLoadTask("bt_team.png", tSideButton[(int)SideButtonId::Team]);
-	tex_mgr.AddLoadTask("bt_minimap.png", tSideButton[(int)SideButtonId::Minimap]);
-	tex_mgr.AddLoadTask("bt_journal.png", tSideButton[(int)SideButtonId::Journal]);
-	tex_mgr.AddLoadTask("bt_inventory.png", tSideButton[(int)SideButtonId::Inventory]);
-	tex_mgr.AddLoadTask("bt_action.png", tSideButton[(int)SideButtonId::Action]);
-	tex_mgr.AddLoadTask("bt_stats.png", tSideButton[(int)SideButtonId::Stats]);
-	tex_mgr.AddLoadTask("bt_talk.png", tSideButton[(int)SideButtonId::Talk]);
-	tex_mgr.AddLoadTask("minihp.png", tMinihp[0]);
-	tex_mgr.AddLoadTask("minihp2.png", tMinihp[1]);
-	tex_mgr.AddLoadTask("ministamina.png", tMinistamina);
-	tex_mgr.AddLoadTask("action_cooldown.png", tActionCooldown);
-	tex_mgr.AddLoadTask("sword-brandish.png", tMelee);
-	tex_mgr.AddLoadTask("bow-arrow.png", tRanged);
-	tex_mgr.AddLoadTask("health-potion.png", tPotion);
-	tex_mgr.AddLoadTask("emerytura.jpg", tEmerytura);
-	tex_mgr.AddLoadTask("equipped.png", tEquipped);
+	ResourceManager& res_mgr = ResourceManager::Get();
+	tCrosshair = res_mgr.Load<Texture>("crosshair.png");
+	tBubble = res_mgr.Load<Texture>("bubble.png");
+	tObwodkaBolu = res_mgr.Load<Texture>("czerwono.png");
+	tBar = res_mgr.Load<Texture>("bar.png");
+	tHpBar = res_mgr.Load<Texture>("hp_bar.png");
+	tPoisonedHpBar = res_mgr.Load<Texture>("poisoned_hp_bar.png");
+	tStaminaBar = res_mgr.Load<Texture>("stamina_bar.png");
+	tManaBar = res_mgr.Load<Texture>("mana_bar.png");
+	tShortcut = res_mgr.Load<Texture>("shortcut.png");
+	tShortcutHover = res_mgr.Load<Texture>("shortcut_hover.png");
+	tShortcutDown = res_mgr.Load<Texture>("shortcut_down.png");
+	tSideButton[(int)SideButtonId::Menu] = res_mgr.Load<Texture>("bt_menu.png");
+	tSideButton[(int)SideButtonId::Team] = res_mgr.Load<Texture>("bt_team.png");
+	tSideButton[(int)SideButtonId::Minimap] = res_mgr.Load<Texture>("bt_minimap.png");
+	tSideButton[(int)SideButtonId::Journal] = res_mgr.Load<Texture>("bt_journal.png");
+	tSideButton[(int)SideButtonId::Inventory] = res_mgr.Load<Texture>("bt_inventory.png");
+	tSideButton[(int)SideButtonId::Action] = res_mgr.Load<Texture>("bt_action.png");
+	tSideButton[(int)SideButtonId::Stats] = res_mgr.Load<Texture>("bt_stats.png");
+	tSideButton[(int)SideButtonId::Talk] = res_mgr.Load<Texture>("bt_talk.png");
+	tMinihp[0] = res_mgr.Load<Texture>("minihp.png");
+	tMinihp[1] = res_mgr.Load<Texture>("minihp2.png");
+	tMinistamina = res_mgr.Load<Texture>("ministamina.png");
+	tActionCooldown = res_mgr.Load<Texture>("action_cooldown.png");
+	tMelee = res_mgr.Load<Texture>("sword-brandish.png");
+	tRanged = res_mgr.Load<Texture>("bow-arrow.png");
+	tPotion = res_mgr.Load<Texture>("health-potion.png");
+	tEmerytura = res_mgr.Load<Texture>("emerytura.jpg");
+	tEquipped = res_mgr.Load<Texture>("equipped.png");
 
 	BuffInfo::LoadImages();
 }
@@ -438,7 +438,7 @@ void GameGui::DrawFront()
 		r.p2.x += img_size - 4;
 		r.p2.y += img_size - 4;
 
-		TEX icon = nullptr;
+		Texture* icon = nullptr;
 		int count = 0, icon_size = 128;
 		bool enabled = true, is_action = false, equipped = false;
 		if(shortcut.type == Shortcut::TYPE_SPECIAL)
@@ -522,19 +522,19 @@ void GameGui::DrawFront()
 				charge = pc.action_recharge / action.recharge;
 
 			if(drag_and_drop == 2 && drag_and_drop_type == -1 && drag_and_drop_index == i)
-				drag_and_drop_icon = action.tex->tex;
+				drag_and_drop_icon = action.tex;
 
 			if(charge == 0.f)
-				gui->DrawSprite2(action.tex->tex, mat);
+				gui->DrawSprite2(action.tex, mat);
 			else
 			{
 				gui->UseGrayscale(true);
-				gui->DrawSprite2(action.tex->tex, mat);
+				gui->DrawSprite2(action.tex, mat);
 				gui->UseGrayscale(false);
 				if(charge < 1.f)
 				{
 					Rect part = { 0, 128 - int((1.f - charge) * 128), 128, 128 };
-					gui->DrawSprite2(action.tex->tex, mat, &part);
+					gui->DrawSprite2(action.tex, mat, &part);
 				}
 				gui->DrawSprite2(tActionCooldown, mat);
 			}
@@ -561,7 +561,7 @@ void GameGui::DrawFront()
 		spos.y = gui->wnd_size.y - (gui->wnd_size.y - total) / 2 - offset;
 		for(int i = 0; i < max; ++i)
 		{
-			TEX t;
+			Texture* t;
 			if(sidebar_state[i] == 0)
 				t = tShortcut;
 			else if(sidebar_state[i] == 1)
@@ -598,7 +598,7 @@ void GameGui::DrawBack()
 	if(drag_and_drop == 2 && drag_and_drop_icon)
 	{
 		int img_size = 76 * gui->wnd_size.x / 1920;
-		float scale = float(img_size) / Texture::GetSize(drag_and_drop_icon).x;
+		float scale = float(img_size) / drag_and_drop_icon->GetSize().x;
 		Matrix mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(scale, scale), nullptr, 0.f, &Vec2(gui->cursor_pos + Int2(16, 16)));
 		gui->DrawSprite2(drag_and_drop_icon, mat);
 	}
@@ -666,7 +666,7 @@ void GameGui::DrawDeathScreen()
 
 		if((color & 0xFF000000) != 0)
 		{
-			Int2 img_size = GetSize(game.tRip);
+			Int2 img_size = game.tRip->GetSize();
 			gui->DrawSprite(game.tRip, Center(img_size), color);
 
 			cstring text = Format(game.death_solo ? txDeathAlone : txDeath, game.pc->kills, GameStats::Get().total_kills - game.pc->kills);
@@ -689,7 +689,7 @@ void GameGui::DrawEndOfGameScreen()
 	gui->DrawSpriteFull(game.tCzern, color);
 
 	// image
-	Int2 sprite_pos = Center(GetSize(tEmerytura));
+	Int2 sprite_pos = Center(tEmerytura->GetSize());
 	gui->DrawSprite(tEmerytura, sprite_pos, color);
 
 	// text
@@ -1813,7 +1813,7 @@ void GameGui::RemoveUnit(Unit* unit)
 }
 
 //=================================================================================================
-void GameGui::StartDragAndDrop(int type, int value, TEX icon)
+void GameGui::StartDragAndDrop(int type, int value, Texture* icon)
 {
 	drag_and_drop = 2;
 	drag_and_drop_type = type;

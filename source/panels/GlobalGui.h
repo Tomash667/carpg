@@ -43,7 +43,7 @@ public:
 	void CloseDialog(DialogBox* dialog) { gui->CloseDialog(dialog); }
 	void CloseDialogs() { gui->CloseDialogs(); }
 	void SimpleDialog(cstring text, Control* parent, cstring name = "simple") { gui->SimpleDialog(text, parent, name); }
-	void AddNotification(cstring text, TEX icon, float timer) { gui->AddNotification(text, icon, timer); }
+	void AddNotification(cstring text, Texture* icon, float timer) { gui->AddNotification(text, icon, timer); }
 
 	// panels
 	LoadScreen* load_screen;

@@ -9,7 +9,7 @@
 #include "ResourceManager.h"
 
 //-----------------------------------------------------------------------------
-vector<Music*> Music::musics;
+vector<MusicTrack*> MusicTrack::tracks;
 extern string g_system_dir;
 
 //=================================================================================================
@@ -27,12 +27,12 @@ void Game::SetupTracks()
 {
 	tracks.clear();
 
-	for(Music* music : Music::musics)
+	for(MusicTrack* track : MusicTrack::tracks)
 	{
-		if(music->type == music_type)
+		if(track->type == music_type)
 		{
-			assert(music->music);
-			tracks.push_back(music);
+			assert(track->music);
+			tracks.push_back(track);
 		}
 	}
 
@@ -100,7 +100,7 @@ void Game::SetMusic()
 }
 
 //=================================================================================================
-uint Music::Load(uint& errors)
+uint MusicTrack::Load(uint& errors)
 {
 	Tokenizer t(Tokenizer::F_UNESCAPE);
 	if(!t.FromFile(Format("%s/music.txt", g_system_dir.c_str())))
@@ -124,8 +124,8 @@ uint Music::Load(uint& errors)
 		{ "death", MusicType::Death }
 	});
 
-	auto& sound_mgr = ResourceManager::Get<Sound>();
-	Ptr<Music> music(nullptr);
+	ResourceManager& res_mgr = ResourceManager::Get();
+	Ptr<MusicTrack> track(nullptr);
 
 	try
 	{
@@ -148,12 +148,12 @@ uint Music::Load(uint& errors)
 						while(true)
 						{
 							const string& filename = t.MustGetString();
-							music.Ensure();
-							music->music = sound_mgr.TryGetMusic(filename);
-							if(music->music)
+							track.Ensure();
+							track->music = res_mgr.TryGet<Music>(filename);
+							if(track->music)
 							{
-								music->type = type;
-								Music::musics.push_back(music.Pin());
+								track->type = type;
+								MusicTrack::tracks.push_back(track.Pin());
 							}
 							else
 							{
@@ -172,12 +172,12 @@ uint Music::Load(uint& errors)
 				else
 				{
 					const string& filename = t.MustGetString();
-					music.Ensure();
-					music->music = sound_mgr.TryGetMusic(filename);
-					if(music->music)
+					track.Ensure();
+					track->music = res_mgr.TryGet<Music>(filename);
+					if(track->music)
 					{
-						music->type = type;
-						Music::musics.push_back(music.Pin());
+						track->type = type;
+						MusicTrack::tracks.push_back(track.Pin());
 					}
 					else
 					{
@@ -202,40 +202,40 @@ uint Music::Load(uint& errors)
 		++errors;
 	}
 
-	return  Music::musics.size();
+	return MusicTrack::tracks.size();
 }
 
 //=================================================================================================
-void Game::LoadMusic(MusicType type, bool new_load_screen, bool task)
+void Game::LoadMusic(MusicType type, bool new_load_screen, bool instant)
 {
+	ResourceManager& res_mgr = ResourceManager::Get();
 	bool first = true;
-	auto& sound_mgr = ResourceManager::Get<Sound>();
 
-	for(Music* music : Music::musics)
+	for(MusicTrack* track : MusicTrack::tracks)
 	{
-		if(music->type == type)
+		if(track->type == type)
 		{
 			if(first)
 			{
-				if(music->music->IsLoaded())
+				if(track->music->IsLoaded())
 				{
 					// music for this type is loaded
 					return;
 				}
 				if(new_load_screen)
-					sound_mgr.AddTaskCategory(txLoadMusic);
+					res_mgr.AddTaskCategory(txLoadMusic);
 				first = false;
 			}
-			if(task)
-				sound_mgr.AddLoadTask(music->music);
+			if(instant)
+				res_mgr.LoadInstant(track->music);
 			else
-				sound_mgr.Load(music->music);
+				res_mgr.Load(track->music);
 		}
 	}
 }
 
 //=================================================================================================
-void Music::Cleanup()
+void MusicTrack::Cleanup()
 {
-	DeleteElements(Music::musics);
+	DeleteElements(MusicTrack::tracks);
 }

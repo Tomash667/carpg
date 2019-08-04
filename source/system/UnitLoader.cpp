@@ -1819,7 +1819,7 @@ void UnitLoader::ParseSpells(Ptr<SpellList>& list)
 //=================================================================================================
 void UnitLoader::ParseSounds(Ptr<SoundPack>& pack)
 {
-	auto& sound_mgr = ResourceManager::Get().For<Sound>();
+	ResourceManager& res_mgr = ResourceManager::Get();
 
 	// {
 	t.AssertSymbol('{');
@@ -1838,7 +1838,7 @@ void UnitLoader::ParseSounds(Ptr<SoundPack>& pack)
 			while(!t.IsSymbol('}'))
 			{
 				const string& filename = t.MustGetString();
-				SoundPtr sound = sound_mgr.TryGet(filename);
+				SoundPtr sound = res_mgr.TryGet<Sound>(filename);
 				if(!sound)
 					LoadError("Missing sound '%s'.", filename.c_str());
 				else
@@ -1852,7 +1852,7 @@ void UnitLoader::ParseSounds(Ptr<SoundPack>& pack)
 		else
 		{
 			const string& filename = t.MustGetString();
-			SoundPtr sound = sound_mgr.TryGet(filename);
+			SoundPtr sound = res_mgr.TryGet<Sound>(filename);
 			if(!sound)
 				LoadError("Missing sound '%s'.", filename.c_str());
 			else

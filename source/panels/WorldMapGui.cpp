@@ -62,29 +62,29 @@ void WorldMapGui::LoadLanguage()
 //=================================================================================================
 void WorldMapGui::LoadData()
 {
-	auto& tex_mgr = ResourceManager::Get<Texture>();
-	tex_mgr.AddLoadTask("camp.png", tMapIcon[LI_CAMP]);
-	tex_mgr.AddLoadTask("village.png", tMapIcon[LI_VILLAGE]);
-	tex_mgr.AddLoadTask("city.png", tMapIcon[LI_CITY]);
-	tex_mgr.AddLoadTask("dungeon.png", tMapIcon[LI_DUNGEON]);
-	tex_mgr.AddLoadTask("crypt.png", tMapIcon[LI_CRYPT]);
-	tex_mgr.AddLoadTask("cave.png", tMapIcon[LI_CAVE]);
-	tex_mgr.AddLoadTask("forest.png", tMapIcon[LI_FOREST]);
-	tex_mgr.AddLoadTask("moonwell.png", tMapIcon[LI_MOONWELL]);
-	tex_mgr.AddLoadTask("tower.png", tMapIcon[LI_TOWER]);
-	tex_mgr.AddLoadTask("labyrinth.png", tMapIcon[LI_LABYRINTH]);
-	tex_mgr.AddLoadTask("mine.png", tMapIcon[LI_MINE]);
-	tex_mgr.AddLoadTask("sawmill.png", tMapIcon[LI_SAWMILL]);
-	tex_mgr.AddLoadTask("dungeon2.png", tMapIcon[LI_DUNGEON2]);
-	tex_mgr.AddLoadTask("worldmap.jpg", tWorldMap);
-	tex_mgr.AddLoadTask("selected.png", tSelected[0]);
-	tex_mgr.AddLoadTask("selected2.png", tSelected[1]);
-	tex_mgr.AddLoadTask("mover.png", tMover);
-	tex_mgr.AddLoadTask("old_map.png", tMapBg);
-	tex_mgr.AddLoadTask("enc.png", tEnc);
-	tex_mgr.AddLoadTask("worldmap_side.png", tSide);
-	tex_mgr.AddLoadTask("magnifying-glass-icon.png", tMagnifyingGlass);
-	tex_mgr.AddLoadTask("tracking_arrow.png", tTrackingArrow);
+	ResourceManager& res_mgr = ResourceManager::Get();
+	tMapIcon[LI_CAMP] = res_mgr.Load<Texture>("camp.png");
+	tMapIcon[LI_VILLAGE] = res_mgr.Load<Texture>("village.png");
+	tMapIcon[LI_CITY] = res_mgr.Load<Texture>("city.png");
+	tMapIcon[LI_DUNGEON] = res_mgr.Load<Texture>("dungeon.png");
+	tMapIcon[LI_CRYPT] = res_mgr.Load<Texture>("crypt.png");
+	tMapIcon[LI_CAVE] = res_mgr.Load<Texture>("cave.png");
+	tMapIcon[LI_FOREST] = res_mgr.Load<Texture>("forest.png");
+	tMapIcon[LI_MOONWELL] = res_mgr.Load<Texture>("moonwell.png");
+	tMapIcon[LI_TOWER] = res_mgr.Load<Texture>("tower.png");
+	tMapIcon[LI_LABYRINTH] = res_mgr.Load<Texture>("labyrinth.png");
+	tMapIcon[LI_MINE] = res_mgr.Load<Texture>("mine.png");
+	tMapIcon[LI_SAWMILL] = res_mgr.Load<Texture>("sawmill.png");
+	tMapIcon[LI_DUNGEON2] = res_mgr.Load<Texture>("dungeon2.png");
+	tWorldMap = res_mgr.Load<Texture>("worldmap.jpg");
+	tSelected[0] = res_mgr.Load<Texture>("selected.png");
+	tSelected[1] = res_mgr.Load<Texture>("selected2.png");
+	tMover = res_mgr.Load<Texture>("mover.png");
+	tMapBg = res_mgr.Load<Texture>("old_map.png");
+	tEnc = res_mgr.Load<Texture>("enc.png");
+	tSide = res_mgr.Load<Texture>("worldmap_side.png");
+	tMagnifyingGlass = res_mgr.Load<Texture>("magnifying-glass-icon.png");
+	tTrackingArrow = res_mgr.Load<Texture>("tracking_arrow.png");
 }
 
 //=================================================================================================

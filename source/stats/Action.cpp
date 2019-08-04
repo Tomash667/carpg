@@ -16,9 +16,9 @@ const uint Action::n_actions = countof(Action::actions);
 //=================================================================================================
 Action* Action::Find(const string& id)
 {
-	for (auto& action : actions)
+	for(Action& action : actions)
 	{
-		if (id == action.id)
+		if(id == action.id)
 			return &action;
 	}
 
@@ -28,13 +28,12 @@ Action* Action::Find(const string& id)
 //=================================================================================================
 void Action::LoadData()
 {
-	auto& tex_mgr = ResourceManager::Get<Texture>();
-	auto& sound_mgr = ResourceManager::Get<Sound>();
+	ResourceManager& res_mgr = ResourceManager::Get();
 
-	for (auto& action : actions)
+	for(Action& action : actions)
 	{
-		action.tex = tex_mgr.GetLoaded(Format("%s.png", action.id));
-		if (action.sound_id)
-			action.sound = sound_mgr.GetLoaded(action.sound_id);
+		action.tex = res_mgr.Load<Texture>(Format("%s.png", action.id));
+		if(action.sound_id)
+			action.sound = res_mgr.Load<Sound>(action.sound_id);
 	}
 }

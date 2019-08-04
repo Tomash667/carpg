@@ -27,18 +27,18 @@ Minimap::Minimap()
 //=================================================================================================
 void Minimap::LoadData()
 {
-	auto& tex_mgr = ResourceManager::Get<Texture>();
-	tex_mgr.AddLoadTask("mini_unit.png", tUnit[UNIT_ME]);
-	tex_mgr.AddLoadTask("mini_unit2.png", tUnit[UNIT_TEAM]);
-	tex_mgr.AddLoadTask("mini_unit3.png", tUnit[UNIT_ENEMY]);
-	tex_mgr.AddLoadTask("mini_unit4.png", tUnit[UNIT_NPC]);
-	tex_mgr.AddLoadTask("mini_unit5.png", tUnit[UNIT_CORPSE]);
-	tex_mgr.AddLoadTask("schody_dol.png", tStairsDown);
-	tex_mgr.AddLoadTask("schody_gora.png", tStairsUp);
-	tex_mgr.AddLoadTask("mini_bag.png", tBag);
-	tex_mgr.AddLoadTask("mini_bag2.png", tBagImportant);
-	tex_mgr.AddLoadTask("mini_portal.png", tPortal);
-	tex_mgr.AddLoadTask("mini_chest.png", tChest);
+	ResourceManager& res_mgr = ResourceManager::Get();
+	tUnit[UNIT_ME] = res_mgr.Load<Texture>("mini_unit.png");
+	tUnit[UNIT_TEAM] = res_mgr.Load<Texture>("mini_unit2.png");
+	tUnit[UNIT_ENEMY] = res_mgr.Load<Texture>("mini_unit3.png");
+	tUnit[UNIT_NPC] = res_mgr.Load<Texture>("mini_unit4.png");
+	tUnit[UNIT_CORPSE] = res_mgr.Load<Texture>("mini_unit5.png");
+	tStairsDown = res_mgr.Load<Texture>("schody_dol.png");
+	tStairsUp = res_mgr.Load<Texture>("schody_gora.png");
+	tBag = res_mgr.Load<Texture>("mini_bag.png");
+	tBagImportant = res_mgr.Load<Texture>("mini_bag2.png");
+	tPortal = res_mgr.Load<Texture>("mini_portal.png");
+	tChest = res_mgr.Load<Texture>("mini_chest.png");
 }
 
 //=================================================================================================
@@ -51,7 +51,7 @@ void Minimap::Draw(ControlDrawData*)
 	// map texture
 	Rect r = { global_pos.x, global_pos.y, global_pos.x + size.x, global_pos.y + size.y };
 	Rect r_part = { 0, 0, minimap_size, minimap_size };
-	gui->DrawSpriteRectPart(game.tMinimap, r, r_part, Color::Alpha(140));
+	gui->DrawSpriteRectPart(&game.tMinimap, r, r_part, Color::Alpha(140));
 
 	// stairs
 	if(type == L_DUNGEON || type == L_CRYPT || type == L_CAVE)

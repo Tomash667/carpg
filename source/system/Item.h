@@ -127,8 +127,7 @@ struct Item
 	vector<ItemEffect> effects;
 	ITEM_TYPE type;
 	MeshPtr mesh;
-	TexturePtr tex;
-	TEX icon;
+	TexturePtr tex, icon;
 	ResourceState state;
 
 	static const Item* gold;

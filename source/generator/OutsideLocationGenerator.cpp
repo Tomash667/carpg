@@ -397,7 +397,7 @@ void OutsideLocationGenerator::SpawnTeam()
 void OutsideLocationGenerator::CreateMinimap()
 {
 	Game& game = Game::Get();
-	TextureLock lock(game.tMinimap);
+	TextureLock lock(game.tMinimap.tex);
 
 	for(int y = 0; y < OutsideLocation::size; ++y)
 	{

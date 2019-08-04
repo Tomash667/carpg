@@ -654,7 +654,7 @@ void Game::OnReset()
 	if(eGlow)
 		V(eGlow->OnLostDevice());
 
-	SafeRelease(tMinimap);
+	SafeRelease(tMinimap.tex);
 	for(int i = 0; i < 3; ++i)
 	{
 		SafeRelease(sPostEffect[i]);
@@ -816,7 +816,6 @@ void Game::ClearPointers()
 	vbFullscreen = nullptr;
 
 	// tekstury render target, powierzchnie
-	tMinimap = nullptr;
 	for(int i = 0; i < 3; ++i)
 	{
 		sPostEffect[i] = nullptr;
@@ -853,7 +852,7 @@ void Game::OnCleanup()
 	SafeRelease(vbFullscreen);
 
 	// tekstury render target, powierzchnie
-	SafeRelease(tMinimap);
+	SafeRelease(tMinimap.tex);
 	for(int i = 0; i < 3; ++i)
 	{
 		SafeRelease(sPostEffect[i]);
@@ -861,8 +860,10 @@ void Game::OnCleanup()
 	}
 
 	// item textures
-	for(auto& it : item_texture_map)
-		SafeRelease(it.second);
+	for(auto& item : item_texture_map)
+		delete item.second;
+	for(Texture* tex : over_item_textures)
+		delete tex;
 
 	draw_batch.Clear();
 }
@@ -870,13 +871,14 @@ void Game::OnCleanup()
 //=================================================================================================
 void Game::CreateTextures()
 {
-	if(tMinimap)
+	if(tMinimap.tex)
 		return;
 
 	IDirect3DDevice9* device = render->GetDevice();
 	const Int2& wnd_size = engine->GetWindowSize();
 
-	V(device->CreateTexture(128, 128, 0, D3DUSAGE_DYNAMIC, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tMinimap, nullptr));
+	V(device->CreateTexture(128, 128, 0, D3DUSAGE_DYNAMIC, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tMinimap.tex, nullptr));
+	tMinimap.state = ResourceState::Loaded;
 
 	int ms, msq;
 	render->GetMultisampling(ms, msq);
@@ -1306,7 +1308,7 @@ MeshInstance* Game::GetBowInstance(Mesh* mesh)
 	if(bow_instances.empty())
 	{
 		if(!mesh->IsLoaded())
-			ResourceManager::Get<Mesh>().Load(mesh);
+			ResourceManager::Get().Load(mesh);
 		return new MeshInstance(mesh);
 	}
 	else

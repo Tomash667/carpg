@@ -215,9 +215,6 @@
     <ClCompile Include="stats\Attribute.cpp">
       <Filter>stats</Filter>
     </ClCompile>
-    <ClCompile Include="stats\Music.cpp">
-      <Filter>stats</Filter>
-    </ClCompile>
     <ClCompile Include="stats\Skill.cpp">
       <Filter>stats</Filter>
     </ClCompile>
@@ -563,6 +560,9 @@
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="Team.cpp" />
     <ClCompile Include="World.cpp" />
+    <ClCompile Include="stats\MusicTrack.cpp">
+      <Filter>stats</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="entity\AIController.h">
@@ -729,9 +729,6 @@
     </ClInclude>
     <ClInclude Include="Pch.h" />
     <ClInclude Include="stats\Attribute.h">
-      <Filter>stats</Filter>
-    </ClInclude>
-    <ClInclude Include="stats\Music.h">
       <Filter>stats</Filter>
     </ClInclude>
     <ClInclude Include="stats\Skill.h">
@@ -1129,6 +1126,9 @@
     <ClInclude Include="Settings.h" />
     <ClInclude Include="Team.h" />
     <ClInclude Include="World.h" />
+    <ClInclude Include="stats\MusicTrack.h">
+      <Filter>stats</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resource\resource.rc">

@@ -48,7 +48,7 @@ private:
 
 	Game* game;
 	Button bt[BUTTONS];
-	TEX tBackground, tLogo, tFModLogo;
+	TexturePtr tBackground, tLogo, tFModLogo;
 	CheckVersionStatus check_status;
 	int version_new;
 	string version_text, version_changelog;

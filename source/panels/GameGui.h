@@ -50,10 +50,10 @@ struct SpeechBubble
 struct BuffImage
 {
 	Vec2 pos;
-	TEX tex;
+	Texture* tex;
 	int id;
 
-	BuffImage(const Vec2& pos, TEX tex, int id) : pos(pos), tex(tex), id(id)
+	BuffImage(const Vec2& pos, Texture* tex, int id) : pos(pos), tex(tex), id(id)
 	{
 	}
 };
@@ -88,7 +88,7 @@ public:
 	void Setup();
 	void RemoveUnit(Unit* unit);
 	void DrawEndOfGameScreen();
-	void StartDragAndDrop(int type, int value, TEX tex);
+	void StartDragAndDrop(int type, int value, Texture* tex);
 	bool IsDragAndDrop() const { return drag_and_drop == 2; }
 
 	Int2 dialog_cursor_pos;
@@ -137,9 +137,9 @@ private:
 	float sidebar;
 	int sidebar_state[(int)SideButtonId::Max], drag_and_drop, drag_and_drop_type, drag_and_drop_index;
 	Int2 drag_and_drop_pos;
-	TEX tBar, tHpBar, tPoisonedHpBar, tStaminaBar, tManaBar, tShortcut, tShortcutHover, tShortcutDown, tSideButton[(int)SideButtonId::Max], tMinihp[2],
+	TexturePtr tBar, tHpBar, tPoisonedHpBar, tStaminaBar, tManaBar, tShortcut, tShortcutHover, tShortcutDown, tSideButton[(int)SideButtonId::Max], tMinihp[2],
 		tMinistamina, tCrosshair, tBubble, tObwodkaBolu, tActionCooldown, tMelee, tRanged, tPotion, tEmerytura, tEquipped;
-	TEX drag_and_drop_icon;
+	Texture* drag_and_drop_icon;
 	Scrollbar scrollbar;
 	vector<SpeechBubble*> speech_bbs;
 	vector<SortedSpeechBubble> sorted_speech_bbs;

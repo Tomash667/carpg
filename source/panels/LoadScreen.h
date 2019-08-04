@@ -45,7 +45,7 @@ public:
 	}
 
 private:
-	TEX tBackground, tLoadbar, tLoadbarBg;
+	TexturePtr tBackground, tLoadbar, tLoadbarBg;
 	float progress, min_progress, max_progress;
 	string text;
 	int step, steps;

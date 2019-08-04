@@ -4269,31 +4269,30 @@ void Unit::CreateMesh(CREATE_MESH mode)
 	if(data->state != ResourceState::Loaded)
 	{
 		assert(mode != CREATE_MESH::AFTER_PRELOAD);
-		if(ResourceManager::Get().IsLoadScreen())
+		ResourceManager& res_mgr = ResourceManager::Get();
+		if(res_mgr.IsLoadScreen())
 		{
 			if(mode == CREATE_MESH::LOAD)
-				ResourceManager::Get<Mesh>().Load(mesh);
+				res_mgr.LoadInstant(mesh);
 			else if(!mesh->IsLoaded())
 				Game::Get().units_mesh_load.push_back(pair<Unit*, bool>(this, mode == CREATE_MESH::ON_WORLDMAP));
 			if(data->state == ResourceState::NotLoaded)
 			{
-				ResourceManager::Get<Mesh>().AddLoadTask(mesh);
+				res_mgr.Load(mesh);
 				if(data->sounds)
 				{
-					auto& sound_mgr = ResourceManager::Get<Sound>();
 					for(int i = 0; i < SOUND_MAX; ++i)
 					{
 						for(SoundPtr sound : data->sounds->sounds[i])
-							sound_mgr.AddLoadTask(sound);
+							res_mgr.Load(sound);
 					}
 				}
 				if(data->tex)
 				{
-					auto& tex_mgr = ResourceManager::Get<Texture>();
-					for(auto& tex : data->tex->textures)
+					for(TexId& texid : data->tex->textures)
 					{
-						if(tex.tex)
-							tex_mgr.AddLoadTask(tex.tex);
+						if(texid.tex)
+							res_mgr.Load(texid.tex);
 					}
 				}
 				data->state = ResourceState::Loading;
@@ -4306,23 +4305,21 @@ void Unit::CreateMesh(CREATE_MESH mode)
 		}
 		else
 		{
-			ResourceManager::Get<Mesh>().Load(mesh);
+			res_mgr.Load(mesh);
 			if(data->sounds)
 			{
-				auto& sound_mgr = ResourceManager::Get<Sound>();
 				for(int i = 0; i < SOUND_MAX; ++i)
 				{
 					for(SoundPtr sound : data->sounds->sounds[i])
-						sound_mgr.Load(sound);
+						res_mgr.Load(sound);
 				}
 			}
 			if(data->tex)
 			{
-				auto& tex_mgr = ResourceManager::Get<Texture>();
-				for(auto& tex : data->tex->textures)
+				for(TexId& texid : data->tex->textures)
 				{
-					if(tex.tex)
-						tex_mgr.Load(tex.tex);
+					if(texid.tex)
+						res_mgr.Load(texid.tex);
 				}
 			}
 			data->state = ResourceState::Loaded;

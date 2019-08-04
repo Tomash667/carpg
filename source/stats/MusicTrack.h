@@ -20,12 +20,12 @@ enum class MusicType
 };
 
 //-----------------------------------------------------------------------------
-struct Music
+struct MusicTrack
 {
-	SoundPtr music;
+	MusicPtr music;
 	MusicType type;
 
-	static vector<Music*> musics;
+	static vector<MusicTrack*> tracks;
 	static uint Load(uint& errors);
 	static void Cleanup();
 };

@@ -231,20 +231,20 @@ void CreateCharacterPanel::LoadLanguage()
 //=================================================================================================
 void CreateCharacterPanel::LoadData()
 {
-	auto& tex_mgr = ResourceManager::Get<Texture>();
-	tex_mgr.AddLoadTask("klasa_cecha.png", tKlasaCecha);
-	tex_mgr.AddLoadTask("close.png", custom_x.tex[Button::NONE]);
-	tex_mgr.AddLoadTask("close_hover.png", custom_x.tex[Button::HOVER]);
-	tex_mgr.AddLoadTask("close_down.png", custom_x.tex[Button::DOWN]);
-	tex_mgr.AddLoadTask("close_disabled.png", custom_x.tex[Button::DISABLED]);
-	tex_mgr.AddLoadTask("plus.png", custom_bt[0].tex[Button::NONE]);
-	tex_mgr.AddLoadTask("plus_hover.png", custom_bt[0].tex[Button::HOVER]);
-	tex_mgr.AddLoadTask("plus_down.png", custom_bt[0].tex[Button::DOWN]);
-	tex_mgr.AddLoadTask("plus_disabled.png", custom_bt[0].tex[Button::DISABLED]);
-	tex_mgr.AddLoadTask("minus.png", custom_bt[1].tex[Button::NONE]);
-	tex_mgr.AddLoadTask("minus_hover.png", custom_bt[1].tex[Button::HOVER]);
-	tex_mgr.AddLoadTask("minus_down.png", custom_bt[1].tex[Button::DOWN]);
-	tex_mgr.AddLoadTask("minus_disabled.png", custom_bt[1].tex[Button::DISABLED]);
+	ResourceManager& res_mgr = ResourceManager::Get();
+	tKlasaCecha = res_mgr.Load<Texture>("klasa_cecha.png");
+	custom_x.tex[Button::NONE] = res_mgr.Load<Texture>("close.png");
+	custom_x.tex[Button::HOVER] = res_mgr.Load<Texture>("close_hover.png");
+	custom_x.tex[Button::DOWN] = res_mgr.Load<Texture>("close_down.png");
+	custom_x.tex[Button::DISABLED] = res_mgr.Load<Texture>("close_disabled.png");
+	custom_bt[0].tex[Button::NONE] = res_mgr.Load<Texture>("plus.png");
+	custom_bt[0].tex[Button::HOVER] = res_mgr.Load<Texture>("plus_hover.png");
+	custom_bt[0].tex[Button::DOWN] = res_mgr.Load<Texture>("plus_down.png");
+	custom_bt[0].tex[Button::DISABLED] = res_mgr.Load<Texture>("plus_disabled.png");
+	custom_bt[1].tex[Button::NONE] = res_mgr.Load<Texture>("minus.png");
+	custom_bt[1].tex[Button::HOVER] = res_mgr.Load<Texture>("minus_hover.png");
+	custom_bt[1].tex[Button::DOWN] = res_mgr.Load<Texture>("minus_down.png");
+	custom_bt[1].tex[Button::DISABLED] = res_mgr.Load<Texture>("minus_disabled.png");
 
 	rt_char = game->render->CreateRenderTarget(Int2(128, 256));
 }

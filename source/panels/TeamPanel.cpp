@@ -74,6 +74,14 @@ void TeamPanel::LoadLanguage()
 }
 
 //=================================================================================================
+void TeamPanel::LoadData()
+{
+	ResourceManager& res_mgr = ResourceManager::Get();
+	tCrown = res_mgr.Load<Texture>("korona.png");
+	tSkull = res_mgr.Load<Texture>("czaszka.png");
+}
+
+//=================================================================================================
 void TeamPanel::Draw(ControlDrawData*)
 {
 	GamePanel::Draw();
@@ -105,17 +113,17 @@ void TeamPanel::Draw(ControlDrawData*)
 	{
 		if(unit.GetClass() != Class::INVALID)
 		{
-			TEX t = ClassInfo::classes[(int)unit.GetClass()].icon;
+			Texture* t = ClassInfo::classes[(int)unit.GetClass()].icon;
 			Int2 img_size;
 			Vec2 scale;
-			Control::ResizeImage(t, Int2(32, 32), img_size, scale);
+			t->ResizeImage(Int2(32, 32), img_size, scale);
 			mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &Vec2((float)offset.x, (float)offset.y));
 			gui->DrawSprite2(t, mat, nullptr, &rect, Color::White);
 		}
 		if(&unit == Team.leader)
-			gui->DrawSprite(tKorona, Int2(offset.x + 32, offset.y), Color::White, &rect);
+			gui->DrawSprite(tCrown, Int2(offset.x + 32, offset.y), Color::White, &rect);
 		if(!unit.IsAlive())
-			gui->DrawSprite(tCzaszka, Int2(offset.x + 64, offset.y), Color::White, &rect);
+			gui->DrawSprite(tSkull, Int2(offset.x + 64, offset.y), Color::White, &rect);
 
 		Rect r2 = {
 			offset.x + 96,
@@ -494,12 +502,4 @@ void TeamPanel::Hide()
 {
 	LostFocus();
 	visible = false;
-}
-
-//=================================================================================================
-void TeamPanel::LoadData()
-{
-	auto& tex_mgr = ResourceManager::Get<Texture>();
-	tex_mgr.AddLoadTask("czaszka.png", TeamPanel::tCzaszka);
-	tex_mgr.AddLoadTask("korona.png", TeamPanel::tKorona);
 }

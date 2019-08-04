@@ -1078,7 +1078,7 @@ void InsideLocationGenerator::CreateMinimap()
 {
 	Game& game = Game::Get();
 	InsideLocationLevel& lvl = GetLevelData();
-	TextureLock lock(game.tMinimap);
+	TextureLock lock(game.tMinimap.tex);
 
 	for(int y = 0; y < lvl.h; ++y)
 	{

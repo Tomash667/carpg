@@ -298,7 +298,7 @@
     <ClInclude Include="stats\DamageTypes.h" />
     <ClInclude Include="stats\Effect.h" />
     <ClInclude Include="stats\Material.h" />
-    <ClInclude Include="stats\Music.h" />
+    <ClInclude Include="stats\MusicTrack.h" />
     <ClInclude Include="stats\Perk.h" />
     <ClInclude Include="stats\RoomType.h" />
     <ClInclude Include="stats\Skill.h" />
@@ -482,7 +482,7 @@
     <ClCompile Include="stats\BaseTrap.cpp" />
     <ClCompile Include="stats\Class.cpp" />
     <ClCompile Include="stats\Effect.cpp" />
-    <ClCompile Include="stats\Music.cpp" />
+    <ClCompile Include="stats\MusicTrack.cpp" />
     <ClCompile Include="stats\Perk.cpp" />
     <ClCompile Include="stats\Required.cpp" />
     <ClCompile Include="stats\RoomType.cpp" />

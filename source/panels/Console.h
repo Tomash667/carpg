@@ -19,7 +19,7 @@ public:
 	void Reset() { itb.Reset(); }
 
 private:
-	TEX tBackground;
+	Texture* tBackground;
 	InputTextBox itb;
 	bool added;
 };
