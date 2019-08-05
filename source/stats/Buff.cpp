@@ -18,7 +18,7 @@ BuffInfo BuffInfo::info[] = {
 
 void BuffInfo::LoadImages()
 {
-	ResourceManager& res_mgr = ResourceManager::Get();
+	ResourceManager& res_mgr = *app::res_mgr;
 	for(int i=0; i<BUFF_COUNT; ++i)
 	{
 		BuffInfo& buff = info[i];

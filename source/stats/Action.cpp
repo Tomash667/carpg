@@ -28,7 +28,7 @@ Action* Action::Find(const string& id)
 //=================================================================================================
 void Action::LoadData()
 {
-	ResourceManager& res_mgr = ResourceManager::Get();
+	ResourceManager& res_mgr = *app::res_mgr;
 
 	for(Action& action : actions)
 	{

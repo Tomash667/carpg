@@ -180,7 +180,7 @@ void ServerPanel::LoadLanguage()
 //=================================================================================================
 void ServerPanel::LoadData()
 {
-	ResourceManager& res_mgr = ResourceManager::Get();
+	ResourceManager& res_mgr = *app::res_mgr;
 	tReady = res_mgr.Load<Texture>("gotowy.png");
 	tNotReady = res_mgr.Load<Texture>("niegotowy.png");
 }

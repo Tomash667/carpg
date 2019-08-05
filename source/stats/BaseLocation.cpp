@@ -193,7 +193,7 @@ UnitGroup* BaseLocation::GetRandomGroup() const
 //=================================================================================================
 void BaseLocation::PreloadTextures()
 {
-	ResourceManager& res_mgr = ResourceManager::Get();
+	ResourceManager& res_mgr = *app::res_mgr;
 	for(uint i=0; i<n_base_locations; ++i)
 	{
 		auto& bl = g_base_locations[i];

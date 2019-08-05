@@ -46,11 +46,10 @@ extern string g_system_dir;
 //=================================================================================================
 void Game::BeforeInit()
 {
-	input = engine->GetInput();
-	GKey.input = input;
-	render = engine->GetRender();
+	input = app::input;
+	render = app::render;
 	render->SetShadersDir(Format("%s/shaders", g_system_dir.c_str()));
-	sound_mgr = engine->GetSoundManager();
+	sound_mgr = app::sound_mgr;
 }
 
 //=================================================================================================
@@ -123,7 +122,7 @@ void Game::PreconfigureGame()
 	PreloadLanguage();
 	PreloadData();
 	CreatePlaceholderResources();
-	ResourceManager::Get().SetProgressCallback(ProgressCallback(gui->load_screen, &LoadScreen::SetProgressCallback));
+	app::res_mgr->SetProgressCallback(ProgressCallback(gui->load_screen, &LoadScreen::SetProgressCallback));
 }
 
 //=================================================================================================
@@ -176,7 +175,7 @@ void Game::PreloadLanguage()
 //=================================================================================================
 void Game::PreloadData()
 {
-	ResourceManager::Get().AddDir("data/preload");
+	app::res_mgr->AddDir("data/preload");
 
 	GlobalGui::font = gui->gui->CreateFont("Arial", 12, 800, 512, 2);
 
@@ -187,7 +186,7 @@ void Game::PreloadData()
 	if(!sound_mgr->IsMusicDisabled())
 	{
 		Ptr<MusicTrack> track;
-		track->music = ResourceManager::Get().Load<Music>("Intro.ogg");
+		track->music = app::res_mgr->Load<Music>("Intro.ogg");
 		track->type = MusicType::Intro;
 		MusicTrack::tracks.push_back(track.Pin());
 		SetMusic(MusicType::Intro);
@@ -219,9 +218,8 @@ void Game::LoadSystem()
 void Game::AddFilesystem()
 {
 	Info("Game: Creating list of files.");
-	auto& res_mgr = ResourceManager::Get();
-	res_mgr.AddDir("data");
-	res_mgr.AddPak("data/data.pak", "KrystaliceFire");
+	app::res_mgr->AddDir("data");
+	app::res_mgr->AddPak("data/data.pak", "KrystaliceFire");
 }
 
 //=================================================================================================
@@ -230,13 +228,12 @@ void Game::AddFilesystem()
 void Game::LoadDatafiles()
 {
 	Info("Game: Loading system.");
-	auto& res_mgr = ResourceManager::Get();
 	load_errors = 0;
 	load_warnings = 0;
 
 	// content
 	content.system_dir = g_system_dir;
-	content.LoadContent([this, &res_mgr](Content::Id id)
+	content.LoadContent([this](Content::Id id)
 	{
 		switch(id)
 		{
@@ -334,13 +331,12 @@ void Game::ConfigureGame()
 void Game::LoadData()
 {
 	Info("Game: Loading data.");
-	auto& res_mgr = ResourceManager::Get();
 
-	res_mgr.PrepareLoadScreen(0.33f);
+	app::res_mgr->PrepareLoadScreen(0.33f);
 	AddLoadTasks();
 	for(GameComponent* component : components)
 		component->LoadData();
-	res_mgr.StartLoadScreen();
+	app::res_mgr->StartLoadScreen();
 }
 
 //=================================================================================================
@@ -522,8 +518,8 @@ void Game::AddLoadTasks()
 {
 	gui->load_screen->Tick(txPreloadAssets);
 
-	ResourceManager& res_mgr = ResourceManager::Get();
-	bool nomusic = this->sound_mgr->IsMusicDisabled();
+	ResourceManager& res_mgr = *app::res_mgr;
+	bool nomusic = sound_mgr->IsMusicDisabled();
 
 	// gui textures
 	res_mgr.AddTaskCategory(txLoadGuiTextures);

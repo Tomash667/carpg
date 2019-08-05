@@ -28,7 +28,7 @@ Minimap::Minimap()
 //=================================================================================================
 void Minimap::LoadData()
 {
-	ResourceManager& res_mgr = ResourceManager::Get();
+	ResourceManager& res_mgr = *app::res_mgr;
 	tUnit[UNIT_ME] = res_mgr.Load<Texture>("mini_unit.png");
 	tUnit[UNIT_TEAM] = res_mgr.Load<Texture>("mini_unit2.png");
 	tUnit[UNIT_ENEMY] = res_mgr.Load<Texture>("mini_unit3.png");

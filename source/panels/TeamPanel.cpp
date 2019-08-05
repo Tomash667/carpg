@@ -76,7 +76,7 @@ void TeamPanel::LoadLanguage()
 //=================================================================================================
 void TeamPanel::LoadData()
 {
-	ResourceManager& res_mgr = ResourceManager::Get();
+	ResourceManager& res_mgr = *app::res_mgr;
 	tCrown = res_mgr.Load<Texture>("korona.png");
 	tSkull = res_mgr.Load<Texture>("czaszka.png");
 }
@@ -353,7 +353,7 @@ void TeamPanel::OnPayCredit(int id)
 		else
 			SimpleDialog(Format(txPaidCreditPart, count, game.pc->credit - count));
 		game.pc->unit->gold -= count;
-		game.sound_mgr->PlaySound2d(game.sCoins);
+		app::sound_mgr->PlaySound2d(game.sCoins);
 		if(Net::IsLocal())
 			game.pc->PayCredit(count);
 		else
@@ -454,7 +454,7 @@ void TeamPanel::OnGiveGold(int id)
 	else
 	{
 		game.pc->unit->gold -= counter;
-		game.sound_mgr->PlaySound2d(game.sCoins);
+		app::sound_mgr->PlaySound2d(game.sCoins);
 		if(Net::IsLocal())
 		{
 			target->gold += counter;

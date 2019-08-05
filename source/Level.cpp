@@ -57,7 +57,7 @@ void Level::LoadLanguage()
 //=================================================================================================
 void Level::LoadData()
 {
-	ResourceManager& res_mgr = ResourceManager::Get();
+	ResourceManager& res_mgr = *app::res_mgr;
 	tFlare = res_mgr.Load<Texture>("flare.png");
 	tFlare2 = res_mgr.Load<Texture>("flare2.png");
 	tWater = res_mgr.Load<Texture>("water.png");
@@ -76,7 +76,7 @@ void Level::PostInit()
 	terrain_options.tex_size = 256;
 	terrain_options.tile_size = 2.f;
 	terrain_options.tiles_per_part = 16;
-	terrain->Init(game.render->GetDevice(), terrain_options);
+	terrain->Init(app::render->GetDevice(), terrain_options);
 	terrain->Build();
 	terrain->RemoveHeightMap(true);
 
@@ -4050,7 +4050,7 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 		Error("Read level: Broken music.");
 		return false;
 	}
-	if(!game.sound_mgr->IsMusicDisabled())
+	if(!app::sound_mgr->IsMusicDisabled())
 		game.LoadMusic(music, false, true);
 	if(W.IsBossLevel())
 		game.SetMusic();
@@ -4191,7 +4191,7 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 				Error("Read level: Broken explosion.");
 				return false;
 			}
-			explo->tex = ResourceManager::Get().Load<Texture>(tex_id);
+			explo->tex = app::res_mgr->Load<Texture>(tex_id);
 		}
 
 		// electro effects

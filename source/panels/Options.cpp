@@ -187,13 +187,13 @@ void Options::LoadLanguage()
 	bts[1].pos = Int2(bts[0].size.x + 40, 410);
 
 	// lista rozdzielczoœci
-	int refresh_hz = game->render->GetRefreshRate();
+	int refresh_hz = app::render->GetRefreshRate();
 	res.parent = this;
 	res.pos = Int2(20, 80);
 	res.size = Int2(250, 200);
 	res.event_handler = DialogEvent(this, &Options::OnChangeRes);
 	vector<Resolution> resolutions;
-	game->render->GetResolutions(resolutions);
+	app::render->GetResolutions(resolutions);
 	LocalVector<Res*> vres;
 	for(Resolution& r : resolutions)
 		vres->push_back(new Res(r.size, r.hz));
@@ -202,7 +202,7 @@ void Options::LoadLanguage()
 	for(auto r : vres)
 	{
 		res.Add(r);
-		if(r->size == game->engine->GetWindowSize() && r->hz == refresh_hz)
+		if(r->size == app::engine->GetWindowSize() && r->hz == refresh_hz)
 			res.SetIndex(index);
 		++index;
 	}
@@ -217,11 +217,11 @@ void Options::LoadLanguage()
 	multisampling.event_handler = DialogEvent(this, &Options::OnChangeMultisampling);
 	multisampling.Add(new MultisamplingItem(0, 0));
 	int ms, msq;
-	game->render->GetMultisampling(ms, msq);
+	app::render->GetMultisampling(ms, msq);
 	if(ms == 0)
 		multisampling.SetIndex(0);
 	vector<Int2> ms_modes;
-	game->render->GetMultisamplingModes(ms_modes);
+	app::render->GetMultisamplingModes(ms_modes);
 	index = 1;
 	for(Int2& mode : ms_modes)
 	{
@@ -380,15 +380,15 @@ void Options::Event(GuiEvent e)
 			game->SaveOptions();
 			break;
 		case IdFullscreen:
-			game->engine->ChangeMode(check[0].checked);
+			app::engine->ChangeMode(check[0].checked);
 			break;
 		case IdChangeRes:
 			break;
 		case IdSoundVolume:
-			game->sound_mgr->SetSoundVolume(sound_volume);
+			app::sound_mgr->SetSoundVolume(sound_volume);
 			break;
 		case IdMusicVolume:
-			game->sound_mgr->SetMusicVolume(music_volume);
+			app::sound_mgr->SetMusicVolume(music_volume);
 			break;
 		case IdMouseSensitivity:
 			game->settings.mouse_sensitivity = mouse_sensitivity;
@@ -410,7 +410,7 @@ void Options::Event(GuiEvent e)
 			game->cl_specularmap = check[3].checked;
 			break;
 		case IdVsync:
-			game->render->SetVsync(!game->render->IsVsyncEnabled());
+			app::render->SetVsync(!app::render->IsVsyncEnabled());
 			break;
 		}
 	}
@@ -419,15 +419,15 @@ void Options::Event(GuiEvent e)
 //=================================================================================================
 void Options::SetOptions()
 {
-	check[0].checked = game->engine->IsFullscreen();
+	check[0].checked = app::engine->IsFullscreen();
 	check[1].checked = game->cl_glow;
 	check[2].checked = game->cl_normalmap;
 	check[3].checked = game->cl_specularmap;
-	check[4].checked = game->render->IsVsyncEnabled();
+	check[4].checked = app::render->IsVsyncEnabled();
 
 	Res& re = *res.GetItemCast<Res>();
-	const Int2& wnd_size = game->engine->GetWindowSize();
-	int refresh_hz = game->render->GetRefreshRate();
+	const Int2& wnd_size = app::engine->GetWindowSize();
+	int refresh_hz = app::render->GetRefreshRate();
 	if(re.size != wnd_size || re.hz != refresh_hz)
 	{
 		auto& ress = res.GetItemsCast<Res>();
@@ -445,7 +445,7 @@ void Options::SetOptions()
 
 	MultisamplingItem& mi = *multisampling.GetItemCast<MultisamplingItem>();
 	int ms, msq;
-	game->render->GetMultisampling(ms, msq);
+	app::render->GetMultisampling(ms, msq);
 	if(mi.level != ms || mi.quality != msq)
 	{
 		auto& multis = multisampling.GetItemsCast<MultisamplingItem>();
@@ -460,15 +460,14 @@ void Options::SetOptions()
 		}
 	}
 
-	SoundManager* sound_mgr = game->sound_mgr;
-	if(sound_volume != sound_mgr->GetSoundVolume())
+	if(sound_volume != app::sound_mgr->GetSoundVolume())
 	{
-		sound_volume = sound_mgr->GetSoundVolume();
+		sound_volume = app::sound_mgr->GetSoundVolume();
 		scroll[0].SetValue(float(sound_volume) / 100.f);
 	}
-	if(music_volume != sound_mgr->GetMusicVolume())
+	if(music_volume != app::sound_mgr->GetMusicVolume())
 	{
-		music_volume = sound_mgr->GetMusicVolume();
+		music_volume = app::sound_mgr->GetMusicVolume();
 		scroll[1].SetValue(float(music_volume) / 100.f);
 	}
 	if(mouse_sensitivity != game->settings.mouse_sensitivity)
@@ -487,7 +486,7 @@ void Options::SetOptions()
 void Options::OnChangeRes(int)
 {
 	Res& r = *res.GetItemCast<Res>();
-	game->engine->ChangeMode(r.size, game->engine->IsFullscreen(), r.hz);
+	app::engine->ChangeMode(r.size, app::engine->IsFullscreen(), r.hz);
 	Event((GuiEvent)IdChangeRes);
 }
 
@@ -495,7 +494,7 @@ void Options::OnChangeRes(int)
 void Options::OnChangeMultisampling(int id)
 {
 	MultisamplingItem& multi = *multisampling.GetItemCast<MultisamplingItem>();
-	if(game->render->SetMultisampling(multi.level, multi.quality) == 0)
+	if(app::render->SetMultisampling(multi.level, multi.quality) == 0)
 		gui->SimpleDialog(txMultisamplingError, this);
 }
 

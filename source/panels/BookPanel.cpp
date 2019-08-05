@@ -16,7 +16,7 @@ BookPanel::BookPanel() : book(nullptr), scale(0, 0)
 //=================================================================================================
 void BookPanel::LoadData()
 {
-	ResourceManager& res_mgr = ResourceManager::Get();
+	ResourceManager& res_mgr = *app::res_mgr;
 
 	tArrowL = res_mgr.Load<Texture>("strzalka_l.png");
 	tArrowR = res_mgr.Load<Texture>("strzalka_p.png");
@@ -130,7 +130,7 @@ void BookPanel::Show(const Book* book)
 	Event(GuiEvent_Show);
 	GainFocus();
 
-	Game::Get().sound_mgr->PlaySound2d(sound);
+	app::sound_mgr->PlaySound2d(sound);
 }
 
 //=================================================================================================
@@ -193,5 +193,5 @@ Font* BookPanel::GetFont()
 void BookPanel::ChangePage(int change)
 {
 	current_page += change;
-	Game::Get().sound_mgr->PlaySound2d(sound);
+	app::sound_mgr->PlaySound2d(sound);
 }

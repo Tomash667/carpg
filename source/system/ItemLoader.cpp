@@ -1024,7 +1024,7 @@ void ItemLoader::ParseBookScheme(const string& id)
 		case BSP_TEXTURE:
 			{
 				const string& str = t.MustGetString();
-				scheme->tex = ResourceManager::Get().TryGet<Texture>(str);
+				scheme->tex = app::res_mgr->TryGet<Texture>(str);
 				if(!scheme->tex)
 					t.Throw("Missing texture '%s'.", str.c_str());
 				t.Next();

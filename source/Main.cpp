@@ -516,12 +516,12 @@ void LoadConfiguration(Game& game, char* lpCmdLine)
 	Int2 wnd_size = cfg.GetInt2("resolution");
 	int refresh_hz = cfg.GetInt("refresh");
 	Info("Settings: Resolution %dx%d (%d Hz, %s).", wnd_size.x, wnd_size.y, refresh_hz, windowed == False ? "fullscreen" : "windowed");
-	game.engine->ChangeMode(wnd_size, windowed == False, refresh_hz);
+	app::engine->ChangeMode(wnd_size, windowed == False, refresh_hz);
 
 	// adapter
 	int used_adapter = cfg.GetInt("adapter");
 	Info("Settings: Adapter %d.", used_adapter);
-	game.engine->GetRender()->SetAdapter(used_adapter);
+	app::render->SetAdapter(used_adapter);
 
 	// log
 	log_to_file = (cfg.GetBool3("log", True) == True);
@@ -548,9 +548,9 @@ void LoadConfiguration(Game& game, char* lpCmdLine)
 		Info("Settings: no music.");
 	}
 	if(nosound || nomusic)
-		game.sound_mgr->Disable(nosound, nomusic);
-	game.sound_mgr->SetSoundVolume(Clamp(cfg.GetInt("sound_volume", 100), 0, 100));
-	game.sound_mgr->SetMusicVolume(Clamp(cfg.GetInt("music_volume", 50), 0, 100));
+		app::sound_mgr->Disable(nosound, nomusic);
+	app::sound_mgr->SetSoundVolume(Clamp(cfg.GetInt("sound_volume", 100), 0, 100));
+	app::sound_mgr->SetMusicVolume(Clamp(cfg.GetInt("music_volume", 50), 0, 100));
 
 	// mouse settings
 	game.settings.mouse_sensitivity = Clamp(cfg.GetInt("mouse_sensitivity", 50), 0, 100);
@@ -633,21 +633,21 @@ void LoadConfiguration(Game& game, char* lpCmdLine)
 
 	Int2 force_size = cfg.GetInt2("wnd_size", Int2(-1, -1)),
 		force_pos = cfg.GetInt2("wnd_pos", Int2(-1, -1));
-	game.engine->SetWindowInitialPos(force_pos, force_size);
-	game.engine->HideWindow(cfg.GetBool("hidden_window"));
+	app::engine->SetWindowInitialPos(force_pos, force_size);
+	app::engine->HideWindow(cfg.GetBool("hidden_window"));
 
 	// multisampling
 	int multisampling = cfg.GetInt("multisampling"),
 		multisampling_quality = cfg.GetInt("multisampling_quality");
-	game.engine->GetRender()->SetMultisampling(multisampling, multisampling_quality);
+	app::render->SetMultisampling(multisampling, multisampling_quality);
 
 	// miscellaneous
 	game.cl_postfx = cfg.GetBool("cl_postfx", true);
 	game.cl_normalmap = cfg.GetBool("cl_normalmap", true);
 	game.cl_specularmap = cfg.GetBool("cl_specularmap", true);
 	game.cl_glow = cfg.GetBool("cl_glow", true);
-	game.engine->GetRender()->SetShaderVersion(cfg.GetInt("cl_shader_version", -1));
-	game.engine->GetRender()->SetVsync(cfg.GetBool("vsync", true));
+	app::render->SetShaderVersion(cfg.GetInt("cl_shader_version", -1));
+	app::render->SetVsync(cfg.GetBool("vsync", true));
 	game.settings.grass_range = cfg.GetFloat("grass_range", 40.f);
 	if(game.settings.grass_range < 0.f)
 		game.settings.grass_range = 0.f;

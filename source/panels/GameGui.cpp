@@ -109,7 +109,7 @@ void GameGui::LoadLanguage()
 //=================================================================================================
 void GameGui::LoadData()
 {
-	ResourceManager& res_mgr = ResourceManager::Get();
+	ResourceManager& res_mgr = *app::res_mgr;
 	tCrosshair = res_mgr.Load<Texture>("crosshair.png");
 	tBubble = res_mgr.Load<Texture>("bubble.png");
 	tObwodkaBolu = res_mgr.Load<Texture>("czerwono.png");
@@ -612,10 +612,10 @@ void GameGui::DrawBack()
 		if(game.devmode)
 		{
 			text = Format("Pos: %g; %g; %g (%d; %d)\nRot: %g %s\nFps: %g", FLT10(u.pos.x), FLT10(u.pos.y), FLT10(u.pos.z), int(u.pos.x / 2), int(u.pos.z / 2),
-				FLT100(u.rot), dir_name_short[AngleToDir(Clip(u.rot))], FLT10(game.engine->GetFps()));
+				FLT100(u.rot), dir_name_short[AngleToDir(Clip(u.rot))], FLT10(app::engine->GetFps()));
 		}
 		else
-			text = Format("Fps: %g", FLT10(game.engine->GetFps()));
+			text = Format("Fps: %g", FLT10(app::engine->GetFps()));
 		Int2 s = GlobalGui::font->CalculateSize(text);
 		if(Int2::Distance(s, debug_info_size) < 32)
 			debug_info_size = Int2::Max(s, debug_info_size);

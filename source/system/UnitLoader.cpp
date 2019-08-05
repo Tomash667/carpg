@@ -1819,7 +1819,7 @@ void UnitLoader::ParseSpells(Ptr<SpellList>& list)
 //=================================================================================================
 void UnitLoader::ParseSounds(Ptr<SoundPack>& pack)
 {
-	ResourceManager& res_mgr = ResourceManager::Get();
+	ResourceManager& res_mgr = *app::res_mgr;
 
 	// {
 	t.AssertSymbol('{');

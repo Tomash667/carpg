@@ -232,7 +232,7 @@ void CreateCharacterPanel::LoadLanguage()
 //=================================================================================================
 void CreateCharacterPanel::LoadData()
 {
-	ResourceManager& res_mgr = ResourceManager::Get();
+	ResourceManager& res_mgr = *app::res_mgr;
 	tBox = res_mgr.Load<Texture>("box.png");
 	tPowerBar = res_mgr.Load<Texture>("klasa_cecha.png");
 	custom_x.tex[Button::NONE] = AreaLayout(res_mgr.Load<Texture>("close.png"));
@@ -248,7 +248,7 @@ void CreateCharacterPanel::LoadData()
 	custom_bt[1].tex[Button::DOWN] = AreaLayout(res_mgr.Load<Texture>("minus_down.png"));
 	custom_bt[1].tex[Button::DISABLED] = AreaLayout(res_mgr.Load<Texture>("minus_disabled.png"));
 
-	rt_char = game->render->CreateRenderTarget(Int2(128, 256));
+	rt_char = app::render->CreateRenderTarget(Int2(128, 256));
 }
 
 //=================================================================================================
@@ -642,8 +642,8 @@ void CreateCharacterPanel::Event(GuiEvent e)
 //=================================================================================================
 void CreateCharacterPanel::RenderUnit()
 {
-	Render* render = game->render;
-	IDirect3DDevice9* device = game->render->GetDevice();
+	Render* render = app::render;
+	IDirect3DDevice9* device = render->GetDevice();
 	HRESULT hr = device->TestCooperativeLevel();
 	if(hr != D3D_OK)
 		return;

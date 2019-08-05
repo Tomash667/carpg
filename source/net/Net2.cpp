@@ -786,7 +786,7 @@ bool Net::ReadWorldData(BitStreamReader& f)
 	}
 
 	// load music
-	if(!game.sound_mgr->IsMusicDisabled())
+	if(!app::sound_mgr->IsMusicDisabled())
 	{
 		game.LoadMusic(MusicType::Boss, false);
 		game.LoadMusic(MusicType::Death, false);

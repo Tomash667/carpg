@@ -2339,13 +2339,13 @@ void World::StartEncounter(int enc, UnitGroup* group)
 				encounter.special = SE_GOLEM;
 				QM.quest_mages2->paid = false;
 			}
-			else if(IsDebug() && Game::Get().input->Focus())
+			else if(IsDebug() && app::input->Focus())
 			{
-				if(Game::Get().input->Down(Key::I))
+				if(app::input->Down(Key::I))
 					encounter.special = SE_CRAZY_HEROES;
-				else if(Game::Get().input->Down(Key::B))
+				else if(app::input->Down(Key::B))
 					encounter.special = SE_BANDITS_VS_TRAVELERS;
-				else if(Game::Get().input->Down(Key::C))
+				else if(app::input->Down(Key::C))
 					encounter.special = SE_CRAZY_COOK;
 			}
 

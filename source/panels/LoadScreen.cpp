@@ -9,7 +9,7 @@
 //=================================================================================================
 void LoadScreen::LoadData()
 {
-	ResourceManager& res_mgr = ResourceManager::Get();
+	ResourceManager& res_mgr = *app::res_mgr;
 	tLoadbarBg = res_mgr.Load<Texture>("loadbar_bg.png");
 	tLoadbar = res_mgr.Load<Texture>("loadbar.png");
 	tBackground = res_mgr.Load<Texture>("load_bg.jpg");
@@ -49,7 +49,7 @@ void LoadScreen::Setup(float min_progress, float max_progress, int steps, cstrin
 		text.clear();
 	progress = min_progress;
 	step = 0;
-	Engine::Get().DoPseudotick();
+	app::engine->DoPseudotick();
 }
 
 //=================================================================================================
@@ -60,7 +60,7 @@ void LoadScreen::Tick(cstring str)
 	progress = min_progress + (max_progress - min_progress) * step / steps;
 	if(str)
 		text = str;
-	Engine::Get().DoPseudotick();
+	app::engine->DoPseudotick();
 }
 
 //=================================================================================================

@@ -124,7 +124,7 @@ uint MusicTrack::Load(uint& errors)
 		{ "death", MusicType::Death }
 	});
 
-	ResourceManager& res_mgr = ResourceManager::Get();
+	ResourceManager& res_mgr = *app::res_mgr;
 	Ptr<MusicTrack> track(nullptr);
 
 	try
@@ -208,7 +208,7 @@ uint MusicTrack::Load(uint& errors)
 //=================================================================================================
 void Game::LoadMusic(MusicType type, bool new_load_screen, bool instant)
 {
-	ResourceManager& res_mgr = ResourceManager::Get();
+	ResourceManager& res_mgr = *app::res_mgr;
 	bool first = true;
 
 	for(MusicTrack* track : MusicTrack::tracks)

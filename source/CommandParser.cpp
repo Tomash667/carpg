@@ -1325,11 +1325,11 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			int level = -1;
 			if(t.Next())
 				level = t.MustGetInt();
-			int result = game.render->SetMultisampling(type, level);
+			int result = app::render->SetMultisampling(type, level);
 			if(result == 2)
 			{
 				int ms, msq;
-				game.render->GetMultisampling(ms, msq);
+				app::render->GetMultisampling(ms, msq);
 				Msg("Changed multisampling to %d, %d.", ms, msq);
 			}
 			else
@@ -1338,7 +1338,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		else
 		{
 			int ms, msq;
-			game.render->GetMultisampling(ms, msq);
+			app::render->GetMultisampling(ms, msq);
 			Msg("multisampling = %d, %d", ms, msq);
 		}
 		break;
@@ -1364,7 +1364,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 				}
 			}
 			vector<Resolution> resolutions;
-			game.render->GetResolutions(resolutions);
+			app::render->GetResolutions(resolutions);
 			for(const Resolution& res : resolutions)
 			{
 				if(w == res.size.x)
@@ -1396,16 +1396,16 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 				}
 			}
 			if(valid)
-				game.engine->ChangeMode(Int2(w, h), game.engine->IsFullscreen(), hz);
+				app::engine->ChangeMode(Int2(w, h), app::engine->IsFullscreen(), hz);
 			else
 				Msg("Can't change resolution to %dx%d (%d Hz).", w, h, hz);
 		}
 		else
 		{
 			LocalString s = Format("Current resolution %dx%d (%d Hz). Available: ",
-				game.engine->GetWindowSize().x, game.engine->GetWindowSize().y, game.render->GetRefreshRate());
+				app::engine->GetWindowSize().x, app::engine->GetWindowSize().y, app::render->GetRefreshRate());
 			vector<Resolution> resolutions;
-			game.render->GetResolutions(resolutions);
+			app::render->GetResolutions(resolutions);
 			for(const Resolution& res : resolutions)
 				s += Format("%dx%d(%d), ", res.size.x, res.size.y, res.hz);
 			s.pop(2u);
@@ -1472,7 +1472,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		break;
 	case CMD_RELOAD_SHADERS:
 		game.ReloadShaders();
-		if(game.engine->IsShutdown())
+		if(app::engine->IsShutdown())
 			return;
 		break;
 	case CMD_TILE_INFO:
@@ -2030,7 +2030,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		break;
 	case CMD_SHADER_VERSION:
 		if(!t.Next() || !t.IsInt())
-			Msg("shader_version: %d", game.render->GetShaderVersion());
+			Msg("shader_version: %d", app::render->GetShaderVersion());
 		else
 		{
 			int value = t.GetInt();
@@ -2038,7 +2038,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 				Msg("Invalid shader version, must be 2 or 3.");
 			else
 			{
-				game.render->SetShaderVersion(value);
+				app::render->SetShaderVersion(value);
 				Msg("shader_version: %d", value);
 				game.ReloadShaders();
 			}

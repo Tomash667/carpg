@@ -192,7 +192,7 @@ void DialogContext::Update(float dt)
 			{
 				if(GKey.KeyPressedReleaseAllowed(GK_SELECT_DIALOG)
 					|| GKey.KeyPressedReleaseAllowed(GK_SKIP_DIALOG)
-					|| (GKey.AllowKeyboard() && game.input->PressedRelease(Key::Escape)))
+					|| (GKey.AllowKeyboard() && app::input->PressedRelease(Key::Escape)))
 					skip = true;
 				else
 				{
@@ -961,18 +961,18 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 	else if(strcmp(msg, "gossip") == 0 || strcmp(msg, "gossip_drunk") == 0)
 	{
 		bool drunkman = (strcmp(msg, "gossip_drunk") == 0);
-		if(!drunkman && (Rand() % 3 == 0 || (game.input->Down(Key::Shift) && game.devmode)))
+		if(!drunkman && (Rand() % 3 == 0 || (app::input->Down(Key::Shift) && game.devmode)))
 		{
 			int what = Rand() % 3;
 			if(QM.HaveQuestRumors() && Rand() % 2 == 0)
 				what = 2;
 			if(game.devmode)
 			{
-				if(game.input->Down(Key::N1))
+				if(app::input->Down(Key::N1))
 					what = 0;
-				else if(game.input->Down(Key::N2))
+				else if(app::input->Down(Key::N2))
 					what = 1;
-				else if(game.input->Down(Key::N3))
+				else if(app::input->Down(Key::N3))
 					what = 2;
 			}
 			const vector<Location*>& locations = W.GetLocations();

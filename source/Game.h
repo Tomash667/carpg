@@ -277,16 +277,18 @@ public:
 
 private:
 	static Game* game;
+
+	Engine* engine;
+	Input* input;
+	Render* render;
+	SoundManager* sound_mgr;
+
 public:
 	static Game& Get()
 	{
 		return *game;
 	}
 
-	Engine* engine;
-	Input* input;
-	Render* render;
-	SoundManager* sound_mgr;
 	CustomCollisionWorld* phy_world;
 
 	//-----------------------------------------------------------------

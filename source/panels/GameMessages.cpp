@@ -46,7 +46,7 @@ void GameMessages::LoadLanguage()
 //=================================================================================================
 void GameMessages::LoadData()
 {
-	snd_scribble = ResourceManager::Get().Load<Sound>("scribble.mp3");
+	snd_scribble = app::res_mgr->Load<Sound>("scribble.mp3");
 }
 
 //=================================================================================================
@@ -231,12 +231,12 @@ void GameMessages::AddGameMsg3(GMS id)
 	case GMS_ADDED_RUMOR:
 		repeat = true;
 		text = txGmsRumor;
-		Game::Get().sound_mgr->PlaySound2d(snd_scribble);
+		app::sound_mgr->PlaySound2d(snd_scribble);
 		break;
 	case GMS_JOURNAL_UPDATED:
 		repeat = true;
 		text = txGmsJournalUpdated;
-		Game::Get().sound_mgr->PlaySound2d(snd_scribble);
+		app::sound_mgr->PlaySound2d(snd_scribble);
 		break;
 	case GMS_USED:
 		text = txGmsUsed;

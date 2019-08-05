@@ -233,7 +233,7 @@ void GlobalGui::LoadLanguage()
 //=================================================================================================
 void GlobalGui::LoadData()
 {
-	ResourceManager& res_mgr = ResourceManager::Get();
+	ResourceManager& res_mgr = *app::res_mgr;
 	GamePanel::tBackground = res_mgr.Load<Texture>("game_panel.png");
 	GamePanel::tDialog = res_mgr.Load<Texture>("dialog.png");
 

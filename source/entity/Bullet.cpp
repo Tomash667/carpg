@@ -52,7 +52,7 @@ void Bullet::Load(FileReader& f)
 	f >> rot;
 	const string& mesh_id = f.ReadString1();
 	if(!mesh_id.empty())
-		mesh = ResourceManager::Get().Load<Mesh>(mesh_id);
+		mesh = app::res_mgr->Load<Mesh>(mesh_id);
 	else
 		mesh = nullptr;
 	f >> speed;
@@ -75,7 +75,7 @@ void Bullet::Load(FileReader& f)
 		spell = nullptr;
 	const string& tex_name = f.ReadString1();
 	if(!tex_name.empty())
-		tex = ResourceManager::Get().Load<Texture>(tex_name);
+		tex = app::res_mgr->Load<Texture>(tex_name);
 	else
 		tex = nullptr;
 	f >> refid;

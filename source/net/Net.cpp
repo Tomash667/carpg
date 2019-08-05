@@ -5683,7 +5683,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				Object* obj = L.local_area->FindObject(base_obj);
 				obj->base = BaseObject::Get("altar");
 				obj->mesh = obj->base->mesh;
-				ResourceManager::Get().Load(obj->mesh);
+				app::res_mgr->Load(obj->mesh);
 
 				// remove particles
 				float best_dist = 999.f;

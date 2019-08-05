@@ -506,7 +506,7 @@ void Journal::OnAddNote(int id)
 	if(id == BUTTON_OK)
 	{
 		notes.push_back(Format(txAddTime, W.GetDate(), input_str.c_str()));
-		game.sound_mgr->PlaySound2d(game.gui->messages->snd_scribble);
+		app::sound_mgr->PlaySound2d(game.gui->messages->snd_scribble);
 		Build();
 		if(!Net::IsLocal())
 			Net::PushChange(NetChange::ADD_NOTE);
@@ -522,7 +522,7 @@ void Journal::NeedUpdate(Mode at_mode, int quest_id)
 //=================================================================================================
 void Journal::LoadData()
 {
-	ResourceManager& res_mgr = ResourceManager::Get();
+	ResourceManager& res_mgr = *app::res_mgr;
 	tBook = res_mgr.Load<Texture>("book.png");
 	tPage[0] = res_mgr.Load<Texture>("dziennik_przyciski.png");
 	tPage[1] = res_mgr.Load<Texture>("dziennik_przyciski2.png");

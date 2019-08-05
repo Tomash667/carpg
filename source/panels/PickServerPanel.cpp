@@ -71,7 +71,7 @@ void PickServerPanel::LoadLanguage()
 //=================================================================================================
 void PickServerPanel::LoadData()
 {
-	ResourceManager& res_mgr = ResourceManager::Get();
+	ResourceManager& res_mgr = *app::res_mgr;
 	tIcoSave = res_mgr.Load<Texture>("save-16.png");
 	tIcoPassword = res_mgr.Load<Texture>("padlock-16.png");
 }

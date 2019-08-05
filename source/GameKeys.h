@@ -97,14 +97,14 @@ public:
 
 	bool Down(GAME_KEYS gk) const
 	{
-		return input->Down(keys[gk][0]) || input->Down(keys[gk][1]);
+		return app::input->Down(keys[gk][0]) || app::input->Down(keys[gk][1]);
 	}
 	Key DownR(GAME_KEYS gk) const
 	{
 		const GameKey& k = keys[gk];
-		if(input->Down(k[0]))
+		if(app::input->Down(k[0]))
 			return k[0];
-		else if(input->Down(k[1]))
+		else if(app::input->Down(k[1]))
 			return k[1];
 		else
 			return Key::None;
@@ -112,16 +112,16 @@ public:
 	Key PressedR(GAME_KEYS gk) const
 	{
 		const GameKey& k = keys[gk];
-		if(input->Pressed(k[0]))
+		if(app::input->Pressed(k[0]))
 			return k[0];
-		else if(input->Pressed(k[1]))
+		else if(app::input->Pressed(k[1]))
 			return k[1];
 		else
 			return Key::None;
 	}
 	bool PressedRelease(GAME_KEYS gk)
 	{
-		return input->PressedRelease(keys[gk][0]) || input->PressedRelease(keys[gk][1]);
+		return app::input->PressedRelease(keys[gk][0]) || app::input->PressedRelease(keys[gk][1]);
 	}
 	GameKey& operator [] (int n)
 	{
@@ -139,12 +139,12 @@ public:
 		GameKey& k = keys[gk];
 		if(k[0] != Key::None)
 		{
-			if(KeyAllowed(k[0]) && (input->*f)(k[0]))
+			if(KeyAllowed(k[0]) && (app::input->*f)(k[0]))
 				return k[0];
 		}
 		if(k[1] != Key::None)
 		{
-			if(KeyAllowed(k[1]) && (input->*f)(k[1]))
+			if(KeyAllowed(k[1]) && (app::input->*f)(k[1]))
 				return k[1];
 		}
 		return Key::None;
@@ -158,12 +158,12 @@ public:
 		GameKey& k = keys[gk];
 		if(k[0] != Key::None && k[0] != ignored_key)
 		{
-			if(KeyAllowed(k[0]) && (input->*f)(k[0]))
+			if(KeyAllowed(k[0]) && (app::input->*f)(k[0]))
 				return k[0];
 		}
 		if(k[1] != Key::None && k[1] != ignored_key)
 		{
-			if(KeyAllowed(k[1]) && (input->*f)(k[1]))
+			if(KeyAllowed(k[1]) && (app::input->*f)(k[1]))
 				return k[1];
 		}
 		return Key::None;
@@ -197,12 +197,12 @@ public:
 		GameKey& k = keys[gk];
 		if(k[0] != Key::None)
 		{
-			if(input->DownUp(k[0]))
+			if(app::input->DownUp(k[0]))
 				return true;
 		}
 		if(k[1] != Key::None)
 		{
-			if(input->DownUp(k[1]))
+			if(app::input->DownUp(k[1]))
 				return true;
 		}
 		return false;
@@ -215,7 +215,7 @@ public:
 	bool KeyUpAllowed(Key key)
 	{
 		if(KeyAllowed(key))
-			return input->Up(key);
+			return app::input->Up(key);
 		else
 			return true;
 	}
@@ -228,7 +228,7 @@ public:
 			{
 				if(k.key[i] >= Key::F1 && k.key[i] <= Key::F12)
 				{
-					if(input->PressedRelease(k.key[i]))
+					if(app::input->PressedRelease(k.key[i]))
 						return true;
 				}
 			}
@@ -237,10 +237,9 @@ public:
 	}
 	bool DebugKey(Key k)
 	{
-		return IsDebug() && input->Focus() && input->Down(k);
+		return IsDebug() && app::input->Focus() && app::input->Down(k);
 	}
 
-	Input* input;
 	AllowInput allow_input;
 
 private:

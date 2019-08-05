@@ -258,7 +258,7 @@ void Unit::SetGold(int new_gold)
 		if(player->is_local)
 		{
 			Game& game = Game::Get();
-			game.sound_mgr->PlaySound2d(game.sCoins);
+			app::sound_mgr->PlaySound2d(game.sCoins);
 		}
 		else
 		{
@@ -4269,7 +4269,7 @@ void Unit::CreateMesh(CREATE_MESH mode)
 	if(data->state != ResourceState::Loaded)
 	{
 		assert(mode != CREATE_MESH::AFTER_PRELOAD);
-		ResourceManager& res_mgr = ResourceManager::Get();
+		ResourceManager& res_mgr = *app::res_mgr;
 		if(res_mgr.IsLoadScreen())
 		{
 			if(mode == CREATE_MESH::LOAD)
@@ -4296,7 +4296,7 @@ void Unit::CreateMesh(CREATE_MESH mode)
 					}
 				}
 				data->state = ResourceState::Loading;
-				ResourceManager::Get().AddTask(this, TaskCallback([](TaskData& td)
+				app::res_mgr->AddTask(this, TaskCallback([](TaskData& td)
 				{
 					Unit* unit = static_cast<Unit*>(td.ptr);
 					unit->data->state = ResourceState::Loaded;
@@ -5007,7 +5007,7 @@ void Unit::DropGold(int count)
 	Game& game = Game::Get();
 
 	gold -= count;
-	game.sound_mgr->PlaySound2d(game.sCoins);
+	app::sound_mgr->PlaySound2d(game.sCoins);
 
 	// animacja wyrzucania
 	action = A_ANIMATION;
@@ -5061,7 +5061,7 @@ bool Unit::IsDrunkman() const
 //=================================================================================================
 void Unit::PlaySound(Sound* sound, float range)
 {
-	Game::Get().sound_mgr->PlaySound3d(sound, GetHeadSoundPos(), range);
+	app::sound_mgr->PlaySound3d(sound, GetHeadSoundPos(), range);
 }
 
 //=================================================================================================

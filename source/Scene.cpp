@@ -3275,7 +3275,7 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 		if(!mesh.IsLoaded())
 		{
 			ReportError(10, Format("Drawing not loaded mesh '%s'.", mesh.filename));
-			ResourceManager::Get().Load(const_cast<Mesh*>(&mesh));
+			app::res_mgr->Load(const_cast<Mesh*>(&mesh));
 			break;
 		}
 

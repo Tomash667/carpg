@@ -62,7 +62,7 @@ void WorldMapGui::LoadLanguage()
 //=================================================================================================
 void WorldMapGui::LoadData()
 {
-	ResourceManager& res_mgr = ResourceManager::Get();
+	ResourceManager& res_mgr = *app::res_mgr;
 	tMapIcon[LI_CAMP] = res_mgr.Load<Texture>("camp.png");
 	tMapIcon[LI_VILLAGE] = res_mgr.Load<Texture>("village.png");
 	tMapIcon[LI_CITY] = res_mgr.Load<Texture>("city.png");
@@ -91,10 +91,10 @@ void WorldMapGui::LoadData()
 void WorldMapGui::Draw(ControlDrawData*)
 {
 	// background
-	Rect rect0(Int2::Zero, game.engine->GetWindowSize());
-	game.render->SetTextureAddressMode(TEX_ADR_WRAP);
+	Rect rect0(Int2::Zero, app::engine->GetWindowSize());
+	app::render->SetTextureAddressMode(TEX_ADR_WRAP);
 	gui->DrawSpriteRectPart(tMapBg, rect0, rect0);
-	game.render->SetTextureAddressMode(TEX_ADR_CLAMP);
+	app::render->SetTextureAddressMode(TEX_ADR_CLAMP);
 
 	// map
 	Matrix mat = Matrix::Transform2D(&offset, 0.f, &Vec2(float(W.world_size) / MAP_IMG_SIZE * zoom), nullptr, 0.f, &(GetCameraCenter() - offset));

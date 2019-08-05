@@ -53,7 +53,7 @@ void ActionPanel::LoadLanguage()
 //=================================================================================================
 void ActionPanel::LoadData()
 {
-	ResourceManager& res_mgr = ResourceManager::Get();
+	ResourceManager& res_mgr = *app::res_mgr;
 	tItemBar = res_mgr.Load<Texture>("item_bar.png");
 	tMelee = res_mgr.Load<Texture>("sword-brandish.png");
 	tRanged = res_mgr.Load<Texture>("bow-arrow.png");

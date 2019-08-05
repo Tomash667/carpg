@@ -59,7 +59,7 @@ void GameMenu::LoadLanguage()
 //=================================================================================================
 void GameMenu::LoadData()
 {
-	tLogo = ResourceManager::Get().Load<Texture>("logo_small.png");
+	tLogo = app::res_mgr->Load<Texture>("logo_small.png");
 }
 
 //=================================================================================================

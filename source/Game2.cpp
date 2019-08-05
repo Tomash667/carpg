@@ -3294,7 +3294,7 @@ uint Game::TestGameData(bool major)
 {
 	string str;
 	uint errors = 0;
-	ResourceManager& res_mgr = ResourceManager::Get();
+	ResourceManager& res_mgr = *app::res_mgr;
 
 	Info("Test: Checking items...");
 
@@ -3633,7 +3633,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 		script->Parse(*u);
 		SortItems(u->items);
 		u->RecalculateWeight();
-		if(!ResourceManager::Get().IsLoadScreen())
+		if(!app::res_mgr->IsLoadScreen())
 		{
 			for(auto slot : u->slots)
 			{
@@ -7036,7 +7036,7 @@ void Game::UpdateTraps(LevelArea& area, float dt)
 
 void Game::PreloadTraps(vector<Trap*>& traps)
 {
-	ResourceManager& res_mgr = ResourceManager::Get();
+	ResourceManager& res_mgr = *app::res_mgr;
 
 	for(Trap* trap : traps)
 	{
@@ -7752,7 +7752,7 @@ void Game::ApplyLocationTexturePack(TexturePack& pack, LocationTexturePack::Entr
 	else
 		pack = pack_def;
 
-	ResourceManager& res_mgr = ResourceManager::Get();
+	ResourceManager& res_mgr = *app::res_mgr;
 	res_mgr.Load(pack.diffuse);
 	if(pack.normal)
 		res_mgr.Load(pack.normal);
@@ -8181,7 +8181,7 @@ void Game::LoadingStart(int steps)
 	gui->load_screen->visible = true;
 	gui->main_menu->visible = false;
 	gui->game_gui->visible = false;
-	ResourceManager::Get().PrepareLoadScreen(loading_cap);
+	app::res_mgr->PrepareLoadScreen(loading_cap);
 }
 
 void Game::LoadingStep(cstring text, int end)
@@ -8222,11 +8222,10 @@ void Game::LoadResources(cstring text, bool worldmap)
 	PreloadResources(worldmap);
 
 	// check if there is anything to load
-	auto& res_mgr = ResourceManager::Get();
-	if(res_mgr.HaveTasks())
+	if(app::res_mgr->HaveTasks())
 	{
-		Info("Loading new resources (%d).", res_mgr.GetLoadTasksCount());
-		res_mgr.StartLoadScreen(txLoadingResources);
+		Info("Loading new resources (%d).", app::res_mgr->GetLoadTasksCount());
+		app::res_mgr->StartLoadScreen(txLoadingResources);
 
 		// apply mesh instance for newly loaded meshes
 		for(auto& unit_mesh : units_mesh_load)
@@ -8245,7 +8244,7 @@ void Game::LoadResources(cstring text, bool worldmap)
 	else
 	{
 		Info("Nothing new to load.");
-		res_mgr.CancelLoadScreen();
+		app::res_mgr->CancelLoadScreen();
 	}
 
 	if(L.location)
@@ -8264,7 +8263,7 @@ void Game::LoadResources(cstring text, bool worldmap)
 // When there is something new to load, add task to load it when entering location etc
 void Game::PreloadResources(bool worldmap)
 {
-	ResourceManager& res_mgr = ResourceManager::Get();
+	ResourceManager& res_mgr = *app::res_mgr;
 
 	if(Net::IsLocal())
 		items_load.clear();
@@ -8345,7 +8344,7 @@ void Game::PreloadResources(bool worldmap)
 
 void Game::PreloadUsables(vector<Usable*>& usables)
 {
-	ResourceManager& res_mgr = ResourceManager::Get();
+	ResourceManager& res_mgr = *app::res_mgr;
 
 	for(auto u : usables)
 	{
@@ -8374,7 +8373,7 @@ void Game::PreloadUnits(vector<Unit*>& units)
 
 void Game::PreloadUnit(Unit* unit)
 {
-	ResourceManager& res_mgr = ResourceManager::Get();
+	ResourceManager& res_mgr = *app::res_mgr;
 	UnitData& data = *unit->data;
 
 	if(Net::IsLocal())
@@ -8395,7 +8394,7 @@ void Game::PreloadUnit(Unit* unit)
 	if(data.mesh)
 		res_mgr.Load(data.mesh);
 
-	if(!Game::Get().sound_mgr->IsDisabled())
+	if(!sound_mgr->IsDisabled())
 	{
 		for(int i = 0; i < SOUND_MAX; ++i)
 		{
@@ -8428,7 +8427,7 @@ void Game::PreloadItem(const Item* p_item)
 	if(item.state == ResourceState::Loaded)
 		return;
 
-	ResourceManager& res_mgr = ResourceManager::Get();
+	ResourceManager& res_mgr = *app::res_mgr;
 	if(res_mgr.IsLoadScreen())
 	{
 		if(item.state != ResourceState::Loading)
