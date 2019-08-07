@@ -712,7 +712,7 @@ void LoadConfiguration(Game& game, char* lpCmdLine)
 	game.skip_tutorial = ToBool(cfg.GetBool3("skip_tutorial", False));
 
 	// crash reporter
-	ErrorHandler::Get().RegisterHandler(cfg, log_filename);
+	RegisterErrorHandler(cfg, log_filename);
 }
 
 //=================================================================================================
