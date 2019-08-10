@@ -57,7 +57,7 @@ spell raise {
 	cooldown {10 15}
 	range 15
 	tex_particle "czarna_iskra.png" 0.1
-	sound_cast "Darkness3.ogg" 1
+	sound_cast "Darkness3.mp3" 1
 }
 
 spell thunder_bolt {
@@ -111,7 +111,7 @@ spell heal {
 	cooldown {10 15}
 	range 15
 	tex_particle "heal.png" 0.03
-	sound_cast "heal.ogg" 1
+	sound_cast "heal.mp3" 1
 }
 
 spell mystic_ball {

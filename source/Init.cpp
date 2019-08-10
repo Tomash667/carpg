@@ -753,8 +753,8 @@ void Game::AddLoadTasks()
 	sDoor[1] = sound_mgr.AddLoadTask("drzwi-03.mp3");
 	sDoor[2] = sound_mgr.AddLoadTask("drzwi-04.mp3");
 	sDoorClose = sound_mgr.AddLoadTask("104528__skyumori__door-close-sqeuak-02.mp3");
-	sDoorClosed[0] = sound_mgr.AddLoadTask("wont_budge.ogg");
-	sDoorClosed[1] = sound_mgr.AddLoadTask("wont_budge2.ogg");
+	sDoorClosed[0] = sound_mgr.AddLoadTask("wont_budge.mp3");
+	sDoorClosed[1] = sound_mgr.AddLoadTask("wont_budge2.mp3");
 	sItem[0] = sound_mgr.AddLoadTask("bottle.wav"); // potion
 	sItem[1] = sound_mgr.AddLoadTask("armor-light.wav"); // light armor
 	sItem[2] = sound_mgr.AddLoadTask("chainmail1.wav"); // heavy armor
@@ -783,7 +783,7 @@ void Game::AddLoadTasks()
 	sArenaWin = sound_mgr.AddLoadTask("arena_wygrana.mp3");
 	sArenaLost = sound_mgr.AddLoadTask("arena_porazka.mp3");
 	sUnlock = sound_mgr.AddLoadTask("unlock.mp3");
-	sEvil = sound_mgr.AddLoadTask("TouchofDeath.ogg");
+	sEvil = sound_mgr.AddLoadTask("TouchofDeath.mp3");
 	sEat = sound_mgr.AddLoadTask("eat.mp3");
 	sSummon = sound_mgr.AddLoadTask("whooshy-puff.wav");
 	sZap = sound_mgr.AddLoadTask("zap.mp3");

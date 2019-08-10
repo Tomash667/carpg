@@ -1,6 +1,11 @@
 Changelog
 
 --------------------------------------------------------------------------------
+Version 0.11.1 (???):
+- units collision shape was slightly higher then it should be
+- fixed starting resolution of 800x600
+
+--------------------------------------------------------------------------------
 Version 0.11 (2019-07-28):
 ! cannot load saves from version 0.3 or older
 + loading unit group settings from file

@@ -1,6 +1,11 @@
 Historia zmian
 
 --------------------------------------------------------------------------------
+Version 0.11.1 (???):
+- bry³a kolizji jednostek by³ wy¿sza ni¿ powinna
+- startowa rozdzielczoœæ 800x600
+
+--------------------------------------------------------------------------------
 Wersja 0.11 (2019-07-28):
 ! nie mo¿na wczytywaæ ju¿ zapisów z wersji 0.3 lub starszej
 + wczytywanie ustawieñ grup jednostek z pliku
@@ -22,7 +27,7 @@ Wersja 0.11 (2019-07-28):
 - naprawione crashe przy u¿yciu opcji nosound i nomusic
 - naprawiony rzadki crash przy generowaniu/wêdrówce [Ampped]
 - wczytywanie zepsutego zapisu a nastêpnie dobrego mo¿e zcrashowaæ grê [Ampped]
-- dodanie zabezpieczenia przed crashem w ekwipunku [Ampped/jakee248]
+- dodanie zabezpieczenia przed cr	ashem w ekwipunku [Ampped/jakee248]
 - efekt leczenia zaklêcia wyssania krwii ignorowa³ odpornoœæ na czary celu
 - losowe obozy siê nie generowa³y
 - crash po wejœciu do podziemi w zadaniu z bandytami [Ampped]
