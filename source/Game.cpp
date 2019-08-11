@@ -488,6 +488,12 @@ void Game::OnUpdate(float dt)
 
 	arena->UpdatePvpRequest(dt);
 
+	if(game_state == GS_LEVEL || game_state == GS_WORLDMAP)
+	{
+		void UpdateTest();
+		UpdateTest();
+	}
+
 	// update game
 	if(!end_of_game)
 	{

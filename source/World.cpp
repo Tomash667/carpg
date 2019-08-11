@@ -2067,6 +2067,21 @@ Location* World::GetRandomSettlementWeighted(delegate<float(Location*)> func)
 }
 
 //=================================================================================================
+Location* World::GetRandomLocation(delegate<bool(Location*)> pred)
+{
+	int start_index = Rand() % locations.size();
+	int index = start_index;
+	do
+	{
+		Location* loc = locations[index];
+		if(loc && pred(loc))
+			return loc;
+		index = (index + 1) % locations.size();
+	} while(index != start_index);
+	return nullptr;
+}
+
+//=================================================================================================
 void World::ExitToMap()
 {
 	if(state == State::INSIDE_ENCOUNTER)

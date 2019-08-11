@@ -127,6 +127,7 @@ public:
 	City* GetRandomSettlement(delegate<bool(City*)> pred);
 	Location* GetRandomSettlement(Location* loc);
 	Location* GetRandomSettlementWeighted(delegate<float(Location*)> func);
+	Location* GetRandomLocation(delegate<bool(Location*)> pred);
 
 	// travel
 	void Travel(int index, bool send);

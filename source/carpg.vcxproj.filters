@@ -566,6 +566,7 @@
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="Team.cpp" />
     <ClCompile Include="World.cpp" />
+    <ClCompile Include="Test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="entity\AIController.h">
