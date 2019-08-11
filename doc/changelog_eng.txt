@@ -2,6 +2,7 @@ Changelog
 
 --------------------------------------------------------------------------------
 Version 0.11.1 (???):
+- fixed crash on animals encounter [Savagesheep]
 - units collision shape was slightly higher then it should be
 - fixed starting resolution of 800x600
 

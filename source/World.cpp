@@ -2403,6 +2403,17 @@ void World::StartEncounter(int enc, UnitGroup* group)
 			encounter.mode = ENCOUNTER_COMBAT;
 			encounter.group = group;
 			text = group->encounter_text.c_str();
+			if(group->is_list)
+			{
+				for(UnitGroup::Entry& entry : group->entries)
+				{
+					if(entry.is_leader)
+					{
+						encounter.group = entry.group;
+						break;
+					}
+				}
+			}
 		}
 	}
 

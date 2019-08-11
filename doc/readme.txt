@@ -300,6 +300,7 @@ Podziêkowania za znalezione b³êdy:
 	MildlyPhilosophicalHobbit
 	Minister of Death
 	Paradox Edge
+	Savagesheep
 	thebard88
 	Vinur_Gamall
 	XNautPhD

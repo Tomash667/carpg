@@ -3209,7 +3209,7 @@ group forest {
 		spiders
 		rats
 		bears
-		animals
+		animals encounter
 	}
 	encounter_chance 1
 	gender 1

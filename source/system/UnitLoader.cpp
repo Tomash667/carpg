@@ -2144,6 +2144,17 @@ void UnitLoader::ParseGroup(const string& id)
 					crc.Update(id);
 					crc.Update(weight);
 					t.Next();
+					if(t.IsItem("encounter"))
+					{
+						for(UnitGroup::Entry& entry : group->entries)
+						{
+							if(entry.is_leader)
+								t.Throw("Group list already have entry marked as 'encounter'.");
+						}
+						group->entries.back().is_leader = true;
+						crc.Update(true);
+						t.Next();
+					}
 				}
 				if(group->entries.empty())
 					t.Throw("Empty list.");
@@ -2185,6 +2196,20 @@ void UnitLoader::ParseGroup(const string& id)
 
 	if(group->entries.empty() && !group->special)
 		t.Throw("Empty group.");
+	if(group->is_list && group->encounter_chance > 0)
+	{
+		bool ok = false;
+		for(UnitGroup::Entry& entry : group->entries)
+		{
+			if(entry.is_leader)
+			{
+				ok = true;
+				break;
+			}
+		}
+		if(!ok)
+			t.Throw("Group list with encounter chance must have entry marked as 'encounter'.");
+	}
 
 	UnitGroup::groups.push_back(group.Pin());
 }
