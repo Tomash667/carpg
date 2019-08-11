@@ -2,9 +2,11 @@ Changelog
 
 --------------------------------------------------------------------------------
 Version 0.11.1 (???):
-- fixed crash on animals encounter [Savagesheep]
+- crash on animals encounter [Savagesheep]
+- crash when new player joins loaded multiplayer game [Savagesheep]
 - units collision shape was slightly higher then it should be
 - fixed starting resolution of 800x600
+- running LAN server was visible on list of servers
 
 --------------------------------------------------------------------------------
 Version 0.11 (2019-07-28):

@@ -155,15 +155,9 @@ void PickServerPanel::Update(float dt)
 				char sign[2];
 				reader >> time_ms;
 				reader >> sign;
-				if(!reader)
+				if(!reader || sign[0] != 'C' || sign[1] != 'A')
 				{
-					Error("PickServer: Broken packet from %s.", packet->systemAddress.ToString());
-					break;
-				}
-				if(sign[0] != 'C' || sign[1] != 'A')
-				{
-					Warn("PickServer: Unknown response from %s, this is not CaRpg server (0x%x%x).",
-						packet->systemAddress.ToString(), byte(sign[0]), byte(sign[1]));
+					// someone responded but this is not carpg server or game already started and we are ignored
 					break;
 				}
 

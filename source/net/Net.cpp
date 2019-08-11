@@ -353,7 +353,8 @@ void Game::UpdateServer(float dt)
 		PlayerInfo* ptr_info = N.FindPlayer(packet->systemAddress);
 		if(!ptr_info || ptr_info->left != PlayerInfo::LEFT_NO)
 		{
-			Info("Ignoring packet from %s.", packet->systemAddress.ToString());
+			if(packet->data[0] != ID_UNCONNECTED_PING)
+				Info("Ignoring packet from %s.", packet->systemAddress.ToString());
 			continue;
 		}
 

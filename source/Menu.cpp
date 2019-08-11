@@ -1612,6 +1612,7 @@ void Game::UpdateServerTransfer(float dt)
 						if(!info.loaded)
 						{
 							L.local_area->units.push_back(info.u);
+							info.u->area = L.local_area;
 							L.WarpNearLocation(*L.local_area, *info.u, pos, 4.f, false, 20);
 							info.u->rot = Vec3::LookAtAngle(info.u->pos, pos);
 							info.u->interp->Reset(info.u->pos, info.u->rot);
@@ -1656,6 +1657,7 @@ void Game::UpdateServerTransfer(float dt)
 						if(!info.loaded)
 						{
 							L.local_area->units.push_back(info.u);
+							info.u->area = L.local_area;
 							L.WarpNearLocation(*L.local_area, *info.u, pos, L.location->outside ? 4.f : 2.f, false, 20);
 							info.u->rot = rot;
 							info.u->interp->Reset(info.u->pos, info.u->rot);
