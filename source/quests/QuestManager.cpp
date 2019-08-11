@@ -10,6 +10,7 @@
 #include "QuestScheme.h"
 #include "QuestList.h"
 #include "Language.h"
+#include "Game.h"
 
 #include "Quest_Artifacts.h"
 #include "Quest_Bandits.h"
@@ -502,10 +503,17 @@ void QuestManager::Write(BitStreamWriter& f)
 	}
 
 	// quest items
+	// temporary fix for crash
+	LoopAndRemove(Net::changes, [](NetChange& c)
+	{
+		if(c.type == NetChange::REGISTER_ITEM)
+			return false;
+		Game::Get().ReportError(13, Format("QuestManager write invalid change %d.", c.type));
+		return true;
+	});
 	f.WriteCasted<word>(Net::changes.size());
 	for(NetChange& c : Net::changes)
 	{
-		assert(c.type == NetChange::REGISTER_ITEM);
 		f << c.base_item->id;
 		f << c.item2->id;
 		f << c.item2->name;
