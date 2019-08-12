@@ -148,7 +148,7 @@ void Game::DrawGame(RenderTarget* target)
 		}
 
 		// draw gui
-		gui->Draw(L.camera.matViewProj, IS_SET(draw_flags, DF_GUI), IS_SET(draw_flags, DF_MENU));
+		gui->Draw(L.camera.matViewProj, IsSet(draw_flags, DF_GUI), IsSet(draw_flags, DF_MENU));
 
 		V(device->EndScene());
 		if(target)
@@ -240,7 +240,7 @@ void Game::DrawGame(RenderTarget* target)
 			V(ePostFx->End());
 
 			if(it + 1 == end)
-				gui->Draw(L.camera.matViewProj, IS_SET(draw_flags, DF_GUI), IS_SET(draw_flags, DF_MENU));
+				gui->Draw(L.camera.matViewProj, IsSet(draw_flags, DF_GUI), IsSet(draw_flags, DF_MENU));
 
 			V(device->EndScene());
 

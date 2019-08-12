@@ -60,9 +60,9 @@ void Minimap::Draw(ControlDrawData*)
 		InsideLocation* inside = (InsideLocation*)L.location;
 		InsideLocationLevel& lvl = inside->GetLevelData();
 
-		if(inside->HaveDownStairs() && IS_SET(lvl.map[lvl.staircase_down(lvl.w)].flags, Tile::F_REVEALED))
+		if(inside->HaveDownStairs() && IsSet(lvl.map[lvl.staircase_down(lvl.w)].flags, Tile::F_REVEALED))
 			gui->DrawSprite(tStairsDown, Int2(TileToPoint(lvl.staircase_down)) - Int2(16, 16), Color::Alpha(180));
-		if(inside->HaveUpStairs() && IS_SET(lvl.map[lvl.staircase_up(lvl.w)].flags, Tile::F_REVEALED))
+		if(inside->HaveUpStairs() && IsSet(lvl.map[lvl.staircase_up(lvl.w)].flags, Tile::F_REVEALED))
 			gui->DrawSprite(tStairsUp, Int2(TileToPoint(lvl.staircase_up)) - Int2(16, 16), Color::Alpha(180));
 	}
 
@@ -92,7 +92,7 @@ void Minimap::Draw(ControlDrawData*)
 	LocalVector<GroundItem*> important_items;
 	for(vector<GroundItem*>::iterator it = area.items.begin(), end = area.items.end(); it != end; ++it)
 	{
-		if(IS_SET((*it)->item->flags, ITEM_IMPORTANT))
+		if(IsSet((*it)->item->flags, ITEM_IMPORTANT))
 			important_items->push_back(*it);
 		else if(!lvl || lvl->IsTileVisible((*it)->pos))
 		{
@@ -223,7 +223,7 @@ void Minimap::Build()
 
 		for(CityBuilding& b : city->buildings)
 		{
-			if(IS_SET(b.building->flags, Building::HAVE_NAME))
+			if(IsSet(b.building->flags, Building::HAVE_NAME))
 			{
 				Text& text = Add1(texts);
 				text.text = b.building->name.c_str();

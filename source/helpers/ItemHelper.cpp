@@ -40,7 +40,7 @@ void InsertRandomItem(vector<ItemSlot>& container, vector<T*>& items, int price_
 	for(int i = 0; i < 100; ++i)
 	{
 		T* item = items[Rand() % items.size()];
-		if(item->value > price_limit || IS_SET(item->flags, exclude_flags))
+		if(item->value > price_limit || IsSet(item->flags, exclude_flags))
 			continue;
 		InsertItemBare(container, item, count);
 		return;

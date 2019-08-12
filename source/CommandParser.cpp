@@ -33,7 +33,6 @@
 
 //-----------------------------------------------------------------------------
 CommandParser* global::cmdp;
-PrintMsgFunc g_print_func;
 
 //=================================================================================================
 void CommandParser::AddCommands()
@@ -159,7 +158,7 @@ void CommandParser::AddCommands()
 //=================================================================================================
 void CommandParser::ParseCommand(const string& command_str, PrintMsgFunc print_func, PARSE_SOURCE source)
 {
-	g_print_func = print_func;
+	print_msg = print_func;
 
 	Tokenizer t(Tokenizer::F_JOIN_MINUS);
 	t.FromString(command_str);
@@ -183,22 +182,22 @@ void CommandParser::ParseCommand(const string& command_str, PrintMsgFunc print_f
 			if(token != it->name)
 				continue;
 
-			if(IS_SET(it->flags, F_CHEAT) && !game.devmode)
+			if(IsSet(it->flags, F_CHEAT) && !game.devmode)
 			{
 				Msg("You can't use command '%s' without devmode.", token.c_str());
 				return;
 			}
 
-			if(!IS_ALL_SET(it->flags, F_ANYWHERE))
+			if(!IsAllSet(it->flags, F_ANYWHERE))
 			{
 				if(gui->server->visible)
 				{
-					if(!IS_SET(it->flags, F_LOBBY))
+					if(!IsSet(it->flags, F_LOBBY))
 					{
 						Msg("You can't use command '%s' in server lobby.", token.c_str());
 						return;
 					}
-					else if(IS_SET(it->flags, F_SERVER) && !Net::IsServer())
+					else if(IsSet(it->flags, F_SERVER) && !Net::IsServer())
 					{
 						Msg("Only server can use command '%s'.", token.c_str());
 						return;
@@ -206,7 +205,7 @@ void CommandParser::ParseCommand(const string& command_str, PrintMsgFunc print_f
 				}
 				else if(game.game_state == GS_MAIN_MENU)
 				{
-					if(!IS_SET(it->flags, F_MENU))
+					if(!IsSet(it->flags, F_MENU))
 					{
 						Msg("You can't use command '%s' in menu.", token.c_str());
 						return;
@@ -214,12 +213,12 @@ void CommandParser::ParseCommand(const string& command_str, PrintMsgFunc print_f
 				}
 				else if(Net::IsOnline())
 				{
-					if(!IS_SET(it->flags, F_MULTIPLAYER))
+					if(!IsSet(it->flags, F_MULTIPLAYER))
 					{
 						Msg("You can't use command '%s' in multiplayer.", token.c_str());
 						return;
 					}
-					else if(IS_SET(it->flags, F_SERVER) && !Net::IsServer())
+					else if(IsSet(it->flags, F_SERVER) && !Net::IsServer())
 					{
 						Msg("Only server can use command '%s'.", token.c_str());
 						return;
@@ -227,7 +226,7 @@ void CommandParser::ParseCommand(const string& command_str, PrintMsgFunc print_f
 				}
 				else if(game.game_state == GS_WORLDMAP)
 				{
-					if(!IS_SET(it->flags, F_WORLD_MAP))
+					if(!IsSet(it->flags, F_WORLD_MAP))
 					{
 						Msg("You can't use command '%s' on world map.", token.c_str());
 						return;
@@ -235,7 +234,7 @@ void CommandParser::ParseCommand(const string& command_str, PrintMsgFunc print_f
 				}
 				else
 				{
-					if(!IS_SET(it->flags, F_SINGLEPLAYER))
+					if(!IsSet(it->flags, F_SINGLEPLAYER))
 					{
 						Msg("You can't use command '%s' in singleplayer.", token.c_str());
 						return;
@@ -247,7 +246,7 @@ void CommandParser::ParseCommand(const string& command_str, PrintMsgFunc print_f
 			{
 				if(t.Next())
 				{
-					if(IS_SET(it->flags, F_MP_VAR) && !Net::IsServer())
+					if(IsSet(it->flags, F_MP_VAR) && !Net::IsServer())
 					{
 						Msg("Only server can change this variable.");
 						return;
@@ -259,7 +258,7 @@ void CommandParser::ParseCommand(const string& command_str, PrintMsgFunc print_f
 					if(value != var)
 					{
 						var = value;
-						if(IS_SET(it->flags, F_MP_VAR))
+						if(IsSet(it->flags, F_MP_VAR))
 							Net::PushChange(NetChange::CHANGE_MP_VARS);
 						if(it->changed)
 							it->changed();
@@ -274,7 +273,7 @@ void CommandParser::ParseCommand(const string& command_str, PrintMsgFunc print_f
 
 				if(t.Next())
 				{
-					if(IS_SET(it->flags, F_MP_VAR) && !Net::IsServer())
+					if(IsSet(it->flags, F_MP_VAR) && !Net::IsServer())
 					{
 						Msg("Only server can change this variable.");
 						return;
@@ -284,7 +283,7 @@ void CommandParser::ParseCommand(const string& command_str, PrintMsgFunc print_f
 					if(!Equal(f, f2))
 					{
 						f = f2;
-						if(IS_SET(it->flags, F_MP_VAR))
+						if(IsSet(it->flags, F_MP_VAR))
 							Net::PushChange(NetChange::CHANGE_MP_VARS);
 					}
 				}
@@ -297,7 +296,7 @@ void CommandParser::ParseCommand(const string& command_str, PrintMsgFunc print_f
 
 				if(t.Next())
 				{
-					if(IS_SET(it->flags, F_MP_VAR) && !Net::IsServer())
+					if(IsSet(it->flags, F_MP_VAR) && !Net::IsServer())
 					{
 						Msg("Only server can change this variable.");
 						return;
@@ -307,7 +306,7 @@ void CommandParser::ParseCommand(const string& command_str, PrintMsgFunc print_f
 					if(i != i2)
 					{
 						i = i2;
-						if(IS_SET(it->flags, F_MP_VAR))
+						if(IsSet(it->flags, F_MP_VAR))
 							Net::PushChange(NetChange::CHANGE_MP_VARS);
 						if(it->changed)
 							it->changed();
@@ -322,7 +321,7 @@ void CommandParser::ParseCommand(const string& command_str, PrintMsgFunc print_f
 
 				if(t.Next())
 				{
-					if(IS_SET(it->flags, F_MP_VAR) && !Net::IsServer())
+					if(IsSet(it->flags, F_MP_VAR) && !Net::IsServer())
 					{
 						Msg("Only server can change this variable.");
 						return;
@@ -332,7 +331,7 @@ void CommandParser::ParseCommand(const string& command_str, PrintMsgFunc print_f
 					if(u != u2)
 					{
 						u = u2;
-						if(IS_SET(it->flags, F_MP_VAR))
+						if(IsSet(it->flags, F_MP_VAR))
 							Net::PushChange(NetChange::CHANGE_MP_VARS);
 					}
 				}
@@ -397,7 +396,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 {
 	Game& game = Game::Get();
 
-	if(!IS_SET(cmd.flags, F_NO_ECHO))
+	if(!IsSet(cmd.flags, F_NO_ECHO))
 		Msg(t.GetInnerString().c_str());
 
 	switch(cmd.cmd)
@@ -608,38 +607,38 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 				for(const ConsoleCommand& cmd : cmds)
 				{
 					bool ok = true;
-					if(IS_SET(cmd.flags, F_CHEAT) && !game.devmode)
+					if(IsSet(cmd.flags, F_CHEAT) && !game.devmode)
 						ok = false;
 
-					if(!IS_ALL_SET(cmd.flags, F_ANYWHERE))
+					if(!IsAllSet(cmd.flags, F_ANYWHERE))
 					{
 						if(gui->server->visible)
 						{
-							if(!IS_SET(cmd.flags, F_LOBBY))
+							if(!IsSet(cmd.flags, F_LOBBY))
 								ok = false;
-							else if(IS_SET(cmd.flags, F_SERVER) && !Net::IsServer())
+							else if(IsSet(cmd.flags, F_SERVER) && !Net::IsServer())
 								ok = false;
 						}
 						else if(game.game_state == GS_MAIN_MENU)
 						{
-							if(!IS_SET(cmd.flags, F_MENU))
+							if(!IsSet(cmd.flags, F_MENU))
 								ok = false;
 						}
 						else if(Net::IsOnline())
 						{
-							if(!IS_SET(cmd.flags, F_MULTIPLAYER))
+							if(!IsSet(cmd.flags, F_MULTIPLAYER))
 								ok = false;
-							else if(IS_SET(cmd.flags, F_SERVER) && !Net::IsServer())
+							else if(IsSet(cmd.flags, F_SERVER) && !Net::IsServer())
 								ok = false;
 						}
 						else if(game.game_state == GS_WORLDMAP)
 						{
-							if(!IS_SET(cmd.flags, F_WORLD_MAP))
+							if(!IsSet(cmd.flags, F_WORLD_MAP))
 								ok = false;
 						}
 						else
 						{
-							if(!IS_SET(cmd.flags, F_SINGLEPLAYER))
+							if(!IsSet(cmd.flags, F_SINGLEPLAYER))
 								ok = false;
 						}
 					}
@@ -692,7 +691,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		{
 			auto& id = t.MustGetItem();
 			UnitData* data = UnitData::TryGet(id);
-			if(!data || IS_SET(data->flags, F_SECRET))
+			if(!data || IsSet(data->flags, F_SECRET))
 				Msg("Missing base unit '%s'!", id.c_str());
 			else if(data->group == G_PLAYER)
 				Msg("Can't spawn player unit.");
@@ -2054,8 +2053,8 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 bool CommandParser::ParseStream(BitStreamReader& f, PlayerInfo& info)
 {
 	LocalString str;
-	PrintMsgFunc prev_func = g_print_func;
-	g_print_func = [&str](cstring s)
+	PrintMsgFunc prev_func = print_msg;
+	print_msg = [&str](cstring s)
 	{
 		if(!str.empty())
 			str += "\n";
@@ -2064,7 +2063,7 @@ bool CommandParser::ParseStream(BitStreamReader& f, PlayerInfo& info)
 
 	bool result = ParseStreamInner(f);
 
-	g_print_func = prev_func;
+	print_msg = prev_func;
 
 	if(result && !str.empty())
 	{
@@ -2080,8 +2079,8 @@ bool CommandParser::ParseStream(BitStreamReader& f, PlayerInfo& info)
 void CommandParser::ParseStringCommand(int cmd, const string& s, PlayerInfo& info)
 {
 	LocalString str;
-	PrintMsgFunc prev_func = g_print_func;
-	g_print_func = [&str](cstring s)
+	PrintMsgFunc prev_func = print_msg;
+	print_msg = [&str](cstring s)
 	{
 		if(!str.empty())
 			str += "\n";
@@ -2095,7 +2094,7 @@ void CommandParser::ParseStringCommand(int cmd, const string& s, PlayerInfo& inf
 		break;
 	}
 
-	g_print_func = prev_func;
+	print_msg = prev_func;
 
 	if(!str.empty())
 	{
@@ -2635,7 +2634,7 @@ void CommandParser::ArenaCombat(cstring str)
 			}
 			const string& id = t.MustGetItem();
 			UnitData* ud = UnitData::TryGet(id);
-			if(!ud || IS_SET(ud->flags, F_SECRET))
+			if(!ud || IsSet(ud->flags, F_SECRET))
 				t.Throw("Missing unit '%s'.", id.c_str());
 			else if(ud->group == G_PLAYER)
 				t.Throw("Unit '%s' can't be spawned.", id.c_str());
@@ -2791,7 +2790,7 @@ void CommandParser::CmdList(Tokenizer& t)
 			LocalVector2<UnitData*> units;
 			for(auto unit : UnitData::units)
 			{
-				if(!IS_SET(unit->flags, F_SECRET) && (match.empty() || _strnicmp(match.c_str(), unit->id.c_str(), match.length()) == 0))
+				if(!IsSet(unit->flags, F_SECRET) && (match.empty() || _strnicmp(match.c_str(), unit->id.c_str(), match.length()) == 0))
 					units.push_back(unit);
 			}
 
@@ -2825,7 +2824,7 @@ void CommandParser::CmdList(Tokenizer& t)
 			LocalVector2<UnitData*> units;
 			for(auto unit : UnitData::units)
 			{
-				if(!IS_SET(unit->flags, F_SECRET) && (match.empty() || _strnicmp(match.c_str(), unit->name.c_str(), match.length()) == 0))
+				if(!IsSet(unit->flags, F_SECRET) && (match.empty() || _strnicmp(match.c_str(), unit->name.c_str(), match.length()) == 0))
 					units.push_back(unit);
 			}
 

@@ -107,10 +107,10 @@ struct Item
 	const OtherItem& ToOther() const { return Cast<OtherItem, IT_OTHER>(); }
 	const Book& ToBook() const { return Cast<Book, IT_BOOK>(); }
 
-	bool IsStackable() const { return Any(type, IT_CONSUMABLE, IT_GOLD, IT_BOOK) || (type == IT_OTHER && !IS_SET(flags, ITEM_QUEST)); }
-	bool CanBeGenerated() const { return !IS_SET(flags, ITEM_NOT_RANDOM); }
+	bool IsStackable() const { return Any(type, IT_CONSUMABLE, IT_GOLD, IT_BOOK) || (type == IT_OTHER && !IsSet(flags, ITEM_QUEST)); }
+	bool CanBeGenerated() const { return !IsSet(flags, ITEM_NOT_RANDOM); }
 	bool IsWearable() const { return Any(type, IT_WEAPON, IT_BOW, IT_SHIELD, IT_ARMOR, IT_AMULET, IT_RING); }
-	bool IsQuest() const { return IS_SET(flags, ITEM_QUEST); }
+	bool IsQuest() const { return IsSet(flags, ITEM_QUEST); }
 	bool IsQuest(int quest_refid) const { return IsQuest() && refid == quest_refid; }
 
 	float GetWeight() const { return float(weight) / 10; }

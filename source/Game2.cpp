@@ -190,7 +190,7 @@ void Game::DrawItemImage(const Item& item, RenderTarget* target, float rot)
 {
 	IDirect3DDevice9* device = render->GetDevice();
 
-	if(IS_SET(ITEM_ALPHA, item.flags))
+	if(IsSet(ITEM_ALPHA, item.flags))
 	{
 		render->SetAlphaBlend(true);
 		render->SetNoZWrite(true);
@@ -355,7 +355,7 @@ void Game::SetupCamera(float dt)
 					if(RayToBox(to, dist, box, &tout) && tout < min_tout && tout > 0.f)
 						min_tout = tout;
 				}
-				else if(IS_SET(p.flags, Tile::F_LOW_CEILING))
+				else if(IsSet(p.flags, Tile::F_LOW_CEILING))
 				{
 					const Box box(float(x) * 2, 3.f, float(z) * 2, float(x + 1) * 2, 4.f, float(z + 1) * 2);
 					if(RayToBox(to, dist, box, &tout) && tout < min_tout && tout > 0.f)
@@ -1598,7 +1598,7 @@ void Game::UpdatePlayer(float dt)
 					int i_index = pc->unit->FindItem(item);
 					if(i_index != Unit::INVALID_IINDEX)
 					{
-						if(IS_SET(item->flags, ITEM_MAGIC_SCROLL))
+						if(IsSet(item->flags, ITEM_MAGIC_SCROLL))
 						{
 							if(!pc->unit->usable) // can't use when sitting
 								pc->unit->UseItem(i_index);
@@ -1698,7 +1698,7 @@ void Game::UpdatePlayer(float dt)
 							pc->last_weapon = u.weapon_taken;
 							u.weapon_state = WS_TAKING;
 							u.animation_state = 0;
-							CLEAR_BIT(u.mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
+							ClearBit(u.mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
 						}
 						break;
 					case WS_TAKING:
@@ -1718,7 +1718,7 @@ void Game::UpdatePlayer(float dt)
 							u.weapon_taken = W_NONE;
 							u.weapon_state = WS_HIDING;
 							u.animation_state = 0;
-							SET_BIT(u.mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
+							SetBit(u.mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
 						}
 						break;
 					case WS_TAKEN:
@@ -1801,7 +1801,7 @@ void Game::UpdatePlayer(float dt)
 						pc->last_weapon = u.weapon_taken;
 						u.weapon_state = WS_TAKING;
 						u.animation_state = 0;
-						CLEAR_BIT(u.mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
+						ClearBit(u.mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
 					}
 
 					if(Net::IsOnline())
@@ -1844,7 +1844,7 @@ void Game::UpdatePlayer(float dt)
 						u.weapon_hiding = W_BOW;
 						u.weapon_state = WS_HIDING;
 						u.animation_state = 0;
-						SET_BIT(u.mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
+						SetBit(u.mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
 					}
 				}
 
@@ -1948,7 +1948,7 @@ void Game::UpdatePlayer(float dt)
 						pc->last_weapon = u.weapon_taken;
 						u.weapon_state = WS_TAKING;
 						u.animation_state = 0;
-						CLEAR_BIT(u.mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
+						ClearBit(u.mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
 					}
 				}
 				else
@@ -1991,7 +1991,7 @@ void Game::UpdatePlayer(float dt)
 						u.weapon_hiding = W_ONE_HANDED;
 						u.weapon_state = WS_HIDING;
 						u.animation_state = 0;
-						SET_BIT(u.mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
+						SetBit(u.mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
 					}
 				}
 
@@ -2637,7 +2637,7 @@ void Game::UpdatePlayer(float dt)
 	else
 	{
 		auto& action = pc->GetAction();
-		if(action.area == Action::LINE && IS_SET(action.flags, Action::F_PICK_DIR))
+		if(action.area == Action::LINE && IsSet(action.flags, Action::F_PICK_DIR))
 		{
 			// adjust action dir
 			switch(move)
@@ -2887,7 +2887,7 @@ void Game::PlayerCheckObjectDistance(Unit& u, const Vec3& pos, void* ptr, float&
 			{
 				Usable* use = (Usable*)ptr;
 				auto& bu = *use->base;
-				if(IS_SET(bu.use_flags, BaseUsable::CONTAINER))
+				if(IsSet(bu.use_flags, BaseUsable::CONTAINER))
 				{
 					float allowed_dif;
 					switch(bu.limit_rot)
@@ -2994,7 +2994,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 				{
 					bool allow_exit = false;
 
-					if(L.city_ctx && IS_SET(L.city_ctx->flags, City::HaveExit))
+					if(L.city_ctx && IsSet(L.city_ctx->flags, City::HaveExit))
 					{
 						for(vector<EntryPoint>::const_iterator it = L.city_ctx->entry_points.begin(), end = L.city_ctx->entry_points.end(); it != end; ++it)
 						{
@@ -3422,7 +3422,7 @@ uint Game::TestGameData(bool major)
 		// model postaci
 		if(ud.mesh_id.empty())
 		{
-			if(!IS_SET(ud.flags, F_HUMAN))
+			if(!IsSet(ud.flags, F_HUMAN))
 			{
 				str += "\tNo mesh!\n";
 				++errors;
@@ -3449,7 +3449,7 @@ uint Game::TestGameData(bool major)
 					}
 				}
 
-				if(!IS_SET(ud.flags, F_SLOW))
+				if(!IsSet(ud.flags, F_SLOW))
 				{
 					if(!mesh.GetAnimation(NAMES::ani_run))
 					{
@@ -3458,7 +3458,7 @@ uint Game::TestGameData(bool major)
 					}
 				}
 
-				if(!IS_SET(ud.flags, F_DONT_SUFFER))
+				if(!IsSet(ud.flags, F_DONT_SUFFER))
 				{
 					if(!mesh.GetAnimation(NAMES::ani_hurt))
 					{
@@ -3467,7 +3467,7 @@ uint Game::TestGameData(bool major)
 					}
 				}
 
-				if(IS_SET(ud.flags, F_HUMAN) || IS_SET(ud.flags, F_HUMANOID))
+				if(IsSet(ud.flags, F_HUMAN) || IsSet(ud.flags, F_HUMANOID))
 				{
 					for(uint i = 0; i < NAMES::n_points; ++i)
 					{
@@ -3678,13 +3678,13 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 				u->human_data->hair = Rand() % MAX_HAIR - 1;
 				u->human_data->mustache = Rand() % MAX_MUSTACHE - 1;
 				u->human_data->height = Random(0.9f, 1.1f);
-				if(IS_SET(base.flags2, F2_OLD))
+				if(IsSet(base.flags2, F2_OLD))
 					u->human_data->hair_color = Color::Hex(0xDED5D0);
-				else if(IS_SET(base.flags, F_CRAZY))
+				else if(IsSet(base.flags, F_CRAZY))
 					u->human_data->hair_color = Vec4(RandomPart(8), RandomPart(8), RandomPart(8), 1.f);
-				else if(IS_SET(base.flags, F_GRAY_HAIR))
+				else if(IsSet(base.flags, F_GRAY_HAIR))
 					u->human_data->hair_color = g_hair_colors[Rand() % 4];
-				else if(IS_SET(base.flags, F_TOMASHU))
+				else if(IsSet(base.flags, F_TOMASHU))
 				{
 					u->human_data->beard = 4;
 					u->human_data->mustache = -1;
@@ -3701,7 +3701,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 		u->CreateMesh(Unit::CREATE_MESH::NORMAL);
 
 		// hero data
-		if(IS_SET(base.flags, F_HERO))
+		if(IsSet(base.flags, F_HERO))
 		{
 			u->hero = new HeroData;
 			u->hero->Init(*u);
@@ -3710,7 +3710,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 			u->hero = nullptr;
 
 		// boss music
-		if(IS_SET(u->data->flags2, F2_BOSS))
+		if(IsSet(u->data->flags2, F2_BOSS))
 			W.AddBossLevel(Int2(L.location_index, L.dungeon_level));
 
 		// physics
@@ -3921,7 +3921,7 @@ Game::ATTACK_RESULT Game::DoAttack(LevelArea& area, Unit& unit)
 void Game::GiveDmg(Unit& taker, float dmg, Unit* giver, const Vec3* hitpoint, int dmg_flags)
 {
 	// blood particles
-	if(!IS_SET(dmg_flags, DMG_NO_BLOOD))
+	if(!IsSet(dmg_flags, DMG_NO_BLOOD))
 	{
 		ParticleEmitter* pe = new ParticleEmitter;
 		pe->tex = tKrew[taker.data->blood];
@@ -3961,7 +3961,7 @@ void Game::GiveDmg(Unit& taker, float dmg, Unit* giver, const Vec3* hitpoint, in
 	}
 
 	// apply magic resistance
-	if(IS_SET(dmg_flags, DMG_MAGICAL))
+	if(IsSet(dmg_flags, DMG_MAGICAL))
 		dmg *= taker.CalculateMagicResistance();
 
 	if(giver && giver->IsPlayer())
@@ -4000,7 +4000,7 @@ void Game::GiveDmg(Unit& taker, float dmg, Unit* giver, const Vec3* hitpoint, in
 		{
 			PlayAttachedSound(taker, taker.data->sounds->Random(SOUND_PAIN), Unit::PAIN_SOUND_DIST);
 			taker.hurt_timer = Random(1.f, 1.5f);
-			if(IS_SET(dmg_flags, DMG_NO_BLOOD))
+			if(IsSet(dmg_flags, DMG_NO_BLOOD))
 				taker.hurt_timer += 1.f;
 			if(Net::IsOnline())
 			{
@@ -4053,12 +4053,12 @@ void Game::UpdateUnits(LevelArea& area, float dt)
 					targets.clear();
 					float t;
 					bool in_dash = false;
-					ContactTest(u.cobj, [&](btCollisionObject* obj, bool second)
+					ContactTest(u.cobj, [&](btCollisionObject* obj, bool first)
 					{
-						if(!second)
+						if(first)
 						{
 							int flags = obj->getCollisionFlags();
-							if(!IS_SET(flags, CG_UNIT))
+							if(!IsSet(flags, CG_UNIT))
 								return false;
 							else
 							{
@@ -4096,7 +4096,7 @@ void Game::UpdateUnits(LevelArea& area, float dt)
 							LineTest(u.cobj->getCollisionShape(), u.GetPhysicsPos(), center, [&](btCollisionObject* obj, bool)
 							{
 								int flags = obj->getCollisionFlags();
-								if(IS_SET(flags, CG_TERRAIN | CG_UNIT))
+								if(IsSet(flags, CG_TERRAIN | CG_UNIT))
 									return LT_IGNORE;
 								return LT_COLLIDE;
 							}, t);
@@ -5017,9 +5017,9 @@ void Game::UpdateUnits(LevelArea& area, float dt)
 					LineTest(u.cobj->getCollisionShape(), from, dir, [&u](btCollisionObject* obj, bool)
 					{
 						int flags = obj->getCollisionFlags();
-						if(IS_SET(flags, CG_TERRAIN))
+						if(IsSet(flags, CG_TERRAIN))
 							return LT_IGNORE;
-						if(IS_SET(flags, CG_UNIT) && obj->getUserPointer() == &u)
+						if(IsSet(flags, CG_UNIT) && obj->getUserPointer() == &u)
 							return LT_IGNORE;
 						return LT_COLLIDE;
 					}, t);
@@ -5029,19 +5029,19 @@ void Game::UpdateUnits(LevelArea& area, float dt)
 					// bull charge, do line test and find targets
 					static vector<Unit*> targets;
 					targets.clear();
-					LineTest(u.cobj->getCollisionShape(), from, dir, [&](btCollisionObject* obj, bool second)
+					LineTest(u.cobj->getCollisionShape(), from, dir, [&](btCollisionObject* obj, bool first)
 					{
 						int flags = obj->getCollisionFlags();
-						if(!second)
+						if(first)
 						{
-							if(IS_SET(flags, CG_TERRAIN))
+							if(IsSet(flags, CG_TERRAIN))
 								return LT_IGNORE;
-							if(IS_SET(flags, CG_UNIT) && obj->getUserPointer() == &u)
+							if(IsSet(flags, CG_UNIT) && obj->getUserPointer() == &u)
 								return LT_IGNORE;
 						}
 						else
 						{
-							if(IS_SET(obj->getCollisionFlags(), CG_UNIT))
+							if(IsSet(obj->getCollisionFlags(), CG_UNIT))
 							{
 								Unit* unit = (Unit*)obj->getUserPointer();
 								targets.push_back(unit);
@@ -5087,7 +5087,7 @@ void Game::UpdateUnits(LevelArea& area, float dt)
 							auto unit_clbk = [unit](btCollisionObject* obj, bool)
 							{
 								int flags = obj->getCollisionFlags();
-								if(IS_SET(flags, CG_TERRAIN | CG_UNIT))
+								if(IsSet(flags, CG_TERRAIN | CG_UNIT))
 									return LT_IGNORE;
 								return LT_COLLIDE;
 							};
@@ -5215,7 +5215,7 @@ bool Game::DoShieldSmash(LevelArea& area, Unit& attacker)
 	if(!CheckForHit(area, attacker, hitted, *mesh->FindPoint("hit"), attacker.mesh_inst->mesh->GetPoint(NAMES::point_shield), hitpoint))
 		return false;
 
-	if(!IS_SET(hitted->data->flags, F_DONT_SUFFER) && hitted->last_bash <= 0.f)
+	if(!IsSet(hitted->data->flags, F_DONT_SUFFER) && hitted->last_bash <= 0.f)
 	{
 		hitted->last_bash = 1.f + float(hitted->Get(AttributeId::END)) / 50.f;
 
@@ -5257,7 +5257,7 @@ struct BulletCallback : public btCollisionWorld::ConvexResultCallback
 {
 	BulletCallback(btCollisionObject* ignore) : target(nullptr), ignore(ignore)
 	{
-		CLEAR_BIT(m_collisionFilterMask, CG_BARRIER);
+		ClearBit(m_collisionFilterMask, CG_BARRIER);
 	}
 
 	btScalar addSingleResult(btCollisionWorld::LocalConvexResult& convexResult, bool normalInWorldSpace) override
@@ -5346,7 +5346,7 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 
 		Vec3 hitpoint = ToVec3(callback.hitpoint);
 		Unit* hitted = nullptr;
-		if(IS_SET(callback.target->getCollisionFlags(), CG_UNIT))
+		if(IsSet(callback.target->getCollisionFlags(), CG_UNIT))
 			hitted = (Unit*)callback.target->getUserPointer();
 
 		// something was hit, remove bullet
@@ -5407,7 +5407,7 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 				// backstab bonus damage
 				float angle_dif = AngleDiff(it->rot.y, hitted->rot);
 				float backstab_mod = it->backstab;
-				if(IS_SET(hitted->data->flags2, F2_BACKSTAB_RES))
+				if(IsSet(hitted->data->flags2, F2_BACKSTAB_RES))
 					backstab_mod /= 2;
 				m += angle_dif / PI * backstab_mod;
 
@@ -5443,7 +5443,7 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 					{
 						hitted->BreakAction();
 
-						if(!IS_SET(hitted->data->flags, F_DONT_SUFFER))
+						if(!IsSet(hitted->data->flags, F_DONT_SUFFER))
 						{
 							if(hitted->action != A_POSITION)
 								hitted->action = A_PAIN;
@@ -5591,10 +5591,10 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 					}
 				}
 
-				GiveDmg(*hitted, dmg, it->owner, &hitpoint, !IS_SET(it->spell->flags, Spell::Poison) ? DMG_MAGICAL : 0);
+				GiveDmg(*hitted, dmg, it->owner, &hitpoint, !IsSet(it->spell->flags, Spell::Poison) ? DMG_MAGICAL : 0);
 
 				// apply poison
-				if(IS_SET(it->spell->flags, Spell::Poison))
+				if(IsSet(it->spell->flags, Spell::Poison))
 				{
 					float poison_res = hitted->GetPoisonResistance();
 					if(poison_res > 0.f)
@@ -5643,7 +5643,7 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 				pe->Init();
 				area.tmp->pes.push_back(pe);
 
-				if(it->owner && it->owner->IsPlayer() && Net::IsLocal() && callback.target && IS_SET(callback.target->getCollisionFlags(), CG_OBJECT))
+				if(it->owner && it->owner->IsPlayer() && Net::IsLocal() && callback.target && IsSet(callback.target->getCollisionFlags(), CG_OBJECT))
 				{
 					Object* obj = static_cast<Object*>(callback.target->getUserPointer());
 					if(obj && obj->base && obj->base->id == "bow_target")
@@ -5692,7 +5692,7 @@ Vec3 Game::PredictTargetPos(const Unit& me, const Unit& target, float bullet_spe
 
 struct BulletRaytestCallback : public btCollisionWorld::RayResultCallback
 {
-	BulletRaytestCallback(const void* _ignore1, const void* _ignore2) : ignore1(_ignore1), ignore2(_ignore2), clear(true)
+	BulletRaytestCallback(const void* ignore1, const void* ignore2) : ignore1(ignore1), ignore2(ignore2), clear(true)
 	{
 	}
 
@@ -5716,7 +5716,7 @@ struct BulletRaytestCallback2 : public btCollisionWorld::RayResultCallback
 
 	btScalar addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace)
 	{
-		if(IS_SET(rayResult.m_collisionObject->getCollisionFlags(), CG_UNIT))
+		if(IsSet(rayResult.m_collisionObject->getCollisionFlags(), CG_UNIT))
 			return 1.f;
 		clear = false;
 		return 0.f;
@@ -5989,7 +5989,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelArea& area, Unit& attacker, Unit&
 	// backstab bonus
 	float angle_dif = AngleDiff(Clip(attacker.rot + PI), hitted.rot);
 	float backstab_mod = attacker.GetBackstabMod(bash ? attacker.slots[SLOT_SHIELD] : attacker.slots[SLOT_WEAPON]);
-	if(IS_SET(hitted.data->flags2, F2_BACKSTAB_RES))
+	if(IsSet(hitted.data->flags2, F2_BACKSTAB_RES))
 		backstab_mod /= 2;
 	m += angle_dif / PI * backstab_mod;
 
@@ -6019,7 +6019,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelArea& area, Unit& attacker, Unit&
 		// reduce damage
 		float block = hitted.CalculateBlock() * hitted.GetBlockMod();
 		float stamina = min(attack, block);
-		if(IS_SET(attacker.data->flags2, F2_IGNORE_BLOCK))
+		if(IsSet(attacker.data->flags2, F2_IGNORE_BLOCK))
 			block *= 2.f / 3;
 		if(attacker.attack_power >= 1.9f)
 			stamina *= 4.f / 3;
@@ -6031,7 +6031,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelArea& area, Unit& attacker, Unit&
 		{
 			hitted.BreakAction();
 
-			if(!IS_SET(hitted.data->flags, F_DONT_SUFFER))
+			if(!IsSet(hitted.data->flags, F_DONT_SUFFER))
 			{
 				if(hitted.action != A_POSITION)
 					hitted.action = A_PAIN;
@@ -6108,7 +6108,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelArea& area, Unit& attacker, Unit&
 	GiveDmg(hitted, dmg, &attacker, &hitpoint);
 
 	// apply poison
-	if(IS_SET(attacker.data->flags, F_POISON_ATTACK))
+	if(IsSet(attacker.data->flags, F_POISON_ATTACK))
 	{
 		float poison_res = hitted.GetPoisonResistance();
 		if(poison_res > 0.f)
@@ -6149,7 +6149,7 @@ void Game::CastSpell(LevelArea& area, Unit& u)
 	if(spell.type == Spell::Ball || spell.type == Spell::Point)
 	{
 		int count = 1;
-		if(IS_SET(spell.flags, Spell::Triple))
+		if(IsSet(spell.flags, Spell::Triple))
 			count = 3;
 
 		float expected_rot = Clip(-Vec3::Angle2d(coord, u.target_pos) + PI / 2);
@@ -6234,7 +6234,7 @@ void Game::CastSpell(LevelArea& area, Unit& u)
 	}
 	else
 	{
-		if(IS_SET(spell.flags, Spell::Jump))
+		if(IsSet(spell.flags, Spell::Jump))
 		{
 			Electro* e = new Electro;
 			e->hitted.push_back(&u);
@@ -6290,7 +6290,7 @@ void Game::CastSpell(LevelArea& area, Unit& u)
 				memcpy(c.f, &e->lines[0].pts.back(), sizeof(Vec3));
 			}
 		}
-		else if(IS_SET(spell.flags, Spell::Drain))
+		else if(IsSet(spell.flags, Spell::Drain))
 		{
 			Vec3 hitpoint;
 			Unit* hitted;
@@ -6300,7 +6300,7 @@ void Game::CastSpell(LevelArea& area, Unit& u)
 			if(RayTest(coord, u.target_pos, &u, hitpoint, hitted) && hitted)
 			{
 				// trafiono w cel
-				if(!IS_SET(hitted->data->flags2, F2_BLOODLESS) && !u.IsFriend(*hitted))
+				if(!IsSet(hitted->data->flags2, F2_BLOODLESS) && !u.IsFriend(*hitted))
 				{
 					Drain& drain = Add1(area.tmp->drains);
 					drain.from = hitted;
@@ -6333,13 +6333,13 @@ void Game::CastSpell(LevelArea& area, Unit& u)
 				}
 			}
 		}
-		else if(IS_SET(spell.flags, Spell::Raise))
+		else if(IsSet(spell.flags, Spell::Raise))
 		{
 			for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
 			{
 				if((*it)->live_state == Unit::DEAD
 					&& !u.IsEnemy(**it)
-					&& IS_SET((*it)->data->flags, F_UNDEAD)
+					&& IsSet((*it)->data->flags, F_UNDEAD)
 					&& Vec3::Distance(u.target_pos, (*it)->pos) < 0.5f)
 				{
 					Unit& u2 = **it;
@@ -6404,11 +6404,11 @@ void Game::CastSpell(LevelArea& area, Unit& u)
 			}
 			u.ai->state = AIController::Idle;
 		}
-		else if(IS_SET(spell.flags, Spell::Heal))
+		else if(IsSet(spell.flags, Spell::Heal))
 		{
 			for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
 			{
-				if(!u.IsEnemy(**it) && !IS_SET((*it)->data->flags, F_UNDEAD) && Vec3::Distance(u.target_pos, (*it)->pos) < 0.5f)
+				if(!u.IsEnemy(**it) && !IsSet((*it)->data->flags, F_UNDEAD) && Vec3::Distance(u.target_pos, (*it)->pos) < 0.5f)
 				{
 					Unit& u2 = **it;
 					u2.hp += float(spell.dmg + spell.dmg_bonus*(u.level + u.CalculateMagicPower()));
@@ -6506,7 +6506,7 @@ void Game::SpellHitEffect(LevelArea& area, Bullet& bullet, const Vec3& pos, Unit
 	}
 
 	// wybuch
-	if(Net::IsLocal() && spell.tex_explode && IS_SET(spell.flags, Spell::Explode))
+	if(Net::IsLocal() && spell.tex_explode && IsSet(spell.flags, Spell::Explode))
 	{
 		Explo* explo = new Explo;
 		explo->dmg = (float)spell.dmg;
@@ -6632,7 +6632,7 @@ void Game::UpdateTraps(LevelArea& area, float dt)
 				{
 					for(Unit* unit : area.units)
 					{
-						if(unit->IsStanding() && !IS_SET(unit->data->flags, F_SLIGHT)
+						if(unit->IsStanding() && !IsSet(unit->data->flags, F_SLIGHT)
 							&& CircleToCircle(trap.pos.x, trap.pos.z, trap.base->rw, unit->pos.x, unit->pos.z, unit->GetUnitRadius()))
 						{
 							trigger = true;
@@ -6796,7 +6796,7 @@ void Game::UpdateTraps(LevelArea& area, float dt)
 					reactivate = true;
 					for(Unit* unit : area.units)
 					{
-						if(!IS_SET(unit->data->flags, F_SLIGHT)
+						if(!IsSet(unit->data->flags, F_SLIGHT)
 							&& CircleToCircle(trap.obj2.pos.x, trap.obj2.pos.z, trap.base->rw, unit->pos.x, unit->pos.z, unit->GetUnitRadius()))
 						{
 							reactivate = false;
@@ -6837,7 +6837,7 @@ void Game::UpdateTraps(LevelArea& area, float dt)
 				{
 					for(Unit* unit : area.units)
 					{
-						if(unit->IsStanding() && !IS_SET(unit->data->flags, F_SLIGHT) &&
+						if(unit->IsStanding() && !IsSet(unit->data->flags, F_SLIGHT) &&
 							CircleToRectangle(unit->pos.x, unit->pos.z, unit->GetUnitRadius(), trap.pos.x, trap.pos.z, trap.base->rw, trap.base->h))
 						{
 							trigger = true;
@@ -6932,7 +6932,7 @@ void Game::UpdateTraps(LevelArea& area, float dt)
 					empty = true;
 					for(Unit* unit : area.units)
 					{
-						if(!IS_SET(unit->data->flags, F_SLIGHT) &&
+						if(!IsSet(unit->data->flags, F_SLIGHT) &&
 							CircleToRectangle(unit->pos.x, unit->pos.z, unit->GetUnitRadius(), trap.pos.x, trap.pos.z, trap.base->rw, trap.base->h))
 						{
 							empty = false;
@@ -7116,14 +7116,14 @@ struct ConvexCallback : public btCollisionWorld::ConvexResultCallback
 
 	bool needsCollision(btBroadphaseProxy* proxy0) const override
 	{
-		return clbk((btCollisionObject*)proxy0->m_clientObject, false) == Game::LT_COLLIDE;
+		return clbk((btCollisionObject*)proxy0->m_clientObject, true) == Game::LT_COLLIDE;
 	}
 
 	float addSingleResult(btCollisionWorld::LocalConvexResult& convexResult, bool normalInWorldSpace)
 	{
 		if(use_clbk2)
 		{
-			auto result = clbk((btCollisionObject*)convexResult.m_hitCollisionObject, true);
+			auto result = clbk((btCollisionObject*)convexResult.m_hitCollisionObject, false);
 			if(result == Game::LT_IGNORE)
 				return m_closestHitFraction;
 			else if(result == Game::LT_END)
@@ -7189,7 +7189,7 @@ struct ContactTestCallback : public btCollisionWorld::ContactResultCallback
 
 	bool needsCollision(btBroadphaseProxy* proxy0) const override
 	{
-		return clbk((btCollisionObject*)proxy0->m_clientObject, false);
+		return clbk((btCollisionObject*)proxy0->m_clientObject, true);
 	}
 
 	float addSingleResult(btManifoldPoint& cp, const btCollisionObjectWrapper* colObj0Wrap, int partId0, int index0, const btCollisionObjectWrapper* colObj1Wrap,
@@ -7202,7 +7202,7 @@ struct ContactTestCallback : public btCollisionWorld::ContactResultCallback
 				cobj = colObj1Wrap->m_collisionObject;
 			else
 				cobj = colObj0Wrap->m_collisionObject;
-			if(!clbk((btCollisionObject*)cobj, true))
+			if(!clbk((btCollisionObject*)cobj, false))
 				return 1.f;
 		}
 		hit = true;
@@ -7655,7 +7655,7 @@ Sound* Game::GetItemSound(const Item* item)
 		else
 			return sItem[7];
 	case IT_OTHER:
-		if(IS_SET(item->flags, ITEM_CRYSTAL_SOUND))
+		if(IsSet(item->flags, ITEM_CRYSTAL_SOUND))
 			return sItem[3];
 		else
 			return sItem[7];
@@ -7786,7 +7786,7 @@ void Game::SetDungeonParamsAndTextures(BaseLocation& base)
 	}
 
 	// ustawienia uv podziemi
-	bool new_tex_wrap = !IS_SET(base.options, BLO_NO_TEX_WRAP);
+	bool new_tex_wrap = !IsSet(base.options, BLO_NO_TEX_WRAP);
 	if(new_tex_wrap != dungeon_tex_wrap)
 	{
 		dungeon_tex_wrap = new_tex_wrap;
@@ -8679,7 +8679,7 @@ void Game::AttackReaction(Unit& attacked, Unit& attacker)
 		{
 			if(!Team.is_bandit)
 			{
-				if(attacked.dont_attack && IS_SET(attacked.data->flags, F_PEACEFUL))
+				if(attacked.dont_attack && IsSet(attacked.data->flags, F_PEACEFUL))
 				{
 					if(attacked.ai->state == AIController::Idle)
 					{
@@ -8708,11 +8708,11 @@ void Game::AttackReaction(Unit& attacked, Unit& attacker)
 					Net::PushChange(NetChange::CHANGE_FLAGS);
 			}
 		}
-		if(attacked.dont_attack && !IS_SET(attacked.data->flags, F_PEACEFUL))
+		if(attacked.dont_attack && !IsSet(attacked.data->flags, F_PEACEFUL))
 		{
 			for(vector<Unit*>::iterator it = L.local_area->units.begin(), end = L.local_area->units.end(); it != end; ++it)
 			{
-				if((*it)->dont_attack && !IS_SET((*it)->data->flags, F_PEACEFUL))
+				if((*it)->dont_attack && !IsSet((*it)->data->flags, F_PEACEFUL))
 				{
 					(*it)->dont_attack = false;
 					(*it)->ai->change_ai_mode = true;
@@ -8903,7 +8903,7 @@ void Game::GenerateQuestUnits()
 		}
 	}
 
-	if(W.GetDay() == 6 && W.GetMonth() == 2 && L.city_ctx && IS_SET(L.city_ctx->flags, City::HaveArena)
+	if(W.GetDay() == 6 && W.GetMonth() == 2 && L.city_ctx && IsSet(L.city_ctx->flags, City::HaveArena)
 		&& L.location_index == QM.quest_tournament->GetCity() && !QM.quest_tournament->IsGenerated())
 		QM.quest_tournament->GenerateUnits();
 }
@@ -9470,7 +9470,7 @@ void Game::PlayerUseUsable(Usable* usable, bool after_action)
 		u.UseUsable(&use);
 		pc_data.before_player = BP_NONE;
 
-		if(IS_SET(bu.use_flags, BaseUsable::CONTAINER))
+		if(IsSet(bu.use_flags, BaseUsable::CONTAINER))
 		{
 			// loot container
 			gui->inventory->StartTrade2(I_LOOT_CONTAINER, &use);
@@ -9506,7 +9506,7 @@ void Game::PlayerUseUsable(Usable* usable, bool after_action)
 		c.id = pc_data.before_player_ptr.usable->netid;
 		c.count = USE_USABLE_START;
 
-		if(IS_SET(bu.use_flags, BaseUsable::CONTAINER))
+		if(IsSet(bu.use_flags, BaseUsable::CONTAINER))
 		{
 			pc->action = PlayerController::Action_LootContainer;
 			pc->action_usable = pc_data.before_player_ptr.usable;
@@ -9753,7 +9753,7 @@ void Game::OnEnterLevel()
 
 cstring Game::GetRandomIdleText(Unit& u)
 {
-	if(IS_SET(u.data->flags3, F3_DRUNK_MAGE) && QM.quest_mages2->mages_state < Quest_Mages2::State::MageCured)
+	if(IsSet(u.data->flags3, F3_DRUNK_MAGE) && QM.quest_mages2->mages_state < Quest_Mages2::State::MageCured)
 		return RandomString(txAiDrunkMageText);
 
 	int n = Rand() % 100;
@@ -9785,11 +9785,11 @@ cstring Game::GetRandomIdleText(Unit& u)
 	case G_CITIZENS:
 		if(!u.IsTeamMember())
 		{
-			if(u.area->area_type == LevelArea::Type::Building && (IS_SET(u.data->flags, F_AI_DRUNKMAN) || IS_SET(u.data->flags3, F3_DRUNKMAN_AFTER_CONTEST)))
+			if(u.area->area_type == LevelArea::Type::Building && (IsSet(u.data->flags, F_AI_DRUNKMAN) || IsSet(u.data->flags3, F3_DRUNKMAN_AFTER_CONTEST)))
 			{
 				if(L.city_ctx->FindInn() == u.area)
 				{
-					if(IS_SET(u.data->flags, F_AI_DRUNKMAN) || QM.quest_contest->state != Quest_Contest::CONTEST_TODAY)
+					if(IsSet(u.data->flags, F_AI_DRUNKMAN) || QM.quest_contest->state != Quest_Contest::CONTEST_TODAY)
 					{
 						if(Rand() % 3 == 0)
 							return RandomString(txAiDrunkText);
@@ -9821,13 +9821,13 @@ cstring Game::GetRandomIdleText(Unit& u)
 		break;
 	case G_MAGES:
 	case G_UNDEAD:
-		if(IS_SET(u.data->flags, F_MAGE) && n < 50)
+		if(IsSet(u.data->flags, F_MAGE) && n < 50)
 			return RandomString(txAiMageText);
 		else
 			hero_text = false;
 		break;
 	case G_GOBLINS:
-		if(!IS_SET(u.data->flags2, F2_NOT_GOBLIN))
+		if(!IsSet(u.data->flags2, F2_NOT_GOBLIN))
 			return RandomString(txAiGoblinText);
 		hero_text = false;
 		break;
@@ -9940,7 +9940,7 @@ void Game::HandleQuestEvent(Quest_Event* event)
 			Info("Generated unit %s (%g,%g).", event->unit_to_spawn->id.c_str(), spawned->pos.x, spawned->pos.z);
 
 		// mark near units as guards if guarded (only in dungeon)
-		if(IS_SET(spawned->data->flags2, F2_GUARDED) && lvl)
+		if(IsSet(spawned->data->flags2, F2_GUARDED) && lvl)
 		{
 			Room& room = lvl->GetRoom(event->spawn_unit_room, inside->HaveDownStairs());
 			for(Unit* unit : L.local_area->units)

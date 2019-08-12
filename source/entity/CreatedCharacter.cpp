@@ -122,7 +122,7 @@ int CreatedCharacter::Read(BitStreamReader& f)
 
 	for(int i = 0; i < (int)SkillId::MAX; ++i)
 	{
-		if(IS_SET(sk, 1 << i))
+		if(IsSet(sk, 1 << i))
 		{
 			if(s[i].value < 0)
 			{

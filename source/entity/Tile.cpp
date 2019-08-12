@@ -48,17 +48,17 @@ void Tile::SetupFlags(Tile* tiles, const Int2& size)
 				p.flags |= Tile::F_FLOOR;
 
 			if(p.type == BARS || p.type == BARS_CEILING)
-				assert(!IS_SET(p.flags, Tile::F_LOW_CEILING));
+				assert(!IsSet(p.flags, Tile::F_LOW_CEILING));
 
-			if(!IS_SET(p.flags, Tile::F_LOW_CEILING))
+			if(!IsSet(p.flags, Tile::F_LOW_CEILING))
 			{
-				if(IS_SET(tiles[x - 1 + y * size.x].flags, Tile::F_LOW_CEILING))
+				if(IsSet(tiles[x - 1 + y * size.x].flags, Tile::F_LOW_CEILING))
 					p.flags |= Tile::F_CEIL_RIGHT;
-				if(IS_SET(tiles[x + 1 + y * size.x].flags, Tile::F_LOW_CEILING))
+				if(IsSet(tiles[x + 1 + y * size.x].flags, Tile::F_LOW_CEILING))
 					p.flags |= Tile::F_CEIL_LEFT;
-				if(IS_SET(tiles[x + (y - 1)*size.x].flags, Tile::F_LOW_CEILING))
+				if(IsSet(tiles[x + (y - 1)*size.x].flags, Tile::F_LOW_CEILING))
 					p.flags |= Tile::F_CEIL_BACK;
-				if(IS_SET(tiles[x + (y + 1)*size.x].flags, Tile::F_LOW_CEILING))
+				if(IsSet(tiles[x + (y + 1)*size.x].flags, Tile::F_LOW_CEILING))
 					p.flags |= Tile::F_CEIL_FRONT;
 
 				// dziura w suficie

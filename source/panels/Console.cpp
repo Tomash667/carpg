@@ -117,5 +117,5 @@ void Console::Event(GuiEvent e)
 //=================================================================================================
 void Console::OnInput(const string& str)
 {
-	global::cmdp->ParseCommand(str, PrintMsgFunc(this, &Console::AddMsg), PS_CONSOLE);
+	global::cmdp->ParseCommand(str, CommandParser::PrintMsgFunc(this, &Console::AddMsg), PS_CONSOLE);
 }

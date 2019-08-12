@@ -172,18 +172,3 @@ struct ConsoleCommand
 		return *(T*)var;
 	}
 };
-
-//-----------------------------------------------------------------------------
-typedef delegate<void(cstring)> PrintMsgFunc;
-
-extern PrintMsgFunc g_print_func;
-
-inline void Msg(cstring msg)
-{
-	g_print_func(msg);
-}
-template<typename... Args>
-inline void Msg(cstring msg, const Args&... args)
-{
-	g_print_func(Format(msg, args...));
-}

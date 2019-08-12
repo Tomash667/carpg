@@ -1105,7 +1105,7 @@ void CreateCharacterPanel::GetTooltip(TooltipController* ptr_tool, int group, in
 			PerkInfo& pi = PerkInfo::perks[id];
 			tool.big_text = pi.name;
 			tool.text = pi.desc;
-			if(IS_SET(pi.flags, PerkInfo::Flaw))
+			if(IsSet(pi.flags, PerkInfo::Flaw))
 			{
 				tool.text += "\n\n";
 				tool.text += txFlawExtraPerk;
@@ -1121,7 +1121,7 @@ void CreateCharacterPanel::GetTooltip(TooltipController* ptr_tool, int group, in
 			tool.big_text = pi.name;
 			tool.text = pi.desc;
 			taken.GetDesc(tool.small_text);
-			if(IS_SET(pi.flags, PerkInfo::Flaw))
+			if(IsSet(pi.flags, PerkInfo::Flaw))
 			{
 				tool.text += "\n\n";
 				tool.text += txFlawExtraPerk;
@@ -1337,7 +1337,7 @@ void CreateCharacterPanel::RebuildPerksFlow()
 	for(int i = 0; i < (int)cc.taken_perks.size(); ++i)
 	{
 		PerkInfo& perk = PerkInfo::perks[(int)cc.taken_perks[i].perk];
-		if(IS_SET(perk.flags, PerkInfo::RequireFormat))
+		if(IsSet(perk.flags, PerkInfo::RequireFormat))
 		{
 			string* s = StringPool.Get();
 			*s = cc.taken_perks[i].FormatName();
@@ -1360,7 +1360,7 @@ void CreateCharacterPanel::RebuildPerksFlow()
 		for(Perk perk : available_perks)
 		{
 			PerkInfo& info = PerkInfo::perks[(int)perk];
-			bool can_pick = (cc.perks == 0 && !IS_SET(info.flags, PerkInfo::Flaw));
+			bool can_pick = (cc.perks == 0 && !IsSet(info.flags, PerkInfo::Flaw));
 			flowPerks.Add()->Set((int)Group::PickPerk_AddButton, (int)perk, 0, can_pick);
 			flowPerks.Add()->Set(info.name.c_str(), (int)Group::Perk, (int)perk);
 		}

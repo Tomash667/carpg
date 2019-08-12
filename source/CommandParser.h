@@ -8,6 +8,8 @@
 class CommandParser : public GameComponent
 {
 public:
+	typedef delegate<void(cstring)> PrintMsgFunc;
+
 	void AddCommands();
 	void ParseCommand(const string& command_str, PrintMsgFunc print_func, PARSE_SOURCE source = PS_UNKNOWN);
 	bool ParseStream(BitStreamReader& f, PlayerInfo& info);
@@ -23,6 +25,16 @@ public:
 	void ArenaCombat(cstring str);
 	void CmdList(Tokenizer& t);
 
+	inline void Msg(cstring msg)
+	{
+		print_msg(msg);
+	}
+	template<typename... Args>
+	inline void Msg(cstring msg, const Args&... args)
+	{
+		print_msg(Format(msg, args...));
+	}
+
 private:
 	void ParseScript(Tokenizer& t);
 	void RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE source);
@@ -30,4 +42,5 @@ private:
 	bool ParseStreamInner(BitStreamReader& f);
 
 	vector<ConsoleCommand> cmds;
+	PrintMsgFunc print_msg;
 };

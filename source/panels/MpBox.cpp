@@ -80,7 +80,7 @@ void MpBox::OnInput(const string& str)
 {
 	Game& game = Game::Get();
 	if(str[0] == '/')
-		global::cmdp->ParseCommand(str.substr(1), PrintMsgFunc(&game, &Game::AddMultiMsg), PS_CHAT);
+		global::cmdp->ParseCommand(str.substr(1), CommandParser::PrintMsgFunc(&game, &Game::AddMultiMsg), PS_CHAT);
 	else
 	{
 		if(Net::IsOnline() && N.active_players != 1)

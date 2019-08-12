@@ -96,7 +96,7 @@ void CheckBaseItems(uint& errors)
 	{
 		if(item->type == IT_WEAPON)
 		{
-			if(IS_SET(item->flags, ITEM_MAGE))
+			if(IsSet(item->flags, ITEM_MAGE))
 				++have_wand;
 			else
 			{
@@ -123,7 +123,7 @@ void CheckBaseItems(uint& errors)
 			++have_shield;
 		else if(item->type == IT_ARMOR)
 		{
-			if(IS_SET(item->flags, ITEM_MAGE))
+			if(IsSet(item->flags, ITEM_MAGE))
 				++have_mage_armor;
 			else
 			{

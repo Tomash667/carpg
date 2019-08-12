@@ -2003,13 +2003,13 @@ int World::GetNearestLocation(const Vec2& pos, int flags, bool not_quest, int ta
 
 	for(vector<Location*>::iterator it = locations.begin(), end = locations.end(); it != end; ++it, ++index)
 	{
-		if(*it && IS_SET(flags, 1 << (*it)->type) && (!not_quest || !(*it)->active_quest))
+		if(*it && IsSet(flags, 1 << (*it)->type) && (!not_quest || !(*it)->active_quest))
 		{
 			if(target_flags != -1)
 			{
 				if((*it)->type == L_DUNGEON || (*it)->type == L_CRYPT)
 				{
-					if(!IS_SET(target_flags, 1 << ((InsideLocation*)(*it))->target))
+					if(!IsSet(target_flags, 1 << ((InsideLocation*)(*it))->target))
 						break;
 				}
 			}

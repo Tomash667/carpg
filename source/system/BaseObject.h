@@ -130,7 +130,7 @@ struct BaseObject
 
 	bool IsUsable() const
 	{
-		return IS_SET(flags, OBJ_USABLE);
+		return IsSet(flags, OBJ_USABLE);
 	}
 
 	static BaseObject obj_alpha;

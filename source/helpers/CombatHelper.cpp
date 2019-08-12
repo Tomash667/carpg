@@ -12,37 +12,37 @@ int CombatHelper::CalculateModifier(int type, int flags)
 {
 	int mod = -2;
 
-	if(IS_SET(type, DMG_SLASH))
+	if(IsSet(type, DMG_SLASH))
 	{
-		if(IS_SET(flags, F_SLASH_RES25))
+		if(IsSet(flags, F_SLASH_RES25))
 			mod = 1;
-		else if(IS_SET(flags, F_SLASH_WEAK25))
+		else if(IsSet(flags, F_SLASH_WEAK25))
 			mod = -1;
 		else
 			mod = 0;
 	}
 
-	if(IS_SET(type, DMG_PIERCE))
+	if(IsSet(type, DMG_PIERCE))
 	{
-		if(IS_SET(flags, F_PIERCE_RES25))
+		if(IsSet(flags, F_PIERCE_RES25))
 		{
 			if(mod == -2)
 				mod = 1;
 		}
-		else if(IS_SET(flags, F_PIERCE_WEAK25))
+		else if(IsSet(flags, F_PIERCE_WEAK25))
 			mod = -1;
 		else if(mod != -1)
 			mod = 0;
 	}
 
-	if(IS_SET(type, DMG_BLUNT))
+	if(IsSet(type, DMG_BLUNT))
 	{
-		if(IS_SET(flags, F_BLUNT_RES25))
+		if(IsSet(flags, F_BLUNT_RES25))
 		{
 			if(mod == -2)
 				mod = 1;
 		}
-		else if(IS_SET(flags, F_BLUNT_WEAK25))
+		else if(IsSet(flags, F_BLUNT_WEAK25))
 			mod = -1;
 		else if(mod != -1)
 			mod = 0;

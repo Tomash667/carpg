@@ -1461,7 +1461,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		PerkContext ctx(pc, false);
 		for(PerkInfo& info : PerkInfo::perks)
 		{
-			if(IS_SET(info.flags, PerkInfo::History))
+			if(IsSet(info.flags, PerkInfo::History))
 				continue;
 			if(pc->HavePerk(info.perk_id))
 				continue;
@@ -1501,7 +1501,7 @@ bool DialogContext::ExecuteSpecialIf(cstring msg)
 		return result;
 
 	if(strcmp(msg, "is_drunk") == 0)
-		return IS_SET(talker->data->flags, F_AI_DRUNKMAN) && talker->area->area_type == LevelArea::Type::Building;
+		return IsSet(talker->data->flags, F_AI_DRUNKMAN) && talker->area->area_type == LevelArea::Type::Building;
 	else if(strcmp(msg, "is_inside_dungeon") == 0)
 		return L.local_area->area_type == LevelArea::Type::Inside;
 	else if(strcmp(msg, "is_team_full") == 0)
@@ -1509,7 +1509,7 @@ bool DialogContext::ExecuteSpecialIf(cstring msg)
 	else if(strcmp(msg, "can_join") == 0)
 		return pc->unit->gold >= talker->hero->JoinCost();
 	else if(strcmp(msg, "is_near_arena") == 0)
-		return L.city_ctx && IS_SET(L.city_ctx->flags, City::HaveArena) && Vec3::Distance2d(talker->pos, L.city_ctx->arena_pos) < 5.f;
+		return L.city_ctx && IsSet(L.city_ctx->flags, City::HaveArena) && Vec3::Distance2d(talker->pos, L.city_ctx->arena_pos) < 5.f;
 	else if(strcmp(msg, "is_ginger") == 0)
 		return pc->unit->human_data->hair_color.Equal(g_hair_colors[8]);
 	else if(strcmp(msg, "is_bald") == 0)

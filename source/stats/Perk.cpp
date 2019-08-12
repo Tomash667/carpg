@@ -253,11 +253,11 @@ bool TakenPerk::CanTake(PerkContext& ctx)
 	PerkInfo& info = PerkInfo::perks[(int)perk];
 
 	// can take history perk only at startup
-	if(IS_SET(info.flags, PerkInfo::History) && !ctx.startup)
+	if(IsSet(info.flags, PerkInfo::History) && !ctx.startup)
 		return false;
 
 	// can take more then 2 flaws
-	if(IS_SET(info.flags, PerkInfo::Flaw) && ctx.cc && ctx.cc->perks_max >= 4)
+	if(IsSet(info.flags, PerkInfo::Flaw) && ctx.cc && ctx.cc->perks_max >= 4)
 		return false;
 
 	switch(perk)
@@ -442,7 +442,7 @@ void TakenPerk::Apply(PerkContext& ctx)
 
 	if(ctx.cc)
 	{
-		if(IS_SET(info.flags, PerkInfo::Flaw))
+		if(IsSet(info.flags, PerkInfo::Flaw))
 		{
 			ctx.cc->perks_max++;
 			ctx.cc->perks++;
@@ -525,7 +525,7 @@ void TakenPerk::Remove(PerkContext& ctx)
 
 	if(ctx.cc)
 	{
-		if(IS_SET(info.flags, PerkInfo::Flaw))
+		if(IsSet(info.flags, PerkInfo::Flaw))
 		{
 			ctx.cc->perks_max--;
 			ctx.cc->perks--;

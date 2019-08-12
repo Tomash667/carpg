@@ -71,7 +71,7 @@ void InsideLocationGenerator::OnEnter()
 			L.UpdateLocation(days, base.door_open, need_reset);
 
 		int update_flags = HandleUpdate(days);
-		if(IS_SET(update_flags, PREVENT_RESET))
+		if(IsSet(update_flags, PREVENT_RESET))
 			need_reset = false;
 
 		if(need_reset)
@@ -120,12 +120,12 @@ void InsideLocationGenerator::OnEnter()
 		L.OnReenterLevel();
 
 		// odtwórz jednostki
-		if(!IS_SET(update_flags, PREVENT_RESPAWN_UNITS))
+		if(!IsSet(update_flags, PREVENT_RESPAWN_UNITS))
 			RespawnUnits();
 		RespawnTraps();
 
 		// odtwórz fizykê
-		if(!IS_SET(update_flags, PREVENT_RECREATE_OBJECTS))
+		if(!IsSet(update_flags, PREVENT_RECREATE_OBJECTS))
 			L.RecreateObjects();
 
 		if(need_reset)
@@ -406,7 +406,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 			{
 				Object* o = new Object;
 				o->mesh = game.aDoorWall;
-				if(IS_SET(lvl.map[x + y * lvl.w].flags, Tile::F_SECOND_TEXTURE))
+				if(IsSet(lvl.map[x + y * lvl.w].flags, Tile::F_SECOND_TEXTURE))
 					o->mesh = game.aDoorWall2;
 				o->pos = Vec3(float(x * 2) + 1, 0, float(y * 2) + 1);
 				o->scale = 1;
@@ -440,7 +440,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 						o->pos.x -= 0.8229f;
 				}
 
-				if(Rand() % 100 < base.door_chance || IS_SET(lvl.map[x + y * lvl.w].flags, Tile::F_SPECIAL))
+				if(Rand() % 100 < base.door_chance || IsSet(lvl.map[x + y * lvl.w].flags, Tile::F_SPECIAL))
 				{
 					Door* door = new Door;
 					lvl.doors.push_back(door);
@@ -462,7 +462,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 					tr.setRotation(btQuaternion(door->rot, 0, 0));
 					game.phy_world->addCollisionObject(door->phy, CG_DOOR);
 
-					if(IS_SET(lvl.map[x + y * lvl.w].flags, Tile::F_SPECIAL))
+					if(IsSet(lvl.map[x + y * lvl.w].flags, Tile::F_SPECIAL))
 						door->locked = LOCK_ORCS;
 					else if(Rand() % 100 < base.door_open)
 					{
@@ -480,7 +480,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 
 	// dotyczy tylko pochodni
 	int flags = 0;
-	if(IS_SET(base.options, BLO_MAGIC_LIGHT))
+	if(IsSet(base.options, BLO_MAGIC_LIGHT))
 		flags = Level::SOE_MAGIC_LIGHT;
 
 	bool required = false;
@@ -560,7 +560,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 				ObjectEntity e = GenerateDungeonObject(lvl, *room, base, on_wall, blocks, flags);
 				if(!e)
 				{
-					if(IS_SET(base->flags, OBJ_IMPORTANT))
+					if(IsSet(base->flags, OBJ_IMPORTANT))
 						--j;
 					--fail;
 					continue;
@@ -569,7 +569,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 				if(e.type == ObjectEntity::CHEST)
 					room_chests.push_back(e);
 
-				if(IS_SET(base->flags, OBJ_REQUIRED))
+				if(IsSet(base->flags, OBJ_REQUIRED))
 					required_object = true;
 
 				if(is_group)
@@ -582,7 +582,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 
 		if(!room_chests.empty())
 		{
-			bool extra = IS_SET(rt->flags, RT_TREASURE);
+			bool extra = IsSet(rt->flags, RT_TREASURE);
 			GenerateDungeonTreasure(room_chests, chest_lvl, extra);
 			room_chests.clear();
 		}
@@ -634,11 +634,11 @@ ObjectEntity InsideLocationGenerator::GenerateDungeonObject(InsideLocationLevel&
 	else
 		shift = base->size + Vec2(base->extra_dist, base->extra_dist);
 
-	if(IS_SET(base->flags, OBJ_NEAR_WALL))
+	if(IsSet(base->flags, OBJ_NEAR_WALL))
 	{
 		Int2 tile;
 		GameDirection dir;
-		if(!lvl.GetRandomNearWallTile(room, tile, dir, IS_SET(base->flags, OBJ_ON_WALL)))
+		if(!lvl.GetRandomNearWallTile(room, tile, dir, IsSet(base->flags, OBJ_ON_WALL)))
 			return nullptr;
 
 		rot = DirToRot(dir);
@@ -647,7 +647,7 @@ ObjectEntity InsideLocationGenerator::GenerateDungeonObject(InsideLocationLevel&
 		else
 			pos = Vec3(2.f*tile.x + sin(rot)*(2.f - shift.y - 0.01f), 0.f, 2.f*tile.y + cos(rot)*(2.f - shift.y - 0.01f));
 
-		if(IS_SET(base->flags, OBJ_ON_WALL))
+		if(IsSet(base->flags, OBJ_ON_WALL))
 		{
 			switch(dir)
 			{
@@ -691,7 +691,7 @@ ObjectEntity InsideLocationGenerator::GenerateDungeonObject(InsideLocationLevel&
 			}
 		}
 	}
-	else if(IS_SET(base->flags, OBJ_IN_MIDDLE))
+	else if(IsSet(base->flags, OBJ_IN_MIDDLE))
 	{
 		rot = PI / 2 * (Rand() % 4);
 		pos = room.Center();
@@ -719,13 +719,13 @@ ObjectEntity InsideLocationGenerator::GenerateDungeonObject(InsideLocationLevel&
 			return nullptr;
 	}
 
-	if(IS_SET(base->flags, OBJ_HIGH))
+	if(IsSet(base->flags, OBJ_HIGH))
 		pos.y += 1.5f;
 
 	if(base->type == OBJ_HITBOX)
 	{
 		// sprawdŸ kolizje z blokami
-		if(!IS_SET(base->flags, OBJ_NO_PHYSICS))
+		if(!IsSet(base->flags, OBJ_NO_PHYSICS))
 		{
 			if(NotZero(rot))
 			{
@@ -766,7 +766,7 @@ ObjectEntity InsideLocationGenerator::GenerateDungeonObject(InsideLocationLevel&
 	else
 	{
 		// sprawdŸ kolizje z blokami
-		if(!IS_SET(base->flags, OBJ_NO_PHYSICS))
+		if(!IsSet(base->flags, OBJ_NO_PHYSICS))
 		{
 			for(vector<Int2>::iterator b_it = blocks.begin(), b_end = blocks.end(); b_it != b_end; ++b_it)
 			{
@@ -784,7 +784,7 @@ ObjectEntity InsideLocationGenerator::GenerateDungeonObject(InsideLocationLevel&
 			return nullptr;
 	}
 
-	if(IS_SET(base->flags, OBJ_ON_WALL))
+	if(IsSet(base->flags, OBJ_ON_WALL))
 		on_wall.push_back(pos);
 
 	return L.SpawnObjectEntity(lvl, base, pos, rot, 1.f, flags);
@@ -798,13 +798,13 @@ ObjectEntity InsideLocationGenerator::GenerateDungeonObject(InsideLocationLevel&
 
 	Box2d allowed_region(2.f * tile.x, 2.f * tile.y, 2.f * (tile.x + 1), 2.f * (tile.y + 1));
 	int dir_flags = lvl.GetTileDirFlags(tile);
-	if(IS_SET(dir_flags, GDIRF_LEFT_ROW))
+	if(IsSet(dir_flags, GDIRF_LEFT_ROW))
 		allowed_region.v1.x += base->r;
-	if(IS_SET(dir_flags, GDIRF_RIGHT_ROW))
+	if(IsSet(dir_flags, GDIRF_RIGHT_ROW))
 		allowed_region.v2.x -= base->r;
-	if(IS_SET(dir_flags, GDIRF_DOWN_ROW))
+	if(IsSet(dir_flags, GDIRF_DOWN_ROW))
 		allowed_region.v1.y += base->r;
-	if(IS_SET(dir_flags, GDIRF_UP_ROW))
+	if(IsSet(dir_flags, GDIRF_UP_ROW))
 		allowed_region.v2.y -= base->r;
 
 	if(allowed_region.SizeX() < base->r + EXTRA_RADIUS
@@ -828,21 +828,21 @@ void InsideLocationGenerator::GenerateTraps()
 {
 	BaseLocation& base = g_base_locations[inside->target];
 
-	if(!IS_SET(base.traps, TRAPS_NORMAL | TRAPS_MAGIC))
+	if(!IsSet(base.traps, TRAPS_NORMAL | TRAPS_MAGIC))
 		return;
 
 	InsideLocationLevel& lvl = GetLevelData();
 
 	int szansa;
 	Int2 pt(-1000, -1000);
-	if(IS_SET(base.traps, TRAPS_NEAR_ENTRANCE))
+	if(IsSet(base.traps, TRAPS_NEAR_ENTRANCE))
 	{
 		if(dungeon_level != 0)
 			return;
 		szansa = 10;
 		pt = lvl.staircase_up;
 	}
-	else if(IS_SET(base.traps, TRAPS_NEAR_END))
+	else if(IsSet(base.traps, TRAPS_NEAR_END))
 	{
 		if(inside->IsMultilevel())
 		{
@@ -899,13 +899,13 @@ void InsideLocationGenerator::GenerateTraps()
 		szansa = 20;
 
 	vector<TRAP_TYPE> traps;
-	if(IS_SET(base.traps, TRAPS_NORMAL))
+	if(IsSet(base.traps, TRAPS_NORMAL))
 	{
 		traps.push_back(TRAP_ARROW);
 		traps.push_back(TRAP_POISON);
 		traps.push_back(TRAP_SPEAR);
 	}
-	if(IS_SET(base.traps, TRAPS_MAGIC))
+	if(IsSet(base.traps, TRAPS_MAGIC))
 		traps.push_back(TRAP_FIREBALL);
 
 	for(int y = 1; y < lvl.h - 1; ++y)
@@ -931,21 +931,21 @@ void InsideLocationGenerator::RegenerateTraps()
 	Game& game = Game::Get();
 	BaseLocation& base = g_base_locations[inside->target];
 
-	if(!IS_SET(base.traps, TRAPS_MAGIC))
+	if(!IsSet(base.traps, TRAPS_MAGIC))
 		return;
 
 	InsideLocationLevel& lvl = GetLevelData();
 
 	int szansa;
 	Int2 pt(-1000, -1000);
-	if(IS_SET(base.traps, TRAPS_NEAR_ENTRANCE))
+	if(IsSet(base.traps, TRAPS_NEAR_ENTRANCE))
 	{
 		if(dungeon_level != 0)
 			return;
 		szansa = 0;
 		pt = lvl.staircase_up;
 	}
-	else if(IS_SET(base.traps, TRAPS_NEAR_END))
+	else if(IsSet(base.traps, TRAPS_NEAR_END))
 	{
 		if(inside->IsMultilevel())
 		{
@@ -1015,7 +1015,7 @@ void InsideLocationGenerator::RegenerateTraps()
 				&& !OR2_EQ(lvl.map[x + (y + 1)*lvl.w].type, STAIRS_DOWN, STAIRS_UP))
 			{
 				int s = szansa + max(0, 30 - Int2::Distance(pt, Int2(x, y)));
-				if(IS_SET(base.traps, TRAPS_NORMAL))
+				if(IsSet(base.traps, TRAPS_NORMAL))
 					s /= 4;
 				if(Rand() % 500 < s)
 				{
@@ -1086,7 +1086,7 @@ void InsideLocationGenerator::CreateMinimap()
 		for(int x = 0; x < lvl.w; ++x)
 		{
 			Tile& p = lvl.map[x + (lvl.w - 1 - y)*lvl.w];
-			if(IS_SET(p.flags, Tile::F_REVEALED))
+			if(IsSet(p.flags, Tile::F_REVEALED))
 			{
 				if(OR2_EQ(p.type, WALL, BLOCKADE_WALL))
 					*pix = Color(100, 100, 100);

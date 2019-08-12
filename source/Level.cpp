@@ -486,7 +486,7 @@ void Level::RemoveUnit(Unit* unit, bool notify)
 ObjectEntity Level::SpawnObjectEntity(LevelArea& area, BaseObject* base, const Vec3& pos, float rot, float scale, int flags, Vec3* out_point,
 	int variant)
 {
-	if(IS_SET(base->flags, OBJ_TABLE_SPAWNER))
+	if(IsSet(base->flags, OBJ_TABLE_SPAWNER))
 	{
 		// table & stools
 		BaseObject* table = BaseObject::Get(Rand() % 2 == 0 ? "table" : "table2");
@@ -550,7 +550,7 @@ ObjectEntity Level::SpawnObjectEntity(LevelArea& area, BaseObject* base, const V
 
 		return o;
 	}
-	else if(IS_SET(base->flags, OBJ_BUILDING))
+	else if(IsSet(base->flags, OBJ_BUILDING))
 	{
 		// building
 		int roti;
@@ -581,7 +581,7 @@ ObjectEntity Level::SpawnObjectEntity(LevelArea& area, BaseObject* base, const V
 
 		return o;
 	}
-	else if(IS_SET(base->flags, OBJ_USABLE))
+	else if(IsSet(base->flags, OBJ_USABLE))
 	{
 		// usable object
 		BaseUsable* base_use = (BaseUsable*)base;
@@ -592,7 +592,7 @@ ObjectEntity Level::SpawnObjectEntity(LevelArea& area, BaseObject* base, const V
 		u->rot = rot;
 		u->user = nullptr;
 
-		if(IS_SET(base_use->use_flags, BaseUsable::CONTAINER))
+		if(IsSet(base_use->use_flags, BaseUsable::CONTAINER))
 		{
 			u->container = new ItemContainer;
 			const Item* item = Book::GetRandom();
@@ -615,7 +615,7 @@ ObjectEntity Level::SpawnObjectEntity(LevelArea& area, BaseObject* base, const V
 			if(base->variants)
 			{
 				// extra code for bench
-				if(IS_SET(base_use->use_flags, BaseUsable::IS_BENCH))
+				if(IsSet(base_use->use_flags, BaseUsable::IS_BENCH))
 				{
 					switch(location->type)
 					{
@@ -645,7 +645,7 @@ ObjectEntity Level::SpawnObjectEntity(LevelArea& area, BaseObject* base, const V
 
 		return u;
 	}
-	else if(IS_SET(base->flags, OBJ_IS_CHEST))
+	else if(IsSet(base->flags, OBJ_IS_CHEST))
 	{
 		// chest
 		Chest* chest = new Chest;
@@ -685,9 +685,9 @@ void Level::SpawnObjectExtras(LevelArea& area, BaseObject* obj, const Vec3& pos,
 	Game& game = Game::Get();
 
 	// ogieñ pochodni
-	if(!IS_SET(flags, SOE_DONT_SPAWN_PARTICLES))
+	if(!IsSet(flags, SOE_DONT_SPAWN_PARTICLES))
 	{
-		if(IS_SET(obj->flags, OBJ_LIGHT))
+		if(IsSet(obj->flags, OBJ_LIGHT))
 		{
 			ParticleEmitter* pe = new ParticleEmitter;
 			pe->alpha = 0.8f;
@@ -711,28 +711,28 @@ void Level::SpawnObjectExtras(LevelArea& area, BaseObject* obj, const Vec3& pos,
 			area.tmp->pes.push_back(pe);
 
 			pe->tex = tFlare;
-			if(IS_SET(obj->flags, OBJ_CAMPFIRE_EFFECT))
+			if(IsSet(obj->flags, OBJ_CAMPFIRE_EFFECT))
 				pe->size = 0.7f;
 			else
 			{
 				pe->size = 0.5f;
-				if(IS_SET(flags, SOE_MAGIC_LIGHT))
+				if(IsSet(flags, SOE_MAGIC_LIGHT))
 					pe->tex = tFlare2;
 			}
 
 			// œwiat³o
-			if(!IS_SET(flags, SOE_DONT_CREATE_LIGHT))
+			if(!IsSet(flags, SOE_DONT_CREATE_LIGHT))
 			{
 				Light& s = Add1(area.lights);
 				s.pos = pe->pos;
 				s.range = 5;
-				if(IS_SET(flags, SOE_MAGIC_LIGHT))
+				if(IsSet(flags, SOE_MAGIC_LIGHT))
 					s.color = Vec3(0.8f, 0.8f, 1.f);
 				else
 					s.color = Vec3(1.f, 0.9f, 0.9f);
 			}
 		}
-		else if(IS_SET(obj->flags, OBJ_BLOOD_EFFECT))
+		else if(IsSet(obj->flags, OBJ_BLOOD_EFFECT))
 		{
 			// krew
 			ParticleEmitter* pe = new ParticleEmitter;
@@ -758,7 +758,7 @@ void Level::SpawnObjectExtras(LevelArea& area, BaseObject* obj, const Vec3& pos,
 			pe->Init();
 			area.tmp->pes.push_back(pe);
 		}
-		else if(IS_SET(obj->flags, OBJ_WATER_EFFECT))
+		else if(IsSet(obj->flags, OBJ_WATER_EFFECT))
 		{
 			// krew
 			ParticleEmitter* pe = new ParticleEmitter;
@@ -791,10 +791,10 @@ void Level::SpawnObjectExtras(LevelArea& area, BaseObject* obj, const Vec3& pos,
 	{
 		CollisionObject& c = Add1(area.tmp->colliders);
 		c.owner = user_ptr;
-		c.cam_collider = IS_SET(obj->flags, OBJ_PHY_BLOCKS_CAM);
+		c.cam_collider = IsSet(obj->flags, OBJ_PHY_BLOCKS_CAM);
 
 		int group = CG_OBJECT;
-		if(IS_SET(obj->flags, OBJ_PHY_BLOCKS_CAM))
+		if(IsSet(obj->flags, OBJ_PHY_BLOCKS_CAM))
 			group |= CG_CAMERA_COLLIDER;
 
 		btCollisionObject* cobj = new btCollisionObject;
@@ -857,15 +857,15 @@ void Level::SpawnObjectExtras(LevelArea& area, BaseObject* obj, const Vec3& pos,
 
 		phy_world->addCollisionObject(cobj, group);
 
-		if(IS_SET(obj->flags, OBJ_PHYSICS_PTR))
+		if(IsSet(obj->flags, OBJ_PHYSICS_PTR))
 		{
 			assert(user_ptr);
 			cobj->setUserPointer(user_ptr);
 		}
 
-		if(IS_SET(obj->flags, OBJ_DOUBLE_PHYSICS))
+		if(IsSet(obj->flags, OBJ_DOUBLE_PHYSICS))
 			SpawnObjectExtras(area, obj->next_obj, pos, rot, user_ptr, scale, flags);
-		else if(IS_SET(obj->flags, OBJ_MULTI_PHYSICS))
+		else if(IsSet(obj->flags, OBJ_MULTI_PHYSICS))
 		{
 			for(int i = 0;; ++i)
 			{
@@ -876,7 +876,7 @@ void Level::SpawnObjectExtras(LevelArea& area, BaseObject* obj, const Vec3& pos,
 			}
 		}
 	}
-	else if(IS_SET(obj->flags, OBJ_SCALEABLE))
+	else if(IsSet(obj->flags, OBJ_SCALEABLE))
 	{
 		CollisionObject& c = Add1(area.tmp->colliders);
 		c.type = CollisionObject::SPHERE;
@@ -892,7 +892,7 @@ void Level::SpawnObjectExtras(LevelArea& area, BaseObject* obj, const Vec3& pos,
 		phy_world->addCollisionObject(cobj, CG_OBJECT);
 	}
 
-	if(IS_SET(obj->flags, OBJ_CAM_COLLIDERS))
+	if(IsSet(obj->flags, OBJ_CAM_COLLIDERS))
 	{
 		int roti = (int)round((rot / (PI / 2)));
 		for(vector<Mesh::Point>::const_iterator it = obj->mesh->attach_points.begin(), end = obj->mesh->attach_points.end(); it != end; ++it)
@@ -1462,7 +1462,7 @@ void Level::RecreateObjects(bool spawn_pes)
 		{
 			InsideLocation* inside = (InsideLocation*)location;
 			BaseLocation& base = g_base_locations[inside->target];
-			if(IS_SET(base.options, BLO_MAGIC_LIGHT))
+			if(IsSet(base.options, BLO_MAGIC_LIGHT))
 				flags |= Level::SOE_MAGIC_LIGHT;
 		}
 
@@ -1474,7 +1474,7 @@ void Level::RecreateObjects(bool spawn_pes)
 			if(!base_obj)
 				continue;
 
-			if(IS_SET(base_obj->flags, OBJ_BUILDING))
+			if(IsSet(base_obj->flags, OBJ_BUILDING))
 			{
 				float rot = obj.rot.y;
 				int roti;
@@ -1952,7 +1952,7 @@ Unit* Level::SpawnUnitInsideInn(UnitData& ud, int level, InsideBuilding* inn, in
 
 	Vec3 pos;
 	bool ok = false;
-	if(IS_SET(flags, SU_MAIN_ROOM) || Rand() % 5 != 0)
+	if(IsSet(flags, SU_MAIN_ROOM) || Rand() % 5 != 0)
 	{
 		if(WarpToRegion(*inn, inn->region1, ud.GetRadius(), pos, 20) ||
 			WarpToRegion(*inn, inn->region2, ud.GetRadius(), pos, 10))
@@ -1969,7 +1969,7 @@ Unit* Level::SpawnUnitInsideInn(UnitData& ud, int level, InsideBuilding* inn, in
 	{
 		float rot = Random(MAX_ANGLE);
 		Unit* u = game.CreateUnitWithAI(*inn, ud, level, nullptr, &pos, &rot);
-		if(u && IS_SET(flags, SU_TEMPORARY))
+		if(u && IsSet(flags, SU_TEMPORARY))
 			u->temporary = true;
 		return u;
 	}
@@ -2639,7 +2639,7 @@ bool Level::CollideWithStairsRect(const CollisionObject& _co, const Box2d& _box)
 void Level::CreateBlood(LevelArea& area, const Unit& u, bool fully_created)
 {
 	Game& game = Game::Get();
-	if(!game.tKrewSlad[u.data->blood] || IS_SET(u.data->flags2, F2_BLOODLESS))
+	if(!game.tKrewSlad[u.data->blood] || IsSet(u.data->flags2, F2_BLOODLESS))
 		return;
 
 	Blood& b = Add1(area.bloods);
@@ -3139,7 +3139,7 @@ void Level::OnReenterLevel()
 bool Level::HaveArena()
 {
 	if(city_ctx)
-		return IS_SET(city_ctx->flags, City::HaveArena);
+		return IsSet(city_ctx->flags, City::HaveArena);
 	return false;
 }
 
@@ -3877,7 +3877,7 @@ void Level::UpdateDungeonMinimap(bool in_level)
 	for(vector<Int2>::iterator it = minimap_reveal.begin(), end = minimap_reveal.end(); it != end; ++it)
 	{
 		Tile& p = lvl.map[it->x + (lvl.w - it->y - 1)*lvl.w];
-		SET_BIT(p.flags, Tile::F_REVEALED);
+		SetBit(p.flags, Tile::F_REVEALED);
 		uint* pix = lock[it->y] + it->x;
 		if(OR2_EQ(p.type, WALL, BLOCKADE_WALL))
 			*pix = Color(100, 100, 100);

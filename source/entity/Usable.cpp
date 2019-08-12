@@ -53,9 +53,9 @@ void Usable::Save(FileWriter& f, bool local)
 	f << netid;
 	if(base->variants)
 		f << variant;
-	if(IS_SET(base->use_flags, BaseUsable::CONTAINER))
+	if(IsSet(base->use_flags, BaseUsable::CONTAINER))
 		container->Save(f);
-	if(local && !IS_SET(base->use_flags, BaseUsable::CONTAINER))
+	if(local && !IsSet(base->use_flags, BaseUsable::CONTAINER))
 		f << (user ? user->refid : -1);
 }
 
@@ -109,7 +109,7 @@ void Usable::Load(FileReader& f, bool local)
 	f >> netid;
 	if(base->variants)
 		f >> variant;
-	if(LOAD_VERSION >= V_0_6 && IS_SET(base->use_flags, BaseUsable::CONTAINER))
+	if(LOAD_VERSION >= V_0_6 && IsSet(base->use_flags, BaseUsable::CONTAINER))
 	{
 		container = new ItemContainer;
 		container->Load(f);
@@ -119,7 +119,7 @@ void Usable::Load(FileReader& f, bool local)
 	{
 		if(LOAD_VERSION >= V_0_7_1)
 		{
-			if(IS_SET(base->use_flags, BaseUsable::CONTAINER))
+			if(IsSet(base->use_flags, BaseUsable::CONTAINER))
 				user = nullptr;
 			else
 				user = Unit::GetByRefid(f.Read<int>());
@@ -127,7 +127,7 @@ void Usable::Load(FileReader& f, bool local)
 		else
 		{
 			int refid = f.Read<int>();
-			if(IS_SET(base->use_flags, BaseUsable::CONTAINER))
+			if(IsSet(base->use_flags, BaseUsable::CONTAINER))
 				user = nullptr;
 			else
 				user = Unit::GetByRefid(refid);
@@ -164,7 +164,7 @@ bool Usable::Read(BitStreamReader& f)
 		Error("Invalid usable type '%s'.", base_id.c_str());
 		return false;
 	}
-	if(IS_SET(base->use_flags, BaseUsable::CONTAINER))
+	if(IsSet(base->use_flags, BaseUsable::CONTAINER))
 		container = new ItemContainer;
 	return true;
 }

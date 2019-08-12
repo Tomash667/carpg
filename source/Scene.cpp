@@ -488,7 +488,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 	}
 
 	// terrain
-	if(area.area_type == LevelArea::Type::Outside && IS_SET(draw_flags, DF_TERRAIN))
+	if(area.area_type == LevelArea::Type::Outside && IsSet(draw_flags, DF_TERRAIN))
 	{
 		PROFILER_BLOCK("Terrain");
 		uint parts = L.terrain->GetPartsCount();
@@ -500,14 +500,14 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 	}
 
 	// dungeon
-	if(area.area_type == LevelArea::Type::Inside && IS_SET(draw_flags, DF_TERRAIN))
+	if(area.area_type == LevelArea::Type::Inside && IsSet(draw_flags, DF_TERRAIN))
 	{
 		PROFILER_BLOCK("Dungeon");
 		FillDrawBatchDungeonParts(frustum);
 	}
 
 	// units
-	if(IS_SET(draw_flags, DF_UNITS))
+	if(IsSet(draw_flags, DF_UNITS))
 	{
 		PROFILER_BLOCK("Units");
 		for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
@@ -518,7 +518,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 	}
 
 	// objects
-	if(IS_SET(draw_flags, DF_OBJECTS))
+	if(IsSet(draw_flags, DF_OBJECTS))
 	{
 		PROFILER_BLOCK("Objects");
 		if(area.area_type == LevelArea::Type::Outside)
@@ -545,7 +545,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 	}
 
 	// items
-	if(IS_SET(draw_flags, DF_ITEMS))
+	if(IsSet(draw_flags, DF_ITEMS))
 	{
 		PROFILER_BLOCK("Ground items");
 		Vec3 pos;
@@ -561,7 +561,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 			}
 			Mesh* mesh;
 			pos = item.pos;
-			if(IS_SET(item.item->flags, ITEM_GROUND_MESH))
+			if(IsSet(item.item->flags, ITEM_GROUND_MESH))
 			{
 				mesh = item.item->mesh;
 				pos.y -= mesh->head.bbox.v1.y;
@@ -574,7 +574,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 				node->billboard = false;
 				node->mat = Matrix::RotationY(item.rot) * Matrix::Translation(pos);
 				node->mesh = mesh;
-				node->flags = IS_SET(item.item->flags, ITEM_ALPHA) ? SceneNode::F_ALPHA_TEST : 0;
+				node->flags = IsSet(item.item->flags, ITEM_ALPHA) ? SceneNode::F_ALPHA_TEST : 0;
 				node->tex_override = nullptr;
 				node->tint = Vec4(1, 1, 1, 1);
 				if(!outside)
@@ -587,7 +587,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 						glow.node = node;
 						glow.type = GlowNode::Item;
 						glow.ptr = &item;
-						glow.alpha = IS_SET(item.item->flags, ITEM_ALPHA);
+						glow.alpha = IsSet(item.item->flags, ITEM_ALPHA);
 					}
 					else
 						node->tint = Vec4(2, 2, 2, 1);
@@ -598,7 +598,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 	}
 
 	// usable objects
-	if(IS_SET(draw_flags, DF_USABLES))
+	if(IsSet(draw_flags, DF_USABLES))
 	{
 		PROFILER_BLOCK("Usables");
 		for(vector<Usable*>::iterator it = area.usables.begin(), end = area.usables.end(); it != end; ++it)
@@ -635,7 +635,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 	}
 
 	// chests
-	if(IS_SET(draw_flags, DF_USABLES))
+	if(IsSet(draw_flags, DF_USABLES))
 	{
 		PROFILER_BLOCK("Chests");
 		for(vector<Chest*>::iterator it = area.chests.begin(), end = area.chests.end(); it != end; ++it)
@@ -681,7 +681,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 	}
 
 	// doors
-	if(IS_SET(draw_flags, DF_USABLES))
+	if(IsSet(draw_flags, DF_USABLES))
 	{
 		for(vector<Door*>::iterator it = area.doors.begin(), end = area.doors.end(); it != end; ++it)
 		{
@@ -726,7 +726,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 	}
 
 	// bloods
-	if(IS_SET(draw_flags, DF_BLOOD))
+	if(IsSet(draw_flags, DF_BLOOD))
 	{
 		for(vector<Blood>::iterator it = area.bloods.begin(), end = area.bloods.end(); it != end; ++it)
 		{
@@ -740,7 +740,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 	}
 
 	// bullets
-	if(IS_SET(draw_flags, DF_BULLETS))
+	if(IsSet(draw_flags, DF_BULLETS))
 	{
 		for(vector<Bullet>::iterator it = tmp_area.bullets.begin(), end = tmp_area.bullets.end(); it != end; ++it)
 		{
@@ -775,7 +775,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 	}
 
 	// traps
-	if(IS_SET(draw_flags, DF_TRAPS))
+	if(IsSet(draw_flags, DF_TRAPS))
 	{
 		for(vector<Trap*>::iterator it = area.traps.begin(), end = area.traps.end(); it != end; ++it)
 		{
@@ -822,7 +822,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 	}
 
 	// explosions
-	if(IS_SET(draw_flags, DF_EXPLOS))
+	if(IsSet(draw_flags, DF_EXPLOS))
 	{
 		for(vector<Explo*>::iterator it = tmp_area.explos.begin(), end = tmp_area.explos.end(); it != end; ++it)
 		{
@@ -833,7 +833,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 	}
 
 	// particles
-	if(IS_SET(draw_flags, DF_PARTICLES))
+	if(IsSet(draw_flags, DF_PARTICLES))
 	{
 		PROFILER_BLOCK("Particles");
 		for(vector<ParticleEmitter*>::iterator it = tmp_area.pes.begin(), end = tmp_area.pes.end(); it != end; ++it)
@@ -862,13 +862,13 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 		draw_batch.tpes = nullptr;
 
 	// electros
-	if(IS_SET(draw_flags, DF_LIGHTINGS) && !tmp_area.electros.empty())
+	if(IsSet(draw_flags, DF_LIGHTINGS) && !tmp_area.electros.empty())
 		draw_batch.electros = &tmp_area.electros;
 	else
 		draw_batch.electros = nullptr;
 
 	// portals
-	if(IS_SET(draw_flags, DF_PORTALS) && area.area_type != LevelArea::Type::Building)
+	if(IsSet(draw_flags, DF_PORTALS) && area.area_type != LevelArea::Type::Building)
 	{
 		Portal* portal = L.location->portal;
 		while(portal)
@@ -880,7 +880,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 	}
 
 	// areas
-	if(IS_SET(draw_flags, DF_AREA))
+	if(IsSet(draw_flags, DF_AREA))
 		ListAreas(area);
 
 	// colliders
@@ -1155,7 +1155,7 @@ void Game::ListDrawObjectsUnit(LevelArea* area, FrustumPlanes& frustum, bool out
 	if(u.used_item && u.action != A_USE_ITEM)
 	{
 		right_hand_item = u.used_item->mesh;
-		if(IS_SET(u.used_item->flags, ITEM_ALPHA))
+		if(IsSet(u.used_item->flags, ITEM_ALPHA))
 			right_hand_item_flags = SceneNode::F_ALPHA_TEST;
 	}
 
@@ -1280,7 +1280,7 @@ void Game::ListDrawObjectsUnit(LevelArea* area, FrustumPlanes& frustum, bool out
 				glow.node = node2;
 				glow.type = GlowNode::Unit;
 				glow.ptr = &u;
-				glow.alpha = IS_SET(right_hand_item_flags, SceneNode::F_ALPHA_TEST);
+				glow.alpha = IsSet(right_hand_item_flags, SceneNode::F_ALPHA_TEST);
 			}
 			else
 				node2->tint = Vec4(2, 2, 2, 1);
@@ -1531,7 +1531,7 @@ void Game::AddObjectToDrawBatch(LevelArea& area, const Object& o, FrustumPlanes&
 		node->flags = SceneNode::F_ALPHA_TEST | SceneNode::F_NO_CULLING;
 	node->tex_override = nullptr;
 	node->tint = Vec4(1, 1, 1, 1);
-	if(!IS_SET(node->mesh->head.flags, Mesh::F_SPLIT))
+	if(!IsSet(node->mesh->head.flags, Mesh::F_SPLIT))
 	{
 		if(area.area_type != LevelArea::Type::Outside)
 			node->lights = GatherDrawBatchLights(area, node, o.pos.x, o.pos.z, o.GetRadius());
@@ -1540,7 +1540,7 @@ void Game::AddObjectToDrawBatch(LevelArea& area, const Object& o, FrustumPlanes&
 	else
 	{
 		const Mesh& mesh = node->GetMesh();
-		if(IS_SET(mesh.head.flags, Mesh::F_TANGENTS))
+		if(IsSet(mesh.head.flags, Mesh::F_TANGENTS))
 			node->flags |= SceneNode::F_BINORMALS;
 
 		//#define DEBUG_SPLITS
@@ -1607,7 +1607,7 @@ void Game::ListAreas(LevelArea& area)
 	{
 		if(L.city_ctx)
 		{
-			if(IS_SET(L.city_ctx->flags, City::HaveExit))
+			if(IsSet(L.city_ctx->flags, City::HaveExit))
 			{
 				for(vector<EntryPoint>::const_iterator entry_it = L.city_ctx->entry_points.begin(), entry_end = L.city_ctx->entry_points.end();
 					entry_it != entry_end; ++entry_it)
@@ -1632,7 +1632,7 @@ void Game::ListAreas(LevelArea& area)
 			}
 		}
 
-		if(!L.city_ctx || !IS_SET(L.city_ctx->flags, City::HaveExit))
+		if(!L.city_ctx || !IsSet(L.city_ctx->flags, City::HaveExit))
 		{
 			const float H1 = -10.f;
 			const float H2 = 30.f;
@@ -1784,13 +1784,13 @@ void Game::PrepareAreaPath()
 		// find max line
 		float t;
 		Vec3 dir(sin(rot)*action.area_size.x, 0, cos(rot)*action.area_size.x);
-		bool ignore_units = IS_SET(action.flags, Action::F_IGNORE_UNITS);
+		bool ignore_units = IsSet(action.flags, Action::F_IGNORE_UNITS);
 		LineTest(pc->unit->cobj->getCollisionShape(), from, dir, [this, ignore_units](btCollisionObject* obj, bool)
 		{
 			int flags = obj->getCollisionFlags();
-			if(IS_SET(flags, CG_TERRAIN))
+			if(IsSet(flags, CG_TERRAIN))
 				return LT_IGNORE;
-			if(IS_SET(flags, CG_UNIT) && (obj->getUserPointer() == pc->unit || ignore_units))
+			if(IsSet(flags, CG_UNIT) && (obj->getUserPointer() == pc->unit || ignore_units))
 				return LT_IGNORE;
 			return LT_COLLIDE;
 		}, t);
@@ -1878,15 +1878,15 @@ void Game::PrepareAreaPath()
 			int flags = obj->getCollisionFlags();
 			if(!second)
 			{
-				if(IS_SET(flags, CG_TERRAIN))
+				if(IsSet(flags, CG_TERRAIN))
 					return LT_IGNORE;
-				if(IS_SET(flags, CG_UNIT) && obj->getUserPointer() == pc->unit)
+				if(IsSet(flags, CG_UNIT) && obj->getUserPointer() == pc->unit)
 					return LT_IGNORE;
 				return LT_COLLIDE;
 			}
 			else
 			{
-				if(IS_SET(flags, CG_BUILDING | CG_DOOR))
+				if(IsSet(flags, CG_BUILDING | CG_DOOR))
 					return LT_END;
 				else
 					return LT_COLLIDE;
@@ -2040,7 +2040,7 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 	Light* light[3];
 	float range[3], dist;
 
-	if(!IS_SET(base.options, BLO_LABYRINTH))
+	if(!IsSet(base.options, BLO_LABYRINTH))
 	{
 		for(Room* room : lvl.rooms)
 		{
@@ -2141,10 +2141,10 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 					m.matWorld = Matrix::Translation(2.f*(room->pos.x + x), 0, 2.f*(room->pos.y + y));
 					m.matCombined = m.matWorld * L.camera.matViewProj;
 
-					int tex_id = (IS_SET(tile.flags, Tile::F_SECOND_TEXTURE) ? 1 : 0);
+					int tex_id = (IsSet(tile.flags, Tile::F_SECOND_TEXTURE) ? 1 : 0);
 
 					// pod³oga
-					if(IS_SET(tile.flags, Tile::F_FLOOR))
+					if(IsSet(tile.flags, Tile::F_FLOOR))
 					{
 						DungeonPart& dp = Add1(draw_batch.dungeon_parts);
 						dp.tp = &tFloor[tex_id];
@@ -2155,11 +2155,11 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 					}
 
 					// sufit
-					if(IS_SET(tile.flags, Tile::F_CEILING | Tile::F_LOW_CEILING))
+					if(IsSet(tile.flags, Tile::F_CEILING | Tile::F_LOW_CEILING))
 					{
 						DungeonPart& dp = Add1(draw_batch.dungeon_parts);
 						dp.tp = &tCeil[tex_id];
-						dp.start_index = IS_SET(tile.flags, Tile::F_LOW_CEILING) ? 12 : 6;
+						dp.start_index = IsSet(tile.flags, Tile::F_LOW_CEILING) ? 12 : 6;
 						dp.primitive_count = 2;
 						dp.matrix = matrix_id;
 						dp.lights = lights_id;
@@ -2327,10 +2327,10 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 			m.matWorld = Matrix::Translation(2.f*it->x, 0, 2.f*it->y);
 			m.matCombined = m.matWorld * L.camera.matViewProj;
 
-			int tex_id = (IS_SET(tile.flags, Tile::F_SECOND_TEXTURE) ? 1 : 0);
+			int tex_id = (IsSet(tile.flags, Tile::F_SECOND_TEXTURE) ? 1 : 0);
 
 			// pod³oga
-			if(IS_SET(tile.flags, Tile::F_FLOOR))
+			if(IsSet(tile.flags, Tile::F_FLOOR))
 			{
 				DungeonPart& dp = Add1(draw_batch.dungeon_parts);
 				dp.tp = &tFloor[tex_id];
@@ -2341,11 +2341,11 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 			}
 
 			// sufit
-			if(IS_SET(tile.flags, Tile::F_CEILING | Tile::F_LOW_CEILING))
+			if(IsSet(tile.flags, Tile::F_CEILING | Tile::F_LOW_CEILING))
 			{
 				DungeonPart& dp = Add1(draw_batch.dungeon_parts);
 				dp.tp = &tCeil[tex_id];
-				dp.start_index = IS_SET(tile.flags, Tile::F_LOW_CEILING) ? 12 : 6;
+				dp.start_index = IsSet(tile.flags, Tile::F_LOW_CEILING) ? 12 : 6;
 				dp.primitive_count = 2;
 				dp.matrix = matrix_id;
 				dp.lights = lights_id;
@@ -2424,7 +2424,7 @@ void Game::AddOrSplitSceneNode(SceneNode* node, int exclude_subs)
 
 	const Mesh& mesh = node->GetMesh();
 	assert(mesh.state == ResourceState::Loaded);
-	if(IS_SET(mesh.head.flags, Mesh::F_TANGENTS))
+	if(IsSet(mesh.head.flags, Mesh::F_TANGENTS))
 		node->flags |= SceneNode::F_BINORMALS;
 	if(mesh.head.n_subs == 1)
 	{
@@ -2449,7 +2449,7 @@ void Game::AddOrSplitSceneNode(SceneNode* node, int exclude_subs)
 		for(word i = 0, count = mesh.head.n_subs; i < count; ++i)
 		{
 			const int shift = 1 << i;
-			if(!IS_SET(exclude_subs, shift))
+			if(!IsSet(exclude_subs, shift))
 				splits[(cl_normalmap && mesh.subs[i].tex_normal) + (cl_specularmap && mesh.subs[i].tex_specular) * 2] |= shift;
 		}
 
@@ -2480,18 +2480,18 @@ void Game::AddOrSplitSceneNode(SceneNode* node, int exclude_subs)
 					node2->tint = node->tint;
 					node2->lights = node->lights;
 					node2->tex_override = node->tex_override;
-					if(IS_SET(i, SplitNormal))
+					if(IsSet(i, SplitNormal))
 						node2->flags |= SceneNode::F_NORMAL_MAP;
-					if(IS_SET(i, SplitSpecular))
+					if(IsSet(i, SplitSpecular))
 						node2->flags |= SceneNode::F_SPECULAR_MAP;
 					draw_batch.nodes.push_back(node2);
 				}
 			}
 		}
 
-		if(IS_SET(first, SplitNormal))
+		if(IsSet(first, SplitNormal))
 			node->flags |= SceneNode::F_NORMAL_MAP;
-		if(IS_SET(first, SplitSpecular))
+		if(IsSet(first, SplitSpecular))
 			node->flags |= SceneNode::F_SPECULAR_MAP;
 		node->subs = splits[first];
 		draw_batch.nodes.push_back(node);
@@ -2576,7 +2576,7 @@ int Game::GatherDrawBatchLights(LevelArea& area, SceneNode* node, float x, float
 		Vec3 lights_pos[3];
 		float lights_range[3] = { 0 };
 		const Vec2 obj_pos(x, z);
-		bool is_split = (node && IS_SET(node->GetMesh().head.flags, Mesh::F_SPLIT));
+		bool is_split = (node && IsSet(node->GetMesh().head.flags, Mesh::F_SPLIT));
 		Vec2 light_pos;
 
 		for(vector<Light>::iterator it3 = area.lights.begin(), end3 = area.lights.end(); it3 != end3; ++it3)
@@ -2762,7 +2762,7 @@ void Game::DrawScene(bool outside)
 	PROFILER_BLOCK("DrawScene");
 
 	// niebo
-	if(outside && IS_SET(draw_flags, DF_SKYBOX))
+	if(outside && IsSet(draw_flags, DF_SKYBOX))
 		DrawSkybox();
 
 	// teren
@@ -2870,7 +2870,7 @@ void Game::DrawGlowingNodes(bool use_postfx)
 		render->SetAlphaTest(glow.alpha);
 
 		// animowany czy nie?
-		if(IS_SET(glow.node->flags, SceneNode::F_ANIMATED))
+		if(IsSet(glow.node->flags, SceneNode::F_ANIMATED))
 		{
 			if(prev_mode != 1)
 			{
@@ -3290,20 +3290,20 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 			}
 			current_flags = node->flags;
 			e = super_shader->GetShader(super_shader->GetShaderId(
-				IS_SET(node->flags, SceneNode::F_ANIMATED),
-				IS_SET(node->flags, SceneNode::F_BINORMALS),
+				IsSet(node->flags, SceneNode::F_ANIMATED),
+				IsSet(node->flags, SceneNode::F_BINORMALS),
 				L.cl_fog,
-				cl_specularmap && IS_SET(node->flags, SceneNode::F_SPECULAR_MAP),
-				cl_normalmap && IS_SET(node->flags, SceneNode::F_NORMAL_MAP),
+				cl_specularmap && IsSet(node->flags, SceneNode::F_SPECULAR_MAP),
+				cl_normalmap && IsSet(node->flags, SceneNode::F_NORMAL_MAP),
 				L.cl_lighting && !outside,
 				L.cl_lighting && outside));
 			D3DXHANDLE tech;
 			V(e->FindNextValidTechnique(nullptr, &tech));
 			V(e->SetTechnique(tech));
 
-			render->SetNoZWrite(IS_SET(current_flags, SceneNode::F_NO_ZWRITE));
-			render->SetNoCulling(IS_SET(current_flags, SceneNode::F_NO_CULLING));
-			render->SetAlphaTest(IS_SET(current_flags, SceneNode::F_ALPHA_TEST));
+			render->SetNoZWrite(IsSet(current_flags, SceneNode::F_NO_ZWRITE));
+			render->SetNoCulling(IsSet(current_flags, SceneNode::F_NO_CULLING));
+			render->SetAlphaTest(IsSet(current_flags, SceneNode::F_ALPHA_TEST));
 		}
 
 		// ustaw parametry shadera
@@ -3314,7 +3314,7 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 		V(e->SetMatrix(super_shader->hMatCombined, (D3DXMATRIX*)&m1));
 		V(e->SetMatrix(super_shader->hMatWorld, (D3DXMATRIX*)&node->mat));
 		V(e->SetVector(super_shader->hTint, (D3DXVECTOR4*)&node->tint));
-		if(IS_SET(node->flags, SceneNode::F_ANIMATED))
+		if(IsSet(node->flags, SceneNode::F_ANIMATED))
 		{
 			const MeshInstance& mesh_inst = node->GetMeshInstance();
 			V(e->SetMatrixArray(super_shader->hMatBones, (D3DXMATRIX*)&mesh_inst.mat_bones[0], mesh_inst.mat_bones.size()));
@@ -3334,20 +3334,20 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 			V(e->SetRawValue(super_shader->hLights, &lights[node->lights].ld[0], 0, sizeof(LightData) * 3));
 
 		// renderowanie
-		if(!IS_SET(node->subs, SPLIT_INDEX))
+		if(!IsSet(node->subs, SPLIT_INDEX))
 		{
 			for(int i = 0; i < mesh.head.n_subs; ++i)
 			{
-				if(!IS_SET(node->subs, 1 << i))
+				if(!IsSet(node->subs, 1 << i))
 					continue;
 
 				const Mesh::Submesh& sub = mesh.subs[i];
 
 				// tekstura
 				V(e->SetTexture(super_shader->hTexDiffuse, mesh.GetTexture(i, node->tex_override)));
-				if(cl_normalmap && IS_SET(current_flags, SceneNode::F_NORMAL_MAP))
+				if(cl_normalmap && IsSet(current_flags, SceneNode::F_NORMAL_MAP))
 					V(e->SetTexture(super_shader->hTexNormal, sub.tex_normal->tex));
-				if(cl_specularmap && IS_SET(current_flags, SceneNode::F_SPECULAR_MAP))
+				if(cl_specularmap && IsSet(current_flags, SceneNode::F_SPECULAR_MAP))
 					V(e->SetTexture(super_shader->hTexSpecular, sub.tex_specular->tex));
 
 				// ustawienia œwiat³a
@@ -3373,9 +3373,9 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 
 			// tekstura
 			V(e->SetTexture(super_shader->hTexDiffuse, mesh.GetTexture(index, node->tex_override)));
-			if(cl_normalmap && IS_SET(current_flags, SceneNode::F_NORMAL_MAP))
+			if(cl_normalmap && IsSet(current_flags, SceneNode::F_NORMAL_MAP))
 				V(e->SetTexture(super_shader->hTexNormal, sub.tex_normal->tex));
-			if(cl_specularmap && IS_SET(current_flags, SceneNode::F_SPECULAR_MAP))
+			if(cl_specularmap && IsSet(current_flags, SceneNode::F_SPECULAR_MAP))
 				V(e->SetTexture(super_shader->hTexSpecular, sub.tex_specular->tex));
 
 			// ustawienia œwiat³a

@@ -385,7 +385,7 @@ struct Unit
 	}
 	bool CanRun() const
 	{
-		if(IS_SET(data->flags, F_SLOW) || Any(action, A_BLOCK, A_BASH, A_SHOOT, A_USE_ITEM) || (action == A_ATTACK && !run_attack))
+		if(IsSet(data->flags, F_SLOW) || Any(action, A_BLOCK, A_BASH, A_SHOOT, A_USE_ITEM) || (action == A_ATTACK && !run_attack))
 			return false;
 		else
 			return !IsOverloaded();
@@ -563,11 +563,11 @@ public:
 		if(IsFollower())
 			return hero->melee;
 		else
-			return IS_SET(data->flags2, F2_MELEE);
+			return IsSet(data->flags2, F2_MELEE);
 	}
 	bool IsImmortal() const
 	{
-		if(IS_SET(data->flags, F_IMMORTAL))
+		if(IsSet(data->flags, F_IMMORTAL))
 			return true;
 		else if(IsPlayer())
 			return player->godmode;
@@ -726,7 +726,7 @@ public:
 
 	bool CanDoWhileUsing() const
 	{
-		return action == A_ANIMATION2 && animation_state == AS_ANIMATION2_USING && IS_SET(usable->base->use_flags, BaseUsable::ALLOW_USE_ITEM);
+		return action == A_ANIMATION2 && animation_state == AS_ANIMATION2_USING && IsSet(usable->base->use_flags, BaseUsable::ALLOW_USE_ITEM);
 	}
 
 	int GetBuffs() const;
@@ -820,7 +820,7 @@ public:
 	bool IsFriend(Unit& u) const;
 	bool IsInvisible() const { return IsPlayer() && player->invisible; }
 	void RefreshStock();
-	float GetMaxMorale() const { return IS_SET(data->flags, F_COWARD) ? 5.f : 10.f; }
+	float GetMaxMorale() const { return IsSet(data->flags, F_COWARD) ? 5.f : 10.f; }
 	void AddDialog(Quest_Scripted* quest, GameDialog* dialog);
 	void AddDialogS(Quest_Scripted* quest, const string& dialog_id);
 	void RemoveDialog(Quest_Scripted* quest, bool cleanup);

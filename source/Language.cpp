@@ -624,7 +624,7 @@ void Language::LoadLanguageFiles()
 
 	for(Building* building : Building::buildings)
 	{
-		if(IS_SET(building->flags, Building::HAVE_NAME) && building->name.empty())
+		if(IsSet(building->flags, Building::HAVE_NAME) && building->name.empty())
 			Warn("Building '%s' don't have name.", building->id.c_str());
 	}
 

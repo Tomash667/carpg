@@ -196,7 +196,7 @@ void Quest_Tournament::Progress()
 		city = W.GetRandomCityIndex(city);
 		master = nullptr;
 	}
-	if(day == 6 && month == 2 && L.city_ctx && IS_SET(L.city_ctx->flags, City::HaveArena) && W.GetCurrentLocationIndex() == city && !generated)
+	if(day == 6 && month == 2 && L.city_ctx && IsSet(L.city_ctx->flags, City::HaveArena) && W.GetCurrentLocationIndex() == city && !generated)
 		GenerateUnits();
 	if(month > 2 || (month == 2 && day > 6))
 		year = current_year;
@@ -232,9 +232,9 @@ bool Quest_Tournament::ShouldJoin(Unit& u)
 		return false;
 	if(u.IsStanding() && u.IsHero() && u.frozen == FROZEN::NO)
 	{
-		if(IS_SET(u.data->flags2, F2_TOURNAMENT))
+		if(IsSet(u.data->flags2, F2_TOURNAMENT))
 			return true;
-		else if(IS_SET(u.data->flags3, F3_DRUNK_MAGE) && QM.quest_mages2->mages_state >= Quest_Mages2::State::MageCured)
+		else if(IsSet(u.data->flags3, F3_DRUNK_MAGE) && QM.quest_mages2->mages_state >= Quest_Mages2::State::MageCured)
 		{
 			if(!u.IsTeamMember())
 			{

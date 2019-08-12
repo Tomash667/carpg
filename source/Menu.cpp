@@ -496,12 +496,12 @@ void Game::UpdateClientConnectingIp(float dt)
 			gui->server->max_players = max_players;
 			gui->server->server_name = server_name_r;
 			Info("NM_CONNECTING(0): Server information. Name:%s; players:%d/%d; flags:%d.", server_name_r.c_str(), players, max_players, flags);
-			if(IS_SET(flags, 0xFC))
+			if(IsSet(flags, 0xFC))
 				Warn("NM_CONNECTING(0): Unknown server flags.");
 			N.server = packet->systemAddress;
 			enter_pswd.clear();
 
-			if(IS_SET(flags, 0x01))
+			if(IsSet(flags, 0x01))
 			{
 				// password is required
 				net_state = NetState::Client_WaitingForPassword;
@@ -2134,7 +2134,7 @@ void Game::OnPickServer(int id)
 	{
 		// connect to proxy server for nat punchthrough
 		PickServerPanel::ServerData& info = gui->pick_server->servers[gui->pick_server->grid.selected];
-		if(IS_SET(info.flags, SERVER_PASSWORD))
+		if(IsSet(info.flags, SERVER_PASSWORD))
 		{
 			net_mode = NM_CONNECTING;
 			net_state = NetState::Client_WaitingForPasswordProxy;
@@ -2172,7 +2172,7 @@ void Game::OnPickServer(int id)
 		gui->server->server_name = info.name;
 		gui->server->max_players = info.max_players;
 		N.active_players = info.active_players;
-		if(IS_SET(info.flags, SERVER_PASSWORD))
+		if(IsSet(info.flags, SERVER_PASSWORD))
 		{
 			// enter password
 			net_mode = NM_CONNECTING;

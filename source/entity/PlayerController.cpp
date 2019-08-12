@@ -1466,7 +1466,7 @@ void PlayerController::Yell()
 	{
 		Unit& u2 = **it;
 		if(u2.IsAI() && u2.IsStanding() && !unit->IsEnemy(u2) && !unit->IsFriend(u2) && u2.busy == Unit::Busy_No && u2.frozen == FROZEN::NO && !u2.usable
-			&& u2.ai->state == AIController::Idle && !IS_SET(u2.data->flags, F_AI_STAY)
+			&& u2.ai->state == AIController::Idle && !IsSet(u2.data->flags, F_AI_STAY)
 			&& Any(u2.ai->idle_action, AIController::Idle_None, AIController::Idle_Animation, AIController::Idle_Rot, AIController::Idle_Look))
 		{
 			u2.ai->idle_action = AIController::Idle_MoveAway;

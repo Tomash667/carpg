@@ -321,8 +321,8 @@ bool Game::ReadPlayerData(BitStreamReader& f)
 			Error("Read player data: Broken multiplaye data.");
 			return false;
 		}
-		unit->run_attack = IS_SET(flags, 0x01);
-		unit->used_item_is_team = IS_SET(flags, 0x02);
+		unit->run_attack = IsSet(flags, 0x01);
+		unit->used_item_is_team = IsSet(flags, 0x02);
 	}
 
 	// checksum
@@ -1156,7 +1156,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 										c.unit = player.action_unit;
 									}
 								}
-								if(IS_SET(slot.item->flags, ITEM_IMPORTANT))
+								if(IsSet(slot.item->flags, ITEM_IMPORTANT))
 								{
 									player.action_unit->mark = false;
 									NetChange& c = Add1(Net::changes);
@@ -1712,7 +1712,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					else
 					{
 						BaseUsable& base = *usable->base;
-						if(!IS_SET(base.use_flags, BaseUsable::CONTAINER))
+						if(!IsSet(base.use_flags, BaseUsable::CONTAINER))
 						{
 							unit.action = A_ANIMATION2;
 							unit.animation = ANI_PLAY;
@@ -1755,7 +1755,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						if(state == USE_USABLE_STOP)
 						{
 							BaseUsable& base = *usable->base;
-							if(!IS_SET(base.use_flags, BaseUsable::CONTAINER))
+							if(!IsSet(base.use_flags, BaseUsable::CONTAINER))
 							{
 								unit.action = A_NONE;
 								unit.animation = ANI_STAND;
@@ -3136,7 +3136,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					break;
 				}
 				ItemSlot& slot = unit.items[index];
-				if(!slot.item || slot.item->type != IT_BOOK || !IS_SET(slot.item->flags, ITEM_MAGIC_SCROLL))
+				if(!slot.item || slot.item->type != IT_BOOK || !IsSet(slot.item->flags, ITEM_MAGIC_SCROLL))
 				{
 					Error("Update server: USE_ITEM, invalid item '%s' at index %d from %s.",
 						slot.item ? slot.item->id.c_str() : "null", index, info.name.c_str());
@@ -3633,9 +3633,9 @@ void Game::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 
 	f.WriteCasted<byte>(ID_PLAYER_CHANGES);
 	f.WriteCasted<byte>(info.update_flags);
-	if(IS_SET(info.update_flags, PlayerInfo::UF_POISON_DAMAGE))
+	if(IsSet(info.update_flags, PlayerInfo::UF_POISON_DAMAGE))
 		f << player.last_dmg_poison;
-	if(IS_SET(info.update_flags, PlayerInfo::UF_NET_CHANGES))
+	if(IsSet(info.update_flags, PlayerInfo::UF_NET_CHANGES))
 	{
 		f.WriteCasted<byte>(info.changes.size());
 		if(info.changes.size() > 0xFF)
@@ -3756,15 +3756,15 @@ void Game::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 				break;
 			case NetChangePlayer::PLAYER_STATS:
 				f.WriteCasted<byte>(c.id);
-				if(IS_SET(c.id, STAT_KILLS))
+				if(IsSet(c.id, STAT_KILLS))
 					f << player.kills;
-				if(IS_SET(c.id, STAT_DMG_DONE))
+				if(IsSet(c.id, STAT_DMG_DONE))
 					f << player.dmg_done;
-				if(IS_SET(c.id, STAT_DMG_TAKEN))
+				if(IsSet(c.id, STAT_DMG_TAKEN))
 					f << player.dmg_taken;
-				if(IS_SET(c.id, STAT_KNOCKS))
+				if(IsSet(c.id, STAT_KNOCKS))
 					f << player.knocks;
-				if(IS_SET(c.id, STAT_ARENA_FIGHTS))
+				if(IsSet(c.id, STAT_ARENA_FIGHTS))
 					f << player.arena_fights;
 				break;
 			case NetChangePlayer::ADDED_ITEMS_MSG:
@@ -3830,15 +3830,15 @@ void Game::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 			f.WriteCasted<byte>(0xFF);
 		}
 	}
-	if(IS_SET(info.update_flags, PlayerInfo::UF_GOLD))
+	if(IsSet(info.update_flags, PlayerInfo::UF_GOLD))
 		f << info.u->gold;
-	if(IS_SET(info.update_flags, PlayerInfo::UF_ALCOHOL))
+	if(IsSet(info.update_flags, PlayerInfo::UF_ALCOHOL))
 		f << info.u->alcohol;
-	if(IS_SET(info.update_flags, PlayerInfo::UF_STAMINA))
+	if(IsSet(info.update_flags, PlayerInfo::UF_STAMINA))
 		f << info.u->stamina;
-	if(IS_SET(info.update_flags, PlayerInfo::UF_LEARNING_POINTS))
+	if(IsSet(info.update_flags, PlayerInfo::UF_LEARNING_POINTS))
 		f << info.pc->learning_points;
-	if(IS_SET(info.update_flags, PlayerInfo::UF_LEVEL))
+	if(IsSet(info.update_flags, PlayerInfo::UF_LEVEL))
 		f << info.u->level;
 }
 
@@ -4269,9 +4269,9 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Error("Update client: Broken CHANGE_FLAGS.");
 				else
 				{
-					Team.is_bandit = IS_SET(flags, 0x01);
-					Team.crazies_attack = IS_SET(flags, 0x02);
-					anyone_talking = IS_SET(flags, 0x04);
+					Team.is_bandit = IsSet(flags, 0x01);
+					Team.crazies_attack = IsSet(flags, 0x02);
+					anyone_talking = IsSet(flags, 0x04);
 				}
 			}
 			break;
@@ -5187,7 +5187,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				BaseUsable& base = *usable->base;
 				if(state == USE_USABLE_START || state == USE_USABLE_START_SPECIAL)
 				{
-					if(!IS_SET(base.use_flags, BaseUsable::CONTAINER))
+					if(!IsSet(base.use_flags, BaseUsable::CONTAINER))
 					{
 						unit->action = A_ANIMATION2;
 						unit->animation = ANI_PLAY;
@@ -5217,7 +5217,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				}
 				else
 				{
-					if(unit->player != pc && !IS_SET(base.use_flags, BaseUsable::CONTAINER))
+					if(unit->player != pc && !IsSet(base.use_flags, BaseUsable::CONTAINER))
 					{
 						unit->action = A_NONE;
 						unit->animation = ANI_STAND;
@@ -5388,7 +5388,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				f >> type;
 				if(!f)
 					Error("Update client: Broken ARENA_SOUND.");
-				else if(game_state == GS_LEVEL && L.city_ctx && IS_SET(L.city_ctx->flags, City::HaveArena)
+				else if(game_state == GS_LEVEL && L.city_ctx && IsSet(L.city_ctx->flags, City::HaveArena)
 					&& L.GetArena() == pc->unit->area)
 				{
 					Sound* sound;
@@ -5571,7 +5571,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				}
 
 				Spell& spell = *spell_ptr;
-				if(!IS_SET(spell.flags, Spell::Explode))
+				if(!IsSet(spell.flags, Spell::Explode))
 				{
 					Error("Update client: CREATE_EXPLOSION, spell '%s' is not explosion.", spell_id.c_str());
 					break;
@@ -6542,7 +6542,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 	}
 
 	// last damage from poison
-	if(IS_SET(flags, PlayerInfo::UF_POISON_DAMAGE))
+	if(IsSet(flags, PlayerInfo::UF_POISON_DAMAGE))
 	{
 		f >> pc->last_dmg_poison;
 		if(!f)
@@ -6553,7 +6553,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 	}
 
 	// changes
-	if(IS_SET(flags, PlayerInfo::UF_NET_CHANGES))
+	if(IsSet(flags, PlayerInfo::UF_NET_CHANGES))
 	{
 		byte changes;
 		f >> changes;
@@ -7199,15 +7199,15 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 						else
 						{
 							int* buf = (int*)BUF;
-							if(IS_SET(flags, STAT_KILLS))
+							if(IsSet(flags, STAT_KILLS))
 								pc->kills = *buf++;
-							if(IS_SET(flags, STAT_DMG_DONE))
+							if(IsSet(flags, STAT_DMG_DONE))
 								pc->dmg_done = *buf++;
-							if(IS_SET(flags, STAT_DMG_TAKEN))
+							if(IsSet(flags, STAT_DMG_TAKEN))
 								pc->dmg_taken = *buf++;
-							if(IS_SET(flags, STAT_KNOCKS))
+							if(IsSet(flags, STAT_KNOCKS))
 								pc->knocks = *buf++;
-							if(IS_SET(flags, STAT_ARENA_FIGHTS))
+							if(IsSet(flags, STAT_ARENA_FIGHTS))
 								pc->arena_fights = *buf++;
 						}
 					}
@@ -7316,7 +7316,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 					if(!f)
 						Error("Update single client: Broken GENERIC_CMD_RESPONSE.");
 					else
-						g_print_func(output->c_str());
+						global::cmdp->Msg(output->c_str());
 					StringPool.Free(output);
 				}
 				break;
@@ -7404,7 +7404,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 	}
 
 	// gold
-	if(IS_SET(flags, PlayerInfo::UF_GOLD))
+	if(IsSet(flags, PlayerInfo::UF_GOLD))
 	{
 		if(!pc)
 			f.Skip(sizeof(pc->unit->gold));
@@ -7420,7 +7420,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 	}
 
 	// alcohol
-	if(IS_SET(flags, PlayerInfo::UF_ALCOHOL))
+	if(IsSet(flags, PlayerInfo::UF_ALCOHOL))
 	{
 		if(!pc)
 			f.Skip(sizeof(pc->unit->alcohol));
@@ -7436,7 +7436,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 	}
 
 	// stamina
-	if(IS_SET(flags, PlayerInfo::UF_STAMINA))
+	if(IsSet(flags, PlayerInfo::UF_STAMINA))
 	{
 		if(!pc)
 			f.Skip(sizeof(pc->unit->stamina));
@@ -7452,7 +7452,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 	}
 
 	// learning points
-	if(IS_SET(flags, PlayerInfo::UF_LEARNING_POINTS))
+	if(IsSet(flags, PlayerInfo::UF_LEARNING_POINTS))
 	{
 		if(!pc)
 			f.Skip(sizeof(pc->learning_points));
@@ -7468,7 +7468,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 	}
 
 	// level
-	if(IS_SET(flags, PlayerInfo::UF_LEVEL))
+	if(IsSet(flags, PlayerInfo::UF_LEVEL))
 	{
 		if(!pc)
 			f.Skip<float>();

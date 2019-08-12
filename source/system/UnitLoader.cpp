@@ -1007,9 +1007,9 @@ void UnitLoader::ParseUnit(const string& id)
 	}
 
 	// configure
-	if(IS_SET(unit->flags, F_HUMAN))
+	if(IsSet(unit->flags, F_HUMAN))
 		unit->type = UNIT_TYPE::HUMAN;
-	else if(IS_SET(unit->flags, F_HUMANOID))
+	else if(IsSet(unit->flags, F_HUMANOID))
 		unit->type = UNIT_TYPE::HUMANOID;
 	else
 		unit->type = UNIT_TYPE::ANIMAL;
@@ -1212,7 +1212,7 @@ void UnitLoader::ParseSubprofile(Ptr<StatProfile::Subprofile>& subprofile)
 						t.Unexpected();
 						break;
 					}
-					if(IS_SET(set, 1 << type))
+					if(IsSet(set, 1 << type))
 						t.Throw("Subprofile priority already set.");
 					set |= (1 << type);
 					t.Next();
@@ -1275,7 +1275,7 @@ void UnitLoader::ParseSubprofile(Ptr<StatProfile::Subprofile>& subprofile)
 				while(!t.IsSymbol('}'))
 				{
 					ItemTag tag = (ItemTag)t.MustGetKeywordId(G_TAG);
-					if(IS_SET(set, 1 << tag))
+					if(IsSet(set, 1 << tag))
 						t.Throw("Subprofile tag priority already set.");
 					set |= (1 << tag);
 					t.Next();

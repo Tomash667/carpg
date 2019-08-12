@@ -827,11 +827,11 @@ void CityGenerator::GenerateBuildings(vector<ToBuild>& tobuild)
 				}
 			}
 
-			if(IS_SET(build_it->building->flags, Building::FAVOR_CENTER))
+			if(IsSet(build_it->building->flags, Building::FAVOR_CENTER))
 				range = Int2::Distance(centrum, it->pt);
 			else
 				range = 0;
-			if(IS_SET(build_it->building->flags, Building::FAVOR_ROAD))
+			if(IsSet(build_it->building->flags, Building::FAVOR_ROAD))
 				range += max(0, best_length - 1);
 			else
 				range += max(0, best_length - 5);
@@ -1573,7 +1573,7 @@ void CityGenerator::ApplyWallTiles(int gates)
 	}
 
 	// tiles under gates
-	if(IS_SET(gates, GATE_SOUTH))
+	if(IsSet(gates, GATE_SOUTH))
 	{
 		tiles[w / 2 - 1 + int(0.15f*w)*w].Set(TT_ROAD, TM_ROAD);
 		tiles[w / 2 + int(0.15f*w)*w].Set(TT_ROAD, TM_ROAD);
@@ -1582,7 +1582,7 @@ void CityGenerator::ApplyWallTiles(int gates)
 		tiles[w / 2 + (int(0.15f*w) + 1)*w].Set(TT_ROAD, TM_ROAD);
 		tiles[w / 2 + 1 + (int(0.15f*w) + 1)*w].Set(TT_ROAD, TM_ROAD);
 	}
-	if(IS_SET(gates, GATE_WEST))
+	if(IsSet(gates, GATE_WEST))
 	{
 		tiles[int(0.15f*w) + (w / 2 - 1)*w].Set(TT_ROAD, TM_ROAD);
 		tiles[int(0.15f*w) + (w / 2)*w].Set(TT_ROAD, TM_ROAD);
@@ -1591,7 +1591,7 @@ void CityGenerator::ApplyWallTiles(int gates)
 		tiles[int(0.15f*w) + 1 + (w / 2)*w].Set(TT_ROAD, TM_ROAD);
 		tiles[int(0.15f*w) + 1 + (w / 2 + 1)*w].Set(TT_ROAD, TM_ROAD);
 	}
-	if(IS_SET(gates, GATE_NORTH))
+	if(IsSet(gates, GATE_NORTH))
 	{
 		tiles[w / 2 - 1 + int(0.85f*w)*w].Set(TT_ROAD, TM_ROAD);
 		tiles[w / 2 + int(0.85f*w)*w].Set(TT_ROAD, TM_ROAD);
@@ -1600,7 +1600,7 @@ void CityGenerator::ApplyWallTiles(int gates)
 		tiles[w / 2 + (int(0.85f*w) - 1)*w].Set(TT_ROAD, TM_ROAD);
 		tiles[w / 2 + 1 + (int(0.85f*w) - 1)*w].Set(TT_ROAD, TM_ROAD);
 	}
-	if(IS_SET(gates, GATE_EAST))
+	if(IsSet(gates, GATE_EAST))
 	{
 		tiles[int(0.85f*w) + (w / 2 - 1)*w].Set(TT_ROAD, TM_ROAD);
 		tiles[int(0.85f*w) + (w / 2)*w].Set(TT_ROAD, TM_ROAD);
@@ -1672,11 +1672,11 @@ void CityGenerator::GenerateRoads(TERRAIN_TILE _road_tile, int tries)
 		Road2& r = roads[index];
 
 		int choices = 0;
-		if(!IS_SET(r.flags, ROAD_START_CHECKED))
+		if(!IsSet(r.flags, ROAD_START_CHECKED))
 			choice[choices++] = RT_START;
-		if(!IS_SET(r.flags, ROAD_MID_CHECKED))
+		if(!IsSet(r.flags, ROAD_MID_CHECKED))
 			choice[choices++] = RT_MID;
-		if(!IS_SET(r.flags, ROAD_END_CHECKED))
+		if(!IsSet(r.flags, ROAD_END_CHECKED))
 			choice[choices++] = RT_END;
 		if(choices == 0)
 			continue;
@@ -1684,7 +1684,7 @@ void CityGenerator::GenerateRoads(TERRAIN_TILE _road_tile, int tries)
 		const int type = choice[Rand() % choices];
 
 		Int2 pt;
-		const bool horizontal = IS_SET(r.flags, ROAD_HORIZONTAL);
+		const bool horizontal = IsSet(r.flags, ROAD_HORIZONTAL);
 
 		if(type == RT_MID)
 		{
@@ -1745,7 +1745,7 @@ void CityGenerator::GenerateRoads(TERRAIN_TILE _road_tile, int tries)
 		}
 
 		GameDirection dir = (GameDirection)get_choice_pop(choice, choices);
-		const bool all_done = IS_ALL_SET(r.flags, ROAD_ALL_CHECKED);
+		const bool all_done = IsAllSet(r.flags, ROAD_ALL_CHECKED);
 		bool try_dual;
 		if(MakeAndFillRoad(pt, dir, index))
 			try_dual = ((Rand() % ROAD_DUAL_CHANCE) == 0);
@@ -1882,7 +1882,7 @@ void CityGenerator::FillRoad(const Int2& pt, GameDirection dir, int dist)
 		maxx = end_pt.x,
 		maxy = end_pt.y;
 
-	if(IS_SET(road.flags, ROAD_HORIZONTAL))
+	if(IsSet(road.flags, ROAD_HORIZONTAL))
 	{
 		--minx;
 		++maxx;
@@ -2058,7 +2058,7 @@ void CityGenerator::Generate()
 	if(village)
 	{
 		Info("Generating village map.");
-		CLEAR_BIT(city->flags, City::HaveExit);
+		ClearBit(city->flags, City::HaveExit);
 	}
 	else
 		Info("Generating city map.");
@@ -2378,19 +2378,19 @@ void CityGenerator::SpawnBuildings()
 		for(int i = mur1; i < mur2; i += 3)
 		{
 			// north
-			if(!IS_SET(city->gates, GATE_NORTH) || i < mid - 1 || i > mid)
+			if(!IsSet(city->gates, GATE_NORTH) || i < mid - 1 || i > mid)
 				L.SpawnObjectEntity(area, oWall, Vec3(float(i) * 2 + 1.f, 1.f, int(0.85f*OutsideLocation::size) * 2 + 1.f), 0);
 
 			// south
-			if(!IS_SET(city->gates, GATE_SOUTH) || i < mid - 1 || i > mid)
+			if(!IsSet(city->gates, GATE_SOUTH) || i < mid - 1 || i > mid)
 				L.SpawnObjectEntity(area, oWall, Vec3(float(i) * 2 + 1.f, 1.f, int(0.15f*OutsideLocation::size) * 2 + 1.f), PI);
 
 			// west
-			if(!IS_SET(city->gates, GATE_WEST) || i < mid - 1 || i > mid)
+			if(!IsSet(city->gates, GATE_WEST) || i < mid - 1 || i > mid)
 				L.SpawnObjectEntity(area, oWall, Vec3(int(0.15f*OutsideLocation::size) * 2 + 1.f, 1.f, float(i) * 2 + 1.f), PI * 3 / 2);
 
 			// east
-			if(!IS_SET(city->gates, GATE_EAST) || i < mid - 1 || i > mid)
+			if(!IsSet(city->gates, GATE_EAST) || i < mid - 1 || i > mid)
 				L.SpawnObjectEntity(area, oWall, Vec3(int(0.85f*OutsideLocation::size) * 2 + 1.f, 1.f, float(i) * 2 + 1.f), PI / 2);
 		}
 
@@ -2405,25 +2405,25 @@ void CityGenerator::SpawnBuildings()
 		L.SpawnObjectEntity(area, oTower, Vec3(int(0.15f*OutsideLocation::size) * 2 + 1.f, 1.f, int(0.85f*OutsideLocation::size) * 2 + 1.f), PI * 3 / 2);
 
 		// gates
-		if(IS_SET(city->gates, GATE_NORTH))
+		if(IsSet(city->gates, GATE_NORTH))
 		{
 			L.SpawnObjectEntity(area, oGate, Vec3(0.5f*OutsideLocation::size * 2 + 1.f, 1.f, 0.85f*OutsideLocation::size * 2), 0);
 			L.SpawnObjectEntity(area, oGrate, Vec3(0.5f*OutsideLocation::size * 2 + 1.f, 1.f, 0.85f*OutsideLocation::size * 2), 0);
 		}
 
-		if(IS_SET(city->gates, GATE_SOUTH))
+		if(IsSet(city->gates, GATE_SOUTH))
 		{
 			L.SpawnObjectEntity(area, oGate, Vec3(0.5f*OutsideLocation::size * 2 + 1.f, 1.f, 0.15f*OutsideLocation::size * 2), PI);
 			L.SpawnObjectEntity(area, oGrate, Vec3(0.5f*OutsideLocation::size * 2 + 1.f, 1.f, 0.15f*OutsideLocation::size * 2), PI);
 		}
 
-		if(IS_SET(city->gates, GATE_WEST))
+		if(IsSet(city->gates, GATE_WEST))
 		{
 			L.SpawnObjectEntity(area, oGate, Vec3(0.15f*OutsideLocation::size * 2, 1.f, 0.5f*OutsideLocation::size * 2 + 1.f), PI * 3 / 2);
 			L.SpawnObjectEntity(area, oGrate, Vec3(0.15f*OutsideLocation::size * 2, 1.f, 0.5f*OutsideLocation::size * 2 + 1.f), PI * 3 / 2);
 		}
 
-		if(IS_SET(city->gates, GATE_EAST))
+		if(IsSet(city->gates, GATE_EAST))
 		{
 			L.SpawnObjectEntity(area, oGate, Vec3(0.85f*OutsideLocation::size * 2, 1.f, 0.5f*OutsideLocation::size * 2 + 1.f), PI / 2);
 			L.SpawnObjectEntity(area, oGrate, Vec3(0.85f*OutsideLocation::size * 2, 1.f, 0.5f*OutsideLocation::size * 2 + 1.f), PI / 2);

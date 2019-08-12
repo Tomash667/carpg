@@ -44,7 +44,7 @@
 #include "RenderTarget.h"
 #include "BitStreamFunc.h"
 #include "InfoBox.h"
-#include "ConsoleCommands.h"
+#include "CommandParser.h"
 
 enum SaveFlags
 {
@@ -550,14 +550,14 @@ bool Game::LoadGameHeader(GameReader& f, SaveSlot& slot)
 	// info
 	if(slot.load_version >= V_0_9)
 	{
-		slot.hardcore = IS_SET(flags, SF_HARDCORE);
-		slot.on_worldmap = IS_SET(flags, SF_ON_WORLDMAP);
+		slot.hardcore = IsSet(flags, SF_HARDCORE);
+		slot.on_worldmap = IsSet(flags, SF_ON_WORLDMAP);
 		f >> slot.text;
 		f >> slot.player_name;
 		const string& class_id = f.ReadString1();
 		ClassInfo* ci = ClassInfo::Find(class_id);
 		slot.player_class = (ci ? ci->class_id : Class::INVALID);
-		if(IS_SET(flags, SF_ONLINE))
+		if(IsSet(flags, SF_ONLINE))
 			f.ReadStringArray<byte, byte>(slot.mp_players);
 		else
 			slot.mp_players.clear();
@@ -642,7 +642,7 @@ void Game::LoadGame(GameReader& f)
 	// save flags
 	byte flags;
 	f >> flags;
-	bool online_save = IS_SET(flags, SF_ONLINE);
+	bool online_save = IsSet(flags, SF_ONLINE);
 	if(N.mp_load)
 	{
 		if(!online_save)
@@ -655,7 +655,7 @@ void Game::LoadGame(GameReader& f)
 	}
 
 	Info("Loading save. Version %s, start %s, format %d, mp %d, debug %d.", VersionToString(version), VersionToString(start_version), LOAD_VERSION,
-		online_save ? 1 : 0, IS_SET(flags, SF_DEBUG) ? 1 : 0);
+		online_save ? 1 : 0, IsSet(flags, SF_DEBUG) ? 1 : 0);
 
 	// info
 	if(LOAD_VERSION >= V_0_9)
@@ -677,7 +677,7 @@ void Game::LoadGame(GameReader& f)
 	GAME_STATE game_state2;
 	if(LOAD_VERSION >= V_0_8)
 	{
-		hardcore_mode = IS_SET(flags, SF_HARDCORE);
+		hardcore_mode = IsSet(flags, SF_HARDCORE);
 
 		// game stats
 		GameStats::Get().Load(f);
@@ -1001,14 +1001,14 @@ bool Game::TryLoadGame(int slot, bool quickload, bool from_console)
 		{
 			Warn("Missing quicksave.");
 			if(from_console)
-				Msg("Missing quicksave.");
+				cmdp->Msg("Missing quicksave.");
 			return false;
 		}
 
 		cstring msg = Format("Failed to load game: %s", ex.msg);
 		Error(msg);
 		if(from_console)
-			Msg(msg);
+			cmdp->Msg(msg);
 		else
 		{
 			cstring dialog_text;

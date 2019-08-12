@@ -35,7 +35,7 @@ struct SceneNode
 
 	const Mesh& GetMesh() const
 	{
-		if(!IS_SET(flags, F_ANIMATED) || parent_mesh_inst)
+		if(!IsSet(flags, F_ANIMATED) || parent_mesh_inst)
 			return *mesh;
 		else
 			return *mesh_inst->mesh;
@@ -43,7 +43,7 @@ struct SceneNode
 
 	const MeshInstance& GetMeshInstance() const
 	{
-		assert(IS_SET(flags, F_ANIMATED));
+		assert(IsSet(flags, F_ANIMATED));
 		if(!parent_mesh_inst)
 			return *mesh_inst;
 		else

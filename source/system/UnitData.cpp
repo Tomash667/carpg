@@ -179,12 +179,12 @@ void UnitData::Validate(uint& err)
 {
 	for(auto unit : units)
 	{
-		if(unit->name.empty() && !IS_SET(unit->flags3, F3_PARENT_DATA))
+		if(unit->name.empty() && !IsSet(unit->flags3, F3_PARENT_DATA))
 		{
 			++err;
 			Error("Test: Missing unit '%s' name.", unit->id.c_str());
 		}
-		if(!IS_SET(unit->flags2, F2_FIXED_STATS) && !unit->stat_profile)
+		if(!IsSet(unit->flags2, F2_FIXED_STATS) && !unit->stat_profile)
 		{
 			++err;
 			Error("Test: Unit '%s' have no fixed stats nor profile.", unit->id.c_str());
@@ -196,12 +196,12 @@ bool TraderInfo::CanBuySell(const Item* item)
 {
 	assert(item);
 
-	if(IS_SET(buy_flags, (1 << item->type)))
+	if(IsSet(buy_flags, (1 << item->type)))
 	{
 		if(item->type == IT_CONSUMABLE)
 		{
 			const Consumable* c = static_cast<const Consumable*>(item);
-			if(IS_SET(buy_consumable_flags, (1 << c->cons_type)))
+			if(IsSet(buy_consumable_flags, (1 << c->cons_type)))
 				return true;
 		}
 		else

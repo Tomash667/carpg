@@ -115,7 +115,7 @@ namespace FOV
 		if(x < 0 || y < 0 || x >= w || y >= w)
 			return;
 		Tile& p = mapa[x + y*w];
-		if(!IS_SET(p.flags, Tile::F_REVEALED))
+		if(!IsSet(p.flags, Tile::F_REVEALED))
 			reveal->push_back(Int2(x, w - y - 1));
 	}
 

@@ -351,9 +351,9 @@ void PickServerPanel::GetCell(int item, int column, Cell& cell)
 	if(column == 0)
 	{
 		vector<Texture*>& imgs = *cell.imgset;
-		if(IS_SET(server.flags, SERVER_PASSWORD))
+		if(IsSet(server.flags, SERVER_PASSWORD))
 			imgs.push_back(tIcoPassword);
-		if(IS_SET(server.flags, SERVER_SAVED))
+		if(IsSet(server.flags, SERVER_SAVED))
 			imgs.push_back(tIcoSave);
 	}
 	else

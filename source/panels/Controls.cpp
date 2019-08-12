@@ -434,7 +434,7 @@ void Controls::InitKeyText()
 	Language::Section& s = Language::GetSection("Keys");
 	for(int i = 0; i < n_texts; ++i)
 	{
-		if(IS_SET(in_text[i], 0x02))
+		if(IsSet(in_text[i], 0x02))
 			key_text[i] = s.Get(Format("k%d", i));
 		else
 			key_text[i] = nullptr;
@@ -468,7 +468,7 @@ void Controls::OnKey(int key)
 		input->SetCallback(nullptr);
 		game->gui->cursor_allow_move = true;
 	}
-	else if(key < n_texts && IS_SET(in_text[key], 0x01))
+	else if(key < n_texts && IsSet(in_text[key], 0x01))
 	{
 		GKey[picked][picked_n] = (Key)key;
 		picked = -1;

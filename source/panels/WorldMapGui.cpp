@@ -616,7 +616,7 @@ void WorldMapGui::GetCityText(City& city, string& s)
 	// list buildings
 	for(CityBuilding& b : city.buildings)
 	{
-		if(IS_SET(b.building->flags, Building::LIST))
+		if(IsSet(b.building->flags, Building::LIST))
 		{
 			bool found = false;
 			for(auto& i : items)

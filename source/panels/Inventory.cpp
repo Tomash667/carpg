@@ -511,11 +511,11 @@ void InventoryPanel::Draw(ControlDrawData*)
 
 		// item quality icon
 		Texture* icon;
-		if(IS_SET(item->flags, ITEM_HQ))
+		if(IsSet(item->flags, ITEM_HQ))
 			icon = base.tStarHq;
-		else if(IS_SET(item->flags, ITEM_MAGICAL))
+		else if(IsSet(item->flags, ITEM_MAGICAL))
 			icon = base.tStarM;
-		else if(IS_SET(item->flags, ITEM_UNIQUE))
+		else if(IsSet(item->flags, ITEM_UNIQUE))
 			icon = base.tStarU;
 		else
 			icon = nullptr;
@@ -734,7 +734,7 @@ void InventoryPanel::Update(float dt)
 		if(mode == INVENTORY && input->PressedRelease(Key::RightButton) && game.pc->unit->action == A_NONE)
 		{
 			// wyrzuæ przedmiot
-			if(IS_SET(item->flags, ITEM_DONT_DROP) && game.IsAnyoneTalking())
+			if(IsSet(item->flags, ITEM_DONT_DROP) && game.IsAnyoneTalking())
 				gui->SimpleDialog(base.txCantDoNow, this);
 			else
 			{
@@ -2003,7 +2003,7 @@ void InventoryPanel::LootItem(int index, uint count)
 				c.unit = unit;
 			}
 		}
-		if(IS_SET(slot.item->flags, ITEM_IMPORTANT))
+		if(IsSet(slot.item->flags, ITEM_IMPORTANT))
 		{
 			unit->mark = false;
 			if(Net::IsServer())
@@ -2568,7 +2568,7 @@ void InventoryPanel::UpdateGrid(bool mine)
 void InventoryPanel::ReadBook(const Item* item, int index)
 {
 	assert(item && item->type == IT_BOOK);
-	if(IS_SET(item->flags, ITEM_MAGIC_SCROLL))
+	if(IsSet(item->flags, ITEM_MAGIC_SCROLL))
 	{
 		if(!game.pc->unit->usable) // can't use when sitting
 		{

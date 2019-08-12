@@ -22,7 +22,7 @@ void NameHelper::SetHeroNames()
 //=================================================================================================
 void NameHelper::GenerateHeroName(HeroData& hero)
 {
-	return GenerateHeroName(hero.unit->GetClass(), IS_SET(hero.unit->data->flags, F_CRAZY), hero.name);
+	return GenerateHeroName(hero.unit->GetClass(), IsSet(hero.unit->data->flags, F_CRAZY), hero.name);
 }
 
 //=================================================================================================

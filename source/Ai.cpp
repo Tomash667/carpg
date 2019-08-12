@@ -222,7 +222,7 @@ void Game::UpdateAi(float dt)
 		CheckAutoTalk(u, dt);
 
 		// AI escape
-		if(enemy && ai.state != AIController::Escape && !IS_SET(u.data->flags, F_DONT_ESCAPE) && ai.GetMorale() < 0.f)
+		if(enemy && ai.state != AIController::Escape && !IsSet(u.data->flags, F_DONT_ESCAPE) && ai.GetMorale() < 0.f)
 		{
 			if(u.action == A_BLOCK)
 			{
@@ -262,7 +262,7 @@ void Game::UpdateAi(float dt)
 		{
 			for(int i = 0; i < 3; ++i)
 			{
-				if(u.data->spells && u.data->spells->spell[i] && IS_SET(u.data->spells->spell[i]->flags, Spell::NonCombat)
+				if(u.data->spells && u.data->spells->spell[i] && IsSet(u.data->spells->spell[i]->flags, Spell::NonCombat)
 					&& u.level >= u.data->spells->level[i] && ai.cooldown[i] <= 0.f)
 				{
 					float spell_range = u.data->spells->spell[i]->range,
@@ -273,13 +273,13 @@ void Game::UpdateAi(float dt)
 					if(best_dist < 3.f)
 						spell_range = 2.5f;
 
-					if(IS_SET(u.data->spells->spell[i]->flags, Spell::Raise))
+					if(IsSet(u.data->spells->spell[i]->flags, Spell::Raise))
 					{
 						// raise undead spell
 						for(vector<Unit*>::iterator it2 = area.units.begin(), end2 = area.units.end(); it2 != end2; ++it2)
 						{
 							Unit& target = **it2;
-							if(!target.to_remove && target.live_state == Unit::DEAD && !u.IsEnemy(target) && IS_SET(target.data->flags, F_UNDEAD)
+							if(!target.to_remove && target.live_state == Unit::DEAD && !u.IsEnemy(target) && IsSet(target.data->flags, F_UNDEAD)
 								&& (dist = Vec3::Distance(u.pos, target.pos)) < spell_range && target.in_arena == u.in_arena && L.CanSee(u, target))
 							{
 								float prio = target.hpmax - dist * 10;
@@ -297,7 +297,7 @@ void Game::UpdateAi(float dt)
 						for(vector<Unit*>::iterator it2 = area.units.begin(), end2 = area.units.end(); it2 != end2; ++it2)
 						{
 							Unit& target = **it2;
-							if(!target.to_remove && !u.IsEnemy(target) && !IS_SET(target.data->flags, F_UNDEAD) && target.hpmax - target.hp > 100.f
+							if(!target.to_remove && !u.IsEnemy(target) && !IsSet(target.data->flags, F_UNDEAD) && target.hpmax - target.hp > 100.f
 								&& (dist = Vec3::Distance(u.pos, target.pos)) < spell_range && target.in_arena == u.in_arena
 								&& (target.IsAlive() || target.IsTeamMember()) && L.CanSee(u, target))
 							{
@@ -357,7 +357,7 @@ void Game::UpdateAi(float dt)
 								ai.city_wander = false;
 								ai.change_ai_mode = true;
 								repeat = true;
-								if(IS_SET(u.data->flags2, F2_YELL))
+								if(IsSet(u.data->flags2, F2_YELL))
 									AI_Shout(area, ai);
 								break;
 							}
@@ -706,7 +706,7 @@ void Game::UpdateAi(float dt)
 						ai.loc_timer -= dt;
 						if(ai.timer <= 0.f)
 						{
-							if(IS_SET(u.data->flags2, F2_XAR))
+							if(IsSet(u.data->flags2, F2_XAR))
 							{
 								// search for altar
 								BaseObject* base_obj = BaseObject::Get("bloody_altar");
@@ -732,9 +732,9 @@ void Game::UpdateAi(float dt)
 							{
 								// stop looking at the person, go look somewhere else
 								ai.idle_action = AIController::Idle_Rot;
-								if(IS_SET(u.data->flags, F_AI_GUARD) && AngleDiff(u.rot, ai.start_rot) > PI / 4)
+								if(IsSet(u.data->flags, F_AI_GUARD) && AngleDiff(u.rot, ai.start_rot) > PI / 4)
 									ai.idle_data.rot = ai.start_rot;
-								else if(IS_SET(u.data->flags2, F2_LIMITED_ROT))
+								else if(IsSet(u.data->flags2, F2_LIMITED_ROT))
 									ai.idle_data.rot = RandomRot(ai.start_rot, PI / 4);
 								else
 									ai.idle_data.rot = Clip(Vec3::LookAtAngle(u.pos, ai.idle_data.pos) + Random(-PI / 2, PI / 2));
@@ -817,7 +817,7 @@ void Game::UpdateAi(float dt)
 									if(u.area->area_type == LevelArea::Type::Outside)
 									{
 										// unit is outside
-										int where = Rand() % (IS_SET(L.city_ctx->flags, City::HaveTrainingGrounds) ? 3 : 2);
+										int where = Rand() % (IsSet(L.city_ctx->flags, City::HaveTrainingGrounds) ? 3 : 2);
 										if(where == 0)
 										{
 											// go to random position
@@ -873,7 +873,7 @@ void Game::UpdateAi(float dt)
 								ai.idle_data.unit = u.guard_target;
 								ai.city_wander = false;
 							}
-							else if(IS_SET(u.data->flags3, F3_MINER) && Rand() % 2 == 0)
+							else if(IsSet(u.data->flags3, F3_MINER) && Rand() % 2 == 0)
 							{
 								// check if unit have required item
 								const Item* req_item = iron_vein->item;
@@ -905,7 +905,7 @@ void Game::UpdateAi(float dt)
 								else
 									goto normal_idle_action;
 							}
-							else if(IS_SET(u.data->flags3, F3_DRUNK_MAGE)
+							else if(IsSet(u.data->flags3, F3_DRUNK_MAGE)
 								&& QM.quest_mages2->mages_state >= Quest_Mages2::State::OldMageJoined
 								&& QM.quest_mages2->mages_state < Quest_Mages2::State::MageCured
 								&& Rand() % 3 == 0)
@@ -940,13 +940,13 @@ void Game::UpdateAi(float dt)
 										ai.idle_data.pos = tournament->GetMaster()->pos + Vec3::Random(Vec3(-10, 0, -10), Vec3(10, 0, 10));
 									}
 								}
-								else if(IS_SET(u.data->flags2, F2_SIT_ON_THRONE) && !u.IsFollower())
+								else if(IsSet(u.data->flags2, F2_SIT_ON_THRONE) && !u.IsFollower())
 									what = AI_USE;
 								else if(u.data->type == UNIT_TYPE::HUMAN)
 								{
-									if(!IS_SET(u.data->flags, F_AI_GUARD))
+									if(!IsSet(u.data->flags, F_AI_GUARD))
 									{
-										if(IS_SET(u.data->flags2, F2_AI_TRAIN) && Rand() % 5 == 0)
+										if(IsSet(u.data->flags2, F2_AI_TRAIN) && Rand() % 5 == 0)
 										{
 											static vector<Object*> do_cw;
 											BaseObject* manekin = BaseObject::Get("melee_target"),
@@ -980,7 +980,7 @@ void Game::UpdateAi(float dt)
 										}
 										if(what != AI_NONE)
 										{
-											if(IS_SET(u.data->flags3, F3_DONT_EAT))
+											if(IsSet(u.data->flags3, F3_DONT_EAT))
 												what = Rand() % 6;
 											else
 												what = Rand() % 7;
@@ -988,7 +988,7 @@ void Game::UpdateAi(float dt)
 									}
 									else // guard (don't move/use objects)
 									{
-										if(IS_SET(u.data->flags3, F3_DONT_EAT))
+										if(IsSet(u.data->flags3, F3_DONT_EAT))
 											what = Rand() % 5;
 										else
 											what = Rand() % 7;
@@ -998,7 +998,7 @@ void Game::UpdateAi(float dt)
 								}
 								else // not human
 								{
-									if(IS_SET(u.data->flags3, F3_DONT_EAT))
+									if(IsSet(u.data->flags3, F3_DONT_EAT))
 										what = Rand() % 5;
 									else
 									{
@@ -1012,9 +1012,9 @@ void Game::UpdateAi(float dt)
 								// or have flag F3_TALK_AT_COMPETITION and there is competition started
 								if(what == AI_TALK)
 								{
-									if(IS_SET(u.data->flags2, F2_DONT_TALK))
+									if(IsSet(u.data->flags2, F2_DONT_TALK))
 										what = Rand() % 3;
-									else if(IS_SET(u.data->flags3, F3_TALK_AT_COMPETITION)
+									else if(IsSet(u.data->flags3, F3_TALK_AT_COMPETITION)
 										&& (QM.quest_contest->state >= Quest_Contest::CONTEST_STARTING
 										|| tournament->GetState() >= Quest_Tournament::TOURNAMENT_STARTING))
 									{
@@ -1033,7 +1033,7 @@ void Game::UpdateAi(float dt)
 										for(vector<Usable*>::iterator it2 = area.usables.begin(), end2 = area.usables.end(); it2 != end2; ++it2)
 										{
 											Usable& use = **it2;
-											if(!use.user && (use.base != throne || IS_SET(u.data->flags2, F2_SIT_ON_THRONE))
+											if(!use.user && (use.base != throne || IsSet(u.data->flags2, F2_SIT_ON_THRONE))
 												&& Vec3::Distance(use.pos, u.pos) < 10.f && !use.base->IsContainer()
 												&& L.CanSee(area, use.pos, u.pos))
 											{
@@ -1103,16 +1103,16 @@ void Game::UpdateAi(float dt)
 								case AI_ROTATE:
 									ai.timer = Random(2.f, 5.f);
 									ai.idle_action = AIController::Idle_Rot;
-									if(IS_SET(u.data->flags, F_AI_GUARD) && AngleDiff(u.rot, ai.start_rot) > PI / 4)
+									if(IsSet(u.data->flags, F_AI_GUARD) && AngleDiff(u.rot, ai.start_rot) > PI / 4)
 										ai.idle_data.rot = ai.start_rot;
-									else if(IS_SET(u.data->flags2, F2_LIMITED_ROT))
+									else if(IsSet(u.data->flags2, F2_LIMITED_ROT))
 										ai.idle_data.rot = RandomRot(ai.start_rot, PI / 4);
 									else
 										ai.idle_data.rot = Random(MAX_ANGLE);
 									break;
 								case AI_TALK:
 									{
-										const float d = ((IS_SET(u.data->flags, F_AI_GUARD) || IS_SET(u.data->flags, F_AI_STAY)) ? 1.5f : 10.f);
+										const float d = ((IsSet(u.data->flags, F_AI_GUARD) || IsSet(u.data->flags, F_AI_STAY)) ? 1.5f : 10.f);
 										close_enemies.clear();
 										for(vector<Unit*>::iterator it2 = area.units.begin(), end2 = area.units.end(); it2 != end2; ++it2)
 										{
@@ -1132,15 +1132,15 @@ void Game::UpdateAi(float dt)
 										}
 									}
 									// no units nearby - move random
-									if(IS_SET(u.data->flags, F_AI_GUARD))
+									if(IsSet(u.data->flags, F_AI_GUARD))
 										break;
 								case AI_MOVE:
-									if(IS_SET(u.data->flags, F_AI_GUARD))
+									if(IsSet(u.data->flags, F_AI_GUARD))
 										break;
 									ai.timer = Random(3.f, 6.f);
 									ai.idle_action = AIController::Idle_Move;
 									ai.city_wander = false;
-									if(IS_SET(u.data->flags, F_AI_STAY))
+									if(IsSet(u.data->flags, F_AI_STAY))
 									{
 										if(Vec3::Distance(u.pos, ai.start_pos) > 2.f)
 											ai.idle_data.pos = ai.start_pos;
@@ -1167,7 +1167,7 @@ void Game::UpdateAi(float dt)
 								case AI_EAT:
 									ai.timer = Random(3.f, 5.f);
 									ai.idle_action = AIController::Idle_None;
-									u.ConsumeItem(ItemList::GetItem(IS_SET(u.data->flags3, F3_ORC_FOOD) ? "orc_food" : "normal_food")->ToConsumable());
+									u.ConsumeItem(ItemList::GetItem(IsSet(u.data->flags3, F3_ORC_FOOD) ? "orc_food" : "normal_food")->ToConsumable());
 									break;
 								default:
 									assert(0);
@@ -1214,9 +1214,9 @@ void Game::UpdateAi(float dt)
 								{
 									// stop looking
 									ai.idle_action = AIController::Idle_Rot;
-									if(IS_SET(u.data->flags, F_AI_GUARD) && AngleDiff(u.rot, ai.start_rot) > PI / 4)
+									if(IsSet(u.data->flags, F_AI_GUARD) && AngleDiff(u.rot, ai.start_rot) > PI / 4)
 										ai.idle_data.rot = ai.start_rot;
-									else if(IS_SET(u.data->flags2, F2_LIMITED_ROT))
+									else if(IsSet(u.data->flags2, F2_LIMITED_ROT))
 										ai.idle_data.rot = RandomRot(ai.start_rot, PI / 4);
 									else
 										ai.idle_data.rot = Random(MAX_ANGLE);
@@ -1279,7 +1279,7 @@ void Game::UpdateAi(float dt)
 										}
 										else
 										{
-											if(IS_SET(u.data->flags, F_AI_GUARD))
+											if(IsSet(u.data->flags, F_AI_GUARD))
 												ai.idle_action = AIController::Idle_None;
 											else
 											{
@@ -1298,7 +1298,7 @@ void Game::UpdateAi(float dt)
 											ai.idle_action = AIController::Idle_None;
 										else
 										{
-											if(IS_SET(u.data->flags, F_AI_GUARD))
+											if(IsSet(u.data->flags, F_AI_GUARD))
 												ai.idle_action = AIController::Idle_None;
 											else
 											{
@@ -1358,7 +1358,7 @@ void Game::UpdateAi(float dt)
 												u.action = A_ANIMATION2;
 												u.animation = ANI_PLAY;
 												bool read_papers = false;
-												if(use.base == chair && IS_SET(u.data->flags, F_AI_CLERK))
+												if(use.base == chair && IsSet(u.data->flags, F_AI_CLERK))
 												{
 													read_papers = true;
 													u.mesh_inst->Play("czyta_papiery", PLAY_PRIO3, 0);
@@ -1510,7 +1510,7 @@ void Game::UpdateAi(float dt)
 							case AIController::Idle_RunRegion:
 								if(Vec3::Distance2d(u.pos, ai.idle_data.region.pos) < u.GetUnitRadius() * 2)
 								{
-									if(L.city_ctx && !IS_SET(L.city_ctx->flags, City::HaveExit)
+									if(L.city_ctx && !IsSet(L.city_ctx->flags, City::HaveExit)
 										&& ai.idle_data.region.area->area_type == LevelArea::Type::Outside && !ai.idle_data.region.exit)
 									{
 										// in exit area, go to border
@@ -1643,7 +1643,7 @@ void Game::UpdateAi(float dt)
 					if(u.action == A_NONE)
 					{
 						WeaponType weapon = W_NONE;
-						if(u.PreferMelee() || IS_SET(u.data->flags, F_MAGE) || !u.HaveBow())
+						if(u.PreferMelee() || IsSet(u.data->flags, F_MAGE) || !u.HaveBow())
 						{
 							if(u.HaveWeapon())
 								weapon = W_ONE_HANDED;
@@ -1653,7 +1653,7 @@ void Game::UpdateAi(float dt)
 						else
 						{
 							float safe_dist = (u.IsHoldingMeeleWeapon() ? 5.f : 2.5f);
-							if(IS_SET(u.data->flags, F_ARCHER))
+							if(IsSet(u.data->flags, F_ARCHER))
 								safe_dist /= 2.f;
 							if(best_dist > safe_dist)
 								weapon = W_BOW;
@@ -1674,17 +1674,17 @@ void Game::UpdateAi(float dt)
 							{
 								Spell& s = *u.data->spells->spell[i];
 
-								if(IS_SET(s.flags, Spell::NonCombat))
+								if(IsSet(s.flags, Spell::NonCombat))
 									continue;
 
 								if(best_dist < s.range)
 								{
 									bool ok = true;
 
-									if(IS_SET(s.flags, Spell::Drain))
+									if(IsSet(s.flags, Spell::Drain))
 									{
 										// can't cast drain blood on bloodless units
-										if(IS_SET(enemy->data->flags2, F2_BLOODLESS))
+										if(IsSet(enemy->data->flags2, F2_BLOODLESS))
 											ok = false;
 									}
 
@@ -1726,7 +1726,7 @@ void Game::UpdateAi(float dt)
 						}
 					}
 
-					if(u.IsHoldingBow() || IS_SET(u.data->flags, F_MAGE))
+					if(u.IsHoldingBow() || IsSet(u.data->flags, F_MAGE))
 					{
 						// mage and bowmen distace keeping
 						move_type = KeepDistanceCheck;
@@ -1800,7 +1800,7 @@ void Game::UpdateAi(float dt)
 						}
 
 						// stay close but not too close
-						if(ai.state == AIController::Fighting && !(u.IsHoldingBow() || IS_SET(u.data->flags, F_MAGE)))
+						if(ai.state == AIController::Fighting && !(u.IsHoldingBow() || IsSet(u.data->flags, F_MAGE)))
 						{
 							look_at = LookAtTarget;
 							target_pos = enemy->pos;
@@ -2480,7 +2480,7 @@ void Game::UpdateAi(float dt)
 					{
 						look_at = LookAtTarget;
 						target_pos = top->pos;
-						if(u.IsHoldingBow() || IS_SET(u.data->flags, F_MAGE))
+						if(u.IsHoldingBow() || IsSet(u.data->flags, F_MAGE))
 							move_type = KeepDistanceCheck;
 						else
 						{
@@ -2631,7 +2631,7 @@ void Game::UpdateAi(float dt)
 						&& target_tile != ai.pf_target_tile && ai.pf_timer <= 0.f))
 					{
 						ai.pf_timer = Random(0.2f, 0.4f);
-						if(pathfinding->FindPath(area, my_tile, target_tile, ai.pf_path, !IS_SET(u.data->flags, F_DONT_OPEN), ai.city_wander && L.city_ctx != nullptr))
+						if(pathfinding->FindPath(area, my_tile, target_tile, ai.pf_path, !IsSet(u.data->flags, F_DONT_OPEN), ai.city_wander && L.city_ctx != nullptr))
 						{
 							// path found
 							ai.pf_state = AIController::PFS_GLOBAL_DONE;
@@ -2651,7 +2651,7 @@ void Game::UpdateAi(float dt)
 				}
 
 				// door opening
-				if(!IS_SET(u.data->flags, F_DONT_OPEN))
+				if(!IsSet(u.data->flags, F_DONT_OPEN))
 				{
 					for(vector<Door*>::iterator it = area.doors.begin(), end = area.doors.end(); it != end; ++it)
 					{
@@ -3035,7 +3035,7 @@ void Game::AI_DoAttack(AIController& ai, Unit* target, bool running)
 		u.attack_id = u.GetRandomAttack();
 
 		bool do_power_attack;
-		if(!IS_SET(u.data->flags, F_NO_POWER_ATTACK))
+		if(!IsSet(u.data->flags, F_NO_POWER_ATTACK))
 		{
 			if(target && target->action == A_BLOCK)
 				do_power_attack = (Rand() % 2 == 0);

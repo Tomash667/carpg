@@ -1382,7 +1382,7 @@ void ServerPanel::OnKick(int id)
 void ServerPanel::OnInput(const string& str)
 {
 	if(str[0] == '/')
-		global::cmdp->ParseCommand(str.substr(1), PrintMsgFunc(this, &ServerPanel::AddMsg), PS_LOBBY);
+		global::cmdp->ParseCommand(str.substr(1), CommandParser::PrintMsgFunc(this, &ServerPanel::AddMsg), PS_LOBBY);
 	else
 	{
 		// wyœlij tekst

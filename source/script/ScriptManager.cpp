@@ -1055,8 +1055,8 @@ void ScriptManager::AddVarType(Var::Type type, cstring name, bool is_ref)
 
 Var::Type ScriptManager::GetVarType(int type_id)
 {
-	if(IS_SET(type_id, asTYPEID_OBJHANDLE))
-		CLEAR_BIT(type_id, asTYPEID_OBJHANDLE);
+	if(IsSet(type_id, asTYPEID_OBJHANDLE))
+		ClearBit(type_id, asTYPEID_OBJHANDLE);
 	auto it = script_type_infos.find(type_id);
 	assert(it != script_type_infos.end());
 	return it->second.type;
@@ -1064,10 +1064,10 @@ Var::Type ScriptManager::GetVarType(int type_id)
 
 bool ScriptManager::CheckVarType(int type_id, bool is_ref)
 {
-	if(IS_SET(type_id, asTYPEID_OBJHANDLE))
+	if(IsSet(type_id, asTYPEID_OBJHANDLE))
 	{
 		is_ref = true;
-		CLEAR_BIT(type_id, asTYPEID_OBJHANDLE);
+		ClearBit(type_id, asTYPEID_OBJHANDLE);
 	}
 
 	auto it = script_type_infos.find(type_id);

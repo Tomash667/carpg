@@ -67,7 +67,7 @@ struct BaseUsable : public BaseObject
 
 	bool IsContainer() const
 	{
-		return IS_SET(use_flags, CONTAINER);
+		return IsSet(use_flags, CONTAINER);
 	}
 
 	static vector<BaseUsable*> usables;

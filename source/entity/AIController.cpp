@@ -271,7 +271,7 @@ void AIController::Load(GameReader& f)
 //=================================================================================================
 bool AIController::CheckPotion(bool in_combat)
 {
-	if(unit->action == A_NONE && have_potion > 0 && !IS_SET(unit->data->flags, F_UNDEAD))
+	if(unit->action == A_NONE && have_potion > 0 && !IsSet(unit->data->flags, F_UNDEAD))
 	{
 		float hpp = unit->GetHpp();
 		if(hpp < 0.5f || (hpp < 0.75f && !in_combat) || (!Equal(hpp, 1.f) && unit->busy == Unit::Busy_Tournament))
@@ -343,7 +343,7 @@ float AIController::GetMorale() const
 //=================================================================================================
 bool AIController::CanWander() const
 {
-	if(L.city_ctx && loc_timer <= 0.f && !Game::Get().dont_wander && IS_SET(unit->data->flags, F_AI_WANDERS))
+	if(L.city_ctx && loc_timer <= 0.f && !Game::Get().dont_wander && IsSet(unit->data->flags, F_AI_WANDERS))
 	{
 		if(unit->busy != Unit::Busy_No)
 			return false;

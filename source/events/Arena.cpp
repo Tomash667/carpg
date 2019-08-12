@@ -794,7 +794,7 @@ void Arena::Update(float dt)
 		timer += dt;
 		if(timer >= 0.5f)
 		{
-			pvp_player->StartDialog(fighter, GameDialog::TryGet(IS_SET(fighter->data->flags, F_CRAZY) ? "crazy_pvp" : "hero_pvp"));
+			pvp_player->StartDialog(fighter, GameDialog::TryGet(IsSet(fighter->data->flags, F_CRAZY) ? "crazy_pvp" : "hero_pvp"));
 			mode = NONE;
 			free = true;
 		}

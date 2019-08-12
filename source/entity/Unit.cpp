@@ -77,7 +77,7 @@ void Unit::Release()
 float Unit::CalculateMaxHp() const
 {
 	float maxhp = (float)data->hp + GetEffectSum(EffectId::Health);
-	if(IS_SET(data->flags2, F2_FIXED_STATS))
+	if(IsSet(data->flags2, F2_FIXED_STATS))
 		maxhp = (float)(data->hp + data->hp_lvl * (level - data->level.x));
 	else
 	{
@@ -94,7 +94,7 @@ float Unit::CalculateMaxHp() const
 float Unit::CalculateMaxStamina() const
 {
 	float stamina = (float)data->stamina + GetEffectSum(EffectId::Stamina);
-	if(IS_SET(data->flags2, F2_FIXED_STATS))
+	if(IsSet(data->flags2, F2_FIXED_STATS))
 		return stamina;
 	float v = 0.6f*Get(AttributeId::END) + 0.4f*Get(AttributeId::DEX);
 	return stamina + 250.f + v * 2.f;
@@ -105,7 +105,7 @@ float Unit::CalculateAttack() const
 {
 	if(HaveWeapon())
 		return CalculateAttack(&GetWeapon());
-	else if(IS_SET(data->flags2, F2_FIXED_STATS))
+	else if(IsSet(data->flags2, F2_FIXED_STATS))
 		return (float)(data->attack + data->attack_lvl * (level - data->level.x));
 	{
 		float bonus = GetEffectSum(EffectId::MeleeAttack);
@@ -120,7 +120,7 @@ float Unit::CalculateAttack(const Item* weapon) const
 
 	float attack = (float)data->attack;
 
-	if(IS_SET(data->flags2, F2_FIXED_STATS))
+	if(IsSet(data->flags2, F2_FIXED_STATS))
 	{
 		if(weapon->type == IT_WEAPON)
 			attack += weapon->ToWeapon().dmg;
@@ -203,7 +203,7 @@ float Unit::CalculateBlock(const Item* shield) const
 float Unit::CalculateDefense(const Item* armor) const
 {
 	float def = (float)data->def + GetEffectSum(EffectId::Defense);
-	if(!IS_SET(data->flags2, F2_FIXED_STATS))
+	if(!IsSet(data->flags2, F2_FIXED_STATS))
 	{
 		def += float(Get(AttributeId::END) - 25);
 
@@ -646,7 +646,7 @@ void Unit::UseItem(int index)
 		ConsumeItem(index);
 		break;
 	case IT_BOOK:
-		assert(IS_SET(slot.item->flags, ITEM_MAGIC_SCROLL));
+		assert(IsSet(slot.item->flags, ITEM_MAGIC_SCROLL));
 		if(Net::IsLocal())
 		{
 			action = A_USE_ITEM;
@@ -701,7 +701,7 @@ void Unit::HideWeapon()
 			weapon_taken = W_NONE;
 			weapon_state = WS_HIDING;
 			animation_state = 0;
-			SET_BIT(mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
+			SetBit(mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
 		}
 		break;
 	case WS_TAKEN:
@@ -1395,7 +1395,7 @@ void Unit::AddItemAndEquipIfNone(const Item* item, uint count)
 //=================================================================================================
 void Unit::CalculateLoad()
 {
-	if(IS_SET(data->flags2, F2_FIXED_STATS))
+	if(IsSet(data->flags2, F2_FIXED_STATS))
 		weight_max = 999;
 	else
 	{
@@ -1593,7 +1593,7 @@ int Unit::GetRandomAttack() const
 		do
 		{
 			int n = Rand() % data->frames->attacks;
-			if(IS_SET(data->frames->extra->e[n].flags, a))
+			if(IsSet(data->frames->extra->e[n].flags, a))
 				return n;
 		} while(1);
 	}
@@ -2003,7 +2003,7 @@ void Unit::Load(GameReader& f, bool local)
 		{
 			for(ItemSlot& item : items)
 			{
-				if(item.item && IS_SET(item.item->flags, ITEM_IMPORTANT))
+				if(item.item && IsSet(item.item->flags, ITEM_IMPORTANT))
 				{
 					mark = true;
 					break;
@@ -2237,7 +2237,7 @@ void Unit::Load(GameReader& f, bool local)
 	if(local && human_data)
 		human_data->ApplyScale(mesh_inst->mesh);
 
-	if(IS_SET(data->flags, F_HERO))
+	if(IsSet(data->flags, F_HERO))
 	{
 		hero = new HeroData;
 		hero->unit = this;
@@ -2562,9 +2562,9 @@ bool Unit::Read(BitStreamReader& f)
 		f >> hero->credit;
 		if(!f)
 			return false;
-		hero->know_name = IS_SET(flags, 0x01);
-		hero->team_member = IS_SET(flags, 0x02);
-		hero->free = IS_SET(flags, 0x04);
+		hero->know_name = IsSet(flags, 0x01);
+		hero->team_member = IsSet(flags, 0x02);
+		hero->free = IsSet(flags, 0x04);
 	}
 	else if(type == 2)
 	{
@@ -2707,7 +2707,7 @@ bool Unit::Read(BitStreamReader& f)
 	CreatePhysics(true);
 
 	// boss music
-	if(IS_SET(data->flags2, F2_BOSS))
+	if(IsSet(data->flags2, F2_BOSS))
 		W.AddBossLevel();
 
 	prev_pos = pos;
@@ -2972,7 +2972,7 @@ bool Unit::SlotRequireHideWeapon(ITEM_SLOT slot) const
 //=================================================================================================
 float Unit::GetAttackSpeed(const Weapon* used_weapon) const
 {
-	if(IS_SET(data->flags2, F2_FIXED_STATS))
+	if(IsSet(data->flags2, F2_FIXED_STATS))
 		return 1.f;
 
 	const Weapon* wep;
@@ -3024,7 +3024,7 @@ float Unit::GetAttackSpeed(const Weapon* used_weapon) const
 float Unit::GetBowAttackSpeed() const
 {
 	float base_mod = GetStaminaAttackSpeedMod();
-	if(IS_SET(data->flags2, F2_FIXED_STATS))
+	if(IsSet(data->flags2, F2_FIXED_STATS))
 		return base_mod;
 
 	// values range
@@ -3476,7 +3476,7 @@ bool Unit::IsBetterItem(const Item* item, int* value, int* prev_value, ITEM_SLOT
 	switch(item->type)
 	{
 	case IT_WEAPON:
-		if(!IS_SET(data->flags, F_MAGE))
+		if(!IsSet(data->flags, F_MAGE))
 			return IsBetterWeapon(item->ToWeapon(), value, prev_value);
 		else
 		{
@@ -3512,7 +3512,7 @@ bool Unit::IsBetterItem(const Item* item, int* value, int* prev_value, ITEM_SLOT
 			return v > prev_v;
 		}
 	case IT_ARMOR:
-		if(!IS_SET(data->flags, F_MAGE))
+		if(!IsSet(data->flags, F_MAGE))
 			return IsBetterArmor(item->ToArmor(), value, prev_value);
 		else
 		{
@@ -3681,9 +3681,9 @@ Mesh::Animation* Unit::GetTakeWeaponAnimation(bool melee) const
 float Unit::CalculateMagicResistance() const
 {
 	float mres = 1.f;
-	if(IS_SET(data->flags2, F2_MAGIC_RES50))
+	if(IsSet(data->flags2, F2_MAGIC_RES50))
 		mres = 0.5f;
-	else if(IS_SET(data->flags2, F2_MAGIC_RES25))
+	else if(IsSet(data->flags2, F2_MAGIC_RES25))
 		mres = 0.75f;
 	float effect_mres = GetEffectMulInv(EffectId::MagicResistance);
 	return mres * effect_mres;
@@ -3692,7 +3692,7 @@ float Unit::CalculateMagicResistance() const
 //=================================================================================================
 float Unit::GetPoisonResistance() const
 {
-	if(IS_SET(data->flags, F_POISON_RES))
+	if(IsSet(data->flags, F_POISON_RES))
 		return 0.f;
 	return GetEffectMulInv(EffectId::PoisonResistance);
 }
@@ -3701,7 +3701,7 @@ float Unit::GetPoisonResistance() const
 float Unit::GetBackstabMod(const Item* item) const
 {
 	float mod = 0.25f;
-	if(IS_SET(data->flags, F2_BACKSTAB))
+	if(IsSet(data->flags, F2_BACKSTAB))
 		mod += 0.25f;
 	if(item)
 	{
@@ -4014,7 +4014,7 @@ void Unit::CalculateStats()
 //=================================================================================================
 float Unit::CalculateMobility(const Armor* armor) const
 {
-	if(IS_SET(data->flags2, F2_FIXED_STATS))
+	if(IsSet(data->flags2, F2_FIXED_STATS))
 		return 100;
 
 	if(!armor)
@@ -4179,7 +4179,7 @@ void Unit::UpdateStaminaAction()
 {
 	if(usable)
 	{
-		if(IS_SET(usable->base->use_flags, BaseUsable::SLOW_STAMINA_RESTORE))
+		if(IsSet(usable->base->use_flags, BaseUsable::SLOW_STAMINA_RESTORE))
 			stamina_action = SA_RESTORE_SLOW;
 		else
 			stamina_action = SA_RESTORE_MORE;
@@ -4370,7 +4370,7 @@ void Unit::CreateMesh(CREATE_MESH mode)
 //=================================================================================================
 void Unit::ApplyStun(float length)
 {
-	if(Net::IsLocal() && IS_SET(data->flags2, F2_STUN_RESISTANCE))
+	if(Net::IsLocal() && IsSet(data->flags2, F2_STUN_RESISTANCE))
 		length /= 2;
 
 	Effect* effect = FindEffect(EffectId::Stun);
@@ -4459,7 +4459,7 @@ bool Unit::IsIdle() const
 	if(Net::IsLocal())
 		return ai->state == AIController::Idle;
 	else
-		return !IS_SET(ai_mode, AI_MODE_IDLE);
+		return !IsSet(ai_mode, AI_MODE_IDLE);
 }
 
 //=================================================================================================
@@ -4468,7 +4468,7 @@ bool Unit::IsAssist() const
 	if(Net::IsLocal())
 		return assist;
 	else
-		return IS_SET(ai_mode, AI_MODE_ASSIST);
+		return IsSet(ai_mode, AI_MODE_ASSIST);
 }
 
 //=================================================================================================
@@ -4477,7 +4477,7 @@ bool Unit::IsDontAttack() const
 	if(Net::IsLocal())
 		return dont_attack;
 	else
-		return IS_SET(ai_mode, AI_MODE_DONT_ATTACK);
+		return IsSet(ai_mode, AI_MODE_DONT_ATTACK);
 }
 
 //=================================================================================================
@@ -4486,7 +4486,7 @@ bool Unit::WantAttackTeam() const
 	if(Net::IsLocal())
 		return attack_team;
 	else
-		return IS_SET(ai_mode, AI_MODE_ATTACK_TEAM);
+		return IsSet(ai_mode, AI_MODE_ATTACK_TEAM);
 }
 
 //=================================================================================================
@@ -4876,7 +4876,7 @@ void Unit::Die( Unit* killer)
 		// mark if unit have important item in inventory
 		for(ItemSlot& item : items)
 		{
-			if(item.item && IS_SET(item.item->flags, ITEM_IMPORTANT))
+			if(item.item && IsSet(item.item->flags, ITEM_IMPORTANT))
 			{
 				mark = true;
 				if(Net::IsServer())
@@ -4976,7 +4976,7 @@ void Unit::Die( Unit* killer)
 	}
 
 	// end boss music
-	if(IS_SET(data->flags2, F2_BOSS) && W.RemoveBossLevel(Int2(L.location_index, L.dungeon_level)))
+	if(IsSet(data->flags2, F2_BOSS) && W.RemoveBossLevel(Int2(L.location_index, L.dungeon_level)))
 		game.SetMusic();
 
 	if(prev_action == A_ANIMATION)
@@ -5048,11 +5048,11 @@ void Unit::DropGold(int count)
 //=================================================================================================
 bool Unit::IsDrunkman() const
 {
-	if(IS_SET(data->flags, F_AI_DRUNKMAN))
+	if(IsSet(data->flags, F_AI_DRUNKMAN))
 		return true;
-	else if(IS_SET(data->flags3, F3_DRUNK_MAGE))
+	else if(IsSet(data->flags3, F3_DRUNK_MAGE))
 		return QM.quest_mages2->mages_state < Quest_Mages2::State::MageCured;
-	else if(IS_SET(data->flags3, F3_DRUNKMAN_AFTER_CONTEST))
+	else if(IsSet(data->flags3, F3_DRUNKMAN_AFTER_CONTEST))
 		return QM.quest_contest->state == Quest_Contest::CONTEST_DONE;
 	else
 		return false;
@@ -5133,7 +5133,7 @@ void Unit::SetWeaponState(bool takes_out, WeaponType type)
 					weapon_taken = weapon_hiding;
 					weapon_hiding = W_NONE;
 					weapon_state = WS_TAKING;
-					CLEAR_BIT(mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
+					ClearBit(mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
 				}
 			}
 			else
@@ -5194,7 +5194,7 @@ void Unit::SetWeaponState(bool takes_out, WeaponType type)
 				weapon_taken = W_NONE;
 				weapon_state = WS_HIDING;
 				animation_state = 0;
-				SET_BIT(mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
+				SetBit(mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
 			}
 			break;
 		case WS_TAKEN:
@@ -5511,7 +5511,7 @@ void Unit::OrderAttack()
 	{
 		for(Unit* unit : area->units)
 		{
-			if(unit->dont_attack && unit->IsEnemy(*Team.leader, true) && !IS_SET(unit->data->flags, F_PEACEFUL))
+			if(unit->dont_attack && unit->IsEnemy(*Team.leader, true) && !IsSet(unit->data->flags, F_PEACEFUL))
 			{
 				unit->dont_attack = false;
 				unit->ai->change_ai_mode = true;

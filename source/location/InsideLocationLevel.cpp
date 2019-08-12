@@ -395,7 +395,7 @@ bool InsideLocationLevel::IsTileNearWall(const Int2& pt, int& dir) const
 	int i = Rand() % 4;
 	while(true)
 	{
-		if(IS_SET(kierunek, 1 << i))
+		if(IsSet(kierunek, 1 << i))
 		{
 			dir = i;
 			return true;

@@ -236,7 +236,7 @@ Unit* TeamSingleton::GetRandomSaneHero()
 
 	for(Unit& unit : active_members)
 	{
-		if(unit.IsHero() && !IS_SET(unit.data->flags, F_CRAZY))
+		if(unit.IsHero() && !IsSet(unit.data->flags, F_CRAZY))
 			v->push_back(&unit);
 	}
 
@@ -273,7 +273,7 @@ void TeamSingleton::GetTeamInfo(TeamInfo& info)
 					else
 					{
 						++info.heroes;
-						if(IS_SET(unit.data->flags, F_CRAZY))
+						if(IsSet(unit.data->flags, F_CRAZY))
 							++info.insane_heroes;
 						else
 							++info.sane_heroes;
@@ -683,7 +683,7 @@ void TeamSingleton::UpdateTeamItemShares()
 							if(Vec3::Distance2d(tsi.from->pos, tsi.to->pos) > 8.f)
 								state = 0;
 							else if(tsi.from->busy == Unit::Busy_No && tsi.from->player->action == PlayerController::Action_None)
-								dialog = GameDialog::TryGet(IS_SET(tsi.to->data->flags, F_CRAZY) ? "crazy_buy_item" : "hero_buy_item");
+								dialog = GameDialog::TryGet(IsSet(tsi.to->data->flags, F_CRAZY) ? "crazy_buy_item" : "hero_buy_item");
 							else
 								state = 2;
 						}
@@ -699,7 +699,7 @@ void TeamSingleton::UpdateTeamItemShares()
 						if(Vec3::Distance2d(tsi.to->pos, leader->pos) > 8.f)
 							state = 0;
 						else if(leader->busy == Unit::Busy_No && leader->player->action == PlayerController::Action_None)
-							dialog = GameDialog::TryGet(IS_SET(tsi.to->data->flags, F_CRAZY) ? "crazy_get_item" : "hero_get_item");
+							dialog = GameDialog::TryGet(IsSet(tsi.to->data->flags, F_CRAZY) ? "crazy_get_item" : "hero_get_item");
 						else
 							state = 2;
 					}
@@ -709,7 +709,7 @@ void TeamSingleton::UpdateTeamItemShares()
 						if(Vec3::Distance2d(tsi.from->pos, tsi.to->pos) > 8.f)
 							state = 0;
 						else if(tsi.from->busy == Unit::Busy_No && tsi.from->player->action == PlayerController::Action_None)
-							dialog = GameDialog::TryGet(IS_SET(tsi.to->data->flags, F_CRAZY) ? "crazy_get_item" : "hero_get_item");
+							dialog = GameDialog::TryGet(IsSet(tsi.to->data->flags, F_CRAZY) ? "crazy_get_item" : "hero_get_item");
 						else
 							state = 2;
 					}

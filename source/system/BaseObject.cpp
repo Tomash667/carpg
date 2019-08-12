@@ -37,9 +37,9 @@ BaseObject* ObjectGroup::EntryList::GetRandom()
 BaseObject::~BaseObject()
 {
 	delete shape;
-	if(IS_SET(flags, OBJ_DOUBLE_PHYSICS))
+	if(IsSet(flags, OBJ_DOUBLE_PHYSICS))
 		delete next_obj;
-	else if(IS_SET(flags, OBJ_MULTI_PHYSICS))
+	else if(IsSet(flags, OBJ_MULTI_PHYSICS))
 		delete[] next_obj;
 }
 

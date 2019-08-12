@@ -859,7 +859,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 #undef S
 #define S(xx,yy) lvl.map[x-(xx)+(y+(yy))*lvl.w].type == WALL
 
-				if(lvl.map[x + y * lvl.w].type == EMPTY && Rand() % 3 != 0 && !IS_SET(lvl.map[x + y * lvl.w].flags, Tile::F_SECOND_TEXTURE))
+				if(lvl.map[x + y * lvl.w].type == EMPTY && Rand() % 3 != 0 && !IsSet(lvl.map[x + y * lvl.w].flags, Tile::F_SECOND_TEXTURE))
 				{
 					GameDirection dir = GDIR_INVALID;
 
@@ -1018,7 +1018,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 			{
 				Int2 tile = cave.GetRandomTile();
 				const Tile& p = lvl.At(tile);
-				if(p.type == EMPTY && !IS_SET(p.flags, Tile::F_SECOND_TEXTURE))
+				if(p.type == EMPTY && !IsSet(p.flags, Tile::F_SECOND_TEXTURE))
 				{
 					L.SpawnUnitNearLocation(cave, Vec3(2.f*tile.x + Random(0.4f, 1.6f), 0, 2.f*tile.y + Random(0.4f, 1.6f)), miner, nullptr, -2);
 					break;
@@ -1043,7 +1043,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 					{
 						Int2 tile = cave.GetRandomTile();
 						const Tile& p = lvl.At(tile);
-						if(p.type == EMPTY && !IS_SET(p.flags, Tile::F_SECOND_TEXTURE))
+						if(p.type == EMPTY && !IsSet(p.flags, Tile::F_SECOND_TEXTURE))
 						{
 							L.WarpUnit(*u, Vec3(2.f*tile.x + Random(0.4f, 1.6f), 0, 2.f*tile.y + Random(0.4f, 1.6f)));
 							break;

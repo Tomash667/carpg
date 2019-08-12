@@ -34,7 +34,7 @@ struct Object
 	}
 	bool IsBillboard() const
 	{
-		return base && IS_SET(base->flags, OBJ_BILLBOARD);
+		return base && IsSet(base->flags, OBJ_BILLBOARD);
 	}
 	void Save(FileWriter& f);
 	void Load(FileReader& f);

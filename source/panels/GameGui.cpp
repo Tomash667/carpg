@@ -312,7 +312,7 @@ void GameGui::DrawFront()
 		{
 			GroundItem& item = *game.pc_data.before_player_ptr.item;
 			Mesh* mesh;
-			if(IS_SET(item.item->flags, ITEM_GROUND_MESH))
+			if(IsSet(item.item->flags, ITEM_GROUND_MESH))
 				mesh = item.item->mesh;
 			else
 				mesh = game.aBag;
@@ -401,7 +401,7 @@ void GameGui::DrawFront()
 	Rect part = { 0, 0, int(hpp * 256), 16 };
 	Matrix mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale, wnd_scale), nullptr, 0.f, &Vec2(0.f, float(gui->wnd_size.y) - wnd_scale * 35));
 	if(part.Right() > 0)
-		gui->DrawSprite2(!IS_SET(buffs, BUFF_POISON) ? tHpBar : tPoisonedHpBar, mat, &part, nullptr, Color::White);
+		gui->DrawSprite2(!IsSet(buffs, BUFF_POISON) ? tHpBar : tPoisonedHpBar, mat, &part, nullptr, Color::White);
 	gui->DrawSprite2(tBar, mat, nullptr, nullptr, Color::White);
 
 	// stamina bar
@@ -857,7 +857,7 @@ void GameGui::Update(float dt)
 	for(int i = 0; i < BUFF_COUNT; ++i)
 	{
 		int buff_bit = 1 << i;
-		if(IS_SET(buffs, buff_bit))
+		if(IsSet(buffs, buff_bit))
 		{
 			auto& info = BuffInfo::info[i];
 			buff_images.push_back(BuffImage(Vec2(2, buf_posy), info.img, i));

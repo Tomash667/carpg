@@ -276,19 +276,19 @@ void Quest_Contest::Update(float dt)
 				if(u.IsStanding() && u.IsAI() && !u.event_handler && u.frozen == FROZEN::NO && u.busy == Unit::Busy_No)
 				{
 					bool ok = false;
-					if(IS_SET(u.data->flags2, F2_CONTEST))
+					if(IsSet(u.data->flags2, F2_CONTEST))
 						ok = true;
-					else if(IS_SET(u.data->flags2, F2_CONTEST_50))
+					else if(IsSet(u.data->flags2, F2_CONTEST_50))
 					{
 						if(Rand() % 2 == 0)
 							ok = true;
 					}
-					else if(IS_SET(u.data->flags3, F3_CONTEST_25))
+					else if(IsSet(u.data->flags3, F3_CONTEST_25))
 					{
 						if(Rand() % 4 == 0)
 							ok = true;
 					}
-					else if(IS_SET(u.data->flags3, F3_DRUNK_MAGE))
+					else if(IsSet(u.data->flags3, F3_DRUNK_MAGE))
 					{
 						if(QM.quest_mages2->mages_state < Quest_Mages2::State::MageCured)
 							ok = true;

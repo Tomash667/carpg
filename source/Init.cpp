@@ -695,7 +695,7 @@ void Game::AddLoadTasks()
 		else if(!obj.mesh_id.empty())
 		{
 			obj.mesh = res_mgr.Get<Mesh>(obj.mesh_id);
-			if(!IS_SET(obj.flags, OBJ_SCALEABLE | OBJ_NO_PHYSICS) && obj.type == OBJ_CYLINDER)
+			if(!IsSet(obj.flags, OBJ_SCALEABLE | OBJ_NO_PHYSICS) && obj.type == OBJ_CYLINDER)
 				obj.shape = new btCylinderShape(btVector3(obj.r, obj.h, obj.r));
 			SetupObject(res_mgr, obj);
 		}
@@ -796,7 +796,7 @@ void Game::SetupObject(ResourceManager& res_mgr, BaseObject& obj)
 {
 	Mesh::Point* point;
 
-	if(IS_SET(obj.flags, OBJ_PRELOAD))
+	if(IsSet(obj.flags, OBJ_PRELOAD))
 	{
 		if(obj.variants)
 		{
@@ -810,7 +810,7 @@ void Game::SetupObject(ResourceManager& res_mgr, BaseObject& obj)
 
 	if(obj.variants)
 	{
-		assert(!IS_SET(obj.flags, OBJ_DOUBLE_PHYSICS | OBJ_MULTI_PHYSICS)); // not supported for variant mesh yet
+		assert(!IsSet(obj.flags, OBJ_DOUBLE_PHYSICS | OBJ_MULTI_PHYSICS)); // not supported for variant mesh yet
 		res_mgr.LoadMeshMetadata(obj.variants->entries[0].mesh);
 		point = obj.variants->entries[0].mesh->FindPoint("hit");
 	}
@@ -820,7 +820,7 @@ void Game::SetupObject(ResourceManager& res_mgr, BaseObject& obj)
 		point = obj.mesh->FindPoint("hit");
 	}
 
-	if(!point || !point->IsBox() || IS_SET(obj.flags, OBJ_BUILDING | OBJ_SCALEABLE) || obj.type == OBJ_CYLINDER)
+	if(!point || !point->IsBox() || IsSet(obj.flags, OBJ_BUILDING | OBJ_SCALEABLE) || obj.type == OBJ_CYLINDER)
 	{
 		obj.size = Vec2::Zero;
 		obj.matrix = nullptr;
@@ -831,13 +831,13 @@ void Game::SetupObject(ResourceManager& res_mgr, BaseObject& obj)
 	obj.matrix = &point->mat;
 	obj.size = point->size.XZ();
 
-	if(!IS_SET(obj.flags, OBJ_NO_PHYSICS))
+	if(!IsSet(obj.flags, OBJ_NO_PHYSICS))
 		obj.shape = new btBoxShape(ToVector3(point->size));
 
-	if(IS_SET(obj.flags, OBJ_PHY_ROT))
+	if(IsSet(obj.flags, OBJ_PHY_ROT))
 		obj.type = OBJ_HITBOX_ROT;
 
-	if(IS_SET(obj.flags, OBJ_MULTI_PHYSICS))
+	if(IsSet(obj.flags, OBJ_MULTI_PHYSICS))
 	{
 		LocalVector2<Mesh::Point*> points;
 		Mesh::Point* prev_point = point;
@@ -861,7 +861,7 @@ void Game::SetupObject(ResourceManager& res_mgr, BaseObject& obj)
 		{
 			BaseObject& o2 = obj.next_obj[i];
 			o2.shape = new btBoxShape(ToVector3(points[i]->size));
-			if(IS_SET(obj.flags, OBJ_PHY_BLOCKS_CAM))
+			if(IsSet(obj.flags, OBJ_PHY_BLOCKS_CAM))
 				o2.flags = OBJ_PHY_BLOCKS_CAM;
 			o2.matrix = &points[i]->mat;
 			o2.size = points[i]->size.XZ();
@@ -869,18 +869,18 @@ void Game::SetupObject(ResourceManager& res_mgr, BaseObject& obj)
 		}
 		obj.next_obj[points.size()].shape = nullptr;
 	}
-	else if(IS_SET(obj.flags, OBJ_DOUBLE_PHYSICS))
+	else if(IsSet(obj.flags, OBJ_DOUBLE_PHYSICS))
 	{
 		Mesh::Point* point2 = obj.mesh->FindNextPoint("hit", point);
 		if(point2 && point2->IsBox())
 		{
 			assert(point2->size.x >= 0 && point2->size.y >= 0 && point2->size.z >= 0);
 			obj.next_obj = new BaseObject;
-			if(!IS_SET(obj.flags, OBJ_NO_PHYSICS))
+			if(!IsSet(obj.flags, OBJ_NO_PHYSICS))
 			{
 				btBoxShape* shape = new btBoxShape(ToVector3(point2->size));
 				obj.next_obj->shape = shape;
-				if(IS_SET(obj.flags, OBJ_PHY_BLOCKS_CAM))
+				if(IsSet(obj.flags, OBJ_PHY_BLOCKS_CAM))
 					obj.next_obj->flags = OBJ_PHY_BLOCKS_CAM;
 			}
 			else
@@ -912,7 +912,7 @@ void Game::LoadItemsData(ResourceManager& res_mgr)
 	{
 		Item& item = *it.second;
 
-		if(IS_SET(item.flags, ITEM_TEX_ONLY))
+		if(IsSet(item.flags, ITEM_TEX_ONLY))
 		{
 			item.tex = res_mgr.TryGet<Texture>(item.mesh_id);
 			if(!item.tex)

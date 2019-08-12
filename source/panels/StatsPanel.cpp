@@ -195,7 +195,7 @@ void StatsPanel::SetText()
 	for(int i = 0; i < (int)pc->perks.size(); ++i)
 	{
 		PerkInfo& perk = PerkInfo::perks[(int)pc->perks[i].perk];
-		if(IS_SET(perk.flags, PerkInfo::RequireFormat))
+		if(IsSet(perk.flags, PerkInfo::RequireFormat))
 		{
 			string* s = StringPool.Get();
 			*s = pc->perks[i].FormatName();

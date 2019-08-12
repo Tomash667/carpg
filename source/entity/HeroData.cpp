@@ -38,7 +38,7 @@ void HeroData::Init(Unit& _unit)
 
 	if(!unit->data->real_name.empty())
 		name = unit->data->real_name;
-	else if(!IS_SET(unit->data->flags2, F2_SPECIFIC_NAME))
+	else if(!IsSet(unit->data->flags2, F2_SPECIFIC_NAME))
 		NameHelper::GenerateHeroName(*this);
 }
 
@@ -112,7 +112,7 @@ void HeroData::Load(FileReader& f)
 //=================================================================================================
 int HeroData::JoinCost() const
 {
-	if(IS_SET(unit->data->flags, F_CRAZY))
+	if(IsSet(unit->data->flags, F_CRAZY))
 		return (unit->level - 1) * 100 + Random(50, 150);
 	else
 		return unit->level * 100;
@@ -148,9 +148,9 @@ void HeroData::LevelUp()
 //=================================================================================================
 void HeroData::SetupMelee()
 {
-	if(IS_SET(unit->data->flags2, F2_MELEE))
+	if(IsSet(unit->data->flags2, F2_MELEE))
 		melee = true;
-	else if(IS_SET(unit->data->flags2, F2_MELEE_50) && Rand() % 2 == 0)
+	else if(IsSet(unit->data->flags2, F2_MELEE_50) && Rand() % 2 == 0)
 		melee = true;
 }
 

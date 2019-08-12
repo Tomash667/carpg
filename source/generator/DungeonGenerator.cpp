@@ -40,7 +40,7 @@ void DungeonGenerator::Generate()
 	settings.groups = &lvl.groups;
 	settings.corridor_join_chance = base.join_corridor;
 	settings.room_join_chance = base.join_room;
-	settings.shape = (IS_SET(base.options, BLO_ROUND) ? MapSettings::CIRCLE : MapSettings::SQUARE);
+	settings.shape = (IsSet(base.options, BLO_ROUND) ? MapSettings::CIRCLE : MapSettings::SQUARE);
 	settings.stairs_up_loc = (inside->HaveUpStairs() ? MapSettings::RANDOM : MapSettings::NONE);
 	settings.stairs_down_loc = (inside->HaveDownStairs() ? MapSettings::RANDOM : MapSettings::NONE);
 	settings.bars_chance = base.bars_chance;
@@ -346,7 +346,7 @@ void DungeonGenerator::GenerateDungeonItems()
 	InsideLocation* inside = (InsideLocation*)loc;
 	BaseLocation& base = g_base_locations[inside->target];
 
-	if(IS_SET(base.options, BLO_LESS_FOOD))
+	if(IsSet(base.options, BLO_LESS_FOOD))
 		--mod;
 
 	UnitGroup* group = GetGroup();

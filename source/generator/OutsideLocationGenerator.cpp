@@ -150,7 +150,7 @@ void OutsideLocationGenerator::OnEnter()
 	int days;
 	bool need_reset = outside->CheckUpdate(days, W.GetWorldtime());
 	int update_flags = HandleUpdate(days);
-	if(IS_SET(update_flags, PREVENT_RESET))
+	if(IsSet(update_flags, PREVENT_RESET))
 		need_reset = false;
 
 	L.SetOutsideParams();
@@ -192,12 +192,12 @@ void OutsideLocationGenerator::OnEnter()
 
 		// recreate colliders
 		game.LoadingStep(game.txGeneratingPhysics);
-		if(!IS_SET(update_flags, PREVENT_RECREATE_OBJECTS))
+		if(!IsSet(update_flags, PREVENT_RECREATE_OBJECTS))
 			L.RecreateObjects();
 
 		// respawn units
 		game.LoadingStep(game.txGeneratingUnits);
-		if(!IS_SET(update_flags, PREVENT_RESPAWN_UNITS))
+		if(!IsSet(update_flags, PREVENT_RESPAWN_UNITS))
 			RespawnUnits();
 		if(need_reset)
 			GenerateUnits();
