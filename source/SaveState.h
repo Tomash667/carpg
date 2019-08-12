@@ -22,7 +22,7 @@ enum SAVE_VERSION
 	V_0_8 = 13, // 0.8
 	V_0_9 = 14, // 0.9
 	V_0_10 = 15, // 0.10
-	V_0_11 = 16, // 0.11
+	V_0_11 = 16, // 0.11/0.11.1
 	V_NEXT = 17,
 
 	// save version used by saves

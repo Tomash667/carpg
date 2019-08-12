@@ -7060,27 +7060,28 @@ void Game::PreloadTraps(vector<Trap*>& traps)
 
 struct BulletRaytestCallback3 : public btCollisionWorld::RayResultCallback
 {
-	explicit BulletRaytestCallback3(Unit* ignore) : hit(false), ignore(ignore), hitted(nullptr), fraction(1.01f)
+	explicit BulletRaytestCallback3(Unit* ignore) : ignore(ignore), hitted(nullptr), fraction(1.01f)
 	{
 	}
 
 	btScalar addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace)
 	{
-		Unit* u = (Unit*)rayResult.m_collisionObject->getUserPointer();
-		if(ignore && u == ignore)
+		if(!IS_SET(rayResult.m_collisionObject->getCollisionFlags(), CG_UNIT))
+			return 1.f;
+
+		Unit* unit = reinterpret_cast<Unit*>(rayResult.m_collisionObject->getUserPointer());
+		if(unit == ignore)
 			return 1.f;
 
 		if(rayResult.m_hitFraction < fraction)
 		{
-			hit = true;
-			hitted = u;
+			hitted = unit;
 			fraction = rayResult.m_hitFraction;
 		}
 
 		return 0.f;
 	}
 
-	bool hit;
 	Unit* ignore, *hitted;
 	float fraction;
 };
@@ -7090,7 +7091,7 @@ bool Game::RayTest(const Vec3& from, const Vec3& to, Unit* ignore, Vec3& hitpoin
 	BulletRaytestCallback3 callback(ignore);
 	phy_world->rayTest(ToVector3(from), ToVector3(to), callback);
 
-	if(callback.hit)
+	if(callback.hitted)
 	{
 		hitpoint = from + (to - from) * callback.fraction;
 		hitted = callback.hitted;
@@ -7098,7 +7099,6 @@ bool Game::RayTest(const Vec3& from, const Vec3& to, Unit* ignore, Vec3& hitpoin
 	}
 	else
 		return false;
-
 }
 
 struct ConvexCallback : public btCollisionWorld::ConvexResultCallback
@@ -8698,9 +8698,6 @@ void Game::AttackReaction(Unit& attacked, Unit& attacker)
 				}
 				else
 					Team.SetBandit(true);
-				{
-					Team.is_bandit = true;
-				}
 			}
 		}
 		else if(attacked.data->group == G_CRAZIES)
