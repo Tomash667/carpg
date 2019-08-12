@@ -54,7 +54,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>.;..\..\project\source;..\..\project\source\core;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\..\carpglib\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;COMMON_ONLY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -72,13 +72,13 @@
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention />
       <TargetMachine>MachineX86</TargetMachine>
-      <AdditionalLibraryDirectories>..\..\external\DirectX\Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\carpglib\external\DirectX\Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>.;..\..\project\source;..\..\project\source\core;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\..\carpglib\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;COMMON_ONLY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -96,16 +96,17 @@
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention />
       <TargetMachine>MachineX86</TargetMachine>
-      <AdditionalLibraryDirectories>..\..\external\DirectX\Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\carpglib\external\DirectX\Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\project\source\core\Containers.cpp" />
-    <ClCompile Include="..\..\project\source\core\CoreMath.cpp" />
-    <ClCompile Include="..\..\project\source\core\File.cpp" />
-    <ClCompile Include="..\..\project\source\core\Logger.cpp" />
-    <ClCompile Include="..\..\project\source\core\Text.cpp" />
-    <ClCompile Include="..\..\project\source\core\Tokenizer.cpp" />
+    <ClCompile Include="..\..\carpglib\source\Color.cpp" />
+    <ClCompile Include="..\..\carpglib\source\Containers.cpp" />
+    <ClCompile Include="..\..\carpglib\source\CoreMath.cpp" />
+    <ClCompile Include="..\..\carpglib\source\File.cpp" />
+    <ClCompile Include="..\..\carpglib\source\Logger.cpp" />
+    <ClCompile Include="..\..\carpglib\source\Text.cpp" />
+    <ClCompile Include="..\..\carpglib\source\Tokenizer.cpp" />
     <ClCompile Include="Converter.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Mesh.cpp" />
@@ -115,13 +116,13 @@
     <ClCompile Include="QmshTmpLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\project\source\core\Containers.h" />
-    <ClInclude Include="..\..\project\source\core\Core.h" />
-    <ClInclude Include="..\..\project\source\core\CoreMath.h" />
-    <ClInclude Include="..\..\project\source\core\File.h" />
-    <ClInclude Include="..\..\project\source\core\Logger.h" />
-    <ClInclude Include="..\..\project\source\core\Text.h" />
-    <ClInclude Include="..\..\project\source\core\Tokenizer.h" />
+    <ClInclude Include="..\..\carpglib\source\Containers.h" />
+    <ClInclude Include="..\..\carpglib\source\Core.h" />
+    <ClInclude Include="..\..\carpglib\source\CoreMath.h" />
+    <ClInclude Include="..\..\carpglib\source\File.h" />
+    <ClInclude Include="..\..\carpglib\source\Logger.h" />
+    <ClInclude Include="..\..\carpglib\source\Text.h" />
+    <ClInclude Include="..\..\carpglib\source\Tokenizer.h" />
     <ClInclude Include="ConversionData.h" />
     <ClInclude Include="Converter.h" />
     <ClInclude Include="Mesh.h" />
@@ -138,7 +139,7 @@
     <Text Include="UWAGI.TXT" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\project\source\core\CoreMath.inl" />
+    <None Include="..\..\carpglib\source\CoreMath.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -129,7 +129,7 @@ bool ConvertToQmsh(std::string& filename)
 //=================================================================================================
 int main(int argc, char **argv)
 {
-	Logger::global = new ConsoleLogger;
+	Logger::SetInstance(new ConsoleLogger);
 
 	setlocale(LC_ALL, "");
 	setlocale(LC_NUMERIC, "C");
