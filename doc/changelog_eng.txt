@@ -6,6 +6,15 @@ Version 0.12 (???):
 + update libraries: FMod 1.10.14
 
 --------------------------------------------------------------------------------
+Version 0.11.1 (???):
+- crash on animals encounter [Savagesheep]
+- crash when new player joins loaded multiplayer game [Savagesheep]
+- crash prevention when loading multiplayer game for quest items [Savagesheep]
+- units collision shape was slightly higher then it should be
+- fixed starting resolution of 800x600
+- running LAN server was visible on list of servers
+
+--------------------------------------------------------------------------------
 Version 0.11 (2019-07-28):
 ! cannot load saves from version 0.3 or older
 + loading unit group settings from file

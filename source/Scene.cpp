@@ -955,10 +955,12 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 			case CAPSULE_SHAPE_PROXYTYPE:
 				{
 					const btCapsuleShape* capsule = (const btCapsuleShape*)shape;
+					float r = capsule->getRadius();
+					float h = capsule->getHalfHeight();
 					DebugSceneNode* node = debug_node_pool.Get();
 					node->type = DebugSceneNode::Capsule;
 					node->group = DebugSceneNode::Physic;
-					node->mat = Matrix::Scale(capsule->getRadius(), capsule->getHalfHeight(), capsule->getRadius()) * m3 * L.camera.matViewProj;
+					node->mat = Matrix::Scale(r, h + r, r) * m3 * L.camera.matViewProj;
 					draw_batch.debug_nodes.push_back(node);
 				}
 				break;

@@ -5067,7 +5067,10 @@ void Unit::PlaySound(Sound* sound, float range)
 //=================================================================================================
 void Unit::CreatePhysics(bool position)
 {
-	btCapsuleShape* caps = new btCapsuleShape(GetUnitRadius(), max(MIN_H, GetUnitHeight()));
+	float r = GetUnitRadius();
+	float h = max(MIN_H, GetUnitHeight());
+
+	btCapsuleShape* caps = new btCapsuleShape(r, h - r * 2);
 	cobj = new btCollisionObject;
 	cobj->setCollisionShape(caps);
 	cobj->setUserPointer(this);
@@ -5076,7 +5079,7 @@ void Unit::CreatePhysics(bool position)
 	if(position)
 	{
 		btVector3 bpos(ToVector3(IsAlive() ? pos : Vec3(1000, 1000, 1000)));
-		bpos.setY(pos.y + max(MIN_H, GetUnitHeight()) / 2);
+		bpos.setY(pos.y + h / 2);
 		cobj->getWorldTransform().setOrigin(bpos);
 	}
 

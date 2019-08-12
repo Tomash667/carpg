@@ -1047,6 +1047,7 @@ void ServerPanel::UpdateLobbyServer(float dt)
 			starting = false;
 			d = 0;
 			N.peer->SetMaximumIncomingConnections(0);
+			N.peer->SetOfflinePingResponse(nullptr, 0);
 			game->net_mode = Game::NM_TRANSFER_SERVER;
 			game->net_timer = game->mp_timeout;
 			game->net_state = NetState::Server_Starting;
