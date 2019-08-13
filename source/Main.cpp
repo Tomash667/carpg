@@ -751,16 +751,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	LogProcessorFeatures();
 	LoadSystemDir();
 
+	// settings
+	Game game;
+	LoadConfiguration(game, lpCmdLine);
+
 	// instalation scripts
 	if(!RunInstallScripts())
 	{
 		MessageBox(nullptr, "Failed to run installation scripts. Check log for details.", nullptr, MB_OK | MB_ICONERROR | MB_TASKMODAL);
 		return 3;
 	}
-
-	// settings
-	Game game;
-	LoadConfiguration(game, lpCmdLine);
 
 	// language
 	Language::Init();

@@ -6,10 +6,12 @@ Wersja 0.12 (???):
 + aktualizacja bibliotek: FMod 1.10.14
 
 --------------------------------------------------------------------------------
-Version 0.11.1 (???):
+Wersja 0.11.1 (2019-08-12):
 - crash przy spotkaniu zwierz¹t na mapie [Savagesheep]
 - crash gdy nowy gracz do³¹cza do wczytanej gry multiplayer [Savagesheep]
 - zabezpieczenie przed crashem przy wczytywaniu przedmiotów zwi¹zanych z zadaniami w multiplayer [Savagesheep]
+- crash gdy ai nie trafi z czara wyssania krwi i trafi w maneki lub tarczê strzelnicz¹ [Savagesheep]
+- atakowanie przyjaznych orków nie powoduje ju¿ ataku przez ludzi
 - bry³a kolizji jednostek by³ wy¿sza ni¿ powinna
 - startowa rozdzielczoœæ 800x600
 - uruchomiona gra LAN wyœwietla³a siê na liœcie serwerów

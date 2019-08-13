@@ -38,7 +38,7 @@ bool FillEntry()
 	t.AddKeyword("dir", 1);
 	t.AddKeyword("pdb", 2);
 	t.AddKeyword("cdir", 3);
-	
+
 	try
 	{
 		while(true)
@@ -49,7 +49,7 @@ bool FillEntry()
 				break;
 			Entry& e = Add1(entries);
 			e.type = (EntryType)t.MustGetKeywordId();
-			
+
 			// string
 			t.Next();
 			e.input = t.MustGetString();
@@ -93,7 +93,7 @@ char buf2[256];
 
 uint CalculateCrc(HANDLE file)
 {
-	const DWORD chunk = 64*1024;
+	const DWORD chunk = 64 * 1024;
 	if(!buf)
 		buf = new byte[chunk];
 
@@ -107,7 +107,7 @@ uint CalculateCrc(HANDLE file)
 		crc.Update(buf, count);
 		size_left -= count;
 	}
-	
+
 	return crc.Get();
 }
 
@@ -123,7 +123,7 @@ bool PakFile(cstring input, cstring output, cstring path)
 	}
 	DWORD size = GetFileSize(file, NULL);
 
-	cstring name = output+pak_dir.length();
+	cstring name = output + pak_dir.length();
 
 	if(!check_entry)
 	{
@@ -180,7 +180,7 @@ bool PakFile(cstring input, cstring output, cstring path)
 			CopyFile(input, output, FALSE);
 		}
 	}
-	
+
 	return true;
 }
 
@@ -198,7 +198,7 @@ bool PakDir(cstring input, cstring output)
 		return false;
 	}
 
-	do 
+	do
 	{
 		if(strcmp(data.cFileName, ".") == 0 || strcmp(data.cFileName, "..") == 0)
 			continue;
@@ -206,7 +206,7 @@ bool PakDir(cstring input, cstring output)
 		if(IS_SET(data.dwFileAttributes, FILE_ATTRIBUTE_DIRECTORY))
 		{
 			string input2 = Format("%s/%s", input, data.cFileName),
-				   output2 = Format("%s%s/", output, data.cFileName);
+				output2 = Format("%s%s/", output, data.cFileName);
 			if(!PakDir(input2.c_str(), output2.c_str()))
 			{
 				FindClose(find);
@@ -221,8 +221,7 @@ bool PakDir(cstring input, cstring output)
 				return false;
 			}
 		}
-	}
-	while(FindNextFile(find, &data));
+	} while(FindNextFile(find, &data));
 
 	FindClose(find);
 	return true;
@@ -366,7 +365,12 @@ bool CreatePatch(char* pakname)
 		CreateDirectory(Format("%s/system/install", pak_dir.c_str()), NULL);
 		std::ofstream o(Format("%s/system/install/%s.txt", pak_dir.c_str(), pakname));
 		for(vector<PakEntry*>::iterator it = missing.begin(), end = missing.end(); it != end; ++it)
-			o << Format("remove \"%s\"\n", (*it)->path.c_str());
+		{
+			cstring entry = (*it)->path.c_str();
+			if(entry[0] == '/')
+				++entry;
+			o << Format("remove \"%s\"\n", entry);
+		}
 	}
 
 	if(!nozip)
@@ -390,7 +394,7 @@ bool LoadEntries(char* pakname)
 	}
 
 	string cur_pak = Format("%s.txt", pakname);
-	DWORD t1=0, t2=0;
+	DWORD t1 = 0, t2 = 0;
 	string best;
 
 	do
@@ -401,8 +405,7 @@ bool LoadEntries(char* pakname)
 			t2 = data.ftLastWriteTime.dwLowDateTime;
 			best = data.cFileName;
 		}
-	}
-	while(FindNextFile(find, &data));
+	} while(FindNextFile(find, &data));
 
 	FindClose(find);
 
@@ -457,7 +460,7 @@ int main(int argc, char** argv)
 
 	int mode = 0;
 
-	for(int i=1; i<argc; ++i)
+	for(int i = 1; i < argc; ++i)
 	{
 		if(strcmp(argv[i], "-nozip") == 0)
 			nozip = true;

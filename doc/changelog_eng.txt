@@ -6,10 +6,12 @@ Version 0.12 (???):
 + update libraries: FMod 1.10.14
 
 --------------------------------------------------------------------------------
-Version 0.11.1 (???):
+Wersja 0.11.1 (2019-08-12):
 - crash on animals encounter [Savagesheep]
 - crash when new player joins loaded multiplayer game [Savagesheep]
 - crash prevention when loading multiplayer game for quest items [Savagesheep]
+- crash when enemy cast drain and misses hitting melee or bow targets [Savagesheep]
+- fixed attacking peaceful orcs cause attack from citizens
 - units collision shape was slightly higher then it should be
 - fixed starting resolution of 800x600
 - running LAN server was visible on list of servers
