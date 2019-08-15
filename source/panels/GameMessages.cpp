@@ -7,7 +7,7 @@
 #include "SaveState.h"
 #include "SoundManager.h"
 #include "ResourceManager.h"
-#include "GlobalGui.h"
+#include "GameGui.h"
 
 //=================================================================================================
 void GameMessages::LoadLanguage()
@@ -41,12 +41,13 @@ void GameMessages::LoadLanguage()
 	txGameLoaded = Str("gameLoaded");
 	txGoldPlus = Str("goldPlus");
 	txQuestCompletedGold = Str("questCompletedGold");
+	txGmsAddedItems = Str("gmsAddedItems");
 }
 
 //=================================================================================================
 void GameMessages::LoadData()
 {
-	snd_scribble = app::res_mgr->Load<Sound>("scribble.mp3");
+	snd_scribble = res_mgr->Load<Sound>("scribble.mp3");
 }
 
 //=================================================================================================
@@ -67,14 +68,13 @@ void GameMessages::Draw(ControlDrawData*)
 		else if(it->fade > 0 && it->time < 0.f)
 			a = 255 - int(it->fade * 2550);
 		Rect rect = { 0, int(it->pos.y) - it->size.y / 2, gui->wnd_size.x, int(it->pos.y) + it->size.y / 2 };
-		gui->DrawText(GlobalGui::font, it->msg, DTF_CENTER | DTF_OUTLINE, Color::Alpha(a), rect);
+		gui->DrawText(GameGui::font, it->msg, DTF_CENTER | DTF_OUTLINE, Color::Alpha(a), rect);
 	}
 
-	Game& game = Game::Get();
-	if(game.paused)
+	if(game->paused)
 	{
 		Rect r = { 0, 0, gui->wnd_size.x, gui->wnd_size.y };
-		gui->DrawText(GlobalGui::font_big, txGamePausedBig, DTF_CENTER | DTF_VCENTER, Color::Black, r);
+		gui->DrawText(GameGui::font_big, txGamePausedBig, DTF_CENTER | DTF_VCENTER, Color::Black, r);
 	}
 }
 
@@ -170,7 +170,7 @@ void GameMessages::AddMessage(cstring text, float time, int type, int subtype, i
 	m.subtype = subtype;
 	m.time = time;
 	m.fade = -0.1f;
-	m.size = GlobalGui::font->CalculateSize(text, gui->wnd_size.x - 64);
+	m.size = GameGui::font->CalculateSize(text, gui->wnd_size.x - 64);
 	m.size.y += 6;
 	m.value = value;
 
@@ -231,12 +231,12 @@ void GameMessages::AddGameMsg3(GMS id)
 	case GMS_ADDED_RUMOR:
 		repeat = true;
 		text = txGmsRumor;
-		app::sound_mgr->PlaySound2d(snd_scribble);
+		sound_mgr->PlaySound2d(snd_scribble);
 		break;
 	case GMS_JOURNAL_UPDATED:
 		repeat = true;
 		text = txGmsJournalUpdated;
-		app::sound_mgr->PlaySound2d(snd_scribble);
+		sound_mgr->PlaySound2d(snd_scribble);
 		break;
 	case GMS_USED:
 		text = txGmsUsed;
@@ -367,6 +367,9 @@ void GameMessages::AddFormattedMessage(PlayerController* player, GMS id, int sub
 			text = Format(txQuestCompletedGold, value);
 			time = 4.f;
 			break;
+		case GMS_ADDED_ITEMS:
+			text = Format(txGmsAddedItems, value);
+			break;
 		default:
 			assert(0);
 			return;
@@ -377,7 +380,7 @@ void GameMessages::AddFormattedMessage(PlayerController* player, GMS id, int sub
 			GameMsg& msg = *existing;
 			msg.msg = text;
 			msg.time = time;
-			msg.size = GlobalGui::font->CalculateSize(text, gui->wnd_size.x - 64);
+			msg.size = GameGui::font->CalculateSize(text, gui->wnd_size.x - 64);
 			msg.size.y += 6;
 			msg.value = value;
 		}
@@ -392,4 +395,13 @@ void GameMessages::AddFormattedMessage(PlayerController* player, GMS id, int sub
 		c.count = value;
 		c.a = subtype;
 	}
+}
+
+//=================================================================================================
+void GameMessages::AddItemMessage(PlayerController* player, uint count)
+{
+	if(count == 1u)
+		AddGameMsg3(player, GMS_ADDED_ITEM);
+	else
+		AddFormattedMessage(player, GMS_ADDED_ITEMS, 0, count);
 }

@@ -1,11 +1,10 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "GameComponent.h"
 #include "ConsoleCommands.h"
 
 //-----------------------------------------------------------------------------
-class CommandParser : public GameComponent
+class CommandParser
 {
 public:
 	typedef delegate<void(cstring)> PrintMsgFunc;
@@ -38,7 +37,6 @@ public:
 private:
 	void ParseScript(Tokenizer& t);
 	void RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE source);
-	void Cleanup() override { delete this; }
 	bool ParseStreamInner(BitStreamReader& f);
 
 	vector<ConsoleCommand> cmds;

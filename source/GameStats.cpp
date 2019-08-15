@@ -4,7 +4,7 @@
 #include "GameFile.h"
 #include "BitStreamFunc.h"
 
-GameStats Singleton<GameStats>::instance;
+GameStats* global::game_stats;
 
 void GameStats::Reset()
 {

@@ -327,7 +327,7 @@ namespace FOV
 
 	void DungeonReveal(const Int2& tile, vector<Int2>& revealed_tiles)
 	{
-		InsideLocationLevel& lvl = static_cast<InsideLocation*>(L.location)->GetLevelData();
+		InsideLocationLevel& lvl = static_cast<InsideLocation*>(game_level->location)->GetLevelData();
 
 		source = tile;
 		extent = Int2(5, 5);

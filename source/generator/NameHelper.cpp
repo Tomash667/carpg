@@ -48,10 +48,10 @@ void NameHelper::GenerateHeroName(Class clas, bool crazy, string& hero_name)
 		hero_name += txNamePrefix;
 		hero_name += RandomItem(ci.nicknames);
 	}
-	else if((type == 0 || type == 4) && !W.GetLocations().empty())
+	else if((type == 0 || type == 4) && !world->GetLocations().empty())
 	{
 		hero_name += txNameFrom;
-		hero_name += W.GetRandomSettlement()->name;
+		hero_name += world->GetRandomSettlement()->name;
 	}
 	else if(type == 0 || type == 1 || type == 4 || type == 5)
 	{

@@ -39,11 +39,24 @@
 #include "Quest_Tutorial.h"
 #include "Quest_Wanted.h"
 
-//-----------------------------------------------------------------------------
-QuestManager QM;
+QuestManager* global::quest_mgr;
 
 //=================================================================================================
-void QuestManager::InitOnce()
+QuestManager::QuestManager() : quest_contest(nullptr), quest_secret(nullptr), quest_tournament(nullptr), quest_tutorial(nullptr)
+{
+}
+
+//=================================================================================================
+QuestManager::~QuestManager()
+{
+	delete quest_contest;
+	delete quest_secret;
+	delete quest_tournament;
+	delete quest_tutorial;
+}
+
+//=================================================================================================
+void QuestManager::Init()
 {
 	force = Q_FORCE_DISABLED;
 
@@ -82,17 +95,7 @@ void QuestManager::InitOnce()
 }
 
 //=================================================================================================
-void QuestManager::LoadLanguage()
-{
-	LoadArray(txRumorQ, "rumorQ");
-	quest_contest->LoadLanguage();
-	quest_secret->LoadLanguage();
-	quest_tournament->LoadLanguage();
-	quest_tutorial->LoadLanguage();
-}
-
-//=================================================================================================
-void QuestManager::PostInit()
+void QuestManager::InitLists()
 {
 	quests_mayor = QuestList::TryGet("mayor");
 	quests_captain = QuestList::TryGet("captain");
@@ -108,12 +111,13 @@ void QuestManager::PostInit()
 }
 
 //=================================================================================================
-void QuestManager::Cleanup()
+void QuestManager::LoadLanguage()
 {
-	delete quest_contest;
-	delete quest_secret;
-	delete quest_tournament;
-	delete quest_tutorial;
+	LoadArray(txRumorQ, "rumorQ");
+	quest_contest->LoadLanguage();
+	quest_secret->LoadLanguage();
+	quest_tournament->LoadLanguage();
+	quest_tutorial->LoadLanguage();
 }
 
 //=================================================================================================
@@ -134,7 +138,7 @@ void QuestManager::InitQuests(bool devmode)
 	// goblins
 	quest_goblins = new Quest_Goblins;
 	quest_goblins->Init();
-	quest_goblins->start_loc = W.GetRandomSettlementIndex(used, 1);
+	quest_goblins->start_loc = world->GetRandomSettlementIndex(used, 1);
 	quest_goblins->refid = quest_counter++;
 	quest_goblins->Start();
 	unaccepted_quests.push_back(quest_goblins);
@@ -143,7 +147,7 @@ void QuestManager::InitQuests(bool devmode)
 	// bandits
 	quest_bandits = new Quest_Bandits;
 	quest_bandits->Init();
-	quest_bandits->start_loc = W.GetRandomSettlementIndex(used, 1);
+	quest_bandits->start_loc = world->GetRandomSettlementIndex(used, 1);
 	quest_bandits->refid = quest_counter++;
 	quest_bandits->Start();
 	unaccepted_quests.push_back(quest_bandits);
@@ -151,7 +155,7 @@ void QuestManager::InitQuests(bool devmode)
 
 	// sawmill
 	quest_sawmill = new Quest_Sawmill;
-	quest_sawmill->start_loc = W.GetRandomSettlementIndex(used);
+	quest_sawmill->start_loc = world->GetRandomSettlementIndex(used);
 	quest_sawmill->refid = quest_counter++;
 	quest_sawmill->Start();
 	unaccepted_quests.push_back(quest_sawmill);
@@ -159,8 +163,8 @@ void QuestManager::InitQuests(bool devmode)
 
 	// mine
 	quest_mine = new Quest_Mine;
-	quest_mine->start_loc = W.GetRandomSettlementIndex(used);
-	quest_mine->target_loc = W.GetClosestLocation(L_CAVE, W.GetLocation(quest_mine->start_loc)->pos);
+	quest_mine->start_loc = world->GetRandomSettlementIndex(used);
+	quest_mine->target_loc = world->GetClosestLocation(L_CAVE, world->GetLocation(quest_mine->start_loc)->pos);
 	quest_mine->refid = quest_counter++;
 	quest_mine->Start();
 	unaccepted_quests.push_back(quest_mine);
@@ -168,7 +172,7 @@ void QuestManager::InitQuests(bool devmode)
 
 	// mages
 	quest_mages = new Quest_Mages;
-	quest_mages->start_loc = W.GetRandomSettlementIndex(used);
+	quest_mages->start_loc = world->GetRandomSettlementIndex(used);
 	quest_mages->refid = quest_counter++;
 	quest_mages->Start();
 	unaccepted_quests.push_back(quest_mages);
@@ -184,7 +188,7 @@ void QuestManager::InitQuests(bool devmode)
 	// orcs
 	quest_orcs = new Quest_Orcs;
 	quest_orcs->Init();
-	quest_orcs->start_loc = W.GetRandomSettlementIndex(used);
+	quest_orcs->start_loc = world->GetRandomSettlementIndex(used);
 	quest_orcs->refid = quest_counter++;
 	quest_orcs->Start();
 	unaccepted_quests.push_back(quest_orcs);
@@ -200,7 +204,7 @@ void QuestManager::InitQuests(bool devmode)
 	// evil
 	quest_evil = new Quest_Evil;
 	quest_evil->Init();
-	quest_evil->start_loc = W.GetRandomSettlementIndex(used);
+	quest_evil->start_loc = world->GetRandomSettlementIndex(used);
 	quest_evil->refid = quest_counter++;
 	quest_evil->Start();
 	unaccepted_quests.push_back(quest_evil);
@@ -226,16 +230,16 @@ void QuestManager::InitQuests(bool devmode)
 
 	if(devmode)
 	{
-		Info("Quest 'Sawmill' - %s.", W.GetLocation(quest_sawmill->start_loc)->name.c_str());
-		Info("Quest 'Mine' - %s, %s.", W.GetLocation(quest_mine->start_loc)->name.c_str(), W.GetLocation(quest_mine->target_loc)->name.c_str());
-		Info("Quest 'Bandits' - %s.", W.GetLocation(quest_bandits->start_loc)->name.c_str());
-		Info("Quest 'Mages' - %s.", W.GetLocation(quest_mages->start_loc)->name.c_str());
-		Info("Quest 'Orcs' - %s.", W.GetLocation(quest_orcs->start_loc)->name.c_str());
-		Info("Quest 'Goblins' - %s.", W.GetLocation(quest_goblins->start_loc)->name.c_str());
-		Info("Quest 'Evil' - %s.", W.GetLocation(quest_evil->start_loc)->name.c_str());
-		Info("Tournament - %s.", W.GetLocation(quest_tournament->GetCity())->name.c_str());
-		Info("Contest - %s.", W.GetLocation(quest_contest->where)->name.c_str());
-		Info("Gladiator armor - %s.", W.GetLocation(quest_artifacts->target_loc)->name.c_str());
+		Info("Quest 'Sawmill' - %s.", world->GetLocation(quest_sawmill->start_loc)->name.c_str());
+		Info("Quest 'Mine' - %s, %s.", world->GetLocation(quest_mine->start_loc)->name.c_str(), world->GetLocation(quest_mine->target_loc)->name.c_str());
+		Info("Quest 'Bandits' - %s.", world->GetLocation(quest_bandits->start_loc)->name.c_str());
+		Info("Quest 'Mages' - %s.", world->GetLocation(quest_mages->start_loc)->name.c_str());
+		Info("Quest 'Orcs' - %s.", world->GetLocation(quest_orcs->start_loc)->name.c_str());
+		Info("Quest 'Goblins' - %s.", world->GetLocation(quest_goblins->start_loc)->name.c_str());
+		Info("Quest 'Evil' - %s.", world->GetLocation(quest_evil->start_loc)->name.c_str());
+		Info("Tournament - %s.", world->GetLocation(quest_tournament->GetCity())->name.c_str());
+		Info("Contest - %s.", world->GetLocation(quest_contest->where)->name.c_str());
+		Info("Gladiator armor - %s.", world->GetLocation(quest_artifacts->target_loc)->name.c_str());
 	}
 
 	// init scripted quests
@@ -437,10 +441,10 @@ void QuestManager::Update(int days)
 		if(!quest->IsTimedout())
 			return false;
 
-		Location* loc = W.GetLocation(quest->target_loc);
+		Location* loc = world->GetLocation(quest->target_loc);
 		bool in_camp = false;
 
-		if(loc->type == L_CAMP && (quest->target_loc == W.GetTravelLocationIndex() || quest->target_loc == W.GetCurrentLocationIndex()))
+		if(loc->type == L_CAMP && (quest->target_loc == world->GetTravelLocationIndex() || quest->target_loc == world->GetCurrentLocationIndex()))
 			in_camp = true;
 
 		if(!quest->timeout)
@@ -460,7 +464,7 @@ void QuestManager::Update(int days)
 		if(loc->type == L_CAMP)
 		{
 			quest->target_loc = -1;
-			W.DeleteCamp((Camp*)loc);
+			world->DeleteCamp((Camp*)loc);
 		}
 
 		return true;
@@ -478,10 +482,10 @@ void QuestManager::Update(int days)
 	});
 
 	// update contest
-	if(quest_contest->year != W.GetYear())
+	if(quest_contest->year != world->GetYear())
 	{
-		quest_contest->year = W.GetYear();
-		quest_contest->where = W.GetRandomSettlementIndex(quest_contest->where);
+		quest_contest->year = world->GetYear();
+		quest_contest->where = world->GetRandomSettlementIndex(quest_contest->where);
 	}
 }
 
@@ -504,7 +508,7 @@ void QuestManager::Write(BitStreamWriter& f)
 	{
 		if(c.type == NetChange::REGISTER_ITEM)
 			return false;
-		Game::Get().ReportError(13, Format("QuestManager write invalid change %d.", c.type));
+		game->ReportError(13, Format("QuestManager write invalid change %d.", c.type));
 		return true;
 	});
 	f.WriteCasted<word>(Net::changes.size());
@@ -732,11 +736,11 @@ void QuestManager::Load(GameReader& f)
 			{
 			case old::R_SAWMILL:
 				id = Q_SAWMILL;
-				text = Format(txRumorQ[0], W.GetLocation(quest_sawmill->start_loc)->name.c_str());
+				text = Format(txRumorQ[0], world->GetLocation(quest_sawmill->start_loc)->name.c_str());
 				break;
 			case old::R_MINE:
 				id = Q_MINE;
-				text = Format(txRumorQ[1], W.GetLocation(quest_mine->start_loc)->name.c_str());
+				text = Format(txRumorQ[1], world->GetLocation(quest_mine->start_loc)->name.c_str());
 				break;
 			case old::R_CONTEST:
 				id = Q_FORCE_NONE;
@@ -744,11 +748,11 @@ void QuestManager::Load(GameReader& f)
 				break;
 			case old::R_BANDITS:
 				id = Q_BANDITS;
-				text = Format(txRumorQ[3], W.GetLocation(quest_bandits->start_loc)->name.c_str());
+				text = Format(txRumorQ[3], world->GetLocation(quest_bandits->start_loc)->name.c_str());
 				break;
 			case old::R_MAGES:
 				id = Q_MAGES;
-				text = Format(txRumorQ[4], W.GetLocation(quest_mages->start_loc)->name.c_str());
+				text = Format(txRumorQ[4], world->GetLocation(quest_mages->start_loc)->name.c_str());
 				break;
 			case old::R_MAGES2:
 				id = Q_MAGES2;
@@ -756,15 +760,15 @@ void QuestManager::Load(GameReader& f)
 				break;
 			case old::R_ORCS:
 				id = Q_ORCS;
-				text = Format(txRumorQ[6], W.GetLocation(quest_orcs->start_loc)->name.c_str());
+				text = Format(txRumorQ[6], world->GetLocation(quest_orcs->start_loc)->name.c_str());
 				break;
 			case old::R_GOBLINS:
 				id = Q_GOBLINS;
-				text = Format(txRumorQ[7], W.GetLocation(quest_goblins->start_loc)->name.c_str());
+				text = Format(txRumorQ[7], world->GetLocation(quest_goblins->start_loc)->name.c_str());
 				break;
 			case old::R_EVIL:
 				id = Q_EVIL;
-				text = Format(txRumorQ[8], W.GetLocation(quest_evil->start_loc)->name.c_str());
+				text = Format(txRumorQ[8], world->GetLocation(quest_evil->start_loc)->name.c_str());
 				break;
 			}
 			if(id == Q_FORCE_NONE)

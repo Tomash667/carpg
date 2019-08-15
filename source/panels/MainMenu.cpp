@@ -6,14 +6,14 @@
 #include "DialogBox.h"
 #include "ResourceManager.h"
 #include "Game.h"
-#include "GlobalGui.h"
+#include "GameGui.h"
 #include "SaveLoadPanel.h"
 #include <thread>
 #include "LobbyApi.h"
 #include "Utility.h"
 
 //=================================================================================================
-MainMenu::MainMenu(Game* game) : game(game), check_status(CheckVersionStatus::None), check_updates(game->check_updates)
+MainMenu::MainMenu() : check_status(CheckVersionStatus::None), check_updates(game->check_updates)
 {
 	focusable = true;
 	visible = false;
@@ -54,7 +54,7 @@ void MainMenu::LoadLanguage()
 		b.id = IdNewGame + i;
 		b.parent = this;
 		b.text = s.Get(names[i]);
-		b.size = GlobalGui::font->CalculateSize(b.text) + Int2(24, 24);
+		b.size = GameGui::font->CalculateSize(b.text) + Int2(24, 24);
 
 		maxsize = Int2::Max(maxsize, b.size);
 	}
@@ -69,10 +69,9 @@ void MainMenu::LoadLanguage()
 //=================================================================================================
 void MainMenu::LoadData()
 {
-	ResourceManager& res_mgr = *app::res_mgr;
-	tBackground = res_mgr.Load<Texture>("menu_bg.jpg");
-	tLogo = res_mgr.Load<Texture>("logo.png");
-	tFModLogo = res_mgr.Load<Texture>("fmod_logo.png");
+	tBackground = res_mgr->Load<Texture>("menu_bg.jpg");
+	tLogo = res_mgr->Load<Texture>("logo.png");
+	tFModLogo = res_mgr->Load<Texture>("fmod_logo.png");
 }
 
 //=================================================================================================
@@ -85,19 +84,19 @@ void MainMenu::Draw(ControlDrawData*)
 
 	Rect r = { 0, 0, gui->wnd_size.x, gui->wnd_size.y };
 	r.Top() = r.Bottom() - 64;
-	gui->DrawText(GlobalGui::font, "Devmode(2013,2019) Tomashu & Leinnan", DTF_CENTER | DTF_BOTTOM | DTF_OUTLINE, Color::White, r);
+	gui->DrawText(GameGui::font, "Devmode(2013,2019) Tomashu & Leinnan", DTF_CENTER | DTF_BOTTOM | DTF_OUTLINE, Color::White, r);
 
 	r.Left() = gui->wnd_size.x - 512 - 16;
 	r.Right() = gui->wnd_size.x - 16;
 	r.Top() = 256 + 24;
 	r.Bottom() = r.Top() + 64;
-	gui->DrawText(GlobalGui::font, Format(txVersion, VERSION_STR), DTF_CENTER | DTF_OUTLINE, Color::White, r);
+	gui->DrawText(GameGui::font, Format(txVersion, VERSION_STR), DTF_CENTER | DTF_OUTLINE, Color::White, r);
 
 	r.Left() = 0;
 	r.Right() = gui->wnd_size.x;
 	r.Bottom() = gui->wnd_size.y - 16;
 	r.Top() = r.Bottom() - 64;
-	gui->DrawText(GlobalGui::font, version_text, DTF_CENTER | DTF_BOTTOM | DTF_OUTLINE, Color::White, r);
+	gui->DrawText(GameGui::font, version_text, DTF_CENTER | DTF_BOTTOM | DTF_OUTLINE, Color::White, r);
 
 	for(int i = 0; i < BUTTONS; ++i)
 	{
@@ -185,14 +184,14 @@ void MainMenu::UpdateCheckVersion()
 void MainMenu::CheckVersion()
 {
 	auto cancel = [&]() { return check_status == CheckVersionStatus::Cancel; };
-	version_new = N.api->GetVersion(cancel);
+	version_new = net->api->GetVersion(cancel);
 	if(version_new < 0)
 		check_status = CheckVersionStatus::Error;
 	else
 	{
 		version_changelog.clear();
 		if(version_new > VERSION)
-			N.api->GetChangelog(version_changelog, cancel);
+			net->api->GetChangelog(version_changelog, cancel);
 		check_status = CheckVersionStatus::Done;
 	}
 }
@@ -213,17 +212,17 @@ void MainMenu::Event(GuiEvent e)
 		{
 		case IdNewGame:
 			Net::SetMode(Net::Mode::Singleplayer);
-			game->gui->ShowCreateCharacterPanel(true);
+			game_gui->ShowCreateCharacterPanel(true);
 			break;
 		case IdLoadGame:
 			Net::SetMode(Net::Mode::Singleplayer);
-			game->gui->saveload->ShowLoadPanel();
+			game_gui->saveload->ShowLoadPanel();
 			break;
 		case IdMultiplayer:
-			game->gui->ShowMultiplayer();
+			game_gui->ShowMultiplayer();
 			break;
 		case IdOptions:
-			game->gui->ShowOptions();
+			game_gui->ShowOptions();
 			break;
 		case IdInfo:
 			gui->SimpleDialog(Format(txInfoText, VERSION_STR, utility::GetCompileTime().c_str()), nullptr);

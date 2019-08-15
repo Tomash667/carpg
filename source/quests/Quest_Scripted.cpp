@@ -6,7 +6,7 @@
 #include "World.h"
 #include "Game.h"
 #include "Journal.h"
-#include "GlobalGui.h"
+#include "GameGui.h"
 #include "GameMessages.h"
 #include "QuestManager.h"
 #include "GameFile.h"
@@ -24,7 +24,7 @@ Quest_Scripted::~Quest_Scripted()
 
 void Quest_Scripted::Start()
 {
-	start_loc = W.GetCurrentLocationIndex();
+	start_loc = world->GetCurrentLocationIndex();
 	quest_id = Q_SCRIPTED;
 	type = scheme->type;
 
@@ -34,14 +34,14 @@ void Quest_Scripted::Start()
 	if(!scheme->f_startup)
 		return;
 	BeforeCall();
-	SM.RunScript(scheme->f_startup, instance);
+	script_mgr->RunScript(scheme->f_startup, instance);
 	AfterCall();
 }
 
 void Quest_Scripted::CreateInstance()
 {
 	asIScriptFunction* factory = scheme->script_type->GetFactoryByIndex(0);
-	SM.RunScript(factory, nullptr, [this](asIScriptContext* ctx, int stage)
+	script_mgr->RunScript(factory, nullptr, [this](asIScriptContext* ctx, int stage)
 	{
 		if(stage == 1)
 		{
@@ -64,7 +64,7 @@ void Quest_Scripted::Save(GameWriter& f)
 	{
 		int type_id;
 		scheme->script_type->GetProperty(i, nullptr, &type_id);
-		Var::Type var_type = SM.GetVarType(type_id);
+		Var::Type var_type = script_mgr->GetVarType(type_id);
 		void* ptr = instance->GetAddressOfProperty(i);
 		switch(var_type)
 		{
@@ -149,7 +149,7 @@ bool Quest_Scripted::Load(GameReader& f)
 	{
 		int type_id;
 		scheme->script_type->GetProperty(i, nullptr, &type_id);
-		Var::Type var_type = SM.GetVarType(type_id);
+		Var::Type var_type = script_mgr->GetVarType(type_id);
 		void* ptr = instance->GetAddressOfProperty(i);
 		switch(var_type)
 		{
@@ -189,7 +189,7 @@ bool Quest_Scripted::Load(GameReader& f)
 			{
 				int index = f.Read<int>();
 				if(index != -1)
-					*(Location**)ptr = W.GetLocation(index);
+					*(Location**)ptr = world->GetLocation(index);
 				else
 					*(Location**)ptr = nullptr;
 			}
@@ -198,7 +198,7 @@ bool Quest_Scripted::Load(GameReader& f)
 			{
 				int index = f.Read<int>();
 				if(index != -1)
-					*(Encounter**)ptr = W.GetEncounter(index);
+					*(Encounter**)ptr = world->GetEncounter(index);
 				else
 					*(Encounter**)ptr = nullptr;
 			}
@@ -240,7 +240,7 @@ void Quest_Scripted::BeforeCall()
 	{
 		journal_state = JournalState::None;
 		journal_changes = 0;
-		SM.GetContext().quest = this;
+		script_mgr->GetContext().quest = this;
 	}
 	++call_depth;
 }
@@ -252,8 +252,8 @@ void Quest_Scripted::AfterCall()
 		return;
 	if(journal_changes || journal_state == JournalState::Changed)
 	{
-		game->gui->journal->NeedUpdate(Journal::Quests, quest_index);
-		game->gui->messages->AddGameMsg3(GMS_JOURNAL_UPDATED);
+		game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
+		game_gui->messages->AddGameMsg3(GMS_JOURNAL_UPDATED);
 		if(Net::IsOnline())
 		{
 			NetChange& c = Add1(Net::changes);
@@ -262,7 +262,7 @@ void Quest_Scripted::AfterCall()
 			c.count = journal_changes;
 		}
 	}
-	SM.GetContext().quest = nullptr;
+	script_mgr->GetContext().quest = nullptr;
 }
 
 void Quest_Scripted::SetProgress(int prog2)
@@ -274,14 +274,14 @@ void Quest_Scripted::SetProgress(int prog2)
 	BeforeCall();
 	if(scheme->set_progress_use_prev)
 	{
-		SM.RunScript(scheme->f_progress, instance, [prev](asIScriptContext* ctx, int stage)
+		script_mgr->RunScript(scheme->f_progress, instance, [prev](asIScriptContext* ctx, int stage)
 		{
 			if(stage == 0)
 				CHECKED(ctx->SetArgDWord(0, prev));
 		});
 	}
 	else
-		SM.RunScript(scheme->f_progress, instance);
+		script_mgr->RunScript(scheme->f_progress, instance);
 	AfterCall();
 }
 
@@ -310,7 +310,7 @@ void Quest_Scripted::SetCompleted()
 	else if(type == QuestType::Captain)
 		((City&)GetStartLocation()).quest_captain = CityQuestState::None;
 	if(type == QuestType::Unique)
-		QM.EndUniqueQuest();
+		quest_mgr->EndUniqueQuest();
 	Cleanup();
 }
 
@@ -332,14 +332,14 @@ void Quest_Scripted::SetTimeout(int days)
 	assert(timeout_days == -1);
 	assert(days > 0);
 	timeout_days = days;
-	QM.quests_timeout2.push_back(this);
+	quest_mgr->quests_timeout2.push_back(this);
 }
 
 bool Quest_Scripted::IsTimedout() const
 {
 	if(timeout_days == -1)
 		return false;
-	return W.GetWorldtime() - start_time > timeout_days;
+	return world->GetWorldtime() - start_time > timeout_days;
 }
 
 bool Quest_Scripted::OnTimeout(TimeoutType ttype)
@@ -355,7 +355,7 @@ void Quest_Scripted::FireEvent(ScriptEvent& event)
 	if(!scheme->f_event)
 		return;
 	BeforeCall();
-	SM.RunScript(scheme->f_event, instance, [&event](asIScriptContext* ctx, int stage)
+	script_mgr->RunScript(scheme->f_event, instance, [&event](asIScriptContext* ctx, int stage)
 	{
 		if(stage == 0)
 			CHECKED(ctx->SetArgObject(0, &event));
@@ -367,7 +367,7 @@ void Quest_Scripted::Cleanup()
 {
 	if(timeout_days != -1)
 	{
-		RemoveElementTry(QM.quests_timeout2, static_cast<Quest*>(this));
+		RemoveElementTry(quest_mgr->quests_timeout2, static_cast<Quest*>(this));
 		timeout_days = -1;
 	}
 
@@ -389,7 +389,7 @@ void Quest_Scripted::Cleanup()
 		unit->RemoveDialog(this, true);
 	unit_dialogs.clear();
 
-	W.RemoveEncounter(this);
+	world->RemoveEncounter(this);
 }
 
 // Remove event ptr, must be called when removing real event
@@ -412,7 +412,7 @@ void Quest_Scripted::RemoveDialogPtr(Unit* unit)
 cstring Quest_Scripted::FormatString(const string& str)
 {
 	if(str == "date")
-		return W.GetDate();
+		return world->GetDate();
 	else if(str == "name")
 	{
 		Unit* talker = DialogContext::current->talker;
@@ -428,7 +428,7 @@ cstring Quest_Scripted::FormatString(const string& str)
 
 string Quest_Scripted::GetString(int index)
 {
-	assert(SM.GetContext().quest == this);
+	assert(script_mgr->GetContext().quest == this);
 	GameDialog* dialog = scheme->dialogs[0];
 	if(index < 0 || index >= (int)dialog->texts.size())
 		throw ScriptException("Invalid text index.");
@@ -452,7 +452,7 @@ string Quest_Scripted::GetString(int index)
 			{
 				uint pos = FindClosingPos(str, i);
 				int index = atoi(str.substr(i + 1, pos - i - 1).c_str());
-				SM.RunScript(scheme->scripts.Get(DialogScripts::F_FORMAT), instance, [&](asIScriptContext* ctx, int stage)
+				script_mgr->RunScript(scheme->scripts.Get(DialogScripts::F_FORMAT), instance, [&](asIScriptContext* ctx, int stage)
 				{
 					if(stage == 0)
 					{
@@ -485,10 +485,10 @@ string Quest_Scripted::GetString(int index)
 
 void Quest_Scripted::AddRumor(const string& str)
 {
-	QM.AddQuestRumor(refid, str.c_str());
+	quest_mgr->AddQuestRumor(refid, str.c_str());
 }
 
 void Quest_Scripted::RemoveRumor()
 {
-	QM.RemoveQuestRumor(refid);
+	quest_mgr->RemoveQuestRumor(refid);
 }

@@ -1,7 +1,6 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "GameComponent.h"
 #include "LevelArea.h"
 #include "ObjectEntity.h"
 #include "Camera.h"
@@ -31,7 +30,7 @@ enum class CanLeaveLocationResult
 };
 
 //-----------------------------------------------------------------------------
-class Level : public GameComponent
+class Level
 {
 	struct UnitWarpData
 	{
@@ -41,10 +40,10 @@ class Level : public GameComponent
 
 public:
 	Level();
-	void LoadLanguage() override;
-	void LoadData() override;
-	void PostInit() override;
-	void Cleanup() override;
+	~Level();
+	void LoadLanguage();
+	void LoadData();
+	void Init();
 	void Reset();
 	Location* GetLocation() { return location; }
 	void WarpUnit(Unit* unit, int where)
@@ -173,8 +172,8 @@ public:
 	Vec4 GetLightDir();
 	void SetOutsideParams();
 
-	Location* location; // same as W.current_location
-	int location_index; // same as W.current_location_index
+	Location* location; // same as world->current_location
+	int location_index; // same as world->current_location_index
 	int dungeon_level;
 	bool reenter;
 	Camera camera;
@@ -231,4 +230,3 @@ private:
 
 	cstring txLocationText, txLocationTextMap, txWorldMap, txNewsCampCleared, txNewsLocCleared;
 };
-extern Level L;

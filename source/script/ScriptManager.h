@@ -1,7 +1,6 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "GameComponent.h"
 #include "Var.h"
 #include "ScriptException.h"
 #include "Event.h"
@@ -55,12 +54,12 @@ struct ScriptContext
 };
 
 //-----------------------------------------------------------------------------
-class ScriptManager : public GameComponent
+class ScriptManager
 {
 public:
 	ScriptManager();
-	void InitOnce() override;
-	void Cleanup() override;
+	~ScriptManager();
+	void Init();
 	void RegisterCommon();
 	void RegisterGame();
 	void SetException(cstring ex) { last_exception = ex; }
@@ -115,4 +114,3 @@ private:
 	std::unordered_map<Unit*, VarsContainer*> unit_vars;
 	ScriptContext ctx;
 };
-extern ScriptManager SM;

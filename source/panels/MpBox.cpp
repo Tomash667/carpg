@@ -2,8 +2,8 @@
 #include "GameCore.h"
 #include "MpBox.h"
 #include "Game.h"
-#include "GlobalGui.h"
 #include "GameGui.h"
+#include "LevelGui.h"
 #include "BitStreamFunc.h"
 #include "Team.h"
 #include "CommandParser.h"
@@ -36,7 +36,7 @@ void MpBox::Draw(ControlDrawData*)
 void MpBox::Update(float dt)
 {
 	// hack for mp_box focus
-	focusable = Game::Get().gui->game_gui->CanFocusMpBox();
+	focusable = game_gui->level_gui->CanFocusMpBox();
 
 	bool prev_focus = focus;
 	focus = focusable;
@@ -78,12 +78,11 @@ void MpBox::Reset()
 //=================================================================================================
 void MpBox::OnInput(const string& str)
 {
-	Game& game = Game::Get();
 	if(str[0] == '/')
-		global::cmdp->ParseCommand(str.substr(1), CommandParser::PrintMsgFunc(&game, &Game::AddMultiMsg), PS_CHAT);
+		cmdp->ParseCommand(str.substr(1), CommandParser::PrintMsgFunc(game, &Game::AddMultiMsg), PS_CHAT);
 	else
 	{
-		if(Net::IsOnline() && N.active_players != 1)
+		if(Net::IsOnline() && net->active_players != 1)
 		{
 			// send text to server / other players
 			BitStreamWriter f;
@@ -91,14 +90,14 @@ void MpBox::OnInput(const string& str)
 			f.WriteCasted<byte>(Team.my_id);
 			f << str;
 			if(Net::IsServer())
-				N.SendAll(f, MEDIUM_PRIORITY, RELIABLE);
+				net->SendAll(f, MEDIUM_PRIORITY, RELIABLE);
 			else
-				N.SendClient(f, MEDIUM_PRIORITY, RELIABLE);
+				net->SendClient(f, MEDIUM_PRIORITY, RELIABLE);
 		}
 		// add text
-		cstring s = Format("%s: %s", game.player_name.c_str(), str.c_str());
-		game.AddMultiMsg(s);
-		if(game.game_state == GS_LEVEL)
-			game.gui->game_gui->AddSpeechBubble(game.pc->unit, str.c_str());
+		cstring s = Format("%s: %s", game->player_name.c_str(), str.c_str());
+		game->AddMultiMsg(s);
+		if(game->game_state == GS_LEVEL)
+			game_gui->level_gui->AddSpeechBubble(game->pc->unit, str.c_str());
 	}
 }

@@ -37,7 +37,7 @@ void Object::Load(FileReader& f)
 	else
 	{
 		base = nullptr;
-		mesh = app::res_mgr->Load<Mesh>(f.ReadString1());
+		mesh = res_mgr->Load<Mesh>(f.ReadString1());
 	}
 }
 
@@ -82,7 +82,7 @@ bool Object::Read(BitStreamReader& f)
 		const string& mesh_id = f.ReadString1();
 		if(!f)
 			return false;
-		mesh = app::res_mgr->Load<Mesh>(mesh_id);
+		mesh = res_mgr->Load<Mesh>(mesh_id);
 		base = nullptr;
 	}
 	return true;

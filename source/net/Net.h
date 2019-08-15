@@ -1,7 +1,6 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "GameComponent.h"
 #include "GamePacket.h"
 #include "NetChange.h"
 #include "NetChangePlayer.h"
@@ -74,7 +73,7 @@ enum class MasterServerState
 };
 
 //-----------------------------------------------------------------------------
-class Net : public GameComponent
+class Net
 {
 public:
 	enum class Mode
@@ -104,9 +103,9 @@ public:
 	static vector<NetChange> changes;
 
 	Net();
-	void InitOnce() override;
-	void LoadLanguage() override;
-	void Cleanup() override;
+	~Net();
+	void Init();
+	void LoadLanguage();
 	void WriteNetVars(BitStreamWriter& f);
 	void ReadNetVars(BitStreamReader& f);
 	bool ValidateNick(cstring nick);
@@ -180,4 +179,3 @@ private:
 	static Mode mode;
 	cstring txCreateServerFailed, txInitConnectionFailed;
 };
-extern Net N;

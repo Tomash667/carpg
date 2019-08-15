@@ -35,13 +35,32 @@
 #include "Collision.h"
 #include "LocationHelper.h"
 
-Level L;
+Level* global::game_level;
 
 //=================================================================================================
 Level::Level() : local_area(nullptr), terrain(nullptr), terrain_shape(nullptr), dungeon_shape(nullptr), dungeon_shape_data(nullptr), shape_wall(nullptr),
 shape_stairs(nullptr), shape_stairs_part(), shape_block(nullptr), shape_barrier(nullptr), shape_door(nullptr), shape_arrow(nullptr), shape_summon(nullptr),
 cl_fog(true), cl_lighting(true)
 {
+	camera.draw_range = 80.f;
+}
+
+//=================================================================================================
+Level::~Level()
+{
+	delete terrain;
+	delete terrain_shape;
+	delete dungeon_shape;
+	delete dungeon_shape_data;
+	delete shape_wall;
+	delete shape_stairs_part[0];
+	delete shape_stairs_part[1];
+	delete shape_stairs;
+	delete shape_block;
+	delete shape_barrier;
+	delete shape_door;
+	delete shape_arrow;
+	delete shape_summon;
 }
 
 //=================================================================================================
@@ -57,18 +76,15 @@ void Level::LoadLanguage()
 //=================================================================================================
 void Level::LoadData()
 {
-	ResourceManager& res_mgr = *app::res_mgr;
-	tFlare = res_mgr.Load<Texture>("flare.png");
-	tFlare2 = res_mgr.Load<Texture>("flare2.png");
-	tWater = res_mgr.Load<Texture>("water.png");
+	tFlare = res_mgr->Load<Texture>("flare.png");
+	tFlare2 = res_mgr->Load<Texture>("flare2.png");
+	tWater = res_mgr->Load<Texture>("water.png");
 }
 
 //=================================================================================================
-void Level::PostInit()
+void Level::Init()
 {
-	Game& game = Game::Get();
-
-	phy_world = game.phy_world;
+	phy_world = game->phy_world;
 
 	terrain = new Terrain;
 	TerrainOptions terrain_options;
@@ -76,7 +92,7 @@ void Level::PostInit()
 	terrain_options.tex_size = 256;
 	terrain_options.tile_size = 2.f;
 	terrain_options.tiles_per_part = 16;
-	terrain->Init(app::render->GetDevice(), terrain_options);
+	terrain->Init(render->GetDevice(), terrain_options);
 	terrain->Build();
 	terrain->RemoveHeightMap(true);
 
@@ -104,27 +120,9 @@ void Level::PostInit()
 	shape_barrier = new btBoxShape(btVector3(size / 2, 40.f, border / 2));
 	shape_summon = new btCylinderShape(btVector3(1.5f / 2, 0.75f, 1.5f / 2));
 
-	Mesh::Point* point = game.aArrow->FindPoint("Empty");
+	Mesh::Point* point = game->aArrow->FindPoint("Empty");
 	assert(point && point->IsBox());
 	shape_arrow = new btBoxShape(ToVector3(point->size));
-}
-
-//=================================================================================================
-void Level::Cleanup()
-{
-	delete terrain;
-	delete terrain_shape;
-	delete dungeon_shape;
-	delete dungeon_shape_data;
-	delete shape_wall;
-	delete shape_stairs_part[0];
-	delete shape_stairs_part[1];
-	delete shape_stairs;
-	delete shape_block;
-	delete shape_barrier;
-	delete shape_door;
-	delete shape_arrow;
-	delete shape_summon;
 }
 
 //=================================================================================================
@@ -139,7 +137,6 @@ void Level::Reset()
 //=================================================================================================
 void Level::ProcessUnitWarps()
 {
-	Game& game = Game::Get();
 	bool warped_to_arena = false;
 
 	for(UnitWarpData& warp : unit_warp_data)
@@ -175,7 +172,7 @@ void Level::ProcessUnitWarps()
 				warp.unit->rot = building.outside_rot;
 				WarpUnit(*warp.unit, building.outside_spawn);
 				local_area->units.push_back(warp.unit);
-				RemoveElement(game.arena->units, warp.unit);
+				RemoveElement(game->arena->units, warp.unit);
 			}
 			else
 			{
@@ -196,20 +193,20 @@ void Level::ProcessUnitWarps()
 			building.units.push_back(warp.unit);
 		}
 
-		if(warp.unit == game.pc->unit)
+		if(warp.unit == game->pc->unit)
 		{
 			camera.Reset();
-			game.pc_data.rot_buf = 0.f;
+			game->pc_data.rot_buf = 0.f;
 
-			if(game.fallback_type == FALLBACK::ARENA)
+			if(game->fallback_type == FALLBACK::ARENA)
 			{
-				game.pc->unit->frozen = FROZEN::ROTATE;
-				game.fallback_type = FALLBACK::ARENA2;
+				game->pc->unit->frozen = FROZEN::ROTATE;
+				game->fallback_type = FALLBACK::ARENA2;
 			}
-			else if(game.fallback_type == FALLBACK::ARENA_EXIT)
+			else if(game->fallback_type == FALLBACK::ARENA_EXIT)
 			{
-				game.pc->unit->frozen = FROZEN::NO;
-				game.fallback_type = FALLBACK::NONE;
+				game->pc->unit->frozen = FROZEN::NO;
+				game->fallback_type = FALLBACK::NONE;
 			}
 		}
 	}
@@ -221,7 +218,7 @@ void Level::ProcessUnitWarps()
 		Vec3 pt1(0, 0, 0), pt2(0, 0, 0);
 		int count1 = 0, count2 = 0;
 
-		for(vector<Unit*>::iterator it = game.arena->units.begin(), end = game.arena->units.end(); it != end; ++it)
+		for(vector<Unit*>::iterator it = game->arena->units.begin(), end = game->arena->units.end(); it != end; ++it)
 		{
 			if((*it)->in_arena == 0)
 			{
@@ -250,7 +247,7 @@ void Level::ProcessUnitWarps()
 			pt2 = ((building.region1.Midpoint() + building.region2.Midpoint()) / 2).XZ();
 		}
 
-		for(vector<Unit*>::iterator it = game.arena->units.begin(), end = game.arena->units.end(); it != end; ++it)
+		for(vector<Unit*>::iterator it = game->arena->units.begin(), end = game->arena->units.end(); it != end; ++it)
 			(*it)->rot = Vec3::LookAtAngle((*it)->pos, (*it)->in_arena == 0 ? pt2 : pt1);
 	}
 }
@@ -258,7 +255,6 @@ void Level::ProcessUnitWarps()
 //=================================================================================================
 void Level::ProcessRemoveUnits(bool leave)
 {
-	Game& game = Game::Get();
 	if(leave)
 	{
 		for(Unit* unit : to_remove)
@@ -270,7 +266,7 @@ void Level::ProcessRemoveUnits(bool leave)
 	else
 	{
 		for(Unit* unit : to_remove)
-			game.DeleteUnit(unit);
+			game->DeleteUnit(unit);
 	}
 	to_remove.clear();
 }
@@ -470,7 +466,7 @@ void Level::RemoveUnit(Unit* unit, bool notify)
 {
 	assert(unit);
 	if(unit->action == A_DESPAWN || (Net::IsClient() && unit->summoner))
-		Game::Get().SpawnUnitEffect(*unit);
+		game->SpawnUnitEffect(*unit);
 	unit->RemoveAllEventHandlers();
 	unit->to_remove = true;
 	to_remove.push_back(unit);
@@ -682,8 +678,6 @@ void Level::SpawnObjectExtras(LevelArea& area, BaseObject* obj, const Vec3& pos,
 {
 	assert(obj);
 
-	Game& game = Game::Get();
-
 	// ogieñ pochodni
 	if(!IsSet(flags, SOE_DONT_SPAWN_PARTICLES))
 	{
@@ -753,7 +747,7 @@ void Level::SpawnObjectExtras(LevelArea& area, BaseObject* obj, const Vec3& pos,
 			pe->speed_min = Vec3(-1, 4, -1);
 			pe->speed_max = Vec3(1, 6, 1);
 			pe->mode = 0;
-			pe->tex = game.tKrew[BLOOD_RED];
+			pe->tex = game->tKrew[BLOOD_RED];
 			pe->size = 0.5f;
 			pe->Init();
 			area.tmp->pes.push_back(pe);
@@ -944,7 +938,6 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 	// o_x_[!N!]nazwa_???
 	// x (o - obiekt, r - obrócony obiekt, p - fizyka, s - strefa, c - postaæ, m - maska œwiat³a, d - detal wokó³ obiektu, l - limited rot object)
 	// N - wariant (tylko obiekty)
-	Game& game = Game::Get();
 	string token;
 	Matrix m1, m2;
 	bool have_exit = false, have_spawn = false;
@@ -1272,7 +1265,7 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 					door->rot = Clip(pt.rot.y + rot);
 					door->state = Door::Open;
 					door->door2 = (token == "door2");
-					door->mesh_inst = new MeshInstance(door->door2 ? game.aDoor2 : game.aDoor);
+					door->mesh_inst = new MeshInstance(door->door2 ? game->aDoor2 : game->aDoor);
 					door->mesh_inst->groups[0].speed = 2.f;
 					door->phy = new btCollisionObject;
 					door->phy->setCollisionShape(shape_door);
@@ -1877,7 +1870,7 @@ Unit* Level::SpawnUnitInsideRoom(Room &p, UnitData &unit, int level, const Int2&
 		if(!Collide(global_col, pt, radius))
 		{
 			float rot = Random(MAX_ANGLE);
-			return Game::Get().CreateUnitWithAI(*local_area, unit, level, nullptr, &pt, &rot);
+			return game->CreateUnitWithAI(*local_area, unit, level, nullptr, &pt, &rot);
 		}
 	}
 
@@ -1923,7 +1916,7 @@ Unit* Level::SpawnUnitNearLocation(LevelArea& area, const Vec3 &pos, UnitData &u
 				rot = Vec3::LookAtAngle(tmp_pos, *look_at);
 			else
 				rot = Random(MAX_ANGLE);
-			return Game::Get().CreateUnitWithAI(area, unit, level, nullptr, &tmp_pos, &rot);
+			return game->CreateUnitWithAI(area, unit, level, nullptr, &tmp_pos, &rot);
 		}
 
 		tmp_pos = pos + Vec2::RandomPoissonDiscPoint().XZ() * extra_radius;
@@ -1939,14 +1932,12 @@ Unit* Level::SpawnUnitInsideRegion(LevelArea& area, const Box2d& region, UnitDat
 	if(!WarpToRegion(area, region, unit.GetRadius(), pos))
 		return nullptr;
 
-	return Game::Get().CreateUnitWithAI(area, unit, level, nullptr, &pos);
+	return game->CreateUnitWithAI(area, unit, level, nullptr, &pos);
 }
 
 //=================================================================================================
 Unit* Level::SpawnUnitInsideInn(UnitData& ud, int level, InsideBuilding* inn, int flags)
 {
-	Game& game = Game::Get();
-
 	if(!inn)
 		inn = city_ctx->FindInn();
 
@@ -1954,21 +1945,21 @@ Unit* Level::SpawnUnitInsideInn(UnitData& ud, int level, InsideBuilding* inn, in
 	bool ok = false;
 	if(IsSet(flags, SU_MAIN_ROOM) || Rand() % 5 != 0)
 	{
-		if(WarpToRegion(*inn, inn->region1, ud.GetRadius(), pos, 20) ||
-			WarpToRegion(*inn, inn->region2, ud.GetRadius(), pos, 10))
+		if(WarpToRegion(*inn, inn->region1, ud.GetRadius(), pos, 20)
+			|| WarpToRegion(*inn, inn->region2, ud.GetRadius(), pos, 10))
 			ok = true;
 	}
 	else
 	{
-		if(WarpToRegion(*inn, inn->region2, ud.GetRadius(), pos, 10) ||
-			WarpToRegion(*inn, inn->region1, ud.GetRadius(), pos, 20))
+		if(WarpToRegion(*inn, inn->region2, ud.GetRadius(), pos, 10)
+			|| WarpToRegion(*inn, inn->region1, ud.GetRadius(), pos, 20))
 			ok = true;
 	}
 
 	if(ok)
 	{
 		float rot = Random(MAX_ANGLE);
-		Unit* u = game.CreateUnitWithAI(*inn, ud, level, nullptr, &pos, &rot);
+		Unit* u = game->CreateUnitWithAI(*inn, ud, level, nullptr, &pos, &rot);
 		if(u && IsSet(flags, SU_TEMPORARY))
 			u->temporary = true;
 		return u;
@@ -2002,7 +1993,7 @@ Unit* Level::SpawnUnit(LevelArea& area, TmpSpawn spawn)
 		return nullptr;
 
 	float rot = Random(MAX_ANGLE);
-	return Game::Get().CreateUnitWithAI(area, *spawn.first, spawn.second, nullptr, &pos, &rot);
+	return game->CreateUnitWithAI(area, *spawn.first, spawn.second, nullptr, &pos, &rot);
 }
 
 //=================================================================================================
@@ -2638,8 +2629,7 @@ bool Level::CollideWithStairsRect(const CollisionObject& _co, const Box2d& _box)
 //=================================================================================================
 void Level::CreateBlood(LevelArea& area, const Unit& u, bool fully_created)
 {
-	Game& game = Game::Get();
-	if(!game.tKrewSlad[u.data->blood] || IsSet(u.data->flags2, F2_BLOODLESS))
+	if(!game->tKrewSlad[u.data->blood] || IsSet(u.data->flags2, F2_BLOODLESS))
 		return;
 
 	Blood& b = Add1(area.bloods);
@@ -2782,7 +2772,7 @@ void Level::WarpNearLocation(LevelArea& area, Unit& unit, const Vec3& pos, float
 	}
 
 	unit.pos = tmp_pos;
-	Game::Get().MoveUnit(unit, true);
+	game->MoveUnit(unit, true);
 	unit.visual_pos = unit.pos;
 
 	if(Net::IsOnline())
@@ -2854,7 +2844,7 @@ Trap* Level::CreateTrap(Int2 pt, TRAP_TYPE type, bool timed)
 			{
 				trap.tile = pt + DirToPos(dir) * j;
 
-				if(Game::Get().CanShootAtLocation(Vec3(trap.pos.x + (2.f*j - 1.2f)*DirToPos(dir).x, 1.f, trap.pos.z + (2.f*j - 1.2f)*DirToPos(dir).y),
+				if(game->CanShootAtLocation(Vec3(trap.pos.x + (2.f*j - 1.2f)*DirToPos(dir).x, 1.f, trap.pos.z + (2.f*j - 1.2f)*DirToPos(dir).y),
 					Vec3(trap.pos.x, 1.f, trap.pos.z)))
 				{
 					TrapLocation& tr = Add1(possible);
@@ -3092,8 +3082,6 @@ int Level::GetChestDifficultyLevel() const
 //=================================================================================================
 void Level::OnReenterLevel()
 {
-	Game& game = Game::Get();
-
 	for(LevelArea& area : ForEachArea())
 	{
 		// odtwórz skrzynie
@@ -3101,7 +3089,7 @@ void Level::OnReenterLevel()
 		{
 			Chest& chest = **it;
 
-			chest.mesh_inst = new MeshInstance(game.aChest);
+			chest.mesh_inst = new MeshInstance(game->aChest);
 		}
 
 		// odtwórz drzwi
@@ -3110,7 +3098,7 @@ void Level::OnReenterLevel()
 			Door& door = **it;
 
 			// animowany model
-			door.mesh_inst = new MeshInstance(door.door2 ? game.aDoor2 : game.aDoor);
+			door.mesh_inst = new MeshInstance(door.door2 ? game->aDoor2 : game->aDoor);
 			door.mesh_inst->groups[0].speed = 2.f;
 
 			// fizyka
@@ -3184,11 +3172,10 @@ void Level::CheckIfLocationCleared()
 	if(city_ctx)
 		return;
 
-	Game& game = Game::Get();
 	bool is_clear = true;
 	for(vector<Unit*>::iterator it = local_area->units.begin(), end = local_area->units.end(); it != end; ++it)
 	{
-		if((*it)->IsAlive() && game.pc->unit->IsEnemy(**it, true))
+		if((*it)->IsAlive() && game->pc->unit->IsEnemy(**it, true))
 		{
 			is_clear = false;
 			break;
@@ -3222,9 +3209,9 @@ void Level::CheckIfLocationCleared()
 		if(cleared && prevent && !location->group->IsEmpty())
 		{
 			if(location->type == L_CAMP)
-				W.AddNews(Format(txNewsCampCleared, W.GetLocation(W.GetNearestSettlement(location->pos))->name.c_str()));
+				world->AddNews(Format(txNewsCampCleared, world->GetLocation(world->GetNearestSettlement(location->pos))->name.c_str()));
 			else
-				W.AddNews(Format(txNewsLocCleared, location->name.c_str()));
+				world->AddNews(Format(txNewsLocCleared, location->name.c_str()));
 		}
 	}
 }
@@ -3274,9 +3261,9 @@ void Level::SpawnDungeonColliders()
 	{
 		for(int x = 1; x < w - 1; ++x)
 		{
-			if(IsBlocking(m[x + y * w]) && (!IsBlocking(m[x - 1 + (y - 1)*w]) || !IsBlocking(m[x + (y - 1)*w]) || !IsBlocking(m[x + 1 + (y - 1)*w]) ||
-				!IsBlocking(m[x - 1 + y * w]) || !IsBlocking(m[x + 1 + y * w]) ||
-				!IsBlocking(m[x - 1 + (y + 1)*w]) || !IsBlocking(m[x + (y + 1)*w]) || !IsBlocking(m[x + 1 + (y + 1)*w])))
+			if(IsBlocking(m[x + y * w]) && (!IsBlocking(m[x - 1 + (y - 1)*w]) || !IsBlocking(m[x + (y - 1)*w]) || !IsBlocking(m[x + 1 + (y - 1)*w])
+				|| !IsBlocking(m[x - 1 + y * w]) || !IsBlocking(m[x + 1 + y * w])
+				|| !IsBlocking(m[x - 1 + (y + 1)*w]) || !IsBlocking(m[x + (y + 1)*w]) || !IsBlocking(m[x + 1 + (y + 1)*w])))
 			{
 				SpawnDungeonCollider(Vec3(2.f*x + 1.f, 2.f, 2.f*y + 1.f));
 			}
@@ -3768,8 +3755,6 @@ bool Level::KillAll(int mode, Unit& unit, Unit* ignore)
 		return true;
 	}
 
-	Game& game = Game::Get();
-
 	switch(mode)
 	{
 	case 0: // kill enemies
@@ -3778,7 +3763,7 @@ bool Level::KillAll(int mode, Unit& unit, Unit* ignore)
 			for(Unit* u : area.units)
 			{
 				if(u->IsAlive() && u->IsEnemy(unit) && u != ignore)
-					game.GiveDmg(*u, u->hp);
+					game->GiveDmg(*u, u->hp);
 			}
 		}
 		break;
@@ -3788,7 +3773,7 @@ bool Level::KillAll(int mode, Unit& unit, Unit* ignore)
 			for(Unit* u : area.units)
 			{
 				if(u->IsAlive() && !u->IsPlayer() && u != ignore)
-					game.GiveDmg(*u, u->hp);
+					game->GiveDmg(*u, u->hp);
 			}
 		}
 		break;
@@ -3800,8 +3785,6 @@ bool Level::KillAll(int mode, Unit& unit, Unit* ignore)
 //=================================================================================================
 void Level::AddPlayerTeam(const Vec3& pos, float rot, bool reenter, bool hide_weapon)
 {
-	Game& game = Game::Get();
-
 	for(Unit& unit : Team.members)
 	{
 		if(!reenter)
@@ -3809,7 +3792,7 @@ void Level::AddPlayerTeam(const Vec3& pos, float rot, bool reenter, bool hide_we
 			local_area->units.push_back(&unit);
 			unit.CreatePhysics();
 			if(unit.IsHero())
-				game.ais.push_back(unit.ai);
+				game->ais.push_back(unit.ai);
 		}
 
 		if(hide_weapon || unit.weapon_state == WS_HIDING)
@@ -3871,7 +3854,7 @@ void Level::UpdateDungeonMinimap(bool in_level)
 	if(minimap_reveal.empty())
 		return;
 
-	TextureLock lock(Game::Get().tMinimap.tex);
+	TextureLock lock(game->tMinimap.tex);
 	InsideLocationLevel& lvl = ((InsideLocation*)location)->GetLevelData();
 
 	for(vector<Int2>::iterator it = minimap_reveal.begin(), end = minimap_reveal.end(); it != end; ++it)
@@ -3959,7 +3942,7 @@ void Level::Write(BitStreamWriter& f)
 	location->Write(f);
 	f.WriteCasted<byte>(GetLocationMusic());
 
-	if(!N.mp_load && !reenter)
+	if(!net->mp_load && !reenter)
 		return;
 
 	for(LevelArea& area : ForEachArea())
@@ -4011,8 +3994,6 @@ void Level::Write(BitStreamWriter& f)
 //=================================================================================================
 bool Level::Read(BitStreamReader& f, bool loaded_resources)
 {
-	Game& game = Game::Get();
-
 	// location
 	f >> reenter;
 	Usable::refid_request.clear();
@@ -4022,8 +4003,8 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 		return false;
 	}
 	is_open = true;
-	L.Apply();
-	game.loc_gen_factory->Get(location)->OnLoad();
+	game_level->Apply();
+	game->loc_gen_factory->Get(location)->OnLoad();
 	location->RequireLoadingResources(&loaded_resources);
 
 	// apply usable users
@@ -4050,14 +4031,14 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 		Error("Read level: Broken music.");
 		return false;
 	}
-	if(!app::sound_mgr->IsMusicDisabled())
-		game.LoadMusic(music, false, true);
-	if(W.IsBossLevel())
-		game.SetMusic();
+	if(!sound_mgr->IsMusicDisabled())
+		game->LoadMusic(music, false, true);
+	if(world->IsBossLevel())
+		game->SetMusic();
 	else
-		game.SetMusic(music);
+		game->SetMusic(music);
 
-	if(!N.mp_load && !reenter)
+	if(!net->mp_load && !reenter)
 		return true;
 
 	for(LevelArea& area : ForEachArea())
@@ -4090,7 +4071,7 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 			if(spell_id.empty())
 			{
 				bullet.spell = nullptr;
-				bullet.mesh = game.aArrow;
+				bullet.mesh = game->aArrow;
 				bullet.pe = nullptr;
 				bullet.remove = false;
 				bullet.tex = nullptr;
@@ -4191,7 +4172,7 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 				Error("Read level: Broken explosion.");
 				return false;
 			}
-			explo->tex = app::res_mgr->Load<Texture>(tex_id);
+			explo->tex = res_mgr->Load<Texture>(tex_id);
 		}
 
 		// electro effects
@@ -4246,7 +4227,7 @@ MusicType Level::GetLocationMusic()
 		return MusicType::Dungeon;
 	case L_FOREST:
 	case L_CAMP:
-		if(location_index == QM.quest_secret->where2)
+		if(location_index == quest_mgr->quest_secret->where2)
 			return MusicType::Moonwell;
 		else
 			return MusicType::Forest;
@@ -4406,7 +4387,7 @@ bool Level::IsSafe()
 //=================================================================================================
 CanLeaveLocationResult Level::CanLeaveLocation(Unit& unit)
 {
-	if(QM.quest_secret->state == Quest_Secret::SECRET_FIGHT)
+	if(quest_mgr->quest_secret->state == Quest_Secret::SECRET_FIGHT)
 		return CanLeaveLocationResult::InCombat;
 
 	if(city_ctx)
@@ -4486,7 +4467,7 @@ Vec4 Level::GetLightDir()
 void Level::SetOutsideParams()
 {
 	camera.draw_range = 80.f;
-	Game::Get().clear_color_next = Color::White;
+	game->clear_color_next = Color::White;
 	fog_params = Vec4(40, 80, 40, 0);
 	fog_color = Vec4(0.9f, 0.85f, 0.8f, 1);
 	ambient_color = Vec4(0.5f, 0.5f, 0.5f, 1);

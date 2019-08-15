@@ -90,13 +90,13 @@ void Game::SetMusic()
 	if(sound_mgr->IsMusicDisabled())
 		return;
 
-	if(W.IsBossLevel(Int2(L.location_index, L.dungeon_level)))
+	if(world->IsBossLevel(Int2(game_level->location_index, game_level->dungeon_level)))
 	{
 		SetMusic(MusicType::Boss);
 		return;
 	}
 
-	SetMusic(L.GetLocationMusic());
+	SetMusic(game_level->GetLocationMusic());
 }
 
 //=================================================================================================
@@ -124,7 +124,6 @@ uint MusicTrack::Load(uint& errors)
 		{ "death", MusicType::Death }
 	});
 
-	ResourceManager& res_mgr = *app::res_mgr;
 	Ptr<MusicTrack> track(nullptr);
 
 	try
@@ -149,7 +148,7 @@ uint MusicTrack::Load(uint& errors)
 						{
 							const string& filename = t.MustGetString();
 							track.Ensure();
-							track->music = res_mgr.TryGet<Music>(filename);
+							track->music = res_mgr->TryGet<Music>(filename);
 							if(track->music)
 							{
 								track->type = type;
@@ -173,7 +172,7 @@ uint MusicTrack::Load(uint& errors)
 				{
 					const string& filename = t.MustGetString();
 					track.Ensure();
-					track->music = res_mgr.TryGet<Music>(filename);
+					track->music = res_mgr->TryGet<Music>(filename);
 					if(track->music)
 					{
 						track->type = type;
@@ -208,7 +207,6 @@ uint MusicTrack::Load(uint& errors)
 //=================================================================================================
 void Game::LoadMusic(MusicType type, bool new_load_screen, bool instant)
 {
-	ResourceManager& res_mgr = *app::res_mgr;
 	bool first = true;
 
 	for(MusicTrack* track : MusicTrack::tracks)
@@ -223,13 +221,13 @@ void Game::LoadMusic(MusicType type, bool new_load_screen, bool instant)
 					return;
 				}
 				if(new_load_screen)
-					res_mgr.AddTaskCategory(txLoadMusic);
+					res_mgr->AddTaskCategory(txLoadMusic);
 				first = false;
 			}
 			if(instant)
-				res_mgr.LoadInstant(track->music);
+				res_mgr->LoadInstant(track->music);
 			else
-				res_mgr.Load(track->music);
+				res_mgr->Load(track->music);
 		}
 	}
 }

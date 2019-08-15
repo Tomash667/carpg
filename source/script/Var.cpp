@@ -171,7 +171,7 @@ void VarsContainer::Load(FileReader& f)
 				if(index == -1)
 					v->location = nullptr;
 				else
-					v->location = W.GetLocation(index);
+					v->location = world->GetLocation(index);
 			}
 			break;
 		case Var::Type::Encounter:
@@ -181,7 +181,7 @@ void VarsContainer::Load(FileReader& f)
 				if(index == -1)
 					v->encounter = nullptr;
 				else
-					v->encounter = W.GetEncounter(index);
+					v->encounter = world->GetEncounter(index);
 			}
 			break;
 		case Var::Type::GroundItem:

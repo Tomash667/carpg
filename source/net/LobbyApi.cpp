@@ -6,7 +6,7 @@
 #include <slikenet\HTTPConnection2.h>
 #include <slikenet\NatPunchthroughClient.h>
 #include "Game.h"
-#include "GlobalGui.h"
+#include "GameGui.h"
 #include "PickServerPanel.h"
 #include "Language.h"
 #include <sstream>
@@ -71,7 +71,7 @@ void LobbyApi::UpdateInternal()
 				Error("LobbyApi: Bad server response %d for %s.", code, op_names[current_op]);
 				last_request_failed = true;
 				if(current_op == GET_SERVERS || current_op == GET_CHANGES)
-					Game::Get().gui->pick_server->HandleBadRequest();
+					game_gui->pick_server->HandleBadRequest();
 			}
 			else if(current_op == REPORT)
 			{
@@ -138,11 +138,11 @@ void LobbyApi::ParseResponse(const char* response)
 	switch(current_op)
 	{
 	case GET_SERVERS:
-		if(Game::Get().gui->pick_server->HandleGetServers(j))
+		if(game_gui->pick_server->HandleGetServers(j))
 			timestamp = j["timestamp"].get<int>();
 		break;
 	case GET_CHANGES:
-		if(Game::Get().gui->pick_server->HandleGetChanges(j))
+		if(game_gui->pick_server->HandleGetChanges(j))
 			timestamp = j["timestamp"].get<int>();
 		break;
 	case GET_VERSION:
@@ -268,20 +268,20 @@ void LobbyApi::StartPunchthrough(RakNetGUID* target)
 		np_client->SetDebugInterface(&logger);
 	}
 
-	N.peer->AttachPlugin(np_client);
+	net->peer->AttachPlugin(np_client);
 	np_attached = true;
 
 	if(target)
-		np_client->OpenNAT(*target, N.master_server_adr);
+		np_client->OpenNAT(*target, net->master_server_adr);
 	else
-		np_client->FindRouterPortStride(N.master_server_adr);
+		np_client->FindRouterPortStride(net->master_server_adr);
 }
 
 void LobbyApi::EndPunchthrough()
 {
 	if(np_attached)
 	{
-		N.peer->DetachPlugin(np_client);
+		net->peer->DetachPlugin(np_client);
 		np_attached = false;
 	}
 }

@@ -1,7 +1,6 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "GameComponent.h"
 #include "Location.h"
 #include "UnitGroup.h"
 
@@ -23,7 +22,7 @@ struct EncounterData
 // General notes:
 // + don't create settlements after GenerateWorld (currently it is hardcoded that they are before other locations - here and in Quest_SpreadNews)
 // + currently only camps can be removed
-class World : public GameComponent
+class World
 {
 	friend class WorldMapGui;
 public:
@@ -48,9 +47,9 @@ public:
 	static const int TILE_SIZE = 30;
 
 	// general
-	void LoadLanguage() override;
-	void PostInit() override;
-	void Cleanup() override;
+	void LoadLanguage();
+	void Init();
+	void Cleanup();
 	void OnNewGame();
 	void Reset();
 	void Update(int days, UpdateMode mode);
@@ -218,4 +217,3 @@ private:
 	void LoadLocations(GameReader& f, LoadingHandler& loading);
 	void LoadNews(GameReader& f);
 };
-extern World W;

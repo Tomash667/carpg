@@ -345,10 +345,10 @@ void LoadSystemDir()
 }
 
 //=================================================================================================
-void LoadConfiguration(Game& game, char* lpCmdLine)
+void LoadConfiguration(char* lpCmdLine)
 {
-	Config& cfg = game.cfg;
-	game.cfg_file = "carpg.cfg";
+	Config& cfg = game->cfg;
+	game->cfg_file = "carpg.cfg";
 	string log_filename;
 	int delay = -1;
 	Bool3 windowed = None,
@@ -382,24 +382,24 @@ void LoadConfiguration(Game& game, char* lpCmdLine)
 				if(argc != i + 1 && argv[i + 1][0] != '-')
 				{
 					++i;
-					game.cfg_file = argv[i];
-					Info("Configuration file: %s", game.cfg_file.c_str());
+					game->cfg_file = argv[i];
+					Info("Configuration file: %s", game->cfg_file.c_str());
 				}
 				else
 					Warn("No argument for parameter '-config'!");
 			}
 			else if(strcmp(arg, "single") == 0)
-				game.quickstart = QUICKSTART_SINGLE;
+				game->quickstart = QUICKSTART_SINGLE;
 			else if(strcmp(arg, "host") == 0)
-				game.quickstart = QUICKSTART_HOST;
+				game->quickstart = QUICKSTART_HOST;
 			else if(strcmp(arg, "join") == 0)
-				game.quickstart = QUICKSTART_JOIN_LAN;
+				game->quickstart = QUICKSTART_JOIN_LAN;
 			else if(strcmp(arg, "joinip") == 0)
-				game.quickstart = QUICKSTART_JOIN_IP;
+				game->quickstart = QUICKSTART_JOIN_IP;
 			else if(strcmp(arg, "load") == 0)
-				game.quickstart = QUICKSTART_LOAD;
+				game->quickstart = QUICKSTART_LOAD;
 			else if(strcmp(arg, "loadmp") == 0)
-				game.quickstart = QUICKSTART_LOAD_MP;
+				game->quickstart = QUICKSTART_LOAD_MP;
 			else if(strcmp(arg, "loadslot") == 0)
 			{
 				if(argc != i + 1 && argv[i + 1][0] != '-')
@@ -409,7 +409,7 @@ void LoadConfiguration(Game& game, char* lpCmdLine)
 					if(!TextHelper::ToInt(argv[i], slot) || slot < 1 || slot > SaveSlot::MAX_SLOTS)
 						Warn("Invalid loadslot value '%s'.", argv[i]);
 					else
-						game.quickstart_slot = slot;
+						game->quickstart_slot = slot;
 				}
 				else
 					Warn("No argument for parameter '-loadslot'!");
@@ -426,7 +426,7 @@ void LoadConfiguration(Game& game, char* lpCmdLine)
 				nomusic = true;
 			else if(strcmp(arg, "test") == 0)
 			{
-				game.testing = true;
+				game->testing = true;
 				console = True;
 			}
 			else if(strcmp(arg, "delay-0") == 0)
@@ -465,11 +465,11 @@ void LoadConfiguration(Game& game, char* lpCmdLine)
 
 	// load configuration file
 	Info("Loading config file");
-	Config::Result result = cfg.Load(game.cfg_file.c_str());
+	Config::Result result = cfg.Load(game->cfg_file.c_str());
 	if(result == Config::NO_FILE)
-		Info("Config file not found '%s'.", game.cfg_file.c_str());
+		Info("Config file not found '%s'.", game->cfg_file.c_str());
 	else if(result == Config::PARSE_ERROR)
-		Error("Config file parse error '%s' : %s", game.cfg_file.c_str(), cfg.GetError().c_str());
+		Error("Config file parse error '%s' : %s", game->cfg_file.c_str(), cfg.GetError().c_str());
 
 	// startup delay to synchronize mp game on localhost
 	if(delay == -1)
@@ -516,12 +516,12 @@ void LoadConfiguration(Game& game, char* lpCmdLine)
 	Int2 wnd_size = cfg.GetInt2("resolution");
 	int refresh_hz = cfg.GetInt("refresh");
 	Info("Settings: Resolution %dx%d (%d Hz, %s).", wnd_size.x, wnd_size.y, refresh_hz, windowed == False ? "fullscreen" : "windowed");
-	app::engine->ChangeMode(wnd_size, windowed == False, refresh_hz);
+	engine->ChangeMode(wnd_size, windowed == False, refresh_hz);
 
 	// adapter
 	int used_adapter = cfg.GetInt("adapter");
 	Info("Settings: Adapter %d.", used_adapter);
-	app::render->SetAdapter(used_adapter);
+	render->SetAdapter(used_adapter);
 
 	// log
 	log_to_file = (cfg.GetBool3("log", True) == True);
@@ -530,11 +530,11 @@ void LoadConfiguration(Game& game, char* lpCmdLine)
 	if(log_to_file)
 		log_filename = cfg.GetString("log_filename", "log.txt");
 
-	game.hardcore_option = ToBool(cfg.GetBool3("hardcore_mode", False));
+	game->hardcore_option = ToBool(cfg.GetBool3("hardcore_mode", False));
 
 	// window inactivity game stop prevention
 	if(cfg.GetBool3("inactive_update", False) == True)
-		game.inactive_update = true;
+		game->inactive_update = true;
 
 	// sound/music settings
 	if(nosound || cfg.GetBool("nosound"))
@@ -548,50 +548,50 @@ void LoadConfiguration(Game& game, char* lpCmdLine)
 		Info("Settings: no music.");
 	}
 	if(nosound || nomusic)
-		app::sound_mgr->Disable(nosound, nomusic);
-	app::sound_mgr->SetSoundVolume(Clamp(cfg.GetInt("sound_volume", 100), 0, 100));
-	app::sound_mgr->SetMusicVolume(Clamp(cfg.GetInt("music_volume", 50), 0, 100));
+		sound_mgr->Disable(nosound, nomusic);
+	sound_mgr->SetSoundVolume(Clamp(cfg.GetInt("sound_volume", 100), 0, 100));
+	sound_mgr->SetMusicVolume(Clamp(cfg.GetInt("music_volume", 50), 0, 100));
 
 	// mouse settings
-	game.settings.mouse_sensitivity = Clamp(cfg.GetInt("mouse_sensitivity", 50), 0, 100);
-	game.settings.mouse_sensitivity_f = Lerp(0.5f, 1.5f, float(game.settings.mouse_sensitivity) / 100);
+	game->settings.mouse_sensitivity = Clamp(cfg.GetInt("mouse_sensitivity", 50), 0, 100);
+	game->settings.mouse_sensitivity_f = Lerp(0.5f, 1.5f, float(game->settings.mouse_sensitivity) / 100);
 
 	// multiplayer mode
-	game.player_name = cfg.GetString("nick", "");
+	game->player_name = cfg.GetString("nick", "");
 #define LIMIT(x) if(x.length() > 16) x = x.substr(0,16)
-	LIMIT(game.player_name);
-	N.server_name = cfg.GetString("server_name", "");
-	LIMIT(N.server_name);
-	N.password = cfg.GetString("server_pswd", "");
-	LIMIT(N.password);
-	N.max_players = Clamp(cfg.GetUint("server_players", DEFAULT_PLAYERS), MIN_PLAYERS, MAX_PLAYERS);
-	game.server_ip = cfg.GetString("server_ip", "");
-	game.mp_timeout = Clamp(cfg.GetFloat("timeout", 10.f), 1.f, 3600.f);
-	N.server_lan = cfg.GetBool("server_lan");
-	N.join_lan = cfg.GetBool("join_lan");
+	LIMIT(game->player_name);
+	net->server_name = cfg.GetString("server_name", "");
+	LIMIT(net->server_name);
+	net->password = cfg.GetString("server_pswd", "");
+	LIMIT(net->password);
+	net->max_players = Clamp(cfg.GetUint("server_players", DEFAULT_PLAYERS), MIN_PLAYERS, MAX_PLAYERS);
+	game->server_ip = cfg.GetString("server_ip", "");
+	game->mp_timeout = Clamp(cfg.GetFloat("timeout", 10.f), 1.f, 3600.f);
+	net->server_lan = cfg.GetBool("server_lan");
+	net->join_lan = cfg.GetBool("join_lan");
 
 	// quickstart
-	if(game.quickstart == QUICKSTART_NONE)
+	if(game->quickstart == QUICKSTART_NONE)
 	{
 		const string& mode = cfg.GetString("quickstart", "");
 		if(mode == "single")
-			game.quickstart = QUICKSTART_SINGLE;
+			game->quickstart = QUICKSTART_SINGLE;
 		else if(mode == "host")
-			game.quickstart = QUICKSTART_HOST;
+			game->quickstart = QUICKSTART_HOST;
 		else if(mode == "join")
-			game.quickstart = QUICKSTART_JOIN_LAN;
+			game->quickstart = QUICKSTART_JOIN_LAN;
 		else if(mode == "joinip")
-			game.quickstart = QUICKSTART_JOIN_IP;
+			game->quickstart = QUICKSTART_JOIN_IP;
 		else if(mode == "load")
-			game.quickstart = QUICKSTART_LOAD;
+			game->quickstart = QUICKSTART_LOAD;
 		else if(mode == "loadmp")
-			game.quickstart = QUICKSTART_LOAD_MP;
+			game->quickstart = QUICKSTART_LOAD_MP;
 	}
 	int slot = cfg.GetInt("loadslot", -1);
 	if(slot != -1 && slot >= 1 && slot <= SaveSlot::MAX_SLOTS)
-		game.quickstart_slot = slot;
+		game->quickstart_slot = slot;
 
-	N.port = Clamp(cfg.GetInt("port", PORT), 0, 0xFFFF);
+	net->port = Clamp(cfg.GetInt("port", PORT), 0, 0xFFFF);
 
 	// quickstart class autopick
 	{
@@ -602,7 +602,7 @@ void LoadConfiguration(Game& game, char* lpCmdLine)
 			if(ci)
 			{
 				if(ClassInfo::IsPickable(ci->class_id))
-					game.quickstart_class = ci->class_id;
+					game->quickstart_class = ci->class_id;
 				else
 					Warn("Settings [class]: Class '%s' is not pickable by players.", clas.c_str());
 			}
@@ -611,11 +611,11 @@ void LoadConfiguration(Game& game, char* lpCmdLine)
 		}
 	}
 
-	game.quickstart_name = cfg.GetString("name", "Test");
-	if(game.quickstart_name.empty())
-		game.quickstart_name = "Test";
+	game->quickstart_name = cfg.GetString("name", "Test");
+	if(game->quickstart_name.empty())
+		game->quickstart_name = "Test";
 
-	game.change_title_a = ToBool(cfg.GetBool3("change_title", False));
+	game->change_title_a = ToBool(cfg.GetBool3("change_title", False));
 
 	// window position & size
 	Int2 con_pos = cfg.GetInt2("con_pos", Int2(-1, -1));
@@ -633,38 +633,38 @@ void LoadConfiguration(Game& game, char* lpCmdLine)
 
 	Int2 force_size = cfg.GetInt2("wnd_size", Int2(-1, -1)),
 		force_pos = cfg.GetInt2("wnd_pos", Int2(-1, -1));
-	app::engine->SetWindowInitialPos(force_pos, force_size);
-	app::engine->HideWindow(cfg.GetBool("hidden_window"));
+	engine->SetWindowInitialPos(force_pos, force_size);
+	engine->HideWindow(cfg.GetBool("hidden_window"));
 
 	// multisampling
 	int multisampling = cfg.GetInt("multisampling"),
 		multisampling_quality = cfg.GetInt("multisampling_quality");
-	app::render->SetMultisampling(multisampling, multisampling_quality);
+	render->SetMultisampling(multisampling, multisampling_quality);
 
 	// miscellaneous
-	game.cl_postfx = cfg.GetBool("cl_postfx", true);
-	game.cl_normalmap = cfg.GetBool("cl_normalmap", true);
-	game.cl_specularmap = cfg.GetBool("cl_specularmap", true);
-	game.cl_glow = cfg.GetBool("cl_glow", true);
-	app::render->SetShaderVersion(cfg.GetInt("cl_shader_version", -1));
-	app::render->SetVsync(cfg.GetBool("vsync", true));
-	game.settings.grass_range = cfg.GetFloat("grass_range", 40.f);
-	if(game.settings.grass_range < 0.f)
-		game.settings.grass_range = 0.f;
+	game->cl_postfx = cfg.GetBool("cl_postfx", true);
+	game->cl_normalmap = cfg.GetBool("cl_normalmap", true);
+	game->cl_specularmap = cfg.GetBool("cl_specularmap", true);
+	game->cl_glow = cfg.GetBool("cl_glow", true);
+	render->SetShaderVersion(cfg.GetInt("cl_shader_version", -1));
+	render->SetVsync(cfg.GetBool("vsync", true));
+	game->settings.grass_range = cfg.GetFloat("grass_range", 40.f);
+	if(game->settings.grass_range < 0.f)
+		game->settings.grass_range = 0.f;
 	{
 		const string& screenshot_format = cfg.GetString("screenshot_format", "jpg");
 		if(screenshot_format == "jpg")
-			game.screenshot_format = ImageFormat::JPG;
+			game->screenshot_format = ImageFormat::JPG;
 		else if(screenshot_format == "bmp")
-			game.screenshot_format = ImageFormat::BMP;
+			game->screenshot_format = ImageFormat::BMP;
 		else if(screenshot_format == "tga")
-			game.screenshot_format = ImageFormat::TGA;
+			game->screenshot_format = ImageFormat::TGA;
 		else if(screenshot_format == "png")
-			game.screenshot_format = ImageFormat::PNG;
+			game->screenshot_format = ImageFormat::PNG;
 		else
 		{
 			Warn("Settings: Unknown screenshot format '%s'. Defaulting to jpg.", screenshot_format.c_str());
-			game.screenshot_format = ImageFormat::JPG;
+			game->screenshot_format = ImageFormat::JPG;
 		}
 	}
 
@@ -700,16 +700,16 @@ void LoadConfiguration(Game& game, char* lpCmdLine)
 	else
 	{
 		seed = cfg_seed;
-		game.force_seed = seed;
+		game->force_seed = seed;
 	}
-	game.next_seed = cfg.GetUint("next_seed");
-	game.force_seed_all = ToBool(cfg.GetBool3("force_seed", False));
-	Info("random seed: %u/%u/%d", seed, game.next_seed, (game.force_seed_all ? 1 : 0));
+	game->next_seed = cfg.GetUint("next_seed");
+	game->force_seed_all = ToBool(cfg.GetBool3("force_seed", False));
+	Info("random seed: %u/%u/%d", seed, game->next_seed, (game->force_seed_all ? 1 : 0));
 	Srand(seed);
 
 	// miscellaneous
-	game.check_updates = ToBool(cfg.GetBool3("check_updates", True));
-	game.skip_tutorial = ToBool(cfg.GetBool3("skip_tutorial", False));
+	game->check_updates = ToBool(cfg.GetBool3("check_updates", True));
+	game->skip_tutorial = ToBool(cfg.GetBool3("skip_tutorial", False));
 
 	// crash reporter
 	RegisterErrorHandler(cfg, log_filename);
@@ -752,8 +752,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	LoadSystemDir();
 
 	// settings
-	Game game;
-	LoadConfiguration(game, lpCmdLine);
+	Ptr<Game> game;
+	global::game = game.Get();
+	LoadConfiguration(lpCmdLine);
 
 	// instalation scripts
 	if(!RunInstallScripts())
@@ -765,7 +766,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	// language
 	Language::Init();
 	Language::LoadLanguages();
-	const string& lang = game.cfg.GetString("language", "");
+	const string& lang = game->cfg.GetString("language", "");
 	if(lang == "")
 	{
 		LocalString s;
@@ -777,21 +778,18 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		else
 		{
 			Language::prefix = s;
-			game.cfg.Add("language", s->c_str());
+			game->cfg.Add("language", s->c_str());
 		}
 	}
 	else
 		Language::prefix = lang;
 
 	// save configuration
-	game.SaveCfg();
+	game->SaveCfg();
 
 	// start the game
 	Info("Starting game engine.");
-	bool b = game.Start();
+	bool ok = game->Start();
 
-	// cleanup
-	Language::Cleanup();
-
-	return (b ? 0 : 1);
+	return (ok ? 0 : 1);
 }

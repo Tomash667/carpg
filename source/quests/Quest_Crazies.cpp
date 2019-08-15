@@ -10,16 +10,16 @@
 #include "Level.h"
 #include "AIController.h"
 #include "Team.h"
-#include "GlobalGui.h"
+#include "GameGui.h"
 #include "GameMessages.h"
 
 //=================================================================================================
 void Quest_Crazies::Init()
 {
-	QM.RegisterSpecialHandler(this, "crazies_talked");
-	QM.RegisterSpecialHandler(this, "crazies_sell_stone");
-	QM.RegisterSpecialIfHandler(this, "crazies_not_asked");
-	QM.RegisterSpecialIfHandler(this, "crazies_need_talk");
+	quest_mgr->RegisterSpecialHandler(this, "crazies_talked");
+	quest_mgr->RegisterSpecialHandler(this, "crazies_sell_stone");
+	quest_mgr->RegisterSpecialIfHandler(this, "crazies_not_asked");
+	quest_mgr->RegisterSpecialIfHandler(this, "crazies_need_talk");
 }
 
 //=================================================================================================
@@ -49,14 +49,14 @@ void Quest_Crazies::SetProgress(int prog2)
 	case Progress::Started: // zaatakowano przez unk
 		{
 			OnStart(game->txQuest[253]);
-			msgs.push_back(Format(game->txQuest[170], W.GetDate()));
+			msgs.push_back(Format(game->txQuest[170], world->GetDate()));
 			msgs.push_back(game->txQuest[254]);
 		}
 		break;
 	case Progress::KnowLocation: // trener powiedzia³ o labiryncie
 		{
-			start_loc = W.GetCurrentLocationIndex();
-			Location& loc = *W.CreateLocation(L_DUNGEON, Vec2(0, 0), -128.f, LABYRINTH, UnitGroup::Get("unk"), false);
+			start_loc = world->GetCurrentLocationIndex();
+			Location& loc = *world->CreateLocation(L_DUNGEON, Vec2(0, 0), -128.f, LABYRINTH, UnitGroup::Get("unk"), false);
 			loc.active_quest = this;
 			loc.SetKnown();
 			loc.st = 13;
@@ -64,7 +64,7 @@ void Quest_Crazies::SetProgress(int prog2)
 
 			crazies_state = State::TalkedTrainer;
 
-			OnUpdate(Format(game->txQuest[255], W.GetCurrentLocation()->name.c_str(), loc.name.c_str(), GetTargetLocationDir()));
+			OnUpdate(Format(game->txQuest[255], world->GetCurrentLocation()->name.c_str(), loc.name.c_str(), GetTargetLocationDir()));
 		}
 		break;
 	case Progress::Finished: // schowano kamieñ do skrzyni
@@ -76,7 +76,7 @@ void Quest_Crazies::SetProgress(int prog2)
 			Team.AddExp(12000);
 
 			OnUpdate(game->txQuest[256]);
-			QM.EndUniqueQuest();
+			quest_mgr->EndUniqueQuest();
 		}
 	}
 }
@@ -162,14 +162,14 @@ void Quest_Crazies::CheckStone()
 	if(!Team.FindItemInTeam(stone, -1, nullptr, nullptr, false))
 	{
 		// usuñ kamieñ z gry o ile to nie encounter bo i tak jest resetowany
-		if(L.location->type != L_ENCOUNTER)
+		if(game_level->location->type != L_ENCOUNTER)
 		{
-			if(target_loc == L.location_index)
+			if(target_loc == game_level->location_index)
 			{
 				// jest w dobrym miejscu, sprawdŸ czy w³o¿y³ kamieñ do skrzyni
 				Chest* chest;
 				int slot;
-				if(L.local_area->FindItemInChest(stone, &chest, &slot))
+				if(game_level->local_area->FindItemInChest(stone, &chest, &slot))
 				{
 					// w³o¿y³ kamieñ, koniec questa
 					chest->items.erase(chest->items.begin() + slot);
@@ -178,12 +178,12 @@ void Quest_Crazies::CheckStone()
 				}
 			}
 
-			L.RemoveItemFromWorld(stone);
+			game_level->RemoveItemFromWorld(stone);
 		}
 
 		// dodaj kamieñ przywódcy
 		Team.leader->AddItem(stone, 1, false);
-		game->gui->messages->AddGameMsg3(Team.leader->player, GMS_ADDED_CURSED_STONE);
+		game_gui->messages->AddGameMsg3(Team.leader->player, GMS_ADDED_CURSED_STONE);
 	}
 
 	if(crazies_state == State::TalkedWithCrazy)

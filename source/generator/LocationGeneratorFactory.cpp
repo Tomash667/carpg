@@ -18,7 +18,7 @@
 #include "Quest_Secret.h"
 
 //=================================================================================================
-void LocationGeneratorFactory::InitOnce()
+LocationGeneratorFactory::LocationGeneratorFactory()
 {
 	camp = new CampGenerator;
 	cave = new CaveGenerator;
@@ -33,13 +33,7 @@ void LocationGeneratorFactory::InitOnce()
 }
 
 //=================================================================================================
-void LocationGeneratorFactory::PostInit()
-{
-	OutsideLocationGenerator::InitOnce();
-}
-
-//=================================================================================================
-void LocationGeneratorFactory::Cleanup()
+LocationGeneratorFactory::~LocationGeneratorFactory()
 {
 	delete camp;
 	delete cave;
@@ -51,8 +45,12 @@ void LocationGeneratorFactory::Cleanup()
 	delete moonwell;
 	delete secret;
 	delete tutorial;
+}
 
-	delete this;
+//=================================================================================================
+void LocationGeneratorFactory::Init()
+{
+	OutsideLocationGenerator::InitOnce();
 }
 
 //=================================================================================================
@@ -70,7 +68,7 @@ LocationGenerator* LocationGeneratorFactory::Get(Location* loc, bool first, bool
 		loc_gen = encounter;
 		break;
 	case L_FOREST:
-		if(L.location_index == QM.quest_secret->where2)
+		if(game_level->location_index == quest_mgr->quest_secret->where2)
 			loc_gen = secret;
 		else
 			loc_gen = forest;
@@ -99,7 +97,7 @@ LocationGenerator* LocationGeneratorFactory::Get(Location* loc, bool first, bool
 		break;
 	}
 	loc_gen->loc = loc;
-	loc_gen->dungeon_level = L.dungeon_level;
+	loc_gen->dungeon_level = game_level->dungeon_level;
 	loc_gen->first = first;
 	loc_gen->reenter = reenter;
 	loc_gen->Init();

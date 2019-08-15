@@ -10,10 +10,10 @@
 #include "Tokenizer.h"
 #include "Game.h"
 #include "QuestManager.h"
-#include "GlobalGui.h"
+#include "GameGui.h"
 #include "ServerPanel.h"
 #include "Console.h"
-#include "GameGui.h"
+#include "LevelGui.h"
 #include "WorldMapGui.h"
 #include "MpBox.h"
 #include "ScriptManager.h"
@@ -37,28 +37,27 @@ CommandParser* global::cmdp;
 //=================================================================================================
 void CommandParser::AddCommands()
 {
-	Game& game = Game::Get();
-	cmds.push_back(ConsoleCommand(&L.cl_fog, "cl_fog", "draw fog (cl_fog 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&L.cl_lighting, "cl_lighting", "use lighting (cl_lighting 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&game.draw_particle_sphere, "draw_particle_sphere", "draw particle extents sphere (draw_particle_sphere 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&game.draw_unit_radius, "draw_unit_radius", "draw units radius (draw_unit_radius 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&game.draw_hitbox, "draw_hitbox", "draw weapons hitbox (draw_hitbox 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&game.draw_phy, "draw_phy", "draw physical colliders (draw_phy 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&game.draw_col, "draw_col", "draw colliders (draw_col 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&game.game_speed, "speed", "game speed (speed 0-10)", F_CHEAT | F_WORLD_MAP | F_SINGLEPLAYER, 0.f, 10.f));
-	cmds.push_back(ConsoleCommand(&game.next_seed, "next_seed", "Random seed used in next map generation", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&game.dont_wander, "dont_wander", "citizens don't wander around city (dont_wander 0/1)", F_ANYWHERE | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&game.draw_flags, "draw_flags", "set which elements of game draw (draw_flags int)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&N.mp_interp, "mp_interp", "interpolation interval (mp_interp 0.f-1.f)", F_MULTIPLAYER | F_WORLD_MAP | F_MP_VAR, 0.f, 1.f));
-	cmds.push_back(ConsoleCommand(&N.mp_use_interp, "mp_use_interp", "set use of interpolation (mp_use_interp 0/1)", F_MULTIPLAYER | F_WORLD_MAP | F_MP_VAR));
-	cmds.push_back(ConsoleCommand(&game.cl_postfx, "cl_postfx", "use post effects (cl_postfx 0/1)", F_ANYWHERE | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&game.cl_normalmap, "cl_normalmap", "use normal mapping (cl_normalmap 0/1)", F_ANYWHERE | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&game.cl_specularmap, "cl_specularmap", "use specular mapping (cl_specularmap 0/1)", F_ANYWHERE | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&game.cl_glow, "cl_glow", "use glow (cl_glow 0/1)", F_ANYWHERE | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(&game.uv_mod, "uv_mod", "terrain uv mod (uv_mod 1-256)", F_ANYWHERE, 1, 256, VoidF(this, &Game::UvModChanged)));
-	cmds.push_back(ConsoleCommand(reinterpret_cast<int*>(&game.profiler_mode), "profiler", "profiler execution: 0-disabled, 1-update, 2-rendering", F_ANYWHERE | F_WORLD_MAP, 0, 2));
-	cmds.push_back(ConsoleCommand(&game.settings.grass_range, "grass_range", "grass draw range", F_ANYWHERE | F_WORLD_MAP, 0.f));
-	cmds.push_back(ConsoleCommand(&game.devmode, "devmode", "developer mode (devmode 0/1)", F_GAME | F_SERVER | F_WORLD_MAP | F_MENU));
+	cmds.push_back(ConsoleCommand(&game_level->cl_fog, "cl_fog", "draw fog (cl_fog 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&game_level->cl_lighting, "cl_lighting", "use lighting (cl_lighting 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&game->draw_particle_sphere, "draw_particle_sphere", "draw particle extents sphere (draw_particle_sphere 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&game->draw_unit_radius, "draw_unit_radius", "draw units radius (draw_unit_radius 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&game->draw_hitbox, "draw_hitbox", "draw weapons hitbox (draw_hitbox 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&game->draw_phy, "draw_phy", "draw physical colliders (draw_phy 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&game->draw_col, "draw_col", "draw colliders (draw_col 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&game->game_speed, "speed", "game speed (speed 0-10)", F_CHEAT | F_WORLD_MAP | F_SINGLEPLAYER, 0.f, 10.f));
+	cmds.push_back(ConsoleCommand(&game->next_seed, "next_seed", "Random seed used in next map generation", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&game->dont_wander, "dont_wander", "citizens don't wander around city (dont_wander 0/1)", F_ANYWHERE | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&game->draw_flags, "draw_flags", "set which elements of game draw (draw_flags int)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&net->mp_interp, "mp_interp", "interpolation interval (mp_interp 0.f-1.f)", F_MULTIPLAYER | F_WORLD_MAP | F_MP_VAR, 0.f, 1.f));
+	cmds.push_back(ConsoleCommand(&net->mp_use_interp, "mp_use_interp", "set use of interpolation (mp_use_interp 0/1)", F_MULTIPLAYER | F_WORLD_MAP | F_MP_VAR));
+	cmds.push_back(ConsoleCommand(&game->cl_postfx, "cl_postfx", "use post effects (cl_postfx 0/1)", F_ANYWHERE | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&game->cl_normalmap, "cl_normalmap", "use normal mapping (cl_normalmap 0/1)", F_ANYWHERE | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&game->cl_specularmap, "cl_specularmap", "use specular mapping (cl_specularmap 0/1)", F_ANYWHERE | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&game->cl_glow, "cl_glow", "use glow (cl_glow 0/1)", F_ANYWHERE | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&game->uv_mod, "uv_mod", "terrain uv mod (uv_mod 1-256)", F_ANYWHERE, 1, 256, VoidF(this, &Game::UvModChanged)));
+	cmds.push_back(ConsoleCommand(reinterpret_cast<int*>(&game->profiler_mode), "profiler", "profiler execution: 0-disabled, 1-update, 2-rendering", F_ANYWHERE | F_WORLD_MAP, 0, 2));
+	cmds.push_back(ConsoleCommand(&game->settings.grass_range, "grass_range", "grass draw range", F_ANYWHERE | F_WORLD_MAP, 0.f));
+	cmds.push_back(ConsoleCommand(&game->devmode, "devmode", "developer mode (devmode 0/1)", F_GAME | F_SERVER | F_WORLD_MAP | F_MENU));
 
 	cmds.push_back(ConsoleCommand(CMD_WHISPER, "whisper", "send private message to player (whisper nick msg)", F_LOBBY | F_MULTIPLAYER | F_WORLD_MAP | F_NO_ECHO));
 	cmds.push_back(ConsoleCommand(CMD_WHISPER, "w", "send private message to player, short from whisper (w nick msg)", F_LOBBY | F_MULTIPLAYER | F_WORLD_MAP | F_NO_ECHO));
@@ -174,7 +173,6 @@ void CommandParser::ParseCommand(const string& command_str, PrintMsgFunc print_f
 			return;
 		}
 
-		Game& game = Game::Get();
 		const string& token = t.MustGetItem();
 
 		for(vector<ConsoleCommand>::iterator it = cmds.begin(), end = cmds.end(); it != end; ++it)
@@ -182,7 +180,7 @@ void CommandParser::ParseCommand(const string& command_str, PrintMsgFunc print_f
 			if(token != it->name)
 				continue;
 
-			if(IsSet(it->flags, F_CHEAT) && !game.devmode)
+			if(IsSet(it->flags, F_CHEAT) && !game->devmode)
 			{
 				Msg("You can't use command '%s' without devmode.", token.c_str());
 				return;
@@ -190,7 +188,7 @@ void CommandParser::ParseCommand(const string& command_str, PrintMsgFunc print_f
 
 			if(!IsAllSet(it->flags, F_ANYWHERE))
 			{
-				if(gui->server->visible)
+				if(game_gui->server->visible)
 				{
 					if(!IsSet(it->flags, F_LOBBY))
 					{
@@ -203,7 +201,7 @@ void CommandParser::ParseCommand(const string& command_str, PrintMsgFunc print_f
 						return;
 					}
 				}
-				else if(game.game_state == GS_MAIN_MENU)
+				else if(game->game_state == GS_MAIN_MENU)
 				{
 					if(!IsSet(it->flags, F_MENU))
 					{
@@ -224,7 +222,7 @@ void CommandParser::ParseCommand(const string& command_str, PrintMsgFunc print_f
 						return;
 					}
 				}
-				else if(game.game_state == GS_WORLDMAP)
+				else if(game->game_state == GS_WORLDMAP)
 				{
 					if(!IsSet(it->flags, F_WORLD_MAP))
 					{
@@ -355,14 +353,13 @@ void CommandParser::ParseCommand(const string& command_str, PrintMsgFunc print_f
 
 void CommandParser::ParseScript(Tokenizer& t)
 {
-	Game& game = Game::Get();
 	Msg(t.GetInnerString().c_str());
-	if(!game.devmode)
+	if(!game->devmode)
 	{
 		Msg("You can't use script command without devmode.");
 		return;
 	}
-	if(game.game_state != GS_LEVEL)
+	if(game->game_state != GS_LEVEL)
 	{
 		Msg("Script commands can only be used inside level.");
 		return;
@@ -371,16 +368,16 @@ void CommandParser::ParseScript(Tokenizer& t)
 	cstring code = t.GetTextRest();
 	if(Net::IsLocal())
 	{
-		string& output = SM.OpenOutput();
-		ScriptContext& ctx = SM.GetContext();
-		ctx.pc = game.pc;
-		ctx.target = game.pc_data.target_unit;
-		SM.RunScript(code);
+		string& output = script_mgr->OpenOutput();
+		ScriptContext& ctx = script_mgr->GetContext();
+		ctx.pc = game->pc;
+		ctx.target = game->pc_data.target_unit;
+		script_mgr->RunScript(code);
 		if(!output.empty())
 			Msg(output.c_str());
 		ctx.pc = nullptr;
 		ctx.target = nullptr;
-		SM.CloseOutput();
+		script_mgr->CloseOutput();
 	}
 	else
 	{
@@ -388,14 +385,12 @@ void CommandParser::ParseScript(Tokenizer& t)
 		c.type = NetChange::RUN_SCRIPT;
 		c.str = StringPool.Get();
 		*c.str = code;
-		c.id = (game.pc_data.target_unit ? game.pc_data.target_unit->netid : -1);
+		c.id = (game->pc_data.target_unit ? game->pc_data.target_unit->netid : -1);
 	}
 }
 
 void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE source)
 {
-	Game& game = Game::Get();
-
 	if(!IsSet(cmd.flags, F_NO_ECHO))
 		Msg(t.GetInnerString().c_str());
 
@@ -403,7 +398,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 	{
 	case CMD_GOTO_MAP:
 		if(Net::IsLocal())
-			game.ExitToMap();
+			game->ExitToMap();
 		else
 			Net::PushChange(NetChange::CHEAT_GOTO_MAP);
 		break;
@@ -414,18 +409,18 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		if(t.Next() && t.IsInt() && t.GetInt() == 1)
 			exit(0);
 		else
-			game.Quit();
+			game->Quit();
 		break;
 	case CMD_REVEAL:
 		if(Net::IsLocal())
-			W.Reveal();
+			world->Reveal();
 		else
 			Net::PushChange(NetChange::CHEAT_REVEAL);
 		break;
 	case CMD_MAP2CONSOLE:
-		if(game.game_state == GS_LEVEL && !L.location->outside)
+		if(game->game_state == GS_LEVEL && !game_level->location->outside)
 		{
-			InsideLocationLevel& lvl = static_cast<InsideLocation*>(L.location)->GetLevelData();
+			InsideLocationLevel& lvl = static_cast<InsideLocation*>(game_level->location)->GetLevelData();
 			Tile::DebugDraw(lvl.map, Int2(lvl.w, lvl.h));
 		}
 		else
@@ -453,7 +448,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 					count = 1;
 
 				if(Net::IsLocal())
-					game.pc->unit->AddItem2(item, count, is_team ? count : 0, false);
+					game->pc->unit->AddItem2(item, count, is_team ? count : 0, false);
 				else
 				{
 					NetChange& c = Add1(Net::changes);
@@ -480,7 +475,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 				if(is_team)
 					Team.AddGold(count);
 				else
-					game.pc->unit->gold = max(game.pc->unit->gold + count, 0);
+					game->pc->unit->gold = max(game->pc->unit->gold + count, 0);
 			}
 			else
 			{
@@ -569,16 +564,16 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 					if(skill)
 					{
 						if(cmd.cmd == CMD_MOD_STAT)
-							num += game.pc->unit->stats->skill[value];
+							num += game->pc->unit->stats->skill[value];
 						int v = Clamp(num, Skill::MIN, Skill::MAX);
-						game.pc->unit->Set((SkillId)value, v);
+						game->pc->unit->Set((SkillId)value, v);
 					}
 					else
 					{
 						if(cmd.cmd == CMD_MOD_STAT)
-							num += game.pc->unit->stats->attrib[value];
+							num += game->pc->unit->stats->attrib[value];
 						int v = Clamp(num, Attribute::MIN, Attribute::MAX);
-						game.pc->unit->Set((AttributeId)value, v);
+						game->pc->unit->Set((AttributeId)value, v);
 					}
 				}
 				else
@@ -607,19 +602,19 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 				for(const ConsoleCommand& cmd : cmds)
 				{
 					bool ok = true;
-					if(IsSet(cmd.flags, F_CHEAT) && !game.devmode)
+					if(IsSet(cmd.flags, F_CHEAT) && !game->devmode)
 						ok = false;
 
 					if(!IsAllSet(cmd.flags, F_ANYWHERE))
 					{
-						if(gui->server->visible)
+						if(game_gui->server->visible)
 						{
 							if(!IsSet(cmd.flags, F_LOBBY))
 								ok = false;
 							else if(IsSet(cmd.flags, F_SERVER) && !Net::IsServer())
 								ok = false;
 						}
-						else if(game.game_state == GS_MAIN_MENU)
+						else if(game->game_state == GS_MAIN_MENU)
 						{
 							if(!IsSet(cmd.flags, F_MENU))
 								ok = false;
@@ -631,7 +626,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 							else if(IsSet(cmd.flags, F_SERVER) && !Net::IsServer())
 								ok = false;
 						}
-						else if(game.game_state == GS_WORLDMAP)
+						else if(game->game_state == GS_WORLDMAP)
 						{
 							if(!IsSet(cmd.flags, F_WORLD_MAP))
 								ok = false;
@@ -711,10 +706,10 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 
 				if(Net::IsLocal())
 				{
-					LevelArea& area = *game.pc->unit->area;
+					LevelArea& area = *game->pc->unit->area;
 					for(int i = 0; i < count; ++i)
 					{
-						Unit* u = L.SpawnUnitNearLocation(area, game.pc->unit->GetFrontPos(), *data, &game.pc->unit->pos, level);
+						Unit* u = game_level->SpawnUnitNearLocation(area, game->pc->unit->GetFrontPos(), *data, &game->pc->unit->pos, level);
 						if(!u)
 						{
 							Msg("No free space for unit '%s'!", data->id.c_str());
@@ -723,7 +718,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 						else if(in_arena != -1)
 						{
 							u->in_arena = in_arena;
-							game.arena->units.push_back(u);
+							game->arena->units.push_back(u);
 						}
 					}
 				}
@@ -744,30 +739,30 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 	case CMD_HEAL:
 		if(Net::IsLocal())
 		{
-			game.pc->unit->hp = game.pc->unit->hpmax;
-			game.pc->unit->stamina = game.pc->unit->stamina_max;
-			game.pc->unit->RemovePoison();
-			game.pc->unit->RemoveEffect(EffectId::Stun);
+			game->pc->unit->hp = game->pc->unit->hpmax;
+			game->pc->unit->stamina = game->pc->unit->stamina_max;
+			game->pc->unit->RemovePoison();
+			game->pc->unit->RemoveEffect(EffectId::Stun);
 			if(Net::IsOnline())
 			{
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::UPDATE_HP;
-				c.unit = game.pc->unit;
+				c.unit = game->pc->unit;
 			}
 		}
 		else
 			Net::PushChange(NetChange::CHEAT_HEAL);
 		break;
 	case CMD_KILL:
-		if(game.pc_data.target_unit && game.pc_data.target_unit->IsAlive())
+		if(game->pc_data.target_unit && game->pc_data.target_unit->IsAlive())
 		{
 			if(Net::IsLocal())
-				game.GiveDmg(*game.pc_data.target_unit, game.pc_data.target_unit->hpmax);
+				game->GiveDmg(*game->pc_data.target_unit, game->pc_data.target_unit->hpmax);
 			else
 			{
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::CHEAT_KILL;
-				c.unit = game.pc_data.target_unit;
+				c.unit = game->pc_data.target_unit;
 			}
 		}
 		else
@@ -777,28 +772,28 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		CmdList(t);
 		break;
 	case CMD_HEAL_UNIT:
-		if(game.pc_data.target_unit)
+		if(game->pc_data.target_unit)
 		{
 			if(Net::IsLocal())
 			{
-				game.pc_data.target_unit->hp = game.pc_data.target_unit->hpmax;
-				game.pc_data.target_unit->stamina = game.pc_data.target_unit->stamina_max;
-				game.pc_data.target_unit->RemovePoison();
-				game.pc_data.target_unit->RemoveEffect(EffectId::Stun);
+				game->pc_data.target_unit->hp = game->pc_data.target_unit->hpmax;
+				game->pc_data.target_unit->stamina = game->pc_data.target_unit->stamina_max;
+				game->pc_data.target_unit->RemovePoison();
+				game->pc_data.target_unit->RemoveEffect(EffectId::Stun);
 				if(Net::IsOnline())
 				{
 					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::UPDATE_HP;
-					c.unit = game.pc_data.target_unit;
-					if(game.pc_data.target_unit->player && !game.pc_data.target_unit->player->is_local)
-						game.pc_data.target_unit->player->player_info->update_flags |= PlayerInfo::UF_STAMINA;
+					c.unit = game->pc_data.target_unit;
+					if(game->pc_data.target_unit->player && !game->pc_data.target_unit->player->is_local)
+						game->pc_data.target_unit->player->player_info->update_flags |= PlayerInfo::UF_STAMINA;
 				}
 			}
 			else
 			{
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::CHEAT_HEAL_UNIT;
-				c.unit = game.pc_data.target_unit;
+				c.unit = game->pc_data.target_unit;
 			}
 		}
 		else
@@ -806,7 +801,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		break;
 	case CMD_SUICIDE:
 		if(Net::IsLocal())
-			game.GiveDmg(*game.pc->unit, game.pc->unit->hpmax);
+			game->GiveDmg(*game->pc->unit, game->pc->unit->hpmax);
 		else
 			Net::PushChange(NetChange::CHEAT_SUICIDE);
 		break;
@@ -825,17 +820,17 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		}
 		break;
 	case CMD_SCREENSHOT:
-		game.TakeScreenshot();
+		game->TakeScreenshot();
 		break;
 	case CMD_SCARE:
 		if(Net::IsLocal())
 		{
-			for(AIController* ai : game.ais)
+			for(AIController* ai : game->ais)
 			{
-				if(ai->unit->IsEnemy(*game.pc->unit) && Vec3::Distance(ai->unit->pos, game.pc->unit->pos) < ALERT_RANGE && L.CanSee(*ai->unit, *game.pc->unit))
+				if(ai->unit->IsEnemy(*game->pc->unit) && Vec3::Distance(ai->unit->pos, game->pc->unit->pos) < ALERT_RANGE && game_level->CanSee(*ai->unit, *game->pc->unit))
 				{
 					ai->morale = -10;
-					ai->target_last_pos = game.pc->unit->pos;
+					ai->target_last_pos = game->pc->unit->pos;
 				}
 			}
 		}
@@ -845,41 +840,41 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 	case CMD_INVISIBLE:
 		if(t.Next())
 		{
-			game.pc->invisible = t.MustGetBool();
+			game->pc->invisible = t.MustGetBool();
 			if(!Net::IsLocal())
 			{
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::CHEAT_INVISIBLE;
-				c.id = game.pc->invisible ? 1 : 0;
+				c.id = game->pc->invisible ? 1 : 0;
 			}
 		}
-		Msg("invisible = %d", game.pc->invisible ? 1 : 0);
+		Msg("invisible = %d", game->pc->invisible ? 1 : 0);
 		break;
 	case CMD_GODMODE:
 		if(t.Next())
 		{
-			game.pc->godmode = t.MustGetBool();
+			game->pc->godmode = t.MustGetBool();
 			if(!Net::IsLocal())
 			{
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::CHEAT_GODMODE;
-				c.id = game.pc->godmode ? 1 : 0;
+				c.id = game->pc->godmode ? 1 : 0;
 			}
 		}
-		Msg("godmode = %d", game.pc->godmode ? 1 : 0);
+		Msg("godmode = %d", game->pc->godmode ? 1 : 0);
 		break;
 	case CMD_NOCLIP:
 		if(t.Next())
 		{
-			game.pc->noclip = t.MustGetBool();
+			game->pc->noclip = t.MustGetBool();
 			if(!Net::IsLocal())
 			{
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::CHEAT_NOCLIP;
-				c.id = game.pc->noclip ? 1 : 0;
+				c.id = game->pc->noclip ? 1 : 0;
 			}
 		}
-		Msg("noclip = %d", game.pc->noclip ? 1 : 0);
+		Msg("noclip = %d", game->pc->noclip ? 1 : 0);
 		break;
 	case CMD_KILLALL:
 		{
@@ -887,14 +882,14 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			if(t.Next())
 				mode = t.MustGetInt();
 			Unit* ignore = nullptr;
-			if(game.pc_data.before_player == BP_UNIT)
-				ignore = game.pc_data.before_player_ptr.unit;
-			if(!L.KillAll(mode, *game.pc->unit, ignore))
+			if(game->pc_data.before_player == BP_UNIT)
+				ignore = game->pc_data.before_player_ptr.unit;
+			if(!game_level->KillAll(mode, *game->pc->unit, ignore))
 				Msg("Unknown mode '%d'.", mode);
 		}
 		break;
 	case CMD_SAVE:
-		if(game.CanSaveGame())
+		if(game->CanSaveGame())
 		{
 			int slot = 1;
 			LocalString text;
@@ -913,15 +908,15 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 				}
 			}
 			if(slot != -1)
-				game.SaveGameSlot(slot, text->c_str());
+				game->SaveGameSlot(slot, text->c_str());
 			else
-				game.SaveGameFilename(text.get_ref());
+				game->SaveGameFilename(text.get_ref());
 		}
 		else
 			Msg(Net::IsClient() ? "Only server can save game." : "You can't save game in this moment.");
 		break;
 	case CMD_LOAD:
-		if(game.CanLoadGame())
+		if(game->CanLoadGame())
 		{
 			LocalString name;
 			int slot = 1;
@@ -939,18 +934,18 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			try
 			{
 				if(slot != -1)
-					game.LoadGameSlot(slot);
+					game->LoadGameSlot(slot);
 				else
-					game.LoadGameFilename(name.get_ref());
-				gui->CloseDialog(gui->console);
+					game->LoadGameFilename(name.get_ref());
+				gui->CloseDialog(game_gui->console);
 			}
 			catch(const SaveException& ex)
 			{
 				cstring error = Format("Failed to load game: %s", ex.msg);
 				Error(error);
 				Msg(error);
-				if(!gui->HaveDialog(gui->console))
-					gui->ShowDialog(gui->console);
+				if(!gui->HaveDialog(game_gui->console))
+					gui->ShowDialog(game_gui->console);
 			}
 		}
 		else
@@ -958,7 +953,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		break;
 	case CMD_REVEAL_MINIMAP:
 		if(Net::IsLocal())
-			L.RevealMinimap();
+			game_level->RevealMinimap();
 		else
 			Net::PushChange(NetChange::CHEAT_REVEAL_MINIMAP);
 		break;
@@ -970,7 +965,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			if(count > 0)
 			{
 				if(Net::IsLocal())
-					W.Update(count, World::UM_SKIP);
+					world->Update(count, World::UM_SKIP);
 				else
 				{
 					NetChange& c = Add1(Net::changes);
@@ -992,19 +987,19 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			}
 
 			bool ok = false;
-			if(L.city_ctx)
+			if(game_level->city_ctx)
 			{
 				int index;
-				InsideBuilding* building = L.city_ctx->FindInsideBuilding(group, index);
+				InsideBuilding* building = game_level->city_ctx->FindInsideBuilding(group, index);
 				if(building)
 				{
 					// wejdŸ do budynku
 					if(Net::IsLocal())
 					{
-						game.fallback_type = FALLBACK::ENTER;
-						game.fallback_t = -1.f;
-						game.fallback_1 = index;
-						game.pc->unit->frozen = (game.pc->unit->usable ? FROZEN::YES_NO_ANIM : FROZEN::YES);
+						game->fallback_type = FALLBACK::ENTER;
+						game->fallback_t = -1.f;
+						game->fallback_1 = index;
+						game->pc->unit->frozen = (game->pc->unit->usable ? FROZEN::YES_NO_ANIM : FROZEN::YES);
 					}
 					else
 					{
@@ -1026,7 +1021,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		if(t.Next())
 		{
 			const string& player_nick = t.MustGetText();
-			PlayerInfo* info = N.FindPlayer(player_nick);
+			PlayerInfo* info = net->FindPlayer(player_nick);
 			if(!info)
 				Msg("No player with nick '%s'.", player_nick.c_str());
 			else if(t.NextLine())
@@ -1041,11 +1036,11 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 					f.WriteCasted<byte>(Net::IsServer() ? Team.my_id : info->id);
 					f << text;
 					if(Net::IsServer())
-						N.SendServer(f, MEDIUM_PRIORITY, RELIABLE, info->adr);
+						net->SendServer(f, MEDIUM_PRIORITY, RELIABLE, info->adr);
 					else
-						N.SendClient(f, MEDIUM_PRIORITY, RELIABLE);
+						net->SendClient(f, MEDIUM_PRIORITY, RELIABLE);
 					cstring s = Format("@%s: %s", info->name.c_str(), text.c_str());
-					game.AddMsg(s);
+					game->AddMsg(s);
 					Info(s);
 				}
 			}
@@ -1059,17 +1054,17 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		if(t.NextLine())
 		{
 			const string& text = t.MustGetItem();
-			if(N.active_players > 1)
+			if(net->active_players > 1)
 			{
 				BitStreamWriter f;
 				f << ID_SERVER_SAY;
 				f << text;
-				N.SendAll(f, MEDIUM_PRIORITY, RELIABLE);
+				net->SendAll(f, MEDIUM_PRIORITY, RELIABLE);
 			}
-			game.AddServerMsg(text.c_str());
+			game->AddServerMsg(text.c_str());
 			Info("SERVER: %s", text.c_str());
-			if(game.game_state == GS_LEVEL)
-				gui->game_gui->AddSpeechBubble(game.pc->unit, text.c_str());
+			if(game->game_state == GS_LEVEL)
+				game_gui->level_gui->AddSpeechBubble(game->pc->unit, text.c_str());
 		}
 		else
 			Msg("You need to enter message.");
@@ -1078,20 +1073,20 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		if(t.Next())
 		{
 			const string& player_name = t.MustGetItem();
-			PlayerInfo* info = N.FindPlayer(player_name);
+			PlayerInfo* info = net->FindPlayer(player_name);
 			if(!info)
 				Msg("No player with nick '%s'.", player_name.c_str());
 			else
-				N.KickPlayer(*info);
+				net->KickPlayer(*info);
 		}
 		else
 			Msg("You need to enter player nick.");
 		break;
 	case CMD_READY:
 		{
-			PlayerInfo& info = N.GetMe();
+			PlayerInfo& info = net->GetMe();
 			info.ready = !info.ready;
-			gui->server->ChangeReady();
+			game_gui->server->ChangeReady();
 		}
 		break;
 	case CMD_LEADER:
@@ -1100,7 +1095,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		else
 		{
 			const string& player_name = t.MustGetText();
-			PlayerInfo* info = N.FindPlayer(player_name);
+			PlayerInfo* info = net->FindPlayer(player_name);
 			if(!info)
 				Msg("No player with nick '%s'.", player_name.c_str());
 			else if(Team.leader_id == info->id)
@@ -1109,12 +1104,12 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 				Msg("You can't change a leader."); // must be current leader or server
 			else
 			{
-				if(gui->server->visible)
+				if(game_gui->server->visible)
 				{
 					if(Net::IsServer())
 					{
 						Team.leader_id = info->id;
-						gui->server->AddLobbyUpdate(Int2(Lobby_ChangeLeader, 0));
+						game_gui->server->AddLobbyUpdate(Int2(Lobby_ChangeLeader, 0));
 					}
 					else
 						Msg("You can't change a leader.");
@@ -1130,20 +1125,20 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 						Team.leader_id = info->id;
 						Team.leader = info->u;
 
-						if(gui->world_map->dialog_enc)
-							gui->world_map->dialog_enc->bts[0].state = (Team.IsLeader() ? Button::NONE : Button::DISABLED);
+						if(game_gui->world_map->dialog_enc)
+							game_gui->world_map->dialog_enc->bts[0].state = (Team.IsLeader() ? Button::NONE : Button::DISABLED);
 					}
 				}
 
-				game.AddMsg(Format("Leader changed to '%s'.", info->name.c_str()));
+				game->AddMsg(Format("Leader changed to '%s'.", info->name.c_str()));
 			}
 		}
 		break;
 	case CMD_EXIT:
-		game.ExitToMenu();
+		game->ExitToMenu();
 		break;
 	case CMD_RANDOM:
-		if(gui->server->visible)
+		if(game_gui->server->visible)
 		{
 			if(t.Next())
 			{
@@ -1177,7 +1172,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 					{
 						if(ClassInfo::IsPickable(ci->class_id))
 						{
-							gui->server->PickClass(ci->class_id, false);
+							game_gui->server->PickClass(ci->class_id, false);
 							Msg("You picked Random character.");
 						}
 						else
@@ -1189,7 +1184,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			}
 			else
 			{
-				gui->server->PickClass(Class::RANDOM, false);
+				game_gui->server->PickClass(Class::RANDOM, false);
 				Msg("You picked Random character.");
 			}
 		}
@@ -1199,15 +1194,15 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::RANDOM_NUMBER;
 			c.id = n;
-			c.unit = game.pc->unit;
-			game.AddMsg(Format("You rolled %d.", n));
+			c.unit = game->pc->unit;
+			game->AddMsg(Format("You rolled %d.", n));
 		}
 		else
 			Msg("You rolled %d.", Random(1, 100));
 		break;
 	case CMD_START:
 		{
-			cstring msg = gui->server->TryStart();
+			cstring msg = game_gui->server->TryStart();
 			if(msg)
 				Msg(msg);
 		}
@@ -1221,11 +1216,11 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			f.WriteCasted<byte>(Team.my_id);
 			f << text;
 			if(Net::IsServer())
-				N.SendAll(f, MEDIUM_PRIORITY, RELIABLE);
+				net->SendAll(f, MEDIUM_PRIORITY, RELIABLE);
 			else
-				N.SendClient(f, MEDIUM_PRIORITY, RELIABLE);
-			cstring s = Format("%s: %s", N.GetMe().name.c_str(), text.c_str());
-			game.AddMsg(s);
+				net->SendClient(f, MEDIUM_PRIORITY, RELIABLE);
+			cstring s = Format("%s: %s", net->GetMe().name.c_str(), text.c_str());
+			game->AddMsg(s);
 			Info(s);
 		}
 		else
@@ -1240,7 +1235,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 				bool b = t.MustGetBool();
 				if(player_name == "all")
 				{
-					for(PlayerInfo& info : N.players)
+					for(PlayerInfo& info : net->players)
 					{
 						if(info.left == PlayerInfo::LEFT_NO && info.devmode != b && info.id != 0)
 						{
@@ -1253,7 +1248,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 				}
 				else
 				{
-					PlayerInfo* info = N.FindPlayer(player_name);
+					PlayerInfo* info = net->FindPlayer(player_name);
 					if(!info)
 						Msg("No player with nick '%s'.", player_name.c_str());
 					else if(info->devmode != b)
@@ -1271,7 +1266,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 				{
 					LocalString s = "Players devmode: ";
 					bool any = false;
-					for(PlayerInfo& info : N.players)
+					for(PlayerInfo& info : net->players)
 					{
 						if(info.left == PlayerInfo::LEFT_NO && info.id != 0)
 						{
@@ -1290,7 +1285,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 				}
 				else
 				{
-					PlayerInfo* info = N.FindPlayer(player_name);
+					PlayerInfo* info = net->FindPlayer(player_name);
 					if(!info)
 						Msg("No player with nick '%s'.", player_name.c_str());
 					else
@@ -1304,18 +1299,18 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 	case CMD_NOAI:
 		if(t.Next())
 		{
-			game.noai = t.MustGetBool();
+			game->noai = t.MustGetBool();
 			if(Net::IsOnline())
 			{
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::CHEAT_NOAI;
-				c.id = (game.noai ? 1 : 0);
+				c.id = (game->noai ? 1 : 0);
 			}
 		}
-		Msg("noai = %d", game.noai ? 1 : 0);
+		Msg("noai = %d", game->noai ? 1 : 0);
 		break;
 	case CMD_PAUSE:
-		game.PauseGame();
+		game->PauseGame();
 		break;
 	case CMD_MULTISAMPLING:
 		if(t.Next())
@@ -1324,11 +1319,11 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			int level = -1;
 			if(t.Next())
 				level = t.MustGetInt();
-			int result = app::render->SetMultisampling(type, level);
+			int result = render->SetMultisampling(type, level);
 			if(result == 2)
 			{
 				int ms, msq;
-				app::render->GetMultisampling(ms, msq);
+				render->GetMultisampling(ms, msq);
 				Msg("Changed multisampling to %d, %d.", ms, msq);
 			}
 			else
@@ -1337,15 +1332,15 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		else
 		{
 			int ms, msq;
-			app::render->GetMultisampling(ms, msq);
+			render->GetMultisampling(ms, msq);
 			Msg("multisampling = %d, %d", ms, msq);
 		}
 		break;
 	case CMD_QUICKSAVE:
-		game.Quicksave(true);
+		game->Quicksave(true);
 		break;
 	case CMD_QUICKLOAD:
-		game.Quickload(true);
+		game->Quickload(true);
 		break;
 	case CMD_RESOLUTION:
 		if(t.Next())
@@ -1363,7 +1358,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 				}
 			}
 			vector<Resolution> resolutions;
-			app::render->GetResolutions(resolutions);
+			render->GetResolutions(resolutions);
 			for(const Resolution& res : resolutions)
 			{
 				if(w == res.size.x)
@@ -1395,16 +1390,16 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 				}
 			}
 			if(valid)
-				app::engine->ChangeMode(Int2(w, h), app::engine->IsFullscreen(), hz);
+				engine->ChangeMode(Int2(w, h), engine->IsFullscreen(), hz);
 			else
 				Msg("Can't change resolution to %dx%d (%d Hz).", w, h, hz);
 		}
 		else
 		{
 			LocalString s = Format("Current resolution %dx%d (%d Hz). Available: ",
-				app::engine->GetWindowSize().x, app::engine->GetWindowSize().y, app::render->GetRefreshRate());
+				engine->GetWindowSize().x, engine->GetWindowSize().y, render->GetRefreshRate());
 			vector<Resolution> resolutions;
-			app::render->GetResolutions(resolutions);
+			render->GetResolutions(resolutions);
 			for(const Resolution& res : resolutions)
 				s += Format("%dx%d(%d), ", res.size.x, res.size.y, res.hz);
 			s.pop(2u);
@@ -1412,20 +1407,20 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		}
 		break;
 	case CMD_QS:
-		if(!gui->server->Quickstart())
+		if(!game_gui->server->Quickstart())
 			Msg("Not everyone is ready.");
 		break;
 	case CMD_CLEAR:
 		switch(source)
 		{
 		case PS_CONSOLE:
-			gui->console->Reset();
+			game_gui->console->Reset();
 			break;
 		case PS_CHAT:
-			gui->mp_box->itb.Reset();
+			game_gui->mp_box->itb.Reset();
 			break;
 		case PS_LOBBY:
-			gui->server->itb.Reset();
+			game_gui->server->itb.Reset();
 			break;
 		case PS_UNKNOWN:
 		default:
@@ -1439,9 +1434,9 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		{
 			Unit* u;
 			if(t.Next() && t.GetInt() == 1)
-				u = game.pc->unit;
-			else if(game.pc_data.target_unit)
-				u = game.pc_data.target_unit;
+				u = game->pc->unit;
+			else if(game->pc_data.target_unit)
+				u = game->pc_data.target_unit;
 			else
 			{
 				Msg("No unit in front of player.");
@@ -1450,7 +1445,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			if(Net::IsLocal())
 			{
 				if(cmd.cmd == CMD_HURT)
-					game.GiveDmg(*u, 100.f);
+					game->GiveDmg(*u, 100.f);
 				else if(cmd.cmd == CMD_BREAK_ACTION)
 					u->BreakAction(Unit::BREAK_ACTION_MODE::NORMAL, true);
 				else
@@ -1470,15 +1465,15 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		}
 		break;
 	case CMD_RELOAD_SHADERS:
-		game.ReloadShaders();
-		if(app::engine->IsShutdown())
+		game->ReloadShaders();
+		if(engine->IsShutdown())
 			return;
 		break;
 	case CMD_TILE_INFO:
-		if(L.location->outside && game.pc->unit->area->area_type == LevelArea::Type::Outside && L.terrain->IsInside(game.pc->unit->pos))
+		if(game_level->location->outside && game->pc->unit->area->area_type == LevelArea::Type::Outside && game_level->terrain->IsInside(game->pc->unit->pos))
 		{
-			OutsideLocation* outside = static_cast<OutsideLocation*>(L.location);
-			const TerrainTile& t = outside->tiles[PosToPt(game.pc->unit->pos)(outside->size)];
+			OutsideLocation* outside = static_cast<OutsideLocation*>(game_level->location);
+			const TerrainTile& t = outside->tiles[PosToPt(game->pc->unit->pos)(outside->size)];
 			Msg(t.GetInfo());
 		}
 		else
@@ -1486,7 +1481,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		break;
 	case CMD_SET_SEED:
 		t.Next();
-		game.next_seed = t.MustGetUint();
+		game->next_seed = t.MustGetUint();
 		break;
 	case CMD_CRASH:
 		void DoCrash();
@@ -1497,17 +1492,17 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			if(t.Next())
 			{
 				const string& id = t.MustGetItem();
-				if(!QM.SetForcedQuest(id))
+				if(!quest_mgr->SetForcedQuest(id))
 					Msg("Invalid quest id '%s'.", id.c_str());
 			}
-			int force = QM.GetForcedQuest();
+			int force = quest_mgr->GetForcedQuest();
 			cstring name;
 			if(force == Q_FORCE_DISABLED)
 				name = "disabled";
 			else if(force == Q_FORCE_NONE)
 				name = "none";
 			else
-				name = QM.GetQuestInfos()[force].name;
+				name = quest_mgr->GetQuestInfos()[force].name;
 			Msg("Forced quest: %s", name);
 		}
 		break;
@@ -1522,9 +1517,9 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			}
 			Unit* u;
 			if(t.Next() && t.GetInt() == 1)
-				u = game.pc->unit;
-			else if(game.pc_data.target_unit)
-				u = game.pc_data.target_unit;
+				u = game->pc->unit;
+			else if(game->pc_data.target_unit)
+				u = game->pc_data.target_unit;
 			else
 			{
 				Msg("No unit in front of player.");
@@ -1542,24 +1537,24 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		}
 		break;
 	case CMD_REFRESH_COOLDOWN:
-		game.pc->RefreshCooldown();
+		game->pc->RefreshCooldown();
 		if(!Net::IsLocal())
 			Net::PushChange(NetChange::CHEAT_REFRESH_COOLDOWN);
 		break;
 	case CMD_DRAW_PATH:
-		if(game.pc_data.before_player == BP_UNIT)
+		if(game->pc_data.before_player == BP_UNIT)
 		{
-			global::pathfinding->SetTarget(game.pc_data.before_player_ptr.unit);
+			pathfinding->SetTarget(game->pc_data.before_player_ptr.unit);
 			Msg("Set draw path target.");
 		}
 		else
 		{
-			global::pathfinding->SetTarget(nullptr);
+			pathfinding->SetTarget(nullptr);
 			Msg("Removed draw path target.");
 		}
 		break;
 	case CMD_VERIFY:
-		W.VerifyObjects();
+		world->VerifyObjects();
 		break;
 	case CMD_ADD_EFFECT:
 		if(!t.Next())
@@ -1652,13 +1647,13 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			}
 
 			if(Net::IsLocal())
-				game.pc_data.selected_unit->AddEffect(e);
+				game->pc_data.selected_unit->AddEffect(e);
 			else
 			{
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::GENERIC_CMD;
 				c << (byte)CMD_ADD_EFFECT
-					<< game.pc_data.selected_unit->netid
+					<< game->pc_data.selected_unit->netid
 					<< (char)e.effect
 					<< (char)e.source
 					<< (char)e.source_id
@@ -1756,13 +1751,13 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			}
 
 			if(Net::IsLocal())
-				RemoveEffect(game.pc_data.selected_unit, effect, source, source_id, value);
+				RemoveEffect(game->pc_data.selected_unit, effect, source, source_id, value);
 			else
 			{
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::GENERIC_CMD;
 				c << (byte)CMD_REMOVE_EFFECT
-					<< game.pc_data.selected_unit->netid
+					<< game->pc_data.selected_unit->netid
 					<< (char)effect
 					<< (char)source
 					<< (char)source_id
@@ -1771,18 +1766,18 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		}
 		break;
 	case CMD_LIST_EFFECTS:
-		if(Net::IsLocal() || game.pc_data.selected_unit->IsLocal())
-			ListEffects(game.pc_data.selected_unit);
+		if(Net::IsLocal() || game->pc_data.selected_unit->IsLocal())
+			ListEffects(game->pc_data.selected_unit);
 		else
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::GENERIC_CMD;
 			c << (byte)CMD_LIST_EFFECTS
-				<< game.pc_data.selected_unit->netid;
+				<< game->pc_data.selected_unit->netid;
 		}
 		break;
 	case CMD_ADD_PERK:
-		if(!game.pc_data.selected_unit->player)
+		if(!game->pc_data.selected_unit->player)
 			Msg("Only players have perks.");
 		else if(!t.Next())
 			Msg("Perk name required. Use 'list perks' to display list.");
@@ -1831,20 +1826,20 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			}
 
 			if(Net::IsLocal())
-				AddPerk(game.pc_data.selected_unit->player, info->perk_id, value);
+				AddPerk(game->pc_data.selected_unit->player, info->perk_id, value);
 			else
 			{
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::GENERIC_CMD;
 				c << (byte)CMD_ADD_PERK
-					<< game.pc_data.selected_unit->netid
+					<< game->pc_data.selected_unit->netid
 					<< (char)info->perk_id
 					<< (char)value;
 			}
 		}
 		break;
 	case CMD_REMOVE_PERK:
-		if(!game.pc_data.selected_unit->player)
+		if(!game->pc_data.selected_unit->player)
 			Msg("Only players have perks.");
 		else if(!t.Next())
 			Msg("Perk name required. Use 'list perks' to display list.");
@@ -1893,29 +1888,29 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			}
 
 			if(Net::IsLocal())
-				RemovePerk(game.pc_data.selected_unit->player, info->perk_id, value);
+				RemovePerk(game->pc_data.selected_unit->player, info->perk_id, value);
 			else
 			{
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::GENERIC_CMD;
 				c << (byte)CMD_REMOVE_PERK
-					<< game.pc_data.selected_unit->netid
+					<< game->pc_data.selected_unit->netid
 					<< (char)info->perk_id
 					<< (char)value;
 			}
 		}
 		break;
 	case CMD_LIST_PERKS:
-		if(!game.pc_data.selected_unit->player)
+		if(!game->pc_data.selected_unit->player)
 			Msg("Only players have perks.");
-		else if(Net::IsLocal() || game.pc_data.selected_unit->IsLocal())
-			ListPerks(game.pc_data.selected_unit->player);
+		else if(Net::IsLocal() || game->pc_data.selected_unit->IsLocal())
+			ListPerks(game->pc_data.selected_unit->player);
 		else
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::GENERIC_CMD;
 			c << (byte)CMD_LIST_PERKS
-				<< game.pc_data.selected_unit->netid;
+				<< game->pc_data.selected_unit->netid;
 		}
 		break;
 	case CMD_SELECT:
@@ -1942,39 +1937,39 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 					break;
 				}
 			}
-			else if(game.pc_data.before_player == BP_UNIT)
+			else if(game->pc_data.before_player == BP_UNIT)
 				select = SELECT_TARGET;
 			else
 				select = SELECT_SHOW;
 
 			if(select == SELECT_ME)
-				game.pc_data.selected_unit = game.pc->unit;
+				game->pc_data.selected_unit = game->pc->unit;
 			else if(select == SELECT_TARGET)
 			{
-				if(!game.pc_data.target_unit)
+				if(!game->pc_data.target_unit)
 				{
 					Msg("No unit in front of player.");
 					break;
 				}
-				game.pc_data.selected_unit = game.pc_data.target_unit;
+				game->pc_data.selected_unit = game->pc_data.target_unit;
 			}
-			Msg("Currently selected: %s %p [%d]", game.pc_data.selected_unit->data->id.c_str(), game.pc_data.selected_unit,
-				Net::IsOnline() ? game.pc_data.selected_unit->netid : -1);
+			Msg("Currently selected: %s %p [%d]", game->pc_data.selected_unit->data->id.c_str(), game->pc_data.selected_unit,
+				Net::IsOnline() ? game->pc_data.selected_unit->netid : -1);
 		}
 		break;
 	case CMD_LIST_STATS:
-		if(Net::IsLocal() || game.pc_data.selected_unit->IsLocal())
-			ListStats(game.pc_data.selected_unit);
+		if(Net::IsLocal() || game->pc_data.selected_unit->IsLocal())
+			ListStats(game->pc_data.selected_unit);
 		else
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::GENERIC_CMD;
 			c << (byte)CMD_LIST_STATS
-				<< game.pc_data.selected_unit->netid;
+				<< game->pc_data.selected_unit->netid;
 		}
 		break;
 	case CMD_ADD_LEARNING_POINTS:
-		if(!game.pc_data.selected_unit->IsPlayer())
+		if(!game->pc_data.selected_unit->IsPlayer())
 			Msg("Only players have learning points.");
 		else
 		{
@@ -1984,13 +1979,13 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			if(count < 1)
 				break;
 			if(Net::IsLocal())
-				game.pc_data.selected_unit->player->AddLearningPoint(count);
+				game->pc_data.selected_unit->player->AddLearningPoint(count);
 			else
 			{
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::GENERIC_CMD;
 				c << (byte)CMD_ADD_LEARNING_POINTS
-					<< game.pc_data.selected_unit->netid
+					<< game->pc_data.selected_unit->netid
 					<< count;
 			}
 		}
@@ -2001,7 +1996,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			if(t.Next())
 				building_id = t.MustGetInt();
 			if(Net::IsLocal())
-				L.CleanLevel(building_id);
+				game_level->CleanLevel(building_id);
 			else
 			{
 				NetChange& c = Add1(Net::changes);
@@ -2011,7 +2006,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		}
 		break;
 	case CMD_ARENA:
-		if(!L.HaveArena())
+		if(!game_level->HaveArena())
 			Msg("Arena required inside location.");
 		else
 		{
@@ -2029,7 +2024,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		break;
 	case CMD_SHADER_VERSION:
 		if(!t.Next() || !t.IsInt())
-			Msg("shader_version: %d", app::render->GetShaderVersion());
+			Msg("shader_version: %d", render->GetShaderVersion());
 		else
 		{
 			int value = t.GetInt();
@@ -2037,9 +2032,9 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 				Msg("Invalid shader version, must be 2 or 3.");
 			else
 			{
-				app::render->SetShaderVersion(value);
+				render->SetShaderVersion(value);
 				Msg("shader_version: %d", value);
-				game.ReloadShaders();
+				game->ReloadShaders();
 			}
 		}
 		break;
@@ -2123,7 +2118,7 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f)
 			f >> e.power;
 			f >> e.time;
 
-			Unit* unit = L.FindUnit(netid);
+			Unit* unit = game_level->FindUnit(netid);
 			if(!unit)
 			{
 				Error("CommandParser CMD_ADD_EFFECT: Missing unit %d.", netid);
@@ -2197,7 +2192,7 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f)
 			f.ReadCasted<char>(source_id);
 			f.ReadCasted<char>(value);
 
-			Unit* unit = L.FindUnit(netid);
+			Unit* unit = game_level->FindUnit(netid);
 			if(!unit)
 			{
 				Error("CommandParser CMD_REMOVE_EFFECT: Missing unit %d.", netid);
@@ -2259,7 +2254,7 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f)
 		{
 			int netid;
 			f >> netid;
-			Unit* unit = L.FindUnit(netid);
+			Unit* unit = game_level->FindUnit(netid);
 			if(!unit)
 			{
 				Error("CommandParser CMD_LIST_EFFECTS: Missing unit %d.", netid);
@@ -2277,7 +2272,7 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f)
 			f.ReadCasted<char>(perk);
 			f.ReadCasted<char>(value);
 
-			Unit* unit = L.FindUnit(netid);
+			Unit* unit = game_level->FindUnit(netid);
 			if(!unit)
 			{
 				Error("CommandParser CMD_ADD_PERK: Missing unit %d.", netid);
@@ -2331,7 +2326,7 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f)
 			f.ReadCasted<char>(perk);
 			f.ReadCasted<char>(value);
 
-			Unit* unit = L.FindUnit(netid);
+			Unit* unit = game_level->FindUnit(netid);
 			if(!unit)
 			{
 				Error("CommandParser CMD_REMOVE_PERK: Missing unit %d.", netid);
@@ -2380,7 +2375,7 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f)
 		{
 			int netid;
 			f >> netid;
-			Unit* unit = L.FindUnit(netid);
+			Unit* unit = game_level->FindUnit(netid);
 			if(!unit)
 			{
 				Error("CommandParser CMD_LIST_PERKS: Missing unit %d.", netid);
@@ -2398,7 +2393,7 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f)
 		{
 			int netid;
 			f >> netid;
-			Unit* unit = L.FindUnit(netid);
+			Unit* unit = game_level->FindUnit(netid);
 			if(!unit)
 			{
 				Error("CommandParser CMD_LIST_STAT: Missing unit %d.", netid);
@@ -2414,7 +2409,7 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f)
 			f >> netid;
 			f >> count;
 
-			Unit* unit = L.FindUnit(netid);
+			Unit* unit = game_level->FindUnit(netid);
 			if(!unit)
 			{
 				Error("CommandParser CMD_ADD_LEARNING_POINTS: Missing unit %d.", netid);
@@ -2661,7 +2656,7 @@ void CommandParser::ArenaCombat(cstring str)
 	else if(!any[0] || !any[1])
 		Msg("Missing other units.");
 	else
-		Game::Get().arena->SpawnUnit(units);
+		game->arena->SpawnUnit(units);
 }
 
 //=================================================================================================
@@ -2856,7 +2851,7 @@ void CommandParser::CmdList(Tokenizer& t)
 	case LIST_QUEST:
 		{
 			LocalVector2<const QuestInfo*> quests;
-			for(auto& info : QM.GetQuestInfos())
+			for(auto& info : quest_mgr->GetQuestInfos())
 			{
 				if(match.empty() || _strnicmp(match.c_str(), info.name, match.length()) == 0)
 					quests.push_back(&info);

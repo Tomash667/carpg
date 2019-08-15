@@ -12,7 +12,7 @@
 #include "Trap.h"
 #include "Door.h"
 #include "EntityInterpolator.h"
-#include "GlobalGui.h"
+#include "GameGui.h"
 #include "ServerPanel.h"
 #include "Journal.h"
 #include "PlayerInfo.h"
@@ -24,7 +24,7 @@
 #include "Team.h"
 #include "LobbyApi.h"
 
-Net N;
+Net* global::net;
 const float CHANGE_LEVEL_TIMER = 5.f;
 const int CLOSE_PEER_TIMER = 1000; // ms
 //#define TEST_LAG 50
@@ -35,7 +35,17 @@ Net::Net() : peer(nullptr), mp_load(false), mp_use_interp(true), mp_interp(0.05f
 }
 
 //=================================================================================================
-void Net::InitOnce()
+Net::~Net()
+{
+	DeleteElements(players);
+	DeleteElements(old_players);
+	if(peer)
+		RakPeerInterface::DestroyInstance(peer);
+	delete api;
+}
+
+//=================================================================================================
+void Net::Init()
 {
 	api = new LobbyApi;
 }
@@ -45,16 +55,6 @@ void Net::LoadLanguage()
 {
 	txCreateServerFailed = Str("createServerFailed");
 	txInitConnectionFailed = Str("initConnectionFailed");
-}
-
-//=================================================================================================
-void Net::Cleanup()
-{
-	DeleteElements(players);
-	DeleteElements(old_players);
-	if(peer)
-		RakPeerInterface::DestroyInstance(peer);
-	delete api;
 }
 
 //=================================================================================================
@@ -204,7 +204,7 @@ void Net::OnChangeLevel(int level)
 {
 	BitStreamWriter f;
 	f << ID_CHANGE_LEVEL;
-	f << (byte)L.location_index;
+	f << (byte)game_level->location_index;
 	f << (byte)level;
 	f << false;
 
@@ -276,7 +276,7 @@ PlayerInfo* Net::FindOldPlayer(cstring nick)
 //=================================================================================================
 void Net::DeleteOldPlayers()
 {
-	const bool in_level = L.is_open;
+	const bool in_level = game_level->is_open;
 	for(PlayerInfo& info : old_players)
 	{
 		if(!info.loaded && info.u)
@@ -286,7 +286,7 @@ void Net::DeleteOldPlayers()
 			if(info.u->cobj)
 			{
 				delete info.u->cobj->getCollisionShape();
-				L.phy_world->removeCollisionObject(info.u->cobj);
+				game_level->phy_world->removeCollisionObject(info.u->cobj);
 				delete info.u->cobj;
 			}
 			delete info.u;
@@ -375,11 +375,10 @@ void Net::KickPlayer(PlayerInfo& info)
 
 	info.state = PlayerInfo::REMOVING;
 
-	Game& game = Game::Get();
-	ServerPanel* server_panel = game.gui->server;
+	ServerPanel* server_panel = game_gui->server;
 	if(server_panel->visible)
 	{
-		server_panel->AddMsg(Format(game.txPlayerKicked, info.name.c_str()));
+		server_panel->AddMsg(Format(game->txPlayerKicked, info.name.c_str()));
 		Info("Player %s was kicked.", info.name.c_str());
 
 		if(active_players > 2)
@@ -449,7 +448,6 @@ bool Net::FilterOut(NetChangePlayer& c)
 	{
 	case NetChangePlayer::DEVMODE:
 	case NetChangePlayer::GOLD_RECEIVED:
-	case NetChangePlayer::ADDED_ITEMS_MSG:
 	case NetChangePlayer::GAME_MESSAGE:
 	case NetChangePlayer::RUN_SCRIPT_RESULT:
 	case NetChangePlayer::GENERIC_CMD_RESPONSE:
@@ -464,21 +462,20 @@ bool Net::FilterOut(NetChangePlayer& c)
 void Net::WriteWorldData(BitStreamWriter& f)
 {
 	Info("Preparing world data.");
-	Game& game = Game::Get();
 
 	f << ID_WORLD_DATA;
 
 	// world
-	W.Write(f);
+	world->Write(f);
 
 	// quests
-	QM.Write(f);
+	quest_mgr->Write(f);
 
 	// rumors
-	f.WriteStringArray<byte, word>(game.gui->journal->GetRumors());
+	f.WriteStringArray<byte, word>(game_gui->journal->GetRumors());
 
 	// stats
-	GameStats::Get().Write(f);
+	game_stats->Write(f);
 
 	// mp vars
 	WriteNetVars(f);
@@ -498,7 +495,7 @@ void Net::WritePlayerStartData(BitStreamWriter& f, PlayerInfo& info)
 
 	// flags
 	f << info.devmode;
-	f << Game::Get().noai;
+	f << game->noai;
 
 	// player
 	info.u->player->WriteStart(f);
@@ -518,10 +515,10 @@ void Net::WriteLevelData(BitStream& stream, bool loaded_resources)
 	f << loaded_resources;
 
 	// level
-	L.Write(f);
+	game_level->Write(f);
 
 	// items preload
-	std::set<const Item*>& items_load = Game::Get().items_load;
+	std::set<const Item*>& items_load = game->items_load;
 	f << items_load.size();
 	for(const Item* item : items_load)
 	{
@@ -611,7 +608,7 @@ void Net::SendClient(BitStreamWriter& f, PacketPriority priority, PacketReliabil
 //=================================================================================================
 void Net::InterpolateUnits(float dt)
 {
-	for(LevelArea& area : L.ForEachArea())
+	for(LevelArea& area : game_level->ForEachArea())
 	{
 		for(Unit* unit : area.units)
 		{
@@ -731,21 +728,19 @@ bool Net::FilterOut(NetChange& c)
 //=================================================================================================
 bool Net::ReadWorldData(BitStreamReader& f)
 {
-	Game& game = Game::Get();
-
 	// world
-	if(!W.Read(f))
+	if(!world->Read(f))
 	{
 		Error("Read world: Broken packet for world data.");
 		return false;
 	}
 
 	// quests
-	if(!QM.Read(f))
+	if(!quest_mgr->Read(f))
 		return false;
 
 	// rumors
-	f.ReadStringArray<byte, word>(game.gui->journal->GetRumors());
+	f.ReadStringArray<byte, word>(game_gui->journal->GetRumors());
 	if(!f)
 	{
 		Error("Read world: Broken packet for rumors.");
@@ -753,7 +748,7 @@ bool Net::ReadWorldData(BitStreamReader& f)
 	}
 
 	// game stats
-	GameStats::Get().Read(f);
+	game_stats->Read(f);
 	if(!f)
 	{
 		Error("Read world: Broken packet for game stats.");
@@ -786,11 +781,11 @@ bool Net::ReadWorldData(BitStreamReader& f)
 	}
 
 	// load music
-	if(!app::sound_mgr->IsMusicDisabled())
+	if(!sound_mgr->IsMusicDisabled())
 	{
-		game.LoadMusic(MusicType::Boss, false);
-		game.LoadMusic(MusicType::Death, false);
-		game.LoadMusic(MusicType::Travel, false);
+		game->LoadMusic(MusicType::Boss, false);
+		game->LoadMusic(MusicType::Death, false);
+		game->LoadMusic(MusicType::Travel, false);
 	}
 
 	return true;
@@ -799,14 +794,12 @@ bool Net::ReadWorldData(BitStreamReader& f)
 //=================================================================================================
 bool Net::ReadPlayerStartData(BitStreamReader& f)
 {
-	Game& game = Game::Get();
+	game->pc = new PlayerController;
 
-	game.pc = new PlayerController;
-
-	f >> game.devmode;
-	f >> game.noai;
-	game.pc->ReadStart(f);
-	f.ReadStringArray<word, word>(game.gui->journal->GetNotes());
+	f >> game->devmode;
+	f >> game->noai;
+	game->pc->ReadStart(f);
+	f.ReadStringArray<word, word>(game_gui->journal->GetNotes());
 	if(!f)
 		return false;
 
@@ -825,13 +818,12 @@ bool Net::ReadPlayerStartData(BitStreamReader& f)
 //=================================================================================================
 bool Net::ReadLevelData(BitStreamReader& f)
 {
-	Game& game = Game::Get();
-	L.camera.Reset();
-	game.pc_data.rot_buf = 0.f;
-	W.RemoveBossLevel();
+	game_level->camera.Reset();
+	game->pc_data.rot_buf = 0.f;
+	world->RemoveBossLevel();
 
 	bool loaded_resources;
-	f >> N.mp_load;
+	f >> net->mp_load;
 	f >> loaded_resources;
 	if(!f)
 	{
@@ -839,7 +831,7 @@ bool Net::ReadLevelData(BitStreamReader& f)
 		return false;
 	}
 
-	if(!L.Read(f, loaded_resources))
+	if(!game_level->Read(f, loaded_resources))
 		return false;
 
 	// items to preload
@@ -849,7 +841,7 @@ bool Net::ReadLevelData(BitStreamReader& f)
 		Error("Read level: Broken items preload count.");
 		return false;
 	}
-	std::set<const Item*>& items_load = game.items_load;
+	std::set<const Item*>& items_load = game->items_load;
 	items_load.clear();
 	for(uint i = 0; i < items_load_count; ++i)
 	{
@@ -877,7 +869,7 @@ bool Net::ReadLevelData(BitStreamReader& f)
 				Error("Read level: Broken quest item preload '%u'.", i);
 				return false;
 			}
-			const Item* item = QM.FindQuestItemClient(item_id.c_str(), refid);
+			const Item* item = quest_mgr->FindQuestItemClient(item_id.c_str(), refid);
 			if(!item)
 			{
 				Error("Read level: Missing quest item preload '%s' (%d).", item_id.c_str(), refid);

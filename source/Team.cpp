@@ -7,7 +7,7 @@
 #include "QuestManager.h"
 #include "Quest_Evil.h"
 #include "Net.h"
-#include "GlobalGui.h"
+#include "GameGui.h"
 #include "TeamPanel.h"
 #include "UnitHelper.h"
 #include "AIController.h"
@@ -80,9 +80,8 @@ void TeamSingleton::AddTeamMember(Unit* unit, bool free)
 	unit->MakeItemsTeam(false);
 
 	// update TeamPanel if open
-	Game& game = Game::Get();
-	if(game.gui->team->visible)
-		game.gui->team->Changed();
+	if(game_gui->team->visible)
+		game_gui->team->Changed();
 
 	// send info to other players
 	if(Net::IsOnline())
@@ -113,9 +112,8 @@ void TeamSingleton::RemoveTeamMember(Unit* unit)
 	unit->MakeItemsTeam(true);
 
 	// update TeamPanel if open
-	Game& game = Game::Get();
-	if(game.gui->team->visible)
-		game.gui->team->Changed();
+	if(game_gui->team->visible)
+		game_gui->team->Changed();
 
 	// send info to other players
 	if(Net::IsOnline())
@@ -464,7 +462,7 @@ void TeamSingleton::Update(int days, bool travel)
 	}
 	else
 	{
-		bool autoheal = (QM.quest_evil->evil_state == Quest_Evil::State::ClosingPortals || QM.quest_evil->evil_state == Quest_Evil::State::KillBoss);
+		bool autoheal = (quest_mgr->quest_evil->evil_state == Quest_Evil::State::ClosingPortals || quest_mgr->quest_evil->evil_state == Quest_Evil::State::KillBoss);
 
 		// regeneracja hp / trenowanie
 		for(Unit& unit : members)
@@ -604,8 +602,7 @@ bool TeamSingleton::CheckTeamShareItem(TeamShareItem& tsi)
 //=================================================================================================
 void TeamSingleton::UpdateTeamItemShares()
 {
-	Game& game = Game::Get();
-	if(game.fallback_type != FALLBACK::NO || team_share_id == -1)
+	if(game->fallback_type != FALLBACK::NO || team_share_id == -1)
 		return;
 
 	if(team_share_id >= (int)team_shares.size())
@@ -1088,23 +1085,23 @@ void TeamSingleton::BuyTeamItems()
 	}
 
 	// buying potions by old mage
-	if(QM.quest_mages2->scholar && Any(QM.quest_mages2->mages_state, Quest_Mages2::State::MageRecruited, Quest_Mages2::State::OldMageJoined,
+	if(quest_mgr->quest_mages2->scholar && Any(quest_mgr->quest_mages2->mages_state, Quest_Mages2::State::MageRecruited, Quest_Mages2::State::OldMageJoined,
 		Quest_Mages2::State::OldMageRemembers, Quest_Mages2::State::BuyPotion))
 	{
-		int count = max(0, 3 - QM.quest_mages2->scholar->CountItem(hp2));
+		int count = max(0, 3 - quest_mgr->quest_mages2->scholar->CountItem(hp2));
 		if(count)
 		{
-			QM.quest_mages2->scholar->AddItem(hp2, count, false);
-			QM.quest_mages2->scholar->ai->have_potion = 2;
+			quest_mgr->quest_mages2->scholar->AddItem(hp2, count, false);
+			quest_mgr->quest_mages2->scholar->ai->have_potion = 2;
 		}
 	}
 
 	// buying potions by orc
-	if(QM.quest_orcs2->orc
-		&& (QM.quest_orcs2->orcs_state == Quest_Orcs2::State::OrcJoined || QM.quest_orcs2->orcs_state >= Quest_Orcs2::State::CompletedJoined))
+	if(quest_mgr->quest_orcs2->orc
+		&& (quest_mgr->quest_orcs2->orcs_state == Quest_Orcs2::State::OrcJoined || quest_mgr->quest_orcs2->orcs_state >= Quest_Orcs2::State::CompletedJoined))
 	{
 		int ile1, ile2;
-		switch(QM.quest_orcs2->GetOrcClass())
+		switch(quest_mgr->quest_orcs2->GetOrcClass())
 		{
 		case Quest_Orcs2::OrcClass::None:
 			ile1 = 6;
@@ -1124,22 +1121,22 @@ void TeamSingleton::BuyTeamItems()
 			break;
 		}
 
-		int count = max(0, ile1 - QM.quest_orcs2->orc->CountItem(hp2));
+		int count = max(0, ile1 - quest_mgr->quest_orcs2->orc->CountItem(hp2));
 		if(count)
-			QM.quest_orcs2->orc->AddItem(hp2, count, false);
+			quest_mgr->quest_orcs2->orc->AddItem(hp2, count, false);
 
 		if(ile2)
 		{
-			count = max(0, ile2 - QM.quest_orcs2->orc->CountItem(hp3));
+			count = max(0, ile2 - quest_mgr->quest_orcs2->orc->CountItem(hp3));
 			if(count)
-				QM.quest_orcs2->orc->AddItem(hp3, count, false);
+				quest_mgr->quest_orcs2->orc->AddItem(hp3, count, false);
 		}
 
-		QM.quest_orcs2->orc->ai->have_potion = 2;
+		quest_mgr->quest_orcs2->orc->ai->have_potion = 2;
 	}
 
 	// buying points for cleric
-	if(QM.quest_evil->evil_state == Quest_Evil::State::ClosingPortals || QM.quest_evil->evil_state == Quest_Evil::State::KillBoss)
+	if(quest_mgr->quest_evil->evil_state == Quest_Evil::State::ClosingPortals || quest_mgr->quest_evil->evil_state == Quest_Evil::State::KillBoss)
 	{
 		Unit* unit = FindTeamMember("q_zlo_kaplan");
 		if(unit)
@@ -1333,8 +1330,6 @@ void TeamSingleton::AddExp(int exp, rvector<Unit>* units)
 //=================================================================================================
 void TeamSingleton::AddGold(int count, rvector<Unit>* units, bool show, bool is_quest)
 {
-	Game& game = Game::Get();
-
 	GMS msg = (is_quest ? GMS_QUEST_COMPLETED_GOLD : GMS_GOLD_ADDED);
 
 	if(!units)
@@ -1349,12 +1344,12 @@ void TeamSingleton::AddGold(int count, rvector<Unit>* units, bool show, bool is_
 			if(!u.player->is_local)
 				u.player->player_info->UpdateGold();
 			if(show)
-				gui->messages->AddFormattedMessage(u.player, msg, -1, count);
+				game_gui->messages->AddFormattedMessage(u.player, msg, -1, count);
 		}
 		else if(!u.IsPlayer() && u.busy == Unit::Busy_Trading)
 		{
 			Unit* trader = FindPlayerTradingWithUnit(u);
-			if(trader != game.pc->unit)
+			if(trader != game->pc->unit)
 			{
 				NetChangePlayer& c = Add1(trader->player->player_info->changes);
 				c.type = NetChangePlayer::UPDATE_TRADER_GOLD;
@@ -1442,12 +1437,12 @@ void TeamSingleton::AddGold(int count, rvector<Unit>* units, bool show, bool is_
 			if(unit.player->gold_get && !unit.player->is_local)
 				unit.player->player_info->UpdateGold();
 			if(show && (unit.player->gold_get || is_quest))
-				gui->messages->AddFormattedMessage(unit.player, msg, -1, unit.player->gold_get);
+				game_gui->messages->AddFormattedMessage(unit.player, msg, -1, unit.player->gold_get);
 		}
 		else if(unit.hero->gained_gold && unit.busy == Unit::Busy_Trading)
 		{
 			Unit* trader = FindPlayerTradingWithUnit(unit);
-			if(trader != game.pc->unit)
+			if(trader != game->pc->unit)
 			{
 				NetChangePlayer& c = Add1(trader->player->player_info->changes);
 				c.type = NetChangePlayer::UPDATE_TRADER_GOLD;

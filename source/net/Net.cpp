@@ -20,7 +20,7 @@
 #include "ServerPanel.h"
 #include "InfoBox.h"
 #include "LoadScreen.h"
-#include "GameGui.h"
+#include "LevelGui.h"
 #include "WorldMapGui.h"
 #include "MpBox.h"
 #include "AIController.h"
@@ -39,7 +39,7 @@
 #include "ParticleSystem.h"
 #include "ResourceManager.h"
 #include "ItemHelper.h"
-#include "GlobalGui.h"
+#include "GameGui.h"
 #include "Console.h"
 #include "FOV.h"
 #include "PlayerInfo.h"
@@ -127,11 +127,11 @@ void Game::AddServerMsg(cstring msg)
 {
 	assert(msg);
 	cstring s = Format(txServer, msg);
-	if(gui->server->visible)
-		gui->server->AddMsg(s);
+	if(game_gui->server->visible)
+		game_gui->server->AddMsg(s);
 	else
 	{
-		gui->messages->AddGameMsg(msg, 2.f + float(strlen(msg)) / 10);
+		game_gui->messages->AddGameMsg(msg, 2.f + float(strlen(msg)) / 10);
 		AddMultiMsg(s);
 	}
 }
@@ -172,7 +172,7 @@ void Game::SendPlayerData(PlayerInfo& info)
 	f.WriteCasted<byte>(Team.leader_id);
 
 	// multiplayer load data
-	if(N.mp_load)
+	if(net->mp_load)
 	{
 		int flags = 0;
 		if(unit.run_attack)
@@ -186,13 +186,13 @@ void Game::SendPlayerData(PlayerInfo& info)
 
 	f.WriteCasted<byte>(0xFF);
 
-	N.SendServer(f, HIGH_PRIORITY, RELIABLE, info.adr);
+	net->SendServer(f, HIGH_PRIORITY, RELIABLE, info.adr);
 }
 
 //=================================================================================================
 bool Game::ReadPlayerData(BitStreamReader& f)
 {
-	PlayerInfo& info = N.GetMe();
+	PlayerInfo& info = net->GetMe();
 
 	int netid = f.Read<int>();
 	if(!f)
@@ -201,7 +201,7 @@ bool Game::ReadPlayerData(BitStreamReader& f)
 		return false;
 	}
 
-	Unit* unit = L.FindUnit(netid);
+	Unit* unit = game_level->FindUnit(netid);
 	if(!unit)
 	{
 		Error("Read player data: Missing unit %d.", netid);
@@ -211,7 +211,7 @@ bool Game::ReadPlayerData(BitStreamReader& f)
 	pc = unit->player;
 	pc->player_info = &info;
 	info.pc = pc;
-	gui->game_gui->Setup();
+	game_gui->level_gui->Setup();
 
 	// items
 	for(int i = 0; i < SLOT_MAX; ++i)
@@ -283,7 +283,7 @@ bool Game::ReadPlayerData(BitStreamReader& f)
 	for(byte i = 0; i < count; ++i)
 	{
 		f >> netid;
-		Unit* team_member = L.FindUnit(netid);
+		Unit* team_member = game_level->FindUnit(netid);
 		if(!team_member)
 		{
 			Error("Read player data: Missing team member %d.", netid);
@@ -299,7 +299,7 @@ bool Game::ReadPlayerData(BitStreamReader& f)
 		Error("Read player data: Broken team leader.");
 		return false;
 	}
-	PlayerInfo* leader_info = N.TryGetPlayer(Team.leader_id);
+	PlayerInfo* leader_info = net->TryGetPlayer(Team.leader_id);
 	if(!leader_info)
 	{
 		Error("Read player data: Missing player %d.", Team.leader_id);
@@ -310,7 +310,7 @@ bool Game::ReadPlayerData(BitStreamReader& f)
 	dialog_context.pc = unit->player;
 
 	// multiplayer load data
-	if(N.mp_load)
+	if(net->mp_load)
 	{
 		byte flags;
 		f >> unit->attack_power;
@@ -342,15 +342,15 @@ void Game::UpdateServer(float dt)
 {
 	if(game_state == GS_LEVEL)
 	{
-		N.InterpolatePlayers(dt);
+		net->InterpolatePlayers(dt);
 		pc->unit->changed = true;
 	}
 
 	Packet* packet;
-	for(packet = N.peer->Receive(); packet; N.peer->DeallocatePacket(packet), packet = N.peer->Receive())
+	for(packet = net->peer->Receive(); packet; net->peer->DeallocatePacket(packet), packet = net->peer->Receive())
 	{
 		BitStreamReader reader(packet);
-		PlayerInfo* ptr_info = N.FindPlayer(packet->systemAddress);
+		PlayerInfo* ptr_info = net->FindPlayer(packet->systemAddress);
 		if(!ptr_info || ptr_info->left != PlayerInfo::LEFT_NO)
 		{
 			if(packet->data[0] != ID_UNCONNECTED_PING)
@@ -367,8 +367,8 @@ void Game::UpdateServer(float dt)
 		case ID_CONNECTION_LOST:
 		case ID_DISCONNECTION_NOTIFICATION:
 			Info(msg_id == ID_CONNECTION_LOST ? "Lost connection with player %s." : "Player %s has disconnected.", info.name.c_str());
-			--N.active_players;
-			N.players_left = true;
+			--net->active_players;
+			net->players_left = true;
 			info.left = (msg_id == ID_CONNECTION_LOST ? PlayerInfo::LEFT_DISCONNECTED : PlayerInfo::LEFT_QUIT);
 			break;
 		case ID_SAY:
@@ -380,7 +380,7 @@ void Game::UpdateServer(float dt)
 		case ID_CONTROL:
 			if(!ProcessControlMessageServer(reader, info))
 			{
-				N.peer->DeallocatePacket(packet);
+				net->peer->DeallocatePacket(packet);
 				return;
 			}
 			break;
@@ -392,41 +392,41 @@ void Game::UpdateServer(float dt)
 
 	ProcessLeftPlayers();
 
-	N.update_timer += dt;
-	if(N.update_timer >= TICK && N.active_players > 1)
+	net->update_timer += dt;
+	if(net->update_timer >= TICK && net->active_players > 1)
 	{
 		bool last_anyone_talking = anyone_talking;
 		anyone_talking = IsAnyoneTalking();
 		if(last_anyone_talking != anyone_talking)
 			Net::PushChange(NetChange::CHANGE_FLAGS);
 
-		N.update_timer = 0;
+		net->update_timer = 0;
 		BitStreamWriter f;
 		f << ID_CHANGES;
 
 		// dodaj zmiany pozycji jednostek i ai_mode
 		if(game_state == GS_LEVEL)
 		{
-			for(LevelArea& area : L.ForEachArea())
+			for(LevelArea& area : game_level->ForEachArea())
 				ServerProcessUnits(area.units);
 		}
 
 		// wyœlij odkryte kawa³ki minimapy
-		if(!L.minimap_reveal_mp.empty())
+		if(!game_level->minimap_reveal_mp.empty())
 		{
 			if(game_state == GS_LEVEL)
 				Net::PushChange(NetChange::REVEAL_MINIMAP);
 			else
-				L.minimap_reveal_mp.clear();
+				game_level->minimap_reveal_mp.clear();
 		}
 
 		// changes
 		WriteServerChanges(f);
 		Net::changes.clear();
-		assert(N.net_strs.empty());
-		N.SendAll(f, HIGH_PRIORITY, RELIABLE_ORDERED);
+		assert(net->net_strs.empty());
+		net->SendAll(f, HIGH_PRIORITY, RELIABLE_ORDERED);
 
-		for(PlayerInfo& info : N.players)
+		for(PlayerInfo& info : net->players)
 		{
 			if(info.id == Team.my_id || info.left != PlayerInfo::LEFT_NO)
 				continue;
@@ -445,7 +445,7 @@ void Game::UpdateServer(float dt)
 			{
 				BitStreamWriter f;
 				WriteServerChangesForPlayer(f, info);
-				N.SendServer(f, HIGH_PRIORITY, RELIABLE_ORDERED, info.adr);
+				net->SendServer(f, HIGH_PRIORITY, RELIABLE_ORDERED, info.adr);
 				info.update_flags = 0;
 				info.changes.clear();
 			}
@@ -492,7 +492,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				// too big change in distance, warp unit to old position
 				Warn("UpdateServer: Invalid unit movement from %s ((%g,%g,%g) -> (%g,%g,%g)).", info.name.c_str(), unit.pos.x, unit.pos.y, unit.pos.z,
 					new_pos.x, new_pos.y, new_pos.z);
-				L.WarpUnit(unit, unit.pos);
+				game_level->WarpUnit(unit, unit.pos);
 				unit.interp->Add(unit.pos, rot);
 			}
 			else
@@ -501,12 +501,12 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				if(player.noclip || unit.usable || CheckMoveNet(unit, new_pos))
 				{
 					// update position
-					if(!unit.pos.Equal(new_pos) && !L.location->outside)
+					if(!unit.pos.Equal(new_pos) && !game_level->location->outside)
 					{
 						// reveal minimap
 						Int2 new_tile(int(new_pos.x / 2), int(new_pos.z / 2));
 						if(Int2(int(unit.pos.x / 2), int(unit.pos.z / 2)) != new_tile)
-							FOV::DungeonReveal(new_tile, L.minimap_reveal);
+							FOV::DungeonReveal(new_tile, game_level->minimap_reveal);
 					}
 					unit.pos = new_pos;
 					unit.UpdatePhysics(unit.pos);
@@ -613,7 +613,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						}
 
 						// send to other players
-						if(N.active_players > 2 && IsVisible(slot_type))
+						if(net->active_players > 2 && IsVisible(slot_type))
 						{
 							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::CHANGE_EQUIPMENT;
@@ -638,7 +638,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							unit.slots[slot] = nullptr;
 
 							// send to other players
-							if(N.active_players > 2 && IsVisible(slot))
+							if(net->active_players > 2 && IsVisible(slot))
 							{
 								NetChange& c = Add1(Net::changes);
 								c.type = NetChange::CHANGE_EQUIPMENT;
@@ -664,7 +664,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					unit.mesh_inst->groups[1].speed = 1.f;
 					unit.SetWeaponState(!hide, weapon_type);
 					// send to other players
-					if(N.active_players > 2)
+					if(net->active_players > 2)
 					{
 						NetChange& c = Add1(Net::changes);
 						c.unit = &unit;
@@ -797,7 +797,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					}
 
 					// send to other players
-					if(N.active_players > 2)
+					if(net->active_players > 2)
 					{
 						NetChange& c = Add1(Net::changes);
 						c.unit = &unit;
@@ -874,7 +874,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						slot = nullptr;
 
 						// send info about changing equipment to other players
-						if(N.active_players > 2 && IsVisible(slot_type))
+						if(net->active_players > 2 && IsVisible(slot_type))
 						{
 							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::CHANGE_EQUIPMENT;
@@ -891,11 +891,11 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					item->pos.x -= sin(unit.rot)*0.25f;
 					item->pos.z -= cos(unit.rot)*0.25f;
 					item->rot = Random(MAX_ANGLE);
-					if(!QM.quest_secret->CheckMoonStone(item, unit))
-						L.AddGroundItem(*unit.area, item);
+					if(!quest_mgr->quest_secret->CheckMoonStone(item, unit))
+						game_level->AddGroundItem(*unit.area, item);
 
 					// send to other players
-					if(N.active_players > 2)
+					if(net->active_players > 2)
 					{
 						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::DROP_ITEM;
@@ -919,7 +919,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					break;
 
 				LevelArea* area;
-				GroundItem* item = L.FindGroundItem(netid, &area);
+				GroundItem* item = game_level->FindGroundItem(netid, &area);
 				if(!item)
 				{
 					Error("Update server: PICKUP_ITEM from %s, missing item %d.", info.name.c_str(), netid);
@@ -949,7 +949,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				c2.id = item->netid;
 
 				// send info to other players about picking item
-				if(N.active_players > 2)
+				if(net->active_players > 2)
 				{
 					NetChange& c3 = Add1(Net::changes);
 					c3.type = NetChange::PICKUP_ITEM;
@@ -963,7 +963,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				RemoveElement(area->items, item);
 
 				// event
-				for(Event& event : L.location->events)
+				for(Event& event : game_level->location->events)
 				{
 					if(event.type == EVENT_PICKUP)
 					{
@@ -1001,7 +1001,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				if(game_state != GS_LEVEL)
 					break;
 
-				Unit* looted_unit = L.FindUnit(netid);
+				Unit* looted_unit = game_level->FindUnit(netid);
 				if(!looted_unit)
 				{
 					Error("Update server: LOOT_UNIT from %s, missing unit %d.", info.name.c_str(), netid);
@@ -1040,7 +1040,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				if(game_state != GS_LEVEL)
 					break;
 
-				Chest* chest = L.FindChest(netid);
+				Chest* chest = game_level->FindChest(netid);
 				if(!chest)
 				{
 					Error("Update server: USE_CHEST from %s, missing chest %d.", info.name.c_str(), netid);
@@ -1150,7 +1150,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 								{
 									player.action_unit->used_item = nullptr;
 									// removed item from hand, send info to other players
-									if(N.active_players > 2)
+									if(net->active_players > 2)
 									{
 										NetChange& c = Add1(Net::changes);
 										c.type = NetChange::REMOVE_USED_ITEM;
@@ -1192,7 +1192,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					{
 						player.action_unit->used_item = nullptr;
 						// removed item from hand, send info to other players
-						if(N.active_players > 2)
+						if(net->active_players > 2)
 						{
 							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::REMOVE_USED_ITEM;
@@ -1204,7 +1204,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					slot = nullptr;
 
 					// send info about changing equipment of looted unit
-					if(N.active_players > 2 && IsVisible(type))
+					if(net->active_players > 2 && IsVisible(type))
 					{
 						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::CHANGE_EQUIPMENT;
@@ -1369,7 +1369,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					unit.weight -= slot->weight;
 					slot = nullptr;
 					// send info about changing equipment
-					if(N.active_players > 2 && IsVisible(type))
+					if(net->active_players > 2 && IsVisible(type))
 					{
 						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::CHANGE_EQUIPMENT;
@@ -1406,7 +1406,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							changes = true;
 
 							// send info about changing equipment
-							if(N.active_players > 2 && IsVisible((ITEM_SLOT)i))
+							if(net->active_players > 2 && IsVisible((ITEM_SLOT)i))
 							{
 								NetChange& c = Add1(Net::changes);
 								c.type = NetChange::CHANGE_EQUIPMENT;
@@ -1519,7 +1519,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					unit.mesh_inst->frame_end_info = false;
 					unit.animation = ANI_IDLE;
 					// send info to other players
-					if(N.active_players > 2)
+					if(net->active_players > 2)
 					{
 						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::IDLE;
@@ -1543,7 +1543,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				if(game_state != GS_LEVEL)
 					break;
 
-				Unit* talk_to = L.FindUnit(netid);
+				Unit* talk_to = game_level->FindUnit(netid);
 				if(!talk_to)
 				{
 					Error("Update server: TALK from %s, missing unit %d.", info.name.c_str(), netid);
@@ -1610,7 +1610,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					Error("Update server: Broken ENTER_BUILDING from %s.", info.name.c_str());
 				else if(game_state == GS_LEVEL)
 				{
-					if(L.city_ctx && building_index < L.city_ctx->inside_buildings.size())
+					if(game_level->city_ctx && building_index < game_level->city_ctx->inside_buildings.size())
 					{
 						WarpData& warp = Add1(mp_warps);
 						warp.u = &unit;
@@ -1667,7 +1667,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				{
 					AddMsg(Format(txRolledNumber, info.name.c_str(), number));
 					// send to other players
-					if(N.active_players > 2)
+					if(net->active_players > 2)
 					{
 						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::RANDOM_NUMBER;
@@ -1693,7 +1693,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				if(game_state != GS_LEVEL)
 					break;
 
-				Usable* usable = L.FindUsable(usable_netid);
+				Usable* usable = game_level->FindUsable(usable_netid);
 				if(!usable)
 				{
 					Error("Update server: USE_USABLE from %s, missing usable %d.", info.name.c_str(), usable_netid);
@@ -1806,7 +1806,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				break;
 			unit.Standup();
 			// send to other players
-			if(N.active_players > 2)
+			if(net->active_players > 2)
 			{
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::STAND_UP;
@@ -1847,7 +1847,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					break;
 				for(AIController* ai : ais)
 				{
-					if(ai->unit->IsEnemy(unit) && Vec3::Distance(ai->unit->pos, unit.pos) < ALERT_RANGE && L.CanSee(*ai->unit, unit))
+					if(ai->unit->IsEnemy(unit) && Vec3::Distance(ai->unit->pos, unit.pos) < ALERT_RANGE && game_level->CanSee(*ai->unit, unit))
 					{
 						ai->morale = -10;
 						ai->target_last_pos = unit.pos;
@@ -1884,7 +1884,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					ignored = nullptr;
 				else
 				{
-					ignored = L.FindUnit(ignored_netid);
+					ignored = game_level->FindUnit(ignored_netid);
 					if(!ignored)
 					{
 						Error("Update server: CHEAT_KILLALL from %s, missing unit %d.", info.name.c_str(), ignored_netid);
@@ -1892,7 +1892,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					}
 				}
 
-				if(!L.KillAll(mode, unit, ignored))
+				if(!game_level->KillAll(mode, unit, ignored))
 					Error("Update server: CHEAT_KILLALL from %s, invalid mode %u.", info.name.c_str(), mode);
 			}
 			break;
@@ -1979,7 +1979,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					Error("Update server: Player %s used CHEAT_KILL without devmode.", info.name.c_str());
 				else if(game_state == GS_LEVEL)
 				{
-					Unit* target = L.FindUnit(netid);
+					Unit* target = game_level->FindUnit(netid);
 					if(!target)
 						Error("Update server: CHEAT_KILL from %s, missing unit %d.", info.name.c_str(), netid);
 					else if(target->IsAlive())
@@ -1998,7 +1998,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					Error("Update server: Player %s used CHEAT_HEAL_UNIT without devmode.", info.name.c_str());
 				else if(game_state == GS_LEVEL)
 				{
-					Unit* target = L.FindUnit(netid);
+					Unit* target = game_level->FindUnit(netid);
 					if(!target)
 						Error("Update server: CHEAT_HEAL_UNIT from %s, missing unit %d.", info.name.c_str(), netid);
 					else
@@ -2025,7 +2025,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 		// player used cheat 'reveal'
 		case NetChange::CHEAT_REVEAL:
 			if(info.devmode)
-				W.Reveal();
+				world->Reveal();
 			else
 				Error("Update server: Player %s used CHEAT_REVEAL without devmode.", info.name.c_str());
 			break;
@@ -2046,7 +2046,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 			if(info.devmode)
 			{
 				if(game_state == GS_LEVEL)
-					L.RevealMinimap();
+					game_level->RevealMinimap();
 			}
 			else
 				Error("Update server: Player %s used CHEAT_REVEAL_MINIMAP without devmode.", info.name.c_str());
@@ -2111,7 +2111,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				else if(!info.devmode)
 					Error("Update server: Player %s used CHEAT_SKIP_DAYS without devmode.", info.name.c_str());
 				else
-					W.Update(count, World::UM_SKIP);
+					world->Update(count, World::UM_SKIP);
 			}
 			break;
 		// player used cheat 'warp'
@@ -2127,7 +2127,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				{
 					if(unit.frozen != FROZEN::NO)
 						Error("Update server: CHEAT_WARP from %s, unit is frozen.", info.name.c_str());
-					else if(!L.city_ctx || building_index >= L.city_ctx->inside_buildings.size())
+					else if(!game_level->city_ctx || building_index >= game_level->city_ctx->inside_buildings.size())
 						Error("Update server: CHEAT_WARP from %s, invalid inside building index %u.", info.name.c_str(), building_index);
 					else
 					{
@@ -2170,7 +2170,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 
 						for(byte i = 0; i < count; ++i)
 						{
-							Unit* spawned = L.SpawnUnitNearLocation(area, pos, *data, &unit.pos, level);
+							Unit* spawned = game_level->SpawnUnitNearLocation(area, pos, *data, &unit.pos, level);
 							if(!spawned)
 							{
 								Warn("Update server: CHEAT_SPAWN_UNIT from %s, no free space for unit.", info.name.c_str());
@@ -2271,7 +2271,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					Error("Update server: LEAVE_LOCATION from %s, player is not leader.", info.name.c_str());
 				else if(game_state == GS_LEVEL)
 				{
-					CanLeaveLocationResult result = L.CanLeaveLocation(*info.u);
+					CanLeaveLocationResult result = game_level->CanLeaveLocation(*info.u);
 					if(result == CanLeaveLocationResult::Yes)
 					{
 						Net::PushChange(NetChange::LEAVE_LOCATION);
@@ -2289,7 +2289,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						}
 						else
 						{
-							if(L.location->TryGetPortal(type))
+							if(game_level->location->TryGetPortal(type))
 							{
 								fallback_type = FALLBACK::USE_PORTAL;
 								fallback_1 = type;
@@ -2331,7 +2331,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				if(game_state != GS_LEVEL)
 					break;
 
-				Door* door = L.FindDoor(netid);
+				Door* door = game_level->FindDoor(netid);
 				if(!door)
 				{
 					Error("Update server: USE_DOOR from %s, missing door %d.", info.name.c_str(), netid);
@@ -2419,8 +2419,8 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					Error("Update server: TRAVEL from %s, player is not leader.", info.name.c_str());
 				else if(game_state == GS_WORLDMAP)
 				{
-					W.Travel(loc, true);
-					gui->world_map->StartTravel();
+					world->Travel(loc, true);
+					game_gui->world_map->StartTravel();
 				}
 			}
 			break;
@@ -2435,8 +2435,8 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					Error("Update server: TRAVEL_POS from %s, player is not leader.", info.name.c_str());
 				else if(game_state == GS_WORLDMAP)
 				{
-					W.TravelPos(pos, true);
-					gui->world_map->StartTravel();
+					world->TravelPos(pos, true);
+					game_gui->world_map->StartTravel();
 				}
 			}
 			break;
@@ -2450,17 +2450,17 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				else if(!Team.IsLeader(unit))
 					Error("Update server: STOP_TRAVEL from %s, player is not leader.", info.name.c_str());
 				else if(game_state == GS_WORLDMAP)
-					W.StopTravel(pos, true);
+					world->StopTravel(pos, true);
 			}
 			break;
 		// leader finished travel
 		case NetChange::END_TRAVEL:
 			if(game_state == GS_WORLDMAP)
-				W.EndTravel();
+				world->EndTravel();
 			break;
 		// enter current location
 		case NetChange::ENTER_LOCATION:
-			if(game_state == GS_WORLDMAP && W.GetState() == World::State::ON_MAP && Team.IsLeader(info.u))
+			if(game_state == GS_WORLDMAP && world->GetState() == World::State::ON_MAP && Team.IsLeader(info.u))
 			{
 				EnterLocation();
 				return false;
@@ -2472,10 +2472,10 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 		case NetChange::CLOSE_ENCOUNTER:
 			if(game_state == GS_WORLDMAP)
 			{
-				if(gui->world_map->dialog_enc)
+				if(game_gui->world_map->dialog_enc)
 				{
-					gui->CloseDialog(gui->world_map->dialog_enc);
-					gui->world_map->dialog_enc = nullptr;
+					gui->CloseDialog(game_gui->world_map->dialog_enc);
+					game_gui->world_map->dialog_enc = nullptr;
 				}
 				Net::PushChange(NetChange::CLOSE_ENCOUNTER);
 				Event_RandomEncounter(0);
@@ -2491,7 +2491,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					Error("Update server: Broken CHEAT_CHANGE_LEVEL from %s.", info.name.c_str());
 				else if(!info.devmode)
 					Error("Update server: Player %s used CHEAT_CHANGE_LEVEL without devmode.", info.name.c_str());
-				else if(L.location->outside)
+				else if(game_level->location->outside)
 					Error("Update server:CHEAT_CHANGE_LEVEL from %s, outside location.", info.name.c_str());
 				else if(game_state == GS_LEVEL)
 				{
@@ -2511,20 +2511,20 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					Error("Update server: Player %s used CHEAT_CHANGE_LEVEL without devmode.", info.name.c_str());
 				else if(game_state == GS_LEVEL)
 				{
-					InsideLocation* inside = (InsideLocation*)L.location;
+					InsideLocation* inside = (InsideLocation*)game_level->location;
 					InsideLocationLevel& lvl = inside->GetLevelData();
 
 					if(!is_down)
 					{
 						Int2 tile = lvl.GetUpStairsFrontTile();
 						unit.rot = DirToRot(lvl.staircase_up_dir);
-						L.WarpUnit(unit, Vec3(2.f*tile.x + 1.f, 0.f, 2.f*tile.y + 1.f));
+						game_level->WarpUnit(unit, Vec3(2.f*tile.x + 1.f, 0.f, 2.f*tile.y + 1.f));
 					}
 					else
 					{
 						Int2 tile = lvl.GetDownStairsFrontTile();
 						unit.rot = DirToRot(lvl.staircase_down_dir);
-						L.WarpUnit(unit, Vec3(2.f*tile.x + 1.f, 0.f, 2.f*tile.y + 1.f));
+						game_level->WarpUnit(unit, Vec3(2.f*tile.x + 1.f, 0.f, 2.f*tile.y + 1.f));
 					}
 				}
 			}
@@ -2577,7 +2577,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				else if(game_state == GS_LEVEL)
 				{
 					if(type == 2)
-						QM.quest_tournament->Train(player);
+						quest_mgr->quest_tournament->Train(player);
 					else
 					{
 						cstring error = nullptr;
@@ -2630,7 +2630,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					Error("Update server: CHANGE_LEADER from %s, player is not leader.", info.name.c_str());
 				else
 				{
-					PlayerInfo* new_leader = N.TryGetPlayer(id);
+					PlayerInfo* new_leader = net->TryGetPlayer(id);
 					if(!new_leader)
 					{
 						Error("Update server: CHANGE_LEADER from %s, invalid player id %u.", id);
@@ -2754,10 +2754,10 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						item->pos.x -= sin(unit.rot)*0.25f;
 						item->pos.z -= cos(unit.rot)*0.25f;
 						item->rot = Random(MAX_ANGLE);
-						L.AddGroundItem(*info.u->area, item);
+						game_level->AddGroundItem(*info.u->area, item);
 
 						// send info to other players
-						if(N.active_players > 2)
+						if(net->active_players > 2)
 						{
 							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::DROP_ITEM;
@@ -2804,15 +2804,15 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					Error("Update server: Player %s used CHEAT_TRAVEL without devmode.", info.name.c_str());
 				else if(!Team.IsLeader(unit))
 					Error("Update server: CHEAT_TRAVEL from %s, player is not leader.", info.name.c_str());
-				else if(!W.VerifyLocation(location_index))
+				else if(!world->VerifyLocation(location_index))
 					Error("Update server: CHEAT_TRAVEL from %s, invalid location index %u.", info.name.c_str(), location_index);
 				else if(game_state == GS_WORLDMAP)
 				{
-					W.Warp(location_index);
-					gui->world_map->StartTravel();
+					world->Warp(location_index);
+					game_gui->world_map->StartTravel();
 
 					// inform other players
-					if(N.active_players > 2)
+					if(net->active_players > 2)
 					{
 						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::CHEAT_TRAVEL;
@@ -2834,11 +2834,11 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					Error("Update server: CHEAT_TRAVEL_POS from %s, player is not leader.", info.name.c_str());
 				else if(game_state == GS_WORLDMAP)
 				{
-					W.WarpPos(pos);
-					gui->world_map->StartTravel();
+					world->WarpPos(pos);
+					game_gui->world_map->StartTravel();
 
 					// inform other players
-					if(N.active_players > 2)
+					if(net->active_players > 2)
 					{
 						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::CHEAT_TRAVEL_POS;
@@ -2860,7 +2860,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					Error("Update server: Player %s used CHEAT_HURT without devmode.", info.name.c_str());
 				else if(game_state == GS_LEVEL)
 				{
-					Unit* target = L.FindUnit(netid);
+					Unit* target = game_level->FindUnit(netid);
 					if(target)
 						GiveDmg(*target, 100.f);
 					else
@@ -2879,7 +2879,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					Error("Update server: Player %s used CHEAT_BREAK_ACTION without devmode.", info.name.c_str());
 				else if(game_state == GS_LEVEL)
 				{
-					Unit* target = L.FindUnit(netid);
+					Unit* target = game_level->FindUnit(netid);
 					if(target)
 						target->BreakAction(Unit::BREAK_ACTION_MODE::NORMAL, true);
 					else
@@ -2898,7 +2898,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					Error("Update server: Player %s used CHEAT_FALL without devmode.", info.name.c_str());
 				else if(game_state == GS_LEVEL)
 				{
-					Unit* target = L.FindUnit(netid);
+					Unit* target = game_level->FindUnit(netid);
 					if(target)
 						target->Fall();
 					else
@@ -2924,7 +2924,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					Error("Update server: Player %s used CHEAT_STUN without devmode.", info.name.c_str());
 				else if(game_state == GS_LEVEL)
 				{
-					Unit* target = L.FindUnit(netid);
+					Unit* target = game_level->FindUnit(netid);
 					if(target && length > 0)
 						target->ApplyStun(length);
 					else
@@ -2976,18 +2976,18 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					break;
 				}
 
-				Unit* target = L.FindUnit(target_netid);
+				Unit* target = game_level->FindUnit(target_netid);
 				if(!target && target_netid != -1)
 				{
 					Error("Update server: RUN_SCRIPT, invalid target %d from %s.", target_netid, info.name.c_str());
 					break;
 				}
 
-				string& output = SM.OpenOutput();
-				ScriptContext& ctx = SM.GetContext();
+				string& output = script_mgr->OpenOutput();
+				ScriptContext& ctx = script_mgr->GetContext();
 				ctx.pc = info.pc;
 				ctx.target = target;
-				SM.RunScript(code->c_str());
+				script_mgr->RunScript(code->c_str());
 
 				NetChangePlayer& c = Add1(info.changes);
 				c.type = NetChangePlayer::RUN_SCRIPT_RESULT;
@@ -3001,7 +3001,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 
 				ctx.pc = nullptr;
 				ctx.target = nullptr;
-				SM.CloseOutput();
+				script_mgr->CloseOutput();
 			}
 			break;
 		// player set next action
@@ -3074,7 +3074,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						}
 						else if(game_state == GS_LEVEL)
 						{
-							player.next_action_data.usable = L.FindUsable(netid);
+							player.next_action_data.usable = game_level->FindUsable(netid);
 							if(!player.next_action_data.usable)
 							{
 								Error("Update server: SET_NEXT_ACTION, invalid usable %d from '%s'.", netid, info.name.c_str());
@@ -3115,7 +3115,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				}
 				else if(game_state != GS_LEVEL)
 					f.Skip(len);
-				else if(!global::cmdp->ParseStream(f, info))
+				else if(!cmdp->ParseStream(f, info))
 					Error("Update server: Failed to parse GENERIC_CMD (length %u) from %s.", len, info.name.c_str());
 			}
 			break;
@@ -3162,7 +3162,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				else if(!info.devmode)
 					Error("Update server: Player %s used CHEAT_ARENA without devmode.", info.name.c_str());
 				else if(game_state == GS_LEVEL)
-					global::cmdp->ParseStringCommand(CMD_ARENA, str, info);
+					cmdp->ParseStringCommand(CMD_ARENA, str, info);
 			}
 			break;
 		// clean level from blood and corpses
@@ -3175,7 +3175,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				else if(!info.devmode)
 					Error("Update server: Player %s used CLEAN_LEVEL without devmode.", info.name.c_str());
 				else if(game_state == GS_LEVEL)
-					L.CleanLevel(building_id);
+					game_level->CleanLevel(building_id);
 			}
 			break;
 		// player set shortcut
@@ -3368,7 +3368,7 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 			{
 				byte count = 0;
 				uint pos = f.BeginPatch(count);
-				for(PlayerInfo& info : N.players)
+				for(PlayerInfo& info : net->players)
 				{
 					if(info.left == PlayerInfo::LEFT_NO)
 					{
@@ -3411,19 +3411,19 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 			f << c.count;
 			f << *c.str;
 			StringPool.Free(c.str);
-			RemoveElement(N.net_strs, c.str);
+			RemoveElement(net->net_strs, c.str);
 			break;
 		case NetChange::TALK_POS:
 			f << c.pos;
 			f << *c.str;
 			StringPool.Free(c.str);
-			RemoveElement(N.net_strs, c.str);
+			RemoveElement(net->net_strs, c.str);
 			break;
 		case NetChange::CHANGE_LOCATION_STATE:
 			f.WriteCasted<byte>(c.id);
 			break;
 		case NetChange::ADD_RUMOR:
-			f << gui->journal->GetRumors()[c.id];
+			f << game_gui->journal->GetRumors()[c.id];
 			break;
 		case NetChange::HAIR_COLOR:
 			f << c.unit->netid;
@@ -3446,7 +3446,7 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 			break;
 		case NetChange::ADD_QUEST:
 			{
-				Quest* q = QM.FindQuest(c.id, false);
+				Quest* q = quest_mgr->FindQuest(c.id, false);
 				f << q->refid;
 				f << q->name;
 				f.WriteString2(q->msgs[0]);
@@ -3455,7 +3455,7 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 			break;
 		case NetChange::UPDATE_QUEST:
 			{
-				Quest* q = QM.FindQuest(c.id, false);
+				Quest* q = quest_mgr->FindQuest(c.id, false);
 				f << q->refid;
 				f.WriteCasted<byte>(q->state);
 				f.WriteCasted<byte>(c.count);
@@ -3507,7 +3507,7 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 			f.WriteCasted<char>(c.unit->in_arena);
 			break;
 		case NetChange::WORLD_TIME:
-			W.WriteTime(f);
+			world->WriteTime(f);
 			break;
 		case NetChange::USE_DOOR:
 			f << c.id;
@@ -3523,7 +3523,7 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 			break;
 		case NetChange::ADD_LOCATION:
 			{
-				Location& loc = *W.GetLocation(c.id);
+				Location& loc = *world->GetLocation(c.id);
 				f.WriteCasted<byte>(c.id);
 				f.WriteCasted<byte>(loc.type);
 				if(loc.type == L_DUNGEON || loc.type == L_CRYPT)
@@ -3568,25 +3568,25 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 			f << c.pos;
 			break;
 		case NetChange::REVEAL_MINIMAP:
-			f.WriteCasted<word>(L.minimap_reveal_mp.size());
-			for(vector<Int2>::iterator it2 = L.minimap_reveal_mp.begin(), end2 = L.minimap_reveal_mp.end(); it2 != end2; ++it2)
+			f.WriteCasted<word>(game_level->minimap_reveal_mp.size());
+			for(vector<Int2>::iterator it2 = game_level->minimap_reveal_mp.begin(), end2 = game_level->minimap_reveal_mp.end(); it2 != end2; ++it2)
 			{
 				f.WriteCasted<byte>(it2->x);
 				f.WriteCasted<byte>(it2->y);
 			}
-			L.minimap_reveal_mp.clear();
+			game_level->minimap_reveal_mp.clear();
 			break;
 		case NetChange::CHANGE_MP_VARS:
-			N.WriteNetVars(f);
+			net->WriteNetVars(f);
 			break;
 		case NetChange::SECRET_TEXT:
 			f << Quest_Secret::GetNote().desc;
 			break;
 		case NetChange::UPDATE_MAP_POS:
-			f << W.GetWorldPos();
+			f << world->GetWorldPos();
 			break;
 		case NetChange::GAME_STATS:
-			f << GameStats::Get().total_kills;
+			f << game_stats->total_kills;
 			break;
 		case NetChange::STUN:
 			f << c.unit->netid;
@@ -3604,11 +3604,11 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 			break;
 		case NetChange::CHANGE_LOCATION_IMAGE:
 			f.WriteCasted<byte>(c.id);
-			f.WriteCasted<byte>(W.GetLocation(c.id)->image);
+			f.WriteCasted<byte>(world->GetLocation(c.id)->image);
 			break;
 		case NetChange::CHANGE_LOCATION_NAME:
 			f.WriteCasted<byte>(c.id);
-			f << W.GetLocation(c.id)->name;
+			f << world->GetLocation(c.id)->name;
 			break;
 		case NetChange::USE_CHEST:
 			f << c.id;
@@ -3768,9 +3768,6 @@ void Game::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 				if(IsSet(c.id, STAT_ARENA_FIGHTS))
 					f << player.arena_fights;
 				break;
-			case NetChangePlayer::ADDED_ITEMS_MSG:
-				f.WriteCasted<byte>(c.count);
-				break;
 			case NetChangePlayer::STAT_CHANGED:
 				f.WriteCasted<byte>(c.id);
 				f.WriteCasted<byte>(c.a);
@@ -3859,13 +3856,13 @@ void Game::UpdateClient(float dt)
 		}
 
 		// interpolacja pozycji/obrotu postaci
-		N.InterpolateUnits(dt);
+		net->InterpolateUnits(dt);
 	}
 
 	bool exit_from_server = false;
 
 	Packet* packet;
-	for(packet = N.peer->Receive(); packet; N.peer->DeallocatePacket(packet), packet = N.peer->Receive())
+	for(packet = net->peer->Receive(); packet; net->peer->DeallocatePacket(packet), packet = net->peer->Receive())
 	{
 		BitStreamReader reader(packet);
 		byte msg_id;
@@ -3888,7 +3885,7 @@ void Game::UpdateClient(float dt)
 					text_eng = "Update client: You have been disconnected.";
 				}
 				Info(text_eng);
-				N.peer->DeallocatePacket(packet);
+				net->peer->DeallocatePacket(packet);
 				ExitToMenu();
 				gui->SimpleDialog(text, nullptr);
 				return;
@@ -3917,7 +3914,7 @@ void Game::UpdateClient(float dt)
 					reason_text_int = txServerClosed;
 				}
 				Info("Update client: %s", reason_text);
-				N.peer->DeallocatePacket(packet);
+				net->peer->DeallocatePacket(packet);
 				ExitToMenu();
 				gui->SimpleDialog(reason_text_int, nullptr);
 				return;
@@ -3933,25 +3930,25 @@ void Game::UpdateClient(float dt)
 					Error("Update client: Broken ID_CHANGE_LEVEL.");
 				else
 				{
-					W.ChangeLevel(loc, encounter);
-					L.dungeon_level = level;
-					Info("Update client: Level change to %s (%d, level %d).", L.location->name.c_str(), L.location_index, L.dungeon_level);
-					gui->info_box->Show(txGeneratingLocation);
+					world->ChangeLevel(loc, encounter);
+					game_level->dungeon_level = level;
+					Info("Update client: Level change to %s (%d, level %d).", game_level->location->name.c_str(), game_level->location_index, game_level->dungeon_level);
+					game_gui->info_box->Show(txGeneratingLocation);
 					LeaveLevel();
 					net_mode = NM_TRANSFER;
 					net_state = NetState::Client_ChangingLevel;
 					clear_color = Color::Black;
-					gui->load_screen->visible = true;
-					gui->game_gui->visible = false;
-					gui->world_map->Hide();
+					game_gui->load_screen->visible = true;
+					game_gui->level_gui->visible = false;
+					game_gui->world_map->Hide();
 					arena->ClosePvpDialog();
-					if(gui->world_map->dialog_enc)
+					if(game_gui->world_map->dialog_enc)
 					{
-						gui->CloseDialog(gui->world_map->dialog_enc);
-						gui->world_map->dialog_enc = nullptr;
+						gui->CloseDialog(game_gui->world_map->dialog_enc);
+						game_gui->world_map->dialog_enc = nullptr;
 					}
-					N.peer->DeallocatePacket(packet);
-					N.FilterClientChanges();
+					net->peer->DeallocatePacket(packet);
+					net->FilterClientChanges();
 					LoadingStart(4);
 					return;
 				}
@@ -3960,26 +3957,26 @@ void Game::UpdateClient(float dt)
 		case ID_CHANGES:
 			if(!ProcessControlMessageClient(reader, exit_from_server))
 			{
-				N.peer->DeallocatePacket(packet);
+				net->peer->DeallocatePacket(packet);
 				return;
 			}
 			break;
 		case ID_PLAYER_CHANGES:
 			if(!ProcessControlMessageClientForMe(reader))
 			{
-				N.peer->DeallocatePacket(packet);
+				net->peer->DeallocatePacket(packet);
 				return;
 			}
 			break;
 		case ID_LOADING:
 			{
 				Info("Quickloading server game.");
-				N.mp_quickload = true;
+				net->mp_quickload = true;
 				ClearGame();
-				reader >> N.mp_load_worldmap;
-				LoadingStart(N.mp_load_worldmap ? 4 : 9);
-				gui->info_box->Show(txLoadingSaveByServer);
-				gui->world_map->Hide();
+				reader >> net->mp_load_worldmap;
+				LoadingStart(net->mp_load_worldmap ? 4 : 9);
+				game_gui->info_box->Show(txLoadingSaveByServer);
+				game_gui->world_map->Hide();
 				net_mode = Game::NM_TRANSFER;
 				net_state = NetState::Client_BeforeTransfer;
 				game_state = GS_LOAD;
@@ -3993,10 +3990,10 @@ void Game::UpdateClient(float dt)
 	}
 
 	// wyœli moj¹ pozycjê/akcjê
-	N.update_timer += dt;
-	if(N.update_timer >= TICK)
+	net->update_timer += dt;
+	if(net->update_timer >= TICK)
 	{
-		N.update_timer = 0;
+		net->update_timer = 0;
 		BitStreamWriter f;
 		f << ID_CONTROL;
 		if(game_state == GS_LEVEL)
@@ -4011,11 +4008,11 @@ void Game::UpdateClient(float dt)
 			f << false;
 		WriteClientChanges(f);
 		Net::changes.clear();
-		N.SendClient(f, HIGH_PRIORITY, RELIABLE_ORDERED);
+		net->SendClient(f, HIGH_PRIORITY, RELIABLE_ORDERED);
 	}
 
 	if(exit_from_server)
-		N.peer->Shutdown(1000);
+		net->peer->Shutdown(1000);
 }
 
 //=================================================================================================
@@ -4066,7 +4063,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				if(game_state != GS_LEVEL)
 					break;
 
-				Unit* unit = L.FindUnit(netid);
+				Unit* unit = game_level->FindUnit(netid);
 				if(!unit)
 					Error("Update client: UNIT_POS, missing unit %d.", netid);
 				else if(unit != pc->unit)
@@ -4095,7 +4092,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Error("Update client: CHANGE_EQUIPMENT, invalid slot %d.", type);
 				else if(game_state == GS_LEVEL)
 				{
-					Unit* target = L.FindUnit(netid);
+					Unit* target = game_level->FindUnit(netid);
 					if(!target)
 						Error("Update client: CHANGE_EQUIPMENT, missing unit %d.", netid);
 					else
@@ -4120,7 +4117,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Error("Update client: Broken TAKE_WEAPON.");
 				else if(game_state == GS_LEVEL)
 				{
-					Unit* unit = L.FindUnit(netid);
+					Unit* unit = game_level->FindUnit(netid);
 					if(!unit)
 						Error("Update client: TAKE_WEAPON, missing unit %d.", netid);
 					else if(unit != pc->unit)
@@ -4150,7 +4147,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				if(game_state != GS_LEVEL)
 					break;
 
-				Unit* unit_ptr = L.FindUnit(netid);
+				Unit* unit_ptr = game_level->FindUnit(netid);
 				if(!unit_ptr)
 				{
 					Error("Update client: ATTACK, missing unit %d.", netid);
@@ -4288,7 +4285,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Error("Update client: Broken UPDATE_HP.");
 				else if(game_state == GS_LEVEL)
 				{
-					Unit* unit = L.FindUnit(netid);
+					Unit* unit = game_level->FindUnit(netid);
 					if(!unit)
 						Error("Update client: UPDATE_HP, missing unit %d.", netid);
 					else if(unit == pc->unit)
@@ -4344,7 +4341,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					pe->op_alpha = POP_LINEAR_SHRINK;
 					pe->mode = 0;
 					pe->Init();
-					L.GetArea(pos).tmp->pes.push_back(pe);
+					game_level->GetArea(pos).tmp->pes.push_back(pe);
 				}
 			}
 			break;
@@ -4359,7 +4356,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Error("Update client: Broken UNIT_SOUND.");
 				else if(game_state == GS_LEVEL)
 				{
-					Unit* unit = L.FindUnit(netid);
+					Unit* unit = game_level->FindUnit(netid);
 					if(!unit)
 						Error("Update client: UNIT_SOUND, missing unit %d.", netid);
 					else if(Sound* sound = unit->GetSound(sound_id))
@@ -4398,7 +4395,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Error("Update client: Broken DIE.");
 				else if(game_state == GS_LEVEL)
 				{
-					Unit* unit = L.FindUnit(netid);
+					Unit* unit = game_level->FindUnit(netid);
 					if(!unit)
 						Error("Update client: DIE, missing unit %d.", netid);
 					else
@@ -4415,7 +4412,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Error("Update client: Broken FALL.");
 				else if(game_state == GS_LEVEL)
 				{
-					Unit* unit = L.FindUnit(netid);
+					Unit* unit = game_level->FindUnit(netid);
 					if(!unit)
 						Error("Update client: FALL, missing unit %d.", netid);
 					else
@@ -4432,7 +4429,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Error("Update client: Broken DROP_ITEM.");
 				else if(game_state == GS_LEVEL)
 				{
-					Unit* unit = L.FindUnit(netid);
+					Unit* unit = game_level->FindUnit(netid);
 					if(!unit)
 						Error("Update client: DROP_ITEM, missing unit %d.", netid);
 					else if(unit != pc->unit)
@@ -4459,7 +4456,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				else
 				{
 					PreloadItem(item->item);
-					L.GetArea(item->pos).items.push_back(item);
+					game_level->GetArea(item->pos).items.push_back(item);
 				}
 			}
 			break;
@@ -4474,7 +4471,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Error("Update client: Broken PICKUP_ITEM.");
 				else if(game_state == GS_LEVEL)
 				{
-					Unit* unit = L.FindUnit(netid);
+					Unit* unit = game_level->FindUnit(netid);
 					if(!unit)
 						Error("Update client: PICKUP_ITEM, missing unit %d.", netid);
 					else if(unit != pc->unit)
@@ -4498,7 +4495,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				else if(game_state == GS_LEVEL)
 				{
 					LevelArea* area;
-					GroundItem* item = L.FindGroundItem(netid, &area);
+					GroundItem* item = game_level->FindGroundItem(netid, &area);
 					if(!item)
 						Error("Update client: REMOVE_ITEM, missing ground item %d.", netid);
 					else
@@ -4527,7 +4524,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Error("Update client: Broken CONSUME_ITEM.");
 				else if(game_state == GS_LEVEL)
 				{
-					Unit* unit = L.FindUnit(netid);
+					Unit* unit = game_level->FindUnit(netid);
 					if(!unit)
 						Error("Update client: CONSUME_ITEM, missing unit %d.", netid);
 					else if(item->type != IT_CONSUMABLE)
@@ -4563,7 +4560,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Error("Update client: Broken STUNNED.");
 				else if(game_state == GS_LEVEL)
 				{
-					Unit* unit = L.FindUnit(netid);
+					Unit* unit = game_level->FindUnit(netid);
 					if(!unit)
 						Error("Update client: STUNNED, missing unit %d.", netid);
 					else
@@ -4612,7 +4609,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 						owner = nullptr;
 					else
 					{
-						owner = L.FindUnit(netid);
+						owner = game_level->FindUnit(netid);
 						if(!owner)
 						{
 							Error("Update client: SHOOT_ARROW, missing unit %d.", netid);
@@ -4620,7 +4617,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 						}
 					}
 
-					LevelArea& area = L.GetArea(pos);
+					LevelArea& area = game_level->GetArea(pos);
 
 					Bullet& b = Add1(area.tmp->bullets);
 					b.mesh = aArrow;
@@ -4682,7 +4679,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 							Error("Update client: Broken UPDATE_CREDIT(2).");
 						else
 						{
-							Unit* unit = L.FindUnit(netid);
+							Unit* unit = game_level->FindUnit(netid);
 							if(!unit)
 								Error("Update client: UPDATE_CREDIT, missing unit %d.", netid);
 							else
@@ -4708,7 +4705,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Error("Update client: Broken IDLE.");
 				else if(game_state == GS_LEVEL)
 				{
-					Unit* unit = L.FindUnit(netid);
+					Unit* unit = game_level->FindUnit(netid);
 					if(!unit)
 						Error("Update client: IDLE, missing unit %d.", netid);
 					else if(animation_index >= unit->data->idles->anims.size())
@@ -4725,7 +4722,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 			break;
 		// info about completing all unique quests
 		case NetChange::ALL_QUESTS_COMPLETED:
-			QM.unique_completed_show = true;
+			quest_mgr->unique_completed_show = true;
 			break;
 		// unit talks
 		case NetChange::TALK:
@@ -4740,12 +4737,12 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Error("Update client: Broken TALK.");
 				else if(game_state == GS_LEVEL)
 				{
-					Unit* unit = L.FindUnit(netid);
+					Unit* unit = game_level->FindUnit(netid);
 					if(!unit)
 						Error("Update client: TALK, missing unit %d.", netid);
 					else
 					{
-						gui->game_gui->AddSpeechBubble(unit, text.c_str());
+						game_gui->level_gui->AddSpeechBubble(unit, text.c_str());
 						unit->bubble->skip_id = skip_id;
 
 						if(animation != 0)
@@ -4781,7 +4778,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				if(!f)
 					Error("Update client: Broken TALK_POS.");
 				else if(game_state == GS_LEVEL)
-					gui->game_gui->AddSpeechBubble(pos, text.c_str());
+					game_gui->level_gui->AddSpeechBubble(pos, text.c_str());
 			}
 			break;
 		// change location state
@@ -4791,11 +4788,11 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				f >> location_index;
 				if(!f)
 					Error("Update client: Broken CHANGE_LOCATION_STATE.");
-				else if(!W.VerifyLocation(location_index))
+				else if(!world->VerifyLocation(location_index))
 					Error("Update client: CHANGE_LOCATION_STATE, invalid location %u.", location_index);
 				else
 				{
-					Location* loc = W.GetLocation(location_index);
+					Location* loc = world->GetLocation(location_index);
 					loc->SetKnown();
 				}
 			}
@@ -4808,9 +4805,9 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Error("Update client: Broken ADD_RUMOR.");
 				else
 				{
-					gui->messages->AddGameMsg3(GMS_ADDED_RUMOR);
-					gui->journal->GetRumors().push_back(text);
-					gui->journal->NeedUpdate(Journal::Rumors);
+					game_gui->messages->AddGameMsg3(GMS_ADDED_RUMOR);
+					game_gui->journal->GetRumors().push_back(text);
+					game_gui->journal->NeedUpdate(Journal::Rumors);
 				}
 			}
 			break;
@@ -4827,7 +4824,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Error("Update client: Broken TELL_NAME.");
 				else if(game_state == GS_LEVEL)
 				{
-					Unit* unit = L.FindUnit(netid);
+					Unit* unit = game_level->FindUnit(netid);
 					if(!unit)
 						Error("Update client: TELL_NAME, missing unit %d.", netid);
 					else if(!unit->IsHero())
@@ -4852,7 +4849,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Error("Update client: Broken HAIR_COLOR.");
 				else if(game_state == GS_LEVEL)
 				{
-					Unit* unit = L.FindUnit(netid);
+					Unit* unit = game_level->FindUnit(netid);
 					if(!unit)
 						Error("Update client: HAIR_COLOR, missing unit %d.", netid);
 					else if(unit->data->type != UNIT_TYPE::HUMAN)
@@ -4883,14 +4880,14 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				if(game_state != GS_LEVEL)
 					break;
 
-				Unit* unit = L.FindUnit(netid);
+				Unit* unit = game_level->FindUnit(netid);
 				if(!unit)
 				{
 					Error("Update client: WARP, missing unit %d.", netid);
 					break;
 				}
 
-				LevelArea* area = L.GetAreaById(area_id);
+				LevelArea* area = game_level->GetAreaById(area_id);
 				if(!area)
 				{
 					Error("Update client: WARP, invalid area %d.", area_id);
@@ -4940,7 +4937,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Net::PushChange(NetChange::WARP);
 					interpolate_timer = 0.f;
 					pc_data.rot_buf = 0.f;
-					L.camera.Reset();
+					game_level->camera.Reset();
 					pc_data.rot_buf = 0.f;
 				}
 			}
@@ -4975,7 +4972,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 						if(!f)
 							Error("Update client: Broken REGISTER_ITEM(3).");
 						else
-							QM.quest_items.push_back(item);
+							quest_mgr->quest_items.push_back(item);
 					}
 				}
 			}
@@ -4992,10 +4989,8 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					break;
 				}
 
-				QuestManager& quest_manager = QM;
-
 				PlaceholderQuest* quest = new PlaceholderQuest;
-				quest->quest_index = quest_manager.quests.size();
+				quest->quest_index = quest_mgr->quests.size();
 				quest->name = quest_name;
 				quest->refid = refid;
 				quest->msgs.resize(2);
@@ -5010,9 +5005,9 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				}
 
 				quest->state = Quest::Started;
-				gui->journal->NeedUpdate(Journal::Quests, quest->quest_index);
-				gui->messages->AddGameMsg3(GMS_JOURNAL_UPDATED);
-				quest_manager.quests.push_back(quest);
+				game_gui->journal->NeedUpdate(Journal::Quests, quest->quest_index);
+				game_gui->messages->AddGameMsg3(GMS_JOURNAL_UPDATED);
+				quest_mgr->quests.push_back(quest);
 			}
 			break;
 		// update quest
@@ -5029,7 +5024,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					break;
 				}
 
-				Quest* quest = QM.FindQuest(refid, false);
+				Quest* quest = quest_mgr->FindQuest(refid, false);
 				if(!quest)
 				{
 					Error("Update client: UPDATE_QUEST, missing quest %d.", refid);
@@ -5050,8 +5045,8 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 							break;
 						}
 					}
-					gui->journal->NeedUpdate(Journal::Quests, quest->quest_index);
-					gui->messages->AddGameMsg3(GMS_JOURNAL_UPDATED);
+					game_gui->journal->NeedUpdate(Journal::Quests, quest->quest_index);
+					game_gui->messages->AddGameMsg3(GMS_JOURNAL_UPDATED);
 				}
 			}
 			break;
@@ -5066,7 +5061,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				else
 				{
 					bool found = false;
-					for(Item* item : QM.quest_items)
+					for(Item* item : quest_mgr->quest_items)
 					{
 						if(item->refid == refid && item->id == item_id)
 						{
@@ -5094,7 +5089,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Error("Update client: Broken CHANGE_LEADER.");
 				else
 				{
-					PlayerInfo* info = N.TryGetPlayer(id);
+					PlayerInfo* info = net->TryGetPlayer(id);
 					if(info)
 					{
 						Team.leader_id = id;
@@ -5104,8 +5099,8 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 							AddMsg(Format(txPcIsLeader, info->name.c_str()));
 						Team.leader = info->u;
 
-						if(gui->world_map->dialog_enc)
-							gui->world_map->dialog_enc->bts[0].state = (Team.IsLeader() ? Button::NONE : Button::DISABLED);
+						if(game_gui->world_map->dialog_enc)
+							game_gui->world_map->dialog_enc->bts[0].state = (Team.IsLeader() ? Button::NONE : Button::DISABLED);
 					}
 					else
 						Error("Update client: CHANGE_LEADER, missing player %u.", id);
@@ -5122,7 +5117,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Error("Update client: Broken RANDOM_NUMBER.");
 				else if(player_id != Team.my_id)
 				{
-					PlayerInfo* info = N.TryGetPlayer(player_id);
+					PlayerInfo* info = net->TryGetPlayer(player_id);
 					if(info)
 						AddMsg(Format(txRolledNumber, info->name.c_str(), number));
 					else
@@ -5141,14 +5136,14 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Error("Update client: Broken REMOVE_PLAYER.");
 				else
 				{
-					PlayerInfo* info = N.TryGetPlayer(player_id);
+					PlayerInfo* info = net->TryGetPlayer(player_id);
 					if(!info)
 						Error("Update client: REMOVE_PLAYER, missing player %u.", player_id);
 					else if(player_id != Team.my_id)
 					{
 						info->left = reason;
 						RemovePlayer(*info);
-						N.players.erase(info->GetIndex());
+						net->players.erase(info->GetIndex());
 						delete info;
 					}
 				}
@@ -5171,14 +5166,14 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				if(game_state != GS_LEVEL)
 					break;
 
-				Unit* unit = L.FindUnit(netid);
+				Unit* unit = game_level->FindUnit(netid);
 				if(!unit)
 				{
 					Error("Update client: USE_USABLE, missing unit %d.", netid);
 					break;
 				}
 
-				Usable* usable = L.FindUsable(usable_netid);
+				Usable* usable = game_level->FindUsable(usable_netid);
 				if(!usable)
 				{
 					Error("Update client: USE_USABLE, missing usable %d.", usable_netid);
@@ -5245,7 +5240,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Error("Update client: Broken STAND_UP.");
 				else if(game_state == GS_LEVEL)
 				{
-					Unit* unit = L.FindUnit(netid);
+					Unit* unit = game_level->FindUnit(netid);
 					if(!unit)
 						Error("Update client: STAND_UP, missing unit %d.", netid);
 					else
@@ -5257,7 +5252,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 		case NetChange::GAME_OVER:
 			Info("Update client: Game over - all players died.");
 			SetMusic(MusicType::Death);
-			gui->CloseAllPanels(true);
+			game_gui->CloseAllPanels(true);
 			++death_screen;
 			death_fade = 0;
 			death_solo = false;
@@ -5274,7 +5269,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Error("Update client: Broken RECRUIT_NPC.");
 				else if(game_state == GS_LEVEL)
 				{
-					Unit* unit = L.FindUnit(netid);
+					Unit* unit = game_level->FindUnit(netid);
 					if(!unit)
 						Error("Update client: RECRUIT_NPC, missing unit %d.", netid);
 					else if(!unit->IsHero())
@@ -5287,8 +5282,8 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 						Team.members.push_back(unit);
 						if(!free)
 							Team.active_members.push_back(unit);
-						if(gui->team->visible)
-							gui->team->Changed();
+						if(game_gui->team->visible)
+							game_gui->team->Changed();
 					}
 				}
 			}
@@ -5302,7 +5297,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Error("Update client: Broken KICK_NPC.");
 				else if(game_state == GS_LEVEL)
 				{
-					Unit* unit = L.FindUnit(netid);
+					Unit* unit = game_level->FindUnit(netid);
 					if(!unit)
 						Error("Update client: KICK_NPC, missing unit %d.", netid);
 					else if(!unit->IsHero() || !unit->hero->team_member)
@@ -5313,8 +5308,8 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 						RemoveElement(Team.members.ptrs, unit);
 						if(!unit->hero->free)
 							RemoveElement(Team.active_members.ptrs, unit);
-						if(gui->team->visible)
-							gui->team->Changed();
+						if(game_gui->team->visible)
+							game_gui->team->Changed();
 					}
 				}
 			}
@@ -5328,11 +5323,11 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Error("Update client: Broken REMOVE_UNIT.");
 				else if(game_state == GS_LEVEL)
 				{
-					Unit* unit = L.FindUnit(netid);
+					Unit* unit = game_level->FindUnit(netid);
 					if(!unit)
 						Error("Update client: REMOVE_UNIT, missing unit %d.", netid);
 					else
-						L.RemoveUnit(unit);
+						game_level->RemoveUnit(unit);
 				}
 			}
 			break;
@@ -5347,7 +5342,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				}
 				else if(game_state == GS_LEVEL)
 				{
-					LevelArea& area = L.GetArea(unit->pos);
+					LevelArea& area = game_level->GetArea(unit->pos);
 					area.units.push_back(unit);
 					unit->area = &area;
 					if(unit->summoner != nullptr)
@@ -5368,7 +5363,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Error("Update client: Broken CHANGE_ARENA_STATE.");
 				else if(game_state == GS_LEVEL)
 				{
-					Unit* unit = L.FindUnit(netid);
+					Unit* unit = game_level->FindUnit(netid);
 					if(!unit)
 						Error("Update client: CHANGE_ARENA_STATE, missing unit %d.", netid);
 					else
@@ -5389,8 +5384,8 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				f >> type;
 				if(!f)
 					Error("Update client: Broken ARENA_SOUND.");
-				else if(game_state == GS_LEVEL && L.city_ctx && IsSet(L.city_ctx->flags, City::HaveArena)
-					&& L.GetArena() == pc->unit->area)
+				else if(game_state == GS_LEVEL && game_level->city_ctx && IsSet(game_level->city_ctx->flags, City::HaveArena)
+					&& game_level->GetArena() == pc->unit->area)
 				{
 					Sound* sound;
 					if(type == 0)
@@ -5426,8 +5421,8 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Error("Update client: Broken TRAVEL.");
 				else if(game_state == GS_WORLDMAP)
 				{
-					W.Travel(loc, false);
-					gui->world_map->StartTravel();
+					world->Travel(loc, false);
+					game_gui->world_map->StartTravel();
 				}
 			}
 			break;
@@ -5440,8 +5435,8 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Error("Update client: Broken TRAVEL_POS.");
 				else if(game_state == GS_WORLDMAP)
 				{
-					W.TravelPos(pos, false);
-					gui->world_map->StartTravel();
+					world->TravelPos(pos, false);
+					game_gui->world_map->StartTravel();
 				}
 			}
 			break;
@@ -5453,17 +5448,17 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				if(!f)
 					Error("Update client: Broken STOP_TRAVEL.");
 				else if(game_state == GS_WORLDMAP)
-					W.StopTravel(pos, false);
+					world->StopTravel(pos, false);
 			}
 			break;
 		// leader finished travel
 		case NetChange::END_TRAVEL:
 			if(game_state == GS_WORLDMAP)
-				W.EndTravel();
+				world->EndTravel();
 			break;
 		// change world time
 		case NetChange::WORLD_TIME:
-			W.ReadTime(f);
+			world->ReadTime(f);
 			if(!f)
 				Error("Update client: Broken WORLD_TIME.");
 			break;
@@ -5478,7 +5473,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Error("Update client: Broken USE_DOOR.");
 				else if(game_state == GS_LEVEL)
 				{
-					Door* door = L.FindDoor(netid);
+					Door* door = game_level->FindDoor(netid);
 					if(!door)
 						Error("Update client: USE_DOOR, missing door %d.", netid);
 					else
@@ -5587,7 +5582,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 
 				sound_mgr->PlaySound3d(spell.sound_hit, explo->pos, spell.sound_hit_dist);
 
-				L.GetArea(pos).tmp->explos.push_back(explo);
+				game_level->GetArea(pos).tmp->explos.push_back(explo);
 			}
 			break;
 		// remove trap
@@ -5599,7 +5594,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Error("Update client: Broken REMOVE_TRAP.");
 				else  if(game_state == GS_LEVEL)
 				{
-					if(!L.RemoveTrap(netid))
+					if(!game_level->RemoveTrap(netid))
 						Error("Update client: REMOVE_TRAP, missing trap %d.", netid);
 				}
 			}
@@ -5613,7 +5608,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Error("Update client: Broken TRIGGER_TRAP.");
 				else if(game_state == GS_LEVEL)
 				{
-					Trap* trap = L.FindTrap(netid);
+					Trap* trap = game_level->FindTrap(netid);
 					if(trap)
 						trap->trigger = true;
 					else
@@ -5636,7 +5631,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					DialogInfo info;
 					info.event = [this](int)
 					{
-						gui->world_map->dialog_enc = nullptr;
+						game_gui->world_map->dialog_enc = nullptr;
 						Net::PushChange(NetChange::CLOSE_ENCOUNTER);
 					};
 					info.name = "encounter";
@@ -5646,30 +5641,30 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					info.type = DIALOG_OK;
 					info.text = text;
 
-					gui->world_map->dialog_enc = gui->ShowDialog(info);
+					game_gui->world_map->dialog_enc = gui->ShowDialog(info);
 					if(!Team.IsLeader())
-						gui->world_map->dialog_enc->bts[0].state = Button::DISABLED;
-					assert(W.GetState() == World::State::TRAVEL);
-					W.SetState(World::State::ENCOUNTER);
+						game_gui->world_map->dialog_enc->bts[0].state = Button::DISABLED;
+					assert(world->GetState() == World::State::TRAVEL);
+					world->SetState(World::State::ENCOUNTER);
 				}
 			}
 			break;
 		// close encounter message box
 		case NetChange::CLOSE_ENCOUNTER:
-			if(game_state == GS_WORLDMAP && gui->world_map->dialog_enc)
+			if(game_state == GS_WORLDMAP && game_gui->world_map->dialog_enc)
 			{
-				gui->CloseDialog(gui->world_map->dialog_enc);
-				gui->world_map->dialog_enc = nullptr;
+				gui->CloseDialog(game_gui->world_map->dialog_enc);
+				game_gui->world_map->dialog_enc = nullptr;
 			}
 			break;
 		// close portal in location
 		case NetChange::CLOSE_PORTAL:
 			if(game_state == GS_LEVEL)
 			{
-				if(L.location && L.location->portal)
+				if(game_level->location && game_level->location->portal)
 				{
-					delete L.location->portal;
-					L.location->portal = nullptr;
+					delete game_level->location->portal;
+					game_level->location->portal = nullptr;
 				}
 				else
 					Error("Update client: CLOSE_PORTAL, missing portal.");
@@ -5681,15 +5676,15 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 			{
 				// change object
 				BaseObject* base_obj = BaseObject::Get("bloody_altar");
-				Object* obj = L.local_area->FindObject(base_obj);
+				Object* obj = game_level->local_area->FindObject(base_obj);
 				obj->base = BaseObject::Get("altar");
 				obj->mesh = obj->base->mesh;
-				app::res_mgr->Load(obj->mesh);
+				res_mgr->Load(obj->mesh);
 
 				// remove particles
 				float best_dist = 999.f;
 				ParticleEmitter* best_pe = nullptr;
-				for(ParticleEmitter* pe : L.local_area->tmp->pes)
+				for(ParticleEmitter* pe : game_level->local_area->tmp->pes)
 				{
 					if(pe->tex == tKrew[BLOOD_RED])
 					{
@@ -5751,7 +5746,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					break;
 				}
 
-				W.AddLocationAtIndex(loc);
+				world->AddLocationAtIndex(loc);
 			}
 			break;
 		// remove camp
@@ -5761,10 +5756,10 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				f >> camp_index;
 				if(!f)
 					Error("Update client: Broken REMOVE_CAMP.");
-				else if(!W.VerifyLocation(camp_index) || W.GetLocation(camp_index)->type != L_CAMP)
+				else if(!world->VerifyLocation(camp_index) || world->GetLocation(camp_index)->type != L_CAMP)
 					Error("Update client: REMOVE_CAMP, invalid location %u.", camp_index);
 				else
-					W.RemoveLocation(camp_index);
+					world->RemoveLocation(camp_index);
 			}
 			break;
 		// change unit ai mode
@@ -5778,7 +5773,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Error("Update client: Broken CHANGE_AI_MODE.");
 				else
 				{
-					Unit* unit = L.FindUnit(netid);
+					Unit* unit = game_level->FindUnit(netid);
 					if(!unit)
 						Error("Update client: CHANGE_AI_MODE, missing unit %d.", netid);
 					else
@@ -5796,7 +5791,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Error("Update client: Broken CHANGE_UNIT_BASE.");
 				else if(game_state == GS_LEVEL)
 				{
-					Unit* unit = L.FindUnit(netid);
+					Unit* unit = game_level->FindUnit(netid);
 					UnitData* ud = UnitData::TryGet(unit_id);
 					if(unit && ud)
 						unit->data = ud;
@@ -5818,7 +5813,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Error("Update client: Broken CAST_SPELL.");
 				else if(game_state == GS_LEVEL)
 				{
-					Unit* unit = L.FindUnit(netid);
+					Unit* unit = game_level->FindUnit(netid);
 					if(!unit)
 						Error("Update client: CAST_SPELL, missing unit %d.", netid);
 					else
@@ -5873,13 +5868,13 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				Unit* unit = nullptr;
 				if(netid != -1)
 				{
-					unit = L.FindUnit(netid);
+					unit = game_level->FindUnit(netid);
 					if(!unit)
 						Error("Update client: CREATE_SPELL_BALL, missing unit %d.", netid);
 				}
 
 				Spell& spell = *spell_ptr;
-				LevelArea& area = L.GetArea(pos);
+				LevelArea& area = game_level->GetArea(pos);
 
 				Bullet& b = Add1(area.tmp->bullets);
 
@@ -5961,7 +5956,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Error("Update client: Broken CREATE_DRAIN.");
 				else if(game_state == GS_LEVEL)
 				{
-					Unit* unit = L.FindUnit(netid);
+					Unit* unit = game_level->FindUnit(netid);
 					if(!unit)
 						Error("Update client: CREATE_DRAIN, missing unit %d.", netid);
 					else
@@ -6002,7 +5997,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					e->netid = netid;
 					e->AddLine(p1, p2);
 					e->valid = true;
-					L.GetArea(p1).tmp->electros.push_back(e);
+					game_level->GetArea(p1).tmp->electros.push_back(e);
 				}
 			}
 			break;
@@ -6017,7 +6012,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Error("Update client: Broken UPDATE_ELECTRO.");
 				else if(game_state == GS_LEVEL)
 				{
-					Electro* e = L.FindElectro(netid);
+					Electro* e = game_level->FindElectro(netid);
 					if(!e)
 						Error("Update client: UPDATE_ELECTRO, missing electro %d.", netid);
 					else
@@ -6067,7 +6062,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 						pe->mode = 1;
 						pe->Init();
 
-						L.GetArea(pos).tmp->pes.push_back(pe);
+						game_level->GetArea(pos).tmp->pes.push_back(pe);
 					}
 				}
 			}
@@ -6104,7 +6099,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					pe->mode = 1;
 					pe->Init();
 
-					L.GetArea(pos).tmp->pes.push_back(pe);
+					game_level->GetArea(pos).tmp->pes.push_back(pe);
 				}
 			}
 			break;
@@ -6140,13 +6135,13 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					pe->mode = 1;
 					pe->Init();
 
-					L.GetArea(pos).tmp->pes.push_back(pe);
+					game_level->GetArea(pos).tmp->pes.push_back(pe);
 				}
 			}
 			break;
 		// someone used cheat 'reveal_minimap'
 		case NetChange::CHEAT_REVEAL_MINIMAP:
-			L.RevealMinimap();
+			game_level->RevealMinimap();
 			break;
 		// revealing minimap
 		case NetChange::REVEAL_MINIMAP:
@@ -6162,7 +6157,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 						byte x, y;
 						f.Read(x);
 						f.Read(y);
-						L.minimap_reveal.push_back(Int2(x, y));
+						game_level->minimap_reveal.push_back(Int2(x, y));
 					}
 				}
 			}
@@ -6181,7 +6176,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 		// end of game, time run out
 		case NetChange::END_OF_GAME:
 			Info("Update client: Game over - time run out.");
-			gui->CloseAllPanels(true);
+			game_gui->CloseAllPanels(true);
 			end_of_game = true;
 			death_fade = 0.f;
 			exit_from_server = true;
@@ -6201,7 +6196,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 						f >> netid;
 						f >> days;
 
-						Unit* unit = L.FindUnit(netid);
+						Unit* unit = game_level->FindUnit(netid);
 						if(!unit || !unit->IsPlayer())
 						{
 							Error("Update client: UPDATE_FREE_DAYS, missing unit %d or is not a player (0x%p).", netid, unit);
@@ -6216,14 +6211,14 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 			break;
 		// multiplayer vars changed
 		case NetChange::CHANGE_MP_VARS:
-			N.ReadNetVars(f);
+			net->ReadNetVars(f);
 			if(!f)
 				Error("Update client: Broken CHANGE_MP_VARS.");
 			break;
 		// game saved notification
 		case NetChange::GAME_SAVED:
 			AddMultiMsg(txGameSaved);
-			gui->messages->AddGameMsg3(GMS_GAME_SAVED);
+			game_gui->messages->AddGameMsg3(GMS_GAME_SAVED);
 			break;
 		// ai left team due too many team members
 		case NetChange::HERO_LEAVE:
@@ -6234,7 +6229,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Error("Update client: Broken HERO_LEAVE.");
 				else if(game_state == GS_LEVEL)
 				{
-					Unit* unit = L.FindUnit(netid);
+					Unit* unit = game_level->FindUnit(netid);
 					if(!unit)
 						Error("Update client: HERO_LEAVE, missing unit %d.", netid);
 					else
@@ -6270,7 +6265,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				if(!f)
 					Error("Update client: Broken UPDATE_MAP_POS.");
 				else
-					W.SetWorldPos(pos);
+					world->SetWorldPos(pos);
 			}
 			break;
 		// player used cheat for fast travel on map
@@ -6280,12 +6275,12 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				f >> location_index;
 				if(!f)
 					Error("Update client: Broken CHEAT_TRAVEL.");
-				else if(!W.VerifyLocation(location_index))
+				else if(!world->VerifyLocation(location_index))
 					Error("Update client: CHEAT_TRAVEL, invalid location index %u.", location_index);
 				else if(game_state == GS_WORLDMAP)
 				{
-					W.Warp(location_index);
-					gui->world_map->StartTravel();
+					world->Warp(location_index);
+					game_gui->world_map->StartTravel();
 				}
 			}
 			break;
@@ -6298,8 +6293,8 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Error("Update client: Broken CHEAT_TRAVEL_POS.");
 				else if(game_state == GS_WORLDMAP)
 				{
-					W.WarpPos(pos);
-					gui->world_map->StartTravel();
+					world->WarpPos(pos);
+					game_gui->world_map->StartTravel();
 				}
 			}
 			break;
@@ -6312,7 +6307,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Error("Update client: Broken REMOVE_USED_ITEM.");
 				else if(game_state == GS_LEVEL)
 				{
-					Unit* unit = L.FindUnit(netid);
+					Unit* unit = game_level->FindUnit(netid);
 					if(!unit)
 						Error("Update client: REMOVE_USED_ITEM, missing unit %d.", netid);
 					else
@@ -6322,7 +6317,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 			break;
 		// game stats showed at end of game
 		case NetChange::GAME_STATS:
-			f >> GameStats::Get().total_kills;
+			f >> game_stats->total_kills;
 			if(!f)
 				Error("Update client: Broken GAME_STATS.");
 			break;
@@ -6335,7 +6330,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Error("Update client: Broken USABLE_SOUND.");
 				else if(game_state == GS_LEVEL)
 				{
-					Unit* unit = L.FindUnit(netid);
+					Unit* unit = game_level->FindUnit(netid);
 					if(!unit)
 						Error("Update client: USABLE_SOUND, missing unit %d.", netid);
 					else if(!unit->usable)
@@ -6354,7 +6349,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Error("Update client: Broken BREAK_ACTION.");
 				else if(game_state == GS_LEVEL)
 				{
-					Unit* unit = L.FindUnit(netid);
+					Unit* unit = game_level->FindUnit(netid);
 					if(unit)
 						unit->BreakAction();
 					else
@@ -6371,7 +6366,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Error("Update client: Broken PLAYER_ACTION.");
 				else if(game_state == GS_LEVEL)
 				{
-					Unit* unit = L.FindUnit(netid);
+					Unit* unit = game_level->FindUnit(netid);
 					if(unit && unit->player)
 					{
 						if(unit->player != pc)
@@ -6393,7 +6388,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Error("Update client: Broken STUN.");
 				else if(game_state == GS_LEVEL)
 				{
-					Unit* unit = L.FindUnit(netid);
+					Unit* unit = game_level->FindUnit(netid);
 					if(!unit)
 						Error("Update client: STUN, missing unit %d.", netid);
 					else
@@ -6415,7 +6410,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Error("Update client: Broken USE_ITEM.");
 				else if(game_state == GS_LEVEL)
 				{
-					Unit* unit = L.FindUnit(netid);
+					Unit* unit = game_level->FindUnit(netid);
 					if(!unit)
 						Error("Update client: USE_ITEM, missing unit %d.", netid);
 					else
@@ -6438,7 +6433,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Error("Update client: Broken MARK_UNIT.");
 				else if(game_state == GS_LEVEL)
 				{
-					Unit* unit = L.FindUnit(netid);
+					Unit* unit = game_level->FindUnit(netid);
 					if(!unit)
 						Error("Update client: MARK_UNIT, missing unit %d.", netid);
 					else
@@ -6454,7 +6449,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				if(!f)
 					Error("Update client: Broken CLEAN_LEVEL.");
 				else if(game_state == GS_LEVEL)
-					L.CleanLevel(building_id);
+					game_level->CleanLevel(building_id);
 			}
 			break;
 		// change location image
@@ -6466,10 +6461,10 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				f.ReadCasted<byte>(image);
 				if(!f)
 					Error("Update client: Broken CHANGE_LOCATION_IMAGE.");
-				else if(!W.VerifyLocation(index))
+				else if(!world->VerifyLocation(index))
 					Error("Update client: CHANGE_LOCATION_IMAGE, invalid location %d.", index);
 				else
-					W.GetLocation(index)->SetImage(image);
+					world->GetLocation(index)->SetImage(image);
 			}
 			break;
 		// change location name
@@ -6480,10 +6475,10 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				const string& name = f.ReadString1();
 				if(!f)
 					Error("Update client: Broken CHANGE_LOCATION_NAME.");
-				else if(!W.VerifyLocation(index))
+				else if(!world->VerifyLocation(index))
 					Error("Update client: CHANGE_LOCATION_NAME, invalid location %d.", index);
 				else
-					W.GetLocation(index)->SetName(name.c_str());
+					world->GetLocation(index)->SetName(name.c_str());
 			}
 			break;
 		// unit uses chest
@@ -6497,14 +6492,14 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Error("Update client: Broken USE_CHEST.");
 					break;
 				}
-				Chest* chest = L.FindChest(chest_id);
+				Chest* chest = game_level->FindChest(chest_id);
 				if(!chest)
 					Error("Update client: USE_CHEST, missing chest %d.", chest_id);
 				else if(unit_id == -1)
 					chest->OpenClose(nullptr);
 				else
 				{
-					Unit* unit = L.FindUnit(unit_id);
+					Unit* unit = game_level->FindUnit(unit_id);
 					if(!unit)
 						Error("Update client: USE_CHEST, missing unit %d.", unit_id);
 					else
@@ -6613,7 +6608,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 						pc->unit->action = A_NONE;
 					if(!can_loot)
 					{
-						gui->messages->AddGameMsg3(GMS_IS_LOOTED);
+						game_gui->messages->AddGameMsg3(GMS_IS_LOOTED);
 						pc->action = PlayerController::Action_None;
 						break;
 					}
@@ -6627,11 +6622,11 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 
 					// start trade
 					if(pc->action == PlayerController::Action_LootUnit)
-						gui->inventory->StartTrade(I_LOOT_BODY, *pc->action_unit);
+						game_gui->inventory->StartTrade(I_LOOT_BODY, *pc->action_unit);
 					else if(pc->action == PlayerController::Action_LootContainer)
-						gui->inventory->StartTrade(I_LOOT_CONTAINER, pc->action_usable->container->items);
+						game_gui->inventory->StartTrade(I_LOOT_CONTAINER, pc->action_usable->container->items);
 					else
-						gui->inventory->StartTrade(I_LOOT_CHEST, pc->action_chest->items);
+						game_gui->inventory->StartTrade(I_LOOT_CHEST, pc->action_chest->items);
 				}
 				break;
 			// start dialog with unit or is busy
@@ -6645,12 +6640,12 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 					{
 						// unit is busy
 						pc->action = PlayerController::Action_None;
-						gui->messages->AddGameMsg3(GMS_UNIT_BUSY);
+						game_gui->messages->AddGameMsg3(GMS_UNIT_BUSY);
 					}
 					else if(netid != -2 && game_state == GS_LEVEL) // not entered/left building
 					{
 						// start dialog
-						Unit* unit = L.FindUnit(netid);
+						Unit* unit = game_level->FindUnit(netid);
 						if(!unit)
 							Error("Update single client: START_DIALOG, missing unit %d.", netid);
 						else
@@ -6710,7 +6705,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 								break;
 							}
 						}
-						gui->game_gui->UpdateScrollbar(dialog_choices.size());
+						game_gui->level_gui->UpdateScrollbar(dialog_choices.size());
 					}
 				}
 				break;
@@ -6738,7 +6733,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 					if(game_state != GS_LEVEL)
 						break;
 
-					Unit* trader = L.FindUnit(netid);
+					Unit* trader = game_level->FindUnit(netid);
 					if(!trader)
 					{
 						Error("Update single client: START_TRADE, missing unit %d.", netid);
@@ -6750,7 +6745,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 						break;
 					}
 
-					gui->inventory->StartTrade(I_TRADE, chest_trade, trader);
+					game_gui->inventory->StartTrade(I_TRADE, chest_trade, trader);
 				}
 				break;
 			// add multiple same items to inventory
@@ -6782,7 +6777,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 						Error("Update single client: ADD_ITEMS_TRADER, invalid count %d or team count %d.", count, team_count);
 					else if(game_state == GS_LEVEL)
 					{
-						Unit* unit = L.FindUnit(netid);
+						Unit* unit = game_level->FindUnit(netid);
 						if(!unit)
 							Error("Update single client: ADD_ITEMS_TRADER, missing unit %d.", netid);
 						else if(!pc->IsTradingWith(unit))
@@ -6806,7 +6801,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 						Error("Update single client: ADD_ITEMS_CHEST, invalid count %d or team count %d.", count, team_count);
 					else if(game_state == GS_LEVEL)
 					{
-						Chest* chest = L.FindChest(netid);
+						Chest* chest = game_level->FindChest(netid);
 						if(!chest)
 							Error("Update single client: ADD_ITEMS_CHEST, missing chest %d.", netid);
 						else if(pc->action != PlayerController::Action_LootChest || pc->action_chest != chest)
@@ -6846,7 +6841,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 						Error("Update single client: REMOVE_ITEMS_TRADE, invalid count %d.", count);
 					else if(game_state == GS_LEVEL)
 					{
-						Unit* unit = L.FindUnit(netid);
+						Unit* unit = game_level->FindUnit(netid);
 						if(!unit)
 							Error("Update single client: REMOVE_ITEMS_TRADER, missing unit %d.", netid);
 						else if(!pc->IsTradingWith(unit))
@@ -6882,7 +6877,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 			case NetChangePlayer::USE_USABLE:
 				if(game_state == GS_LEVEL)
 				{
-					gui->messages->AddGameMsg3(GMS_USED);
+					game_gui->messages->AddGameMsg3(GMS_USED);
 					if(pc->action == PlayerController::Action_LootContainer)
 						pc->action = PlayerController::Action_None;
 					if(pc->unit->action == A_PREPARE)
@@ -6918,7 +6913,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 						if(!ReadItemListTeam(f, unit.items))
 							Error("Update single client: Broken %s.", name);
 						else
-							gui->inventory->StartTrade(type == NetChangePlayer::START_SHARE ? I_SHARE : I_GIVE, unit);
+							game_gui->inventory->StartTrade(type == NetChangePlayer::START_SHARE ? I_SHARE : I_GIVE, unit);
 					}
 					else
 					{
@@ -6942,7 +6937,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 					if(!f)
 						Error("Update single client: Broken IS_BETTER_ITEM.");
 					else if(game_state == GS_LEVEL)
-						gui->inventory->inv_trade_mine->IsBetterItemResponse(is_better);
+						game_gui->inventory->inv_trade_mine->IsBetterItemResponse(is_better);
 				}
 				break;
 			// question about pvp
@@ -6954,7 +6949,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 						Error("Update single client: Broken PVP.");
 					else if(game_state == GS_LEVEL)
 					{
-						PlayerInfo* info = N.TryGetPlayer(player_id);
+						PlayerInfo* info = net->TryGetPlayer(player_id);
 						if(!info)
 							Error("Update single client: PVP, invalid player id %u.", player_id);
 						else
@@ -7003,7 +6998,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 						Error("Update single client: Broken NO_PVP.");
 					else if(game_state == GS_LEVEL)
 					{
-						PlayerInfo* info = N.TryGetPlayer(player_id);
+						PlayerInfo* info = net->TryGetPlayer(player_id);
 						if(!info)
 							Error("Update single client: NO_PVP, invalid player id %u.", player_id);
 						else
@@ -7021,7 +7016,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 					else if(reason != CanLeaveLocationResult::InCombat && reason != CanLeaveLocationResult::TeamTooFar)
 						Error("Update single client: CANT_LEAVE_LOCATION, invalid reason %u.", (byte)reason);
 					else if(game_state == GS_LEVEL)
-						gui->messages->AddGameMsg3(reason == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
+						game_gui->messages->AddGameMsg3(reason == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
 				}
 				break;
 			// force player to look at unit
@@ -7037,7 +7032,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 							pc->unit->look_target = nullptr;
 						else
 						{
-							Unit* unit = L.FindUnit(netid);
+							Unit* unit = game_level->FindUnit(netid);
 							if(!unit)
 								Error("Update single client: LOOK_AT, missing unit %d.", netid);
 							else
@@ -7112,7 +7107,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 						Error("Update single client: GOLD_RECEIVED, invalid count %d.", count);
 					else
 					{
-						PlayerInfo* info = N.TryGetPlayer(player_id);
+						PlayerInfo* info = net->TryGetPlayer(player_id);
 						if(!info)
 							Error("Update single client: GOLD_RECEIVED, invalid player id %u.", player_id);
 						else
@@ -7135,7 +7130,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 						Error("Update single client: UPDATE_TRADER_GOLD, invalid count %d.", count);
 					else if(game_state == GS_LEVEL)
 					{
-						Unit* unit = L.FindUnit(netid);
+						Unit* unit = game_level->FindUnit(netid);
 						if(!unit)
 							Error("Update single client: UPDATE_TRADER_GOLD, missing unit %d.", netid);
 						else if(!pc->IsTradingWith(unit))
@@ -7154,7 +7149,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 						Error("Update single client: Broken UPDATE_TRADER_INVENTORY.");
 					else if(game_state == GS_LEVEL)
 					{
-						Unit* unit = L.FindUnit(netid);
+						Unit* unit = game_level->FindUnit(netid);
 						bool ok = true;
 						if(!unit)
 						{
@@ -7212,19 +7207,6 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 								pc->arena_fights = *buf++;
 						}
 					}
-				}
-				break;
-			// message about gaining multiple items
-			case NetChangePlayer::ADDED_ITEMS_MSG:
-				{
-					byte count;
-					f >> count;
-					if(!f)
-						Error("Update single client: Broken ADDED_ITEMS_MSG.");
-					else if(count <= 1)
-						Error("Update single client: ADDED_ITEMS_MSG, invalid count %u.", count);
-					else
-						gui->messages->AddGameMsg(Format(txGmsAddedItems, (int)count), 3.f);
 				}
 				break;
 			// player stat changed
@@ -7294,7 +7276,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 					if(!f)
 						Error("Update single client: Broken GAME_MESSAGE.");
 					else
-						gui->messages->AddGameMsg3((GMS)gm_id);
+						game_gui->messages->AddGameMsg3((GMS)gm_id);
 				}
 				break;
 			// run script result
@@ -7305,7 +7287,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 					if(!f)
 						Error("Update single client: Broken RUN_SCRIPT_RESULT.");
 					else
-						gui->console->AddMsg(output->c_str());
+						game_gui->console->AddMsg(output->c_str());
 					StringPool.Free(output);
 				}
 				break;
@@ -7317,7 +7299,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 					if(!f)
 						Error("Update single client: Broken GENERIC_CMD_RESPONSE.");
 					else
-						global::cmdp->Msg(output->c_str());
+						cmdp->Msg(output->c_str());
 					StringPool.Free(output);
 				}
 				break;
@@ -7375,7 +7357,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 					if(!f)
 						Error("Update single client: Broken GAME_MESSAGE_FORMATTED.");
 					else
-						gui->messages->AddFormattedMessage(pc, id, subtype, value);
+						game_gui->messages->AddFormattedMessage(pc, id, subtype, value);
 				}
 				break;
 			// play sound
@@ -7583,7 +7565,7 @@ void Game::WriteClientChanges(BitStreamWriter& f)
 		case NetChange::END_TRAVEL:
 			break;
 		case NetChange::ADD_NOTE:
-			f << gui->journal->GetNotes().back();
+			f << game_gui->journal->GetNotes().back();
 			break;
 		case NetChange::USE_USABLE:
 			f << c.id;
@@ -7723,7 +7705,7 @@ void Game::Client_Say(BitStreamReader& f)
 		Error("Client_Say: Broken packet.");
 	else
 	{
-		PlayerInfo* info = N.TryGetPlayer(id);
+		PlayerInfo* info = net->TryGetPlayer(id);
 		if(!info)
 			Error("Client_Say: Broken packet, missing player %d.", id);
 		else
@@ -7731,7 +7713,7 @@ void Game::Client_Say(BitStreamReader& f)
 			cstring s = Format("%s: %s", info->name.c_str(), text.c_str());
 			AddMsg(s);
 			if(game_state == GS_LEVEL)
-				gui->game_gui->AddSpeechBubble(info->u, text.c_str());
+				game_gui->level_gui->AddSpeechBubble(info->u, text.c_str());
 		}
 	}
 }
@@ -7747,7 +7729,7 @@ void Game::Client_Whisper(BitStreamReader& f)
 		Error("Client_Whisper: Broken packet.");
 	else
 	{
-		PlayerInfo* info = N.TryGetPlayer(id);
+		PlayerInfo* info = net->TryGetPlayer(id);
 		if(!info)
 			Error("Client_Whisper: Broken packet, missing player %d.", id);
 		else
@@ -7785,11 +7767,11 @@ void Game::Server_Say(BitStreamReader& f, PlayerInfo& info, Packet* packet)
 		AddMsg(str);
 
 		// przeœlij dalej
-		if(N.active_players > 2)
-			N.peer->Send(&f.GetBitStream(), MEDIUM_PRIORITY, RELIABLE, 0, packet->systemAddress, true);
+		if(net->active_players > 2)
+			net->peer->Send(&f.GetBitStream(), MEDIUM_PRIORITY, RELIABLE, 0, packet->systemAddress, true);
 
 		if(game_state == GS_LEVEL)
-			gui->game_gui->AddSpeechBubble(info.u, text.c_str());
+			game_gui->level_gui->AddSpeechBubble(info.u, text.c_str());
 	}
 }
 
@@ -7812,13 +7794,13 @@ void Game::Server_Whisper(BitStreamReader& f, PlayerInfo& info, Packet* packet)
 		else
 		{
 			// wiadomoœæ do kogoœ innego
-			PlayerInfo* info2 = N.TryGetPlayer(id);
+			PlayerInfo* info2 = net->TryGetPlayer(id);
 			if(!info2)
 				Error("Server_Whisper: Broken packet from %s to missing player %d.", info.name.c_str(), id);
 			else
 			{
 				packet->data[1] = (byte)info.id;
-				N.peer->Send((cstring)packet->data, packet->length, MEDIUM_PRIORITY, RELIABLE, 0, info2->adr, false);
+				net->peer->Send((cstring)packet->data, packet->length, MEDIUM_PRIORITY, RELIABLE, 0, info2->adr, false);
 			}
 		}
 	}
@@ -7853,7 +7835,7 @@ void Game::UpdateWarpData(float dt)
 	{
 		if((it->timer -= dt * 2) <= 0.f)
 		{
-			L.WarpUnit(it->u, it->where);
+			game_level->WarpUnit(it->u, it->where);
 
 			NetChangePlayer& c = Add1(it->u->player->player_info->changes);
 			c.type = NetChangePlayer::SET_FROZEN;
@@ -7872,36 +7854,36 @@ void Game::UpdateWarpData(float dt)
 //=================================================================================================
 void Game::Net_OnNewGameClient()
 {
-	DeleteElements(QM.quest_items);
+	DeleteElements(quest_mgr->quest_items);
 	devmode = default_devmode;
 	train_move = 0.f;
 	anyone_talking = false;
 	interpolate_timer = 0.f;
 	Net::changes.clear();
-	if(!N.net_strs.empty())
-		StringPool.Free(N.net_strs);
+	if(!net->net_strs.empty())
+		StringPool.Free(net->net_strs);
 	paused = false;
 	hardcore_mode = false;
-	if(!N.mp_quickload)
+	if(!net->mp_quickload)
 	{
-		gui->mp_box->Reset();
-		gui->mp_box->visible = true;
+		game_gui->mp_box->Reset();
+		game_gui->mp_box->visible = true;
 	}
 }
 
 //=================================================================================================
 void Game::Net_OnNewGameServer()
 {
-	N.active_players = 1;
-	DeleteElements(N.players);
+	net->active_players = 1;
+	DeleteElements(net->players);
 	Team.my_id = 0;
 	Team.leader_id = 0;
-	N.last_id = 0;
+	net->last_id = 0;
 	paused = false;
 	hardcore_mode = false;
 
 	PlayerInfo* info = new PlayerInfo;
-	N.players.push_back(info);
+	net->players.push_back(info);
 
 	PlayerInfo& sp = *info;
 	sp.name = player_name;
@@ -7909,7 +7891,7 @@ void Game::Net_OnNewGameServer()
 	sp.state = PlayerInfo::IN_LOBBY;
 	sp.left = PlayerInfo::LEFT_NO;
 
-	if(!N.mp_load)
+	if(!net->mp_load)
 	{
 		Unit::netid_counter = 0;
 		GroundItem::netid_counter = 0;
@@ -7921,42 +7903,42 @@ void Game::Net_OnNewGameServer()
 	}
 
 	skip_id_counter = 0;
-	N.update_timer = 0.f;
+	net->update_timer = 0.f;
 	arena->Reset();
 	anyone_talking = false;
 	mp_warps.clear();
-	if(!N.mp_load)
+	if(!net->mp_load)
 		Net::changes.clear(); // przy wczytywaniu jest czyszczone przed wczytaniem i w net_changes s¹ zapisane quest_items
-	if(!N.net_strs.empty())
-		StringPool.Free(N.net_strs);
-	gui->server->max_players = N.max_players;
-	gui->server->server_name = N.server_name;
-	gui->server->UpdateServerInfo();
-	gui->server->Show();
-	if(!N.mp_quickload)
+	if(!net->net_strs.empty())
+		StringPool.Free(net->net_strs);
+	game_gui->server->max_players = net->max_players;
+	game_gui->server->server_name = net->server_name;
+	game_gui->server->UpdateServerInfo();
+	game_gui->server->Show();
+	if(!net->mp_quickload)
 	{
-		gui->mp_box->Reset();
-		gui->mp_box->visible = true;
+		game_gui->mp_box->Reset();
+		game_gui->mp_box->visible = true;
 	}
 
-	if(!N.mp_load)
-		gui->server->CheckAutopick();
+	if(!net->mp_load)
+		game_gui->server->CheckAutopick();
 	else
 	{
 		// search for saved character
-		PlayerInfo* old = N.FindOldPlayer(player_name.c_str());
+		PlayerInfo* old = net->FindOldPlayer(player_name.c_str());
 		if(old)
 		{
 			sp.devmode = old->devmode;
 			sp.clas = old->clas;
 			sp.hd.CopyFrom(old->hd);
 			sp.loaded = true;
-			gui->server->UseLoadedCharacter(true);
+			game_gui->server->UseLoadedCharacter(true);
 		}
 		else
 		{
-			gui->server->UseLoadedCharacter(false);
-			gui->server->CheckAutopick();
+			game_gui->server->UseLoadedCharacter(false);
+			game_gui->server->CheckAutopick();
 		}
 	}
 
@@ -7983,7 +7965,7 @@ int Game::ReadItemAndFind(BitStreamReader& f, const Item*& item) const
 		if(!f)
 			return -2;
 
-		item = QM.FindQuestItemClient(item_id.c_str(), quest_refid);
+		item = quest_mgr->FindQuestItemClient(item_id.c_str(), quest_refid);
 		if(!item)
 		{
 			Warn("Missing quest item '%s' (%d).", item_id.c_str(), quest_refid);
@@ -8008,7 +7990,7 @@ int Game::ReadItemAndFind(BitStreamReader& f, const Item*& item) const
 //=================================================================================================
 bool Game::CheckMoveNet(Unit& unit, const Vec3& pos)
 {
-	L.global_col.clear();
+	game_level->global_col.clear();
 
 	const float radius = unit.GetUnitRadius();
 	Level::IgnoreObjects ignore = { 0 };
@@ -8019,21 +8001,21 @@ bool Game::CheckMoveNet(Unit& unit, const Vec3& pos)
 	ignore.ignored_units = (const Unit**)ignored;
 	ignore.ignored_objects = ignored_objects;
 
-	L.GatherCollisionObjects(*unit.area, L.global_col, pos, radius, &ignore);
+	game_level->GatherCollisionObjects(*unit.area, game_level->global_col, pos, radius, &ignore);
 
-	if(L.global_col.empty())
+	if(game_level->global_col.empty())
 		return true;
 
-	return !L.Collide(L.global_col, pos, radius);
+	return !game_level->Collide(game_level->global_col, pos, radius);
 }
 
 //=================================================================================================
 void Game::ProcessLeftPlayers()
 {
-	if(!N.players_left)
+	if(!net->players_left)
 		return;
 
-	LoopAndRemove(N.players, [this](PlayerInfo& info)
+	LoopAndRemove(net->players, [this](PlayerInfo& info)
 	{
 		if(info.left == PlayerInfo::LEFT_NO)
 			return false;
@@ -8054,8 +8036,8 @@ void Game::ProcessLeftPlayers()
 			c2.type = NetChange::CHANGE_LEADER;
 			c2.id = Team.my_id;
 
-			if(gui->world_map->dialog_enc)
-				gui->world_map->dialog_enc->bts[0].state = Button::NONE;
+			if(game_gui->world_map->dialog_enc)
+				game_gui->world_map->dialog_enc->bts[0].state = Button::NONE;
 
 			AddMsg(txYouAreLeader);
 		}
@@ -8067,7 +8049,7 @@ void Game::ProcessLeftPlayers()
 		return true;
 	});
 
-	N.players_left = false;
+	net->players_left = false;
 }
 
 //=================================================================================================
@@ -8112,12 +8094,12 @@ void Game::RemovePlayer(PlayerInfo& info)
 	RemoveElement(Team.active_members.ptrs, unit);
 	if(game_state == GS_WORLDMAP)
 	{
-		if(Net::IsLocal() && !L.is_open)
+		if(Net::IsLocal() && !game_level->is_open)
 			DeleteUnit(unit);
 	}
 	else
 	{
-		L.to_remove.push_back(unit);
+		game_level->to_remove.push_back(unit);
 		unit->to_remove = true;
 	}
 	info.u = nullptr;

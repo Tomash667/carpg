@@ -1,11 +1,10 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "GameComponent.h"
 #include "QuestHandler.h"
 
 //-----------------------------------------------------------------------------
-class Arena : public GameComponent, public QuestHandler
+class Arena : public QuestHandler
 {
 public:
 	enum Mode
@@ -41,9 +40,8 @@ public:
 		bool side;
 	};
 
-	void InitOnce() override;
-	void LoadLanguage() override;
-	void Cleanup() override { delete this; }
+	void Init();
+	void LoadLanguage();
 	void Start(Mode mode);
 	void Reset();
 	bool Special(DialogContext& ctx, cstring msg) override;

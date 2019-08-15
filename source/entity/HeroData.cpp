@@ -129,7 +129,7 @@ void HeroData::PassTime(int days, bool travel)
 	if(unit->hp != unit->hpmax)
 	{
 		float heal = 0.5f * unit->Get(AttributeId::END);
-		if(L.city_ctx && !travel)
+		if(game_level->city_ctx && !travel)
 			heal *= 2;
 		heal *= natural_mod * days;
 		heal = min(heal, unit->hpmax - unit->hp);

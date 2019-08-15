@@ -257,7 +257,7 @@ public:
 	cstring txCantSaveGame, txSaveFailed, txLoadFailed, txQuickSave, txGameSaved, txLoadingLocations, txLoadingData, txEndOfLoading, txCantSaveNow,
 		txOnlyServerCanSave, txCantLoadGame, txOnlyServerCanLoad, txLoadSignature, txLoadVersion, txLoadSaveVersionOld, txLoadMP, txLoadSP, txLoadOpenError,
 		txCantLoadMultiplayer, txTooOldVersion, txMissingPlayerInSave, txGameLoaded, txLoadError, txLoadErrorGeneric;
-	cstring txPvpRefuse, txWin, txWinMp, txLevelUp, txLevelDown, txRegeneratingLevel, txNeedItem, txGmsAddedItems;
+	cstring txPvpRefuse, txWin, txWinMp, txLevelUp, txLevelDown, txRegeneratingLevel, txNeedItem;
 	cstring txRumor[29], txRumorD[7];
 	cstring txMayorQFailed[3], txQuestAlreadyGiven[2], txMayorNoQ[2], txCaptainQFailed[2], txCaptainNoQ[2], txLocationDiscovered[2], txAllDiscovered[2],
 		txCampDiscovered[2], txAllCampDiscovered[2], txNoQRumors[2], txNeedMoreGold, txNoNearLoc, txNearLoc, txNearLocEmpty[2], txNearLocCleared,
@@ -276,19 +276,9 @@ public:
 	cstring txHaveErrors;
 
 private:
-	static Game* game;
-
 	Engine* engine;
-	Input* input;
-	Render* render;
-	SoundManager* sound_mgr;
 
 public:
-	static Game& Get()
-	{
-		return *game;
-	}
-
 	CustomCollisionWorld* phy_world;
 
 	//-----------------------------------------------------------------
@@ -396,7 +386,7 @@ public:
 	void GenerateItemImageImpl(Item& item);
 	Texture* TryGenerateItemImage(const Item& item);
 	void DrawItemImage(const Item& item, RenderTarget* target, float rot);
-	void SetupObject(ResourceManager& res_mgr, BaseObject& obj);
+	void SetupObject(BaseObject& obj);
 	void SetupCamera(float dt);
 	void LoadShaders();
 	void SetupShaders();
@@ -447,7 +437,7 @@ public:
 	bool CanShootAtLocation(const Unit& me, const Unit& target, const Vec3& pos) const { return CanShootAtLocation2(me, &target, pos); }
 	bool CanShootAtLocation(const Vec3& from, const Vec3& to) const;
 	bool CanShootAtLocation2(const Unit& me, const void* ptr, const Vec3& to) const;
-	void LoadItemsData(ResourceManager& res_mgr);
+	void LoadItemsData();
 	Unit* CreateUnitWithAI(LevelArea& area, UnitData& unit, int level = -1, Human* human_data = nullptr, const Vec3* pos = nullptr, const float* rot = nullptr, AIController** ai = nullptr);
 	void ChangeLevel(int where);
 	void ExitToMap();
@@ -666,15 +656,12 @@ public:
 	// NEW
 	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 	LocationGeneratorFactory* loc_gen_factory;
-	Pathfinding* pathfinding;
 	Arena* arena;
-	GlobalGui* gui;
 	DebugDrawer* debug_drawer;
 	GrassShader* grass_shader;
 	SuperShader* super_shader;
 	TerrainShader* terrain_shader;
 
 private:
-	vector<GameComponent*> components;
 	vector<int> reported_errors;
 };

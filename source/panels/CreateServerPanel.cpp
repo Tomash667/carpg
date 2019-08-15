@@ -5,10 +5,10 @@
 #include "Input.h"
 #include "Const.h"
 #include "Net.h"
-#include "GlobalGui.h"
+#include "GameGui.h"
 
 //=================================================================================================
-CreateServerPanel::CreateServerPanel(const DialogInfo& info) : GameDialogBox(info)
+CreateServerPanel::CreateServerPanel(const DialogInfo& info) : DialogBox(info)
 {
 	size = Int2(344, 360);
 	bts.resize(2);
@@ -84,7 +84,7 @@ void CreateServerPanel::Draw(ControlDrawData*)
 
 	// tekst
 	Rect r = { global_pos.x + 12, global_pos.y + 8, global_pos.x + size.x - 12, global_pos.y + size.y };
-	gui->DrawText(GlobalGui::font_big, txCreateServer, DTF_TOP | DTF_CENTER, Color::Black, r);
+	gui->DrawText(GameGui::font_big, txCreateServer, DTF_TOP | DTF_CENTER, Color::Black, r);
 
 	// reszta
 	cont.Draw();
@@ -136,9 +136,9 @@ void CreateServerPanel::Event(GuiEvent e)
 //=================================================================================================
 void CreateServerPanel::Show()
 {
-	textbox[0].SetText(N.server_name.c_str());
-	textbox[1].SetText(Format("%d", N.max_players));
-	textbox[2].SetText(N.password.c_str());
-	checkbox.checked = N.server_lan;
+	textbox[0].SetText(net->server_name.c_str());
+	textbox[1].SetText(Format("%d", net->max_players));
+	textbox[2].SetText(net->password.c_str());
+	checkbox.checked = net->server_lan;
 	gui->ShowDialog(this);
 }

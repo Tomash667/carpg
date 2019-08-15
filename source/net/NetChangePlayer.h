@@ -44,7 +44,6 @@ struct NetChangePlayer
 		UPDATE_TRADER_GOLD, // update trader gold [int(id)-unit gold, int(count)-count]
 		UPDATE_TRADER_INVENTORY, // update trader inventory after getting item [int(netid)-unit, ItemListTeam]
 		PLAYER_STATS, // update player statistics [byte(id)-flags, vector<int>-values]
-		ADDED_ITEMS_MSG, // message about gaining multiple items [byte(count)-count]
 		STAT_CHANGED, // player stat changed [byte(id)-ChangedStatType, byte(a)-stat id, int(count)-value]
 		ADD_PERK, // add perk to player [char(id)-perk, char(count)-value]
 		REMOVE_PERK, // remvoe perk from player [char(id)-perk, char(count)-value]

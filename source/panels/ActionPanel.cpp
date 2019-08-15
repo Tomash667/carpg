@@ -1,8 +1,8 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "ActionPanel.h"
+#include "LevelGui.h"
 #include "GameGui.h"
-#include "GlobalGui.h"
 #include "Action.h"
 #include "Language.h"
 #include "ResourceManager.h"
@@ -41,7 +41,7 @@ void ActionPanel::LoadLanguage()
 	txAbilities = s.Get("abilities");
 	txOther = s.Get("other");
 
-	Language::Section s2 = Language::GetSection("GameGui");
+	Language::Section s2 = Language::GetSection("LevelGui");
 	txMeleeWeapon = s2.Get("meleeWeapon");
 	txRangedWeapon = s2.Get("rangedWeapon");
 	txPotion = s2.Get("potion");
@@ -53,11 +53,10 @@ void ActionPanel::LoadLanguage()
 //=================================================================================================
 void ActionPanel::LoadData()
 {
-	ResourceManager& res_mgr = *app::res_mgr;
-	tItemBar = res_mgr.Load<Texture>("item_bar.png");
-	tMelee = res_mgr.Load<Texture>("sword-brandish.png");
-	tRanged = res_mgr.Load<Texture>("bow-arrow.png");
-	tPotion = res_mgr.Load<Texture>("health-potion.png");
+	tItemBar = res_mgr->Load<Texture>("item_bar.png");
+	tMelee = res_mgr->Load<Texture>("sword-brandish.png");
+	tRanged = res_mgr->Load<Texture>("bow-arrow.png");
+	tPotion = res_mgr->Load<Texture>("health-potion.png");
 }
 
 //=================================================================================================
@@ -81,7 +80,7 @@ void ActionPanel::Draw(ControlDrawData*)
 		pos.x + size.x - 16,
 		pos.y + size.y - 16
 	};
-	gui->DrawText(GlobalGui::font_big, txActions, DTF_TOP | DTF_CENTER, Color::Black, rect);
+	gui->DrawText(GameGui::font_big, txActions, DTF_TOP | DTF_CENTER, Color::Black, rect);
 
 	// abilities grid group
 	if(!actions.empty())
@@ -110,7 +109,7 @@ void ActionPanel::DrawGroup(cstring text)
 	int shift_x = pos.x + 12 + (size.x - 48) % 63 / 2;
 	int shift_y = pos.y + 48 + (size.y - 64 - 34) % 63 / 2 + grid_offset;
 
-	gui->DrawText(GlobalGui::font_big, text, DTF_LEFT, Color::Black, Rect(shift_x, shift_y, shift_x + 400, shift_y + 50));
+	gui->DrawText(GameGui::font_big, text, DTF_LEFT, Color::Black, Rect(shift_x, shift_y, shift_x + 400, shift_y + 50));
 	shift_y += 40;
 
 	for(int y = 0; y < count_h; ++y)
@@ -155,7 +154,7 @@ void ActionPanel::Update(float dt)
 		return;
 	}
 
-	if(global::gui->game_gui->IsDragAndDrop())
+	if(game_gui->level_gui->IsDragAndDrop())
 	{
 		tooltip.anything = false;
 		return;
@@ -182,7 +181,7 @@ void ActionPanel::Update(float dt)
 				icon = actions[0]->tex;
 				break;
 			}
-			global::gui->game_gui->StartDragAndDrop(Shortcut::TYPE_SPECIAL, value, icon);
+			game_gui->level_gui->StartDragAndDrop(Shortcut::TYPE_SPECIAL, value, icon);
 			drag_and_drop = false;
 		}
 		if(input->Released(Key::LeftButton))
@@ -205,7 +204,7 @@ void ActionPanel::Update(float dt)
 				if(GKey.PressedRelease((GAME_KEYS)(GK_SHORTCUT1 + i)) && group != G_NONE)
 				{
 					int value = ConvertToShortcutSpecial(group, id);
-					Game::Get().pc->SetShortcut(i, Shortcut::TYPE_SPECIAL, value);
+					game->pc->SetShortcut(i, Shortcut::TYPE_SPECIAL, value);
 				}
 			}
 		}

@@ -4,7 +4,7 @@
 #include "Game.h"
 #include "BitStreamFunc.h"
 #include "Inventory.h"
-#include "GlobalGui.h"
+#include "GameGui.h"
 #include "PlayerInfo.h"
 #include "SoundManager.h"
 
@@ -48,7 +48,7 @@ void Chest::Load(FileReader& f, bool local)
 
 	if(local)
 	{
-		mesh_inst = new MeshInstance(Game::Get().aChest);
+		mesh_inst = new MeshInstance(game->aChest);
 
 		int state = f.Read<int>();
 		if(state != 0)
@@ -70,7 +70,7 @@ void Chest::Load(FileReader& f, bool local)
 	else
 	{
 		handler = reinterpret_cast<ChestEventHandler*>(refid);
-		Game::Get().load_chest_handler.push_back(this);
+		game->load_chest_handler.push_back(this);
 	}
 }
 
@@ -90,7 +90,7 @@ bool Chest::Read(BitStreamReader& f)
 	f >> netid;
 	if(!f)
 		return false;
-	mesh_inst = new MeshInstance(Game::Get().aChest);
+	mesh_inst = new MeshInstance(game->aChest);
 	return true;
 }
 
@@ -102,7 +102,7 @@ bool Chest::AddItem(const Item* item, uint count, uint team_count, bool notify)
 	if(user && user->IsPlayer())
 	{
 		if(user->player->is_local)
-			Game::Get().gui->inventory->BuildTmpInventory(1);
+			game_gui->inventory->BuildTmpInventory(1);
 		else if(notify)
 		{
 			NetChangePlayer& c = Add1(user->player->player_info->changes);
@@ -120,14 +120,13 @@ bool Chest::AddItem(const Item* item, uint count, uint team_count, bool notify)
 //=================================================================================================
 void Chest::OpenClose(Unit* unit)
 {
-	Game& game = Game::Get();
 	if(unit)
 	{
 		// open chest by unit
 		assert(!user);
 		user = unit;
 		mesh_inst->Play(&mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END, 0);
-		app::sound_mgr->PlaySound3d(game.sChestOpen, GetCenter(), SOUND_DIST);
+		sound_mgr->PlaySound3d(game->sChestOpen, GetCenter(), SOUND_DIST);
 		if(Net::IsLocal() && handler)
 			handler->HandleChestEvent(ChestEventHandler::Opened, this);
 		if(Net::IsServer())
@@ -144,7 +143,7 @@ void Chest::OpenClose(Unit* unit)
 		assert(user);
 		user = nullptr;
 		mesh_inst->Play(&mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
-		app::sound_mgr->PlaySound3d(game.sChestClose, GetCenter(), SOUND_DIST);
+		sound_mgr->PlaySound3d(game->sChestClose, GetCenter(), SOUND_DIST);
 		if(Net::IsServer())
 		{
 			NetChange& c = Add1(Net::changes);

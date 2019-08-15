@@ -19,7 +19,7 @@ void DungeonGenerator::Generate()
 {
 	InsideLocation* inside = (InsideLocation*)loc;
 	BaseLocation& base = g_base_locations[inside->target];
-	inside->SetActiveLevel(L.dungeon_level);
+	inside->SetActiveLevel(game_level->dungeon_level);
 	if(inside->IsMultilevel())
 	{
 		MultiInsideLocation* multi = (MultiInsideLocation*)inside;
@@ -44,7 +44,7 @@ void DungeonGenerator::Generate()
 	settings.stairs_up_loc = (inside->HaveUpStairs() ? MapSettings::RANDOM : MapSettings::NONE);
 	settings.stairs_down_loc = (inside->HaveDownStairs() ? MapSettings::RANDOM : MapSettings::NONE);
 	settings.bars_chance = base.bars_chance;
-	settings.devmode = Game::Get().devmode;
+	settings.devmode = game->devmode;
 	settings.remove_dead_end_corridors = true;
 
 	if(inside->type == L_CRYPT && !inside->HaveDownStairs())
@@ -74,7 +74,7 @@ void DungeonGenerator::Generate()
 		lvl.rooms.push_back(room);
 		settings.stairs_up_loc = MapSettings::FAR_FROM_ROOM;
 	}
-	else if(L.location_index == QM.quest_secret->where && QM.quest_secret->state == Quest_Secret::SECRET_DROPPED_STONE && !inside->HaveDownStairs())
+	else if(game_level->location_index == quest_mgr->quest_secret->where && quest_mgr->quest_secret->state == Quest_Secret::SECRET_DROPPED_STONE && !inside->HaveDownStairs())
 	{
 		// secret
 		Room* room = Room::Get();
@@ -87,13 +87,13 @@ void DungeonGenerator::Generate()
 		lvl.rooms.push_back(room);
 		settings.stairs_up_loc = MapSettings::FAR_FROM_ROOM;
 	}
-	else if(L.location_index == QM.quest_evil->target_loc && QM.quest_evil->evil_state == Quest_Evil::State::GeneratedCleric)
+	else if(game_level->location_index == quest_mgr->quest_evil->target_loc && quest_mgr->quest_evil->evil_state == Quest_Evil::State::GeneratedCleric)
 	{
 		// schody w krypcie 0 jak najdalej od œrodka
 		settings.stairs_up_loc = MapSettings::FAR_FROM_ROOM;
 	}
 
-	if(QM.quest_orcs2->orcs_state == Quest_Orcs2::State::Accepted && L.location_index == QM.quest_orcs->target_loc && dungeon_level == L.location->GetLastLevel())
+	if(quest_mgr->quest_orcs2->orcs_state == Quest_Orcs2::State::Accepted && game_level->location_index == quest_mgr->quest_orcs->target_loc && dungeon_level == game_level->location->GetLastLevel())
 	{
 		// search for room for cell
 		settings.stop = true;
@@ -246,15 +246,15 @@ void DungeonGenerator::GenerateObjects()
 //=================================================================================================
 void DungeonGenerator::GenerateUnits()
 {
-	if(L.location->group->IsEmpty())
+	if(game_level->location->group->IsEmpty())
 		return;
 
 	UnitGroup* group = GetGroup();
 	int base_level;
-	if(L.location->group->IsChallange())
-		base_level = L.location->st; // all levels have max st
+	if(game_level->location->group->IsChallange())
+		base_level = game_level->location->st; // all levels have max st
 	else
-		base_level = L.GetDifficultyLevel();
+		base_level = game_level->GetDifficultyLevel();
 
 	Pooled<TmpUnitGroup> tmp;
 	tmp->Fill(group, base_level);
@@ -272,7 +272,7 @@ void DungeonGenerator::GenerateUnits()
 	const int chance[3] = { chance_for_none, chance_for_none + chance_for_1, chance_for_none + chance_for_1 + chance_for_2 };
 
 	// spawn units
-	InsideLocation* inside = (InsideLocation*)L.location;
+	InsideLocation* inside = (InsideLocation*)game_level->location;
 	InsideLocationLevel& lvl = inside->GetLevelData();
 	Int2 down_stairs_pt = lvl.staircase_down;
 	if(!inside->HaveDownStairs())
@@ -319,7 +319,7 @@ void DungeonGenerator::GenerateUnits()
 		for(TmpUnitGroup::Spawn& spawn : tmp->Roll(base_level, count))
 		{
 			Room& room = *lvl.rooms[RandomItem(group.rooms)];
-			L.SpawnUnitInsideRoom(room, *spawn.first, spawn.second, excluded_pt, down_stairs_pt);
+			game_level->SpawnUnitInsideRoom(room, *spawn.first, spawn.second, excluded_pt, down_stairs_pt);
 		}
 	}
 }
@@ -364,17 +364,17 @@ void DungeonGenerator::GenerateDungeonItems()
 	bool spawn_golden_cup = Rand() % 100 == 0;
 
 	// spawn food
-	LevelArea& area = *L.local_area;
+	LevelArea& area = *game_level->local_area;
 	for(vector<Object*>::iterator it = area.objects.begin(), end = area.objects.end(); it != end; ++it)
 	{
 		Object& obj = **it;
 		if(obj.base == table)
 		{
-			L.PickableItemBegin(area, obj);
+			game_level->PickableItemBegin(area, obj);
 			if(spawn_golden_cup)
 			{
 				spawn_golden_cup = false;
-				L.PickableItemAdd(Item::Get("golden_cup"));
+				game_level->PickableItemAdd(Item::Get("golden_cup"));
 			}
 			else
 			{
@@ -382,22 +382,22 @@ void DungeonGenerator::GenerateDungeonItems()
 				if(count)
 				{
 					for(int i = 0; i < count; ++i)
-						L.PickableItemAdd(lis.Get());
+						game_level->PickableItemAdd(lis.Get());
 				}
 			}
 			if(Rand() % 3 == 0)
-				L.PickableItemAdd(plate);
+				game_level->PickableItemAdd(plate);
 			if(Rand() % 3 == 0)
-				L.PickableItemAdd(cup);
+				game_level->PickableItemAdd(cup);
 		}
 		else if(obj.base == shelves)
 		{
 			int count = Random(mod, mod * 3 / 2);
 			if(count)
 			{
-				L.PickableItemBegin(area, obj);
+				game_level->PickableItemBegin(area, obj);
 				for(int i = 0; i < count; ++i)
-					L.PickableItemAdd(lis.Get());
+					game_level->PickableItemAdd(lis.Get());
 			}
 		}
 	}

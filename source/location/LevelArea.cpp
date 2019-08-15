@@ -817,8 +817,8 @@ ForLocation::ForLocation(int loc, int level)
 	ctx = LevelAreaContextPool.Get();
 	ctx->entries.clear();
 
-	bool active = (W.GetCurrentLocationIndex() == loc);
-	Location* l = W.GetLocation(loc);
+	bool active = (world->GetCurrentLocationIndex() == loc);
+	Location* l = world->GetLocation(loc);
 	assert(l->last_visit != -1);
 
 	switch(l->type)
@@ -876,7 +876,7 @@ ForLocation::ForLocation(int loc, int level)
 					for(int i = 0; i < multi->generated; ++i)
 					{
 						LevelAreaContext::Entry& e = ctx->entries[i];
-						e.active = (active && L.dungeon_level == i);
+						e.active = (active && game_level->dungeon_level == i);
 						e.area = multi->levels[i];
 						e.level = i;
 						e.loc = loc;
@@ -886,7 +886,7 @@ ForLocation::ForLocation(int loc, int level)
 				{
 					assert(level >= 0 && level < multi->generated);
 					LevelAreaContext::Entry& e = Add1(ctx->entries);
-					e.active = (active && L.dungeon_level == level);
+					e.active = (active && game_level->dungeon_level == level);
 					e.area = multi->levels[level];
 					e.level = level;
 					e.loc = loc;
@@ -956,13 +956,12 @@ GroundItem* LevelAreaContext::FindQuestGroundItem(int quest_refid, LevelAreaCont
 // search only alive enemies for now
 Unit* LevelAreaContext::FindUnitWithQuestItem(int quest_refid, LevelAreaContext::Entry** entry, int* unit_index, int* item_iindex)
 {
-	Game& game = Game::Get();
 	for(LevelAreaContext::Entry& e : entries)
 	{
 		for(int i = 0, len = (int)e.area->units.size(); i < len; ++i)
 		{
 			Unit* unit = e.area->units[i];
-			if(unit->IsAlive() && unit->IsEnemy(*game.pc->unit))
+			if(unit->IsAlive() && unit->IsEnemy(*game->pc->unit))
 			{
 				int iindex = unit->FindQuestItem(quest_refid);
 				if(iindex != Unit::INVALID_IINDEX)
@@ -1102,7 +1101,7 @@ bool LevelAreaContext::RemoveUnit(Unit* unit)
 		if(entry->active)
 		{
 			unit->to_remove = true;
-			L.to_remove.push_back(unit);
+			game_level->to_remove.push_back(unit);
 		}
 		else
 			RemoveElementIndex(entry->area->units, unit_index);

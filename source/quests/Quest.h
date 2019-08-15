@@ -36,7 +36,6 @@ struct Quest : public QuestHandler
 		Failed
 	};
 
-	QuestManager& quest_manager;
 	QUEST quest_id;
 	State state;
 	string name;
@@ -45,7 +44,6 @@ struct Quest : public QuestHandler
 	QuestType type;
 	vector<string> msgs;
 	bool timeout;
-	static Game* game;
 
 	Quest();
 	virtual ~Quest() {}

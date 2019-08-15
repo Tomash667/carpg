@@ -1,8 +1,9 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-struct GameStats : public Singleton<GameStats>
+class GameStats
 {
+public:
 	int total_kills;
 	// time spent playing on current save
 	int hour, minute, second;

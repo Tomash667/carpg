@@ -9,7 +9,7 @@
 #include "Portal.h"
 #include "Level.h"
 #include "SuperShader.h"
-#include "GlobalGui.h"
+#include "GameGui.h"
 #include "GameMessages.h"
 #include "ParticleSystem.h"
 #include "Render.h"
@@ -491,10 +491,10 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 	if(area.area_type == LevelArea::Type::Outside && IsSet(draw_flags, DF_TERRAIN))
 	{
 		PROFILER_BLOCK("Terrain");
-		uint parts = L.terrain->GetPartsCount();
+		uint parts = game_level->terrain->GetPartsCount();
 		for(uint i = 0; i < parts; ++i)
 		{
-			if(frustum.BoxToFrustum(L.terrain->GetPart(i)->GetBox()))
+			if(frustum.BoxToFrustum(game_level->terrain->GetPart(i)->GetBox()))
 				draw_batch.terrain_parts.push_back(i);
 		}
 	}
@@ -845,7 +845,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 				if(draw_particle_sphere)
 				{
 					DebugSceneNode* debug_node = debug_node_pool.Get();
-					debug_node->mat = Matrix::Scale(pe.radius * 2) * Matrix::Translation(pe.pos) * L.camera.matViewProj;
+					debug_node->mat = Matrix::Scale(pe.radius * 2) * Matrix::Translation(pe.pos) * game_level->camera.matViewProj;
 					debug_node->type = DebugSceneNode::Sphere;
 					debug_node->group = DebugSceneNode::ParticleRadius;
 					draw_batch.debug_nodes.push_back(debug_node);
@@ -870,10 +870,10 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 	// portals
 	if(IsSet(draw_flags, DF_PORTALS) && area.area_type != LevelArea::Type::Building)
 	{
-		Portal* portal = L.location->portal;
+		Portal* portal = game_level->location->portal;
 		while(portal)
 		{
-			if(L.location->outside || L.dungeon_level == portal->at_level)
+			if(game_level->location->outside || game_level->dungeon_level == portal->at_level)
 				draw_batch.portals.push_back(portal);
 			portal = portal->next_portal;
 		}
@@ -922,7 +922,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 				DebugSceneNode* node = debug_node_pool.Get();
 				node->type = type;
 				node->group = DebugSceneNode::Collider;
-				node->mat = Matrix::Scale(scale) * Matrix::RotationY(rot) * Matrix::Translation(it->pt.x, 1.f, it->pt.y) * L.camera.matViewProj;
+				node->mat = Matrix::Scale(scale) * Matrix::RotationY(rot) * Matrix::Translation(it->pt.x, 1.f, it->pt.y) * game_level->camera.matViewProj;
 				draw_batch.debug_nodes.push_back(node);
 			}
 		}
@@ -948,7 +948,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 					DebugSceneNode* node = debug_node_pool.Get();
 					node->type = DebugSceneNode::Box;
 					node->group = DebugSceneNode::Physic;
-					node->mat = Matrix::Scale(ToVec3(box->getHalfExtentsWithMargin())) * m3 * L.camera.matViewProj;
+					node->mat = Matrix::Scale(ToVec3(box->getHalfExtentsWithMargin())) * m3 * game_level->camera.matViewProj;
 					draw_batch.debug_nodes.push_back(node);
 				}
 				break;
@@ -960,7 +960,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 					DebugSceneNode* node = debug_node_pool.Get();
 					node->type = DebugSceneNode::Capsule;
 					node->group = DebugSceneNode::Physic;
-					node->mat = Matrix::Scale(r, h + r, r) * m3 * L.camera.matViewProj;
+					node->mat = Matrix::Scale(r, h + r, r) * m3 * game_level->camera.matViewProj;
 					draw_batch.debug_nodes.push_back(node);
 				}
 				break;
@@ -971,7 +971,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 					node->type = DebugSceneNode::Cylinder;
 					node->group = DebugSceneNode::Physic;
 					Vec3 v = ToVec3(cylinder->getHalfExtentsWithoutMargin());
-					node->mat = Matrix::Scale(v.x, v.y / 2, v.z) * m3 * L.camera.matViewProj;
+					node->mat = Matrix::Scale(v.x, v.y / 2, v.z) * m3 * game_level->camera.matViewProj;
 					draw_batch.debug_nodes.push_back(node);
 				}
 				break;
@@ -992,7 +992,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 							node->type = DebugSceneNode::Box;
 							node->group = DebugSceneNode::Physic;
 							compound->getChildTransform(i).getOpenGLMatrix(&m2._11);
-							node->mat = Matrix::Scale(ToVec3(box->getHalfExtentsWithMargin())) * m2 * m3 * L.camera.matViewProj;
+							node->mat = Matrix::Scale(ToVec3(box->getHalfExtentsWithMargin())) * m2 * m3 * game_level->camera.matViewProj;
 							draw_batch.debug_nodes.push_back(node);
 						}
 					}
@@ -1004,7 +1004,7 @@ void Game::ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside
 					const btBvhTriangleMeshShape* trimesh = (const btBvhTriangleMeshShape*)shape;
 					node->type = DebugSceneNode::TriMesh;
 					node->group = DebugSceneNode::Physic;
-					node->mat = m3 * L.camera.matViewProj;
+					node->mat = m3 * game_level->camera.matViewProj;
 					node->mesh_ptr = (void*)trimesh->getMeshInterface();
 					draw_batch.debug_nodes.push_back(node);
 				}
@@ -1209,7 +1209,7 @@ void Game::ListDrawObjectsUnit(LevelArea* area, FrustumPlanes& frustum, bool out
 			assert(box && box->IsBox());
 
 			DebugSceneNode* debug_node = debug_node_pool.Get();
-			debug_node->mat = box->mat * node2->mat * L.camera.matViewProj;
+			debug_node->mat = box->mat * node2->mat * game_level->camera.matViewProj;
 			debug_node->type = DebugSceneNode::Box;
 			debug_node->group = DebugSceneNode::Hitbox;
 			draw_batch.debug_nodes.push_back(debug_node);
@@ -1253,7 +1253,7 @@ void Game::ListDrawObjectsUnit(LevelArea* area, FrustumPlanes& frustum, bool out
 			assert(box && box->IsBox());
 
 			DebugSceneNode* debug_node = debug_node_pool.Get();
-			node->mat = box->mat * node2->mat * L.camera.matViewProj;
+			node->mat = box->mat * node2->mat * game_level->camera.matViewProj;
 			debug_node->type = DebugSceneNode::Box;
 			debug_node->group = DebugSceneNode::Hitbox;
 			draw_batch.debug_nodes.push_back(debug_node);
@@ -1490,7 +1490,7 @@ void Game::ListDrawObjectsUnit(LevelArea* area, FrustumPlanes& frustum, bool out
 	{
 		float h = u.GetUnitHeight() / 2;
 		DebugSceneNode* debug_node = debug_node_pool.Get();
-		debug_node->mat = Matrix::Scale(u.GetUnitRadius(), h, u.GetUnitRadius()) * Matrix::Translation(u.GetColliderPos() + Vec3(0, h, 0)) * L.camera.matViewProj;
+		debug_node->mat = Matrix::Scale(u.GetUnitRadius(), h, u.GetUnitRadius()) * Matrix::Translation(u.GetColliderPos() + Vec3(0, h, 0)) * game_level->camera.matViewProj;
 		debug_node->type = DebugSceneNode::Cylinder;
 		debug_node->group = DebugSceneNode::UnitRadius;
 		draw_batch.debug_nodes.push_back(debug_node);
@@ -1501,7 +1501,7 @@ void Game::ListDrawObjectsUnit(LevelArea* area, FrustumPlanes& frustum, bool out
 		Box box;
 		u.GetBox(box);
 		DebugSceneNode* debug_node = debug_node_pool.Get();
-		debug_node->mat = Matrix::Scale(box.SizeX() / 2, h, box.SizeZ() / 2) * Matrix::Translation(u.pos + Vec3(0, h, 0)) * L.camera.matViewProj;
+		debug_node->mat = Matrix::Scale(box.SizeX() / 2, h, box.SizeZ() / 2) * Matrix::Translation(u.pos + Vec3(0, h, 0)) * game_level->camera.matViewProj;
 		debug_node->type = DebugSceneNode::Box;
 		debug_node->group = DebugSceneNode::Hitbox;
 		draw_batch.debug_nodes.push_back(debug_node);
@@ -1520,7 +1520,7 @@ void Game::AddObjectToDrawBatch(LevelArea& area, const Object& o, FrustumPlanes&
 	else
 	{
 		node->billboard = true;
-		node->mat = Matrix::CreateLookAt(o.pos, L.camera.center);
+		node->mat = Matrix::CreateLookAt(o.pos, game_level->camera.center);
 	}
 
 	node->mesh = o.mesh;
@@ -1593,7 +1593,7 @@ void Game::AddObjectToDrawBatch(LevelArea& area, const Object& o, FrustumPlanes&
 			D3DXMatrixScaling(&m1, radius * 2);
 			D3DXMatrixTranslation(&m2, pos);
 			D3DXMatrixMultiply(&m3, &m1, &m2);
-			D3DXMatrixMultiply(&debug->mat, &m3, &L.camera.matViewProj);
+			D3DXMatrixMultiply(&debug->mat, &m3, &game_level->camera.matViewProj);
 			draw_batch.debug_nodes.push_back(debug);
 #endif
 		}
@@ -1607,11 +1607,11 @@ void Game::ListAreas(LevelArea& area)
 {
 	if(area.area_type == LevelArea::Type::Outside)
 	{
-		if(L.city_ctx)
+		if(game_level->city_ctx)
 		{
-			if(IsSet(L.city_ctx->flags, City::HaveExit))
+			if(IsSet(game_level->city_ctx->flags, City::HaveExit))
 			{
-				for(vector<EntryPoint>::const_iterator entry_it = L.city_ctx->entry_points.begin(), entry_end = L.city_ctx->entry_points.end();
+				for(vector<EntryPoint>::const_iterator entry_it = game_level->city_ctx->entry_points.begin(), entry_end = game_level->city_ctx->entry_points.end();
 					entry_it != entry_end; ++entry_it)
 				{
 					const EntryPoint& e = *entry_it;
@@ -1623,7 +1623,7 @@ void Game::ListAreas(LevelArea& area)
 				}
 			}
 
-			for(vector<InsideBuilding*>::const_iterator it = L.city_ctx->inside_buildings.begin(), end = L.city_ctx->inside_buildings.end(); it != end; ++it)
+			for(vector<InsideBuilding*>::const_iterator it = game_level->city_ctx->inside_buildings.begin(), end = game_level->city_ctx->inside_buildings.end(); it != end; ++it)
 			{
 				const InsideBuilding& ib = **it;
 				Area& a = Add1(draw_batch.areas);
@@ -1634,7 +1634,7 @@ void Game::ListAreas(LevelArea& area)
 			}
 		}
 
-		if(!L.city_ctx || !IsSet(L.city_ctx->flags, City::HaveExit))
+		if(!game_level->city_ctx || !IsSet(game_level->city_ctx->flags, City::HaveExit))
 		{
 			const float H1 = -10.f;
 			const float H2 = 30.f;
@@ -1679,7 +1679,7 @@ void Game::ListAreas(LevelArea& area)
 	}
 	else if(area.area_type == LevelArea::Type::Inside)
 	{
-		InsideLocation* inside = static_cast<InsideLocation*>(L.location);
+		InsideLocation* inside = static_cast<InsideLocation*>(game_level->location);
 		InsideLocationLevel& lvl = inside->GetLevelData();
 
 		if(inside->HaveUpStairs())
@@ -1799,7 +1799,7 @@ void Game::PrepareAreaPath()
 
 		float len = action.area_size.x * t;
 
-		if(L.location->outside && pc->unit->area->area_type == LevelArea::Type::Outside)
+		if(game_level->location->outside && pc->unit->area->area_type == LevelArea::Type::Outside)
 		{
 			// build line on terrain
 			area.points.clear();
@@ -1813,7 +1813,7 @@ void Game::PrepareAreaPath()
 			Matrix mat = Matrix::RotationY(rot);
 			for(int i = 0; i < steps; ++i)
 			{
-				float current_h = L.terrain->GetH(active_pos) + h;
+				float current_h = game_level->terrain->GetH(active_pos) + h;
 				area.points.push_back(Vec3::Transform(Vec3(-action.area_size.y, current_h, active_step), mat) + unit_offset);
 				area.points.push_back(Vec3::Transform(Vec3(+action.area_size.y, current_h, active_step), mat) + unit_offset);
 
@@ -1862,7 +1862,7 @@ void Game::PrepareAreaPath()
 		const float radius = action.area_size.x / 2;
 		const float unit_r = pc->unit->GetUnitRadius();
 
-		float range = (Clamp(L.camera.rot.y, cam_min, cam_max) - cam_min) / (cam_max - cam_min) * action.area_size.y;
+		float range = (Clamp(game_level->camera.rot.y, cam_min, cam_max) - cam_min) / (cam_max - cam_min) * action.area_size.y;
 		if(range < radius + unit_r)
 			range = radius + unit_r;
 		const float min_t = action.area_size.x / range / 2;
@@ -1898,8 +1898,8 @@ void Game::PrepareAreaPath()
 		float t, end_t;
 		Vec3 dir_normal(sin(rot), 0, cos(rot));
 		Vec3 dir = dir_normal * range;
-		LineTest(L.shape_summon, from, dir, clbk, t, &t_forward, true, &end_t);
-		LineTest(L.shape_summon, from + dir, -dir, clbk, t, &t_backward);
+		LineTest(game_level->shape_summon, from, dir, clbk, t, &t_forward, true, &end_t);
+		LineTest(game_level->shape_summon, from + dir, -dir, clbk, t, &t_backward);
 
 		// merge t's to find free spots, we only use last one
 		static vector<pair<float, bool>> t_merged;
@@ -1980,7 +1980,7 @@ void Game::PrepareAreaPath()
 			pc_data.action_ok = true;
 		}
 
-		bool outside = (L.location->outside && pc->unit->area->area_type == LevelArea::Type::Outside);
+		bool outside = (game_level->location->outside && pc->unit->area->area_type == LevelArea::Type::Outside);
 
 		// build circle
 		PrepareAreaPathCircle(area, radius, t * range, rot, outside);
@@ -2019,7 +2019,7 @@ void Game::PrepareAreaPathCircle(Area2& area, float radius, float range, float r
 	{
 		area.points[i] = Vec3::Transform(area.points[i], mat) + pc->unit->pos;
 		if(outside)
-			area.points[i].y = L.terrain->GetH(area.points[i]) + h;
+			area.points[i].y = game_level->terrain->GetH(area.points[i]) + h;
 	}
 
 	area.faces.clear();
@@ -2034,7 +2034,7 @@ void Game::PrepareAreaPathCircle(Area2& area, float radius, float range, float r
 //=================================================================================================
 void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 {
-	InsideLocation* inside = static_cast<InsideLocation*>(L.location);
+	InsideLocation* inside = static_cast<InsideLocation*>(game_level->location);
 	InsideLocationLevel& lvl = inside->GetLevelData();
 	BaseLocation& base = g_base_locations[inside->target];
 	Box box;
@@ -2077,7 +2077,7 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 						continue;
 
 					// ustaw œwiat³a
-					range[0] = range[1] = range[2] = L.camera.draw_range;
+					range[0] = range[1] = range[2] = game_level->camera.draw_range;
 					light[0] = light[1] = light[2] = nullptr;
 
 					float dx = 2.f*(room->pos.x + x) + 1.f;
@@ -2141,7 +2141,7 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 					int matrix_id = draw_batch.matrices.size();
 					NodeMatrix& m = Add1(draw_batch.matrices);
 					m.matWorld = Matrix::Translation(2.f*(room->pos.x + x), 0, 2.f*(room->pos.y + y));
-					m.matCombined = m.matWorld * L.camera.matViewProj;
+					m.matCombined = m.matWorld * game_level->camera.matViewProj;
 
 					int tex_id = (IsSet(tile.flags, Tile::F_SECOND_TEXTURE) ? 1 : 0);
 
@@ -2263,7 +2263,7 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 			if(!frustum.BoxToFrustum(box))
 				continue;
 
-			range[0] = range[1] = range[2] = L.camera.draw_range;
+			range[0] = range[1] = range[2] = game_level->camera.draw_range;
 			light[0] = light[1] = light[2] = nullptr;
 
 			float dx = 2.f*it->x + 1.f;
@@ -2327,7 +2327,7 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 			int matrix_id = draw_batch.matrices.size();
 			NodeMatrix& m = Add1(draw_batch.matrices);
 			m.matWorld = Matrix::Translation(2.f*it->x, 0, 2.f*it->y);
-			m.matCombined = m.matWorld * L.camera.matViewProj;
+			m.matCombined = m.matWorld * game_level->camera.matViewProj;
 
 			int tex_id = (IsSet(tile.flags, Tile::F_SECOND_TEXTURE) ? 1 : 0);
 
@@ -2509,7 +2509,7 @@ int Game::GatherDrawBatchLights(LevelArea& area, SceneNode* node, float x, float
 	float range[3], dist;
 
 	light[0] = light[1] = light[2] = nullptr;
-	range[0] = range[1] = range[2] = L.camera.draw_range;
+	range[0] = range[1] = range[2] = game_level->camera.draw_range;
 
 	if(area.masks.empty())
 	{
@@ -2931,7 +2931,7 @@ void Game::DrawGlowingNodes(bool use_postfx)
 			glow_color = Vec4(1, 1, 1, 1);
 
 		// ustawienia shadera
-		m1 = glow.node->mat * L.camera.matViewProj;
+		m1 = glow.node->mat * game_level->camera.matViewProj;
 		V(eGlow->SetMatrix(hGlowCombined, (D3DXMATRIX*)&m1));
 		V(eGlow->SetVector(hGlowColor, (D3DXVECTOR4*)&glow_color));
 		V(eGlow->CommitChanges());
@@ -3128,7 +3128,7 @@ void Game::DrawSkybox()
 	render->SetNoZWrite(true);
 
 	uint passes;
-	m2 = Matrix::Translation(L.camera.center) * L.camera.matViewProj;
+	m2 = Matrix::Translation(game_level->camera.center) * game_level->camera.matViewProj;
 
 	V(device->SetVertexDeclaration(render->GetVertexDeclaration(aSkybox->vertex_decl)));
 	V(device->SetStreamSource(0, aSkybox->vb, 0, aSkybox->vertex_size));
@@ -3153,10 +3153,10 @@ void Game::DrawSkybox()
 //=================================================================================================
 void Game::DrawTerrain(const vector<uint>& parts)
 {
-	terrain_shader->SetCamera(L.camera);
-	terrain_shader->SetFog(L.GetFogColor(), L.GetFogParams());
-	terrain_shader->SetLight(L.GetLightDir(), L.GetLightColor(), L.GetAmbientColor());
-	terrain_shader->Draw(L.terrain, parts);
+	terrain_shader->SetCamera(game_level->camera);
+	terrain_shader->SetFog(game_level->GetFogColor(), game_level->GetFogParams());
+	terrain_shader->SetLight(game_level->GetLightDir(), game_level->GetLightColor(), game_level->GetAmbientColor());
+	terrain_shader->Draw(game_level->terrain, parts);
 }
 
 //=================================================================================================
@@ -3193,16 +3193,16 @@ void Game::DrawDungeon(const vector<DungeonPart>& parts, const vector<Lights>& l
 				V(e->EndPass());
 				V(e->End());
 			}
-			e = super_shader->GetShader(super_shader->GetShaderId(false, true, L.cl_fog, cl_specularmap && dp.tp->specular != nullptr,
-				cl_normalmap && dp.tp->normal != nullptr, L.cl_lighting, false));
+			e = super_shader->GetShader(super_shader->GetShaderId(false, true, game_level->cl_fog, cl_specularmap && dp.tp->specular != nullptr,
+				cl_normalmap && dp.tp->normal != nullptr, game_level->cl_lighting, false));
 			if(first)
 			{
 				first = false;
 				V(e->SetVector(super_shader->hTint, (D3DXVECTOR4*)&Vec4(1, 1, 1, 1)));
-				V(e->SetVector(super_shader->hAmbientColor, (D3DXVECTOR4*)&L.GetAmbientColor()));
-				V(e->SetVector(super_shader->hFogColor, (D3DXVECTOR4*)&L.GetFogColor()));
-				V(e->SetVector(super_shader->hFogParams, (D3DXVECTOR4*)&L.GetFogParams()));
-				V(e->SetVector(super_shader->hCameraPos, (D3DXVECTOR4*)&L.camera.center));
+				V(e->SetVector(super_shader->hAmbientColor, (D3DXVECTOR4*)&game_level->GetAmbientColor()));
+				V(e->SetVector(super_shader->hFogColor, (D3DXVECTOR4*)&game_level->GetFogColor()));
+				V(e->SetVector(super_shader->hFogParams, (D3DXVECTOR4*)&game_level->GetFogParams()));
+				V(e->SetVector(super_shader->hCameraPos, (D3DXVECTOR4*)&game_level->camera.center));
 				V(e->SetVector(super_shader->hSpecularColor, (D3DXVECTOR4*)&Vec4(1, 1, 1, 1)));
 				V(e->SetFloat(super_shader->hSpecularIntensity, 0.2f));
 				V(e->SetFloat(super_shader->hSpecularHardness, 10));
@@ -3246,18 +3246,18 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 
 	render->SetAlphaBlend(false);
 
-	Vec4 fogColor = L.GetFogColor();
-	Vec4 fogParams = L.GetFogParams();
-	Vec4 lightDir = L.GetLightDir();
-	Vec4 lightColor = L.GetLightColor();
-	Vec4 ambientColor = L.GetAmbientColor();
+	Vec4 fogColor = game_level->GetFogColor();
+	Vec4 fogParams = game_level->GetFogParams();
+	Vec4 lightDir = game_level->GetLightDir();
+	Vec4 lightColor = game_level->GetLightColor();
+	Vec4 ambientColor = game_level->GetAmbientColor();
 
 	// setup effect
 	ID3DXEffect* e = super_shader->GetEffect();
 	V(e->SetVector(super_shader->hAmbientColor, (D3DXVECTOR4*)&ambientColor));
 	V(e->SetVector(super_shader->hFogColor, (D3DXVECTOR4*)&fogColor));
 	V(e->SetVector(super_shader->hFogParams, (D3DXVECTOR4*)&fogParams));
-	V(e->SetVector(super_shader->hCameraPos, (D3DXVECTOR4*)&L.camera.center));
+	V(e->SetVector(super_shader->hCameraPos, (D3DXVECTOR4*)&game_level->camera.center));
 	if(outside)
 	{
 		V(e->SetVector(super_shader->hLightDir, (D3DXVECTOR4*)&lightDir));
@@ -3277,7 +3277,7 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 		if(!mesh.IsLoaded())
 		{
 			ReportError(10, Format("Drawing not loaded mesh '%s'.", mesh.filename));
-			app::res_mgr->Load(const_cast<Mesh*>(&mesh));
+			res_mgr->Load(const_cast<Mesh*>(&mesh));
 			break;
 		}
 
@@ -3294,11 +3294,11 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 			e = super_shader->GetShader(super_shader->GetShaderId(
 				IsSet(node->flags, SceneNode::F_ANIMATED),
 				IsSet(node->flags, SceneNode::F_BINORMALS),
-				L.cl_fog,
+				game_level->cl_fog,
 				cl_specularmap && IsSet(node->flags, SceneNode::F_SPECULAR_MAP),
 				cl_normalmap && IsSet(node->flags, SceneNode::F_NORMAL_MAP),
-				L.cl_lighting && !outside,
-				L.cl_lighting && outside));
+				game_level->cl_lighting && !outside,
+				game_level->cl_lighting && outside));
 			D3DXHANDLE tech;
 			V(e->FindNextValidTechnique(nullptr, &tech));
 			V(e->SetTechnique(tech));
@@ -3310,9 +3310,9 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 
 		// ustaw parametry shadera
 		if(!node->billboard)
-			m1 = node->mat * L.camera.matViewProj;
+			m1 = node->mat * game_level->camera.matViewProj;
 		else
-			m1 = node->mat.Inverse() * L.camera.matViewProj;
+			m1 = node->mat.Inverse() * game_level->camera.matViewProj;
 		V(e->SetMatrix(super_shader->hMatCombined, (D3DXMATRIX*)&m1));
 		V(e->SetMatrix(super_shader->hMatWorld, (D3DXMATRIX*)&node->mat));
 		V(e->SetVector(super_shader->hTint, (D3DXVECTOR4*)&node->tint));
@@ -3448,12 +3448,12 @@ void Game::DrawDebugNodes(const vector<DebugSceneNode*>& nodes)
 		{
 			btTriangleIndexVertexArray* mesh = (btTriangleIndexVertexArray*)node.mesh_ptr;
 			// currently only dungeon mesh is supported here
-			assert(mesh == L.dungeon_shape_data);
+			assert(mesh == game_level->dungeon_shape_data);
 			V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_POS)));
 			V(eMesh->CommitChanges());
 
-			V(device->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, L.dungeon_shape_pos.size(), L.dungeon_shape_index.size() / 3, L.dungeon_shape_index.data(),
-				D3DFMT_INDEX32, L.dungeon_shape_pos.data(), sizeof(Vec3)));
+			V(device->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, game_level->dungeon_shape_pos.size(), game_level->dungeon_shape_index.size() / 3, game_level->dungeon_shape_index.data(),
+				D3DFMT_INDEX32, game_level->dungeon_shape_pos.data(), sizeof(Vec3)));
 		}
 		else
 		{
@@ -3486,7 +3486,7 @@ void Game::DrawBloods(bool outside, const vector<Blood*>& bloods, const vector<L
 	render->SetNoZWrite(true);
 
 	ID3DXEffect* e = super_shader->GetShader(
-		super_shader->GetShaderId(false, false, L.cl_fog, false, false, !outside && L.cl_lighting, outside && L.cl_lighting));
+		super_shader->GetShaderId(false, false, game_level->cl_fog, false, false, !outside && game_level->cl_lighting, outside && game_level->cl_lighting));
 	V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_DEFAULT)));
 	V(e->SetVector(super_shader->hTint, (D3DXVECTOR4*)&Vec4(1, 1, 1, 1)));
 
@@ -3551,7 +3551,7 @@ void Game::DrawBloods(bool outside, const vector<Blood*>& bloods, const vector<L
 
 		// setup shader
 		m1 = Matrix::Translation(blood.pos);
-		m2 = m1 * L.camera.matViewProj;
+		m2 = m1 * game_level->camera.matViewProj;
 		V(e->SetMatrix(super_shader->hMatCombined, (D3DXMATRIX*)&m2));
 		V(e->SetMatrix(super_shader->hMatWorld, (D3DXMATRIX*)&m1));
 		V(e->SetTexture(super_shader->hTexDiffuse, tKrewSlad[blood.type]->tex));
@@ -3583,16 +3583,16 @@ void Game::DrawBillboards(const vector<Billboard>& billboards)
 
 	uint passes;
 	V(eParticle->SetTechnique(techParticle));
-	V(eParticle->SetMatrix(hParticleCombined, (D3DXMATRIX*)&L.camera.matViewProj));
+	V(eParticle->SetMatrix(hParticleCombined, (D3DXMATRIX*)&game_level->camera.matViewProj));
 	V(eParticle->Begin(&passes, 0));
 	V(eParticle->BeginPass(0));
 
 	for(vector<Billboard>::const_iterator it = billboards.begin(), end = billboards.end(); it != end; ++it)
 	{
-		L.camera.matViewInv._41 = it->pos.x;
-		L.camera.matViewInv._42 = it->pos.y;
-		L.camera.matViewInv._43 = it->pos.z;
-		m1 = Matrix::Scale(it->size) * L.camera.matViewInv;
+		game_level->camera.matViewInv._41 = it->pos.x;
+		game_level->camera.matViewInv._42 = it->pos.y;
+		game_level->camera.matViewInv._43 = it->pos.z;
+		m1 = Matrix::Scale(it->size) * game_level->camera.matViewInv;
 
 		for(int i = 0; i < 4; ++i)
 			billboard_v[i].pos = Vec3::Transform(billboard_ext[i], m1);
@@ -3640,7 +3640,7 @@ void Game::DrawExplosions(const vector<Explo*>& explos)
 			V(eMesh->SetTexture(hMeshTex, last_tex));
 		}
 
-		m1 = Matrix::Scale(e.size) * Matrix::Translation(e.pos) * L.camera.matViewProj;
+		m1 = Matrix::Scale(e.size) * Matrix::Translation(e.pos) * game_level->camera.matViewProj;
 		tint.w = 1.f - e.size / e.sizemax;
 
 		V(eMesh->SetMatrix(hMeshCombined, (D3DXMATRIX*)&m1));
@@ -3669,7 +3669,7 @@ void Game::DrawParticles(const vector<ParticleEmitter*>& pes)
 
 	uint passes;
 	V(eParticle->SetTechnique(techParticle));
-	V(eParticle->SetMatrix(hParticleCombined, (D3DXMATRIX*)&L.camera.matViewProj));
+	V(eParticle->SetMatrix(hParticleCombined, (D3DXMATRIX*)&game_level->camera.matViewProj));
 	V(eParticle->Begin(&passes, 0));
 	V(eParticle->BeginPass(0));
 
@@ -3697,10 +3697,10 @@ void Game::DrawParticles(const vector<ParticleEmitter*>& pes)
 			if(!p.exists)
 				continue;
 
-			L.camera.matViewInv._41 = p.pos.x;
-			L.camera.matViewInv._42 = p.pos.y;
-			L.camera.matViewInv._43 = p.pos.z;
-			m1 = Matrix::Scale(pe.GetScale(p)) * L.camera.matViewInv;
+			game_level->camera.matViewInv._41 = p.pos.x;
+			game_level->camera.matViewInv._42 = p.pos.y;
+			game_level->camera.matViewInv._43 = p.pos.z;
+			m1 = Matrix::Scale(pe.GetScale(p)) * game_level->camera.matViewInv;
 
 			const Vec4 color(1.f, 1.f, 1.f, pe.GetAlpha(p));
 
@@ -3779,7 +3779,7 @@ void Game::DrawTrailParticles(const vector<TrailParticleEmitter*>& tpes)
 
 	uint passes;
 	V(eParticle->SetTechnique(techTrail));
-	V(eParticle->SetMatrix(hParticleCombined, (D3DXMATRIX*)&L.camera.matViewProj));
+	V(eParticle->SetMatrix(hParticleCombined, (D3DXMATRIX*)&game_level->camera.matViewProj));
 	V(eParticle->Begin(&passes, 0));
 	V(eParticle->BeginPass(0));
 
@@ -3844,7 +3844,7 @@ void Game::DrawLightings(const vector<Electro*>& electros)
 	uint passes;
 	V(eParticle->SetTechnique(techParticle));
 	V(eParticle->SetTexture(hParticleTex, tLightingLine->tex));
-	V(eParticle->SetMatrix(hParticleCombined, (D3DXMATRIX*)&L.camera.matViewProj));
+	V(eParticle->SetMatrix(hParticleCombined, (D3DXMATRIX*)&game_level->camera.matViewProj));
 	V(eParticle->Begin(&passes, 0));
 	V(eParticle->BeginPass(0));
 
@@ -3873,11 +3873,11 @@ void Game::DrawLightings(const vector<Electro*>& electros)
 				continue;
 
 			// startowy punkt
-			L.camera.matViewInv._41 = it2->pts.front().x;
-			L.camera.matViewInv._42 = it2->pts.front().y;
-			L.camera.matViewInv._43 = it2->pts.front().z;
+			game_level->camera.matViewInv._41 = it2->pts.front().x;
+			game_level->camera.matViewInv._42 = it2->pts.front().y;
+			game_level->camera.matViewInv._43 = it2->pts.front().z;
 			m2 = Matrix::Scale(0.1f);
-			m1 = m2 * L.camera.matViewInv;
+			m1 = m2 * game_level->camera.matViewInv;
 
 			for(int i = 0; i < 2; ++i)
 				prev[i] = Vec3::Transform(pos[i], m1);
@@ -3887,10 +3887,10 @@ void Game::DrawLightings(const vector<Electro*>& electros)
 			for(int j = 1; j < count; ++j)
 			{
 				// nastêpny punkt
-				L.camera.matViewInv._41 = it2->pts[j].x;
-				L.camera.matViewInv._42 = it2->pts[j].y;
-				L.camera.matViewInv._43 = it2->pts[j].z;
-				m1 = m2 * L.camera.matViewInv;
+				game_level->camera.matViewInv._41 = it2->pts[j].x;
+				game_level->camera.matViewInv._42 = it2->pts[j].y;
+				game_level->camera.matViewInv._43 = it2->pts[j].z;
+				m1 = m2 * game_level->camera.matViewInv;
 
 				for(int i = 0; i < 2; ++i)
 					next[i] = Vec3::Transform(pos[i], m1);
@@ -3956,7 +3956,7 @@ void Game::DrawStunEffects(const vector<StunEffect>& stuns)
 	for(auto& stun : stuns)
 	{
 		matWorld = Matrix::RotationY(stun.time * 3) * Matrix::Translation(stun.pos);
-		V(eMesh->SetMatrix(hMeshCombined, (D3DXMATRIX*)&(matWorld * L.camera.matViewProj)));
+		V(eMesh->SetMatrix(hMeshCombined, (D3DXMATRIX*)&(matWorld * game_level->camera.matViewProj)));
 		V(eMesh->SetMatrix(hMeshWorld, (D3DXMATRIX*)&matWorld));
 
 		for(int i = 0; i < mesh.head.n_subs; ++i)
@@ -3988,7 +3988,7 @@ void Game::DrawPortals(const vector<Portal*>& portals)
 	V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_PARTICLE)));
 	V(eParticle->SetTechnique(techParticle));
 	V(eParticle->SetTexture(hParticleTex, tPortal->tex));
-	V(eParticle->SetMatrix(hParticleCombined, (D3DXMATRIX*)&L.camera.matViewProj));
+	V(eParticle->SetMatrix(hParticleCombined, (D3DXMATRIX*)&game_level->camera.matViewProj));
 	V(eParticle->Begin(&passes, 0));
 	V(eParticle->BeginPass(0));
 
@@ -3997,7 +3997,7 @@ void Game::DrawPortals(const vector<Portal*>& portals)
 		const Portal& portal = **it;
 		m2 = Matrix::Rotation(0, portal.rot, -portal_anim * PI * 2)
 			* Matrix::Translation(portal.pos + Vec3(0, 0.67f + 0.305f, 0))
-			* L.camera.matViewProj;
+			* game_level->camera.matViewProj;
 		V(eParticle->SetMatrix(hParticleCombined, (D3DXMATRIX*)&m2));
 		V(eParticle->CommitChanges());
 		V(device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, portal_v, sizeof(VParticle)));
@@ -4020,7 +4020,7 @@ void Game::DrawAreas(const vector<Area>& areas, float range, const vector<Area2*
 	V(device->SetVertexDeclaration(render->GetVertexDeclaration(VDI_POS)));
 
 	V(eArea->SetTechnique(techArea));
-	V(eArea->SetMatrix(hAreaCombined, (D3DXMATRIX*)&L.camera.matViewProj));
+	V(eArea->SetMatrix(hAreaCombined, (D3DXMATRIX*)&game_level->camera.matViewProj));
 	V(eArea->SetVector(hAreaColor, (D3DXVECTOR4*)&Vec4(0, 1, 0, 0.5f)));
 	Vec4 playerPos(pc->unit->pos, 1.f);
 	playerPos.y += 0.75f;
@@ -4064,6 +4064,6 @@ void Game::DrawAreas(const vector<Area>& areas, float range, const vector<Area2*
 //=================================================================================================
 void Game::UvModChanged()
 {
-	L.terrain->uv_mod = uv_mod;
-	L.terrain->RebuildUv();
+	game_level->terrain->uv_mod = uv_mod;
+	game_level->terrain->RebuildUv();
 }

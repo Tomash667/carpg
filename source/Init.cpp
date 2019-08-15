@@ -24,7 +24,7 @@
 #include "Arena.h"
 #include "ResourceManager.h"
 #include "Building.h"
-#include "GlobalGui.h"
+#include "GameGui.h"
 #include "SaveLoadPanel.h"
 #include "DebugDrawer.h"
 #include "Item.h"
@@ -38,6 +38,7 @@
 #include "BaseUsable.h"
 #include "Engine.h"
 #include "Notifications.h"
+#include "GameStats.h"
 
 extern void HumanPredraw(void* ptr, Matrix* mat, int n);
 extern const int ITEM_IMAGE_SIZE;
@@ -46,10 +47,19 @@ extern string g_system_dir;
 //=================================================================================================
 void Game::BeforeInit()
 {
-	input = app::input;
-	render = app::render;
 	render->SetShadersDir(Format("%s/shaders", g_system_dir.c_str()));
-	sound_mgr = app::sound_mgr;
+
+	arena = new Arena;
+	cmdp = new CommandParser;
+	game_stats = new GameStats;
+	game_gui = new GameGui;
+	game_level = new Level;
+	loc_gen_factory = new LocationGeneratorFactory;
+	net = new Net;
+	pathfinding = new Pathfinding;
+	quest_mgr = new QuestManager;
+	script_mgr = new ScriptManager;
+	world = new World;
 }
 
 //=================================================================================================
@@ -93,36 +103,16 @@ void Game::PreconfigureGame()
 
 	phy_world = engine->GetPhysicsWorld();
 	engine->UnlockCursor(false);
-	engine->cam_base = &L.camera;
 
 	// set animesh callback
 	MeshInstance::Predraw = HumanPredraw;
 
-	// game components
-	pathfinding = new Pathfinding;
-	global::pathfinding = pathfinding;
-	arena = new Arena;
-	loc_gen_factory = new LocationGeneratorFactory;
-	gui = new GlobalGui;
-	global::gui = gui;
-	global::cmdp = new CommandParser;
-	components.push_back(&W);
-	components.push_back(pathfinding);
-	components.push_back(&QM);
-	components.push_back(arena);
-	components.push_back(loc_gen_factory);
-	components.push_back(gui);
-	components.push_back(&L);
-	components.push_back(&SM);
-	components.push_back(global::cmdp);
-	components.push_back(&N);
-	for(GameComponent* component : components)
-		component->Prepare();
+	game_gui->PreInit();
 
 	PreloadLanguage();
 	PreloadData();
 	CreatePlaceholderResources();
-	app::res_mgr->SetProgressCallback(ProgressCallback(gui->load_screen, &LoadScreen::SetProgressCallback));
+	res_mgr->SetProgressCallback(ProgressCallback(game_gui->load_screen, &LoadScreen::SetProgressCallback));
 }
 
 //=================================================================================================
@@ -175,18 +165,18 @@ void Game::PreloadLanguage()
 //=================================================================================================
 void Game::PreloadData()
 {
-	app::res_mgr->AddDir("data/preload");
+	res_mgr->AddDir("data/preload");
 
-	GlobalGui::font = gui->gui->CreateFont("Arial", 12, 800, 512, 2);
+	GameGui::font = game_gui->gui->CreateFont("Arial", 12, 800, 512, 2);
 
 	// loadscreen textures
-	gui->load_screen->LoadData();
+	game_gui->load_screen->LoadData();
 
 	// intro music
 	if(!sound_mgr->IsMusicDisabled())
 	{
 		Ptr<MusicTrack> track;
-		track->music = app::res_mgr->Load<Music>("Intro.ogg");
+		track->music = res_mgr->Load<Music>("Intro.ogg");
 		track->type = MusicType::Intro;
 		MusicTrack::tracks.push_back(track.Pin());
 		SetMusic(MusicType::Intro);
@@ -199,15 +189,18 @@ void Game::PreloadData()
 void Game::LoadSystem()
 {
 	Info("Game: Loading system.");
-	gui->load_screen->Setup(0.f, 0.33f, 14, txCreatingListOfFiles);
+	game_gui->load_screen->Setup(0.f, 0.33f, 14, txCreatingListOfFiles);
 
 	AddFilesystem();
-	for(GameComponent* component : components)
-		component->InitOnce();
-	gui->main_menu->UpdateCheckVersion();
+	arena->Init();
+	game_gui->Init();
+	net->Init();
+	quest_mgr->Init();
+	script_mgr->Init();
+	game_gui->main_menu->UpdateCheckVersion();
 	LoadDatafiles();
 	LoadLanguageFiles();
-	gui->load_screen->Tick(txLoadingShaders);
+	game_gui->load_screen->Tick(txLoadingShaders);
 	LoadShaders();
 	ConfigureGame();
 }
@@ -218,8 +211,8 @@ void Game::LoadSystem()
 void Game::AddFilesystem()
 {
 	Info("Game: Creating list of files.");
-	app::res_mgr->AddDir("data");
-	app::res_mgr->AddPak("data/data.pak", "KrystaliceFire");
+	res_mgr->AddDir("data");
+	res_mgr->AddPak("data/data.pak", "KrystaliceFire");
 }
 
 //=================================================================================================
@@ -238,34 +231,34 @@ void Game::LoadDatafiles()
 		switch(id)
 		{
 		case Content::Id::Items:
-			gui->load_screen->Tick(txLoadingItems);
+			game_gui->load_screen->Tick(txLoadingItems);
 			break;
 		case Content::Id::Objects:
-			gui->load_screen->Tick(txLoadingObjects);
+			game_gui->load_screen->Tick(txLoadingObjects);
 			break;
 		case Content::Id::Spells:
-			gui->load_screen->Tick(txLoadingSpells);
+			game_gui->load_screen->Tick(txLoadingSpells);
 			break;
 		case Content::Id::Dialogs:
-			gui->load_screen->Tick(txLoadingDialogs);
+			game_gui->load_screen->Tick(txLoadingDialogs);
 			break;
 		case Content::Id::Units:
-			gui->load_screen->Tick(txLoadingUnits);
+			game_gui->load_screen->Tick(txLoadingUnits);
 			break;
 		case Content::Id::Buildings:
-			gui->load_screen->Tick(txLoadingBuildings);
+			game_gui->load_screen->Tick(txLoadingBuildings);
 			break;
 		case Content::Id::Musics:
-			gui->load_screen->Tick(txLoadingMusics);
+			game_gui->load_screen->Tick(txLoadingMusics);
 			break;
 		case Content::Id::Quests:
-			gui->load_screen->Tick(txLoadingQuests);
+			game_gui->load_screen->Tick(txLoadingQuests);
 			break;
 		}
 	});
 
 	// required
-	gui->load_screen->Tick(txLoadingRequires);
+	game_gui->load_screen->Tick(txLoadingRequires);
 	LoadRequiredStats(load_errors);
 }
 
@@ -275,7 +268,7 @@ void Game::LoadDatafiles()
 void Game::LoadLanguageFiles()
 {
 	Info("Game: Loading language files.");
-	gui->load_screen->Tick(txLoadingLanguageFiles);
+	game_gui->load_screen->Tick(txLoadingLanguageFiles);
 
 	Language::LoadLanguageFiles();
 
@@ -284,7 +277,12 @@ void Game::LoadLanguageFiles()
 	NameHelper::SetHeroNames();
 	SetGameText();
 	SetStatsText();
-	N.LoadLanguage();
+	arena->LoadLanguage();
+	game_gui->LoadLanguage();
+	game_level->LoadLanguage();
+	net->LoadLanguage();
+	quest_mgr->LoadLanguage();
+	world->LoadLanguage();
 
 	txLoadGuiTextures = Str("loadGuiTextures");
 	txLoadParticles = Str("loadParticles");
@@ -295,9 +293,6 @@ void Game::LoadLanguageFiles()
 	txLoadMusic = Str("loadMusic");
 	txGenerateWorld = Str("generateWorld");
 	txHaveErrors = Str("haveErrors");
-
-	for(GameComponent* component : components)
-		component->LoadLanguage();
 }
 
 //=================================================================================================
@@ -306,10 +301,10 @@ void Game::LoadLanguageFiles()
 void Game::ConfigureGame()
 {
 	Info("Game: Configuring game.");
-	gui->load_screen->Tick(txConfiguringGame);
+	game_gui->load_screen->Tick(txConfiguringGame);
 
 	InitScene();
-	global::cmdp->AddCommands();
+	cmdp->AddCommands();
 	settings.ResetGameKeys();
 	settings.LoadGameKeys(cfg);
 	load_errors += BaseLocation::SetRoomPointers();
@@ -332,11 +327,11 @@ void Game::LoadData()
 {
 	Info("Game: Loading data.");
 
-	app::res_mgr->PrepareLoadScreen(0.33f);
+	res_mgr->PrepareLoadScreen(0.33f);
 	AddLoadTasks();
-	for(GameComponent* component : components)
-		component->LoadData();
-	app::res_mgr->StartLoadScreen();
+	game_gui->LoadData();
+	game_level->LoadData();
+	res_mgr->StartLoadScreen();
 }
 
 //=================================================================================================
@@ -347,8 +342,11 @@ void Game::PostconfigureGame()
 	Info("Game: Postconfiguring game.");
 
 	engine->LockCursor();
-	for(GameComponent* component : components)
-		component->PostInit();
+	game_gui->PostInit();
+	game_level->Init();
+	loc_gen_factory->Init();
+	world->Init();
+	quest_mgr->InitLists();
 
 	// create save folders
 	io::CreateDirectory("saves");
@@ -391,7 +389,7 @@ void Game::PostconfigureGame()
 		Texture* img = (load_errors > 0 ? tError : tWarning);
 		cstring text = Format(txHaveErrors, load_errors, load_warnings);
 #ifdef _DEBUG
-		gui->notifications->Add(text, img, 5.f);
+		game_gui->notifications->Add(text, img, 5.f);
 #else
 		DialogInfo info;
 		info.name = "have_errors";
@@ -399,7 +397,7 @@ void Game::PostconfigureGame()
 		info.type = DIALOG_OK;
 		info.img = img;
 		info.event = [this](int result) { StartGameMode(); };
-		info.parent = gui->main_menu;
+		info.parent = game_gui->main_menu;
 		info.order = ORDER_TOPMOST;
 		info.pause = false;
 		info.auto_wrap = true;
@@ -417,8 +415,8 @@ void Game::PostconfigureGame()
 	// end load screen, show menu
 	clear_color = Color::Black;
 	game_state = GS_MAIN_MENU;
-	gui->load_screen->visible = false;
-	gui->main_menu->visible = true;
+	game_gui->load_screen->visible = false;
+	game_gui->main_menu->visible = true;
 	if(music_type != MusicType::Intro)
 		SetMusic(MusicType::Title);
 
@@ -446,7 +444,7 @@ void Game::StartGameMode()
 			Warn("Quickstart: Can't create server, no player nick.");
 			break;
 		}
-		if(N.server_name.empty())
+		if(net->server_name.empty())
 		{
 			Warn("Quickstart: Can't create server, no server name.");
 			break;
@@ -454,12 +452,12 @@ void Game::StartGameMode()
 
 		if(quickstart == QUICKSTART_LOAD_MP)
 		{
-			N.mp_load = true;
-			N.mp_quickload = false;
+			net->mp_load = true;
+			net->mp_quickload = false;
 			if(TryLoadGame(quickstart_slot, false, false))
 			{
-				gui->create_server->CloseDialog();
-				gui->server->autoready = true;
+				game_gui->create_server->CloseDialog();
+				game_gui->server->autoready = true;
 			}
 			else
 			{
@@ -470,7 +468,7 @@ void Game::StartGameMode()
 
 		try
 		{
-			N.InitServer();
+			net->InitServer();
 		}
 		catch(cstring err)
 		{
@@ -483,8 +481,8 @@ void Game::StartGameMode()
 	case QUICKSTART_JOIN_LAN:
 		if(!player_name.empty())
 		{
-			gui->server->autoready = true;
-			gui->pick_server->Show(true);
+			game_gui->server->autoready = true;
+			game_gui->pick_server->Show(true);
 		}
 		else
 			Warn("Quickstart: Can't join server, no player nick.");
@@ -494,7 +492,7 @@ void Game::StartGameMode()
 		{
 			if(!server_ip.empty())
 			{
-				gui->server->autoready = true;
+				game_gui->server->autoready = true;
 				QuickJoinIp();
 			}
 			else
@@ -516,112 +514,111 @@ void Game::StartGameMode()
 //=================================================================================================
 void Game::AddLoadTasks()
 {
-	gui->load_screen->Tick(txPreloadAssets);
+	game_gui->load_screen->Tick(txPreloadAssets);
 
-	ResourceManager& res_mgr = *app::res_mgr;
 	bool nomusic = sound_mgr->IsMusicDisabled();
 
 	// gui textures
-	res_mgr.AddTaskCategory(txLoadGuiTextures);
-	tEquipped = res_mgr.Load<Texture>("equipped.png");
-	tCzern = res_mgr.Load<Texture>("czern.bmp");
-	tRip = res_mgr.Load<Texture>("rip.jpg");
-	tPortal = res_mgr.Load<Texture>("dark_portal.png");
+	res_mgr->AddTaskCategory(txLoadGuiTextures);
+	tEquipped = res_mgr->Load<Texture>("equipped.png");
+	tCzern = res_mgr->Load<Texture>("czern.bmp");
+	tRip = res_mgr->Load<Texture>("rip.jpg");
+	tPortal = res_mgr->Load<Texture>("dark_portal.png");
 	for(ClassInfo& ci : ClassInfo::classes)
-		ci.icon = res_mgr.Load<Texture>(ci.icon_file);
-	tWarning = res_mgr.Load<Texture>("warning.png");
-	tError = res_mgr.Load<Texture>("error.png");
+		ci.icon = res_mgr->Load<Texture>(ci.icon_file);
+	tWarning = res_mgr->Load<Texture>("warning.png");
+	tError = res_mgr->Load<Texture>("error.png");
 	Action::LoadData();
 
 	// preload terrain textures
-	tGrass = res_mgr.Load<Texture>("trawa.jpg");
-	tGrass2 = res_mgr.Load<Texture>("Grass0157_5_S.jpg");
-	tGrass3 = res_mgr.Load<Texture>("LeavesDead0045_1_S.jpg");
-	tRoad = res_mgr.Load<Texture>("droga.jpg");
-	tFootpath = res_mgr.Load<Texture>("ziemia.jpg");
-	tField = res_mgr.Load<Texture>("pole.jpg");
-	tFloorBase.diffuse = res_mgr.Load<Texture>("droga.jpg");
+	tGrass = res_mgr->Load<Texture>("trawa.jpg");
+	tGrass2 = res_mgr->Load<Texture>("Grass0157_5_S.jpg");
+	tGrass3 = res_mgr->Load<Texture>("LeavesDead0045_1_S.jpg");
+	tRoad = res_mgr->Load<Texture>("droga.jpg");
+	tFootpath = res_mgr->Load<Texture>("ziemia.jpg");
+	tField = res_mgr->Load<Texture>("pole.jpg");
+	tFloorBase.diffuse = res_mgr->Load<Texture>("droga.jpg");
 	tFloorBase.normal = nullptr;
 	tFloorBase.specular = nullptr;
-	tWallBase.diffuse = res_mgr.Load<Texture>("sciana.jpg");
-	tWallBase.normal = res_mgr.Load<Texture>("sciana_nrm.jpg");
-	tWallBase.specular = res_mgr.Load<Texture>("sciana_spec.jpg");
-	tCeilBase.diffuse = res_mgr.Load<Texture>("sufit.jpg");
+	tWallBase.diffuse = res_mgr->Load<Texture>("sciana.jpg");
+	tWallBase.normal = res_mgr->Load<Texture>("sciana_nrm.jpg");
+	tWallBase.specular = res_mgr->Load<Texture>("sciana_spec.jpg");
+	tCeilBase.diffuse = res_mgr->Load<Texture>("sufit.jpg");
 	tCeilBase.normal = nullptr;
 	tCeilBase.specular = nullptr;
 	BaseLocation::PreloadTextures();
 
 	// particles
-	res_mgr.AddTaskCategory(txLoadParticles);
-	tKrew[BLOOD_RED] = res_mgr.Load<Texture>("krew.png");
-	tKrew[BLOOD_GREEN] = res_mgr.Load<Texture>("krew2.png");
-	tKrew[BLOOD_BLACK] = res_mgr.Load<Texture>("krew3.png");
-	tKrew[BLOOD_BONE] = res_mgr.Load<Texture>("iskra.png");
-	tKrew[BLOOD_ROCK] = res_mgr.Load<Texture>("kamien.png");
-	tKrew[BLOOD_IRON] = res_mgr.Load<Texture>("iskra.png");
-	tKrewSlad[BLOOD_RED] = res_mgr.Load<Texture>("krew_slad.png");
-	tKrewSlad[BLOOD_GREEN] = res_mgr.Load<Texture>("krew_slad2.png");
-	tKrewSlad[BLOOD_BLACK] = res_mgr.Load<Texture>("krew_slad3.png");
+	res_mgr->AddTaskCategory(txLoadParticles);
+	tKrew[BLOOD_RED] = res_mgr->Load<Texture>("krew.png");
+	tKrew[BLOOD_GREEN] = res_mgr->Load<Texture>("krew2.png");
+	tKrew[BLOOD_BLACK] = res_mgr->Load<Texture>("krew3.png");
+	tKrew[BLOOD_BONE] = res_mgr->Load<Texture>("iskra.png");
+	tKrew[BLOOD_ROCK] = res_mgr->Load<Texture>("kamien.png");
+	tKrew[BLOOD_IRON] = res_mgr->Load<Texture>("iskra.png");
+	tKrewSlad[BLOOD_RED] = res_mgr->Load<Texture>("krew_slad.png");
+	tKrewSlad[BLOOD_GREEN] = res_mgr->Load<Texture>("krew_slad2.png");
+	tKrewSlad[BLOOD_BLACK] = res_mgr->Load<Texture>("krew_slad3.png");
 	tKrewSlad[BLOOD_BONE] = nullptr;
 	tKrewSlad[BLOOD_ROCK] = nullptr;
 	tKrewSlad[BLOOD_IRON] = nullptr;
-	tIskra = res_mgr.Load<Texture>("iskra.png");
-	tSpawn = res_mgr.Load<Texture>("spawn_fog.png");
-	tLightingLine = res_mgr.Load<Texture>("lighting_line.png");
+	tIskra = res_mgr->Load<Texture>("iskra.png");
+	tSpawn = res_mgr->Load<Texture>("spawn_fog.png");
+	tLightingLine = res_mgr->Load<Texture>("lighting_line.png");
 
 	// physic meshes
-	res_mgr.AddTaskCategory(txLoadPhysicMeshes);
-	vdStairsUp = res_mgr.Load<VertexData>("schody_gora.phy");
-	vdStairsDown = res_mgr.Load<VertexData>("schody_dol.phy");
-	vdDoorHole = res_mgr.Load<VertexData>("nadrzwi.phy");
+	res_mgr->AddTaskCategory(txLoadPhysicMeshes);
+	vdStairsUp = res_mgr->Load<VertexData>("schody_gora.phy");
+	vdStairsDown = res_mgr->Load<VertexData>("schody_dol.phy");
+	vdDoorHole = res_mgr->Load<VertexData>("nadrzwi.phy");
 
 	// models
-	res_mgr.AddTaskCategory(txLoadModels);
-	aBox = res_mgr.Load<Mesh>("box.qmsh");
-	aCylinder = res_mgr.Load<Mesh>("cylinder.qmsh");
-	aSphere = res_mgr.Load<Mesh>("sphere.qmsh");
-	aCapsule = res_mgr.Load<Mesh>("capsule.qmsh");
-	aArrow = res_mgr.Load<Mesh>("strzala.qmsh");
-	aSkybox = res_mgr.Load<Mesh>("skybox.qmsh");
-	aBag = res_mgr.Load<Mesh>("worek.qmsh");
-	aChest = res_mgr.Load<Mesh>("skrzynia.qmsh");
-	aGrating = res_mgr.Load<Mesh>("kratka.qmsh");
-	aDoorWall = res_mgr.Load<Mesh>("nadrzwi.qmsh");
-	aDoorWall2 = res_mgr.Load<Mesh>("nadrzwi2.qmsh");
-	aStairsDown = res_mgr.Load<Mesh>("schody_dol.qmsh");
-	aStairsDown2 = res_mgr.Load<Mesh>("schody_dol2.qmsh");
-	aStairsUp = res_mgr.Load<Mesh>("schody_gora.qmsh");
-	aSpellball = res_mgr.Load<Mesh>("spellball.qmsh");
-	aDoor = res_mgr.Load<Mesh>("drzwi.qmsh");
-	aDoor2 = res_mgr.Load<Mesh>("drzwi2.qmsh");
-	aHumanBase = res_mgr.Load<Mesh>("human.qmsh");
-	aHair[0] = res_mgr.Load<Mesh>("hair1.qmsh");
-	aHair[1] = res_mgr.Load<Mesh>("hair2.qmsh");
-	aHair[2] = res_mgr.Load<Mesh>("hair3.qmsh");
-	aHair[3] = res_mgr.Load<Mesh>("hair4.qmsh");
-	aHair[4] = res_mgr.Load<Mesh>("hair5.qmsh");
-	aEyebrows = res_mgr.Load<Mesh>("eyebrows.qmsh");
-	aMustache[0] = res_mgr.Load<Mesh>("mustache1.qmsh");
-	aMustache[1] = res_mgr.Load<Mesh>("mustache2.qmsh");
-	aBeard[0] = res_mgr.Load<Mesh>("beard1.qmsh");
-	aBeard[1] = res_mgr.Load<Mesh>("beard2.qmsh");
-	aBeard[2] = res_mgr.Load<Mesh>("beard3.qmsh");
-	aBeard[3] = res_mgr.Load<Mesh>("beard4.qmsh");
-	aBeard[4] = res_mgr.Load<Mesh>("beardm1.qmsh");
-	aStun = res_mgr.Load<Mesh>("stunned.qmsh");
+	res_mgr->AddTaskCategory(txLoadModels);
+	aBox = res_mgr->Load<Mesh>("box.qmsh");
+	aCylinder = res_mgr->Load<Mesh>("cylinder.qmsh");
+	aSphere = res_mgr->Load<Mesh>("sphere.qmsh");
+	aCapsule = res_mgr->Load<Mesh>("capsule.qmsh");
+	aArrow = res_mgr->Load<Mesh>("strzala.qmsh");
+	aSkybox = res_mgr->Load<Mesh>("skybox.qmsh");
+	aBag = res_mgr->Load<Mesh>("worek.qmsh");
+	aChest = res_mgr->Load<Mesh>("skrzynia.qmsh");
+	aGrating = res_mgr->Load<Mesh>("kratka.qmsh");
+	aDoorWall = res_mgr->Load<Mesh>("nadrzwi.qmsh");
+	aDoorWall2 = res_mgr->Load<Mesh>("nadrzwi2.qmsh");
+	aStairsDown = res_mgr->Load<Mesh>("schody_dol.qmsh");
+	aStairsDown2 = res_mgr->Load<Mesh>("schody_dol2.qmsh");
+	aStairsUp = res_mgr->Load<Mesh>("schody_gora.qmsh");
+	aSpellball = res_mgr->Load<Mesh>("spellball.qmsh");
+	aDoor = res_mgr->Load<Mesh>("drzwi.qmsh");
+	aDoor2 = res_mgr->Load<Mesh>("drzwi2.qmsh");
+	aHumanBase = res_mgr->Load<Mesh>("human.qmsh");
+	aHair[0] = res_mgr->Load<Mesh>("hair1.qmsh");
+	aHair[1] = res_mgr->Load<Mesh>("hair2.qmsh");
+	aHair[2] = res_mgr->Load<Mesh>("hair3.qmsh");
+	aHair[3] = res_mgr->Load<Mesh>("hair4.qmsh");
+	aHair[4] = res_mgr->Load<Mesh>("hair5.qmsh");
+	aEyebrows = res_mgr->Load<Mesh>("eyebrows.qmsh");
+	aMustache[0] = res_mgr->Load<Mesh>("mustache1.qmsh");
+	aMustache[1] = res_mgr->Load<Mesh>("mustache2.qmsh");
+	aBeard[0] = res_mgr->Load<Mesh>("beard1.qmsh");
+	aBeard[1] = res_mgr->Load<Mesh>("beard2.qmsh");
+	aBeard[2] = res_mgr->Load<Mesh>("beard3.qmsh");
+	aBeard[3] = res_mgr->Load<Mesh>("beard4.qmsh");
+	aBeard[4] = res_mgr->Load<Mesh>("beardm1.qmsh");
+	aStun = res_mgr->Load<Mesh>("stunned.qmsh");
 
 	// preload buildings
 	for(Building* b : Building::buildings)
 	{
 		if(!b->mesh_id.empty())
 		{
-			b->mesh = res_mgr.Get<Mesh>(b->mesh_id);
-			res_mgr.LoadMeshMetadata(b->mesh);
+			b->mesh = res_mgr->Get<Mesh>(b->mesh_id);
+			res_mgr->LoadMeshMetadata(b->mesh);
 		}
 		if(!b->inside_mesh_id.empty())
 		{
-			b->inside_mesh = res_mgr.Get<Mesh>(b->inside_mesh_id);
-			res_mgr.LoadMeshMetadata(b->inside_mesh);
+			b->inside_mesh = res_mgr->Get<Mesh>(b->inside_mesh_id);
+			res_mgr->LoadMeshMetadata(b->inside_mesh);
 		}
 	}
 
@@ -631,8 +628,8 @@ void Game::AddLoadTasks()
 		BaseTrap& t = BaseTrap::traps[i];
 		if(t.mesh_id)
 		{
-			t.mesh = res_mgr.Get<Mesh>(t.mesh_id);
-			res_mgr.LoadMeshMetadata(t.mesh);
+			t.mesh = res_mgr->Get<Mesh>(t.mesh_id);
+			res_mgr->LoadMeshMetadata(t.mesh);
 
 			Mesh::Point* pt = t.mesh->FindPoint("hitbox");
 			assert(pt);
@@ -645,33 +642,33 @@ void Game::AddLoadTasks()
 				t.h = t.rw = pt->size.x;
 		}
 		if(t.mesh_id2)
-			t.mesh2 = res_mgr.Get<Mesh>(t.mesh_id2);
+			t.mesh2 = res_mgr->Get<Mesh>(t.mesh_id2);
 		if(t.sound_id)
-			t.sound = res_mgr.Get<Sound>(t.sound_id);
+			t.sound = res_mgr->Get<Sound>(t.sound_id);
 		if(t.sound_id2)
-			t.sound2 = res_mgr.Get<Sound>(t.sound_id2);
+			t.sound2 = res_mgr->Get<Sound>(t.sound_id2);
 		if(t.sound_id3)
-			t.sound3 = res_mgr.Get<Sound>(t.sound_id3);
+			t.sound3 = res_mgr->Get<Sound>(t.sound_id3);
 	}
 
 	// spells
-	res_mgr.AddTaskCategory(txLoadSpells);
+	res_mgr->AddTaskCategory(txLoadSpells);
 	for(Spell* spell_ptr : Spell::spells)
 	{
 		Spell& spell = *spell_ptr;
 
 		if(!spell.sound_cast_id.empty())
-			spell.sound_cast = res_mgr.Load<Sound>(spell.sound_cast_id);
+			spell.sound_cast = res_mgr->Load<Sound>(spell.sound_cast_id);
 		if(!spell.sound_hit_id.empty())
-			spell.sound_hit = res_mgr.Load<Sound>(spell.sound_hit_id);
+			spell.sound_hit = res_mgr->Load<Sound>(spell.sound_hit_id);
 		if(!spell.tex_id.empty())
-			spell.tex = res_mgr.Load<Texture>(spell.tex_id);
+			spell.tex = res_mgr->Load<Texture>(spell.tex_id);
 		if(!spell.tex_particle_id.empty())
-			spell.tex_particle = res_mgr.Load<Texture>(spell.tex_particle_id);
+			spell.tex_particle = res_mgr->Load<Texture>(spell.tex_particle_id);
 		if(!spell.tex_explode_id.empty())
-			spell.tex_explode = res_mgr.Load<Texture>(spell.tex_explode_id);
+			spell.tex_explode = res_mgr->Load<Texture>(spell.tex_explode_id);
 		if(!spell.mesh_id.empty())
-			spell.mesh = res_mgr.Load<Mesh>(spell.mesh_id);
+			spell.mesh = res_mgr->Load<Mesh>(spell.mesh_id);
 
 		if(spell.type == Spell::Ball || spell.type == Spell::Point)
 			spell.shape = new btSphereShape(spell.size);
@@ -687,17 +684,17 @@ void Game::AddLoadTasks()
 			if(!vo.loaded)
 			{
 				for(uint i = 0; i < vo.entries.size(); ++i)
-					vo.entries[i].mesh = res_mgr.Get<Mesh>(vo.entries[i].mesh_id);
+					vo.entries[i].mesh = res_mgr->Get<Mesh>(vo.entries[i].mesh_id);
 				vo.loaded = true;
 			}
-			SetupObject(res_mgr, obj);
+			SetupObject(obj);
 		}
 		else if(!obj.mesh_id.empty())
 		{
-			obj.mesh = res_mgr.Get<Mesh>(obj.mesh_id);
+			obj.mesh = res_mgr->Get<Mesh>(obj.mesh_id);
 			if(!IsSet(obj.flags, OBJ_SCALEABLE | OBJ_NO_PHYSICS) && obj.type == OBJ_CYLINDER)
 				obj.shape = new btCylinderShape(btVector3(obj.r, obj.h, obj.r));
-			SetupObject(res_mgr, obj);
+			SetupObject(obj);
 		}
 		else
 		{
@@ -709,7 +706,7 @@ void Game::AddLoadTasks()
 		{
 			BaseUsable& bu = *(BaseUsable*)p_obj;
 			if(!bu.sound_id.empty())
-				bu.sound = res_mgr.Get<Sound>(bu.sound_id);
+				bu.sound = res_mgr->Get<Sound>(bu.sound_id);
 			if(!bu.item_id.empty())
 				bu.item = Item::Get(bu.item_id);
 		}
@@ -722,7 +719,7 @@ void Game::AddLoadTasks()
 
 		// model
 		if(!ud.mesh_id.empty())
-			ud.mesh = res_mgr.Get<Mesh>(ud.mesh_id);
+			ud.mesh = res_mgr->Get<Mesh>(ud.mesh_id);
 		else
 			ud.mesh = aHumanBase;
 
@@ -733,58 +730,58 @@ void Game::AddLoadTasks()
 			for(TexId& ti : ud.tex->textures)
 			{
 				if(!ti.id.empty())
-					ti.tex = res_mgr.Load<Texture>(ti.id);
+					ti.tex = res_mgr->Load<Texture>(ti.id);
 			}
 		}
 	}
 
 	// preload items
-	LoadItemsData(res_mgr);
+	LoadItemsData();
 
 	// sounds
-	res_mgr.AddTaskCategory(txLoadSounds);
-	sGulp = res_mgr.Load<Sound>("gulp.mp3");
-	sCoins = res_mgr.Load<Sound>("moneta2.mp3");
-	sBow[0] = res_mgr.Load<Sound>("bow1.mp3");
-	sBow[1] = res_mgr.Load<Sound>("bow2.mp3");
-	sDoor[0] = res_mgr.Load<Sound>("drzwi-02.mp3");
-	sDoor[1] = res_mgr.Load<Sound>("drzwi-03.mp3");
-	sDoor[2] = res_mgr.Load<Sound>("drzwi-04.mp3");
-	sDoorClose = res_mgr.Load<Sound>("104528__skyumori__door-close-sqeuak-02.mp3");
-	sDoorClosed[0] = res_mgr.Load<Sound>("wont_budge.mp3");
-	sDoorClosed[1] = res_mgr.Load<Sound>("wont_budge2.mp3");
-	sItem[0] = res_mgr.Load<Sound>("bottle.wav"); // potion
-	sItem[1] = res_mgr.Load<Sound>("armor-light.wav"); // light armor
-	sItem[2] = res_mgr.Load<Sound>("chainmail1.wav"); // heavy armor
-	sItem[3] = res_mgr.Load<Sound>("metal-ringing.wav"); // crystal
-	sItem[4] = res_mgr.Load<Sound>("wood-small.wav"); // bow
-	sItem[5] = res_mgr.Load<Sound>("cloth-heavy.wav"); // shield
-	sItem[6] = res_mgr.Load<Sound>("sword-unsheathe.wav"); // weapon
-	sItem[7] = res_mgr.Load<Sound>("interface3.wav"); // other
-	sItem[8] = res_mgr.Load<Sound>("amulet.mp3"); // amulet
-	sItem[9] = res_mgr.Load<Sound>("ring.mp3"); // ring
-	sChestOpen = res_mgr.Load<Sound>("chest_open.mp3");
-	sChestClose = res_mgr.Load<Sound>("chest_close.mp3");
-	sDoorBudge = res_mgr.Load<Sound>("door_budge.mp3");
-	sRock = res_mgr.Load<Sound>("atak_kamien.mp3");
-	sWood = res_mgr.Load<Sound>("atak_drewno.mp3");
-	sCrystal = res_mgr.Load<Sound>("atak_krysztal.mp3");
-	sMetal = res_mgr.Load<Sound>("atak_metal.mp3");
-	sBody[0] = res_mgr.Load<Sound>("atak_cialo.mp3");
-	sBody[1] = res_mgr.Load<Sound>("atak_cialo2.mp3");
-	sBody[2] = res_mgr.Load<Sound>("atak_cialo3.mp3");
-	sBody[3] = res_mgr.Load<Sound>("atak_cialo4.mp3");
-	sBody[4] = res_mgr.Load<Sound>("atak_cialo5.mp3");
-	sBone = res_mgr.Load<Sound>("atak_kosci.mp3");
-	sSkin = res_mgr.Load<Sound>("atak_skora.mp3");
-	sArenaFight = res_mgr.Load<Sound>("arena_fight.mp3");
-	sArenaWin = res_mgr.Load<Sound>("arena_wygrana.mp3");
-	sArenaLost = res_mgr.Load<Sound>("arena_porazka.mp3");
-	sUnlock = res_mgr.Load<Sound>("unlock.mp3");
-	sEvil = res_mgr.Load<Sound>("TouchofDeath.mp3");
-	sEat = res_mgr.Load<Sound>("eat.mp3");
-	sSummon = res_mgr.Load<Sound>("whooshy-puff.wav");
-	sZap = res_mgr.Load<Sound>("zap.mp3");
+	res_mgr->AddTaskCategory(txLoadSounds);
+	sGulp = res_mgr->Load<Sound>("gulp.mp3");
+	sCoins = res_mgr->Load<Sound>("moneta2.mp3");
+	sBow[0] = res_mgr->Load<Sound>("bow1.mp3");
+	sBow[1] = res_mgr->Load<Sound>("bow2.mp3");
+	sDoor[0] = res_mgr->Load<Sound>("drzwi-02.mp3");
+	sDoor[1] = res_mgr->Load<Sound>("drzwi-03.mp3");
+	sDoor[2] = res_mgr->Load<Sound>("drzwi-04.mp3");
+	sDoorClose = res_mgr->Load<Sound>("104528__skyumori__door-close-sqeuak-02.mp3");
+	sDoorClosed[0] = res_mgr->Load<Sound>("wont_budge.mp3");
+	sDoorClosed[1] = res_mgr->Load<Sound>("wont_budge2.mp3");
+	sItem[0] = res_mgr->Load<Sound>("bottle.wav"); // potion
+	sItem[1] = res_mgr->Load<Sound>("armor-light.wav"); // light armor
+	sItem[2] = res_mgr->Load<Sound>("chainmail1.wav"); // heavy armor
+	sItem[3] = res_mgr->Load<Sound>("metal-ringing.wav"); // crystal
+	sItem[4] = res_mgr->Load<Sound>("wood-small.wav"); // bow
+	sItem[5] = res_mgr->Load<Sound>("cloth-heavy.wav"); // shield
+	sItem[6] = res_mgr->Load<Sound>("sword-unsheathe.wav"); // weapon
+	sItem[7] = res_mgr->Load<Sound>("interface3.wav"); // other
+	sItem[8] = res_mgr->Load<Sound>("amulet.mp3"); // amulet
+	sItem[9] = res_mgr->Load<Sound>("ring.mp3"); // ring
+	sChestOpen = res_mgr->Load<Sound>("chest_open.mp3");
+	sChestClose = res_mgr->Load<Sound>("chest_close.mp3");
+	sDoorBudge = res_mgr->Load<Sound>("door_budge.mp3");
+	sRock = res_mgr->Load<Sound>("atak_kamien.mp3");
+	sWood = res_mgr->Load<Sound>("atak_drewno.mp3");
+	sCrystal = res_mgr->Load<Sound>("atak_krysztal.mp3");
+	sMetal = res_mgr->Load<Sound>("atak_metal.mp3");
+	sBody[0] = res_mgr->Load<Sound>("atak_cialo.mp3");
+	sBody[1] = res_mgr->Load<Sound>("atak_cialo2.mp3");
+	sBody[2] = res_mgr->Load<Sound>("atak_cialo3.mp3");
+	sBody[3] = res_mgr->Load<Sound>("atak_cialo4.mp3");
+	sBody[4] = res_mgr->Load<Sound>("atak_cialo5.mp3");
+	sBone = res_mgr->Load<Sound>("atak_kosci.mp3");
+	sSkin = res_mgr->Load<Sound>("atak_skora.mp3");
+	sArenaFight = res_mgr->Load<Sound>("arena_fight.mp3");
+	sArenaWin = res_mgr->Load<Sound>("arena_wygrana.mp3");
+	sArenaLost = res_mgr->Load<Sound>("arena_porazka.mp3");
+	sUnlock = res_mgr->Load<Sound>("unlock.mp3");
+	sEvil = res_mgr->Load<Sound>("TouchofDeath.mp3");
+	sEat = res_mgr->Load<Sound>("eat.mp3");
+	sSummon = res_mgr->Load<Sound>("whooshy-puff.wav");
+	sZap = res_mgr->Load<Sound>("zap.mp3");
 
 	// musics
 	if(!nomusic)
@@ -792,7 +789,7 @@ void Game::AddLoadTasks()
 }
 
 //=================================================================================================
-void Game::SetupObject(ResourceManager& res_mgr, BaseObject& obj)
+void Game::SetupObject(BaseObject& obj)
 {
 	Mesh::Point* point;
 
@@ -802,21 +799,21 @@ void Game::SetupObject(ResourceManager& res_mgr, BaseObject& obj)
 		{
 			VariantObject& vo = *obj.variants;
 			for(uint i = 0; i < vo.entries.size(); ++i)
-				res_mgr.Load(vo.entries[i].mesh);
+				res_mgr->Load(vo.entries[i].mesh);
 		}
 		else if(!obj.mesh_id.empty())
-			res_mgr.Load(obj.mesh);
+			res_mgr->Load(obj.mesh);
 	}
 
 	if(obj.variants)
 	{
 		assert(!IsSet(obj.flags, OBJ_DOUBLE_PHYSICS | OBJ_MULTI_PHYSICS)); // not supported for variant mesh yet
-		res_mgr.LoadMeshMetadata(obj.variants->entries[0].mesh);
+		res_mgr->LoadMeshMetadata(obj.variants->entries[0].mesh);
 		point = obj.variants->entries[0].mesh->FindPoint("hit");
 	}
 	else
 	{
-		res_mgr.LoadMeshMetadata(obj.mesh);
+		res_mgr->LoadMeshMetadata(obj.mesh);
 		point = obj.mesh->FindPoint("hit");
 	}
 
@@ -893,7 +890,7 @@ void Game::SetupObject(ResourceManager& res_mgr, BaseObject& obj)
 }
 
 //=================================================================================================
-void Game::LoadItemsData(ResourceManager& res_mgr)
+void Game::LoadItemsData()
 {
 	for(Armor* armor : Armor::armors)
 	{
@@ -903,7 +900,7 @@ void Game::LoadItemsData(ResourceManager& res_mgr)
 			for(TexId& ti : a.tex_override)
 			{
 				if(!ti.id.empty())
-					ti.tex = res_mgr.Load<Texture>(ti.id);
+					ti.tex = res_mgr->Load<Texture>(ti.id);
 			}
 		}
 	}
@@ -914,7 +911,7 @@ void Game::LoadItemsData(ResourceManager& res_mgr)
 
 		if(IsSet(item.flags, ITEM_TEX_ONLY))
 		{
-			item.tex = res_mgr.TryGet<Texture>(item.mesh_id);
+			item.tex = res_mgr->TryGet<Texture>(item.mesh_id);
 			if(!item.tex)
 			{
 				item.icon = &missing_item_texture;
@@ -924,7 +921,7 @@ void Game::LoadItemsData(ResourceManager& res_mgr)
 		}
 		else
 		{
-			item.mesh = res_mgr.TryGet<Mesh>(item.mesh_id);
+			item.mesh = res_mgr->TryGet<Mesh>(item.mesh_id);
 			if(!item.mesh)
 			{
 				item.icon = &missing_item_texture;

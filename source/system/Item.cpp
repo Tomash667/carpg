@@ -263,8 +263,7 @@ float Item::GetEffectPower(EffectId effect) const
 //=================================================================================================
 void Item::CreateCopy(Item& item) const
 {
-	Game& game = Game::Get();
-	game.PreloadItem(this);
+	game->PreloadItem(this);
 
 	switch(type)
 	{
@@ -293,7 +292,7 @@ void Item::CreateCopy(Item& item) const
 		break;
 	}
 
-	if(Net::IsServer() || N.mp_load)
+	if(Net::IsServer() || net->mp_load)
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::REGISTER_ITEM;
@@ -335,7 +334,7 @@ Item* Item::QuestCopy(Quest* quest, const string& name)
 	item->id = Format("$%s", id.c_str());
 	item->name = name;
 	item->refid = quest->refid;
-	QM.AddQuestItem(item);
+	quest_mgr->AddQuestItem(item);
 	return item;
 }
 

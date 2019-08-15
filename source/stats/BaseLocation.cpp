@@ -193,33 +193,32 @@ UnitGroup* BaseLocation::GetRandomGroup() const
 //=================================================================================================
 void BaseLocation::PreloadTextures()
 {
-	ResourceManager& res_mgr = *app::res_mgr;
 	for(uint i=0; i<n_base_locations; ++i)
 	{
 		auto& bl = g_base_locations[i];
 		if(bl.tex.floor.id)
 		{
-			bl.tex.floor.tex = res_mgr.Load<Texture>(bl.tex.floor.id);
+			bl.tex.floor.tex = res_mgr->Load<Texture>(bl.tex.floor.id);
 			if(bl.tex.floor.id_normal)
-				bl.tex.floor.tex_normal = res_mgr.Load<Texture>(bl.tex.floor.id_normal);
+				bl.tex.floor.tex_normal = res_mgr->Load<Texture>(bl.tex.floor.id_normal);
 			if(bl.tex.floor.id_specular)
-				bl.tex.floor.tex_specular = res_mgr.Load<Texture>(bl.tex.floor.id_specular);
+				bl.tex.floor.tex_specular = res_mgr->Load<Texture>(bl.tex.floor.id_specular);
 		}
 		if(bl.tex.wall.id)
 		{
-			bl.tex.wall.tex = res_mgr.Load<Texture>(bl.tex.wall.id);
+			bl.tex.wall.tex = res_mgr->Load<Texture>(bl.tex.wall.id);
 			if(bl.tex.wall.id_normal)
-				bl.tex.wall.tex_normal = res_mgr.Load<Texture>(bl.tex.wall.id_normal);
+				bl.tex.wall.tex_normal = res_mgr->Load<Texture>(bl.tex.wall.id_normal);
 			if(bl.tex.wall.id_specular)
-				bl.tex.wall.tex_specular = res_mgr.Load<Texture>(bl.tex.wall.id_specular);
+				bl.tex.wall.tex_specular = res_mgr->Load<Texture>(bl.tex.wall.id_specular);
 		}
 		if(bl.tex.ceil.id)
 		{
-			bl.tex.ceil.tex = res_mgr.Load<Texture>(bl.tex.ceil.id);
+			bl.tex.ceil.tex = res_mgr->Load<Texture>(bl.tex.ceil.id);
 			if(bl.tex.ceil.id_normal)
-				bl.tex.ceil.tex_normal = res_mgr.Load<Texture>(bl.tex.ceil.id_normal);
+				bl.tex.ceil.tex_normal = res_mgr->Load<Texture>(bl.tex.ceil.id_normal);
 			if(bl.tex.ceil.id_specular)
-				bl.tex.ceil.tex_specular = res_mgr.Load<Texture>(bl.tex.ceil.id_specular);
+				bl.tex.ceil.tex_specular = res_mgr->Load<Texture>(bl.tex.ceil.id_specular);
 		}
 	}
 }

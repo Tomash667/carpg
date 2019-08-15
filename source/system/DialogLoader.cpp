@@ -756,7 +756,7 @@ void DialogLoader::LoadGlobals()
 		t.Next();
 		t.AssertSymbol(';');
 		t.Next();
-		ScriptManager::RegisterResult result = SM.RegisterGlobalVar(type, is_ref, name);
+		ScriptManager::RegisterResult result = script_mgr->RegisterGlobalVar(type, is_ref, name);
 		if(result == ScriptManager::InvalidType)
 			LoadError("Invalid type for global variable '%s%s %s'.", type.c_str(), is_ref ? "@" : "", name.c_str());
 		else if(result == ScriptManager::AlreadyExists)

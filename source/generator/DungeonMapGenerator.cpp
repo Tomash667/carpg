@@ -9,8 +9,8 @@
 //=================================================================================================
 void DungeonMapGenerator::Generate(MapSettings& settings, bool recreate)
 {
-	assert(settings.map_w && settings.map_h && settings.room_size.x >= 4 && settings.room_size.y >= settings.room_size.x &&
-		InRange(settings.corridor_chance, 0, 100) && settings.rooms);
+	assert(settings.map_w && settings.map_h && settings.room_size.x >= 4 && settings.room_size.y >= settings.room_size.x
+		&& InRange(settings.corridor_chance, 0, 100) && settings.rooms);
 	assert(settings.corridor_chance == 0 || (settings.corridor_size.x >= 3 && settings.corridor_size.y >= settings.corridor_size.x));
 
 	map_w = settings.map_w;

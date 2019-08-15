@@ -36,7 +36,8 @@ enum GMS
 	GMS_ADDED_CURSED_STONE,
 	GMS_GAME_LOADED,
 	GMS_GOLD_ADDED,
-	GMS_QUEST_COMPLETED_GOLD
+	GMS_QUEST_COMPLETED_GOLD,
+	GMS_ADDED_ITEMS
 };
 
 //-----------------------------------------------------------------------------
@@ -67,6 +68,7 @@ public:
 	void AddGameMsg3(GMS id);
 	void AddGameMsg3(PlayerController* player, GMS id);
 	void AddFormattedMessage(PlayerController* player, GMS id, int subtype, int value);
+	void AddItemMessage(PlayerController* player, uint count);
 
 private:
 	list<GameMsg> msgs;
@@ -74,7 +76,7 @@ private:
 	cstring txGamePausedBig, txINeedWeapon, txNoHpp, txCantDo, txDontLootFollower, txDontLootArena, txUnlockedDoor, txNeedKey, txGmsLooted, txGmsRumor,
 		txGmsJournalUpdated, txGmsUsed, txGmsUnitBusy, txGmsGatherTeam, txGmsNotLeader, txGmsNotInCombat, txGmsAddedItem, txGmsGettingOutOfRange,
 		txGmsLeftEvent, txGameSaved, txGainTextAttrib, txGainTextSkill, txGainLearningPoints, txLearnedPerk, txTooComplicated, txAddedCursedStone,
-		txGameLoaded, txGoldPlus, txQuestCompletedGold;
+		txGameLoaded, txGoldPlus, txQuestCompletedGold, txGmsAddedItems;
 public:
 	Sound* snd_scribble;
 };

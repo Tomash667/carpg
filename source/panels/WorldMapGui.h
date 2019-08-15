@@ -37,7 +37,6 @@ private:
 	void CenterView(float dt, const Vec2* target = nullptr);
 	Vec2 GetCameraCenter() const;
 
-	Game& game;
 	TexturePtr tMapBg, tWorldMap, tMapIcon[LI_MAX], tEnc, tSelected[2], tMover, tSide, tMagnifyingGlass, tTrackingArrow;
 	cstring txBuildings;
 	ComboBox combo_box;

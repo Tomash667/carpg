@@ -1,7 +1,6 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "GameComponent.h"
 #include "QuestConsts.h"
 
 //-----------------------------------------------------------------------------
@@ -33,7 +32,7 @@ struct QuestInfo
 };
 
 //-----------------------------------------------------------------------------
-class QuestManager : public GameComponent
+class QuestManager
 {
 	struct QuestRequest
 	{
@@ -50,11 +49,14 @@ class QuestManager : public GameComponent
 		vector<ItemSlot>* items;
 		Unit* unit;
 	};
+
 public:
-	void InitOnce() override;
-	void LoadLanguage() override;
-	void PostInit() override;
-	void Cleanup() override;
+	QuestManager();
+	~QuestManager();
+	void Init();
+	void InitLists();
+	void LoadLanguage();
+	void Cleanup();
 	void InitQuests(bool devmode);
 	Quest* CreateQuest(QUEST quest_id);
 	Quest* CreateQuest(QuestInfo* info);
@@ -136,4 +138,3 @@ private:
 	string tmp_str;
 	vector<pair<int, string>> quest_rumors;
 };
-extern QuestManager QM;

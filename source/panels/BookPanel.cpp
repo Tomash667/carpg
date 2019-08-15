@@ -16,12 +16,10 @@ BookPanel::BookPanel() : book(nullptr), scale(0, 0)
 //=================================================================================================
 void BookPanel::LoadData()
 {
-	ResourceManager& res_mgr = *app::res_mgr;
+	tArrowL = res_mgr->Load<Texture>("strzalka_l.png");
+	tArrowR = res_mgr->Load<Texture>("strzalka_p.png");
 
-	tArrowL = res_mgr.Load<Texture>("strzalka_l.png");
-	tArrowR = res_mgr.Load<Texture>("strzalka_p.png");
-
-	sound = res_mgr.Load<Sound>("page-turn.wav");
+	sound = res_mgr->Load<Sound>("page-turn.wav");
 
 	gui->AddFont("Dwarf Runes.ttf");
 	normal_font = gui->CreateFont("Arial", 16, 800, 512);
@@ -130,7 +128,7 @@ void BookPanel::Show(const Book* book)
 	Event(GuiEvent_Show);
 	GainFocus();
 
-	app::sound_mgr->PlaySound2d(sound);
+	sound_mgr->PlaySound2d(sound);
 }
 
 //=================================================================================================
@@ -193,5 +191,5 @@ Font* BookPanel::GetFont()
 void BookPanel::ChangePage(int change)
 {
 	current_page += change;
-	app::sound_mgr->PlaySound2d(sound);
+	sound_mgr->PlaySound2d(sound);
 }

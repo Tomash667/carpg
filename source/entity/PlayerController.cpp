@@ -9,7 +9,7 @@
 #include "Class.h"
 #include "Action.h"
 #include "Level.h"
-#include "GlobalGui.h"
+#include "GameGui.h"
 #include "GameMessages.h"
 #include "Team.h"
 #include "World.h"
@@ -171,7 +171,7 @@ void PlayerController::Train(SkillId skill, float points)
 	{
 		recalculate_level = true;
 		unit->Set(skill, value);
-		Game::Get().gui->messages->AddFormattedMessage(this, GMS_GAIN_SKILL, s, gained);
+		game_gui->messages->AddFormattedMessage(this, GMS_GAIN_SKILL, s, gained);
 		if(!is_local)
 		{
 			NetChangePlayer& c2 = Add1(player_info->changes);
@@ -217,7 +217,7 @@ void PlayerController::Train(AttributeId attrib, float points)
 	{
 		recalculate_level = true;
 		unit->Set(attrib, value);
-		Game::Get().gui->messages->AddFormattedMessage(this, GMS_GAIN_ATTRIBUTE, a, gained);
+		game_gui->messages->AddFormattedMessage(this, GMS_GAIN_ATTRIBUTE, a, gained);
 		if(!is_local)
 		{
 			NetChangePlayer& c2 = Add1(player_info->changes);
@@ -681,7 +681,7 @@ void PlayerController::RecalculateLevel()
 	if(level != unit->level)
 	{
 		unit->level = level;
-		if(Net::IsLocal() && !L.entering)
+		if(Net::IsLocal() && !game_level->entering)
 		{
 			Team.CalculatePlayersLevel();
 			if(player_info && !IsLocal())
@@ -984,7 +984,7 @@ void PlayerController::Train(bool is_skill, int id, TrainMode mode)
 			unit->Set((AttributeId)id, value);
 		}
 
-		Game::Get().gui->messages->AddFormattedMessage(this, is_skill ? GMS_GAIN_SKILL : GMS_GAIN_ATTRIBUTE, id, count);
+		game_gui->messages->AddFormattedMessage(this, is_skill ? GMS_GAIN_SKILL : GMS_GAIN_ATTRIBUTE, id, count);
 
 		if(!IsLocal())
 		{
@@ -1144,7 +1144,7 @@ bool PlayerController::Read(BitStreamReader& f)
 			int index = f.Read<int>();
 			if(!f)
 				return false;
-			next_action_data.usable = L.FindUsable(index);
+			next_action_data.usable = game_level->FindUsable(index);
 		}
 		break;
 	default:
@@ -1204,34 +1204,6 @@ int PlayerController::GetNextActionItemIndex() const
 }
 
 //=================================================================================================
-void PlayerController::AddItemMessage(uint count)
-{
-	assert(count != 0u);
-	if(IsLocal())
-	{
-		Game& game = Game::Get();
-		if(count == 1u)
-			game.gui->messages->AddGameMsg3(GMS_ADDED_ITEM);
-		else
-			game.gui->messages->AddGameMsg(Format(game.txGmsAddedItems, count), 3.f);
-	}
-	else
-	{
-		NetChangePlayer& c2 = Add1(player_info->changes);
-		if(count == 1u)
-		{
-			c2.type = NetChangePlayer::GAME_MESSAGE;
-			c2.id = GMS_ADDED_ITEM;
-		}
-		else
-		{
-			c2.type = NetChangePlayer::ADDED_ITEMS_MSG;
-			c2.count = count;
-		}
-	}
-}
-
-//=================================================================================================
 void PlayerController::PayCredit(int count)
 {
 	rvector<Unit> units;
@@ -1266,13 +1238,13 @@ void PlayerController::UseDays(int count)
 		count -= free_days;
 		free_days = 0;
 
-		for(PlayerInfo& info : N.players)
+		for(PlayerInfo& info : net->players)
 		{
 			if(info.left == PlayerInfo::LEFT_NO && info.pc != this)
 				info.pc->free_days += count;
 		}
 
-		W.Update(count, World::UM_NORMAL);
+		world->Update(count, World::UM_NORMAL);
 	}
 
 	Net::PushChange(NetChange::UPDATE_FREE_DAYS);
@@ -1364,7 +1336,7 @@ bool PlayerController::RemovePerk(Perk perk, int value)
 void PlayerController::AddLearningPoint(int count)
 {
 	learning_points += count;
-	Game::Get().gui->messages->AddFormattedMessage(this, GMS_GAIN_LEARNING_POINTS, -1, count);
+	game_gui->messages->AddFormattedMessage(this, GMS_GAIN_LEARNING_POINTS, -1, count);
 	if(!is_local)
 		player_info->update_flags |= PlayerInfo::UF_LEARNING_POINTS;
 }
@@ -1450,7 +1422,7 @@ void PlayerController::Yell()
 {
 	if(Sound* sound = unit->GetSound(SOUND_SEE_ENEMY))
 	{
-		Game::Get().PlayAttachedSound(*unit, sound, Unit::ALERT_SOUND_DIST);
+		game->PlayAttachedSound(*unit, sound, Unit::ALERT_SOUND_DIST);
 		if(Net::IsServer())
 		{
 			NetChange& c = Add1(Net::changes);
@@ -1459,7 +1431,7 @@ void PlayerController::Yell()
 			c.id = SOUND_SEE_ENEMY;
 		}
 	}
-	unit->Talk(RandomString(Game::Get().txYell), 0);
+	unit->Talk(RandomString(game->txYell), 0);
 
 	LevelArea& area = *unit->area;
 	for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)

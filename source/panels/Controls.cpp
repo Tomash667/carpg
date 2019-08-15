@@ -4,7 +4,7 @@
 #include "GameKeys.h"
 #include "Language.h"
 #include "Game.h"
-#include "GlobalGui.h"
+#include "GameGui.h"
 
 //-----------------------------------------------------------------------------
 // 0x01 - pickable key
@@ -275,7 +275,7 @@ enum ButtonId
 };
 
 //=================================================================================================
-Controls::Controls(const DialogInfo& info) : GameDialogBox(info), picked(-1)
+Controls::Controls(const DialogInfo& info) : DialogBox(info), picked(-1)
 {
 	size = Int2(570 + 8 * 2, 368);
 	bts.resize(2);
@@ -453,7 +453,7 @@ void Controls::SelectCell(int item, int column, int button)
 		picked_n = column - 1;
 		cursor_tick = 0.f;
 		input->SetCallback(Input::Callback(this, &Controls::OnKey));
-		game->gui->cursor_allow_move = false;
+		game_gui->cursor_allow_move = false;
 	}
 	else
 		GKey[item][column - 1] = Key::None;
@@ -466,14 +466,14 @@ void Controls::OnKey(int key)
 	{
 		picked = -1;
 		input->SetCallback(nullptr);
-		game->gui->cursor_allow_move = true;
+		game_gui->cursor_allow_move = true;
 	}
 	else if(key < n_texts && IsSet(in_text[key], 0x01))
 	{
 		GKey[picked][picked_n] = (Key)key;
 		picked = -1;
 		input->SetCallback(nullptr);
-		game->gui->cursor_allow_move = true;
+		game_gui->cursor_allow_move = true;
 		changed = true;
 	}
 }

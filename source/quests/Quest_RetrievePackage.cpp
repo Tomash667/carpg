@@ -16,8 +16,8 @@ void Quest_RetrievePackage::Start()
 {
 	quest_id = Q_RETRIEVE_PACKAGE;
 	type = QuestType::Mayor;
-	start_loc = W.GetCurrentLocationIndex();
-	from_loc = W.GetRandomSettlementIndex(start_loc);
+	start_loc = world->GetCurrentLocationIndex();
+	from_loc = world->GetRandomSettlementIndex(start_loc);
 }
 
 //=================================================================================================
@@ -47,9 +47,9 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 		// received quest from mayor
 		{
 			OnStart(game->txQuest[265]);
-			QM.quests_timeout.push_back(this);
+			quest_mgr->quests_timeout.push_back(this);
 
-			target_loc = W.GetRandomSpawnLocation((GetStartLocation().pos + W.GetLocation(from_loc)->pos) / 2, UnitGroup::Get("bandits"));
+			target_loc = world->GetRandomSpawnLocation((GetStartLocation().pos + world->GetLocation(from_loc)->pos) / 2, UnitGroup::Get("bandits"));
 
 			Location& loc = GetStartLocation();
 			Location& loc2 = GetTargetLocation();
@@ -69,7 +69,7 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 			item_to_give[0] = &parcel;
 			at_level = loc2.GetRandomLevel();
 
-			msgs.push_back(Format(game->txQuest[3], who, loc.name.c_str(), W.GetDate()));
+			msgs.push_back(Format(game->txQuest[3], who, loc.name.c_str(), world->GetDate()));
 			if(loc2.type == L_CAMP)
 			{
 				game->target_loc_is_camp = true;
@@ -97,7 +97,7 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 			}
 
 			OnUpdate(game->txQuest[24]);
-			RemoveElementTry<Quest_Dungeon*>(QM.quests_timeout, this);
+			RemoveElementTry<Quest_Dungeon*>(quest_mgr->quests_timeout, this);
 		}
 		break;
 	case Progress::Finished:
@@ -117,7 +117,7 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 			}
 
 			OnUpdate(game->txQuest[25]);
-			RemoveElementTry<Quest_Dungeon*>(QM.quests_timeout, this);
+			RemoveElementTry<Quest_Dungeon*>(quest_mgr->quests_timeout, this);
 		}
 		break;
 	}
@@ -127,9 +127,9 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 cstring Quest_RetrievePackage::FormatString(const string& str)
 {
 	if(str == "burmistrz_od")
-		return LocationHelper::IsCity(W.GetLocation(from_loc)) ? game->txQuest[26] : game->txQuest[27];
+		return LocationHelper::IsCity(world->GetLocation(from_loc)) ? game->txQuest[26] : game->txQuest[27];
 	else if(str == "locname_od")
-		return W.GetLocation(from_loc)->name.c_str();
+		return world->GetLocation(from_loc)->name.c_str();
 	else if(str == "locname")
 		return GetTargetLocationName();
 	else if(str == "target_dir")
@@ -146,7 +146,7 @@ cstring Quest_RetrievePackage::FormatString(const string& str)
 //=================================================================================================
 bool Quest_RetrievePackage::IsTimedout() const
 {
-	return W.GetWorldtime() - start_time > 30;
+	return world->GetWorldtime() - start_time > 30;
 }
 
 //=================================================================================================
@@ -170,7 +170,7 @@ bool Quest_RetrievePackage::OnTimeout(TimeoutType ttype)
 //=================================================================================================
 bool Quest_RetrievePackage::IfHaveQuestItem() const
 {
-	return W.GetCurrentLocationIndex() == start_loc && prog == Progress::Started;
+	return world->GetCurrentLocationIndex() == start_loc && prog == Progress::Started;
 }
 
 //=================================================================================================

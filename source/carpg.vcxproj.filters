@@ -61,6 +61,9 @@
     <Filter Include="resource">
       <UniqueIdentifier>{bc9d59f8-23a1-480d-ba81-5772aad70353}</UniqueIdentifier>
     </Filter>
+    <Filter Include="components">
+      <UniqueIdentifier>{c4209f58-7028-49a2-894c-6df97de80980}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="resource\PickLanguage.cpp">
@@ -154,9 +157,6 @@
       <Filter>panels</Filter>
     </ClCompile>
     <ClCompile Include="panels\CreateServerPanel.cpp">
-      <Filter>panels</Filter>
-    </ClCompile>
-    <ClCompile Include="panels\GameGui.cpp">
       <Filter>panels</Filter>
     </ClCompile>
     <ClCompile Include="panels\GameMenu.cpp">
@@ -409,9 +409,6 @@
     <ClCompile Include="net\EntityInterpolator.cpp">
       <Filter>net</Filter>
     </ClCompile>
-    <ClCompile Include="panels\GlobalGui.cpp">
-      <Filter>panels</Filter>
-    </ClCompile>
     <ClCompile Include="helpers\LoadingHandler.cpp">
       <Filter>helpers</Filter>
     </ClCompile>
@@ -542,26 +539,46 @@
       <Filter>generator</Filter>
     </ClCompile>
     <ClCompile Include="Ai.cpp" />
-    <ClCompile Include="CommandParser.cpp" />
-    <ClCompile Include="FOV.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="Game2.cpp" />
     <ClCompile Include="GameCommon.cpp" />
     <ClCompile Include="GameFile.cpp" />
-    <ClCompile Include="GameStats.cpp" />
     <ClCompile Include="Init.cpp" />
     <ClCompile Include="Language.cpp" />
-    <ClCompile Include="Level.cpp" />
     <ClCompile Include="Menu.cpp" />
-    <ClCompile Include="Pathfinding.cpp" />
     <ClCompile Include="QuadTreeAndGrass.cpp" />
     <ClCompile Include="SaveLoad.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Settings.cpp" />
-    <ClCompile Include="Team.cpp" />
-    <ClCompile Include="World.cpp" />
     <ClCompile Include="stats\MusicTrack.cpp">
       <Filter>stats</Filter>
+    </ClCompile>
+    <ClCompile Include="Pathfinding.cpp">
+      <Filter>components</Filter>
+    </ClCompile>
+    <ClCompile Include="CommandParser.cpp">
+      <Filter>components</Filter>
+    </ClCompile>
+    <ClCompile Include="World.cpp">
+      <Filter>components</Filter>
+    </ClCompile>
+    <ClCompile Include="Level.cpp">
+      <Filter>components</Filter>
+    </ClCompile>
+    <ClCompile Include="FOV.cpp">
+      <Filter>components</Filter>
+    </ClCompile>
+    <ClCompile Include="Team.cpp">
+      <Filter>components</Filter>
+    </ClCompile>
+    <ClCompile Include="GameStats.cpp">
+      <Filter>components</Filter>
+    </ClCompile>
+    <ClCompile Include="panels\LevelGui.cpp">
+      <Filter>panels</Filter>
+    </ClCompile>
+    <ClCompile Include="panels\GameGui.cpp">
+      <Filter>panels</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -671,9 +688,6 @@
       <Filter>panels</Filter>
     </ClInclude>
     <ClInclude Include="panels\CreateServerPanel.h">
-      <Filter>panels</Filter>
-    </ClInclude>
-    <ClInclude Include="panels\GameGui.h">
       <Filter>panels</Filter>
     </ClInclude>
     <ClInclude Include="panels\GameMenu.h">
@@ -866,9 +880,6 @@
     <ClInclude Include="net\NetChangePlayer.h">
       <Filter>net</Filter>
     </ClInclude>
-    <ClInclude Include="panels\GameDialogBox.h">
-      <Filter>panels</Filter>
-    </ClInclude>
     <ClInclude Include="panels\BookPanel.h">
       <Filter>panels</Filter>
     </ClInclude>
@@ -946,9 +957,6 @@
     </ClInclude>
     <ClInclude Include="net\EntityInterpolator.h">
       <Filter>net</Filter>
-    </ClInclude>
-    <ClInclude Include="panels\GlobalGui.h">
-      <Filter>panels</Filter>
     </ClInclude>
     <ClInclude Include="helpers\LoadingHandler.h">
       <Filter>helpers</Filter>
@@ -1049,9 +1057,6 @@
     <ClInclude Include="system\DialogContext.h">
       <Filter>system\dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="system\DialogLoader.h">
-      <Filter>system\dialogs</Filter>
-    </ClInclude>
     <ClInclude Include="generator\NameHelper.h">
       <Filter>helpers</Filter>
     </ClInclude>
@@ -1069,9 +1074,6 @@
     </ClInclude>
     <ClInclude Include="quests\Quest_Scripted.h">
       <Filter>quests</Filter>
-    </ClInclude>
-    <ClInclude Include="system\DialogLoader.h">
-      <Filter>3. game\system\dialogs</Filter>
     </ClInclude>
     <ClInclude Include="system\QuestScheme.h">
       <Filter>system\quests</Filter>
@@ -1109,25 +1111,50 @@
     <ClInclude Include="generator\DungeonMapGenerator.h">
       <Filter>generator</Filter>
     </ClInclude>
-    <ClInclude Include="CommandParser.h" />
-    <ClInclude Include="ConsoleCommands.h" />
-    <ClInclude Include="FOV.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameCommon.h" />
-    <ClInclude Include="GameComponent.h" />
     <ClInclude Include="GameCore.h" />
     <ClInclude Include="GameFile.h" />
     <ClInclude Include="GameKeys.h" />
-    <ClInclude Include="GameStats.h" />
     <ClInclude Include="Language.h" />
-    <ClInclude Include="Level.h" />
-    <ClInclude Include="Pathfinding.h" />
     <ClInclude Include="SaveState.h" />
     <ClInclude Include="Settings.h" />
-    <ClInclude Include="Team.h" />
-    <ClInclude Include="World.h" />
     <ClInclude Include="stats\MusicTrack.h">
       <Filter>stats</Filter>
+    </ClInclude>
+    <ClInclude Include="Pathfinding.h">
+      <Filter>components</Filter>
+    </ClInclude>
+    <ClInclude Include="CommandParser.h">
+      <Filter>components</Filter>
+    </ClInclude>
+    <ClInclude Include="ConsoleCommands.h">
+      <Filter>components</Filter>
+    </ClInclude>
+    <ClInclude Include="World.h">
+      <Filter>components</Filter>
+    </ClInclude>
+    <ClInclude Include="system\DialogLoader.h">
+      <Filter>system\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="system\DialogLoader.h" />
+    <ClInclude Include="Level.h">
+      <Filter>components</Filter>
+    </ClInclude>
+    <ClInclude Include="FOV.h">
+      <Filter>components</Filter>
+    </ClInclude>
+    <ClInclude Include="Team.h">
+      <Filter>components</Filter>
+    </ClInclude>
+    <ClInclude Include="GameStats.h">
+      <Filter>components</Filter>
+    </ClInclude>
+    <ClInclude Include="panels\LevelGui.h">
+      <Filter>panels</Filter>
+    </ClInclude>
+    <ClInclude Include="panels\GameGui.h">
+      <Filter>panels</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

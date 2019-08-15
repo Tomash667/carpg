@@ -228,7 +228,6 @@ public:
 	void RefreshCooldown();
 	bool IsHit(Unit* unit) const;
 	int GetNextActionItemIndex() const;
-	void AddItemMessage(uint count);
 	void PayCredit(int count);
 	void UseDays(int count);
 	void StartDialog(Unit* talker, GameDialog* dialog = nullptr);

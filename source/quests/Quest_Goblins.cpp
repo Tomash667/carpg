@@ -8,7 +8,7 @@
 #include "QuestManager.h"
 #include "Encounter.h"
 #include "InsideLocation.h"
-#include "GlobalGui.h"
+#include "GameGui.h"
 #include "Team.h"
 #include "World.h"
 #include "Level.h"
@@ -16,7 +16,7 @@
 //=================================================================================================
 void Quest_Goblins::Init()
 {
-	QM.RegisterSpecialIfHandler(this, "q_gobliny_zapytaj");
+	quest_mgr->RegisterSpecialIfHandler(this, "q_gobliny_zapytaj");
 }
 
 //=================================================================================================
@@ -28,7 +28,7 @@ void Quest_Goblins::Start()
 	goblins_state = State::None;
 	nobleman = nullptr;
 	messenger = nullptr;
-	QM.AddQuestRumor(refid, Format(QM.txRumorQ[7], GetStartLocationName()));
+	quest_mgr->AddQuestRumor(refid, Format(quest_mgr->txRumorQ[7], GetStartLocationName()));
 }
 
 //=================================================================================================
@@ -64,27 +64,27 @@ void DodajStraznikow()
 {
 	// szukaj szlachcica
 	UnitData* ud = UnitData::Get("q_gobliny_szlachcic2");
-	Unit* u = L.local_area->FindUnit(ud);
+	Unit* u = game_level->local_area->FindUnit(ud);
 	assert(u);
 
 	// szukaj tronu
-	Usable* use = L.local_area->FindUsable(BaseUsable::Get("throne"));
+	Usable* use = game_level->local_area->FindUsable(BaseUsable::Get("throne"));
 	assert(use);
 
 	// przesuñ szlachcica w pobli¿e tronu
-	L.WarpUnit(*u, use->pos);
+	game_level->WarpUnit(*u, use->pos);
 
 	// usuñ pozosta³e osoby z pomieszczenia
-	InsideLocation* inside = (InsideLocation*)W.GetCurrentLocation();
+	InsideLocation* inside = (InsideLocation*)world->GetCurrentLocation();
 	InsideLocationLevel& lvl = inside->GetLevelData();
 	Room* room = lvl.GetNearestRoom(u->pos);
 	assert(room);
-	for(vector<Unit*>::iterator it = L.local_area->units.begin(), end = L.local_area->units.end(); it != end; ++it)
+	for(vector<Unit*>::iterator it = game_level->local_area->units.begin(), end = game_level->local_area->units.end(); it != end; ++it)
 	{
 		if((*it)->data != ud && room->IsInside((*it)->pos))
 		{
 			(*it)->to_remove = true;
-			L.to_remove.push_back(*it);
+			game_level->to_remove.push_back(*it);
 		}
 	}
 
@@ -92,7 +92,7 @@ void DodajStraznikow()
 	UnitData* ud2 = UnitData::Get("q_gobliny_ochroniarz");
 	for(int i = 0; i < 3; ++i)
 	{
-		Unit* u2 = L.SpawnUnitInsideRoom(*room, *ud2, 10);
+		Unit* u2 = game_level->SpawnUnitInsideRoom(*room, *ud2, 10);
 		if(u2)
 		{
 			u2->dont_attack = true;
@@ -102,7 +102,7 @@ void DodajStraznikow()
 
 	// ustaw szlachcica
 	u->hero->know_name = true;
-	u->ApplyHumanData(QM.quest_goblins->hd_nobleman);
+	u->ApplyHumanData(quest_mgr->quest_goblins->hd_nobleman);
 }
 
 //=================================================================================================
@@ -114,8 +114,8 @@ void Quest_Goblins::SetProgress(int prog2)
 	case Progress::NotAccepted:
 		// nie zaakceptowano
 		{
-			if(QM.RemoveQuestRumor(refid))
-				game->gui->journal->AddRumor(Format(game->txQuest[211], GetStartLocationName()));
+			if(quest_mgr->RemoveQuestRumor(refid))
+				game_gui->journal->AddRumor(Format(game->txQuest[211], GetStartLocationName()));
 		}
 		break;
 	case Progress::Started:
@@ -123,9 +123,9 @@ void Quest_Goblins::SetProgress(int prog2)
 		{
 			OnStart(game->txQuest[212]);
 			// usuñ plotkê
-			QM.RemoveQuestRumor(refid);
+			quest_mgr->RemoveQuestRumor(refid);
 			// dodaj lokalizacje
-			target_loc = W.GetNearestLocation(GetStartLocation().pos, 1 << L_FOREST, true);
+			target_loc = world->GetNearestLocation(GetStartLocation().pos, 1 << L_FOREST, true);
 			Location& target = GetTargetLocation();
 			target.SetKnown();
 			target.reset = true;
@@ -134,10 +134,10 @@ void Quest_Goblins::SetProgress(int prog2)
 			spawn_item = Quest_Event::Item_OnGround;
 			item_to_give[0] = Item::Get("q_gobliny_luk");
 			// questowe rzeczy
-			msgs.push_back(Format(game->txQuest[217], GetStartLocationName(), W.GetDate()));
+			msgs.push_back(Format(game->txQuest[217], GetStartLocationName(), world->GetDate()));
 			msgs.push_back(Format(game->txQuest[218], GetTargetLocationName(), GetTargetLocationDir()));
 			// encounter
-			Encounter* e = W.AddEncounter(enc);
+			Encounter* e = world->AddEncounter(enc);
 			e->check_func = TeamHaveOldBow;
 			e->dialog = GameDialog::TryGet("q_goblins_encounter");
 			e->dont_attack = true;
@@ -157,10 +157,10 @@ void Quest_Goblins::SetProgress(int prog2)
 		{
 			Team.RemoveQuestItem(Item::Get("q_gobliny_luk"));
 			OnUpdate(game->txQuest[220]);
-			W.RemoveEncounter(enc);
+			world->RemoveEncounter(enc);
 			enc = -1;
 			GetTargetLocation().active_quest = nullptr;
-			W.AddNews(game->txQuest[221]);
+			world->AddNews(game->txQuest[221]);
 			Team.AddExp(1000);
 		}
 		break;
@@ -177,7 +177,7 @@ void Quest_Goblins::SetProgress(int prog2)
 		// pos³aniec dostarczy³ info o bazie goblinów
 		{
 			state = Quest::Started;
-			target_loc = W.GetRandomSpawnLocation(GetStartLocation().pos, UnitGroup::Get("goblins"));
+			target_loc = world->GetRandomSpawnLocation(GetStartLocation().pos, UnitGroup::Get("goblins"));
 			Location& target = GetTargetLocation();
 			target.state = LS_KNOWN;
 			target.st = 10;
@@ -205,7 +205,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			goblins_state = State::GivenBow;
 			GetTargetLocation().active_quest = nullptr;
 			target_loc = -1;
-			W.AddNews(game->txQuest[225]);
+			world->AddNews(game->txQuest[225]);
 		}
 		break;
 	case Progress::DidntTalkedAboutBow:
@@ -237,7 +237,7 @@ void Quest_Goblins::SetProgress(int prog2)
 		// pogadano z karczmarzem
 		{
 			goblins_state = State::KnownLocation;
-			Location& target = *W.CreateLocation(L_DUNGEON, W.GetWorldPos(), 128.f, THRONE_FORT, UnitGroup::Get("goblins"), false);
+			Location& target = *world->CreateLocation(L_DUNGEON, world->GetWorldPos(), 128.f, THRONE_FORT, UnitGroup::Get("goblins"), false);
 			target.st = 12;
 			target.SetKnown();
 			target.active_quest = this;
@@ -261,8 +261,8 @@ void Quest_Goblins::SetProgress(int prog2)
 			state = Quest::Completed;
 			OnUpdate(game->txQuest[230]);
 			GetTargetLocation().active_quest = nullptr;
-			QM.EndUniqueQuest();
-			W.AddNews(game->txQuest[231]);
+			quest_mgr->EndUniqueQuest();
+			world->AddNews(game->txQuest[231]);
 			Team.AddLearningPoint();
 			Team.AddExp(15000);
 		}
@@ -357,7 +357,7 @@ bool Quest_Goblins::Load(GameReader& f)
 
 	if(enc != -1)
 	{
-		Encounter* e = W.RecreateEncounter(enc);
+		Encounter* e = world->RecreateEncounter(enc);
 		e->check_func = TeamHaveOldBow;
 		e->dialog = GameDialog::TryGet("q_goblins_encounter");
 		e->dont_attack = true;
@@ -382,7 +382,7 @@ bool Quest_Goblins::SpecialIf(DialogContext& ctx, cstring msg)
 	{
 		return goblins_state >= State::MageTalked
 			&& goblins_state < State::KnownLocation
-			&& L.location_index == start_loc
+			&& game_level->location_index == start_loc
 			&& prog != Progress::TalkedWithInnkeeper;
 	}
 	assert(0);

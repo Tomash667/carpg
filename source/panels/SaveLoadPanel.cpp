@@ -10,7 +10,7 @@
 #include "World.h"
 #include "Level.h"
 #include "Game.h"
-#include "GlobalGui.h"
+#include "GameGui.h"
 #include "GetTextDialog.h"
 #include "GameMenu.h"
 #include "CreateServerPanel.h"
@@ -19,7 +19,7 @@
 #include "DirectX.h"
 
 //=================================================================================================
-SaveLoad::SaveLoad(const DialogInfo& info) : GameDialogBox(info), choice(0)
+SaveLoad::SaveLoad(const DialogInfo& info) : DialogBox(info), choice(0)
 {
 	size = Int2(610, 400);
 
@@ -66,7 +66,7 @@ void SaveLoad::Draw(ControlDrawData*)
 {
 	DrawPanel();
 	Rect r = { global_pos.x, global_pos.y + 8, global_pos.x + size.x, global_pos.y + size.y };
-	gui->DrawText(GlobalGui::font_big, save_mode ? txSaving : txLoading, DTF_CENTER, Color::Black, r);
+	gui->DrawText(GameGui::font_big, save_mode ? txSaving : txLoading, DTF_CENTER, Color::Black, r);
 	for(int i = 0; i < 2; ++i)
 		bt[i].Draw();
 	textbox.Draw();
@@ -91,7 +91,7 @@ void SaveLoad::Draw(ControlDrawData*)
 				text = Format(txEmptySlot, i + 1);
 		}
 
-		gui->DrawText(GlobalGui::font, text, DTF_SINGLELINE | DTF_VCENTER, choice == i ? Color::Green : Color::Black, r);
+		gui->DrawText(GameGui::font, text, DTF_SINGLELINE | DTF_VCENTER, choice == i ? Color::Green : Color::Black, r);
 
 		r.Top() = r.Bottom() + 4;
 		r.Bottom() = r.Top() + 20;
@@ -162,7 +162,7 @@ void SaveLoad::Event(GuiEvent e)
 	{
 		if(e == IdCancel)
 		{
-			N.mp_load = false;
+			net->mp_load = false;
 			gui->CloseDialog(this);
 			return;
 		}
@@ -314,7 +314,7 @@ void SaveLoad::SetText()
 		s += Format(txSaveDate, t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec);
 	}
 	if(slot.game_year != -1 && slot.game_month != -1 && slot.game_day != -1)
-		s += Format(txSaveTime, W.GetDate(slot.game_year, slot.game_month, slot.game_day));
+		s += Format(txSaveTime, world->GetDate(slot.game_year, slot.game_month, slot.game_day));
 	if(!slot.location.empty())
 		s += slot.location;
 
@@ -412,7 +412,7 @@ void SaveLoad::ShowSavePanel()
 //=================================================================================================
 void SaveLoad::ShowLoadPanel()
 {
-	bool online = (N.mp_load || Net::IsServer());
+	bool online = (net->mp_load || Net::IsServer());
 	SetSaveMode(false, online, online ? multi_saves : single_saves);
 	gui->ShowDialog(this);
 }

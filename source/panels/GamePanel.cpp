@@ -1,15 +1,13 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "GamePanel.h"
-#include "GameDialogBox.h"
+#include "DialogBox.h"
 #include "Input.h"
-#include "Game.h"
 #include "Language.h"
-#include "GlobalGui.h"
+#include "GameGui.h"
 
 //-----------------------------------------------------------------------------
 TexturePtr GamePanel::tBackground, GamePanel::tDialog;
-Game* GameDialogBox::game;
 
 //-----------------------------------------------------------------------------
 enum MenuId
@@ -63,11 +61,11 @@ void GamePanel::DrawBoxInternal()
 		gui->DrawSprite(box_img, box_img_pos, Color::Alpha(alpha2));
 
 	// du¿y tekst
-	gui->DrawText(GlobalGui::font, box_text, DTF_PARSE_SPECIAL, Color(0, 0, 0, alpha2), box_big);
+	gui->DrawText(GameGui::font, box_text, DTF_PARSE_SPECIAL, Color(0, 0, 0, alpha2), box_big);
 
 	// ma³y tekst
 	if(!box_text_small.empty())
-		gui->DrawText(GlobalGui::font_small, box_text_small, DTF_PARSE_SPECIAL, Color(0, 0, 0, alpha2), box_small);
+		gui->DrawText(GameGui::font_small, box_text_small, DTF_PARSE_SPECIAL, Color(0, 0, 0, alpha2), box_small);
 }
 
 //=================================================================================================
@@ -117,7 +115,7 @@ void GamePanel::UpdateBoxIndex(float dt, int index, int index2, bool refresh)
 
 	if(box_state == BOX_VISIBLE)
 	{
-		Int2 text_size = GlobalGui::font->CalculateSize(box_text);
+		Int2 text_size = GameGui::font->CalculateSize(box_text);
 		box_big = Rect::Create(Int2(0, 0), text_size);
 		Int2 size = text_size + Int2(24, 24);
 		Int2 pos2 = Int2(gui->cursor_pos) + Int2(24, 24);
@@ -141,7 +139,7 @@ void GamePanel::UpdateBoxIndex(float dt, int index, int index2, bool refresh)
 
 		if(!box_text_small.empty())
 		{
-			Int2 size_small = GlobalGui::font_small->CalculateSize(box_text_small, size.x - 24);
+			Int2 size_small = GameGui::font_small->CalculateSize(box_text_small, size.x - 24);
 			box_small = Rect::Create(Int2(0, 0), size_small);
 			int size_y = size_small.y;
 			size.y += size_y + 12;

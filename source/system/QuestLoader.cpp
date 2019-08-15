@@ -41,7 +41,7 @@ enum QuestKeyword
 //=================================================================================================
 void QuestLoader::DoLoading()
 {
-	engine = SM.GetEngine();
+	engine = script_mgr->GetEngine();
 	module = engine->GetModule("Quests", asGM_CREATE_IF_NOT_EXISTS);
 
 	Load("quests.txt", G_TOP);
@@ -94,7 +94,7 @@ void QuestLoader::LoadEntity(int top, const string& id)
 //=================================================================================================
 void QuestLoader::ParseQuest(const string& id)
 {
-	if(QM.FindQuest(id))
+	if(quest_mgr->FindQuest(id))
 		t.Throw("Id must be unique.");
 
 	Ptr<QuestScheme> quest;
@@ -155,7 +155,7 @@ void QuestLoader::ParseQuest(const string& id)
 	if(quest->type == QuestType::NotSet)
 		t.Throw("Quest type not set.");
 
-	QM.AddScriptedQuest(quest.Get());
+	quest_mgr->AddScriptedQuest(quest.Get());
 	QuestScheme::schemes.push_back(quest.Pin());
 }
 
@@ -181,7 +181,7 @@ void QuestLoader::ParseQuestList(const string& id)
 			info = nullptr;
 		else
 		{
-			info = QM.FindQuest(quest_id);
+			info = quest_mgr->FindQuest(quest_id);
 			if(!info)
 				t.Throw("Missing quest '%s'.", quest_id.c_str());
 		}
@@ -408,7 +408,7 @@ void QuestLoader::Finalize()
 			int type_id;
 			bool is_ref;
 			type->GetProperty(i, nullptr, &type_id, nullptr, nullptr, nullptr, &is_ref);
-			if(!SM.CheckVarType(type_id, is_ref))
+			if(!script_mgr->CheckVarType(type_id, is_ref))
 			{
 				Error("Quest '%s' invalid property declaration '%s'.", scheme->id.c_str(), type->GetPropertyDeclaration(i));
 				++content.errors;

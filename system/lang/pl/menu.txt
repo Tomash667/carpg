@@ -80,7 +80,7 @@ noNotes = "Brak notatek"
 addNote = "Dodaj notatkê"
 addTime = "Dodano %s:\n%s"
 
-[GameGui]
+[LevelGui]
 death = "Twoja dru¿yna zosta³a wybita! Powodzenia w przysz³ych przygodach...\nZabi³eœ %d istot, pozostali zabili %d."
 deathAlone = "Nie ¿yjesz! Mo¿e trzeba by³o nie podró¿owaæ samotnie?\nZabi³eœ %d istot, pozostali zabili %d."
 gameTimeout = "Jesteœ ju¿ za stary aby uganiaæ siê za potworami po podziemiach.\nCzas przejœæ na zas³u¿on¹ emeryturê i cieszyæ siê zgromadzonym bogactwem.\nZabi³eœ %d istot, inni zabili %d."

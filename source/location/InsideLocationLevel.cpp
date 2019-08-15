@@ -367,10 +367,10 @@ bool InsideLocationLevel::IsTileNearWall(const Int2& pt) const
 {
 	assert(pt.x > 0 && pt.y > 0 && pt.x < w - 1 && pt.y < h - 1);
 
-	return map[pt.x - 1 + pt.y*w].IsWall() ||
-		map[pt.x + 1 + pt.y*w].IsWall() ||
-		map[pt.x + (pt.y - 1)*w].IsWall() ||
-		map[pt.x + (pt.y + 1)*w].IsWall();
+	return map[pt.x - 1 + pt.y*w].IsWall()
+		|| map[pt.x + 1 + pt.y*w].IsWall()
+		|| map[pt.x + (pt.y - 1)*w].IsWall()
+		|| map[pt.x + (pt.y + 1)*w].IsWall();
 }
 
 //=================================================================================================

@@ -19,8 +19,9 @@
 #undef OUT
 
 //-----------------------------------------------------------------------------
-// slnet types
+// usings
 using namespace SLNet;
+using namespace app;
 
 //-----------------------------------------------------------------------------
 // angel script
@@ -50,20 +51,22 @@ class GameMessages;
 class GamePanel;
 class GamePanelContainer;
 class GameReader;
+class GameStats;
 class GameWriter;
-class GlobalGui;
 class InfoBox;
 class Inventory;
 class InventoryPanel;
 class Journal;
 class Level;
 class LevelAreaContext;
+class LevelGui;
 class LoadScreen;
 class LobbyApi;
 class MainMenu;
 class Minimap;
 class MpBox;
 class MultiplayerPanel;
+class Net;
 class Options;
 class Pathfinding;
 class PickServerPanel;
@@ -74,6 +77,7 @@ class ScriptManager;
 class ServerPanel;
 class StatsPanel;
 class TeamPanel;
+class World;
 class WorldMapGui;
 
 //-----------------------------------------------------------------------------
@@ -224,7 +228,14 @@ typedef pair<UnitData*, int> TmpSpawn;
 namespace global
 {
 	extern CommandParser* cmdp;
-	extern GlobalGui* gui;
+	extern Game* game;
+	extern GameGui* game_gui;
+	extern GameStats* game_stats;
+	extern Level* game_level;
+	extern Net* net;
 	extern Pathfinding* pathfinding;
+	extern QuestManager* quest_mgr;
+	extern ScriptManager* script_mgr;
+	extern World* world;
 }
 using namespace global;

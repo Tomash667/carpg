@@ -144,7 +144,6 @@
     <ClInclude Include="entity\UnitEventHandler.h" />
     <ClInclude Include="events\Arena.h" />
     <ClInclude Include="FOV.h" />
-    <ClInclude Include="GameComponent.h" />
     <ClInclude Include="GameCore.h" />
     <ClInclude Include="GameStats.h" />
     <ClInclude Include="generator\CampGenerator.h" />
@@ -174,8 +173,7 @@
     <ClInclude Include="net\PlayerInfo.h" />
     <ClInclude Include="panels\ActionPanel.h" />
     <ClInclude Include="panels\BookPanel.h" />
-    <ClInclude Include="panels\GameDialogBox.h" />
-    <ClInclude Include="panels\GlobalGui.h" />
+    <ClInclude Include="panels\GameGui.h" />
     <ClInclude Include="Pathfinding.h" />
     <ClInclude Include="quests\QuestHandler.h" />
     <ClInclude Include="quests\QuestConsts.h" />
@@ -247,7 +245,7 @@
     <ClInclude Include="panels\Controls.h" />
     <ClInclude Include="panels\CreateCharacterPanel.h" />
     <ClInclude Include="panels\CreateServerPanel.h" />
-    <ClInclude Include="panels\GameGui.h" />
+    <ClInclude Include="panels\LevelGui.h" />
     <ClInclude Include="panels\GameMenu.h" />
     <ClInclude Include="panels\GameMessages.h" />
     <ClInclude Include="panels\GamePanel.h" />
@@ -373,7 +371,7 @@
     <ClCompile Include="net\PlayerInfo.cpp" />
     <ClCompile Include="panels\ActionPanel.cpp" />
     <ClCompile Include="panels\BookPanel.cpp" />
-    <ClCompile Include="panels\GlobalGui.cpp" />
+    <ClCompile Include="panels\GameGui.cpp" />
     <ClCompile Include="Pathfinding.cpp" />
     <ClCompile Include="quests\Quest_Artifacts.cpp" />
     <ClCompile Include="quests\Quest_Contest.cpp" />
@@ -433,7 +431,7 @@
     <ClCompile Include="panels\Controls.cpp" />
     <ClCompile Include="panels\CreateCharacterPanel.cpp" />
     <ClCompile Include="panels\CreateServerPanel.cpp" />
-    <ClCompile Include="panels\GameGui.cpp" />
+    <ClCompile Include="panels\LevelGui.cpp" />
     <ClCompile Include="panels\GameMenu.cpp" />
     <ClCompile Include="panels\GameMessages.cpp" />
     <ClCompile Include="panels\GamePanel.cpp" />

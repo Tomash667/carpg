@@ -98,7 +98,7 @@ bool InsideBuilding::Read(BitStreamReader& f)
 		return false;
 	}
 	offset = Vec2(512.f*level_shift.x + 256.f, 512.f*level_shift.y + 256.f);
-	L.ProcessBuildingObjects(*this, L.city_ctx, this, building->inside_mesh, nullptr, 0, 0, Vec3(offset.x, 0, offset.y), building, nullptr, true);
+	game_level->ProcessBuildingObjects(*this, game_level->city_ctx, this, building->inside_mesh, nullptr, 0, 0, Vec3(offset.x, 0, offset.y), building, nullptr, true);
 
 	return true;
 }

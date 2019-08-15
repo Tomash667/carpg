@@ -103,7 +103,7 @@ void Trap::Write(BitStreamWriter& f)
 	f << pos;
 	f << obj.rot.y;
 
-	if(N.mp_load)
+	if(net->mp_load)
 	{
 		f.WriteCasted<byte>(state);
 		f << time;
@@ -133,7 +133,7 @@ bool Trap::Read(BitStreamReader& f)
 	trigger = false;
 	hitted = nullptr;
 
-	if(N.mp_load)
+	if(net->mp_load)
 	{
 		f.ReadCasted<byte>(state);
 		f >> time;

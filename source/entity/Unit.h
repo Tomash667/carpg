@@ -523,7 +523,7 @@ public:
 		else
 			return false;
 	}
-	void MakeItemsTeam(bool team);
+	void MakeItemsTeam(bool is_team);
 	void Heal(float heal)
 	{
 		hp += heal;

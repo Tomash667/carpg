@@ -5,7 +5,7 @@
 #include "Quest_Mages.h"
 #include "City.h"
 #include "InsideLocation.h"
-#include "GameGui.h"
+#include "LevelGui.h"
 #include "Spell.h"
 #include "Team.h"
 #include "SoundManager.h"
@@ -16,7 +16,7 @@
 #include "Quest_Tournament.h"
 #include "Pathfinding.h"
 #include "GameMessages.h"
-#include "GlobalGui.h"
+#include "GameGui.h"
 #include "Quest_Scripted.h"
 #include "ScriptManager.h"
 
@@ -118,7 +118,7 @@ void Game::UpdateAi(float dt)
 		throne = BaseUsable::Get("throne"),
 		iron_vein = BaseUsable::Get("iron_vein"),
 		gold_vein = BaseUsable::Get("gold_vein");
-	Quest_Tournament* tournament = QM.quest_tournament;
+	Quest_Tournament* tournament = quest_mgr->quest_tournament;
 
 	for(vector<AIController*>::iterator it = ais.begin(), end = ais.end(); it != end; ++it)
 	{
@@ -212,7 +212,7 @@ void Game::UpdateAi(float dt)
 
 			dist = Vec3::Distance(u.pos, (*it2)->pos);
 
-			if(dist < best_dist && L.CanSee(u, **it2))
+			if(dist < best_dist && game_level->CanSee(u, **it2))
 			{
 				best_dist = dist;
 				enemy = *it2;
@@ -280,7 +280,7 @@ void Game::UpdateAi(float dt)
 						{
 							Unit& target = **it2;
 							if(!target.to_remove && target.live_state == Unit::DEAD && !u.IsEnemy(target) && IsSet(target.data->flags, F_UNDEAD)
-								&& (dist = Vec3::Distance(u.pos, target.pos)) < spell_range && target.in_arena == u.in_arena && L.CanSee(u, target))
+								&& (dist = Vec3::Distance(u.pos, target.pos)) < spell_range && target.in_arena == u.in_arena && game_level->CanSee(u, target))
 							{
 								float prio = target.hpmax - dist * 10;
 								if(prio > best_prio)
@@ -299,7 +299,7 @@ void Game::UpdateAi(float dt)
 							Unit& target = **it2;
 							if(!target.to_remove && !u.IsEnemy(target) && !IsSet(target.data->flags, F_UNDEAD) && target.hpmax - target.hp > 100.f
 								&& (dist = Vec3::Distance(u.pos, target.pos)) < spell_range && target.in_arena == u.in_arena
-								&& (target.IsAlive() || target.IsTeamMember()) && L.CanSee(u, target))
+								&& (target.IsAlive() || target.IsTeamMember()) && game_level->CanSee(u, target))
 							{
 								float prio = target.hpmax - target.hp;
 								if(&target == &u)
@@ -515,7 +515,7 @@ void Game::UpdateAi(float dt)
 									else
 									{
 										// target is not in the building but the hero is - leave the building
-										ai.idle_data.region.area = L.local_area;
+										ai.idle_data.region.area = game_level->local_area;
 										ai.idle_data.region.pos = static_cast<InsideBuilding*>(u.area)->exit_region.Midpoint().XZ();
 									}
 
@@ -595,11 +595,11 @@ void Game::UpdateAi(float dt)
 						{
 							ai.idle_action = AIController::Idle_MoveRegion;
 							ai.timer = Random(30.f, 40.f);
-							ai.idle_data.region.area = L.local_area;
+							ai.idle_data.region.area = game_level->local_area;
 							ai.idle_data.region.exit = false;
 							ai.idle_data.region.pos = u.area->area_type == LevelArea::Type::Building ?
 								static_cast<InsideBuilding*>(u.area)->exit_region.Midpoint().XZ() :
-								L.GetExitPos(u);
+								game_level->GetExitPos(u);
 						}
 						break;
 					case ORDER_LOOK_AT:
@@ -656,7 +656,7 @@ void Game::UpdateAi(float dt)
 							}
 							else
 							{
-								InsideBuilding* inn = L.city_ctx->FindInn();
+								InsideBuilding* inn = game_level->city_ctx->FindInn();
 								if(u.area->area_type == LevelArea::Type::Outside)
 								{
 									// go to inn
@@ -685,7 +685,7 @@ void Game::UpdateAi(float dt)
 										// is not inside inn - go outside
 										ai.timer = Random(15.f, 30.f);
 										ai.idle_action = AIController::Idle_MoveRegion;
-										ai.idle_data.region.area = L.local_area;
+										ai.idle_data.region.area = game_level->local_area;
 										ai.idle_data.region.exit = false;
 										ai.idle_data.region.pos = static_cast<InsideBuilding*>(u.area)->exit_region.Midpoint().XZ();
 									}
@@ -817,19 +817,19 @@ void Game::UpdateAi(float dt)
 									if(u.area->area_type == LevelArea::Type::Outside)
 									{
 										// unit is outside
-										int where = Rand() % (IsSet(L.city_ctx->flags, City::HaveTrainingGrounds) ? 3 : 2);
+										int where = Rand() % (IsSet(game_level->city_ctx->flags, City::HaveTrainingGrounds) ? 3 : 2);
 										if(where == 0)
 										{
 											// go to random position
 											ai.loc_timer = ai.timer = Random(30.f, 120.f);
 											ai.idle_action = AIController::Idle_Move;
-											ai.idle_data.pos = L.city_ctx->buildings[Rand() % L.city_ctx->buildings.size()].walk_pt
+											ai.idle_data.pos = game_level->city_ctx->buildings[Rand() % game_level->city_ctx->buildings.size()].walk_pt
 												+ Vec3::Random(Vec3(-1.f, 0, -1), Vec3(1, 0, 1));
 										}
 										else if(where == 1)
 										{
 											// go to inn
-											InsideBuilding* inn = L.city_ctx->FindInn();
+											InsideBuilding* inn = game_level->city_ctx->FindInn();
 											ai.loc_timer = ai.timer = Random(75.f, 150.f);
 											ai.idle_action = AIController::Idle_MoveRegion;
 											ai.idle_data.region.area = inn;
@@ -841,7 +841,7 @@ void Game::UpdateAi(float dt)
 											// go to training grounds
 											ai.loc_timer = ai.timer = Random(75.f, 150.f);
 											ai.idle_action = AIController::Idle_Move;
-											ai.idle_data.pos = L.city_ctx->FindBuilding(BuildingGroup::BG_TRAINING_GROUNDS)->walk_pt
+											ai.idle_data.pos = game_level->city_ctx->FindBuilding(BuildingGroup::BG_TRAINING_GROUNDS)->walk_pt
 												+ Vec3::Random(Vec3(-1.f, 0, -1), Vec3(1, 0, 1));
 										}
 									}
@@ -850,7 +850,7 @@ void Game::UpdateAi(float dt)
 										// leave building
 										ai.loc_timer = ai.timer = Random(15.f, 30.f);
 										ai.idle_action = AIController::Idle_MoveRegion;
-										ai.idle_data.region.area = L.local_area;
+										ai.idle_data.region.area = game_level->local_area;
 										ai.idle_data.region.exit = false;
 										ai.idle_data.region.pos = static_cast<InsideBuilding*>(u.area)->exit_region.Midpoint().XZ();
 									}
@@ -861,7 +861,7 @@ void Game::UpdateAi(float dt)
 									// go near random building
 									ai.loc_timer = ai.timer = Random(30.f, 120.f);
 									ai.idle_action = AIController::Idle_Move;
-									ai.idle_data.pos = L.city_ctx->buildings[Rand() % L.city_ctx->buildings.size()].walk_pt
+									ai.idle_data.pos = game_level->city_ctx->buildings[Rand() % game_level->city_ctx->buildings.size()].walk_pt
 										+ Vec3::Random(Vec3(-1.f, 0, -1), Vec3(1, 0, 1));
 									ai.city_wander = true;
 								}
@@ -906,8 +906,8 @@ void Game::UpdateAi(float dt)
 									goto normal_idle_action;
 							}
 							else if(IsSet(u.data->flags3, F3_DRUNK_MAGE)
-								&& QM.quest_mages2->mages_state >= Quest_Mages2::State::OldMageJoined
-								&& QM.quest_mages2->mages_state < Quest_Mages2::State::MageCured
+								&& quest_mgr->quest_mages2->mages_state >= Quest_Mages2::State::OldMageJoined
+								&& quest_mgr->quest_mages2->mages_state < Quest_Mages2::State::MageCured
 								&& Rand() % 3 == 0)
 							{
 								// drink something
@@ -1015,7 +1015,7 @@ void Game::UpdateAi(float dt)
 									if(IsSet(u.data->flags2, F2_DONT_TALK))
 										what = Rand() % 3;
 									else if(IsSet(u.data->flags3, F3_TALK_AT_COMPETITION)
-										&& (QM.quest_contest->state >= Quest_Contest::CONTEST_STARTING
+										&& (quest_mgr->quest_contest->state >= Quest_Contest::CONTEST_STARTING
 										|| tournament->GetState() >= Quest_Tournament::TOURNAMENT_STARTING))
 									{
 										what = AI_LOOK;
@@ -1035,7 +1035,7 @@ void Game::UpdateAi(float dt)
 											Usable& use = **it2;
 											if(!use.user && (use.base != throne || IsSet(u.data->flags2, F2_SIT_ON_THRONE))
 												&& Vec3::Distance(use.pos, u.pos) < 10.f && !use.base->IsContainer()
-												&& L.CanSee(area, use.pos, u.pos))
+												&& game_level->CanSee(area, use.pos, u.pos))
 											{
 												const Item* needed_item = use.base->item;
 												if(!needed_item || u.HaveItem(needed_item) || u.slots[SLOT_WEAPON] == needed_item)
@@ -1088,7 +1088,7 @@ void Game::UpdateAi(float dt)
 											if((*it2)->to_remove || !(*it2)->IsStanding() || (*it2)->IsInvisible() || *it2 == &u)
 												continue;
 
-											if(Vec3::Distance(u.pos, (*it2)->pos) < 10.f && L.CanSee(u, **it2))
+											if(Vec3::Distance(u.pos, (*it2)->pos) < 10.f && game_level->CanSee(u, **it2))
 												close_enemies.push_back(*it2);
 										}
 										if(!close_enemies.empty())
@@ -1119,7 +1119,7 @@ void Game::UpdateAi(float dt)
 											if((*it2)->to_remove || !(*it2)->IsStanding() || (*it2)->IsInvisible() || *it2 == &u)
 												continue;
 
-											if(Vec3::Distance(u.pos, (*it2)->pos) < d && L.CanSee(u, **it2))
+											if(Vec3::Distance(u.pos, (*it2)->pos) < d && game_level->CanSee(u, **it2))
 												close_enemies.push_back(*it2);
 										}
 										if(!close_enemies.empty())
@@ -1149,14 +1149,14 @@ void Game::UpdateAi(float dt)
 									}
 									else
 										ai.idle_data.pos = u.pos + Vec3::Random(Vec3(-5.f, 0, -5.f), Vec3(5.f, 0, 5.f));
-									if(L.city_ctx && !L.city_ctx->IsInsideCity(ai.idle_data.pos))
+									if(game_level->city_ctx && !game_level->city_ctx->IsInsideCity(ai.idle_data.pos))
 									{
 										ai.timer = Random(2.f, 4.f);
 										ai.idle_action = AIController::Idle_None;
 									}
-									else if(!L.location->outside)
+									else if(!game_level->location->outside)
 									{
-										InsideLocation* inside = static_cast<InsideLocation*>(L.location);
+										InsideLocation* inside = static_cast<InsideLocation*>(game_level->location);
 										if(!inside->GetLevelData().IsValidWalkPos(ai.idle_data.pos, u.GetUnitRadius()))
 										{
 											ai.timer = Random(2.f, 4.f);
@@ -1210,7 +1210,7 @@ void Game::UpdateAi(float dt)
 								}
 								break;
 							case AIController::Idle_Look:
-								if(ai.idle_data.unit->to_remove || Vec3::Distance2d(u.pos, ai.idle_data.unit->pos) > 10.f || !L.CanSee(u, *ai.idle_data.unit))
+								if(ai.idle_data.unit->to_remove || Vec3::Distance2d(u.pos, ai.idle_data.unit->pos) > 10.f || !game_level->CanSee(u, *ai.idle_data.unit))
 								{
 									// stop looking
 									ai.idle_action = AIController::Idle_Rot;
@@ -1231,7 +1231,7 @@ void Game::UpdateAi(float dt)
 							case AIController::Idle_WalkTo:
 								if(ai.idle_data.unit->IsStanding() && !ai.idle_data.unit->to_remove)
 								{
-									if(L.CanSee(u, *ai.idle_data.unit))
+									if(game_level->CanSee(u, *ai.idle_data.unit))
 									{
 										if(Vec3::Distance2d(u.pos, ai.idle_data.unit->pos) < 1.5f)
 										{
@@ -1242,7 +1242,7 @@ void Game::UpdateAi(float dt)
 											cstring msg = GetRandomIdleText(u);
 
 											int ani = 0;
-											gui->game_gui->AddSpeechBubble(&u, msg);
+											game_gui->level_gui->AddSpeechBubble(&u, msg);
 											if(u.data->type == UNIT_TYPE::HUMAN && Rand() % 3 != 0)
 											{
 												ani = Rand() % 2 + 1;
@@ -1274,7 +1274,7 @@ void Game::UpdateAi(float dt)
 												*c.str = msg;
 												c.id = ani;
 												c.count = 0;
-												N.net_strs.push_back(c.str);
+												net->net_strs.push_back(c.str);
 											}
 										}
 										else
@@ -1510,17 +1510,17 @@ void Game::UpdateAi(float dt)
 							case AIController::Idle_RunRegion:
 								if(Vec3::Distance2d(u.pos, ai.idle_data.region.pos) < u.GetUnitRadius() * 2)
 								{
-									if(L.city_ctx && !IsSet(L.city_ctx->flags, City::HaveExit)
+									if(game_level->city_ctx && !IsSet(game_level->city_ctx->flags, City::HaveExit)
 										&& ai.idle_data.region.area->area_type == LevelArea::Type::Outside && !ai.idle_data.region.exit)
 									{
 										// in exit area, go to border
 										ai.idle_data.region.exit = true;
-										ai.idle_data.region.pos = L.GetExitPos(u, true);
+										ai.idle_data.region.pos = game_level->GetExitPos(u, true);
 									}
 									else
 									{
 										ai.idle_action = AIController::Idle_None;
-										L.WarpUnit(&u, ai.idle_data.region.area->area_id);
+										game_level->WarpUnit(&u, ai.idle_data.region.area->area_id);
 										if(ai.idle_data.region.area->area_type != LevelArea::Type::Building || (u.IsFollower() && u.order == ORDER_FOLLOW))
 										{
 											ai.loc_timer = -1.f;
@@ -1940,7 +1940,7 @@ void Game::UpdateAi(float dt)
 					if(Vec3::Distance(u.pos, ai.target_last_pos) < 1.f || ai.timer <= 0.f)
 					{
 						// last seen point reached
-						if(L.location->outside)
+						if(game_level->location->outside)
 						{
 							// outside, therefore idle
 							ai.state = AIController::Idle;
@@ -1952,7 +1952,7 @@ void Game::UpdateAi(float dt)
 						}
 						else
 						{
-							InsideLocation* inside = static_cast<InsideLocation*>(L.location);
+							InsideLocation* inside = static_cast<InsideLocation*>(game_level->location);
 							Room* room = inside->FindChaseRoom(u.pos);
 							if(room)
 							{
@@ -2028,7 +2028,7 @@ void Game::UpdateAi(float dt)
 					else if(Vec3::Distance(u.pos, ai.target_last_pos) < 1.f)
 					{
 						// search for another room
-						InsideLocation* inside = static_cast<InsideLocation*>(L.location);
+						InsideLocation* inside = static_cast<InsideLocation*>(game_level->location);
 						InsideLocationLevel& lvl = inside->GetLevelData();
 						Room* room = lvl.GetNearestRoom(u.pos);
 						ai.escape_room = room->connected[Rand() % room->connected.size()];
@@ -2113,7 +2113,7 @@ void Game::UpdateAi(float dt)
 					if(enemy)
 					{
 						ai.target_last_pos = enemy->pos;
-						if(L.location->outside)
+						if(game_level->location->outside)
 						{
 							// underground advanced escape, run ahead when outside
 							if(Vec3::Distance2d(enemy->pos, u.pos) < 3.f)
@@ -2159,7 +2159,7 @@ void Game::UpdateAi(float dt)
 								mid /= (float)close_enemies.size();
 
 								// which kind of room is it?
-								Room* room = static_cast<InsideLocation*>(L.location)->GetLevelData().FindEscapeRoom(u.pos, mid);
+								Room* room = static_cast<InsideLocation*>(game_level->location)->GetLevelData().FindEscapeRoom(u.pos, mid);
 
 								if(room)
 								{
@@ -2631,7 +2631,7 @@ void Game::UpdateAi(float dt)
 						&& target_tile != ai.pf_target_tile && ai.pf_timer <= 0.f))
 					{
 						ai.pf_timer = Random(0.2f, 0.4f);
-						if(pathfinding->FindPath(area, my_tile, target_tile, ai.pf_path, !IsSet(u.data->flags, F_DONT_OPEN), ai.city_wander && L.city_ctx != nullptr))
+						if(pathfinding->FindPath(area, my_tile, target_tile, ai.pf_path, !IsSet(u.data->flags, F_DONT_OPEN), ai.city_wander && game_level->city_ctx != nullptr))
 						{
 							// path found
 							ai.pf_state = AIController::PFS_GLOBAL_DONE;
@@ -2659,8 +2659,8 @@ void Game::UpdateAi(float dt)
 						if(door.IsBlocking() && door.state == Door::Closed && door.locked == LOCK_NONE && Vec3::Distance(door.pos, u.pos) < 1.f)
 						{
 							// doors get opened automatically when AI moves next to them
-							if(!L.location->outside)
-								L.minimap_opened_doors = true;
+							if(!game_level->location->outside)
+								game_level->minimap_opened_doors = true;
 							door.state = Door::Opening;
 							door.mesh_inst->Play(&door.mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);
 							door.mesh_inst->frame_end_info = false;
@@ -2682,9 +2682,9 @@ void Game::UpdateAi(float dt)
 
 				// local pathfinding
 				Vec3 move_target;
-				if(ai.pf_state == AIController::PFS_GLOBAL_DONE ||
-					ai.pf_state == AIController::PFS_GLOBAL_NOT_USED ||
-					ai.pf_state == AIController::PFS_LOCAL_TRY_WALK)
+				if(ai.pf_state == AIController::PFS_GLOBAL_DONE
+					|| ai.pf_state == AIController::PFS_GLOBAL_NOT_USED
+					|| ai.pf_state == AIController::PFS_LOCAL_TRY_WALK)
 				{
 					Int2 local_tile;
 					bool is_end_point;
@@ -2771,8 +2771,8 @@ void Game::UpdateAi(float dt)
 				}
 				else if(ai.pf_state == AIController::PFS_MANUAL_WALK)
 					move_target = target_pos;
-				else if(ai.pf_state == AIController::PFS_WALKING ||
-					ai.pf_state == AIController::PFS_WALKING_LOCAL)
+				else if(ai.pf_state == AIController::PFS_WALKING
+					|| ai.pf_state == AIController::PFS_WALKING_LOCAL)
 				{
 					const Int2& pt = ai.pf_local_path.back();
 					move_target = Vec3(0.25f*pt.x + 0.125f, 0, 0.25f*pt.y + 0.125f);
@@ -3013,7 +3013,7 @@ void Game::AI_Shout(LevelArea& area, AIController& ai)
 			|| u->ai->alert_target || u->dont_attack)
 			continue;
 
-		if(Vec3::Distance(unit.pos, u->pos) <= 20.f && L.CanSee(unit, *u))
+		if(Vec3::Distance(unit.pos, u->pos) <= 20.f && game_level->CanSee(unit, *u))
 		{
 			u->ai->alert_target = ai.target;
 			u->ai->alert_target_pos = ai.target_last_pos;
@@ -3122,7 +3122,7 @@ void Game::AI_HitReaction(Unit& unit, const Vec3& pos)
 			continue;
 
 		if((u->ai->state == AIController::Idle || u->ai->state == AIController::SearchEnemy)
-			&& Vec3::Distance(unit.pos, u->pos) <= 20.f && L.CanSee(unit, *u))
+			&& Vec3::Distance(unit.pos, u->pos) <= 20.f && game_level->CanSee(unit, *u))
 		{
 			AIController* ai2 = u->ai;
 			ai2->target_last_pos = pos;
@@ -3196,7 +3196,7 @@ void Game::CheckAutoTalk(Unit& unit, float dt)
 	for(auto& near_unit : near_units)
 	{
 		Unit& talk_target = *near_unit.unit;
-		if(L.CanSee(unit, talk_target))
+		if(game_level->CanSee(unit, talk_target))
 		{
 			bool ok = true;
 			for(vector<Unit*>::iterator it2 = area.units.begin(), end2 = area.units.end(); it2 != end2; ++it2)
@@ -3206,7 +3206,7 @@ void Game::CheckAutoTalk(Unit& unit, float dt)
 					continue;
 
 				if(check_unit.IsAlive() && talk_target.IsEnemy(check_unit) && check_unit.IsAI() && !check_unit.dont_attack
-					&& Vec3::Distance2d(talk_target.pos, check_unit.pos) < ALERT_RANGE && L.CanSee(check_unit, talk_target))
+					&& Vec3::Distance2d(talk_target.pos, check_unit.pos) < ALERT_RANGE && game_level->CanSee(check_unit, talk_target))
 				{
 					ok = false;
 					break;

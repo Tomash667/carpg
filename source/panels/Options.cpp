@@ -3,7 +3,7 @@
 #include "Options.h"
 #include "Language.h"
 #include "Input.h"
-#include "GlobalGui.h"
+#include "GameGui.h"
 #include "Game.h"
 #include "MenuList.h"
 #include "SoundManager.h"
@@ -85,7 +85,7 @@ public:
 };
 
 //=================================================================================================
-Options::Options(const DialogInfo& info) : GameDialogBox(info)
+Options::Options(const DialogInfo& info) : DialogBox(info)
 {
 	size = Int2(570, 460);
 	bts.resize(2);
@@ -177,23 +177,23 @@ void Options::LoadLanguage()
 	bts[0].id = IdOk;
 	bts[0].parent = this;
 	bts[0].text = Str("ok");
-	bts[0].size = GlobalGui::font->CalculateSize(bts[0].text) + Int2(24, 24);
+	bts[0].size = GameGui::font->CalculateSize(bts[0].text) + Int2(24, 24);
 	bts[1].id = IdControls;
 	bts[1].parent = this;
 	bts[1].text = s.Get("controls");
-	bts[1].size = GlobalGui::font->CalculateSize(bts[1].text) + Int2(24, 24);
+	bts[1].size = GameGui::font->CalculateSize(bts[1].text) + Int2(24, 24);
 	bts[0].size.x = bts[1].size.x = max(bts[0].size.x, bts[1].size.x);
 	bts[0].pos = Int2(20, 410);
 	bts[1].pos = Int2(bts[0].size.x + 40, 410);
 
 	// lista rozdzielczoœci
-	int refresh_hz = app::render->GetRefreshRate();
+	int refresh_hz = render->GetRefreshRate();
 	res.parent = this;
 	res.pos = Int2(20, 80);
 	res.size = Int2(250, 200);
 	res.event_handler = DialogEvent(this, &Options::OnChangeRes);
 	vector<Resolution> resolutions;
-	app::render->GetResolutions(resolutions);
+	render->GetResolutions(resolutions);
 	LocalVector<Res*> vres;
 	for(Resolution& r : resolutions)
 		vres->push_back(new Res(r.size, r.hz));
@@ -202,7 +202,7 @@ void Options::LoadLanguage()
 	for(auto r : vres)
 	{
 		res.Add(r);
-		if(r->size == app::engine->GetWindowSize() && r->hz == refresh_hz)
+		if(r->size == engine->GetWindowSize() && r->hz == refresh_hz)
 			res.SetIndex(index);
 		++index;
 	}
@@ -217,11 +217,11 @@ void Options::LoadLanguage()
 	multisampling.event_handler = DialogEvent(this, &Options::OnChangeMultisampling);
 	multisampling.Add(new MultisamplingItem(0, 0));
 	int ms, msq;
-	app::render->GetMultisampling(ms, msq);
+	render->GetMultisampling(ms, msq);
 	if(ms == 0)
 		multisampling.SetIndex(0);
 	vector<Int2> ms_modes;
-	app::render->GetMultisamplingModes(ms_modes);
+	render->GetMultisamplingModes(ms_modes);
 	index = 1;
 	for(Int2& mode : ms_modes)
 	{
@@ -252,36 +252,36 @@ void Options::Draw(ControlDrawData*)
 
 	// tekst OPCJE
 	Rect r = { global_pos.x, global_pos.y + 8, global_pos.x + size.x, global_pos.y + size.y };
-	gui->DrawText(GlobalGui::font_big, txOPTIONS, DTF_TOP | DTF_CENTER, Color::Black, r);
+	gui->DrawText(GameGui::font_big, txOPTIONS, DTF_TOP | DTF_CENTER, Color::Black, r);
 
 	// tekst Rozdzielczoœæ:
 	Rect r2 = { global_pos.x + 10, global_pos.y + 50, global_pos.x + size.x, global_pos.y + 75 };
-	gui->DrawText(GlobalGui::font, txResolution, DTF_SINGLELINE, Color::Black, r2);
+	gui->DrawText(GameGui::font, txResolution, DTF_SINGLELINE, Color::Black, r2);
 	// Multisampling:
 	r2.Top() = global_pos.y + 300;
 	r2.Bottom() = r2.Top() + 20;
-	gui->DrawText(GlobalGui::font, txMultisampling, DTF_SINGLELINE, Color::Black, r2);
+	gui->DrawText(GameGui::font, txMultisampling, DTF_SINGLELINE, Color::Black, r2);
 	// Jêzyk:
 	r2.Top() = global_pos.y + 360;
 	r2.Bottom() = r2.Top() + 20;
-	gui->DrawText(GlobalGui::font, txLanguage, DTF_SINGLELINE, Color::Black, r2);
+	gui->DrawText(GameGui::font, txLanguage, DTF_SINGLELINE, Color::Black, r2);
 	// G³oœnoœæ dŸwiêku (0)
 	r2.Left() = global_pos.x + 290;
 	r2.Top() = global_pos.y + 270;
 	r2.Bottom() = r2.Top() + 20;
-	gui->DrawText(GlobalGui::font, Format("%s (%d)", txSoundVolume, sound_volume), DTF_SINGLELINE, Color::Black, r2);
+	gui->DrawText(GameGui::font, Format("%s (%d)", txSoundVolume, sound_volume), DTF_SINGLELINE, Color::Black, r2);
 	// G³oœnoœæ muzyki (0)
 	r2.Top() = global_pos.y + 310;
 	r2.Bottom() = r2.Top() + 20;
-	gui->DrawText(GlobalGui::font, Format("%s (%d)", txMusicVolume, music_volume), DTF_SINGLELINE, Color::Black, r2);
+	gui->DrawText(GameGui::font, Format("%s (%d)", txMusicVolume, music_volume), DTF_SINGLELINE, Color::Black, r2);
 	// Czu³oœæ myszki (0)
 	r2.Top() = global_pos.y + 350;
 	r2.Bottom() = r2.Top() + 20;
-	gui->DrawText(GlobalGui::font, Format("%s (%d)", txMouseSensitivity, mouse_sensitivity), DTF_SINGLELINE, Color::Black, r2);
+	gui->DrawText(GameGui::font, Format("%s (%d)", txMouseSensitivity, mouse_sensitivity), DTF_SINGLELINE, Color::Black, r2);
 	// Zasiêg trawy (0)
 	r2.Top() = global_pos.y + 390;
 	r2.Bottom() = r2.Top() + 20;
-	gui->DrawText(GlobalGui::font, Format("%s (%d)", txGrassRange, grass_range), DTF_SINGLELINE, Color::Black, r2);
+	gui->DrawText(GameGui::font, Format("%s (%d)", txGrassRange, grass_range), DTF_SINGLELINE, Color::Black, r2);
 
 	// listbox z rozdzielczoœciami
 	res.Draw();
@@ -380,15 +380,15 @@ void Options::Event(GuiEvent e)
 			game->SaveOptions();
 			break;
 		case IdFullscreen:
-			app::engine->ChangeMode(check[0].checked);
+			engine->ChangeMode(check[0].checked);
 			break;
 		case IdChangeRes:
 			break;
 		case IdSoundVolume:
-			app::sound_mgr->SetSoundVolume(sound_volume);
+			sound_mgr->SetSoundVolume(sound_volume);
 			break;
 		case IdMusicVolume:
-			app::sound_mgr->SetMusicVolume(music_volume);
+			sound_mgr->SetMusicVolume(music_volume);
 			break;
 		case IdMouseSensitivity:
 			game->settings.mouse_sensitivity = mouse_sensitivity;
@@ -398,7 +398,7 @@ void Options::Event(GuiEvent e)
 			game->settings.grass_range = (float)grass_range;
 			break;
 		case IdControls:
-			gui->ShowDialog((DialogBox*)game->gui->controls);
+			gui->ShowDialog((DialogBox*)game_gui->controls);
 			break;
 		case IdGlow:
 			game->cl_glow = check[1].checked;
@@ -410,7 +410,7 @@ void Options::Event(GuiEvent e)
 			game->cl_specularmap = check[3].checked;
 			break;
 		case IdVsync:
-			app::render->SetVsync(!app::render->IsVsyncEnabled());
+			render->SetVsync(!render->IsVsyncEnabled());
 			break;
 		}
 	}
@@ -419,15 +419,15 @@ void Options::Event(GuiEvent e)
 //=================================================================================================
 void Options::SetOptions()
 {
-	check[0].checked = app::engine->IsFullscreen();
+	check[0].checked = engine->IsFullscreen();
 	check[1].checked = game->cl_glow;
 	check[2].checked = game->cl_normalmap;
 	check[3].checked = game->cl_specularmap;
-	check[4].checked = app::render->IsVsyncEnabled();
+	check[4].checked = render->IsVsyncEnabled();
 
 	Res& re = *res.GetItemCast<Res>();
-	const Int2& wnd_size = app::engine->GetWindowSize();
-	int refresh_hz = app::render->GetRefreshRate();
+	const Int2& wnd_size = engine->GetWindowSize();
+	int refresh_hz = render->GetRefreshRate();
 	if(re.size != wnd_size || re.hz != refresh_hz)
 	{
 		auto& ress = res.GetItemsCast<Res>();
@@ -445,7 +445,7 @@ void Options::SetOptions()
 
 	MultisamplingItem& mi = *multisampling.GetItemCast<MultisamplingItem>();
 	int ms, msq;
-	app::render->GetMultisampling(ms, msq);
+	render->GetMultisampling(ms, msq);
 	if(mi.level != ms || mi.quality != msq)
 	{
 		auto& multis = multisampling.GetItemsCast<MultisamplingItem>();
@@ -460,14 +460,14 @@ void Options::SetOptions()
 		}
 	}
 
-	if(sound_volume != app::sound_mgr->GetSoundVolume())
+	if(sound_volume != sound_mgr->GetSoundVolume())
 	{
-		sound_volume = app::sound_mgr->GetSoundVolume();
+		sound_volume = sound_mgr->GetSoundVolume();
 		scroll[0].SetValue(float(sound_volume) / 100.f);
 	}
-	if(music_volume != app::sound_mgr->GetMusicVolume())
+	if(music_volume != sound_mgr->GetMusicVolume())
 	{
-		music_volume = app::sound_mgr->GetMusicVolume();
+		music_volume = sound_mgr->GetMusicVolume();
 		scroll[1].SetValue(float(music_volume) / 100.f);
 	}
 	if(mouse_sensitivity != game->settings.mouse_sensitivity)
@@ -486,7 +486,7 @@ void Options::SetOptions()
 void Options::OnChangeRes(int)
 {
 	Res& r = *res.GetItemCast<Res>();
-	app::engine->ChangeMode(r.size, app::engine->IsFullscreen(), r.hz);
+	engine->ChangeMode(r.size, engine->IsFullscreen(), r.hz);
 	Event((GuiEvent)IdChangeRes);
 }
 
@@ -494,7 +494,7 @@ void Options::OnChangeRes(int)
 void Options::OnChangeMultisampling(int id)
 {
 	MultisamplingItem& multi = *multisampling.GetItemCast<MultisamplingItem>();
-	if(app::render->SetMultisampling(multi.level, multi.quality) == 0)
+	if(render->SetMultisampling(multi.level, multi.quality) == 0)
 		gui->SimpleDialog(txMultisamplingError, this);
 }
 

@@ -1,7 +1,7 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "GameDialogBox.h"
+#include "DialogBox.h"
 #include "Grid.h"
 #include "InputTextBox.h"
 #include "Class.h"
@@ -18,7 +18,7 @@ enum LobbyUpdate
 };
 
 //-----------------------------------------------------------------------------
-class ServerPanel : public GameDialogBox
+class ServerPanel : public DialogBox
 {
 public:
 	explicit ServerPanel(const DialogInfo& info);

@@ -1,11 +1,11 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "GameDialogBox.h"
+#include "DialogBox.h"
 #include "TextBox.h"
 
 //-----------------------------------------------------------------------------
-class MultiplayerPanel : public GameDialogBox
+class MultiplayerPanel : public DialogBox
 {
 public:
 	explicit MultiplayerPanel(const DialogInfo& info);

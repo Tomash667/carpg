@@ -5,7 +5,7 @@
 #include "QuestManager.h"
 #include "Quest_Contest.h"
 #include "CreateCharacterPanel.h"
-#include "GameGui.h"
+#include "LevelGui.h"
 #include "Journal.h"
 #include "LoadScreen.h"
 #include "MainMenu.h"
@@ -18,7 +18,7 @@
 #include "SoundManager.h"
 #include "ParticleSystem.h"
 #include "Game.h"
-#include "GlobalGui.h"
+#include "GameGui.h"
 
 //=================================================================================================
 void Quest_Tutorial::LoadLanguage()
@@ -31,28 +31,26 @@ void Quest_Tutorial::LoadLanguage()
 //=================================================================================================
 void Quest_Tutorial::Start()
 {
-	Game& game = Game::Get();
-
-	game.LoadingStart(1);
+	game->LoadingStart(1);
 
 	HumanData hd;
-	hd.Get(*game.gui->create_character->unit->human_data);
-	game.NewGameCommon(game.gui->create_character->clas, game.gui->create_character->player_name.c_str(), hd, game.gui->create_character->cc, true);
+	hd.Get(*game_gui->create_character->unit->human_data);
+	game->NewGameCommon(game_gui->create_character->clas, game_gui->create_character->player_name.c_str(), hd, game_gui->create_character->cc, true);
 	in_tutorial = true;
 	state = 0;
 	texts.clear();
-	QM.quest_contest->state = Quest_Contest::CONTEST_NOT_DONE;
-	game.pc_data.autowalk = false;
-	game.pc->shortcuts[2].type = Shortcut::TYPE_NONE; // disable action in tutorial
+	quest_mgr->quest_contest->state = Quest_Contest::CONTEST_NOT_DONE;
+	game->pc_data.autowalk = false;
+	game->pc->shortcuts[2].type = Shortcut::TYPE_NONE; // disable action in tutorial
 
 	// ekwipunek
-	game.pc->unit->ClearInventory();
+	game->pc->unit->ClearInventory();
 	auto item = Item::Get("al_clothes");
-	game.PreloadItem(item);
-	game.pc->unit->slots[SLOT_ARMOR] = item;
-	game.pc->unit->weight += game.pc->unit->slots[SLOT_ARMOR]->weight;
-	game.pc->unit->gold = 10;
-	game.gui->journal->GetNotes().push_back(txTutNote);
+	game->PreloadItem(item);
+	game->pc->unit->slots[SLOT_ARMOR] = item;
+	game->pc->unit->weight += game->pc->unit->slots[SLOT_ARMOR]->weight;
+	game->pc->unit->gold = 10;
+	game_gui->journal->GetNotes().push_back(txTutNote);
 
 	// startowa lokacja
 	SingleInsideLocation* loc = new SingleInsideLocation;
@@ -61,21 +59,21 @@ void Quest_Tutorial::Start()
 	loc->type = L_DUNGEON;
 	loc->image = LI_DUNGEON;
 	loc->group = UnitGroup::empty;
-	W.StartInLocation(loc);
-	L.dungeon_level = 0;
+	world->StartInLocation(loc);
+	game_level->dungeon_level = 0;
 
-	game.loc_gen_factory->Get(L.location)->OnEnter();
+	game->loc_gen_factory->Get(game_level->location)->OnEnter();
 
 	// go!
-	game.LoadResources("", false);
-	L.event_handler = nullptr;
-	game.SetMusic();
-	game.gui->load_screen->visible = false;
-	game.gui->main_menu->visible = false;
-	game.gui->game_gui->visible = true;
-	game.gui->world_map->Hide();
-	game.clear_color = game.clear_color_next;
-	L.camera.Reset();
+	game->LoadResources("", false);
+	game_level->event_handler = nullptr;
+	game->SetMusic();
+	game_gui->load_screen->visible = false;
+	game_gui->main_menu->visible = false;
+	game_gui->level_gui->visible = true;
+	game_gui->world_map->Hide();
+	game->clear_color = game->clear_color_next;
+	game_level->camera.Reset();
 }
 
 /*
@@ -100,7 +98,7 @@ state:
 //=================================================================================================
 void Quest_Tutorial::Update()
 {
-	PlayerController* pc = Game::Get().pc;
+	PlayerController* pc = game->pc;
 
 	// check tutorial texts
 	for(Text& text : texts)
@@ -177,11 +175,10 @@ void Quest_Tutorial::Update()
 //=================================================================================================
 void Quest_Tutorial::Finish(int)
 {
-	Game& game = Game::Get();
 	gui->GetDialog("tut_end")->visible = false;
 	finished_tutorial = true;
-	game.ClearGame();
-	game.StartNewGame();
+	game->ClearGame();
+	game->StartNewGame();
 }
 
 //=================================================================================================
@@ -254,7 +251,7 @@ void Quest_Tutorial::HandleEvent(int activate, int unlock)
 
 	if(unlock != -1)
 	{
-		for(Door* door : L.local_area->doors)
+		for(Door* door : game_level->local_area->doors)
 		{
 			if(door->locked == LOCK_TUTORIAL + unlock)
 			{
@@ -283,7 +280,7 @@ void Quest_Tutorial::HandleMeleeAttackCollision()
 	if(state != 5)
 		return;
 
-	Game::Get().pc->Train(true, (int)SkillId::ONE_HANDED_WEAPON, TrainMode::Tutorial);
+	game->pc->Train(true, (int)SkillId::ONE_HANDED_WEAPON, TrainMode::Tutorial);
 	state = 6;
 	int activate = 4;
 	for(vector<Text>::iterator it = texts.begin(), end = texts.end(); it != end; ++it)
@@ -302,7 +299,7 @@ void Quest_Tutorial::HandleBulletCollision()
 	if(state != 12)
 		return;
 
-	Game::Get().pc->Train(true, (int)SkillId::BOW, TrainMode::Tutorial);
+	game->pc->Train(true, (int)SkillId::BOW, TrainMode::Tutorial);
 	state = 13;
 	int unlock = 6;
 	int activate = 8;
@@ -314,7 +311,7 @@ void Quest_Tutorial::HandleBulletCollision()
 			break;
 		}
 	}
-	for(vector<Door*>::iterator it = L.local_area->doors.begin(), end = L.local_area->doors.end(); it != end; ++it)
+	for(vector<Door*>::iterator it = game_level->local_area->doors.begin(), end = game_level->local_area->doors.end(); it != end; ++it)
 	{
 		if((*it)->locked == LOCK_TUTORIAL + unlock)
 		{

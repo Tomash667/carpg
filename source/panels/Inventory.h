@@ -175,7 +175,6 @@ private:
 	bool HandleLeftClick(const Item* item);
 
 	Inventory& base;
-	Game& game;
 	float rot;
 	const Item* item_visible;
 	const Item* drag_and_drop_item;

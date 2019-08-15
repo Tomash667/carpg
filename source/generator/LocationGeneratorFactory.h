@@ -1,16 +1,15 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "GameComponent.h"
 #include "LocationGenerator.h"
 
 //-----------------------------------------------------------------------------
-class LocationGeneratorFactory : public GameComponent
+class LocationGeneratorFactory
 {
 public:
-	void InitOnce() override;
-	void PostInit() override;
-	void Cleanup() override;
+	LocationGeneratorFactory();
+	~LocationGeneratorFactory();
+	void Init();
 	LocationGenerator* Get(Location* loc, bool first = false, bool reenter = false);
 
 private:

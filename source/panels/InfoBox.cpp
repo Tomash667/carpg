@@ -3,10 +3,10 @@
 #include "InfoBox.h"
 #include "Game.h"
 #include "LoadScreen.h"
-#include "GlobalGui.h"
+#include "GameGui.h"
 
 //=================================================================================================
-InfoBox::InfoBox(const DialogInfo& info) : GameDialogBox(info)
+InfoBox::InfoBox(const DialogInfo& info) : DialogBox(info)
 {
 	visible = false;
 }
@@ -14,11 +14,11 @@ InfoBox::InfoBox(const DialogInfo& info) : GameDialogBox(info)
 //=================================================================================================
 void InfoBox::Draw(ControlDrawData*)
 {
-	DrawPanel(!game->gui->load_screen->visible);
+	DrawPanel(!game_gui->load_screen->visible);
 
 	// text
 	Rect r = { global_pos.x, global_pos.y, global_pos.x + size.x, global_pos.y + size.y };
-	gui->DrawText(GlobalGui::font, text, DTF_CENTER | DTF_VCENTER, Color::Black, r);
+	gui->DrawText(GameGui::font, text, DTF_CENTER | DTF_VCENTER, Color::Black, r);
 }
 
 //=================================================================================================
@@ -43,7 +43,7 @@ void InfoBox::Event(GuiEvent e)
 //=================================================================================================
 void InfoBox::Show(cstring _text)
 {
-	size = GlobalGui::font->CalculateSize(_text) + Int2(24, 24);
+	size = GameGui::font->CalculateSize(_text) + Int2(24, 24);
 	text = _text;
 
 	if(!visible)

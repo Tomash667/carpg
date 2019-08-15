@@ -658,7 +658,10 @@ Language::Section Language::GetSection(cstring name)
 	if(it != sections.end())
 		return Section(*it->second, name);
 	else
-		return Section(*sections["(default)"], name);
+	{
+		Error("Missing text section '%s'.", name);
+		return Section(*sections[""], name);
+	}
 }
 
 //=================================================================================================

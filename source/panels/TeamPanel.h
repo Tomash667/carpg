@@ -27,7 +27,6 @@ public:
 	void OnKick(int id);
 
 private:
-	Game& game;
 	Scrollbar scrollbar;
 	Button bt[4];
 	cstring txTeam, txCharInTeam, txPing, txDays, txPickCharacter, txNoCredit, txPayCreditAmount, txNotEnoughGold, txPaidCredit, txPaidCreditPart, txGiveGoldSelf, txGiveGoldAmount, txOnlyPcLeader,

@@ -8,12 +8,12 @@
 #include "Version.h"
 #include "BitStreamFunc.h"
 #include "ResourceManager.h"
-#include "GlobalGui.h"
+#include "GameGui.h"
 #include "LobbyApi.h"
 #include <json.hpp>
 
 //=================================================================================================
-PickServerPanel::PickServerPanel(const DialogInfo& info) : GameDialogBox(info), pick_autojoin(false)
+PickServerPanel::PickServerPanel(const DialogInfo& info) : DialogBox(info), pick_autojoin(false)
 {
 	size = Int2(524, 340);
 	bts.resize(2);
@@ -71,9 +71,8 @@ void PickServerPanel::LoadLanguage()
 //=================================================================================================
 void PickServerPanel::LoadData()
 {
-	ResourceManager& res_mgr = *app::res_mgr;
-	tIcoSave = res_mgr.Load<Texture>("save-16.png");
-	tIcoPassword = res_mgr.Load<Texture>("padlock-16.png");
+	tIcoSave = res_mgr->Load<Texture>("save-16.png");
+	tIcoPassword = res_mgr->Load<Texture>("padlock-16.png");
 }
 
 //=================================================================================================
@@ -120,22 +119,22 @@ void PickServerPanel::Update(float dt)
 	{
 		if(lan_mode)
 		{
-			N.peer->Ping("255.255.255.255", (word)N.port, false);
+			net->peer->Ping("255.255.255.255", (word)net->port, false);
 			timer = 0;
 		}
-		else if(!N.api->IsBusy() && !bad_request)
+		else if(!net->api->IsBusy() && !bad_request)
 		{
 			if(timer > 30.f)
-				N.api->GetServers();
+				net->api->GetServers();
 			else
-				N.api->GetChanges();
+				net->api->GetChanges();
 			timer = 0;
 		}
 	}
 
 	// listen for packets
 	Packet* packet;
-	for(packet = N.peer->Receive(); packet; N.peer->DeallocatePacket(packet), packet = N.peer->Receive())
+	for(packet = net->peer->Receive(); packet; net->peer->DeallocatePacket(packet), packet = net->peer->Receive())
 	{
 		BitStreamReader reader(packet);
 		byte msg_id;
@@ -281,8 +280,8 @@ void PickServerPanel::Event(GuiEvent e)
 			gui->SimpleDialog(Format(txInvalidServerVersion, VersionToString(servers[grid.selected].version), VERSION_STR), this);
 		break;
 	case IdCancel:
-		N.ClosePeer();
-		N.peer->Shutdown(0);
+		net->ClosePeer();
+		net->peer->Shutdown(0);
 		CloseDialog();
 		break;
 	case IdInternet:
@@ -303,21 +302,21 @@ void PickServerPanel::Show(bool pick_autojoin)
 
 	try
 	{
-		N.InitClient();
+		net->InitClient();
 	}
 	catch(cstring err)
 	{
-		gui->SimpleDialog(err, (Control*)game->gui->main_menu);
+		gui->SimpleDialog(err, (Control*)game_gui->main_menu);
 		return;
 	}
 
-	if(N.join_lan)
+	if(net->join_lan)
 	{
 		Info("Pinging LAN servers...");
 		lan_mode = true;
 		cb_internet.checked = false;
 		cb_lan.checked = true;
-		N.peer->Ping("255.255.255.255", (word)N.port, false);
+		net->peer->Ping("255.255.255.255", (word)net->port, false);
 	}
 	else
 	{
@@ -325,8 +324,8 @@ void PickServerPanel::Show(bool pick_autojoin)
 		lan_mode = false;
 		cb_internet.checked = true;
 		cb_lan.checked = false;
-		N.api->Reset();
-		N.api->GetServers();
+		net->api->Reset();
+		net->api->GetServers();
 	}
 
 	bad_request = false;
@@ -366,18 +365,17 @@ void PickServerPanel::OnChangeMode(bool lan_mode)
 	this->lan_mode = lan_mode;
 	if(lan_mode)
 	{
-		N.api->Reset();
-		N.peer->Ping("255.255.255.255", (word)N.port, false);
+		net->api->Reset();
+		net->peer->Ping("255.255.255.255", (word)net->port, false);
 	}
 	else
 	{
-		N.api->GetServers();
+		net->api->GetServers();
 		bad_request = false;
 	}
-	N.join_lan = lan_mode;
-	Game& game = Game::Get();
-	game.cfg.Add("join_lan", lan_mode);
-	game.SaveCfg();
+	net->join_lan = lan_mode;
+	game->cfg.Add("join_lan", lan_mode);
+	game->SaveCfg();
 	servers.clear();
 	grid.Reset();
 	timer = 0;

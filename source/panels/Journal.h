@@ -42,7 +42,6 @@ public:
 	vector<string>& GetRumors() { return rumors; }
 
 private:
-	Game& game;
 	Mode mode;
 	TexturePtr tBook, tPage[3], tArrowL, tArrowR;
 	cstring txAdd, txNoteText, txNoQuests, txNoRumors, txNoNotes, txAddNote, txAddTime;

@@ -1,7 +1,7 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "GameDialogBox.h"
+#include "DialogBox.h"
 #include "CheckBox.h"
 #include "Slider.h"
 #include "Class.h"
@@ -16,7 +16,7 @@
 #include "CreatedCharacter.h"
 
 //-----------------------------------------------------------------------------
-class CreateCharacterPanel : public GameDialogBox
+class CreateCharacterPanel : public DialogBox
 {
 public:
 	enum class Group

@@ -25,7 +25,7 @@
 #include "MultiInsideLocation.h"
 #include "SingleInsideLocation.h"
 #include "Encounter.h"
-#include "GameGui.h"
+#include "LevelGui.h"
 #include "Console.h"
 #include "InfoBox.h"
 #include "LoadScreen.h"
@@ -62,7 +62,7 @@
 #include "Arena.h"
 #include "ResourceManager.h"
 #include "ItemHelper.h"
-#include "GlobalGui.h"
+#include "GameGui.h"
 #include "FOV.h"
 #include "PlayerInfo.h"
 #include "CombatHelper.h"
@@ -120,12 +120,12 @@ void Game::Draw()
 		outside = true;
 	else if(area.area_type == LevelArea::Type::Inside)
 		outside = false;
-	else if(L.city_ctx->inside_buildings[area.area_id]->top > 0.f)
+	else if(game_level->city_ctx->inside_buildings[area.area_id]->top > 0.f)
 		outside = false;
 	else
 		outside = true;
 
-	ListDrawObjects(area, L.camera.frustum, outside);
+	ListDrawObjects(area, game_level->camera.frustum, outside);
 	DrawScene(outside);
 }
 
@@ -271,18 +271,18 @@ void Game::SetupCamera(float dt)
 	LevelArea& area = *target->area;
 
 	float rotX;
-	if(L.camera.free_rot)
-		rotX = L.camera.real_rot.x;
+	if(game_level->camera.free_rot)
+		rotX = game_level->camera.real_rot.x;
 	else
 		rotX = target->rot;
 
-	L.camera.UpdateRot(dt, Vec2(rotX, L.camera.real_rot.y));
+	game_level->camera.UpdateRot(dt, Vec2(rotX, game_level->camera.real_rot.y));
 
 	Matrix mat, matProj, matView;
 	const Vec3 cam_h(0, target->GetUnitHeight() + 0.2f, 0);
-	Vec3 dist(0, -L.camera.tmp_dist, 0);
+	Vec3 dist(0, -game_level->camera.tmp_dist, 0);
 
-	mat = Matrix::Rotation(L.camera.rot.y, L.camera.rot.x, 0);
+	mat = Matrix::Rotation(game_level->camera.rot.y, game_level->camera.rot.x, 0);
 	dist = Vec3::Transform(dist, mat);
 
 	// !!! to => from !!!
@@ -295,10 +295,10 @@ void Game::SetupCamera(float dt)
 
 	if(area.area_type == LevelArea::Type::Outside)
 	{
-		OutsideLocation* outside = (OutsideLocation*)L.location;
+		OutsideLocation* outside = (OutsideLocation*)game_level->location;
 
 		// terrain
-		tout = L.terrain->Raytest(to, to + dist);
+		tout = game_level->terrain->Raytest(to, to + dist);
 		if(tout < min_tout && tout > 0.f)
 			min_tout = tout;
 
@@ -322,7 +322,7 @@ void Game::SetupCamera(float dt)
 	}
 	else if(area.area_type == LevelArea::Type::Inside)
 	{
-		InsideLocation* inside = (InsideLocation*)L.location;
+		InsideLocation* inside = (InsideLocation*)game_level->location;
 		InsideLocationLevel& lvl = inside->GetLevelData();
 
 		int minx = max(0, tx - 3),
@@ -534,7 +534,7 @@ void Game::SetupCamera(float dt)
 	}
 
 	// camera colliders
-	for(vector<CameraCollider>::iterator it = L.cam_colliders.begin(), end = L.cam_colliders.end(); it != end; ++it)
+	for(vector<CameraCollider>::iterator it = game_level->cam_colliders.begin(), end = game_level->cam_colliders.end(); it != end; ++it)
 	{
 		if(RayToBox(to, dist, it->box, &tout) && tout < min_tout && tout > 0.f)
 			min_tout = tout;
@@ -551,18 +551,18 @@ void Game::SetupCamera(float dt)
 		real_dist = 0.01f;
 	Vec3 from = to + dist.Normalize() * real_dist;
 
-	L.camera.Update(dt, from, to);
+	game_level->camera.Update(dt, from, to);
 
 	float drunk = pc->unit->alcohol / pc->unit->hpmax;
 	float drunk_mod = (drunk > 0.1f ? (drunk - 0.1f) / 0.9f : 0.f);
 
-	matView = Matrix::CreateLookAt(L.camera.from, L.camera.to);
+	matView = Matrix::CreateLookAt(game_level->camera.from, game_level->camera.to);
 	matProj = Matrix::CreatePerspectiveFieldOfView(PI / 4 + sin(drunk_anim)*(PI / 16)*drunk_mod,
-		engine->GetWindowAspect() * (1.f + sin(drunk_anim) / 10 * drunk_mod), 0.1f, L.camera.draw_range);
-	L.camera.matViewProj = matView * matProj;
-	L.camera.matViewInv = matView.Inverse();
-	L.camera.center = L.camera.from;
-	L.camera.frustum.Set(L.camera.matViewProj);
+		engine->GetWindowAspect() * (1.f + sin(drunk_anim) / 10 * drunk_mod), 0.1f, game_level->camera.draw_range);
+	game_level->camera.matViewProj = matView * matProj;
+	game_level->camera.matViewInv = matView.Inverse();
+	game_level->camera.center = game_level->camera.from;
+	game_level->camera.frustum.Set(game_level->camera.matViewProj);
 
 	// centrum dŸwiêku 3d
 	sound_mgr->SetListenerPosition(target->GetHeadSoundPos(), Vec3(sin(target->rot + PI), 0, cos(target->rot + PI)));
@@ -655,7 +655,7 @@ void Game::UpdateGame(float dt)
 		assert(pc->is_local);
 		if(Net::IsServer())
 		{
-			for(PlayerInfo& info : N.players)
+			for(PlayerInfo& info : net->players)
 			{
 				if(info.left == PlayerInfo::LEFT_NO)
 				{
@@ -672,10 +672,10 @@ void Game::UpdateGame(float dt)
 	}
 #endif
 
-	L.minimap_opened_doors = false;
+	game_level->minimap_opened_doors = false;
 
-	if(QM.quest_tutorial->in_tutorial && !Net::IsOnline())
-		QM.quest_tutorial->Update();
+	if(quest_mgr->quest_tutorial->in_tutorial && !Net::IsOnline())
+		quest_mgr->quest_tutorial->Update();
 
 	drunk_anim = Clip(drunk_anim + dt);
 	UpdatePostEffects(dt);
@@ -683,13 +683,13 @@ void Game::UpdateGame(float dt)
 	portal_anim += dt;
 	if(portal_anim >= 1.f)
 		portal_anim -= 1.f;
-	L.light_angle = Clip(L.light_angle + dt / 100);
+	game_level->light_angle = Clip(game_level->light_angle + dt / 100);
 
 	UpdateFallback(dt);
-	if(!L.location)
+	if(!game_level->location)
 		return;
 
-	if(Net::IsLocal() && !QM.quest_tutorial->in_tutorial)
+	if(Net::IsLocal() && !quest_mgr->quest_tutorial->in_tutorial)
 	{
 		// aktualizuj arene/wymiane sprzêtu/zawody w piciu/questy
 		UpdateGame2(dt);
@@ -699,9 +699,9 @@ void Game::UpdateGame(float dt)
 	if(CanShowEndScreen())
 	{
 		if(Net::IsLocal())
-			QM.unique_completed_show = true;
+			quest_mgr->unique_completed_show = true;
 		else
-			QM.unique_completed_show = false;
+			quest_mgr->unique_completed_show = false;
 
 		cstring text;
 
@@ -717,7 +717,7 @@ void Game::UpdateGame(float dt)
 		else
 			text = txWin;
 
-		gui->SimpleDialog(Format(text, pc->kills, GameStats::Get().total_kills - pc->kills), nullptr);
+		gui->SimpleDialog(Format(text, pc->kills, game_stats->total_kills - pc->kills), nullptr);
 	}
 
 	// licznik otrzymanych obra¿eñ
@@ -727,9 +727,9 @@ void Game::UpdateGame(float dt)
 
 	if(devmode && GKey.AllowKeyboard())
 	{
-		if(!L.location->outside)
+		if(!game_level->location->outside)
 		{
-			InsideLocation* inside = (InsideLocation*)L.location;
+			InsideLocation* inside = (InsideLocation*)game_level->location;
 			InsideLocationLevel& lvl = inside->GetLevelData();
 
 			// key [<,] - warp to stairs up or upper level
@@ -741,7 +741,7 @@ void Game::UpdateGame(float dt)
 					{
 						Int2 tile = lvl.GetUpStairsFrontTile();
 						pc->unit->rot = DirToRot(lvl.staircase_up_dir);
-						L.WarpUnit(*pc->unit, Vec3(2.f*tile.x + 1.f, 0.f, 2.f*tile.y + 1.f));
+						game_level->WarpUnit(*pc->unit, Vec3(2.f*tile.x + 1.f, 0.f, 2.f*tile.y + 1.f));
 					}
 					else
 					{
@@ -777,7 +777,7 @@ void Game::UpdateGame(float dt)
 					{
 						Int2 tile = lvl.GetDownStairsFrontTile();
 						pc->unit->rot = DirToRot(lvl.staircase_down_dir);
-						L.WarpUnit(*pc->unit, Vec3(2.f*tile.x + 1.f, 0.f, 2.f*tile.y + 1.f));
+						game_level->WarpUnit(*pc->unit, Vec3(2.f*tile.x + 1.f, 0.f, 2.f*tile.y + 1.f));
 					}
 					else
 					{
@@ -818,20 +818,20 @@ void Game::UpdateGame(float dt)
 	// obracanie kamery góra/dó³
 	if(!Net::IsLocal() || Team.IsAnyoneAlive())
 	{
-		if(dialog_context.dialog_mode && gui->inventory->mode <= I_INVENTORY)
+		if(dialog_context.dialog_mode && game_gui->inventory->mode <= I_INVENTORY)
 		{
-			L.camera.free_rot = false;
-			if(L.camera.real_rot.y > 4.2875104f)
+			game_level->camera.free_rot = false;
+			if(game_level->camera.real_rot.y > 4.2875104f)
 			{
-				L.camera.real_rot.y -= dt;
-				if(L.camera.real_rot.y < 4.2875104f)
-					L.camera.real_rot.y = 4.2875104f;
+				game_level->camera.real_rot.y -= dt;
+				if(game_level->camera.real_rot.y < 4.2875104f)
+					game_level->camera.real_rot.y = 4.2875104f;
 			}
-			else if(L.camera.real_rot.y < 4.2875104f)
+			else if(game_level->camera.real_rot.y < 4.2875104f)
 			{
-				L.camera.real_rot.y += dt;
-				if(L.camera.real_rot.y > 4.2875104f)
-					L.camera.real_rot.y = 4.2875104f;
+				game_level->camera.real_rot.y += dt;
+				if(game_level->camera.real_rot.y > 4.2875104f)
+					game_level->camera.real_rot.y = 4.2875104f;
 			}
 		}
 		else
@@ -842,67 +842,67 @@ void Game::UpdateGame(float dt)
 				const float c_cam_angle_max = PI * 1.8f - 0.1f;
 
 				int div = (pc->unit->action == A_SHOOT ? 800 : 400);
-				L.camera.real_rot.y += -float(input->GetMouseDif().y) * settings.mouse_sensitivity_f / div;
-				if(L.camera.real_rot.y > c_cam_angle_max)
-					L.camera.real_rot.y = c_cam_angle_max;
-				if(L.camera.real_rot.y < c_cam_angle_min)
-					L.camera.real_rot.y = c_cam_angle_min;
+				game_level->camera.real_rot.y += -float(input->GetMouseDif().y) * settings.mouse_sensitivity_f / div;
+				if(game_level->camera.real_rot.y > c_cam_angle_max)
+					game_level->camera.real_rot.y = c_cam_angle_max;
+				if(game_level->camera.real_rot.y < c_cam_angle_min)
+					game_level->camera.real_rot.y = c_cam_angle_min;
 
 				if(!pc->unit->IsStanding())
 				{
-					L.camera.real_rot.x = Clip(L.camera.real_rot.x + float(input->GetMouseDif().x) * settings.mouse_sensitivity_f / 400);
-					L.camera.free_rot = true;
-					L.camera.free_rot_key = Key::None;
+					game_level->camera.real_rot.x = Clip(game_level->camera.real_rot.x + float(input->GetMouseDif().x) * settings.mouse_sensitivity_f / 400);
+					game_level->camera.free_rot = true;
+					game_level->camera.free_rot_key = Key::None;
 				}
-				else if(!L.camera.free_rot)
+				else if(!game_level->camera.free_rot)
 				{
-					L.camera.free_rot_key = GKey.KeyDoReturn(GK_ROTATE_CAMERA, &Input::Pressed);
-					if(L.camera.free_rot_key != Key::None)
+					game_level->camera.free_rot_key = GKey.KeyDoReturn(GK_ROTATE_CAMERA, &Input::Pressed);
+					if(game_level->camera.free_rot_key != Key::None)
 					{
-						L.camera.real_rot.x = Clip(pc->unit->rot + PI);
-						L.camera.free_rot = true;
+						game_level->camera.real_rot.x = Clip(pc->unit->rot + PI);
+						game_level->camera.free_rot = true;
 					}
 				}
 				else
 				{
-					if(L.camera.free_rot_key == Key::None || GKey.KeyUpAllowed(L.camera.free_rot_key))
-						L.camera.free_rot = false;
+					if(game_level->camera.free_rot_key == Key::None || GKey.KeyUpAllowed(game_level->camera.free_rot_key))
+						game_level->camera.free_rot = false;
 					else
-						L.camera.real_rot.x = Clip(L.camera.real_rot.x + float(input->GetMouseDif().x) * settings.mouse_sensitivity_f / 400);
+						game_level->camera.real_rot.x = Clip(game_level->camera.real_rot.x + float(input->GetMouseDif().x) * settings.mouse_sensitivity_f / 400);
 				}
 			}
 			else
-				L.camera.free_rot = false;
+				game_level->camera.free_rot = false;
 		}
 	}
 	else
 	{
-		L.camera.free_rot = false;
-		if(L.camera.real_rot.y > PI + 0.1f)
+		game_level->camera.free_rot = false;
+		if(game_level->camera.real_rot.y > PI + 0.1f)
 		{
-			L.camera.real_rot.y -= dt;
-			if(L.camera.real_rot.y < PI + 0.1f)
-				L.camera.real_rot.y = PI + 0.1f;
+			game_level->camera.real_rot.y -= dt;
+			if(game_level->camera.real_rot.y < PI + 0.1f)
+				game_level->camera.real_rot.y = PI + 0.1f;
 		}
-		else if(L.camera.real_rot.y < PI + 0.1f)
+		else if(game_level->camera.real_rot.y < PI + 0.1f)
 		{
-			L.camera.real_rot.y += dt;
-			if(L.camera.real_rot.y > PI + 0.1f)
-				L.camera.real_rot.y = PI + 0.1f;
+			game_level->camera.real_rot.y += dt;
+			if(game_level->camera.real_rot.y > PI + 0.1f)
+				game_level->camera.real_rot.y = PI + 0.1f;
 		}
 	}
 
 	// przybli¿anie/oddalanie kamery
 	if(GKey.AllowMouse())
 	{
-		if(!dialog_context.dialog_mode || !dialog_context.show_choices || !gui->game_gui->IsMouseInsideDialog())
+		if(!dialog_context.dialog_mode || !dialog_context.show_choices || !game_gui->level_gui->IsMouseInsideDialog())
 		{
-			L.camera.dist -= input->GetMouseWheel();
-			L.camera.dist = Clamp(L.camera.dist, 0.5f, 6.f);
+			game_level->camera.dist -= input->GetMouseWheel();
+			game_level->camera.dist = Clamp(game_level->camera.dist, 0.5f, 6.f);
 		}
 
 		if(input->PressedRelease(Key::MiddleButton))
-			L.camera.dist = 3.5f;
+			game_level->camera.dist = 3.5f;
 	}
 
 	// umieranie
@@ -912,7 +912,7 @@ void Game::UpdateGame(float dt)
 		{
 			Info("Game over: all players died.");
 			SetMusic(MusicType::Death);
-			gui->CloseAllPanels(true);
+			game_gui->CloseAllPanels(true);
 			++death_screen;
 			death_fade = 0;
 			death_solo = (Team.GetTeamSize() == 1u);
@@ -941,7 +941,7 @@ void Game::UpdateGame(float dt)
 	// aktualizuj gracza
 	if(pc_data.wasted_key != Key::None && input->Up(pc_data.wasted_key))
 		pc_data.wasted_key = Key::None;
-	if(dialog_context.dialog_mode || pc->unit->look_target || gui->inventory->mode > I_INVENTORY)
+	if(dialog_context.dialog_mode || pc->unit->look_target || game_gui->inventory->mode > I_INVENTORY)
 	{
 		Vec3 pos;
 		if(pc->unit->look_target)
@@ -952,19 +952,19 @@ void Game::UpdateGame(float dt)
 				pos = pc->unit->look_target->pos;
 			pc->unit->animation = ANI_STAND;
 		}
-		else if(gui->inventory->mode == I_LOOT_CHEST)
+		else if(game_gui->inventory->mode == I_LOOT_CHEST)
 		{
 			assert(pc->action == PlayerController::Action_LootChest);
 			pos = pc->action_chest->pos;
 			pc->unit->animation = ANI_KNEELS;
 		}
-		else if(gui->inventory->mode == I_LOOT_BODY)
+		else if(game_gui->inventory->mode == I_LOOT_BODY)
 		{
 			assert(pc->action == PlayerController::Action_LootUnit);
 			pos = pc->action_unit->GetLootCenter();
 			pc->unit->animation = ANI_KNEELS;
 		}
-		else if(gui->inventory->mode == I_LOOT_CONTAINER)
+		else if(game_gui->inventory->mode == I_LOOT_CONTAINER)
 		{
 			// TODO: animacja
 			assert(pc->action == PlayerController::Action_LootContainer);
@@ -978,7 +978,7 @@ void Game::UpdateGame(float dt)
 		}
 		else
 		{
-			assert(pc->action == InventoryModeToActionRequired(gui->inventory->mode));
+			assert(pc->action == InventoryModeToActionRequired(game_gui->inventory->mode));
 			pos = pc->action_unit->pos;
 			pc->unit->animation = ANI_STAND;
 		}
@@ -1002,9 +1002,9 @@ void Game::UpdateGame(float dt)
 			}
 		}
 
-		if(gui->inventory->mode > I_INVENTORY)
+		if(game_gui->inventory->mode > I_INVENTORY)
 		{
-			if(gui->inventory->mode == I_LOOT_BODY)
+			if(game_gui->inventory->mode == I_LOOT_BODY)
 			{
 				if(pc->action_unit->IsAlive())
 				{
@@ -1012,7 +1012,7 @@ void Game::UpdateGame(float dt)
 					CloseInventory();
 				}
 			}
-			else if(gui->inventory->mode == I_TRADE || gui->inventory->mode == I_SHARE || gui->inventory->mode == I_GIVE)
+			else if(game_gui->inventory->mode == I_TRADE || game_gui->inventory->mode == I_SHARE || game_gui->inventory->mode == I_GIVE)
 			{
 				if(!pc->action_unit->IsStanding() || !pc->action_unit->IsIdle())
 				{
@@ -1062,14 +1062,14 @@ void Game::UpdateGame(float dt)
 	}
 
 	// aktualizuj konteksty poziomów
-	L.lights_dt += dt;
-	for(LevelArea& area : L.ForEachArea())
+	game_level->lights_dt += dt;
+	for(LevelArea& area : game_level->ForEachArea())
 		UpdateArea(area, dt);
-	if(L.lights_dt >= 1.f / 60)
-		L.lights_dt = 0.f;
+	if(game_level->lights_dt >= 1.f / 60)
+		game_level->lights_dt = 0.f;
 
 	// aktualizacja minimapy
-	L.UpdateDungeonMinimap(true);
+	game_level->UpdateDungeonMinimap(true);
 
 	// aktualizuj dialogi
 	if(Net::IsSingleplayer())
@@ -1079,7 +1079,7 @@ void Game::UpdateGame(float dt)
 	}
 	else if(Net::IsServer())
 	{
-		for(PlayerInfo& info : N.players)
+		for(PlayerInfo& info : net->players)
 		{
 			if(info.left != PlayerInfo::LEFT_NO)
 				continue;
@@ -1104,11 +1104,11 @@ void Game::UpdateGame(float dt)
 	{
 		if(Net::IsOnline())
 			UpdateWarpData(dt);
-		L.ProcessUnitWarps();
+		game_level->ProcessUnitWarps();
 	}
 
 	// usuñ jednostki
-	L.ProcessRemoveUnits(false);
+	game_level->ProcessRemoveUnits(false);
 
 	if(Net::IsOnline())
 	{
@@ -1121,7 +1121,7 @@ void Game::UpdateGame(float dt)
 	pc->Update(dt);
 	if(Net::IsServer())
 	{
-		for(PlayerInfo& info : N.players)
+		for(PlayerInfo& info : net->players)
 		{
 			if(info.left == PlayerInfo::LEFT_NO && info.pc != pc)
 				info.pc->Update(dt, false);
@@ -1161,18 +1161,18 @@ void Game::UpdateFallback(float dt)
 						pc->Train(true, fallback_2);
 						break;
 					case 2:
-						QM.quest_tournament->Train(*pc);
+						quest_mgr->quest_tournament->Train(*pc);
 						break;
 					case 3:
 						pc->AddPerk((Perk)fallback_2, -1);
-						gui->messages->AddGameMsg3(GMS_LEARNED_PERK);
+						game_gui->messages->AddGameMsg3(GMS_LEARNED_PERK);
 						break;
 					}
 					pc->Rest(10, false);
 					if(Net::IsOnline())
 						pc->UseDays(10);
 					else
-						W.Update(10, World::UM_NORMAL);
+						world->Update(10, World::UM_NORMAL);
 				}
 				else
 				{
@@ -1191,7 +1191,7 @@ void Game::UpdateFallback(float dt)
 					if(Net::IsOnline())
 						pc->UseDays(fallback_1);
 					else
-						W.Update(fallback_1, World::UM_NORMAL);
+						world->Update(fallback_1, World::UM_NORMAL);
 				}
 				else
 				{
@@ -1203,7 +1203,7 @@ void Game::UpdateFallback(float dt)
 				}
 				break;
 			case FALLBACK::ENTER: // enter/exit building
-				L.WarpUnit(pc->unit, fallback_1);
+				game_level->WarpUnit(pc->unit, fallback_1);
 				break;
 			case FALLBACK::EXIT:
 				ExitToMap();
@@ -1214,13 +1214,13 @@ void Game::UpdateFallback(float dt)
 			case FALLBACK::USE_PORTAL:
 				{
 					LeaveLocation(false, false);
-					Portal* portal = L.location->GetPortal(fallback_1);
-					W.ChangeLevel(portal->target_loc, false);
+					Portal* portal = game_level->location->GetPortal(fallback_1);
+					world->ChangeLevel(portal->target_loc, false);
 					// aktualnie mo¿na siê tepn¹æ z X poziomu na 1 zawsze ale ¿eby z X na X to musi byæ odwiedzony
 					// np w sekrecie z 3 na 1 i spowrotem do
 					int at_level = 0;
-					if(L.location->portal)
-						at_level = L.location->portal->at_level;
+					if(game_level->location->portal)
+						at_level = game_level->location->portal->at_level;
 					EnterLocation(at_level, portal->target);
 				}
 				return;
@@ -1380,7 +1380,7 @@ void Game::UpdatePlayer(float dt)
 				Net::PushChange(NetChange::YELL);
 		}
 
-		if((GKey.allow_input == GameKeys::ALLOW_INPUT || GKey.allow_input == GameKeys::ALLOW_MOUSE) && !L.camera.free_rot)
+		if((GKey.allow_input == GameKeys::ALLOW_INPUT || GKey.allow_input == GameKeys::ALLOW_MOUSE) && !game_level->camera.free_rot)
 		{
 			int div = (pc->unit->action == A_SHOOT ? 800 : 400);
 			pc_data.rot_buf *= (1.f - dt * 2);
@@ -1503,11 +1503,11 @@ void Game::UpdatePlayer(float dt)
 						u.player->TrainMove(speed);
 
 					// revealing minimap
-					if(!L.location->outside)
+					if(!game_level->location->outside)
 					{
 						Int2 new_tile(int(u.pos.x / 2), int(u.pos.z / 2));
 						if(new_tile != prev_tile)
-							FOV::DungeonReveal(new_tile, L.minimap_reveal);
+							FOV::DungeonReveal(new_tile, game_level->minimap_reveal);
 					}
 				}
 
@@ -1572,7 +1572,7 @@ void Game::UpdatePlayer(float dt)
 							}
 							else
 							{
-								gui->inventory->inv_mine->EquipSlotItem(slot_type, i_index);
+								game_gui->inventory->inv_mine->EquipSlotItem(slot_type, i_index);
 								if(item->type == IT_WEAPON || item->type == IT_SHIELD)
 								{
 									shortcut.type = Shortcut::TYPE_SPECIAL;
@@ -1591,7 +1591,7 @@ void Game::UpdatePlayer(float dt)
 				{
 					int i_index = pc->unit->FindItem(item);
 					if(i_index != Unit::INVALID_IINDEX)
-						gui->inventory->inv_mine->ConsumeItem(i_index);
+						game_gui->inventory->inv_mine->ConsumeItem(i_index);
 				}
 				else if(item->type == IT_BOOK)
 				{
@@ -1605,10 +1605,10 @@ void Game::UpdatePlayer(float dt)
 						}
 						else
 						{
-							OpenPanel open = gui->game_gui->GetOpenPanel();
+							OpenPanel open = game_gui->level_gui->GetOpenPanel();
 							if(open != OpenPanel::Inventory)
-								gui->game_gui->ClosePanels();
-							gui->book->Show((const Book*)item);
+								game_gui->level_gui->ClosePanels();
+							game_gui->book->Show((const Book*)item);
 						}
 					}
 				}
@@ -1748,7 +1748,7 @@ void Game::UpdatePlayer(float dt)
 				else
 				{
 					// komunikat o braku broni
-					gui->messages->AddGameMsg3(GMS_NEED_WEAPON);
+					game_gui->messages->AddGameMsg3(GMS_NEED_WEAPON);
 				}
 			}
 		}
@@ -2051,7 +2051,7 @@ void Game::UpdatePlayer(float dt)
 				u.ConsumeItem(potion_index);
 			}
 			else
-				gui->messages->AddGameMsg3(GMS_NO_POTION);
+				game_gui->messages->AddGameMsg3(GMS_NO_POTION);
 		}
 	} // allow_input == ALLOW_INPUT || allow_input == ALLOW_KEYBOARD
 
@@ -2121,21 +2121,21 @@ void Game::UpdatePlayer(float dt)
 				else if(u2->live_state == Unit::FALL)
 				{
 					// nie mo¿na okradaæ osoby która zaraz wstanie
-					gui->messages->AddGameMsg3(GMS_CANT_DO);
+					game_gui->messages->AddGameMsg3(GMS_CANT_DO);
 				}
 				else if(u2->IsFollower() || u2->IsPlayer())
 				{
 					// nie mo¿na okradaæ sojuszników
-					gui->messages->AddGameMsg3(GMS_DONT_LOOT_FOLLOWER);
+					game_gui->messages->AddGameMsg3(GMS_DONT_LOOT_FOLLOWER);
 				}
 				else if(u2->in_arena != -1)
-					gui->messages->AddGameMsg3(GMS_DONT_LOOT_ARENA);
+					game_gui->messages->AddGameMsg3(GMS_DONT_LOOT_ARENA);
 				else if(Net::IsLocal())
 				{
 					if(Net::IsOnline() && u2->busy == Unit::Busy_Looted)
 					{
 						// ktoœ ju¿ ograbia zw³oki
-						gui->messages->AddGameMsg3(GMS_IS_LOOTED);
+						game_gui->messages->AddGameMsg3(GMS_IS_LOOTED);
 					}
 					else
 					{
@@ -2144,7 +2144,7 @@ void Game::UpdatePlayer(float dt)
 						pc->action_unit = u2;
 						u2->busy = Unit::Busy_Looted;
 						pc->chest_trade = &u2->items;
-						gui->inventory->StartTrade(I_LOOT_BODY, *u2);
+						game_gui->inventory->StartTrade(I_LOOT_BODY, *u2);
 					}
 				}
 				else
@@ -2165,7 +2165,7 @@ void Game::UpdatePlayer(float dt)
 					if(u2->busy != Unit::Busy_No || !u2->CanTalk())
 					{
 						// osoba jest czymœ zajêta
-						gui->messages->AddGameMsg3(GMS_UNIT_BUSY);
+						game_gui->messages->AddGameMsg3(GMS_UNIT_BUSY);
 					}
 					else
 					{
@@ -2195,7 +2195,7 @@ void Game::UpdatePlayer(float dt)
 			else if(Net::IsLocal())
 			{
 				// rozpocznij ograbianie skrzyni
-				gui->inventory->StartTrade2(I_LOOT_CHEST, pc_data.before_player_ptr.chest);
+				game_gui->inventory->StartTrade2(I_LOOT_CHEST, pc_data.before_player_ptr.chest);
 				pc_data.before_player_ptr.chest->OpenClose(pc->unit);
 			}
 			else
@@ -2219,8 +2219,8 @@ void Game::UpdatePlayer(float dt)
 				// otwieranie drzwi
 				if(door->locked == LOCK_NONE)
 				{
-					if(!L.location->outside)
-						L.minimap_opened_doors = true;
+					if(!game_level->location->outside)
+						game_level->minimap_opened_doors = true;
 					door->state = Door::Opening;
 					door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);
 					door->mesh_inst->frame_end_info = false;
@@ -2255,9 +2255,9 @@ void Game::UpdatePlayer(float dt)
 					if(key && pc->unit->HaveItem(Item::Get(key)))
 					{
 						sound_mgr->PlaySound3d(sUnlock, center, Door::UNLOCK_SOUND_DIST);
-						gui->messages->AddGameMsg3(GMS_UNLOCK_DOOR);
-						if(!L.location->outside)
-							L.minimap_opened_doors = true;
+						game_gui->messages->AddGameMsg3(GMS_UNLOCK_DOOR);
+						if(!game_level->location->outside)
+							game_level->minimap_opened_doors = true;
 						door->locked = LOCK_NONE;
 						door->state = Door::Opening;
 						door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);
@@ -2274,7 +2274,7 @@ void Game::UpdatePlayer(float dt)
 					}
 					else
 					{
-						gui->messages->AddGameMsg3(GMS_NEED_KEY);
+						game_gui->messages->AddGameMsg3(GMS_NEED_KEY);
 						sound_mgr->PlaySound3d(sDoorClosed[Rand() % 2], center, Door::SOUND_DIST);
 					}
 				}
@@ -2339,7 +2339,7 @@ void Game::UpdatePlayer(float dt)
 					RemoveElement(area.items, &item);
 					pc_data.before_player = BP_NONE;
 
-					for(Event& event : L.location->events)
+					for(Event& event : game_level->location->events)
 					{
 						if(event.type == EVENT_PICKUP)
 						{
@@ -2627,7 +2627,7 @@ void Game::UpdatePlayer(float dt)
 	if(!pc_data.action_ready)
 	{
 		if(u.frozen == FROZEN::NO && Any(u.action, A_NONE, A_ATTACK, A_BLOCK, A_BASH) && shortcut.type == Shortcut::TYPE_SPECIAL
-			&& shortcut.value == Shortcut::SPECIAL_ACTION && pc->CanUseAction() && !QM.quest_tutorial->in_tutorial)
+			&& shortcut.value == Shortcut::SPECIAL_ACTION && pc->CanUseAction() && !quest_mgr->quest_tutorial->in_tutorial)
 		{
 			pc_data.action_ready = true;
 			pc_data.action_ok = false;
@@ -2780,11 +2780,11 @@ void Game::UseAction(PlayerController* p, bool from_server, const Vec3* pos)
 		if(Net::IsLocal())
 		{
 			// despawn old
-			Unit* existing_unit = L.FindUnit([=](Unit* u) { return u->summoner == p->unit; });
+			Unit* existing_unit = game_level->FindUnit([=](Unit* u) { return u->summoner == p->unit; });
 			if(existing_unit)
 			{
 				Team.RemoveTeamMember(existing_unit);
-				L.RemoveUnit(existing_unit);
+				game_level->RemoveUnit(existing_unit);
 			}
 
 			// spawn new
@@ -2796,7 +2796,7 @@ void Game::UseAction(PlayerController* p, bool from_server, const Vec3* pos)
 				assert(pos);
 				spawn_pos = *pos;
 			}
-			Unit* unit = L.SpawnUnitNearLocation(*p->unit->area, spawn_pos, *UnitData::Get("white_wolf_sum"), nullptr, p->unit->level);
+			Unit* unit = game_level->SpawnUnitNearLocation(*p->unit->area, spawn_pos, *UnitData::Get("white_wolf_sum"), nullptr, p->unit->level);
 			if(unit)
 			{
 				unit->summoner = p->unit;
@@ -2908,7 +2908,7 @@ void Game::PlayerCheckObjectDistance(Unit& u, const Vec3& pos, void* ptr, float&
 				}
 			}
 			dist += angle;
-			if(dist < best_dist && L.CanSee(*u.area, u.pos, pos, type == BP_DOOR, ptr))
+			if(dist < best_dist && game_level->CanSee(*u.area, u.pos, pos, type == BP_DOOR, ptr))
 			{
 				best_dist = dist;
 				pc_data.before_player_ptr.any = ptr;
@@ -2926,14 +2926,14 @@ int Game::CheckMove(Vec3& _pos, const Vec3& _dir, float _radius, Unit* _me, bool
 	Vec3 new_pos = _pos + _dir;
 	Vec3 gather_pos = _pos + _dir / 2;
 	float gather_radius = _dir.Length() + _radius;
-	L.global_col.clear();
+	game_level->global_col.clear();
 
 	Level::IgnoreObjects ignore = { 0 };
 	Unit* ignored[] = { _me, nullptr };
 	ignore.ignored_units = (const Unit**)ignored;
-	L.GatherCollisionObjects(*_me->area, L.global_col, gather_pos, gather_radius, &ignore);
+	game_level->GatherCollisionObjects(*_me->area, game_level->global_col, gather_pos, gather_radius, &ignore);
 
-	if(L.global_col.empty())
+	if(game_level->global_col.empty())
 	{
 		if(is_small)
 			*is_small = (Vec3::Distance(_pos, new_pos) < SMALL_DISTANCE);
@@ -2942,7 +2942,7 @@ int Game::CheckMove(Vec3& _pos, const Vec3& _dir, float _radius, Unit* _me, bool
 	}
 
 	// idŸ prosto po x i z
-	if(!L.Collide(L.global_col, new_pos, _radius))
+	if(!game_level->Collide(game_level->global_col, new_pos, _radius))
 	{
 		if(is_small)
 			*is_small = (Vec3::Distance(_pos, new_pos) < SMALL_DISTANCE);
@@ -2953,7 +2953,7 @@ int Game::CheckMove(Vec3& _pos, const Vec3& _dir, float _radius, Unit* _me, bool
 	// idŸ po x
 	Vec3 new_pos2 = _me->pos;
 	new_pos2.x = new_pos.x;
-	if(!L.Collide(L.global_col, new_pos2, _radius))
+	if(!game_level->Collide(game_level->global_col, new_pos2, _radius))
 	{
 		if(is_small)
 			*is_small = (Vec3::Distance(_pos, new_pos2) < SMALL_DISTANCE);
@@ -2964,7 +2964,7 @@ int Game::CheckMove(Vec3& _pos, const Vec3& _dir, float _radius, Unit* _me, bool
 	// idŸ po z
 	new_pos2.x = _me->pos.x;
 	new_pos2.z = new_pos.z;
-	if(!L.Collide(L.global_col, new_pos2, _radius))
+	if(!game_level->Collide(game_level->global_col, new_pos2, _radius))
 	{
 		if(is_small)
 			*is_small = (Vec3::Distance(_pos, new_pos2) < SMALL_DISTANCE);
@@ -2981,39 +2981,39 @@ int Game::CheckMove(Vec3& _pos, const Vec3& _dir, float _radius, Unit* _me, bool
 //=============================================================================
 void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 {
-	if(L.location->outside)
+	if(game_level->location->outside)
 	{
 		if(unit.area->area_type == LevelArea::Type::Outside)
 		{
-			if(L.terrain->IsInside(unit.pos))
+			if(game_level->terrain->IsInside(unit.pos))
 			{
-				L.terrain->SetH(unit.pos);
+				game_level->terrain->SetH(unit.pos);
 				if(warped)
 					return;
 				if(unit.IsPlayer() && WantExitLevel() && unit.frozen == FROZEN::NO && !dash)
 				{
 					bool allow_exit = false;
 
-					if(L.city_ctx && IsSet(L.city_ctx->flags, City::HaveExit))
+					if(game_level->city_ctx && IsSet(game_level->city_ctx->flags, City::HaveExit))
 					{
-						for(vector<EntryPoint>::const_iterator it = L.city_ctx->entry_points.begin(), end = L.city_ctx->entry_points.end(); it != end; ++it)
+						for(vector<EntryPoint>::const_iterator it = game_level->city_ctx->entry_points.begin(), end = game_level->city_ctx->entry_points.end(); it != end; ++it)
 						{
 							if(it->exit_region.IsInside(unit.pos))
 							{
 								if(!Team.IsLeader())
-									gui->messages->AddGameMsg3(GMS_NOT_LEADER);
+									game_gui->messages->AddGameMsg3(GMS_NOT_LEADER);
 								else
 								{
 									if(Net::IsLocal())
 									{
-										CanLeaveLocationResult result = L.CanLeaveLocation(unit);
+										CanLeaveLocationResult result = game_level->CanLeaveLocation(unit);
 										if(result == CanLeaveLocationResult::Yes)
 										{
 											allow_exit = true;
-											W.SetTravelDir(unit.pos);
+											world->SetTravelDir(unit.pos);
 										}
 										else
-											gui->messages->AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
+											game_gui->messages->AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
 									}
 									else
 										Net_LeaveLocation(ENTER_FROM_OUTSIDE);
@@ -3022,23 +3022,23 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 							}
 						}
 					}
-					else if(L.location_index != QM.quest_secret->where2
+					else if(game_level->location_index != quest_mgr->quest_secret->where2
 						&& (unit.pos.x < 33.f || unit.pos.x > 256.f - 33.f || unit.pos.z < 33.f || unit.pos.z > 256.f - 33.f))
 					{
 						if(!Team.IsLeader())
-							gui->messages->AddGameMsg3(GMS_NOT_LEADER);
+							game_gui->messages->AddGameMsg3(GMS_NOT_LEADER);
 						else if(!Net::IsLocal())
 							Net_LeaveLocation(ENTER_FROM_OUTSIDE);
 						else
 						{
-							CanLeaveLocationResult result = L.CanLeaveLocation(unit);
+							CanLeaveLocationResult result = game_level->CanLeaveLocation(unit);
 							if(result == CanLeaveLocationResult::Yes)
 							{
 								allow_exit = true;
-								W.SetTravelDir(unit.pos);
+								world->SetTravelDir(unit.pos);
 							}
 							else
-								gui->messages->AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
+								game_gui->messages->AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
 						}
 					}
 
@@ -3059,10 +3059,10 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 			if(warped)
 				return;
 
-			if(unit.IsPlayer() && L.location->type == L_CITY && WantExitLevel() && unit.frozen == FROZEN::NO && !dash)
+			if(unit.IsPlayer() && game_level->location->type == L_CITY && WantExitLevel() && unit.frozen == FROZEN::NO && !dash)
 			{
 				int id = 0;
-				for(vector<InsideBuilding*>::iterator it = L.city_ctx->inside_buildings.begin(), end = L.city_ctx->inside_buildings.end(); it != end; ++it, ++id)
+				for(vector<InsideBuilding*>::iterator it = game_level->city_ctx->inside_buildings.begin(), end = game_level->city_ctx->inside_buildings.end(); it != end; ++it, ++id)
 				{
 					if((*it)->enter_region.IsInside(unit.pos))
 					{
@@ -3121,7 +3121,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 	}
 	else
 	{
-		InsideLocation* inside = (InsideLocation*)L.location;
+		InsideLocation* inside = (InsideLocation*)game_level->location;
 		InsideLocationLevel& lvl = inside->GetLevelData();
 		Int2 pt = PosToPt(unit.pos);
 
@@ -3157,7 +3157,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 				{
 					if(Net::IsLocal())
 					{
-						CanLeaveLocationResult result = L.CanLeaveLocation(unit);
+						CanLeaveLocationResult result = game_level->CanLeaveLocation(unit);
 						if(result == CanLeaveLocationResult::Yes)
 						{
 							fallback_type = FALLBACK::CHANGE_LEVEL;
@@ -3169,13 +3169,13 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 								Net::PushChange(NetChange::LEAVE_LOCATION);
 						}
 						else
-							gui->messages->AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
+							game_gui->messages->AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
 					}
 					else
 						Net_LeaveLocation(ENTER_FROM_UP_LEVEL);
 				}
 				else
-					gui->messages->AddGameMsg3(GMS_NOT_LEADER);
+					game_gui->messages->AddGameMsg3(GMS_NOT_LEADER);
 			}
 		}
 		else if(pt == lvl.staircase_down)
@@ -3210,7 +3210,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 				{
 					if(Net::IsLocal())
 					{
-						CanLeaveLocationResult result = L.CanLeaveLocation(unit);
+						CanLeaveLocationResult result = game_level->CanLeaveLocation(unit);
 						if(result == CanLeaveLocationResult::Yes)
 						{
 							fallback_type = FALLBACK::CHANGE_LEVEL;
@@ -3222,13 +3222,13 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 								Net::PushChange(NetChange::LEAVE_LOCATION);
 						}
 						else
-							gui->messages->AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
+							game_gui->messages->AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
 					}
 					else
 						Net_LeaveLocation(ENTER_FROM_DOWN_LEVEL);
 				}
 				else
-					gui->messages->AddGameMsg3(GMS_NOT_LEADER);
+					game_gui->messages->AddGameMsg3(GMS_NOT_LEADER);
 			}
 		}
 		else
@@ -3241,7 +3241,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 	// obs³uga portali
 	if(unit.frozen == FROZEN::NO && unit.IsPlayer() && WantExitLevel() && !dash)
 	{
-		Portal* portal = L.location->portal;
+		Portal* portal = game_level->location->portal;
 		int index = 0;
 		while(portal)
 		{
@@ -3253,7 +3253,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 					{
 						if(Net::IsLocal())
 						{
-							CanLeaveLocationResult result = L.CanLeaveLocation(unit);
+							CanLeaveLocationResult result = game_level->CanLeaveLocation(unit);
 							if(result == CanLeaveLocationResult::Yes)
 							{
 								fallback_type = FALLBACK::USE_PORTAL;
@@ -3265,13 +3265,13 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 									Net::PushChange(NetChange::LEAVE_LOCATION);
 							}
 							else
-								gui->messages->AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
+								game_gui->messages->AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
 						}
 						else
 							Net_LeaveLocation(ENTER_FROM_PORTAL + index);
 					}
 					else
-						gui->messages->AddGameMsg3(GMS_NOT_LEADER);
+						game_gui->messages->AddGameMsg3(GMS_NOT_LEADER);
 
 					break;
 				}
@@ -3294,7 +3294,6 @@ uint Game::TestGameData(bool major)
 {
 	string str;
 	uint errors = 0;
-	ResourceManager& res_mgr = *app::res_mgr;
 
 	Info("Test: Checking items...");
 
@@ -3309,7 +3308,7 @@ uint Game::TestGameData(bool major)
 		}
 		else
 		{
-			res_mgr.LoadMeshMetadata(w.mesh);
+			res_mgr->LoadMeshMetadata(w.mesh);
 			Mesh::Point* pt = w.mesh->FindPoint("hit");
 			if(!pt || !pt->IsBox())
 			{
@@ -3335,7 +3334,7 @@ uint Game::TestGameData(bool major)
 		}
 		else
 		{
-			res_mgr.LoadMeshMetadata(s.mesh);
+			res_mgr->LoadMeshMetadata(s.mesh);
 			Mesh::Point* pt = s.mesh->FindPoint("hit");
 			if(!pt || !pt->IsBox())
 			{
@@ -3438,7 +3437,7 @@ uint Game::TestGameData(bool major)
 			else
 			{
 				Mesh& mesh = *ud.mesh;
-				res_mgr.Load(&mesh);
+				res_mgr->Load(&mesh);
 
 				for(uint i = 0; i < NAMES::n_ani_base; ++i)
 				{
@@ -3577,7 +3576,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	if(level == -2)
 		u->level = base.level.Random();
 	else if(level == -3)
-		u->level = base.level.Clamp(L.location->st);
+		u->level = base.level.Clamp(game_level->location->st);
 	else
 		u->level = base.level.Clamp(level);
 	u->player = nullptr;
@@ -3633,7 +3632,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 		script->Parse(*u);
 		SortItems(u->items);
 		u->RecalculateWeight();
-		if(!app::res_mgr->IsLoadScreen())
+		if(!res_mgr->IsLoadScreen())
 		{
 			for(auto slot : u->slots)
 			{
@@ -3647,9 +3646,9 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	if(base.trader && !test_unit)
 	{
 		u->stock = new TraderStock;
-		u->stock->date = W.GetWorldtime();
+		u->stock->date = world->GetWorldtime();
 		base.trader->stock->Parse(u->stock->items);
-		if(!L.entering)
+		if(!game_level->entering)
 		{
 			for(ItemSlot& slot : u->stock->items)
 				PreloadItem(slot.item);
@@ -3711,7 +3710,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 
 		// boss music
 		if(IsSet(u->data->flags2, F2_BOSS))
-			W.AddBossLevel(Int2(L.location_index, L.dungeon_level));
+			world->AddBossLevel(Int2(game_level->location_index, game_level->dungeon_level));
 
 		// physics
 		if(create_physics)
@@ -3723,7 +3722,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	if(Net::IsServer())
 	{
 		u->netid = Unit::netid_counter++;
-		if(!L.entering)
+		if(!game_level->entering)
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::SPAWN_UNIT;
@@ -3863,8 +3862,8 @@ bool Game::CheckForHit(LevelArea& area, Unit& unit, Unit*& hitted, Mesh::Point& 
 
 				if(Net::IsLocal() && unit.IsPlayer())
 				{
-					if(QM.quest_tutorial->in_tutorial)
-						QM.quest_tutorial->HandleMeleeAttackCollision();
+					if(quest_mgr->quest_tutorial->in_tutorial)
+						quest_mgr->quest_tutorial->HandleMeleeAttackCollision();
 					unit.player->Train(TrainWhat::AttackNoDamage, 0.f, 1);
 				}
 
@@ -4196,12 +4195,12 @@ void Game::UpdateUnits(LevelArea& area, float dt)
 			if(Net::IsLocal() && (Any(u.live_state, Unit::DYING, Unit::FALLING) || u.action == A_POSITION_CORPSE))
 			{
 				Vec3 pos = u.GetLootCenter();
-				L.global_col.clear();
+				game_level->global_col.clear();
 				Level::IgnoreObjects ignore = { 0 };
 				ignore.ignore_units = true;
 				ignore.ignore_doors = true;
-				L.GatherCollisionObjects(area, L.global_col, pos, 0.25f, &ignore);
-				if(L.Collide(L.global_col, pos, 0.25f))
+				game_level->GatherCollisionObjects(area, game_level->global_col, pos, 0.25f, &ignore);
+				if(game_level->Collide(game_level->global_col, pos, 0.25f))
 				{
 					Vec3 dir = u.pos - pos;
 					dir.y = 0;
@@ -4220,7 +4219,7 @@ void Game::UpdateUnits(LevelArea& area, float dt)
 				if(u.live_state == Unit::DYING)
 				{
 					u.live_state = Unit::DEAD;
-					L.CreateBlood(area, u);
+					game_level->CreateBlood(area, u);
 					if(u.summoner != nullptr && Net::IsLocal())
 					{
 						Team.RemoveTeamMember(&u);
@@ -4300,7 +4299,7 @@ void Game::UpdateUnits(LevelArea& area, float dt)
 						// unequip item
 						case NA_REMOVE:
 							if(u.slots[pc->next_action_data.slot])
-								gui->inventory->inv_mine->RemoveSlotItem(pc->next_action_data.slot);
+								game_gui->inventory->inv_mine->RemoveSlotItem(pc->next_action_data.slot);
 							break;
 						// equip item after unequiping old one
 						case NA_EQUIP:
@@ -4309,7 +4308,7 @@ void Game::UpdateUnits(LevelArea& area, float dt)
 								int index = pc->GetNextActionItemIndex();
 								if(index != -1)
 								{
-									gui->inventory->inv_mine->EquipSlotItem(index);
+									game_gui->inventory->inv_mine->EquipSlotItem(index);
 									if(pc->next_action == NA_EQUIP_DRAW)
 									{
 										switch(pc->next_action_data.item->type)
@@ -4332,14 +4331,14 @@ void Game::UpdateUnits(LevelArea& area, float dt)
 						// drop item after hiding it
 						case NA_DROP:
 							if(u.slots[pc->next_action_data.slot])
-								gui->inventory->inv_mine->DropSlotItem(pc->next_action_data.slot);
+								game_gui->inventory->inv_mine->DropSlotItem(pc->next_action_data.slot);
 							break;
 						// use consumable
 						case NA_CONSUME:
 							{
 								int index = pc->GetNextActionItemIndex();
 								if(index != -1)
-									gui->inventory->inv_mine->ConsumeItem(index);
+									game_gui->inventory->inv_mine->ConsumeItem(index);
 							}
 							break;
 						//  use usable
@@ -4350,17 +4349,17 @@ void Game::UpdateUnits(LevelArea& area, float dt)
 						// sell equipped item
 						case NA_SELL:
 							if(u.slots[pc->next_action_data.slot])
-								gui->inventory->inv_trade_mine->SellSlotItem(pc->next_action_data.slot);
+								game_gui->inventory->inv_trade_mine->SellSlotItem(pc->next_action_data.slot);
 							break;
 						// put equipped item in container
 						case NA_PUT:
 							if(u.slots[pc->next_action_data.slot])
-								gui->inventory->inv_trade_mine->PutSlotItem(pc->next_action_data.slot);
+								game_gui->inventory->inv_trade_mine->PutSlotItem(pc->next_action_data.slot);
 							break;
 						// give equipped item
 						case NA_GIVE:
 							if(u.slots[pc->next_action_data.slot])
-								gui->inventory->inv_trade_mine->GiveSlotItem(pc->next_action_data.slot);
+								game_gui->inventory->inv_trade_mine->GiveSlotItem(pc->next_action_data.slot);
 							break;
 						}
 
@@ -4915,7 +4914,7 @@ void Game::UpdateUnits(LevelArea& area, float dt)
 							{
 								u.visual_pos = u.pos = Vec3::Lerp(u.target_pos, u.target_pos2, u.timer * 2);
 								u.changed = true;
-								L.global_col.clear();
+								game_level->global_col.clear();
 								float my_radius = u.GetUnitRadius();
 								bool ok = true;
 								for(vector<Unit*>::iterator it2 = area.units.begin(), end2 = area.units.end(); it2 != end2; ++it2)
@@ -5162,7 +5161,7 @@ void Game::UpdateUnits(LevelArea& area, float dt)
 		case A_DESPAWN:
 			u.timer -= dt;
 			if(u.timer <= 0.f)
-				L.RemoveUnit(&u);
+				game_level->RemoveUnit(&u);
 			break;
 		case A_PREPARE:
 			assert(Net::IsClient());
@@ -5181,7 +5180,7 @@ void Game::UpdateUnits(LevelArea& area, float dt)
 				if(Net::IsLocal() && u.IsPlayer())
 				{
 					// magic scroll effect
-					gui->messages->AddGameMsg3(u.player, GMS_TOO_COMPLICATED);
+					game_gui->messages->AddGameMsg3(u.player, GMS_TOO_COMPLICATED);
 					u.ApplyStun(2.5f);
 					u.RemoveItem(u.used_item, 1u);
 					u.used_item = nullptr;
@@ -5328,7 +5327,7 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 		// do contact test
 		btCollisionShape* shape;
 		if(!it->spell)
-			shape = L.shape_arrow;
+			shape = game_level->shape_arrow;
 		else
 			shape = it->spell->shape;
 		assert(shape->isConvex());
@@ -5648,8 +5647,8 @@ void Game::UpdateBullets(LevelArea& area, float dt)
 					Object* obj = static_cast<Object*>(callback.target->getUserPointer());
 					if(obj && obj->base && obj->base->id == "bow_target")
 					{
-						if(QM.quest_tutorial->in_tutorial)
-							QM.quest_tutorial->HandleBulletCollision();
+						if(quest_mgr->quest_tutorial->in_tutorial)
+							quest_mgr->quest_tutorial->HandleBulletCollision();
 						it->owner->player->Train(TrainWhat::BowNoDamage, 0.f, 1);
 					}
 				}
@@ -5749,7 +5748,7 @@ Unit* Game::CreateUnitWithAI(LevelArea& area, UnitData& unit, int level, Human* 
 		if(area.area_type == LevelArea::Type::Outside)
 		{
 			Vec3 pt = *pos;
-			L.terrain->SetH(pt);
+			game_level->terrain->SetH(pt);
 			u->pos = pt;
 		}
 		else
@@ -5779,35 +5778,35 @@ void Game::ChangeLevel(int where)
 
 	Info(where == 1 ? "Changing level to lower." : "Changing level to upper.");
 
-	L.entering = true;
-	L.event_handler = nullptr;
-	L.UpdateDungeonMinimap(false);
+	game_level->entering = true;
+	game_level->event_handler = nullptr;
+	game_level->UpdateDungeonMinimap(false);
 
-	if(!QM.quest_tutorial->in_tutorial && QM.quest_crazies->crazies_state >= Quest_Crazies::State::PickedStone
-		&& QM.quest_crazies->crazies_state < Quest_Crazies::State::End)
-		QM.quest_crazies->CheckStone();
+	if(!quest_mgr->quest_tutorial->in_tutorial && quest_mgr->quest_crazies->crazies_state >= Quest_Crazies::State::PickedStone
+		&& quest_mgr->quest_crazies->crazies_state < Quest_Crazies::State::End)
+		quest_mgr->quest_crazies->CheckStone();
 
-	if(Net::IsOnline() && N.active_players > 1)
+	if(Net::IsOnline() && net->active_players > 1)
 	{
-		int level = L.dungeon_level;
+		int level = game_level->dungeon_level;
 		if(where == -1)
 			--level;
 		else
 			++level;
 		if(level >= 0)
-			N.OnChangeLevel(level);
+			net->OnChangeLevel(level);
 
-		N.FilterServerChanges();
+		net->FilterServerChanges();
 	}
 
 	if(where == -1)
 	{
 		// poziom w górê
-		if(L.dungeon_level == 0)
+		if(game_level->dungeon_level == 0)
 		{
-			if(QM.quest_tutorial->in_tutorial)
+			if(quest_mgr->quest_tutorial->in_tutorial)
 			{
-				QM.quest_tutorial->OnEvent(Quest_Tutorial::Exit);
+				quest_mgr->quest_tutorial->OnEvent(Quest_Tutorial::Exit);
 				fallback_type = FALLBACK::CLIENT;
 				fallback_t = 0.f;
 				return;
@@ -5822,20 +5821,20 @@ void Game::ChangeLevel(int where)
 			LoadingStart(4);
 			LoadingStep(txLevelUp);
 
-			MultiInsideLocation* inside = (MultiInsideLocation*)L.location;
+			MultiInsideLocation* inside = (MultiInsideLocation*)game_level->location;
 			LeaveLevel();
-			--L.dungeon_level;
+			--game_level->dungeon_level;
 			LocationGenerator* loc_gen = loc_gen_factory->Get(inside);
-			L.enter_from = ENTER_FROM_DOWN_LEVEL;
+			game_level->enter_from = ENTER_FROM_DOWN_LEVEL;
 			EnterLevel(loc_gen);
 		}
 	}
 	else
 	{
-		MultiInsideLocation* inside = (MultiInsideLocation*)L.location;
+		MultiInsideLocation* inside = (MultiInsideLocation*)game_level->location;
 
 		int steps = 3; // txLevelDown, txGeneratingMinimap, txLoadingComplete
-		if(L.dungeon_level + 1 >= inside->generated)
+		if(game_level->dungeon_level + 1 >= inside->generated)
 			steps += 3; // txGeneratingMap, txGeneratingObjects, txGeneratingUnits
 		else
 			++steps; // txRegeneratingLevel
@@ -5845,12 +5844,12 @@ void Game::ChangeLevel(int where)
 
 		// poziom w dó³
 		LeaveLevel();
-		++L.dungeon_level;
+		++game_level->dungeon_level;
 
 		LocationGenerator* loc_gen = loc_gen_factory->Get(inside);
 
 		// czy to pierwsza wizyta?
-		if(L.dungeon_level >= inside->generated)
+		if(game_level->dungeon_level >= inside->generated)
 		{
 			if(next_seed != 0)
 			{
@@ -5860,11 +5859,11 @@ void Game::ChangeLevel(int where)
 			else if(force_seed != 0 && force_seed_all)
 				Srand(force_seed);
 
-			inside->generated = L.dungeon_level + 1;
-			inside->infos[L.dungeon_level].seed = RandVal();
+			inside->generated = game_level->dungeon_level + 1;
+			inside->infos[game_level->dungeon_level].seed = RandVal();
 
-			Info("Generating location '%s', seed %u.", L.location->name.c_str(), RandVal());
-			Info("Generating dungeon, level %d, target %d.", L.dungeon_level + 1, inside->target);
+			Info("Generating location '%s', seed %u.", game_level->location->name.c_str(), RandVal());
+			Info("Generating dungeon, level %d, target %d.", game_level->dungeon_level + 1, inside->target);
 
 			LoadingStep(txGeneratingMap);
 
@@ -5872,57 +5871,57 @@ void Game::ChangeLevel(int where)
 			loc_gen->Generate();
 		}
 
-		L.enter_from = ENTER_FROM_UP_LEVEL;
+		game_level->enter_from = ENTER_FROM_UP_LEVEL;
 		EnterLevel(loc_gen);
 	}
 
-	L.location->last_visit = W.GetWorldtime();
-	L.CheckIfLocationCleared();
-	bool loaded_resources = L.location->RequireLoadingResources(nullptr);
+	game_level->location->last_visit = world->GetWorldtime();
+	game_level->CheckIfLocationCleared();
+	bool loaded_resources = game_level->location->RequireLoadingResources(nullptr);
 	LoadResources(txLoadingComplete, false);
 
 	SetMusic();
 
-	if(Net::IsOnline() && N.active_players > 1)
+	if(Net::IsOnline() && net->active_players > 1)
 	{
 		net_mode = NM_SERVER_SEND;
 		net_state = NetState::Server_Send;
 		prepared_stream.Reset();
-		N.WriteLevelData(prepared_stream, loaded_resources);
+		net->WriteLevelData(prepared_stream, loaded_resources);
 		Info("Generated location packet: %d.", prepared_stream.GetNumberOfBytesUsed());
-		gui->info_box->Show(txWaitingForPlayers);
+		game_gui->info_box->Show(txWaitingForPlayers);
 	}
 	else
 	{
 		clear_color = clear_color_next;
 		game_state = GS_LEVEL;
-		gui->load_screen->visible = false;
-		gui->main_menu->visible = false;
-		gui->game_gui->visible = true;
+		game_gui->load_screen->visible = false;
+		game_gui->main_menu->visible = false;
+		game_gui->level_gui->visible = true;
 	}
 
 	Info("Randomness integrity: %d", RandVal());
-	L.entering = false;
+	game_level->entering = false;
 }
 
 void Game::ExitToMap()
 {
 	// zamknij gui layer
-	gui->CloseAllPanels();
+	game_gui->CloseAllPanels();
 
 	clear_color = Color::Black;
 	game_state = GS_WORLDMAP;
-	if(L.is_open && L.location->type == L_ENCOUNTER)
+	if(game_level->is_open && game_level->location->type == L_ENCOUNTER)
 		LeaveLocation();
 
-	W.ExitToMap();
+	world->ExitToMap();
 	SetMusic(MusicType::Travel);
 
 	if(Net::IsServer())
 		Net::PushChange(NetChange::EXIT_TO_MAP);
 
-	gui->world_map->Show();
-	gui->game_gui->visible = false;
+	game_gui->world_map->Show();
+	game_gui->level_gui->visible = false;
 }
 
 Sound* Game::GetMaterialSound(MATERIAL_TYPE atakuje, MATERIAL_TYPE trafiony)
@@ -6355,7 +6354,7 @@ void Game::CastSpell(LevelArea& area, Unit& u)
 					u2.ReequipItems();
 
 					// przenieœ fizyke
-					L.WarpUnit(u2, u2.pos);
+					game_level->WarpUnit(u2, u2.pos);
 
 					// resetuj ai
 					u2.ai->Reset();
@@ -6837,8 +6836,8 @@ void Game::UpdateTraps(LevelArea& area, float dt)
 				{
 					for(Unit* unit : area.units)
 					{
-						if(unit->IsStanding() && !IsSet(unit->data->flags, F_SLIGHT) &&
-							CircleToRectangle(unit->pos.x, unit->pos.z, unit->GetUnitRadius(), trap.pos.x, trap.pos.z, trap.base->rw, trap.base->h))
+						if(unit->IsStanding() && !IsSet(unit->data->flags, F_SLIGHT)
+							&& CircleToRectangle(unit->pos.x, unit->pos.z, unit->GetUnitRadius(), trap.pos.x, trap.pos.z, trap.base->rw, trap.base->h))
 						{
 							trigger = true;
 							break;
@@ -6932,8 +6931,8 @@ void Game::UpdateTraps(LevelArea& area, float dt)
 					empty = true;
 					for(Unit* unit : area.units)
 					{
-						if(!IsSet(unit->data->flags, F_SLIGHT) &&
-							CircleToRectangle(unit->pos.x, unit->pos.z, unit->GetUnitRadius(), trap.pos.x, trap.pos.z, trap.base->rw, trap.base->h))
+						if(!IsSet(unit->data->flags, F_SLIGHT)
+							&& CircleToRectangle(unit->pos.x, unit->pos.z, unit->GetUnitRadius(), trap.pos.x, trap.pos.z, trap.base->rw, trap.base->h))
 						{
 							empty = false;
 							break;
@@ -7036,8 +7035,6 @@ void Game::UpdateTraps(LevelArea& area, float dt)
 
 void Game::PreloadTraps(vector<Trap*>& traps)
 {
-	ResourceManager& res_mgr = *app::res_mgr;
-
 	for(Trap* trap : traps)
 	{
 		auto& base = *trap->base;
@@ -7045,15 +7042,15 @@ void Game::PreloadTraps(vector<Trap*>& traps)
 			continue;
 
 		if(base.mesh)
-			res_mgr.Load(base.mesh);
+			res_mgr->Load(base.mesh);
 		if(base.mesh2)
-			res_mgr.Load(base.mesh2);
+			res_mgr->Load(base.mesh2);
 		if(base.sound)
-			res_mgr.Load(base.sound);
+			res_mgr->Load(base.sound);
 		if(base.sound2)
-			res_mgr.Load(base.sound2);
+			res_mgr->Load(base.sound2);
 		if(base.sound3)
-			res_mgr.Load(base.sound3);
+			res_mgr->Load(base.sound3);
 
 		base.state = ResourceState::Loaded;
 	}
@@ -7511,7 +7508,7 @@ void Game::BuildRefidTables()
 	GroundItem::refid_table.clear();
 	ParticleEmitter::refid_table.clear();
 	TrailParticleEmitter::refid_table.clear();
-	for(Location* loc : W.GetLocations())
+	for(Location* loc : world->GetLocations())
 	{
 		if(loc)
 			loc->BuildRefidTables();
@@ -7521,32 +7518,32 @@ void Game::BuildRefidTables()
 // clear game vars on new game or load
 void Game::ClearGameVars(bool new_game)
 {
-	gui->inventory->mode = I_NONE;
+	game_gui->inventory->mode = I_NONE;
 	dialog_context.dialog_mode = false;
 	dialog_context.is_local = true;
 	death_screen = 0;
 	end_of_game = false;
-	gui->minimap->city = nullptr;
+	game_gui->minimap->city = nullptr;
 	Team.ClearOnNewGameOrLoad();
 	draw_flags = 0xFFFFFFFF;
-	gui->game_gui->Reset();
-	gui->journal->Reset();
+	game_gui->level_gui->Reset();
+	game_gui->journal->Reset();
 	arena->Reset();
 	debug_info = false;
 	debug_info2 = false;
-	gui->world_map->dialog_enc = nullptr;
-	gui->game_gui->visible = false;
-	gui->inventory->lock = nullptr;
-	gui->world_map->picked_location = -1;
+	game_gui->world_map->dialog_enc = nullptr;
+	game_gui->level_gui->visible = false;
+	game_gui->inventory->lock = nullptr;
+	game_gui->world_map->picked_location = -1;
 	post_effects.clear();
 	grayout = 0.f;
-	L.camera.Reset();
-	L.lights_dt = 1.f;
+	game_level->camera.Reset();
+	game_level->lights_dt = 1.f;
 	pc_data.Reset();
-	SM.Reset();
-	L.Reset();
+	script_mgr->Reset();
+	game_level->Reset();
 	pathfinding->SetTarget(nullptr);
-	gui->world_map->Clear();
+	game_gui->world_map->Clear();
 
 	// odciemnianie na pocz¹tku
 	fallback_type = FALLBACK::NONE;
@@ -7555,32 +7552,32 @@ void Game::ClearGameVars(bool new_game)
 	if(new_game)
 	{
 		devmode = default_devmode;
-		L.cl_fog = true;
-		L.cl_lighting = true;
+		game_level->cl_fog = true;
+		game_level->cl_lighting = true;
 		draw_particle_sphere = false;
 		draw_unit_radius = false;
 		draw_hitbox = false;
 		noai = false;
 		draw_phy = false;
 		draw_col = false;
-		L.camera.real_rot = Vec2(0, 4.2875104f);
-		L.camera.dist = 3.5f;
+		game_level->camera.real_rot = Vec2(0, 4.2875104f);
+		game_level->camera.dist = 3.5f;
 		game_speed = 1.f;
-		L.dungeon_level = 0;
-		QM.Reset();
-		W.OnNewGame();
-		GameStats::Get().Reset();
+		game_level->dungeon_level = 0;
+		quest_mgr->Reset();
+		world->OnNewGame();
+		game_stats->Reset();
 		Team.Reset();
 		dont_wander = false;
 		pc_data.picking_item_state = 0;
-		L.is_open = false;
-		gui->game_gui->PositionPanels();
-		gui->Clear(true, false);
-		if(!N.mp_quickload)
-			gui->mp_box->visible = Net::IsOnline();
+		game_level->is_open = false;
+		game_gui->level_gui->PositionPanels();
+		game_gui->Clear(true, false);
+		if(!net->mp_quickload)
+			game_gui->mp_box->visible = Net::IsOnline();
 		drunk_anim = 0.f;
-		L.light_angle = Random(PI * 2);
-		L.camera.Reset();
+		game_level->light_angle = Random(PI * 2);
+		game_level->camera.Reset();
 		pc_data.rot_buf = 0.f;
 		start_version = VERSION;
 
@@ -7601,7 +7598,7 @@ void Game::ClearGame()
 	LeaveLocation(true, false);
 
 	// delete units on world map
-	if((game_state == GS_WORLDMAP || prev_game_state == GS_WORLDMAP || (N.mp_load && prev_game_state == GS_LOAD)) && !L.is_open && Net::IsLocal() && !N.was_client)
+	if((game_state == GS_WORLDMAP || prev_game_state == GS_WORLDMAP || (net->mp_load && prev_game_state == GS_LOAD)) && !game_level->is_open && Net::IsLocal() && !net->was_client)
 	{
 		for(Unit& unit : Team.members)
 		{
@@ -7617,14 +7614,14 @@ void Game::ClearGame()
 		prev_game_state = GS_LOAD;
 	}
 
-	if(!N.net_strs.empty())
-		StringPool.Free(N.net_strs);
+	if(!net->net_strs.empty())
+		StringPool.Free(net->net_strs);
 
-	L.is_open = false;
-	L.city_ctx = nullptr;
-	QM.Clear();
-	W.Reset();
-	gui->Clear(true, false);
+	game_level->is_open = false;
+	game_level->city_ctx = nullptr;
+	quest_mgr->Clear();
+	world->Reset();
+	game_gui->Clear(true, false);
 	pc = nullptr;
 }
 
@@ -7675,11 +7672,11 @@ void Game::Unit_StopUsingUsable(LevelArea& area, Unit& u, bool send)
 
 	const float unit_radius = u.GetUnitRadius();
 
-	L.global_col.clear();
+	game_level->global_col.clear();
 	Level::IgnoreObjects ignore = { 0 };
 	const Unit* ignore_units[2] = { &u, nullptr };
 	ignore.ignored_units = ignore_units;
-	L.GatherCollisionObjects(area, L.global_col, u.pos, 2.f + unit_radius, &ignore);
+	game_level->GatherCollisionObjects(area, game_level->global_col, u.pos, 2.f + unit_radius, &ignore);
 
 	Vec3 tmp_pos = u.target_pos;
 	bool ok = false;
@@ -7687,10 +7684,10 @@ void Game::Unit_StopUsingUsable(LevelArea& area, Unit& u, bool send)
 
 	for(int i = 0; i < 20; ++i)
 	{
-		if(!L.Collide(L.global_col, tmp_pos, unit_radius))
+		if(!game_level->Collide(game_level->global_col, tmp_pos, unit_radius))
 		{
 			if(i != 0 && area.have_terrain)
-				tmp_pos.y = L.terrain->GetH(tmp_pos);
+				tmp_pos.y = game_level->terrain->GetH(tmp_pos);
 			u.target_pos = tmp_pos;
 			ok = true;
 			break;
@@ -7752,22 +7749,21 @@ void Game::ApplyLocationTexturePack(TexturePack& pack, LocationTexturePack::Entr
 	else
 		pack = pack_def;
 
-	ResourceManager& res_mgr = *app::res_mgr;
-	res_mgr.Load(pack.diffuse);
+	res_mgr->Load(pack.diffuse);
 	if(pack.normal)
-		res_mgr.Load(pack.normal);
+		res_mgr->Load(pack.normal);
 	if(pack.specular)
-		res_mgr.Load(pack.specular);
+		res_mgr->Load(pack.specular);
 }
 
 void Game::SetDungeonParamsAndTextures(BaseLocation& base)
 {
 	// ustawienia t³a
-	L.camera.draw_range = base.draw_range;
-	L.fog_params = Vec4(base.fog_range.x, base.fog_range.y, base.fog_range.y - base.fog_range.x, 0);
-	L.fog_color = Vec4(base.fog_color, 1);
-	L.ambient_color = Vec4(base.ambient_color, 1);
-	clear_color_next = Color(int(L.fog_color.x * 255), int(L.fog_color.y * 255), int(L.fog_color.z * 255));
+	game_level->camera.draw_range = base.draw_range;
+	game_level->fog_params = Vec4(base.fog_range.x, base.fog_range.y, base.fog_range.y - base.fog_range.x, 0);
+	game_level->fog_color = Vec4(base.fog_color, 1);
+	game_level->ambient_color = Vec4(base.ambient_color, 1);
+	clear_color_next = Color(int(game_level->fog_color.x * 255), int(game_level->fog_color.y * 255), int(game_level->fog_color.z * 255));
 
 	// tekstury podziemi
 	ApplyLocationTexturePack(tFloor[0], tWall[0], tCeil[0], base.tex);
@@ -7829,9 +7825,9 @@ void Game::SetDungeonParamsToMeshes()
 void Game::EnterLevel(LocationGenerator* loc_gen)
 {
 	if(!loc_gen->first)
-		Info("Entering location '%s' level %d.", L.location->name.c_str(), L.dungeon_level + 1);
+		Info("Entering location '%s' level %d.", game_level->location->name.c_str(), game_level->dungeon_level + 1);
 
-	gui->inventory->lock = nullptr;
+	game_gui->inventory->lock = nullptr;
 
 	loc_gen->OnEnter();
 
@@ -7846,47 +7842,47 @@ void Game::LeaveLevel(bool clear)
 {
 	Info("Leaving level.");
 
-	if(gui->game_gui)
-		gui->game_gui->Reset();
+	if(game_gui->level_gui)
+		game_gui->level_gui->Reset();
 
-	if(L.is_open)
+	if(game_level->is_open)
 	{
-		for(LevelArea& area : L.ForEachArea())
+		for(LevelArea& area : game_level->ForEachArea())
 		{
 			LeaveLevel(area, clear);
 			area.tmp->Free();
 			area.tmp = nullptr;
 		}
-		if(L.city_ctx && (!Net::IsLocal() || N.was_client))
-			DeleteElements(L.city_ctx->inside_buildings);
-		if(Net::IsClient() && !L.location->outside)
+		if(game_level->city_ctx && (!Net::IsLocal() || net->was_client))
+			DeleteElements(game_level->city_ctx->inside_buildings);
+		if(Net::IsClient() && !game_level->location->outside)
 		{
-			InsideLocation* inside = (InsideLocation*)L.location;
+			InsideLocation* inside = (InsideLocation*)game_level->location;
 			InsideLocationLevel& lvl = inside->GetLevelData();
 			Room::Free(lvl.rooms);
 		}
 	}
 
 	ais.clear();
-	L.RemoveColliders();
+	game_level->RemoveColliders();
 	StopAllSounds();
 
 	ClearQuadtree();
 
-	gui->CloseAllPanels();
+	game_gui->CloseAllPanels();
 
-	L.camera.Reset();
+	game_level->camera.Reset();
 	pc_data.rot_buf = 0.f;
 	pc_data.target_unit = nullptr;
 	dialog_context.dialog_mode = false;
-	gui->inventory->mode = I_NONE;
+	game_gui->inventory->mode = I_NONE;
 	pc_data.before_player = BP_NONE;
 }
 
 void Game::LeaveLevel(LevelArea& area, bool clear)
 {
 	// cleanup units
-	if(Net::IsLocal() && !clear && !N.was_client)
+	if(Net::IsLocal() && !clear && !net->was_client)
 	{
 		for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
 		{
@@ -7946,12 +7942,12 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 						{
 							unit.live_state = Unit::DEAD;
 							unit.mesh_inst->SetToEnd();
-							L.CreateBlood(area, unit, true);
+							game_level->CreateBlood(area, unit, true);
 						}
-						if(unit.ai->goto_inn && L.city_ctx)
+						if(unit.ai->goto_inn && game_level->city_ctx)
 						{
 							// warp to inn if unit wanted to go there
-							L.WarpToInn(**it);
+							game_level->WarpToInn(**it);
 						}
 						delete unit.mesh_inst;
 						unit.mesh_inst = nullptr;
@@ -7983,7 +7979,7 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 			Unit& unit = **it;
 
 			if(unit.IsLocal() && !clear)
-				unit.player = nullptr; // don't delete game.pc
+				unit.player = nullptr; // don't delete game->pc
 
 			if(unit.cobj)
 				delete unit.cobj->getCollisionShape();
@@ -8007,7 +8003,7 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 	// temporary entities
 	area.tmp->Clear();
 
-	if(Net::IsLocal() && !N.was_client)
+	if(Net::IsLocal() && !net->was_client)
 	{
 		// remove chest meshes
 		for(Chest* chest : area.chests)
@@ -8054,7 +8050,7 @@ void Game::UpdateArea(LevelArea& area, float dt)
 	// aktualizuj postacie
 	UpdateUnits(area, dt);
 
-	if(L.lights_dt >= 1.f / 60)
+	if(game_level->lights_dt >= 1.f / 60)
 		UpdateLights(area.lights);
 
 	// update chests
@@ -8169,7 +8165,7 @@ void Game::PlayHitSound(MATERIAL_TYPE mat2, MATERIAL_TYPE mat, const Vec3& hitpo
 
 void Game::LoadingStart(int steps)
 {
-	gui->load_screen->Reset();
+	game_gui->load_screen->Reset();
 	loading_t.Reset();
 	loading_dt = 0.f;
 	loading_cap = 0.66f;
@@ -8178,10 +8174,10 @@ void Game::LoadingStart(int steps)
 	loading_first_step = true;
 	clear_color = Color::Black;
 	game_state = GS_LOAD;
-	gui->load_screen->visible = true;
-	gui->main_menu->visible = false;
-	gui->game_gui->visible = false;
-	app::res_mgr->PrepareLoadScreen(loading_cap);
+	game_gui->load_screen->visible = true;
+	game_gui->main_menu->visible = false;
+	game_gui->level_gui->visible = false;
+	res_mgr->PrepareLoadScreen(loading_cap);
 }
 
 void Game::LoadingStep(cstring text, int end)
@@ -8193,7 +8189,7 @@ void Game::LoadingStep(cstring text, int end)
 		progress = loading_cap;
 	else
 		progress = 1.f;
-	gui->load_screen->SetProgressOptional(progress, text);
+	game_gui->load_screen->SetProgressOptional(progress, text);
 
 	if(end != 2)
 	{
@@ -8222,10 +8218,10 @@ void Game::LoadResources(cstring text, bool worldmap)
 	PreloadResources(worldmap);
 
 	// check if there is anything to load
-	if(app::res_mgr->HaveTasks())
+	if(res_mgr->HaveTasks())
 	{
-		Info("Loading new resources (%d).", app::res_mgr->GetLoadTasksCount());
-		app::res_mgr->StartLoadScreen(txLoadingResources);
+		Info("Loading new resources (%d).", res_mgr->GetLoadTasksCount());
+		res_mgr->StartLoadScreen(txLoadingResources);
 
 		// apply mesh instance for newly loaded meshes
 		for(auto& unit_mesh : units_mesh_load)
@@ -8233,7 +8229,7 @@ void Game::LoadResources(cstring text, bool worldmap)
 			Unit::CREATE_MESH mode;
 			if(unit_mesh.second)
 				mode = Unit::CREATE_MESH::ON_WORLDMAP;
-			else if(N.mp_load && Net::IsClient())
+			else if(net->mp_load && Net::IsClient())
 				mode = Unit::CREATE_MESH::AFTER_PRELOAD;
 			else
 				mode = Unit::CREATE_MESH::NORMAL;
@@ -8244,16 +8240,16 @@ void Game::LoadResources(cstring text, bool worldmap)
 	else
 	{
 		Info("Nothing new to load.");
-		app::res_mgr->CancelLoadScreen();
+		res_mgr->CancelLoadScreen();
 	}
 
-	if(L.location)
+	if(game_level->location)
 	{
 		// spawn blood for units that are dead and their mesh just loaded
-		L.SpawnBlood();
+		game_level->SpawnBlood();
 
 		// finished
-		if((Net::IsLocal() || !N.mp_load_worldmap) && !L.location->outside)
+		if((Net::IsLocal() || !net->mp_load_worldmap) && !game_level->location->outside)
 			SetDungeonParamsToMeshes();
 	}
 
@@ -8263,14 +8259,12 @@ void Game::LoadResources(cstring text, bool worldmap)
 // When there is something new to load, add task to load it when entering location etc
 void Game::PreloadResources(bool worldmap)
 {
-	ResourceManager& res_mgr = *app::res_mgr;
-
 	if(Net::IsLocal())
 		items_load.clear();
 
 	if(!worldmap)
 	{
-		for(LevelArea& area : L.ForEachArea())
+		for(LevelArea& area : game_level->ForEachArea())
 		{
 			// load units - units respawn so need to check everytime...
 			PreloadUnits(area.units);
@@ -8293,40 +8287,40 @@ void Game::PreloadResources(bool worldmap)
 		}
 
 		bool new_value = true;
-		if(L.location->RequireLoadingResources(&new_value) == false)
+		if(game_level->location->RequireLoadingResources(&new_value) == false)
 		{
 			// load music
 			if(!sound_mgr->IsMusicDisabled())
-				LoadMusic(L.GetLocationMusic(), false);
+				LoadMusic(game_level->GetLocationMusic(), false);
 
 			// load objects
-			for(Object* obj : L.local_area->objects)
-				res_mgr.Load(obj->mesh);
+			for(Object* obj : game_level->local_area->objects)
+				res_mgr->Load(obj->mesh);
 
 			// load usables
-			PreloadUsables(L.local_area->usables);
+			PreloadUsables(game_level->local_area->usables);
 
-			if(L.city_ctx)
+			if(game_level->city_ctx)
 			{
 				// load buildings
-				for(CityBuilding& city_building : L.city_ctx->buildings)
+				for(CityBuilding& city_building : game_level->city_ctx->buildings)
 				{
 					Building& building = *city_building.building;
 					if(building.state == ResourceState::NotLoaded)
 					{
 						if(building.mesh)
-							res_mgr.Load(building.mesh);
+							res_mgr->Load(building.mesh);
 						if(building.inside_mesh)
-							res_mgr.Load(building.inside_mesh);
+							res_mgr->Load(building.inside_mesh);
 						building.state = ResourceState::Loaded;
 					}
 				}
 
-				for(InsideBuilding* ib : L.city_ctx->inside_buildings)
+				for(InsideBuilding* ib : game_level->city_ctx->inside_buildings)
 				{
 					// load building objects
 					for(Object* obj : ib->objects)
-						res_mgr.Load(obj->mesh);
+						res_mgr->Load(obj->mesh);
 
 					// load building usables
 					PreloadUsables(ib->usables);
@@ -8344,8 +8338,6 @@ void Game::PreloadResources(bool worldmap)
 
 void Game::PreloadUsables(vector<Usable*>& usables)
 {
-	ResourceManager& res_mgr = *app::res_mgr;
-
 	for(auto u : usables)
 	{
 		auto base = u->base;
@@ -8354,12 +8346,12 @@ void Game::PreloadUsables(vector<Usable*>& usables)
 			if(base->variants)
 			{
 				for(uint i = 0; i < base->variants->entries.size(); ++i)
-					res_mgr.Load(base->variants->entries[i].mesh);
+					res_mgr->Load(base->variants->entries[i].mesh);
 			}
 			else
-				res_mgr.Load(base->mesh);
+				res_mgr->Load(base->mesh);
 			if(base->sound)
-				res_mgr.Load(base->sound);
+				res_mgr->Load(base->sound);
 			base->state = ResourceState::Loaded;
 		}
 	}
@@ -8373,7 +8365,6 @@ void Game::PreloadUnits(vector<Unit*>& units)
 
 void Game::PreloadUnit(Unit* unit)
 {
-	ResourceManager& res_mgr = *app::res_mgr;
 	UnitData& data = *unit->data;
 
 	if(Net::IsLocal())
@@ -8392,14 +8383,14 @@ void Game::PreloadUnit(Unit* unit)
 		return;
 
 	if(data.mesh)
-		res_mgr.Load(data.mesh);
+		res_mgr->Load(data.mesh);
 
 	if(!sound_mgr->IsDisabled())
 	{
 		for(int i = 0; i < SOUND_MAX; ++i)
 		{
 			for(SoundPtr sound : data.sounds->sounds[i])
-				res_mgr.Load(sound);
+				res_mgr->Load(sound);
 		}
 	}
 
@@ -8408,7 +8399,7 @@ void Game::PreloadUnit(Unit* unit)
 		for(TexId& ti : data.tex->textures)
 		{
 			if(ti.tex)
-				res_mgr.Load(ti.tex);
+				res_mgr->Load(ti.tex);
 		}
 	}
 
@@ -8427,8 +8418,7 @@ void Game::PreloadItem(const Item* p_item)
 	if(item.state == ResourceState::Loaded)
 		return;
 
-	ResourceManager& res_mgr = *app::res_mgr;
-	if(res_mgr.IsLoadScreen())
+	if(res_mgr->IsLoadScreen())
 	{
 		if(item.state != ResourceState::Loading)
 		{
@@ -8440,21 +8430,21 @@ void Game::PreloadItem(const Item* p_item)
 					for(TexId& ti : armor.tex_override)
 					{
 						if(!ti.id.empty())
-							ti.tex = res_mgr.Load<Texture>(ti.id);
+							ti.tex = res_mgr->Load<Texture>(ti.id);
 					}
 				}
 			}
 			else if(item.type == IT_BOOK)
 			{
 				Book& book = item.ToBook();
-				res_mgr.Load(book.scheme->tex);
+				res_mgr->Load(book.scheme->tex);
 			}
 
 			if(item.tex)
-				res_mgr.Load(item.tex);
+				res_mgr->Load(item.tex);
 			else
-				res_mgr.Load(item.mesh);
-			res_mgr.AddTask(&item, TaskCallback(this, &Game::GenerateItemImage));
+				res_mgr->Load(item.mesh);
+			res_mgr->AddTask(&item, TaskCallback(this, &Game::GenerateItemImage));
 
 			item.state = ResourceState::Loading;
 		}
@@ -8470,24 +8460,24 @@ void Game::PreloadItem(const Item* p_item)
 				for(TexId& ti : armor.tex_override)
 				{
 					if(!ti.id.empty())
-						res_mgr.Load(ti.tex);
+						res_mgr->Load(ti.tex);
 				}
 			}
 		}
 		else if(item.type == IT_BOOK)
 		{
 			Book& book = item.ToBook();
-			res_mgr.Load(book.scheme->tex);
+			res_mgr->Load(book.scheme->tex);
 		}
 
 		if(item.tex)
 		{
-			res_mgr.Load(item.tex);
+			res_mgr->Load(item.tex);
 			item.icon = item.tex;
 		}
 		else
 		{
-			res_mgr.Load(item.mesh);
+			res_mgr->Load(item.mesh);
 			TaskData task;
 			task.ptr = &item;
 			GenerateItemImage(task);
@@ -8499,7 +8489,7 @@ void Game::PreloadItem(const Item* p_item)
 
 void Game::VerifyResources()
 {
-	for(LevelArea& area : L.ForEachArea())
+	for(LevelArea& area : game_level->ForEachArea())
 	{
 		for(GroundItem* item : area.items)
 			VerifyItemResources(item->item);
@@ -8576,10 +8566,10 @@ void Game::DeleteUnit(Unit* unit)
 {
 	assert(unit);
 
-	if(L.is_open)
+	if(game_level->is_open)
 	{
 		RemoveElement(unit->area->units, unit);
-		gui->game_gui->RemoveUnit(unit);
+		game_gui->level_gui->RemoveUnit(unit);
 		if(pc_data.before_player == BP_UNIT && pc_data.before_player_ptr.unit == unit)
 			pc_data.before_player = BP_NONE;
 		if(unit == pc_data.target_unit)
@@ -8593,7 +8583,7 @@ void Game::DeleteUnit(Unit* unit)
 		}
 		else
 		{
-			for(PlayerInfo& player : N.players)
+			for(PlayerInfo& player : net->players)
 			{
 				PlayerController* pc = player.pc;
 				if(pc->action == PlayerController::Action_LootUnit && pc->action_unit == unit)
@@ -8624,8 +8614,8 @@ void Game::DeleteUnit(Unit* unit)
 			}
 		}
 
-		if(QM.quest_contest->state >= Quest_Contest::CONTEST_STARTING)
-			RemoveElementTry(QM.quest_contest->units, unit);
+		if(quest_mgr->quest_contest->state >= Quest_Contest::CONTEST_STARTING)
+			RemoveElementTry(quest_mgr->quest_contest->units, unit);
 		if(!arena->free)
 		{
 			RemoveElementTry(arena->units, unit);
@@ -8668,7 +8658,7 @@ void Game::DeleteUnit(Unit* unit)
 float Game::PlayerAngleY()
 {
 	const float pt0 = 4.6662526f;
-	return L.camera.rot.y - pt0;
+	return game_level->camera.rot.y - pt0;
 }
 
 void Game::AttackReaction(Unit& attacked, Unit& attacker)
@@ -8707,7 +8697,7 @@ void Game::AttackReaction(Unit& attacked, Unit& attacker)
 		}
 		if(attacked.dont_attack && !IsSet(attacked.data->flags, F_PEACEFUL))
 		{
-			for(vector<Unit*>::iterator it = L.local_area->units.begin(), end = L.local_area->units.end(); it != end; ++it)
+			for(vector<Unit*>::iterator it = game_level->local_area->units.begin(), end = game_level->local_area->units.end(); it != end; ++it)
 			{
 				if((*it)->dont_attack && !IsSet((*it)->data->flags, F_PEACEFUL))
 				{
@@ -8721,125 +8711,125 @@ void Game::AttackReaction(Unit& attacked, Unit& attacker)
 
 void Game::GenerateQuestUnits()
 {
-	if(QM.quest_sawmill->sawmill_state == Quest_Sawmill::State::None && L.location_index == QM.quest_sawmill->start_loc)
+	if(quest_mgr->quest_sawmill->sawmill_state == Quest_Sawmill::State::None && game_level->location_index == quest_mgr->quest_sawmill->start_loc)
 	{
-		Unit* u = L.SpawnUnitInsideInn(*UnitData::Get("artur_drwal"), -2);
+		Unit* u = game_level->SpawnUnitInsideInn(*UnitData::Get("artur_drwal"), -2);
 		assert(u);
 		if(u)
 		{
-			QM.quest_sawmill->sawmill_state = Quest_Sawmill::State::GeneratedUnit;
-			QM.quest_sawmill->hd_lumberjack.Get(*u->human_data);
+			quest_mgr->quest_sawmill->sawmill_state = Quest_Sawmill::State::GeneratedUnit;
+			quest_mgr->quest_sawmill->hd_lumberjack.Get(*u->human_data);
 			if(devmode)
 				Info("Generated quest unit '%s'.", u->GetRealName());
 		}
 	}
 
-	if(L.location_index == QM.quest_mine->start_loc && QM.quest_mine->mine_state == Quest_Mine::State::None)
+	if(game_level->location_index == quest_mgr->quest_mine->start_loc && quest_mgr->quest_mine->mine_state == Quest_Mine::State::None)
 	{
-		Unit* u = L.SpawnUnitInsideInn(*UnitData::Get("inwestor"), -2);
+		Unit* u = game_level->SpawnUnitInsideInn(*UnitData::Get("inwestor"), -2);
 		assert(u);
 		if(u)
 		{
-			QM.quest_mine->mine_state = Quest_Mine::State::SpawnedInvestor;
+			quest_mgr->quest_mine->mine_state = Quest_Mine::State::SpawnedInvestor;
 			if(devmode)
 				Info("Generated quest unit '%s'.", u->GetRealName());
 		}
 	}
 
-	if(L.location_index == QM.quest_bandits->start_loc && QM.quest_bandits->bandits_state == Quest_Bandits::State::None)
+	if(game_level->location_index == quest_mgr->quest_bandits->start_loc && quest_mgr->quest_bandits->bandits_state == Quest_Bandits::State::None)
 	{
-		Unit* u = L.SpawnUnitInsideInn(*UnitData::Get("mistrz_agentow"), -2);
+		Unit* u = game_level->SpawnUnitInsideInn(*UnitData::Get("mistrz_agentow"), -2);
 		assert(u);
 		if(u)
 		{
-			QM.quest_bandits->bandits_state = Quest_Bandits::State::GeneratedMaster;
+			quest_mgr->quest_bandits->bandits_state = Quest_Bandits::State::GeneratedMaster;
 			if(devmode)
 				Info("Generated quest unit '%s'.", u->GetRealName());
 		}
 	}
 
-	if(L.location_index == QM.quest_mages->start_loc && QM.quest_mages2->mages_state == Quest_Mages2::State::None)
+	if(game_level->location_index == quest_mgr->quest_mages->start_loc && quest_mgr->quest_mages2->mages_state == Quest_Mages2::State::None)
 	{
-		Unit* u = L.SpawnUnitInsideInn(*UnitData::Get("q_magowie_uczony"), -2);
+		Unit* u = game_level->SpawnUnitInsideInn(*UnitData::Get("q_magowie_uczony"), -2);
 		assert(u);
 		if(u)
 		{
-			QM.quest_mages2->mages_state = Quest_Mages2::State::GeneratedScholar;
+			quest_mgr->quest_mages2->mages_state = Quest_Mages2::State::GeneratedScholar;
 			if(devmode)
 				Info("Generated quest unit '%s'.", u->GetRealName());
 		}
 	}
 
-	if(L.location_index == QM.quest_mages2->mage_loc)
+	if(game_level->location_index == quest_mgr->quest_mages2->mage_loc)
 	{
-		if(QM.quest_mages2->mages_state == Quest_Mages2::State::TalkedWithCaptain)
+		if(quest_mgr->quest_mages2->mages_state == Quest_Mages2::State::TalkedWithCaptain)
 		{
-			Unit* u = L.SpawnUnitInsideInn(*UnitData::Get("q_magowie_stary"), 15);
+			Unit* u = game_level->SpawnUnitInsideInn(*UnitData::Get("q_magowie_stary"), 15);
 			assert(u);
 			if(u)
 			{
-				QM.quest_mages2->mages_state = Quest_Mages2::State::GeneratedOldMage;
-				QM.quest_mages2->good_mage_name = u->hero->name;
+				quest_mgr->quest_mages2->mages_state = Quest_Mages2::State::GeneratedOldMage;
+				quest_mgr->quest_mages2->good_mage_name = u->hero->name;
 				if(devmode)
 					Info("Generated quest unit '%s'.", u->GetRealName());
 			}
 		}
-		else if(QM.quest_mages2->mages_state == Quest_Mages2::State::MageLeft)
+		else if(quest_mgr->quest_mages2->mages_state == Quest_Mages2::State::MageLeft)
 		{
-			Unit* u = L.SpawnUnitInsideInn(*UnitData::Get("q_magowie_stary"), 15);
+			Unit* u = game_level->SpawnUnitInsideInn(*UnitData::Get("q_magowie_stary"), 15);
 			assert(u);
 			if(u)
 			{
-				QM.quest_mages2->scholar = u;
+				quest_mgr->quest_mages2->scholar = u;
 				u->hero->know_name = true;
-				u->hero->name = QM.quest_mages2->good_mage_name;
-				u->ApplyHumanData(QM.quest_mages2->hd_mage);
-				QM.quest_mages2->mages_state = Quest_Mages2::State::MageGeneratedInCity;
+				u->hero->name = quest_mgr->quest_mages2->good_mage_name;
+				u->ApplyHumanData(quest_mgr->quest_mages2->hd_mage);
+				quest_mgr->quest_mages2->mages_state = Quest_Mages2::State::MageGeneratedInCity;
 				if(devmode)
 					Info("Generated quest unit '%s'.", u->GetRealName());
 			}
 		}
 	}
 
-	if(L.location_index == QM.quest_orcs->start_loc && QM.quest_orcs2->orcs_state == Quest_Orcs2::State::None)
+	if(game_level->location_index == quest_mgr->quest_orcs->start_loc && quest_mgr->quest_orcs2->orcs_state == Quest_Orcs2::State::None)
 	{
-		Unit* u = L.SpawnUnitInsideInn(*UnitData::Get("q_orkowie_straznik"));
+		Unit* u = game_level->SpawnUnitInsideInn(*UnitData::Get("q_orkowie_straznik"));
 		assert(u);
 		if(u)
 		{
 			u->StartAutoTalk();
-			QM.quest_orcs2->orcs_state = Quest_Orcs2::State::GeneratedGuard;
-			QM.quest_orcs2->guard = u;
+			quest_mgr->quest_orcs2->orcs_state = Quest_Orcs2::State::GeneratedGuard;
+			quest_mgr->quest_orcs2->guard = u;
 			if(devmode)
 				Info("Generated quest unit '%s'.", u->GetRealName());
 		}
 	}
 
-	if(L.location_index == QM.quest_goblins->start_loc && QM.quest_goblins->goblins_state == Quest_Goblins::State::None)
+	if(game_level->location_index == quest_mgr->quest_goblins->start_loc && quest_mgr->quest_goblins->goblins_state == Quest_Goblins::State::None)
 	{
-		Unit* u = L.SpawnUnitInsideInn(*UnitData::Get("q_gobliny_szlachcic"));
+		Unit* u = game_level->SpawnUnitInsideInn(*UnitData::Get("q_gobliny_szlachcic"));
 		assert(u);
 		if(u)
 		{
-			QM.quest_goblins->nobleman = u;
-			QM.quest_goblins->hd_nobleman.Get(*u->human_data);
-			QM.quest_goblins->goblins_state = Quest_Goblins::State::GeneratedNobleman;
+			quest_mgr->quest_goblins->nobleman = u;
+			quest_mgr->quest_goblins->hd_nobleman.Get(*u->human_data);
+			quest_mgr->quest_goblins->goblins_state = Quest_Goblins::State::GeneratedNobleman;
 			if(devmode)
 				Info("Generated quest unit '%s'.", u->GetRealName());
 		}
 	}
 
-	if(L.location_index == QM.quest_evil->start_loc && QM.quest_evil->evil_state == Quest_Evil::State::None)
+	if(game_level->location_index == quest_mgr->quest_evil->start_loc && quest_mgr->quest_evil->evil_state == Quest_Evil::State::None)
 	{
-		CityBuilding* b = L.city_ctx->FindBuilding(BuildingGroup::BG_INN);
-		Unit* u = L.SpawnUnitNearLocation(*L.local_area, b->walk_pt, *UnitData::Get("q_zlo_kaplan"), nullptr, 10);
+		CityBuilding* b = game_level->city_ctx->FindBuilding(BuildingGroup::BG_INN);
+		Unit* u = game_level->SpawnUnitNearLocation(*game_level->local_area, b->walk_pt, *UnitData::Get("q_zlo_kaplan"), nullptr, 10);
 		assert(u);
 		if(u)
 		{
 			u->rot = Random(MAX_ANGLE);
 			u->StartAutoTalk();
-			QM.quest_evil->cleric = u;
-			QM.quest_evil->evil_state = Quest_Evil::State::GeneratedCleric;
+			quest_mgr->quest_evil->cleric = u;
+			quest_mgr->quest_evil->evil_state = Quest_Evil::State::GeneratedCleric;
 			if(devmode)
 				Info("Generated quest unit '%s'.", u->GetRealName());
 		}
@@ -8849,83 +8839,83 @@ void Game::GenerateQuestUnits()
 		return;
 
 	// sawmill quest
-	if(QM.quest_sawmill->sawmill_state == Quest_Sawmill::State::InBuild)
+	if(quest_mgr->quest_sawmill->sawmill_state == Quest_Sawmill::State::InBuild)
 	{
-		if(QM.quest_sawmill->days >= 30 && L.city_ctx)
+		if(quest_mgr->quest_sawmill->days >= 30 && game_level->city_ctx)
 		{
-			QM.quest_sawmill->days = 29;
-			Unit* u = L.SpawnUnitNearLocation(*Team.leader->area, Team.leader->pos, *UnitData::Get("poslaniec_tartak"), &Team.leader->pos, -2, 2.f);
+			quest_mgr->quest_sawmill->days = 29;
+			Unit* u = game_level->SpawnUnitNearLocation(*Team.leader->area, Team.leader->pos, *UnitData::Get("poslaniec_tartak"), &Team.leader->pos, -2, 2.f);
 			if(u)
 			{
-				QM.quest_sawmill->messenger = u;
+				quest_mgr->quest_sawmill->messenger = u;
 				u->StartAutoTalk(true);
 			}
 		}
 	}
-	else if(QM.quest_sawmill->sawmill_state == Quest_Sawmill::State::Working)
+	else if(quest_mgr->quest_sawmill->sawmill_state == Quest_Sawmill::State::Working)
 	{
-		int count = QM.quest_sawmill->days / 30;
+		int count = quest_mgr->quest_sawmill->days / 30;
 		if(count)
 		{
-			QM.quest_sawmill->days -= count * 30;
+			quest_mgr->quest_sawmill->days -= count * 30;
 			Team.AddGold(count * Quest_Sawmill::PAYMENT, nullptr, true);
 		}
 	}
 
-	if(QM.quest_mine->days >= QM.quest_mine->days_required &&
-		((QM.quest_mine->mine_state2 == Quest_Mine::State2::InBuild && QM.quest_mine->mine_state == Quest_Mine::State::Shares) || // inform player about building mine & give gold
-			QM.quest_mine->mine_state2 == Quest_Mine::State2::Built || // inform player about possible investment
-			QM.quest_mine->mine_state2 == Quest_Mine::State2::InExpand || // inform player about finished mine expanding
-			QM.quest_mine->mine_state2 == Quest_Mine::State2::Expanded)) // inform player about finding portal
+	if(quest_mgr->quest_mine->days >= quest_mgr->quest_mine->days_required
+		&& ((quest_mgr->quest_mine->mine_state2 == Quest_Mine::State2::InBuild && quest_mgr->quest_mine->mine_state == Quest_Mine::State::Shares) || // inform player about building mine & give gold
+			quest_mgr->quest_mine->mine_state2 == Quest_Mine::State2::Built || // inform player about possible investment
+			quest_mgr->quest_mine->mine_state2 == Quest_Mine::State2::InExpand || // inform player about finished mine expanding
+			quest_mgr->quest_mine->mine_state2 == Quest_Mine::State2::Expanded)) // inform player about finding portal
 	{
-		Unit* u = L.SpawnUnitNearLocation(*Team.leader->area, Team.leader->pos, *UnitData::Get("poslaniec_kopalnia"), &Team.leader->pos, -2, 2.f);
+		Unit* u = game_level->SpawnUnitNearLocation(*Team.leader->area, Team.leader->pos, *UnitData::Get("poslaniec_kopalnia"), &Team.leader->pos, -2, 2.f);
 		if(u)
 		{
-			QM.quest_mine->messenger = u;
+			quest_mgr->quest_mine->messenger = u;
 			u->StartAutoTalk(true);
 		}
 	}
 
 	GenerateQuestUnits2();
 
-	if(QM.quest_evil->evil_state == Quest_Evil::State::GenerateMage && L.location_index == QM.quest_evil->mage_loc)
+	if(quest_mgr->quest_evil->evil_state == Quest_Evil::State::GenerateMage && game_level->location_index == quest_mgr->quest_evil->mage_loc)
 	{
-		Unit* u = L.SpawnUnitInsideInn(*UnitData::Get("q_zlo_mag"), -2);
+		Unit* u = game_level->SpawnUnitInsideInn(*UnitData::Get("q_zlo_mag"), -2);
 		assert(u);
 		if(u)
 		{
-			QM.quest_evil->evil_state = Quest_Evil::State::GeneratedMage;
+			quest_mgr->quest_evil->evil_state = Quest_Evil::State::GeneratedMage;
 			if(devmode)
 				Info("Generated quest unit '%s'.", u->GetRealName());
 		}
 	}
 
-	if(W.GetDay() == 6 && W.GetMonth() == 2 && L.city_ctx && IsSet(L.city_ctx->flags, City::HaveArena)
-		&& L.location_index == QM.quest_tournament->GetCity() && !QM.quest_tournament->IsGenerated())
-		QM.quest_tournament->GenerateUnits();
+	if(world->GetDay() == 6 && world->GetMonth() == 2 && game_level->city_ctx && IsSet(game_level->city_ctx->flags, City::HaveArena)
+		&& game_level->location_index == quest_mgr->quest_tournament->GetCity() && !quest_mgr->quest_tournament->IsGenerated())
+		quest_mgr->quest_tournament->GenerateUnits();
 }
 
 void Game::GenerateQuestUnits2()
 {
-	if(QM.quest_goblins->goblins_state == Quest_Goblins::State::Counting && QM.quest_goblins->days <= 0)
+	if(quest_mgr->quest_goblins->goblins_state == Quest_Goblins::State::Counting && quest_mgr->quest_goblins->days <= 0)
 	{
-		Unit* u = L.SpawnUnitNearLocation(*Team.leader->area, Team.leader->pos, *UnitData::Get("q_gobliny_poslaniec"), &Team.leader->pos, -2, 2.f);
+		Unit* u = game_level->SpawnUnitNearLocation(*Team.leader->area, Team.leader->pos, *UnitData::Get("q_gobliny_poslaniec"), &Team.leader->pos, -2, 2.f);
 		if(u)
 		{
-			QM.quest_goblins->messenger = u;
+			quest_mgr->quest_goblins->messenger = u;
 			u->StartAutoTalk(true);
 			if(devmode)
 				Info("Generated quest unit '%s'.", u->GetRealName());
 		}
 	}
 
-	if(QM.quest_goblins->goblins_state == Quest_Goblins::State::NoblemanLeft && QM.quest_goblins->days <= 0)
+	if(quest_mgr->quest_goblins->goblins_state == Quest_Goblins::State::NoblemanLeft && quest_mgr->quest_goblins->days <= 0)
 	{
-		Unit* u = L.SpawnUnitNearLocation(*Team.leader->area, Team.leader->pos, *UnitData::Get("q_gobliny_mag"), &Team.leader->pos, 5, 2.f);
+		Unit* u = game_level->SpawnUnitNearLocation(*Team.leader->area, Team.leader->pos, *UnitData::Get("q_gobliny_mag"), &Team.leader->pos, 5, 2.f);
 		if(u)
 		{
-			QM.quest_goblins->messenger = u;
-			QM.quest_goblins->goblins_state = Quest_Goblins::State::GeneratedMage;
+			quest_mgr->quest_goblins->messenger = u;
+			quest_mgr->quest_goblins->goblins_state = Quest_Goblins::State::GeneratedMage;
 			u->StartAutoTalk(true);
 			if(devmode)
 				Info("Generated quest unit '%s'.", u->GetRealName());
@@ -8943,47 +8933,47 @@ void Game::UpdateQuests(int days)
 	int income = 0;
 
 	// sawmill
-	if(QM.quest_sawmill->sawmill_state == Quest_Sawmill::State::InBuild)
+	if(quest_mgr->quest_sawmill->sawmill_state == Quest_Sawmill::State::InBuild)
 	{
-		QM.quest_sawmill->days += days;
-		if(QM.quest_sawmill->days >= 30 && L.city_ctx && game_state == GS_LEVEL)
+		quest_mgr->quest_sawmill->days += days;
+		if(quest_mgr->quest_sawmill->days >= 30 && game_level->city_ctx && game_state == GS_LEVEL)
 		{
-			QM.quest_sawmill->days = 29;
-			Unit* u = L.SpawnUnitNearLocation(*Team.leader->area, Team.leader->pos, *UnitData::Get("poslaniec_tartak"), &Team.leader->pos, -2, 2.f);
+			quest_mgr->quest_sawmill->days = 29;
+			Unit* u = game_level->SpawnUnitNearLocation(*Team.leader->area, Team.leader->pos, *UnitData::Get("poslaniec_tartak"), &Team.leader->pos, -2, 2.f);
 			if(u)
 			{
-				QM.quest_sawmill->messenger = u;
+				quest_mgr->quest_sawmill->messenger = u;
 				u->StartAutoTalk(true);
 			}
 		}
 	}
-	else if(QM.quest_sawmill->sawmill_state == Quest_Sawmill::State::Working)
+	else if(quest_mgr->quest_sawmill->sawmill_state == Quest_Sawmill::State::Working)
 	{
-		QM.quest_sawmill->days += days;
-		int count = QM.quest_sawmill->days / 30;
+		quest_mgr->quest_sawmill->days += days;
+		int count = quest_mgr->quest_sawmill->days / 30;
 		if(count)
 		{
-			QM.quest_sawmill->days -= count * 30;
+			quest_mgr->quest_sawmill->days -= count * 30;
 			income += count * Quest_Sawmill::PAYMENT;
 		}
 	}
 
 	// mine
-	if(QM.quest_mine->mine_state2 == Quest_Mine::State2::InBuild)
+	if(quest_mgr->quest_mine->mine_state2 == Quest_Mine::State2::InBuild)
 	{
-		QM.quest_mine->days += days;
-		if(QM.quest_mine->days >= QM.quest_mine->days_required)
+		quest_mgr->quest_mine->days += days;
+		if(quest_mgr->quest_mine->days >= quest_mgr->quest_mine->days_required)
 		{
-			if(QM.quest_mine->mine_state == Quest_Mine::State::Shares)
+			if(quest_mgr->quest_mine->mine_state == Quest_Mine::State::Shares)
 			{
 				// player invesetd in mine, inform him about finishing
-				if(L.city_ctx && game_state == GS_LEVEL)
+				if(game_level->city_ctx && game_state == GS_LEVEL)
 				{
-					Unit* u = L.SpawnUnitNearLocation(*Team.leader->area, Team.leader->pos, *UnitData::Get("poslaniec_kopalnia"), &Team.leader->pos, -2, 2.f);
+					Unit* u = game_level->SpawnUnitNearLocation(*Team.leader->area, Team.leader->pos, *UnitData::Get("poslaniec_kopalnia"), &Team.leader->pos, -2, 2.f);
 					if(u)
 					{
-						W.AddNews(Format(txMineBuilt, W.GetLocation(QM.quest_mine->target_loc)->name.c_str()));
-						QM.quest_mine->messenger = u;
+						world->AddNews(Format(txMineBuilt, world->GetLocation(quest_mgr->quest_mine->target_loc)->name.c_str()));
+						quest_mgr->quest_mine->messenger = u;
 						u->StartAutoTalk(true);
 					}
 				}
@@ -8991,72 +8981,72 @@ void Game::UpdateQuests(int days)
 			else
 			{
 				// player got gold, don't inform him
-				W.AddNews(Format(txMineBuilt, W.GetLocation(QM.quest_mine->target_loc)->name.c_str()));
-				QM.quest_mine->mine_state2 = Quest_Mine::State2::Built;
-				QM.quest_mine->days -= QM.quest_mine->days_required;
-				QM.quest_mine->days_required = Random(60, 90);
-				if(QM.quest_mine->days >= QM.quest_mine->days_required)
-					QM.quest_mine->days = QM.quest_mine->days_required - 1;
+				world->AddNews(Format(txMineBuilt, world->GetLocation(quest_mgr->quest_mine->target_loc)->name.c_str()));
+				quest_mgr->quest_mine->mine_state2 = Quest_Mine::State2::Built;
+				quest_mgr->quest_mine->days -= quest_mgr->quest_mine->days_required;
+				quest_mgr->quest_mine->days_required = Random(60, 90);
+				if(quest_mgr->quest_mine->days >= quest_mgr->quest_mine->days_required)
+					quest_mgr->quest_mine->days = quest_mgr->quest_mine->days_required - 1;
 			}
 		}
 	}
-	else if(QM.quest_mine->mine_state2 == Quest_Mine::State2::Built
-		|| QM.quest_mine->mine_state2 == Quest_Mine::State2::InExpand
-		|| QM.quest_mine->mine_state2 == Quest_Mine::State2::Expanded)
+	else if(quest_mgr->quest_mine->mine_state2 == Quest_Mine::State2::Built
+		|| quest_mgr->quest_mine->mine_state2 == Quest_Mine::State2::InExpand
+		|| quest_mgr->quest_mine->mine_state2 == Quest_Mine::State2::Expanded)
 	{
 		// mine is built/in expand/expanded
 		// count time to news about expanding/finished expanding/found portal
-		QM.quest_mine->days += days;
-		if(QM.quest_mine->days >= QM.quest_mine->days_required && L.city_ctx && game_state == GS_LEVEL)
+		quest_mgr->quest_mine->days += days;
+		if(quest_mgr->quest_mine->days >= quest_mgr->quest_mine->days_required && game_level->city_ctx && game_state == GS_LEVEL)
 		{
-			Unit* u = L.SpawnUnitNearLocation(*Team.leader->area, Team.leader->pos, *UnitData::Get("poslaniec_kopalnia"), &Team.leader->pos, -2, 2.f);
+			Unit* u = game_level->SpawnUnitNearLocation(*Team.leader->area, Team.leader->pos, *UnitData::Get("poslaniec_kopalnia"), &Team.leader->pos, -2, 2.f);
 			if(u)
 			{
-				QM.quest_mine->messenger = u;
+				quest_mgr->quest_mine->messenger = u;
 				u->StartAutoTalk(true);
 			}
 		}
 	}
 
 	// give gold from mine
-	income += QM.quest_mine->GetIncome(days);
+	income += quest_mgr->quest_mine->GetIncome(days);
 
 	if(income != 0)
 		Team.AddGold(income, nullptr, true);
 
-	QM.quest_contest->Progress();
+	quest_mgr->quest_contest->Progress();
 
 	//----------------------------
 	// mages
-	if(QM.quest_mages2->mages_state == Quest_Mages2::State::Counting)
+	if(quest_mgr->quest_mages2->mages_state == Quest_Mages2::State::Counting)
 	{
-		QM.quest_mages2->days -= days;
-		if(QM.quest_mages2->days <= 0)
+		quest_mgr->quest_mages2->days -= days;
+		if(quest_mgr->quest_mages2->days <= 0)
 		{
 			// from now golem can be encountered on road
-			QM.quest_mages2->mages_state = Quest_Mages2::State::Encounter;
+			quest_mgr->quest_mages2->mages_state = Quest_Mages2::State::Encounter;
 		}
 	}
 
 	// orcs
-	if(Any(QM.quest_orcs2->orcs_state, Quest_Orcs2::State::CompletedJoined, Quest_Orcs2::State::CampCleared, Quest_Orcs2::State::PickedClass))
+	if(Any(quest_mgr->quest_orcs2->orcs_state, Quest_Orcs2::State::CompletedJoined, Quest_Orcs2::State::CampCleared, Quest_Orcs2::State::PickedClass))
 	{
-		QM.quest_orcs2->days -= days;
-		if(QM.quest_orcs2->days <= 0)
-			QM.quest_orcs2->orc->StartAutoTalk();
+		quest_mgr->quest_orcs2->days -= days;
+		if(quest_mgr->quest_orcs2->days <= 0)
+			quest_mgr->quest_orcs2->orc->StartAutoTalk();
 	}
 
 	// goblins
-	if(QM.quest_goblins->goblins_state == Quest_Goblins::State::Counting || QM.quest_goblins->goblins_state == Quest_Goblins::State::NoblemanLeft)
-		QM.quest_goblins->days -= days;
+	if(quest_mgr->quest_goblins->goblins_state == Quest_Goblins::State::Counting || quest_mgr->quest_goblins->goblins_state == Quest_Goblins::State::NoblemanLeft)
+		quest_mgr->quest_goblins->days -= days;
 
 	// crazies
-	if(QM.quest_crazies->crazies_state == Quest_Crazies::State::PickedStone)
-		QM.quest_crazies->days -= days;
+	if(quest_mgr->quest_crazies->crazies_state == Quest_Crazies::State::PickedStone)
+		quest_mgr->quest_crazies->days -= days;
 
-	QM.quest_tournament->Progress();
+	quest_mgr->quest_tournament->Progress();
 
-	if(L.city_ctx)
+	if(game_level->city_ctx)
 		GenerateQuestUnits2();
 }
 
@@ -9064,94 +9054,94 @@ void Game::RemoveQuestUnit(UnitData* ud, bool on_leave)
 {
 	assert(ud);
 
-	Unit* unit = L.FindUnit([=](Unit* unit)
+	Unit* unit = game_level->FindUnit([=](Unit* unit)
 	{
 		return unit->data == ud && unit->IsAlive();
 	});
 
 	if(unit)
-		L.RemoveUnit(unit, !on_leave);
+		game_level->RemoveUnit(unit, !on_leave);
 }
 
 void Game::RemoveQuestUnits(bool on_leave)
 {
-	if(L.city_ctx)
+	if(game_level->city_ctx)
 	{
-		if(QM.quest_sawmill->messenger)
+		if(quest_mgr->quest_sawmill->messenger)
 		{
 			RemoveQuestUnit(UnitData::Get("poslaniec_tartak"), on_leave);
-			QM.quest_sawmill->messenger = nullptr;
+			quest_mgr->quest_sawmill->messenger = nullptr;
 		}
 
-		if(QM.quest_mine->messenger)
+		if(quest_mgr->quest_mine->messenger)
 		{
 			RemoveQuestUnit(UnitData::Get("poslaniec_kopalnia"), on_leave);
-			QM.quest_mine->messenger = nullptr;
+			quest_mgr->quest_mine->messenger = nullptr;
 		}
 
-		if(L.is_open && L.location_index == QM.quest_sawmill->start_loc && QM.quest_sawmill->sawmill_state == Quest_Sawmill::State::InBuild
-			&& QM.quest_sawmill->build_state == Quest_Sawmill::BuildState::None)
+		if(game_level->is_open && game_level->location_index == quest_mgr->quest_sawmill->start_loc && quest_mgr->quest_sawmill->sawmill_state == Quest_Sawmill::State::InBuild
+			&& quest_mgr->quest_sawmill->build_state == Quest_Sawmill::BuildState::None)
 		{
-			Unit* u = L.city_ctx->FindInn()->FindUnit(UnitData::Get("artur_drwal"));
+			Unit* u = game_level->city_ctx->FindInn()->FindUnit(UnitData::Get("artur_drwal"));
 			if(u && u->IsAlive())
 			{
-				QM.quest_sawmill->build_state = Quest_Sawmill::BuildState::LumberjackLeft;
-				L.RemoveUnit(u, !on_leave);
+				quest_mgr->quest_sawmill->build_state = Quest_Sawmill::BuildState::LumberjackLeft;
+				game_level->RemoveUnit(u, !on_leave);
 			}
 		}
 
-		if(QM.quest_mages2->scholar && QM.quest_mages2->mages_state == Quest_Mages2::State::ScholarWaits)
+		if(quest_mgr->quest_mages2->scholar && quest_mgr->quest_mages2->mages_state == Quest_Mages2::State::ScholarWaits)
 		{
 			RemoveQuestUnit(UnitData::Get("q_magowie_uczony"), on_leave);
-			QM.quest_mages2->scholar = nullptr;
-			QM.quest_mages2->mages_state = Quest_Mages2::State::Counting;
-			QM.quest_mages2->days = Random(15, 30);
+			quest_mgr->quest_mages2->scholar = nullptr;
+			quest_mgr->quest_mages2->mages_state = Quest_Mages2::State::Counting;
+			quest_mgr->quest_mages2->days = Random(15, 30);
 		}
 
-		if(QM.quest_orcs2->guard && QM.quest_orcs2->orcs_state >= Quest_Orcs2::State::GuardTalked)
+		if(quest_mgr->quest_orcs2->guard && quest_mgr->quest_orcs2->orcs_state >= Quest_Orcs2::State::GuardTalked)
 		{
 			RemoveQuestUnit(UnitData::Get("q_orkowie_straznik"), on_leave);
-			QM.quest_orcs2->guard = nullptr;
+			quest_mgr->quest_orcs2->guard = nullptr;
 		}
 	}
 
-	if(QM.quest_bandits->bandits_state == Quest_Bandits::State::AgentTalked)
+	if(quest_mgr->quest_bandits->bandits_state == Quest_Bandits::State::AgentTalked)
 	{
-		QM.quest_bandits->bandits_state = Quest_Bandits::State::AgentLeft;
-		QM.quest_bandits->agent = nullptr;
+		quest_mgr->quest_bandits->bandits_state = Quest_Bandits::State::AgentLeft;
+		quest_mgr->quest_bandits->agent = nullptr;
 	}
 
-	if(QM.quest_mages2->mages_state == Quest_Mages2::State::MageLeaving)
+	if(quest_mgr->quest_mages2->mages_state == Quest_Mages2::State::MageLeaving)
 	{
-		QM.quest_mages2->mages_state = Quest_Mages2::State::MageLeft;
-		QM.quest_mages2->scholar = nullptr;
+		quest_mgr->quest_mages2->mages_state = Quest_Mages2::State::MageLeft;
+		quest_mgr->quest_mages2->scholar = nullptr;
 	}
 
-	if(QM.quest_goblins->goblins_state == Quest_Goblins::State::MessengerTalked && QM.quest_goblins->messenger)
+	if(quest_mgr->quest_goblins->goblins_state == Quest_Goblins::State::MessengerTalked && quest_mgr->quest_goblins->messenger)
 	{
 		RemoveQuestUnit(UnitData::Get("q_gobliny_poslaniec"), on_leave);
-		QM.quest_goblins->messenger = nullptr;
+		quest_mgr->quest_goblins->messenger = nullptr;
 	}
 
-	if(QM.quest_goblins->goblins_state == Quest_Goblins::State::GivenBow && QM.quest_goblins->nobleman)
+	if(quest_mgr->quest_goblins->goblins_state == Quest_Goblins::State::GivenBow && quest_mgr->quest_goblins->nobleman)
 	{
 		RemoveQuestUnit(UnitData::Get("q_gobliny_szlachcic"), on_leave);
-		QM.quest_goblins->nobleman = nullptr;
-		QM.quest_goblins->goblins_state = Quest_Goblins::State::NoblemanLeft;
-		QM.quest_goblins->days = Random(15, 30);
+		quest_mgr->quest_goblins->nobleman = nullptr;
+		quest_mgr->quest_goblins->goblins_state = Quest_Goblins::State::NoblemanLeft;
+		quest_mgr->quest_goblins->days = Random(15, 30);
 	}
 
-	if(QM.quest_goblins->goblins_state == Quest_Goblins::State::MageTalked && QM.quest_goblins->messenger)
+	if(quest_mgr->quest_goblins->goblins_state == Quest_Goblins::State::MageTalked && quest_mgr->quest_goblins->messenger)
 	{
 		RemoveQuestUnit(UnitData::Get("q_gobliny_mag"), on_leave);
-		QM.quest_goblins->messenger = nullptr;
-		QM.quest_goblins->goblins_state = Quest_Goblins::State::MageLeft;
+		quest_mgr->quest_goblins->messenger = nullptr;
+		quest_mgr->quest_goblins->goblins_state = Quest_Goblins::State::MageLeft;
 	}
 
-	if(QM.quest_evil->evil_state == Quest_Evil::State::ClericLeaving)
+	if(quest_mgr->quest_evil->evil_state == Quest_Evil::State::ClericLeaving)
 	{
-		QM.quest_evil->cleric = nullptr;
-		QM.quest_evil->evil_state = Quest_Evil::State::ClericLeft;
+		quest_mgr->quest_evil->cleric = nullptr;
+		quest_mgr->quest_evil->evil_state = Quest_Evil::State::ClericLeft;
 	}
 }
 
@@ -9184,71 +9174,71 @@ void Game::UpdateGame2(float dt)
 		arena->Update(dt);
 
 	// tournament
-	if(QM.quest_tournament->GetState() != Quest_Tournament::TOURNAMENT_NOT_DONE)
-		QM.quest_tournament->Update(dt);
+	if(quest_mgr->quest_tournament->GetState() != Quest_Tournament::TOURNAMENT_NOT_DONE)
+		quest_mgr->quest_tournament->Update(dt);
 
 	// sharing of team items between team members
 	Team.UpdateTeamItemShares();
 
 	// contest
-	QM.quest_contest->Update(dt);
+	quest_mgr->quest_contest->Update(dt);
 
 	// quest bandits
-	if(QM.quest_bandits->bandits_state == Quest_Bandits::State::Counting)
+	if(quest_mgr->quest_bandits->bandits_state == Quest_Bandits::State::Counting)
 	{
-		QM.quest_bandits->timer -= dt;
-		if(QM.quest_bandits->timer <= 0.f)
+		quest_mgr->quest_bandits->timer -= dt;
+		if(quest_mgr->quest_bandits->timer <= 0.f)
 		{
 			// spawn agent
-			Unit* u = L.SpawnUnitNearLocation(*Team.leader->area, Team.leader->pos, *UnitData::Get("agent"), &Team.leader->pos, -2, 2.f);
+			Unit* u = game_level->SpawnUnitNearLocation(*Team.leader->area, Team.leader->pos, *UnitData::Get("agent"), &Team.leader->pos, -2, 2.f);
 			if(u)
 			{
-				QM.quest_bandits->bandits_state = Quest_Bandits::State::AgentCome;
-				QM.quest_bandits->agent = u;
+				quest_mgr->quest_bandits->bandits_state = Quest_Bandits::State::AgentCome;
+				quest_mgr->quest_bandits->agent = u;
 				u->StartAutoTalk(true);
 			}
 		}
 	}
 
 	// quest mages
-	if(QM.quest_mages2->mages_state == Quest_Mages2::State::OldMageJoined && L.location_index == QM.quest_mages2->target_loc)
+	if(quest_mgr->quest_mages2->mages_state == Quest_Mages2::State::OldMageJoined && game_level->location_index == quest_mgr->quest_mages2->target_loc)
 	{
-		QM.quest_mages2->timer += dt;
-		if(QM.quest_mages2->timer >= 30.f && QM.quest_mages2->scholar->auto_talk == AutoTalkMode::No)
-			QM.quest_mages2->scholar->StartAutoTalk();
+		quest_mgr->quest_mages2->timer += dt;
+		if(quest_mgr->quest_mages2->timer >= 30.f && quest_mgr->quest_mages2->scholar->auto_talk == AutoTalkMode::No)
+			quest_mgr->quest_mages2->scholar->StartAutoTalk();
 	}
 
 	// quest evil
-	if(QM.quest_evil->evil_state == Quest_Evil::State::SpawnedAltar && L.location_index == QM.quest_evil->target_loc)
+	if(quest_mgr->quest_evil->evil_state == Quest_Evil::State::SpawnedAltar && game_level->location_index == quest_mgr->quest_evil->target_loc)
 	{
 		for(Unit& unit : Team.members)
 		{
-			if(unit.IsStanding() && unit.IsPlayer() && Vec3::Distance(unit.pos, QM.quest_evil->pos) < 5.f
-				&& L.CanSee(*L.local_area, unit.pos, QM.quest_evil->pos))
+			if(unit.IsStanding() && unit.IsPlayer() && Vec3::Distance(unit.pos, quest_mgr->quest_evil->pos) < 5.f
+				&& game_level->CanSee(*game_level->local_area, unit.pos, quest_mgr->quest_evil->pos))
 			{
-				QM.quest_evil->evil_state = Quest_Evil::State::Summoning;
+				quest_mgr->quest_evil->evil_state = Quest_Evil::State::Summoning;
 				sound_mgr->PlaySound2d(sEvil);
 				if(Net::IsOnline())
 					Net::PushChange(NetChange::EVIL_SOUND);
-				QM.quest_evil->SetProgress(Quest_Evil::Progress::AltarEvent);
+				quest_mgr->quest_evil->SetProgress(Quest_Evil::Progress::AltarEvent);
 				// spawn undead
-				InsideLocation* inside = (InsideLocation*)L.location;
+				InsideLocation* inside = (InsideLocation*)game_level->location;
 				inside->group = UnitGroup::Get("undead");
-				DungeonGenerator* gen = (DungeonGenerator*)loc_gen_factory->Get(L.location);
+				DungeonGenerator* gen = (DungeonGenerator*)loc_gen_factory->Get(game_level->location);
 				gen->GenerateUnits();
 				break;
 			}
 		}
 	}
-	else if(QM.quest_evil->evil_state == Quest_Evil::State::ClosingPortals && !L.location->outside && L.location->GetLastLevel() == L.dungeon_level)
+	else if(quest_mgr->quest_evil->evil_state == Quest_Evil::State::ClosingPortals && !game_level->location->outside && game_level->location->GetLastLevel() == game_level->dungeon_level)
 	{
-		int d = QM.quest_evil->GetLocId(L.location_index);
+		int d = quest_mgr->quest_evil->GetLocId(game_level->location_index);
 		if(d != -1)
 		{
-			Quest_Evil::Loc& loc = QM.quest_evil->loc[d];
+			Quest_Evil::Loc& loc = quest_mgr->quest_evil->loc[d];
 			if(loc.state != 3)
 			{
-				Unit* u = QM.quest_evil->cleric;
+				Unit* u = quest_mgr->quest_evil->cleric;
 
 				if(u->ai->state == AIController::Idle)
 				{
@@ -9266,25 +9256,25 @@ void Game::UpdateGame2(float dt)
 						// zamknij
 						if(dist < 2.f)
 						{
-							QM.quest_evil->timer -= dt;
-							if(QM.quest_evil->timer <= 0.f)
+							quest_mgr->quest_evil->timer -= dt;
+							if(quest_mgr->quest_evil->timer <= 0.f)
 							{
 								loc.state = Quest_Evil::Loc::State::PortalClosed;
 								u->OrderFollow(Team.GetLeader());
 								u->ai->idle_action = AIController::Idle_None;
-								QM.quest_evil->OnUpdate(Format(txPortalClosed, L.location->name.c_str()));
+								quest_mgr->quest_evil->OnUpdate(Format(txPortalClosed, game_level->location->name.c_str()));
 								u->StartAutoTalk();
-								QM.quest_evil->changed = true;
-								++QM.quest_evil->closed;
-								delete L.location->portal;
-								L.location->portal = nullptr;
-								W.AddNews(Format(txPortalClosedNews, L.location->name.c_str()));
+								quest_mgr->quest_evil->changed = true;
+								++quest_mgr->quest_evil->closed;
+								delete game_level->location->portal;
+								game_level->location->portal = nullptr;
+								world->AddNews(Format(txPortalClosedNews, game_level->location->name.c_str()));
 								if(Net::IsOnline())
 									Net::PushChange(NetChange::CLOSE_PORTAL);
 							}
 						}
 						else
-							QM.quest_evil->timer = 1.5f;
+							quest_mgr->quest_evil->timer = 1.5f;
 					}
 					else if(u->order != ORDER_FOLLOW)
 						u->OrderFollow(Team.GetLeader());
@@ -9294,14 +9284,14 @@ void Game::UpdateGame2(float dt)
 	}
 
 	// secret quest
-	Quest_Secret* secret = QM.quest_secret;
+	Quest_Secret* secret = quest_mgr->quest_secret;
 	if(secret->state == Quest_Secret::SECRET_FIGHT)
 		secret->UpdateFight();
 }
 
 void Game::OnCloseInventory()
 {
-	if(gui->inventory->mode == I_TRADE)
+	if(game_gui->inventory->mode == I_TRADE)
 	{
 		if(Net::IsLocal())
 		{
@@ -9311,7 +9301,7 @@ void Game::OnCloseInventory()
 		else
 			Net::PushChange(NetChange::STOP_TRADE);
 	}
-	else if(gui->inventory->mode == I_SHARE || gui->inventory->mode == I_GIVE)
+	else if(game_gui->inventory->mode == I_SHARE || game_gui->inventory->mode == I_GIVE)
 	{
 		if(Net::IsLocal())
 		{
@@ -9321,9 +9311,9 @@ void Game::OnCloseInventory()
 		else
 			Net::PushChange(NetChange::STOP_TRADE);
 	}
-	else if(gui->inventory->mode == I_LOOT_CHEST && Net::IsLocal())
+	else if(game_gui->inventory->mode == I_LOOT_CHEST && Net::IsLocal())
 		pc->action_chest->OpenClose(nullptr);
-	else if(gui->inventory->mode == I_LOOT_CONTAINER)
+	else if(game_gui->inventory->mode == I_LOOT_CONTAINER)
 	{
 		if(Net::IsLocal())
 		{
@@ -9341,11 +9331,11 @@ void Game::OnCloseInventory()
 			Net::PushChange(NetChange::STOP_TRADE);
 	}
 
-	if(Net::IsOnline() && (gui->inventory->mode == I_LOOT_BODY || gui->inventory->mode == I_LOOT_CHEST))
+	if(Net::IsOnline() && (game_gui->inventory->mode == I_LOOT_BODY || game_gui->inventory->mode == I_LOOT_CHEST))
 	{
 		if(Net::IsClient())
 			Net::PushChange(NetChange::STOP_TRADE);
-		else if(gui->inventory->mode == I_LOOT_BODY)
+		else if(game_gui->inventory->mode == I_LOOT_BODY)
 			pc->action_unit->busy = Unit::Busy_No;
 	}
 
@@ -9353,34 +9343,34 @@ void Game::OnCloseInventory()
 		pc->next_action = NA_NONE;
 
 	pc->action = PlayerController::Action_None;
-	gui->inventory->mode = I_NONE;
+	game_gui->inventory->mode = I_NONE;
 }
 
 // zamyka ekwipunek i wszystkie okna które on móg³by utworzyæ
 void Game::CloseInventory()
 {
 	OnCloseInventory();
-	gui->inventory->mode = I_NONE;
-	if(gui->game_gui)
+	game_gui->inventory->mode = I_NONE;
+	if(game_gui->level_gui)
 	{
-		gui->inventory->inv_mine->Hide();
-		gui->inventory->gp_trade->Hide();
+		game_gui->inventory->inv_mine->Hide();
+		game_gui->inventory->gp_trade->Hide();
 	}
 }
 
 bool Game::CanShowEndScreen()
 {
 	if(Net::IsLocal())
-		return !QM.unique_completed_show && QM.unique_quests_completed == QM.unique_quests && L.city_ctx && !dialog_context.dialog_mode && pc->unit->IsStanding();
+		return !quest_mgr->unique_completed_show && quest_mgr->unique_quests_completed == quest_mgr->unique_quests && game_level->city_ctx && !dialog_context.dialog_mode && pc->unit->IsStanding();
 	else
-		return QM.unique_completed_show && L.city_ctx && !dialog_context.dialog_mode && pc->unit->IsStanding();
+		return quest_mgr->unique_completed_show && game_level->city_ctx && !dialog_context.dialog_mode && pc->unit->IsStanding();
 }
 
 void Game::UpdateGameDialogClient()
 {
 	if(dialog_context.show_choices)
 	{
-		if(gui->game_gui->UpdateChoice(dialog_context, dialog_choices.size()))
+		if(game_gui->level_gui->UpdateChoice(dialog_context, dialog_choices.size()))
 		{
 			dialog_context.show_choices = false;
 			dialog_context.dialog_text = "";
@@ -9405,7 +9395,7 @@ void Game::UpdateGameDialogClient()
 
 void Game::UpdateGameNet(float dt)
 {
-	if(gui->info_box->visible)
+	if(game_gui->info_box->visible)
 		return;
 
 	if(Net::IsServer())
@@ -9421,7 +9411,7 @@ DialogContext* Game::FindDialogContext(Unit* talker)
 		return &dialog_context;
 	if(Net::IsOnline())
 	{
-		for(PlayerInfo& info : N.players)
+		for(PlayerInfo& info : net->players)
 		{
 			if(info.pc->dialog_ctx->talker == talker)
 				return info.pc->dialog_ctx;
@@ -9441,7 +9431,7 @@ void Game::PlayerUseUsable(Usable* usable, bool after_action)
 	{
 		if(!u.HaveItem(bu.item) && u.slots[SLOT_WEAPON] != bu.item)
 		{
-			gui->messages->AddGameMsg2(Format(txNeedItem, bu.item->name.c_str()), 2.f);
+			game_gui->messages->AddGameMsg2(Format(txNeedItem, bu.item->name.c_str()), 2.f);
 			ok = false;
 		}
 		else if(pc->unit->weapon_state != WS_HIDDEN && (bu.item != &pc->unit->GetWeapon() || pc->unit->HaveShield()))
@@ -9470,7 +9460,7 @@ void Game::PlayerUseUsable(Usable* usable, bool after_action)
 		if(IsSet(bu.use_flags, BaseUsable::CONTAINER))
 		{
 			// loot container
-			gui->inventory->StartTrade2(I_LOOT_CONTAINER, &use);
+			game_gui->inventory->StartTrade2(I_LOOT_CONTAINER, &use);
 		}
 		else
 		{
@@ -9520,11 +9510,11 @@ void Game::OnEnterLocation()
 	cstring text = nullptr;
 
 	// orc talking after entering location
-	if(QM.quest_orcs2->orcs_state == Quest_Orcs2::State::ToldAboutCamp && QM.quest_orcs2->target_loc == L.location_index
-		&& QM.quest_orcs2->talked == Quest_Orcs2::Talked::No)
+	if(quest_mgr->quest_orcs2->orcs_state == Quest_Orcs2::State::ToldAboutCamp && quest_mgr->quest_orcs2->target_loc == game_level->location_index
+		&& quest_mgr->quest_orcs2->talked == Quest_Orcs2::Talked::No)
 	{
-		QM.quest_orcs2->talked = Quest_Orcs2::Talked::AboutCamp;
-		talker = QM.quest_orcs2->orc;
+		quest_mgr->quest_orcs2->talked = Quest_Orcs2::Talked::AboutCamp;
+		talker = quest_mgr->quest_orcs2->orc;
 		text = txOrcCamp;
 	}
 
@@ -9536,10 +9526,10 @@ void Game::OnEnterLocation()
 
 		if(info.sane_heroes > 0)
 		{
-			switch(L.location->type)
+			switch(game_level->location->type)
 			{
 			case L_CITY:
-				if(LocationHelper::IsCity(L.location))
+				if(LocationHelper::IsCity(game_level->location))
 					text = RandomString(txAiCity);
 				else
 					text = RandomString(txAiVillage);
@@ -9551,12 +9541,12 @@ void Game::OnEnterLocation()
 				text = txAiForest;
 				break;
 			case L_CAMP:
-				if(L.location->state != LS_CLEARED && !L.location->group->IsEmpty())
+				if(game_level->location->state != LS_CLEARED && !game_level->location->group->IsEmpty())
 				{
-					if(!L.location->group->name2.empty())
+					if(!game_level->location->group->name2.empty())
 					{
 						always_use = true;
-						text = Format(txAiCampFull, L.location->group->name2.c_str());
+						text = Format(txAiCampFull, game_level->location->group->name2.c_str());
 					}
 				}
 				else
@@ -9579,17 +9569,17 @@ void Game::OnEnterLevel()
 	cstring text = nullptr;
 
 	// cleric talking after entering location
-	Quest_Evil* quest_evil = QM.quest_evil;
+	Quest_Evil* quest_evil = quest_mgr->quest_evil;
 	if(quest_evil->evil_state == Quest_Evil::State::ClosingPortals || quest_evil->evil_state == Quest_Evil::State::KillBoss)
 	{
 		if(quest_evil->evil_state == Quest_Evil::State::ClosingPortals)
 		{
-			int d = quest_evil->GetLocId(L.location_index);
+			int d = quest_evil->GetLocId(game_level->location_index);
 			if(d != -1)
 			{
 				Quest_Evil::Loc& loc = quest_evil->loc[d];
 
-				if(L.dungeon_level == L.location->GetLastLevel())
+				if(game_level->dungeon_level == game_level->location->GetLastLevel())
 				{
 					if(loc.state < Quest_Evil::Loc::TalkedAfterEnterLevel)
 					{
@@ -9598,7 +9588,7 @@ void Game::OnEnterLevel()
 						loc.state = Quest_Evil::Loc::TalkedAfterEnterLevel;
 					}
 				}
-				else if(L.dungeon_level == 0 && loc.state == Quest_Evil::Loc::None)
+				else if(game_level->dungeon_level == 0 && loc.state == Quest_Evil::Loc::None)
 				{
 					talker = quest_evil->cleric;
 					text = txPortalClose;
@@ -9606,7 +9596,7 @@ void Game::OnEnterLevel()
 				}
 			}
 		}
-		else if(L.location_index == quest_evil->target_loc && !quest_evil->told_about_boss)
+		else if(game_level->location_index == quest_evil->target_loc && !quest_evil->told_about_boss)
 		{
 			quest_evil->told_about_boss = true;
 			talker = quest_evil->cleric;
@@ -9615,10 +9605,10 @@ void Game::OnEnterLevel()
 	}
 
 	// orc talking after entering level
-	Quest_Orcs2* quest_orcs2 = QM.quest_orcs2;
-	if(!talker && (quest_orcs2->orcs_state == Quest_Orcs2::State::GenerateOrcs || quest_orcs2->orcs_state == Quest_Orcs2::State::GeneratedOrcs) && L.location_index == quest_orcs2->target_loc)
+	Quest_Orcs2* quest_orcs2 = quest_mgr->quest_orcs2;
+	if(!talker && (quest_orcs2->orcs_state == Quest_Orcs2::State::GenerateOrcs || quest_orcs2->orcs_state == Quest_Orcs2::State::GeneratedOrcs) && game_level->location_index == quest_orcs2->target_loc)
 	{
-		if(L.dungeon_level == 0)
+		if(game_level->dungeon_level == 0)
 		{
 			if(quest_orcs2->talked < Quest_Orcs2::Talked::AboutBase)
 			{
@@ -9627,7 +9617,7 @@ void Game::OnEnterLevel()
 				text = txGorushDanger;
 			}
 		}
-		else if(L.dungeon_level == L.location->GetLastLevel())
+		else if(game_level->dungeon_level == game_level->location->GetLastLevel())
 		{
 			if(quest_orcs2->talked < Quest_Orcs2::Talked::AboutBoss)
 			{
@@ -9639,14 +9629,14 @@ void Game::OnEnterLevel()
 	}
 
 	// old mage talking after entering location
-	Quest_Mages2* quest_mages2 = QM.quest_mages2;
+	Quest_Mages2* quest_mages2 = quest_mgr->quest_mages2;
 	if(!talker && (quest_mages2->mages_state == Quest_Mages2::State::OldMageJoined || quest_mages2->mages_state == Quest_Mages2::State::MageRecruited))
 	{
-		if(quest_mages2->target_loc == L.location_index)
+		if(quest_mages2->target_loc == game_level->location_index)
 		{
 			if(quest_mages2->mages_state == Quest_Mages2::State::OldMageJoined)
 			{
-				if(L.dungeon_level == 0 && quest_mages2->talked == Quest_Mages2::Talked::No)
+				if(game_level->dungeon_level == 0 && quest_mages2->talked == Quest_Mages2::Talked::No)
 				{
 					quest_mages2->talked = Quest_Mages2::Talked::AboutHisTower;
 					text = txMageHere;
@@ -9654,7 +9644,7 @@ void Game::OnEnterLevel()
 			}
 			else
 			{
-				if(L.dungeon_level == 0)
+				if(game_level->dungeon_level == 0)
 				{
 					if(quest_mages2->talked < Quest_Mages2::Talked::AfterEnter)
 					{
@@ -9662,7 +9652,7 @@ void Game::OnEnterLevel()
 						text = Format(txMageEnter, quest_mages2->evil_mage_name.c_str());
 					}
 				}
-				else if(L.dungeon_level == L.location->GetLastLevel() && quest_mages2->talked < Quest_Mages2::Talked::BeforeBoss)
+				else if(game_level->dungeon_level == game_level->location->GetLastLevel() && quest_mages2->talked < Quest_Mages2::Talked::BeforeBoss)
 				{
 					quest_mages2->talked = Quest_Mages2::Talked::BeforeBoss;
 					text = txMageFinal;
@@ -9675,7 +9665,7 @@ void Game::OnEnterLevel()
 	}
 
 	// default talking about location
-	if(!talker && L.dungeon_level == 0 && (L.enter_from == ENTER_FROM_OUTSIDE || L.enter_from >= ENTER_FROM_PORTAL))
+	if(!talker && game_level->dungeon_level == 0 && (game_level->enter_from == ENTER_FROM_OUTSIDE || game_level->enter_from >= ENTER_FROM_PORTAL))
 	{
 		TeamInfo info;
 		Team.GetTeamInfo(info);
@@ -9684,12 +9674,12 @@ void Game::OnEnterLevel()
 		{
 			LocalString s;
 
-			switch(L.location->type)
+			switch(game_level->location->type)
 			{
 			case L_DUNGEON:
 			case L_CRYPT:
 				{
-					InsideLocation* inside = (InsideLocation*)L.location;
+					InsideLocation* inside = (InsideLocation*)game_level->location;
 					switch(inside->target)
 					{
 					case HUMAN_FORT:
@@ -9750,7 +9740,7 @@ void Game::OnEnterLevel()
 
 cstring Game::GetRandomIdleText(Unit& u)
 {
-	if(IsSet(u.data->flags3, F3_DRUNK_MAGE) && QM.quest_mages2->mages_state < Quest_Mages2::State::MageCured)
+	if(IsSet(u.data->flags3, F3_DRUNK_MAGE) && quest_mgr->quest_mages2->mages_state < Quest_Mages2::State::MageCured)
 		return RandomString(txAiDrunkMageText);
 
 	int n = Rand() % 100;
@@ -9784,9 +9774,9 @@ cstring Game::GetRandomIdleText(Unit& u)
 		{
 			if(u.area->area_type == LevelArea::Type::Building && (IsSet(u.data->flags, F_AI_DRUNKMAN) || IsSet(u.data->flags3, F3_DRUNKMAN_AFTER_CONTEST)))
 			{
-				if(L.city_ctx->FindInn() == u.area)
+				if(game_level->city_ctx->FindInn() == u.area)
 				{
-					if(IsSet(u.data->flags, F_AI_DRUNKMAN) || QM.quest_contest->state != Quest_Contest::CONTEST_TODAY)
+					if(IsSet(u.data->flags, F_AI_DRUNKMAN) || quest_mgr->quest_contest->state != Quest_Contest::CONTEST_TODAY)
 					{
 						if(Rand() % 3 == 0)
 							return RandomString(txAiDrunkText);
@@ -9840,9 +9830,9 @@ cstring Game::GetRandomIdleText(Unit& u)
 
 	if(hero_text)
 	{
-		if(L.location->type == L_CITY)
+		if(game_level->location->type == L_CITY)
 			return RandomString(txAiHeroCityText);
-		else if(L.location->outside)
+		else if(game_level->location->outside)
 			return RandomString(txAiHeroOutsideText);
 		else
 			return RandomString(txAiHeroDungeonText);
@@ -9852,7 +9842,7 @@ cstring Game::GetRandomIdleText(Unit& u)
 		n = Rand() % 100;
 		if(n < 60)
 			return RandomString(txAiDefaultText);
-		else if(L.location->outside)
+		else if(game_level->location->outside)
 			return RandomString(txAiOutsideText);
 		else
 			return RandomString(txAiInsideText);
@@ -9861,8 +9851,8 @@ cstring Game::GetRandomIdleText(Unit& u)
 
 void Game::OnEnterLevelOrLocation()
 {
-	gui->Clear(false, true);
-	L.lights_dt = 1.f;
+	game_gui->Clear(false, true);
+	game_level->lights_dt = 1.f;
 	pc_data.autowalk = false;
 	pc_data.selected_unit = pc->unit;
 	fallback_t = -0.5f;
@@ -9874,12 +9864,12 @@ void Game::OnEnterLevelOrLocation()
 	}
 
 	// events v2
-	for(Event& e : L.location->events)
+	for(Event& e : game_level->location->events)
 	{
 		if(e.type == EVENT_ENTER)
 		{
 			ScriptEvent event(EVENT_ENTER);
-			event.location = L.location;
+			event.location = game_level->location;
 			e.quest->FireEvent(event);
 		}
 	}
@@ -9894,36 +9884,36 @@ void Game::HandleQuestEvent(Quest_Event* event)
 	Unit* spawned = nullptr, *spawned2 = nullptr;
 	InsideLocationLevel* lvl = nullptr;
 	InsideLocation* inside = nullptr;
-	if(L.local_area->area_type == LevelArea::Type::Inside)
+	if(game_level->local_area->area_type == LevelArea::Type::Inside)
 	{
-		inside = (InsideLocation*)L.location;
+		inside = (InsideLocation*)game_level->location;
 		lvl = &inside->GetLevelData();
 	}
 
 	// spawn unit
 	if(event->unit_to_spawn)
 	{
-		if(L.local_area->area_type == LevelArea::Type::Outside)
+		if(game_level->local_area->area_type == LevelArea::Type::Outside)
 		{
-			if(L.location->type == L_CITY)
-				spawned = L.SpawnUnitInsideInn(*event->unit_to_spawn, event->unit_spawn_level);
+			if(game_level->location->type == L_CITY)
+				spawned = game_level->SpawnUnitInsideInn(*event->unit_to_spawn, event->unit_spawn_level);
 			else
 			{
 				Vec3 pos(0, 0, 0);
 				int count = 0;
-				for(Unit* unit : L.local_area->units)
+				for(Unit* unit : game_level->local_area->units)
 				{
 					pos += unit->pos;
 					++count;
 				}
 				pos /= (float)count;
-				spawned = L.SpawnUnitNearLocation(*L.local_area, pos, *event->unit_to_spawn, nullptr, event->unit_spawn_level);
+				spawned = game_level->SpawnUnitNearLocation(*game_level->local_area, pos, *event->unit_to_spawn, nullptr, event->unit_spawn_level);
 			}
 		}
 		else
 		{
 			Room& room = lvl->GetRoom(event->spawn_unit_room, inside->HaveDownStairs());
-			spawned = L.SpawnUnitInsideRoomOrNear(*lvl, room, *event->unit_to_spawn, event->unit_spawn_level);
+			spawned = game_level->SpawnUnitInsideRoomOrNear(*lvl, room, *event->unit_to_spawn, event->unit_spawn_level);
 		}
 		if(!spawned)
 			throw "Failed to spawn quest unit!";
@@ -9940,7 +9930,7 @@ void Game::HandleQuestEvent(Quest_Event* event)
 		if(IsSet(spawned->data->flags2, F2_GUARDED) && lvl)
 		{
 			Room& room = lvl->GetRoom(event->spawn_unit_room, inside->HaveDownStairs());
-			for(Unit* unit : L.local_area->units)
+			for(Unit* unit : game_level->local_area->units)
 			{
 				if(unit != spawned && unit->IsFriend(*spawned) && lvl->GetRoom(PosToPt(unit->pos)) == &room)
 				{
@@ -9959,7 +9949,7 @@ void Game::HandleQuestEvent(Quest_Event* event)
 			room = lvl->GetRoom(PosToPt(spawned->pos));
 		else
 			room = &lvl->GetRoom(event->spawn_unit_room2, inside->HaveDownStairs());
-		spawned2 = L.SpawnUnitInsideRoomOrNear(*lvl, *room, *event->unit_to_spawn2, event->unit_spawn_level2);
+		spawned2 = game_level->SpawnUnitInsideRoomOrNear(*lvl, *room, *event->unit_to_spawn2, event->unit_spawn_level2);
 		if(!spawned2)
 			throw "Failed to spawn quest unit 2!";
 		if(devmode)
@@ -9979,7 +9969,7 @@ void Game::HandleQuestEvent(Quest_Event* event)
 	case Quest_Dungeon::Item_GiveStrongest:
 		{
 			Unit* best = nullptr;
-			for(Unit* unit : L.local_area->units)
+			for(Unit* unit : game_level->local_area->units)
 			{
 				if(unit->IsAlive() && unit->IsEnemy(*pc->unit) && (!best || unit->level > best->level))
 					best = unit;
@@ -10015,9 +10005,9 @@ void Game::HandleQuestEvent(Quest_Event* event)
 		{
 			GroundItem* item;
 			if(lvl)
-				item = L.SpawnGroundItemInsideAnyRoom(*lvl, event->item_to_give[0]);
+				item = game_level->SpawnGroundItemInsideAnyRoom(*lvl, event->item_to_give[0]);
 			else
-				item = L.SpawnGroundItemInsideRadius(event->item_to_give[0], Vec2(128, 128), 10.f);
+				item = game_level->SpawnGroundItemInsideRadius(event->item_to_give[0], Vec2(128, 128), 10.f);
 			if(devmode)
 				Info("Generated item %s on ground (%g,%g).", event->item_to_give[0]->id.c_str(), item->pos.x, item->pos.z);
 		}
@@ -10054,7 +10044,7 @@ void Game::HandleQuestEvent(Quest_Event* event)
 		break;
 	case Quest_Dungeon::Item_InChest:
 		{
-			Chest* chest = L.local_area->GetRandomFarChest(L.GetSpawnPoint());
+			Chest* chest = game_level->local_area->GetRandomFarChest(game_level->GetSpawnPoint());
 			assert(event->item_to_give[0]);
 			if(devmode)
 			{

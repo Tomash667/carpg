@@ -10,7 +10,7 @@
 #include "Content.h"
 #include "OutsideLocation.h"
 #include "InsideLocation.h"
-#include "GameGui.h"
+#include "LevelGui.h"
 #include "Console.h"
 #include "MpBox.h"
 #include "GameMenu.h"
@@ -44,7 +44,7 @@
 #include "InfoBox.h"
 #include "LoadScreen.h"
 #include "Portal.h"
-#include "GlobalGui.h"
+#include "GameGui.h"
 #include "DebugDrawer.h"
 #include "Pathfinding.h"
 #include "SaveSlot.h"
@@ -56,9 +56,10 @@
 #include "GrassShader.h"
 #include "TerrainShader.h"
 #include "Engine.h"
+#include "CommandParser.h"
 
 const float LIMIT_DT = 0.3f;
-Game* Game::game;
+Game* global::game;
 GameKeys GKey;
 extern string g_system_dir;
 extern cstring RESTART_MUTEX_NAME;
@@ -85,15 +86,11 @@ quickstart_slot(SaveSlot::MAX_SLOTS), clear_color(Color::Black), engine(new Engi
 #endif
 	devmode = default_devmode;
 
-	game = this;
-	Quest::game = this;
-
 	dialog_context.is_local = true;
 
 	ClearPointers();
 
 	uv_mod = Terrain::DEFAULT_UV_MOD;
-	L.camera.draw_range = 80.f;
 
 	SetupConfigVars();
 	BeforeInit();
@@ -148,7 +145,7 @@ void Game::DrawGame(RenderTarget* target)
 		}
 
 		// draw gui
-		gui->Draw(L.camera.matViewProj, IsSet(draw_flags, DF_GUI), IsSet(draw_flags, DF_MENU));
+		game_gui->Draw(game_level->camera.matViewProj, IsSet(draw_flags, DF_GUI), IsSet(draw_flags, DF_MENU));
 
 		V(device->EndScene());
 		if(target)
@@ -240,7 +237,7 @@ void Game::DrawGame(RenderTarget* target)
 			V(ePostFx->End());
 
 			if(it + 1 == end)
-				gui->Draw(L.camera.matViewProj, IsSet(draw_flags, DF_GUI), IsSet(draw_flags, DF_MENU));
+				game_gui->Draw(game_level->camera.matViewProj, IsSet(draw_flags, DF_GUI), IsSet(draw_flags, DF_MENU));
 
 			V(device->EndScene());
 
@@ -273,7 +270,7 @@ void Game::OnDebugDraw(DebugDrawer* dd)
 {
 	if(pathfinding->IsDebugDraw())
 	{
-		dd->SetCamera(L.camera);
+		dd->SetCamera(game_level->camera);
 		pathfinding->Draw(dd);
 	}
 }
@@ -309,7 +306,7 @@ void Game::OnUpdate(float dt)
 	else if(profiler_mode == ProfilerMode::Disabled)
 		Profiler::g_profiler.Clear();
 
-	N.api->Update();
+	net->api->Update();
 
 	UpdateMusic();
 
@@ -317,7 +314,7 @@ void Game::OnUpdate(float dt)
 	{
 		// update time spent in game
 		if(game_state != GS_MAIN_MENU && game_state != GS_LOAD)
-			GameStats::Get().Update(dt);
+			game_stats->Update(dt);
 	}
 
 	GKey.allow_input = GameKeys::ALLOW_INPUT;
@@ -345,7 +342,7 @@ void Game::OnUpdate(float dt)
 
 	// fast quit (alt+f4)
 	if(input->Focus() && input->Shortcut(KEY_ALT, Key::F4) && !gui->HaveTopDialog("dialog_alt_f4"))
-		gui->ShowQuitDialog();
+		game_gui->ShowQuitDialog();
 
 	if(end_of_game)
 	{
@@ -363,7 +360,7 @@ void Game::OnUpdate(float dt)
 	{
 		// handle open/close of console
 		if(!gui->HaveTopDialog("dialog_alt_f4") && !gui->HaveDialog("console") && GKey.KeyDownUpAllowed(GK_CONSOLE))
-			gui->ShowDialog(gui->console);
+			gui->ShowDialog(game_gui->console);
 
 		// unlock cursor
 		if(!engine->IsFullscreen() && engine->IsActive() && engine->IsCursorLocked() && input->Shortcut(KEY_CONTROL, Key::U))
@@ -383,11 +380,11 @@ void Game::OnUpdate(float dt)
 	}
 
 	// handle panels
-	if(gui->HaveDialog() || (gui->mp_box->visible && gui->mp_box->itb.focus))
+	if(gui->HaveDialog() || (game_gui->mp_box->visible && game_gui->mp_box->itb.focus))
 		GKey.allow_input = GameKeys::ALLOW_NONE;
 	else if(GKey.AllowKeyboard() && game_state == GS_LEVEL && death_screen == 0 && !dialog_context.dialog_mode)
 	{
-		OpenPanel open = gui->game_gui->GetOpenPanel(),
+		OpenPanel open = game_gui->level_gui->GetOpenPanel(),
 			to_open = OpenPanel::None;
 
 		if(GKey.PressedRelease(GK_STATS))
@@ -406,14 +403,14 @@ void Game::OnUpdate(float dt)
 			to_open = OpenPanel::Trade; // ShowPanel hide when already opened
 
 		if(to_open != OpenPanel::None)
-			gui->game_gui->ShowPanel(to_open, open);
+			game_gui->level_gui->ShowPanel(to_open, open);
 
 		switch(open)
 		{
 		case OpenPanel::None:
 		case OpenPanel::Minimap:
 		default:
-			if(gui->game_gui->use_cursor)
+			if(game_gui->level_gui->use_cursor)
 				GKey.allow_input = GameKeys::ALLOW_KEYBOARD;
 			break;
 		case OpenPanel::Stats:
@@ -438,10 +435,10 @@ void Game::OnUpdate(float dt)
 
 	// mp box
 	if(game_state == GS_LEVEL && GKey.KeyPressedReleaseAllowed(GK_TALK_BOX))
-		gui->mp_box->visible = !gui->mp_box->visible;
+		game_gui->mp_box->visible = !game_gui->mp_box->visible;
 
-	// update gui
-	gui->UpdateGui(dt);
+	// update game_gui
+	game_gui->UpdateGui(dt);
 	if(game_state == GS_EXIT_TO_MENU)
 	{
 		ExitToMenu();
@@ -454,17 +451,17 @@ void Game::OnUpdate(float dt)
 		return;
 	}
 
-	// handle blocking input by gui
-	if(gui->HaveDialog() || (gui->mp_box->visible && gui->mp_box->itb.focus))
+	// handle blocking input by game_gui
+	if(gui->HaveDialog() || (game_gui->mp_box->visible && game_gui->mp_box->itb.focus))
 		GKey.allow_input = GameKeys::ALLOW_NONE;
 	else if(GKey.AllowKeyboard() && game_state == GS_LEVEL && death_screen == 0 && !dialog_context.dialog_mode)
 	{
-		switch(gui->game_gui->GetOpenPanel())
+		switch(game_gui->level_gui->GetOpenPanel())
 		{
 		case OpenPanel::None:
 		case OpenPanel::Minimap:
 		default:
-			if(gui->game_gui->use_cursor)
+			if(game_gui->level_gui->use_cursor)
 				GKey.allow_input = GameKeys::ALLOW_KEYBOARD;
 			break;
 		case OpenPanel::Stats:
@@ -484,7 +481,7 @@ void Game::OnUpdate(float dt)
 
 	// open game menu
 	if(GKey.AllowKeyboard() && CanShowMenu() && input->PressedRelease(Key::Escape))
-		gui->ShowMenu();
+		game_gui->ShowMenu();
 
 	arena->UpdatePvpRequest(dt);
 
@@ -500,7 +497,7 @@ void Game::OnUpdate(float dt)
 				{
 					if(Net::IsOnline())
 						UpdateWarpData(dt);
-					L.ProcessUnitWarps();
+					game_level->ProcessUnitWarps();
 				}
 				SetupCamera(dt);
 				if(Net::IsOnline())
@@ -517,7 +514,7 @@ void Game::OnUpdate(float dt)
 					{
 						if(Net::IsOnline())
 							UpdateWarpData(dt);
-						L.ProcessUnitWarps();
+						game_level->ProcessUnitWarps();
 					}
 					SetupCamera(dt);
 				}
@@ -540,11 +537,11 @@ void Game::OnUpdate(float dt)
 		UpdateGameNet(dt);
 
 	// open/close mp box
-	if(GKey.AllowKeyboard() && game_state == GS_LEVEL && gui->mp_box->visible && !gui->mp_box->itb.focus && input->PressedRelease(Key::Enter))
+	if(GKey.AllowKeyboard() && game_state == GS_LEVEL && game_gui->mp_box->visible && !game_gui->mp_box->itb.focus && input->PressedRelease(Key::Enter))
 	{
-		gui->mp_box->itb.focus = true;
-		gui->mp_box->Event(GuiEvent_GainFocus);
-		gui->mp_box->itb.Event(GuiEvent_GainFocus);
+		game_gui->mp_box->itb.focus = true;
+		game_gui->mp_box->Event(GuiEvent_GainFocus);
+		game_gui->mp_box->itb.Event(GuiEvent_GainFocus);
 	}
 
 	Profiler::g_profiler.End();
@@ -561,7 +558,7 @@ void Game::GetTitle(LocalString& s)
 	s += " -  DEBUG";
 #endif
 
-	if(change_title_a && ((game_state != GS_MAIN_MENU && game_state != GS_LOAD) || (gui->server && gui->server->visible)))
+	if(change_title_a && ((game_state != GS_MAIN_MENU && game_state != GS_LOAD) || (game_gui->server && game_gui->server->visible)))
 	{
 		if(Net::IsOnline())
 		{
@@ -630,16 +627,16 @@ void Game::OnReload()
 	BuildDungeon();
 	// rebuild minimap texture
 	if(game_state == GS_LEVEL)
-		loc_gen_factory->Get(L.location)->CreateMinimap();
-	if(gui && gui->inventory)
-		gui->inventory->OnReload();
+		loc_gen_factory->Get(game_level->location)->CreateMinimap();
+	if(game_gui && game_gui->inventory)
+		game_gui->inventory->OnReload();
 }
 
 //=================================================================================================
 void Game::OnReset()
 {
-	if(gui && gui->inventory)
-		gui->inventory->OnReset();
+	if(game_gui && game_gui->inventory)
+		game_gui->inventory->OnReset();
 
 	if(eMesh)
 		V(eMesh->OnLostDevice());
@@ -684,7 +681,7 @@ void Game::TakeScreenshot(bool no_gui)
 	if(FAILED(hr))
 	{
 		cstring msg = Format("Failed to get front buffer data to save screenshot (%d)!", hr);
-		gui->console->AddMsg(msg);
+		game_gui->console->AddMsg(msg);
 		Error(msg);
 	}
 	else
@@ -732,7 +729,7 @@ void Game::TakeScreenshot(bool no_gui)
 		D3DXSaveSurfaceToFileA(path, format, back_buffer, nullptr, nullptr);
 
 		cstring msg = Format("Screenshot saved to '%s'.", path);
-		gui->console->AddMsg(msg);
+		game_gui->console->AddMsg(msg);
 		Info(msg);
 
 		back_buffer->Release();
@@ -757,32 +754,32 @@ void Game::DoExitToMenu()
 	StopAllSounds();
 	ClearGame();
 
-	if(app::res_mgr->IsLoadScreen())
-		app::res_mgr->CancelLoadScreen(true);
+	if(res_mgr->IsLoadScreen())
+		res_mgr->CancelLoadScreen(true);
 
 	game_state = GS_MAIN_MENU;
 	paused = false;
-	N.mp_load = false;
-	N.was_client = false;
+	net->mp_load = false;
+	net->was_client = false;
 
 	SetMusic(MusicType::Title);
 	end_of_game = false;
 
-	gui->CloseAllPanels();
+	game_gui->CloseAllPanels();
 	string msg;
 	DialogBox* box = gui->GetDialog("fatal");
-	bool console = gui->console->visible;
+	bool console = game_gui->console->visible;
 	if(box)
 		msg = box->text;
 	gui->CloseDialogs();
 	if(!msg.empty())
 		gui->SimpleDialog(msg.c_str(), nullptr, "fatal");
 	if(console)
-		gui->ShowDialog(gui->console);
-	gui->game_menu->visible = false;
-	gui->game_gui->visible = false;
-	gui->world_map->Hide();
-	gui->main_menu->visible = true;
+		gui->ShowDialog(game_gui->console);
+	game_gui->game_menu->visible = false;
+	game_gui->level_gui->visible = false;
+	game_gui->world_map->Hide();
+	game_gui->main_menu->visible = true;
 	units_mesh_load.clear();
 
 	if(change_title_a)
@@ -835,8 +832,17 @@ void Game::OnCleanup()
 
 	content.CleanupContent();
 
-	for(GameComponent* component : components)
-		component->Cleanup();
+	delete arena;
+	delete cmdp;
+	delete game_stats;
+	delete game_gui;
+	delete game_level;
+	delete loc_gen_factory;
+	delete net;
+	delete pathfinding;
+	delete quest_mgr;
+	delete script_mgr;
+	delete world;
 
 	DeleteElements(bow_instances);
 	ClearQuadtree();
@@ -865,6 +871,8 @@ void Game::OnCleanup()
 		delete tex;
 
 	draw_batch.Clear();
+
+	Language::Cleanup();
 }
 
 //=================================================================================================
@@ -1056,7 +1064,6 @@ void Game::SetGameText()
 	txLevelDown = Str("levelDown");
 	txRegeneratingLevel = Str("regeneratingLevel");
 	txNeedItem = Str("needItem");
-	txGmsAddedItems = Str("gmsAddedItems");
 
 	// plotki
 	LoadArray(txRumor, "rumor_");
@@ -1307,7 +1314,7 @@ MeshInstance* Game::GetBowInstance(Mesh* mesh)
 	if(bow_instances.empty())
 	{
 		if(!mesh->IsLoaded())
-			app::res_mgr->Load(mesh);
+			res_mgr->Load(mesh);
 		return new MeshInstance(mesh);
 	}
 	else
@@ -1334,11 +1341,11 @@ cstring Game::GetShortcutText(GAME_KEYS key, cstring action)
 		action = k.text;
 
 	if(first_key && second_key)
-		return Format("%s (%s, %s)", action, gui->controls->key_text[(int)k[0]], gui->controls->key_text[(int)k[1]]);
+		return Format("%s (%s, %s)", action, game_gui->controls->key_text[(int)k[0]], game_gui->controls->key_text[(int)k[1]]);
 	else if(first_key || second_key)
 	{
 		Key used = k[first_key ? 0 : 1];
-		return Format("%s (%s)", action, gui->controls->key_text[(int)used]);
+		return Format("%s (%s)", action, game_gui->controls->key_text[(int)used]);
 	}
 	else
 		return action;
@@ -1353,7 +1360,7 @@ void Game::PauseGame()
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::PAUSED;
 		c.id = (paused ? 1 : 0);
-		if(paused && game_state == GS_WORLDMAP && W.GetState() == World::State::TRAVEL)
+		if(paused && game_state == GS_WORLDMAP && world->GetState() == World::State::TRAVEL)
 			Net::PushChange(NetChange::UPDATE_MAP_POS);
 	}
 }
@@ -1370,37 +1377,37 @@ void Game::GenerateWorld()
 
 	Info("Generating world, seed %u.", RandVal());
 
-	W.GenerateWorld();
+	world->GenerateWorld();
 
 	Info("Randomness integrity: %d", RandVal());
 }
 
 void Game::EnterLocation(int level, int from_portal, bool close_portal)
 {
-	Location& l = *L.location;
-	L.entering = true;
+	Location& l = *game_level->location;
+	game_level->entering = true;
 
-	gui->world_map->Hide();
-	gui->game_gui->Reset();
-	gui->game_gui->visible = true;
+	game_gui->world_map->Hide();
+	game_gui->level_gui->Reset();
+	game_gui->level_gui->visible = true;
 
-	const bool reenter = L.is_open;
-	L.is_open = true;
-	L.reenter = reenter;
-	if(W.GetState() != World::State::INSIDE_ENCOUNTER)
-		W.SetState(World::State::INSIDE_LOCATION);
+	const bool reenter = game_level->is_open;
+	game_level->is_open = true;
+	game_level->reenter = reenter;
+	if(world->GetState() != World::State::INSIDE_ENCOUNTER)
+		world->SetState(World::State::INSIDE_LOCATION);
 	if(from_portal != -1)
-		L.enter_from = ENTER_FROM_PORTAL + from_portal;
+		game_level->enter_from = ENTER_FROM_PORTAL + from_portal;
 	else
-		L.enter_from = ENTER_FROM_OUTSIDE;
+		game_level->enter_from = ENTER_FROM_OUTSIDE;
 	if(!reenter)
-		L.light_angle = Random(PI * 2);
+		game_level->light_angle = Random(PI * 2);
 
-	L.dungeon_level = level;
-	L.event_handler = nullptr;
+	game_level->dungeon_level = level;
+	game_level->event_handler = nullptr;
 	pc_data.before_player = BP_NONE;
 	arena->Reset();
-	gui->inventory->lock = nullptr;
+	game_gui->inventory->lock = nullptr;
 
 	bool first = false;
 
@@ -1410,15 +1417,15 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 	if(!reenter)
 		InitQuadTree();
 
-	if(Net::IsOnline() && N.active_players > 1)
+	if(Net::IsOnline() && net->active_players > 1)
 	{
 		BitStreamWriter f;
 		f << ID_CHANGE_LEVEL;
-		f << (byte)L.location_index;
+		f << (byte)game_level->location_index;
 		f << (byte)0;
-		f << (W.GetState() == World::State::INSIDE_ENCOUNTER);
-		int ack = N.SendAll(f, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT);
-		for(PlayerInfo& info : N.players)
+		f << (world->GetState() == World::State::INSIDE_ENCOUNTER);
+		int ack = net->SendAll(f, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT);
+		for(PlayerInfo& info : net->players)
 		{
 			if(info.id == Team.my_id)
 				info.state = PlayerInfo::IN_GAME;
@@ -1429,7 +1436,7 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 				info.timer = 5.f;
 			}
 		}
-		N.FilterServerChanges();
+		net->FilterServerChanges();
 	}
 
 	// calculate number of loading steps for drawing progress bar
@@ -1460,11 +1467,11 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 		l.seed = RandVal();
 		if(!l.outside)
 		{
-			InsideLocation* inside = static_cast<InsideLocation*>(L.location);
+			InsideLocation* inside = static_cast<InsideLocation*>(game_level->location);
 			if(inside->IsMultilevel())
 			{
 				MultiInsideLocation* multi = static_cast<MultiInsideLocation*>(inside);
-				multi->infos[L.dungeon_level].seed = l.seed;
+				multi->infos[game_level->dungeon_level].seed = l.seed;
 			}
 		}
 
@@ -1479,7 +1486,7 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 	else if(!Any(l.type, L_DUNGEON, L_CRYPT, L_CAVE))
 		Info("Entering location '%s'.", l.name.c_str());
 
-	if(L.location->outside)
+	if(game_level->location->outside)
 	{
 		loc_gen->OnEnter();
 		if(!reenter)
@@ -1491,22 +1498,22 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 	else
 		EnterLevel(loc_gen);
 
-	bool loaded_resources = L.location->RequireLoadingResources(nullptr);
+	bool loaded_resources = game_level->location->RequireLoadingResources(nullptr);
 	LoadResources(txLoadingComplete, false);
 
-	l.last_visit = W.GetWorldtime();
-	L.CheckIfLocationCleared();
-	L.camera.Reset();
+	l.last_visit = world->GetWorldtime();
+	game_level->CheckIfLocationCleared();
+	game_level->camera.Reset();
 	pc_data.rot_buf = 0.f;
 	SetMusic();
 
 	if(close_portal)
 	{
-		delete L.location->portal;
-		L.location->portal = nullptr;
+		delete game_level->location->portal;
+		game_level->location->portal = nullptr;
 	}
 
-	if(L.location->outside)
+	if(game_level->location->outside)
 	{
 		OnEnterLevelOrLocation();
 		OnEnterLocation();
@@ -1516,42 +1523,42 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 	{
 		net_mode = NM_SERVER_SEND;
 		net_state = NetState::Server_Send;
-		if(N.active_players > 1)
+		if(net->active_players > 1)
 		{
 			prepared_stream.Reset();
-			N.WriteLevelData(prepared_stream, loaded_resources);
+			net->WriteLevelData(prepared_stream, loaded_resources);
 			Info("Generated location packet: %d.", prepared_stream.GetNumberOfBytesUsed());
 		}
 		else
-			N.GetMe().state = PlayerInfo::IN_GAME;
+			net->GetMe().state = PlayerInfo::IN_GAME;
 
-		gui->info_box->Show(txWaitingForPlayers);
+		game_gui->info_box->Show(txWaitingForPlayers);
 	}
 	else
 	{
 		clear_color = clear_color_next;
 		game_state = GS_LEVEL;
-		gui->load_screen->visible = false;
-		gui->main_menu->visible = false;
-		gui->game_gui->visible = true;
+		game_gui->load_screen->visible = false;
+		game_gui->main_menu->visible = false;
+		game_gui->level_gui->visible = true;
 	}
 
 	Info("Randomness integrity: %d", RandVal());
 	Info("Entered location.");
-	L.entering = false;
+	game_level->entering = false;
 }
 
 // dru¿yna opuœci³a lokacje
 void Game::LeaveLocation(bool clear, bool end_buffs)
 {
-	if(!L.is_open)
+	if(!game_level->is_open)
 		return;
 
-	if(Net::IsLocal() && !N.was_client)
+	if(Net::IsLocal() && !net->was_client)
 	{
 		// zawody
-		if(QM.quest_tournament->GetState() != Quest_Tournament::TOURNAMENT_NOT_DONE)
-			QM.quest_tournament->Clean();
+		if(quest_mgr->quest_tournament->GetState() != Quest_Tournament::TOURNAMENT_NOT_DONE)
+			quest_mgr->quest_tournament->Clean();
 		// arena
 		if(!arena->free)
 			arena->Clean();
@@ -1565,23 +1572,23 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 
 	Info("Leaving location.");
 
-	if(Net::IsLocal() && (QM.quest_crazies->check_stone
-		|| (QM.quest_crazies->crazies_state >= Quest_Crazies::State::PickedStone && QM.quest_crazies->crazies_state < Quest_Crazies::State::End)))
-		QM.quest_crazies->CheckStone();
+	if(Net::IsLocal() && (quest_mgr->quest_crazies->check_stone
+		|| (quest_mgr->quest_crazies->crazies_state >= Quest_Crazies::State::PickedStone && quest_mgr->quest_crazies->crazies_state < Quest_Crazies::State::End)))
+		quest_mgr->quest_crazies->CheckStone();
 
 	// drinking contest
-	Quest_Contest* contest = QM.quest_contest;
+	Quest_Contest* contest = quest_mgr->quest_contest;
 	if(contest->state >= Quest_Contest::CONTEST_STARTING)
 		contest->Cleanup();
 
 	// clear blood & bodies from orc base
-	if(Net::IsLocal() && QM.quest_orcs2->orcs_state == Quest_Orcs2::State::ClearDungeon && L.location_index == QM.quest_orcs2->target_loc)
+	if(Net::IsLocal() && quest_mgr->quest_orcs2->orcs_state == Quest_Orcs2::State::ClearDungeon && game_level->location_index == quest_mgr->quest_orcs2->target_loc)
 	{
-		QM.quest_orcs2->orcs_state = Quest_Orcs2::State::End;
-		L.UpdateLocation(31, 100, false);
+		quest_mgr->quest_orcs2->orcs_state = Quest_Orcs2::State::End;
+		game_level->UpdateLocation(31, 100, false);
 	}
 
-	if(L.city_ctx && game_state != GS_EXIT_TO_MENU && Net::IsLocal())
+	if(game_level->city_ctx && game_state != GS_EXIT_TO_MENU && Net::IsLocal())
 	{
 		// opuszczanie miasta
 		Team.BuyTeamItems();
@@ -1589,7 +1596,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 
 	LeaveLevel();
 
-	if(L.is_open)
+	if(game_level->is_open)
 	{
 		if(Net::IsLocal())
 		{
@@ -1597,11 +1604,11 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 			RemoveQuestUnits(true);
 		}
 
-		L.ProcessRemoveUnits(true);
+		game_level->ProcessRemoveUnits(true);
 
-		if(L.location->type == L_ENCOUNTER)
+		if(game_level->location->type == L_ENCOUNTER)
 		{
-			OutsideLocation* outside = static_cast<OutsideLocation*>(L.location);
+			OutsideLocation* outside = static_cast<OutsideLocation*>(game_level->location);
 			outside->bloods.clear();
 			DeleteElements(outside->objects);
 			DeleteElements(outside->chests);
@@ -1628,29 +1635,29 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 			unit.EndEffects();
 	}
 
-	L.is_open = false;
-	L.city_ctx = nullptr;
+	game_level->is_open = false;
+	game_level->city_ctx = nullptr;
 }
 
 void Game::Event_RandomEncounter(int)
 {
-	gui->world_map->dialog_enc = nullptr;
+	game_gui->world_map->dialog_enc = nullptr;
 	if(Net::IsOnline())
 		Net::PushChange(NetChange::CLOSE_ENCOUNTER);
-	W.StartEncounter();
+	world->StartEncounter();
 	EnterLocation();
 }
 
 //=================================================================================================
 void Game::OnResize()
 {
-	gui->OnResize();
+	game_gui->OnResize();
 }
 
 //=================================================================================================
 void Game::OnFocus(bool focus, const Int2& activation_point)
 {
-	gui->OnFocus(focus, activation_point);
+	game_gui->OnFocus(focus, activation_point);
 }
 
 //=================================================================================================
@@ -1676,7 +1683,7 @@ void Game::ReportError(int id, cstring text, bool once)
 	cstring str = Format("[Report %d]: %s", id, text);
 	Warn(str);
 #ifdef _DEBUG
-	gui->messages->AddGameMsg(str, 5.f);
+	game_gui->messages->AddGameMsg(str, 5.f);
 #endif
-	N.api->Report(id, Format("[%s] %s", mode, text));
+	net->api->Report(id, Format("[%s] %s", mode, text));
 }

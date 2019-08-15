@@ -4,15 +4,14 @@
 #include "ResourceManager.h"
 #include "Engine.h"
 #include "Utility.h"
-#include "GlobalGui.h"
+#include "GameGui.h"
 
 //=================================================================================================
 void LoadScreen::LoadData()
 {
-	ResourceManager& res_mgr = *app::res_mgr;
-	tLoadbarBg = res_mgr.Load<Texture>("loadbar_bg.png");
-	tLoadbar = res_mgr.Load<Texture>("loadbar.png");
-	tBackground = res_mgr.Load<Texture>("load_bg.jpg");
+	tLoadbarBg = res_mgr->Load<Texture>("loadbar_bg.png");
+	tLoadbar = res_mgr->Load<Texture>("loadbar.png");
+	tBackground = res_mgr->Load<Texture>("load_bg.jpg");
 }
 
 //=================================================================================================
@@ -33,7 +32,7 @@ void LoadScreen::Draw(ControlDrawData*)
 
 	// text
 	Rect r2 = { 32, 0, gui->wnd_size.x - 32, LONG(gui->wnd_size.y - img_size.y - 32) };
-	gui->DrawText(GlobalGui::font, text, DTF_CENTER | DTF_BOTTOM, Color::White, r2);
+	gui->DrawText(GameGui::font, text, DTF_CENTER | DTF_BOTTOM, Color::White, r2);
 }
 
 //=================================================================================================
@@ -49,7 +48,7 @@ void LoadScreen::Setup(float min_progress, float max_progress, int steps, cstrin
 		text.clear();
 	progress = min_progress;
 	step = 0;
-	app::engine->DoPseudotick();
+	engine->DoPseudotick();
 }
 
 //=================================================================================================
@@ -60,7 +59,7 @@ void LoadScreen::Tick(cstring str)
 	progress = min_progress + (max_progress - min_progress) * step / steps;
 	if(str)
 		text = str;
-	app::engine->DoPseudotick();
+	engine->DoPseudotick();
 }
 
 //=================================================================================================

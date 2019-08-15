@@ -7,7 +7,7 @@
 #include "InsideLocation.h"
 #include "GameFile.h"
 #include "Level.h"
-#include "GlobalGui.h"
+#include "GameGui.h"
 #include "GameMessages.h"
 #include "QuestManager.h"
 #include "Quest_Tournament.h"
@@ -182,11 +182,11 @@ void AIController::Load(GameReader& f)
 		int room_id = f.Read<int>();
 		if(room_id != -1)
 		{
-			if(!L.location->outside)
-				escape_room = ((InsideLocation*)L.location)->GetLevelData().rooms[room_id];
+			if(!game_level->location->outside)
+				escape_room = ((InsideLocation*)game_level->location)->GetLevelData().rooms[room_id];
 			else
 			{
-				Game::Get().ReportError(1, Format("Unit %s has escape_room %d.", unit->GetName(), room_id));
+				game->ReportError(1, Format("Unit %s has escape_room %d.", unit->GetName(), room_id));
 				escape_room = nullptr;
 			}
 		}
@@ -196,7 +196,7 @@ void AIController::Load(GameReader& f)
 	else if(state == AIController::Cast)
 	{
 		cast_target = reinterpret_cast<Unit*>(f.Read<int>());
-		Game::Get().ai_cast_targets.push_back(this);
+		game->ai_cast_targets.push_back(this);
 	}
 	f >> have_potion;
 	f >> potion;
@@ -229,7 +229,7 @@ void AIController::Load(GameReader& f)
 	case AIController::Idle_TrainBow:
 		f >> idle_data.obj.pos;
 		f >> idle_data.obj.rot;
-		Game::Get().ai_bow_targets.push_back(this);
+		game->ai_bow_targets.push_back(this);
 		break;
 	case AIController::Idle_MoveRegion:
 	case AIController::Idle_RunRegion:
@@ -240,19 +240,19 @@ void AIController::Load(GameReader& f)
 			if(LOAD_VERSION >= V_0_11)
 			{
 				f >> idle_data.region.exit;
-				idle_data.region.area = L.GetAreaById(area_id);
+				idle_data.region.area = game_level->GetAreaById(area_id);
 			}
 			else
 			{
 				if(area_id == LevelArea::OLD_EXIT_ID)
 				{
 					idle_data.region.exit = true;
-					idle_data.region.area = L.GetAreaById(LevelArea::OUTSIDE_ID);
+					idle_data.region.area = game_level->GetAreaById(LevelArea::OUTSIDE_ID);
 				}
 				else
 				{
 					idle_data.region.exit = false;
-					idle_data.region.area = L.GetAreaById(area_id);
+					idle_data.region.area = game_level->GetAreaById(area_id);
 				}
 			}
 		}
@@ -280,10 +280,7 @@ bool AIController::CheckPotion(bool in_combat)
 			if(index == -1)
 			{
 				if(unit->busy == Unit::Busy_No && unit->IsFollower() && !unit->summoner)
-				{
-					Game& game = Game::Get();
-					unit->Talk(RandomString(game.txAiNoHpPot));
-				}
+					unit->Talk(RandomString(game->txAiNoHpPot));
 				have_potion = 0;
 				return false;
 			}
@@ -343,7 +340,7 @@ float AIController::GetMorale() const
 //=================================================================================================
 bool AIController::CanWander() const
 {
-	if(L.city_ctx && loc_timer <= 0.f && !Game::Get().dont_wander && IsSet(unit->data->flags, F_AI_WANDERS))
+	if(game_level->city_ctx && loc_timer <= 0.f && !game->dont_wander && IsSet(unit->data->flags, F_AI_WANDERS))
 	{
 		if(unit->busy != Unit::Busy_No)
 			return false;
@@ -351,7 +348,7 @@ bool AIController::CanWander() const
 		{
 			if(unit->hero->team_member && unit->order != ORDER_WANDER)
 				return false;
-			else if(QM.quest_tournament->IsGenerated())
+			else if(quest_mgr->quest_tournament->IsGenerated())
 				return false;
 			else
 				return true;

@@ -54,7 +54,7 @@ void PlayerInfo::Load(FileReader& f)
 int PlayerInfo::GetIndex() const
 {
 	int index = 0;
-	for(PlayerInfo& info : N.players)
+	for(PlayerInfo& info : net->players)
 	{
 		if(&info == this)
 			return index;

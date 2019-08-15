@@ -1,12 +1,12 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "GameDialogBox.h"
+#include "DialogBox.h"
 #include "InputTextBox.h"
 
 //-----------------------------------------------------------------------------
 // Ingame console, opened with tilde (~)
-class Console : public GameDialogBox, public OnCharHandler
+class Console : public DialogBox, public OnCharHandler
 {
 public:
 	explicit Console(const DialogInfo& info);

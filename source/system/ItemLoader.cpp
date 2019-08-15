@@ -922,7 +922,7 @@ void ItemLoader::ParseStock(const string& id)
 					if(stock->script)
 						t.Throw("Stock script already used.");
 					const string& block = t.GetBlock('{', '}', false);
-					stock->script = SM.PrepareScript(Format("stock_%s", stock->id.c_str()), block.c_str());
+					stock->script = script_mgr->PrepareScript(Format("stock_%s", stock->id.c_str()), block.c_str());
 					if(!stock->script)
 						t.Throw("Failed to parse script.");
 					t.Next();
@@ -1024,7 +1024,7 @@ void ItemLoader::ParseBookScheme(const string& id)
 		case BSP_TEXTURE:
 			{
 				const string& str = t.MustGetString();
-				scheme->tex = app::res_mgr->TryGet<Texture>(str);
+				scheme->tex = res_mgr->TryGet<Texture>(str);
 				if(!scheme->tex)
 					t.Throw("Missing texture '%s'.", str.c_str());
 				t.Next();

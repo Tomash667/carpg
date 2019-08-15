@@ -28,12 +28,10 @@ Action* Action::Find(const string& id)
 //=================================================================================================
 void Action::LoadData()
 {
-	ResourceManager& res_mgr = *app::res_mgr;
-
 	for(Action& action : actions)
 	{
-		action.tex = res_mgr.Load<Texture>(Format("%s.png", action.id));
+		action.tex = res_mgr->Load<Texture>(Format("%s.png", action.id));
 		if(action.sound_id)
-			action.sound = res_mgr.Load<Sound>(action.sound_id);
+			action.sound = res_mgr->Load<Sound>(action.sound_id);
 	}
 }

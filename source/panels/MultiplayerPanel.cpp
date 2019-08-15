@@ -4,10 +4,10 @@
 #include "Input.h"
 #include "Language.h"
 #include "Game.h"
-#include "GlobalGui.h"
+#include "GameGui.h"
 
 //=================================================================================================
-MultiplayerPanel::MultiplayerPanel(const DialogInfo& info) : GameDialogBox(info)
+MultiplayerPanel::MultiplayerPanel(const DialogInfo& info) : DialogBox(info)
 {
 	size = Int2(344, 380);
 	bts.resize(5);
@@ -72,11 +72,11 @@ void MultiplayerPanel::Draw(ControlDrawData*)
 
 	// tekst
 	Rect r = { global_pos.x + 12, global_pos.y + 8, global_pos.x + size.x - 12, global_pos.y + size.y };
-	gui->DrawText(GlobalGui::font_big, txMultiplayerGame, DTF_TOP | DTF_CENTER, Color::Black, r);
+	gui->DrawText(GameGui::font_big, txMultiplayerGame, DTF_TOP | DTF_CENTER, Color::Black, r);
 
 	// tekst nick
 	r.Top() += 60;
-	gui->DrawText(GlobalGui::font, txNick, 0, Color::Black, r);
+	gui->DrawText(GameGui::font, txNick, 0, Color::Black, r);
 
 	// textbox
 	textbox.Draw();

@@ -64,7 +64,7 @@ void InsideLocation::Write(BitStreamWriter& f)
 //=================================================================================================
 bool InsideLocation::Read(BitStreamReader& f)
 {
-	SetActiveLevel(L.dungeon_level);
+	SetActiveLevel(game_level->dungeon_level);
 	InsideLocationLevel& lvl = GetLevelData();
 	f.ReadCasted<byte>(target);
 	f >> from_portal;
@@ -124,7 +124,7 @@ bool InsideLocation::Read(BitStreamReader& f)
 	}
 
 	// portals
-	if(!ReadPortals(f, L.dungeon_level))
+	if(!ReadPortals(f, game_level->dungeon_level))
 	{
 		Error("Read level: Broken portals.");
 		return false;

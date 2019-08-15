@@ -1,10 +1,7 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "GameComponent.h"
-
-//-----------------------------------------------------------------------------
-class Pathfinding : public GameComponent
+class Pathfinding
 {
 	friend struct AStarSort;
 
@@ -20,7 +17,6 @@ class Pathfinding : public GameComponent
 	};
 
 public:
-	void Cleanup() override { delete this; }
 	bool FindPath(LevelArea& area, const Int2& start_tile, const Int2& target_tile, vector<Int2>& path, bool can_open_doors = true, bool wandering = false, vector<Int2>* blocked = nullptr);
 	int FindLocalPath(LevelArea& area, vector<Int2>& path, const Int2& my_tile, const Int2& target_tile, const Unit* me, const Unit* other, const void* usable = nullptr, bool is_end_point = false);
 	void Draw(DebugDrawer* dd);

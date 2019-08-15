@@ -12,7 +12,7 @@
 #include "Render.h"
 #include "RenderTarget.h"
 #include "Level.h"
-#include "GlobalGui.h"
+#include "GameGui.h"
 
 //-----------------------------------------------------------------------------
 const int SECTION_H = 40;
@@ -35,7 +35,7 @@ enum ButtonId
 };
 
 //=================================================================================================
-CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : GameDialogBox(info), unit(nullptr), rt_char(nullptr)
+CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : DialogBox(info), unit(nullptr), rt_char(nullptr)
 {
 	size = Int2(600, 500);
 	unit = new Unit;
@@ -232,23 +232,22 @@ void CreateCharacterPanel::LoadLanguage()
 //=================================================================================================
 void CreateCharacterPanel::LoadData()
 {
-	ResourceManager& res_mgr = *app::res_mgr;
-	tBox = res_mgr.Load<Texture>("box.png");
-	tPowerBar = res_mgr.Load<Texture>("klasa_cecha.png");
-	custom_x.tex[Button::NONE] = AreaLayout(res_mgr.Load<Texture>("close.png"));
-	custom_x.tex[Button::HOVER] = AreaLayout(res_mgr.Load<Texture>("close_hover.png"));
-	custom_x.tex[Button::DOWN] = AreaLayout(res_mgr.Load<Texture>("close_down.png"));
-	custom_x.tex[Button::DISABLED] = AreaLayout(res_mgr.Load<Texture>("close_disabled.png"));
-	custom_bt[0].tex[Button::NONE] = AreaLayout(res_mgr.Load<Texture>("plus.png"));
-	custom_bt[0].tex[Button::HOVER] = AreaLayout(res_mgr.Load<Texture>("plus_hover.png"));
-	custom_bt[0].tex[Button::DOWN] = AreaLayout(res_mgr.Load<Texture>("plus_down.png"));
-	custom_bt[0].tex[Button::DISABLED] = AreaLayout(res_mgr.Load<Texture>("plus_disabled.png"));
-	custom_bt[1].tex[Button::NONE] = AreaLayout(res_mgr.Load<Texture>("minus.png"));
-	custom_bt[1].tex[Button::HOVER] = AreaLayout(res_mgr.Load<Texture>("minus_hover.png"));
-	custom_bt[1].tex[Button::DOWN] = AreaLayout(res_mgr.Load<Texture>("minus_down.png"));
-	custom_bt[1].tex[Button::DISABLED] = AreaLayout(res_mgr.Load<Texture>("minus_disabled.png"));
+	tBox = res_mgr->Load<Texture>("box.png");
+	tPowerBar = res_mgr->Load<Texture>("klasa_cecha.png");
+	custom_x.tex[Button::NONE] = AreaLayout(res_mgr->Load<Texture>("close.png"));
+	custom_x.tex[Button::HOVER] = AreaLayout(res_mgr->Load<Texture>("close_hover.png"));
+	custom_x.tex[Button::DOWN] = AreaLayout(res_mgr->Load<Texture>("close_down.png"));
+	custom_x.tex[Button::DISABLED] = AreaLayout(res_mgr->Load<Texture>("close_disabled.png"));
+	custom_bt[0].tex[Button::NONE] = AreaLayout(res_mgr->Load<Texture>("plus.png"));
+	custom_bt[0].tex[Button::HOVER] = AreaLayout(res_mgr->Load<Texture>("plus_hover.png"));
+	custom_bt[0].tex[Button::DOWN] = AreaLayout(res_mgr->Load<Texture>("plus_down.png"));
+	custom_bt[0].tex[Button::DISABLED] = AreaLayout(res_mgr->Load<Texture>("plus_disabled.png"));
+	custom_bt[1].tex[Button::NONE] = AreaLayout(res_mgr->Load<Texture>("minus.png"));
+	custom_bt[1].tex[Button::HOVER] = AreaLayout(res_mgr->Load<Texture>("minus_hover.png"));
+	custom_bt[1].tex[Button::DOWN] = AreaLayout(res_mgr->Load<Texture>("minus_down.png"));
+	custom_bt[1].tex[Button::DISABLED] = AreaLayout(res_mgr->Load<Texture>("minus_disabled.png"));
 
-	rt_char = app::render->CreateRenderTarget(Int2(128, 256));
+	rt_char = render->CreateRenderTarget(Int2(128, 256));
 }
 
 //=================================================================================================
@@ -258,7 +257,7 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 
 	// top text
 	Rect rect0 = { 12 + pos.x, 12 + pos.y, pos.x + size.x - 12, 12 + pos.y + 72 };
-	gui->DrawText(GlobalGui::font_big, txCharacterCreation, DTF_CENTER, Color::Black, rect0);
+	gui->DrawText(GameGui::font_big, txCharacterCreation, DTF_CENTER, Color::Black, rect0);
 
 	// character
 	gui->DrawSprite(rt_char->GetTexture(), Int2(pos.x + 228, pos.y + 64));
@@ -297,7 +296,7 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 				if(fi.section)
 				{
 					r.Bottom() = r.Top() + SECTION_H;
-					if(!gui->DrawText(GlobalGui::font_big, item_text, DTF_SINGLELINE, Color::Black, r, &rect))
+					if(!gui->DrawText(GameGui::font_big, item_text, DTF_SINGLELINE, Color::Black, r, &rect))
 						break;
 				}
 				else
@@ -309,7 +308,7 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 						gui->DrawSprite2(tPowerBar, mat, &part, &rect, Color::White);
 					}
 					r.Bottom() = r.Top() + VALUE_H;
-					if(!gui->DrawText(GlobalGui::font, item_text, DTF_SINGLELINE, Color::Black, r, &rect))
+					if(!gui->DrawText(GameGui::font, item_text, DTF_SINGLELINE, Color::Black, r, &rect))
 						break;
 				}
 			}
@@ -330,11 +329,11 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 
 			// left text "Skill points: X/Y"
 			Rect r = { global_pos.x + 16, global_pos.y + 310, global_pos.x + 216, global_pos.y + 360 };
-			gui->DrawText(GlobalGui::font, Format(txSkillPoints, cc.sp, cc.sp_max), 0, Color::Black, r);
+			gui->DrawText(GameGui::font, Format(txSkillPoints, cc.sp, cc.sp_max), 0, Color::Black, r);
 
 			// right text "Feats: X/Y"
 			Rect r2 = { global_pos.x + size.x - 216, global_pos.y + 310, global_pos.x + size.x - 16, global_pos.y + 360 };
-			gui->DrawText(GlobalGui::font, Format(txPerkPoints, cc.perks, cc.perks_max), DTF_RIGHT, Color::Black, r2);
+			gui->DrawText(GameGui::font, Format(txPerkPoints, cc.perks, cc.perks_max), DTF_RIGHT, Color::Black, r2);
 
 			tooltip.Draw();
 		}
@@ -642,7 +641,6 @@ void CreateCharacterPanel::Event(GuiEvent e)
 //=================================================================================================
 void CreateCharacterPanel::RenderUnit()
 {
-	Render* render = app::render;
 	IDirect3DDevice9* device = render->GetDevice();
 	HRESULT hr = device->TestCooperativeLevel();
 	if(hr != D3D_OK)
@@ -660,18 +658,18 @@ void CreateCharacterPanel::RenderUnit()
 
 	static vector<Lights> lights;
 
-	L.SetOutsideParams();
+	game_level->SetOutsideParams();
 
 	Matrix matView, matProj;
 	Vec3 from = Vec3(0.f, 2.f, dist);
 	matView = Matrix::CreateLookAt(from, Vec3(0.f, 1.f, 0.f), Vec3(0, 1, 0));
 	matProj = Matrix::CreatePerspectiveFieldOfView(PI / 4, 0.5f, 1.f, 5.f);
-	L.camera.matViewProj = matView * matProj;
-	L.camera.center = from;
-	L.camera.matViewInv = matView.Inverse();
+	game_level->camera.matViewProj = matView * matProj;
+	game_level->camera.center = from;
+	game_level->camera.matViewInv = matView.Inverse();
 
-	L.camera.frustum.Set(L.camera.matViewProj);
-	game->ListDrawObjectsUnit(nullptr, L.camera.frustum, true, *unit);
+	game_level->camera.frustum.Set(game_level->camera.matViewProj);
+	game->ListDrawObjectsUnit(nullptr, game_level->camera.frustum, true, *unit);
 	game->DrawSceneNodes(game->draw_batch.nodes, lights, true);
 	game->draw_batch.Clear();
 

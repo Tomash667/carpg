@@ -80,7 +80,7 @@ noNotes = "No notes"
 addNote = "Add note"
 addTime = "Added at %s:\n%s"
 
-[GameGui]
+[LevelGui]
 death = "Your team has been wiped out! Good luck in your future adventures...\nYou killed %d creatures, others killed %d."
 deathAlone = "You are dead! Maybe next time you shouldn't travel alone?\nYou killed %d creatures, others killed %d."
 gameTimeout = "You are too old to chase monsters inside dungeons.\nTime to go into retirement and enjoy spending your gathered wealth.\nYou killed %d creatures, others killed %d."

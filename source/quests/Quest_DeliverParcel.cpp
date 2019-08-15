@@ -13,8 +13,8 @@
 //=================================================================================================
 void Quest_DeliverParcel::Start()
 {
-	start_loc = W.GetCurrentLocationIndex();
-	end_loc = W.GetRandomSettlementIndex(start_loc);
+	start_loc = world->GetCurrentLocationIndex();
+	end_loc = world->GetRandomSettlementIndex(start_loc);
 	quest_id = Q_DELIVER_PARCEL;
 	type = QuestType::Mayor;
 }
@@ -47,9 +47,9 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 		// give parcel to player
 		{
 			OnStart(game->txQuest[9]);
-			QM.quests_timeout2.push_back(this);
+			quest_mgr->quests_timeout2.push_back(this);
 
-			Location& loc = *W.GetLocation(end_loc);
+			Location& loc = *world->GetLocation(end_loc);
 			Item::Get("parcel")->CreateCopy(parcel);
 			parcel.id = "$parcel";
 			parcel.name = Format(game->txQuest[8], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str());
@@ -57,13 +57,13 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			DialogContext::current->pc->unit->AddItem2(&parcel, 1u, 1u);
 
 			Location& loc2 = GetStartLocation();
-			msgs.push_back(Format(game->txQuest[3], LocationHelper::IsCity(loc2) ? game->txForMayor : game->txForSoltys, loc2.name.c_str(), W.GetDate()));
+			msgs.push_back(Format(game->txQuest[3], LocationHelper::IsCity(loc2) ? game->txForMayor : game->txForSoltys, loc2.name.c_str(), world->GetDate()));
 			msgs.push_back(Format(game->txQuest[10], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str(),
 				GetLocationDirName(loc2.pos, loc.pos)));
 
 			if(Rand() % 4 != 0)
 			{
-				Encounter* e = W.AddEncounter(enc);
+				Encounter* e = world->AddEncounter(enc);
 				e->pos = (loc.pos + loc2.pos) / 2;
 				e->range = 64;
 				e->chance = 45;
@@ -88,7 +88,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			Team.AddReward(300, 2000);
 
 			OnUpdate(game->txQuest[12]);
-			RemoveElementTry(QM.quests_timeout2, static_cast<Quest*>(this));
+			RemoveElementTry(quest_mgr->quests_timeout2, static_cast<Quest*>(this));
 			RemoveEncounter();
 		}
 		break;
@@ -99,7 +99,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			((City&)GetStartLocation()).quest_mayor = CityQuestState::Failed;
 
 			OnUpdate(game->txQuest[13]);
-			RemoveElementTry(QM.quests_timeout2, static_cast<Quest*>(this));
+			RemoveElementTry(quest_mgr->quests_timeout2, static_cast<Quest*>(this));
 			RemoveEncounter();
 		}
 		break;
@@ -115,7 +115,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			RemoveEncounter();
 
 			OnUpdate(game->txQuest[14]);
-			RemoveElementTry(QM.quests_timeout2, static_cast<Quest*>(this));
+			RemoveElementTry(quest_mgr->quests_timeout2, static_cast<Quest*>(this));
 		}
 		break;
 	case Progress::AttackedBandits:
@@ -152,7 +152,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 //=================================================================================================
 cstring Quest_DeliverParcel::FormatString(const string& str)
 {
-	Location& loc = *W.GetLocation(end_loc);
+	Location& loc = *world->GetLocation(end_loc);
 	if(str == "target_burmistrza")
 		return (LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys);
 	else if(str == "target_locname")
@@ -169,7 +169,7 @@ cstring Quest_DeliverParcel::FormatString(const string& str)
 //=================================================================================================
 bool Quest_DeliverParcel::IsTimedout() const
 {
-	return W.GetWorldtime() - start_time > 15;
+	return world->GetWorldtime() - start_time > 15;
 }
 
 //=================================================================================================
@@ -184,7 +184,7 @@ bool Quest_DeliverParcel::OnTimeout(TimeoutType ttype)
 bool Quest_DeliverParcel::SpecialIf(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "q_deliver_parcel_after") == 0)
-		return W.GetWorldtime() - start_time < 30 && Rand() % 2 == 0;
+		return world->GetWorldtime() - start_time < 30 && Rand() % 2 == 0;
 	assert(0);
 	return false;
 }
@@ -192,9 +192,9 @@ bool Quest_DeliverParcel::SpecialIf(DialogContext& ctx, cstring msg)
 //=================================================================================================
 bool Quest_DeliverParcel::IfHaveQuestItem() const
 {
-	if(W.GetCurrentLocationIndex() == W.GetEncounterLocationIndex() && prog == Progress::Started)
+	if(world->GetCurrentLocationIndex() == world->GetEncounterLocationIndex() && prog == Progress::Started)
 		return true;
-	return W.GetCurrentLocationIndex() == end_loc && (prog == Progress::Started || prog == Progress::ParcelGivenToBandits);
+	return world->GetCurrentLocationIndex() == end_loc && (prog == Progress::Started || prog == Progress::ParcelGivenToBandits);
 }
 
 //=================================================================================================
@@ -222,7 +222,7 @@ bool Quest_DeliverParcel::Load(GameReader& f)
 		f >> end_loc;
 		if(prog >= Progress::Started)
 		{
-			Location& loc = *W.GetLocation(end_loc);
+			Location& loc = *world->GetLocation(end_loc);
 			Item::Get("parcel")->CreateCopy(parcel);
 			parcel.id = "$parcel";
 			parcel.name = Format(game->txQuest[8], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str());
@@ -232,9 +232,9 @@ bool Quest_DeliverParcel::Load(GameReader& f)
 
 	if(enc != -1)
 	{
-		Location& loc = *W.GetLocation(end_loc);
+		Location& loc = *world->GetLocation(end_loc);
 		Location& loc2 = GetStartLocation();
-		Encounter* e = W.RecreateEncounter(enc);
+		Encounter* e = world->RecreateEncounter(enc);
 		e->pos = (loc.pos + loc2.pos) / 2;
 		e->range = 64;
 		e->chance = 45;

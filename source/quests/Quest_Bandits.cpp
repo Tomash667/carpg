@@ -15,7 +15,7 @@
 //=================================================================================================
 void Quest_Bandits::Init()
 {
-	QM.RegisterSpecialIfHandler(this, "q_bandyci_straznikow_daj");
+	quest_mgr->RegisterSpecialIfHandler(this, "q_bandyci_straznikow_daj");
 }
 
 //=================================================================================================
@@ -31,7 +31,7 @@ void Quest_Bandits::Start()
 	bandits_state = State::None;
 	timer = 0.f;
 	agent = nullptr;
-	QM.AddQuestRumor(refid, Format(QM.txRumorQ[3], GetStartLocationName()));
+	quest_mgr->AddQuestRumor(refid, Format(quest_mgr->txRumorQ[3], GetStartLocationName()));
 }
 
 //=================================================================================================
@@ -63,15 +63,15 @@ void WarpToThroneBanditBoss()
 {
 	// search for boss
 	UnitData* ud = UnitData::Get("q_bandyci_szef");
-	Unit* u = L.local_area->FindUnit(ud);
+	Unit* u = game_level->local_area->FindUnit(ud);
 	assert(u);
 
 	// search for throne
-	Usable* use = L.local_area->FindUsable(BaseUsable::Get("throne"));
+	Usable* use = game_level->local_area->FindUsable(BaseUsable::Get("throne"));
 	assert(use);
 
 	// warp boss to throne
-	L.WarpUnit(*u, use->pos);
+	game_level->WarpUnit(*u, use->pos);
 }
 
 //=================================================================================================
@@ -89,8 +89,8 @@ void Quest_Bandits::SetProgress(int prog2)
 			if(!DialogContext::current->pc->unit->HaveItem(item))
 				DialogContext::current->pc->unit->AddItem2(item, 1u, 1u);
 			Location& sl = GetStartLocation();
-			Location& other = *W.GetLocation(other_loc);
-			Encounter* e = W.AddEncounter(enc);
+			Location& other = *world->GetLocation(other_loc);
+			Encounter* e = world->AddEncounter(enc);
 			e->dialog = GameDialog::TryGet("q_bandits");
 			e->dont_attack = true;
 			e->group = UnitGroup::Get("bandits");
@@ -107,14 +107,14 @@ void Quest_Bandits::SetProgress(int prog2)
 		else
 		{
 			OnStart(game->txQuest[153]);
-			QM.RemoveQuestRumor(refid);
+			quest_mgr->RemoveQuestRumor(refid);
 
 			const Item* item = Item::Get("q_bandyci_paczka");
 			DialogContext::current->pc->unit->AddItem2(item, 1u, 1u);
-			other_loc = W.GetRandomSettlementIndex(start_loc);
+			other_loc = world->GetRandomSettlementIndex(start_loc);
 			Location& sl = GetStartLocation();
-			Location& other = *W.GetLocation(other_loc);
-			Encounter* e = W.AddEncounter(enc);
+			Location& other = *world->GetLocation(other_loc);
+			Encounter* e = world->AddEncounter(enc);
 			e->dialog = GameDialog::TryGet("q_bandits");
 			e->dont_attack = true;
 			e->group = UnitGroup::Get("bandits");
@@ -126,9 +126,9 @@ void Quest_Bandits::SetProgress(int prog2)
 			e->timed = false;
 			e->range = 72;
 			e->st = 8;
-			msgs.push_back(Format(game->txQuest[154], sl.name.c_str(), W.GetDate()));
+			msgs.push_back(Format(game->txQuest[154], sl.name.c_str(), world->GetDate()));
 			msgs.push_back(Format(game->txQuest[155], sl.name.c_str(), other.name.c_str(), GetLocationDirName(sl.pos, other.pos)));
-			W.AddNews(Format(game->txQuest[156], GetStartLocationName()));
+			world->AddNews(Format(game->txQuest[156], GetStartLocationName()));
 		}
 		break;
 	case Progress::FoundBandits:
@@ -142,7 +142,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			}
 			get_letter = true;
 			OnUpdate(game->txQuest[157]);
-			W.RemoveEncounter(enc);
+			world->RemoveEncounter(enc);
 			enc = -1;
 		}
 		break;
@@ -151,8 +151,8 @@ void Quest_Bandits::SetProgress(int prog2)
 	case Progress::NeedTalkWithCaptain:
 		// info o obozie
 		{
-			camp_loc = W.CreateCamp(GetStartLocation().pos, UnitGroup::Get("bandits"));
-			Location& camp = *W.GetLocation(camp_loc);
+			camp_loc = world->CreateCamp(GetStartLocation().pos, UnitGroup::Get("bandits"));
+			Location& camp = *world->GetLocation(camp_loc);
 			camp.st = 10;
 			camp.state = LS_HIDDEN;
 			camp.active_quest = this;
@@ -166,7 +166,7 @@ void Quest_Bandits::SetProgress(int prog2)
 	case Progress::NeedClearCamp:
 		// pozycja obozu
 		{
-			Location& camp = *W.GetLocation(camp_loc);
+			Location& camp = *world->GetLocation(camp_loc);
 			OnUpdate(Format(game->txQuest[159], GetLocationDirName(GetStartLocation().pos, camp.pos)));
 			camp.SetKnown();
 			bandits_state = State::GenerateGuards;
@@ -179,7 +179,7 @@ void Quest_Bandits::SetProgress(int prog2)
 
 			// zmieñ ai pod¹¿aj¹cych stra¿ników
 			UnitData* ud = UnitData::Get("guard_q_bandyci");
-			for(Unit* unit : L.local_area->units)
+			for(Unit* unit : game_level->local_area->units)
 			{
 				if(unit->data == ud)
 				{
@@ -188,7 +188,7 @@ void Quest_Bandits::SetProgress(int prog2)
 				}
 			}
 
-			W.AddNews(Format(game->txQuest[160], GetStartLocationName()));
+			world->AddNews(Format(game->txQuest[160], GetStartLocationName()));
 		}
 		break;
 	case Progress::TalkedWithAgent:
@@ -197,12 +197,12 @@ void Quest_Bandits::SetProgress(int prog2)
 			bandits_state = State::AgentTalked;
 			DialogContext::current->talker->SetOrder(ORDER_LEAVE);
 			DialogContext::current->talker->event_handler = this;
-			Location& target = *W.CreateLocation(L_DUNGEON, GetStartLocation().pos, 64.f, THRONE_VAULT, UnitGroup::Get("bandits"), false);
+			Location& target = *world->CreateLocation(L_DUNGEON, GetStartLocation().pos, 64.f, THRONE_VAULT, UnitGroup::Get("bandits"), false);
 			target.active_quest = this;
 			target.SetKnown();
 			target.st = 12;
 			target_loc = target.index;
-			W.GetLocation(camp_loc)->active_quest = nullptr;
+			world->GetLocation(camp_loc)->active_quest = nullptr;
 			OnUpdate(Format(game->txQuest[161], target.name.c_str(), GetLocationDirName(GetStartLocation().pos, target.pos)));
 			done = false;
 			at_level = 1;
@@ -221,7 +221,7 @@ void Quest_Bandits::SetProgress(int prog2)
 		{
 			camp_loc = -1;
 			OnUpdate(Format(game->txQuest[162], GetStartLocationName()));
-			W.AddNews(game->txQuest[163]);
+			world->AddNews(game->txQuest[163]);
 			Team.AddLearningPoint();
 		}
 		break;
@@ -233,7 +233,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			// ustaw arto na temporary ¿eby sobie poszed³
 			DialogContext::current->talker->temporary = true;
 			Team.AddReward(10000, 25000);
-			QM.EndUniqueQuest();
+			quest_mgr->EndUniqueQuest();
 		}
 		break;
 	}
@@ -265,7 +265,7 @@ bool Quest_Bandits::Special(DialogContext& ctx, cstring msg)
 bool Quest_Bandits::SpecialIf(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "q_bandyci_straznikow_daj") == 0)
-		return prog == Progress::NeedTalkWithCaptain && W.GetCurrentLocationIndex() == start_loc;
+		return prog == Progress::NeedTalkWithCaptain && world->GetCurrentLocationIndex() == start_loc;
 	assert(0);
 	return false;
 }
@@ -276,17 +276,17 @@ cstring Quest_Bandits::FormatString(const string& str)
 	if(str == "start_loc")
 		return GetStartLocationName();
 	else if(str == "other_loc")
-		return W.GetLocation(other_loc)->name.c_str();
+		return world->GetLocation(other_loc)->name.c_str();
 	else if(str == "other_dir")
-		return GetLocationDirName(GetStartLocation().pos, W.GetLocation(other_loc)->pos);
+		return GetLocationDirName(GetStartLocation().pos, world->GetLocation(other_loc)->pos);
 	else if(str == "camp_dir")
-		return GetLocationDirName(GetStartLocation().pos, W.GetLocation(camp_loc)->pos);
+		return GetLocationDirName(GetStartLocation().pos, world->GetLocation(camp_loc)->pos);
 	else if(str == "target_loc")
 		return GetTargetLocationName();
 	else if(str == "target_dir")
 		return GetTargetLocationDir();
 	else if(str == "target_dir_camp")
-		return GetLocationDirName(W.GetLocation(camp_loc)->pos, GetTargetLocation().pos);
+		return GetLocationDirName(world->GetLocation(camp_loc)->pos, GetTargetLocation().pos);
 	else
 	{
 		assert(0);
@@ -357,12 +357,12 @@ bool Quest_Bandits::Load(GameReader& f)
 
 	if(enc != -1)
 	{
-		Encounter* e = W.RecreateEncounter(enc);
+		Encounter* e = world->RecreateEncounter(enc);
 		e->dialog = GameDialog::TryGet("q_bandits");
 		e->dont_attack = true;
 		e->group = UnitGroup::Get("bandits");
 		e->location_event_handler = nullptr;
-		e->pos = (GetStartLocation().pos + W.GetLocation(other_loc)->pos) / 2;
+		e->pos = (GetStartLocation().pos + world->GetLocation(other_loc)->pos) / 2;
 		e->quest = reinterpret_cast<Quest_Encounter*>(this);
 		e->chance = 60;
 		e->text = game->txQuest[11];

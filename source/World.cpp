@@ -24,7 +24,7 @@
 #include "Quest_Mages.h"
 #include "Quest_Scripted.h"
 #include "Game.h"
-#include "GlobalGui.h"
+#include "GameGui.h"
 #include "WorldMapGui.h"
 
 
@@ -34,7 +34,7 @@ const float World::MAP_KM_RATIO = 1.f / 3; // 1200 pixels = 400 km
 const int start_year = 100;
 const float world_border = 50.f;
 const int def_world_size = 1200;
-World W;
+World* global::world;
 vector<string> txLocationStart, txLocationEnd;
 
 // pre V_0_8 compatibility
@@ -96,9 +96,9 @@ void World::LoadLanguage()
 }
 
 //=================================================================================================
-void World::PostInit()
+void World::Init()
 {
-	gui = Game::Get().gui->world_map;
+	gui = game_gui->world_map;
 }
 
 //=================================================================================================
@@ -142,13 +142,13 @@ void World::Update(int days, UpdateMode mode)
 	SpawnCamps(days);
 	UpdateEncounters();
 	if(Any(state, State::INSIDE_LOCATION, State::INSIDE_ENCOUNTER))
-		L.Update();
+		game_level->Update();
 	UpdateLocations();
 	UpdateNews();
-	QM.Update(days);
+	quest_mgr->Update(days);
 
 	if(Net::IsLocal())
-		Game::Get().UpdateQuests(days);
+		game->UpdateQuests(days);
 
 	if(mode == UM_TRAVEL)
 		Team.Update(1, true);
@@ -159,10 +159,9 @@ void World::Update(int days, UpdateMode mode)
 	if(year >= 160)
 	{
 		Info("Game over: you are too old.");
-		Game& game = Game::Get();
-		global::gui->CloseAllPanels(true);
-		game.end_of_game = true;
-		game.death_fade = 0.f;
+		game_gui->CloseAllPanels(true);
+		game->end_of_game = true;
+		game->death_fade = 0.f;
 		if(Net::IsOnline())
 		{
 			Net::PushChange(NetChange::GAME_STATS);
@@ -494,7 +493,7 @@ int World::AddLocation(Location* loc)
 			{
 				*rit = loc;
 				loc->index = index;
-				if(Net::IsOnline() && !N.prepare_world)
+				if(Net::IsOnline() && !net->prepare_world)
 				{
 					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::ADD_LOCATION;
@@ -508,7 +507,7 @@ int World::AddLocation(Location* loc)
 	}
 	else
 	{
-		if(Net::IsOnline() && !N.prepare_world)
+		if(Net::IsOnline() && !net->prepare_world)
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::ADD_LOCATION;
@@ -896,8 +895,8 @@ void World::GenerateWorld(int start_location_type, int start_location_target)
 	current_location = locations[current_location_index];
 	current_location->state = LS_ENTERED;
 	world_pos = current_location->pos;
-	L.location_index = current_location_index;
-	L.location = current_location;
+	game_level->location_index = current_location_index;
+	game_level->location = current_location;
 	tomir_spawned = false;
 }
 
@@ -1373,14 +1372,14 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 				{
 					string* str = StringPool.Get();
 					*str = dialog_id;
-					QM.AddQuestRequest(quest_refid, &enc->quest, [enc, str]
+					quest_mgr->AddQuestRequest(quest_refid, &enc->quest, [enc, str]
 					{
 						enc->dialog = static_cast<Quest_Scripted*>(enc->quest)->GetDialog(*str);
 						StringPool.Free(str);
 					});
 				}
 				else
-					QM.AddQuestRequest(quest_refid, &enc->quest);
+					quest_mgr->AddQuestRequest(quest_refid, &enc->quest);
 				f >> enc->group;
 				const string& text = f.ReadString1();
 				if(text.empty())
@@ -1423,10 +1422,10 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 	}
 	else
 		current_location = nullptr;
-	L.location_index = current_location_index;
-	L.location = current_location;
-	if(L.location && Any(state, State::INSIDE_LOCATION, State::INSIDE_ENCOUNTER))
-		L.Apply();
+	game_level->location_index = current_location_index;
+	game_level->location = current_location;
+	if(game_level->location && Any(state, State::INSIDE_LOCATION, State::INSIDE_ENCOUNTER))
+		game_level->Apply();
 }
 
 //=================================================================================================
@@ -1490,7 +1489,7 @@ void World::LoadOld(GameReader& f, LoadingHandler& loading, int part, bool insid
 			bool guards_enc_reward;
 			f >> guards_enc_reward;
 			if(guards_enc_reward)
-				SM.GetVar("guards_enc_reward") = true;
+				script_mgr->GetVar("guards_enc_reward") = true;
 		}
 		else if(state == State::ENCOUNTER)
 		{
@@ -1695,8 +1694,8 @@ bool World::Read(BitStreamReader& f)
 	{
 		current_location_index = -1;
 		current_location = nullptr;
-		L.location_index = -1;
-		L.location = nullptr;
+		game_level->location_index = -1;
+		game_level->location = nullptr;
 	}
 	else
 	{
@@ -1706,8 +1705,8 @@ bool World::Read(BitStreamReader& f)
 			return false;
 		}
 		current_location = locations[current_location_index];
-		L.location_index = current_location_index;
-		L.location = current_location;
+		game_level->location_index = current_location_index;
+		game_level->location = current_location;
 	}
 
 	// position on world map when inside encounter locations
@@ -2075,8 +2074,8 @@ void World::ExitToMap()
 		state = State::TRAVEL;
 		current_location_index = -1;
 		current_location = nullptr;
-		L.location_index = -1;
-		L.location = nullptr;
+		game_level->location_index = -1;
+		game_level->location = nullptr;
 	}
 	else
 		state = State::ON_MAP;
@@ -2088,8 +2087,8 @@ void World::ChangeLevel(int index, bool encounter)
 	state = encounter ? State::INSIDE_ENCOUNTER : State::INSIDE_LOCATION;
 	current_location_index = index;
 	current_location = locations[index];
-	L.location_index = current_location_index;
-	L.location = current_location;
+	game_level->location_index = current_location_index;
+	game_level->location = current_location;
 }
 
 //=================================================================================================
@@ -2100,9 +2099,9 @@ void World::StartInLocation(Location* loc)
 	current_location = loc;
 	state = State::INSIDE_LOCATION;
 	loc->index = current_location_index;
-	L.location_index = current_location_index;
-	L.location = loc;
-	L.is_open = true;
+	game_level->location_index = current_location_index;
+	game_level->location = loc;
+	game_level->is_open = true;
 }
 
 //=================================================================================================
@@ -2111,8 +2110,8 @@ void World::StartEncounter()
 	state = State::INSIDE_ENCOUNTER;
 	current_location_index = encounter_loc;
 	current_location = locations[current_location_index];
-	L.location_index = current_location_index;
-	L.location = current_location;
+	game_level->location_index = current_location_index;
+	game_level->location = current_location;
 }
 
 //=================================================================================================
@@ -2122,17 +2121,17 @@ void World::Travel(int index, bool send)
 		return;
 
 	// leave current location
-	if(L.is_open)
+	if(game_level->is_open)
 	{
-		Game::Get().LeaveLocation();
-		L.is_open = false;
+		game->LeaveLocation();
+		game_level->is_open = false;
 	}
 
 	state = State::TRAVEL;
 	current_location = nullptr;
 	current_location_index = -1;
-	L.location = nullptr;
-	L.location_index = -1;
+	game_level->location = nullptr;
+	game_level->location_index = -1;
 	travel_timer = 0.f;
 	travel_start_pos = world_pos;
 	travel_location_index = index;
@@ -2157,17 +2156,17 @@ void World::TravelPos(const Vec2& pos, bool send)
 		return;
 
 	// leave current location
-	if(L.is_open)
+	if(game_level->is_open)
 	{
-		Game::Get().LeaveLocation();
-		L.is_open = false;
+		game->LeaveLocation();
+		game_level->is_open = false;
 	}
 
 	state = State::TRAVEL;
 	current_location = nullptr;
 	current_location_index = -1;
-	L.location = nullptr;
-	L.location_index = -1;
+	game_level->location = nullptr;
+	game_level->location_index = -1;
 	travel_timer = 0.f;
 	travel_start_pos = world_pos;
 	travel_location_index = -1;
@@ -2303,14 +2302,14 @@ void World::StartEncounter(int enc, UnitGroup* group)
 	}
 	else
 	{
-		Quest_Crazies::State c_state = QM.quest_crazies->crazies_state;
+		Quest_Crazies::State c_state = quest_mgr->quest_crazies->crazies_state;
 
 		bool special = false;
-		bool golem = (QM.quest_mages2->mages_state >= Quest_Mages2::State::Encounter
-			&& QM.quest_mages2->mages_state < Quest_Mages2::State::Completed && Rand() % 3 == 0) || GKey.DebugKey(Key::G);
+		bool golem = (quest_mgr->quest_mages2->mages_state >= Quest_Mages2::State::Encounter
+			&& quest_mgr->quest_mages2->mages_state < Quest_Mages2::State::Completed && Rand() % 3 == 0) || GKey.DebugKey(Key::G);
 		bool crazy = (c_state == Quest_Crazies::State::TalkedWithCrazy && (Rand() % 2 == 0 || GKey.DebugKey(Key::S)));
 		bool unk = (c_state >= Quest_Crazies::State::PickedStone && c_state < Quest_Crazies::State::End && (Rand() % 3 == 0 || GKey.DebugKey(Key::S)));
-		if(QM.quest_mages2->mages_state == Quest_Mages2::State::Encounter && Rand() % 2 == 0)
+		if(quest_mgr->quest_mages2->mages_state == Quest_Mages2::State::Encounter && Rand() % 2 == 0)
 			golem = true;
 		if(c_state == Quest_Crazies::State::PickedStone && Rand() % 2 == 0)
 			unk = true;
@@ -2337,15 +2336,15 @@ void World::StartEncounter(int enc, UnitGroup* group)
 			else if(golem)
 			{
 				encounter.special = SE_GOLEM;
-				QM.quest_mages2->paid = false;
+				quest_mgr->quest_mages2->paid = false;
 			}
-			else if(IsDebug() && app::input->Focus())
+			else if(IsDebug() && input->Focus())
 			{
-				if(app::input->Down(Key::I))
+				if(input->Down(Key::I))
 					encounter.special = SE_CRAZY_HEROES;
-				else if(app::input->Down(Key::B))
+				else if(input->Down(Key::B))
 					encounter.special = SE_BANDITS_VS_TRAVELERS;
-				else if(app::input->Down(Key::C))
+				else if(input->Down(Key::C))
 					encounter.special = SE_CRAZY_COOK;
 			}
 
@@ -2447,9 +2446,9 @@ void World::EndTravel()
 		current_location_index = travel_location_index;
 		current_location = locations[travel_location_index];
 		travel_location_index = -1;
-		L.location_index = current_location_index;
-		L.location = current_location;
-		Location& loc = *L.location;
+		game_level->location_index = current_location_index;
+		game_level->location = current_location;
+		Location& loc = *game_level->location;
 		loc.SetVisited();
 		world_pos = loc.pos;
 	}
@@ -2462,15 +2461,15 @@ void World::EndTravel()
 //=================================================================================================
 void World::Warp(int index)
 {
-	if(L.is_open)
+	if(game_level->is_open)
 	{
-		Game::Get().LeaveLocation(false, false);
-		L.is_open = false;
+		game->LeaveLocation(false, false);
+		game_level->is_open = false;
 	}
 	current_location_index = index;
 	current_location = locations[current_location_index];
-	L.location_index = current_location_index;
-	L.location = current_location;
+	game_level->location_index = current_location_index;
+	game_level->location = current_location;
 	Location& loc = *current_location;
 	loc.SetVisited();
 	world_pos = loc.pos;
@@ -2479,16 +2478,16 @@ void World::Warp(int index)
 //=================================================================================================
 void World::WarpPos(const Vec2& pos)
 {
-	if(L.is_open)
+	if(game_level->is_open)
 	{
-		Game::Get().LeaveLocation(false, false);
-		L.is_open = false;
+		game->LeaveLocation(false, false);
+		game_level->is_open = false;
 	}
 	world_pos = pos;
 	current_location_index = -1;
 	current_location = nullptr;
-	L.location_index = -1;
-	L.location = nullptr;
+	game_level->location_index = -1;
+	game_level->location = nullptr;
 }
 
 //=================================================================================================
@@ -2769,7 +2768,6 @@ void World::AbadonLocation(Location* loc)
 	// only works for OutsideLocation for now!
 	assert(loc->outside && loc->type != L_CITY);
 
-	Game& game = Game::Get();
 	OutsideLocation* outside = static_cast<OutsideLocation*>(loc);
 
 	// if location is open
@@ -2778,10 +2776,10 @@ void World::AbadonLocation(Location* loc)
 		// remove units
 		for(Unit*& u : outside->units)
 		{
-			if(u->IsAlive() && game.pc->unit->IsEnemy(*u))
+			if(u->IsAlive() && game->pc->unit->IsEnemy(*u))
 			{
 				u->to_remove = true;
-				L.to_remove.push_back(u);
+				game_level->to_remove.push_back(u);
 			}
 		}
 
@@ -2798,7 +2796,7 @@ void World::AbadonLocation(Location* loc)
 		for(Unit*& u : outside->units)
 		{
 			__assume(u != nullptr);
-			if(u->IsAlive() && game.pc->unit->IsEnemy(*u))
+			if(u->IsAlive() && game->pc->unit->IsEnemy(*u))
 			{
 				delete u;
 				u = nullptr;

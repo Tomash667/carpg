@@ -10,17 +10,17 @@
 #include "Quest.h"
 #include "ResourceManager.h"
 #include "World.h"
-#include "GlobalGui.h"
+#include "GameGui.h"
 #include "GameMessages.h"
 #include "SoundManager.h"
 
 //=================================================================================================
-Journal::Journal() : mode(Quests), game(Game::Get())
+Journal::Journal() : mode(Quests)
 {
 	visible = false;
 	Reset();
 
-	font_height = GlobalGui::font->height;
+	font_height = GameGui::font->height;
 }
 
 //=================================================================================================
@@ -60,15 +60,15 @@ void Journal::Draw(ControlDrawData*)
 
 			const Color color[3] = { Color::Black, Color::Red, Color::Green };
 
-			gui->DrawText(GlobalGui::font, it->text, 0, color[it->color], r);
+			gui->DrawText(GameGui::font, it->text, 0, color[it->color], r);
 		}
 	}
 
 	// numery stron
 	int pages = texts.back().x + 1;
-	gui->DrawText(GlobalGui::font, Format("%d/%d", x1 + 1, pages), DTF_BOTTOM | DTF_CENTER, Color::Black, rect);
+	gui->DrawText(GameGui::font, Format("%d/%d", x1 + 1, pages), DTF_BOTTOM | DTF_CENTER, Color::Black, rect);
 	if(x2 != pages)
-		gui->DrawText(GlobalGui::font, Format("%d/%d", x2 + 1, pages), DTF_BOTTOM | DTF_CENTER, Color::Black, rect2);
+		gui->DrawText(GameGui::font, Format("%d/%d", x2 + 1, pages), DTF_BOTTOM | DTF_CENTER, Color::Black, rect2);
 
 	// strza³ki 32, 243
 	if(page != 0)
@@ -121,14 +121,14 @@ void Journal::Update(float dt)
 			Build();
 		}
 		// zmiana wybranego zadania
-		if(mode == Quests && !QM.quests.empty())
+		if(mode == Quests && !quest_mgr->quests.empty())
 		{
 			if(GKey.PressedR(GK_ROTATE_LEFT) != Key::None)
 			{
 				if(!details)
 				{
 					// otwórz ostatni quest na tej stronie
-					open_quest = max((page + 1)*rect_lines * 2 - 1, int(QM.quests.size()) - 1);
+					open_quest = max((page + 1)*rect_lines * 2 - 1, int(quest_mgr->quests.size()) - 1);
 					prev_page = page;
 					page = 0;
 					Build();
@@ -138,7 +138,7 @@ void Journal::Update(float dt)
 					// poprzedni quest
 					--open_quest;
 					if(open_quest == -1)
-						open_quest = QM.quests.size() - 1;
+						open_quest = quest_mgr->quests.size() - 1;
 					page = 0;
 					Build();
 				}
@@ -157,7 +157,7 @@ void Journal::Update(float dt)
 				{
 					// nastêpny
 					++open_quest;
-					if(open_quest == (int)QM.quests.size())
+					if(open_quest == (int)quest_mgr->quests.size())
 						open_quest = 0;
 					page = 0;
 					Build();
@@ -233,7 +233,7 @@ void Journal::Update(float dt)
 	}
 	else if(mode == Quests)
 	{
-		if(!QM.quests.empty() && !details)
+		if(!quest_mgr->quests.empty() && !details)
 		{
 			// wybór questa
 			int what = -1;
@@ -245,7 +245,7 @@ void Journal::Update(float dt)
 			if(what != -1)
 			{
 				what += page * rect_lines * 2;
-				if(what < int(QM.quests.size()))
+				if(what < int(quest_mgr->quests.size()))
 				{
 					gui->cursor_mode = CURSOR_HOVER;
 					if(input->Focus() && input->PressedRelease(Key::LeftButton))
@@ -382,11 +382,11 @@ void Journal::Build()
 		if(!details)
 		{
 			// list of quests
-			if(QM.quests.empty())
+			if(quest_mgr->quests.empty())
 				AddEntry(txNoQuests, 0, true);
 			else
 			{
-				for(vector<Quest*>::iterator it = QM.quests.begin(), end = QM.quests.end(); it != end; ++it)
+				for(vector<Quest*>::iterator it = quest_mgr->quests.begin(), end = quest_mgr->quests.end(); it != end; ++it)
 				{
 					int color = 0;
 					if((*it)->state == Quest::Failed)
@@ -400,7 +400,7 @@ void Journal::Build()
 		else
 		{
 			// details of single quest
-			Quest* quest = QM.quests[open_quest];
+			Quest* quest = quest_mgr->quests[open_quest];
 			for(vector<string>::iterator it = quest->msgs.begin(), end = quest->msgs.end(); it != end; ++it)
 				AddEntry(it->c_str(), 0, false);
 		}
@@ -451,7 +451,7 @@ void Journal::AddEntry(cstring text, int color, bool singleline)
 	}
 
 	// ile linijek zajmuje tekst?
-	Int2 osize = GlobalGui::font->CalculateSize(text, rect_w);
+	Int2 osize = GameGui::font->CalculateSize(text, rect_w);
 	int h = osize.y / font_height + 1;
 
 	if(y + h >= rect_lines)
@@ -505,8 +505,8 @@ void Journal::OnAddNote(int id)
 {
 	if(id == BUTTON_OK)
 	{
-		notes.push_back(Format(txAddTime, W.GetDate(), input_str.c_str()));
-		app::sound_mgr->PlaySound2d(game.gui->messages->snd_scribble);
+		notes.push_back(Format(txAddTime, world->GetDate(), input_str.c_str()));
+		sound_mgr->PlaySound2d(game_gui->messages->snd_scribble);
 		Build();
 		if(!Net::IsLocal())
 			Net::PushChange(NetChange::ADD_NOTE);
@@ -522,13 +522,12 @@ void Journal::NeedUpdate(Mode at_mode, int quest_id)
 //=================================================================================================
 void Journal::LoadData()
 {
-	ResourceManager& res_mgr = *app::res_mgr;
-	tBook = res_mgr.Load<Texture>("book.png");
-	tPage[0] = res_mgr.Load<Texture>("dziennik_przyciski.png");
-	tPage[1] = res_mgr.Load<Texture>("dziennik_przyciski2.png");
-	tPage[2] = res_mgr.Load<Texture>("dziennik_przyciski3.png");
-	tArrowL = res_mgr.Load<Texture>("strzalka_l.png");
-	tArrowR = res_mgr.Load<Texture>("strzalka_p.png");
+	tBook = res_mgr->Load<Texture>("book.png");
+	tPage[0] = res_mgr->Load<Texture>("dziennik_przyciski.png");
+	tPage[1] = res_mgr->Load<Texture>("dziennik_przyciski2.png");
+	tPage[2] = res_mgr->Load<Texture>("dziennik_przyciski3.png");
+	tArrowL = res_mgr->Load<Texture>("strzalka_l.png");
+	tArrowR = res_mgr->Load<Texture>("strzalka_p.png");
 }
 
 //=================================================================================================
@@ -543,9 +542,9 @@ void Journal::AddRumor(cstring text)
 		c.id = rumors.size();
 	}
 
-	rumors.push_back(Format(txAddTime, W.GetDate(), text));
+	rumors.push_back(Format(txAddTime, world->GetDate(), text));
 	NeedUpdate(Journal::Rumors);
-	game.gui->messages->AddGameMsg3(GMS_ADDED_RUMOR);
+	game_gui->messages->AddGameMsg3(GMS_ADDED_RUMOR);
 }
 
 //=================================================================================================

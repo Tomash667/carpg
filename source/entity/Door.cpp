@@ -43,13 +43,11 @@ void Door::Load(FileReader& f, bool local)
 
 	if(local)
 	{
-		Game& game = Game::Get();
-
-		mesh_inst = new MeshInstance(door2 ? game.aDoor2 : game.aDoor);
+		mesh_inst = new MeshInstance(door2 ? game->aDoor2 : game->aDoor);
 		mesh_inst->Load(f);
 
 		phy = new btCollisionObject;
-		phy->setCollisionShape(L.shape_door);
+		phy->setCollisionShape(game_level->shape_door);
 		phy->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_DOOR);
 
 		btTransform& tr = phy->getWorldTransform();
@@ -57,7 +55,7 @@ void Door::Load(FileReader& f, bool local)
 		pos2.y += Door::HEIGHT;
 		tr.setOrigin(ToVector3(pos2));
 		tr.setRotation(btQuaternion(rot, 0, 0));
-		game.phy_world->addCollisionObject(phy, CG_DOOR);
+		game->phy_world->addCollisionObject(phy, CG_DOOR);
 
 		if(!IsBlocking())
 		{
@@ -85,8 +83,6 @@ void Door::Write(BitStreamWriter& f)
 //=================================================================================================
 bool Door::Read(BitStreamReader& f)
 {
-	Game& game = Game::Get();
-
 	f >> pos;
 	f >> rot;
 	f >> pt;
@@ -103,10 +99,10 @@ bool Door::Read(BitStreamReader& f)
 		return false;
 	}
 
-	mesh_inst = new MeshInstance(door2 ? game.aDoor2 : game.aDoor);
+	mesh_inst = new MeshInstance(door2 ? game->aDoor2 : game->aDoor);
 	mesh_inst->groups[0].speed = 2.f;
 	phy = new btCollisionObject;
-	phy->setCollisionShape(L.shape_door);
+	phy->setCollisionShape(game_level->shape_door);
 	phy->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_DOOR);
 
 	btTransform& tr = phy->getWorldTransform();
@@ -114,7 +110,7 @@ bool Door::Read(BitStreamReader& f)
 	pos.y += Door::HEIGHT;
 	tr.setOrigin(ToVector3(pos));
 	tr.setRotation(btQuaternion(rot, 0, 0));
-	game.phy_world->addCollisionObject(phy, CG_DOOR);
+	game->phy_world->addCollisionObject(phy, CG_DOOR);
 
 	if(state == Door::Open)
 	{

@@ -15,20 +15,19 @@
 #include "BaseLocation.h"
 #include "Team.h"
 #include "Quest_Scripted.h"
-#include "Team.h"
 #include "LocationHelper.h"
 #include "Encounter.h"
 #include "UnitGroup.h"
 
 
-ScriptManager SM;
+ScriptManager* global::script_mgr;
 static std::map<int, asIScriptFunction*> tostring_map;
 static string tmp_str_result;
 
 
 ScriptException::ScriptException(cstring msg)
 {
-	SM.SetException(msg);
+	script_mgr->SetException(msg);
 }
 
 void MessageCallback(const asSMessageInfo* msg, void* param)
@@ -47,7 +46,7 @@ void MessageCallback(const asSMessageInfo* msg, void* param)
 		level = Logger::L_INFO;
 		break;
 	}
-	SM.Log(level, Format("(%d:%d) %s", msg->row, msg->col, msg->message));
+	script_mgr->Log(level, Format("(%d:%d) %s", msg->row, msg->col, msg->message));
 }
 
 
@@ -55,7 +54,14 @@ ScriptManager::ScriptManager() : engine(nullptr), module(nullptr)
 {
 }
 
-void ScriptManager::InitOnce()
+ScriptManager::~ScriptManager()
+{
+	if(engine)
+		engine->ShutDownAndRelease();
+	DeleteElements(unit_vars);
+}
+
+void ScriptManager::Init()
 {
 	Info("Initializing ScriptManager...");
 
@@ -69,13 +75,6 @@ void ScriptManager::InitOnce()
 	RegisterStdStringUtils(engine);
 	RegisterCommon();
 	RegisterGame();
-}
-
-void ScriptManager::Cleanup()
-{
-	if(engine)
-		engine->ShutDownAndRelease();
-	DeleteElements(unit_vars);
 }
 
 asIScriptFunction* FindToString(asIScriptEngine* engine, int type_id)
@@ -262,20 +261,20 @@ static void FormatStrGeneric(asIScriptGeneric* gen)
 
 static void ScriptInfo(const string& str)
 {
-	SM.Log(Logger::L_INFO, str.c_str());
+	script_mgr->Log(Logger::L_INFO, str.c_str());
 }
 static void ScriptDevInfo(const string& str)
 {
-	if(Game::Get().devmode)
+	if(game->devmode)
 		Info(str.c_str());
 }
 static void ScriptWarn(const string& str)
 {
-	SM.Log(Logger::L_WARN, str.c_str());
+	script_mgr->Log(Logger::L_WARN, str.c_str());
 }
 static void ScriptError(const string& str)
 {
-	SM.Log(Logger::L_ERROR, str.c_str());
+	script_mgr->Log(Logger::L_ERROR, str.c_str());
 }
 
 string Vec2_ToString(const Vec2& v)
@@ -389,7 +388,7 @@ VarsContainer* p_globals = &globals;
 
 VarsContainer* Unit_GetVars(Unit* unit)
 {
-	return SM.GetVars(unit);
+	return script_mgr->GetVars(unit);
 }
 
 string World_GetDirName(const Vec2& pos1, const Vec2& pos2)
@@ -399,7 +398,7 @@ string World_GetDirName(const Vec2& pos1, const Vec2& pos2)
 
 Location* World_GetRandomCity()
 {
-	return W.GetLocation(W.GetRandomCityIndex());
+	return world->GetLocation(world->GetRandomCityIndex());
 }
 
 Location* World_GetRandomSettlementWithBuilding(const string& building_id)
@@ -407,7 +406,7 @@ Location* World_GetRandomSettlementWithBuilding(const string& building_id)
 	Building* b = Building::TryGet(building_id);
 	if(!b)
 		throw ScriptException("Missing building '%s'.", building_id.c_str());
-	return W.GetRandomSettlement([b](City* city)
+	return world->GetRandomSettlement([b](City* city)
 	{
 		return city->FindBuilding(b) != nullptr;
 	});
@@ -417,7 +416,7 @@ Location* World_GetRandomSettlement(asIScriptFunction* func)
 {
 	asIScriptEngine* engine = func->GetEngine();
 	asIScriptContext* ctx = engine->RequestContext();
-	Location* target = W.GetRandomSettlementWeighted([=](Location* loc)
+	Location* target = world->GetRandomSettlementWeighted([=](Location* loc)
 	{
 		CHECKED(ctx->Prepare(func));
 		CHECKED(ctx->SetArgObject(0, loc));
@@ -431,7 +430,7 @@ Location* World_GetRandomSettlement(asIScriptFunction* func)
 
 void StockScript_AddItem(const Item* item, uint count)
 {
-	vector<ItemSlot>* stock = SM.GetContext().stock;
+	vector<ItemSlot>* stock = script_mgr->GetContext().stock;
 	if(!stock)
 		throw ScriptException("This method must be called from StockScript.");
 	InsertItemBare(*stock, item, count);
@@ -439,7 +438,7 @@ void StockScript_AddItem(const Item* item, uint count)
 
 void StockScript_AddRandomItem(ITEM_TYPE type, int price_limit, int flags, uint count)
 {
-	vector<ItemSlot>* stock = SM.GetContext().stock;
+	vector<ItemSlot>* stock = script_mgr->GetContext().stock;
 	if(!stock)
 		throw ScriptException("This method must be called from StockScript.");
 	ItemHelper::AddRandomItem(*stock, type, price_limit, flags, count);
@@ -676,7 +675,7 @@ void ScriptManager::RegisterGame()
 
 	CHECKED(engine->RegisterFuncdef("float GetLocationCallback(Location@)"));
 
-	WithNamespace("World", &W)
+	WithNamespace("World", world)
 		.AddFunction("uint GetSettlements()", asMETHOD(World, GetSettlements))
 		.AddFunction("Location@ GetLocation(uint)", asMETHOD(World, GetLocation))
 		.AddFunction("string GetDirName(const Vec2& in, const Vec2& in)", asFUNCTION(World_GetDirName)) // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -689,7 +688,7 @@ void ScriptManager::RegisterGame()
 		.AddFunction("Encounter@ AddEncounter(Quest@)", asMETHOD(World, AddEncounterS))
 		.AddFunction("void RemoveEncounter(Quest@)", asMETHODPR(World, RemoveEncounter, (Quest*), void));
 
-	WithNamespace("Level", &L)
+	WithNamespace("Level", game_level)
 		.AddFunction("Location@ get_location()", asMETHOD(Level, GetLocation))
 		.AddFunction("bool IsSettlement()", asMETHOD(Level, IsSettlement))
 		.AddFunction("bool IsCity()", asMETHOD(Level, IsCity))

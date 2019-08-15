@@ -98,7 +98,7 @@ void Location::Load(GameReader& f, bool, LOCATION_TOKEN token)
 		active_quest = (Quest_Dungeon*)ACTIVE_QUEST_HOLDER;
 	else
 	{
-		Game::Get().load_location_quest.push_back(this);
+		game->load_location_quest.push_back(this);
 		active_quest = (Quest_Dungeon*)refid;
 	}
 	f >> last_visit;
@@ -143,7 +143,7 @@ void Location::Load(GameReader& f, bool, LOCATION_TOKEN token)
 			int refid;
 			f >> e.type;
 			f >> refid;
-			QM.AddQuestRequest(refid, (Quest**)&e.quest, [&]()
+			quest_mgr->AddQuestRequest(refid, (Quest**)&e.quest, [&]()
 			{
 				EventPtr event;
 				event.source = EventPtr::LOCATION;

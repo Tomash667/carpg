@@ -12,7 +12,6 @@
 const float SS = 0.25f;
 Pathfinding* global::pathfinding;
 
-
 //-----------------------------------------------------------------------------
 struct Point
 {
@@ -35,6 +34,20 @@ struct AStarSort
 	int size;
 };
 
+//-----------------------------------------------------------------------------
+const Int2 c_dir[4] = {
+	Int2(0,1),
+	Int2(1,0),
+	Int2(0,-1),
+	Int2(-1,0)
+};
+
+const Int2 c_dir2[4] = {
+	Int2(1,1),
+	Int2(1,-1),
+	Int2(-1,1),
+	Int2(-1,-1)
+};
 
 //=================================================================================================
 // szuka œcie¿ki u¿ywaj¹c algorytmu A-Star
@@ -55,7 +68,7 @@ bool Pathfinding::FindPath(LevelArea& area, const Int2& start_tile, const Int2& 
 	if(area.area_type == LevelArea::Type::Outside)
 	{
 		// zewnêtrze
-		OutsideLocation* outside = static_cast<OutsideLocation*>(L.location);
+		OutsideLocation* outside = static_cast<OutsideLocation*>(game_level->location);
 		const TerrainTile* m = outside->tiles;
 		const int w = OutsideLocation::size;
 
@@ -115,24 +128,10 @@ bool Pathfinding::FindPath(LevelArea& area, const Int2& start_tile, const Int2& 
 				break;
 			}
 
-			const Int2 kierunek[4] = {
-				Int2(0,1),
-				Int2(1,0),
-				Int2(0,-1),
-				Int2(-1,0)
-			};
-
-			const Int2 kierunek2[4] = {
-				Int2(1,1),
-				Int2(1,-1),
-				Int2(-1,1),
-				Int2(-1,-1)
-			};
-
 			for(int i = 0; i < 4; ++i)
 			{
-				const Int2& pt1 = kierunek[i] + pt.pt;
-				const Int2& pt2 = kierunek2[i] + pt.pt;
+				const Int2& pt1 = c_dir[i] + pt.pt;
+				const Int2& pt2 = c_dir2[i] + pt.pt;
 
 				if(pt1.x >= 0 && pt1.y >= 0 && pt1.x < w - 1 && pt1.y < w - 1 && a_map[pt1(w)].state == 0 && !m[pt1(w)].IsBlocking())
 				{
@@ -156,10 +155,10 @@ bool Pathfinding::FindPath(LevelArea& area, const Int2& start_tile, const Int2& 
 					to_check.push_back(new_pt);
 				}
 
-				if(pt2.x >= 0 && pt2.y >= 0 && pt2.x < w - 1 && pt2.y < w - 1 && a_map[pt2(w)].state == 0 &&
-					!m[pt2(w)].IsBlocking() &&
-					!m[kierunek2[i].x + pt.pt.x + pt.pt.y*w].IsBlocking() &&
-					!m[pt.pt.x + (kierunek2[i].y + pt.pt.y)*w].IsBlocking())
+				if(pt2.x >= 0 && pt2.y >= 0 && pt2.x < w - 1 && pt2.y < w - 1 && a_map[pt2(w)].state == 0
+					&& !m[pt2(w)].IsBlocking()
+					&& !m[c_dir2[i].x + pt.pt.x + pt.pt.y*w].IsBlocking()
+					&& !m[pt.pt.x + (c_dir2[i].y + pt.pt.y)*w].IsBlocking())
 				{
 					apt.prev = pt.pt;
 					apt.cost = prev_apt.cost + 15;
@@ -200,7 +199,7 @@ bool Pathfinding::FindPath(LevelArea& area, const Int2& start_tile, const Int2& 
 	else
 	{
 		// wnêtrze
-		InsideLocation* inside = static_cast<InsideLocation*>(L.location);
+		InsideLocation* inside = static_cast<InsideLocation*>(game_level->location);
 		InsideLocationLevel& lvl = inside->GetLevelData();
 		const Tile* m = lvl.map;
 		const int w = lvl.w, h = lvl.h;
@@ -262,26 +261,12 @@ bool Pathfinding::FindPath(LevelArea& area, const Int2& start_tile, const Int2& 
 				break;
 			}
 
-			const Int2 kierunek[4] = {
-				Int2(0,1),
-				Int2(1,0),
-				Int2(0,-1),
-				Int2(-1,0)
-			};
-
-			const Int2 kierunek2[4] = {
-				Int2(1,1),
-				Int2(1,-1),
-				Int2(-1,1),
-				Int2(-1,-1)
-			};
-
 			if(can_open_doors)
 			{
 				for(int i = 0; i < 4; ++i)
 				{
-					const Int2& pt1 = kierunek[i] + pt.pt;
-					const Int2& pt2 = kierunek2[i] + pt.pt;
+					const Int2& pt1 = c_dir[i] + pt.pt;
+					const Int2& pt2 = c_dir2[i] + pt.pt;
 
 					if(pt1.x >= 0 && pt1.y >= 0 && pt1.x < w - 1 && pt1.y < h - 1 && !IsBlocking(m[pt1(w)]))
 					{
@@ -301,10 +286,10 @@ bool Pathfinding::FindPath(LevelArea& area, const Int2& start_tile, const Int2& 
 						}
 					}
 
-					if(pt2.x >= 0 && pt2.y >= 0 && pt2.x < w - 1 && pt2.y < h - 1 &&
-						!IsBlocking(m[pt2(w)]) &&
-						!IsBlocking(m[kierunek2[i].x + pt.pt.x + pt.pt.y*w]) &&
-						!IsBlocking(m[pt.pt.x + (kierunek2[i].y + pt.pt.y)*w]))
+					if(pt2.x >= 0 && pt2.y >= 0 && pt2.x < w - 1 && pt2.y < h - 1
+						&& !IsBlocking(m[pt2(w)])
+						&& !IsBlocking(m[c_dir2[i].x + pt.pt.x + pt.pt.y*w])
+						&& !IsBlocking(m[pt.pt.x + (c_dir2[i].y + pt.pt.y)*w]))
 					{
 						apt.prev = pt.pt;
 						apt.cost = prev_apt.cost + 15;
@@ -327,8 +312,8 @@ bool Pathfinding::FindPath(LevelArea& area, const Int2& start_tile, const Int2& 
 			{
 				for(int i = 0; i < 4; ++i)
 				{
-					const Int2& pt1 = kierunek[i] + pt.pt;
-					const Int2& pt2 = kierunek2[i] + pt.pt;
+					const Int2& pt1 = c_dir[i] + pt.pt;
+					const Int2& pt2 = c_dir2[i] + pt.pt;
 
 					if(pt1.x >= 0 && pt1.y >= 0 && pt1.x < w - 1 && pt1.y < h - 1 && !IsBlocking(m[pt1(w)]))
 					{
@@ -426,10 +411,10 @@ bool Pathfinding::FindPath(LevelArea& area, const Int2& start_tile, const Int2& 
 						}
 					}
 
-					if(pt2.x >= 0 && pt2.y >= 0 && pt2.x < w - 1 && pt2.y < h - 1 &&
-						!IsBlocking(m[pt2(w)]) &&
-						!IsBlocking(m[kierunek2[i].x + pt.pt.x + pt.pt.y*w]) &&
-						!IsBlocking(m[pt.pt.x + (kierunek2[i].y + pt.pt.y)*w]))
+					if(pt2.x >= 0 && pt2.y >= 0 && pt2.x < w - 1 && pt2.y < h - 1
+						&& !IsBlocking(m[pt2(w)])
+						&& !IsBlocking(m[c_dir2[i].x + pt.pt.x + pt.pt.y*w])
+						&& !IsBlocking(m[pt.pt.x + (c_dir2[i].y + pt.pt.y)*w]))
 					{
 						bool ok = true;
 
@@ -440,16 +425,16 @@ bool Pathfinding::FindPath(LevelArea& area, const Int2& start_tile, const Int2& 
 								ok = false;
 						}
 
-						if(ok && m[kierunek2[i].x + pt.pt.x + pt.pt.y*w].type == DOORS)
+						if(ok && m[c_dir2[i].x + pt.pt.x + pt.pt.y*w].type == DOORS)
 						{
-							Door* door = area.FindDoor(Int2(kierunek2[i].x + pt.pt.x, pt.pt.y));
+							Door* door = area.FindDoor(Int2(c_dir2[i].x + pt.pt.x, pt.pt.y));
 							if(door && door->IsBlocking())
 								ok = false;
 						}
 
-						if(ok && m[pt.pt.x + (kierunek2[i].y + pt.pt.y)*w].type == DOORS)
+						if(ok && m[pt.pt.x + (c_dir2[i].y + pt.pt.y)*w].type == DOORS)
 						{
-							Door* door = area.FindDoor(Int2(pt.pt.x, kierunek2[i].y + pt.pt.y));
+							Door* door = area.FindDoor(Int2(pt.pt.x, c_dir2[i].y + pt.pt.y));
 							if(door && door->IsBlocking())
 								ok = false;
 						}
@@ -551,8 +536,8 @@ int Pathfinding::FindLocalPath(LevelArea& area, vector<Int2>& path, const Int2& 
 		ignore.ignored_objects = ignored_objects;
 	}
 
-	L.global_col.clear();
-	L.GatherCollisionObjects(area, L.global_col, Box2d(float(minx) / 4 - 0.25f, float(miny) / 4 - 0.25f, float(maxx) / 4 + 0.25f, float(maxy) / 4 + 0.25f), &ignore);
+	game_level->global_col.clear();
+	game_level->GatherCollisionObjects(area, game_level->global_col, Box2d(float(minx) / 4 - 0.25f, float(miny) / 4 - 0.25f, float(maxx) / 4 + 0.25f, float(maxy) / 4 + 0.25f), &ignore);
 
 	const float r = me->GetUnitRadius() - 0.25f / 2;
 
@@ -562,7 +547,7 @@ int Pathfinding::FindLocalPath(LevelArea& area, vector<Int2>& path, const Int2& 
 		{
 			for(int x = minx, x2 = 0; x < maxx; ++x, ++x2)
 			{
-				if(!L.Collide(L.global_col, Box2d(0.25f*x, 0.25f*y, 0.25f*(x + 1), 0.25f*(y + 1)), r))
+				if(!game_level->Collide(game_level->global_col, Box2d(0.25f*x, 0.25f*y, 0.25f*(x + 1), 0.25f*(y + 1)), r))
 				{
 					test_pf.push_back(pair<Vec2, int>(Vec2(0.25f*x, 0.25f*y), 0));
 					local_pfmap[x2 + y2 * w] = false;
@@ -577,7 +562,7 @@ int Pathfinding::FindLocalPath(LevelArea& area, vector<Int2>& path, const Int2& 
 		for(int y = miny, y2 = 0; y < maxy; ++y, ++y2)
 		{
 			for(int x = minx, x2 = 0; x < maxx; ++x, ++x2)
-				local_pfmap[x2 + y2 * w] = L.Collide(L.global_col, Box2d(0.25f*x, 0.25f*y, 0.25f*(x + 1), 0.25f*(y + 1)), r);
+				local_pfmap[x2 + y2 * w] = game_level->Collide(game_level->global_col, Box2d(0.25f*x, 0.25f*y, 0.25f*(x + 1), 0.25f*(y + 1)), r);
 		}
 	}
 
@@ -654,24 +639,10 @@ int Pathfinding::FindLocalPath(LevelArea& area, vector<Int2>& path, const Int2& 
 			break;
 		}
 
-		const Int2 kierunek[4] = {
-			Int2(0,1),
-			Int2(1,0),
-			Int2(0,-1),
-			Int2(-1,0)
-		};
-
-		const Int2 kierunek2[4] = {
-			Int2(1,1),
-			Int2(1,-1),
-			Int2(-1,1),
-			Int2(-1,-1)
-		};
-
 		for(int i = 0; i < 4; ++i)
 		{
-			const Int2& pt1 = kierunek[i] + pt.pt;
-			const Int2& pt2 = kierunek2[i] + pt.pt;
+			const Int2& pt1 = c_dir[i] + pt.pt;
+			const Int2& pt2 = c_dir2[i] + pt.pt;
 
 			if(pt1.x >= 0 && pt1.y >= 0 && pt1.x < w - 1 && pt1.y < h - 1 && !local_pfmap[pt1(w)])
 			{
@@ -720,7 +691,7 @@ int Pathfinding::FindLocalPath(LevelArea& area, vector<Int2>& path, const Int2& 
 	if(marked)
 	{
 		if(marked == me)
-			test_pf_outside = (L.location->outside && me->area->area_type == LevelArea::Type::Outside);
+			test_pf_outside = (game_level->location->outside && me->area->area_type == LevelArea::Type::Outside);
 
 		if(a_map[my_rel(w)].state == 0)
 		{
@@ -790,7 +761,7 @@ void Pathfinding::Draw(DebugDrawer* dd)
 
 		if(test_pf_outside)
 		{
-			float h = L.terrain->GetH(v[0].x, v[0].z) + 0.1f;
+			float h = game_level->terrain->GetH(v[0].x, v[0].z) + 0.1f;
 			for(int i = 0; i < 4; ++i)
 				v[i].y = h;
 		}

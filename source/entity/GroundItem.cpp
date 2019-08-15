@@ -36,7 +36,7 @@ void GroundItem::Load(FileReader& f)
 	else
 	{
 		int quest_refid = f.Read<int>();
-		QM.AddQuestItemRequest(&item, item_id.c_str(), quest_refid, nullptr);
+		quest_mgr->AddQuestItemRequest(&item, item_id.c_str(), quest_refid, nullptr);
 		item = QUEST_ITEM_PLACEHOLDER;
 	}
 	f >> netid;
@@ -63,5 +63,5 @@ bool GroundItem::Read(BitStreamReader& f)
 	f >> rot;
 	f >> count;
 	f >> team_count;
-	return f.IsOk() && Game::Get().ReadItemAndFind(f, item) > 0;
+	return f.IsOk() && game->ReadItemAndFind(f, item) > 0;
 }
