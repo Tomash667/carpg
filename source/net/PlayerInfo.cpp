@@ -6,7 +6,7 @@
 #include "Net.h"
 
 //=================================================================================================
-PlayerInfo::PlayerInfo() : pc(nullptr), u(nullptr), clas(Class::INVALID), left(LEFT_NO), update_flags(0), ready(false), loaded(false), warping(false)
+PlayerInfo::PlayerInfo() : pc(nullptr), u(nullptr), clas(nullptr), left(LEFT_NO), update_flags(0), ready(false), loaded(false), warping(false)
 {
 }
 
@@ -14,7 +14,6 @@ PlayerInfo::PlayerInfo() : pc(nullptr), u(nullptr), clas(Class::INVALID), left(L
 void PlayerInfo::Save(FileWriter& f)
 {
 	f << name;
-	f << clas;
 	f << id;
 	f << devmode;
 	hd.Save(f);
@@ -26,7 +25,8 @@ void PlayerInfo::Save(FileWriter& f)
 void PlayerInfo::Load(FileReader& f)
 {
 	f >> name;
-	f >> clas;
+	if(LOAD_VERSION < V_DEV)
+		f.Skip<int>(); // old class
 	f >> id;
 	f >> devmode;
 	int old_left;
@@ -42,6 +42,7 @@ void PlayerInfo::Load(FileReader& f)
 	int refid;
 	f >> refid;
 	u = Unit::GetByRefid(refid);
+	clas = u->GetClass();
 	f.ReadStringArray<int, word>(notes);
 	if(LOAD_VERSION < V_0_5_1)
 		f >> left;

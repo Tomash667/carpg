@@ -33,7 +33,6 @@ enum Group
 	G_SPELL_KEYWORD,
 	G_ITEM_KEYWORD,
 	G_GROUP_KEYWORD,
-	G_CLASS,
 	G_TRADER_KEYWORD,
 	G_ITEM_GROUP,
 	G_CONSUMABLE_GROUP,
@@ -409,9 +408,6 @@ void UnitLoader::InitTokenizer()
 		{ "list", GK_LIST },
 		{ "gender", GK_GENDER }
 		});
-
-	for(ClassInfo& clas : ClassInfo::classes)
-		t.AddKeyword(clas.id, (int)clas.class_id, G_CLASS);
 
 	t.AddKeywords(G_TRADER_KEYWORD, {
 		{ "stock", TK_STOCK },
@@ -920,8 +916,13 @@ void UnitLoader::ParseUnit(const string& id)
 			crc.Update(unit->armor_type);
 			break;
 		case P_CLASS:
-			unit->clas = (Class)t.MustGetKeywordId(G_CLASS);
-			crc.Update(unit->clas);
+			{
+				const string& id = t.MustGetItemKeyword();
+				unit->clas = Class::TryGet(id);
+				if(!unit->clas)
+					t.Throw("Invalid unit class '%s'.", id.c_str());
+				crc.Update(unit->clas->id);
+			}
 			break;
 		case P_TRADER:
 			if(unit->trader)

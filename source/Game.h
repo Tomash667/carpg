@@ -245,7 +245,7 @@ public:
 	// Localized texts
 	//-----------------------------------------------------------------
 	cstring txCreatingListOfFiles, txConfiguringGame, txLoadingItems, txLoadingObjects, txLoadingSpells, txLoadingUnits, txLoadingMusics, txLoadingBuildings,
-		txLoadingRequires, txLoadingShaders, txLoadingDialogs, txLoadingLanguageFiles, txPreloadAssets, txLoadingQuests;
+		txLoadingRequires, txLoadingShaders, txLoadingDialogs, txLoadingLanguageFiles, txPreloadAssets, txLoadingQuests, txLoadingClasses;
 	cstring txAiNoHpPot[2], txAiCity[2], txAiVillage[2], txAiMoonwell, txAiForest, txAiCampEmpty, txAiCampFull, txAiFort, txAiDwarfFort, txAiTower, txAiArmory,
 		txAiHideout, txAiVault, txAiCrypt, txAiTemple, txAiNecromancerBase, txAiLabyrinth, txAiNoEnemies, txAiNearEnemies, txAiCave, txAiInsaneText[11],
 		txAiDefaultText[9], txAiOutsideText[3], txAiInsideText[2], txAiHumanText[2], txAiOrcText[7], txAiGoblinText[5], txAiMageText[4], txAiSecretText[3],
@@ -538,19 +538,17 @@ public:
 
 	//-----------------------------------------------------------------
 	// MENU / MAIN MENU / OPTIONS
-	Class quickstart_class;
-	string quickstart_name;
 	bool check_updates, skip_tutorial;
 
 	bool CanShowMenu();
 	void SaveOptions();
 	void StartNewGame();
-	void NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharacter& cc, bool tutorial);
+	void NewGameCommon(Class* clas, cstring name, HumanData& hd, CreatedCharacter& cc, bool tutorial);
 	void StartQuickGame();
 	void MultiplayerPanelEvent(int id);
 	void CreateServerEvent(int id);
 	// set for Random player character (clas is in/out)
-	void RandomCharacter(Class& clas, int& hair_index, HumanData& hd, CreatedCharacter& cc);
+	void RandomCharacter(Class*& clas, int& hair_index, HumanData& hd, CreatedCharacter& cc);
 	void OnEnterIp(int id);
 	void GenericInfoBoxUpdate(float dt);
 	void UpdateClientConnectingIp(float dt);

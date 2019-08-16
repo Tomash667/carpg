@@ -26,7 +26,7 @@ void NameHelper::GenerateHeroName(HeroData& hero)
 }
 
 //=================================================================================================
-void NameHelper::GenerateHeroName(Class clas, bool crazy, string& hero_name)
+void NameHelper::GenerateHeroName(Class* clas, bool crazy, string& hero_name)
 {
 	if(crazy)
 	{
@@ -34,19 +34,18 @@ void NameHelper::GenerateHeroName(Class clas, bool crazy, string& hero_name)
 		return;
 	}
 
-	ClassInfo& ci = ClassInfo::classes[(int)clas];
-	if(Rand() % 2 == 0 && !ci.names.empty())
-		hero_name = RandomItem(ci.names);
+	if(Rand() % 2 == 0 && !clas->names.empty())
+		hero_name = RandomItem(clas->names);
 	else
 		hero_name = RandomItem(name_random);
 
 	hero_name += " ";
 
 	int type = Rand() % 7;
-	if(type < 4 && !ci.nicknames.empty())
+	if(type < 4 && !clas->nicknames.empty())
 	{
 		hero_name += txNamePrefix;
-		hero_name += RandomItem(ci.nicknames);
+		hero_name += RandomItem(clas->nicknames);
 	}
 	else if((type == 0 || type == 4) && !world->GetLocations().empty())
 	{

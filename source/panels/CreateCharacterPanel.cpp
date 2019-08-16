@@ -937,10 +937,10 @@ void CreateCharacterPanel::Init()
 {
 	unit->mesh_inst = new MeshInstance(game->aHumanBase);
 
-	for(ClassInfo& ci : ClassInfo::classes)
+	for(Class* clas : Class::classes)
 	{
-		if(ci.IsPickable())
-			lbClasses.Add(new DefaultGuiElement(ci.name.c_str(), (int)ci.class_id, ci.icon));
+		if(clas->IsPickable())
+			lbClasses.Add(new DefaultGuiElement(clas->name.c_str(), reinterpret_cast<int>(clas), clas->icon));
 	}
 	lbClasses.Sort();
 	lbClasses.Initialize();
@@ -963,7 +963,7 @@ void CreateCharacterPanel::RandomAppearance()
 //=================================================================================================
 void CreateCharacterPanel::Show(bool enter_name)
 {
-	clas = ClassInfo::GetRandomPlayer();
+	clas = Class::GetRandomPlayer();
 	lbClasses.Select(lbClasses.FindIndex((int)clas));
 	ClassChanged();
 	RandomAppearance();
@@ -980,7 +980,7 @@ void CreateCharacterPanel::Show(bool enter_name)
 }
 
 //=================================================================================================
-void CreateCharacterPanel::ShowRedo(Class clas, HumanData& hd, CreatedCharacter& cc)
+void CreateCharacterPanel::ShowRedo(Class* clas, HumanData& hd, CreatedCharacter& cc)
 {
 	this->clas = clas;
 	lbClasses.Select(lbClasses.FindIndex((int)clas));
@@ -1027,7 +1027,7 @@ void CreateCharacterPanel::SetCharacter()
 //=================================================================================================
 void CreateCharacterPanel::OnChangeClass(int index)
 {
-	clas = (Class)lbClasses.GetItem()->value;
+	clas = reinterpret_cast<Class*>(lbClasses.GetItem()->value);
 	ClassChanged();
 	reset_skills_perks = true;
 	ResetDoll(false);
@@ -1132,19 +1132,18 @@ void CreateCharacterPanel::GetTooltip(TooltipController* ptr_tool, int group, in
 //=================================================================================================
 void CreateCharacterPanel::ClassChanged()
 {
-	ClassInfo& ci = ClassInfo::classes[(int)clas];
-	unit->data = ci.unit_data;
+	unit->data = clas->player;
 	anim = DA_STAND;
 	t = 1.f;
 	tbClassDesc.Reset();
-	tbClassDesc.SetText(ci.desc.c_str());
+	tbClassDesc.SetText(clas->desc.c_str());
 	tbClassDesc.UpdateScrollbar();
 
 	flow_items.clear();
 
 	int y = 0;
 
-	StatProfile& profile = ci.unit_data->GetStatProfile();
+	StatProfile& profile = clas->player->GetStatProfile();
 	unit->stats->Set(profile);
 	unit->CalculateStats();
 

@@ -35,7 +35,7 @@ public:
 private:
 	int level, in_location;
 	bool crazy;
-	Class clas;
+	Class* clas;
 	string unit_name;
 	OtherItem letter;
 	Unit* target_unit;

@@ -381,15 +381,16 @@ void Quest_Orcs2::SetProgress(int prog2)
 	case Progress::SelectRandom:
 		// losowo
 		{
+			Class* player_class = DialogContext::current->pc->unit->GetClass();
 			OrcClass clas;
-			if(DialogContext::current->pc->unit->GetClass() == Class::WARRIOR)
+			if(player_class->id == "warrior")
 			{
 				if(Rand() % 2 == 0)
 					clas = OrcClass::Hunter;
 				else
 					clas = OrcClass::Shaman;
 			}
-			else if(DialogContext::current->pc->unit->GetClass() == Class::HUNTER)
+			else if(player_class->id == "hunter")
 			{
 				if(Rand() % 2 == 0)
 					clas = OrcClass::Warrior;
@@ -713,7 +714,7 @@ void Quest_Orcs2::ChangeClass(OrcClass new_orc_class)
 	orcs_state = State::PickedClass;
 	days = Random(30, 60);
 
-	if(orc->GetClass() == Class::WARRIOR)
+	if(orc->GetClass()->id == "warrior")
 		orc->hero->melee = true;
 
 	if(Net::IsOnline())

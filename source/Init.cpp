@@ -149,6 +149,7 @@ void Game::PreloadLanguage()
 	txLoadingItems = Str("loadingItems");
 	txLoadingObjects = Str("loadingObjects");
 	txLoadingSpells = Str("loadingSpells");
+	txLoadingClasses = Str("loadingClasses");
 	txLoadingUnits = Str("loadingUnits");
 	txLoadingMusics = Str("loadingMusics");
 	txLoadingBuildings = Str("loadingBuildings");
@@ -200,6 +201,7 @@ void Game::LoadSystem()
 	game_gui->main_menu->UpdateCheckVersion();
 	LoadDatafiles();
 	LoadLanguageFiles();
+	game_gui->server->Init();
 	game_gui->load_screen->Tick(txLoadingShaders);
 	LoadShaders();
 	ConfigureGame();
@@ -253,6 +255,9 @@ void Game::LoadDatafiles()
 			break;
 		case Content::Id::Quests:
 			game_gui->load_screen->Tick(txLoadingQuests);
+			break;
+		case Content::Id::Classes:
+			game_gui->load_screen->Tick(txLoadingClasses);
 			break;
 		}
 	});
@@ -308,13 +313,6 @@ void Game::ConfigureGame()
 	settings.ResetGameKeys();
 	settings.LoadGameKeys(cfg);
 	load_errors += BaseLocation::SetRoomPointers();
-
-	for (ClassInfo& ci : ClassInfo::classes)
-	{
-		ci.unit_data = UnitData::TryGet(ci.unit_data_id);
-		if (ci.action_id)
-			ci.action = Action::Find(string(ci.action_id));
-	}
 
 	CreateTextures();
 	CreateRenderTargets();
@@ -524,8 +522,6 @@ void Game::AddLoadTasks()
 	tCzern = res_mgr->Load<Texture>("czern.bmp");
 	tRip = res_mgr->Load<Texture>("rip.jpg");
 	tPortal = res_mgr->Load<Texture>("dark_portal.png");
-	for(ClassInfo& ci : ClassInfo::classes)
-		ci.icon = res_mgr->Load<Texture>(ci.icon_file);
 	tWarning = res_mgr->Load<Texture>("warning.png");
 	tError = res_mgr->Load<Texture>("error.png");
 	Action::LoadData();

@@ -38,7 +38,7 @@ enum ButtonId
 };
 
 //=================================================================================================
-ServerPanel::ServerPanel(const DialogInfo& info) : DialogBox(info), autoready(false), autopick_class(Class::INVALID)
+ServerPanel::ServerPanel(const DialogInfo& info) : DialogBox(info), autoready(false), autopick_class(nullptr)
 {
 	size = Int2(540, 510);
 	bts.resize(6);
@@ -92,29 +92,35 @@ ServerPanel::ServerPanel(const DialogInfo& info) : DialogBox(info), autoready(fa
 	itb.Init();
 
 	visible = false;
+}
 
-	// config
+//=================================================================================================
+void ServerPanel::Init()
+{
+	random_class = reinterpret_cast<Class*>(&random_class);
+
 	autostart_count = game->cfg.GetUint("autostart");
 	if(autostart_count > MAX_PLAYERS)
 		autostart_count = 0;
 
-	const string& clas = game->cfg.GetString("autopick", "");
-	if(!clas.empty())
+	const string& class_id = game->cfg.GetString("autopick", "");
+	if(!class_id.empty())
 	{
-		if(clas == "random")
-			autopick_class = Class::RANDOM;
+		if(class_id == "random")
+			autopick_class = random_class;
 		else
 		{
-			ClassInfo* ci = ClassInfo::Find(clas);
-			if(ci)
+			autopick_class = Class::TryGet(class_id);
+			if(autopick_class)
 			{
-				if(ClassInfo::IsPickable(ci->class_id))
-					autopick_class = ci->class_id;
-				else
-					Warn("Settings [autopick]: Class '%s' is not pickable by players.", clas.c_str());
+				if(!autopick_class->IsPickable())
+				{
+					Warn("Settings [autopick]: Class '%s' is not pickable by players.", class_id.c_str());
+					autopick_class = nullptr;
+				}
 			}
 			else
-				Warn("Settings [autopick]: Invalid class '%s'.", clas.c_str());
+				Warn("Settings [autopick]: Invalid class '%s'.", class_id.c_str());
 		}
 	}
 }
@@ -230,7 +236,7 @@ void ServerPanel::UpdateLobby(float dt)
 	if(autoready)
 	{
 		PlayerInfo& info = net->GetMe();
-		if(!info.ready && info.clas != Class::INVALID)
+		if(!info.ready && info.clas)
 		{
 			info.ready = true;
 			bts[1].state = Button::NONE;
@@ -343,7 +349,7 @@ void ServerPanel::UpdateLobbyClient(float dt)
 					Warn("ServerPanel: Character pick refused.");
 					PlayerInfo& info = net->GetMe();
 					info.ready = false;
-					info.clas = Class::INVALID;
+					info.clas = nullptr;
 					bts[0].state = Button::NONE;
 					bts[0].text = txPickChar;
 					bts[1].state = Button::DISABLED;
@@ -412,17 +418,25 @@ bool ServerPanel::DoLobbyUpdate(BitStreamReader& f)
 					return false;
 				}
 				f >> info->ready;
-				f.ReadCasted<byte>(info->clas);
+				const string& class_id = f.ReadString1();
 				if(!f)
 				{
 					Error("ServerPanel: Broken Lobby_UpdatePlayer.");
 					return false;
 				}
-				if(!ClassInfo::IsPickable(info->clas))
+				Class* clas = Class::TryGet(class_id);
+				if(!clas)
 				{
-					Error("ServerPanel: Broken Lobby_UpdatePlayer, player %d have class %d: %s.", id, info->clas);
+					Error("ServerPanel: Broken Lobby_UpdatePlayer, player '%s' have invalid class '%s'.", info->name.c_str(), class_id.c_str());
 					return false;
 				}
+				else if(!clas->IsPickable())
+				{
+					Error("ServerPanel: Broken Lobby_UpdatePlayer, player 's' have non pickable class '%s'.", info->name.c_str(), class_id.c_str());
+					return false;
+				}
+				else
+					info->clas = clas;
 			}
 			break;
 		case Lobby_AddPlayer:
@@ -780,7 +794,10 @@ void ServerPanel::UpdateLobbyServer(float dt)
 						++count;
 						fw.WriteCasted<byte>(info2.id);
 						fw.WriteCasted<byte>(info2.ready ? 1 : 0);
-						fw.WriteCasted<byte>(info2.clas);
+						if(info2.clas)
+							fw << info2.clas->id;
+						else
+							fw.Write0();
 						fw << info2.name;
 					}
 					fw.Patch<byte>(4, count);
@@ -791,7 +808,7 @@ void ServerPanel::UpdateLobbyServer(float dt)
 						if(old)
 						{
 							fw.WriteCasted<byte>(2);
-							fw.WriteCasted<byte>(old->clas);
+							fw << old->clas->id;
 
 							info->clas = old->clas;
 							info->loaded = true;
@@ -876,16 +893,16 @@ void ServerPanel::UpdateLobbyServer(float dt)
 				Warn("ServerPanel: Packet ID_PICK_CHARACTER from player not in lobby %s.", packet->systemAddress.ToString());
 			else
 			{
-				Class old_class = info->clas;
+				Class* old_class = info->clas;
 				bool old_ready = info->ready;
 				int result = ReadCharacterData(reader, info->clas, info->hd, info->cc);
-				byte ok = 0;
+				bool ok = false;
 				if(result == 0)
 				{
 					reader >> info->ready;
 					if(reader)
 					{
-						ok = 1;
+						ok = true;
 						Info("Received character from '%s'.", info->name.c_str());
 					}
 					else
@@ -902,10 +919,10 @@ void ServerPanel::UpdateLobbyServer(float dt)
 					Error("ServerPanel: Packet ID_PICK_CHARACTER from '%s' %s.", info->name.c_str(), err[result - 1]);
 				}
 
-				if(ok == 0)
+				if(!ok)
 				{
 					info->ready = false;
-					info->clas = Class::INVALID;
+					info->clas = nullptr;
 				}
 				CheckReady();
 
@@ -914,7 +931,7 @@ void ServerPanel::UpdateLobbyServer(float dt)
 					AddLobbyUpdate(Int2(Lobby_UpdatePlayer, info->id));
 
 				// send result
-				byte packet[2] = { ID_PICK_CHARACTER, ok };
+				byte packet[2] = { ID_PICK_CHARACTER, byte(ok ? 1 : 0) };
 				net->peer->Send((cstring)packet, 2, HIGH_PRIORITY, RELIABLE, 0, info->adr, false);
 			}
 			break;
@@ -984,7 +1001,7 @@ void ServerPanel::UpdateLobbyServer(float dt)
 								f.WriteCasted<byte>(u.x);
 								f.WriteCasted<byte>(info->id);
 								f << info->ready;
-								f.WriteCasted<byte>(info->clas);
+								f << info->clas->id;
 							}
 						}
 						break;
@@ -1143,7 +1160,7 @@ void ServerPanel::Event(GuiEvent e)
 			itb.focus = true;
 			itb.Event(GuiEvent_GainFocus);
 		}
-		global_pos = (gui->wnd_size - size) / 2;
+		global_pos = pos = (gui->wnd_size - size) / 2;
 		for(int i = 0; i < 6; ++i)
 			bts[i].global_pos = global_pos + bts[i].pos;
 		itb.Event(GuiEvent_Moved);
@@ -1167,7 +1184,7 @@ void ServerPanel::Event(GuiEvent e)
 	case IdPickCharacter: // pick character / change character
 		{
 			PlayerInfo& info = net->GetMe();
-			if(info.clas != Class::INVALID)
+			if(info.clas)
 			{
 				// already have character, redo
 				if(info.ready)
@@ -1306,7 +1323,7 @@ void ServerPanel::GetCell(int item, int column, Cell& cell)
 		cell.text_color->color = (info.id == Team.leader_id ? 0xFFFFD700 : Color::Black);
 	}
 	else
-		cell.text = (info.clas == Class::INVALID ? txNone : ClassInfo::classes[(int)info.clas].name.c_str());
+		cell.text = (info.clas ? info.clas->name.c_str() : txNone);
 }
 
 //=================================================================================================
@@ -1424,7 +1441,7 @@ void ServerPanel::UseLoadedCharacter(bool have)
 	if(have)
 	{
 		Info("ServerPanel: Joined loaded game with existing character.");
-		autopick_class = Class::INVALID;
+		autopick_class = nullptr;
 		bts[0].state = Button::DISABLED;
 		bts[0].text = txChangeChar;
 		bts[1].state = Button::NONE;
@@ -1440,17 +1457,18 @@ void ServerPanel::UseLoadedCharacter(bool have)
 //=================================================================================================
 void ServerPanel::CheckAutopick()
 {
-	if(autopick_class != Class::INVALID)
+	if(autopick_class)
 	{
 		Info("ServerPanel: Autopicking character.");
-		PickClass(autopick_class, true);
-		autopick_class = Class::INVALID;
+		PickClass(nullptr, true);
+		autopick_class = nullptr;
 		autoready = false;
 	}
 }
 
 //=================================================================================================
-void ServerPanel::PickClass(Class clas, bool ready)
+// Pick selected class - for nullptr select random
+void ServerPanel::PickClass(Class* clas, bool ready)
 {
 	PlayerInfo& info = net->GetMe();
 	info.clas = clas;
@@ -1541,8 +1559,8 @@ bool ServerPanel::Quickstart()
 			PlayerInfo& info = net->GetMe();
 			if(!info.ready)
 			{
-				if(info.clas == Class::INVALID)
-					PickClass(Class::RANDOM, true);
+				if(!info.clas)
+					PickClass(nullptr, true);
 				else
 				{
 					info.ready = true;
@@ -1564,8 +1582,8 @@ bool ServerPanel::Quickstart()
 		PlayerInfo& info = net->GetMe();
 		if(!info.ready)
 		{
-			if(info.clas == Class::INVALID)
-				PickClass(Class::RANDOM, true);
+			if(!info.clas)
+				PickClass(nullptr, true);
 			else
 			{
 				info.ready = true;

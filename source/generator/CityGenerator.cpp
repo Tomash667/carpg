@@ -2602,7 +2602,7 @@ void CityGenerator::SpawnTemporaryUnits()
 
 	for(uint i = 0; i < count; ++i)
 	{
-		UnitData& ud = ClassInfo::GetRandomData();
+		UnitData& ud = *Class::GetRandomHero()->hero;
 
 		if(Rand() % 2 == 0 || !training_grounds)
 		{

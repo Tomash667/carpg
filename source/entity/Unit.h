@@ -512,7 +512,7 @@ public:
 	bool IsFollower() const { return hero && hero->team_member; }
 	bool IsFollowing(Unit* u) const { return order == ORDER_FOLLOW && order_unit == u; }
 	bool IsFollowingTeamMember() const { return IsFollower() && order == ORDER_FOLLOW; }
-	Class GetClass() const { return data->clas; }
+	Class* GetClass() const { return data->clas; }
 	bool CanFollowWarp() const { return IsHero() && order == ORDER_FOLLOW && in_arena == -1 && frozen == FROZEN::NO; }
 	bool IsTeamMember() const
 	{

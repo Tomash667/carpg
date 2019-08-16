@@ -44,7 +44,7 @@ struct PlayerInfo
 	string name;
 	PlayerController* pc;
 	Unit* u;
-	Class clas;
+	Class* clas;
 	int id, ack, update_flags;
 	SystemAddress adr;
 	float timer, yspeed;

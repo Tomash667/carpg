@@ -3168,7 +3168,7 @@ void Game::CheckAutoTalk(Unit& unit, float dt)
 			// if not leader (in leader mode) or busy - don't check this unit
 			if((leader_mode && &u != Team.leader)
 				|| (u.player->dialog_ctx->dialog_mode || u.busy != Unit::Busy_No
-				|| !u.IsStanding() || u.player->action != PlayerController::Action_None))
+				|| !u.IsStanding() || u.player->action != PlayerAction::None))
 				continue;
 			float dist = Vec3::Distance(unit.pos, u.pos);
 			if(dist <= 8.f || leader_mode)

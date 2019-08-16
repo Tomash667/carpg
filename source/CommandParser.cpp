@@ -45,7 +45,7 @@ void CommandParser::AddCommands()
 	cmds.push_back(ConsoleCommand(&game->draw_phy, "draw_phy", "draw physical colliders (draw_phy 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&game->draw_col, "draw_col", "draw colliders (draw_col 0/1)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&game->game_speed, "speed", "game speed (speed 0-10)", F_CHEAT | F_WORLD_MAP | F_SINGLEPLAYER, 0.f, 10.f));
-	cmds.push_back(ConsoleCommand(&game->next_seed, "next_seed", "Random seed used in next map generation", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(&game->next_seed, "next_seed", "random seed used in next map generation", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&game->dont_wander, "dont_wander", "citizens don't wander around city (dont_wander 0/1)", F_ANYWHERE | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&game->draw_flags, "draw_flags", "set which elements of game draw (draw_flags int)", F_ANYWHERE | F_CHEAT | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(&net->mp_interp, "mp_interp", "interpolation interval (mp_interp 0.f-1.f)", F_MULTIPLAYER | F_WORLD_MAP | F_MP_VAR, 0.f, 1.f));
@@ -108,7 +108,7 @@ void CommandParser::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_QUICKSAVE, "quicksave", "save game on last slot", F_GAME | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(CMD_QUICKLOAD, "quickload", "load game from last slot", F_GAME | F_WORLD_MAP | F_MENU | F_SERVER));
 	cmds.push_back(ConsoleCommand(CMD_RESOLUTION, "resolution", "show or change display resolution (resolution [w h hz])", F_ANYWHERE | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(CMD_QS, "qs", "pick Random character, get ready and start game", F_LOBBY));
+	cmds.push_back(ConsoleCommand(CMD_QS, "qs", "pick random character, get ready and start game", F_LOBBY));
 	cmds.push_back(ConsoleCommand(CMD_CLEAR, "clear", "clear text", F_ANYWHERE | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(CMD_HURT, "hurt", "deal 100 damage to unit ('hurt 1' targets self)", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_BREAK_ACTION, "break_action", "break unit current action ('break 1' targets self)", F_GAME | F_CHEAT));
@@ -1144,48 +1144,48 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			{
 				if(t.IsSymbol('?'))
 				{
-					LocalVector2<Class> classes;
-					for(ClassInfo& ci : ClassInfo::classes)
+					LocalVector2<Class*> classes;
+					for(Class* clas : Class::classes)
 					{
-						if(ci.pickable)
-							classes.push_back(ci.class_id);
+						if(clas->IsPickable())
+							classes.push_back(clas);
 					}
 					std::sort(classes.begin(), classes.end(),
-						[](Class c1, Class c2) -> bool
+						[](Class* c1, Class* c2) -> bool
 					{
-						return strcmp(ClassInfo::classes[(int)c1].id, ClassInfo::classes[(int)c2].id) < 0;
+						return strcmp(c1->id.c_str(), c2->id.c_str()) < 0;
 					});
 					LocalString str = "List of classes: ";
 					Join(classes.Get(), str.get_ref(), ", ",
-						[](Class c)
+						[](Class* c)
 					{
-						return ClassInfo::classes[(int)c].id;
+						return c->id;
 					});
 					str += ".";
 					Msg(str.c_str());
 				}
 				else
 				{
-					const string& clas = t.MustGetItem();
-					ClassInfo* ci = ClassInfo::Find(clas);
-					if(ci)
+					const string& class_id = t.MustGetItem();
+					Class* clas = Class::TryGet(class_id);
+					if(clas)
 					{
-						if(ClassInfo::IsPickable(ci->class_id))
+						if(clas->IsPickable())
 						{
-							game_gui->server->PickClass(ci->class_id, false);
-							Msg("You picked Random character.");
+							game_gui->server->PickClass(clas, false);
+							Msg("You picked random character.");
 						}
 						else
-							Msg("Class '%s' is not pickable by players.", clas.c_str());
+							Msg("Class '%s' is not pickable by players.", class_id.c_str());
 					}
 					else
-						Msg("Invalid class name '%s'. Use 'Random ?' for list of classes.", clas.c_str());
+						Msg("Invalid class id '%s'. Use 'random ?' for list of classes.", class_id.c_str());
 				}
 			}
 			else
 			{
-				game_gui->server->PickClass(Class::RANDOM, false);
-				Msg("You picked Random character.");
+				game_gui->server->PickClass(nullptr, false);
+				Msg("You picked random character.");
 			}
 		}
 		else if(Net::IsOnline())

@@ -569,6 +569,7 @@ void LoadConfiguration(char* lpCmdLine)
 	game->mp_timeout = Clamp(cfg.GetFloat("timeout", 10.f), 1.f, 3600.f);
 	net->server_lan = cfg.GetBool("server_lan");
 	net->join_lan = cfg.GetBool("join_lan");
+	net->port = Clamp(cfg.GetInt("port", PORT), 0, 0xFFFF);
 
 	// quickstart
 	if(game->quickstart == QUICKSTART_NONE)
@@ -590,32 +591,6 @@ void LoadConfiguration(char* lpCmdLine)
 	int slot = cfg.GetInt("loadslot", -1);
 	if(slot != -1 && slot >= 1 && slot <= SaveSlot::MAX_SLOTS)
 		game->quickstart_slot = slot;
-
-	net->port = Clamp(cfg.GetInt("port", PORT), 0, 0xFFFF);
-
-	// quickstart class autopick
-	{
-		const string& clas = cfg.GetString("class", "");
-		if(!clas.empty())
-		{
-			ClassInfo* ci = ClassInfo::Find(clas);
-			if(ci)
-			{
-				if(ClassInfo::IsPickable(ci->class_id))
-					game->quickstart_class = ci->class_id;
-				else
-					Warn("Settings [class]: Class '%s' is not pickable by players.", clas.c_str());
-			}
-			else
-				Warn("Settings [class]: Invalid class '%s'.", clas.c_str());
-		}
-	}
-
-	game->quickstart_name = cfg.GetString("name", "Test");
-	if(game->quickstart_name.empty())
-		game->quickstart_name = "Test";
-
-	game->change_title_a = ToBool(cfg.GetBool3("change_title", False));
 
 	// window position & size
 	Int2 con_pos = cfg.GetInt2("con_pos", Int2(-1, -1));
@@ -642,6 +617,7 @@ void LoadConfiguration(char* lpCmdLine)
 	render->SetMultisampling(multisampling, multisampling_quality);
 
 	// miscellaneous
+	game->change_title_a = ToBool(cfg.GetBool3("change_title", False));
 	game->cl_postfx = cfg.GetBool("cl_postfx", true);
 	game->cl_normalmap = cfg.GetBool("cl_normalmap", true);
 	game->cl_specularmap = cfg.GetBool("cl_specularmap", true);

@@ -62,7 +62,7 @@ void DialogContext::StartDialog(Unit* talker, GameDialog* dialog)
 		dialog_quest = quest_mgr->FindAnyQuest(this->dialog->quest);
 	update_news = true;
 	update_locations = 1;
-	pc->action = PlayerController::Action_Talk;
+	pc->action = PlayerAction::Talk;
 	pc->action_unit = talker;
 	ClearChoices();
 	can_skip = true;
@@ -345,7 +345,7 @@ void DialogContext::UpdateLoop()
 
 			talker->busy = Unit::Busy_Trading;
 			EndDialog();
-			pc->action = PlayerController::Action_Trade;
+			pc->action = PlayerAction::Trade;
 			pc->action_unit = talker;
 			pc->chest_trade = &talker->stock->items;
 
@@ -655,7 +655,7 @@ void DialogContext::EndDialog()
 	talker->busy = Unit::Busy_No;
 	talker->look_target = nullptr;
 	talker = nullptr;
-	pc->action = PlayerController::Action_None;
+	pc->action = PlayerAction::None;
 
 	if(!is_local)
 	{
@@ -1281,9 +1281,9 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 	}
 	else if(strcmp(msg, "hero_about") == 0)
 	{
-		Class clas = talker->GetClass();
-		if(clas < Class::MAX)
-			DialogTalk(ClassInfo::classes[(int)clas].about.c_str());
+		Class* clas = talker->GetClass();
+		if(clas)
+			DialogTalk(clas->about.c_str());
 		++dialog_pos;
 		return true;
 	}
@@ -1312,7 +1312,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		Unit* t = talker;
 		t->busy = Unit::Busy_Trading;
 		EndDialog();
-		pc->action = PlayerController::Action_GiveItems;
+		pc->action = PlayerAction::GiveItems;
 		pc->action_unit = t;
 		pc->chest_trade = &t->items;
 		if(is_local)
@@ -1329,7 +1329,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		Unit* t = talker;
 		t->busy = Unit::Busy_Trading;
 		EndDialog();
-		pc->action = PlayerController::Action_ShareItems;
+		pc->action = PlayerAction::ShareItems;
 		pc->action_unit = t;
 		pc->chest_trade = &t->items;
 		if(is_local)
@@ -1534,7 +1534,10 @@ bool DialogContext::ExecuteSpecialIf(cstring msg)
 			return true;
 	}
 	else if(strcmp(msg, "is_not_mage") == 0)
-		return talker->GetClass() != Class::MAGE;
+	{
+		Class* clas = talker->GetClass();
+		return !clas || clas->id != "mage";
+	}
 	else if(strcmp(msg, "prefer_melee") == 0)
 		return talker->hero->melee;
 	else
@@ -1580,7 +1583,9 @@ cstring DialogContext::FormatString(const string& str_part)
 	else if(str_part == "rhero")
 	{
 		static string str;
-		NameHelper::GenerateHeroName(ClassInfo::GetRandom(), Rand() % 4 == 0, str);
+		bool crazy = Rand() % 4 == 0;
+		Class* clas = crazy ? Class::GetRandomCrazy() : Class::GetRandomHero();
+		NameHelper::GenerateHeroName(clas, crazy, str);
 		return str.c_str();
 	}
 	else if(strncmp(str_part.c_str(), "player/", 7) == 0)

@@ -325,15 +325,15 @@ void Language::ParseObject(Tokenizer& t)
 		// }
 		{
 			const string& id = t.MustGetText();
-			ClassInfo* ci = ClassInfo::Find(id);
-			if(!ci)
+			Class* clas = Class::TryGet(id);
+			if(!clas)
 				t.Throw("Invalid class '%s'.", id.c_str());
 			t.Next();
 			t.AssertSymbol('{');
 			t.Next();
-			GetString(t, P_NAME, ci->name);
-			GetString(t, P_DESC, ci->desc);
-			GetString(t, P_ABOUT, ci->about);
+			GetString(t, P_NAME, clas->name);
+			GetString(t, P_DESC, clas->desc);
+			GetString(t, P_ABOUT, clas->about);
 			t.AssertSymbol('}');
 		}
 		break;
@@ -380,13 +380,13 @@ void Language::ParseObject(Tokenizer& t)
 			}
 			else
 			{
-				ClassInfo* ci = ClassInfo::Find(t.MustGetItem());
-				if(ci)
+				Class* clas = Class::TryGet(t.MustGetItem());
+				if(clas)
 				{
 					if(nickname)
-						names = &ci->nicknames;
+						names = &clas->nicknames;
 					else
-						names = &ci->names;
+						names = &clas->names;
 				}
 				else
 					t.Unexpected();
@@ -447,14 +447,14 @@ void Language::ParseObject(Tokenizer& t)
 		// }
 		{
 			const string& id = t.MustGetText();
-			PerkInfo* ci = PerkInfo::Find(id);
-			if(!ci)
+			PerkInfo* perk = PerkInfo::Find(id);
+			if(!perk)
 				t.Throw("Invalid perk '%s'.", id.c_str());
 			t.Next();
 			t.AssertSymbol('{');
 			t.Next();
-			GetString(t, P_NAME, ci->name);
-			GetString(t, P_DESC, ci->desc);
+			GetString(t, P_NAME, perk->name);
+			GetString(t, P_DESC, perk->desc);
 			t.AssertSymbol('}');
 		}
 		break;
@@ -625,13 +625,23 @@ void Language::LoadLanguageFiles()
 	for(Building* building : Building::buildings)
 	{
 		if(IsSet(building->flags, Building::HAVE_NAME) && building->name.empty())
-			Warn("Building '%s' don't have name.", building->id.c_str());
+			Warn("Building '%s': empty name.", building->id.c_str());
 	}
 
 	for(BaseUsable* usable : BaseUsable::usables)
 	{
 		if(usable->name.empty())
-			Warn("Usables '%s' don't have name.", usable->name.c_str());
+			Warn("Usables '%s': empty name.", usable->name.c_str());
+	}
+
+	for(Class* clas : Class::classes)
+	{
+		if(clas->name.empty())
+			Warn("Class %s: empty name.", clas->id.c_str());
+		if(clas->desc.empty())
+			Warn("Class %s: empty desc.", clas->id.c_str());
+		if(clas->about.empty())
+			Warn("Class %s: empty about.", clas->id.c_str());
 	}
 }
 

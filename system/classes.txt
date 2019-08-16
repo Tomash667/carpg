@@ -1,0 +1,53 @@
+class barbarian {
+	icon "icon_barbarian.png"
+}
+
+class bard {
+	icon "icon_bard.png"
+}
+
+class cleric {
+	icon "icon_cleric.png"
+}
+
+class druid {
+	icon "icon_druid.png"
+}
+
+class hunter {
+	player base_hunter
+	hero hero_hunter 2
+	crazy crazy_hunter 2
+	icon "icon_hunter.png"
+	action summon_wolf
+}
+
+class mage {
+	hero hero_mage
+	crazy crazy_mage
+	icon "icon_mage.png"
+}
+
+class monk {
+	icon "icon_monk.png"
+}
+
+class paladin {
+	icon "icon_paladin.png"
+}
+
+class rogue {
+	player base_rogue
+	hero hero_rogue 2
+	crazy crazy_rogue 2
+	icon "icon_rogue.png"
+	action dash
+}
+
+class warrior {
+	player base_warrior
+	hero hero_warrior 2
+	crazy crazy_warrior 2
+	icon "icon_warrior.png"
+	action bull_charge
+}

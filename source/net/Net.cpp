@@ -1020,7 +1020,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					// start looting unit
 					c.id = 1;
 					looted_unit->busy = Unit::Busy_Looted;
-					player.action = PlayerController::Action_LootUnit;
+					player.action = PlayerAction::LootUnit;
 					player.action_unit = looted_unit;
 					player.chest_trade = &looted_unit->items;
 				}
@@ -1058,7 +1058,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				{
 					// start looting chest
 					c.id = 1;
-					player.action = PlayerController::Action_LootChest;
+					player.action = PlayerAction::LootChest;
 					player.action_chest = chest;
 					player.chest_trade = &chest->items;
 					chest->OpenClose(player.unit);
@@ -1130,21 +1130,21 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					else
 					{
 						// player get item from corpse/chest/npc or bought from trader
-						uint team_count = (player.action == PlayerController::Action_Trade ? 0 : min((uint)count, slot.team_count));
+						uint team_count = (player.action == PlayerAction::Trade ? 0 : min((uint)count, slot.team_count));
 						unit.AddItem2(slot.item, (uint)count, team_count, false, false);
-						if(player.action == PlayerController::Action_Trade)
+						if(player.action == PlayerAction::Trade)
 						{
 							int price = ItemHelper::GetItemPrice(slot.item, unit, true) * count;
 							unit.gold -= price;
 							player.Train(TrainWhat::Trade, (float)price, 0);
 						}
-						else if(player.action == PlayerController::Action_ShareItems && slot.item->type == IT_CONSUMABLE
+						else if(player.action == PlayerAction::ShareItems && slot.item->type == IT_CONSUMABLE
 							&& slot.item->ToConsumable().IsHealingPotion())
 							player.action_unit->ai->have_potion = 1;
-						if(player.action != PlayerController::Action_LootChest && player.action != PlayerController::Action_LootContainer)
+						if(player.action != PlayerAction::LootChest && player.action != PlayerAction::LootContainer)
 						{
 							player.action_unit->weight -= slot.item->weight*count;
-							if(player.action == PlayerController::Action_LootUnit)
+							if(player.action == PlayerAction::LootUnit)
 							{
 								if(slot.item == player.action_unit->used_item)
 								{
@@ -1178,7 +1178,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				{
 					// getting equipped item
 					ITEM_SLOT type = IIndexToSlot(i_index);
-					if(player.action == PlayerController::Action_LootChest || player.action == PlayerController::Action_LootContainer
+					if(player.action == PlayerAction::LootChest || player.action == PlayerAction::LootContainer
 						|| type < SLOT_WEAPON || type >= SLOT_MAX || !player.action_unit->slots[type])
 					{
 						Error("Update server: GET_ITEM from %s, invalid or empty slot %d.", info.name.c_str(), type);
@@ -1188,7 +1188,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					// get equipped item from unit
 					const Item*& slot = player.action_unit->slots[type];
 					unit.AddItem2(slot, 1u, 1u, false, false);
-					if(player.action == PlayerController::Action_LootUnit && type == SLOT_WEAPON && slot == player.action_unit->used_item)
+					if(player.action == PlayerAction::LootUnit && type == SLOT_WEAPON && slot == player.action_unit->used_item)
 					{
 						player.action_unit->used_item = nullptr;
 						// removed item from hand, send info to other players
@@ -1255,11 +1255,11 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					uint team_count = min(count, slot.team_count);
 
 					// add item
-					if(player.action == PlayerController::Action_LootChest)
+					if(player.action == PlayerAction::LootChest)
 						player.action_chest->AddItem(slot.item, count, team_count, false);
-					else if(player.action == PlayerController::Action_LootContainer)
+					else if(player.action == PlayerAction::LootContainer)
 						player.action_usable->container->AddItem(slot.item, count, team_count);
-					else if(player.action == PlayerController::Action_Trade)
+					else if(player.action == PlayerAction::Trade)
 					{
 						InsertItem(*player.chest_trade, slot.item, count, team_count);
 						int price = ItemHelper::GetItemPrice(slot.item, unit, false);
@@ -1277,12 +1277,12 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					{
 						Unit* t = player.action_unit;
 						uint add_as_team = team_count;
-						if(player.action == PlayerController::Action_ShareItems)
+						if(player.action == PlayerAction::ShareItems)
 						{
 							if(slot.item->type == IT_CONSUMABLE && slot.item->ToConsumable().IsHealingPotion())
 								t->ai->have_potion = 2;
 						}
-						else if(player.action == PlayerController::Action_GiveItems)
+						else if(player.action == PlayerAction::GiveItems)
 						{
 							add_as_team = 0;
 							int price = slot.item->value / 2;
@@ -1301,11 +1301,11 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 								t->ai->have_potion = 2;
 						}
 						t->AddItem2(slot.item, count, add_as_team, false, false);
-						if(player.action == PlayerController::Action_ShareItems || player.action == PlayerController::Action_GiveItems)
+						if(player.action == PlayerAction::ShareItems || player.action == PlayerAction::GiveItems)
 						{
 							if(slot.item->type == IT_CONSUMABLE && t->ai->have_potion == 0)
 								t->ai->have_potion = 1;
-							if(player.action == PlayerController::Action_GiveItems)
+							if(player.action == PlayerAction::GiveItems)
 							{
 								t->UpdateInventory();
 								NetChangePlayer& c = Add1(info.changes);
@@ -1336,11 +1336,11 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					const Item*& slot = unit.slots[type];
 					int price = ItemHelper::GetItemPrice(slot, unit, false);
 					// add new item
-					if(player.action == PlayerController::Action_LootChest)
+					if(player.action == PlayerAction::LootChest)
 						player.action_chest->AddItem(slot, 1u, 0u, false);
-					else if(player.action == PlayerController::Action_LootContainer)
+					else if(player.action == PlayerAction::LootContainer)
 						player.action_usable->container->AddItem(slot, 1u, 0u);
-					else if(player.action == PlayerController::Action_Trade)
+					else if(player.action == PlayerAction::Trade)
 					{
 						InsertItem(*player.chest_trade, slot, 1u, 0u);
 						unit.gold += price;
@@ -1349,7 +1349,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					else
 					{
 						player.action_unit->AddItem2(slot, 1u, 0u, false, false);
-						if(player.action == PlayerController::Action_GiveItems)
+						if(player.action == PlayerAction::GiveItems)
 						{
 							price = slot->value / 2;
 							if(player.action_unit->gold >= price)
@@ -1393,7 +1393,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				bool changes = false;
 
 				// slots
-				if(player.action != PlayerController::Action_LootChest && player.action != PlayerController::Action_LootContainer)
+				if(player.action != PlayerAction::LootChest && player.action != PlayerAction::LootContainer)
 				{
 					const Item** slots = player.action_unit->slots;
 					for(int i = 0; i < SLOT_MAX; ++i)
@@ -1450,9 +1450,9 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				break;
 			}
 
-			if(player.action == PlayerController::Action_LootChest)
+			if(player.action == PlayerAction::LootChest)
 				player.action_chest->OpenClose(nullptr);
-			else if(player.action == PlayerController::Action_LootContainer)
+			else if(player.action == PlayerAction::LootContainer)
 			{
 				unit.UseUsable(nullptr);
 
@@ -1467,7 +1467,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				player.action_unit->busy = Unit::Busy_No;
 				player.action_unit->look_target = nullptr;
 			}
-			player.action = PlayerController::Action_None;
+			player.action = PlayerAction::None;
 			break;
 		// player takes item for credit
 		case NetChange::TAKE_ITEM_CREDIT:
@@ -1740,7 +1740,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							c.type = NetChangePlayer::LOOT;
 							c.id = 1;
 
-							player.action = PlayerController::Action_LootContainer;
+							player.action = PlayerAction::LootContainer;
 							player.action_usable = usable;
 							player.chest_trade = &usable->container->items;
 						}
@@ -1914,7 +1914,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				if(game_state != GS_LEVEL)
 					break;
 
-				if(player.action == PlayerController::Action_GiveItems)
+				if(player.action == PlayerAction::GiveItems)
 				{
 					const Item* item = unit.GetIIndexItem(i_index);
 					if(item)
@@ -2780,8 +2780,8 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				{
 					if(count < 0 || count > unit.gold)
 						Error("Update server: PUT_GOLD from %s, invalid count %d (have %d).", info.name.c_str(), count, unit.gold);
-					else if(player.action != PlayerController::Action_LootChest && player.action != PlayerController::Action_LootUnit
-						&& player.action != PlayerController::Action_LootContainer)
+					else if(player.action != PlayerAction::LootChest && player.action != PlayerAction::LootUnit
+						&& player.action != PlayerAction::LootContainer)
 					{
 						Error("Update server: PUT_GOLD from %s, player is not trading.", info.name.c_str());
 					}
@@ -4760,7 +4760,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 							dialog_context.dialog_wait = 1.f;
 							dialog_context.skip_id = skip_id;
 						}
-						else if(pc->action == PlayerController::Action_Talk && pc->action_unit == unit)
+						else if(pc->action == PlayerAction::Talk && pc->action_unit == unit)
 						{
 							predialog = text;
 							dialog_context.skip_id = skip_id;
@@ -6609,7 +6609,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 					if(!can_loot)
 					{
 						game_gui->messages->AddGameMsg3(GMS_IS_LOOTED);
-						pc->action = PlayerController::Action_None;
+						pc->action = PlayerAction::None;
 						break;
 					}
 
@@ -6621,9 +6621,9 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 					}
 
 					// start trade
-					if(pc->action == PlayerController::Action_LootUnit)
+					if(pc->action == PlayerAction::LootUnit)
 						game_gui->inventory->StartTrade(I_LOOT_BODY, *pc->action_unit);
-					else if(pc->action == PlayerController::Action_LootContainer)
+					else if(pc->action == PlayerAction::LootContainer)
 						game_gui->inventory->StartTrade(I_LOOT_CONTAINER, pc->action_usable->container->items);
 					else
 						game_gui->inventory->StartTrade(I_LOOT_CHEST, pc->action_chest->items);
@@ -6639,7 +6639,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 					else if(netid == -1)
 					{
 						// unit is busy
-						pc->action = PlayerController::Action_None;
+						pc->action = PlayerAction::None;
 						game_gui->messages->AddGameMsg3(GMS_UNIT_BUSY);
 					}
 					else if(netid != -2 && game_state == GS_LEVEL) // not entered/left building
@@ -6650,7 +6650,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 							Error("Update single client: START_DIALOG, missing unit %d.", netid);
 						else
 						{
-							pc->action = PlayerController::Action_Talk;
+							pc->action = PlayerAction::Talk;
 							pc->action_unit = unit;
 							dialog_context.StartDialog(unit);
 							if(!predialog.empty())
@@ -6714,8 +6714,8 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 				if(game_state == GS_LEVEL)
 				{
 					dialog_context.dialog_mode = false;
-					if(pc->action == PlayerController::Action_Talk)
-						pc->action = PlayerController::Action_None;
+					if(pc->action == PlayerAction::Talk)
+						pc->action = PlayerAction::None;
 					pc->unit->look_target = nullptr;
 				}
 				break;
@@ -6804,7 +6804,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 						Chest* chest = game_level->FindChest(netid);
 						if(!chest)
 							Error("Update single client: ADD_ITEMS_CHEST, missing chest %d.", netid);
-						else if(pc->action != PlayerController::Action_LootChest || pc->action_chest != chest)
+						else if(pc->action != PlayerAction::LootChest || pc->action_chest != chest)
 							Error("Update single client: ADD_ITEMS_CHEST, chest %d is not opened by player.", netid);
 						else
 						{
@@ -6878,8 +6878,8 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 				if(game_state == GS_LEVEL)
 				{
 					game_gui->messages->AddGameMsg3(GMS_USED);
-					if(pc->action == PlayerController::Action_LootContainer)
-						pc->action = PlayerController::Action_None;
+					if(pc->action == PlayerAction::LootContainer)
+						pc->action = PlayerAction::None;
 					if(pc->unit->action == A_PREPARE)
 						pc->unit->action = A_NONE;
 				}

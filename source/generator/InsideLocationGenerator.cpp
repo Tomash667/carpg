@@ -1301,7 +1301,7 @@ void InsideLocationGenerator::SpawnHeroesInsideDungeon()
 	for(int i = 0; i < count; ++i)
 	{
 		int level = loc->st + Random(-2, 2);
-		Unit* u = game_level->SpawnUnitInsideRoom(*room, ClassInfo::GetRandomData(), level);
+		Unit* u = game_level->SpawnUnitInsideRoom(*room, *Class::GetRandomHero()->hero, level);
 		if(u)
 			heroes->push_back(u);
 		else

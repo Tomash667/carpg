@@ -84,28 +84,28 @@ const float SMALL_DISTANCE = 0.001f;
 
 Matrix m1, m2, m3, m4;
 
-PlayerController::Action InventoryModeToActionRequired(InventoryMode imode)
+PlayerAction InventoryModeToActionRequired(InventoryMode imode)
 {
 	switch(imode)
 	{
 	case I_NONE:
 	case I_INVENTORY:
-		return PlayerController::Action_None;
+		return PlayerAction::None;
 	case I_LOOT_BODY:
-		return PlayerController::Action_LootUnit;
+		return PlayerAction::LootUnit;
 	case I_LOOT_CHEST:
-		return PlayerController::Action_LootChest;
+		return PlayerAction::LootChest;
 	case I_TRADE:
-		return PlayerController::Action_Trade;
+		return PlayerAction::Trade;
 	case I_SHARE:
-		return PlayerController::Action_ShareItems;
+		return PlayerAction::ShareItems;
 	case I_GIVE:
-		return PlayerController::Action_GiveItems;
+		return PlayerAction::GiveItems;
 	case I_LOOT_CONTAINER:
-		return PlayerController::Action_LootContainer;
+		return PlayerAction::LootContainer;
 	default:
 		assert(0);
-		return PlayerController::Action_None;
+		return PlayerAction::None;
 	}
 }
 
@@ -954,20 +954,20 @@ void Game::UpdateGame(float dt)
 		}
 		else if(game_gui->inventory->mode == I_LOOT_CHEST)
 		{
-			assert(pc->action == PlayerController::Action_LootChest);
+			assert(pc->action == PlayerAction::LootChest);
 			pos = pc->action_chest->pos;
 			pc->unit->animation = ANI_KNEELS;
 		}
 		else if(game_gui->inventory->mode == I_LOOT_BODY)
 		{
-			assert(pc->action == PlayerController::Action_LootUnit);
+			assert(pc->action == PlayerAction::LootUnit);
 			pos = pc->action_unit->GetLootCenter();
 			pc->unit->animation = ANI_KNEELS;
 		}
 		else if(game_gui->inventory->mode == I_LOOT_CONTAINER)
 		{
 			// TODO: animacja
-			assert(pc->action == PlayerController::Action_LootContainer);
+			assert(pc->action == PlayerAction::LootContainer);
 			pos = pc->action_usable->pos;
 			pc->unit->animation = ANI_STAND;
 		}
@@ -2140,7 +2140,7 @@ void Game::UpdatePlayer(float dt)
 					else
 					{
 						// rozpoczynij wymianê przedmiotów
-						pc->action = PlayerController::Action_LootUnit;
+						pc->action = PlayerAction::LootUnit;
 						pc->action_unit = u2;
 						u2->busy = Unit::Busy_Looted;
 						pc->chest_trade = &u2->items;
@@ -2153,7 +2153,7 @@ void Game::UpdatePlayer(float dt)
 					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::LOOT_UNIT;
 					c.id = u2->netid;
-					pc->action = PlayerController::Action_LootUnit;
+					pc->action = PlayerAction::LootUnit;
 					pc->action_unit = u2;
 					pc->chest_trade = &u2->items;
 				}
@@ -2180,7 +2180,7 @@ void Game::UpdatePlayer(float dt)
 					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::TALK;
 					c.id = u2->netid;
-					pc->action = PlayerController::Action_Talk;
+					pc->action = PlayerAction::Talk;
 					pc->action_unit = u2;
 					predialog.clear();
 				}
@@ -2204,7 +2204,7 @@ void Game::UpdatePlayer(float dt)
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::USE_CHEST;
 				c.id = pc_data.before_player_ptr.chest->netid;
-				pc->action = PlayerController::Action_LootChest;
+				pc->action = PlayerAction::LootChest;
 				pc->action_chest = pc_data.before_player_ptr.chest;
 				pc->chest_trade = &pc->action_chest->items;
 				pc->unit->action = A_PREPARE;
@@ -8578,7 +8578,7 @@ void Game::DeleteUnit(Unit* unit)
 			pc_data.selected_unit = nullptr;
 		if(Net::IsClient())
 		{
-			if(pc->action == PlayerController::Action_LootUnit && pc->action_unit == unit)
+			if(pc->action == PlayerAction::LootUnit && pc->action_unit == unit)
 				pc->unit->BreakAction();
 		}
 		else
@@ -8586,7 +8586,7 @@ void Game::DeleteUnit(Unit* unit)
 			for(PlayerInfo& player : net->players)
 			{
 				PlayerController* pc = player.pc;
-				if(pc->action == PlayerController::Action_LootUnit && pc->action_unit == unit)
+				if(pc->action == PlayerAction::LootUnit && pc->action_unit == unit)
 					pc->action_unit = nullptr;
 			}
 		}
@@ -8595,20 +8595,20 @@ void Game::DeleteUnit(Unit* unit)
 		{
 			switch(unit->player->action)
 			{
-			case PlayerController::Action_LootChest:
+			case PlayerAction::LootChest:
 				unit->player->action_chest->OpenClose(nullptr);
 				break;
-			case PlayerController::Action_LootUnit:
+			case PlayerAction::LootUnit:
 				unit->player->action_unit->busy = Unit::Busy_No;
 				break;
-			case PlayerController::Action_Trade:
-			case PlayerController::Action_Talk:
-			case PlayerController::Action_GiveItems:
-			case PlayerController::Action_ShareItems:
+			case PlayerAction::Trade:
+			case PlayerAction::Talk:
+			case PlayerAction::GiveItems:
+			case PlayerAction::ShareItems:
 				unit->player->action_unit->busy = Unit::Busy_No;
 				unit->player->action_unit->look_target = nullptr;
 				break;
-			case PlayerController::Action_LootContainer:
+			case PlayerAction::LootContainer:
 				unit->UseUsable(nullptr);
 				break;
 			}
@@ -9342,7 +9342,7 @@ void Game::OnCloseInventory()
 	if(Any(pc->next_action, NA_PUT, NA_GIVE, NA_SELL))
 		pc->next_action = NA_NONE;
 
-	pc->action = PlayerController::Action_None;
+	pc->action = PlayerAction::None;
 	game_gui->inventory->mode = I_NONE;
 }
 
@@ -9495,7 +9495,7 @@ void Game::PlayerUseUsable(Usable* usable, bool after_action)
 
 		if(IsSet(bu.use_flags, BaseUsable::CONTAINER))
 		{
-			pc->action = PlayerController::Action_LootContainer;
+			pc->action = PlayerAction::LootContainer;
 			pc->action_usable = pc_data.before_player_ptr.usable;
 			pc->chest_trade = &pc->action_usable->container->items;
 		}

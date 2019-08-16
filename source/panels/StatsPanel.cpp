@@ -153,7 +153,7 @@ void StatsPanel::SetText()
 	int hp = int(pc->unit->hp);
 	if(hp == 0 && pc->unit->hp > 0)
 		hp = 1;
-	flowStats.Add()->Set(Format("%s: %s", txClass, ClassInfo::classes[(int)pc->unit->GetClass()].name.c_str()), G_STATS, STATS_CLASS);
+	flowStats.Add()->Set(Format("%s: %s", txClass, pc->unit->GetClass()->name.c_str()), G_STATS, STATS_CLASS);
 	flowStats.Add()->Set(Format(txTraitsStart, hp, int(pc->unit->hpmax), int(pc->unit->stamina), int(pc->unit->stamina_max)), G_INVALID, -1);
 	cstring meleeAttack = (pc->unit->HaveWeapon() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetWeapon())) : "-");
 	cstring rangedAttack = (pc->unit->HaveBow() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetBow())) : "-");
@@ -251,9 +251,9 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id)
 			break;
 		case STATS_CLASS:
 			{
-				ClassInfo& info = ClassInfo::classes[(int)pc->unit->GetClass()];
-				tooltip.big_text = info.name;
-				tooltip.text = info.desc;
+				Class* clas = pc->unit->GetClass();
+				tooltip.big_text = clas->name;
+				tooltip.text = clas->desc;
 				if(game->devmode)
 				{
 					if(Net::IsLocal())

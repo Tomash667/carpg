@@ -277,11 +277,11 @@ void SaveLoad::SetText()
 		s += slot.player_name;
 		exists = true;
 	}
-	if(slot.player_class != Class::INVALID)
+	if(slot.player_class)
 	{
 		if(exists)
 			s += " ";
-		s += ClassInfo::classes[(int)slot.player_class].name;
+		s += slot.player_class->name;
 		exists = true;
 	}
 	if(slot.hardcore)
@@ -366,19 +366,13 @@ void SaveLoad::LoadSaveSlots()
 					slot.save_date = cfg.GetInt64("save_date");
 					const string& str = cfg.GetString("player_class");
 					if(str == "0")
-						slot.player_class = Class::WARRIOR;
+						slot.player_class = Class::TryGet("warrior");
 					else if(str == "1")
-						slot.player_class = Class::HUNTER;
+						slot.player_class = Class::TryGet("hunter");
 					else if(str == "2")
-						slot.player_class = Class::ROGUE;
+						slot.player_class = Class::TryGet("rogue");
 					else
-					{
-						ClassInfo* ci = ClassInfo::Find(str);
-						if(ci && ci->pickable)
-							slot.player_class = ci->class_id;
-						else
-							slot.player_class = Class::INVALID;
-					}
+						slot.player_class = Class::TryGet(str);
 				}
 				else
 				{
@@ -388,7 +382,7 @@ void SaveLoad::LoadSaveSlots()
 					slot.game_day = -1;
 					slot.game_month = -1;
 					slot.game_year = -1;
-					slot.player_class = Class::INVALID;
+					slot.player_class = nullptr;
 					slot.mp_players.clear();
 					slot.save_date = 0;
 					slot.hardcore = false;

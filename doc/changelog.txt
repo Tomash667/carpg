@@ -3,6 +3,7 @@ Historia zmian
 --------------------------------------------------------------------------------
 Wersja 0.12 (???):
 ! nie mo¿na wczytywaæ ju¿ zapisów z wersji 0.4.20 lub starszej
++ wczytywanie klas postaci z pliku
 + aktualizacja bibliotek: FMod 1.10.14
 
 --------------------------------------------------------------------------------

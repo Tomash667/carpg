@@ -215,7 +215,7 @@ void Inventory::StartTrade(InventoryMode mode, Unit& unit)
 		inv_trade_mine->mode = InventoryPanel::SHARE_MY;
 		inv_trade_other->mode = InventoryPanel::SHARE_OTHER;
 		inv_trade_other->title = Format("%s - %s", txShareItems, unit.GetName());
-		pc->action = PlayerController::Action_ShareItems;
+		pc->action = PlayerAction::ShareItems;
 		pc->action_unit = &unit;
 		pc->chest_trade = &unit.items;
 		break;
@@ -223,7 +223,7 @@ void Inventory::StartTrade(InventoryMode mode, Unit& unit)
 		inv_trade_mine->mode = InventoryPanel::GIVE_MY;
 		inv_trade_other->mode = InventoryPanel::GIVE_OTHER;
 		inv_trade_other->title = Format("%s - %s", txGiveItems, unit.GetName());
-		pc->action = PlayerController::Action_GiveItems;
+		pc->action = PlayerAction::GiveItems;
 		pc->action_unit = &unit;
 		pc->chest_trade = &unit.items;
 		break;
@@ -261,7 +261,7 @@ void Inventory::StartTrade(InventoryMode mode, vector<ItemSlot>& items, Unit* un
 		inv_trade_other->mode = InventoryPanel::TRADE_OTHER;
 		inv_trade_other->unit = unit;
 		inv_trade_other->title = Format("%s - %s", txTrading, unit->GetName());
-		pc->action = PlayerController::Action_Trade;
+		pc->action = PlayerAction::Trade;
 		pc->action_unit = unit;
 		pc->chest_trade = &items;
 		break;
@@ -293,7 +293,7 @@ void Inventory::StartTrade2(InventoryMode mode, void* ptr)
 	case I_LOOT_CHEST:
 		{
 			Chest* chest = (Chest*)ptr;
-			pc->action = PlayerController::Action_LootChest;
+			pc->action = PlayerAction::LootChest;
 			pc->action_chest = chest;
 			pc->chest_trade = &pc->action_chest->items;
 			inv_trade_mine->mode = InventoryPanel::LOOT_MY;
@@ -307,7 +307,7 @@ void Inventory::StartTrade2(InventoryMode mode, void* ptr)
 	case I_LOOT_CONTAINER:
 		{
 			Usable* usable = (Usable*)ptr;
-			pc->action = PlayerController::Action_LootContainer;
+			pc->action = PlayerAction::LootContainer;
 			pc->action_usable = usable;
 			pc->chest_trade = &pc->action_usable->container->items;
 			inv_trade_mine->mode = InventoryPanel::LOOT_MY;
@@ -347,9 +347,9 @@ void Inventory::BuildTmpInventory(int index)
 	else
 	{
 		// przedmioty innej postaci, w skrzyni
-		if(pc->action == PlayerController::Action_LootChest
-			|| pc->action == PlayerController::Action_Trade
-			|| pc->action == PlayerController::Action_LootContainer)
+		if(pc->action == PlayerAction::LootChest
+			|| pc->action == PlayerAction::Trade
+			|| pc->action == PlayerAction::LootContainer)
 			slots = nullptr;
 		else
 			slots = pc->action_unit->slots;
@@ -1342,7 +1342,7 @@ void InventoryPanel::Event(GuiEvent e)
 		bool changes = false;
 
 		// slots
-		if(game->pc->action != PlayerController::Action_LootChest && game->pc->action != PlayerController::Action_LootContainer)
+		if(game->pc->action != PlayerAction::LootChest && game->pc->action != PlayerAction::LootContainer)
 		{
 			const Item** unit_slots = game->pc->action_unit->slots;
 			for(int i = 0; i < SLOT_MAX; ++i)
@@ -2460,7 +2460,7 @@ void InventoryPanel::IsBetterItemResponse(bool is_better)
 	int iindex = GetLockIndexOrSlotAndRelease();
 	if(iindex == Unit::INVALID_IINDEX)
 		Warn("InventoryPanel::IsBetterItem, item removed.");
-	else if(game->pc->action != PlayerController::Action_GiveItems)
+	else if(game->pc->action != PlayerAction::GiveItems)
 		Warn("InventoryPanel::IsBetterItem, no longer giving items.");
 	else if(!is_better)
 		gui->SimpleDialog(base.txWontTakeItem, this);

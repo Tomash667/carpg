@@ -51,7 +51,7 @@ enum GamePacket : byte
 	{
 		byte - id
 		bool - is ready
-		byte - class
+		string1 - class
 		string1 - nick
 	}
 	*/

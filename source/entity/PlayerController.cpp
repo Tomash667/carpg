@@ -35,7 +35,7 @@ void PlayerController::Init(Unit& _unit, bool partial)
 	idle_timer = Random(1.f, 2.f);
 	credit = 0;
 	on_credit = false;
-	action = Action_None;
+	action = PlayerAction::None;
 	free_days = 0;
 	recalculate_level = false;
 	split_gold = 0.f;
@@ -399,7 +399,7 @@ void PlayerController::Save(FileWriter& f)
 void PlayerController::Load(FileReader& f)
 {
 	if(LOAD_VERSION < V_0_7)
-		f.Skip<Class>(); // old class info
+		f.Skip<int>(); // old class info
 	f >> name;
 	f >> move_tick;
 	f >> last_dmg;
@@ -634,7 +634,7 @@ void PlayerController::Load(FileReader& f)
 	else
 		InitShortcuts();
 
-	action = Action_None;
+	action = PlayerAction::None;
 }
 
 //=================================================================================================
@@ -1164,7 +1164,7 @@ bool PlayerController::IsLeader() const
 //=================================================================================================
 Action& PlayerController::GetAction()
 {
-	auto action = ClassInfo::classes[(int)unit->GetClass()].action;
+	Action* action = unit->GetClass()->action;
 	assert(action);
 	return *action;
 }
@@ -1174,7 +1174,7 @@ bool PlayerController::UseActionCharge()
 {
 	if (action_charges == 0 || action_cooldown > 0)
 		return false;
-	auto& action = GetAction();
+	Action& action = GetAction();
 	--action_charges;
 	action_cooldown = action.cooldown;
 	if(action_recharge == 0)

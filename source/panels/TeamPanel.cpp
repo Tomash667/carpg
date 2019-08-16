@@ -110,9 +110,10 @@ void TeamPanel::Draw(ControlDrawData*)
 	Matrix mat;
 	for(Unit& unit : Team.members)
 	{
-		if(unit.GetClass() != Class::INVALID)
+		Class* clas = unit.GetClass();
+		if(clas)
 		{
-			Texture* t = ClassInfo::classes[(int)unit.GetClass()].icon;
+			Texture* t = clas->icon;
 			Int2 img_size;
 			Vec2 scale;
 			t->ResizeImage(Int2(32, 32), img_size, scale);

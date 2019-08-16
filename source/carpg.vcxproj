@@ -197,6 +197,8 @@
     <ClInclude Include="system\BuildingGroup.h" />
     <ClInclude Include="system\BuildingLoader.h" />
     <ClInclude Include="system\BuildingScript.h" />
+    <ClInclude Include="system\Class.h" />
+    <ClInclude Include="system\ClassLoader.h" />
     <ClInclude Include="system\Content.h" />
     <ClInclude Include="system\ContentLoader.h" />
     <ClInclude Include="entity\AIController.h" />
@@ -291,7 +293,6 @@
     <ClInclude Include="stats\Attribute.h" />
     <ClInclude Include="stats\BaseLocation.h" />
     <ClInclude Include="stats\BaseTrap.h" />
-    <ClInclude Include="stats\Class.h" />
     <ClInclude Include="stats\Const.h" />
     <ClInclude Include="stats\DamageTypes.h" />
     <ClInclude Include="stats\Effect.h" />
@@ -313,6 +314,8 @@
     <ClCompile Include="entity\Encounter.cpp" />
     <ClCompile Include="GameFile.cpp" />
     <ClCompile Include="Settings.cpp" />
+    <ClCompile Include="system\Class.cpp" />
+    <ClCompile Include="system\ClassLoader.cpp" />
     <ClCompile Include="system\Content.cpp" />
     <ClCompile Include="system\QuestList.cpp" />
     <ClCompile Include="system\QuestLoader.cpp" />
@@ -478,7 +481,6 @@
     <ClCompile Include="stats\Attribute.cpp" />
     <ClCompile Include="stats\BaseLocation.cpp" />
     <ClCompile Include="stats\BaseTrap.cpp" />
-    <ClCompile Include="stats\Class.cpp" />
     <ClCompile Include="stats\Effect.cpp" />
     <ClCompile Include="stats\MusicTrack.cpp" />
     <ClCompile Include="stats\Perk.cpp" />

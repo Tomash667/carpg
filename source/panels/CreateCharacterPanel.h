@@ -48,14 +48,14 @@ public:
 	void Event(GuiEvent e) override;
 	void Init();
 	void Show(bool enter_name);
-	void ShowRedo(Class clas, HumanData& hd, CreatedCharacter& cc);
+	void ShowRedo(Class* clas, HumanData& hd, CreatedCharacter& cc);
 
 	// data
 	CustomButton custom_x, custom_bt[2];
 
 	// results
 	CreatedCharacter cc;
-	Class clas;
+	Class* clas;
 	string player_name;
 	Unit* unit;
 	int hair_color_index, last_hair_color_index;

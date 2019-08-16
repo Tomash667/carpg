@@ -396,7 +396,7 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 	// info
 	f << (slot ? slot->text : "");
 	f << pc->name;
-	f << ClassInfo::classes[(int)pc->unit->data->clas].id;
+	f << pc->unit->GetClass()->id;
 	if(Net::IsOnline())
 	{
 		f.WriteCasted<byte>(net->active_players - 1);
@@ -553,9 +553,7 @@ bool Game::LoadGameHeader(GameReader& f, SaveSlot& slot)
 		slot.on_worldmap = IsSet(flags, SF_ON_WORLDMAP);
 		f >> slot.text;
 		f >> slot.player_name;
-		const string& class_id = f.ReadString1();
-		ClassInfo* ci = ClassInfo::Find(class_id);
-		slot.player_class = (ci ? ci->class_id : Class::INVALID);
+		slot.player_class = Class::TryGet(f.ReadString1());
 		if(IsSet(flags, SF_ONLINE))
 			f.ReadStringArray<byte, byte>(slot.mp_players);
 		else

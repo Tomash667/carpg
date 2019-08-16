@@ -89,7 +89,25 @@ void Game::StartQuickGame()
 {
 	Net::SetMode(Net::Mode::Singleplayer);
 
-	Class clas = quickstart_class;
+	Class* clas = nullptr;
+	const string& class_id = cfg.GetString("quickstart_class");
+	if(!class_id.empty())
+	{
+		clas = Class::TryGet(class_id);
+		if(clas)
+		{
+			if(!clas->IsPickable())
+			{
+				Warn("Settings [quickstart_class]: Class '%s' is not pickable by players.", class_id.c_str());
+				clas = nullptr;
+			}
+		}
+		else
+			Warn("Settings [quickstart_class]: Invalid class '%s'.", class_id.c_str());
+	}
+	string quickstart_name = cfg.GetString("quickstart_name", "Test");
+	if(quickstart_name.empty())
+		quickstart_name = "Test";
 	HumanData hd;
 	CreatedCharacter cc;
 	int hair_index;
@@ -99,7 +117,7 @@ void Game::StartQuickGame()
 }
 
 //=================================================================================================
-void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharacter& cc, bool tutorial)
+void Game::NewGameCommon(Class* clas, cstring name, HumanData& hd, CreatedCharacter& cc, bool tutorial)
 {
 	game_level->entering = true;
 	quest_mgr->quest_tutorial->in_tutorial = tutorial;
@@ -108,7 +126,7 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 	game_state = GS_LEVEL;
 	hardcore_mode = hardcore_option;
 
-	UnitData& ud = *ClassInfo::classes[(int)clas].unit_data;
+	UnitData& ud = *clas->player;
 
 	Unit* u = CreateUnit(ud, -1, nullptr, nullptr, false, true);
 	u->area = nullptr;
@@ -144,7 +162,7 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 
 	if(!tutorial && cc.HavePerk(Perk::Leader))
 	{
-		Unit* npc = CreateUnit(ClassInfo::GetRandomData(), -1, nullptr, nullptr, false);
+		Unit* npc = CreateUnit(*Class::GetRandomHero()->hero, -1, nullptr, nullptr, false);
 		npc->area = nullptr;
 		npc->ai = new AIController;
 		npc->ai->Init(npc);
@@ -298,10 +316,10 @@ void Game::AddMsg(cstring msg)
 }
 
 //=================================================================================================
-void Game::RandomCharacter(Class& clas, int& hair_index, HumanData& hd, CreatedCharacter& cc)
+void Game::RandomCharacter(Class*& clas, int& hair_index, HumanData& hd, CreatedCharacter& cc)
 {
-	if(clas == Class::RANDOM)
-		clas = ClassInfo::GetRandomPlayer();
+	if(!clas)
+		clas = Class::GetRandomPlayer();
 	// appearance
 	hd.beard = Rand() % MAX_BEARD - 1;
 	hd.hair = Rand() % MAX_HAIR - 1;
@@ -588,7 +606,7 @@ void Game::UpdateClientConnectingIp(float dt)
 					PlayerInfo* pinfo = new PlayerInfo;
 					net->players.push_back(pinfo);
 					PlayerInfo& info = *pinfo;
-					info.clas = Class::INVALID;
+					info.clas = nullptr;
 					info.ready = false;
 					info.name = player_name;
 					info.id = Team.my_id;
@@ -598,6 +616,7 @@ void Game::UpdateClientConnectingIp(float dt)
 					info.loaded = false;
 
 					// read other players
+					string class_id;
 					for(int i = 0; i < count; ++i)
 					{
 						pinfo = new PlayerInfo;
@@ -609,7 +628,7 @@ void Game::UpdateClientConnectingIp(float dt)
 
 						reader.ReadCasted<byte>(info2.id);
 						reader >> info2.ready;
-						reader.ReadCasted<byte>(info2.clas);
+						reader >> class_id;
 						reader >> info2.name;
 						if(!reader)
 						{
@@ -620,12 +639,18 @@ void Game::UpdateClientConnectingIp(float dt)
 						}
 
 						// verify player class
-						if(!ClassInfo::IsPickable(info2.clas) && info2.clas != Class::INVALID)
+						if(class_id.empty())
+							info2.clas = nullptr;
+						else
 						{
-							Error("NM_CONNECTING(2): Broken packet ID_JOIN, player %s has class %d.", info2.name.c_str(), info2.clas);
-							net->peer->DeallocatePacket(packet);
-							EndConnecting(txCantJoin, true);
-							return;
+							info2.clas = Class::TryGet(class_id);
+							if(!info2.clas || !info2.clas->IsPickable())
+							{
+								Error("NM_CONNECTING(2): Broken packet ID_JOIN, player '%s' has class '%s'.", info2.name.c_str(), class_id.c_str());
+								net->peer->DeallocatePacket(packet);
+								EndConnecting(txCantJoin, true);
+								return;
+							}
 						}
 					}
 
@@ -640,10 +665,18 @@ void Game::UpdateClientConnectingIp(float dt)
 					}
 					if(load_char == 2)
 					{
-						reader.ReadCasted<byte>(info.clas);
+						reader >> class_id;
+						info.clas = Class::TryGet(class_id);
 						if(!reader)
 						{
 							Error("NM_CONNECTING(2): Broken packet ID_JOIN(3).");
+							net->peer->DeallocatePacket(packet);
+							EndConnecting(txCantJoin, true);
+							return;
+						}
+						else if(!info.clas || !info.clas->IsPickable())
+						{
+							Error("NM_CONNECTING(2): Invalid loaded class '%s'.", class_id.c_str());
 							net->peer->DeallocatePacket(packet);
 							EndConnecting(txCantJoin, true);
 							return;
@@ -1341,9 +1374,7 @@ void Game::UpdateServerTransfer(float dt)
 			Unit* u;
 			if(!info.loaded)
 			{
-				UnitData& ud = *ClassInfo::classes[(int)info.clas].unit_data;
-
-				u = CreateUnit(ud, -1, nullptr, nullptr, in_level, true);
+				u = CreateUnit(*info.clas->player, -1, nullptr, nullptr, in_level, true);
 				u->area = nullptr;
 				u->ApplyHumanData(info.hd);
 				u->mesh_inst->need_update = true;
@@ -1435,7 +1466,7 @@ void Game::UpdateServerTransfer(float dt)
 
 		if(!net->mp_load && leader_perk > 0 && Team.GetActiveTeamSize() < Team.GetMaxSize())
 		{
-			UnitData& ud = ClassInfo::GetRandomData();
+			UnitData& ud = *Class::GetRandomHero()->hero;
 			int level = ud.level.x + 2 * (leader_perk - 1);
 			Unit* npc = CreateUnit(ud, level, nullptr, nullptr, false);
 			npc->area = nullptr;
@@ -2069,7 +2100,7 @@ void Game::OnCreateCharacter(int id)
 		game_gui->server->bts[1].state = Button::NONE;
 		game_gui->server->bts[0].text = game_gui->server->txChangeChar;
 		// set data
-		Class old_class = info.clas;
+		Class* old_class = info.clas;
 		info.clas = game_gui->create_character->clas;
 		info.hd.Get(*game_gui->create_character->unit->human_data);
 		info.cc = game_gui->create_character->cc;

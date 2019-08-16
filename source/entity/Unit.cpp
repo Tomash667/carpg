@@ -4583,7 +4583,7 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 		break;
 	}
 
-	if(usable && !(player && player->action == PlayerController::Action_LootContainer))
+	if(usable && !(player && player->action == PlayerAction::LootContainer))
 	{
 		if(mode == BREAK_ACTION_MODE::INSTANT)
 		{
@@ -4636,7 +4636,7 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 			if(game_gui->inventory->mode > I_INVENTORY)
 				game->CloseInventory();
 
-			if(player->action == PlayerController::Action_Talk)
+			if(player->action == PlayerAction::Talk)
 			{
 				if(Net::IsLocal())
 				{
@@ -4647,18 +4647,18 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 				else
 					game->dialog_context.dialog_mode = false;
 				look_target = nullptr;
-				player->action = PlayerController::Action_None;
+				player->action = PlayerAction::None;
 			}
 		}
 		else if(Net::IsLocal())
 		{
-			if(player->action == PlayerController::Action_Talk)
+			if(player->action == PlayerAction::Talk)
 			{
 				player->action_unit->busy = Busy_No;
 				player->action_unit->look_target = nullptr;
 				player->dialog_ctx->dialog_mode = false;
 				look_target = nullptr;
-				player->action = PlayerController::Action_None;
+				player->action = PlayerAction::None;
 			}
 		}
 	}

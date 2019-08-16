@@ -19,7 +19,7 @@ void Quest_Wanted::Start()
 	type = QuestType::Captain;
 	level = Random(5, 15);
 	crazy = (Rand() % 5 == 0);
-	clas = ClassInfo::GetRandom();
+	clas = crazy ? Class::GetRandomCrazy() : Class::GetRandomHero();
 	target_unit = nullptr;
 	in_location = -1;
 }
@@ -61,7 +61,7 @@ void Quest_Wanted::SetProgress(int prog2)
 			if(!target.active_quest)
 			{
 				target.active_quest = this;
-				unit_to_spawn = &ClassInfo::GetUnitData(clas, crazy);
+				unit_to_spawn = crazy ? clas->crazy : clas->hero;
 				unit_dont_attack = true;
 				unit_event_handler = this;
 				send_spawn_event = true;
@@ -224,7 +224,7 @@ void Quest_Wanted::Save(GameWriter& f)
 
 	f << level;
 	f << crazy;
-	f << clas;
+	f << clas->id;
 	f << unit_name;
 	f << target_unit;
 	f << in_location;
@@ -237,14 +237,14 @@ bool Quest_Wanted::Load(GameReader& f)
 
 	f >> level;
 	f >> crazy;
-	f >> clas;
+	clas = Class::TryGet(f.ReadString1());
 	f >> unit_name;
 	f >> target_unit;
 	f >> in_location;
 
 	if(!done)
 	{
-		unit_to_spawn = &ClassInfo::GetUnitData(clas, crazy);
+		unit_to_spawn = crazy ? clas->crazy : clas->hero;
 		unit_dont_attack = true;
 		unit_event_handler = this;
 		send_spawn_event = true;

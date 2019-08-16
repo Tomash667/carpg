@@ -679,7 +679,7 @@ void TeamSingleton::UpdateTeamItemShares()
 						{
 							if(Vec3::Distance2d(tsi.from->pos, tsi.to->pos) > 8.f)
 								state = 0;
-							else if(tsi.from->busy == Unit::Busy_No && tsi.from->player->action == PlayerController::Action_None)
+							else if(tsi.from->busy == Unit::Busy_No && tsi.from->player->action == PlayerAction::None)
 								dialog = GameDialog::TryGet(IsSet(tsi.to->data->flags, F_CRAZY) ? "crazy_buy_item" : "hero_buy_item");
 							else
 								state = 2;
@@ -695,7 +695,7 @@ void TeamSingleton::UpdateTeamItemShares()
 						// NPC owns item that other NPC wants to take for credit, ask leader
 						if(Vec3::Distance2d(tsi.to->pos, leader->pos) > 8.f)
 							state = 0;
-						else if(leader->busy == Unit::Busy_No && leader->player->action == PlayerController::Action_None)
+						else if(leader->busy == Unit::Busy_No && leader->player->action == PlayerAction::None)
 							dialog = GameDialog::TryGet(IsSet(tsi.to->data->flags, F_CRAZY) ? "crazy_get_item" : "hero_get_item");
 						else
 							state = 2;
@@ -705,7 +705,7 @@ void TeamSingleton::UpdateTeamItemShares()
 						// PC owns item that other NPC wants to take for credit, ask him
 						if(Vec3::Distance2d(tsi.from->pos, tsi.to->pos) > 8.f)
 							state = 0;
-						else if(tsi.from->busy == Unit::Busy_No && tsi.from->player->action == PlayerController::Action_None)
+						else if(tsi.from->busy == Unit::Busy_No && tsi.from->player->action == PlayerAction::None)
 							dialog = GameDialog::TryGet(IsSet(tsi.to->data->flags, F_CRAZY) ? "crazy_get_item" : "hero_get_item");
 						else
 							state = 2;

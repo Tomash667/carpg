@@ -112,6 +112,20 @@ struct Shortcut
 };
 
 //-----------------------------------------------------------------------------
+enum class PlayerAction
+{
+	None,
+	LootUnit,
+	LootChest,
+	Talk,
+	Trade,
+	ShareItems,
+	GiveItems,
+	LootContainer,
+	TalkUsable
+};
+
+//-----------------------------------------------------------------------------
 struct PlayerController : public HeroPlayerCommon
 {
 	struct StatData
@@ -143,18 +157,7 @@ struct PlayerController : public HeroPlayerCommon
 	bool godmode, noclip, invisible, is_local, recalculate_level, leaving_event, always_run, last_ring;
 	int id, free_days, action_charges, learning_points, exp, exp_need, exp_level;
 	//----------------------
-	enum Action
-	{
-		Action_None,
-		Action_LootUnit,
-		Action_LootChest,
-		Action_Talk,
-		Action_Trade,
-		Action_ShareItems,
-		Action_GiveItems,
-		Action_LootContainer,
-		Action_TalkUsable
-	} action;
+	PlayerAction action;
 	union
 	{
 		Unit* action_unit;
@@ -206,20 +209,21 @@ public:
 
 	bool IsTradingWith(Unit* t) const
 	{
-		if(Any(action, Action_LootUnit, Action_Trade, Action_GiveItems, Action_ShareItems))
+		if(Any(action, PlayerAction::LootUnit, PlayerAction::Trade, PlayerAction::GiveItems, PlayerAction::ShareItems))
 			return action_unit == t;
 		else
 			return false;
 	}
 
-	static bool IsTrade(Action a)
+	static bool IsTrade(PlayerAction a)
 	{
-		return Any(a, Action_LootChest, Action_LootUnit, Action_Trade, Action_ShareItems, Action_GiveItems, Action_LootContainer);
+		return Any(a, PlayerAction::LootChest, PlayerAction::LootUnit, PlayerAction::Trade,
+			PlayerAction::ShareItems, PlayerAction::GiveItems, PlayerAction::LootContainer);
 	}
 	bool IsTrading() const { return IsTrade(action); }
 	bool IsLocal() const { return is_local; }
 	bool IsLeader() const;
-	::Action& GetAction();
+	Action& GetAction();
 	bool CanUseAction() const
 	{
 		return action_charges > 0 && action_cooldown <= 0;

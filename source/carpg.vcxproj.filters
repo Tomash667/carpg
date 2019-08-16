@@ -64,6 +64,9 @@
     <Filter Include="components">
       <UniqueIdentifier>{c4209f58-7028-49a2-894c-6df97de80980}</UniqueIdentifier>
     </Filter>
+    <Filter Include="system\classes">
+      <UniqueIdentifier>{36e9d514-c76f-4a1d-a204-97a28e33e7d3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="resource\PickLanguage.cpp">
@@ -139,9 +142,6 @@
       <Filter>stats</Filter>
     </ClCompile>
     <ClCompile Include="stats\BaseTrap.cpp">
-      <Filter>stats</Filter>
-    </ClCompile>
-    <ClCompile Include="stats\Class.cpp">
       <Filter>stats</Filter>
     </ClCompile>
     <ClCompile Include="stats\RoomType.cpp">
@@ -580,6 +580,12 @@
     <ClCompile Include="panels\GameGui.cpp">
       <Filter>panels</Filter>
     </ClCompile>
+    <ClCompile Include="system\Class.cpp">
+      <Filter>system\classes</Filter>
+    </ClCompile>
+    <ClCompile Include="system\ClassLoader.cpp">
+      <Filter>system\classes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="entity\AIController.h">
@@ -661,9 +667,6 @@
       <Filter>stats</Filter>
     </ClInclude>
     <ClInclude Include="stats\BaseTrap.h">
-      <Filter>stats</Filter>
-    </ClInclude>
-    <ClInclude Include="stats\Class.h">
       <Filter>stats</Filter>
     </ClInclude>
     <ClInclude Include="stats\Const.h">
@@ -1155,6 +1158,12 @@
     </ClInclude>
     <ClInclude Include="panels\GameGui.h">
       <Filter>panels</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Class.h">
+      <Filter>system\classes</Filter>
+    </ClInclude>
+    <ClInclude Include="system\ClassLoader.h">
+      <Filter>system\classes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
