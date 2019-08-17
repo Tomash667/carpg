@@ -555,35 +555,24 @@ void Game::GetTitle(LocalString& s)
 
 #ifdef _DEBUG
 	none = false;
-	s += " -  DEBUG";
+	s += " - DEBUG";
 #endif
 
-	if(change_title_a && ((game_state != GS_MAIN_MENU && game_state != GS_LOAD) || (game_gui->server && game_gui->server->visible)))
+	if((game_state != GS_MAIN_MENU && game_state != GS_LOAD) || (game_gui->server && game_gui->server->visible))
 	{
+		if(none)
+			s += " - ";
+		else
+			s += ", ";
 		if(Net::IsOnline())
 		{
 			if(Net::IsServer())
-			{
-				if(none)
-					s += " - SERVER";
-				else
-					s += ", SERVER";
-			}
+				s += "SERVER";
 			else
-			{
-				if(none)
-					s += " - CLIENT";
-				else
-					s += ", CLIENT";
-			}
+				s += "CLIENT";
 		}
 		else
-		{
-			if(none)
-				s += " - SINGLE";
-			else
-				s += ", SINGLE";
-		}
+			s += "SINGLE";
 	}
 
 	s += Format(" [%d]", GetCurrentProcessId());
@@ -782,8 +771,7 @@ void Game::DoExitToMenu()
 	game_gui->main_menu->visible = true;
 	units_mesh_load.clear();
 
-	if(change_title_a)
-		ChangeTitle();
+	ChangeTitle();
 }
 
 //=================================================================================================

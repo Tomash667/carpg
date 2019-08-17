@@ -7942,8 +7942,7 @@ void Game::Net_OnNewGameServer()
 		}
 	}
 
-	if(change_title_a)
-		ChangeTitle();
+	ChangeTitle();
 }
 
 //=================================================================================================

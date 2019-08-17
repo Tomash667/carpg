@@ -617,7 +617,6 @@ void LoadConfiguration(char* lpCmdLine)
 	render->SetMultisampling(multisampling, multisampling_quality);
 
 	// miscellaneous
-	game->change_title_a = ToBool(cfg.GetBool3("change_title", False));
 	game->cl_postfx = cfg.GetBool("cl_postfx", true);
 	game->cl_normalmap = cfg.GetBool("cl_normalmap", true);
 	game->cl_specularmap = cfg.GetBool("cl_specularmap", true);

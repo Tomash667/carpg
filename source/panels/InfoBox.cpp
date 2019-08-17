@@ -34,20 +34,20 @@ void InfoBox::Event(GuiEvent e)
 	{
 		if(e == GuiEvent_Show)
 			visible = true;
-		global_pos = (gui->wnd_size - size) / 2;
+		global_pos = pos = (gui->wnd_size - size) / 2;
 	}
 	else if(e == GuiEvent_Close)
 		visible = false;
 }
 
 //=================================================================================================
-void InfoBox::Show(cstring _text)
+void InfoBox::Show(cstring text)
 {
-	size = GameGui::font->CalculateSize(_text) + Int2(24, 24);
-	text = _text;
+	size = GameGui::font->CalculateSize(text) + Int2(24, 24);
+	this->text = text;
 
 	if(!visible)
 		gui->ShowDialog(this);
 	else
-		global_pos = (gui->wnd_size - size) / 2;
+		global_pos = pos = (gui->wnd_size - size) / 2;
 }

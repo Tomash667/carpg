@@ -990,6 +990,7 @@ void CreateCharacterPanel::ShowRedo(Class* clas, HumanData& hd, CreatedCharacter
 	this->cc = cc;
 	RebuildSkillsFlow();
 	RebuildPerksFlow();
+	UpdateInventory();
 
 	reset_skills_perks = false;
 	enter_name = false;

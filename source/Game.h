@@ -586,7 +586,6 @@ public:
 	VoidF net_callback;
 	float net_timer, mp_timeout;
 	BitStream prepared_stream;
-	bool change_title_a;
 	int skip_id_counter;
 	struct WarpData
 	{

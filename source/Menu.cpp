@@ -175,8 +175,7 @@ void Game::NewGameCommon(Class* clas, cstring name, HumanData& hd, CreatedCharac
 
 	fallback_type = FALLBACK::NONE;
 	fallback_t = -0.5f;
-	if(change_title_a)
-		ChangeTitle();
+	ChangeTitle();
 
 	if(!tutorial)
 	{
@@ -704,8 +703,7 @@ void Game::UpdateClientConnectingIp(float dt)
 					if(load_char != 2)
 						game_gui->server->CheckAutopick();
 					game_gui->info_box->CloseDialog();
-					if(change_title_a)
-						ChangeTitle();
+					ChangeTitle();
 					return;
 				}
 				break;
@@ -1120,8 +1118,7 @@ void Game::UpdateClientTransfer(float dt)
 					Team.leader_id = 0;
 					Team.leader = nullptr;
 					SetMusic(MusicType::Travel);
-					if(change_title_a)
-						ChangeTitle();
+					ChangeTitle();
 					if(net->mp_quickload)
 					{
 						net->mp_quickload = false;
@@ -1155,8 +1152,7 @@ void Game::UpdateClientTransfer(float dt)
 					fallback_t = -0.5f;
 					game_level->camera.Reset();
 					pc_data.rot_buf = 0.f;
-					if(change_title_a)
-						ChangeTitle();
+					ChangeTitle();
 					if(net->mp_quickload)
 					{
 						net->mp_quickload = false;

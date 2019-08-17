@@ -5,6 +5,7 @@ Wersja 0.12 (???):
 ! nie mo¿na wczytywaæ ju¿ zapisów z wersji 0.4.20 lub starszej
 + wczytywanie klas postaci z pliku
 + aktualizacja bibliotek: FMod 1.10.14
+- zmiana postaci w trybie multiplayer resetowa³a ekwipunek postaci
 
 --------------------------------------------------------------------------------
 Wersja 0.11.1 (2019-08-12):
