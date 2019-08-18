@@ -514,7 +514,7 @@ void CaveGenerator::GenerateUnits()
 //=================================================================================================
 void CaveGenerator::GenerateItems()
 {
-	GenerateMushrooms();
+	GenerateCaveItems();
 }
 
 //=================================================================================================
@@ -524,18 +524,19 @@ int CaveGenerator::HandleUpdate(int days)
 	if(game_level->location_index == quest_mgr->quest_mine->target_loc)
 		update_flags = quest_mgr->quest_mine->GenerateMine(this, false);
 	if(days > 0)
-		GenerateMushrooms(min(days, 10));
+		GenerateCaveItems(min(days, 10));
 	return update_flags;
 }
 
 //=================================================================================================
-void CaveGenerator::GenerateMushrooms(int days_since)
+void CaveGenerator::GenerateCaveItems(int days_since)
 {
 	InsideLocationLevel& lvl = GetLevelData();
 	Int2 pt;
 	Vec2 pos;
 	int dir;
 	const Item* shroom = Item::Get("mushroom");
+	const Item* magic_crystal = Item::Get("magic_crystal");
 
 	for(int i = 0; i < days_since * 20; ++i)
 	{
@@ -563,7 +564,7 @@ void CaveGenerator::GenerateMushrooms(int days_since)
 				pos.y += 0.5f;
 				break;
 			}
-			game_level->SpawnGroundItemInsideRadius(shroom, pos, 0.5f);
+			game_level->SpawnGroundItemInsideRadius(Rand() % 2 == 0 ? shroom : magic_crystal, pos, 0.5f);
 		}
 	}
 }

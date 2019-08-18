@@ -209,7 +209,8 @@ struct Unit
 	Animation animation, current_animation;
 	LiveState live_state;
 	Vec3 pos, visual_pos, prev_pos, target_pos, target_pos2;
-	float rot, prev_speed, hp, hpmax, stamina, stamina_max, speed, hurt_timer, talk_timer, timer, use_rot, attack_power, last_bash, alcohol, raise_timer;
+	float rot, prev_speed, hp, hpmax, mp, mpmax, stamina, stamina_max, speed, hurt_timer, talk_timer, timer, use_rot, attack_power, last_bash, alcohol,
+		raise_timer;
 	int refs, animation_state, level, gold, attack_id, refid, in_arena, quest_refid;
 	FROZEN frozen;
 	ACTION action;
@@ -348,8 +349,10 @@ struct Unit
 	}
 	Vec3 GetEyePos() const;
 	float CalculateMaxHp() const;
+	float CalculateMaxMp() const;
 	float CalculateMaxStamina() const;
 	float GetHpp() const { return hp / hpmax; }
+	float GetMpp() const { return mp / mpmax; }
 	float GetStaminap() const { return stamina / stamina_max; }
 	void GetBox(Box& box) const;
 	int GetDmgType() const;
@@ -391,6 +394,7 @@ struct Unit
 			return !IsOverloaded();
 	}
 	void RecalculateHp(bool send = false);
+	void RecalculateMp();
 	void RecalculateStamina();
 	bool CanBlock() const
 	{
@@ -790,6 +794,7 @@ public:
 	}
 
 	void UpdateStaminaAction();
+	void RemoveMana(float value);
 	void RemoveStamina(float value);
 	void RemoveStaminaBlock(float value);
 

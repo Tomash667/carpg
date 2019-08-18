@@ -110,7 +110,7 @@ spell heal {
 	dmg 150 + 20
 	cooldown {10 15}
 	range 15
-	tex_particle "heal.png" 0.03
+	tex_particle "heal_effect.png" 0.03
 	sound_cast "heal.mp3" 1
 }
 

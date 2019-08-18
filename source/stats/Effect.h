@@ -29,6 +29,8 @@ enum class EffectId
 	Heal, // consumable
 	Antidote, // consumable
 	GreenHair, // consumable
+	Mana, // mod max mp (add)
+	RestoreMana, // consumable
 
 	Max // max 127 values
 };

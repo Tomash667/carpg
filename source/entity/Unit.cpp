@@ -91,6 +91,13 @@ float Unit::CalculateMaxHp() const
 }
 
 //=================================================================================================
+float Unit::CalculateMaxMp() const
+{
+	// TODO
+	return 5000.f + GetEffectSum(EffectId::Mana);
+}
+
+//=================================================================================================
 float Unit::CalculateMaxStamina() const
 {
 	float stamina = (float)data->stamina + GetEffectSum(EffectId::Stamina);
@@ -610,7 +617,7 @@ void Unit::ConsumeItem(const Consumable& item, bool force, bool send)
 void Unit::ConsumeItemAnim(const Consumable& cons)
 {
 	cstring anim_name;
-	if(cons.cons_type == Food)
+	if(cons.cons_type == Food || cons.cons_type == Herb)
 	{
 		action = A_EAT;
 		anim_name = "je";
@@ -900,6 +907,9 @@ void Unit::OnAddRemoveEffect(Effect& e)
 	case EffectId::Attribute:
 		ApplyStat((AttributeId)e.value);
 		break;
+	case EffectId::Mana:
+		RecalculateMp();
+		break;
 	}
 }
 
@@ -1008,6 +1018,11 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 					c.unit = this;
 				}
 			}
+			break;
+		case EffectId::RestoreMana:
+			mp += effect.power;
+			if(mp > mpmax)
+				mp = mpmax;
 			break;
 		default:
 			if(item.time == 0.f && effect.effect == EffectId::Attribute)
@@ -1142,6 +1157,16 @@ void Unit::UpdateEffects(float dt)
 		player->last_dmg_poison = poison_dmg;
 	}
 
+	// restore mana
+	if(player && mp != mpmax)
+	{
+		mp += 1.f;
+		if(mp > mpmax)
+			mp = mpmax;
+		if(Net::IsServer() && !player->is_local)
+			player->player_info->update_flags |= PlayerInfo::UF_MANA;
+	}
+
 	// restore stamina
 	if(stamina_timer > 0)
 	{
@@ -1206,6 +1231,7 @@ void Unit::EndEffects(int days, float* o_natural_mod)
 	alcohol = 0.f;
 	stamina = stamina_max;
 	stamina_timer = 0;
+	mp = mpmax;
 
 	if(effects.empty())
 	{
@@ -1513,6 +1539,18 @@ void Unit::RecalculateHp(bool send)
 }
 
 //=================================================================================================
+void Unit::RecalculateMp()
+{
+	float mpp = mp / mpmax;
+	mpmax = CalculateMaxMp();
+	mp = mpmax * mpp;
+	if(mp < 0)
+		mp = 1;
+	else if(mp > mpmax)
+		mp = mpmax;
+}
+
+//=================================================================================================
 void Unit::RecalculateStamina()
 {
 	float p = stamina / stamina_max;
@@ -1642,6 +1680,8 @@ void Unit::Save(GameWriter& f, bool local)
 	f << rot;
 	f << hp;
 	f << hpmax;
+	f << mp;
+	f << mpmax;
 	f << stamina;
 	f << stamina_max;
 	f << stamina_action;
@@ -1869,6 +1909,15 @@ void Unit::Load(GameReader& f, bool local)
 	f >> rot;
 	f >> hp;
 	f >> hpmax;
+	if(LOAD_VERSION >= V_DEV)
+	{
+		f >> mp;
+		f >> mpmax;
+	}
+	else
+	{
+		FIXME;
+	}
 	f >> stamina;
 	f >> stamina_max;
 	f >> stamina_action;
@@ -4223,6 +4272,14 @@ void Unit::UpdateStaminaAction()
 			break;
 		}
 	}
+}
+
+//=================================================================================================
+void Unit::RemoveMana(float value)
+{
+	mp -= value;
+	if(player && !player->is_local)
+		player->player_info->update_flags |= PlayerInfo::UF_MANA;
 }
 
 //=================================================================================================

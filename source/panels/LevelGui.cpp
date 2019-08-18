@@ -61,6 +61,7 @@ enum class TooltipGroup
 enum Bar
 {
 	BAR_HP,
+	BAR_MANA,
 	BAR_STAMINA
 };
 
@@ -95,6 +96,7 @@ void LevelGui::LoadLanguage()
 	txPressEsc = s.Get("pressEsc");
 	txMenu = s.Get("menu");
 	txHp = s.Get("hp");
+	txMana = s.Get("mana");
 	txStamina = s.Get("stamina");
 	txMeleeWeapon = s.Get("meleeWeapon");
 	txRangedWeapon = s.Get("rangedWeapon");
@@ -393,17 +395,25 @@ void LevelGui::DrawFront()
 	// get buffs
 	int buffs = pc.unit->GetBuffs();
 
-	// healthbar
+	// health bar
 	float wnd_scale = float(gui->wnd_size.x) / 800;
-	float hpp = Clamp(pc.unit->hp / pc.unit->hpmax, 0.f, 1.f);
+	float hpp = Clamp(pc.unit->GetHpp(), 0.f, 1.f);
 	Rect part = { 0, 0, int(hpp * 256), 16 };
-	Matrix mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale, wnd_scale), nullptr, 0.f, &Vec2(0.f, float(gui->wnd_size.y) - wnd_scale * 35));
+	Matrix mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale, wnd_scale), nullptr, 0.f, &Vec2(0.f, float(gui->wnd_size.y) - wnd_scale * 53));
 	if(part.Right() > 0)
 		gui->DrawSprite2(!IsSet(buffs, BUFF_POISON) ? tHpBar : tPoisonedHpBar, mat, &part, nullptr, Color::White);
 	gui->DrawSprite2(tBar, mat, nullptr, nullptr, Color::White);
 
+	// mana bar
+	float mpp = pc.unit->GetMpp();
+	part.Right() = int(mpp * 256);
+	mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale, wnd_scale), nullptr, 0.f, &Vec2(0.f, float(gui->wnd_size.y) - wnd_scale * 35));
+	if(part.Right() > 0)
+		gui->DrawSprite2(tManaBar, mat, &part, nullptr, Color::White);
+	gui->DrawSprite2(tBar, mat, nullptr, nullptr, Color::White);
+
 	// stamina bar
-	float stamina_p = pc.unit->stamina / pc.unit->stamina_max;
+	float stamina_p = pc.unit->GetStaminap();
 	part.Right() = int(stamina_p * 256);
 	mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale, wnd_scale), nullptr, 0.f, &Vec2(0.f, float(gui->wnd_size.y) - wnd_scale * 17));
 	if(part.Right() > 0)
@@ -847,7 +857,7 @@ void LevelGui::Update(float dt)
 
 	buff_scale = gui->wnd_size.x / 1024.f;
 	float off = buff_scale * 33;
-	float buf_posy = float(gui->wnd_size.y - 5) - off - hp_scale * 35;
+	float buf_posy = float(gui->wnd_size.y - 5) - off - hp_scale * 53;
 	Int2 buff_size(int(buff_scale * 32), int(buff_scale * 32));
 
 	buff_images.clear();
@@ -909,14 +919,23 @@ void LevelGui::Update(float dt)
 			}
 		}
 
-		// for healthbar
+		// for health bar
 		float wnd_scale = float(gui->wnd_size.x) / 800;
-		Matrix mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale, wnd_scale), nullptr, 0.f, &Vec2(0.f, float(gui->wnd_size.y) - wnd_scale * 35));
+		Matrix mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale, wnd_scale), nullptr, 0.f, &Vec2(0.f, float(gui->wnd_size.y) - wnd_scale * 53));
 		Rect r = gui->GetSpriteRect(tBar, mat);
 		if(r.IsInside(gui->cursor_pos))
 		{
 			group = TooltipGroup::Bar;
 			id = Bar::BAR_HP;
+		}
+
+		// for mana bar
+		mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale, wnd_scale), nullptr, 0.f, &Vec2(0.f, float(gui->wnd_size.y) - wnd_scale * 35));
+		r = gui->GetSpriteRect(tBar, mat);
+		if(r.IsInside(gui->cursor_pos))
+		{
+			group = TooltipGroup::Bar;
+			id = Bar::BAR_MANA;
 		}
 
 		// for stamina bar
@@ -1376,19 +1395,31 @@ void LevelGui::GetTooltip(TooltipController*, int _group, int id)
 	case TooltipGroup::Bar:
 		{
 			Unit* u = game->pc->unit;
-			if(id == BAR_HP)
+			switch(id)
 			{
-				int hp = (int)u->hp;
-				if(hp == 0 && u->hp > 0.f)
-					hp = 1;
-				int hpmax = (int)u->hpmax;
-				tooltip.text = Format("%s: %d/%d", txHp, hp, hpmax);
-			}
-			else if(id == BAR_STAMINA)
-			{
-				int stamina = (int)u->stamina;
-				int stamina_max = (int)u->stamina_max;
-				tooltip.text = Format("%s: %d/%d", txStamina, stamina, stamina_max);
+			case BAR_HP:
+				{
+					int hp = (int)u->hp;
+					if(hp == 0 && u->hp > 0.f)
+						hp = 1;
+					int hpmax = (int)u->hpmax;
+					tooltip.text = Format("%s: %d/%d", txHp, hp, hpmax);
+				}
+				break;
+			case BAR_MANA:
+				{
+					int mp = (int)u->mp;
+					int mpmax = (int)u->mpmax;
+					tooltip.text = Format("%s: %d/%d", txMana, mp, mpmax);
+				}
+				break;
+			case BAR_STAMINA:
+				{
+					int stamina = (int)u->stamina;
+					int stamina_max = (int)u->stamina_max;
+					tooltip.text = Format("%s: %d/%d", txStamina, stamina, stamina_max);
+				}
+				break;
 			}
 		}
 		break;

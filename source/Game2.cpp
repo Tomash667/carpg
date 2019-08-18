@@ -2730,8 +2730,13 @@ void Game::UseAction(PlayerController* p, bool from_server, const Vec3* pos)
 	if(!from_server)
 	{
 		p->UseActionCharge();
-		if(action.stamina_cost > 0)
-			p->unit->RemoveStamina(action.stamina_cost);
+		if(action.cost > 0)
+		{
+			if(action.use_mana)
+				p->unit->RemoveMana(action.cost);
+			else
+				p->unit->RemoveStamina(action.cost);
+		}
 	}
 
 	Vec3 action_point;
@@ -3617,6 +3622,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 		u->stats = base.GetStats(u->level);
 	u->CalculateStats();
 	u->hp = u->hpmax = u->CalculateMaxHp();
+	u->mp = u->mpmax = u->CalculateMaxMp();
 	u->stamina = u->stamina_max = u->CalculateMaxStamina();
 	u->stamina_timer = 0;
 	u->fake_unit = false;
@@ -7647,10 +7653,10 @@ Sound* Game::GetItemSound(const Item* item)
 	case IT_RING:
 		return sItem[9];
 	case IT_CONSUMABLE:
-		if(item->ToConsumable().cons_type != Food)
-			return sItem[0];
-		else
+		if(Any(item->ToConsumable().cons_type, Food, Herb))
 			return sItem[7];
+		else
+			return sItem[0];
 	case IT_OTHER:
 		if(IsSet(item->flags, ITEM_CRYSTAL_SOUND))
 			return sItem[3];

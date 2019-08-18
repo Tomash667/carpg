@@ -26,7 +26,9 @@ EffectInfo EffectInfo::effects[] = {
 	EffectInfo(EffectId::Backstab, "backstab", "backstab modifier"),
 	EffectInfo(EffectId::Heal, "heal", "heal damage on consume"),
 	EffectInfo(EffectId::Antidote, "antidote", "heal poison on consume"),
-	EffectInfo(EffectId::GreenHair, "green_hair", "turn hair green on consume")
+	EffectInfo(EffectId::GreenHair, "green_hair", "turn hair green on consume"),
+	EffectInfo(EffectId::Mana, "mana", "modify max mp"),
+	EffectInfo(EffectId::RestoreMana, "restore_mana", "restore mana on consume")
 };
 
 EffectId EffectInfo::TryGet(const string& id)

@@ -1926,7 +1926,7 @@ ring r_poison_resistance : r_emerald {
 consumable p_nreg {
 	weight 0.2
 	value 10
-	mesh "naturalny.qmsh"
+	mesh "natural_pot.qmsh"
 	type potion
 	time 10
 	flags ground_mesh
@@ -1938,7 +1938,7 @@ consumable p_nreg {
 consumable p_nreg2 {
 	weight 0.2
 	value 100
-	mesh "naturalny2.qmsh"
+	mesh "natural_pot2.qmsh"
 	type potion
 	time 30
 	flags ground_mesh
@@ -1950,7 +1950,7 @@ consumable p_nreg2 {
 consumable p_hp {
 	weight 0.1
 	value 25
-	mesh "mikstura_hp.qmsh"
+	mesh "hp_pot.qmsh"
 	type potion
 	flags ground_mesh
 	effects {
@@ -1961,7 +1961,7 @@ consumable p_hp {
 consumable p_hp2 {
 	weight 0.1
 	value 100
-	mesh "mikstura_hp2.qmsh"
+	mesh "hp_pot2.qmsh"
 	type potion
 	flags ground_mesh
 	effects {
@@ -1972,7 +1972,7 @@ consumable p_hp2 {
 consumable p_hp3 {
 	weight 0.1
 	value 400
-	mesh "mikstura_hp3.qmsh"
+	mesh "hp_pot3.qmsh"
 	type potion
 	flags ground_mesh
 	effects {
@@ -1980,10 +1980,43 @@ consumable p_hp3 {
 	}
 }
 
+consumable p_mp {
+	weight 0.1
+	value 25
+	mesh "mp_pot.qmsh"
+	type potion
+	flags ground_mesh
+	effects {
+		restore_mana 250
+	}
+}
+
+consumable p_mp2 {
+	weight 0.1
+	value 100
+	mesh "mp_pot2.qmsh"
+	type potion
+	flags ground_mesh
+	effects {
+		restore_mana 500
+	}
+}
+
+consumable p_mp3 {
+	weight 0.1
+	value 400
+	mesh "mp_pot3.qmsh"
+	type potion
+	flags ground_mesh
+	effects {
+		restore_mana 1000
+	}
+}
+
 consumable p_reg {
 	weight 0.1
 	value 250
-	mesh "mikstura_reg.qmsh"
+	mesh "misc_pot.qmsh"
 	type potion
 	time 360
 	flags ground_mesh
@@ -1995,7 +2028,7 @@ consumable p_reg {
 consumable p_antidote {
 	weight 0.1
 	value 50
-	mesh "antidotum.qmsh"
+	mesh "antidote.qmsh"
 	type potion
 	time 30
 	flags ground_mesh
@@ -2008,7 +2041,7 @@ consumable p_antidote {
 consumable p_antimagic {
 	weight 0.2
 	value 200
-	mesh "mikstura_reg.qmsh"
+	mesh "misc_pot.qmsh"
 	type potion
 	time 300
 	flags ground_mesh
@@ -2053,7 +2086,7 @@ consumable p_dex {
 consumable q_magowie_potion {
 	weight 0.1
 	value 150
-	mesh "antidotum.qmsh"
+	mesh "antidote.qmsh"
 	type potion
 	flags {not_shop not_chest not_random not_alchemist ground_mesh hq}
 }
@@ -2061,7 +2094,7 @@ consumable q_magowie_potion {
 consumable water {
 	weight 0.4
 	value 1
-	mesh "woda.qmsh"
+	mesh "water.qmsh"
 	type drink
 	time 10
 	flags {not_alchemist ground_mesh}
@@ -2073,7 +2106,7 @@ consumable water {
 consumable spring_water {
 	weight 0.4
 	value 10
-	mesh "woda.qmsh"
+	mesh "water.qmsh"
 	type drink
 	time 30
 	flags {not_alchemist ground_mesh hq}
@@ -2314,6 +2347,17 @@ consumable alchemist_herb {
 	mesh "woddruff_herb.qmsh"
 	type herb
 	flags {not_shop not_chest not_random not_alchemist ground_mesh alpha}
+}
+
+consumable magic_crystal {
+	weight 0.5
+	value 10
+	mesh "magic_crystal.qmsh"
+	type herb
+	flags {not_merchant ground_mesh}
+	effects {
+		mana 150
+	}
 }
 
 //------------------------------------------------------------------------------

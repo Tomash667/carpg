@@ -2685,7 +2685,7 @@ void CityGenerator::GeneratePickableItems()
 	BaseObject* table = BaseObject::Get("table"),
 		*shelves = BaseObject::Get("shelves");
 
-	// piwa w karczmie
+	// alcohol in inn
 	InsideBuilding& inn = *city->FindInn();
 	const Item* beer = Item::Get("beer");
 	const Item* vodka = Item::Get("vodka");
@@ -2718,7 +2718,7 @@ void CityGenerator::GeneratePickableItems()
 		}
 	}
 
-	// jedzenie w sklepie
+	// food in food shop
 	CityBuilding* food = city->FindBuilding(BuildingGroup::BG_FOOD_SELLER);
 	if(food)
 	{
@@ -2747,7 +2747,7 @@ void CityGenerator::GeneratePickableItems()
 		}
 	}
 
-	// miksturki u alchemika
+	// potions in alchemy shop
 	CityBuilding* alch = city->FindBuilding(BuildingGroup::BG_ALCHEMIST);
 	if(alch)
 	{
@@ -2778,6 +2778,8 @@ void CityGenerator::GeneratePickableItems()
 				game_level->PickableItemAdd(Item::Get("p_nreg"));
 			if(Rand() % 2 == 0)
 				game_level->PickableItemAdd(Item::Get("healing_herb"));
+			if(Rand() % 2 == 0)
+				game_level->PickableItemAdd(Item::Get("p_mp"));
 		}
 	}
 }

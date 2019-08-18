@@ -142,8 +142,8 @@ private:
 	Scrollbar scrollbar;
 	vector<SpeechBubble*> speech_bbs;
 	vector<SortedSpeechBubble> sorted_speech_bbs;
-	cstring txMenu, txDeath, txDeathAlone, txGameTimeout, txChest, txDoor, txDoorLocked, txPressEsc, txHp, txStamina, txMeleeWeapon, txRangedWeapon, txPotion,
-		txMeleeWeaponDesc, txRangedWeaponDesc, txPotionDesc;
+	cstring txMenu, txDeath, txDeathAlone, txGameTimeout, txChest, txDoor, txDoorLocked, txPressEsc, txHp, txMana, txStamina, txMeleeWeapon, txRangedWeapon,
+		txPotion, txMeleeWeaponDesc, txRangedWeaponDesc, txPotionDesc;
 	Int2 debug_info_size, dialog_pos, dialog_size, profiler_size;
 	vector<UnitView> unit_views;
 };

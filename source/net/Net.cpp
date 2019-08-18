@@ -158,6 +158,7 @@ void Game::SendPlayerData(PlayerInfo& info)
 	// data
 	unit.stats->Write(f);
 	f << unit.gold;
+	f << unit.mp;
 	f << unit.stamina;
 	f << unit.effects;
 	unit.player->Write(f);
@@ -247,6 +248,7 @@ bool Game::ReadPlayerData(BitStreamReader& f)
 	unit->stats->subprofile.value = 0;
 	unit->stats->Read(f);
 	f >> unit->gold;
+	f >> unit->mp;
 	f >> unit->stamina;
 	f >> unit->effects;
 	if(!f || !pc->Read(f))
@@ -262,6 +264,7 @@ bool Game::ReadPlayerData(BitStreamReader& f)
 	unit->weight = 0;
 	unit->CalculateLoad();
 	unit->RecalculateWeight();
+	unit->mpmax = unit->CalculateMaxMp();
 	unit->stamina_max = unit->CalculateMaxStamina();
 
 	unit->player->credit = credit;
@@ -1957,6 +1960,11 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					c.type = NetChange::UPDATE_HP;
 					c.unit = &unit;
 				}
+				if(unit.mp != unit.mpmax)
+				{
+					unit.mp = unit.mpmax;
+					info.update_flags |= PlayerInfo::UF_MANA;
+				}
 				if(unit.stamina != unit.stamina_max)
 				{
 					unit.stamina = unit.stamina_max;
@@ -2009,6 +2017,12 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::UPDATE_HP;
 							c.unit = target;
+						}
+						if(target->mp != target->mpmax)
+						{
+							target->mp = target->mpmax;
+							if(target->player && !target->player->is_local)
+								target->player->player_info->update_flags |= PlayerInfo::UF_MANA;
 						}
 						if(target->stamina != target->stamina_max)
 						{
@@ -3629,205 +3643,12 @@ void Game::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 {
 	PlayerController& player = *info.pc;
 
-	if(!info.changes.empty())
-		info.update_flags |= PlayerInfo::UF_NET_CHANGES;
-
 	f.WriteCasted<byte>(ID_PLAYER_CHANGES);
 	f.WriteCasted<byte>(info.update_flags);
+
+	// variables
 	if(IsSet(info.update_flags, PlayerInfo::UF_POISON_DAMAGE))
 		f << player.last_dmg_poison;
-	if(IsSet(info.update_flags, PlayerInfo::UF_NET_CHANGES))
-	{
-		f.WriteCasted<byte>(info.changes.size());
-		if(info.changes.size() > 0xFF)
-			Error("Update server: Too many changes for player %s.", info.name.c_str());
-
-		for(NetChangePlayer& c : info.changes)
-		{
-			f.WriteCasted<byte>(c.type);
-
-			switch(c.type)
-			{
-			case NetChangePlayer::PICKUP:
-				f << c.id;
-				f << c.count;
-				break;
-			case NetChangePlayer::LOOT:
-				f << (c.id != 0);
-				if(c.id != 0)
-					WriteItemListTeam(f, *player.chest_trade);
-				break;
-			case NetChangePlayer::START_SHARE:
-			case NetChangePlayer::START_GIVE:
-				{
-					Unit& u = *player.action_unit;
-					f << u.weight;
-					f << u.weight_max;
-					f << u.gold;
-					WriteItemListTeam(f, u.items);
-				}
-				break;
-			case NetChangePlayer::START_DIALOG:
-				f << c.id;
-				break;
-			case NetChangePlayer::SHOW_DIALOG_CHOICES:
-				{
-					DialogContext& ctx = *player.dialog_ctx;
-					f.WriteCasted<byte>(ctx.choices.size());
-					f.WriteCasted<char>(ctx.dialog_esc);
-					for(DialogChoice& choice : ctx.choices)
-						f << choice.msg;
-				}
-				break;
-			case NetChangePlayer::END_DIALOG:
-			case NetChangePlayer::USE_USABLE:
-			case NetChangePlayer::PREPARE_WARP:
-			case NetChangePlayer::ENTER_ARENA:
-			case NetChangePlayer::START_ARENA_COMBAT:
-			case NetChangePlayer::EXIT_ARENA:
-			case NetChangePlayer::END_FALLBACK:
-				break;
-			case NetChangePlayer::START_TRADE:
-				f << c.id;
-				WriteItemList(f, *player.chest_trade);
-				break;
-			case NetChangePlayer::SET_FROZEN:
-			case NetChangePlayer::DEVMODE:
-			case NetChangePlayer::PVP:
-			case NetChangePlayer::NO_PVP:
-			case NetChangePlayer::CANT_LEAVE_LOCATION:
-			case NetChangePlayer::REST:
-				f.WriteCasted<byte>(c.id);
-				break;
-			case NetChangePlayer::IS_BETTER_ITEM:
-				f << (c.id != 0);
-				break;
-			case NetChangePlayer::REMOVE_QUEST_ITEM:
-			case NetChangePlayer::LOOK_AT:
-				f << c.id;
-				break;
-			case NetChangePlayer::ADD_ITEMS:
-				{
-					f << c.id;
-					f << c.count;
-					f << c.item->id;
-					if(c.item->id[0] == '$')
-						f << c.item->refid;
-				}
-				break;
-			case NetChangePlayer::TRAIN:
-				f.WriteCasted<byte>(c.id);
-				f.WriteCasted<byte>(c.count);
-				break;
-			case NetChangePlayer::UNSTUCK:
-				f << c.pos;
-				break;
-			case NetChangePlayer::GOLD_RECEIVED:
-				f.WriteCasted<byte>(c.id);
-				f << c.count;
-				break;
-			case NetChangePlayer::ADD_ITEMS_TRADER:
-				f << c.id;
-				f << c.count;
-				f << c.a;
-				f << c.item;
-				break;
-			case NetChangePlayer::ADD_ITEMS_CHEST:
-				f << c.id;
-				f << c.count;
-				f << c.a;
-				f << c.item;
-				break;
-			case NetChangePlayer::REMOVE_ITEMS:
-				f << c.id;
-				f << c.count;
-				break;
-			case NetChangePlayer::REMOVE_ITEMS_TRADER:
-				f << c.id;
-				f << c.count;
-				f << c.a;
-				break;
-			case NetChangePlayer::UPDATE_TRADER_GOLD:
-				f << c.id;
-				f << c.count;
-				break;
-			case NetChangePlayer::UPDATE_TRADER_INVENTORY:
-				f << c.unit->netid;
-				WriteItemListTeam(f, c.unit->items);
-				break;
-			case NetChangePlayer::PLAYER_STATS:
-				f.WriteCasted<byte>(c.id);
-				if(IsSet(c.id, STAT_KILLS))
-					f << player.kills;
-				if(IsSet(c.id, STAT_DMG_DONE))
-					f << player.dmg_done;
-				if(IsSet(c.id, STAT_DMG_TAKEN))
-					f << player.dmg_taken;
-				if(IsSet(c.id, STAT_KNOCKS))
-					f << player.knocks;
-				if(IsSet(c.id, STAT_ARENA_FIGHTS))
-					f << player.arena_fights;
-				break;
-			case NetChangePlayer::STAT_CHANGED:
-				f.WriteCasted<byte>(c.id);
-				f.WriteCasted<byte>(c.a);
-				f << c.count;
-				break;
-			case NetChangePlayer::ADD_PERK:
-			case NetChangePlayer::REMOVE_PERK:
-				f.WriteCasted<char>(c.id);
-				f.WriteCasted<char>(c.count);
-				break;
-			case NetChangePlayer::GAME_MESSAGE:
-				f << c.id;
-				break;
-			case NetChangePlayer::RUN_SCRIPT_RESULT:
-				if(c.str)
-				{
-					f.WriteString4(*c.str);
-					StringPool.Free(c.str);
-				}
-				else
-					f << 0u;
-				break;
-			case NetChangePlayer::GENERIC_CMD_RESPONSE:
-				f.WriteString4(*c.str);
-				StringPool.Free(c.str);
-				break;
-			case NetChangePlayer::ADD_EFFECT:
-				f.WriteCasted<char>(c.id);
-				f.WriteCasted<char>(c.count);
-				f.WriteCasted<char>(c.a1);
-				f.WriteCasted<char>(c.a2);
-				f << c.pos.x;
-				f << c.pos.y;
-				break;
-			case NetChangePlayer::REMOVE_EFFECT:
-				f.WriteCasted<char>(c.id);
-				f.WriteCasted<char>(c.count);
-				f.WriteCasted<char>(c.a1);
-				f.WriteCasted<char>(c.a2);
-				break;
-			case NetChangePlayer::ON_REST:
-				f.WriteCasted<byte>(c.count);
-				break;
-			case NetChangePlayer::GAME_MESSAGE_FORMATTED:
-				f << c.id;
-				f << c.a;
-				f << c.count;
-				break;
-			case NetChangePlayer::SOUND:
-				f << c.id;
-				break;
-			default:
-				Error("Update server: Unknown player %s change %d.", info.name.c_str(), c.type);
-				assert(0);
-				break;
-			}
-
-			f.WriteCasted<byte>(0xFF);
-		}
-	}
 	if(IsSet(info.update_flags, PlayerInfo::UF_GOLD))
 		f << info.u->gold;
 	if(IsSet(info.update_flags, PlayerInfo::UF_ALCOHOL))
@@ -3838,6 +3659,199 @@ void Game::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 		f << info.pc->learning_points;
 	if(IsSet(info.update_flags, PlayerInfo::UF_LEVEL))
 		f << info.u->level;
+	if(IsSet(info.update_flags, PlayerInfo::UF_MANA))
+		f << info.u->mp;
+
+	// changes
+	f.WriteCasted<byte>(info.changes.size());
+	if(info.changes.size() > 0xFF)
+		Error("Update server: Too many changes for player %s.", info.name.c_str());
+
+	for(NetChangePlayer& c : info.changes)
+	{
+		f.WriteCasted<byte>(c.type);
+
+		switch(c.type)
+		{
+		case NetChangePlayer::PICKUP:
+			f << c.id;
+			f << c.count;
+			break;
+		case NetChangePlayer::LOOT:
+			f << (c.id != 0);
+			if(c.id != 0)
+				WriteItemListTeam(f, *player.chest_trade);
+			break;
+		case NetChangePlayer::START_SHARE:
+		case NetChangePlayer::START_GIVE:
+			{
+				Unit& u = *player.action_unit;
+				f << u.weight;
+				f << u.weight_max;
+				f << u.gold;
+				WriteItemListTeam(f, u.items);
+			}
+			break;
+		case NetChangePlayer::START_DIALOG:
+			f << c.id;
+			break;
+		case NetChangePlayer::SHOW_DIALOG_CHOICES:
+			{
+				DialogContext& ctx = *player.dialog_ctx;
+				f.WriteCasted<byte>(ctx.choices.size());
+				f.WriteCasted<char>(ctx.dialog_esc);
+				for(DialogChoice& choice : ctx.choices)
+					f << choice.msg;
+			}
+			break;
+		case NetChangePlayer::END_DIALOG:
+		case NetChangePlayer::USE_USABLE:
+		case NetChangePlayer::PREPARE_WARP:
+		case NetChangePlayer::ENTER_ARENA:
+		case NetChangePlayer::START_ARENA_COMBAT:
+		case NetChangePlayer::EXIT_ARENA:
+		case NetChangePlayer::END_FALLBACK:
+			break;
+		case NetChangePlayer::START_TRADE:
+			f << c.id;
+			WriteItemList(f, *player.chest_trade);
+			break;
+		case NetChangePlayer::SET_FROZEN:
+		case NetChangePlayer::DEVMODE:
+		case NetChangePlayer::PVP:
+		case NetChangePlayer::NO_PVP:
+		case NetChangePlayer::CANT_LEAVE_LOCATION:
+		case NetChangePlayer::REST:
+			f.WriteCasted<byte>(c.id);
+			break;
+		case NetChangePlayer::IS_BETTER_ITEM:
+			f << (c.id != 0);
+			break;
+		case NetChangePlayer::REMOVE_QUEST_ITEM:
+		case NetChangePlayer::LOOK_AT:
+			f << c.id;
+			break;
+		case NetChangePlayer::ADD_ITEMS:
+			{
+				f << c.id;
+				f << c.count;
+				f << c.item->id;
+				if(c.item->id[0] == '$')
+					f << c.item->refid;
+			}
+			break;
+		case NetChangePlayer::TRAIN:
+			f.WriteCasted<byte>(c.id);
+			f.WriteCasted<byte>(c.count);
+			break;
+		case NetChangePlayer::UNSTUCK:
+			f << c.pos;
+			break;
+		case NetChangePlayer::GOLD_RECEIVED:
+			f.WriteCasted<byte>(c.id);
+			f << c.count;
+			break;
+		case NetChangePlayer::ADD_ITEMS_TRADER:
+			f << c.id;
+			f << c.count;
+			f << c.a;
+			f << c.item;
+			break;
+		case NetChangePlayer::ADD_ITEMS_CHEST:
+			f << c.id;
+			f << c.count;
+			f << c.a;
+			f << c.item;
+			break;
+		case NetChangePlayer::REMOVE_ITEMS:
+			f << c.id;
+			f << c.count;
+			break;
+		case NetChangePlayer::REMOVE_ITEMS_TRADER:
+			f << c.id;
+			f << c.count;
+			f << c.a;
+			break;
+		case NetChangePlayer::UPDATE_TRADER_GOLD:
+			f << c.id;
+			f << c.count;
+			break;
+		case NetChangePlayer::UPDATE_TRADER_INVENTORY:
+			f << c.unit->netid;
+			WriteItemListTeam(f, c.unit->items);
+			break;
+		case NetChangePlayer::PLAYER_STATS:
+			f.WriteCasted<byte>(c.id);
+			if(IsSet(c.id, STAT_KILLS))
+				f << player.kills;
+			if(IsSet(c.id, STAT_DMG_DONE))
+				f << player.dmg_done;
+			if(IsSet(c.id, STAT_DMG_TAKEN))
+				f << player.dmg_taken;
+			if(IsSet(c.id, STAT_KNOCKS))
+				f << player.knocks;
+			if(IsSet(c.id, STAT_ARENA_FIGHTS))
+				f << player.arena_fights;
+			break;
+		case NetChangePlayer::STAT_CHANGED:
+			f.WriteCasted<byte>(c.id);
+			f.WriteCasted<byte>(c.a);
+			f << c.count;
+			break;
+		case NetChangePlayer::ADD_PERK:
+		case NetChangePlayer::REMOVE_PERK:
+			f.WriteCasted<char>(c.id);
+			f.WriteCasted<char>(c.count);
+			break;
+		case NetChangePlayer::GAME_MESSAGE:
+			f << c.id;
+			break;
+		case NetChangePlayer::RUN_SCRIPT_RESULT:
+			if(c.str)
+			{
+				f.WriteString4(*c.str);
+				StringPool.Free(c.str);
+			}
+			else
+				f << 0u;
+			break;
+		case NetChangePlayer::GENERIC_CMD_RESPONSE:
+			f.WriteString4(*c.str);
+			StringPool.Free(c.str);
+			break;
+		case NetChangePlayer::ADD_EFFECT:
+			f.WriteCasted<char>(c.id);
+			f.WriteCasted<char>(c.count);
+			f.WriteCasted<char>(c.a1);
+			f.WriteCasted<char>(c.a2);
+			f << c.pos.x;
+			f << c.pos.y;
+			break;
+		case NetChangePlayer::REMOVE_EFFECT:
+			f.WriteCasted<char>(c.id);
+			f.WriteCasted<char>(c.count);
+			f.WriteCasted<char>(c.a1);
+			f.WriteCasted<char>(c.a2);
+			break;
+		case NetChangePlayer::ON_REST:
+			f.WriteCasted<byte>(c.count);
+			break;
+		case NetChangePlayer::GAME_MESSAGE_FORMATTED:
+			f << c.id;
+			f << c.a;
+			f << c.count;
+			break;
+		case NetChangePlayer::SOUND:
+			f << c.id;
+			break;
+		default:
+			Error("Update server: Unknown player %s change %d.", info.name.c_str(), c.type);
+			assert(0);
+			break;
+		}
+
+		f.WriteCasted<byte>(0xFF);
+	}
 }
 
 //=================================================================================================
@@ -6537,932 +6551,859 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 		return true;
 	}
 
-	// last damage from poison
+	// variables
 	if(IsSet(flags, PlayerInfo::UF_POISON_DAMAGE))
-	{
 		f >> pc->last_dmg_poison;
-		if(!f)
-		{
-			Error("Update single client: Broken ID_PLAYER_CHANGES at UF_POISON_DAMAGE.");
-			return true;
-		}
+	if(IsSet(flags, PlayerInfo::UF_GOLD))
+		f >> pc->unit->gold;
+	if(IsSet(flags, PlayerInfo::UF_ALCOHOL))
+		f >> pc->unit->alcohol;
+	if(IsSet(flags, PlayerInfo::UF_STAMINA))
+		f >> pc->unit->stamina;
+	if(IsSet(flags, PlayerInfo::UF_LEARNING_POINTS))
+		f >> pc->learning_points;
+	if(IsSet(flags, PlayerInfo::UF_LEVEL))
+		f >> pc->unit->level;
+	if(IsSet(flags, PlayerInfo::UF_MANA))
+		f >> pc->unit->mp;
+	if(!f)
+	{
+		Error("Update single client: Broken ID_PLAYER_CHANGES(2).");
+		return true;
 	}
 
 	// changes
-	if(IsSet(flags, PlayerInfo::UF_NET_CHANGES))
+	byte changes;
+	f >> changes;
+	if(!f)
 	{
-		byte changes;
-		f >> changes;
+		Error("Update single client: Broken ID_PLAYER_CHANGES at changes.");
+		return true;
+	}
+
+	for(byte change_i = 0; change_i < changes; ++change_i)
+	{
+		NetChangePlayer::TYPE type;
+		f.ReadCasted<byte>(type);
 		if(!f)
 		{
-			Error("Update single client: Broken ID_PLAYER_CHANGES at UF_NET_CHANGES.");
+			Error("Update single client: Broken ID_PLAYER_CHANGES at UF_NET_CHANGES(2).");
 			return true;
 		}
 
-		for(byte change_i = 0; change_i < changes; ++change_i)
+		switch(type)
 		{
-			NetChangePlayer::TYPE type;
-			f.ReadCasted<byte>(type);
-			if(!f)
+		// item picked up
+		case NetChangePlayer::PICKUP:
 			{
-				Error("Update single client: Broken ID_PLAYER_CHANGES at UF_NET_CHANGES(2).");
-				return true;
-			}
-
-			switch(type)
-			{
-			// item picked up
-			case NetChangePlayer::PICKUP:
+				int count, team_count;
+				f >> count;
+				f >> team_count;
+				if(!f)
+					Error("Update single client: Broken PICKUP.");
+				else if(game_state == GS_LEVEL)
 				{
-					int count, team_count;
-					f >> count;
-					f >> team_count;
-					if(!f)
-						Error("Update single client: Broken PICKUP.");
-					else if(game_state == GS_LEVEL)
-					{
-						pc->unit->AddItem2(pc_data.picking_item->item, (uint)count, (uint)team_count, false);
-						if(pc_data.picking_item->item->type == IT_GOLD)
-							sound_mgr->PlaySound2d(sCoins);
-						if(pc_data.picking_item_state == 2)
-							delete pc_data.picking_item;
-						pc_data.picking_item_state = 0;
-					}
-				}
-				break;
-			// response to looting
-			case NetChangePlayer::LOOT:
-				{
-					bool can_loot;
-					f >> can_loot;
-					if(!f)
-					{
-						Error("Update single client: Broken LOOT.");
-						break;
-					}
-
-					if(game_state != GS_LEVEL)
-						break;
-
-					if(pc->unit->action == A_PREPARE)
-						pc->unit->action = A_NONE;
-					if(!can_loot)
-					{
-						game_gui->messages->AddGameMsg3(GMS_IS_LOOTED);
-						pc->action = PlayerAction::None;
-						break;
-					}
-
-					// read items
-					if(!ReadItemListTeam(f, *pc->chest_trade))
-					{
-						Error("Update single client: Broken LOOT(2).");
-						break;
-					}
-
-					// start trade
-					if(pc->action == PlayerAction::LootUnit)
-						game_gui->inventory->StartTrade(I_LOOT_BODY, *pc->action_unit);
-					else if(pc->action == PlayerAction::LootContainer)
-						game_gui->inventory->StartTrade(I_LOOT_CONTAINER, pc->action_usable->container->items);
-					else
-						game_gui->inventory->StartTrade(I_LOOT_CHEST, pc->action_chest->items);
-				}
-				break;
-			// start dialog with unit or is busy
-			case NetChangePlayer::START_DIALOG:
-				{
-					int netid;
-					f >> netid;
-					if(!f)
-						Error("Update single client: Broken START_DIALOG.");
-					else if(netid == -1)
-					{
-						// unit is busy
-						pc->action = PlayerAction::None;
-						game_gui->messages->AddGameMsg3(GMS_UNIT_BUSY);
-					}
-					else if(netid != -2 && game_state == GS_LEVEL) // not entered/left building
-					{
-						// start dialog
-						Unit* unit = game_level->FindUnit(netid);
-						if(!unit)
-							Error("Update single client: START_DIALOG, missing unit %d.", netid);
-						else
-						{
-							pc->action = PlayerAction::Talk;
-							pc->action_unit = unit;
-							dialog_context.StartDialog(unit);
-							if(!predialog.empty())
-							{
-								dialog_context.dialog_s_text = predialog;
-								dialog_context.dialog_text = dialog_context.dialog_s_text.c_str();
-								dialog_context.dialog_wait = 1.f;
-								predialog.clear();
-							}
-							else if(unit->bubble)
-							{
-								dialog_context.dialog_s_text = unit->bubble->text;
-								dialog_context.dialog_text = dialog_context.dialog_s_text.c_str();
-								dialog_context.dialog_wait = 1.f;
-								dialog_context.skip_id = unit->bubble->skip_id;
-							}
-							pc_data.before_player = BP_NONE;
-						}
-					}
-				}
-				break;
-			// show dialog choices
-			case NetChangePlayer::SHOW_DIALOG_CHOICES:
-				{
-					byte count;
-					char escape;
-					f >> count;
-					f >> escape;
-					if(!f.Ensure(count))
-						Error("Update single client: Broken SHOW_DIALOG_CHOICES.");
-					else if(game_state != GS_LEVEL)
-					{
-						for(byte i = 0; i < count; ++i)
-						{
-							f.SkipString1();
-							if(!f)
-								Error("Update single client: Broken SHOW_DIALOG_CHOICES(2) at %u index.", i);
-						}
-					}
-					else
-					{
-						dialog_context.choice_selected = 0;
-						dialog_context.show_choices = true;
-						dialog_context.dialog_esc = escape;
-						dialog_choices.resize(count);
-						for(byte i = 0; i < count; ++i)
-						{
-							f >> dialog_choices[i];
-							if(!f)
-							{
-								Error("Update single client: Broken SHOW_DIALOG_CHOICES at %u index.", i);
-								break;
-							}
-						}
-						game_gui->level_gui->UpdateScrollbar(dialog_choices.size());
-					}
-				}
-				break;
-			// end of dialog
-			case NetChangePlayer::END_DIALOG:
-				if(game_state == GS_LEVEL)
-				{
-					dialog_context.dialog_mode = false;
-					if(pc->action == PlayerAction::Talk)
-						pc->action = PlayerAction::None;
-					pc->unit->look_target = nullptr;
-				}
-				break;
-			// start trade
-			case NetChangePlayer::START_TRADE:
-				{
-					int netid;
-					f >> netid;
-					if(!ReadItemList(f, chest_trade))
-					{
-						Error("Update single client: Broken START_TRADE.");
-						break;
-					}
-
-					if(game_state != GS_LEVEL)
-						break;
-
-					Unit* trader = game_level->FindUnit(netid);
-					if(!trader)
-					{
-						Error("Update single client: START_TRADE, missing unit %d.", netid);
-						break;
-					}
-					if(!trader->data->trader)
-					{
-						Error("Update single client: START_TRADER, unit '%s' is not a trader.", trader->data->id.c_str());
-						break;
-					}
-
-					game_gui->inventory->StartTrade(I_TRADE, chest_trade, trader);
-				}
-				break;
-			// add multiple same items to inventory
-			case NetChangePlayer::ADD_ITEMS:
-				{
-					int team_count, count;
-					const Item* item;
-					f >> team_count;
-					f >> count;
-					if(ReadItemAndFind(f, item) <= 0)
-						Error("Update single client: Broken ADD_ITEMS.");
-					else if(count <= 0 || team_count > count)
-						Error("Update single client: ADD_ITEMS, invalid count %d or team count %d.", count, team_count);
-					else if(game_state == GS_LEVEL)
-						pc->unit->AddItem2(item, (uint)count, (uint)team_count, false);
-				}
-				break;
-			// add items to trader which is trading with player
-			case NetChangePlayer::ADD_ITEMS_TRADER:
-				{
-					int netid, count, team_count;
-					const Item* item;
-					f >> netid;
-					f >> count;
-					f >> team_count;
-					if(ReadItemAndFind(f, item) <= 0)
-						Error("Update single client: Broken ADD_ITEMS_TRADER.");
-					else if(count <= 0 || team_count > count)
-						Error("Update single client: ADD_ITEMS_TRADER, invalid count %d or team count %d.", count, team_count);
-					else if(game_state == GS_LEVEL)
-					{
-						Unit* unit = game_level->FindUnit(netid);
-						if(!unit)
-							Error("Update single client: ADD_ITEMS_TRADER, missing unit %d.", netid);
-						else if(!pc->IsTradingWith(unit))
-							Error("Update single client: ADD_ITEMS_TRADER, unit %d (%s) is not trading with player.", netid, unit->data->id.c_str());
-						else
-							unit->AddItem2(item, (uint)count, (uint)team_count, false);
-					}
-				}
-				break;
-			// add items to chest which is open by player
-			case NetChangePlayer::ADD_ITEMS_CHEST:
-				{
-					int netid, count, team_count;
-					const Item* item;
-					f >> netid;
-					f >> count;
-					f >> team_count;
-					if(ReadItemAndFind(f, item) <= 0)
-						Error("Update single client: Broken ADD_ITEMS_CHEST.");
-					else if(count <= 0 || team_count > count)
-						Error("Update single client: ADD_ITEMS_CHEST, invalid count %d or team count %d.", count, team_count);
-					else if(game_state == GS_LEVEL)
-					{
-						Chest* chest = game_level->FindChest(netid);
-						if(!chest)
-							Error("Update single client: ADD_ITEMS_CHEST, missing chest %d.", netid);
-						else if(pc->action != PlayerAction::LootChest || pc->action_chest != chest)
-							Error("Update single client: ADD_ITEMS_CHEST, chest %d is not opened by player.", netid);
-						else
-						{
-							PreloadItem(item);
-							chest->AddItem(item, (uint)count, (uint)team_count, false);
-						}
-					}
-				}
-				break;
-			// remove items from inventory
-			case NetChangePlayer::REMOVE_ITEMS:
-				{
-					int i_index, count;
-					f >> i_index;
-					f >> count;
-					if(!f)
-						Error("Update single client: Broken REMOVE_ITEMS.");
-					else if(count <= 0)
-						Error("Update single client: REMOVE_ITEMS, invalid count %d.", count);
-					else if(game_state == GS_LEVEL)
-						pc->unit->RemoveItem(i_index, (uint)count);
-				}
-				break;
-			// remove items from traded inventory which is trading with player
-			case NetChangePlayer::REMOVE_ITEMS_TRADER:
-				{
-					int netid, i_index, count;
-					f >> netid;
-					f >> count;
-					f >> i_index;
-					if(!f)
-						Error("Update single client: Broken REMOVE_ITEMS_TRADER.");
-					else if(count <= 0)
-						Error("Update single client: REMOVE_ITEMS_TRADE, invalid count %d.", count);
-					else if(game_state == GS_LEVEL)
-					{
-						Unit* unit = game_level->FindUnit(netid);
-						if(!unit)
-							Error("Update single client: REMOVE_ITEMS_TRADER, missing unit %d.", netid);
-						else if(!pc->IsTradingWith(unit))
-							Error("Update single client: REMOVE_ITEMS_TRADER, unit %d (%s) is not trading with player.", netid, unit->data->id.c_str());
-						else
-							unit->RemoveItem(i_index, (uint)count);
-					}
-				}
-				break;
-			// change player frozen state
-			case NetChangePlayer::SET_FROZEN:
-				{
-					FROZEN frozen;
-					f.ReadCasted<byte>(frozen);
-					if(!f)
-						Error("Update single client: Broken SET_FROZEN.");
-					else if(game_state == GS_LEVEL)
-						pc->unit->frozen = frozen;
-				}
-				break;
-			// remove quest item from inventory
-			case NetChangePlayer::REMOVE_QUEST_ITEM:
-				{
-					int refid;
-					f >> refid;
-					if(!f)
-						Error("Update single client: Broken REMOVE_QUEST_ITEM.");
-					else if(game_state == GS_LEVEL)
-						pc->unit->RemoveQuestItem(refid);
-				}
-				break;
-			// someone else is using usable
-			case NetChangePlayer::USE_USABLE:
-				if(game_state == GS_LEVEL)
-				{
-					game_gui->messages->AddGameMsg3(GMS_USED);
-					if(pc->action == PlayerAction::LootContainer)
-						pc->action = PlayerAction::None;
-					if(pc->unit->action == A_PREPARE)
-						pc->unit->action = A_NONE;
-				}
-				break;
-			// change development mode for player
-			case NetChangePlayer::DEVMODE:
-				{
-					bool allowed;
-					f >> allowed;
-					if(!f)
-						Error("Update single client: Broken CHEATS.");
-					else if(devmode != allowed)
-					{
-						AddMsg(allowed ? txDevmodeOn : txDevmodeOff);
-						devmode = allowed;
-					}
-				}
-				break;
-			// start sharing/giving items
-			case NetChangePlayer::START_SHARE:
-			case NetChangePlayer::START_GIVE:
-				{
-					cstring name = (type == NetChangePlayer::START_SHARE ? "START_SHARE" : "START_GIVE");
-					if(pc->action_unit && pc->action_unit->IsTeamMember() && game_state == GS_LEVEL)
-					{
-						Unit& unit = *pc->action_unit;
-						f >> unit.weight;
-						f >> unit.weight_max;
-						f >> unit.gold;
-						unit.stats = unit.data->GetStats(unit.level);
-						if(!ReadItemListTeam(f, unit.items))
-							Error("Update single client: Broken %s.", name);
-						else
-							game_gui->inventory->StartTrade(type == NetChangePlayer::START_SHARE ? I_SHARE : I_GIVE, unit);
-					}
-					else
-					{
-						if(game_state == GS_LEVEL)
-							Error("Update single client: %s, player is not talking with team member.", name);
-						// try to skip
-						UnitStats stats;
-						vector<ItemSlot> items;
-						f.Skip(sizeof(int) * 3);
-						stats.Read(f);
-						if(!ReadItemListTeam(f, items, true))
-							Error("Update single client: Broken %s(2).", name);
-					}
-				}
-				break;
-			// response to is IS_BETTER_ITEM
-			case NetChangePlayer::IS_BETTER_ITEM:
-				{
-					bool is_better;
-					f >> is_better;
-					if(!f)
-						Error("Update single client: Broken IS_BETTER_ITEM.");
-					else if(game_state == GS_LEVEL)
-						game_gui->inventory->inv_trade_mine->IsBetterItemResponse(is_better);
-				}
-				break;
-			// question about pvp
-			case NetChangePlayer::PVP:
-				{
-					byte player_id;
-					f >> player_id;
-					if(!f)
-						Error("Update single client: Broken PVP.");
-					else if(game_state == GS_LEVEL)
-					{
-						PlayerInfo* info = net->TryGetPlayer(player_id);
-						if(!info)
-							Error("Update single client: PVP, invalid player id %u.", player_id);
-						else
-							arena->ShowPvpRequest(info->u);
-					}
-				}
-				break;
-			// preparing to warp
-			case NetChangePlayer::PREPARE_WARP:
-				if(game_state == GS_LEVEL)
-				{
-					fallback_type = FALLBACK::WAIT_FOR_WARP;
-					fallback_t = -1.f;
-					pc->unit->frozen = (pc->unit->usable ? FROZEN::YES_NO_ANIM : FROZEN::YES);
-				}
-				break;
-			// entering arena
-			case NetChangePlayer::ENTER_ARENA:
-				if(game_state == GS_LEVEL)
-				{
-					fallback_type = FALLBACK::ARENA;
-					fallback_t = -1.f;
-					pc->unit->frozen = FROZEN::YES;
-				}
-				break;
-			// start of arena combat
-			case NetChangePlayer::START_ARENA_COMBAT:
-				if(game_state == GS_LEVEL)
-					pc->unit->frozen = FROZEN::NO;
-				break;
-			// exit from arena
-			case NetChangePlayer::EXIT_ARENA:
-				if(game_state == GS_LEVEL)
-				{
-					fallback_type = FALLBACK::ARENA_EXIT;
-					fallback_t = -1.f;
-					pc->unit->frozen = FROZEN::YES;
-				}
-				break;
-			// player refused to pvp
-			case NetChangePlayer::NO_PVP:
-				{
-					byte player_id;
-					f >> player_id;
-					if(!f)
-						Error("Update single client: Broken NO_PVP.");
-					else if(game_state == GS_LEVEL)
-					{
-						PlayerInfo* info = net->TryGetPlayer(player_id);
-						if(!info)
-							Error("Update single client: NO_PVP, invalid player id %u.", player_id);
-						else
-							AddMsg(Format(txPvpRefuse, info->name.c_str()));
-					}
-				}
-				break;
-			// can't leave location message
-			case NetChangePlayer::CANT_LEAVE_LOCATION:
-				{
-					CanLeaveLocationResult reason;
-					f.ReadCasted<byte>(reason);
-					if(!f)
-						Error("Update single client: Broken CANT_LEAVE_LOCATION.");
-					else if(reason != CanLeaveLocationResult::InCombat && reason != CanLeaveLocationResult::TeamTooFar)
-						Error("Update single client: CANT_LEAVE_LOCATION, invalid reason %u.", (byte)reason);
-					else if(game_state == GS_LEVEL)
-						game_gui->messages->AddGameMsg3(reason == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
-				}
-				break;
-			// force player to look at unit
-			case NetChangePlayer::LOOK_AT:
-				{
-					int netid;
-					f >> netid;
-					if(!f)
-						Error("Update single client: Broken LOOK_AT.");
-					else if(game_state == GS_LEVEL)
-					{
-						if(netid == -1)
-							pc->unit->look_target = nullptr;
-						else
-						{
-							Unit* unit = game_level->FindUnit(netid);
-							if(!unit)
-								Error("Update single client: LOOK_AT, missing unit %d.", netid);
-							else
-								pc->unit->look_target = unit;
-						}
-					}
-				}
-				break;
-			// end of fallback
-			case NetChangePlayer::END_FALLBACK:
-				if(game_state == GS_LEVEL && fallback_type == FALLBACK::CLIENT)
-					fallback_type = FALLBACK::CLIENT2;
-				break;
-			// response to rest in inn
-			case NetChangePlayer::REST:
-				{
-					byte days;
-					f >> days;
-					if(!f)
-						Error("Update single client: Broken REST.");
-					else if(game_state == GS_LEVEL)
-					{
-						fallback_type = FALLBACK::REST;
-						fallback_t = -1.f;
-						fallback_1 = days;
-						pc->unit->frozen = FROZEN::YES;
-					}
-				}
-				break;
-			// response to training
-			case NetChangePlayer::TRAIN:
-				{
-					byte type, stat_type;
-					f >> type;
-					f >> stat_type;
-					if(!f)
-						Error("Update single client: Broken TRAIN.");
-					else if(game_state == GS_LEVEL)
-					{
-						fallback_type = FALLBACK::TRAIN;
-						fallback_t = -1.f;
-						fallback_1 = type;
-						fallback_2 = stat_type;
-						pc->unit->frozen = FROZEN::YES;
-					}
-				}
-				break;
-			// warped player to not stuck position
-			case NetChangePlayer::UNSTUCK:
-				{
-					Vec3 new_pos;
-					f >> new_pos;
-					if(!f)
-						Error("Update single client: Broken UNSTUCK.");
-					else if(game_state == GS_LEVEL)
-					{
-						pc->unit->pos = new_pos;
-						interpolate_timer = 0.1f;
-					}
-				}
-				break;
-			// message about receiving gold from another player
-			case NetChangePlayer::GOLD_RECEIVED:
-				{
-					byte player_id;
-					int count;
-					f >> player_id;
-					f >> count;
-					if(!f)
-						Error("Update single client: Broken GOLD_RECEIVED.");
-					else if(count <= 0)
-						Error("Update single client: GOLD_RECEIVED, invalid count %d.", count);
-					else
-					{
-						PlayerInfo* info = net->TryGetPlayer(player_id);
-						if(!info)
-							Error("Update single client: GOLD_RECEIVED, invalid player id %u.", player_id);
-						else
-						{
-							AddMultiMsg(Format(txReceivedGold, count, info->name.c_str()));
-							sound_mgr->PlaySound2d(sCoins);
-						}
-					}
-				}
-				break;
-			// update trader gold
-			case NetChangePlayer::UPDATE_TRADER_GOLD:
-				{
-					int netid, count;
-					f >> netid;
-					f >> count;
-					if(!f)
-						Error("Update single client: Broken UPDATE_TRADER_GOLD.");
-					else if(count < 0)
-						Error("Update single client: UPDATE_TRADER_GOLD, invalid count %d.", count);
-					else if(game_state == GS_LEVEL)
-					{
-						Unit* unit = game_level->FindUnit(netid);
-						if(!unit)
-							Error("Update single client: UPDATE_TRADER_GOLD, missing unit %d.", netid);
-						else if(!pc->IsTradingWith(unit))
-							Error("Update single client: UPDATE_TRADER_GOLD, unit %d (%s) is not trading with player.", netid, unit->data->id.c_str());
-						else
-							unit->gold = count;
-					}
-				}
-				break;
-			// update trader inventory after getting item
-			case NetChangePlayer::UPDATE_TRADER_INVENTORY:
-				{
-					int netid;
-					f >> netid;
-					if(!f)
-						Error("Update single client: Broken UPDATE_TRADER_INVENTORY.");
-					else if(game_state == GS_LEVEL)
-					{
-						Unit* unit = game_level->FindUnit(netid);
-						bool ok = true;
-						if(!unit)
-						{
-							Error("Update single client: UPDATE_TRADER_INVENTORY, missing unit %d.", netid);
-							ok = false;
-						}
-						else if(!pc->IsTradingWith(unit))
-						{
-							Error("Update single client: UPDATE_TRADER_INVENTORY, unit %d (%s) is not trading with player.",
-								netid, unit->data->id.c_str());
-							ok = false;
-						}
-						if(ok)
-						{
-							if(!ReadItemListTeam(f, unit->items))
-								Error("Update single client: Broken UPDATE_TRADER_INVENTORY(2).");
-						}
-						else
-						{
-							vector<ItemSlot> items;
-							if(!ReadItemListTeam(f, items, true))
-								Error("Update single client: Broken UPDATE_TRADER_INVENTORY(3).");
-						}
-					}
-				}
-				break;
-			// update player statistics
-			case NetChangePlayer::PLAYER_STATS:
-				{
-					byte flags;
-					f >> flags;
-					if(!f)
-						Error("Update single client: Broken PLAYER_STATS.");
-					else if(flags == 0 || (flags & ~STAT_MAX) != 0)
-						Error("Update single client: PLAYER_STATS, invalid flags %u.", flags);
-					else
-					{
-						int set_flags = CountBits(flags);
-						// read to buffer
-						f.Read(BUF, sizeof(int)*set_flags);
-						if(!f)
-							Error("Update single client: Broken PLAYER_STATS(2).");
-						else
-						{
-							int* buf = (int*)BUF;
-							if(IsSet(flags, STAT_KILLS))
-								pc->kills = *buf++;
-							if(IsSet(flags, STAT_DMG_DONE))
-								pc->dmg_done = *buf++;
-							if(IsSet(flags, STAT_DMG_TAKEN))
-								pc->dmg_taken = *buf++;
-							if(IsSet(flags, STAT_KNOCKS))
-								pc->knocks = *buf++;
-							if(IsSet(flags, STAT_ARENA_FIGHTS))
-								pc->arena_fights = *buf++;
-						}
-					}
-				}
-				break;
-			// player stat changed
-			case NetChangePlayer::STAT_CHANGED:
-				{
-					byte type, what;
-					int value;
-					f >> type;
-					f >> what;
-					f >> value;
-					if(!f)
-						Error("Update single client: Broken STAT_CHANGED.");
-					else
-					{
-						switch((ChangedStatType)type)
-						{
-						case ChangedStatType::ATTRIBUTE:
-							if(what >= (byte)AttributeId::MAX)
-								Error("Update single client: STAT_CHANGED, invalid attribute %u.", what);
-							else
-								pc->unit->Set((AttributeId)what, value);
-							break;
-						case ChangedStatType::SKILL:
-							if(what >= (byte)SkillId::MAX)
-								Error("Update single client: STAT_CHANGED, invalid skill %u.", what);
-							else
-								pc->unit->Set((SkillId)what, value);
-							break;
-						default:
-							Error("Update single client: STAT_CHANGED, invalid change type %u.", type);
-							break;
-						}
-					}
-				}
-				break;
-			// add perk to player
-			case NetChangePlayer::ADD_PERK:
-				{
-					Perk perk;
-					int value;
-					f.ReadCasted<char>(perk);
-					f.ReadCasted<char>(value);
-					if(!f)
-						Error("Update single client: Broken ADD_PERK.");
-					else
-						pc->AddPerk(perk, value);
-				}
-				break;
-			// remove perk from player
-			case NetChangePlayer::REMOVE_PERK:
-				{
-					Perk perk;
-					int value;
-					f.ReadCasted<char>(perk);
-					f.ReadCasted<char>(value);
-					if(!f)
-						Error("Update single client: Broken REMOVE_PERK.");
-					else
-						pc->RemovePerk(perk, value);
-				}
-				break;
-			// show game message
-			case NetChangePlayer::GAME_MESSAGE:
-				{
-					int gm_id;
-					f >> gm_id;
-					if(!f)
-						Error("Update single client: Broken GAME_MESSAGE.");
-					else
-						game_gui->messages->AddGameMsg3((GMS)gm_id);
-				}
-				break;
-			// run script result
-			case NetChangePlayer::RUN_SCRIPT_RESULT:
-				{
-					string* output = StringPool.Get();
-					f.ReadString4(*output);
-					if(!f)
-						Error("Update single client: Broken RUN_SCRIPT_RESULT.");
-					else
-						game_gui->console->AddMsg(output->c_str());
-					StringPool.Free(output);
-				}
-				break;
-			// generic command result
-			case NetChangePlayer::GENERIC_CMD_RESPONSE:
-				{
-					string* output = StringPool.Get();
-					f.ReadString4(*output);
-					if(!f)
-						Error("Update single client: Broken GENERIC_CMD_RESPONSE.");
-					else
-						cmdp->Msg(output->c_str());
-					StringPool.Free(output);
-				}
-				break;
-			// add effect to player
-			case NetChangePlayer::ADD_EFFECT:
-				{
-					Effect e;
-					f.ReadCasted<char>(e.effect);
-					f.ReadCasted<char>(e.source);
-					f.ReadCasted<char>(e.source_id);
-					f.ReadCasted<char>(e.value);
-					f >> e.power;
-					f >> e.time;
-					if(!f)
-						Error("Update single client: Broken ADD_EFFECT.");
-					else
-						pc->unit->AddEffect(e);
-				}
-				break;
-			// remove effect from player
-			case NetChangePlayer::REMOVE_EFFECT:
-				{
-					EffectId effect;
-					EffectSource source;
-					int source_id, value;
-					f.ReadCasted<char>(effect);
-					f.ReadCasted<char>(source);
-					f.ReadCasted<char>(source_id);
-					f.ReadCasted<char>(value);
-					if(!f)
-						Error("Update single client: Broken REMOVE_EFFECT.");
-					else
-						pc->unit->RemoveEffects(effect, source, source_id, value);
-				}
-				break;
-			// player is resting
-			case NetChangePlayer::ON_REST:
-				{
-					int days;
-					f.ReadCasted<byte>(days);
-					if(!f)
-						Error("Update single client: Broken ON_REST.");
-					else
-						pc->Rest(days, false, false);
-				}
-				break;
-			// add formatted message
-			case NetChangePlayer::GAME_MESSAGE_FORMATTED:
-				{
-					GMS id;
-					int subtype, value;
-					f >> id;
-					f >> subtype;
-					f >> value;
-					if(!f)
-						Error("Update single client: Broken GAME_MESSAGE_FORMATTED.");
-					else
-						game_gui->messages->AddFormattedMessage(pc, id, subtype, value);
-				}
-				break;
-			// play sound
-			case NetChangePlayer::SOUND:
-				{
-					int id;
-					f >> id;
-					if(!f)
-						Error("Update single client: Broken SOUND.");
-					else if(id == 0)
+					pc->unit->AddItem2(pc_data.picking_item->item, (uint)count, (uint)team_count, false);
+					if(pc_data.picking_item->item->type == IT_GOLD)
 						sound_mgr->PlaySound2d(sCoins);
+					if(pc_data.picking_item_state == 2)
+						delete pc_data.picking_item;
+					pc_data.picking_item_state = 0;
 				}
-				break;
-			default:
-				Warn("Update single client: Unknown player change type %d.", type);
-				break;
 			}
-
-			byte checksum;
-			f >> checksum;
-			if(!f || checksum != 0xFF)
+			break;
+		// response to looting
+		case NetChangePlayer::LOOT:
 			{
-				Error("Update single client: Invalid checksum (%u).", change_i);
-				return true;
+				bool can_loot;
+				f >> can_loot;
+				if(!f)
+				{
+					Error("Update single client: Broken LOOT.");
+					break;
+				}
+
+				if(game_state != GS_LEVEL)
+					break;
+
+				if(pc->unit->action == A_PREPARE)
+					pc->unit->action = A_NONE;
+				if(!can_loot)
+				{
+					game_gui->messages->AddGameMsg3(GMS_IS_LOOTED);
+					pc->action = PlayerAction::None;
+					break;
+				}
+
+				// read items
+				if(!ReadItemListTeam(f, *pc->chest_trade))
+				{
+					Error("Update single client: Broken LOOT(2).");
+					break;
+				}
+
+				// start trade
+				if(pc->action == PlayerAction::LootUnit)
+					game_gui->inventory->StartTrade(I_LOOT_BODY, *pc->action_unit);
+				else if(pc->action == PlayerAction::LootContainer)
+					game_gui->inventory->StartTrade(I_LOOT_CONTAINER, pc->action_usable->container->items);
+				else
+					game_gui->inventory->StartTrade(I_LOOT_CHEST, pc->action_chest->items);
 			}
+			break;
+		// start dialog with unit or is busy
+		case NetChangePlayer::START_DIALOG:
+			{
+				int netid;
+				f >> netid;
+				if(!f)
+					Error("Update single client: Broken START_DIALOG.");
+				else if(netid == -1)
+				{
+					// unit is busy
+					pc->action = PlayerAction::None;
+					game_gui->messages->AddGameMsg3(GMS_UNIT_BUSY);
+				}
+				else if(netid != -2 && game_state == GS_LEVEL) // not entered/left building
+				{
+					// start dialog
+					Unit* unit = game_level->FindUnit(netid);
+					if(!unit)
+						Error("Update single client: START_DIALOG, missing unit %d.", netid);
+					else
+					{
+						pc->action = PlayerAction::Talk;
+						pc->action_unit = unit;
+						dialog_context.StartDialog(unit);
+						if(!predialog.empty())
+						{
+							dialog_context.dialog_s_text = predialog;
+							dialog_context.dialog_text = dialog_context.dialog_s_text.c_str();
+							dialog_context.dialog_wait = 1.f;
+							predialog.clear();
+						}
+						else if(unit->bubble)
+						{
+							dialog_context.dialog_s_text = unit->bubble->text;
+							dialog_context.dialog_text = dialog_context.dialog_s_text.c_str();
+							dialog_context.dialog_wait = 1.f;
+							dialog_context.skip_id = unit->bubble->skip_id;
+						}
+						pc_data.before_player = BP_NONE;
+					}
+				}
+			}
+			break;
+		// show dialog choices
+		case NetChangePlayer::SHOW_DIALOG_CHOICES:
+			{
+				byte count;
+				char escape;
+				f >> count;
+				f >> escape;
+				if(!f.Ensure(count))
+					Error("Update single client: Broken SHOW_DIALOG_CHOICES.");
+				else if(game_state != GS_LEVEL)
+				{
+					for(byte i = 0; i < count; ++i)
+					{
+						f.SkipString1();
+						if(!f)
+							Error("Update single client: Broken SHOW_DIALOG_CHOICES(2) at %u index.", i);
+					}
+				}
+				else
+				{
+					dialog_context.choice_selected = 0;
+					dialog_context.show_choices = true;
+					dialog_context.dialog_esc = escape;
+					dialog_choices.resize(count);
+					for(byte i = 0; i < count; ++i)
+					{
+						f >> dialog_choices[i];
+						if(!f)
+						{
+							Error("Update single client: Broken SHOW_DIALOG_CHOICES at %u index.", i);
+							break;
+						}
+					}
+					game_gui->level_gui->UpdateScrollbar(dialog_choices.size());
+				}
+			}
+			break;
+		// end of dialog
+		case NetChangePlayer::END_DIALOG:
+			if(game_state == GS_LEVEL)
+			{
+				dialog_context.dialog_mode = false;
+				if(pc->action == PlayerAction::Talk)
+					pc->action = PlayerAction::None;
+				pc->unit->look_target = nullptr;
+			}
+			break;
+		// start trade
+		case NetChangePlayer::START_TRADE:
+			{
+				int netid;
+				f >> netid;
+				if(!ReadItemList(f, chest_trade))
+				{
+					Error("Update single client: Broken START_TRADE.");
+					break;
+				}
+
+				if(game_state != GS_LEVEL)
+					break;
+
+				Unit* trader = game_level->FindUnit(netid);
+				if(!trader)
+				{
+					Error("Update single client: START_TRADE, missing unit %d.", netid);
+					break;
+				}
+				if(!trader->data->trader)
+				{
+					Error("Update single client: START_TRADER, unit '%s' is not a trader.", trader->data->id.c_str());
+					break;
+				}
+
+				game_gui->inventory->StartTrade(I_TRADE, chest_trade, trader);
+			}
+			break;
+		// add multiple same items to inventory
+		case NetChangePlayer::ADD_ITEMS:
+			{
+				int team_count, count;
+				const Item* item;
+				f >> team_count;
+				f >> count;
+				if(ReadItemAndFind(f, item) <= 0)
+					Error("Update single client: Broken ADD_ITEMS.");
+				else if(count <= 0 || team_count > count)
+					Error("Update single client: ADD_ITEMS, invalid count %d or team count %d.", count, team_count);
+				else if(game_state == GS_LEVEL)
+					pc->unit->AddItem2(item, (uint)count, (uint)team_count, false);
+			}
+			break;
+		// add items to trader which is trading with player
+		case NetChangePlayer::ADD_ITEMS_TRADER:
+			{
+				int netid, count, team_count;
+				const Item* item;
+				f >> netid;
+				f >> count;
+				f >> team_count;
+				if(ReadItemAndFind(f, item) <= 0)
+					Error("Update single client: Broken ADD_ITEMS_TRADER.");
+				else if(count <= 0 || team_count > count)
+					Error("Update single client: ADD_ITEMS_TRADER, invalid count %d or team count %d.", count, team_count);
+				else if(game_state == GS_LEVEL)
+				{
+					Unit* unit = game_level->FindUnit(netid);
+					if(!unit)
+						Error("Update single client: ADD_ITEMS_TRADER, missing unit %d.", netid);
+					else if(!pc->IsTradingWith(unit))
+						Error("Update single client: ADD_ITEMS_TRADER, unit %d (%s) is not trading with player.", netid, unit->data->id.c_str());
+					else
+						unit->AddItem2(item, (uint)count, (uint)team_count, false);
+				}
+			}
+			break;
+		// add items to chest which is open by player
+		case NetChangePlayer::ADD_ITEMS_CHEST:
+			{
+				int netid, count, team_count;
+				const Item* item;
+				f >> netid;
+				f >> count;
+				f >> team_count;
+				if(ReadItemAndFind(f, item) <= 0)
+					Error("Update single client: Broken ADD_ITEMS_CHEST.");
+				else if(count <= 0 || team_count > count)
+					Error("Update single client: ADD_ITEMS_CHEST, invalid count %d or team count %d.", count, team_count);
+				else if(game_state == GS_LEVEL)
+				{
+					Chest* chest = game_level->FindChest(netid);
+					if(!chest)
+						Error("Update single client: ADD_ITEMS_CHEST, missing chest %d.", netid);
+					else if(pc->action != PlayerAction::LootChest || pc->action_chest != chest)
+						Error("Update single client: ADD_ITEMS_CHEST, chest %d is not opened by player.", netid);
+					else
+					{
+						PreloadItem(item);
+						chest->AddItem(item, (uint)count, (uint)team_count, false);
+					}
+				}
+			}
+			break;
+		// remove items from inventory
+		case NetChangePlayer::REMOVE_ITEMS:
+			{
+				int i_index, count;
+				f >> i_index;
+				f >> count;
+				if(!f)
+					Error("Update single client: Broken REMOVE_ITEMS.");
+				else if(count <= 0)
+					Error("Update single client: REMOVE_ITEMS, invalid count %d.", count);
+				else if(game_state == GS_LEVEL)
+					pc->unit->RemoveItem(i_index, (uint)count);
+			}
+			break;
+		// remove items from traded inventory which is trading with player
+		case NetChangePlayer::REMOVE_ITEMS_TRADER:
+			{
+				int netid, i_index, count;
+				f >> netid;
+				f >> count;
+				f >> i_index;
+				if(!f)
+					Error("Update single client: Broken REMOVE_ITEMS_TRADER.");
+				else if(count <= 0)
+					Error("Update single client: REMOVE_ITEMS_TRADE, invalid count %d.", count);
+				else if(game_state == GS_LEVEL)
+				{
+					Unit* unit = game_level->FindUnit(netid);
+					if(!unit)
+						Error("Update single client: REMOVE_ITEMS_TRADER, missing unit %d.", netid);
+					else if(!pc->IsTradingWith(unit))
+						Error("Update single client: REMOVE_ITEMS_TRADER, unit %d (%s) is not trading with player.", netid, unit->data->id.c_str());
+					else
+						unit->RemoveItem(i_index, (uint)count);
+				}
+			}
+			break;
+		// change player frozen state
+		case NetChangePlayer::SET_FROZEN:
+			{
+				FROZEN frozen;
+				f.ReadCasted<byte>(frozen);
+				if(!f)
+					Error("Update single client: Broken SET_FROZEN.");
+				else if(game_state == GS_LEVEL)
+					pc->unit->frozen = frozen;
+			}
+			break;
+		// remove quest item from inventory
+		case NetChangePlayer::REMOVE_QUEST_ITEM:
+			{
+				int refid;
+				f >> refid;
+				if(!f)
+					Error("Update single client: Broken REMOVE_QUEST_ITEM.");
+				else if(game_state == GS_LEVEL)
+					pc->unit->RemoveQuestItem(refid);
+			}
+			break;
+		// someone else is using usable
+		case NetChangePlayer::USE_USABLE:
+			if(game_state == GS_LEVEL)
+			{
+				game_gui->messages->AddGameMsg3(GMS_USED);
+				if(pc->action == PlayerAction::LootContainer)
+					pc->action = PlayerAction::None;
+				if(pc->unit->action == A_PREPARE)
+					pc->unit->action = A_NONE;
+			}
+			break;
+		// change development mode for player
+		case NetChangePlayer::DEVMODE:
+			{
+				bool allowed;
+				f >> allowed;
+				if(!f)
+					Error("Update single client: Broken CHEATS.");
+				else if(devmode != allowed)
+				{
+					AddMsg(allowed ? txDevmodeOn : txDevmodeOff);
+					devmode = allowed;
+				}
+			}
+			break;
+		// start sharing/giving items
+		case NetChangePlayer::START_SHARE:
+		case NetChangePlayer::START_GIVE:
+			{
+				cstring name = (type == NetChangePlayer::START_SHARE ? "START_SHARE" : "START_GIVE");
+				if(pc->action_unit && pc->action_unit->IsTeamMember() && game_state == GS_LEVEL)
+				{
+					Unit& unit = *pc->action_unit;
+					f >> unit.weight;
+					f >> unit.weight_max;
+					f >> unit.gold;
+					unit.stats = unit.data->GetStats(unit.level);
+					if(!ReadItemListTeam(f, unit.items))
+						Error("Update single client: Broken %s.", name);
+					else
+						game_gui->inventory->StartTrade(type == NetChangePlayer::START_SHARE ? I_SHARE : I_GIVE, unit);
+				}
+				else
+				{
+					if(game_state == GS_LEVEL)
+						Error("Update single client: %s, player is not talking with team member.", name);
+					// try to skip
+					UnitStats stats;
+					vector<ItemSlot> items;
+					f.Skip(sizeof(int) * 3);
+					stats.Read(f);
+					if(!ReadItemListTeam(f, items, true))
+						Error("Update single client: Broken %s(2).", name);
+				}
+			}
+			break;
+		// response to is IS_BETTER_ITEM
+		case NetChangePlayer::IS_BETTER_ITEM:
+			{
+				bool is_better;
+				f >> is_better;
+				if(!f)
+					Error("Update single client: Broken IS_BETTER_ITEM.");
+				else if(game_state == GS_LEVEL)
+					game_gui->inventory->inv_trade_mine->IsBetterItemResponse(is_better);
+			}
+			break;
+		// question about pvp
+		case NetChangePlayer::PVP:
+			{
+				byte player_id;
+				f >> player_id;
+				if(!f)
+					Error("Update single client: Broken PVP.");
+				else if(game_state == GS_LEVEL)
+				{
+					PlayerInfo* info = net->TryGetPlayer(player_id);
+					if(!info)
+						Error("Update single client: PVP, invalid player id %u.", player_id);
+					else
+						arena->ShowPvpRequest(info->u);
+				}
+			}
+			break;
+		// preparing to warp
+		case NetChangePlayer::PREPARE_WARP:
+			if(game_state == GS_LEVEL)
+			{
+				fallback_type = FALLBACK::WAIT_FOR_WARP;
+				fallback_t = -1.f;
+				pc->unit->frozen = (pc->unit->usable ? FROZEN::YES_NO_ANIM : FROZEN::YES);
+			}
+			break;
+		// entering arena
+		case NetChangePlayer::ENTER_ARENA:
+			if(game_state == GS_LEVEL)
+			{
+				fallback_type = FALLBACK::ARENA;
+				fallback_t = -1.f;
+				pc->unit->frozen = FROZEN::YES;
+			}
+			break;
+		// start of arena combat
+		case NetChangePlayer::START_ARENA_COMBAT:
+			if(game_state == GS_LEVEL)
+				pc->unit->frozen = FROZEN::NO;
+			break;
+		// exit from arena
+		case NetChangePlayer::EXIT_ARENA:
+			if(game_state == GS_LEVEL)
+			{
+				fallback_type = FALLBACK::ARENA_EXIT;
+				fallback_t = -1.f;
+				pc->unit->frozen = FROZEN::YES;
+			}
+			break;
+		// player refused to pvp
+		case NetChangePlayer::NO_PVP:
+			{
+				byte player_id;
+				f >> player_id;
+				if(!f)
+					Error("Update single client: Broken NO_PVP.");
+				else if(game_state == GS_LEVEL)
+				{
+					PlayerInfo* info = net->TryGetPlayer(player_id);
+					if(!info)
+						Error("Update single client: NO_PVP, invalid player id %u.", player_id);
+					else
+						AddMsg(Format(txPvpRefuse, info->name.c_str()));
+				}
+			}
+			break;
+		// can't leave location message
+		case NetChangePlayer::CANT_LEAVE_LOCATION:
+			{
+				CanLeaveLocationResult reason;
+				f.ReadCasted<byte>(reason);
+				if(!f)
+					Error("Update single client: Broken CANT_LEAVE_LOCATION.");
+				else if(reason != CanLeaveLocationResult::InCombat && reason != CanLeaveLocationResult::TeamTooFar)
+					Error("Update single client: CANT_LEAVE_LOCATION, invalid reason %u.", (byte)reason);
+				else if(game_state == GS_LEVEL)
+					game_gui->messages->AddGameMsg3(reason == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
+			}
+			break;
+		// force player to look at unit
+		case NetChangePlayer::LOOK_AT:
+			{
+				int netid;
+				f >> netid;
+				if(!f)
+					Error("Update single client: Broken LOOK_AT.");
+				else if(game_state == GS_LEVEL)
+				{
+					if(netid == -1)
+						pc->unit->look_target = nullptr;
+					else
+					{
+						Unit* unit = game_level->FindUnit(netid);
+						if(!unit)
+							Error("Update single client: LOOK_AT, missing unit %d.", netid);
+						else
+							pc->unit->look_target = unit;
+					}
+				}
+			}
+			break;
+		// end of fallback
+		case NetChangePlayer::END_FALLBACK:
+			if(game_state == GS_LEVEL && fallback_type == FALLBACK::CLIENT)
+				fallback_type = FALLBACK::CLIENT2;
+			break;
+		// response to rest in inn
+		case NetChangePlayer::REST:
+			{
+				byte days;
+				f >> days;
+				if(!f)
+					Error("Update single client: Broken REST.");
+				else if(game_state == GS_LEVEL)
+				{
+					fallback_type = FALLBACK::REST;
+					fallback_t = -1.f;
+					fallback_1 = days;
+					pc->unit->frozen = FROZEN::YES;
+				}
+			}
+			break;
+		// response to training
+		case NetChangePlayer::TRAIN:
+			{
+				byte type, stat_type;
+				f >> type;
+				f >> stat_type;
+				if(!f)
+					Error("Update single client: Broken TRAIN.");
+				else if(game_state == GS_LEVEL)
+				{
+					fallback_type = FALLBACK::TRAIN;
+					fallback_t = -1.f;
+					fallback_1 = type;
+					fallback_2 = stat_type;
+					pc->unit->frozen = FROZEN::YES;
+				}
+			}
+			break;
+		// warped player to not stuck position
+		case NetChangePlayer::UNSTUCK:
+			{
+				Vec3 new_pos;
+				f >> new_pos;
+				if(!f)
+					Error("Update single client: Broken UNSTUCK.");
+				else if(game_state == GS_LEVEL)
+				{
+					pc->unit->pos = new_pos;
+					interpolate_timer = 0.1f;
+				}
+			}
+			break;
+		// message about receiving gold from another player
+		case NetChangePlayer::GOLD_RECEIVED:
+			{
+				byte player_id;
+				int count;
+				f >> player_id;
+				f >> count;
+				if(!f)
+					Error("Update single client: Broken GOLD_RECEIVED.");
+				else if(count <= 0)
+					Error("Update single client: GOLD_RECEIVED, invalid count %d.", count);
+				else
+				{
+					PlayerInfo* info = net->TryGetPlayer(player_id);
+					if(!info)
+						Error("Update single client: GOLD_RECEIVED, invalid player id %u.", player_id);
+					else
+					{
+						AddMultiMsg(Format(txReceivedGold, count, info->name.c_str()));
+						sound_mgr->PlaySound2d(sCoins);
+					}
+				}
+			}
+			break;
+		// update trader gold
+		case NetChangePlayer::UPDATE_TRADER_GOLD:
+			{
+				int netid, count;
+				f >> netid;
+				f >> count;
+				if(!f)
+					Error("Update single client: Broken UPDATE_TRADER_GOLD.");
+				else if(count < 0)
+					Error("Update single client: UPDATE_TRADER_GOLD, invalid count %d.", count);
+				else if(game_state == GS_LEVEL)
+				{
+					Unit* unit = game_level->FindUnit(netid);
+					if(!unit)
+						Error("Update single client: UPDATE_TRADER_GOLD, missing unit %d.", netid);
+					else if(!pc->IsTradingWith(unit))
+						Error("Update single client: UPDATE_TRADER_GOLD, unit %d (%s) is not trading with player.", netid, unit->data->id.c_str());
+					else
+						unit->gold = count;
+				}
+			}
+			break;
+		// update trader inventory after getting item
+		case NetChangePlayer::UPDATE_TRADER_INVENTORY:
+			{
+				int netid;
+				f >> netid;
+				if(!f)
+					Error("Update single client: Broken UPDATE_TRADER_INVENTORY.");
+				else if(game_state == GS_LEVEL)
+				{
+					Unit* unit = game_level->FindUnit(netid);
+					bool ok = true;
+					if(!unit)
+					{
+						Error("Update single client: UPDATE_TRADER_INVENTORY, missing unit %d.", netid);
+						ok = false;
+					}
+					else if(!pc->IsTradingWith(unit))
+					{
+						Error("Update single client: UPDATE_TRADER_INVENTORY, unit %d (%s) is not trading with player.",
+							netid, unit->data->id.c_str());
+						ok = false;
+					}
+					if(ok)
+					{
+						if(!ReadItemListTeam(f, unit->items))
+							Error("Update single client: Broken UPDATE_TRADER_INVENTORY(2).");
+					}
+					else
+					{
+						vector<ItemSlot> items;
+						if(!ReadItemListTeam(f, items, true))
+							Error("Update single client: Broken UPDATE_TRADER_INVENTORY(3).");
+					}
+				}
+			}
+			break;
+		// update player statistics
+		case NetChangePlayer::PLAYER_STATS:
+			{
+				byte flags;
+				f >> flags;
+				if(!f)
+					Error("Update single client: Broken PLAYER_STATS.");
+				else if(flags == 0 || (flags & ~STAT_MAX) != 0)
+					Error("Update single client: PLAYER_STATS, invalid flags %u.", flags);
+				else
+				{
+					int set_flags = CountBits(flags);
+					// read to buffer
+					f.Read(BUF, sizeof(int)*set_flags);
+					if(!f)
+						Error("Update single client: Broken PLAYER_STATS(2).");
+					else
+					{
+						int* buf = (int*)BUF;
+						if(IsSet(flags, STAT_KILLS))
+							pc->kills = *buf++;
+						if(IsSet(flags, STAT_DMG_DONE))
+							pc->dmg_done = *buf++;
+						if(IsSet(flags, STAT_DMG_TAKEN))
+							pc->dmg_taken = *buf++;
+						if(IsSet(flags, STAT_KNOCKS))
+							pc->knocks = *buf++;
+						if(IsSet(flags, STAT_ARENA_FIGHTS))
+							pc->arena_fights = *buf++;
+					}
+				}
+			}
+			break;
+		// player stat changed
+		case NetChangePlayer::STAT_CHANGED:
+			{
+				byte type, what;
+				int value;
+				f >> type;
+				f >> what;
+				f >> value;
+				if(!f)
+					Error("Update single client: Broken STAT_CHANGED.");
+				else
+				{
+					switch((ChangedStatType)type)
+					{
+					case ChangedStatType::ATTRIBUTE:
+						if(what >= (byte)AttributeId::MAX)
+							Error("Update single client: STAT_CHANGED, invalid attribute %u.", what);
+						else
+							pc->unit->Set((AttributeId)what, value);
+						break;
+					case ChangedStatType::SKILL:
+						if(what >= (byte)SkillId::MAX)
+							Error("Update single client: STAT_CHANGED, invalid skill %u.", what);
+						else
+							pc->unit->Set((SkillId)what, value);
+						break;
+					default:
+						Error("Update single client: STAT_CHANGED, invalid change type %u.", type);
+						break;
+					}
+				}
+			}
+			break;
+		// add perk to player
+		case NetChangePlayer::ADD_PERK:
+			{
+				Perk perk;
+				int value;
+				f.ReadCasted<char>(perk);
+				f.ReadCasted<char>(value);
+				if(!f)
+					Error("Update single client: Broken ADD_PERK.");
+				else
+					pc->AddPerk(perk, value);
+			}
+			break;
+		// remove perk from player
+		case NetChangePlayer::REMOVE_PERK:
+			{
+				Perk perk;
+				int value;
+				f.ReadCasted<char>(perk);
+				f.ReadCasted<char>(value);
+				if(!f)
+					Error("Update single client: Broken REMOVE_PERK.");
+				else
+					pc->RemovePerk(perk, value);
+			}
+			break;
+		// show game message
+		case NetChangePlayer::GAME_MESSAGE:
+			{
+				int gm_id;
+				f >> gm_id;
+				if(!f)
+					Error("Update single client: Broken GAME_MESSAGE.");
+				else
+					game_gui->messages->AddGameMsg3((GMS)gm_id);
+			}
+			break;
+		// run script result
+		case NetChangePlayer::RUN_SCRIPT_RESULT:
+			{
+				string* output = StringPool.Get();
+				f.ReadString4(*output);
+				if(!f)
+					Error("Update single client: Broken RUN_SCRIPT_RESULT.");
+				else
+					game_gui->console->AddMsg(output->c_str());
+				StringPool.Free(output);
+			}
+			break;
+		// generic command result
+		case NetChangePlayer::GENERIC_CMD_RESPONSE:
+			{
+				string* output = StringPool.Get();
+				f.ReadString4(*output);
+				if(!f)
+					Error("Update single client: Broken GENERIC_CMD_RESPONSE.");
+				else
+					cmdp->Msg(output->c_str());
+				StringPool.Free(output);
+			}
+			break;
+		// add effect to player
+		case NetChangePlayer::ADD_EFFECT:
+			{
+				Effect e;
+				f.ReadCasted<char>(e.effect);
+				f.ReadCasted<char>(e.source);
+				f.ReadCasted<char>(e.source_id);
+				f.ReadCasted<char>(e.value);
+				f >> e.power;
+				f >> e.time;
+				if(!f)
+					Error("Update single client: Broken ADD_EFFECT.");
+				else
+					pc->unit->AddEffect(e);
+			}
+			break;
+		// remove effect from player
+		case NetChangePlayer::REMOVE_EFFECT:
+			{
+				EffectId effect;
+				EffectSource source;
+				int source_id, value;
+				f.ReadCasted<char>(effect);
+				f.ReadCasted<char>(source);
+				f.ReadCasted<char>(source_id);
+				f.ReadCasted<char>(value);
+				if(!f)
+					Error("Update single client: Broken REMOVE_EFFECT.");
+				else
+					pc->unit->RemoveEffects(effect, source, source_id, value);
+			}
+			break;
+		// player is resting
+		case NetChangePlayer::ON_REST:
+			{
+				int days;
+				f.ReadCasted<byte>(days);
+				if(!f)
+					Error("Update single client: Broken ON_REST.");
+				else
+					pc->Rest(days, false, false);
+			}
+			break;
+		// add formatted message
+		case NetChangePlayer::GAME_MESSAGE_FORMATTED:
+			{
+				GMS id;
+				int subtype, value;
+				f >> id;
+				f >> subtype;
+				f >> value;
+				if(!f)
+					Error("Update single client: Broken GAME_MESSAGE_FORMATTED.");
+				else
+					game_gui->messages->AddFormattedMessage(pc, id, subtype, value);
+			}
+			break;
+		// play sound
+		case NetChangePlayer::SOUND:
+			{
+				int id;
+				f >> id;
+				if(!f)
+					Error("Update single client: Broken SOUND.");
+				else if(id == 0)
+					sound_mgr->PlaySound2d(sCoins);
+			}
+			break;
+		default:
+			Warn("Update single client: Unknown player change type %d.", type);
+			break;
 		}
-	}
 
-	// gold
-	if(IsSet(flags, PlayerInfo::UF_GOLD))
-	{
-		if(!pc)
-			f.Skip(sizeof(pc->unit->gold));
-		else
+		byte checksum;
+		f >> checksum;
+		if(!f || checksum != 0xFF)
 		{
-			f >> pc->unit->gold;
-			if(!f)
-			{
-				Error("Update single client: Broken ID_PLAYER_CHANGES at UF_GOLD.");
-				return true;
-			}
-		}
-	}
-
-	// alcohol
-	if(IsSet(flags, PlayerInfo::UF_ALCOHOL))
-	{
-		if(!pc)
-			f.Skip(sizeof(pc->unit->alcohol));
-		else
-		{
-			f >> pc->unit->alcohol;
-			if(!f)
-			{
-				Error("Update single client: Broken ID_PLAYER_CHANGES at UF_GOLD.");
-				return true;
-			}
-		}
-	}
-
-	// stamina
-	if(IsSet(flags, PlayerInfo::UF_STAMINA))
-	{
-		if(!pc)
-			f.Skip(sizeof(pc->unit->stamina));
-		else
-		{
-			f.Read(pc->unit->stamina);
-			if(!f)
-			{
-				Error("Update single client: Broken ID_PLAYER_CHANGES at UF_STAMINA.");
-				return true;
-			}
-		}
-	}
-
-	// learning points
-	if(IsSet(flags, PlayerInfo::UF_LEARNING_POINTS))
-	{
-		if(!pc)
-			f.Skip(sizeof(pc->learning_points));
-		else
-		{
-			f.Read(pc->learning_points);
-			if(!f)
-			{
-				Error("Update single client: Broken ID_PLAYER_CHANGES at UF_LEARNING_POINTS.");
-				return true;
-			}
-		}
-	}
-
-	// level
-	if(IsSet(flags, PlayerInfo::UF_LEVEL))
-	{
-		if(!pc)
-			f.Skip<float>();
-		else
-		{
-			f.Read(pc->unit->level);
-			if(!f)
-			{
-				Error("Update single client: Broken ID_PLAYER_CHANGES at UF_LEVEL.");
-				return true;
-			}
+			Error("Update single client: Invalid checksum (%u).", change_i);
+			return true;
 		}
 	}
 

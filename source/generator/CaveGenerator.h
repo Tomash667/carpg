@@ -27,7 +27,7 @@ private:
 	void GenerateCave(Tile*& tiles, int size, Int2& stairs, GameDirection& stairs_dir, vector<Int2>& holes, Rect* ext);
 	void CreateStairs(Tile* tiles, Int2& stairs, GameDirection& stairs_dir);
 	void CreateHoles(Tile* tiles, vector<Int2>& holes);
-	void GenerateMushrooms(int days_since = 10);
+	void GenerateCaveItems(int days_since = 10);
 
 	bool* m1, *m2;
 	vector<int> v;

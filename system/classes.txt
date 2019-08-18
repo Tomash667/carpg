@@ -7,7 +7,9 @@ class bard {
 }
 
 class cleric {
+	//player base_cleric
 	icon "icon_cleric.png"
+	//action heal
 }
 
 class druid {

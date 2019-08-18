@@ -740,6 +740,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		if(Net::IsLocal())
 		{
 			game->pc->unit->hp = game->pc->unit->hpmax;
+			game->pc->unit->mp = game->pc->unit->mpmax;
 			game->pc->unit->stamina = game->pc->unit->stamina_max;
 			game->pc->unit->RemovePoison();
 			game->pc->unit->RemoveEffect(EffectId::Stun);
@@ -777,6 +778,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			if(Net::IsLocal())
 			{
 				game->pc_data.target_unit->hp = game->pc_data.target_unit->hpmax;
+				game->pc_data.target_unit->mp = game->pc_data.target_unit->mpmax;
 				game->pc_data.target_unit->stamina = game->pc_data.target_unit->stamina_max;
 				game->pc_data.target_unit->RemovePoison();
 				game->pc_data.target_unit->RemoveEffect(EffectId::Stun);
@@ -786,7 +788,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 					c.type = NetChange::UPDATE_HP;
 					c.unit = game->pc_data.target_unit;
 					if(game->pc_data.target_unit->player && !game->pc_data.target_unit->player->is_local)
-						game->pc_data.target_unit->player->player_info->update_flags |= PlayerInfo::UF_STAMINA;
+						game->pc_data.target_unit->player->player_info->update_flags |= PlayerInfo::UF_MANA | PlayerInfo::UF_STAMINA;
 				}
 			}
 			else

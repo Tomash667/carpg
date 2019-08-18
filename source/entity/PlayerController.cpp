@@ -247,6 +247,7 @@ void PlayerController::Rest(int days, bool resting, bool travel)
 	// update effects that work for days, end other
 	float natural_mod;
 	float prev_hp = unit->hp,
+		prev_mp = unit->mp,
 		prev_stamina = unit->stamina;
 	unit->EndEffects(days, &natural_mod);
 
@@ -275,6 +276,8 @@ void PlayerController::Rest(int days, bool resting, bool travel)
 
 		if(!is_local)
 		{
+			if(unit->mp != prev_mp)
+				player_info->update_flags |= PlayerInfo::UF_MANA;
 			if(unit->stamina != prev_stamina)
 				player_info->update_flags |= PlayerInfo::UF_STAMINA;
 			NetChangePlayer& c = Add1(player_info->changes);
