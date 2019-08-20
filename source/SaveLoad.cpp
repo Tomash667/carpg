@@ -76,7 +76,7 @@ bool Game::CanSaveGame() const
 
 	if(Net::IsOnline())
 	{
-		if(Team.IsAnyoneAlive() && Net::IsServer())
+		if(team->IsAnyoneAlive() && Net::IsServer())
 			return true;
 	}
 	else if(pc->unit->IsAlive() || pc->unit->in_arena != -1)
@@ -449,7 +449,7 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 	if(game_state == GS_LEVEL)
 		f << (game_level->event_handler ? game_level->event_handler->GetLocationEventHandlerQuestRefid() : -1);
 	else
-		Team.SaveOnWorldmap(f);
+		team->SaveOnWorldmap(f);
 	f << game_level->enter_from;
 	f << game_level->light_angle;
 
@@ -486,7 +486,7 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 	++check_id;
 
 	// save team
-	Team.Save(f);
+	team->Save(f);
 
 	// save quests
 	quest_mgr->Save(f);
@@ -816,11 +816,11 @@ void Game::LoadGame(GameReader& f)
 	++check_id;
 
 	// wczytaj dru¿ynê
-	Team.Load(f);
+	team->Load(f);
 	for(vector<pair<Unit**, int>>::iterator it = Unit::refid_request.begin(), end = Unit::refid_request.end(); it != end; ++it)
 	{
 		if(it->second == Unit::REFID_LEADER)
-			*(it->first) = Team.GetLeader();
+			*(it->first) = team->GetLeader();
 	}
 	Unit::refid_request.clear();
 
@@ -924,7 +924,7 @@ void Game::LoadGame(GameReader& f)
 		game_level->event_handler = dynamic_cast<LocationEventHandler*>(quest_mgr->FindAnyQuest(location_event_handler_quest_refid));
 	else
 		game_level->event_handler = nullptr;
-	Team.ClearOnNewGameOrLoad();
+	team->ClearOnNewGameOrLoad();
 	fallback_type = FALLBACK::NONE;
 	fallback_t = -0.5f;
 	game_gui->inventory->mode = I_NONE;

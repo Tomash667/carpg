@@ -89,7 +89,7 @@ void Quest_BanditsCollectToll::SetProgress(int prog2)
 		{
 			state = Quest::Completed;
 			OnUpdate(game->txQuest[56]);
-			Team.AddReward(1500, 4500);
+			team->AddReward(1500, 4500);
 			((City&)GetStartLocation()).quest_captain = CityQuestState::None;
 			world->AddNews(game->txQuest[278]);
 		}

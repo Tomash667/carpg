@@ -364,7 +364,7 @@ void WorldMapGui::Update(float dt)
 		bool stop = false;
 		if(focus && input->Focus() && gui->cursor_pos.x < gui->wnd_size.x * 2 / 3 && input->PressedRelease(Key::LeftButton))
 		{
-			if(Team.IsLeader())
+			if(team->IsLeader())
 			{
 				world->StopTravel(world->GetWorldPos(), true);
 				stop = true;
@@ -414,7 +414,7 @@ void WorldMapGui::Update(float dt)
 				if(input->PressedRelease(Key::LeftButton))
 				{
 					combo_box.LostFocus();
-					if(Team.IsLeader())
+					if(team->IsLeader())
 					{
 						if(picked_location != world->GetCurrentLocationIndex())
 						{
@@ -435,7 +435,7 @@ void WorldMapGui::Update(float dt)
 				}
 				else if(game->devmode && picked_location != world->GetCurrentLocationIndex() && !combo_box.focus && input->PressedRelease(Key::T))
 				{
-					if(Team.IsLeader())
+					if(team->IsLeader())
 					{
 						world->Warp(picked_location);
 						follow = true;
@@ -460,7 +460,7 @@ void WorldMapGui::Update(float dt)
 				if(input->PressedRelease(Key::LeftButton))
 				{
 					combo_box.LostFocus();
-					if(Team.IsLeader())
+					if(team->IsLeader())
 					{
 						world->TravelPos(c_pos, true);
 						follow = true;
@@ -471,7 +471,7 @@ void WorldMapGui::Update(float dt)
 				}
 				else if(game->devmode && !combo_box.focus && input->PressedRelease(Key::T))
 				{
-					if(Team.IsLeader())
+					if(team->IsLeader())
 					{
 						world->WarpPos(c_pos);
 						follow = true;
@@ -684,7 +684,7 @@ void WorldMapGui::ShowEncounterMessage(cstring text)
 		*c.str = text;
 
 		// disable button when server is not leader
-		if(!Team.IsLeader())
+		if(!team->IsLeader())
 			dialog_enc->bts[0].state = Button::DISABLED;
 	}
 }

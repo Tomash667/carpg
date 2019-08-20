@@ -143,7 +143,7 @@ void Quest_SpreadNews::SetProgress(int prog2)
 			prog = Progress::Finished;
 			state = Quest::Completed;
 			((City&)GetStartLocation()).quest_mayor = CityQuestState::None;
-			Team.AddReward(500, 2000);
+			team->AddReward(500, 2000);
 
 			OnUpdate(game->txQuest[21]);
 		}

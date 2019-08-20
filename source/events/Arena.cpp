@@ -73,7 +73,7 @@ bool Arena::Special(DialogContext& ctx, cstring msg)
 	else if(strcmp(msg, "pvp_gather") == 0)
 	{
 		near_players.clear();
-		for(Unit& unit : Team.active_members)
+		for(Unit& unit : team->active_members)
 		{
 			if(unit.IsPlayer() && unit.player != ctx.pc && Vec3::Distance2d(unit.pos, game_level->city_ctx->arena_pos) < 5.f)
 				near_players.push_back(&unit);
@@ -298,7 +298,7 @@ void Arena::StartArenaCombat(int level)
 		c.unit = ctx.pc->unit;
 	}
 
-	for(Unit& unit : Team.members)
+	for(Unit& unit : team->members)
 	{
 		if(unit.frozen != FROZEN::NO || Vec3::Distance2d(unit.pos, game_level->city_ctx->arena_pos) > 5.f)
 			continue;
@@ -486,8 +486,8 @@ void Arena::AddReward(int gold, int exp)
 			v.push_back(*it);
 	}
 
-	Team.AddGold(gold * v.size(), &v, true);
-	Team.AddExp(-exp, &v);
+	team->AddGold(gold * v.size(), &v, true);
+	team->AddExp(-exp, &v);
 }
 
 //=================================================================================================
@@ -901,7 +901,7 @@ void Arena::RewardExp(Unit* dead_unit)
 			if(unit->in_arena != dead_unit->in_arena)
 				to_reward.push_back(unit);
 		}
-		Team.AddExp(50 * dead_unit->level, &to_reward);
+		team->AddExp(50 * dead_unit->level, &to_reward);
 	}
 }
 

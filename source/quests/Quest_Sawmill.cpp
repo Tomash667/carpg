@@ -75,7 +75,7 @@ void Quest_Sawmill::SetProgress(int prog2)
 		// oczyszczono
 		{
 			OnUpdate(Format(game->txQuest[127], GetTargetLocationName()));
-			Team.AddExp(3000);
+			team->AddExp(3000);
 		}
 		break;
 	case Progress::Talked:
@@ -95,7 +95,7 @@ void Quest_Sawmill::SetProgress(int prog2)
 			days = 0;
 
 			OnUpdate(game->txQuest[129]);
-			Team.AddReward(PAYMENT);
+			team->AddReward(PAYMENT);
 			quest_mgr->EndUniqueQuest();
 			Location& target = GetTargetLocation();
 			world->AddNews(Format(game->txQuest[130], target.name.c_str()));

@@ -39,6 +39,7 @@
 #include "Engine.h"
 #include "Notifications.h"
 #include "GameStats.h"
+#include "Team.h"
 
 extern void HumanPredraw(void* ptr, Matrix* mat, int n);
 extern const int ITEM_IMAGE_SIZE;
@@ -59,6 +60,7 @@ void Game::BeforeInit()
 	pathfinding = new Pathfinding;
 	quest_mgr = new QuestManager;
 	script_mgr = new ScriptManager;
+	team = new Team;
 	world = new World;
 }
 

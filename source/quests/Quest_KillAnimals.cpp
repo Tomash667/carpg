@@ -84,7 +84,7 @@ void Quest_KillAnimals::SetProgress(int prog2)
 			state = Quest::Completed;
 			((City&)GetStartLocation()).quest_captain = CityQuestState::None;
 			int reward = GetReward();
-			Team.AddReward(2500, reward * 3);
+			team->AddReward(2500, reward * 3);
 			OnUpdate(game->txQuest[79]);
 		}
 		break;

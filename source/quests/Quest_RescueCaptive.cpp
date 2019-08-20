@@ -99,7 +99,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 		// found captive
 		{
 			OnUpdate(game->txQuest[35]);
-			Team.AddExp(2000);
+			team->AddExp(2000);
 		}
 		break;
 	case Progress::CaptiveDie:
@@ -141,7 +141,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 		{
 			state = Quest::Completed;
 			int reward = GetReward();
-			Team.AddReward(reward, reward * 3);
+			team->AddReward(reward, reward * 3);
 
 			((City&)GetStartLocation()).quest_captain = CityQuestState::None;
 			if(target_loc != -1)
@@ -151,7 +151,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 					loc.active_quest = nullptr;
 			}
 			RemoveElementTry<Quest_Dungeon*>(quest_mgr->quests_timeout, this);
-			Team.RemoveTeamMember(captive);
+			team->RemoveTeamMember(captive);
 
 			game_level->RemoveUnit(captive);
 			captive->event_handler = nullptr;
@@ -199,7 +199,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 		{
 			state = Quest::Completed;
 			int reward = GetReward();
-			Team.AddReward(reward / 4, reward * 3 / 2);
+			team->AddReward(reward / 4, reward * 3 / 2);
 			if(captive)
 			{
 				captive->event_handler = nullptr;
@@ -222,7 +222,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 		// captive was left in city
 		{
 			if(captive->hero->team_member)
-				Team.RemoveTeamMember(captive);
+				team->RemoveTeamMember(captive);
 			captive->dont_attack = false;
 			captive->ai->goto_inn = true;
 			captive->ai->timer = 0.f;
@@ -312,7 +312,7 @@ bool Quest_RescueCaptive::IfNeedTalk(cstring topic) const
 	{
 		if(prog == Progress::CaptiveDie || prog == Progress::CaptiveEscape || prog == Progress::CaptiveLeftInCity)
 			return true;
-		else if(prog == Progress::FoundCaptive && Team.IsTeamMember(*captive))
+		else if(prog == Progress::FoundCaptive && team->IsTeamMember(*captive))
 			return true;
 		else
 			return false;

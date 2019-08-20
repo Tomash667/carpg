@@ -211,7 +211,7 @@ void Net::OnChangeLevel(int level)
 	uint ack = SendAll(f, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT);
 	for(PlayerInfo& info : players)
 	{
-		if(info.id == Team.my_id)
+		if(info.id == team->my_id)
 			info.state = PlayerInfo::IN_GAME;
 		else
 		{

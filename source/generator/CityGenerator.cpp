@@ -2314,13 +2314,13 @@ void CityGenerator::OnEnter()
 	if(!reenter)
 		game->GenerateQuestUnits();
 
-	for(Unit& unit : Team.members)
+	for(Unit& unit : team->members)
 	{
 		if(unit.IsHero())
 			unit.hero->lost_pvp = false;
 	}
 
-	Team.CheckTeamItemShares();
+	team->CheckTeamItemShares();
 
 	Quest_Contest* contest = quest_mgr->quest_contest;
 	if(!contest->generated && game_level->location_index == contest->where && contest->state == Quest_Contest::CONTEST_TODAY)

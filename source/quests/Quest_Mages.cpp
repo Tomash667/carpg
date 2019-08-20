@@ -70,7 +70,7 @@ void Quest_Mages::SetProgress(int prog2)
 
 			GetTargetLocation().active_quest = nullptr;
 
-			Team.AddReward(4000, 12000);
+			team->AddReward(4000, 12000);
 			OnUpdate(game->txQuest[168]);
 			quest_mgr->RemoveQuestRumor(refid);
 		}
@@ -197,7 +197,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			OnUpdate(Format(game->txQuest[173], sl.name.c_str(), ml.name.c_str(), GetLocationDirName(sl.pos, ml.pos)));
 
 			mages_state = State::TalkedWithCaptain;
-			Team.AddExp(2500);
+			team->AddExp(2500);
 		}
 		break;
 	case Progress::MageWantsBeer:
@@ -237,7 +237,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			loc.st = 1;
 			loc.SetKnown();
 			target_loc = loc.index;
-			Team.AddTeamMember(DialogContext::current->talker, true);
+			team->AddTeamMember(DialogContext::current->talker, true);
 			OnUpdate(Format(game->txQuest[177], DialogContext::current->talker->hero->name.c_str(), GetTargetLocationName(),
 				GetLocationDirName(world->GetCurrentLocation()->pos, GetTargetLocation().pos), world->GetCurrentLocation()->name.c_str()));
 			mages_state = State::OldMageJoined;
@@ -251,7 +251,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			DialogContext::current->talker->auto_talk = AutoTalkMode::No;
 			mages_state = State::OldMageRemembers;
 			OnUpdate(Format(game->txQuest[178], DialogContext::current->talker->hero->name.c_str(), GetStartLocationName()));
-			Team.AddExp(1000);
+			team->AddExp(1000);
 		}
 		break;
 	case Progress::TalkedWithCaptain:
@@ -307,7 +307,7 @@ void Quest_Mages2::SetProgress(int prog2)
 		// nie zrekrutowa³em maga
 		{
 			Unit* u = DialogContext::current->talker;
-			Team.RemoveTeamMember(u);
+			team->RemoveTeamMember(u);
 			mages_state = State::MageLeaving;
 			good_mage_name = u->hero->name;
 			hd_mage.Get(*u->human_data);
@@ -347,7 +347,7 @@ void Quest_Mages2::SetProgress(int prog2)
 				OnUpdate(Format(game->txQuest[184], u->hero->name.c_str()));
 				good_mage_name = u->hero->name;
 				u->ai->goto_inn = false;
-				Team.AddTeamMember(u, true);
+				team->AddTeamMember(u, true);
 			}
 
 			mages_state = State::MageRecruited;
@@ -361,7 +361,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			mages_state = State::Completed;
 			OnUpdate(game->txQuest[185]);
 			world->AddNews(game->txQuest[186]);
-			Team.AddLearningPoint();
+			team->AddLearningPoint();
 		}
 		break;
 	case Progress::TalkedWithMage:
@@ -370,7 +370,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			OnUpdate(Format(game->txQuest[187], DialogContext::current->talker->hero->name.c_str(), evil_mage_name.c_str()));
 			// idŸ sobie
 			Unit* u = DialogContext::current->talker;
-			Team.RemoveTeamMember(u);
+			team->RemoveTeamMember(u);
 			u->SetOrder(ORDER_LEAVE);
 			scholar = nullptr;
 		}
@@ -385,7 +385,7 @@ void Quest_Mages2::SetProgress(int prog2)
 				scholar->temporary = true;
 				scholar = nullptr;
 			}
-			Team.AddReward(10000, 25000);
+			team->AddReward(10000, 25000);
 			OnUpdate(game->txQuest[188]);
 			quest_mgr->EndUniqueQuest();
 			quest_mgr->RemoveQuestRumor(refid);

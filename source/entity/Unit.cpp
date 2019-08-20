@@ -777,13 +777,13 @@ bool Unit::AddItem(const Item* item, uint count, uint team_count)
 {
 	assert(item && count != 0 && team_count <= count);
 
-	if(item->type == IT_GOLD && Team.IsTeamMember(*this))
+	if(item->type == IT_GOLD && team->IsTeamMember(*this))
 	{
 		if(Net::IsLocal())
 		{
 			if(team_count && IsTeamMember())
 			{
-				Team.AddGold(team_count);
+				team->AddGold(team_count);
 				uint normal_gold = count - team_count;
 				if(normal_gold)
 				{
@@ -834,7 +834,7 @@ void Unit::AddItem2(const Item* item, uint count, uint team_count, bool show_msg
 		{
 			// check if unit is trading with someone that gets this item
 			Unit* u = nullptr;
-			for(Unit& member : Team.active_members)
+			for(Unit& member : team->active_members)
 			{
 				if(member.IsPlayer() && member.player->IsTradingWith(this))
 				{
@@ -2614,7 +2614,7 @@ bool Unit::Read(BitStreamReader& f)
 		// player
 		int id;
 		f.ReadCasted<byte>(id);
-		if(id == Team.my_id)
+		if(id == team->my_id)
 		{
 			assert(game->pc);
 			player = game->pc;
@@ -3355,7 +3355,7 @@ uint Unit::RemoveItem(int i_index, uint count)
 		{
 			// search for player trading with this unit
 			Unit* t = nullptr;
-			for(Unit& member : Team.active_members)
+			for(Unit& member : team->active_members)
 			{
 				if(member.IsPlayer() && member.player->IsTradingWith(this))
 				{
@@ -4996,7 +4996,7 @@ void Unit::Die( Unit* killer)
 					int exp = level * 50;
 					if(killer->assist)
 						exp /= 2;
-					Team.AddExp(exp);
+					team->AddExp(exp);
 				}
 			}
 			else
@@ -5337,7 +5337,7 @@ bool Unit::IsEnemy(Unit &u, bool ignore_dont_attack) const
 			if(g2 == G_CRAZIES)
 				return true;
 			else if(g2 == G_TEAM)
-				return Team.IsBandit() || WantAttackTeam();
+				return team->IsBandit() || WantAttackTeam();
 			else
 				return true;
 		}
@@ -5346,7 +5346,7 @@ bool Unit::IsEnemy(Unit &u, bool ignore_dont_attack) const
 			if(g2 == G_CITIZENS)
 				return true;
 			else if(g2 == G_TEAM)
-				return Team.crazies_attack || WantAttackTeam();
+				return team->crazies_attack || WantAttackTeam();
 			else
 				return true;
 		}
@@ -5355,9 +5355,9 @@ bool Unit::IsEnemy(Unit &u, bool ignore_dont_attack) const
 			if(u.WantAttackTeam())
 				return true;
 			else if(g2 == G_CITIZENS)
-				return Team.IsBandit();
+				return team->IsBandit();
 			else if(g2 == G_CRAZIES)
-				return Team.crazies_attack;
+				return team->crazies_attack;
 			else
 				return true;
 		}
@@ -5384,14 +5384,14 @@ bool Unit::IsFriend(Unit& u) const
 		{
 			if(u.IsTeamMember())
 				return true;
-			else if(u.IsAI() && !Team.IsBandit() && u.IsAssist())
+			else if(u.IsAI() && !team->IsBandit() && u.IsAssist())
 				return true;
 			else
 				return false;
 		}
 		else if(u.IsTeamMember())
 		{
-			if(IsAI() && !Team.IsBandit() && IsAssist())
+			if(IsAI() && !team->IsBandit() && IsAssist())
 				return true;
 			else
 				return false;
@@ -5541,9 +5541,9 @@ void Unit::OrderAttack()
 {
 	if(data->group == G_CRAZIES)
 	{
-		if(!Team.crazies_attack)
+		if(!team->crazies_attack)
 		{
-			Team.crazies_attack = true;
+			team->crazies_attack = true;
 			if(Net::IsOnline())
 			{
 				NetChange& c = Add1(Net::changes);
@@ -5555,7 +5555,7 @@ void Unit::OrderAttack()
 	{
 		for(Unit* unit : area->units)
 		{
-			if(unit->dont_attack && unit->IsEnemy(*Team.leader, true) && !IsSet(unit->data->flags, F_PEACEFUL))
+			if(unit->dont_attack && unit->IsEnemy(*team->leader, true) && !IsSet(unit->data->flags, F_PEACEFUL))
 			{
 				unit->dont_attack = false;
 				unit->ai->change_ai_mode = true;
@@ -5570,7 +5570,7 @@ void Unit::OrderClear()
 	if(hero && hero->team_member)
 	{
 		order = ORDER_FOLLOW;
-		order_unit = Team.GetLeader();
+		order_unit = team->GetLeader();
 	}
 	else
 		order = ORDER_NONE;

@@ -627,19 +627,19 @@ void ScriptManager::RegisterGame()
 		.WithNamespace()
 		.AddFunction("UnitGroup@ Get(const string& in)", asFUNCTION(UnitGroup::GetS));
 
-	WithNamespace("Team", &Team)
-		.AddFunction("Unit@ get_leader()", asMETHOD(TeamSingleton, GetLeader))
-		.AddFunction("uint get_size()", asMETHOD(TeamSingleton, GetActiveTeamSize))
-		.AddFunction("uint get_max_size()", asMETHOD(TeamSingleton, GetMaxSize))
-		.AddFunction("bool get_bandit()", asMETHOD(TeamSingleton, IsBandit))
-		.AddFunction("void set_bandit(bool)", asMETHOD(TeamSingleton, SetBandit))
-		.AddFunction("bool HaveMember()", asMETHOD(TeamSingleton, HaveOtherActiveTeamMember))
-		.AddFunction("bool HavePcMember()", asMETHOD(TeamSingleton, HaveOtherPlayer))
-		.AddFunction("bool HaveNpcMember()", asMETHOD(TeamSingleton, HaveActiveNpc))
-		.AddFunction("bool HaveItem(Item@)", asMETHOD(TeamSingleton, HaveItem))
-		.AddFunction("void AddGold(uint)", asMETHOD(TeamSingleton, AddGoldS))
-		.AddFunction("void AddReward(uint, uint = 0)", asMETHOD(TeamSingleton, AddReward))
-		.AddFunction("uint RemoveItem(Item@, uint = 1)", asMETHOD(TeamSingleton, RemoveItem));
+	WithNamespace("Team", team)
+		.AddFunction("Unit@ get_leader()", asMETHOD(Team, GetLeader))
+		.AddFunction("uint get_size()", asMETHOD(Team, GetActiveTeamSize))
+		.AddFunction("uint get_max_size()", asMETHOD(Team, GetMaxSize))
+		.AddFunction("bool get_bandit()", asMETHOD(Team, IsBandit))
+		.AddFunction("void set_bandit(bool)", asMETHOD(Team, SetBandit))
+		.AddFunction("bool HaveMember()", asMETHOD(Team, HaveOtherActiveTeamMember))
+		.AddFunction("bool HavePcMember()", asMETHOD(Team, HaveOtherPlayer))
+		.AddFunction("bool HaveNpcMember()", asMETHOD(Team, HaveActiveNpc))
+		.AddFunction("bool HaveItem(Item@)", asMETHOD(Team, HaveItem))
+		.AddFunction("void AddGold(uint)", asMETHOD(Team, AddGoldS))
+		.AddFunction("void AddReward(uint, uint = 0)", asMETHOD(Team, AddReward))
+		.AddFunction("uint RemoveItem(Item@, uint = 1)", asMETHOD(Team, RemoveItem));
 
 	sb.AddStruct<TmpUnitGroup::Spawn>("Spawn");
 

@@ -117,7 +117,7 @@ void Quest_Orcs::SetProgress(int prog2)
 		{
 			state = Quest::Completed;
 
-			Team.AddReward(4000, 12000);
+			team->AddReward(4000, 12000);
 			OnUpdate(game->txQuest[195]);
 			world->AddNews(Format(game->txQuest[196], GetTargetLocationName(), GetStartLocationName()));
 
@@ -314,9 +314,9 @@ void Quest_Orcs2::SetProgress(int prog2)
 			}
 			// do³¹cz do dru¿yny
 			DialogContext::current->talker->dont_attack = false;
-			Team.AddTeamMember(DialogContext::current->talker, true);
-			if(Team.free_recruits > 0)
-				--Team.free_recruits;
+			team->AddTeamMember(DialogContext::current->talker, true);
+			if(team->free_recruits > 0)
+				--team->free_recruits;
 		}
 		break;
 	case Progress::TalkedAboutCamp:
@@ -350,7 +350,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 		{
 			orc->StartAutoTalk();
 			world->AddNews(game->txQuest[200]);
-			Team.AddExp(14000);
+			team->AddExp(14000);
 		}
 		break;
 	case Progress::TalkedAfterClearingCamp:
@@ -454,7 +454,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 			orc->StartAutoTalk();
 			OnUpdate(game->txQuest[204]);
 			world->AddNews(game->txQuest[205]);
-			Team.AddLearningPoint();
+			team->AddLearningPoint();
 		}
 		break;
 	case Progress::Finished:
@@ -462,11 +462,11 @@ void Quest_Orcs2::SetProgress(int prog2)
 		{
 			LevelArea& area = *game_level->local_area;
 			state = Quest::Completed;
-			Team.AddReward(Random(9000, 11000), 25000);
+			team->AddReward(Random(9000, 11000), 25000);
 			OnUpdate(game->txQuest[206]);
 			quest_mgr->EndUniqueQuest();
 			// gorush
-			Team.RemoveTeamMember(orc);
+			team->RemoveTeamMember(orc);
 			Usable* throne = area.FindUsable(BaseUsable::Get("throne"));
 			assert(throne);
 			if(throne)

@@ -171,7 +171,7 @@ void HeroData::AddExp(int exp)
 //=================================================================================================
 float HeroData::GetExpMod() const
 {
-	int dif = unit->level - Team.players_level;
+	int dif = unit->level - team->players_level;
 	switch(dif)
 	{
 	case 3:

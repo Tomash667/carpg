@@ -119,7 +119,7 @@ void Quest_Evil::SetProgress(int prog2)
 			Location& mage = *world->GetLocation(mage_loc);
 			OnUpdate(Format(game->txQuest[238], mage.name.c_str(), GetLocationDirName(GetStartLocation().pos, mage.pos)));
 			evil_state = State::GenerateMage;
-			Team.AddExp(7500);
+			team->AddExp(7500);
 		}
 		break;
 	case Progress::MageToldAboutStolenBook:
@@ -198,7 +198,7 @@ void Quest_Evil::SetProgress(int prog2)
 			const Item* item = Item::Get("q_zlo_ksiega");
 			u.AddItem(item, 1, true);
 			DialogContext::current->pc->unit->RemoveItem(item, 1);
-			Team.AddTeamMember(&u, true);
+			team->AddTeamMember(&u, true);
 
 			evil_state = State::ClosingPortals;
 		}
@@ -207,7 +207,7 @@ void Quest_Evil::SetProgress(int prog2)
 		// u¿ywane tylko do czyszczenia flagi changed
 		apply = false;
 		changed = false;
-		Team.AddExp(10000);
+		team->AddExp(10000);
 		break;
 	case Progress::AllPortalsClosed:
 		// zamkniêto wszystkie portale
@@ -263,15 +263,15 @@ void Quest_Evil::SetProgress(int prog2)
 			assert(best_pe);
 			best_pe->destroy = true;
 			// gadanie przez jozana
-			Unit* unit = Team.FindTeamMember("q_zlo_kaplan");
+			Unit* unit = team->FindTeamMember("q_zlo_kaplan");
 			if(unit)
 				unit->StartAutoTalk();
 
 			quest_mgr->EndUniqueQuest();
-			Team.AddExp(30000);
+			team->AddExp(30000);
 			evil_state = State::ClericWantTalk;
 			world->AddNews(game->txQuest[250]);
-			Team.AddLearningPoint();
+			team->AddLearningPoint();
 
 			if(Net::IsOnline())
 				Net::PushChange(NetChange::CLEAN_ALTAR);
@@ -283,7 +283,7 @@ void Quest_Evil::SetProgress(int prog2)
 			evil_state = State::ClericLeaving;
 			// usuñ jozana z dru¿yny
 			Unit& u = *DialogContext::current->talker;
-			Team.RemoveTeamMember(&u);
+			team->RemoveTeamMember(&u);
 			u.SetOrder(ORDER_LEAVE);
 		}
 		break;

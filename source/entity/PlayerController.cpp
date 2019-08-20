@@ -686,7 +686,7 @@ void PlayerController::RecalculateLevel()
 		unit->level = level;
 		if(Net::IsLocal() && !game_level->entering)
 		{
-			Team.CalculatePlayersLevel();
+			team->CalculatePlayersLevel();
 			if(player_info && !IsLocal())
 				player_info->update_flags |= PlayerInfo::UF_LEVEL;
 		}
@@ -1161,7 +1161,7 @@ bool PlayerController::Read(BitStreamReader& f)
 //=================================================================================================
 bool PlayerController::IsLeader() const
 {
-	return Team.IsLeader(unit);
+	return team->IsLeader(unit);
 }
 
 //=================================================================================================
@@ -1210,13 +1210,13 @@ int PlayerController::GetNextActionItemIndex() const
 void PlayerController::PayCredit(int count)
 {
 	rvector<Unit> units;
-	for(Unit& u : Team.active_members)
+	for(Unit& u : team->active_members)
 	{
 		if(&u != unit)
 			units.push_back(&u);
 	}
 
-	Team.AddGold(count, &units);
+	team->AddGold(count, &units);
 
 	credit -= count;
 	if(credit < 0)

@@ -13,7 +13,7 @@ struct TeamInfo
 };
 
 //-----------------------------------------------------------------------------
-class TeamSingleton
+class Team
 {
 public:
 	struct TeamShareItem
@@ -104,4 +104,3 @@ private:
 	};
 	vector<ItemToBuy> to_buy, to_buy2;
 };
-extern TeamSingleton Team;

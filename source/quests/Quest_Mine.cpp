@@ -106,7 +106,7 @@ void Quest_Mine::SetProgress(int prog2)
 	case Progress::ClearedLocation:
 		{
 			OnUpdate(game->txQuest[134]);
-			Team.AddExp(3000);
+			team->AddExp(3000);
 		}
 		break;
 	case Progress::SelectedShares:
@@ -123,7 +123,7 @@ void Quest_Mine::SetProgress(int prog2)
 		{
 			state = Quest::Completed;
 			OnUpdate(game->txQuest[136]);
-			Team.AddReward(PAYMENT);
+			team->AddReward(PAYMENT);
 			mine_state2 = State2::Built;
 			days -= days_required;
 			days_required = Random(60, 90);
@@ -139,7 +139,7 @@ void Quest_Mine::SetProgress(int prog2)
 		{
 			state = Quest::Completed;
 			OnUpdate(game->txQuest[137]);
-			Team.AddReward(3000);
+			team->AddReward(3000);
 			mine_state2 = State2::InBuild;
 			days = 0;
 			days_required = Random(30, 45);
@@ -179,7 +179,7 @@ void Quest_Mine::SetProgress(int prog2)
 		{
 			state = Quest::Completed;
 			OnUpdate(game->txQuest[143]);
-			Team.AddReward(PAYMENT2);
+			team->AddReward(PAYMENT2);
 			mine_state = State::BigShares;
 			mine_state2 = State2::Expanded;
 			days -= days_required;
@@ -211,7 +211,7 @@ void Quest_Mine::SetProgress(int prog2)
 			OnUpdate(game->txQuest[148]);
 			quest_mgr->EndUniqueQuest();
 			world->AddNews(game->txQuest[149]);
-			Team.AddExp(10000);
+			team->AddExp(10000);
 		}
 		break;
 	}

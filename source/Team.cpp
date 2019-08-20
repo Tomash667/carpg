@@ -19,7 +19,7 @@
 #include "PlayerInfo.h"
 
 
-TeamSingleton Team;
+Team* global::team;
 
 //-----------------------------------------------------------------------------
 // Team shares only work for equippable items, that have only 1 count in slot!
@@ -42,7 +42,7 @@ enum TeamItemPriority
 //-----------------------------------------------------------------------------
 struct SortTeamShares
 {
-	bool operator () (const TeamSingleton::TeamShareItem& t1, const TeamSingleton::TeamShareItem& t2) const
+	bool operator () (const Team::TeamShareItem& t1, const Team::TeamShareItem& t2) const
 	{
 		if(t1.value == t2.value)
 			return t1.priority < t2.priority;
@@ -52,13 +52,13 @@ struct SortTeamShares
 };
 
 //-----------------------------------------------------------------------------
-bool UniqueTeamShares(const TeamSingleton::TeamShareItem& t1, const TeamSingleton::TeamShareItem& t2)
+bool UniqueTeamShares(const Team::TeamShareItem& t1, const Team::TeamShareItem& t2)
 {
 	return t1.to == t2.to && t1.from == t2.from && t1.item == t2.item && t1.priority == t2.priority;
 }
 
 
-void TeamSingleton::AddTeamMember(Unit* unit, bool free)
+void Team::AddTeamMember(Unit* unit, bool free)
 {
 	assert(unit && unit->hero);
 
@@ -95,7 +95,7 @@ void TeamSingleton::AddTeamMember(Unit* unit, bool free)
 		unit->event_handler->HandleUnitEvent(UnitEventHandler::RECRUIT, unit);
 }
 
-void TeamSingleton::RemoveTeamMember(Unit* unit)
+void Team::RemoveTeamMember(Unit* unit)
 {
 	assert(unit && unit->hero);
 
@@ -127,7 +127,7 @@ void TeamSingleton::RemoveTeamMember(Unit* unit)
 		unit->event_handler->HandleUnitEvent(UnitEventHandler::KICK, unit);
 }
 
-Unit* TeamSingleton::FindActiveTeamMember(int netid)
+Unit* Team::FindActiveTeamMember(int netid)
 {
 	for(Unit& unit : active_members)
 	{
@@ -138,7 +138,7 @@ Unit* TeamSingleton::FindActiveTeamMember(int netid)
 	return nullptr;
 }
 
-bool TeamSingleton::FindItemInTeam(const Item* item, int refid, Unit** unit_result, int* i_index, bool check_npc)
+bool Team::FindItemInTeam(const Item* item, int refid, Unit** unit_result, int* i_index, bool check_npc)
 {
 	assert(item);
 
@@ -161,7 +161,7 @@ bool TeamSingleton::FindItemInTeam(const Item* item, int refid, Unit** unit_resu
 	return false;
 }
 
-Unit* TeamSingleton::FindTeamMember(cstring id)
+Unit* Team::FindTeamMember(cstring id)
 {
 	UnitData* unit_data = UnitData::Get(id);
 	assert(unit_data);
@@ -176,7 +176,7 @@ Unit* TeamSingleton::FindTeamMember(cstring id)
 	return nullptr;
 }
 
-uint TeamSingleton::GetActiveNpcCount()
+uint Team::GetActiveNpcCount()
 {
 	uint count = 0;
 	for(Unit& unit : active_members)
@@ -187,7 +187,7 @@ uint TeamSingleton::GetActiveNpcCount()
 	return count;
 }
 
-uint TeamSingleton::GetNpcCount()
+uint Team::GetNpcCount()
 {
 	uint count = 0;
 	for(Unit& unit : members)
@@ -198,7 +198,7 @@ uint TeamSingleton::GetNpcCount()
 	return count;
 }
 
-Vec2 TeamSingleton::GetShare()
+Vec2 Team::GetShare()
 {
 	uint pc = 0, npc = 0;
 	for(Unit& unit : active_members)
@@ -211,7 +211,7 @@ Vec2 TeamSingleton::GetShare()
 	return GetShare(pc, npc);
 }
 
-Vec2 TeamSingleton::GetShare(int pc, int npc)
+Vec2 Team::GetShare(int pc, int npc)
 {
 	if(pc == 0)
 	{
@@ -228,7 +228,7 @@ Vec2 TeamSingleton::GetShare(int pc, int npc)
 	}
 }
 
-Unit* TeamSingleton::GetRandomSaneHero()
+Unit* Team::GetRandomSaneHero()
 {
 	LocalVector<Unit*> v;
 
@@ -241,7 +241,7 @@ Unit* TeamSingleton::GetRandomSaneHero()
 	return v->at(Rand() % v->size());
 }
 
-void TeamSingleton::GetTeamInfo(TeamInfo& info)
+void Team::GetTeamInfo(TeamInfo& info)
 {
 	info.players = 0;
 	info.npcs = 0;
@@ -284,7 +284,7 @@ void TeamSingleton::GetTeamInfo(TeamInfo& info)
 	}
 }
 
-uint TeamSingleton::GetPlayersCount()
+uint Team::GetPlayersCount()
 {
 	uint count = 0;
 	for(Unit& unit : active_members)
@@ -295,7 +295,7 @@ uint TeamSingleton::GetPlayersCount()
 	return count;
 }
 
-bool TeamSingleton::HaveActiveNpc()
+bool Team::HaveActiveNpc()
 {
 	for(Unit& unit : active_members)
 	{
@@ -305,7 +305,7 @@ bool TeamSingleton::HaveActiveNpc()
 	return false;
 }
 
-bool TeamSingleton::HaveNpc()
+bool Team::HaveNpc()
 {
 	for(Unit& unit : members)
 	{
@@ -315,7 +315,7 @@ bool TeamSingleton::HaveNpc()
 	return false;
 }
 
-bool TeamSingleton::HaveOtherPlayer()
+bool Team::HaveOtherPlayer()
 {
 	bool first = true;
 	for(Unit& unit : active_members)
@@ -330,7 +330,7 @@ bool TeamSingleton::HaveOtherPlayer()
 	return false;
 }
 
-bool TeamSingleton::IsAnyoneAlive()
+bool Team::IsAnyoneAlive()
 {
 	for(Unit& unit : members)
 	{
@@ -341,7 +341,7 @@ bool TeamSingleton::IsAnyoneAlive()
 	return false;
 }
 
-bool TeamSingleton::IsTeamMember(Unit& unit)
+bool Team::IsTeamMember(Unit& unit)
 {
 	if(unit.IsPlayer())
 		return true;
@@ -351,7 +351,7 @@ bool TeamSingleton::IsTeamMember(Unit& unit)
 		return false;
 }
 
-bool TeamSingleton::IsTeamNotBusy()
+bool Team::IsTeamNotBusy()
 {
 	for(Unit& unit : members)
 	{
@@ -362,7 +362,7 @@ bool TeamSingleton::IsTeamNotBusy()
 	return true;
 }
 
-void TeamSingleton::Load(GameReader& f)
+void Team::Load(GameReader& f)
 {
 	members.ptrs.resize(f.Read<uint>());
 	for(Unit*& unit : members.ptrs)
@@ -401,7 +401,7 @@ void TeamSingleton::Load(GameReader& f)
 		bool free_recruit;
 		f >> free_recruit;
 		if(free_recruit)
-			free_recruits = 3 - Team.GetActiveTeamSize();
+			free_recruits = 3 - team->GetActiveTeamSize();
 		else
 			free_recruits = 0;
 	}
@@ -410,20 +410,20 @@ void TeamSingleton::Load(GameReader& f)
 	CalculatePlayersLevel();
 }
 
-void TeamSingleton::Reset()
+void Team::Reset()
 {
 	crazies_attack = false;
 	is_bandit = false;
 	free_recruits = 2;
 }
 
-void TeamSingleton::ClearOnNewGameOrLoad()
+void Team::ClearOnNewGameOrLoad()
 {
 	team_shares.clear();
 	team_share_id = -1;
 }
 
-void TeamSingleton::Save(GameWriter& f)
+void Team::Save(GameWriter& f)
 {
 	f << GetTeamSize();
 	for(Unit& unit : members)
@@ -439,7 +439,7 @@ void TeamSingleton::Save(GameWriter& f)
 	f << free_recruits;
 }
 
-void TeamSingleton::SaveOnWorldmap(GameWriter& f)
+void Team::SaveOnWorldmap(GameWriter& f)
 {
 	f << GetTeamSize();
 	for(Unit& unit : members)
@@ -450,7 +450,7 @@ void TeamSingleton::SaveOnWorldmap(GameWriter& f)
 	}
 }
 
-void TeamSingleton::Update(int days, bool travel)
+void Team::Update(int days, bool travel)
 {
 	if(!travel)
 	{
@@ -498,7 +498,7 @@ void TeamSingleton::Update(int days, bool travel)
 }
 
 //=================================================================================================
-void TeamSingleton::CheckTeamItemShares()
+void Team::CheckTeamItemShares()
 {
 	if(!HaveActiveNpc())
 	{
@@ -590,7 +590,7 @@ void TeamSingleton::CheckTeamItemShares()
 }
 
 //=================================================================================================
-bool TeamSingleton::CheckTeamShareItem(TeamShareItem& tsi)
+bool Team::CheckTeamShareItem(TeamShareItem& tsi)
 {
 	int index = FindItemIndex(tsi.from->items, tsi.index, tsi.item, tsi.is_team);
 	if(index == -1)
@@ -600,7 +600,7 @@ bool TeamSingleton::CheckTeamShareItem(TeamShareItem& tsi)
 }
 
 //=================================================================================================
-void TeamSingleton::UpdateTeamItemShares()
+void Team::UpdateTeamItemShares()
 {
 	if(game->fallback_type != FALLBACK::NO || team_share_id == -1)
 		return;
@@ -734,7 +734,7 @@ void TeamSingleton::UpdateTeamItemShares()
 }
 
 //=================================================================================================
-void TeamSingleton::TeamShareGiveItemCredit(DialogContext& ctx)
+void Team::TeamShareGiveItemCredit(DialogContext& ctx)
 {
 	TeamShareItem& tsi = team_shares[ctx.team_share_id];
 	if(CheckTeamShareItem(tsi))
@@ -768,7 +768,7 @@ void TeamSingleton::TeamShareGiveItemCredit(DialogContext& ctx)
 }
 
 //=================================================================================================
-void TeamSingleton::TeamShareSellItem(DialogContext& ctx)
+void Team::TeamShareSellItem(DialogContext& ctx)
 {
 	TeamShareItem& tsi = team_shares[ctx.team_share_id];
 	if(CheckTeamShareItem(tsi))
@@ -793,7 +793,7 @@ void TeamSingleton::TeamShareSellItem(DialogContext& ctx)
 }
 
 //=================================================================================================
-void TeamSingleton::TeamShareDecline(DialogContext& ctx)
+void Team::TeamShareDecline(DialogContext& ctx)
 {
 	int share_id = ctx.team_share_id;
 	TeamShareItem tsi = team_shares[share_id];
@@ -832,7 +832,7 @@ void TeamSingleton::TeamShareDecline(DialogContext& ctx)
 }
 
 //=================================================================================================
-void TeamSingleton::BuyTeamItems()
+void Team::BuyTeamItems()
 {
 	const Item* hp1 = Item::Get("p_hp");
 	const Item* hp2 = Item::Get("p_hp2");
@@ -1170,7 +1170,7 @@ vector<ItemToSell> items_to_sell;
 
 //=================================================================================================
 // Only sell equippable items now
-void TeamSingleton::CheckUnitOverload(Unit& unit)
+void Team::CheckUnitOverload(Unit& unit)
 {
 	if(unit.weight <= unit.weight_max)
 		return;
@@ -1215,7 +1215,7 @@ void TeamSingleton::CheckUnitOverload(Unit& unit)
 }
 
 //=================================================================================================
-void TeamSingleton::CheckCredit(bool require_update, bool ignore)
+void Team::CheckCredit(bool require_update, bool ignore)
 {
 	if(GetActiveTeamSize() > 1)
 	{
@@ -1242,7 +1242,7 @@ void TeamSingleton::CheckCredit(bool require_update, bool ignore)
 }
 
 //=================================================================================================
-bool TeamSingleton::RemoveQuestItem(const Item* item, int refid)
+bool Team::RemoveQuestItem(const Item* item, int refid)
 {
 	Unit* unit;
 	int slot_id;
@@ -1257,7 +1257,7 @@ bool TeamSingleton::RemoveQuestItem(const Item* item, int refid)
 }
 
 //=================================================================================================
-Unit* TeamSingleton::FindPlayerTradingWithUnit(Unit& u)
+Unit* Team::FindPlayerTradingWithUnit(Unit& u)
 {
 	for(Unit& unit : active_members)
 	{
@@ -1269,7 +1269,7 @@ Unit* TeamSingleton::FindPlayerTradingWithUnit(Unit& u)
 }
 
 //=================================================================================================
-void TeamSingleton::AddLearningPoint(int count)
+void Team::AddLearningPoint(int count)
 {
 	assert(count >= 1);
 	for(Unit& unit : active_members)
@@ -1281,7 +1281,7 @@ void TeamSingleton::AddLearningPoint(int count)
 
 //=================================================================================================
 // when exp is negative it doesn't depend of units count
-void TeamSingleton::AddExp(int exp, rvector<Unit>* units)
+void Team::AddExp(int exp, rvector<Unit>* units)
 {
 	if(!units)
 		units = &active_members;
@@ -1328,7 +1328,7 @@ void TeamSingleton::AddExp(int exp, rvector<Unit>* units)
 }
 
 //=================================================================================================
-void TeamSingleton::AddGold(int count, rvector<Unit>* units, bool show, bool is_quest)
+void Team::AddGold(int count, rvector<Unit>* units, bool show, bool is_quest)
 {
 	GMS msg = (is_quest ? GMS_QUEST_COMPLETED_GOLD : GMS_GOLD_ADDED);
 
@@ -1457,7 +1457,7 @@ void TeamSingleton::AddGold(int count, rvector<Unit>* units, bool show, bool is_
 }
 
 //=================================================================================================
-void TeamSingleton::AddReward(int gold, int exp)
+void Team::AddReward(int gold, int exp)
 {
 	AddGold(gold, nullptr, true, true);
 	if(exp > 0)
@@ -1465,7 +1465,7 @@ void TeamSingleton::AddReward(int gold, int exp)
 }
 
 //=================================================================================================
-void TeamSingleton::OnTravel(float dist)
+void Team::OnTravel(float dist)
 {
 	for(Unit& unit : active_members)
 	{
@@ -1475,7 +1475,7 @@ void TeamSingleton::OnTravel(float dist)
 }
 
 //=================================================================================================
-void TeamSingleton::CalculatePlayersLevel()
+void Team::CalculatePlayersLevel()
 {
 	bool have_leader_perk = false;
 	players_level = -1;
@@ -1494,7 +1494,7 @@ void TeamSingleton::CalculatePlayersLevel()
 }
 
 //=================================================================================================
-uint TeamSingleton::RemoveItem(const Item* item, uint count)
+uint Team::RemoveItem(const Item* item, uint count)
 {
 	uint total_removed = 0;
 	for(Unit& unit : members)
@@ -1512,7 +1512,7 @@ uint TeamSingleton::RemoveItem(const Item* item, uint count)
 }
 
 //=================================================================================================
-void TeamSingleton::SetBandit(bool is_bandit)
+void Team::SetBandit(bool is_bandit)
 {
 	if(this->is_bandit == is_bandit)
 		return;
@@ -1522,7 +1522,7 @@ void TeamSingleton::SetBandit(bool is_bandit)
 }
 
 //=================================================================================================
-Unit* TeamSingleton::GetNearestTeamMember(const Vec3& pos, float* out_dist)
+Unit* Team::GetNearestTeamMember(const Vec3& pos, float* out_dist)
 {
 	Unit* best = nullptr;
 	float best_dist;

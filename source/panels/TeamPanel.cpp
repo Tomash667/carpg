@@ -96,7 +96,7 @@ void TeamPanel::Draw(ControlDrawData*)
 	Int2 offset = global_pos + Int2(8, 40 - scrollbar.offset);
 	rect = Rect::Create(Int2(global_pos.x + 8, global_pos.y + 40), Int2(size.x - 52, size.y - 96));
 
-	Vec2 share = Team.GetShare();
+	Vec2 share = team->GetShare();
 	int pc_share = (int)round(share.x * 100);
 	int npc_share = (int)round(share.y * 100);
 	LocalString s;
@@ -108,7 +108,7 @@ void TeamPanel::Draw(ControlDrawData*)
 	int hitbox_counter = 0;
 	hitboxes.clear();
 	Matrix mat;
-	for(Unit& unit : Team.members)
+	for(Unit& unit : team->members)
 	{
 		Class* clas = unit.GetClass();
 		if(clas)
@@ -120,7 +120,7 @@ void TeamPanel::Draw(ControlDrawData*)
 			mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &Vec2((float)offset.x, (float)offset.y));
 			gui->DrawSprite2(t, mat, nullptr, &rect, Color::White);
 		}
-		if(&unit == Team.leader)
+		if(&unit == team->leader)
 			gui->DrawSprite(tCrown, Int2(offset.x + 32, offset.y), Color::White, &rect);
 		if(!unit.IsAlive())
 			gui->DrawSprite(tSkull, Int2(offset.x + 64, offset.y), Color::White, &rect);
@@ -184,7 +184,7 @@ void TeamPanel::Update(float dt)
 				picking = false;
 				if(picked >= 0)
 				{
-					target = Team.members.ptrs[picked];
+					target = team->members.ptrs[picked];
 					switch(mode)
 					{
 					case Bt_GiveGold:
@@ -208,7 +208,7 @@ void TeamPanel::Update(float dt)
 	if(Net::IsClient())
 	{
 		bool was_leader = bt[2].state != Button::DISABLED;
-		bool is_leader = Team.IsLeader();
+		bool is_leader = team->IsLeader();
 		if(was_leader != is_leader)
 			bt[2].state = (is_leader ? Button::NONE : Button::DISABLED);
 	}
@@ -237,7 +237,7 @@ void TeamPanel::Event(GuiEvent e)
 		break;
 	case GuiEvent_Resize:
 		{
-			int s = 32 * Team.GetTeamSize();
+			int s = 32 * team->GetTeamSize();
 			scrollbar.total = s;
 			scrollbar.part = min(s, scrollbar.size.y);
 			scrollbar.pos = Int2(size.x - 28, 48);
@@ -254,7 +254,7 @@ void TeamPanel::Event(GuiEvent e)
 		scrollbar.LostFocus();
 		break;
 	case GuiEvent_Show:
-		bt[2].state = ((Net::IsServer() || Team.IsLeader()) ? Button::NONE : Button::DISABLED);
+		bt[2].state = ((Net::IsServer() || team->IsLeader()) ? Button::NONE : Button::DISABLED);
 		bt[3].state = (Net::IsServer() ? Button::NONE : Button::DISABLED);
 		picking = false;
 		Changed();
@@ -283,7 +283,7 @@ void TeamPanel::Event(GuiEvent e)
 //=================================================================================================
 void TeamPanel::Changed()
 {
-	int s = 32 * Team.GetTeamSize();
+	int s = 32 * team->GetTeamSize();
 	scrollbar.total = s;
 	scrollbar.part = min(s, scrollbar.size.y);
 	if(scrollbar.offset + scrollbar.part > scrollbar.total)
@@ -384,25 +384,25 @@ void TeamPanel::ChangeLeader()
 		SimpleDialog(txOnlyPcLeader);
 	else if(target == game->pc->unit)
 	{
-		if(Team.IsLeader())
+		if(team->IsLeader())
 			SimpleDialog(txAlreadyLeader);
 		else if(Net::IsServer())
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::CHANGE_LEADER;
-			c.id = Team.my_id;
+			c.id = team->my_id;
 
-			Team.leader_id = Team.my_id;
-			Team.leader = game->pc->unit;
+			team->leader_id = team->my_id;
+			team->leader = game->pc->unit;
 
 			game->AddMultiMsg(txYouAreLeader);
 		}
 		else
 			SimpleDialog(txCantChangeLeader);
 	}
-	else if(Team.IsLeader(target))
+	else if(team->IsLeader(target))
 		SimpleDialog(Format(txPcAlreadyLeader, target->GetName()));
-	else if(Team.IsLeader() || Net::IsServer())
+	else if(team->IsLeader() || Net::IsServer())
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::CHANGE_LEADER;
@@ -410,8 +410,8 @@ void TeamPanel::ChangeLeader()
 
 		if(Net::IsServer())
 		{
-			Team.leader_id = c.id;
-			Team.leader = target;
+			team->leader_id = c.id;
+			team->leader = target;
 
 			game->AddMultiMsg(Format(txPcIsLeader, target->GetName()));
 		}
@@ -447,7 +447,7 @@ void TeamPanel::OnGiveGold(int id)
 	if(id != BUTTON_OK || counter == 0)
 		return;
 
-	if(!Team.IsTeamMember(*target))
+	if(!team->IsTeamMember(*target))
 		SimpleDialog(Format(txCAlreadyLeft, target->GetName()));
 	else if(counter > game->pc->unit->gold)
 		SimpleDialog(txNotEnoughGold);
@@ -483,7 +483,7 @@ void TeamPanel::OnKick(int id)
 	if(id == BUTTON_NO)
 		return;
 
-	if(!Team.IsTeamMember(*target))
+	if(!team->IsTeamMember(*target))
 		SimpleDialog(txAlreadyLeft);
 	else
 		net->KickPlayer(*target->player->player_info);

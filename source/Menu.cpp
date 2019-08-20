@@ -131,11 +131,11 @@ void Game::NewGameCommon(Class* clas, cstring name, HumanData& hd, CreatedCharac
 	Unit* u = CreateUnit(ud, -1, nullptr, nullptr, false, true);
 	u->area = nullptr;
 	u->ApplyHumanData(hd);
-	Team.members.clear();
-	Team.active_members.clear();
-	Team.members.push_back(u);
-	Team.active_members.push_back(u);
-	Team.leader = u;
+	team->members.clear();
+	team->active_members.clear();
+	team->members.push_back(u);
+	team->active_members.push_back(u);
+	team->leader = u;
 
 	u->player = new PlayerController;
 	pc = u->player;
@@ -156,7 +156,7 @@ void Game::NewGameCommon(Class* clas, cstring name, HumanData& hd, CreatedCharac
 	}
 	dialog_context.pc = pc;
 
-	Team.CalculatePlayersLevel();
+	team->CalculatePlayersLevel();
 	ClearGameVars(true);
 	game_gui->Setup(pc);
 
@@ -167,8 +167,8 @@ void Game::NewGameCommon(Class* clas, cstring name, HumanData& hd, CreatedCharac
 		npc->ai = new AIController;
 		npc->ai->Init(npc);
 		npc->hero->know_name = true;
-		Team.AddTeamMember(npc, false);
-		--Team.free_recruits;
+		team->AddTeamMember(npc, false);
+		--team->free_recruits;
 		npc->hero->SetupMelee();
 	}
 	game_gui->level_gui->Setup();
@@ -588,9 +588,9 @@ void Game::UpdateClientConnectingIp(float dt)
 				// server accepted and sent info about players and my id
 				{
 					int count, load_char;
-					reader.ReadCasted<byte>(Team.my_id);
+					reader.ReadCasted<byte>(team->my_id);
 					reader.ReadCasted<byte>(net->active_players);
-					reader.ReadCasted<byte>(Team.leader_id);
+					reader.ReadCasted<byte>(team->leader_id);
 					reader.ReadCasted<byte>(count);
 					if(!reader)
 					{
@@ -608,7 +608,7 @@ void Game::UpdateClientConnectingIp(float dt)
 					info.clas = nullptr;
 					info.ready = false;
 					info.name = player_name;
-					info.id = Team.my_id;
+					info.id = team->my_id;
 					info.state = PlayerInfo::IN_LOBBY;
 					info.update_flags = 0;
 					info.left = PlayerInfo::LEFT_NO;
@@ -685,9 +685,9 @@ void Game::UpdateClientConnectingIp(float dt)
 					net->peer->DeallocatePacket(packet);
 
 					// read leader
-					if(!net->TryGetPlayer(Team.leader_id))
+					if(!net->TryGetPlayer(team->leader_id))
 					{
-						Error("NM_CONNECTING(2): Broken packet ID_JOIN, no player with leader id %d.", Team.leader_id);
+						Error("NM_CONNECTING(2): Broken packet ID_JOIN, no player with leader id %d.", team->leader_id);
 						EndConnecting(txCantJoin, true);
 						return;
 					}
@@ -1115,8 +1115,8 @@ void Game::UpdateClientTransfer(float dt)
 					world->SetState(World::State::ON_MAP);
 					game_gui->info_box->CloseDialog();
 					net->update_timer = 0.f;
-					Team.leader_id = 0;
-					Team.leader = nullptr;
+					team->leader_id = 0;
+					team->leader = nullptr;
 					SetMusic(MusicType::Travel);
 					ChangeTitle();
 					if(net->mp_quickload)
@@ -1300,9 +1300,9 @@ void Game::UpdateServerTransfer(float dt)
 
 			// do it
 			ClearGameVars(true);
-			Team.free_recruits = 3 - net->active_players;
-			if(Team.free_recruits < 0)
-				Team.free_recruits = 0;
+			team->free_recruits = 3 - net->active_players;
+			if(team->free_recruits < 0)
+				team->free_recruits = 0;
 			fallback_type = FALLBACK::NONE;
 			fallback_t = -0.5f;
 			game_gui->main_menu->visible = false;
@@ -1342,7 +1342,7 @@ void Game::UpdateServerTransfer(float dt)
 			net_timer = mp_timeout;
 			for(PlayerInfo& info : net->players)
 			{
-				if(info.id != Team.my_id)
+				if(info.id != team->my_id)
 					info.ready = false;
 				else
 					info.ready = true;
@@ -1356,9 +1356,9 @@ void Game::UpdateServerTransfer(float dt)
 
 		// create team
 		if(net->mp_load)
-			prev_team = Team.members.ptrs;
-		Team.members.clear();
-		Team.active_members.clear();
+			prev_team = team->members.ptrs;
+		team->members.clear();
+		team->active_members.clear();
 		game_level->entering = true;
 		const bool in_level = game_level->is_open;
 		int leader_perk = 0;
@@ -1399,12 +1399,12 @@ void Game::UpdateServerTransfer(float dt)
 				u->player->id = info.id;
 			}
 
-			Team.members.push_back(u);
-			Team.active_members.push_back(u);
+			team->members.push_back(u);
+			team->active_members.push_back(u);
 
 			info.pc = u->player;
 			u->player->player_info = &info;
-			if(info.id == Team.my_id)
+			if(info.id == team->my_id)
 			{
 				pc = u->player;
 				u->player->dialog_ctx = &dialog_context;
@@ -1421,7 +1421,7 @@ void Game::UpdateServerTransfer(float dt)
 			u->interp = EntityInterpolator::Pool.Get();
 			u->interp->Reset(u->pos, u->rot);
 		}
-		Team.CalculatePlayersLevel();
+		team->CalculatePlayersLevel();
 
 		// add ai
 		bool anyone_left = false;
@@ -1431,13 +1431,13 @@ void Game::UpdateServerTransfer(float dt)
 				continue;
 
 			if(unit->hero->free)
-				Team.members.push_back(unit);
+				team->members.push_back(unit);
 			else
 			{
-				if(Team.active_members.size() < Team.GetMaxSize())
+				if(team->active_members.size() < team->GetMaxSize())
 				{
-					Team.members.push_back(unit);
-					Team.active_members.push_back(unit);
+					team->members.push_back(unit);
+					team->active_members.push_back(unit);
 				}
 				else
 				{
@@ -1460,7 +1460,7 @@ void Game::UpdateServerTransfer(float dt)
 			}
 		}
 
-		if(!net->mp_load && leader_perk > 0 && Team.GetActiveTeamSize() < Team.GetMaxSize())
+		if(!net->mp_load && leader_perk > 0 && team->GetActiveTeamSize() < team->GetMaxSize())
 		{
 			UnitData& ud = *Class::GetRandomHero()->hero;
 			int level = ud.level.x + 2 * (leader_perk - 1);
@@ -1469,23 +1469,23 @@ void Game::UpdateServerTransfer(float dt)
 			npc->ai = new AIController;
 			npc->ai->Init(npc);
 			npc->hero->know_name = true;
-			Team.AddTeamMember(npc, false);
+			team->AddTeamMember(npc, false);
 			npc->hero->SetupMelee();
 		}
 		game_level->entering = false;
 
 		// recalculate credit if someone left
 		if(anyone_left)
-			Team.CheckCredit(false, true);
+			team->CheckCredit(false, true);
 
 		// set leader
-		PlayerInfo* leader_info = net->TryGetPlayer(Team.leader_id);
+		PlayerInfo* leader_info = net->TryGetPlayer(team->leader_id);
 		if(leader_info)
-			Team.leader = leader_info->u;
+			team->leader = leader_info->u;
 		else
 		{
-			Team.leader_id = 0;
-			Team.leader = net->GetMe().u;
+			team->leader_id = 0;
+			team->leader = net->GetMe().u;
 		}
 
 		// send info
@@ -1529,11 +1529,11 @@ void Game::UpdateServerTransfer(float dt)
 			ok = true;
 			if(anyone_removed)
 			{
-				Team.CheckCredit(false, true);
-				if(Team.leader_id == -1)
+				team->CheckCredit(false, true);
+				if(team->leader_id == -1)
 				{
-					Team.leader_id = 0;
-					Team.leader = net->GetMe().u;
+					team->leader_id = 0;
+					team->leader = net->GetMe().u;
 				}
 			}
 		}
@@ -1592,7 +1592,7 @@ void Game::UpdateServerTransfer(float dt)
 				int ack = net->SendAll(f, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT);
 				for(PlayerInfo& info : net->players)
 				{
-					if(info.id == Team.my_id)
+					if(info.id == team->my_id)
 						info.state = PlayerInfo::IN_GAME;
 					else
 					{
@@ -1604,8 +1604,8 @@ void Game::UpdateServerTransfer(float dt)
 
 				// find player that was in save and is playing now (first check leader)
 				Unit* center_unit = nullptr;
-				if(Team.leader->player->player_info->loaded)
-					center_unit = Team.leader;
+				if(team->leader->player->player_info->loaded)
+					center_unit = team->leader;
 				else
 				{
 					// anyone

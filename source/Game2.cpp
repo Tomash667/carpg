@@ -816,7 +816,7 @@ void Game::UpdateGame(float dt)
 	}
 
 	// obracanie kamery góra/dó³
-	if(!Net::IsLocal() || Team.IsAnyoneAlive())
+	if(!Net::IsLocal() || team->IsAnyoneAlive())
 	{
 		if(dialog_context.dialog_mode && game_gui->inventory->mode <= I_INVENTORY)
 		{
@@ -906,7 +906,7 @@ void Game::UpdateGame(float dt)
 	}
 
 	// umieranie
-	if((Net::IsLocal() && !Team.IsAnyoneAlive()) || death_screen != 0)
+	if((Net::IsLocal() && !team->IsAnyoneAlive()) || death_screen != 0)
 	{
 		if(death_screen == 0)
 		{
@@ -915,7 +915,7 @@ void Game::UpdateGame(float dt)
 			game_gui->CloseAllPanels(true);
 			++death_screen;
 			death_fade = 0;
-			death_solo = (Team.GetTeamSize() == 1u);
+			death_solo = (team->GetTeamSize() == 1u);
 			if(Net::IsOnline())
 			{
 				Net::PushChange(NetChange::GAME_STATS);
@@ -1252,7 +1252,7 @@ void Game::UpdateFallback(float dt)
 				{
 					if(fallback_type == FALLBACK::CHANGE_LEVEL || fallback_type == FALLBACK::USE_PORTAL || fallback_type == FALLBACK::EXIT)
 					{
-						for(Unit& unit : Team.members)
+						for(Unit& unit : team->members)
 							unit.frozen = FROZEN::NO;
 					}
 					pc->unit->frozen = FROZEN::NO;
@@ -1553,7 +1553,7 @@ void Game::UpdatePlayer(float dt)
 					}
 					else if(pc->unit->CanWear(item))
 					{
-						bool ignore_team = !Team.HaveOtherActiveTeamMember();
+						bool ignore_team = !team->HaveOtherActiveTeamMember();
 						int i_index = pc->unit->FindItem([=](const ItemSlot& slot)
 						{
 							return slot.item == item && (slot.team_count == 0u || ignore_team);
@@ -2788,7 +2788,7 @@ void Game::UseAction(PlayerController* p, bool from_server, const Vec3* pos)
 			Unit* existing_unit = game_level->FindUnit([=](Unit* u) { return u->summoner == p->unit; });
 			if(existing_unit)
 			{
-				Team.RemoveTeamMember(existing_unit);
+				team->RemoveTeamMember(existing_unit);
 				game_level->RemoveUnit(existing_unit);
 			}
 
@@ -2808,7 +2808,7 @@ void Game::UseAction(PlayerController* p, bool from_server, const Vec3* pos)
 				unit->in_arena = p->unit->in_arena;
 				if(unit->in_arena != -1)
 					arena->units.push_back(unit);
-				Team.AddTeamMember(unit, true);
+				team->AddTeamMember(unit, true);
 				unit->order_unit = p->unit;
 				SpawnUnitEffect(*unit);
 			}
@@ -3005,7 +3005,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 						{
 							if(it->exit_region.IsInside(unit.pos))
 							{
-								if(!Team.IsLeader())
+								if(!team->IsLeader())
 									game_gui->messages->AddGameMsg3(GMS_NOT_LEADER);
 								else
 								{
@@ -3030,7 +3030,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 					else if(game_level->location_index != quest_mgr->quest_secret->where2
 						&& (unit.pos.x < 33.f || unit.pos.x > 256.f - 33.f || unit.pos.z < 33.f || unit.pos.z > 256.f - 33.f))
 					{
-						if(!Team.IsLeader())
+						if(!team->IsLeader())
 							game_gui->messages->AddGameMsg3(GMS_NOT_LEADER);
 						else if(!Net::IsLocal())
 							Net_LeaveLocation(ENTER_FROM_OUTSIDE);
@@ -3051,7 +3051,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 					{
 						fallback_type = FALLBACK::EXIT;
 						fallback_t = -1.f;
-						for(Unit& unit : Team.members)
+						for(Unit& unit : team->members)
 							unit.frozen = FROZEN::YES;
 						if(Net::IsOnline())
 							Net::PushChange(NetChange::LEAVE_LOCATION);
@@ -3158,7 +3158,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 
 			if(unit.IsPlayer() && WantExitLevel() && box.IsInside(unit.pos) && unit.frozen == FROZEN::NO && !dash)
 			{
-				if(Team.IsLeader())
+				if(team->IsLeader())
 				{
 					if(Net::IsLocal())
 					{
@@ -3168,7 +3168,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 							fallback_type = FALLBACK::CHANGE_LEVEL;
 							fallback_t = -1.f;
 							fallback_1 = -1;
-							for(Unit& unit : Team.members)
+							for(Unit& unit : team->members)
 								unit.frozen = FROZEN::YES;
 							if(Net::IsOnline())
 								Net::PushChange(NetChange::LEAVE_LOCATION);
@@ -3211,7 +3211,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 
 			if(unit.IsPlayer() && WantExitLevel() && box.IsInside(unit.pos) && unit.frozen == FROZEN::NO && !dash)
 			{
-				if(Team.IsLeader())
+				if(team->IsLeader())
 				{
 					if(Net::IsLocal())
 					{
@@ -3221,7 +3221,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 							fallback_type = FALLBACK::CHANGE_LEVEL;
 							fallback_t = -1.f;
 							fallback_1 = +1;
-							for(Unit& unit : Team.members)
+							for(Unit& unit : team->members)
 								unit.frozen = FROZEN::YES;
 							if(Net::IsOnline())
 								Net::PushChange(NetChange::LEAVE_LOCATION);
@@ -3254,7 +3254,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 			{
 				if(CircleToRotatedRectangle(unit.pos.x, unit.pos.z, unit.GetUnitRadius(), portal->pos.x, portal->pos.z, 0.67f, 0.1f, portal->rot))
 				{
-					if(Team.IsLeader())
+					if(team->IsLeader())
 					{
 						if(Net::IsLocal())
 						{
@@ -3264,7 +3264,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 								fallback_type = FALLBACK::USE_PORTAL;
 								fallback_t = -1.f;
 								fallback_1 = index;
-								for(Unit& unit : Team.members)
+								for(Unit& unit : team->members)
 									unit.frozen = FROZEN::YES;
 								if(Net::IsOnline())
 									Net::PushChange(NetChange::LEAVE_LOCATION);
@@ -4228,7 +4228,7 @@ void Game::UpdateUnits(LevelArea& area, float dt)
 					game_level->CreateBlood(area, u);
 					if(u.summoner != nullptr && Net::IsLocal())
 					{
-						Team.RemoveTeamMember(&u);
+						team->RemoveTeamMember(&u);
 						u.action = A_DESPAWN;
 						u.timer = Random(2.5f, 5.f);
 						u.summoner = nullptr;
@@ -7530,7 +7530,7 @@ void Game::ClearGameVars(bool new_game)
 	death_screen = 0;
 	end_of_game = false;
 	game_gui->minimap->city = nullptr;
-	Team.ClearOnNewGameOrLoad();
+	team->ClearOnNewGameOrLoad();
 	draw_flags = 0xFFFFFFFF;
 	game_gui->level_gui->Reset();
 	game_gui->journal->Reset();
@@ -7573,7 +7573,7 @@ void Game::ClearGameVars(bool new_game)
 		quest_mgr->Reset();
 		world->OnNewGame();
 		game_stats->Reset();
-		Team.Reset();
+		team->Reset();
 		dont_wander = false;
 		pc_data.picking_item_state = 0;
 		game_level->is_open = false;
@@ -7606,7 +7606,7 @@ void Game::ClearGame()
 	// delete units on world map
 	if((game_state == GS_WORLDMAP || prev_game_state == GS_WORLDMAP || (net->mp_load && prev_game_state == GS_LOAD)) && !game_level->is_open && Net::IsLocal() && !net->was_client)
 	{
-		for(Unit& unit : Team.members)
+		for(Unit& unit : team->members)
 		{
 			if(unit.bow_instance)
 				bow_instances.push_back(unit.bow_instance);
@@ -7616,7 +7616,7 @@ void Game::ClearGame()
 			delete unit.ai;
 			delete &unit;
 		}
-		Team.members.clear();
+		team->members.clear();
 		prev_game_state = GS_LOAD;
 	}
 
@@ -7928,7 +7928,7 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 						unit.live_state = Unit::ALIVE;
 					}
 					if(unit.order != ORDER_FOLLOW)
-						unit.OrderFollow(Team.GetLeader());
+						unit.OrderFollow(team->GetLeader());
 					unit.talking = false;
 					unit.mesh_inst->need_update = true;
 					unit.ai->Reset();
@@ -8673,7 +8673,7 @@ void Game::AttackReaction(Unit& attacked, Unit& attacker)
 	{
 		if(attacked.data->group == G_CITIZENS)
 		{
-			if(!Team.is_bandit)
+			if(!team->is_bandit)
 			{
 				if(attacked.dont_attack && IsSet(attacked.data->flags, F_PEACEFUL))
 				{
@@ -8689,14 +8689,14 @@ void Game::AttackReaction(Unit& attacked, Unit& attacker)
 					}
 				}
 				else
-					Team.SetBandit(true);
+					team->SetBandit(true);
 			}
 		}
 		else if(attacked.data->group == G_CRAZIES)
 		{
-			if(!Team.crazies_attack)
+			if(!team->crazies_attack)
 			{
-				Team.crazies_attack = true;
+				team->crazies_attack = true;
 				if(Net::IsOnline())
 					Net::PushChange(NetChange::CHANGE_FLAGS);
 			}
@@ -8841,7 +8841,7 @@ void Game::GenerateQuestUnits()
 		}
 	}
 
-	if(Team.is_bandit)
+	if(team->is_bandit)
 		return;
 
 	// sawmill quest
@@ -8850,7 +8850,7 @@ void Game::GenerateQuestUnits()
 		if(quest_mgr->quest_sawmill->days >= 30 && game_level->city_ctx)
 		{
 			quest_mgr->quest_sawmill->days = 29;
-			Unit* u = game_level->SpawnUnitNearLocation(*Team.leader->area, Team.leader->pos, *UnitData::Get("poslaniec_tartak"), &Team.leader->pos, -2, 2.f);
+			Unit* u = game_level->SpawnUnitNearLocation(*team->leader->area, team->leader->pos, *UnitData::Get("poslaniec_tartak"), &team->leader->pos, -2, 2.f);
 			if(u)
 			{
 				quest_mgr->quest_sawmill->messenger = u;
@@ -8864,7 +8864,7 @@ void Game::GenerateQuestUnits()
 		if(count)
 		{
 			quest_mgr->quest_sawmill->days -= count * 30;
-			Team.AddGold(count * Quest_Sawmill::PAYMENT, nullptr, true);
+			team->AddGold(count * Quest_Sawmill::PAYMENT, nullptr, true);
 		}
 	}
 
@@ -8874,7 +8874,7 @@ void Game::GenerateQuestUnits()
 			quest_mgr->quest_mine->mine_state2 == Quest_Mine::State2::InExpand || // inform player about finished mine expanding
 			quest_mgr->quest_mine->mine_state2 == Quest_Mine::State2::Expanded)) // inform player about finding portal
 	{
-		Unit* u = game_level->SpawnUnitNearLocation(*Team.leader->area, Team.leader->pos, *UnitData::Get("poslaniec_kopalnia"), &Team.leader->pos, -2, 2.f);
+		Unit* u = game_level->SpawnUnitNearLocation(*team->leader->area, team->leader->pos, *UnitData::Get("poslaniec_kopalnia"), &team->leader->pos, -2, 2.f);
 		if(u)
 		{
 			quest_mgr->quest_mine->messenger = u;
@@ -8905,7 +8905,7 @@ void Game::GenerateQuestUnits2()
 {
 	if(quest_mgr->quest_goblins->goblins_state == Quest_Goblins::State::Counting && quest_mgr->quest_goblins->days <= 0)
 	{
-		Unit* u = game_level->SpawnUnitNearLocation(*Team.leader->area, Team.leader->pos, *UnitData::Get("q_gobliny_poslaniec"), &Team.leader->pos, -2, 2.f);
+		Unit* u = game_level->SpawnUnitNearLocation(*team->leader->area, team->leader->pos, *UnitData::Get("q_gobliny_poslaniec"), &team->leader->pos, -2, 2.f);
 		if(u)
 		{
 			quest_mgr->quest_goblins->messenger = u;
@@ -8917,7 +8917,7 @@ void Game::GenerateQuestUnits2()
 
 	if(quest_mgr->quest_goblins->goblins_state == Quest_Goblins::State::NoblemanLeft && quest_mgr->quest_goblins->days <= 0)
 	{
-		Unit* u = game_level->SpawnUnitNearLocation(*Team.leader->area, Team.leader->pos, *UnitData::Get("q_gobliny_mag"), &Team.leader->pos, 5, 2.f);
+		Unit* u = game_level->SpawnUnitNearLocation(*team->leader->area, team->leader->pos, *UnitData::Get("q_gobliny_mag"), &team->leader->pos, 5, 2.f);
 		if(u)
 		{
 			quest_mgr->quest_goblins->messenger = u;
@@ -8931,7 +8931,7 @@ void Game::GenerateQuestUnits2()
 
 void Game::UpdateQuests(int days)
 {
-	if(Team.is_bandit)
+	if(team->is_bandit)
 		return;
 
 	RemoveQuestUnits(false);
@@ -8945,7 +8945,7 @@ void Game::UpdateQuests(int days)
 		if(quest_mgr->quest_sawmill->days >= 30 && game_level->city_ctx && game_state == GS_LEVEL)
 		{
 			quest_mgr->quest_sawmill->days = 29;
-			Unit* u = game_level->SpawnUnitNearLocation(*Team.leader->area, Team.leader->pos, *UnitData::Get("poslaniec_tartak"), &Team.leader->pos, -2, 2.f);
+			Unit* u = game_level->SpawnUnitNearLocation(*team->leader->area, team->leader->pos, *UnitData::Get("poslaniec_tartak"), &team->leader->pos, -2, 2.f);
 			if(u)
 			{
 				quest_mgr->quest_sawmill->messenger = u;
@@ -8975,7 +8975,7 @@ void Game::UpdateQuests(int days)
 				// player invesetd in mine, inform him about finishing
 				if(game_level->city_ctx && game_state == GS_LEVEL)
 				{
-					Unit* u = game_level->SpawnUnitNearLocation(*Team.leader->area, Team.leader->pos, *UnitData::Get("poslaniec_kopalnia"), &Team.leader->pos, -2, 2.f);
+					Unit* u = game_level->SpawnUnitNearLocation(*team->leader->area, team->leader->pos, *UnitData::Get("poslaniec_kopalnia"), &team->leader->pos, -2, 2.f);
 					if(u)
 					{
 						world->AddNews(Format(txMineBuilt, world->GetLocation(quest_mgr->quest_mine->target_loc)->name.c_str()));
@@ -9005,7 +9005,7 @@ void Game::UpdateQuests(int days)
 		quest_mgr->quest_mine->days += days;
 		if(quest_mgr->quest_mine->days >= quest_mgr->quest_mine->days_required && game_level->city_ctx && game_state == GS_LEVEL)
 		{
-			Unit* u = game_level->SpawnUnitNearLocation(*Team.leader->area, Team.leader->pos, *UnitData::Get("poslaniec_kopalnia"), &Team.leader->pos, -2, 2.f);
+			Unit* u = game_level->SpawnUnitNearLocation(*team->leader->area, team->leader->pos, *UnitData::Get("poslaniec_kopalnia"), &team->leader->pos, -2, 2.f);
 			if(u)
 			{
 				quest_mgr->quest_mine->messenger = u;
@@ -9018,7 +9018,7 @@ void Game::UpdateQuests(int days)
 	income += quest_mgr->quest_mine->GetIncome(days);
 
 	if(income != 0)
-		Team.AddGold(income, nullptr, true);
+		team->AddGold(income, nullptr, true);
 
 	quest_mgr->quest_contest->Progress();
 
@@ -9159,7 +9159,7 @@ bool Game::IsAnyoneTalking() const
 	{
 		if(Net::IsOnline())
 		{
-			for(Unit& unit : Team.active_members)
+			for(Unit& unit : team->active_members)
 			{
 				if(unit.IsPlayer() && unit.player->dialog_ctx->dialog_mode)
 					return true;
@@ -9184,7 +9184,7 @@ void Game::UpdateGame2(float dt)
 		quest_mgr->quest_tournament->Update(dt);
 
 	// sharing of team items between team members
-	Team.UpdateTeamItemShares();
+	team->UpdateTeamItemShares();
 
 	// contest
 	quest_mgr->quest_contest->Update(dt);
@@ -9196,7 +9196,7 @@ void Game::UpdateGame2(float dt)
 		if(quest_mgr->quest_bandits->timer <= 0.f)
 		{
 			// spawn agent
-			Unit* u = game_level->SpawnUnitNearLocation(*Team.leader->area, Team.leader->pos, *UnitData::Get("agent"), &Team.leader->pos, -2, 2.f);
+			Unit* u = game_level->SpawnUnitNearLocation(*team->leader->area, team->leader->pos, *UnitData::Get("agent"), &team->leader->pos, -2, 2.f);
 			if(u)
 			{
 				quest_mgr->quest_bandits->bandits_state = Quest_Bandits::State::AgentCome;
@@ -9217,7 +9217,7 @@ void Game::UpdateGame2(float dt)
 	// quest evil
 	if(quest_mgr->quest_evil->evil_state == Quest_Evil::State::SpawnedAltar && game_level->location_index == quest_mgr->quest_evil->target_loc)
 	{
-		for(Unit& unit : Team.members)
+		for(Unit& unit : team->members)
 		{
 			if(unit.IsStanding() && unit.IsPlayer() && Vec3::Distance(unit.pos, quest_mgr->quest_evil->pos) < 5.f
 				&& game_level->CanSee(*game_level->local_area, unit.pos, quest_mgr->quest_evil->pos))
@@ -9266,7 +9266,7 @@ void Game::UpdateGame2(float dt)
 							if(quest_mgr->quest_evil->timer <= 0.f)
 							{
 								loc.state = Quest_Evil::Loc::State::PortalClosed;
-								u->OrderFollow(Team.GetLeader());
+								u->OrderFollow(team->GetLeader());
 								u->ai->idle_action = AIController::Idle_None;
 								quest_mgr->quest_evil->OnUpdate(Format(txPortalClosed, game_level->location->name.c_str()));
 								u->StartAutoTalk();
@@ -9283,7 +9283,7 @@ void Game::UpdateGame2(float dt)
 							quest_mgr->quest_evil->timer = 1.5f;
 					}
 					else if(u->order != ORDER_FOLLOW)
-						u->OrderFollow(Team.GetLeader());
+						u->OrderFollow(team->GetLeader());
 				}
 			}
 		}
@@ -9527,7 +9527,7 @@ void Game::OnEnterLocation()
 	if(!talker)
 	{
 		TeamInfo info;
-		Team.GetTeamInfo(info);
+		team->GetTeamInfo(info);
 		bool always_use = false;
 
 		if(info.sane_heroes > 0)
@@ -9561,7 +9561,7 @@ void Game::OnEnterLocation()
 			}
 
 			if(text && (always_use || Rand() % 2 == 0))
-				talker = Team.GetRandomSaneHero();
+				talker = team->GetRandomSaneHero();
 		}
 	}
 
@@ -9667,14 +9667,14 @@ void Game::OnEnterLevel()
 		}
 
 		if(text)
-			talker = Team.FindTeamMember("q_magowie_stary");
+			talker = team->FindTeamMember("q_magowie_stary");
 	}
 
 	// default talking about location
 	if(!talker && game_level->dungeon_level == 0 && (game_level->enter_from == ENTER_FROM_OUTSIDE || game_level->enter_from >= ENTER_FROM_PORTAL))
 	{
 		TeamInfo info;
-		Team.GetTeamInfo(info);
+		team->GetTeamInfo(info);
 
 		if(info.sane_heroes > 0)
 		{
@@ -9735,7 +9735,7 @@ void Game::OnEnterLevel()
 				break;
 			}
 
-			Team.GetRandomSaneHero()->Talk(s->c_str());
+			team->GetRandomSaneHero()->Talk(s->c_str());
 			return;
 		}
 	}
@@ -9865,7 +9865,7 @@ void Game::OnEnterLevelOrLocation()
 	fallback_type = FALLBACK::NONE;
 	if(Net::IsLocal())
 	{
-		for(Unit& unit : Team.members)
+		for(Unit& unit : team->members)
 			unit.frozen = FROZEN::NO;
 	}
 

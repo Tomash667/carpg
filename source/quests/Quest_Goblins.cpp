@@ -56,7 +56,7 @@ GameDialog* Quest_Goblins::GetDialog(int type2)
 //=================================================================================================
 bool TeamHaveOldBow()
 {
-	return Team.HaveQuestItem(Item::Get("q_gobliny_luk"));
+	return team->HaveQuestItem(Item::Get("q_gobliny_luk"));
 }
 
 //=================================================================================================
@@ -155,13 +155,13 @@ void Quest_Goblins::SetProgress(int prog2)
 	case Progress::BowStolen:
 		// gobliny ukrad³y ³uk
 		{
-			Team.RemoveQuestItem(Item::Get("q_gobliny_luk"));
+			team->RemoveQuestItem(Item::Get("q_gobliny_luk"));
 			OnUpdate(game->txQuest[220]);
 			world->RemoveEncounter(enc);
 			enc = -1;
 			GetTargetLocation().active_quest = nullptr;
 			world->AddNews(game->txQuest[221]);
-			Team.AddExp(1000);
+			team->AddExp(1000);
 		}
 		break;
 	case Progress::TalkedAboutStolenBow:
@@ -200,7 +200,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			const Item* item = Item::Get("q_gobliny_luk");
 			DialogContext::current->pc->unit->RemoveItem(item, 1);
 			DialogContext::current->talker->AddItem(item, 1, true);
-			Team.AddReward(500, 2500);
+			team->AddReward(500, 2500);
 			OnUpdate(game->txQuest[224]);
 			goblins_state = State::GivenBow;
 			GetTargetLocation().active_quest = nullptr;
@@ -263,8 +263,8 @@ void Quest_Goblins::SetProgress(int prog2)
 			GetTargetLocation().active_quest = nullptr;
 			quest_mgr->EndUniqueQuest();
 			world->AddNews(game->txQuest[231]);
-			Team.AddLearningPoint();
-			Team.AddExp(15000);
+			team->AddLearningPoint();
+			team->AddExp(15000);
 		}
 		break;
 	}

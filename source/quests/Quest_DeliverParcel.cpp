@@ -85,7 +85,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			((City&)GetStartLocation()).quest_mayor = CityQuestState::Failed;
 
 			DialogContext::current->pc->unit->RemoveQuestItem(refid);
-			Team.AddReward(300, 2000);
+			team->AddReward(300, 2000);
 
 			OnUpdate(game->txQuest[12]);
 			RemoveElementTry(quest_mgr->quests_timeout2, static_cast<Quest*>(this));
@@ -110,7 +110,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			((City&)GetStartLocation()).quest_mayor = CityQuestState::None;
 
 			DialogContext::current->pc->unit->RemoveQuestItem(refid);
-			Team.AddReward(750, 3000);
+			team->AddReward(750, 3000);
 
 			RemoveEncounter();
 
@@ -133,7 +133,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			RemoveEncounter();
 
 			DialogContext::current->talker->AddItem(&parcel, 1, true);
-			Team.RemoveQuestItem(&parcel, refid);
+			team->RemoveQuestItem(&parcel, refid);
 
 			OnUpdate(game->txQuest[16]);
 		}

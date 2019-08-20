@@ -1401,7 +1401,7 @@ void InsideLocationGenerator::OpenDoorsByTeam(const Int2& pt)
 {
 	static vector<Int2> tmp_path;
 	InsideLocationLevel& lvl = inside->GetLevelData();
-	for(Unit& unit : Team.members)
+	for(Unit& unit : team->members)
 	{
 		Int2 unit_pt = PosToPt(unit.pos);
 		if(pathfinding->FindPath(lvl, unit_pt, pt, tmp_path))

@@ -78,7 +78,7 @@ bool Quest_Secret::Special(DialogContext& ctx, cstring msg)
 			c.unit = ctx.talker;
 		}
 
-		for(Unit& unit : Team.members)
+		for(Unit& unit : team->members)
 		{
 			unit.in_arena = 0;
 			game->arena->units.push_back(&unit);
@@ -143,7 +143,7 @@ bool Quest_Secret::CheckMoonStone(GroundItem* item, Unit& unit)
 		note->desc = Format("\"%c %d km, %c %d km\"", cpos.y > l.pos.y ? 'S' : 'N', (int)abs((cpos.y - l.pos.y) / 3), cpos.x > l.pos.x ? 'W' : 'E', (int)abs((cpos.x - l.pos.x) / 3));
 		unit.AddItem2(note, 1u, 1u, false);
 		delete item;
-		Team.AddExp(5000);
+		team->AddExp(5000);
 		if(Net::IsOnline())
 			Net::PushChange(NetChange::SECRET_TEXT);
 		return true;
@@ -212,8 +212,8 @@ void Quest_Secret::UpdateFight()
 			// gracz wygra³
 			state = SECRET_WIN;
 			arena->units[0]->StartAutoTalk();
-			Team.AddLearningPoint();
-			Team.AddExp(25000);
+			team->AddLearningPoint();
+			team->AddExp(25000);
 		}
 		else
 		{

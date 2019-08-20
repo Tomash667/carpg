@@ -455,7 +455,7 @@ void InventoryPanel::Draw(ControlDrawData*)
 	}
 
 	// rysuj przedmioty
-	bool have_team = Team.GetActiveTeamSize() > 1 && mode != TRADE_OTHER;
+	bool have_team = team->GetActiveTeamSize() > 1 && mode != TRADE_OTHER;
 	int shift = int(scrollbar.offset / 63)*cells_w;
 	for(int i = 0, cells = min(cells_w*cells_h, (int)i_items->size() - shift); i < cells; ++i)
 	{
@@ -809,7 +809,7 @@ void InventoryPanel::Update(float dt)
 				}
 				else
 				{
-					if(unit->CanWear(item) && slot->team_count > 0 && Team.GetActiveTeamSize() > 1)
+					if(unit->CanWear(item) && slot->team_count > 0 && team->GetActiveTeamSize() > 1)
 					{
 						DialogInfo di;
 						di.event = delegate<void(int)>(this, &InventoryPanel::OnTakeItem);
@@ -1643,7 +1643,7 @@ void InventoryPanel::FormatBox(int group, string& text, string& small_text, Text
 			target = game->pc->unit;
 
 		GetItemString(text, item, target, (uint)count);
-		if(mode != TRADE_OTHER && team_count && Team.GetActiveTeamSize() > 1)
+		if(mode != TRADE_OTHER && team_count && team->GetActiveTeamSize() > 1)
 		{
 			text += '\n';
 			text += base.txTeamItem;
@@ -1752,7 +1752,7 @@ void InventoryPanel::OnTakeItem(int id)
 	slot.team_count = 0;
 
 	if(Net::IsLocal())
-		Team.CheckCredit(true);
+		team->CheckCredit(true);
 	else
 	{
 		NetChange& c = Add1(Net::changes);
@@ -1862,7 +1862,7 @@ void InventoryPanel::SellItem(int index, uint count)
 		int price = ItemHelper::GetItemPrice(slot.item, *game->pc->unit, false);
 		game->pc->Train(TrainWhat::Trade, (float)price, 0);
 		if(team_count)
-			Team.AddGold(price * team_count);
+			team->AddGold(price * team_count);
 		if(normal_count)
 			unit->gold += price * normal_count;
 	}
@@ -2316,7 +2316,7 @@ void InventoryPanel::OnGiveItem(int id)
 	case 0: // give team item for credit
 		t->hero->credit += price;
 		if(Net::IsLocal())
-			Team.CheckCredit(true);
+			team->CheckCredit(true);
 		break;
 	case 1: // sell item
 		if(t->gold < price)

@@ -160,7 +160,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			target_loc = camp_loc;
 			location_event_handler = this;
 			DialogContext::current->pc->unit->RemoveItem(Item::Get("q_bandyci_list"), 1);
-			Team.AddExp(5000);
+			team->AddExp(5000);
 		}
 		break;
 	case Progress::NeedClearCamp:
@@ -213,7 +213,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			unit_event_handler = this;
 			unit_auto_talk = true;
 			callback = WarpToThroneBanditBoss;
-			Team.AddExp(7500);
+			team->AddExp(7500);
 		}
 		break;
 	case Progress::KilledBoss:
@@ -222,7 +222,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			camp_loc = -1;
 			OnUpdate(Format(game->txQuest[162], GetStartLocationName()));
 			world->AddNews(game->txQuest[163]);
-			Team.AddLearningPoint();
+			team->AddLearningPoint();
 		}
 		break;
 	case Progress::Finished:
@@ -232,7 +232,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			OnUpdate(game->txQuest[164]);
 			// ustaw arto na temporary ¿eby sobie poszed³
 			DialogContext::current->talker->temporary = true;
-			Team.AddReward(10000, 25000);
+			team->AddReward(10000, 25000);
 			quest_mgr->EndUniqueQuest();
 		}
 		break;
@@ -254,7 +254,7 @@ bool Quest_Bandits::Special(DialogContext& ctx, cstring msg)
 	{
 		const Item* item = Item::Get("q_bandyci_paczka");
 		ctx.talker->AddItem(item, 1, true);
-		Team.RemoveQuestItem(item);
+		team->RemoveQuestItem(item);
 	}
 	else
 		assert(0);

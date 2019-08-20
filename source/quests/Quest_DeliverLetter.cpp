@@ -87,7 +87,7 @@ void Quest_DeliverLetter::SetProgress(int prog2)
 		// given response, end of quest
 		{
 			state = Quest::Completed;
-			Team.AddReward(250, 1000);
+			team->AddReward(250, 1000);
 
 			((City&)GetStartLocation()).quest_mayor = CityQuestState::None;
 			DialogContext::current->pc->unit->RemoveQuestItem(refid);

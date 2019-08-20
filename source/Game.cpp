@@ -830,6 +830,7 @@ void Game::OnCleanup()
 	delete pathfinding;
 	delete quest_mgr;
 	delete script_mgr;
+	delete team;
 	delete world;
 
 	DeleteElements(bow_instances);
@@ -1414,7 +1415,7 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 		int ack = net->SendAll(f, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT);
 		for(PlayerInfo& info : net->players)
 		{
-			if(info.id == Team.my_id)
+			if(info.id == team->my_id)
 				info.state = PlayerInfo::IN_GAME;
 			else
 			{
@@ -1578,7 +1579,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 	if(game_level->city_ctx && game_state != GS_EXIT_TO_MENU && Net::IsLocal())
 	{
 		// opuszczanie miasta
-		Team.BuyTeamItems();
+		team->BuyTeamItems();
 	}
 
 	LeaveLevel();
@@ -1608,9 +1609,9 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 		}
 	}
 
-	if(Team.crazies_attack)
+	if(team->crazies_attack)
 	{
-		Team.crazies_attack = false;
+		team->crazies_attack = false;
 		if(Net::IsOnline())
 			Net::PushChange(NetChange::CHANGE_FLAGS);
 	}
@@ -1618,7 +1619,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 	if(Net::IsLocal() && end_buffs)
 	{
 		// usuñ tymczasowe bufy
-		for(Unit& unit : Team.members)
+		for(Unit& unit : team->members)
 			unit.EndEffects();
 	}
 

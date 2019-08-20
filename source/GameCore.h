@@ -76,6 +76,7 @@ class SaveLoad;
 class ScriptManager;
 class ServerPanel;
 class StatsPanel;
+class Team;
 class TeamPanel;
 class World;
 class WorldMapGui;
@@ -236,6 +237,7 @@ namespace global
 	extern Pathfinding* pathfinding;
 	extern QuestManager* quest_mgr;
 	extern ScriptManager* script_mgr;
+	extern Team* team;
 	extern World* world;
 }
 using namespace global;

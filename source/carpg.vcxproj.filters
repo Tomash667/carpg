@@ -1137,9 +1137,6 @@
     <ClInclude Include="World.h">
       <Filter>components</Filter>
     </ClInclude>
-    <ClInclude Include="system\DialogLoader.h">
-      <Filter>system\dialogs</Filter>
-    </ClInclude>
     <ClInclude Include="system\DialogLoader.h" />
     <ClInclude Include="Level.h">
       <Filter>components</Filter>
@@ -1164,6 +1161,9 @@
     </ClInclude>
     <ClInclude Include="system\ClassLoader.h">
       <Filter>system\classes</Filter>
+    </ClInclude>
+    <ClInclude Include="system\DialogLoader.h">
+      <Filter>system\dialogs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

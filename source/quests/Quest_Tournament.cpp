@@ -319,7 +319,7 @@ void Quest_Tournament::Update(float dt)
 
 		// team members joining
 		const Vec3& walk_pt = game_level->city_ctx->FindBuilding(BuildingGroup::BG_ARENA)->walk_pt;
-		for(Unit& unit : Team.members)
+		for(Unit& unit : team->members)
 		{
 			if(unit.busy == Unit::Busy_No && Vec3::Distance2d(unit.pos, master->pos) <= 16.f && !unit.dont_attack && ShouldJoin(unit))
 			{

@@ -242,7 +242,7 @@ void OutsideLocationGenerator::OnEnter()
 		Vec3 pos = team_pos + Vec3(sin(team_dir + PI) * 8, 0, cos(team_dir + PI) * 8);
 		for(int i = 0; i < count; ++i)
 		{
-			Unit* u = game_level->SpawnUnitNearLocation(*outside, pos, *ud, &Team.leader->pos, 6, 4.f);
+			Unit* u = game_level->SpawnUnitNearLocation(*outside, pos, *ud, &team->leader->pos, 6, 4.f);
 			u->assist = true;
 		}
 	}

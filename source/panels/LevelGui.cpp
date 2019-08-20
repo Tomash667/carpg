@@ -159,7 +159,7 @@ void LevelGui::Draw(ControlDrawData*)
 void LevelGui::DrawFront()
 {
 	// death screen
-	if(!Team.IsAnyoneAlive())
+	if(!team->IsAnyoneAlive())
 	{
 		DrawDeathScreen();
 		return;
@@ -483,7 +483,7 @@ void LevelGui::DrawFront()
 					enabled = true;
 				}
 				else
-					enabled = pc.unit->HaveItem(shortcut.item, Team.HaveOtherActiveTeamMember());
+					enabled = pc.unit->HaveItem(shortcut.item, team->HaveOtherActiveTeamMember());
 			}
 			else if(shortcut.item->IsStackable())
 			{

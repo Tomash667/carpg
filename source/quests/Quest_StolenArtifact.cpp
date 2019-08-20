@@ -102,7 +102,7 @@ void Quest_StolenArtifact::SetProgress(int prog2)
 			RemoveElementTry<Quest_Dungeon*>(quest_mgr->quests_timeout, this);
 			OnUpdate(game->txQuest[94]);
 			int reward = GetReward();
-			Team.AddReward(reward, reward * 3);
+			team->AddReward(reward, reward * 3);
 			DialogContext::current->talker->temporary = true;
 			DialogContext::current->talker->AddItem(&quest_item, 1, true);
 			DialogContext::current->pc->unit->RemoveQuestItem(refid);

@@ -97,7 +97,7 @@ void Quest_CampNearCity::SetProgress(int prog2)
 			state = Quest::Completed;
 			((City&)GetStartLocation()).quest_captain = CityQuestState::None;
 			int reward = GetReward();
-			Team.AddReward(reward, reward * 3);
+			team->AddReward(reward, reward * 3);
 			OnUpdate(game->txQuest[66]);
 		}
 		break;

@@ -73,7 +73,7 @@ void Quest_Crazies::SetProgress(int prog2)
 			GetTargetLocation().active_quest = nullptr;
 
 			crazies_state = State::End;
-			Team.AddExp(12000);
+			team->AddExp(12000);
 
 			OnUpdate(game->txQuest[256]);
 			quest_mgr->EndUniqueQuest();
@@ -159,7 +159,7 @@ void Quest_Crazies::CheckStone()
 {
 	check_stone = false;
 
-	if(!Team.FindItemInTeam(stone, -1, nullptr, nullptr, false))
+	if(!team->FindItemInTeam(stone, -1, nullptr, nullptr, false))
 	{
 		// usuñ kamieñ z gry o ile to nie encounter bo i tak jest resetowany
 		if(game_level->location->type != L_ENCOUNTER)
@@ -182,8 +182,8 @@ void Quest_Crazies::CheckStone()
 		}
 
 		// dodaj kamieñ przywódcy
-		Team.leader->AddItem(stone, 1, false);
-		game_gui->messages->AddGameMsg3(Team.leader->player, GMS_ADDED_CURSED_STONE);
+		team->leader->AddItem(stone, 1, false);
+		game_gui->messages->AddGameMsg3(team->leader->player, GMS_ADDED_CURSED_STONE);
 	}
 
 	if(crazies_state == State::TalkedWithCrazy)

@@ -151,9 +151,9 @@ void World::Update(int days, UpdateMode mode)
 		game->UpdateQuests(days);
 
 	if(mode == UM_TRAVEL)
-		Team.Update(1, true);
+		team->Update(1, true);
 	else if(mode == UM_NORMAL)
-		Team.Update(days, false);
+		team->Update(days, false);
 
 	// end of game
 	if(year >= 160)
@@ -2210,7 +2210,7 @@ void World::UpdateTravel(float dt)
 		// end of travel
 		if(Net::IsLocal())
 		{
-			Team.OnTravel(Vec2::Distance(world_pos, travel_target_pos));
+			team->OnTravel(Vec2::Distance(world_pos, travel_target_pos));
 			EndTravel();
 		}
 		else
@@ -2222,7 +2222,7 @@ void World::UpdateTravel(float dt)
 		float travel_dist = travel_timer / dist * TRAVEL_SPEED * 3;
 		world_pos = travel_start_pos + dir * travel_dist;
 		if(Net::IsLocal())
-			Team.OnTravel(travel_dist);
+			team->OnTravel(travel_dist);
 
 		// reveal nearby locations, check encounters
 		reveal_timer += dt;

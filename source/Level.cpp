@@ -3785,7 +3785,7 @@ bool Level::KillAll(int mode, Unit& unit, Unit* ignore)
 //=================================================================================================
 void Level::AddPlayerTeam(const Vec3& pos, float rot, bool reenter, bool hide_weapon)
 {
-	for(Unit& unit : Team.members)
+	for(Unit& unit : team->members)
 	{
 		if(!reenter)
 		{
@@ -3844,7 +3844,7 @@ void Level::UpdateDungeonMinimap(bool in_level)
 {
 	if(minimap_opened_doors)
 	{
-		for(Unit& unit : Team.active_members)
+		for(Unit& unit : team->active_members)
 		{
 			if(unit.IsPlayer())
 				FOV::DungeonReveal(Int2(int(unit.pos.x / 2), int(unit.pos.z / 2)), minimap_reveal);
@@ -4392,7 +4392,7 @@ CanLeaveLocationResult Level::CanLeaveLocation(Unit& unit)
 
 	if(city_ctx)
 	{
-		for(Unit& u : Team.members)
+		for(Unit& u : team->members)
 		{
 			if(u.summoner != nullptr)
 				continue;
@@ -4417,7 +4417,7 @@ CanLeaveLocationResult Level::CanLeaveLocation(Unit& unit)
 	}
 	else
 	{
-		for(Unit& u : Team.members)
+		for(Unit& u : team->members)
 		{
 			if(u.summoner != nullptr)
 				continue;

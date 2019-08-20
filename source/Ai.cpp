@@ -474,7 +474,7 @@ void Game::UpdateAi(float dt)
 					if(u.assist)
 					{
 						order = ORDER_FOLLOW;
-						order_unit = Team.GetLeader();
+						order_unit = team->GetLeader();
 					}
 					if(ai.goto_inn)
 						order = ORDER_GOTO_INN;
@@ -560,7 +560,7 @@ void Game::UpdateAi(float dt)
 								}
 								else
 								{
-									for(Unit& unit : Team.members)
+									for(Unit& unit : team->members)
 									{
 										if(&unit != &u && Vec3::Distance(unit.pos, u.pos) < 1.f)
 										{
@@ -626,7 +626,7 @@ void Game::UpdateAi(float dt)
 						case Unit::MOVE_RUN_WHEN_NEAR_TEAM:
 							{
 								float dist;
-								Unit* near_team = Team.GetNearestTeamMember(u.pos, &dist);
+								Unit* near_team = team->GetNearestTeamMember(u.pos, &dist);
 								if(dist < 4.f)
 									run_type = Run;
 								else if(dist < 5.f)
@@ -3161,12 +3161,12 @@ void Game::CheckAutoTalk(Unit& unit, float dt)
 
 	const bool leader_mode = (unit.auto_talk == AutoTalkMode::Leader);
 
-	for(Unit& u : Team.members)
+	for(Unit& u : team->members)
 	{
 		if(u.IsPlayer())
 		{
 			// if not leader (in leader mode) or busy - don't check this unit
-			if((leader_mode && &u != Team.leader)
+			if((leader_mode && &u != team->leader)
 				|| (u.player->dialog_ctx->dialog_mode || u.busy != Unit::Busy_No
 				|| !u.IsStanding() || u.player->action != PlayerAction::None))
 				continue;

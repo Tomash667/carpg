@@ -1292,18 +1292,18 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		int cost = talker->hero->JoinCost();
 		pc->unit->ModGold(-cost);
 		talker->gold += cost;
-		Team.AddTeamMember(talker, false);
+		team->AddTeamMember(talker, false);
 		talker->temporary = false;
-		if(Team.free_recruits > 0)
-			--Team.free_recruits;
+		if(team->free_recruits > 0)
+			--team->free_recruits;
 		talker->hero->SetupMelee();
 		if(Net::IsOnline() && !is_local)
 			pc->player_info->UpdateGold();
 	}
 	else if(strcmp(msg, "recruit_free") == 0)
 	{
-		Team.AddTeamMember(talker, false);
-		--Team.free_recruits;
+		team->AddTeamMember(talker, false);
+		--team->free_recruits;
 		talker->temporary = false;
 		talker->hero->SetupMelee();
 	}
@@ -1343,20 +1343,20 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 	}
 	else if(strcmp(msg, "kick_npc") == 0)
 	{
-		Team.RemoveTeamMember(talker);
+		team->RemoveTeamMember(talker);
 		talker->SetOrder(game_level->city_ctx ? ORDER_WANDER : ORDER_LEAVE);
 		talker->hero->credit = 0;
 		talker->ai->city_wander = true;
 		talker->ai->loc_timer = Random(5.f, 10.f);
-		Team.CheckCredit(false);
+		team->CheckCredit(false);
 		talker->temporary = true;
 	}
 	else if(strcmp(msg, "give_item_credit") == 0)
-		Team.TeamShareGiveItemCredit(*this);
+		team->TeamShareGiveItemCredit(*this);
 	else if(strcmp(msg, "sell_item") == 0)
-		Team.TeamShareSellItem(*this);
+		team->TeamShareSellItem(*this);
 	else if(strcmp(msg, "share_decline") == 0)
-		Team.TeamShareDecline(*this);
+		team->TeamShareDecline(*this);
 	else if(strcmp(msg, "force_attack") == 0)
 	{
 		talker->dont_attack = false;
@@ -1402,13 +1402,13 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 	}
 	else if(strcmp(msg, "captive_join") == 0)
 	{
-		Team.AddTeamMember(talker, true);
+		team->AddTeamMember(talker, true);
 		talker->dont_attack = true;
 	}
 	else if(strcmp(msg, "captive_escape") == 0)
 	{
 		if(talker->hero->team_member)
-			Team.RemoveTeamMember(talker);
+			team->RemoveTeamMember(talker);
 		talker->SetOrder(ORDER_LEAVE);
 		talker->dont_attack = false;
 	}
@@ -1501,7 +1501,7 @@ bool DialogContext::ExecuteSpecialIf(cstring msg)
 	else if(strcmp(msg, "is_inside_dungeon") == 0)
 		return game_level->local_area->area_type == LevelArea::Type::Inside;
 	else if(strcmp(msg, "is_team_full") == 0)
-		return Team.GetActiveTeamSize() >= Team.GetMaxSize();
+		return team->GetActiveTeamSize() >= team->GetMaxSize();
 	else if(strcmp(msg, "can_join") == 0)
 		return pc->unit->gold >= talker->hero->JoinCost();
 	else if(strcmp(msg, "is_near_arena") == 0)
@@ -1523,7 +1523,7 @@ bool DialogContext::ExecuteSpecialIf(cstring msg)
 			return true;
 	}
 	else if(strcmp(msg, "is_free_recruit") == 0)
-		return talker->level <= 8 && Team.free_recruits > 0;
+		return talker->level <= 8 && team->free_recruits > 0;
 	else if(strcmp(msg, "have_unique_quest") == 0)
 	{
 		if(((quest_mgr->quest_orcs2->orcs_state == Quest_Orcs2::State::Accepted || quest_mgr->quest_orcs2->orcs_state == Quest_Orcs2::State::OrcJoined)

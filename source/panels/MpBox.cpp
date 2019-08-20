@@ -87,7 +87,7 @@ void MpBox::OnInput(const string& str)
 			// send text to server / other players
 			BitStreamWriter f;
 			f << ID_SAY;
-			f.WriteCasted<byte>(Team.my_id);
+			f.WriteCasted<byte>(team->my_id);
 			f << str;
 			if(Net::IsServer())
 				net->SendAll(f, MEDIUM_PRIORITY, RELIABLE);

@@ -473,7 +473,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			if(Net::IsLocal())
 			{
 				if(is_team)
-					Team.AddGold(count);
+					team->AddGold(count);
 				else
 					game->pc->unit->gold = max(game->pc->unit->gold + count, 0);
 			}
@@ -808,12 +808,12 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			Net::PushChange(NetChange::CHEAT_SUICIDE);
 		break;
 	case CMD_CITIZEN:
-		if(Team.is_bandit || Team.crazies_attack)
+		if(team->is_bandit || team->crazies_attack)
 		{
 			if(Net::IsLocal())
 			{
-				Team.is_bandit = false;
-				Team.crazies_attack = false;
+				team->is_bandit = false;
+				team->crazies_attack = false;
 				if(Net::IsOnline())
 					Net::PushChange(NetChange::CHANGE_FLAGS);
 			}
@@ -1029,13 +1029,13 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			else if(t.NextLine())
 			{
 				const string& text = t.MustGetItem();
-				if(info->id == Team.my_id)
+				if(info->id == team->my_id)
 					Msg("Whispers in your head: %s", text.c_str());
 				else
 				{
 					BitStreamWriter f;
 					f << ID_WHISPER;
-					f.WriteCasted<byte>(Net::IsServer() ? Team.my_id : info->id);
+					f.WriteCasted<byte>(Net::IsServer() ? team->my_id : info->id);
 					f << text;
 					if(Net::IsServer())
 						net->SendServer(f, MEDIUM_PRIORITY, RELIABLE, info->adr);
@@ -1100,9 +1100,9 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			PlayerInfo* info = net->FindPlayer(player_name);
 			if(!info)
 				Msg("No player with nick '%s'.", player_name.c_str());
-			else if(Team.leader_id == info->id)
+			else if(team->leader_id == info->id)
 				Msg("Player '%s' is already a leader.", player_name.c_str());
-			else if(!Net::IsServer() && Team.leader_id != Team.my_id)
+			else if(!Net::IsServer() && team->leader_id != team->my_id)
 				Msg("You can't change a leader."); // must be current leader or server
 			else
 			{
@@ -1110,7 +1110,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 				{
 					if(Net::IsServer())
 					{
-						Team.leader_id = info->id;
+						team->leader_id = info->id;
 						game_gui->server->AddLobbyUpdate(Int2(Lobby_ChangeLeader, 0));
 					}
 					else
@@ -1124,11 +1124,11 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 
 					if(Net::IsServer())
 					{
-						Team.leader_id = info->id;
-						Team.leader = info->u;
+						team->leader_id = info->id;
+						team->leader = info->u;
 
 						if(game_gui->world_map->dialog_enc)
-							game_gui->world_map->dialog_enc->bts[0].state = (Team.IsLeader() ? Button::NONE : Button::DISABLED);
+							game_gui->world_map->dialog_enc->bts[0].state = (team->IsLeader() ? Button::NONE : Button::DISABLED);
 					}
 				}
 
@@ -1215,7 +1215,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			const string& text = t.MustGetItem();
 			BitStreamWriter f;
 			f << ID_SAY;
-			f.WriteCasted<byte>(Team.my_id);
+			f.WriteCasted<byte>(team->my_id);
 			f << text;
 			if(Net::IsServer())
 				net->SendAll(f, MEDIUM_PRIORITY, RELIABLE);
