@@ -74,7 +74,7 @@ LevelGui::LevelGui() : debug_info_size(0, 0), profiler_size(0, 0), use_cursor(fa
 	scrollbar.parent = this;
 	visible = false;
 
-	tooltip.Init(TooltipGetText(this, &LevelGui::GetTooltip));
+	tooltip.Init(TooltipController::Callback(this, &LevelGui::GetTooltip));
 }
 
 //=================================================================================================
@@ -1334,7 +1334,7 @@ void LevelGui::UpdateScrollbar(int choices)
 }
 
 //=================================================================================================
-void LevelGui::GetTooltip(TooltipController*, int _group, int id)
+void LevelGui::GetTooltip(TooltipController*, int _group, int id, bool refresh)
 {
 	TooltipGroup group = (TooltipGroup)_group;
 

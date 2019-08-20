@@ -125,7 +125,7 @@ private:
 	void DrawUnitInfo(cstring text, Unit& unit, const Vec3& pos, int alpha);
 	int GetShortcutIndex();
 	void UpdateSpeechBubbles(float dt);
-	void GetTooltip(TooltipController*, int group, int id);
+	void GetTooltip(TooltipController*, int group, int id, bool refresh);
 	void SortUnits();
 	void UpdatePlayerView(float dt);
 

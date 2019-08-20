@@ -1371,7 +1371,7 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 			count = 4;
 		if(count > 0)
 		{
-			std::random_shuffle(details.begin(), details.end(), MyRand);
+			Shuffle(details.begin(), details.end());
 			while(count && !details.empty())
 			{
 				const Mesh::Point& pt = *details.back();

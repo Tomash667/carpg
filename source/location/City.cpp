@@ -466,7 +466,7 @@ void City::GenerateCityBuildings(vector<Building*>& buildings, bool required, bo
 			{
 				int new_pos = (int)buildings.size();
 				if(new_pos - shuffle_start >= 2)
-					std::random_shuffle(buildings.begin() + shuffle_start, buildings.end(), MyRand);
+					Shuffle(buildings.begin() + shuffle_start, buildings.end());
 				shuffle_start = -1;
 			}
 			break;

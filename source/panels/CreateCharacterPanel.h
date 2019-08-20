@@ -82,7 +82,7 @@ private:
 	void UpdateUnit(float dt);
 	void OnChangeClass(int index);
 	cstring GetText(int group, int id);
-	void GetTooltip(TooltipController* tooltip, int group, int id);
+	void GetTooltip(TooltipController* tooltip, int group, int id, bool refresh);
 	void ClassChanged();
 	void OnPickSkill(int group, int id);
 	void OnPickPerk(int group, int id);

@@ -752,7 +752,7 @@ void Quest_Tournament::VerifyUnit(Unit* unit)
 //=================================================================================================
 void Quest_Tournament::StartRound()
 {
-	std::random_shuffle(units.begin(), units.end(), MyRand);
+	Shuffle(units.begin(), units.end());
 	pairs.clear();
 
 	Unit* first = skipped_unit;

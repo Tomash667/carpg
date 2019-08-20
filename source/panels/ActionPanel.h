@@ -19,7 +19,7 @@ public:
 private:
 	void DrawGroup(cstring text);
 	void UpdateGroup(uint count, int group, int& group_result, int& id_result);
-	void GetTooltip(TooltipController* tooltip, int group, int id);
+	void GetTooltip(TooltipController* tooltip, int group, int id, bool refresh);
 	int ConvertToShortcutSpecial(int group, int id);
 
 	TooltipController tooltip;

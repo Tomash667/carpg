@@ -1227,7 +1227,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 
 			if(!active_locations.empty())
 			{
-				std::random_shuffle(active_locations.begin(), active_locations.end(), MyRand);
+				Shuffle(active_locations.begin(), active_locations.end());
 				std::sort(active_locations.begin(), active_locations.end(),
 					[](const pair<int, bool>& l1, const pair<int, bool>& l2) -> bool { return l1.second < l2.second; });
 				update_locations = 0;

@@ -25,7 +25,7 @@ public:
 
 private:
 	void SetText();
-	void GetTooltip(TooltipController* tooltip, int group, int id);
+	void GetTooltip(TooltipController* tooltip, int group, int id, bool refresh);
 
 	TooltipController tooltip;
 	FlowContainer flowAttribs, flowStats, flowSkills, flowFeats;

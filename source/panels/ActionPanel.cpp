@@ -28,7 +28,7 @@ enum OtherAction
 ActionPanel::ActionPanel()
 {
 	visible = false;
-	tooltip.Init(TooltipGetText(this, &ActionPanel::GetTooltip));
+	tooltip.Init(TooltipController::Callback(this, &ActionPanel::GetTooltip));
 }
 
 //=================================================================================================
@@ -249,7 +249,7 @@ void ActionPanel::UpdateGroup(uint count, int group, int& group_result, int& id_
 }
 
 //=================================================================================================
-void ActionPanel::GetTooltip(TooltipController*, int group, int id)
+void ActionPanel::GetTooltip(TooltipController*, int group, int id, bool refresh)
 {
 	if(group == G_NONE)
 	{

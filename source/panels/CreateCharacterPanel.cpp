@@ -162,7 +162,7 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : DialogBox(info), 
 	flow_scroll.total = 100;
 	flow_scroll.part = 10;
 
-	tooltip.Init(TooltipGetText(this, &CreateCharacterPanel::GetTooltip));
+	tooltip.Init(TooltipController::Callback(this, &CreateCharacterPanel::GetTooltip));
 
 	flowSkills.size = Int2(198, 235 + 18);
 	flowSkills.pos = Int2(16, 73 - 18);
@@ -1060,7 +1060,7 @@ cstring CreateCharacterPanel::GetText(int group, int id)
 }
 
 //=================================================================================================
-void CreateCharacterPanel::GetTooltip(TooltipController* ptr_tool, int group, int id)
+void CreateCharacterPanel::GetTooltip(TooltipController* ptr_tool, int group, int id, bool refresh)
 {
 	TooltipController& tool = *ptr_tool;
 
@@ -1394,7 +1394,7 @@ void CreateCharacterPanel::PickAttribute(cstring text, Perk perk)
 
 	PickItemDialogParams params;
 	params.event = DialogEvent(this, &CreateCharacterPanel::OnPickAttributeForPerk);
-	params.get_tooltip = TooltipGetText(this, &CreateCharacterPanel::GetTooltip);
+	params.get_tooltip = TooltipController::Callback(this, &CreateCharacterPanel::GetTooltip);
 	params.parent = this;
 	params.text = text;
 
@@ -1411,7 +1411,7 @@ void CreateCharacterPanel::PickSkill(cstring text, Perk perk)
 
 	PickItemDialogParams params;
 	params.event = DialogEvent(this, &CreateCharacterPanel::OnPickSkillForPerk);
-	params.get_tooltip = TooltipGetText(this, &CreateCharacterPanel::GetTooltip);
+	params.get_tooltip = TooltipController::Callback(this, &CreateCharacterPanel::GetTooltip);
 	params.parent = this;
 	params.text = text;
 

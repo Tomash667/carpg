@@ -390,7 +390,7 @@ InventoryPanel::InventoryPanel(Inventory& base) : base(base), last_item(nullptr)
 //=================================================================================================
 void InventoryPanel::InitTooltip()
 {
-	base.tooltip.Init(TooltipGetText(this, &InventoryPanel::GetTooltip));
+	base.tooltip.Init(TooltipController::Callback(this, &InventoryPanel::GetTooltip));
 }
 
 //=================================================================================================
@@ -1692,7 +1692,7 @@ void InventoryPanel::FormatBox(int group, string& text, string& small_text, Text
 }
 
 //=================================================================================================
-void InventoryPanel::GetTooltip(TooltipController*, int group, int)
+void InventoryPanel::GetTooltip(TooltipController*, int group, int, bool refresh)
 {
 	if(group == INDEX_INVALID)
 	{
@@ -1704,7 +1704,7 @@ void InventoryPanel::GetTooltip(TooltipController*, int group, int)
 	base.tooltip.anything = true;
 	base.tooltip.big_text.clear();
 
-	FormatBox(group, base.tooltip.text, base.tooltip.small_text, base.tooltip.img, false);
+	FormatBox(group, base.tooltip.text, base.tooltip.small_text, base.tooltip.img, refresh);
 }
 
 //=================================================================================================

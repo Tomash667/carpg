@@ -32,7 +32,7 @@ enum Stats
 StatsPanel::StatsPanel() : last_update(0.f)
 {
 	visible = false;
-	tooltip.Init(TooltipGetText(this, &StatsPanel::GetTooltip));
+	tooltip.Init(TooltipController::Callback(this, &StatsPanel::GetTooltip));
 }
 
 //=================================================================================================
@@ -217,7 +217,7 @@ void StatsPanel::SetText()
 }
 
 //=================================================================================================
-void StatsPanel::GetTooltip(TooltipController*, int group, int id)
+void StatsPanel::GetTooltip(TooltipController*, int group, int id, bool refresh)
 {
 	tooltip.anything = true;
 	tooltip.img = nullptr;
