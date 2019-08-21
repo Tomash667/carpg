@@ -553,27 +553,6 @@
     <ClCompile Include="stats\MusicTrack.cpp">
       <Filter>stats</Filter>
     </ClCompile>
-    <ClCompile Include="Pathfinding.cpp">
-      <Filter>components</Filter>
-    </ClCompile>
-    <ClCompile Include="CommandParser.cpp">
-      <Filter>components</Filter>
-    </ClCompile>
-    <ClCompile Include="World.cpp">
-      <Filter>components</Filter>
-    </ClCompile>
-    <ClCompile Include="Level.cpp">
-      <Filter>components</Filter>
-    </ClCompile>
-    <ClCompile Include="FOV.cpp">
-      <Filter>components</Filter>
-    </ClCompile>
-    <ClCompile Include="Team.cpp">
-      <Filter>components</Filter>
-    </ClCompile>
-    <ClCompile Include="GameStats.cpp">
-      <Filter>components</Filter>
-    </ClCompile>
     <ClCompile Include="panels\LevelGui.cpp">
       <Filter>panels</Filter>
     </ClCompile>
@@ -585,6 +564,27 @@
     </ClCompile>
     <ClCompile Include="system\ClassLoader.cpp">
       <Filter>system\classes</Filter>
+    </ClCompile>
+    <ClCompile Include="components\CommandParser.cpp">
+      <Filter>components</Filter>
+    </ClCompile>
+    <ClCompile Include="components\FOV.cpp">
+      <Filter>components</Filter>
+    </ClCompile>
+    <ClCompile Include="components\GameStats.cpp">
+      <Filter>components</Filter>
+    </ClCompile>
+    <ClCompile Include="components\Level.cpp">
+      <Filter>components</Filter>
+    </ClCompile>
+    <ClCompile Include="components\Pathfinding.cpp">
+      <Filter>components</Filter>
+    </ClCompile>
+    <ClCompile Include="components\Team.cpp">
+      <Filter>components</Filter>
+    </ClCompile>
+    <ClCompile Include="components\World.cpp">
+      <Filter>components</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1125,31 +1125,7 @@
     <ClInclude Include="stats\MusicTrack.h">
       <Filter>stats</Filter>
     </ClInclude>
-    <ClInclude Include="Pathfinding.h">
-      <Filter>components</Filter>
-    </ClInclude>
-    <ClInclude Include="CommandParser.h">
-      <Filter>components</Filter>
-    </ClInclude>
-    <ClInclude Include="ConsoleCommands.h">
-      <Filter>components</Filter>
-    </ClInclude>
-    <ClInclude Include="World.h">
-      <Filter>components</Filter>
-    </ClInclude>
     <ClInclude Include="system\DialogLoader.h" />
-    <ClInclude Include="Level.h">
-      <Filter>components</Filter>
-    </ClInclude>
-    <ClInclude Include="FOV.h">
-      <Filter>components</Filter>
-    </ClInclude>
-    <ClInclude Include="Team.h">
-      <Filter>components</Filter>
-    </ClInclude>
-    <ClInclude Include="GameStats.h">
-      <Filter>components</Filter>
-    </ClInclude>
     <ClInclude Include="panels\LevelGui.h">
       <Filter>panels</Filter>
     </ClInclude>
@@ -1164,6 +1140,30 @@
     </ClInclude>
     <ClInclude Include="system\DialogLoader.h">
       <Filter>system\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="components\CommandParser.h">
+      <Filter>components</Filter>
+    </ClInclude>
+    <ClInclude Include="components\ConsoleCommands.h">
+      <Filter>components</Filter>
+    </ClInclude>
+    <ClInclude Include="components\FOV.h">
+      <Filter>components</Filter>
+    </ClInclude>
+    <ClInclude Include="components\GameStats.h">
+      <Filter>components</Filter>
+    </ClInclude>
+    <ClInclude Include="components\Level.h">
+      <Filter>components</Filter>
+    </ClInclude>
+    <ClInclude Include="components\Pathfinding.h">
+      <Filter>components</Filter>
+    </ClInclude>
+    <ClInclude Include="components\Team.h">
+      <Filter>components</Filter>
+    </ClInclude>
+    <ClInclude Include="components\World.h">
+      <Filter>components</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

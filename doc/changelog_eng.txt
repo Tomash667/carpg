@@ -9,6 +9,7 @@ Version 0.12 (???):
 + update libraries: FMod 1.10.14
 - in multiplayer redoing character creation was resetting to standard inventory
 - eating herbs have now correct animation and sounds
+- door sounds was playing very rare when someone else used door in mp
 
 --------------------------------------------------------------------------------
 Wersja 0.11.1 (2019-08-12):

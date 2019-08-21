@@ -2405,7 +2405,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						ok = false;
 				}
 
-				if(ok && Rand() == 0)
+				if(ok && Rand() % 2 == 0)
 				{
 					Sound* sound;
 					if(is_closing && Rand() % 2 == 0)
@@ -5545,7 +5545,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 								ok = false;
 						}
 
-						if(ok && Rand() == 0)
+						if(ok && Rand() % 2 == 0)
 						{
 							Sound* sound;
 							if(is_closing && Rand() % 2 == 0)

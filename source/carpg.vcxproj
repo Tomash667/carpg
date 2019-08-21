@@ -55,7 +55,7 @@
       <SDLCheck>true</SDLCheck>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\carpglib\include;..\carpglib\external\Bullet\src;..\carpglib\external\DirectX\Include;..\carpglib\external\DirectXMath\Inc;..\carpglib\external\FMod\inc;..\carpglib\external\Visual Leak Detector\include;..\carpglib\external\zlib;.;entity;events;generator;helpers;location;net;panels;quests;script;stats;system;resource;..\external\angelscript_sdk\angelscript\include;..\external\angelscript_sdk\add_on;..\external\json;..\external\SLikeNet\Source\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\carpglib\include;..\carpglib\external\Bullet\src;..\carpglib\external\DirectX\Include;..\carpglib\external\DirectXMath\Inc;..\carpglib\external\FMod\inc;..\carpglib\external\Visual Leak Detector\include;..\carpglib\external\zlib;.;components;entity;events;generator;helpers;location;net;panels;quests;script;stats;system;resource;..\external\angelscript_sdk\angelscript\include;..\external\angelscript_sdk\add_on;..\external\json;..\external\SLikeNet\Source\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>false</MultiProcessorCompilation>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <AdditionalOptions>/w34706 /w34702 /w34189 /w34265 /w34266 /w34928 /Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
@@ -92,7 +92,7 @@
       <SDLCheck>true</SDLCheck>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\carpglib\include;..\carpglib\external\Bullet\src;..\carpglib\external\DirectX\Include;..\carpglib\external\DirectXMath\Inc;..\carpglib\external\FMod\inc;..\carpglib\external\Visual Leak Detector\include;..\carpglib\external\zlib;.;entity;events;generator;helpers;location;net;panels;quests;script;stats;system;resource;..\external\angelscript_sdk\angelscript\include;..\external\angelscript_sdk\add_on;..\external\json;..\external\SLikeNet\Source\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\carpglib\include;..\carpglib\external\Bullet\src;..\carpglib\external\DirectX\Include;..\carpglib\external\DirectXMath\Inc;..\carpglib\external\FMod\inc;..\carpglib\external\Visual Leak Detector\include;..\carpglib\external\zlib;.;components;entity;events;generator;helpers;location;net;panels;quests;script;stats;system;resource;..\external\angelscript_sdk\angelscript\include;..\external\angelscript_sdk\add_on;..\external\json;..\external\SLikeNet\Source\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -126,9 +126,15 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="components\CommandParser.h" />
+    <ClInclude Include="components\ConsoleCommands.h" />
+    <ClInclude Include="components\FOV.h" />
+    <ClInclude Include="components\GameStats.h" />
+    <ClInclude Include="components\Level.h" />
+    <ClInclude Include="components\Pathfinding.h" />
+    <ClInclude Include="components\Team.h" />
+    <ClInclude Include="components\World.h" />
     <ClInclude Include="ErrorHandler.h" />
-    <ClInclude Include="CommandParser.h" />
-    <ClInclude Include="ConsoleCommands.h" />
     <ClInclude Include="entity\BloodType.h" />
     <ClInclude Include="entity\Collision.h" />
     <ClInclude Include="entity\Encounter.h" />
@@ -143,9 +149,7 @@
     <ClInclude Include="entity\Tile.h" />
     <ClInclude Include="entity\UnitEventHandler.h" />
     <ClInclude Include="events\Arena.h" />
-    <ClInclude Include="FOV.h" />
     <ClInclude Include="GameCore.h" />
-    <ClInclude Include="GameStats.h" />
     <ClInclude Include="generator\CampGenerator.h" />
     <ClInclude Include="generator\CaveGenerator.h" />
     <ClInclude Include="generator\DungeonGenerator.h" />
@@ -163,7 +167,6 @@
     <ClInclude Include="helpers\CombatHelper.h" />
     <ClInclude Include="helpers\ItemHelper.h" />
     <ClInclude Include="helpers\LoadingHandler.h" />
-    <ClInclude Include="Level.h" />
     <ClInclude Include="net\BitStreamFunc.h" />
     <ClInclude Include="net\EntityInterpolator.h" />
     <ClInclude Include="net\GamePacket.h" />
@@ -174,7 +177,6 @@
     <ClInclude Include="panels\ActionPanel.h" />
     <ClInclude Include="panels\BookPanel.h" />
     <ClInclude Include="panels\GameGui.h" />
-    <ClInclude Include="Pathfinding.h" />
     <ClInclude Include="quests\QuestHandler.h" />
     <ClInclude Include="quests\QuestConsts.h" />
     <ClInclude Include="quests\Quest_Artifacts.h" />
@@ -311,6 +313,13 @@
     <ClInclude Include="system\ItemScript.h" />
     <ClInclude Include="system\ItemType.h" />
     <ClInclude Include="system\Spell.h" />
+    <ClCompile Include="components\CommandParser.cpp" />
+    <ClCompile Include="components\FOV.cpp" />
+    <ClCompile Include="components\GameStats.cpp" />
+    <ClCompile Include="components\Level.cpp" />
+    <ClCompile Include="components\Pathfinding.cpp" />
+    <ClCompile Include="components\Team.cpp" />
+    <ClCompile Include="components\World.cpp" />
     <ClCompile Include="entity\Encounter.cpp" />
     <ClCompile Include="GameFile.cpp" />
     <ClCompile Include="Settings.cpp" />
@@ -329,8 +338,6 @@
     <ClInclude Include="system\UnitData.h" />
     <ClInclude Include="system\UnitGroup.h" />
     <ClInclude Include="system\UnitLoader.h" />
-    <ClInclude Include="Team.h" />
-    <ClInclude Include="World.h" />
     <ClInclude Include="Pch.h" />
     <ClInclude Include="Utility.h" />
     <ClInclude Include="Version.h" />
@@ -338,7 +345,6 @@
   <ItemGroup>
     <ClCompile Include="ErrorHandler.cpp" />
     <ClCompile Include="Ai.cpp" />
-    <ClCompile Include="CommandParser.cpp" />
     <ClCompile Include="entity\Camera.cpp" />
     <ClCompile Include="entity\ItemContainer.cpp" />
     <ClCompile Include="entity\Portal.cpp" />
@@ -346,7 +352,6 @@
     <ClCompile Include="entity\TerrainTile.cpp" />
     <ClCompile Include="entity\Tile.cpp" />
     <ClCompile Include="events\Arena.cpp" />
-    <ClCompile Include="GameStats.cpp" />
     <ClCompile Include="generator\CampGenerator.cpp" />
     <ClCompile Include="generator\CaveGenerator.cpp" />
     <ClCompile Include="generator\DungeonGenerator.cpp" />
@@ -364,7 +369,6 @@
     <ClCompile Include="helpers\CombatHelper.cpp" />
     <ClCompile Include="helpers\ItemHelper.cpp" />
     <ClCompile Include="helpers\LoadingHandler.cpp" />
-    <ClCompile Include="Level.cpp" />
     <ClCompile Include="location\LevelArea.cpp" />
     <ClCompile Include="net\BitStreamFunc.cpp" />
     <ClCompile Include="net\EntityInterpolator.cpp" />
@@ -375,7 +379,6 @@
     <ClCompile Include="panels\ActionPanel.cpp" />
     <ClCompile Include="panels\BookPanel.cpp" />
     <ClCompile Include="panels\GameGui.cpp" />
-    <ClCompile Include="Pathfinding.cpp" />
     <ClCompile Include="quests\Quest_Artifacts.cpp" />
     <ClCompile Include="quests\Quest_Contest.cpp" />
     <ClCompile Include="quests\Quest_Scripted.cpp" />
@@ -409,7 +412,6 @@
     <ClCompile Include="entity\Trap.cpp" />
     <ClCompile Include="entity\Unit.cpp" />
     <ClCompile Include="entity\Usable.cpp" />
-    <ClCompile Include="FOV.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="Game2.cpp" />
     <ClCompile Include="GameCommon.cpp" />
@@ -505,8 +507,6 @@
     <ClCompile Include="system\UnitData.cpp" />
     <ClCompile Include="system\UnitGroup.cpp" />
     <ClCompile Include="system\UnitLoader.cpp" />
-    <ClCompile Include="Team.cpp" />
-    <ClCompile Include="World.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
