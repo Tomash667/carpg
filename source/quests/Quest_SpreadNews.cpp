@@ -18,8 +18,8 @@ bool SortEntries(const Quest_SpreadNews::Entry& e1, const Quest_SpreadNews::Entr
 //=================================================================================================
 void Quest_SpreadNews::Start()
 {
-	type = QuestType::Mayor;
-	quest_id = Q_SPREAD_NEWS;
+	category = QuestCategory::Mayor;
+	type = Q_SPREAD_NEWS;
 	start_loc = world->GetCurrentLocationIndex();
 	Vec2 pos = GetStartLocation().pos;
 	bool sorted = false;

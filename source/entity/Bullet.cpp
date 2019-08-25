@@ -23,8 +23,7 @@ void Bullet::Save(FileWriter& f)
 	f << tex_size;
 	f << yspeed;
 	f << poison_attack;
-	int refid = (owner ? owner->refid : -1);
-	f << refid;
+	f << (owner ? owner->id : -1);
 	if(spell)
 		f << spell->id;
 	else
@@ -33,12 +32,9 @@ void Bullet::Save(FileWriter& f)
 		f << tex->filename;
 	else
 		f.Write0();
-	refid = (trail ? trail->refid : -1);
-	f << refid;
-	refid = (trail2 ? trail2->refid : -1);
-	f << refid;
-	refid = (pe ? pe->refid : -1);
-	f << refid;
+	f << (trail ? trail->id : -1);
+	f << (trail2 ? trail2->id : -1);
+	f << (pe ? pe->id : -1);
 	f << remove;
 	f << backstab;
 	f << level;
@@ -61,9 +57,7 @@ void Bullet::Load(FileReader& f)
 	f >> tex_size;
 	f >> yspeed;
 	f >> poison_attack;
-	int refid;
-	f >> refid;
-	owner = Unit::GetByRefid(refid);
+	owner = Unit::GetById(f.Read<int>());
 	const string& spell_id = f.ReadString1();
 	if(!spell_id.empty())
 	{
@@ -78,12 +72,9 @@ void Bullet::Load(FileReader& f)
 		tex = res_mgr->Load<Texture>(tex_name);
 	else
 		tex = nullptr;
-	f >> refid;
-	trail = TrailParticleEmitter::GetByRefid(refid);
-	f >> refid;
-	trail2 = TrailParticleEmitter::GetByRefid(refid);
-	f >> refid;
-	pe = ParticleEmitter::GetByRefid(refid);
+	trail = TrailParticleEmitter::GetById(f.Read<int>());
+	trail2 = TrailParticleEmitter::GetById(f.Read<int>());
+	pe = ParticleEmitter::GetById(f.Read<int>());
 	f >> remove;
 	f >> level;
 	if(LOAD_VERSION >= V_0_10)

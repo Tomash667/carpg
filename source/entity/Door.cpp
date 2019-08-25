@@ -7,7 +7,7 @@
 #include "Collision.h"
 #include "Level.h"
 
-int Door::netid_counter;
+EntityType<Door>::Impl EntityType<Door>::impl;
 const float Door::WIDTH = 0.842f;
 const float Door::THICKNESS = 0.181f;
 const float Door::HEIGHT = 1.319f;
@@ -18,12 +18,12 @@ const float Door::BLOCKED_SOUND_DIST = 1.f;
 //=================================================================================================
 void Door::Save(FileWriter& f, bool local)
 {
+	f << id;
 	f << pos;
 	f << rot;
 	f << pt;
 	f << locked;
 	f << state;
-	f << netid;
 	f << door2;
 
 	if(local)
@@ -33,12 +33,17 @@ void Door::Save(FileWriter& f, bool local)
 //=================================================================================================
 void Door::Load(FileReader& f, bool local)
 {
+	if(LOAD_VERSION >= V_DEV)
+		f >> id;
+	Register();
+
 	f >> pos;
 	f >> rot;
 	f >> pt;
 	f >> locked;
 	f >> state;
-	f >> netid;
+	if(LOAD_VERSION < V_DEV)
+		f.Skip<int>(); // old netid
 	f >> door2;
 
 	if(local)
@@ -71,24 +76,24 @@ void Door::Load(FileReader& f, bool local)
 //=================================================================================================
 void Door::Write(BitStreamWriter& f)
 {
+	f << id;
 	f << pos;
 	f << rot;
 	f << pt;
 	f.WriteCasted<byte>(locked);
 	f.WriteCasted<byte>(state);
-	f << netid;
 	f << door2;
 }
 
 //=================================================================================================
 bool Door::Read(BitStreamReader& f)
 {
+	f >> id;
 	f >> pos;
 	f >> rot;
 	f >> pt;
 	f.ReadCasted<byte>(locked);
 	f.ReadCasted<byte>(state);
-	f >> netid;
 	f >> door2;
 	if(!f)
 		return false;
@@ -119,5 +124,6 @@ bool Door::Read(BitStreamReader& f)
 		mesh_inst->SetToEnd(mesh_inst->mesh->anims[0].name.c_str());
 	}
 
+	Register();
 	return true;
 }

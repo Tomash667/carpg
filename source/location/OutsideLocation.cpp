@@ -39,11 +39,6 @@ OutsideLocation::~OutsideLocation()
 {
 	delete[] tiles;
 	delete[] h;
-	DeleteElements(objects);
-	DeleteElements(units);
-	DeleteElements(chests);
-	DeleteElements(usables);
-	DeleteElements(items);
 }
 
 //=================================================================================================
@@ -136,12 +131,6 @@ bool OutsideLocation::Read(BitStreamReader& f)
 	}
 
 	return true;
-}
-
-//=================================================================================================
-void OutsideLocation::BuildRefidTables()
-{
-	LevelArea::BuildRefidTables();
 }
 
 //=================================================================================================

@@ -8,7 +8,7 @@
 struct QuestScheme
 {
 	string id;
-	QuestType type;
+	QuestCategory category;
 	vector<GameDialog*> dialogs;
 	vector<string> progress;
 	asITypeInfo* script_type;
@@ -17,7 +17,7 @@ struct QuestScheme
 	string code;
 	bool set_progress_use_prev;
 
-	QuestScheme() : type(QuestType::NotSet) {}
+	QuestScheme() : category(QuestCategory::NotSet) {}
 	~QuestScheme();
 	GameDialog* GetDialog(const string& id);
 	int GetProgress(const string& progress_id);

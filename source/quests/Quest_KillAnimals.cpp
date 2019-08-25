@@ -14,8 +14,8 @@
 //=================================================================================================
 void Quest_KillAnimals::Start()
 {
-	quest_id = Q_KILL_ANIMALS;
-	type = QuestType::Captain;
+	type = Q_KILL_ANIMALS;
+	category = QuestCategory::Captain;
 	start_loc = world->GetCurrentLocationIndex();
 }
 

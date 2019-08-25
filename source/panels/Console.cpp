@@ -25,7 +25,7 @@ Console::Console(const DialogInfo& info) : DialogBox(info), added(false)
 //=================================================================================================
 void Console::LoadData()
 {
-	tBackground = res_mgr->Load<Texture>("tlo_konsoli.jpg");
+	tBackground = res_mgr->Load<Texture>("console_bkg.jpg");
 }
 
 //=================================================================================================

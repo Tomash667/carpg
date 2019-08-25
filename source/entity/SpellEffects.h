@@ -17,34 +17,35 @@ struct Explo
 
 	void Save(FileWriter& f);
 	void Load(FileReader& f);
+	void Write(BitStreamWriter& f);
+	bool Read(BitStreamReader& f);
 };
 
 //-----------------------------------------------------------------------------
-struct ElectroLine
+struct Electro : public EntityType<Electro>
 {
-	vector<Vec3> pts;
-	float t;
-};
+	struct Line
+	{
+		vector<Vec3> pts;
+		float t;
+	};
 
-//-----------------------------------------------------------------------------
-struct Electro
-{
-	int netid;
 	Spell* spell;
-	Unit* owner;
-	vector<ElectroLine> lines;
-	vector<Unit*> hitted;
+	Entity<Unit> owner;
+	vector<Line> lines;
+	vector<Entity<Unit>> hitted;
 	float dmg;
 	bool valid, hitsome;
 	Vec3 start_pos;
 
 	static const int MIN_SIZE = 5;
 	static const int LINE_MIN_SIZE = 28;
-	static int netid_counter;
 
 	void AddLine(const Vec3& from, const Vec3& to);
 	void Save(FileWriter& f);
 	void Load(FileReader& f);
+	void Write(BitStreamWriter& f);
+	bool Read(BitStreamReader& f);
 };
 
 //-----------------------------------------------------------------------------

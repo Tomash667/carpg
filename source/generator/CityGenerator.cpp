@@ -2298,7 +2298,7 @@ void CityGenerator::OnEnter()
 
 	// spawn quest units
 	if(game_level->location->active_quest && game_level->location->active_quest != (Quest_Dungeon*)ACTIVE_QUEST_HOLDER && !game_level->location->active_quest->done
-		&& game_level->location->active_quest->quest_id != Q_SCRIPTED)
+		&& game_level->location->active_quest->type != Q_SCRIPTED)
 		game->HandleQuestEvent(game_level->location->active_quest);
 
 	// generate minimap
@@ -2628,18 +2628,7 @@ void CityGenerator::SpawnTemporaryUnits()
 void CityGenerator::RemoveTemporaryUnits()
 {
 	for(LevelArea& area : game_level->ForEachArea())
-	{
-		LoopAndRemove(area.units, [](Unit* u)
-		{
-			if(u->temporary)
-			{
-				delete u;
-				return true;
-			}
-			else
-				return false;
-		});
-	}
+		DeleteElements(area.units, [](Unit* u) {return u->temporary; });
 }
 
 //=================================================================================================

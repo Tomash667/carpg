@@ -82,7 +82,7 @@ void HeroData::Load(FileReader& f)
 				break;
 			case old::Follow:
 				unit->order = ORDER_FOLLOW;
-				Unit::AddRequest(&unit->order_unit, Unit::REFID_LEADER);
+				team->GetLeaderRequest(&unit->order_unit);
 				break;
 			case old::Leave:
 				unit->order = ORDER_LEAVE;

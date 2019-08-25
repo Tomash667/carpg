@@ -72,7 +72,7 @@ void Quest_Contest::Save(GameWriter& f)
 		f << time;
 		f << units.size();
 		for(Unit* unit : units)
-			f << unit->refid;
+			f << unit->id;
 	}
 }
 
@@ -323,10 +323,10 @@ void Quest_Contest::Update(float dt)
 					{
 						NetChangePlayer& c = Add1(u.player->player_info->changes);
 						c.type = NetChangePlayer::LOOK_AT;
-						c.id = innkeeper.netid;
+						c.id = innkeeper.id;
 					}
 					u.busy = Unit::Busy_Yes;
-					u.look_target = &innkeeper;
+					u.look_target = innkeeper;
 					u.event_handler = this;
 				}
 			}

@@ -32,7 +32,7 @@ public:
 	bool IfNeedTalk(cstring topic) const override;
 	void Save(GameWriter& f) override;
 	bool Load(GameReader& f) override;
-	int GetUnitEventHandlerQuestRefid() override { return refid; }
+	int GetUnitEventHandlerQuestRefid() override { return id; }
 
 private:
 	int GetReward() const;

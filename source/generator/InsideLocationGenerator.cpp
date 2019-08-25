@@ -77,17 +77,7 @@ void InsideLocationGenerator::OnEnter()
 		{
 			// usuñ ¿ywe jednostki
 			if(days != 0)
-			{
-				for(vector<Unit*>::iterator it = lvl.units.begin(), end = lvl.units.end(); it != end; ++it)
-				{
-					if((*it)->IsAlive())
-					{
-						delete *it;
-						*it = nullptr;
-					}
-				}
-				RemoveNullElements(lvl.units);
-			}
+				DeleteElements(lvl.units, [](Unit* unit) { return unit->IsAlive(); });
 
 			// usuñ zawartoœæ skrzyni
 			for(vector<Chest*>::iterator it = lvl.chests.begin(), end = lvl.chests.end(); it != end; ++it)
@@ -132,7 +122,7 @@ void InsideLocationGenerator::OnEnter()
 	}
 
 	// questowe rzeczy
-	if(inside->active_quest && inside->active_quest != (Quest_Dungeon*)ACTIVE_QUEST_HOLDER && inside->active_quest->quest_id != Q_SCRIPTED)
+	if(inside->active_quest && inside->active_quest != (Quest_Dungeon*)ACTIVE_QUEST_HOLDER && inside->active_quest->type != Q_SCRIPTED)
 	{
 		Quest_Event* event = inside->active_quest->GetEvent(game_level->location_index);
 		if(event)
@@ -235,10 +225,10 @@ void InsideLocationGenerator::OnEnter()
 				if(o)
 				{
 					GroundItem* item = new GroundItem;
+					item->Register();
 					item->count = 1;
 					item->team_count = 1;
 					item->item = kartka;
-					item->netid = GroundItem::netid_counter++;
 					item->pos = o->pos;
 					item->rot = Random(MAX_ANGLE);
 					lvl.items.push_back(item);
@@ -441,6 +431,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 				if(Rand() % 100 < base.door_chance || IsSet(lvl.map[x + y * lvl.w].flags, Tile::F_SPECIAL))
 				{
 					Door* door = new Door;
+					door->Register();
 					lvl.doors.push_back(door);
 					door->pt = Int2(x, y);
 					door->pos = o->pos;
@@ -452,7 +443,6 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 					door->phy->setCollisionShape(game_level->shape_door);
 					door->phy->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_DOOR);
 					door->locked = LOCK_NONE;
-					door->netid = Door::netid_counter++;
 					btTransform& tr = door->phy->getWorldTransform();
 					Vec3 pos = door->pos;
 					pos.y += Door::HEIGHT;

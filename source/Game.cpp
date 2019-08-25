@@ -1302,7 +1302,7 @@ MeshInstance* Game::GetBowInstance(Mesh* mesh)
 	if(bow_instances.empty())
 	{
 		if(!mesh->IsLoaded())
-			res_mgr->Load(mesh);
+			res_mgr->LoadInstant(mesh);
 		return new MeshInstance(mesh);
 	}
 	else
@@ -1597,15 +1597,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 		if(game_level->location->type == L_ENCOUNTER)
 		{
 			OutsideLocation* outside = static_cast<OutsideLocation*>(game_level->location);
-			outside->bloods.clear();
-			DeleteElements(outside->objects);
-			DeleteElements(outside->chests);
-			DeleteElements(outside->items);
-			outside->objects.clear();
-			DeleteElements(outside->usables);
-			for(vector<Unit*>::iterator it = outside->units.begin(), end = outside->units.end(); it != end; ++it)
-				delete *it;
-			outside->units.clear();
+			outside->Clear();
 		}
 	}
 

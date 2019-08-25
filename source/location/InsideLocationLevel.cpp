@@ -8,13 +8,6 @@
 InsideLocationLevel::~InsideLocationLevel()
 {
 	delete[] map;
-	DeleteElements(objects);
-	DeleteElements(units);
-	DeleteElements(chests);
-	DeleteElements(doors);
-	DeleteElements(usables);
-	DeleteElements(items);
-	DeleteElements(traps);
 	Room::Free(rooms);
 }
 

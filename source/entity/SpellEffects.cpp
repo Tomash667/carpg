@@ -6,8 +6,10 @@
 #include "Spell.h"
 #include "ParticleSystem.h"
 #include "ResourceManager.h"
+#include "SaveState.h"
+#include "BitStreamFunc.h"
 
-int Electro::netid_counter;
+EntityType<Electro>::Impl EntityType<Electro>::impl;
 
 //=================================================================================================
 void Explo::Save(FileWriter& f)
@@ -18,8 +20,8 @@ void Explo::Save(FileWriter& f)
 	f << dmg;
 	f << hitted.size();
 	for(Unit* unit : hitted)
-		f << unit->refid;
-	f << (owner ? owner->refid : -1);
+		f << unit->id;
+	f << (owner ? owner->id : -1);
 	f << tex->filename;
 }
 
@@ -32,15 +34,37 @@ void Explo::Load(FileReader& f)
 	f >> dmg;
 	hitted.resize(f.Read<uint>());
 	for(uint i = 0; i < hitted.size(); ++i)
-		hitted[i] = Unit::GetByRefid(f.Read<int>());
-	owner = Unit::GetByRefid(f.Read<int>());
+		hitted[i] = Unit::GetById(f.Read<int>());
+	owner = Unit::GetById(f.Read<int>());
 	tex = res_mgr->Load<Texture>(f.ReadString1());
+}
+
+//=================================================================================================
+void Explo::Write(BitStreamWriter& f)
+{
+	f << tex->filename;
+	f << pos;
+	f << size;
+	f << sizemax;
+}
+
+//=================================================================================================
+bool Explo::Read(BitStreamReader& f)
+{
+	const string& tex_id = f.ReadString1();
+	f >> pos;
+	f >> size;
+	f >> sizemax;
+	if(!f)
+		return false;
+	tex = res_mgr->Load<Texture>(tex_id);
+	return true;
 }
 
 //=================================================================================================
 void Electro::AddLine(const Vec3& from, const Vec3& to)
 {
-	ElectroLine& line = Add1(lines);
+	Line& line = Add1(lines);
 
 	line.t = 0.f;
 	line.pts.push_back(from);
@@ -65,38 +89,41 @@ void Electro::AddLine(const Vec3& from, const Vec3& to)
 //=================================================================================================
 void Electro::Save(FileWriter& f)
 {
+	f << id;
 	f << lines.size();
-	for(ElectroLine& line : lines)
+	for(Line& line : lines)
 	{
 		f.WriteVector4(line.pts);
 		f << line.t;
 	}
 	f << hitted.size();
-	for(Unit* unit : hitted)
-		f << unit->refid;
+	for(Entity<Unit> unit : hitted)
+		f << unit;
 	f << dmg;
-	f << (owner ? owner->refid : -1);
+	f << owner;
 	f << spell->id;
 	f << valid;
 	f << hitsome;
 	f << start_pos;
-	f << netid;
 }
 
 //=================================================================================================
 void Electro::Load(FileReader& f)
 {
+	if(LOAD_VERSION >= V_DEV)
+		f >> id;
+	Register();
 	lines.resize(f.Read<uint>());
-	for(ElectroLine& line : lines)
+	for(Line& line : lines)
 	{
 		f.ReadVector4(line.pts);
 		f >> line.t;
 	}
 	hitted.resize(f.Read<uint>());
-	for(Unit*& unit : hitted)
-		unit = Unit::GetByRefid(f.Read<int>());
+	for(Entity<Unit>& unit : hitted)
+		f >> unit;
 	f >> dmg;
-	owner = Unit::GetByRefid(f.Read<int>());
+	f >> owner;
 	const string& spell_id = f.ReadString1();
 	spell = Spell::TryGet(spell_id);
 	if(!spell)
@@ -104,23 +131,63 @@ void Electro::Load(FileReader& f)
 	f >> valid;
 	f >> hitsome;
 	f >> start_pos;
-	f >> netid;
+}
+
+//=================================================================================================
+void Electro::Write(BitStreamWriter& f)
+{
+	f << id;
+	f << spell->id;
+	f.WriteCasted<byte>(lines.size());
+	for(Line& line : lines)
+	{
+		f << line.pts.front();
+		f << line.pts.back();
+		f << line.t;
+	}
+}
+
+//=================================================================================================
+bool Electro::Read(BitStreamReader& f)
+{
+	f >> id;
+	spell = Spell::TryGet(f.ReadString1());
+
+	byte count;
+	f >> count;
+	if(!f.Ensure(count * LINE_MIN_SIZE))
+		return false;
+	lines.reserve(count);
+	Vec3 from, to;
+	float t;
+	for(byte i = 0; i < count; ++i)
+	{
+		f >> from;
+		f >> to;
+		f >> t;
+		AddLine(from, to);
+		lines.back().t = t;
+	}
+
+	valid = true;
+	Register();
+	return true;
 }
 
 //=================================================================================================
 void Drain::Save(FileWriter& f)
 {
-	f << from->refid;
-	f << to->refid;
-	f << pe->refid;
+	f << from->id;
+	f << to->id;
+	f << pe->id;
 	f << t;
 }
 
 //=================================================================================================
 void Drain::Load(FileReader& f)
 {
-	from = Unit::GetByRefid(f.Read<int>());
-	to = Unit::GetByRefid(f.Read<int>());
-	pe = ParticleEmitter::GetByRefid(f.Read<int>());
+	from = Unit::GetById(f.Read<int>());
+	to = Unit::GetById(f.Read<int>());
+	pe = ParticleEmitter::GetById(f.Read<int>());
 	f >> t;
 }

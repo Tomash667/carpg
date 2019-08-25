@@ -150,10 +150,10 @@ bool InsideLocation::RemoveItemFromChest(const Item* item, int& at_level)
 }
 
 //=================================================================================================
-bool InsideLocation::RemoveQuestItemFromChest(int quest_refid, int& at_level)
+bool InsideLocation::RemoveQuestItemFromChest(int quest_id, int& at_level)
 {
 	int index;
-	Chest* chest = FindChestWithQuestItem(quest_refid, at_level, &index);
+	Chest* chest = FindChestWithQuestItem(quest_id, at_level, &index);
 	if(!chest)
 		return false;
 	else

@@ -171,7 +171,7 @@ struct PlayerController : public HeroPlayerCommon
 	vector<ItemSlot>* chest_trade; // zale¿ne od action (dla LootUnit,ShareItems,GiveItems ekw jednostki, dla LootChest zawartoœæ skrzyni, dla Trade skrzynia kupca)
 	int kills, dmg_done, dmg_taken, knocks, arena_fights, stat_flags;
 	vector<TakenPerk> perks;
-	vector<Unit*> action_targets;
+	vector<Entity<Unit>> action_targets;
 	Shortcut shortcuts[Shortcut::MAX];
 
 	PlayerController() : dialog_ctx(nullptr), stat_flags(0), player_info(nullptr), is_local(false), action_recharge(0.f),
@@ -182,7 +182,7 @@ struct PlayerController : public HeroPlayerCommon
 
 	void Rest(int days, bool resting, bool travel = false);
 
-	void Init(Unit& _unit, bool partial = false);
+	void Init(Unit& unit, bool partial = false);
 	void Update(float dt, bool is_local = true);
 private:
 	void InitShortcuts();
@@ -279,8 +279,7 @@ struct LocalPlayerData
 {
 	BeforePlayer before_player;
 	BeforePlayerPtr before_player_ptr;
-	Unit* selected_unit, // unit marked with 'select' command
-		*target_unit; // unit in front of player
+	Unit* selected_unit; // unit marked with 'select' command
 	GroundItem* picking_item;
 	Vec3 action_point;
 	int picking_item_state;
@@ -293,12 +292,17 @@ struct LocalPlayerData
 		before_player = BP_NONE;
 		before_player_ptr.any = nullptr;
 		selected_unit = nullptr;
-		target_unit = nullptr;
 		picking_item = nullptr;
 		picking_item_state = 0;
 		rot_buf = 0.f;
 		wasted_key = Key::None;
 		autowalk = false;
 		action_ready = false;
+	}
+	Unit* GetTargetUnit()
+	{
+		if(before_player == BP_UNIT)
+			return before_player_ptr.unit;
+		return nullptr;
 	}
 };

@@ -16,8 +16,8 @@
 //=================================================================================================
 void Quest_RescueCaptive::Start()
 {
-	quest_id = Q_RESCUE_CAPTIVE;
-	type = QuestType::Captain;
+	type = Q_RESCUE_CAPTIVE;
+	category = QuestCategory::Captain;
 	start_loc = world->GetCurrentLocationIndex();
 	switch(Rand() % 4)
 	{

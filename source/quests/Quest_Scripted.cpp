@@ -25,8 +25,8 @@ Quest_Scripted::~Quest_Scripted()
 void Quest_Scripted::Start()
 {
 	start_loc = world->GetCurrentLocationIndex();
-	quest_id = Q_SCRIPTED;
-	type = scheme->type;
+	type = Q_SCRIPTED;
+	category = scheme->category;
 
 	CreateInstance();
 
@@ -122,7 +122,7 @@ void Quest_Scripted::Save(GameWriter& f)
 			{
 				GroundItem* item = *(GroundItem**)ptr;
 				if(item)
-					f << item->refid;
+					f << item->id;
 				else
 					f << -1;
 			}
@@ -205,8 +205,8 @@ bool Quest_Scripted::Load(GameReader& f)
 			break;
 		case Var::Type::GroundItem:
 			{
-				int refid = f.Read<int>();
-				*(GroundItem**)ptr = GroundItem::GetByRefid(refid);
+				int id = f.Read<int>();
+				*(GroundItem**)ptr = GroundItem::GetById(id);
 			}
 			break;
 		}
@@ -257,7 +257,7 @@ void Quest_Scripted::AfterCall()
 		if(Net::IsOnline())
 		{
 			NetChange& c = Add1(Net::changes);
-			c.id = refid;
+			c.id = id;
 			c.type = NetChange::UPDATE_QUEST;
 			c.count = journal_changes;
 		}
@@ -305,11 +305,11 @@ void Quest_Scripted::SetCompleted()
 	assert(journal_state == JournalState::None);
 	journal_state = JournalState::Changed;
 	state = Quest::Completed;
-	if(type == QuestType::Mayor)
+	if(category == QuestCategory::Mayor)
 		((City&)GetStartLocation()).quest_mayor = CityQuestState::None;
-	else if(type == QuestType::Captain)
+	else if(category == QuestCategory::Captain)
 		((City&)GetStartLocation()).quest_captain = CityQuestState::None;
-	if(type == QuestType::Unique)
+	if(category == QuestCategory::Unique)
 		quest_mgr->EndUniqueQuest();
 	Cleanup();
 }
@@ -319,9 +319,9 @@ void Quest_Scripted::SetFailed()
 	assert(journal_state == JournalState::None);
 	journal_state = JournalState::Changed;
 	state = Quest::Failed;
-	if(type == QuestType::Mayor)
+	if(category == QuestCategory::Mayor)
 		((City&)GetStartLocation()).quest_mayor = CityQuestState::Failed;
-	else if(type == QuestType::Captain)
+	else if(category == QuestCategory::Captain)
 		((City&)GetStartLocation()).quest_captain = CityQuestState::Failed;
 	Cleanup();
 }
@@ -485,10 +485,10 @@ string Quest_Scripted::GetString(int index)
 
 void Quest_Scripted::AddRumor(const string& str)
 {
-	quest_mgr->AddQuestRumor(refid, str.c_str());
+	quest_mgr->AddQuestRumor(id, str.c_str());
 }
 
 void Quest_Scripted::RemoveRumor()
 {
-	quest_mgr->RemoveQuestRumor(refid);
+	quest_mgr->RemoveQuestRumor(id);
 }

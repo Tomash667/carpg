@@ -355,7 +355,7 @@ void DialogContext::UpdateLoop()
 			{
 				NetChangePlayer& c = Add1(pc->player_info->changes);
 				c.type = NetChangePlayer::START_TRADE;
-				c.id = talker->netid;
+				c.id = talker->id;
 			}
 			return;
 		case DTF_TALK:
@@ -404,7 +404,7 @@ void DialogContext::UpdateLoop()
 			break;
 		case DTF_CHECK_QUEST_TIMEOUT:
 			{
-				Quest* quest = quest_mgr->FindQuest(game_level->location_index, (QuestType)de.value);
+				Quest* quest = quest_mgr->FindQuest(game_level->location_index, (QuestCategory)de.value);
 				if(quest && quest->IsActive() && quest->IsTimedout())
 				{
 					dialog_once = false;
@@ -415,16 +415,16 @@ void DialogContext::UpdateLoop()
 		case DTF_IF_HAVE_QUEST_ITEM:
 			{
 				cstring msg = dialog->strs[de.value].c_str();
-				int required_refid = -1;
+				int quest_id = -1;
 				if(msg[0] == '$' && msg[1] == '$')
-					required_refid = talker->quest_refid;
-				cmp_result = pc->unit->FindQuestItem(msg, nullptr, nullptr, false, required_refid);
+					quest_id = talker->quest_id;
+				cmp_result = pc->unit->FindQuestItem(msg, nullptr, nullptr, false, quest_id);
 				if(de.op == OP_NOT_EQUAL)
 					cmp_result = !cmp_result;
 			}
 			break;
 		case DTF_IF_HAVE_QUEST_ITEM_CURRENT:
-			cmp_result = (dialog_quest && pc->unit->HaveQuestItem(dialog_quest->refid));
+			cmp_result = (dialog_quest && pc->unit->HaveQuestItem(dialog_quest->id));
 			if(de.op == OP_NOT_EQUAL)
 				cmp_result = !cmp_result;
 			break;
@@ -439,11 +439,11 @@ void DialogContext::UpdateLoop()
 		case DTF_DO_QUEST_ITEM:
 			{
 				cstring msg = dialog->strs[de.value].c_str();
-				int required_refid = -1;
+				int quest_id = -1;
 				if(msg[0] == '$' && msg[1] == '$')
-					required_refid = talker->quest_refid;
+					quest_id = talker->quest_id;
 				Quest* quest;
-				if(pc->unit->FindQuestItem(msg, &quest, nullptr, false, required_refid))
+				if(pc->unit->FindQuestItem(msg, &quest, nullptr, false, quest_id))
 					StartNextDialog(quest->GetDialog(QUEST_DIALOG_NEXT), quest);
 			}
 			break;
@@ -557,7 +557,7 @@ void DialogContext::UpdateLoop()
 				ctx.target = talker;
 				DialogScripts* scripts;
 				void* instance;
-				if(dialog_quest && dialog_quest->quest_id == Q_SCRIPTED)
+				if(dialog_quest && dialog_quest->type == Q_SCRIPTED)
 				{
 					Quest_Scripted* quest = (Quest_Scripted*)dialog_quest;
 					scripts = &quest->GetScheme()->scripts;
@@ -589,7 +589,7 @@ void DialogContext::UpdateLoop()
 				void* instance;
 				ctx.pc = pc;
 				ctx.target = talker;
-				if(dialog_quest && dialog_quest->quest_id == Q_SCRIPTED)
+				if(dialog_quest && dialog_quest->type == Q_SCRIPTED)
 				{
 					Quest_Scripted* quest = (Quest_Scripted*)dialog_quest;
 					scripts = &quest->GetScheme()->scripts;
@@ -702,7 +702,7 @@ cstring DialogContext::GetText(int index)
 				void* instance;
 				ctx.pc = pc;
 				ctx.target = talker;
-				if(dialog_quest && dialog_quest->quest_id == Q_SCRIPTED)
+				if(dialog_quest && dialog_quest->type == Q_SCRIPTED)
 				{
 					Quest_Scripted* quest = (Quest_Scripted*)dialog_quest;
 					scripts = &quest->GetScheme()->scripts;
@@ -771,7 +771,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		{
 			if(game_level->city_ctx->quest_mayor == CityQuestState::InProgress)
 			{
-				Quest* quest = quest_mgr->FindUnacceptedQuest(game_level->location_index, QuestType::Mayor);
+				Quest* quest = quest_mgr->FindUnacceptedQuest(game_level->location_index, QuestCategory::Mayor);
 				DeleteElement(quest_mgr->unaccepted_quests, quest);
 			}
 
@@ -783,7 +783,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			if(quest)
 			{
 				// add new quest
-				quest->refid = quest_mgr->quest_counter++;
+				quest->id = quest_mgr->quest_counter++;
 				quest->Start();
 				quest_mgr->unaccepted_quests.push_back(quest);
 				StartNextDialog(quest->GetDialog(QUEST_DIALOG_START), quest);
@@ -794,7 +794,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		else if(game_level->city_ctx->quest_mayor == CityQuestState::InProgress)
 		{
 			// ju¿ ma przydzielone zadanie ?
-			Quest* quest = quest_mgr->FindUnacceptedQuest(game_level->location_index, QuestType::Mayor);
+			Quest* quest = quest_mgr->FindUnacceptedQuest(game_level->location_index, QuestCategory::Mayor);
 			if(quest)
 			{
 				// quest nie zosta³ zaakceptowany
@@ -802,7 +802,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			}
 			else
 			{
-				quest = quest_mgr->FindQuest(game_level->location_index, QuestType::Mayor);
+				quest = quest_mgr->FindQuest(game_level->location_index, QuestCategory::Mayor);
 				if(quest)
 				{
 					DialogTalk(RandomString(game->txQuestAlreadyGiven));
@@ -835,7 +835,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		{
 			if(game_level->city_ctx->quest_captain == CityQuestState::InProgress)
 			{
-				Quest* quest = quest_mgr->FindUnacceptedQuest(game_level->location_index, QuestType::Captain);
+				Quest* quest = quest_mgr->FindUnacceptedQuest(game_level->location_index, QuestCategory::Captain);
 				DeleteElement(quest_mgr->unaccepted_quests, quest);
 			}
 
@@ -847,7 +847,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			if(quest)
 			{
 				// add new quest
-				quest->refid = quest_mgr->quest_counter++;
+				quest->id = quest_mgr->quest_counter++;
 				quest->Start();
 				quest_mgr->unaccepted_quests.push_back(quest);
 				StartNextDialog(quest->GetDialog(QUEST_DIALOG_START), quest);
@@ -858,7 +858,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		else if(game_level->city_ctx->quest_captain == CityQuestState::InProgress)
 		{
 			// ju¿ ma przydzielone zadanie
-			Quest* quest = quest_mgr->FindUnacceptedQuest(game_level->location_index, QuestType::Captain);
+			Quest* quest = quest_mgr->FindUnacceptedQuest(game_level->location_index, QuestCategory::Captain);
 			if(quest)
 			{
 				// quest nie zosta³ zaakceptowany
@@ -866,7 +866,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 			}
 			else
 			{
-				quest = quest_mgr->FindQuest(game_level->location_index, QuestType::Captain);
+				quest = quest_mgr->FindQuest(game_level->location_index, QuestCategory::Captain);
 				if(quest)
 				{
 					DialogTalk(RandomString(game->txQuestAlreadyGiven));
@@ -888,18 +888,18 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 	}
 	else if(strcmp(msg, "przedmiot_quest") == 0)
 	{
-		if(talker->quest_refid == -1)
+		if(talker->quest_id == -1)
 		{
 			Quest* quest = quest_mgr->GetAdventurerQuest();
-			quest->refid = quest_mgr->quest_counter++;
-			talker->quest_refid = quest->refid;
+			quest->id = quest_mgr->quest_counter++;
+			talker->quest_id = quest->id;
 			quest->Start();
 			quest_mgr->unaccepted_quests.push_back(quest);
 			StartNextDialog(quest->GetDialog(QUEST_DIALOG_START), quest);
 		}
 		else
 		{
-			Quest* quest = quest_mgr->FindUnacceptedQuest(talker->quest_refid);
+			Quest* quest = quest_mgr->FindUnacceptedQuest(talker->quest_id);
 			StartNextDialog(quest->GetDialog(QUEST_DIALOG_START), quest);
 		}
 	}
@@ -1513,12 +1513,12 @@ bool DialogContext::ExecuteSpecialIf(cstring msg)
 	else if(strcmp(msg, "is_camp") == 0)
 		return game->target_loc_is_camp;
 	else if(strcmp(msg, "dont_have_quest") == 0)
-		return talker->quest_refid == -1;
+		return talker->quest_id == -1;
 	else if(strcmp(msg, "have_unaccepted_quest") == 0)
-		return quest_mgr->FindUnacceptedQuest(talker->quest_refid);
+		return quest_mgr->FindUnacceptedQuest(talker->quest_id);
 	else if(strcmp(msg, "have_completed_quest") == 0)
 	{
-		Quest* q = quest_mgr->FindQuest(talker->quest_refid);
+		Quest* q = quest_mgr->FindQuest(talker->quest_id);
 		if(q && !q->IsActive())
 			return true;
 	}

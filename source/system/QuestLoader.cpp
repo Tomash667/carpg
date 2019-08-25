@@ -14,7 +14,7 @@ enum Group
 {
 	G_TOP,
 	G_PROPERTY,
-	G_QUEST_TYPE
+	G_QUEST_CATEGORY
 };
 
 enum TopKeyword
@@ -69,11 +69,11 @@ void QuestLoader::InitTokenizer()
 		{ "dialog", P_DIALOG }
 		});
 
-	t.AddEnums<QuestType>(G_QUEST_TYPE, {
-		{ "mayor", QuestType::Mayor },
-		{ "captain", QuestType::Captain },
-		{ "random", QuestType::Random },
-		{ "unique", QuestType::Unique }
+	t.AddEnums<QuestCategory>(G_QUEST_CATEGORY, {
+		{ "mayor", QuestCategory::Mayor },
+		{ "captain", QuestCategory::Captain },
+		{ "random", QuestCategory::Random },
+		{ "unique", QuestCategory::Unique }
 		});
 }
 
@@ -112,9 +112,9 @@ void QuestLoader::ParseQuest(const string& id)
 		switch(p)
 		{
 		case P_TYPE:
-			if(quest->type != QuestType::NotSet)
+			if(quest->category != QuestCategory::NotSet)
 				t.Throw("Quest type already set.");
-			quest->type = (QuestType)t.MustGetKeywordId(G_QUEST_TYPE);
+			quest->category = (QuestCategory)t.MustGetKeywordId(G_QUEST_CATEGORY);
 			break;
 		case P_PROGRESS:
 			if(!quest->progress.empty())
@@ -152,7 +152,7 @@ void QuestLoader::ParseQuest(const string& id)
 		t.Next();
 	}
 
-	if(quest->type == QuestType::NotSet)
+	if(quest->category == QuestCategory::NotSet)
 		t.Throw("Quest type not set.");
 
 	quest_mgr->AddScriptedQuest(quest.Get());
@@ -396,7 +396,7 @@ void QuestLoader::Finalize()
 			Error("Missing quest '%s' SetProgress method.", scheme->id.c_str());
 			++content.errors;
 		}
-		if(scheme->type != QuestType::Unique && !scheme->GetDialog("start"))
+		if(scheme->category != QuestCategory::Unique && !scheme->GetDialog("start"))
 		{
 			Error("Missing quest '%s' dialog 'start'.", scheme->id.c_str());
 			++content.errors;

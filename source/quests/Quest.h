@@ -1,5 +1,6 @@
 #pragma once
 
+//-----------------------------------------------------------------------------
 #include "QuestHandler.h"
 #include "Chest.h"
 #include "Location.h"
@@ -36,12 +37,13 @@ struct Quest : public QuestHandler
 		Failed
 	};
 
-	QUEST quest_id;
+	int id;
+	QUEST_TYPE type;
 	State state;
 	string name;
-	int prog, refid, start_time, start_loc;
+	int prog, start_time, start_loc;
 	uint quest_index;
-	QuestType type;
+	QuestCategory category;
 	vector<string> msgs;
 	bool timeout;
 

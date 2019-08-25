@@ -28,8 +28,8 @@ void Quest_Evil::Init()
 //=================================================================================================
 void Quest_Evil::Start()
 {
-	type = QuestType::Unique;
-	quest_id = Q_EVIL;
+	category = QuestCategory::Unique;
+	type = Q_EVIL;
 	mage_loc = -1;
 	closed = 0;
 	changed = false;
@@ -41,7 +41,7 @@ void Quest_Evil::Start()
 	told_about_boss = false;
 	evil_state = State::None;
 	cleric = nullptr;
-	quest_mgr->AddQuestRumor(refid, Format(quest_mgr->txRumorQ[8], GetStartLocationName()));
+	quest_mgr->AddQuestRumor(id, Format(quest_mgr->txRumorQ[8], GetStartLocationName()));
 }
 
 //=================================================================================================
@@ -78,7 +78,7 @@ void Quest_Evil::SetProgress(int prog2)
 	case Progress::NotAccepted:
 		// nie zaakceptowano
 		{
-			if(!quest_mgr->RemoveQuestRumor(refid))
+			if(!quest_mgr->RemoveQuestRumor(id))
 				game_gui->journal->AddRumor(Format(game->txQuest[232], GetStartLocationName()));
 		}
 		break;
@@ -90,7 +90,7 @@ void Quest_Evil::SetProgress(int prog2)
 		{
 			OnStart(game->txQuest[233]);
 			// usuñ plotkê
-			quest_mgr->RemoveQuestRumor(refid);
+			quest_mgr->RemoveQuestRumor(id);
 			// lokacja
 			Location& target = *world->CreateLocation(L_DUNGEON, world->GetWorldPos(), 128.f, OLD_TEMPLE, UnitGroup::empty, false, 1);
 			target.SetKnown();
@@ -677,7 +677,9 @@ void Quest_Evil::WarpEvilBossToAltar()
 			if(u2)
 			{
 				u2->dont_attack = true;
-				u2->guard_target = u;
+				u2->order = ORDER_GUARD;
+				u2->order_unit = u;
+				u2->order_timer = -1;
 			}
 		}
 	}

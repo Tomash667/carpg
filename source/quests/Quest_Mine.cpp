@@ -18,8 +18,8 @@
 //=================================================================================================
 void Quest_Mine::Start()
 {
-	quest_id = Q_MINE;
-	type = QuestType::Unique;
+	type = Q_MINE;
+	category = QuestCategory::Unique;
 	dungeon_loc = -2;
 	mine_state = State::None;
 	mine_state2 = State2::None;
@@ -28,7 +28,7 @@ void Quest_Mine::Start()
 	days = 0;
 	days_required = 0;
 	days_gold = 0;
-	quest_mgr->AddQuestRumor(refid, Format(quest_mgr->txRumorQ[1], GetStartLocationName()));
+	quest_mgr->AddQuestRumor(id, Format(quest_mgr->txRumorQ[1], GetStartLocationName()));
 }
 
 //=================================================================================================
@@ -116,7 +116,7 @@ void Quest_Mine::SetProgress(int prog2)
 			mine_state2 = State2::InBuild;
 			days = 0;
 			days_required = Random(30, 45);
-			quest_mgr->RemoveQuestRumor(refid);
+			quest_mgr->RemoveQuestRumor(id);
 		}
 		break;
 	case Progress::GotFirstGold:
@@ -143,7 +143,7 @@ void Quest_Mine::SetProgress(int prog2)
 			mine_state2 = State2::InBuild;
 			days = 0;
 			days_required = Random(30, 45);
-			quest_mgr->RemoveQuestRumor(refid);
+			quest_mgr->RemoveQuestRumor(id);
 		}
 		break;
 	case Progress::NeedTalk:
@@ -732,12 +732,12 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 			}
 
 			Door* door = new Door;
+			door->Register();
 			door->pt = end_pt;
 			door->pos = o->pos;
 			door->rot = o->rot.y;
 			door->state = Door::Closed;
 			door->locked = LOCK_MINE;
-			door->netid = Door::netid_counter++;
 			cave.doors.push_back(door);
 		}
 
@@ -925,11 +925,10 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 						if(!game_level->Collide(game_level->global_col, box, 0.f, rot))
 						{
 							Usable* u = new Usable;
+							u->Register();
 							u->pos = pos;
 							u->rot = rot;
 							u->base = (Rand() % 10 < gold_chance ? gold_vein : iron_vein);
-							u->user = nullptr;
-							u->netid = Usable::netid_counter++;
 							cave.usables.push_back(u);
 
 							CollisionObject& c = Add1(cave.tmp->colliders);

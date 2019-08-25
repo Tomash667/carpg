@@ -60,29 +60,29 @@ void QuestManager::Init()
 {
 	force = Q_FORCE_DISABLED;
 
-	infos.push_back(QuestInfo(Q_MINE, QuestType::Unique, "mine"));
-	infos.push_back(QuestInfo(Q_SAWMILL, QuestType::Unique, "sawmill"));
-	infos.push_back(QuestInfo(Q_BANDITS, QuestType::Unique, "bandits"));
-	infos.push_back(QuestInfo(Q_MAGES, QuestType::Unique, "mages"));
-	infos.push_back(QuestInfo(Q_MAGES2, QuestType::Unique, "mages2"));
-	infos.push_back(QuestInfo(Q_ORCS, QuestType::Unique, "orcs"));
-	infos.push_back(QuestInfo(Q_ORCS2, QuestType::Unique, "orcs2"));
-	infos.push_back(QuestInfo(Q_GOBLINS, QuestType::Unique, "goblins"));
-	infos.push_back(QuestInfo(Q_EVIL, QuestType::Unique, "evil"));
-	infos.push_back(QuestInfo(Q_DELIVER_LETTER, QuestType::Mayor, "deliver_letter"));
-	infos.push_back(QuestInfo(Q_DELIVER_PARCEL, QuestType::Mayor, "deliver_parcel"));
-	infos.push_back(QuestInfo(Q_SPREAD_NEWS, QuestType::Mayor, "spread_news"));
-	infos.push_back(QuestInfo(Q_RESCUE_CAPTIVE, QuestType::Captain, "rescue_captive"));
-	infos.push_back(QuestInfo(Q_BANDITS_COLLECT_TOLL, QuestType::Captain, "bandits_collect_toll"));
-	infos.push_back(QuestInfo(Q_CAMP_NEAR_CITY, QuestType::Captain, "camp_near_city"));
-	infos.push_back(QuestInfo(Q_RETRIEVE_PACKAGE, QuestType::Mayor, "retrieve_package"));
-	infos.push_back(QuestInfo(Q_KILL_ANIMALS, QuestType::Captain, "kill_animals"));
-	infos.push_back(QuestInfo(Q_LOST_ARTIFACT, QuestType::Random, "lost_artifact"));
-	infos.push_back(QuestInfo(Q_STOLEN_ARTIFACT, QuestType::Random, "stolen_artifact"));
-	infos.push_back(QuestInfo(Q_FIND_ARTIFACT, QuestType::Random, "find_artifact"));
-	infos.push_back(QuestInfo(Q_CRAZIES, QuestType::Unique, "crazies"));
-	infos.push_back(QuestInfo(Q_WANTED, QuestType::Captain, "wanted"));
-	infos.push_back({ Q_ARTIFACTS, QuestType::Unique, "artifacts" });
+	infos.push_back(QuestInfo(Q_MINE, QuestCategory::Unique, "mine"));
+	infos.push_back(QuestInfo(Q_SAWMILL, QuestCategory::Unique, "sawmill"));
+	infos.push_back(QuestInfo(Q_BANDITS, QuestCategory::Unique, "bandits"));
+	infos.push_back(QuestInfo(Q_MAGES, QuestCategory::Unique, "mages"));
+	infos.push_back(QuestInfo(Q_MAGES2, QuestCategory::Unique, "mages2"));
+	infos.push_back(QuestInfo(Q_ORCS, QuestCategory::Unique, "orcs"));
+	infos.push_back(QuestInfo(Q_ORCS2, QuestCategory::Unique, "orcs2"));
+	infos.push_back(QuestInfo(Q_GOBLINS, QuestCategory::Unique, "goblins"));
+	infos.push_back(QuestInfo(Q_EVIL, QuestCategory::Unique, "evil"));
+	infos.push_back(QuestInfo(Q_DELIVER_LETTER, QuestCategory::Mayor, "deliver_letter"));
+	infos.push_back(QuestInfo(Q_DELIVER_PARCEL, QuestCategory::Mayor, "deliver_parcel"));
+	infos.push_back(QuestInfo(Q_SPREAD_NEWS, QuestCategory::Mayor, "spread_news"));
+	infos.push_back(QuestInfo(Q_RESCUE_CAPTIVE, QuestCategory::Captain, "rescue_captive"));
+	infos.push_back(QuestInfo(Q_BANDITS_COLLECT_TOLL, QuestCategory::Captain, "bandits_collect_toll"));
+	infos.push_back(QuestInfo(Q_CAMP_NEAR_CITY, QuestCategory::Captain, "camp_near_city"));
+	infos.push_back(QuestInfo(Q_RETRIEVE_PACKAGE, QuestCategory::Mayor, "retrieve_package"));
+	infos.push_back(QuestInfo(Q_KILL_ANIMALS, QuestCategory::Captain, "kill_animals"));
+	infos.push_back(QuestInfo(Q_LOST_ARTIFACT, QuestCategory::Random, "lost_artifact"));
+	infos.push_back(QuestInfo(Q_STOLEN_ARTIFACT, QuestCategory::Random, "stolen_artifact"));
+	infos.push_back(QuestInfo(Q_FIND_ARTIFACT, QuestCategory::Random, "find_artifact"));
+	infos.push_back(QuestInfo(Q_CRAZIES, QuestCategory::Unique, "crazies"));
+	infos.push_back(QuestInfo(Q_WANTED, QuestCategory::Captain, "wanted"));
+	infos.push_back({ Q_ARTIFACTS, QuestCategory::Unique, "artifacts" });
 
 	// create pseudo quests
 	quest_contest = new Quest_Contest;
@@ -105,7 +105,7 @@ void QuestManager::InitLists()
 	unique_quests = 8;
 	for(QuestScheme* scheme : QuestScheme::schemes)
 	{
-		if(scheme->type == QuestType::Unique)
+		if(scheme->category == QuestCategory::Unique)
 			++unique_quests;
 	}
 }
@@ -139,7 +139,7 @@ void QuestManager::InitQuests(bool devmode)
 	quest_goblins = new Quest_Goblins;
 	quest_goblins->Init();
 	quest_goblins->start_loc = world->GetRandomSettlementIndex(used, 1);
-	quest_goblins->refid = quest_counter++;
+	quest_goblins->id = quest_counter++;
 	quest_goblins->Start();
 	unaccepted_quests.push_back(quest_goblins);
 	used.push_back(quest_goblins->start_loc);
@@ -148,7 +148,7 @@ void QuestManager::InitQuests(bool devmode)
 	quest_bandits = new Quest_Bandits;
 	quest_bandits->Init();
 	quest_bandits->start_loc = world->GetRandomSettlementIndex(used, 1);
-	quest_bandits->refid = quest_counter++;
+	quest_bandits->id = quest_counter++;
 	quest_bandits->Start();
 	unaccepted_quests.push_back(quest_bandits);
 	used.push_back(quest_bandits->start_loc);
@@ -156,7 +156,7 @@ void QuestManager::InitQuests(bool devmode)
 	// sawmill
 	quest_sawmill = new Quest_Sawmill;
 	quest_sawmill->start_loc = world->GetRandomSettlementIndex(used);
-	quest_sawmill->refid = quest_counter++;
+	quest_sawmill->id = quest_counter++;
 	quest_sawmill->Start();
 	unaccepted_quests.push_back(quest_sawmill);
 	used.push_back(quest_sawmill->start_loc);
@@ -165,7 +165,7 @@ void QuestManager::InitQuests(bool devmode)
 	quest_mine = new Quest_Mine;
 	quest_mine->start_loc = world->GetRandomSettlementIndex(used);
 	quest_mine->target_loc = world->GetClosestLocation(L_CAVE, world->GetLocation(quest_mine->start_loc)->pos);
-	quest_mine->refid = quest_counter++;
+	quest_mine->id = quest_counter++;
 	quest_mine->Start();
 	unaccepted_quests.push_back(quest_mine);
 	used.push_back(quest_mine->start_loc);
@@ -173,7 +173,7 @@ void QuestManager::InitQuests(bool devmode)
 	// mages
 	quest_mages = new Quest_Mages;
 	quest_mages->start_loc = world->GetRandomSettlementIndex(used);
-	quest_mages->refid = quest_counter++;
+	quest_mages->id = quest_counter++;
 	quest_mages->Start();
 	unaccepted_quests.push_back(quest_mages);
 	used.push_back(quest_mages->start_loc);
@@ -181,7 +181,7 @@ void QuestManager::InitQuests(bool devmode)
 	// mages2
 	quest_mages2 = new Quest_Mages2;
 	quest_mages2->Init();
-	quest_mages2->refid = quest_counter++;
+	quest_mages2->id = quest_counter++;
 	quest_mages2->Start();
 	unaccepted_quests.push_back(quest_mages2);
 
@@ -189,7 +189,7 @@ void QuestManager::InitQuests(bool devmode)
 	quest_orcs = new Quest_Orcs;
 	quest_orcs->Init();
 	quest_orcs->start_loc = world->GetRandomSettlementIndex(used);
-	quest_orcs->refid = quest_counter++;
+	quest_orcs->id = quest_counter++;
 	quest_orcs->Start();
 	unaccepted_quests.push_back(quest_orcs);
 	used.push_back(quest_orcs->start_loc);
@@ -197,7 +197,7 @@ void QuestManager::InitQuests(bool devmode)
 	// orcs2
 	quest_orcs2 = new Quest_Orcs2;
 	quest_orcs2->Init();
-	quest_orcs2->refid = quest_counter++;
+	quest_orcs2->id = quest_counter++;
 	quest_orcs2->Start();
 	unaccepted_quests.push_back(quest_orcs2);
 
@@ -205,7 +205,7 @@ void QuestManager::InitQuests(bool devmode)
 	quest_evil = new Quest_Evil;
 	quest_evil->Init();
 	quest_evil->start_loc = world->GetRandomSettlementIndex(used);
-	quest_evil->refid = quest_counter++;
+	quest_evil->id = quest_counter++;
 	quest_evil->Start();
 	unaccepted_quests.push_back(quest_evil);
 	used.push_back(quest_evil->start_loc);
@@ -213,13 +213,13 @@ void QuestManager::InitQuests(bool devmode)
 	// crazies
 	quest_crazies = new Quest_Crazies;
 	quest_crazies->Init();
-	quest_crazies->refid = quest_counter++;
+	quest_crazies->id = quest_counter++;
 	quest_crazies->Start();
 	unaccepted_quests.push_back(quest_crazies);
 
 	// artifacts
 	quest_artifacts = new Quest_Artifacts;
-	quest_artifacts->refid = quest_counter++;
+	quest_artifacts->id = quest_counter++;
 	quest_artifacts->Start();
 	unaccepted_quests.push_back(quest_artifacts);
 
@@ -245,20 +245,20 @@ void QuestManager::InitQuests(bool devmode)
 	// init scripted quests
 	for(QuestScheme* scheme : QuestScheme::schemes)
 	{
-		if(scheme->type != QuestType::Unique)
+		if(scheme->category != QuestCategory::Unique)
 			continue;
 		Quest_Scripted* quest = new Quest_Scripted;
 		quest->Init(scheme);
 		unaccepted_quests.push_back(quest);
-		quest->refid = quest_counter++;
+		quest->id = quest_counter++;
 		quest->Start();
 	}
 }
 
 //=================================================================================================
-Quest* QuestManager::CreateQuest(QUEST quest_id)
+Quest* QuestManager::CreateQuest(QUEST_TYPE type)
 {
-	switch(quest_id)
+	switch(type)
 	{
 	case Q_DELIVER_LETTER:
 		return new Quest_DeliverLetter;
@@ -321,22 +321,22 @@ Quest* QuestManager::CreateQuest(QuestInfo* info)
 {
 	if(!info)
 		return nullptr;
-	if(info->id == Q_SCRIPTED)
+	if(info->type == Q_SCRIPTED)
 	{
 		Quest_Scripted* quest = new Quest_Scripted;
 		quest->Init(info->scheme);
 		return quest;
 	}
 	else
-		return CreateQuest(info->id);
+		return CreateQuest(info->type);
 }
 
 //=================================================================================================
-QuestInfo* QuestManager::GetRandomQuest(QuestType type)
+QuestInfo* QuestManager::GetRandomQuest(QuestCategory category)
 {
 	if(force == Q_FORCE_NONE)
 	{
-		if(type == QuestType::Random)
+		if(category == QuestCategory::Random)
 		{
 			Warn("Can't force none random quest - unsupported.");
 			force = Q_FORCE_DISABLED;
@@ -352,9 +352,9 @@ QuestInfo* QuestManager::GetRandomQuest(QuestType type)
 	if(force != Q_FORCE_DISABLED)
 	{
 		QuestInfo& info = infos[force];
-		if(info.type != type)
+		if(info.category != category)
 		{
-			Warn("Can't force quest '%s', invalid quest type.", info.name);
+			Warn("Can't force quest '%s', invalid quest category.", info.name);
 			force = Q_FORCE_DISABLED;
 		}
 		else
@@ -366,15 +366,15 @@ QuestInfo* QuestManager::GetRandomQuest(QuestType type)
 	}
 
 	QuestList* list;
-	switch(type)
+	switch(category)
 	{
-	case QuestType::Mayor:
+	case QuestCategory::Mayor:
 		list = quests_mayor;
 		break;
-	case QuestType::Captain:
+	case QuestCategory::Captain:
 		list = quests_captain;
 		break;
-	case QuestType::Random:
+	case QuestCategory::Random:
 		list = quests_random;
 		break;
 	default:
@@ -388,29 +388,29 @@ QuestInfo* QuestManager::GetRandomQuest(QuestType type)
 //=================================================================================================
 Quest* QuestManager::GetMayorQuest()
 {
-	return CreateQuest(GetRandomQuest(QuestType::Mayor));
+	return CreateQuest(GetRandomQuest(QuestCategory::Mayor));
 }
 
 //=================================================================================================
 Quest* QuestManager::GetCaptainQuest()
 {
-	return CreateQuest(GetRandomQuest(QuestType::Captain));
+	return CreateQuest(GetRandomQuest(QuestCategory::Captain));
 }
 
 //=================================================================================================
 Quest* QuestManager::GetAdventurerQuest()
 {
-	return CreateQuest(GetRandomQuest(QuestType::Random));
+	return CreateQuest(GetRandomQuest(QuestCategory::Random));
 }
 
 //=================================================================================================
-void QuestManager::AddQuestItemRequest(const Item** item, cstring name, int quest_refid, vector<ItemSlot>* items, Unit* unit)
+void QuestManager::AddQuestItemRequest(const Item** item, cstring name, int quest_id, vector<ItemSlot>* items, Unit* unit)
 {
-	assert(item && name && quest_refid != -1);
+	assert(item && name && quest_id != -1);
 	QuestItemRequest* q = new QuestItemRequest;
 	q->item = item;
 	q->name = name;
-	q->quest_refid = quest_refid;
+	q->quest_id = quest_id;
 	q->items = items;
 	q->unit = unit;
 	quest_item_requests.push_back(q);
@@ -496,7 +496,7 @@ void QuestManager::Write(BitStreamWriter& f)
 	f.WriteCasted<word>(quests.size());
 	for(Quest* quest : quests)
 	{
-		f << quest->refid;
+		f << quest->id;
 		f.WriteCasted<byte>(quest->state);
 		f << quest->name;
 		f.WriteStringArray<byte, word>(quest->msgs);
@@ -518,7 +518,7 @@ void QuestManager::Write(BitStreamWriter& f)
 		f << c.item2->id;
 		f << c.item2->name;
 		f << c.item2->desc;
-		f << c.item2->refid;
+		f << c.item2->quest_id;
 	}
 	Net::changes.clear();
 }
@@ -542,7 +542,7 @@ bool QuestManager::Read(BitStreamReader& f)
 	{
 		quest = new PlaceholderQuest;
 		quest->quest_index = index;
-		f >> quest->refid;
+		f >> quest->id;
 		f.ReadCasted<byte>(quest->state);
 		f >> quest->name;
 		f.ReadStringArray<byte, word>(quest->msgs);
@@ -588,7 +588,7 @@ bool QuestManager::Read(BitStreamReader& f)
 		f >> item->id;
 		f >> item->name;
 		f >> item->desc;
-		f >> item->refid;
+		f >> item->quest_id;
 		if(!f)
 		{
 			Error("Read world: Broken packet for quest item %u (2).", i);
@@ -615,17 +615,17 @@ void QuestManager::Save(GameWriter& f)
 
 	f << quests_timeout.size();
 	for(Quest_Dungeon* q : quests_timeout)
-		f << q->refid;
+		f << q->id;
 
 	f << quests_timeout2.size();
 	for(Quest* q : quests_timeout2)
-		f << q->refid;
+		f << q->id;
 
 	f << quest_items.size();
 	for(Item* item : quest_items)
 	{
 		f << item->id;
-		f << item->refid;
+		f << item->quest_id;
 		f << item->name;
 	}
 
@@ -658,27 +658,27 @@ void QuestManager::Load(GameReader& f)
 
 
 	// get quest pointers
-	quest_sawmill = static_cast<Quest_Sawmill*>(FindQuestById(Q_SAWMILL));
-	quest_mine = static_cast<Quest_Mine*>(FindQuestById(Q_MINE));
-	quest_bandits = static_cast<Quest_Bandits*>(FindQuestById(Q_BANDITS));
+	quest_sawmill = static_cast<Quest_Sawmill*>(FindQuest(Q_SAWMILL));
+	quest_mine = static_cast<Quest_Mine*>(FindQuest(Q_MINE));
+	quest_bandits = static_cast<Quest_Bandits*>(FindQuest(Q_BANDITS));
 	quest_bandits->Init();
-	quest_goblins = static_cast<Quest_Goblins*>(FindQuestById(Q_GOBLINS));
+	quest_goblins = static_cast<Quest_Goblins*>(FindQuest(Q_GOBLINS));
 	quest_goblins->Init();
-	quest_mages = static_cast<Quest_Mages*>(FindQuestById(Q_MAGES));
-	quest_mages2 = static_cast<Quest_Mages2*>(FindQuestById(Q_MAGES2));
-	quest_orcs = static_cast<Quest_Orcs*>(FindQuestById(Q_ORCS));
+	quest_mages = static_cast<Quest_Mages*>(FindQuest(Q_MAGES));
+	quest_mages2 = static_cast<Quest_Mages2*>(FindQuest(Q_MAGES2));
+	quest_orcs = static_cast<Quest_Orcs*>(FindQuest(Q_ORCS));
 	quest_orcs->Init();
-	quest_orcs2 = static_cast<Quest_Orcs2*>(FindQuestById(Q_ORCS2));
+	quest_orcs2 = static_cast<Quest_Orcs2*>(FindQuest(Q_ORCS2));
 	quest_orcs2->Init();
-	quest_evil = static_cast<Quest_Evil*>(FindQuestById(Q_EVIL));
+	quest_evil = static_cast<Quest_Evil*>(FindQuest(Q_EVIL));
 	quest_evil->Init();
-	quest_crazies = static_cast<Quest_Crazies*>(FindQuestById(Q_CRAZIES));
+	quest_crazies = static_cast<Quest_Crazies*>(FindQuest(Q_CRAZIES));
 	quest_crazies->Init();
-	quest_artifacts = static_cast<Quest_Artifacts*>(FindQuestById(Q_ARTIFACTS));
+	quest_artifacts = static_cast<Quest_Artifacts*>(FindQuest(Q_ARTIFACTS));
 	if(LOAD_VERSION < V_0_8 && !quest_mages2)
 	{
 		quest_mages2 = new Quest_Mages2;
-		quest_mages2->refid = quest_counter++;
+		quest_mages2->id = quest_counter++;
 		quest_mages2->Start();
 		unaccepted_quests.push_back(quest_mages2);
 	}
@@ -702,7 +702,7 @@ void QuestManager::Load(GameReader& f)
 			Item* base = Item::Get(id.c_str() + 1);
 			item = base->CreateCopy();
 			item->id = id;
-			f >> item->refid;
+			f >> item->quest_id;
 			f >> item->name;
 		}
 	}
@@ -731,55 +731,55 @@ void QuestManager::Load(GameReader& f)
 			if(rumors[i])
 				continue;
 			cstring text;
-			QUEST id;
+			QUEST_TYPE type;
 			switch((old::QUEST_RUMOR)i)
 			{
 			case old::R_SAWMILL:
-				id = Q_SAWMILL;
+				type = Q_SAWMILL;
 				text = Format(txRumorQ[0], world->GetLocation(quest_sawmill->start_loc)->name.c_str());
 				break;
 			case old::R_MINE:
-				id = Q_MINE;
+				type = Q_MINE;
 				text = Format(txRumorQ[1], world->GetLocation(quest_mine->start_loc)->name.c_str());
 				break;
 			case old::R_CONTEST:
-				id = Q_FORCE_NONE;
+				type = Q_FORCE_NONE;
 				text = txRumorQ[2];
 				break;
 			case old::R_BANDITS:
-				id = Q_BANDITS;
+				type = Q_BANDITS;
 				text = Format(txRumorQ[3], world->GetLocation(quest_bandits->start_loc)->name.c_str());
 				break;
 			case old::R_MAGES:
-				id = Q_MAGES;
+				type = Q_MAGES;
 				text = Format(txRumorQ[4], world->GetLocation(quest_mages->start_loc)->name.c_str());
 				break;
 			case old::R_MAGES2:
-				id = Q_MAGES2;
+				type = Q_MAGES2;
 				text = txRumorQ[5];
 				break;
 			case old::R_ORCS:
-				id = Q_ORCS;
+				type = Q_ORCS;
 				text = Format(txRumorQ[6], world->GetLocation(quest_orcs->start_loc)->name.c_str());
 				break;
 			case old::R_GOBLINS:
-				id = Q_GOBLINS;
+				type = Q_GOBLINS;
 				text = Format(txRumorQ[7], world->GetLocation(quest_goblins->start_loc)->name.c_str());
 				break;
 			case old::R_EVIL:
-				id = Q_EVIL;
+				type = Q_EVIL;
 				text = Format(txRumorQ[8], world->GetLocation(quest_evil->start_loc)->name.c_str());
 				break;
 			}
-			if(id == Q_FORCE_NONE)
+			if(type == Q_FORCE_NONE)
 			{
 				quest_contest->rumor = quest_counter++;
 				quest_rumors.push_back(pair<int, string>(quest_contest->rumor, text));
 			}
 			else
 			{
-				Quest* quest = FindQuestById(id);
-				quest_rumors.push_back(pair<int, string>(quest->refid, text));
+				Quest* quest = FindQuest(type);
+				quest_rumors.push_back(pair<int, string>(quest->id, text));
 			}
 		}
 	}
@@ -799,7 +799,7 @@ void QuestManager::Load(GameReader& f)
 	// process quest requests
 	for(QuestRequest& request : quest_requests)
 	{
-		*request.quest = FindAnyQuest(request.refid);
+		*request.quest = FindAnyQuest(request.id);
 		if(request.callback)
 			request.callback();
 	}
@@ -809,7 +809,7 @@ void QuestManager::Load(GameReader& f)
 	for(vector<QuestItemRequest*>::iterator it = quest_item_requests.begin(), end = quest_item_requests.end(); it != end; ++it)
 	{
 		QuestItemRequest* qir = *it;
-		*qir->item = FindQuestItem(qir->name.c_str(), qir->quest_refid);
+		*qir->item = FindQuestItem(qir->name.c_str(), qir->quest_id);
 		if(qir->items)
 		{
 			bool ok = true;
@@ -847,11 +847,11 @@ void QuestManager::LoadQuests(GameReader& f, vector<Quest*>& quests)
 	uint quest_index = 0;
 	for(uint i = 0; i < count; ++i)
 	{
-		QUEST quest_type;
-		f >> quest_type;
+		QUEST_TYPE type;
+		f >> type;
 
-		Quest* quest = CreateQuest(quest_type);
-		quest->quest_id = quest_type;
+		Quest* quest = CreateQuest(type);
+		quest->type = type;
 		quest->quest_index = quest_index;
 		if(!quest->Load(f))
 		{
@@ -868,11 +868,11 @@ void QuestManager::LoadQuests(GameReader& f, vector<Quest*>& quests)
 }
 
 //=================================================================================================
-Quest* QuestManager::FindQuest(int refid, bool active)
+Quest* QuestManager::FindQuest(int id, bool active)
 {
 	for(Quest* quest : quests)
 	{
-		if((!active || quest->IsActive()) && quest->refid == refid)
+		if((!active || quest->IsActive()) && quest->id == id)
 			return quest;
 	}
 
@@ -880,11 +880,11 @@ Quest* QuestManager::FindQuest(int refid, bool active)
 }
 
 //=================================================================================================
-Quest* QuestManager::FindQuest(int loc, QuestType type)
+Quest* QuestManager::FindQuest(int loc, QuestCategory category)
 {
 	for(Quest* quest : quests)
 	{
-		if(quest->start_loc == loc && quest->type == type)
+		if(quest->start_loc == loc && quest->category == category)
 			return quest;
 	}
 
@@ -892,17 +892,17 @@ Quest* QuestManager::FindQuest(int loc, QuestType type)
 }
 
 //=================================================================================================
-Quest* QuestManager::FindAnyQuest(int refid)
+Quest* QuestManager::FindAnyQuest(int id)
 {
 	for(Quest* quest : quests)
 	{
-		if(quest->refid == refid)
+		if(quest->id == id)
 			return quest;
 	}
 
 	for(Quest* quest : unaccepted_quests)
 	{
-		if(quest->refid == refid)
+		if(quest->id == id)
 			return quest;
 	}
 
@@ -916,13 +916,13 @@ Quest* QuestManager::FindAnyQuest(QuestScheme* scheme)
 
 	for(Quest* quest : quests)
 	{
-		if(quest->quest_id == Q_SCRIPTED && static_cast<Quest_Scripted*>(quest)->GetScheme() == scheme)
+		if(quest->type == Q_SCRIPTED && static_cast<Quest_Scripted*>(quest)->GetScheme() == scheme)
 			return quest;
 	}
 
 	for(Quest* quest : unaccepted_quests)
 	{
-		if(quest->quest_id == Q_SCRIPTED && static_cast<Quest_Scripted*>(quest)->GetScheme() == scheme)
+		if(quest->type == Q_SCRIPTED && static_cast<Quest_Scripted*>(quest)->GetScheme() == scheme)
 			return quest;
 	}
 
@@ -930,17 +930,17 @@ Quest* QuestManager::FindAnyQuest(QuestScheme* scheme)
 }
 
 //=================================================================================================
-Quest* QuestManager::FindQuestById(QUEST quest_id)
+Quest* QuestManager::FindQuest(QUEST_TYPE type)
 {
 	for(Quest* quest : quests)
 	{
-		if(quest->quest_id == quest_id)
+		if(quest->type == type)
 			return quest;
 	}
 
 	for(Quest* quest : unaccepted_quests)
 	{
-		if(quest->quest_id == quest_id)
+		if(quest->type == type)
 			return quest;
 	}
 
@@ -948,11 +948,11 @@ Quest* QuestManager::FindQuestById(QUEST quest_id)
 }
 
 //=================================================================================================
-Quest* QuestManager::FindUnacceptedQuest(int loc, QuestType type)
+Quest* QuestManager::FindUnacceptedQuest(int loc, QuestCategory category)
 {
 	for(Quest* quest : unaccepted_quests)
 	{
-		if(quest->start_loc == loc && quest->type == type)
+		if(quest->start_loc == loc && quest->category == category)
 			return quest;
 	}
 
@@ -960,11 +960,11 @@ Quest* QuestManager::FindUnacceptedQuest(int loc, QuestType type)
 }
 
 //=================================================================================================
-Quest* QuestManager::FindUnacceptedQuest(int refid)
+Quest* QuestManager::FindUnacceptedQuest(int id)
 {
 	for(Quest* quest : unaccepted_quests)
 	{
-		if(quest->refid == refid)
+		if(quest->id == id)
 			return quest;
 	}
 
@@ -972,17 +972,17 @@ Quest* QuestManager::FindUnacceptedQuest(int refid)
 }
 
 //=================================================================================================
-const Item* QuestManager::FindQuestItem(cstring name, int refid)
+const Item* QuestManager::FindQuestItem(cstring item_id, int quest_id)
 {
 	for(Item* item : quest_items)
 	{
-		if(item->refid == refid && item->id == name)
+		if(item->quest_id == quest_id && item->id == item_id)
 			return item;
 	}
 
 	for(Quest* quest : quests)
 	{
-		if(refid == quest->refid)
+		if(quest->id == quest_id)
 			return quest->GetQuestItem();
 	}
 
@@ -1066,13 +1066,13 @@ bool QuestManager::HandleFormatString(const string& str, cstring& result)
 }
 
 //=================================================================================================
-const Item* QuestManager::FindQuestItemClient(cstring id, int refid) const
+const Item* QuestManager::FindQuestItemClient(cstring item_id, int quest_id) const
 {
-	assert(id);
+	assert(item_id);
 
 	for(Item* item : quest_items)
 	{
-		if(item->id == id && (refid == -1 || item->IsQuest(refid)))
+		if(item->id == item_id && (quest_id == -1 || item->IsQuest(quest_id)))
 			return item;
 	}
 
@@ -1083,7 +1083,7 @@ const Item* QuestManager::FindQuestItemClient(cstring id, int refid) const
 void QuestManager::AddScriptedQuest(QuestScheme* scheme)
 {
 	assert(scheme);
-	infos.push_back(QuestInfo(Q_SCRIPTED, scheme->type, scheme->id.c_str(), scheme));
+	infos.push_back(QuestInfo(Q_SCRIPTED, scheme->category, scheme->id.c_str(), scheme));
 }
 
 //=================================================================================================
@@ -1100,17 +1100,17 @@ QuestInfo* QuestManager::FindQuest(const string& id)
 //=================================================================================================
 int QuestManager::AddQuestRumor(cstring str)
 {
-	int refid = quest_counter++;
-	quest_rumors.push_back(pair<int, string>(refid, str));
-	return refid;
+	int id = quest_counter++;
+	quest_rumors.push_back(pair<int, string>(id, str));
+	return id;
 }
 
 //=================================================================================================
-bool QuestManager::RemoveQuestRumor(int refid)
+bool QuestManager::RemoveQuestRumor(int id)
 {
 	for(uint i = 0; i < quest_rumors.size(); ++i)
 	{
-		if(quest_rumors[i].first == refid)
+		if(quest_rumors[i].first == id)
 		{
 			RemoveElementIndex(quest_rumors, i);
 			return true;

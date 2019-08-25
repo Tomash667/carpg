@@ -15,8 +15,8 @@ void Quest_DeliverParcel::Start()
 {
 	start_loc = world->GetCurrentLocationIndex();
 	end_loc = world->GetRandomSettlementIndex(start_loc);
-	quest_id = Q_DELIVER_PARCEL;
-	type = QuestType::Mayor;
+	type = Q_DELIVER_PARCEL;
+	category = QuestCategory::Mayor;
 }
 
 //=================================================================================================
@@ -53,7 +53,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			Item::Get("parcel")->CreateCopy(parcel);
 			parcel.id = "$parcel";
 			parcel.name = Format(game->txQuest[8], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str());
-			parcel.refid = refid;
+			parcel.quest_id = id;
 			DialogContext::current->pc->unit->AddItem2(&parcel, 1u, 1u);
 
 			Location& loc2 = GetStartLocation();
@@ -84,7 +84,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			state = Quest::Failed;
 			((City&)GetStartLocation()).quest_mayor = CityQuestState::Failed;
 
-			DialogContext::current->pc->unit->RemoveQuestItem(refid);
+			DialogContext::current->pc->unit->RemoveQuestItem(id);
 			team->AddReward(300, 2000);
 
 			OnUpdate(game->txQuest[12]);
@@ -109,7 +109,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			state = Quest::Completed;
 			((City&)GetStartLocation()).quest_mayor = CityQuestState::None;
 
-			DialogContext::current->pc->unit->RemoveQuestItem(refid);
+			DialogContext::current->pc->unit->RemoveQuestItem(id);
 			team->AddReward(750, 3000);
 
 			RemoveEncounter();
@@ -133,7 +133,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			RemoveEncounter();
 
 			DialogContext::current->talker->AddItem(&parcel, 1, true);
-			team->RemoveQuestItem(&parcel, refid);
+			team->RemoveQuestItem(&parcel, id);
 
 			OnUpdate(game->txQuest[16]);
 		}
@@ -226,7 +226,7 @@ bool Quest_DeliverParcel::Load(GameReader& f)
 			Item::Get("parcel")->CreateCopy(parcel);
 			parcel.id = "$parcel";
 			parcel.name = Format(game->txQuest[8], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str());
-			parcel.refid = refid;
+			parcel.quest_id = id;
 		}
 	}
 

@@ -284,7 +284,7 @@ void ItemHelper::SkipStock(FileReader& f)
 		const string& item_id = f.ReadString1();
 		f.Skip<uint>(); // count
 		if(item_id[0] == '$')
-			f.Skip<int>(); // quest_refid
+			f.Skip<int>(); // quest_id
 	}
 }
 

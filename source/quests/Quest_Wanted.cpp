@@ -15,8 +15,8 @@
 void Quest_Wanted::Start()
 {
 	start_loc = world->GetCurrentLocationIndex();
-	quest_id = Q_WANTED;
-	type = QuestType::Captain;
+	type = Q_WANTED;
+	category = QuestCategory::Captain;
 	level = Random(5, 15);
 	crazy = (Rand() % 5 == 0);
 	clas = crazy ? Class::GetRandomCrazy() : Class::GetRandomHero();
@@ -72,7 +72,7 @@ void Quest_Wanted::SetProgress(int prog2)
 			Item::Get("wanted_letter")->CreateCopy(letter);
 			letter.id = "$wanted_letter";
 			letter.name = game->txQuest[258];
-			letter.refid = refid;
+			letter.quest_id = id;
 			letter.desc = Format(game->txQuest[259], level * 100, unit_name.c_str());
 			DialogContext::current->pc->unit->AddItem2(&letter, 1u, 1u);
 
@@ -256,7 +256,7 @@ bool Quest_Wanted::Load(GameReader& f)
 		Item::Get("wanted_letter")->CreateCopy(letter);
 		letter.id = "$wanted_letter";
 		letter.name = game->txQuest[258];
-		letter.refid = refid;
+		letter.quest_id = id;
 		letter.desc = Format(game->txQuest[259], level * 100, unit_name.c_str());
 	}
 

@@ -240,14 +240,6 @@ bool City::Read(BitStreamReader& f)
 }
 
 //=================================================================================================
-void City::BuildRefidTables()
-{
-	LevelArea::BuildRefidTables();
-	for(InsideBuilding* inside : inside_buildings)
-		inside->BuildRefidTables();
-}
-
-//=================================================================================================
 bool City::FindUnit(Unit* unit, int* level)
 {
 	assert(unit);

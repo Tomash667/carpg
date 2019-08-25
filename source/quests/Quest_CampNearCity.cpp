@@ -14,8 +14,8 @@
 //=================================================================================================
 void Quest_CampNearCity::Start()
 {
-	quest_id = Q_CAMP_NEAR_CITY;
-	type = QuestType::Captain;
+	type = Q_CAMP_NEAR_CITY;
+	category = QuestCategory::Captain;
 	start_loc = world->GetCurrentLocationIndex();
 	switch(Rand() % 3)
 	{

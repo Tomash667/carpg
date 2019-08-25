@@ -110,7 +110,6 @@ struct Location
 	virtual void Load(GameReader& f, bool local, LOCATION_TOKEN token);
 	virtual void Write(BitStreamWriter& f) = 0;
 	virtual bool Read(BitStreamReader& f) = 0;
-	virtual void BuildRefidTables() = 0;
 	virtual bool FindUnit(Unit* unit, int* level = nullptr) = 0;
 	virtual Unit* FindUnit(UnitData* data, int& at_level) = 0;
 	virtual bool CheckUpdate(int& days_passed, int worldtime);

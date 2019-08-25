@@ -7,10 +7,6 @@
 #include "Language.h"
 #include "Game.h"
 #include "GameFile.h"
-#include "GroundItem.h"
-#include "Chest.h"
-#include "Trap.h"
-#include "Door.h"
 #include "EntityInterpolator.h"
 #include "GameGui.h"
 #include "ServerPanel.h"
@@ -23,6 +19,7 @@
 #include "SoundManager.h"
 #include "Team.h"
 #include "LobbyApi.h"
+#include "SaveState.h"
 
 Net* global::net;
 const float CHANGE_LEVEL_TIMER = 5.f;
@@ -315,13 +312,6 @@ void Net::Save(GameWriter& f)
 		if(info.left == PlayerInfo::LEFT_NO)
 			info.Save(f);
 	}
-	f << Unit::netid_counter;
-	f << GroundItem::netid_counter;
-	f << Chest::netid_counter;
-	f << Usable::netid_counter;
-	f << Trap::netid_counter;
-	f << Door::netid_counter;
-	f << Electro::netid_counter;
 	f << mp_use_interp;
 	f << mp_interp;
 }
@@ -343,13 +333,8 @@ void Net::Load(GameReader& f)
 		old_players.ptrs[i] = new PlayerInfo;
 		old_players.ptrs[i]->Load(f);
 	}
-	f >> Unit::netid_counter;
-	f >> GroundItem::netid_counter;
-	f >> Chest::netid_counter;
-	f >> Usable::netid_counter;
-	f >> Trap::netid_counter;
-	f >> Door::netid_counter;
-	f >> Electro::netid_counter;
+	if(LOAD_VERSION < V_DEV)
+		f.Skip(sizeof(int) * 7); // old netid_counters
 	f >> mp_use_interp;
 	f >> mp_interp;
 }
@@ -524,7 +509,7 @@ void Net::WriteLevelData(BitStream& stream, bool loaded_resources)
 	{
 		f << item->id;
 		if(item->IsQuest())
-			f << item->refid;
+			f << item->quest_id;
 	}
 
 	f.WriteCasted<byte>(0xFF);
@@ -863,22 +848,22 @@ bool Net::ReadLevelData(BitStreamReader& f)
 		}
 		else
 		{
-			int refid = f.Read<int>();
+			int quest_id = f.Read<int>();
 			if(!f)
 			{
 				Error("Read level: Broken quest item preload '%u'.", i);
 				return false;
 			}
-			const Item* item = quest_mgr->FindQuestItemClient(item_id.c_str(), refid);
+			const Item* item = quest_mgr->FindQuestItemClient(item_id.c_str(), quest_id);
 			if(!item)
 			{
-				Error("Read level: Missing quest item preload '%s' (%d).", item_id.c_str(), refid);
+				Error("Read level: Missing quest item preload '%s' (%d).", item_id.c_str(), quest_id);
 				return false;
 			}
 			const Item* base = Item::TryGet(item_id.c_str() + 1);
 			if(!base)
 			{
-				Error("Read level: Missing quest item preload base '%s' (%d).", item_id.c_str(), refid);
+				Error("Read level: Missing quest item preload base '%s' (%d).", item_id.c_str(), quest_id);
 				return false;
 			}
 			items_load.insert(base);

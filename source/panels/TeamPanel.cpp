@@ -471,7 +471,7 @@ void TeamPanel::OnGiveGold(int id)
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::GIVE_GOLD;
-			c.id = target->netid;
+			c.id = target->id;
 			c.count = counter;
 		}
 	}

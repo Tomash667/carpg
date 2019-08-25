@@ -58,15 +58,15 @@ public:
 	void Apply();
 	LevelArea& GetArea(const Vec3& pos);
 	LevelArea* GetAreaById(int area_id);
-	Unit* FindUnit(int netid);
+	Unit* FindUnit(int id);
 	Unit* FindUnit(delegate<bool(Unit*)> pred);
 	Unit* FindUnit(UnitData* ud);
-	Usable* FindUsable(int netid);
-	Door* FindDoor(int netid);
-	Trap* FindTrap(int netid);
-	Chest* FindChest(int netid);
-	Electro* FindElectro(int netid);
-	bool RemoveTrap(int netid);
+	Usable* FindUsable(int id);
+	Door* FindDoor(int id);
+	Trap* FindTrap(int id);
+	Chest* FindChest(int id);
+	Electro* FindElectro(int id);
+	bool RemoveTrap(int id);
 	void RemoveUnit(Unit* unit, bool notify = true);
 	// for object rot must be 0, PI/2, PI or PI*3/2
 	ObjectEntity SpawnObjectEntity(LevelArea& area, BaseObject* base, const Vec3& pos, float rot, float scale = 1.f, int flags = 0,
@@ -89,7 +89,7 @@ public:
 	void PickableItemBegin(LevelArea& area, Object& o);
 	void PickableItemAdd(const Item* item);
 	void AddGroundItem(LevelArea& area, GroundItem* item);
-	GroundItem* FindGroundItem(int netid, LevelArea** area = nullptr);
+	GroundItem* FindGroundItem(int id, LevelArea** area = nullptr);
 	GroundItem* SpawnGroundItemInsideAnyRoom(InsideLocationLevel& lvl, const Item* item);
 	GroundItem* SpawnGroundItemInsideRoom(Room& room, const Item* item);
 	GroundItem* SpawnGroundItemInsideRadius(const Item* item, const Vec2& pos, float radius, bool try_exact = false);

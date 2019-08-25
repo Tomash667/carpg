@@ -22,13 +22,13 @@ void Quest_Goblins::Init()
 //=================================================================================================
 void Quest_Goblins::Start()
 {
-	type = QuestType::Unique;
-	quest_id = Q_GOBLINS;
+	category = QuestCategory::Unique;
+	type = Q_GOBLINS;
 	enc = -1;
 	goblins_state = State::None;
 	nobleman = nullptr;
 	messenger = nullptr;
-	quest_mgr->AddQuestRumor(refid, Format(quest_mgr->txRumorQ[7], GetStartLocationName()));
+	quest_mgr->AddQuestRumor(id, Format(quest_mgr->txRumorQ[7], GetStartLocationName()));
 }
 
 //=================================================================================================
@@ -96,7 +96,9 @@ void DodajStraznikow()
 		if(u2)
 		{
 			u2->dont_attack = true;
-			u2->guard_target = u;
+			u2->order = ORDER_GUARD;
+			u2->order_unit = u;
+			u2->order_timer = -1;
 		}
 	}
 
@@ -114,7 +116,7 @@ void Quest_Goblins::SetProgress(int prog2)
 	case Progress::NotAccepted:
 		// nie zaakceptowano
 		{
-			if(quest_mgr->RemoveQuestRumor(refid))
+			if(quest_mgr->RemoveQuestRumor(id))
 				game_gui->journal->AddRumor(Format(game->txQuest[211], GetStartLocationName()));
 		}
 		break;
@@ -123,7 +125,7 @@ void Quest_Goblins::SetProgress(int prog2)
 		{
 			OnStart(game->txQuest[212]);
 			// usuñ plotkê
-			quest_mgr->RemoveQuestRumor(refid);
+			quest_mgr->RemoveQuestRumor(id);
 			// dodaj lokalizacje
 			target_loc = world->GetNearestLocation(GetStartLocation().pos, 1 << L_FOREST, true);
 			Location& target = GetTargetLocation();

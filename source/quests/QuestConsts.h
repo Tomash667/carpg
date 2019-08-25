@@ -1,7 +1,7 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-enum class QuestType
+enum class QuestCategory
 {
 	NotSet = -1,
 	Mayor = 0,
@@ -13,7 +13,7 @@ enum class QuestType
 //-----------------------------------------------------------------------------
 // identyfikatory questów
 // kolejnoœæ nie jest nigdzie u¿ywana, mo¿na dawaæ jak siê chce, ale na koñcu ¿eby zapisy by³y kompatybilne
-enum QUEST
+enum QUEST_TYPE
 {
 	Q_FORCE_DISABLED = -2,
 	Q_FORCE_NONE = -1,

@@ -14,8 +14,8 @@
 //=================================================================================================
 void Quest_BanditsCollectToll::Start()
 {
-	quest_id = Q_BANDITS_COLLECT_TOLL;
-	type = QuestType::Captain;
+	type = Q_BANDITS_COLLECT_TOLL;
+	category = QuestCategory::Captain;
 	start_loc = world->GetCurrentLocationIndex();
 	other_loc = world->GetRandomSettlementIndex(start_loc);
 }

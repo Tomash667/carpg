@@ -2175,7 +2175,7 @@ void InventoryPanel::OnGiveGold(int id)
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::GIVE_GOLD;
-			c.id = u->netid;
+			c.id = u->id;
 			c.count = counter;
 		}
 	}

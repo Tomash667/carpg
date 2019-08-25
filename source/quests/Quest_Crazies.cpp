@@ -25,8 +25,8 @@ void Quest_Crazies::Init()
 //=================================================================================================
 void Quest_Crazies::Start()
 {
-	type = QuestType::Unique;
-	quest_id = Q_CRAZIES;
+	category = QuestCategory::Unique;
+	type = Q_CRAZIES;
 	target_loc = -1;
 	crazies_state = State::None;
 	days = 0;

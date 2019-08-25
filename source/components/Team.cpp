@@ -120,25 +120,25 @@ void Team::RemoveTeamMember(Unit* unit)
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::KICK_NPC;
-		c.id = unit->netid;
+		c.id = unit->id;
 	}
 
 	if(unit->event_handler)
 		unit->event_handler->HandleUnitEvent(UnitEventHandler::KICK, unit);
 }
 
-Unit* Team::FindActiveTeamMember(int netid)
+Unit* Team::FindActiveTeamMember(int id)
 {
 	for(Unit& unit : active_members)
 	{
-		if(unit.netid == netid)
+		if(unit.id == id)
 			return &unit;
 	}
 
 	return nullptr;
 }
 
-bool Team::FindItemInTeam(const Item* item, int refid, Unit** unit_result, int* i_index, bool check_npc)
+bool Team::FindItemInTeam(const Item* item, int quest_id, Unit** unit_result, int* i_index, bool check_npc)
 {
 	assert(item);
 
@@ -146,7 +146,7 @@ bool Team::FindItemInTeam(const Item* item, int refid, Unit** unit_result, int* 
 	{
 		if(unit.IsPlayer() || check_npc)
 		{
-			int index = unit.FindItem(item, refid);
+			int index = unit.FindItem(item, quest_id);
 			if(index != Unit::INVALID_IINDEX)
 			{
 				if(unit_result)
@@ -259,7 +259,7 @@ void Team::GetTeamInfo(TeamInfo& info)
 			++info.npcs;
 			if(unit.IsHero())
 			{
-				if(unit.summoner != nullptr)
+				if(unit.summoner)
 				{
 					++info.free_members;
 					++info.summons;
@@ -366,13 +366,13 @@ void Team::Load(GameReader& f)
 {
 	members.ptrs.resize(f.Read<uint>());
 	for(Unit*& unit : members.ptrs)
-		unit = Unit::GetByRefid(f.Read<int>());
+		unit = Unit::GetById(f.Read<int>());
 
 	active_members.ptrs.resize(f.Read<uint>());
 	for(Unit*& unit : active_members.ptrs)
-		unit = Unit::GetByRefid(f.Read<int>());
+		unit = Unit::GetById(f.Read<int>());
 
-	leader = Unit::GetByRefid(f.Read<int>());
+	leader = Unit::GetById(f.Read<int>());
 	if(LOAD_VERSION < V_0_7)
 	{
 		int team_gold;
@@ -408,6 +408,11 @@ void Team::Load(GameReader& f)
 
 	CheckCredit(false, true);
 	CalculatePlayersLevel();
+
+	// apply leader requests
+	for(Entity<Unit>* unit : leader_requests)
+		*unit = leader;
+	leader_requests.clear();
 }
 
 void Team::Reset()
@@ -427,13 +432,13 @@ void Team::Save(GameWriter& f)
 {
 	f << GetTeamSize();
 	for(Unit& unit : members)
-		f << unit.refid;
+		f << unit.id;
 
 	f << GetActiveTeamSize();
 	for(Unit& unit : active_members)
-		f << unit.refid;
+		f << unit.id;
 
-	f << leader->refid;
+	f << leader->id;
 	f << crazies_attack;
 	f << is_bandit;
 	f << free_recruits;
@@ -443,11 +448,7 @@ void Team::SaveOnWorldmap(GameWriter& f)
 {
 	f << GetTeamSize();
 	for(Unit& unit : members)
-	{
 		unit.Save(f, false);
-		unit.refid = (int)Unit::refid_table.size();
-		Unit::refid_table.push_back(&unit);
-	}
 }
 
 void Team::Update(int days, bool travel)
@@ -1197,7 +1198,6 @@ void Team::CheckUnitOverload(Unit& unit)
 	{
 		ItemToSell& to_sell = items_to_sell.back();
 		ItemSlot& slot = unit.items[to_sell.index];
-		__assume(slot.item != nullptr);
 		int price = ItemHelper::GetItemPrice(slot.item, unit, false);
 		if(slot.team_count == 0)
 			unit.gold += price;
@@ -1242,12 +1242,12 @@ void Team::CheckCredit(bool require_update, bool ignore)
 }
 
 //=================================================================================================
-bool Team::RemoveQuestItem(const Item* item, int refid)
+bool Team::RemoveQuestItem(const Item* item, int quest_id)
 {
 	Unit* unit;
 	int slot_id;
 
-	if(FindItemInTeam(item, refid, &unit, &slot_id))
+	if(FindItemInTeam(item, quest_id, &unit, &slot_id))
 	{
 		unit->RemoveItem(slot_id, 1u);
 		return true;
@@ -1353,7 +1353,7 @@ void Team::AddGold(int count, rvector<Unit>* units, bool show, bool is_quest)
 			{
 				NetChangePlayer& c = Add1(trader->player->player_info->changes);
 				c.type = NetChangePlayer::UPDATE_TRADER_GOLD;
-				c.id = u.netid;
+				c.id = u.id;
 				c.count = u.gold;
 			}
 		}
@@ -1446,7 +1446,7 @@ void Team::AddGold(int count, rvector<Unit>* units, bool show, bool is_quest)
 			{
 				NetChangePlayer& c = Add1(trader->player->player_info->changes);
 				c.type = NetChangePlayer::UPDATE_TRADER_GOLD;
-				c.id = unit.netid;
+				c.id = unit.id;
 				c.count = unit.gold;
 			}
 		}

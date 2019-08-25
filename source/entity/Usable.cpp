@@ -27,41 +27,31 @@ namespace old
 	};
 }
 
-vector<Usable*> Usable::refid_table;
-vector<UsableRequest> Usable::refid_request;
-int Usable::netid_counter;
 const float Usable::SOUND_DIST = 1.5f;
-
-//=================================================================================================
-Mesh* Usable::GetMesh() const
-{
-	if(base->variants)
-	{
-		assert(InRange(variant, 0, (int)base->variants->entries.size()));
-		return base->variants->entries[variant].mesh;
-	}
-	else
-		return base->mesh;
-}
+EntityType<Usable>::Impl EntityType<Usable>::impl;
 
 //=================================================================================================
 void Usable::Save(FileWriter& f, bool local)
 {
+	f << id;
 	f << base->id;
 	f << pos;
 	f << rot;
-	f << netid;
 	if(base->variants)
 		f << variant;
 	if(IsSet(base->use_flags, BaseUsable::CONTAINER))
 		container->Save(f);
 	if(local && !IsSet(base->use_flags, BaseUsable::CONTAINER))
-		f << (user ? user->refid : -1);
+		f << user;
 }
 
 //=================================================================================================
 void Usable::Load(FileReader& f, bool local)
 {
+	if(LOAD_VERSION >= V_DEV)
+		f >> id;
+	Register();
+
 	if(LOAD_VERSION < V_0_6_2)
 	{
 		int type = f.Read<int>();
@@ -106,7 +96,8 @@ void Usable::Load(FileReader& f, bool local)
 		base = BaseUsable::Get(f.ReadString1());
 	f >> pos;
 	f >> rot;
-	f >> netid;
+	if(LOAD_VERSION < V_DEV)
+		f.Skip<int>(); // old netid
 	if(base->variants)
 		f >> variant;
 	if(LOAD_VERSION >= V_0_6 && IsSet(base->use_flags, BaseUsable::CONTAINER))
@@ -122,15 +113,13 @@ void Usable::Load(FileReader& f, bool local)
 			if(IsSet(base->use_flags, BaseUsable::CONTAINER))
 				user = nullptr;
 			else
-				user = Unit::GetByRefid(f.Read<int>());
+				f >> user;
 		}
 		else
 		{
-			int refid = f.Read<int>();
+			f >> user;
 			if(IsSet(base->use_flags, BaseUsable::CONTAINER))
 				user = nullptr;
-			else
-				user = Unit::GetByRefid(refid);
 		}
 	}
 	else
@@ -140,31 +129,45 @@ void Usable::Load(FileReader& f, bool local)
 //=================================================================================================
 void Usable::Write(BitStreamWriter& f) const
 {
-	f << netid;
+	f << id;
 	f << base->id;
 	f << pos;
 	f << rot;
 	f.WriteCasted<byte>(variant);
+	f << user;
 }
 
 //=================================================================================================
 bool Usable::Read(BitStreamReader& f)
 {
-	f >> netid;
+	f >> id;
 	const string& base_id = f.ReadString1();
 	f >> pos;
 	f >> rot;
 	f.ReadCasted<byte>(variant);
+	f >> user;
 	if(!f)
 		return false;
-	user = nullptr;
 	base = BaseUsable::TryGet(base_id);
 	if(!base)
 	{
 		Error("Invalid usable type '%s'.", base_id.c_str());
 		return false;
 	}
+	Register();
 	if(IsSet(base->use_flags, BaseUsable::CONTAINER))
 		container = new ItemContainer;
 	return true;
+}
+
+//=================================================================================================
+Mesh* Usable::GetMesh() const
+{
+	if(base->variants)
+	{
+		assert(InRange(variant, 0, (int)base->variants->entries.size()));
+		return base->variants->entries[variant].mesh;
+	}
+	else
+		return base->mesh;
 }

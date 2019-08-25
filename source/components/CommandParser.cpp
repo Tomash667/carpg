@@ -134,6 +134,7 @@ void CommandParser::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_CLEAN_LEVEL, "clean_level", "remove all corpses and blood from level (clean_level [building_id])", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_ARENA, "arena", "spawns enemies on arena (example arena 3 rat vs 2 wolf)", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_SHADER_VERSION, "shader_version", "force shader version (shader_version 2/3)", F_ANYWHERE | F_WORLD_MAP | F_NO_ECHO));
+	cmds.push_back(ConsoleCommand(CMD_REMOVE_UNIT, "remove_unit", "remove selected unit", F_GAME | F_CHEAT | F_SERVER));
 
 	// verify all commands are added
 #ifdef _DEBUG
@@ -366,12 +367,13 @@ void CommandParser::ParseScript(Tokenizer& t)
 	}
 
 	cstring code = t.GetTextRest();
+	Unit* target_unit = game->pc_data.GetTargetUnit();
 	if(Net::IsLocal())
 	{
 		string& output = script_mgr->OpenOutput();
 		ScriptContext& ctx = script_mgr->GetContext();
 		ctx.pc = game->pc;
-		ctx.target = game->pc_data.target_unit;
+		ctx.target = target_unit;
 		script_mgr->RunScript(code);
 		if(!output.empty())
 			Msg(output.c_str());
@@ -385,7 +387,7 @@ void CommandParser::ParseScript(Tokenizer& t)
 		c.type = NetChange::RUN_SCRIPT;
 		c.str = StringPool.Get();
 		*c.str = code;
-		c.id = (game->pc_data.target_unit ? game->pc_data.target_unit->netid : -1);
+		c.id = (target_unit ? target_unit->id : -1);
 	}
 }
 
@@ -755,15 +757,15 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			Net::PushChange(NetChange::CHEAT_HEAL);
 		break;
 	case CMD_KILL:
-		if(game->pc_data.target_unit && game->pc_data.target_unit->IsAlive())
+		if(Unit* target = game->pc_data.GetTargetUnit(); target && target->IsAlive())
 		{
 			if(Net::IsLocal())
-				game->GiveDmg(*game->pc_data.target_unit, game->pc_data.target_unit->hpmax);
+				game->GiveDmg(*target, target->hpmax);
 			else
 			{
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::CHEAT_KILL;
-				c.unit = game->pc_data.target_unit;
+				c.unit = target;
 			}
 		}
 		else
@@ -773,29 +775,29 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		CmdList(t);
 		break;
 	case CMD_HEAL_UNIT:
-		if(game->pc_data.target_unit)
+		if(Unit* target = game->pc_data.GetTargetUnit())
 		{
 			if(Net::IsLocal())
 			{
-				game->pc_data.target_unit->hp = game->pc_data.target_unit->hpmax;
-				game->pc_data.target_unit->mp = game->pc_data.target_unit->mpmax;
-				game->pc_data.target_unit->stamina = game->pc_data.target_unit->stamina_max;
-				game->pc_data.target_unit->RemovePoison();
-				game->pc_data.target_unit->RemoveEffect(EffectId::Stun);
+				target->hp = target->hpmax;
+				target->mp = target->mpmax;
+				target->stamina = target->stamina_max;
+				target->RemovePoison();
+				target->RemoveEffect(EffectId::Stun);
 				if(Net::IsOnline())
 				{
 					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::UPDATE_HP;
-					c.unit = game->pc_data.target_unit;
-					if(game->pc_data.target_unit->player && !game->pc_data.target_unit->player->is_local)
-						game->pc_data.target_unit->player->player_info->update_flags |= PlayerInfo::UF_MANA | PlayerInfo::UF_STAMINA;
+					c.unit = target;
+					if(target->player && !target->player->is_local)
+						target->player->player_info->update_flags |= PlayerInfo::UF_MANA | PlayerInfo::UF_STAMINA;
 				}
 			}
 			else
 			{
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::CHEAT_HEAL_UNIT;
-				c.unit = game->pc_data.target_unit;
+				c.unit = target;
 			}
 		}
 		else
@@ -1437,8 +1439,8 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			Unit* u;
 			if(t.Next() && t.GetInt() == 1)
 				u = game->pc->unit;
-			else if(game->pc_data.target_unit)
-				u = game->pc_data.target_unit;
+			else if(Unit* target = game->pc_data.GetTargetUnit())
+				u = target;
 			else
 			{
 				Msg("No unit in front of player.");
@@ -1520,8 +1522,8 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			Unit* u;
 			if(t.Next() && t.GetInt() == 1)
 				u = game->pc->unit;
-			else if(game->pc_data.target_unit)
-				u = game->pc_data.target_unit;
+			else if(Unit* target = game->pc_data.GetTargetUnit())
+				u = target;
 			else
 			{
 				Msg("No unit in front of player.");
@@ -1655,7 +1657,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::GENERIC_CMD;
 				c << (byte)CMD_ADD_EFFECT
-					<< game->pc_data.selected_unit->netid
+					<< game->pc_data.selected_unit->id
 					<< (char)e.effect
 					<< (char)e.source
 					<< (char)e.source_id
@@ -1759,7 +1761,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::GENERIC_CMD;
 				c << (byte)CMD_REMOVE_EFFECT
-					<< game->pc_data.selected_unit->netid
+					<< game->pc_data.selected_unit->id
 					<< (char)effect
 					<< (char)source
 					<< (char)source_id
@@ -1775,7 +1777,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::GENERIC_CMD;
 			c << (byte)CMD_LIST_EFFECTS
-				<< game->pc_data.selected_unit->netid;
+				<< game->pc_data.selected_unit->id;
 		}
 		break;
 	case CMD_ADD_PERK:
@@ -1834,7 +1836,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::GENERIC_CMD;
 				c << (byte)CMD_ADD_PERK
-					<< game->pc_data.selected_unit->netid
+					<< game->pc_data.selected_unit->id
 					<< (char)info->perk_id
 					<< (char)value;
 			}
@@ -1896,7 +1898,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::GENERIC_CMD;
 				c << (byte)CMD_REMOVE_PERK
-					<< game->pc_data.selected_unit->netid
+					<< game->pc_data.selected_unit->id
 					<< (char)info->perk_id
 					<< (char)value;
 			}
@@ -1912,7 +1914,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::GENERIC_CMD;
 			c << (byte)CMD_LIST_PERKS
-				<< game->pc_data.selected_unit->netid;
+				<< game->pc_data.selected_unit->id;
 		}
 		break;
 	case CMD_SELECT:
@@ -1948,15 +1950,16 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 				game->pc_data.selected_unit = game->pc->unit;
 			else if(select == SELECT_TARGET)
 			{
-				if(!game->pc_data.target_unit)
+				if(Unit* target = game->pc_data.GetTargetUnit())
+					game->pc_data.selected_unit = target;
+				else
 				{
 					Msg("No unit in front of player.");
 					break;
 				}
-				game->pc_data.selected_unit = game->pc_data.target_unit;
 			}
 			Msg("Currently selected: %s %p [%d]", game->pc_data.selected_unit->data->id.c_str(), game->pc_data.selected_unit,
-				Net::IsOnline() ? game->pc_data.selected_unit->netid : -1);
+				Net::IsOnline() ? game->pc_data.selected_unit->id : -1);
 		}
 		break;
 	case CMD_LIST_STATS:
@@ -1967,7 +1970,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::GENERIC_CMD;
 			c << (byte)CMD_LIST_STATS
-				<< game->pc_data.selected_unit->netid;
+				<< game->pc_data.selected_unit->id;
 		}
 		break;
 	case CMD_ADD_LEARNING_POINTS:
@@ -1987,7 +1990,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::GENERIC_CMD;
 				c << (byte)CMD_ADD_LEARNING_POINTS
-					<< game->pc_data.selected_unit->netid
+					<< game->pc_data.selected_unit->id
 					<< count;
 			}
 		}
@@ -2039,6 +2042,12 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 				game->ReloadShaders();
 			}
 		}
+		break;
+	case CMD_REMOVE_UNIT:
+		if(game->pc_data.selected_unit->IsPlayer())
+			Msg("Can't remove player unit.");
+		else
+			game_level->RemoveUnit(game->pc_data.selected_unit);
 		break;
 	default:
 		assert(0);
@@ -2109,10 +2118,10 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f)
 	{
 	case CMD_ADD_EFFECT:
 		{
-			int netid;
+			int id;
 			Effect e;
 
-			f >> netid;
+			f >> id;
 			f.ReadCasted<char>(e.effect);
 			f.ReadCasted<char>(e.source);
 			f.ReadCasted<char>(e.source_id);
@@ -2120,10 +2129,10 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f)
 			f >> e.power;
 			f >> e.time;
 
-			Unit* unit = game_level->FindUnit(netid);
+			Unit* unit = game_level->FindUnit(id);
 			if(!unit)
 			{
-				Error("CommandParser CMD_ADD_EFFECT: Missing unit %d.", netid);
+				Error("CommandParser CMD_ADD_EFFECT: Missing unit %d.", id);
 				return false;
 			}
 			if(e.effect >= EffectId::Max)
@@ -2182,22 +2191,22 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f)
 		break;
 	case CMD_REMOVE_EFFECT:
 		{
-			int netid;
+			int id;
 			EffectId effect;
 			EffectSource source;
 			int source_id;
 			int value;
 
-			f >> netid;
+			f >> id;
 			f.ReadCasted<char>(effect);
 			f.ReadCasted<char>(source);
 			f.ReadCasted<char>(source_id);
 			f.ReadCasted<char>(value);
 
-			Unit* unit = game_level->FindUnit(netid);
+			Unit* unit = game_level->FindUnit(id);
 			if(!unit)
 			{
-				Error("CommandParser CMD_REMOVE_EFFECT: Missing unit %d.", netid);
+				Error("CommandParser CMD_REMOVE_EFFECT: Missing unit %d.", id);
 				return false;
 			}
 			if(effect >= EffectId::Max)
@@ -2254,12 +2263,12 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f)
 		break;
 	case CMD_LIST_EFFECTS:
 		{
-			int netid;
-			f >> netid;
-			Unit* unit = game_level->FindUnit(netid);
+			int id;
+			f >> id;
+			Unit* unit = game_level->FindUnit(id);
 			if(!unit)
 			{
-				Error("CommandParser CMD_LIST_EFFECTS: Missing unit %d.", netid);
+				Error("CommandParser CMD_LIST_EFFECTS: Missing unit %d.", id);
 				return false;
 			}
 			ListEffects(unit);
@@ -2267,22 +2276,22 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f)
 		break;
 	case CMD_ADD_PERK:
 		{
-			int netid, value;
+			int id, value;
 			Perk perk;
 
-			f >> netid;
+			f >> id;
 			f.ReadCasted<char>(perk);
 			f.ReadCasted<char>(value);
 
-			Unit* unit = game_level->FindUnit(netid);
+			Unit* unit = game_level->FindUnit(id);
 			if(!unit)
 			{
-				Error("CommandParser CMD_ADD_PERK: Missing unit %d.", netid);
+				Error("CommandParser CMD_ADD_PERK: Missing unit %d.", id);
 				return false;
 			}
 			if(!unit->player)
 			{
-				Error("CommandParser CMD_ADD_PERK: Unit %d is not player.", netid);
+				Error("CommandParser CMD_ADD_PERK: Unit %d is not player.", id);
 				return false;
 			}
 			if(perk >= Perk::Max)
@@ -2321,22 +2330,22 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f)
 		break;
 	case CMD_REMOVE_PERK:
 		{
-			int netid, value;
+			int id, value;
 			Perk perk;
 
-			f >> netid;
+			f >> id;
 			f.ReadCasted<char>(perk);
 			f.ReadCasted<char>(value);
 
-			Unit* unit = game_level->FindUnit(netid);
+			Unit* unit = game_level->FindUnit(id);
 			if(!unit)
 			{
-				Error("CommandParser CMD_REMOVE_PERK: Missing unit %d.", netid);
+				Error("CommandParser CMD_REMOVE_PERK: Missing unit %d.", id);
 				return false;
 			}
 			if(!unit->player)
 			{
-				Error("CommandParser CMD_REMOVE_PERK: Unit %d is not player.", netid);
+				Error("CommandParser CMD_REMOVE_PERK: Unit %d is not player.", id);
 				return false;
 			}
 			if(perk >= Perk::Max)
@@ -2375,17 +2384,17 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f)
 		break;
 	case CMD_LIST_PERKS:
 		{
-			int netid;
-			f >> netid;
-			Unit* unit = game_level->FindUnit(netid);
+			int id;
+			f >> id;
+			Unit* unit = game_level->FindUnit(id);
 			if(!unit)
 			{
-				Error("CommandParser CMD_LIST_PERKS: Missing unit %d.", netid);
+				Error("CommandParser CMD_LIST_PERKS: Missing unit %d.", id);
 				return false;
 			}
 			if(!unit->player)
 			{
-				Error("CommandParser CMD_LIST_PERKS: Unit %d is not player.", netid);
+				Error("CommandParser CMD_LIST_PERKS: Unit %d is not player.", id);
 				return false;
 			}
 			ListPerks(unit->player);
@@ -2393,12 +2402,12 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f)
 		break;
 	case CMD_LIST_STATS:
 		{
-			int netid;
-			f >> netid;
-			Unit* unit = game_level->FindUnit(netid);
+			int id;
+			f >> id;
+			Unit* unit = game_level->FindUnit(id);
 			if(!unit)
 			{
-				Error("CommandParser CMD_LIST_STAT: Missing unit %d.", netid);
+				Error("CommandParser CMD_LIST_STAT: Missing unit %d.", id);
 				return false;
 			}
 			ListStats(unit);
@@ -2406,20 +2415,20 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f)
 		break;
 	case CMD_ADD_LEARNING_POINTS:
 		{
-			int netid, count;
+			int id, count;
 
-			f >> netid;
+			f >> id;
 			f >> count;
 
-			Unit* unit = game_level->FindUnit(netid);
+			Unit* unit = game_level->FindUnit(id);
 			if(!unit)
 			{
-				Error("CommandParser CMD_ADD_LEARNING_POINTS: Missing unit %d.", netid);
+				Error("CommandParser CMD_ADD_LEARNING_POINTS: Missing unit %d.", id);
 				return false;
 			}
 			if(!unit->player)
 			{
-				Error("CommandParser CMD_ADD_LEARNING_POINTS: Unit %d is not player.", netid);
+				Error("CommandParser CMD_ADD_LEARNING_POINTS: Unit %d is not player.", id);
 				return false;
 			}
 			if(count < 1)

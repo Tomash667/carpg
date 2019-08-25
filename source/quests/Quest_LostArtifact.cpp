@@ -14,8 +14,8 @@
 //=================================================================================================
 void Quest_LostArtifact::Start()
 {
-	quest_id = Q_LOST_ARTIFACT;
-	type = QuestType::Random;
+	type = Q_LOST_ARTIFACT;
+	category = QuestCategory::Random;
 	start_loc = world->GetCurrentLocationIndex();
 	item = OtherItem::artifacts[Rand() % OtherItem::artifacts.size()];
 }
@@ -50,7 +50,7 @@ void Quest_LostArtifact::SetProgress(int prog2)
 
 			item->CreateCopy(quest_item);
 			quest_item.id = Format("$%s", item->id.c_str());
-			quest_item.refid = refid;
+			quest_item.quest_id = id;
 
 			Location& sl = GetStartLocation();
 
@@ -115,7 +115,7 @@ void Quest_LostArtifact::SetProgress(int prog2)
 			team->AddReward(reward, reward * 3);
 			DialogContext::current->talker->temporary = true;
 			DialogContext::current->talker->AddItem(&quest_item, 1, true);
-			DialogContext::current->pc->unit->RemoveQuestItem(refid);
+			DialogContext::current->pc->unit->RemoveQuestItem(id);
 		}
 		break;
 	case Progress::Timeout:
@@ -185,7 +185,7 @@ bool Quest_LostArtifact::IsTimedout() const
 bool Quest_LostArtifact::OnTimeout(TimeoutType ttype)
 {
 	if(done)
-		ForLocation(target_loc, at_level)->RemoveQuestGroundItem(refid);
+		ForLocation(target_loc, at_level)->RemoveQuestGroundItem(id);
 
 	OnUpdate(game->txQuest[277]);
 	return true;
@@ -229,7 +229,7 @@ bool Quest_LostArtifact::Load(GameReader& f)
 	{
 		item->CreateCopy(quest_item);
 		quest_item.id = Format("$%s", item->id.c_str());
-		quest_item.refid = refid;
+		quest_item.quest_id = id;
 		spawn_item = Quest_Dungeon::Item_OnGround;
 		item_to_give[0] = &quest_item;
 	}

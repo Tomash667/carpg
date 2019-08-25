@@ -941,15 +941,13 @@ void Game::UpdateGame(float dt)
 	// aktualizuj gracza
 	if(pc_data.wasted_key != Key::None && input->Up(pc_data.wasted_key))
 		pc_data.wasted_key = Key::None;
-	if(dialog_context.dialog_mode || pc->unit->look_target || game_gui->inventory->mode > I_INVENTORY)
+	Unit* look_target = pc->unit->look_target;
+	if(dialog_context.dialog_mode || look_target || game_gui->inventory->mode > I_INVENTORY)
 	{
 		Vec3 pos;
-		if(pc->unit->look_target)
+		if(look_target)
 		{
-			if(pc->unit->look_target->to_remove)
-				pc->unit->look_target = nullptr;
-			else
-				pos = pc->unit->look_target->pos;
+			pos = look_target->pos;
 			pc->unit->animation = ANI_STAND;
 		}
 		else if(game_gui->inventory->mode == I_LOOT_CHEST)
@@ -966,7 +964,6 @@ void Game::UpdateGame(float dt)
 		}
 		else if(game_gui->inventory->mode == I_LOOT_CONTAINER)
 		{
-			// TODO: animacja
 			assert(pc->action == PlayerAction::LootContainer);
 			pos = pc->action_usable->pos;
 			pc->unit->animation = ANI_STAND;
@@ -984,7 +981,6 @@ void Game::UpdateGame(float dt)
 		}
 
 		float dir = Vec3::LookAtAngle(pc->unit->pos, pos);
-
 		if(!Equal(pc->unit->rot, dir))
 		{
 			const float rot_speed = 3.f*dt;
@@ -2152,7 +2148,7 @@ void Game::UpdatePlayer(float dt)
 					// wiadomoœæ o wymianie do serwera
 					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::LOOT_UNIT;
-					c.id = u2->netid;
+					c.id = u2->id;
 					pc->action = PlayerAction::LootUnit;
 					pc->action_unit = u2;
 					pc->chest_trade = &u2->items;
@@ -2179,7 +2175,7 @@ void Game::UpdatePlayer(float dt)
 					// wiadomoœæ o rozmowie do serwera
 					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::TALK;
-					c.id = u2->netid;
+					c.id = u2->id;
 					pc->action = PlayerAction::Talk;
 					pc->action_unit = u2;
 					predialog.clear();
@@ -2203,7 +2199,7 @@ void Game::UpdatePlayer(float dt)
 				// wyœlij wiadomoœæ o pl¹drowaniu skrzyni
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::USE_CHEST;
-				c.id = pc_data.before_player_ptr.chest->netid;
+				c.id = pc_data.before_player_ptr.chest->id;
 				pc->action = PlayerAction::LootChest;
 				pc->action_chest = pc_data.before_player_ptr.chest;
 				pc->chest_trade = &pc->action_chest->items;
@@ -2230,7 +2226,7 @@ void Game::UpdatePlayer(float dt)
 					{
 						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::USE_DOOR;
-						c.id = door->netid;
+						c.id = door->id;
 						c.count = 0;
 					}
 				}
@@ -2268,7 +2264,7 @@ void Game::UpdatePlayer(float dt)
 						{
 							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::USE_DOOR;
-							c.id = door->netid;
+							c.id = door->id;
 							c.count = 0;
 						}
 					}
@@ -2298,7 +2294,7 @@ void Game::UpdatePlayer(float dt)
 				{
 					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::USE_DOOR;
-					c.id = door->netid;
+					c.id = door->id;
 					c.count = 1;
 				}
 			}
@@ -2333,7 +2329,7 @@ void Game::UpdatePlayer(float dt)
 
 						NetChange& c2 = Add1(Net::changes);
 						c2.type = NetChange::REMOVE_ITEM;
-						c2.id = item.netid;
+						c2.id = item.id;
 					}
 
 					RemoveElement(area.items, &item);
@@ -2355,7 +2351,7 @@ void Game::UpdatePlayer(float dt)
 				{
 					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::PICKUP_ITEM;
-					c.id = item.netid;
+					c.id = item.id;
 
 					pc_data.picking_item = &item;
 					pc_data.picking_item_state = 1;
@@ -2365,11 +2361,6 @@ void Game::UpdatePlayer(float dt)
 		else if(u.action == A_NONE)
 			PlayerUseUsable(pc_data.before_player_ptr.usable, false);
 	}
-
-	if(pc_data.before_player == BP_UNIT)
-		pc_data.target_unit = pc_data.before_player_ptr.unit;
-	else
-		pc_data.target_unit = nullptr;
 
 	// atak
 	if(u.weapon_state == WS_TAKEN && !pc_data.action_ready)
@@ -3563,7 +3554,10 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	if(test_unit)
 		u = test_unit;
 	else
+	{
 		u = new Unit;
+		u->Register();
+	}
 
 	// unit data
 	u->data = &base;
@@ -3596,7 +3590,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	u->event_handler = nullptr;
 	u->to_remove = false;
 	u->temporary = false;
-	u->quest_refid = -1;
+	u->quest_id = -1;
 	u->bubble = nullptr;
 	u->busy = Unit::Busy_No;
 	u->interp = nullptr;
@@ -3605,7 +3599,6 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	u->auto_talk = AutoTalkMode::No;
 	u->attack_team = false;
 	u->last_bash = 0.f;
-	u->guard_target = nullptr;
 	u->alcohol = 0.f;
 	u->moved = false;
 	u->running = false;
@@ -3725,15 +3718,11 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 			u->cobj = nullptr;
 	}
 
-	if(Net::IsServer())
+	if(Net::IsServer() && !game_level->entering)
 	{
-		u->netid = Unit::netid_counter++;
-		if(!game_level->entering)
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::SPAWN_UNIT;
-			c.unit = u;
-		}
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::SPAWN_UNIT;
+		c.unit = u;
 	}
 
 	return u;
@@ -4226,7 +4215,7 @@ void Game::UpdateUnits(LevelArea& area, float dt)
 				{
 					u.live_state = Unit::DEAD;
 					game_level->CreateBlood(area, u);
-					if(u.summoner != nullptr && Net::IsLocal())
+					if(u.summoner && Net::IsLocal())
 					{
 						team->RemoveTeamMember(&u);
 						u.action = A_DESPAWN;
@@ -4797,7 +4786,7 @@ void Game::UpdateUnits(LevelArea& area, float dt)
 							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::USE_USABLE;
 							c.unit = &u;
-							c.id = u.usable->netid;
+							c.id = u.usable->id;
 							c.count = USE_USABLE_END;
 						}
 						if(Net::IsLocal())
@@ -4984,7 +4973,7 @@ void Game::UpdateUnits(LevelArea& area, float dt)
 					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::USE_USABLE;
 					c.unit = &u;
-					c.id = u.usable->netid;
+					c.id = u.usable->id;
 					c.count = USE_USABLE_END;
 				}
 
@@ -6233,7 +6222,7 @@ void Game::CastSpell(LevelArea& area, Unit& u)
 				c.pos = b.start_pos;
 				c.f[0] = b.rot.y;
 				c.f[1] = b.yspeed;
-				c.extra_netid = u.netid;
+				c.extra_id = u.id;
 			}
 		}
 	}
@@ -6242,9 +6231,10 @@ void Game::CastSpell(LevelArea& area, Unit& u)
 		if(IsSet(spell.flags, Spell::Jump))
 		{
 			Electro* e = new Electro;
-			e->hitted.push_back(&u);
+			e->Register();
+			e->hitted.push_back(u);
 			e->dmg = float(spell.dmg + spell.dmg_bonus * (u.CalculateMagicPower() + u.level));
-			e->owner = &u;
+			e->owner = u;
 			e->spell = &spell;
 			e->start_pos = u.pos;
 
@@ -6286,11 +6276,9 @@ void Game::CastSpell(LevelArea& area, Unit& u)
 
 			if(Net::IsOnline())
 			{
-				e->netid = Electro::netid_counter++;
-
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::CREATE_ELECTRO;
-				c.e_id = e->netid;
+				c.e_id = e->id;
 				c.pos = e->lines[0].pts.front();
 				memcpy(c.f, &e->lines[0].pts.back(), sizeof(Vec3));
 			}
@@ -6661,7 +6649,7 @@ void Game::UpdateTraps(LevelArea& area, float dt)
 					{
 						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::TRIGGER_TRAP;
-						c.id = trap.netid;
+						c.id = trap.id;
 					}
 				}
 			}
@@ -6692,7 +6680,7 @@ void Game::UpdateTraps(LevelArea& area, float dt)
 					{
 						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::TRIGGER_TRAP;
-						c.id = trap.netid;
+						c.id = trap.id;
 					}
 				}
 			}
@@ -6827,7 +6815,7 @@ void Game::UpdateTraps(LevelArea& area, float dt)
 					{
 						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::TRIGGER_TRAP;
-						c.id = trap.netid;
+						c.id = trap.id;
 					}
 				}
 			}
@@ -6917,7 +6905,7 @@ void Game::UpdateTraps(LevelArea& area, float dt)
 
 							NetChange& c2 = Add1(Net::changes);
 							c2.type = NetChange::TRIGGER_TRAP;
-							c2.id = trap.netid;
+							c2.id = trap.id;
 						}
 					}
 				}
@@ -6963,7 +6951,7 @@ void Game::UpdateTraps(LevelArea& area, float dt)
 					{
 						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::TRIGGER_TRAP;
-						c.id = trap.netid;
+						c.id = trap.id;
 					}
 				}
 			}
@@ -7012,7 +7000,7 @@ void Game::UpdateTraps(LevelArea& area, float dt)
 
 						NetChange& c2 = Add1(Net::changes);
 						c2.type = NetChange::REMOVE_TRAP;
-						c2.id = trap.netid;
+						c2.id = trap.id;
 					}
 
 					delete *it;
@@ -7227,7 +7215,7 @@ void Game::UpdateElectros(LevelArea& area, float dt)
 	{
 		Electro& e = **it;
 
-		for(vector<ElectroLine>::iterator it2 = e.lines.begin(), end2 = e.lines.end(); it2 != end2; ++it2)
+		for(vector<Electro::Line>::iterator it2 = e.lines.begin(), end2 = e.lines.end(); it2 != end2; ++it2)
 			it2->t += dt;
 
 		if(!Net::IsLocal())
@@ -7242,19 +7230,27 @@ void Game::UpdateElectros(LevelArea& area, float dt)
 		{
 			if(e.lines.back().t >= 0.25f)
 			{
-				// zadaj obra¿enia
 				Unit* hitted = e.hitted.back();
-				if(!e.owner->IsFriend(*hitted))
+				Unit* owner = e.owner;
+				if(!hitted || !owner)
 				{
-					if(hitted->IsAI() && e.owner->IsAlive())
-						AI_HitReaction(*hitted, e.start_pos);
-					GiveDmg(*hitted, e.dmg, e.owner, nullptr, DMG_NO_BLOOD | DMG_MAGICAL);
+					e.valid = false;
+					continue;
 				}
 
+				// deal damage
+				if(!owner->IsFriend(*hitted))
+				{
+					if(hitted->IsAI() && owner->IsAlive())
+						AI_HitReaction(*hitted, e.start_pos);
+					GiveDmg(*hitted, e.dmg, owner, nullptr, DMG_NO_BLOOD | DMG_MAGICAL);
+				}
+
+				// play sound
 				if(e.spell->sound_hit)
 					sound_mgr->PlaySound3d(e.spell->sound_hit, e.lines.back().pts.back(), e.spell->sound_hit_dist);
 
-				// cz¹steczki
+				// add particles
 				if(e.spell->tex_particle)
 				{
 					ParticleEmitter* pe = new ParticleEmitter;
@@ -7297,7 +7293,7 @@ void Game::UpdateElectros(LevelArea& area, float dt)
 						if(!(*it2)->IsAlive() || IsInside(e.hitted, *it2))
 							continue;
 
-						float dist = Vec3::Distance((*it2)->pos, e.hitted.back()->pos);
+						float dist = Vec3::Distance((*it2)->pos, hitted->pos);
 						if(dist <= 5.f)
 							targets.push_back(pair<Unit*, float>(*it2, dist));
 					}
@@ -7344,7 +7340,7 @@ void Game::UpdateElectros(LevelArea& area, float dt)
 							{
 								NetChange& c = Add1(Net::changes);
 								c.type = NetChange::UPDATE_ELECTRO;
-								c.e_id = e.netid;
+								c.e_id = e.id;
 								c.pos = to;
 							}
 						}
@@ -7469,56 +7465,21 @@ void Game::UpdateDrains(LevelArea& area, float dt)
 
 void Game::UpdateAttachedSounds(float dt)
 {
-	uint index = 0;
-	for(vector<AttachedSound>::iterator it = attached_sounds.begin(), end = attached_sounds.end(); it != end; ++it, ++index)
+	LoopAndRemove(attached_sounds, [](AttachedSound& sound)
 	{
-		if(it->unit)
+		Unit* unit = sound.unit;
+		if(unit)
 		{
-			if(it->unit->to_remove)
-			{
-				it->unit = nullptr;
-				if(!sound_mgr->IsPlaying(it->channel))
-					_to_remove.push_back(index);
-			}
-			else if(!sound_mgr->UpdateChannelPosition(it->channel, it->unit->GetHeadSoundPos()))
-			{
-				it->unit = nullptr;
-				_to_remove.push_back(index);
-			}
+			if(!sound_mgr->UpdateChannelPosition(sound.channel, unit->GetHeadSoundPos()))
+				return false;
 		}
 		else
 		{
-			if(!sound_mgr->IsPlaying(it->channel))
-				_to_remove.push_back(index);
+			if(!sound_mgr->IsPlaying(sound.channel))
+				return true;
 		}
-	}
-
-	while(!_to_remove.empty())
-	{
-		index = _to_remove.back();
-		_to_remove.pop_back();
-		if(index == attached_sounds.size() - 1)
-			attached_sounds.pop_back();
-		else
-		{
-			std::iter_swap(attached_sounds.begin() + index, attached_sounds.end() - 1);
-			attached_sounds.pop_back();
-		}
-	}
-}
-
-void Game::BuildRefidTables()
-{
-	Unit::refid_table.clear();
-	Usable::refid_table.clear();
-	GroundItem::refid_table.clear();
-	ParticleEmitter::refid_table.clear();
-	TrailParticleEmitter::refid_table.clear();
-	for(Location* loc : world->GetLocations())
-	{
-		if(loc)
-			loc->BuildRefidTables();
-	}
+		return false;
+	});
 }
 
 // clear game vars on new game or load
@@ -7550,6 +7511,15 @@ void Game::ClearGameVars(bool new_game)
 	game_level->Reset();
 	pathfinding->SetTarget(nullptr);
 	game_gui->world_map->Clear();
+	ParticleEmitter::ResetEntities();
+	TrailParticleEmitter::ResetEntities();
+	Unit::ResetEntities();
+	GroundItem::ResetEntities();
+	Chest::ResetEntities();
+	Usable::ResetEntities();
+	Trap::ResetEntities();
+	Door::ResetEntities();
+	Electro::ResetEntities();
 
 	// odciemnianie na pocz¹tku
 	fallback_type = FALLBACK::NONE;
@@ -7599,6 +7569,7 @@ void Game::ClearGame()
 {
 	Info("Clearing game.");
 
+	EntitySystem::clear = true;
 	draw_batch.Clear();
 
 	LeaveLocation(true, false);
@@ -7629,6 +7600,7 @@ void Game::ClearGame()
 	world->Reset();
 	game_gui->Clear(true, false);
 	pc = nullptr;
+	EntitySystem::clear = false;
 }
 
 Sound* Game::GetItemSound(const Item* item)
@@ -7715,7 +7687,7 @@ void Game::Unit_StopUsingUsable(LevelArea& area, Unit& u, bool send)
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::USE_USABLE;
 		c.unit = &u;
-		c.id = u.usable->netid;
+		c.id = u.usable->id;
 		c.count = USE_USABLE_STOP;
 	}
 }
@@ -7879,7 +7851,6 @@ void Game::LeaveLevel(bool clear)
 
 	game_level->camera.Reset();
 	pc_data.rot_buf = 0.f;
-	pc_data.target_unit = nullptr;
 	dialog_context.dialog_mode = false;
 	game_gui->inventory->mode = I_NONE;
 	pc_data.before_player = BP_NONE;
@@ -8578,8 +8549,6 @@ void Game::DeleteUnit(Unit* unit)
 		game_gui->level_gui->RemoveUnit(unit);
 		if(pc_data.before_player == BP_UNIT && pc_data.before_player_ptr.unit == unit)
 			pc_data.before_player = BP_NONE;
-		if(unit == pc_data.target_unit)
-			pc_data.target_unit = pc->unit;
 		if(unit == pc_data.selected_unit)
 			pc_data.selected_unit = nullptr;
 		if(Net::IsClient())
@@ -8654,8 +8623,6 @@ void Game::DeleteUnit(Unit* unit)
 		phy_world->removeCollisionObject(unit->cobj);
 		delete unit->cobj;
 	}
-
-	unit->look_target = nullptr;
 
 	if(--unit->refs == 0)
 		delete unit;
@@ -9328,7 +9295,7 @@ void Game::OnCloseInventory()
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::USE_USABLE;
 				c.unit = pc->unit;
-				c.id = pc->unit->usable->netid;
+				c.id = pc->unit->usable->id;
 				c.count = USE_USABLE_END;
 			}
 			pc->unit->UseUsable(nullptr);
@@ -9488,7 +9455,7 @@ void Game::PlayerUseUsable(Usable* usable, bool after_action)
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::USE_USABLE;
 			c.unit = &u;
-			c.id = u.usable->netid;
+			c.id = u.usable->id;
 			c.count = USE_USABLE_START;
 		}
 	}
@@ -9496,7 +9463,7 @@ void Game::PlayerUseUsable(Usable* usable, bool after_action)
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::USE_USABLE;
-		c.id = pc_data.before_player_ptr.usable->netid;
+		c.id = pc_data.before_player_ptr.usable->id;
 		c.count = USE_USABLE_START;
 
 		if(IsSet(bu.use_flags, BaseUsable::CONTAINER))
@@ -9941,7 +9908,9 @@ void Game::HandleQuestEvent(Quest_Event* event)
 				if(unit != spawned && unit->IsFriend(*spawned) && lvl->GetRoom(PosToPt(unit->pos)) == &room)
 				{
 					unit->dont_attack = spawned->dont_attack;
-					unit->guard_target = spawned;
+					unit->order = ORDER_GUARD;
+					unit->order_unit = spawned;
+					unit->order_timer = -1;
 				}
 			}
 		}
@@ -9963,7 +9932,9 @@ void Game::HandleQuestEvent(Quest_Event* event)
 		if(spawned && event->spawn_2_guard_1)
 		{
 			spawned2->dont_attack = spawned->dont_attack;
-			spawned2->guard_target = spawned;
+			spawned2->order = ORDER_GUARD;
+			spawned2->order_unit = spawned;
+			spawned2->order_timer = -1;
 		}
 	}
 

@@ -111,7 +111,7 @@ struct Item
 	bool CanBeGenerated() const { return !IsSet(flags, ITEM_NOT_RANDOM); }
 	bool IsWearable() const { return Any(type, IT_WEAPON, IT_BOW, IT_SHIELD, IT_ARMOR, IT_AMULET, IT_RING); }
 	bool IsQuest() const { return IsSet(flags, ITEM_QUEST); }
-	bool IsQuest(int quest_refid) const { return IsQuest() && refid == quest_refid; }
+	bool IsQuest(int quest_id) const { return IsQuest() && this->quest_id == quest_id; }
 
 	float GetWeight() const { return float(weight) / 10; }
 	float GetWeightValue() const { return float(value) / weight; }
@@ -123,7 +123,7 @@ struct Item
 	void Rename(cstring name);
 
 	string id, mesh_id, name, desc;
-	int weight, value, ai_value, flags, refid;
+	int weight, value, ai_value, flags, quest_id;
 	vector<ItemEffect> effects;
 	ITEM_TYPE type;
 	MeshPtr mesh;

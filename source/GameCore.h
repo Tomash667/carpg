@@ -1,13 +1,14 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "EngineCore.h"
-#include "File.h"
-#include "Physics.h"
-#include "Sound.h"
-#include "Texture.h"
-#include "Key.h"
-#include "WindowsIncludes.h"
+#include <EngineCore.h>
+#include <File.h>
+#include <Physics.h>
+#include <Sound.h>
+#include <Texture.h>
+#include <Key.h>
+#include <Entity.h>
+#include <WindowsIncludes.h>
 #define far
 #define IN
 #define OUT
@@ -219,7 +220,7 @@ enum class EffectId;
 enum class EffectSource;
 enum class MusicType;
 enum class Perk;
-enum class QuestType;
+enum class QuestCategory;
 enum class SkillId;
 
 //-----------------------------------------------------------------------------

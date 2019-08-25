@@ -63,8 +63,8 @@ struct LevelArea
 	void Load(GameReader& f, bool local, old::LoadCompatibility compatibility = old::LoadCompatibility::None);
 	void Write(BitStreamWriter& f);
 	bool Read(BitStreamReader& f);
+	void Clear();
 	cstring GetName();
-	void BuildRefidTables();
 	Unit* FindUnit(UnitData* ud);
 	Usable* FindUsable(BaseUsable* base);
 	bool RemoveItem(const Item* item);
@@ -76,7 +76,7 @@ struct LevelArea
 	Chest* GetRandomFarChest(const Int2& pt);
 	bool HaveUnit(Unit* unit);
 	Chest* FindChestWithItem(const Item* item, int* index);
-	Chest* FindChestWithQuestItem(int quest_refid, int* index);
+	Chest* FindChestWithQuestItem(int quest_id, int* index);
 	Door* FindDoor(const Int2& pt);
 };
 
@@ -112,13 +112,13 @@ class LevelAreaContext
 	vector<Entry> entries;
 
 public:
-	GroundItem* FindQuestGroundItem(int quest_refid, LevelAreaContext::Entry** entry = nullptr, int* item_index = nullptr);
-	Unit* FindUnitWithQuestItem(int quest_refid, LevelAreaContext::Entry** entry = nullptr, int* unit_index = nullptr, int* item_iindex = nullptr);
+	GroundItem* FindQuestGroundItem(int quest_id, LevelAreaContext::Entry** entry = nullptr, int* item_index = nullptr);
+	Unit* FindUnitWithQuestItem(int quest_id, LevelAreaContext::Entry** entry = nullptr, int* unit_index = nullptr, int* item_iindex = nullptr);
 	bool FindUnit(Unit* unit, LevelAreaContext::Entry** entry = nullptr, int* unit_index = nullptr);
 	Unit* FindUnit(UnitData* data, LevelAreaContext::Entry** entry = nullptr, int* unit_index = nullptr);
 	Unit* FindUnit(delegate<bool(Unit*)> clbk, LevelAreaContext::Entry** entry = nullptr, int* unit_index = nullptr);
-	bool RemoveQuestGroundItem(int quest_refid);
-	bool RemoveQuestItemFromUnit(int quest_refid);
+	bool RemoveQuestGroundItem(int quest_id);
+	bool RemoveQuestItemFromUnit(int quest_id);
 	bool RemoveUnit(Unit* unit);
 };
 

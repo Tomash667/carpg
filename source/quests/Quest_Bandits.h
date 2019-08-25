@@ -48,8 +48,8 @@ public:
 	void HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit) override;
 	void Save(GameWriter& f) override;
 	bool Load(GameReader& f) override;
-	int GetUnitEventHandlerQuestRefid() override { return refid; }
-	int GetLocationEventHandlerQuestRefid() override { return refid; }
+	int GetUnitEventHandlerQuestRefid() override { return id; }
+	int GetLocationEventHandlerQuestRefid() override { return id; }
 
 	State bandits_state;
 	float timer;

@@ -16,12 +16,12 @@
 //=================================================================================================
 void Quest_Sawmill::Start()
 {
-	quest_id = Q_SAWMILL;
-	type = QuestType::Unique;
+	type = Q_SAWMILL;
+	category = QuestCategory::Unique;
 	sawmill_state = State::None;
 	build_state = BuildState::None;
 	days = 0;
-	quest_mgr->AddQuestRumor(refid, Format(quest_mgr->txRumorQ[0], GetStartLocationName()));
+	quest_mgr->AddQuestRumor(id, Format(quest_mgr->txRumorQ[0], GetStartLocationName()));
 }
 
 //=================================================================================================
@@ -83,7 +83,7 @@ void Quest_Sawmill::SetProgress(int prog2)
 		{
 			days = 0;
 			sawmill_state = State::InBuild;
-			quest_mgr->RemoveQuestRumor(refid);
+			quest_mgr->RemoveQuestRumor(id);
 			OnUpdate(game->txQuest[128]);
 		}
 		break;
@@ -216,15 +216,7 @@ void Quest_Sawmill::GenerateSawmill(bool in_progress)
 	game_level->terrain->Rebuild(true);
 
 	// usuñ obiekty
-	LoopAndRemove(outside.objects, [](const Object* obj)
-	{
-		if(Vec3::Distance2d(obj->pos, Vec3(128, 0, 128)) < 16.f)
-		{
-			delete obj;
-			return true;
-		}
-		return false;
-	});
+	DeleteElements(outside.objects, [](const Object* obj) { return Vec3::Distance2d(obj->pos, Vec3(128, 0, 128)) < 16.f; });
 
 	if(!tartak_objs_ptrs[0])
 	{

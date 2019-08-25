@@ -4,15 +4,16 @@
 #include "Net.h"
 #include "BitStreamFunc.h"
 #include "Unit.h"
+#include "SaveState.h"
 
-int Trap::netid_counter;
+EntityType<Trap>::Impl EntityType<Trap>::impl;
 
 //=================================================================================================
 void Trap::Save(FileWriter& f, bool local)
 {
+	f << id;
 	f << base->type;
 	f << pos;
-	f << netid;
 
 	if(base->type == TRAP_ARROW || base->type == TRAP_POISON)
 	{
@@ -32,7 +33,7 @@ void Trap::Save(FileWriter& f, bool local)
 			f << obj2.pos.y;
 			f << hitted->size();
 			for(Unit* unit : *hitted)
-				f << unit->refid;
+				f << unit->id;
 		}
 	}
 }
@@ -42,9 +43,13 @@ void Trap::Load(FileReader& f, bool local)
 {
 	TRAP_TYPE type;
 
+	if(LOAD_VERSION >= V_DEV)
+		f >> id;
+	Register();
 	f >> type;
 	f >> pos;
-	f >> netid;
+	if(LOAD_VERSION < V_DEV)
+		f.Skip<int>(); // old netid
 
 	base = &BaseTrap::traps[type];
 	hitted = nullptr;
@@ -87,7 +92,7 @@ void Trap::Load(FileReader& f, bool local)
 			{
 				hitted->resize(count);
 				for(Unit*& unit : *hitted)
-					unit = Unit::GetByRefid(f.Read<int>());
+					unit = Unit::GetById(f.Read<int>());
 			}
 		}
 	}
@@ -96,9 +101,9 @@ void Trap::Load(FileReader& f, bool local)
 //=================================================================================================
 void Trap::Write(BitStreamWriter& f)
 {
+	f << id;
 	f.WriteCasted<byte>(base->type);
 	f.WriteCasted<byte>(dir);
-	f << netid;
 	f << tile;
 	f << pos;
 	f << obj.rot.y;
@@ -114,9 +119,9 @@ void Trap::Write(BitStreamWriter& f)
 bool Trap::Read(BitStreamReader& f)
 {
 	TRAP_TYPE type;
+	f >> id;
 	f.ReadCasted<byte>(type);
 	f.ReadCasted<byte>(dir);
-	f >> netid;
 	f >> tile;
 	f >> pos;
 	f >> obj.rot.y;
@@ -156,5 +161,6 @@ bool Trap::Read(BitStreamReader& f)
 	else
 		obj.base = &BaseObject::obj_alpha;
 
+	Register();
 	return true;
 }

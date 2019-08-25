@@ -12,7 +12,7 @@ struct ItemContainer
 	void Load(FileReader& f);
 
 	int FindItem(const Item* item) const;
-	int FindQuestItem(int quest_refid) const;
+	int FindQuestItem(int quest_id) const;
 
 	bool AddItem(const Item* item, uint count, uint team_count)
 	{

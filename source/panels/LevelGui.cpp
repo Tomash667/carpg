@@ -46,7 +46,8 @@ cstring order_str[ORDER_MAX] = {
 	"LOOK_AT",
 	"ESCAPE_TO",
 	"ESCAPE_TO_UNIT",
-	"GOTO_INN"
+	"GOTO_INN",
+	"ORDER_GUARD"
 };
 
 //-----------------------------------------------------------------------------
@@ -112,7 +113,7 @@ void LevelGui::LoadData()
 {
 	tCrosshair = res_mgr->Load<Texture>("crosshair.png");
 	tBubble = res_mgr->Load<Texture>("bubble.png");
-	tObwodkaBolu = res_mgr->Load<Texture>("czerwono.png");
+	tObwodkaBolu = res_mgr->Load<Texture>("damage_layer.png");
 	tBar = res_mgr->Load<Texture>("bar.png");
 	tHpBar = res_mgr->Load<Texture>("hp_bar.png");
 	tPoisonedHpBar = res_mgr->Load<Texture>("poisoned_hp_bar.png");
@@ -203,10 +204,10 @@ void LevelGui::DrawFront()
 			Unit& u = *it.unit;
 			Vec3 text_pos = u.visual_pos;
 			text_pos.y += u.GetUnitHeight();
-			LocalString str;
-			if(Net::IsOnline())
-				str = Format("%d - ", u.netid);
-			str += Format("%s (%s) [%u]", u.GetRealName(), u.data->id.c_str(), u.refs);
+			LocalString str = Format("%s (%s, %d", u.GetRealName(), u.data->id.c_str(), u.id);
+			if(u.refs != 1)
+				str += Format(" x%u", u.refs);
+			str += ")";
 			if(Net::IsLocal())
 			{
 				if(u.IsAI())
@@ -1653,7 +1654,7 @@ void LevelGui::Save(FileWriter& f) const
 	{
 		const SpeechBubble& sb = *p_sb;
 		f.WriteString2(sb.text);
-		f << (sb.unit ? sb.unit->refid : -1);
+		f << (sb.unit ? sb.unit->id : -1);
 		f << sb.size;
 		f << sb.time;
 		f << sb.length;
@@ -1671,7 +1672,7 @@ void LevelGui::Load(FileReader& f)
 		*it = SpeechBubblePool.Get();
 		SpeechBubble& sb = **it;
 		f.ReadString2(sb.text);
-		sb.unit = Unit::GetByRefid(f.Read<int>());
+		sb.unit = Unit::GetById(f.Read<int>());
 		if(sb.unit)
 			sb.unit->bubble = &sb;
 		f >> sb.size;

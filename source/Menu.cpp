@@ -119,6 +119,7 @@ void Game::StartQuickGame()
 //=================================================================================================
 void Game::NewGameCommon(Class* clas, cstring name, HumanData& hd, CreatedCharacter& cc, bool tutorial)
 {
+	ClearGameVars(true);
 	game_level->entering = true;
 	quest_mgr->quest_tutorial->in_tutorial = tutorial;
 	game_gui->main_menu->visible = false;
@@ -157,7 +158,6 @@ void Game::NewGameCommon(Class* clas, cstring name, HumanData& hd, CreatedCharac
 	dialog_context.pc = pc;
 
 	team->CalculatePlayersLevel();
-	ClearGameVars(true);
 	game_gui->Setup(pc);
 
 	if(!tutorial && cc.HavePerk(Perk::Leader))

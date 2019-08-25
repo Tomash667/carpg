@@ -50,12 +50,11 @@ struct TmpLocation : public Location
 {
 	TmpLocation() : Location(false) {}
 
-	void Apply(vector<std::reference_wrapper<LevelArea>>& areas) {}
-	void Write(BitStreamWriter& f) {}
-	bool Read(BitStreamReader& f) { return false; }
-	void BuildRefidTables() {}
-	bool FindUnit(Unit*, int*) { return false; }
-	Unit* FindUnit(UnitData*, int&) { return nullptr; }
+	void Apply(vector<std::reference_wrapper<LevelArea>>& areas) override {}
+	void Write(BitStreamWriter& f) override  {}
+	bool Read(BitStreamReader& f) override { return false; }
+	bool FindUnit(Unit*, int*) override { return false; }
+	Unit* FindUnit(UnitData*, int&) override { return nullptr; }
 };
 
 
@@ -290,15 +289,7 @@ void World::UpdateLocations()
 //=================================================================================================
 void World::UpdateNews()
 {
-	LoopAndRemove(news, [this](News* news)
-	{
-		if(worldtime - news->add_time > 30)
-		{
-			delete news;
-			return true;
-		}
-		return false;
-	});
+	DeleteElements(news, [this](News* news) { return worldtime - news->add_time > 30; });
 }
 
 //=================================================================================================
@@ -1186,7 +1177,7 @@ void World::Save(GameWriter& f)
 			f << enc->pos;
 			f << enc->chance;
 			f << enc->range;
-			f << enc->quest->refid;
+			f << enc->quest->id;
 			if(enc->dialog)
 				f << enc->dialog->id;
 			else
@@ -1365,21 +1356,21 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 				f >> enc->pos;
 				f >> enc->chance;
 				f >> enc->range;
-				int quest_refid;
-				f >> quest_refid;
+				int quest_id;
+				f >> quest_id;
 				const string& dialog_id = f.ReadString1();
 				if(!dialog_id.empty())
 				{
 					string* str = StringPool.Get();
 					*str = dialog_id;
-					quest_mgr->AddQuestRequest(quest_refid, &enc->quest, [enc, str]
+					quest_mgr->AddQuestRequest(quest_id, &enc->quest, [enc, str]
 					{
 						enc->dialog = static_cast<Quest_Scripted*>(enc->quest)->GetDialog(*str);
 						StringPool.Free(str);
 					});
 				}
 				else
-					quest_mgr->AddQuestRequest(quest_refid, &enc->quest);
+					quest_mgr->AddQuestRequest(quest_id, &enc->quest);
 				f >> enc->group;
 				const string& text = f.ReadString1();
 				if(text.empty())
@@ -2494,7 +2485,7 @@ void World::WarpPos(const Vec2& pos)
 Encounter* World::AddEncounter(int& index, Quest* quest)
 {
 	Encounter* enc;
-	if(quest && quest->quest_id == Q_SCRIPTED)
+	if(quest && quest->type == Q_SCRIPTED)
 		enc = new Encounter(quest);
 	else
 		enc = new Encounter;
@@ -2793,16 +2784,7 @@ void World::AbadonLocation(Location* loc)
 	else
 	{
 		// delete units
-		for(Unit*& u : outside->units)
-		{
-			__assume(u != nullptr);
-			if(u->IsAlive() && game->pc->unit->IsEnemy(*u))
-			{
-				delete u;
-				u = nullptr;
-			}
-		}
-		RemoveNullElements(outside->units);
+		DeleteElements(outside->units, [](Unit* unit) { return unit->IsAlive() && game->pc->unit->IsEnemy(*unit); });
 
 		// remove items from chests
 		for(Chest* chest : outside->chests)

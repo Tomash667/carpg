@@ -162,9 +162,6 @@ void Game::UpdateAi(float dt)
 			ai.cooldown[2] -= dt;
 		}
 
-		if(u.guard_target && u.dont_attack && !u.guard_target->dont_attack)
-			u.dont_attack = false;
-
 		if(u.frozen >= FROZEN::YES)
 		{
 			if(u.frozen == FROZEN::YES)
@@ -172,15 +169,11 @@ void Game::UpdateAi(float dt)
 			continue;
 		}
 
-		if(u.look_target && u.look_target->to_remove)
-			u.look_target = nullptr;
-
 		if(u.action == A_ANIMATION)
 		{
-			if(u.look_target)
+			if(Unit* look_target = u.look_target; look_target)
 			{
-				float dir = Vec3::LookAtAngle(u.pos, u.look_target->pos);
-
+				float dir = Vec3::LookAtAngle(u.pos, look_target->pos);
 				if(!Equal(u.rot, dir))
 				{
 					const float rot_speed = 3.f*dt;
@@ -429,10 +422,11 @@ void Game::UpdateAi(float dt)
 						ai.in_combat = false;
 
 					// temporary fix - invalid usable user
-					if(u.usable && u.usable->user != &u)
+					if(u.usable && u.usable->user != u)
 					{
+						Unit* user = u.usable->user;
 						ReportError(2, Format("Invalid usable user: %s is using %s but the user is %s.", u.GetRealName(), u.usable->base->id.c_str(),
-							u.usable->user ? u.usable->user->GetRealName() : "nullptr"));
+							user ? user->GetRealName() : "nullptr"));
 						u.usable = nullptr;
 					}
 
@@ -453,11 +447,11 @@ void Game::UpdateAi(float dt)
 						ReportError(3, Format("Unit %s blocks in idle.", u.GetRealName()));
 					}
 
-					if(u.look_target && !u.usable)
+					if(Unit* look_target = u.look_target; look_target && !u.usable)
 					{
 						// unit looking at talker in dialog
 						look_at = LookAtPoint;
-						look_pos = u.look_target->pos;
+						look_pos = look_target->pos;
 						u.timer = Random(1.f, 2.f);
 						continue;
 					}
@@ -483,6 +477,11 @@ void Game::UpdateAi(float dt)
 					switch(order)
 					{
 					case ORDER_FOLLOW:
+						if(!order_unit)
+						{
+							u.OrderClear();
+							break;
+						}
 						if(order_unit->in_arena == -1 && u.busy != Unit::Busy_Tournament)
 						{
 							dist = Vec3::Distance(u.pos, order_unit->pos);
@@ -693,6 +692,16 @@ void Game::UpdateAi(float dt)
 							}
 						}
 						break;
+					case ORDER_GUARD:
+						// remove dont_attack bit if leader removed it
+						if(order_unit)
+						{
+							if(u.dont_attack && !order_unit->dont_attack)
+								u.SetDontAttack(false);
+						}
+						else
+							u.OrderClear();
+						break;
 					}
 
 					if(!use_idle)
@@ -866,11 +875,12 @@ void Game::UpdateAi(float dt)
 									ai.city_wander = true;
 								}
 							}
-							else if(u.guard_target && Vec3::Distance(u.pos, u.guard_target->pos) > 5.f)
+							else if(u.order == ORDER_GUARD && Vec3::Distance(u.pos, order_unit->pos) > 5.f)
 							{
+								// walk to guard target when too far
 								ai.timer = Random(2.f, 4.f);
 								ai.idle_action = AIController::Idle_WalkNearUnit;
-								ai.idle_data.unit = u.guard_target;
+								ai.idle_data.unit = order_unit;
 								ai.city_wander = false;
 							}
 							else if(IsSet(u.data->flags3, F3_MINER) && Rand() % 2 == 0)
@@ -1394,7 +1404,7 @@ void Game::UpdateAi(float dt)
 													NetChange& c = Add1(Net::changes);
 													c.type = NetChange::USE_USABLE;
 													c.unit = &u;
-													c.id = use.netid;
+													c.id = use.id;
 													c.count = (read_papers ? USE_USABLE_START_SPECIAL : USE_USABLE_START);
 												}
 											}
@@ -2050,14 +2060,12 @@ void Game::UpdateAi(float dt)
 
 					if(u.order == ORDER_ESCAPE_TO_UNIT)
 					{
-						if(u.order_unit->to_remove)
-						{
-							u.order_unit = nullptr;
+						Unit* order_unit = u.order_unit;
+						if(!u.order_unit)
 							u.order = ORDER_ESCAPE_TO;
-						}
 						else
 						{
-							if(Vec3::Distance(u.order_unit->pos, u.pos) < 3.f)
+							if(Vec3::Distance(order_unit->pos, u.pos) < 3.f)
 							{
 								u.OrderClear();
 								break;
@@ -2065,7 +2073,7 @@ void Game::UpdateAi(float dt)
 							move_type = MovePoint;
 							run_type = Run;
 							look_at = LookAtWalk;
-							u.order_pos = u.order_unit->pos;
+							u.order_pos = order_unit->pos;
 							target_pos = u.order_pos;
 							break;
 						}
@@ -2673,7 +2681,7 @@ void Game::UpdateAi(float dt)
 							{
 								NetChange& c = Add1(Net::changes);
 								c.type = NetChange::USE_DOOR;
-								c.id = door.netid;
+								c.id = door.id;
 								c.count = 0;
 							}
 						}

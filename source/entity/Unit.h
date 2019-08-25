@@ -112,9 +112,10 @@ enum UnitOrder
 	ORDER_LEAVE,
 	ORDER_MOVE,
 	ORDER_LOOK_AT,
-	ORDER_ESCAPE_TO,
-	ORDER_ESCAPE_TO_UNIT,
+	ORDER_ESCAPE_TO, // escape from enemies moving toward point
+	ORDER_ESCAPE_TO_UNIT, // escape from enemies moving toward target
 	ORDER_GOTO_INN,
+	ORDER_GUARD, // stays near target, remove dont_attack when target dont_attack is removed
 	ORDER_MAX
 };
 
@@ -127,7 +128,7 @@ struct TraderStock
 
 //-----------------------------------------------------------------------------
 // jednostka w grze
-struct Unit
+struct Unit : public EntityType<Unit>
 {
 	enum LiveState
 	{
@@ -196,9 +197,7 @@ struct Unit
 	static const float PAIN_SOUND_DIST;
 	static const float DIE_SOUND_DIST;
 	static const float YELL_SOUND_DIST;
-	static int netid_counter;
 
-	int netid;
 	LevelArea* area;
 	UnitData* data;
 	PlayerController* player;
@@ -211,7 +210,7 @@ struct Unit
 	Vec3 pos, visual_pos, prev_pos, target_pos, target_pos2;
 	float rot, prev_speed, hp, hpmax, mp, mpmax, stamina, stamina_max, speed, hurt_timer, talk_timer, timer, use_rot, attack_power, last_bash, alcohol,
 		raise_timer;
-	int refs, animation_state, level, gold, attack_id, refid, in_arena, quest_refid;
+	int refs, animation_state, level, gold, attack_id, in_arena, quest_id;
 	FROZEN frozen;
 	ACTION action;
 	WeaponType weapon_taken, weapon_hiding;
@@ -225,8 +224,7 @@ struct Unit
 	Usable* usable;
 	UnitEventHandler* event_handler;
 	SpeechBubble* bubble;
-	SmartPtr<Unit> look_target;
-	Unit *guard_target, *summoner;
+	Entity<Unit> summoner, look_target, order_unit;
 	int ai_mode;
 	enum Busy
 	{
@@ -251,12 +249,10 @@ struct Unit
 	float order_timer;
 	Vec3 order_pos;
 	MoveType order_move_type;
-	Unit* order_unit;
 
 	//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	Unit() : mesh_inst(nullptr), hero(nullptr), ai(nullptr), player(nullptr), cobj(nullptr), interp(nullptr), bow_instance(nullptr), fake_unit(false),
-		human_data(nullptr), stamina_action(SA_RESTORE_MORE), summoner(nullptr), moved(false), refs(1), stock(nullptr), stats(nullptr), mark(false),
-		order(ORDER_NONE) {}
+		human_data(nullptr), stamina_action(SA_RESTORE_MORE), moved(false), refs(1), stock(nullptr), stats(nullptr), mark(false), order(ORDER_NONE) {}
 	~Unit();
 
 	void AddRef() { ++refs; }
@@ -477,8 +473,8 @@ public:
 	{
 		return data->type == UNIT_TYPE::HUMAN;
 	}
-	bool HaveQuestItem(int quest_refid);
-	void RemoveQuestItem(int quest_refid);
+	bool HaveQuestItem(int quest_id);
+	void RemoveQuestItem(int quest_id);
 	void RemoveQuestItemS(Quest* quest);
 	bool HaveItem(const Item* item, bool owned = false) const;
 	bool HaveItemEquipped(const Item* item) const;
@@ -541,10 +537,10 @@ public:
 	void HealPoison();
 	// szuka przedmiotu w ekwipunku, zwraca i_index (INVALID_IINDEX jeœli nie ma takiego przedmiotu)
 	static const int INVALID_IINDEX = (-SLOT_INVALID - 1);
-	int FindItem(const Item* item, int quest_refid = -1) const;
+	int FindItem(const Item* item, int quest_id = -1) const;
 	int FindItem(delegate<bool(const ItemSlot& slot)> callback) const;
-	int FindQuestItem(int quest_refid) const;
-	bool FindQuestItem(cstring id, Quest** quest, int* i_index, bool not_active = false, int required_refid = -1);
+	int FindQuestItem(int quest_id) const;
+	bool FindQuestItem(cstring id, Quest** quest, int* i_index, bool not_active = false, int quest_id = -1);
 	void RemoveItem(int iindex, bool active_location = true);
 	uint RemoveItem(int i_index, uint count);
 	uint RemoveItem(const Item* item, uint count);
@@ -842,6 +838,7 @@ public:
 	void OrderFollow(Unit* target);
 	void OrderMove(const Vec3& pos, MoveType move_type);
 	void OrderLookAt(const Vec3& pos);
+	void OrderGuard(Unit* unit);
 	void OrderTimer(float time) { order_timer = time; }
 	void Talk(cstring text, int play_anim = -1);
 	void TalkS(const string& text, int play_anim = -1) { Talk(text.c_str(), play_anim); }
@@ -849,32 +846,6 @@ public:
 	float GetBlockMod() const { return action == A_BLOCK ? mesh_inst->groups[1].GetBlendT() : 0.5f; }
 	float GetStaminaAttackSpeedMod() const;
 	float GetBashSpeed() const { return 2.f * GetStaminaAttackSpeedMod(); }
-
-	//-----------------------------------------------------------------------------
-	static vector<Unit*> refid_table;
-	static vector<pair<Unit**, int>> refid_request;
-
-	// special value for AddRequest to get team leader
-	static const int REFID_LEADER = -2;
-
-	static Unit* GetByRefid(int _refid)
-	{
-		if(_refid == -1 || _refid >= (int)refid_table.size())
-			return nullptr;
-		else
-			return refid_table[_refid];
-	}
-	static void AddRequest(Unit** unit, int refid)
-	{
-		assert(unit && refid != -1);
-		refid_request.push_back(pair<Unit**, int>(unit, refid));
-	}
-	static void AddRefid(Unit* unit)
-	{
-		assert(unit);
-		unit->refid = (int)refid_table.size();
-		refid_table.push_back(unit);
-	}
 };
 
 //-----------------------------------------------------------------------------

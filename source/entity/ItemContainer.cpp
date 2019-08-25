@@ -17,7 +17,7 @@ void ItemContainer::Save(FileWriter& f)
 		f << slot.count;
 		f << slot.team_count;
 		if(slot.item->id[0] == '$')
-			f << slot.item->refid;
+			f << slot.item->quest_id;
 	}
 }
 
@@ -41,9 +41,9 @@ void ItemContainer::Load(FileReader& f)
 			slot.item = Item::Get(item_id);
 		else
 		{
-			int quest_refid;
-			f >> quest_refid;
-			quest_mgr->AddQuestItemRequest(&slot.item, item_id.c_str(), quest_refid, &items);
+			int quest_id;
+			f >> quest_id;
+			quest_mgr->AddQuestItemRequest(&slot.item, item_id.c_str(), quest_id, &items);
 			slot.item = QUEST_ITEM_PLACEHOLDER;
 			can_sort = false;
 		}
@@ -67,12 +67,12 @@ int ItemContainer::FindItem(const Item* item) const
 }
 
 //=================================================================================================
-int ItemContainer::FindQuestItem(int quest_refid) const
+int ItemContainer::FindQuestItem(int quest_id) const
 {
 	int index = 0;
 	for(vector<ItemSlot>::const_iterator it = items.begin(), end = items.end(); it != end; ++it, ++index)
 	{
-		if(it->item->IsQuest(quest_refid))
+		if(it->item->IsQuest(quest_id))
 			return index;
 	}
 	return -1;

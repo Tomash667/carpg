@@ -278,7 +278,7 @@ void Item::CreateCopy(Item& item) const
 			o.mesh_id = o2.mesh_id;
 			o.name = o2.name;
 			o.other_type = o2.other_type;
-			o.refid = o2.refid;
+			o.quest_id = o2.quest_id;
 			o.tex = o2.tex;
 			o.type = o2.type;
 			o.value = o2.value;
@@ -333,7 +333,7 @@ Item* Item::QuestCopy(Quest* quest, const string& name)
 	Item* item = CreateCopy();
 	item->id = Format("$%s", id.c_str());
 	item->name = name;
-	item->refid = quest->refid;
+	item->quest_id = quest->id;
 	quest_mgr->AddQuestItem(item);
 	return item;
 }

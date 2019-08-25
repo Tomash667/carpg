@@ -24,9 +24,9 @@ void Quest_Orcs::Init()
 //=================================================================================================
 void Quest_Orcs::Start()
 {
-	quest_id = Q_ORCS;
-	type = QuestType::Unique;
-	quest_mgr->AddQuestRumor(refid, Format(quest_mgr->txRumorQ[6], GetStartLocationName()));
+	type = Q_ORCS;
+	category = QuestCategory::Unique;
+	quest_mgr->AddQuestRumor(id, Format(quest_mgr->txRumorQ[6], GetStartLocationName()));
 }
 
 //=================================================================================================
@@ -49,14 +49,14 @@ void Quest_Orcs::SetProgress(int prog2)
 		{
 			if(prog != Progress::None)
 				return;
-			if(quest_mgr->RemoveQuestRumor(refid))
+			if(quest_mgr->RemoveQuestRumor(id))
 				game_gui->journal->AddRumor(Format(game->txQuest[189], GetStartLocationName()));
 			quest_mgr->quest_orcs2->orcs_state = Quest_Orcs2::State::GuardTalked;
 		}
 		break;
 	case Progress::NotAccepted:
 		{
-			if(quest_mgr->RemoveQuestRumor(refid))
+			if(quest_mgr->RemoveQuestRumor(id))
 				game_gui->journal->AddRumor(Format(game->txQuest[190], GetStartLocationName()));
 			// mark guard to remove
 			Unit*& u = quest_mgr->quest_orcs2->guard;
@@ -73,7 +73,7 @@ void Quest_Orcs::SetProgress(int prog2)
 		{
 			OnStart(game->txQuest[191]);
 			// remove rumor from pool
-			quest_mgr->RemoveQuestRumor(refid);
+			quest_mgr->RemoveQuestRumor(id);
 			// mark guard to remove
 			Unit*& u = quest_mgr->quest_orcs2->guard;
 			if(u)
@@ -226,8 +226,8 @@ void Quest_Orcs2::Init()
 //=================================================================================================
 void Quest_Orcs2::Start()
 {
-	quest_id = Q_ORCS2;
-	type = QuestType::Unique;
+	type = Q_ORCS2;
+	category = QuestCategory::Unique;
 	start_loc = -1;
 	near_loc = -1;
 	talked = Talked::No;

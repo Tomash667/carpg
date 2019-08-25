@@ -14,8 +14,8 @@
 //=================================================================================================
 void Quest_RetrievePackage::Start()
 {
-	quest_id = Q_RETRIEVE_PACKAGE;
-	type = QuestType::Mayor;
+	type = Q_RETRIEVE_PACKAGE;
+	category = QuestCategory::Mayor;
 	start_loc = world->GetCurrentLocationIndex();
 	from_loc = world->GetRandomSettlementIndex(start_loc);
 }
@@ -62,7 +62,7 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 			Item::Get("parcel")->CreateCopy(parcel);
 			parcel.id = "$stolen_parcel";
 			parcel.name = Format(game->txQuest[8], who, loc.name.c_str());
-			parcel.refid = refid;
+			parcel.quest_id = id;
 			unit_to_spawn = UnitGroup::Get("bandits")->GetLeader(8);
 			unit_spawn_level = -3;
 			spawn_item = Quest_Dungeon::Item_GiveSpawned;
@@ -108,7 +108,7 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 			team->AddReward(reward, reward * 3);
 
 			((City&)GetStartLocation()).quest_mayor = CityQuestState::None;
-			DialogContext::current->pc->unit->RemoveQuestItem(refid);
+			DialogContext::current->pc->unit->RemoveQuestItem(id);
 			if(target_loc != -1)
 			{
 				Location& loc = GetTargetLocation();
@@ -159,7 +159,7 @@ bool Quest_RetrievePackage::OnTimeout(TimeoutType ttype)
 		{
 			u->mark = false;
 			if(u->IsAlive())
-				u->RemoveQuestItem(refid);
+				u->RemoveQuestItem(id);
 		}
 	}
 
@@ -212,7 +212,7 @@ bool Quest_RetrievePackage::Load(GameReader& f)
 			Item::Get("parcel")->CreateCopy(parcel);
 			parcel.id = "$stolen_parcel";
 			parcel.name = Format(game->txQuest[8], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str());
-			parcel.refid = refid;
+			parcel.quest_id = id;
 
 			item_to_give[0] = &parcel;
 			unit_to_spawn = UnitGroup::Get("bandits")->GetLeader(8);

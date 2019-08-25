@@ -27,12 +27,13 @@ public:
 
 	void AddTeamMember(Unit* unit, bool free);
 	void RemoveTeamMember(Unit* unit);
-	Unit* FindActiveTeamMember(int netid);
-	bool FindItemInTeam(const Item* item, int refid, Unit** unit_result, int* i_index, bool check_npc = true);
+	Unit* FindActiveTeamMember(int id);
+	bool FindItemInTeam(const Item* item, int quest_id, Unit** unit_result, int* i_index, bool check_npc = true);
 	Unit* FindTeamMember(cstring id);
 	uint GetActiveNpcCount();
 	uint GetActiveTeamSize() { return active_members.size(); }
 	Unit* GetLeader() { return leader; }
+	void GetLeaderRequest(Entity<Unit>* unit) { leader_requests.push_back(unit); }
 	uint GetMaxSize() { return 8u; }
 	uint GetNpcCount();
 	Vec2 GetShare();
@@ -42,7 +43,7 @@ public:
 	uint GetPlayersCount();
 	uint GetTeamSize() { return members.size(); }
 	bool HaveActiveNpc();
-	bool HaveQuestItem(const Item* item, int refid = -1) { return FindItemInTeam(item, refid, nullptr, nullptr, true); }
+	bool HaveQuestItem(const Item* item, int quest_id = -1) { return FindItemInTeam(item, quest_id, nullptr, nullptr, true); }
 	bool HaveItem(const Item* item) { return FindItemInTeam(item, -1, nullptr, nullptr, true); }
 	bool HaveNpc();
 	bool HaveOtherActiveTeamMember() { return GetActiveTeamSize() > 1u; }
@@ -68,7 +69,7 @@ public:
 	void TeamShareDecline(DialogContext& ctx);
 	void BuyTeamItems();
 	void CheckCredit(bool require_update = false, bool ignore = false);
-	bool RemoveQuestItem(const Item* item, int refid = -1);
+	bool RemoveQuestItem(const Item* item, int quest_id = -1);
 	Unit* FindPlayerTradingWithUnit(Unit& u);
 	void AddLearningPoint(int count = 1);
 	void AddExp(int exp, rvector<Unit>* units = nullptr);
@@ -92,6 +93,7 @@ private:
 	bool CheckTeamShareItem(TeamShareItem& tsi);
 	void CheckUnitOverload(Unit& unit);
 
+	vector<Entity<Unit>*> leader_requests;
 	// team shares, not saved
 	vector<TeamShareItem> team_shares;
 	int team_share_id;

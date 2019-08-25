@@ -241,6 +241,7 @@ Available commands:
 	reload_shaders - reload shaders.
 	remove_effect - remove effect from selected unit (remove_effect effect/source [perk] [value_type]).
 	remove_perk - remove perk from selected unit (remove_perk perk).
+	remove_unit - remove selected unit.
 	resolution - show or change display resolution (resolution [w h hz]).
 	reveal - reveal all locations on world map.
 	reveal_minimap - reveal dungeon minimap.

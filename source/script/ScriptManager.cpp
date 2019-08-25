@@ -609,9 +609,12 @@ void ScriptManager::RegisterGame()
 		.Method("void OrderFollow(Unit@)", asMETHOD(Unit, OrderFollow))
 		.Method("void OrderMove(const Vec3& in, MOVE_TYPE)", asMETHOD(Unit, OrderMove))
 		.Method("void OrderLookAt(const Vec3& in)", asMETHOD(Unit, OrderLookAt))
+		.Method("void OrderGuard(Unit@)", asMETHOD(Unit, OrderGuard))
 		.Method("void OrderTimer(float)", asMETHOD(Unit, OrderTimer))
 		.Method("void Talk(const string& in, int = -1)", asMETHOD(Unit, TalkS))
-		.WithInstance("Unit@ target", &ctx.target);
+		.WithInstance("Unit@ target", &ctx.target)
+		.WithNamespace()
+		.AddFunction("Unit@ Id(int)", asFUNCTION(Unit::GetById));
 
 	ForType("Player")
 		.Member("Unit@ unit", offsetof(PlayerController, unit))
@@ -998,7 +1001,7 @@ void ScriptManager::Save(FileWriter& f)
 		if(e.second->IsEmpty())
 			continue;
 		++count;
-		f << e.first->refid;
+		f << e.first->id;
 		e.second->Save(f);
 	}
 	if(count > 0)
@@ -1019,8 +1022,8 @@ void ScriptManager::Load(FileReader& f)
 	f >> count;
 	for(uint i = 0; i < count; ++i)
 	{
-		int refid = f.Read<int>();
-		Unit* unit = Unit::refid_table[refid];
+		int id = f.Read<int>();
+		Unit* unit = Unit::GetById(id);
 		VarsContainer* vars = new VarsContainer;
 		vars->Load(f);
 		unit_vars[unit] = vars;

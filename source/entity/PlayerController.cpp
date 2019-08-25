@@ -349,7 +349,7 @@ void PlayerController::Save(FileWriter& f)
 		f << next_action_data.item->id;
 		break;
 	case NA_USE:
-		f << next_action_data.usable->refid;
+		f << next_action_data.usable->id;
 		break;
 	default:
 		assert(0);
@@ -380,8 +380,8 @@ void PlayerController::Save(FileWriter& f)
 	if(unit->action == A_DASH && unit->animation_state == 1)
 	{
 		f << action_targets.size();
-		for(auto target : action_targets)
-			f << target->refid;
+		for(Entity<Unit> unit : action_targets)
+			f << unit;
 	}
 	f << split_gold;
 	f << always_run;
@@ -473,7 +473,7 @@ void PlayerController::Load(FileReader& f)
 			next_action_data.item = Item::Get(f.ReadString1());
 			break;
 		case NA_USE:
-			Usable::AddRequest(&next_action_data.usable, f.Read<int>(), nullptr);
+			Usable::AddRequest(&next_action_data.usable, f.Read<int>());
 			break;
 		case NA_SELL:
 		case NA_PUT:
@@ -594,12 +594,8 @@ void PlayerController::Load(FileReader& f)
 		uint count;
 		f >> count;
 		action_targets.resize(count);
-		for(uint i = 0; i < count; ++i)
-		{
-			int refid;
-			f >> refid;
-			Unit::AddRequest(&action_targets[i], refid);
-		}
+		for(Entity<Unit>& unit : action_targets)
+			f >> unit;
 	}
 	if(LOAD_VERSION >= V_0_7)
 		f >> split_gold;
@@ -1066,7 +1062,7 @@ void PlayerController::Write(BitStreamWriter& f) const
 		f << GetNextActionItemIndex();
 		break;
 	case NA_USE:
-		f << next_action_data.usable->netid;
+		f << next_action_data.usable->id;
 		break;
 	default:
 		assert(0);
@@ -1265,7 +1261,7 @@ void PlayerController::StartDialog(Unit* talker, GameDialog* dialog)
 	{
 		NetChangePlayer& c = Add1(player_info->changes);
 		c.type = NetChangePlayer::START_DIALOG;
-		c.id = talker->netid;
+		c.id = talker->id;
 	}
 
 	ctx.StartDialog(talker, dialog);

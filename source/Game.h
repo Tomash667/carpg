@@ -46,7 +46,7 @@ enum GAME_STATE
 struct AttachedSound
 {
 	FMOD::Channel* channel;
-	SmartPtr<Unit> unit;
+	Entity<Unit> unit;
 };
 
 static_assert(sizeof(time_t) == sizeof(__int64), "time_t needs to be 64 bit");
@@ -473,7 +473,6 @@ public:
 	void AI_DoAttack(AIController& ai, Unit* target, bool running = false);
 	void AI_HitReaction(Unit& unit, const Vec3& pos);
 	void UpdateAttachedSounds(float dt);
-	void BuildRefidTables();
 	bool SaveGameSlot(int slot, cstring text);
 	void SaveGameFilename(const string& name);
 	bool SaveGameCommon(cstring filename, int slot, cstring text);

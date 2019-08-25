@@ -15,9 +15,9 @@
 //=================================================================================================
 void Quest_Mages::Start()
 {
-	quest_id = Q_MAGES;
-	type = QuestType::Unique;
-	quest_mgr->AddQuestRumor(refid, Format(quest_mgr->txRumorQ[4], GetStartLocationName()));
+	type = Q_MAGES;
+	category = QuestCategory::Unique;
+	quest_mgr->AddQuestRumor(id, Format(quest_mgr->txRumorQ[4], GetStartLocationName()));
 }
 
 //=================================================================================================
@@ -72,7 +72,7 @@ void Quest_Mages::SetProgress(int prog2)
 
 			team->AddReward(4000, 12000);
 			OnUpdate(game->txQuest[168]);
-			quest_mgr->RemoveQuestRumor(refid);
+			quest_mgr->RemoveQuestRumor(id);
 		}
 		break;
 	case Progress::EncounteredGolem:
@@ -80,7 +80,7 @@ void Quest_Mages::SetProgress(int prog2)
 			quest_mgr->quest_mages2->OnStart(game->txQuest[169]);
 			Quest_Mages2* q = quest_mgr->quest_mages2;
 			q->mages_state = Quest_Mages2::State::EncounteredGolem;
-			quest_mgr->AddQuestRumor(q->refid, quest_mgr->txRumorQ[5]);
+			quest_mgr->AddQuestRumor(q->id, quest_mgr->txRumorQ[5]);
 			q->msgs.push_back(Format(game->txQuest[170], world->GetDate()));
 			q->msgs.push_back(game->txQuest[171]);
 			world->AddNews(game->txQuest[172]);
@@ -159,8 +159,8 @@ void Quest_Mages2::Init()
 //=================================================================================================
 void Quest_Mages2::Start()
 {
-	type = QuestType::Unique;
-	quest_id = Q_MAGES2;
+	category = QuestCategory::Unique;
+	type = Q_MAGES2;
 	talked = Quest_Mages2::Talked::No;
 	mages_state = State::None;
 	scholar = nullptr;
@@ -388,7 +388,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			team->AddReward(10000, 25000);
 			OnUpdate(game->txQuest[188]);
 			quest_mgr->EndUniqueQuest();
-			quest_mgr->RemoveQuestRumor(refid);
+			quest_mgr->RemoveQuestRumor(id);
 		}
 		break;
 	}

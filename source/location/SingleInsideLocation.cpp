@@ -29,12 +29,6 @@ void SingleInsideLocation::Load(GameReader& f, bool local, LOCATION_TOKEN token)
 }
 
 //=================================================================================================
-void SingleInsideLocation::BuildRefidTables()
-{
-	LevelArea::BuildRefidTables();
-}
-
-//=================================================================================================
 bool SingleInsideLocation::FindUnit(Unit* unit, int* level)
 {
 	if(HaveUnit(unit))
@@ -66,9 +60,9 @@ Chest* SingleInsideLocation::FindChestWithItem(const Item* item, int& at_level, 
 }
 
 //=================================================================================================
-Chest* SingleInsideLocation::FindChestWithQuestItem(int quest_refid, int& at_level, int* index)
+Chest* SingleInsideLocation::FindChestWithQuestItem(int quest_id, int& at_level, int* index)
 {
-	Chest* chest = InsideLocationLevel::FindChestWithQuestItem(quest_refid, index);
+	Chest* chest = InsideLocationLevel::FindChestWithQuestItem(quest_id, index);
 	if(chest)
 		at_level = 0;
 	return chest;

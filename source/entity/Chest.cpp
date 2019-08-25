@@ -7,18 +7,20 @@
 #include "GameGui.h"
 #include "PlayerInfo.h"
 #include "SoundManager.h"
+#include "SaveState.h"
 
 const float Chest::SOUND_DIST = 1.f;
-int Chest::netid_counter;
+EntityType<Chest>::Impl EntityType<Chest>::impl;
 
 //=================================================================================================
 void Chest::Save(FileWriter& f, bool local)
 {
+	f << id;
+
 	ItemContainer::Save(f);
 
 	f << pos;
 	f << rot;
-	f << netid;
 
 	if(local)
 	{
@@ -39,12 +41,18 @@ void Chest::Save(FileWriter& f, bool local)
 //=================================================================================================
 void Chest::Load(FileReader& f, bool local)
 {
+	if(LOAD_VERSION >= V_DEV)
+		f >> id;
+	Register();
+
 	ItemContainer::Load(f);
 
 	f >> pos;
 	f >> rot;
-	f >> netid;
 	user = nullptr;
+
+	if(LOAD_VERSION < V_DEV)
+		f.Skip<int>(); // old netid
 
 	if(local)
 	{
@@ -64,12 +72,12 @@ void Chest::Load(FileReader& f, bool local)
 	else
 		mesh_inst = nullptr;
 
-	int refid = f.Read<int>();
-	if(refid == -1)
+	int handler_id = f.Read<int>();
+	if(handler_id == -1)
 		handler = nullptr;
 	else
 	{
-		handler = reinterpret_cast<ChestEventHandler*>(refid);
+		handler = reinterpret_cast<ChestEventHandler*>(handler_id);
 		game->load_chest_handler.push_back(this);
 	}
 }
@@ -77,19 +85,20 @@ void Chest::Load(FileReader& f, bool local)
 //=================================================================================================
 void Chest::Write(BitStreamWriter& f)
 {
+	f << id;
 	f << pos;
 	f << rot;
-	f << netid;
 }
 
 //=================================================================================================
 bool Chest::Read(BitStreamReader& f)
 {
+	f >> id;
 	f >> pos;
 	f >> rot;
-	f >> netid;
 	if(!f)
 		return false;
+	Register();
 	mesh_inst = new MeshInstance(game->aChest);
 	return true;
 }
@@ -108,7 +117,7 @@ bool Chest::AddItem(const Item* item, uint count, uint team_count, bool notify)
 			NetChangePlayer& c = Add1(user->player->player_info->changes);
 			c.type = NetChangePlayer::ADD_ITEMS_CHEST;
 			c.item = item;
-			c.id = netid;
+			c.id = id;
 			c.count = count;
 			c.a = team_count;
 		}
@@ -133,8 +142,8 @@ void Chest::OpenClose(Unit* unit)
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::USE_CHEST;
-			c.id = netid;
-			c.count = unit->netid;
+			c.id = id;
+			c.count = unit->id;
 		}
 	}
 	else
@@ -148,7 +157,7 @@ void Chest::OpenClose(Unit* unit)
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::USE_CHEST;
-			c.id = netid;
+			c.id = id;
 			c.count = -1;
 		}
 	}

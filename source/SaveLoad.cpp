@@ -370,7 +370,6 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 	game_level->ProcessRemoveUnits(false);
 	if(game_state == GS_WORLDMAP && game_level->is_open)
 		LeaveLocation(false, false);
-	BuildRefidTables();
 
 	// signature
 	byte sign[4] = { 'C','R','S','V' };
@@ -439,6 +438,17 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 	if(slot)
 		slot->img_size = img_size;
 
+	// ids
+	f << ParticleEmitter::impl.id_counter;
+	f << TrailParticleEmitter::impl.id_counter;
+	f << Unit::impl.id_counter;
+	f << GroundItem::impl.id_counter;
+	f << Chest::impl.id_counter;
+	f << Usable::impl.id_counter;
+	f << Trap::impl.id_counter;
+	f << Door::impl.id_counter;
+	f << Electro::impl.id_counter;
+
 	game_stats->Save(f);
 
 	f << game_state;
@@ -471,7 +481,7 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 	f << game_speed;
 	f << next_seed;
 	f << draw_flags;
-	f << pc->unit->refid;
+	f << pc->unit->id;
 	f << game_level->dungeon_level;
 	f << portal_anim;
 	f << drunk_anim;
@@ -585,13 +595,6 @@ void Game::LoadGame(GameReader& f)
 	load_unit_handler.clear();
 	load_chest_handler.clear();
 	units_mesh_load.clear();
-	Unit::refid_table.clear();
-	Unit::refid_request.clear();
-	Usable::refid_table.clear();
-	Usable::refid_request.clear();
-	GroundItem::refid_table.clear();
-	ParticleEmitter::refid_table.clear();
-	TrailParticleEmitter::refid_table.clear();
 	game_level->entering = true;
 
 	byte check_id = 0, read_id;
@@ -670,6 +673,20 @@ void Game::LoadGame(GameReader& f)
 		f.SkipData<uint>(); // image
 	}
 
+	// ids
+	if(LOAD_VERSION >= V_DEV)
+	{
+		f >> ParticleEmitter::impl.id_counter;
+		f >> TrailParticleEmitter::impl.id_counter;
+		f >> Unit::impl.id_counter;
+		f >> GroundItem::impl.id_counter;
+		f >> Chest::impl.id_counter;
+		f >> Usable::impl.id_counter;
+		f >> Trap::impl.id_counter;
+		f >> Door::impl.id_counter;
+		f >> Electro::impl.id_counter;
+	}
+
 	LoadingHandler loading;
 	GAME_STATE game_state2;
 	if(LOAD_VERSION >= V_0_8)
@@ -706,12 +723,12 @@ void Game::LoadGame(GameReader& f)
 	}
 
 	uint count;
-	int location_event_handler_quest_refid;
+	int location_event_handler_quest_id;
 	if(game_state2 == GS_LEVEL)
-		f >> location_event_handler_quest_refid;
+		f >> location_event_handler_quest_id;
 	else
 	{
-		location_event_handler_quest_refid = -1;
+		location_event_handler_quest_id = -1;
 		// load team
 		f >> count;
 		for(uint i = 0; i < count; ++i)
@@ -719,7 +736,6 @@ void Game::LoadGame(GameReader& f)
 			Unit* u = new Unit;
 			u->Load(f, false);
 			u->area = nullptr;
-			Unit::AddRefid(u);
 			u->CreateMesh(Unit::CREATE_MESH::ON_WORLDMAP);
 
 			if(!u->IsPlayer())
@@ -735,25 +751,10 @@ void Game::LoadGame(GameReader& f)
 	f >> game_level->enter_from;
 	f >> game_level->light_angle;
 
-	// set entities pointers
+	// apply entity requests
 	LoadingStep(txLoadingData);
-	for(vector<pair<Unit**, int>>::iterator it = Unit::refid_request.begin(), end = Unit::refid_request.end(); it != end; ++it)
-	{
-		if(it->second != Unit::REFID_LEADER)
-			*(it->first) = Unit::refid_table[it->second];
-	}
-	for(vector<UsableRequest>::iterator it = Usable::refid_request.begin(), end = Usable::refid_request.end(); it != end; ++it)
-	{
-		Usable* u = Usable::refid_table[it->refid];
-		if(it->user && u->user != it->user)
-		{
-			Warn("Invalid usable %s (%d) user %s.", u->base->id.c_str(), u->refid, it->user->data->id.c_str());
-			*it->usable = nullptr;
-		}
-		else
-			*it->usable = u;
-	}
-	Usable::refid_request.clear();
+	Unit::ApplyRequests();
+	Usable::ApplyRequests();
 
 	// camera
 	f >> game_level->camera.real_rot.y;
@@ -817,12 +818,6 @@ void Game::LoadGame(GameReader& f)
 
 	// wczytaj dru¿ynê
 	team->Load(f);
-	for(vector<pair<Unit**, int>>::iterator it = Unit::refid_request.begin(), end = Unit::refid_request.end(); it != end; ++it)
-	{
-		if(it->second == Unit::REFID_LEADER)
-			*(it->first) = team->GetLeader();
-	}
-	Unit::refid_request.clear();
 
 	// load quests
 	LoadingStep(txLoadingQuests);
@@ -895,8 +890,8 @@ void Game::LoadGame(GameReader& f)
 	for(vector<AIController*>::iterator it = ai_cast_targets.begin(), end = ai_cast_targets.end(); it != end; ++it)
 	{
 		AIController& ai = **it;
-		int refid = (int)ai.cast_target;
-		ai.cast_target = Unit::GetByRefid(refid);
+		int id = (int)ai.cast_target;
+		ai.cast_target = Unit::GetById(id);
 	}
 
 	// questy zwi¹zane z lokacjami
@@ -920,8 +915,8 @@ void Game::LoadGame(GameReader& f)
 	}
 
 	dialog_context.dialog_mode = false;
-	if(location_event_handler_quest_refid != -1)
-		game_level->event_handler = dynamic_cast<LocationEventHandler*>(quest_mgr->FindAnyQuest(location_event_handler_quest_refid));
+	if(location_event_handler_quest_id != -1)
+		game_level->event_handler = dynamic_cast<LocationEventHandler*>(quest_mgr->FindAnyQuest(location_event_handler_quest_id));
 	else
 		game_level->event_handler = nullptr;
 	team->ClearOnNewGameOrLoad();
@@ -930,7 +925,6 @@ void Game::LoadGame(GameReader& f)
 	game_gui->inventory->mode = I_NONE;
 	pc_data.before_player = BP_NONE;
 	pc_data.selected_unit = pc->unit;
-	pc_data.target_unit = nullptr;
 	dialog_context.pc = pc;
 	dialog_context.dialog_mode = false;
 	game_gui->level_gui->Setup();

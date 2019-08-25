@@ -327,16 +327,16 @@ LevelArea* Level::GetAreaById(int area_id)
 }
 
 //=================================================================================================
-Unit* Level::FindUnit(int netid)
+Unit* Level::FindUnit(int id)
 {
-	if(netid == -1)
+	if(id == -1)
 		return nullptr;
 
 	for(LevelArea& area : ForEachArea())
 	{
 		for(Unit* unit : area.units)
 		{
-			if(unit->netid == netid)
+			if(unit->id == id)
 				return unit;
 		}
 	}
@@ -369,13 +369,13 @@ Unit* Level::FindUnit(UnitData* ud)
 }
 
 //=================================================================================================
-Usable* Level::FindUsable(int netid)
+Usable* Level::FindUsable(int id)
 {
 	for(LevelArea& area : ForEachArea())
 	{
 		for(Usable* usable : area.usables)
 		{
-			if(usable->netid == netid)
+			if(usable->id == id)
 				return usable;
 		}
 	}
@@ -383,13 +383,13 @@ Usable* Level::FindUsable(int netid)
 }
 
 //=================================================================================================
-Door* Level::FindDoor(int netid)
+Door* Level::FindDoor(int id)
 {
 	for(LevelArea& area : ForEachArea())
 	{
 		for(Door* door : area.doors)
 		{
-			if(door->netid == netid)
+			if(door->id == id)
 				return door;
 		}
 	}
@@ -398,13 +398,13 @@ Door* Level::FindDoor(int netid)
 }
 
 //=================================================================================================
-Trap* Level::FindTrap(int netid)
+Trap* Level::FindTrap(int id)
 {
 	for(LevelArea& area : ForEachArea())
 	{
 		for(Trap* trap : area.traps)
 		{
-			if(trap->netid == netid)
+			if(trap->id == id)
 				return trap;
 		}
 	}
@@ -413,13 +413,13 @@ Trap* Level::FindTrap(int netid)
 }
 
 //=================================================================================================
-Chest* Level::FindChest(int netid)
+Chest* Level::FindChest(int id)
 {
 	for(LevelArea& area : ForEachArea())
 	{
 		for(Chest* chest : area.chests)
 		{
-			if(chest->netid == netid)
+			if(chest->id == id)
 				return chest;
 		}
 	}
@@ -428,13 +428,13 @@ Chest* Level::FindChest(int netid)
 }
 
 //=================================================================================================
-Electro* Level::FindElectro(int netid)
+Electro* Level::FindElectro(int id)
 {
 	for(LevelArea& area : ForEachArea())
 	{
 		for(Electro* electro : area.tmp->electros)
 		{
-			if(electro->netid == netid)
+			if(electro->id == id)
 				return electro;
 		}
 	}
@@ -443,13 +443,13 @@ Electro* Level::FindElectro(int netid)
 }
 
 //=================================================================================================
-bool Level::RemoveTrap(int netid)
+bool Level::RemoveTrap(int id)
 {
 	for(LevelArea& area : ForEachArea())
 	{
 		for(vector<Trap*>::iterator it = area.traps.begin(), end = area.traps.end(); it != end; ++it)
 		{
-			if((*it)->netid == netid)
+			if((*it)->id == id)
 			{
 				delete *it;
 				area.traps.erase(it);
@@ -474,7 +474,7 @@ void Level::RemoveUnit(Unit* unit, bool notify)
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::REMOVE_UNIT;
-		c.id = unit->netid;
+		c.id = unit->id;
 	}
 }
 
@@ -533,13 +533,11 @@ ObjectEntity Level::SpawnObjectEntity(LevelArea& area, BaseObject* base, const V
 			sdir += rot;
 
 			Usable* u = new Usable;
-			area.usables.push_back(u);
+			u->Register();
 			u->base = stool;
 			u->pos = pos + Vec3(sin(sdir)*slen, 0, cos(sdir)*slen);
 			u->rot = sdir;
-			u->user = nullptr;
-			if(Net::IsOnline())
-				u->netid = Usable::netid_counter++;
+			area.usables.push_back(u);
 
 			SpawnObjectExtras(area, stool, u->pos, u->rot, u);
 		}
@@ -583,10 +581,10 @@ ObjectEntity Level::SpawnObjectEntity(LevelArea& area, BaseObject* base, const V
 		BaseUsable* base_use = (BaseUsable*)base;
 
 		Usable* u = new Usable;
+		u->Register();
 		u->base = base_use;
 		u->pos = pos;
 		u->rot = rot;
-		u->user = nullptr;
 
 		if(IsSet(base_use->use_flags, BaseUsable::CONTAINER))
 		{
@@ -633,8 +631,6 @@ ObjectEntity Level::SpawnObjectEntity(LevelArea& area, BaseObject* base, const V
 		}
 		u->variant = variant;
 
-		if(Net::IsOnline())
-			u->netid = Usable::netid_counter++;
 		area.usables.push_back(u);
 
 		SpawnObjectExtras(area, base, pos, rot, u, scale, flags);
@@ -645,12 +641,11 @@ ObjectEntity Level::SpawnObjectEntity(LevelArea& area, BaseObject* base, const V
 	{
 		// chest
 		Chest* chest = new Chest;
+		chest->Register();
 		chest->mesh_inst = new MeshInstance(base->mesh);
 		chest->rot = rot;
 		chest->pos = pos;
 		area.chests.push_back(chest);
-		if(Net::IsOnline())
-			chest->netid = Chest::netid_counter++;
 
 		SpawnObjectExtras(area, base, pos, rot, nullptr, scale, flags);
 
@@ -1261,6 +1256,7 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 				else if(token == "door" || token == "doorc" || token == "doorl" || token == "door2")
 				{
 					Door* door = new Door;
+					door->Register();
 					door->pos = pos;
 					door->rot = Clip(pt.rot.y + rot);
 					door->state = Door::Open;
@@ -1271,7 +1267,6 @@ void Level::ProcessBuildingObjects(LevelArea& area, City* city, InsideBuilding* 
 					door->phy->setCollisionShape(shape_door);
 					door->phy->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_DOOR);
 					door->locked = LOCK_NONE;
-					door->netid = Door::netid_counter++;
 
 					btTransform& tr = door->phy->getWorldTransform();
 					Vec3 pos = door->pos;
@@ -1651,7 +1646,6 @@ void Level::AddGroundItem(LevelArea& area, GroundItem* item)
 
 	if(Net::IsOnline())
 	{
-		item->netid = GroundItem::netid_counter++;
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::SPAWN_ITEM;
 		c.item = item;
@@ -1659,13 +1653,13 @@ void Level::AddGroundItem(LevelArea& area, GroundItem* item)
 }
 
 //=================================================================================================
-GroundItem* Level::FindGroundItem(int netid, LevelArea** out_area)
+GroundItem* Level::FindGroundItem(int id, LevelArea** out_area)
 {
 	for(LevelArea& area : ForEachArea())
 	{
 		for(GroundItem* ground_item : area.items)
 		{
-			if(ground_item->netid == netid)
+			if(ground_item->id == id)
 			{
 				if(out_area)
 					*out_area = &area;
@@ -1706,12 +1700,12 @@ GroundItem* Level::SpawnGroundItemInsideRoom(Room& room, const Item* item)
 		if(!Collide(global_col, pos, 0.25f))
 		{
 			GroundItem* gi = new GroundItem;
+			gi->Register();
 			gi->count = 1;
 			gi->team_count = 1;
 			gi->rot = Random(MAX_ANGLE);
 			gi->pos = pos;
 			gi->item = item;
-			gi->netid = GroundItem::netid_counter++;
 			local_area->items.push_back(gi);
 			return gi;
 		}
@@ -1745,6 +1739,7 @@ GroundItem* Level::SpawnGroundItemInsideRadius(const Item* item, const Vec2& pos
 		if(!Collide(global_col, pt, 0.25f))
 		{
 			GroundItem* gi = new GroundItem;
+			gi->Register();
 			gi->count = 1;
 			gi->team_count = 1;
 			gi->rot = Random(MAX_ANGLE);
@@ -1752,7 +1747,6 @@ GroundItem* Level::SpawnGroundItemInsideRadius(const Item* item, const Vec2& pos
 			if(local_area->area_type == LevelArea::Type::Outside)
 				terrain->SetH(gi->pos);
 			gi->item = item;
-			gi->netid = GroundItem::netid_counter++;
 			local_area->items.push_back(gi);
 			return gi;
 		}
@@ -1782,6 +1776,7 @@ GroundItem* Level::SpawnGroundItemInsideRegion(const Item* item, const Vec2& pos
 		if(!Collide(global_col, pt, 0.25f))
 		{
 			GroundItem* gi = new GroundItem;
+			gi->Register();
 			gi->count = 1;
 			gi->team_count = 1;
 			gi->rot = Random(MAX_ANGLE);
@@ -1789,7 +1784,6 @@ GroundItem* Level::SpawnGroundItemInsideRegion(const Item* item, const Vec2& pos
 			if(local_area->area_type == LevelArea::Type::Outside)
 				terrain->SetH(gi->pos);
 			gi->item = item;
-			gi->netid = GroundItem::netid_counter++;
 			local_area->items.push_back(gi);
 			return gi;
 		}
@@ -1831,10 +1825,10 @@ void Level::PickableItemAdd(const Item* item)
 			i.pos = pos;
 
 			GroundItem* gi = new GroundItem;
+			gi->Register();
 			gi->count = 1;
 			gi->team_count = 1;
 			gi->item = item;
-			gi->netid = GroundItem::netid_counter++;
 			gi->rot = Random(MAX_ANGLE);
 			float rot = pickable_obj->rot.y,
 				s = sin(rot),
@@ -2804,7 +2798,7 @@ Trap* Level::CreateTrap(Int2 pt, TRAP_TYPE type, bool timed)
 	Trap& trap = *t;
 	local_area->traps.push_back(t);
 
-	auto& base = BaseTrap::traps[type];
+	BaseTrap& base = BaseTrap::traps[type];
 	trap.base = &base;
 	trap.hitted = nullptr;
 	trap.state = 0;
@@ -2813,7 +2807,6 @@ Trap* Level::CreateTrap(Int2 pt, TRAP_TYPE type, bool timed)
 	trap.obj.mesh = trap.base->mesh;
 	trap.obj.pos = trap.pos;
 	trap.obj.scale = 1.f;
-	trap.netid = Trap::netid_counter++;
 
 	if(type == TRAP_ARROW || type == TRAP_POISON)
 	{
@@ -2900,6 +2893,7 @@ Trap* Level::CreateTrap(Int2 pt, TRAP_TYPE type, bool timed)
 		trap.time = 2.f;
 	}
 
+	trap.Register();
 	return &trap;
 }
 
@@ -2937,23 +2931,9 @@ void Level::UpdateLocation(int days, int open_chance, bool reset)
 		{
 			// usuñ wszystkie zw³oki i przedmioty
 			if(reset)
-			{
-				for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
-					delete *it;
-				area.units.clear();
-			}
+				DeleteElements(area.units);
 			else
-			{
-				for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
-				{
-					if(!(*it)->IsAlive())
-					{
-						delete *it;
-						*it = nullptr;
-					}
-				}
-				RemoveNullElements(area.units);
-			}
+				DeleteElements(area.units, [](Unit* unit) { return !unit->IsAlive(); });
 			DeleteElements(area.items);
 		}
 
@@ -3958,7 +3938,7 @@ void Level::Write(BitStreamWriter& f)
 			f << bullet.speed;
 			f << bullet.yspeed;
 			f << bullet.timer;
-			f << (bullet.owner ? bullet.owner->netid : -1);
+			f << (bullet.owner ? bullet.owner->id : -1);
 			if(bullet.spell)
 				f << bullet.spell->id;
 			else
@@ -3968,26 +3948,12 @@ void Level::Write(BitStreamWriter& f)
 		// explosions
 		f.Write(tmp_area.explos.size());
 		for(Explo* explo : tmp_area.explos)
-		{
-			f << explo->tex->filename;
-			f << explo->pos;
-			f << explo->size;
-			f << explo->sizemax;
-		}
+			explo->Write(f);
 
 		// electros
 		f.Write(tmp_area.electros.size());
 		for(Electro* electro : tmp_area.electros)
-		{
-			f << electro->netid;
-			f.WriteCasted<byte>(electro->lines.size());
-			for(ElectroLine& line : electro->lines)
-			{
-				f << line.pts.front();
-				f << line.pts.back();
-				f << line.t;
-			}
-		}
+			electro->Write(f);
 	}
 }
 
@@ -3996,7 +3962,6 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 {
 	// location
 	f >> reenter;
-	Usable::refid_request.clear();
 	if(!location->Read(f))
 	{
 		Error("Read level: Failed to read location.");
@@ -4008,20 +3973,7 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 	location->RequireLoadingResources(&loaded_resources);
 
 	// apply usable users
-	for(vector<UsableRequest>::iterator it = Usable::refid_request.begin(), end = Usable::refid_request.end(); it != end; ++it)
-	{
-		Unit* unit = it->user;
-		Usable* u = FindUsable(it->refid);
-		if(!u)
-			Warn("Invalid usable netid %d for %s (%d).", it->refid, unit->data->id.c_str(), unit->netid);
-		else
-		{
-			*it->usable = u;
-			u->user = unit;
-			unit->use_rot = Vec3::LookAtAngle(unit->pos, u->pos);
-		}
-	}
-	Usable::refid_request.clear();
+	Usable::ApplyRequests();
 
 	// music
 	MusicType music;
@@ -4061,7 +4013,7 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 			f >> bullet.speed;
 			f >> bullet.yspeed;
 			f >> bullet.timer;
-			int netid = f.Read<int>();
+			int unit_id = f.Read<int>();
 			const string& spell_id = f.ReadString1();
 			if(!f)
 			{
@@ -4139,12 +4091,12 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 				}
 			}
 
-			if(netid != -1)
+			if(unit_id != -1)
 			{
-				bullet.owner = FindUnit(netid);
+				bullet.owner = FindUnit(unit_id);
 				if(!bullet.owner)
 				{
-					Error("Read level: Missing bullet owner %d.", netid);
+					Error("Read level: Missing bullet owner %d.", unit_id);
 					return false;
 				}
 			}
@@ -4163,16 +4115,11 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 		for(Explo*& explo : tmp_area.explos)
 		{
 			explo = new Explo;
-			const string& tex_id = f.ReadString1();
-			f >> explo->pos;
-			f >> explo->size;
-			f >> explo->sizemax;
-			if(!f)
+			if(!explo->Read(f))
 			{
 				Error("Read level: Broken explosion.");
 				return false;
 			}
-			explo->tex = res_mgr->Load<Texture>(tex_id);
 		}
 
 		// electro effects
@@ -4183,29 +4130,13 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 			return false;
 		}
 		tmp_area.electros.resize(count);
-		Spell* electro_spell = Spell::TryGet("thunder_bolt");
 		for(Electro*& electro : tmp_area.electros)
 		{
 			electro = new Electro;
-			electro->spell = electro_spell;
-			electro->valid = true;
-			f >> electro->netid;
-			f >> count;
-			if(!f.Ensure(count * Electro::LINE_MIN_SIZE))
+			if(!electro->Read(f))
 			{
 				Error("Read level: Broken electro.");
 				return false;
-			}
-			electro->lines.resize(count);
-			Vec3 from, to;
-			float t;
-			for(byte i = 0; i < count; ++i)
-			{
-				f >> from;
-				f >> to;
-				f >> t;
-				electro->AddLine(from, to);
-				electro->lines.back().t = t;
 			}
 		}
 	}
@@ -4394,7 +4325,7 @@ CanLeaveLocationResult Level::CanLeaveLocation(Unit& unit)
 	{
 		for(Unit& u : team->members)
 		{
-			if(u.summoner != nullptr)
+			if(u.summoner)
 				continue;
 
 			if(u.busy != Unit::Busy_No && u.busy != Unit::Busy_Tournament)
@@ -4419,7 +4350,7 @@ CanLeaveLocationResult Level::CanLeaveLocation(Unit& unit)
 	{
 		for(Unit& u : team->members)
 		{
-			if(u.summoner != nullptr)
+			if(u.summoner)
 				continue;
 
 			if(u.busy != Unit::Busy_No || Vec3::Distance2d(unit.pos, u.pos) > 8.f)

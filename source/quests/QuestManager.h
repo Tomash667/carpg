@@ -23,12 +23,13 @@ class Quest_Tutorial;
 //-----------------------------------------------------------------------------
 struct QuestInfo
 {
-	QUEST id;
-	QuestType type;
+	QUEST_TYPE type;
+	QuestCategory category;
 	cstring name;
 	QuestScheme* scheme;
 
-	QuestInfo(QUEST id, QuestType type, cstring name, QuestScheme* scheme = nullptr) : id(id), type(type), name(name), scheme(scheme) {}
+	QuestInfo(QUEST_TYPE type, QuestCategory category, cstring name, QuestScheme* scheme = nullptr)
+		: type(type), category(category), name(name), scheme(scheme) {}
 };
 
 //-----------------------------------------------------------------------------
@@ -36,7 +37,7 @@ class QuestManager
 {
 	struct QuestRequest
 	{
-		int refid;
+		int id;
 		Quest** quest;
 		delegate<void()> callback;
 	};
@@ -45,7 +46,7 @@ class QuestManager
 	{
 		const Item** item;
 		string name;
-		int quest_refid;
+		int quest_id;
 		vector<ItemSlot>* items;
 		Unit* unit;
 	};
@@ -58,12 +59,12 @@ public:
 	void LoadLanguage();
 	void Cleanup();
 	void InitQuests(bool devmode);
-	Quest* CreateQuest(QUEST quest_id);
+	Quest* CreateQuest(QUEST_TYPE type);
 	Quest* CreateQuest(QuestInfo* info);
 	Quest* GetMayorQuest();
 	Quest* GetCaptainQuest();
 	Quest* GetAdventurerQuest();
-	void AddQuestItemRequest(const Item** item, cstring name, int quest_refid, vector<ItemSlot>* items, Unit* unit = nullptr);
+	void AddQuestItemRequest(const Item** item, cstring name, int quest_id, vector<ItemSlot>* items, Unit* unit = nullptr);
 	void Reset();
 	void Clear();
 	void Update(int days);
@@ -71,14 +72,14 @@ public:
 	bool Read(BitStreamReader& f);
 	void Save(GameWriter& f);
 	void Load(GameReader& f);
-	Quest* FindQuest(int location, QuestType type);
-	Quest* FindQuest(int refid, bool active = true);
-	Quest* FindAnyQuest(int refid);
+	Quest* FindQuest(int location, QuestCategory category);
+	Quest* FindQuest(int id, bool active = true);
+	Quest* FindAnyQuest(int id);
 	Quest* FindAnyQuest(QuestScheme* scheme);
-	Quest* FindQuestById(QUEST quest_id);
-	Quest* FindUnacceptedQuest(int location, QuestType type);
-	Quest* FindUnacceptedQuest(int refid);
-	const Item* FindQuestItem(cstring name, int refid);
+	Quest* FindQuest(QUEST_TYPE type);
+	Quest* FindUnacceptedQuest(int location, QuestCategory category);
+	Quest* FindUnacceptedQuest(int id);
+	const Item* FindQuestItem(cstring name, int quest_id);
 	void EndUniqueQuest() { ++unique_quests_completed; }
 	bool SetForcedQuest(const string& name);
 	int GetForcedQuest() const { return force; }
@@ -89,15 +90,15 @@ public:
 	bool HandleSpecial(DialogContext& ctx, cstring msg, bool& result);
 	bool HandleSpecialIf(DialogContext& ctx, cstring msg, bool& result);
 	bool HandleFormatString(const string& str, cstring& result);
-	const Item* FindQuestItemClient(cstring id, int refid) const;
+	const Item* FindQuestItemClient(cstring item_id, int quest_id) const;
 	void AddScriptedQuest(QuestScheme* scheme);
 	QuestInfo* FindQuest(const string& id);
-	void AddQuestRequest(int refid, Quest** quest, delegate<void()> callback = nullptr) { quest_requests.push_back({ refid, quest, callback }); }
+	void AddQuestRequest(int id, Quest** quest, delegate<void()> callback = nullptr) { quest_requests.push_back({ id, quest, callback }); }
 	void AddQuestItem(Item* item) { quest_items.push_back(item); }
 	bool HaveQuestRumors() const { return !quest_rumors.empty(); }
 	int AddQuestRumor(cstring str);
-	void AddQuestRumor(int refid, cstring str) { quest_rumors.push_back(pair<int, string>(refid, str)); }
-	bool RemoveQuestRumor(int refid);
+	void AddQuestRumor(int id, cstring str) { quest_rumors.push_back(pair<int, string>(id, str)); }
+	bool RemoveQuestRumor(int id);
 	string GetRandomQuestRumor();
 
 	vector<Quest*> unaccepted_quests;
@@ -127,7 +128,7 @@ public:
 
 private:
 	void LoadQuests(GameReader& f, vector<Quest*>& quests);
-	QuestInfo* GetRandomQuest(QuestType type);
+	QuestInfo* GetRandomQuest(QuestCategory category);
 
 	vector<QuestInfo> infos;
 	vector<QuestItemRequest*> quest_item_requests;

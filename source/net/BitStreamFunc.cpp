@@ -59,7 +59,7 @@ void BitStreamWriter::operator << (const Item& item)
 {
 	operator << (item.id);
 	if(item.id[0] == '$')
-		operator << (item.refid);
+		operator << (item.quest_id);
 }
 
 void BitStreamWriter::Reset()

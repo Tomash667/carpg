@@ -55,7 +55,7 @@ void AIController::Save(GameWriter& f)
 			timer = Random(1.f, 2.f);
 		}
 	}
-	f << unit->refid;
+	f << unit->id;
 	f << target;
 	f << alert_target;
 	f << state;
@@ -91,7 +91,7 @@ void AIController::Save(GameWriter& f)
 	if(state == AIController::Escape)
 		f << (escape_room ? escape_room->index : -1);
 	else if(state == AIController::Cast)
-		f << cast_target->refid;
+		f << cast_target->id;
 	f << have_potion;
 	f << potion;
 	f << idle_action;
@@ -113,12 +113,12 @@ void AIController::Save(GameWriter& f)
 	case AIController::Idle_Chat:
 	case AIController::Idle_WalkNearUnit:
 	case AIController::Idle_MoveAway:
-		f << idle_data.unit->refid;
+		f << idle_data.unit->id;
 		break;
 	case AIController::Idle_Use:
 	case AIController::Idle_WalkUse:
 	case AIController::Idle_WalkUseEat:
-		f << idle_data.usable->refid;
+		f << idle_data.usable->id;
 		break;
 	case AIController::Idle_TrainBow:
 		f << idle_data.obj.pos;

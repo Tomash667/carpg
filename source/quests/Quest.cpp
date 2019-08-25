@@ -19,14 +19,14 @@ Quest::Quest() : state(Hidden), prog(0), timeout(false)
 //=================================================================================================
 void Quest::Save(GameWriter& f)
 {
-	f << quest_id;
+	f << type;
 	f << state;
 	f << name;
 	f << prog;
-	f << refid;
+	f << id;
 	f << start_time;
 	f << start_loc;
-	f << type;
+	f << category;
 	f.WriteStringArray<byte, word>(msgs);
 	f << timeout;
 }
@@ -34,14 +34,14 @@ void Quest::Save(GameWriter& f)
 //=================================================================================================
 bool Quest::Load(GameReader& f)
 {
-	// quest_id is read in QuestManager to create this instance
+	// type is read in QuestManager to create this instance
 	f >> state;
 	f >> name;
 	f >> prog;
-	f >> refid;
+	f >> id;
 	f >> start_time;
 	f >> start_loc;
-	f >> type;
+	f >> category;
 	f.ReadStringArray<byte, word>(msgs);
 	f >> timeout;
 
@@ -63,7 +63,7 @@ void Quest::OnStart(cstring name)
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::ADD_QUEST;
-		c.id = refid;
+		c.id = id;
 	}
 }
 
@@ -79,7 +79,7 @@ void Quest::OnUpdate(const std::initializer_list<cstring>& new_msgs)
 	{
 
 		NetChange& c = Add1(Net::changes);
-		c.id = refid;
+		c.id = id;
 		c.type = NetChange::UPDATE_QUEST;
 		c.count = new_msgs.size();
 	}

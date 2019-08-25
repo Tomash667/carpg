@@ -45,10 +45,7 @@ const float Unit::ALERT_SOUND_DIST = 2.f;
 const float Unit::PAIN_SOUND_DIST = 1.f;
 const float Unit::DIE_SOUND_DIST = 1.f;
 const float Unit::YELL_SOUND_DIST = 2.f;
-vector<Unit*> Unit::refid_table;
-vector<pair<Unit**, int>> Unit::refid_request;
-int Unit::netid_counter;
-static Unit* SUMMONER_PLACEHOLDER = (Unit*)0xFA4E1111;
+EntityType<Unit>::Impl EntityType<Unit>::impl;
 static AIController* AI_PLACEHOLDER = (AIController*)1;
 
 //=================================================================================================
@@ -303,6 +300,7 @@ bool Unit::DropItem(int index)
 	if(Net::IsLocal())
 	{
 		GroundItem* item = new GroundItem;
+		item->Register();
 		item->item = s.item;
 		item->count = 1;
 		if(s.team_count > 0)
@@ -368,6 +366,7 @@ void Unit::DropItem(ITEM_SLOT slot)
 		RemoveItemEffects(item2, slot);
 
 		GroundItem* item = new GroundItem;
+		item->Register();
 		item->item = item2;
 		item->count = 1;
 		item->team_count = 0;
@@ -425,6 +424,7 @@ bool Unit::DropItems(int index, uint count)
 	if(Net::IsLocal())
 	{
 		GroundItem* item = new GroundItem;
+		item->Register();
 		item->item = s.item;
 		item->count = count;
 		item->team_count = min(count, s.team_count);
@@ -849,7 +849,7 @@ void Unit::AddItem2(const Item* item, uint count, uint team_count, bool show_msg
 				NetChangePlayer& c = Add1(u->player->player_info->changes);
 				c.type = NetChangePlayer::ADD_ITEMS_TRADER;
 				c.item = item;
-				c.id = netid;
+				c.id = id;
 				c.count = count;
 				c.a = team_count;
 			}
@@ -1638,7 +1638,7 @@ int Unit::GetRandomAttack() const
 //=================================================================================================
 void Unit::Save(GameWriter& f, bool local)
 {
-	// unit data
+	f << id;
 	f << data->id;
 
 	// items
@@ -1653,7 +1653,7 @@ void Unit::Save(GameWriter& f, bool local)
 			f << slot.count;
 			f << slot.team_count;
 			if(slot.item->id[0] == '$')
-				f << slot.item->refid;
+				f << slot.item->quest_id;
 		}
 		else
 			f.Write0();
@@ -1694,7 +1694,7 @@ void Unit::Save(GameWriter& f, bool local)
 	f << gold;
 	f << to_remove;
 	f << temporary;
-	f << quest_refid;
+	f << quest_id;
 	f << assist;
 	f << auto_talk;
 	if(auto_talk != AutoTalkMode::No)
@@ -1704,11 +1704,9 @@ void Unit::Save(GameWriter& f, bool local)
 	}
 	f << dont_attack;
 	f << attack_team;
-	f << netid;
 	f << (event_handler ? event_handler->GetUnitEventHandlerQuestRefid() : -1);
 	f << weight;
-	f << (guard_target ? guard_target->refid : -1);
-	f << (summoner ? summoner->refid : -1);
+	f << summoner;
 	if(live_state >= DYING)
 		f << mark;
 
@@ -1763,12 +1761,12 @@ void Unit::Save(GameWriter& f, bool local)
 		{
 			if(usable->user != this)
 			{
-				Warn("Invalid usable %s (%d) user %s.", usable->base->id.c_str(), usable->refid, data->id.c_str());
+				Warn("Invalid usable %s (%d) user %s.", usable->base->id.c_str(), usable->id, data->id.c_str());
 				usable = nullptr;
 				f << -1;
 			}
 			else
-				f << usable->refid;
+				f << usable->id;
 		}
 		else
 			f << -1;
@@ -1784,7 +1782,7 @@ void Unit::Save(GameWriter& f, bool local)
 	f.Write(dialogs.size());
 	for(QuestDialog& dialog : dialogs)
 	{
-		f << dialog.quest->refid;
+		f << dialog.quest->id;
 		f << dialog.dialog->id;
 	}
 
@@ -1793,7 +1791,7 @@ void Unit::Save(GameWriter& f, bool local)
 	for(Event& e : events)
 	{
 		f << e.type;
-		f << e.quest->refid;
+		f << e.quest->id;
 	}
 
 	// order
@@ -1802,7 +1800,8 @@ void Unit::Save(GameWriter& f, bool local)
 	switch(order)
 	{
 	case ORDER_FOLLOW:
-		f << order_unit->refid;
+	case ORDER_GUARD:
+		f << order_unit;
 		break;
 	case ORDER_LOOK_AT:
 		f << order_pos;
@@ -1815,7 +1814,7 @@ void Unit::Save(GameWriter& f, bool local)
 		f << order_pos;
 		break;
 	case ORDER_ESCAPE_TO_UNIT:
-		f << order_unit->refid;
+		f << order_unit;
 		f << order_pos;
 		break;
 	}
@@ -1846,7 +1845,7 @@ void Unit::SaveStock(GameWriter& f)
 			f << slot.item->id;
 			f << slot.count;
 			if(slot.item->id[0] == '$')
-				f << slot.item->refid;
+				f << slot.item->quest_id;
 		}
 		else
 			f.Write0();
@@ -1858,7 +1857,9 @@ void Unit::Load(GameReader& f, bool local)
 {
 	human_data = nullptr;
 
-	// unit data
+	if(LOAD_VERSION >= V_DEV)
+		f >> id;
+	Register();
 	data = UnitData::Get(f.ReadString1());
 
 	// items
@@ -1889,8 +1890,8 @@ void Unit::Load(GameReader& f, bool local)
 			slot.item = Item::Get(item_id);
 		else
 		{
-			int quest_item_refid = f.Read<int>();
-			quest_mgr->AddQuestItemRequest(&slot.item, item_id.c_str(), quest_item_refid, &items, this);
+			int quest_item_id = f.Read<int>();
+			quest_mgr->AddQuestItemRequest(&slot.item, item_id.c_str(), quest_item_id, &items, this);
 			slot.item = QUEST_ITEM_PLACEHOLDER;
 			can_sort = false;
 		}
@@ -1994,7 +1995,7 @@ void Unit::Load(GameReader& f, bool local)
 		f.Skip<int>(); // old inside_building
 	f >> to_remove;
 	f >> temporary;
-	f >> quest_refid;
+	f >> quest_id;
 	f >> assist;
 
 	// auto talking
@@ -2011,15 +2012,16 @@ void Unit::Load(GameReader& f, bool local)
 
 	f >> dont_attack;
 	f >> attack_team;
-	f >> netid;
-	int unit_event_handler_quest_refid = f.Read<int>();
-	if(unit_event_handler_quest_refid == -2)
+	if(LOAD_VERSION < V_DEV)
+		f.Skip<int>(); // old netid
+	int unit_event_handler_quest_id = f.Read<int>();
+	if(unit_event_handler_quest_id == -2)
 		event_handler = quest_mgr->quest_contest;
-	else if(unit_event_handler_quest_refid == -1)
+	else if(unit_event_handler_quest_id == -1)
 		event_handler = nullptr;
 	else
 	{
-		event_handler = reinterpret_cast<UnitEventHandler*>(unit_event_handler_quest_refid);
+		event_handler = reinterpret_cast<UnitEventHandler*>(unit_event_handler_quest_id);
 		game->load_unit_handler.push_back(this);
 	}
 	if(can_sort && content.require_update)
@@ -2028,17 +2030,10 @@ void Unit::Load(GameReader& f, bool local)
 	if(can_sort && content.require_update)
 		RecalculateWeight();
 
-	int guard_refid = f.Read<int>();
-	if(guard_refid == -1)
-		guard_target = nullptr;
-	else
-		AddRequest(&guard_target, guard_refid);
-
-	int summoner_refid = f.Read<int>();
-	if(summoner_refid == -1)
-		summoner = nullptr;
-	else
-		AddRequest(&summoner, summoner_refid);
+	Entity<Unit> guard_target;
+	if(LOAD_VERSION < V_DEV)		
+		f >> guard_target;
+	f >> summoner;
 
 	if(live_state >= DYING)
 	{
@@ -2120,11 +2115,11 @@ void Unit::Load(GameReader& f, bool local)
 		else
 			used_item = nullptr;
 
-		int usable_refid = f.Read<int>();
-		if(usable_refid == -1)
+		int usable_id = f.Read<int>();
+		if(usable_id == -1)
 			usable = nullptr;
 		else
-			Usable::AddRequest(&usable, usable_refid, this);
+			Usable::AddRequest(&usable, usable_id);
 
 		if(action == A_SHOOT)
 		{
@@ -2206,10 +2201,10 @@ void Unit::Load(GameReader& f, bool local)
 		dialogs.resize(f.Read<uint>());
 		for(QuestDialog& dialog : dialogs)
 		{
-			int quest_refid = f.Read<int>();
+			int quest_id = f.Read<int>();
 			string* str = StringPool.Get();
 			f >> *str;
-			quest_mgr->AddQuestRequest(quest_refid, (Quest**)&dialog.quest, [this, &dialog, str]()
+			quest_mgr->AddQuestRequest(quest_id, (Quest**)&dialog.quest, [this, &dialog, str]()
 			{
 				dialog.dialog = dialog.quest->GetDialog(*str);
 				StringPool.Free(str);
@@ -2223,10 +2218,10 @@ void Unit::Load(GameReader& f, bool local)
 		events.resize(f.Read<uint>());
 		for(Event& e : events)
 		{
-			int refid;
+			int quest_id;
 			f >> e.type;
-			f >> refid;
-			quest_mgr->AddQuestRequest(refid, (Quest**)&e.quest, [&]()
+			f >> quest_id;
+			quest_mgr->AddQuestRequest(quest_id, (Quest**)&e.quest, [&]()
 			{
 				EventPtr event;
 				event.source = EventPtr::UNIT;
@@ -2242,9 +2237,9 @@ void Unit::Load(GameReader& f, bool local)
 		{
 		case ORDER_FOLLOW:
 			if(LOAD_VERSION >= V_0_11)
-				AddRequest(&order_unit, f.Read<int>());
+				f >> order_unit;
 			else
-				AddRequest(&order_unit, Unit::REFID_LEADER);
+				team->GetLeaderRequest(&order_unit);
 			break;
 		case ORDER_LOOK_AT:
 			f >> order_pos;
@@ -2257,14 +2252,23 @@ void Unit::Load(GameReader& f, bool local)
 			f >> order_pos;
 			break;
 		case ORDER_ESCAPE_TO_UNIT:
-			AddRequest(&order_unit, f.Read<int>());
+			f >> order_unit;
 			f >> order_pos;
+			break;
+		case ORDER_GUARD:
+			f >> order_unit;
 			break;
 		}
 	}
 	else
 	{
 		order = ORDER_NONE;
+		order_timer = 0.f;
+	}
+	if(guard_target)
+	{
+		order = ORDER_GUARD;
+		order_unit = guard_target;
 		order_timer = 0.f;
 	}
 
@@ -2293,7 +2297,6 @@ void Unit::Load(GameReader& f, bool local)
 
 	in_arena = -1;
 	ai = nullptr;
-	look_target = nullptr;
 	interp = nullptr;
 	frozen = FROZEN::NO;
 
@@ -2373,9 +2376,9 @@ void Unit::LoadStock(GameReader& f)
 			slot.item = Item::Get(item_id);
 		else
 		{
-			int quest_refid;
-			f >> quest_refid;
-			quest_mgr->AddQuestItemRequest(&slot.item, item_id.c_str(), quest_refid, &cnt);
+			int quest_id;
+			f >> quest_id;
+			quest_mgr->AddQuestItemRequest(&slot.item, item_id.c_str(), quest_id, &cnt);
 			slot.item = QUEST_ITEM_PLACEHOLDER;
 			can_sort = false;
 		}
@@ -2389,8 +2392,8 @@ void Unit::LoadStock(GameReader& f)
 void Unit::Write(BitStreamWriter& f)
 {
 	// main
+	f << id;
 	f << data->id;
-	f << netid;
 
 	// human data
 	if(data->type == UNIT_TYPE::HUMAN)
@@ -2418,9 +2421,8 @@ void Unit::Write(BitStreamWriter& f)
 	f << rot;
 	f << hp;
 	f << hpmax;
-	f << netid;
 	f.WriteCasted<char>(in_arena);
-	f << (summoner != nullptr);
+	f << summoner;
 	f << mark;
 
 	// hero/player data
@@ -2458,7 +2460,6 @@ void Unit::Write(BitStreamWriter& f)
 	// loaded data
 	if(net->mp_load || game_level->reenter)
 	{
-		f << netid;
 		mesh_inst->Write(f);
 		f.WriteCasted<byte>(animation);
 		f.WriteCasted<byte>(current_animation);
@@ -2475,7 +2476,12 @@ void Unit::Write(BitStreamWriter& f)
 			f << used_item->id;
 		else
 			f.Write0();
-		f << (usable ? usable->netid : -1);
+		f << (usable ? usable->id : -1);
+		if(usable)
+		{
+			float usable_rot = Vec3::LookAtAngle(pos, usable->pos);
+			f << usable_rot;
+		}
 	}
 	else
 	{
@@ -2489,14 +2495,15 @@ void Unit::Write(BitStreamWriter& f)
 bool Unit::Read(BitStreamReader& f)
 {
 	// main
-	const string& id = f.ReadString1();
-	f >> netid;
+	f >> id;
+	const string& unit_data_id = f.ReadString1();
 	if(!f)
 		return false;
-	data = UnitData::TryGet(id);
+	Register();
+	data = UnitData::TryGet(unit_data_id);
 	if(!data)
 	{
-		Error("Missing base unit id '%s'!", id.c_str());
+		Error("Missing base unit id '%s'!", unit_data_id.c_str());
 		return false;
 	}
 
@@ -2574,9 +2581,9 @@ bool Unit::Read(BitStreamReader& f)
 	f >> rot;
 	f >> hp;
 	f >> hpmax;
-	f >> netid;
 	f.ReadCasted<char>(in_arena);
-	bool is_summoned = f.Read<bool>();
+	f >> summoner;
+	f >> mark;
 	if(!f)
 		return false;
 	if(live_state >= Unit::LIVESTATE_MAX)
@@ -2584,8 +2591,6 @@ bool Unit::Read(BitStreamReader& f)
 		Error("Invalid live state %d.", live_state);
 		return false;
 	}
-	summoner = (is_summoned ? SUMMONER_PLACEHOLDER : nullptr);
-	f >> mark;
 
 	// hero/player data
 	byte type;
@@ -2692,7 +2697,6 @@ bool Unit::Read(BitStreamReader& f)
 	if(net->mp_load || game_level->reenter)
 	{
 		// get current state in multiplayer
-		f >> netid;
 		if(!mesh_inst->Read(f))
 			return false;
 		f.ReadCasted<byte>(animation);
@@ -2707,7 +2711,7 @@ bool Unit::Read(BitStreamReader& f)
 		f >> target_pos2;
 		f >> timer;
 		const string& used_item_id = f.ReadString1();
-		int usable_netid = f.Read<int>();
+		int usable_id = f.Read<int>();
 		if(!f)
 			return false;
 
@@ -2725,10 +2729,13 @@ bool Unit::Read(BitStreamReader& f)
 			used_item = nullptr;
 
 		// usable
-		if(usable_netid == -1)
+		if(usable_id == -1)
 			usable = nullptr;
 		else
-			Usable::AddRequest(&usable, usable_netid, this);
+		{
+			Usable::AddRequest(&usable, usable_id);
+			f >> use_rot;
+		}
 
 		// bow animesh instance
 		if(action == A_SHOOT)
@@ -2757,6 +2764,7 @@ bool Unit::Read(BitStreamReader& f)
 	speed = prev_speed = 0.f;
 	talking = false;
 
+	Register();
 	return true;
 }
 
@@ -2931,22 +2939,22 @@ void Unit::ReequipItemsInternal()
 }
 
 //=================================================================================================
-bool Unit::HaveQuestItem(int quest_refid)
+bool Unit::HaveQuestItem(int quest_id)
 {
 	for(vector<ItemSlot>::iterator it = items.begin(), end = items.end(); it != end; ++it)
 	{
-		if(it->item && it->item->IsQuest(quest_refid))
+		if(it->item && it->item->IsQuest(quest_id))
 			return true;
 	}
 	return false;
 }
 
 //=================================================================================================
-void Unit::RemoveQuestItem(int quest_refid)
+void Unit::RemoveQuestItem(int quest_id)
 {
 	for(vector<ItemSlot>::iterator it = items.begin(), end = items.end(); it != end; ++it)
 	{
-		if(it->item && it->item->IsQuest(quest_refid))
+		if(it->item && it->item->IsQuest(quest_id))
 		{
 			weight -= it->item->weight;
 			items.erase(it);
@@ -2954,7 +2962,7 @@ void Unit::RemoveQuestItem(int quest_refid)
 			{
 				NetChangePlayer& c = Add1(player->player_info->changes);
 				c.type = NetChangePlayer::REMOVE_QUEST_ITEM;
-				c.id = quest_refid;
+				c.id = quest_id;
 			}
 			return;
 		}
@@ -2966,7 +2974,7 @@ void Unit::RemoveQuestItem(int quest_refid)
 //=================================================================================================
 void Unit::RemoveQuestItemS(Quest* quest)
 {
-	RemoveQuestItem(quest->refid);
+	RemoveQuestItem(quest->id);
 }
 
 //=================================================================================================
@@ -3144,20 +3152,20 @@ void Unit::RemoveEffect(EffectId effect)
 }
 
 //=================================================================================================
-int Unit::FindItem(const Item* item, int quest_refid) const
+int Unit::FindItem(const Item* item, int quest_id) const
 {
 	assert(item);
 
 	for(int i = 0; i < SLOT_MAX; ++i)
 	{
-		if(slots[i] == item && (quest_refid == -1 || slots[i]->IsQuest(quest_refid)))
+		if(slots[i] == item && (quest_id == -1 || slots[i]->IsQuest(quest_id)))
 			return SlotToIIndex(ITEM_SLOT(i));
 	}
 
 	int index = 0;
 	for(vector<ItemSlot>::const_iterator it = items.begin(), end = items.end(); it != end; ++it, ++index)
 	{
-		if(it->item == item && (quest_refid == -1 || it->item->IsQuest(quest_refid)))
+		if(it->item == item && (quest_id == -1 || it->item->IsQuest(quest_id)))
 			return index;
 	}
 
@@ -3178,18 +3186,18 @@ int Unit::FindItem(delegate<bool(const ItemSlot& slot)> callback) const
 }
 
 //=================================================================================================
-int Unit::FindQuestItem(int quest_refid) const
+int Unit::FindQuestItem(int quest_id) const
 {
 	for(int i = 0; i < SLOT_MAX; ++i)
 	{
-		if(slots[i] && slots[i]->IsQuest(quest_refid))
+		if(slots[i] && slots[i]->IsQuest(quest_id))
 			return SlotToIIndex(ITEM_SLOT(i));
 	}
 
 	int index = 0;
 	for(vector<ItemSlot>::const_iterator it = items.begin(), end = items.end(); it != end; ++it, ++index)
 	{
-		if(it->item->IsQuest(quest_refid))
+		if(it->item->IsQuest(quest_id))
 			return index;
 	}
 
@@ -3197,7 +3205,7 @@ int Unit::FindQuestItem(int quest_refid) const
 }
 
 //=================================================================================================
-bool Unit::FindQuestItem(cstring id, Quest** out_quest, int* i_index, bool not_active, int required_refid)
+bool Unit::FindQuestItem(cstring id, Quest** out_quest, int* i_index, bool not_active, int quest_id)
 {
 	assert(id);
 
@@ -3206,9 +3214,9 @@ bool Unit::FindQuestItem(cstring id, Quest** out_quest, int* i_index, bool not_a
 		// szukaj w za³o¿onych przedmiotach
 		for(int i = 0; i < SLOT_MAX; ++i)
 		{
-			if(slots[i] && slots[i]->IsQuest() && (required_refid == -1 || required_refid == slots[i]->refid))
+			if(slots[i] && slots[i]->IsQuest() && (quest_id == -1 || quest_id == slots[i]->quest_id))
 			{
-				Quest* quest = quest_mgr->FindQuest(slots[i]->refid, !not_active);
+				Quest* quest = quest_mgr->FindQuest(slots[i]->quest_id, !not_active);
 				if(quest && (not_active || quest->IsActive()) && quest->IfHaveQuestItem2(id))
 				{
 					if(i_index)
@@ -3224,9 +3232,9 @@ bool Unit::FindQuestItem(cstring id, Quest** out_quest, int* i_index, bool not_a
 		int index = 0;
 		for(vector<ItemSlot>::iterator it2 = items.begin(), end2 = items.end(); it2 != end2; ++it2, ++index)
 		{
-			if(it2->item && it2->item->IsQuest() && (required_refid == -1 || required_refid == it2->item->refid))
+			if(it2->item && it2->item->IsQuest() && (quest_id == -1 || quest_id == it2->item->quest_id))
 			{
-				Quest* quest = quest_mgr->FindQuest(it2->item->refid, !not_active);
+				Quest* quest = quest_mgr->FindQuest(it2->item->quest_id, !not_active);
 				if(quest && (not_active || quest->IsActive()) && quest->IfHaveQuestItem2(id))
 				{
 					if(i_index)
@@ -3245,7 +3253,7 @@ bool Unit::FindQuestItem(cstring id, Quest** out_quest, int* i_index, bool not_a
 		{
 			if(slots[i] && slots[i]->IsQuest() && slots[i]->id == id)
 			{
-				Quest* quest = quest_mgr->FindQuest(slots[i]->refid, !not_active);
+				Quest* quest = quest_mgr->FindQuest(slots[i]->quest_id, !not_active);
 				if(quest && (not_active || quest->IsActive()) && quest->IfHaveQuestItem())
 				{
 					if(i_index)
@@ -3263,7 +3271,7 @@ bool Unit::FindQuestItem(cstring id, Quest** out_quest, int* i_index, bool not_a
 		{
 			if(it2->item && it2->item->IsQuest() && it2->item->id == id)
 			{
-				Quest* quest = quest_mgr->FindQuest(it2->item->refid, !not_active);
+				Quest* quest = quest_mgr->FindQuest(it2->item->quest_id, !not_active);
 				if(quest && (not_active || quest->IsActive()) && quest->IfHaveQuestItem())
 				{
 					if(i_index)
@@ -3368,7 +3376,7 @@ uint Unit::RemoveItem(int i_index, uint count)
 			{
 				NetChangePlayer& c = Add1(t->player->player_info->changes);
 				c.type = NetChangePlayer::REMOVE_ITEMS_TRADER;
-				c.id = netid;
+				c.id = id;
 				c.count = count;
 				c.a = i_index;
 			}
@@ -5061,6 +5069,7 @@ void Unit::DropGold(int count)
 	{
 		// stwórz przedmiot
 		GroundItem* item = new GroundItem;
+		item->Register();
 		item->item = Item::gold;
 		item->count = count;
 		item->team_count = 0;
@@ -5597,6 +5606,14 @@ void Unit::OrderLookAt(const Vec3& pos)
 {
 	SetOrder(ORDER_LOOK_AT);
 	order_pos = pos;
+}
+
+//=================================================================================================
+void Unit::OrderGuard(Unit* unit)
+{
+	assert(unit);
+	SetOrder(ORDER_GUARD);
+	order_unit = unit;
 }
 
 //=================================================================================================

@@ -175,19 +175,9 @@ void OutsideLocationGenerator::OnEnter()
 		if(days > 0)
 			game_level->UpdateLocation(days, 100, false);
 
+		// remove alive units
 		if(need_reset)
-		{
-			// remove alive units
-			for(vector<Unit*>::iterator it = outside->units.begin(), end = outside->units.end(); it != end; ++it)
-			{
-				if((*it)->IsAlive())
-				{
-					delete *it;
-					*it = nullptr;
-				}
-			}
-			RemoveNullElements(outside->units);
-		}
+			LoopAndRemove(outside->units, [](Unit* unit) { return unit->IsAlive(); });
 
 		// recreate colliders
 		game->LoadingStep(game->txGeneratingPhysics);
@@ -216,7 +206,7 @@ void OutsideLocationGenerator::OnEnter()
 	}
 
 	// handle quest event
-	if(outside->active_quest && outside->active_quest != (Quest_Dungeon*)ACTIVE_QUEST_HOLDER && outside->active_quest->quest_id != Q_SCRIPTED)
+	if(outside->active_quest && outside->active_quest != (Quest_Dungeon*)ACTIVE_QUEST_HOLDER && outside->active_quest->type != Q_SCRIPTED)
 	{
 		Quest_Event* event = outside->active_quest->GetEvent(game_level->location_index);
 		if(event)

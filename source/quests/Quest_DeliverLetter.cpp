@@ -14,8 +14,8 @@ void Quest_DeliverLetter::Start()
 {
 	start_loc = world->GetCurrentLocationIndex();
 	end_loc = world->GetRandomSettlementIndex(start_loc);
-	quest_id = Q_DELIVER_LETTER;
-	type = QuestType::Mayor;
+	type = Q_DELIVER_LETTER;
+	category = QuestCategory::Mayor;
 }
 
 //=================================================================================================
@@ -54,7 +54,7 @@ void Quest_DeliverLetter::SetProgress(int prog2)
 			Item::Get("letter")->CreateCopy(letter);
 			letter.id = "$letter";
 			letter.name = Format(game->txQuest[0], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str());
-			letter.refid = refid;
+			letter.quest_id = id;
 			DialogContext::current->pc->unit->AddItem2(&letter, 1u, 1u);
 
 			Location& loc2 = GetStartLocation();
@@ -69,7 +69,7 @@ void Quest_DeliverLetter::SetProgress(int prog2)
 			state = Quest::Failed;
 			((City&)GetStartLocation()).quest_mayor = CityQuestState::Failed;
 			if(world->GetCurrentLocationIndex() == end_loc)
-				DialogContext::current->pc->unit->RemoveQuestItem(refid);
+				DialogContext::current->pc->unit->RemoveQuestItem(id);
 
 			OnUpdate(game->txQuest[5]);
 		}
@@ -90,7 +90,7 @@ void Quest_DeliverLetter::SetProgress(int prog2)
 			team->AddReward(250, 1000);
 
 			((City&)GetStartLocation()).quest_mayor = CityQuestState::None;
-			DialogContext::current->pc->unit->RemoveQuestItem(refid);
+			DialogContext::current->pc->unit->RemoveQuestItem(id);
 
 			OnUpdate(game->txQuest[7]);
 			RemoveElementTry(quest_mgr->quests_timeout2, static_cast<Quest*>(this));
@@ -168,7 +168,7 @@ bool Quest_DeliverLetter::Load(GameReader& f)
 			letter.id = "$letter";
 			letter.name = Format(game->txQuest[prog == Progress::GotResponse ? 1 : 0], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys,
 				loc.name.c_str());
-			letter.refid = refid;
+			letter.quest_id = id;
 		}
 	}
 

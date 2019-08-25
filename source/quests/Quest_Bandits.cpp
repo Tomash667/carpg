@@ -21,8 +21,8 @@ void Quest_Bandits::Init()
 //=================================================================================================
 void Quest_Bandits::Start()
 {
-	quest_id = Q_BANDITS;
-	type = QuestType::Unique;
+	type = Q_BANDITS;
+	category = QuestCategory::Unique;
 	enc = -1;
 	other_loc = -1;
 	camp_loc = -1;
@@ -31,7 +31,7 @@ void Quest_Bandits::Start()
 	bandits_state = State::None;
 	timer = 0.f;
 	agent = nullptr;
-	quest_mgr->AddQuestRumor(refid, Format(quest_mgr->txRumorQ[3], GetStartLocationName()));
+	quest_mgr->AddQuestRumor(id, Format(quest_mgr->txRumorQ[3], GetStartLocationName()));
 }
 
 //=================================================================================================
@@ -107,7 +107,7 @@ void Quest_Bandits::SetProgress(int prog2)
 		else
 		{
 			OnStart(game->txQuest[153]);
-			quest_mgr->RemoveQuestRumor(refid);
+			quest_mgr->RemoveQuestRumor(id);
 
 			const Item* item = Item::Get("q_bandyci_paczka");
 			DialogContext::current->pc->unit->AddItem2(item, 1u, 1u);

@@ -17,7 +17,7 @@ void PlayerInfo::Save(FileWriter& f)
 	f << id;
 	f << devmode;
 	hd.Save(f);
-	f << (u ? u->refid : -1);
+	f << (u ? u->id : -1);
 	f.WriteStringArray<int, word>(notes);
 }
 
@@ -39,9 +39,9 @@ void PlayerInfo::Load(FileReader& f)
 	else
 		old_left = -1;
 	hd.Load(f);
-	int refid;
-	f >> refid;
-	u = Unit::GetByRefid(refid);
+	int unit_id;
+	f >> unit_id;
+	u = Unit::GetById(unit_id);
 	clas = u->GetClass();
 	f.ReadStringArray<int, word>(notes);
 	if(LOAD_VERSION < V_0_5_1)

@@ -3867,7 +3867,7 @@ void Game::DrawLightings(const vector<Electro*>& electros)
 
 	for(vector<Electro*>::const_iterator it = electros.begin(), end = electros.end(); it != end; ++it)
 	{
-		for(vector<ElectroLine>::iterator it2 = (*it)->lines.begin(), end2 = (*it)->lines.end(); it2 != end2; ++it2)
+		for(vector<Electro::Line>::iterator it2 = (*it)->lines.begin(), end2 = (*it)->lines.end(); it2 != end2; ++it2)
 		{
 			if(it2->t >= 0.5f)
 				continue;

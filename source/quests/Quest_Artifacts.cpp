@@ -8,8 +8,8 @@
 void Quest_Artifacts::Start()
 {
 	start_loc = -1;
-	quest_id = Q_ARTIFACTS;
-	type = QuestType::Unique;
+	type = Q_ARTIFACTS;
+	category = QuestCategory::Unique;
 
 	// one of corners
 	const Vec2& bounds = world->GetWorldBounds();
