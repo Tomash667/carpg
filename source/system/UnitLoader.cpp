@@ -282,6 +282,7 @@ void UnitLoader::InitTokenizer()
 		{ "contest", F2_CONTEST },
 		{ "contest_50", F2_CONTEST_50 },
 		{ "dont_talk", F2_DONT_TALK },
+		{ "construct", F2_CONSTRUCT },
 		{ "old", F2_OLD },
 		{ "melee", F2_MELEE },
 		{ "melee_50", F2_MELEE_50 },
@@ -455,7 +456,9 @@ void UnitLoader::InitTokenizer()
 		{ "ranged", TAG_RANGED },
 		{ "def", TAG_DEF },
 		{ "stamina", TAG_STAMINA },
-		{ "mage", TAG_MAGE }
+		{ "mage", TAG_MAGE },
+		{ "mana", TAG_MANA },
+		{ "cleric", TAG_CLERIC }
 		});
 }
 

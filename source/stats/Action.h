@@ -1,9 +1,6 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Resource.h"
-
-//-----------------------------------------------------------------------------
 // Player special action
 struct Action
 {
@@ -29,12 +26,13 @@ struct Action
 	Vec2 area_size; // for LINE w,h; for POINT radius,max_distance
 	cstring sound_id;
 	SoundPtr sound;
-	bool use_mana; // false - use stamina
+	bool use_mana, // true-use mana, false-use stamina
+		use_cast; // use cast animation
 
 	Action(cstring id, float cooldown, float recharge, int charges, Area area, const Vec2& area_size, cstring sound_id, float sound_dist, int flags,
-		float cost, bool use_mana) :
+		float cost, bool use_mana, bool use_cast) :
 		id(id), cooldown(cooldown), recharge(recharge), charges(charges), tex(nullptr), area(area), area_size(area_size), sound_id(sound_id), sound(nullptr),
-		sound_dist(sound_dist), flags(flags),cost(cost), use_mana(use_mana)
+		sound_dist(sound_dist), flags(flags),cost(cost), use_mana(use_mana), use_cast(use_cast)
 	{
 	}
 

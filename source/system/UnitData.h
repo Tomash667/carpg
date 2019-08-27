@@ -6,7 +6,6 @@
 #include "Blood.h"
 #include "StatProfile.h"
 #include "ArmorUnitType.h"
-#include "Resource.h"
 #include "DamageTypes.h"
 #include "ItemScript.h"
 #include "FrameInfo.h"
@@ -69,7 +68,7 @@ enum UNIT_FLAGS
 	F_PIERCE_WEAK25 = 1 << 9, // pierce damage weakness 25%
 	F_SLASH_WEAK25 = 1 << 10, // slash damage weakness 25%
 	F_BLUNT_WEAK25 = 1 << 11, // blunt damage weakness 25%
-	F_UNDEAD = 1 << 12, // can be raised as undead, can't use potions
+	F_UNDEAD = 1 << 12, // can be raised as undead, can't use potions, heal don't work
 	F_SLOW = 1 << 13, // don't run
 	F_POISON_ATTACK = 1 << 14, // attack apply poison
 	F_IMMORTAL = 1 << 15, // immortal, can't have less then 1 hp
@@ -101,7 +100,7 @@ enum UNIT_FLAGS2
 	F2_CONTEST = 1 << 3, // joins drinking contest
 	F2_CONTEST_50 = 1 << 4, // 50% to join drinking contest
 	F2_DONT_TALK = 1 << 5, // no idle talk
-	// unused (1 << 6)
+	F2_CONSTRUCT = 1 << 6, // can't be healed
 	// unused (1 << 7)
 	// unused (1 << 8)
 	F2_OLD = 1 << 9, // have old gray hair

@@ -18,7 +18,9 @@ enum Keyword
 	K_HERO,
 	K_CRAZY,
 	K_ICON,
-	K_ACTION
+	K_ACTION,
+	K_MP_BAR,
+	K_LEVEL
 };
 
 //=================================================================================================
@@ -43,7 +45,9 @@ void ClassLoader::InitTokenizer()
 		{ "hero", K_HERO },
 		{ "crazy", K_CRAZY },
 		{ "icon", K_ICON },
-		{ "action", K_ACTION }
+		{ "action", K_ACTION },
+		{ "mp_bar", K_MP_BAR },
+		{ "level", K_LEVEL }
 		});
 }
 
@@ -55,7 +59,7 @@ void ClassLoader::LoadEntity(int top, const string& id)
 
 	Ptr<Class> clas;
 	clas->id = id;
-	
+
 	t.Next();
 	t.AssertSymbol('{');
 	t.Next();
@@ -116,12 +120,74 @@ void ClassLoader::LoadEntity(int top, const string& id)
 				t.Next();
 			}
 			break;
+		case K_MP_BAR:
+			clas->mp_bar = t.MustGetBool();
+			t.Next();
+			break;
+		case K_LEVEL:
+			t.AssertSymbol('{');
+			t.Next();
+			while(!t.IsSymbol('}'))
+			{
+				Class::LevelEntry entry;
+				ParseLevelEntry(entry);
+				t.Next();
+				if(t.IsItem("required"))
+				{
+					entry.required = true;
+					t.Next();
+				}
+				else
+					entry.required = (entry.type == Class::LevelEntry::T_ATTRIBUTE);
+				entry.priority = t.MustGetFloat();
+				if(entry.priority > 0.f)
+					clas->level.push_back(entry);
+				t.Next();
+			}
+			t.Next();
+			break;
 		}
 	}
 
 	if(!clas->icon)
 		LoadError("Icon not set.");
 	Class::classes.push_back(clas.Pin());
+}
+
+//=================================================================================================
+void ClassLoader::ParseLevelEntry(Class::LevelEntry& entry)
+{
+	const string& item = t.MustGetItem();
+	if(item == "weapon")
+	{
+		entry.type = Class::LevelEntry::T_SKILL_SPECIAL;
+		entry.value = Class::LevelEntry::S_WEAPON;
+		return;
+	}
+	else if(item == "armor")
+	{
+		entry.type = Class::LevelEntry::T_SKILL_SPECIAL;
+		entry.value = Class::LevelEntry::S_ARMOR;
+		return;
+	}
+
+	Attribute* a = Attribute::Find(item);
+	if(a)
+	{
+		entry.type = Class::LevelEntry::T_ATTRIBUTE;
+		entry.value = (int)a->attrib_id;
+		return;
+	}
+
+	Skill* s = Skill::Find(item);
+	if(s)
+	{
+		entry.type = Class::LevelEntry::T_SKILL;
+		entry.value = (int)s->skill_id;
+		return;
+	}
+
+	t.Unexpected();
 }
 
 //=================================================================================================
@@ -158,6 +224,8 @@ void ClassLoader::ApplyUnits()
 					}
 				}
 			}
+			if(clas->level.empty())
+				LoadError("Missing level entries.");
 		}
 		if(!clas->hero_id.empty())
 		{

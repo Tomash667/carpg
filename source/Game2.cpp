@@ -980,24 +980,7 @@ void Game::UpdateGame(float dt)
 			pc->unit->animation = ANI_STAND;
 		}
 
-		float dir = Vec3::LookAtAngle(pc->unit->pos, pos);
-		if(!Equal(pc->unit->rot, dir))
-		{
-			const float rot_speed = 3.f*dt;
-			const float rot_diff = AngleDiff(pc->unit->rot, dir);
-			if(ShortestArc(pc->unit->rot, dir) > 0.f)
-				pc->unit->animation = ANI_RIGHT;
-			else
-				pc->unit->animation = ANI_LEFT;
-			if(rot_diff < rot_speed)
-				pc->unit->rot = dir;
-			else
-			{
-				const float d = Sign(ShortestArc(pc->unit->rot, dir)) * rot_speed;
-				pc->unit->rot = Clip(pc->unit->rot + d);
-			}
-		}
-
+		pc->unit->RotateTo(pos, dt);
 		if(game_gui->inventory->mode > I_INVENTORY)
 		{
 			if(game_gui->inventory->mode == I_LOOT_BODY)
@@ -1033,7 +1016,20 @@ void Game::UpdateGame(float dt)
 		pc_data.action_ready = false;
 	}
 	else if(!IsBlocking(pc->unit->action) && !pc->unit->HaveEffect(EffectId::Stun))
-		UpdatePlayer(dt);
+	{
+		bool allow_rot = true;
+		if(pc->unit->action == A_CAST && pc->unit->action_unit != pc->unit)
+		{
+			Vec3 pos;
+			if(Unit* target = pc->unit->action_unit)
+				pos = target->pos;
+			else
+				pos = pc->unit->target_pos;
+			pc->unit->RotateTo(pos, dt);
+			allow_rot = false;
+		}
+		UpdatePlayer(dt, allow_rot);
+	}
 	else
 	{
 		pc_data.before_player = BP_NONE;
@@ -1265,7 +1261,7 @@ void Game::UpdateFallback(float dt)
 }
 
 //=================================================================================================
-void Game::UpdatePlayer(float dt)
+void Game::UpdatePlayer(float dt, bool allow_rot)
 {
 	Unit& u = *pc->unit;
 	LevelArea& area = *u.area;
@@ -1333,10 +1329,14 @@ void Game::UpdatePlayer(float dt)
 		}
 
 		int rotate = 0;
-		if(GKey.KeyDownAllowed(GK_ROTATE_LEFT))
-			--rotate;
-		if(GKey.KeyDownAllowed(GK_ROTATE_RIGHT))
-			++rotate;
+		if(allow_rot)
+		{
+			if(GKey.KeyDownAllowed(GK_ROTATE_LEFT))
+				--rotate;
+			if(GKey.KeyDownAllowed(GK_ROTATE_RIGHT))
+				++rotate;
+		}
+
 		if(u.frozen == FROZEN::NO)
 		{
 			bool cancel_autowalk = (GKey.KeyPressedReleaseAllowed(GK_MOVE_FORWARD) || GKey.KeyDownAllowed(GK_MOVE_BACK));
@@ -1376,7 +1376,7 @@ void Game::UpdatePlayer(float dt)
 				Net::PushChange(NetChange::YELL);
 		}
 
-		if((GKey.allow_input == GameKeys::ALLOW_INPUT || GKey.allow_input == GameKeys::ALLOW_MOUSE) && !game_level->camera.free_rot)
+		if((GKey.allow_input == GameKeys::ALLOW_INPUT || GKey.allow_input == GameKeys::ALLOW_MOUSE) && !game_level->camera.free_rot && allow_rot)
 		{
 			int div = (pc->unit->action == A_SHOOT ? 800 : 400);
 			pc_data.rot_buf *= (1.f - dt * 2);
@@ -2058,28 +2058,6 @@ void Game::UpdatePlayer(float dt)
 	pc_data.before_player = BP_NONE;
 	float dist, best_dist = 3.0f;
 
-	// units in front of player
-	for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
-	{
-		Unit& u2 = **it;
-		if(&u == &u2 || u2.to_remove)
-			continue;
-
-		dist = Vec3::Distance2d(u.visual_pos, u2.visual_pos);
-
-		if(u2.IsStanding())
-			PlayerCheckObjectDistance(u, u2.visual_pos, &u2, best_dist, BP_UNIT);
-		else if(u2.live_state == Unit::FALL || u2.live_state == Unit::DEAD)
-			PlayerCheckObjectDistance(u, u2.GetLootCenter(), &u2, best_dist, BP_UNIT);
-	}
-
-	// chests in front of player
-	for(Chest* chest : area.chests)
-	{
-		if(!chest->GetUser())
-			PlayerCheckObjectDistance(u, chest->pos, chest, best_dist, BP_CHEST);
-	}
-
 	// doors in front of player
 	for(Door* door : area.doors)
 	{
@@ -2087,19 +2065,44 @@ void Game::UpdatePlayer(float dt)
 			PlayerCheckObjectDistance(u, door->pos, door, best_dist, BP_DOOR);
 	}
 
-	// ground items in front of player
-	for(GroundItem* ground_item : area.items)
-		PlayerCheckObjectDistance(u, ground_item->pos, ground_item, best_dist, BP_ITEM);
-
-	// usable objects in front of player
-	for(Usable* usable : area.usables)
+	if(!pc_data.action_ready && u.action != A_CAST)
 	{
-		if(!usable->user)
-			PlayerCheckObjectDistance(u, usable->pos, usable, best_dist, BP_USABLE);
+		// units in front of player
+		for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
+		{
+			Unit& u2 = **it;
+			if(&u == &u2 || u2.to_remove)
+				continue;
+
+			dist = Vec3::Distance2d(u.visual_pos, u2.visual_pos);
+
+			if(u2.IsStanding())
+				PlayerCheckObjectDistance(u, u2.visual_pos, &u2, best_dist, BP_UNIT);
+			else if(u2.live_state == Unit::FALL || u2.live_state == Unit::DEAD)
+				PlayerCheckObjectDistance(u, u2.GetLootCenter(), &u2, best_dist, BP_UNIT);
+		}
+
+		// chests in front of player
+		for(Chest* chest : area.chests)
+		{
+			if(!chest->GetUser())
+				PlayerCheckObjectDistance(u, chest->pos, chest, best_dist, BP_CHEST);
+		}
+
+		// ground items in front of player
+		for(GroundItem* ground_item : area.items)
+			PlayerCheckObjectDistance(u, ground_item->pos, ground_item, best_dist, BP_ITEM);
+
+		// usable objects in front of player
+		for(Usable* usable : area.usables)
+		{
+			if(!usable->user)
+				PlayerCheckObjectDistance(u, usable->pos, usable, best_dist, BP_USABLE);
+		}
 	}
 
 	// use something in front of player
-	if(u.frozen == FROZEN::NO && pc_data.before_player != BP_NONE && !pc_data.action_ready
+	if(u.frozen == FROZEN::NO && pc_data.before_player != BP_NONE
 		&& (GKey.KeyPressedReleaseAllowed(GK_USE) || (u.IsNotFighting() && GKey.KeyPressedReleaseAllowed(GK_ATTACK_USE))))
 	{
 		idle = false;
@@ -2617,12 +2620,17 @@ void Game::UpdatePlayer(float dt)
 	// action
 	if(!pc_data.action_ready)
 	{
-		if(u.frozen == FROZEN::NO && Any(u.action, A_NONE, A_ATTACK, A_BLOCK, A_BASH) && shortcut.type == Shortcut::TYPE_SPECIAL
-			&& shortcut.value == Shortcut::SPECIAL_ACTION && pc->CanUseAction() && !quest_mgr->quest_tutorial->in_tutorial)
+		if(u.frozen == FROZEN::NO && shortcut.type == Shortcut::TYPE_SPECIAL && shortcut.value == Shortcut::SPECIAL_ACTION)
 		{
-			pc_data.action_ready = true;
-			pc_data.action_ok = false;
-			pc_data.action_rot = 0.f;
+			if(pc->CanUseAction())
+			{
+				pc_data.action_ready = true;
+				pc_data.action_ok = false;
+				pc_data.action_rot = 0.f;
+				pc_data.action_target = nullptr;
+			}
+			else
+				sound_mgr->PlaySound2d(sCancel);
 		}
 	}
 	else
@@ -2709,7 +2717,7 @@ void Game::UpdatePlayer(float dt)
 }
 
 //=================================================================================================
-void Game::UseAction(PlayerController* p, bool from_server, const Vec3* pos)
+void Game::UseAction(PlayerController* p, bool from_server, const Vec3* pos, Unit* target)
 {
 	if(p == pc && from_server)
 		return;
@@ -2727,6 +2735,26 @@ void Game::UseAction(PlayerController* p, bool from_server, const Vec3* pos)
 				p->unit->RemoveMana(action.cost);
 			else
 				p->unit->RemoveStamina(action.cost);
+		}
+	}
+
+	if(action.use_cast)
+	{
+		// cast animation
+		p->unit->action = A_CAST;
+		p->unit->attack_id = -1;
+		p->unit->animation_state = 0;
+		p->unit->mesh_inst->frame_end_info2 = false;
+		p->unit->mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+		if(p == pc)
+		{
+			p->unit->target_pos = pc_data.action_point;
+			p->unit->action_unit = pc_data.action_target;
+		}
+		else if(Net::IsServer())
+		{
+			p->unit->target_pos = *pos;
+			p->unit->action_unit = target;
 		}
 	}
 
@@ -2764,47 +2792,9 @@ void Game::UseAction(PlayerController* p, bool from_server, const Vec3* pos)
 			p->unit->mesh_inst->Play("charge", PLAY_PRIO1, 1);
 		}
 	}
-	else if(strcmp(action.id, "summon_wolf") == 0)
+	else if(strcmp(action.id, "summon_wolf") == 0 || strcmp(action.id, "heal") == 0)
 	{
-		// cast animation
-		p->unit->action = A_CAST;
-		p->unit->attack_id = -1;
-		p->unit->animation_state = 0;
-		p->unit->mesh_inst->frame_end_info2 = false;
-		p->unit->mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
-
-		if(Net::IsLocal())
-		{
-			// despawn old
-			Unit* existing_unit = game_level->FindUnit([=](Unit* u) { return u->summoner == p->unit; });
-			if(existing_unit)
-			{
-				team->RemoveTeamMember(existing_unit);
-				game_level->RemoveUnit(existing_unit);
-			}
-
-			// spawn new
-			Vec3 spawn_pos;
-			if(p == pc)
-				spawn_pos = pc_data.action_point;
-			else
-			{
-				assert(pos);
-				spawn_pos = *pos;
-			}
-			Unit* unit = game_level->SpawnUnitNearLocation(*p->unit->area, spawn_pos, *UnitData::Get("white_wolf_sum"), nullptr, p->unit->level);
-			if(unit)
-			{
-				unit->summoner = p->unit;
-				unit->in_arena = p->unit->in_arena;
-				if(unit->in_arena != -1)
-					arena->units.push_back(unit);
-				team->AddTeamMember(unit, true);
-				unit->order_unit = p->unit;
-				SpawnUnitEffect(*unit);
-			}
-		}
-		else if(!from_server)
+		if(!from_server)
 			action_point = pc_data.action_point;
 	}
 
@@ -2820,7 +2810,8 @@ void Game::UseAction(PlayerController* p, bool from_server, const Vec3* pos)
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::PLAYER_ACTION;
-			c.pos = action_point;
+			c.unit = pc_data.action_target;
+			c.pos = pc_data.action_point;
 		}
 	}
 
@@ -4020,14 +4011,16 @@ void Game::GiveDmg(Unit& taker, float dmg, Unit* giver, const Vec3* hitpoint, in
 }
 
 //=================================================================================================
-// Aktualizuj jednostki na danym poziomie (pomieszczeniu)
+// Update units in area
 //=================================================================================================
 void Game::UpdateUnits(LevelArea& area, float dt)
 {
 	PROFILER_BLOCK("UpdateUnits");
-	for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
+
+	// new units can be added inside this loop - so no iterators!
+	for(uint i = 0, count = area.units.size(); i < count; ++i)
 	{
-		Unit& u = **it;
+		Unit& u = *area.units[i];
 
 		// update effects and mouth moving
 		if(u.IsAlive())
@@ -4728,7 +4721,7 @@ void Game::UpdateUnits(LevelArea& area, float dt)
 				if(Net::IsLocal() && u.animation_state == 0 && u.mesh_inst->GetProgress2() >= u.data->frames->t[F_CAST])
 				{
 					u.animation_state = 1;
-					CastSpell(area, u);
+					CastSpell(u);
 				}
 				if(u.mesh_inst->frame_end_info2)
 				{
@@ -4742,7 +4735,7 @@ void Game::UpdateUnits(LevelArea& area, float dt)
 				if(Net::IsLocal() && u.animation_state == 0 && u.mesh_inst->GetProgress() >= u.data->frames->t[F_CAST])
 				{
 					u.animation_state = 1;
-					CastSpell(area, u);
+					CastSpell(u);
 				}
 				if(u.mesh_inst->frame_end_info)
 				{
@@ -5737,6 +5730,7 @@ Unit* Game::CreateUnitWithAI(LevelArea& area, UnitData& unit, int level, Human* 
 {
 	Unit* u = CreateUnit(unit, level, human_data);
 	u->area = &area;
+	area.units.push_back(u);
 
 	if(pos)
 	{
@@ -5751,16 +5745,13 @@ Unit* Game::CreateUnitWithAI(LevelArea& area, UnitData& unit, int level, Human* 
 		u->UpdatePhysics(u->pos);
 		u->visual_pos = u->pos;
 	}
+
 	if(rot)
 		u->rot = *rot;
 
-	area.units.push_back(u);
-
 	AIController* a = new AIController;
 	a->Init(u);
-
 	ais.push_back(a);
-
 	if(ai)
 		*ai = a;
 
@@ -6121,22 +6112,26 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelArea& area, Unit& attacker, Unit&
 	return hitted.action == A_PAIN ? ATTACK_CLEAN_HIT : ATTACK_HIT;
 }
 
-void Game::CastSpell(LevelArea& area, Unit& u)
+void Game::CastSpell(Unit& unit)
 {
-	if(u.player)
+	if(unit.IsPlayer())
+	{
+		CastPlayerSpell(*unit.player);
 		return;
+	}
 
-	Spell& spell = *u.data->spells->spell[u.attack_id];
+	LevelArea& area = *unit.area;
+	Spell& spell = *unit.data->spells->spell[unit.attack_id];
 
-	Mesh::Point* point = u.mesh_inst->mesh->GetPoint(NAMES::point_cast);
+	Mesh::Point* point = unit.mesh_inst->mesh->GetPoint(NAMES::point_cast);
 	assert(point);
 
-	if(u.human_data)
-		u.mesh_inst->SetupBones(&u.human_data->mat_scale[0]);
+	if(unit.human_data)
+		unit.mesh_inst->SetupBones(&unit.human_data->mat_scale[0]);
 	else
-		u.mesh_inst->SetupBones();
+		unit.mesh_inst->SetupBones();
 
-	m2 = point->mat * u.mesh_inst->mat_bones[point->bone] * (Matrix::RotationY(u.rot) * Matrix::Translation(u.pos));
+	m2 = point->mat * unit.mesh_inst->mat_bones[point->bone] * (Matrix::RotationY(unit.rot) * Matrix::Translation(unit.pos));
 
 	Vec3 coord = Vec3::TransformZero(m2);
 
@@ -6146,15 +6141,15 @@ void Game::CastSpell(LevelArea& area, Unit& u)
 		if(IsSet(spell.flags, Spell::Triple))
 			count = 3;
 
-		float expected_rot = Clip(-Vec3::Angle2d(coord, u.target_pos) + PI / 2);
-		float current_rot = Clip(u.rot + PI);
+		float expected_rot = Clip(-Vec3::Angle2d(coord, unit.target_pos) + PI / 2);
+		float current_rot = Clip(unit.rot + PI);
 		AdjustAngle(current_rot, expected_rot, ToRadians(10.f));
 
 		for(int i = 0; i < count; ++i)
 		{
 			Bullet& b = Add1(area.tmp->bullets);
 
-			b.level = u.level + u.CalculateMagicPower();
+			b.level = unit.level + unit.CalculateMagicPower();
 			b.backstab = 0.25f;
 			b.pos = coord;
 			b.attack = float(spell.dmg);
@@ -6164,7 +6159,7 @@ void Game::CastSpell(LevelArea& area, Unit& u)
 			b.tex_size = spell.size;
 			b.speed = spell.speed;
 			b.timer = spell.range / (spell.speed - 1);
-			b.owner = &u;
+			b.owner = &unit;
 			b.remove = false;
 			b.trail = nullptr;
 			b.trail2 = nullptr;
@@ -6175,16 +6170,16 @@ void Game::CastSpell(LevelArea& area, Unit& u)
 			// ustal z jak¹ si³¹ rzuciæ kul¹
 			if(spell.type == Spell::Ball)
 			{
-				float dist = Vec3::Distance2d(u.pos, u.target_pos);
+				float dist = Vec3::Distance2d(unit.pos, unit.target_pos);
 				float t = dist / spell.speed;
-				float h = (u.target_pos.y + Random(-0.5f, 0.5f)) - b.pos.y;
+				float h = (unit.target_pos.y + Random(-0.5f, 0.5f)) - b.pos.y;
 				b.yspeed = h / t + (10.f*t) / 2;
 			}
 			else if(spell.type == Spell::Point)
 			{
-				float dist = Vec3::Distance2d(u.pos, u.target_pos);
+				float dist = Vec3::Distance2d(unit.pos, unit.target_pos);
 				float t = dist / spell.speed;
-				float h = (u.target_pos.y + Random(-0.5f, 0.5f)) - b.pos.y;
+				float h = (unit.target_pos.y + Random(-0.5f, 0.5f)) - b.pos.y;
 				b.yspeed = h / t;
 			}
 
@@ -6222,7 +6217,7 @@ void Game::CastSpell(LevelArea& area, Unit& u)
 				c.pos = b.start_pos;
 				c.f[0] = b.rot.y;
 				c.f[1] = b.yspeed;
-				c.extra_id = u.id;
+				c.extra_id = unit.id;
 			}
 		}
 	}
@@ -6232,21 +6227,21 @@ void Game::CastSpell(LevelArea& area, Unit& u)
 		{
 			Electro* e = new Electro;
 			e->Register();
-			e->hitted.push_back(u);
-			e->dmg = float(spell.dmg + spell.dmg_bonus * (u.CalculateMagicPower() + u.level));
-			e->owner = u;
+			e->hitted.push_back(unit);
+			e->dmg = float(spell.dmg + spell.dmg_bonus * (unit.CalculateMagicPower() + unit.level));
+			e->owner = unit;
 			e->spell = &spell;
-			e->start_pos = u.pos;
+			e->start_pos = unit.pos;
 
 			Vec3 hitpoint;
 			Unit* hitted;
 
-			u.target_pos.y += Random(-0.5f, 0.5f);
-			Vec3 dir = u.target_pos - coord;
+			unit.target_pos.y += Random(-0.5f, 0.5f);
+			Vec3 dir = unit.target_pos - coord;
 			dir.Normalize();
 			Vec3 target = coord + dir * spell.range;
 
-			if(RayTest(coord, target, &u, hitpoint, hitted))
+			if(RayTest(coord, target, &unit, hitpoint, hitted))
 			{
 				if(hitted)
 				{
@@ -6288,19 +6283,19 @@ void Game::CastSpell(LevelArea& area, Unit& u)
 			Vec3 hitpoint;
 			Unit* hitted;
 
-			u.target_pos.y += Random(-0.5f, 0.5f);
+			unit.target_pos.y += Random(-0.5f, 0.5f);
 
-			if(RayTest(coord, u.target_pos, &u, hitpoint, hitted) && hitted)
+			if(RayTest(coord, unit.target_pos, &unit, hitpoint, hitted) && hitted)
 			{
 				// trafiono w cel
-				if(!IsSet(hitted->data->flags2, F2_BLOODLESS) && !u.IsFriend(*hitted))
+				if(!IsSet(hitted->data->flags2, F2_BLOODLESS) && !unit.IsFriend(*hitted))
 				{
 					Drain& drain = Add1(area.tmp->drains);
 					drain.from = hitted;
-					drain.to = &u;
+					drain.to = &unit;
 
-					float dmg = float(spell.dmg + (u.CalculateMagicPower() + u.level)*spell.dmg_bonus);
-					GiveDmg(*hitted, dmg, &u, nullptr, DMG_MAGICAL);
+					float dmg = float(spell.dmg + (unit.CalculateMagicPower() + unit.level)*spell.dmg_bonus);
+					GiveDmg(*hitted, dmg, &unit, nullptr, DMG_MAGICAL);
 
 					drain.pe = area.tmp->pes.back();
 					drain.t = 0.f;
@@ -6309,9 +6304,9 @@ void Game::CastSpell(LevelArea& area, Unit& u)
 					drain.pe->speed_max = Vec3(3, 3, 3);
 
 					dmg *= hitted->CalculateMagicResistance();
-					u.hp += dmg;
-					if(u.hp > u.hpmax)
-						u.hp = u.hpmax;
+					unit.hp += dmg;
+					if(unit.hp > unit.hpmax)
+						unit.hp = unit.hpmax;
 
 					if(Net::IsOnline())
 					{
@@ -6328,125 +6323,146 @@ void Game::CastSpell(LevelArea& area, Unit& u)
 		}
 		else if(IsSet(spell.flags, Spell::Raise))
 		{
-			for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
+			Unit* target = unit.action_unit;
+			if(!target) // pre V_DEV
 			{
-				if((*it)->live_state == Unit::DEAD
-					&& !u.IsEnemy(**it)
-					&& IsSet((*it)->data->flags, F_UNDEAD)
-					&& Vec3::Distance(u.target_pos, (*it)->pos) < 0.5f)
+				for(Unit* u : area.units)
 				{
-					Unit& u2 = **it;
-					u2.hp = u2.hpmax;
-					u2.live_state = Unit::ALIVE;
-					u2.weapon_state = WS_HIDDEN;
-					u2.animation = ANI_STAND;
-					u2.animation_state = 0;
-					u2.weapon_taken = W_NONE;
-					u2.weapon_hiding = W_NONE;
-
-					// za³ó¿ przedmioty / dodaj z³oto
-					u2.ReequipItems();
-
-					// przenieœ fizyke
-					game_level->WarpUnit(u2, u2.pos);
-
-					// resetuj ai
-					u2.ai->Reset();
-
-					// efekt cz¹steczkowy
-					ParticleEmitter* pe = new ParticleEmitter;
-					pe->tex = spell.tex_particle;
-					pe->emision_interval = 0.01f;
-					pe->life = 0.f;
-					pe->particle_life = 0.5f;
-					pe->emisions = 1;
-					pe->spawn_min = 16;
-					pe->spawn_max = 25;
-					pe->max_particles = 25;
-					pe->pos = u2.pos;
-					pe->pos.y += u2.GetUnitHeight() / 2;
-					pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
-					pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
-					pe->pos_min = Vec3(-spell.size, -spell.size, -spell.size);
-					pe->pos_max = Vec3(spell.size, spell.size, spell.size);
-					pe->size = spell.size_particle;
-					pe->op_size = POP_LINEAR_SHRINK;
-					pe->alpha = 1.f;
-					pe->op_alpha = POP_LINEAR_SHRINK;
-					pe->mode = 1;
-					pe->Init();
-					area.tmp->pes.push_back(pe);
-
-					if(Net::IsOnline())
+					if(u->live_state == Unit::DEAD
+						&& !unit.IsEnemy(*u)
+						&& IsSet(u->data->flags, F_UNDEAD)
+						&& Vec3::Distance(unit.target_pos, u->pos) < 0.5f)
 					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::RAISE_EFFECT;
-						c.pos = pe->pos;
-
-						NetChange& c2 = Add1(Net::changes);
-						c2.type = NetChange::STAND_UP;
-						c2.unit = &u2;
-
-						NetChange& c3 = Add1(Net::changes);
-						c3.type = NetChange::UPDATE_HP;
-						c3.unit = &u2;
+						target = u;
+						break;
 					}
-
-					break;
 				}
 			}
-			u.ai->state = AIController::Idle;
+
+			if(target)
+			{
+				Unit& u2 = *target;
+				u2.hp = u2.hpmax;
+				u2.live_state = Unit::ALIVE;
+				u2.weapon_state = WS_HIDDEN;
+				u2.animation = ANI_STAND;
+				u2.animation_state = 0;
+				u2.weapon_taken = W_NONE;
+				u2.weapon_hiding = W_NONE;
+
+				// za³ó¿ przedmioty / dodaj z³oto
+				u2.ReequipItems();
+
+				// przenieœ fizyke
+				game_level->WarpUnit(u2, u2.pos);
+
+				// resetuj ai
+				u2.ai->Reset();
+
+				// efekt cz¹steczkowy
+				ParticleEmitter* pe = new ParticleEmitter;
+				pe->tex = spell.tex_particle;
+				pe->emision_interval = 0.01f;
+				pe->life = 0.f;
+				pe->particle_life = 0.5f;
+				pe->emisions = 1;
+				pe->spawn_min = 16;
+				pe->spawn_max = 25;
+				pe->max_particles = 25;
+				pe->pos = u2.pos;
+				pe->pos.y += u2.GetUnitHeight() / 2;
+				pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
+				pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
+				pe->pos_min = Vec3(-spell.size, -spell.size, -spell.size);
+				pe->pos_max = Vec3(spell.size, spell.size, spell.size);
+				pe->size = spell.size_particle;
+				pe->op_size = POP_LINEAR_SHRINK;
+				pe->alpha = 1.f;
+				pe->op_alpha = POP_LINEAR_SHRINK;
+				pe->mode = 1;
+				pe->Init();
+				area.tmp->pes.push_back(pe);
+
+				if(Net::IsOnline())
+				{
+					NetChange& c = Add1(Net::changes);
+					c.type = NetChange::RAISE_EFFECT;
+					c.pos = pe->pos;
+
+					NetChange& c2 = Add1(Net::changes);
+					c2.type = NetChange::STAND_UP;
+					c2.unit = &u2;
+
+					NetChange& c3 = Add1(Net::changes);
+					c3.type = NetChange::UPDATE_HP;
+					c3.unit = &u2;
+				}
+			}
+
+			unit.ai->state = AIController::Idle;
 		}
 		else if(IsSet(spell.flags, Spell::Heal))
 		{
-			for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
+			Unit* target = unit.action_unit;
+			if(!target) // pre V_DEV
 			{
-				if(!u.IsEnemy(**it) && !IsSet((*it)->data->flags, F_UNDEAD) && Vec3::Distance(u.target_pos, (*it)->pos) < 0.5f)
+				for(Unit* u : area.units)
 				{
-					Unit& u2 = **it;
-					u2.hp += float(spell.dmg + spell.dmg_bonus*(u.level + u.CalculateMagicPower()));
-					if(u2.hp > u2.hpmax)
-						u2.hp = u2.hpmax;
-
-					// efekt cz¹steczkowy
-					ParticleEmitter* pe = new ParticleEmitter;
-					pe->tex = spell.tex_particle;
-					pe->emision_interval = 0.01f;
-					pe->life = 0.f;
-					pe->particle_life = 0.5f;
-					pe->emisions = 1;
-					pe->spawn_min = 16;
-					pe->spawn_max = 25;
-					pe->max_particles = 25;
-					pe->pos = u2.pos;
-					pe->pos.y += u2.GetUnitHeight() / 2;
-					pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
-					pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
-					pe->pos_min = Vec3(-spell.size, -spell.size, -spell.size);
-					pe->pos_max = Vec3(spell.size, spell.size, spell.size);
-					pe->size = spell.size_particle;
-					pe->op_size = POP_LINEAR_SHRINK;
-					pe->alpha = 1.f;
-					pe->op_alpha = POP_LINEAR_SHRINK;
-					pe->mode = 1;
-					pe->Init();
-					area.tmp->pes.push_back(pe);
-
-					if(Net::IsOnline())
+					if(!unit.IsEnemy(*u) && !IsSet(u->data->flags, F_UNDEAD)
+						&& !IsSet(u->data->flags2, F2_CONSTRUCT) && Vec3::Distance(unit.target_pos, u->pos) < 0.5f)
 					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::HEAL_EFFECT;
-						c.pos = pe->pos;
-
-						NetChange& c3 = Add1(Net::changes);
-						c3.type = NetChange::UPDATE_HP;
-						c3.unit = &u2;
+						target = u;
+						break;
 					}
-
-					break;
 				}
 			}
-			u.ai->state = AIController::Idle;
+
+			if(target)
+			{
+				Unit& u2 = *target;
+				u2.hp += float(spell.dmg + spell.dmg_bonus*(unit.level + unit.CalculateMagicPower()));
+				if(u2.hp > u2.hpmax)
+					u2.hp = u2.hpmax;
+
+				// efekt cz¹steczkowy
+				float r = u2.GetUnitRadius(),
+					h = u2.GetUnitHeight();
+				ParticleEmitter* pe = new ParticleEmitter;
+				pe->tex = spell.tex_particle;
+				pe->emision_interval = 0.01f;
+				pe->life = 0.f;
+				pe->particle_life = 0.5f;
+				pe->emisions = 1;
+				pe->spawn_min = 16;
+				pe->spawn_max = 25;
+				pe->max_particles = 25;
+				pe->pos = u2.pos;
+				pe->pos.y += h / 2;
+				pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
+				pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
+				pe->pos_min = Vec3(-r, -h / 2, -r);
+				pe->pos_max = Vec3(r, h / 2, r);
+				pe->size = spell.size_particle;
+				pe->op_size = POP_LINEAR_SHRINK;
+				pe->alpha = 0.9f;
+				pe->op_alpha = POP_LINEAR_SHRINK;
+				pe->mode = 1;
+				pe->Init();
+				area.tmp->pes.push_back(pe);
+
+				if(Net::IsOnline())
+				{
+					NetChange& c = Add1(Net::changes);
+					c.type = NetChange::HEAL_EFFECT;
+					c.pos = pe->pos;
+
+					NetChange& c3 = Add1(Net::changes);
+					c3.type = NetChange::UPDATE_HP;
+					c3.unit = &u2;
+				}
+			}
+
+			unit.ai->state = AIController::Idle;
 		}
 	}
 
@@ -6460,6 +6476,109 @@ void Game::CastSpell(LevelArea& area, Unit& u)
 			c.type = NetChange::SPELL_SOUND;
 			c.spell = &spell;
 			c.pos = coord;
+		}
+	}
+}
+
+void Game::CastPlayerSpell(PlayerController& player)
+{
+	Action& action = player.GetAction();
+	Unit& unit = *player.unit;
+	LevelArea& area = *unit.area;
+
+	if(strcmp(action.id, "summon_wolf") == 0)
+	{
+		// despawn old
+		Unit* existing_unit = game_level->FindUnit([&](Unit* u) { return u->summoner == player.unit; });
+		if(existing_unit)
+		{
+			team->RemoveTeamMember(existing_unit);
+			game_level->RemoveUnit(existing_unit);
+		}
+
+		// spawn new
+		Unit* new_unit = game_level->SpawnUnitNearLocation(area, unit.target_pos, *UnitData::Get("white_wolf_sum"), nullptr, unit.level);
+		if(new_unit)
+		{
+			new_unit->summoner = &unit;
+			new_unit->in_arena = unit.in_arena;
+			if(new_unit->in_arena != -1)
+				arena->units.push_back(new_unit);
+			team->AddTeamMember(new_unit, true);
+			new_unit->order_unit = &unit;
+			SpawnUnitEffect(*new_unit);
+		}
+	}
+	else if(strcmp(action.id, "heal") == 0)
+	{
+		Spell& spell = *Spell::TryGet("heal");
+		Unit* target = unit.action_unit;
+
+		// check if target is not too far
+		if(target && target->area == unit.area && Vec3::Distance(unit.pos, target->pos) <= action.area_size.x * 1.5f)
+		{
+			// heal target
+			if(!IsSet(target->data->flags, F_UNDEAD) && !IsSet(target->data->flags2, F2_CONSTRUCT) && target->hp != target->hpmax)
+			{
+				float power = player.GetActionPower();
+				target->hp += power;
+				if(target->hp > target->hpmax)
+					target->hp = target->hpmax;
+				if(Net::IsServer())
+				{
+					NetChange& c = Add1(Net::changes);
+					c.type = NetChange::UPDATE_HP;
+					c.unit = target;
+				}
+			}
+
+			// particle effect
+			float r = target->GetUnitRadius(),
+				h = target->GetUnitHeight();
+			ParticleEmitter* pe = new ParticleEmitter;
+			pe->tex = spell.tex_particle;
+			pe->emision_interval = 0.01f;
+			pe->life = 0.f;
+			pe->particle_life = 0.5f;
+			pe->emisions = 1;
+			pe->spawn_min = 16;
+			pe->spawn_max = 25;
+			pe->max_particles = 25;
+			pe->pos = target->pos;
+			pe->pos.y += h / 2;
+			pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
+			pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
+			pe->pos_min = Vec3(-r, -h / 2, -r);
+			pe->pos_max = Vec3(r, h / 2, r);
+			pe->size = spell.size_particle;
+			pe->op_size = POP_LINEAR_SHRINK;
+			pe->alpha = 0.9f;
+			pe->op_alpha = POP_LINEAR_SHRINK;
+			pe->mode = 1;
+			pe->Init();
+			area.tmp->pes.push_back(pe);
+			if(Net::IsOnline())
+			{
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::HEAL_EFFECT;
+				c.pos = pe->pos;
+			}
+
+			// sound effect
+			if(spell.sound_cast)
+			{
+				Vec3 pos = target->GetCenter();
+				sound_mgr->PlaySound3d(spell.sound_cast, pos, spell.sound_cast_dist);
+				if(Net::IsOnline())
+				{
+					NetChange& c = Add1(Net::changes);
+					c.type = NetChange::SPELL_SOUND;
+					c.spell = &spell;
+					c.pos = pos;
+				}
+			}
+
+			player.Train(TrainWhat::Cast, 0.f, 0);
 		}
 	}
 }
@@ -8546,7 +8665,7 @@ void Game::DeleteUnit(Unit* unit)
 	if(game_level->is_open)
 	{
 		RemoveElement(unit->area->units, unit);
-		game_gui->level_gui->RemoveUnit(unit);
+		game_gui->level_gui->RemoveUnitView(unit);
 		if(pc_data.before_player == BP_UNIT && pc_data.before_player_ptr.unit == unit)
 			pc_data.before_player = BP_NONE;
 		if(unit == pc_data.selected_unit)
@@ -8648,7 +8767,7 @@ void Game::AttackReaction(Unit& attacked, Unit& attacker)
 					{
 						attacked.ai->state = AIController::Escape;
 						attacked.ai->timer = Random(2.f, 4.f);
-						attacked.ai->target = &attacker;
+						attacked.ai->target = attacker;
 						attacked.ai->target_last_pos = attacker.pos;
 						attacked.ai->escape_room = nullptr;
 						attacked.ai->ignore = 0.f;
@@ -8836,10 +8955,10 @@ void Game::GenerateQuestUnits()
 	}
 
 	if(quest_mgr->quest_mine->days >= quest_mgr->quest_mine->days_required
-		&& ((quest_mgr->quest_mine->mine_state2 == Quest_Mine::State2::InBuild && quest_mgr->quest_mine->mine_state == Quest_Mine::State::Shares) || // inform player about building mine & give gold
-			quest_mgr->quest_mine->mine_state2 == Quest_Mine::State2::Built || // inform player about possible investment
-			quest_mgr->quest_mine->mine_state2 == Quest_Mine::State2::InExpand || // inform player about finished mine expanding
-			quest_mgr->quest_mine->mine_state2 == Quest_Mine::State2::Expanded)) // inform player about finding portal
+		&& ((quest_mgr->quest_mine->mine_state2 == Quest_Mine::State2::InBuild && quest_mgr->quest_mine->mine_state == Quest_Mine::State::Shares) // inform player about building mine & give gold
+		|| quest_mgr->quest_mine->mine_state2 == Quest_Mine::State2::Built // inform player about possible investment
+		|| quest_mgr->quest_mine->mine_state2 == Quest_Mine::State2::InExpand // inform player about finished mine expanding
+		|| quest_mgr->quest_mine->mine_state2 == Quest_Mine::State2::Expanded)) // inform player about finding portal
 	{
 		Unit* u = game_level->SpawnUnitNearLocation(*team->leader->area, team->leader->pos, *UnitData::Get("poslaniec_kopalnia"), &team->leader->pos, -2, 2.f);
 		if(u)

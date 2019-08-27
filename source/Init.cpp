@@ -300,6 +300,13 @@ void Game::LoadLanguageFiles()
 	txLoadMusic = Str("loadMusic");
 	txGenerateWorld = Str("generateWorld");
 	txHaveErrors = Str("haveErrors");
+
+	uint language_errors = Language::GetErrors();
+	if(language_errors != 0)
+	{
+		Error("Game: %u language errors.", language_errors);
+		load_warnings += language_errors;
+	}
 }
 
 //=================================================================================================
@@ -780,6 +787,7 @@ void Game::AddLoadTasks()
 	sEat = res_mgr->Load<Sound>("eat.mp3");
 	sSummon = res_mgr->Load<Sound>("whooshy-puff.wav");
 	sZap = res_mgr->Load<Sound>("zap.mp3");
+	sCancel = res_mgr->Load<Sound>("cancel.mp3");
 
 	// musics
 	if(!nomusic)

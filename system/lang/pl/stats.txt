@@ -64,6 +64,10 @@ action "dash" {
 	name "Zryw"
 	desc "Przemieszczasz siê szybko w okreœlonym kierunku. Posiada trzy ³adunki."
 }
+action "heal" {
+	name "Uzdrowienie"
+	desc "Przywraca $cg{power} punktów ¿ycia$c- celowi."
+}
 action "summon_wolf" {
 	name "Zwierzêcy sojusznik"
 	desc "Przywo³uje wilka który pomaga ci w walce dopóki nie zginie."
@@ -80,7 +84,7 @@ attribute str {
 }
 attribute end {
 	name "Kondycja"
-	desc "\tZwiêksza zdrowie, wytrzyma³oœæ i odpornoœæ postaci.\n\tOtrzymywanie obra¿eñ i ich leczenie trenuje kondycjê.\n\tWp³ywa na umiejêtnoœci: œredni pancerz, ciê¿ki pancerz."
+	desc "\tZwiêksza zdrowie, wytrzyma³oœæ i odpornoœæ postaci.\n\tOtrzymywanie obra¿eñ i ich leczenie trenuje kondycjê.\n\tWp³ywa na umiejêtnoœci: œredni pancerz, ciê¿ki pancerz, koncentracja."
 }
 attribute dex {
 	name "Zrêcznoœæ"
@@ -92,11 +96,11 @@ attribute int {
 }
 attribute wis {
 	name "M¹droœæ"
-	desc "\tZwiêksza si³ê czarów druida i kap³ana."
+	desc "\tZwiêksza si³ê czarów druida.\n\tWp³ywa na umiejêtnoœci: koncentracja."
 }
 attribute cha {
 	name "Charyzma"
-	desc "\tZwiêksza szansê na przekonanie innych.\n\tRozmawianie i handel trenuje charyzmê.\n\tWp³ywa na umiejêtnoœci: targowanie."
+	desc "\tZwiêksza si³ê czarów kap³ana i szansê na przekonanie innych.\n\tRozmawianie i handel trenuje charyzmê.\n\tWp³ywa na umiejêtnoœci: magia bogów, targowanie."
 }
 
 //------------------------------------------------------------------------------
@@ -113,8 +117,8 @@ class bard {
 }
 class cleric {
 	name "Kap³an"
-	desc "Wyznawca boga który dziêki oddaniu otrzyma³ moc rzucania czarów."
-	about "?"
+	desc "Wyznawca boga który dziêki oddaniu otrzyma³ moc rzucania czarów.\n\nSpecjalna akcja: Uleczenie"
+	about "Jestem kap³anem, wyznawc¹ Imnosa. Podró¿ujê po miastach ucz¹c innych o moim bogu oraz pomagam tym którzy tego potrzebuj¹. "
 }
 class druid {
 	name "Druid"
@@ -250,6 +254,14 @@ perk perfect_health {
 perk energetic {
 	name "Energiczny"
 	desc "+100 do wytrzyma³oœci."
+}
+perk strong_aura {
+	name "Silna aura"
+	desc "+100 do maksymalnej many."
+}
+perk mana_harmony {
+	name "Harmonia many"
+	desc "Zwiêksza szybkoœæ przywracania many o 100%."
 }
 
 //------------------------------------------------------------------------------

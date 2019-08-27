@@ -740,19 +740,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		break;
 	case CMD_HEAL:
 		if(Net::IsLocal())
-		{
-			game->pc->unit->hp = game->pc->unit->hpmax;
-			game->pc->unit->mp = game->pc->unit->mpmax;
-			game->pc->unit->stamina = game->pc->unit->stamina_max;
-			game->pc->unit->RemovePoison();
-			game->pc->unit->RemoveEffect(EffectId::Stun);
-			if(Net::IsOnline())
-			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::UPDATE_HP;
-				c.unit = game->pc->unit;
-			}
-		}
+			HealUnit(*game->pc->unit);
 		else
 			Net::PushChange(NetChange::CHEAT_HEAL);
 		break;
@@ -778,21 +766,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		if(Unit* target = game->pc_data.GetTargetUnit())
 		{
 			if(Net::IsLocal())
-			{
-				target->hp = target->hpmax;
-				target->mp = target->mpmax;
-				target->stamina = target->stamina_max;
-				target->RemovePoison();
-				target->RemoveEffect(EffectId::Stun);
-				if(Net::IsOnline())
-				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::UPDATE_HP;
-					c.unit = target;
-					if(target->player && !target->player->is_local)
-						target->player->player_info->update_flags |= PlayerInfo::UF_MANA | PlayerInfo::UF_STAMINA;
-				}
-			}
+				HealUnit(*target);
 			else
 			{
 				NetChange& c = Add1(Net::changes);
@@ -2448,6 +2422,43 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f)
 }
 
 //=================================================================================================
+void CommandParser::HealUnit(Unit& unit)
+{
+	if(unit.hp != unit.hpmax)
+	{
+		unit.hp = unit.hpmax;
+		if(Net::IsServer())
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::UPDATE_HP;
+			c.unit = &unit;
+		}
+	}
+	if(unit.mp != unit.mpmax)
+	{
+		unit.mp = unit.mpmax;
+		if(Net::IsServer() && unit.IsTeamMember())
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::UPDATE_MP;
+			c.unit = &unit;
+		}
+	}
+	if(unit.stamina != unit.stamina_max)
+	{
+		unit.stamina = unit.stamina_max;
+		if(Net::IsServer() && unit.IsTeamMember())
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::UPDATE_STAMINA;
+			c.unit = &unit;
+		}
+	}
+	unit.RemovePoison();
+	unit.RemoveEffect(EffectId::Stun);
+}
+
+//=================================================================================================
 void CommandParser::RemoveEffect(Unit* u, EffectId effect, EffectSource source, int source_id, int value)
 {
 	uint removed = u->RemoveEffects(effect, source, source_id, value);
@@ -2560,6 +2571,11 @@ void CommandParser::ListStats(Unit* u)
 	}
 	Msg("Health: %d/%d (bonus: %+g, regeneration: %+g/sec, natural: x%g)", hp, (int)u->hpmax, u->GetEffectSum(EffectId::Health),
 		u->GetEffectSum(EffectId::Regeneration), u->GetEffectMul(EffectId::NaturalHealingMod));
+	if(u->GetClass()->mp_bar)
+	{
+		Msg("Mana: %d/%d (bonus: %+g, regeneration: %+g/sec, mod: x%g)", (int)u->mp, (int)u->mpmax, u->GetEffectSum(EffectId::Mana), u->GetMpRegen(),
+			1.f + u->GetEffectSum(EffectId::ManaRegeneration));
+	}
 	Msg("Stamina: %d/%d (bonus: %+g, regeneration: %+g/sec, mod: x%g)", (int)u->stamina, (int)u->stamina_max, u->GetEffectSum(EffectId::Stamina),
 		u->GetEffectMax(EffectId::StaminaRegeneration), u->GetEffectMul(EffectId::StaminaRegenerationMod));
 	Msg("Melee attack: %s (bonus: %+g, backstab: x%g), ranged: %s (bonus: %+g, backstab: x%g)",

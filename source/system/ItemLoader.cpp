@@ -249,7 +249,9 @@ void ItemLoader::InitTokenizer()
 		{ "ranged", TAG_RANGED },
 		{ "def", TAG_DEF },
 		{ "stamina", TAG_STAMINA },
-		{ "mage", TAG_MAGE }
+		{ "mage", TAG_MAGE },
+		{ "mana", TAG_MANA },
+		{ "cleric", TAG_CLERIC }
 		});
 }
 

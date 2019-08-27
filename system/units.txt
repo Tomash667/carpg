@@ -119,33 +119,34 @@ spells mage {
 // COMMON STAT PROFILES
 //------------------------------------------------------------------------------
 profile cleric {
-	strength 60
-	endurance 60
-	dexterity 45
-	inteligence 50
-	wisdom 70
-	charisma 55
+	strength 50
+	endurance 55
+	dexterity 50
+	inteligence 55
+	wisdom 60
+	charisma 70
 
-	one_handed_weapon 15
+	one_handed_weapon 10
 	short_blade 10
-	long_blade 10
-	axe 10
+	long_blade 5
+	axe 5
 	blunt 15
-	bow 10
+	bow 5
 	shield 10
 	light_armor 10
 	medium_armor 15
-	heavy_armor 10
+	gods_magic 20
+	concentration 15
 	haggle 15
 
 	subprofile cleric {
 		weapon blunt
 		armor {
 			medium_armor 3
-			heavy_armor 2
+			light_armor 2
 		}
+		tag gods_magic
 		tag weapon
-		tag one_handed_weapon
 		tag armor
 		tag shield
 		priority {
@@ -155,14 +156,18 @@ profile cleric {
 			bow 0.5
 		}
 		tags {
-			str 1
-			dex 1
-			melee 1
-			ranged 1
-			def 1
-			stamina 1
+			str 0.9
+			dex 0.75
+			melee 0.9
+			ranged 0.4
+			def 0.9
+			stamina 0.8
 			mage 0
+			mana 1.5
+			cleric 1.5
 		}
+		perk talent charisma
+		perk skill_focus gods_magic
 	}
 }
 
@@ -208,6 +213,8 @@ profile hunter {
 			def 1
 			stamina 1.5
 			mage 0
+			mana 0
+			cleric 0
 		}
 		perk talent dexterity
 		perk skill_focus bow
@@ -293,6 +300,8 @@ profile hunter {
 			def 1.2
 			stamina 1.5
 			mage 0
+			mana 0
+			cleric 0
 		}
 		perk talent dexterity
 		perk skill_focus weapon
@@ -379,6 +388,8 @@ profile hunter {
 			def 1.5
 			stamina 1.5
 			mage 0
+			mana 0
+			cleric 0
 		}
 		perk talent endurance
 		perk skill_focus weapon
@@ -478,6 +489,8 @@ profile mage {
 			def 1.5
 			stamina 1
 			mage 3
+			mana 0
+			cleric 0
 		}
 	}
 }
@@ -525,6 +538,8 @@ profile rogue {
 			def 1
 			stamina 1.5
 			mage 0
+			mana 0
+			cleric 0
 		}
 		perk talent dexterity
 		perk skill_focus weapon
@@ -609,6 +624,8 @@ profile rogue {
 			def 1
 			stamina 1.5
 			mage 0
+			mana 0
+			cleric 0
 		}
 		perk talent dexterity
 		perk skill_focus bow
@@ -716,6 +733,8 @@ profile warrior {
 			def 2
 			stamina 1
 			mage 0
+			mana 0
+			cleric 0
 		}
 		perk talent endurance
 		perk skill_focus armor
@@ -802,6 +821,8 @@ profile warrior {
 			def 1.5
 			stamina 1.5
 			mage 0
+			mana 0
+			cleric 0
 		}
 		perk talent strength
 		perk skill_focus weapon
@@ -890,6 +911,8 @@ profile warrior {
 			def 1
 			stamina 1.5
 			mage 0
+			mana 0
+			cleric 0
 		}
 		perk talent strength
 		perk skill_focus weapon
@@ -1157,15 +1180,15 @@ unit base_rogue : base_player {
 	class rogue
 }
 
-/*unit base_cleric : base_player {
+unit base_cleric : base_player {
 	profile cleric
 	items {
 		3 p_hp
-		2 p_nreg
+		2 p_mp
 	}
 	gold 90
 	class cleric
-}*/
+}
 
 //------------------------------------------------------------------------------
 // CITIZENS
@@ -2509,7 +2532,7 @@ unit mage_guard : base_human {
 
 unit base_golem {
 	mesh "golem.qmsh"
-	flags {fixed_stats dont_escape pierce_res25 slash_res25 dont_suffer poison_res bloodless ignore_block dont_eat backstab_res stun_res dont_talk}
+	flags {fixed_stats dont_escape pierce_res25 slash_res25 dont_suffer poison_res bloodless ignore_block dont_eat backstab_res stun_res dont_talk construct}
 	stamina 150
 	group mages
 	dmg_type blunt

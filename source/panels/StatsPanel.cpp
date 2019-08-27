@@ -43,6 +43,7 @@ void StatsPanel::LoadLanguage()
 	txTitle = section.Get("title");
 	txClass = section.Get("class");
 	txTraitsStart = section.Get("traitsStart");
+	txTraitsStartMp = section.Get("traitsStartMp");
 	txTraitsEnd = section.Get("traitsEnd");
 	txStatsText = section.Get("statsText");
 	txYearMonthDay = section.Get("yearMonthDay");
@@ -150,12 +151,18 @@ void StatsPanel::SetText()
 	// stats
 	flowStats.Clear();
 	flowStats.Add()->Set(txTraits);
+	Class* clas = pc->unit->GetClass();
 	int hp = int(pc->unit->hp);
 	if(hp == 0 && pc->unit->hp > 0)
 		hp = 1;
-	flowStats.Add()->Set(Format("%s: %s", txClass, pc->unit->GetClass()->name.c_str()), G_STATS, STATS_CLASS);
-	flowStats.Add()->Set(Format(txTraitsStart, hp, int(pc->unit->hpmax), int(pc->unit->mp), int(pc->unit->mpmax),
-		int(pc->unit->stamina), int(pc->unit->stamina_max)), G_INVALID, -1);
+	flowStats.Add()->Set(Format("%s: %s", txClass, clas->name.c_str()), G_STATS, STATS_CLASS);
+	if(clas->mp_bar)
+	{
+		flowStats.Add()->Set(Format(txTraitsStartMp, hp, int(pc->unit->hpmax), int(pc->unit->mp), int(pc->unit->mpmax),
+			int(pc->unit->stamina), int(pc->unit->stamina_max)), G_INVALID, -1);
+	}
+	else
+		flowStats.Add()->Set(Format(txTraitsStart, hp, int(pc->unit->hpmax), int(pc->unit->stamina), int(pc->unit->stamina_max)), G_INVALID, -1);
 	cstring meleeAttack = (pc->unit->HaveWeapon() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetWeapon())) : "-");
 	cstring rangedAttack = (pc->unit->HaveBow() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetBow())) : "-");
 	flowStats.Add()->Set(Format("%s: %s/%s", txAttack, meleeAttack, rangedAttack), G_STATS, STATS_ATTACK);

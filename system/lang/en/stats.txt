@@ -64,6 +64,10 @@ action "dash" {
 	name "Dash"
 	desc "You move fast in a selected direction. Has three charges."
 }
+action "heal" {
+	name "Heal"
+	desc "Restore $cg{power} health points$c- to the target."
+}
 action "summon_wolf" {
 	name "Animal ally"
 	desc "You summon a wolf that will help you in combat until it is killed."
@@ -80,7 +84,7 @@ attribute str {
 }
 attribute end {
 	name "Endurance"
-	desc "\tIncreases health, stamina and resistance.\n\tTaking damage and natural healing trains endurance.\n\tAffected skills: medium armor, heavy armor."
+	desc "\tIncreases health, stamina and resistance.\n\tTaking damage and natural healing trains endurance.\n\tAffected skills: medium armor, heavy armor, concentration."
 }
 attribute dex {
 	name "Dexterity"
@@ -92,11 +96,11 @@ attribute int {
 }
 attribute wis {
 	name "Wisdom"
-	desc "\tIncreases the power of cleric and druid spells."
+	desc "\tIncreases the power of druid spells.\n\tAffected skills: concentration."
 }
 attribute cha {
 	name "Charisma"
-	desc "\tIncreases the chance to affect others.\n\tTalking and trading trains charisma.\n\tAffected skills: haggle."
+	desc "\tIncreases the power of cleric spells and chance to affect others.\n\tTalking and trading trains charisma.\n\tAffected skills: gods magic, haggle."
 }
 
 //------------------------------------------------------------------------------
@@ -113,8 +117,8 @@ class bard {
 }
 class cleric {
 	name "Cleric"
-	desc "A firm follower of god, recompensated for his devotion with the power to cast spells."
-	about "?"
+	desc "A firm follower of god, recompensated for his devotion with the power to cast spells.\n\nSpecial action: Heal"
+	about "I am a cleric, a follower of Imnos. I travel around cities teaching others about my god and helping those who need it."
 }
 class druid {
 	name "Druid"
@@ -250,6 +254,14 @@ perk perfect_health {
 perk energetic {
 	name "Energetic"
 	desc "+100 stamina."
+}
+perk strong_aura {
+	name "Strong aura"
+	desc "+100 to maximum mana."
+}
+perk mana_harmony {
+	name "Mana harmony"
+	desc "Increase mana regeneration by 100%."
 }
 
 //------------------------------------------------------------------------------

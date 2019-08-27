@@ -1584,6 +1584,17 @@ amulet a_stamina : a_gold {
 	tag stamina
 }
 
+amulet a_mana : a_gold {
+	value 1500
+	ai_value 120
+	flags magical
+	effects {
+		mana 150
+		mana_regeneration 0.5
+	}
+	tag mana
+}
+
 amulet a_warrior : a_ruby {
 	value 3000
 	ai_value 150
@@ -1860,6 +1871,36 @@ ring r_carry : r_gold {
 	}
 }
 
+ring r_gods_magic : r_gold {
+	value 500
+	ai_value 80
+	flags magical
+	effects {
+		skill gods_magic 10
+	}
+	tag cleric
+}
+
+ring r_concentration : r_gold {
+	value 500
+	ai_value 80
+	flags magical
+	effects {
+		skill concentration 10
+	}
+	tag mana
+}
+
+ring r_mana : r_gold {
+	value 500
+	ai_value 80
+	flags magical
+	effects {
+		mana 100
+	}
+	tag mana
+}
+
 ring r_str2 : r_emerald {
 	value 1500
 	ai_value 110
@@ -1918,6 +1959,16 @@ ring r_poison_resistance : r_emerald {
 		poison_resistance 0.5
 	}
 	tag def
+}
+
+ring r_mana_regen : r_emerald {
+	value 1500
+	ai_value 110
+	flags magical
+	effects {
+		mana_regeneration 1
+	}
+	tag mana
 }
 
 //------------------------------------------------------------------------------

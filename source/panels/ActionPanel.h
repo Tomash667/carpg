@@ -15,6 +15,7 @@ public:
 	void Event(GuiEvent e) override;
 	void Update(float dt) override;
 	void Init(Action* action);
+	void GetActionTooltip(TooltipController& tooltip);
 
 private:
 	void DrawGroup(cstring text);
@@ -25,7 +26,7 @@ private:
 	TooltipController tooltip;
 	vector<Action*> actions;
 	vector<Texture*> images;
-	cstring txActions, txCooldown, txCooldownCharges, txAbilities, txOther;
+	cstring txActions, txCooldown, txCooldownCharges, txCost, txAbilities, txOther, txMana, txStamina;
 	cstring txMeleeWeapon, txRangedWeapon, txPotion, txMeleeWeaponDesc, txRangedWeaponDesc, txPotionDesc;
 	TexturePtr tItemBar, tMelee, tRanged, tPotion;
 	Int2 drag_and_drop_pos;

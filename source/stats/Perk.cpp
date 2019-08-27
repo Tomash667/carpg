@@ -41,7 +41,9 @@ PerkInfo PerkInfo::perks[] = {
 	PerkInfo(Perk::HardSkin, "hard_skin", 0, 2),
 	PerkInfo(Perk::Adaptation, "adaptation", 0, 3),
 	PerkInfo(Perk::PerfectHealth, "perfect_health", 0, 5),
-	PerkInfo(Perk::Energetic, "energetic", 0, 2)
+	PerkInfo(Perk::Energetic, "energetic", 0, 2),
+	PerkInfo(Perk::StrongAura, "strong_aura", 0, 2),
+	PerkInfo(Perk::ManaHarmony, "mana_harmony", 0, 5)
 };
 
 //-----------------------------------------------------------------------------
@@ -333,6 +335,10 @@ bool TakenPerk::CanTake(PerkContext& ctx)
 		return ctx.Have(AttributeId::END, 90) && !ctx.HavePerk(Perk::ChronicDisease);
 	case Perk::Energetic:
 		return ctx.Have(AttributeId::DEX, 60) && ctx.Have(AttributeId::END, 60) && !ctx.HavePerk(Perk::Sluggish);
+	case Perk::StrongAura:
+		return ctx.Have(AttributeId::WIS, 60);
+	case Perk::ManaHarmony:
+		return ctx.Have(AttributeId::WIS, 90);
 	default:
 		assert(0);
 		return true;
@@ -438,6 +444,14 @@ void TakenPerk::Apply(PerkContext& ctx)
 		ctx.AddRequired(AttributeId::DEX);
 		ctx.AddRequired(AttributeId::END);
 		break;
+	case Perk::StrongAura:
+		ctx.AddEffect(perk, EffectId::Mana, 100.f);
+		ctx.AddRequired(AttributeId::WIS);
+		break;
+	case Perk::ManaHarmony:
+		ctx.AddEffect(perk, EffectId::ManaRegeneration, 1.f);
+		ctx.AddRequired(AttributeId::WIS);
+		break;
 	}
 
 	if(ctx.cc)
@@ -492,32 +506,31 @@ void TakenPerk::Remove(PerkContext& ctx)
 		ctx.Mod((SkillId)value, -5, false);
 		break;
 	case Perk::StrongBack:
-		ctx.RemoveRequired(AttributeId::STR);
-		break;
 	case Perk::Aggressive:
+		ctx.RemoveRequired(AttributeId::STR);
 		ctx.RemoveRequired(AttributeId::STR);
 		break;
 	case Perk::Mobility:
-		ctx.RemoveRequired(AttributeId::DEX);
-		break;
 	case Perk::Finesse:
+		ctx.RemoveRequired(AttributeId::DEX);
 		ctx.RemoveRequired(AttributeId::DEX);
 		break;
 	case Perk::Tough:
-		ctx.RemoveRequired(AttributeId::END);
-		break;
 	case Perk::HardSkin:
-		ctx.RemoveRequired(AttributeId::END);
-		break;
 	case Perk::Adaptation:
-		ctx.RemoveRequired(AttributeId::END);
-		break;
 	case Perk::PerfectHealth:
+		ctx.RemoveRequired(AttributeId::END);
+		ctx.RemoveRequired(AttributeId::END);
+		ctx.RemoveRequired(AttributeId::END);
 		ctx.RemoveRequired(AttributeId::END);
 		break;
 	case Perk::Energetic:
 		ctx.RemoveRequired(AttributeId::DEX);
 		ctx.RemoveRequired(AttributeId::END);
+		break;
+	case Perk::StrongAura:
+	case Perk::ManaHarmony:
+		ctx.RemoveRequired(AttributeId::WIS);
 		break;
 	}
 

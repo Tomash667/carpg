@@ -224,7 +224,7 @@ struct Unit : public EntityType<Unit>
 	Usable* usable;
 	UnitEventHandler* event_handler;
 	SpeechBubble* bubble;
-	Entity<Unit> summoner, look_target, order_unit;
+	Entity<Unit> summoner, look_target, order_unit, action_unit;
 	int ai_mode;
 	enum Busy
 	{
@@ -346,6 +346,7 @@ struct Unit : public EntityType<Unit>
 	Vec3 GetEyePos() const;
 	float CalculateMaxHp() const;
 	float CalculateMaxMp() const;
+	float GetMpRegen() const;
 	float CalculateMaxStamina() const;
 	float GetHpp() const { return hp / hpmax; }
 	float GetMpp() const { return mp / mpmax; }
@@ -384,12 +385,12 @@ struct Unit : public EntityType<Unit>
 	}
 	bool CanRun() const
 	{
-		if(IsSet(data->flags, F_SLOW) || Any(action, A_BLOCK, A_BASH, A_SHOOT, A_USE_ITEM) || (action == A_ATTACK && !run_attack))
+		if(IsSet(data->flags, F_SLOW) || Any(action, A_BLOCK, A_BASH, A_SHOOT, A_USE_ITEM, A_CAST) || (action == A_ATTACK && !run_attack))
 			return false;
 		else
 			return !IsOverloaded();
 	}
-	void RecalculateHp(bool send = false);
+	void RecalculateHp();
 	void RecalculateMp();
 	void RecalculateStamina();
 	bool CanBlock() const
@@ -513,6 +514,12 @@ public:
 	bool IsFollowing(Unit* u) const { return order == ORDER_FOLLOW && order_unit == u; }
 	bool IsFollowingTeamMember() const { return IsFollower() && order == ORDER_FOLLOW; }
 	Class* GetClass() const { return data->clas; }
+	bool IsUsingMp() const
+	{
+		if(data->clas)
+			return data->clas->mp_bar;
+		return false;
+	}
 	bool CanFollowWarp() const { return IsHero() && order == ORDER_FOLLOW && in_arena == -1 && frozen == FROZEN::NO; }
 	bool IsTeamMember() const
 	{
@@ -748,6 +755,7 @@ public:
 	void Set(AttributeId a, int value);
 	void Set(SkillId s, int value);
 	void ApplyStat(AttributeId a);
+	void ApplyStat(SkillId s);
 	void CalculateStats();
 	float CalculateMobility(const Armor* armor = nullptr) const;
 	float GetMobilityMod(bool run) const;
@@ -846,6 +854,7 @@ public:
 	float GetBlockMod() const { return action == A_BLOCK ? mesh_inst->groups[1].GetBlendT() : 0.5f; }
 	float GetStaminaAttackSpeedMod() const;
 	float GetBashSpeed() const { return 2.f * GetStaminaAttackSpeedMod(); }
+	void RotateTo(const Vec3& pos, float dt);
 };
 
 //-----------------------------------------------------------------------------

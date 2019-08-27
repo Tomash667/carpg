@@ -90,8 +90,20 @@ float Unit::CalculateMaxHp() const
 //=================================================================================================
 float Unit::CalculateMaxMp() const
 {
-	// TODO
-	return 5000.f + GetEffectSum(EffectId::Mana);
+	return 200.f
+		+ 4.f * (Get(AttributeId::WIS) - 50.f)
+		+ 4.f * Get(SkillId::CONCENTRATION)
+		+ GetEffectSum(EffectId::Mana);
+}
+
+//=================================================================================================
+float Unit::GetMpRegen() const
+{
+	float value = (200.f
+		+ 4.f * (Get(AttributeId::WIS) - 50.f)
+		+ 4.f * Get(SkillId::CONCENTRATION)) / 100.f;
+	value *= (1.f + GetEffectSum(EffectId::ManaRegeneration));
+	return value;
 }
 
 //=================================================================================================
@@ -896,7 +908,7 @@ void Unit::OnAddRemoveEffect(Effect& e)
 	switch(e.effect)
 	{
 	case EffectId::Health:
-		RecalculateHp(true);
+		RecalculateHp();
 		break;
 	case EffectId::Carry:
 		CalculateLoad();
@@ -906,6 +918,9 @@ void Unit::OnAddRemoveEffect(Effect& e)
 		break;
 	case EffectId::Attribute:
 		ApplyStat((AttributeId)e.value);
+		break;
+	case EffectId::Skill:
+		ApplyStat((SkillId)e.value);
 		break;
 	case EffectId::Mana:
 		RecalculateMp();
@@ -949,14 +964,17 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 		switch(effect.effect)
 		{
 		case EffectId::Heal:
-			hp += effect.power;
-			if(hp > hpmax)
-				hp = hpmax;
-			if(Net::IsOnline())
+			if(hp != hpmax)
 			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::UPDATE_HP;
-				c.unit = this;
+				hp += effect.power;
+				if(hp > hpmax)
+					hp = hpmax;
+				if(Net::IsOnline())
+				{
+					NetChange& c = Add1(Net::changes);
+					c.type = NetChange::UPDATE_HP;
+					c.unit = this;
+				}
 			}
 			break;
 		case EffectId::Poison:
@@ -1020,9 +1038,18 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 			}
 			break;
 		case EffectId::RestoreMana:
-			mp += effect.power;
-			if(mp > mpmax)
-				mp = mpmax;
+			if(mp != mpmax)
+			{
+				mp += effect.power;
+				if(mp > mpmax)
+					mp = mpmax;
+				if(Net::IsOnline() && IsTeamMember())
+				{
+					NetChange& c = Add1(Net::changes);
+					c.type = NetChange::UPDATE_MP;
+					c.unit = this;
+				}
+			}
 			break;
 		default:
 			if(item.time == 0.f && effect.effect == EffectId::Attribute)
@@ -1160,24 +1187,32 @@ void Unit::UpdateEffects(float dt)
 	// restore mana
 	if(player && mp != mpmax)
 	{
-		mp += 1.f;
+		mp += GetMpRegen() * dt;
 		if(mp > mpmax)
 			mp = mpmax;
-		if(Net::IsServer() && !player->is_local)
-			player->player_info->update_flags |= PlayerInfo::UF_MANA;
+		if(Net::IsServer() && IsTeamMember())
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::UPDATE_MP;
+			c.unit = this;
+		}
 	}
 
 	// restore stamina
 	if(stamina_timer > 0)
 	{
 		stamina_timer -= dt;
-		if(best_stamina > 0.f)
+		if(best_stamina > 0.f && stamina != stamina_max)
 		{
 			stamina += best_stamina * dt * stamina_mod;
 			if(stamina > stamina_max)
 				stamina = stamina_max;
-			if(Net::IsServer() && player && !player->is_local)
-				player->player_info->update_flags |= PlayerInfo::UF_STAMINA;
+			if(Net::IsServer() && IsTeamMember())
+			{
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::UPDATE_STAMINA;
+				c.unit = this;
+			}
 		}
 	}
 	else if(stamina != stamina_max && (stamina_action != SA_DONT_RESTORE || best_stamina > 0.f))
@@ -1220,8 +1255,12 @@ void Unit::UpdateEffects(float dt)
 		stamina += ((stamina_max * stamina_restore / 100) + best_stamina) * dt * stamina_mod;
 		if(stamina > stamina_max)
 			stamina = stamina_max;
-		if(Net::IsServer() && player && !player->is_local)
-			player->player_info->update_flags |= PlayerInfo::UF_STAMINA;
+		if(Net::IsServer() && IsTeamMember())
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::UPDATE_STAMINA;
+			c.unit = this;
+		}
 	}
 }
 
@@ -1520,7 +1559,7 @@ bool Unit::IsBetterArmor(const Armor& armor, int* value, int* prev_value) const
 }
 
 //=================================================================================================
-void Unit::RecalculateHp(bool send)
+void Unit::RecalculateHp()
 {
 	float hpp = hp / hpmax;
 	hpmax = CalculateMaxHp();
@@ -1529,13 +1568,6 @@ void Unit::RecalculateHp(bool send)
 		hp = 1;
 	else if(hp > hpmax)
 		hp = hpmax;
-
-	if(send && player && !player->IsLocal() && Net::IsServer())
-	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::UPDATE_HP;
-		c.unit = this;
-	}
 }
 
 //=================================================================================================
@@ -1545,7 +1577,7 @@ void Unit::RecalculateMp()
 	mpmax = CalculateMaxMp();
 	mp = mpmax * mpp;
 	if(mp < 0)
-		mp = 1;
+		mp = 0;
 	else if(mp > mpmax)
 		mp = mpmax;
 }
@@ -1748,6 +1780,8 @@ void Unit::Save(GameWriter& f, bool local)
 
 		if(action == A_DASH || action == A_ANIMATION2)
 			f << use_rot;
+		if(action == A_CAST)
+			f << action_unit;
 
 		if(used_item)
 		{
@@ -1916,9 +1950,7 @@ void Unit::Load(GameReader& f, bool local)
 		f >> mpmax;
 	}
 	else
-	{
-		FIXME;
-	}
+		mp = mpmax = CalculateMaxMp();
 	f >> stamina;
 	f >> stamina_max;
 	f >> stamina_action;
@@ -2096,14 +2128,21 @@ void Unit::Load(GameReader& f, bool local)
 		f >> alcohol;
 		f >> raise_timer;
 
-		if(action == A_DASH)
-			f >> use_rot;
-		else if(action == A_ANIMATION2)
+		switch(action)
 		{
+		case A_DASH:
+			f >> use_rot;
+			break;
+		case A_ANIMATION2:
 			if(LOAD_VERSION >= V_0_10)
 				f >> use_rot;
 			else
 				use_rot = 0.f;
+			break;
+		case A_CAST:
+			if(LOAD_VERSION >= V_DEV)
+				f >> action_unit;
+			break;
 		}
 
 		const string& item_id = f.ReadString1();
@@ -2419,8 +2458,15 @@ void Unit::Write(BitStreamWriter& f)
 	f.WriteCasted<byte>(live_state);
 	f << pos;
 	f << rot;
-	f << hp;
-	f << hpmax;
+	f << GetHpp();
+	if(IsTeamMember())
+	{
+		f.Write1();
+		f << GetMpp();
+		f << GetStaminap();
+	}
+	else
+		f.Write0();
 	f.WriteCasted<char>(in_arena);
 	f << summoner;
 	f << mark;
@@ -2576,11 +2622,23 @@ bool Unit::Read(BitStreamReader& f)
 	}
 
 	// variables
+	hpmax = 1.f;
+	mpmax = 1.f;
+	stamina_max = 1.f;
 	f.ReadCasted<byte>(live_state);
 	f >> pos;
 	f >> rot;
 	f >> hp;
-	f >> hpmax;
+	if(f.Read1())
+	{
+		f >> mp;
+		f >> stamina;
+	}
+	else
+	{
+		mp = 1.f;
+		stamina = 1.f;
+	}
 	f.ReadCasted<char>(in_arena);
 	f >> summoner;
 	f >> mark;
@@ -3981,9 +4039,13 @@ void Unit::Set(AttributeId a, int value)
 void Unit::Set(SkillId s, int value)
 {
 	assert(!stats->fixed);
-	stats->skill[(int)s] = value;
-	if(player)
-		player->recalculate_level = true;
+	if(stats->skill[(int)s] != value)
+	{
+		stats->skill[(int)s] = value;
+		ApplyStat(s);
+		if(player)
+			player->recalculate_level = true;
+	}
 }
 
 //=================================================================================================
@@ -3993,64 +4055,30 @@ void Unit::ApplyStat(AttributeId a)
 	switch(a)
 	{
 	case AttributeId::STR:
-		{
-			// hp/load depends on str
-			if(Net::IsLocal())
-			{
-				RecalculateHp();
-				if(!fake_unit && Net::IsServer())
-				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::UPDATE_HP;
-					c.unit = this;
-				}
-			}
-			else
-				hpmax = CalculateMaxHp();
-			CalculateLoad();
-		}
+		RecalculateHp();
+		CalculateLoad();
 		break;
 	case AttributeId::END:
-		{
-			// hp/stamina depends on end
-			if(Net::IsLocal())
-			{
-				RecalculateHp();
-				RecalculateStamina();
-				if(!fake_unit && Net::IsServer())
-				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::UPDATE_HP;
-					c.unit = this;
-					if(IsPlayer() && !player->is_local)
-						player->player_info->update_flags |= PlayerInfo::UF_STAMINA;
-				}
-			}
-			else
-			{
-				hpmax = CalculateMaxHp();
-				stamina_max = CalculateMaxStamina();
-			}
-		}
+		RecalculateHp();
+		RecalculateStamina();
 		break;
 	case AttributeId::DEX:
-		{
-			// stamina depends on dex
-			if(Net::IsLocal())
-			{
-				RecalculateStamina();
-				if(!fake_unit && Net::IsServer() && IsPlayer() && !player->is_local)
-					player->player_info->update_flags |= PlayerInfo::UF_STAMINA;
-			}
-			else
-				stamina_max = CalculateMaxStamina();
-		}
+		RecalculateStamina();
+		break;
+	case AttributeId::WIS:
+		RecalculateMp();
 		break;
 	case AttributeId::INT:
-	case AttributeId::WIS:
 	case AttributeId::CHA:
 		break;
 	}
+}
+
+//=================================================================================================
+void Unit::ApplyStat(SkillId s)
+{
+	if(s == SkillId::CONCENTRATION)
+		RecalculateMp();
 }
 
 //=================================================================================================
@@ -4286,8 +4314,16 @@ void Unit::UpdateStaminaAction()
 void Unit::RemoveMana(float value)
 {
 	mp -= value;
-	if(player && !player->is_local)
-		player->player_info->update_flags |= PlayerInfo::UF_MANA;
+	if(player && Net::IsLocal())
+	{
+		player->Train(TrainWhat::Mana, value, 0);
+		if(Net::IsServer())
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::UPDATE_MP;
+			c.unit = this;
+		}
+	}
 }
 
 //=================================================================================================
@@ -4300,8 +4336,12 @@ void Unit::RemoveStamina(float value)
 	if(player && Net::IsLocal())
 	{
 		player->Train(TrainWhat::Stamina, value, 0);
-		if(!player->is_local)
-			player->player_info->update_flags |= PlayerInfo::UF_STAMINA;
+		if(Net::IsServer())
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::UPDATE_STAMINA;
+			c.unit = this;
+		}
 	}
 }
 
@@ -4902,7 +4942,7 @@ void Unit::Standup()
 }
 
 //=================================================================================================
-void Unit::Die( Unit* killer)
+void Unit::Die(Unit* killer)
 {
 	ACTION prev_action = action;
 
@@ -5667,4 +5707,26 @@ float Unit::GetStaminaAttackSpeedMod() const
 		return 1.f;
 	float t = (limit - sp) * (1.f / limit);
 	return 1.f - mod * t;
+}
+
+//=================================================================================================
+void Unit::RotateTo(const Vec3& pos, float dt)
+{
+	float dir = Vec3::LookAtAngle(this->pos, pos);
+	if(!Equal(rot, dir))
+	{
+		const float rot_speed = GetRotationSpeed() * dt;
+		const float rot_diff = AngleDiff(rot, dir);
+		if(ShortestArc(rot, dir) > 0.f)
+			animation = ANI_RIGHT;
+		else
+			animation = ANI_LEFT;
+		if(rot_diff < rot_speed)
+			rot = dir;
+		else
+		{
+			const float d = Sign(ShortestArc(rot, dir)) * rot_speed;
+			rot = Clip(rot + d);
+		}
+	}
 }

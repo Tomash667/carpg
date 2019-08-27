@@ -16,6 +16,8 @@
 #include "ScriptException.h"
 #include "AIController.h"
 #include "SoundManager.h"
+#include "QuestManager.h"
+#include "Quest_Tutorial.h"
 
 //=================================================================================================
 PlayerController::~PlayerController()
@@ -274,12 +276,22 @@ void PlayerController::Rest(int days, bool resting, bool travel)
 			c.unit = unit;
 		}
 
+		if(unit->mp != prev_mp)
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::UPDATE_MP;
+			c.unit = unit;
+		}
+
+		if(unit->stamina != prev_stamina)
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::UPDATE_STAMINA;
+			c.unit = unit;
+		}
+
 		if(!is_local)
 		{
-			if(unit->mp != prev_mp)
-				player_info->update_flags |= PlayerInfo::UF_MANA;
-			if(unit->stamina != prev_stamina)
-				player_info->update_flags |= PlayerInfo::UF_STAMINA;
 			NetChangePlayer& c = Add1(player_info->changes);
 			c.type = NetChangePlayer::ON_REST;
 			c.count = days;
@@ -649,28 +661,78 @@ void PlayerController::SetRequiredPoints()
 int PlayerController::CalculateLevel()
 {
 	float level = 0.f;
+	float prio = 0.f;
 	UnitStats& stats = *unit->stats;
+	Class* clas = unit->GetClass();
 
-	// only str, end & dex is currently important for players
-	for(int i = 0; i < 3; ++i)
-		level += float(stats.attrib[i] - 25) / 5;
+	if(clas->level.empty())
+		return 1;
 
-	// tag 4 most important player skill from currently 5 (weapon, one handed, armor, bow, shield)
-	SkillId skills[5] = {
-		WeaponTypeInfo::info[unit->GetBestWeaponType()].skill,
-		GetArmorTypeSkill(unit->GetBestArmorType()),
-		SkillId::ONE_HANDED_WEAPON,
-		SkillId::BOW,
-		SkillId::SHIELD
-	};
-	int values[5];
-	for(int i = 0; i < 5; ++i)
-		values[i] = stats.skill[(int)skills[i]];
-	std::sort(values, values + 5, std::greater<int>());
-	for(int i = 0; i < 4; ++i)
-		level += float(stats.skill[i]) / 5;
+	// apply attributes/skills
+	static vector<pair<float, float>> values;
+	values.clear();
+	for(Class::LevelEntry& entry : clas->level)
+	{
+		float e_level, e_prio = -1;
+		switch(entry.type)
+		{
+		case Class::LevelEntry::T_ATTRIBUTE:
+			{
+				float value = (float)stats.attrib[entry.value];
+				e_level = (value - 25) / 5 * entry.priority;
+				e_prio = entry.priority;
+			}
+			break;
+		case Class::LevelEntry::T_SKILL:
+			{
+				float value = (float)stats.skill[entry.value];
+				e_level = value / 5 * entry.priority;
+				e_prio = entry.priority;
+			}
+			break;
+		case Class::LevelEntry::T_SKILL_SPECIAL:
+			if(entry.value == Class::LevelEntry::S_WEAPON)
+			{
+				SkillId skill = WeaponTypeInfo::info[unit->GetBestWeaponType()].skill;
+				float value = (float)stats.skill[(int)skill];
+				e_level = value / 5 * entry.priority;
+				e_prio = entry.priority;
+			}
+			else if(entry.value == Class::LevelEntry::S_ARMOR)
+			{
+				SkillId skill = GetArmorTypeSkill(unit->GetBestArmorType());
+				float value = (float)stats.skill[(int)skill];
+				e_level = value / 5 * entry.priority;
+				e_prio = entry.priority;
+			}
+			break;
+		}
 
-	return int(level / 7);
+		if(e_prio > 0)
+		{
+			if(entry.required)
+			{
+				level += e_level;
+				prio += e_prio;
+			}
+			else
+				values.push_back({ e_level, e_prio });
+		}
+	}
+
+	// use 4 most important combat skill from currently 5 (weapon, one handed, armor, bow, shield)
+	std::sort(values.begin(), values.end(), [](const pair<float, float>& v1, const pair<float, float>& v2)
+	{
+		return v1.first > v2.first;
+	});
+	for(uint i = 0; i < min(4u, values.size()); ++i)
+	{
+		pair<float, float>& p = values[i];
+		level += p.first;
+		prio += p.second;
+	}
+
+	return int(level / prio);
 }
 
 //=================================================================================================
@@ -889,6 +951,12 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 		break;
 	case TrainWhat::Dash:
 		TrainMod(AttributeId::DEX, 50.f);
+		break;
+	case TrainWhat::Mana:
+		TrainMod(SkillId::CONCENTRATION, value * 5);
+		break;
+	case TrainWhat::Cast:
+		TrainMod(SkillId::GODS_MAGIC, 2000.f);
 		break;
 	default:
 		assert(0);
@@ -1161,7 +1229,7 @@ bool PlayerController::IsLeader() const
 }
 
 //=================================================================================================
-Action& PlayerController::GetAction()
+Action& PlayerController::GetAction() const
 {
 	Action* action = unit->GetClass()->action;
 	assert(action);
@@ -1169,9 +1237,30 @@ Action& PlayerController::GetAction()
 }
 
 //=================================================================================================
+bool PlayerController::CanUseAction() const
+{
+	if(action_charges == 0 || action_cooldown > 0)
+		return false;
+	if(quest_mgr->quest_tutorial->in_tutorial)
+		return false;
+	Action& action = GetAction();
+	if(unit->action != A_NONE)
+	{
+		if(!Any(unit->action, A_ATTACK, A_BLOCK, A_BASH))
+			return false;
+		if(action.use_cast)
+			return false;
+	}
+	if(action.use_mana)
+		return unit->mp >= action.cost;
+	else
+		return unit->stamina >= action.cost;
+}
+
+//=================================================================================================
 bool PlayerController::UseActionCharge()
 {
-	if (action_charges == 0 || action_cooldown > 0)
+	if(action_charges == 0 || action_cooldown > 0)
 		return false;
 	Action& action = GetAction();
 	--action_charges;
@@ -1508,4 +1597,11 @@ void PlayerController::SetShortcut(int index, Shortcut::Type type, int value)
 		c.type = NetChange::SET_SHORTCUT;
 		c.id = index;
 	}
+}
+
+//=================================================================================================
+float PlayerController::GetActionPower() const
+{
+	// currently only used by heal spell
+	return 100.f + 4.f * unit->Get(AttributeId::CHA) + 4.f * unit->Get(SkillId::GODS_MAGIC);
 }

@@ -534,6 +534,10 @@ item a_stamina {
 	name "Amulet energii"
 	desc "+100 do wytrzyma³oœci i przyœpiesza szybkoœæ regeneracji wytrzyma³oœci."
 }
+item a_mana {
+	name "Amulet many"
+	desc "+150 do many i przyœpiesza szybkoœæ regeneracji many."
+}
 item a_warrior {
 	name "Amulet wojownika"
 	desc "+50 do ataku wrêcz, +10 do si³y, +20 do umiejêtnoœci walk¹ jednorêczn¹ broni¹."
@@ -646,6 +650,18 @@ item r_carry {
 	name "Pierœcieñ tragarza"
 	desc "+50% do udŸwigu."
 }
+item r_gods_magic {
+	name "Pierœcieñ wyznawcy"
+	desc "+10 do umiejêtnoœci boska magia."
+}
+item r_concentration {
+	name "Pierœcieñ koncentracji"
+	desc "+10 do umiejêtnoœci koncentracja."
+}
+item r_mana {
+	name "Pierœcieñ many"
+	desc "+100 do many."
+}
 item r_str2 {
 	name "Wiêkszy pierœcieñ si³y"
 	desc "+15 do si³y."
@@ -669,6 +685,10 @@ item r_assassin {
 item r_poison_resistance {
 	name "Pierœcieñ odpornoœci na trucizny"
 	desc "+50% odpornoœci na trucizny."
+}
+item r_mana_regen {
+	name "Pierœcieñ harmonii"
+	desc "+100% szybkoœci regeneracji many."
 }
 
 //------------------------------------------------------------------------------

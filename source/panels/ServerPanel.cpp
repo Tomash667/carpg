@@ -1460,7 +1460,9 @@ void ServerPanel::CheckAutopick()
 	if(autopick_class)
 	{
 		Info("ServerPanel: Autopicking character.");
-		PickClass(nullptr, true);
+		if(autopick_class == random_class)
+			autopick_class = nullptr;
+		PickClass(autopick_class, true);
 		autopick_class = nullptr;
 		autoready = false;
 	}

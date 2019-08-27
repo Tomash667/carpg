@@ -158,8 +158,6 @@ void Game::SendPlayerData(PlayerInfo& info)
 	// data
 	unit.stats->Write(f);
 	f << unit.gold;
-	f << unit.mp;
-	f << unit.stamina;
 	f << unit.effects;
 	unit.player->Write(f);
 
@@ -182,6 +180,8 @@ void Game::SendPlayerData(PlayerInfo& info)
 			flags |= 0x02;
 		f << unit.attack_power;
 		f << unit.raise_timer;
+		if(unit.action == A_CAST)
+			f << unit.action_unit;
 		f.WriteCasted<byte>(flags);
 	}
 
@@ -248,8 +248,6 @@ bool Game::ReadPlayerData(BitStreamReader& f)
 	unit->stats->subprofile.value = 0;
 	unit->stats->Read(f);
 	f >> unit->gold;
-	f >> unit->mp;
-	f >> unit->stamina;
 	f >> unit->effects;
 	if(!f || !pc->Read(f))
 	{
@@ -263,8 +261,12 @@ bool Game::ReadPlayerData(BitStreamReader& f)
 	unit->weight = 0;
 	unit->CalculateLoad();
 	unit->RecalculateWeight();
+	unit->hpmax = unit->CalculateMaxHp();
+	unit->hp *= unit->hpmax;
 	unit->mpmax = unit->CalculateMaxMp();
+	unit->mp *= unit->mpmax;
 	unit->stamina_max = unit->CalculateMaxStamina();
+	unit->stamina *= unit->stamina_max;
 
 	unit->player->credit = credit;
 	unit->player->free_days = free_days;
@@ -317,10 +319,12 @@ bool Game::ReadPlayerData(BitStreamReader& f)
 		byte flags;
 		f >> unit->attack_power;
 		f >> unit->raise_timer;
+		if(unit->action == A_CAST)
+			f >> unit->action_unit;
 		f >> flags;
 		if(!f)
 		{
-			Error("Read player data: Broken multiplaye data.");
+			Error("Read player data: Broken multiplayer data.");
 			return false;
 		}
 		unit->run_attack = IsSet(flags, 0x01);
@@ -1951,28 +1955,8 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 		case NetChange::CHEAT_HEAL:
 			if(info.devmode)
 			{
-				if(game_state != GS_LEVEL)
-					break;
-
-				if(unit.hp != unit.hpmax)
-				{
-					unit.hp = unit.hpmax;
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::UPDATE_HP;
-					c.unit = &unit;
-				}
-				if(unit.mp != unit.mpmax)
-				{
-					unit.mp = unit.mpmax;
-					info.update_flags |= PlayerInfo::UF_MANA;
-				}
-				if(unit.stamina != unit.stamina_max)
-				{
-					unit.stamina = unit.stamina_max;
-					info.update_flags |= PlayerInfo::UF_STAMINA;
-				}
-				unit.RemovePoison();
-				unit.RemoveEffect(EffectId::Stun);
+				if(game_state == GS_LEVEL)
+					cmdp->HealUnit(unit);
 			}
 			else
 				Error("Update server: Player %s used CHEAT_HEAL without devmode.", info.name.c_str());
@@ -2011,29 +1995,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					if(!target)
 						Error("Update server: CHEAT_HEAL_UNIT from %s, missing unit %d.", info.name.c_str(), id);
 					else
-					{
-						if(target->hp != target->hpmax)
-						{
-							target->hp = target->hpmax;
-							NetChange& c = Add1(Net::changes);
-							c.type = NetChange::UPDATE_HP;
-							c.unit = target;
-						}
-						if(target->mp != target->mpmax)
-						{
-							target->mp = target->mpmax;
-							if(target->player && !target->player->is_local)
-								target->player->player_info->update_flags |= PlayerInfo::UF_MANA;
-						}
-						if(target->stamina != target->stamina_max)
-						{
-							target->stamina = target->stamina_max;
-							if(target->player && !target->player->is_local)
-								target->player->player_info->update_flags |= PlayerInfo::UF_STAMINA;
-						}
-						target->RemovePoison();
-						target->RemoveEffect(EffectId::Stun);
-					}
+						cmdp->HealUnit(*target);
 				}
 			}
 			break;
@@ -2951,12 +2913,20 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 		// player used action
 		case NetChange::PLAYER_ACTION:
 			{
+				int netid;
 				Vec3 pos;
+				f >> netid;
 				f >> pos;
 				if(!f)
 					Error("Update server: Broken PLAYER_ACTION from %s.", info.name.c_str());
 				else if(game_state == GS_LEVEL)
-					UseAction(info.pc, false, &pos);
+				{
+					Unit* target = game_level->FindUnit(netid);
+					if(!target && netid != -1)
+						Error("Update server: PLAYER_ACTION, invalid target %d from %s.", netid, info.name.c_str());
+					else
+						UseAction(info.pc, false, &pos, target);
+				}
 			}
 			break;
 		// player used cheat 'refresh_cooldown'
@@ -3310,8 +3280,15 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 			break;
 		case NetChange::UPDATE_HP:
 			f << c.unit->id;
-			f << c.unit->hp;
-			f << c.unit->hpmax;
+			f << c.unit->GetHpp();
+			break;
+		case NetChange::UPDATE_MP:
+			f << c.unit->id;
+			f << c.unit->GetMpp();
+			break;
+		case NetChange::UPDATE_STAMINA:
+			f << c.unit->id;
+			f << c.unit->GetStaminap();
 			break;
 		case NetChange::SPAWN_BLOOD:
 			f.WriteCasted<byte>(c.id);
@@ -3655,14 +3632,10 @@ void Game::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 		f << info.u->gold;
 	if(IsSet(info.update_flags, PlayerInfo::UF_ALCOHOL))
 		f << info.u->alcohol;
-	if(IsSet(info.update_flags, PlayerInfo::UF_STAMINA))
-		f << info.u->stamina;
 	if(IsSet(info.update_flags, PlayerInfo::UF_LEARNING_POINTS))
 		f << info.pc->learning_points;
 	if(IsSet(info.update_flags, PlayerInfo::UF_LEVEL))
 		f << info.u->level;
-	if(IsSet(info.update_flags, PlayerInfo::UF_MANA))
-		f << info.u->mp;
 
 	// changes
 	f.WriteCasted<byte>(info.changes.size());
@@ -4293,10 +4266,9 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 		case NetChange::UPDATE_HP:
 			{
 				int id;
-				float hp, hpmax;
+				float hpp;
 				f >> id;
-				f >> hp;
-				f >> hpmax;
+				f >> hpp;
 				if(!f)
 					Error("Update client: Broken UPDATE_HP.");
 				else if(game_state == GS_LEVEL)
@@ -4307,22 +4279,55 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					else if(unit == pc->unit)
 					{
 						// handling of previous hp
-						float hp_dif = hp - unit->hp - hpmax + unit->hpmax;
+						float hp_dif = hpp - unit->GetHpp();
 						if(hp_dif < 0.f)
-						{
-							float old_ratio = unit->hp / unit->hpmax;
-							float new_ratio = hp / hpmax;
-							if(old_ratio > new_ratio)
-								pc->last_dmg += -hp_dif;
-						}
-						unit->hp = hp;
-						unit->hpmax = hpmax;
+							pc->last_dmg += -hp_dif * unit->hpmax;
+						unit->hp = hpp * unit->hpmax;
 					}
 					else
-					{
-						unit->hp = hp;
-						unit->hpmax = hpmax;
-					}
+						unit->hp = hpp;
+				}
+			}
+			break;
+		// update unit mp
+		case NetChange::UPDATE_MP:
+			{
+				int netid;
+				float mpp;
+				f >> netid;
+				f >> mpp;
+				if(!f)
+					Error("Update client: Broken UPDATE_MP.");
+				else if(game_state == GS_LEVEL)
+				{
+					Unit* unit = game_level->FindUnit(netid);
+					if(!unit)
+						Error("Update client: UPDATE_MP, missing unit %d.", netid);
+					else if(unit == pc->unit)
+						unit->mp = mpp * unit->mpmax;
+					else
+						unit->mp = mpp;
+				}
+			}
+			break;
+		// update unit stamina
+		case NetChange::UPDATE_STAMINA:
+			{
+				int netid;
+				float staminap;
+				f >> netid;
+				f >> staminap;
+				if(!f)
+					Error("Update client: Broken UPDATE_STAMINA.");
+				else if(game_state == GS_LEVEL)
+				{
+					Unit* unit = game_level->FindUnit(netid);
+					if(!unit)
+						Error("Update client: UPDATE_STAMINA, missing unit %d.", netid);
+					else if(unit == pc->unit)
+						unit->stamina = staminap * unit->stamina_max;
+					else
+						unit->stamina = staminap;
 				}
 			}
 			break;
@@ -6561,14 +6566,10 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 		f >> pc->unit->gold;
 	if(IsSet(flags, PlayerInfo::UF_ALCOHOL))
 		f >> pc->unit->alcohol;
-	if(IsSet(flags, PlayerInfo::UF_STAMINA))
-		f >> pc->unit->stamina;
 	if(IsSet(flags, PlayerInfo::UF_LEARNING_POINTS))
 		f >> pc->learning_points;
 	if(IsSet(flags, PlayerInfo::UF_LEVEL))
 		f >> pc->unit->level;
-	if(IsSet(flags, PlayerInfo::UF_MANA))
-		f >> pc->unit->mp;
 	if(!f)
 	{
 		Error("Update single client: Broken ID_PLAYER_CHANGES(2).");
@@ -7564,6 +7565,7 @@ void Game::WriteClientChanges(BitStreamWriter& f)
 			f << c.count;
 			break;
 		case NetChange::PLAYER_ACTION:
+			f << (c.unit ? c.unit->id : -1);
 			f << c.pos;
 			break;
 		case NetChange::CHEAT_STUN:

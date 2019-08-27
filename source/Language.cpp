@@ -13,6 +13,45 @@
 #include "BaseUsable.h"
 #include "UnitGroup.h"
 
+enum Group
+{
+	G_KEYWORD,
+	G_PROPERTY
+};
+
+enum Keyword
+{
+	K_ATTRIBUTE,
+	K_SKILL_GROUP,
+	K_SKILL,
+	K_CLASS,
+	K_NAME,
+	K_NICKNAME,
+	K_CRAZY,
+	K_RANDOM,
+	K_ITEM,
+	K_PERK,
+	K_UNIT,
+	K_UNIT_GROUP,
+	K_LOCATION_START,
+	K_LOCATION_END,
+	K_BUILDING,
+	K_ACTION,
+	K_USABLE
+};
+
+enum Property
+{
+	P_NAME,
+	P_NAME2,
+	P_NAME3,
+	P_REAL_NAME,
+	P_DESC,
+	P_ABOUT,
+	P_TEXT,
+	P_ENCOUNTER_TEXT
+};
+
 //-----------------------------------------------------------------------------
 extern string g_system_dir;
 extern vector<string> name_random, nickname_random, crazy_name, txLocationStart, txLocationEnd;
@@ -20,12 +59,12 @@ string Language::prefix, Language::tstr;
 Language::Map Language::strs;
 Language::Sections Language::sections;
 vector<Language::Map*> Language::languages;
+uint Language::errors;
 
 //=================================================================================================
 void Language::Init()
 {
 	sections[""] = &strs;
-	sections["(placeholder)"] = new Map;
 }
 
 //=================================================================================================
@@ -117,6 +156,7 @@ bool Language::LoadFileInternal(Tokenizer& t, cstring path, Map* lmap)
 	catch(const Tokenizer::Exception& e)
 	{
 		Error("Failed to load language file '%s': %s", path, e.ToString());
+		++errors;
 		return false;
 	}
 
@@ -155,45 +195,6 @@ void Language::LoadLanguages()
 	if(lmap)
 		delete lmap;
 }
-
-enum Group
-{
-	G_KEYWORD,
-	G_PROPERTY
-};
-
-enum Keyword
-{
-	K_ATTRIBUTE,
-	K_SKILL_GROUP,
-	K_SKILL,
-	K_CLASS,
-	K_NAME,
-	K_NICKNAME,
-	K_CRAZY,
-	K_RANDOM,
-	K_ITEM,
-	K_PERK,
-	K_UNIT,
-	K_UNIT_GROUP,
-	K_LOCATION_START,
-	K_LOCATION_END,
-	K_BUILDING,
-	K_ACTION,
-	K_USABLE
-};
-
-enum Property
-{
-	P_NAME,
-	P_NAME2,
-	P_NAME3,
-	P_REAL_NAME,
-	P_DESC,
-	P_ABOUT,
-	P_TEXT,
-	P_ENCOUNTER_TEXT
-};
 
 //=================================================================================================
 void Language::PrepareTokenizer(Tokenizer& t)
@@ -248,6 +249,7 @@ void Language::LoadObjectFile(Tokenizer& t, cstring filename)
 	if(!t.FromFile(path))
 	{
 		Error("Failed to open language file '%s'.", path.c_str());
+		++errors;
 		return;
 	}
 
@@ -258,6 +260,7 @@ void Language::LoadObjectFile(Tokenizer& t, cstring filename)
 	catch(const Tokenizer::Exception& e)
 	{
 		Error("Failed to load language file '%s': %s", path.c_str(), e.ToString());
+		++errors;
 	}
 }
 
@@ -622,26 +625,56 @@ void Language::LoadLanguageFiles()
 	if(txLocationStart.empty() || txLocationEnd.empty())
 		throw "Missing locations names.";
 
+	for(uint i = 0; i < Action::n_actions; ++i)
+	{
+		Action& action = Action::actions[i];
+		if(action.name.empty())
+		{
+			Warn("Action '%s': empty name.", action.id);
+			++errors;
+		}
+		if(action.desc.empty())
+		{
+			Warn("Action '%s': empty desc.", action.id);
+			++errors;
+		}
+	}
+
 	for(Building* building : Building::buildings)
 	{
 		if(IsSet(building->flags, Building::HAVE_NAME) && building->name.empty())
+		{
 			Warn("Building '%s': empty name.", building->id.c_str());
+			++errors;
+		}
 	}
 
 	for(BaseUsable* usable : BaseUsable::usables)
 	{
 		if(usable->name.empty())
+		{
 			Warn("Usables '%s': empty name.", usable->name.c_str());
+			++errors;
+		}
 	}
 
 	for(Class* clas : Class::classes)
 	{
 		if(clas->name.empty())
+		{
 			Warn("Class %s: empty name.", clas->id.c_str());
+			++errors;
+		}
 		if(clas->desc.empty())
+		{
 			Warn("Class %s: empty desc.", clas->id.c_str());
+			++errors;
+		}
 		if(clas->about.empty())
+		{
 			Warn("Class %s: empty about.", clas->id.c_str());
+			++errors;
+		}
 	}
 }
 
@@ -655,7 +688,10 @@ cstring Language::TryGetString(cstring str, bool err)
 	else
 	{
 		if(err)
+		{
 			Error("Missing text string for '%s'.", str);
+			++errors;
+		}
 		return nullptr;
 	}
 }
@@ -670,6 +706,7 @@ Language::Section Language::GetSection(cstring name)
 	else
 	{
 		Error("Missing text section '%s'.", name);
+		++errors;
 		return Section(*sections[""], name);
 	}
 }
@@ -684,6 +721,7 @@ cstring Language::Section::Get(cstring str)
 	else
 	{
 		Error("Missing text string for '%s.%s'.", name, str);
+		++errors;
 		return "";
 	}
 }

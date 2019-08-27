@@ -534,6 +534,10 @@ item a_stamina {
 	name "Amulet of energy"
 	desc "+100 to stamina and increase regeneration speed of stamina."
 }
+item a_mana {
+	name "Amulet of mana"
+	desc "+150 to mana and increase regeneration speed of mana."
+}
 item a_warrior {
 	name "Amulet of warrior"
 	desc "+50 to melee attack, +10 to strength, +20 to one handed weapon skill."
@@ -646,6 +650,18 @@ item r_carry {
 	name "Ring of porter"
 	desc "+50% to carry capacity."
 }
+item r_gods_magic {
+	name "Ring of beliver"
+	desc "+10 to gods magic skill."
+}
+item r_concentration {
+	name "Ring of concentration"
+	desc "+10 to concentration skill."
+}
+item r_mana {
+	name "Ring of mana"
+	desc "+100 to mana."
+}
 item r_str2 {
 	name "Ring of greater strength"
 	desc "+15 to strength."
@@ -669,6 +685,10 @@ item r_assassin {
 item r_poison_resistance {
 	name "Ring of poison resistance"
 	desc "+50% poison resistance."
+}
+item r_mana_regen {
+	name "Ring of harmony"
+	desc "+100% to mana regeneration speed."
 }
 
 //------------------------------------------------------------------------------

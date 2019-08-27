@@ -61,7 +61,9 @@ enum class TrainWhat
 
 	Stamina, // player uses stamina [value],
 	BullsCharge, // trains str
-	Dash
+	Dash,
+	Cast,
+	Mana, // player uses mana [value]
 };
 
 //-----------------------------------------------------------------------------
@@ -223,11 +225,8 @@ public:
 	bool IsTrading() const { return IsTrade(action); }
 	bool IsLocal() const { return is_local; }
 	bool IsLeader() const;
-	Action& GetAction();
-	bool CanUseAction() const
-	{
-		return action_charges > 0 && action_cooldown <= 0;
-	}
+	Action& GetAction() const;
+	bool CanUseAction() const;
 	bool UseActionCharge();
 	void RefreshCooldown();
 	bool IsHit(Unit* unit) const;
@@ -250,6 +249,7 @@ public:
 	int GetHealingPotion() const;
 	void ClearShortcuts();
 	void SetShortcut(int index, Shortcut::Type type, int value = 0);
+	float GetActionPower() const;
 };
 
 //-----------------------------------------------------------------------------
@@ -280,6 +280,7 @@ struct LocalPlayerData
 	BeforePlayer before_player;
 	BeforePlayerPtr before_player_ptr;
 	Unit* selected_unit; // unit marked with 'select' command
+	Entity<Unit> action_target;
 	GroundItem* picking_item;
 	Vec3 action_point;
 	int picking_item_state;
@@ -292,6 +293,7 @@ struct LocalPlayerData
 		before_player = BP_NONE;
 		before_player_ptr.any = nullptr;
 		selected_unit = nullptr;
+		action_target = nullptr;
 		picking_item = nullptr;
 		picking_item_state = 0;
 		rot_buf = 0.f;

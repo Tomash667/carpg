@@ -7,9 +7,24 @@ class bard {
 }
 
 class cleric {
-	//player base_cleric
+	player base_cleric
 	icon "icon_cleric.png"
-	//action heal
+	action heal
+	mp_bar 1
+	level {
+		str 1
+		end 1
+		dex 1
+		wis 0.5
+		cha 1
+		weapon 1
+		armor 1
+		one_handed_weapon 1
+		bow 0.9
+		shield 1
+		gods_magic required 1
+		concentration required 0.5
+	}
 }
 
 class druid {
@@ -22,6 +37,16 @@ class hunter {
 	crazy crazy_hunter 2
 	icon "icon_hunter.png"
 	action summon_wolf
+	level {
+		str 1
+		end 1
+		dex 1
+		weapon 1
+		armor 1
+		one_handed_weapon 1
+		bow 1.1
+		shield 1
+	}
 }
 
 class mage {
@@ -44,6 +69,16 @@ class rogue {
 	crazy crazy_rogue 2
 	icon "icon_rogue.png"
 	action dash
+	level {
+		str 1
+		end 1
+		dex 1.1
+		weapon 1
+		armor 1
+		one_handed_weapon 1
+		bow 1
+		shield 1
+	}
 }
 
 class warrior {
@@ -52,4 +87,14 @@ class warrior {
 	crazy crazy_warrior 2
 	icon "icon_warrior.png"
 	action bull_charge
+	level {
+		str 1
+		end 1.1
+		dex 1
+		weapon 1
+		armor 1
+		one_handed_weapon 1
+		bow 1
+		shield 1
+	}
 }

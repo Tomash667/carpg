@@ -590,7 +590,6 @@ void Game::LoadGame(GameReader& f)
 	arena->Reset();
 	pc_data.autowalk = false;
 	ai_bow_targets.clear();
-	ai_cast_targets.clear();
 	load_location_quest.clear();
 	load_unit_handler.clear();
 	load_chest_handler.clear();
@@ -884,14 +883,6 @@ void Game::LoadGame(GameReader& f)
 			assert(ptr);
 			ai.idle_data.obj.ptr = ptr;
 		}
-	}
-
-	// cele czarów ai
-	for(vector<AIController*>::iterator it = ai_cast_targets.begin(), end = ai_cast_targets.end(); it != end; ++it)
-	{
-		AIController& ai = **it;
-		int id = (int)ai.cast_target;
-		ai.cast_target = Unit::GetById(id);
 	}
 
 	// questy zwi¹zane z lokacjami

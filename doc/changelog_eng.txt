@@ -3,8 +3,11 @@ Changelog
 --------------------------------------------------------------------------------
 Version 0.12 (???):
 ! cannot load saves from version 0.4.20 or older
++ new player class: cleric - healing spell
 + mana
-+ new items: magic crystal, mana potions
++ new skills: gods magic, concentration
++ new feats: strong aura, magic harmony
++ new items: magic crystal, mana potions, ring of beliver/concentration/mana/harmony, amulet of mana
 + loading character classes from file
 + update libraries: FMod 1.10.14
 - in multiplayer redoing character creation was resetting to standard inventory
@@ -14,6 +17,7 @@ Version 0.12 (???):
 - client crash when loading game with electro effect
 - crash when npc follows player and he quits
 - crash when npc escapes towards player and he quits
+- crash after loading game when npc wants something from player that not exists after loading
 
 --------------------------------------------------------------------------------
 Wersja 0.11.1 (2019-08-12):

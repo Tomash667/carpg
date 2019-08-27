@@ -86,7 +86,7 @@ public:
 	void Load(FileReader& f);
 	bool IsMouseInsideDialog() const { return PointInRect(gui->cursor_pos, dialog_pos, dialog_size); }
 	void Setup();
-	void RemoveUnit(Unit* unit);
+	void RemoveUnitView(Unit* unit);
 	void DrawEndOfGameScreen();
 	void StartDragAndDrop(int type, int value, Texture* tex);
 	bool IsDragAndDrop() const { return drag_and_drop == 2; }
@@ -122,12 +122,14 @@ private:
 	void DrawBack();
 	void DrawDeathScreen();
 	void DrawSpeechBubbles();
-	void DrawUnitInfo(cstring text, Unit& unit, const Vec3& pos, int alpha);
+	void DrawObjectInfo(cstring text, const Vec3& pos);
+	void DrawUnitInfo(cstring text, Unit& unit, const Vec3& pos, int alpha = 255);
 	int GetShortcutIndex();
 	void UpdateSpeechBubbles(float dt);
 	void GetTooltip(TooltipController*, int group, int id, bool refresh);
 	void SortUnits();
 	void UpdatePlayerView(float dt);
+	void AddUnitView(Unit* unit);
 
 	TooltipController tooltip;
 	float buff_scale;
@@ -136,8 +138,8 @@ private:
 	float sidebar;
 	int sidebar_state[(int)SideButtonId::Max], drag_and_drop, drag_and_drop_type, drag_and_drop_index;
 	Int2 drag_and_drop_pos;
-	TexturePtr tBar, tHpBar, tPoisonedHpBar, tStaminaBar, tManaBar, tShortcut, tShortcutHover, tShortcutDown, tSideButton[(int)SideButtonId::Max], tMinihp[2],
-		tMinistamina, tCrosshair, tBubble, tObwodkaBolu, tActionCooldown, tMelee, tRanged, tPotion, tEmerytura, tEquipped, tDialog;
+	TexturePtr tBar, tHpBar, tPoisonedHpBar, tStaminaBar, tManaBar, tShortcut, tShortcutHover, tShortcutDown, tSideButton[(int)SideButtonId::Max], tMinihp,
+		tMinistamina, tMinimp, tCrosshair, tBubble, tDamageLayer, tActionCooldown, tMelee, tRanged, tPotion, tEmerytura, tEquipped, tDialog, tShortcutAction;
 	Texture* drag_and_drop_icon;
 	Scrollbar scrollbar;
 	vector<SpeechBubble*> speech_bbs;

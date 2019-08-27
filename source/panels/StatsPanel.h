@@ -30,7 +30,7 @@ private:
 	TooltipController tooltip;
 	FlowContainer flowAttribs, flowStats, flowSkills, flowFeats;
 	float last_update;
-	cstring txAttributes, txTitle, txClass, txTraitsStart, txTraitsEnd, txStatsText, txYearMonthDay, txBase, txRelatedAttributes, txFeats, txTraits, txStats,
-		txDate, txAttack, txMeleeAttack, txRangedAttack;
+	cstring txAttributes, txTitle, txClass, txTraitsStart, txTraitsStartMp, txTraitsEnd, txStatsText, txYearMonthDay, txBase, txRelatedAttributes, txFeats,
+		txTraits, txStats, txDate, txAttack, txMeleeAttack, txRangedAttack;
 	vector<pair<cstring, int>> perks;
 };

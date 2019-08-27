@@ -3,8 +3,11 @@ Historia zmian
 --------------------------------------------------------------------------------
 Wersja 0.12 (???):
 ! nie mo¿na wczytywaæ ju¿ zapisów z wersji 0.4.20 lub starszej
++ nowa klasa gracza: kap³an - czar uleczenia
 + mana
-+ nowe przedmioty: magiczny kryszta³, miksturki many
++ nowe umiejêtnoœci: magia bogów, koncentracja
++ nowe atuty: silna aura, harmonia many
++ nowe przedmioty: magiczny kryszta³, miksturki many, pierœcieñ wyznawcy/koncentracji/many/harmonii, amulet many
 + wczytywanie klas postaci z pliku
 + aktualizacja bibliotek: FMod 1.10.14
 - zmiana postaci w trybie multiplayer resetowa³a ekwipunek postaci
@@ -14,6 +17,7 @@ Wersja 0.12 (???):
 - crash klienta po wczytaniu gry z efektem pioruna
 - crash gdy npc pod¹¿a za graczem a on wyjdzie z gry
 - crash gdy npc ucieka do gracza a on wyjedzie z gry
+- crash po wczytaniu gry gdy npc chcia³ coœ od gracza którego nie ma po wczytaniu
 
 --------------------------------------------------------------------------------
 Wersja 0.11.1 (2019-08-12):

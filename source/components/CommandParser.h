@@ -15,6 +15,7 @@ public:
 	void ParseStringCommand(int cmd, const string& s, PlayerInfo& info);
 	const vector<ConsoleCommand>& GetCommands() { return cmds; }
 
+	void HealUnit(Unit& unit);
 	void RemoveEffect(Unit* u, EffectId effect, EffectSource source, int source_id, int value);
 	void ListEffects(Unit* u);
 	void AddPerk(PlayerController* pc, Perk perk, int value);

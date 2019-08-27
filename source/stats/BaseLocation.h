@@ -1,9 +1,6 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Resource.h"
-
-//-----------------------------------------------------------------------------
 enum BaseLocationId
 {
 	// fort ludzi, 2-3 poziomów, bez pu³apek czy ukrytych przejœæ

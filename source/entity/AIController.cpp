@@ -13,13 +13,12 @@
 #include "Quest_Tournament.h"
 
 //=================================================================================================
-void AIController::Init(Unit* _unit)
+void AIController::Init(Unit* unit)
 {
-	assert(_unit);
+	assert(unit);
 
-	unit = _unit;
+	this->unit = unit;
 	unit->ai = this;
-	target = nullptr;
 	state = Idle;
 	next_attack = 0.f;
 	ignore = 0.f;
@@ -31,7 +30,6 @@ void AIController::Init(Unit* _unit)
 	potion = -1;
 	last_scan = 0.f;
 	in_combat = false;
-	alert_target = nullptr;
 	escape_room = nullptr;
 	idle_action = Idle_None;
 	start_pos = unit->pos;
@@ -46,15 +44,6 @@ void AIController::Init(Unit* _unit)
 //=================================================================================================
 void AIController::Save(GameWriter& f)
 {
-	if(state == Cast)
-	{
-		if(!ValidateTarget(cast_target))
-		{
-			state = Idle;
-			idle_action = Idle_None;
-			timer = Random(1.f, 2.f);
-		}
-	}
 	f << unit->id;
 	f << target;
 	f << alert_target;
@@ -90,8 +79,6 @@ void AIController::Save(GameWriter& f)
 		f << cooldown;
 	if(state == AIController::Escape)
 		f << (escape_room ? escape_room->index : -1);
-	else if(state == AIController::Cast)
-		f << cast_target->id;
 	f << have_potion;
 	f << potion;
 	f << idle_action;
@@ -113,7 +100,7 @@ void AIController::Save(GameWriter& f)
 	case AIController::Idle_Chat:
 	case AIController::Idle_WalkNearUnit:
 	case AIController::Idle_MoveAway:
-		f << idle_data.unit->id;
+		f << idle_data.unit;
 		break;
 	case AIController::Idle_Use:
 	case AIController::Idle_WalkUse:
@@ -193,11 +180,8 @@ void AIController::Load(GameReader& f)
 		else
 			escape_room = nullptr;
 	}
-	else if(state == AIController::Cast)
-	{
-		cast_target = reinterpret_cast<Unit*>(f.Read<int>());
-		game->ai_cast_targets.push_back(this);
-	}
+	else if(state == AIController::Cast && LOAD_VERSION < V_DEV)
+		f.Skip<int>(); // old cast_target
 	f >> have_potion;
 	f >> potion;
 	f >> idle_action;
@@ -360,18 +344,4 @@ bool AIController::CanWander() const
 	}
 	else
 		return false;
-}
-
-//=================================================================================================
-bool AIController::ValidateTarget(Unit* target)
-{
-	assert(target);
-
-	for(Unit* u : unit->area->units)
-	{
-		if(u == target)
-			return true;
-	}
-
-	return false;
 }

@@ -73,7 +73,7 @@ public:
 		int line;
 #endif
 
-		void OnFree()
+		~Node()
 		{
 			Free(childs);
 		}

@@ -133,7 +133,7 @@ void Game::DrawGame(RenderTarget* target)
 			Draw();
 
 			// draw glow
-			if(pc_data.before_player != BP_NONE && !draw_batch.glow_nodes.empty())
+			if(!draw_batch.glow_nodes.empty())
 			{
 				V(device->EndScene());
 				DrawGlowingNodes(false);
@@ -168,7 +168,7 @@ void Game::DrawGame(RenderTarget* target)
 			V(device->BeginScene());
 			Draw();
 			V(device->EndScene());
-			if(pc_data.before_player != BP_NONE && !draw_batch.glow_nodes.empty())
+			if(!draw_batch.glow_nodes.empty())
 				DrawGlowingNodes(true);
 
 			// debug draw

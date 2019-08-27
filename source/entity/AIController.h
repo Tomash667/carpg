@@ -85,8 +85,9 @@ struct AIController
 		PFS_WALKING_LOCAL
 	};
 
-	Unit* unit, *target, *alert_target, *cast_target;
+	Unit* unit;
 	State state;
+	Entity<Unit> target, alert_target;
 	Vec3 target_last_pos, alert_target_pos, start_pos;
 	bool in_combat, city_wander, goto_inn;
 	float next_attack, timer, ignore, morale, cooldown[3], last_scan, start_rot, loc_timer, shoot_yspeed;
@@ -98,7 +99,7 @@ struct AIController
 	{
 		float rot;
 		Vec3 pos;
-		Unit* unit;
+		Entity<Unit> unit;
 		Usable* usable;
 		ObjP obj;
 		RegionTarget region;
@@ -121,7 +122,6 @@ struct AIController
 	void Reset();
 	float GetMorale() const;
 	bool CanWander() const;
-	bool ValidateTarget(Unit* target);
 };
 
 //-----------------------------------------------------------------------------

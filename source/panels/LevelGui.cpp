@@ -31,9 +31,8 @@
 #include "Engine.h"
 
 //-----------------------------------------------------------------------------
-const float UNIT_VIEW_A = 0.2f;
-const float UNIT_VIEW_B = 0.4f;
-const int UNIT_VIEW_MUL = 5;
+const float UNIT_VIEW_A = 0.1f;
+const float UNIT_VIEW_B = 0.2f;
 extern const int ITEM_IMAGE_SIZE;
 
 cstring order_str[ORDER_MAX] = {
@@ -113,7 +112,7 @@ void LevelGui::LoadData()
 {
 	tCrosshair = res_mgr->Load<Texture>("crosshair.png");
 	tBubble = res_mgr->Load<Texture>("bubble.png");
-	tObwodkaBolu = res_mgr->Load<Texture>("damage_layer.png");
+	tDamageLayer = res_mgr->Load<Texture>("damage_layer.png");
 	tBar = res_mgr->Load<Texture>("bar.png");
 	tHpBar = res_mgr->Load<Texture>("hp_bar.png");
 	tPoisonedHpBar = res_mgr->Load<Texture>("poisoned_hp_bar.png");
@@ -130,9 +129,9 @@ void LevelGui::LoadData()
 	tSideButton[(int)SideButtonId::Action] = res_mgr->Load<Texture>("bt_action.png");
 	tSideButton[(int)SideButtonId::Stats] = res_mgr->Load<Texture>("bt_stats.png");
 	tSideButton[(int)SideButtonId::Talk] = res_mgr->Load<Texture>("bt_talk.png");
-	tMinihp[0] = res_mgr->Load<Texture>("minihp.png");
-	tMinihp[1] = res_mgr->Load<Texture>("minihp2.png");
+	tMinihp = res_mgr->Load<Texture>("minihp.png");
 	tMinistamina = res_mgr->Load<Texture>("ministamina.png");
+	tMinimp = res_mgr->Load<Texture>("minimp.png");
 	tActionCooldown = res_mgr->Load<Texture>("action_cooldown.png");
 	tMelee = res_mgr->Load<Texture>("sword-brandish.png");
 	tRanged = res_mgr->Load<Texture>("bow-arrow.png");
@@ -140,6 +139,7 @@ void LevelGui::LoadData()
 	tEmerytura = res_mgr->Load<Texture>("emerytura.jpg");
 	tEquipped = res_mgr->Load<Texture>("equipped.png");
 	tDialog = res_mgr->Load<Texture>("dialog.png");
+	tShortcutAction = res_mgr->Load<Texture>("shortcut_action.png");
 
 	BuffInfo::LoadImages();
 }
@@ -176,12 +176,13 @@ void LevelGui::DrawFront()
 	PlayerController& pc = *game->pc;
 
 	// crosshair
-	if(pc.unit->weapon_state == WS_TAKEN && pc.unit->weapon_taken == W_BOW)
+	if((pc.unit->weapon_state == WS_TAKEN && pc.unit->weapon_taken == W_BOW)
+		|| (game->pc_data.action_ready && pc.GetAction().area == Action::TARGET))
 		gui->DrawSprite(tCrosshair, Center(32, 32));
 
-	// obwódka bólu
+	// taking damage layer (red screen)
 	if(pc.dmgc > 0.f)
-		gui->DrawSpriteFull(tObwodkaBolu, Color::Alpha((int)Clamp<float>(pc.dmgc / pc.unit->hp * 5 * 255, 0.f, 255.f)));
+		gui->DrawSpriteFull(tDamageLayer, Color::Alpha((int)Clamp<float>(pc.dmgc / pc.unit->hp * 5 * 255, 0.f, 255.f)));
 
 	// debug info
 	if(game->debug_info && !game->devmode)
@@ -222,14 +223,21 @@ void LevelGui::DrawFront()
 					{
 					case ORDER_MOVE:
 					case ORDER_LOOK_AT:
+					case ORDER_ESCAPE_TO:
 						str += Format(" Pos:%.1f;%.1f;%.1f", u.order_pos.x, u.order_pos.y, u.order_pos.z);
+						break;
+					case ORDER_FOLLOW:
+					case ORDER_GUARD:
+					case ORDER_ESCAPE_TO_UNIT:
+						if(Unit* unit = u.order_unit)
+							str += Format(" %s(%d)", unit->data->id.c_str(), unit->id);
 						break;
 					}
 				}
 				else
 					str += Format("\nB:%d, F:%d, LVL:%d, Ani:%d, A:%d", u.busy, u.frozen, u.level, u.animation, u.player->action);
 			}
-			DrawUnitInfo(str, u, text_pos, -1);
+			DrawUnitInfo(str, u, text_pos);
 		}
 	}
 	else
@@ -249,14 +257,14 @@ void LevelGui::DrawFront()
 				if(it->time > UNIT_VIEW_B)
 					alpha = 255;
 				else
-					alpha = int((it->time - UNIT_VIEW_A) * 255 * UNIT_VIEW_MUL);
+					alpha = int((it->time - UNIT_VIEW_A) * 255 / (UNIT_VIEW_B - UNIT_VIEW_A));
 			}
 			else if(it->time < 0.f)
 			{
 				if(it->time < -UNIT_VIEW_A)
 					alpha = 255;
 				else
-					alpha = int(-it->time * 255 * UNIT_VIEW_MUL);
+					alpha = int(-it->time * 255 / (UNIT_VIEW_B - UNIT_VIEW_A));
 			}
 			else
 				alpha = 0;
@@ -274,7 +282,7 @@ void LevelGui::DrawFront()
 			DrawUnitInfo(it.unit->GetName(), *it.unit, *it.last_pos, it.alpha);
 	}
 
-	// napis nad wybranym obiektem/postaci¹
+	// text above selected object/units
 	switch(game->pc_data.before_player)
 	{
 	case BP_UNIT:
@@ -292,21 +300,21 @@ void LevelGui::DrawFront()
 				}
 			}
 			if(!dont_draw)
-				DrawUnitInfo(u->GetName(), *u, u->GetUnitTextPos(), -1);
+				DrawUnitInfo(u->GetName(), *u, u->GetUnitTextPos());
 		}
 		break;
 	case BP_CHEST:
 		{
 			Vec3 text_pos = game->pc_data.before_player_ptr.chest->pos;
 			text_pos.y += 0.75f;
-			gui->DrawText3D(GameGui::font, txChest, DTF_OUTLINE, Color::White, text_pos);
+			DrawObjectInfo(txChest, text_pos);
 		}
 		break;
 	case BP_DOOR:
 		{
 			Vec3 text_pos = game->pc_data.before_player_ptr.door->pos;
 			text_pos.y += 1.75f;
-			gui->DrawText3D(GameGui::font, game->pc_data.before_player_ptr.door->locked == LOCK_NONE ? txDoor : txDoorLocked, DTF_OUTLINE, Color::White, text_pos);
+			DrawObjectInfo(game->pc_data.before_player_ptr.door->locked == LOCK_NONE ? txDoor : txDoorLocked, text_pos);
 		}
 		break;
 	case BP_ITEM:
@@ -324,7 +332,7 @@ void LevelGui::DrawFront()
 				text = item.item->name.c_str();
 			else
 				text = Format("%s (%d)", item.item->name.c_str(), item.count);
-			gui->DrawText3D(GameGui::font, text, DTF_OUTLINE, Color::White, text_pos);
+			DrawObjectInfo(text, text_pos);
 		}
 		break;
 	case BP_USABLE:
@@ -332,15 +340,15 @@ void LevelGui::DrawFront()
 			Usable& u = *game->pc_data.before_player_ptr.usable;
 			Vec3 text_pos = u.pos;
 			text_pos.y += u.GetMesh()->head.radius;
-			gui->DrawText3D(GameGui::font, u.base->name, DTF_OUTLINE, Color::White, text_pos);
+			DrawObjectInfo(u.base->name.c_str(), text_pos);
 		}
 		break;
 	}
 
-	// dymki z tekstem
+	// speech bubbles
 	DrawSpeechBubbles();
 
-	// dialog
+	// dialog box
 	if(game->dialog_context.dialog_mode)
 	{
 		Int2 dsize(gui->wnd_size.x - 256 - 8, 104);
@@ -352,7 +360,7 @@ void LevelGui::DrawFront()
 		{
 			int off = int(scrollbar.offset);
 
-			// zaznaczenie
+			// selection
 			Rect r_img = Rect::Create(Int2(offset.x, offset.y + game->dialog_context.choice_selected*GameGui::font->height - off + 6),
 				Int2(dsize.x - 16, GameGui::font->height));
 			if(r_img.Bottom() >= r.Top() && r_img.Top() < r.Bottom())
@@ -364,7 +372,7 @@ void LevelGui::DrawFront()
 				gui->DrawSpriteRect(game->tEquipped, r_img, 0xAAFFFFFF);
 			}
 
-			// tekst
+			// text
 			LocalString s;
 			if(Net::IsLocal())
 			{
@@ -393,33 +401,39 @@ void LevelGui::DrawFront()
 			gui->DrawText(GameGui::font, game->dialog_context.dialog_text, DTF_CENTER | DTF_VCENTER, Color::Black, r);
 	}
 
-	// get buffs
-	int buffs = pc.unit->GetBuffs();
-
 	// health bar
 	float wnd_scale = float(gui->wnd_size.x) / 800;
+	bool mp_bar = game->pc->unit->IsUsingMp();
+	int bar_offset = (mp_bar ? 3 : 2);
 	float hpp = Clamp(pc.unit->GetHpp(), 0.f, 1.f);
 	Rect part = { 0, 0, int(hpp * 256), 16 };
-	Matrix mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale, wnd_scale), nullptr, 0.f, &Vec2(0.f, float(gui->wnd_size.y) - wnd_scale * 53));
+	Matrix mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale, wnd_scale), nullptr, 0.f,
+		&Vec2(0.f, float(gui->wnd_size.y) - wnd_scale * (bar_offset * 18 - 1)));
 	if(part.Right() > 0)
-		gui->DrawSprite2(!IsSet(buffs, BUFF_POISON) ? tHpBar : tPoisonedHpBar, mat, &part, nullptr, Color::White);
+		gui->DrawSprite2(!IsSet(pc.unit->GetBuffs(), BUFF_POISON) ? tHpBar : tPoisonedHpBar, mat, &part, nullptr, Color::White);
 	gui->DrawSprite2(tBar, mat, nullptr, nullptr, Color::White);
-
-	// mana bar
-	float mpp = pc.unit->GetMpp();
-	part.Right() = int(mpp * 256);
-	mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale, wnd_scale), nullptr, 0.f, &Vec2(0.f, float(gui->wnd_size.y) - wnd_scale * 35));
-	if(part.Right() > 0)
-		gui->DrawSprite2(tManaBar, mat, &part, nullptr, Color::White);
-	gui->DrawSprite2(tBar, mat, nullptr, nullptr, Color::White);
+	--bar_offset;
 
 	// stamina bar
-	float stamina_p = pc.unit->GetStaminap();
+	float stamina_p = Clamp(pc.unit->GetStaminap(), 0.f, 1.f);
 	part.Right() = int(stamina_p * 256);
-	mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale, wnd_scale), nullptr, 0.f, &Vec2(0.f, float(gui->wnd_size.y) - wnd_scale * 17));
+	mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale, wnd_scale), nullptr, 0.f, &Vec2(0.f, float(gui->wnd_size.y) - wnd_scale * (bar_offset * 18 - 1)));
 	if(part.Right() > 0)
 		gui->DrawSprite2(tStaminaBar, mat, &part, nullptr, Color::White);
 	gui->DrawSprite2(tBar, mat, nullptr, nullptr, Color::White);
+	--bar_offset;
+
+	// mana bar
+	if(mp_bar)
+	{
+		float mpp = pc.unit->GetMpp();
+		part.Right() = int(mpp * 256);
+		mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale, wnd_scale), nullptr, 0.f,
+			&Vec2(0.f, float(gui->wnd_size.y) - wnd_scale * (bar_offset * 18 - 1)));
+		if(part.Right() > 0)
+			gui->DrawSprite2(tManaBar, mat, &part, nullptr, Color::White);
+		gui->DrawSprite2(tBar, mat, nullptr, nullptr, Color::White);
+	}
 
 	// buffs
 	for(BuffImage& img : buff_images)
@@ -534,24 +548,45 @@ void LevelGui::DrawFront()
 			if(drag_and_drop == 2 && drag_and_drop_type == -1 && drag_and_drop_index == i)
 				drag_and_drop_icon = action.tex;
 
-			if(charge == 0.f)
-				gui->DrawSprite2(action.tex, mat);
+			bool can_use;
+			if(action.use_mana)
+				can_use = pc.unit->mp >= action.cost;
+			else
+				can_use = pc.unit->stamina >= action.cost;
+			if(can_use)
+			{
+				if(charge == 0.f)
+					gui->DrawSprite2(action.tex, mat);
+				else
+				{
+					gui->UseGrayscale(true);
+					gui->DrawSprite2(action.tex, mat);
+					gui->UseGrayscale(false);
+					if(charge < 1.f)
+					{
+						Rect part = { 0, 128 - int((1.f - charge) * 128), 128, 128 };
+						gui->DrawSprite2(action.tex, mat, &part);
+					}
+					gui->DrawSprite2(tActionCooldown, mat);
+				}
+			}
 			else
 			{
 				gui->UseGrayscale(true);
 				gui->DrawSprite2(action.tex, mat);
 				gui->UseGrayscale(false);
-				if(charge < 1.f)
-				{
-					Rect part = { 0, 128 - int((1.f - charge) * 128), 128, 128 };
-					gui->DrawSprite2(action.tex, mat, &part);
-				}
-				gui->DrawSprite2(tActionCooldown, mat);
 			}
 
 			// charges
 			if(action.charges > 1)
 				gui->DrawText(GameGui::font_small, Format("%d/%d", pc.action_charges, action.charges), DTF_RIGHT | DTF_BOTTOM, Color::Black, r);
+
+			// readied action
+			if(game->pc_data.action_ready)
+			{
+				mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(scale, scale), nullptr, 0.f, &Vec2(float(spos.x), float(spos.y)));
+				gui->DrawSprite2(tShortcutAction, mat);
+			}
 		}
 
 		const GameKey& gk = GKey[GK_SHORTCUT1 + i];
@@ -584,7 +619,7 @@ void LevelGui::DrawFront()
 		}
 	}
 
-	// œciemnianie
+	// fade in/out
 	if(game->fallback_type != FALLBACK::NO)
 	{
 		int alpha;
@@ -656,7 +691,7 @@ void LevelGui::DrawDeathScreen()
 	if(game->death_screen <= 0)
 		return;
 
-	// czarne t³o
+	// black screen
 	int color;
 	if(game->death_screen == 1)
 		color = (int(game->death_fade * 255) << 24) | 0x00FFFFFF;
@@ -666,7 +701,7 @@ void LevelGui::DrawDeathScreen()
 	if((color & 0xFF000000) != 0)
 		gui->DrawSpriteFull(game->tCzern, color);
 
-	// obrazek i tekst
+	// image & text
 	if(game->death_screen > 1)
 	{
 		if(game->death_screen == 2)
@@ -783,50 +818,82 @@ void LevelGui::DrawSpeechBubbles()
 }
 
 //=================================================================================================
-void LevelGui::DrawUnitInfo(cstring text, Unit& unit, const Vec3& pos, int alpha)
+void LevelGui::DrawObjectInfo(cstring text, const Vec3& pos)
 {
-	Color text_color;
-	if(alpha == -1)
-	{
-		text_color = Color::White;
-		alpha = 255;
-	}
-	else if(unit.IsEnemy(*game->pc->unit))
-		text_color = Color(255, 0, 0, alpha);
-	else
-		text_color = Color(0, 255, 0, alpha);
+	Rect r;
+	if(!gui->DrawText3D(GameGui::font, text, DTF_OUTLINE | DTF_DONT_DRAW, Color::Black, pos, &r))
+		return;
+
+	// background
+	Rect bkg_rect = { r.Left() - 1, r.Top() - 1,r.Right() + 1,r.Bottom() + 1 };
+	gui->DrawArea(Color(0, 0, 0, 255 / 3), bkg_rect);
 
 	// text
+	gui->DrawText3D(GameGui::font, text, DTF_OUTLINE, Color::White, pos);
+}
+
+//=================================================================================================
+void LevelGui::DrawUnitInfo(cstring text, Unit& unit, const Vec3& pos, int alpha)
+{
 	Rect r;
-	if(gui->DrawText3D(GameGui::font, text, DTF_OUTLINE, text_color, pos, &r))
+	if(!gui->DrawText3D(GameGui::font, text, DTF_OUTLINE | DTF_DONT_DRAW, Color::Black, pos, &r))
+		return;
+
+	float hpp;
+	if(!unit.IsAlive() && !unit.IsFollower())
+		hpp = -1.f;
+	else
+		hpp = max(unit.GetHpp(), 0.f);
+
+	// background
+	Rect bkg_rect = { r.Left() - 1, r.Top() - 1,r.Right() + 1,r.Bottom() + 1 };
+	if(hpp >= 0.f)
 	{
-		float hpp;
-		if(!unit.IsAlive() && !unit.IsFollower())
-			hpp = -1.f;
-		else
-			hpp = max(unit.GetHpp(), 0.f);
+		bkg_rect.p2.y += 7;
+		if(unit.IsUsingMp())
+			bkg_rect.p2.y += 3;
+	}
+	gui->DrawArea(Color(0, 0, 0, alpha / 3), bkg_rect);
+
+	// text
+	Color text_color;
+	if(unit.IsFriend(*game->pc->unit))
+		text_color = Color(0, 255, 0, alpha);
+	else if(unit.IsAlive() && unit.IsEnemy(*game->pc->unit))
+		text_color = Color(255, 0, 0, alpha);
+	else
+		text_color = Color(255, 255, 255, alpha);
+	gui->DrawText3D(GameGui::font, text, DTF_OUTLINE, text_color, pos);
+
+	if(hpp >= 0.f)
+	{
+		// hp
 		Color color = Color::Alpha(alpha);
+		Rect r2(r.Left(), r.Bottom(), r.Right(), r.Bottom() + 4);
+		int sizex = r2.SizeX();
+		r2.Right() = r2.Left() + int(hpp * sizex);
+		Rect r3 = { 0, 0, int(hpp * 64), 4 };
+		gui->DrawSpriteRectPart(tMinihp, r2, r3, color);
 
-		if(hpp >= 0.f)
+		if((game->devmode && Net::IsLocal()) || unit.IsTeamMember())
 		{
-			// hp background
-			Rect r2(r.Left(), r.Bottom(), r.Right(), r.Bottom() + 4);
-			gui->DrawSpriteRect(tMinihp[0], r2, color);
-
-			// hp
-			int sizex = r2.SizeX();
-			r2.Right() = r2.Left() + int(hpp * sizex);
-			Rect r3 = { 0, 0, int(hpp * 64), 4 };
-			gui->DrawSpriteRectPart(tMinihp[1], r2, r3, color);
-
 			// stamina
-			if(game->devmode && Net::IsLocal())
+			float stamina = Clamp(unit.GetStaminap(), 0.f, 1.f);
+			r2 += Int2(0, 5);
+			r3.Right() = int(stamina * 64);
+			r3.Bottom() = 2;
+			r2.Right() = r2.Left() + int(stamina * sizex);
+			r2.Bottom() = r2.Top() + 2;
+			gui->DrawSpriteRectPart(tMinistamina, r2, r3, color);
+
+			// mana
+			if(unit.IsUsingMp())
 			{
-				float stamina = max(unit.GetStaminap(), 0.f);
-				r2 += Int2(0, 4);
-				r3.Right() = int(stamina * 64);
-				r2.Right() = r2.Left() + int(stamina * sizex);
-				gui->DrawSpriteRectPart(tMinistamina, r2, r3, color);
+				float mpp = Clamp(unit.GetMpp(), 0.f, 1.f);
+				r2 += Int2(0, 3);
+				r3.Right() = int(mpp * 64);
+				r2.Right() = r2.Left() + int(mpp * sizex);
+				gui->DrawSpriteRectPart(tMinimp, r2, r3, color);
 			}
 		}
 	}
@@ -852,13 +919,15 @@ void LevelGui::Update(float dt)
 
 	const bool have_manabar = false;
 	float hp_scale = float(gui->wnd_size.x) / 800;
+	bool mp_bar = game->pc->unit->IsUsingMp();
+	int bar_offset = (mp_bar ? 3 : 2);
 
 	// buffs
 	int buffs = game->pc->unit->GetBuffs();
 
 	buff_scale = gui->wnd_size.x / 1024.f;
 	float off = buff_scale * 33;
-	float buf_posy = float(gui->wnd_size.y - 5) - off - hp_scale * 53;
+	float buf_posy = float(gui->wnd_size.y - 5) - off - hp_scale * (bar_offset * 18 - 1);
 	Int2 buff_size(int(buff_scale * 32), int(buff_scale * 32));
 
 	buff_images.clear();
@@ -922,30 +991,38 @@ void LevelGui::Update(float dt)
 
 		// for health bar
 		float wnd_scale = float(gui->wnd_size.x) / 800;
-		Matrix mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale, wnd_scale), nullptr, 0.f, &Vec2(0.f, float(gui->wnd_size.y) - wnd_scale * 53));
+		Matrix mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale, wnd_scale), nullptr, 0.f,
+			&Vec2(0.f, float(gui->wnd_size.y) - wnd_scale * (bar_offset * 18 - 1)));
 		Rect r = gui->GetSpriteRect(tBar, mat);
 		if(r.IsInside(gui->cursor_pos))
 		{
 			group = TooltipGroup::Bar;
 			id = Bar::BAR_HP;
 		}
-
-		// for mana bar
-		mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale, wnd_scale), nullptr, 0.f, &Vec2(0.f, float(gui->wnd_size.y) - wnd_scale * 35));
-		r = gui->GetSpriteRect(tBar, mat);
-		if(r.IsInside(gui->cursor_pos))
-		{
-			group = TooltipGroup::Bar;
-			id = Bar::BAR_MANA;
-		}
+		--bar_offset;
 
 		// for stamina bar
-		mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale, wnd_scale), nullptr, 0.f, &Vec2(0.f, float(gui->wnd_size.y) - wnd_scale * 17));
+		mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale, wnd_scale), nullptr, 0.f,
+			&Vec2(0.f, float(gui->wnd_size.y) - wnd_scale * (bar_offset * 18 - 1)));
 		r = gui->GetSpriteRect(tBar, mat);
 		if(r.IsInside(gui->cursor_pos))
 		{
 			group = TooltipGroup::Bar;
 			id = Bar::BAR_STAMINA;
+		}
+		--bar_offset;
+
+		// for mana bar
+		if(mp_bar)
+		{
+			mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale, wnd_scale), nullptr, 0.f,
+				&Vec2(0.f, float(gui->wnd_size.y) - wnd_scale * (bar_offset * 18 - 1)));
+			r = gui->GetSpriteRect(tBar, mat);
+			if(r.IsInside(gui->cursor_pos))
+			{
+				group = TooltipGroup::Bar;
+				id = Bar::BAR_MANA;
+			}
 		}
 
 		// shortcuts
@@ -1441,11 +1518,11 @@ void LevelGui::GetTooltip(TooltipController*, int _group, int id, bool refresh)
 					desc = txRangedWeaponDesc;
 					break;
 				case Shortcut::SPECIAL_ACTION:
-					{
-						Action& action = game->pc->GetAction();
-						title = action.name.c_str();
-						desc = action.desc.c_str();
-					}
+					game_gui->actions->GetActionTooltip(tooltip);
+					tooltip.small_text = Format("%s\n%s", tooltip.text.c_str(), tooltip.small_text.c_str());
+					tooltip.text = tooltip.big_text;
+					tooltip.big_text.clear();
+					tooltip.img = nullptr;
 					break;
 				case Shortcut::SPECIAL_HEALING_POTION:
 					title = txPotion;
@@ -1459,13 +1536,21 @@ void LevelGui::GetTooltip(TooltipController*, int _group, int id, bool refresh)
 				desc = shortcut.item->desc.c_str();
 			}
 			const GameKey& gk = GKey[GK_SHORTCUT1 + id];
-			if(gk[0] != Key::None)
-				title = Format("%s (%s)", title, game_gui->controls->key_text[(int)gk[0]]);
-			tooltip.text = title;
-			if(desc)
-				tooltip.small_text = desc;
+			if(shortcut.type == Shortcut::TYPE_SPECIAL && shortcut.value == Shortcut::SPECIAL_ACTION)
+			{
+				if(gk[0] != Key::None)
+					tooltip.text = Format("%s (%s)", tooltip.text.c_str(), game_gui->controls->key_text[(int)gk[0]]);
+			}
 			else
-				tooltip.small_text.clear();
+			{
+				if(gk[0] != Key::None)
+					title = Format("%s (%s)", title, game_gui->controls->key_text[(int)gk[0]]);
+				tooltip.text = title;
+				if(desc)
+					tooltip.small_text = desc;
+				else
+					tooltip.small_text.clear();
+			}
 		}
 		break;
 	}
@@ -1733,31 +1818,21 @@ void LevelGui::UpdatePlayerView(float dt)
 		if(mark)
 		{
 			float dist = Vec3::Distance(u.visual_pos, u2.visual_pos);
-
 			if(dist < ALERT_RANGE && game_level->camera.frustum.SphereToFrustum(u2.visual_pos, u2.GetSphereRadius()) && game_level->CanSee(u, u2))
-			{
-				// dodaj do pobliskich jednostek
-				bool exists = false;
-				for(vector<UnitView>::iterator it2 = unit_views.begin(), end2 = unit_views.end(); it2 != end2; ++it2)
-				{
-					if(it2->unit == *it)
-					{
-						exists = true;
-						it2->valid = true;
-						it2->last_pos = u2.GetUnitTextPos();
-						break;
-					}
-				}
-				if(!exists)
-				{
-					UnitView& uv = Add1(unit_views);
-					uv.valid = true;
-					uv.unit = *it;
-					uv.time = 0.f;
-					uv.last_pos = u2.GetUnitTextPos();
-				}
-			}
+				AddUnitView(&u2);
 		}
+	}
+
+	// extra units
+	if(game->pc_data.action_ready && game->pc_data.action_ok)
+	{
+		if(Unit* target = game->pc_data.action_target; target != &u)
+			AddUnitView(target);
+	}
+	if(u.action == A_CAST)
+	{
+		if(Unit* target = u.action_unit; target != &u)
+			AddUnitView(target);
 	}
 
 	// aktualizuj pobliskie postacie
@@ -1831,7 +1906,27 @@ void LevelGui::UpdatePlayerView(float dt)
 }
 
 //=================================================================================================
-void LevelGui::RemoveUnit(Unit* unit)
+void LevelGui::AddUnitView(Unit* unit)
+{
+	for(UnitView& view : unit_views)
+	{
+		if(view.unit == unit)
+		{
+			view.valid = true;
+			view.last_pos = unit->GetUnitTextPos();
+			return;
+		}
+	}
+
+	UnitView& uv = Add1(unit_views);
+	uv.valid = true;
+	uv.unit = unit;
+	uv.time = 0.f;
+	uv.last_pos = unit->GetUnitTextPos();
+}
+
+//=================================================================================================
+void LevelGui::RemoveUnitView(Unit* unit)
 {
 	for(vector<UnitView>::iterator it = unit_views.begin(), end = unit_views.end(); it != end; ++it)
 	{

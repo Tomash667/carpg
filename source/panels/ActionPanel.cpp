@@ -38,8 +38,11 @@ void ActionPanel::LoadLanguage()
 	txActions = s.Get("actions");
 	txCooldown = s.Get("cooldown");
 	txCooldownCharges = s.Get("cooldownCharges");
+	txCost = s.Get("cost");
 	txAbilities = s.Get("abilities");
 	txOther = s.Get("other");
+	txMana = s.Get("mana");
+	txStamina = s.Get("stamina");
 
 	Language::Section s2 = Language::GetSection("LevelGui");
 	txMeleeWeapon = s2.Get("meleeWeapon");
@@ -258,17 +261,7 @@ void ActionPanel::GetTooltip(TooltipController*, int group, int id, bool refresh
 	}
 
 	if(group == G_ACTION)
-	{
-		Action& action = *actions[id];
-		tooltip.anything = true;
-		tooltip.img = action.tex;
-		tooltip.big_text = action.name;
-		tooltip.text = action.desc;
-		if(action.charges == 1)
-			tooltip.small_text = Format(txCooldown, action.cooldown);
-		else
-			tooltip.small_text = Format(txCooldownCharges, action.cooldown, action.charges, action.recharge);
-	}
+		GetActionTooltip(tooltip);
 	else
 	{
 		tooltip.anything = true;
@@ -291,6 +284,34 @@ void ActionPanel::GetTooltip(TooltipController*, int group, int id, bool refresh
 			tooltip.text = txPotionDesc;
 			break;
 		}
+	}
+}
+
+//=================================================================================================
+void ActionPanel::GetActionTooltip(TooltipController& tooltip)
+{
+	Action& action = *actions[0];
+	tooltip.anything = true;
+	tooltip.img = action.tex;
+	tooltip.big_text = action.name;
+
+	tooltip.text = action.desc;
+	uint pos = tooltip.text.find("{power}", 0);
+	if(pos != string::npos)
+		tooltip.text.replace(pos, 7, Format("%d", (int)game->pc->GetActionPower()));
+
+	if(action.charges == 1)
+		tooltip.small_text = Format(txCooldown, action.cooldown);
+	else
+		tooltip.small_text = Format(txCooldownCharges, action.cooldown, action.charges, action.recharge);
+	if(action.cost > 0.f)
+	{
+		tooltip.small_text += '\n';
+		tooltip.small_text += txCost;
+		if(action.use_mana)
+			tooltip.small_text += Format("$cb%g %s$c-", action.cost, txMana);
+		else
+			tooltip.small_text += Format("$cy%g %s$c-", action.cost, txStamina);
 	}
 }
 

@@ -4296,6 +4296,33 @@ dialog mage_seller
 		talk 0
 	choice 1
 		trade
+	choice 7
+	{
+		talk 8
+		choice 9
+		{
+			special "train/int"
+			end
+		}
+		choice 10
+		{
+			special "train/wis"
+			end
+		}
+		choice 11
+		{
+			special "train/gods_magic"
+			end
+		}
+		choice 12
+		{
+			special "train/concentration"
+			end
+		}
+		escape choice 13
+			restart
+		show_choices
+	}
 	choice 2
 	{
 		talk 3

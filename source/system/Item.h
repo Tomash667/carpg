@@ -6,7 +6,6 @@
 #include "DamageTypes.h"
 #include "ItemType.h"
 #include "ArmorUnitType.h"
-#include "Resource.h"
 #include "Effect.h"
 #include "Skill.h"
 
@@ -321,6 +320,8 @@ enum ItemTag
 	TAG_DEF,
 	TAG_STAMINA,
 	TAG_MAGE,
+	TAG_MANA,
+	TAG_CLERIC,
 	TAG_MAX
 };
 static_assert(TAG_MAX < 32, "Too many ItemTag!");

@@ -187,7 +187,8 @@ public:
 	void AddObjectToDrawBatch(LevelArea& area, const Object& o, FrustumPlanes& frustum);
 	void ListAreas(LevelArea& area);
 	void PrepareAreaPath();
-	void PrepareAreaPathCircle(Area2& area, float radius, float range, float rot, bool outside);
+	void PrepareAreaPathCircle(Area2& area, float radius, float range, float rot);
+	void PrepareAreaPathCircle(Area2& area, const Vec3& pos, float radius);
 	void FillDrawBatchDungeonParts(FrustumPlanes& frustum);
 	void AddOrSplitSceneNode(SceneNode* node, int exclude_subs = 0);
 	int GatherDrawBatchLights(LevelArea& area, SceneNode* node, float x, float z, float radius, int sub = 0);
@@ -236,7 +237,7 @@ public:
 		hMeshLightColor, hMeshLights, hParticleCombined, hParticleTex, hSkyboxCombined, hSkyboxTex, hAreaCombined, hAreaColor, hAreaPlayerPos, hAreaRange,
 		hGuiSize, hGuiTex, hPostTex, hPostPower, hPostSkill, hGlowCombined, hGlowBones, hGlowColor, hGlowTex;
 	SoundPtr sGulp, sCoins, sBow[2], sDoor[3], sDoorClosed[2], sDoorClose, sItem[10], sChestOpen, sChestClose, sDoorBudge, sRock, sWood, sCrystal, sMetal,
-		sBody[5], sBone, sSkin, sArenaFight, sArenaWin, sArenaLost, sUnlock, sEvil, sEat, sSummon, sZap;
+		sBody[5], sBone, sSkin, sArenaFight, sArenaWin, sArenaLost, sUnlock, sEvil, sEat, sSummon, sZap, sCancel;
 	VB vbParticle;
 	cstring txLoadGuiTextures, txLoadParticles, txLoadPhysicMeshes, txLoadModels, txLoadSpells, txLoadSounds, txLoadMusic, txGenerateWorld;
 	TexturePtr tGrass, tGrass2, tGrass3, tRoad, tFootpath, tField;
@@ -351,7 +352,7 @@ public:
 	int loading_steps, loading_index;
 	bool loading_first_step;
 	// used temporary at loading
-	vector<AIController*> ai_bow_targets, ai_cast_targets;
+	vector<AIController*> ai_bow_targets;
 	vector<Location*> load_location_quest;
 	vector<Unit*> load_unit_handler;
 	vector<Chest*> load_chest_handler;
@@ -393,8 +394,8 @@ public:
 	void TakeScreenshot(bool no_gui = false);
 	void UpdateGame(float dt);
 	void UpdateFallback(float dt);
-	void UpdatePlayer(float dt);
-	void UseAction(PlayerController* p, bool from_server, const Vec3* pos_data = nullptr);
+	void UpdatePlayer(float dt, bool allow_rot);
+	void UseAction(PlayerController* p, bool from_server, const Vec3* pos_data = nullptr, Unit* target = nullptr);
 	void SpawnUnitEffect(Unit& unit);
 	void PlayerCheckObjectDistance(Unit& u, const Vec3& pos, void* ptr, float& best_dist, BeforePlayer type);
 	int CheckMove(Vec3& pos, const Vec3& dir, float radius, Unit* me, bool* is_small = nullptr);
@@ -452,7 +453,8 @@ public:
 	bool TryLoadGame(int slot, bool quickload, bool from_console);
 	void RemoveUnusedAiAndCheck();
 	void CheckUnitsAi(LevelArea& area, int& err_count);
-	void CastSpell(LevelArea& area, Unit& unit);
+	void CastSpell(Unit& unit);
+	void CastPlayerSpell(PlayerController& player);
 	void SpellHitEffect(LevelArea& area, Bullet& bullet, const Vec3& pos, Unit* hitted);
 	void UpdateExplosions(LevelArea& area, float dt);
 	void UpdateTraps(LevelArea& area, float dt);

@@ -30,7 +30,7 @@ void Minimap::LoadData()
 {
 	tUnit[UNIT_ME] = res_mgr->Load<Texture>("mini_unit.png");
 	tUnit[UNIT_TEAM] = res_mgr->Load<Texture>("mini_unit2.png");
-	tUnit[UNIT_ENEMY] = res_mgr->Load<Texture>("mini_unit3.png");
+	tUnit[UNIT_ENEMY] = res_mgr->Load<Texture>("mini_unit.png");
 	tUnit[UNIT_NPC] = res_mgr->Load<Texture>("mini_unit4.png");
 	tUnit[UNIT_CORPSE] = res_mgr->Load<Texture>("mini_unit5.png");
 	tStairsDown = res_mgr->Load<Texture>("schody_dol.png");
