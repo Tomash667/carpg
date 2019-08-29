@@ -1902,7 +1902,7 @@ void Game::OnEnterPassword(int id)
 	Info("Password entered.");
 	if(net_state == NetState::Client_WaitingForPasswordProxy)
 	{
-		ConnectionAttemptResult result = net->peer->Connect(LobbyApi::API_URL, (word)LobbyApi::PROXY_PORT, nullptr, 0);
+		ConnectionAttemptResult result = net->peer->Connect(net->api->GetApiUrl(), net->api->GetProxyPort(), nullptr, 0);
 		if(result == CONNECTION_ATTEMPT_STARTED)
 		{
 			net_state = NetState::Client_ConnectingProxy;
@@ -2178,7 +2178,7 @@ void Game::OnPickServer(int id)
 		}
 		else
 		{
-			ConnectionAttemptResult result = net->peer->Connect(LobbyApi::API_URL, (word)LobbyApi::PROXY_PORT, nullptr, 0);
+			ConnectionAttemptResult result = net->peer->Connect(net->api->GetApiUrl(), net->api->GetProxyPort(), nullptr, 0);
 			if(result == CONNECTION_ATTEMPT_STARTED)
 			{
 				net_mode = NM_CONNECTING;

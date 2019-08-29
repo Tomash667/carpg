@@ -1,5 +1,6 @@
 EXTERNAL VERSION LIST
 --------------------------------------------------------------------------------
 Angelscript - 2.33 (<http://www.angelcode.com/angelscript/>)
+Curl - 7.65.3 (<https://github.com/curl/curl/releases>)
 JSON for Modern C++ - 3.6.1 (<https://github.com/nlohmann/json/releases>)
 SLikeNet - 0.1.2 fork (<https://github.com/Tomash667/SLikeNet>)

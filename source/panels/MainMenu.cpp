@@ -122,9 +122,6 @@ void MainMenu::UpdateCheckVersion()
 {
 	if(check_status == CheckVersionStatus::None)
 	{
-#ifdef _DEBUG
-		check_updates = false;
-#endif
 		if(check_updates)
 		{
 			Info("Checking CaRpg version.");

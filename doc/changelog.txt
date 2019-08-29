@@ -10,6 +10,7 @@ Wersja 0.12 (???):
 + nowe przedmioty: magiczny kryszta³, miksturki many, pierœcieñ wyznawcy/koncentracji/many/harmonii, amulet many
 + wczytywanie klas postaci z pliku
 + aktualizacja bibliotek: FMod 1.10.14
++ usprawnione sprawdzanie wersji, wykorzystywanie biblioteki libcurl
 - zmiana postaci w trybie multiplayer resetowa³a ekwipunek postaci
 - jedzenie zió³ ma teraz poprawn¹ animacjê i dŸwiêki
 - dŸwiêk drzwi by³ bardzo rzadko odtwarzany w mp gdy ktoœ inny korzysta³ z drzwi

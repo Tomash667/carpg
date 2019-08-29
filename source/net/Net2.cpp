@@ -45,6 +45,7 @@ Net::~Net()
 void Net::Init()
 {
 	api = new LobbyApi;
+	api->Init(game->cfg);
 }
 
 //=================================================================================================
@@ -180,7 +181,7 @@ void Net::InitServer()
 
 	if(!server_lan)
 	{
-		ConnectionAttemptResult result = peer->Connect(LobbyApi::API_URL, LobbyApi::PROXY_PORT, nullptr, 0, nullptr, 0, 6);
+		ConnectionAttemptResult result = peer->Connect(net->api->GetApiUrl(), net->api->GetProxyPort(), nullptr, 0, nullptr, 0, 6);
 		if(result == CONNECTION_ATTEMPT_STARTED)
 			master_server_state = MasterServerState::Connecting;
 		else

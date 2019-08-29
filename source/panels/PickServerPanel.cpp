@@ -122,7 +122,7 @@ void PickServerPanel::Update(float dt)
 			net->peer->Ping("255.255.255.255", (word)net->port, false);
 			timer = 0;
 		}
-		else if(!net->api->IsBusy() && !bad_request)
+		else if(!bad_request)
 		{
 			if(timer > 30.f)
 				net->api->GetServers();

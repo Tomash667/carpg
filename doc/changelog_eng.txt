@@ -10,6 +10,7 @@ Version 0.12 (???):
 + new items: magic crystal, mana potions, ring of beliver/concentration/mana/harmony, amulet of mana
 + loading character classes from file
 + update libraries: FMod 1.10.14
++ improved version checking, using libcurl
 - in multiplayer redoing character creation was resetting to standard inventory
 - eating herbs have now correct animation and sounds
 - door sounds was playing very rare when someone else used door in mp
