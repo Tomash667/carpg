@@ -3351,24 +3351,6 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 
 	render->SetAlphaBlend(false);
 
-	Vec4 fogColor = game_level->GetFogColor();
-	Vec4 fogParams = game_level->GetFogParams();
-	Vec4 lightDir = game_level->GetLightDir();
-	Vec4 lightColor = game_level->GetLightColor();
-	Vec4 ambientColor = game_level->GetAmbientColor();
-
-	// setup effect
-	ID3DXEffect* e = super_shader->GetEffect();
-	V(e->SetVector(super_shader->hAmbientColor, (D3DXVECTOR4*)&ambientColor));
-	V(e->SetVector(super_shader->hFogColor, (D3DXVECTOR4*)&fogColor));
-	V(e->SetVector(super_shader->hFogParams, (D3DXVECTOR4*)&fogParams));
-	V(e->SetVector(super_shader->hCameraPos, (D3DXVECTOR4*)&game_level->camera.center));
-	if(outside)
-	{
-		V(e->SetVector(super_shader->hLightDir, (D3DXVECTOR4*)&lightDir));
-		V(e->SetVector(super_shader->hLightColor, (D3DXVECTOR4*)&lightColor));
-	}
-
 	// modele
 	uint passes;
 	int current_flags = -1;
@@ -3418,24 +3400,7 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 			m1 = node->mat * game_level->camera.matViewProj;
 		else
 			m1 = node->mat.Inverse() * game_level->camera.matViewProj;
-		V(e->SetMatrix(super_shader->hMatCombined, (D3DXMATRIX*)&m1));
-		V(e->SetMatrix(super_shader->hMatWorld, (D3DXMATRIX*)&node->mat));
-		V(e->SetVector(super_shader->hTint, (D3DXVECTOR4*)&node->tint));
-		if(IsSet(node->flags, SceneNode::F_ANIMATED))
-		{
-			const MeshInstance& mesh_inst = node->GetMeshInstance();
-			V(e->SetMatrixArray(super_shader->hMatBones, (D3DXMATRIX*)&mesh_inst.mat_bones[0], mesh_inst.mat_bones.size()));
-		}
-
-		// ustaw model
-		if(prev_mesh != &mesh)
-		{
-			V(device->SetVertexDeclaration(render->GetVertexDeclaration(mesh.vertex_decl)));
-			V(device->SetStreamSource(0, mesh.vb, 0, mesh.vertex_size));
-			V(device->SetIndices(mesh.ib));
-			prev_mesh = &mesh;
-		}
-
+		
 		// œwiat³a
 		if(!outside)
 			V(e->SetRawValue(super_shader->hLights, &lights[node->lights].ld[0], 0, sizeof(LightData) * 3));
@@ -3443,35 +3408,7 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 		// renderowanie
 		if(!IsSet(node->subs, SPLIT_INDEX))
 		{
-			for(int i = 0; i < mesh.head.n_subs; ++i)
-			{
-				if(!IsSet(node->subs, 1 << i))
-					continue;
-
-				const Mesh::Submesh& sub = mesh.subs[i];
-
-				// tekstura
-				V(e->SetTexture(super_shader->hTexDiffuse, mesh.GetTexture(i, node->tex_override)));
-				if(cl_normalmap && IsSet(current_flags, SceneNode::F_NORMAL_MAP))
-					V(e->SetTexture(super_shader->hTexNormal, sub.tex_normal->tex));
-				if(cl_specularmap && IsSet(current_flags, SceneNode::F_SPECULAR_MAP))
-					V(e->SetTexture(super_shader->hTexSpecular, sub.tex_specular->tex));
-
-				// ustawienia œwiat³a
-				V(e->SetVector(super_shader->hSpecularColor, (D3DXVECTOR4*)&sub.specular_color));
-				V(e->SetFloat(super_shader->hSpecularIntensity, sub.specular_intensity));
-				V(e->SetFloat(super_shader->hSpecularHardness, (float)sub.specular_hardness));
-
-				if(!inside_begin)
-				{
-					V(e->Begin(&passes, 0));
-					V(e->BeginPass(0));
-					inside_begin = true;
-				}
-				else
-					V(e->CommitChanges());
-				V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, sub.min_ind, sub.n_ind, sub.first * 3, sub.tris));
-			}
+			
 		}
 		else
 		{
