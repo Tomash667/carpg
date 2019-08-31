@@ -647,7 +647,7 @@ void Quest_Tournament::Update(float dt)
 						float mhp = u.hpmax - u.hp;
 						uint given_items = 0;
 						if(mhp > 0.f && u.IsAI())
-							u.ai->have_potion = 2;
+							u.ai->have_potion = HavePotion::Yes;
 						if(mhp >= p3_power)
 						{
 							int count = (int)floor(mhp / p3_power);

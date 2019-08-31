@@ -190,7 +190,7 @@ cantKickMyself = "Nie mo¿esz sam siebie wyrzuciæ!"
 cantKickAi = "Jeœli chcesz wyrzuciæ t¹ osobê, musisz z ni¹ porozmawiaæ."
 reallyKick = "Na pewno chcesz wyrzuciæ %s?"
 alreadyLeft = "Postaæ opuœci³a dru¿ynê."
-cAlreadyLeft = "%s nie jest ju¿ cz³onkiem dru¿yny."
+giveGoldRefuse = "%s odmawia przyjêcia od ciebie z³ota."
 
 [WorldMap]
 worldDate = "Data: %s"

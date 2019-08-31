@@ -314,7 +314,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 			}
 			// do³¹cz do dru¿yny
 			DialogContext::current->talker->dont_attack = false;
-			team->AddTeamMember(DialogContext::current->talker, true);
+			team->AddTeamMember(DialogContext::current->talker, HeroType::Free);
 			if(team->free_recruits > 0)
 				--team->free_recruits;
 		}

@@ -458,6 +458,7 @@ struct Unit : public EntityType<Unit>
 		return pt;
 	}
 	int FindHealingPotion() const;
+	int FindManaPotion() const;
 	float GetAttackRange() const
 	{
 		return data->attack_range;
@@ -821,7 +822,7 @@ public:
 	bool IsDrunkman() const;
 	void PlaySound(Sound* sound, float range);
 	void CreatePhysics(bool position = false);
-	void UpdatePhysics(const Vec3& pos);
+	void UpdatePhysics(const Vec3* pos = nullptr);
 	Sound* GetSound(SOUND_ID sound_id) const;
 	void SetWeaponState(bool takes_out, WeaponType type);
 	void UpdateInventory(bool notify = true);

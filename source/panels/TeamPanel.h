@@ -18,22 +18,24 @@ public:
 	void Show();
 	void Hide();
 	void Changed();
+
+private:
 	void UpdateButtons();
+	void GiveGold(Unit* target);
+	void ChangeLeader(Unit* target);
+	void Kick(Unit* target);
 	void OnPayCredit(int id);
-	void GiveGold();
-	void ChangeLeader();
-	void Kick();
 	void OnGiveGold(int id);
 	void OnKick(int id);
 
-private:
 	Scrollbar scrollbar;
 	Button bt[4];
-	cstring txTeam, txCharInTeam, txPing, txDays, txPickCharacter, txNoCredit, txPayCreditAmount, txNotEnoughGold, txPaidCredit, txPaidCreditPart, txGiveGoldSelf, txGiveGoldAmount, txOnlyPcLeader,
-		txAlreadyLeader, txYouAreLeader, txCantChangeLeader, txPcAlreadyLeader, txPcIsLeader, txCantKickMyself, txCantKickAi, txReallyKick, txAlreadyLeft, txCAlreadyLeft;
+	cstring txTeam, txCharInTeam, txPing, txDays, txPickCharacter, txNoCredit, txPayCreditAmount, txNotEnoughGold, txPaidCredit, txPaidCreditPart,
+		txGiveGoldSelf, txGiveGoldAmount, txOnlyPcLeader, txAlreadyLeader, txYouAreLeader, txCantChangeLeader, txPcAlreadyLeader, txPcIsLeader,
+		txCantKickMyself, txCantKickAi, txReallyKick, txAlreadyLeft, txGiveGoldRefuse;
 	int counter, mode, picked;
 	TexturePtr tCrown, tSkull;
 	vector<Hitbox> hitboxes;
-	Unit* target;
+	Entity<Unit> target_unit;
 	bool picking;
 };

@@ -226,7 +226,7 @@ weapon axe_orcish {
 	value 220
 	mesh "topor_orkowy.qmsh"
 	attack 75
-	req_str 75
+	req_str 65
 	type axe
 	material metal
 	dmg_type slash
@@ -237,7 +237,7 @@ weapon axe_crystal {
 	value 1500
 	mesh "topor_krysztalowy.qmsh"
 	attack 105
-	req_str 70
+	req_str 60
 	type axe
 	material crystal
 	dmg_type slash
@@ -249,7 +249,7 @@ weapon axe_giant {
 	value 8000
 	mesh "topor_giganta.qmsh"
 	attack 155
-	req_str 85
+	req_str 70
 	type axe
 	material metal
 	dmg_type slash
@@ -261,7 +261,7 @@ weapon axe_ripper {
 	value 40000
 	mesh "rozpruwacz.qmsh"
 	attack 210
-	req_str 80
+	req_str 75
 	type axe
 	material metal
 	dmg_type {slash pierce}
@@ -273,7 +273,7 @@ weapon blunt_club {
 	value 2
 	mesh "maczuga.qmsh"
 	attack 15
-	req_str 45
+	req_str 40
 	type blunt
 	material wood
 	dmg_type blunt
@@ -284,7 +284,7 @@ weapon blunt_mace {
 	value 12
 	mesh "buzdygan.qmsh"
 	attack 25
-	req_str 65
+	req_str 50
 	type blunt
 	material metal
 	dmg_type blunt
@@ -295,7 +295,7 @@ weapon blunt_orcish {
 	value 75
 	mesh "orkowy_mlot.qmsh"
 	attack 60
-	req_str 70
+	req_str 60
 	type blunt
 	material rock
 	dmg_type blunt
@@ -306,7 +306,7 @@ weapon blunt_orcish_shaman {
 	value 50
 	mesh "ozdobny_orkowy_mlot.qmsh"
 	attack 30
-	req_str 50
+	req_str 40
 	type blunt
 	material rock
 	dmg_type blunt
@@ -318,7 +318,7 @@ weapon blunt_morningstar {
 	value 180
 	mesh "morgensztern.qmsh"
 	attack 80
-	req_str 70
+	req_str 55
 	type blunt
 	material metal
 	dmg_type {blunt pierce}
@@ -329,7 +329,7 @@ weapon blunt_dwarven {
 	value 800
 	mesh "krasnoludzki_mlot.qmsh"
 	attack 110
-	req_str 85
+	req_str 60
 	type blunt
 	material metal
 	dmg_type blunt
@@ -341,7 +341,7 @@ weapon blunt_adamantine {
 	value 4000
 	mesh "adam_buzdygan.qmsh"
 	attack 160
-	req_str 100
+	req_str 60
 	type blunt
 	material metal
 	dmg_type blunt
@@ -353,7 +353,7 @@ weapon blunt_skullsmasher {
 	value 20000
 	mesh "rozlupywacz.qmsh"
 	attack 220
-	req_str 100
+	req_str 70
 	type blunt
 	material metal
 	dmg_type {blunt pierce}
@@ -1693,6 +1693,34 @@ ring r_dex : r_gold {
 	tag dex
 }
 
+ring r_int : r_gold {
+	value 500
+	ai_value 80
+	flags magical
+	effects {
+		attribute int 5
+	}
+}
+
+ring r_wis : r_gold {
+	value 500
+	ai_value 80
+	flags magical
+	effects {
+		attribute wis 5
+	}
+}
+
+ring r_cha : r_gold {
+	value 500
+	ai_value 80
+	flags magical
+	effects {
+		attribute cha 5
+	}
+	tag cleric
+}
+
 ring r_hp : r_gold {
 	value 500
 	ai_value 80
@@ -1929,6 +1957,34 @@ ring r_dex2 : r_emerald {
 		attribute dex 15
 	}
 	tag dex
+}
+
+ring r_int2 : r_emerald {
+	value 1500
+	ai_value 110
+	flags magical
+	effects {
+		attribute int 15
+	}
+}
+
+ring r_wis2 : r_emerald {
+	value 1500
+	ai_value 110
+	flags magical
+	effects {
+		attribute wis 15
+	}
+}
+
+ring r_cha2 : r_emerald {
+	value 1500
+	ai_value 110
+	flags magical
+	effects {
+		attribute cha 15
+	}
+	tag cleric
 }
 
 ring r_regeneration : r_emerald {
@@ -3482,9 +3538,9 @@ better_items {
 	blunt_orcish blunt_morningstar
 	blunt_morningstar blunt_dwarven
 	blunt_dwarven blunt_adamantine
-	blacksmith_hammer blunt_mace
-	pickaxe blunt_mace
-	frying_pan blunt_mace
+	blacksmith_hammer blunt_orcish
+	pickaxe blunt_orcish
+	frying_pan blunt_orcish
 	wand_1 wand_2
 	wand_2 wand_3
 	

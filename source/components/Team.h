@@ -25,7 +25,7 @@ public:
 		bool is_team;
 	};
 
-	void AddTeamMember(Unit* unit, bool free);
+	void AddTeamMember(Unit* unit, HeroType type);
 	void RemoveTeamMember(Unit* unit);
 	Unit* FindActiveTeamMember(int id);
 	bool FindItemInTeam(const Item* item, int quest_id, Unit** unit_result, int* i_index, bool check_npc = true);
@@ -73,6 +73,7 @@ public:
 	Unit* FindPlayerTradingWithUnit(Unit& u);
 	void AddLearningPoint(int count = 1);
 	void AddExp(int exp, rvector<Unit>* units = nullptr);
+	void AddExpS(int exp) { AddExp(exp); }
 	void AddGold(int count, rvector<Unit>* to = nullptr, bool show = false, bool is_quest = false);
 	void AddGoldS(int count) { AddGold(count, nullptr, true); }
 	void AddReward(int gold, int exp = 0);
@@ -93,11 +94,14 @@ private:
 	bool CheckTeamShareItem(TeamShareItem& tsi);
 	void CheckUnitOverload(Unit& unit);
 
+	//------------------
+	// temporary - not saved
 	vector<Entity<Unit>*> leader_requests;
-	// team shares, not saved
+	vector<int> pot_have;
+	// team shares
 	vector<TeamShareItem> team_shares;
 	int team_share_id;
-	// items to buy, not saved
+	// items to buy
 	struct ItemToBuy
 	{
 		const Item* item;

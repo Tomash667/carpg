@@ -190,7 +190,7 @@ cantKickMyself = "You can't kick yourself!"
 cantKickAi = "If you want to kick this character, you need to talk with him."
 reallyKick = "Do you really want to kick %s?"
 alreadyLeft = "Character has left your team."
-cAlreadyLeft = "%s is no longer team member."
+giveGoldRefuse = "%s refuses to take the gold from you."
 
 [WorldMap]
 worldDate = "Date: %s"

@@ -1207,7 +1207,7 @@ void InsideLocationGenerator::SpawnHeroesInsideDungeon()
 					game_level->blood_to_spawn.push_back(&u);
 				u.hp = 0.f;
 				++game_stats->total_kills;
-				u.UpdatePhysics(Vec3::Zero);
+				u.UpdatePhysics();
 				if(u.event_handler)
 					u.event_handler->HandleUnitEvent(UnitEventHandler::DIE, &u);
 				break;
@@ -1291,7 +1291,7 @@ void InsideLocationGenerator::SpawnHeroesInsideDungeon()
 	for(int i = 0; i < count; ++i)
 	{
 		int level = loc->st + Random(-2, 2);
-		Unit* u = game_level->SpawnUnitInsideRoom(*room, *Class::GetRandomHero()->hero, level);
+		Unit* u = game_level->SpawnUnitInsideRoom(*room, *Class::GetRandomHeroData(), level);
 		if(u)
 			heroes->push_back(u);
 		else

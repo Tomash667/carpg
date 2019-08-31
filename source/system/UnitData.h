@@ -101,7 +101,7 @@ enum UNIT_FLAGS2
 	F2_CONTEST_50 = 1 << 4, // 50% to join drinking contest
 	F2_DONT_TALK = 1 << 5, // no idle talk
 	F2_CONSTRUCT = 1 << 6, // can't be healed
-	// unused (1 << 7)
+	F2_FAST_LEARNER = 1 << 7, // ai hero faster exp gain
 	// unused (1 << 8)
 	F2_OLD = 1 << 9, // have old gray hair
 	F2_MELEE = 1 << 10, // prefers melee combat

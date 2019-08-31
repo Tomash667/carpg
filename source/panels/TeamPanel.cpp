@@ -70,7 +70,7 @@ void TeamPanel::LoadLanguage()
 	txCantKickAi = s.Get("cantKickAi");
 	txReallyKick = s.Get("reallyKick");
 	txAlreadyLeft = s.Get("alreadyLeft");
-	txCAlreadyLeft = s.Get("cAlreadyLeft");
+	txGiveGoldRefuse = s.Get("giveGoldRefuse");
 }
 
 //=================================================================================================
@@ -132,7 +132,7 @@ void TeamPanel::Draw(ControlDrawData*)
 			offset.y + 32
 		};
 		s = "$h+";
-		s += Format(txCharInTeam, unit.GetName(), unit.IsPlayer() ? pc_share : (unit.hero->free ? 0 : npc_share), unit.GetCredit());
+		s += Format(txCharInTeam, unit.GetName(), unit.IsPlayer() ? pc_share : (unit.hero->type == HeroType::Normal ? npc_share : 0), unit.GetCredit());
 		if(unit.IsPlayer() && Net::IsOnline())
 		{
 			if(Net::IsServer())
@@ -184,17 +184,17 @@ void TeamPanel::Update(float dt)
 				picking = false;
 				if(picked >= 0)
 				{
-					target = team->members.ptrs[picked];
+					Unit* target = team->members.ptrs[picked];
 					switch(mode)
 					{
 					case Bt_GiveGold:
-						GiveGold();
+						GiveGold(target);
 						break;
 					case Bt_Kick:
-						Kick();
+						Kick(target);
 						break;
 					case Bt_Leader:
-						ChangeLeader();
+						ChangeLeader(target);
 						break;
 					}
 				}
@@ -366,19 +366,22 @@ void TeamPanel::OnPayCredit(int id)
 }
 
 //=================================================================================================
-void TeamPanel::GiveGold()
+void TeamPanel::GiveGold(Unit* target)
 {
 	if(target == game->pc->unit)
 		SimpleDialog(txGiveGoldSelf);
+	else if(target->hero && target->hero->type != HeroType::Normal)
+		SimpleDialog(Format(txGiveGoldRefuse, target->GetRealName()));
 	else
 	{
+		target_unit = target;
 		counter = 1;
 		GetNumberDialog::Show(this, DialogEvent(this, &TeamPanel::OnGiveGold), Format(txGiveGoldAmount, target->GetName()), 1, game->pc->unit->gold, &counter);
 	}
 }
 
 //=================================================================================================
-void TeamPanel::ChangeLeader()
+void TeamPanel::ChangeLeader(Unit* target)
 {
 	if(target->IsAI())
 		SimpleDialog(txOnlyPcLeader);
@@ -421,7 +424,7 @@ void TeamPanel::ChangeLeader()
 }
 
 //=================================================================================================
-void TeamPanel::Kick()
+void TeamPanel::Kick(Unit* target)
 {
 	if(target == game->pc->unit)
 		SimpleDialog(txCantKickMyself);
@@ -429,6 +432,7 @@ void TeamPanel::Kick()
 		SimpleDialog(txCantKickAi);
 	else
 	{
+		target_unit = target;
 		DialogInfo info;
 		info.event = DialogEvent(this, &TeamPanel::OnKick);
 		info.name = "kick";
@@ -447,8 +451,9 @@ void TeamPanel::OnGiveGold(int id)
 	if(id != BUTTON_OK || counter == 0)
 		return;
 
-	if(!team->IsTeamMember(*target))
-		SimpleDialog(Format(txCAlreadyLeft, target->GetName()));
+	Unit* target = target_unit;
+	if(!target || !team->IsTeamMember(*target))
+		SimpleDialog(txAlreadyLeft);
 	else if(counter > game->pc->unit->gold)
 		SimpleDialog(txNotEnoughGold);
 	else
@@ -483,7 +488,8 @@ void TeamPanel::OnKick(int id)
 	if(id == BUTTON_NO)
 		return;
 
-	if(!team->IsTeamMember(*target))
+	Unit* target = target_unit;
+	if(!target || !team->IsTeamMember(*target))
 		SimpleDialog(txAlreadyLeft);
 	else
 		net->KickPlayer(*target->player->player_info);

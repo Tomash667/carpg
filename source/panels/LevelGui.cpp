@@ -1826,12 +1826,12 @@ void LevelGui::UpdatePlayerView(float dt)
 	// extra units
 	if(game->pc_data.action_ready && game->pc_data.action_ok)
 	{
-		if(Unit* target = game->pc_data.action_target; target != &u)
+		if(Unit* target = game->pc_data.action_target; target && target != &u)
 			AddUnitView(target);
 	}
 	if(u.action == A_CAST)
 	{
-		if(Unit* target = u.action_unit; target != &u)
+		if(Unit* target = u.action_unit; target && target != &u)
 			AddUnitView(target);
 	}
 

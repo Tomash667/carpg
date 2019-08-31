@@ -101,6 +101,7 @@ name hunter {
 	"Hawkeye"
 	"Graves"
 	"Legolas"
+	"Soveliss"
 }
 
 nickname hunter {
@@ -133,6 +134,7 @@ name rogue {
 	"Talon"
 	"Loki"
 	"Razor"
+	"Kerwyn"
 }
 
 nickname rogue {
@@ -186,6 +188,21 @@ nickname mage {
 	"Magus"
 	"Piromag"
 	"Hydromag"
+}
+
+name cleric {
+	"Uther"
+	"Deckard"
+	"Anduin"
+	"Eberk"
+}
+
+nickname cleric {
+	"Pobo¿ny"
+	"Œwiêty"
+	"B³ogos³awiony"
+	"Uzdrowiciel"
+	"Zakonnik"
 }
 
 name crazy {

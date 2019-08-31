@@ -2525,7 +2525,7 @@ void CityGenerator::SpawnUnits()
 
 		u->pos = Vec3(float(b.unit_pt.x) * 2 + 1, 0, float(b.unit_pt.y) * 2 + 1);
 		terrain->SetH(u->pos);
-		u->UpdatePhysics(u->pos);
+		u->UpdatePhysics();
 		u->visual_pos = u->pos;
 
 		if(b.building->group == BuildingGroup::BG_ARENA)
@@ -2602,7 +2602,7 @@ void CityGenerator::SpawnTemporaryUnits()
 
 	for(uint i = 0; i < count; ++i)
 	{
-		UnitData& ud = *Class::GetRandomHero()->hero;
+		UnitData& ud = *Class::GetRandomHeroData();
 
 		if(Rand() % 2 == 0 || !training_grounds)
 		{

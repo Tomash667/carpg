@@ -2696,7 +2696,7 @@ void Level::WarpUnit(Unit& unit, const Vec3& pos)
 		terrain->SetH(unit.pos);
 
 	if(unit.cobj)
-		unit.UpdatePhysics(unit.pos);
+		unit.UpdatePhysics();
 
 	unit.visual_pos = unit.pos;
 
@@ -2781,7 +2781,7 @@ void Level::WarpNearLocation(LevelArea& area, Unit& unit, const Vec3& pos, float
 	}
 
 	if(unit.cobj)
-		unit.UpdatePhysics(unit.pos);
+		unit.UpdatePhysics();
 }
 
 //=================================================================================================

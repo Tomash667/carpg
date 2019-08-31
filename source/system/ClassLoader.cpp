@@ -20,7 +20,8 @@ enum Keyword
 	K_ICON,
 	K_ACTION,
 	K_MP_BAR,
-	K_LEVEL
+	K_LEVEL,
+	K_POTIONS
 };
 
 //=================================================================================================
@@ -47,7 +48,8 @@ void ClassLoader::InitTokenizer()
 		{ "icon", K_ICON },
 		{ "action", K_ACTION },
 		{ "mp_bar", K_MP_BAR },
-		{ "level", K_LEVEL }
+		{ "level", K_LEVEL },
+		{ "potions", K_POTIONS }
 		});
 }
 
@@ -72,35 +74,14 @@ void ClassLoader::LoadEntity(int top, const string& id)
 		case K_PLAYER:
 			clas->player_id = t.MustGetItem();
 			t.Next();
-			if(t.IsInt())
-			{
-				clas->player_weight = t.MustGetInt();
-				t.Next();
-			}
-			else
-				clas->player_weight = 1;
 			break;
 		case K_HERO:
 			clas->hero_id = t.MustGetItem();
 			t.Next();
-			if(t.IsInt())
-			{
-				clas->hero_weight = t.MustGetInt();
-				t.Next();
-			}
-			else
-				clas->hero_weight = 1;
 			break;
 		case K_CRAZY:
 			clas->crazy_id = t.MustGetItem();
 			t.Next();
-			if(t.IsInt())
-			{
-				clas->crazy_weight = t.MustGetInt();
-				t.Next();
-			}
-			else
-				clas->crazy_weight = 1;
 			break;
 		case K_ICON:
 			{
@@ -144,6 +125,37 @@ void ClassLoader::LoadEntity(int top, const string& id)
 					clas->level.push_back(entry);
 				t.Next();
 			}
+			t.Next();
+			break;
+		case K_POTIONS:
+			t.AssertSymbol('{');
+			t.Next();
+			while(!t.IsSymbol('}'))
+			{
+				t.AssertKeyword(K_LEVEL, G_KEYWORD);
+				t.Next();
+				Class::PotionEntry& p = Add1(clas->potions);
+				p.level = t.MustGetInt();
+				t.Next();
+				t.AssertSymbol('{');
+				t.Next();
+				while(!t.IsSymbol('}'))
+				{
+					const string& item_id = t.MustGetItem();
+					const Item* item = Item::TryGet(item_id);
+					if(!item)
+						t.Throw("Missing item '%s'.", item_id.c_str());
+					t.Next();
+					int count = t.MustGetInt();
+					t.Next();
+					p.items.push_back({ item, count });
+				}
+				t.Next();
+			}
+			std::sort(clas->potions.begin(), clas->potions.end(), [](const Class::PotionEntry& pe1, const Class::PotionEntry& pe2)
+			{
+				return pe1.level > pe2.level;
+			});
 			t.Next();
 			break;
 		}
@@ -241,5 +253,5 @@ void ClassLoader::ApplyUnits()
 		}
 	}
 
-	Class::InitLists();
+	content.errors += Class::InitLists();
 }

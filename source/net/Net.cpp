@@ -294,7 +294,7 @@ bool Game::ReadPlayerData(BitStreamReader& f)
 			return false;
 		}
 		team->members.push_back(team_member);
-		if(team_member->IsPlayer() || !team_member->hero->free)
+		if(team_member->IsPlayer() || team_member->hero->type == HeroType::Normal)
 			team->active_members.push_back(team_member);
 	}
 	f.ReadCasted<byte>(team->leader_id);
@@ -515,7 +515,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							FOV::DungeonReveal(new_tile, game_level->minimap_reveal);
 					}
 					unit.pos = new_pos;
-					unit.UpdatePhysics(unit.pos);
+					unit.UpdatePhysics();
 					unit.interp->Add(unit.pos, rot);
 					unit.changed = true;
 				}
@@ -1146,9 +1146,14 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							unit.gold -= price;
 							player.Train(TrainWhat::Trade, (float)price, 0);
 						}
-						else if(player.action == PlayerAction::ShareItems && slot.item->type == IT_CONSUMABLE
-							&& slot.item->ToConsumable().IsHealingPotion())
-							player.action_unit->ai->have_potion = 1;
+						else if(player.action == PlayerAction::ShareItems && slot.item->type == IT_CONSUMABLE)
+						{
+							const Consumable& pot = slot.item->ToConsumable();
+							if(pot.ai_type == ConsumableAiType::Healing)
+								player.action_unit->ai->have_potion = HavePotion::Check;
+							else if(pot.ai_type == ConsumableAiType::Mana)
+								player.action_unit->ai->have_mp_potion = HavePotion::Check;
+						}
 						if(player.action != PlayerAction::LootChest && player.action != PlayerAction::LootContainer)
 						{
 							player.action_unit->weight -= slot.item->weight*count;
@@ -1285,12 +1290,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					{
 						Unit* t = player.action_unit;
 						uint add_as_team = team_count;
-						if(player.action == PlayerAction::ShareItems)
-						{
-							if(slot.item->type == IT_CONSUMABLE && slot.item->ToConsumable().IsHealingPotion())
-								t->ai->have_potion = 2;
-						}
-						else if(player.action == PlayerAction::GiveItems)
+						if(player.action == PlayerAction::GiveItems)
 						{
 							add_as_team = 0;
 							int price = slot.item->value / 2;
@@ -1305,14 +1305,18 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 								t->gold -= price;
 								unit.gold += price;
 							}
-							if(slot.item->type == IT_CONSUMABLE && slot.item->ToConsumable().IsHealingPotion())
-								t->ai->have_potion = 2;
 						}
 						t->AddItem2(slot.item, count, add_as_team, false, false);
 						if(player.action == PlayerAction::ShareItems || player.action == PlayerAction::GiveItems)
 						{
-							if(slot.item->type == IT_CONSUMABLE && t->ai->have_potion == 0)
-								t->ai->have_potion = 1;
+							if(slot.item->type == IT_CONSUMABLE)
+							{
+								const Consumable& pot = slot.item->ToConsumable();
+								if(pot.ai_type == ConsumableAiType::Healing)
+									t->ai->have_potion = HavePotion::Yes;
+								else if(pot.ai_type == ConsumableAiType::Mana)
+									t->ai->have_mp_potion = HavePotion::Yes;
+							}
 							if(player.action == PlayerAction::GiveItems)
 							{
 								t->UpdateInventory();
@@ -3490,7 +3494,7 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 			break;
 		case NetChange::RECRUIT_NPC:
 			f << c.unit->id;
-			f << c.unit->hero->free;
+			f << (c.unit->hero->type != HeroType::Normal);
 			break;
 		case NetChange::SPAWN_UNIT:
 			c.unit->Write(f);
@@ -4062,7 +4066,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					assert(ani < ANI_MAX);
 					if(unit->animation != ANI_PLAY && ani != ANI_PLAY)
 						unit->animation = ani;
-					unit->UpdatePhysics(unit->pos);
+					unit->UpdatePhysics();
 					unit->interp->Add(pos, rot);
 				}
 			}
@@ -5298,7 +5302,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					else
 					{
 						unit->hero->team_member = true;
-						unit->hero->free = free;
+						unit->hero->type = free ? HeroType::Visitor : HeroType::Normal;
 						unit->hero->credit = 0;
 						team->members.push_back(unit);
 						if(!free)
@@ -5327,7 +5331,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					{
 						unit->hero->team_member = false;
 						RemoveElement(team->members.ptrs, unit);
-						if(!unit->hero->free)
+						if(unit->hero->type == HeroType::Normal)
 							RemoveElement(team->active_members.ptrs, unit);
 						if(game_gui->team->visible)
 							game_gui->team->Changed();

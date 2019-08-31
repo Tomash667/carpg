@@ -641,8 +641,10 @@ void ScriptManager::RegisterGame()
 		.AddFunction("bool HaveNpcMember()", asMETHOD(Team, HaveActiveNpc))
 		.AddFunction("bool HaveItem(Item@)", asMETHOD(Team, HaveItem))
 		.AddFunction("void AddGold(uint)", asMETHOD(Team, AddGoldS))
+		.AddFunction("void AddExp(int)", asMETHOD(Team, AddExpS))
 		.AddFunction("void AddReward(uint, uint = 0)", asMETHOD(Team, AddReward))
-		.AddFunction("uint RemoveItem(Item@, uint = 1)", asMETHOD(Team, RemoveItem));
+		.AddFunction("uint RemoveItem(Item@, uint = 1)", asMETHOD(Team, RemoveItem))
+		.AddFunction("void AddMember(Unit@, int = 0)", asMETHOD(Team, AddTeamMember));
 
 	sb.AddStruct<TmpUnitGroup::Spawn>("Spawn");
 

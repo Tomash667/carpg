@@ -1292,7 +1292,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 		int cost = talker->hero->JoinCost();
 		pc->unit->ModGold(-cost);
 		talker->gold += cost;
-		team->AddTeamMember(talker, false);
+		team->AddTeamMember(talker, HeroType::Normal);
 		talker->temporary = false;
 		if(team->free_recruits > 0)
 			--team->free_recruits;
@@ -1302,7 +1302,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 	}
 	else if(strcmp(msg, "recruit_free") == 0)
 	{
-		team->AddTeamMember(talker, false);
+		team->AddTeamMember(talker, HeroType::Normal);
 		--team->free_recruits;
 		talker->temporary = false;
 		talker->hero->SetupMelee();
@@ -1402,7 +1402,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 	}
 	else if(strcmp(msg, "captive_join") == 0)
 	{
-		team->AddTeamMember(talker, true);
+		team->AddTeamMember(talker, HeroType::Visitor);
 		talker->dont_attack = true;
 	}
 	else if(strcmp(msg, "captive_escape") == 0)

@@ -663,13 +663,18 @@ void ItemLoader::ParseItem(ITEM_TYPE type, const string& id)
 	case IT_CONSUMABLE:
 		{
 			Consumable* consumable = static_cast<Consumable*>(item_ptr);
-			if(consumable->cons_type == Potion)
+			if(consumable->cons_type == ConsumableType::Potion)
 			{
 				for(ItemEffect& e : consumable->effects)
 				{
 					if(e.effect == EffectId::Heal && e.power > 0.f)
 					{
-						consumable->is_healing_potion = true;
+						consumable->ai_type = ConsumableAiType::Healing;
+						break;
+					}
+					else if(e.effect == EffectId::RestoreMana && e.power > 0.f)
+					{
+						consumable->ai_type = ConsumableAiType::Mana;
 						break;
 					}
 				}

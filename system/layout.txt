@@ -211,7 +211,7 @@ control "MenuBar" {
 control "MenuList" {
 	box {
 		mode ITEM
-		image "box.png"
+		image "box2.png"
 		corner 8
 		size 32
 	}

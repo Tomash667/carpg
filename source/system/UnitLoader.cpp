@@ -283,6 +283,7 @@ void UnitLoader::InitTokenizer()
 		{ "contest_50", F2_CONTEST_50 },
 		{ "dont_talk", F2_DONT_TALK },
 		{ "construct", F2_CONSTRUCT },
+		{ "fast_learner", F2_FAST_LEARNER },
 		{ "old", F2_OLD },
 		{ "melee", F2_MELEE },
 		{ "melee_50", F2_MELEE_50 },
@@ -428,11 +429,11 @@ void UnitLoader::InitTokenizer()
 		{ "book", IT_BOOK }
 		});
 
-	t.AddKeywords(G_CONSUMABLE_GROUP, {
-		{ "food", Food },
-		{ "drink", Drink },
-		{ "potion", Potion },
-		{ "herb", Herb }
+	t.AddEnums<ConsumableType>(G_CONSUMABLE_GROUP, {
+		{ "food", ConsumableType::Food },
+		{ "drink", ConsumableType::Drink },
+		{ "potion", ConsumableType::Potion },
+		{ "herb", ConsumableType::Herb }
 		});
 
 	t.AddKeywords(G_SUBPROFILE_GROUP, {

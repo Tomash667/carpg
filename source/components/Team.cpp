@@ -58,17 +58,17 @@ bool UniqueTeamShares(const Team::TeamShareItem& t1, const Team::TeamShareItem& 
 }
 
 
-void Team::AddTeamMember(Unit* unit, bool free)
+void Team::AddTeamMember(Unit* unit, HeroType type)
 {
 	assert(unit && unit->hero);
 
 	// set as team member
 	unit->hero->team_member = true;
-	unit->hero->free = free;
+	unit->hero->type = type;
 	unit->OrderFollow(DialogContext::current ? DialogContext::current->pc->unit : leader);
 
 	// add to team list
-	if(!free)
+	if(type == HeroType::Normal)
 	{
 		if(GetActiveTeamSize() == 1u)
 			active_members[0].MakeItemsTeam(false);
@@ -104,7 +104,7 @@ void Team::RemoveTeamMember(Unit* unit)
 	unit->OrderClear();
 
 	// remove from team list
-	if(!unit->hero->free)
+	if(unit->hero->type == HeroType::Normal)
 		RemoveElementOrder(active_members.ptrs, unit);
 	RemoveElementOrder(members.ptrs, unit);
 
@@ -205,7 +205,7 @@ Vec2 Team::GetShare()
 	{
 		if(unit.IsPlayer())
 			++pc;
-		else if(!unit.hero->free)
+		else
 			++npc;
 	}
 	return GetShare(pc, npc);
@@ -266,7 +266,7 @@ void Team::GetTeamInfo(TeamInfo& info)
 				}
 				else
 				{
-					if(unit.hero->free)
+					if(unit.hero->type != HeroType::Normal)
 						++info.free_members;
 					else
 					{
@@ -835,28 +835,29 @@ void Team::TeamShareDecline(DialogContext& ctx)
 //=================================================================================================
 void Team::BuyTeamItems()
 {
-	const Item* hp1 = Item::Get("p_hp");
-	const Item* hp2 = Item::Get("p_hp2");
-	const Item* hp3 = Item::Get("p_hp3");
-
 	for(Unit& unit : active_members)
 	{
 		if(unit.IsPlayer())
 			continue;
 
+		const vector<pair<const Item*, int>>& pot_to_buy = unit.GetClass()->GetPotionEntry(unit.level).items;
+		pot_have.resize(pot_to_buy.size());
+		memset(pot_have.data(), 0, sizeof(int) * pot_to_buy.size());
+
 		// sell old items, count potions
-		int hp1count = 0, hp2count = 0, hp3count = 0;
 		for(vector<ItemSlot>::iterator it2 = unit.items.begin(), end2 = unit.items.end(); it2 != end2;)
 		{
 			assert(it2->item);
 			if(it2->item->type == IT_CONSUMABLE)
 			{
-				if(it2->item == hp1)
-					hp1count += it2->count;
-				else if(it2->item == hp2)
-					hp2count += it2->count;
-				else if(it2->item == hp3)
-					hp3count += it2->count;
+				for(uint i = 0, count = pot_to_buy.size(); i < count; ++i)
+				{
+					if(pot_to_buy[i].first == it2->item)
+					{
+						pot_have[i] += it2->count;
+						break;
+					}
+				}
 				++it2;
 			}
 			else if(it2->item->IsWearable() && it2->team_count == 0)
@@ -878,68 +879,25 @@ void Team::BuyTeamItems()
 				++it2;
 		}
 
-		// buy potions
-		int p1, p2, p3;
-		if(unit.level < 4)
+		// buy potions (half of potions if given for free to help poor heroes)
+		for(uint i = 0, count = pot_to_buy.size(); i < count; ++i)
 		{
-			p1 = 5;
-			p2 = 0;
-			p3 = 0;
+			int& have = pot_have[i];
+			int required = pot_to_buy[i].second;
+			const Item* item = pot_to_buy[i].first;
+			if(have < required / 2)
+			{
+				int count = required / 2 - have;
+				unit.AddItem(item, count, false);
+				have += count;
+			}
+			while(have < required && unit.gold >= item->value / 2)
+			{
+				unit.AddItem(item, 1, false);
+				unit.gold -= item->value / 2;
+				++have;
+			}
 		}
-		else if(unit.level < 8)
-		{
-			p1 = 5;
-			p2 = 2;
-			p3 = 0;
-		}
-		else if(unit.level < 12)
-		{
-			p1 = 6;
-			p2 = 3;
-			p3 = 1;
-		}
-		else if(unit.level < 16)
-		{
-			p1 = 6;
-			p2 = 4;
-			p3 = 2;
-		}
-		else
-		{
-			p1 = 6;
-			p2 = 5;
-			p3 = 4;
-		}
-
-		while(hp3count < p3 && unit.gold >= hp3->value / 2)
-		{
-			unit.AddItem(hp3, 1, false);
-			unit.gold -= hp3->value / 2;
-			++hp3count;
-		}
-		while(hp2count < p2 && unit.gold >= hp2->value / 2)
-		{
-			unit.AddItem(hp2, 1, false);
-			unit.gold -= hp2->value / 2;
-			++hp2count;
-		}
-		while(hp1count < p1 && unit.gold >= hp1->value / 2)
-		{
-			unit.AddItem(hp1, 1, false);
-			unit.gold -= hp1->value / 2;
-			++hp1count;
-		}
-
-		// free potions for poor heroes
-		int count = p1 / 2 - hp1count;
-		if(count > 0)
-			unit.AddItem(hp1, (uint)count, false);
-		count = p2 / 2 - hp2count;
-		if(count > 0)
-			unit.AddItem(hp2, (uint)count, false);
-		count = p3 / 2 - hp3count;
-		if(count > 0)
-			unit.AddItem(hp3, (uint)count, false);
 
 		// buy items
 		const ItemList* lis = ItemList::Get("base_items").lis;
@@ -1060,7 +1018,10 @@ void Team::BuyTeamItems()
 
 		// equip new items
 		unit.UpdateInventory(false);
-		unit.ai->have_potion = 2;
+		if(unit.ai->have_potion != HavePotion::No)
+			unit.ai->have_potion = HavePotion::Check;
+		if(unit.ai->have_mp_potion != HavePotion::No)
+			unit.ai->have_mp_potion = HavePotion::Check;
 
 		// sell old items
 		for(vector<ItemSlot>::iterator it2 = unit.items.begin(), end2 = unit.items.end(); it2 != end2;)
@@ -1085,70 +1046,49 @@ void Team::BuyTeamItems()
 		}
 	}
 
-	// buying potions by old mage
-	if(quest_mgr->quest_mages2->scholar && Any(quest_mgr->quest_mages2->mages_state, Quest_Mages2::State::MageRecruited, Quest_Mages2::State::OldMageJoined,
-		Quest_Mages2::State::OldMageRemembers, Quest_Mages2::State::BuyPotion))
+	// free potions for some special team members
+	for(Unit& unit : members)
 	{
-		int count = max(0, 3 - quest_mgr->quest_mages2->scholar->CountItem(hp2));
-		if(count)
+		if(unit.IsPlayer() || unit.summoner || unit.hero->type != HeroType::Free)
+			continue;
+
+		const vector<pair<const Item*, int>>& pot_to_buy = unit.GetClass()->GetPotionEntry(unit.level).items;
+		pot_have.resize(pot_to_buy.size());
+		memset(pot_have.data(), 0, sizeof(int) * pot_to_buy.size());
+
+		// count potions
+		for(vector<ItemSlot>::iterator it2 = unit.items.begin(), end2 = unit.items.end(); it2 != end2; ++it2)
 		{
-			quest_mgr->quest_mages2->scholar->AddItem(hp2, count, false);
-			quest_mgr->quest_mages2->scholar->ai->have_potion = 2;
-		}
-	}
-
-	// buying potions by orc
-	if(quest_mgr->quest_orcs2->orc
-		&& (quest_mgr->quest_orcs2->orcs_state == Quest_Orcs2::State::OrcJoined || quest_mgr->quest_orcs2->orcs_state >= Quest_Orcs2::State::CompletedJoined))
-	{
-		int ile1, ile2;
-		switch(quest_mgr->quest_orcs2->GetOrcClass())
-		{
-		case Quest_Orcs2::OrcClass::None:
-			ile1 = 6;
-			ile2 = 0;
-			break;
-		case Quest_Orcs2::OrcClass::Shaman:
-			ile1 = 6;
-			ile2 = 1;
-			break;
-		case Quest_Orcs2::OrcClass::Hunter:
-			ile1 = 6;
-			ile2 = 2;
-			break;
-		case Quest_Orcs2::OrcClass::Warrior:
-			ile1 = 7;
-			ile2 = 3;
-			break;
-		}
-
-		int count = max(0, ile1 - quest_mgr->quest_orcs2->orc->CountItem(hp2));
-		if(count)
-			quest_mgr->quest_orcs2->orc->AddItem(hp2, count, false);
-
-		if(ile2)
-		{
-			count = max(0, ile2 - quest_mgr->quest_orcs2->orc->CountItem(hp3));
-			if(count)
-				quest_mgr->quest_orcs2->orc->AddItem(hp3, count, false);
-		}
-
-		quest_mgr->quest_orcs2->orc->ai->have_potion = 2;
-	}
-
-	// buying points for cleric
-	if(quest_mgr->quest_evil->evil_state == Quest_Evil::State::ClosingPortals || quest_mgr->quest_evil->evil_state == Quest_Evil::State::KillBoss)
-	{
-		Unit* unit = FindTeamMember("q_zlo_kaplan");
-		if(unit)
-		{
-			int count = max(0, 5 - unit->CountItem(hp2));
-			if(count)
+			assert(it2->item);
+			if(it2->item->type == IT_CONSUMABLE)
 			{
-				unit->AddItem(hp2, count, false);
-				unit->ai->have_potion = 2;
+				for(uint i = 0, count = pot_to_buy.size(); i < count; ++i)
+				{
+					if(pot_to_buy[i].first == it2->item)
+					{
+						pot_have[i] += it2->count;
+						break;
+					}
+				}
 			}
 		}
+
+		// give potions
+		for(uint i = 0, count = pot_to_buy.size(); i < count; ++i)
+		{
+			int have = pot_have[i];
+			int required = pot_to_buy[i].second;
+			if(have < required)
+			{
+				int count = required - have;
+				unit.AddItem(pot_to_buy[i].first, count, false);
+			}
+		}
+
+		if(unit.ai->have_potion != HavePotion::No)
+			unit.ai->have_potion = HavePotion::Check;
+		if(unit.ai->have_mp_potion != HavePotion::No)
+			unit.ai->have_mp_potion = HavePotion::Check;
 	}
 }
 
@@ -1284,11 +1224,21 @@ void Team::AddLearningPoint(int count)
 void Team::AddExp(int exp, rvector<Unit>* units)
 {
 	if(!units)
-		units = &active_members;
+		units = &members;
 
 	if(exp > 0)
 	{
-		switch(units->size())
+		// count heroes - free heroes gain exp but not affect modifier
+		uint count = 0;
+		for(Unit& unit : *units)
+		{
+			if(unit.IsPlayer())
+				++count;
+			else if(unit.hero->type == HeroType::Normal)
+				++count;
+		}
+
+		switch(count)
 		{
 		case 1:
 			exp *= 2;
@@ -1322,7 +1272,7 @@ void Team::AddExp(int exp, rvector<Unit>* units)
 	{
 		if(unit.IsPlayer())
 			unit.player->AddExp(exp);
-		else
+		else if(unit.hero->type != HeroType::Visitor)
 			unit.hero->AddExp(exp);
 	}
 }

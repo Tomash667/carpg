@@ -352,22 +352,26 @@ struct Ring : public Item
 
 //-----------------------------------------------------------------------------
 // Eatible item (food, drink, potion)
-enum ConsumableType
+enum class ConsumableType
 {
 	Food,
 	Drink,
 	Herb,
 	Potion
 };
+enum class ConsumableAiType
+{
+	None,
+	Healing,
+	Mana
+};
 struct Consumable : public Item
 {
-	Consumable() : Item(IT_CONSUMABLE), time(0), cons_type(Drink), is_healing_potion(false) {}
-
-	bool IsHealingPotion() const { return is_healing_potion; }
+	Consumable() : Item(IT_CONSUMABLE), time(0), cons_type(ConsumableType::Drink), ai_type(ConsumableAiType::None) {}
 
 	float time;
 	ConsumableType cons_type;
-	bool is_healing_potion;
+	ConsumableAiType ai_type;
 
 	static vector<Consumable*> consumables;
 };

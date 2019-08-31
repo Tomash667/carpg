@@ -818,6 +818,9 @@ void Game::OnCleanup()
 	if(game_state != GS_QUIT && game_state != GS_LOAD_MENU)
 		ClearGame();
 
+	if(game_gui && game_gui->main_menu)
+		game_gui->main_menu->ShutdownThread();
+
 	content.CleanupContent();
 
 	delete arena;

@@ -30,7 +30,7 @@ void HeroData::Init(Unit& _unit)
 	on_credit = false;
 	lost_pvp = false;
 	expe = 0;
-	free = false;
+	type = HeroType::Normal;
 	melee = false;
 	phase = false;
 	phase_timer = 0.f;
@@ -53,7 +53,7 @@ void HeroData::Save(FileWriter& f)
 	f << melee;
 	f << phase;
 	f << phase_timer;
-	f << free;
+	f << type;
 	f << lost_pvp;
 	f << split_gold;
 }
@@ -98,7 +98,14 @@ void HeroData::Load(FileReader& f)
 	f >> melee;
 	f >> phase;
 	f >> phase_timer;
-	f >> free;
+	if(LOAD_VERSION >= V_DEV)
+		f >> type;
+	else
+	{
+		bool free;
+		f >> free;
+		type = free ? HeroType::Visitor : HeroType::Normal;
+	}
 	if(LOAD_VERSION >= V_0_6)
 		f >> lost_pvp;
 	else
@@ -172,6 +179,8 @@ void HeroData::AddExp(int exp)
 float HeroData::GetExpMod() const
 {
 	int dif = unit->level - team->players_level;
+	if(IsSet(unit->data->flags2, F2_FAST_LEARNER))
+		--dif;
 	switch(dif)
 	{
 	case 3:
