@@ -5,6 +5,7 @@ Wersja 0.12 (???):
 ! nie mo¿na wczytywaæ ju¿ zapisów z wersji 0.4.20 lub starszej
 + nowa klasa gracza: kap³an - czar uleczenia
 + mana
++ szybka podró¿ (mo¿e byæ u¿yta przez przywódcê w bezpiecznej lokalizacji by szybko powróciæ na mapê œwiata)
 + nowe umiejêtnoœci: magia bogów, koncentracja
 + nowe atuty: silna aura, harmonia many
 + nowe przedmioty: magiczny kryszta³, miksturki many, 10 magicznych pierœcieni, amulet many

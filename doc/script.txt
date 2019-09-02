@@ -60,6 +60,8 @@ Static methods:
 UnitGroup type:
 Static method:
 	UnitGroup@ Get(const string& in id) - return unit group with id.
+Static variables:
+	UnitGroup@ empty - represents empty group.
 
 Quest type:
 	void AddEntry(const string& in str) - add journal message.
@@ -166,6 +168,21 @@ LOCATION enum:
 	L_FOREST
 	L_MOONWELL
 	L_ENCOUNTER
+	
+LOCATION_IMAGE enum:
+	LI_CITY
+	LI_VILLAGE
+	LI_CAVE
+	LI_CAMP
+	LI_DUNGEON
+	LI_CRYPT
+	LI_FOREST
+	LI_MOONWELL
+	LI_TOWER
+	LI_LABYRINTH
+	LI_MINE
+	LI_SAWMILL
+	LI_DUNGEON2
 
 Spawn struct - unit & level.
 
@@ -180,11 +197,13 @@ LevelArea type - part of level (dungeon, outside, building).
 
 Location type:
 	const Vec2 pos
-	const string name
+	string name
 	const LOCATION type
+	LOCATION_IMAGE image
 	int st
 	bool reset - when true reset locations (respawn units/loot) when team enters
 	Quest@ active_quest - quest assigned to location, prevent other quests from using this location.
+	UnitGroup@ group - unit group that spawns in this location.
 	bool IsCity() - true if location is city.
 	bool IsVillage() - true if location is village.
 	void SetKnown() - mark location as known.
@@ -201,6 +220,7 @@ Encounter type:
 	string text
 
 World namespace:
+	Vec2 GetSize() - get worldmap size (in km).
 	uint GetSettlements() - return count of settlements.
 	Location@ GetLocation(uint index) - return location by index.
 	string GetDirName(const Vec2& in pos1, const Vec2& in pos2) - get direction name string from pos1 to pos2.
@@ -210,8 +230,10 @@ World namespace:
 	Location@ GetRandomSettlement(Location@) - returns random settlement that is not passed to function.
 	Location@ GetRandomSettlement(GetLocationCallback@) - returns random settlement using callback that returns weight.
 	Location@ GetClosestLocation(LOCATION type, const Vec2& in pos, int target = -1) - get closest location of this type (doesn't return quest locations).
+	Location@ CreateLocation(LOCATION type, const Vec2& in pos) - create new location at position.
 	Encounter@ AddEncounter(Quest@) - add new encounter attached to this quest.
 	void RemoveEncounter(Quest@) - remove encounters attached to this quest.
+	void SetStartLocation(Location@) - game start location, must be set in quest Startup.
 
 Level namespace:
 	Location@ location - readonly

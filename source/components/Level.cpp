@@ -28,6 +28,9 @@
 #include "Spell.h"
 #include "QuestManager.h"
 #include "Quest_Secret.h"
+#include "Quest_Tutorial.h"
+#include "Quest_Contest.h"
+#include "Quest_Tournament.h"
 #include "LocationGeneratorFactory.h"
 #include "SoundManager.h"
 #include "Render.h"
@@ -4291,7 +4294,7 @@ bool Level::IsSafe()
 	if(city_ctx)
 		return true;
 	else if(location->outside)
-		return (location->state == LS_CLEARED);
+		return location->state == LS_CLEARED || location->type == L_ENCOUNTER;
 	else
 	{
 		InsideLocation* inside = static_cast<InsideLocation*>(location);
@@ -4316,7 +4319,22 @@ bool Level::IsSafe()
 }
 
 //=================================================================================================
-CanLeaveLocationResult Level::CanLeaveLocation(Unit& unit)
+bool Level::CanFastTravel()
+{
+	if(!location->outside
+		|| !IsSafe() 
+		|| game->arena->mode != Arena::NONE
+		|| quest_mgr->quest_tutorial->in_tutorial
+		|| quest_mgr->quest_contest->state >= Quest_Contest::CONTEST_STARTING
+		|| quest_mgr->quest_tournament->GetState() != Quest_Tournament::TOURNAMENT_NOT_DONE)
+		return false;
+
+	CanLeaveLocationResult result = CanLeaveLocation(*team->leader, false);
+	return result == CanLeaveLocationResult::Yes;
+}
+
+//=================================================================================================
+CanLeaveLocationResult Level::CanLeaveLocation(Unit& unit, bool check_dist)
 {
 	if(quest_mgr->quest_secret->state == Quest_Secret::SECRET_FIGHT)
 		return CanLeaveLocationResult::InCombat;
@@ -4331,7 +4349,7 @@ CanLeaveLocationResult Level::CanLeaveLocation(Unit& unit)
 			if(u.busy != Unit::Busy_No && u.busy != Unit::Busy_Tournament)
 				return CanLeaveLocationResult::TeamTooFar;
 
-			if(u.IsPlayer())
+			if(u.IsPlayer() && check_dist)
 			{
 				if(u.area->area_type == LevelArea::Type::Building || Vec3::Distance2d(unit.pos, u.pos) > 8.f)
 					return CanLeaveLocationResult::TeamTooFar;
@@ -4353,7 +4371,7 @@ CanLeaveLocationResult Level::CanLeaveLocation(Unit& unit)
 			if(u.summoner)
 				continue;
 
-			if(u.busy != Unit::Busy_No || Vec3::Distance2d(unit.pos, u.pos) > 8.f)
+			if(u.busy != Unit::Busy_No || (check_dist && Vec3::Distance2d(unit.pos, u.pos) > 8.f))
 				return CanLeaveLocationResult::TeamTooFar;
 
 			for(vector<Unit*>::iterator it2 = local_area->units.begin(), end2 = local_area->units.end(); it2 != end2; ++it2)

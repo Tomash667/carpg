@@ -349,6 +349,7 @@ void Game::UpdateServer(float dt)
 	if(game_state == GS_LEVEL)
 	{
 		net->InterpolatePlayers(dt);
+		net->UpdateFastTravel(dt);
 		pc->unit->changed = true;
 	}
 
@@ -3204,6 +3205,58 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				}
 			}
 			break;
+		// fast travel request/response
+		case NetChange::FAST_TRAVEL:
+			{
+				FAST_TRAVEL option;
+				f.ReadCasted<byte>(option);
+				if(!f)
+				{
+					Error("Update server: Broken FAST_TRAVEL from %s.", info.name.c_str());
+					break;
+				}
+
+				switch(option)
+				{
+				case FAST_TRAVEL_START:
+					if(!team->IsLeader(info.u))
+						Error("Update server: FAST_TRAVEL start - %s is not leader.", info.name.c_str());
+					else if(net->IsFastTravel())
+						Error("Update server: FAST_TRAVEL already started from %s.", info.name.c_str());
+					else if(!game_level->CanFastTravel())
+						Error("Update server: FAST_TRAVEL start from %s, can't.", info.name.c_str());
+					else
+						net->StartFastTravel(1);
+					break;
+				case FAST_TRAVEL_CANCEL:
+					if(!team->IsLeader(info.u))
+						Error("Update server: FAST_TRAVEL cancel - %s is not leader.", info.name.c_str());
+					else if(!net->IsFastTravel())
+						Error("Update server: FAST_TRAVEL cancel not started from %s.", info.name.c_str());
+					else
+						net->CancelFastTravel(FAST_TRAVEL_CANCEL, info.id);
+					break;
+				case FAST_TRAVEL_ACCEPT:
+					if(info.fast_travel)
+						Error("Update server: FAST_TRAVEL already accepted from %s.", info.name.c_str());
+					else
+					{
+						info.fast_travel = true;
+
+						NetChange& c = Add1(Net::changes);
+						c.type = NetChange::FAST_TRAVEL_VOTE;
+						c.id = info.id;
+					}
+					break;
+				case FAST_TRAVEL_DENY:
+					if(info.fast_travel)
+						Error("Update server: FAST_TRAVEL cancel already accepted from %s.", info.name.c_str());
+					else
+						net->CancelFastTravel(FAST_TRAVEL_DENY, info.id);
+					break;
+				}
+			}
+			break;
 		// invalid change
 		default:
 			Error("Update server: Invalid change type %u from %s.", type, info.name.c_str());
@@ -3473,6 +3526,7 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 		case NetChange::TRAVEL:
 		case NetChange::CHEAT_TRAVEL:
 		case NetChange::REMOVE_CAMP:
+		case NetChange::FAST_TRAVEL_VOTE:
 			f.WriteCasted<byte>(c.id);
 			break;
 		case NetChange::PAUSED:
@@ -3610,6 +3664,10 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 		case NetChange::USE_CHEST:
 			f << c.id;
 			f << c.count;
+			break;
+		case NetChange::FAST_TRAVEL:
+			f.WriteCasted<byte>(c.id);
+			f.WriteCasted<byte>(c.count);
 			break;
 		default:
 			Error("Update server: Unknown change %d.", c.type);
@@ -6533,6 +6591,51 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				}
 			}
 			break;
+		// fast travel request/response
+		case NetChange::FAST_TRAVEL:
+			{
+				FAST_TRAVEL option;
+				byte id;
+				f.ReadCasted<byte>(option);
+				f >> id;
+				if(!f)
+				{
+					Error("Update client: Broken FAST_TRAVEL.");
+					break;
+				}
+				switch(option)
+				{
+				case FAST_TRAVEL_START:
+					net->StartFastTravel(2);
+					break;
+				case FAST_TRAVEL_CANCEL:
+				case FAST_TRAVEL_DENY:
+				case FAST_TRAVEL_NOT_SAFE:
+				case FAST_TRAVEL_IN_PROGRESS:
+					net->CancelFastTravel(option, id);
+					break;
+				}
+			}
+			break;
+		// update player vote for fast travel
+		case NetChange::FAST_TRAVEL_VOTE:
+			{
+				byte id;
+				f >> id;
+				if(!f)
+				{
+					Error("Update client: Broken FAST_TRAVEL_VOTE.");
+					break;
+				}
+				PlayerInfo* info = net->TryGetPlayer(id);
+				if(!info)
+				{
+					Error("Update client: FAST_TRAVEL_VOTE invaid player %u.", id);
+					break;
+				}
+				info->fast_travel = true;
+			}
+			break;
 		// invalid change
 		default:
 			Warn("Update client: Unknown change type %d.", type);
@@ -7466,6 +7569,7 @@ void Game::WriteClientChanges(BitStreamWriter& f)
 		case NetChange::TRAVEL:
 		case NetChange::CHEAT_TRAVEL:
 		case NetChange::REST:
+		case NetChange::FAST_TRAVEL:
 			f.WriteCasted<byte>(c.id);
 			break;
 		case NetChange::CHEAT_WARP_TO_STAIRS:

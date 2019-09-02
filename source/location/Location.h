@@ -122,6 +122,8 @@ struct Location
 	Portal* TryGetPortal(int index) const;
 	void WritePortals(BitStreamWriter& f) const;
 	bool ReadPortals(BitStreamReader& f, int at_level);
+	LOCATION_IMAGE GetImage() const { return image; }
+	const string& GetName() const { return name; }
 	void SetVisited()
 	{
 		if(state == LS_KNOWN)
@@ -130,6 +132,7 @@ struct Location
 	void SetKnown();
 	void SetImage(LOCATION_IMAGE image);
 	void SetName(cstring name);
+	void SetNameS(const string& name) { SetName(name.c_str()); }
 	void SetNamePrefix(cstring prefix);
 	void AddEventHandler(Quest_Scripted* quest, EventType type);
 	void RemoveEventHandler(Quest_Scripted* quest, bool cleanup);

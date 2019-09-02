@@ -244,8 +244,17 @@ control "Notifications" {
 		image "dialog.png"
 		corner 16
 		size 64
+		color {255 255 255 222}
+	}
+	button {
+		mode ITEM
+		image "box3.png"
+		corner 8
+		size 32
 	}
 	font "normal"
+	accept "accept.png"
+	cancel "cancel.png"
 }
 
 control "Overlay" {

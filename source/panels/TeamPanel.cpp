@@ -11,14 +11,36 @@
 #include "GameMessages.h"
 #include "ResourceManager.h"
 #include "PlayerInfo.h"
+#include "Level.h"
 
 //-----------------------------------------------------------------------------
 enum ButtonId
 {
-	Bt_GiveGold = GuiEvent_Custom,
+	Bt_FastTravel,
+	Bt_GiveGold,
 	Bt_PayCredit,
 	Bt_Leader,
 	Bt_Kick
+};
+
+enum ButtonEvent
+{
+	BtEvent_FastTravel = GuiEvent_Custom,
+	BtEvent_GiveGold,
+	BtEvent_PayCredit,
+	BtEvent_Leader,
+	BtEvent_Kick
+};
+
+enum TooltipGroup
+{
+	G_NONE = -1,
+	G_LEADER,
+	G_UNCONSCIOUS,
+	G_CLASS,
+	G_BUTTON,
+	G_READY,
+	G_WAITING
 };
 
 //=================================================================================================
@@ -26,16 +48,16 @@ TeamPanel::TeamPanel()
 {
 	visible = false;
 
-	bt[0].id = Bt_GiveGold;
-	bt[0].parent = this;
-	bt[1].id = Bt_PayCredit;
-	bt[1].parent = this;
-	bt[2].id = Bt_Leader;
-	bt[2].parent = this;
-	bt[3].id = Bt_Kick;
-	bt[3].parent = this;
+	bt[Bt_FastTravel].id = BtEvent_FastTravel;
+	bt[Bt_GiveGold].id = BtEvent_GiveGold;
+	bt[Bt_PayCredit].id = BtEvent_PayCredit;
+	bt[Bt_Leader].id = BtEvent_Leader;
+	bt[Bt_Kick].id = BtEvent_Kick;
+	for(int i = 0; i < 5; ++i)
+		bt[i].parent = this;
 
 	UpdateButtons();
+	tooltip.Init(TooltipController::Callback(this, &TeamPanel::GetTooltip));
 }
 
 //=================================================================================================
@@ -43,10 +65,11 @@ void TeamPanel::LoadLanguage()
 {
 	Language::Section& s = Language::GetSection("TeamPanel");
 
-	bt[0].text = s.Get("giveGold");
-	bt[1].text = s.Get("payCredit");
-	bt[2].text = s.Get("changeLeader");
-	bt[3].text = s.Get("kick");
+	bt[Bt_FastTravel].text = s.Get("fastTravel");
+	bt[Bt_GiveGold].text = s.Get("giveGold");
+	bt[Bt_PayCredit].text = s.Get("payCredit");
+	bt[Bt_Leader].text = s.Get("changeLeader");
+	bt[Bt_Kick].text = s.Get("kick");
 
 	txTeam = s.Get("team");
 	txCharInTeam = s.Get("charInTeam");
@@ -71,6 +94,15 @@ void TeamPanel::LoadLanguage()
 	txReallyKick = s.Get("reallyKick");
 	txAlreadyLeft = s.Get("alreadyLeft");
 	txGiveGoldRefuse = s.Get("giveGoldRefuse");
+	txLeader = s.Get("leader");
+	txUnconscious = s.Get("unconscious");
+	txFastTravelTooltip = s.Get("fastTravelTooltip");
+	txChangeLeaderTooltip = s.Get("changeLeaderTooltip");
+	txKickTooltip = s.Get("kickTooltip");
+	txFastTravel = s.Get("fastTravel");
+	txCancelFastTravel = s.Get("cancelFastTravel");
+	txWaiting = s.Get("waiting");
+	txReady = s.Get("ready");
 }
 
 //=================================================================================================
@@ -78,6 +110,8 @@ void TeamPanel::LoadData()
 {
 	tCrown = res_mgr->Load<Texture>("korona.png");
 	tSkull = res_mgr->Load<Texture>("czaszka.png");
+	tFastTravelWait = res_mgr->Load<Texture>("fast_travel_wait.png");
+	tFastTravelOk = res_mgr->Load<Texture>("fast_travel_ok.png");
 }
 
 //=================================================================================================
@@ -122,6 +156,11 @@ void TeamPanel::Draw(ControlDrawData*)
 		}
 		if(&unit == team->leader)
 			gui->DrawSprite(tCrown, Int2(offset.x + 32, offset.y), Color::White, &rect);
+		else if(unit.IsPlayer() && net->IsFastTravel())
+		{
+			TexturePtr image = unit.player->player_info->fast_travel ? tFastTravelOk : tFastTravelWait;
+			gui->DrawSprite(image, Int2(offset.x + 32, offset.y), Color::White, &rect);
+		}
 		if(!unit.IsAlive())
 			gui->DrawSprite(tSkull, Int2(offset.x + 64, offset.y), Color::White, &rect);
 
@@ -154,17 +193,22 @@ void TeamPanel::Draw(ControlDrawData*)
 
 	scrollbar.Draw();
 
-	int count = (Net::IsOnline() ? 4 : 2);
+	const int count = Net::IsOnline() ? 5 : 3;
 	for(int i = 0; i < count; ++i)
 		bt[i].Draw();
 
 	DrawBox();
+
+	tooltip.Draw();
 }
 
 //=================================================================================================
 void TeamPanel::Update(float dt)
 {
 	GamePanel::Update(dt);
+
+	int group = G_NONE;
+	int index = 0;
 
 	if(focus)
 	{
@@ -187,13 +231,13 @@ void TeamPanel::Update(float dt)
 					Unit* target = team->members.ptrs[picked];
 					switch(mode)
 					{
-					case Bt_GiveGold:
+					case BtEvent_GiveGold:
 						GiveGold(target);
 						break;
-					case Bt_Kick:
+					case BtEvent_Kick:
 						Kick(target);
 						break;
-					case Bt_Leader:
+					case BtEvent_Leader:
 						ChangeLeader(target);
 						break;
 					}
@@ -202,23 +246,79 @@ void TeamPanel::Update(float dt)
 			else if(input->Pressed(Key::RightButton))
 				picking = false;
 		}
+
+		// handle icon tooltips
+		Int2 offset = global_pos + Int2(8, 40 - scrollbar.offset);
+		for(Unit& unit : team->members)
+		{
+			if(Class* clas = unit.GetClass(); clas && PointInRect(gui->cursor_pos, offset.x, offset.y, offset.x + 32, offset.y + 32))
+			{
+				group = G_CLASS;
+				break;
+			}
+			if(PointInRect(gui->cursor_pos, offset.x + 32, offset.y, offset.x + 64, offset.y + 32))
+			{
+				if(&unit == team->leader)
+				{
+					group = G_LEADER;
+					break;
+				}
+				else if(unit.IsPlayer() && net->IsFastTravel())
+				{
+					group = unit.player->player_info->fast_travel ? G_READY : G_WAITING;
+					break;
+				}
+			}
+			if(!unit.IsAlive() && PointInRect(gui->cursor_pos, offset.x + 64, offset.y, offset.x + 96, offset.y + 32))
+			{
+				group = G_UNCONSCIOUS;
+				break;
+			}
+
+			offset.y += 32;
+			++index;
+		}
 	}
+
 
 	// enable change leader button if player is leader
 	if(Net::IsClient())
 	{
-		bool was_leader = bt[2].state != Button::DISABLED;
+		bool was_leader = bt[Bt_Leader].state != Button::DISABLED;
 		bool is_leader = team->IsLeader();
 		if(was_leader != is_leader)
-			bt[2].state = (is_leader ? Button::NONE : Button::DISABLED);
+			bt[Bt_Leader].state = (is_leader ? Button::NONE : Button::DISABLED);
 	}
 
-	int count = (Net::IsOnline() ? 4 : 2);
+	// enable fast travel button
+	bool allow_fast_travel_prev = bt[Bt_FastTravel].state != Button::DISABLED;
+	if(net->IsFastTravel() && team->IsLeader())
+	{
+		bt[Bt_FastTravel].text = txCancelFastTravel;
+		if(!allow_fast_travel_prev)
+			bt[Bt_FastTravel].state = Button::NONE;
+	}
+	else
+	{
+		bt[Bt_FastTravel].text = txFastTravel;
+		bool allow_fast_travel = team->IsLeader() && game_level->CanFastTravel();
+		if(allow_fast_travel != allow_fast_travel_prev)
+			bt[Bt_FastTravel].state = (allow_fast_travel ? Button::NONE : Button::DISABLED);
+	}
+
+	const int count = Net::IsOnline() ? 5 : 3;
 	for(int i = 0; i < count; ++i)
 	{
 		bt[i].mouse_focus = focus;
 		bt[i].Update(dt);
+		if(bt[i].state == Button::DISABLED && bt[i].IsInside(gui->cursor_pos))
+		{
+			group = G_BUTTON;
+			index = i;
+		}
 	}
+
+	tooltip.UpdateTooltip(dt, group, index);
 
 	if(focus && input->Focus() && input->PressedRelease(Key::Escape))
 		Hide();
@@ -254,21 +354,30 @@ void TeamPanel::Event(GuiEvent e)
 		scrollbar.LostFocus();
 		break;
 	case GuiEvent_Show:
-		bt[2].state = ((Net::IsServer() || team->IsLeader()) ? Button::NONE : Button::DISABLED);
-		bt[3].state = (Net::IsServer() ? Button::NONE : Button::DISABLED);
+		bt[Bt_Leader].state = ((Net::IsServer() || team->IsLeader()) ? Button::NONE : Button::DISABLED);
+		bt[Bt_Kick].state = (Net::IsServer() ? Button::NONE : Button::DISABLED);
 		picking = false;
 		Changed();
 		UpdateButtons();
+		tooltip.Clear();
 		break;
-	case Bt_GiveGold:
-	case Bt_Leader:
-	case Bt_Kick:
+	case BtEvent_FastTravel:
+		if(net->IsFastTravel())
+			net->CancelFastTravel(FAST_TRAVEL_CANCEL, team->my_id);
+		else if(Net::IsSingleplayer() || (Net::IsServer() && !team->HaveOtherPlayer()))
+			game->ExitToMap();
+		else
+			net->StartFastTravel(0);
+		break;
+	case BtEvent_GiveGold:
+	case BtEvent_Leader:
+	case BtEvent_Kick:
 		game_gui->messages->AddGameMsg2(txPickCharacter, 1.5f, GMS_PICK_CHARACTER);
 		picking = true;
 		picked = -1;
 		mode = e;
 		break;
-	case Bt_PayCredit:
+	case BtEvent_PayCredit:
 		if(game->pc->credit == 0)
 			SimpleDialog(txNoCredit);
 		else
@@ -295,43 +404,15 @@ void TeamPanel::Changed()
 //=================================================================================================
 void TeamPanel::UpdateButtons()
 {
-	if(Net::IsOnline())
+	const int count = Net::IsOnline() ? 5 : 3;
+	const int s = (size.x - 16 - 4 * count) / count;
+
+	for(int i = 0; i < count; ++i)
 	{
-		int s = (size.x - 16 - 12) / 4;
-
-		bt[0].size.x = s;
-		bt[0].size.y = 48;
-		bt[0].pos = Int2(8, size.y - 58);
-		bt[0].global_pos = bt[0].pos + global_pos;
-
-		bt[1].size.x = s;
-		bt[1].size.y = 48;
-		bt[1].pos = Int2(8 + s + 4, size.y - 58);
-		bt[1].global_pos = bt[1].pos + global_pos;
-
-		bt[2].size.x = s;
-		bt[2].size.y = 48;
-		bt[2].pos = Int2(8 + s * 2 + 8, size.y - 58);
-		bt[2].global_pos = bt[2].pos + global_pos;
-
-		bt[3].size.x = s;
-		bt[3].size.y = 48;
-		bt[3].pos = Int2(8 + s * 3 + 12, size.y - 58);
-		bt[3].global_pos = bt[3].pos + global_pos;
-	}
-	else
-	{
-		int s = (size.x - 16 - 6) / 2;
-
-		bt[0].size.x = s;
-		bt[0].size.y = 48;
-		bt[0].pos = Int2(8, size.y - 58);
-		bt[0].global_pos = bt[0].pos + global_pos;
-
-		bt[1].size.x = s;
-		bt[1].size.y = 48;
-		bt[1].pos = Int2(8 + s + 4, size.y - 58);
-		bt[1].global_pos = bt[1].pos + global_pos;
+		bt[i].size.x = s;
+		bt[i].size.y = 48;
+		bt[i].pos = Int2(8 + (s + 4) * i, size.y - 58);
+		bt[i].global_pos = bt[i].pos + global_pos;
 	}
 }
 
@@ -508,4 +589,52 @@ void TeamPanel::Hide()
 {
 	LostFocus();
 	visible = false;
+}
+
+//=================================================================================================
+void TeamPanel::GetTooltip(TooltipController*, int group, int id, bool refresh)
+{
+	if(group == G_NONE)
+	{
+		tooltip.anything = false;
+		return;
+	}
+
+	tooltip.anything = true;
+	tooltip.big_text.clear();
+	tooltip.small_text.clear();
+	tooltip.img = nullptr;
+
+	switch(group)
+	{
+	case G_LEADER:
+		tooltip.text = txLeader;
+		break;
+	case G_UNCONSCIOUS:
+		tooltip.text = txUnconscious;
+		break;
+	case G_CLASS:
+		tooltip.text = team->members[id].GetClass()->name;
+		break;
+	case G_BUTTON:
+		switch(id)
+		{
+		case Bt_FastTravel:
+			tooltip.text = txFastTravelTooltip;
+			break;
+		case Bt_Leader:
+			tooltip.text = txChangeLeaderTooltip;
+			break;
+		case Bt_Kick:
+			tooltip.text = txKickTooltip;
+			break;
+		}
+		break;
+	case G_WAITING:
+		tooltip.text = txWaiting;
+		break;
+	case G_READY:
+		tooltip.text = txReady;
+		break;
+	}
 }

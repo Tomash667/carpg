@@ -5900,6 +5900,7 @@ void Game::ExitToMap()
 	if(game_level->is_open && game_level->location->type == L_ENCOUNTER)
 		LeaveLocation();
 
+	net->ClearFastTravel();
 	world->ExitToMap();
 	SetMusic(MusicType::Travel);
 
@@ -7637,6 +7638,7 @@ void Game::ClearGameVars(bool new_game)
 	game_level->Reset();
 	pathfinding->SetTarget(nullptr);
 	game_gui->world_map->Clear();
+	net->ClearFastTravel();
 	ParticleEmitter::ResetEntities();
 	TrailParticleEmitter::ResetEntities();
 	Unit::ResetEntities();

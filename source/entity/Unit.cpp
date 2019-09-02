@@ -2712,13 +2712,13 @@ bool Unit::Read(BitStreamReader& f)
 			Error("Invalid player %d free days %d.", player->id, player->free_days);
 			return false;
 		}
-		PlayerInfo* info = net->TryGetPlayer(player->id);
-		if(!info)
+		player->player_info = net->TryGetPlayer(player->id);
+		if(!player->player_info)
 		{
 			Error("Invalid player id %d.", player->id);
 			return false;
 		}
-		info->u = this;
+		player->player_info->u = this;
 	}
 	else
 	{

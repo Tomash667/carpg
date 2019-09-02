@@ -369,6 +369,7 @@ Location* World::CreateLocation(LOCATION type, int levels, bool is_village)
 Location* World::CreateLocation(LOCATION type, const Vec2& pos, float range, int target, UnitGroup* group, bool allow_exact, int dungeon_levels)
 {
 	assert(group);
+	assert(type != L_CITY); // not implemented - many methods currently assume that cities are at start of locations vector
 
 	Vec2 pt = pos;
 	if(range < 0.f)
@@ -427,6 +428,26 @@ Location* World::CreateLocation(LOCATION type, const Vec2& pos, float range, int
 			loc->st = 2;
 		if(group != UnitGroup::random)
 			loc->group = group;
+		else
+		{
+			switch(type)
+			{
+			case L_CITY:
+				loc->group = UnitGroup::empty;
+				break;
+			case L_FOREST:
+			case L_MOONWELL:
+				loc->group = UnitGroup::Get("forest");
+				break;
+			case L_CAVE:
+				loc->group = UnitGroup::Get("cave");
+				break;
+			default:
+				assert(0);
+				loc->group = UnitGroup::empty;
+				break;
+			}
+		}
 	}
 
 	SetLocationImageAndName(loc);
@@ -881,14 +902,20 @@ void World::GenerateWorld(int start_location_type, int start_location_target)
 
 	SmoothTiles();
 
+	this->start_location = locations[start_location];
+	tomir_spawned = false;
+}
+
+//=================================================================================================
+void World::StartInLocation()
+{
 	state = State::ON_MAP;
-	current_location_index = start_location;
-	current_location = locations[current_location_index];
+	current_location_index = start_location->index;
+	current_location = start_location;
 	current_location->state = LS_ENTERED;
 	world_pos = current_location->pos;
 	game_level->location_index = current_location_index;
 	game_level->location = current_location;
-	tomir_spawned = false;
 }
 
 //=================================================================================================

@@ -71,6 +71,8 @@ public:
 
 	// world generation
 	void GenerateWorld(int start_location_type = -1, int start_location_target = -1);
+	void SetStartLocation(Location* loc) { start_location = loc; }
+	void StartInLocation();
 	void CalculateTiles();
 	void SmoothTiles();
 	void CreateCity(const Vec2& pos, bool village);
@@ -83,6 +85,7 @@ private:
 public:
 	Location* CreateLocation(LOCATION type, const Vec2& pos, float range = 64.f, int target = -1, UnitGroup* group = UnitGroup::random,
 		bool allow_exact = true, int dungeon_levels = -1);
+	Location* CreateLocationS(LOCATION type, const Vec2& pos) { return CreateLocation(type, pos); }
 	int AddLocation(Location* loc);
 	void AddLocationAtIndex(Location* loc);
 	void RemoveLocation(int index);
@@ -126,6 +129,7 @@ public:
 	City* GetRandomSettlement(delegate<bool(City*)> pred);
 	Location* GetRandomSettlement(Location* loc);
 	Location* GetRandomSettlementWeighted(delegate<float(Location*)> func);
+	Vec2 GetSize() const { return Vec2((float)world_size, (float)world_size); }
 
 	// travel
 	void Travel(int index, bool send);
@@ -173,6 +177,7 @@ private:
 	WorldMapGui* gui;
 	State state;
 	Location* current_location; // current location or nullptr
+	Location* start_location;
 	int current_location_index; // current location index or -1
 	int travel_location_index; // travel target where state is TRAVEL, ENCOUNTER or INSIDE_ENCOUNTER (-1 otherwise)
 	vector<Location*> locations; // can be nullptr

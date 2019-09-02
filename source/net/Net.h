@@ -106,6 +106,7 @@ public:
 	~Net();
 	void Init();
 	void LoadLanguage();
+	void LoadData();
 	void WriteNetVars(BitStreamWriter& f);
 	void ReadNetVars(BitStreamReader& f);
 	bool ValidateNick(cstring nick);
@@ -119,6 +120,11 @@ public:
 	PlayerInfo* FindPlayer(const SystemAddress& adr);
 	PlayerInfo* TryGetPlayer(int id);
 	void ClosePeer(bool wait = false, bool check_was_client = false);
+	bool IsFastTravel() const { return fast_travel; }
+	void StartFastTravel(int who);
+	void CancelFastTravel(int mode, int id);
+	void ClearFastTravel();
+	void OnFastTravel(bool accept);
 
 	LobbyApi* api;
 	RakPeerInterface* peer;
@@ -150,6 +156,7 @@ public:
 	void WriteLevelData(BitStream& stream, bool loaded_resources);
 	int GetServerFlags();
 	void ClearChanges();
+	void UpdateFastTravel(float dt);
 
 	rvector<PlayerInfo> old_players;
 	uint active_players, max_players;
@@ -177,5 +184,9 @@ public:
 
 private:
 	static Mode mode;
-	cstring txCreateServerFailed, txInitConnectionFailed;
+	TexturePtr tFastTravel, tFastTravelDeny;
+	cstring txCreateServerFailed, txInitConnectionFailed, txFastTravelText, txFastTravelWaiting, txFastTravelCancel, txFastTravelDeny, txFastTravelNotSafe;
+	Notification* fast_travel_notif;
+	float fast_travel_timer;
+	bool fast_travel;
 };

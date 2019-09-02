@@ -61,6 +61,9 @@ void ForestGenerator::GenerateObjects()
 //=================================================================================================
 void ForestGenerator::GenerateUnits()
 {
+	if(loc->group->IsEmpty())
+		return;
+
 	LevelArea& area = *game_level->local_area;
 	UnitData* ud_hunter = UnitData::Get("wild_hunter");
 	const int level = game_level->GetDifficultyLevel();

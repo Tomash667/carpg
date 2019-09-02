@@ -181,6 +181,7 @@ void Game::NewGameCommon(Class* clas, cstring name, HumanData& hd, CreatedCharac
 	{
 		GenerateWorld();
 		quest_mgr->InitQuests(devmode);
+		world->StartInLocation();
 		if(!sound_mgr->IsMusicDisabled())
 		{
 			LoadMusic(MusicType::Boss, false);
@@ -1311,6 +1312,7 @@ void Game::UpdateServerTransfer(float dt)
 			net->prepare_world = true;
 			GenerateWorld();
 			quest_mgr->InitQuests(devmode);
+			world->StartInLocation();
 			net->prepare_world = false;
 			if(!sound_mgr->IsMusicDisabled())
 			{

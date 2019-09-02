@@ -10,6 +10,17 @@ enum USE_USABLE_STATE
 };
 
 //-----------------------------------------------------------------------------
+enum FAST_TRAVEL
+{
+	FAST_TRAVEL_START,
+	FAST_TRAVEL_CANCEL,
+	FAST_TRAVEL_ACCEPT,
+	FAST_TRAVEL_DENY,
+	FAST_TRAVEL_NOT_SAFE,
+	FAST_TRAVEL_IN_PROGRESS
+};
+
+//-----------------------------------------------------------------------------
 class NetChangeWriter
 {
 public:
@@ -186,6 +197,8 @@ struct NetChange
 		CHANGE_LOCATION_NAME, // change location name [byte(id)-index, auto:string1-name]
 		SET_SHORTCUT, // player set shortcut [byte(id)-index, auto:byte-type, byte/string1-value]
 		USE_CHEST, // unit uses chest SERVER[int(id)-chest id, int(count)-unit] / CLIENT[int(id)-chest id]
+		FAST_TRAVEL, // fast travel request/response [byte(id)-FAST_TRAVEL enum, SERVER: byte(count)-player id]
+		FAST_TRAVEL_VOTE, // update player vote for fast travel [byte(id)-player id]
 
 		MAX
 	} type;
