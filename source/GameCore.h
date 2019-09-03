@@ -218,6 +218,7 @@ enum SpecialEncounter;
 enum class AttributeId;
 enum class EffectId;
 enum class EffectSource;
+enum class HeroType;
 enum class MusicType;
 enum class Perk;
 enum class QuestCategory;

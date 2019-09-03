@@ -176,6 +176,7 @@ To open console press ~ [to the left from 1]. Some commands are only available
 in multiplayer on lobby. Devmode must be activated (devmode 1).
 Available commands:
 	add_effect - add effect to selected unit (add_effect effect <value_type> power [source [perk/time]]).
+	add_exp - add experience to team (add_exp value).
 	add_gold - give gold to player (add_gold count).
 	add_team_gold - give gold to team (add_team_gold count).
 	add_item - add item to player inventory (add_item id [count]).

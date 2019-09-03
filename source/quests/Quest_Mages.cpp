@@ -237,7 +237,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			loc.st = 1;
 			loc.SetKnown();
 			target_loc = loc.index;
-			team->AddTeamMember(DialogContext::current->talker, true);
+			team->AddTeamMember(DialogContext::current->talker, HeroType::Free);
 			OnUpdate(Format(game->txQuest[177], DialogContext::current->talker->hero->name.c_str(), GetTargetLocationName(),
 				GetLocationDirName(world->GetCurrentLocation()->pos, GetTargetLocation().pos), world->GetCurrentLocation()->name.c_str()));
 			mages_state = State::OldMageJoined;
@@ -347,7 +347,7 @@ void Quest_Mages2::SetProgress(int prog2)
 				OnUpdate(Format(game->txQuest[184], u->hero->name.c_str()));
 				good_mage_name = u->hero->name;
 				u->ai->goto_inn = false;
-				team->AddTeamMember(u, true);
+				team->AddTeamMember(u, HeroType::Free);
 			}
 
 			mages_state = State::MageRecruited;

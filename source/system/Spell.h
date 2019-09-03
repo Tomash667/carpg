@@ -22,7 +22,8 @@ struct Spell
 		Hold = 1 << 5,
 		Triple = 1 << 6, // tylko dla Point i Ball
 		Heal = 1 << 7,
-		NonCombat = 1 << 8
+		NonCombat = 1 << 8,
+		Cleric = 1 << 9, // uses charisma/gods magic instead of magic power/level
 	};
 
 	string id, sound_cast_id, sound_hit_id, tex_id, tex_particle_id, tex_explode_id, mesh_id;
@@ -31,13 +32,13 @@ struct Spell
 	Vec2 cooldown;
 	Type type;
 	int flags, dmg, dmg_bonus;
-	float range, size, size_particle, speed, explode_range, sound_cast_dist, sound_hit_dist;
+	float range, move_range, size, size_particle, speed, explode_range, sound_cast_dist, sound_hit_dist, mana;
 	btCollisionShape* shape;
 	Mesh* mesh;
 
 	Spell() : sound_cast(nullptr), sound_hit(nullptr), tex(nullptr), tex_particle(nullptr), tex_explode(nullptr), shape(nullptr), mesh(nullptr), type(Point),
-		cooldown(0, 0), flags(0), dmg(0), dmg_bonus(0), range(10.f), size(0.f), size_particle(0.f), speed(0.f), explode_range(0.f),
-		sound_cast_dist(1.f), sound_hit_dist(2.f) {}
+		cooldown(0, 0), flags(0), dmg(0), dmg_bonus(0), range(10.f), move_range(10.f), size(0.f), size_particle(0.f), speed(0.f), explode_range(0.f),
+		sound_cast_dist(1.f), sound_hit_dist(2.f), mana(0) {}
 	~Spell()
 	{
 		delete shape;

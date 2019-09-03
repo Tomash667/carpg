@@ -26,7 +26,8 @@ void AIController::Init(Unit* unit)
 	cooldown[0] = 0.f;
 	cooldown[1] = 0.f;
 	cooldown[2] = 0.f;
-	have_potion = 1;
+	have_potion = HavePotion::Check;
+	have_mp_potion = HavePotion::Check;
 	potion = -1;
 	last_scan = 0.f;
 	in_combat = false;
@@ -80,6 +81,7 @@ void AIController::Save(GameWriter& f)
 	if(state == AIController::Escape)
 		f << (escape_room ? escape_room->index : -1);
 	f << have_potion;
+	f << have_mp_potion;
 	f << potion;
 	f << idle_action;
 	switch(idle_action)
@@ -183,6 +185,10 @@ void AIController::Load(GameReader& f)
 	else if(state == AIController::Cast && LOAD_VERSION < V_DEV)
 		f.Skip<int>(); // old cast_target
 	f >> have_potion;
+	if(LOAD_VERSION >= V_DEV)
+		f >> have_mp_potion;
+	else
+		have_mp_potion = HavePotion::Check;
 	f >> potion;
 	f >> idle_action;
 	switch(idle_action)
@@ -255,7 +261,10 @@ void AIController::Load(GameReader& f)
 //=================================================================================================
 bool AIController::CheckPotion(bool in_combat)
 {
-	if(unit->action == A_NONE && have_potion > 0 && !IsSet(unit->data->flags, F_UNDEAD))
+	if(unit->action != A_NONE)
+		return false;
+
+	if(have_potion != HavePotion::No && !IsSet(unit->data->flags, F_UNDEAD))
 	{
 		float hpp = unit->GetHpp();
 		if(hpp < 0.5f || (hpp < 0.75f && !in_combat) || (!Equal(hpp, 1.f) && unit->busy == Unit::Busy_Tournament))
@@ -265,7 +274,7 @@ bool AIController::CheckPotion(bool in_combat)
 			{
 				if(unit->busy == Unit::Busy_No && unit->IsFollower() && !unit->summoner)
 					unit->Talk(RandomString(game->txAiNoHpPot));
-				have_potion = 0;
+				have_potion = HavePotion::No;
 				return false;
 			}
 
@@ -274,6 +283,32 @@ bool AIController::CheckPotion(bool in_combat)
 			timer = Random(1.f, 1.5f);
 
 			return true;
+		}
+	}
+
+	if(have_mp_potion != HavePotion::No)
+	{
+		Class* clas = unit->GetClass();
+		if(!clas || !clas->mp_bar)
+			have_mp_potion = HavePotion::No;
+		else
+		{
+			float mpp = unit->GetMpp();
+			if(mpp < 0.33f || (mpp < 0.66f && !in_combat) || (mpp < 0.80f && unit->busy == Unit::Busy_Tournament))
+			{
+				int index = unit->FindManaPotion();
+				if(index == -1)
+				{
+					have_mp_potion = HavePotion::No;
+					return false;
+				}
+
+				if(unit->ConsumeItem(index) != 3 && this->in_combat)
+					state = AIController::Dodge;
+				timer = Random(1.f, 1.5f);
+
+				return true;
+			}
 		}
 	}
 
@@ -298,7 +333,8 @@ void AIController::Reset()
 	cooldown[2] = 0.f;
 	last_scan = 0.f;
 	escape_room = nullptr;
-	have_potion = 1;
+	have_potion = HavePotion::Check;
+	have_mp_potion = HavePotion::Check;
 	idle_action = Idle_None;
 	change_ai_mode = true;
 	unit->run_attack = false;

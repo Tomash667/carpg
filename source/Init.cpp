@@ -338,6 +338,7 @@ void Game::LoadData()
 	AddLoadTasks();
 	game_gui->LoadData();
 	game_level->LoadData();
+	net->LoadData();
 	res_mgr->StartLoadScreen();
 }
 

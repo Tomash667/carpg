@@ -8,6 +8,7 @@ class bard {
 
 class cleric {
 	player base_cleric
+	hero hero_cleric
 	icon "icon_cleric.png"
 	action heal
 	mp_bar 1
@@ -25,6 +26,37 @@ class cleric {
 		gods_magic required 1
 		concentration required 0.5
 	}
+	potions {
+		level 17 {
+			p_hp3 1
+			p_mp3 1
+			p_hp2 5
+			p_mp2 3
+			p_hp 6
+			p_mp 6
+		}
+		level 13 {
+			p_hp2 3
+			p_mp2 2
+			p_hp 6
+			p_mp 5
+		}
+		level 9 {
+			p_hp2 2
+			p_mp2 1
+			p_hp 5
+			p_mp 4
+		}
+		level 6 {
+			p_hp2 1
+			p_hp 4
+			p_mp 4
+		}
+		level 0 {
+			p_hp 4
+			p_mp 2
+		}
+	}
 }
 
 class druid {
@@ -33,8 +65,8 @@ class druid {
 
 class hunter {
 	player base_hunter
-	hero hero_hunter 2
-	crazy crazy_hunter 2
+	hero hero_hunter
+	crazy crazy_hunter
 	icon "icon_hunter.png"
 	action summon_wolf
 	level {
@@ -47,12 +79,60 @@ class hunter {
 		bow 1.1
 		shield 1
 	}
+	potions {
+		level 17 {
+			p_hp3 4
+			p_hp2 5
+			p_hp 6
+		}
+		level 13 {
+			p_hp3 2
+			p_hp2 4
+			p_hp 6
+		}
+		level 9 {
+			p_hp3 1
+			p_hp2 3
+			p_hp 6
+		}
+		level 6 {
+			p_hp2 2
+			p_hp 5
+		}
+		level 0 {
+			p_hp 5
+		}
+	}
 }
 
 class mage {
 	hero hero_mage
 	crazy crazy_mage
 	icon "icon_mage.png"
+	potions {
+		level 17 {
+			p_hp3 4
+			p_hp2 5
+			p_hp 6
+		}
+		level 13 {
+			p_hp3 2
+			p_hp2 4
+			p_hp 6
+		}
+		level 9 {
+			p_hp3 1
+			p_hp2 3
+			p_hp 6
+		}
+		level 6 {
+			p_hp2 2
+			p_hp 5
+		}
+		level 0 {
+			p_hp 5
+		}
+	}
 }
 
 class monk {
@@ -65,8 +145,8 @@ class paladin {
 
 class rogue {
 	player base_rogue
-	hero hero_rogue 2
-	crazy crazy_rogue 2
+	hero hero_rogue
+	crazy crazy_rogue
 	icon "icon_rogue.png"
 	action dash
 	level {
@@ -79,12 +159,36 @@ class rogue {
 		bow 1
 		shield 1
 	}
+	potions {
+		level 17 {
+			p_hp3 4
+			p_hp2 5
+			p_hp 6
+		}
+		level 13 {
+			p_hp3 2
+			p_hp2 4
+			p_hp 6
+		}
+		level 9 {
+			p_hp3 1
+			p_hp2 3
+			p_hp 6
+		}
+		level 6 {
+			p_hp2 2
+			p_hp 5
+		}
+		level 0 {
+			p_hp 5
+		}
+	}
 }
 
 class warrior {
 	player base_warrior
-	hero hero_warrior 2
-	crazy crazy_warrior 2
+	hero hero_warrior
+	crazy crazy_warrior
 	icon "icon_warrior.png"
 	action bull_charge
 	level {
@@ -96,5 +200,29 @@ class warrior {
 		one_handed_weapon 1
 		bow 1
 		shield 1
+	}
+	potions {
+		level 17 {
+			p_hp3 4
+			p_hp2 5
+			p_hp 6
+		}
+		level 13 {
+			p_hp3 2
+			p_hp2 4
+			p_hp 6
+		}
+		level 9 {
+			p_hp3 1
+			p_hp2 3
+			p_hp 6
+		}
+		level 6 {
+			p_hp2 2
+			p_hp 5
+		}
+		level 0 {
+			p_hp 5
+		}
 	}
 }

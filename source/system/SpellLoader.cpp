@@ -31,7 +31,9 @@ enum Keyword
 	K_TEX_PARTICLE,
 	K_TEX_EXPLODE,
 	K_SOUND_CAST,
-	K_SOUND_HIT
+	K_SOUND_HIT,
+	K_MANA,
+	K_MOVE_RANGE
 };
 
 //=================================================================================================
@@ -67,7 +69,9 @@ void SpellLoader::InitTokenizer()
 		{ "tex_particle", K_TEX_PARTICLE },
 		{ "tex_explode", K_TEX_EXPLODE },
 		{ "sound_cast", K_SOUND_CAST },
-		{ "sound_hit", K_SOUND_HIT }
+		{ "sound_hit", K_SOUND_HIT },
+		{ "mana", K_MANA },
+		{ "move_range", K_MOVE_RANGE }
 		});
 
 	t.AddKeywords(G_TYPE, {
@@ -86,7 +90,8 @@ void SpellLoader::InitTokenizer()
 		{ "hold", Spell::Hold },
 		{ "triple", Spell::Triple },
 		{ "heal", Spell::Heal },
-		{ "non_combat", Spell::NonCombat }
+		{ "non_combat", Spell::NonCombat },
+		{ "cleric", Spell::Cleric }
 		});
 }
 
@@ -243,6 +248,20 @@ void SpellLoader::ParseSpell(const string& id)
 			if(spell->sound_hit_dist <= 0.f)
 				t.Throw("Invalid hit sound distance %g}.", spell->sound_hit_dist);
 			crc.Update(spell->sound_hit_dist);
+			t.Next();
+			break;
+		case K_MANA:
+			spell->mana = t.MustGetFloat();
+			if(spell->mana < 0)
+				LoadError("Nagative mana cost.");
+			crc.Update(spell->mana);
+			t.Next();
+			break;
+		case K_MOVE_RANGE:
+			spell->move_range = t.MustGetFloat();
+			if(spell->move_range < 0.f)
+				t.Throw("Negative nove range %g.", spell->move_range);
+			crc.Update(spell->move_range);
 			t.Next();
 			break;
 		}

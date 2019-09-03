@@ -255,18 +255,20 @@ void Game::UpdateAi(float dt)
 		{
 			for(int i = 0; i < 3; ++i)
 			{
-				if(u.data->spells && u.data->spells->spell[i] && IsSet(u.data->spells->spell[i]->flags, Spell::NonCombat)
-					&& u.level >= u.data->spells->level[i] && ai.cooldown[i] <= 0.f)
+				Spell* spell = u.data->spells->spell[i];
+				if(spell && IsSet(spell->flags, Spell::NonCombat)
+					&& u.level >= u.data->spells->level[i] && ai.cooldown[i] <= 0.f
+					&& (spell->mana <= 0 || u.mp >= spell->mana))
 				{
-					float spell_range = u.data->spells->spell[i]->range,
+					float spell_range = spell->move_range,
 						best_prio = -999.f, dist;
 					Unit* spell_target = nullptr;
 
 					// if near enemies, cast only on near targets
 					if(best_dist < 3.f)
-						spell_range = 2.5f;
+						spell_range = spell->range;
 
-					if(IsSet(u.data->spells->spell[i]->flags, Spell::Raise))
+					if(IsSet(spell->flags, Spell::Raise))
 					{
 						// raise undead spell
 						for(vector<Unit*>::iterator it2 = area.units.begin(), end2 = area.units.end(); it2 != end2; ++it2)
@@ -2363,6 +2365,7 @@ void Game::UpdateAi(float dt)
 			case AIController::Cast:
 				if(Unit* target = ai.target)
 				{
+					Spell& s = *u.data->spells->spell[u.attack_id];
 					if(target == &u)
 					{
 						move_type = DontMove;
@@ -2370,8 +2373,6 @@ void Game::UpdateAi(float dt)
 
 						if(u.action == A_NONE)
 						{
-							Spell& s = *u.data->spells->spell[u.attack_id];
-
 							ai.cooldown[u.attack_id] = s.cooldown.Random();
 							u.action = A_CAST;
 							u.animation_state = 0;
@@ -2399,14 +2400,12 @@ void Game::UpdateAi(float dt)
 						look_at = LookAtPoint;
 						target_pos = look_pos = target->pos;
 
-						if(Vec3::Distance(u.pos, target_pos) <= 2.5f)
+						if(Vec3::Distance(u.pos, target_pos) <= s.range)
 						{
 							move_type = DontMove;
 
 							if(u.action == A_NONE)
 							{
-								Spell& s = *u.data->spells->spell[u.attack_id];
-
 								ai.cooldown[u.attack_id] = s.cooldown.Random();
 								u.action = A_CAST;
 								u.animation_state = 0;

@@ -3273,7 +3273,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 		unit.visual_pos = unit.pos;
 		unit.changed = true;
 	}
-	unit.UpdatePhysics(unit.pos);
+	unit.UpdatePhysics();
 }
 
 //=================================================================================================
@@ -4918,7 +4918,7 @@ void Game::UpdateUnits(LevelArea& area, float dt)
 									}
 								}
 								if(ok)
-									u.UpdatePhysics(u.pos);
+									u.UpdatePhysics();
 							}
 						}
 					}
@@ -5742,7 +5742,7 @@ Unit* Game::CreateUnitWithAI(LevelArea& area, UnitData& unit, int level, Human* 
 		}
 		else
 			u->pos = *pos;
-		u->UpdatePhysics(u->pos);
+		u->UpdatePhysics();
 		u->visual_pos = u->pos;
 	}
 
@@ -5900,6 +5900,7 @@ void Game::ExitToMap()
 	if(game_level->is_open && game_level->location->type == L_ENCOUNTER)
 		LeaveLocation();
 
+	net->ClearFastTravel();
 	world->ExitToMap();
 	SetMusic(MusicType::Travel);
 
@@ -6134,6 +6135,14 @@ void Game::CastSpell(Unit& unit)
 	m2 = point->mat * unit.mesh_inst->mat_bones[point->bone] * (Matrix::RotationY(unit.rot) * Matrix::Translation(unit.pos));
 
 	Vec3 coord = Vec3::TransformZero(m2);
+	float dmg;
+	if(IsSet(spell.flags, Spell::Cleric))
+		dmg = float(spell.dmg + spell.dmg_bonus * (unit.Get(AttributeId::CHA) + unit.Get(SkillId::GODS_MAGIC) - 50));
+	else
+		dmg = float(spell.dmg + spell.dmg_bonus * (unit.CalculateMagicPower() + unit.level));
+
+	if(spell.mana > 0)
+		unit.RemoveMana(spell.mana);
 
 	if(spell.type == Spell::Ball || spell.type == Spell::Point)
 	{
@@ -6152,7 +6161,7 @@ void Game::CastSpell(Unit& unit)
 			b.level = unit.level + unit.CalculateMagicPower();
 			b.backstab = 0.25f;
 			b.pos = coord;
-			b.attack = float(spell.dmg);
+			b.attack = dmg;
 			b.rot = Vec3(0, current_rot + Random(-0.05f, 0.05f), 0);
 			b.mesh = spell.mesh;
 			b.tex = spell.tex;
@@ -6228,7 +6237,7 @@ void Game::CastSpell(Unit& unit)
 			Electro* e = new Electro;
 			e->Register();
 			e->hitted.push_back(unit);
-			e->dmg = float(spell.dmg + spell.dmg_bonus * (unit.CalculateMagicPower() + unit.level));
+			e->dmg = dmg;
 			e->owner = unit;
 			e->spell = &spell;
 			e->start_pos = unit.pos;
@@ -6294,7 +6303,6 @@ void Game::CastSpell(Unit& unit)
 					drain.from = hitted;
 					drain.to = &unit;
 
-					float dmg = float(spell.dmg + (unit.CalculateMagicPower() + unit.level)*spell.dmg_bonus);
 					GiveDmg(*hitted, dmg, &unit, nullptr, DMG_MAGICAL);
 
 					drain.pe = area.tmp->pes.back();
@@ -6420,7 +6428,7 @@ void Game::CastSpell(Unit& unit)
 			if(target)
 			{
 				Unit& u2 = *target;
-				u2.hp += float(spell.dmg + spell.dmg_bonus*(unit.level + unit.CalculateMagicPower()));
+				u2.hp += dmg;
 				if(u2.hp > u2.hpmax)
 					u2.hp = u2.hpmax;
 
@@ -6504,7 +6512,7 @@ void Game::CastPlayerSpell(PlayerController& player)
 			new_unit->in_arena = unit.in_arena;
 			if(new_unit->in_arena != -1)
 				arena->units.push_back(new_unit);
-			team->AddTeamMember(new_unit, true);
+			team->AddTeamMember(new_unit, HeroType::Visitor);
 			new_unit->order_unit = &unit;
 			SpawnUnitEffect(*new_unit);
 		}
@@ -7630,6 +7638,7 @@ void Game::ClearGameVars(bool new_game)
 	game_level->Reset();
 	pathfinding->SetTarget(nullptr);
 	game_gui->world_map->Clear();
+	net->ClearFastTravel();
 	ParticleEmitter::ResetEntities();
 	TrailParticleEmitter::ResetEntities();
 	Unit::ResetEntities();
@@ -7744,7 +7753,7 @@ Sound* Game::GetItemSound(const Item* item)
 	case IT_RING:
 		return sItem[9];
 	case IT_CONSUMABLE:
-		if(Any(item->ToConsumable().cons_type, Food, Herb))
+		if(Any(item->ToConsumable().cons_type, ConsumableType::Food, ConsumableType::Herb))
 			return sItem[7];
 		else
 			return sItem[0];
@@ -7799,7 +7808,7 @@ void Game::Unit_StopUsingUsable(LevelArea& area, Unit& u, bool send)
 	assert(ok);
 
 	if(u.cobj)
-		u.UpdatePhysics(u.target_pos);
+		u.UpdatePhysics(&u.target_pos);
 
 	if(send && Net::IsOnline())
 	{

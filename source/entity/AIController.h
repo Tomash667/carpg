@@ -17,6 +17,14 @@ struct RegionTarget
 };
 
 //-----------------------------------------------------------------------------
+enum class HavePotion
+{
+	No,
+	Check,
+	Yes
+};
+
+//-----------------------------------------------------------------------------
 struct AIController
 {
 	enum State
@@ -92,7 +100,7 @@ struct AIController
 	bool in_combat, city_wander, goto_inn;
 	float next_attack, timer, ignore, morale, cooldown[3], last_scan, start_rot, loc_timer, shoot_yspeed;
 	Room* escape_room;
-	int have_potion; // czy ai ma miksturke lecznicz¹: 0 - nie ma, 1 - trzeba sprawdziæ, 2 - ma
+	HavePotion have_potion, have_mp_potion;
 	int potion; // miksturka do u¿ycia po schowaniu broni
 	IdleAction idle_action;
 	union IdleData

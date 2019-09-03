@@ -20,6 +20,8 @@
 #include "Team.h"
 #include "LobbyApi.h"
 #include "SaveState.h"
+#include "Notifications.h"
+#include "ResourceManager.h"
 
 Net* global::net;
 const float CHANGE_LEVEL_TIMER = 5.f;
@@ -53,6 +55,17 @@ void Net::LoadLanguage()
 {
 	txCreateServerFailed = Str("createServerFailed");
 	txInitConnectionFailed = Str("initConnectionFailed");
+	txFastTravelText = Str("fastTravelText");
+	txFastTravelWaiting = Str("fastTravelWaiting");
+	txFastTravelCancel = Str("fastTravelCancel");
+	txFastTravelDeny = Str("fastTravelDeny");
+}
+
+//=================================================================================================
+void Net::LoadData()
+{
+	tFastTravel = res_mgr->LoadInstant<Texture>("fast_travel.png");
+	tFastTravelDeny = res_mgr->LoadInstant<Texture>("fast_travel_deny.png");
 }
 
 //=================================================================================================
@@ -882,4 +895,191 @@ bool Net::ReadLevelData(BitStreamReader& f)
 	}
 
 	return true;
+}
+
+//=================================================================================================
+void Net::StartFastTravel(int who)
+{
+	// mark players
+	if(IsServer() || who == 2)
+	{
+		for(PlayerInfo& info : players)
+			info.fast_travel = false;
+		if(who == 0)
+			GetMe().fast_travel = true;
+		else
+			team->GetLeader()->player->player_info->fast_travel = true;
+		fast_travel = true;
+		fast_travel_timer = 0.f;
+	}
+
+	// send to server/players
+	if(who == 0 || who == 1)
+	{
+		NetChange& c = Add1(changes);
+		c.type = NetChange::FAST_TRAVEL;
+		c.id = FAST_TRAVEL_START;
+		c.count = 0;
+	}
+
+	// show notification
+	if((who == 0 && IsServer()) || (who == 2 && team->IsLeader()))
+	{
+		if(fast_travel_notif)
+			fast_travel_notif->Close();
+		fast_travel_notif = game_gui->notifications->Add(txFastTravelWaiting, tFastTravel, -1.f);
+	}
+	else if(who == 1 || (who == 2 && !team->IsLeader()))
+	{
+		if(fast_travel_notif)
+			fast_travel_notif->Close();
+		fast_travel_notif = game_gui->notifications->Add(txFastTravelText, tFastTravel, -1.f);
+		fast_travel_notif->buttons = true;
+		fast_travel_notif->callback = delegate<void(bool)>(this, &Net::OnFastTravel);
+	}
+}
+
+//=================================================================================================
+void Net::CancelFastTravel(int mode, int id)
+{
+	fast_travel = false;
+
+	if(!fast_travel_notif)
+		return;
+
+	switch(mode)
+	{
+	case FAST_TRAVEL_CANCEL:
+		if(id != team->my_id)
+		{
+			PlayerInfo* info = TryGetPlayer(id);
+			cstring name = info ? info->name.c_str() : nullptr;
+			fast_travel_notif->icon = tFastTravelDeny;
+			fast_travel_notif->text = Format(txFastTravelCancel, name);
+			fast_travel_notif->Close(3.f);
+		}
+		else
+			fast_travel_notif->Close();
+		break;
+	case FAST_TRAVEL_DENY:
+		{
+			PlayerInfo* info = TryGetPlayer(id);
+			cstring name = info ? info->name.c_str() : nullptr;
+			fast_travel_notif->icon = tFastTravelDeny;
+			fast_travel_notif->text = Format(txFastTravelDeny, name);
+			fast_travel_notif->Close(3.f);
+		}
+		break;
+	case FAST_TRAVEL_NOT_SAFE:
+		fast_travel_notif->icon = tFastTravelDeny;
+		fast_travel_notif->text = txFastTravelNotSafe;
+		fast_travel_notif->Close(3.f);
+		break;
+	case FAST_TRAVEL_IN_PROGRESS:
+		fast_travel_notif->Close();
+		break;
+	}
+
+	fast_travel_notif->buttons = false;
+	fast_travel_notif = nullptr;
+
+	if(IsServer() || (team->IsLeader() && mode == FAST_TRAVEL_CANCEL))
+	{
+		NetChange& c = Add1(changes);
+		c.type = NetChange::FAST_TRAVEL;
+		c.id = mode;
+		c.count = id;
+	}
+}
+
+//=================================================================================================
+void Net::ClearFastTravel()
+{
+	if(fast_travel_notif)
+	{
+		fast_travel_notif->Close();
+		fast_travel_notif = nullptr;
+	}
+	fast_travel = false;
+}
+
+//=================================================================================================
+void Net::OnFastTravel(bool accept)
+{
+	if(accept)
+	{
+		PlayerInfo& me = GetMe();
+		fast_travel_notif->buttons = false;
+		fast_travel_notif->text = txFastTravelWaiting;
+		me.fast_travel = true;
+
+		NetChange& c = Add1(changes);
+		if(IsServer())
+		{
+			c.type = NetChange::FAST_TRAVEL_VOTE;
+			c.id = me.id;
+		}
+		else
+		{
+			c.type = NetChange::FAST_TRAVEL;
+			c.id = FAST_TRAVEL_ACCEPT;
+		}
+	}
+	else
+	{
+		fast_travel = false;
+		fast_travel_notif->Close();
+		fast_travel_notif = nullptr;
+
+		NetChange& c = Add1(changes);
+		c.type = NetChange::FAST_TRAVEL;
+		c.id = FAST_TRAVEL_DENY;
+		c.count = team->my_id;
+	}
+}
+
+//=================================================================================================
+void Net::UpdateFastTravel(float dt)
+{
+	if(!fast_travel)
+		return;
+
+	if(!game_level->CanFastTravel())
+	{
+		CancelFastTravel(FAST_TRAVEL_NOT_SAFE, 0);
+		return;
+	}
+
+	int player_id = -1;
+	bool ok = true;
+	for(PlayerInfo& info : players)
+	{
+		if(info.left == PlayerInfo::LEFT_NO && !info.fast_travel)
+		{
+			player_id = info.id;
+			ok = false;
+			break;
+		}
+	}
+
+	if(ok)
+	{
+		NetChange& c = Add1(changes);
+		c.type = NetChange::FAST_TRAVEL;
+		c.id = FAST_TRAVEL_IN_PROGRESS;
+
+		if(fast_travel_notif)
+		{
+			fast_travel_notif->Close();
+			fast_travel_notif = nullptr;
+		}
+
+		game->ExitToMap();
+	}
+	else
+	{
+		fast_travel_timer += dt;
+		if(fast_travel_timer >= 5.f)
+			CancelFastTravel(FAST_TRAVEL_DENY, player_id);
+	}
 }

@@ -294,7 +294,7 @@ bool Game::ReadPlayerData(BitStreamReader& f)
 			return false;
 		}
 		team->members.push_back(team_member);
-		if(team_member->IsPlayer() || !team_member->hero->free)
+		if(team_member->IsPlayer() || team_member->hero->type == HeroType::Normal)
 			team->active_members.push_back(team_member);
 	}
 	f.ReadCasted<byte>(team->leader_id);
@@ -349,6 +349,7 @@ void Game::UpdateServer(float dt)
 	if(game_state == GS_LEVEL)
 	{
 		net->InterpolatePlayers(dt);
+		net->UpdateFastTravel(dt);
 		pc->unit->changed = true;
 	}
 
@@ -515,7 +516,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							FOV::DungeonReveal(new_tile, game_level->minimap_reveal);
 					}
 					unit.pos = new_pos;
-					unit.UpdatePhysics(unit.pos);
+					unit.UpdatePhysics();
 					unit.interp->Add(unit.pos, rot);
 					unit.changed = true;
 				}
@@ -1146,9 +1147,14 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 							unit.gold -= price;
 							player.Train(TrainWhat::Trade, (float)price, 0);
 						}
-						else if(player.action == PlayerAction::ShareItems && slot.item->type == IT_CONSUMABLE
-							&& slot.item->ToConsumable().IsHealingPotion())
-							player.action_unit->ai->have_potion = 1;
+						else if(player.action == PlayerAction::ShareItems && slot.item->type == IT_CONSUMABLE)
+						{
+							const Consumable& pot = slot.item->ToConsumable();
+							if(pot.ai_type == ConsumableAiType::Healing)
+								player.action_unit->ai->have_potion = HavePotion::Check;
+							else if(pot.ai_type == ConsumableAiType::Mana)
+								player.action_unit->ai->have_mp_potion = HavePotion::Check;
+						}
 						if(player.action != PlayerAction::LootChest && player.action != PlayerAction::LootContainer)
 						{
 							player.action_unit->weight -= slot.item->weight*count;
@@ -1285,12 +1291,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					{
 						Unit* t = player.action_unit;
 						uint add_as_team = team_count;
-						if(player.action == PlayerAction::ShareItems)
-						{
-							if(slot.item->type == IT_CONSUMABLE && slot.item->ToConsumable().IsHealingPotion())
-								t->ai->have_potion = 2;
-						}
-						else if(player.action == PlayerAction::GiveItems)
+						if(player.action == PlayerAction::GiveItems)
 						{
 							add_as_team = 0;
 							int price = slot.item->value / 2;
@@ -1305,14 +1306,18 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 								t->gold -= price;
 								unit.gold += price;
 							}
-							if(slot.item->type == IT_CONSUMABLE && slot.item->ToConsumable().IsHealingPotion())
-								t->ai->have_potion = 2;
 						}
 						t->AddItem2(slot.item, count, add_as_team, false, false);
 						if(player.action == PlayerAction::ShareItems || player.action == PlayerAction::GiveItems)
 						{
-							if(slot.item->type == IT_CONSUMABLE && t->ai->have_potion == 0)
-								t->ai->have_potion = 1;
+							if(slot.item->type == IT_CONSUMABLE)
+							{
+								const Consumable& pot = slot.item->ToConsumable();
+								if(pot.ai_type == ConsumableAiType::Healing)
+									t->ai->have_potion = HavePotion::Yes;
+								else if(pot.ai_type == ConsumableAiType::Mana)
+									t->ai->have_mp_potion = HavePotion::Yes;
+							}
 							if(player.action == PlayerAction::GiveItems)
 							{
 								t->UpdateInventory();
@@ -3200,6 +3205,58 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				}
 			}
 			break;
+		// fast travel request/response
+		case NetChange::FAST_TRAVEL:
+			{
+				FAST_TRAVEL option;
+				f.ReadCasted<byte>(option);
+				if(!f)
+				{
+					Error("Update server: Broken FAST_TRAVEL from %s.", info.name.c_str());
+					break;
+				}
+
+				switch(option)
+				{
+				case FAST_TRAVEL_START:
+					if(!team->IsLeader(info.u))
+						Error("Update server: FAST_TRAVEL start - %s is not leader.", info.name.c_str());
+					else if(net->IsFastTravel())
+						Error("Update server: FAST_TRAVEL already started from %s.", info.name.c_str());
+					else if(!game_level->CanFastTravel())
+						Error("Update server: FAST_TRAVEL start from %s, can't.", info.name.c_str());
+					else
+						net->StartFastTravel(1);
+					break;
+				case FAST_TRAVEL_CANCEL:
+					if(!team->IsLeader(info.u))
+						Error("Update server: FAST_TRAVEL cancel - %s is not leader.", info.name.c_str());
+					else if(!net->IsFastTravel())
+						Error("Update server: FAST_TRAVEL cancel not started from %s.", info.name.c_str());
+					else
+						net->CancelFastTravel(FAST_TRAVEL_CANCEL, info.id);
+					break;
+				case FAST_TRAVEL_ACCEPT:
+					if(info.fast_travel)
+						Error("Update server: FAST_TRAVEL already accepted from %s.", info.name.c_str());
+					else
+					{
+						info.fast_travel = true;
+
+						NetChange& c = Add1(Net::changes);
+						c.type = NetChange::FAST_TRAVEL_VOTE;
+						c.id = info.id;
+					}
+					break;
+				case FAST_TRAVEL_DENY:
+					if(info.fast_travel)
+						Error("Update server: FAST_TRAVEL cancel already accepted from %s.", info.name.c_str());
+					else
+						net->CancelFastTravel(FAST_TRAVEL_DENY, info.id);
+					break;
+				}
+			}
+			break;
 		// invalid change
 		default:
 			Error("Update server: Invalid change type %u from %s.", type, info.name.c_str());
@@ -3469,6 +3526,7 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 		case NetChange::TRAVEL:
 		case NetChange::CHEAT_TRAVEL:
 		case NetChange::REMOVE_CAMP:
+		case NetChange::FAST_TRAVEL_VOTE:
 			f.WriteCasted<byte>(c.id);
 			break;
 		case NetChange::PAUSED:
@@ -3490,7 +3548,7 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 			break;
 		case NetChange::RECRUIT_NPC:
 			f << c.unit->id;
-			f << c.unit->hero->free;
+			f << (c.unit->hero->type != HeroType::Normal);
 			break;
 		case NetChange::SPAWN_UNIT:
 			c.unit->Write(f);
@@ -3606,6 +3664,10 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 		case NetChange::USE_CHEST:
 			f << c.id;
 			f << c.count;
+			break;
+		case NetChange::FAST_TRAVEL:
+			f.WriteCasted<byte>(c.id);
+			f.WriteCasted<byte>(c.count);
 			break;
 		default:
 			Error("Update server: Unknown change %d.", c.type);
@@ -4062,7 +4124,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					assert(ani < ANI_MAX);
 					if(unit->animation != ANI_PLAY && ani != ANI_PLAY)
 						unit->animation = ani;
-					unit->UpdatePhysics(unit->pos);
+					unit->UpdatePhysics();
 					unit->interp->Add(pos, rot);
 				}
 			}
@@ -5298,7 +5360,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					else
 					{
 						unit->hero->team_member = true;
-						unit->hero->free = free;
+						unit->hero->type = free ? HeroType::Visitor : HeroType::Normal;
 						unit->hero->credit = 0;
 						team->members.push_back(unit);
 						if(!free)
@@ -5327,7 +5389,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					{
 						unit->hero->team_member = false;
 						RemoveElement(team->members.ptrs, unit);
-						if(!unit->hero->free)
+						if(unit->hero->type == HeroType::Normal)
 							RemoveElement(team->active_members.ptrs, unit);
 						if(game_gui->team->visible)
 							game_gui->team->Changed();
@@ -6529,6 +6591,51 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				}
 			}
 			break;
+		// fast travel request/response
+		case NetChange::FAST_TRAVEL:
+			{
+				FAST_TRAVEL option;
+				byte id;
+				f.ReadCasted<byte>(option);
+				f >> id;
+				if(!f)
+				{
+					Error("Update client: Broken FAST_TRAVEL.");
+					break;
+				}
+				switch(option)
+				{
+				case FAST_TRAVEL_START:
+					net->StartFastTravel(2);
+					break;
+				case FAST_TRAVEL_CANCEL:
+				case FAST_TRAVEL_DENY:
+				case FAST_TRAVEL_NOT_SAFE:
+				case FAST_TRAVEL_IN_PROGRESS:
+					net->CancelFastTravel(option, id);
+					break;
+				}
+			}
+			break;
+		// update player vote for fast travel
+		case NetChange::FAST_TRAVEL_VOTE:
+			{
+				byte id;
+				f >> id;
+				if(!f)
+				{
+					Error("Update client: Broken FAST_TRAVEL_VOTE.");
+					break;
+				}
+				PlayerInfo* info = net->TryGetPlayer(id);
+				if(!info)
+				{
+					Error("Update client: FAST_TRAVEL_VOTE invaid player %u.", id);
+					break;
+				}
+				info->fast_travel = true;
+			}
+			break;
 		// invalid change
 		default:
 			Warn("Update client: Unknown change type %d.", type);
@@ -7462,6 +7569,7 @@ void Game::WriteClientChanges(BitStreamWriter& f)
 		case NetChange::TRAVEL:
 		case NetChange::CHEAT_TRAVEL:
 		case NetChange::REST:
+		case NetChange::FAST_TRAVEL:
 			f.WriteCasted<byte>(c.id);
 			break;
 		case NetChange::CHEAT_WARP_TO_STAIRS:

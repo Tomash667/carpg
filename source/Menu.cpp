@@ -162,12 +162,12 @@ void Game::NewGameCommon(Class* clas, cstring name, HumanData& hd, CreatedCharac
 
 	if(!tutorial && cc.HavePerk(Perk::Leader))
 	{
-		Unit* npc = CreateUnit(*Class::GetRandomHero()->hero, -1, nullptr, nullptr, false);
+		Unit* npc = CreateUnit(*Class::GetRandomHeroData(), -1, nullptr, nullptr, false);
 		npc->area = nullptr;
 		npc->ai = new AIController;
 		npc->ai->Init(npc);
 		npc->hero->know_name = true;
-		team->AddTeamMember(npc, false);
+		team->AddTeamMember(npc, HeroType::Normal);
 		--team->free_recruits;
 		npc->hero->SetupMelee();
 	}
@@ -181,6 +181,7 @@ void Game::NewGameCommon(Class* clas, cstring name, HumanData& hd, CreatedCharac
 	{
 		GenerateWorld();
 		quest_mgr->InitQuests(devmode);
+		world->StartInLocation();
 		if(!sound_mgr->IsMusicDisabled())
 		{
 			LoadMusic(MusicType::Boss, false);
@@ -1311,6 +1312,7 @@ void Game::UpdateServerTransfer(float dt)
 			net->prepare_world = true;
 			GenerateWorld();
 			quest_mgr->InitQuests(devmode);
+			world->StartInLocation();
 			net->prepare_world = false;
 			if(!sound_mgr->IsMusicDisabled())
 			{
@@ -1430,7 +1432,7 @@ void Game::UpdateServerTransfer(float dt)
 			if(unit->IsPlayer())
 				continue;
 
-			if(unit->hero->free)
+			if(unit->hero->type != HeroType::Normal)
 				team->members.push_back(unit);
 			else
 			{
@@ -1462,14 +1464,14 @@ void Game::UpdateServerTransfer(float dt)
 
 		if(!net->mp_load && leader_perk > 0 && team->GetActiveTeamSize() < team->GetMaxSize())
 		{
-			UnitData& ud = *Class::GetRandomHero()->hero;
+			UnitData& ud = *Class::GetRandomHeroData();
 			int level = ud.level.x + 2 * (leader_perk - 1);
 			Unit* npc = CreateUnit(ud, level, nullptr, nullptr, false);
 			npc->area = nullptr;
 			npc->ai = new AIController;
 			npc->ai->Init(npc);
 			npc->hero->know_name = true;
-			team->AddTeamMember(npc, false);
+			team->AddTeamMember(npc, HeroType::Normal);
 			npc->hero->SetupMelee();
 		}
 		game_level->entering = false;
@@ -1981,8 +1983,6 @@ void Game::AddMultiMsg(cstring _msg)
 void Game::Quit()
 {
 	Info("Game: Quit.");
-
-	game_gui->main_menu->ShutdownThread();
 	if(Net::IsOnline())
 		CloseConnection(VoidF(this, &Game::DoQuit));
 	else

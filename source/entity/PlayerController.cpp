@@ -1547,30 +1547,31 @@ int PlayerController::GetHealingPotion() const
 	{
 		if(!it->item || it->item->type != IT_CONSUMABLE)
 			continue;
+
 		const Consumable& pot = it->item->ToConsumable();
-		if(pot.IsHealingPotion())
+		if(pot.ai_type != ConsumableAiType::Healing)
+			continue;
+
+		float power = pot.GetEffectPower(EffectId::Heal);
+		if(potion_index == -1)
 		{
-			float power = pot.GetEffectPower(EffectId::Heal);
-			if(potion_index == -1)
+			potion_index = index;
+			healed_hp = power;
+		}
+		else
+		{
+			if(power > missing_hp)
 			{
-				potion_index = index;
-				healed_hp = power;
-			}
-			else
-			{
-				if(power > missing_hp)
-				{
-					if(power < healed_hp)
-					{
-						potion_index = index;
-						healed_hp = power;
-					}
-				}
-				else if(power > healed_hp)
+				if(power < healed_hp)
 				{
 					potion_index = index;
 					healed_hp = power;
 				}
+			}
+			else if(power > healed_hp)
+			{
+				potion_index = index;
+				healed_hp = power;
 			}
 		}
 	}
@@ -1603,5 +1604,5 @@ void PlayerController::SetShortcut(int index, Shortcut::Type type, int value)
 float PlayerController::GetActionPower() const
 {
 	// currently only used by heal spell
-	return 100.f + 4.f * unit->Get(AttributeId::CHA) + 4.f * unit->Get(SkillId::GODS_MAGIC);
+	return 150.f + 5.f * (unit->Get(AttributeId::CHA) - 50.f) + 5.f * unit->Get(SkillId::GODS_MAGIC);
 }

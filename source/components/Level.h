@@ -164,7 +164,8 @@ public:
 	GroundItem* FindItem(const Item* item);
 	Unit* GetMayor();
 	bool IsSafe();
-	CanLeaveLocationResult CanLeaveLocation(Unit& unit);
+	bool CanFastTravel();
+	CanLeaveLocationResult CanLeaveLocation(Unit& unit, bool check_dist = true);
 	Vec4 GetFogColor() { return fog_color; }
 	Vec4 GetFogParams();
 	Vec4 GetAmbientColor();

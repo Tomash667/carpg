@@ -328,7 +328,7 @@ void Arena::StartArenaCombat(int level)
 			c.type = NetChange::CHANGE_ARENA_STATE;
 			c.unit = &unit;
 		}
-		else if(unit.IsHero() && unit.CanFollowWarp())
+		else if(unit.IsHero() && unit.CanFollowWarp() && !unit.dont_attack)
 		{
 			unit.frozen = FROZEN::YES;
 			unit.in_arena = 0;

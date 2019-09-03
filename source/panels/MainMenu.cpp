@@ -263,4 +263,6 @@ void MainMenu::ShutdownThread()
 		check_version_thread.join();
 		check_status = CheckVersionStatus::Cancel;
 	}
+	else if(check_status == CheckVersionStatus::Done)
+		check_version_thread.join();
 }

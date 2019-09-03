@@ -1203,7 +1203,7 @@ void InventoryPanel::Update(float dt)
 							c.id = i_index;
 						}
 					}
-					else if(item->type == IT_CONSUMABLE && item->ToConsumable().IsHealingPotion())
+					else if(item->type == IT_CONSUMABLE && item->ToConsumable().ai_type != ConsumableAiType::None)
 					{
 						uint count;
 						if(slot->count != 1)
@@ -2238,8 +2238,14 @@ void InventoryPanel::ShareGiveItem(int index, uint count)
 		c.id = index;
 		c.count = count;
 	}
-	else if(item->type == IT_CONSUMABLE && item->ToConsumable().IsHealingPotion())
-		unit->player->action_unit->ai->have_potion = 2;
+	else if(item->type == IT_CONSUMABLE)
+	{
+		const Consumable& pot = slot.item->ToConsumable();
+		if(pot.ai_type == ConsumableAiType::Healing)
+			unit->player->action_unit->ai->have_potion = HavePotion::Yes;
+		else if(pot.ai_type == ConsumableAiType::Mana)
+			unit->player->action_unit->ai->have_mp_potion = HavePotion::Yes;
+	}
 }
 
 //=================================================================================================
@@ -2277,8 +2283,14 @@ void InventoryPanel::ShareTakeItem(int index, uint count)
 		c.id = index;
 		c.count = count;
 	}
-	else if(item->type == IT_CONSUMABLE && item->ToConsumable().IsHealingPotion())
-		unit->ai->have_potion = 1;
+	else if(item->type == IT_CONSUMABLE)
+	{
+		const Consumable& pot = slot.item->ToConsumable();
+		if(pot.ai_type == ConsumableAiType::Healing)
+			unit->ai->have_potion = HavePotion::Yes;
+		else if(pot.ai_type == ConsumableAiType::Mana)
+			unit->ai->have_mp_potion = HavePotion::Yes;
+	}
 }
 
 //=================================================================================================
@@ -2415,7 +2427,13 @@ void InventoryPanel::GivePotion(int index, uint count)
 		c.count = count;
 	}
 	else
-		unit->player->action_unit->ai->have_potion = 2;
+	{
+		const Consumable& pot = slot.item->ToConsumable();
+		if(pot.ai_type == ConsumableAiType::Healing)
+			unit->player->action_unit->ai->have_potion = HavePotion::Yes;
+		else if(pot.ai_type == ConsumableAiType::Mana)
+			unit->player->action_unit->ai->have_mp_potion = HavePotion::Yes;
+	}
 }
 
 //=================================================================================================

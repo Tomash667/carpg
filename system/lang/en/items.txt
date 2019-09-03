@@ -578,6 +578,18 @@ item r_dex {
 	name "Ring of dexterity"
 	desc "+5 to dexterity."
 }
+item r_int {
+	name "Ring of inteligence"
+	desc "+5 to inteligence."
+}
+item r_wis {
+	name "Ring of wisdom"
+	desc "+5 to wisdom."
+}
+item r_cha {
+	name "Ring of charisma"
+	desc "+5 to charisma."
+}
 item r_hp {
 	name "Ring of health"
 	desc "+100 to health."
@@ -673,6 +685,18 @@ item r_end2 {
 item r_dex2 {
 	name "Ring of greater dexterity"
 	desc "+15 to dexterity."
+}
+item r_int2 {
+	name "Ring of greater inteligence"
+	desc "+15 to inteligence."
+}
+item r_wis2 {
+	name "Ring of greater wisdom"
+	desc "+15 to wisdom."
+}
+item r_cha2 {
+	name "Ring of greater charisma"
+	desc "+15 to charisma."
 }
 item r_regeneration {
 	name "Ring of regeneration"

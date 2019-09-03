@@ -578,6 +578,18 @@ item r_dex {
 	name "Pierœcieñ zrêcznoœci"
 	desc "+5 do zrêcznoœci."
 }
+item r_int {
+	name "Pierœcien inteligencji"
+	desc "+5 do inteligencji."
+}
+item r_wis {
+	name "Pierœcieñ m¹droœci"
+	desc "+5 do m¹droœci."
+}
+item r_cha {
+	name "Pierœcieñ charyzmy"
+	desc "+5 do charyzmy."
+}
 item r_hp {
 	name "Pierœcieñ zdrowia"
 	desc "+100 do zdrowia."
@@ -673,6 +685,18 @@ item r_end2 {
 item r_dex2 {
 	name "Wiêkszy pierœcieñ zrêcznoœci"
 	desc "+15 do zrêcznoœci."
+}
+item r_int2 {
+	name "Wiêkszy pierœcieñ inteligencji"
+	desc "+15 do inteligencji."
+}
+item r_wis2 {
+	name "Wiêkszy pierœcieñ m¹droœci"
+	desc "+15 do m¹droœci."
+}
+item r_cha2 {
+	name "Wiêkszy pierœcieñ charyzmy"
+	desc "+15 do charyzmy."
 }
 item r_regeneration {
 	name "Pierœcieñ regeneracji"

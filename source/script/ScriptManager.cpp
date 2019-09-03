@@ -506,6 +506,22 @@ void ScriptManager::RegisterGame()
 		{ "MOVE_RUN_WHEN_NEAR_TEAM", Unit::MOVE_RUN_WHEN_NEAR_TEAM }
 		});
 
+	AddEnum("LOCATION_IMAGE", {
+		{ "LI_CITY", LI_CITY },
+		{ "LI_VILLAGE", LI_VILLAGE },
+		{ "LI_CAVE", LI_CAVE },
+		{ "LI_CAMP", LI_CAMP },
+		{ "LI_DUNGEON", LI_DUNGEON },
+		{ "LI_CRYPT", LI_CRYPT },
+		{ "LI_FOREST", LI_FOREST },
+		{ "LI_MOONWELL", LI_MOONWELL },
+		{ "LI_TOWER", LI_TOWER },
+		{ "LI_LABYRINTH", LI_LABYRINTH },
+		{ "LI_MINE", LI_MINE },
+		{ "LI_SAWMILL", LI_SAWMILL },
+		{ "LI_DUNGEON2", LI_DUNGEON2 }
+		});
+
 	AddType("Var")
 		.Method("bool IsNone() const", asMETHOD(Var, IsNone))
 		.Method("bool IsBool() const", asMETHODPR(Var, IsBool, () const, bool))
@@ -628,7 +644,8 @@ void ScriptManager::RegisterGame()
 
 	AddType("UnitGroup")
 		.WithNamespace()
-		.AddFunction("UnitGroup@ Get(const string& in)", asFUNCTION(UnitGroup::GetS));
+		.AddFunction("UnitGroup@ Get(const string& in)", asFUNCTION(UnitGroup::GetS))
+		.AddObject("UnitGroup@ empty", &UnitGroup::empty);
 
 	WithNamespace("Team", team)
 		.AddFunction("Unit@ get_leader()", asMETHOD(Team, GetLeader))
@@ -641,8 +658,10 @@ void ScriptManager::RegisterGame()
 		.AddFunction("bool HaveNpcMember()", asMETHOD(Team, HaveActiveNpc))
 		.AddFunction("bool HaveItem(Item@)", asMETHOD(Team, HaveItem))
 		.AddFunction("void AddGold(uint)", asMETHOD(Team, AddGoldS))
+		.AddFunction("void AddExp(int)", asMETHOD(Team, AddExpS))
 		.AddFunction("void AddReward(uint, uint = 0)", asMETHOD(Team, AddReward))
-		.AddFunction("uint RemoveItem(Item@, uint = 1)", asMETHOD(Team, RemoveItem));
+		.AddFunction("uint RemoveItem(Item@, uint = 1)", asMETHOD(Team, RemoveItem))
+		.AddFunction("void AddMember(Unit@, int = 0)", asMETHOD(Team, AddTeamMember));
 
 	sb.AddStruct<TmpUnitGroup::Spawn>("Spawn");
 
@@ -660,6 +679,11 @@ void ScriptManager::RegisterGame()
 		.Member("int st", offsetof(Location, st))
 		.Member("bool reset", offsetof(Location, reset))
 		.Member("Quest@ active_quest", offsetof(Location, active_quest))
+		.Member("UnitGroup@ group", offsetof(Location, group))
+		.Method("const string& get_name() const", asMETHOD(Location, GetName))
+		.Method("void set_name(const string& in)", asMETHOD(Location, SetNameS))
+		.Method("LOCATION_IMAGE get_image() const", asMETHOD(Location, GetImage))
+		.Method("void set_image(LOCATION_IMAGE)", asMETHOD(Location, SetImage))
 		.Method("void AddEventHandler(Quest@, EventType)", asMETHOD(Location, AddEventHandler))
 		.Method("void RemoveEventHandler(Quest@)", asMETHOD(Location, RemoveEventHandlerS))
 		.Method("void SetKnown()", asMETHOD(Location, SetKnown))
@@ -679,6 +703,7 @@ void ScriptManager::RegisterGame()
 	CHECKED(engine->RegisterFuncdef("float GetLocationCallback(Location@)"));
 
 	WithNamespace("World", world)
+		.AddFunction("Vec2 GetSize()", asMETHOD(World, GetSize))
 		.AddFunction("uint GetSettlements()", asMETHOD(World, GetSettlements))
 		.AddFunction("Location@ GetLocation(uint)", asMETHOD(World, GetLocation))
 		.AddFunction("string GetDirName(const Vec2& in, const Vec2& in)", asFUNCTION(World_GetDirName)) // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -688,8 +713,10 @@ void ScriptManager::RegisterGame()
 		.AddFunction("Location@ GetRandomSettlement(Location@)", asMETHODPR(World, GetRandomSettlement, (Location*), Location*))
 		.AddFunction("Location@ GetRandomSettlement(GetLocationCallback@)", asFUNCTION(World_GetRandomSettlement))
 		.AddFunction("Location@ GetClosestLocation(LOCATION, const Vec2& in, int = -1)", asMETHOD(World, GetClosestLocationS))
+		.AddFunction("Location@ CreateLocation(LOCATION, const Vec2& in)", asMETHOD(World, CreateLocationS))
 		.AddFunction("Encounter@ AddEncounter(Quest@)", asMETHOD(World, AddEncounterS))
-		.AddFunction("void RemoveEncounter(Quest@)", asMETHODPR(World, RemoveEncounter, (Quest*), void));
+		.AddFunction("void RemoveEncounter(Quest@)", asMETHODPR(World, RemoveEncounter, (Quest*), void))
+		.AddFunction("void SetStartLocation(Location@)", asMETHOD(World, SetStartLocation));
 
 	WithNamespace("Level", game_level)
 		.AddFunction("Location@ get_location()", asMETHOD(Level, GetLocation))

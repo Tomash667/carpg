@@ -1782,7 +1782,7 @@ struct BulletRaytestCallback4 : public btCollisionWorld::RayResultCallback
 		if(m_closestHitFraction > rayResult.m_hitFraction)
 		{
 			m_closestHitFraction = rayResult.m_hitFraction;
-			if(IsSet(rayResult.m_collisionObject->getCollisionFlags(), CG_UNIT))
+			if(IsSet(rayResult.m_collisionObject->getCollisionFlags(), CG_UNIT | CG_UNIT_DEAD))
 				hit = reinterpret_cast<Unit*>(ptr);
 			else
 				hit = nullptr;
@@ -2042,9 +2042,13 @@ void Game::PrepareAreaPath()
 		{
 			Unit* target;
 			if(GKey.KeyDownAllowed(GK_MOVE_BACK))
+			{
+				// cast on self
 				target = pc->unit;
+			}
 			else
 			{
+				// raytest
 				BulletRaytestCallback4 clbk(pc->unit);
 				Vec3 from = game_level->camera.from;
 				Vec3 dir = (game_level->camera.to - from).Normalized();

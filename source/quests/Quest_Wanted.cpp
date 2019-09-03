@@ -19,7 +19,7 @@ void Quest_Wanted::Start()
 	category = QuestCategory::Captain;
 	level = Random(5, 15);
 	crazy = (Rand() % 5 == 0);
-	clas = crazy ? Class::GetRandomCrazy() : Class::GetRandomHero();
+	clas = crazy ? Class::GetRandomCrazy() : Class::GetRandomHero(true);
 	target_unit = nullptr;
 	in_location = -1;
 }

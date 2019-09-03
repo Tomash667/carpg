@@ -629,7 +629,7 @@ void Unit::ConsumeItem(const Consumable& item, bool force, bool send)
 void Unit::ConsumeItemAnim(const Consumable& cons)
 {
 	cstring anim_name;
-	if(cons.cons_type == Food || cons.cons_type == Herb)
+	if(cons.cons_type == ConsumableType::Food || cons.cons_type == ConsumableType::Herb)
 	{
 		action = A_EAT;
 		anim_name = "je";
@@ -2330,6 +2330,14 @@ void Unit::Load(GameReader& f, bool local)
 		hero = new HeroData;
 		hero->unit = this;
 		hero->Load(f);
+		if(LOAD_VERSION < V_DEV)
+		{
+			if(hero->team_member && hero->type == HeroType::Visitor &&
+				(data->id == "q_zlo_kaplan" || data->id == "q_magowie_stary" || strncmp(data->id.c_str(), "q_orkowie_gorush", 16) == 0))
+			{
+				hero->type = HeroType::Free;
+			}
+		}
 	}
 	else
 		hero = nullptr;
@@ -2488,7 +2496,7 @@ void Unit::Write(BitStreamWriter& f)
 			b |= 0x01;
 		if(hero->team_member)
 			b |= 0x02;
-		if(hero->free)
+		if(hero->type != HeroType::Normal)
 			b |= 0x04;
 		f << b;
 		f << hero->credit;
@@ -2670,7 +2678,7 @@ bool Unit::Read(BitStreamReader& f)
 			return false;
 		hero->know_name = IsSet(flags, 0x01);
 		hero->team_member = IsSet(flags, 0x02);
-		hero->free = IsSet(flags, 0x04);
+		hero->type = IsSet(flags, 0x04) ? HeroType::Visitor : HeroType::Normal;
 	}
 	else if(type == 2)
 	{
@@ -2704,13 +2712,13 @@ bool Unit::Read(BitStreamReader& f)
 			Error("Invalid player %d free days %d.", player->id, player->free_days);
 			return false;
 		}
-		PlayerInfo* info = net->TryGetPlayer(player->id);
-		if(!info)
+		player->player_info = net->TryGetPlayer(player->id);
+		if(!player->player_info)
 		{
 			Error("Invalid player id %d.", player->id);
 			return false;
 		}
-		info->u = this;
+		player->player_info->u = this;
 	}
 	else
 	{
@@ -2872,28 +2880,28 @@ int Unit::FindHealingPotion() const
 
 	for(vector<ItemSlot>::const_iterator it = items.begin(), end = items.end(); it != end; ++it, ++index)
 	{
-		if(it->item && it->item->type == IT_CONSUMABLE)
-		{
-			const Consumable& pot = it->item->ToConsumable();
-			if(!pot.IsHealingPotion())
-				continue;
+		if(!it->item || it->item->type != IT_CONSUMABLE)
+			continue;
 
-			float power = pot.GetEffectPower(EffectId::Heal);
-			if(power <= missing)
+		const Consumable& pot = it->item->ToConsumable();
+		if(pot.ai_type != ConsumableAiType::Healing)
+			continue;
+
+		float power = pot.GetEffectPower(EffectId::Heal);
+		if(power <= missing)
+		{
+			if(power > heal)
 			{
-				if(power > heal)
-				{
-					heal = power;
-					id = index;
-				}
+				heal = power;
+				id = index;
 			}
-			else
+		}
+		else
+		{
+			if(power < heal2)
 			{
-				if(power < heal2)
-				{
-					heal2 = power;
-					id2 = index;
-				}
+				heal2 = power;
+				id2 = index;
 			}
 		}
 	}
@@ -2903,6 +2911,56 @@ int Unit::FindHealingPotion() const
 		if(id2 != -1)
 		{
 			if(missing - heal < heal2 - missing)
+				return id;
+			else
+				return id2;
+		}
+		else
+			return id;
+	}
+	else
+		return id2;
+}
+
+//=================================================================================================
+int Unit::FindManaPotion() const
+{
+	float missing = mpmax - mp, gain = 0, gain2 = Inf();
+	int id = -1, id2 = -1, index = 0;
+
+	for(vector<ItemSlot>::const_iterator it = items.begin(), end = items.end(); it != end; ++it, ++index)
+	{
+		if(!it->item || it->item->type != IT_CONSUMABLE)
+			continue;
+
+		const Consumable& pot = it->item->ToConsumable();
+		if(pot.ai_type != ConsumableAiType::Mana)
+			continue;
+
+		float power = pot.GetEffectPower(EffectId::RestoreMana);
+		if(power <= missing)
+		{
+			if(power > gain)
+			{
+				gain = power;
+				id = index;
+			}
+		}
+		else
+		{
+			if(power < gain2)
+			{
+				gain2 = power;
+				id2 = index;
+			}
+		}
+	}
+
+	if(id != -1)
+	{
+		if(id2 != -1)
+		{
+			if(missing - gain < gain2 - missing)
 				return id;
 			else
 				return id2;
@@ -4806,6 +4864,8 @@ void Unit::Fall()
 			c.unit = this;
 		}
 
+		UpdatePhysics();
+
 		if(player && player->is_local)
 			game->pc_data.before_player = BP_NONE;
 	}
@@ -4855,7 +4915,7 @@ void Unit::TryStandup(float dt)
 				{
 					// móg³by wstaæ ale jest zbyt pijany
 					live_state = FALL;
-					UpdatePhysics(pos);
+					UpdatePhysics();
 				}
 				else
 				{
@@ -4921,6 +4981,9 @@ void Unit::Standup()
 	else
 		action = A_NONE;
 	used_item = nullptr;
+
+	// change flag from CG_UNIT_DEAD -> CG_UNIT
+	cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_UNIT);
 
 	if(Net::IsLocal())
 	{
@@ -5090,7 +5153,7 @@ void Unit::Die(Unit* killer)
 		PlaySound(sound, Unit::DIE_SOUND_DIST);
 
 	// move physics
-	UpdatePhysics(pos);
+	UpdatePhysics();
 }
 
 //=================================================================================================
@@ -5166,23 +5229,38 @@ void Unit::CreatePhysics(bool position)
 	cobj->setCollisionShape(caps);
 	cobj->setUserPointer(this);
 	cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_UNIT);
+	game_level->phy_world->addCollisionObject(cobj, CG_UNIT);
 
 	if(position)
-	{
-		btVector3 bpos(ToVector3(IsAlive() ? pos : Vec3(1000, 1000, 1000)));
-		bpos.setY(pos.y + h / 2);
-		cobj->getWorldTransform().setOrigin(bpos);
-	}
-
-	game_level->phy_world->addCollisionObject(cobj, CG_UNIT);
+		UpdatePhysics();
 }
 
 //=================================================================================================
-void Unit::UpdatePhysics(const Vec3& pos)
+void Unit::UpdatePhysics(const Vec3* target_pos)
 {
-	btVector3 a_min, a_max, bpos(ToVector3(IsAlive() ? pos : Vec3(1000, 1000, 1000)));
-	bpos.setY(pos.y + max(MIN_H, GetUnitHeight()) / 2);
-	cobj->getWorldTransform().setOrigin(bpos);
+	Vec3 phy_pos = target_pos ? *target_pos : pos;
+	switch(live_state)
+	{
+	case ALIVE:
+		phy_pos.y += max(MIN_H, GetUnitHeight()) / 2;
+		break;
+	case FALLING:
+	case FALL:
+		break;
+	case DYING:
+	case DEAD:
+		if(IsTeamMember())
+		{
+			// keep physics pos to alow cast heal spell on corpse - used for raytest
+			cobj->setCollisionFlags(CG_UNIT_DEAD);
+		}
+		else
+			phy_pos = Vec3(1000, 1000, 1000);
+		break;
+	}
+
+	btVector3 a_min, a_max;
+	cobj->getWorldTransform().setOrigin(ToVector3(phy_pos));
 	game_level->phy_world->UpdateAabb(cobj);
 }
 

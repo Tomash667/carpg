@@ -168,6 +168,71 @@ profile cleric {
 		}
 		perk talent charisma
 		perk skill_focus gods_magic
+		items {
+			$-2weapon
+			$-1armor
+			!-2shield
+			chance 50 !-4bow
+			if level 20 {
+				p_hp2
+				random 1 2 p_hp2
+				p_mp3
+				p_mp2
+				a_mana
+				random {r_cha2 r_mana_regen}
+				random {r_cha r_concentration r_mana}
+			}
+			else if level 16 {
+				p_hp2
+				p_hp
+				p_mp2
+				random 1 2 p_mp
+				if chance 50 {
+					a_mana
+				}
+				else {
+					a_stamina
+				}
+				random {r_cha2 r_mana_regen}
+				random {r_cha r_concentration r_mana}
+			}
+			else if level 12 {
+				p_hp2
+				p_mp2
+				p_mp
+				if chance 25 {
+					a_mana
+				}
+				else {
+					a_food
+				}
+				if chance 50 {
+					random {r_cha2 r_mana_regen}
+				}
+				else {
+					random {r_cha r_concentration r_mana}
+				}
+				if chance 25 {
+					random {r_cha r_concentration r_mana}
+				}
+			}
+			else if level 8 {
+				random 1 2 p_hp
+				random 1 2 p_mp
+				if chance 50 {
+					random {r_cha r_concentration r_mana}
+				}
+				chance 25 a_food
+			}
+			else {
+				p_hp
+				p_mp
+				if chance 10 {
+					random {r_cha r_concentration r_mana}
+				}
+			}
+			random 1 3 !normal_food
+		}
 	}
 }
 
@@ -1564,12 +1629,13 @@ unit q_gobliny_mag : base_human {
 unit q_zlo_kaplan : base_human {
 	level {5 20}
 	profile cleric
-	flags | {hero ai_stay ai_train specific_name}
+	flags | {hero ai_stay ai_train specific_name fast_learner}
 	items {
 		blunt_morningstar
 		shield_iron
 		am_breastplate_hq
 		p_hp2
+		2 p_mp
 		random 1 3 !normal_food
 	}
 	gold {{50 100}{200 400}}
@@ -2958,6 +3024,17 @@ unit hero_rogue : base_hero {
 }
 
 unit hero_tomir : hero_warrior {
+	flags | fast_learner
+}
+
+unit hero_cleric : base_hero {
+	profile cleric
+	flags | {ai_train contest_50}
+	class cleric
+	spells {
+		non_combat 1
+		{heal 0}
+	}
 }
 
 //------------------------------------------------------------------------------
@@ -3179,6 +3256,14 @@ group heroes {
 	hero_warrior 2
 	hero_hunter 2
 	hero_rogue 2
+	hero_cleric 1
+}
+
+group evil_heroes {
+	hero_mage 1
+	hero_warrior 2
+	hero_hunter 2
+	hero_rogue 2
 }
 
 group tournament {
@@ -3186,6 +3271,7 @@ group tournament {
 	hero_hunter 2
 	hero_rogue 2
 	hero_mage 1
+	hero_cleric 1
 }
 
 group merchant_guards {

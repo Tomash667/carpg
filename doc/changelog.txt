@@ -5,9 +5,11 @@ Wersja 0.12 (???):
 ! nie mo¿na wczytywaæ ju¿ zapisów z wersji 0.4.20 lub starszej
 + nowa klasa gracza: kap³an - czar uleczenia
 + mana
++ szybka podró¿ (mo¿e byæ u¿yta przez przywódcê w bezpiecznej lokalizacji by szybko powróciæ na mapê œwiata)
 + nowe umiejêtnoœci: magia bogów, koncentracja
 + nowe atuty: silna aura, harmonia many
-+ nowe przedmioty: magiczny kryszta³, miksturki many, pierœcieñ wyznawcy/koncentracji/many/harmonii, amulet many
++ nowe przedmioty: magiczny kryszta³, miksturki many, 10 magicznych pierœcieni, amulet many
++ obni¿one wymagania si³y dla broni obuchowych/toporów
 + wczytywanie klas postaci z pliku
 + aktualizacja bibliotek: FMod 1.10.14
 + usprawnione sprawdzanie wersji, wykorzystywanie biblioteki libcurl
@@ -19,6 +21,10 @@ Wersja 0.12 (???):
 - crash gdy npc pod¹¿a za graczem a on wyjdzie z gry
 - crash gdy npc ucieka do gracza a on wyjedzie z gry
 - crash po wczytaniu gry gdy npc chcia³ coœ od gracza którego nie ma po wczytaniu
+- obra¿enia od niektórych czarów by³y Ÿle liczone i nieuwzglêdnia³o magicznej si³y
+- porwany nie do³¹cza do walki na arenie
+- nie mo¿na dawaæ z³ota przywo³anym jednostkom i tymczasowym cz³onkom dru¿yny
+- crash przy oknie dialogowym dawania z³ota/wyrzucania gdy gracz wyjdzie z gry
 
 --------------------------------------------------------------------------------
 Wersja 0.11.1 (2019-08-12):

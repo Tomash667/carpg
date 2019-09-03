@@ -135,6 +135,7 @@ void CommandParser::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_ARENA, "arena", "spawns enemies on arena (example arena 3 rat vs 2 wolf)", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_SHADER_VERSION, "shader_version", "force shader version (shader_version 2/3)", F_ANYWHERE | F_WORLD_MAP | F_NO_ECHO));
 	cmds.push_back(ConsoleCommand(CMD_REMOVE_UNIT, "remove_unit", "remove selected unit", F_GAME | F_CHEAT | F_SERVER));
+	cmds.push_back(ConsoleCommand(CMD_ADD_EXP, "add_exp", "add experience to team (add_exp value)", F_GAME | F_CHEAT));
 
 	// verify all commands are added
 #ifdef _DEBUG
@@ -2023,6 +2024,25 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		else
 			game_level->RemoveUnit(game->pc_data.selected_unit);
 		break;
+	case CMD_ADD_EXP:
+		if(t.Next())
+		{
+			int exp = t.MustGetInt();
+			if(exp <= 0)
+				Msg("Exp must by positive!");
+			if(Net::IsLocal())
+				team->AddExp(exp);
+			else
+			{
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::GENERIC_CMD;
+				c << (byte)CMD_ADD_EXP
+					<< exp;
+			}
+		}
+		else
+			Msg("You need to enter exp amount!");
+		break;
 	default:
 		assert(0);
 		break;
@@ -2412,6 +2432,18 @@ bool CommandParser::ParseStreamInner(BitStreamReader& f)
 			}
 
 			unit->player->AddLearningPoint(count);
+		}
+		break;
+	case CMD_ADD_EXP:
+		{
+			int exp;
+			f >> exp;
+			if(exp <= 0)
+			{
+				Error("CommandParser CMD_ADD_EXP: Value must be positive.");
+				return false;
+			}
+			team->AddExp(exp);
 		}
 		break;
 	default:

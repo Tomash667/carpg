@@ -5,9 +5,11 @@ Version 0.12 (???):
 ! cannot load saves from version 0.4.20 or older
 + new player class: cleric - healing spell
 + mana
++ fast travel (can be used inside safe locations by team leader to quickly return to map)
 + new skills: gods magic, concentration
 + new feats: strong aura, magic harmony
-+ new items: magic crystal, mana potions, ring of beliver/concentration/mana/harmony, amulet of mana
++ new items: magic crystal, mana potions, 10 magic rings, amulet of mana
++ decreased strength requirments for blunt weapons/axes
 + loading character classes from file
 + update libraries: FMod 1.10.14
 + improved version checking, using libcurl
@@ -19,6 +21,10 @@ Version 0.12 (???):
 - crash when npc follows player and he quits
 - crash when npc escapes towards player and he quits
 - crash after loading game when npc wants something from player that not exists after loading
+- some spells didn't use magic power to increase damage
+- captive doesn't join arena combat
+- can't give gold to summoned or temporary team members
+- crash on give gold dialog box or kick confirmation when player quit
 
 --------------------------------------------------------------------------------
 Wersja 0.11.1 (2019-08-12):
