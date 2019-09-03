@@ -977,7 +977,7 @@ dialog hero
 		{
 			choice 6
 			{
-				script "target.order = ORDER_WANDER"
+				script "target.OrderWander()"
 				talk 7
 				end
 			}
@@ -995,7 +995,7 @@ dialog hero
 		{
 			choice 10
 			{
-				script "target.order = ORDER_WAIT"
+				script "target.OrderWait()"
 				talk 11
 				end
 			}
@@ -1226,7 +1226,7 @@ dialog crazy
 		{
 			choice 6
 			{
-				script "target.order = ORDER_WANDER"
+				script "target.OrderWander()"
 				talk 7
 				end
 			}
@@ -1244,7 +1244,7 @@ dialog crazy
 		{
 			choice 10
 			{
-				script "target.order = ORDER_WAIT"
+				script "target.OrderWait()"
 				talk 11
 				end
 			}
@@ -1604,7 +1604,7 @@ dialog captive
 		{
 			choice 3
 			{
-				script "target.order = ORDER_WAIT"
+				script "target.OrderWait()"
 				talk 4
 				end
 			}
@@ -4264,7 +4264,7 @@ dialog tomir
 	{
 		talk 3
 		talk 11
-		script "target.order = ORDER_LEAVE"
+		script "target.OrderLeave()"
 		end
 	}
 	else
@@ -4282,7 +4282,7 @@ dialog tomir
 		{
 			talk 10
 			talk 11
-			script "target.order = ORDER_LEAVE"
+			script "target.OrderLeave()"
 			end
 		}
 		show_choices

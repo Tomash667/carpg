@@ -366,7 +366,7 @@ bool AIController::CanWander() const
 			return false;
 		if(unit->IsHero())
 		{
-			if(unit->hero->team_member && unit->order != ORDER_WANDER)
+			if(unit->hero->team_member && unit->GetOrder() != ORDER_WANDER)
 				return false;
 			else if(quest_mgr->quest_tournament->IsGenerated())
 				return false;

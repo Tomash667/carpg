@@ -265,7 +265,7 @@ void Quest_Evil::SetProgress(int prog2)
 			// gadanie przez jozana
 			Unit* unit = team->FindTeamMember("q_zlo_kaplan");
 			if(unit)
-				unit->StartAutoTalk();
+				unit->OrderAutoTalk();
 
 			quest_mgr->EndUniqueQuest();
 			team->AddExp(30000);
@@ -284,7 +284,7 @@ void Quest_Evil::SetProgress(int prog2)
 			// usuñ jozana z dru¿yny
 			Unit& u = *DialogContext::current->talker;
 			team->RemoveTeamMember(&u);
-			u.SetOrder(ORDER_LEAVE);
+			u.OrderLeave();
 		}
 		break;
 	}
@@ -677,9 +677,7 @@ void Quest_Evil::WarpEvilBossToAltar()
 			if(u2)
 			{
 				u2->dont_attack = true;
-				u2->order = ORDER_GUARD;
-				u2->order_unit = u;
-				u2->order_timer = -1;
+				u2->OrderGuard(u);
 			}
 		}
 	}

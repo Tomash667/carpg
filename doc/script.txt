@@ -75,19 +75,36 @@ Quest type:
 
 Enum UNIT_ORDER, values:
 	ORDER_NONE
-	ORDER_WANDER - for heroes, they wander freely around city
-	ORDER_WAIT - for heroes, stay close to current position
-	ORDER_FOLLOW - for heroes, follow team leader
-	ORDER_LEAVE - unit goes to nearest location exit and leave
-	ORDER_MOVE - unit moves to position
-	ORDER_LOOK_AT - unit looks at position
-	ORDER_ESCAPE_TO - unit runs toward position and ignore enemies
-	ORDER_ESCAPE_TO_UNIT - unit runs toward other unit and ignore enemies
+	ORDER_WANDER - for heroes, they wander freely around city.
+	ORDER_WAIT - for heroes, stay close to current position.
+	ORDER_FOLLOW - for heroes, follow team leader.
+	ORDER_LEAVE - unit goes to nearest location exit and leave.
+	ORDER_MOVE - unit moves to position.
+	ORDER_LOOK_AT - unit looks at position.
+	ORDER_ESCAPE_TO - unit runs toward position and ignore enemies.
+	ORDER_ESCAPE_TO_UNIT - unit runs toward other unit and ignore enemies.
+	ORDER_GOTO_INN - unit goes to inn.
+	ORDER_GUARD - unit stays close to another unit and remove dont_attack flag when target is attacked.
+	ORDER_AUTO_TALK - ai will talk with nearest player or leader.
 
 Enum MOVE_TYPE, values:
-	MOVE_RUN - always run
-	MOVE_WALK - always walk
-	MOVE_RUN_WHEN_NEAR_TEAM - run when near team, otherwise look
+	MOVE_RUN - always run.
+	MOVE_WALK - always walk.
+	MOVE_RUN_WHEN_NEAR_TEAM - run when near team, otherwise look.
+	
+UnitOrderBuilder - used to set multiple unit orders one after another (for example unit.OrderWait().WithTimer(5).ThenFollow(player).WithTimer(5).ThenAutoTalk();)
+	UnitOrderBuilder@ WithTimer(float timer) - set order timer.
+	UnitOrderBuilder@ ThenWander()
+	UnitOrderBuilder@ ThenWait()
+	UnitOrderBuilder@ ThenFollow(Unit@)
+	UnitOrderBuilder@ ThenLeave()
+	UnitOrderBuilder@ ThenMove(const Vec3& in, MOVE_TYPE)
+	UnitOrderBuilder@ ThenLookAt(const Vec3& in)
+	UnitOrderBuilder@ ThenEscapeTo(const Vec3& in)
+	UnitOrderBuilder@ ThenEscapeToUnit(Unit@)
+	UnitOrderBuilder@ ThenGoToInn()
+	UnitOrderBuilder@ ThenGuard(Unit@)
+	UnitOrderBuilder@ ThenAutoTalk(bool=true, Dialog@=null)
 
 Unit type:
 	const Vec3 pos
@@ -96,10 +113,9 @@ Unit type:
 	int gold - modifying will show message.
 	VarsContainer@ vars - readonly
 	string name - can only be set for heroes (UnitData have hero flag) at startup.
-	bool auto_talk - ai auto talk mode.
 	bool dont_attack - enemy ai don't attack.
 	bool known_name - player known name, can't be changed from true to false.
-	UNIT_ORDER order - current unit order.
+	const UNIT_ORDER order - current unit order.
 	LevelArea@ area - level area unit is in.
 	bool IsTeamMember() - true if unit is team member.
 	float GetHpp() - get health percentage 0..1.
@@ -112,8 +128,23 @@ Unit type:
 	void RemoveDialog(Quest@) - remove quest dialog from unit.
 	void AddEventHandler(Quest@, EventType) - add event to unit.
 	void RemoveEventHandler(Quest@) - remove event from unit.
-	void OrderEscapeToUnit(Unit@) - orders ai to escape towards unit.
+	void OrderClear() - remove all unit orders.
+	void OrderNext() - end current order and start next one.
 	void OrderAttack() - orders unit to attack (crazies in this level will attack team, remove dont_attack).
+	UnitOrderBuilder@ OrderWander() - order unit to wander.
+	UnitOrderBuilder@ OrderWait() - order unit to wait.
+	UnitOrderBuilder@ OrderFollow(Unit@) - order unit to follow target unit.
+	UnitOrderBuilder@ OrderLeave() - order unit to leave current location.
+	UnitOrderBuilder@ OrderMove(const Vec3& in pos, MOVE_TYPE) - order unit to move to position.
+	UnitOrderBuilder@ OrderLookAt(const Vec3& in pos) - order unit to look at position.
+	UnitOrderBuilder@ OrderEscapeTo(const Vec3& in pos) - order unit to escape to position (will ignore enemies).
+	UnitOrderBuilder@ OrderEscapeToUnit(Unit@) - order unit to escape to unit (will ignore enemies).
+	UnitOrderBuilder@ OrderGoToInn() - order unit to go to inn.
+	UnitOrderBuilder@ OrderGuard(Unit@) - order unit to guard other unit and stay close, when attacked will defend target.
+	UnitOrderBuilder@ OrderAutoTalk(bool leader = false, Dialog@=null) - start dialog when close to player or leader, can use default dialog or selected.
+	
+	
+	void OrderEscapeToUnit(Unit@) - orders ai to escape towards unit.
 	void OrderClear() - clear current unit order.
 	void OrderMove(const Vec3& in pos, MOVE_TYPE) - orders unit to move to position.
 	void OrderLookAt(const Vec3& in pos) - orders unit to look at position.

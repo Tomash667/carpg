@@ -153,7 +153,7 @@ void EncounterGenerator::OnEnter()
 
 	// auto talk with leader
 	if(dialog)
-		talker->StartAutoTalk(true, dialog);
+		talker->OrderAutoTalk(true, dialog);
 }
 
 //=================================================================================================

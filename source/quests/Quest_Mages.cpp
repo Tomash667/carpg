@@ -248,7 +248,6 @@ void Quest_Mages2::SetProgress(int prog2)
 	case Progress::MageTalkedAboutTower:
 		// mag sobie przypomnia³ ¿e to jego wie¿a
 		{
-			DialogContext::current->talker->auto_talk = AutoTalkMode::No;
 			mages_state = State::OldMageRemembers;
 			OnUpdate(Format(game->txQuest[178], DialogContext::current->talker->hero->name.c_str(), GetStartLocationName()));
 			team->AddExp(1000);
@@ -321,7 +320,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			else
 			{
 				// idŸ do startowej lokacji do karczmy
-				u->SetOrder(ORDER_LEAVE);
+				u->OrderLeave();
 				u->event_handler = this;
 			}
 
@@ -357,7 +356,7 @@ void Quest_Mages2::SetProgress(int prog2)
 		// zabito maga
 		{
 			if(mages_state == State::MageRecruited)
-				scholar->StartAutoTalk();
+				scholar->OrderAutoTalk();
 			mages_state = State::Completed;
 			OnUpdate(game->txQuest[185]);
 			world->AddNews(game->txQuest[186]);
@@ -371,7 +370,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			// idŸ sobie
 			Unit* u = DialogContext::current->talker;
 			team->RemoveTeamMember(u);
-			u->SetOrder(ORDER_LEAVE);
+			u->OrderLeave();
 			scholar = nullptr;
 		}
 		break;

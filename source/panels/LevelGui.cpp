@@ -46,7 +46,8 @@ cstring order_str[ORDER_MAX] = {
 	"ESCAPE_TO",
 	"ESCAPE_TO_UNIT",
 	"GOTO_INN",
-	"ORDER_GUARD"
+	"GUARD",
+	"AUTO_TALK"
 };
 
 //-----------------------------------------------------------------------------
@@ -214,22 +215,23 @@ void LevelGui::DrawFront()
 				if(u.IsAI())
 				{
 					AIController& ai = *u.ai;
+					UnitOrder order = u.GetOrder();
 					str += Format("\nB:%d, F:%d, LVL:%d\nAni:%d, A:%d, Ai:%s%s T:%.2f LT:%.2f\nO:%s", u.busy, u.frozen, u.level,
 						u.animation, u.action, str_ai_state[ai.state], ai.state == AIController::Idle ? Format("(%s)", str_ai_idle[ai.idle_action]) : "",
-						ai.timer, ai.loc_timer, order_str[u.order]);
-					if(u.order_timer > 0.f)
-						str += Format(" %.2f", u.order_timer);
-					switch(u.order)
+						ai.timer, ai.loc_timer, order_str[order]);
+					if(order != ORDER_NONE && u.order->timer > 0.f)
+						str += Format(" %.2f", u.order->timer);
+					switch(order)
 					{
 					case ORDER_MOVE:
 					case ORDER_LOOK_AT:
 					case ORDER_ESCAPE_TO:
-						str += Format(" Pos:%.1f;%.1f;%.1f", u.order_pos.x, u.order_pos.y, u.order_pos.z);
+						str += Format(" Pos:%.1f;%.1f;%.1f", u.order->pos.x, u.order->pos.y, u.order->pos.z);
 						break;
 					case ORDER_FOLLOW:
 					case ORDER_GUARD:
 					case ORDER_ESCAPE_TO_UNIT:
-						if(Unit* unit = u.order_unit)
+						if(Unit* unit = u.order->unit)
 							str += Format(" %s(%d)", unit->data->id.c_str(), unit->id);
 						break;
 					}

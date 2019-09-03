@@ -67,13 +67,14 @@ void DialogScripts::GetFormattedCode(FUNC f, string& code)
 }
 
 //=================================================================================================
-void DialogScripts::Build()
+int DialogScripts::Build()
 {
 	asIScriptModule* module = script_mgr->GetEngine()->GetModule("Quests", asGM_CREATE_IF_NOT_EXISTS);
 #ifdef _DEBUG
 	string output;
 #endif
 	LocalString code;
+	int errors = 0;
 	for(int i = 0; i < F_MAX; ++i)
 	{
 		if(scripts[i].empty())
@@ -86,13 +87,17 @@ void DialogScripts::Build()
 #endif
 		int r = module->CompileFunction(name[i], code.c_str(), -1, 0, &func[i]);
 		if(r < 0)
+		{
 			Error("Failed to compile dialogs script %s (%d): %s", name[i], r, code.c_str());
+			++errors;
+		}
 	}
 #ifdef _DEBUG
 	io::CreateDirectory("debug");
 	TextWriter::WriteAll("debug/dialog_script.txt", output);
 #endif
 	built = true;
+	return errors;
 }
 
 //=================================================================================================

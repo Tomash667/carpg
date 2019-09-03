@@ -211,7 +211,7 @@ void Quest_Secret::UpdateFight()
 		{
 			// gracz wygra³
 			state = SECRET_WIN;
-			arena->units[0]->StartAutoTalk();
+			arena->units[0]->OrderAutoTalk();
 			team->AddLearningPoint();
 			team->AddExp(25000);
 		}
