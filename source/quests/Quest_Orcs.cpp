@@ -62,7 +62,6 @@ void Quest_Orcs::SetProgress(int prog2)
 			Unit*& u = quest_mgr->quest_orcs2->guard;
 			if(u)
 			{
-				u->auto_talk = AutoTalkMode::No;
 				u->temporary = true;
 				u = nullptr;
 			}
@@ -78,7 +77,6 @@ void Quest_Orcs::SetProgress(int prog2)
 			Unit*& u = quest_mgr->quest_orcs2->guard;
 			if(u)
 			{
-				u->auto_talk = AutoTalkMode::No;
 				u->temporary = true;
 				u = nullptr;
 			}
@@ -348,7 +346,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 	case Progress::ClearedCamp:
 		// oczyszczono obóz orków
 		{
-			orc->StartAutoTalk();
+			orc->OrderAutoTalk();
 			world->AddNews(game->txQuest[200]);
 			team->AddExp(14000);
 		}
@@ -451,7 +449,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 	case Progress::KilledBoss:
 		// zabito bossa
 		{
-			orc->StartAutoTalk();
+			orc->OrderAutoTalk();
 			OnUpdate(game->txQuest[204]);
 			world->AddNews(game->txQuest[205]);
 			team->AddLearningPoint();

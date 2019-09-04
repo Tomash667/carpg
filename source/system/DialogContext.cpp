@@ -38,8 +38,10 @@ void DialogContext::StartDialog(Unit* talker, GameDialog* dialog)
 	assert(!dialog_mode);
 
 	// use up auto talk
-	if(talker && (talker->auto_talk == AutoTalkMode::Yes || talker->auto_talk == AutoTalkMode::Wait) && talker->auto_talk_dialog == nullptr)
-		talker->auto_talk = AutoTalkMode::No;
+	if(talker && talker->GetOrder() == ORDER_AUTO_TALK
+		&& (pc->IsLeader() || talker->order->auto_talk != AutoTalkMode::Leader)
+		&& !talker->order->auto_talk_dialog)
+		talker->OrderNext();
 
 	dialog_mode = true;
 	dialog_wait = -1;
@@ -1344,7 +1346,10 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 	else if(strcmp(msg, "kick_npc") == 0)
 	{
 		team->RemoveTeamMember(talker);
-		talker->SetOrder(game_level->city_ctx ? ORDER_WANDER : ORDER_LEAVE);
+		if(game_level->city_ctx)
+			talker->OrderWander();
+		else
+			talker->OrderLeave();
 		talker->hero->credit = 0;
 		talker->ai->city_wander = true;
 		talker->ai->loc_timer = Random(5.f, 10.f);
@@ -1409,7 +1414,7 @@ bool DialogContext::ExecuteSpecial(cstring msg)
 	{
 		if(talker->hero->team_member)
 			team->RemoveTeamMember(talker);
-		talker->SetOrder(ORDER_LEAVE);
+		talker->OrderLeave();
 		talker->dont_attack = false;
 	}
 	else if(strcmp(msg, "news") == 0)

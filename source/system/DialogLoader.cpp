@@ -767,7 +767,7 @@ void DialogLoader::LoadGlobals()
 //=================================================================================================
 void DialogLoader::Finalize()
 {
-	DialogScripts::global.Build();
+	content.errors += DialogScripts::global.Build();
 
 	content.crc[(int)Content::Id::Dialogs] = crc.Get();
 	Info("Loaded dialogs (%u) - crc %p.", GameDialog::dialogs.size(), content.crc[(int)Content::Id::Dialogs]);

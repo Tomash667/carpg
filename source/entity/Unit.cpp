@@ -51,6 +51,8 @@ static AIController* AI_PLACEHOLDER = (AIController*)1;
 //=================================================================================================
 Unit::~Unit()
 {
+	if(order)
+		order->Free();
 	delete mesh_inst;
 	delete human_data;
 	delete hero;
@@ -1728,12 +1730,6 @@ void Unit::Save(GameWriter& f, bool local)
 	f << temporary;
 	f << quest_id;
 	f << assist;
-	f << auto_talk;
-	if(auto_talk != AutoTalkMode::No)
-	{
-		f << (auto_talk_dialog ? auto_talk_dialog->id.c_str() : "");
-		f << auto_talk_timer;
-	}
 	f << dont_attack;
 	f << attack_team;
 	f << (event_handler ? event_handler->GetUnitEventHandlerQuestRefid() : -1);
@@ -1828,30 +1824,41 @@ void Unit::Save(GameWriter& f, bool local)
 		f << e.quest->id;
 	}
 
-	// order
-	f << order;
-	f << order_timer;
-	switch(order)
+	// orders
+	UnitOrderEntry* current_order = order;
+	while(current_order)
 	{
-	case ORDER_FOLLOW:
-	case ORDER_GUARD:
-		f << order_unit;
-		break;
-	case ORDER_LOOK_AT:
-		f << order_pos;
-		break;
-	case ORDER_MOVE:
-		f << order_pos;
-		f << order_move_type;
-		break;
-	case ORDER_ESCAPE_TO:
-		f << order_pos;
-		break;
-	case ORDER_ESCAPE_TO_UNIT:
-		f << order_unit;
-		f << order_pos;
-		break;
+		f.Write1();
+		f << current_order->order;
+		f << current_order->timer;
+		switch(current_order->order)
+		{
+		case ORDER_FOLLOW:
+		case ORDER_GUARD:
+			f << current_order->unit;
+			break;
+		case ORDER_LOOK_AT:
+			f << current_order->pos;
+			break;
+		case ORDER_MOVE:
+			f << current_order->pos;
+			f << current_order->move_type;
+			break;
+		case ORDER_ESCAPE_TO:
+			f << current_order->pos;
+			break;
+		case ORDER_ESCAPE_TO_UNIT:
+			f << current_order->unit;
+			f << current_order->pos;
+			break;
+		case ORDER_AUTO_TALK:
+			f << current_order->auto_talk;
+			f << (current_order->auto_talk_dialog ? current_order->auto_talk_dialog->id.c_str() : "");
+			break;
+		}
+		current_order = current_order->next;
 	}
+	f.Write0();
 
 	if(player)
 	{
@@ -2030,16 +2037,21 @@ void Unit::Load(GameReader& f, bool local)
 	f >> quest_id;
 	f >> assist;
 
-	// auto talking
-	f >> auto_talk;
-	if(auto_talk != AutoTalkMode::No)
+	AutoTalkMode old_auto_talk = AutoTalkMode::No;
+	GameDialog* old_auto_talk_dialog = nullptr;
+	float old_auto_talk_timer = 0;
+	if(LOAD_VERSION < V_DEV)
 	{
-		const string& dialog_id = f.ReadString1();
-		if(dialog_id.empty())
-			auto_talk_dialog = nullptr;
-		else
-			auto_talk_dialog = GameDialog::TryGet(dialog_id.c_str());
-		f >> auto_talk_timer;
+		// old auto talk
+		f >> old_auto_talk;
+		if(old_auto_talk != AutoTalkMode::No)
+		{
+			if(const string& dialog_id = f.ReadString1(); !dialog_id.empty())
+				old_auto_talk_dialog = GameDialog::TryGet(dialog_id.c_str());
+			else
+				old_auto_talk_dialog = nullptr;
+			f >> old_auto_talk_timer;
+		}
 	}
 
 	f >> dont_attack;
@@ -2063,7 +2075,7 @@ void Unit::Load(GameReader& f, bool local)
 		RecalculateWeight();
 
 	Entity<Unit> guard_target;
-	if(LOAD_VERSION < V_DEV)		
+	if(LOAD_VERSION < V_DEV)
 		f >> guard_target;
 	f >> summoner;
 
@@ -2269,46 +2281,115 @@ void Unit::Load(GameReader& f, bool local)
 			});
 		}
 
-		// order
-		f >> order;
-		f >> order_timer;
-		switch(order)
+		// orders
+		if(LOAD_VERSION >= V_DEV)
 		{
-		case ORDER_FOLLOW:
-			if(LOAD_VERSION >= V_0_11)
-				f >> order_unit;
-			else
-				team->GetLeaderRequest(&order_unit);
-			break;
-		case ORDER_LOOK_AT:
-			f >> order_pos;
-			break;
-		case ORDER_MOVE:
-			f >> order_pos;
-			f >> order_move_type;
-			break;
-		case ORDER_ESCAPE_TO:
-			f >> order_pos;
-			break;
-		case ORDER_ESCAPE_TO_UNIT:
-			f >> order_unit;
-			f >> order_pos;
-			break;
-		case ORDER_GUARD:
-			f >> order_unit;
-			break;
+			UnitOrderEntry* current_order = nullptr;
+			while(f.Read1())
+			{
+				if(current_order)
+				{
+					current_order->next = UnitOrderEntry::Get();
+					current_order = current_order->next;
+				}
+				else
+				{
+					order = UnitOrderEntry::Get();
+					current_order = order;
+				}
+
+				f >> current_order->order;
+				f >> current_order->timer;
+				switch(current_order->order)
+				{
+				case ORDER_FOLLOW:
+					f >> current_order->unit;
+					break;
+				case ORDER_LOOK_AT:
+					f >> current_order->pos;
+					break;
+				case ORDER_MOVE:
+					f >> current_order->pos;
+					f >> current_order->move_type;
+					break;
+				case ORDER_ESCAPE_TO:
+					f >> current_order->pos;
+					break;
+				case ORDER_ESCAPE_TO_UNIT:
+					f >> current_order->unit;
+					f >> current_order->pos;
+					break;
+				case ORDER_GUARD:
+					f >> current_order->unit;
+					break;
+				case ORDER_AUTO_TALK:
+					f >> current_order->auto_talk;
+					if(const string& dialog_id = f.ReadString1(); !dialog_id.empty())
+						current_order->auto_talk_dialog = GameDialog::TryGet(dialog_id.c_str());
+					else
+						current_order->auto_talk_dialog = nullptr;
+					break;
+				}
+			}
 		}
-	}
-	else
-	{
-		order = ORDER_NONE;
-		order_timer = 0.f;
+		else
+		{
+			UnitOrder unit_order;
+			float timer;
+			f >> unit_order;
+			f >> timer;
+			if(unit_order != ORDER_NONE)
+			{
+				order = UnitOrderEntry::Get();
+				order->order = unit_order;
+				order->timer = timer;
+				switch(order->order)
+				{
+				case ORDER_FOLLOW:
+					if(LOAD_VERSION >= V_0_11)
+						f >> order->unit;
+					else
+						team->GetLeaderRequest(&order->unit);
+					break;
+				case ORDER_LOOK_AT:
+					f >> order->pos;
+					break;
+				case ORDER_MOVE:
+					f >> order->pos;
+					f >> order->move_type;
+					break;
+				case ORDER_ESCAPE_TO:
+					f >> order->pos;
+					break;
+				case ORDER_ESCAPE_TO_UNIT:
+					f >> order->unit;
+					f >> order->pos;
+					break;
+				case ORDER_GUARD:
+					f >> order->unit;
+					break;
+				}
+			}
+		}
 	}
 	if(guard_target)
 	{
-		order = ORDER_GUARD;
-		order_unit = guard_target;
-		order_timer = 0.f;
+		if(order)
+			order->Free();
+		order = UnitOrderEntry::Get();
+		order->order = ORDER_GUARD;
+		order->unit = guard_target;
+		order->timer = 0.f;
+	}
+	if(old_auto_talk != AutoTalkMode::No)
+	{
+		if(order)
+			order->Free();
+		order = UnitOrderEntry::Get();
+		order->order = ORDER_AUTO_TALK;
+		order->timer = old_auto_talk_timer;
+		order->auto_talk = old_auto_talk;
+		order->auto_talk_dialog = old_auto_talk_dialog;
 	}
 
 	if(f.Read1())
@@ -4272,8 +4353,9 @@ void Unit::SetAnimationAtEnd(cstring anim_name)
 		mesh_inst->SetToEnd(mat_scale);
 }
 
+FIXME;
 //=================================================================================================
-void Unit::StartAutoTalk(bool leader, GameDialog* dialog)
+/*void Unit::OrderAutoTalk(bool leader, GameDialog* dialog)
 {
 	if(!leader)
 	{
@@ -4294,10 +4376,10 @@ void Unit::SetAutoTalk(bool new_auto_talk)
 	if(new_auto_talk == GetAutoTalk())
 		return;
 	if(new_auto_talk)
-		StartAutoTalk();
+		OrderAutoTalk();
 	else
 		auto_talk = AutoTalkMode::No;
-}
+}*/
 
 //=================================================================================================
 void Unit::SetDontAttack(bool new_dont_attack)
@@ -5636,30 +5718,71 @@ void Unit::RemoveAllEventHandlers()
 }
 
 //=================================================================================================
-void Unit::OrderEscapeToUnit(Unit* unit)
+void Unit::OrderClear()
 {
-	assert(unit);
-	SetOrder(ORDER_ESCAPE_TO_UNIT);
-	order_unit = unit;
-	order_pos = unit->pos;
-	if(ai)
+	if(order)
+		order->Free();
+	if(hero && hero->team_member)
 	{
-		ai->state = AIController::Escape;
-		ai->escape_room = nullptr;
+		order = UnitOrderEntry::Get();
+		order->order = ORDER_FOLLOW;
+		order->unit = team->GetLeader();
+		order->timer = 0.f;
+	}
+	else
+	{
+		order = nullptr;
+		if(ai)
+		{
+			ai->timer = 0.f;
+			ai->idle_action = AIController::Idle_None;
+		}
 	}
 }
 
 //=================================================================================================
-void Unit::SetOrder(UnitOrder order)
+void Unit::OrderNext()
 {
-	this->order = order;
-	order_timer = -1.f;
+	if(!order)
+		return;
+	UnitOrderEntry* next = order->next;
+	if(next)
+	{
+		order->next = nullptr;
+		order->Free();
+		order = next;
+
+		switch(order->order)
+		{
+		case ORDER_WANDER:
+			if(ai)
+				ai->loc_timer = Random(5.f, 10.f);
+			break;
+		case ORDER_ESCAPE_TO:
+		case ORDER_ESCAPE_TO_UNIT:
+			if(ai)
+			{
+				ai->state = AIController::Escape;
+				ai->escape_room = nullptr;
+			}
+			break;
+		}
+	}
+	else
+		OrderClear();
+}
+
+//=================================================================================================
+void Unit::OrderReset()
+{
+	if(order)
+		order->Free();
+	order = UnitOrderEntry::Get();
+	order->timer = -1.f;
 	if(ai)
 	{
 		ai->timer = 0.f;
 		ai->idle_action = AIController::Idle_None;
-		if(order == ORDER_WANDER)
-			ai->loc_timer = Random(5.f, 10.f);
 	}
 }
 
@@ -5692,46 +5815,125 @@ void Unit::OrderAttack()
 }
 
 //=================================================================================================
-void Unit::OrderClear()
+UnitOrderEntry* Unit::OrderWander()
 {
-	if(hero && hero->team_member)
+	OrderReset();
+	order->order = ORDER_WANDER;
+	if(ai)
+		ai->loc_timer = Random(5.f, 10.f);
+	return order;
+}
+
+//=================================================================================================
+UnitOrderEntry* Unit::OrderWait()
+{
+	OrderReset();
+	order->order = ORDER_WAIT;
+	return order;
+}
+
+//=================================================================================================
+UnitOrderEntry* Unit::OrderFollow(Unit* target)
+{
+	assert(target);
+	OrderReset();
+	order->order = ORDER_WAIT;
+	order->unit = target;
+	return order;
+}
+
+//=================================================================================================
+UnitOrderEntry* Unit::OrderLeave()
+{
+	OrderReset();
+	order->order = ORDER_LEAVE;
+	return order;
+}
+
+//=================================================================================================
+UnitOrderEntry* Unit::OrderMove(const Vec3& pos, MoveType move_type)
+{
+	OrderReset();
+	order->order = ORDER_MOVE;
+	order->pos = pos;
+	order->move_type = move_type;
+	return order;
+}
+
+//=================================================================================================
+UnitOrderEntry* Unit::OrderLookAt(const Vec3& pos)
+{
+	OrderReset();
+	order->order = ORDER_LOOK_AT;
+	order->pos = pos;
+	return order;
+}
+
+//=================================================================================================
+UnitOrderEntry* Unit::OrderEscapeTo(const Vec3& pos)
+{
+	OrderReset();
+	order->order = ORDER_ESCAPE_TO;
+	order->pos = pos;
+	if(ai)
 	{
-		order = ORDER_FOLLOW;
-		order_unit = team->GetLeader();
+		ai->state = AIController::Escape;
+		ai->escape_room = nullptr;
 	}
-	else
-		order = ORDER_NONE;
-	order_timer = 0.f;
+	return order;
 }
 
 //=================================================================================================
-void Unit::OrderFollow(Unit* target)
-{
-	SetOrder(ORDER_FOLLOW);
-	order_unit = target;
-}
-
-//=================================================================================================
-void Unit::OrderMove(const Vec3& pos, MoveType move_type)
-{
-	SetOrder(ORDER_MOVE);
-	order_pos = pos;
-	order_move_type = move_type;
-}
-
-//=================================================================================================
-void Unit::OrderLookAt(const Vec3& pos)
-{
-	SetOrder(ORDER_LOOK_AT);
-	order_pos = pos;
-}
-
-//=================================================================================================
-void Unit::OrderGuard(Unit* unit)
+UnitOrderEntry* Unit::OrderEscapeToUnit(Unit* unit)
 {
 	assert(unit);
-	SetOrder(ORDER_GUARD);
-	order_unit = unit;
+	OrderReset();
+	order->order = ORDER_ESCAPE_TO_UNIT;
+	order->unit = unit;
+	order->pos = unit->pos;
+	if(ai)
+	{
+		ai->state = AIController::Escape;
+		ai->escape_room = nullptr;
+	}
+	return order;
+}
+
+//=================================================================================================
+UnitOrderEntry* Unit::OrderGoToInn()
+{
+	OrderReset();
+	order->order = ORDER_GOTO_INN;
+	return order;
+}
+
+//=================================================================================================
+UnitOrderEntry* Unit::OrderGuard(Unit* target)
+{
+	assert(target);
+	OrderReset();
+	order->order = ORDER_GUARD;
+	order->unit = target;
+	return order;
+}
+
+//=================================================================================================
+UnitOrderEntry* Unit::OrderAutoTalk(bool leader, GameDialog* dialog)
+{
+	OrderReset();
+	order->order = ORDER_AUTO_TALK;
+	if(!leader)
+	{
+		order->auto_talk = AutoTalkMode::Yes;
+		order->timer = AUTO_TALK_WAIT;
+	}
+	else
+	{
+		order->auto_talk = AutoTalkMode::Leader;
+		order->timer = 0.f;
+	}
+	order->auto_talk_dialog = dialog;
+	return order;
 }
 
 //=================================================================================================
@@ -5807,4 +6009,116 @@ void Unit::RotateTo(const Vec3& pos, float dt)
 			rot = Clip(rot + d);
 		}
 	}
+}
+
+UnitOrderEntry* UnitOrderEntry::NextOrder()
+{
+	next = UnitOrderEntry::Get();
+	next->timer = -1.f;
+	return next;
+}
+
+UnitOrderEntry* UnitOrderEntry::WithTimer(float t)
+{
+	timer = t;
+	return this;
+}
+
+UnitOrderEntry* UnitOrderEntry::ThenWander()
+{
+	UnitOrderEntry* o = NextOrder();
+	o->order = ORDER_WANDER;
+	return o;
+}
+
+UnitOrderEntry* UnitOrderEntry::ThenWait()
+{
+	UnitOrderEntry* o = NextOrder();
+	o->order = ORDER_WAIT;
+	return o;
+}
+
+UnitOrderEntry* UnitOrderEntry::ThenFollow(Unit* target)
+{
+	assert(target);
+	UnitOrderEntry* o = NextOrder();
+	o->order = ORDER_FOLLOW;
+	o->unit = target;
+	return o;
+}
+
+UnitOrderEntry* UnitOrderEntry::ThenLeave()
+{
+	UnitOrderEntry* o = NextOrder();
+	o->order = ORDER_LEAVE;
+	return o;
+}
+
+UnitOrderEntry* UnitOrderEntry::ThenMove(const Vec3& pos, MoveType move_type)
+{
+	UnitOrderEntry* o = NextOrder();
+	o->order = ORDER_MOVE;
+	o->pos = pos;
+	o->move_type = move_type;
+	return o;
+}
+
+UnitOrderEntry* UnitOrderEntry::ThenLookAt(const Vec3& pos)
+{
+	UnitOrderEntry* o = NextOrder();
+	o->order = ORDER_LOOK_AT;
+	o->pos = pos;
+	return o;
+}
+
+UnitOrderEntry* UnitOrderEntry::ThenEscapeTo(const Vec3& pos)
+{
+	UnitOrderEntry* o = NextOrder();
+	o->order = ORDER_ESCAPE_TO;
+	o->pos = pos;
+	return o;
+}
+
+UnitOrderEntry* UnitOrderEntry::ThenEscapeToUnit(Unit* target)
+{
+	assert(target);
+	UnitOrderEntry* o = NextOrder();
+	o->order = ORDER_ESCAPE_TO_UNIT;
+	o->unit = target;
+	o->pos = target->pos;
+	return o;
+}
+
+UnitOrderEntry* UnitOrderEntry::ThenGoToInn()
+{
+	UnitOrderEntry* o = NextOrder();
+	o->order = ORDER_GOTO_INN;
+	return o;
+}
+
+UnitOrderEntry* UnitOrderEntry::ThenGuard(Unit* target)
+{
+	assert(target);
+	UnitOrderEntry* o = NextOrder();
+	o->order = ORDER_GUARD;
+	o->unit = target;
+	return o;
+}
+
+UnitOrderEntry* UnitOrderEntry::ThenAutoTalk(bool leader, GameDialog* dialog)
+{
+	UnitOrderEntry* o = NextOrder();
+	o->order = ORDER_AUTO_TALK;
+	if(!leader)
+	{
+		o->auto_talk = AutoTalkMode::Yes;
+		o->timer = Unit::AUTO_TALK_WAIT;
+	}
+	else
+	{
+		o->auto_talk = AutoTalkMode::Leader;
+		o->timer = 0.f;
+	}
+	o->auto_talk_dialog = dialog;
+	return o;
 }

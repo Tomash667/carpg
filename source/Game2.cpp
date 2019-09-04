@@ -3587,7 +3587,6 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	u->interp = nullptr;
 	u->dont_attack = false;
 	u->assist = false;
-	u->auto_talk = AutoTalkMode::No;
 	u->attack_team = false;
 	u->last_bash = 0.f;
 	u->alcohol = 0.f;
@@ -6513,7 +6512,7 @@ void Game::CastPlayerSpell(PlayerController& player)
 			if(new_unit->in_arena != -1)
 				arena->units.push_back(new_unit);
 			team->AddTeamMember(new_unit, HeroType::Visitor);
-			new_unit->order_unit = &unit;
+			new_unit->order->unit = &unit; // follow summoner
 			SpawnUnitEffect(*new_unit);
 		}
 	}
@@ -8026,7 +8025,7 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 						unit.hp = 1.f;
 						unit.live_state = Unit::ALIVE;
 					}
-					if(unit.order != ORDER_FOLLOW)
+					if(unit.GetOrder() != ORDER_FOLLOW)
 						unit.OrderFollow(team->GetLeader());
 					unit.talking = false;
 					unit.mesh_inst->need_update = true;
@@ -8035,7 +8034,7 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 				}
 				else
 				{
-					if(unit.order == ORDER_LEAVE && unit.IsAlive())
+					if(unit.GetOrder() == ORDER_LEAVE && unit.IsAlive())
 					{
 						delete unit.ai;
 						delete &unit;
@@ -8898,7 +8897,7 @@ void Game::GenerateQuestUnits()
 		assert(u);
 		if(u)
 		{
-			u->StartAutoTalk();
+			u->OrderAutoTalk();
 			quest_mgr->quest_orcs2->orcs_state = Quest_Orcs2::State::GeneratedGuard;
 			quest_mgr->quest_orcs2->guard = u;
 			if(devmode)
@@ -8928,7 +8927,7 @@ void Game::GenerateQuestUnits()
 		if(u)
 		{
 			u->rot = Random(MAX_ANGLE);
-			u->StartAutoTalk();
+			u->OrderAutoTalk();
 			quest_mgr->quest_evil->cleric = u;
 			quest_mgr->quest_evil->evil_state = Quest_Evil::State::GeneratedCleric;
 			if(devmode)
@@ -8949,7 +8948,7 @@ void Game::GenerateQuestUnits()
 			if(u)
 			{
 				quest_mgr->quest_sawmill->messenger = u;
-				u->StartAutoTalk(true);
+				u->OrderAutoTalk(true);
 			}
 		}
 	}
@@ -8973,7 +8972,7 @@ void Game::GenerateQuestUnits()
 		if(u)
 		{
 			quest_mgr->quest_mine->messenger = u;
-			u->StartAutoTalk(true);
+			u->OrderAutoTalk(true);
 		}
 	}
 
@@ -9004,7 +9003,7 @@ void Game::GenerateQuestUnits2()
 		if(u)
 		{
 			quest_mgr->quest_goblins->messenger = u;
-			u->StartAutoTalk(true);
+			u->OrderAutoTalk(true);
 			if(devmode)
 				Info("Generated quest unit '%s'.", u->GetRealName());
 		}
@@ -9017,7 +9016,7 @@ void Game::GenerateQuestUnits2()
 		{
 			quest_mgr->quest_goblins->messenger = u;
 			quest_mgr->quest_goblins->goblins_state = Quest_Goblins::State::GeneratedMage;
-			u->StartAutoTalk(true);
+			u->OrderAutoTalk(true);
 			if(devmode)
 				Info("Generated quest unit '%s'.", u->GetRealName());
 		}
@@ -9044,7 +9043,7 @@ void Game::UpdateQuests(int days)
 			if(u)
 			{
 				quest_mgr->quest_sawmill->messenger = u;
-				u->StartAutoTalk(true);
+				u->OrderAutoTalk(true);
 			}
 		}
 	}
@@ -9075,7 +9074,7 @@ void Game::UpdateQuests(int days)
 					{
 						world->AddNews(Format(txMineBuilt, world->GetLocation(quest_mgr->quest_mine->target_loc)->name.c_str()));
 						quest_mgr->quest_mine->messenger = u;
-						u->StartAutoTalk(true);
+						u->OrderAutoTalk(true);
 					}
 				}
 			}
@@ -9104,7 +9103,7 @@ void Game::UpdateQuests(int days)
 			if(u)
 			{
 				quest_mgr->quest_mine->messenger = u;
-				u->StartAutoTalk(true);
+				u->OrderAutoTalk(true);
 			}
 		}
 	}
@@ -9134,7 +9133,7 @@ void Game::UpdateQuests(int days)
 	{
 		quest_mgr->quest_orcs2->days -= days;
 		if(quest_mgr->quest_orcs2->days <= 0)
-			quest_mgr->quest_orcs2->orc->StartAutoTalk();
+			quest_mgr->quest_orcs2->orc->OrderAutoTalk();
 	}
 
 	// goblins
@@ -9296,7 +9295,7 @@ void Game::UpdateGame2(float dt)
 			{
 				quest_mgr->quest_bandits->bandits_state = Quest_Bandits::State::AgentCome;
 				quest_mgr->quest_bandits->agent = u;
-				u->StartAutoTalk(true);
+				u->OrderAutoTalk(true);
 			}
 		}
 	}
@@ -9305,8 +9304,8 @@ void Game::UpdateGame2(float dt)
 	if(quest_mgr->quest_mages2->mages_state == Quest_Mages2::State::OldMageJoined && game_level->location_index == quest_mgr->quest_mages2->target_loc)
 	{
 		quest_mgr->quest_mages2->timer += dt;
-		if(quest_mgr->quest_mages2->timer >= 30.f && quest_mgr->quest_mages2->scholar->auto_talk == AutoTalkMode::No)
-			quest_mgr->quest_mages2->scholar->StartAutoTalk();
+		if(quest_mgr->quest_mages2->timer >= 30.f && quest_mgr->quest_mages2->scholar->GetOrder() != ORDER_AUTO_TALK)
+			quest_mgr->quest_mages2->scholar->OrderAutoTalk();
 	}
 
 	// quest evil
@@ -9351,8 +9350,8 @@ void Game::UpdateGame2(float dt)
 						u->ai->idle_action = AIController::Idle_Move;
 						u->ai->idle_data.pos = loc.pos;
 						u->ai->timer = 1.f;
-						if(u->order != ORDER_WAIT)
-							u->SetOrder(ORDER_WAIT);
+						if(u->GetOrder() != ORDER_WAIT)
+							u->OrderWait();
 
 						// zamknij
 						if(dist < 2.f)
@@ -9364,7 +9363,7 @@ void Game::UpdateGame2(float dt)
 								u->OrderFollow(team->GetLeader());
 								u->ai->idle_action = AIController::Idle_None;
 								quest_mgr->quest_evil->OnUpdate(Format(txPortalClosed, game_level->location->name.c_str()));
-								u->StartAutoTalk();
+								u->OrderAutoTalk();
 								quest_mgr->quest_evil->changed = true;
 								++quest_mgr->quest_evil->closed;
 								delete game_level->location->portal;
@@ -9377,7 +9376,7 @@ void Game::UpdateGame2(float dt)
 						else
 							quest_mgr->quest_evil->timer = 1.5f;
 					}
-					else if(u->order != ORDER_FOLLOW)
+					else if(u->GetOrder() != ORDER_FOLLOW)
 						u->OrderFollow(team->GetLeader());
 				}
 			}
@@ -10020,7 +10019,7 @@ void Game::HandleQuestEvent(Quest_Event* event)
 			throw "Failed to spawn quest unit!";
 		spawned->dont_attack = event->unit_dont_attack;
 		if(event->unit_auto_talk)
-			spawned->StartAutoTalk();
+			spawned->OrderAutoTalk();
 		spawned->event_handler = event->unit_event_handler;
 		if(spawned->event_handler && event->send_spawn_event)
 			spawned->event_handler->HandleUnitEvent(UnitEventHandler::SPAWN, spawned);
@@ -10036,9 +10035,7 @@ void Game::HandleQuestEvent(Quest_Event* event)
 				if(unit != spawned && unit->IsFriend(*spawned) && lvl->GetRoom(PosToPt(unit->pos)) == &room)
 				{
 					unit->dont_attack = spawned->dont_attack;
-					unit->order = ORDER_GUARD;
-					unit->order_unit = spawned;
-					unit->order_timer = -1;
+					unit->OrderGuard(spawned);
 				}
 			}
 		}
@@ -10060,9 +10057,7 @@ void Game::HandleQuestEvent(Quest_Event* event)
 		if(spawned && event->spawn_2_guard_1)
 		{
 			spawned2->dont_attack = spawned->dont_attack;
-			spawned2->order = ORDER_GUARD;
-			spawned2->order_unit = spawned;
-			spawned2->order_timer = -1;
+			spawned2->OrderGuard(spawned);
 		}
 	}
 

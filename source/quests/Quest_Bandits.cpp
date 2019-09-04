@@ -192,10 +192,10 @@ void Quest_Bandits::SetProgress(int prog2)
 		}
 		break;
 	case Progress::TalkedWithAgent:
-		// porazmawiano z agentem, powiedzia³ gdzie jest skrytka i idzie sobie
+		// talked with agent, he told where is bandit secret hideout is, now he is leaving
 		{
 			bandits_state = State::AgentTalked;
-			DialogContext::current->talker->SetOrder(ORDER_LEAVE);
+			DialogContext::current->talker->OrderLeave();
 			DialogContext::current->talker->event_handler = this;
 			Location& target = *world->CreateLocation(L_DUNGEON, GetStartLocation().pos, 64.f, THRONE_VAULT, UnitGroup::Get("bandits"), false);
 			target.active_quest = this;

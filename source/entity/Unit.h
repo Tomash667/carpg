@@ -116,6 +116,7 @@ enum UnitOrder
 	ORDER_ESCAPE_TO_UNIT, // escape from enemies moving toward target
 	ORDER_GOTO_INN,
 	ORDER_GUARD, // stays near target, remove dont_attack when target dont_attack is removed
+	ORDER_AUTO_TALK,
 	ORDER_MAX
 };
 
@@ -124,6 +125,61 @@ struct TraderStock
 {
 	vector<ItemSlot> items;
 	int date;
+};
+
+//-----------------------------------------------------------------------------
+enum MoveType
+{
+	MOVE_RUN,
+	MOVE_WALK,
+	MOVE_RUN_WHEN_NEAR_TEAM
+};
+
+//-----------------------------------------------------------------------------
+struct UnitOrderEntry : public ObjectPoolProxy<UnitOrderEntry>
+{
+	UnitOrder order;
+	Entity<Unit> unit;
+	float timer;
+	union
+	{
+		struct
+		{
+			Vec3 pos;
+			MoveType move_type;
+		};
+		struct
+		{
+			AutoTalkMode auto_talk;
+			GameDialog* auto_talk_dialog;
+		};
+	};
+	UnitOrderEntry* next;
+
+	UnitOrderEntry() : next(nullptr) {}
+	void OnFree()
+	{
+		if(next)
+		{
+			next->Free();
+			next = nullptr;
+		}
+	}
+	UnitOrderEntry* WithTimer(float t);
+	UnitOrderEntry* ThenWander();
+	UnitOrderEntry* ThenWait();
+	UnitOrderEntry* ThenFollow(Unit* target);
+	UnitOrderEntry* ThenLeave();
+	UnitOrderEntry* ThenMove(const Vec3& pos, MoveType move_type);
+	UnitOrderEntry* ThenLookAt(const Vec3& pos);
+	UnitOrderEntry* ThenEscapeTo(const Vec3& pos);
+	UnitOrderEntry* ThenEscapeToUnit(Unit* target);
+	UnitOrderEntry* ThenGoToInn();
+	UnitOrderEntry* ThenGuard(Unit* target);
+	UnitOrderEntry* ThenAutoTalk(bool leader, GameDialog* dialog);
+
+private:
+	UnitOrderEntry* NextOrder();
 };
 
 //-----------------------------------------------------------------------------
@@ -176,13 +232,6 @@ struct Unit : public EntityType<Unit>
 		LOAD
 	};
 
-	enum MoveType
-	{
-		MOVE_RUN,
-		MOVE_WALK,
-		MOVE_RUN_WHEN_NEAR_TEAM
-	};
-
 	static const int MIN_SIZE = 36;
 	static const float AUTO_TALK_WAIT;
 	static const float STAMINA_BOW_ATTACK;
@@ -224,7 +273,7 @@ struct Unit : public EntityType<Unit>
 	Usable* usable;
 	UnitEventHandler* event_handler;
 	SpeechBubble* bubble;
-	Entity<Unit> summoner, look_target, order_unit, action_unit;
+	Entity<Unit> summoner, look_target, action_unit;
 	int ai_mode;
 	enum Busy
 	{
@@ -237,22 +286,16 @@ struct Unit : public EntityType<Unit>
 	} busy; // nie zapisywane, powinno byæ Busy_No
 	EntityInterpolator* interp;
 	UnitStats* stats;
-	AutoTalkMode auto_talk;
-	float auto_talk_timer;
-	GameDialog* auto_talk_dialog;
 	StaminaAction stamina_action;
 	float stamina_timer;
 	TraderStock* stock;
 	vector<QuestDialog> dialogs;
 	vector<Event> events;
-	UnitOrder order;
-	float order_timer;
-	Vec3 order_pos;
-	MoveType order_move_type;
+	UnitOrderEntry* order;
 
 	//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	Unit() : mesh_inst(nullptr), hero(nullptr), ai(nullptr), player(nullptr), cobj(nullptr), interp(nullptr), bow_instance(nullptr), fake_unit(false),
-		human_data(nullptr), stamina_action(SA_RESTORE_MORE), moved(false), refs(1), stock(nullptr), stats(nullptr), mark(false), order(ORDER_NONE) {}
+		human_data(nullptr), stamina_action(SA_RESTORE_MORE), moved(false), refs(1), stock(nullptr), stats(nullptr), mark(false), order(nullptr) {}
 	~Unit();
 
 	void AddRef() { ++refs; }
@@ -512,8 +555,8 @@ public:
 	}
 	bool IsHero() const { return hero != nullptr; }
 	bool IsFollower() const { return hero && hero->team_member; }
-	bool IsFollowing(Unit* u) const { return order == ORDER_FOLLOW && order_unit == u; }
-	bool IsFollowingTeamMember() const { return IsFollower() && order == ORDER_FOLLOW; }
+	bool IsFollowing(Unit* u) const { return GetOrder() == ORDER_FOLLOW && order->unit == u; }
+	bool IsFollowingTeamMember() const { return IsFollower() && GetOrder() == ORDER_FOLLOW; }
 	Class* GetClass() const { return data->clas; }
 	bool IsUsingMp() const
 	{
@@ -521,7 +564,7 @@ public:
 			return data->clas->mp_bar;
 		return false;
 	}
-	bool CanFollowWarp() const { return IsHero() && order == ORDER_FOLLOW && in_arena == -1 && frozen == FROZEN::NO; }
+	bool CanFollowWarp() const { return IsHero() && GetOrder() == ORDER_FOLLOW && in_arena == -1 && frozen == FROZEN::NO; }
 	bool IsTeamMember() const
 	{
 		if(IsPlayer())
@@ -742,7 +785,8 @@ public:
 	// nie sprawdza czy stoi/¿yje/czy chce gadaæ - tylko akcjê
 	bool CanTalk() const
 	{
-		if(action == A_EAT || action == A_DRINK || action == A_STAND_UP || auto_talk == AutoTalkMode::Leader)
+		FIXME;
+		if(action == A_EAT || action == A_DRINK || action == A_STAND_UP /*|| auto_talk == AutoTalkMode::Leader*/)
 			return false;
 		else
 			return true;
@@ -781,9 +825,10 @@ public:
 		return s;
 	}
 
-	void StartAutoTalk(bool leader = false, GameDialog* dialog = nullptr);
-	void SetAutoTalk(bool auto_talk);
-	bool GetAutoTalk() const { return auto_talk != AutoTalkMode::No; }
+	FIXME;
+	//void OrderAutoTalk(bool leader = false, GameDialog* dialog = nullptr);
+	//void SetAutoTalk(bool auto_talk);
+	//bool GetAutoTalk() const { return auto_talk != AutoTalkMode::No; }
 	void SetDontAttack(bool dont_attack);
 	bool GetDontAttack() const { return dont_attack; }
 
@@ -839,16 +884,29 @@ public:
 	void RemoveEventHandler(Quest_Scripted* quest, bool cleanup);
 	void RemoveEventHandlerS(Quest_Scripted* quest) { RemoveEventHandler(quest, false); }
 	void RemoveAllEventHandlers();
-	void OrderEscapeToUnit(Unit* unit);
-	UnitOrder GetOrder() const { return order; }
-	void SetOrder(UnitOrder order);
-	void OrderAttack();
+	UnitOrder GetOrder() const
+	{
+		if(order)
+			return order->order;
+		return ORDER_NONE;
+	}
+private:
+	void OrderReset();
+public:
 	void OrderClear();
-	void OrderFollow(Unit* target);
-	void OrderMove(const Vec3& pos, MoveType move_type);
-	void OrderLookAt(const Vec3& pos);
-	void OrderGuard(Unit* unit);
-	void OrderTimer(float time) { order_timer = time; }
+	void OrderNext();
+	void OrderAttack();
+	UnitOrderEntry* OrderWander();
+	UnitOrderEntry* OrderWait();
+	UnitOrderEntry* OrderFollow(Unit* target);
+	UnitOrderEntry* OrderLeave();
+	UnitOrderEntry* OrderMove(const Vec3& pos, MoveType move_type);
+	UnitOrderEntry* OrderLookAt(const Vec3& pos);
+	UnitOrderEntry* OrderEscapeTo(const Vec3& pos);
+	UnitOrderEntry* OrderEscapeToUnit(Unit* unit);
+	UnitOrderEntry* OrderGoToInn();
+	UnitOrderEntry* OrderGuard(Unit* target);
+	UnitOrderEntry* OrderAutoTalk(bool leader = false, GameDialog* dialog = nullptr);
 	void Talk(cstring text, int play_anim = -1);
 	void TalkS(const string& text, int play_anim = -1) { Talk(text.c_str(), play_anim); }
 	bool IsBlocking() const { return action == A_BLOCK || (action == A_BASH && animation_state == 0); }

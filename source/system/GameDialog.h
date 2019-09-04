@@ -79,7 +79,7 @@ struct DialogScripts
 	~DialogScripts();
 	int AddCode(FUNC f, const string& code);
 	void GetFormattedCode(FUNC f, string& code);
-	void Build();
+	int Build();
 	asIScriptFunction* Get(FUNC f) { return func[f]; }
 	void Set(asITypeInfo* type);
 

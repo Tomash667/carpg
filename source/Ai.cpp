@@ -212,8 +212,6 @@ void Game::UpdateAi(float dt)
 			}
 		}
 
-		CheckAutoTalk(u, dt);
-
 		// AI escape
 		if(enemy && ai.state != AIController::Escape && !IsSet(u.data->flags, F_DONT_ESCAPE) && ai.GetMorale() < 0.f)
 		{
@@ -449,15 +447,15 @@ void Game::UpdateAi(float dt)
 						continue;
 					}
 
-					if(u.order != ORDER_NONE && u.order_timer > 0.f)
+					if(UnitOrder order = u.GetOrder(); order != ORDER_NONE && order != ORDER_AUTO_TALK && u.order->timer > 0.f)
 					{
-						u.order_timer -= dt;
-						if(u.order_timer <= 0.f)
-							u.OrderClear();
+						u.order->timer -= dt;
+						if(u.order->timer <= 0.f)
+							u.OrderNext();
 					}
 
-					UnitOrder order = u.order;
-					Unit* order_unit = u.order_unit;
+					UnitOrder order = u.GetOrder();
+					Unit* order_unit = u.order ? u.order->unit : nullptr;
 					if(u.assist)
 					{
 						order = ORDER_FOLLOW;
@@ -597,25 +595,25 @@ void Game::UpdateAi(float dt)
 					case ORDER_LOOK_AT:
 						use_idle = false;
 						look_at = LookAtPoint;
-						look_pos = u.order_pos;
+						look_pos = u.order->pos;
 						break;
 					case ORDER_MOVE:
 						use_idle = false;
-						if(Vec3::Distance2d(u.pos, u.order_pos) < 0.1f)
+						if(Vec3::Distance2d(u.pos, u.order->pos) < 0.1f)
 							u.OrderClear();
 						move_type = MovePoint;
-						target_pos = u.order_pos;
+						target_pos = u.order->pos;
 						look_at = LookAtWalk;
-						switch(u.order_move_type)
+						switch(u.order->move_type)
 						{
 						default:
-						case Unit::MOVE_WALK:
+						case MOVE_WALK:
 							run_type = Walk;
 							break;
-						case Unit::MOVE_RUN:
+						case MOVE_RUN:
 							run_type = Run;
 							break;
-						case Unit::MOVE_RUN_WHEN_NEAR_TEAM:
+						case MOVE_RUN_WHEN_NEAR_TEAM:
 							{
 								float dist;
 								Unit* near_team = team->GetNearestTeamMember(u.pos, &dist);
@@ -694,6 +692,9 @@ void Game::UpdateAi(float dt)
 						}
 						else
 							u.OrderClear();
+						break;
+					case ORDER_AUTO_TALK:
+						CheckAutoTalk(u, dt);
 						break;
 					}
 
@@ -868,7 +869,7 @@ void Game::UpdateAi(float dt)
 									ai.city_wander = true;
 								}
 							}
-							else if(u.order == ORDER_GUARD && Vec3::Distance(u.pos, order_unit->pos) > 5.f)
+							else if(order == ORDER_GUARD && Vec3::Distance(u.pos, order_unit->pos) > 5.f)
 							{
 								// walk to guard target when too far
 								ai.timer = Random(2.f, 4.f);
@@ -1520,7 +1521,7 @@ void Game::UpdateAi(float dt)
 									{
 										ai.idle_action = AIController::Idle_None;
 										game_level->WarpUnit(&u, ai.idle_data.region.area->area_id);
-										if(ai.idle_data.region.area->area_type != LevelArea::Type::Building || (u.IsFollower() && u.order == ORDER_FOLLOW))
+										if(ai.idle_data.region.area->area_type != LevelArea::Type::Building || (u.IsFollower() && order == ORDER_FOLLOW))
 										{
 											ai.loc_timer = -1.f;
 											ai.timer = -1.f;
@@ -2041,11 +2042,11 @@ void Game::UpdateAi(float dt)
 					// ignore alert target
 					ai.alert_target = nullptr;
 
-					if(u.order == ORDER_ESCAPE_TO_UNIT)
+					if(u.GetOrder() == ORDER_ESCAPE_TO_UNIT)
 					{
-						Unit* order_unit = u.order_unit;
-						if(!u.order_unit)
-							u.order = ORDER_ESCAPE_TO;
+						Unit* order_unit = u.order->unit;
+						if(!order_unit)
+							u.order->order = ORDER_ESCAPE_TO;
 						else
 						{
 							if(Vec3::Distance(order_unit->pos, u.pos) < 3.f)
@@ -2056,14 +2057,14 @@ void Game::UpdateAi(float dt)
 							move_type = MovePoint;
 							run_type = Run;
 							look_at = LookAtWalk;
-							u.order_pos = order_unit->pos;
-							target_pos = u.order_pos;
+							u.order->pos = order_unit->pos;
+							target_pos = order_unit->pos;
 							break;
 						}
 					}
-					if(u.order == ORDER_ESCAPE_TO)
+					if(u.GetOrder() == ORDER_ESCAPE_TO)
 					{
-						if(Vec3::Distance(u.order_pos, u.pos) < 0.1f)
+						if(Vec3::Distance(u.order->pos, u.pos) < 0.1f)
 						{
 							u.OrderClear();
 							break;
@@ -2071,7 +2072,7 @@ void Game::UpdateAi(float dt)
 						move_type = MovePoint;
 						run_type = Run;
 						look_at = LookAtWalk;
-						target_pos = u.order_pos;
+						target_pos = u.order->pos;
 						break;
 					}
 
@@ -2943,7 +2944,7 @@ void Game::UpdateAi(float dt)
 				if(dif <= rot_speed)
 				{
 					u.rot = dir;
-					if(u.order == ORDER_LOOK_AT && u.order_timer < 0.f)
+					if(u.GetOrder() == ORDER_LOOK_AT && u.order->timer < 0.f)
 						u.OrderClear();
 				}
 				else
@@ -3127,21 +3128,21 @@ void Game::AI_HitReaction(Unit& unit, const Vec3& pos)
 //=================================================================================================
 void Game::CheckAutoTalk(Unit& unit, float dt)
 {
-	if(unit.auto_talk == AutoTalkMode::No || (unit.action != A_NONE && unit.action != A_ANIMATION2))
+	if(unit.action != A_NONE && unit.action != A_ANIMATION2)
 	{
-		if(unit.auto_talk == AutoTalkMode::Wait)
+		if(unit.order->auto_talk == AutoTalkMode::Wait)
 		{
-			unit.auto_talk = AutoTalkMode::Yes;
-			unit.auto_talk_timer = Unit::AUTO_TALK_WAIT;
+			unit.order->auto_talk = AutoTalkMode::Yes;
+			unit.order->timer = Unit::AUTO_TALK_WAIT;
 		}
 		return;
 	}
 
 	// timer to not check everything every frame
-	unit.auto_talk_timer -= dt;
-	if(unit.auto_talk_timer > 0.f)
+	unit.order->timer -= dt;
+	if(unit.order->timer > 0.f)
 		return;
-	unit.auto_talk_timer = Unit::AUTO_TALK_WAIT;
+	unit.order->timer = Unit::AUTO_TALK_WAIT;
 
 	// find near players
 	struct NearUnit
@@ -3151,7 +3152,7 @@ void Game::CheckAutoTalk(Unit& unit, float dt)
 	};
 	static vector<NearUnit> near_units;
 
-	const bool leader_mode = (unit.auto_talk == AutoTalkMode::Leader);
+	const bool leader_mode = (unit.order->auto_talk == AutoTalkMode::Leader);
 
 	for(Unit& u : team->members)
 	{
@@ -3171,11 +3172,8 @@ void Game::CheckAutoTalk(Unit& unit, float dt)
 	// if no nearby available players found, return
 	if(near_units.empty())
 	{
-		if(unit.auto_talk == AutoTalkMode::Wait)
-		{
-			unit.auto_talk = AutoTalkMode::Yes;
-			unit.auto_talk_timer = Unit::AUTO_TALK_WAIT;
-		}
+		if(unit.order->auto_talk == AutoTalkMode::Wait)
+			unit.order->auto_talk = AutoTalkMode::Yes;
 		return;
 	}
 
@@ -3216,21 +3214,21 @@ void Game::CheckAutoTalk(Unit& unit, float dt)
 	// start dialog or wait
 	if(talk_player)
 	{
-		if(unit.auto_talk == AutoTalkMode::Yes)
+		if(unit.order->auto_talk == AutoTalkMode::Yes)
 		{
-			unit.auto_talk = AutoTalkMode::Wait;
-			unit.auto_talk_timer = 1.f;
+			unit.order->auto_talk = AutoTalkMode::Wait;
+			unit.order->timer = 1.f;
 		}
 		else
 		{
-			unit.auto_talk = AutoTalkMode::No;
-			talk_player->StartDialog(&unit, unit.auto_talk_dialog);
+			talk_player->StartDialog(&unit, unit.order->auto_talk_dialog);
+			unit.OrderClear();
 		}
 	}
-	else if(unit.auto_talk == AutoTalkMode::Wait)
+	else if(unit.order->auto_talk == AutoTalkMode::Wait)
 	{
-		unit.auto_talk = AutoTalkMode::Yes;
-		unit.auto_talk_timer = Unit::AUTO_TALK_WAIT;
+		unit.order->auto_talk = AutoTalkMode::Yes;
+		unit.order->timer = Unit::AUTO_TALK_WAIT;
 	}
 
 	near_units.clear();

@@ -1449,7 +1449,10 @@ void Game::UpdateServerTransfer(float dt)
 					c.unit = unit;
 
 					AddMultiMsg(Format(txMpNPCLeft, unit->hero->name.c_str()));
-					unit->SetOrder(game_level->city_ctx ? ORDER_WANDER : ORDER_LEAVE);
+					if(game_level->city_ctx)
+						unit->OrderWander();
+					else
+						unit->OrderLeave();
 					unit->hero->team_member = false;
 					unit->hero->credit = 0;
 					unit->ai->city_wander = false;

@@ -96,9 +96,7 @@ void DodajStraznikow()
 		if(u2)
 		{
 			u2->dont_attack = true;
-			u2->order = ORDER_GUARD;
-			u2->order_unit = u;
-			u2->order_timer = -1;
+			u2->OrderGuard(u);
 		}
 	}
 

@@ -497,13 +497,18 @@ void ScriptManager::RegisterGame()
 		{ "ORDER_FOLLOW", ORDER_FOLLOW },
 		{ "ORDER_LEAVE", ORDER_LEAVE },
 		{ "ORDER_MOVE", ORDER_MOVE },
-		{ "ORDER_LOOK_AT", ORDER_LOOK_AT }
+		{ "ORDER_LOOK_AT", ORDER_LOOK_AT },
+		{ "ORDER_ESCAPE_TO", ORDER_ESCAPE_TO },
+		{ "ORDER_ESCAPE_TO_UNIT", ORDER_ESCAPE_TO_UNIT },
+		{ "ORDER_GOTO_INN", ORDER_GOTO_INN },
+		{ "ORDER_GUARD", ORDER_GUARD },
+		{ "ORDER_AUTO_TALK", ORDER_AUTO_TALK }
 		});
 
 	AddEnum("MOVE_TYPE", {
-		{ "MOVE_RUN", Unit::MOVE_RUN },
-		{ "MOVE_WALK", Unit::MOVE_WALK },
-		{ "MOVE_RUN_WHEN_NEAR_TEAM", Unit::MOVE_RUN_WHEN_NEAR_TEAM }
+		{ "MOVE_RUN", MOVE_RUN },
+		{ "MOVE_WALK", MOVE_WALK },
+		{ "MOVE_RUN_WHEN_NEAR_TEAM", MOVE_RUN_WHEN_NEAR_TEAM }
 		});
 
 	AddEnum("LOCATION_IMAGE", {
@@ -589,6 +594,20 @@ void ScriptManager::RegisterGame()
 		.WithNamespace()
 		.AddFunction("UnitData@ Get(const string& in)", asFUNCTION(UnitData::GetS));
 
+	AddType("UnitOrderBuilder")
+		.Method("UnitOrderBuilder@ WithTimer(float)", asMETHOD(UnitOrderEntry, WithTimer))
+		.Method("UnitOrderBuilder@ ThenWander()", asMETHOD(UnitOrderEntry, ThenWander))
+		.Method("UnitOrderBuilder@ ThenWait()", asMETHOD(UnitOrderEntry, ThenWait))
+		.Method("UnitOrderBuilder@ ThenFollow(Unit@)", asMETHOD(UnitOrderEntry, ThenFollow))
+		.Method("UnitOrderBuilder@ ThenLeave()", asMETHOD(UnitOrderEntry, ThenLeave))
+		.Method("UnitOrderBuilder@ ThenMove(const Vec3& in, MOVE_TYPE)", asMETHOD(UnitOrderEntry, ThenMove))
+		.Method("UnitOrderBuilder@ ThenLookAt(const Vec3& in)", asMETHOD(UnitOrderEntry, ThenLookAt))
+		.Method("UnitOrderBuilder@ ThenEscapeTo(const Vec3& in)", asMETHOD(UnitOrderEntry, ThenEscapeTo))
+		.Method("UnitOrderBuilder@ ThenEscapeToUnit(Unit@)", asMETHOD(UnitOrderEntry, ThenEscapeToUnit))
+		.Method("UnitOrderBuilder@ ThenGoToInn()", asMETHOD(UnitOrderEntry, ThenGoToInn))
+		.Method("UnitOrderBuilder@ ThenGuard(Unit@)", asMETHOD(UnitOrderEntry, ThenGuard))
+		.Method("UnitOrderBuilder@ ThenAutoTalk(bool=true, Dialog@=null)", asMETHOD(UnitOrderEntry, ThenAutoTalk));
+
 	ForType("Unit")
 		.Member("const Vec3 pos", offsetof(Unit, pos))
 		.Member("const Player@ player", offsetof(Unit, player))
@@ -599,14 +618,10 @@ void ScriptManager::RegisterGame()
 		.Method("VarsContainer@ get_vars()", asFUNCTION(Unit_GetVars)) // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 		.Method("const string& get_name()", asMETHOD(Unit, GetNameS))
 		.Method("void set_name(const string& in)", asMETHOD(Unit, SetName))
-		.Method("bool get_auto_talk() const", asMETHOD(Unit, GetAutoTalk))
-		.Method("void set_auto_talk(bool)", asMETHOD(Unit, SetAutoTalk))
 		.Method("bool get_dont_attack() const", asMETHOD(Unit, GetDontAttack))
 		.Method("void set_dont_attack(bool)", asMETHOD(Unit, SetDontAttack))
 		.Method("bool get_known_name() const", asMETHOD(Unit, GetKnownName))
 		.Method("void set_known_name(bool)", asMETHOD(Unit, SetKnownName))
-		.Method("UNIT_ORDER get_order() const", asMETHOD(Unit, GetOrder))
-		.Method("void set_order(UNIT_ORDER)", asMETHOD(Unit, SetOrder))
 		.Method("bool IsTeamMember()", asMETHOD(Unit, IsTeamMember))
 		.Method("bool IsFollowing(Unit@)", asMETHOD(Unit, IsFollowing))
 		.Method("float GetHpp()", asMETHOD(Unit, GetHpp))
@@ -619,14 +634,21 @@ void ScriptManager::RegisterGame()
 		.Method("void RemoveDialog(Quest@)", asMETHOD(Unit, RemoveDialog))
 		.Method("void AddEventHandler(Quest@, EventType)", asMETHOD(Unit, AddEventHandler))
 		.Method("void RemoveEventHandler(Quest@)", asMETHOD(Unit, RemoveEventHandlerS))
-		.Method("void OrderEscapeToUnit(Unit@)", asMETHOD(Unit, OrderEscapeToUnit))
-		.Method("void OrderAttack()", asMETHOD(Unit, OrderAttack))
+		.Method("UNIT_ORDER get_order() const", asMETHOD(Unit, GetOrder))
 		.Method("void OrderClear()", asMETHOD(Unit, OrderClear))
-		.Method("void OrderFollow(Unit@)", asMETHOD(Unit, OrderFollow))
-		.Method("void OrderMove(const Vec3& in, MOVE_TYPE)", asMETHOD(Unit, OrderMove))
-		.Method("void OrderLookAt(const Vec3& in)", asMETHOD(Unit, OrderLookAt))
-		.Method("void OrderGuard(Unit@)", asMETHOD(Unit, OrderGuard))
-		.Method("void OrderTimer(float)", asMETHOD(Unit, OrderTimer))
+		.Method("void OrderNext()", asMETHOD(Unit, OrderNext))
+		.Method("void OrderAttack()", asMETHOD(Unit, OrderAttack))
+		.Method("UnitOrderBuilder@ OrderWander()", asMETHOD(Unit, OrderWander))
+		.Method("UnitOrderBuilder@ OrderWait()", asMETHOD(Unit, OrderWait))
+		.Method("UnitOrderBuilder@ OrderFollow(Unit@)", asMETHOD(Unit, OrderFollow))
+		.Method("UnitOrderBuilder@ OrderLeave()", asMETHOD(Unit, OrderLeave))
+		.Method("UnitOrderBuilder@ OrderMove(const Vec3& in, MOVE_TYPE)", asMETHOD(Unit, OrderMove))
+		.Method("UnitOrderBuilder@ OrderLookAt(const Vec3& in)", asMETHOD(Unit, OrderLookAt))
+		.Method("UnitOrderBuilder@ OrderEscapeTo(const Vec3& in)", asMETHOD(Unit, OrderEscapeTo))
+		.Method("UnitOrderBuilder@ OrderEscapeToUnit(Unit@)", asMETHOD(Unit, OrderEscapeToUnit))
+		.Method("UnitOrderBuilder@ OrderGoToInn()", asMETHOD(Unit, OrderGoToInn))
+		.Method("UnitOrderBuilder@ OrderGuard(Unit@)", asMETHOD(Unit, OrderGuard))
+		.Method("UnitOrderBuilder@ OrderAutoTalk(bool=false, Dialog@=null)", asMETHOD(Unit, OrderAutoTalk))
 		.Method("void Talk(const string& in, int = -1)", asMETHOD(Unit, TalkS))
 		.WithInstance("Unit@ target", &ctx.target)
 		.WithNamespace()

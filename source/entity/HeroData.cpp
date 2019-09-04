@@ -72,23 +72,25 @@ void HeroData::Load(FileReader& f)
 		f >> mode;
 		if(team_member)
 		{
+			UnitOrderEntry* order = UnitOrderEntry::Get();
 			switch(mode)
 			{
 			case old::Wander:
-				unit->order = ORDER_WANDER;
+				order->order = ORDER_WANDER;
 				break;
 			case old::Wait:
-				unit->order = ORDER_WAIT;
+				order->order = ORDER_WAIT;
 				break;
 			case old::Follow:
-				unit->order = ORDER_FOLLOW;
-				team->GetLeaderRequest(&unit->order_unit);
+				order->order = ORDER_FOLLOW;
+				team->GetLeaderRequest(&order->unit);
 				break;
 			case old::Leave:
-				unit->order = ORDER_LEAVE;
+				order->order = ORDER_LEAVE;
 				break;
 			}
-			unit->order_timer = 0.f;
+			order->timer = 0.f;
+			unit->order = order;
 		}
 	}
 	if(LOAD_VERSION < V_0_11)
