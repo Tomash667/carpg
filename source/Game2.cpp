@@ -7988,13 +7988,16 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 	// cleanup units
 	if(Net::IsLocal() && !clear && !net->was_client)
 	{
-		for(vector<Unit*>::iterator it = area.units.begin(), end = area.units.end(); it != end; ++it)
+		LoopAndRemove(area.units, [&](Unit* p_unit)
 		{
-			Unit& unit = **it;
+			Unit& unit = *p_unit;
 
 			// physics
-			delete unit.cobj->getCollisionShape();
-			unit.cobj = nullptr;
+			if(unit.cobj)
+			{
+				delete unit.cobj->getCollisionShape();
+				unit.cobj = nullptr;
+			}
 
 			// speech bubble
 			unit.bubble = nullptr;
@@ -8003,7 +8006,7 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 			// if using object, end it and move to free space
 			if(unit.usable)
 			{
-				Unit_StopUsingUsable(area, **it);
+				Unit_StopUsingUsable(area, unit);
 				unit.UseUsable(nullptr);
 				unit.visual_pos = unit.pos = unit.target_pos;
 			}
@@ -8030,15 +8033,16 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 					unit.talking = false;
 					unit.mesh_inst->need_update = true;
 					unit.ai->Reset();
-					*it = nullptr;
+					return true;
 				}
 				else
 				{
-					if(unit.GetOrder() == ORDER_LEAVE && unit.IsAlive())
+					UnitOrder order = unit.GetOrder();
+					if(order == ORDER_LEAVE && unit.IsAlive())
 					{
 						delete unit.ai;
 						delete &unit;
-						*it = nullptr;
+						return true;
 					}
 					else
 					{
@@ -8048,16 +8052,27 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 							unit.mesh_inst->SetToEnd();
 							game_level->CreateBlood(area, unit, true);
 						}
-						if(unit.ai->goto_inn && game_level->city_ctx)
+
+						// warp to inn if unit wanted to go there
+						if(order == ORDER_GOTO_INN && unit.IsAlive())
 						{
-							// warp to inn if unit wanted to go there
-							game_level->WarpToInn(**it);
+							unit.OrderNext();
+							if(game_level->city_ctx)
+							{
+								InsideBuilding* inn = game_level->city_ctx->FindInn();
+								game_level->WarpToRegion(*inn, (Rand() % 5 == 0 ? inn->region2 : inn->region1), unit.GetUnitRadius(), unit.pos, 20);
+								unit.visual_pos = unit.pos;
+								unit.area = inn;
+								inn->units.push_back(&unit);
+								return true;
+							}
 						}
 						delete unit.mesh_inst;
 						unit.mesh_inst = nullptr;
 						delete unit.ai;
 						unit.ai = nullptr;
 						unit.EndEffects();
+						return false;
 					}
 				}
 			}
@@ -8066,12 +8081,9 @@ void Game::LeaveLevel(LevelArea& area, bool clear)
 				unit.talking = false;
 				unit.mesh_inst->need_update = true;
 				unit.usable = nullptr;
-				*it = nullptr;
+				return true;
 			}
-		}
-
-		// remove units that left this level
-		RemoveNullElements(area.units);
+		});
 	}
 	else
 	{

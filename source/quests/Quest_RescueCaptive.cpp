@@ -224,8 +224,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 			if(captive->hero->team_member)
 				team->RemoveTeamMember(captive);
 			captive->dont_attack = false;
-			captive->ai->goto_inn = true;
-			captive->ai->timer = 0.f;
+			captive->OrderGoToInn();
 			captive->temporary = true;
 			captive->event_handler = nullptr;
 			captive = nullptr;

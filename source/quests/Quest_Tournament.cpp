@@ -238,7 +238,7 @@ bool Quest_Tournament::ShouldJoin(Unit& u)
 			if(!u.IsTeamMember())
 			{
 				// po wszystkim wróæ do karczmy
-				u.ai->goto_inn = true;
+				u.OrderGoToInn();
 			}
 			return true;
 		}

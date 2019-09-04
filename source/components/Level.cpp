@@ -2733,19 +2733,6 @@ bool Level::WarpToRegion(LevelArea& area, const Box2d& region, float radius, Vec
 }
 
 //=================================================================================================
-// zmienia tylko pozycjê bo ta funkcja jest wywo³ywana przy opuszczaniu miasta
-void Level::WarpToInn(Unit& unit)
-{
-	assert(city_ctx);
-
-	InsideBuilding* inn = city_ctx->FindInn();
-
-	WarpToRegion(*inn, (Rand() % 5 == 0 ? inn->region2 : inn->region1), unit.GetUnitRadius(), unit.pos, 20);
-	unit.visual_pos = unit.pos;
-	unit.area = inn;
-}
-
-//=================================================================================================
 void Level::WarpNearLocation(LevelArea& area, Unit& unit, const Vec3& pos, float extra_radius, bool allow_exact, int tries)
 {
 	const float radius = unit.GetUnitRadius();
