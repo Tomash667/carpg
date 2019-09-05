@@ -461,8 +461,6 @@ void Game::UpdateAi(float dt)
 						order = ORDER_FOLLOW;
 						order_unit = team->GetLeader();
 					}
-					if(ai.goto_inn)
-						order = ORDER_GOTO_INN;
 
 					bool use_idle = true;
 					switch(order)
@@ -665,7 +663,7 @@ void Game::UpdateAi(float dt)
 									if(u.area == inn)
 									{
 										// is inside inn - move to random point
-										ai.goto_inn = false;
+										u.OrderNext();
 										ai.timer = Random(5.f, 7.5f);
 										ai.idle_action = AIController::Idle_Move;
 										ai.idle_data.pos = (Rand() % 5 == 0 ? inn->region2.Midpoint() : inn->region1.Midpoint()).XZ();

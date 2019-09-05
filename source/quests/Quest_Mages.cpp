@@ -314,8 +314,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			if(world->GetCurrentLocationIndex() == mage_loc)
 			{
 				// idŸ do karczmy
-				u->ai->goto_inn = true;
-				u->ai->timer = 0.f;
+				u->OrderGoToInn();
 			}
 			else
 			{
@@ -345,7 +344,6 @@ void Quest_Mages2::SetProgress(int prog2)
 			{
 				OnUpdate(Format(game->txQuest[184], u->hero->name.c_str()));
 				good_mage_name = u->hero->name;
-				u->ai->goto_inn = false;
 				team->AddTeamMember(u, HeroType::Free);
 			}
 

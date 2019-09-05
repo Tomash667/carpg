@@ -2643,25 +2643,19 @@ void CityGenerator::RepositionUnits()
 	else
 		citizen = UnitData::Get("citizen");
 	UnitData* guard = UnitData::Get("guard_move");
-	InsideBuilding* inn = city->FindInn();
 
 	for(vector<Unit*>::iterator it = city->units.begin(), end = city->units.end(); it != end; ++it)
 	{
 		Unit& u = **it;
-		if(u.IsAlive() && u.IsAI())
+		if(u.IsAlive() && u.IsAI() && u.data == citizen || u.data == guard)
 		{
-			if(u.ai->goto_inn)
-				game_level->WarpToRegion(*inn, (Rand() % 5 == 0 ? inn->region2 : inn->region1), u.GetUnitRadius(), u.pos);
-			else if(u.data == citizen || u.data == guard)
+			for(int j = 0; j < 50; ++j)
 			{
-				for(int j = 0; j < 50; ++j)
+				Int2 pt(Random(a, b), Random(a, b));
+				if(city->tiles[pt(OutsideLocation::size)].IsRoadOrPath())
 				{
-					Int2 pt(Random(a, b), Random(a, b));
-					if(city->tiles[pt(OutsideLocation::size)].IsRoadOrPath())
-					{
-						game_level->WarpUnit(u, Vec3(2.f*pt.x + 1, 0, 2.f*pt.y + 1));
-						break;
-					}
+					game_level->WarpUnit(u, Vec3(2.f*pt.x + 1, 0, 2.f*pt.y + 1));
+					break;
 				}
 			}
 		}

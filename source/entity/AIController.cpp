@@ -37,7 +37,6 @@ void AIController::Init(Unit* unit)
 	start_rot = unit->rot;
 	loc_timer = 0.f;
 	timer = 0.f;
-	goto_inn = false;
 	change_ai_mode = false;
 	pf_state = PFS_NOT_USING;
 }
@@ -126,7 +125,6 @@ void AIController::Save(GameWriter& f)
 	f << city_wander;
 	f << loc_timer;
 	f << shoot_yspeed;
-	f << goto_inn;
 }
 
 //=================================================================================================
@@ -254,7 +252,13 @@ void AIController::Load(GameReader& f)
 	f >> city_wander;
 	f >> loc_timer;
 	f >> shoot_yspeed;
-	f >> goto_inn;
+	if(LOAD_VERSION < V_DEV)
+	{
+		bool goto_inn;
+		f >> goto_inn;
+		if(goto_inn)
+			unit->OrderGoToInn();
+	}
 	change_ai_mode = false;
 }
 
