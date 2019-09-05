@@ -3355,99 +3355,11 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 
 	render->SetAlphaBlend(false);
 
-	// modele
-	uint passes;
-	int current_flags = -1;
-	bool inside_begin = false;
-	const Mesh* prev_mesh = nullptr;
+	// pass
+	render->SetNoZWrite(IsSet(current_flags, SceneNode::F_NO_ZWRITE));
+	render->SetNoCulling(IsSet(current_flags, SceneNode::F_NO_CULLING));
+	render->SetAlphaTest(IsSet(current_flags, SceneNode::F_ALPHA_TEST));
 
-	for(vector<SceneNode*>::const_iterator it = nodes.begin(), end = nodes.end(); it != end; ++it)
-	{
-		const SceneNode* node = *it;
-		const Mesh& mesh = node->GetMesh();
-		if(!mesh.IsLoaded())
-		{
-			ReportError(10, Format("Drawing not loaded mesh '%s'.", mesh.filename));
-			res_mgr->Load(const_cast<Mesh*>(&mesh));
-			break;
-		}
-
-		// pobierz nowy efekt jeœli trzeba
-		if(node->flags != current_flags)
-		{
-			if(inside_begin)
-			{
-				e->EndPass();
-				e->End();
-				inside_begin = false;
-			}
-			current_flags = node->flags;
-			e = super_shader->GetShader(super_shader->GetShaderId(
-				IsSet(node->flags, SceneNode::F_ANIMATED),
-				IsSet(node->flags, SceneNode::F_BINORMALS),
-				game_level->cl_fog,
-				cl_specularmap && IsSet(node->flags, SceneNode::F_SPECULAR_MAP),
-				cl_normalmap && IsSet(node->flags, SceneNode::F_NORMAL_MAP),
-				game_level->cl_lighting && !outside,
-				game_level->cl_lighting && outside));
-			D3DXHANDLE tech;
-			V(e->FindNextValidTechnique(nullptr, &tech));
-			V(e->SetTechnique(tech));
-
-			render->SetNoZWrite(IsSet(current_flags, SceneNode::F_NO_ZWRITE));
-			render->SetNoCulling(IsSet(current_flags, SceneNode::F_NO_CULLING));
-			render->SetAlphaTest(IsSet(current_flags, SceneNode::F_ALPHA_TEST));
-		}
-
-		// ustaw parametry shadera
-		if(!node->billboard)
-			m1 = node->mat * game_level->camera.matViewProj;
-		else
-			m1 = node->mat.Inverse() * game_level->camera.matViewProj;
-		
-		// œwiat³a
-		if(!outside)
-			V(e->SetRawValue(super_shader->hLights, &lights[node->lights].ld[0], 0, sizeof(LightData) * 3));
-
-		// renderowanie
-		if(!IsSet(node->subs, SPLIT_INDEX))
-		{
-			
-		}
-		else
-		{
-			int index = (node->subs & ~SPLIT_INDEX);
-			const Mesh::Submesh& sub = mesh.subs[index];
-
-			// tekstura
-			V(e->SetTexture(super_shader->hTexDiffuse, mesh.GetTexture(index, node->tex_override)));
-			if(cl_normalmap && IsSet(current_flags, SceneNode::F_NORMAL_MAP))
-				V(e->SetTexture(super_shader->hTexNormal, sub.tex_normal->tex));
-			if(cl_specularmap && IsSet(current_flags, SceneNode::F_SPECULAR_MAP))
-				V(e->SetTexture(super_shader->hTexSpecular, sub.tex_specular->tex));
-
-			// ustawienia œwiat³a
-			V(e->SetVector(super_shader->hSpecularColor, (D3DXVECTOR4*)&sub.specular_color));
-			V(e->SetFloat(super_shader->hSpecularIntensity, sub.specular_intensity));
-			V(e->SetFloat(super_shader->hSpecularHardness, (float)sub.specular_hardness));
-
-			if(!inside_begin)
-			{
-				V(e->Begin(&passes, 0));
-				V(e->BeginPass(0));
-				inside_begin = true;
-			}
-			else
-				V(e->CommitChanges());
-			V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, sub.min_ind, sub.n_ind, sub.first * 3, sub.tris));
-		}
-	}
-
-	if(inside_begin)
-	{
-		V(e->EndPass());
-		V(e->End());
-	}
 }
 
 //=================================================================================================
