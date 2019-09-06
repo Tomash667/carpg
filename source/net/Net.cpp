@@ -1565,7 +1565,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 
 				NetChangePlayer& c = Add1(info.changes);
 				c.type = NetChangePlayer::START_DIALOG;
-				if(talk_to->busy != Unit::Busy_No || !talk_to->CanTalk())
+				if(talk_to->busy != Unit::Busy_No || !talk_to->CanTalk(unit))
 				{
 					// can't talk to unit
 					c.id = -1;
@@ -5388,9 +5388,9 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					else
 					{
 						unit->hero->team_member = false;
-						RemoveElement(team->members.ptrs, unit);
+						RemoveElementOrder(team->members.ptrs, unit);
 						if(unit->hero->type == HeroType::Normal)
-							RemoveElement(team->active_members.ptrs, unit);
+							RemoveElementOrder(team->active_members.ptrs, unit);
 						if(game_gui->team->visible)
 							game_gui->team->Changed();
 					}
@@ -5661,7 +5661,6 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				explo->size = 0.f;
 				explo->sizemax = 2.f;
 				explo->tex = spell.tex_explode;
-				explo->owner = nullptr;
 
 				sound_mgr->PlaySound3d(spell.sound_hit, explo->pos, spell.sound_hit_dist);
 
@@ -8132,8 +8131,8 @@ void Game::RemovePlayer(PlayerInfo& info)
 		return;
 
 	Unit* unit = info.u;
-	RemoveElement(team->members.ptrs, unit);
-	RemoveElement(team->active_members.ptrs, unit);
+	RemoveElementOrder(team->members.ptrs, unit);
+	RemoveElementOrder(team->active_members.ptrs, unit);
 	if(game_state == GS_WORLDMAP)
 	{
 		if(Net::IsLocal() && !game_level->is_open)

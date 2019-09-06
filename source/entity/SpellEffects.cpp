@@ -18,10 +18,8 @@ void Explo::Save(FileWriter& f)
 	f << size;
 	f << sizemax;
 	f << dmg;
-	f << hitted.size();
-	for(Unit* unit : hitted)
-		f << unit->id;
-	f << (owner ? owner->id : -1);
+	f << hitted;
+	f << owner;
 	f << tex->filename;
 }
 
@@ -32,10 +30,8 @@ void Explo::Load(FileReader& f)
 	f >> size;
 	f >> sizemax;
 	f >> dmg;
-	hitted.resize(f.Read<uint>());
-	for(uint i = 0; i < hitted.size(); ++i)
-		hitted[i] = Unit::GetById(f.Read<int>());
-	owner = Unit::GetById(f.Read<int>());
+	f >> hitted;
+	f >> owner;
 	tex = res_mgr->Load<Texture>(f.ReadString1());
 }
 

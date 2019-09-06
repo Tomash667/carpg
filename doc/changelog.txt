@@ -25,6 +25,9 @@ Wersja 0.12 (???):
 - porwany nie do³¹cza do walki na arenie
 - nie mo¿na dawaæ z³ota przywo³anym jednostkom i tymczasowym cz³onkom dru¿yny
 - crash przy oknie dialogowym dawania z³ota/wyrzucania gdy gracz wyjdzie z gry
+- poprawiony k¹t wchodzenia do lokalizacji
+- usuwanie cz³onków dru¿yny w multiplayer nie zmienia kolejnoœci dru¿yny
+- klient po wyjœciu z gry multiplayer i rozpoczêciu singleplayer nie by³ przewódc¹ dru¿yny
 
 --------------------------------------------------------------------------------
 Wersja 0.11.1 (2019-08-12):

@@ -12,6 +12,7 @@
 #include "Level.h"
 #include "BitStreamFunc.h"
 #include "GroundItem.h"
+#include "GameCommon.h"
 
 //=================================================================================================
 City::~City()
@@ -620,7 +621,7 @@ void City::GetEntry(Vec3& pos, float& rot)
 		// check which spawn rot i closest to entry rot
 		float best_dif = 999.f;
 		int best_index = -1, index = 0;
-		float dir = Clip(-world->GetTravelDir() + PI / 2);
+		float dir = ConvertNewAngleToOld(world->GetTravelDir());
 		for(vector<EntryPoint>::iterator it = entry_points.begin(), end = entry_points.end(); it != end; ++it, ++index)
 		{
 			float dif = AngleDiff(dir, it->spawn_rot);

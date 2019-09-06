@@ -115,6 +115,20 @@ inline cstring GetLocationDirName(const Vec2& from, const Vec2& to)
 {
 	return dir_name[GetLocationDir(from, to)];
 }
+inline cstring GetLocationDirName(float angle)
+{
+	return dir_name[AngleToDir(angle)];
+}
+
+//-----------------------------------------------------------------------------
+inline float ConvertOldAngleToNew(float angle)
+{
+	return Clip(angle + PI / 2);
+}
+inline float ConvertNewAngleToOld(float angle)
+{
+	return Clip(angle - PI / 2);
+}
 
 //-----------------------------------------------------------------------------
 extern vector<uint> _to_remove;

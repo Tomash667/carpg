@@ -34,6 +34,8 @@ Enum ITEM_FLAGS:
 	ITEM_NOT_ALCHEMIST - not generated for alchemist.
 
 Dialog type.
+Static methods:
+	Dialog@ Get(const string& in id) - return dialog with id.
 
 Item type:
 	string name - readonly

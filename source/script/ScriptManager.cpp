@@ -555,7 +555,9 @@ void ScriptManager::RegisterGame()
 		.Method("Var@ opIndex(const string& in)", asMETHOD(VarsContainer, Get))
 		.WithInstance("VarsContainer@ globals", &p_globals);
 
-	AddType("Dialog");
+	AddType("Dialog")
+		.WithNamespace()
+		.AddFunction("Dialog@ Get(const string& in)", asFUNCTION(GameDialog::GetS));
 
 	AddType("Quest")
 		.Method("void AddEntry(const string& in)", asMETHOD(Quest_Scripted, AddEntry))

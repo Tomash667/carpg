@@ -426,6 +426,11 @@ void Team::ClearOnNewGameOrLoad()
 {
 	team_shares.clear();
 	team_share_id = -1;
+	if(Net::IsSingleplayer())
+	{
+		my_id = 0;
+		leader_id = 0;
+	}
 }
 
 void Team::Save(GameWriter& f)

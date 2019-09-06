@@ -116,6 +116,10 @@ struct GameDialog
 	Text& GetText(int index);
 
 	static GameDialog* TryGet(cstring id);
+	static GameDialog* GetS(const string& id)
+	{
+		return TryGet(id.c_str());
+	}
 	static void Cleanup();
 	static Map dialogs;
 };

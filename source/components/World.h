@@ -198,7 +198,7 @@ private:
 		day_timer,
 		reveal_timer, // increase chance for encounter every 0.25 sec
 		encounter_chance,
-		travel_dir; // from which direction team will enter level after travel
+		travel_dir; // direction from start to target point (uses NEW rotation)
 	EncounterMode encounter_mode;
 	int year, // in game year, starts at 100
 		month, // in game month, 0 to 11

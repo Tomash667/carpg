@@ -4056,7 +4056,17 @@ int Unit::GetBuffs() const
 }
 
 //=================================================================================================
-bool Unit::CanAct()
+bool Unit::CanTalk(Unit& unit) const
+{
+	if(Any(action, A_EAT, A_DRINK, A_STAND_UP))
+		return false;
+	if(GetOrder() == ORDER_AUTO_TALK && order->auto_talk == AutoTalkMode::Leader && !team->IsLeader(unit))
+		return false;
+	return true;
+}
+
+//=================================================================================================
+bool Unit::CanAct() const
 {
 	if(talking || !IsStanding() || action == A_STAND_UP)
 		return false;
@@ -4352,34 +4362,6 @@ void Unit::SetAnimationAtEnd(cstring anim_name)
 	else
 		mesh_inst->SetToEnd(mat_scale);
 }
-
-FIXME;
-//=================================================================================================
-/*void Unit::OrderAutoTalk(bool leader, GameDialog* dialog)
-{
-	if(!leader)
-	{
-		auto_talk = AutoTalkMode::Yes;
-		auto_talk_timer = AUTO_TALK_WAIT;
-	}
-	else
-	{
-		auto_talk = AutoTalkMode::Leader;
-		auto_talk_timer = 0.f;
-	}
-	auto_talk_dialog = dialog;
-}
-
-//=================================================================================================
-void Unit::SetAutoTalk(bool new_auto_talk)
-{
-	if(new_auto_talk == GetAutoTalk())
-		return;
-	if(new_auto_talk)
-		OrderAutoTalk();
-	else
-		auto_talk = AutoTalkMode::No;
-}*/
 
 //=================================================================================================
 void Unit::SetDontAttack(bool new_dont_attack)

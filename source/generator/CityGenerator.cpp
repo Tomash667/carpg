@@ -64,7 +64,8 @@ void CityGenerator::SetRoadSize(int _road_size, int _road_part)
 }
 
 //=================================================================================================
-void CityGenerator::GenerateMainRoad(RoadType type, GameDirection dir, int rocky_roads, bool plaza, int swap, vector<EntryPoint>& entry_points, int& gates, bool fill_roads)
+void CityGenerator::GenerateMainRoad(RoadType type, GameDirection dir, int rocky_roads, bool plaza, int swap, vector<EntryPoint>& entry_points,
+	int& gates, bool fill_roads)
 {
 	memset(tiles, 0, sizeof(TerrainTile)*w*h);
 

@@ -1,20 +1,25 @@
-Singletons:
-QM - QuestManager
-W - World
-L - Levle
+CaRpg uses left handed coordinate system:
+X - left, right +
+Y - down, up +
+Z - back, font +
 
-Pozycja w CaRpg:
-   Z+
-  /|\
-   |
-   |
-   +-----> X+
+Rotation:
 
-   X - lewo, prawo +
-   Y - dó³, góra   +
-   Z - ty³, przód  +
+		   6/4 PI
+	5/4 PI  /|\   7/4 PI
+	  |\     |     /|
+		\.   |   ./
+		  \. | ./
+4/4			\|/
+ PI <--------+--------> 0/4 PI
+			/|\
+		  /  |  \
+		/    |    \
+	  |/     |     \|
+	3/4 PI  \|/     1/4 PI
+           2/4 PI
 
-Mapa (lokalizacji, œwiata):
+Map (location, world):
  (0,h)--------(w,h)
    |            |
    |            |
@@ -22,8 +27,7 @@ Mapa (lokalizacji, œwiata):
    |            |
  (0,0)--------(w,0)
 
-Obrót w CaRpg:
-w radianach
+Old rotation, still used in old code :(
         PI
         /|\
          |
@@ -33,18 +37,6 @@ PI/2 <---+---> 3/2 PI
          |
         \|/
          0
-Dla zera kierunek jest Z- (w stronê kamery)
-
-NEW ROTATION (NOT USED YET BUT IT WILL BE)
-     PI/2 +Z
-      /|\
-       |
- -X    |    +X
-PI <---+---> 0
-       |
-       |
-      \|/
-     3/2 PI -Z
 
 SCREEN & 2D DRAWING
 (0,0)------------(w,0)
