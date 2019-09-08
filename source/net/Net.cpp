@@ -3257,6 +3257,15 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				}
 			}
 			break;
+		// skip current cutscene
+		case NetChange::CUTSCENE_SKIP:
+			if(!cutscene)
+				Error("Update server: CUTSCENE_SKIP no cutscene from %s.", info.name.c_str());
+			else if(!team->IsLeader(info.u))
+				Error("Update server: CUTSCENE_SKIP not a leader from %s.", info.name.c_str());
+			else
+				CutsceneEnded(true);
+			break;
 		// invalid change
 		default:
 			Error("Update server: Invalid change type %u from %s.", type, info.name.c_str());
@@ -3446,6 +3455,7 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 		case NetChange::END_OF_GAME:
 		case NetChange::GAME_SAVED:
 		case NetChange::END_TRAVEL:
+		case NetChange::CUTSCENE_SKIP:
 			break;
 		case NetChange::KICK_NPC:
 		case NetChange::REMOVE_UNIT:
@@ -3668,6 +3678,15 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 		case NetChange::FAST_TRAVEL:
 			f.WriteCasted<byte>(c.id);
 			f.WriteCasted<byte>(c.count);
+			break;
+		case NetChange::CUTSCENE_START:
+			f << (c.id == 1);
+			break;
+		case NetChange::CUTSCENE_IMAGE:
+		case NetChange::CUTSCENE_TEXT:
+			f << *c.str;
+			f << c.f[0];
+			StringPool.Free(c.str);
 			break;
 		default:
 			Error("Update server: Unknown change %d.", c.type);
@@ -6635,6 +6654,45 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				info->fast_travel = true;
 			}
 			break;
+		// start of cutscene
+		case NetChange::CUTSCENE_START:
+			{
+				bool instant;
+				f >> instant;
+				if(!f)
+					Error("Update client: Broken CUTSCENE_START.");
+				else
+					CutsceneStart(instant);
+			}
+			break;
+		// queue cutscene image to show
+		case NetChange::CUTSCENE_IMAGE:
+			{
+				float time;
+				const string& image = f.ReadString1();
+				f >> time;
+				if(!f)
+					Error("Update client: Broken CUTSCENE_IMAGE.");
+				else
+					CutsceneImage(image, time);
+			}
+			break;
+		// queue cutscene text to show
+		case NetChange::CUTSCENE_TEXT:
+			{
+				float time;
+				const string& text = f.ReadString1();
+				f >> time;
+				if(!f)
+					Error("Update client: Broken CUTSCENE_TEXT.");
+				else
+					CutsceneText(text, time);
+			}
+			break;
+		// skip current cutscene
+		case NetChange::CUTSCENE_SKIP:
+			CutsceneEnded(false);
+			break;
 		// invalid change
 		default:
 			Warn("Update client: Unknown change type %d.", type);
@@ -7615,6 +7673,7 @@ void Game::WriteClientChanges(BitStreamWriter& f)
 		case NetChange::CHEAT_REFRESH_COOLDOWN:
 		case NetChange::END_FALLBACK:
 		case NetChange::END_TRAVEL:
+		case NetChange::CUTSCENE_SKIP:
 			break;
 		case NetChange::ADD_NOTE:
 			f << game_gui->journal->GetNotes().back();

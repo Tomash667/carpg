@@ -1219,11 +1219,13 @@ void Game::UpdateFallback(float dt)
 			case FALLBACK::NONE:
 			case FALLBACK::ARENA2:
 			case FALLBACK::CLIENT2:
+			case FALLBACK::CUTSCENE_END:
 				break;
 			case FALLBACK::ARENA:
 			case FALLBACK::ARENA_EXIT:
 			case FALLBACK::WAIT_FOR_WARP:
 			case FALLBACK::CLIENT:
+			case FALLBACK::CUTSCENE:
 				fallback_t = 0.f;
 				break;
 			default:
@@ -7544,14 +7546,13 @@ void Game::ClearGameVars(bool new_game)
 	dialog_context.is_local = true;
 	death_screen = 0;
 	end_of_game = false;
+	cutscene = false;
 	game_gui->minimap->city = nullptr;
 	team->ClearOnNewGameOrLoad();
 	draw_flags = 0xFFFFFFFF;
 	game_gui->level_gui->Reset();
 	game_gui->journal->Reset();
 	arena->Reset();
-	debug_info = false;
-	debug_info2 = false;
 	game_gui->world_map->dialog_enc = nullptr;
 	game_gui->level_gui->visible = false;
 	game_gui->inventory->lock = nullptr;
@@ -7626,6 +7627,7 @@ void Game::ClearGame()
 
 	EntitySystem::clear = true;
 	draw_batch.Clear();
+	script_mgr->StopAllScripts();
 
 	LeaveLocation(true, false);
 
@@ -7661,6 +7663,7 @@ void Game::ClearGame()
 	world->Reset();
 	game_gui->Clear(true, false);
 	pc = nullptr;
+	cutscene = false;
 	EntitySystem::clear = false;
 }
 

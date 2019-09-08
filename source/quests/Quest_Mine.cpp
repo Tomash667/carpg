@@ -954,7 +954,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 							else
 								c.type = CollisionObject::RECTANGLE;
 
-							game->phy_world->addCollisionObject(cobj, CG_OBJECT);
+							phy_world->addCollisionObject(cobj, CG_OBJECT);
 						}
 					}
 #undef P

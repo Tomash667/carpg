@@ -105,6 +105,7 @@ void LevelGui::LoadLanguage()
 	txMeleeWeaponDesc = s.Get("meleeWeaponDesc");
 	txRangedWeaponDesc = s.Get("rangedWeaponDesc");
 	txPotionDesc = s.Get("potionDesc");
+	txSkipCutscene = s.Get("skipCutscene");
 	BuffInfo::LoadText();
 }
 
@@ -148,13 +149,43 @@ void LevelGui::LoadData()
 //=================================================================================================
 void LevelGui::Draw(ControlDrawData*)
 {
-	DrawFront();
+	if(game->cutscene)
+	{
+		int fallback_alpha = DrawFallback();
+		DrawCutscene(fallback_alpha);
+	}
+	else
+	{
+		DrawFront();
 
-	Container::Draw();
+		Container::Draw();
 
-	DrawBack();
+		DrawBack();
 
-	game_gui->messages->Draw();
+		game_gui->messages->Draw();
+	}
+}
+
+//=================================================================================================
+int LevelGui::DrawFallback()
+{
+	if(game->fallback_type == FALLBACK::NO)
+		return 0;
+
+	int alpha;
+	if(game->fallback_t < 0.f)
+	{
+		if(game->fallback_type == FALLBACK::NONE)
+			alpha = 255;
+		else
+			alpha = int((1.f + game->fallback_t) * 255);
+	}
+	else
+		alpha = int((1.f - game->fallback_t) * 255);
+
+	gui->DrawSpriteFull(game->tCzern, Color::Alpha(alpha));
+
+	return alpha;
 }
 
 //=================================================================================================
@@ -186,9 +217,9 @@ void LevelGui::DrawFront()
 		gui->DrawSpriteFull(tDamageLayer, Color::Alpha((int)Clamp<float>(pc.dmgc / pc.unit->hp * 5 * 255, 0.f, 255.f)));
 
 	// debug info
-	if(game->debug_info && !game->devmode)
-		game->debug_info = false;
-	if(game->debug_info)
+	if(debug_info && !game->devmode)
+		debug_info = false;
+	if(debug_info)
 	{
 		sorted_units.clear();
 		for(Unit* unit : pc.unit->area->units)
@@ -288,7 +319,7 @@ void LevelGui::DrawFront()
 	switch(game->pc_data.before_player)
 	{
 	case BP_UNIT:
-		if(!game->debug_info)
+		if(!debug_info)
 		{
 			Unit* u = game->pc_data.before_player_ptr.unit;
 			bool dont_draw = false;
@@ -621,22 +652,7 @@ void LevelGui::DrawFront()
 		}
 	}
 
-	// fade in/out
-	if(game->fallback_type != FALLBACK::NO)
-	{
-		int alpha;
-		if(game->fallback_t < 0.f)
-		{
-			if(game->fallback_type == FALLBACK::NONE)
-				alpha = 255;
-			else
-				alpha = int((1.f + game->fallback_t) * 255);
-		}
-		else
-			alpha = int((1.f - game->fallback_t) * 255);
-
-		gui->DrawSpriteFull(game->tCzern, Color::Alpha(alpha));
-	}
+	DrawFallback();
 }
 
 //=================================================================================================
@@ -651,7 +667,7 @@ void LevelGui::DrawBack()
 	}
 
 	// debug info
-	if(game->debug_info2)
+	if(debug_info2)
 	{
 		Unit& u = *game->pc->unit;
 		cstring text;
@@ -907,7 +923,18 @@ void LevelGui::Update(float dt)
 	TooltipGroup group = TooltipGroup::Invalid;
 	int id = -1;
 
+	if(game->devmode)
+	{
+		if(input->PressedRelease(Key::F3))
+			debug_info = !debug_info;
+	}
+	if(input->PressedRelease(Key::F2))
+		debug_info2 = !debug_info2;
+
 	Container::Update(dt);
+
+	if(game->cutscene)
+		UpdateCutscene(dt);
 
 	UpdatePlayerView(dt);
 	UpdateSpeechBubbles(dt);
@@ -1305,6 +1332,8 @@ void LevelGui::AddSpeechBubble(const Vec3& pos, cstring text)
 //=================================================================================================
 void LevelGui::Reset()
 {
+	debug_info = false;
+	debug_info2 = false;
 	SpeechBubblePool.Free(speech_bbs);
 	Event(GuiEvent_Show);
 	use_cursor = false;
@@ -1947,4 +1976,165 @@ void LevelGui::StartDragAndDrop(int type, int value, Texture* icon)
 	drag_and_drop_type = type;
 	drag_and_drop_index = value;
 	drag_and_drop_icon = icon;
+}
+
+//=================================================================================================
+void LevelGui::ResetCutscene()
+{
+	cutscene_image = nullptr;
+	cutscene_next_images.clear();
+	cutscene_image_timer = 0;
+	cutscene_image_state = CS_NONE;
+	cutscene_text.clear();
+	cutscene_next_texts.clear();
+	cutscene_text_timer = 0;
+	cutscene_text_state = CS_NONE;
+}
+
+//=================================================================================================
+void LevelGui::SetCutsceneImage(Texture* tex, float time)
+{
+	cutscene_next_images.push_back(std::make_pair(tex, time));
+}
+
+//=================================================================================================
+void LevelGui::SetCutsceneText(const string& text, float time)
+{
+	cutscene_next_texts.push_back(std::make_pair(text, time));
+}
+
+//=================================================================================================
+void LevelGui::UpdateCutscene(float dt)
+{
+	// is everything shown?
+	if(cutscene_image_state == CS_NONE && cutscene_next_images.empty() && cutscene_text_state == CS_NONE && cutscene_next_texts.empty())
+	{
+		game->CutsceneEnded(false);
+		return;
+	}
+
+	// cancel cutscene
+	if(team->IsLeader() && input->PressedRelease(Key::Escape))
+	{
+		game->CutsceneEnded(true);
+		return;
+	}
+
+	// update image
+	switch(cutscene_image_state)
+	{
+	case CS_NONE:
+		if(!cutscene_next_images.empty())
+		{
+			cutscene_image = cutscene_next_images.front().first;
+			cutscene_image_timer = 0.f;
+			cutscene_image_state = CS_FADE_IN;
+		}
+		break;
+	case CS_FADE_IN:
+		cutscene_image_timer += dt * 2;
+		if(cutscene_image_timer >= 1.f)
+		{
+			cutscene_image_timer = cutscene_next_images.front().second;
+			cutscene_image_state = CS_WAIT;
+			cutscene_next_images.erase(cutscene_next_images.begin());
+		}
+		break;
+	case CS_WAIT:
+		cutscene_image_timer -= dt;
+		if(cutscene_image_timer <= 0)
+		{
+			cutscene_image_timer = 1.f;
+			cutscene_image_state = CS_FADE_OUT;
+		}
+		break;
+	case CS_FADE_OUT:
+		cutscene_image_timer -= dt * 2;
+		if(cutscene_image_timer <= 0)
+		{
+			cutscene_image = nullptr;
+			cutscene_image_state = CS_NONE;
+		}
+		break;
+	}
+
+	// update text
+	switch(cutscene_text_state)
+	{
+	case CS_NONE:
+		if(!cutscene_next_texts.empty())
+		{
+			cutscene_text = cutscene_next_texts.front().first;
+			cutscene_text_timer = 0.f;
+			cutscene_text_state = CS_FADE_IN;
+		}
+		break;
+	case CS_FADE_IN:
+		cutscene_text_timer += dt * 2;
+		if(cutscene_text_timer >= 1.f)
+		{
+			cutscene_text_timer = cutscene_next_texts.front().second;
+			cutscene_text_state = CS_WAIT;
+			cutscene_next_texts.erase(cutscene_next_texts.begin());
+		}
+		break;
+	case CS_WAIT:
+		cutscene_text_timer -= dt;
+		if(cutscene_text_timer <= 0)
+		{
+			cutscene_text_timer = 1.f;
+			cutscene_text_state = CS_FADE_OUT;
+		}
+		break;
+	case CS_FADE_OUT:
+		cutscene_text_timer -= dt * 2;
+		if(cutscene_text_timer <= 0)
+		{
+			cutscene_text.clear();
+			cutscene_text_state = CS_NONE;
+		}
+		break;
+	}
+}
+
+//=================================================================================================
+void LevelGui::DrawCutscene(int fallback_alpha)
+{
+	if(team->IsLeader())
+	{
+		const Rect r = { 4,4,200,200 };
+		gui->DrawText(game_gui->font, txSkipCutscene, DTF_LEFT | DTF_TOP | DTF_OUTLINE, Color::Alpha(fallback_alpha), r);
+	}
+
+	if(cutscene_image)
+	{
+		const int alpha = GetAlpha(cutscene_image_state, cutscene_image_timer, fallback_alpha);
+		Int2 img_size = cutscene_image->GetSize();
+		const int max_size = gui->wnd_size.y - 128;
+		const float scale = float(max_size) / img_size.y;
+		img_size *= scale;
+		const Matrix mat = Matrix::Transform2D(nullptr, 0, &Vec2(scale, scale), nullptr, 0.f, &Vec2((gui->wnd_size - img_size) / 2));
+		gui->DrawSprite2(cutscene_image, mat, nullptr, nullptr, Color::Alpha(alpha));
+	}
+
+	if(!cutscene_text.empty())
+	{
+		const int alpha = GetAlpha(cutscene_text_state, cutscene_text_timer, fallback_alpha);
+		const Rect r = { 0, gui->wnd_size.y - 64,gui->wnd_size.x, gui->wnd_size.y };
+		gui->DrawText(game_gui->font, cutscene_text, DTF_OUTLINE | DTF_CENTER | DTF_VCENTER, Color::Alpha(alpha), r);
+	}
+}
+
+//=================================================================================================
+int LevelGui::GetAlpha(CutsceneState cs, float timer, int fallback_alpha)
+{
+	switch(cs)
+	{
+	case CS_NONE:
+		return 0;
+	case CS_WAIT:
+		return fallback_alpha;
+	default:
+		return int(timer * 255) * fallback_alpha / 255;
+	}
 }

@@ -60,6 +60,7 @@
 
 const float LIMIT_DT = 0.3f;
 Game* global::game;
+CustomCollisionWorld* global::phy_world;
 GameKeys GKey;
 extern string g_system_dir;
 extern cstring RESTART_MUTEX_NAME;
@@ -74,11 +75,10 @@ const float MAGIC_SCROLL_SOUND_DIST = 1.5f;
 //=================================================================================================
 Game::Game() : vbParticle(nullptr), quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0), draw_particle_sphere(false),
 draw_unit_radius(false), draw_hitbox(false), noai(false), testing(false), game_speed(1.f), devmode(false), force_seed(0), next_seed(0), force_seed_all(false),
-debug_info(false), dont_wander(false), check_updates(true), skip_tutorial(false), portal_anim(0), debug_info2(false), music_type(MusicType::None),
-end_of_game(false), prepared_stream(64 * 1024), paused(false), draw_flags(0xFFFFFFFF), prev_game_state(GS_LOAD), rt_save(nullptr), rt_item(nullptr),
-rt_item_rot(nullptr), cl_postfx(true), mp_timeout(10.f), cl_normalmap(true), cl_specularmap(true), dungeon_tex_wrap(true), profiler_mode(ProfilerMode::Disabled),
-screenshot_format(ImageFormat::JPG), game_state(GS_LOAD), default_devmode(false), default_player_devmode(false), quickstart_slot(SaveSlot::MAX_SLOTS),
-clear_color(Color::Black), engine(new Engine)
+dont_wander(false), check_updates(true), skip_tutorial(false), portal_anim(0), music_type(MusicType::None), end_of_game(false), prepared_stream(64 * 1024),
+paused(false), draw_flags(0xFFFFFFFF), prev_game_state(GS_LOAD), rt_save(nullptr), rt_item(nullptr), rt_item_rot(nullptr), cl_postfx(true), mp_timeout(10.f),
+cl_normalmap(true), cl_specularmap(true), dungeon_tex_wrap(true), profiler_mode(ProfilerMode::Disabled), screenshot_format(ImageFormat::JPG),
+game_state(GS_LOAD), default_devmode(false), default_player_devmode(false), quickstart_slot(SaveSlot::MAX_SLOTS), clear_color(Color::Black), engine(new Engine)
 {
 #ifdef _DEBUG
 	default_devmode = true;
@@ -307,6 +307,7 @@ void Game::OnUpdate(float dt)
 		Profiler::g_profiler.Clear();
 
 	net->api->Update();
+	script_mgr->UpdateScripts(dt);
 
 	UpdateMusic();
 
@@ -331,14 +332,6 @@ void Game::OnUpdate(float dt)
 	}
 	else
 		input->SetFocus(true);
-
-	if(devmode)
-	{
-		if(input->PressedRelease(Key::F3))
-			debug_info = !debug_info;
-	}
-	if(input->PressedRelease(Key::F2))
-		debug_info2 = !debug_info2;
 
 	// fast quit (alt+f4)
 	if(input->Focus() && input->Shortcut(KEY_ALT, Key::F4) && !gui->HaveTopDialog("dialog_alt_f4"))
@@ -382,7 +375,7 @@ void Game::OnUpdate(float dt)
 	// handle panels
 	if(gui->HaveDialog() || (game_gui->mp_box->visible && game_gui->mp_box->itb.focus))
 		GKey.allow_input = GameKeys::ALLOW_NONE;
-	else if(GKey.AllowKeyboard() && game_state == GS_LEVEL && death_screen == 0 && !dialog_context.dialog_mode)
+	else if(GKey.AllowKeyboard() && game_state == GS_LEVEL && death_screen == 0 && !dialog_context.dialog_mode && !cutscene)
 	{
 		OpenPanel open = game_gui->level_gui->GetOpenPanel(),
 			to_open = OpenPanel::None;
@@ -425,17 +418,20 @@ void Game::OnUpdate(float dt)
 		}
 	}
 
+	if(!cutscene)
+	{
 	// quicksave, quickload
-	bool console_open = gui->HaveTopDialog("console");
-	bool special_key_allowed = (GKey.allow_input == GameKeys::ALLOW_KEYBOARD || GKey.allow_input == GameKeys::ALLOW_INPUT || (!gui->HaveDialog() || console_open));
-	if(GKey.KeyPressedReleaseSpecial(GK_QUICKSAVE, special_key_allowed))
-		Quicksave(console_open);
-	if(GKey.KeyPressedReleaseSpecial(GK_QUICKLOAD, special_key_allowed))
-		Quickload(console_open);
+		bool console_open = gui->HaveTopDialog("console");
+		bool special_key_allowed = (GKey.allow_input == GameKeys::ALLOW_KEYBOARD || GKey.allow_input == GameKeys::ALLOW_INPUT || (!gui->HaveDialog() || console_open));
+		if(GKey.KeyPressedReleaseSpecial(GK_QUICKSAVE, special_key_allowed))
+			Quicksave(console_open);
+		if(GKey.KeyPressedReleaseSpecial(GK_QUICKLOAD, special_key_allowed))
+			Quickload(console_open);
 
-	// mp box
-	if(game_state == GS_LEVEL && GKey.KeyPressedReleaseAllowed(GK_TALK_BOX))
-		game_gui->mp_box->visible = !game_gui->mp_box->visible;
+		// mp box
+		if(game_state == GS_LEVEL && GKey.KeyPressedReleaseAllowed(GK_TALK_BOX))
+			game_gui->mp_box->visible = !game_gui->mp_box->visible;
+	}
 
 	// update game_gui
 	game_gui->UpdateGui(dt);
@@ -480,14 +476,14 @@ void Game::OnUpdate(float dt)
 		GKey.allow_input = GameKeys::ALLOW_INPUT;
 
 	// open game menu
-	if(GKey.AllowKeyboard() && CanShowMenu() && input->PressedRelease(Key::Escape))
+	if(GKey.AllowKeyboard() && CanShowMenu() && !cutscene && input->PressedRelease(Key::Escape))
 		game_gui->ShowMenu();
 
-	arena->UpdatePvpRequest(dt);
-
 	// update game
-	if(!end_of_game)
+	if(!end_of_game && !cutscene)
 	{
+		arena->UpdatePvpRequest(dt);
+
 		if(game_state == GS_LEVEL)
 		{
 			if(paused)
@@ -533,11 +529,16 @@ void Game::OnUpdate(float dt)
 			assert(Net::changes.empty());
 		}
 	}
-	else if(Net::IsOnline())
-		UpdateGameNet(dt);
+	else
+	{
+		if(cutscene)
+			UpdateFallback(dt);
+		if(Net::IsOnline())
+			UpdateGameNet(dt);
+	}
 
 	// open/close mp box
-	if(GKey.AllowKeyboard() && game_state == GS_LEVEL && game_gui->mp_box->visible && !game_gui->mp_box->itb.focus && input->PressedRelease(Key::Enter))
+	if(!cutscene && GKey.AllowKeyboard() && game_state == GS_LEVEL && game_gui->mp_box->visible && !game_gui->mp_box->itb.focus && input->PressedRelease(Key::Enter))
 	{
 		game_gui->mp_box->itb.focus = true;
 		game_gui->mp_box->Event(GuiEvent_GainFocus);
@@ -1296,6 +1297,7 @@ uint Game::ValidateGameData(bool major)
 	else
 		Error("Test: Validation failed, %u errors found.", err);
 
+	content.warnings += err;
 	return err;
 }
 
@@ -1669,4 +1671,98 @@ void Game::ReportError(int id, cstring text, bool once)
 	game_gui->messages->AddGameMsg(str, 5.f);
 #endif
 	net->api->Report(id, Format("[%s] %s", mode, text));
+}
+
+//=================================================================================================
+void Game::CutsceneStart(bool instant)
+{
+	cutscene = true;
+	game_gui->CloseAllPanels();
+	game_gui->level_gui->ResetCutscene();
+	fallback_type = FALLBACK::CUTSCENE;
+	fallback_t = instant ? 0.f : -1.f;
+
+	if(Net::IsServer())
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::CUTSCENE_START;
+		c.id = (instant ? 1 : 0);
+	}
+}
+
+//=================================================================================================
+void Game::CutsceneImage(const string& image, float time)
+{
+	assert(cutscene && time > 0);
+	Texture* tex;
+	if(image.empty())
+		tex = nullptr;
+	else
+	{
+		tex = res_mgr->TryLoadInstant<Texture>(image);
+		if(!tex)
+			Warn("CutsceneImage: missing texture '%s'.", image.c_str());
+	}
+	game_gui->level_gui->SetCutsceneImage(tex, time);
+
+	if(Net::IsServer())
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::CUTSCENE_IMAGE;
+		c.str = StringPool.Get();
+		*c.str = image;
+		c.f[0] = time;
+	}
+}
+
+//=================================================================================================
+void Game::CutsceneText(const string& text, float time)
+{
+	assert(cutscene && time > 0);
+	game_gui->level_gui->SetCutsceneText(text, time);
+
+	if(Net::IsServer())
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::CUTSCENE_TEXT;
+		c.str = StringPool.Get();
+		*c.str = text;
+		c.f[0] = time;
+	}
+}
+
+//=================================================================================================
+void Game::CutsceneEnd()
+{
+	assert(cutscene);
+	cutscene_script = script_mgr->SuspendScript();
+}
+
+//=================================================================================================
+void Game::CutsceneEnded(bool cancel)
+{
+	if(cancel)
+	{
+		if(Net::IsServer())
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::CUTSCENE_SKIP;
+		}
+
+		if(Net::IsClient())
+			return;
+	}
+
+	cutscene = false;
+	fallback_type = FALLBACK::CUTSCENE_END;
+	fallback_t = -fallback_t;
+
+	if(Net::IsLocal())
+		script_mgr->ResumeScript(cutscene_script);
+}
+
+//=================================================================================================
+bool Game::CutsceneShouldSkip()
+{
+	return cfg.GetBool("skip_cutscene");
 }

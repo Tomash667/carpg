@@ -297,7 +297,7 @@ void Net::DeleteOldPlayers()
 			if(info.u->cobj)
 			{
 				delete info.u->cobj->getCollisionShape();
-				game_level->phy_world->removeCollisionObject(info.u->cobj);
+				phy_world->removeCollisionObject(info.u->cobj);
 				delete info.u->cobj;
 			}
 			delete info.u;
@@ -717,6 +717,8 @@ bool Net::FilterOut(NetChange& c)
 		return true;
 	case NetChange::RUN_SCRIPT:
 	case NetChange::CHEAT_ARENA:
+	case NetChange::CUTSCENE_IMAGE:
+	case NetChange::CUTSCENE_TEXT:
 		StringPool.Free(c.str);
 		return true;
 	default:

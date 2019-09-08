@@ -54,6 +54,14 @@ struct ScriptContext
 };
 
 //-----------------------------------------------------------------------------
+struct SuspendedScript
+{
+	asIScriptContext* ctx;
+	ScriptContext sctx;
+	float time;
+};
+
+//-----------------------------------------------------------------------------
 class ScriptManager
 {
 public:
@@ -63,14 +71,14 @@ public:
 	void RegisterCommon();
 	void RegisterGame();
 	void SetException(cstring ex) { last_exception = ex; }
-	bool RunScript(cstring code, bool validate = false);
-	bool RunIfScript(cstring code, bool validate = false);
+	void RunScript(cstring code);
 	asIScriptFunction* PrepareScript(cstring name, cstring code);
-	bool RunScript(asIScriptFunction* func, void* instance = nullptr, delegate<void(asIScriptContext*, int)> clbk = nullptr);
+	void RunScript(asIScriptFunction* func, void* instance = nullptr, delegate<void(asIScriptContext*, int)> clbk = nullptr);
 	string& OpenOutput();
 	void CloseOutput();
 	void Log(Logger::Level level, cstring msg, cstring code = nullptr);
 	void AddFunction(cstring decl, const asSFuncPtr& funcPointer);
+	void AddFunction(cstring decl, const asSFuncPtr& funcPointer, void* obj);
 	// add enum with values {name, value}
 	void AddEnum(cstring name, std::initializer_list<pair<cstring, int>> const& values);
 	TypeBuilder AddType(cstring name, bool refcount = false);
@@ -93,6 +101,12 @@ public:
 	void AddVarType(Var::Type type, cstring name, bool is_ref);
 	Var::Type GetVarType(int type_id);
 	bool CheckVarType(int type_id, bool is_ref);
+	void ScriptSleep(float time);
+	void UpdateScripts(float dt);
+	bool ExecuteScript(asIScriptContext* ctx);
+	void StopAllScripts();
+	asIScriptContext* SuspendScript();
+	void ResumeScript(asIScriptContext* ctx);
 
 private:
 	struct ScriptTypeInfo
@@ -113,4 +127,5 @@ private:
 	std::map<string, int> var_type_map;
 	std::unordered_map<Unit*, VarsContainer*> unit_vars;
 	ScriptContext ctx;
+	vector<SuspendedScript> suspended_scripts;
 };

@@ -98,6 +98,7 @@ potion = "Najlepsza mikstura lecznicza"
 meleeWeaponDesc = "Wyjmujesz broñ do walki wrêcz."
 rangedWeaponDesc = "Wyjmujesz broñ dystansowej."
 potionDesc = "Wypij najlepsz¹ miksturê lecznicz¹ która wyleczy najwiêcej obra¿eñ."
+skipCutscene = "Esc - pomiñ"
 
 [Inventory]
 inventory = "Ekwipunek"

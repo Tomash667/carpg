@@ -2894,7 +2894,7 @@ void CityGenerator::SpawnCityPhysics()
 				cobj->setCollisionShape(game_level->shape_block);
 				cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BUILDING);
 				cobj->getWorldTransform().setOrigin(btVector3(2.f*x + 1.f, terrain->GetH(2.f*x + 1.f, 2.f*x + 1), 2.f*z + 1.f));
-				game_level->phy_world->addCollisionObject(cobj, CG_BUILDING);
+				phy_world->addCollisionObject(cobj, CG_BUILDING);
 			}
 		}
 	}

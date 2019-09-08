@@ -87,8 +87,6 @@ void Level::LoadData()
 //=================================================================================================
 void Level::Init()
 {
-	phy_world = game->phy_world;
-
 	terrain = new Terrain;
 	TerrainOptions terrain_options;
 	terrain_options.n_parts = 8;

@@ -1,6 +1,8 @@
 #pragma once
 
-#include "App.h"
+#include <App.h>
+#include <Config.h>
+#include <Timer.h>
 #include "Const.h"
 #include "GameCommon.h"
 #include "Net.h"
@@ -10,12 +12,10 @@
 #include "SceneNode.h"
 #include "QuadTree.h"
 #include "MusicTrack.h"
-#include "Config.h"
 #include "Settings.h"
 #include "Blood.h"
 #include "BaseObject.h"
 #include "PlayerController.h"
-#include "Timer.h"
 
 //-----------------------------------------------------------------------------
 // quickstart mode
@@ -66,7 +66,9 @@ enum class FALLBACK
 	WAIT_FOR_WARP,
 	ARENA2,
 	CLIENT,
-	CLIENT2
+	CLIENT2,
+	CUTSCENE,
+	CUTSCENE_END
 };
 
 enum DRAW_FLAGS
@@ -156,28 +158,8 @@ public:
 	void PostconfigureGame();
 	void StartGameMode();
 
-	QUICKSTART quickstart;
-	int quickstart_slot;
-	ProfilerMode profiler_mode;
-
 	void ReloadShaders();
 	void ReleaseShaders();
-
-	// scene
-	Color clear_color, clear_color_next;
-	bool dungeon_tex_wrap;
-	bool cl_normalmap, cl_specularmap, cl_glow;
-	DrawBatch draw_batch;
-	VDefault blood_v[4];
-	VParticle billboard_v[4];
-	Vec3 billboard_ext[4];
-	VParticle portal_v[4];
-	int uv_mod;
-	QuadTree quadtree;
-	LevelParts level_parts;
-	vector<const vector<Matrix>*> grass_patches[2];
-	uint grass_count[2];
-
 	void InitScene();
 	void BuildDungeon();
 	void ChangeDungeonTexWrap();
@@ -217,169 +199,17 @@ public:
 	void ClearGrass();
 	void CalculateQuadtree();
 	void ListQuadtreeNodes();
-
-	//-----------------------------------------------------------------
-	// resources
-	//-----------------------------------------------------------------
-	MeshPtr aHumanBase, aHair[5], aBeard[5], aMustache[2], aEyebrows;
-	MeshPtr aBox, aCylinder, aSphere, aCapsule;
-	MeshPtr aArrow, aSkybox, aBag, aChest, aGrating, aDoorWall, aDoorWall2, aStairsDown, aStairsDown2, aStairsUp, aSpellball, aPressurePlate, aDoor, aDoor2, aStun;
-	VertexDataPtr vdStairsUp, vdStairsDown, vdDoorHole;
-	RenderTarget* rt_save, *rt_item, *rt_item_rot;
-	Texture tMinimap;
-	TexturePtr tCzern, tPortal, tLightingLine, tRip, tEquipped, tWarning, tError;
-	TexturePtr tKrew[BLOOD_MAX], tKrewSlad[BLOOD_MAX], tIskra, tSpawn;
-	TexturePack tFloor[2], tWall[2], tCeil[2], tFloorBase, tWallBase, tCeilBase;
-	ID3DXEffect* eMesh, *eParticle, *eSkybox, *eArea, *ePostFx, *eGlow;
-	D3DXHANDLE techMesh, techMeshDir, techMeshSimple, techMeshSimple2, techMeshExplo, techParticle, techSkybox, techArea, techTrail, techGlowMesh, techGlowAni;
-	D3DXHANDLE hAniCombined, hAniWorld, hAniBones, hAniTex, hAniFogColor, hAniFogParam, hAniTint, hAniHairColor, hAniAmbientColor, hAniLightDir,
-		hAniLightColor, hAniLights, hMeshCombined, hMeshWorld, hMeshTex, hMeshFogColor, hMeshFogParam, hMeshTint, hMeshAmbientColor, hMeshLightDir,
-		hMeshLightColor, hMeshLights, hParticleCombined, hParticleTex, hSkyboxCombined, hSkyboxTex, hAreaCombined, hAreaColor, hAreaPlayerPos, hAreaRange,
-		hGuiSize, hGuiTex, hPostTex, hPostPower, hPostSkill, hGlowCombined, hGlowBones, hGlowColor, hGlowTex;
-	SoundPtr sGulp, sCoins, sBow[2], sDoor[3], sDoorClosed[2], sDoorClose, sItem[10], sChestOpen, sChestClose, sDoorBudge, sRock, sWood, sCrystal, sMetal,
-		sBody[5], sBone, sSkin, sArenaFight, sArenaWin, sArenaLost, sUnlock, sEvil, sEat, sSummon, sZap, sCancel;
-	VB vbParticle;
-	cstring txLoadGuiTextures, txLoadParticles, txLoadPhysicMeshes, txLoadModels, txLoadSpells, txLoadSounds, txLoadMusic, txGenerateWorld;
-	TexturePtr tGrass, tGrass2, tGrass3, tRoad, tFootpath, tField;
-
-	//-----------------------------------------------------------------
-	// Localized texts
-	//-----------------------------------------------------------------
-	cstring txCreatingListOfFiles, txConfiguringGame, txLoadingItems, txLoadingObjects, txLoadingSpells, txLoadingUnits, txLoadingMusics, txLoadingBuildings,
-		txLoadingRequires, txLoadingShaders, txLoadingDialogs, txLoadingLanguageFiles, txPreloadAssets, txLoadingQuests, txLoadingClasses;
-	cstring txAiNoHpPot[2], txAiCity[2], txAiVillage[2], txAiMoonwell, txAiForest, txAiCampEmpty, txAiCampFull, txAiFort, txAiDwarfFort, txAiTower, txAiArmory,
-		txAiHideout, txAiVault, txAiCrypt, txAiTemple, txAiNecromancerBase, txAiLabyrinth, txAiNoEnemies, txAiNearEnemies, txAiCave, txAiInsaneText[11],
-		txAiDefaultText[9], txAiOutsideText[3], txAiInsideText[2], txAiHumanText[2], txAiOrcText[7], txAiGoblinText[5], txAiMageText[4], txAiSecretText[3],
-		txAiHeroDungeonText[4], txAiHeroCityText[5], txAiBanditText[6], txAiHeroOutsideText[2], txAiDrunkMageText[3], txAiDrunkText[6],
-		txAiDrunkContestText[4], txAiWildHunterText[3];
-	cstring txEnteringLocation, txGeneratingMap, txGeneratingBuildings, txGeneratingObjects, txGeneratingUnits, txGeneratingItems, txGeneratingPhysics,
-		txRecreatingObjects, txGeneratingMinimap, txLoadingComplete, txWaitingForPlayers, txLoadingResources;
-	cstring txTutPlay, txTutTick;
-	cstring txCantSaveGame, txSaveFailed, txLoadFailed, txQuickSave, txGameSaved, txLoadingLocations, txLoadingData, txEndOfLoading, txCantSaveNow,
-		txOnlyServerCanSave, txCantLoadGame, txOnlyServerCanLoad, txLoadSignature, txLoadVersion, txLoadSaveVersionOld, txLoadMP, txLoadSP, txLoadOpenError,
-		txCantLoadMultiplayer, txTooOldVersion, txMissingPlayerInSave, txGameLoaded, txLoadError, txLoadErrorGeneric;
-	cstring txPvpRefuse, txWin, txWinMp, txLevelUp, txLevelDown, txRegeneratingLevel, txNeedItem;
-	cstring txRumor[29], txRumorD[7];
-	cstring txMayorQFailed[3], txQuestAlreadyGiven[2], txMayorNoQ[2], txCaptainQFailed[2], txCaptainNoQ[2], txLocationDiscovered[2], txAllDiscovered[2],
-		txCampDiscovered[2], txAllCampDiscovered[2], txNoQRumors[2], txNeedMoreGold, txNoNearLoc, txNearLoc, txNearLocEmpty[2], txNearLocCleared,
-		txNearLocEnemy[2], txNoNews[2], txAllNews[2], txAllNearLoc, txLearningPoint, txLearningPoints, txNeedLearningPoints;
-	cstring txNear, txFar, txVeryFar, txELvlVeryWeak[2], txELvlWeak[2], txELvlAverage[2], txELvlQuiteStrong[2], txELvlStrong[2];
-	cstring txMineBuilt, txAncientArmory, txPortalClosed, txPortalClosedNews, txHiddenPlace, txOrcCamp, txPortalClose, txPortalCloseLevel,
-		txXarDanger, txGorushDanger, txGorushCombat, txMageHere, txMageEnter, txMageFinal, txQuest[279], txForMayor, txForSoltys;
-	cstring txEnterIp, txConnecting, txInvalidIp, txWaitingForPswd, txEnterPswd, txConnectingTo, txConnectingProxy, txConnectTimeout, txConnectInvalid,
-		txConnectVersion, txConnectSLikeNet, txCantJoin, txLostConnection, txInvalidPswd, txCantJoin2, txServerFull, txInvalidData, txNickUsed, txInvalidVersion,
-		txInvalidVersion2, txInvalidNick, txGeneratingWorld, txLoadedWorld, txWorldDataError, txLoadedPlayer, txPlayerDataError, txGeneratingLocation,
-		txLoadingLocation, txLoadingLocationError, txLoadingChars, txLoadingCharsError, txSendingWorld, txMpNPCLeft, txLoadingLevel, txDisconnecting,
-		txPreparingWorld, txInvalidCrc, txConnectionFailed, txLoadingSaveByServer, txServerFailedToLoadSave;
-	cstring txServer, txYouAreLeader, txRolledNumber, txPcIsLeader, txReceivedGold, txYouDisconnected, txYouKicked, txGamePaused, txGameResumed, txDevmodeOn,
-		txDevmodeOff, txPlayerDisconnected, txPlayerQuit, txPlayerKicked, txServerClosed;
-	cstring txYell[3];
-	cstring txHaveErrors;
-
-private:
-	Engine* engine;
-
-public:
-	CustomCollisionWorld* phy_world;
-
-	//-----------------------------------------------------------------
-	// GAME
-	//---------------------------------
-	int start_version;
-	ItemTextureMap item_texture_map;
-	vector<Texture*> over_item_textures;
-	uint load_errors, load_warnings;
-	Texture missing_item_texture;
-	vector<pair<Unit*, bool>> units_mesh_load;
-	std::set<const Item*> items_load;
-
-	//---------------------------------
-	// DRAWING
-	Matrix mat;
-	int particle_count;
-	VB vbDungeon;
-	IB ibDungeon;
-	Int2 dungeon_part[16], dungeon_part2[16], dungeon_part3[16], dungeon_part4[16];
-	bool draw_particle_sphere, draw_unit_radius, draw_hitbox, draw_phy, draw_col;
-	float portal_anim, drunk_anim;
-	// post effect u¿ywa 3 tekstur lub jeœli jest w³¹czony multisampling 3 surface i 1 tekstury
-	SURFACE sPostEffect[3];
-	TEX tPostEffect[3];
-	VB vbFullscreen;
-	vector<PostEffect> post_effects;
-
-	//---------------------------------
-	// CONSOLE & COMMANDS
-	Settings settings;
-	bool inactive_update, noai, devmode, default_devmode, default_player_devmode, debug_info, debug_info2, dont_wander;
-	string cfg_file;
-
 	void SetupConfigVars();
-
-	//---------------------------------
-	// GAME
-	GAME_STATE game_state, prev_game_state;
-	LocalPlayerData pc_data;
-	PlayerController* pc;
-	bool testing, force_seed_all, end_of_game, target_loc_is_camp, death_solo;
-	int death_screen;
-	float death_fade, game_speed;
-	vector<MeshInstance*> bow_instances;
-	vector<AIController*> ais;
-	uint force_seed, next_seed;
-	vector<AttachedSound> attached_sounds;
-
 	MeshInstance* GetBowInstance(Mesh* mesh);
-
-	//---------------------------------
-	// SCREENSHOT
-	time_t last_screenshot;
-	uint screenshot_count;
-	ImageFormat screenshot_format;
-
-	//---------------------------------
-	// DIALOGS
-	DialogContext dialog_context;
-	vector<string> dialog_choices; // used in client multiplayer mode
-	string predialog;
-
 	DialogContext* FindDialogContext(Unit* talker);
-
-	//---------------------------------
-	// LOADING
-	float loading_dt, loading_cap;
-	Timer loading_t;
-	int loading_steps, loading_index;
-	bool loading_first_step;
-	// used temporary at loading
-	vector<AIController*> ai_bow_targets;
-	vector<Location*> load_location_quest;
-	vector<Unit*> load_unit_handler;
-	vector<Chest*> load_chest_handler;
-
-	//---------------------------------
-	// FALLBACK
-	FALLBACK fallback_type;
-	int fallback_1, fallback_2;
-	float fallback_t;
-
-	int draw_flags;
-
-	// music
-	MusicType music_type;
-	MusicTrack* last_music;
-	vector<MusicTrack*> tracks;
-	int track_id;
 	void LoadMusic(MusicType type, bool new_load_screen = true, bool instant = false);
 	void SetMusic();
 	void SetMusic(MusicType type);
 	void SetupTracks();
 	void UpdateMusic();
-
-	bool hardcore_mode, hardcore_option;
-	float grayout;
-	bool cl_postfx;
-
+	void SaveCfg();
+	cstring GetShortcutText(GAME_KEYS key, cstring action = nullptr);
+	void PauseGame();
 	void Draw();
 	void ExitToMenu();
 	void DoExitToMenu();
@@ -508,12 +338,8 @@ public:
 	void VerifyResources();
 	void VerifyUnitResources(Unit* unit);
 	void VerifyItemResources(const Item* item);
-	//
 	void DeleteUnit(Unit* unit);
-	bool WantExitLevel()
-	{
-		return !GKey.KeyDownAllowed(GK_WALK);
-	}
+	bool WantExitLevel() { return !GKey.KeyDownAllowed(GK_WALK); }
 	float PlayerAngleY();
 	void AttackReaction(Unit& attacked, Unit& attacker);
 	void GenerateQuestUnits();
@@ -533,14 +359,19 @@ public:
 	void OnEnterLevelOrLocation();
 	cstring GetRandomIdleText(Unit& u);
 	void HandleQuestEvent(Quest_Event* event);
-
 	void UpdateLights(vector<Light>& lights);
 	void UpdatePostEffects(float dt);
+	// --- cutscene
+	void CutsceneStart(bool instant);
+	void CutsceneImage(const string& image, float time);
+	void CutsceneText(const string& text, float time);
+	void CutsceneEnd();
+	void CutsceneEnded(bool cancel);
+	bool CutsceneShouldSkip();
 
 	//-----------------------------------------------------------------
 	// MENU / MAIN MENU / OPTIONS
-	bool check_updates, skip_tutorial;
-
+	//-----------------------------------------------------------------
 	bool CanShowMenu();
 	void SaveOptions();
 	void StartNewGame();
@@ -572,35 +403,7 @@ public:
 
 	//-----------------------------------------------------------------
 	// MULTIPLAYER
-	string player_name, server_ip, enter_pswd;
-	enum NET_MODE
-	{
-		NM_CONNECTING,
-		NM_QUITTING,
-		NM_QUITTING_SERVER,
-		NM_TRANSFER,
-		NM_TRANSFER_SERVER,
-		NM_SERVER_SEND
-	} net_mode;
-	NetState net_state;
-	int net_tries;
-	VoidF net_callback;
-	float net_timer, mp_timeout;
-	BitStream prepared_stream;
-	int skip_id_counter;
-	struct WarpData
-	{
-		Unit* u;
-		int where; // <-1 - get outside the building,  >=0 - get inside the building
-		float timer;
-	};
-	vector<WarpData> mp_warps;
-	float train_move; // used by client to training by walking
-	bool anyone_talking;
-	float interpolate_timer;
-	bool paused;
-	vector<ItemSlot> chest_trade; // used by clients when trading
-
+	//-----------------------------------------------------------------
 	void AddServerMsg(cstring msg);
 	void AddMsg(cstring msg);
 	void OnEnterPassword(int id);
@@ -640,19 +443,15 @@ public:
 
 	//-----------------------------------------------------------------
 	// WORLD MAP
+	//-----------------------------------------------------------------
 	void EnterLocation(int level = 0, int from_portal = -1, bool close_portal = false);
 	void GenerateWorld();
 	void LeaveLocation(bool clear = false, bool end_buffs = true);
 	void Event_RandomEncounter(int id);
 
-	Config cfg;
-	void SaveCfg();
-	cstring GetShortcutText(GAME_KEYS key, cstring action = nullptr);
-	void PauseGame();
-
-	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-	// NEW
-	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+	//-----------------------------------------------------------------
+	// COMPONENTS
+	//-----------------------------------------------------------------
 	LocationGeneratorFactory* loc_gen_factory;
 	Arena* arena;
 	DebugDrawer* debug_drawer;
@@ -660,6 +459,195 @@ public:
 	SuperShader* super_shader;
 	TerrainShader* terrain_shader;
 
+	//-----------------------------------------------------------------
+	// GAME
+	//-----------------------------------------------------------------
+	GAME_STATE game_state, prev_game_state;
+	LocalPlayerData pc_data;
+	PlayerController* pc;
+	bool testing, force_seed_all, end_of_game, target_loc_is_camp, death_solo, cutscene;
+	int death_screen;
+	float death_fade, game_speed;
+	vector<MeshInstance*> bow_instances;
+	vector<AIController*> ais;
+	uint force_seed, next_seed;
+	ProfilerMode profiler_mode;
+	int start_version;
+	ItemTextureMap item_texture_map;
+	vector<Texture*> over_item_textures;
+	uint load_errors, load_warnings;
+	Texture missing_item_texture;
+	std::set<const Item*> items_load;
+	bool hardcore_mode, hardcore_option, check_updates, skip_tutorial;
+	// quickstart
+	QUICKSTART quickstart;
+	int quickstart_slot;
+	// fallback
+	FALLBACK fallback_type;
+	int fallback_1, fallback_2;
+	float fallback_t;
+	// dialogs
+	DialogContext dialog_context;
+	vector<string> dialog_choices; // used in client multiplayer mode
+	string predialog;
+
+	//-----------------------------------------------------------------
+	// LOADING
+	//-----------------------------------------------------------------
+	float loading_dt, loading_cap;
+	Timer loading_t;
+	int loading_steps, loading_index;
+	bool loading_first_step;
+	// used temporary at loading
+	vector<AIController*> ai_bow_targets;
+	vector<Location*> load_location_quest;
+	vector<Unit*> load_unit_handler;
+	vector<Chest*> load_chest_handler;
+	vector<pair<Unit*, bool>> units_mesh_load;
+
+	//-----------------------------------------------------------------
+	// MULTIPLAYER
+	//-----------------------------------------------------------------
+	string player_name, server_ip, enter_pswd;
+	enum NET_MODE
+	{
+		NM_CONNECTING,
+		NM_QUITTING,
+		NM_QUITTING_SERVER,
+		NM_TRANSFER,
+		NM_TRANSFER_SERVER,
+		NM_SERVER_SEND
+	} net_mode;
+	NetState net_state;
+	int net_tries;
+	VoidF net_callback;
+	float net_timer, mp_timeout;
+	BitStream prepared_stream;
+	int skip_id_counter;
+	struct WarpData
+	{
+		Unit* u;
+		int where; // <-1 - get outside the building,  >=0 - get inside the building
+		float timer;
+	};
+	vector<WarpData> mp_warps;
+	float train_move; // used by client to training by walking
+	bool anyone_talking;
+	float interpolate_timer;
+	bool paused;
+	vector<ItemSlot> chest_trade; // used by clients when trading
+
+	//-----------------------------------------------------------------
+	// DRAWING
+	//-----------------------------------------------------------------
+	int draw_flags;
+	Matrix mat;
+	int particle_count;
+	VB vbDungeon;
+	IB ibDungeon;
+	Int2 dungeon_part[16], dungeon_part2[16], dungeon_part3[16], dungeon_part4[16];
+	bool draw_particle_sphere, draw_unit_radius, draw_hitbox, draw_phy, draw_col, cl_postfx;
+	float portal_anim, drunk_anim, grayout;
+	// post effect u¿ywa 3 tekstur lub jeœli jest w³¹czony multisampling 3 surface i 1 tekstury
+	SURFACE sPostEffect[3];
+	TEX tPostEffect[3];
+	VB vbFullscreen;
+	vector<PostEffect> post_effects;
+	// scene
+	Color clear_color, clear_color_next;
+	bool dungeon_tex_wrap;
+	bool cl_normalmap, cl_specularmap, cl_glow;
+	DrawBatch draw_batch;
+	VDefault blood_v[4];
+	VParticle billboard_v[4];
+	Vec3 billboard_ext[4];
+	VParticle portal_v[4];
+	int uv_mod;
+	QuadTree quadtree;
+	LevelParts level_parts;
+	vector<const vector<Matrix>*> grass_patches[2];
+	uint grass_count[2];
+	// screenshot
+	time_t last_screenshot;
+	uint screenshot_count;
+	ImageFormat screenshot_format;
+
+	//-----------------------------------------------------------------
+	// SOUND & MUSIC
+	//-----------------------------------------------------------------
+	vector<AttachedSound> attached_sounds;
+	MusicType music_type;
+	MusicTrack* last_music;
+	vector<MusicTrack*> tracks;
+	int track_id;
+
+	//-----------------------------------------------------------------
+	// CONSOLE & COMMANDS
+	//-----------------------------------------------------------------
+	Config cfg;
+	Settings settings;
+	bool inactive_update, noai, devmode, default_devmode, default_player_devmode, dont_wander;
+	string cfg_file;
+
+	//-----------------------------------------------------------------
+	// RESOURCES
+	//-----------------------------------------------------------------
+	MeshPtr aHumanBase, aHair[5], aBeard[5], aMustache[2], aEyebrows;
+	MeshPtr aBox, aCylinder, aSphere, aCapsule;
+	MeshPtr aArrow, aSkybox, aBag, aChest, aGrating, aDoorWall, aDoorWall2, aStairsDown, aStairsDown2, aStairsUp, aSpellball, aPressurePlate, aDoor, aDoor2, aStun;
+	VertexDataPtr vdStairsUp, vdStairsDown, vdDoorHole;
+	RenderTarget* rt_save, *rt_item, *rt_item_rot;
+	Texture tMinimap;
+	TexturePtr tCzern, tPortal, tLightingLine, tRip, tEquipped, tWarning, tError;
+	TexturePtr tKrew[BLOOD_MAX], tKrewSlad[BLOOD_MAX], tIskra, tSpawn;
+	TexturePack tFloor[2], tWall[2], tCeil[2], tFloorBase, tWallBase, tCeilBase;
+	ID3DXEffect* eMesh, *eParticle, *eSkybox, *eArea, *ePostFx, *eGlow;
+	D3DXHANDLE techMesh, techMeshDir, techMeshSimple, techMeshSimple2, techMeshExplo, techParticle, techSkybox, techArea, techTrail, techGlowMesh, techGlowAni;
+	D3DXHANDLE hMeshCombined, hMeshWorld, hMeshTex, hMeshFogColor, hMeshFogParam, hMeshTint, hMeshAmbientColor, hMeshLightDir, hMeshLightColor, hMeshLights,
+		hParticleCombined, hParticleTex, hSkyboxCombined, hSkyboxTex, hAreaCombined, hAreaColor, hAreaPlayerPos, hAreaRange, hPostTex, hPostPower, hPostSkill,
+		hGlowCombined, hGlowBones, hGlowColor, hGlowTex;
+	SoundPtr sGulp, sCoins, sBow[2], sDoor[3], sDoorClosed[2], sDoorClose, sItem[10], sChestOpen, sChestClose, sDoorBudge, sRock, sWood, sCrystal, sMetal,
+		sBody[5], sBone, sSkin, sArenaFight, sArenaWin, sArenaLost, sUnlock, sEvil, sEat, sSummon, sZap, sCancel;
+	VB vbParticle;
+	TexturePtr tGrass, tGrass2, tGrass3, tRoad, tFootpath, tField;
+
+	//-----------------------------------------------------------------
+	// LOCALIZED TEXTS
+	//-----------------------------------------------------------------
+	cstring txLoadGuiTextures, txLoadParticles, txLoadPhysicMeshes, txLoadModels, txLoadSpells, txLoadSounds, txLoadMusic, txGenerateWorld;
+	cstring txCreatingListOfFiles, txConfiguringGame, txLoadingItems, txLoadingObjects, txLoadingSpells, txLoadingUnits, txLoadingMusics, txLoadingBuildings,
+		txLoadingRequires, txLoadingShaders, txLoadingDialogs, txLoadingLanguageFiles, txPreloadAssets, txLoadingQuests, txLoadingClasses;
+	cstring txAiNoHpPot[2], txAiCity[2], txAiVillage[2], txAiMoonwell, txAiForest, txAiCampEmpty, txAiCampFull, txAiFort, txAiDwarfFort, txAiTower, txAiArmory,
+		txAiHideout, txAiVault, txAiCrypt, txAiTemple, txAiNecromancerBase, txAiLabyrinth, txAiNoEnemies, txAiNearEnemies, txAiCave, txAiInsaneText[11],
+		txAiDefaultText[9], txAiOutsideText[3], txAiInsideText[2], txAiHumanText[2], txAiOrcText[7], txAiGoblinText[5], txAiMageText[4], txAiSecretText[3],
+		txAiHeroDungeonText[4], txAiHeroCityText[5], txAiBanditText[6], txAiHeroOutsideText[2], txAiDrunkMageText[3], txAiDrunkText[6],
+		txAiDrunkContestText[4], txAiWildHunterText[3];
+	cstring txEnteringLocation, txGeneratingMap, txGeneratingBuildings, txGeneratingObjects, txGeneratingUnits, txGeneratingItems, txGeneratingPhysics,
+		txRecreatingObjects, txGeneratingMinimap, txLoadingComplete, txWaitingForPlayers, txLoadingResources;
+	cstring txTutPlay, txTutTick;
+	cstring txCantSaveGame, txSaveFailed, txLoadFailed, txQuickSave, txGameSaved, txLoadingLocations, txLoadingData, txEndOfLoading, txCantSaveNow,
+		txOnlyServerCanSave, txCantLoadGame, txOnlyServerCanLoad, txLoadSignature, txLoadVersion, txLoadSaveVersionOld, txLoadMP, txLoadSP, txLoadOpenError,
+		txCantLoadMultiplayer, txTooOldVersion, txMissingPlayerInSave, txGameLoaded, txLoadError, txLoadErrorGeneric;
+	cstring txPvpRefuse, txWin, txWinMp, txLevelUp, txLevelDown, txRegeneratingLevel, txNeedItem;
+	cstring txRumor[29], txRumorD[7];
+	cstring txMayorQFailed[3], txQuestAlreadyGiven[2], txMayorNoQ[2], txCaptainQFailed[2], txCaptainNoQ[2], txLocationDiscovered[2], txAllDiscovered[2],
+		txCampDiscovered[2], txAllCampDiscovered[2], txNoQRumors[2], txNeedMoreGold, txNoNearLoc, txNearLoc, txNearLocEmpty[2], txNearLocCleared,
+		txNearLocEnemy[2], txNoNews[2], txAllNews[2], txAllNearLoc, txLearningPoint, txLearningPoints, txNeedLearningPoints;
+	cstring txNear, txFar, txVeryFar, txELvlVeryWeak[2], txELvlWeak[2], txELvlAverage[2], txELvlQuiteStrong[2], txELvlStrong[2];
+	cstring txMineBuilt, txAncientArmory, txPortalClosed, txPortalClosedNews, txHiddenPlace, txOrcCamp, txPortalClose, txPortalCloseLevel,
+		txXarDanger, txGorushDanger, txGorushCombat, txMageHere, txMageEnter, txMageFinal, txQuest[279], txForMayor, txForSoltys;
+	cstring txEnterIp, txConnecting, txInvalidIp, txWaitingForPswd, txEnterPswd, txConnectingTo, txConnectingProxy, txConnectTimeout, txConnectInvalid,
+		txConnectVersion, txConnectSLikeNet, txCantJoin, txLostConnection, txInvalidPswd, txCantJoin2, txServerFull, txInvalidData, txNickUsed, txInvalidVersion,
+		txInvalidVersion2, txInvalidNick, txGeneratingWorld, txLoadedWorld, txWorldDataError, txLoadedPlayer, txPlayerDataError, txGeneratingLocation,
+		txLoadingLocation, txLoadingLocationError, txLoadingChars, txLoadingCharsError, txSendingWorld, txMpNPCLeft, txLoadingLevel, txDisconnecting,
+		txPreparingWorld, txInvalidCrc, txConnectionFailed, txLoadingSaveByServer, txServerFailedToLoadSave;
+	cstring txServer, txYouAreLeader, txRolledNumber, txPcIsLeader, txReceivedGold, txYouDisconnected, txYouKicked, txGamePaused, txGameResumed, txDevmodeOn,
+		txDevmodeOff, txPlayerDisconnected, txPlayerQuit, txPlayerKicked, txServerClosed;
+	cstring txYell[3];
+	cstring txHaveErrors;
+
 private:
+	Engine* engine;
 	vector<int> reported_errors;
+	asIScriptContext* cutscene_script;
 };

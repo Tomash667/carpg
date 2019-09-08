@@ -6,6 +6,8 @@ Core functions:
 	string Format(const string& in format_str, ?& in ...) - return formatted string, takes 0 to 8 any arguments.
 	int Random(int a, int b) - returns random number in range <a,b>.
 	int Rand() - returns random int number.
+	void Sleep(float seconds) - resume script execution after some time, don't use in places that require return value instantly like callbacks or dialog_if.
+		! Console output don't work after sleep.
 
 Core types:
 	Int2 - 2d int point x, y.
@@ -216,6 +218,7 @@ LOCATION_IMAGE enum:
 	LI_MINE
 	LI_SAWMILL
 	LI_DUNGEON2
+	LI_ACADEMY
 
 Spawn struct - unit & level.
 
@@ -301,3 +304,9 @@ Event type:
 ScriptContext type, global instance C:
 	Quest@ quest
 	Player@ pc
+	
+Cutscene namespace:
+	void Start(bool instant = true) - start cutscene sequence.
+	void Image(const string& in image) - queue image to show.
+	void Text(const string& in text) - queue text to show.
+	void End() - end cutscene sequence and suspend script until cutscene ended.
