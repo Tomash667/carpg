@@ -117,3 +117,46 @@ int Class::VerifyGroup(UnitGroup* group, bool crazy)
 
 	return errors;
 }
+
+//=================================================================================================
+::Class* old::ConvertOldClass(int clas)
+{
+	cstring id;
+	switch(clas)
+	{
+	case old::Class::BARBARIAN:
+		id = "barbarian";
+		break;
+	case old::Class::BARD:
+		id = "bard";
+		break;
+	case old::Class::CLERIC:
+		id = "cleric";
+		break;
+	case old::Class::DRUID:
+		id = "druid";
+		break;
+	case old::Class::HUNTER:
+		id = "hunter";
+		break;
+	case old::Class::MAGE:
+		id = "mage";
+		break;
+	case old::Class::MONK:
+		id = "monk";
+		break;
+	case old::Class::PALADIN:
+		id = "paladin";
+		break;
+	case old::Class::ROGUE:
+		id = "rogue";
+		break;
+	default:
+		assert(0);
+	case old::Class::WARRIOR:
+		id = "warrior";
+		break;
+	}
+
+	return ::Class::TryGet(id);
+}

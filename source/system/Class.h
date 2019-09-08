@@ -53,3 +53,28 @@ struct Class
 private:
 	static int VerifyGroup(UnitGroup* group, bool crazy);
 };
+
+//-----------------------------------------------------------------------------
+// pre V_DEV
+namespace old
+{
+	enum class Class
+	{
+		BARBARIAN,
+		BARD,
+		CLERIC,
+		DRUID,
+		HUNTER,
+		MAGE,
+		MONK,
+		PALADIN,
+		ROGUE,
+		WARRIOR,
+
+		MAX,
+		INVALID,
+		RANDOM
+	};
+
+	::Class* ConvertOldClass(int clas);
+}

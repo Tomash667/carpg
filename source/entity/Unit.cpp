@@ -1956,8 +1956,6 @@ void Unit::Load(GameReader& f, bool local)
 		f >> mp;
 		f >> mpmax;
 	}
-	else
-		mp = mpmax = CalculateMaxMp();
 	f >> stamina;
 	f >> stamina_max;
 	f >> stamina_action;
@@ -2473,6 +2471,10 @@ void Unit::Load(GameReader& f, bool local)
 		}
 		CalculateStats();
 	}
+
+	// compatibility
+	if(LOAD_VERSION < V_DEV)
+		mp = mpmax = CalculateMaxMp();
 
 	CalculateLoad();
 }

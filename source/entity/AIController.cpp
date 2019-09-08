@@ -241,6 +241,8 @@ void AIController::Load(GameReader& f)
 				{
 					idle_data.region.exit = false;
 					idle_data.region.area = game_level->GetAreaById(area_id);
+					if(!idle_data.region.area)
+						idle_data.region.area = game_level->local_area;
 				}
 			}
 		}
