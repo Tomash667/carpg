@@ -448,7 +448,7 @@ void InsideLocationGenerator::GenerateDungeonObjects()
 					pos.y += Door::HEIGHT;
 					tr.setOrigin(ToVector3(pos));
 					tr.setRotation(btQuaternion(door->rot, 0, 0));
-					game->phy_world->addCollisionObject(door->phy, CG_DOOR);
+					phy_world->addCollisionObject(door->phy, CG_DOOR);
 
 					if(IsSet(lvl.map[x + y * lvl.w].flags, Tile::F_SPECIAL))
 						door->locked = LOCK_ORCS;

@@ -38,11 +38,12 @@ void DialogContext::StartDialog(Unit* talker, GameDialog* dialog)
 	assert(!dialog_mode);
 
 	// use up auto talk
-	if(talker && talker->GetOrder() == ORDER_AUTO_TALK
-		&& (pc->IsLeader() || talker->order->auto_talk != AutoTalkMode::Leader)
-		&& !talker->order->auto_talk_dialog)
+	if(talker && !dialog && talker->GetOrder() == ORDER_AUTO_TALK)
+	{
+		dialog = talker->order->auto_talk_dialog;
 		talker->OrderNext();
-
+	}
+	
 	dialog_mode = true;
 	dialog_wait = -1;
 	dialog_pos = 0;

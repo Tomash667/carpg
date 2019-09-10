@@ -2154,7 +2154,7 @@ void World::Travel(int index, bool send)
 	travel_start_pos = world_pos;
 	travel_location_index = index;
 	travel_target_pos = locations[travel_location_index]->pos;
-	travel_dir = Angle(world_pos.x, -world_pos.y, travel_target_pos.x, -travel_target_pos.y);
+	travel_dir = AngleLH(world_pos.x, world_pos.y, travel_target_pos.x, travel_target_pos.y);
 	reveal_timer = 0.f;
 	if(Net::IsLocal())
 		travel_first_frame = true;
@@ -2189,7 +2189,7 @@ void World::TravelPos(const Vec2& pos, bool send)
 	travel_start_pos = world_pos;
 	travel_location_index = -1;
 	travel_target_pos = pos;
-	travel_dir = Angle(world_pos.x, -world_pos.y, travel_target_pos.x, -travel_target_pos.y);
+	travel_dir = AngleLH(world_pos.x, world_pos.y, travel_target_pos.x, travel_target_pos.y);
 	reveal_timer = 0.f;
 	if(Net::IsLocal())
 		travel_first_frame = true;
@@ -2588,32 +2588,35 @@ void World::GetOutsideSpawnPoint(Vec3& pos, float& dir) const
 	const float map_size = 256.f;
 	const float dist = 40.f;
 
-	if(travel_dir < PI / 4 || travel_dir > 7.f / 4 * PI)
+	// reverse dir, if you exit from north then you enter from south
+	float entry_dir = Clip(travel_dir + PI);
+
+	if(entry_dir < PI / 4 || entry_dir > 7.f / 4 * PI)
 	{
 		// east
 		dir = PI / 2;
-		if(travel_dir < PI / 4)
-			pos = Vec3(map_size - dist, 0, Lerp(map_size / 2, map_size - dist, travel_dir / (PI / 4)));
+		if(entry_dir < PI / 4)
+			pos = Vec3(map_size - dist, 0, Lerp(map_size / 2, dist, entry_dir / (PI / 4)));
 		else
-			pos = Vec3(map_size - dist, 0, Lerp(dist, map_size / 2, (travel_dir - (7.f / 4 * PI)) / (PI / 4)));
+			pos = Vec3(map_size - dist, 0, Lerp(map_size - dist, map_size / 2, (entry_dir - 7.f / 4 * PI) / (PI / 4)));
 	}
-	else if(travel_dir < 3.f / 4 * PI)
-	{
-		// north
-		dir = 0;
-		pos = Vec3(Lerp(dist, map_size - dist, 1.f - ((travel_dir - (1.f / 4 * PI)) / (PI / 2))), 0, map_size - dist);
-	}
-	else if(travel_dir < 5.f / 4 * PI)
-	{
-		// west
-		dir = 3.f / 2 * PI;
-		pos = Vec3(dist, 0, Lerp(dist, map_size - dist, 1.f - ((travel_dir - (3.f / 4 * PI)) / (PI / 2))));
-	}
-	else
+	else if(entry_dir < 3.f / 4 * PI)
 	{
 		// south
 		dir = PI;
-		pos = Vec3(Lerp(dist, map_size - dist, (travel_dir - (5.f / 4 * PI)) / (PI / 2)), 0, dist);
+		pos = Vec3(Lerp(map_size - dist, dist, (entry_dir - 1.f / 4 * PI) / (PI / 2)), 0, dist);
+	}
+	else if(entry_dir < 5.f / 4 * PI)
+	{
+		// west
+		dir = 3.f / 2 * PI;
+		pos = Vec3(dist, 0, Lerp(dist, map_size - dist, (entry_dir - 3.f / 4 * PI) / (PI / 2)));
+	}
+	else
+	{
+		// north
+		dir = 0;
+		pos = Vec3(Lerp(dist, map_size - dist, (entry_dir - 5.f / 4 * PI) / (PI / 2)), 0, map_size - dist);
 	}
 }
 
@@ -2682,6 +2685,9 @@ void World::SetTravelDir(const Vec3& pos)
 		travel_dir = Lerp(5.f / 4 * PI, 7.f / 4 * PI, (unit_pos.x - border) / (map_size - border * 2));
 	else
 		travel_dir = Lerp(1.f / 4 * PI, 3.f / 4 * PI, 1.f - (unit_pos.x - border) / (map_size - border * 2));
+
+	// convert RH angle to LH and then entry to exit dir
+	travel_dir = Clip(ConvertAngle(travel_dir) + PI);
 }
 
 //=================================================================================================

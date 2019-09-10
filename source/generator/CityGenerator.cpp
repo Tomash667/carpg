@@ -64,7 +64,8 @@ void CityGenerator::SetRoadSize(int _road_size, int _road_part)
 }
 
 //=================================================================================================
-void CityGenerator::GenerateMainRoad(RoadType type, GameDirection dir, int rocky_roads, bool plaza, int swap, vector<EntryPoint>& entry_points, int& gates, bool fill_roads)
+void CityGenerator::GenerateMainRoad(RoadType type, GameDirection dir, int rocky_roads, bool plaza, int swap, vector<EntryPoint>& entry_points,
+	int& gates, bool fill_roads)
 {
 	memset(tiles, 0, sizeof(TerrainTile)*w*h);
 
@@ -2893,7 +2894,7 @@ void CityGenerator::SpawnCityPhysics()
 				cobj->setCollisionShape(game_level->shape_block);
 				cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BUILDING);
 				cobj->getWorldTransform().setOrigin(btVector3(2.f*x + 1.f, terrain->GetH(2.f*x + 1.f, 2.f*x + 1), 2.f*z + 1.f));
-				game_level->phy_world->addCollisionObject(cobj, CG_BUILDING);
+				phy_world->addCollisionObject(cobj, CG_BUILDING);
 			}
 		}
 	}

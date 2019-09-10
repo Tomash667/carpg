@@ -312,8 +312,10 @@ void ScriptManager::RegisterCommon()
 		.Method("Int2& opAssign(const Int2& in)", asMETHODPR(Int2, operator =, (const Int2&), Int2&))
 		.Method("Int2& opAddAssign(const Int2& in)", asMETHOD(Int2, operator +=))
 		.Method("Int2& opSubAssign(const Int2& in)", asMETHOD(Int2, operator -=))
-		.Method("Int2& opMulAssign(int)", asMETHOD(Int2, operator *=))
-		.Method("Int2& opDivAssign(int)", asMETHOD(Int2, operator /=))
+		.Method("Int2& opMulAssign(int)", asMETHODPR(Int2, operator *=, (int), Int2&))
+		.Method("Int2& opMulAssign(float)", asMETHODPR(Int2, operator *=, (float), Int2&))
+		.Method("Int2& opDivAssign(int)", asMETHODPR(Int2, operator /=, (int), Int2&))
+		.Method("Int2& opDivAssign(float)", asMETHODPR(Int2, operator /=, (float), Int2&))
 		.Method("Int2 opAdd(const Int2& in) const", asMETHODPR(Int2, operator +, (const Int2&) const, Int2))
 		.Method("Int2 opSub(const Int2& in) const", asMETHODPR(Int2, operator -, (const Int2&) const, Int2))
 		.Method("Int2 opMul(int) const", asMETHODPR(Int2, operator *, (int) const, Int2))
@@ -377,6 +379,8 @@ void ScriptManager::RegisterCommon()
 		.Method("Vec4 opSub(const Vec4& in) const", asMETHODPR(Vec4, operator -, (const Vec4&) const, Vec4))
 		.Method("Vec4 opMul(float) const", asMETHODPR(Vec4, operator *, (float) const, Vec4))
 		.Method("Vec4 opDiv(float) const", asMETHODPR(Vec4, operator /, (float) const, Vec4));
+
+	AddFunction("void Sleep(float)", asMETHOD(ScriptManager, ScriptSleep), this);
 }
 
 #include "PlayerInfo.h"
@@ -524,7 +528,8 @@ void ScriptManager::RegisterGame()
 		{ "LI_LABYRINTH", LI_LABYRINTH },
 		{ "LI_MINE", LI_MINE },
 		{ "LI_SAWMILL", LI_SAWMILL },
-		{ "LI_DUNGEON2", LI_DUNGEON2 }
+		{ "LI_DUNGEON2", LI_DUNGEON2 },
+		{ "LI_ACADEMY", LI_ACADEMY }
 		});
 
 	AddType("Var")
@@ -555,7 +560,9 @@ void ScriptManager::RegisterGame()
 		.Method("Var@ opIndex(const string& in)", asMETHOD(VarsContainer, Get))
 		.WithInstance("VarsContainer@ globals", &p_globals);
 
-	AddType("Dialog");
+	AddType("Dialog")
+		.WithNamespace()
+		.AddFunction("Dialog@ Get(const string& in)", asFUNCTION(GameDialog::GetS));
 
 	AddType("Quest")
 		.Method("void AddEntry(const string& in)", asMETHOD(Quest_Scripted, AddEntry))
@@ -766,6 +773,13 @@ void ScriptManager::RegisterGame()
 		.Member("Unit@ unit", offsetof(ScriptEvent, unit))
 		.Member("GroundItem@ item", offsetof(ScriptEvent, item));
 
+	WithNamespace("Cutscene", game)
+		.AddFunction("void Start(bool = true)", asMETHOD(Game, CutsceneStart))
+		.AddFunction("void End()", asMETHOD(Game, CutsceneEnd))
+		.AddFunction("void Image(const string& in, float)", asMETHOD(Game, CutsceneImage))
+		.AddFunction("void Text(const string& in, float)", asMETHOD(Game, CutsceneText))
+		.AddFunction("bool ShouldSkip()", asMETHOD(Game, CutsceneShouldSkip));
+
 	AddVarType(Var::Type::Bool, "bool", false);
 	AddVarType(Var::Type::Int, "int", false);
 	AddVarType(Var::Type::Float, "float", false);
@@ -778,7 +792,7 @@ void ScriptManager::RegisterGame()
 	AddVarType(Var::Type::GroundItem, "GroundItem", true);
 }
 
-bool ScriptManager::RunScript(cstring code, bool validate)
+void ScriptManager::RunScript(cstring code)
 {
 	assert(code);
 
@@ -790,94 +804,20 @@ bool ScriptManager::RunScript(cstring code, bool validate)
 	if(r < 0)
 	{
 		Log(Logger::L_ERROR, Format("Failed to parse script (%d).", r), code);
-		return false;
-	}
-
-	if(validate)
-	{
-		func->Release();
-		return true;
+		return;
 	}
 
 	// run
 	asIScriptContext* tmp_context = engine->RequestContext();
 	r = tmp_context->Prepare(func);
-	if(r >= 0)
-	{
-		last_exception = nullptr;
-		r = tmp_context->Execute();
-	}
-
-	bool finished = (r == asEXECUTION_FINISHED);
-	if(!finished)
-	{
-		if(r == asEXECUTION_EXCEPTION)
-		{
-			cstring msg = last_exception ? last_exception : tmp_context->GetExceptionString();
-			Log(Logger::L_ERROR, Format("Script exception thrown \"%s\" in %s(%d).", msg, tmp_context->GetExceptionFunction()->GetName(),
-				tmp_context->GetExceptionFunction()), code);
-		}
-		else
-			Log(Logger::L_ERROR, Format("Script execution failed (%d).", r), code);
-	}
-
 	func->Release();
-	engine->ReturnContext(tmp_context);
-
-	return finished;
-}
-
-bool ScriptManager::RunIfScript(cstring code, bool validate)
-{
-	assert(code);
-
-	// compile
-	asIScriptModule* tmp_module = engine->GetModule("RunScriptModule", asGM_ALWAYS_CREATE);
-	cstring packed_code = Format("bool f() { return (%s); }", code);
-	asIScriptFunction* func;
-	int r = tmp_module->CompileFunction("RunScript", packed_code, -1, 0, &func);
 	if(r < 0)
 	{
-		Log(Logger::L_ERROR, Format("Failed to parse if script (%d).", r), code);
-		return false;
-	}
-
-	if(validate)
-	{
-		func->Release();
-		return true;
-	}
-
-	// run
-	asIScriptContext* tmp_context = engine->RequestContext();
-	r = tmp_context->Prepare(func);
-	if(r >= 0)
-	{
-		last_exception = nullptr;
-		r = tmp_context->Execute();
-	}
-
-	bool ok;
-	bool finished = (r == asEXECUTION_FINISHED);
-	if(!finished)
-	{
-		ok = false;
-		if(r == asEXECUTION_EXCEPTION)
-		{
-			cstring msg = last_exception ? last_exception : tmp_context->GetExceptionString();
-			Log(Logger::L_ERROR, Format("Script exception thrown \"%s\" in %s(%d).", msg, tmp_context->GetExceptionFunction()->GetName(),
-				tmp_context->GetExceptionFunction()), code);
-		}
-		else
-			Log(Logger::L_ERROR, Format("Script execution failed (%d).", r), code);
+		Log(Logger::L_ERROR, Format("Failed to prepare script (%d).", r));
+		engine->ReturnContext(tmp_context);
 	}
 	else
-		ok = (tmp_context->GetReturnByte() != 0);
-
-	func->Release();
-	engine->ReturnContext(tmp_context);
-
-	return ok;
+		ExecuteScript(tmp_context);
 }
 
 asIScriptFunction* ScriptManager::PrepareScript(cstring name, cstring code)
@@ -893,14 +833,14 @@ asIScriptFunction* ScriptManager::PrepareScript(cstring name, cstring code)
 	int r = tmp_module->CompileFunction("RunScript", packed_code, -1, 0, &func);
 	if(r < 0)
 	{
-		Log(Logger::L_ERROR, Format("Failed to prepare script (%d).", r), code);
+		Log(Logger::L_ERROR, Format("Failed to compile script (%d).", r), code);
 		return nullptr;
 	}
 
 	return func;
 }
 
-bool ScriptManager::RunScript(asIScriptFunction* func, void* instance, delegate<void(asIScriptContext*, int)> clbk)
+void ScriptManager::RunScript(asIScriptFunction* func, void* instance, delegate<void(asIScriptContext*, int)> clbk)
 {
 	// run
 	asIScriptContext* tmp_context = engine->RequestContext();
@@ -913,13 +853,28 @@ bool ScriptManager::RunScript(asIScriptFunction* func, void* instance, delegate<
 		{
 			if(clbk)
 				clbk(tmp_context, 0);
-			last_exception = nullptr;
-			r = tmp_context->Execute();
 		}
 	}
 
-	bool finished = (r == asEXECUTION_FINISHED);
-	if(!finished)
+	if(r < 0)
+	{
+		Log(Logger::L_ERROR, Format("Failed to prepare script (%d).", r));
+		engine->ReturnContext(tmp_context);
+		return;
+	}
+
+	last_exception = nullptr;
+	r = tmp_context->Execute();
+
+	if(r == asEXECUTION_SUSPENDED)
+		return;
+
+	if(r == asEXECUTION_FINISHED)
+	{
+		if(clbk)
+			clbk(tmp_context, 1);
+	}
+	else
 	{
 		if(r == asEXECUTION_EXCEPTION)
 		{
@@ -930,12 +885,8 @@ bool ScriptManager::RunScript(asIScriptFunction* func, void* instance, delegate<
 		else
 			Log(Logger::L_ERROR, Format("Script execution failed (%d).", r));
 	}
-	else if(clbk)
-		clbk(tmp_context, 1);
 
 	engine->ReturnContext(tmp_context);
-
-	return finished;
 }
 
 string& ScriptManager::OpenOutput()
@@ -980,6 +931,12 @@ void ScriptManager::AddFunction(cstring decl, const asSFuncPtr& funcPointer)
 {
 	assert(decl);
 	CHECKED(engine->RegisterGlobalFunction(decl, funcPointer, asCALL_CDECL));
+}
+
+void ScriptManager::AddFunction(cstring decl, const asSFuncPtr& funcPointer, void* obj)
+{
+	assert(decl);
+	CHECKED(engine->RegisterGlobalFunction(decl, funcPointer, asCALL_THISCALL_ASGLOBAL, obj));
 }
 
 void ScriptManager::AddEnum(cstring name, std::initializer_list<pair<cstring, int>> const& values)
@@ -1125,4 +1082,105 @@ bool ScriptManager::CheckVarType(int type_id, bool is_ref)
 	if(it == script_type_infos.end() || it->second.require_ref != is_ref)
 		return false;
 	return true;
+}
+
+void ScriptManager::ScriptSleep(float time)
+{
+	if(time <= 0)
+		return;
+
+	asIScriptContext* ctx = asGetActiveContext();
+	ctx->Suspend();
+
+	for(SuspendedScript& ss : suspended_scripts)
+	{
+		if(ss.ctx == ctx)
+		{
+			ss.time = time;
+			return;
+		}
+	}
+
+	SuspendedScript& ss = Add1(suspended_scripts);
+	ss.ctx = ctx;
+	ss.sctx = this->ctx;
+	ss.time = time;
+}
+
+void ScriptManager::UpdateScripts(float dt)
+{
+	LoopAndRemove(suspended_scripts, [&](SuspendedScript& ss)
+	{
+		if(ss.time < 0)
+			return false;
+
+		ss.time -= dt;
+		if(ss.time > 0.f)
+			return false;
+
+		this->ctx = ss.sctx;
+		return ExecuteScript(ss.ctx);
+	});
+}
+
+bool ScriptManager::ExecuteScript(asIScriptContext* ctx)
+{
+	assert(ctx);
+
+	last_exception = nullptr;
+
+	int r = ctx->Execute();
+	if(r == asEXECUTION_SUSPENDED)
+		return false;
+	if(r != asEXECUTION_FINISHED)
+	{
+		if(r == asEXECUTION_EXCEPTION)
+		{
+			cstring msg = last_exception ? last_exception : ctx->GetExceptionString();
+			Log(Logger::L_ERROR, Format("Script exception thrown \"%s\" in %s(%d).", msg, ctx->GetExceptionFunction()->GetName(),
+				ctx->GetExceptionFunction()));
+		}
+		else
+			Log(Logger::L_ERROR, Format("Script execution failed (%d).", r));
+	}
+
+	engine->ReturnContext(ctx);
+	return true;
+}
+
+void ScriptManager::StopAllScripts()
+{
+	for(SuspendedScript& ss : suspended_scripts)
+		engine->ReturnContext(ss.ctx);
+	suspended_scripts.clear();
+}
+
+asIScriptContext* ScriptManager::SuspendScript()
+{
+	asIScriptContext* ctx = asGetActiveContext();
+	if(!ctx)
+		return nullptr;
+
+	ctx->Suspend();
+
+	SuspendedScript& ss = Add1(suspended_scripts);
+	ss.ctx = ctx;
+	ss.sctx = this->ctx;
+	ss.time = -1;
+
+	return ctx;
+}
+
+void ScriptManager::ResumeScript(asIScriptContext* ctx)
+{
+	for(auto it = suspended_scripts.begin(), end = suspended_scripts.end(); it != end; ++it)
+	{
+		if(it->ctx == ctx)
+		{
+			this->ctx = it->sctx;
+			suspended_scripts.erase(it);
+			ExecuteScript(ctx);
+			return;
+		}
+	}
 }

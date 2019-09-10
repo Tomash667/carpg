@@ -98,6 +98,7 @@ potion = "Best healing potion"
 meleeWeaponDesc = "Draw melee weapon."
 rangedWeaponDesc = "Draw ranged weapon."
 potionDesc = "Drink best healing potion that will heal most damage."
+skipCutscene = "Esc - skip"
 
 [Inventory]
 inventory = "Inventory"

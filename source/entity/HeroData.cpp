@@ -70,7 +70,7 @@ void HeroData::Load(FileReader& f)
 	{
 		old::Mode mode;
 		f >> mode;
-		if(team_member)
+		if(team_member || mode == old::Leave)
 		{
 			UnitOrderEntry* order = UnitOrderEntry::Get();
 			switch(mode)

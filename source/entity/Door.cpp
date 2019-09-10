@@ -60,7 +60,7 @@ void Door::Load(FileReader& f, bool local)
 		pos2.y += Door::HEIGHT;
 		tr.setOrigin(ToVector3(pos2));
 		tr.setRotation(btQuaternion(rot, 0, 0));
-		game->phy_world->addCollisionObject(phy, CG_DOOR);
+		phy_world->addCollisionObject(phy, CG_DOOR);
 
 		if(!IsBlocking())
 		{
@@ -115,7 +115,7 @@ bool Door::Read(BitStreamReader& f)
 	pos.y += Door::HEIGHT;
 	tr.setOrigin(ToVector3(pos));
 	tr.setRotation(btQuaternion(rot, 0, 0));
-	game->phy_world->addCollisionObject(phy, CG_DOOR);
+	phy_world->addCollisionObject(phy, CG_DOOR);
 
 	if(state == Door::Open)
 	{

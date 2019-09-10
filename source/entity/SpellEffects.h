@@ -4,11 +4,11 @@
 //-----------------------------------------------------------------------------
 struct Explo
 {
-	Unit* owner;
+	Entity<Unit> owner;
 	Vec3 pos;
 	float size, sizemax, dmg;
 	TexturePtr tex;
-	vector<Unit*> hitted;
+	vector<Entity<Unit>> hitted;
 
 	static const int MIN_SIZE = 21;
 

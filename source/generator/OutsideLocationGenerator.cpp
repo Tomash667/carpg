@@ -493,7 +493,7 @@ void OutsideLocationGenerator::SpawnOutsideBariers()
 		tr.setIdentity();
 		tr.setOrigin(btVector3(size2, 40.f, border2));
 		obj->setWorldTransform(tr);
-		game_level->phy_world->addCollisionObject(obj, CG_BARRIER);
+		phy_world->addCollisionObject(obj, CG_BARRIER);
 	}
 
 	// bottom
@@ -511,7 +511,7 @@ void OutsideLocationGenerator::SpawnOutsideBariers()
 		tr.setIdentity();
 		tr.setOrigin(btVector3(size2, 40.f, size - border2));
 		obj->setWorldTransform(tr);
-		game_level->phy_world->addCollisionObject(obj, CG_BARRIER);
+		phy_world->addCollisionObject(obj, CG_BARRIER);
 	}
 
 	// left
@@ -529,7 +529,7 @@ void OutsideLocationGenerator::SpawnOutsideBariers()
 		tr.setOrigin(btVector3(border2, 40.f, size2));
 		tr.setRotation(btQuaternion(PI / 2, 0, 0));
 		obj->setWorldTransform(tr);
-		game_level->phy_world->addCollisionObject(obj, CG_BARRIER);
+		phy_world->addCollisionObject(obj, CG_BARRIER);
 	}
 
 	// right
@@ -547,6 +547,6 @@ void OutsideLocationGenerator::SpawnOutsideBariers()
 		tr.setOrigin(btVector3(size - border2, 40.f, size2));
 		tr.setRotation(btQuaternion(PI / 2, 0, 0));
 		obj->setWorldTransform(tr);
-		game_level->phy_world->addCollisionObject(obj, CG_BARRIER);
+		phy_world->addCollisionObject(obj, CG_BARRIER);
 	}
 }

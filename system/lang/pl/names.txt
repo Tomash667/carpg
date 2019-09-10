@@ -272,6 +272,8 @@ name crazy {
 	"Dread Pirate Roberts"
 	"Nathan Drake"
 	"Doktor"
+	"Batman"
+	"Lo Wang"
 }
 
 name location_start {

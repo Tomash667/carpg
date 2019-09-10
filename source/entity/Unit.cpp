@@ -1956,8 +1956,6 @@ void Unit::Load(GameReader& f, bool local)
 		f >> mp;
 		f >> mpmax;
 	}
-	else
-		mp = mpmax = CalculateMaxMp();
 	f >> stamina;
 	f >> stamina_max;
 	f >> stamina_action;
@@ -2473,6 +2471,10 @@ void Unit::Load(GameReader& f, bool local)
 		}
 		CalculateStats();
 	}
+
+	// compatibility
+	if(LOAD_VERSION < V_DEV)
+		mp = mpmax = CalculateMaxMp();
 
 	CalculateLoad();
 }
@@ -4056,7 +4058,17 @@ int Unit::GetBuffs() const
 }
 
 //=================================================================================================
-bool Unit::CanAct()
+bool Unit::CanTalk(Unit& unit) const
+{
+	if(Any(action, A_EAT, A_DRINK, A_STAND_UP))
+		return false;
+	if(GetOrder() == ORDER_AUTO_TALK && order->auto_talk == AutoTalkMode::Leader && !team->IsLeader(unit))
+		return false;
+	return true;
+}
+
+//=================================================================================================
+bool Unit::CanAct() const
 {
 	if(talking || !IsStanding() || action == A_STAND_UP)
 		return false;
@@ -4352,34 +4364,6 @@ void Unit::SetAnimationAtEnd(cstring anim_name)
 	else
 		mesh_inst->SetToEnd(mat_scale);
 }
-
-FIXME;
-//=================================================================================================
-/*void Unit::OrderAutoTalk(bool leader, GameDialog* dialog)
-{
-	if(!leader)
-	{
-		auto_talk = AutoTalkMode::Yes;
-		auto_talk_timer = AUTO_TALK_WAIT;
-	}
-	else
-	{
-		auto_talk = AutoTalkMode::Leader;
-		auto_talk_timer = 0.f;
-	}
-	auto_talk_dialog = dialog;
-}
-
-//=================================================================================================
-void Unit::SetAutoTalk(bool new_auto_talk)
-{
-	if(new_auto_talk == GetAutoTalk())
-		return;
-	if(new_auto_talk)
-		OrderAutoTalk();
-	else
-		auto_talk = AutoTalkMode::No;
-}*/
 
 //=================================================================================================
 void Unit::SetDontAttack(bool new_dont_attack)
@@ -5311,7 +5295,7 @@ void Unit::CreatePhysics(bool position)
 	cobj->setCollisionShape(caps);
 	cobj->setUserPointer(this);
 	cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_UNIT);
-	game_level->phy_world->addCollisionObject(cobj, CG_UNIT);
+	phy_world->addCollisionObject(cobj, CG_UNIT);
 
 	if(position)
 		UpdatePhysics();
@@ -5343,7 +5327,7 @@ void Unit::UpdatePhysics(const Vec3* target_pos)
 
 	btVector3 a_min, a_max;
 	cobj->getWorldTransform().setOrigin(ToVector3(phy_pos));
-	game_level->phy_world->UpdateAabb(cobj);
+	phy_world->UpdateAabb(cobj);
 }
 
 //=================================================================================================

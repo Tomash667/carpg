@@ -783,15 +783,8 @@ public:
 	int GetBuffs() const;
 
 	// nie sprawdza czy stoi/¿yje/czy chce gadaæ - tylko akcjê
-	bool CanTalk() const
-	{
-		FIXME;
-		if(action == A_EAT || action == A_DRINK || action == A_STAND_UP /*|| auto_talk == AutoTalkMode::Leader*/)
-			return false;
-		else
-			return true;
-	}
-	bool CanAct();
+	bool CanTalk(Unit& unit) const;
+	bool CanAct() const;
 
 	int Get(AttributeId a, StatState* state = nullptr) const;
 	int Get(SkillId s, StatState* state = nullptr, bool skill_bonus = true) const;
@@ -825,10 +818,6 @@ public:
 		return s;
 	}
 
-	FIXME;
-	//void OrderAutoTalk(bool leader = false, GameDialog* dialog = nullptr);
-	//void SetAutoTalk(bool auto_talk);
-	//bool GetAutoTalk() const { return auto_talk != AutoTalkMode::No; }
 	void SetDontAttack(bool dont_attack);
 	bool GetDontAttack() const { return dont_attack; }
 

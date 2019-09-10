@@ -25,6 +25,9 @@ Version 0.12 (???):
 - captive doesn't join arena combat
 - can't give gold to summoned or temporary team members
 - crash on give gold dialog box or kick confirmation when player quit
+- fixed location entrance direction
+- in multiplayer game removing team members don't shuffle order
+- client after exiting multiplayer and starting singleplayer wasn't leader
 
 --------------------------------------------------------------------------------
 Wersja 0.11.1 (2019-08-12):

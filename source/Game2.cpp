@@ -1219,11 +1219,13 @@ void Game::UpdateFallback(float dt)
 			case FALLBACK::NONE:
 			case FALLBACK::ARENA2:
 			case FALLBACK::CLIENT2:
+			case FALLBACK::CUTSCENE_END:
 				break;
 			case FALLBACK::ARENA:
 			case FALLBACK::ARENA_EXIT:
 			case FALLBACK::WAIT_FOR_WARP:
 			case FALLBACK::CLIENT:
+			case FALLBACK::CUTSCENE:
 				fallback_t = 0.f;
 				break;
 			default:
@@ -2161,7 +2163,7 @@ void Game::UpdatePlayer(float dt, bool allow_rot)
 			{
 				if(Net::IsLocal())
 				{
-					if(u2->busy != Unit::Busy_No || !u2->CanTalk())
+					if(u2->busy != Unit::Busy_No || !u2->CanTalk(u))
 					{
 						// osoba jest czymú zajÍta
 						game_gui->messages->AddGameMsg3(GMS_UNIT_BUSY);
@@ -6650,94 +6652,64 @@ void Game::SpellHitEffect(LevelArea& area, Bullet& bullet, const Vec3& pos, Unit
 	}
 }
 
-extern vector<uint> _to_remove;
-
 void Game::UpdateExplosions(LevelArea& area, float dt)
 {
-	uint index = 0;
-	for(vector<Explo*>::iterator it = area.tmp->explos.begin(), end = area.tmp->explos.end(); it != end; ++it, ++index)
+	LoopAndRemove(area.tmp->explos, [&](Explo* p_explo)
 	{
-		Explo& e = **it;
-		bool delete_me = false;
+		Explo& explo = *p_explo;
 
-		// powiÍksz
-		e.size += e.sizemax*dt;
-		if(e.size >= e.sizemax)
+		// increase size
+		bool delete_me = false;
+		explo.size += explo.sizemax*dt;
+		if(explo.size >= explo.sizemax)
 		{
 			delete_me = true;
-			e.size = e.sizemax;
-			_to_remove.push_back(index);
+			explo.size = explo.sizemax;
 		}
-
-		float dmg = e.dmg * Lerp(1.f, 0.1f, e.size / e.sizemax);
 
 		if(Net::IsLocal())
 		{
-			// zadaj obraøenia
-			for(vector<Unit*>::iterator it2 = area.units.begin(), end2 = area.units.end(); it2 != end2; ++it2)
+			// deal damage
+			Unit* owner = explo.owner;
+			float dmg = explo.dmg * Lerp(1.f, 0.1f, explo.size / explo.sizemax);
+			for(Unit* unit : area.units)
 			{
-				if(!(*it2)->IsAlive() || ((*it)->owner && (*it)->owner->IsFriend(**it2)))
+				if(!unit->IsAlive() || (owner && owner->IsFriend(*unit)))
 					continue;
 
-				// sprawdü czy juø nie zosta≥ trafiony
-				bool already_hit = false;
-				for(vector<Unit*>::iterator it3 = e.hitted.begin(), end3 = e.hitted.end(); it3 != end3; ++it3)
-				{
-					if(*it2 == *it3)
-					{
-						already_hit = true;
-						break;
-					}
-				}
-
-				// nie zosta≥ trafiony
-				if(!already_hit)
+				if(!IsInside(explo.hitted, unit))
 				{
 					Box box;
-					(*it2)->GetBox(box);
+					unit->GetBox(box);
 
-					if(SphereToBox(e.pos, e.size, box))
+					if(SphereToBox(explo.pos, explo.size, box))
 					{
-						// zadaj obraøenia
-						GiveDmg(**it2, dmg, e.owner, nullptr, DMG_NO_BLOOD | DMG_MAGICAL);
-						e.hitted.push_back(*it2);
+						GiveDmg(*unit, dmg, owner, nullptr, DMG_NO_BLOOD | DMG_MAGICAL);
+						explo.hitted.push_back(unit);
 					}
 				}
 			}
 		}
 
 		if(delete_me)
-			delete *it;
-	}
-
-	while(!_to_remove.empty())
-	{
-		index = _to_remove.back();
-		_to_remove.pop_back();
-		if(index == area.tmp->explos.size() - 1)
-			area.tmp->explos.pop_back();
-		else
-		{
-			std::iter_swap(area.tmp->explos.begin() + index, area.tmp->explos.end() - 1);
-			area.tmp->explos.pop_back();
-		}
-	}
+			delete p_explo;
+		return delete_me;
+	});
 }
 
 void Game::UpdateTraps(LevelArea& area, float dt)
 {
 	const bool is_local = Net::IsLocal();
-	uint index = 0;
-	for(vector<Trap*>::iterator it = area.traps.begin(), end = area.traps.end(); it != end; ++it, ++index)
+	LoopAndRemove(area.traps, [&](Trap* p_trap)
 	{
-		Trap& trap = **it;
+		Trap& trap = *p_trap;
 
 		if(trap.state == -1)
 		{
 			trap.time -= dt;
 			if(trap.time <= 0.f)
 				trap.state = 0;
-			continue;
+			return false;
 		}
 
 		switch(trap.base->type)
@@ -7100,8 +7072,6 @@ void Game::UpdateTraps(LevelArea& area, float dt)
 
 				if(trigger)
 				{
-					_to_remove.push_back(index);
-
 					Spell* fireball = Spell::TryGet("fireball");
 
 					Explo* explo = new Explo;
@@ -7111,7 +7081,6 @@ void Game::UpdateTraps(LevelArea& area, float dt)
 					explo->sizemax = 2.f;
 					explo->dmg = float(trap.base->attack);
 					explo->tex = fireball->tex_explode;
-					explo->owner = nullptr;
 
 					sound_mgr->PlaySound3d(fireball->sound_hit, explo->pos, fireball->sound_hit_dist);
 
@@ -7129,7 +7098,8 @@ void Game::UpdateTraps(LevelArea& area, float dt)
 						c2.id = trap.id;
 					}
 
-					delete *it;
+					delete p_trap;
+					return true;
 				}
 			}
 			break;
@@ -7137,20 +7107,9 @@ void Game::UpdateTraps(LevelArea& area, float dt)
 			assert(0);
 			break;
 		}
-	}
 
-	while(!_to_remove.empty())
-	{
-		index = _to_remove.back();
-		_to_remove.pop_back();
-		if(index == area.traps.size() - 1)
-			area.traps.pop_back();
-		else
-		{
-			std::iter_swap(area.traps.begin() + index, area.traps.end() - 1);
-			area.traps.pop_back();
-		}
-	}
+		return false;
+	});
 }
 
 void Game::PreloadTraps(vector<Trap*>& traps)
@@ -7336,51 +7295,50 @@ bool Game::ContactTest(btCollisionObject* obj, delegate<bool(btCollisionObject*,
 
 void Game::UpdateElectros(LevelArea& area, float dt)
 {
-	uint index = 0;
-	for(vector<Electro*>::iterator it = area.tmp->electros.begin(), end = area.tmp->electros.end(); it != end; ++it, ++index)
+	LoopAndRemove(area.tmp->electros, [&](Electro* p_electro)
 	{
-		Electro& e = **it;
+		Electro& electro = *p_electro;
 
-		for(vector<Electro::Line>::iterator it2 = e.lines.begin(), end2 = e.lines.end(); it2 != end2; ++it2)
-			it2->t += dt;
+		for(Electro::Line& line : electro.lines)
+			line.t += dt;
 
 		if(!Net::IsLocal())
 		{
-			if(e.lines.back().t >= 0.5f)
+			if(electro.lines.back().t >= 0.5f)
 			{
-				_to_remove.push_back(index);
-				delete *it;
+				delete p_electro;
+				return true;
 			}
 		}
-		else if(e.valid)
+		else if(electro.valid)
 		{
-			if(e.lines.back().t >= 0.25f)
+			if(electro.lines.back().t >= 0.25f)
 			{
-				Unit* hitted = e.hitted.back();
-				Unit* owner = e.owner;
+				Unit* hitted = electro.hitted.back();
+				Unit* owner = electro.owner;
 				if(!hitted || !owner)
 				{
-					e.valid = false;
-					continue;
+					electro.valid = false;
+					return false;
 				}
 
 				// deal damage
 				if(!owner->IsFriend(*hitted))
 				{
 					if(hitted->IsAI() && owner->IsAlive())
-						AI_HitReaction(*hitted, e.start_pos);
-					GiveDmg(*hitted, e.dmg, owner, nullptr, DMG_NO_BLOOD | DMG_MAGICAL);
+						AI_HitReaction(*hitted, electro.start_pos);
+					GiveDmg(*hitted, electro.dmg, owner, nullptr, DMG_NO_BLOOD | DMG_MAGICAL);
 				}
 
 				// play sound
-				if(e.spell->sound_hit)
-					sound_mgr->PlaySound3d(e.spell->sound_hit, e.lines.back().pts.back(), e.spell->sound_hit_dist);
+				if(electro.spell->sound_hit)
+					sound_mgr->PlaySound3d(electro.spell->sound_hit, electro.lines.back().pts.back(), electro.spell->sound_hit_dist);
 
 				// add particles
-				if(e.spell->tex_particle)
+				if(electro.spell->tex_particle)
 				{
 					ParticleEmitter* pe = new ParticleEmitter;
-					pe->tex = e.spell->tex_particle;
+					pe->tex = electro.spell->tex_particle;
 					pe->emision_interval = 0.01f;
 					pe->life = 0.f;
 					pe->particle_life = 0.5f;
@@ -7388,12 +7346,12 @@ void Game::UpdateElectros(LevelArea& area, float dt)
 					pe->spawn_min = 8;
 					pe->spawn_max = 12;
 					pe->max_particles = 12;
-					pe->pos = e.lines.back().pts.back();
+					pe->pos = electro.lines.back().pts.back();
 					pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
 					pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
-					pe->pos_min = Vec3(-e.spell->size, -e.spell->size, -e.spell->size);
-					pe->pos_max = Vec3(e.spell->size, e.spell->size, e.spell->size);
-					pe->size = e.spell->size_particle;
+					pe->pos_min = Vec3(-electro.spell->size, -electro.spell->size, -electro.spell->size);
+					pe->pos_max = Vec3(electro.spell->size, electro.spell->size, electro.spell->size);
+					pe->size = electro.spell->size_particle;
 					pe->op_size = POP_LINEAR_SHRINK;
 					pe->alpha = 1.f;
 					pe->op_alpha = POP_LINEAR_SHRINK;
@@ -7406,17 +7364,17 @@ void Game::UpdateElectros(LevelArea& area, float dt)
 				{
 					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::ELECTRO_HIT;
-					c.pos = e.lines.back().pts.back();
+					c.pos = electro.lines.back().pts.back();
 				}
 
-				if(e.dmg >= 10.f)
+				if(electro.dmg >= 10.f)
 				{
 					static vector<pair<Unit*, float>> targets;
 
 					// traf w kolejny cel
 					for(vector<Unit*>::iterator it2 = area.units.begin(), end2 = area.units.end(); it2 != end2; ++it2)
 					{
-						if(!(*it2)->IsAlive() || IsInside(e.hitted, *it2))
+						if(!(*it2)->IsAlive() || IsInside(electro.hitted, *it2))
 							continue;
 
 						float dist = Vec3::Distance((*it2)->pos, hitted->pos);
@@ -7441,7 +7399,7 @@ void Game::UpdateElectros(LevelArea& area, float dt)
 						{
 							Vec3 hitpoint;
 							Unit* new_hitted;
-							if(RayTest(e.lines.back().pts.back(), it2->first->GetCenter(), hitted, hitpoint, new_hitted))
+							if(RayTest(electro.lines.back().pts.back(), it2->first->GetCenter(), hitted, hitpoint, new_hitted))
 							{
 								if(new_hitted == it2->first)
 								{
@@ -7455,53 +7413,53 @@ void Game::UpdateElectros(LevelArea& area, float dt)
 						if(target)
 						{
 							// kolejny cel
-							e.dmg = min(e.dmg / 2, Lerp(e.dmg, e.dmg / 5, dist / 5));
-							e.valid = true;
-							e.hitted.push_back(target);
-							Vec3 from = e.lines.back().pts.back();
+							electro.dmg = min(electro.dmg / 2, Lerp(electro.dmg, electro.dmg / 5, dist / 5));
+							electro.valid = true;
+							electro.hitted.push_back(target);
+							Vec3 from = electro.lines.back().pts.back();
 							Vec3 to = target->GetCenter();
-							e.AddLine(from, to);
+							electro.AddLine(from, to);
 
 							if(Net::IsOnline())
 							{
 								NetChange& c = Add1(Net::changes);
 								c.type = NetChange::UPDATE_ELECTRO;
-								c.e_id = e.id;
+								c.e_id = electro.id;
 								c.pos = to;
 							}
 						}
 						else
 						{
 							// brak kolejnego celu
-							e.valid = false;
+							electro.valid = false;
 						}
 
 						targets.clear();
 					}
 					else
-						e.valid = false;
+						electro.valid = false;
 				}
 				else
 				{
 					// trafi≥ juø wystarczajπco duøo postaci
-					e.valid = false;
+					electro.valid = false;
 				}
 			}
 		}
 		else
 		{
-			if(e.hitsome && e.lines.back().t >= 0.25f)
+			if(electro.hitsome && electro.lines.back().t >= 0.25f)
 			{
-				e.hitsome = false;
+				electro.hitsome = false;
 
-				if(e.spell->sound_hit)
-					sound_mgr->PlaySound3d(e.spell->sound_hit, e.lines.back().pts.back(), e.spell->sound_hit_dist);
+				if(electro.spell->sound_hit)
+					sound_mgr->PlaySound3d(electro.spell->sound_hit, electro.lines.back().pts.back(), electro.spell->sound_hit_dist);
 
 				// czπsteczki
-				if(e.spell->tex_particle)
+				if(electro.spell->tex_particle)
 				{
 					ParticleEmitter* pe = new ParticleEmitter;
-					pe->tex = e.spell->tex_particle;
+					pe->tex = electro.spell->tex_particle;
 					pe->emision_interval = 0.01f;
 					pe->life = 0.f;
 					pe->particle_life = 0.5f;
@@ -7509,12 +7467,12 @@ void Game::UpdateElectros(LevelArea& area, float dt)
 					pe->spawn_min = 8;
 					pe->spawn_max = 12;
 					pe->max_particles = 12;
-					pe->pos = e.lines.back().pts.back();
+					pe->pos = electro.lines.back().pts.back();
 					pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
 					pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
-					pe->pos_min = Vec3(-e.spell->size, -e.spell->size, -e.spell->size);
-					pe->pos_max = Vec3(e.spell->size, e.spell->size, e.spell->size);
-					pe->size = e.spell->size_particle;
+					pe->pos_min = Vec3(-electro.spell->size, -electro.spell->size, -electro.spell->size);
+					pe->pos_max = Vec3(electro.spell->size, electro.spell->size, electro.spell->size);
+					pe->size = electro.spell->size_particle;
 					pe->op_size = POP_LINEAR_SHRINK;
 					pe->alpha = 1.f;
 					pe->op_alpha = POP_LINEAR_SHRINK;
@@ -7527,66 +7485,38 @@ void Game::UpdateElectros(LevelArea& area, float dt)
 				{
 					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::ELECTRO_HIT;
-					c.pos = e.lines.back().pts.back();
+					c.pos = electro.lines.back().pts.back();
 				}
 			}
-			if(e.lines.back().t >= 0.5f)
+			if(electro.lines.back().t >= 0.5f)
 			{
-				_to_remove.push_back(index);
-				delete *it;
+				delete p_electro;
+				return true;
 			}
 		}
-	}
 
-	// usuÒ
-	while(!_to_remove.empty())
-	{
-		index = _to_remove.back();
-		_to_remove.pop_back();
-		if(index == area.tmp->electros.size() - 1)
-			area.tmp->electros.pop_back();
-		else
-		{
-			std::iter_swap(area.tmp->electros.begin() + index, area.tmp->electros.end() - 1);
-			area.tmp->electros.pop_back();
-		}
-	}
+		return false;
+	});
 }
 
 void Game::UpdateDrains(LevelArea& area, float dt)
 {
-	uint index = 0;
-	for(vector<Drain>::iterator it = area.tmp->drains.begin(), end = area.tmp->drains.end(); it != end; ++it, ++index)
+	LoopAndRemove(area.tmp->drains, [&](Drain& drain)
 	{
-		Drain& d = *it;
-		d.t += dt;
-		Vec3 center = d.to->GetCenter();
+		drain.t += dt;
 
-		if(d.pe->manual_delete == 2)
+		if(drain.pe->manual_delete == 2)
 		{
-			delete d.pe;
-			_to_remove.push_back(index);
+			delete drain.pe;
+			return true;
 		}
-		else
-		{
-			for(vector<Particle>::iterator it2 = d.pe->particles.begin(), end2 = d.pe->particles.end(); it2 != end2; ++it2)
-				it2->pos = Vec3::Lerp(it2->pos, center, d.t / 1.5f);
-		}
-	}
 
-	// usuÒ
-	while(!_to_remove.empty())
-	{
-		index = _to_remove.back();
-		_to_remove.pop_back();
-		if(index == area.tmp->drains.size() - 1)
-			area.tmp->drains.pop_back();
-		else
-		{
-			std::iter_swap(area.tmp->drains.begin() + index, area.tmp->drains.end() - 1);
-			area.tmp->drains.pop_back();
-		}
-	}
+		Vec3 center = drain.to->GetCenter();
+		for(Particle& p : drain.pe->particles)
+			p.pos = Vec3::Lerp(p.pos, center, drain.t / 1.5f);
+
+		return false;
+	});
 }
 
 void Game::UpdateAttachedSounds(float dt)
@@ -7616,14 +7546,13 @@ void Game::ClearGameVars(bool new_game)
 	dialog_context.is_local = true;
 	death_screen = 0;
 	end_of_game = false;
+	cutscene = false;
 	game_gui->minimap->city = nullptr;
 	team->ClearOnNewGameOrLoad();
 	draw_flags = 0xFFFFFFFF;
 	game_gui->level_gui->Reset();
 	game_gui->journal->Reset();
 	arena->Reset();
-	debug_info = false;
-	debug_info2 = false;
 	game_gui->world_map->dialog_enc = nullptr;
 	game_gui->level_gui->visible = false;
 	game_gui->inventory->lock = nullptr;
@@ -7698,11 +7627,13 @@ void Game::ClearGame()
 
 	EntitySystem::clear = true;
 	draw_batch.Clear();
+	script_mgr->StopAllScripts();
 
 	LeaveLocation(true, false);
 
 	// delete units on world map
-	if((game_state == GS_WORLDMAP || prev_game_state == GS_WORLDMAP || (net->mp_load && prev_game_state == GS_LOAD)) && !game_level->is_open && Net::IsLocal() && !net->was_client)
+	if((game_state == GS_WORLDMAP || prev_game_state == GS_WORLDMAP || (net->mp_load && prev_game_state == GS_LOAD)) && !game_level->is_open
+		&& Net::IsLocal() && !net->was_client)
 	{
 		for(Unit& unit : team->members)
 		{
@@ -7717,6 +7648,11 @@ void Game::ClearGame()
 		team->members.clear();
 		prev_game_state = GS_LOAD;
 	}
+	if((game_state == GS_WORLDMAP || prev_game_state == GS_WORLDMAP) && !game_level->is_open && (Net::IsClient() || net->was_client))
+	{
+		delete pc;
+		pc = nullptr;
+	}
 
 	if(!net->net_strs.empty())
 		StringPool.Free(net->net_strs);
@@ -7727,6 +7663,7 @@ void Game::ClearGame()
 	world->Reset();
 	game_gui->Clear(true, false);
 	pc = nullptr;
+	cutscene = false;
 	EntitySystem::clear = false;
 }
 

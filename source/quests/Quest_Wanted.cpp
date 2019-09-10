@@ -237,7 +237,14 @@ bool Quest_Wanted::Load(GameReader& f)
 
 	f >> level;
 	f >> crazy;
-	clas = Class::TryGet(f.ReadString1());
+	if(LOAD_VERSION >= V_DEV)
+		clas = Class::TryGet(f.ReadString1());
+	else
+	{
+		int old_clas;
+		f >> old_clas;
+		clas = old::ConvertOldClass(old_clas);
+	}
 	f >> unit_name;
 	f >> target_unit;
 	f >> in_location;

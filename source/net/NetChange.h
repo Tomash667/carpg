@@ -199,6 +199,10 @@ struct NetChange
 		USE_CHEST, // unit uses chest SERVER[int(id)-chest id, int(count)-unit] / CLIENT[int(id)-chest id]
 		FAST_TRAVEL, // fast travel request/response [byte(id)-FAST_TRAVEL enum, SERVER: byte(count)-player id]
 		FAST_TRAVEL_VOTE, // update player vote for fast travel [byte(id)-player id]
+		CUTSCENE_START, // start of cutscene [bool(id)-instant]
+		CUTSCENE_IMAGE, // queue cutscene image to show [string1(str)-texture, float(f[0])-time]
+		CUTSCENE_TEXT, // queue cutscene text to show [string1(str)-text, float(f[0])-time]
+		CUTSCENE_SKIP, // skip current cutscene []
 
 		MAX
 	} type;

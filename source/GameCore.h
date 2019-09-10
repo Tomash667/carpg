@@ -237,6 +237,7 @@ namespace global
 	extern Level* game_level;
 	extern Net* net;
 	extern Pathfinding* pathfinding;
+	extern CustomCollisionWorld* phy_world;
 	extern QuestManager* quest_mgr;
 	extern ScriptManager* script_mgr;
 	extern Team* team;

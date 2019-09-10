@@ -75,6 +75,7 @@ void WorldMapGui::LoadData()
 	tMapIcon[LI_MINE] = res_mgr->Load<Texture>("mine.png");
 	tMapIcon[LI_SAWMILL] = res_mgr->Load<Texture>("sawmill.png");
 	tMapIcon[LI_DUNGEON2] = res_mgr->Load<Texture>("dungeon2.png");
+	tMapIcon[LI_ACADEMY] = res_mgr->Load<Texture>("academy.png");
 	tWorldMap = res_mgr->Load<Texture>("worldmap.jpg");
 	tSelected[0] = res_mgr->Load<Texture>("selected.png");
 	tSelected[1] = res_mgr->Load<Texture>("selected2.png");

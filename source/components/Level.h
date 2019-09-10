@@ -184,7 +184,6 @@ public:
 	LevelArea* local_area;
 
 	// colliders
-	CustomCollisionWorld* phy_world;
 	btHeightfieldTerrainShape* terrain_shape;
 	btCollisionObject* obj_terrain;
 	btCollisionShape* shape_wall, *shape_stairs, *shape_stairs_part[2], *shape_block, *shape_barrier, *shape_door, *shape_arrow, *shape_summon;
