@@ -18,6 +18,13 @@ struct EncounterData
 };
 
 //-----------------------------------------------------------------------------
+enum GetLocationFlag
+{
+	F_ALLOW_ACTIVE = 1 << 0,
+	F_EXCLUDED = 1 << 1
+};
+
+//-----------------------------------------------------------------------------
 // World handling
 // General notes:
 // + don't create settlements after GenerateWorld (currently it is hardcoded that they are before other locations - here and in Quest_SpreadNews)
@@ -70,7 +77,7 @@ public:
 	void ReadTime(BitStreamReader& f);
 
 	// world generation
-	void GenerateWorld(int start_location_type = -1, int start_location_target = -1);
+	void GenerateWorld();
 	void SetStartLocation(Location* loc) { start_location = loc; }
 	void StartInLocation();
 	void CalculateTiles();
@@ -114,17 +121,23 @@ public:
 	void SetWorldPos(const Vec2& world_pos) { this->world_pos = world_pos; }
 	uint GetSettlements() { return settlements; }
 	int GetRandomSettlementIndex(int excluded = -1) const;
-	int GetRandomSettlementIndex(const vector<int>& used, int type = 0) const;
+	int GetRandomSettlementIndex(const vector<int>& used, int target = ANY_TARGET) const;
 	Location* GetRandomSettlement(int excluded = -1) const { return locations[GetRandomSettlementIndex(excluded)]; }
 	int GetRandomFreeSettlementIndex(int excluded = -1) const;
 	int GetRandomCityIndex(int excluded = -1) const;
-	int GetClosestLocation(LOCATION type, const Vec2& pos, int target = -1);
-	Location* GetClosestLocationS(LOCATION type, const Vec2& pos, int target = -1) { return locations[GetClosestLocation(type, pos, target)]; }
-	int GetClosestLocationNotTarget(LOCATION type, const Vec2& pos, int not_target);
+	int GetClosestLocation(LOCATION type, const Vec2& pos, int target = ANY_TARGET, int flags = 0);
+	int GetClosestLocation(LOCATION type, const Vec2& pos, const int* targets, int n_targets, int flags = 0);
+	int GetClosestLocation(LOCATION type, const Vec2& pos, std::initializer_list<int> const& targets, int flags = 0)
+	{
+		return GetClosestLocation(type, pos, targets.begin(), targets.size(), flags);
+	}
+	Location* GetClosestLocationS(LOCATION type, const Vec2& pos, int target = ANY_TARGET, int flags = 0)
+	{
+		return locations[GetClosestLocation(type, pos, target, flags)];
+	}
 	bool FindPlaceForLocation(Vec2& pos, float range = 64.f, bool allow_exact = true);
 	int GetRandomSpawnLocation(const Vec2& pos, UnitGroup* group, float range = 160.f);
-	int GetNearestLocation(const Vec2& pos, int flags, bool not_quest, int target_flags = -1);
-	int GetNearestSettlement(const Vec2& pos) { return GetNearestLocation(pos, (1 << L_CITY), false); }
+	int GetNearestSettlement(const Vec2& pos) { return GetClosestLocation(L_CITY, pos); }
 	const Vec2& GetWorldBounds() const { return world_bounds; }
 	City* GetRandomSettlement(delegate<bool(City*)> pred);
 	Location* GetRandomSettlement(Location* loc);

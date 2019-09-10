@@ -8,6 +8,13 @@
 #include "BuildingGroup.h"
 
 //-----------------------------------------------------------------------------
+enum CityTarget
+{
+	VILLAGE,
+	CITY
+};
+
+//-----------------------------------------------------------------------------
 // Budynek w mieœcie
 struct CityBuilding
 {
@@ -31,12 +38,6 @@ enum class CityQuestState
 //-----------------------------------------------------------------------------
 struct City : public OutsideLocation
 {
-	enum class SettlementType
-	{
-		Village,
-		City
-	};
-
 	enum Flags
 	{
 		HaveExit = 1 << 0,
@@ -50,7 +51,6 @@ struct City : public OutsideLocation
 		// saved as byte in PreparedWorldData
 	};
 
-	SettlementType settlement_type;
 	int citizens, citizens_world, quest_mayor_time, quest_captain_time,
 		arena_time, // last arena combat worldtime or -1
 		gates, flags, variant;
@@ -62,7 +62,7 @@ struct City : public OutsideLocation
 	vector<EntryPoint> entry_points;
 
 	City() : quest_mayor(CityQuestState::None), quest_captain(CityQuestState::None), quest_mayor_time(-1), quest_captain_time(-1),
-		inside_offset(1, 0), arena_time(-1), flags(HaveExit), settlement_type(SettlementType::City), variant(-1)
+		inside_offset(1, 0), arena_time(-1), flags(HaveExit), variant(-1)
 	{
 	}
 	~City();
@@ -70,12 +70,11 @@ struct City : public OutsideLocation
 	// from Location
 	void Apply(vector<std::reference_wrapper<LevelArea>>& areas) override;
 	void Save(GameWriter& f, bool local) override;
-	void Load(GameReader& f, bool local, LOCATION_TOKEN token) override;
+	void Load(GameReader& f, bool local) override;
 	void Write(BitStreamWriter& f) override;
 	bool Read(BitStreamReader& f) override;
 	bool FindUnit(Unit* unit, int* level) override;
 	Unit* FindUnit(UnitData* data, int& at_level) override;
-	LOCATION_TOKEN GetToken() const override { return LT_CITY; }
 
 	void GenerateCityBuildings(vector<Building*>& buildings, bool required, bool first_city);
 	void PrepareCityBuildings(vector<ToBuild>& tobuild);
@@ -87,6 +86,6 @@ struct City : public OutsideLocation
 	InsideBuilding* FindInn(int& id) { return FindInsideBuilding(BuildingGroup::BG_INN, id); }
 	CityBuilding* FindBuilding(BuildingGroup* group);
 	CityBuilding* FindBuilding(Building* building);
-	bool IsVillage() const { return settlement_type == SettlementType::Village; }
+	bool IsVillage() const { return target == VILLAGE; }
 	void GetEntry(Vec3& pos, float& rot);
 };

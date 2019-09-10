@@ -1665,7 +1665,7 @@ void Game::UpdateServerTransfer(float dt)
 						pos = portal->pos + Vec3(sin(portal->rot) * 2, 0, cos(portal->rot) * 2);
 						rot = Clip(portal->rot + PI);
 					}
-					else if(game_level->location->type == L_DUNGEON || game_level->location->type == L_CRYPT)
+					else if(game_level->location->type == L_DUNGEON)
 					{
 						InsideLocation* inside = static_cast<InsideLocation*>(game_level->location);
 						InsideLocationLevel& lvl = inside->GetLevelData();

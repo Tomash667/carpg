@@ -9583,11 +9583,11 @@ void Game::OnEnterLocation()
 				else
 					text = RandomString(txAiVillage);
 				break;
-			case L_MOONWELL:
-				text = txAiMoonwell;
-				break;
-			case L_FOREST:
-				text = txAiForest;
+			case L_OUTSIDE:
+				if(game_level->location->target == MOONWELL)
+					text = txAiMoonwell;
+				else
+					text = txAiForest;
 				break;
 			case L_CAMP:
 				if(game_level->location->state != LS_CLEARED && !game_level->location->group->IsEmpty())
@@ -9726,7 +9726,6 @@ void Game::OnEnterLevel()
 			switch(game_level->location->type)
 			{
 			case L_DUNGEON:
-			case L_CRYPT:
 				{
 					InsideLocation* inside = (InsideLocation*)game_level->location;
 					switch(inside->target)
@@ -9742,7 +9741,7 @@ void Game::OnEnterLevel()
 					case MAGE_TOWER:
 						s = txAiTower;
 						break;
-					case KOPALNIA_POZIOM:
+					case ANCIENT_ARMORY:
 						s = txAiArmory;
 						break;
 					case BANDITS_HIDEOUT:
@@ -10062,11 +10061,13 @@ void Game::HandleQuestEvent(Quest_Event* event)
 		}
 		break;
 	case Quest_Dungeon::Item_InTreasure:
-		if(inside && (inside->type == L_CRYPT || inside->target == LABYRINTH))
+		if(inside && Any(inside->target, HERO_CRYPT, MONSTER_CRYPT, LABYRINTH))
 		{
 			Chest* chest = nullptr;
 
-			if(inside->type == L_CRYPT)
+			if(inside->target == LABYRINTH)
+				chest = RandomItem(lvl->chests);
+			else
 			{
 				Room& room = *lvl->rooms[inside->special_room];
 				LocalVector2<Chest*> chests;
@@ -10079,8 +10080,6 @@ void Game::HandleQuestEvent(Quest_Event* event)
 				if(!chests.empty())
 					chest = chests.RandomItem();
 			}
-			else
-				chest = RandomItem(lvl->chests);
 
 			assert(chest);
 			if(chest)

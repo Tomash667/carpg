@@ -29,7 +29,6 @@ void AIController::Init(Unit* unit)
 	have_potion = HavePotion::Check;
 	have_mp_potion = HavePotion::Check;
 	potion = -1;
-	last_scan = 0.f;
 	in_combat = false;
 	escape_room = nullptr;
 	idle_action = Idle_None;
@@ -73,7 +72,6 @@ void AIController::Save(GameWriter& f)
 	f << timer;
 	f << ignore;
 	f << morale;
-	f << last_scan;
 	f << start_rot;
 	if(unit->data->spells)
 		f << cooldown;
@@ -160,7 +158,8 @@ void AIController::Load(GameReader& f)
 	f >> timer;
 	f >> ignore;
 	f >> morale;
-	f >> last_scan;
+	if(LOAD_VERSION < V_DEV)
+		f.Skip<float>(); // old last_scan
 	f >> start_rot;
 	if(unit->data->spells)
 		f >> cooldown;
@@ -337,7 +336,6 @@ void AIController::Reset()
 	cooldown[0] = 0.f;
 	cooldown[1] = 0.f;
 	cooldown[2] = 0.f;
-	last_scan = 0.f;
 	escape_room = nullptr;
 	have_potion = HavePotion::Check;
 	have_mp_potion = HavePotion::Check;

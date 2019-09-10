@@ -41,15 +41,15 @@ bool Location::CheckUpdate(int& days_passed, int worldtime)
 //=================================================================================================
 void Location::Save(GameWriter& f, bool)
 {
-	f << type;
 	f << pos;
 	f << name;
 	f << state;
+	f << target;
 	int quest_id;
 	if(active_quest)
 	{
-		if(active_quest == (Quest_Dungeon*)ACTIVE_QUEST_HOLDER)
-			quest_id = ACTIVE_QUEST_HOLDER;
+		if(active_quest == ACTIVE_QUEST_HOLDER)
+			quest_id = (int)ACTIVE_QUEST_HOLDER;
 		else
 			quest_id = active_quest->id;
 	}
@@ -85,17 +85,55 @@ void Location::Save(GameWriter& f, bool)
 }
 
 //=================================================================================================
-void Location::Load(GameReader& f, bool, LOCATION_TOKEN token)
+void Location::Load(GameReader& f, bool)
 {
-	f >> type;
+	if(LOAD_VERSION < V_DEV)
+	{
+		old::LOCATION old_type;
+		f >> old_type;
+		switch(old_type)
+		{
+		case old::L_CITY:
+			type = L_CITY;
+			break;
+		case old::L_CAVE:
+			type = L_CAVE;
+			break;
+		case old::L_CAMP:
+			type = L_CAMP;
+			target = 0;
+			break;
+		case old::L_DUNGEON:
+		case old::L_CRYPT:
+			type = L_DUNGEON;
+			break;
+		case old::L_FOREST:
+			type = L_OUTSIDE;
+			target = FOREST;
+			break;
+		case old::L_MOONWELL:
+			type = L_OUTSIDE;
+			target = MOONWELL;
+			break;
+		case old::L_ENCOUNTER:
+			type = L_ENCOUNTER;
+			target = 0;
+			break;
+		case old::L_ACADEMY:
+			type = L_NULL;
+			break;
+		}
+	}
 	f >> pos;
 	f >> name;
 	f >> state;
+	if(LOAD_VERSION >= V_DEV)
+		f >> target;
 	int quest_id = f.Read<int>();
 	if(quest_id == -1)
 		active_quest = nullptr;
-	else if(quest_id == ACTIVE_QUEST_HOLDER)
-		active_quest = (Quest_Dungeon*)ACTIVE_QUEST_HOLDER;
+	else if(quest_id == (int)ACTIVE_QUEST_HOLDER)
+		active_quest = ACTIVE_QUEST_HOLDER;
 	else
 	{
 		game->load_location_quest.push_back(this);

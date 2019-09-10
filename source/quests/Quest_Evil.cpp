@@ -163,7 +163,7 @@ void Quest_Evil::SetProgress(int prog2)
 			} l_info[3] = {
 				L_DUNGEON, OLD_TEMPLE, "evil", 16,
 				L_DUNGEON, NECROMANCER_BASE, "necromancers", 15,
-				L_CRYPT, MONSTER_CRYPT, "undead", 13
+				L_DUNGEON, MONSTER_CRYPT, "undead", 13
 			};
 
 			cstring new_msgs[4];

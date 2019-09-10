@@ -3587,9 +3587,10 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 				Location& loc = *world->GetLocation(c.id);
 				f.WriteCasted<byte>(c.id);
 				f.WriteCasted<byte>(loc.type);
-				if(loc.type == L_DUNGEON || loc.type == L_CRYPT)
+				if(loc.type == L_DUNGEON)
 					f.WriteCasted<byte>(loc.GetLastLevel() + 1);
 				f.WriteCasted<byte>(loc.state);
+				f.WriteCasted<byte>(loc.target);
 				f << loc.pos;
 				f << loc.name;
 				f.WriteCasted<byte>(loc.image);
@@ -5815,7 +5816,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				}
 
 				Location* loc;
-				if(type == L_DUNGEON || type == L_CRYPT)
+				if(type == L_DUNGEON)
 				{
 					byte levels;
 					f >> levels;
@@ -5837,6 +5838,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				loc->index = location_index;
 
 				f.ReadCasted<byte>(loc->state);
+				f.ReadCasted<byte>(loc->target);
 				f >> loc->pos;
 				f >> loc->name;
 				f.ReadCasted<byte>(loc->image);

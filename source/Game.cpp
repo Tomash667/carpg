@@ -1476,7 +1476,7 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 
 		loc_gen->Generate();
 	}
-	else if(!Any(l.type, L_DUNGEON, L_CRYPT, L_CAVE))
+	else if(!Any(l.type, L_DUNGEON, L_CAVE))
 		Info("Entering location '%s'.", l.name.c_str());
 
 	if(game_level->location->outside)

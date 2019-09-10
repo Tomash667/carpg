@@ -65,7 +65,7 @@ void Quest_FindArtifact::SetProgress(int prog2)
 			}
 			else
 			{
-				target_loc = world->GetClosestLocation(L_CRYPT, sl.pos);
+				target_loc = world->GetClosestLocation(L_DUNGEON, sl.pos, { HERO_CRYPT, MONSTER_CRYPT });
 				InsideLocation& inside = (InsideLocation&)GetTargetLocation();
 				if(inside.IsMultilevel())
 				{

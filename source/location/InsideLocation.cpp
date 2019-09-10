@@ -12,23 +12,23 @@ void InsideLocation::Save(GameWriter& f, bool local)
 {
 	Location::Save(f, local);
 
-	f << target;
 	f << special_room;
 	f << from_portal;
 }
 
 //=================================================================================================
-void InsideLocation::Load(GameReader& f, bool local, LOCATION_TOKEN token)
+void InsideLocation::Load(GameReader& f, bool local)
 {
-	Location::Load(f, local, token);
+	Location::Load(f, local);
 
-	f >> target;
+	if(LOAD_VERSION < V_DEV)
+		f >> target;
 	f >> special_room;
 	f >> from_portal;
 
 	if(LOAD_VERSION < V_0_8)
 	{
-		if(target == KOPALNIA_POZIOM)
+		if(target == ANCIENT_ARMORY)
 			state = LS_HIDDEN;
 	}
 }
@@ -37,7 +37,6 @@ void InsideLocation::Load(GameReader& f, bool local, LOCATION_TOKEN token)
 void InsideLocation::Write(BitStreamWriter& f)
 {
 	InsideLocationLevel& lvl = GetLevelData();
-	f.WriteCasted<byte>(target);
 	f << from_portal;
 
 	lvl.Write(f);
@@ -66,7 +65,6 @@ bool InsideLocation::Read(BitStreamReader& f)
 {
 	SetActiveLevel(game_level->dungeon_level);
 	InsideLocationLevel& lvl = GetLevelData();
-	f.ReadCasted<byte>(target);
 	f >> from_portal;
 
 	if(!lvl.Read(f))

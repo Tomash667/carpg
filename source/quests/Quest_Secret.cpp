@@ -14,6 +14,7 @@
 #include "Arena.h"
 #include "AIController.h"
 #include "GroundItem.h"
+#include "OutsideLocation.h"
 
 //=================================================================================================
 void Quest_Secret::InitOnce()
@@ -128,14 +129,14 @@ bool Quest_Secret::CheckMoonStone(GroundItem* item, Unit& unit)
 {
 	assert(item);
 
-	if(state == SECRET_NONE && world->GetCurrentLocation()->type == L_MOONWELL && item->item->id == "krystal"
+	if(state == SECRET_NONE && world->GetCurrentLocation()->type == L_OUTSIDE && world->GetCurrentLocation()->target == MOONWELL && item->item->id == "krystal"
 		&& Vec3::Distance2d(item->pos, Vec3(128.f, 0, 128.f)) < 1.2f)
 	{
 		game_gui->messages->AddGameMsg(txSecretAppear, 3.f);
 		state = SECRET_DROPPED_STONE;
 		Location& l = *world->CreateLocation(L_DUNGEON, Vec2(0, 0), -128.f, DWARF_FORT, UnitGroup::Get("challange"), false, 3);
 		l.st = 18;
-		l.active_quest = (Quest_Dungeon*)ACTIVE_QUEST_HOLDER;
+		l.active_quest = ACTIVE_QUEST_HOLDER;
 		l.state = LS_UNKNOWN;
 		where = l.index;
 		Vec2& cpos = world->GetCurrentLocation()->pos;

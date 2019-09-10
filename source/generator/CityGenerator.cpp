@@ -2298,7 +2298,7 @@ void CityGenerator::OnEnter()
 	}
 
 	// spawn quest units
-	if(game_level->location->active_quest && game_level->location->active_quest != (Quest_Dungeon*)ACTIVE_QUEST_HOLDER && !game_level->location->active_quest->done
+	if(game_level->location->active_quest && game_level->location->active_quest != ACTIVE_QUEST_HOLDER && !game_level->location->active_quest->done
 		&& game_level->location->active_quest->type != Q_SCRIPTED)
 		game->HandleQuestEvent(game_level->location->active_quest);
 

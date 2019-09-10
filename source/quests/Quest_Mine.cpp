@@ -796,7 +796,7 @@ int Quest_Mine::GenerateMine(CaveGenerator* cave_gen, bool first)
 			// destination location
 			SingleInsideLocation* loc = new SingleInsideLocation;
 			loc->active_quest = this;
-			loc->target = KOPALNIA_POZIOM;
+			loc->target = ANCIENT_ARMORY;
 			loc->from_portal = true;
 			loc->name = game->txAncientArmory;
 			loc->pos = Vec2(-999, -999);

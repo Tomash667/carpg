@@ -95,7 +95,7 @@ Enum MOVE_TYPE, values:
 	MOVE_RUN - always run.
 	MOVE_WALK - always walk.
 	MOVE_RUN_WHEN_NEAR_TEAM - run when near team, otherwise look.
-	
+
 UnitOrderBuilder - used to set multiple unit orders one after another (for example unit.OrderWait().WithTimer(5).ThenFollow(player).WithTimer(5).ThenAutoTalk();)
 	UnitOrderBuilder@ WithTimer(float timer) - set order timer.
 	UnitOrderBuilder@ ThenWander()
@@ -146,14 +146,6 @@ Unit type:
 	UnitOrderBuilder@ OrderGoToInn() - order unit to go to inn.
 	UnitOrderBuilder@ OrderGuard(Unit@) - order unit to guard other unit and stay close, when attacked will defend target.
 	UnitOrderBuilder@ OrderAutoTalk(bool leader = false, Dialog@=null) - start dialog when close to player or leader, can use default dialog or selected.
-	
-	
-	void OrderEscapeToUnit(Unit@) - orders ai to escape towards unit.
-	void OrderClear() - clear current unit order.
-	void OrderMove(const Vec3& in pos, MOVE_TYPE) - orders unit to move to position.
-	void OrderLookAt(const Vec3& in pos) - orders unit to look at position.
-	void OrderGuard(Unit@) - stay near target, attack when target is attacked.
-	void OrderTimer(float time) - set last order timer (0 is infinity, < 0 - stop when finished).
 	void Talk(const string& in text, int anim = -1) - unit talks text, animation (-1 random, 0 none, 1 what, 2 points).
 Globals:
 	Unit@ target
@@ -199,11 +191,13 @@ LOCATION enum:
 	L_CAVE
 	L_CAMP
 	L_DUNGEON
-	L_CRYPT
-	L_FOREST
-	L_MOONWELL
+	L_OUTSIDE
 	L_ENCOUNTER
-	
+
+LOCATION_TARGET enum:
+	FOREST
+	MOONWELL
+
 LOCATION_IMAGE enum:
 	LI_CITY
 	LI_VILLAGE
@@ -304,7 +298,7 @@ Event type:
 ScriptContext type, global instance C:
 	Quest@ quest
 	Player@ pc
-	
+
 Cutscene namespace:
 	void Start(bool instant = true) - start cutscene sequence.
 	void Image(const string& in image) - queue image to show.

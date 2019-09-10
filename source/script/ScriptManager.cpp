@@ -432,6 +432,12 @@ Location* World_GetRandomSettlement(asIScriptFunction* func)
 	return target;
 }
 
+Location* World_GetClosestLocation2(LOCATION type, const Vec2& pos, CScriptArray* array, int flags)
+{
+	int index = world->GetClosestLocation(type, pos, (int*)array->GetBuffer(), array->GetSize(), flags);
+	return world->GetLocation(index);
+}
+
 void StockScript_AddItem(const Item* item, uint count)
 {
 	vector<ItemSlot>* stock = script_mgr->GetContext().stock;
@@ -488,10 +494,13 @@ void ScriptManager::RegisterGame()
 		{ "L_CAVE", L_CAVE },
 		{ "L_CAMP", L_CAMP },
 		{ "L_DUNGEON", L_DUNGEON },
-		{ "L_CRYPT", L_CRYPT },
-		{ "L_FOREST", L_FOREST },
-		{ "L_MOONWELL", L_MOONWELL },
+		{ "L_OUTSIDE", L_OUTSIDE },
 		{ "L_ENCOUNTER", L_ENCOUNTER }
+		});
+
+	AddEnum("LOCATION_TARGET", {
+		{ "FOREST", FOREST },
+		{ "MOONWELL", MOONWELL }
 		});
 
 	AddEnum("UNIT_ORDER", {

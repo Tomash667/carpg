@@ -150,7 +150,6 @@ void Game::UpdateAi(float dt)
 		// update time
 		u.prev_pos = u.pos;
 		ai.timer -= dt;
-		ai.last_scan -= dt;
 		ai.next_attack -= dt;
 		ai.ignore -= dt;
 		ai.pf_timer -= dt;

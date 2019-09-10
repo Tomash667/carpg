@@ -58,9 +58,9 @@ void Quest_LostArtifact::SetProgress(int prog2)
 			spawn_item = Quest_Dungeon::Item_OnGround;
 			item_to_give[0] = &quest_item;
 			if(Rand() % 2 == 0)
-				target_loc = world->GetClosestLocation(L_CRYPT, sl.pos);
+				target_loc = world->GetClosestLocation(L_DUNGEON, sl.pos, { HERO_CRYPT, MONSTER_CRYPT });
 			else
-				target_loc = world->GetClosestLocationNotTarget(L_DUNGEON, sl.pos, LABYRINTH);
+				target_loc = world->GetClosestLocation(L_DUNGEON, sl.pos, LABYRINTH, F_EXCLUDED);
 			Location& tl = GetTargetLocation();
 			at_level = tl.GetRandomLevel();
 

@@ -12,9 +12,9 @@ void Camp::Save(GameWriter& f, bool local)
 }
 
 //=================================================================================================
-void Camp::Load(GameReader& f, bool local, LOCATION_TOKEN token)
+void Camp::Load(GameReader& f, bool local)
 {
-	OutsideLocation::Load(f, local, token);
+	OutsideLocation::Load(f, local);
 
 	f >> create_time;
 }

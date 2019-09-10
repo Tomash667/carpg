@@ -65,9 +65,9 @@ void OutsideLocation::Save(GameWriter& f, bool local)
 }
 
 //=================================================================================================
-void OutsideLocation::Load(GameReader& f, bool local, LOCATION_TOKEN token)
+void OutsideLocation::Load(GameReader& f, bool local)
 {
-	Location::Load(f, local, token);
+	Location::Load(f, local);
 
 	if(last_visit != -1)
 	{
@@ -85,7 +85,7 @@ void OutsideLocation::Load(GameReader& f, bool local, LOCATION_TOKEN token)
 		f.Read(h, sizeof(float)*size2);
 	}
 
-	if(LOAD_VERSION < V_0_8 && st == 20 && type == L_FOREST)
+	if(LOAD_VERSION < V_0_8 && st == 20 && type == L_OUTSIDE)
 		state = LS_HIDDEN;
 }
 

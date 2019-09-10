@@ -11,6 +11,7 @@
 #include "QuestList.h"
 #include "Language.h"
 #include "Game.h"
+#include "City.h"
 
 #include "Quest_Artifacts.h"
 #include "Quest_Bandits.h"
@@ -138,7 +139,7 @@ void QuestManager::InitQuests(bool devmode)
 	// goblins
 	quest_goblins = new Quest_Goblins;
 	quest_goblins->Init();
-	quest_goblins->start_loc = world->GetRandomSettlementIndex(used, 1);
+	quest_goblins->start_loc = world->GetRandomSettlementIndex(used, CITY);
 	quest_goblins->id = quest_counter++;
 	quest_goblins->Start();
 	unaccepted_quests.push_back(quest_goblins);
@@ -147,7 +148,7 @@ void QuestManager::InitQuests(bool devmode)
 	// bandits
 	quest_bandits = new Quest_Bandits;
 	quest_bandits->Init();
-	quest_bandits->start_loc = world->GetRandomSettlementIndex(used, 1);
+	quest_bandits->start_loc = world->GetRandomSettlementIndex(used, CITY);
 	quest_bandits->id = quest_counter++;
 	quest_bandits->Start();
 	unaccepted_quests.push_back(quest_bandits);

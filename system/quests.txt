@@ -442,7 +442,7 @@ quest alchemist_apprentice
 			switch(progress)
 			{
 			case P_ALCH_ACCEPTED:
-				@forest = World::GetClosestLocation(L_FOREST, city.pos);
+				@forest = World::GetClosestLocation(L_OUTSIDE, city.pos, FOREST);
 				forest.st = 9;
 				forest.reset = true;
 				@forest.active_quest = quest;

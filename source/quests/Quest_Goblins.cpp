@@ -8,6 +8,7 @@
 #include "QuestManager.h"
 #include "Encounter.h"
 #include "InsideLocation.h"
+#include "OutsideLocation.h"
 #include "GameGui.h"
 #include "Team.h"
 #include "World.h"
@@ -125,7 +126,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			// usuñ plotkê
 			quest_mgr->RemoveQuestRumor(id);
 			// dodaj lokalizacje
-			target_loc = world->GetNearestLocation(GetStartLocation().pos, 1 << L_FOREST, true);
+			target_loc = world->GetClosestLocation(L_OUTSIDE, GetStartLocation().pos, FOREST);
 			Location& target = GetTargetLocation();
 			target.SetKnown();
 			target.reset = true;

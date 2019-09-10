@@ -127,7 +127,7 @@ BaseLocation g_base_locations[] = {
 		LocationTexturePack("block01b.jpg", "stone01b.jpg", "block01d.jpg"),
 	"Cave",					Int2(0,0),		52, 0,		0, 0,		0,			Int2(0,0),	Int2(0,0),	BLO_LABYRINTH,	nullptr, nullptr,
 		Vec3(0,0,0), Vec3(0,0,0), Vec3(0.4f,0.4f,0.4f), Vec3(0,0,0), Vec2(16.f,25.f), Vec2(0,0), 25.f, 0,
-		nullptr, 0, 0, 0, 0, 0, "random", nullptr, nullptr, 100, 0, 0, 0, KOPALNIA_POZIOM,
+		nullptr, 0, 0, 0, 0, 0, "random", nullptr, nullptr, 100, 0, 0, 0, ANCIENT_ARMORY,
 		LocationTexturePack("rock2.jpg", "rock1.jpg", "rock3.jpg"),
 	"Ancient armory",		Int2(1,1),		45, 0,		35, 0,		25,			Int2(5,10),	Int2(4,8),	BLO_MAGIC_LIGHT | BLO_LESS_FOOD, RoomStr("schody_swiatynia"), nullptr,
 		Vec3(40.f / 255,40.f / 255,40.f / 255), Vec3(5.f / 255,5.f / 255,5.f / 255), Vec3(0.25f,0.25f,0.25f), Vec3(-0.04f,-0.04f,-0.04f), Vec2(5.f,18.f), Vec2(-0.5f,-0.5f), 18.f, -0.5f,

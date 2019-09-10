@@ -53,7 +53,7 @@ void Minimap::Draw(ControlDrawData*)
 	gui->DrawSpriteRectPart(&game->tMinimap, r, r_part, Color::Alpha(140));
 
 	// stairs
-	if(type == L_DUNGEON || type == L_CRYPT || type == L_CAVE)
+	if(type == L_DUNGEON || type == L_CAVE)
 	{
 		InsideLocation* inside = (InsideLocation*)game_level->location;
 		InsideLocationLevel& lvl = inside->GetLevelData();
@@ -67,7 +67,7 @@ void Minimap::Draw(ControlDrawData*)
 	// portals
 	Portal* p = game_level->location->portal;
 	InsideLocationLevel* lvl = nullptr;
-	if(game_level->location->type == L_DUNGEON || game_level->location->type == L_CRYPT || game_level->location->type == L_CAVE)
+	if(game_level->location->type == L_DUNGEON || game_level->location->type == L_CAVE)
 		lvl = &((InsideLocation*)game_level->location)->GetLevelData();
 	while(p)
 	{

@@ -618,7 +618,6 @@ ObjectEntity Level::SpawnObjectEntity(LevelArea& area, BaseObject* base, const V
 						variant = 0;
 						break;
 					case L_DUNGEON:
-					case L_CRYPT:
 						variant = Rand() % 2;
 						break;
 					default:
@@ -3875,19 +3874,19 @@ void Level::RevealMinimap()
 //=================================================================================================
 bool Level::IsCity()
 {
-	return location->type == L_CITY && static_cast<City*>(location)->settlement_type == City::SettlementType::City;
+	return location->type == L_CITY && location->target == CITY;
 }
 
 //=================================================================================================
 bool Level::IsVillage()
 {
-	return location->type == L_CITY && static_cast<City*>(location)->settlement_type == City::SettlementType::Village;
+	return location->type == L_CITY && location->target == VILLAGE;
 }
 
 //=================================================================================================
 bool Level::IsTutorial()
 {
-	return location->type == L_DUNGEON && static_cast<InsideLocation*>(location)->target == TUTORIAL_FORT;
+	return location->type == L_DUNGEON && location->target == TUTORIAL_FORT;
 }
 
 //=================================================================================================
@@ -4139,21 +4138,21 @@ MusicType Level::GetLocationMusic()
 	{
 	case L_CITY:
 		return MusicType::City;
-	case L_CRYPT:
-		return MusicType::Crypt;
 	case L_DUNGEON:
 	case L_CAVE:
-		return MusicType::Dungeon;
-	case L_FOREST:
-	case L_CAMP:
-		if(location_index == quest_mgr->quest_secret->where2)
+		if(Any(location->target, HERO_CRYPT, MONSTER_CRYPT))
+			return MusicType::Crypt;
+		else
+			return MusicType::Dungeon;
+	case L_OUTSIDE:
+		if(location_index == quest_mgr->quest_secret->where2 || location->target == MOONWELL)
 			return MusicType::Moonwell;
 		else
 			return MusicType::Forest;
+	case L_CAMP:
+		return MusicType::Forest;
 	case L_ENCOUNTER:
 		return MusicType::Travel;
-	case L_MOONWELL:
-		return MusicType::Moonwell;
 	default:
 		assert(0);
 		return MusicType::Dungeon;
@@ -4266,7 +4265,7 @@ Unit* Level::GetMayor()
 	if(!city_ctx)
 		return nullptr;
 	cstring id;
-	if(city_ctx->settlement_type == City::SettlementType::Village)
+	if(city_ctx->target == VILLAGE)
 		id = "soltys";
 	else
 		id = "mayor";
@@ -4307,7 +4306,7 @@ bool Level::IsSafe()
 bool Level::CanFastTravel()
 {
 	if(!location->outside
-		|| !IsSafe() 
+		|| !IsSafe()
 		|| game->arena->mode != Arena::NONE
 		|| quest_mgr->quest_tutorial->in_tutorial
 		|| quest_mgr->quest_contest->state >= Quest_Contest::CONTEST_STARTING
