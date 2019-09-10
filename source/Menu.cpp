@@ -180,7 +180,7 @@ void Game::NewGameCommon(Class* clas, cstring name, HumanData& hd, CreatedCharac
 	if(!tutorial)
 	{
 		GenerateWorld();
-		quest_mgr->InitQuests(devmode);
+		quest_mgr->InitQuests();
 		world->StartInLocation();
 		if(!sound_mgr->IsMusicDisabled())
 		{
@@ -1311,7 +1311,7 @@ void Game::UpdateServerTransfer(float dt)
 			clear_color = Color::Black;
 			net->prepare_world = true;
 			GenerateWorld();
-			quest_mgr->InitQuests(devmode);
+			quest_mgr->InitQuests();
 			world->StartInLocation();
 			net->prepare_world = false;
 			if(!sound_mgr->IsMusicDisabled())

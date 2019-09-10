@@ -147,7 +147,7 @@ void World::Update(int days, UpdateMode mode)
 	quest_mgr->Update(days);
 
 	if(Net::IsLocal())
-		game->UpdateQuests(days);
+		quest_mgr->UpdateQuests(days);
 
 	if(mode == UM_TRAVEL)
 		team->Update(1, true);

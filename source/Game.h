@@ -158,6 +158,10 @@ public:
 	void PostconfigureGame();
 	void StartGameMode();
 
+	//-----------------------------------------------------------------
+	// DRAWING
+	//-----------------------------------------------------------------
+	void Draw();
 	void ReloadShaders();
 	void ReleaseShaders();
 	void InitScene();
@@ -199,18 +203,32 @@ public:
 	void ClearGrass();
 	void CalculateQuadtree();
 	void ListQuadtreeNodes();
-	void SetupConfigVars();
-	MeshInstance* GetBowInstance(Mesh* mesh);
-	DialogContext* FindDialogContext(Unit* talker);
+	void ApplyLocationTexturePack(TexturePack& floor, TexturePack& wall, TexturePack& ceil, LocationTexturePack& tex);
+	void ApplyLocationTexturePack(TexturePack& pack, LocationTexturePack::Entry& e, TexturePack& pack_def);
+	void SetDungeonParamsAndTextures(BaseLocation& base);
+	void SetDungeonParamsToMeshes();
+
+	//-----------------------------------------------------------------
+	// SOUND & MUSIC
+	//-----------------------------------------------------------------
 	void LoadMusic(MusicType type, bool new_load_screen = true, bool instant = false);
 	void SetMusic();
 	void SetMusic(MusicType type);
 	void SetupTracks();
 	void UpdateMusic();
+	Sound* GetMaterialSound(MATERIAL_TYPE m1, MATERIAL_TYPE m2);
+	Sound* GetItemSound(const Item* item);
+	void PlayAttachedSound(Unit& unit, Sound* sound, float distance);
+	void PlayHitSound(MATERIAL_TYPE mat_weapon, MATERIAL_TYPE mat_body, const Vec3& hitpoint, float range, bool dmg);
+	void UpdateAttachedSounds(float dt);
+	void StopAllSounds();
+
+	void SetupConfigVars();
+	MeshInstance* GetBowInstance(Mesh* mesh);
+	DialogContext* FindDialogContext(Unit* talker);
 	void SaveCfg();
 	cstring GetShortcutText(GAME_KEYS key, cstring action = nullptr);
 	void PauseGame();
-	void Draw();
 	void ExitToMenu();
 	void DoExitToMenu();
 	void GenerateItemImage(TaskData& task_data);
@@ -231,14 +249,9 @@ public:
 	int CheckMove(Vec3& pos, const Vec3& dir, float radius, Unit* me, bool* is_small = nullptr);
 	void UpdateAi(float dt);
 	void CheckAutoTalk(Unit& unit, float dt);
-	void ApplyLocationTexturePack(TexturePack& floor, TexturePack& wall, TexturePack& ceil, LocationTexturePack& tex);
-	void ApplyLocationTexturePack(TexturePack& pack, LocationTexturePack::Entry& e, TexturePack& pack_def);
-	void SetDungeonParamsAndTextures(BaseLocation& base);
-	void SetDungeonParamsToMeshes();
 	void MoveUnit(Unit& unit, bool warped = false, bool dash = false);
 	uint ValidateGameData(bool major);
 	uint TestGameData(bool major);
-	void TestUnitSpells(const SpellList& spells, string& errors, uint& count);
 	Unit* CreateUnit(UnitData& base, int level = -1, Human* human_data = nullptr, Unit* test_unit = nullptr, bool create_physics = true, bool custom = false);
 	bool CheckForHit(LevelArea& area, Unit& unit, Unit*& hitted, Vec3& hitpoint);
 	bool CheckForHit(LevelArea& area, Unit& unit, Unit*& hitted, Mesh::Point& hitbox, Mesh::Point* bone, Vec3& hitpoint);
@@ -265,16 +278,10 @@ public:
 	bool DoShieldSmash(LevelArea& area, Unit& attacker);
 	void UpdateBullets(LevelArea& area, float dt);
 	Vec3 PredictTargetPos(const Unit& me, const Unit& target, float bullet_speed) const;
-	bool CanShootAtLocation(const Unit& me, const Unit& target, const Vec3& pos) const { return CanShootAtLocation2(me, &target, pos); }
-	bool CanShootAtLocation(const Vec3& from, const Vec3& to) const;
-	bool CanShootAtLocation2(const Unit& me, const void* ptr, const Vec3& to) const;
 	void LoadItemsData();
 	Unit* CreateUnitWithAI(LevelArea& area, UnitData& unit, int level = -1, Human* human_data = nullptr, const Vec3* pos = nullptr, const float* rot = nullptr, AIController** ai = nullptr);
 	void ChangeLevel(int where);
 	void ExitToMap();
-	Sound* GetMaterialSound(MATERIAL_TYPE m1, MATERIAL_TYPE m2);
-	void PlayAttachedSound(Unit& unit, Sound* sound, float distance);
-	void StopAllSounds();
 	ATTACK_RESULT DoGenericAttack(LevelArea& area, Unit& attacker, Unit& hitted, const Vec3& hitpoint, float attack, int dmg_type, bool bash);
 	void SaveGame(GameWriter& f, SaveSlot* slot);
 	void CreateSaveImage();
@@ -289,22 +296,11 @@ public:
 	void UpdateExplosions(LevelArea& area, float dt);
 	void UpdateTraps(LevelArea& area, float dt);
 	void PreloadTraps(vector<Trap*>& traps);
-	bool RayTest(const Vec3& from, const Vec3& to, Unit* ignore, Vec3& hitpoint, Unit*& hitted);
-	enum LINE_TEST_RESULT
-	{
-		LT_IGNORE,
-		LT_COLLIDE,
-		LT_END
-	};
-	bool LineTest(btCollisionShape* shape, const Vec3& from, const Vec3& dir, delegate<LINE_TEST_RESULT(btCollisionObject*, bool)> clbk, float& t,
-		vector<float>* t_list = nullptr, bool use_clbk2 = false, float* end_t = nullptr);
-	bool ContactTest(btCollisionObject* obj, delegate<bool(btCollisionObject*, bool)> clbk, bool use_clbk2 = false);
 	void UpdateElectros(LevelArea& area, float dt);
 	void UpdateDrains(LevelArea& area, float dt);
 	void AI_Shout(LevelArea& area, AIController& ai);
 	void AI_DoAttack(AIController& ai, Unit* target, bool running = false);
 	void AI_HitReaction(Unit& unit, const Vec3& pos);
-	void UpdateAttachedSounds(float dt);
 	bool SaveGameSlot(int slot, cstring text);
 	void SaveGameFilename(const string& name);
 	bool SaveGameCommon(cstring filename, int slot, cstring text);
@@ -316,15 +312,10 @@ public:
 	void Quickload(bool from_console);
 	void ClearGameVars(bool new_game);
 	void ClearGame();
-	Sound* GetItemSound(const Item* item);
-	void Unit_StopUsingUsable(LevelArea& area, Unit& unit, bool send = true);
 	void EnterLevel(LocationGenerator* loc_gen);
 	void LeaveLevel(bool clear = false);
 	void LeaveLevel(LevelArea& area, bool clear);
 	void UpdateArea(LevelArea& area, float dt);
-	bool IsAnyoneTalking() const;
-	// this could be a global function
-	void PlayHitSound(MATERIAL_TYPE mat_weapon, MATERIAL_TYPE mat_body, const Vec3& hitpoint, float range, bool dmg);
 	// loading
 	void LoadingStart(int steps);
 	void LoadingStep(cstring text = nullptr, int end = 0);
@@ -340,11 +331,7 @@ public:
 	void VerifyItemResources(const Item* item);
 	void DeleteUnit(Unit* unit);
 	bool WantExitLevel() { return !GKey.KeyDownAllowed(GK_WALK); }
-	float PlayerAngleY();
 	void AttackReaction(Unit& attacked, Unit& attacker);
-	void GenerateQuestUnits();
-	void GenerateQuestUnits2();
-	void UpdateQuests(int days);
 	void RemoveQuestUnit(UnitData* ud, bool on_leave);
 	void RemoveQuestUnits(bool on_leave);
 	void UpdateGame2(float dt);
@@ -532,7 +519,6 @@ public:
 	};
 	vector<WarpData> mp_warps;
 	float train_move; // used by client to training by walking
-	bool anyone_talking;
 	float interpolate_timer;
 	bool paused;
 	vector<ItemSlot> chest_trade; // used by clients when trading

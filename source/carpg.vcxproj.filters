@@ -1165,6 +1165,9 @@
     <ClInclude Include="components\World.h">
       <Filter>components</Filter>
     </ClInclude>
+    <ClInclude Include="helpers\PhysicCallbacks.h">
+      <Filter>helpers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resource\resource.rc">

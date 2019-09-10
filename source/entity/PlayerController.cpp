@@ -1606,3 +1606,10 @@ float PlayerController::GetActionPower() const
 	// currently only used by heal spell
 	return 150.f + 5.f * (unit->Get(AttributeId::CHA) - 50.f) + 5.f * unit->Get(SkillId::GODS_MAGIC);
 }
+
+//=================================================================================================
+float PlayerController::GetShootAngle() const
+{
+	const float pt0 = 4.6662526f;
+	return game_level->camera.rot.y - pt0;
+}

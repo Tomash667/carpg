@@ -402,9 +402,9 @@ void Game::UpdateServer(float dt)
 	net->update_timer += dt;
 	if(net->update_timer >= TICK && net->active_players > 1)
 	{
-		bool last_anyone_talking = anyone_talking;
-		anyone_talking = IsAnyoneTalking();
-		if(last_anyone_talking != anyone_talking)
+		bool last_anyone_talking = team->anyone_talking;
+		team->anyone_talking = team->IsAnyoneTalking();
+		if(last_anyone_talking != team->anyone_talking)
 			Net::PushChange(NetChange::CHANGE_FLAGS);
 
 		net->update_timer = 0;
@@ -3339,7 +3339,7 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 					b |= 0x01;
 				if(team->crazies_attack)
 					b |= 0x02;
-				if(anyone_talking)
+				if(team->anyone_talking)
 					b |= 0x04;
 				f << b;
 			}
@@ -4340,7 +4340,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				{
 					team->is_bandit = IsSet(flags, 0x01);
 					team->crazies_attack = IsSet(flags, 0x02);
-					anyone_talking = IsSet(flags, 0x04);
+					team->anyone_talking = IsSet(flags, 0x04);
 				}
 			}
 			break;
@@ -7612,7 +7612,7 @@ void Game::WriteClientChanges(BitStreamWriter& f)
 				f << b;
 				f << c.f[1];
 				if(c.id == 2)
-					f << PlayerAngleY() * 12;
+					f << pc->GetShootAngle() * 12;
 			}
 			break;
 		case NetChange::DROP_ITEM:
@@ -7971,7 +7971,7 @@ void Game::Net_OnNewGameClient()
 	DeleteElements(quest_mgr->quest_items);
 	devmode = default_devmode;
 	train_move = 0.f;
-	anyone_talking = false;
+	team->anyone_talking = false;
 	interpolate_timer = 0.f;
 	Net::changes.clear();
 	if(!net->net_strs.empty())
@@ -8008,7 +8008,7 @@ void Game::Net_OnNewGameServer()
 	skip_id_counter = 0;
 	net->update_timer = 0.f;
 	arena->Reset();
-	anyone_talking = false;
+	team->anyone_talking = false;
 	mp_warps.clear();
 	if(!net->mp_load)
 		Net::changes.clear(); // przy wczytywaniu jest czyszczone przed wczytaniem i w net_changes s¹ zapisane quest_items

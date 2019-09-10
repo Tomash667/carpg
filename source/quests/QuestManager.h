@@ -57,8 +57,7 @@ public:
 	void Init();
 	void InitLists();
 	void LoadLanguage();
-	void Cleanup();
-	void InitQuests(bool devmode);
+	void InitQuests();
 	Quest* CreateQuest(QUEST_TYPE type);
 	Quest* CreateQuest(QuestInfo* info);
 	Quest* GetMayorQuest();
@@ -100,6 +99,8 @@ public:
 	void AddQuestRumor(int id, cstring str) { quest_rumors.push_back(pair<int, string>(id, str)); }
 	bool RemoveQuestRumor(int id);
 	string GetRandomQuestRumor();
+	void GenerateQuestUnits(bool on_enter);
+	void UpdateQuests(int days);
 
 	vector<Quest*> unaccepted_quests;
 	vector<Quest*> quests;

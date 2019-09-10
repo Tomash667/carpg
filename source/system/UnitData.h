@@ -1,6 +1,7 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+#include "Const.h"
 #include "Material.h"
 #include "UnitStats.h"
 #include "Blood.h"
@@ -17,12 +18,11 @@
 struct SpellList
 {
 	string id;
-	int level[3];
-	cstring name[3];
-	Spell* spell[3];
+	int level[MAX_SPELLS];
+	Spell* spell[MAX_SPELLS];
 	bool have_non_combat;
 
-	SpellList() : spell(), name(), level(), have_non_combat(false) {}
+	SpellList() : spell(), level(), have_non_combat(false) {}
 
 	static vector<SpellList*> lists;
 	static SpellList* TryGet(Cstring id);

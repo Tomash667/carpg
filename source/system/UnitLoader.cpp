@@ -1784,16 +1784,16 @@ void UnitLoader::ParseSpells(Ptr<SpellList>& list)
 			else
 			{
 				// null
-				if(index == 3)
-					t.Throw("Too many spells (max 3 for now).");
+				if(index == MAX_SPELLS)
+					t.Throw("Too many spells (max %d for now).", MAX_SPELLS);
 				++index;
 				crc.Update(0);
 			}
 		}
 		else
 		{
-			if(index == 3)
-				t.Throw("Too many spells (max 3 for now).");
+			if(index == MAX_SPELLS)
+				t.Throw("Too many spells (max %d for now).", MAX_SPELLS);
 			t.AssertSymbol('{');
 			t.Next();
 			const string& spell_id = t.MustGetItemKeyword();

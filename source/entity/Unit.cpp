@@ -31,6 +31,7 @@
 #include "ScriptException.h"
 #include "LevelGui.h"
 #include "ScriptManager.h"
+#include "Terrain.h"
 
 const float Unit::AUTO_TALK_WAIT = 0.333f;
 const float Unit::STAMINA_BOW_ATTACK = 100.f;
@@ -4826,7 +4827,7 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 		{
 			target_pos2 = target_pos = pos;
 			const Item* prev_used_item = used_item;
-			game->Unit_StopUsingUsable(*area, *this, mode != BREAK_ACTION_MODE::FALL && notify);
+			StopUsingUsable(mode != BREAK_ACTION_MODE::FALL && notify);
 			if(prev_used_item && slots[SLOT_WEAPON] == prev_used_item && !HaveShield())
 			{
 				weapon_state = WS_TAKEN;
@@ -6105,4 +6106,56 @@ UnitOrderEntry* UnitOrderEntry::ThenAutoTalk(bool leader, GameDialog* dialog)
 	}
 	o->auto_talk_dialog = dialog;
 	return o;
+}
+
+//=================================================================================================
+void Unit::StopUsingUsable(bool send)
+{
+	animation = ANI_STAND;
+	animation_state = AS_ANIMATION2_MOVE_TO_ENDPOINT;
+	timer = 0.f;
+	used_item = nullptr;
+
+	const float unit_radius = GetUnitRadius();
+
+	game_level->global_col.clear();
+	Level::IgnoreObjects ignore = { 0 };
+	const Unit* ignore_units[2] = { this, nullptr };
+	ignore.ignored_units = ignore_units;
+	game_level->GatherCollisionObjects(*area, game_level->global_col, pos, 2.f + unit_radius, &ignore);
+
+	Vec3 tmp_pos = target_pos;
+	bool ok = false;
+	float radius = unit_radius;
+
+	for(int i = 0; i < 20; ++i)
+	{
+		if(!game_level->Collide(game_level->global_col, tmp_pos, unit_radius))
+		{
+			if(i != 0 && area->have_terrain)
+				tmp_pos.y = game_level->terrain->GetH(tmp_pos);
+			target_pos = tmp_pos;
+			ok = true;
+			break;
+		}
+
+		tmp_pos = target_pos + Vec2::RandomPoissonDiscPoint().XZ() * radius;
+
+		if(i < 10)
+			radius += 0.2f;
+	}
+
+	assert(ok);
+
+	if(cobj)
+		UpdatePhysics(&target_pos);
+
+	if(send && Net::IsOnline())
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::USE_USABLE;
+		c.unit = this;
+		c.id = usable->id;
+		c.count = USE_USABLE_STOP;
+	}
 }

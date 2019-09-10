@@ -903,6 +903,7 @@ public:
 	float GetStaminaAttackSpeedMod() const;
 	float GetBashSpeed() const { return 2.f * GetStaminaAttackSpeedMod(); }
 	void RotateTo(const Vec3& pos, float dt);
+	void StopUsingUsable(bool send = true);
 };
 
 //-----------------------------------------------------------------------------

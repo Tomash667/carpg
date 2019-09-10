@@ -250,6 +250,7 @@ public:
 	void ClearShortcuts();
 	void SetShortcut(int index, Shortcut::Type type, int value = 0);
 	float GetActionPower() const;
+	float GetShootAngle() const;
 };
 
 //-----------------------------------------------------------------------------

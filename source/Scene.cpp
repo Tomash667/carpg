@@ -16,6 +16,7 @@
 #include "TerrainShader.h"
 #include "ResourceManager.h"
 #include "SoundManager.h"
+#include "PhysicCallbacks.h"
 #include "DirectX.h"
 
 //-----------------------------------------------------------------------------
@@ -1768,32 +1769,6 @@ void Game::ListAreas(LevelArea& area)
 		PrepareAreaPath();
 }
 
-struct BulletRaytestCallback4 : public btCollisionWorld::RayResultCallback
-{
-	BulletRaytestCallback4(Unit* me) : me(me), hit(nullptr)
-	{
-	}
-
-	btScalar addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace)
-	{
-		void* ptr = rayResult.m_collisionObject->getUserPointer();
-		if(me == ptr)
-			return 1.f;
-		if(m_closestHitFraction > rayResult.m_hitFraction)
-		{
-			m_closestHitFraction = rayResult.m_hitFraction;
-			if(IsSet(rayResult.m_collisionObject->getCollisionFlags(), CG_UNIT | CG_UNIT_DEAD))
-				hit = reinterpret_cast<Unit*>(ptr);
-			else
-				hit = nullptr;
-		}
-		return 0.f;
-	}
-
-	Unit* me;
-	Unit* hit;
-};
-
 //=================================================================================================
 void Game::PrepareAreaPath()
 {
@@ -1825,7 +1800,7 @@ void Game::PrepareAreaPath()
 			float t;
 			Vec3 dir(sin(rot)*action.area_size.x, 0, cos(rot)*action.area_size.x);
 			bool ignore_units = IsSet(action.flags, Action::F_IGNORE_UNITS);
-			LineTest(pc->unit->cobj->getCollisionShape(), from, dir, [this, ignore_units](btCollisionObject* obj, bool)
+			game_level->LineTest(pc->unit->cobj->getCollisionShape(), from, dir, [this, ignore_units](btCollisionObject* obj, bool)
 			{
 				int flags = obj->getCollisionFlags();
 				if(IsSet(flags, CG_TERRAIN))
@@ -1938,8 +1913,8 @@ void Game::PrepareAreaPath()
 			float t, end_t;
 			Vec3 dir_normal(sin(rot), 0, cos(rot));
 			Vec3 dir = dir_normal * range;
-			LineTest(game_level->shape_summon, from, dir, clbk, t, &t_forward, true, &end_t);
-			LineTest(game_level->shape_summon, from + dir, -dir, clbk, t, &t_backward);
+			game_level->LineTest(game_level->shape_summon, from, dir, clbk, t, &t_forward, true, &end_t);
+			game_level->LineTest(game_level->shape_summon, from + dir, -dir, clbk, t, &t_backward);
 
 			// merge t's to find free spots, we only use last one
 			static vector<pair<float, bool>> t_merged;
@@ -2049,7 +2024,7 @@ void Game::PrepareAreaPath()
 			else
 			{
 				// raytest
-				BulletRaytestCallback4 clbk(pc->unit);
+				RaytestClosestUnitDeadOrAliveCallback clbk(pc->unit);
 				Vec3 from = game_level->camera.from;
 				Vec3 dir = (game_level->camera.to - from).Normalized();
 				Vec3 to = from + dir * action.area_size.x;

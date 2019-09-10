@@ -729,7 +729,7 @@ void InventoryPanel::Update(float dt)
 		if(mode == INVENTORY && input->PressedRelease(Key::RightButton) && game->pc->unit->action == A_NONE)
 		{
 			// wyrzuæ przedmiot
-			if(IsSet(item->flags, ITEM_DONT_DROP) && game->IsAnyoneTalking())
+			if(IsSet(item->flags, ITEM_DONT_DROP) && team->IsAnyoneTalking())
 				gui->SimpleDialog(base.txCantDoNow, this);
 			else
 			{

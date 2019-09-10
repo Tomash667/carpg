@@ -167,6 +167,7 @@
     <ClInclude Include="helpers\CombatHelper.h" />
     <ClInclude Include="helpers\ItemHelper.h" />
     <ClInclude Include="helpers\LoadingHandler.h" />
+    <ClInclude Include="helpers\PhysicCallbacks.h" />
     <ClInclude Include="net\BitStreamFunc.h" />
     <ClInclude Include="net\EntityInterpolator.h" />
     <ClInclude Include="net\GamePacket.h" />

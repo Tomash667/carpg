@@ -2313,7 +2313,7 @@ void CityGenerator::OnEnter()
 	game_level->AddPlayerTeam(spawn_pos, spawn_dir, reenter, true);
 
 	if(!reenter)
-		game->GenerateQuestUnits();
+		quest_mgr->GenerateQuestUnits(true);
 
 	for(Unit& unit : team->members)
 	{

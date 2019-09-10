@@ -37,6 +37,7 @@
 #include "SpellEffects.h"
 #include "Collision.h"
 #include "LocationHelper.h"
+#include "PhysicCallbacks.h"
 
 Level* global::game_level;
 
@@ -2824,7 +2825,7 @@ Trap* Level::CreateTrap(Int2 pt, TRAP_TYPE type, bool timed)
 			{
 				trap.tile = pt + DirToPos(dir) * j;
 
-				if(game->CanShootAtLocation(Vec3(trap.pos.x + (2.f*j - 1.2f)*DirToPos(dir).x, 1.f, trap.pos.z + (2.f*j - 1.2f)*DirToPos(dir).y),
+				if(CanShootAtLocation(Vec3(trap.pos.x + (2.f*j - 1.2f)*DirToPos(dir).x, 1.f, trap.pos.z + (2.f*j - 1.2f)*DirToPos(dir).y),
 					Vec3(trap.pos.x, 1.f, trap.pos.z)))
 				{
 					TrapLocation& tr = Add1(possible);
@@ -4404,4 +4405,74 @@ void Level::SetOutsideParams()
 	fog_params = Vec4(40, 80, 40, 0);
 	fog_color = Vec4(0.9f, 0.85f, 0.8f, 1);
 	ambient_color = Vec4(0.5f, 0.5f, 0.5f, 1);
+}
+
+//=================================================================================================
+bool Level::CanShootAtLocation(const Vec3& from, const Vec3& to) const
+{
+	RaytestAnyUnitCallback callback;
+	phy_world->rayTest(ToVector3(from), ToVector3(to), callback);
+	return callback.clear;
+}
+
+//=================================================================================================
+bool Level::CanShootAtLocation2(const Unit& me, const void* ptr, const Vec3& to) const
+{
+	RaytestWithIgnoredCallback callback(&me, ptr);
+	phy_world->rayTest(btVector3(me.pos.x, me.pos.y + 1.f, me.pos.z), btVector3(to.x, to.y + 1.f, to.z), callback);
+	return callback.clear;
+}
+
+//=================================================================================================
+bool Level::RayTest(const Vec3& from, const Vec3& to, Unit* ignore, Vec3& hitpoint, Unit*& hitted)
+{
+	RaytestClosestUnitCallback callback(ignore);
+	phy_world->rayTest(ToVector3(from), ToVector3(to), callback);
+
+	if(callback.hitted)
+	{
+		hitpoint = from + (to - from) * callback.fraction;
+		hitted = callback.hitted;
+		return true;
+	}
+	else
+		return false;
+}
+
+//=================================================================================================
+bool Level::LineTest(btCollisionShape* shape, const Vec3& from, const Vec3& dir, delegate<LINE_TEST_RESULT(btCollisionObject*, bool)> clbk, float& t,
+	vector<float>* t_list, bool use_clbk2, float* end_t)
+{
+	assert(shape->isConvex());
+
+	btTransform t_from, t_to;
+	t_from.setIdentity();
+	t_from.setOrigin(ToVector3(from));
+	//t_from.getBasis().setRotation(ToQuaternion(Quat::CreateFromYawPitchRoll(rot, 0, 0)));
+	t_to.setIdentity();
+	t_to.setOrigin(ToVector3(dir) + t_from.getOrigin());
+	//t_to.setBasis(t_from.getBasis());
+
+	ConvexCallback callback(clbk, t_list, use_clbk2);
+
+	phy_world->convexSweepTest((btConvexShape*)shape, t_from, t_to, callback);
+
+	bool has_hit = (callback.closest <= 1.f);
+	t = min(callback.closest, 1.f);
+	if(end_t)
+	{
+		if(callback.end)
+			*end_t = callback.end_t;
+		else
+			*end_t = 1.f;
+	}
+	return has_hit;
+}
+
+//=================================================================================================
+bool Level::ContactTest(btCollisionObject* obj, delegate<bool(btCollisionObject*, bool)> clbk, bool use_clbk2)
+{
+	ContactTestCallback callback(obj, clbk, use_clbk2);
+	phy_world->contactTest(obj, callback);
+	return callback.hit;
 }

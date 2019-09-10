@@ -156,9 +156,8 @@ void Game::UpdateAi(float dt)
 		ai.morale = Min(ai.morale + dt, u.GetMaxMorale());
 		if(u.data->spells)
 		{
-			ai.cooldown[0] -= dt;
-			ai.cooldown[1] -= dt;
-			ai.cooldown[2] -= dt;
+			for(int i = 0; i < MAX_SPELLS; +i)
+				ai.cooldown[i] -= dt;
 		}
 
 		if(u.frozen >= FROZEN::YES)
@@ -250,7 +249,7 @@ void Game::UpdateAi(float dt)
 		if(u.data->spells && u.data->spells->have_non_combat && u.action == A_NONE && ai.state != AIController::Escape && ai.state != AIController::Cast
 			&& u.busy == Unit::Busy_No)
 		{
-			for(int i = 0; i < 3; ++i)
+			for(int i = 0; i < MAX_SPELLS; ++i)
 			{
 				Spell* spell = u.data->spells->spell[i];
 				if(spell && IsSet(spell->flags, Spell::NonCombat)
@@ -376,7 +375,7 @@ void Game::UpdateAi(float dt)
 						ai.idle_action = AIController::Idle_None;
 						ai.timer = Random(2.f, 5.f);
 						ai.city_wander = false;
-						Unit_StopUsingUsable(area, u);
+						u.StopUsingUsable();
 					}
 
 					bool hide_weapon = true;
@@ -480,7 +479,7 @@ void Game::UpdateAi(float dt)
 								{
 									if(u.busy != Unit::Busy_Talking && (u.action != A_ANIMATION2 || u.animation_state != AS_ANIMATION2_MOVE_TO_ENDPOINT))
 									{
-										Unit_StopUsingUsable(area, u);
+										u.StopUsingUsable();
 										ai.idle_action = AIController::Idle_None;
 										ai.timer = Random(1.f, 2.f);
 										ai.city_wander = false;
@@ -538,7 +537,7 @@ void Game::UpdateAi(float dt)
 								{
 									if(u.busy != Unit::Busy_Talking && (u.action != A_ANIMATION2 || u.animation_state != AS_ANIMATION2_MOVE_TO_ENDPOINT))
 									{
-										Unit_StopUsingUsable(area, u);
+										u.StopUsingUsable();
 										ai.idle_action = AIController::Idle_None;
 										ai.timer = Random(1.f, 2.f);
 										ai.city_wander = false;
@@ -572,7 +571,7 @@ void Game::UpdateAi(float dt)
 						{
 							if(u.busy != Unit::Busy_Talking && (u.action != A_ANIMATION2 || u.animation_state != AS_ANIMATION2_MOVE_TO_ENDPOINT))
 							{
-								Unit_StopUsingUsable(area, u);
+								u.StopUsingUsable();
 								ai.idle_action = AIController::Idle_None;
 								ai.timer = Random(1.f, 2.f);
 								ai.city_wander = true;
@@ -635,7 +634,7 @@ void Game::UpdateAi(float dt)
 							{
 								if(u.busy != Unit::Busy_Talking && (u.action != A_ANIMATION2 || u.animation_state != AS_ANIMATION2_MOVE_TO_ENDPOINT))
 								{
-									Unit_StopUsingUsable(area, u);
+									u.StopUsingUsable();
 									ai.idle_action = AIController::Idle_None;
 									ai.timer = Random(1.f, 2.f);
 									use_idle = false;
@@ -766,7 +765,7 @@ void Game::UpdateAi(float dt)
 										ai.timer = Random(10.f, 15.f);
 										break;
 									case 2: // stop sitting
-										Unit_StopUsingUsable(area, u);
+										u.StopUsingUsable();
 										ai.idle_action = AIController::Idle_None;
 										ai.timer = Random(2.5f, 5.f);
 										break;
@@ -774,7 +773,7 @@ void Game::UpdateAi(float dt)
 								}
 								else
 								{
-									Unit_StopUsingUsable(area, u);
+									u.StopUsingUsable();
 									ai.idle_action = AIController::Idle_None;
 									ai.timer = Random(2.5f, 5.f);
 								}
@@ -1464,7 +1463,7 @@ void Game::UpdateAi(float dt)
 											u.TakeWeapon(W_BOW);
 											float dir = Vec3::LookAtAngle(u.pos, ai.idle_data.obj.pos);
 											if(AngleDiff(u.rot, dir) < PI / 4 && u.action == A_NONE && u.weapon_taken == W_BOW && ai.next_attack <= 0.f
-												&& u.frozen == FROZEN::NO && CanShootAtLocation2(u, ai.idle_data.obj.ptr, ai.idle_data.obj.pos))
+												&& u.frozen == FROZEN::NO && game_level->CanShootAtLocation2(u, ai.idle_data.obj.ptr, ai.idle_data.obj.pos))
 											{
 												// bow shooting
 												float speed = u.GetBowAttackSpeed();
@@ -1669,7 +1668,7 @@ void Game::UpdateAi(float dt)
 					if(u.data->spells && u.action == A_NONE && u.frozen == FROZEN::NO)
 					{
 						// spellcasting
-						for(int i = 2; i >= 0; --i)
+						for(int i = MAX_SPELLS - 1; i >= 0; --i)
 						{
 							if(u.data->spells->spell[i] && u.level >= u.data->spells->level[i] && ai.cooldown[i] <= 0.f)
 							{
@@ -1689,7 +1688,7 @@ void Game::UpdateAi(float dt)
 											ok = false;
 									}
 
-									if(!CanShootAtLocation(u, *enemy, enemy->pos))
+									if(!game_level->CanShootAtLocation(u, *enemy, enemy->pos))
 										break;
 
 									if(ok)
@@ -1759,7 +1758,7 @@ void Game::UpdateAi(float dt)
 							// shooting possibility check
 							look_pos = PredictTargetPos(u, *enemy, u.GetArrowSpeed());
 
-							if(CanShootAtLocation(u, *enemy, enemy->pos))
+							if(game_level->CanShootAtLocation(u, *enemy, enemy->pos))
 							{
 								// bowshot
 								float speed = u.GetBowAttackSpeed();
@@ -2522,7 +2521,7 @@ void Game::UpdateAi(float dt)
 
 			if(move_type == KeepDistanceCheck)
 			{
-				if(u.action == A_TAKE_WEAPON || CanShootAtLocation(u, *enemy, target_pos))
+				if(u.action == A_TAKE_WEAPON || game_level->CanShootAtLocation(u, *enemy, target_pos))
 				{
 					if(best_dist < 8.f)
 						move = -1;
@@ -2591,7 +2590,7 @@ void Game::UpdateAi(float dt)
 				if(move_type == KeepDistanceCheck)
 				{
 					u.pos += dir;
-					if(u.action != A_TAKE_WEAPON && !CanShootAtLocation(u, *enemy, target_pos))
+					if(u.action != A_TAKE_WEAPON && !game_level->CanShootAtLocation(u, *enemy, target_pos))
 						move = 0;
 					u.pos = u.prev_pos;
 				}
@@ -2819,7 +2818,7 @@ void Game::UpdateAi(float dt)
 					if(move_type == KeepDistanceCheck)
 					{
 						u.pos += dir;
-						if(!CanShootAtLocation(u, *enemy, target_pos))
+						if(!game_level->CanShootAtLocation(u, *enemy, target_pos))
 							move = 0;
 						u.pos = u.prev_pos;
 					}
