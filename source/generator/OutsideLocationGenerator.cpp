@@ -212,7 +212,7 @@ void OutsideLocationGenerator::OnEnter()
 		if(event)
 		{
 			if(!event->done)
-				game->HandleQuestEvent(event);
+				quest_mgr->HandleQuestEvent(event);
 			game_level->event_handler = event->location_event_handler;
 		}
 	}

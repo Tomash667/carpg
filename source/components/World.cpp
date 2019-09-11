@@ -1028,7 +1028,7 @@ void World::SetLocationImageAndName(Location* l)
 	switch(l->type)
 	{
 	case L_CITY:
-		if(l->type == VILLAGE)
+		if(l->target == VILLAGE)
 		{
 			l->image = LI_VILLAGE;
 			l->name = txVillage;

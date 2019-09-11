@@ -32,6 +32,8 @@
 #include "LevelGui.h"
 #include "ScriptManager.h"
 #include "Terrain.h"
+#include "Spell.h"
+#include "ParticleSystem.h"
 
 const float Unit::AUTO_TALK_WAIT = 0.333f;
 const float Unit::STAMINA_BOW_ATTACK = 100.f;
@@ -4859,9 +4861,9 @@ void Unit::BreakAction(BREAK_ACTION_MODE mode, bool notify, bool allow_animation
 	if(IsPlayer())
 	{
 		player->next_action = NA_NONE;
-		if(player == game->pc)
+		if(player->is_local)
 		{
-			game->pc_data.action_ready = false;
+			player->data.action_ready = false;
 			game_gui->inventory->lock = nullptr;
 			if(game_gui->inventory->mode > I_INVENTORY)
 				game->CloseInventory();
@@ -4934,7 +4936,7 @@ void Unit::Fall()
 		UpdatePhysics();
 
 		if(player && player->is_local)
-			game->pc_data.before_player = BP_NONE;
+			player->data.before_player = BP_NONE;
 	}
 	else
 	{
@@ -4944,7 +4946,7 @@ void Unit::Fall()
 		if(player && player->is_local)
 		{
 			raise_timer = Random(5.f, 7.f);
-			game->pc_data.before_player = BP_NONE;
+			player->data.before_player = BP_NONE;
 		}
 	}
 
@@ -5161,7 +5163,7 @@ void Unit::Die(Unit* killer)
 			++player->knocks;
 			player->stat_flags |= STAT_KNOCKS;
 			if(player->is_local)
-				game->pc_data.before_player = BP_NONE;
+				game->pc->data.before_player = BP_NONE;
 		}
 
 		// give experience
@@ -5193,7 +5195,7 @@ void Unit::Die(Unit* killer)
 		if(player && player->is_local)
 		{
 			raise_timer = Random(5.f, 7.f);
-			game->pc_data.before_player = BP_NONE;
+			player->data.before_player = BP_NONE;
 		}
 	}
 
@@ -6157,5 +6159,488 @@ void Unit::StopUsingUsable(bool send)
 		c.unit = this;
 		c.id = usable->id;
 		c.count = USE_USABLE_STOP;
+	}
+}
+
+//=================================================================================================
+void Unit::CheckAutoTalk(float dt)
+{
+	if(action != A_NONE && action != A_ANIMATION2)
+	{
+		if(order->auto_talk == AutoTalkMode::Wait)
+		{
+			order->auto_talk = AutoTalkMode::Yes;
+			order->timer = Unit::AUTO_TALK_WAIT;
+		}
+		return;
+	}
+
+	// timer to not check everything every frame
+	order->timer -= dt;
+	if(order->timer > 0.f)
+		return;
+	order->timer = Unit::AUTO_TALK_WAIT;
+
+	// find near players
+	struct NearUnit
+	{
+		Unit* unit;
+		float dist;
+	};
+	static vector<NearUnit> near_units;
+
+	const bool leader_mode = (order->auto_talk == AutoTalkMode::Leader);
+
+	for(Unit& u : team->members)
+	{
+		if(u.IsPlayer())
+		{
+			// if not leader (in leader mode) or busy - don't check this unit
+			if((leader_mode && &u != team->leader)
+				|| (u.player->dialog_ctx->dialog_mode || u.busy != Unit::Busy_No
+				|| !u.IsStanding() || u.player->action != PlayerAction::None))
+				continue;
+			float dist = Vec3::Distance(pos, u.pos);
+			if(dist <= 8.f || leader_mode)
+				near_units.push_back({ &u, dist });
+		}
+	}
+
+	// if no nearby available players found, return
+	if(near_units.empty())
+	{
+		if(order->auto_talk == AutoTalkMode::Wait)
+			order->auto_talk = AutoTalkMode::Yes;
+		return;
+	}
+
+	// sort by distance
+	std::sort(near_units.begin(), near_units.end(), [](const NearUnit& nu1, const NearUnit& nu2) { return nu1.dist < nu2.dist; });
+
+	// get near player that don't have enemies nearby
+	PlayerController* talk_player = nullptr;
+	for(auto& near_unit : near_units)
+	{
+		Unit& talk_target = *near_unit.unit;
+		if(game_level->CanSee(*this, talk_target))
+		{
+			bool ok = true;
+			for(vector<Unit*>::iterator it2 = area->units.begin(), end2 = area->units.end(); it2 != end2; ++it2)
+			{
+				Unit& check_unit = **it2;
+				if(&talk_target == &check_unit || this == &check_unit)
+					continue;
+
+				if(check_unit.IsAlive() && talk_target.IsEnemy(check_unit) && check_unit.IsAI() && !check_unit.dont_attack
+					&& Vec3::Distance2d(talk_target.pos, check_unit.pos) < ALERT_RANGE && game_level->CanSee(check_unit, talk_target))
+				{
+					ok = false;
+					break;
+				}
+			}
+
+			if(ok)
+			{
+				talk_player = talk_target.player;
+				break;
+			}
+		}
+	}
+
+	// start dialog or wait
+	if(talk_player)
+	{
+		if(order->auto_talk == AutoTalkMode::Yes)
+		{
+			order->auto_talk = AutoTalkMode::Wait;
+			order->timer = 1.f;
+		}
+		else
+		{
+			talk_player->StartDialog(this, order->auto_talk_dialog);
+			OrderClear();
+		}
+	}
+	else if(order->auto_talk == AutoTalkMode::Wait)
+	{
+		order->auto_talk = AutoTalkMode::Yes;
+		order->timer = Unit::AUTO_TALK_WAIT;
+	}
+
+	near_units.clear();
+}
+
+//=================================================================================================
+void Unit::CastSpell()
+{
+	if(IsPlayer())
+	{
+		player->CastSpell();
+		return;
+	}
+
+	Spell& spell = *data->spells->spell[attack_id];
+
+	Mesh::Point* point = mesh_inst->mesh->GetPoint(NAMES::point_cast);
+	assert(point);
+
+	if(human_data)
+		mesh_inst->SetupBones(&human_data->mat_scale[0]);
+	else
+		mesh_inst->SetupBones();
+
+	Matrix m = point->mat * mesh_inst->mat_bones[point->bone] * (Matrix::RotationY(rot) * Matrix::Translation(pos));
+
+	Vec3 coord = Vec3::TransformZero(m);
+	float dmg;
+	if(IsSet(spell.flags, Spell::Cleric))
+		dmg = float(spell.dmg + spell.dmg_bonus * (Get(AttributeId::CHA) + Get(SkillId::GODS_MAGIC) - 50));
+	else
+		dmg = float(spell.dmg + spell.dmg_bonus * (CalculateMagicPower() + level));
+
+	if(spell.mana > 0)
+		RemoveMana(spell.mana);
+
+	if(spell.type == Spell::Ball || spell.type == Spell::Point)
+	{
+		int count = 1;
+		if(IsSet(spell.flags, Spell::Triple))
+			count = 3;
+
+		float expected_rot = Clip(-Vec3::Angle2d(coord, target_pos) + PI / 2);
+		float current_rot = Clip(rot + PI);
+		AdjustAngle(current_rot, expected_rot, ToRadians(10.f));
+
+		for(int i = 0; i < count; ++i)
+		{
+			Bullet& b = Add1(area->tmp->bullets);
+
+			b.level = level + CalculateMagicPower();
+			b.backstab = 0.25f;
+			b.pos = coord;
+			b.attack = dmg;
+			b.rot = Vec3(0, current_rot + Random(-0.05f, 0.05f), 0);
+			b.mesh = spell.mesh;
+			b.tex = spell.tex;
+			b.tex_size = spell.size;
+			b.speed = spell.speed;
+			b.timer = spell.range / (spell.speed - 1);
+			b.owner = this;
+			b.remove = false;
+			b.trail = nullptr;
+			b.trail2 = nullptr;
+			b.pe = nullptr;
+			b.spell = &spell;
+			b.start_pos = b.pos;
+
+			// ustal z jak¹ si³¹ rzuciæ kul¹
+			if(spell.type == Spell::Ball)
+			{
+				float dist = Vec3::Distance2d(pos, target_pos);
+				float t = dist / spell.speed;
+				float h = (target_pos.y + Random(-0.5f, 0.5f)) - b.pos.y;
+				b.yspeed = h / t + (10.f*t) / 2;
+			}
+			else if(spell.type == Spell::Point)
+			{
+				float dist = Vec3::Distance2d(pos, target_pos);
+				float t = dist / spell.speed;
+				float h = (target_pos.y + Random(-0.5f, 0.5f)) - b.pos.y;
+				b.yspeed = h / t;
+			}
+
+			if(spell.tex_particle)
+			{
+				ParticleEmitter* pe = new ParticleEmitter;
+				pe->tex = spell.tex_particle;
+				pe->emision_interval = 0.1f;
+				pe->life = -1;
+				pe->particle_life = 0.5f;
+				pe->emisions = -1;
+				pe->spawn_min = 3;
+				pe->spawn_max = 4;
+				pe->max_particles = 50;
+				pe->pos = b.pos;
+				pe->speed_min = Vec3(-1, -1, -1);
+				pe->speed_max = Vec3(1, 1, 1);
+				pe->pos_min = Vec3(-spell.size, -spell.size, -spell.size);
+				pe->pos_max = Vec3(spell.size, spell.size, spell.size);
+				pe->size = spell.size_particle;
+				pe->op_size = POP_LINEAR_SHRINK;
+				pe->alpha = 1.f;
+				pe->op_alpha = POP_LINEAR_SHRINK;
+				pe->mode = 1;
+				pe->Init();
+				area->tmp->pes.push_back(pe);
+				b.pe = pe;
+			}
+
+			if(Net::IsOnline())
+			{
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::CREATE_SPELL_BALL;
+				c.spell = &spell;
+				c.pos = b.start_pos;
+				c.f[0] = b.rot.y;
+				c.f[1] = b.yspeed;
+				c.extra_id = id;
+			}
+		}
+	}
+	else
+	{
+		if(IsSet(spell.flags, Spell::Jump))
+		{
+			Electro* e = new Electro;
+			e->Register();
+			e->hitted.push_back(this);
+			e->dmg = dmg;
+			e->owner = this;
+			e->spell = &spell;
+			e->start_pos = pos;
+
+			Vec3 hitpoint;
+			Unit* hitted;
+
+			target_pos.y += Random(-0.5f, 0.5f);
+			Vec3 dir = target_pos - coord;
+			dir.Normalize();
+			Vec3 target = coord + dir * spell.range;
+
+			if(game_level->RayTest(coord, target, this, hitpoint, hitted))
+			{
+				if(hitted)
+				{
+					// trafiono w cel
+					e->valid = true;
+					e->hitsome = true;
+					e->hitted.push_back(hitted);
+					e->AddLine(coord, hitpoint);
+				}
+				else
+				{
+					// trafienie w obiekt
+					e->valid = false;
+					e->hitsome = true;
+					e->AddLine(coord, hitpoint);
+				}
+			}
+			else
+			{
+				// w nic nie trafiono
+				e->valid = false;
+				e->hitsome = false;
+				e->AddLine(coord, target);
+			}
+
+			area->tmp->electros.push_back(e);
+
+			if(Net::IsOnline())
+			{
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::CREATE_ELECTRO;
+				c.e_id = e->id;
+				c.pos = e->lines[0].pts.front();
+				memcpy(c.f, &e->lines[0].pts.back(), sizeof(Vec3));
+			}
+		}
+		else if(IsSet(spell.flags, Spell::Drain))
+		{
+			Vec3 hitpoint;
+			Unit* hitted;
+
+			target_pos.y += Random(-0.5f, 0.5f);
+
+			if(game_level->RayTest(coord, target_pos, this, hitpoint, hitted) && hitted)
+			{
+				// trafiono w cel
+				if(!IsSet(hitted->data->flags2, F2_BLOODLESS) && !IsFriend(*hitted))
+				{
+					Drain& drain = Add1(area->tmp->drains);
+					drain.from = hitted;
+					drain.to = this;
+
+					game->GiveDmg(*hitted, dmg, this, nullptr, Game::DMG_MAGICAL);
+
+					drain.pe = area->tmp->pes.back();
+					drain.t = 0.f;
+					drain.pe->manual_delete = 1;
+					drain.pe->speed_min = Vec3(-3, 0, -3);
+					drain.pe->speed_max = Vec3(3, 3, 3);
+
+					dmg *= hitted->CalculateMagicResistance();
+					hp += dmg;
+					if(hp > hpmax)
+						hp = hpmax;
+
+					if(Net::IsOnline())
+					{
+						NetChange& c = Add1(Net::changes);
+						c.type = NetChange::UPDATE_HP;
+						c.unit = drain.to;
+
+						NetChange& c2 = Add1(Net::changes);
+						c2.type = NetChange::CREATE_DRAIN;
+						c2.unit = drain.to;
+					}
+				}
+			}
+		}
+		else if(IsSet(spell.flags, Spell::Raise))
+		{
+			Unit* target = action_unit;
+			if(!target) // pre V_DEV
+			{
+				for(Unit* u : area->units)
+				{
+					if(u->live_state == Unit::DEAD
+						&& !IsEnemy(*u)
+						&& IsSet(u->data->flags, F_UNDEAD)
+						&& Vec3::Distance(target_pos, u->pos) < 0.5f)
+					{
+						target = u;
+						break;
+					}
+				}
+			}
+
+			if(target)
+			{
+				Unit& u2 = *target;
+				u2.hp = u2.hpmax;
+				u2.live_state = Unit::ALIVE;
+				u2.weapon_state = WS_HIDDEN;
+				u2.animation = ANI_STAND;
+				u2.animation_state = 0;
+				u2.weapon_taken = W_NONE;
+				u2.weapon_hiding = W_NONE;
+
+				// za³ó¿ przedmioty / dodaj z³oto
+				u2.ReequipItems();
+
+				// przenieœ fizyke
+				game_level->WarpUnit(u2, u2.pos);
+
+				// resetuj ai
+				u2.ai->Reset();
+
+				// efekt cz¹steczkowy
+				ParticleEmitter* pe = new ParticleEmitter;
+				pe->tex = spell.tex_particle;
+				pe->emision_interval = 0.01f;
+				pe->life = 0.f;
+				pe->particle_life = 0.5f;
+				pe->emisions = 1;
+				pe->spawn_min = 16;
+				pe->spawn_max = 25;
+				pe->max_particles = 25;
+				pe->pos = u2.pos;
+				pe->pos.y += u2.GetUnitHeight() / 2;
+				pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
+				pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
+				pe->pos_min = Vec3(-spell.size, -spell.size, -spell.size);
+				pe->pos_max = Vec3(spell.size, spell.size, spell.size);
+				pe->size = spell.size_particle;
+				pe->op_size = POP_LINEAR_SHRINK;
+				pe->alpha = 1.f;
+				pe->op_alpha = POP_LINEAR_SHRINK;
+				pe->mode = 1;
+				pe->Init();
+				area->tmp->pes.push_back(pe);
+
+				if(Net::IsOnline())
+				{
+					NetChange& c = Add1(Net::changes);
+					c.type = NetChange::RAISE_EFFECT;
+					c.pos = pe->pos;
+
+					NetChange& c2 = Add1(Net::changes);
+					c2.type = NetChange::STAND_UP;
+					c2.unit = &u2;
+
+					NetChange& c3 = Add1(Net::changes);
+					c3.type = NetChange::UPDATE_HP;
+					c3.unit = &u2;
+				}
+			}
+
+			ai->state = AIController::Idle;
+		}
+		else if(IsSet(spell.flags, Spell::Heal))
+		{
+			Unit* target = action_unit;
+			if(!target) // pre V_DEV
+			{
+				for(Unit* u : area->units)
+				{
+					if(!IsEnemy(*u) && !IsSet(u->data->flags, F_UNDEAD)
+						&& !IsSet(u->data->flags2, F2_CONSTRUCT) && Vec3::Distance(target_pos, u->pos) < 0.5f)
+					{
+						target = u;
+						break;
+					}
+				}
+			}
+
+			if(target)
+			{
+				Unit& u2 = *target;
+				u2.hp += dmg;
+				if(u2.hp > u2.hpmax)
+					u2.hp = u2.hpmax;
+
+				// efekt cz¹steczkowy
+				float r = u2.GetUnitRadius(),
+					h = u2.GetUnitHeight();
+				ParticleEmitter* pe = new ParticleEmitter;
+				pe->tex = spell.tex_particle;
+				pe->emision_interval = 0.01f;
+				pe->life = 0.f;
+				pe->particle_life = 0.5f;
+				pe->emisions = 1;
+				pe->spawn_min = 16;
+				pe->spawn_max = 25;
+				pe->max_particles = 25;
+				pe->pos = u2.pos;
+				pe->pos.y += h / 2;
+				pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
+				pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
+				pe->pos_min = Vec3(-r, -h / 2, -r);
+				pe->pos_max = Vec3(r, h / 2, r);
+				pe->size = spell.size_particle;
+				pe->op_size = POP_LINEAR_SHRINK;
+				pe->alpha = 0.9f;
+				pe->op_alpha = POP_LINEAR_SHRINK;
+				pe->mode = 1;
+				pe->Init();
+				area->tmp->pes.push_back(pe);
+
+				if(Net::IsOnline())
+				{
+					NetChange& c = Add1(Net::changes);
+					c.type = NetChange::HEAL_EFFECT;
+					c.pos = pe->pos;
+
+					NetChange& c3 = Add1(Net::changes);
+					c3.type = NetChange::UPDATE_HP;
+					c3.unit = &u2;
+				}
+			}
+
+			ai->state = AIController::Idle;
+		}
+	}
+
+	// dŸwiêk
+	if(spell.sound_cast)
+	{
+		sound_mgr->PlaySound3d(spell.sound_cast, coord, spell.sound_cast_dist);
+		if(Net::IsOnline())
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::SPELL_SOUND;
+			c.spell = &spell;
+			c.pos = coord;
+		}
 	}
 }

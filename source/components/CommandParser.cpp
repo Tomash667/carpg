@@ -368,7 +368,7 @@ void CommandParser::ParseScript(Tokenizer& t)
 	}
 
 	cstring code = t.GetTextRest();
-	Unit* target_unit = game->pc_data.GetTargetUnit();
+	Unit* target_unit = game->pc->data.GetTargetUnit();
 	if(Net::IsLocal())
 	{
 		string& output = script_mgr->OpenOutput();
@@ -746,7 +746,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			Net::PushChange(NetChange::CHEAT_HEAL);
 		break;
 	case CMD_KILL:
-		if(Unit* target = game->pc_data.GetTargetUnit(); target && target->IsAlive())
+		if(Unit* target = game->pc->data.GetTargetUnit(); target && target->IsAlive())
 		{
 			if(Net::IsLocal())
 				game->GiveDmg(*target, target->hpmax);
@@ -764,7 +764,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		CmdList(t);
 		break;
 	case CMD_HEAL_UNIT:
-		if(Unit* target = game->pc_data.GetTargetUnit())
+		if(Unit* target = game->pc->data.GetTargetUnit())
 		{
 			if(Net::IsLocal())
 				HealUnit(*target);
@@ -861,8 +861,8 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			if(t.Next())
 				mode = t.MustGetInt();
 			Unit* ignore = nullptr;
-			if(game->pc_data.before_player == BP_UNIT)
-				ignore = game->pc_data.before_player_ptr.unit;
+			if(game->pc->data.before_player == BP_UNIT)
+				ignore = game->pc->data.before_player_ptr.unit;
 			if(!game_level->KillAll(mode, *game->pc->unit, ignore))
 				Msg("Unknown mode '%d'.", mode);
 		}
@@ -1414,7 +1414,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			Unit* u;
 			if(t.Next() && t.GetInt() == 1)
 				u = game->pc->unit;
-			else if(Unit* target = game->pc_data.GetTargetUnit())
+			else if(Unit* target = game->pc->data.GetTargetUnit())
 				u = target;
 			else
 			{
@@ -1497,7 +1497,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			Unit* u;
 			if(t.Next() && t.GetInt() == 1)
 				u = game->pc->unit;
-			else if(Unit* target = game->pc_data.GetTargetUnit())
+			else if(Unit* target = game->pc->data.GetTargetUnit())
 				u = target;
 			else
 			{
@@ -1521,9 +1521,9 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			Net::PushChange(NetChange::CHEAT_REFRESH_COOLDOWN);
 		break;
 	case CMD_DRAW_PATH:
-		if(game->pc_data.before_player == BP_UNIT)
+		if(game->pc->data.before_player == BP_UNIT)
 		{
-			pathfinding->SetTarget(game->pc_data.before_player_ptr.unit);
+			pathfinding->SetTarget(game->pc->data.before_player_ptr.unit);
 			Msg("Set draw path target.");
 		}
 		else
@@ -1626,13 +1626,13 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			}
 
 			if(Net::IsLocal())
-				game->pc_data.selected_unit->AddEffect(e);
+				game->pc->data.selected_unit->AddEffect(e);
 			else
 			{
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::GENERIC_CMD;
 				c << (byte)CMD_ADD_EFFECT
-					<< game->pc_data.selected_unit->id
+					<< game->pc->data.selected_unit->id
 					<< (char)e.effect
 					<< (char)e.source
 					<< (char)e.source_id
@@ -1730,13 +1730,13 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			}
 
 			if(Net::IsLocal())
-				RemoveEffect(game->pc_data.selected_unit, effect, source, source_id, value);
+				RemoveEffect(game->pc->data.selected_unit, effect, source, source_id, value);
 			else
 			{
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::GENERIC_CMD;
 				c << (byte)CMD_REMOVE_EFFECT
-					<< game->pc_data.selected_unit->id
+					<< game->pc->data.selected_unit->id
 					<< (char)effect
 					<< (char)source
 					<< (char)source_id
@@ -1745,18 +1745,18 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		}
 		break;
 	case CMD_LIST_EFFECTS:
-		if(Net::IsLocal() || game->pc_data.selected_unit->IsLocal())
-			ListEffects(game->pc_data.selected_unit);
+		if(Net::IsLocal() || game->pc->data.selected_unit->IsLocal())
+			ListEffects(game->pc->data.selected_unit);
 		else
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::GENERIC_CMD;
 			c << (byte)CMD_LIST_EFFECTS
-				<< game->pc_data.selected_unit->id;
+				<< game->pc->data.selected_unit->id;
 		}
 		break;
 	case CMD_ADD_PERK:
-		if(!game->pc_data.selected_unit->player)
+		if(!game->pc->data.selected_unit->player)
 			Msg("Only players have perks.");
 		else if(!t.Next())
 			Msg("Perk name required. Use 'list perks' to display list.");
@@ -1805,20 +1805,20 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			}
 
 			if(Net::IsLocal())
-				AddPerk(game->pc_data.selected_unit->player, info->perk_id, value);
+				AddPerk(game->pc->data.selected_unit->player, info->perk_id, value);
 			else
 			{
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::GENERIC_CMD;
 				c << (byte)CMD_ADD_PERK
-					<< game->pc_data.selected_unit->id
+					<< game->pc->data.selected_unit->id
 					<< (char)info->perk_id
 					<< (char)value;
 			}
 		}
 		break;
 	case CMD_REMOVE_PERK:
-		if(!game->pc_data.selected_unit->player)
+		if(!game->pc->data.selected_unit->player)
 			Msg("Only players have perks.");
 		else if(!t.Next())
 			Msg("Perk name required. Use 'list perks' to display list.");
@@ -1867,29 +1867,29 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			}
 
 			if(Net::IsLocal())
-				RemovePerk(game->pc_data.selected_unit->player, info->perk_id, value);
+				RemovePerk(game->pc->data.selected_unit->player, info->perk_id, value);
 			else
 			{
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::GENERIC_CMD;
 				c << (byte)CMD_REMOVE_PERK
-					<< game->pc_data.selected_unit->id
+					<< game->pc->data.selected_unit->id
 					<< (char)info->perk_id
 					<< (char)value;
 			}
 		}
 		break;
 	case CMD_LIST_PERKS:
-		if(!game->pc_data.selected_unit->player)
+		if(!game->pc->data.selected_unit->player)
 			Msg("Only players have perks.");
-		else if(Net::IsLocal() || game->pc_data.selected_unit->IsLocal())
-			ListPerks(game->pc_data.selected_unit->player);
+		else if(Net::IsLocal() || game->pc->data.selected_unit->IsLocal())
+			ListPerks(game->pc->data.selected_unit->player);
 		else
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::GENERIC_CMD;
 			c << (byte)CMD_LIST_PERKS
-				<< game->pc_data.selected_unit->id;
+				<< game->pc->data.selected_unit->id;
 		}
 		break;
 	case CMD_SELECT:
@@ -1916,40 +1916,40 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 					break;
 				}
 			}
-			else if(game->pc_data.before_player == BP_UNIT)
+			else if(game->pc->data.before_player == BP_UNIT)
 				select = SELECT_TARGET;
 			else
 				select = SELECT_SHOW;
 
 			if(select == SELECT_ME)
-				game->pc_data.selected_unit = game->pc->unit;
+				game->pc->data.selected_unit = game->pc->unit;
 			else if(select == SELECT_TARGET)
 			{
-				if(Unit* target = game->pc_data.GetTargetUnit())
-					game->pc_data.selected_unit = target;
+				if(Unit* target = game->pc->data.GetTargetUnit())
+					game->pc->data.selected_unit = target;
 				else
 				{
 					Msg("No unit in front of player.");
 					break;
 				}
 			}
-			Msg("Currently selected: %s %p [%d]", game->pc_data.selected_unit->data->id.c_str(), game->pc_data.selected_unit,
-				Net::IsOnline() ? game->pc_data.selected_unit->id : -1);
+			Msg("Currently selected: %s %p [%d]", game->pc->data.selected_unit->data->id.c_str(), game->pc->data.selected_unit,
+				Net::IsOnline() ? game->pc->data.selected_unit->id : -1);
 		}
 		break;
 	case CMD_LIST_STATS:
-		if(Net::IsLocal() || game->pc_data.selected_unit->IsLocal())
-			ListStats(game->pc_data.selected_unit);
+		if(Net::IsLocal() || game->pc->data.selected_unit->IsLocal())
+			ListStats(game->pc->data.selected_unit);
 		else
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::GENERIC_CMD;
 			c << (byte)CMD_LIST_STATS
-				<< game->pc_data.selected_unit->id;
+				<< game->pc->data.selected_unit->id;
 		}
 		break;
 	case CMD_ADD_LEARNING_POINTS:
-		if(!game->pc_data.selected_unit->IsPlayer())
+		if(!game->pc->data.selected_unit->IsPlayer())
 			Msg("Only players have learning points.");
 		else
 		{
@@ -1959,13 +1959,13 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			if(count < 1)
 				break;
 			if(Net::IsLocal())
-				game->pc_data.selected_unit->player->AddLearningPoint(count);
+				game->pc->data.selected_unit->player->AddLearningPoint(count);
 			else
 			{
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::GENERIC_CMD;
 				c << (byte)CMD_ADD_LEARNING_POINTS
-					<< game->pc_data.selected_unit->id
+					<< game->pc->data.selected_unit->id
 					<< count;
 			}
 		}
@@ -2019,10 +2019,10 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 		}
 		break;
 	case CMD_REMOVE_UNIT:
-		if(game->pc_data.selected_unit->IsPlayer())
+		if(game->pc->data.selected_unit->IsPlayer())
 			Msg("Can't remove player unit.");
 		else
-			game_level->RemoveUnit(game->pc_data.selected_unit);
+			game_level->RemoveUnit(game->pc->data.selected_unit);
 		break;
 	case CMD_ADD_EXP:
 		if(t.Next())

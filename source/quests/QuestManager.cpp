@@ -14,6 +14,7 @@
 #include "Level.h"
 #include "Team.h"
 #include "City.h"
+#include "InsideLocation.h"
 
 #include "Quest_Artifacts.h"
 #include "Quest_Bandits.h"
@@ -1354,7 +1355,7 @@ void QuestManager::UpdateQuests(int days)
 	if(team->is_bandit)
 		return;
 
-	game->RemoveQuestUnits(false);
+	RemoveQuestUnits(false);
 
 	int income = 0;
 
@@ -1474,4 +1475,292 @@ void QuestManager::UpdateQuests(int days)
 
 	if(game_level->city_ctx)
 		GenerateQuestUnits(false);
+}
+
+//=================================================================================================
+void QuestManager::RemoveQuestUnits(bool on_leave)
+{
+	if(game_level->city_ctx)
+	{
+		if(quest_sawmill->messenger)
+		{
+			game_level->RemoveUnit(UnitData::Get("poslaniec_tartak"), on_leave);
+			quest_sawmill->messenger = nullptr;
+		}
+
+		if(quest_mine->messenger)
+		{
+			game_level->RemoveUnit(UnitData::Get("poslaniec_kopalnia"), on_leave);
+			quest_mine->messenger = nullptr;
+		}
+
+		if(game_level->is_open && game_level->location_index == quest_sawmill->start_loc && quest_sawmill->sawmill_state == Quest_Sawmill::State::InBuild
+			&& quest_sawmill->build_state == Quest_Sawmill::BuildState::None)
+		{
+			Unit* u = game_level->city_ctx->FindInn()->FindUnit(UnitData::Get("artur_drwal"));
+			if(u && u->IsAlive())
+			{
+				quest_sawmill->build_state = Quest_Sawmill::BuildState::LumberjackLeft;
+				game_level->RemoveUnit(u, !on_leave);
+			}
+		}
+
+		if(quest_mages2->scholar && quest_mages2->mages_state == Quest_Mages2::State::ScholarWaits)
+		{
+			game_level->RemoveUnit(UnitData::Get("q_magowie_uczony"), on_leave);
+			quest_mages2->scholar = nullptr;
+			quest_mages2->mages_state = Quest_Mages2::State::Counting;
+			quest_mages2->days = Random(15, 30);
+		}
+
+		if(quest_orcs2->guard && quest_orcs2->orcs_state >= Quest_Orcs2::State::GuardTalked)
+		{
+			game_level->RemoveUnit(UnitData::Get("q_orkowie_straznik"), on_leave);
+			quest_orcs2->guard = nullptr;
+		}
+	}
+
+	if(quest_bandits->bandits_state == Quest_Bandits::State::AgentTalked)
+	{
+		quest_bandits->bandits_state = Quest_Bandits::State::AgentLeft;
+		quest_bandits->agent = nullptr;
+	}
+
+	if(quest_mages2->mages_state == Quest_Mages2::State::MageLeaving)
+	{
+		quest_mages2->mages_state = Quest_Mages2::State::MageLeft;
+		quest_mages2->scholar = nullptr;
+	}
+
+	if(quest_goblins->goblins_state == Quest_Goblins::State::MessengerTalked && quest_goblins->messenger)
+	{
+		game_level->RemoveUnit(UnitData::Get("q_gobliny_poslaniec"), on_leave);
+		quest_goblins->messenger = nullptr;
+	}
+
+	if(quest_goblins->goblins_state == Quest_Goblins::State::GivenBow && quest_goblins->nobleman)
+	{
+		game_level->RemoveUnit(UnitData::Get("q_gobliny_szlachcic"), on_leave);
+		quest_goblins->nobleman = nullptr;
+		quest_goblins->goblins_state = Quest_Goblins::State::NoblemanLeft;
+		quest_goblins->days = Random(15, 30);
+	}
+
+	if(quest_goblins->goblins_state == Quest_Goblins::State::MageTalked && quest_goblins->messenger)
+	{
+		game_level->RemoveUnit(UnitData::Get("q_gobliny_mag"), on_leave);
+		quest_goblins->messenger = nullptr;
+		quest_goblins->goblins_state = Quest_Goblins::State::MageLeft;
+	}
+
+	if(quest_evil->evil_state == Quest_Evil::State::ClericLeaving)
+	{
+		quest_evil->cleric = nullptr;
+		quest_evil->evil_state = Quest_Evil::State::ClericLeft;
+	}
+}
+
+//=================================================================================================
+void QuestManager::HandleQuestEvent(Quest_Event* event)
+{
+	assert(event);
+
+	event->done = true;
+
+	Unit* spawned = nullptr, *spawned2 = nullptr;
+	InsideLocationLevel* lvl = nullptr;
+	InsideLocation* inside = nullptr;
+	if(game_level->local_area->area_type == LevelArea::Type::Inside)
+	{
+		inside = (InsideLocation*)game_level->location;
+		lvl = &inside->GetLevelData();
+	}
+
+	// spawn unit
+	if(event->unit_to_spawn)
+	{
+		if(game_level->local_area->area_type == LevelArea::Type::Outside)
+		{
+			if(game_level->location->type == L_CITY)
+				spawned = game_level->SpawnUnitInsideInn(*event->unit_to_spawn, event->unit_spawn_level);
+			else
+			{
+				Vec3 pos(0, 0, 0);
+				int count = 0;
+				for(Unit* unit : game_level->local_area->units)
+				{
+					pos += unit->pos;
+					++count;
+				}
+				pos /= (float)count;
+				spawned = game_level->SpawnUnitNearLocation(*game_level->local_area, pos, *event->unit_to_spawn, nullptr, event->unit_spawn_level);
+			}
+		}
+		else
+		{
+			Room& room = lvl->GetRoom(event->spawn_unit_room, inside->HaveDownStairs());
+			spawned = game_level->SpawnUnitInsideRoomOrNear(*lvl, room, *event->unit_to_spawn, event->unit_spawn_level);
+		}
+		if(!spawned)
+			throw "Failed to spawn quest unit!";
+		spawned->dont_attack = event->unit_dont_attack;
+		if(event->unit_auto_talk)
+			spawned->OrderAutoTalk();
+		spawned->event_handler = event->unit_event_handler;
+		if(spawned->event_handler && event->send_spawn_event)
+			spawned->event_handler->HandleUnitEvent(UnitEventHandler::SPAWN, spawned);
+		if(game->devmode)
+			Info("Generated unit %s (%g,%g).", event->unit_to_spawn->id.c_str(), spawned->pos.x, spawned->pos.z);
+
+		// mark near units as guards if guarded (only in dungeon)
+		if(IsSet(spawned->data->flags2, F2_GUARDED) && lvl)
+		{
+			Room& room = lvl->GetRoom(event->spawn_unit_room, inside->HaveDownStairs());
+			for(Unit* unit : game_level->local_area->units)
+			{
+				if(unit != spawned && unit->IsFriend(*spawned) && lvl->GetRoom(PosToPt(unit->pos)) == &room)
+				{
+					unit->dont_attack = spawned->dont_attack;
+					unit->OrderGuard(spawned);
+				}
+			}
+		}
+	}
+
+	// spawn second units (only in dungeon)
+	if(event->unit_to_spawn2 && lvl)
+	{
+		Room* room;
+		if(spawned && event->spawn_2_guard_1)
+			room = lvl->GetRoom(PosToPt(spawned->pos));
+		else
+			room = &lvl->GetRoom(event->spawn_unit_room2, inside->HaveDownStairs());
+		spawned2 = game_level->SpawnUnitInsideRoomOrNear(*lvl, *room, *event->unit_to_spawn2, event->unit_spawn_level2);
+		if(!spawned2)
+			throw "Failed to spawn quest unit 2!";
+		if(game->devmode)
+			Info("Generated unit %s (%g,%g).", event->unit_to_spawn2->id.c_str(), spawned2->pos.x, spawned2->pos.z);
+		if(spawned && event->spawn_2_guard_1)
+		{
+			spawned2->dont_attack = spawned->dont_attack;
+			spawned2->OrderGuard(spawned);
+		}
+	}
+
+	// spawn item
+	switch(event->spawn_item)
+	{
+	case Quest_Dungeon::Item_DontSpawn:
+		break;
+	case Quest_Dungeon::Item_GiveStrongest:
+		{
+			Unit* best = nullptr;
+			for(Unit* unit : game_level->local_area->units)
+			{
+				if(unit->IsAlive() && unit->IsEnemy(*game->pc->unit) && (!best || unit->level > best->level))
+					best = unit;
+			}
+			assert(best);
+			if(best)
+			{
+				best->AddItem(event->item_to_give[0], 1, true);
+				if(game->devmode)
+					Info("Given item %s unit %s (%g,%g).", event->item_to_give[0]->id.c_str(), best->data->id.c_str(), best->pos.x, best->pos.z);
+			}
+		}
+		break;
+	case Quest_Dungeon::Item_GiveSpawned:
+		assert(spawned);
+		if(spawned)
+		{
+			spawned->AddItem(event->item_to_give[0], 1, true);
+			if(game->devmode)
+				Info("Given item %s unit %s (%g,%g).", event->item_to_give[0]->id.c_str(), spawned->data->id.c_str(), spawned->pos.x, spawned->pos.z);
+		}
+		break;
+	case Quest_Dungeon::Item_GiveSpawned2:
+		assert(spawned2);
+		if(spawned2)
+		{
+			spawned2->AddItem(event->item_to_give[0], 1, true);
+			if(game->devmode)
+				Info("Given item %s unit %s (%g,%g).", event->item_to_give[0]->id.c_str(), spawned2->data->id.c_str(), spawned2->pos.x, spawned2->pos.z);
+		}
+		break;
+	case Quest_Dungeon::Item_OnGround:
+		{
+			GroundItem* item;
+			if(lvl)
+				item = game_level->SpawnGroundItemInsideAnyRoom(*lvl, event->item_to_give[0]);
+			else
+				item = game_level->SpawnGroundItemInsideRadius(event->item_to_give[0], Vec2(128, 128), 10.f);
+			if(game->devmode)
+				Info("Generated item %s on ground (%g,%g).", event->item_to_give[0]->id.c_str(), item->pos.x, item->pos.z);
+		}
+		break;
+	case Quest_Dungeon::Item_InTreasure:
+		if(inside && Any(inside->target, HERO_CRYPT, MONSTER_CRYPT, LABYRINTH))
+		{
+			Chest* chest = nullptr;
+
+			if(inside->target == LABYRINTH)
+				chest = RandomItem(lvl->chests);
+			else
+			{
+				Room& room = *lvl->rooms[inside->special_room];
+				LocalVector2<Chest*> chests;
+				for(Chest* chest2 : lvl->chests)
+				{
+					if(room.IsInside(chest2->pos))
+						chests.push_back(chest2);
+				}
+
+				if(!chests.empty())
+					chest = chests.RandomItem();
+			}
+
+			assert(chest);
+			if(chest)
+			{
+				chest->AddItem(event->item_to_give[0]);
+				if(game->devmode)
+					Info("Generated item %s in treasure chest (%g,%g).", event->item_to_give[0]->id.c_str(), chest->pos.x, chest->pos.z);
+			}
+		}
+		break;
+	case Quest_Dungeon::Item_InChest:
+		{
+			Chest* chest = game_level->local_area->GetRandomFarChest(game_level->GetSpawnPoint());
+			assert(event->item_to_give[0]);
+			if(game->devmode)
+			{
+				LocalString str = "Addded items (";
+				for(int i = 0; i < Quest_Dungeon::MAX_ITEMS; ++i)
+				{
+					if(!event->item_to_give[i])
+						break;
+					if(i > 0)
+						str += ", ";
+					chest->AddItem(event->item_to_give[i]);
+					str += event->item_to_give[i]->id;
+				}
+				str += Format(") to chest (%g,%g).", chest->pos.x, chest->pos.z);
+				Info(str.get_ref().c_str());
+			}
+			else
+			{
+				for(int i = 0; i < Quest_Dungeon::MAX_ITEMS; ++i)
+				{
+					if(!event->item_to_give[i])
+						break;
+					chest->AddItem(event->item_to_give[i]);
+				}
+			}
+			chest->handler = event->chest_event_handler;
+		}
+		break;
+	}
+
+	if(event->callback)
+		event->callback();
 }

@@ -588,7 +588,7 @@ void Game::LoadGame(GameReader& f)
 	StopAllSounds();
 	quest_mgr->quest_tutorial->in_tutorial = false;
 	arena->Reset();
-	pc_data.autowalk = false;
+	pc->data.autowalk = false;
 	ai_bow_targets.clear();
 	load_location_quest.clear();
 	load_unit_handler.clear();
@@ -759,7 +759,7 @@ void Game::LoadGame(GameReader& f)
 	f >> game_level->camera.real_rot.y;
 	f >> game_level->camera.dist;
 	game_level->camera.Reset();
-	pc_data.rot_buf = 0.f;
+	pc->data.rot_buf = 0.f;
 
 	// traders stock
 	if(LOAD_VERSION < V_0_8)
@@ -914,8 +914,8 @@ void Game::LoadGame(GameReader& f)
 	fallback_type = FALLBACK::NONE;
 	fallback_t = -0.5f;
 	game_gui->inventory->mode = I_NONE;
-	pc_data.before_player = BP_NONE;
-	pc_data.selected_unit = pc->unit;
+	pc->data.before_player = BP_NONE;
+	pc->data.selected_unit = pc->unit;
 	dialog_context.pc = pc;
 	dialog_context.dialog_mode = false;
 	game_gui->level_gui->Setup();

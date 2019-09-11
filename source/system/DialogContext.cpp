@@ -43,7 +43,7 @@ void DialogContext::StartDialog(Unit* talker, GameDialog* dialog)
 		dialog = talker->order->auto_talk_dialog;
 		talker->OrderNext();
 	}
-	
+
 	dialog_mode = true;
 	dialog_wait = -1;
 	dialog_pos = 0;
@@ -197,8 +197,8 @@ void DialogContext::Update(float dt)
 					skip = true;
 				else
 				{
-					game->pc_data.wasted_key = GKey.KeyDoReturn(GK_ATTACK_USE, &Input::PressedRelease);
-					if(game->pc_data.wasted_key != Key::None)
+					game->pc->data.wasted_key = GKey.KeyDoReturn(GK_ATTACK_USE, &Input::PressedRelease);
+					if(game->pc->data.wasted_key != Key::None)
 						skip = true;
 				}
 			}

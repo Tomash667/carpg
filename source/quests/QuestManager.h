@@ -101,6 +101,8 @@ public:
 	string GetRandomQuestRumor();
 	void GenerateQuestUnits(bool on_enter);
 	void UpdateQuests(int days);
+	void RemoveQuestUnits(bool on_leave);
+	void HandleQuestEvent(Quest_Event* event);
 
 	vector<Quest*> unaccepted_quests;
 	vector<Quest*> quests;

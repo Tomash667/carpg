@@ -2300,7 +2300,7 @@ void CityGenerator::OnEnter()
 	// spawn quest units
 	if(game_level->location->active_quest && game_level->location->active_quest != ACTIVE_QUEST_HOLDER && !game_level->location->active_quest->done
 		&& game_level->location->active_quest->type != Q_SCRIPTED)
-		game->HandleQuestEvent(game_level->location->active_quest);
+		quest_mgr->HandleQuestEvent(game_level->location->active_quest);
 
 	// generate minimap
 	game->LoadingStep(game->txGeneratingMinimap);

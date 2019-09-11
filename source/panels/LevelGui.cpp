@@ -209,7 +209,7 @@ void LevelGui::DrawFront()
 
 	// crosshair
 	if((pc.unit->weapon_state == WS_TAKEN && pc.unit->weapon_taken == W_BOW)
-		|| (game->pc_data.action_ready && pc.GetAction().area == Action::TARGET))
+		|| (game->pc->data.action_ready && pc.GetAction().area == Action::TARGET))
 		gui->DrawSprite(tCrosshair, Center(32, 32));
 
 	// taking damage layer (red screen)
@@ -316,12 +316,12 @@ void LevelGui::DrawFront()
 	}
 
 	// text above selected object/units
-	switch(game->pc_data.before_player)
+	switch(game->pc->data.before_player)
 	{
 	case BP_UNIT:
 		if(!debug_info)
 		{
-			Unit* u = game->pc_data.before_player_ptr.unit;
+			Unit* u = game->pc->data.before_player_ptr.unit;
 			bool dont_draw = false;
 			for(vector<UnitView>::iterator it = unit_views.begin(), end = unit_views.end(); it != end; ++it)
 			{
@@ -338,21 +338,21 @@ void LevelGui::DrawFront()
 		break;
 	case BP_CHEST:
 		{
-			Vec3 text_pos = game->pc_data.before_player_ptr.chest->pos;
+			Vec3 text_pos = game->pc->data.before_player_ptr.chest->pos;
 			text_pos.y += 0.75f;
 			DrawObjectInfo(txChest, text_pos);
 		}
 		break;
 	case BP_DOOR:
 		{
-			Vec3 text_pos = game->pc_data.before_player_ptr.door->pos;
+			Vec3 text_pos = game->pc->data.before_player_ptr.door->pos;
 			text_pos.y += 1.75f;
-			DrawObjectInfo(game->pc_data.before_player_ptr.door->locked == LOCK_NONE ? txDoor : txDoorLocked, text_pos);
+			DrawObjectInfo(game->pc->data.before_player_ptr.door->locked == LOCK_NONE ? txDoor : txDoorLocked, text_pos);
 		}
 		break;
 	case BP_ITEM:
 		{
-			GroundItem& item = *game->pc_data.before_player_ptr.item;
+			GroundItem& item = *game->pc->data.before_player_ptr.item;
 			Mesh* mesh;
 			if(IsSet(item.item->flags, ITEM_GROUND_MESH))
 				mesh = item.item->mesh;
@@ -370,7 +370,7 @@ void LevelGui::DrawFront()
 		break;
 	case BP_USABLE:
 		{
-			Usable& u = *game->pc_data.before_player_ptr.usable;
+			Usable& u = *game->pc->data.before_player_ptr.usable;
 			Vec3 text_pos = u.pos;
 			text_pos.y += u.GetMesh()->head.radius;
 			DrawObjectInfo(u.base->name.c_str(), text_pos);
@@ -615,7 +615,7 @@ void LevelGui::DrawFront()
 				gui->DrawText(GameGui::font_small, Format("%d/%d", pc.action_charges, action.charges), DTF_RIGHT | DTF_BOTTOM, Color::Black, r);
 
 			// readied action
-			if(game->pc_data.action_ready)
+			if(game->pc->data.action_ready)
 			{
 				mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(scale, scale), nullptr, 0.f, &Vec2(float(spos.x), float(spos.y)));
 				gui->DrawSprite2(tShortcutAction, mat);
@@ -1419,7 +1419,7 @@ bool LevelGui::UpdateChoice(DialogContext& ctx, int choices)
 	if(GKey.AllowMouse() && cursor_choice != -1 && input->PressedRelease(Key::LeftButton))
 	{
 		if(ctx.is_local)
-			game->pc_data.wasted_key = Key::LeftButton;
+			game->pc->data.wasted_key = Key::LeftButton;
 		ctx.choice_selected = cursor_choice;
 		return true;
 	}
@@ -1855,9 +1855,9 @@ void LevelGui::UpdatePlayerView(float dt)
 	}
 
 	// extra units
-	if(game->pc_data.action_ready && game->pc_data.action_ok)
+	if(game->pc->data.action_ready && game->pc->data.action_ok)
 	{
-		if(Unit* target = game->pc_data.action_target; target && target != &u)
+		if(Unit* target = game->pc->data.action_target; target && target != &u)
 			AddUnitView(target);
 	}
 	if(u.action == A_CAST)

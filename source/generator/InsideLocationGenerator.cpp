@@ -131,7 +131,7 @@ void InsideLocationGenerator::OnEnter()
 			{
 				if(!event->done)
 				{
-					game->HandleQuestEvent(event);
+					quest_mgr->HandleQuestEvent(event);
 
 					// generowanie orków
 					if(game_level->location_index == quest_mgr->quest_orcs2->target_loc && quest_mgr->quest_orcs2->orcs_state == Quest_Orcs2::State::GenerateOrcs)

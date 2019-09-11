@@ -7,6 +7,7 @@
 #include "BitStreamFunc.h"
 #include "Team.h"
 #include "CommandParser.h"
+#include "PlayerController.h"
 
 //=================================================================================================
 MpBox::MpBox() : have_focus(false)

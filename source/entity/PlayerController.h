@@ -75,6 +75,31 @@ enum class TrainMode
 };
 
 //-----------------------------------------------------------------------------
+enum class PlayerAction
+{
+	None,
+	LootUnit,
+	LootChest,
+	Talk,
+	Trade,
+	ShareItems,
+	GiveItems,
+	LootContainer,
+	TalkUsable
+};
+
+//-----------------------------------------------------------------------------
+enum BeforePlayer
+{
+	BP_NONE,
+	BP_UNIT,
+	BP_CHEST,
+	BP_DOOR,
+	BP_ITEM,
+	BP_USABLE
+};
+
+//-----------------------------------------------------------------------------
 inline int GetRequiredAttributePoints(int level)
 {
 	return 4 * (level + 20)*(level + 25);
@@ -114,17 +139,49 @@ struct Shortcut
 };
 
 //-----------------------------------------------------------------------------
-enum class PlayerAction
+union BeforePlayerPtr
 {
-	None,
-	LootUnit,
-	LootChest,
-	Talk,
-	Trade,
-	ShareItems,
-	GiveItems,
-	LootContainer,
-	TalkUsable
+	Unit* unit;
+	Chest* chest;
+	Door* door;
+	GroundItem* item;
+	Usable* usable;
+	void* any;
+};
+
+//-----------------------------------------------------------------------------
+struct LocalPlayerData
+{
+	BeforePlayer before_player;
+	BeforePlayerPtr before_player_ptr;
+	Unit* selected_unit; // unit marked with 'select' command
+	Entity<Unit> action_target;
+	GroundItem* picking_item;
+	Vec3 action_point;
+	int picking_item_state;
+	float rot_buf, action_rot;
+	Key wasted_key;
+	bool autowalk, action_ready, action_ok;
+
+	void Reset()
+	{
+		before_player = BP_NONE;
+		before_player_ptr.any = nullptr;
+		selected_unit = nullptr;
+		action_target = nullptr;
+		picking_item = nullptr;
+		picking_item_state = 0;
+		rot_buf = 0.f;
+		wasted_key = Key::None;
+		autowalk = false;
+		action_ready = false;
+	}
+	Unit* GetTargetUnit()
+	{
+		if(before_player == BP_UNIT)
+			return before_player_ptr.unit;
+		return nullptr;
+	}
 };
 
 //-----------------------------------------------------------------------------
@@ -175,6 +232,7 @@ struct PlayerController : public HeroPlayerCommon
 	vector<TakenPerk> perks;
 	vector<Entity<Unit>> action_targets;
 	Shortcut shortcuts[Shortcut::MAX];
+	static LocalPlayerData data;
 
 	PlayerController() : dialog_ctx(nullptr), stat_flags(0), player_info(nullptr), is_local(false), action_recharge(0.f),
 		action_cooldown(0.f), action_charges(0), last_ring(false)
@@ -251,61 +309,7 @@ public:
 	void SetShortcut(int index, Shortcut::Type type, int value = 0);
 	float GetActionPower() const;
 	float GetShootAngle() const;
-};
-
-//-----------------------------------------------------------------------------
-enum BeforePlayer
-{
-	BP_NONE,
-	BP_UNIT,
-	BP_CHEST,
-	BP_DOOR,
-	BP_ITEM,
-	BP_USABLE
-};
-
-//-----------------------------------------------------------------------------
-union BeforePlayerPtr
-{
-	Unit* unit;
-	Chest* chest;
-	Door* door;
-	GroundItem* item;
-	Usable* usable;
-	void* any;
-};
-
-//-----------------------------------------------------------------------------
-struct LocalPlayerData
-{
-	BeforePlayer before_player;
-	BeforePlayerPtr before_player_ptr;
-	Unit* selected_unit; // unit marked with 'select' command
-	Entity<Unit> action_target;
-	GroundItem* picking_item;
-	Vec3 action_point;
-	int picking_item_state;
-	float rot_buf, action_rot;
-	Key wasted_key;
-	bool autowalk, action_ready, action_ok;
-
-	void Reset()
-	{
-		before_player = BP_NONE;
-		before_player_ptr.any = nullptr;
-		selected_unit = nullptr;
-		action_target = nullptr;
-		picking_item = nullptr;
-		picking_item_state = 0;
-		rot_buf = 0.f;
-		wasted_key = Key::None;
-		autowalk = false;
-		action_ready = false;
-	}
-	Unit* GetTargetUnit()
-	{
-		if(before_player == BP_UNIT)
-			return before_player_ptr.unit;
-		return nullptr;
-	}
+	void CheckObjectDistance(const Vec3& pos, void* ptr, float& best_dist, BeforePlayer type);
+	void UseUsable(Usable* u, bool after_action);
+	void CastSpell();
 };

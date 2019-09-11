@@ -967,8 +967,8 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				}
 
 				// remove item
-				if(pc_data.before_player == BP_ITEM && pc_data.before_player_ptr.item == item)
-					pc_data.before_player = BP_NONE;
+				if(pc->data.before_player == BP_ITEM && pc->data.before_player_ptr.item == item)
+					pc->data.before_player = BP_NONE;
 				RemoveElement(area->items, item);
 
 				// event
@@ -4604,10 +4604,10 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					else
 					{
 						RemoveElement(area->items, item);
-						if(pc_data.before_player == BP_ITEM && pc_data.before_player_ptr.item == item)
-							pc_data.before_player = BP_NONE;
-						if(pc_data.picking_item_state == 1 && pc_data.picking_item == item)
-							pc_data.picking_item_state = 2;
+						if(pc->data.before_player == BP_ITEM && pc->data.before_player_ptr.item == item)
+							pc->data.before_player = BP_NONE;
+						if(pc->data.picking_item_state == 1 && pc->data.picking_item == item)
+							pc->data.picking_item_state = 2;
 						else
 							delete item;
 					}
@@ -5039,9 +5039,9 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					}
 					Net::PushChange(NetChange::WARP);
 					interpolate_timer = 0.f;
-					pc_data.rot_buf = 0.f;
+					pc->data.rot_buf = 0.f;
 					game_level->camera.Reset();
-					pc_data.rot_buf = 0.f;
+					pc->data.rot_buf = 0.f;
 				}
 			}
 			break;
@@ -5311,8 +5311,8 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 						unit->action = A_NONE;
 
 					unit->UseUsable(usable);
-					if(pc_data.before_player == BP_USABLE && pc_data.before_player_ptr.usable == usable)
-						pc_data.before_player = BP_NONE;
+					if(pc->data.before_player == BP_USABLE && pc->data.before_player_ptr.usable == usable)
+						pc->data.before_player = BP_NONE;
 				}
 				else
 				{
@@ -6773,12 +6773,12 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 					Error("Update single client: Broken PICKUP.");
 				else if(game_state == GS_LEVEL)
 				{
-					pc->unit->AddItem2(pc_data.picking_item->item, (uint)count, (uint)team_count, false);
-					if(pc_data.picking_item->item->type == IT_GOLD)
+					pc->unit->AddItem2(pc->data.picking_item->item, (uint)count, (uint)team_count, false);
+					if(pc->data.picking_item->item->type == IT_GOLD)
 						sound_mgr->PlaySound2d(sCoins);
-					if(pc_data.picking_item_state == 2)
-						delete pc_data.picking_item;
-					pc_data.picking_item_state = 0;
+					if(pc->data.picking_item_state == 2)
+						delete pc->data.picking_item;
+					pc->data.picking_item_state = 0;
 				}
 			}
 			break;
@@ -6859,7 +6859,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 							dialog_context.dialog_wait = 1.f;
 							dialog_context.skip_id = unit->bubble->skip_id;
 						}
-						pc_data.before_player = BP_NONE;
+						pc->data.before_player = BP_NONE;
 					}
 				}
 			}

@@ -156,7 +156,7 @@ void Game::UpdateAi(float dt)
 		ai.morale = Min(ai.morale + dt, u.GetMaxMorale());
 		if(u.data->spells)
 		{
-			for(int i = 0; i < MAX_SPELLS; +i)
+			for(int i = 0; i < MAX_SPELLS; ++i)
 				ai.cooldown[i] -= dt;
 		}
 
@@ -346,7 +346,7 @@ void Game::UpdateAi(float dt)
 							ai.change_ai_mode = true;
 							repeat = true;
 							if(IsSet(u.data->flags2, F2_YELL))
-								AI_Shout(area, ai);
+								ai.Shout();
 							break;
 						}
 
@@ -362,7 +362,7 @@ void Game::UpdateAi(float dt)
 							ai.timer = 0.f;
 							ai.city_wander = false;
 							ai.change_ai_mode = true;
-							AI_Shout(area, ai);
+							ai.Shout();
 							repeat = true;
 							break;
 						}
@@ -690,7 +690,7 @@ void Game::UpdateAi(float dt)
 							u.OrderClear();
 						break;
 					case ORDER_AUTO_TALK:
-						CheckAutoTalk(u, dt);
+						u.CheckAutoTalk(dt);
 						break;
 					}
 
@@ -1429,7 +1429,7 @@ void Game::UpdateAi(float dt)
 									else
 									{
 										u.TakeWeapon(W_ONE_HANDED);
-										AI_DoAttack(ai, nullptr, false);
+										ai.DoAttack(nullptr, false);
 										ai.in_combat = true;
 										u.hitted = true;
 										look_at = LookAtPoint;
@@ -1737,7 +1737,7 @@ void Game::UpdateAi(float dt)
 					if(u.action == A_CAST)
 					{
 						// spellshot
-						look_pos = PredictTargetPos(u, *enemy, u.data->spells->spell[u.attack_id]->speed);
+						look_pos = ai.PredictTargetPos(*enemy, u.data->spells->spell[u.attack_id]->speed);
 						look_at = LookAtPoint;
 						u.target_pos = look_pos;
 					}
@@ -1745,7 +1745,7 @@ void Game::UpdateAi(float dt)
 					{
 						// bowshot
 						float arrow_speed = u.GetArrowSpeed();
-						look_pos = PredictTargetPos(u, *enemy, arrow_speed);
+						look_pos = ai.PredictTargetPos(*enemy, arrow_speed);
 						look_at = LookAtPoint;
 						u.target_pos = look_pos;
 						ai.shoot_yspeed = (enemy->pos.y - u.pos.y) / (Vec3::Distance(u.pos, enemy->pos) / arrow_speed);
@@ -1756,7 +1756,7 @@ void Game::UpdateAi(float dt)
 						if(u.action == A_NONE && ai.next_attack <= 0.f && u.frozen == FROZEN::NO)
 						{
 							// shooting possibility check
-							look_pos = PredictTargetPos(u, *enemy, u.GetArrowSpeed());
+							look_pos = ai.PredictTargetPos(*enemy, u.GetArrowSpeed());
 
 							if(game_level->CanShootAtLocation(u, *enemy, enemy->pos))
 							{
@@ -1795,9 +1795,9 @@ void Game::UpdateAi(float dt)
 						if(u.action == A_NONE && ai.next_attack <= 0.f && u.frozen == FROZEN::NO)
 						{
 							if(best_dist <= u.GetAttackRange() + 1.f)
-								AI_DoAttack(ai, enemy);
+								ai.DoAttack(enemy);
 							else if(u.running && best_dist <= u.GetAttackRange() * 3 + 1.f)
-								AI_DoAttack(ai, enemy, true);
+								ai.DoAttack(enemy, true);
 						}
 
 						// stay close but not too close
@@ -1984,7 +1984,7 @@ void Game::UpdateAi(float dt)
 						ai.target_last_pos = enemy->pos;
 						ai.state = AIController::Fighting;
 						ai.timer = 0.f;
-						AI_Shout(area, ai);
+						ai.Shout();
 						repeat = true;
 						break;
 					}
@@ -2329,18 +2329,18 @@ void Game::UpdateAi(float dt)
 
 						// attack
 						if(u.action == A_NONE && best_dist <= u.GetAttackRange() && ai.next_attack <= 0.f && u.frozen == FROZEN::NO)
-							AI_DoAttack(ai, enemy);
+							ai.DoAttack(enemy);
 						else if(u.action == A_CAST)
 						{
 							// cast a spell
-							look_pos = PredictTargetPos(u, *top, u.data->spells->spell[u.attack_id]->speed);
+							look_pos = ai.PredictTargetPos(*top, u.data->spells->spell[u.attack_id]->speed);
 							look_at = LookAtPoint;
 							u.target_pos = look_pos;
 						}
 						else if(u.action == A_SHOOT)
 						{
 							// shoot with bow
-							look_pos = PredictTargetPos(u, *top, u.GetArrowSpeed());
+							look_pos = ai.PredictTargetPos(*top, u.GetArrowSpeed());
 							look_at = LookAtPoint;
 							u.target_pos = look_pos;
 						}
@@ -2595,7 +2595,7 @@ void Game::UpdateAi(float dt)
 					u.pos = u.prev_pos;
 				}
 
-				if(move != 0 && CheckMove(u.pos, dir, u.GetUnitRadius(), &u, &small))
+				if(move != 0 && game_level->CheckMove(u.pos, dir, u.GetUnitRadius(), &u, &small))
 				{
 					MoveUnit(u);
 
@@ -2826,7 +2826,7 @@ void Game::UpdateAi(float dt)
 					if(move != 0)
 					{
 						int move_state = 0;
-						if(CheckMove(u.pos, dir, u.GetUnitRadius(), &u, &small))
+						if(game_level->CheckMove(u.pos, dir, u.GetUnitRadius(), &u, &small))
 							move_state = 1;
 						else if(try_phase && u.hero->phase)
 						{
@@ -2974,258 +2974,4 @@ void Game::UpdateAi(float dt)
 			}
 		}
 	}
-}
-
-//=================================================================================================
-void Game::AI_Shout(LevelArea& area, AIController& ai)
-{
-	Unit& unit = *ai.unit;
-
-	if(!unit.data->sounds->Have(SOUND_SEE_ENEMY))
-		return;
-
-	PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_SEE_ENEMY), Unit::ALERT_SOUND_DIST);
-
-	if(Net::IsOnline())
-	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::UNIT_SOUND;
-		c.unit = &unit;
-		c.id = SOUND_SEE_ENEMY;
-	}
-
-	// alarm near allies
-	Unit* target = ai.target;
-	for(Unit* u : area.units)
-	{
-		if(u->to_remove || &unit == u || !u->IsStanding() || u->IsPlayer() || !unit.IsFriend(*u) || u->ai->state == AIController::Fighting
-			|| u->ai->alert_target || u->dont_attack)
-			continue;
-
-		if(Vec3::Distance(unit.pos, u->pos) <= 20.f && game_level->CanSee(unit, *u))
-		{
-			u->ai->alert_target = target;
-			u->ai->alert_target_pos = ai.target_last_pos;
-		}
-	}
-}
-
-//=================================================================================================
-// when target is nullptr, it deals no damage (dummy training)
-void Game::AI_DoAttack(AIController& ai, Unit* target, bool running)
-{
-	Unit& u = *ai.unit;
-
-	if(u.action == A_NONE && (u.mesh_inst->mesh->head.n_groups == 1 || u.weapon_state == WS_TAKEN) && ai.next_attack <= 0.f)
-	{
-		if(u.data->sounds->Have(SOUND_ATTACK) && Rand() % 4 == 0)
-			PlayAttachedSound(u, u.data->sounds->Random(SOUND_ATTACK), Unit::ATTACK_SOUND_DIST);
-		u.action = A_ATTACK;
-		u.attack_id = u.GetRandomAttack();
-
-		bool do_power_attack;
-		if(!IsSet(u.data->flags, F_NO_POWER_ATTACK))
-		{
-			if(target && target->action == A_BLOCK)
-				do_power_attack = (Rand() % 2 == 0);
-			else
-				do_power_attack = (Rand() % 5 == 0);
-		}
-		else
-			do_power_attack = false;
-		u.attack_power = 1.f;
-
-		if(running)
-		{
-			u.attack_power = 1.5f;
-			u.run_attack = true;
-			do_power_attack = false;
-		}
-
-		float stamina_cost = (running || do_power_attack) ? 1.5f : 1.f;
-		if(u.HaveWeapon())
-			stamina_cost *= u.GetWeapon().GetInfo().stamina;
-		else
-			stamina_cost *= Unit::STAMINA_UNARMED_ATTACK;
-		u.RemoveStamina(stamina_cost);
-
-		float speed = (do_power_attack ? ai.unit->GetPowerAttackSpeed() : ai.unit->GetAttackSpeed()) * u.GetStaminaAttackSpeedMod();
-
-		if(u.mesh_inst->mesh->head.n_groups > 1)
-		{
-			u.mesh_inst->Play(NAMES::ani_attacks[u.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
-			u.mesh_inst->groups[1].speed = speed;
-		}
-		else
-		{
-			u.mesh_inst->Play(NAMES::ani_attacks[u.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 0);
-			u.mesh_inst->groups[0].speed = speed;
-			u.animation = ANI_PLAY;
-		}
-		u.animation_state = (do_power_attack ? 0 : 1);
-		u.hitted = !target;
-
-		if(Net::IsOnline())
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::ATTACK;
-			c.unit = &u;
-			c.id = (do_power_attack ? AID_PrepareAttack : (running ? AID_RunningAttack : AID_Attack));
-			c.f[1] = speed;
-		}
-	}
-}
-
-//=================================================================================================
-void Game::AI_HitReaction(Unit& unit, const Vec3& pos)
-{
-	AIController& ai = *unit.ai;
-
-	if(unit.dont_attack || !Any(ai.state, AIController::Idle, AIController::SearchEnemy))
-		return;
-
-	ai.target = nullptr;
-	ai.target_last_pos = pos;
-	if(ai.state == AIController::Idle)
-		ai.change_ai_mode = true;
-	ai.state = AIController::SeenEnemy;
-	ai.timer = Random(10.f, 15.f);
-	ai.city_wander = false;
-	if(!unit.data->sounds->Have(SOUND_SEE_ENEMY))
-		return;
-
-	PlayAttachedSound(unit, unit.data->sounds->Random(SOUND_SEE_ENEMY), Unit::ALERT_SOUND_DIST);
-
-	if(Net::IsOnline())
-	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::UNIT_SOUND;
-		c.unit = &unit;
-		c.id = SOUND_SEE_ENEMY;
-	}
-
-	// alarm near allies
-	for(Unit* u : unit.area->units)
-	{
-		if(u->to_remove || &unit == u || !u->IsStanding() || u->IsPlayer() || !unit.IsFriend(*u) || u->dont_attack)
-			continue;
-
-		if((u->ai->state == AIController::Idle || u->ai->state == AIController::SearchEnemy)
-			&& Vec3::Distance(unit.pos, u->pos) <= 20.f && game_level->CanSee(unit, *u))
-		{
-			AIController* ai2 = u->ai;
-			ai2->target_last_pos = pos;
-			ai2->state = AIController::SeenEnemy;
-			ai2->timer = Random(5.f, 10.f);
-		}
-	}
-}
-
-//=================================================================================================
-void Game::CheckAutoTalk(Unit& unit, float dt)
-{
-	if(unit.action != A_NONE && unit.action != A_ANIMATION2)
-	{
-		if(unit.order->auto_talk == AutoTalkMode::Wait)
-		{
-			unit.order->auto_talk = AutoTalkMode::Yes;
-			unit.order->timer = Unit::AUTO_TALK_WAIT;
-		}
-		return;
-	}
-
-	// timer to not check everything every frame
-	unit.order->timer -= dt;
-	if(unit.order->timer > 0.f)
-		return;
-	unit.order->timer = Unit::AUTO_TALK_WAIT;
-
-	// find near players
-	struct NearUnit
-	{
-		Unit* unit;
-		float dist;
-	};
-	static vector<NearUnit> near_units;
-
-	const bool leader_mode = (unit.order->auto_talk == AutoTalkMode::Leader);
-
-	for(Unit& u : team->members)
-	{
-		if(u.IsPlayer())
-		{
-			// if not leader (in leader mode) or busy - don't check this unit
-			if((leader_mode && &u != team->leader)
-				|| (u.player->dialog_ctx->dialog_mode || u.busy != Unit::Busy_No
-				|| !u.IsStanding() || u.player->action != PlayerAction::None))
-				continue;
-			float dist = Vec3::Distance(unit.pos, u.pos);
-			if(dist <= 8.f || leader_mode)
-				near_units.push_back({ &u, dist });
-		}
-	}
-
-	// if no nearby available players found, return
-	if(near_units.empty())
-	{
-		if(unit.order->auto_talk == AutoTalkMode::Wait)
-			unit.order->auto_talk = AutoTalkMode::Yes;
-		return;
-	}
-
-	// sort by distance
-	std::sort(near_units.begin(), near_units.end(), [](const NearUnit& nu1, const NearUnit& nu2) { return nu1.dist < nu2.dist; });
-
-	// get near player that don't have enemies nearby
-	LevelArea& area = *unit.area;
-	PlayerController* talk_player = nullptr;
-	for(auto& near_unit : near_units)
-	{
-		Unit& talk_target = *near_unit.unit;
-		if(game_level->CanSee(unit, talk_target))
-		{
-			bool ok = true;
-			for(vector<Unit*>::iterator it2 = area.units.begin(), end2 = area.units.end(); it2 != end2; ++it2)
-			{
-				Unit& check_unit = **it2;
-				if(&talk_target == &check_unit || &unit == &check_unit)
-					continue;
-
-				if(check_unit.IsAlive() && talk_target.IsEnemy(check_unit) && check_unit.IsAI() && !check_unit.dont_attack
-					&& Vec3::Distance2d(talk_target.pos, check_unit.pos) < ALERT_RANGE && game_level->CanSee(check_unit, talk_target))
-				{
-					ok = false;
-					break;
-				}
-			}
-
-			if(ok)
-			{
-				talk_player = talk_target.player;
-				break;
-			}
-		}
-	}
-
-	// start dialog or wait
-	if(talk_player)
-	{
-		if(unit.order->auto_talk == AutoTalkMode::Yes)
-		{
-			unit.order->auto_talk = AutoTalkMode::Wait;
-			unit.order->timer = 1.f;
-		}
-		else
-		{
-			talk_player->StartDialog(&unit, unit.order->auto_talk_dialog);
-			unit.OrderClear();
-		}
-	}
-	else if(unit.order->auto_talk == AutoTalkMode::Wait)
-	{
-		unit.order->auto_talk = AutoTalkMode::Yes;
-		unit.order->timer = Unit::AUTO_TALK_WAIT;
-	}
-
-	near_units.clear();
 }

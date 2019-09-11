@@ -15,7 +15,6 @@
 #include "Settings.h"
 #include "Blood.h"
 #include "BaseObject.h"
-#include "PlayerController.h"
 
 //-----------------------------------------------------------------------------
 // quickstart mode
@@ -164,12 +163,14 @@ public:
 	void Draw();
 	void ReloadShaders();
 	void ReleaseShaders();
+	void LoadShaders();
+	void SetupShaders();
 	void InitScene();
 	void BuildDungeon();
 	void ChangeDungeonTexWrap();
 	void FillDungeonPart(Int2* dungeon_part, word* faces, int& index, word offset);
 	void ListDrawObjects(LevelArea& area, FrustumPlanes& frustum, bool outside);
-	void ListDrawObjectsUnit(LevelArea* area, FrustumPlanes& frustum, bool outside, Unit& u);
+	void ListDrawObjectsUnit(FrustumPlanes& frustum, bool outside, Unit& u);
 	void AddObjectToDrawBatch(LevelArea& area, const Object& o, FrustumPlanes& frustum);
 	void ListAreas(LevelArea& area);
 	void PrepareAreaPath();
@@ -237,18 +238,13 @@ public:
 	void DrawItemImage(const Item& item, RenderTarget* target, float rot);
 	void SetupObject(BaseObject& obj);
 	void SetupCamera(float dt);
-	void LoadShaders();
-	void SetupShaders();
 	void TakeScreenshot(bool no_gui = false);
 	void UpdateGame(float dt);
 	void UpdateFallback(float dt);
 	void UpdatePlayer(float dt, bool allow_rot);
 	void UseAction(PlayerController* p, bool from_server, const Vec3* pos_data = nullptr, Unit* target = nullptr);
 	void SpawnUnitEffect(Unit& unit);
-	void PlayerCheckObjectDistance(Unit& u, const Vec3& pos, void* ptr, float& best_dist, BeforePlayer type);
-	int CheckMove(Vec3& pos, const Vec3& dir, float radius, Unit* me, bool* is_small = nullptr);
 	void UpdateAi(float dt);
-	void CheckAutoTalk(Unit& unit, float dt);
 	void MoveUnit(Unit& unit, bool warped = false, bool dash = false);
 	uint ValidateGameData(bool major);
 	uint TestGameData(bool major);
@@ -277,7 +273,6 @@ public:
 	bool CanSaveGame() const;
 	bool DoShieldSmash(LevelArea& area, Unit& attacker);
 	void UpdateBullets(LevelArea& area, float dt);
-	Vec3 PredictTargetPos(const Unit& me, const Unit& target, float bullet_speed) const;
 	void LoadItemsData();
 	Unit* CreateUnitWithAI(LevelArea& area, UnitData& unit, int level = -1, Human* human_data = nullptr, const Vec3* pos = nullptr, const float* rot = nullptr, AIController** ai = nullptr);
 	void ChangeLevel(int where);
@@ -290,17 +285,12 @@ public:
 	bool TryLoadGame(int slot, bool quickload, bool from_console);
 	void RemoveUnusedAiAndCheck();
 	void CheckUnitsAi(LevelArea& area, int& err_count);
-	void CastSpell(Unit& unit);
-	void CastPlayerSpell(PlayerController& player);
 	void SpellHitEffect(LevelArea& area, Bullet& bullet, const Vec3& pos, Unit* hitted);
 	void UpdateExplosions(LevelArea& area, float dt);
 	void UpdateTraps(LevelArea& area, float dt);
 	void PreloadTraps(vector<Trap*>& traps);
 	void UpdateElectros(LevelArea& area, float dt);
 	void UpdateDrains(LevelArea& area, float dt);
-	void AI_Shout(LevelArea& area, AIController& ai);
-	void AI_DoAttack(AIController& ai, Unit* target, bool running = false);
-	void AI_HitReaction(Unit& unit, const Vec3& pos);
 	bool SaveGameSlot(int slot, cstring text);
 	void SaveGameFilename(const string& name);
 	bool SaveGameCommon(cstring filename, int slot, cstring text);
@@ -332,20 +322,16 @@ public:
 	void DeleteUnit(Unit* unit);
 	bool WantExitLevel() { return !GKey.KeyDownAllowed(GK_WALK); }
 	void AttackReaction(Unit& attacked, Unit& attacker);
-	void RemoveQuestUnit(UnitData* ud, bool on_leave);
-	void RemoveQuestUnits(bool on_leave);
 	void UpdateGame2(float dt);
 	void OnCloseInventory();
 	void CloseInventory();
 	bool CanShowEndScreen();
 	void UpdateGameDialogClient();
 	void UpdateGameNet(float dt);
-	void PlayerUseUsable(Usable* u, bool after_action);
 	void OnEnterLocation();
 	void OnEnterLevel();
 	void OnEnterLevelOrLocation();
 	cstring GetRandomIdleText(Unit& u);
-	void HandleQuestEvent(Quest_Event* event);
 	void UpdateLights(vector<Light>& lights);
 	void UpdatePostEffects(float dt);
 	// --- cutscene
@@ -450,7 +436,6 @@ public:
 	// GAME
 	//-----------------------------------------------------------------
 	GAME_STATE game_state, prev_game_state;
-	LocalPlayerData pc_data;
 	PlayerController* pc;
 	bool testing, force_seed_all, end_of_game, target_loc_is_camp, death_solo, cutscene;
 	int death_screen;

@@ -1152,7 +1152,7 @@ void Game::UpdateClientTransfer(float dt)
 					fallback_type = FALLBACK::NONE;
 					fallback_t = -0.5f;
 					game_level->camera.Reset();
-					pc_data.rot_buf = 0.f;
+					pc->data.rot_buf = 0.f;
 					ChangeTitle();
 					if(net->mp_quickload)
 					{

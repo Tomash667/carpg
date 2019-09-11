@@ -1398,7 +1398,7 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 
 	game_level->dungeon_level = level;
 	game_level->event_handler = nullptr;
-	pc_data.before_player = BP_NONE;
+	pc->data.before_player = BP_NONE;
 	arena->Reset();
 	game_gui->inventory->lock = nullptr;
 
@@ -1497,7 +1497,7 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 	l.last_visit = world->GetWorldtime();
 	game_level->CheckIfLocationCleared();
 	game_level->camera.Reset();
-	pc_data.rot_buf = 0.f;
+	pc->data.rot_buf = 0.f;
 	SetMusic();
 
 	if(close_portal)
@@ -1594,7 +1594,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 		if(Net::IsLocal())
 		{
 			// usuñ questowe postacie
-			RemoveQuestUnits(true);
+			quest_mgr->RemoveQuestUnits(true);
 		}
 
 		game_level->ProcessRemoveUnits(true);

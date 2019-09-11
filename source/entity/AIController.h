@@ -133,6 +133,10 @@ struct AIController
 	void Reset();
 	float GetMorale() const;
 	bool CanWander() const;
+	Vec3 PredictTargetPos(const Unit& target, float bullet_speed) const;
+	void Shout();
+	void HitReaction(const Vec3& pos);
+	void DoAttack(Unit* target, bool running = false);
 };
 
 //-----------------------------------------------------------------------------

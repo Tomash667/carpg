@@ -115,7 +115,7 @@ struct Location
 	bool loaded_resources;
 
 	Location(bool outside) : active_quest(nullptr), last_visit(-1), reset(false), state(LS_UNKNOWN), outside(outside), st(0), group(nullptr),
-		portal(nullptr), dont_clean(false), loaded_resources(false)
+		portal(nullptr), dont_clean(false), loaded_resources(false), target(0)
 	{
 	}
 

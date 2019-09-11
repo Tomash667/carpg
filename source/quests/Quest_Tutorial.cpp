@@ -40,7 +40,7 @@ void Quest_Tutorial::Start()
 	state = 0;
 	texts.clear();
 	quest_mgr->quest_contest->state = Quest_Contest::CONTEST_NOT_DONE;
-	game->pc_data.autowalk = false;
+	game->pc->data.autowalk = false;
 	game->pc->shortcuts[2].type = Shortcut::TYPE_NONE; // disable action in tutorial
 
 	// ekwipunek

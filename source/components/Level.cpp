@@ -198,7 +198,7 @@ void Level::ProcessUnitWarps()
 		if(warp.unit == game->pc->unit)
 		{
 			camera.Reset();
-			game->pc_data.rot_buf = 0.f;
+			game->pc->data.rot_buf = 0.f;
 
 			if(game->fallback_type == FALLBACK::ARENA)
 			{
@@ -478,6 +478,20 @@ void Level::RemoveUnit(Unit* unit, bool notify)
 		c.type = NetChange::REMOVE_UNIT;
 		c.id = unit->id;
 	}
+}
+
+//=================================================================================================
+void Level::RemoveUnit(UnitData* ud, bool on_leave)
+{
+	assert(ud);
+
+	Unit* unit = FindUnit([=](Unit* unit)
+	{
+		return unit->data == ud && unit->IsAlive();
+	});
+
+	if(unit)
+		RemoveUnit(unit, !on_leave);
 }
 
 //=================================================================================================
@@ -3956,7 +3970,7 @@ bool Level::Read(BitStreamReader& f, bool loaded_resources)
 		return false;
 	}
 	is_open = true;
-	game_level->Apply();
+	Apply();
 	game->loc_gen_factory->Get(location)->OnLoad();
 	location->RequireLoadingResources(&loaded_resources);
 
@@ -4475,4 +4489,63 @@ bool Level::ContactTest(btCollisionObject* obj, delegate<bool(btCollisionObject*
 	ContactTestCallback callback(obj, clbk, use_clbk2);
 	phy_world->contactTest(obj, callback);
 	return callback.hit;
+}
+
+//=================================================================================================
+int Level::CheckMove(Vec3& pos, const Vec3& dir, float radius, Unit* me, bool* is_small)
+{
+	assert(radius > 0.f && me);
+
+	constexpr float SMALL_DISTANCE = 0.001f;
+	Vec3 new_pos = pos + dir;
+	Vec3 gather_pos = pos + dir / 2;
+	float gather_radius = dir.Length() + radius;
+	global_col.clear();
+
+	Level::IgnoreObjects ignore = { 0 };
+	Unit* ignored[] = { me, nullptr };
+	ignore.ignored_units = (const Unit**)ignored;
+	GatherCollisionObjects(*me->area, global_col, gather_pos, gather_radius, &ignore);
+
+	if(global_col.empty())
+	{
+		if(is_small)
+			*is_small = (Vec3::Distance(pos, new_pos) < SMALL_DISTANCE);
+		pos = new_pos;
+		return 3;
+	}
+
+	// idŸ prosto po x i z
+	if(!Collide(global_col, new_pos, radius))
+	{
+		if(is_small)
+			*is_small = (Vec3::Distance(pos, new_pos) < SMALL_DISTANCE);
+		pos = new_pos;
+		return 3;
+	}
+
+	// idŸ po x
+	Vec3 new_pos2 = me->pos;
+	new_pos2.x = new_pos.x;
+	if(!Collide(global_col, new_pos2, radius))
+	{
+		if(is_small)
+			*is_small = (Vec3::Distance(pos, new_pos2) < SMALL_DISTANCE);
+		pos = new_pos2;
+		return 1;
+	}
+
+	// idŸ po z
+	new_pos2.x = me->pos.x;
+	new_pos2.z = new_pos.z;
+	if(!Collide(global_col, new_pos2, radius))
+	{
+		if(is_small)
+			*is_small = (Vec3::Distance(pos, new_pos2) < SMALL_DISTANCE);
+		pos = new_pos2;
+		return 2;
+	}
+
+	// nie ma drogi
+	return 0;
 }

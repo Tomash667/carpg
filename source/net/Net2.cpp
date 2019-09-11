@@ -820,7 +820,7 @@ bool Net::ReadPlayerStartData(BitStreamReader& f)
 bool Net::ReadLevelData(BitStreamReader& f)
 {
 	game_level->camera.Reset();
-	game->pc_data.rot_buf = 0.f;
+	game->pc->data.rot_buf = 0.f;
 	world->RemoveBossLevel();
 
 	bool loaded_resources;
