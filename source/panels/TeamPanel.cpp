@@ -9,6 +9,7 @@
 #include "SoundManager.h"
 #include "GameGui.h"
 #include "GameMessages.h"
+#include "MpBox.h"
 #include "ResourceManager.h"
 #include "PlayerInfo.h"
 #include "Level.h"
@@ -479,7 +480,7 @@ void TeamPanel::ChangeLeader(Unit* target)
 			team->leader_id = team->my_id;
 			team->leader = game->pc->unit;
 
-			game->AddMultiMsg(txYouAreLeader);
+			game_gui->mp_box->Add(txYouAreLeader);
 		}
 		else
 			SimpleDialog(txCantChangeLeader);
@@ -497,7 +498,7 @@ void TeamPanel::ChangeLeader(Unit* target)
 			team->leader_id = c.id;
 			team->leader = target;
 
-			game->AddMultiMsg(Format(txPcIsLeader, target->GetName()));
+			game_gui->mp_box->Add(Format(txPcIsLeader, target->GetName()));
 		}
 	}
 	else

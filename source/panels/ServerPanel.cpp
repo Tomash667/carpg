@@ -268,13 +268,13 @@ void ServerPanel::UpdateLobbyClient(float dt)
 		switch(msg_id)
 		{
 		case ID_SAY:
-			game->Client_Say(reader);
+			net->Client_Say(reader);
 			break;
 		case ID_WHISPER:
-			game->Client_Whisper(reader);
+			net->Client_Whisper(reader);
 			break;
 		case ID_SERVER_SAY:
-			game->Client_ServerSay(reader);
+			net->Client_ServerSay(reader);
 			break;
 		case ID_LOBBY_UPDATE:
 			DoLobbyUpdate(reader);
@@ -610,7 +610,7 @@ void ServerPanel::UpdateLobbyServer(float dt)
 				{
 					Info("ServerPanel: Registered server.");
 					net->master_server_state = MasterServerState::Connected;
-					net->api->StartPunchthrough(nullptr);
+					api->StartPunchthrough(nullptr);
 					if(net->active_players != 1)
 					{
 						BitStreamWriter f;
@@ -860,13 +860,13 @@ void ServerPanel::UpdateLobbyServer(float dt)
 			if(!info)
 				Warn("ServerPanel: Packet ID_SAY from unconnected client %s.", packet->systemAddress.ToString());
 			else
-				game->Server_Say(reader, *info, packet);
+				net->Server_Say(reader, *info);
 			break;
 		case ID_WHISPER:
 			if(!info)
 				Warn("ServerPanel: Packet ID_WHISPER from unconnected client %s.", packet->systemAddress.ToString());
 			else
-				game->Server_Whisper(reader, *info, packet);
+				net->Server_Whisper(reader, *info);
 			break;
 		case ID_LEAVE:
 			if(!info)
@@ -1057,7 +1057,7 @@ void ServerPanel::UpdateLobbyServer(float dt)
 			if(net->master_server_state == MasterServerState::Connected)
 				net->peer->CloseConnection(net->master_server_adr, true, 1, IMMEDIATE_PRIORITY);
 			net->master_server_state = MasterServerState::NotConnected;
-			net->api->EndPunchthrough();
+			api->EndPunchthrough();
 			// change server status
 			Info("ServerPanel: Starting game.");
 			starting = false;
@@ -1338,7 +1338,7 @@ void ServerPanel::ExitLobby(VoidF callback)
 
 		Info("ServerPanel: Closing server.");
 
-		net->api->EndPunchthrough();
+		api->EndPunchthrough();
 		// zablokuj do³¹czanie
 		net->peer->SetMaximumIncomingConnections(0);
 		// wy³¹cz info o serwerze
@@ -1376,12 +1376,6 @@ void ServerPanel::ExitLobby(VoidF callback)
 		game->net_callback = callback;
 		CloseDialog();
 	}
-}
-
-//=================================================================================================
-void ServerPanel::AddMsg(cstring _text)
-{
-	itb.Add(_text);
 }
 
 //=================================================================================================

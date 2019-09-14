@@ -15,6 +15,7 @@ public:
 	bool NeedCursor() const override { return itb.focus; }
 	void Reset();
 	void OnInput(const string& str);
+	void Add(cstring text) { itb.Add(text); }
 
 	InputTextBox itb;
 	bool have_focus;

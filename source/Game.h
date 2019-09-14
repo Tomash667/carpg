@@ -161,6 +161,7 @@ public:
 	// DRAWING
 	//-----------------------------------------------------------------
 	void Draw();
+	void ForceRedraw();
 	void ReloadShaders();
 	void ReleaseShaders();
 	void LoadShaders();
@@ -363,7 +364,7 @@ public:
 	void UpdateServerSend(float dt);
 	void UpdateServerQuiting(float dt);
 	void QuickJoinIp();
-	void AddMultiMsg(cstring msg);
+	void OnEnterPassword(int id);
 	void Quit();
 	void OnCreateCharacter(int id);
 	void OnPlayTutorial(int id);
@@ -373,46 +374,6 @@ public:
 	void DoQuit();
 	void RestartGame();
 	void ClearAndExitToMenu(cstring msg);
-
-	//-----------------------------------------------------------------
-	// MULTIPLAYER
-	//-----------------------------------------------------------------
-	void AddServerMsg(cstring msg);
-	void AddMsg(cstring msg);
-	void OnEnterPassword(int id);
-	void ForceRedraw();
-	void SendPlayerData(PlayerInfo& info);
-	bool ReadPlayerData(BitStreamReader& stream);
-	void UpdateServer(float dt);
-	bool ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info);
-	void WriteServerChanges(BitStreamWriter& f);
-	void WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info);
-	void UpdateClient(float dt);
-	bool ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server);
-	bool ProcessControlMessageClientForMe(BitStreamReader& f);
-	void WriteClientChanges(BitStreamWriter& f);
-	void Client_Say(BitStreamReader& f);
-	void Client_Whisper(BitStreamReader& f);
-	void Client_ServerSay(BitStreamReader& f);
-	void Server_Say(BitStreamReader& f, PlayerInfo& info, Packet* packet);
-	void Server_Whisper(BitStreamReader& f, PlayerInfo& info, Packet* packet);
-	void ServerProcessUnits(vector<Unit*>& units);
-	void UpdateWarpData(float dt);
-	void Net_LeaveLocation(int where)
-	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::LEAVE_LOCATION;
-		c.id = where;
-	}
-	void Net_OnNewGameServer();
-	void Net_OnNewGameClient();
-	// read item id and return it (can be quest item or gold), results: -2 read error, -1 not found, 0 empty, 1 ok
-	int ReadItemAndFind(BitStreamReader& f, const Item*& item) const;
-	bool ReadItemList(BitStreamReader& f, vector<ItemSlot>& items);
-	bool ReadItemListTeam(BitStreamReader& f, vector<ItemSlot>& items, bool skip = false);
-	bool CheckMoveNet(Unit& unit, const Vec3& pos);
-	void ProcessLeftPlayers();
-	void RemovePlayer(PlayerInfo& info);
 
 	//-----------------------------------------------------------------
 	// WORLD MAP
@@ -496,15 +457,7 @@ public:
 	float net_timer, mp_timeout;
 	BitStream prepared_stream;
 	int skip_id_counter;
-	struct WarpData
-	{
-		Unit* u;
-		int where; // <-1 - get outside the building,  >=0 - get inside the building
-		float timer;
-	};
-	vector<WarpData> mp_warps;
 	float train_move; // used by client to training by walking
-	float interpolate_timer;
 	bool paused;
 	vector<ItemSlot> chest_trade; // used by clients when trading
 

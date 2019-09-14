@@ -2,6 +2,9 @@
 #include "GameCore.h"
 #include "BitStreamFunc.h"
 #include "Item.h"
+#include "ItemSlot.h"
+#include "QuestManager.h"
+#include "Game.h"
 
 //-----------------------------------------------------------------------------
 static ObjectPool<BitStream> bitstream_write_pool, bitstream_read_pool;
@@ -67,6 +70,27 @@ void BitStreamWriter::Reset()
 	bitstream.Reset();
 }
 
+void BitStreamWriter::WriteItemList(vector<ItemSlot>& items)
+{
+	operator << (items.size());
+	for(ItemSlot& slot : items)
+	{
+		operator << (*slot.item);
+		operator << (slot.count);
+	}
+}
+
+void BitStreamWriter::WriteItemListTeam(vector<ItemSlot>& items)
+{
+	operator << (items.size());
+	for(ItemSlot& slot : items)
+	{
+		operator << (*slot.item);
+		operator << (slot.count);
+		operator << (slot.team_count);
+	}
+}
+
 //-----------------------------------------------------------------------------
 BitStreamReader::BitStreamReader(BitStream& bitstream) : bitstream(bitstream), pooled(false)
 {
@@ -124,4 +148,92 @@ BitStream& BitStreamReader::CreateBitStream(Packet* packet)
 	BitStream* bitstream = bitstream_read_pool.Get();
 	new(bitstream)BitStream(packet->data, packet->length, false);
 	return *bitstream;
+}
+
+// -2 read error, -1 not found, 0 empty, 1 found
+int BitStreamReader::ReadItemAndFind(const Item*& item)
+{
+	item = nullptr;
+
+	const string& item_id = ReadString1();
+	if(!IsOk())
+		return -2;
+
+	if(item_id.empty())
+		return 0;
+
+	if(item_id[0] == '$')
+	{
+		int quest_id = Read<int>();
+		if(!IsOk())
+			return -2;
+
+		item = quest_mgr->FindQuestItemClient(item_id.c_str(), quest_id);
+		if(!item)
+		{
+			Warn("Missing quest item '%s' (%d).", item_id.c_str(), quest_id);
+			return -1;
+		}
+		else
+			return 1;
+	}
+	else
+	{
+		item = Item::TryGet(item_id);
+		if(!item)
+		{
+			Warn("Missing item '%s'.", item_id.c_str());
+			return -1;
+		}
+		else
+			return 1;
+	}
+}
+
+bool BitStreamReader::ReadItemList(vector<ItemSlot>& items)
+{
+	const int MIN_SIZE = 5;
+
+	uint count = Read<uint>();
+	if(!Ensure(count * MIN_SIZE))
+		return false;
+
+	items.resize(count);
+	for(ItemSlot& slot : items)
+	{
+		if(ReadItemAndFind(slot.item) < 1)
+			return false;
+		operator >> (slot.count);
+		if(!IsOk())
+			return false;
+		game->PreloadItem(slot.item);
+		slot.team_count = 0;
+	}
+
+	return true;
+}
+
+bool BitStreamReader::ReadItemListTeam(vector<ItemSlot>& items, bool skip)
+{
+	const int MIN_SIZE = 9;
+
+	uint count;
+	operator >> (count);
+	if(!Ensure(count * MIN_SIZE))
+		return false;
+
+	items.resize(count);
+	for(ItemSlot& slot : items)
+	{
+		if(ReadItemAndFind(slot.item) < 1)
+			return false;
+		operator >> (slot.count);
+		operator >> (slot.team_count);
+		if(!IsOk())
+			return false;
+		if(!skip)
+			game->PreloadItem(slot.item);
+	}
+
+	return true;
 }

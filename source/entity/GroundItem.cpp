@@ -68,5 +68,5 @@ bool GroundItem::Read(BitStreamReader& f)
 	f >> count;
 	f >> team_count;
 	Register();
-	return f.IsOk() && game->ReadItemAndFind(f, item) > 0;
+	return f.IsOk() && f.ReadItemAndFind(item) > 0;
 }

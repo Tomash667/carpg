@@ -40,6 +40,7 @@
 #include "ItemHelper.h"
 #include "CreateServerPanel.h"
 #include "GameMenu.h"
+#include "MpBox.h"
 #include "PlayerInfo.h"
 #include "RenderTarget.h"
 #include "BitStreamFunc.h"
@@ -364,7 +365,7 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 
 	// before saving update minimap, finish unit warps
 	if(Net::IsOnline())
-		ProcessLeftPlayers();
+		net->ProcessLeftPlayers();
 	game_level->UpdateDungeonMinimap(false);
 	game_level->ProcessUnitWarps();
 	game_level->ProcessRemoveUnits(false);
@@ -513,7 +514,7 @@ void Game::SaveGame(GameWriter& f, SaveSlot* slot)
 		++check_id;
 
 		Net::PushChange(NetChange::GAME_SAVED);
-		AddMultiMsg(txGameSaved);
+		game_gui->mp_box->Add(txGameSaved);
 	}
 
 	f.Write("EOS", 3);

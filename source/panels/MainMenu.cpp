@@ -181,14 +181,14 @@ void MainMenu::UpdateCheckVersion()
 void MainMenu::CheckVersion()
 {
 	auto cancel = [&]() { return check_status == CheckVersionStatus::Cancel; };
-	version_new = net->api->GetVersion(cancel);
+	version_new = api->GetVersion(cancel);
 	if(version_new < 0)
 		check_status = CheckVersionStatus::Error;
 	else
 	{
 		version_changelog.clear();
 		if(version_new > VERSION)
-			net->api->GetChangelog(version_changelog, cancel);
+			api->GetChangelog(version_changelog, cancel);
 		check_status = CheckVersionStatus::Done;
 	}
 }

@@ -1019,7 +1019,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 					else
 						net->SendClient(f, MEDIUM_PRIORITY, RELIABLE);
 					cstring s = Format("@%s: %s", info->name.c_str(), text.c_str());
-					game->AddMsg(s);
+					game_gui->AddMsg(s);
 					Info(s);
 				}
 			}
@@ -1040,7 +1040,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 				f << text;
 				net->SendAll(f, MEDIUM_PRIORITY, RELIABLE);
 			}
-			game->AddServerMsg(text.c_str());
+			net->AddServerMsg(text.c_str());
 			Info("SERVER: %s", text.c_str());
 			if(game->game_state == GS_LEVEL)
 				game_gui->level_gui->AddSpeechBubble(game->pc->unit, text.c_str());
@@ -1109,7 +1109,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 					}
 				}
 
-				game->AddMsg(Format("Leader changed to '%s'.", info->name.c_str()));
+				game_gui->AddMsg(Format("Leader changed to '%s'.", info->name.c_str()));
 			}
 		}
 		break;
@@ -1174,7 +1174,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			c.type = NetChange::RANDOM_NUMBER;
 			c.id = n;
 			c.unit = game->pc->unit;
-			game->AddMsg(Format("You rolled %d.", n));
+			game_gui->AddMsg(Format("You rolled %d.", n));
 		}
 		else
 			Msg("You rolled %d.", Random(1, 100));
@@ -1199,7 +1199,7 @@ void CommandParser::RunCommand(ConsoleCommand& cmd, Tokenizer& t, PARSE_SOURCE s
 			else
 				net->SendClient(f, MEDIUM_PRIORITY, RELIABLE);
 			cstring s = Format("%s: %s", net->GetMe().name.c_str(), text.c_str());
-			game->AddMsg(s);
+			game_gui->AddMsg(s);
 			Info(s);
 		}
 		else

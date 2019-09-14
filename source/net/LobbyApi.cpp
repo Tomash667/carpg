@@ -9,6 +9,8 @@
 #include <slikenet\NatPunchthroughClient.h>
 #include <curl\curl.h>
 
+LobbyApi* global::api;
+
 cstring op_names[] = {
 	"NONE",
 	"GET_SERVERS",

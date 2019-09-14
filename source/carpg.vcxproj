@@ -323,6 +323,8 @@
     <ClCompile Include="components\World.cpp" />
     <ClCompile Include="entity\Encounter.cpp" />
     <ClCompile Include="GameFile.cpp" />
+    <ClCompile Include="net\NetClient.cpp" />
+    <ClCompile Include="net\NetServer.cpp" />
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="system\Class.cpp" />
     <ClCompile Include="system\ClassLoader.cpp" />
@@ -374,7 +376,7 @@
     <ClCompile Include="net\BitStreamFunc.cpp" />
     <ClCompile Include="net\EntityInterpolator.cpp" />
     <ClCompile Include="net\LobbyApi.cpp" />
-    <ClCompile Include="net\Net2.cpp" />
+    <ClCompile Include="net\Net.cpp" />
     <ClCompile Include="net\NetChange.cpp" />
     <ClCompile Include="net\PlayerInfo.cpp" />
     <ClCompile Include="panels\ActionPanel.cpp" />
@@ -432,7 +434,6 @@
     <ClCompile Include="location\OutsideLocation.cpp" />
     <ClCompile Include="location\SingleInsideLocation.cpp" />
     <ClCompile Include="Menu.cpp" />
-    <ClCompile Include="net\Net.cpp" />
     <ClCompile Include="panels\Console.cpp" />
     <ClCompile Include="panels\Controls.cpp" />
     <ClCompile Include="panels\CreateCharacterPanel.cpp" />

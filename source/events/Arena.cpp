@@ -245,7 +245,7 @@ void Arena::UpdatePvpRequest(float dt)
 			if(Net::IsServer())
 			{
 				if(pvp_response.from == game->pc->unit)
-					game->AddMsg(Format(game->txPvpRefuse, pvp_response.to->player->name.c_str()));
+					game_gui->AddMsg(Format(game->txPvpRefuse, pvp_response.to->player->name.c_str()));
 				else
 				{
 					NetChangePlayer& c = Add1(pvp_response.from->player->player_info->changes);
@@ -395,7 +395,7 @@ void Arena::HandlePvpResponse(PlayerInfo& info, bool accepted)
 		else
 		{
 			if(pvp_response.from->player == game->pc)
-				game->AddMsg(Format(game->txPvpRefuse, info.name.c_str()));
+				game_gui->AddMsg(Format(game->txPvpRefuse, info.name.c_str()));
 			else
 			{
 				NetChangePlayer& c = Add1(pvp_response.from->player->player_info->changes);

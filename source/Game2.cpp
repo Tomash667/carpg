@@ -1093,7 +1093,7 @@ void Game::UpdateGame(float dt)
 	if(Net::IsLocal())
 	{
 		if(Net::IsOnline())
-			UpdateWarpData(dt);
+			net->UpdateWarpData(dt);
 		game_level->ProcessUnitWarps();
 	}
 
@@ -2889,7 +2889,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 											game_gui->messages->AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
 									}
 									else
-										Net_LeaveLocation(ENTER_FROM_OUTSIDE);
+										net->OnLeaveLocation(ENTER_FROM_OUTSIDE);
 								}
 								break;
 							}
@@ -2901,7 +2901,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 						if(!team->IsLeader())
 							game_gui->messages->AddGameMsg3(GMS_NOT_LEADER);
 						else if(!Net::IsLocal())
-							Net_LeaveLocation(ENTER_FROM_OUTSIDE);
+							net->OnLeaveLocation(ENTER_FROM_OUTSIDE);
 						else
 						{
 							CanLeaveLocationResult result = game_level->CanLeaveLocation(unit);
@@ -3045,7 +3045,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 							game_gui->messages->AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
 					}
 					else
-						Net_LeaveLocation(ENTER_FROM_UP_LEVEL);
+						net->OnLeaveLocation(ENTER_FROM_UP_LEVEL);
 				}
 				else
 					game_gui->messages->AddGameMsg3(GMS_NOT_LEADER);
@@ -3098,7 +3098,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 							game_gui->messages->AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
 					}
 					else
-						Net_LeaveLocation(ENTER_FROM_DOWN_LEVEL);
+						net->OnLeaveLocation(ENTER_FROM_DOWN_LEVEL);
 				}
 				else
 					game_gui->messages->AddGameMsg3(GMS_NOT_LEADER);
@@ -3141,7 +3141,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 								game_gui->messages->AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
 						}
 						else
-							Net_LeaveLocation(ENTER_FROM_PORTAL + index);
+							net->OnLeaveLocation(ENTER_FROM_PORTAL + index);
 					}
 					else
 						game_gui->messages->AddGameMsg3(GMS_NOT_LEADER);
@@ -3154,7 +3154,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 		}
 	}
 
-	if(Net::IsLocal() || &unit != pc->unit || interpolate_timer <= 0.f)
+	if(Net::IsLocal() || &unit != pc->unit || net->interpolate_timer <= 0.f)
 	{
 		unit.visual_pos = unit.pos;
 		unit.changed = true;
@@ -5640,7 +5640,8 @@ void Game::ChangeLevel(int where)
 		net_mode = NM_SERVER_SEND;
 		net_state = NetState::Server_Send;
 		prepared_stream.Reset();
-		net->WriteLevelData(prepared_stream, loaded_resources);
+		BitStreamWriter f(prepared_stream);
+		net->WriteLevelData(f, loaded_resources);
 		Info("Generated location packet: %d.", prepared_stream.GetNumberOfBytesUsed());
 		game_gui->info_box->Show(txWaitingForPlayers);
 	}
@@ -8063,9 +8064,9 @@ void Game::UpdateGameNet(float dt)
 		return;
 
 	if(Net::IsServer())
-		UpdateServer(dt);
+		net->UpdateServer(dt);
 	else
-		UpdateClient(dt);
+		net->UpdateClient(dt);
 }
 
 DialogContext* Game::FindDialogContext(Unit* talker)

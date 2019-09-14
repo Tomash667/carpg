@@ -306,7 +306,7 @@ void Game::OnUpdate(float dt)
 	else if(profiler_mode == ProfilerMode::Disabled)
 		Profiler::g_profiler.Clear();
 
-	net->api->Update();
+	api->Update();
 	script_mgr->UpdateScripts(dt);
 
 	UpdateMusic();
@@ -492,7 +492,7 @@ void Game::OnUpdate(float dt)
 				if(Net::IsLocal())
 				{
 					if(Net::IsOnline())
-						UpdateWarpData(dt);
+						net->UpdateWarpData(dt);
 					game_level->ProcessUnitWarps();
 				}
 				SetupCamera(dt);
@@ -509,7 +509,7 @@ void Game::OnUpdate(float dt)
 					if(Net::IsLocal())
 					{
 						if(Net::IsOnline())
-							UpdateWarpData(dt);
+							net->UpdateWarpData(dt);
 						game_level->ProcessUnitWarps();
 					}
 					SetupCamera(dt);
@@ -1349,7 +1349,7 @@ void Game::PauseGame()
 	paused = !paused;
 	if(Net::IsOnline())
 	{
-		AddMultiMsg(paused ? txGamePaused : txGameResumed);
+		game_gui->mp_box->Add(paused ? txGamePaused : txGameResumed);
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::PAUSED;
 		c.id = (paused ? 1 : 0);
@@ -1519,7 +1519,8 @@ void Game::EnterLocation(int level, int from_portal, bool close_portal)
 		if(net->active_players > 1)
 		{
 			prepared_stream.Reset();
-			net->WriteLevelData(prepared_stream, loaded_resources);
+			BitStreamWriter f(prepared_stream);
+			net->WriteLevelData(f, loaded_resources);
 			Info("Generated location packet: %d.", prepared_stream.GetNumberOfBytesUsed());
 		}
 		else
@@ -1670,7 +1671,7 @@ void Game::ReportError(int id, cstring text, bool once)
 #ifdef _DEBUG
 	game_gui->messages->AddGameMsg(str, 5.f);
 #endif
-	net->api->Report(id, Format("[%s] %s", mode, text));
+	api->Report(id, Format("[%s] %s", mode, text));
 }
 
 //=================================================================================================

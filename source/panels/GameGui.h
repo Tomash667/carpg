@@ -29,6 +29,7 @@ public:
 	void ShowQuitDialog();
 	void ShowCreateCharacterPanel(bool enter_name, bool redo = false);
 	void CloseAllPanels(bool close_mp_box = false);
+	void AddMsg(cstring msg);
 
 	static FontPtr font, font_small, font_big;
 	Notifications* notifications;

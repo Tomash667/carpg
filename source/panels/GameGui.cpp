@@ -378,3 +378,13 @@ void GameGui::CloseAllPanels(bool close_mp_box)
 	if(level_gui)
 		level_gui->ClosePanels(close_mp_box);
 }
+
+//=================================================================================================
+void GameGui::AddMsg(cstring msg)
+{
+	assert(msg);
+	if(server->visible)
+		server->AddMsg(msg);
+	else
+		mp_box->itb.Add(msg);
+}
